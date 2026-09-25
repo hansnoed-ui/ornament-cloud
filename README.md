@@ -8,12 +8,12 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `icons.js` – animierte Schwarz-Weiss-Symbole des Footer-Menüs (Dauer in `PERIOD`)
 - `news/` – News als aufklappbare Einträge; neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
 - `termine/` – Termine als aufklappbare Einträge; neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen
-- `portfolio/` – Werkübersicht (Karten); jedes Werk mit eigener Seite, z. B. `portfolio/rad-von-zeit-und-raum/`
-- `portfolio/rad-von-zeit-und-raum/` – interaktives Doppelrad: `index.html`, `rad.css`, `js/wheel.js` (Rad, Geste, Ablauf),
+- `portfolio/` – Werkübersicht (Karten); jedes Werk mit eigener Seite, z. B. `portfolio/nebeneinander-nacheinander/`
+- `portfolio/nebeneinander-nacheinander/` – interaktives Doppelrad: `index.html`, `rad.css`, `js/wheel.js` (Rad, Geste, Ablauf),
   `js/lib/spin.js` (Drehphysik), `js/lib/geometry.js`, `js/symbols.js` (40 Zeichen), `js/lib/random.js`, `js/lib/validation.js`;
   Diagnose mit `?debug`, direkte Konstellation mit `?pair=<id>`
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und 99 Konstellationen, unverändert)
-- `tools/sync-doppelspalt-data.ts` – erzeugt daraus `portfolio/rad-von-zeit-und-raum/js/data/*.js`:
+- `tools/sync-doppelspalt-data.ts` – erzeugt daraus `portfolio/nebeneinander-nacheinander/js/data/*.js`:
   `node --experimental-strip-types tools/sync-doppelspalt-data.ts`
 - `tests/` – Prüfungen des Rads: `node --experimental-strip-types --no-warnings --test tests/doppelspalt.test.mjs`
   und im Browser (Playwright): `node tests/doppelspalt.e2e.mjs`
