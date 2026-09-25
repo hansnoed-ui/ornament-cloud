@@ -195,6 +195,9 @@
 .rad-more summary::-webkit-details-marker { display: none; }
 .rad-more summary::after { content: " ↓"; }
 .rad-more[open] summary::after { content: " ↑"; }
+.rad-more-close,
+.rad-more[open] .rad-more-open { display: none; }
+.rad-more[open] .rad-more-close { display: inline; }
 
 /* ---------- Diagnose (nur ?debug) ---------- */
 .rad-debug {
