@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Portfolio – Ornament Cloud</title>
-  <link rel="stylesheet" href="../styles.css?v=16">
+  <link rel="stylesheet" href="../styles.css?v=17">
 </head>
 <body>
   <header class="site-header">
@@ -37,13 +37,35 @@
       </div>
       <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
       <h1>Portfolio</h1>
-      <p class="lead">Diese Seite ist in Vorbereitung.</p>
+      <p class="lead">Werke, Versuchsanordnungen und Arbeiten im Entstehen.</p>
     </div>
   </header>
 
   <main class="wrap">
-    <p><a href="../">← Zur Startseite</a></p>
+    <!--
+      Neues Werk: einen <article class="card">-Block kopieren (wie auf der Startseite).
+      Die Vorschau ist hier eine Animation aus icons.js (data-icon); statt dessen geht auch
+      ein Standbild/Video wie bei den Artefakten auf der Startseite.
+    -->
+    <section class="grid" aria-label="Werke">
+
+      <article class="card card--svg">
+        <a class="thumb" href="rad-von-zeit-und-raum/" tabindex="-1" aria-hidden="true">
+          <svg class="post-anim" data-icon="rad" viewBox="0 0 200 200"></svg>
+        </a>
+        <div class="body">
+          <time class="card-date" datetime="2026-09-25">25. September 2026</time>
+          <h2>Das Rad von Zeit und Raum</h2>
+          <p>Eine interaktive Versuchsanordnung zur Verräumlichung und Verzeitlichung von Wahrnehmung: Auf zwei gegenläufigen Rädern begegnen sich Künstler und Theoretiker in zufälligen Konstellationen.</p>
+          <ul class="tags"><li>Versuchsanordnung</li><li>Interaktiv</li><li>In Arbeit</li></ul>
+          <a class="link" href="rad-von-zeit-und-raum/">Ansehen <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+
+    </section>
+
+    <p class="back"><a href="../">← Zur Startseite</a></p>
   </main>
-  <script src="../icons.js?v=11" defer></script>
+  <script src="../icons.js?v=12" defer></script>
 </body>
 </html>
