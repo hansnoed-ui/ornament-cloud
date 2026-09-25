@@ -43,21 +43,30 @@
 
   <main class="wrap">
     <!--
-      Neuer Eintrag: einen <article class="post">-Block kopieren und oberhalb einfügen,
-      damit der neueste Eintrag oben steht. Die Animation ist optional.
+      Neuer Eintrag: einen <details class="entry">-Block kopieren und oberhalb einfügen,
+      damit der neueste Eintrag oben steht. Im <summary> stehen Datum, Titel und
+      Untertitel (immer sichtbar), in .entry-body Animation und Text (aufklappbar).
     -->
-    <article class="post">
-      <figure class="post-figure">
-        <svg class="post-anim" data-icon="prozess" viewBox="0 0 320 190" role="img"
-             aria-label="Eine Schleife zieht über eine Zeitlinie; jede Runde hat eine etwas andere Form und hinterlässt einen Punkt, bis achtzehn Punkte die Linie bilden."></svg>
-        <figcaption>Jede Runde des Gesprächs hinterlässt einen Schritt. Achtzehn sind es bis heute.</figcaption>
-      </figure>
-      <div class="post-body">
-        <time datetime="2026-09-25">25. September 2026</time>
-        <h2>Erstellung neue Website mit Claude Code</h2>
-        <p>In einem einzigen langen Gespräch mit Claude Code ist aus einem leeren GitHub-Repository diese Website entstanden: schlichtes HTML und CSS, das drei meiner Claude-Artefakte zeigt. Die Artefakte wurden samt 3D-Bibliothek und Schriften auf die eigene Seite geholt, sodass nichts mehr von fremden Servern geladen wird. Für jede Arbeit hat Claude die Animation Bild für Bild aufgenommen und daraus kurze Vorschau-Schleifen gemacht, deren Format, Tempo und Kontrast wir mehrmals nachjustiert haben. Dazu kamen ein ruhiger Hintergrund aus Lemniskaten und Schleifen, die wiederkehren, aber nie identisch, ein Menü mit drei stark reduzierten Schwarz-Weiss-Symbolen und eine wogende Trennlinie. Jede Rückmeldung wurde zu einem kleinen, überprüften Schritt auf GitHub – der Prozess selbst ist eine Wiederkehr ohne Rückkehr.</p>
+    <details class="entry">
+      <summary class="entry-head">
+        <span class="entry-text">
+          <time datetime="2026-09-25">25. September 2026</time>
+          <h2>Erstellung neue Website mit Claude Code</h2>
+          <span class="post-meta">Website ornament-cloud · entstanden im Dialog mit Claude Code</span>
+        </span>
+        <span class="entry-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="entry-body">
+        <figure class="post-figure">
+          <svg class="post-anim" data-icon="prozess" viewBox="0 0 320 190" role="img"
+               aria-label="Eine Schleife zieht über eine Zeitlinie; jede Runde hat eine etwas andere Form und hinterlässt einen Punkt, bis achtzehn Punkte die Linie bilden."></svg>
+          <figcaption>Jede Runde des Gesprächs hinterlässt einen Schritt. Achtzehn sind es bis heute.</figcaption>
+        </figure>
+        <div class="post-body">
+          <p>In einem einzigen langen Gespräch mit Claude Code ist aus einem leeren GitHub-Repository diese Website entstanden: schlichtes HTML und CSS, das drei meiner Claude-Artefakte zeigt. Die Artefakte wurden samt 3D-Bibliothek und Schriften auf die eigene Seite geholt, sodass nichts mehr von fremden Servern geladen wird. Für jede Arbeit hat Claude die Animation Bild für Bild aufgenommen und daraus kurze Vorschau-Schleifen gemacht, deren Format, Tempo und Kontrast wir mehrmals nachjustiert haben. Dazu kamen ein ruhiger Hintergrund aus Lemniskaten und Schleifen, die wiederkehren, aber nie identisch, ein Menü mit drei stark reduzierten Schwarz-Weiss-Symbolen und eine wogende Trennlinie. Jede Rückmeldung wurde zu einem kleinen, überprüften Schritt auf GitHub – der Prozess selbst ist eine Wiederkehr ohne Rückkehr.</p>
+        </div>
       </div>
-    </article>
+    </details>
 
     <p class="back"><a href="../">← Zur Startseite</a></p>
   </main>
