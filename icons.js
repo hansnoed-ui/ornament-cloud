@@ -9,6 +9,7 @@
     stellen   Raster, Objekte, Drift, Werk, Atmosphäre, mit Kamerafahrt (Portfolio)
     wave      feine Wellenlinie als Trennung unter dem Header
     prozess   Schleife über einer Zeitlinie, 18 Schritte (News-Eintrag)
+    inklusion Kreis öffnet sich, verschiedene Formen finden hinein (Termine-Eintrag)
 
   Es werden nur Symbole animiert, die gerade sichtbar sind.
   Bei prefers-reduced-motion erscheint ein ruhendes Bild.
@@ -17,7 +18,7 @@
 (function () {
   'use strict';
 
-  var PERIOD = { reentry: 24, zeit: 15, stellen: 12, wave: 60, prozess: 26.4 };   // Sekunden pro Durchlauf
+  var PERIOD = { reentry: 24, zeit: 15, stellen: 12, wave: 60, prozess: 26.4, inklusion: 22 };   // Sekunden pro Durchlauf
   var FPS = 30;
 
   var NS = 'http://www.w3.org/2000/svg';
@@ -365,6 +366,72 @@
     };
   }
 
+  // ---------- Termine: Inklusion ----------
+  // Ein Kreis (Raum, Institution) öffnet sich. Eine taktile Leitlinie führt zur
+  // Öffnung, ganz verschiedene Formen finden in ihrem eigenen Tempo hinein und
+  // bleiben drinnen verschieden. Der Kreis schliesst sich nicht wieder.
+  function inklusion(svg) {
+    var CX = 206, CY = 95, R = 64, GX = CX - R;
+    var ring = el('path', { 'class': 'bold' }, svg);
+    var band = [];
+    for (var i = 0; i < 14; i++) band.push(el('circle', { cx: f(16 + i * 8.4), cy: CY, r: 1.8, 'class': 'fill', opacity: 0 }, svg));
+    function shapePath(kind, s) {
+      switch (kind) {
+        case 'kreis':   return 'M' + (-s) + ',0A' + s + ',' + s + ' 0 1,0 ' + s + ',0A' + s + ',' + s + ' 0 1,0 ' + (-s) + ',0Z';
+        case 'quadrat': return 'M' + (-s) + ',' + (-s) + 'H' + s + 'V' + s + 'H' + (-s) + 'Z';
+        case 'dreieck': return 'M0,' + (-s * 1.2) + 'L' + (s * 1.1) + ',' + (s * 0.8) + 'H' + (-s * 1.1) + 'Z';
+        case 'raute':   return 'M0,' + (-s * 1.3) + 'L' + s + ',0L0,' + (s * 1.3) + 'L' + (-s) + ',0Z';
+        case 'paar':    return 'M' + (-s * 0.9) + ',0m-2.4,0a2.4,2.4 0 1,0 4.8,0a2.4,2.4 0 1,0 -4.8,0M' + (s * 0.9) + ',0m-2.4,0a2.4,2.4 0 1,0 4.8,0a2.4,2.4 0 1,0 -4.8,0';
+        default:        return 'M0,0m-3,0a3,3 0 1,0 6,0a3,3 0 1,0 -6,0';
+      }
+    }
+    // Form, Grösse, Klasse, Start draussen, Ziel drinnen, Startzeit, Dauer, schrittweise?
+    var F = [
+      ['kreis',   9, 'mid',  [44, 38],  [CX - 22, CY - 24], 0.28, 0.20, false],
+      ['quadrat', 7, 'mid',  [30, 150], [CX + 26, CY - 18], 0.34, 0.22, false],
+      ['dreieck', 8, 'mid',  [86, 30],  [CX + 4, CY + 28],  0.30, 0.34, true],
+      ['paar',    6, 'fill', [100, 158], [CX + 30, CY + 20], 0.42, 0.18, false],
+      ['raute',   6, 'mid',  [22, 88],  [CX - 28, CY + 16], 0.46, 0.24, false],
+      ['punkt',   4, 'fill', [70, 118], [CX, CY - 2],       0.52, 0.16, false]
+    ];
+    var shapes = F.map(function (d) {
+      var g = el('g', {}, svg);
+      el('path', { d: shapePath(d[0], d[1]), 'class': d[2] }, g);
+      return { g: g, from: d[3], to: d[4], t0: d[5], dur: d[6], steps: d[7] };
+    });
+
+    return function (u, t) {
+      var appear = seg(u, 0, 0.08), out = 1 - seg(u, 0.93, 1);
+      var gap = 0.62 * seg(u, 0.12, 0.3);                      // halber Öffnungswinkel
+      var a0 = Math.PI + gap, a1 = Math.PI - gap + TAU;
+      var d = '';
+      for (var n = 0; n <= 96; n++) {
+        var a = a0 + (a1 - a0) * n / 96;
+        d += (n ? 'L' : 'M') + f(CX + Math.cos(a) * R) + ',' + f(CY + Math.sin(a) * R);
+      }
+      ring.setAttribute('d', d);
+      ring.setAttribute('opacity', (appear * out).toFixed(3));
+
+      band.forEach(function (b, i) {                          // Leitlinie erscheint Punkt für Punkt
+        b.setAttribute('opacity', (seg(u, 0.1 + i * 0.012, 0.13 + i * 0.012) * 0.8 * out).toFixed(3));
+      });
+
+      var sway = 0.05 * Math.sin(t * 0.6);                    // drinnen bewegt sich das Ganze leise mit
+      shapes.forEach(function (s, i) {
+        var p = Math.min(1, Math.max(0, (u - s.t0) / s.dur));
+        if (s.steps) p = (Math.floor(p * 6) + ease((p * 6) % 1)) / 6;   // eine Form geht in kleinen Schritten
+        p = s.steps ? p : ease(p);
+        var cx = GX - 18, cy = CY;                              // Weg durch die Öffnung
+        var x = (1 - p) * (1 - p) * s.from[0] + 2 * (1 - p) * p * cx + p * p * s.to[0];
+        var y = (1 - p) * (1 - p) * s.from[1] + 2 * (1 - p) * p * cy + p * p * s.to[1];
+        var dx = x - CX, dy = y - CY, c = Math.cos(sway * p), sn = Math.sin(sway * p);
+        x = CX + dx * c - dy * sn; y = CY + dx * sn + dy * c;
+        s.g.setAttribute('transform', 'translate(' + f(x) + ',' + f(y) + ')');
+        s.g.setAttribute('opacity', (appear * out).toFixed(3));
+      });
+    };
+  }
+
   // ---------- Trennlinie unter dem Header: feine, rhythmisch wogende Welle ----------
   function wave(svg) {
     var H = 32, path = el('path', { 'class': 'wave' }, svg);
@@ -386,14 +453,14 @@
   }
 
   // ---------- Ablauf ----------
-  var FACTORY = { reentry: reentry, zeit: zeit, stellen: stellen, wave: wave, prozess: prozess };
-  var STILL = { reentry: 0.7, zeit: 0.45, stellen: 0.78, wave: 0, prozess: 0.95 };   // Standbild bei reduzierter Bewegung
+  var FACTORY = { reentry: reentry, zeit: zeit, stellen: stellen, wave: wave, prozess: prozess, inklusion: inklusion };
+  var STILL = { reentry: 0.7, zeit: 0.45, stellen: 0.78, wave: 0, prozess: 0.95, inklusion: 0.85 };   // Standbild bei reduzierter Bewegung
   var icons = [];
 
   Array.prototype.forEach.call(document.querySelectorAll('svg[data-icon]'), function (svg) {
     var name = svg.getAttribute('data-icon');
     if (!FACTORY[name]) return;
-    icons.push({ name: name, update: FACTORY[name](svg), visible: true, offset: name === 'prozess' ? 0 : Math.random() * PERIOD[name], svg: svg });
+    icons.push({ name: name, update: FACTORY[name](svg), visible: true, offset: (name === 'prozess' || name === 'inklusion') ? 0 : Math.random() * PERIOD[name], svg: svg });
   });
   if (!icons.length) return;
 
