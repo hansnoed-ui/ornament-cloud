@@ -169,48 +169,14 @@
   margin: 56px 0 0;
 }
 
-/* Beschreibung rechtsbündig am rechten Rand, darunter "mehr lesen";
-   der aufgeklappte Text steht wieder linksbündig */
+/* Beschreibung rechtsbündig am rechten Rand */
 .rad-intro {
   max-width: 720px;
   margin-left: auto !important;
   text-align: right;
 }
 
-.rad-more-body {
-  max-width: 720px;
-  text-align: left;
-}
-
 .rad-about p { margin: 0 0 14px; line-height: 1.7; }
-
-.rad-about h2 {
-  margin: 24px 0 14px;
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: 1.6rem;
-}
-
-.rad-statement {
-  font-family: var(--serif);
-  font-size: 1.25rem;
-  line-height: 1.55;
-}
-
-.rad-more summary {
-  cursor: pointer;
-  color: var(--accent);
-  font-weight: 600;
-  list-style: none;
-  margin: 4px 0 16px;
-  text-align: right;
-}
-.rad-more summary::-webkit-details-marker { display: none; }
-.rad-more summary::after { content: " ↓"; }
-.rad-more[open] summary::after { content: " ↑"; }
-.rad-more-close,
-.rad-more[open] .rad-more-open { display: none; }
-.rad-more[open] .rad-more-close { display: inline; }
 
 /* ---------- Diagnose (nur ?debug) ---------- */
 .rad-debug {
