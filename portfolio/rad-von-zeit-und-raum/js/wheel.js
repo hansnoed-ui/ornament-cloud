@@ -12,7 +12,7 @@ import { drawConstellation } from "./lib/random.js";
 import { validateDataset } from "./lib/validation.js";
 import { SLOTS, STEP, mod, slotAngle, targetsFor, indexAtAxis } from "./lib/geometry.js";
 import { planSpin, positionAt } from "./lib/spin.js";
-import { symbolMarkup } from "./symbols.js";
+import { symbolMarkup } from "./symbols.js?v=2";
 
 const NS = "http://www.w3.org/2000/svg";
 const C = 500;                                        // Mittelpunkt im 1000er-Feld

@@ -19,7 +19,7 @@ function basePath(base) {
     case "linie":        return "M0,-0.86V0.86";
     case "bogen": {      // Dreiviertelkreis, unten rechts offen
       const r = 0.72, a0 = (135 * Math.PI) / 180, a1 = (45 * Math.PI) / 180;
-      return `M${f(r * Math.cos(a1))},${f(r * Math.sin(a1))}A${r},${r} 0 1,1 ${f(r * Math.cos(a0))},${f(r * Math.sin(a0))}`;
+      return `M${f(r * Math.cos(a1))},${f(r * Math.sin(a1))}A${r},${r} 0 1,0 ${f(r * Math.cos(a0))},${f(r * Math.sin(a0))}`;
     }
     case "kreuzung":     return "M-0.7,-0.7L0.7,0.7M0.7,-0.7L-0.7,0.7";
     case "wiederholung": return "M-0.72,-0.5H0.72M-0.72,0H0.72M-0.72,0.5H0.72";
