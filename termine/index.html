@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Termine – Ornament Cloud</title>
-  <link rel="stylesheet" href="../styles.css?v=13">
+  <link rel="stylesheet" href="../styles.css?v=14">
 </head>
 <body>
   <header class="site-header">
@@ -43,42 +43,57 @@
 
   <main class="wrap">
     <!--
-      Neuer Termin: einen <article class="post">-Block kopieren und oberhalb einfügen,
-      damit der neueste Termin oben steht. Die Animation ist optional.
+      Neuer Termin: einen <details class="entry">-Block kopieren und oberhalb einfügen,
+      damit der neueste Termin oben steht. Im <summary> stehen Datum, Titel und
+      Untertitel (immer sichtbar), in .entry-body Animation und Text (aufklappbar).
     -->
-    <article class="post">
-      <figure class="post-figure">
-        <svg class="post-anim" data-icon="turm" viewBox="0 0 320 190" role="img"
-             aria-label="Ein Turm steht in der Mitte; kleine Werke ordnen sich in drei wechselnden Konstellationen um ihn und sind über feine Linien mit ihm verbunden. Ein Punkt von aussen versetzt ein Werk. Unten füllt sich eine Zeitleiste mit 155 Tagen."></svg>
-        <figcaption>Der Turm bleibt, die Werke wechseln ihre Konstellation, und das Publikum greift ein. 155 Tage bis zur Finissage.</figcaption>
-      </figure>
-      <div class="post-body">
-        <time datetime="2026-10-04T14:00">4. Oktober 2026 · 14–17 Uhr</time>
-        <h2>Finissage Supervisionen 2026</h2>
-        <p class="post-meta">Oberer Turm, Kaiserstuhl · Organisation und Kuratierung im Auftrag von Pro Kaiserstuhl, mit Unterstützung der Gemeinde Zurzach</p>
-        <p>Vom 2. Mai bis zum 4. Oktober 2026 bringt die Ausstellung Supervisionen 2026 an über 155 Tagen Kunstwerke in wechselnden Konstellationen in einen Dialog mit dem fast 800-jährigen Oberen Turm in Kaiserstuhl. In drei grossen Vernissagen kamen dafür insgesamt neun Künstlerinnen und Künstler aus der Gemeinde, der Region, der ganzen Schweiz und aus Deutschland zusammen. Parallel zur Turmöffnung versteht sich die Ausstellung als offenes System, das neben der klassischen Werkpräsentation das Publikum aktiv in kuratorische Prozesse einbindet. Ein offener Aufruf lud dazu ein, in die Ausstellung einzugreifen, woraus die Präsentation von drei regionalen Künstlerinnen hervorging. Ergänzt durch Vermittlungsangebote macht das Projekt Wahrnehmung, Entscheidung und Bedeutung als gemeinsame Praxis erfahrbar – die Finissage schliesst diesen Weg gemeinsam ab.</p>
-        <p class="post-link"><a class="link" href="https://www.oberer-turm.ch" target="_blank" rel="noopener">www.oberer-turm.ch <span aria-hidden="true">↗</span><span class="sr-only"> (öffnet in neuem Fenster)</span></a></p>
+    <details class="entry">
+      <summary class="entry-head">
+        <span class="entry-text">
+          <time datetime="2026-10-04T14:00">4. Oktober 2026 · 14–17 Uhr</time>
+          <h2>Finissage Supervisionen 2026</h2>
+          <span class="post-meta">Oberer Turm, Kaiserstuhl · Organisation und Kuratierung im Auftrag von Pro Kaiserstuhl, mit Unterstützung der Gemeinde Zurzach</span>
+        </span>
+        <span class="entry-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="entry-body">
+        <figure class="post-figure">
+          <svg class="post-anim" data-icon="turm" viewBox="0 0 320 190" role="img"
+               aria-label="Ein Turm steht in der Mitte; kleine Werke ordnen sich in drei wechselnden Konstellationen um ihn und sind über feine Linien mit ihm verbunden. Ein Punkt von aussen versetzt ein Werk. Unten füllt sich eine Zeitleiste mit 155 Tagen."></svg>
+          <figcaption>Der Turm bleibt, die Werke wechseln ihre Konstellation, und das Publikum greift ein. 155 Tage bis zur Finissage.</figcaption>
+        </figure>
+        <div class="post-body">
+          <p>Vom 2. Mai bis zum 4. Oktober 2026 bringt die Ausstellung Supervisionen 2026 an über 155 Tagen Kunstwerke in wechselnden Konstellationen in einen Dialog mit dem fast 800-jährigen Oberen Turm in Kaiserstuhl. In drei grossen Vernissagen kamen dafür insgesamt neun Künstlerinnen und Künstler aus der Gemeinde, der Region, der ganzen Schweiz und aus Deutschland zusammen. Parallel zur Turmöffnung versteht sich die Ausstellung als offenes System, das neben der klassischen Werkpräsentation das Publikum aktiv in kuratorische Prozesse einbindet. Ein offener Aufruf lud dazu ein, in die Ausstellung einzugreifen, woraus die Präsentation von drei regionalen Künstlerinnen hervorging. Ergänzt durch Vermittlungsangebote macht das Projekt Wahrnehmung, Entscheidung und Bedeutung als gemeinsame Praxis erfahrbar – die Finissage schliesst diesen Weg gemeinsam ab.</p>
+          <p class="post-link"><a class="link" href="https://www.oberer-turm.ch" target="_blank" rel="noopener">www.oberer-turm.ch <span aria-hidden="true">↗</span><span class="sr-only"> (öffnet in neuem Fenster)</span></a></p>
+        </div>
       </div>
-    </article>
+    </details>
 
-    <article class="post">
-      <figure class="post-figure">
-        <svg class="post-anim" data-icon="inklusion" viewBox="0 0 320 190" role="img"
-             aria-label="Ein Kreis öffnet sich; eine gepunktete Leitlinie führt zur Öffnung, und verschiedene Formen gelangen jede in ihrem eigenen Tempo hinein, ohne gleich zu werden."></svg>
-        <figcaption>Der Kreis öffnet sich, und jede Form findet in ihrem eigenen Tempo hinein, ohne gleich werden zu müssen.</figcaption>
-      </figure>
-      <div class="post-body">
-        <time datetime="2026-09-17">17. September 2026</time>
-        <h2>Netzwerktreffen inklusive Kultur</h2>
-        <p class="post-meta">Kunsthaus Aarau · Teilnahme als Vertreter des FARO Kunstraum</p>
-        <p>Die sehbehinderte Nicole Sourt Sánchez setzt sich dafür ein, dass Kunst und Kultur für alle Menschen zugänglich sind, und erkundet im Aargauer Kunsthaus unter anderem den neuen tastbaren Übersichtsplan in Brailleschrift. Ihr Besuch fand im Rahmen dieses Netzwerktreffens statt, organisiert vom Verein Zukunftslabor, der gemeinsam mit Menschen mit Behinderungen, Kulturinstitutionen und Fachpersonen konkrete Lösungen für eine zugängliche Kulturlandschaft entwickelt. Niederschwellige Massnahmen scheitern laut Sánchez selten am guten Willen, sondern am Wissen über erste Schritte: Wer Informationen auch hörbar oder tastbar anbietet oder Räume einmal mit verbundenen Augen abgeht, merkt schnell, wo eine Rampe oder ein taktiles Band hilft. Werden Betroffene früh in Planungen einbezogen, entstehen Angebote, die den tatsächlichen Bedürfnissen entsprechen – diese Erfahrung bringt sie nun in den neu gegründeten Verein kultiv ein, der sich etwa für eine barrierefreiere Badenfahrt 2027 engagiert. Das Aargauer Kunsthaus gilt dabei als Vorreiter: Seit über zehn Jahren bietet es Führungen für Menschen mit Sehbehinderung an, dazu Führungen in Gebärdensprache und Angebote für Sonderschulen und Menschen mit Demenz.</p>
-        <p class="post-source">Zusammenfassung des Berichts über das Treffen: «Inklusion darf kein Sonderwunsch sein» von Ursula Burgherr, Aargauer Zeitung, Kultur &amp; Leben, 24. September 2026.</p>
-        <p class="post-link"><a class="link" href="https://www.zukunftslabor.ch/" target="_blank" rel="noopener">www.zukunftslabor.ch <span aria-hidden="true">↗</span><span class="sr-only"> (öffnet in neuem Fenster)</span></a></p>
+    <details class="entry">
+      <summary class="entry-head">
+        <span class="entry-text">
+          <time datetime="2026-09-17">17. September 2026</time>
+          <h2>Netzwerktreffen inklusive Kultur</h2>
+          <span class="post-meta">Kunsthaus Aarau · Teilnahme als Vertreter des FARO Kunstraum</span>
+        </span>
+        <span class="entry-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="entry-body">
+        <figure class="post-figure">
+          <svg class="post-anim" data-icon="inklusion" viewBox="0 0 320 190" role="img"
+               aria-label="Ein Kreis öffnet sich; eine gepunktete Leitlinie führt zur Öffnung, und verschiedene Formen gelangen jede in ihrem eigenen Tempo hinein, ohne gleich zu werden."></svg>
+          <figcaption>Der Kreis öffnet sich, und jede Form findet in ihrem eigenen Tempo hinein, ohne gleich werden zu müssen.</figcaption>
+        </figure>
+        <div class="post-body">
+          <p>Die sehbehinderte Nicole Sourt Sánchez setzt sich dafür ein, dass Kunst und Kultur für alle Menschen zugänglich sind, und erkundet im Aargauer Kunsthaus unter anderem den neuen tastbaren Übersichtsplan in Brailleschrift. Ihr Besuch fand im Rahmen dieses Netzwerktreffens statt, organisiert vom Verein Zukunftslabor, der gemeinsam mit Menschen mit Behinderungen, Kulturinstitutionen und Fachpersonen konkrete Lösungen für eine zugängliche Kulturlandschaft entwickelt. Niederschwellige Massnahmen scheitern laut Sánchez selten am guten Willen, sondern am Wissen über erste Schritte: Wer Informationen auch hörbar oder tastbar anbietet oder Räume einmal mit verbundenen Augen abgeht, merkt schnell, wo eine Rampe oder ein taktiles Band hilft. Werden Betroffene früh in Planungen einbezogen, entstehen Angebote, die den tatsächlichen Bedürfnissen entsprechen – diese Erfahrung bringt sie nun in den neu gegründeten Verein kultiv ein, der sich etwa für eine barrierefreiere Badenfahrt 2027 engagiert. Das Aargauer Kunsthaus gilt dabei als Vorreiter: Seit über zehn Jahren bietet es Führungen für Menschen mit Sehbehinderung an, dazu Führungen in Gebärdensprache und Angebote für Sonderschulen und Menschen mit Demenz.</p>
+          <p class="post-source">Zusammenfassung des Berichts über das Treffen: «Inklusion darf kein Sonderwunsch sein» von Ursula Burgherr, Aargauer Zeitung, Kultur &amp; Leben, 24. September 2026.</p>
+          <p class="post-link"><a class="link" href="https://www.zukunftslabor.ch/" target="_blank" rel="noopener">www.zukunftslabor.ch <span aria-hidden="true">↗</span><span class="sr-only"> (öffnet in neuem Fenster)</span></a></p>
+        </div>
       </div>
-    </article>
+    </details>
 
     <p class="back"><a href="../">← Zur Startseite</a></p>
   </main>
-  <script src="../icons.js?v=10" defer></script>
+  <script src="../icons.js?v=11" defer></script>
 </body>
 </html>
