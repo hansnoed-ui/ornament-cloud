@@ -118,13 +118,31 @@ h1 {
   font-family: var(--serif);
   font-size: 3.5rem;
   color: var(--text);
+}
+
+.thumb span {
   opacity: 0.9;
 }
 
-.thumb img {
+.thumb {
+  position: relative;
+  overflow: hidden;
+}
+
+.thumb img,
+.thumb video {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Bei reduzierter Bewegung nur das Standbild zeigen */
+@media (prefers-reduced-motion: reduce) {
+  .thumb video {
+    display: none;
+  }
 }
 
 .card--b .thumb { background: var(--thumb-b); }

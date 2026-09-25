@@ -23,14 +23,22 @@
     <!--
       Neues Artefakt hinzufügen:
       Einen <article class="card">-Block kopieren und Titel, Text, Tags und Link anpassen.
-      Optional ein Vorschaubild in /assets ablegen und im <img> verlinken
-      (ohne Bild wird eine farbige Fläche mit dem Anfangsbuchstaben gezeigt).
+      Vorschau: Standbild (.jpg) und Videoschleife (.mp4 und .webm) in /assets ablegen und wie
+      bei den bestehenden Karten per <img> und <video> einbinden. Ohne Vorschau
+      <div class="thumb" aria-hidden="true"><span>X</span></div> verwenden,
+      dann erscheint eine farbige Fläche mit dem Anfangsbuchstaben.
       Farbvarianten für die Fläche: card--a, card--b, card--c, card--d
     -->
     <section class="grid" aria-label="Artefakte">
 
       <article class="card card--a">
-        <div class="thumb" aria-hidden="true"><span>R</span></div>
+        <div class="thumb" aria-hidden="true">
+          <img src="assets/reentry.jpg" alt="" loading="lazy">
+          <video poster="assets/reentry.jpg" autoplay muted loop playsinline preload="metadata">
+            <source src="assets/reentry.mp4" type="video/mp4">
+            <source src="assets/reentry.webm" type="video/webm">
+          </video>
+        </div>
         <div class="body">
           <h2>Re-entry-Knoten, Helix, S/F-Band</h2>
           <p>Eine 3D-Animation in drei Schritten. Eine Schleife läuft in ihren eigenen Innenraum zurück und kreuzt sich. Entlang der Zeitachse auseinandergezogen, wird sie zur Helix, und aus dem Widerspruch wird ein Nacheinander. Zuletzt wird sie zum verwundenen Band, dessen zwei Seiten Selbst- und Fremdreferenz zeigen. Die Ansicht lässt sich mit der Maus drehen.</p>
@@ -40,7 +48,13 @@
       </article>
 
       <article class="card card--b">
-        <div class="thumb" aria-hidden="true"><span>F</span></div>
+        <div class="thumb" aria-hidden="true">
+          <img src="assets/formen-der-zeit.jpg" alt="" loading="lazy">
+          <video poster="assets/formen-der-zeit.jpg" autoplay muted loop playsinline preload="metadata">
+            <source src="assets/formen-der-zeit.mp4" type="video/mp4">
+            <source src="assets/formen-der-zeit.webm" type="video/webm">
+          </video>
+        </div>
         <div class="body">
           <h2>Formen der Zeit</h2>
           <p>Eine animierte Reise durch historische Zeitvorstellungen: Aristoteles, Augustinus, Newton, Kant, Bergson, Einstein, Deleuze und Luhmann. Am Ende verdichtet sich alles auf zwei Bewegungen, Raumbildung und Zeitbildung.</p>
@@ -50,7 +64,13 @@
       </article>
 
       <article class="card card--d">
-        <div class="thumb" aria-hidden="true"><span>S</span></div>
+        <div class="thumb" aria-hidden="true">
+          <img src="assets/stellenfeld.jpg" alt="" loading="lazy">
+          <video poster="assets/stellenfeld.jpg" autoplay muted loop playsinline preload="metadata">
+            <source src="assets/stellenfeld.mp4" type="video/mp4">
+            <source src="assets/stellenfeld.webm" type="video/webm">
+          </video>
+        </div>
         <div class="body">
           <h2>Stellenfeld</h2>
           <p>Eine 3D-Animation in sechs Stationen: Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre. Objekte besetzen ein leuchtendes Gitter, das Gitter wandert weiter, ein Werk bleibt stehen. Die Kamera lässt sich mit der Maus drehen.</p>
