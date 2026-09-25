@@ -479,6 +479,19 @@ h1 {
   color: var(--muted);
 }
 
+.post-body .post-link {
+  margin-top: 16px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .back {
   margin: 0 0 64px;
 }
