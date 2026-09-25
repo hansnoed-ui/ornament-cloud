@@ -168,8 +168,8 @@
 .rad-ticker {
   margin: 40px 0 0;
   overflow: hidden;
-  background: var(--accent);
-  color: #fff;
+  background: transparent;
+  color: var(--text);
 }
 
 .rad-ticker-track {
@@ -201,10 +201,6 @@
 
 @keyframes rad-ticker {
   to { transform: translateX(-50%); }
-}
-
-@media (prefers-color-scheme: dark) {
-  .rad-ticker { color: #000; }
 }
 
 /* ---------- Einführung ---------- */
