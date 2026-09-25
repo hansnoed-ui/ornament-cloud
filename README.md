@@ -6,7 +6,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `index.html` – Startseite; jedes Artefakt ist ein `<article class="card">`-Block
 - `styles.css` – Gestaltung (inkl. automatischem Dark Mode und Farben des Hintergrunds)
 - `icons.js` – animierte Schwarz-Weiss-Symbole des Footer-Menüs (Dauer in `PERIOD`)
-- `news/` – News; neuer Eintrag = `<article class="post">`-Block kopieren und oben einfügen
+- `news/` – News als aufklappbare Einträge; neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
 - `termine/` – Termine als aufklappbare Einträge; neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen
 - `portfolio/` – Platzhalterseite
 - `bg.js` – animierter Hintergrund (Lemniskaten und Schleifen als SVG, Tempo in `CONFIG`)
