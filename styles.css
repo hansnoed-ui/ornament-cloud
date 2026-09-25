@@ -464,6 +464,21 @@ h1 {
   color: var(--text);
 }
 
+.post-body p + p {
+  margin-top: 12px;
+}
+
+.post-body .post-meta {
+  margin: -4px 0 14px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.post-body .post-source {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
 .back {
   margin: 0 0 64px;
 }
