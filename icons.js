@@ -438,24 +438,29 @@
   // und stehen über feine Linien mit ihm im Dialog. In der dritten greift ein Punkt
   // von aussen ein (offener Aufruf). Unten füllen sich 155 Tage bis zur Finissage.
   function turm(svg) {
-    var TX0 = 146, TX1 = 174, TY0 = 34, TY1 = 160, DAYS = 155, BASE = 178;
-    var tower = 'M' + TX0 + ',' + TY1 + 'V' + (TY0 + 8);
-    for (var c = 0; c < 4; c++) {                     // Zinnen
-      var x = TX0 + c * 7;
-      tower += 'H' + (x + 3.5) + 'V' + TY0 + 'H' + (x + 7) + 'V' + (TY0 + 8);
-    }
-    tower += 'H' + TX1 + 'V' + TY1 + 'Z';
-    var windows = 'M160,64v10M160,98v10M154,128v8M166,128v8M153,' + (TY1) + 'v-12h14v12';
+    // Oberer Turm, reduziert nach Foto: massiver Schaft, steiles Pyramidendach mit Knauf,
+    // Uhr, drei kleine Fenster unter dem Dach, Schlitzfenster, Erker rechts, Rundbogentor
+    var TX0 = 138, TX1 = 182, TY0 = 60, TY1 = 162, DAYS = 155, BASE = 178;
+    var tower = 'M' + TX0 + ',' + TY1 + 'V' + TY0 + 'H' + TX1 + 'V' + TY1 + 'Z'          // Schaft
+              + 'M' + (TX0 - 3) + ',' + TY0 + 'L160,36L' + (TX1 + 3) + ',' + TY0 + 'Z';   // Dach
+    var windows = 'M160,36V28'                                         // Spitze
+                + 'M147,66h4v4h-4ZM158,66h4v4h-4ZM169,66h4v4h-4Z'      // Fenster unter dem Dach
+                + 'M160,106v6M160,126v6M150,140v5'                    // Schlitzfenster
+                + 'M182,66h5v12h-5'                                   // Erker
+                + 'M154,' + TY1 + 'V152a6,6 0 0,1 12,0V' + TY1;       // Rundbogentor
+    var clock = 'M160,82m-6.5,0a6.5,6.5 0 1,0 13,0a6.5,6.5 0 1,0 -13,0M160,82V77.5M160,82l3.2,1.8';
     var links = el('g', {}, svg), linkEls = [];
     var ticks = el('path', { 'class': 'thin' }, svg);
     var marks = el('path', { 'class': 'mid' }, svg);
     el('path', { d: 'M20,' + BASE + 'H300', 'class': 'thin', opacity: 0.3 }, svg);
     el('path', { d: tower, 'class': 'bold' }, svg);
     el('path', { d: windows, 'class': 'thin' }, svg);
+    el('path', { d: clock, 'class': 'mid' }, svg);
+    el('circle', { cx: 160, cy: 27, r: 1.6, 'class': 'fill' }, svg);   // Knauf
 
     var sizes = [[14, 18], [10, 10], [18, 12], [8, 14], [12, 12], [16, 10], [9, 9]];
     var A = [[50, 52], [102, 80], [56, 122], [108, 146], [222, 50], [270, 84], [232, 130]];
-    var B = [], C = [[112, 48], [112, 84], [112, 120], [208, 48], [208, 84], [208, 120], [276, 150]];
+    var B = [], C = [[108, 66], [108, 98], [108, 130], [214, 66], [214, 98], [214, 130], [276, 150]];
     for (var i = 0; i < 7; i++) {
       var a = Math.PI * (0.15 + i * 0.28) + (i > 3 ? 0.35 : 0);
       B.push([160 + Math.cos(a) * 118, 96 + Math.sin(a) * 58]);
@@ -482,7 +487,7 @@
         if (i === 6) p = mix(p, C2, move);
         w.setAttribute('d', rect(p[0], p[1], sizes[i][0], sizes[i][1]));
         w.setAttribute('opacity', show.toFixed(3));
-        var ex = p[0] < 160 ? TX0 : TX1, ey = Math.max(TY0 + 14, Math.min(TY1 - 6, p[1]));
+        var ex = p[0] < 160 ? TX0 : TX1, ey = Math.max(TY0 + 6, Math.min(TY1 - 6, p[1]));
         var gx = p[0] < 160 ? p[0] + sizes[i][0] / 2 : p[0] - sizes[i][0] / 2;
         linkEls[i].setAttribute('d', 'M' + f(gx) + ',' + f(p[1]) + 'L' + ex + ',' + f(ey));
         var moving = (u > 0.3 && u < 0.36) || (u > 0.56 && u < 0.62) ? 0.25 : 1;
