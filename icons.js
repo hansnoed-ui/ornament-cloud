@@ -7,6 +7,7 @@
     reentry   Schleife -> Helix -> verwundenes Band          (News)
     zeit      Kreise -> Kalenderraster -> Messlinie, ohne Schrift (Termine)
     stellen   Raster, Objekte, Drift, Werk, Atmosphäre, mit Kamerafahrt (Portfolio)
+    wave      feine Wellenlinie als Trennung unter dem Header
 
   Es werden nur Symbole animiert, die gerade sichtbar sind.
   Bei prefers-reduced-motion erscheint ein ruhendes Bild.
@@ -15,7 +16,7 @@
 (function () {
   'use strict';
 
-  var PERIOD = { reentry: 24, zeit: 15, stellen: 12 };   // Sekunden pro Durchlauf
+  var PERIOD = { reentry: 24, zeit: 15, stellen: 12, wave: 60 };   // Sekunden pro Durchlauf
   var FPS = 30;
 
   var NS = 'http://www.w3.org/2000/svg';
@@ -301,9 +302,27 @@
     };
   }
 
+  // ---------- Trennlinie unter dem Header: feine, langsam wogende Welle ----------
+  function wave(svg) {
+    var H = 24, path = el('path', { 'class': 'wave' }, svg);
+    return function (u, t) {
+      var w = svg.clientWidth || 600, d = '';
+      svg.setAttribute('viewBox', '0 0 ' + w + ' ' + H);
+      var A = 2.6 + 1.2 * Math.sin(t * 0.27);          // Amplitude atmet langsam
+      for (var x = 0; x <= w; x += 4) {
+        var env = Math.pow(Math.sin(Math.PI * x / w), 0.6);   // an den Enden flach
+        var y = 0.6 * Math.sin(TAU * x / 260 + t * 0.35)
+              + 0.3 * Math.sin(TAU * x / 110 - t * 0.23 + 1)
+              + 0.12 * Math.sin(TAU * x / 57 + t * 0.52 + 2);
+        d += (x ? 'L' : 'M') + x + ',' + f(H / 2 + A * env * y);
+      }
+      path.setAttribute('d', d);
+    };
+  }
+
   // ---------- Ablauf ----------
-  var FACTORY = { reentry: reentry, zeit: zeit, stellen: stellen };
-  var STILL = { reentry: 0.7, zeit: 0.45, stellen: 0.78 };   // Standbild bei reduzierter Bewegung
+  var FACTORY = { reentry: reentry, zeit: zeit, stellen: stellen, wave: wave };
+  var STILL = { reentry: 0.7, zeit: 0.45, stellen: 0.78, wave: 0 };   // Standbild bei reduzierter Bewegung
   var icons = [];
 
   Array.prototype.forEach.call(document.querySelectorAll('svg[data-icon]'), function (svg) {
@@ -314,7 +333,9 @@
   if (!icons.length) return;
 
   if (reduceMotion) {
-    icons.forEach(function (ic) { ic.update(STILL[ic.name], STILL[ic.name] * PERIOD[ic.name]); });
+    var still = function () { icons.forEach(function (ic) { ic.update(STILL[ic.name], STILL[ic.name] * PERIOD[ic.name]); }); };
+    still();
+    window.addEventListener('resize', still);
     return;
   }
 
