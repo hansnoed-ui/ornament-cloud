@@ -166,14 +166,26 @@
 
 /* ---------- Einführung ---------- */
 .rad-about {
-  max-width: 720px;
   margin: 56px 0 0;
+}
+
+/* Beschreibung rechtsbündig am rechten Rand, darunter "mehr lesen";
+   der aufgeklappte Text steht wieder linksbündig */
+.rad-intro {
+  max-width: 720px;
+  margin-left: auto !important;
+  text-align: right;
+}
+
+.rad-more-body {
+  max-width: 720px;
+  text-align: left;
 }
 
 .rad-about p { margin: 0 0 14px; line-height: 1.7; }
 
 .rad-about h2 {
-  margin: 40px 0 14px;
+  margin: 24px 0 14px;
   font-family: var(--serif);
   font-weight: 400;
   font-size: 1.6rem;
@@ -191,6 +203,7 @@
   font-weight: 600;
   list-style: none;
   margin: 4px 0 16px;
+  text-align: right;
 }
 .rad-more summary::-webkit-details-marker { display: none; }
 .rad-more summary::after { content: " ↓"; }
