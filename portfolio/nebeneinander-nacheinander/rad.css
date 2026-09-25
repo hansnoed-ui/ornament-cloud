@@ -169,7 +169,7 @@
   margin: 40px 0 0;
   overflow: hidden;
   background: transparent;
-  color: var(--text);
+  color: var(--accent);
 }
 
 .rad-ticker-track {
