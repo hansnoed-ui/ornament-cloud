@@ -20,12 +20,12 @@
   'use strict';
 
   var CONFIG = {
-    speed: 1,          // 1 = normal, 0.5 = halb so schnell, 2 = doppelt so schnell
+    speed: 2,          // 1 = ursprüngliches Tempo, 0.5 = halb so schnell, 2 = doppelt so schnell
     fps: 24,           // Bildrate; die Bewegung ist so langsam, dass mehr nicht nötig ist
     points: 220,       // Stützpunkte pro Kurve (Mobil: 140)
     echoes: 4,         // Echos der hinteren Figur (Mobil: 2)
     traceEvery: 11,    // alle n Sekunden bleibt ein Abdruck der vorderen Figur zurück
-    traceLife: 42,     // so viele Sekunden braucht ein Abdruck zum Verblassen
+    traceLife: 21,     // so viele Sekunden braucht ein Abdruck zum Verblassen
     maxTraces: 7       // gleichzeitig sichtbare Abdrücke (Mobil: 4)
   };
 

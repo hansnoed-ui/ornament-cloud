@@ -98,7 +98,7 @@ a {
 .bg .far { stroke: var(--bg-line-faint); stroke-width: 0.8; }
 .bg .mid { stroke: var(--bg-line-mid); stroke-width: 0.7; }
 .bg .near { stroke: var(--bg-line-strong); stroke-width: 0.8; }
-.bg .trace { stroke: var(--bg-line-strong); stroke-width: 0.6; transition: opacity 42s linear; }
+.bg .trace { stroke: var(--bg-line-strong); stroke-width: 0.6; transition: opacity 21s linear; }
 .bg .axis { stroke: var(--bg-line-faint); stroke-width: 0.6; }
 .bg .mark { stroke: var(--bg-line-strong); stroke-width: 0.7; }
 .bg .mark-dot { fill: var(--bg-line-strong); stroke: none; }
