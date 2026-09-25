@@ -493,7 +493,136 @@ h1 {
 }
 
 .back {
-  margin: 0 0 64px;
+  margin: 32px 0 64px;
+}
+
+/* Termine: aufklappbare Einträge */
+.entry {
+  margin-bottom: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.2s ease;
+}
+
+.entry:hover,
+.entry[open] {
+  border-color: var(--muted);
+}
+
+.entry-head {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 22px 28px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.entry-head::-webkit-details-marker {
+  display: none;
+}
+
+.entry-head:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+  border-radius: var(--radius);
+}
+
+.entry-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-text time {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.entry-text h2 {
+  margin: 4px 0 4px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+.entry-text .post-meta {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* Plus-Zeichen, das beim Öffnen zum Minus wird */
+.entry-toggle {
+  position: relative;
+  flex: 0 0 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.entry-toggle::before,
+.entry-toggle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 1.5px;
+  margin: -0.75px 0 0 -7px;
+  background: var(--text);
+  transition: transform 0.3s ease, background-color 0.25s ease;
+}
+
+.entry-toggle::after {
+  transform: rotate(90deg);
+}
+
+.entry[open] .entry-toggle::after {
+  transform: rotate(0deg);
+}
+
+.entry-head:hover .entry-toggle {
+  background: var(--text);
+  border-color: var(--text);
+}
+
+.entry-head:hover .entry-toggle::before,
+.entry-head:hover .entry-toggle::after {
+  background: var(--surface);
+}
+
+.entry-body {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 32px;
+  align-items: start;
+  padding: 4px 28px 28px;
+}
+
+.entry[open] .entry-body {
+  animation: entry-open 0.45s ease;
+}
+
+@keyframes entry-open {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entry[open] .entry-body { animation: none; }
+}
+
+@media (max-width: 760px) {
+  .entry-head { padding: 18px 20px; gap: 16px; }
+  .entry-text h2 { font-size: 1.3rem; }
+  .entry-body { grid-template-columns: 1fr; gap: 20px; padding: 0 20px 20px; }
 }
 
 @media (max-width: 760px) {

@@ -566,6 +566,15 @@
   }
 
   var t = 0, last = 0;
+
+  // Aufklappbare Einträge: Animation beim Öffnen von vorn beginnen
+  document.addEventListener('toggle', function (e) {
+    if (!e.target.open) return;
+    icons.forEach(function (ic) {
+      if (e.target.contains(ic.svg)) { ic.offset = -t; ic.update(0, 0); }
+    });
+  }, true);
+
   function frame(now) {
     requestAnimationFrame(frame);
     if (now - last < 1000 / FPS) return;
