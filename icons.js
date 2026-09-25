@@ -10,6 +10,7 @@
     wave      feine Wellenlinie als Trennung unter dem Header
     prozess   Schleife über einer Zeitlinie, 18 Schritte (News-Eintrag)
     inklusion Kreis öffnet sich, verschiedene Formen finden hinein (Termine-Eintrag)
+    turm      Turm, Werke in drei Konstellationen, Eingriff, 155 Tage (Termine-Eintrag)
 
   Es werden nur Symbole animiert, die gerade sichtbar sind.
   Bei prefers-reduced-motion erscheint ein ruhendes Bild.
@@ -18,7 +19,7 @@
 (function () {
   'use strict';
 
-  var PERIOD = { reentry: 24, zeit: 15, stellen: 12, wave: 60, prozess: 26.4, inklusion: 22 };   // Sekunden pro Durchlauf
+  var PERIOD = { reentry: 24, zeit: 15, stellen: 12, wave: 60, prozess: 26.4, inklusion: 22, turm: 24 };   // Sekunden pro Durchlauf
   var FPS = 30;
 
   var NS = 'http://www.w3.org/2000/svg';
@@ -432,6 +433,85 @@
     };
   }
 
+  // ---------- Termine: Supervisionen 2026 im Oberen Turm ----------
+  // Der Turm bleibt, die Werke wechseln in drei Konstellationen (drei Vernissagen)
+  // und stehen über feine Linien mit ihm im Dialog. In der dritten greift ein Punkt
+  // von aussen ein (offener Aufruf). Unten füllen sich 155 Tage bis zur Finissage.
+  function turm(svg) {
+    var TX0 = 146, TX1 = 174, TY0 = 34, TY1 = 160, DAYS = 155, BASE = 178;
+    var tower = 'M' + TX0 + ',' + TY1 + 'V' + (TY0 + 8);
+    for (var c = 0; c < 4; c++) {                     // Zinnen
+      var x = TX0 + c * 7;
+      tower += 'H' + (x + 3.5) + 'V' + TY0 + 'H' + (x + 7) + 'V' + (TY0 + 8);
+    }
+    tower += 'H' + TX1 + 'V' + TY1 + 'Z';
+    var windows = 'M160,64v10M160,98v10M154,128v8M166,128v8M153,' + (TY1) + 'v-12h14v12';
+    var links = el('g', {}, svg), linkEls = [];
+    var ticks = el('path', { 'class': 'thin' }, svg);
+    var marks = el('path', { 'class': 'mid' }, svg);
+    el('path', { d: 'M20,' + BASE + 'H300', 'class': 'thin', opacity: 0.3 }, svg);
+    el('path', { d: tower, 'class': 'bold' }, svg);
+    el('path', { d: windows, 'class': 'thin' }, svg);
+
+    var sizes = [[14, 18], [10, 10], [18, 12], [8, 14], [12, 12], [16, 10], [9, 9]];
+    var A = [[50, 52], [102, 80], [56, 122], [108, 146], [222, 50], [270, 84], [232, 130]];
+    var B = [], C = [[112, 48], [112, 84], [112, 120], [208, 48], [208, 84], [208, 120], [276, 150]];
+    for (var i = 0; i < 7; i++) {
+      var a = Math.PI * (0.15 + i * 0.28) + (i > 3 ? 0.35 : 0);
+      B.push([160 + Math.cos(a) * 118, 96 + Math.sin(a) * 58]);
+    }
+    var C2 = C[6].slice(); C2 = [256, 70];              // neue Stelle nach dem Eingriff
+    var works = sizes.map(function (sz, i) {
+      linkEls.push(el('path', { 'class': 'thin dash' }, links));
+      return el('path', { 'class': i % 3 === 1 ? 'fill' : 'mid' }, svg);
+    });
+    var hand = el('circle', { r: 5, 'class': 'mid' }, svg);
+
+    function rect(cx, cy, w, h) {
+      return 'M' + f(cx - w / 2) + ',' + f(cy - h / 2) + 'h' + w + 'v' + h + 'h' + (-w) + 'Z';
+    }
+    function mix(p, q, t) { return [lerp(p[0], q[0], t), lerp(p[1], q[1], t)]; }
+
+    return function (u) {
+      var show = seg(u, 0, 0.05) * (1 - seg(u, 0.9, 0.97));
+      var ab = seg(u, 0.3, 0.36), bc = seg(u, 0.56, 0.62);
+      var grab = seg(u, 0.64, 0.68), move = seg(u, 0.68, 0.76), leave = seg(u, 0.77, 0.83);
+
+      works.forEach(function (w, i) {
+        var p = mix(mix(A[i], B[i], ab), C[i], bc);
+        if (i === 6) p = mix(p, C2, move);
+        w.setAttribute('d', rect(p[0], p[1], sizes[i][0], sizes[i][1]));
+        w.setAttribute('opacity', show.toFixed(3));
+        var ex = p[0] < 160 ? TX0 : TX1, ey = Math.max(TY0 + 14, Math.min(TY1 - 6, p[1]));
+        var gx = p[0] < 160 ? p[0] + sizes[i][0] / 2 : p[0] - sizes[i][0] / 2;
+        linkEls[i].setAttribute('d', 'M' + f(gx) + ',' + f(p[1]) + 'L' + ex + ',' + f(ey));
+        var moving = (u > 0.3 && u < 0.36) || (u > 0.56 && u < 0.62) ? 0.25 : 1;
+        linkEls[i].setAttribute('opacity', (0.55 * show * moving).toFixed(3));
+      });
+
+      // Eingriff von aussen: ein Punkt holt ein Werk an eine neue Stelle
+      var hp;
+      if (u < 0.68) hp = mix([312, 176], C[6], grab);
+      else if (u < 0.77) hp = mix(C[6], C2, move);
+      else hp = mix(C2, [316, 20], leave);
+      hand.setAttribute('cx', f(hp[0] + 9)); hand.setAttribute('cy', f(hp[1] - 9));
+      hand.setAttribute('opacity', (u > 0.62 && u < 0.84 ? seg(u, 0.62, 0.64) * (1 - seg(u, 0.81, 0.84)) : 0).toFixed(3));
+
+      // 155 Tage, drei Vernissagen, Finissage
+      var n = Math.floor(DAYS * seg(u, 0.03, 0.88)), d = '', m = '';
+      for (var k = 0; k < n; k++) {
+        var x = 20 + k * 280 / (DAYS - 1);
+        d += 'M' + f(x) + ',' + BASE + 'v-4';
+      }
+      [0, 52, 104, DAYS - 1].forEach(function (k) {
+        if (k < n) m += 'M' + f(20 + k * 280 / (DAYS - 1)) + ',' + (BASE + 3) + 'v-12';
+      });
+      ticks.setAttribute('d', d); marks.setAttribute('d', m);
+      var tl = (1 - seg(u, 0.93, 1)).toFixed(3);
+      ticks.setAttribute('opacity', tl); marks.setAttribute('opacity', tl);
+    };
+  }
+
   // ---------- Trennlinie unter dem Header: feine, rhythmisch wogende Welle ----------
   function wave(svg) {
     var H = 32, path = el('path', { 'class': 'wave' }, svg);
@@ -453,14 +533,14 @@
   }
 
   // ---------- Ablauf ----------
-  var FACTORY = { reentry: reentry, zeit: zeit, stellen: stellen, wave: wave, prozess: prozess, inklusion: inklusion };
-  var STILL = { reentry: 0.7, zeit: 0.45, stellen: 0.78, wave: 0, prozess: 0.95, inklusion: 0.85 };   // Standbild bei reduzierter Bewegung
+  var FACTORY = { reentry: reentry, zeit: zeit, stellen: stellen, wave: wave, prozess: prozess, inklusion: inklusion, turm: turm };
+  var STILL = { reentry: 0.7, zeit: 0.45, stellen: 0.78, wave: 0, prozess: 0.95, inklusion: 0.85, turm: 0.7 };   // Standbild bei reduzierter Bewegung
   var icons = [];
 
   Array.prototype.forEach.call(document.querySelectorAll('svg[data-icon]'), function (svg) {
     var name = svg.getAttribute('data-icon');
     if (!FACTORY[name]) return;
-    icons.push({ name: name, update: FACTORY[name](svg), visible: true, offset: (name === 'prozess' || name === 'inklusion') ? 0 : Math.random() * PERIOD[name], svg: svg });
+    icons.push({ name: name, update: FACTORY[name](svg), visible: true, offset: (name === 'prozess' || name === 'inklusion' || name === 'turm') ? 0 : Math.random() * PERIOD[name], svg: svg });
   });
   if (!icons.length) return;
 
