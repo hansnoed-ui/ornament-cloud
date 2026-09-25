@@ -4,7 +4,8 @@ Einfache statische Website (reines HTML/CSS), die eine Auswahl meiner Claude-Art
 Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CDNs oder Google geladen.
 
 - `index.html` – Startseite; jedes Artefakt ist ein `<article class="card">`-Block
-- `styles.css` – Gestaltung (inkl. automatischem Dark Mode)
+- `styles.css` – Gestaltung (inkl. automatischem Dark Mode und Farben des Hintergrunds)
+- `bg.js` – animierter Hintergrund (Lemniskaten und Schleifen als SVG, Tempo in `CONFIG`)
 - `assets/` – Vorschau-Videos (.mp4/.webm) und Standbilder (.jpg)
 - `werke/<name>/index.html` – lokale Kopien der Artefakte
 - `vendor/three/` – three.js r128 (MIT-Lizenz) für die 3D-Artefakte

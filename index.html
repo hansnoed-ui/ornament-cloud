@@ -5,9 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ornament Cloud – Artefakte</title>
   <meta name="description" content="Animierte Visualisierungen zu Zeit, Raum und Wiederholung.">
-  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
+  <!-- Animierter Hintergrund (Linien werden von bg.js gezeichnet) -->
+  <div class="bg" aria-hidden="true">
+    <svg class="bg-field" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg>
+  </div>
+
   <header class="site-header">
     <div class="wrap">
       <p class="eyebrow">Ornament Cloud</p>
@@ -86,5 +91,6 @@
       <p>Erstellt mit <a href="https://claude.ai">Claude</a> · © 2026</p>
     </div>
   </footer>
+  <script src="bg.js?v=1" defer></script>
 </body>
 </html>
