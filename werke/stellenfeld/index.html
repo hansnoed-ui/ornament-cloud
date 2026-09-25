@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre</title>
+<link href="../../vendor/fonts/fonts.css" rel="stylesheet">
+<style>
+/* Die Bühne bleibt in beiden Farbmodi dunkel, sie ist Teil des Werks; nur die Bedienleiste folgt dem Modus. */
+:root{
+  --stage:#05070A;
+  --ui-bg:rgba(236,240,239,.86); --ui-ink:#10201F; --ui-line:rgba(16,32,31,.25); --ui-accent:#1FA9B4;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --ui-bg:rgba(12,18,20,.72); --ui-ink:#E6EEEC; --ui-line:rgba(230,238,236,.22); --ui-accent:#35C3CD; }
+}
+:root[data-theme="dark"]{ --ui-bg:rgba(12,18,20,.72); --ui-ink:#E6EEEC; --ui-line:rgba(230,238,236,.22); --ui-accent:#35C3CD; }
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;background:var(--stage);scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;overflow:hidden;background:var(--stage);font-family:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+#stage{position:relative;width:100%;height:100%;overflow:hidden;background:var(--stage)}
+#stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#stage canvas:active{cursor:grabbing}
+.vignette{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 75% 70% at 50% 48%, rgba(5,7,10,0) 55%, rgba(5,7,10,.55) 85%, rgba(5,7,10,.9) 100%)}
+.scrim{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 55% at 12% 88%, rgba(5,7,10,.78) 0%, rgba(5,7,10,.45) 45%, rgba(5,7,10,0) 100%)}
+.lbl{position:absolute;left:6vw;top:auto;bottom:13%;max-width:min(46rem,80vw);pointer-events:none;opacity:0;will-change:opacity,transform}
+.lbl .t1{font-family:"Newsreader",Georgia,serif;font-weight:300;font-size:clamp(44px,7vw,112px);line-height:.95;color:#F3EDE3;letter-spacing:-.01em;text-shadow:0 0 28px rgba(5,7,10,.85),0 0 6px rgba(5,7,10,.6)}
+.lbl .t2{margin-top:.55em;font-family:"Newsreader",Georgia,serif;font-style:italic;font-weight:300;font-size:clamp(19px,2.1vw,34px);line-height:1.25;color:#B7D8DB;text-shadow:0 0 18px rgba(5,7,10,.9)}
+.lead{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+body.notext .lbl, body.notext .lead, body.notext .scrim{display:none}
+@media (max-width:640px){ .lbl{left:7vw;bottom:16%} .lbl .t1{font-size:clamp(38px,11vw,64px)} }
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.bar{
+  position:absolute;left:50%;bottom:22px;transform:translateX(-50%);
+  width:min(560px,calc(100% - 28px));display:flex;align-items:center;gap:8px;
+  padding:8px;border-radius:999px;background:var(--ui-bg);color:var(--ui-ink);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  font-size:14px;transition:opacity .5s ease;
+}
+.bar.hidden{opacity:0;pointer-events:none}
+.bar button{font:inherit;color:inherit;background:transparent;border:1px solid var(--ui-line);border-radius:999px;height:34px;padding:0 14px;cursor:pointer;white-space:nowrap}
+.bar button:hover{border-color:var(--ui-ink)}
+.bar input[type=range]{flex:1;min-width:60px;accent-color:var(--ui-accent)}
+.bar button:focus-visible,.bar input:focus-visible{outline:2px solid var(--ui-accent);outline-offset:2px}
+.nogl{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:#E6EEEC;font-size:18px}
+body.rec .bar{display:none}
+body.rec #stage canvas{cursor:none}
+@media (max-width:520px){ .bar{bottom:14px} .bar button{padding:0 11px} }
+</style>
+</head>
+<body>
+<div id="stage">
+  <h1 class="sr-only">Stellenfeld: Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre</h1>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="scrim" aria-hidden="true"></div>
+  <svg class="lead" id="lead" aria-hidden="true"><line id="leadLine" x1="0" y1="0" x2="0" y2="0" stroke="#F3EDE3" stroke-width="1" /><circle id="leadDot" r="4" fill="none" stroke="#F3EDE3" stroke-width="1.2" /></svg>
+  <div class="lbl" data-i="0"><div class="t1">Stelle</div><div class="t2">Das Medium wird erst durch Besetzung sichtbar</div></div>
+  <div class="lbl" data-i="1"><div class="t1">Objekt</div><div class="t2">Die Form macht das Medium wahrnehmbar</div></div>
+  <div class="lbl" data-i="2"><div class="t1">Raum</div><div class="t2">Objekte verlassen ihre Stellen</div></div>
+  <div class="lbl" data-i="3"><div class="t1">Zeit</div><div class="t2">Stellen verlassen ihre Objekte</div></div>
+  <div class="lbl" data-i="4"><div class="t1">Werk</div><div class="t2">Eine Stelle wird festgehalten</div></div>
+  <div class="lbl" data-i="5"><div class="t1">Atmosphäre</div><div class="t2">Der Überschuss der Stellendifferenz</div></div>
+  <div class="bar" id="bar" role="group" aria-label="Wiedergabe">
+    <button id="play" type="button">Pause</button>
+    <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Position in der Runde">
+    <button id="txt" type="button" aria-pressed="true">Text</button>
+    <button id="full" type="button">Vollbild</button>
+  </div>
+</div>
+
+<script src="../../vendor/three/three.min.js"></script>
+<script src="../../vendor/three/CopyShader.js"></script>
+<script src="../../vendor/three/LuminosityHighPassShader.js"></script>
+<script src="../../vendor/three/EffectComposer.js"></script>
+<script src="../../vendor/three/RenderPass.js"></script>
+<script src="../../vendor/three/ShaderPass.js"></script>
+<script src="../../vendor/three/UnrealBloomPass.js"></script>
+<script>
+(function(){
+  "use strict";
+  var stage = document.getElementById('stage');
+  var TWO = Math.PI*2;
+
+  // ---------- Parameter ----------
+  var DURATION = 40;
+  var S = 0.9, NG = 8, FW = (2*NG+1)*S;      // Gitterweite, halbe Feldbreite in Zellen
+  var M = 72;                                   // Objekte je Generation
+  var DRIFT_CELLS = 4;                          // Zeit-Drift in ganzen Stellen (Schleife bleibt nahtlos)
+  var COL = { stage:0x05070A, place:0x1FC4D0, obj:0xFF5A1F, work:0xF6EEE2, dust:0xB9C9CC };
+
+  function ease(x){ return x<=0?0:x>=1?1:x*x*(3-2*x); }
+  function hash(n){ var x = Math.sin(n*127.1 + 311.7)*43758.5453; return x - Math.floor(x); }
+  function lerp(a,b,t){ return a + (b-a)*t; }
+
+  // ---------- Renderer ----------
+  var renderer;
+  try { renderer = new THREE.WebGLRenderer({ antialias:true }); }
+  catch(e){
+    var msg = document.createElement('div'); msg.className = 'nogl';
+    msg.textContent = 'Diese Animation braucht WebGL. Öffne die Seite in einem aktuellen Browser.';
+    stage.appendChild(msg); return;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+  renderer.setClearColor(COL.stage, 1);
+  var canvas = renderer.domElement;
+  canvas.setAttribute('role','img');
+  canvas.setAttribute('aria-label','Ein leuchtendes Gitter aus Stellen, das von Objekten besetzt wird; die Objekte wechseln ihre Stellen, dann wandert das Gitter weiter und lässt die Objekte zurück, ein Werk bleibt stehen, zuletzt leuchtet eine Atmosphäre auf');
+  stage.insertBefore(canvas, stage.firstChild);
+
+  var scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(COL.stage, 12, 34);
+  var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 300);
+  scene.add(new THREE.HemisphereLight(0xbfe4ff, 0x1a0e08, 0.3));
+  var workLight = new THREE.PointLight(0xffd9b0, 2.0, 9, 1.8); scene.add(workLight);
+  var coolLight = new THREE.PointLight(0x5fe0ea, 0.9, 14, 1.8); scene.add(coolLight);
+
+  var composer = null;
+  if (THREE.EffectComposer && THREE.UnrealBloomPass && THREE.RenderPass){
+    composer = new THREE.EffectComposer(renderer);
+    composer.addPass(new THREE.RenderPass(scene, camera));
+    composer.addPass(new THREE.UnrealBloomPass(new THREE.Vector2(256,256), 0.7, 0.5, 0.42));
+  }
+
+  // ---------- Texturen ----------
+  function glowTex(){
+    var cv = document.createElement('canvas'); cv.width = cv.height = 128;
+    var x = cv.getContext('2d');
+    var g = x.createRadialGradient(64,64,0,64,64,64);
+    g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(0.16,'rgba(255,255,255,0.5)');
+    g.addColorStop(0.45,'rgba(255,255,255,0.11)'); g.addColorStop(1,'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(0,0,128,128);
+    return new THREE.CanvasTexture(cv);
+  }
+  function formTex(){
+    var cv = document.createElement('canvas'); cv.width = cv.height = 128;
+    var x = cv.getContext('2d');
+    x.translate(64,64); x.rotate(Math.PI/4);
+    x.strokeStyle = 'rgba(255,255,255,0.95)'; x.lineWidth = 7;
+    x.strokeRect(-34,-34,68,68);
+    x.fillStyle = 'rgba(255,255,255,1)';
+    x.beginPath(); x.arc(0,0,11,0,TWO); x.fill();
+    return new THREE.CanvasTexture(cv);
+  }
+  var gTex = glowTex(), fTex = formTex();
+
+  // ---------- Stellenfeld ----------
+  var GN = (2*NG+1)*(2*NG+1);
+  var placePos = new Float32Array(GN*3), placeCol = new Float32Array(GN*3);
+  var pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute('position', new THREE.BufferAttribute(placePos,3));
+  pGeo.setAttribute('color', new THREE.BufferAttribute(placeCol,3));
+  var pMat = new THREE.PointsMaterial({ map:gTex, size:0.36, vertexColors:true, transparent:true,
+    blending:THREE.AdditiveBlending, depthWrite:false });
+  scene.add(new THREE.Points(pGeo, pMat));
+  var placeC = new THREE.Color(COL.place);
+  // Linien des Stellenfelds: machen die Isotropie des Mediums sichtbar
+  var LN = (2*NG+1)*2;
+  var linePos = new Float32Array(LN*2*3);
+  var lGeo = new THREE.BufferGeometry();
+  lGeo.setAttribute('position', new THREE.BufferAttribute(linePos,3));
+  var lMat = new THREE.LineBasicMaterial({ color:COL.place, transparent:true, opacity:0.10,
+    blending:THREE.AdditiveBlending, depthWrite:false });
+  scene.add(new THREE.LineSegments(lGeo, lMat));
+  function updateLines(dr){
+    var n = 0, half = NG*S;
+    for (var j=-NG;j<=NG;j++){            // Linien in x-Richtung
+      linePos[n++] = -half; linePos[n++] = 0; linePos[n++] = j*S;
+      linePos[n++] =  half; linePos[n++] = 0; linePos[n++] = j*S;
+    }
+    for (var i=-NG;i<=NG;i++){            // Linien in z-Richtung, wandern mit dem Feld
+      var x = wrapX(i*S + dr);
+      linePos[n++] = x; linePos[n++] = 0; linePos[n++] = -half;
+      linePos[n++] = x; linePos[n++] = 0; linePos[n++] =  half;
+    }
+    lGeo.attributes.position.needsUpdate = true;
+    lGeo.computeBoundingSphere();
+  }
+  var occ = new Float32Array(GN);                 // Besetzungsgrad je Stelle
+
+  function cellIndex(i,j){ return (i+NG)*(2*NG+1) + (j+NG); }
+  function wrapX(x){ while (x > FW/2) x -= FW; while (x < -FW/2) x += FW; return x; }
+
+  // ---------- Objekte ----------
+  var cellA = new Int16Array(M*2), cellB = new Int16Array(M*2);
+  for (var m=0;m<M;m++){
+    var lim = NG-3;
+    var ia = Math.round((hash(m*3.1)*2-1)*lim), ja = Math.round((hash(m*7.7+5)*2-1)*lim);
+    cellA[m*2] = ia; cellA[m*2+1] = ja;
+    cellB[m*2] = Math.max(-lim, Math.min(lim, ia + Math.round((hash(m*13.3+2)*2-1)*3.2)));
+    cellB[m*2+1] = Math.max(-lim, Math.min(lim, ja + Math.round((hash(m*17.9+9)*2-1)*3.2)));
+  }
+  var OBJ = M*2;                                  // zwei Generationen
+  var oPos = new Float32Array(OBJ*3), oCol = new Float32Array(OBJ*3), oHalo = new Float32Array(OBJ*3);
+  var oGeo = new THREE.BufferGeometry();
+  oGeo.setAttribute('position', new THREE.BufferAttribute(oPos,3));
+  oGeo.setAttribute('color', new THREE.BufferAttribute(oCol,3));
+  var oMat = new THREE.PointsMaterial({ map:fTex, size:0.62, vertexColors:true, transparent:true,
+    blending:THREE.AdditiveBlending, depthWrite:false });
+  scene.add(new THREE.Points(oGeo, oMat));
+  var hGeo = new THREE.BufferGeometry();
+  hGeo.setAttribute('position', new THREE.BufferAttribute(oPos,3));
+  hGeo.setAttribute('color', new THREE.BufferAttribute(oHalo,3));
+  var hMat = new THREE.PointsMaterial({ map:gTex, size:1.0, vertexColors:true, transparent:true,
+    blending:THREE.AdditiveBlending, depthWrite:false });
+  var haloPts = new THREE.Points(hGeo, hMat); scene.add(haloPts);
+  var objC = new THREE.Color(COL.obj), coolC = new THREE.Color(COL.place);
+
+  // ---------- Werk ----------
+  var workGeo = new THREE.IcosahedronGeometry(0.36, 0);
+  var workMat = new THREE.MeshStandardMaterial({ color:0x151412, emissive:0xFFB070, emissiveIntensity:0.05,
+    roughness:0.26, metalness:0.4, flatShading:true });
+  var work = new THREE.Mesh(workGeo, workMat); scene.add(work);
+  var wireMat = new THREE.MeshBasicMaterial({ color:COL.place, wireframe:true, transparent:true, opacity:0.5 });
+  var wire = new THREE.Mesh(workGeo, wireMat); wire.scale.setScalar(1.06); scene.add(wire);
+  function sprite(color, size){
+    var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map:gTex, color:color, transparent:true,
+      blending:THREE.AdditiveBlending, depthWrite:false }));
+    sp.scale.set(size,size,1); scene.add(sp); return sp;
+  }
+  var workGlow = sprite(0xFFC79A, 1.0);
+  var atmo = sprite(0xFFAE72, 10);
+  var atmo2 = sprite(0x3FD2DC, 7);
+
+  function ringMesh(color){
+    var pts = [];
+    for (var i=0;i<=96;i++){ var a=i/96*TWO; pts.push(new THREE.Vector3(Math.cos(a),0,Math.sin(a))); }
+    var g = new THREE.BufferGeometry().setFromPoints(pts);
+    var l = new THREE.Line(g, new THREE.LineBasicMaterial({ color:color, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false }));
+    scene.add(l); return l;
+  }
+  var flashRings = [ringMesh(COL.work), ringMesh(COL.place), ringMesh(COL.work), ringMesh(COL.place)];
+  var atmoRings = [ringMesh(COL.obj), ringMesh(COL.place)];
+
+  // ---------- Staub ----------
+  var DTILE = 420;
+  var dPos = new Float32Array(DTILE*3);
+  for (var d=0; d<DTILE; d++){
+    dPos[d*3]   = (hash(d*2.3)*2-1)*13;
+    dPos[d*3+1] = hash(d*5.1)*6 - 0.6;
+    dPos[d*3+2] = (hash(d*9.7)*2-1)*13;
+  }
+  var dGeo = new THREE.BufferGeometry();
+  dGeo.setAttribute('position', new THREE.BufferAttribute(dPos,3));
+  scene.add(new THREE.Points(dGeo, new THREE.PointsMaterial({ color:COL.dust, map:gTex, size:0.07,
+    transparent:true, opacity:0.5, blending:THREE.AdditiveBlending, depthWrite:false })));
+
+  // ---------- Phasen ----------
+  var LBL = [
+    { t0:0.015, t1:0.175 },   // Stelle
+    { t0:0.195, t1:0.335 },   // Objekt
+    { t0:0.360, t1:0.535 },   // Raum
+    { t0:0.565, t1:0.735 },   // Zeit
+    { t0:0.760, t1:0.885 },   // Werk
+    { t0:0.905, t1:0.995 }    // Atmosphäre
+  ];
+  function drift(t){ return DRIFT_CELLS*S*ease((t-0.55)/0.25); }
+
+  // Zustand eines Objekts: Position und Helligkeit
+  var st = { x:0, y:0, z:0, b:0, ci:0, cj:0 };
+  function gen1(m, t, dr){
+    var h1 = hash(m+0.5), h2 = hash(m*1.7+3), h3 = hash(m*2.9+11);
+    var ia = cellA[m*2], ja = cellA[m*2+1], ib = cellB[m*2], jb = cellB[m*2+1];
+    var b = ease((t - 0.02 - 0.11*h1)/0.10);
+    var mv = ease((t - 0.365 - 0.10*h2)/0.11);
+    var x = lerp(ia*S, ib*S, mv), z = lerp(ja*S, jb*S, mv);
+    var y = Math.sin(Math.PI*mv)*0.42;
+    var isWork = (m === 0);
+    if (!isWork){
+      b *= 1 - ease((t - 0.575 - 0.13*h3)/0.10);
+      y -= 0.3*ease((t - 0.60 - 0.13*h3)/0.12);
+    }
+    st.x = x; st.y = y; st.z = z; st.b = b;
+    st.ci = mv < 0.5 ? ia : ib; st.cj = mv < 0.5 ? ja : jb;
+    return st;
+  }
+  function gen2(m, t, dr){
+    var h4 = hash(m*3.3+21), h5 = hash(m*4.1+31);
+    var ia = cellA[m*2], ja = cellA[m*2+1];
+    var b = ease((t - 0.615 - 0.13*h4)/0.10) * (1 - ease((t - 0.905 - 0.05*h5)/0.07));
+    st.x = ia*S + dr; st.y = 0; st.z = ja*S; st.b = b;
+    st.ci = ia; st.cj = ja;
+    return st;
+  }
+
+  // ---------- Bedienung ----------
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var tau = reduce ? 0.3 : 0, playing = !reduce, last = performance.now(), scrubbing = false;
+  var yaw = 0, pitch = 0, zoom = 1;
+  var bar = document.getElementById('bar'), playBtn = document.getElementById('play');
+  var scrub = document.getElementById('scrub'), fullBtn = document.getElementById('full');
+  var txtBtn = document.getElementById('txt');
+  var lblEls = Array.prototype.slice.call(document.querySelectorAll('.lbl'));
+  var leadLine = document.getElementById('leadLine'), leadDot = document.getElementById('leadDot');
+  function setPlaying(v){ playing = v; playBtn.textContent = v ? 'Pause' : 'Abspielen'; }
+  setPlaying(playing);
+  playBtn.addEventListener('click', function(){ setPlaying(!playing); });
+  scrub.addEventListener('input', function(){ tau = scrub.value/1000; });
+  scrub.addEventListener('pointerdown', function(){ scrubbing = true; });
+  window.addEventListener('pointerup', function(){ scrubbing = false; });
+  txtBtn.addEventListener('click', function(){
+    var on = txtBtn.getAttribute('aria-pressed') !== 'true';
+    txtBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    document.body.classList.toggle('notext', !on);
+  });
+  fullBtn.addEventListener('click', function(){
+    try {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function(){});
+      else if (document.exitFullscreen) document.exitFullscreen().catch(function(){});
+    } catch(e){}
+  });
+  var hideTimer = null;
+  function poke(){
+    bar.classList.remove('hidden');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(function(){ if (!bar.matches(':hover') && !bar.contains(document.activeElement)) bar.classList.add('hidden'); }, 2600);
+  }
+  ['pointermove','pointerdown','keydown','touchstart'].forEach(function(ev){ window.addEventListener(ev, poke, { passive:true }); });
+  poke();
+  var drag = null;
+  canvas.addEventListener('pointerdown', function(e){ drag = { x:e.clientX, y:e.clientY }; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove', function(e){
+    if (!drag) return;
+    yaw -= (e.clientX-drag.x)*0.005;
+    pitch = Math.max(-1.5, Math.min(4.5, pitch + (e.clientY-drag.y)*0.014));
+    drag.x = e.clientX; drag.y = e.clientY;
+  });
+  canvas.addEventListener('pointerup', function(){ drag = null; });
+  canvas.addEventListener('pointercancel', function(){ drag = null; });
+  canvas.addEventListener('dblclick', function(){ yaw = 0; pitch = 0; zoom = 1; });
+  canvas.addEventListener('wheel', function(e){ e.preventDefault(); zoom = Math.max(0.55, Math.min(1.8, zoom*Math.exp(e.deltaY*0.001))); }, { passive:false });
+  window.addEventListener('keydown', function(e){
+    if (e.target && e.target.tagName === 'INPUT') return;
+    if (e.key === ' ') { e.preventDefault(); setPlaying(!playing); }
+    else if (e.key === 'f' || e.key === 'F') { fullBtn.click(); }
+    else if (e.key === 't' || e.key === 'T') { txtBtn.click(); }
+    else if (e.key === 'h' || e.key === 'H') { document.body.classList.toggle('rec'); }
+  });
+  function resize(){
+    var w = stage.clientWidth, h = Math.max(1, stage.clientHeight);
+    renderer.setSize(w, h, false);
+    var dx = w > 640 ? Math.round(w*0.12) : 0, dy = w > 640 ? 0 : Math.round(h*0.12);
+    camera.aspect = (w+2*dx)/(h+2*dy);
+    camera.setViewOffset(w+2*dx, h+2*dy, 0, 2*dy, w, h);
+    camera.updateProjectionMatrix();
+    if (composer) composer.setSize(w, h);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ---------- Kamera: Schlüsselbilder ----------
+  // tau, Zielgewicht Werk, Azimut, Radius, Höhe, fov
+  var KF = [
+    [0.00, 0.00, 0.40, 11.5, 1.5, 46],
+    [0.18, 0.00, 1.15, 10.5, 4.2, 42],
+    [0.42, 0.00, 2.15, 10.0, 8.5, 44],
+    [0.60, 0.15, 3.10, 12.0, 2.4, 40],
+    [0.80, 0.95, 4.60,  5.6, 2.1, 38],
+    [0.92, 0.45, 5.60, 11.5, 4.5, 50]
+  ];
+  var nK = KF.length;
+  function kfGet(i){
+    var sh = Math.floor(i/nK), k = ((i % nK) + nK) % nK, b = KF[k].slice();
+    b[0] += sh; b[2] += TWO*sh;
+    return b;
+  }
+  function camAt(t){
+    var k = 0; while (k < nK-1 && t >= KF[k+1][0]) k++;
+    var p0 = kfGet(k-1), p1 = kfGet(k), p2 = kfGet(k+1), p3 = kfGet(k+2);
+    var h = p2[0]-p1[0], s = (t-p1[0])/h, s2 = s*s, s3 = s2*s;
+    var h00 = 2*s3-3*s2+1, h10 = s3-2*s2+s, h01 = -2*s3+3*s2, h11 = s3-s2;
+    var out = [t];
+    for (var c=1;c<6;c++){
+      var m1 = (p2[c]-p0[c])/(p2[0]-p0[0]), m2 = (p3[c]-p1[c])/(p3[0]-p1[0]);
+      out.push(h00*p1[c] + h10*h*m1 + h01*p2[c] + h11*h*m2);
+    }
+    return out;
+  }
+
+  // ---------- Schleife ----------
+  var target = new THREE.Vector3(), workPos = new THREE.Vector3(), pv3 = new THREE.Vector3();
+  function frame(now){
+    var dt = Math.min(0.05, (now-last)/1000); last = now;
+    if (playing){ tau += dt/DURATION; tau -= Math.floor(tau); }
+    var t = tau, dr = drift(t);
+
+    // Objekte und Besetzung
+    for (var q=0;q<GN;q++) occ[q] = 0;
+    var atmoPhase = ease((t-0.885)/0.045)*(1 - ease((t-0.965)/0.035));
+    for (var m=0;m<M;m++){
+      var s1 = gen1(m, t, dr);
+      var i1 = m*3;
+      oPos[i1] = s1.x; oPos[i1+1] = s1.y; oPos[i1+2] = s1.z;
+      var b1 = s1.b;
+      oCol[i1] = objC.r*b1; oCol[i1+1] = objC.g*b1; oCol[i1+2] = objC.b*b1;
+      var hb1 = b1*(0.22 + 0.9*atmoPhase);
+      oHalo[i1] = objC.r*hb1; oHalo[i1+1] = objC.g*hb1; oHalo[i1+2] = objC.b*hb1*1.25;
+      if (b1 > 0.05 && t < 0.58){
+        var ci = Math.max(-NG, Math.min(NG, s1.ci)), cj = Math.max(-NG, Math.min(NG, s1.cj));
+        occ[cellIndex(ci,cj)] += b1;
+      }
+      var s2 = gen2(m, t, dr);
+      var i2 = (M+m)*3;
+      oPos[i2] = s2.x; oPos[i2+1] = s2.y; oPos[i2+2] = s2.z;
+      var b2 = s2.b;
+      oCol[i2] = objC.r*b2; oCol[i2+1] = objC.g*b2; oCol[i2+2] = objC.b*b2;
+      var hb2 = b2*(0.22 + 0.9*atmoPhase);
+      oHalo[i2] = objC.r*hb2; oHalo[i2+1] = objC.g*hb2; oHalo[i2+2] = objC.b*hb2*1.25;
+      if (b2 > 0.05) occ[cellIndex(s2.ci, s2.cj)] += b2;
+    }
+    oGeo.attributes.position.needsUpdate = true;
+    oGeo.attributes.color.needsUpdate = true;
+    hGeo.attributes.color.needsUpdate = true;
+    oGeo.computeBoundingSphere(); hGeo.computeBoundingSphere();
+    hMat.size = 1.0 + 1.6*atmoPhase;
+
+    // Stellenfeld: Grundhelligkeit und Besetzung, plus weiche Umgebung
+    var base = 0.08 + 0.22*ease((t-0.01)/0.14);
+    var n = 0;
+    for (var i=-NG;i<=NG;i++) for (var j=-NG;j<=NG;j++){
+      var idx = cellIndex(i,j);
+      var glow = occ[idx];
+      var nb = 0;
+      if (i>-NG) nb += occ[cellIndex(i-1,j)];
+      if (i<NG)  nb += occ[cellIndex(i+1,j)];
+      if (j>-NG) nb += occ[cellIndex(i,j-1)];
+      if (j<NG)  nb += occ[cellIndex(i,j+1)];
+      var br = base + 1.5*Math.min(1.4, glow) + 0.32*Math.min(1.5, nb) + 0.6*atmoPhase*Math.min(1, glow+0.25*nb);
+      placePos[n]   = wrapX(i*S + dr);
+      placePos[n+1] = 0;
+      placePos[n+2] = j*S;
+      placeCol[n]   = placeC.r*br; placeCol[n+1] = placeC.g*br; placeCol[n+2] = placeC.b*br;
+      n += 3;
+    }
+    pGeo.attributes.position.needsUpdate = true;
+    pGeo.attributes.color.needsUpdate = true;
+    pGeo.computeBoundingSphere();
+    updateLines(dr);
+    lMat.opacity = 0.05 + 0.13*ease((t-0.01)/0.16) + 0.10*atmoPhase;
+
+    // Werk
+    var w1 = gen1(0, t, dr);
+    workPos.set(w1.x, w1.y, w1.z);
+    var wOn = ease((t-0.05)/0.12) * (1 - ease((t-0.945)/0.05));
+    work.position.copy(workPos); wire.position.copy(workPos); workGlow.position.copy(workPos);
+    work.rotation.set(0.6*Math.sin(TWO*t), TWO*t*0.6, 0.3*Math.cos(TWO*t*2));
+    wire.rotation.copy(work.rotation);
+    var flash = 0;
+    for (var k=0;k<4;k++){
+      var tk = 0.765 + k*0.033;
+      flash += Math.exp(-Math.pow((t-tk)/0.011, 2));
+      var age = (t - tk)/0.055;
+      var ring = flashRings[k];
+      ring.position.copy(workPos);
+      if (age > 0 && age < 1){
+        var rr = 0.4 + age*2.6;
+        ring.scale.set(rr, rr, rr);
+        ring.material.opacity = 0.75*(1-age)*wOn;
+        ring.visible = true;
+      } else ring.visible = false;
+    }
+    workMat.emissiveIntensity = (0.05 + 0.35*flash) * wOn;
+    wireMat.opacity = (0.4 + 0.5*flash) * wOn;
+    work.visible = wire.visible = wOn > 0.02;
+    var wScale = 0.85 + 0.35*ease((t-0.70)/0.10);
+    work.scale.setScalar(wScale); wire.scale.setScalar(wScale*1.06);
+    workGlow.material.opacity = (0.07 + 0.22*flash) * wOn;
+    workGlow.scale.setScalar(0.9 + 1.1*flash + 0.7*atmoPhase);
+    workGlow.visible = wOn > 0.02;
+    workLight.position.set(workPos.x + 2.2*Math.cos(TWO*t*3), 1.6, workPos.z + 2.2*Math.sin(TWO*t*3));
+    workLight.intensity = 1.0 + 1.8*flash;
+    coolLight.position.set(3*Math.cos(TWO*t + 2), 3.2, 3*Math.sin(TWO*t + 2));
+
+    // Atmosphäre
+    atmo.position.set(0, 0.5, 0); atmo2.position.set(dr*0.5, 0.35, 0);
+    atmo.material.opacity = 0.34*atmoPhase; atmo2.material.opacity = 0.22*atmoPhase;
+    atmo.scale.setScalar(9 + 10*atmoPhase); atmo2.scale.setScalar(6 + 7*atmoPhase);
+    atmo.visible = atmo2.visible = atmoPhase > 0.01;
+    for (var r=0;r<2;r++){
+      var ar = atmoRings[r], ag = (t - (0.895 + r*0.035))/0.09;
+      ar.position.set(0, 0.02, 0);
+      if (ag > 0 && ag < 1){
+        var rad = 1.5 + ag*9;
+        ar.scale.set(rad, rad, rad);
+        ar.material.opacity = 0.5*(1-ag);
+        ar.visible = true;
+      } else ar.visible = false;
+    }
+
+    // Kamera
+    var cp = camAt(t);
+    var tw = cp[1], az = cp[2] + yaw, rad2 = Math.max(3.2, cp[3])*zoom, hgt = cp[4] + pitch, fov = cp[5];
+    target.set(workPos.x*tw, 0.25 + 0.3*tw, workPos.z*tw);
+    camera.fov = Math.max(26, Math.min(58, fov));
+    camera.updateProjectionMatrix();
+    camera.position.set(target.x + rad2*Math.cos(az), target.y + hgt, target.z + rad2*Math.sin(az));
+    camera.up.set(0,1,0);
+    camera.lookAt(target);
+    camera.rotateZ(0.05*Math.sin(TWO*2*t + 0.4));
+    var dT = camera.position.distanceTo(target);
+    scene.fog.near = dT*0.55; scene.fog.far = dT + 30;
+
+    // Titel und Hinweislinie
+    var best = -1, bestOp = 0;
+    for (var li=0; li<LBL.length; li++){
+      var L = LBL[li];
+      var op = ease((t-L.t0)/0.022) * (1 - ease((t-(L.t1-0.022))/0.022));
+      lblEls[li].style.opacity = op.toFixed(3);
+      lblEls[li].style.transform = 'translateY(' + ((1-op)*14).toFixed(1) + 'px)';
+      if (op > bestOp){ bestOp = op; best = li; }
+    }
+    if (best >= 0 && bestOp > 0.02){
+      if (best >= 4) pv3.copy(workPos).add(new THREE.Vector3(0, 0.6, 0));
+      else pv3.set(oPos[0], oPos[1] + 0.5, oPos[2]);
+      if (best === 0) pv3.set(placePos[0], 0.3, placePos[2]);
+      pv3.project(camera);
+      var sw = stage.clientWidth, sh = stage.clientHeight;
+      var px = (pv3.x*0.5+0.5)*sw, py = (-pv3.y*0.5+0.5)*sh;
+      var r0 = lblEls[best].querySelector('.t1').getBoundingClientRect(), sr = stage.getBoundingClientRect();
+      var lx = Math.min(r0.right - sr.left + 18, px - 10), ly = r0.top - sr.top + r0.height*0.55;
+      var onScreen = pv3.z < 1 && px > 0 && px < sw && py > 0 && py < sh;
+      leadLine.setAttribute('x1', lx.toFixed(1)); leadLine.setAttribute('y1', ly.toFixed(1));
+      leadLine.setAttribute('x2', px.toFixed(1)); leadLine.setAttribute('y2', py.toFixed(1));
+      leadDot.setAttribute('cx', px.toFixed(1)); leadDot.setAttribute('cy', py.toFixed(1));
+      var lo = onScreen ? bestOp*0.5 : 0;
+      leadLine.style.opacity = lo.toFixed(3); leadDot.style.opacity = (lo*1.4).toFixed(3);
+    } else { leadLine.style.opacity = 0; leadDot.style.opacity = 0; }
+
+    if (!scrubbing) scrub.value = Math.round(tau*1000);
+    if (composer) composer.render(); else renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

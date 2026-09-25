@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Re-entry-Knoten, Helix, S/F-Band</title>
+<link href="../../vendor/fonts/fonts.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4E9E7;
+  --ink:#15282B;
+  --muted:#5A6A6B;
+  --line:rgba(21,40,43,.22);
+  --curve:#15282B;
+  --s:#E0662F;
+  --f:#1E6A73;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E2125; --ink:#E3ECEA; --muted:#93A8A7; --line:rgba(227,236,234,.22);
+    --curve:#E3ECEA; --s:#DE7040; --f:#2C8C96;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E2125; --ink:#E3ECEA; --muted:#93A8A7; --line:rgba(227,236,234,.22);
+  --curve:#E3ECEA; --s:#DE7040; --f:#2C8C96;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;height:100%;overflow:hidden;
+  background:var(--bg);color:var(--ink);
+  font-family:"Newsreader",Georgia,"Times New Roman",serif;
+  -webkit-font-smoothing:antialiased;
+}
+#stage{position:relative;width:100%;height:100%;overflow:hidden}
+#stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#stage canvas:active{cursor:grabbing}
+
+.head{position:absolute;top:22px;left:26px;right:26px;pointer-events:none}
+.head h1{margin:0;font-size:20px;font-weight:500;line-height:1.2}
+.head p{margin:4px 0 0;font-size:15px;color:var(--muted);font-style:italic}
+
+.caption{position:absolute;left:26px;bottom:92px;max-width:31rem;pointer-events:none;transition:opacity .35s ease}
+.caption .num{font-size:58px;line-height:.9;color:var(--s);font-variant-numeric:lining-nums}
+.caption h2{margin:10px 0 0;font-size:27px;font-weight:500;line-height:1.15}
+.caption .role{margin-top:3px;font-size:17px;font-style:italic;color:var(--muted)}
+.caption p{margin:12px 0 0;font-size:17.5px;line-height:1.5;max-width:36ch}
+
+.axislabel{position:absolute;left:0;top:0;font-size:17px;font-style:italic;color:var(--muted);pointer-events:none;white-space:nowrap}
+
+.controls{
+  position:absolute;left:26px;right:26px;bottom:24px;
+  display:flex;align-items:center;gap:8px;
+  font-family:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;
+}
+.controls button{
+  font:inherit;color:var(--ink);background:transparent;
+  border:1px solid var(--line);border-radius:999px;
+  height:36px;padding:0 14px;cursor:pointer;white-space:nowrap;
+}
+.controls button:hover{border-color:var(--ink)}
+.controls button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.controls input[type=range]{flex:1;min-width:80px;accent-color:var(--f);height:36px;margin:0 6px}
+.controls button:focus-visible,.controls input:focus-visible{outline:2px solid var(--f);outline-offset:2px}
+.spacer{width:4px}
+
+.nogl{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;font-size:18px}
+
+body.notext .caption{opacity:0}
+body.rec .controls,body.rec .head{display:none}
+body.rec #stage canvas{cursor:none}
+body.rec .caption{bottom:30px}
+
+@media (max-width:680px){
+  .head{top:16px;left:18px;right:18px}
+  .head h1{font-size:18px}
+  .head p{font-size:14px}
+  .caption{left:18px;right:18px;bottom:142px}
+  body.rec .caption{bottom:22px}
+  .caption .num{font-size:42px}
+  .caption h2{font-size:22px;margin-top:6px}
+  .caption .role{font-size:15.5px}
+  .caption p{font-size:15.5px;margin-top:8px}
+  .controls{left:14px;right:14px;bottom:14px;flex-wrap:wrap;gap:6px}
+  .controls button{height:34px;padding:0 12px}
+  .controls input[type=range]{order:9;flex-basis:100%;margin:2px 0 0}
+}
+@media (prefers-reduced-motion: reduce){ .caption{transition:none} }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="head">
+    <h1>Re-entry-Knoten, Helix, S/F-Band</h1>
+    <p>Ziehen dreht die Ansicht, Doppelklick setzt sie zurück</p>
+  </div>
+
+  <div class="caption" id="cap" aria-live="polite">
+    <div class="num" id="capNum">1</div>
+    <h2 id="capTitle">Re-entry-Knoten</h2>
+    <div class="role" id="capRole">Ursprung des Problems</div>
+    <p id="capText"></p>
+  </div>
+
+  <div class="axislabel" id="axisLabel" aria-hidden="true">Zeit</div>
+
+  <div class="controls" role="group" aria-label="Wiedergabe">
+    <button id="play" type="button">Pause</button>
+    <span class="spacer"></span>
+    <button class="ph" type="button" data-p="1" aria-pressed="true">1 Knoten</button>
+    <button class="ph" type="button" data-p="2" aria-pressed="false">2 Helix</button>
+    <button class="ph" type="button" data-p="3" aria-pressed="false">3 Band</button>
+    <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Position in der Sequenz">
+    <button id="txt" type="button" aria-pressed="true">Text</button>
+    <button id="rec" type="button">Aufnahme</button>
+  </div>
+</div>
+
+<script src="../../vendor/three/three.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  var stage = document.getElementById('stage');
+
+  // ---------- Inhalt ----------
+  var PHASES = [
+    { title:"Re-entry-Knoten", role:"Ursprung des Problems",
+      text:"Die Unterscheidung läuft in ihren eigenen Innenraum zurück und kreuzt sich. In der Ebene bleibt diese Kreuzung ein Widerspruch." },
+    { title:"Helix", role:"Form der Zeit",
+      text:"Entlang der Zeitachse auseinandergezogen, trennt sich, was sich in der Ebene kreuzte. Der Widerspruch wird zum Nacheinander." },
+    { title:"S/F-Band", role:"Begriffliche Explikation",
+      text:"Selbst- und Fremdreferenz sind zwei Seiten eines Bandes. Die Verwindung bringt abwechselnd die eine und die andere nach aussen." }
+  ];
+  var PHASE_START = [0.0, 0.23, 0.63];
+
+  // ---------- Geometrie-Parameter ----------
+  var DURATION = 34;                 // Sekunden pro Durchlauf
+  var TURNS = 5, SPT = 180, SEG = TURNS*SPT, TT = TURNS*Math.PI*2;
+  var RAD = 10, TUBE_R = 0.03;
+  var PITCH = 1.15, CZ = PITCH/(2*Math.PI);
+  var BAND_W = 0.6, TILE_LEN = 4*BAND_W;
+  var BAND_LEN = TURNS*Math.sqrt(Math.pow(2*Math.PI,2)+PITCH*PITCH);
+  var TILES = BAND_LEN/TILE_LEN;
+  var LA = 1.0, LB = 0.45, LK = 1.2, LOFF = -0.84;   // Limaçon mit Innenschleife
+
+  // ---------- Renderer ----------
+  var renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias:true });
+  } catch(e) {
+    var msg = document.createElement('div');
+    msg.className = 'nogl';
+    msg.textContent = 'Diese Animation braucht WebGL. Öffne die Seite in einem aktuellen Browser.';
+    stage.appendChild(msg);
+    return;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+  var canvas = renderer.domElement;
+  canvas.setAttribute('role','img');
+  canvas.setAttribute('aria-label','Animierte Figur: eine sich kreuzende Schleife, die sich zur Spirale und dann zum verwundenen Band entfaltet');
+  stage.insertBefore(canvas, stage.firstChild);
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(35, 1, 0.1, 200);
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x3a4a4a, 0.8));
+  var key = new THREE.DirectionalLight(0xffffff, 0.6); key.position.set(4,7,5); scene.add(key);
+  var rim = new THREE.DirectionalLight(0xffffff, 0.35); rim.position.set(-5,-3,-4); scene.add(rim);
+
+  // ---------- Kurve ----------
+  function curve(t, s, m, v){
+    var r = LB + LA*Math.cos(t);
+    var lx = LK*r*Math.cos(t) + LOFF, lz = LK*r*Math.sin(t);
+    var cx = Math.cos(t), cz = Math.sin(t);
+    return v.set(lx + (cx-lx)*m, s*CZ*(t - TT/2), lz + (cz-lz)*m);
+  }
+  var P = [];
+  for (var i=0;i<=SEG;i++) P.push(new THREE.Vector3());
+
+  // ---------- Röhre (Phasen 1 und 2) ----------
+  var tubePos = new Float32Array((SEG+1)*RAD*3);
+  var tubeNor = new Float32Array((SEG+1)*RAD*3);
+  var tubeIdx = [];
+  for (var a=0;a<SEG;a++) for (var j=0;j<RAD;j++){
+    var i0=a*RAD+j, i1=a*RAD+(j+1)%RAD, i2=(a+1)*RAD+j, i3=(a+1)*RAD+(j+1)%RAD;
+    tubeIdx.push(i0,i1,i2, i1,i3,i2);
+  }
+  var tubeGeo = new THREE.BufferGeometry();
+  tubeGeo.setAttribute('position', new THREE.BufferAttribute(tubePos,3));
+  tubeGeo.setAttribute('normal', new THREE.BufferAttribute(tubeNor,3));
+  tubeGeo.setIndex(tubeIdx);
+  var tubeMat = new THREE.MeshStandardMaterial({ roughness:0.45, metalness:0.05, transparent:true });
+  var tube = new THREE.Mesh(tubeGeo, tubeMat);
+  scene.add(tube);
+
+  var Tg=new THREE.Vector3(), Nv=new THREE.Vector3(), Bv=new THREE.Vector3(), Y=new THREE.Vector3(0,1,0);
+  function computeCurve(s,m){ for (var i=0;i<=SEG;i++) curve(i/SEG*TT, s, m, P[i]); }
+  function updateTube(){
+    for (var i=0;i<=SEG;i++){
+      var pa=P[Math.max(0,i-1)], pb=P[Math.min(SEG,i+1)];
+      Tg.subVectors(pb,pa).normalize();
+      Nv.crossVectors(Y,Tg); if (Nv.lengthSq()<1e-10) Nv.set(1,0,0); Nv.normalize();
+      Bv.crossVectors(Tg,Nv);
+      for (var j=0;j<RAD;j++){
+        var al=j/RAD*Math.PI*2, ca=Math.cos(al), sa=Math.sin(al);
+        var nx=ca*Nv.x+sa*Bv.x, ny=ca*Nv.y+sa*Bv.y, nz=ca*Nv.z+sa*Bv.z;
+        var k=(i*RAD+j)*3;
+        tubePos[k]=P[i].x+TUBE_R*nx; tubePos[k+1]=P[i].y+TUBE_R*ny; tubePos[k+2]=P[i].z+TUBE_R*nz;
+        tubeNor[k]=nx; tubeNor[k+1]=ny; tubeNor[k+2]=nz;
+      }
+    }
+    tubeGeo.attributes.position.needsUpdate=true;
+    tubeGeo.attributes.normal.needsUpdate=true;
+    tubeGeo.computeBoundingSphere();
+  }
+
+  // ---------- Band (Phase 3) ----------
+  var ribPos = new Float32Array((SEG+1)*2*3);
+  var ribUV = new Float32Array((SEG+1)*2*2);
+  var ribIdx = [];
+  for (var b=0;b<SEG;b++){ var q0=2*b, q1=2*b+1, q2=2*b+2, q3=2*b+3; ribIdx.push(q0,q1,q2, q1,q3,q2); }
+  for (var c=0;c<=SEG;c++){
+    var u = TILES*(1 - c/SEG);
+    ribUV[c*4]=u; ribUV[c*4+1]=0; ribUV[c*4+2]=u; ribUV[c*4+3]=1;
+  }
+  var ribGeo = new THREE.BufferGeometry();
+  ribGeo.setAttribute('position', new THREE.BufferAttribute(ribPos,3));
+  ribGeo.setAttribute('uv', new THREE.BufferAttribute(ribUV,2));
+  ribGeo.setIndex(ribIdx);
+  var ribFrontMat = new THREE.MeshStandardMaterial({ side:THREE.FrontSide, roughness:0.62, metalness:0.0 });
+  var ribBackMat  = new THREE.MeshStandardMaterial({ side:THREE.BackSide,  roughness:0.62, metalness:0.0 });
+  var ribFront = new THREE.Mesh(ribGeo, ribFrontMat);
+  var ribBack  = new THREE.Mesh(ribGeo, ribBackMat);
+  scene.add(ribFront); scene.add(ribBack);
+
+  function updateRibbon(w,k){
+    var h = w*BAND_W/2;
+    for (var i=0;i<=SEG;i++){
+      var t=i/SEG*TT, p=P[i];
+      var rx=p.x, rz=p.z, rl=Math.hypot(rx,rz)||1; rx/=rl; rz/=rl;
+      var ph = k*(t - TT/2)/2, cp=Math.cos(ph), sp=Math.sin(ph);
+      var dx=sp*rx, dy=cp, dz=sp*rz, o=i*6;
+      ribPos[o]=p.x-h*dx;   ribPos[o+1]=p.y-h*dy; ribPos[o+2]=p.z-h*dz;
+      ribPos[o+3]=p.x+h*dx; ribPos[o+4]=p.y+h*dy; ribPos[o+5]=p.z+h*dz;
+    }
+    ribGeo.attributes.position.needsUpdate=true;
+    ribGeo.computeVertexNormals();
+    ribGeo.computeBoundingSphere();
+  }
+
+  // ---------- Zeitachse, Ebene, Punkt ----------
+  var axisMat = new THREE.MeshBasicMaterial({ transparent:true, opacity:0 });
+  var axis = new THREE.Mesh(new THREE.CylinderGeometry(0.008,0.008,7.1,8), axisMat);
+  axis.position.y = 0.05; scene.add(axis);
+  var cone = new THREE.Mesh(new THREE.ConeGeometry(0.05,0.16,16), axisMat);
+  cone.position.y = 3.68; scene.add(cone);
+
+
+  var pointMat = new THREE.MeshBasicMaterial({ transparent:true });
+  var point = new THREE.Mesh(new THREE.SphereGeometry(0.07,20,14), pointMat);
+  var haloMat = new THREE.MeshBasicMaterial({ transparent:true, opacity:0.18, depthWrite:false });
+  var halo = new THREE.Mesh(new THREE.SphereGeometry(0.17,20,14), haloMat);
+  scene.add(point); scene.add(halo);
+
+  // ---------- Farben und Beschriftung der Bandseiten ----------
+  function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  function makeTex(letter, bg, mirror){
+    var cv=document.createElement('canvas'); cv.width=512; cv.height=128;
+    var x=cv.getContext('2d');
+    x.fillStyle=bg; x.fillRect(0,0,512,128);
+    x.save();
+    if (mirror){ x.translate(512,0); x.scale(-1,1); }
+    x.fillStyle='rgba(255,255,255,0.92)';
+    x.font='italic 400 96px Newsreader, Georgia, serif';
+    x.textAlign='center'; x.textBaseline='middle';
+    x.fillText(letter,256,68);
+    x.restore();
+    var t=new THREE.CanvasTexture(cv);
+    t.wrapS=THREE.RepeatWrapping;
+    t.anisotropy=Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    return t;
+  }
+  function applyTheme(){
+    var bg=css('--bg'), ink=css('--curve'), s=css('--s'), f=css('--f');
+    renderer.setClearColor(new THREE.Color(bg), 1);
+    tubeMat.color.set(ink); axisMat.color.set(ink);
+    pointMat.color.set(s); haloMat.color.set(s);
+    if (ribFrontMat.map) ribFrontMat.map.dispose();
+    if (ribBackMat.map) ribBackMat.map.dispose();
+    ribFrontMat.map = makeTex('S', s, false);
+    ribBackMat.map  = makeTex('F', f, true);
+    ribFrontMat.needsUpdate = true; ribBackMat.needsUpdate = true;
+  }
+  applyTheme();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(applyTheme);
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mq.addEventListener) mq.addEventListener('change', applyTheme);
+  }
+  new MutationObserver(applyTheme).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] });
+
+  // ---------- Zeitsteuerung ----------
+  function ease(x){ return x<=0?0:x>=1?1:x*x*(3-2*x); }
+  function seg(u,a,b){ return ease((u-a)/(b-a)); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function stateAt(u){
+    return {
+      draw: seg(u,0.00,0.10),
+      s:    seg(u,0.24,0.46),
+      m:    seg(u,0.40,0.56),
+      cam:  seg(u,0.22,0.46),
+      cam2: seg(u,0.62,0.80),
+      w:    seg(u,0.64,0.76),
+      fade: seg(u,0.66,0.76),
+      k:    seg(u,0.76,0.92)
+    };
+  }
+  function phaseAt(u){ return u < PHASE_START[1] ? 1 : (u < PHASE_START[2] ? 2 : 3); }
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var u = reduce ? 0.12 : 0, playing = !reduce, clock = 0, last = performance.now();
+  var yaw = 0, pitch = 0, zoom = 1, scrubbing = false;
+  var prev = { s:-1, m:-1, w:-1, k:-1 };
+
+  // ---------- Bedienung ----------
+  var playBtn = document.getElementById('play');
+  var scrub = document.getElementById('scrub');
+  var phBtns = Array.prototype.slice.call(document.querySelectorAll('.ph'));
+  var txtBtn = document.getElementById('txt');
+  var recBtn = document.getElementById('rec');
+  var cap = document.getElementById('cap');
+  var capNum = document.getElementById('capNum'), capTitle = document.getElementById('capTitle');
+  var capRole = document.getElementById('capRole'), capText = document.getElementById('capText');
+  var axisLabel = document.getElementById('axisLabel');
+
+  function setPlaying(v){ playing=v; playBtn.textContent = v ? 'Pause' : 'Abspielen'; }
+  setPlaying(playing);
+  playBtn.addEventListener('click', function(){ setPlaying(!playing); });
+  phBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){ u = PHASE_START[+btn.dataset.p - 1]; });
+  });
+  scrub.addEventListener('input', function(){ u = scrub.value/1000; });
+  scrub.addEventListener('pointerdown', function(){ scrubbing=true; });
+  window.addEventListener('pointerup', function(){ scrubbing=false; });
+  txtBtn.addEventListener('click', function(){
+    var on = txtBtn.getAttribute('aria-pressed') !== 'true';
+    txtBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    document.body.classList.toggle('notext', !on);
+    computeLayout();
+  });
+  function enterRec(){ document.body.classList.add('rec'); computeLayout(); }
+  function exitRec(){ document.body.classList.remove('rec'); computeLayout(); recBtn.focus(); }
+  recBtn.addEventListener('click', function(e){ e.stopPropagation(); enterRec(); });
+
+  var shownPhase = 0, capTimer = null;
+  function showPhase(p){
+    if (p === shownPhase) return;
+    var first = shownPhase === 0;
+    shownPhase = p;
+    phBtns.forEach(function(btn){ btn.setAttribute('aria-pressed', (+btn.dataset.p===p) ? 'true' : 'false'); });
+    var d = PHASES[p-1];
+    var swap = function(){
+      capNum.textContent = p; capTitle.textContent = d.title; capRole.textContent = d.role; capText.textContent = d.text;
+      cap.style.opacity = '';
+    };
+    if (first || reduce) { swap(); return; }
+    cap.style.opacity = '0';
+    clearTimeout(capTimer);
+    capTimer = setTimeout(swap, 360);
+  }
+
+  // Ziehen, Zoomen
+  var drag = null;
+  canvas.addEventListener('pointerdown', function(e){
+    if (document.body.classList.contains('rec')) { exitRec(); return; }
+    drag = { x:e.clientX, y:e.clientY };
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', function(e){
+    if (!drag) return;
+    yaw -= (e.clientX - drag.x)*0.006;
+    pitch = Math.max(-1.1, Math.min(1.1, pitch + (e.clientY - drag.y)*0.004));
+    drag.x = e.clientX; drag.y = e.clientY;
+  });
+  canvas.addEventListener('pointerup', function(){ drag = null; });
+  canvas.addEventListener('pointercancel', function(){ drag = null; });
+  canvas.addEventListener('dblclick', function(){ yaw=0; pitch=0; zoom=1; });
+  canvas.addEventListener('wheel', function(e){
+    e.preventDefault();
+    zoom = Math.max(0.5, Math.min(2.2, zoom*Math.exp(e.deltaY*0.001)));
+  }, { passive:false });
+
+  window.addEventListener('keydown', function(e){
+    if (e.target && e.target.tagName === 'INPUT' && e.key !== 'Escape') return;
+    if (e.key === ' ') { e.preventDefault(); setPlaying(!playing); }
+    else if (e.key === '1' || e.key === '2' || e.key === '3') { u = PHASE_START[+e.key - 1]; }
+    else if (e.key === 'Escape') { if (document.body.classList.contains('rec')) exitRec(); }
+    else if (e.key === 'h' || e.key === 'H') { document.body.classList.contains('rec') ? exitRec() : enterRec(); }
+    else if (e.key === 't' || e.key === 'T') { txtBtn.click(); }
+  });
+
+  // ---------- Grösse ----------
+  // Die Figur wird in den freien Bereich zwischen Titel, Text und Bedienung eingepasst.
+  var headEl = document.querySelector('.head'), ctrlEl = document.querySelector('.controls');
+  var capMaxH = 0, lay = { availH:1, W:1, Hv:1 };
+  function measureCaption(){
+    var keep = [capNum.textContent, capTitle.textContent, capRole.textContent, capText.textContent];
+    var mx = 0;
+    PHASES.forEach(function(d,i){
+      capNum.textContent=i+1; capTitle.textContent=d.title; capRole.textContent=d.role; capText.textContent=d.text;
+      mx = Math.max(mx, cap.offsetHeight);
+    });
+    capNum.textContent=keep[0]; capTitle.textContent=keep[1]; capRole.textContent=keep[2]; capText.textContent=keep[3];
+    capMaxH = mx;
+  }
+  function computeLayout(){
+    var W = stage.clientWidth, H = Math.max(1, stage.clientHeight), sr = stage.getBoundingClientRect();
+    var rec = document.body.classList.contains('rec'), notext = document.body.classList.contains('notext');
+    var top = rec ? 30 : headEl.getBoundingClientRect().bottom - sr.top + 28;
+    var bottom = rec ? H - 12 : ctrlEl.getBoundingClientRect().top - sr.top - 10;
+    if (W <= 680 && !notext){
+      var capBottom = H - (parseFloat(getComputedStyle(cap).bottom) || 0);
+      bottom = Math.min(bottom, capBottom - capMaxH - 10);
+    }
+    var availH = Math.max(80, bottom - top), cy = (top + bottom)/2;
+    var Hv = H + 2*Math.abs(H/2 - cy);
+    var offY = cy < H/2 ? (H - 2*cy) : 0;
+    camera.aspect = W/Hv;
+    camera.setViewOffset(W, Hv, 0, offY, W, H);
+    camera.updateProjectionMatrix();
+    lay.availH = availH; lay.W = W; lay.Hv = Hv;
+  }
+  function resize(){
+    renderer.setSize(stage.clientWidth, stage.clientHeight, false);
+    measureCaption();
+    computeLayout();
+  }
+  window.addEventListener('resize', resize);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
+  resize();
+
+  function fitDist(wNeed, hNeed){
+    var t = 2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
+    return Math.max(hNeed/lay.availH, wNeed/(lay.W*0.9)) * lay.Hv / t;
+  }
+
+  // ---------- Schleife ----------
+  var tmpV = new THREE.Vector3(), topV = new THREE.Vector3();
+  function frame(now){
+    var dt = Math.min(0.05, (now-last)/1000); last = now;
+    if (playing){ u += dt/DURATION; if (u >= 1) u -= 1; clock += dt; }
+    var st = stateAt(u);
+
+    if (st.s !== prev.s || st.m !== prev.m){
+      computeCurve(st.s, st.m);
+      updateTube();
+      prev.w = -1;
+    }
+    if (st.w > 0.001 && (st.w !== prev.w || st.k !== prev.k)){
+      updateRibbon(st.w, st.k);
+    }
+    prev.s = st.s; prev.m = st.m; prev.w = st.w; prev.k = st.k;
+
+    // Röhre: Zeichnen und Ausblenden
+    var visSeg = st.draw < 1 ? Math.max(1, Math.floor(st.draw*SPT)) : SEG;
+    tubeGeo.setDrawRange(0, visSeg*RAD*6);
+    tubeMat.opacity = 1 - st.fade;
+    tube.visible = tubeMat.opacity > 0.01;
+    ribFront.visible = ribBack.visible = st.w > 0.001;
+
+    // Punkt
+    var tp;
+    if (st.draw < 1) tp = st.draw*Math.PI*2;
+    else tp = (clock*0.42*Math.PI*2) % TT;
+    curve(tp, st.s, st.m, tmpV);
+    point.position.copy(tmpV); halo.position.copy(tmpV);
+    var pa = 1 - st.w;
+    pointMat.opacity = pa; haloMat.opacity = 0.18*pa;
+    point.visible = halo.visible = pa > 0.01;
+
+    // Achse und Ebene
+    axisMat.opacity = 0.5*st.s*(1 - 0.5*st.cam2);
+    axis.visible = cone.visible = axisMat.opacity > 0.01;
+
+    // Kamera
+    var elevDeg = lerp(lerp(84, 16, st.cam), 26, st.cam2);
+    var elev = Math.max(-1.45, Math.min(1.49, elevDeg*Math.PI/180 + pitch));
+    var az = 0.5 + u*2.4 + yaw;
+    var dist = lerp(fitDist(2.7, 2.7), fitDist(3.3, 7.4), st.cam)*zoom;
+    camera.position.set(dist*Math.cos(elev)*Math.sin(az), dist*Math.sin(elev), dist*Math.cos(elev)*Math.cos(az));
+    camera.lookAt(0, 0, 0);
+
+    // Beschriftung der Zeitachse
+    topV.set(0, 3.72, 0).project(camera);
+    var W = stage.clientWidth, H = stage.clientHeight;
+    axisLabel.style.transform = 'translate(' + ((topV.x*0.5+0.5)*W + 10) + 'px,' + ((-topV.y*0.5+0.5)*H - 12) + 'px)';
+    axisLabel.style.opacity = (st.s*(1-st.cam2*0.6)).toFixed(3);
+
+    showPhase(phaseAt(u));
+    if (!scrubbing) scrub.value = Math.round(u*1000);
+
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
