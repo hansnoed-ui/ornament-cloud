@@ -1,0 +1,30 @@
+{
+  "artists": 20,
+  "theorists": 20,
+  "records": 99,
+  "uniquePersonPairs": 99,
+  "duplicatePersonPairs": [],
+  "resolvedReplacements": [
+    {
+      "editorialNumber": 24,
+      "pair": "Roman Opalka × Lucy Suchman"
+    },
+    {
+      "editorialNumber": 42,
+      "pair": "Marina Abramović × Henri Bergson"
+    },
+    {
+      "editorialNumber": 46,
+      "pair": "Mona Hatoum × N. Katherine Hayles"
+    },
+    {
+      "editorialNumber": 63,
+      "pair": "Sol LeWitt × Judith Butler"
+    },
+    {
+      "editorialNumber": 78,
+      "pair": "Robert Smithson × Michel Foucault"
+    }
+  ],
+  "sourceCleanup": "Removed citation/export debris from website copy; retained corpus prose/questions, with five curator-approved replacement constellations to resolve duplicate person-pairs."
+}

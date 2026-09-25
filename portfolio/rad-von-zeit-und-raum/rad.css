@@ -1,0 +1,236 @@
+/* Das Rad von Zeit und Raum – nur für diese Seite.
+   Farben, Schriften und Abstände kommen aus ../../styles.css (Variablen). */
+
+/* ---------- Bühne: weisse Fläche, Rad im Zentrum, Ergebnis daneben/darunter ---------- */
+.rad-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 36px;
+  align-items: center;
+  padding: 40px;
+}
+
+.rad-wheel-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.rad-wheel {
+  display: block;
+  width: min(100%, 620px);
+  aspect-ratio: 1 / 1;
+  color: var(--text);
+  touch-action: none;             /* die Geste gehört dem Rad */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: grab;
+  border-radius: 50%;
+  outline: none;
+}
+
+.rad-wheel.is-dragging { cursor: grabbing; }
+.rad-wheel[data-state="spinning"],
+.rad-wheel[data-state="settling"] { cursor: default; }
+
+.rad-wheel:focus-visible {
+  outline: 1px solid var(--text);
+  outline-offset: 6px;
+}
+
+/* Linien: Breite in Bildschirmpixeln, unabhängig von der Grösse des Rads */
+.rad-wheel path,
+.rad-wheel circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.rad-guide { stroke-width: 0.6; stroke-dasharray: 2 5; opacity: 0.35; }
+.rad-hair { stroke-width: 0.6; opacity: 0.18; }
+.rad-cross { stroke-width: 1; opacity: 0.7; }
+.rad-wheel .rad-dot { fill: currentColor; stroke: none; }
+
+.rad-edge { stroke-width: 1.4; }
+.rad-edge--thin { stroke-width: 0.8; opacity: 0.6; }
+.rad-fine { stroke-width: 0.6; opacity: 0.4; }
+.rad-bound { stroke-width: 0.9; opacity: 0.75; }
+
+.rad-axis-line { stroke-width: 0.7; opacity: 0.22; }
+.rad-axis-notch { stroke-width: 1.4; }
+.rad-wheel .rad-axis-mark { fill: currentColor; stroke: none; }
+
+/* Zeichen */
+.rad-wheel .sym { transition: opacity 0.6s ease; }
+.rad-wheel .sym-line { stroke-width: 1.3; }
+.rad-wheel .sym-ghost { opacity: 0.45; }
+.rad-wheel .sym-over { stroke-width: 0.9; }
+.rad-wheel .sym-dot { fill: currentColor; stroke: none; }
+
+/* nach dem Stillstand treten die übrigen Zeichen leicht zurück */
+.rad-wheel.is-selected .sym { opacity: 0.28; }
+.rad-wheel.is-selected .sym.is-hit { opacity: 1; }
+.rad-wheel.is-selected .sym.is-hit .sym-line { stroke-width: 1.8; }
+
+/* Spur früherer Begegnungen */
+.rad-wheel .rad-trace { fill: currentColor; stroke: none; }
+
+/* Hinweis in der leeren Mitte, nur vor der ersten Berührung */
+.rad-cue {
+  font-family: var(--font);
+  font-size: 22px;
+  letter-spacing: 0.3em;
+  fill: var(--muted);
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.rad-wheel.is-touched .rad-cue { opacity: 0; }
+
+/* ---------- Ergebnis ---------- */
+.rad-result {
+  max-width: 680px;
+  margin: 0 auto;
+  min-height: 1px;
+}
+
+.rad-result > * {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: opacity 0.9s ease, transform 0.9s ease, visibility 0s linear 0.9s;
+}
+
+.rad-result > .is-shown {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.9s ease, transform 0.9s ease, visibility 0s;
+}
+
+.rad-result:not(.is-active) > * {
+  transition-duration: 0.2s, 0.2s, 0s;
+  transition-delay: 0s, 0s, 0.2s;
+}
+
+.rad-names {
+  margin: 0 0 20px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.7rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.rad-artist,
+.rad-theorist {
+  display: inline-block;          /* Namen bleiben zusammen */
+}
+
+.rad-x {
+  padding: 0 0.15em;
+  color: var(--muted);
+}
+
+.rad-text {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.rad-question {
+  margin: 2.2em 0 0;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.rad-again {
+  margin-top: 2.4em;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+
+.rad-again:hover,
+.rad-again:focus-visible { color: var(--text); }
+
+/* ---------- Einführung ---------- */
+.rad-about {
+  max-width: 720px;
+  margin: 56px 0 0;
+}
+
+.rad-about p { margin: 0 0 14px; line-height: 1.7; }
+
+.rad-about h2 {
+  margin: 40px 0 14px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.6rem;
+}
+
+.rad-statement {
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  line-height: 1.55;
+}
+
+.rad-more summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+  list-style: none;
+  margin: 4px 0 16px;
+}
+.rad-more summary::-webkit-details-marker { display: none; }
+.rad-more summary::after { content: " ↓"; }
+.rad-more[open] summary::after { content: " ↑"; }
+
+/* ---------- Diagnose (nur ?debug) ---------- */
+.rad-debug {
+  margin: 20px 0;
+  padding: 16px;
+  border: 1px dashed var(--muted);
+  font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.rad-debug pre { margin: 0 0 10px; white-space: pre-wrap; }
+.rad-debug button, .rad-debug select { font: inherit; margin: 0 6px 6px 0; }
+
+/* ---------- Breite Bildschirme: Rad links, Ergebnis rechts ---------- */
+@media (min-width: 980px) {
+  .rad-stage {
+    grid-template-columns: minmax(0, 11fr) minmax(0, 9fr);
+    gap: 56px;
+    padding: 48px;
+  }
+  .rad-result { margin: 0; }
+}
+
+/* ---------- Smartphone: Rad zuerst, möglichst breit, Ergebnis darunter ---------- */
+@media (max-width: 640px) {
+  .rad-stage {
+    margin: 0 -20px;
+    padding: 20px 10px 32px;
+    gap: 28px;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+  }
+  .rad-result { padding: 0 10px; }
+  .rad-names { font-size: 1.35rem; }
+  .rad-question { font-size: 1.15rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rad-result > *, .rad-wheel .sym, .rad-cue { transition: none; }
+}

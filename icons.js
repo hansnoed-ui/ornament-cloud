@@ -535,7 +535,7 @@
       }
       el('path', { d: d, 'class': 'thin', opacity: 0.55 }, g);
       el('path', { d: m, 'class': 'mid' }, g);
-      for (var k = 0; k < sectors; k++) {                  // künftige Plätze: kleine Marken zwischen den Teilstrichen
+      for (var k = 0; k < sectors; k++) {                  // Plätze: kleine Marken zwischen den Teilstrichen
         var b = (k + 0.5) / sectors * TAU;
         el('circle', { cx: f(C + Math.cos(b) * (r - marks)), cy: f(C + Math.sin(b) * (r - marks)), r: k === 0 ? 2.4 : 1.6, 'class': k === 0 ? 'fill' : 'mid' }, g);
       }
@@ -544,8 +544,8 @@
     // feine Hilfskreise und Achsen (stehen still)
     el('path', { d: 'M' + (C - 96) + ',' + C + 'H' + (C + 96) + 'M' + C + ',' + (C - 96) + 'V' + (C + 96), 'class': 'thin', opacity: 0.25 }, svg);
     el('path', { d: 'M' + (C - 68) + ',' + C + 'a68,68 0 1,0 136,0a68,68 0 1,0 -136,0', 'class': 'thin dash', opacity: 0.35 }, svg);
-    var outer = ring(RO, 12, 72, 15, 'bold');
-    var inner = ring(RI, 8, 48, 13, 'mid');
+    var outer = ring(RO, 20, 100, 15, 'bold');   // 20 Künstler
+    var inner = ring(RI, 20, 60, 13, 'mid');     // 20 Theoretiker
     el('path', { d: 'M' + (C - 5) + ',' + C + 'H' + (C + 5) + 'M' + C + ',' + (C - 5) + 'V' + (C + 5), 'class': 'mid' }, svg);
     el('circle', { cx: C, cy: C, r: 1.6, 'class': 'fill' }, svg);
     // feststehender Zeiger: hier wird jeweils eine Begegnung abgelesen
