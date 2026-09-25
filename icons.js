@@ -11,6 +11,7 @@
     prozess   Schleife über einer Zeitlinie, 18 Schritte (News-Eintrag)
     inklusion Kreis öffnet sich, verschiedene Formen finden hinein (Termine-Eintrag)
     turm      Turm, Werke in drei Konstellationen, Eingriff, 155 Tage (Termine-Eintrag)
+    rad       Doppelrad, zwei gegenläufige Ringe (Portfolio: Das Rad von Zeit und Raum)
 
   Es werden nur Symbole animiert, die gerade sichtbar sind.
   Bei prefers-reduced-motion erscheint ein ruhendes Bild.
@@ -19,7 +20,7 @@
 (function () {
   'use strict';
 
-  var PERIOD = { reentry: 24, zeit: 15, stellen: 12, wave: 60, prozess: 26.4, inklusion: 22, turm: 24 };   // Sekunden pro Durchlauf
+  var PERIOD = { reentry: 24, zeit: 15, stellen: 12, wave: 60, prozess: 26.4, inklusion: 22, turm: 24, rad: 240 };   // Sekunden pro Durchlauf
   var FPS = 30;
 
   var NS = 'http://www.w3.org/2000/svg';
@@ -517,6 +518,46 @@
     };
   }
 
+  // ---------- Portfolio: Das Rad von Zeit und Raum (Vorschau) ----------
+  // Zwei konzentrische Ringe, der äussere dreht langsam im Uhrzeigersinn, der
+  // innere gegenläufig. Feststehender Zeiger oben als Ablesemarke, Fadenkreuz
+  // in der Mitte. Die Drehung ist stetig, der Loop daher ohne Sprung.
+  function rad(svg) {
+    var C = 100, RO = 84, RI = 54, OUTER_T = 120, INNER_T = 80;   // Sekunden pro Umdrehung
+    function ring(r, sectors, ticks, marks, cls) {
+      var g = el('g', {}, svg), d = '', m = '';
+      el('path', { d: 'M' + (C - r) + ',' + C + 'a' + r + ',' + r + ' 0 1,0 ' + 2 * r + ',0a' + r + ',' + r + ' 0 1,0 ' + -2 * r + ',0', 'class': cls }, g);
+      for (var i = 0; i < ticks; i++) {                  // Skala
+        var a = i / ticks * TAU, long = i % (ticks / sectors) === 0, l = long ? 9 : 3.5;
+        var c = Math.cos(a), s = Math.sin(a);
+        (long ? function () { m += 'M' + f(C + c * (r - l)) + ',' + f(C + s * (r - l)) + 'L' + f(C + c * r) + ',' + f(C + s * r); }
+              : function () { d += 'M' + f(C + c * (r - l)) + ',' + f(C + s * (r - l)) + 'L' + f(C + c * r) + ',' + f(C + s * r); })();
+      }
+      el('path', { d: d, 'class': 'thin', opacity: 0.55 }, g);
+      el('path', { d: m, 'class': 'mid' }, g);
+      for (var k = 0; k < sectors; k++) {                  // künftige Plätze: kleine Marken zwischen den Teilstrichen
+        var b = (k + 0.5) / sectors * TAU;
+        el('circle', { cx: f(C + Math.cos(b) * (r - marks)), cy: f(C + Math.sin(b) * (r - marks)), r: k === 0 ? 2.4 : 1.6, 'class': k === 0 ? 'fill' : 'mid' }, g);
+      }
+      return g;
+    }
+    // feine Hilfskreise und Achsen (stehen still)
+    el('path', { d: 'M' + (C - 96) + ',' + C + 'H' + (C + 96) + 'M' + C + ',' + (C - 96) + 'V' + (C + 96), 'class': 'thin', opacity: 0.25 }, svg);
+    el('path', { d: 'M' + (C - 68) + ',' + C + 'a68,68 0 1,0 136,0a68,68 0 1,0 -136,0', 'class': 'thin dash', opacity: 0.35 }, svg);
+    var outer = ring(RO, 12, 72, 15, 'bold');
+    var inner = ring(RI, 8, 48, 13, 'mid');
+    el('path', { d: 'M' + (C - 5) + ',' + C + 'H' + (C + 5) + 'M' + C + ',' + (C - 5) + 'V' + (C + 5), 'class': 'mid' }, svg);
+    el('circle', { cx: C, cy: C, r: 1.6, 'class': 'fill' }, svg);
+    // feststehender Zeiger: hier wird jeweils eine Begegnung abgelesen
+    el('path', { d: 'M' + C + ',' + (C - RO - 11) + 'l-4,-7h8Z', 'class': 'fill' }, svg);
+    el('path', { d: 'M' + C + ',' + (C - RO - 3) + 'V' + (C - RI + 10), 'class': 'thin', opacity: 0.6 }, svg);
+
+    return function (u, t) {
+      outer.setAttribute('transform', 'rotate(' + f(360 * t / OUTER_T) + ' ' + C + ' ' + C + ')');
+      inner.setAttribute('transform', 'rotate(' + f(-360 * t / INNER_T) + ' ' + C + ' ' + C + ')');
+    };
+  }
+
   // ---------- Trennlinie unter dem Header: feine, rhythmisch wogende Welle ----------
   function wave(svg) {
     var H = 32, path = el('path', { 'class': 'wave' }, svg);
@@ -538,8 +579,8 @@
   }
 
   // ---------- Ablauf ----------
-  var FACTORY = { reentry: reentry, zeit: zeit, stellen: stellen, wave: wave, prozess: prozess, inklusion: inklusion, turm: turm };
-  var STILL = { reentry: 0.7, zeit: 0.45, stellen: 0.78, wave: 0, prozess: 0.95, inklusion: 0.85, turm: 0.7 };   // Standbild bei reduzierter Bewegung
+  var FACTORY = { reentry: reentry, zeit: zeit, stellen: stellen, wave: wave, prozess: prozess, inklusion: inklusion, turm: turm, rad: rad };
+  var STILL = { reentry: 0.7, zeit: 0.45, stellen: 0.78, wave: 0, prozess: 0.95, inklusion: 0.85, turm: 0.7, rad: 0.05 };   // Standbild bei reduzierter Bewegung
   var icons = [];
 
   Array.prototype.forEach.call(document.querySelectorAll('svg[data-icon]'), function (svg) {

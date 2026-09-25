@@ -349,7 +349,7 @@ h1 {
 
 .menu-item:hover .menu-icon,
 .menu-item:focus-visible .menu-icon,
-.menu-item[aria-current="page"] .menu-icon {
+.menu-item[aria-current] .menu-icon {
   border-color: var(--text);
 }
 
@@ -694,5 +694,85 @@ h1 {
     background: var(--text);
     transform: rotate(45deg) scale(1.25);
   }
+}
+
+/* Karten mit gezeichneter Vorschau (SVG statt Video) */
+.card--svg .thumb {
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.card--svg .thumb .post-anim {
+  width: 78%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  color: var(--text);
+}
+
+.card-date {
+  margin-bottom: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* Werkseite */
+.work-kicker a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.work-kicker a:hover {
+  text-decoration: underline;
+}
+
+.work {
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  gap: 40px;
+  align-items: center;
+  padding: 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.work-figure {
+  margin: 0;
+}
+
+.work-anim {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  color: var(--text);
+}
+
+.work-figure figcaption {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.work-text p {
+  margin: 0 0 14px;
+  font-size: 1.05rem;
+}
+
+.work-text .post-source {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+@media (max-width: 760px) {
+  .work { grid-template-columns: 1fr; gap: 24px; padding: 20px; }
 }
 
