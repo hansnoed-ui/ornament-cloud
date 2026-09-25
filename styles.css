@@ -320,8 +320,8 @@ h1 {
   color: var(--surface);
 }
 
-.menu-item:hover .menu-icon rect.bold,
-.menu-item:focus-visible .menu-icon rect.bold {
+.menu-item:hover .menu-icon .werk,
+.menu-item:focus-visible .menu-icon .werk {
   fill: var(--text);
 }
 
@@ -372,7 +372,7 @@ h1 {
 .menu-icon .dash { stroke-dasharray: 2 3; }
 .menu-icon .fill { fill: currentColor; stroke: none; }
 .menu-icon .hatch { fill: currentColor; fill-opacity: 0.12; stroke: none; }
-.menu-icon rect.bold { fill: var(--surface); }
+.menu-icon .werk { fill: var(--surface); stroke-width: 1.6; }
 
 /* Schmale Bildschirme: Name oben, darunter drei gleich breite Spalten */
 @media (max-width: 760px) {

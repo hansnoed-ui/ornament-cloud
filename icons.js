@@ -6,7 +6,7 @@
 
     reentry   Schleife -> Helix -> verwundenes Band          (News)
     zeit      Kreise -> Kalenderraster -> Messlinie, ohne Schrift (Termine)
-    stellen   Raster, Objekte, Drift, Werk, Atmosphäre      (Installationen)
+    stellen   Raster, Objekte, Drift, Werk, Atmosphäre, mit Kamerafahrt (Portfolio)
 
   Es werden nur Symbole animiert, die gerade sichtbar sind.
   Bei prefers-reduced-motion erscheint ein ruhendes Bild.
@@ -174,67 +174,127 @@
     };
   }
 
-  // ---------- 3  Stellenfeld ----------
+  // ---------- 3  Stellenfeld, mit der Kamerafahrt des Artefakts ----------
   function stellen(svg) {
-    var plane = el('g', { transform: 'translate(100,106) scale(1,0.56) rotate(45)' }, svg);
-    var N = 3, STEP = 20, LIM = (N + 0.5) * STEP;    // 7 x 7 Stellen
-    // Raster auf die Fläche beschneiden, damit beim Weiterziehen nichts übersteht
-    var defs = el('defs', {}, svg), clip = el('clipPath', { id: 'stellen-clip' }, defs);
-    el('rect', { x: -N * STEP - 4, y: -N * STEP - 4, width: 2 * N * STEP + 8, height: 2 * N * STEP + 8 }, clip);
-    var field = el('g', { 'clip-path': 'url(#stellen-clip)' }, plane);
-    var gridLines = el('path', { 'class': 'thin' }, field);
-    var dots = el('g', {}, field), dotEls = [];
-    for (var i = -N; i <= N; i++) for (var j = -N; j <= N; j++) dotEls.push({ i: i, j: j, e: el('circle', { r: 1.8, 'class': 'fill' }, dots) });
+    var N = 3, HALF = N + 0.5, W = 2 * N + 1;        // 7 x 7 Stellen im Abstand 1
+    var vLines = [], hLines = [], dotEls = [];
+    for (var k = -N; k <= N; k++) {
+      vLines.push(el('path', { 'class': 'thin' }, svg));
+      hLines.push(el('path', { 'class': 'thin' }, svg));
+    }
+    for (var i = -N; i <= N; i++) for (var j = -N; j <= N; j++) dotEls.push({ i: i, j: j, e: el('circle', { 'class': 'fill' }, svg) });
     var M = 7, objs = [];
     for (var m = 0; m < M; m++) {
       var ia = Math.round((hash(m * 3.1) * 2 - 1) * 2), ja = Math.round((hash(m * 7.7 + 5) * 2 - 1) * 2);
       var ib = Math.max(-N, Math.min(N, ia + Math.round((hash(m * 13.3 + 2) * 2 - 1) * 2)));
       var jb = Math.max(-N, Math.min(N, ja + Math.round((hash(m * 17.9 + 9) * 2 - 1) * 2)));
-      objs.push({ ia: ia, ja: ja, ib: ib, jb: jb, h: hash(m + 0.5), e: el('rect', { width: 8, height: 8, 'class': m ? 'fill' : 'bold' }, plane) });
+      objs.push({ ia: ia, ja: ja, ib: ib, jb: jb, h: hash(m + 0.5), e: el('path', { 'class': m ? 'fill' : 'werk' }, svg) });
     }
-    var rings = [el('circle', { 'class': 'thin' }, plane), el('circle', { 'class': 'thin' }, plane), el('circle', { 'class': 'mid' }, plane)];
+    var rings = [el('path', { 'class': 'thin' }, svg), el('path', { 'class': 'thin' }, svg), el('path', { 'class': 'mid' }, svg)];
 
-    function wrap(x) { while (x > LIM) x -= 2 * LIM + STEP; while (x < -LIM) x += 2 * LIM + STEP; return x; }
+    // Kamera-Schlüsselbilder aus dem Artefakt: Zeitpunkt, Zug zum Werk, Azimut, Radius, Höhe, Blickwinkel
+    var KF = [
+      [0.00, 0.00, 0.40, 11.5, 1.5, 46],
+      [0.18, 0.00, 1.15, 10.5, 4.2, 42],
+      [0.42, 0.00, 2.15, 10.0, 8.5, 44],
+      [0.60, 0.15, 3.10, 12.0, 2.4, 40],
+      [0.80, 0.95, 4.60,  5.6, 2.1, 38],
+      [0.92, 0.45, 5.60, 11.5, 4.5, 50]
+    ];
+    function kf(i) {
+      var n = KF.length, sh = Math.floor(i / n), b = KF[((i % n) + n) % n].slice();
+      b[0] += sh; b[2] += TAU * sh;
+      return b;
+    }
+    function camAt(t) {                              // weiche, geschlossene Kurve durch die Schlüsselbilder
+      var k = 0; while (k < KF.length - 1 && t >= KF[k + 1][0]) k++;
+      var p0 = kf(k - 1), p1 = kf(k), p2 = kf(k + 1), p3 = kf(k + 2);
+      var h = p2[0] - p1[0], s = (t - p1[0]) / h, s2 = s * s, s3 = s2 * s, out = [t];
+      for (var c = 1; c < 6; c++) {
+        var m1 = (p2[c] - p0[c]) / (p2[0] - p0[0]), m2 = (p3[c] - p1[c]) / (p3[0] - p1[0]);
+        out.push((2 * s3 - 3 * s2 + 1) * p1[c] + (s3 - 2 * s2 + s) * h * m1 + (-2 * s3 + 3 * s2) * p2[c] + (s3 - s2) * h * m2);
+      }
+      return out;
+    }
+    function wrap(x) { while (x >= HALF) x -= W; while (x < -HALF) x += W; return x; }
+    function edge(x) { return Math.max(0, Math.min(1, (HALF - Math.abs(x)) / 0.6)); }
 
     return function (u) {
-      var show = seg(u, 0, 0.1) * (1 - seg(u, 0.94, 1));
-      var drift = 2 * STEP * seg(u, 0.5, 0.7);
-
-      // Stellen und Linien, das Raster wandert in der Zeit-Phase weiter
-      var d = '';
-      for (var k = -N; k <= N; k++) {
-        var x = wrap(k * STEP + drift);
-        d += 'M' + f(x) + ',' + f(-N * STEP) + 'V' + f(N * STEP);
-        d += 'M' + f(-N * STEP) + ',' + f(k * STEP) + 'H' + f(N * STEP);
-      }
-      gridLines.setAttribute('d', d);
-      gridLines.setAttribute('opacity', (0.35 * show).toFixed(3));
-      dotEls.forEach(function (o) {
-        o.e.setAttribute('cx', f(wrap(o.i * STEP + drift))); o.e.setAttribute('cy', f(o.j * STEP));
-      });
-      dots.setAttribute('opacity', show.toFixed(3));
+      var show = seg(u, 0, 0.08) * (1 - seg(u, 0.95, 1));
+      var drift = 2 * seg(u, 0.5, 0.7);
 
       // Objekte: erscheinen, wechseln ihre Stellen, verschwinden bis auf das Werk
-      var werk = null;
-      objs.forEach(function (o, m) {
-        var b = seg(u, 0.17 + 0.08 * o.h, 0.25 + 0.08 * o.h);
+      var state = objs.map(function (o, m) {
+        var b = seg(u, 0.1 + 0.08 * o.h, 0.18 + 0.08 * o.h);
         var mv = seg(u, 0.33 + 0.08 * o.h, 0.43 + 0.08 * o.h);
-        var x = lerp(o.ia, o.ib, mv) * STEP, y = lerp(o.ja, o.jb, mv) * STEP;
-        var size = 8;
+        var size = 0.36;
         if (m) b *= 1 - seg(u, 0.52 + 0.1 * o.h, 0.62 + 0.1 * o.h);
-        else { size = lerp(8, 13, seg(u, 0.7, 0.8)); werk = [x, y]; b *= 1 - seg(u, 0.93, 0.99); }
-        o.e.setAttribute('x', f(x - size / 2)); o.e.setAttribute('y', f(y - size / 2));
-        o.e.setAttribute('width', f(size)); o.e.setAttribute('height', f(size));
-        o.e.setAttribute('opacity', b.toFixed(3));
+        else { size = lerp(0.36, 0.62, seg(u, 0.7, 0.8)); b *= 1 - seg(u, 0.94, 0.99); }
+        return { x: lerp(o.ia, o.ib, mv), z: lerp(o.ja, o.jb, mv), b: b, size: size };
+      });
+      var werk = state[0];
+
+      // Kamera
+      var cp = camAt(u), tw = cp[1], az = cp[2], rad = cp[3], hgt = cp[4], fov = cp[5] * Math.PI / 180;
+      var T = [werk.x * tw, 0.25 + 0.3 * tw, werk.z * tw];
+      var C = [T[0] + rad * Math.cos(az), T[1] + hgt, T[2] + rad * Math.sin(az)];
+      var fx = T[0] - C[0], fy = T[1] - C[1], fz = T[2] - C[2], fl = Math.hypot(fx, fy, fz);
+      fx /= fl; fy /= fl; fz /= fl;
+      var rx = -fz, rz = fx, rl = Math.hypot(rx, rz); rx /= rl; rz /= rl;      // rechts = f x oben
+      var ux = -rz * fy, uy = rz * fx - rx * fz, uz = rx * fy;                    // oben = rechts x f
+      var F = 130 / Math.tan(fov / 2), roll = 0.05 * Math.sin(TAU * 2 * u + 0.4);
+      var cr = Math.cos(roll), sr = Math.sin(roll);
+      function proj(x, y, z) {
+        var dx = x - C[0], dy = y - C[1], dz = z - C[2];
+        var d = dx * fx + dy * fy + dz * fz;
+        if (d < 0.3) return null;
+        var sx = (dx * rx + dz * rz) / d * F, sy = -(dx * ux + dy * uy + dz * uz) / d * F;
+        return [100 + sx * cr - sy * sr, 100 + sx * sr + sy * cr, d];
+      }
+      function seg3(a, b) {
+        var p = proj(a[0], a[1], a[2]), q = proj(b[0], b[1], b[2]);
+        return p && q ? 'M' + f(p[0]) + ',' + f(p[1]) + 'L' + f(q[0]) + ',' + f(q[1]) : '';
+      }
+      function poly(pts) {
+        var d = '';
+        for (var n = 0; n < pts.length; n++) {
+          var p = proj(pts[n][0], pts[n][1], pts[n][2]);
+          if (!p) return '';
+          d += (n ? 'L' : 'M') + f(p[0]) + ',' + f(p[1]);
+        }
+        return d + 'Z';
+      }
+
+      // Raster: Linien und Stellen, das Raster zieht in der Zeit-Phase weiter
+      for (var k = 0; k < W; k++) {
+        var x = wrap(k - N + drift), z = k - N;
+        vLines[k].setAttribute('d', seg3([x, 0, -N], [x, 0, N]));
+        vLines[k].setAttribute('opacity', (0.45 * show * edge(x)).toFixed(3));
+        hLines[k].setAttribute('d', seg3([-N, 0, z], [N, 0, z]));
+        hLines[k].setAttribute('opacity', (0.45 * show).toFixed(3));
+      }
+      dotEls.forEach(function (o) {
+        var x = wrap(o.i + drift), p = proj(x, 0, o.j);
+        if (!p) { o.e.setAttribute('opacity', 0); return; }
+        o.e.setAttribute('cx', f(p[0])); o.e.setAttribute('cy', f(p[1]));
+        o.e.setAttribute('r', Math.max(0.7, Math.min(3.5, 0.06 * F / p[2])).toFixed(2));
+        o.e.setAttribute('opacity', (show * edge(x)).toFixed(3));
       });
 
-      // Werk: Pulse, dann Atmosphäre als weite Ringe
+      // Objekte als Quadrate in der Ebene
+      state.forEach(function (s, m) {
+        var h = s.size / 2;
+        objs[m].e.setAttribute('d', s.b > 0.01 ? poly([[s.x - h, 0.02, s.z - h], [s.x + h, 0.02, s.z - h], [s.x + h, 0.02, s.z + h], [s.x - h, 0.02, s.z + h]]) : '');
+        objs[m].e.setAttribute('opacity', s.b.toFixed(3));
+      });
+
+      // Werk: Pulse, dann Atmosphäre als weite Ringe in der Ebene
       rings.forEach(function (rg, i) {
-        var start = i < 2 ? 0.72 + i * 0.05 : 0.85, dur = i < 2 ? 0.09 : 0.12;
-        var age = (u - start) / dur;
+        var start = i < 2 ? 0.72 + i * 0.05 : 0.85, dur = i < 2 ? 0.09 : 0.12, age = (u - start) / dur;
         if (age > 0 && age < 1) {
-          rg.setAttribute('cx', f(werk[0])); rg.setAttribute('cy', f(werk[1]));
-          rg.setAttribute('r', f(i < 2 ? 8 + age * 26 : 12 + age * 80));
+          var R = i < 2 ? 0.4 + age * 1.3 : 0.6 + age * 4, pts = [];
+          for (var a = 0; a < 32; a++) pts.push([werk.x + Math.cos(a / 32 * TAU) * R, 0.01, werk.z + Math.sin(a / 32 * TAU) * R]);
+          rg.setAttribute('d', poly(pts));
           rg.setAttribute('opacity', ((1 - age) * 0.9).toFixed(3));
         } else rg.setAttribute('opacity', 0);
       });
