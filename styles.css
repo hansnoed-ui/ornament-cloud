@@ -121,7 +121,7 @@ main,
 
 /* Kopfbereich */
 .site-header {
-  padding: 72px 0 40px;
+  padding: 40px 0 40px;
   /* weicher Schleier, damit Titel und Einleitung klar lesbar bleiben */
   background: radial-gradient(ellipse 70% 90% at 25% 45%, var(--bg-veil), transparent 75%);
 }
@@ -270,36 +270,52 @@ h1 {
   margin: 0;
 }
 
-/* Menü im Footer: drei Spalten mit animierten Symbolen */
+/* Header-Menü: Name links, drei animierte Symbole rechts */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+.brand {
+  display: inline-block;
+  margin: 18px 0 0;
+  text-decoration: none;
+}
+
 .menu {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));   /* immer gleich breite Spalten */
   gap: 24px;
-  padding-top: 16px;
-  margin-bottom: 40px;
+  width: min(100%, 680px);
 }
 
 .menu-item {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
   color: var(--text);
   text-decoration: none;
 }
 
 .menu-icon {
   display: block;
-  width: 100%;
+  flex: 0 0 72px;
+  width: 72px;
   aspect-ratio: 1 / 1;
-  margin-bottom: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 10px;
   color: var(--text);
   transition: border-color 0.2s ease;
 }
 
 .menu-item:hover .menu-icon,
-.menu-item:focus-visible .menu-icon {
+.menu-item:focus-visible .menu-icon,
+.menu-item[aria-current="page"] .menu-icon {
   border-color: var(--text);
 }
 
@@ -307,15 +323,24 @@ h1 {
   outline: none;
 }
 
+.menu-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .menu-title {
   font-family: var(--serif);
-  font-size: 1.3rem;
+  font-size: 1.05rem;
   line-height: 1.2;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .menu-sub {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 /* Linien der Symbole: Breite in Bildschirmpixeln, unabhängig von der Grösse */
@@ -329,17 +354,21 @@ h1 {
   vector-effect: non-scaling-stroke;
 }
 
-.menu-icon .bold { stroke-width: 2; }
-.menu-icon .mid { stroke-width: 1.2; }
-.menu-icon .thin { stroke-width: 0.8; }
+.menu-icon .bold { stroke-width: 1.6; }
+.menu-icon .mid { stroke-width: 1; }
+.menu-icon .thin { stroke-width: 0.7; }
 .menu-icon .dash { stroke-dasharray: 2 3; }
 .menu-icon .fill { fill: currentColor; stroke: none; }
 .menu-icon .hatch { fill: currentColor; fill-opacity: 0.12; stroke: none; }
 .menu-icon rect.bold { fill: var(--surface); }
 
-@media (max-width: 600px) {
-  .menu { gap: 12px; }
-  .menu-icon { margin-bottom: 8px; border-radius: 10px; }
-  .menu-title { font-size: 1rem; }
-  .menu-sub { font-size: 0.75rem; }
+/* Schmale Bildschirme: Name oben, darunter drei gleich breite Spalten */
+@media (max-width: 760px) {
+  .topbar { flex-direction: column; gap: 16px; margin-bottom: 32px; }
+  .brand { margin-top: 0; }
+  .menu { width: 100%; gap: 12px; }
+  .menu-item { flex-direction: column; align-items: stretch; gap: 8px; }
+  .menu-icon { flex: none; width: 100%; }
+  .menu-title { font-size: 0.95rem; }
+  .menu-sub { font-size: 0.7rem; white-space: normal; }
 }
