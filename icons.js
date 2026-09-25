@@ -302,18 +302,20 @@
     };
   }
 
-  // ---------- Trennlinie unter dem Header: feine, langsam wogende Welle ----------
+  // ---------- Trennlinie unter dem Header: feine, rhythmisch wogende Welle ----------
   function wave(svg) {
-    var H = 24, path = el('path', { 'class': 'wave' }, svg);
+    var H = 40, path = el('path', { 'class': 'wave' }, svg);
     return function (u, t) {
       var w = svg.clientWidth || 600, d = '';
       svg.setAttribute('viewBox', '0 0 ' + w + ' ' + H);
-      var A = 2.6 + 1.2 * Math.sin(t * 0.27);          // Amplitude atmet langsam
-      for (var x = 0; x <= w; x += 4) {
-        var env = Math.pow(Math.sin(Math.PI * x / w), 0.6);   // an den Enden flach
-        var y = 0.6 * Math.sin(TAU * x / 260 + t * 0.35)
-              + 0.3 * Math.sin(TAU * x / 110 - t * 0.23 + 1)
-              + 0.12 * Math.sin(TAU * x / 57 + t * 0.52 + 2);
+      var beat = 0.75 + 0.25 * Math.sin(t * TAU / 4);          // Grundtakt: alle 4 s ein Anschwellen
+      var A = 14 * beat;
+      for (var x = 0; x <= w; x += 3) {
+        var env = Math.pow(Math.sin(Math.PI * x / w), 0.5);   // an den Enden flach
+        var packet = 0.75 + 0.25 * Math.sin(TAU * x / 600 - t * 0.9);   // wandernde Wellengruppen
+        var y = 0.85 * Math.sin(TAU * x / 160 - t * 1.8) * packet   // regelmässige Grundwelle, wandert nach rechts
+              + 0.12 * Math.sin(TAU * x / 64 + t * 1.2 + 1)
+              + 0.04 * Math.sin(TAU * x / 31 - t * 2.4 + 2);
         d += (x ? 'L' : 'M') + x + ',' + f(H / 2 + A * env * y);
       }
       path.setAttribute('d', d);
