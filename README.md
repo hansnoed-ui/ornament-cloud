@@ -5,6 +5,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 
 - `index.html` – Startseite; jedes Artefakt ist ein `<article class="card">`-Block
 - `styles.css` – Gestaltung (inkl. automatischem Dark Mode und Farben des Hintergrunds)
+- `icons.js` – animierte Schwarz-Weiss-Symbole des Footer-Menüs (Dauer in `PERIOD`)
+- `news/`, `termine/`, `installationen/` – Platzhalterseiten der Menüpunkte
 - `bg.js` – animierter Hintergrund (Lemniskaten und Schleifen als SVG, Tempo in `CONFIG`)
 - `assets/` – Vorschau-Videos (.mp4/.webm) und Standbilder (.jpg)
 - `werke/<name>/index.html` – lokale Kopien der Artefakte
