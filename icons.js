@@ -304,16 +304,16 @@
 
   // ---------- Trennlinie unter dem Header: feine, rhythmisch wogende Welle ----------
   function wave(svg) {
-    var H = 40, path = el('path', { 'class': 'wave' }, svg);
+    var H = 32, path = el('path', { 'class': 'wave' }, svg);
     return function (u, t) {
       var w = svg.clientWidth || 600, d = '';
       svg.setAttribute('viewBox', '0 0 ' + w + ' ' + H);
       var beat = 0.75 + 0.25 * Math.sin(t * TAU / 4);          // Grundtakt: alle 4 s ein Anschwellen
-      var A = 14 * beat;
+      var A = 9.5 * beat;
       for (var x = 0; x <= w; x += 3) {
         var env = Math.pow(Math.sin(Math.PI * x / w), 0.5);   // an den Enden flach
         var packet = 0.75 + 0.25 * Math.sin(TAU * x / 600 - t * 0.9);   // wandernde Wellengruppen
-        var y = 0.85 * Math.sin(TAU * x / 160 - t * 1.8) * packet   // regelmässige Grundwelle, wandert nach rechts
+        var y = 0.85 * Math.sin(TAU * x / 160 - t * 1.5) * packet   // regelmässige Grundwelle, wandert nach rechts
               + 0.12 * Math.sin(TAU * x / 64 + t * 1.2 + 1)
               + 0.04 * Math.sin(TAU * x / 31 - t * 2.4 + 2);
         d += (x ? 'L' : 'M') + x + ',' + f(H / 2 + A * env * y);
