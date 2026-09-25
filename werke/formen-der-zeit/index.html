@@ -1,0 +1,884 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Verräumlichung und Verzeitlichung — Formen der Zeit</title>
+<style>
+:root{
+  --paper:#F5F3ED; --ink:#111416; --muted:#565C5E; --hair:rgba(17,20,22,.38);
+  --warm:#A8461A; --cool:#1E5F67; --soft:rgba(17,20,22,.14);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#101213; --ink:#F2EFE8; --muted:#AEB6B7; --hair:rgba(242,239,232,.38);
+    --warm:#E58A52; --cool:#5FB6BE; --soft:rgba(242,239,232,.14);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#101213; --ink:#F2EFE8; --muted:#AEB6B7; --hair:rgba(242,239,232,.38);
+  --warm:#E58A52; --cool:#5FB6BE; --soft:rgba(242,239,232,.14);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%}
+body{
+  margin:0;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  -webkit-font-smoothing:antialiased;
+}
+#stage{position:relative;width:100%;height:100%;display:flex;flex-direction:column}
+svg#field{flex:1;width:100%;height:100%;display:block}
+
+.head{position:absolute;top:22px;left:30px;right:30px;pointer-events:none;display:flex;justify-content:space-between;gap:24px}
+.head .t{max-width:34rem}
+.kicker{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{margin:4px 0 0;font-size:27px;font-weight:400;line-height:1.1}
+.lead{margin:7px 0 0;font-size:15.5px;line-height:1.45;color:var(--muted);font-style:italic;max-width:30rem}
+.counter{font-family:system-ui,-apple-system,sans-serif;font-size:11px;letter-spacing:.12em;color:var(--muted);text-align:right;white-space:nowrap}
+
+.note{position:absolute;left:30px;bottom:118px;max-width:30rem;pointer-events:none}
+.note p{margin:0;font-size:16.5px;line-height:1.5}
+.note .thy{margin:9px 0 0;font-size:13.5px;line-height:1.5;color:var(--muted);font-family:system-ui,-apple-system,sans-serif;border-left:1px solid var(--hair);padding-left:11px}
+body.notext .note{opacity:0}
+body.notheory .note .thy{display:none}
+
+.rail{position:absolute;left:30px;right:30px;bottom:74px;display:flex;align-items:flex-end;gap:2px;height:34px}
+.rail button{
+  flex:1;background:transparent;border:0;padding:0;cursor:pointer;height:34px;
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.rail span{display:block;width:100%;height:2px;background:var(--hair);transition:height .25s ease,background .25s ease}
+.rail button[aria-current="true"] span{height:14px;background:var(--warm)}
+.rail button:hover span{background:var(--ink)}
+.rail button:focus-visible{outline:2px solid var(--cool);outline-offset:3px}
+
+.bar{
+  position:absolute;left:30px;right:30px;bottom:24px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:13px;
+}
+.bar button,.bar label{
+  color:var(--ink);background:transparent;border:1px solid var(--hair);border-radius:2px;
+  height:32px;padding:0 12px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font:inherit;
+}
+.bar button:hover{border-color:var(--ink)}
+.bar button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.bar input[type=range]{width:110px;accent-color:var(--cool)}
+.bar .sp{flex:1}
+.bar button:focus-visible,.bar input:focus-visible{outline:2px solid var(--cool);outline-offset:2px}
+
+@media (max-width:820px){
+  .head{top:14px;left:16px;right:16px;flex-direction:column;gap:2px}
+  h1{font-size:21px}
+  .lead{font-size:13.5px}
+  .counter{text-align:left}
+  .note{left:16px;right:16px;bottom:126px}
+  .note p{font-size:14.5px}
+  .note .thy{font-size:12.5px}
+  .rail{left:16px;right:16px;bottom:80px;height:26px}
+  .rail button{height:26px}
+  .note{bottom:118px}
+  .bar{left:12px;right:12px;bottom:14px;gap:6px;font-size:12px}
+  .bar button,.bar label{height:30px;padding:0 9px}
+  .bar input[type=range]{width:78px}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="field" viewBox="0 0 1000 730" preserveAspectRatio="xMidYMin meet" role="img"
+       aria-label="Ein Feld, das sich durch vierzehn historische Formen der Zeitvorstellung transformiert und am Ende auf Raumbildung und Zeitbildung reduziert wird"></svg>
+
+  <div class="head">
+    <div class="t">
+      <div class="kicker" id="kicker">Formen der Zeit</div>
+      <h1 id="title">Anwesenheit</h1>
+      <p class="lead" id="lead"></p>
+    </div>
+    <div class="counter" id="counter"></div>
+  </div>
+
+  <div class="note">
+    <p id="noteText"></p>
+    <p class="thy" id="noteTheory"></p>
+  </div>
+
+  <div class="rail" id="rail" role="tablist" aria-label="Zustände"></div>
+
+  <div class="bar">
+    <button id="prev" type="button" aria-label="Vorheriger Zustand">←</button>
+    <button id="play" type="button" aria-pressed="true">Reise</button>
+    <button id="next" type="button" aria-label="Nächster Zustand">→</button>
+    <label for="speed">Tempo <input id="speed" type="range" min="4" max="22" value="11" aria-label="Tempo der Reise"></label>
+    <button id="txt" type="button" aria-pressed="true">Texte</button>
+    <button id="thy" type="button" aria-pressed="true">Theorieebene</button>
+    <span class="sp"></span>
+    <button id="svgBtn" type="button">SVG</button>
+    <button id="pngBtn" type="button">PNG</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var svg = document.getElementById('field');
+  var W = 1000, H = 620, CX = 500, CY = 268;
+
+  function el(tag, attrs, parent){
+    var e = document.createElementNS(SVGNS, tag);
+    if (attrs) for (var k in attrs) e.setAttribute(k, attrs[k]);
+    (parent || svg).appendChild(e);
+    return e;
+  }
+  function set(e, attrs){ for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+  function hash(i){ var x = Math.sin(i*12.9898 + 4.1)*43758.5453; return x - Math.floor(x); }
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function ease(x){ return x<=0?0:x>=1?1:x*x*(3-2*x); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+
+  // ---------- Ebenen ----------
+  // Jede historische Form ist eine eigene Ebene. Phasen setzen nur Gewichte,
+  // die Ebenen verschwinden nie ganz: am Ende sind alle zugleich schwach sichtbar.
+  var layers = {};
+  var root = el('g', { id:'root' });
+  function layer(name, builder){
+    var g = el('g', { 'data-layer':name, opacity:0 }, root);
+    var o = { g:g, w:0, target:0, api:null };
+    o.api = builder(g);
+    layers[name] = o;
+    return o;
+  }
+  function T(parent, x, y, s, cls, anchor){
+    return el('text', { x:x, y:y, 'font-size':s, 'text-anchor':anchor||'middle',
+      'font-family': cls === 'ui' ? 'system-ui, -apple-system, sans-serif' : 'Iowan Old Style, Palatino, Georgia, serif',
+      'letter-spacing': cls === 'ui' ? '0.12em' : '0',
+      fill:'var(--ink)', 'fill-opacity': cls === 'ui' ? 0.62 : 0.88 }, parent);
+  }
+
+  // 1 Anwesenheit ---------------------------------------------------------
+  layer('presence', function(g){
+    var halo = el('circle', { cx:CX, cy:CY, r:120, fill:'var(--warm)', opacity:0.06 }, g);
+    var core = el('circle', { cx:CX, cy:CY, r:6, fill:'var(--warm)' }, g);
+    var dots = [], N = 46;
+    for (var i=0;i<N;i++){
+      var a = hash(i)*Math.PI*2, r = 40 + hash(i+99)*250;
+      dots.push({ x:CX + Math.cos(a)*r*1.35, y:CY + Math.sin(a)*r*0.78,
+        ph:hash(i+7), sp:0.28 + hash(i+13)*0.5,
+        e:el('circle', { cx:0, cy:0, r:2.6, fill:'var(--ink)' }, g) });
+    }
+    var l1 = T(g, CX-250, CY-150, 12, 'ui'); l1.textContent = 'ANWESEND';
+    var l2 = T(g, CX+250, CY+165, 12, 'ui'); l2.textContent = 'ABWESEND';
+    return { update:function(t){
+      set(core, { r: 5 + 1.6*Math.sin(t*2.2) });
+      set(halo, { r: 116 + 10*Math.sin(t*0.7) });
+      for (var i=0;i<dots.length;i++){
+        var d = dots[i], u = (t*d.sp + d.ph) % 1;
+        var vis = Math.sin(Math.PI*u);
+        set(d.e, { cx:d.x, cy:d.y, r: 1.6 + 2.6*vis, opacity: 0.12 + 0.75*vis*vis });
+      }
+    }};
+  });
+
+  // 2 Das Abwesende bleibt -------------------------------------------------
+  layer('trace', function(g){
+    var marks = [], N = 7;
+    for (var i=0;i<N;i++){
+      var x = CX - 250 + i*54, y = CY + 40 - hash(i+3)*90;
+      marks.push({ x:x, y:y, ph:i/N,
+        dot:el('circle', { cx:x, cy:y, r:3.4, fill:'var(--ink)' }, g),
+        cross:el('path', { d:'M'+(x-5)+','+(y)+'h10M'+x+','+(y-5)+'v10', stroke:'var(--muted)',
+          'stroke-width':1, fill:'none', opacity:0 }, g) });
+    }
+    var bridge = el('path', { d:'M'+(CX+70)+','+(CY-20)+' C '+(CX+160)+','+(CY-120)+' '+(CX+260)+','+(CY-120)+' '+(CX+320)+','+(CY-40),
+      stroke:'var(--cool)', 'stroke-width':1, 'stroke-dasharray':'2 5', fill:'none' }, g);
+    var beyond = el('circle', { cx:CX+320, cy:CY-40, r:26, fill:'none', stroke:'var(--cool)', 'stroke-width':1 }, g);
+    var a = T(g, CX+320, CY+4, 12, 'ui'); a.textContent = 'JENSEITS';
+    var b = T(g, CX-190, CY+130, 15); b.textContent = 'nicht mehr — und doch wirksam';
+    return { update:function(t){
+      for (var i=0;i<marks.length;i++){
+        var m = marks[i], u = (t*0.22 + m.ph) % 1;
+        var alive = u < 0.45 ? 1 : 0;
+        set(m.dot, { opacity: alive ? 0.9 : 0, r: 3.4 });
+        set(m.cross, { opacity: alive ? 0 : 0.55 });
+      }
+      set(beyond, { r: 24 + 3*Math.sin(t*1.4) });
+      set(bridge, { opacity: 0.5 + 0.3*Math.sin(t*0.9) });
+    }};
+  });
+
+  // 3 Wiederkehr -----------------------------------------------------------
+  layer('cycle', function(g){
+    var rings = [], R = [70, 112, 150];
+    for (var i=0;i<3;i++){
+      rings.push({ r:R[i], sp:[0.62,0.31,0.13][i],
+        c:el('circle', { cx:CX, cy:CY, r:R[i], fill:'none', stroke:'var(--hair)', 'stroke-width':1 }, g),
+        m:el('circle', { cx:CX, cy:CY, r:4.5, fill:'var(--warm)' }, g),
+        marks:el('g', {}, g), last:-1 });
+    }
+    var cap = T(g, CX, CY+172, 15); cap.textContent = 'Wiederholung macht Unterschiede vergleichbar';
+    return { update:function(t){
+      for (var i=0;i<rings.length;i++){
+        var rr = rings[i], a = t*rr.sp*Math.PI*2 - Math.PI/2;
+        set(rr.m, { cx: CX + Math.cos(a)*rr.r, cy: CY + Math.sin(a)*rr.r });
+        var turn = Math.floor(t*rr.sp);
+        if (turn !== rr.last && turn >= 0){
+          rr.last = turn;
+          var ang = -Math.PI/2 + (hash(turn*7+i)*0.5-0.25);
+          el('circle', { cx: CX + Math.cos(ang)*rr.r, cy: CY + Math.sin(ang)*rr.r,
+            r:2, fill:'var(--ink)', opacity:0.5 }, rr.marks);
+          while (rr.marks.childNodes.length > 14) rr.marks.removeChild(rr.marks.firstChild);
+        }
+      }
+    }};
+  });
+
+  // 4 Zeit bekommt Stellen (Kalender) --------------------------------------
+  layer('calendar', function(g){
+    var cols = 14, rows = 7, cw = 46, ch = 34, x0 = CX - cols*cw/2, y0 = CY - rows*ch/2 - 10;
+    var cells = [];
+    for (var r=0;r<rows;r++) for (var c=0;c<cols;c++){
+      cells.push({ r:r, c:c, x:x0+c*cw, y:y0+r*ch,
+        rect:el('rect', { x:x0+c*cw, y:y0+r*ch, width:cw-4, height:ch-4, fill:'none',
+          stroke:'var(--hair)', 'stroke-width':0.7 }, g),
+        mark:el('circle', { cx:x0+c*cw+(cw-4)/2, cy:y0+r*ch+(ch-4)/2, r:2.6, fill:'var(--ink)', opacity:0 }, g) });
+    }
+    var hi = el('rect', { x:x0+5*cw, y:y0, width:cw-4, height:rows*ch-4, fill:'var(--warm)', opacity:0.12 }, g);
+    var cap = T(g, CX, y0 + rows*ch + 46, 15);
+    cap.textContent = 'dieselbe Stelle, jedes Jahr anders besetzt';
+    var chain = T(g, CX, y0 - 26, 12, 'ui');
+    chain.textContent = 'EREIGNIS → WIEDERHOLUNG → ZEITSTELLE';
+    return { update:function(t){
+      var yr = Math.floor(t*0.2);
+      for (var i=0;i<cells.length;i++){
+        var ce = cells[i], k = hash(i*3.1 + yr*17.7);
+        var on = k > 0.72 ? 1 : 0;
+        set(ce.mark, { opacity: on*0.8 });
+      }
+      set(hi, { opacity: 0.10 + 0.05*Math.sin(t*1.6) });
+    }};
+  });
+
+  // 5 Aristoteles: Zeit als Maß der Veränderung -----------------------------
+  layer('measure', function(g){
+    var y = CY + 40, x0 = CX - 330, x1 = CX + 330;
+    el('path', { d:'M'+x0+','+y+'H'+x1, stroke:'var(--hair)', 'stroke-width':1 }, g);
+    var ticks = el('g', {}, g);
+    var body = el('circle', { cx:x0, cy:y-60, r:9, fill:'none', stroke:'var(--warm)', 'stroke-width':1.4 }, g);
+    var drop = el('path', { d:'', stroke:'var(--hair)', 'stroke-width':0.8, 'stroke-dasharray':'2 3' }, g);
+    var before = T(g, x0+60, y+34, 12, 'ui'); before.textContent = 'VORHER';
+    var after = T(g, x1-60, y+34, 12, 'ui'); after.textContent = 'NACHHER';
+    var count = T(g, CX, y-120, 15); count.textContent = '';
+    return { update:function(t){
+      var u = (t*0.18) % 1, x = lerp(x0, x1, u);
+      set(body, { cx:x, cy:y-60 });
+      set(drop, { d:'M'+x+','+(y-50)+'V'+(y-6) });
+      var n = Math.floor(u*18);
+      while (ticks.childNodes.length > n) ticks.removeChild(ticks.lastChild);
+      while (ticks.childNodes.length < n){
+        var i = ticks.childNodes.length, tx = lerp(x0, x1, (i+0.5)/18);
+        el('path', { d:'M'+tx+','+(y-7)+'v14', stroke:'var(--ink)', 'stroke-width':1, opacity:0.55 }, ticks);
+      }
+      count.textContent = 'gezählte Veränderung: ' + n;
+    }};
+  });
+
+  // 6 Zeit und Ewigkeit -----------------------------------------------------
+  layer('eternity', function(g){
+    var yE = CY - 150, yW = CY + 90;
+    var etern = el('path', { d:'M'+(CX-330)+','+yE+'H'+(CX+330), stroke:'var(--cool)', 'stroke-width':2 }, g);
+    var aura = el('path', { d:'M'+(CX-330)+','+(yE)+'H'+(CX+330), stroke:'var(--cool)', 'stroke-width':14, opacity:0.10 }, g);
+    var world = el('path', { d:'', stroke:'var(--ink)', 'stroke-width':1.2, fill:'none' }, g);
+    var rays = el('g', {}, g);
+    for (var i=0;i<9;i++){
+      var x = CX - 300 + i*75;
+      el('path', { d:'M'+x+','+yE+'L'+x+','+yW, stroke:'var(--hair)', 'stroke-width':0.7,
+        'stroke-dasharray':'1 6' }, rays);
+    }
+    var a = T(g, CX-330, yE-16, 12, 'ui', 'start'); a.textContent = 'EWIGKEIT';
+    var b = T(g, CX-330, yW+34, 12, 'ui', 'start'); b.textContent = 'SCHÖPFUNG';
+    var c = T(g, CX+330, yW+34, 12, 'ui', 'end'); c.textContent = 'VOLLENDUNG';
+    var cap = T(g, CX, yW+80, 15); cap.textContent = 'Ewigkeit ist keine lange Zeit, sondern die Gegenform';
+    return { update:function(t){
+      var d = 'M' + (CX-330) + ',' + yW;
+      for (var i=1;i<=72;i++){
+        var x = CX-330 + i*9.2;
+        var y = yW + Math.sin(i*0.55 + t*1.1)*11 + Math.sin(i*0.19 + t*0.4)*7;
+        d += 'L' + x.toFixed(1) + ',' + y.toFixed(1);
+      }
+      set(world, { d:d });
+      set(aura, { opacity: 0.07 + 0.05*Math.sin(t*0.8) });
+    }};
+  });
+
+  // 7 Augustinus: Zeit wird innerlich ---------------------------------------
+  layer('inner', function(g){
+    var pt = el('circle', { cx:CX, cy:CY, r:5.5, fill:'var(--warm)' }, g);
+    var mem = el('path', { d:'', stroke:'var(--ink)', 'stroke-width':1.1, fill:'none', opacity:0.75 }, g);
+    var exp = el('path', { d:'', stroke:'var(--cool)', 'stroke-width':1.1, fill:'none',
+      'stroke-dasharray':'3 4', opacity:0.75 }, g);
+    var att = el('circle', { cx:CX, cy:CY, r:30, fill:'none', stroke:'var(--warm)', 'stroke-width':1 }, g);
+    var a = T(g, CX-250, CY-70, 12, 'ui'); a.textContent = 'ERINNERUNG';
+    var b = T(g, CX, CY+80, 12, 'ui'); b.textContent = 'AUFMERKSAMKEIT';
+    var c = T(g, CX+250, CY-70, 12, 'ui'); c.textContent = 'ERWARTUNG';
+    var cap = T(g, CX, CY+168, 15);
+    cap.textContent = 'drei Richtungen einer einzigen Gegenwart';
+    return { update:function(t){
+      var k = 0.5 + 0.5*Math.sin(t*1.2);
+      var dm = 'M'+CX+','+CY, de = 'M'+CX+','+CY;
+      for (var i=1;i<=40;i++){
+        var u = i/40;
+        var ang = Math.PI + u*0.9 + 0.12*Math.sin(t*0.7);
+        var r = u*250*(0.85+0.15*k);
+        dm += 'L' + (CX + Math.cos(ang)*r).toFixed(1) + ',' + (CY + Math.sin(ang)*r*0.5 - u*30).toFixed(1);
+        var ang2 = -u*0.9 - 0.12*Math.sin(t*0.7);
+        de += 'L' + (CX + Math.cos(ang2)*r).toFixed(1) + ',' + (CY + Math.sin(ang2)*r*0.5 - u*30).toFixed(1);
+      }
+      set(mem, { d:dm }); set(exp, { d:de });
+      set(att, { r: 26 + 6*k, opacity: 0.35 + 0.3*k });
+      set(pt, { r: 5 + 1.4*k });
+    }};
+  });
+
+  // 8 Mechanische Uhr: Zeit wird gleichförmig -------------------------------
+  layer('clock', function(g){
+    var rowsY = [CY-80, CY, CY+80], names = ['STADT','KLOSTER','PERSON'];
+    var rows = [];
+    for (var r=0;r<3;r++){
+      var row = el('g', {}, g);
+      var segs = [];
+      for (var i=0;i<16;i++) segs.push(el('rect', { x:0, y:rowsY[r]-9, width:10, height:18,
+        fill:'none', stroke:'var(--hair)', 'stroke-width':0.9 }, row));
+      var lab = T(g, CX-332, rowsY[r]-16, 11, 'ui', 'start'); lab.textContent = names[r];
+      rows.push({ segs:segs, y:rowsY[r] });
+    }
+    var beat = el('path', { d:'', stroke:'var(--warm)', 'stroke-width':1.2 }, g);
+    var cap = T(g, CX, CY+162, 15); cap.textContent = 'Die Uhr macht Zeit unabhängig vom Ereignis';
+    return { update:function(t){
+      var uni = ease((t-1.2)/4.2);                   // ungleiche Rhythmen werden zu gleichen Takten
+      for (var r=0;r<rows.length;r++){
+        var x = CX - 328, row = rows[r];
+        for (var i=0;i<16;i++){
+          var raw = 20 + hash(i*3+r*29)*44;
+          var w = lerp(raw, 41, uni)*0.985;
+          set(row.segs[i], { x:x, width:w-4 });
+          x += w;
+        }
+      }
+      var bx = CX - 328 + ((t*140) % 640);
+      set(beat, { d:'M'+bx+','+(CY-108)+'V'+(CY+108), opacity: 0.35 + 0.45*uni });
+    }};
+  });
+
+  // 9 Newton: absolute Zeit --------------------------------------------------
+  layer('newton', function(g){
+    var y = CY + 100;
+    el('path', { d:'M'+(CX-330)+','+y+'H'+(CX+330), stroke:'var(--ink)', 'stroke-width':1.3 }, g);
+    for (var i=0;i<=40;i++){
+      var x = CX-330 + i*16.5;
+      el('path', { d:'M'+x+','+(y-(i%5===0?9:5))+'V'+(y+(i%5===0?9:5)), stroke:'var(--hair)', 'stroke-width':0.8 }, g);
+    }
+    var cur = el('path', { d:'', stroke:'var(--warm)', 'stroke-width':1.4 }, g);
+    var evs = [];
+    for (var j=0;j<12;j++) evs.push({ x:CX-310+hash(j*5)*620, y:y-60-hash(j*9)*130, ph:hash(j+31),
+      e:el('circle', { cx:0, cy:0, r:3.6, fill:'var(--ink)' }, g) });
+    var cap = T(g, CX, y+50, 15); cap.textContent = 'Zeit läuft auch dann weiter, wenn nichts geschieht';
+    var tag = T(g, CX+330, y-26, 11, 'ui', 'end'); tag.textContent = 'ABSOLUTE ZEIT';
+    return { update:function(t){
+      var x = CX-330 + ((t*70) % 660);
+      set(cur, { d:'M'+x+','+(y-26)+'V'+(y+26) });
+      for (var j=0;j<evs.length;j++){
+        var ev = evs[j], u = (t*0.16 + ev.ph) % 1, vis = Math.sin(Math.PI*u);
+        set(ev.e, { cx:ev.x, cy:ev.y, opacity: 0.85*vis*vis, r: 2.6 + 2*vis });
+      }
+    }};
+  });
+
+  // 10 Kant: Bedingung der Erfahrung ------------------------------------------
+  layer('kant', function(g){
+    var frame = el('rect', { x:CX-250, y:CY-160, width:500, height:320, rx:160, fill:'none',
+      stroke:'var(--ink)', 'stroke-width':1.2 }, g);
+    var grid = el('g', { opacity:0.7 }, g);
+    for (var i=-4;i<=4;i++){
+      el('path', { d:'M'+(CX+i*52)+','+(CY-140)+'V'+(CY+140), stroke:'var(--hair)', 'stroke-width':0.7 }, grid);
+      el('path', { d:'M'+(CX-230)+','+(CY+i*32)+'H'+(CX+230), stroke:'var(--hair)', 'stroke-width':0.7 }, grid);
+    }
+    var outside = [], inside = [];
+    for (var j=0;j<16;j++){
+      outside.push({ ph:hash(j*2.7), e:el('circle', { cx:0, cy:0, r:3, fill:'var(--muted)', opacity:0.5 }, g) });
+      inside.push(el('circle', { cx:0, cy:0, r:3.4, fill:'var(--warm)', opacity:0 }, g));
+    }
+    var a = T(g, CX, CY-186, 12, 'ui'); a.textContent = 'NACHEINANDER';
+    var b = T(g, CX-300, CY, 12, 'ui'); b.textContent = 'NEBENEINANDER';
+    set(b, { transform:'rotate(-90 '+(CX-300)+' '+CY+')' });
+    var cap = T(g, CX, CY+180, 14.5);
+    cap.textContent = 'nicht: der Mensch in der Zeit, sondern Zeit als Form des Erscheinens';
+    return { update:function(t){
+      for (var j=0;j<outside.length;j++){
+        var o = outside[j], u = (t*0.2 + o.ph) % 1;
+        var ang = o.ph*Math.PI*2 + t*0.2;
+        var R = 400 - u*120;
+        set(o.e, { cx: CX + Math.cos(ang)*R, cy: CY + Math.sin(ang)*R*0.55, opacity: 0.45*(1-u) });
+        var gx = CX + (Math.round(Math.cos(ang)*4))*52;
+        var gy = CY + (Math.round(Math.sin(ang)*3.5))*32;
+        set(inside[j], { cx:gx, cy:gy, opacity: 0.85*u });
+      }
+    }};
+  });
+
+  // 11 Bergson: Dauer ---------------------------------------------------------
+  layer('duree', function(g){
+    var bands = [];
+    for (var i=0;i<5;i++) bands.push(el('path', { d:'', stroke:'var(--cool)', 'stroke-width':1.1,
+      fill:'none', opacity:0.5 - i*0.07 }, g));
+    var ticks = el('g', {}, g);
+    for (var j=0;j<24;j++){
+      var x = CX-320 + j*27.8;
+      el('path', { d:'M'+x+','+(CY-120)+'V'+(CY+120), stroke:'var(--hair)', 'stroke-width':0.7 }, ticks);
+    }
+    var cap = T(g, CX, CY+172, 15);
+    cap.textContent = 'erlebte Zeit besteht nicht aus nebeneinanderliegenden Punkten';
+    var tag = T(g, CX, CY-172, 12, 'ui'); tag.textContent = 'DURÉE';
+    return { update:function(t){
+      var diss = ease((t-1.0)/3.4);
+      set(ticks, { opacity: 0.85*(1-diss) });
+      for (var i=0;i<bands.length;i++){
+        var d = 'M'+(CX-330)+','+CY, ph = i*0.8;
+        for (var k=1;k<=68;k++){
+          var x = CX-330 + k*9.7;
+          var u = k/68;
+          var amp = (26 + i*13) * (0.35 + 0.65*Math.sin(Math.PI*u));
+          var y = CY + Math.sin(u*5.2 + t*0.9 + ph)*amp*Math.sin(t*0.3 + u*2.2 + ph)*0.9;
+          d += 'L'+x.toFixed(1)+','+y.toFixed(1);
+        }
+        set(bands[i], { d:d, opacity: (0.5 - i*0.07)*(0.3 + 0.7*diss) });
+      }
+    }};
+  });
+
+  // 12 Einstein / Minkowski ----------------------------------------------------
+  layer('relativity', function(g){
+    var gridA = el('g', {}, g), gridB = el('g', {}, g);
+    for (var i=-5;i<=5;i++){
+      el('path', { d:'M'+(CX-300)+','+(CY+i*30)+'H'+(CX+300), stroke:'var(--hair)', 'stroke-width':0.7 }, gridA);
+    }
+    var linesB = [];
+    for (var j=-5;j<=5;j++) linesB.push(el('path', { d:'', stroke:'var(--cool)', 'stroke-width':0.8, opacity:0.75 }, gridB));
+    el('path', { d:'M'+CX+','+CY+'L'+(CX+240)+','+(CY-240)+'M'+CX+','+CY+'L'+(CX-240)+','+(CY-240),
+      stroke:'var(--muted)', 'stroke-width':0.9, 'stroke-dasharray':'3 4' }, g);
+    var evs = [];
+    for (var k=0;k<3;k++){
+      var x = CX - 150 + k*150, y = CY - 60 - k*20;
+      evs.push({ x:x, y:y, e:el('circle', { cx:x, cy:y, r:4.2, fill:'var(--warm)' }, g) });
+    }
+    var a = T(g, CX-300, CY-170, 11, 'ui', 'start'); a.textContent = 'BEOBACHTER A';
+    var b = T(g, CX+300, CY+180, 11, 'ui', 'end'); b.textContent = 'BEOBACHTER B';
+    var cap = T(g, CX, CY+176, 15); cap.textContent = 'Gleichzeitigkeit hängt vom Bezugssystem ab';
+    return { update:function(t){
+      var sh = 0.34 + 0.16*Math.sin(t*0.5);
+      for (var j=0;j<linesB.length;j++){
+        var y = CY + (j-5)*30;
+        var dx = 300;
+        set(linesB[j], { d:'M'+(CX-dx)+','+(y+dx*sh)+'L'+(CX+dx)+','+(y-dx*sh) });
+      }
+      for (var k=0;k<evs.length;k++){
+        set(evs[k].e, { r: 3.6 + 1.2*Math.sin(t*2 + k) });
+      }
+    }};
+  });
+
+  // 13 Deleuze: Differenz und Wiederholung ---------------------------------------
+  layer('difference', function(g){
+    var N = 6, x0 = CX - 270, dx = 108, yIdent = CY - 74, yDiff = CY + 46;
+    var idents = [], diffs = [], arrows = [], nums = [];
+    for (var i=0;i<N;i++){
+      idents.push(el('path', { d:'', stroke:'var(--ink)', 'stroke-width':1, fill:'none',
+        'stroke-dasharray':'2 4', opacity:0.35 }, g));
+      diffs.push(el('path', { d:'', stroke:'var(--ink)', 'stroke-width':1.5, fill:'none', opacity:0.9 }, g));
+      if (i < N-1) arrows.push(el('path', { d:'', stroke:'var(--warm)', 'stroke-width':1, fill:'none', opacity:0.75 }, g));
+      var n = T(g, x0 + i*dx, yDiff + 78, 11, 'ui'); n.textContent = String(i+1);
+      nums.push(n);
+    }
+    var mark = el('circle', { cx:0, cy:0, r:7, fill:'none', stroke:'var(--warm)', 'stroke-width':1.6 }, g);
+    var a = T(g, x0 - 92, yIdent, 11, 'ui', 'end'); a.textContent = 'IDENTISCH';
+    var b = T(g, x0 - 92, yDiff, 11, 'ui', 'end'); b.textContent = 'DIFFERENT';
+    var cap = T(g, CX, CY - 150, 15); cap.textContent = 'Wiederholung bringt Differenz hervor';
+    var foot = T(g, CX, yDiff + 118, 13.5);
+    foot.textContent = 'jede Wiederholung verschiebt die Bedingungen der nächsten';
+    function motif(cx, cy, k, sc, rot){
+      // einfache Schleife, deren Form von k abhängt
+      var rx = 30*sc, ry = 40*sc, d = '';
+      for (var j=0;j<=44;j++){
+        var u = j/44*Math.PI*2;
+        var px = Math.sin(u)*rx*(1 + 0.16*k*Math.sin(u*2));
+        var py = -Math.cos(u)*ry*(1 - 0.10*k);
+        var cr = Math.cos(rot), sr = Math.sin(rot);
+        d += (j ? 'L' : 'M') + (cx + px*cr - py*sr).toFixed(1) + ',' + (cy + px*sr + py*cr).toFixed(1);
+      }
+      return d;
+    }
+    return { update:function(t){
+      var cyc = (t*0.30) % N;
+      for (var i=0;i<N;i++){
+        var cx = x0 + i*dx;
+        set(idents[i], { d: motif(cx, yIdent, 0, 1, 0) });
+        var k = i*0.55, sc = 1 + i*0.055, rot = i*0.13;
+        set(diffs[i], { d: motif(cx, yDiff, k, sc, rot), opacity: 0.45 + 0.5*Math.max(0, 1 - Math.abs(cyc - i)) });
+        set(nums[i], { 'fill-opacity': 0.4 + 0.5*Math.max(0, 1 - Math.abs(cyc - i)) });
+        if (i < N-1){
+          var mx = cx + 34*sc, nx = x0 + (i+1)*dx - 34*(1 + (i+1)*0.055);
+          set(arrows[i], { d:'M'+mx+','+yDiff+'C'+(mx+18)+','+(yDiff-26)+' '+(nx-18)+','+(yDiff-26)+' '+nx+','+yDiff,
+            opacity: 0.25 + 0.6*Math.max(0, 1 - Math.abs(cyc - (i+0.5))) });
+        }
+      }
+      var ci = Math.floor(cyc), u = cyc - ci;
+      var mcx = x0 + ci*dx + dx*u;
+      set(mark, { cx:mcx, cy:yDiff, r: 6 + 2*Math.sin(t*4) });
+    }};
+  });
+
+  // 14 Luhmann: Zeit als Operation -------------------------------------------------
+  layer('operation', function(g){
+    var trace = el('path', { d:'', stroke:'var(--ink)', 'stroke-width':1.2, fill:'none', opacity:0.8 }, g);
+    var faded = el('path', { d:'', stroke:'var(--ink)', 'stroke-width':1, fill:'none', opacity:0.22 }, g);
+    var pot = el('g', {}, g);
+    var potDots = [];
+    for (var i=0;i<70;i++) potDots.push(el('circle', { cx:0, cy:0, r:1.6, fill:'var(--muted)', opacity:0 }, pot));
+    var now = el('circle', { cx:0, cy:0, r:5, fill:'var(--warm)' }, g);
+    var halo = el('circle', { cx:0, cy:0, r:14, fill:'var(--warm)', opacity:0.14 }, g);
+    var cap = T(g, CX, CY+172, 15); cap.textContent = 'Gegenwart ist Vollzug, Vergangenheit irreversibel, Zukunft offen';
+    var tag = T(g, CX, CY-176, 12, 'ui'); tag.textContent = 'WIEDERKEHR OHNE RÜCKKEHR';
+    var P = { w:1, h:1, rot:0 }, hist = [], hist2 = [], n = 0, tPar = 0;
+    function pnt(t, p){
+      var c = Math.cos(t), s = Math.sin(t), d = 1 + s*s;
+      var bx = c/d, by = s*c/d*1.5;
+      var side = bx >= 0 ? 1 : -1;
+      var x = bx*(side>0 ? p.w : 2-p.w)*250, y = by*(side>0 ? p.h : 2-p.h)*250;
+      var cr = Math.cos(p.rot), sr = Math.sin(p.rot);
+      return { x: CX + x*cr - y*sr, y: CY + x*sr + y*cr };
+    }
+    return { update:function(t, dt){
+      var prev = tPar;
+      tPar += dt*0.85;
+      var k0 = Math.floor((prev-Math.PI/2)/Math.PI), k1 = Math.floor((tPar-Math.PI/2)/Math.PI);
+      if (k1 > k0){
+        n++;
+        P.w = clamp(1 + 0.22*Math.sin(n*2.3999), 0.68, 1.32);
+        P.h = clamp(1 + 0.18*Math.sin(n*2.3999*1.4 + 1), 0.7, 1.3);
+        P.rot += 0.16;
+      }
+      var p = pnt(tPar, P);
+      hist.push(p);
+      if (hist.length > 180){ hist2.push(hist.shift()); if (hist2.length > 220) hist2.shift(); }
+      function poly(arr){
+        if (!arr.length) return '';
+        var d = 'M'+arr[0].x.toFixed(1)+','+arr[0].y.toFixed(1);
+        for (var i=1;i<arr.length;i++) d += 'L'+arr[i].x.toFixed(1)+','+arr[i].y.toFixed(1);
+        return d;
+      }
+      set(trace, { d:poly(hist) });
+      set(faded, { d:poly(hist2) });
+      for (var i=0;i<potDots.length;i++){
+        var u = (i%35 + 0.5)/35, br = Math.floor(i/35);
+        var q = { w:P.w + (br?0.16:-0.13), h:P.h + (br?-0.1:0.12), rot:P.rot + (br?0.1:-0.08) };
+        var f = pnt(tPar + u*2.4, q);
+        var jitter = u*u*26;
+        set(potDots[i], { cx: f.x + (hash(i+n*7)-0.5)*jitter, cy: f.y + (hash(i+n*13)-0.5)*jitter,
+          opacity: 0.5*(1-u)*(1-u) + 0.05, r: 1.1 + (1-u) });
+      }
+      set(now, { cx:p.x, cy:p.y, r: 4.6 + 0.8*Math.sin(t*5) });
+      set(halo, { cx:p.x, cy:p.y, r: 13 + 3*Math.sin(t*3) });
+    }};
+  });
+
+  // 15 Luhmann: Eigenzeit der Systeme ------------------------------------------------
+  layer('eigenzeit', function(g){
+    var names = ['ORGANISATION','RECHT','KUNST','BEWUSSTSEIN'];
+    var rate = [0.70, 0.28, 0.16, 1.5];
+    var ys = [CY-108, CY-36, CY+36, CY+108];
+    var tracks = [];
+    for (var r=0;r<4;r++){
+      el('path', { d:'M'+(CX-300)+','+ys[r]+'H'+(CX+300), stroke:'var(--hair)', 'stroke-width':1 }, g);
+      var lab = T(g, CX-312, ys[r]+4, 11, 'ui', 'end'); lab.textContent = names[r];
+      tracks.push({ y:ys[r], rate:rate[r], ops:el('g', {}, g),
+        head:el('circle', { cx:0, cy:ys[r], r:4.4, fill:'var(--warm)' }, g), last:-1 });
+    }
+    var nowLine = el('path', { d:'', stroke:'var(--cool)', 'stroke-width':1.2, opacity:0.8 }, g);
+    var coup = el('g', {}, g);
+    var nowLab = T(g, CX+300, CY-150, 11, 'ui', 'end'); nowLab.textContent = 'GLEICHZEITIGKEIT';
+    var cap = T(g, CX, CY+168, 15);
+    cap.textContent = 'Jedes System bildet seine eigene Zeit; geteilt ist nur der Augenblick';
+    return { update:function(t){
+      var xNow = CX - 300 + ((t*46) % 600);
+      set(nowLine, { d:'M'+xNow+','+(CY-142)+'V'+(CY+142) });
+      while (coup.firstChild) coup.removeChild(coup.firstChild);
+      var hits = [];
+      for (var r=0;r<tracks.length;r++){
+        var tr = tracks[r];
+        var n = Math.floor(t*tr.rate);
+        if (n !== tr.last){
+          tr.last = n;
+          el('path', { d:'M'+xNow+','+(tr.y-9)+'v18', stroke:'var(--ink)', 'stroke-width':1.3, opacity:0.75 }, tr.ops);
+          while (tr.ops.childNodes.length > 26) tr.ops.removeChild(tr.ops.firstChild);
+          hits.push(tr.y);
+        }
+        set(tr.head, { cx:xNow, r: 3.6 + 1.6*Math.abs(Math.sin(t*tr.rate*Math.PI)) });
+      }
+      for (var h=1;h<hits.length;h++){
+        el('path', { d:'M'+xNow+','+hits[h-1]+'V'+hits[h], stroke:'var(--cool)', 'stroke-width':1.6, opacity:0.7 }, coup);
+      }
+    }};
+  });
+
+  // 15/16 Synthese ------------------------------------------------------------------
+  layer('synthesis', function(g){
+    var lineL = el('path', { d:'M'+(CX-250)+','+(CY-110)+'V'+(CY+110), stroke:'var(--ink)', 'stroke-width':1, opacity:0.35 }, g);
+    var lineR = el('path', { d:'M'+(CX+250)+','+(CY-110)+'V'+(CY+110), stroke:'var(--ink)', 'stroke-width':1, opacity:0.35 }, g);
+    var gridL = el('g', {}, g), traceR = el('path', { d:'', stroke:'var(--ink)', 'stroke-width':1.7, fill:'none' }, g);
+    for (var i=0;i<6;i++) for (var j=0;j<5;j++){
+      el('rect', { x:CX-330+i*30, y:CY-70+j*30, width:22, height:22, fill:'none',
+        stroke:'var(--ink)', 'stroke-width':1, opacity:0.45 }, gridL);
+    }
+    var hL = T(g, CX-250, CY-132, 12.5, 'ui'); hL.setAttribute('fill-opacity','0.95'); hL.textContent = 'RAUMBILDUNG';
+    var hR = T(g, CX+250, CY-132, 12.5, 'ui'); hR.setAttribute('fill-opacity','0.95'); hR.textContent = 'ZEITBILDUNG';
+    var sL = T(g, CX-250, CY+122, 14.5); sL.textContent = 'Stellen · Raster · Mass · Vergleich';
+    var sR = T(g, CX+250, CY+122, 14.5); sR.textContent = 'Spur · Erinnerung · Bruch · offene Zukunft';
+    var f1 = T(g, CX, CY-182, 19); f1.setAttribute('fill-opacity','1');
+    f1.textContent = 'Raum entsteht, wenn Differenzen wiederholbar werden.';
+    var f2 = T(g, CX, CY+160, 19); f2.setAttribute('fill-opacity','1');
+    f2.textContent = 'Zeit entsteht, wenn Wiederholungen ihre Differenzen akkumulieren.';
+    var f3 = T(g, CX, CY+190, 15.5); f3.setAttribute('fill','var(--warm)'); f3.setAttribute('fill-opacity','1'); f3.textContent = 'Zeit ist Wiederkehr ohne Rückkehr.';
+    return { update:function(t){
+      var d = 'M'+(CX+120)+','+CY;
+      for (var k=1;k<=60;k++){
+        var u = k/60, x = CX + 120 + u*210;
+        var y = CY + Math.sin(u*7 + t*0.8)*(12 + u*46)*Math.cos(u*2.1);
+        d += 'L'+x.toFixed(1)+','+y.toFixed(1);
+      }
+      set(traceR, { d:d });
+      set(f3, { opacity: 0.55 + 0.45*Math.abs(Math.sin(t*0.6)) });
+    }};
+  });
+
+  // ---------- Phasen ----------
+  var PH = [
+    { key:'presence', title:'Anwesenheit', lead:'Theoretische Rekonstruktion, keine Behauptung über frühe Menschen',
+      note:'Veränderung wird erlebt, ohne dass Zeit bereits als eigenständige Dimension gedacht werden muss.',
+      theory:'Grundunterscheidung: anwesend / abwesend. Das Feld ist räumlich organisiert, nicht zeitlich.',
+      on:{ presence:1 } },
+    { key:'trace', title:'Das Abwesende bleibt', lead:'Tod, Erinnerung, Spur',
+      note:'Der Tote ist abwesend und dennoch gegenwärtig. Etwas ist nicht mehr da und bleibt wirksam.',
+      theory:'Das Nicht-Jetzt wird zunächst räumlich symbolisiert: Jenseits als Anderswo. Erste Vergangenheit ist eine Spur, kein Zeitabschnitt.',
+      on:{ presence:0.22, trace:1 } },
+    { key:'cycle', title:'Wiederkehr', lead:'Tag, Mond, Jahreszeit, Aussaat',
+      note:'Ein Ereignis kann als Wiederkehr eines früheren erkannt werden. Wiederholung macht Unterschiede vergleichbar.',
+      theory:'Der Kreis ist eine Form der Organisation von Zeit, keine Epocheneigenschaft. Von zyklischer Zeit zu sprechen wäre eine Vereinfachung.',
+      on:{ presence:0.1, trace:0.2, cycle:1 } },
+    { key:'calendar', title:'Zeit bekommt Stellen', lead:'Kalender',
+      note:'Der Kalender bildet Zeit nicht nur ab. Er erzeugt reproduzierbare soziale Zeitstellen.',
+      theory:'Starke Verräumlichung: Die Stelle bleibt identifizierbar, obwohl jedes Jahr anderes an ihr geschieht. Ereignis → Wiederholung → Zeitstelle.',
+      on:{ cycle:0.22, calendar:1 } },
+    { key:'measure', title:'Zeit als Mass der Veränderung', lead:'Aristoteles',
+      note:'Zeit wird beobachtbar, indem Veränderung gezählt wird: Bewegung, Vorher und Nachher, dann Zahl.',
+      theory:'Zeit bleibt hier an Bewegung gebunden. Ohne Veränderung gäbe es nichts zu zählen.',
+      on:{ calendar:0.16, measure:1 } },
+    { key:'eternity', title:'Zeit und Ewigkeit', lead:'Weltzeit, Heilsgeschichte',
+      note:'Die veränderliche Welt bekommt eine Gegenform, die selbst nicht vergeht.',
+      theory:'Ewigkeit ist nicht sehr lange Zeit, sondern die Negation zeitlicher Existenz. Geschichte wird als gerichteter Verlauf lesbar.',
+      on:{ measure:0.14, eternity:1 } },
+    { key:'inner', title:'Zeit wird innerlich', lead:'Augustinus',
+      note:'Vergangenheit und Zukunft sind in der Gegenwart wirksam, als Erinnerung und als Erwartung.',
+      theory:'Nicht drei Abschnitte nebeneinander, sondern drei Richtungen einer Gegenwart: Erinnerung, Aufmerksamkeit, Erwartung.',
+      on:{ eternity:0.16, inner:1 } },
+    { key:'clock', title:'Zeit wird gleichförmig', lead:'Mechanische Uhr',
+      note:'Die Uhr macht Zeit unabhängig vom Ereignis. Die Stunde bleibt eine Stunde, gleichgültig, was geschieht.',
+      theory:'Qualitative Rhythmen werden in identische Takte zerlegt. Verschiedene Adressen lassen sich auf denselben Takt beziehen: Synchronisierung.',
+      on:{ inner:0.14, clock:1 } },
+    { key:'newton', title:'Absolute Zeit', lead:'Newton',
+      note:'Zeit läuft auch dann weiter, wenn nichts geschieht.',
+      theory:'Das Raster löst sich vom Ereignis. Ereignisse bewegen sich jetzt innerhalb einer Struktur, die von ihnen unabhängig ist.',
+      on:{ clock:0.2, newton:1 } },
+    { key:'kant', title:'Bedingung der Erfahrung', lead:'Kant',
+      note:'Nicht nur: Was ist Zeit? Sondern: Unter welchen Bedingungen kann etwas zeitlich erscheinen?',
+      theory:'Die äussere Struktur klappt in die Form des Beobachtens hinein. Raum und Zeit als Formen des Nebeneinander und des Nacheinander.',
+      on:{ newton:0.18, kant:1 } },
+    { key:'duree', title:'Dauer', lead:'Bergson',
+      note:'Erlebte Zeit besteht nicht aus nebeneinanderliegenden Zeitpunkten.',
+      theory:'Kritik der Verräumlichung: Die gemessene Zeit ist Raum geworden. Die durée ist qualitativ, ihre Zustände durchdringen einander.',
+      on:{ kant:0.14, duree:1 } },
+    { key:'relativity', title:'Keine universelle Gleichzeitigkeit', lead:'Einstein, Minkowski',
+      note:'Was für den einen Beobachter gleichzeitig ist, ist es für den anderen nicht.',
+      theory:'Das globale Jetzt zerbricht, während Zeit physikalisch stärker mit dem Raum geometrisiert wird. Das ist nicht Bergsons Dauer, sondern ihr Gegenzug.',
+      on:{ duree:0.16, relativity:1 } },
+    { key:'difference', title:'Differenz und Wiederholung', lead:'Deleuze',
+      note:'Wiederholung bringt Differenz hervor. Die Bedingungen der Wiederholung verändern sich im Vollzug.',
+      theory:'Genetische Theorie des Werdens, keine Theorie gesellschaftlicher Zeitstrukturen: Gewohnheit, Gedächtnis, Wiederkehr der Differenz.',
+      on:{ relativity:0.14, difference:1 } },
+    { key:'operation', title:'Zeit als Operation', lead:'Luhmann',
+      note:'Nur die aktuelle Operation ist aktualisiert. Jede Operation verändert die Bedingungen der nächsten.',
+      theory:'Potentialität → Aktualisierung → veränderte Potentialität. Vergangenheit ist irreversible Spur, Zukunft ein offenes Feld, Gegenwart Vollzug.',
+      on:{ difference:0.16, operation:1 } },
+    { key:'eigenzeit', title:'Eigenzeit der Systeme', lead:'Luhmann, Fortsetzung',
+      note:'Es gibt keine gemeinsame Uhr der Gesellschaft. Jedes System bildet seine Zeit aus den eigenen Operationen.',
+      theory:'Geteilt ist nur Gleichzeitigkeit, nicht der Takt. Weltzeit ist eine Semantik, kein Synchronisator. Zeitdruck entsteht dort, wo verschieden getaktete Systeme gekoppelt sind.',
+      on:{ operation:0.12, eigenzeit:1 } },
+    { key:'all', title:'Alle Formen zugleich', lead:'keine Fortschrittsreihe',
+      note:'Keine dieser Formen löst die vorherige einfach ab. Sie liegen übereinander und werden je nach Anlass aktiviert.',
+      theory:'Anwesenheitsfeld, Spur, Kreis, Kalender, Skala, Ewigkeit, innere Zeit, Uhr, Achse, Form, Dauer, Raumzeit, Differenz, Operation.',
+      on:{ presence:0.42, trace:0.4, cycle:0.4, calendar:0.3, measure:0.34, eternity:0.34, inner:0.36,
+           clock:0.3, newton:0.34, kant:0.32, duree:0.42, relativity:0.34, difference:0.4,
+           operation:0.5, eigenzeit:0.4 } },
+    { key:'synthesis', title:'Raumbildung und Zeitbildung', lead:'zwei Grundbewegungen',
+      note:'Raum entsteht, wenn Differenzen wiederholbar werden. Zeit entsteht, wenn Wiederholungen ihre Differenzen akkumulieren.',
+      theory:'Links sammeln sich Stellen, Raster, Masse und Vergleichbarkeit. Rechts Spur, Erinnerung, Irreversibilität und offene Zukunft.',
+      on:{ synthesis:1, calendar:0.07, clock:0.07, newton:0.07, operation:0.1, duree:0.07 } }
+  ];
+
+  // ---------- Zustand ----------
+  var idx = 0, playing = true, speed = 11, tGlobal = 0, phaseT = 0;
+  var titleEl = document.getElementById('title'), leadEl = document.getElementById('lead');
+  var noteEl = document.getElementById('noteText'), thyEl = document.getElementById('noteTheory');
+  var counterEl = document.getElementById('counter'), kickerEl = document.getElementById('kicker');
+  var rail = document.getElementById('rail'), railBtns = [];
+
+  PH.forEach(function(p, i){
+    var b = document.createElement('button');
+    b.type = 'button'; b.title = p.title; b.setAttribute('role','tab');
+    b.setAttribute('aria-label', (i+1)+'. '+p.title);
+    b.appendChild(document.createElement('span'));
+    b.addEventListener('click', function(){ go(i); });
+    rail.appendChild(b); railBtns.push(b);
+  });
+
+  function applyPhase(){
+    var p = PH[idx];
+    titleEl.textContent = p.title;
+    leadEl.textContent = p.lead;
+    noteEl.textContent = p.note;
+    thyEl.textContent = p.theory;
+    kickerEl.textContent = idx < 15 ? 'Formen der Zeit' : (idx === 15 ? 'Gleichzeitigkeit der Formen' : 'Zwei Grundbewegungen');
+    counterEl.textContent = (idx+1) + ' / ' + PH.length;
+    for (var k in layers) layers[k].target = p.on[k] || 0;
+    railBtns.forEach(function(b,i){ b.setAttribute('aria-current', i === idx ? 'true' : 'false'); });
+    phaseT = 0;
+  }
+  function go(i){ idx = (i + PH.length) % PH.length; applyPhase(); }
+  applyPhase();
+
+  document.getElementById('prev').addEventListener('click', function(){ go(idx-1); });
+  document.getElementById('next').addEventListener('click', function(){ go(idx+1); });
+  var playBtn = document.getElementById('play');
+  playBtn.addEventListener('click', function(){
+    playing = !playing; playBtn.setAttribute('aria-pressed', playing ? 'true':'false');
+  });
+  document.getElementById('speed').addEventListener('input', function(e){ speed = +e.target.value; });
+  var txtBtn = document.getElementById('txt'), thyBtn = document.getElementById('thy');
+  txtBtn.addEventListener('click', function(){
+    var on = txtBtn.getAttribute('aria-pressed') !== 'true';
+    txtBtn.setAttribute('aria-pressed', on?'true':'false');
+    document.body.classList.toggle('notext', !on);
+    fitViewBox();
+  });
+  thyBtn.addEventListener('click', function(){
+    var on = thyBtn.getAttribute('aria-pressed') !== 'true';
+    thyBtn.setAttribute('aria-pressed', on?'true':'false');
+    document.body.classList.toggle('notheory', !on);
+  });
+  window.addEventListener('keydown', function(e){
+    if (e.target && e.target.tagName === 'INPUT') return;
+    if (e.key === 'ArrowRight') go(idx+1);
+    else if (e.key === 'ArrowLeft') go(idx-1);
+    else if (e.key === ' '){ e.preventDefault(); playBtn.click(); }
+  });
+
+  // ---------- Export ----------
+  function styleSheet(){
+    var c = getComputedStyle(document.documentElement);
+    var vars = ['paper','ink','muted','hair','warm','cool','soft'].map(function(k){
+      return '--'+k+':'+c.getPropertyValue('--'+k).trim()+';';
+    }).join('');
+    return '<style>svg{'+vars+'}text{font-family:Georgia,serif}</style>';
+  }
+  function serialize(){
+    var clone = svg.cloneNode(true);
+    clone.setAttribute('xmlns', SVGNS);
+    clone.setAttribute('width', W); clone.setAttribute('height', H);
+    var bg = document.createElementNS(SVGNS,'rect');
+    bg.setAttribute('x',0); bg.setAttribute('y',0); bg.setAttribute('width',W); bg.setAttribute('height',H);
+    bg.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue('--paper').trim());
+    clone.insertBefore(bg, clone.firstChild);
+    var s = new XMLSerializer().serializeToString(clone);
+    return s.replace('<svg', '<svg').replace('>', '>' + styleSheet());
+  }
+  function download(blob, name){
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 800);
+  }
+  document.getElementById('svgBtn').addEventListener('click', function(){
+    download(new Blob([serialize()], { type:'image/svg+xml' }), 'formen-der-zeit-' + PH[idx].key + '.svg');
+  });
+  document.getElementById('pngBtn').addEventListener('click', function(){
+    var data = serialize();
+    var img = new Image();
+    img.onload = function(){
+      var sc = 2, cv = document.createElement('canvas');
+      cv.width = W*sc; cv.height = H*sc;
+      var ctx = cv.getContext('2d');
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--paper').trim();
+      ctx.fillRect(0,0,cv.width,cv.height);
+      ctx.drawImage(img, 0, 0, cv.width, cv.height);
+      cv.toBlob(function(b){ download(b, 'formen-der-zeit-' + PH[idx].key + '.png'); });
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data);
+  });
+
+  // ---------- Schleife ----------
+  function fitViewBox(){
+    var stage = document.getElementById('stage');
+    var sw = stage.clientWidth, sh = stage.clientHeight;
+    var head = document.querySelector('.head');
+    if (sw/sh < 1.0){                   // Hochformat: eigene Bildfläche zwischen Titel und Text
+      var top = head.offsetHeight + 26;
+      var reserve = document.body.classList.contains('notext') ? 150 : 250;
+      svg.style.position = 'absolute';
+      svg.style.left = '0'; svg.style.right = '0';
+      svg.style.top = top + 'px';
+      svg.style.height = Math.max(180, sh - top - reserve) + 'px';
+      svg.setAttribute('viewBox', '232 46 536 428');
+      root.setAttribute('transform', 'translate('+CX+',0) scale(0.8,1) translate('+(-CX)+',0)');
+    } else {
+      svg.style.position = ''; svg.style.top = ''; svg.style.height = '';
+      svg.setAttribute('viewBox', '-30 -26 1060 700');
+      root.removeAttribute('transform');
+    }
+  }
+  window.addEventListener('resize', fitViewBox);
+  fitViewBox();
+
+  var last = performance.now();
+  function frame(now){
+    var dt = Math.min(0.05, (now-last)/1000); last = now;
+    tGlobal += dt; phaseT += dt;
+    if (playing && phaseT > speed){ go(idx+1); }
+
+    for (var k in layers){
+      var L = layers[k];
+      L.w += (L.target - L.w) * Math.min(1, dt*2.4);
+      if (L.w < 0.004 && L.target === 0){
+        if (L.g.getAttribute('display') !== 'none') L.g.setAttribute('display','none');
+        continue;
+      }
+      if (L.g.getAttribute('display') === 'none') L.g.removeAttribute('display');
+      L.g.setAttribute('opacity', L.w.toFixed(3));
+      L.api.update(tGlobal, dt);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
