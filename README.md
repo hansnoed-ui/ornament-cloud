@@ -10,7 +10,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `termine/` – Termine als aufklappbare Einträge; neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen
 - `portfolio/` – Werkübersicht (Karten); jedes Werk mit eigener Seite, z. B. `portfolio/nebeneinander-nacheinander/`
 - `portfolio/nebeneinander-nacheinander/` – interaktives Doppelrad: `index.html`, `rad.css`, `js/wheel.js` (Rad, Geste, Ablauf),
-  `js/lib/spin.js` (Drehphysik), `js/lib/geometry.js`, `js/symbols.js` (40 Zeichen), `js/lib/random.js`, `js/lib/validation.js`;
+  `js/lib/spin.js` (Drehphysik), `js/lib/geometry.js`, `js/symbols.js` (40 Zeichen), `js/ticker.js` (Laufband mit allen Namen), `js/lib/random.js`, `js/lib/validation.js`;
   Diagnose mit `?debug`, direkte Konstellation mit `?pair=<id>`
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und 99 Konstellationen, unverändert)
 - `tools/sync-doppelspalt-data.ts` – erzeugt daraus `portfolio/nebeneinander-nacheinander/js/data/*.js`:

@@ -6,7 +6,7 @@
   <title>Nebeneinander, Nacheinander – Ornament Cloud</title>
   <meta name="description" content="Eine interaktive Versuchsanordnung zur Verräumlichung und Verzeitlichung von Wahrnehmung.">
   <link rel="stylesheet" href="../../styles.css?v=17">
-  <link rel="stylesheet" href="rad.css?v=5">
+  <link rel="stylesheet" href="rad.css?v=6">
 </head>
 <body>
   <header class="site-header">
@@ -60,6 +60,10 @@
       <p id="rad-live" class="sr-only" aria-live="polite"></p>
     </section>
 
+    <div class="rad-ticker" role="region" aria-label="Alle Namen auf dem Rad">
+      <div class="rad-ticker-track"></div>
+    </div>
+
     <section class="rad-about">
       <p class="rad-intro">„Nebeneinander, Nacheinander“ ist eine interaktive Versuchsanordnung zur Verräumlichung und Verzeitlichung von Wahrnehmung. Auf zwei gegenläufigen Rädern begegnen sich Künstler:innen und Theoretiker:innen in zufällig ausgewählten Konstellationen. Raum stellt Möglichkeiten nebeneinander bereit, während die Drehung sie in eine zeitliche Folge versetzt und jeweils eine Begegnung aktualisiert. Aus jeder Begegnung entsteht ein kurzer Text und eine offene Frage, aber keine abschliessende Synthese. Das Rad erzeugt keine Antworten – es erzeugt Konstellationen.</p>
     </section>
@@ -68,5 +72,6 @@
   </main>
   <script src="../../icons.js?v=13" defer></script>
   <script type="module" src="js/wheel.js?v=4"></script>
+  <script type="module" src="js/ticker.js?v=1"></script>
 </body>
 </html>

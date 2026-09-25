@@ -164,6 +164,49 @@
 .rad-again:hover,
 .rad-again:focus-visible { color: var(--text); }
 
+/* ---------- Laufband mit allen Namen ---------- */
+.rad-ticker {
+  margin: 40px 0 0;
+  overflow: hidden;
+  background: var(--accent);
+  color: #fff;
+}
+
+.rad-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: rad-ticker var(--ticker-duration, 60s) linear infinite;
+}
+
+.rad-ticker:hover .rad-ticker-track { animation-play-state: paused; }
+
+.rad-ticker-list {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rad-ticker-list li {
+  padding: 11px 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.rad-ticker-list li::after {
+  content: "·";
+  padding: 0 0.9em;
+}
+
+@keyframes rad-ticker {
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-color-scheme: dark) {
+  .rad-ticker { color: #000; }
+}
+
 /* ---------- Einführung ---------- */
 .rad-about {
   margin: 56px 0 0;
@@ -209,10 +252,16 @@
     border-radius: 0;
   }
   .rad-result { padding: 0 10px; }
+  .rad-ticker { margin: 32px -20px 0; }
   .rad-names { font-size: 1.35rem; }
   .rad-question { font-size: 1.15rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .rad-result > *, .rad-wheel .sym, .rad-cue { transition: none; }
+  /* ohne Bewegung: alle Namen stehen umbrochen im Band */
+  .rad-ticker-track { animation: none; width: auto; }
+  .rad-ticker-list { flex-wrap: wrap; padding: 10px 16px; }
+  .rad-ticker-list li { padding: 3px 0; }
+  .rad-ticker-list[aria-hidden] { display: none; }
 }
