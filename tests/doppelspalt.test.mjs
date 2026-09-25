@@ -1,4 +1,4 @@
-// Tests für „Das Rad von Zeit und Raum“ (Doppelspalt der Wahrnehmung)
+// Tests für „Nebeneinander, Nacheinander“ (Doppelspalt der Wahrnehmung)
 //
 //   node --experimental-strip-types --no-warnings --test tests/doppelspalt.test.mjs
 //
@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const root = new URL("../", import.meta.url);
-const js = p => new URL(`portfolio/rad-von-zeit-und-raum/js/${p}`, root).href;
+const js = p => new URL(`portfolio/nebeneinander-nacheinander/js/${p}`, root).href;
 
 const { artists } = await import(js("data/artists.js"));
 const { theorists } = await import(js("data/theorists.js"));
@@ -165,7 +165,7 @@ test("40 unterschiedliche Zeichen", () => {
 });
 
 test("Laufzeit bildet keine Kombinationen: wheel.js zieht nur aus den kuratierten Datensätzen", () => {
-  const src = readFileSync(new URL("portfolio/rad-von-zeit-und-raum/js/wheel.js", root), "utf8");
+  const src = readFileSync(new URL("portfolio/nebeneinander-nacheinander/js/wheel.js", root), "utf8");
   assert.match(src, /drawConstellation\(constellations, previousId\)/);
   assert.doesNotMatch(src, /artists\.(flatMap|map)\([^)]*theorists/);
 });

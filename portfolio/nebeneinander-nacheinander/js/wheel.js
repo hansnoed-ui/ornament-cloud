@@ -1,4 +1,4 @@
-// Das Rad von Zeit und Raum – interaktives Doppelrad
+// Nebeneinander, Nacheinander – interaktives Doppelrad
 //
 // Ablauf: 99 kuratierte Konstellationen → zufällige Auswahl (beim Loslassen) → zwei Zielplätze
 //         → gegenläufige Bewegung → Stillstand → Namen → Text → offene Frage

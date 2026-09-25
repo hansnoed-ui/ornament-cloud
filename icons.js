@@ -11,7 +11,7 @@
     prozess   Schleife über einer Zeitlinie, 18 Schritte (News-Eintrag)
     inklusion Kreis öffnet sich, verschiedene Formen finden hinein (Termine-Eintrag)
     turm      Turm, Werke in drei Konstellationen, Eingriff, 155 Tage (Termine-Eintrag)
-    rad       Doppelrad, zwei gegenläufige Ringe (Portfolio: Das Rad von Zeit und Raum)
+    rad       Doppelrad, zwei gegenläufige Ringe (Portfolio: Nebeneinander, Nacheinander)
 
   Es werden nur Symbole animiert, die gerade sichtbar sind.
   Bei prefers-reduced-motion erscheint ein ruhendes Bild.
@@ -518,7 +518,7 @@
     };
   }
 
-  // ---------- Portfolio: Das Rad von Zeit und Raum (Vorschau) ----------
+  // ---------- Portfolio: Nebeneinander, Nacheinander (Vorschau) ----------
   // Zwei konzentrische Ringe, der äussere dreht langsam im Uhrzeigersinn, der
   // innere gegenläufig. Feststehender Zeiger oben als Ablesemarke, Fadenkreuz
   // in der Mitte. Die Drehung ist stetig, der Loop daher ohne Sprung.

@@ -1,4 +1,4 @@
-// Browsertests für „Das Rad von Zeit und Raum“ (benötigt Playwright)
+// Browsertests für „Nebeneinander, Nacheinander“ (benötigt Playwright)
 //
 //   node tests/doppelspalt.e2e.mjs
 //
@@ -23,7 +23,7 @@ const server = createServer(async (req, res) => {
   catch { res.writeHead(404); res.end(); }
 });
 await new Promise(r => server.listen(0, r));
-const base = `http://localhost:${server.address().port}/portfolio/rad-von-zeit-und-raum/`;
+const base = `http://localhost:${server.address().port}/portfolio/nebeneinander-nacheinander/`;
 
 const results = [];
 async function check(name, fn) {
@@ -32,7 +32,7 @@ async function check(name, fn) {
 }
 
 const browser = await chromium.launch();
-const pairs = new Set((await import(new URL("../portfolio/rad-von-zeit-und-raum/js/data/constellations.js", import.meta.url).href)).constellations.map(c => c.id));
+const pairs = new Set((await import(new URL("../portfolio/nebeneinander-nacheinander/js/data/constellations.js", import.meta.url).href)).constellations.map(c => c.id));
 
 async function open(ctxOpts = {}, query = "") {
   const ctx = await browser.newContext(ctxOpts);
@@ -217,7 +217,7 @@ await check("Screenreader-Struktur: Rad als Schaltfläche, Zeichen verborgen, An
 });
 
 await check("Lange Namen: Umbruch ohne Überlauf auf 320 px", async () => {
-  const cs = (await import(new URL("../portfolio/rad-von-zeit-und-raum/js/data/constellations.js", import.meta.url).href)).constellations;
+  const cs = (await import(new URL("../portfolio/nebeneinander-nacheinander/js/data/constellations.js", import.meta.url).href)).constellations;
   const longOnes = ["wendy-hui-kyong-chun", "n-katherine-hayles", "george-spencer-brown"].map(t => cs.find(c => c.theoristId === t));
   longOnes.push(cs.find(c => c.artistId === "felix-gonzalez-torres"));
   for (const r of longOnes) {
