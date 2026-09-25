@@ -8,6 +8,7 @@
     zeit      Kreise -> Kalenderraster -> Messlinie, ohne Schrift (Termine)
     stellen   Raster, Objekte, Drift, Werk, Atmosphäre, mit Kamerafahrt (Portfolio)
     wave      feine Wellenlinie als Trennung unter dem Header
+    prozess   Schleife über einer Zeitlinie, 18 Schritte (News-Eintrag)
 
   Es werden nur Symbole animiert, die gerade sichtbar sind.
   Bei prefers-reduced-motion erscheint ein ruhendes Bild.
@@ -16,7 +17,7 @@
 (function () {
   'use strict';
 
-  var PERIOD = { reentry: 24, zeit: 15, stellen: 12, wave: 60 };   // Sekunden pro Durchlauf
+  var PERIOD = { reentry: 24, zeit: 15, stellen: 12, wave: 60, prozess: 26.4 };   // Sekunden pro Durchlauf
   var FPS = 30;
 
   var NS = 'http://www.w3.org/2000/svg';
@@ -302,6 +303,68 @@
     };
   }
 
+  // ---------- News: der bisherige Prozess ----------
+  // Ein Gespräch als Schleife über einer Zeitlinie. Jede Runde hat eine etwas
+  // andere Form und hinterlässt einen Schritt auf der Linie; frühere Runden
+  // bleiben als blasse Spuren. 18 Schritte = 18 Änderungen bis heute.
+  function prozess(svg) {
+    var STEPS = 18, LAP = 1.3, HOLD = 3, X0 = 56, X1 = 266, BASE = 150, CY = 76;
+    function slot(i) { return X0 + (X1 - X0) * i / (STEPS - 1); }
+    el('path', { d: 'M' + X0 + ',' + BASE + 'H' + X1, 'class': 'thin', opacity: 0.35 }, svg);
+    var done = el('path', { 'class': 'mid' }, svg);
+    var ghosts = [el('path', { 'class': 'thin' }, svg), el('path', { 'class': 'thin' }, svg), el('path', { 'class': 'thin' }, svg)];
+    var loop = el('path', { 'class': 'bold' }, svg);
+    var drop = el('path', { 'class': 'thin dash' }, svg);
+    var head = el('circle', { r: 4, 'class': 'fill' }, svg);
+    var dots = [];
+    for (var i = 0; i < STEPS; i++) dots.push(el('circle', { cx: f(slot(i)), cy: BASE, r: 3, 'class': 'fill', opacity: 0 }, svg));
+
+    function shape(k, cx) {                              // Schleife mit Innenschleife, jede Runde anders
+      var b = 0.4 + 0.45 * hash(k * 1.7 + 3), rot = -Math.PI / 2 + (hash(k * 2.3 + 9) - 0.5) * 0.9;
+      var sc = 20 + 8 * hash(k * 3.1 + 1), ecc = 0.75 + 0.3 * hash(k + 5), pts = [];
+      var cr = Math.cos(rot), sr = Math.sin(rot);
+      for (var n = 0; n <= 72; n++) {
+        var a = n / 72 * TAU, r = b + Math.cos(a);
+        var x = r * Math.cos(a) * sc, y = r * Math.sin(a) * sc * ecc;
+        pts.push([cx + x * cr - y * sr, CY + x * sr + y * cr]);
+      }
+      return pts;
+    }
+
+    return function (u) {
+      var T = STEPS * LAP + HOLD, tt = u * T;
+      var k = Math.min(STEPS - 1, Math.floor(tt / LAP)), frac = Math.min(1, tt / LAP - k);
+      var finished = tt >= STEPS * LAP, out = 1 - seg(tt, T - 1, T);
+      var cx = k ? lerp(slot(k - 1), slot(k), ease(Math.min(1, frac * 2))) : slot(0);
+
+      var pts = shape(k, cx), shown = finished ? pts : pts.slice(0, Math.max(2, Math.round(frac * pts.length)));
+      loop.setAttribute('d', line(shown));
+      loop.setAttribute('opacity', (finished ? 0.35 : 1) * out);
+      var hp = shown[shown.length - 1];
+      head.setAttribute('cx', f(hp[0])); head.setAttribute('cy', f(hp[1]));
+      head.setAttribute('opacity', finished ? 0 : out);
+
+      ghosts.forEach(function (g, j) {
+        var kk = k - j - 1;
+        if (kk < 0) { g.setAttribute('opacity', 0); return; }
+        g.setAttribute('d', line(shape(kk, slot(kk))));
+        g.setAttribute('opacity', ((0.3 - j * 0.09) * out).toFixed(3));
+      });
+
+      // am Ende jeder Runde fällt ein Schritt auf die Zeitlinie
+      var n = finished ? STEPS : k + (frac > 0.9 ? 1 : 0);
+      dots.forEach(function (d, i) {
+        var fresh = i === n - 1 && !finished ? seg(frac, 0.9, 1) : 1;
+        d.setAttribute('opacity', i < n ? (fresh * out).toFixed(3) : 0);
+        d.setAttribute('r', i === n - 1 && !finished ? f(3 + 2 * (1 - fresh)) : 3);
+      });
+      done.setAttribute('d', n > 1 ? 'M' + f(slot(0)) + ',' + BASE + 'H' + f(slot(n - 1)) : '');
+      done.setAttribute('opacity', out);
+      drop.setAttribute('d', 'M' + f(cx) + ',' + (CY + 30) + 'V' + (BASE - 6));
+      drop.setAttribute('opacity', finished ? 0 : (0.6 * seg(frac, 0.6, 0.9) * (1 - seg(frac, 0.95, 1))).toFixed(3));
+    };
+  }
+
   // ---------- Trennlinie unter dem Header: feine, rhythmisch wogende Welle ----------
   function wave(svg) {
     var H = 32, path = el('path', { 'class': 'wave' }, svg);
@@ -323,14 +386,14 @@
   }
 
   // ---------- Ablauf ----------
-  var FACTORY = { reentry: reentry, zeit: zeit, stellen: stellen, wave: wave };
-  var STILL = { reentry: 0.7, zeit: 0.45, stellen: 0.78, wave: 0 };   // Standbild bei reduzierter Bewegung
+  var FACTORY = { reentry: reentry, zeit: zeit, stellen: stellen, wave: wave, prozess: prozess };
+  var STILL = { reentry: 0.7, zeit: 0.45, stellen: 0.78, wave: 0, prozess: 0.95 };   // Standbild bei reduzierter Bewegung
   var icons = [];
 
   Array.prototype.forEach.call(document.querySelectorAll('svg[data-icon]'), function (svg) {
     var name = svg.getAttribute('data-icon');
     if (!FACTORY[name]) return;
-    icons.push({ name: name, update: FACTORY[name](svg), visible: true, offset: Math.random() * PERIOD[name], svg: svg });
+    icons.push({ name: name, update: FACTORY[name](svg), visible: true, offset: name === 'prozess' ? 0 : Math.random() * PERIOD[name], svg: svg });
   });
   if (!icons.length) return;
 
