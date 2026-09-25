@@ -1,5 +1,5 @@
 :root {
-  --bg: #f7f5f0;
+  --bg: #f8f8f6;
   --surface: #ffffff;
   --text: #1f1d1a;
   --muted: #6b665e;
@@ -14,6 +14,13 @@
   --radius: 14px;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --serif: Georgia, "Times New Roman", serif;
+
+  /* Animierter Hintergrund */
+  --bg-line-faint: #d6d6d3;   /* sehr helles Grau: hintere Figur, Haarlinien */
+  --bg-line-mid: #a9a9a5;     /* Rauchgrau: Schleifen */
+  --bg-line-strong: #3b3b39;  /* Graphit: vordere Figur, Spuren, Kreuzungspunkt */
+  --bg-visibility: 1;         /* Gesamtsichtbarkeit, z. B. 0.6 für noch zurückhaltender */
+  --bg-veil: rgba(248, 248, 246, 0.85); /* Schleier hinter dem Kopfbereich */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -29,6 +36,11 @@
     --thumb-b: #2e3f4a;
     --thumb-c: #36422c;
     --thumb-d: #45344a;
+
+    --bg-line-faint: #2d2c2a;
+    --bg-line-mid: #4b4a47;
+    --bg-line-strong: #c9c6c0;
+    --bg-veil: rgba(23, 22, 20, 0.85);
   }
 }
 
@@ -57,9 +69,61 @@ a {
   padding: 0 20px;
 }
 
+/* Animierter Hintergrund: feste Ebene hinter allem */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  animation: bg-in 6s ease 0.8s forwards;
+}
+
+.bg-field {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: var(--bg-visibility);
+}
+
+.bg path,
+.bg line,
+.bg circle {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bg .far { stroke: var(--bg-line-faint); stroke-width: 0.8; }
+.bg .mid { stroke: var(--bg-line-mid); stroke-width: 0.7; }
+.bg .near { stroke: var(--bg-line-strong); stroke-width: 0.8; }
+.bg .trace { stroke: var(--bg-line-strong); stroke-width: 0.6; transition: opacity 42s linear; }
+.bg .axis { stroke: var(--bg-line-faint); stroke-width: 0.6; }
+.bg .mark { stroke: var(--bg-line-strong); stroke-width: 0.7; }
+.bg .mark-dot { fill: var(--bg-line-strong); stroke: none; }
+
+@keyframes bg-in {
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg { animation: none; opacity: 1; }
+}
+
+/* Inhalt liegt über dem Hintergrund */
+.site-header,
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
+
 /* Kopfbereich */
 .site-header {
   padding: 72px 0 40px;
+  /* weicher Schleier, damit Titel und Einleitung klar lesbar bleiben */
+  background: radial-gradient(ellipse 70% 90% at 25% 45%, var(--bg-veil), transparent 75%);
 }
 
 .eyebrow {
