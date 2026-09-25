@@ -159,7 +159,7 @@ h1 {
 }
 
 @media (max-width: 640px) {
-  .grid { padding-bottom: 4px; }
+  .grid { padding-bottom: 56px; }
 }
 
 /* Karte */
@@ -670,27 +670,29 @@ h1 {
     order: -1;          /* auf dem Handy zuerst: Stellenfeld */
   }
 
+  /* Diamanten oberhalb der Karte: zeigen die Position und laden zum Wischen ein */
   .slider-dots {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    padding: 16px 0 56px;
+    gap: 14px;
+    padding: 0 0 18px;
   }
 
   .slider-dot {
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     padding: 0;
     border: 1px solid var(--text);
-    border-radius: 50%;
+    border-radius: 1px;
     background: transparent;
+    transform: rotate(45deg);
     cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.25s ease;
   }
 
   .slider-dot[aria-current="true"] {
     background: var(--text);
-    transform: scale(1.15);
+    transform: rotate(45deg) scale(1.25);
   }
 }
 
