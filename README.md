@@ -9,6 +9,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `news/` – News als aufklappbare Einträge; neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
 - `termine/` – Termine als aufklappbare Einträge; neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen
 - `portfolio/` – Platzhalterseite
+- `slider.js` – Punkte unter der Wisch-Galerie der Artefakte auf dem Smartphone (Wischen selbst per CSS)
 - `bg.js` – animierter Hintergrund (Lemniskaten und Schleifen als SVG, Tempo in `CONFIG`)
 - `assets/` – Vorschau-Videos (.mp4/.webm) und Standbilder (.jpg)
 - `werke/<name>/index.html` – lokale Kopien der Artefakte

@@ -158,6 +158,10 @@ h1 {
   padding-bottom: 64px;
 }
 
+@media (max-width: 640px) {
+  .grid { padding-bottom: 4px; }
+}
+
 /* Karte */
 .card {
   display: flex;
@@ -629,3 +633,64 @@ h1 {
   .post { grid-template-columns: 1fr; gap: 20px; padding: 20px; }
   .post-body h2 { font-size: 1.4rem; }
 }
+
+/* Smartphone: Artefakte als Wisch-Galerie, immer eines auf einmal */
+.slider-dots {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .grid {
+    display: flex;
+    gap: 40px;          /* grösser als der Seitenrand: die nächste Karte bleibt ganz verborgen */
+    margin: 0 -20px;
+    padding: 0 20px 4px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 20px;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .grid .card {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .grid .card:hover {
+    transform: none;
+  }
+
+  .grid .mobile-first {
+    order: -1;          /* auf dem Handy zuerst: Stellenfeld */
+  }
+
+  .slider-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 0 56px;
+  }
+
+  .slider-dot {
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border: 1px solid var(--text);
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .slider-dot[aria-current="true"] {
+    background: var(--text);
+    transform: scale(1.15);
+  }
+}
+
