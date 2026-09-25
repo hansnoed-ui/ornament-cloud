@@ -310,7 +310,19 @@ h1 {
   border: 1px solid var(--border);
   border-radius: 10px;
   color: var(--text);
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Invers-Effekt: beim Überfahren helle Linien auf dunkler Fläche */
+.menu-item:hover .menu-icon,
+.menu-item:focus-visible .menu-icon {
+  background: var(--text);
+  color: var(--surface);
+}
+
+.menu-item:hover .menu-icon rect.bold,
+.menu-item:focus-visible .menu-icon rect.bold {
+  fill: var(--text);
 }
 
 .menu-item:hover .menu-icon,
