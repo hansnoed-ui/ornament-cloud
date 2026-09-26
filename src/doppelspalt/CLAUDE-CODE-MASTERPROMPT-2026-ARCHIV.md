@@ -1,3 +1,8 @@
+> **Archiv – nicht mehr verbindlich.**
+> Dieser Masterprompt dokumentiert den Entstehungsstand des Werks (September 2026: Arbeitstitel
+> «Doppelspalt der Wahrnehmung», 99 Konstellationen, fünf inzwischen aufgelöste doppelte Personenpaare).
+> Er wird unverändert aufbewahrt. Verbindlich sind die Regeln in [`REGELN.md`](REGELN.md).
+
 # CLAUDE CODE MASTERPROMPT
 ## Doppelspalt der Wahrnehmung — interactive constellation wheel
 
