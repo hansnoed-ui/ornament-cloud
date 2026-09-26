@@ -13,6 +13,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `js/lib/spin.js` (Drehphysik), `js/lib/geometry.js`, `js/symbols.js` (40 Zeichen), `js/ticker.js` (Laufband mit allen Namen), `js/lib/random.js`, `js/lib/validation.js`;
   Diagnose mit `?debug`, direkte Konstellation mit `?pair=<id>` (wird nach jeder Drehung per `history.replaceState` gesetzt; «Link kopieren» teilt sie)
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
+- `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)
+- `src/doppelspalt/CLAUDE-CODE-MASTERPROMPT-2026-ARCHIV.md` – ursprünglicher Auftrag, Entstehungsstand mit 99 Konstellationen, nicht mehr verbindlich
 - `src/doppelspalt/redaktion/` – redaktionelle Fassung der Konstellationen als CSV (aktuelle Datei in `manifest.json` → `editorialFile`); neue Fassung übernehmen:
   `node --experimental-strip-types tools/import-konstellationen.ts src/doppelspalt/redaktion/<datei>.csv`, danach den Sync unten
 - `tools/sync-doppelspalt-data.ts` – erzeugt daraus `portfolio/nebeneinander-nacheinander/js/data/*.js`:
