@@ -45,23 +45,50 @@ test("Browser-Daten entsprechen Zeichen für Zeichen den TypeScript-Originalen",
   assert.deepEqual(JSON.parse(JSON.stringify(constellations)), JSON.parse(JSON.stringify(ts.constellations)));
 });
 
-test("20 Künstler, 20 Theoretiker, 99 Datensätze", () => {
+// verbindliche redaktionelle Fassung (Semikolon-CSV, UTF-8)
+const REDAKTION = "src/doppelspalt/redaktion/konstellationen_165_redaktion_v3.csv";
+function parseCsv(src) {
+  const rows = []; let row = [], f = "", q = false;
+  for (let i = 0; i < src.length; i += 1) {
+    const ch = src[i];
+    if (q) { if (ch === '"' && src[i + 1] === '"') { f += '"'; i += 1; } else if (ch === '"') q = false; else f += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === ";") { row.push(f); f = ""; }
+    else if (ch === "\n" || ch === "\r") { if (ch === "\r" && src[i + 1] === "\n") i += 1; row.push(f); rows.push(row); row = []; f = ""; }
+    else f += ch;
+  }
+  if (f !== "" || row.length) { row.push(f); rows.push(row); }
+  return rows.filter(r => r.some(c => c !== ""));
+}
+
+test("20 Künstler, 20 Theoretiker, 165 Datensätze", () => {
   assert.equal(artists.length, 20);
   assert.equal(theorists.length, 20);
-  assert.equal(constellations.length, 99);
+  assert.equal(constellations.length, 165);
+});
+
+test("Datenbestand entspricht Zeichen für Zeichen der redaktionellen Fassung (CSV)", () => {
+  const [, ...rows] = parseCsv(readFileSync(new URL(REDAKTION, root), "utf8").replace(/^\uFEFF/, ""));
+  assert.equal(rows.length, constellations.length);
+  rows.forEach(([nr, a, , t, , text, frage], i) => {
+    const c = constellations[i];
+    assert.deepEqual([c.editorialNumber, c.artistId, c.theoristId, c.text, c.question], [Number(nr), a, t, text, frage], `#${nr}`);
+  });
 });
 
 test("Originale Validierung des Pakets (strict) besteht ohne Befund", () => {
   assert.deepEqual(ts.validation.validateDataset({ strictUniquePairs: true }), []);
+  assert.deepEqual(ts.validation.validateDataset({ strictUniquePairs: true, expectedConstellations: 165 }), []);
   ts.validation.assertDatasetValid({ strictUniquePairs: true });
 });
 
 test("Übertragene Validierung liefert dasselbe Ergebnis", () => {
   assert.deepEqual(validateDataset({ strictUniquePairs: true }), []);
+  assert.deepEqual(validateDataset({ strictUniquePairs: true, expectedConstellations: 165 }), []);
   assertDatasetValid({ strictUniquePairs: true });
 });
 
-test("alle IDs und Verweise gültig, alle 40 Personen verwendet, 99 eindeutige Paare", () => {
+test("alle IDs und Verweise gültig, alle 40 Personen verwendet, eindeutige Paare", () => {
   const a = new Set(artists.map(p => p.id)), t = new Set(theorists.map(p => p.id));
   const pairs = new Set();
   for (const c of constellations) {
@@ -71,7 +98,8 @@ test("alle IDs und Verweise gültig, alle 40 Personen verwendet, 99 eindeutige P
     assert.ok(c.text.trim() && c.question.trim(), c.id);
     pairs.add(c.pairKey);
   }
-  assert.equal(pairs.size, 99);
+  assert.equal(pairs.size, constellations.length);
+  assert.equal(pairs.size, 165);
   assert.equal(new Set(constellations.map(c => c.artistId)).size, 20);
   assert.equal(new Set(constellations.map(c => c.theoristId)).size, 20);
 });
@@ -80,9 +108,10 @@ test("100 000 Ziehungen: alle erreichbar, keine unmittelbare Wiederholung (Origi
   for (const sim of [ts.random.simulateDraws, simulateDraws]) {
     const counts = sim(constellations, 100_000);
     const v = [...counts.values()];
-    assert.equal(v.filter(x => x > 0).length, 99);
-    // grobe Gleichverteilung: Erwartung ~1010, weit innerhalb von ±25 %
-    assert.ok(Math.min(...v) > 750 && Math.max(...v) < 1270, `min ${Math.min(...v)} max ${Math.max(...v)}`);
+    assert.equal(v.filter(x => x > 0).length, constellations.length);
+    // grobe Gleichverteilung: Erwartung 100 000 / Anzahl, weit innerhalb von ±25 %
+    const e = 100_000 / constellations.length;
+    assert.ok(Math.min(...v) > 0.75 * e && Math.max(...v) < 1.25 * e, `min ${Math.min(...v)} max ${Math.max(...v)} (Erwartung ${e.toFixed(0)})`);
   }
 });
 
@@ -148,9 +177,20 @@ test("Spin: Dauer wächst mit der Stärke der Geste", () => {
   assert.ok(avg(2400) > avg(300) + 1, `${avg(300).toFixed(2)} → ${avg(2400).toFixed(2)}`);
 });
 
+test("Jede einzelne Konstellation ist durch das Rad erreichbar: beide Ringe landen exakt auf ihrem Paar", () => {
+  for (const r of constellations) {
+    const tg = geo.targetsFor(r, artists, theorists);
+    for (const velocity of [300, 1200, -2400]) {
+      const p = spin.planSpin({ artistFrom: Math.random() * 720, theoristFrom: Math.random() * 720, artistTarget: tg.artistTarget, theoristTarget: tg.theoristTarget, grabbed: velocity > 0 ? "artist" : "theorist", velocity });
+      assert.equal(artists[geo.indexAtAxis(spin.positionAt(p.artist, p.artist.T))].id, r.artistId, r.id);
+      assert.equal(theorists[geo.indexAtAxis(spin.positionAt(p.theorist, p.theorist.T))].id, r.theoristId, r.id);
+    }
+  }
+});
+
 test("Spin: reduzierte Bewegung landet ebenso exakt, kurz", () => {
   for (let i = 0; i < 2000; i += 1) {
-    const r = constellations[i % 99], tg = geo.targetsFor(r, artists, theorists);
+    const r = constellations[i % constellations.length], tg = geo.targetsFor(r, artists, theorists);
     const p = spin.planSpin({ artistFrom: Math.random() * 720, theoristFrom: Math.random() * 720, artistTarget: tg.artistTarget, theoristTarget: tg.theoristTarget, velocity: 700, reducedMotion: true });
     assert.equal(p.duration, 0.9);
     assert.equal(geo.indexAtAxis(spin.positionAt(p.artist, 0.9)), tg.artistIndex);

@@ -8,13 +8,15 @@ export type ValidationIssue = {
   message: string;
 };
 
-export function validateDataset(options: { strictUniquePairs?: boolean } = {}): ValidationIssue[] {
+export function validateDataset(options: { strictUniquePairs?: boolean; expectedConstellations?: number } = {}): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const strictUniquePairs = options.strictUniquePairs ?? true;
 
   if (artists.length !== 20) issues.push({ level: "error", code: "ARTIST_COUNT", message: `Expected 20 artists, found ${artists.length}.` });
   if (theorists.length !== 20) issues.push({ level: "error", code: "THEORIST_COUNT", message: `Expected 20 theorists, found ${theorists.length}.` });
-  if (constellations.length !== 99) issues.push({ level: "error", code: "CONSTELLATION_COUNT", message: `Expected 99 constellations, found ${constellations.length}.` });
+  // Anzahl ergibt sich aus dem Datenbestand; optional lässt sich eine erwartete Anzahl prüfen.
+  if (constellations.length === 0) issues.push({ level: "error", code: "CONSTELLATION_COUNT", message: "No constellations found." });
+  if (options.expectedConstellations !== undefined && constellations.length !== options.expectedConstellations) issues.push({ level: "error", code: "CONSTELLATION_COUNT", message: `Expected ${options.expectedConstellations} constellations, found ${constellations.length}.` });
 
   const allPeople = [...artists, ...theorists];
   const personIds = new Set<string>();
@@ -66,7 +68,7 @@ export function validateDataset(options: { strictUniquePairs?: boolean } = {}): 
   return issues;
 }
 
-export function assertDatasetValid(options: { strictUniquePairs?: boolean } = {}): void {
+export function assertDatasetValid(options: { strictUniquePairs?: boolean; expectedConstellations?: number } = {}): void {
   const issues = validateDataset(options);
   const errors = issues.filter(issue => issue.level === "error");
   if (errors.length) {

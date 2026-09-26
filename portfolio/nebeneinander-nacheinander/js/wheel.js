@@ -1,15 +1,15 @@
 // Nebeneinander, Nacheinander – interaktives Doppelrad
 //
-// Ablauf: 99 kuratierte Konstellationen → zufällige Auswahl (beim Loslassen) → zwei Zielplätze
+// Ablauf: kuratierte Konstellationen (Anzahl aus den Daten) → zufällige Auswahl (beim Loslassen) → zwei Zielplätze
 //         → gegenläufige Bewegung → Stillstand → Namen → Text → offene Frage
 // Die Geste bestimmt den Weg (Richtung, Kraft, Umdrehungen, Dauer), nie das Ergebnis.
 // Es werden nie Kombinationen gebildet oder geprüft; das Rad kennt nur die gezogenen Zielwinkel.
 
-import { artists } from "./data/artists.js";
-import { theorists } from "./data/theorists.js";
-import { constellations } from "./data/constellations.js";
+import { artists } from "./data/artists.js?v=165";
+import { theorists } from "./data/theorists.js?v=165";
+import { constellations } from "./data/constellations.js?v=165";
 import { drawConstellation } from "./lib/random.js";
-import { validateDataset } from "./lib/validation.js";
+import { validateDataset } from "./lib/validation.js?v=2";
 import { SLOTS, STEP, mod, slotAngle, targetsFor, indexAtAxis } from "./lib/geometry.js";
 import { planSpin, positionAt } from "./lib/spin.js";
 import { symbolMarkup } from "./symbols.js?v=2";
@@ -342,11 +342,11 @@ function setupDebug() {
   dbg.addEventListener("click", async e => {
     const a = e.target.dataset && e.target.dataset.a;
     if (a === "force") { forcedId = dbg.querySelector("select").value; out.textContent = `Nächster Spin: ${forcedId}`; }
-    if (a === "validate") { const is = validateDataset({ strictUniquePairs: true }); out.textContent = is.length ? JSON.stringify(is, null, 2) : "Keine Befunde: 20 Künstler, 20 Theoretiker, 99 eindeutige Paare."; }
+    if (a === "validate") { const is = validateDataset({ strictUniquePairs: true }); out.textContent = is.length ? JSON.stringify(is, null, 2) : `Keine Befunde: ${artists.length} Künstler, ${theorists.length} Theoretiker, ${constellations.length} eindeutige Paare.`; }
     if (a === "simulate") {
       const { simulateDraws } = await import("./lib/random.js");
       const t0 = performance.now(), counts = simulateDraws(constellations, 100000), v = [...counts.values()];
-      out.textContent = `100 000 Ziehungen in ${Math.round(performance.now() - t0)} ms · erreichbar ${v.filter(x => x > 0).length}/99 · min ${Math.min(...v)} · max ${Math.max(...v)} · keine unmittelbare Wiederholung`;
+      out.textContent = `100 000 Ziehungen in ${Math.round(performance.now() - t0)} ms · erreichbar ${v.filter(x => x > 0).length}/${constellations.length} · min ${Math.min(...v)} · max ${Math.max(...v)} · keine unmittelbare Wiederholung`;
     }
   });
 }

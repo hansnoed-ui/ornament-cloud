@@ -1,7 +1,7 @@
 // Übertragung von src/doppelspalt/src/lib/double-slit/validation.ts (nur Typen und Importpfade angepasst).
-import { artists } from "../data/artists.js";
-import { theorists } from "../data/theorists.js";
-import { constellations } from "../data/constellations.js";
+import { artists } from "../data/artists.js?v=165";
+import { theorists } from "../data/theorists.js?v=165";
+import { constellations } from "../data/constellations.js?v=165";
 
 export function validateDataset(options = {}) {
   const issues = [];
@@ -9,7 +9,9 @@ export function validateDataset(options = {}) {
 
   if (artists.length !== 20) issues.push({ level: "error", code: "ARTIST_COUNT", message: `Expected 20 artists, found ${artists.length}.` });
   if (theorists.length !== 20) issues.push({ level: "error", code: "THEORIST_COUNT", message: `Expected 20 theorists, found ${theorists.length}.` });
-  if (constellations.length !== 99) issues.push({ level: "error", code: "CONSTELLATION_COUNT", message: `Expected 99 constellations, found ${constellations.length}.` });
+  // Anzahl ergibt sich aus dem Datenbestand; optional lässt sich eine erwartete Anzahl prüfen.
+  if (constellations.length === 0) issues.push({ level: "error", code: "CONSTELLATION_COUNT", message: "No constellations found." });
+  if (options.expectedConstellations !== undefined && constellations.length !== options.expectedConstellations) issues.push({ level: "error", code: "CONSTELLATION_COUNT", message: `Expected ${options.expectedConstellations} constellations, found ${constellations.length}.` });
 
   const allPeople = [...artists, ...theorists];
   const personIds = new Set();
