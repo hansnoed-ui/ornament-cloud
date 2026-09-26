@@ -1845,5 +1845,374 @@ export const constellations = Object.freeze([
     "theoristId": "michel-serres",
     "text": "Tehching Hsieh entwirft Regeln, die möglichst ohne Ausnahme über lange Zeit gelten sollen. Michel Serres interessiert sich für Störung und dafür, dass ein Kanal oft gerade durch seine Unterbrechungen sichtbar wird. Bei Hsieh bedrohen Schlaf, Müdigkeit, Krankheit und Alltag fortwährend die reine Fortsetzung der Regel. Die mögliche Störung gehört deshalb zur Performance, auch wenn sie vermieden werden soll.",
     "question": "Wann macht eine Störung die Regel sichtbar?"
+  },
+  {
+    "editorialNumber": 206,
+    "id": "mona-hatoum__gregory-bateson",
+    "pairKey": "mona-hatoum__gregory-bateson",
+    "artistId": "mona-hatoum",
+    "theoristId": "gregory-bateson",
+    "text": "Mona Hatoum macht Grenzen körperlich spürbar. Gitter, Käfige und vertraute häusliche Formen können zugleich schützen, einsperren oder bedrohen. Gregory Bateson versteht Information nicht als isolierte Sache, sondern als Unterschied, der innerhalb einer Relation wirksam wird. Eine Grenze trennt deshalb nicht nur zwei Bereiche. Sie verändert auch, welche Beziehungen zwischen ihnen möglich sind. Bei Hatoum wird gerade die Trennung zum Träger einer Information über Nähe, Gefahr und Zugehörigkeit.",
+    "question": "Wann wird eine Grenze zur Information?"
+  },
+  {
+    "editorialNumber": 207,
+    "id": "christian-marclay__george-spencer-brown",
+    "pairKey": "christian-marclay__george-spencer-brown",
+    "artistId": "christian-marclay",
+    "theoristId": "george-spencer-brown",
+    "text": "Christian Marclay verbindet Ton, Film und Bilder durch Schnitte. George Spencer-Brown beginnt ebenfalls mit einem Schnitt, der zwei Seiten einer Form hervorbringt. Doch Marclays Montage zeigt eine zweite Bewegung: Derselbe Schnitt, der Fragmente voneinander trennt, macht ihre neue Verbindung überhaupt erst möglich. Die Grenze liegt nicht zwischen Zusammenhang und Trennung. Sie erzeugt beides zugleich. Montage wäre dann eine Form des Verbindens, die ihre Kraft gerade aus der sichtbaren Unterbrechung gewinnt.",
+    "question": "Verbindet der Schnitt, weil er trennt?"
+  },
+  {
+    "editorialNumber": 208,
+    "id": "mona-hatoum__michel-serres",
+    "pairKey": "mona-hatoum__michel-serres",
+    "artistId": "mona-hatoum",
+    "theoristId": "michel-serres",
+    "text": "Mona Hatoums Arbeiten verwandeln Türen, Schwellen, Gitter und Alltagsgegenstände in unsichere Übergänge. Michel Serres interessiert sich für Passagen und dafür, dass Übertragung niemals einfach nur von einer Seite zur anderen führt. Wer eine Grenze passiert, bleibt von ihr nicht notwendig unberührt. Bei Hatoum kann der Übergang selbst riskant, elektrisch, körperlich oder politisch werden. Die Grenze ist dann kein ruhiger Rand zwischen zwei Bereichen, sondern ein Ort, an dem sich das Übertragene verändert.",
+    "question": "Was geschieht mit etwas, wenn es eine Grenze passiert?"
+  },
+  {
+    "editorialNumber": 209,
+    "id": "william-kentridge__gilbert-simondon",
+    "pairKey": "william-kentridge__gilbert-simondon",
+    "artistId": "william-kentridge",
+    "theoristId": "gilbert-simondon",
+    "text": "William Kentridge zeichnet, löscht und zeichnet auf derselben Fläche weiter. Frühere Zustände verschwinden nicht vollständig, sondern bleiben als Schatten und Verschmutzungen wirksam. Gilbert Simondon versteht Individuation als einen fortdauernden Prozess, in dem ein Individuum nie völlig abgeschlossen ist. Kentridges Bild besitzt deshalb keine Identität hinter seinen Veränderungen. Es wird gerade durch sie zu diesem Bild. Die Spur eines vergangenen Zustands ist nicht bloß Erinnerung, sondern Material der weiteren Individuation.",
+    "question": "Kann eine Spur Teil der Identität bleiben?"
+  },
+  {
+    "editorialNumber": 210,
+    "id": "agnes-martin__gilbert-simondon",
+    "pairKey": "agnes-martin__gilbert-simondon",
+    "artistId": "agnes-martin",
+    "theoristId": "gilbert-simondon",
+    "text": "Agnes Martins Raster wirken stabil, obwohl ihre Linien, Abstände und Oberflächen nie vollkommen identisch sind. Gilbert Simondon denkt Individuen nicht als fertige Einheiten, sondern als vorläufige Lösungen in einem fortdauernden Prozess. Martins Ordnung könnte deshalb weniger als starres Schema erscheinen denn als fortgesetzte Individuation einer Fläche. Linie für Linie entsteht eine Einheit, deren Identität gerade von kleinen Abweichungen getragen wird. Das Raster hält zusammen, ohne jede Differenz aufzuheben.",
+    "question": "Wie viel Abweichung braucht eine stabile Ordnung?"
+  },
+  {
+    "editorialNumber": 211,
+    "id": "louise-bourgeois__gilbert-simondon",
+    "pairKey": "louise-bourgeois__gilbert-simondon",
+    "artistId": "louise-bourgeois",
+    "theoristId": "gilbert-simondon",
+    "text": "Louise Bourgeois kehrt zu Räumen, Körperteilen, Elternfiguren und Kindheitserinnerungen immer wieder zurück. Gilbert Simondon würde Identität nicht als unveränderlichen Kern verstehen, der hinter solchen Wiederholungen verborgen liegt. Individuation geschieht weiter. Auch Erinnerung wäre dann nicht nur Rückgriff auf etwas Festgelegtes, sondern Material einer späteren Veränderung. Bei Bourgeois formt Vergangenes neue Figuren, während diese Figuren wiederum verändern, wie Vergangenheit gegenwärtig werden kann.",
+    "question": "Wird Erinnerung Teil dessen, was wir werden?"
+  },
+  {
+    "editorialNumber": 212,
+    "id": "felix-gonzalez-torres__susan-leigh-star",
+    "pairKey": "felix-gonzalez-torres__susan-leigh-star",
+    "artistId": "felix-gonzalez-torres",
+    "theoristId": "susan-leigh-star",
+    "text": "Felix Gonzalez-Torres lässt Werke schrumpfen, ergänzt werden, den Ort wechseln und dennoch als dasselbe Werk gelten. Susan Leigh Star zeigt, dass Klassifikationen und Infrastrukturen im Hintergrund mitentscheiden, was überhaupt als dasselbe Objekt behandelt werden kann. Bei Gonzalez-Torres ist Werkidentität deshalb nicht nur eine ästhetische Frage. Inventar, Zertifikat, Ausstellungspraxis und institutionelle Regeln helfen mit, Veränderung als Fortbestand zu lesen.",
+    "question": "Wer entscheidet, wann das Werk noch dasselbe ist?"
+  },
+  {
+    "editorialNumber": 213,
+    "id": "sol-lewitt__gregory-bateson",
+    "pairKey": "sol-lewitt__gregory-bateson",
+    "artistId": "sol-lewitt",
+    "theoristId": "gregory-bateson",
+    "text": "Sol LeWitts Instruktion ist zunächst Information über eine mögliche Handlung. Gregory Bateson interessiert sich dafür, wie Information erst innerhalb von Beziehungen und Kontexten einen Unterschied macht. Eine Anweisung kann deshalb nicht einfach vom Text in die Wand übertragen werden. Ausführende müssen lesen, entscheiden, messen und auf die Situation reagieren. Erst in dieser Kette wird die Regel wirksam. Das Werk entsteht nicht aus Information allein, sondern daraus, dass Information in Handlung übersetzt wird.",
+    "question": "Was muss eine Regel mitteilen, um wirksam zu werden?"
+  },
+  {
+    "editorialNumber": 214,
+    "id": "sol-lewitt__claude-shannon",
+    "pairKey": "sol-lewitt__claude-shannon",
+    "artistId": "sol-lewitt",
+    "theoristId": "claude-shannon",
+    "text": "Sol LeWitts Instruktionen lassen sich wie Nachrichten übertragen. Claude Shannon fragt danach, wie Information durch einen Kanal gelangt, unabhängig davon, was sie bedeutet. Genau hier wird LeWitt interessant. Eine knappe Anweisung kann ausreichen, um an verschiedenen Orten sehr komplexe Arbeiten hervorzubringen. Doch zwischen übertragener Information und sichtbarem Werk liegen Entscheidungen, Material und Ausführung. Die Instruktion kann technisch stabil bleiben, während ihre Verkörperung variiert.",
+    "question": "Wie viel Information braucht ein Werk?"
+  },
+  {
+    "editorialNumber": 215,
+    "id": "sol-lewitt__elena-esposito",
+    "pairKey": "sol-lewitt__elena-esposito",
+    "artistId": "sol-lewitt",
+    "theoristId": "elena-esposito",
+    "text": "Sol LeWitts Instruktion existiert, bevor ihre konkrete Ausführung sichtbar ist. Elena Esposito untersucht, wie Zukunft in der Gegenwart durch Erwartungen, Programme und Entscheidungen strukturiert wird, ohne dadurch schon festzustehen. LeWitts Regel macht etwas Ähnliches. Sie begrenzt den Raum möglicher zukünftiger Bilder, ohne jedes Detail vorwegzunehmen. Das Werk ist damit teilweise bestimmt und teilweise noch offen. Seine Zukunft wird organisiert, bevor sie ausgeführt ist.",
+    "question": "Wie offen kann eine geregelte Zukunft bleiben?"
+  },
+  {
+    "editorialNumber": 216,
+    "id": "tehching-hsieh__gregory-bateson",
+    "pairKey": "tehching-hsieh__gregory-bateson",
+    "artistId": "tehching-hsieh",
+    "theoristId": "gregory-bateson",
+    "text": "Tehching Hsieh gibt einer alltäglichen Handlung durch einen öffentlich festgelegten Rahmen eine andere Bedeutung. Gregory Bateson beschrieb Kommunikation auch über Rahmen, die anzeigen, wie ein Verhalten zu verstehen ist. Ein Schlag im Spiel ist etwas anderes als derselbe Schlag im Kampf. Ähnlich verändert bei Hsieh der Jahresvertrag, was Stempeln, Warten oder Nichtsprechen bedeutet. Die Regel schreibt der Handlung nicht nur einen Ablauf vor. Sie markiert den Kontext, in dem jede Wiederholung als Teil der Performance lesbar wird.",
+    "question": "Was macht eine Handlung zum Teil einer Performance?"
+  },
+  {
+    "editorialNumber": 217,
+    "id": "sol-lewitt__michel-serres",
+    "pairKey": "sol-lewitt__michel-serres",
+    "artistId": "sol-lewitt",
+    "theoristId": "michel-serres",
+    "text": "Sol LeWitts Instruktionen wandern zwischen Sprache, ausführenden Personen, Wand, Werkzeug und Raum. Michel Serres interessiert sich für Passagen, in denen Übertragung niemals völlig verlustfrei bleibt. Auch eine präzise Regel kommt nicht unverändert am Ziel an. Maßstab, Material und lokale Entscheidungen schreiben sich in ihre Ausführung ein. Das bedeutet nicht, dass die Instruktion scheitert. Ihre Identität zeigt sich vielmehr darin, dass sie verschiedene Übersetzungen durchlaufen kann.",
+    "question": "Bleibt eine Instruktion auf ihrem Weg dieselbe?"
+  },
+  {
+    "editorialNumber": 218,
+    "id": "roman-opalka__george-spencer-brown",
+    "pairKey": "roman-opalka__george-spencer-brown",
+    "artistId": "roman-opalka",
+    "theoristId": "george-spencer-brown",
+    "text": "Roman Opalka setzt Zahl auf Zahl und markiert damit jeweils, wie weit die Folge bereits gelangt ist. George Spencer-Brown beginnt mit einer Unterscheidung, die einen markierten von einem unmarkierten Bereich trennt. Bei Opalka liegt jenseits der zuletzt geschriebenen Zahl ein noch nicht vollzogener Fortgang. Mit jeder neuen Zahl verschiebt sich diese Grenze. Was eben Zukunft der Serie war, wird zu ihrer festgelegten Vergangenheit. Zählen erzeugt so fortlaufend einen Unterschied zwischen bereits aktualisiert und noch offen.",
+    "question": "Wo beginnt das noch nicht Gezählte?"
+  },
+  {
+    "editorialNumber": 219,
+    "id": "marina-abramovic__claude-shannon",
+    "pairKey": "marina-abramovic__claude-shannon",
+    "artistId": "marina-abramovic",
+    "theoristId": "claude-shannon",
+    "text": "Marina Abramović kann die Regeln einer Performance in wenigen Sätzen mitteilen. Claude Shannons Informationstheorie erlaubt es, die Übertragung solcher Zeichen von ihrer Bedeutung zu unterscheiden. Die Regel kann vollständig angekommen sein, obwohl das Ereignis, das sie auslöst, noch unbestimmt bleibt. Schmerz, Zögern, Reaktion des Publikums und körperliche Erschöpfung sind nicht in der Nachricht enthalten. Zwischen übertragbarer Instruktion und gelebtem Vollzug öffnet sich ein Überschuss, der nicht mit mehr Information verschwindet.",
+    "question": "Was fehlt einer vollständig übertragenen Regel?"
+  },
+  {
+    "editorialNumber": 220,
+    "id": "mona-hatoum__henri-bergson",
+    "pairKey": "mona-hatoum__henri-bergson",
+    "artistId": "mona-hatoum",
+    "theoristId": "henri-bergson",
+    "text": "Mona Hatoums Grenzen sind selten nur Linien im Raum. Man muss ihnen ausweichen, vor ihnen warten, sich ihnen nähern oder den eigenen Körper zu ihnen ins Verhältnis setzen. Henri Bergson unterscheidet gelebte Dauer von einer Zeit, die in einzelne messbare Abschnitte zerlegt wird. Hatoums Grenze erhält dadurch eine zeitliche Seite. Sie wird nicht nur gesehen, sondern im Zögern, Umgehen und Durchqueren erlebt. Ein räumlicher Schnitt kann sich als Dauer im Körper fortsetzen.",
+    "question": "Wie lange dauert eine Grenze?"
+  },
+  {
+    "editorialNumber": 221,
+    "id": "tehching-hsieh__george-spencer-brown",
+    "pairKey": "tehching-hsieh__george-spencer-brown",
+    "artistId": "tehching-hsieh",
+    "theoristId": "george-spencer-brown",
+    "text": "Tehching Hsiehs Performances beginnen und enden an präzise gesetzten Zeitpunkten. George Spencer-Brown beschreibt Form als Ergebnis einer Unterscheidung zwischen zwei Seiten. Hsiehs Vertrag zieht eine solche Grenze mitten durch das Leben: innerhalb und außerhalb der Performance, vorher und nachher. Doch die Grenze bleibt nicht an ihrem Anfang stehen. Sie organisiert jeden folgenden Tag. Ein einmal gesetzter Schnitt beginnt, reale Lebenszeit zu verbrauchen.",
+    "question": "Wann beginnt eine Grenze, Zeit zu verbrauchen?"
+  },
+  {
+    "editorialNumber": 222,
+    "id": "christian-marclay__susan-leigh-star",
+    "pairKey": "christian-marclay__susan-leigh-star",
+    "artistId": "christian-marclay",
+    "theoristId": "susan-leigh-star",
+    "text": "Christian Marclays Montagen setzen voraus, dass Bilder und Töne auffindbar, speicherbar und miteinander kombinierbar sind. Susan Leigh Star untersucht Infrastrukturen gerade dort, wo ihre Leistung hinter dem sichtbaren Ergebnis verschwindet. Hinter einer Arbeit wie The Clock stehen Archive, Formate, Kataloge, Abspieltechnik und institutionelle Abläufe. Die gemeinsame Gegenwart im Ausstellungsraum wird von einer riesigen unsichtbaren Ordnung getragen. Montage verbindet deshalb nicht nur Fragmente, sondern auch Infrastrukturen.",
+    "question": "Welche Infrastruktur hält eine Montage zusammen?"
+  },
+  {
+    "editorialNumber": 223,
+    "id": "hanne-darboven__george-spencer-brown",
+    "pairKey": "hanne-darboven__george-spencer-brown",
+    "artistId": "hanne-darboven",
+    "theoristId": "george-spencer-brown",
+    "text": "Hanne Darboven zerlegt Zeit in Zahlen, Daten, Zeilen und wiederkehrende Schreiboperationen. George Spencer-Brown beginnt mit dem Ziehen einer Unterscheidung. Auch ein Kalender lebt davon, dass zwischen diesem und dem nächsten Tag eine Grenze gesetzt wird. Darboven vervielfacht solche Schnitte, bis aus ihnen eine sichtbare Ordnung entsteht. Zeit erscheint damit zugleich als kontinuierliches Vergehen und als Folge künstlich gesetzter Unterschiede.",
+    "question": "Was erzeugt der Schnitt zwischen zwei Tagen?"
+  },
+  {
+    "editorialNumber": 224,
+    "id": "mona-hatoum__gilles-deleuze",
+    "pairKey": "mona-hatoum__gilles-deleuze",
+    "artistId": "mona-hatoum",
+    "theoristId": "gilles-deleuze",
+    "text": "Mona Hatoum wiederholt vertraute Formen wie Käfig, Karte, Bett oder Haushaltsgerät, verändert jedoch Maßstab, Material oder Funktion. Gilles Deleuze versteht Wiederholung nicht als Rückkehr des Identischen, sondern als Produktion von Differenz. Gerade deshalb werden Hatoums Grenzen instabil. Die wiederkehrende Form bestätigt nicht, was eine Grenze ist. Sie verschiebt ihre Bedeutung von Schutz zu Bedrohung, von Zuhause zu Ausschluss, von Ordnung zu Unsicherheit.",
+    "question": "Was verändert Wiederholung an einer Grenze?"
+  },
+  {
+    "editorialNumber": 225,
+    "id": "mona-hatoum__jacques-derrida",
+    "pairKey": "mona-hatoum__jacques-derrida",
+    "artistId": "mona-hatoum",
+    "theoristId": "jacques-derrida",
+    "text": "Mona Hatoums Gitter, Karten und häuslichen Formen können in verschiedenen Zusammenhängen völlig unterschiedliche Bedeutungen annehmen. Jacques Derrida verbindet Wiederholbarkeit mit der Möglichkeit, dass ein Zeichen aus seinem ursprünglichen Kontext herausgelöst und anders gelesen wird. Auch eine Grenze bleibt deshalb nicht identisch, nur weil ihre Form wiederkehrt. Derselbe Zaun kann Schutz, Gefangenschaft oder politische Teilung bedeuten. Wiederholung erhält die Form und verschiebt zugleich ihre Lesbarkeit.",
+    "question": "Kann dieselbe Grenze an einem anderen Ort dieselbe bleiben?"
+  },
+  {
+    "editorialNumber": 226,
+    "id": "sol-lewitt__gilles-deleuze",
+    "pairKey": "sol-lewitt__gilles-deleuze",
+    "artistId": "sol-lewitt",
+    "theoristId": "gilles-deleuze",
+    "text": "Sol LeWitts Regeln sind wiederholbar, doch ihre Ausführungen fallen nicht vollkommen zusammen. Gilles Deleuze interessiert sich gerade für eine Wiederholung, die Differenz hervorbringt. Bei LeWitt liegt diese Differenz nicht außerhalb der Regel. Sie entsteht durch ihre erneute Anwendung auf andere Wände, Maße, Materialien und Situationen. Dass eine Instruktion wiederholt werden kann, garantiert deshalb keine identischen Ergebnisse. Die Regel produziert eine Familie verwandter, aber nicht gleicher Ereignisse.",
+    "question": "Wie viel Differenz verträgt dieselbe Regel?"
+  },
+  {
+    "editorialNumber": 227,
+    "id": "sol-lewitt__heinz-von-foerster",
+    "pairKey": "sol-lewitt__heinz-von-foerster",
+    "artistId": "sol-lewitt",
+    "theoristId": "heinz-von-foerster",
+    "text": "Sol LeWitt legt häufig Regeln fest, nach denen eine Folge von Entscheidungen oder Operationen ausgeführt wird. Heinz von Foerster interessiert sich für Rekursion, wenn Ergebnisse wieder in spätere Operationen eingehen. Nicht jede LeWitt-Regel ist rekursiv. Dort aber, wo eine gesetzte Linie die Bedingungen für die nächste verändert, kippt die Instruktion vom bloßen Wiederholen in einen Prozess mit Gedächtnis. Das bereits Ausgeführte wird zur Voraussetzung des weiteren Verlaufs.",
+    "question": "Wann bekommt eine Regel ein Gedächtnis?"
+  },
+  {
+    "editorialNumber": 228,
+    "id": "sol-lewitt__jacques-derrida",
+    "pairKey": "sol-lewitt__jacques-derrida",
+    "artistId": "sol-lewitt",
+    "theoristId": "jacques-derrida",
+    "text": "Sol LeWitts Instruktionen können an verschiedenen Orten und zu verschiedenen Zeiten erneut ausgeführt werden. Jacques Derrida nennt diese Wiederholbarkeit Iterierbarkeit. Ein Zeichen muss aus seinem ursprünglichen Zusammenhang herausgelöst werden können, um überhaupt wiederholbar zu sein. Gerade dadurch verändert sich aber sein Kontext. LeWitts Regel bleibt erkennbar, weil sie wiederholt werden kann, und jede Wiederholung setzt sie zugleich anderen räumlichen und materiellen Bedingungen aus.",
+    "question": "Kann eine Regel identisch wiederholt werden?"
+  },
+  {
+    "editorialNumber": 229,
+    "id": "felix-gonzalez-torres__n-katherine-hayles",
+    "pairKey": "felix-gonzalez-torres__n-katherine-hayles",
+    "artistId": "felix-gonzalez-torres",
+    "theoristId": "n-katherine-hayles",
+    "text": "Felix Gonzalez-Torres trennt Werkidentität von einem unveränderlichen materiellen Bestand. Bonbons verschwinden, Papier wird mitgenommen und später ersetzt. N. Katherine Hayles kritisiert die Vorstellung, Information lasse sich vollständig von ihrer Verkörperung lösen. Genau diese Spannung trägt Gonzalez-Torres' Arbeiten. Die Regel oder das Zertifikat allein ist nicht das Werk, aber auch kein einzelner materieller Zustand reicht aus. Identität verteilt sich zwischen Information und immer neuer Verkörperung.",
+    "question": "Wo sitzt die Identität eines materiell wechselnden Werks?"
+  },
+  {
+    "editorialNumber": 230,
+    "id": "sol-lewitt__henri-bergson",
+    "pairKey": "sol-lewitt__henri-bergson",
+    "artistId": "sol-lewitt",
+    "theoristId": "henri-bergson",
+    "text": "Sol LeWitts Instruktionen können einen Ablauf in einzelne Schritte zerlegen. Henri Bergson warnt davor, gelebte Zeit mit einer Reihe nebeneinandergelegter Einheiten zu verwechseln. Wer eine Wall Drawing ausführt, erlebt beides zugleich. Die Regel ordnet, was nacheinander geschehen soll, während die Arbeit als unteilbare Dauer erfahren wird. Planung kann Zeit strukturieren, aber sie enthält nicht die Zeit, die ihre Ausführung tatsächlich braucht.",
+    "question": "Kann eine Anweisung Dauer ordnen?"
+  },
+  {
+    "editorialNumber": 231,
+    "id": "tehching-hsieh__heinz-von-foerster",
+    "pairKey": "tehching-hsieh__heinz-von-foerster",
+    "artistId": "tehching-hsieh",
+    "theoristId": "heinz-von-foerster",
+    "text": "Tehching Hsiehs langfristige Performances beruhen auf wiederkehrenden Handlungen. Heinz von Foerster beschreibt Rekursion als Rückführung eines Ergebnisses in die Bedingungen der nächsten Operation. Auch bei Hsieh ist die nächste Wiederholung nie völlig voraussetzungslos. Müdigkeit, verpasster Schlaf und die bereits vergangene Zeit verändern den Körper, der die Regel erneut erfüllen muss. Die Regel bleibt gleich, während ihre eigene Ausführung fortlaufend neue Bedingungen erzeugt.",
+    "question": "Was verändert jede Wiederholung an der nächsten?"
+  },
+  {
+    "editorialNumber": 232,
+    "id": "felix-gonzalez-torres__karen-barad",
+    "pairKey": "felix-gonzalez-torres__karen-barad",
+    "artistId": "felix-gonzalez-torres",
+    "theoristId": "karen-barad",
+    "text": "Felix Gonzalez-Torres' Werke entstehen in einer Anordnung aus Material, Ausstellungsraum, Regeln und Handlungen des Publikums. Karen Barad bezeichnet Relationen, in denen die beteiligten Seiten nicht schon vorher vollständig feststehen, als Intraaktionen. Ein Bonbonhaufen ist deshalb nicht einfach ein fertiges Werk, mit dem Besucher:innen anschließend etwas tun. Entnahme und Ergänzung gehören zu den Bedingungen, unter denen sein jeweiliger Zustand und seine Identität hervorgebracht werden.",
+    "question": "Wer oder was stellt das Werk jeweils her?"
+  },
+  {
+    "editorialNumber": 233,
+    "id": "rebecca-horn__gilbert-simondon",
+    "pairKey": "rebecca-horn__gilbert-simondon",
+    "artistId": "rebecca-horn",
+    "theoristId": "gilbert-simondon",
+    "text": "Rebecca Horn verbindet Körper mit Federn, Stäben, Masken und mechanischen Erweiterungen. Gilbert Simondon denkt Individuation als Prozess zwischen einem Individuum und seinem Milieu. Horns Apparate lassen deshalb offen, wo der fertige Körper beginnen soll. Neue Reichweiten, Widerstände und Bewegungen entstehen erst in der Verbindung. Die Maschine ergänzt nicht einfach einen schon abgeschlossenen Organismus. Körper und Apparat bestimmen sich in ihrem Zusammenspiel neu.",
+    "question": "Wo endet der Körper, wenn der Apparat mit ihm entsteht?"
+  },
+  {
+    "editorialNumber": 234,
+    "id": "marina-abramovic__gilles-deleuze",
+    "pairKey": "marina-abramovic__gilles-deleuze",
+    "artistId": "marina-abramovic",
+    "theoristId": "gilles-deleuze",
+    "text": "Marina Abramović hat eigene Performances wiederholt und historische Performances anderer Künstler:innen neu aufgeführt. Gilles Deleuze versteht Wiederholung nicht als identische Rückkehr, sondern als Produktion von Differenz. Das wird bei Performance besonders deutlich. Derselbe Ablauf trifft auf einen anderen Körper, ein anderes Publikum und eine andere historische Situation. Wiederaufführung erhält eine Form nur dadurch, dass sie ein neues Ereignis hervorbringt.",
+    "question": "Kann eine Performance wiederkehren, ohne dieselbe zu werden?"
+  },
+  {
+    "editorialNumber": 235,
+    "id": "sol-lewitt__michel-foucault",
+    "pairKey": "sol-lewitt__michel-foucault",
+    "artistId": "sol-lewitt",
+    "theoristId": "michel-foucault",
+    "text": "Sol LeWitts Instruktionen scheinen zunächst nur festzulegen, was ausgeführt werden soll. Michel Foucault lenkt den Blick darauf, wie Regeln zugleich Positionen, Zuständigkeiten und Sichtbarkeit organisieren. Eine Wall Drawing macht bestimmte Formen sichtbar, während die Arbeit der Ausführenden leicht hinter dem Namen des Künstlers und der scheinbaren Neutralität der Regel verschwindet. Die Instruktion ordnet deshalb nicht nur Linien, sondern auch Rollen im Produktionsprozess.",
+    "question": "Wer wird durch eine Regel sichtbar?"
+  },
+  {
+    "editorialNumber": 236,
+    "id": "marina-abramovic__heinz-von-foerster",
+    "pairKey": "marina-abramovic__heinz-von-foerster",
+    "artistId": "marina-abramovic",
+    "theoristId": "heinz-von-foerster",
+    "text": "Marina Abramovićs Performances können Situationen erzeugen, in denen die Beobachtenden nicht außerhalb des Geschehens bleiben. Heinz von Foersters Kybernetik zweiter Ordnung richtet den Blick auf den Beobachter als Teil dessen, was beobachtet wird. Ein Blick, eine Annäherung oder ein Rückzug des Publikums verändert die Situation, auf die anschließend wieder reagiert wird. Beobachtung erhält damit Folgen und kehrt als veränderte Bedingung in die Performance zurück.",
+    "question": "Was geschieht, wenn Beobachtung zurückwirkt?"
+  },
+  {
+    "editorialNumber": 237,
+    "id": "marina-abramovic__jacques-derrida",
+    "pairKey": "marina-abramovic__jacques-derrida",
+    "artistId": "marina-abramovic",
+    "theoristId": "jacques-derrida",
+    "text": "Marina Abramović bindet Performance an die Anwesenheit eines Körpers in einer unwiederholbaren Gegenwart. Jacques Derrida macht zugleich sichtbar, dass ein Ereignis nur weitergegeben werden kann, wenn Spuren von ihm wiederholbar werden. Fotografien, Beschreibungen, Videos und Reenactments retten die ursprüngliche Präsenz nicht. Sie erzeugen neue Situationen, in denen das vergangene Ereignis anders wiederkehrt. Gerade die Einmaligkeit der Performance produziert damit die Bedingungen ihrer späteren Wiederholung.",
+    "question": "Was bleibt von einer einmaligen Gegenwart?"
+  },
+  {
+    "editorialNumber": 238,
+    "id": "sol-lewitt__wendy-hui-kyong-chun",
+    "pairKey": "sol-lewitt__wendy-hui-kyong-chun",
+    "artistId": "sol-lewitt",
+    "theoristId": "wendy-hui-kyong-chun",
+    "text": "Sol LeWitts Instruktion ist wiederholbar, ohne dass jede Ausführung identisch sein muss. Wendy Hui Kyong Chun beschreibt digitale Medien über Wiederholung, Gewohnheit und Update: Etwas bleibt funktionsfähig, indem es immer wieder erneuert wird. LeWitts Regel lässt sich ähnlich lesen. Sie bewahrt nicht einen fertigen Zustand, sondern ermöglicht neue Aktualisierungen desselben Werks. Stabilität entsteht durch die Fähigkeit, erneut ausgeführt zu werden.",
+    "question": "Wann wird eine Regel zum Update?"
+  },
+  {
+    "editorialNumber": 239,
+    "id": "tehching-hsieh__judith-butler",
+    "pairKey": "tehching-hsieh__judith-butler",
+    "artistId": "tehching-hsieh",
+    "theoristId": "judith-butler",
+    "text": "Tehching Hsieh setzt sich einer ausdrücklich formulierten Regel aus, deren Wiederholung sein Verhalten über Monate oder Jahre ordnet. Judith Butler untersucht dagegen Normen, die oft gerade deshalb wirksam sind, weil sie nicht wie Regeln vor uns liegen. Sie werden durch wiederholte Handlungen selbstverständlich. Hsiehs Performance macht diese Differenz sichtbar: Seine Regel ist künstlich, datiert und kündbar, ihre fortgesetzte Ausführung beginnt jedoch, Alltag und Körper wie eine Norm zu strukturieren.",
+    "question": "Wann beginnt eine Regel wie eine Norm zu wirken?"
+  },
+  {
+    "editorialNumber": 240,
+    "id": "sol-lewitt__donna-haraway",
+    "pairKey": "sol-lewitt__donna-haraway",
+    "artistId": "sol-lewitt",
+    "theoristId": "donna-haraway",
+    "text": "Sol LeWitts Instruktionen können den Eindruck erwecken, eine Regel sei unabhängig davon, wer sie ausführt. Donna Haraway widerspricht der Vorstellung eines standpunktlosen Wissens. Auch die präziseste Anweisung wird von bestimmten Körpern an bestimmten Orten gelesen, vermessen und umgesetzt. Unterschiede in Raum, Material und Erfahrung verschwinden nicht hinter der Regel. Die scheinbar allgemeine Instruktion erhält jedes Mal eine konkrete, situierte Form.",
+    "question": "Von welchem Ort wird eine Regel ausgeführt?"
+  },
+  {
+    "editorialNumber": 241,
+    "id": "agnes-martin__george-spencer-brown",
+    "pairKey": "agnes-martin__george-spencer-brown",
+    "artistId": "agnes-martin",
+    "theoristId": "george-spencer-brown",
+    "text": "Agnes Martins Linien teilen die Bildfläche, doch ihre Wirkung hängt stark von Abstand, Licht und Aufmerksamkeit ab. George Spencer-Brown beginnt Form mit dem Ziehen einer Unterscheidung. Bei Martin ist interessant, wie wenig eine solche Unterscheidung braucht. Eine kaum sichtbare Linie kann zwei Bereiche erzeugen, aber nur für einen Blick, der sie überhaupt wahrnimmt. Grenze und Beobachtung entstehen hier fast im selben Moment.",
+    "question": "Wann wird eine Linie zur Grenze?"
+  },
+  {
+    "editorialNumber": 242,
+    "id": "marina-abramovic__michel-foucault",
+    "pairKey": "marina-abramovic__michel-foucault",
+    "artistId": "marina-abramovic",
+    "theoristId": "michel-foucault",
+    "text": "Marina Abramović setzt Körper häufig Bedingungen aus, die öffentlich beobachtbar sind. Michel Foucault untersucht Sichtbarkeit nicht bloß als Sehen, sondern als Bestandteil von Anordnungen, in denen Verhalten geführt und beurteilt wird. In einer Performance verändert Publikum daher nicht nur die Aufmerksamkeit. Seine Anwesenheit gehört zur Situation, in der Ausdauer, Regelbefolgung und Grenzüberschreitung Bedeutung erhalten. Der Blick ist kein unsichtbares Außen, sondern eine Bedingung des Vollzugs.",
+    "question": "Wann wird Sichtbarkeit Teil der Handlung?"
+  },
+  {
+    "editorialNumber": 243,
+    "id": "bruce-nauman__lucy-suchman",
+    "pairKey": "bruce-nauman__lucy-suchman",
+    "artistId": "bruce-nauman",
+    "theoristId": "lucy-suchman",
+    "text": "Bruce Nauman entwickelt einfache Aufgaben, Bewegungen und räumliche Anordnungen, die im Vollzug schnell komplizierter werden. Lucy Suchman zeigt, dass ein Plan eine Handlung nicht vollständig enthält. Körper müssen auf Raum, Widerstand, Gleichgewicht und unerwartete Situationen reagieren. Naumans Wiederholungen machen genau diese Differenz sichtbar. Die Anweisung bleibt knapp, während jede Ausführung neue kleine Entscheidungen verlangt.",
+    "question": "Was bleibt von einem Plan im Körper?"
+  },
+  {
+    "editorialNumber": 244,
+    "id": "tehching-hsieh__donna-haraway",
+    "pairKey": "tehching-hsieh__donna-haraway",
+    "artistId": "tehching-hsieh",
+    "theoristId": "donna-haraway",
+    "text": "Tehching Hsiehs Zeitregeln wirken zunächst vollkommen allgemein: Eine Stunde ist für alle sechzig Minuten. Donna Haraway erinnert daran, dass jede Erkenntnis und jede Erfahrung situiert ist. Für Hsiehs Körper bedeutet dieselbe Stunde je nach Schlaf, Müdigkeit, Wetter und vorherigem Verlauf etwas anderes. Die Uhr stellt Gleichheit her, während der Körper Differenz erfährt. Gerade diese Spannung macht messbare Zeit als konkrete Lebensbedingung sichtbar.",
+    "question": "Wessen Zeit misst dieselbe Uhr?"
+  },
+  {
+    "editorialNumber": 245,
+    "id": "doris-salcedo__michel-foucault",
+    "pairKey": "doris-salcedo__michel-foucault",
+    "artistId": "doris-salcedo",
+    "theoristId": "michel-foucault",
+    "text": "Doris Salcedo arbeitet mit materiellen Spuren von Gewalt und Verlust, ohne die Abwesenden einfach bildlich zu ersetzen. Michel Foucault untersucht Ordnungen der Sichtbarkeit und die Bedingungen, unter denen etwas erscheinen kann. Salcedos Arbeiten stellen deshalb nicht nur Erinnerungen aus. Sie organisieren eine Form des Sehens, in der Lücke, Leerstelle und beschädigtes Material lesbar werden. Abwesenheit wird sichtbar, ohne dadurch aufgehoben zu sein.",
+    "question": "Wie wird Abwesenheit sichtbar, ohne aufgehoben zu werden?"
+  },
+  {
+    "editorialNumber": 246,
+    "id": "james-turrell__lucy-suchman",
+    "pairKey": "james-turrell__lucy-suchman",
+    "artistId": "james-turrell",
+    "theoristId": "lucy-suchman",
+    "text": "James Turrell plant Räume, Öffnungen und Lichtverhältnisse mit großer Präzision. Lucy Suchman zeigt jedoch, dass geplante Abläufe erst in konkreten Situationen zu tatsächlichen Handlungen werden. Auch Wahrnehmung lässt sich nicht vollständig vorprogrammieren. Augen passen sich unterschiedlich schnell an, Menschen bewegen sich, warten oder übersehen etwas. Turrell kann Bedingungen des Sehens entwerfen, aber nicht das einzelne Sehen selbst. Das Werk entsteht deshalb zwischen räumlicher Planung und situiertem Vollzug.",
+    "question": "Kann man Wahrnehmung planen?"
   }
 ]);
