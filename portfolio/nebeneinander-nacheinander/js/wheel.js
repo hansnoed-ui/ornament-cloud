@@ -83,6 +83,28 @@ el("path", { d: `M${C},${C - 470}V${C - 200}`, class: "rad-axis-line" }, axis);
 el("path", { d: tick(OUTER.edge + 2, OUTER.edge + 14, 0) + tick(OUTER.inner - 1, INNER.edge + 1, 0) + tick(INNER.inner - 2, INNER.inner - 12, 0), class: "rad-axis-notch" }, axis);
 el("path", { d: `M${C},${C - 476}l-7,-13h14Z`, class: "rad-axis-mark" }, axis);
 
+// Namen der beiden getroffenen Plätze (REGELN §6a): tangential, nahe am jeweiligen Zeichen.
+// Künstler:in ausserhalb des Aussenrands neben der Achsenmarke, Theoretiker:in an der Innenkante
+// des Innenrings unter dem Platz. Sie gehören zum Stillstand und stehen deshalb im festen Rahmen.
+const HIT = { artist: 477, theorist: 172 };                 // Radien der Grundlinien
+function arcPath(r, from, to) {
+  const [x0, y0] = polar(r, from), [x1, y1] = polar(r, to);
+  return `M${x0.toFixed(1)},${y0.toFixed(1)}A${r},${r} 0 ${to - from > 180 ? 1 : 0},1 ${x1.toFixed(1)},${y1.toFixed(1)}`;
+}
+const defs = el("defs", {}, svg);
+el("path", { id: "rad-arc-artist", d: arcPath(HIT.artist, 3.5, 85) }, defs);
+el("path", { id: "rad-arc-theorist", d: arcPath(HIT.theorist, -80, 80) }, defs);
+const hitG = el("g", { class: "rad-hitnames", "aria-hidden": "true" }, svg);
+const hitArtist = el("textPath", { href: "#rad-arc-artist", startOffset: "0" }, el("text", {}, hitG));
+const hitTheorist = el("textPath", { href: "#rad-arc-theorist", startOffset: "50%", "text-anchor": "middle" }, el("text", { "text-anchor": "middle" }, hitG));
+function sizeHitNames() {
+  // klein und gleich gross auf jedem Bildschirm: etwa 11.5 px, umgerechnet ins 1000er-Feld
+  const w = svg.getBoundingClientRect().width || 600;
+  hitG.setAttribute("font-size", Math.max(16, Math.min(33, 11.5 * 1000 / w)).toFixed(1));
+}
+sizeHitNames();
+addEventListener("resize", sizeHitNames);
+
 const cue = el("text", { x: C, y: C + 44, class: "rad-cue", "text-anchor": "middle" }, svg);
 cue.textContent = "drehen";
 
@@ -117,6 +139,22 @@ function renderTraces() {
   }
 }
 
+// ---------- Legende: alle 40 Namen neben ihrem Zeichen, voreingestellt geschlossen (§6a) ----------
+const legend = document.getElementById("rad-legend");
+const legendToggle = document.querySelector(".rad-legend-toggle");
+function legendColumn(title, people, offset) {
+  return `<section><h3>${title}</h3><ol>${people.map((p, i) =>
+    `<li data-id="${p.id}"><svg class="rad-legend-sym" viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true" focusable="false">${symbolMarkup(offset + i, 1)}</svg><span>${p.name}</span></li>`
+  ).join("")}</ol></section>`;
+}
+legend.innerHTML = legendColumn("Aussenring", artists, 0) + legendColumn("Innenring", theorists, 20);
+legendToggle.addEventListener("click", () => {
+  const open = legend.hidden;
+  legend.hidden = !open;
+  legendToggle.setAttribute("aria-expanded", String(open));
+  legendToggle.textContent = open ? "Namen ausblenden" : "Namen zeigen";
+});
+
 // ---------- Ergebnis ----------
 const parts = {
   artist: result.querySelector(".rad-artist"),
@@ -140,6 +178,8 @@ function hideResult() {
   parts.share.textContent = "Link kopieren";
   svg.classList.remove("is-selected");
   svg.querySelectorAll(".sym.is-hit").forEach(s => s.classList.remove("is-hit"));
+  hitG.classList.remove("is-shown");
+  legend.querySelectorAll("li.is-hit").forEach(li => li.classList.remove("is-hit"));
   live.textContent = "";
 }
 
@@ -150,6 +190,12 @@ function showResult(record, instant) {
   outer.syms[artistIndex].classList.add("is-hit");
   inner.syms[theoristIndex].classList.add("is-hit");
   svg.classList.add("is-selected");
+
+  // Legende: nur die beiden gezogenen Namen, erst jetzt beim Stillstand
+  legend.querySelector(`li[data-id="${a.id}"]`).classList.add("is-hit");
+  legend.querySelector(`li[data-id="${t.id}"]`).classList.add("is-hit");
+  hitArtist.textContent = a.name;
+  hitTheorist.textContent = t.name;
 
   parts.artist.textContent = a.name;
   parts.theorist.textContent = t.name;
@@ -165,7 +211,7 @@ function showResult(record, instant) {
     at += instant ? 0 : delay;
     timers.push(setTimeout(() => {
       parts[k].classList.add("is-shown");
-      if (k === "names") keepInView();
+      if (k === "names") { hitG.classList.add("is-shown"); keepInView(); }
     }, at));
   });
 }

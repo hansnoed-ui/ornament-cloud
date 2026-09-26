@@ -396,6 +396,87 @@ await check("Verweise auf das Feld: von der Radseite und vom Portfolio", async (
   await ctx.close();
 });
 
+// ---------- Paket 3: Namen am Rad und Legende ----------
+const hitNames = page => page.evaluate(() => {
+  const g = document.querySelector(".rad-hitnames"), [a, t] = g.querySelectorAll("textPath");
+  return { shown: g.classList.contains("is-shown"), opacity: getComputedStyle(g).opacity, artist: a.textContent, theorist: t.textContent, hidden: g.getAttribute("aria-hidden") };
+});
+const legendHits = page => page.$$eval(".rad-legend li.is-hit", lis => lis.map(li => li.dataset.id));
+
+await check("Namen am Rad: erst nach dem Stillstand, die beiden gezogenen, weg mit der nächsten Drehung; Legende hebt nur diese hervor, nie während der Drehung", async () => {
+  const { ctx, page, errors } = await open({ viewport: { width: 1280, height: 900 } });
+  const cs = (await import(new URL("../portfolio/nebeneinander-nacheinander/js/data/constellations.js", import.meta.url).href)).constellations;
+  assert.equal((await hitNames(page)).shown, false);
+  assert.deepEqual(await legendHits(page), []);
+  await mouseArc(page, {});
+  await page.waitForTimeout(300);
+  assert.equal((await hitNames(page)).shown, false, "keine Namen während der Drehung");
+  assert.deepEqual(await legendHits(page), [], "keine Hervorhebung während der Drehung");
+  await waitSelected(page);
+  const s = await assertLanding(page), rec = cs.find(c => c.id === s.cur.id);
+  assert.deepEqual((await legendHits(page)).sort(), [rec.artistId, rec.theoristId].sort());
+  await page.waitForFunction(() => document.querySelector(".rad-hitnames").classList.contains("is-shown"), null, { timeout: 3000 });
+  const h = await hitNames(page);
+  assert.equal(h.hidden, "true");
+  assert.equal(h.artist, await page.$eval(".rad-artist", e => e.textContent));
+  assert.equal(h.theorist, await page.$eval(".rad-theorist", e => e.textContent));
+  await page.waitForTimeout(1500);
+  await page.click(".rad-again");
+  assert.equal((await hitNames(page)).shown, false, "weg mit Beginn der nächsten Drehung");
+  assert.deepEqual(await legendHits(page), []);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Legende: voreingestellt geschlossen, Schalter per Tastatur, 40 Namen neben ihrem Zeichen in Ringreihenfolge", async () => {
+  const { ctx, page } = await open({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
+  const A = (await import(new URL("../portfolio/nebeneinander-nacheinander/js/data/artists.js", import.meta.url).href)).artists;
+  const T = (await import(new URL("../portfolio/nebeneinander-nacheinander/js/data/theorists.js", import.meta.url).href)).theorists;
+  assert.equal(await page.$eval(".rad-legend", e => e.hidden), true);
+  assert.equal(await page.$eval(".rad-legend-toggle", e => e.getAttribute("aria-expanded")), "false");
+  await page.focus(".rad-legend-toggle");
+  await page.keyboard.press("Enter");
+  assert.equal(await page.$eval(".rad-legend", e => e.hidden), false);
+  assert.equal(await page.$eval(".rad-legend-toggle", e => e.getAttribute("aria-expanded")), "true");
+  const cols = await page.$$eval(".rad-legend section", ss => ss.map(s => [...s.querySelectorAll("li")].map(li => ({ id: li.dataset.id, name: li.textContent, sym: !!li.querySelector("svg.rad-legend-sym path, svg.rad-legend-sym circle") }))));
+  assert.deepEqual(cols[0].map(x => x.id), A.map(p => p.id));
+  assert.deepEqual(cols[1].map(x => x.id), T.map(p => p.id));
+  assert.ok(cols.flat().every(x => x.sym), "jedes Zeichen vorhanden");
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "horizontal");
+  await page.keyboard.press("Space");
+  assert.equal(await page.$eval(".rad-legend", e => e.hidden), true);
+  await ctx.close();
+});
+
+await check("Namen am Rad bei 375 px: lesbar gross, innerhalb des Rads, ohne Überlappung mit Ringen und Mitte", async () => {
+  const { ctx, page } = await open({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true }, "?pair=felix-gonzalez-torres__wendy-hui-kyong-chun");
+  await page.waitForFunction(() => document.querySelector(".rad-hitnames").classList.contains("is-shown"));
+  const r = await page.evaluate(() => {
+    const svg = document.querySelector(".rad-wheel"), box = svg.getBoundingClientRect(), k = box.width / 1000;
+    const cx = box.left + box.width / 2, cy = box.top + box.height / 2;
+    const texts = [...document.querySelectorAll(".rad-hitnames text")].map(t => {
+      // Abstand aller Zeichen vom Mittelpunkt (in 1000er-Einheiten)
+      const n = t.getNumberOfChars(), rs = [];
+      for (let i = 0; i < n; i += 1) { const e = t.getExtentOfChar(i), m = svg.getScreenCTM(), p = new DOMPoint(e.x + e.width / 2, e.y + e.height / 2).matrixTransform(m); rs.push(Math.hypot(p.x - cx, p.y - cy) / k); }
+      return { min: Math.min(...rs), max: Math.max(...rs) };
+    });
+    const fs = parseFloat(document.querySelector(".rad-hitnames").getAttribute("font-size")) * k;
+    return { texts, fs, right: box.right, vw: innerWidth };
+  });
+  assert.ok(r.fs >= 10.5, `Schrift ${r.fs.toFixed(1)} px`);
+  const [a, t] = r.texts;
+  assert.ok(a.min > 462 && a.max < 500, `Künstler:in ausserhalb des Aussenrands: ${JSON.stringify(a)}`);
+  assert.ok(t.max < 208 && t.min > 150, `Theoretiker:in an der Innenkante, Mitte frei: ${JSON.stringify(t)}`);
+  assert.ok(r.right <= r.vw);
+  await ctx.close();
+});
+
+await check("Reduzierte Bewegung: Namen am Rad ohne Ein- und Ausblenden", async () => {
+  const { ctx, page } = await open({ viewport: { width: 1280, height: 900 }, reducedMotion: "reduce" }, "?pair=agnes-martin__niklas-luhmann");
+  assert.equal(await page.$eval(".rad-hitnames", e => getComputedStyle(e).transitionDuration), "0s");
+  await ctx.close();
+});
+
 await browser.close();
 server.close();
 console.log(results.join("\n"));

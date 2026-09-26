@@ -11,6 +11,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `portfolio/` – Werkübersicht (Karten); jedes Werk mit eigener Seite, z. B. `portfolio/nebeneinander-nacheinander/`
 - `portfolio/nebeneinander-nacheinander/` – interaktives Doppelrad: `index.html`, `rad.css`, `js/wheel.js` (Rad, Geste, Ablauf),
   `js/lib/spin.js` (Drehphysik), `js/lib/geometry.js`, `js/symbols.js` (40 Zeichen), `js/ticker.js` (Laufband mit allen Namen), `js/lib/random.js`, `js/lib/validation.js`;
+  Namen der beiden getroffenen Plätze am Rad nach dem Stillstand, Legende aller 40 Namen mit Schalter «Namen zeigen» (REGELN §6a);
   Diagnose mit `?debug`, direkte Konstellation mit `?pair=<id>` (wird nach jeder Drehung per `history.replaceState` gesetzt; «Link kopieren» teilt sie)
 - `portfolio/nebeneinander-nacheinander/feld/` – Feldansicht: alle Konstellationen als Matrix 20 × 20 (ab 760 px) und als Liste pro Künstler:in;
   der Teil zwischen `<!-- FELD:START -->` und `<!-- FELD:END -->` wird von `tools/build-feld.ts` aus den Daten geschrieben (läuft mit dem Sync),
