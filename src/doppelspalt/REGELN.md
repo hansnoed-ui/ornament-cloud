@@ -11,7 +11,7 @@ und dokumentiert den Entstehungsstand.
 - Bei einem Konflikt zwischen diesen Regeln und einem aktuellen Auftrag gilt der Auftrag.
 - Der Konflikt wird aber zuerst benannt, und es wird auf Freigabe gewartet. Er wird nie
   stillschweigend aufgelöst.
-- Freigegebene Klärungen werden hier nachgetragen (siehe 8 und 9).
+- Freigegebene Klärungen werden hier nachgetragen (siehe 8, 9 und 12).
 
 ## 1. Werk
 
@@ -111,7 +111,18 @@ Die Adresse jeder Konstellation ist `?pair=<id>`. Nach jeder Drehung wird sie pe
 - Die Tests in `tests/` müssen durchlaufen. Neues Verhalten bekommt Tests.
 - Keine Forschungs- oder Quellenlinks im Werktext.
 
-## 12. Nicht mehr gültig (aus dem Archiv)
+## 12. Feldansicht und Lückenbewertung
+
+- Die Feldansicht (`feld/`) zeigt alle 400 Stellen: die kuratierten Konstellationen und die freien
+  Felder. Sie wird aus denselben Daten erzeugt wie das Rad (`tools/build-feld.ts`).
+- Zeilen und Spalten stehen in der Reihenfolge der Ringe, nicht alphabetisch.
+- Die Bewertung der freien Felder (`redaktion/gaps.csv`, `mittel` | `schwach`) ist als Struktur
+  vorbereitet. Die Klassen `feld-gap--mittel` und `feld-gap--schwach` werden gesetzt, bekommen aber
+  vorerst keine sichtbare Auszeichnung. Begründung: Eine Bewertung ohne die Begründung daneben liest
+  sich als Urteil über die genannte Person. Sichtbar wird sie erst als zuschaltbare Ebene mit
+  erklärendem Satz.
+
+## 13. Nicht mehr gültig (aus dem Archiv)
 
 - 99 Konstellationen, fünf doppelte Personenpaare und `DATA-REVIEW.md` als offene Prüfung:
   erledigt und überholt.

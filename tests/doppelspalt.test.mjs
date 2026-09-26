@@ -241,6 +241,18 @@ test("Feldansicht: jede Konstellation genau einmal in der Matrix und einmal in d
   assert.equal((matrix.match(/class="feld-leer/g) || []).length, free);
   assert.equal((matrix.match(/<tr><th scope="row">/g) || []).length, artists.length);
   assert.equal((matrix.match(/<th scope="col">/g) || []).length, theorists.length);
+  // kleines Bild über der Liste: 400 Zellen, nicht anklickbar, aria-hidden
+  const mini = liste.match(/<svg class="feld-mini"[^>]*>[\s\S]*?<\/svg>/)[0];
+  assert.match(mini, /aria-hidden="true"/);
+  assert.ok(!mini.includes("<a"), "Bild nicht anklickbar");
+  assert.equal((mini.match(/class="feld-mini-voll" d="([^"]*)"/)[1].match(/M/g) || []).length, constellations.length);
+  assert.equal((mini.match(/class="feld-mini-leer" d="([^"]*)"/)[1].match(/M/g) || []).length, free);
+  // Sprungmarken auf alle zwanzig Abschnitte
+  const jumps = [...liste.matchAll(/<nav class="feld-sprung"[\s\S]*?<\/nav>/g)][0][0];
+  for (const a of artists) {
+    assert.ok(jumps.includes(`href="#feld-${a.id}"`), `Sprungmarke ${a.id}`);
+    assert.ok(liste.includes(`id="feld-${a.id}"`), `Abschnitt ${a.id}`);
+  }
 });
 
 test("Feldansicht: die Zahlen im Einleitungstext stimmen mit dem Bestand überein", () => {

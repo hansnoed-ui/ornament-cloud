@@ -104,12 +104,34 @@
 .feld-leer {
   background: linear-gradient(to top right, transparent calc(50% - 0.5px), var(--border) 50%, transparent calc(50% + 0.5px));
 }
-/* vorbereitet für die Bewertung der Lücken (gaps.csv): mittel = gestrichelt, schwach = ohne Diagonale */
-.feld-leer.feld-gap--mittel { border-style: dashed; }
-.feld-leer.feld-gap--schwach { background: none; }
+/* Bewertung der Lücken (gaps.csv): Klassen feld-gap--mittel / feld-gap--schwach werden gesetzt,
+   bleiben aber bewusst ohne sichtbare Auszeichnung (REGELN.md §12). */
 
 /* ---------- Liste pro Künstler:in: schmale Bildschirme ---------- */
 .feld-liste { display: none; }
+
+/* kleines Bild des Feldes über der Liste: 20 × 20 Zellen à 14 px, passt auch bei 320 px */
+.feld-mini {
+  display: block;
+  width: 100%;
+  max-width: 281px;
+  height: auto;
+  margin: 0 0 20px;
+}
+.feld-mini path { fill: none; vector-effect: non-scaling-stroke; }
+.feld-mini-grid { stroke: var(--border); stroke-width: 1; }
+.feld-mini-leer { stroke: var(--border); stroke-width: 0.8; }
+.feld-mini-voll { fill: var(--text) !important; stroke: none; }
+
+/* Sprungmarken auf die Abschnitte */
+.feld-sprung {
+  margin: 0 0 28px;
+  font-size: 0.85rem;
+  line-height: 1.9;
+  color: var(--muted);
+}
+.feld-sprung a { color: var(--text); text-underline-offset: 3px; white-space: nowrap; }
+.feld-person { scroll-margin-top: 16px; }
 
 .feld-person { margin: 0 0 32px; }
 .feld-person h2 {
@@ -149,8 +171,7 @@
 }
 
 @media (max-width: 759.98px) {
-  .feld-matrix-wrap,
-  .feld-legende { display: none; }
+  .feld-matrix-wrap { display: none; }
   .feld-liste { display: block; }
   .feld-intro { font-size: 1.1rem; }
 }
