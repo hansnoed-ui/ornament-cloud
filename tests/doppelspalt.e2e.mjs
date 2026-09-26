@@ -477,6 +477,29 @@ await check("Reduzierte Bewegung: Namen am Rad ohne Ein- und Ausblenden", async 
   await ctx.close();
 });
 
+// ---------- Paket 4: Werkbericht ----------
+await check("Werkbericht: ohne JavaScript lesbar, Inhaltsverzeichnis springt, bei 320 px nichts rutscht weg, Verweise vorhanden", async () => {
+  for (const width of [320, 1280]) {
+    const ctx = await browser.newContext({ viewport: { width, height: 900 }, javaScriptEnabled: false });
+    const page = await ctx.newPage();
+    await page.goto(base + "werkbericht/");
+    assert.equal(await page.$$eval(".wb-toc li a", a => a.length), 12);
+    assert.equal(await page.$$eval(".wb > h2[id]", h => h.length), 12);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `horizontal bei ${width}`);
+    await page.click(".wb-toc li:nth-child(7) a");
+    assert.equal(await page.evaluate(() => location.hash), "#das-feld-und-seine-luecken");
+    assert.equal(await page.$$eval('.wb a[href="../feld/"]', a => a.length), 1);
+    assert.equal(await page.$$eval('.wb a[href="projektpaper.pdf"]', a => a.length), 1);
+    await ctx.close();
+  }
+  const ctx = await browser.newContext({ javaScriptEnabled: false });
+  const page = await ctx.newPage();
+  await page.goto(base);
+  await page.click('.rad-about a[href="werkbericht/"]');
+  assert.match(page.url(), /werkbericht\/$/);
+  await ctx.close();
+});
+
 await browser.close();
 server.close();
 console.log(results.join("\n"));

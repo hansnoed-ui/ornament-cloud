@@ -338,6 +338,16 @@
 
 .rad-about p { margin: 0 0 14px; line-height: 1.7; }
 
+/* Hinweise unter der Beschreibung (Geste und Ziehung, Herkunft der Texte): rechtsbündig, kleiner */
+.rad-about .rad-note {
+  max-width: 720px;
+  margin: 0 0 14px auto;
+  text-align: right;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.rad-about .rad-note a { color: inherit; text-underline-offset: 3px; }
+
 /* Verweis auf die Feldansicht, rechtsbündig unter der Beschreibung */
 .rad-about .rad-more-link {
   max-width: 720px;
