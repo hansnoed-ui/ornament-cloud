@@ -12,7 +12,8 @@
 
 .rad-wheel-wrap {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 .rad-wheel {
@@ -77,6 +78,24 @@
 /* Spur früherer Begegnungen */
 .rad-wheel .rad-trace { fill: currentColor; stroke: none; }
 
+/* Namen der beiden getroffenen Plätze (§6a): erst nach dem Stillstand, weg mit der nächsten Drehung */
+.rad-wheel .rad-hitnames text {
+  fill: currentColor;
+  font-family: var(--font);
+  letter-spacing: 0.02em;
+  /* schmale Aussparung in der Grundfarbe, damit die feine Hilfslinie die Buchstaben nicht schneidet */
+  stroke: var(--surface);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+.rad-wheel .rad-hitnames {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.rad-wheel .rad-hitnames.is-shown { opacity: 1; }
+
 /* Hinweis in der leeren Mitte, nur vor der ersten Berührung */
 .rad-cue {
   font-family: var(--font);
@@ -87,6 +106,78 @@
   pointer-events: none;
 }
 .rad-wheel.is-touched .rad-cue { opacity: 0; }
+
+/* ---------- Legende: alle 40 Namen neben ihrem Zeichen (§6a) ---------- */
+.rad-legend-toggle {
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+.rad-legend-toggle:hover,
+.rad-legend-toggle:focus-visible { color: var(--text); }
+
+.rad-legend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+  width: min(100%, 620px);
+  margin-top: 18px;
+  font-size: 0.85rem;
+}
+.rad-legend[hidden] { display: none; }
+
+.rad-legend h3 {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.rad-legend ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rad-legend li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.rad-legend-sym {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--text);
+  opacity: 0.55;
+}
+.rad-legend-sym path,
+.rad-legend-sym circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1.1;
+}
+.rad-legend-sym .sym-dot { fill: currentColor; stroke: none; }
+.rad-legend-sym .sym-ghost { opacity: 0.45; }
+
+/* nur die beiden gezogenen Namen, erst beim Stillstand */
+.rad-legend li.is-hit { color: var(--text); }
+.rad-legend li.is-hit .rad-legend-sym { opacity: 1; }
 
 /* ---------- Ergebnis ---------- */
 .rad-result {
@@ -291,7 +382,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rad-result > *, .rad-wheel .sym, .rad-cue { transition: none; }
+  .rad-result > *, .rad-wheel .sym, .rad-cue, .rad-wheel .rad-hitnames { transition: none; }
   /* ohne Bewegung: alle Namen stehen umbrochen im Band */
   .rad-ticker-track { animation: none; width: auto; }
   .rad-ticker-list { flex-wrap: wrap; padding: 10px 16px; }
