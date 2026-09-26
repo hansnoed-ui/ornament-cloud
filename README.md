@@ -17,6 +17,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `node --experimental-strip-types tools/import-konstellationen.ts src/doppelspalt/redaktion/<datei>.csv`, danach den Sync unten
 - `tools/sync-doppelspalt-data.ts` – erzeugt daraus `portfolio/nebeneinander-nacheinander/js/data/*.js`:
   `node --experimental-strip-types tools/sync-doppelspalt-data.ts`
+- `tools/og-image.mjs` – erzeugt das Vorschaubild für Facebook/X (`assets/og-nebeneinander-nacheinander.png`) aus dem Rad:
+  `NODE_PATH=$(npm root -g) node tools/og-image.mjs`
 - `tests/` – Prüfungen des Rads: `node --experimental-strip-types --no-warnings --test tests/doppelspalt.test.mjs`
   und im Browser (Playwright): `node tests/doppelspalt.e2e.mjs`
 - `slider.js` – Punkte unter der Wisch-Galerie der Artefakte auf dem Smartphone (Wischen selbst per CSS)
