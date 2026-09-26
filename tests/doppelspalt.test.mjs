@@ -337,3 +337,19 @@ test("sitemap.xml enthält jede Seite (ohne Weiterleitung) genau einmal", () => 
   assert.deepEqual([...locs].sort(), expected);
   assert.equal(new Set(locs).size, locs.length);
 });
+
+test("Literatur: genau die fünf freigegebenen DOIs als https://doi.org-Links, sonst keine Adressen", () => {
+  const lit = WB_MD.slice(WB_MD.indexOf("## 12."));
+  const links = [...lit.matchAll(/\]\((https?:[^)]+)\)/g)].map(m => m[1]).sort();
+  assert.deepEqual(links, [
+    "https://doi.org/10.1017/CBO9780511808418",
+    "https://doi.org/10.1177/00027649921955326",
+    "https://doi.org/10.1177/1049732316665344",
+    "https://doi.org/10.2307/3178066",
+    "https://doi.org/10.2307/3207893",
+  ]);
+  for (const name of ["Lessing", "Bergson", "Borgdorff", "Drucker", "Eco", "Luhmann", "Shannon", "Barad"]) {
+    const line = lit.split("\n").find(l => l.startsWith(`- ${name},`));
+    assert.ok(line && !/https?:/.test(line), `kein Link bei ${name}`);
+  }
+});
