@@ -157,16 +157,16 @@ Eine tragfähige Selbstbeschreibung lautet: theoriegeleitete kuratorische Praxis
 - Barad, K. (2007). *Meeting the Universe Halfway*. Duke University Press. Kap. 4.
 - Bergson, H. (1889/1913). *Time and Free Will*. George Allen. Kap. II.
 - Borgdorff, H. (2012). *The Conflict of the Faculties*. Leiden University Press. Kap. 10.
-- Butler, J. (1988). Performative acts and gender constitution. *Theatre Journal*, 40(4), 519–531.
+- Butler, J. (1988). Performative acts and gender constitution. *Theatre Journal*, 40(4), 519–531. [https://doi.org/10.2307/3207893](https://doi.org/10.2307/3207893)
 - Drucker, J. (2011). Humanities approaches to graphical display. *Digital Humanities Quarterly*, 5(1).
 - Eco, U. (1962/1989). *The Open Work*. Harvard University Press.
-- Haraway, D. (1988). Situated knowledges. *Feminist Studies*, 14(3), 575–599.
-- Hennink, M., Kaiser, B., & Marconi, V. (2017). Code saturation versus meaning saturation. *Qualitative Health Research*, 27(4), 591–608.
+- Haraway, D. (1988). Situated knowledges. *Feminist Studies*, 14(3), 575–599. [https://doi.org/10.2307/3178066](https://doi.org/10.2307/3178066)
+- Hennink, M., Kaiser, B., & Marconi, V. (2017). Code saturation versus meaning saturation. *Qualitative Health Research*, 27(4), 591–608. [https://doi.org/10.1177/1049732316665344](https://doi.org/10.1177/1049732316665344)
 - Lessing, G. E. (1766). *Laokoon*. Kap. XVI.
 - Luhmann, N. (1995). *Die Kunst der Gesellschaft*. Suhrkamp. Kap. 1.
 - Shannon, C. E. (1948). A mathematical theory of communication. *Bell System Technical Journal*, 27.
-- Star, S. L. (1999). The ethnography of infrastructure. *American Behavioral Scientist*, 43(3), 377–391.
-- Suchman, L. (2007). *Human-Machine Reconfigurations*. Cambridge University Press.
+- Star, S. L. (1999). The ethnography of infrastructure. *American Behavioral Scientist*, 43(3), 377–391. [https://doi.org/10.1177/00027649921955326](https://doi.org/10.1177/00027649921955326)
+- Suchman, L. (2007). *Human-Machine Reconfigurations*. Cambridge University Press. [https://doi.org/10.1017/CBO9780511808418](https://doi.org/10.1017/CBO9780511808418)
 
 Werkdokumentationen: National Gallery of Art zu Eva Hesse, *Test Piece for “Contingent”* (1969); M+ zu Tehching Hsieh, *One Year Performance 1980–1981*; MASS MoCA zu Sol LeWitt, *Wall Drawing 159*; Guggenheim zu *On Kawara – Silence* (2015).
 
