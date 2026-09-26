@@ -1,8 +1,8 @@
 {
   "artists": 20,
   "theorists": 20,
-  "records": 99,
-  "uniquePersonPairs": 99,
+  "records": 165,
+  "uniquePersonPairs": 165,
   "duplicatePersonPairs": [],
   "resolvedReplacements": [
     {
@@ -26,5 +26,6 @@
       "pair": "Robert Smithson × Michel Foucault"
     }
   ],
-  "sourceCleanup": "Removed citation/export debris from website copy; retained corpus prose/questions, with five curator-approved replacement constellations to resolve duplicate person-pairs."
+  "sourceCleanup": "Removed citation/export debris from website copy; retained corpus prose/questions, with five curator-approved replacement constellations to resolve duplicate person-pairs.",
+  "editorialSource": "redaktion/konstellationen_165_redaktion_v3.csv (Redaktion V3, ersetzt den Bestand von 99 Konstellationen vollständig)"
 }

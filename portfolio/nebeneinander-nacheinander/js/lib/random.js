@@ -22,7 +22,7 @@ export function secureRandomIndex(upperExclusive) {
 /**
  * Draws one of the curated records uniformly.
  * The immediately previous record is excluded, so when previousId is present
- * the draw is uniform across the remaining 98 records.
+ * the draw is uniform across the remaining records (length − 1).
  */
 export function drawConstellation(constellations, previousId) {
   if (constellations.length === 0) throw new Error("No constellations supplied.");

@@ -22,7 +22,7 @@ export function secureRandomIndex(upperExclusive: number): number {
 /**
  * Draws one of the curated records uniformly.
  * The immediately previous record is excluded, so when previousId is present
- * the draw is uniform across the remaining 98 records.
+ * the draw is uniform across the remaining records (length − 1).
  */
 export function drawConstellation(
   constellations: readonly Constellation[],
