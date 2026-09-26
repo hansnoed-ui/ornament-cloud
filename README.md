@@ -17,9 +17,11 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   der Teil zwischen `<!-- FELD:START -->` und `<!-- FELD:END -->` wird von `tools/build-feld.ts` aus den Daten geschrieben (läuft mit dem Sync),
   Einleitung und Kopf von Hand. Lücken bewerten (vorbereitet): `src/doppelspalt/redaktion/gaps.csv` mit
   `kuenstler_id;theoretiker_id;bewertung` (`mittel` | `schwach`), danach Sync
-- `portfolio/nebeneinander-nacheinander/werkbericht/` – Werkbericht; Quelle ist `src/doppelspalt/werkbericht.md` (Markdown, H2 = Kapitel),
-  gesetzt mit `node --experimental-strip-types tools/build-werkbericht.ts` (Inhaltsverzeichnis aus den H2).
-  Das vollständige Projektpaper liegt als `portfolio/nebeneinander-nacheinander/werkbericht/projektpaper.pdf` daneben (neue Fassung: Datei unter diesem Namen ersetzen)
+- Werkbericht: **zurzeit nicht veröffentlicht** (Seite, Projektpaper und die Hinweise zur Herkunft der Texte auf der Radseite
+  sind entfernt). Die Quelle bleibt: `src/doppelspalt/werkbericht.md`, gesetzt mit `tools/build-werkbericht.ts`.
+  Wieder einschalten: Ordner `portfolio/nebeneinander-nacheinander/werkbericht/` samt `projektpaper.pdf` und die beiden
+  Absätze `rad-note` der Radseite aus dem Stand vor dem Commit «Werkbericht und Herkunftshinweis vorerst von der Website»
+  zurückholen (`git checkout <commit>^ -- …`), Eintrag in `sitemap.xml` ergänzen
 - `sitemap.xml` – alle Seiten (ohne die Weiterleitung `portfolio/rad-von-zeit-und-raum/`); neue Seiten hier eintragen, ein Test prüft das
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)

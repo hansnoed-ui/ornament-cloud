@@ -278,26 +278,17 @@ test("Lückenbewertung vorbereitet: gaps.csv wird gelesen, geprüft und als Klas
   assert.throws(() => feld.parseGaps(`kuenstler_id;theoretiker_id;bewertung\nniemand;${f1[1]};mittel`), /unbekannte ID/);
 });
 
-// ---------- Paket 4: Werkbericht, Herkunft der Texte, Sitemap ----------
+// ---------- Paket 4: Werkbericht (Quelle bleibt, zurzeit nicht veröffentlicht) und Sitemap ----------
+
+test("Werkbericht und Herkunftshinweis sind zurzeit nicht auf der Website: keine Seite, kein Verweis, nicht in der Sitemap", () => {
+  const rad = readFileSync(new URL("portfolio/nebeneinander-nacheinander/index.html", root), "utf8");
+  assert.ok(!rad.includes("werkbericht/"), "Radseite verweist auf den Werkbericht");
+  assert.ok(!rad.includes("KI-gestützt"), "Herkunftshinweis steht noch auf der Radseite");
+  assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("werkbericht"), "Werkbericht in der Sitemap");
+  assert.throws(() => readFileSync(new URL("portfolio/nebeneinander-nacheinander/werkbericht/index.html", root)), "Werkbericht-Seite liegt noch im Webverzeichnis");
+});
 const wb = await import(new URL("tools/build-werkbericht.ts", root).href);
 const WB_MD = readFileSync(new URL("src/doppelspalt/werkbericht.md", root), "utf8");
-const WB_PAGE = readFileSync(new URL("portfolio/nebeneinander-nacheinander/werkbericht/index.html", root), "utf8");
-
-test("Werkbericht ist aktuell und hat ein Inhaltsverzeichnis aus den zwölf H2", () => {
-  const section = WB_PAGE.slice(WB_PAGE.indexOf("<!-- WERKBERICHT:START -->") + 26, WB_PAGE.indexOf("<!-- WERKBERICHT:END -->")).trim();
-  const { html, toc } = wb.buildWerkbericht(WB_MD);
-  assert.equal(section, html.trim(), "Werkbericht veraltet: tools/build-werkbericht.ts ausführen");
-  assert.equal(toc.length, (WB_MD.match(/^## /gm) || []).length);
-  assert.equal(toc.length, 12);
-  for (const t of toc) {
-    assert.ok(section.includes(`href="#${t.id}"`), `Verzeichnis: ${t.id}`);
-    assert.equal(section.split(`id="${t.id}"`).length - 1, 1, `Anker eindeutig: ${t.id}`);
-  }
-  assert.ok(section.includes('href="../feld/"'), "Link auf das Feld");
-  assert.ok(section.includes('href="projektpaper.pdf"'), "Link auf das Projektpaper");
-  const pdf = readFileSync(new URL("portfolio/nebeneinander-nacheinander/werkbericht/projektpaper.pdf", root));
-  assert.equal(pdf.subarray(0, 5).toString(), "%PDF-", "Projektpaper liegt als PDF am verlinkten Ort");
-});
 
 test("Werkbericht: zitierte Fragen stehen wörtlich im Bestand, genannte Paare sind gültig (REGELN §2)", () => {
   const questions = new Set(constellations.map(c => c.question));
@@ -308,21 +299,6 @@ test("Werkbericht: zitierte Fragen stehen wörtlich im Bestand, genannte Paare s
   const named = [...WB_MD.matchAll(/\*\*([^*×\n]+?) × ([^*\n]+?)\.?\*\*/g)].map(m => [m[1].trim(), m[2].trim().replace(/\.$/, "")]);
   assert.ok(named.length >= 7);
   for (const [a, t] of named) assert.ok(byName(a) && byName(t), `unbekannte Person: ${a} × ${t}`);
-});
-
-test("Radseite: Absatz zur Herkunft der Texte wörtlich, mit Link auf den Werkbericht; Satz zur Geste", () => {
-  const page = readFileSync(new URL("portfolio/nebeneinander-nacheinander/index.html", root), "utf8").replace(/<a href="werkbericht\/">([^<]*)<\/a>/, "$1");
-  assert.ok(page.includes("Die Kurztexte sind KI-gestützt entstanden und anschliessend redigiert, einzeln und in mehreren Durchgängen. Sie sind Lesarten, keine Zitate. Ausgewählt wurde nicht nach Vollständigkeit: Von 400 rechnerisch möglichen Paarungen sind 326 kuratiert. Im laufenden Werk arbeitet keine KI. Das Rad zieht aus einem festen Bestand und erfindet im Moment der Drehung nichts. Wie der Korpus gewachsen ist und warum er bei 326 steht, steht im Werkbericht."));
-  assert.ok(readFileSync(new URL("portfolio/nebeneinander-nacheinander/index.html", root), "utf8").includes('<a href="werkbericht/">im Werkbericht</a>'));
-  assert.ok(page.includes("Die Bewegung kommt von der Geste, die Konstellation wird aus dem kuratierten Bestand gezogen."));
-  assert.equal(constellations.length, 326, "Absatz nennt 326: bei neuem Bestand anpassen");
-});
-
-test("Werkbericht Kapitel 2 zitiert den Satz zur Geste wörtlich so, wie er auf der Radseite steht", () => {
-  const page = readFileSync(new URL("portfolio/nebeneinander-nacheinander/index.html", root), "utf8");
-  const satz = page.match(/<p class="rad-note">([^<]+)<\/p>/)[1];
-  const kapitel2 = WB_MD.slice(WB_MD.indexOf("## 2."), WB_MD.indexOf("## 3."));
-  assert.ok(kapitel2.includes(`«${satz}»`), `Kapitel 2 zitiert nicht: «${satz}»`);
 });
 
 test("sitemap.xml enthält jede Seite (ohne Weiterleitung) genau einmal", () => {
