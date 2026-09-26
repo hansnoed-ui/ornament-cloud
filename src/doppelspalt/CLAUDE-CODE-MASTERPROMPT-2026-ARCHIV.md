@@ -1,7 +1,7 @@
 > **Archiv – nicht mehr verbindlich.**
-> Dieser Masterprompt dokumentiert den Entstehungsstand des Werks (September 2026: Arbeitstitel
-> «Doppelspalt der Wahrnehmung», 99 Konstellationen, fünf inzwischen aufgelöste doppelte Personenpaare).
-> Er wird unverändert aufbewahrt. Verbindlich sind die Regeln in [`REGELN.md`](REGELN.md).
+> Dieser Masterprompt dokumentiert den Entstehungsstand von 99 Konstellationen (September 2026,
+> Arbeitstitel «Doppelspalt der Wahrnehmung», mit fünf inzwischen aufgelösten doppelten Personenpaaren).
+> Er wird unverändert aufbewahrt und ist nicht mehr verbindlich. Es gelten die Regeln in [`REGELN.md`](REGELN.md).
 
 # CLAUDE CODE MASTERPROMPT
 ## Doppelspalt der Wahrnehmung — interactive constellation wheel

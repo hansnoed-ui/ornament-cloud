@@ -81,19 +81,16 @@ und dokumentiert den Entstehungsstand.
 - Kein dramatischer Auftritt. Die Frage steht ohne Etikett.
 - Während der Bewegung steht kein Text. Beim nächsten Spin verschwindet der alte Text.
 
-## 8. Zählen und Spielmechanik (Klärung §17)
+## 8. Zählen (Klärung zu §17 des Archivs)
 
-- **Auf der Radseite:** keine Fortschritts-, Gesehen- oder Restanzeige und keinerlei Spielmechanik.
-  Also keine Punkte, Stände wie 17/326, Abzeichen, Serien, Seltenheit, Ranglisten, Casino-Geräusche.
-- **In der Feldansicht und im Werkbericht** sind die Zahlen 400 und 326 Werkaussagen und
-  ausdrücklich erwünscht.
+Auf der Radseite keine Fortschritts-, Gesehen- oder Restanzeige und keine Spielmechanik. In Feldansicht und Werkbericht sind 400 und 326 Werkaussagen und ausdrücklich erwünscht.
 
-## 9. Adresse und Teilen (Klärung §16)
+## 9. Teilen (Klärung zu §16 des Archivs)
 
-- Jede Konstellation hat die Adresse `?pair=<id>`. Nach jeder Drehung wird sie per
-  `history.replaceState` gesetzt, nie per `pushState`.
-- Teilen ist freigegeben: ein kleiner, unterstrichener Knopf «Link kopieren» im Stil von
-  «noch einmal drehen», nicht hervorgehoben.
+Ein Teilen- oder Kopierlink ist erlaubt, klein und unterstrichen im Stil von "noch einmal drehen", nicht hervorgehoben.
+
+Die Adresse jeder Konstellation ist `?pair=<id>`. Nach jeder Drehung wird sie per
+`history.replaceState` gesetzt, nie per `pushState`.
 
 ## 10. Zugänglichkeit
 
