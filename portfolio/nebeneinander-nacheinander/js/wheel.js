@@ -173,10 +173,20 @@ function keepInView() {
   }
 }
 
+// ---------- Zählung (GoatCounter, ohne Cookies): nur Ereignisse, keine persönlichen Daten ----------
+const names = new Map([...artists, ...theorists].map(p => [p.id, p.name]));
+function track(path, title, tries = 20) {
+  try {
+    if (window.goatcounter?.count) window.goatcounter.count({ path, title, event: true });
+    else if (tries > 0) setTimeout(() => track(path, title, tries - 1), 500);   // Skript lädt noch
+  } catch { /* Zählung ist nie wichtiger als das Rad */ }
+}
+const HOW = { wischen: "Wischen", tippen: "Antippen", taste: "Tastatur", nochmal: "noch einmal drehen" };
+
 // ---------- Spin ----------
 function canSpin() { return dataOk && (state === "idle" || state === "selected" || state === "dragging"); }
 
-function startSpin(grabbed, velocity) {
+function startSpin(grabbed, velocity, how = "wischen") {
   if (!canSpin()) return;
   hideResult();
   touched = true;
@@ -196,6 +206,7 @@ function startSpin(grabbed, velocity) {
   plan.targets = tg;
   spinStart = performance.now();
   setState("spinning");
+  track(`rad-drehung/${how}`, `Rad: Drehung (${HOW[how] || how})`);
 }
 
 function finishSpin() {
@@ -211,6 +222,7 @@ function finishSpin() {
   current = { a: targets.artistIndex, t: targets.theoristIndex, id: record.id };
   setState("selected");
   showResult(record, false);
+  track(`rad-paar/${record.id}`, `Rad: ${names.get(record.artistId)} × ${names.get(record.theoristId)}`);
 }
 
 // ---------- Schleife ----------
@@ -291,11 +303,12 @@ function release(e) {
   const hold = Math.max(0, now - lastT - 40);
   let v = span > 0.008 ? recent.slice(1).reduce((s, x) => s + x.d, 0) / span * Math.exp(-hold / 50) : 0;
   const dir = Math.sign(v) || Math.sign(g.total) || 1;
-  if (moved < 6 && now - g.start < 350) v = V_TAP * dir;            // Antippen
+  const tap = moved < 6 && now - g.start < 350;
+  if (tap) v = V_TAP * dir;                                          // Antippen
   else if (Math.abs(v) < V_MIN) v = V_MIN * dir;                     // langsames Ziehen: sanfter Anstoss
   v = Math.max(-V_MAX, Math.min(V_MAX, v));
   setState("idle");                                                  // kurz, damit startSpin greift
-  startSpin(g.grabbed, v);
+  startSpin(g.grabbed, v, tap ? "tippen" : "wischen");
 }
 svg.addEventListener("pointerup", release);
 svg.addEventListener("pointercancel", release);
@@ -303,11 +316,11 @@ svg.addEventListener("pointercancel", release);
 svg.addEventListener("keydown", e => {
   if (e.key !== "Enter" && e.key !== " ") return;
   e.preventDefault();
-  if (state === "idle" || state === "selected") startSpin("artist", V_TAP * (0.9 + 0.4 * Math.random()));
+  if (state === "idle" || state === "selected") startSpin("artist", V_TAP * (0.9 + 0.4 * Math.random()), "taste");
 });
 
 parts.again.addEventListener("click", () => {
-  if (state === "selected") startSpin("artist", V_TAP * (0.9 + 0.5 * Math.random()));
+  if (state === "selected") startSpin("artist", V_TAP * (0.9 + 0.5 * Math.random()), "nochmal");
   svg.focus({ preventScroll: true });
 });
 
@@ -324,6 +337,7 @@ if (dataOk && linked) {
   current = { a: tg.artistIndex, t: tg.theoristIndex, id: linked.id };
   setState("selected");
   showResult(linked, true);
+  track(`rad-direktlink/${linked.id}`, `Rad: Direktlink ${names.get(linked.artistId)} × ${names.get(linked.theoristId)}`);
 }
 
 // ---------- Entwicklungsdiagnose (nur mit ?debug) ----------
