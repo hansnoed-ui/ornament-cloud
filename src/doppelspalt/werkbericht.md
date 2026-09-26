@@ -30,7 +30,7 @@ Die Reihenfolge der Operationen ist entscheidend. Das System wählt nicht zwei P
 
 Präzise gesagt: Bei der ersten Auswahl hat jedes der 326 Paare die Wahrscheinlichkeit 1/326. Danach ist das zuletzt gezeigte Paar ausgeschlossen, jedes der übrigen 325 hat die Wahrscheinlichkeit 1/325. Die Gleichverteilung bleibt dabei erhalten, die einzelnen Ziehungen sind aber nicht unabhängig. Gleiche Wahrscheinlichkeit heisst nicht, dass in einer kurzen Sitzung alle Paare gleich oft erscheinen.
 
-Diese Trennung verhindert eine falsche Suggestion von Geschicklichkeit. Sie allein räumt die Kontrollillusion nicht aus, deshalb steht der Hinweis auch im Text: Du setzt die Bewegung in Gang, die Konstellation wird gezogen.
+Diese Trennung verhindert eine falsche Suggestion von Geschicklichkeit. Sie allein räumt die Kontrollillusion nicht aus, deshalb steht der Hinweis auch im Text: «Die Bewegung kommt von der Geste, die Konstellation wird aus dem kuratierten Bestand gezogen.»
 
 Zur Laufzeit arbeitet keine KI. Das Rad erfindet im Moment der Drehung nichts.
 

@@ -35,6 +35,10 @@ und dokumentiert den Entstehungsstand.
 - Texte und Fragen werden nie umgeschrieben, gekürzt, ergänzt, übersetzt oder neu erzeugt.
   Die Schreibweise des Korpus bleibt, auch «ß».
 - Im Code steht keine feste Korpusgrösse. Massgeblich ist die Länge des Bestands.
+- Redaktionsgeschichte und Importgeschichte sind verschiedene Reihen. Redaktionell wuchs der Bestand
+  in sechs Stufen: 99, 165, 205, 246, 286, 326 (Lieferung 2: 246 + 40 = 286, Lieferung 3: 286 → 326).
+  Ins Repository übernommen wurden 99, 165, 205, 246 und 326; der Zwischenstand 286 wurde nie
+  synchronisiert. Der Werkbericht folgt der Redaktionsgeschichte.
 
 ## 3. Auswahl
 
@@ -128,7 +132,9 @@ Die Adresse jeder Konstellation ist `?pair=<id>`. Nach jeder Drehung wird sie pe
 - Kommentare auf Deutsch. Bei geänderten Dateien wird `?v=` hochgezählt.
 - Diagnose nur mit `?debug`.
 - Die Tests in `tests/` müssen durchlaufen. Neues Verhalten bekommt Tests.
-- Keine Forschungs- oder Quellenlinks im Werktext.
+- Keine Forschungs- oder Quellenlinks in den Konstellationstexten (Text und Frage).
+  Das Verbot gilt nicht für die Dokumentation: Im Literaturverzeichnis des Werkberichts sind Links
+  und DOIs erwünscht, gesetzt dort, wo sie im Projektpaper vorhanden sind.
 
 ## 12. Feldansicht und Lückenbewertung
 

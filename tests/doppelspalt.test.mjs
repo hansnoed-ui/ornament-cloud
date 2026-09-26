@@ -316,6 +316,13 @@ test("Radseite: Absatz zur Herkunft der Texte wörtlich, mit Link auf den Werkbe
   assert.equal(constellations.length, 326, "Absatz nennt 326: bei neuem Bestand anpassen");
 });
 
+test("Werkbericht Kapitel 2 zitiert den Satz zur Geste wörtlich so, wie er auf der Radseite steht", () => {
+  const page = readFileSync(new URL("portfolio/nebeneinander-nacheinander/index.html", root), "utf8");
+  const satz = page.match(/<p class="rad-note">([^<]+)<\/p>/)[1];
+  const kapitel2 = WB_MD.slice(WB_MD.indexOf("## 2."), WB_MD.indexOf("## 3."));
+  assert.ok(kapitel2.includes(`«${satz}»`), `Kapitel 2 zitiert nicht: «${satz}»`);
+});
+
 test("sitemap.xml enthält jede Seite (ohne Weiterleitung) genau einmal", () => {
   const xml = readFileSync(new URL("sitemap.xml", root), "utf8");
   const locs = [...xml.matchAll(/<loc>https:\/\/hansnoed-ui\.github\.io\/ornament-cloud\/([^<]*)<\/loc>/g)].map(m => m[1]);
