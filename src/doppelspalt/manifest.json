@@ -1,8 +1,8 @@
 {
   "artists": 20,
   "theorists": 20,
-  "records": 165,
-  "uniquePersonPairs": 165,
+  "records": 205,
+  "uniquePersonPairs": 205,
   "duplicatePersonPairs": [],
   "resolvedReplacements": [
     {
@@ -27,5 +27,6 @@
     }
   ],
   "sourceCleanup": "Removed citation/export debris from website copy; retained corpus prose/questions, with five curator-approved replacement constellations to resolve duplicate person-pairs.",
-  "editorialSource": "redaktion/konstellationen_165_redaktion_v3.csv (Redaktion V3, ersetzt den Bestand von 99 Konstellationen vollständig)"
+  "editorialFile": "redaktion/konstellationen_205_redaktion_v4.csv",
+  "editorialNote": "Redaktion V4 (205 Konstellationen) ersetzt die Fassungen V3 (165) und das Produktionspaket (99) vollständig. Einträge 1–165 unverändert aus V3; 166–205 ergänzen gezielt bisher leere oder schwach ausgeprägte Verbindungen zwischen den Denkbewegungen des Korpus."
 }
