@@ -18,7 +18,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `tests/` – Prüfungen des Rads: `node --experimental-strip-types --no-warnings --test tests/doppelspalt.test.mjs`
   und im Browser (Playwright): `node tests/doppelspalt.e2e.mjs`
 - `slider.js` – Punkte unter der Wisch-Galerie der Artefakte auf dem Smartphone (Wischen selbst per CSS)
-- `bg.js` – animierter Hintergrund (Lemniskaten und Schleifen als SVG, Tempo in `CONFIG`)
+- `bg.js` – animierter Hintergrund (Lemniskaten und Schleifen als SVG, Tempo in `CONFIG`); zurzeit auf keiner Seite eingebunden. Wieder einschalten: `<div class="bg" aria-hidden="true"><svg class="bg-field" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg></div>` direkt nach `<body>` und `<script src="bg.js?v=2" defer></script>` vor `</body>`
 - `assets/` – Vorschau-Videos (.mp4/.webm) und Standbilder (.jpg)
 - `werke/<name>/index.html` – lokale Kopien der Artefakte
 - `vendor/three/` – three.js r128 (MIT-Lizenz) für die 3D-Artefakte
