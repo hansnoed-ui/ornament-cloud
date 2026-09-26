@@ -48,6 +48,21 @@ function readGaps(): Map<string, string> {
   return existsSync(GAPS) ? parseGaps(readFileSync(GAPS, "utf8")) : new Map();
 }
 
+/** Kleines Bild des Feldes für schmale Bildschirme: 20 × 20 Zellen à 14, nicht anklickbar, aria-hidden */
+function miniFeld(): string {
+  const S = 14, W = S * theorists.length, H = S * artists.length;
+  let grid = "", dots = "", gaps = "";
+  for (let i = 0; i <= artists.length; i += 1) grid += `M0,${i * S}H${W}`;
+  for (let j = 0; j <= theorists.length; j += 1) grid += `M${j * S},0V${H}`;
+  artists.forEach((a, i) => theorists.forEach((t, j) => {
+    const x = j * S, y = i * S;
+    if (byPair.has(`${a.id}__${t.id}`)) dots += `M${x + S / 2 - 1.6},${y + S / 2}a1.6,1.6 0 1,0 3.2,0a1.6,1.6 0 1,0 -3.2,0`;
+    else gaps += `M${x},${y + S}L${x + S},${y}`;
+  }));
+  return `<svg class="feld-mini" viewBox="-0.5 -0.5 ${W + 1} ${H + 1}" aria-hidden="true" focusable="false">` +
+    `<path class="feld-mini-grid" d="${grid}"/><path class="feld-mini-leer" d="${gaps}"/><path class="feld-mini-voll" d="${dots}"/></svg>`;
+}
+
 export function buildFeld(gaps: Map<string, string> = readGaps()): string {
   const out: string[] = [];
 
@@ -70,6 +85,9 @@ export function buildFeld(gaps: Map<string, string> = readGaps()): string {
 
   // ---------- Liste pro Künstler:in (schmal) ----------
   out.push(`<div class="feld-liste">`);
+  out.push(miniFeld());
+  // Sprungmarken auf die zwanzig Abschnitte
+  out.push(`<nav class="feld-sprung" aria-label="Künstler:innen">${artists.map(a => `<a href="#feld-${a.id}">${esc(a.name)}</a>`).join(`<span aria-hidden="true"> · </span>`)}</nav>`);
   for (const a of artists) {
     const own = theorists.map(t => byPair.get(`${a.id}__${t.id}`)).filter(Boolean) as typeof constellations[number][];
     const free = theorists.filter(t => !byPair.has(`${a.id}__${t.id}`));

@@ -344,6 +344,7 @@ await check("Feld ohne JavaScript, Desktop: Matrix 20 × 20 mit allen Konstellat
   await page.goto(feldUrl);
   assert.equal(await page.$eval(".feld-matrix-wrap", e => getComputedStyle(e).display), "block");
   assert.equal(await page.$eval(".feld-liste", e => getComputedStyle(e).display), "none");
+  assert.match(await page.$eval(".feld-legende", e => e.textContent), /Reihenfolge der Ringe, nicht alphabetisch/);
   const links = await page.$$eval(".feld-matrix a", as => as.map(a => new URL(a.href).searchParams.get("pair")));
   assert.equal(links.length, pairs.size);
   assert.deepEqual(new Set(links), pairs);
@@ -359,9 +360,14 @@ await check("Feld ohne JavaScript, Telefon 320 und 390 px: Liste statt Matrix, n
     const page = await ctx.newPage();
     await page.goto(feldUrl);
     assert.equal(await page.$eval(".feld-matrix-wrap", e => getComputedStyle(e).display), "none");
-    const links = await page.$$eval(".feld-liste a", as => as.map(a => new URL(a.href).searchParams.get("pair")));
+    const links = await page.$$eval(".feld-person a", as => as.map(a => new URL(a.href).searchParams.get("pair")));
     assert.deepEqual(new Set(links), pairs);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `horizontal bei ${width}`);
+    const mini = await page.$eval(".feld-mini", e => ({ w: e.getBoundingClientRect().width, right: e.getBoundingClientRect().right, hidden: e.getAttribute("aria-hidden") }));
+    assert.ok(mini.w >= 270 && mini.right <= width, `Bild des Feldes ${JSON.stringify(mini)}`);
+    assert.equal(mini.hidden, "true");
+    await page.click(".feld-sprung a:nth-of-type(12)");
+    assert.equal(await page.evaluate(() => location.hash), "#feld-sol-lewitt");
     await ctx.close();
   }
 });
