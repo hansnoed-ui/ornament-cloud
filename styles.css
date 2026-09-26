@@ -257,6 +257,9 @@ h1 {
   text-decoration: none;
 }
 
+/* zweiter Verweis direkt unter dem ersten (z. B. «Das Feld») */
+.link + .link--next { margin-top: 6px; }
+
 .link:hover,
 .link:focus-visible {
   text-decoration: underline;

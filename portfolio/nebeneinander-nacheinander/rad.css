@@ -247,6 +247,13 @@
 
 .rad-about p { margin: 0 0 14px; line-height: 1.7; }
 
+/* Verweis auf die Feldansicht, rechtsbündig unter der Beschreibung */
+.rad-about .rad-more-link {
+  max-width: 720px;
+  margin: 8px 0 0 auto;
+  text-align: right;
+}
+
 /* ---------- Diagnose (nur ?debug) ---------- */
 .rad-debug {
   margin: 20px 0;

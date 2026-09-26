@@ -214,3 +214,54 @@ test("Laufzeit bildet keine Kombinationen: wheel.js zieht nur aus den kuratierte
   assert.match(src, /drawConstellation\(constellations, previousId\)/);
   assert.doesNotMatch(src, /artists\.(flatMap|map)\([^)]*theorists/);
 });
+
+// ---------- Paket 2: Feldansicht ----------
+const feld = await import(new URL("tools/build-feld.ts", root).href);
+const FELD_PAGE = readFileSync(new URL("portfolio/nebeneinander-nacheinander/feld/index.html", root), "utf8");
+const feldSection = () => FELD_PAGE.slice(FELD_PAGE.indexOf("<!-- FELD:START -->") + 19, FELD_PAGE.indexOf("<!-- FELD:END -->")).trim();
+
+test("Feldansicht ist aktuell: der erzeugte Teil entspricht genau den Daten (keine Zweitpflege)", () => {
+  assert.equal(feldSection(), feld.buildFeld().trim(), "Feldansicht veraltet: tools/sync-doppelspalt-data.ts ausführen");
+});
+
+test("Feldansicht: jede Konstellation genau einmal in der Matrix und einmal in der Liste, als echter Link", () => {
+  const html = feldSection();
+  const matrix = html.slice(0, html.indexOf('<div class="feld-liste">'));
+  const liste = html.slice(html.indexOf('<div class="feld-liste">'));
+  for (const c of constellations) {
+    const href = `href="../?pair=${c.id}"`;
+    assert.equal(matrix.split(href).length - 1, 1, `Matrix: ${c.id}`);
+    assert.equal(liste.split(href).length - 1, 1, `Liste: ${c.id}`);
+  }
+  const titles = [...matrix.matchAll(/<a href="\.\.\/\?pair=([^"]+)" title="([^"]*)"/g)];
+  assert.equal(titles.length, constellations.length);
+  const q = new Map(constellations.map(c => [c.id, c.question.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;")]));
+  for (const [, id, title] of titles) assert.equal(title, q.get(id), `Titel = offene Frage: ${id}`);
+  const free = artists.length * theorists.length - constellations.length;
+  assert.equal((matrix.match(/class="feld-leer/g) || []).length, free);
+  assert.equal((matrix.match(/<tr><th scope="row">/g) || []).length, artists.length);
+  assert.equal((matrix.match(/<th scope="col">/g) || []).length, theorists.length);
+});
+
+test("Feldansicht: die Zahlen im Einleitungstext stimmen mit dem Bestand überein", () => {
+  const intro = FELD_PAGE.match(/<p class="feld-intro">([\s\S]*?)<\/p>/)[1];
+  const n = constellations.length, total = artists.length * theorists.length;
+  assert.equal(total, 400);
+  assert.ok(intro.includes(`${n} sind geschrieben`), `Einleitung nennt nicht ${n}`);
+  assert.ok(intro.includes(`die ${total - n} Stellen`), `Einleitung nennt nicht ${total - n} freie Stellen`);
+});
+
+test("Lückenbewertung vorbereitet: gaps.csv wird gelesen, geprüft und als Klasse gesetzt", () => {
+  const free = [];
+  for (const a of artists) for (const t of theorists) if (!constellations.some(c => c.pairKey === `${a.id}__${t.id}`)) free.push([a.id, t.id]);
+  const [f1, f2] = free;
+  const gaps = feld.parseGaps(`﻿kuenstler_id;theoretiker_id;bewertung\r\n${f1[0]};${f1[1]};mittel\r\n${f2[0]};${f2[1]};schwach\r\n`);
+  assert.equal(gaps.size, 2);
+  const html = feld.buildFeld(gaps);
+  assert.ok(html.includes('class="feld-leer feld-gap--mittel" data-gap="mittel"'));
+  assert.ok(html.includes('class="feld-leer feld-gap--schwach" data-gap="schwach"'));
+  const used = constellations[0];
+  assert.throws(() => feld.parseGaps(`kuenstler_id;theoretiker_id;bewertung\n${used.artistId};${used.theoristId};mittel`), /kein freies Feld/);
+  assert.throws(() => feld.parseGaps(`kuenstler_id;theoretiker_id;bewertung\n${f1[0]};${f1[1]};stark`), /Bewertung/);
+  assert.throws(() => feld.parseGaps(`kuenstler_id;theoretiker_id;bewertung\nniemand;${f1[1]};mittel`), /unbekannte ID/);
+});

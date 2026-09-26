@@ -336,6 +336,60 @@ await check("Rückfall ohne Teilen und Zwischenablage: Adresse erscheint markier
   await ctx.close();
 });
 
+// ---------- Paket 2: Feldansicht ----------
+const feldUrl = base + "feld/";
+await check("Feld ohne JavaScript, Desktop: Matrix 20 × 20 mit allen Konstellationen als Links, freie Felder leer", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, javaScriptEnabled: false });
+  const page = await ctx.newPage();
+  await page.goto(feldUrl);
+  assert.equal(await page.$eval(".feld-matrix-wrap", e => getComputedStyle(e).display), "block");
+  assert.equal(await page.$eval(".feld-liste", e => getComputedStyle(e).display), "none");
+  const links = await page.$$eval(".feld-matrix a", as => as.map(a => new URL(a.href).searchParams.get("pair")));
+  assert.equal(links.length, pairs.size);
+  assert.deepEqual(new Set(links), pairs);
+  assert.equal(await page.$$eval(".feld-matrix td.feld-leer", e => e.length), 400 - pairs.size);
+  assert.equal(await page.$$eval(".feld-matrix td.feld-leer a", e => e.length), 0);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "horizontal");
+  await ctx.close();
+});
+
+await check("Feld ohne JavaScript, Telefon 320 und 390 px: Liste statt Matrix, nichts rutscht horizontal weg", async () => {
+  for (const width of [320, 390]) {
+    const ctx = await browser.newContext({ viewport: { width, height: 800 }, javaScriptEnabled: false, isMobile: true, hasTouch: true });
+    const page = await ctx.newPage();
+    await page.goto(feldUrl);
+    assert.equal(await page.$eval(".feld-matrix-wrap", e => getComputedStyle(e).display), "none");
+    const links = await page.$$eval(".feld-liste a", as => as.map(a => new URL(a.href).searchParams.get("pair")));
+    assert.deepEqual(new Set(links), pairs);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `horizontal bei ${width}`);
+    await ctx.close();
+  }
+});
+
+await check("Feld: ein Link führt zum Rad mit genau dieser Konstellation; Matrix per Tastatur erreichbar", async () => {
+  const { ctx, page, errors } = await open({ viewport: { width: 1280, height: 900 } });
+  await page.goto(feldUrl);
+  const a = page.locator(".feld-matrix a").nth(17);
+  const id = new URL(await a.evaluate(e => e.href)).searchParams.get("pair");
+  await a.focus();
+  assert.equal(await page.evaluate(() => document.activeElement.closest(".feld-matrix") !== null), true);
+  await page.keyboard.press("Enter");
+  await page.waitForFunction(() => document.querySelector(".rad-wheel")?.__rad?.current);
+  assert.equal((await radState(page)).cur.id, id);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Verweise auf das Feld: von der Radseite und vom Portfolio", async () => {
+  const ctx = await browser.newContext({ javaScriptEnabled: false });
+  const page = await ctx.newPage();
+  await page.goto(base);
+  assert.equal(await page.$eval('.rad-about a[href="feld/"]', a => a.textContent.includes("Das Feld")), true);
+  await page.goto(new URL("../", base).href);
+  assert.equal(await page.$$eval('a[href="nebeneinander-nacheinander/feld/"]', a => a.length), 1);
+  await ctx.close();
+});
+
 await browser.close();
 server.close();
 console.log(results.join("\n"));
