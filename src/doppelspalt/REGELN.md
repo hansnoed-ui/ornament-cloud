@@ -11,7 +11,7 @@ und dokumentiert den Entstehungsstand.
 - Bei einem Konflikt zwischen diesen Regeln und einem aktuellen Auftrag gilt der Auftrag.
 - Der Konflikt wird aber zuerst benannt, und es wird auf Freigabe gewartet. Er wird nie
   stillschweigend aufgelöst.
-- Freigegebene Klärungen werden hier nachgetragen (siehe 8, 9 und 12).
+- Freigegebene Klärungen werden hier nachgetragen (siehe 6a, 8, 9 und 12).
 
 ## 1. Werk
 
@@ -73,6 +73,25 @@ und dokumentiert den Entstehungsstand.
 - Auf dem bewegten Rad haben die Zeichen Vorrang. Namen erscheinen nach dem Stillstand, dezent,
   nahe der Achse.
 - Ergebnis im Format **Agnes Martin × Niklas Luhmann**. Immer «×», nie «versus», «Match» oder «Gewinner».
+
+## 6a. Namen am Rad und Legende (Entscheidung zu Paket 3)
+
+- **Am Rad** erscheinen nur die Namen der beiden getroffenen Plätze, nach dem Stillstand, und sie
+  verschwinden beim Beginn der nächsten Drehung, gleich wie der Text (§7). Kein Mitlaufen, kein Lesefenster.
+- Künstler:in: tangential ausserhalb des Aussenrands, neben der Achsenmarke.
+  Theoretiker:in: tangential an der Innenkante des Innenrings, unter dem getroffenen Platz.
+  Die Mitte bleibt leer.
+- Grundsatz: Die Beschriftung gehört zum Zeichen, nicht zur Achse. Der vollständige Name steht
+  ohnehin im Ergebnis.
+- **Alle 40 Namen** stehen nicht auf den Ringen, sondern in einer Legende unter dem Rad: jeder Name
+  neben seinem Zeichen, in Ringreihenfolge, zwei Spalten für Aussen- und Innenring. Voreingestellt
+  geschlossen, mit einem Schalter «Namen zeigen».
+- In der Legende werden ausschliesslich die beiden gezogenen Namen hervorgehoben, und erst beim
+  Stillstand. Die Hervorhebung läuft nicht während der Drehung mit.
+- Begründung: Bei 375 px Breite (Rad 355 px, Schrift 11 px) stehen pro Platz aussen etwa 53 px,
+  innen 20–30 px zur Verfügung. Einzelne Vollnamen brauchen bis etwa 125 px. Alle 40 Namen lesbar und
+  ohne Überlappung auf den Ringen gehen nicht, innen auch als Nachnamen nicht. Eine mitlaufende
+  Beschriftung würde das bewegte Rad unruhig machen und den Zeichen den Vorrang nehmen (§6).
 
 ## 7. Ergebnis
 
