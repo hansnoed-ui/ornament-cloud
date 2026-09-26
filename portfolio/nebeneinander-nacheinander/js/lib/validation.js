@@ -1,7 +1,7 @@
 // Übertragung von src/doppelspalt/src/lib/double-slit/validation.ts (nur Typen und Importpfade angepasst).
-import { artists } from "../data/artists.js?v=v5";
-import { theorists } from "../data/theorists.js?v=v5";
-import { constellations } from "../data/constellations.js?v=v5";
+import { artists } from "../data/artists.js?v=v6";
+import { theorists } from "../data/theorists.js?v=v6";
+import { constellations } from "../data/constellations.js?v=v6";
 
 export function validateDataset(options = {}) {
   const issues = [];

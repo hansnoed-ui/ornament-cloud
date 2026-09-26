@@ -1,8 +1,8 @@
 {
   "artists": 20,
   "theorists": 20,
-  "records": 246,
-  "uniquePersonPairs": 246,
+  "records": 326,
+  "uniquePersonPairs": 326,
   "duplicatePersonPairs": [],
   "resolvedReplacements": [
     {
@@ -27,6 +27,6 @@
     }
   ],
   "sourceCleanup": "Removed citation/export debris from website copy; retained corpus prose/questions, with five curator-approved replacement constellations to resolve duplicate person-pairs.",
-  "editorialFile": "redaktion/konstellationen_246_import.csv",
-  "editorialNote": "Fassung mit 246 Konstellationen ersetzt die früheren Fassungen (99, 165, 205) vollständig. Einträge 1–205 unverändert aus V4; 206–246 neu."
+  "editorialFile": "redaktion/konstellationen_326_import_final.csv",
+  "editorialNote": "Kuratierter Gesamtbestand mit 326 Konstellationen ersetzt die früheren Fassungen (99, 165, 205, 246) vollständig. Einträge 1–246 unverändert; 247–326 neu."
 }

@@ -5,9 +5,9 @@
 // Die Geste bestimmt den Weg (Richtung, Kraft, Umdrehungen, Dauer), nie das Ergebnis.
 // Es werden nie Kombinationen gebildet oder geprüft; das Rad kennt nur die gezogenen Zielwinkel.
 
-import { artists } from "./data/artists.js?v=v5";
-import { theorists } from "./data/theorists.js?v=v5";
-import { constellations } from "./data/constellations.js?v=v5";
+import { artists } from "./data/artists.js?v=v6";
+import { theorists } from "./data/theorists.js?v=v6";
+import { constellations } from "./data/constellations.js?v=v6";
 import { drawConstellation } from "./lib/random.js";
 import { validateDataset } from "./lib/validation.js?v=2";
 import { SLOTS, STEP, mod, slotAngle, targetsFor, indexAtAxis } from "./lib/geometry.js";
