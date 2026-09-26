@@ -7,6 +7,7 @@ import { writeFileSync } from "node:fs";
 import { artists } from "../src/doppelspalt/src/data/artists.ts";
 import { theorists } from "../src/doppelspalt/src/data/theorists.ts";
 import { constellations } from "../src/doppelspalt/src/data/constellations.ts";
+import { writeFeld } from "./build-feld.ts";
 
 const out = new URL("../portfolio/nebeneinander-nacheinander/js/data/", import.meta.url);
 const head = (src: string) =>
@@ -19,3 +20,7 @@ write("artists.js", "artists", "artists.ts", artists);
 write("theorists.js", "theorists", "theorists.ts", theorists);
 write("constellations.js", "constellations", "constellations.ts", constellations);
 console.log(`geschrieben: ${artists.length} Künstler, ${theorists.length} Theoretiker, ${constellations.length} Konstellationen`);
+
+// Feldansicht aus denselben Daten neu setzen (keine Zweitpflege)
+writeFeld();
+console.log("Feldansicht neu geschrieben");

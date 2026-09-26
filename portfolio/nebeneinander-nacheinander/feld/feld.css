@@ -1,0 +1,160 @@
+/* Das Feld – Feldansicht von «Nebeneinander, Nacheinander».
+   Farben, Schriften und Abstände aus ../../../styles.css (Variablen).
+   Instrumentenästhetik des Rads: dünne Linien, keine Flächen, keine neuen Akzente. */
+
+.feld-intro {
+  max-width: 680px;
+  margin: 0 0 28px;
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+.feld-legende {
+  margin: 0 0 20px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.feld-legende-voll,
+.feld-legende-leer {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin: 0 4px 0 0;
+  vertical-align: -2px;
+  border: 1px solid var(--border);
+}
+.feld-legende-leer { margin-left: 14px; }
+.feld-legende-voll { background: radial-gradient(circle, var(--text) 0 2.5px, transparent 3px); }
+
+/* ---------- Matrix: ab 760 px ---------- */
+.feld-matrix-wrap { margin: 0 0 40px; }
+
+.feld-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.8rem;
+}
+
+.feld-matrix .feld-corner { width: 12.5em; border: 0; }
+
+.feld-matrix thead th {
+  height: 11.5em;
+  padding: 0 0 8px;
+  vertical-align: bottom;
+  font-weight: 400;
+  color: var(--muted);
+}
+/* Spaltenköpfe senkrecht, von unten nach oben lesbar */
+.feld-matrix thead th span {
+  display: inline-block;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.feld-matrix tbody th {
+  padding: 0 10px 0 0;
+  text-align: right;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--muted);
+}
+
+.feld-matrix td {
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+/* besetztes Feld: ein Punkt, der ganze Platz ist Link */
+.feld-voll a {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 28px;
+  color: var(--text);
+}
+.feld-voll a::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: currentColor;
+  transition: transform 0.15s ease;
+}
+.feld-voll a:hover::after,
+.feld-voll a:focus-visible::after { transform: scale(1.7); }
+.feld-voll a:focus-visible { outline: 1px solid var(--text); outline-offset: -3px; }
+
+/* Zeile und Kopf der gerade gezeigten Konstellation hervorheben (ohne JavaScript) */
+.feld-matrix tbody tr:has(a:hover, a:focus-visible) th { color: var(--text); }
+
+/* freies Feld: leer, nur feine Diagonale als Zeichen der Lücke */
+.feld-leer {
+  background: linear-gradient(to top right, transparent calc(50% - 0.5px), var(--border) 50%, transparent calc(50% + 0.5px));
+}
+/* vorbereitet für die Bewertung der Lücken (gaps.csv): mittel = gestrichelt, schwach = ohne Diagonale */
+.feld-leer.feld-gap--mittel { border-style: dashed; }
+.feld-leer.feld-gap--schwach { background: none; }
+
+/* ---------- Liste pro Künstler:in: schmale Bildschirme ---------- */
+.feld-liste { display: none; }
+
+.feld-person { margin: 0 0 32px; }
+.feld-person h2 {
+  margin: 0 0 8px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.35rem;
+}
+.feld-person ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+.feld-person li { border-bottom: 1px solid var(--border); }
+.feld-person a {
+  display: block;
+  padding: 10px 0;
+  color: var(--text);
+  text-decoration: none;
+}
+.feld-person a:hover .feld-name,
+.feld-person a:focus-visible .feld-name { text-decoration: underline; text-underline-offset: 3px; }
+.feld-name { display: block; }
+.feld-frage {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.feld-frei {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+@media (max-width: 759.98px) {
+  .feld-matrix-wrap,
+  .feld-legende { display: none; }
+  .feld-liste { display: block; }
+  .feld-intro { font-size: 1.1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feld-voll a::after { transition: none; }
+}
