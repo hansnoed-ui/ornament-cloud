@@ -11,7 +11,7 @@ und dokumentiert den Entstehungsstand.
 - Bei einem Konflikt zwischen diesen Regeln und einem aktuellen Auftrag gilt der Auftrag.
 - Der Konflikt wird aber zuerst benannt, und es wird auf Freigabe gewartet. Er wird nie
   stillschweigend aufgelöst.
-- Freigegebene Klärungen werden hier nachgetragen (siehe 12).
+- Freigegebene Klärungen werden hier nachgetragen (siehe 8 und 9).
 
 ## 1. Werk
 
