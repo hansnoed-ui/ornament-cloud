@@ -277,3 +277,56 @@ test("Lückenbewertung vorbereitet: gaps.csv wird gelesen, geprüft und als Klas
   assert.throws(() => feld.parseGaps(`kuenstler_id;theoretiker_id;bewertung\n${f1[0]};${f1[1]};stark`), /Bewertung/);
   assert.throws(() => feld.parseGaps(`kuenstler_id;theoretiker_id;bewertung\nniemand;${f1[1]};mittel`), /unbekannte ID/);
 });
+
+// ---------- Paket 4: Werkbericht, Herkunft der Texte, Sitemap ----------
+const wb = await import(new URL("tools/build-werkbericht.ts", root).href);
+const WB_MD = readFileSync(new URL("src/doppelspalt/werkbericht.md", root), "utf8");
+const WB_PAGE = readFileSync(new URL("portfolio/nebeneinander-nacheinander/werkbericht/index.html", root), "utf8");
+
+test("Werkbericht ist aktuell und hat ein Inhaltsverzeichnis aus den zwölf H2", () => {
+  const section = WB_PAGE.slice(WB_PAGE.indexOf("<!-- WERKBERICHT:START -->") + 26, WB_PAGE.indexOf("<!-- WERKBERICHT:END -->")).trim();
+  const { html, toc } = wb.buildWerkbericht(WB_MD);
+  assert.equal(section, html.trim(), "Werkbericht veraltet: tools/build-werkbericht.ts ausführen");
+  assert.equal(toc.length, (WB_MD.match(/^## /gm) || []).length);
+  assert.equal(toc.length, 12);
+  for (const t of toc) {
+    assert.ok(section.includes(`href="#${t.id}"`), `Verzeichnis: ${t.id}`);
+    assert.equal(section.split(`id="${t.id}"`).length - 1, 1, `Anker eindeutig: ${t.id}`);
+  }
+  assert.ok(section.includes('href="../feld/"'), "Link auf das Feld");
+  assert.ok(section.includes('href="projektpaper.pdf"'), "Link auf das Projektpaper");
+});
+
+test("Werkbericht: zitierte Fragen stehen wörtlich im Bestand, genannte Paare sind gültig (REGELN §2)", () => {
+  const questions = new Set(constellations.map(c => c.question));
+  const quoted = [...WB_MD.matchAll(/«([^»]+\?)»/g)].map(m => m[1]);
+  assert.ok(quoted.length >= 4);
+  for (const q of quoted) assert.ok(questions.has(q), `nicht wörtlich im Bestand: «${q}»`);
+  const byName = n => [...artists, ...theorists].find(p => p.name === n);
+  const named = [...WB_MD.matchAll(/\*\*([^*×\n]+?) × ([^*\n]+?)\.?\*\*/g)].map(m => [m[1].trim(), m[2].trim().replace(/\.$/, "")]);
+  assert.ok(named.length >= 7);
+  for (const [a, t] of named) assert.ok(byName(a) && byName(t), `unbekannte Person: ${a} × ${t}`);
+});
+
+test("Radseite: Absatz zur Herkunft der Texte wörtlich, mit Link auf den Werkbericht; Satz zur Geste", () => {
+  const page = readFileSync(new URL("portfolio/nebeneinander-nacheinander/index.html", root), "utf8").replace(/<a href="werkbericht\/">([^<]*)<\/a>/, "$1");
+  assert.ok(page.includes("Die Kurztexte sind KI-gestützt entstanden und anschliessend redigiert, einzeln und in mehreren Durchgängen. Sie sind Lesarten, keine Zitate. Ausgewählt wurde nicht nach Vollständigkeit: Von 400 rechnerisch möglichen Paarungen sind 326 kuratiert. Im laufenden Werk arbeitet keine KI. Das Rad zieht aus einem festen Bestand und erfindet im Moment der Drehung nichts. Wie der Korpus gewachsen ist und warum er bei 326 steht, steht im Werkbericht."));
+  assert.ok(readFileSync(new URL("portfolio/nebeneinander-nacheinander/index.html", root), "utf8").includes('<a href="werkbericht/">im Werkbericht</a>'));
+  assert.ok(page.includes("Die Bewegung kommt von der Geste, die Konstellation wird aus dem kuratierten Bestand gezogen."));
+  assert.equal(constellations.length, 326, "Absatz nennt 326: bei neuem Bestand anpassen");
+});
+
+test("sitemap.xml enthält jede Seite (ohne Weiterleitung) genau einmal", () => {
+  const xml = readFileSync(new URL("sitemap.xml", root), "utf8");
+  const locs = [...xml.matchAll(/<loc>https:\/\/hansnoed-ui\.github\.io\/ornament-cloud\/([^<]*)<\/loc>/g)].map(m => m[1]);
+  const pages = [];
+  const walk = dir => { for (const e of readdirSync(new URL(dir, root), { withFileTypes: true })) {
+    if (e.name.startsWith(".") || ["node_modules", "vendor", "src", "tools", "tests", "assets"].includes(e.name)) continue;
+    if (e.isDirectory()) walk(`${dir}${e.name}/`);
+    else if (e.name === "index.html") pages.push(dir);
+  } };
+  walk("");
+  const expected = pages.filter(p => p !== "portfolio/rad-von-zeit-und-raum/").sort();
+  assert.deepEqual([...locs].sort(), expected);
+  assert.equal(new Set(locs).size, locs.length);
+});
