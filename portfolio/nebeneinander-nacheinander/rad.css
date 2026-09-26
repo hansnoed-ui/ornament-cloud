@@ -146,8 +146,16 @@
   line-height: 1.5;
 }
 
-.rad-again {
+/* zwei gleich gestaltete, zurückhaltende Knöpfe unter der Frage */
+.rad-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em 1.6em;
   margin-top: 2.4em;
+}
+
+.rad-again,
+.rad-share {
   padding: 0;
   border: 0;
   background: none;
@@ -162,7 +170,29 @@
 }
 
 .rad-again:hover,
-.rad-again:focus-visible { color: var(--text); }
+.rad-again:focus-visible,
+.rad-share:hover,
+.rad-share:focus-visible { color: var(--text); }
+
+/* Rückfall, wenn weder Teilen noch Zwischenablage verfügbar sind: Adresse zum Markieren */
+.rad-address {
+  margin: 1.2em 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.rad-address[hidden] { display: none; }
+.rad-address input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 0.4em;
+  padding: 0.4em 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  font: inherit;
+  color: var(--text);
+}
 
 /* ---------- Laufband mit allen Namen ---------- */
 .rad-ticker {

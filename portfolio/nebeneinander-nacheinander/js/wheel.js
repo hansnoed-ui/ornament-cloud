@@ -124,7 +124,10 @@ const parts = {
   names: result.querySelector(".rad-names"),
   text: result.querySelector(".rad-text"),
   question: result.querySelector(".rad-question"),
-  again: result.querySelector(".rad-again"),
+  again: result.querySelector(".rad-actions"),       // erscheint als letzter Schritt: beide Knöpfe
+  replay: result.querySelector(".rad-again"),
+  share: result.querySelector(".rad-share"),
+  address: result.querySelector(".rad-address"),
 };
 
 function clearTimers() { timers.forEach(clearTimeout); timers = []; }
@@ -132,7 +135,9 @@ function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 function hideResult() {
   clearTimers();
   result.classList.remove("is-active");
-  ["names", "text", "question", "again"].forEach(k => parts[k].classList.remove("is-shown"));
+  ["names", "text", "question", "again", "address"].forEach(k => parts[k].classList.remove("is-shown"));
+  parts.address.hidden = true;
+  parts.share.textContent = "Link kopieren";
   svg.classList.remove("is-selected");
   svg.querySelectorAll(".sym.is-hit").forEach(s => s.classList.remove("is-hit"));
   live.textContent = "";
@@ -183,6 +188,62 @@ function track(path, title, tries = 20) {
 }
 const HOW = { wischen: "Wischen", tippen: "Antippen", taste: "Tastatur", nochmal: "noch einmal drehen" };
 
+// ---------- Adresse und Teilen ----------
+// Jede Konstellation hat eine Adresse (?pair=<id>). Sie ersetzt den Eintrag im Verlauf,
+// damit der Zurück-Knopf die Seite verlässt, statt durch Drehungen zu blättern.
+function pairUrl(id) {
+  const url = new URL(location.href);
+  url.searchParams.set("pair", id);
+  return url;
+}
+function setAddress(id) {
+  // window.history: «history» ist hier die Spur früherer Begegnungen
+  try { window.history.replaceState(window.history.state, "", pairUrl(id)); } catch { /* z. B. in eingebetteten Ansichten */ }
+}
+function shareUrl(id) {
+  const url = pairUrl(id);
+  url.searchParams.delete("debug");                  // Diagnose gehört nicht in geteilte Links
+  url.hash = "";
+  return url.href;
+}
+
+async function share() {
+  const id = current && current.id;
+  if (!id) return;
+  const url = shareUrl(id);
+  const record = constellations.find(c => c.id === id);
+  const title = `${names.get(record.artistId)} × ${names.get(record.theoristId)}`;
+  track(`rad-teilen/${id}`, `Rad: teilen ${title}`);
+  if (navigator.share) {
+    try { await navigator.share({ title: `${title} – Nebeneinander, Nacheinander`, url }); return; }
+    catch (e) { if (e && e.name === "AbortError") return; }   // abgebrochen: nichts weiter tun
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try { await navigator.clipboard.writeText(url); confirmCopied(); return; }
+    catch { /* keine Berechtigung: Adresse zum Markieren zeigen */ }
+  }
+  showAddress(url);
+}
+
+let copiedTimer = 0;
+function confirmCopied() {
+  // Rückmeldung über die Live-Region; am Knopf selbst kurz dieselben Worte
+  live.textContent = "Link kopiert";
+  parts.share.textContent = "Link kopiert";
+  clearTimeout(copiedTimer);
+  copiedTimer = setTimeout(() => { parts.share.textContent = "Link kopieren"; }, 2200);
+}
+
+function showAddress(url) {
+  const input = parts.address.querySelector("input");
+  input.value = url;
+  parts.address.hidden = false;
+  parts.address.classList.add("is-shown");
+  input.focus();
+  input.select();
+  live.textContent = "Adresse zum Kopieren markiert";
+}
+
 // ---------- Spin ----------
 function canSpin() { return dataOk && (state === "idle" || state === "selected" || state === "dragging"); }
 
@@ -222,6 +283,7 @@ function finishSpin() {
   current = { a: targets.artistIndex, t: targets.theoristIndex, id: record.id };
   setState("selected");
   showResult(record, false);
+  setAddress(record.id);
   track(`rad-paar/${record.id}`, `Rad: ${names.get(record.artistId)} × ${names.get(record.theoristId)}`);
 }
 
@@ -319,12 +381,14 @@ svg.addEventListener("keydown", e => {
   if (state === "idle" || state === "selected") startSpin("artist", V_TAP * (0.9 + 0.4 * Math.random()), "taste");
 });
 
-parts.again.addEventListener("click", () => {
+parts.share.addEventListener("click", share);
+
+parts.replay.addEventListener("click", () => {
   if (state === "selected") startSpin("artist", V_TAP * (0.9 + 0.5 * Math.random()), "nochmal");
   svg.focus({ preventScroll: true });
 });
 
-// ---------- Adresse eines Datensatzes (vorbereitet): ?pair=künstler__theoretiker ----------
+// ---------- Direktlink: ?pair=künstler__theoretiker ----------
 const pairParam = new URLSearchParams(location.search).get("pair");
 const linked = pairParam && constellations.find(c => c.id === pairParam);
 if (dataOk && linked) {
@@ -337,6 +401,7 @@ if (dataOk && linked) {
   current = { a: tg.artistIndex, t: tg.theoristIndex, id: linked.id };
   setState("selected");
   showResult(linked, true);
+  setAddress(linked.id);
   track(`rad-direktlink/${linked.id}`, `Rad: Direktlink ${names.get(linked.artistId)} × ${names.get(linked.theoristId)}`);
 }
 

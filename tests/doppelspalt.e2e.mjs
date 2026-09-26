@@ -259,6 +259,83 @@ await check("Zehn Spins nacheinander: nur kuratierte Paare, nie zweimal direkt d
   await ctx.close();
 });
 
+// ---------- Paket 1: Adresse und Teilen ----------
+await check("Adresse: nach jeder Drehung steht ?pair=<id> in der Leiste, ohne neuen Verlaufseintrag; Aufruf zeigt dieselbe Konstellation", async () => {
+  const { ctx, page, errors } = await open({ viewport: { width: 1280, height: 900 }, reducedMotion: "reduce" });
+  const len0 = await page.evaluate(() => history.length);
+  for (let i = 0; i < 3; i += 1) {
+    await page.focus(".rad-wheel");
+    await page.keyboard.press("Enter");
+    await waitSelected(page, 3000);
+    const s = await assertLanding(page);
+    assert.equal(new URL(await page.evaluate(() => location.href)).searchParams.get("pair"), s.cur.id);
+  }
+  assert.equal(await page.evaluate(() => history.length), len0, "replaceState statt pushState");
+  const url = await page.evaluate(() => location.href), id = new URL(url).searchParams.get("pair");
+  await page.goto(url);
+  await page.waitForFunction(() => document.querySelector(".rad-wheel").__rad.current);
+  assert.equal((await radState(page)).cur.id, id);
+  assert.equal(await page.$eval(".rad-result", r => r.dataset.pair), id);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Link kopieren: mit Tastatur erreichbar, kopiert die Adresse ohne ?debug, Rückmeldung in der Live-Region", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: "reduce", permissions: ["clipboard-read", "clipboard-write"] });
+  await ctx.addInitScript(() => { Object.defineProperty(Navigator.prototype, "share", { value: undefined, configurable: true }); });
+  const page = await ctx.newPage();
+  await page.goto(base + "?debug");
+  await page.waitForFunction(() => document.querySelector(".rad-wheel").__rad);
+  await page.focus(".rad-wheel");
+  await page.keyboard.press("Enter");
+  await waitSelected(page, 3000);
+  await page.waitForFunction(() => document.querySelector(".rad-actions").classList.contains("is-shown"), null, { timeout: 5000 });
+  const id = (await radState(page)).cur.id;
+  await page.focus(".rad-again");
+  await page.keyboard.press("Tab");
+  assert.equal(await page.evaluate(() => document.activeElement.className), "rad-share");
+  await page.keyboard.press("Enter");
+  await page.waitForFunction(() => document.getElementById("rad-live").textContent === "Link kopiert", null, { timeout: 3000 });
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  const u = new URL(copied);
+  assert.equal(u.searchParams.get("pair"), id);
+  assert.equal(u.searchParams.has("debug"), false);
+  await ctx.close();
+});
+
+await check("Teilen: navigator.share wird mit der Adresse aufgerufen, falls vorhanden", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  await ctx.addInitScript(() => { window.__shared = []; Object.defineProperty(Navigator.prototype, "share", { value: d => { window.__shared.push(d); return Promise.resolve(); }, configurable: true }); });
+  const page = await ctx.newPage();
+  await page.goto(base + "?pair=agnes-martin__niklas-luhmann");
+  await page.waitForFunction(() => document.querySelector(".rad-wheel").__rad?.current);
+  await page.click(".rad-share");
+  const shared = await page.evaluate(() => window.__shared);
+  assert.equal(shared.length, 1);
+  assert.equal(new URL(shared[0].url).searchParams.get("pair"), "agnes-martin__niklas-luhmann");
+  assert.match(shared[0].title, /Agnes Martin × Niklas Luhmann/);
+  await ctx.close();
+});
+
+await check("Rückfall ohne Teilen und Zwischenablage: Adresse erscheint markiert zum Kopieren", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  await ctx.addInitScript(() => {
+    Object.defineProperty(Navigator.prototype, "share", { value: undefined, configurable: true });
+    Object.defineProperty(Navigator.prototype, "clipboard", { value: undefined, configurable: true });
+  });
+  const page = await ctx.newPage();
+  await page.goto(base + "?pair=agnes-martin__niklas-luhmann");
+  await page.waitForFunction(() => document.querySelector(".rad-wheel").__rad?.current);
+  await page.click(".rad-share");
+  const r = await page.evaluate(() => { const i = document.querySelector(".rad-address input"); return { hidden: i.closest(".rad-address").hidden, value: i.value, focused: document.activeElement === i, sel: i.selectionEnd - i.selectionStart }; });
+  assert.equal(r.hidden, false);
+  assert.equal(new URL(r.value).searchParams.get("pair"), "agnes-martin__niklas-luhmann");
+  assert.ok(r.focused && r.sel === r.value.length, "Adresse markiert");
+  const sw = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
+  assert.ok(sw, "keine horizontale Verschiebung");
+  await ctx.close();
+});
+
 await browser.close();
 server.close();
 console.log(results.join("\n"));
