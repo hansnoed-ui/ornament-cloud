@@ -2,8 +2,8 @@
 // Die Namen kommen aus denselben Daten wie das Rad; die Liste wird zweimal
 // hintereinander gesetzt, damit die Bewegung ohne Sprung weiterläuft.
 
-import { artists } from "./data/artists.js?v=v4";
-import { theorists } from "./data/theorists.js?v=v4";
+import { artists } from "./data/artists.js?v=v5";
+import { theorists } from "./data/theorists.js?v=v5";
 
 const SPEED = 55;   // Pixel pro Sekunde
 
