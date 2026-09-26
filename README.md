@@ -13,7 +13,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `js/lib/spin.js` (Drehphysik), `js/lib/geometry.js`, `js/symbols.js` (40 Zeichen), `js/ticker.js` (Laufband mit allen Namen), `js/lib/random.js`, `js/lib/validation.js`;
   Diagnose mit `?debug`, direkte Konstellation mit `?pair=<id>`
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
-- `src/doppelspalt/redaktion/` – redaktionelle Fassung der Konstellationen als CSV (zurzeit 165, Redaktion V3); neue Fassung übernehmen:
+- `src/doppelspalt/redaktion/` – redaktionelle Fassung der Konstellationen als CSV (zurzeit Redaktion V4, Datei in `manifest.json` → `editorialFile`); neue Fassung übernehmen:
   `node --experimental-strip-types tools/import-konstellationen.ts src/doppelspalt/redaktion/<datei>.csv`, danach den Sync unten
 - `tools/sync-doppelspalt-data.ts` – erzeugt daraus `portfolio/nebeneinander-nacheinander/js/data/*.js`:
   `node --experimental-strip-types tools/sync-doppelspalt-data.ts`

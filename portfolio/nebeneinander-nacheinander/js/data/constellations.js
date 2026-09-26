@@ -1485,5 +1485,365 @@ export const constellations = Object.freeze([
     "theoristId": "hannah-arendt",
     "text": "Louise Bourgeois macht persönliche Erinnerung in Räumen und Dingen öffentlich zugänglich. Hannah Arendt fragt, wie eine gemeinsame Welt zwischen verschiedenen Menschen entstehen kann. Eine Cell überführt private Erfahrung nicht einfach in gemeinsames Wissen. Sie stellt etwas zwischen die Betrachtenden, zu dem jede Person eine eigene Beziehung aufbauen kann.",
     "question": "Wann wird persönliche Erinnerung Teil einer gemeinsamen Welt?"
+  },
+  {
+    "editorialNumber": 166,
+    "id": "on-kawara__george-spencer-brown",
+    "pairKey": "on-kawara__george-spencer-brown",
+    "artistId": "on-kawara",
+    "theoristId": "george-spencer-brown",
+    "text": "George Spencer-Brown beginnt mit dem Ziehen einer Grenze. Erst dadurch entstehen zwei Seiten. On Kawaras Datumsbilder beruhen auf einer ähnlich elementaren Unterscheidung: Dieser Tag und alle anderen Tage. Die Grenze ist jedoch zeitlich. Mit Mitternacht wird aus dem Heute unwiderruflich ein Gestern. Kawaras Regel, ein Bild nur am bezeichneten Tag fertigzustellen, macht diese Grenze materiell wirksam. Das Datum bezeichnet deshalb nicht nur eine Stelle im Kalender. Es hält den Moment fest, in dem eine zeitliche Unterscheidung irreversibel geworden ist.",
+    "question": "Wann wird aus einer Grenze Vergangenheit?"
+  },
+  {
+    "editorialNumber": 167,
+    "id": "bruce-nauman__george-spencer-brown",
+    "pairKey": "bruce-nauman__george-spencer-brown",
+    "artistId": "bruce-nauman",
+    "theoristId": "george-spencer-brown",
+    "text": "Bruce Nauman wiederholt Bewegungen, Gesten und Sätze, bis das scheinbar Gleiche Unterschiede hervorbringt. George Spencer-Brown beschreibt Form als Folge einer Unterscheidung: Eine Grenze trennt zwei Seiten. Naumans Loops stellen eine einfache Frage an diese Vorstellung. Wenn dieselbe Bewegung wieder beginnt, wird dann dieselbe Grenze erneut gezogen? Körper, Aufmerksamkeit und Zeitpunkt haben sich inzwischen verändert. Die Form kann wiederkehren, aber die Situation ihrer Unterscheidung nicht. Wiederholung wäre damit kein Kreisen innerhalb einer festen Form, sondern ein fortgesetztes Neuziehen ihrer Grenze.",
+    "question": "Kann dieselbe Grenze zweimal gezogen werden?"
+  },
+  {
+    "editorialNumber": 168,
+    "id": "dan-graham__michel-serres",
+    "pairKey": "dan-graham__michel-serres",
+    "artistId": "dan-graham",
+    "theoristId": "michel-serres",
+    "text": "Dan Graham baut mit Glas und Spiegeln Grenzen, die gerade deshalb interessant sind, weil sie nicht einfach abschließen. Sie trennen Räume und lassen zugleich Licht, Blick und Spiegelbild passieren. Michel Serres interessiert sich für Passagen und dafür, dass Vermittlung niemals neutral bleibt. Grahams Glaswand ist deshalb zugleich Grenze und Kanal. Wer hindurchblickt, sieht nicht einfach die andere Seite. Spiegelung, Position und Bewegung verändern das Verhältnis zwischen hier und dort. Die Grenze vermittelt genau dadurch, dass sie trennt.",
+    "question": "Wann wird eine Grenze zum Kanal?"
+  },
+  {
+    "editorialNumber": 169,
+    "id": "dan-graham__elena-esposito",
+    "pairKey": "dan-graham__elena-esposito",
+    "artistId": "dan-graham",
+    "theoristId": "elena-esposito",
+    "text": "Dan Grahams zeitverzögertes Video macht die Gegenwart erst sichtbar, nachdem sie vergangen ist. Was ich auf dem Monitor sehe, habe ich gerade getan. Während dieses Bild erscheint, entsteht bereits die Erwartung des nächsten. Elena Esposito untersucht, wie Zukunft in der Gegenwart wirksam wird, obwohl sie noch nicht eingetreten ist. Grahams Verzögerung erzeugt genau diese Spannung: Sie verwandelt Gegenwart fortlaufend in Vergangenheit und öffnet dadurch zugleich einen Horizont dessen, was gleich erscheinen wird. Zukunft entsteht hier nicht trotz der Verzögerung, sondern durch sie.",
+    "question": "Erzeugt Verzögerung Zukunft?"
+  },
+  {
+    "editorialNumber": 170,
+    "id": "robert-smithson__george-spencer-brown",
+    "pairKey": "robert-smithson__george-spencer-brown",
+    "artistId": "robert-smithson",
+    "theoristId": "george-spencer-brown",
+    "text": "Robert Smithsons Site und Non-Site existieren nur durch eine Unterscheidung. Material befindet sich im Ausstellungsraum und verweist zugleich auf einen Ort außerhalb von ihm. George Spencer-Brown zeigt, dass eine Grenze zwei Seiten nicht nur trennt, sondern überhaupt erst als Seiten einer Form bestimmbar macht. Bei Smithson ermöglicht genau diese Trennung eine gemeinsame Adresse für etwas Abwesendes. Besucher:innen müssen die entfernte Landschaft nicht gemeinsam betreten. Sie können sich im Museum auf sie beziehen, weil Site und Non-Site unterschieden und miteinander verbunden bleiben.",
+    "question": "Kann eine Grenze einen abwesenden Ort gemeinsam zugänglich machen?"
+  },
+  {
+    "editorialNumber": 171,
+    "id": "robert-smithson__gilbert-simondon",
+    "pairKey": "robert-smithson__gilbert-simondon",
+    "artistId": "robert-smithson",
+    "theoristId": "gilbert-simondon",
+    "text": "Robert Smithsons Orte verändern sich weiter, nachdem eine künstlerische Entscheidung getroffen wurde. Wasser, Salz, Wetter und Material setzen ihre Geschichte fort. Gilbert Simondon versteht ein Individuum nicht als fertige Form, sondern als vorläufigen Zustand eines fortdauernden Prozesses. Damit wird bei Smithson eine einfache Frage schwierig: Was genau bleibt an einem Ort identisch? Die Stelle ist wiederauffindbar, ihr materieller Zustand jedoch nicht. Identität könnte deshalb weniger im unveränderten Zustand liegen als in der fortgesetzten Geschichte eines Ortes.",
+    "question": "Wie bleibt ein Ort derselbe, wenn er sich verändert?"
+  },
+  {
+    "editorialNumber": 172,
+    "id": "eva-hesse__henri-bergson",
+    "pairKey": "eva-hesse__henri-bergson",
+    "artistId": "eva-hesse",
+    "theoristId": "henri-bergson",
+    "text": "Eva Hesses Materialien altern, hängen, verfärben sich und verändern ihre Spannung. Solche Veränderungen lassen sich als Folge einzelner Zustände dokumentieren. Henri Bergson warnt jedoch davor, Zeit mit einer Reihe nebeneinandergelegter Zustände zu verwechseln. Dauer bedeutet, dass Vergangenes im gegenwärtigen Zustand weiterwirkt. Hesses Material macht diesen Gedanken beinahe körperlich sichtbar. Das heutige Latex ersetzt nicht das gestrige. Seine gegenwärtige Form ist aus seiner bisherigen Geschichte hervorgegangen.",
+    "question": "Kann ein Material Dauer haben?"
+  },
+  {
+    "editorialNumber": 173,
+    "id": "on-kawara__hannah-arendt",
+    "pairKey": "on-kawara__hannah-arendt",
+    "artistId": "on-kawara",
+    "theoristId": "hannah-arendt",
+    "text": "On Kawara macht einen einzelnen Tag zu einem dauerhaften Gegenstand. Hannah Arendt versteht die gemeinsame Welt als etwas, das zwischen verschiedenen Menschen bestehen kann und ihre jeweiligen Lebenszeiten überdauert. Kawaras Datumsbild beginnt dagegen mit einem radikal persönlichen Jetzt. Nur an diesem einen Tag kann es entstehen. Sobald es fertig ist, kann genau dieser vergangene Tag jedoch von vielen Menschen zu verschiedenen Zeiten betrachtet werden. Ein einmaliges Jetzt erhält dadurch einen Platz in einer gemeinsamen Welt.",
+    "question": "Wann wird ein einzelner Tag gemeinsam?"
+  },
+  {
+    "editorialNumber": 174,
+    "id": "sol-lewitt__hannah-arendt",
+    "pairKey": "sol-lewitt__hannah-arendt",
+    "artistId": "sol-lewitt",
+    "theoristId": "hannah-arendt",
+    "text": "Sol LeWitts Instruktionen erlauben es verschiedenen Menschen, an verschiedenen Orten dasselbe Werk auszuführen. Hannah Arendt denkt eine gemeinsame Welt nicht als Übereinstimmung aller Beteiligten, sondern als etwas, auf das Menschen aus unterschiedlichen Positionen Bezug nehmen können. Eine Wall Drawing verbindet solche Positionen auf ungewöhnliche Weise. Die Ausführenden müssen nicht dasselbe sehen, denken oder tun. Trotzdem beziehen ihre verschiedenen Handlungen sich auf eine gemeinsame Regel und bringen ein Werk hervor, das zwischen ihnen Bestand gewinnt.",
+    "question": "Kann eine Regel etwas Gemeinsames hervorbringen?"
+  },
+  {
+    "editorialNumber": 175,
+    "id": "tehching-hsieh__elena-esposito",
+    "pairKey": "tehching-hsieh__elena-esposito",
+    "artistId": "tehching-hsieh",
+    "theoristId": "elena-esposito",
+    "text": "Tehching Hsieh legt zu Beginn einer Performance fest, was er über Monate oder ein ganzes Jahr tun wird. Damit erhält eine noch nicht gelebte Zukunft bereits in der Gegenwart eine konkrete Form. Elena Esposito untersucht, wie Erwartungen und Prognosen Kommendes wirksam machen, ohne es bereits zu kennen. Bei Hsieh ist die Regel bekannt, die zukünftige Erfahrung jedoch nicht. Müdigkeit, Krankheit, Aufmerksamkeit und Lebenszeit müssen erst eintreten. Der Vertrag beschreibt eine Zukunft und beginnt gerade dadurch schon jetzt, den Körper zu organisieren.",
+    "question": "Wann beginnt Zukunft auf einen Körper zu wirken?"
+  },
+  {
+    "editorialNumber": 176,
+    "id": "james-turrell__elena-esposito",
+    "pairKey": "james-turrell__elena-esposito",
+    "artistId": "james-turrell",
+    "theoristId": "elena-esposito",
+    "text": "James Turrell baut Situationen, in denen Sehen Zeit braucht. Augen passen sich an, Lichtverhältnisse verändern sich und eine zunächst leere Fläche kann allmählich Tiefe gewinnen. Elena Esposito untersucht, wie Erwartungen eine Zukunft in der Gegenwart wirksam machen. Auch bei Turrell sehen wir deshalb nicht nur, was gerade vorhanden ist. Wir warten auf Veränderung, rechnen mit dem nächsten Moment und richten unsere Aufmerksamkeit darauf aus. Die Zukunft des Sehens wirkt schon mit, bevor etwas Neues erscheint.",
+    "question": "Wann wird Erwartung Teil des Sehens?"
+  },
+  {
+    "editorialNumber": 177,
+    "id": "felix-gonzalez-torres__michel-serres",
+    "pairKey": "felix-gonzalez-torres__michel-serres",
+    "artistId": "felix-gonzalez-torres",
+    "theoristId": "michel-serres",
+    "text": "Felix Gonzalez-Torres lässt Teile seiner Werke den Ausstellungsraum verlassen. Papier wird mitgenommen, Bonbons werden gegessen und Bestände später ergänzt. Michel Serres interessiert sich für Passage und dafür, dass eine Übertragung das Übertragene nicht einfach unverändert von einem Ort zum anderen bringt. Bei Gonzalez-Torres gehört diese Veränderung zur Identität des Werks. Es bleibt nicht trotz seiner Zirkulation bestehen, sondern gerade durch sie.",
+    "question": "Kann Weitergabe eine Form erhalten?"
+  },
+  {
+    "editorialNumber": 178,
+    "id": "christian-marclay__hannah-arendt",
+    "pairKey": "christian-marclay__hannah-arendt",
+    "artistId": "christian-marclay",
+    "theoristId": "hannah-arendt",
+    "text": "Christian Marclays The Clock verbindet Tausende Filmfragmente zu einer Zeit, die mit der Uhrzeit des Publikums zusammenfällt. Hannah Arendt beschreibt eine gemeinsame Welt als etwas, das zwischen verschiedenen Menschen besteht, ohne ihre Perspektiven gleichzumachen. Marclay stellt dafür einen ungewöhnlichen gemeinsamen Gegenstand bereit. Verschiedene Menschen sehen verschiedene Bilder, sitzen unterschiedlich lange im Raum und bringen ihre eigenen Erinnerungen mit. Trotzdem befinden sie sich für einen Moment im selben montierten Jetzt.",
+    "question": "Kann eine gemeinsame Gegenwart montiert werden?"
+  },
+  {
+    "editorialNumber": 179,
+    "id": "felix-gonzalez-torres__elena-esposito",
+    "pairKey": "felix-gonzalez-torres__elena-esposito",
+    "artistId": "felix-gonzalez-torres",
+    "theoristId": "elena-esposito",
+    "text": "Felix Gonzalez-Torres definiert Werke so, dass ihre zukünftigen Zustände offen bleiben. Bonbons können verschwinden und ergänzt, Papierstapel abgetragen und erneuert werden. Elena Esposito untersucht, wie Zukunft gegenwärtig organisiert wird, ohne bereits festzustehen. Bei Gonzalez-Torres gehört diese Offenheit zur Werkidentität. Das Werk enthält nicht seinen nächsten Zustand, sondern Regeln dafür, welche Veränderungen es künftig als dasselbe Werk überstehen kann.",
+    "question": "Gehört Zukunft zur Identität eines Werks?"
+  },
+  {
+    "editorialNumber": 180,
+    "id": "william-kentridge__hannah-arendt",
+    "pairKey": "william-kentridge__hannah-arendt",
+    "artistId": "william-kentridge",
+    "theoristId": "hannah-arendt",
+    "text": "William Kentridge arbeitet mit Bildern, in denen politische Geschichte nicht abgeschlossen erscheint. Zeichnungen werden gelöscht und verändert, während frühere Zustände als Spuren sichtbar bleiben. Hannah Arendt versteht die gemeinsame Welt als etwas, das zwischen Menschen Bestand gewinnt und zugleich durch ihr Handeln verändert werden kann. Bei Kentridge wird Vergangenheit deshalb weder beseitigt noch einfach bewahrt. Sie bleibt als veränderter Untergrund gegenwärtigen Handelns erhalten. Eine gemeinsame Welt besitzt Geschichte, ohne durch sie vollständig festgelegt zu sein.",
+    "question": "Wie viel Vergangenheit braucht eine gemeinsame Zukunft?"
+  },
+  {
+    "editorialNumber": 181,
+    "id": "doris-salcedo__george-spencer-brown",
+    "pairKey": "doris-salcedo__george-spencer-brown",
+    "artistId": "doris-salcedo",
+    "theoristId": "george-spencer-brown",
+    "text": "George Spencer-Brown beginnt mit einer Grenze, durch die zwei Seiten entstehen. Doris Salcedo arbeitet mit Rissen, blockierten Durchgängen und Dingen, in denen Trennung körperlich spürbar wird. Eine Grenze erscheint bei ihr deshalb nicht als neutrale Linie. Sie kann eine vergangene Gewalt oder einen Ausschluss gegenwärtig halten. Der Raum wird geteilt, und gerade diese Teilung bleibt als Spur wirksam.",
+    "question": "Kann eine Grenze erinnern?"
+  },
+  {
+    "editorialNumber": 182,
+    "id": "louise-bourgeois__michel-foucault",
+    "pairKey": "louise-bourgeois__michel-foucault",
+    "artistId": "louise-bourgeois",
+    "theoristId": "michel-foucault",
+    "text": "Louise Bourgeois baut mit ihren Cells Räume, in denen Sehen und Zugang genau geregelt sind. Michel Foucault untersucht Anordnungen danach, wie sie Sichtbarkeit verteilen und Positionen hervorbringen. Bei Bourgeois steht man vor Gittern, Türen und Öffnungen, blickt hinein und bleibt zugleich draußen. Die Cell zeigt nicht nur Dinge. Sie organisiert, von welcher Stelle aus etwas sichtbar oder verborgen wird.",
+    "question": "Wer darf in einer Cell sehen und wer bleibt draußen?"
+  },
+  {
+    "editorialNumber": 183,
+    "id": "on-kawara__lucy-suchman",
+    "pairKey": "on-kawara__lucy-suchman",
+    "artistId": "on-kawara",
+    "theoristId": "lucy-suchman",
+    "text": "On Kawaras Datumsbilder folgen einer strengen Regel: Das Bild muss an dem Tag fertig werden, den es bezeichnet. Gelingt das nicht, kann die Regel nicht einfach am nächsten Tag fortgesetzt werden. Lucy Suchman zeigt, dass Pläne erst in konkreten Situationen handlungswirksam werden. Bei Kawara trifft die abstrakte Kalenderordnung deshalb auf Müdigkeit, Arbeitszeit und Mitternacht. Die Situation entscheidet, ob aus dem Plan überhaupt ein Werk wird.",
+    "question": "Wann entscheidet die Situation über eine Regel?"
+  },
+  {
+    "editorialNumber": 184,
+    "id": "bruce-nauman__michel-serres",
+    "pairKey": "bruce-nauman__michel-serres",
+    "artistId": "bruce-nauman",
+    "theoristId": "michel-serres",
+    "text": "Bruce Nauman lässt Bewegungen, Wörter und Bilder in Schleifen zurückkehren. Michel Serres interessiert sich für Passage und für Störungen, die beim Durchgang entstehen. Ein Loop scheint zunächst jede Passage aufzuheben, weil er wieder an seinen Anfang gelangt. Doch Körper, Aufmerksamkeit und Bedeutung kehren nicht unverändert zurück. Jede Runde trägt etwas von der vorherigen mit und fügt eine neue Abweichung hinzu.",
+    "question": "Kann eine Wiederholung ohne Störung zurückkehren?"
+  },
+  {
+    "editorialNumber": 185,
+    "id": "felix-gonzalez-torres__hannah-arendt",
+    "pairKey": "felix-gonzalez-torres__hannah-arendt",
+    "artistId": "felix-gonzalez-torres",
+    "theoristId": "hannah-arendt",
+    "text": "Hannah Arendt verbindet die gemeinsame Welt mit Dingen, die zwischen Menschen Bestand gewinnen. Felix Gonzalez-Torres schafft Werke, deren einzelne Bestandteile gerade nicht dauerhaft sein müssen. Bonbons werden gegessen, Blätter mitgenommen und später ersetzt. Dennoch bleibt ein Werk vorhanden, auf das verschiedene Menschen zu verschiedenen Zeiten Bezug nehmen können. Dauer liegt hier nicht im einzelnen Ding, sondern in einer gemeinsam erhaltenen Form.",
+    "question": "Kann ein vergängliches Werk Teil einer gemeinsamen Welt bleiben?"
+  },
+  {
+    "editorialNumber": 186,
+    "id": "william-kentridge__george-spencer-brown",
+    "pairKey": "william-kentridge__george-spencer-brown",
+    "artistId": "william-kentridge",
+    "theoristId": "george-spencer-brown",
+    "text": "William Kentridge zeichnet Figuren, löscht sie und zeichnet auf derselben Fläche weiter. George Spencer-Brown beginnt mit einer Grenze, durch die eine Form überhaupt erst entsteht. Bei Kentridge verschwindet eine gezogene Grenze jedoch nie vollständig. Radieren hinterlässt Schatten, Verschmierungen und Reste, die in die nächste Zeichnung eingehen. Die Unterscheidung kann aufgehoben werden, ohne wieder einen unmarkierten Anfang herzustellen.",
+    "question": "Was bleibt von einer gelöschten Grenze?"
+  },
+  {
+    "editorialNumber": 187,
+    "id": "tehching-hsieh__michel-foucault",
+    "pairKey": "tehching-hsieh__michel-foucault",
+    "artistId": "tehching-hsieh",
+    "theoristId": "michel-foucault",
+    "text": "Michel Foucault untersucht Zeitpläne, Wiederholungen und Kontrollen als Techniken, durch die Körper geordnet werden. Tehching Hsieh setzt sich selbst über lange Zeiträume extremen Regeln aus. Bei der Stechuhrperformance wird jede Stunde zu einer vorgeschriebenen Stelle für den Körper. Der entscheidende Unterschied liegt darin, dass diese Disziplin als künstlerische Regel selbst gewählt und öffentlich gemacht wird. Gerade dadurch wird ihre Wirkung auf den Alltag sichtbar.",
+    "question": "Was geschieht, wenn Disziplin selbst gewählt wird?"
+  },
+  {
+    "editorialNumber": 188,
+    "id": "dan-graham__gregory-bateson",
+    "pairKey": "dan-graham__gregory-bateson",
+    "artistId": "dan-graham",
+    "theoristId": "gregory-bateson",
+    "text": "Dan Grahams Spiegel und Videoverzögerungen führen Beobachtungen wieder in die Situation zurück, aus der sie entstanden sind. Gregory Bateson interessiert sich für Rückkopplungen, in denen ein Ergebnis zur Bedingung des nächsten Schritts wird. Bei Graham sieht eine Person nicht nur ein Bild von sich. Dieses Bild verändert, wie sie sich weiter bewegt und beobachtet. Beobachtung wird damit Teil eines Kreislaufs, der seine eigene Situation fortlaufend verändert.",
+    "question": "Wann wird Beobachtung zu Rückkopplung?"
+  },
+  {
+    "editorialNumber": 189,
+    "id": "donald-judd__george-spencer-brown",
+    "pairKey": "donald-judd__george-spencer-brown",
+    "artistId": "donald-judd",
+    "theoristId": "george-spencer-brown",
+    "text": "George Spencer-Brown beginnt mit einer Unterscheidung, die zwei Seiten voneinander trennt. Donald Judds Arbeiten machen deutlich, dass auch der Abstand zwischen Dingen eine solche Trennung leisten kann. Der Zwischenraum ist nicht bloß leer. Er hält Körper auseinander, bestimmt ihre Beziehung und lässt eine Folge einzelner Formen entstehen. Ohne Abstand würden die Elemente zu einer anderen Form zusammenfallen.",
+    "question": "Kann ein Abstand eine Form erzeugen?"
+  },
+  {
+    "editorialNumber": 190,
+    "id": "bruce-nauman__gilbert-simondon",
+    "pairKey": "bruce-nauman__gilbert-simondon",
+    "artistId": "bruce-nauman",
+    "theoristId": "gilbert-simondon",
+    "text": "Gilbert Simondon versteht Individuation als einen Prozess, in dem ein Individuum nicht von Anfang an fertig vorliegt. Bruce Nauman wiederholt körperliche Bewegungen so lange, bis Haltung, Rhythmus und Belastung sich verändern. Die Anweisung bleibt erkennbar, doch der ausführende Körper wird mit jedem Durchgang ein anderer Zustand seiner selbst. Wiederholung stabilisiert die Handlung und verändert zugleich denjenigen, der sie ausführt.",
+    "question": "Wird der Körper durch Wiederholung ein anderer?"
+  },
+  {
+    "editorialNumber": 191,
+    "id": "james-turrell__gregory-bateson",
+    "pairKey": "james-turrell__gregory-bateson",
+    "artistId": "james-turrell",
+    "theoristId": "gregory-bateson",
+    "text": "Gregory Bateson beschreibt Information als einen Unterschied, der einen weiteren Unterschied macht. James Turrell arbeitet mit Lichtverhältnissen, in denen kleinste Veränderungen erst nach einer Weile wahrnehmbar werden. Ein physikalischer Unterschied allein genügt deshalb nicht. Körper, Anpassung und räumlicher Zusammenhang entscheiden mit, ob er überhaupt als Unterschied erscheint. Information entsteht hier an der Schwelle der Wahrnehmung.",
+    "question": "Wann wird ein Lichtunterschied zu Information?"
+  },
+  {
+    "editorialNumber": 192,
+    "id": "william-kentridge__michel-foucault",
+    "pairKey": "william-kentridge__michel-foucault",
+    "artistId": "william-kentridge",
+    "theoristId": "michel-foucault",
+    "text": "Michel Foucault versteht Archive nicht als neutrale Speicher der Vergangenheit, sondern als Ordnungen, unter denen etwas sichtbar und sagbar werden kann. William Kentridge greift historische Bilder, Dokumente und politische Erinnerungen auf, zeichnet sie um und setzt sie in neue Folgen. Geschichte erscheint dadurch nicht als fertiger Bestand. Ihre Spuren werden neu angeordnet und erhalten andere Nachbarschaften.",
+    "question": "Welche Geschichte erzeugt eine neue Ordnung der Spuren?"
+  },
+  {
+    "editorialNumber": 193,
+    "id": "tehching-hsieh__gilles-deleuze",
+    "pairKey": "tehching-hsieh__gilles-deleuze",
+    "artistId": "tehching-hsieh",
+    "theoristId": "gilles-deleuze",
+    "text": "Gilles Deleuze trennt Wiederholung vom bloßen Auftreten des Gleichen. Tehching Hsiehs Regeln treiben diese Unterscheidung ins Extrem. In der Stechuhrperformance kehrt jede Stunde formal dieselbe Handlung zurück, während Körper, Müdigkeit und Lebenszeit unwiderruflich weitergehen. Die strenge Gleichheit der Regel macht sichtbar, wie verschieden jeder einzelne Vollzug ist.",
+    "question": "Wie viel Differenz erzeugt dieselbe Stunde?"
+  },
+  {
+    "editorialNumber": 194,
+    "id": "dan-graham__gilbert-simondon",
+    "pairKey": "dan-graham__gilbert-simondon",
+    "artistId": "dan-graham",
+    "theoristId": "gilbert-simondon",
+    "text": "Gilbert Simondon beschreibt Individuation als einen Prozess zwischen Individuum und Umgebung. Dan Grahams Pavillons machen eine solche Beziehung unmittelbar sichtbar. Spiegelung, Durchsicht und Standort verändern fortlaufend, was als Beobachter, Gegenüber und Umgebung erscheint. Die betrachtende Person steht nicht einfach vor einer fertigen Situation. Ihre Position entsteht mit der räumlichen Anordnung immer wieder neu.",
+    "question": "Entsteht eine Beobachterposition erst im Raum?"
+  },
+  {
+    "editorialNumber": 195,
+    "id": "donald-judd__jacques-derrida",
+    "pairKey": "donald-judd__jacques-derrida",
+    "artistId": "donald-judd",
+    "theoristId": "jacques-derrida",
+    "text": "Donald Judd trennt Körper durch präzise Abstände und macht den Zwischenraum zu einem wesentlichen Teil der Arbeit. Jacques Derrida verwendet den Gedanken des Abstands nicht nur räumlich. Identität entsteht für ihn auch dadurch, dass etwas sich von anderem unterscheidet und nicht vollständig mit sich selbst zusammenfällt. Judds Intervalle geben dieser abstrakten Differenz eine konkrete räumliche Form.",
+    "question": "Kann ein Zwischenraum bestimmen, was ein Ding ist?"
+  },
+  {
+    "editorialNumber": 196,
+    "id": "bruce-nauman__claude-shannon",
+    "pairKey": "bruce-nauman__claude-shannon",
+    "artistId": "bruce-nauman",
+    "theoristId": "claude-shannon",
+    "text": "Claude Shannon trennt die technische Übertragung einer Nachricht von ihrer Bedeutung. Bruce Nauman wiederholt Wörter und Sätze so lange, dass Klang, Rhythmus und körperliche Anstrengung wichtiger werden können als der ursprüngliche Sinn. Die Folge der Zeichen kann dabei nahezu gleich bleiben, während ihre Wirkung sich verschiebt. Ein stabiler Signalverlauf garantiert keine stabile Bedeutung.",
+    "question": "Kann dieselbe Nachricht ihre Bedeutung verlieren?"
+  },
+  {
+    "editorialNumber": 197,
+    "id": "james-turrell__george-spencer-brown",
+    "pairKey": "james-turrell__george-spencer-brown",
+    "artistId": "james-turrell",
+    "theoristId": "george-spencer-brown",
+    "text": "George Spencer-Brown beginnt Form mit dem Ziehen einer Grenze. James Turrell zeigt, wie wenig dafür manchmal nötig ist. Eine Öffnung, eine Kante oder ein Wechsel der Lichtzone kann ein scheinbar grenzenloses Feld plötzlich als Form erscheinen lassen. Die Grenze fügt dem Licht kein neues Objekt hinzu. Sie macht einen Unterschied sichtbar, der ohne sie anders oder gar nicht wahrgenommen würde.",
+    "question": "Wann macht eine Grenze Licht zur Form?"
+  },
+  {
+    "editorialNumber": 198,
+    "id": "william-kentridge__michel-serres",
+    "pairKey": "william-kentridge__michel-serres",
+    "artistId": "william-kentridge",
+    "theoristId": "michel-serres",
+    "text": "Michel Serres interessiert sich für Übersetzungen und Passagen, bei denen etwas den Weg nicht unverändert übersteht. William Kentridge lässt Zeichnung in Film, Projektion, Theater, Musik und Bewegung übergehen. Jeder Medienwechsel erhält etwas und verändert zugleich Rhythmus, Maßstab und Wahrnehmung. Das Werk besitzt deshalb keinen neutralen Kanal zwischen seinen Formen.",
+    "question": "Was verändert sich beim Wechsel des Mediums?"
+  },
+  {
+    "editorialNumber": 199,
+    "id": "tehching-hsieh__claude-shannon",
+    "pairKey": "tehching-hsieh__claude-shannon",
+    "artistId": "tehching-hsieh",
+    "theoristId": "claude-shannon",
+    "text": "Tehching Hsiehs Stechuhrperformance erzeugt eine enorme Folge klarer Zeitstempel. Claude Shannon könnte solche unterscheidbaren Zeichen als übertragbare Information behandeln. Doch der Stempel enthält nicht die Müdigkeit, den Schlafmangel oder die verlorene Bewegungsfreiheit, die zu seiner Herstellung gehören. Hsieh macht sichtbar, wie weit ein präzises Datum von der körperlich verbrachten Zeit entfernt sein kann.",
+    "question": "Wie viel Leben passt in einen Zeitstempel?"
+  },
+  {
+    "editorialNumber": 200,
+    "id": "dan-graham__henri-bergson",
+    "pairKey": "dan-graham__henri-bergson",
+    "artistId": "dan-graham",
+    "theoristId": "henri-bergson",
+    "text": "Dan Grahams Videoverzögerungen teilen Zeit in genau messbare Sekunden. Henri Bergson unterscheidet solche messbare Zeit von gelebter Dauer. Vor dem Monitor treffen beide aufeinander. Zehn Sekunden lassen sich technisch exakt festlegen, während das Erlebnis, sich selbst verspätet wiederzusehen, sich nicht in dieselben Einheiten zerlegen lässt. Die gemessene Verzögerung erzeugt eine Dauer, die anders vergeht als die Uhr.",
+    "question": "Wie lang sind zehn Sekunden in der Wahrnehmung?"
+  },
+  {
+    "editorialNumber": 201,
+    "id": "donald-judd__hannah-arendt",
+    "pairKey": "donald-judd__hannah-arendt",
+    "artistId": "donald-judd",
+    "theoristId": "hannah-arendt",
+    "text": "Hannah Arendt gibt den Dingen einer gemeinsamen Welt Bedeutung, weil sie zwischen verschiedenen Menschen Bestand gewinnen können. Donald Judds Objekte sind auf Dauer, Material und präzise räumliche Beziehungen angelegt. Betrachtende kommen und gehen, während dieselben Körper und Abstände erneut zum Bezugspunkt werden. Das Werk verbindet verschiedene Wahrnehmungsmomente durch eine relativ stabile räumliche Ordnung.",
+    "question": "Wie stiftet ein Ding gemeinsame Dauer?"
+  },
+  {
+    "editorialNumber": 202,
+    "id": "bruce-nauman__susan-leigh-star",
+    "pairKey": "bruce-nauman__susan-leigh-star",
+    "artistId": "bruce-nauman",
+    "theoristId": "susan-leigh-star",
+    "text": "Susan Leigh Star untersucht Infrastrukturen, die besonders dann unsichtbar bleiben, wenn sie reibungslos funktionieren. Bruce Nauman macht aus einem gewöhnlichen Durchgang häufig das Gegenteil. Enge Korridore, Kameras und räumliche Beschränkungen lassen Breite, Zugang und Kontrolle plötzlich auffallen. Was sonst nur den Weg ermöglicht, wird selbst zum Gegenstand der Wahrnehmung.",
+    "question": "Wann wird ein Durchgang zur sichtbaren Infrastruktur?"
+  },
+  {
+    "editorialNumber": 203,
+    "id": "james-turrell__susan-leigh-star",
+    "pairKey": "james-turrell__susan-leigh-star",
+    "artistId": "james-turrell",
+    "theoristId": "susan-leigh-star",
+    "text": "James Turrells Arbeiten können den Eindruck erzeugen, Licht erscheine beinahe ohne Vermittlung. Susan Leigh Star richtet den Blick dagegen auf die Infrastrukturen, die im Hintergrund einer Erfahrung arbeiten. Architektur, Strom, technische Steuerung und räumliche Abschirmung gehören auch bei Turrell zu den Bedingungen des Sehens. Gerade weil sie kaum auffallen, kann das Licht so unmittelbar erscheinen.",
+    "question": "Was muss im Hintergrund funktionieren, damit Licht unmittelbar erscheint?"
+  },
+  {
+    "editorialNumber": 204,
+    "id": "william-kentridge__heinz-von-foerster",
+    "pairKey": "william-kentridge__heinz-von-foerster",
+    "artistId": "william-kentridge",
+    "theoristId": "heinz-von-foerster",
+    "text": "William Kentridge zeichnet, löscht und arbeitet auf den Resten der vorherigen Zeichnung weiter. Heinz von Foerster beschreibt rekursive Prozesse, deren Ergebnisse wieder in die Bedingungen der nächsten Operation eingehen. Kentridges Blatt funktioniert genau so, ohne zu einem geschlossenen Kreislauf zu werden. Jede neue Zeichnung reagiert auf eine Oberfläche, die durch die vorherige bereits verändert wurde.",
+    "question": "Wann beginnt ein Bild auf seine eigene Geschichte zu reagieren?"
+  },
+  {
+    "editorialNumber": 205,
+    "id": "tehching-hsieh__michel-serres",
+    "pairKey": "tehching-hsieh__michel-serres",
+    "artistId": "tehching-hsieh",
+    "theoristId": "michel-serres",
+    "text": "Tehching Hsieh entwirft Regeln, die möglichst ohne Ausnahme über lange Zeit gelten sollen. Michel Serres interessiert sich für Störung und dafür, dass ein Kanal oft gerade durch seine Unterbrechungen sichtbar wird. Bei Hsieh bedrohen Schlaf, Müdigkeit, Krankheit und Alltag fortwährend die reine Fortsetzung der Regel. Die mögliche Störung gehört deshalb zur Performance, auch wenn sie vermieden werden soll.",
+    "question": "Wann macht eine Störung die Regel sichtbar?"
   }
 ]);

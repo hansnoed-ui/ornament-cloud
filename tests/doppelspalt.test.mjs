@@ -46,7 +46,8 @@ test("Browser-Daten entsprechen Zeichen für Zeichen den TypeScript-Originalen",
 });
 
 // verbindliche redaktionelle Fassung (Semikolon-CSV, UTF-8)
-const REDAKTION = "src/doppelspalt/redaktion/konstellationen_165_redaktion_v3.csv";
+// Datei und erwartete Anzahl kommen aus der Redaktion selbst, nicht aus einer festen Zahl
+const REDAKTION = "src/doppelspalt/" + JSON.parse(readFileSync(new URL("src/doppelspalt/manifest.json", root), "utf8")).editorialFile;
 function parseCsv(src) {
   const rows = []; let row = [], f = "", q = false;
   for (let i = 0; i < src.length; i += 1) {
@@ -61,16 +62,20 @@ function parseCsv(src) {
   return rows.filter(r => r.some(c => c !== ""));
 }
 
-test("20 Künstler, 20 Theoretiker, 165 Datensätze", () => {
+const REDAKTION_ROWS = parseCsv(readFileSync(new URL(REDAKTION, root), "utf8").replace(/^\uFEFF/, "")).slice(1);
+const EXPECTED = REDAKTION_ROWS.length;
+
+test("20 Künstler, 20 Theoretiker, so viele Datensätze wie in der redaktionellen Fassung", () => {
   assert.equal(artists.length, 20);
   assert.equal(theorists.length, 20);
-  assert.equal(constellations.length, 165);
+  assert.ok(EXPECTED > 0);
+  assert.equal(constellations.length, EXPECTED);
+  assert.deepEqual(constellations.map(c => c.editorialNumber), Array.from({ length: EXPECTED }, (_, i) => i + 1));
 });
 
 test("Datenbestand entspricht Zeichen für Zeichen der redaktionellen Fassung (CSV)", () => {
-  const [, ...rows] = parseCsv(readFileSync(new URL(REDAKTION, root), "utf8").replace(/^\uFEFF/, ""));
-  assert.equal(rows.length, constellations.length);
-  rows.forEach(([nr, a, , t, , text, frage], i) => {
+  assert.equal(REDAKTION_ROWS.length, constellations.length);
+  REDAKTION_ROWS.forEach(([nr, a, , t, , text, frage], i) => {
     const c = constellations[i];
     assert.deepEqual([c.editorialNumber, c.artistId, c.theoristId, c.text, c.question], [Number(nr), a, t, text, frage], `#${nr}`);
   });
@@ -78,13 +83,13 @@ test("Datenbestand entspricht Zeichen für Zeichen der redaktionellen Fassung (C
 
 test("Originale Validierung des Pakets (strict) besteht ohne Befund", () => {
   assert.deepEqual(ts.validation.validateDataset({ strictUniquePairs: true }), []);
-  assert.deepEqual(ts.validation.validateDataset({ strictUniquePairs: true, expectedConstellations: 165 }), []);
+  assert.deepEqual(ts.validation.validateDataset({ strictUniquePairs: true, expectedConstellations: EXPECTED }), []);
   ts.validation.assertDatasetValid({ strictUniquePairs: true });
 });
 
 test("Übertragene Validierung liefert dasselbe Ergebnis", () => {
   assert.deepEqual(validateDataset({ strictUniquePairs: true }), []);
-  assert.deepEqual(validateDataset({ strictUniquePairs: true, expectedConstellations: 165 }), []);
+  assert.deepEqual(validateDataset({ strictUniquePairs: true, expectedConstellations: EXPECTED }), []);
   assertDatasetValid({ strictUniquePairs: true });
 });
 
@@ -99,7 +104,7 @@ test("alle IDs und Verweise gültig, alle 40 Personen verwendet, eindeutige Paar
     pairs.add(c.pairKey);
   }
   assert.equal(pairs.size, constellations.length);
-  assert.equal(pairs.size, 165);
+  assert.equal(pairs.size, EXPECTED);
   assert.equal(new Set(constellations.map(c => c.artistId)).size, 20);
   assert.equal(new Set(constellations.map(c => c.theoristId)).size, 20);
 });
