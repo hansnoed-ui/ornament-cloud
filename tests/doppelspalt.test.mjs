@@ -295,6 +295,8 @@ test("Werkbericht ist aktuell und hat ein Inhaltsverzeichnis aus den zwölf H2",
   }
   assert.ok(section.includes('href="../feld/"'), "Link auf das Feld");
   assert.ok(section.includes('href="projektpaper.pdf"'), "Link auf das Projektpaper");
+  const pdf = readFileSync(new URL("portfolio/nebeneinander-nacheinander/werkbericht/projektpaper.pdf", root));
+  assert.equal(pdf.subarray(0, 5).toString(), "%PDF-", "Projektpaper liegt als PDF am verlinkten Ort");
 });
 
 test("Werkbericht: zitierte Fragen stehen wörtlich im Bestand, genannte Paare sind gültig (REGELN §2)", () => {
