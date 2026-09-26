@@ -9,7 +9,8 @@ This folder is the content and logic handoff for the interactive double wheel.
 - `src/data/constellations.ts` — 99 curated text records
 - `src/lib/double-slit/validation.ts` — dataset integrity checks
 - `src/lib/double-slit/random.ts` — cryptographically backed uniform draw + 100k simulation helper
-- `CLAUDE-CODE-MASTERPROMPT.md` — implementation brief
+- `REGELN.md` — geltende Regeln (verbindlich)
+- `CLAUDE-CODE-MASTERPROMPT-2026-ARCHIV.md` — ursprünglicher Auftrag, Archiv, nicht mehr verbindlich
 - `DATA-REVIEW.md` — record of the resolved duplicate-pair review
 
 ## Editorial invariants
