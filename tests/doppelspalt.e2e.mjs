@@ -490,6 +490,9 @@ await check("Werkbericht: ohne JavaScript lesbar, Inhaltsverzeichnis springt, be
     assert.equal(await page.evaluate(() => location.hash), "#das-feld-und-seine-luecken");
     assert.equal(await page.$$eval('.wb a[href="../feld/"]', a => a.length), 1);
     assert.equal(await page.$$eval('.wb a[href="projektpaper.pdf"]', a => a.length), 1);
+    const res = await page.request.get(base + "werkbericht/projektpaper.pdf");
+    assert.equal(res.status(), 200, "Projektpaper erreichbar");
+    assert.equal((await res.body()).subarray(0, 5).toString(), "%PDF-");
     await ctx.close();
   }
   const ctx = await browser.newContext({ javaScriptEnabled: false });

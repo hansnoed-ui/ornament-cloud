@@ -19,7 +19,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `kuenstler_id;theoretiker_id;bewertung` (`mittel` | `schwach`), danach Sync
 - `portfolio/nebeneinander-nacheinander/werkbericht/` – Werkbericht; Quelle ist `src/doppelspalt/werkbericht.md` (Markdown, H2 = Kapitel),
   gesetzt mit `node --experimental-strip-types tools/build-werkbericht.ts` (Inhaltsverzeichnis aus den H2).
-  Das vollständige Projektpaper gehört als `portfolio/nebeneinander-nacheinander/werkbericht/projektpaper.pdf` daneben
+  Das vollständige Projektpaper liegt als `portfolio/nebeneinander-nacheinander/werkbericht/projektpaper.pdf` daneben (neue Fassung: Datei unter diesem Namen ersetzen)
 - `sitemap.xml` – alle Seiten (ohne die Weiterleitung `portfolio/rad-von-zeit-und-raum/`); neue Seiten hier eintragen, ein Test prüft das
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)
