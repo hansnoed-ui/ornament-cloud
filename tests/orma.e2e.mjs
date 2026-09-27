@@ -520,6 +520,31 @@ await check("Alpha: alpha/ listet ORMA; alpha/orma/ läuft unter dem Website-Pfa
   await ctx.close();
 });
 
+// ---------- Startseite: Apps als Wisch-Galerie ----------
+await check("Startseite (Handy): ORMA steht bei den Apps zuerst, Diamanten über Apps und Artefakten folgen dem Wischen", async () => {
+  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on("pageerror", e => errors.push(e.message));
+  await page.goto(`${origin}/index.html`);
+  const apps = page.getByRole("group", { name: "Apps durchblättern" });
+  const dots = apps.getByRole("button");
+  await dots.first().waitFor();
+  assert.equal(await dots.count(), 2);
+  assert.equal(await dots.nth(0).getAttribute("aria-label"), "App 1 von 2: ORMA");
+  assert.equal(await dots.nth(1).getAttribute("aria-label"), "App 2 von 2: ORNA");
+  assert.equal(await dots.nth(0).getAttribute("aria-current"), "true");
+  // Antippen des zweiten Diamanten wischt zu ORNA
+  await dots.nth(1).click();
+  await page.waitForFunction(() => document.querySelector('[aria-label="App 2 von 2: ORNA"]').getAttribute("aria-current") === "true");
+  // die Artefakte-Galerie behält ihre eigenen Diamanten
+  const art = page.getByRole("group", { name: "Artefakte durchblättern" }).getByRole("button");
+  assert.ok(await art.count() >= 2);
+  assert.match(await art.first().getAttribute("aria-label"), /^Artefakt 1 von /);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 await browser.close();
 server.close();
 const failed = results.filter(r => r[0] !== "ok");
