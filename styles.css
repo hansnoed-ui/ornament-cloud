@@ -143,6 +143,15 @@ h1 {
   line-height: 1.15;
 }
 
+/* Kategorien der Startseite (Apps, Artefakte): Überschrift im Stil des Seitentitels */
+.category {
+  margin: 8px 0 20px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+  line-height: 1.15;
+}
+
 .lead {
   margin: 0;
   max-width: 56ch;

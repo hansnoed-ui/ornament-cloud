@@ -7,8 +7,10 @@
 */
 (function () {
   'use strict';
-  var grid = document.querySelector('.grid');
+  // die Punkte gehören zur Galerie direkt darunter (Artefakte), nicht zu anderen Rastern der Seite
   var dotsBox = document.querySelector('.slider-dots');
+  var grid = dotsBox && dotsBox.nextElementSibling;
+  if (grid && !grid.classList.contains('grid')) grid = null;
   if (!grid || !dotsBox) return;
 
   // Karten in der sichtbaren Reihenfolge (auf dem Handy per CSS umsortiert)
