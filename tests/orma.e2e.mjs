@@ -545,6 +545,22 @@ await check("Installierte App: startet in alpha/orma/app/, spielbar, vom selben 
   await ctx.close();
 });
 
+await check("Rückfall «Verknüpfung erstellen»: auf Android in der Startansicht, nicht auf dem iPhone, nicht in der App", async () => {
+  const a = await open();
+  assert.match(await a.page.locator(".orma-install-alt").textContent(), /«Zum Startbildschirm hinzufügen».*«Verknüpfung erstellen»/);
+  await a.ctx.close();
+  const b = await open({ ...devices["iPhone 13"] });
+  assert.equal(await b.page.locator(".orma-install-alt").count(), 0);
+  await b.ctx.close();
+  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
+  await ctx.addInitScript(() => { const m = window.matchMedia.bind(window); window.matchMedia = q => q.includes("standalone") ? { matches: true, media: q, addEventListener() {}, removeEventListener() {} } : m(q); });
+  const page = await ctx.newPage();
+  await page.goto(base);
+  await page.waitForSelector("html[data-ready]");
+  assert.equal(await page.locator(".orma-install-alt").count(), 0);
+  await ctx.close();
+});
+
 // ---------- Startseite: Apps als Wisch-Galerie ----------
 await check("Startseite (Handy): ORMA steht bei den Apps zuerst, Diamanten über Apps und Artefakten folgen dem Wischen", async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });

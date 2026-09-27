@@ -38,6 +38,8 @@ const AUFTRAG = {
 let round = null;          // laufende Runde
 let notice = "";           // einmalige Meldung für die nächste Ansicht
 let installPrompt = null;
+const ANDROID = /Android/.test(navigator.userAgent);
+const STANDALONE = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 
 // ---------- DOM-Helfer: Text immer als Text ----------
 function h(tag, props = {}, ...children) {
@@ -103,6 +105,9 @@ function renderStart() {
     btn("Unterbrochene Runde verwerfen", () => { clearDraft(storage); renderStart(); }, "orma-link"));
   else if (resumable) extra.push(btn("Unterbrochene Runde verwerfen", () => confirmView("Die unterbrochene Runde wird gelöscht.", "Verwerfen", () => { clearDraft(storage); renderStart(); }, renderStart), "orma-link"));
   if (installPrompt) extra.push(btn("ORMA als App installieren", async () => { installPrompt.prompt(); installPrompt = null; }, "orma-link"));
+  // Android: Manche Geräte lassen die Installation auch in Chrome nicht zu (Warnung «unsichere App»);
+  // eine Verknüpfung geht immer. Die Seite erfährt vom Fehlschlag nichts, darum steht der Hinweis immer da.
+  if (ANDROID && !STANDALONE) extra.push(h("p", { class: "orma-small orma-install-alt", text: "Klappt die Installation nicht? Im Browsermenü (⋮) «Zum Startbildschirm hinzufügen» und dann «Verknüpfung erstellen» wählen." }));
 
   show(
     noticeNode(),
