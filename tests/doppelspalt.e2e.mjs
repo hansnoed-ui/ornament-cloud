@@ -596,6 +596,38 @@ await check("ORNA-Startbild: vor der Animation blitzt die Seite nicht auf; ohne 
   await c.ctx.close();
 });
 
+await check("App: neue Fassung sofort beim nächsten Öffnen, auch wenn der Server 10 Minuten Zwischenspeicher erlaubt (wie GitHub Pages)", async () => {
+  // Vorschaltserver: wie GitHub Pages «max-age=600»; jede ausgelieferte Seite trägt eine laufende Nummer
+  let n = 0;
+  const origin = new URL(base).origin;
+  const proxy = createServer(async (req, res) => {
+    const r = await fetch(origin + req.url);
+    let body = Buffer.from(await r.arrayBuffer());
+    const type = r.headers.get("content-type") || "";
+    if (type.includes("text/html")) body = Buffer.from(String(body).replace("<title>", `<title>[${++n}] `));
+    res.writeHead(r.status, { "content-type": type, "cache-control": "max-age=600" });
+    res.end(body);
+  });
+  await new Promise(ok => proxy.listen(0, ok));
+  try {
+    const url = `http://localhost:${proxy.address().port}${new URL(base).pathname}app/`;
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce", serviceWorkers: "allow" });
+    const page = await ctx.newPage();
+    await page.goto(url);
+    await page.waitForFunction(async () => { const r = await navigator.serviceWorker.getRegistration(); return !!(r && r.active); }, null, { timeout: 15000 });
+    for (let i = 0; i < 5 && !(await page.evaluate(() => !!navigator.serviceWorker.controller)); i++) await page.reload();
+    // zweimal neu öffnen: jedes Mal fragt der Service Worker beim Server nach, statt die Browser-Kopie zu nehmen
+    const nr = async () => Number((await page.title()).match(/^\[(\d+)\]/)[1]);
+    await page.goto(url); const a = await nr();
+    await page.goto(url); const b = await nr();
+    assert.ok(b > a, `Seite kam aus dem Zwischenspeicher (${a} → ${b})`);
+    await ctx.close();
+  } finally {
+    proxy.closeAllConnections();               // auch bei Fehlschlag: offene Verbindungen halten den Testlauf sonst am Leben
+    proxy.close();
+  }
+});
+
 // ---------- Hinweis «Als App installieren» ----------
 await check("Installationsknopf: überall sichtbar ausser in der App; Chrome öffnet das Installationsfenster, sonst stehen die Schritte da", async () => {
   // Computer ohne Meldung «installierbar» (z. B. Inkognito, schon installiert): Knopf da, Klick erklärt

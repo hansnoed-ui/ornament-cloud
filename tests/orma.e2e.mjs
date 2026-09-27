@@ -607,19 +607,23 @@ await check("Aktualisieren: neue Fassung sofort beim nächsten Öffnen, auch wen
     res.end(body);
   });
   await new Promise(ok => proxy.listen(0, ok));
-  const url = `http://localhost:${proxy.address().port}/orma/`;
-  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
-  const page = await ctx.newPage();
-  await page.goto(url);
-  await page.waitForFunction(async () => (await navigator.serviceWorker.getRegistration())?.active?.state === "activated", null, { timeout: 15000 });
-  for (let i = 0; i < 5 && !(await page.evaluate(() => !!navigator.serviceWorker.controller)); i++) await page.reload();
-  // zweimal neu öffnen: jedes Mal fragt der Service Worker beim Server nach, statt die Browser-Kopie zu nehmen
-  const nr = async () => Number((await page.title()).match(/^\[(\d+)\]/)[1]);
-  await page.goto(url); const a = await nr();
-  await page.goto(url); const b = await nr();
-  assert.ok(b > a, `Seite kam aus dem Zwischenspeicher (${a} → ${b})`);
-  await ctx.close();
-  proxy.close();
+  try {
+    const url = `http://localhost:${proxy.address().port}/orma/`;
+    const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
+    const page = await ctx.newPage();
+    await page.goto(url);
+    await page.waitForFunction(async () => (await navigator.serviceWorker.getRegistration())?.active?.state === "activated", null, { timeout: 15000 });
+    for (let i = 0; i < 5 && !(await page.evaluate(() => !!navigator.serviceWorker.controller)); i++) await page.reload();
+    // zweimal neu öffnen: jedes Mal fragt der Service Worker beim Server nach, statt die Browser-Kopie zu nehmen
+    const nr = async () => Number((await page.title()).match(/^\[(\d+)\]/)[1]);
+    await page.goto(url); const a = await nr();
+    await page.goto(url); const b = await nr();
+    assert.ok(b > a, `Seite kam aus dem Zwischenspeicher (${a} → ${b})`);
+    await ctx.close();
+  } finally {
+    proxy.closeAllConnections();               // auch bei Fehlschlag: offene Verbindungen halten den Testlauf sonst am Leben
+    proxy.close();
+  }
 });
 
 // ---------- Startseite: Apps als Wisch-Galerie ----------
