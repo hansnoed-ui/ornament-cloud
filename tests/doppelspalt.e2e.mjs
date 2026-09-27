@@ -542,6 +542,40 @@ await check("ORNA-Startbild: nicht im normalen Browser, nicht bei reduzierter Be
   await b.ctx.close();
 });
 
+// ---------- Hinweis «Als App installieren» ----------
+await check("Installationshinweis: Chrome/Android öffnet das Installationsfenster, iPhone erklärt die Schritte, sonst kein Hinweis", async () => {
+  // ohne Installationsmöglichkeit: kein Hinweis
+  const a = await open({ viewport: { width: 1280, height: 900 } });
+  await a.page.waitForTimeout(300);
+  assert.equal(await a.page.$eval(".rad-install", e => e.hidden), true);
+
+  // Chrome/Android: Browser meldet «installierbar» → Knopf erscheint, Klick ruft das Installationsfenster
+  await a.page.evaluate(() => {
+    window.__prompted = 0;
+    const e = new Event("beforeinstallprompt", { cancelable: true });
+    e.prompt = () => { window.__prompted += 1; };
+    e.userChoice = Promise.resolve({ outcome: "accepted" });
+    dispatchEvent(e);
+  });
+  assert.equal(await a.page.$eval(".rad-install", e => e.hidden), false);
+  await a.page.focus(".rad-install-btn");
+  await a.page.keyboard.press("Enter");
+  assert.equal(await a.page.evaluate(() => window.__prompted), 1);
+  await a.page.waitForFunction(() => document.querySelector(".rad-install").hidden);
+  await a.ctx.close();
+
+  // iPhone: Knopf sichtbar, Klick zeigt die zwei Schritte
+  const b = await open({ ...devices["iPhone 13"] });
+  assert.equal(await b.page.$eval(".rad-install", e => e.hidden), false);
+  assert.equal(await b.page.$eval(".rad-install-hilfe", e => e.hidden), true);
+  await b.page.tap(".rad-install-btn");
+  assert.equal(await b.page.$eval(".rad-install-hilfe", e => e.hidden), false);
+  assert.equal(await b.page.$eval(".rad-install-btn", e => e.getAttribute("aria-expanded")), "true");
+  assert.match(await b.page.$eval(".rad-install-hilfe", e => e.textContent), /Zum Home-Bildschirm/);
+  assert.ok(await b.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await b.ctx.close();
+});
+
 await browser.close();
 server.close();
 console.log(results.join("\n"));

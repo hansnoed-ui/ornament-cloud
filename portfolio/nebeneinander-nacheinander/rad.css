@@ -348,6 +348,37 @@
 }
 .rad-about .rad-note a { color: inherit; text-underline-offset: 3px; }
 
+/* Hinweis «Als App installieren»: nur wo möglich, klein und unterstrichen wie die übrigen Knöpfe */
+.rad-about .rad-install {
+  max-width: 720px;
+  margin: 10px 0 0 auto;
+  text-align: right;
+}
+.rad-about .rad-install[hidden] { display: none; }
+.rad-install-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+.rad-install-btn:hover,
+.rad-install-btn:focus-visible { color: var(--text); }
+.rad-about .rad-install-hilfe {
+  margin: 8px 0 0 auto;
+  max-width: 34em;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.rad-about .rad-install-hilfe[hidden] { display: none; }
+.rad-install-hilfe span { white-space: nowrap; }   /* Namen der Knöpfe nicht trennen */
+
 /* Verweis auf die Feldansicht, rechtsbündig unter der Beschreibung */
 .rad-about .rad-more-link {
   max-width: 720px;

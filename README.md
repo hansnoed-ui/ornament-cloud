@@ -29,6 +29,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   läuft auch mit dem Sync, ein Test meldet, wenn es vergessen ging). Als App sind Menü und Portfolio-Link ausgeblendet.
   App-Name ORNA; beim Start der installierten App setzt sich das Rad zusammen (`js/intro.js`, einmal pro Sitzung,
   im Browser zum Ansehen mit `?intro`, entfällt bei reduzierter Bewegung).
+  Hinweis «Als App installieren» auf der Radseite (`js/pwa.js`): nur wo möglich – Chrome/Edge/Android öffnen das
+  Installationsfenster, iPhone/iPad zeigen die zwei Schritte; als App geöffnet kein Hinweis. Ereignisse `rad-app/hinweis`, `rad-app/installiert`.
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)
 - `src/doppelspalt/CLAUDE-CODE-MASTERPROMPT-2026-ARCHIV.md` – ursprünglicher Auftrag, Entstehungsstand mit 99 Konstellationen, nicht mehr verbindlich
