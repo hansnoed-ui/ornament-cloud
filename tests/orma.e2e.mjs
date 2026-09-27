@@ -456,6 +456,52 @@ await check("Re-Entry, zweiter Durchgang: dieselbe Konstellation kehrt zurück �
   await ctx.close();
 });
 
+// ---------- Startbild (wie ORNA, geteilt) ----------
+/** Helligkeit eines Bildpunkts aus einem Bildschirmfoto (0 dunkel … 255 hell) */
+async function brightness(page, x, y) {
+  const shot = (await page.screenshot()).toString("base64");
+  return page.evaluate(async ({ shot, x, y }) => {
+    const img = new Image(); img.src = `data:image/png;base64,${shot}`; await img.decode();
+    const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+    const g = c.getContext("2d"); g.drawImage(img, 0, 0);
+    const d = g.getImageData(Math.round(x * devicePixelRatio), Math.round(y * devicePixelRatio), 1, 1).data;
+    return (d[0] + d[1] + d[2]) / 3;
+  }, { shot, x, y });
+}
+
+await check("Startbild: wie ORNA 40 Zeichen und Name, links hell, rechts dunkel – auch im Dunkelmodus; als App einmal pro Sitzung", async () => {
+  const { ctx, page, errors } = await open({ reducedMotion: "no-preference", colorScheme: "dark" }, base + "?intro");
+  await page.waitForSelector(".orma-intro.is-assembling");
+  assert.equal(await page.$$eval(".orma-intro .oi-sym", e => e.length), 40);
+  assert.equal(await page.textContent(".oi-name"), "ORMA");
+  assert.equal(await page.$eval(".oi-invert", e => getComputedStyle(e).backdropFilter || getComputedStyle(e).webkitBackdropFilter), "invert(1)");
+  const w = await page.evaluate(() => innerWidth);
+  assert.ok(await brightness(page, w * 0.1, 40) > 200, "links hell");
+  assert.ok(await brightness(page, w * 0.9, 40) < 40, "rechts dunkel");
+  await page.waitForSelector(".orma-intro", { state: "detached", timeout: 6000 });
+  await button(page, "Zu zweit beginnen").waitFor();
+  assert.deepEqual(errors, []);
+  await ctx.close();
+  // installierte App: beim ersten Öffnen das Startbild, beim Neuladen in derselben Sitzung nicht
+  const c2 = await browser.newContext({ ...devices["Pixel 7"] });
+  await c2.addInitScript(() => { Object.defineProperty(Navigator.prototype, "standalone", { value: true, configurable: true }); });
+  const p2 = await c2.newPage();
+  await p2.goto(base);
+  await p2.waitForSelector(".orma-intro");
+  await p2.mouse.click(200, 400);                                            // Antippen überspringt
+  await p2.waitForSelector(".orma-intro", { state: "detached", timeout: 2000 });
+  await p2.reload(); await p2.waitForSelector("html[data-ready]");
+  await p2.waitForTimeout(400);
+  assert.equal(await p2.$(".orma-intro"), null);
+  await c2.close();
+  // reduzierte Bewegung: kein Startbild, Seite sofort sichtbar
+  const r = await open({}, base + "?intro");
+  await r.page.waitForTimeout(300);
+  assert.equal(await r.page.$(".orma-intro"), null);
+  assert.equal(await r.page.evaluate(() => document.documentElement.classList.contains("oi-pre")), false);
+  await r.ctx.close();
+});
+
 // ---------- Alpha-Bereich ----------
 await check("Alpha: alpha/ listet ORMA; alpha/orma/ läuft unter dem Website-Pfad mit eigenem Service Worker", async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });

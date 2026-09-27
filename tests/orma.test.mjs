@@ -379,3 +379,25 @@ test("Re-Entry: Spielaufträge für den Modus allein sprechen eine Person an (du
     assert.notDeepEqual(it.auftraegeAllein, it.auftraege, `${it.id}: Du-Fassung fehlt`);
   }
 });
+
+// ---------- Symbol und Vorschaubild (wie ORNA, vertikal geteilt, rechts invers) ----------
+test("Symbol und Vorschaubild: ORNA-Motiv geteilt, PNG-Grössen stimmen, Vorschaubild mit absoluter Adresse eingebunden", () => {
+  const dir = new URL("src/orma/app/", root);
+  const svg = readFileSync(new URL("icons/icon.svg", dir), "utf8");
+  assert.match(svg, /<clipPath id="rechts"><rect x="50" y="0" width="50" height="100"\/>/);
+  assert.match(svg, /fill="#f8f8f6"/);
+  assert.match(svg, /fill="#1f1d1a"/);
+  const size = f => { const b = readFileSync(new URL(f, dir)); assert.equal(b.subarray(1, 4).toString(), "PNG", f); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
+  const m = JSON.parse(readFileSync(new URL("manifest.webmanifest", dir), "utf8"));
+  for (const i of m.icons) assert.equal(size(i.src).join("x"), i.sizes, i.src);
+  assert.deepEqual(size("icons/apple-touch-icon.png"), [180, 180]);
+  assert.deepEqual(size("og-orma.png"), [1200, 630]);
+  const out = mkdtempSync(join(tmpdir(), "orma-"));
+  const r = build.buildOrma(out);
+  const html = readFileSync(join(out, "index.html"), "utf8");
+  const url = JSON.parse(readFileSync(new URL("src/orma/orma.json", root), "utf8")).url;
+  assert.ok(html.includes(`<meta property="og:image" content="${url}og-orma.png">`));
+  assert.ok(!html.includes("%%URL%%"));
+  assert.ok(r.precache.includes("og-orma.png"));
+  assert.match(html, /<script type="module" src="js\/intro\.js\?v=/);
+});

@@ -172,6 +172,9 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   vom Bestand, sind als ORMA-Redaktion gekennzeichnet, sind keine Zitate und keine Äusserungen der
   genannten Personen und gelten als Entwurf, bis sie freigegeben sind. Die App erzeugt zur Laufzeit
   keine Texte (§1).
+- **Symbol, Startbild und Vorschaubild** (freigegeben am 27. September 2026, Ausnahme zu §5): dasselbe
+  Motiv und dieselbe Startanimation wie ORNA, vertikal in der Mitte geteilt – links schwarz auf weiss,
+  rechts weiss auf schwarz. Die schwarze Hälfte ist die einzige Fläche; die App selbst bleibt ohne Flächen.
 - **Trennung:** eigene Kennung, eigener Service Worker und Cache (`orma-`), eigener Speicher
   (`orma:`). ORMA verändert keine ORNA-Dateien und keine ORNA-Daten.
 - **Veröffentlichung:** Bis zur Freigabe liegt ORMA als Alpha-Version unter `alpha/orma/`: öffentlich

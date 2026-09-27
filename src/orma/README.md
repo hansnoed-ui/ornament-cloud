@@ -1,4 +1,4 @@
-# ORMA – Alpha-Fassung (0.3.1)
+# ORMA – Alpha-Fassung (0.4.0)
 
 **ORMA** · *Nebeneinander, Nacheinander* · Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke.
 
@@ -44,6 +44,28 @@ NODE_PATH=$(npm root -g) node tests/orma.e2e.mjs                           # Bro
 ```
 
 **App-Symbole neu erzeugen** (nur bei geändertem Motiv): `NODE_PATH=$(npm root -g) node tools/orma-icons.mjs`
+
+**Vorschaubild neu erzeugen** (Bild beim Teilen eines Links, 1200 × 630):
+`NODE_PATH=$(npm root -g) node --experimental-strip-types --no-warnings tools/orma-og.mjs` → `src/orma/app/og-orma.png`.
+Die absolute Adresse dafür steht in `src/orma/orma.json` (`url`) und muss bei der Veröffentlichung angepasst werden.
+
+## Symbol, Startbild und Vorschaubild (seit 0.4.0)
+
+Diese drei sind wie bei ORNA, aber vertikal in der Mitte geteilt: links schwarz auf weiss, rechts weiss
+auf schwarz (REGELN §14, Ausnahme zu §5).
+- **App-Symbol:** Android bekommt das leere Rad (erstes Bild der Animation), das iPhone und der
+  Browser-Tab das volle Rad. Die Motive sind aus `tools/app-icons.mjs` abgeschrieben.
+- **Startbild (`js/intro.js`):** dieselbe Animation wie bei ORNA. Das Rad setzt sich aus 40 Zeichen
+  zusammen, dann erscheint «ORMA».
+  - Die Animation läuft einmal pro Sitzung, beim Öffnen der installierten App. Im Browser lässt sie sich
+    mit `?intro` ansehen.
+  - Bei reduzierter Bewegung entfällt sie, Antippen überspringt sie.
+  - Die rechte Hälfte kehrt eine darübergelegte Ebene um (`backdrop-filter: invert(1)`). Die Farben sind
+    fest, damit links auch im Dunkelmodus schwarz auf weiss bleibt.
+- **Vorschaubild (`og-orma.png`):** das Schlussbild der Animation mit Rad, Name und Leitsatz, ebenfalls
+  geteilt.
+- **Nicht geändert:** Die kleine Bildmarke oben in der App und auf der Ergebniskarte bleibt die mit den
+  zwei Ringen.
 
 ## Installieren und offline testen
 
@@ -189,7 +211,9 @@ lassen.
 | `src/orma/orma.json` | Name und Version der App |
 | `tools/build-orma.ts` | Produktionsbuild, prüft die Redaktionsdatei, setzt Version und Dateiliste |
 | `tools/serve-orma.mjs` | Vorschau-Server ohne Abhängigkeiten |
-| `tools/orma-icons.mjs` | App-Symbole (zwei Ringe, Schnittpunkt als Akzent) |
+| `tools/orma-icons.mjs` | App-Symbole (ORNA-Motiv, geteilt, rechts invers) |
+| `tools/orma-og.mjs` | Vorschaubild beim Teilen eines Links |
+| `src/orma/app/js/intro.js` | Startbild der App (wie ORNA, geteilt) |
 | `tests/orma.test.mjs`, `tests/orma.e2e.mjs` | Unit- und Browser-Tests |
 
 **Geänderte gemeinsame Dateien**
@@ -209,7 +233,7 @@ lassen.
 | Service Worker | `…/nebeneinander-nacheinander/sw.js` | `orma/sw.js` (Geltungsbereich nur der ORMA-Ordner) |
 | Cache-Namen | `nn-<Version>`, räumt nur `nn-` auf | `orma-<Version>`, räumt nur `orma-` auf |
 | Speicher | `sessionStorage` «orna-intro» | `localStorage` nur mit Präfix `orma:` |
-| Symbol | leeres bzw. volles Rad | zwei sich überschneidende Ringe mit Akzentpunkt |
+| Symbol | leeres bzw. volles Rad | dasselbe Motiv, vertikal geteilt, rechts invers |
 
 Beide laufen auf derselben Adresse nebeneinander. «Alle ORMA-Einträge löschen» entfernt nur
 `orma:v1:buch`, und ORMAs Service Worker räumt nur eigene Caches auf. Ein Browser-Test prüft genau das
