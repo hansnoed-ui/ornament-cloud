@@ -365,6 +365,24 @@ await check("Trennung: ORNA und ORMA nebeneinander – eigene Service Worker, ei
   await ctx.close();
 });
 
+// ---------- Alpha-Bereich ----------
+await check("Alpha: alpha/ listet ORMA; alpha/orma/ läuft unter dem Website-Pfad mit eigenem Service Worker", async () => {
+  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on("pageerror", e => errors.push(e.message));
+  await page.goto(`${origin}/alpha/`);
+  await page.getByRole("link", { name: "ORMA" }).click();
+  await page.waitForSelector("html[data-ready]");
+  assert.equal(new URL(page.url()).pathname, "/alpha/orma/");
+  await tap(page, "Zu zweit beginnen"); await tap(page, "Beginnen"); await tap(page, "Drehen");
+  await button(page, "Gemeinsam lesen").waitFor();
+  await page.waitForFunction(async () => (await navigator.serviceWorker.getRegistration())?.active?.state === "activated", null, { timeout: 15000 });
+  assert.equal(new URL((await page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).scope))).pathname, "/alpha/orma/");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 await browser.close();
 server.close();
 const failed = results.filter(r => r[0] !== "ok");

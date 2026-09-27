@@ -2,7 +2,7 @@
 //   node --experimental-strip-types --no-warnings --test tests/orma.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, mkdtempSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, mkdtempSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
@@ -266,4 +266,29 @@ test("Trennung: ORNA-Dateien sind auf diesem Stand unverändert gegenüber main"
   try { base = execFileSync("git", ["merge-base", "HEAD", "origin/main"], { cwd: root, encoding: "utf8" }).trim(); } catch { return; }
   const changed = execFileSync("git", ["diff", "--name-only", base, "--", "portfolio", "index.html", "styles.css", "news", "sitemap.xml", "tools/build-app.ts", "tools/app-icons.mjs"], { cwd: root, encoding: "utf8" }).trim();
   assert.equal(changed, "", `geändert: ${changed}`);
+});
+
+// ---------- Alpha-Bereich der Website ----------
+test("Alpha: alpha/orma ist der aktuelle Build (sonst: tools/build-orma.ts --alpha)", () => {
+  const out = mkdtempSync(join(tmpdir(), "orma-"));
+  build.buildOrma(out);
+  const list = d => readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? list(join(d, e.name)).map(f => `${e.name}/${f}`) : [e.name]);
+  const alpha = new URL("alpha/orma/", root).pathname;
+  assert.deepEqual(list(alpha).sort(), list(out).sort());
+  for (const f of list(out)) assert.ok(readFileSync(join(out, f)).equals(readFileSync(join(alpha, f))), `veraltet: alpha/orma/${f}`);
+});
+
+test("Alpha: öffentlich, aber von keiner Seite verlinkt, nicht in der Sitemap, für Suchmaschinen gesperrt", () => {
+  const skip = new Set(["node_modules", "alpha", "dist", ".git"]);
+  const walk = d => readdirSync(d, { withFileTypes: true }).flatMap(e =>
+    skip.has(e.name) || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(new URL(e.name + "/", d)) : e.name.endsWith(".html") ? [new URL(e.name, d)] : []);
+  for (const f of walk(root)) {
+    for (const [, href] of readFileSync(f, "utf8").matchAll(/href="([^"]+)"/g)) {
+      if (/^[a-z]+:/i.test(href) && !href.includes("ornament-cloud/alpha")) continue;
+      assert.ok(!new URL(href, f).pathname.includes("/alpha/"), `${f.pathname.slice(root.pathname.length)} verlinkt den Alpha-Bereich: ${href}`);
+    }
+  }
+  assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("/alpha/"));
+  for (const p of ["alpha/index.html", "alpha/orma/index.html"])
+    assert.match(readFileSync(new URL(p, root), "utf8"), /<meta name="robots" content="noindex/, p);
 });

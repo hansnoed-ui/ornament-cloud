@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ORMA – Nebeneinander, Nacheinander</title>
+  <meta name="description" content="Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke. Ein Kunst- und Denkspiel auf Grundlage von «Nebeneinander, Nacheinander».">
+  <meta name="robots" content="noindex">
+  <!-- Installierbare Web-App ORMA: eigenes Manifest, eigener Service Worker, eigener Speicher (orma:) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ORMA">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="stylesheet" href="orma.css?v=5829f2d6cc5f">
+</head>
+<body>
+  <header class="orma-top">
+    <button class="orma-home" type="button" data-go="start" aria-label="Zur Startansicht">
+      <svg class="orma-logo" viewBox="0 0 64 40" aria-hidden="true"><circle cx="24" cy="20" r="15"/><circle cx="40" cy="20" r="15"/><circle class="orma-logo-dot" cx="32" cy="7.5" r="3"/></svg>
+      <span>ORMA</span>
+    </button>
+  </header>
+  <main id="view" class="orma-view" tabindex="-1">
+    <noscript><p>ORMA braucht JavaScript.</p></noscript>
+  </main>
+  <p id="orma-live" class="sr-only" aria-live="polite"></p>
+  <script type="module" src="js/app.js?v=5829f2d6cc5f"></script>
+</body>
+</html>

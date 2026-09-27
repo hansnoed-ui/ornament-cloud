@@ -1,6 +1,7 @@
 // Produktionsbuild von ORMA: src/orma/app/ + src/orma/redaktion/pilot.json → src/orma/dist/
 //
-//   node --experimental-strip-types tools/build-orma.ts
+//   node --experimental-strip-types tools/build-orma.ts           → src/orma/dist/ (Vorschau, nicht eingecheckt)
+//   node --experimental-strip-types tools/build-orma.ts --alpha   → alpha/orma/ (Alpha-Seite der Website, eingecheckt)
 //
 // – prüft die Redaktionsdatei gegen den Bestand (IDs, Einstieg 40–70 Wörter, drei Aufträge);
 // – schreibt js/data.js: Paarung, Originaltext und Originalfrage wörtlich aus dem Bestand,
@@ -13,6 +14,7 @@ import { readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, statSync, 
 import { createHash } from "node:crypto";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { tmpdir } from "node:os";
 import { artists } from "../src/doppelspalt/src/data/artists.ts";
 import { theorists } from "../src/doppelspalt/src/data/theorists.ts";
 import { constellations } from "../src/doppelspalt/src/data/constellations.ts";
@@ -21,6 +23,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url));
 export const SRC = join(ROOT, "src/orma/app");
 export const PILOT_FILE = join(ROOT, "src/orma/redaktion/pilot.json");
 export const OUT = join(ROOT, "src/orma/dist");
+export const ALPHA = join(ROOT, "alpha/orma");
 const META = JSON.parse(readFileSync(join(ROOT, "src/orma/orma.json"), "utf8"));
 const START = "// <!-- ORMA:START -->", END = "// <!-- ORMA:END -->";
 const AUFTRAEGE = ["beispiel", "einwand", "gestaltung"];
@@ -70,6 +73,7 @@ function walk(dir: string): string[] {
 
 /** Ganzer Build; liefert Version und Dateiliste */
 export function buildOrma(out: string = OUT) {
+  if (![OUT, ALPHA].includes(out) && !out.startsWith(join(tmpdir(), "orma-"))) throw new Error(`Ausgabe nur nach src/orma/dist, alpha/orma oder in einen Testordner: ${out}`);
   const { contentVersion, items } = buildPilot();
   const files = new Map<string, Buffer | string>();          // Pfad in der Ausgabe → Inhalt
   for (const f of walk(SRC)) {
@@ -116,6 +120,7 @@ export function buildOrma(out: string = OUT) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const r = buildOrma();
-  console.log(`ORMA ${META.version} · Build ${r.version} · Inhalt ${r.contentVersion} · ${r.count} Dateien → ${relative(ROOT, OUT)}/`);
+  const out = process.argv.includes("--alpha") ? ALPHA : OUT;
+  const r = buildOrma(out);
+  console.log(`ORMA ${META.version} · Build ${r.version} · Inhalt ${r.contentVersion} · ${r.count} Dateien → ${relative(ROOT, out)}/`);
 }

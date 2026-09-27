@@ -37,6 +37,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   Installationsfenster, iPhone/iPad zeigen die zwei Schritte; als App geöffnet kein Hinweis. Ereignisse `rad-app/hinweis`, `rad-app/installiert`.
 - `src/orma/` – ORMA, zweite eigenständige App (Spiel zu zweit, zwölf Konstellationen, Gedankenbuch, Ergebniskarte);
   eigener Build (`tools/build-orma.ts` → `src/orma/dist/`, nicht eingecheckt), noch nicht veröffentlicht. Alles Weitere in `src/orma/README.md`
+- `alpha/` – Alpha-Versionen, öffentlich erreichbar, aber nicht verlinkt, nicht in der Sitemap, `noindex` (Test prüft das);
+  `alpha/orma/` ist ORMA, erzeugt mit `node --experimental-strip-types tools/build-orma.ts --alpha`
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)
 - `src/doppelspalt/CLAUDE-CODE-MASTERPROMPT-2026-ARCHIV.md` – ursprünglicher Auftrag, Entstehungsstand mit 99 Konstellationen, nicht mehr verbindlich

@@ -7,7 +7,11 @@ ORMA ist ein kostenloses Kunst- und Denkspiel für zwei Personen an einem Gerät
 Anmeldung, keine Bezahlfunktion, keine Werbung, keine Cloud, keine Zählung und keine KI-Aufrufe.
 Alles bleibt auf dem Gerät.
 
-Stand: 27. September 2026. Die App liegt auf dem Branch `orma` und ist **nicht veröffentlicht**.
+Stand: 27. September 2026. Die App ist **nicht veröffentlicht**. Zum Ausprobieren liegt sie als Alpha-Version auf
+der Website: <https://hansnoed-ui.github.io/ornament-cloud/alpha/orma/>. Die Übersicht aller Alpha-Versionen
+steht unter <https://hansnoed-ui.github.io/ornament-cloud/alpha/>. Der Alpha-Bereich ist öffentlich erreichbar,
+aber von keiner Seite verlinkt, nicht in der Sitemap und für Suchmaschinen gesperrt. Wer die Adresse kennt,
+kann ORMA öffnen.
 
 ## Vorschau und Produktionsbuild
 
@@ -23,6 +27,14 @@ node tools/serve-orma.mjs            # → http://localhost:8766/orma/
 - Die Ausgabe `src/orma/dist/` wird nicht eingecheckt (`.gitignore`).
 - Die Ausgabe ist in sich geschlossen und nutzt nur relative Pfade. Sie kann später unter jedem Ordner
   der Website liegen, zum Beispiel `/ornament-cloud/orma/`.
+
+**Alpha-Version aktualisieren** (nach jeder Änderung, die auf der Website ankommen soll):
+
+```sh
+node --experimental-strip-types tools/build-orma.ts --alpha   # → alpha/orma/ (eingecheckt)
+```
+
+Ein Test meldet, wenn `alpha/orma/` nicht mehr dem aktuellen Stand entspricht.
 
 **Tests**
 
@@ -42,8 +54,7 @@ NODE_PATH=$(npm root -g) node tests/orma.e2e.mjs                           # Bro
 3. Offline testen: In den Entwicklertools unter «Application → Service Workers» prüfen, dass `sw.js`
    aktiv ist. Dann unter «Network» auf «Offline» stellen und die Seite neu laden. ORMA startet trotzdem.
    Eine ganze Runde, Behalten, Wiederöffnen und Export gehen dann ohne Netz.
-4. Am Smartphone geht es erst über `https`, also nach der Veröffentlichung oder über einen eigenen
-   https-Tunnel.
+4. Am Smartphone über die Alpha-Adresse (https, siehe oben).
    - Android/Chrome: Menü → «App installieren».
    - iPhone/Safari: «Teilen» → «Zum Home-Bildschirm».
    - Danach Flugmodus einschalten und ORMA vom Home-Bildschirm öffnen.
@@ -165,7 +176,7 @@ mit ORNA und ORMA im selben Browser.
 Alle Prüfungen liefen in Chromium (Playwright) am Linux-Rechner, mobil als «Pixel 7» und «iPhone 13»
 nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
 
-- **Unit-Tests `tests/orma.test.mjs`: 16/16 bestanden.**
+- **Unit-Tests `tests/orma.test.mjs`: 18/18 bestanden.**
   - Ziehung: Rejection Sampling. Gleichverteilung erste Ziehung und nach einer Konstellation
     (je 22 000–24 000 Ziehungen). Nie dieselbe unmittelbar wieder, nur freigegebene IDs.
   - Pilotdaten: Texte, Fragen und IDs wörtlich wie im Bestand. Zwölf verschiedene Personen je Ring.
@@ -177,7 +188,9 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
     werden umbrochen, die Karte wird höher, der Fuss überlappt nie.
   - Build: eigener Cache, eigene Kennung, relative Pfade, Dateiliste vollständig. ORNA-Dateien
     unverändert gegenüber `main`.
-- **Browser-Tests `tests/orma.e2e.mjs`: 10/10 bestanden, in sechs aufeinanderfolgenden Läufen.**
+  - Alpha: `alpha/orma/` entspricht dem aktuellen Build. Keine Seite ausserhalb von `alpha/` verlinkt
+    den Bereich; er steht nicht in der Sitemap und ist mit `noindex` gesperrt.
+- **Browser-Tests `tests/orma.e2e.mjs`: 11/11 bestanden (die ersten zehn in sechs aufeinanderfolgenden Läufen).**
   - ganze Runde am Smartphone (Tippen aufs Rad, Überspringen, Originaltext, Auftrag). Die erste Antwort
     steht weder beim Übergeben noch bei B im Dokument. Mündliche Antwort, Aufdecken, Weiterdenken,
     Ergebniskarte;
@@ -199,7 +212,9 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
     und Export;
   - ORNA und ORMA im selben Browser: zwei Service Worker mit getrennten Geltungsbereichen, beide
     Caches vorhanden. ORMA «Alle löschen» lässt ORNA-Cache und fremde Schlüssel stehen; ORNA läuft
-    danach weiter.
+    danach weiter;
+  - Alpha: Die Übersicht führt zu ORMA; `alpha/orma/` läuft unter dem Website-Pfad mit eigenem Service
+    Worker (Geltungsbereich `/alpha/orma/`).
 - **ORNA-Tests unverändert grün:**
   - `tests/doppelspalt.test.mjs` 26/26;
   - `tests/doppelspalt.e2e.mjs` 32/32.
@@ -238,8 +253,9 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
     gelten installierte Apps als fremd.
 
 **Veröffentlichung (späterer Schritt)**
-12. Den Build nach `/ornament-cloud/orma/` legen, `noindex` entfernen und ORMA in `sitemap.xml`
-    eintragen.
+12. Den Build an seinen endgültigen Ort legen, `noindex` entfernen und ORMA in `sitemap.xml` eintragen.
+    Die Manifest-Kennung `orma` bleibt dabei gleich. Ob eine installierte Alpha-Version dann von selbst
+    auf die neue Adresse wechselt, ist nicht gesichert; im Zweifel die App neu installieren.
 13. Eine Karte in der Kategorie «Apps» auf der Startseite anlegen und bei Bedarf einen News-Eintrag
     schreiben.
 14. Beim Veröffentlichen die bestehenden Website-Tests um ORMA erweitern (Sitemap, Links).
