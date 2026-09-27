@@ -368,6 +368,7 @@ await check("Trennung: ORNA und ORMA nebeneinander – eigene Service Worker, ei
 
 // ---------- Re-Entry (allein) ----------
 const soloStart = page => page.getByRole("button", { name: /^Allein: Re-Entry/ }).click();
+const PILOT_RAW = JSON.parse(readFileSync(new URL("src/orma/redaktion/pilot.json", root), "utf8")).konstellationen;
 
 await check("Re-Entry, erster Durchgang: allein drehen, lesen, Auftrag, antworten – die Schleife bleibt offen, die Antwort verborgen", async () => {
   const { ctx, page, errors } = await open();
@@ -375,8 +376,14 @@ await check("Re-Entry, erster Durchgang: allein drehen, lesen, Auftrag, antworte
   await tap(page, "Drehen");
   await tap(page, "Lesen");
   await tap(page, "Einen Auftrag wählen");
+  // allein: die Aufträge in der Du-Form
+  const drawnId = await page.evaluate(() => JSON.parse(localStorage.getItem("orma:v1:entwurf")).constellationId);
+  const raw = PILOT_RAW.find(x => x.id === drawnId);
+  assert.deepEqual(await page.locator(".orma-option span").allTextContents(), [raw.auftraege_allein.beispiel, raw.auftraege_allein.einwand, raw.auftraege_allein.gestaltung]);
+  assert.equal(await page.textContent("h2"), "Was willst du damit machen?");
   await page.click('[data-auftrag="einwand"]');
   assert.equal(await button(page, "Ich antworte mündlich").count(), 0, "allein keine mündliche Antwort");
+  assert.match(await page.textContent(".orma-task"), new RegExp(raw.auftraege_allein.einwand.slice(0, 30).replace(/[.?*+()]/g, "\\$&")));
   await page.fill("#orma-answer-a", "Mein früher Gedanke");
   await tap(page, "Fertig");
   assert.equal(await page.textContent("h2"), "Die Schleife ist offen");
@@ -411,6 +418,7 @@ await check("Re-Entry, zweiter Durchgang: dieselbe Konstellation kehrt zurück �
   await tap(page, "Lesen");
   await tap(page, "Noch einmal antworten");                                 // keine Auftragswahl: derselbe Auftrag
   assert.match(await page.textContent(".orma-task"), /Etwas daraus machen/);
+  assert.ok((await page.textContent(".orma-task")).includes(PILOT_RAW.find(x => x.id === id).auftraege_allein.gestaltung), "Du-Fassung im zweiten Durchgang");
   assert.ok(!(await page.content()).includes(`Frühere Antwort ${n}`), "erste Antwort beim zweiten Schreiben sichtbar");
   await page.fill("#orma-answer-b", "Heute sehe ich es anders");
   // Schliessen mitten im zweiten Durchgang: Fortsetzen ohne Übergabe, erste Antwort weiter verborgen

@@ -1,4 +1,4 @@
-# ORMA – Alpha-Fassung (0.3.0)
+# ORMA – Alpha-Fassung (0.3.1)
 
 **ORMA** · *Nebeneinander, Nacheinander* · Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke.
 
@@ -112,6 +112,10 @@ Eine Person spielt beide Rollen, zu verschiedenen Zeiten.
    Konstellation später wieder, beginnt eine neue Schleife.
 
 **Weitere Regeln**
+- Allein spricht die App eine Person an (du). Die Spielaufträge haben dafür eigene Fassungen in der Du-Form
+  (`auftraege_allein` in `pilot.json`, seit 0.3.1). Aufträge für zwei Personen sind so umgeformt, dass sie
+  allein ausführbar sind, z. B. «Diktiert euch gegenseitig …» → «Schreib … Leg sie eine Weile weg, lies sie
+  dann und zeichne nur, was dasteht».
 - Allein gibt es keine mündliche Antwort und keine Namen.
 - Die Karte beschriftet die beiden Antworten mit ihrem Datum.
 - Offene Schleifen stehen im Gedankenbuch nur mit Paarung und Datum und lassen sich einzeln löschen.
@@ -216,7 +220,7 @@ mit ORNA und ORMA im selben Browser.
 Alle Prüfungen liefen in Chromium (Playwright) am Linux-Rechner, mobil als «Pixel 7» und «iPhone 13»
 nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
 
-- **Unit-Tests `tests/orma.test.mjs`: 21/21 bestanden** (Stand 0.3.0, mit drei Tests für Re-Entry).
+- **Unit-Tests `tests/orma.test.mjs`: 22/22 bestanden** (Stand 0.3.1, mit vier Tests für Re-Entry, einer davon prüft die Du-Form der Aufträge).
   - Ziehung: Rejection Sampling. Gleichverteilung erste Ziehung und nach einer Konstellation
     (je 46 000–48 000 Ziehungen, Toleranz ±15 %). Nie dieselbe unmittelbar wieder, nur freigegebene IDs.
   - Pilotdaten: Texte, Fragen und IDs wörtlich wie im Bestand. Zwölf Personen je Ring, jede genau zweimal, fester Platz je Person.
@@ -230,7 +234,7 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
     unverändert gegenüber `main`.
   - Alpha: `alpha/orma/` entspricht dem aktuellen Build. Keine Seite ausserhalb von `alpha/` verlinkt
     den Bereich; er steht nicht in der Sitemap und ist mit `noindex` gesperrt.
-- **Browser-Tests `tests/orma.e2e.mjs`: 13/13 bestanden, in drei aufeinanderfolgenden Läufen (Fassung 0.3.0).**
+- **Browser-Tests `tests/orma.e2e.mjs`: 13/13 bestanden, in zwei aufeinanderfolgenden Läufen (Fassung 0.3.1).**
   - Re-Entry, erster Durchgang: Schleife offen, Antwort gespeichert und in der Liste verborgen, Zähler auf der Startansicht;
   - Re-Entry, zweiter Durchgang: Wiedersehen mit Datum, derselbe Auftrag, erste Antwort bis zum Aufdecken
     nicht im Dokument (auch nach Neuladen mitten im zweiten Durchgang), Aufdecken mit Datum, dritter
@@ -266,7 +270,7 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
 ## Offene Punkte
 
 **Redaktion (brauchen deine Durchsicht)**
-1. Alle 24 Einstiege und 72 Spielaufträge sind Entwürfe (`"status": "entwurf"`) und warten auf deine
+1. Alle 24 Einstiege, 72 Spielaufträge und ihre 72 Du-Fassungen für den Modus allein sind Entwürfe (`"status": "entwurf"`) und warten auf deine
    Freigabe. Danach `status` auf `"freigegeben"` setzen und `inhaltsversion` hochzählen.
 2. Der Einstieg zu Rebecca Horn × Wendy Hui Kyong Chun endet mit einem eigenen Satz, der deutet
    und nicht mehr nur verdichtet: «Was sonst unbemerkt bleibt, wird hier zur Aufgabe.» Bitte bestätigen

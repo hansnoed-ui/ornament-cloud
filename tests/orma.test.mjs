@@ -88,8 +88,9 @@ test("Pilot: 24 Konstellationen aus dem Bestand, Paarung, Text und Frage wörtli
 test("Pilot: Redaktion getrennt – die Redaktionsdatei enthält keine Originaltexte, nur Verweise und neue Texte", () => {
   const raw = JSON.parse(readFileSync(new URL("src/orma/redaktion/pilot.json", root), "utf8"));
   for (const k of raw.konstellationen) {
-    assert.deepEqual(Object.keys(k).sort(), ["auftraege", "einstieg", "id"]);
+    assert.deepEqual(Object.keys(k).sort(), ["auftraege", "auftraege_allein", "einstieg", "id"]);
     assert.deepEqual(Object.keys(k.auftraege).sort(), ["beispiel", "einwand", "gestaltung"]);
+    assert.deepEqual(Object.keys(k.auftraege_allein).sort(), ["beispiel", "einwand", "gestaltung"]);
   }
 });
 
@@ -364,4 +365,17 @@ test("Re-Entry-Karte: Beschriftung mit den Daten der beiden Durchgänge und «De
   assert.match(txt, /Ich, am 27\. September 2026/);
   assert.match(txt, /Ich, am 3\. Oktober 2026/);
   assert.ok(!txt.includes("Zuerst"));
+});
+
+test("Re-Entry: Spielaufträge für den Modus allein sprechen eine Person an (du), nie mehrere (ihr)", () => {
+  const plural = /\b(ihr|euch|euer|eure[nmrs]?|gegenseitig|einander)\b|\b(Wählt|Nennt|Findet|Sucht|Schreibt|Legt|Stellt|Erinnert|Denkt|Zeichnet|Macht|Beschreibt|Notiert|Nehmt|Lasst|Gebt|Haltet|Verändert|Verlängert|Benutzt|Vergleicht|Diktiert|Vereinbart|Schliesst|Erfindet|Erzählt|Zeigt|Führt|Geht)\b/;
+  for (const it of pilot.items) {
+    for (const [a, t] of Object.entries(it.auftraegeAllein)) {
+      assert.ok(!plural.test(t), `${it.id} ${a}: «${t}»`);
+      assert.ok(/\b(du|dich|dir|dein\w*)\b|^[A-ZÄÖÜ][a-zäöüß]+(e)?\b/.test(t), `${it.id} ${a}: keine Du-Anrede`);
+      assert.ok(!t.includes("ß"), `${it.id} ${a}: ß`);
+      assert.ok(t.length > 40 && t.length < 260, `${it.id} ${a}: Länge ${t.length}`);
+    }
+    assert.notDeepEqual(it.auftraegeAllein, it.auftraege, `${it.id}: Du-Fassung fehlt`);
+  }
 });
