@@ -348,35 +348,52 @@
 }
 .rad-about .rad-note a { color: inherit; text-underline-offset: 3px; }
 
-/* Hinweis «Als App installieren»: nur wo möglich, klein und unterstrichen wie die übrigen Knöpfe */
-.rad-about .rad-install {
-  max-width: 720px;
-  margin: 10px 0 0 auto;
-  text-align: right;
+/* Hinweis «Als App installieren»: über dem Rad, deutlich, aber im Stil des Instruments –
+   feine Linie, keine Fläche, kleines App-Symbol. Erscheint nur, wo eine Installation möglich ist. */
+.rad-install {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 0 24px;
+  text-align: center;
 }
-.rad-about .rad-install[hidden] { display: none; }
+.rad-install[hidden] { display: none; }
 .rad-install-btn {
-  padding: 0;
-  border: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 20px 8px 8px;
+  border: 1px solid var(--text);
+  border-radius: 999px;
   background: none;
   font: inherit;
-  font-size: 0.9rem;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  text-decoration-thickness: 1px;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  color: var(--text);
   cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.rad-install-btn img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
 }
 .rad-install-btn:hover,
-.rad-install-btn:focus-visible { color: var(--text); }
-.rad-about .rad-install-hilfe {
-  margin: 8px 0 0 auto;
-  max-width: 34em;
+.rad-install-btn:focus-visible {
+  background: var(--text);
+  color: var(--bg);
+  outline: none;
+}
+.rad-install-hilfe {
+  max-width: 30em;
+  margin: 10px 0 0;
   font-size: 0.85rem;
+  line-height: 1.5;
   color: var(--muted);
 }
-.rad-about .rad-install-hilfe[hidden] { display: none; }
+.rad-install-hilfe[hidden] { display: none; }
 .rad-install-hilfe span { white-space: nowrap; }   /* Namen der Knöpfe nicht trennen */
 
 /* Verweis auf die Feldansicht, rechtsbündig unter der Beschreibung */

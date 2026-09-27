@@ -593,6 +593,12 @@ await check("Installationshinweis: Chrome/Android öffnet das Installationsfenst
   // iPhone: Knopf sichtbar, Klick zeigt die zwei Schritte
   const b = await open({ ...devices["iPhone 13"] });
   assert.equal(await b.page.$eval(".rad-install", e => e.hidden), false);
+  // gut sichtbar: über dem Rad, im ersten Bildschirm
+  assert.ok(await b.page.evaluate(() => {
+    const hint = document.querySelector(".rad-install"), stage = document.querySelector(".rad-stage");
+    return (hint.compareDocumentPosition(stage) & Node.DOCUMENT_POSITION_FOLLOWING) && hint.getBoundingClientRect().bottom <= stage.getBoundingClientRect().top + 1
+      && hint.getBoundingClientRect().bottom <= innerHeight;
+  }));
   assert.equal(await b.page.$eval(".rad-install-hilfe", e => e.hidden), true);
   await b.page.tap(".rad-install-btn");
   assert.equal(await b.page.$eval(".rad-install-hilfe", e => e.hidden), false);
