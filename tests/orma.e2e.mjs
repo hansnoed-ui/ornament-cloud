@@ -594,6 +594,34 @@ await check("Rückfall «Verknüpfung erstellen»: auf Android in der Startansic
   await ctx.close();
 });
 
+await check("Aktualisieren: neue Fassung sofort beim nächsten Öffnen, auch wenn der Server 10 Minuten Zwischenspeicher erlaubt (wie GitHub Pages)", async () => {
+  // Vorschaltserver: wie GitHub Pages «max-age=600»; jede ausgelieferte Seite trägt eine laufende Nummer
+  const http = await import("node:http");
+  let n = 0;
+  const proxy = http.createServer(async (req, res) => {
+    const r = await fetch(origin + req.url);
+    let body = Buffer.from(await r.arrayBuffer());
+    const type = r.headers.get("content-type") || "";
+    if (type.includes("text/html")) body = Buffer.from(String(body).replace("<title>", `<title>[${++n}] `));
+    res.writeHead(r.status, { "content-type": type, "cache-control": "max-age=600" });
+    res.end(body);
+  });
+  await new Promise(ok => proxy.listen(0, ok));
+  const url = `http://localhost:${proxy.address().port}/orma/`;
+  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
+  const page = await ctx.newPage();
+  await page.goto(url);
+  await page.waitForFunction(async () => (await navigator.serviceWorker.getRegistration())?.active?.state === "activated", null, { timeout: 15000 });
+  for (let i = 0; i < 5 && !(await page.evaluate(() => !!navigator.serviceWorker.controller)); i++) await page.reload();
+  // zweimal neu öffnen: jedes Mal fragt der Service Worker beim Server nach, statt die Browser-Kopie zu nehmen
+  const nr = async () => Number((await page.title()).match(/^\[(\d+)\]/)[1]);
+  await page.goto(url); const a = await nr();
+  await page.goto(url); const b = await nr();
+  assert.ok(b > a, `Seite kam aus dem Zwischenspeicher (${a} → ${b})`);
+  await ctx.close();
+  proxy.close();
+});
+
 // ---------- Startseite: Apps als Wisch-Galerie ----------
 await check("Startseite (Handy): ORMA steht bei den Apps zuerst, Diamanten über Apps und Artefakten folgen dem Wischen", async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });

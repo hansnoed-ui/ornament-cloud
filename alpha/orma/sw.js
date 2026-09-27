@@ -50,9 +50,11 @@ self.addEventListener("fetch", event => {
 
   if (req.mode === "navigate") {
     // Zwei gleiche Seiten (Website: ./, installierte App: app/): zuerst das Netz (neue Fassung),
-    // ohne Netz die gespeicherte Fassung derselben Seite, sonst die der Website
+    // ohne Netz die gespeicherte Fassung derselben Seite, sonst die der Website.
+    // «no-cache»: immer beim Server nachfragen, statt bis zu 10 Minuten die Browser-Kopie zu nehmen
+    // (GitHub Pages erlaubt max-age=600) – so ist eine neue Fassung beim nächsten Öffnen da.
     event.respondWith(
-      fetch(req).catch(() => caches.open(CACHE).then(c =>
+      fetch(req, { cache: "no-cache" }).catch(() => caches.open(CACHE).then(c =>
         c.match(req, { ignoreSearch: true }).then(hit => hit || c.match(new URL("./", self.registration.scope).href))))
     );
     return;
