@@ -542,6 +542,32 @@ await check("ORNA-Startbild: nicht im normalen Browser, nicht bei reduzierter Be
   await b.ctx.close();
 });
 
+await check("ORNA-Startbild: vor der Animation blitzt die Seite nicht auf; ohne Startbild wird sie trotzdem sichtbar", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await ctx.newPage();
+  await page.route("**/js/intro.js*", async r => { await new Promise(res => setTimeout(res, 1200)); r.continue(); });
+  await page.goto(base + "?intro", { waitUntil: "commit" });
+  await page.waitForSelector(".rad-stage", { state: "attached" });
+  // solange das Startbild noch lädt, ist vom Rad nichts zu sehen
+  assert.equal(await page.evaluate(() => document.documentElement.classList.contains("orna-pre")), true);
+  assert.equal(await page.$eval(".rad-stage", e => getComputedStyle(e).visibility), "hidden");
+  await page.waitForSelector(".orna-intro");
+  assert.equal(await page.evaluate(() => document.documentElement.classList.contains("orna-pre")), false);
+  await ctx.close();
+  // kommt das Startbild gar nicht, erscheint die Seite nach kurzer Zeit dennoch
+  const ctx2 = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const p2 = await ctx2.newPage();
+  await p2.route("**/js/intro.js*", r => r.abort());
+  await p2.goto(base + "?intro");
+  await p2.waitForFunction(() => !document.documentElement.classList.contains("orna-pre"), null, { timeout: 6000 });
+  assert.equal(await p2.$eval(".rad-stage", e => getComputedStyle(e).visibility), "visible");
+  await ctx2.close();
+  // im normalen Browser: gar nichts verborgen
+  const c = await open({ viewport: { width: 390, height: 844 } });
+  assert.equal(await c.page.evaluate(() => document.documentElement.classList.contains("orna-pre")), false);
+  await c.ctx.close();
+});
+
 // ---------- Hinweis «Als App installieren» ----------
 await check("Installationshinweis: Chrome/Android öffnet das Installationsfenster, iPhone erklärt die Schritte, sonst kein Hinweis", async () => {
   // ohne Installationsmöglichkeit: kein Hinweis
