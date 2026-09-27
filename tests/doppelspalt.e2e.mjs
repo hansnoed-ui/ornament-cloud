@@ -628,6 +628,13 @@ await check("Installationsknopf: überall sichtbar ausser in der App; Chrome öf
     return (hint.compareDocumentPosition(stage) & Node.DOCUMENT_POSITION_FOLLOWING) && hint.getBoundingClientRect().bottom <= stage.getBoundingClientRect().top + 1
       && hint.getBoundingClientRect().bottom <= innerHeight;
   }));
+  // mittig zwischen Untertitel und Rad
+  const gaps = await b.page.evaluate(() => {
+    const lead = [...document.querySelectorAll(".site-header p")].pop().getBoundingClientRect();
+    const btn = document.querySelector(".rad-install-btn").getBoundingClientRect(), st = document.querySelector(".rad-stage").getBoundingClientRect();
+    return [btn.top - lead.bottom, st.top - btn.bottom, btn.left, innerWidth - btn.right];
+  });
+  assert.ok(Math.abs(gaps[0] - gaps[1]) <= 1 && Math.abs(gaps[2] - gaps[3]) <= 1, `Abstände ${gaps}`);
   await b.page.tap(".rad-install-btn");
   assert.equal(await b.page.$eval(".rad-install-hilfe", e => e.hidden), false);
   assert.equal(await b.page.$eval(".rad-install-btn", e => e.getAttribute("aria-expanded")), "true");

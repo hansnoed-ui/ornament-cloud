@@ -349,12 +349,13 @@
 .rad-about .rad-note a { color: inherit; text-underline-offset: 3px; }
 
 /* Hinweis «Als App installieren»: über dem Rad, deutlich, aber im Stil des Instruments –
-   feine Linie, keine Fläche, kleines App-Symbol. Erscheint nur, wo eine Installation möglich ist. */
+   feine Linie, keine Fläche, kleines App-Symbol. Steht mittig zwischen Untertitel und Rad
+   (gleicher Abstand oben und unten wie der Kopf nach dem Untertitel). */
 .rad-install {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 0 0 24px;
+  margin: 0 0 40px;
   text-align: center;
 }
 .rad-install[hidden] { display: none; }
