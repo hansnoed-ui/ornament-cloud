@@ -8,6 +8,7 @@ import { artists } from "../src/doppelspalt/src/data/artists.ts";
 import { theorists } from "../src/doppelspalt/src/data/theorists.ts";
 import { constellations } from "../src/doppelspalt/src/data/constellations.ts";
 import { writeFeld } from "./build-feld.ts";
+import { writeApp } from "./build-app.ts";
 
 const out = new URL("../portfolio/nebeneinander-nacheinander/js/data/", import.meta.url);
 const head = (src: string) =>
@@ -24,3 +25,7 @@ console.log(`geschrieben: ${artists.length} Künstler, ${theorists.length} Theor
 // Feldansicht aus denselben Daten neu setzen (keine Zweitpflege)
 writeFeld();
 console.log("Feldansicht neu geschrieben");
+
+// Dateiliste und Version der installierbaren Web-App nachziehen (neue Daten = neue Version)
+writeApp();
+console.log("Service Worker aktualisiert");

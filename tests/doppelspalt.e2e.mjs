@@ -15,7 +15,7 @@ try { playwright = require("playwright"); } catch { playwright = require(join(pr
 const { chromium, devices } = playwright;
 
 const root = new URL("../", import.meta.url).pathname;
-const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".woff2": "font/woff2" };
+const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".woff2": "font/woff2", ".webmanifest": "application/manifest+json", ".png": "image/png", ".svg": "image/svg+xml", ".pdf": "application/pdf" };
 const server = createServer(async (req, res) => {
   let p = normalize(decodeURIComponent(new URL(req.url, "http://x").pathname));
   if (p.endsWith("/")) p += "index.html";
@@ -474,6 +474,40 @@ await check("Namen am Rad bei 375 px: lesbar gross, innerhalb des Rads, ohne Üb
 await check("Reduzierte Bewegung: Namen am Rad ohne Ein- und Ausblenden", async () => {
   const { ctx, page } = await open({ viewport: { width: 1280, height: 900 }, reducedMotion: "reduce" }, "?pair=agnes-martin__niklas-luhmann");
   assert.equal(await page.$eval(".rad-hitnames", e => getComputedStyle(e).transitionDuration), "0s");
+  await ctx.close();
+});
+
+// ---------- Installierbare Web-App ----------
+await check("App: Service Worker übernimmt, danach funktionieren Rad, Direktlink und Feld ohne Netz", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce", serviceWorkers: "allow" });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on("pageerror", e => errors.push(e.message));
+  await page.goto(base);
+  await page.waitForFunction(async () => { const r = await navigator.serviceWorker.getRegistration(); return !!(r && r.active); }, null, { timeout: 15000 });
+  await page.reload();
+  await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 10000 });
+  const manifest = await page.$eval('link[rel="manifest"]', l => l.href);
+  assert.match(manifest, /app\.webmanifest$/);
+
+  await ctx.setOffline(true);
+  await page.goto(base);                                         // Start ohne Netz
+  await page.waitForFunction(() => document.querySelector(".rad-wheel")?.__rad);
+  await page.focus(".rad-wheel");
+  await page.keyboard.press("Enter");
+  await waitSelected(page, 4000);
+  const s = await assertLanding(page);
+  assert.ok(await page.$eval(".rad-text", e => e.textContent.length > 40), "Text offline vorhanden");
+
+  await page.goto(base + "?pair=agnes-martin__niklas-luhmann");  // Direktlink ohne Netz
+  await page.waitForFunction(() => document.querySelector(".rad-wheel")?.__rad?.current);
+  assert.equal((await radState(page)).cur.id, "agnes-martin__niklas-luhmann");
+
+  await page.goto(base + "feld/");                               // Feld ohne Netz
+  assert.equal(await page.$$eval(".feld-matrix a, .feld-person a", a => a.length) > 0, true);
+  await ctx.setOffline(false);
+  assert.deepEqual(errors, []);
+  assert.ok(s.cur.id);
   await ctx.close();
 });
 

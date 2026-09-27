@@ -13,8 +13,18 @@
   <meta property="og:title" content="Das Feld – Nebeneinander, Nacheinander">
   <meta property="og:image" content="https://hansnoed-ui.github.io/ornament-cloud/assets/og-nebeneinander-nacheinander.png">
   <meta name="twitter:card" content="summary_large_image">
+  <!-- Installierbare Web-App -->
+  <link rel="manifest" href="../app.webmanifest">
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../app/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../app/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Nebeneinander">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="stylesheet" href="../../../styles.css?v=18">
-  <link rel="stylesheet" href="feld.css?v=4">
+  <link rel="stylesheet" href="feld.css?v=5">
 </head>
 <body>
   <header class="site-header">
@@ -539,6 +549,7 @@
     <p class="back"><a href="../">← Zum Rad</a></p>
   </main>
   <script src="../../../icons.js?v=13" defer></script>
+  <script type="module" src="../js/pwa.js?v=1"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../../vendor/goatcounter/count.js"></script>
 </body>

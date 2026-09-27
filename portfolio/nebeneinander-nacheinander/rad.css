@@ -399,3 +399,12 @@
   .rad-ticker-list li { padding: 3px 0; }
   .rad-ticker-list[aria-hidden] { display: none; }
 }
+
+/* ---------- Als App installiert (Startbildschirm): ohne Menü der Website ---------- */
+@media (display-mode: standalone) {
+  .site-header .topbar,
+  .site-header .divider,
+  .work-kicker,
+  main > .back { display: none; }
+  .site-header { padding-top: max(24px, env(safe-area-inset-top)); }
+}
