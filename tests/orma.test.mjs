@@ -284,6 +284,16 @@ test("Build: eigene Ausgabe, eigener Cache «orma-», Manifest-Kennung und Geltu
   assert.match(data, /Erzeugt von tools\/build-orma\.ts/);
 });
 
+// Der Ton (sanft, neugierig, liebevoll, ermutigend) soll in den Sätzen liegen, nicht als Wort darin stehen
+test("Redaktion: Einstiege und Aufträge benennen ihren Ton nicht («Findet liebevoll …»)", () => {
+  const raw = JSON.parse(readFileSync(new URL("src/orma/redaktion/pilot.json", root), "utf8"));
+  const ton = /\b(liebevoll|behutsam|wertschätzend|sanft|neugierig|ermutigend|wohlwollend|warmherzig|freundlich(e[rsnm]?)?|achtsam|empower\w*)\b/i;
+  const texte = raw.konstellationen.flatMap(k => [k.einstieg, ...Object.values(k.auftraege), ...Object.values(k.auftraege_allein)]);
+  assert.equal(texte.length, raw.konstellationen.length * 7);
+  const treffer = texte.filter(t => ton.test(t));
+  assert.deepEqual(treffer, []);
+});
+
 // Startseite und News verlinken ORMA seit dem 27. September 2026 (REGELN §14) und gehören darum nicht mehr hierher.
 // Eine eigens beauftragte Änderung an ORNA allein ist erlaubt; sie kommt dann als eigener Schritt, nie
 // zusammen mit ORMA-Dateien (seit dem 27. September 2026: Hinweis «Verknüpfung erstellen» in beiden Apps).
