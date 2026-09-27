@@ -545,6 +545,39 @@ await check("Installierte App: startet in alpha/orma/app/, spielbar, vom selben 
   await ctx.close();
 });
 
+await check("Installieren: Knopf überall ausser in der App; iPhone erklärt «Teilen» → «Zum Home-Bildschirm», Chrome ruft das Installationsfenster", async () => {
+  const inst = page => page.getByRole("button", { name: "ORMA als App installieren" });
+  // iPhone (Safari bietet nie selbst an): Knopf da, Tippen zeigt die Schritte
+  const a = await open({ ...devices["iPhone 13"] });
+  await inst(a.page).click();
+  assert.equal(await inst(a.page).getAttribute("aria-expanded"), "true");
+  assert.match(await a.page.locator(".orma-install-help").textContent(), /«Teilen».*«Zum Home-Bildschirm»/);
+  assert.ok(await a.page.locator(".orma-install-help").isVisible());
+  assert.deepEqual(a.errors, []);
+  await a.ctx.close();
+  // Android/Chrome mit Angebot «installierbar»: Tippen öffnet das Installationsfenster, danach ist der Knopf weg
+  const b = await open();
+  await b.page.evaluate(() => {
+    window.__prompted = 0;
+    const e = new Event("beforeinstallprompt", { cancelable: true });
+    e.prompt = () => { window.__prompted += 1; };
+    e.userChoice = Promise.resolve({ outcome: "accepted" });
+    dispatchEvent(e);
+  });
+  await inst(b.page).click();
+  assert.equal(await b.page.evaluate(() => window.__prompted), 1);
+  await inst(b.page).waitFor({ state: "hidden" });
+  await b.ctx.close();
+  // in der installierten App: kein Knopf
+  const ctx = await browser.newContext({ ...devices["iPhone 13"], reducedMotion: "reduce" });
+  await ctx.addInitScript(() => { Object.defineProperty(Navigator.prototype, "standalone", { value: true, configurable: true }); });
+  const page = await ctx.newPage();
+  await page.goto(base);
+  await page.waitForSelector("html[data-ready]");
+  assert.equal(await inst(page).count(), 0);
+  await ctx.close();
+});
+
 await check("Rückfall «Verknüpfung erstellen»: auf Android in der Startansicht, nicht auf dem iPhone, nicht in der App", async () => {
   const a = await open();
   assert.match(await a.page.locator(".orma-install-alt").textContent(), /«Zum Startbildschirm hinzufügen».*«Verknüpfung erstellen»/);
