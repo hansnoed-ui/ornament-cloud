@@ -1,4 +1,4 @@
-# ORMA – Alpha-Fassung (0.4.0)
+# ORMA – Alpha-Fassung (0.5.0)
 
 **ORMA** · *Nebeneinander, Nacheinander* · Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke.
 
@@ -124,7 +124,8 @@ Eine Person spielt beide Rollen, zu verschiedenen Zeiten.
 1. **Erster Durchgang:** Drehen, lesen, Auftrag wählen, antworten. Die Runde endet mit «Die Schleife ist
    offen». Konstellation, Auftrag, Antwort und Zeitpunkt liegen unter `orma:v1:schleifen`.
 2. **Wiederkehr:** Bringt das Rad irgendwann dieselbe Konstellation, beginnt der zweite Durchgang.
-   - Die Ziehung ist dieselbe wie sonst: gleichverteilt über alle 24, nie zweimal hintereinander.
+   - Die Ziehung ist dieselbe wie sonst: gleichverteilt über alle 48, nie zweimal hintereinander. Bis eine
+     bestimmte Konstellation wiederkehrt, dauert es darum im Schnitt etwa 48 Drehungen.
    - Offene Schleifen werden nicht bevorzugt, und es gibt keinen Mindestabstand.
    - Die App zeigt nur das Datum des ersten Durchgangs.
 3. **Zweiter Durchgang:** derselbe Auftrag, die erste Antwort bleibt verborgen. Dann folgt das Aufdecken:
@@ -144,7 +145,7 @@ Eine Person spielt beide Rollen, zu verschiedenen Zeiten.
   «Alle ORMA-Einträge löschen» entfernt auch sie.
 - Sicherung und Import tragen sie mit, ebenfalls ohne Überschreiben.
 
-## Die 24 Pilot-Konstellationen
+## Die 48 Pilot-Konstellationen
 
 Auswahl nach drei Kriterien:
 - konkreter Werkbezug im Originaltext;
@@ -152,11 +153,13 @@ Auswahl nach drei Kriterien:
 - verschiedene gedankliche Zugänge (Zeit, Körper, Erinnerung, Regel, Blick, Raum, Material, Öffentlichkeit).
 
 Zwölf Künstler:innen (sechs Frauen, sechs Männer) und zwölf Theoretiker:innen. Jede Person kommt in genau
-zwei Konstellationen vor, mit zwei verschiedenen Gegenübern. So konzentriert sich die Auswahl nicht auf
+vier Konstellationen vor, mit vier verschiedenen Gegenübern. So konzentriert sich die Auswahl nicht auf
 wenige Personen, und das Rad bleibt bei zwölf Plätzen je Ring. Die Nummern sind die redaktionellen
 Nummern des Bestands (326er-Fassung).
 
-Die ersten zwölf stammen aus der Fassung 0.1.0, die zweiten zwölf sind mit 0.2.0 dazugekommen. Dieselben
+Die ersten zwölf stammen aus der Fassung 0.1.0, die zweiten zwölf sind mit 0.2.0 dazugekommen, die
+letzten 24 mit 0.5.0. Deren Aufträge sind besonders sanft, neugierig und ermutigend formuliert: Sie laden
+ein, statt zu prüfen, und führen zu kleinen, konkreten Handlungen. Dieselben
 Personen sind neu gepaart, gewählt wurden kurze, konkrete Fragen, die sich gut in eine Handlung übersetzen
 lassen.
 
@@ -186,6 +189,30 @@ lassen.
 | 137 | Doris Salcedo × Susan Leigh Star | Welche Infrastruktur braucht Erinnerung? | Erinnerung, Pflege |
 | 214 | Sol LeWitt × Claude Shannon | Wie viel Information braucht ein Werk? | Anweisung, Information |
 | 195 | Donald Judd × Jacques Derrida | Kann ein Zwischenraum bestimmen, was ein Ding ist? | Abstand, Identität |
+| 172 | Eva Hesse × Henri Bergson | Kann ein Material Dauer haben? | Material, Dauer |
+| 244 | Tehching Hsieh × Donna Haraway | Wessen Zeit misst dieselbe Uhr? | Zeit, Körper |
+| 169 | Dan Graham × Elena Esposito | Erzeugt Verzögerung Zukunft? | Verzögerung, Erwartung |
+| 185 | Felix Gonzalez-Torres × Hannah Arendt | Kann ein vergängliches Werk Teil einer gemeinsamen Welt bleiben? | Gemeinsame Welt |
+| 150 | Rebecca Horn × Judith Butler | Welche Körpergrenzen halten wir für selbstverständlich? | Körpergrenzen |
+| 237 | Marina Abramović × Jacques Derrida | Was bleibt von einer einmaligen Gegenwart? | Gegenwart, Spur |
+| 128 | Mona Hatoum × Lucy Suchman | Was entscheidet sich erst beim Durchqueren eines Raums? | Raum, Handeln |
+| 310 | Louise Bourgeois × Claude Shannon | Wie viel Erinnerung lässt sich übertragen? | Erinnerung, Übertragung |
+| 56 | On Kawara × Wendy Hui Kyong Chun | Was wird aus Vergangenheit, wenn Gegenwart nur noch als nächstes Update erscheint? | Datum, Update |
+| 286 | Doris Salcedo × Michel Serres | Wie trägt Material eine Abwesenheit weiter? | Abwesenheit, Material |
+| 317 | Sol LeWitt × Susan Leigh Star | Welche Infrastruktur führt eine Idee aus? | Idee, Infrastruktur |
+| 189 | Donald Judd × George Spencer-Brown | Kann ein Abstand eine Form erzeugen? | Abstand, Form |
+| 254 | Donald Judd × Susan Leigh Star | Was hält einen präzisen Abstand aufrecht? | Präzision, Pflege |
+| 294 | On Kawara × Henri Bergson | Wie viel Dauer passt in ein Datum? | Datum, Dauer |
+| 205 | Tehching Hsieh × Michel Serres | Wann macht eine Störung die Regel sichtbar? | Regel, Störung |
+| 111 | Dan Graham × Lucy Suchman | Was entsteht erst zwischen Plan und Handlung? | Plan, Situation |
+| 149 | Marina Abramović × Hannah Arendt | Was macht Anwesenheit öffentlich? | Anwesenheit |
+| 261 | Mona Hatoum × George Spencer-Brown | Wer steht auf welcher Seite? | Grenze, Standort |
+| 103 | Louise Bourgeois × Donna Haraway | Wie wird eine persönliche Erinnerung für andere lesbar? | Erinnerung, Standpunkt |
+| 161 | Doris Salcedo × Wendy Hui Kyong Chun | Muss Erinnerung aktualisiert werden, um wirksam zu bleiben? | Erinnerung, Update |
+| 228 | Sol LeWitt × Jacques Derrida | Kann eine Regel identisch wiederholt werden? | Regel, Wiederholung |
+| 135 | Rebecca Horn × Elena Esposito | Was weiß eine Maschine über ihren nächsten Moment? | Maschine, Zukunft |
+| 154 | Eva Hesse × Judith Butler | Wie viel Unterschied verträgt eine Serie? | Serie, Unterschied |
+| 292 | Felix Gonzalez-Torres × Claude Shannon | Wie viel Werk lässt sich als Information übertragen? | Werk, Information |
 
 **Wo die Texte liegen**
 - Auswahl und neue Texte: `src/orma/redaktion/pilot.json`. Die Datei verweist nur über die ID auf den
@@ -244,7 +271,7 @@ mit ORNA und ORMA im selben Browser.
 Alle Prüfungen liefen in Chromium (Playwright) am Linux-Rechner, mobil als «Pixel 7» und «iPhone 13»
 nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
 
-- **Unit-Tests `tests/orma.test.mjs`: 22/22 bestanden** (Stand 0.3.1, mit vier Tests für Re-Entry, einer davon prüft die Du-Form der Aufträge).
+- **Unit-Tests `tests/orma.test.mjs`: 23/23 bestanden** (Stand 0.5.0: 48 Konstellationen, jede Person genau viermal, Du-Form der Aufträge, Symbole und Vorschaubild).
   - Ziehung: Rejection Sampling. Gleichverteilung erste Ziehung und nach einer Konstellation
     (je 46 000–48 000 Ziehungen, Toleranz ±15 %). Nie dieselbe unmittelbar wieder, nur freigegebene IDs.
   - Pilotdaten: Texte, Fragen und IDs wörtlich wie im Bestand. Zwölf Personen je Ring, jede genau zweimal, fester Platz je Person.
@@ -258,7 +285,7 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
     unverändert gegenüber `main`.
   - Alpha: `alpha/orma/` entspricht dem aktuellen Build. Keine Seite ausserhalb von `alpha/` verlinkt
     den Bereich; er steht nicht in der Sitemap und ist mit `noindex` gesperrt.
-- **Browser-Tests `tests/orma.e2e.mjs`: 13/13 bestanden, in zwei aufeinanderfolgenden Läufen (Fassung 0.3.1).**
+- **Browser-Tests `tests/orma.e2e.mjs`: 14/14 bestanden, in zwei aufeinanderfolgenden Läufen (Fassung 0.5.0, mit Startbild).**
   - Re-Entry, erster Durchgang: Schleife offen, Antwort gespeichert und in der Liste verborgen, Zähler auf der Startansicht;
   - Re-Entry, zweiter Durchgang: Wiedersehen mit Datum, derselbe Auftrag, erste Antwort bis zum Aufdecken
     nicht im Dokument (auch nach Neuladen mitten im zweiten Durchgang), Aufdecken mit Datum, dritter
@@ -294,7 +321,7 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
 ## Offene Punkte
 
 **Redaktion (brauchen deine Durchsicht)**
-1. Alle 24 Einstiege, 72 Spielaufträge und ihre 72 Du-Fassungen für den Modus allein sind Entwürfe (`"status": "entwurf"`) und warten auf deine
+1. Alle 48 Einstiege, 144 Spielaufträge und ihre 144 Du-Fassungen für den Modus allein sind Entwürfe (`"status": "entwurf"`) und warten auf deine
    Freigabe. Danach `status` auf `"freigegeben"` setzen und `inhaltsversion` hochzählen.
 2. Der Einstieg zu Rebecca Horn × Wendy Hui Kyong Chun endet mit einem eigenen Satz, der deutet
    und nicht mehr nur verdichtet: «Was sonst unbemerkt bleibt, wird hier zur Aufgabe.» Bitte bestätigen

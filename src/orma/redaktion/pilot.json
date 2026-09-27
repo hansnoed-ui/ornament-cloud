@@ -1,6 +1,6 @@
 {
-  "hinweis": "ORMA-Redaktion. Auswahl der 24 Pilot-Konstellationen und neue Spieltexte. Paarung, Originaltext und Originalfrage kommen unverändert aus dem Bestand (src/doppelspalt/src/data/constellations.ts) und werden hier nur über die ID verknüpft. Einstieg und Spielaufträge (für zwei Personen und, als «auftraege_allein», in der Du-Form für den Modus allein) sind eigene redaktionelle Ergänzungen für ORMA: keine Zitate und keine Äusserungen der genannten Personen. Stand: Entwurf, Freigabe offen.",
-  "inhaltsversion": "2026-09-27.3",
+  "hinweis": "ORMA-Redaktion. Auswahl der 48 Pilot-Konstellationen und neue Spieltexte. Paarung, Originaltext und Originalfrage kommen unverändert aus dem Bestand (src/doppelspalt/src/data/constellations.ts) und werden hier nur über die ID verknüpft. Einstieg und Spielaufträge (für zwei Personen und, als «auftraege_allein», in der Du-Form für den Modus allein) sind eigene redaktionelle Ergänzungen für ORMA: keine Zitate und keine Äusserungen der genannten Personen. Stand: Entwurf, Freigabe offen.",
+  "inhaltsversion": "2026-09-27.4",
   "status": "entwurf",
   "konstellationen": [
     {
@@ -337,6 +337,342 @@
         "beispiel": "Nenne zwei gleiche Dinge, die erst durch ihren Abstand unterscheidbar werden: zwei Fenster, zwei Stühle, zwei Buchstaben. Was ändert sich, wenn der Abstand kleiner wird?",
         "einwand": "Ein Ding ist, was es ist, auch ganz allein im leeren Raum. Finde ein Argument dafür, dass Identität nicht vom Abstand zu anderem abhängt.",
         "gestaltung": "Stell drei gleiche Gegenstände in eine Reihe. Verändere nur die Abstände zwischen ihnen, zweimal. Beschreibe jedes Mal in einem Satz, was die Reihe jetzt ist."
+      }
+    },
+    {
+      "id": "eva-hesse__henri-bergson",
+      "einstieg": "Eva Hesses Materialien altern, hängen, verfärben sich und verändern ihre Spannung. Man könnte das als Folge einzelner Zustände festhalten. Henri Bergson warnt davor, Zeit so nebeneinanderzulegen. Dauer heisst: Vergangenes wirkt im Jetzt weiter. Hesses Material macht das fast körperlich sichtbar. Das heutige Latex ersetzt nicht das gestrige, seine Form ist aus seiner ganzen Geschichte hervorgegangen.",
+      "auftraege": {
+        "beispiel": "Schaut euch einen Gegenstand an, der schon lange bei euch lebt: eine Tasche, ein Holzlöffel, ein Buch. Welche Spur seiner Geschichte entdeckt ihr, die ihn gerade schön macht?",
+        "einwand": "Manchmal wünschen wir uns Dinge, die nicht altern. Findet mit Neugier einen Fall, in dem es gut ist, dass etwas unverändert bleibt.",
+        "gestaltung": "Nehmt ein Blatt Papier und faltet es gemeinsam fünfmal, jedes Mal ein wenig anders. Streicht es dann glatt. Erzählt einander, was die Falten jetzt über seine Zeit verraten."
+      },
+      "auftraege_allein": {
+        "beispiel": "Schau dir einen Gegenstand an, der schon lange bei dir lebt: eine Tasche, einen Holzlöffel, ein Buch. Welche Spur seiner Geschichte entdeckst du, die ihn gerade schön macht?",
+        "einwand": "Manchmal wünschen wir uns Dinge, die nicht altern. Finde mit Neugier einen Fall, in dem es gut ist, dass etwas unverändert bleibt.",
+        "gestaltung": "Nimm ein Blatt Papier und falte es fünfmal, jedes Mal ein wenig anders. Streich es dann glatt. Was verraten dir die Falten jetzt über seine Zeit?"
+      }
+    },
+    {
+      "id": "tehching-hsieh__donna-haraway",
+      "einstieg": "Tehching Hsiehs Zeitregeln wirken ganz allgemein: Eine Stunde hat für alle sechzig Minuten. Donna Haraway erinnert daran, dass jede Erfahrung an einen Ort und einen Körper gebunden ist. Für Hsiehs Körper bedeutet dieselbe Stunde je nach Schlaf, Müdigkeit und Wetter etwas anderes. Die Uhr stellt Gleichheit her, der Körper erfährt Unterschied.",
+      "auftraege": {
+        "beispiel": "Erzählt einander von einer Stunde, die für euch ganz anders verging als die Uhr sagte. Was hat eure Zeit so gedehnt oder verdichtet?",
+        "einwand": "Gleiche Zeit für alle kann auch schützen: bei Arbeitszeiten, bei Pausen, bei Fristen. Sucht behutsam ein Argument dafür, dass die Uhr gerecht sein kann.",
+        "gestaltung": "Stellt einen Wecker auf fünf Minuten. Macht in dieser Zeit beide etwas ganz Verschiedenes. Beschreibt danach, wie lang eure fünf Minuten waren."
+      },
+      "auftraege_allein": {
+        "beispiel": "Denk an eine Stunde, die für dich ganz anders verging, als die Uhr sagte. Was hat deine Zeit so gedehnt oder verdichtet?",
+        "einwand": "Gleiche Zeit für alle kann auch schützen: bei Arbeitszeiten, bei Pausen, bei Fristen. Such behutsam ein Argument dafür, dass die Uhr gerecht sein kann.",
+        "gestaltung": "Stell einen Wecker auf fünf Minuten und tu in dieser Zeit etwas, das dir guttut. Beschreibe danach, wie lang sich deine fünf Minuten angefühlt haben."
+      }
+    },
+    {
+      "id": "dan-graham__elena-esposito",
+      "einstieg": "Dan Grahams zeitverzögertes Video zeigt die Gegenwart erst, wenn sie schon vergangen ist. Was auf dem Monitor erscheint, hat man gerade eben getan. Und während dieses Bild erscheint, wartet man schon auf das nächste. Elena Esposito untersucht, wie Zukunft in der Gegenwart wirkt, obwohl sie noch nicht da ist. Bei Graham entsteht Zukunft gerade durch die Verzögerung.",
+      "auftraege": {
+        "beispiel": "Wann habt ihr zuletzt auf etwas gewartet, das schon unterwegs war: eine Antwort, ein Paket, einen Menschen? Wie hat das Warten euren Moment verändert?",
+        "einwand": "Vielleicht nimmt uns Verzögerung auch etwas: Spontaneität, Nähe, das Jetzt. Findet liebevoll einen Fall, in dem Unmittelbarkeit kostbarer ist als Erwartung.",
+        "gestaltung": "Eine Person macht langsam eine Geste, die andere wiederholt sie drei Sekunden später. Tauscht die Rollen. Erzählt einander, wie es sich anfühlt, dem eigenen Tun hinterherzusehen."
+      },
+      "auftraege_allein": {
+        "beispiel": "Wann hast du zuletzt auf etwas gewartet, das schon unterwegs war: eine Antwort, ein Paket, einen Menschen? Wie hat das Warten deinen Moment verändert?",
+        "einwand": "Vielleicht nimmt uns Verzögerung auch etwas: Spontaneität, Nähe, das Jetzt. Finde liebevoll einen Fall, in dem Unmittelbarkeit kostbarer ist als Erwartung.",
+        "gestaltung": "Filme dich zehn Sekunden lang bei einer ruhigen Bewegung und schau die Aufnahme gleich danach an. Was bemerkst du, wenn du deinem eigenen Tun hinterhersiehst?"
+      }
+    },
+    {
+      "id": "felix-gonzalez-torres__hannah-arendt",
+      "einstieg": "Hannah Arendt verbindet die gemeinsame Welt mit Dingen, die zwischen Menschen Bestand haben. Felix Gonzalez-Torres schafft Werke, deren Teile gerade nicht dauerhaft sein müssen. Bonbons werden gegessen, Blätter mitgenommen und später ersetzt. Trotzdem bleibt ein Werk, auf das sich verschiedene Menschen zu verschiedenen Zeiten beziehen können. Die Dauer liegt nicht im einzelnen Ding, sondern in einer gemeinsam erhaltenen Form.",
+      "auftraege": {
+        "beispiel": "Nennt etwas, das nur besteht, weil viele es immer wieder erneuern: ein Fest, ein Garten, ein Lied. Welchen Beitrag habt ihr selbst schon dazu geleistet?",
+        "einwand": "Manches Gemeinsame braucht gerade ein festes, bleibendes Ding: ein Haus, ein Denkmal, ein Buch. Findet neugierig ein Argument für die Kraft des Dauerhaften.",
+        "gestaltung": "Legt gemeinsam etwas Kleines bereit, das andere mitnehmen dürfen: einen Zettel mit einem guten Satz, eine Blume, eine Nuss. Wie fühlt es sich an, dass es weiterwandert?"
+      },
+      "auftraege_allein": {
+        "beispiel": "Nenne etwas, das nur besteht, weil viele es immer wieder erneuern: ein Fest, einen Garten, ein Lied. Welchen Beitrag hast du selbst schon dazu geleistet?",
+        "einwand": "Manches Gemeinsame braucht gerade ein festes, bleibendes Ding: ein Haus, ein Denkmal, ein Buch. Finde neugierig ein Argument für die Kraft des Dauerhaften.",
+        "gestaltung": "Leg etwas Kleines bereit, das andere mitnehmen dürfen: einen Zettel mit einem guten Satz, eine Blume, eine Nuss. Wie fühlt es sich an, dass es weiterwandert?"
+      }
+    },
+    {
+      "id": "rebecca-horn__judith-butler",
+      "einstieg": "Rebecca Horn verändert Körper durch Verlängerungen, Masken und mechanische Zusätze. Judith Butler fragt, wie gesellschaftliche Normen bestimmen, welche Körper als selbstverständlich gelten und gelesen werden. Horns Apparate stören diese Selbstverständlichkeit. Sie zeigen einen Körper, dessen Grenzen und Möglichkeiten nicht feststehen, ohne dass er dabei beliebig würde.",
+      "auftraege": {
+        "beispiel": "Wo hört euer Körper für euch auf: an der Haut, an der Kleidung, am Rand eures Schattens? Erzählt einander von einem Moment, in dem sich diese Grenze verschoben hat.",
+        "einwand": "Klare Körpergrenzen können auch Halt geben und schützen. Sucht behutsam ein Beispiel, in dem eine feste Grenze gut und wichtig ist.",
+        "gestaltung": "Bastelt aus Papier, Schnur oder Karton eine kleine Verlängerung für eine Hand. Probiert damit gemeinsam, etwas zu berühren oder zu reichen. Was kann euer Körper plötzlich mehr?"
+      },
+      "auftraege_allein": {
+        "beispiel": "Wo hört dein Körper für dich auf: an der Haut, an der Kleidung, am Rand deines Schattens? Erinnere dich an einen Moment, in dem sich diese Grenze verschoben hat.",
+        "einwand": "Klare Körpergrenzen können auch Halt geben und schützen. Such behutsam ein Beispiel, in dem eine feste Grenze gut und wichtig ist.",
+        "gestaltung": "Bastle aus Papier, Schnur oder Karton eine kleine Verlängerung für deine Hand. Berühre damit etwas oder reiche etwas weiter. Was kann dein Körper plötzlich mehr?"
+      }
+    },
+    {
+      "id": "marina-abramovic__jacques-derrida",
+      "einstieg": "Marina Abramović bindet Performance an die Anwesenheit eines Körpers in einer Gegenwart, die sich nicht wiederholen lässt. Jacques Derrida zeigt, dass ein Ereignis nur weitergegeben werden kann, wenn Spuren von ihm wiederholbar werden. Fotos, Beschreibungen und Videos retten die ursprüngliche Anwesenheit nicht. Sie schaffen neue Situationen, in denen das Vergangene anders wiederkehrt.",
+      "auftraege": {
+        "beispiel": "Erzählt einander von einem Moment, den ihr gern festgehalten hättet, und wie ihr ihn heute trotzdem in euch tragt. Was davon lässt sich weitergeben?",
+        "einwand": "Vielleicht bewahrt ein Foto doch mehr, als wir denken. Findet mit Wärme ein Beispiel, in dem eine Aufnahme etwas Wesentliches gerettet hat.",
+        "gestaltung": "Schenkt euch gegenseitig eine Minute ungeteilte Aufmerksamkeit, ohne Telefon, ohne Worte. Beschreibt danach in einem Satz, was davon bleiben soll."
+      },
+      "auftraege_allein": {
+        "beispiel": "Denk an einen Moment, den du gern festgehalten hättest, und wie du ihn heute trotzdem in dir trägst. Was davon liesse sich weitergeben?",
+        "einwand": "Vielleicht bewahrt ein Foto doch mehr, als wir denken. Finde mit Wärme ein Beispiel, in dem eine Aufnahme etwas Wesentliches gerettet hat.",
+        "gestaltung": "Schenk dem Raum, in dem du bist, eine Minute ungeteilte Aufmerksamkeit, ohne Telefon. Beschreibe danach in einem Satz, was davon bleiben soll."
+      }
+    },
+    {
+      "id": "mona-hatoum__lucy-suchman",
+      "einstieg": "Mona Hatoums Räume wirken oft vertraut, bis eine kleine Verschiebung die Bewegung darin verändert. Lucy Suchman zeigt, dass Handeln nicht einfach einem Plan folgt, sondern sich in der Situation bildet. Ein Grundriss kann festlegen, wo Dinge stehen. Wie sich ein Körper darin orientiert, zögert oder ausweicht, entscheidet sich erst vor Ort.",
+      "auftraege": {
+        "beispiel": "Denkt an einen Raum, durch den ihr oft geht. Wo werdet ihr langsamer, wo weicht ihr aus, wo bleibt ihr gern stehen? Was hat euch dort geleitet?",
+        "einwand": "Gute Pläne machen Räume für viele Menschen leichter begehbar. Sucht wohlwollend ein Argument dafür, dass ein Raum sich vorausdenken lässt.",
+        "gestaltung": "Verschiebt gemeinsam einen Stuhl oder eine Tasche um eine Armlänge. Geht danach beide durch den Raum und beobachtet, was eure Wege daraus machen."
+      },
+      "auftraege_allein": {
+        "beispiel": "Denk an einen Raum, durch den du oft gehst. Wo wirst du langsamer, wo weichst du aus, wo bleibst du gern stehen? Was hat dich dort geleitet?",
+        "einwand": "Gute Pläne machen Räume für viele Menschen leichter begehbar. Such wohlwollend ein Argument dafür, dass ein Raum sich vorausdenken lässt.",
+        "gestaltung": "Verschieb einen Stuhl oder eine Tasche um eine Armlänge. Geh danach durch den Raum und beobachte, was dein Weg daraus macht."
+      }
+    },
+    {
+      "id": "louise-bourgeois__claude-shannon",
+      "einstieg": "Louise Bourgeois übersetzt biografische Erfahrungen immer wieder in Räume, Körper und wiederkehrende Motive. Claude Shannon kann beschreiben, wie Zeichen zuverlässig übertragen werden, nicht aber, welche persönliche Bedeutung sie tragen. Bei Bourgeois wird diese Grenze fruchtbar. Eine Spinne, ein Haus oder ein Körperteil lässt sich weitergeben, ohne dass die Erinnerung mitgeht, aus der die Form entstand.",
+      "auftraege": {
+        "beispiel": "Zeigt einander einen Gegenstand, an dem eine Erinnerung hängt. Was sieht die andere Person, und was bleibt allein bei euch?",
+        "einwand": "Manchmal kommt eine Erinnerung doch an: in einem Brief, einem Rezept, einem Lied. Findet neugierig ein Beispiel, in dem Übertragung überraschend gelungen ist.",
+        "gestaltung": "Zeichnet beide eine einfache Form, die für euch eine Erinnerung trägt. Tauscht die Zeichnungen und erzählt, was ihr in der Form der anderen Person seht."
+      },
+      "auftraege_allein": {
+        "beispiel": "Nimm einen Gegenstand in die Hand, an dem eine Erinnerung hängt. Was würde ein fremder Mensch darin sehen, und was bleibt allein bei dir?",
+        "einwand": "Manchmal kommt eine Erinnerung doch an: in einem Brief, einem Rezept, einem Lied. Finde neugierig ein Beispiel, in dem Übertragung überraschend gelungen ist.",
+        "gestaltung": "Zeichne eine einfache Form, die für dich eine Erinnerung trägt. Schreib darunter, was ein anderer Mensch darin sehen könnte, und was nur du darin siehst."
+      }
+    },
+    {
+      "id": "on-kawara__wendy-hui-kyong-chun",
+      "einstieg": "On Kawara bindet jedes Datumsbild an einen einzigen Tag und eine strenge Regel. Wendy Hui Kyong Chun untersucht digitale Medien, die durch ständiges Aktualisieren den Eindruck fortgesetzter Gegenwart erzeugen. Bei Kawara wird jeder Tag abgeschlossen und unwiederbringlich Vergangenheit. Im digitalen Update wird das Vergangene laufend überschrieben, damit etwas gegenwärtig erscheinen kann.",
+      "auftraege": {
+        "beispiel": "Scrollt zusammen in Gedanken zurück: Welche Nachricht, welches Bild der letzten Woche habt ihr schon fast vergessen? Was würdet ihr gern aufbewahren?",
+        "einwand": "Updates halten vieles am Leben: Karten, Fahrpläne, Nachrichten. Findet wohlwollend ein Argument dafür, dass Überschreiben auch pflegen kann.",
+        "gestaltung": "Schreibt beide auf ein Blatt, was heute für euch wichtig war, und datiert es. Legt es an einen Ort, wo es niemand überschreibt."
+      },
+      "auftraege_allein": {
+        "beispiel": "Scroll in Gedanken zurück: Welche Nachricht, welches Bild der letzten Woche hast du schon fast vergessen? Was würdest du gern aufbewahren?",
+        "einwand": "Updates halten vieles am Leben: Karten, Fahrpläne, Nachrichten. Finde wohlwollend ein Argument dafür, dass Überschreiben auch pflegen kann.",
+        "gestaltung": "Schreib auf ein Blatt, was heute für dich wichtig war, und datiere es. Leg es an einen Ort, wo es niemand überschreibt."
+      }
+    },
+    {
+      "id": "doris-salcedo__michel-serres",
+      "einstieg": "Doris Salcedo lässt abwesende Menschen durch Möbel, Stoffe, Risse und andere materielle Spuren gegenwärtig werden, ohne sie zu ersetzen. Michel Serres interessiert sich für Vermittler und Übergänge, die das Übertragene verändern. Salcedos Material ist in diesem Sinn kein neutraler Bote. Es trägt den Verlust weiter, indem es ihm eine neue Form, ein anderes Gewicht und einen neuen Ort gibt.",
+      "auftraege": {
+        "beispiel": "Gibt es bei euch einen Gegenstand, der an einen Menschen erinnert, der nicht mehr da ist oder weit weg lebt? Erzählt einander sanft, wie er dieses Fehlen trägt.",
+        "einwand": "Vielleicht braucht Erinnerung gar kein Material, nur ein Gespräch. Findet behutsam ein Beispiel, in dem Worte genug sind.",
+        "gestaltung": "Wählt gemeinsam einen kleinen Gegenstand und gebt ihm für diesen Abend eine Aufgabe: an jemanden zu erinnern. Wo stellt ihr ihn hin?"
+      },
+      "auftraege_allein": {
+        "beispiel": "Gibt es bei dir einen Gegenstand, der an einen Menschen erinnert, der nicht mehr da ist oder weit weg lebt? Spür nach, wie er dieses Fehlen trägt.",
+        "einwand": "Vielleicht braucht Erinnerung gar kein Material, nur ein Gespräch. Finde behutsam ein Beispiel, in dem Worte genug sind.",
+        "gestaltung": "Wähl einen kleinen Gegenstand und gib ihm für diesen Abend eine Aufgabe: an jemanden zu erinnern. Wo stellst du ihn hin?"
+      }
+    },
+    {
+      "id": "sol-lewitt__susan-leigh-star",
+      "einstieg": "Sol LeWitts Instruktionen lassen ein Werk an verschiedenen Orten ausführen, ohne seine eigene Hand. Susan Leigh Star lenkt den Blick auf die Infrastrukturen, die so etwas selbstverständlich wirken lassen. Ausführende Menschen, vorbereitete Wände, Dokumentation, Material und Wissen bilden ein Netz, ohne das die Regel nicht zum Werk wird. Die Idee wirkt frei, weil ihre Infrastruktur zuverlässig arbeitet.",
+      "auftraege": {
+        "beispiel": "Denkt an eine eigene Idee, die Wirklichkeit geworden ist. Wer oder was hat im Hintergrund mitgeholfen, ohne dass es jemand bemerkt hat? Dankt diesen Helfern in Gedanken.",
+        "einwand": "Manchmal braucht eine Idee nur einen Menschen und ein Blatt Papier. Findet ermutigend ein Beispiel für eine Idee, die fast ohne Infrastruktur auskam.",
+        "gestaltung": "Schreibt eine kleine Idee auf, die ihr diese Woche umsetzen möchtet. Notiert daneben drei Dinge, die sie tragen werden. Was davon habt ihr schon?"
+      },
+      "auftraege_allein": {
+        "beispiel": "Denk an eine eigene Idee, die Wirklichkeit geworden ist. Wer oder was hat im Hintergrund mitgeholfen, ohne dass es jemand bemerkt hat? Dank diesen Helfern in Gedanken.",
+        "einwand": "Manchmal braucht eine Idee nur einen Menschen und ein Blatt Papier. Finde ermutigend ein Beispiel für eine Idee, die fast ohne Infrastruktur auskam.",
+        "gestaltung": "Schreib eine kleine Idee auf, die du diese Woche umsetzen möchtest. Notiere daneben drei Dinge, die sie tragen werden. Was davon hast du schon?"
+      }
+    },
+    {
+      "id": "donald-judd__george-spencer-brown",
+      "einstieg": "George Spencer-Brown beginnt mit einer Unterscheidung, die zwei Seiten voneinander trennt. Donald Judds Arbeiten zeigen, dass auch der Abstand zwischen Dingen eine solche Trennung leisten kann. Der Zwischenraum ist nicht einfach leer. Er hält Körper auseinander, bestimmt ihre Beziehung und lässt eine Folge einzelner Formen entstehen. Ohne Abstand würden die Elemente zu einer anderen Form zusammenfallen.",
+      "auftraege": {
+        "beispiel": "Wo schafft ein Abstand bei euch etwas Gutes: zwischen Tassen im Regal, zwischen Worten, zwischen zwei Menschen? Erzählt einander ein liebstes Beispiel.",
+        "einwand": "Manches wird erst schön, wenn es sich berührt: Hände, Farben, Stimmen. Findet neugierig ein Argument für das Zusammenrücken.",
+        "gestaltung": "Legt fünf kleine Dinge in eine Reihe, erst dicht, dann mit weiten Lücken. Sucht gemeinsam den Abstand, bei dem die Reihe euch am lebendigsten erscheint."
+      },
+      "auftraege_allein": {
+        "beispiel": "Wo schafft ein Abstand bei dir etwas Gutes: zwischen Tassen im Regal, zwischen Worten, zwischen zwei Menschen? Nenne dein liebstes Beispiel.",
+        "einwand": "Manches wird erst schön, wenn es sich berührt: Hände, Farben, Stimmen. Finde neugierig ein Argument für das Zusammenrücken.",
+        "gestaltung": "Leg fünf kleine Dinge in eine Reihe, erst dicht, dann mit weiten Lücken. Such den Abstand, bei dem dir die Reihe am lebendigsten erscheint."
+      }
+    },
+    {
+      "id": "donald-judd__susan-leigh-star",
+      "einstieg": "Donald Judds Arbeiten wirken oft wie eigenständige, präzise gesetzte Körper. Susan Leigh Star richtet den Blick auf Infrastrukturen, die im Hintergrund Stabilität ermöglichen. Auch Judds Präzision hängt an weniger sichtbaren Bedingungen: Fertigung, Masse, Wand, Boden, Befestigung. Der Abstand zwischen zwei Elementen ist darum kein leerer Raum. Er muss bei jeder Präsentation neu hergestellt werden.",
+      "auftraege": {
+        "beispiel": "Was hält bei euch zuhause etwas genau an seinem Platz: ein Nagel, eine Gewohnheit, eine liebevolle Hand? Erzählt einander, wer dafür sorgt.",
+        "einwand": "Vielleicht ist Präzision manchmal gar nicht nötig, und ungefähr reicht völlig. Findet ein freundliches Beispiel, in dem Ungenauigkeit guttut.",
+        "gestaltung": "Stellt zwei Tassen genau eine Handbreite voneinander entfernt. Schaut in einer Stunde nach, ob der Abstand noch stimmt, und erzählt, was ihn gehalten oder verändert hat."
+      },
+      "auftraege_allein": {
+        "beispiel": "Was hält bei dir zuhause etwas genau an seinem Platz: ein Nagel, eine Gewohnheit, eine liebevolle Hand? Wer sorgt dafür?",
+        "einwand": "Vielleicht ist Präzision manchmal gar nicht nötig, und ungefähr reicht völlig. Finde ein freundliches Beispiel, in dem Ungenauigkeit guttut.",
+        "gestaltung": "Stell zwei Tassen genau eine Handbreite voneinander entfernt. Schau in einer Stunde nach, ob der Abstand noch stimmt, und notiere, was ihn gehalten oder verändert hat."
+      }
+    },
+    {
+      "id": "on-kawara__henri-bergson",
+      "einstieg": "On Kawaras Datumsbilder geben einem Tag eine eindeutige Stelle im Kalender. Henri Bergson unterscheidet solche messbare Zeit von der gelebten Dauer, die nicht aus gleichen Einheiten besteht. Kawaras Regel bringt beides in ein einziges Bild. Der Tag ist genau bezeichnet und abgeschlossen, während die Arbeit an ihm als Müdigkeit, Rhythmus und Aufmerksamkeit erlebt wird.",
+      "auftraege": {
+        "beispiel": "Nennt ein Datum, das für euch voller Dauer steckt: ein Geburtstag, ein Umzug, ein erster Schultag. Was passt alles in diesen einen Tag?",
+        "einwand": "Kalender helfen, sich zu verabreden und einander zu finden. Findet mit Wohlwollen ein Argument für die Kraft der klaren Zahl.",
+        "gestaltung": "Schreibt das heutige Datum langsam und schön auf, jede Ziffer mit Sorgfalt. Erzählt einander, was euch während des Schreibens durch den Kopf ging."
+      },
+      "auftraege_allein": {
+        "beispiel": "Nenne ein Datum, das für dich voller Dauer steckt: einen Geburtstag, einen Umzug, einen ersten Schultag. Was passt alles in diesen einen Tag?",
+        "einwand": "Kalender helfen Menschen, sich zu verabreden und sich wiederzufinden. Finde mit Wohlwollen ein Argument für die Kraft der klaren Zahl.",
+        "gestaltung": "Schreib das heutige Datum langsam und schön auf, jede Ziffer mit Sorgfalt. Notiere dann, was dir während des Schreibens durch den Kopf ging."
+      }
+    },
+    {
+      "id": "tehching-hsieh__michel-serres",
+      "einstieg": "Tehching Hsieh entwirft Regeln, die möglichst ohne Ausnahme über lange Zeit gelten sollen. Michel Serres interessiert sich für Störung und dafür, dass ein Kanal oft gerade durch seine Unterbrechungen sichtbar wird. Bei Hsieh bedrohen Schlaf, Müdigkeit, Krankheit und Alltag ständig das reine Weitermachen. Die mögliche Störung gehört darum zur Performance, auch wenn sie vermieden werden soll.",
+      "auftraege": {
+        "beispiel": "Erinnert euch an eine Gewohnheit, die erst auffiel, als sie einmal ausfiel. Was habt ihr in diesem Moment über euch entdeckt?",
+        "einwand": "Manche Regeln funktionieren am besten, wenn niemand sie bemerkt. Findet neugierig ein Beispiel, in dem eine unsichtbare Regel euch trägt.",
+        "gestaltung": "Unterbrecht für drei Minuten eine kleine Routine: anders sitzen, die Tasse in die andere Hand nehmen. Erzählt einander, was die Störung sichtbar gemacht hat."
+      },
+      "auftraege_allein": {
+        "beispiel": "Erinnere dich an eine Gewohnheit, die dir erst auffiel, als sie einmal ausfiel. Was hast du in diesem Moment über dich entdeckt?",
+        "einwand": "Manche Regeln funktionieren am besten, wenn niemand sie bemerkt. Finde neugierig ein Beispiel, in dem eine unsichtbare Regel dich trägt.",
+        "gestaltung": "Unterbrich für drei Minuten eine kleine Routine: anders sitzen, die Tasse in die andere Hand nehmen. Was hat die Störung dir sichtbar gemacht?"
+      }
+    },
+    {
+      "id": "dan-graham__lucy-suchman",
+      "einstieg": "Dan Graham plant Spiegelungen, Glasflächen und Videoverzögerungen sehr genau. Lucy Suchman zeigt jedoch, dass eine Anordnung nicht festlegt, wie Menschen sich darin tatsächlich verhalten. Bei Graham entsteht das Werk darum auch aus Reaktionen, Blicken und Bewegungen, die vorher in keinem Plan stehen. Die Konstruktion ist präzise, die Situation bleibt offen.",
+      "auftraege": {
+        "beispiel": "Erzählt einander von einem Plan, aus dem etwas Schöneres wurde als geplant. Was ist dazwischen geschehen?",
+        "einwand": "Ein guter Plan kann Sicherheit schenken und Freiheit erst möglich machen. Findet behutsam ein Beispiel, in dem der Plan das Wichtigste war.",
+        "gestaltung": "Plant gemeinsam einen Spaziergang von zwei Minuten durch den Raum, Schritt für Schritt. Geht ihn dann und achtet darauf, was unterwegs anders kam."
+      },
+      "auftraege_allein": {
+        "beispiel": "Denk an einen Plan, aus dem etwas Schöneres wurde als geplant. Was ist dazwischen geschehen?",
+        "einwand": "Ein guter Plan kann Sicherheit schenken und Freiheit erst möglich machen. Finde behutsam ein Beispiel, in dem der Plan das Wichtigste war.",
+        "gestaltung": "Plane einen Spaziergang von zwei Minuten durch den Raum, Schritt für Schritt. Geh ihn dann und achte darauf, was unterwegs anders kam."
+      }
+    },
+    {
+      "id": "marina-abramovic__hannah-arendt",
+      "einstieg": "Marina Abramović macht Anwesenheit vor anderen zum Teil ihrer Performances. Hannah Arendt beschreibt einen Raum des Erscheinens, der dort entsteht, wo Menschen voreinander sichtbar und handelnd werden. Bei Abramović ist Öffentlichkeit darum nicht nur Publikum im Hintergrund. Die Anwesenheit der anderen verändert die Situation, in der ein Körper erscheint.",
+      "auftraege": {
+        "beispiel": "Wann habt ihr zuletzt gespürt, dass euer Dasein allein schon etwas bewirkt hat, ohne ein Wort? Erzählt einander davon.",
+        "einwand": "Manchmal braucht es gerade das Unbeobachtete, um frei zu sein. Findet liebevoll ein Beispiel, in dem Alleinsein wertvoller ist als Öffentlichkeit.",
+        "gestaltung": "Setzt euch eine Minute lang ruhig gegenüber und seid einfach da. Beschreibt danach, was diese Anwesenheit mit euch gemacht hat."
+      },
+      "auftraege_allein": {
+        "beispiel": "Wann hast du zuletzt gespürt, dass dein Dasein allein schon etwas bewirkt hat, ohne ein Wort? Erinnere dich daran.",
+        "einwand": "Manchmal braucht es gerade das Unbeobachtete, um frei zu sein. Finde liebevoll ein Beispiel, in dem Alleinsein wertvoller ist als Öffentlichkeit.",
+        "gestaltung": "Setz dich eine Minute lang an ein Fenster oder unter Menschen und sei einfach da. Beschreibe danach, was diese Anwesenheit mit dir gemacht hat."
+      }
+    },
+    {
+      "id": "mona-hatoum__george-spencer-brown",
+      "einstieg": "George Spencer-Brown beginnt mit dem Ziehen einer Grenze, durch die zwei Seiten entstehen. Mona Hatoum macht solche Trennungen körperlich unsicher. Ein Gitter kann Schutz oder Gefangenschaft bedeuten, eine Schwelle Zugang oder Ausschluss. Welche Seite innen oder aussen ist, hängt nicht nur von der Linie ab, sondern auch davon, wo der Körper steht. Die Grenze bleibt einfach, ihre Bedeutung nicht.",
+      "auftraege": {
+        "beispiel": "Denkt an eine Tür, einen Zaun oder eine Schwelle in eurem Leben. Wann war sie Schutz, wann Hindernis? Erzählt einander, was sich verändert hat.",
+        "einwand": "Manche Grenzen schenken Geborgenheit und Ruhe. Sucht wohlwollend ein Beispiel, in dem eine klare Seite gut für alle ist.",
+        "gestaltung": "Legt eine Schnur als Linie auf den Boden. Stellt euch auf verschiedene Seiten und beschreibt, was ihr von dort aus seht. Tauscht dann die Plätze."
+      },
+      "auftraege_allein": {
+        "beispiel": "Denk an eine Tür, einen Zaun oder eine Schwelle in deinem Leben. Wann war sie Schutz, wann Hindernis? Was hat sich verändert?",
+        "einwand": "Manche Grenzen schenken Geborgenheit und Ruhe. Such wohlwollend ein Beispiel, in dem eine klare Seite gut für alle ist.",
+        "gestaltung": "Leg eine Schnur als Linie auf den Boden. Stell dich auf die eine Seite, dann auf die andere, und beschreibe, was du jeweils siehst."
+      }
+    },
+    {
+      "id": "louise-bourgeois__donna-haraway",
+      "einstieg": "Louise Bourgeois macht Erinnerung räumlich, ohne sie zu einer allgemeinen Geschichte zu glätten. Donna Haraway wünscht sich ein Wissen, das seinen eigenen Standpunkt kennt. In Bourgeois' Cells erscheinen Dinge darum nicht als neutrale Belege einer Vergangenheit. Sie sind an Körper, Biografie, Ort und Blickrichtung gebunden und bleiben trotzdem für andere zugänglich.",
+      "auftraege": {
+        "beispiel": "Erzählt einander eine kleine Erinnerung aus eurer Kindheit, mit einem Detail, das nur ihr kennt: ein Geruch, eine Farbe, ein Geräusch. Was davon kann die andere Person mitfühlen?",
+        "einwand": "Manche Erinnerungen dürfen ganz privat bleiben, und das ist gut so. Findet behutsam ein Argument dafür, nicht alles lesbar zu machen.",
+        "gestaltung": "Wählt je einen Gegenstand, der eine Erinnerung trägt, und stellt ihn so hin, dass er aus eurer Blickrichtung erzählt. Erklärt einander, warum gerade so."
+      },
+      "auftraege_allein": {
+        "beispiel": "Denk an eine kleine Erinnerung aus deiner Kindheit, mit einem Detail, das nur du kennst: einen Geruch, eine Farbe, ein Geräusch. Wie könnte ein anderer Mensch es mitfühlen?",
+        "einwand": "Manche Erinnerungen dürfen ganz privat bleiben, und das ist gut so. Finde behutsam ein Argument dafür, nicht alles lesbar zu machen.",
+        "gestaltung": "Wähl einen Gegenstand, der eine Erinnerung trägt, und stell ihn so hin, dass er aus deiner Blickrichtung erzählt. Beschreibe, warum gerade so."
+      }
+    },
+    {
+      "id": "doris-salcedo__wendy-hui-kyong-chun",
+      "einstieg": "Doris Salcedo schafft materielle Spuren, die nicht durch ständiges Aktualisieren neu erscheinen müssen. Wendy Hui Kyong Chun beschreibt digitale Gegenwart dagegen als etwas, das durch Wiederholung und Update fortbesteht. Salcedos Arbeiten setzen dem eine langsamere Form der Dauer entgegen. Ihre Materialien bleiben und verändern sich, ohne sich als neu auszugeben.",
+      "auftraege": {
+        "beispiel": "Welche Erinnerung pflegt ihr immer wieder neu, und welche ruht einfach still bei euch? Erzählt einander von beiden.",
+        "einwand": "Vielleicht bleibt Erinnerung gerade durch Erneuerung lebendig: im Erzählen, im Feiern, im Teilen. Findet warmherzig ein Beispiel dafür.",
+        "gestaltung": "Sucht beide einen Gegenstand, der alt werden durfte, ohne erneuert zu werden. Legt ihn zwischen euch und beschreibt, was er über das Bleiben weiss."
+      },
+      "auftraege_allein": {
+        "beispiel": "Welche Erinnerung pflegst du immer wieder neu, und welche ruht einfach still bei dir? Denk an beide.",
+        "einwand": "Vielleicht bleibt Erinnerung gerade durch Erneuerung lebendig: im Erzählen, im Feiern, im Teilen. Finde warmherzig ein Beispiel dafür.",
+        "gestaltung": "Such einen Gegenstand, der alt werden durfte, ohne erneuert zu werden. Leg ihn vor dich und beschreibe, was er über das Bleiben weiss."
+      }
+    },
+    {
+      "id": "sol-lewitt__jacques-derrida",
+      "einstieg": "Sol LeWitts Instruktionen können an verschiedenen Orten und zu verschiedenen Zeiten erneut ausgeführt werden. Jacques Derrida nennt diese Wiederholbarkeit Iterierbarkeit. Ein Zeichen muss sich aus seinem Zusammenhang lösen lassen, um wiederholbar zu sein, und genau dadurch ändert sich sein Kontext. LeWitts Regel bleibt erkennbar, und jede Wiederholung setzt sie anderen räumlichen und materiellen Bedingungen aus.",
+      "auftraege": {
+        "beispiel": "Habt ihr ein Lieblingsrezept oder ein Ritual, das ihr immer gleich macht und das doch jedes Mal ein wenig anders wird? Erzählt einander, was sich verändert.",
+        "einwand": "Manchmal gelingt Wiederholung erstaunlich genau: im Druck, in der Musik, im Handwerk. Findet neugierig ein Argument für die identische Kopie.",
+        "gestaltung": "Schreibt beide denselben kurzen Satz dreimal von Hand. Legt die sechs Zeilen nebeneinander und entdeckt gemeinsam, wo jede Wiederholung eigen wurde."
+      },
+      "auftraege_allein": {
+        "beispiel": "Hast du ein Lieblingsrezept oder ein Ritual, das du immer gleich machst und das doch jedes Mal ein wenig anders wird? Was verändert sich?",
+        "einwand": "Manchmal gelingt Wiederholung erstaunlich genau: im Druck, in der Musik, im Handwerk. Finde neugierig ein Argument für die identische Kopie.",
+        "gestaltung": "Schreib denselben kurzen Satz dreimal von Hand. Leg die Zeilen nebeneinander und entdecke, wo jede Wiederholung eigen wurde."
+      }
+    },
+    {
+      "id": "rebecca-horn__elena-esposito",
+      "einstieg": "Elena Esposito betont, dass Prognosen die Zukunft nicht kennen, sondern in der Gegenwart Erwartungen erzeugen. Rebecca Horns Maschinen scheinen einen Ablauf schon festzulegen. Doch sobald Mechanik auf Körper, Reibung und Raum trifft, wird aus dem vorgesehenen Ablauf ein tatsächliches Ereignis. Die Maschine macht Zukunft berechenbarer, ohne sie schon in Gegenwart zu verwandeln.",
+      "auftraege": {
+        "beispiel": "Denkt an ein Gerät, dem ihr vertraut, dass es morgen wieder funktioniert. Woher kommt dieses Vertrauen, und hat es euch schon einmal überrascht?",
+        "einwand": "Berechenbarkeit kann entlasten und Raum für Unerwartetes schaffen. Findet mit Zuversicht ein Beispiel, in dem eine gute Vorhersage Freiheit schenkt.",
+        "gestaltung": "Lasst einen Gegenstand dreimal über den Tisch rollen und sagt vorher beide voraus, wo er liegen bleibt. Freut euch über jede Abweichung."
+      },
+      "auftraege_allein": {
+        "beispiel": "Denk an ein Gerät, dem du vertraust, dass es morgen wieder funktioniert. Woher kommt dieses Vertrauen, und hat es dich schon einmal überrascht?",
+        "einwand": "Berechenbarkeit kann entlasten und Raum für Unerwartetes schaffen. Finde mit Zuversicht ein Beispiel, in dem eine gute Vorhersage Freiheit schenkt.",
+        "gestaltung": "Lass einen Gegenstand dreimal über den Tisch rollen und sag vorher voraus, wo er liegen bleibt. Freu dich über jede Abweichung."
+      }
+    },
+    {
+      "id": "eva-hesse__judith-butler",
+      "einstieg": "Eva Hesse wiederholt Formen, ohne identische Körper hervorzubringen. Judith Butler versteht Wiederholung als einen Vollzug, durch den eine Ordnung fortbesteht und sich zugleich verändern kann. Bei Hesse wird diese Veränderung im Material sichtbar. Jede Ausführung gehört zur Serie und bleibt trotzdem ein eigener Körper. Gleichheit und Eigenheit schliessen sich hier nicht aus.",
+      "auftraege": {
+        "beispiel": "Denkt an eine Reihe von Dingen, die zusammengehören und doch alle verschieden sind: Tassen, Geschwister, Bäume einer Allee. Was macht euch jedes einzelne lieb?",
+        "einwand": "Manchmal ist gerade Gleichheit wichtig, etwa bei Schrauben, Medikamenten oder Regeln. Findet ein freundliches Argument für das Identische.",
+        "gestaltung": "Formt beide aus Papier, Knete oder Brotteig fünf kleine gleiche Kugeln. Legt sie nebeneinander und erzählt, welche euch am meisten berührt und warum."
+      },
+      "auftraege_allein": {
+        "beispiel": "Denk an eine Reihe von Dingen, die zusammengehören und doch alle verschieden sind: Tassen, Geschwister, Bäume einer Allee. Was macht dir jedes einzelne lieb?",
+        "einwand": "Manchmal ist gerade Gleichheit wichtig, etwa bei Schrauben, Medikamenten oder Regeln. Finde ein freundliches Argument für das Identische.",
+        "gestaltung": "Forme aus Papier, Knete oder Brotteig fünf kleine gleiche Kugeln. Leg sie nebeneinander und beschreibe, welche dich am meisten berührt und warum."
+      }
+    },
+    {
+      "id": "felix-gonzalez-torres__claude-shannon",
+      "einstieg": "Felix Gonzalez-Torres kann ein Werk durch Zertifikat, Masse und Regeln so beschreiben, dass es an verschiedenen Orten neu installiert wird. Claude Shannon zeigt, wie Information unabhängig von ihrer Bedeutung zuverlässig übertragen werden kann. Doch die vollständigen Angaben erzeugen noch nicht dieselbe Situation. Gewicht, Entnahme, Publikum und Erneuerung müssen erst stattfinden.",
+      "auftraege": {
+        "beispiel": "Nennt etwas, das ihr genau beschrieben bekommen habt und das in Wirklichkeit ganz anders war: ein Ort, ein Gericht, ein Mensch. Was stand in keiner Beschreibung?",
+        "einwand": "Gute Anleitungen machen vieles möglich, von Möbeln bis zu Liedern. Findet ermutigend ein Beispiel, in dem eine Beschreibung fast alles weitergibt.",
+        "gestaltung": "Beschreibt einander in drei Sätzen einen Ort, den ihr liebt, so genau wie möglich. Fragt dann: Was fehlt noch, damit die andere Person wirklich dort ist?"
+      },
+      "auftraege_allein": {
+        "beispiel": "Nenne etwas, das dir genau beschrieben wurde und das in Wirklichkeit ganz anders war: einen Ort, ein Gericht, einen Menschen. Was stand in keiner Beschreibung?",
+        "einwand": "Gute Anleitungen machen vieles möglich, von Möbeln bis zu Liedern. Finde ermutigend ein Beispiel, in dem eine Beschreibung fast alles weitergibt.",
+        "gestaltung": "Beschreibe in drei Sätzen einen Ort, den du liebst, so genau wie möglich. Frag dich dann: Was fehlt noch, damit ein anderer Mensch wirklich dort wäre?"
       }
     }
   ]
