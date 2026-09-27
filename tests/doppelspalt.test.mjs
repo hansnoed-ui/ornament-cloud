@@ -331,3 +331,38 @@ test("Literatur: genau die fünf freigegebenen DOIs als https://doi.org-Links, s
     assert.ok(line && !/https?:/.test(line), `kein Link bei ${name}`);
   }
 });
+
+// ---------- Installierbare Web-App ----------
+const app = await import(new URL("tools/build-app.ts", root).href);
+
+test("App: Dateiliste und Version des Service Workers sind aktuell (tools/build-app.ts)", () => {
+  const sw = readFileSync(new URL("portfolio/nebeneinander-nacheinander/sw.js", root), "utf8");
+  const block = sw.slice(sw.indexOf("// <!-- APP:START -->") + 21, sw.indexOf("// <!-- APP:END -->")).trim();
+  assert.equal(block, app.buildBlock().trim(), "sw.js veraltet: node --experimental-strip-types tools/build-app.ts");
+  for (const need of ["./", "feld/", "js/wheel.js", "js/data/constellations.js", "rad.css", "app.webmanifest"])
+    assert.ok(block.includes(`"${need}`), `nicht offline verfügbar: ${need}`);
+});
+
+test("App: Manifest vollständig, Symbole vorhanden und in der angegebenen Grösse", () => {
+  const dir = new URL("portfolio/nebeneinander-nacheinander/", root);
+  const m = JSON.parse(readFileSync(new URL("app.webmanifest", dir), "utf8"));
+  assert.equal(m.name, "Nebeneinander, Nacheinander");
+  assert.equal(m.start_url, "./");
+  assert.equal(m.scope, "./");
+  assert.equal(m.display, "standalone");
+  assert.ok(m.icons.some(i => i.purpose === "maskable"));
+  for (const i of m.icons) {
+    const png = readFileSync(new URL(i.src, dir));
+    assert.equal(png.subarray(1, 4).toString(), "PNG", i.src);
+    const w = png.readUInt32BE(16), h = png.readUInt32BE(20);
+    assert.equal(`${w}x${h}`, i.sizes, i.src);
+  }
+  const touch = readFileSync(new URL("app/apple-touch-icon.png", dir));
+  assert.equal(touch.readUInt32BE(16), 180);
+  for (const page of ["index.html", "feld/index.html"]) {
+    const html = readFileSync(new URL(page, dir), "utf8");
+    assert.match(html, /<link rel="manifest" href="(\.\.\/)?app\.webmanifest">/, page);
+    assert.match(html, /apple-touch-icon/, page);
+    assert.match(html, /js\/pwa\.js\?v=\d+/, page);
+  }
+});
