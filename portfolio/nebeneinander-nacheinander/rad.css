@@ -443,6 +443,9 @@
 /* ---------- ORNA: Startbild der App, das Rad setzt sich zusammen (js/intro.js) ---------- */
 .orna-intro-open { overflow: hidden; }
 
+/* bis das Startbild steht: leere Fläche in der Grundfarbe statt eines kurzen Blicks auf das fertige Rad */
+.orna-pre body > :not(.orna-intro) { visibility: hidden; }
+
 .orna-intro {
   position: fixed;
   inset: 0;

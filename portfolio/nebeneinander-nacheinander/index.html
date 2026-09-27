@@ -32,7 +32,24 @@
   <meta name="apple-mobile-web-app-title" content="ORNA">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="stylesheet" href="../../styles.css?v=19">
-  <link rel="stylesheet" href="rad.css?v=18">
+  <link rel="stylesheet" href="rad.css?v=19">
+  <!-- ORNA-Startbild: vor dem ersten Bild entscheiden, ob es kommt, damit die Seite nicht kurz aufblitzt -->
+  <script>
+    (function () {
+      try {
+        var q = new URLSearchParams(location.search), seen = false;
+        var app = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+        try { seen = sessionStorage.getItem("orna-intro") === "1"; } catch (e) {}
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches || !(q.has("intro") || (app && !seen))) return;
+        var root = document.documentElement;
+        root.classList.add("orna-pre");
+        // Sicherung: kommt das Startbild nicht, wird die Seite trotzdem sichtbar
+        setTimeout(function () { root.classList.remove("orna-pre"); }, 4000);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="modulepreload" href="js/intro.js?v=2">
+  <link rel="modulepreload" href="js/symbols.js?v=2">
 </head>
 <body>
   <header class="site-header">
@@ -110,7 +127,7 @@
   <script src="../../icons.js?v=13" defer></script>
   <script type="module" src="js/wheel.js?v=11"></script>
   <script type="module" src="js/ticker.js?v=5"></script>
-  <script type="module" src="js/intro.js?v=1"></script>
+  <script type="module" src="js/intro.js?v=2"></script>
   <script type="module" src="js/pwa.js?v=2"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>

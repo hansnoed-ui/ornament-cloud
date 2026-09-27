@@ -48,6 +48,7 @@ function run() {
     <p class="orna-name">ORNA</p>`;
   document.body.append(el);
   document.documentElement.classList.add("orna-intro-open");
+  document.documentElement.classList.remove("orna-pre");      // Startbild steht, die Seite darunter darf erscheinen
 
   // nächster Frame: Endzustand setzen, CSS-Übergänge tragen die Bewegung
   requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("is-assembling")));
