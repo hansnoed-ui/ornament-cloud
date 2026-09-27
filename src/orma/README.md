@@ -255,7 +255,7 @@ lassen.
 | Ordner (Quelle) | `portfolio/nebeneinander-nacheinander/` | `src/orma/app/` |
 | Build | `tools/build-app.ts` (Dateiliste im SW) | `tools/build-orma.ts` → `src/orma/dist/` |
 | Manifest `id` | `./` | `orma` |
-| `start_url` / `scope` | `app/` im Werkordner | `./` im ORMA-Ordner |
+| `start_url` / `scope` | `app/` im Werkordner | `app/` im ORMA-Ordner (Website-Links auf den ORMA-Ordner öffnen so im Browser, nicht in der installierten App) |
 | Service Worker | `…/nebeneinander-nacheinander/sw.js` | `orma/sw.js` (Geltungsbereich nur der ORMA-Ordner) |
 | Cache-Namen | `nn-<Version>`, räumt nur `nn-` auf | `orma-<Version>`, räumt nur `orma-` auf |
 | Speicher | `sessionStorage` «orna-intro» | `localStorage` nur mit Präfix `orma:` |

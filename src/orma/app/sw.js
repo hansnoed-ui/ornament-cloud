@@ -30,9 +30,11 @@ self.addEventListener("fetch", event => {
   if (!url.pathname.startsWith(scope)) return;                          // nur der eigene Ordner
 
   if (req.mode === "navigate") {
-    // Die App ist eine einzige Seite: zuerst das Netz (neue Fassung), ohne Netz die gespeicherte
+    // Zwei gleiche Seiten (Website: ./, installierte App: app/): zuerst das Netz (neue Fassung),
+    // ohne Netz die gespeicherte Fassung derselben Seite, sonst die der Website
     event.respondWith(
-      fetch(req).catch(() => caches.open(CACHE).then(c => c.match(new URL("./", self.registration.scope).href)))
+      fetch(req).catch(() => caches.open(CACHE).then(c =>
+        c.match(req, { ignoreSearch: true }).then(hit => hit || c.match(new URL("./", self.registration.scope).href))))
     );
     return;
   }

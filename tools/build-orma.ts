@@ -119,8 +119,12 @@ export function buildOrma(out: string = OUT) {
     if (!k.startsWith("js/") || !k.endsWith(".js")) continue;
     files.set(k, String(files.get(k)).replace(/(from\s+|import\()\s*"(\.\/[^"?]+\.js)"/g, (_, a, p) => `${a}"${v(p)}"`));
   }
-  const precache = ["./", ...[...files.keys()]
-    .filter(k => k !== "sw.js" && k !== "index.html")
+  // Die installierte App startet in app/ (Manifest: start_url und scope). So bleiben Links der Website auf
+  // alpha/orma/ ausserhalb ihres Geltungsbereichs und öffnen im Browser, nicht in der App (wie bei ORNA).
+  // app/index.html ist dieselbe Seite, alle relativen Adressen zeigen eine Ebene höher.
+  files.set("app/index.html", html.replace(/(href|src)="(?![a-z]+:|\/|#|%)([^"]+)"/g, '$1="../$2"'));
+  const precache = ["./", "app/", ...[...files.keys()]
+    .filter(k => k !== "sw.js" && k !== "index.html" && k !== "app/index.html")
     .map(k => (k === "orma.css" || k.startsWith("js/") ? v(k) : k))].sort();
   const sw = String(files.get("sw.js"));
   const i = sw.indexOf(START), j = sw.indexOf(END);

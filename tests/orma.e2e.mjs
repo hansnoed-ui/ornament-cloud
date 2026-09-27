@@ -520,6 +520,31 @@ await check("Alpha: alpha/ listet ORMA; alpha/orma/ läuft unter dem Website-Pfa
   await ctx.close();
 });
 
+await check("Installierte App: startet in alpha/orma/app/, spielbar, vom selben Service Worker betreut; alpha/orma/ bleibt Website", async () => {
+  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on("pageerror", e => errors.push(e.message));
+  await page.goto(`${origin}/alpha/orma/app/`);
+  await page.waitForSelector("html[data-ready]");
+  const m = await page.evaluate(async () => { const l = document.querySelector('link[rel="manifest"]'); return { href: l.href, json: await (await fetch(l.href)).json() }; });
+  assert.equal(new URL(m.href).pathname, "/alpha/orma/manifest.webmanifest");
+  assert.equal(new URL(m.json.scope, m.href).pathname, "/alpha/orma/app/");
+  assert.equal(new URL(m.json.start_url, m.href).pathname, "/alpha/orma/app/");
+  await tap(page, "Zu zweit beginnen"); await tap(page, "Beginnen"); await tap(page, "Drehen");
+  await button(page, "Gemeinsam lesen").waitFor();
+  await page.waitForFunction(async () => (await navigator.serviceWorker.getRegistration())?.active?.state === "activated", null, { timeout: 15000 });
+  // ohne Netz öffnet die App-Seite aus dem Speicher
+  for (let i = 0; i < 5 && !(await page.evaluate(() => !!navigator.serviceWorker.controller)); i++) await page.reload();
+  await ctx.setOffline(true);
+  await page.reload();
+  await page.waitForSelector("html[data-ready]");
+  assert.equal(new URL(page.url()).pathname, "/alpha/orma/app/");
+  await ctx.setOffline(false);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 // ---------- Startseite: Apps als Wisch-Galerie ----------
 await check("Startseite (Handy): ORMA steht bei den Apps zuerst, Diamanten über Apps und Artefakten folgen dem Wischen", async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
