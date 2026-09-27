@@ -112,7 +112,8 @@ export function buildOrma(out: string = OUT) {
   // Zwischenspeicher umgehen: Stylesheet und Module tragen die Version
   const html = String(files.get("index.html"))
     .replace('href="orma.css"', `href="${v("orma.css")}"`)
-    .replace('src="js/app.js"', `src="${v("js/app.js")}"`);
+    .replace(/src="(js\/[^"?]+\.js)"/g, (_, p) => `src="${v(p)}"`)
+    .replace(/%%URL%%/g, META.url);                            // Vorschaubild: absolute Adresse (orma.json)
   files.set("index.html", html);
   for (const k of files.keys()) {
     if (!k.startsWith("js/") || !k.endsWith(".js")) continue;

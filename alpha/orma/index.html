@@ -16,7 +16,32 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="ORMA">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="orma.css?v=51218b151a5c">
+  <!-- Vorschaubild beim Teilen eines Links (tools/orma-og.mjs); Adresse der Alpha-Version -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ORMA">
+  <meta property="og:description" content="Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke.">
+  <meta property="og:image" content="https://hansnoed-ui.github.io/ornament-cloud/alpha/orma/og-orma.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Das Doppelrad von «Nebeneinander, Nacheinander», vertikal geteilt: links schwarz auf weiss, rechts weiss auf schwarz. Daneben ORMA.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://hansnoed-ui.github.io/ornament-cloud/alpha/orma/og-orma.png">
+  <link rel="stylesheet" href="orma.css?v=ea56ed4559ae">
+  <!-- Startbild: vor dem ersten Bild entscheiden, ob es kommt, damit die Startansicht nicht kurz aufblitzt -->
+  <script>
+    (function () {
+      try {
+        var q = new URLSearchParams(location.search), seen = false;
+        var app = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+        try { seen = sessionStorage.getItem("orma-intro") === "1"; } catch (e) {}
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches || !(q.has("intro") || (app && !seen))) return;
+        var root = document.documentElement;
+        root.classList.add("oi-pre");
+        // Sicherung: kommt das Startbild nicht, wird die Seite trotzdem sichtbar
+        setTimeout(function () { root.classList.remove("oi-pre"); }, 4000);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <header class="orma-top">
@@ -29,6 +54,7 @@
     <noscript><p>ORMA braucht JavaScript.</p></noscript>
   </main>
   <p id="orma-live" class="sr-only" aria-live="polite"></p>
-  <script type="module" src="js/app.js?v=51218b151a5c"></script>
+  <script type="module" src="js/app.js?v=ea56ed4559ae"></script>
+  <script type="module" src="js/intro.js?v=ea56ed4559ae"></script>
 </body>
 </html>

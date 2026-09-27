@@ -237,3 +237,73 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; }
 }
+
+/* ---------- Startbild (js/intro.js): wie ORNA, vertikal geteilt, rechte Hälfte invers (REGELN §14) ---------- */
+.orma-intro-open { overflow: hidden; }
+/* bis das Startbild steht: leere Fläche statt eines kurzen Blicks auf die Startansicht */
+.oi-pre body > :not(.orma-intro) { visibility: hidden; }
+.oi-pre body { background: #f8f8f6; }
+
+.orma-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4vh;
+  background: #f8f8f6;                /* feste Farben: links immer schwarz auf weiss, auch im Dunkelmodus */
+  color: #1f1d1a;
+  transition: opacity 0.55s ease;
+  cursor: pointer;
+}
+.orma-intro.is-leaving { opacity: 0; pointer-events: none; }
+/* rechte Hälfte: alles darunter umkehren – weiss auf schwarz */
+.oi-invert {
+  position: absolute;
+  inset: 0 0 0 50%;
+  -webkit-backdrop-filter: invert(1);
+  backdrop-filter: invert(1);
+  pointer-events: none;
+}
+
+.oi-wheel { width: min(78vw, 58vh, 460px); height: auto; overflow: visible; }
+.oi-wheel path,
+.oi-wheel circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.oi-wheel .sym-line { stroke-width: 1.3; }
+.oi-wheel .sym-ghost { opacity: 0.45; }
+.oi-wheel .sym-over { stroke-width: 0.9; }
+.oi-wheel .sym-dot { fill: currentColor; stroke: none; }
+.oi-ring { stroke-width: 1.4; }
+.oi-ring--thin { stroke-width: 0.8; opacity: 0.6; }
+
+.oi-sym {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.6);
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.5s ease;
+  transition-delay: calc(0.15s + var(--i) * 0.03s);
+}
+.oi-wheel .oi-mark { fill: currentColor; stroke: none; opacity: 0; transition: opacity 0.4s ease 2.1s; }
+.oi-wheel .oi-cross { stroke-width: 1; opacity: 0; transition: opacity 0.4s ease 2.1s; }
+.oi-name {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 1rem;
+  letter-spacing: 0.6em;
+  padding-left: 0.6em;                /* optisch zentriert trotz Sperrung */
+  opacity: 0;
+  transition: opacity 0.6s ease 2.2s;
+}
+.orma-intro.is-assembling .oi-sym { opacity: 1; transform: none; }
+.orma-intro.is-assembling .oi-wheel .oi-mark,
+.orma-intro.is-assembling .oi-wheel .oi-cross,
+.orma-intro.is-assembling .oi-name { opacity: 1; }
