@@ -586,6 +586,20 @@ await check("Startseite (Handy): ORMA steht bei den Apps zuerst, Diamanten über
   await ctx.close();
 });
 
+// ---------- Termine: Einträge ausblenden, ohne sie zu löschen ----------
+await check("Termine: ausgeblendete Einträge (hidden) sind unsichtbar, dann steht der Hinweis; einer sichtbar → Hinweis weg", async () => {
+  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
+  const page = await ctx.newPage();
+  await page.goto(`${origin}/termine/`);
+  assert.equal(await page.locator("details.entry").count(), 2);
+  assert.equal(await page.locator("details.entry:visible").count(), 0);
+  assert.ok(await page.getByText("Zurzeit sind keine Termine eingetragen.").isVisible());
+  await page.evaluate(() => document.querySelector("details.entry").removeAttribute("hidden"));
+  assert.equal(await page.locator("details.entry:visible").count(), 1);
+  assert.equal(await page.getByText("Zurzeit sind keine Termine eingetragen.").isVisible(), false);
+  await ctx.close();
+});
+
 await browser.close();
 server.close();
 const failed = results.filter(r => r[0] !== "ok");

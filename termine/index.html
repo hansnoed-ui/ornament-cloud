@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Termine – Ornament Cloud</title>
   <link rel="stylesheet" href="../styles.css?v=19">
+  <style>
+    /* Hinweis nur, wenn kein Termin sichtbar ist */
+    main:has(.entry:not([hidden])) .termine-leer { display: none; }
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -46,8 +50,10 @@
       Neuer Termin: einen <details class="entry">-Block kopieren und oberhalb einfügen,
       damit der neueste Termin oben steht. Im <summary> stehen Datum, Titel und
       Untertitel (immer sichtbar), in .entry-body Animation und Text (aufklappbar).
+      Ausblenden, ohne zu löschen: «hidden» in den <details>-Tag setzen (<details class="entry" hidden>);
+      zum Einblenden «hidden» wieder entfernen. Ist kein Termin sichtbar, steht der Hinweis unten.
     -->
-    <details class="entry">
+    <details class="entry" hidden>
       <summary class="entry-head">
         <span class="entry-text">
           <time datetime="2026-10-04T14:00">4. Oktober 2026 · 14–17 Uhr</time>
@@ -69,7 +75,7 @@
       </div>
     </details>
 
-    <details class="entry">
+    <details class="entry" hidden>
       <summary class="entry-head">
         <span class="entry-text">
           <time datetime="2026-09-17">17. September 2026</time>
@@ -91,6 +97,8 @@
         </div>
       </div>
     </details>
+
+    <p class="lead termine-leer">Zurzeit sind keine Termine eingetragen.</p>
 
     <p class="back"><a href="../">← Zur Startseite</a></p>
   </main>
