@@ -26,8 +26,11 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - Installierbare Web-App (PWA) für Rad und Feld: `portfolio/nebeneinander-nacheinander/app.webmanifest`, `sw.js` (offline),
   `js/pwa.js` (Anmeldung), Symbole in `app/` (erzeugt mit `NODE_PATH=$(npm root -g) node tools/app-icons.mjs`:
   Android leeres Rad = erstes Bild des Startbilds, damit der Systemstartbildschirm nahtlos übergeht; iPhone volles Rad).
-  Nach jeder Änderung an Rad- oder Feldseite: `node --experimental-strip-types tools/build-app.ts` (neue Version, Dateiliste;
-  läuft auch mit dem Sync, ein Test meldet, wenn es vergessen ging). Als App sind Menü und Portfolio-Link ausgeblendet.
+  Die App hat eine eigene Adresse `app/` (Manifest `start_url`/`scope`), damit Links der Website im Browser bleiben und
+  nie die installierte App öffnen. `app/index.html` und `app/feld/index.html` werden aus Rad- und Feldseite erzeugt
+  (nie von Hand bearbeiten); ältere Installationen auf der Website-Adresse leitet die Radseite nach `app/` weiter.
+  Nach jeder Änderung an Rad- oder Feldseite: `node --experimental-strip-types tools/build-app.ts` (App-Seiten, neue Version,
+  Dateiliste; läuft auch mit dem Sync, ein Test meldet, wenn es vergessen ging). Als App sind Menü und Portfolio-Link ausgeblendet.
   App-Name ORNA; beim Start der installierten App setzt sich das Rad zusammen (`js/intro.js`, einmal pro Sitzung,
   im Browser zum Ansehen mit `?intro`, entfällt bei reduzierter Bewegung).
   Hinweis «Als App installieren» auf der Radseite (`js/pwa.js`): nur wo möglich – Chrome/Edge/Android öffnen das

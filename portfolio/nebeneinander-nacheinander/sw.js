@@ -5,14 +5,16 @@
 //
 // Die Liste unten schreibt tools/build-app.ts – nicht von Hand pflegen.
 // <!-- APP:START -->
-const VERSION = "0aea0b89a67e";
+const VERSION = "e46b94451405";
 const PRECACHE = [
   "../../icons.js?v=13",
   "../../styles.css?v=19",
   "../../vendor/goatcounter/count.js",
   "./",
   "app.webmanifest",
+  "app/",
   "app/apple-touch-icon.png",
+  "app/feld/",
   "app/icon-192.png",
   "app/icon-512.png",
   "app/icon-maskable-512.png",
@@ -29,7 +31,7 @@ const PRECACHE = [
   "js/pwa.js?v=3",
   "js/symbols.js?v=2",
   "js/ticker.js?v=5",
-  "js/wheel.js?v=11",
+  "js/wheel.js?v=12",
   "rad.css?v=21"
 ];
 // <!-- APP:END -->

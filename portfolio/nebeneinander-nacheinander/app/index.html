@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<!-- Erzeugt von tools/build-app.ts aus ../index.html. Nicht von Hand bearbeiten. -->
+<html lang="de" data-web="../">
 <head>
   <meta charset="utf-8">
+  <meta name="robots" content="noindex">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Nebeneinander, Nacheinander – Ornament Cloud</title>
   <meta name="description" content="Eine interaktive Versuchsanordnung zur Verräumlichung und Verzeitlichung von Wahrnehmung.">
@@ -22,17 +24,17 @@
   <meta name="twitter:description" content="Zwei gegenläufige Ringe, Künstler:innen und Theoretiker:innen. Eine Drehung, eine Begegnung, ein kurzer Text und eine offene Frage.">
   <meta name="twitter:image" content="https://hansnoed-ui.github.io/ornament-cloud/assets/og-nebeneinander-nacheinander.png">
   <!-- Installierbare Web-App -->
-  <link rel="manifest" href="app.webmanifest">
+  <link rel="manifest" href="../app.webmanifest">
   <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
-  <link rel="icon" href="app/icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="app/apple-touch-icon.png">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="ORNA">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="../../styles.css?v=19">
-  <link rel="stylesheet" href="rad.css?v=21">
+  <link rel="stylesheet" href="../../../styles.css?v=19">
+  <link rel="stylesheet" href="../rad.css?v=21">
   <!-- ORNA-Startbild: vor dem ersten Bild entscheiden, ob es kommt, damit die Seite nicht kurz aufblitzt -->
   <script>
     (function () {
@@ -50,30 +52,30 @@
       } catch (e) {}
     })();
   </script>
-  <link rel="modulepreload" href="js/intro.js?v=3">
-  <link rel="modulepreload" href="js/symbols.js?v=2">
+  <link rel="modulepreload" href="../js/intro.js?v=3">
+  <link rel="modulepreload" href="../js/symbols.js?v=2">
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
       <div class="topbar">
-        <a class="eyebrow brand" href="../../">Ornament Cloud</a>
+        <a class="eyebrow brand" href="../../../">Ornament Cloud</a>
         <nav class="menu" aria-label="Hauptmenü">
-          <a class="menu-item" href="../../news/">
+          <a class="menu-item" href="../../../news/">
             <svg class="menu-icon" data-icon="reentry" viewBox="0 0 200 200" aria-hidden="true"></svg>
             <span class="menu-text">
               <span class="menu-title">News</span>
               <span class="menu-sub">Work in progress</span>
             </span>
           </a>
-          <a class="menu-item" href="../../termine/">
+          <a class="menu-item" href="../../../termine/">
             <svg class="menu-icon" data-icon="zeit" viewBox="0 0 200 200" aria-hidden="true"></svg>
             <span class="menu-text">
               <span class="menu-title">Termine</span>
               <span class="menu-sub">Agenda</span>
             </span>
           </a>
-          <a class="menu-item" href="../../portfolio/" aria-current="true">
+          <a class="menu-item" href="../../" aria-current="true">
             <svg class="menu-icon" data-icon="stellen" viewBox="0 0 200 200" aria-hidden="true"></svg>
             <span class="menu-text">
               <span class="menu-title">Portfolio</span>
@@ -83,7 +85,7 @@
         </nav>
       </div>
       <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
-      <p class="eyebrow work-kicker"><a href="../">Portfolio</a> · <time datetime="2026-09-25">25. September 2026</time></p>
+      <p class="eyebrow work-kicker"><a href="../../">Portfolio</a> · <time datetime="2026-09-25">25. September 2026</time></p>
       <h1>Nebeneinander, Nacheinander</h1>
       <p class="lead">Eine interaktive Versuchsanordnung.</p>
     </div>
@@ -92,7 +94,7 @@
   <main class="wrap">
     <!-- Hinweis «Als App installieren»: gut sichtbar über dem Rad, erscheint nur, wo es geht (js/pwa.js) -->
     <div class="rad-install" hidden>
-      <button class="rad-install-btn" type="button" aria-expanded="false" aria-controls="rad-install-hilfe"><img src="app/apple-touch-icon.png" alt="" width="28" height="28"><span>ORNA als App installieren</span></button>
+      <button class="rad-install-btn" type="button" aria-expanded="false" aria-controls="rad-install-hilfe"><img src="apple-touch-icon.png" alt="" width="28" height="28"><span>ORNA als App installieren</span></button>
       <p id="rad-install-hilfe" class="rad-install-hilfe" hidden>Unten auf <span>«Teilen»</span> tippen, dann <span>«Zum Home-Bildschirm»</span> wählen. ORNA erscheint danach als eigenes Symbol und läuft auch ohne Netz.</p>
     </div>
 
@@ -126,14 +128,14 @@
       <p class="rad-more-link"><a href="feld/">Das Feld: alle Konstellationen nebeneinander <span aria-hidden="true">→</span></a></p>
     </section>
 
-    <p class="back"><a href="../">← Zum Portfolio</a></p>
+    <p class="back"><a href="../../">← Zum Portfolio</a></p>
   </main>
-  <script src="../../icons.js?v=13" defer></script>
-  <script type="module" src="js/wheel.js?v=12"></script>
-  <script type="module" src="js/ticker.js?v=5"></script>
-  <script type="module" src="js/intro.js?v=3"></script>
-  <script type="module" src="js/pwa.js?v=3"></script>
+  <script src="../../../icons.js?v=13" defer></script>
+  <script type="module" src="../js/wheel.js?v=12"></script>
+  <script type="module" src="../js/ticker.js?v=5"></script>
+  <script type="module" src="../js/intro.js?v=3"></script>
+  <script type="module" src="../js/pwa.js?v=3"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
-  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../../vendor/goatcounter/count.js"></script>
 </body>
 </html>
