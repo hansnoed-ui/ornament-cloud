@@ -478,7 +478,7 @@ await check("Reduzierte Bewegung: Namen am Rad ohne Ein- und Ausblenden", async 
 });
 
 // ---------- Installierbare Web-App ----------
-await check("App: Service Worker übernimmt, danach funktionieren Rad, Direktlink und Feld ohne Netz", async () => {
+await check("App: Service Worker übernimmt, danach funktionieren Rad, Direktlink und Feld der App (app/) ohne Netz", async () => {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce", serviceWorkers: "allow" });
   const page = await ctx.newPage();
   const errors = [];
@@ -491,7 +491,7 @@ await check("App: Service Worker übernimmt, danach funktionieren Rad, Direktlin
   assert.match(manifest, /app\.webmanifest$/);
 
   await ctx.setOffline(true);
-  await page.goto(base);                                         // Start ohne Netz
+  await page.goto(base + "app/");                                // Start der App ohne Netz
   await page.waitForFunction(() => document.querySelector(".rad-wheel")?.__rad);
   await page.focus(".rad-wheel");
   await page.keyboard.press("Enter");
@@ -499,15 +499,43 @@ await check("App: Service Worker übernimmt, danach funktionieren Rad, Direktlin
   const s = await assertLanding(page);
   assert.ok(await page.$eval(".rad-text", e => e.textContent.length > 40), "Text offline vorhanden");
 
-  await page.goto(base + "?pair=agnes-martin__niklas-luhmann");  // Direktlink ohne Netz
+  await page.goto(base + "app/?pair=agnes-martin__niklas-luhmann");  // Direktlink ohne Netz
   await page.waitForFunction(() => document.querySelector(".rad-wheel")?.__rad?.current);
   assert.equal((await radState(page)).cur.id, "agnes-martin__niklas-luhmann");
 
-  await page.goto(base + "feld/");                               // Feld ohne Netz
+  await page.click(".rad-more-link a");                          // Feld der App ohne Netz
+  await page.waitForURL(base + "app/feld/");
   assert.equal(await page.$$eval(".feld-matrix a, .feld-person a", a => a.length) > 0, true);
   await ctx.setOffline(false);
   assert.deepEqual(errors, []);
   assert.ok(s.cur.id);
+  await ctx.close();
+});
+
+await check("App: ältere Installation auf der Website-Adresse wird zur App-Adresse app/ weitergeleitet; im Browser nicht", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  await ctx.addInitScript(() => { Object.defineProperty(Navigator.prototype, "standalone", { value: true, configurable: true }); });
+  const page = await ctx.newPage();
+  await page.goto(base + "?pair=agnes-martin__niklas-luhmann");
+  await page.waitForFunction(() => document.querySelector(".rad-wheel")?.__rad?.current);
+  assert.equal(await page.evaluate(() => location.href), base + "app/?pair=agnes-martin__niklas-luhmann");
+  assert.equal((await radState(page)).cur.id, "agnes-martin__niklas-luhmann");
+  await ctx.close();
+  const b = await open({ viewport: { width: 390, height: 844 } });
+  assert.equal(await b.page.evaluate(() => location.pathname.endsWith("/nebeneinander-nacheinander/")), true);
+  await b.ctx.close();
+});
+
+await check("App: «Link kopieren» in der App teilt die Adresse der Website, nicht die der App", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce", permissions: ["clipboard-read", "clipboard-write"] });
+  await ctx.addInitScript(() => { Object.defineProperty(Navigator.prototype, "share", { value: undefined, configurable: true }); });
+  const page = await ctx.newPage();
+  await page.goto(base + "app/?pair=agnes-martin__niklas-luhmann");
+  await page.waitForFunction(() => document.querySelector(".rad-actions").classList.contains("is-shown"), null, { timeout: 8000 });
+  await page.click(".rad-share");
+  await page.waitForFunction(() => document.getElementById("rad-live").textContent === "Link kopiert", null, { timeout: 3000 });
+  assert.equal(await page.evaluate(() => navigator.clipboard.readText()), base + "?pair=agnes-martin__niklas-luhmann");
+  assert.equal(await page.evaluate(() => location.href), base + "app/?pair=agnes-martin__niklas-luhmann");
   await ctx.close();
 });
 

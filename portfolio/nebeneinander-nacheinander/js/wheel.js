@@ -248,6 +248,9 @@ function setAddress(id) {
 }
 function shareUrl(id) {
   const url = pairUrl(id);
+  // In der App (app/) wird die Adresse der Website geteilt, nicht die der App
+  const web = document.documentElement.dataset.web;
+  if (web) url.pathname = new URL(web, location.href).pathname;
   url.searchParams.delete("debug");                  // Diagnose gehört nicht in geteilte Links
   url.hash = "";
   return url.href;

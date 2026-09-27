@@ -311,7 +311,9 @@ test("sitemap.xml enthält jede Seite (ohne Weiterleitung) genau einmal", () => 
     else if (e.name === "index.html") pages.push(dir);
   } };
   walk("");
-  const expected = pages.filter(p => p !== "portfolio/rad-von-zeit-und-raum/").sort();
+  // ohne Weiterleitung und ohne die App-Seiten (noindex, sie haben die Website-Seite als canonical)
+  const expected = pages.filter(p => p !== "portfolio/rad-von-zeit-und-raum/"
+    && !readFileSync(new URL(p + "index.html", root), "utf8").includes('<meta name="robots" content="noindex">')).sort();
   assert.deepEqual([...locs].sort(), expected);
   assert.equal(new Set(locs).size, locs.length);
 });
@@ -339,7 +341,7 @@ test("App: Dateiliste und Version des Service Workers sind aktuell (tools/build-
   const sw = readFileSync(new URL("portfolio/nebeneinander-nacheinander/sw.js", root), "utf8");
   const block = sw.slice(sw.indexOf("// <!-- APP:START -->") + 21, sw.indexOf("// <!-- APP:END -->")).trim();
   assert.equal(block, app.buildBlock().trim(), "sw.js veraltet: node --experimental-strip-types tools/build-app.ts");
-  for (const need of ["./", "feld/", "js/wheel.js", "js/data/constellations.js", "rad.css", "app.webmanifest"])
+  for (const need of ["./", "feld/", "app/", "app/feld/", "js/wheel.js", "js/data/constellations.js", "rad.css", "app.webmanifest"])
     assert.ok(block.includes(`"${need}`), `nicht offline verfügbar: ${need}`);
 });
 
@@ -348,8 +350,9 @@ test("App: Manifest vollständig, Symbole vorhanden und in der angegebenen Grös
   const m = JSON.parse(readFileSync(new URL("app.webmanifest", dir), "utf8"));
   assert.equal(m.name, "ORNA");
   assert.equal(m.short_name, "ORNA");
-  assert.equal(m.start_url, "./");
-  assert.equal(m.scope, "./");
+  assert.equal(m.start_url, "app/");
+  assert.equal(m.scope, "app/");
+  assert.equal(m.id, "./", "Kennung bleibt, sonst wird eine installierte App zur fremden App");
   assert.equal(m.display, "standalone");
   assert.ok(m.icons.some(i => i.purpose === "maskable"));
   for (const i of m.icons) {
@@ -360,10 +363,33 @@ test("App: Manifest vollständig, Symbole vorhanden und in der angegebenen Grös
   }
   const touch = readFileSync(new URL("app/apple-touch-icon.png", dir));
   assert.equal(touch.readUInt32BE(16), 180);
-  for (const page of ["index.html", "feld/index.html"]) {
+  for (const page of ["index.html", "feld/index.html", "app/index.html", "app/feld/index.html"]) {
     const html = readFileSync(new URL(page, dir), "utf8");
-    assert.match(html, /<link rel="manifest" href="(\.\.\/)?app\.webmanifest">/, page);
+    assert.match(html, /<link rel="manifest" href="(\.\.\/)*app\.webmanifest">/, page);
     assert.match(html, /apple-touch-icon/, page);
     assert.match(html, /js\/pwa\.js\?v=\d+/, page);
   }
+});
+
+test("App: eigene Adresse app/, Links der Website führen nie hinein", () => {
+  const dir = new URL("portfolio/nebeneinander-nacheinander/", root);
+  const scope = new URL(JSON.parse(readFileSync(new URL("app.webmanifest", dir), "utf8")).scope, dir).pathname;
+  // App-Seiten sind aktuell (aus Rad und Feld erzeugt)
+  for (const [w, a] of [["./", "app/"], ["feld/", "app/feld/"]])
+    assert.equal(readFileSync(new URL(a + "index.html", dir), "utf8"), app.buildAppPage(w, a), `${a} veraltet: node --experimental-strip-types tools/build-app.ts`);
+  // alle Seiten durchgehen: Links der Website bleiben ausserhalb, Rad und Feld der App verweisen aufeinander
+  const walk = d => readdirSync(d, { withFileTypes: true }).flatMap(e =>
+    e.name.startsWith(".") || e.name === "node_modules" ? [] : e.isDirectory() ? walk(new URL(e.name + "/", d)) : e.name.endsWith(".html") ? [new URL(e.name, d)] : []);
+  let inApp = 0;
+  for (const f of walk(root)) {
+    const html = readFileSync(f, "utf8"), isApp = f.pathname.startsWith(scope);
+    for (const [, href] of html.matchAll(/<a [^>]*href="([^"#][^"]*)"/g)) {
+      if (/^[a-z]+:/i.test(href)) continue;
+      const target = new URL(href, f).pathname;
+      if (!isApp) assert.ok(!target.startsWith(scope), `${f.pathname.slice(root.pathname.length)}: ${href} öffnet die App`);
+      else if (target.startsWith(new URL("feld/", dir).pathname) || target === dir.pathname) assert.fail(`${f.pathname}: ${href} verlässt die App`);
+      else if (target.startsWith(scope)) inApp += 1;
+    }
+  }
+  assert.ok(inApp > 300, "Rad und Feld der App verweisen aufeinander");
 });
