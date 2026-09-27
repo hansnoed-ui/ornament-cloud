@@ -653,6 +653,33 @@ await check("Installationsknopf: überall sichtbar ausser in der App; Chrome öf
   await ctx.close();
 });
 
+await check("Installationsknopf im Facebook-Browser: Android öffnet die Seite in Chrome, iPhone erklärt den Weg nach Safari", async () => {
+  const fbAndroid = "Mozilla/5.0 (Linux; Android 14; SM-S921B Build/UP1A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/128.0.0.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/480.0.0.0;]";
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, userAgent: fbAndroid, isMobile: true, hasTouch: true });
+  // den Sprung nach Chrome abfangen und festhalten, statt ihn auszuführen
+  await ctx.addInitScript(() => {
+    window.__chrome = null;
+    addEventListener("click", e => { const a = e.target.closest?.(".rad-install-chrome"); if (a) { e.preventDefault(); window.__chrome = a.href; } }, true);
+  });
+  const page = await ctx.newPage();
+  await page.goto(base + "?pair=agnes-martin__niklas-luhmann");
+  await page.tap(".rad-install-btn");
+  await page.waitForFunction(() => window.__chrome);
+  const href = await page.evaluate(() => window.__chrome);
+  assert.match(href, /^intent:\/\/localhost:\d+\/portfolio\/nebeneinander-nacheinander\/\?pair=agnes-martin__niklas-luhmann#Intent;scheme=http;package=com\.android\.chrome;S\.browser_fallback_url=http%3A%2F%2F.+;end$/);
+  assert.equal(await page.$eval(".rad-install-hilfe", e => e.hidden), false);
+  assert.match(await page.$eval(".rad-install-hilfe", e => e.textContent), /Chrome/);
+  await ctx.close();
+
+  const ios = await browser.newContext({ ...devices["iPhone 13"], userAgent: devices["iPhone 13"].userAgent + " [FBAN/FBIOS;FBAV/480.0.0.0]" });
+  const p2 = await ios.newPage();
+  await p2.goto(base);
+  await p2.tap(".rad-install-btn");
+  assert.match(await p2.$eval(".rad-install-hilfe", e => e.textContent), /«In Safari öffnen».*«Zum Home-Bildschirm»/);
+  assert.equal(await p2.$(".rad-install-chrome"), null);
+  await ios.close();
+});
+
 await browser.close();
 server.close();
 console.log(results.join("\n"));
