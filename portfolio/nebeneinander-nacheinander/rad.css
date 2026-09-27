@@ -397,6 +397,17 @@
 .rad-install-hilfe[hidden] { display: none; }
 .rad-install-hilfe span { white-space: nowrap; }   /* Namen der Knöpfe nicht trennen */
 .rad-install-chrome { color: var(--text); white-space: nowrap; }
+/* Rückfall auf Android: Manche Geräte lassen die Installation nicht zu (Warnung «unsichere App»);
+   eine Verknüpfung geht immer. Klein und still unter dem Knopf. */
+.rad-install-alt {
+  max-width: 30em;
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.rad-install-alt[hidden] { display: none; }
+.rad-install-alt span { white-space: nowrap; }
 
 /* Verweis auf die Feldansicht, rechtsbündig unter der Beschreibung */
 .rad-about .rad-more-link {

@@ -8,6 +8,8 @@
 //      die Seite in Chrome, auf dem iPhone erklärt er den Weg nach Safari;
 //    – sonst erklärt er die Schritte für diesen Browser. Chrome meldet «installierbar» erst nach etwas
 //      Verweildauer, nie im Inkognito-Fenster und nicht, wenn ORNA schon installiert ist; der Knopf steht trotzdem.
+//    – auf Android steht darunter immer klein der Rückfall «Verknüpfung erstellen»: Manche Geräte lassen die
+//      Installation auch in Chrome nicht zu (Warnung «unsichere App»), und die Seite erfährt davon nichts.
 // Ohne Unterstützung bleibt es bei der Erklärung; die Seite funktioniert wie bisher.
 
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
@@ -62,6 +64,8 @@ if (box && !standalone) {
     (inApp && android ? ` <a class="rad-install-chrome" href="${esc(chromeUrl()).replace(/"/g, "&quot;")}">In Chrome öffnen</a>`
       : " Ist ORNA schon installiert, steht sie als eigenes Symbol auf dem Bildschirm und läuft auch ohne Netz.");
   const toChrome = help.querySelector(".rad-install-chrome");
+  const alt = box.querySelector(".rad-install-alt");
+  if (alt && android && !inApp) alt.hidden = false;
   let deferred = null;
   box.hidden = false;
 
