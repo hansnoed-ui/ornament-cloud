@@ -194,7 +194,7 @@ await check("Fortsetzen: Runde nach Schliessen wieder aufnehmen, Eingabe bleibt;
 });
 
 // ---------- Ziehung ----------
-await check("Ziehung in der App: jede Runde eine der 24, nie zweimal unmittelbar hintereinander, auch über «Noch eine Runde»", async () => {
+await check("Ziehung in der App: jede Runde eine der 48, nie zweimal unmittelbar hintereinander, auch über «Noch eine Runde»", async () => {
   const { ctx, page } = await open();
   const seen = [];
   await tap(page, "Zu zweit beginnen"); await tap(page, "Beginnen");

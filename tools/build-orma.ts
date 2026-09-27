@@ -27,7 +27,7 @@ export const ALPHA = join(ROOT, "alpha/orma");
 const META = JSON.parse(readFileSync(join(ROOT, "src/orma/orma.json"), "utf8"));
 const START = "// <!-- ORMA:START -->", END = "// <!-- ORMA:END -->";
 const AUFTRAEGE = ["beispiel", "einwand", "gestaltung"];
-export const PILOT_SIZE = 24;                                   // REGELN §14
+export const PILOT_SIZE = 48;                                   // REGELN §14
 export const RING_SLOTS = 12;                                   // Plätze je Ring (js/wheel.js)
 
 export const words = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;

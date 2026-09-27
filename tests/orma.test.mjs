@@ -36,7 +36,7 @@ test("Ziehung: Rejection Sampling verwirft Werte oberhalb des letzten vollen Vie
 // Toleranz ±15 % um den Erwartungswert (bei 2000 erwarteten Treffern gut fünf Standardabweichungen)
 const near = (n, expected) => n > expected * 0.85 && n < expected * 1.15;
 
-test("Ziehung: erste Ziehung gleichverteilt über alle 24, danach nie dieselbe unmittelbar wieder", () => {
+test("Ziehung: erste Ziehung gleichverteilt über alle 48, danach nie dieselbe unmittelbar wieder", () => {
   const N = 2000 * ids.length;
   const first = new Map(ids.map(id => [id, 0]));
   for (let i = 0; i < N; i += 1) { const id = drawNext(ids, null); first.set(id, first.get(id) + 1); }
@@ -55,7 +55,7 @@ test("Ziehung: erste Ziehung gleichverteilt über alle 24, danach nie dieselbe u
   for (const [id, n] of after) assert.ok(near(n, 2000), `${id}: ${n}`);
 });
 
-test("Ziehung: nach einer Konstellation wird gleichverteilt aus den 23 anderen gezogen", () => {
+test("Ziehung: nach einer Konstellation wird gleichverteilt aus den 47 anderen gezogen", () => {
   const last = ids[3], counts = new Map();
   for (let i = 0; i < 2000 * (ids.length - 1); i += 1) { const id = drawNext(ids, last); counts.set(id, (counts.get(id) || 0) + 1); }
   assert.equal(counts.size, ids.length - 1);
@@ -64,9 +64,9 @@ test("Ziehung: nach einer Konstellation wird gleichverteilt aus den 23 anderen g
 });
 
 // ---------- Redaktionsdaten ----------
-test("Pilot: 24 Konstellationen aus dem Bestand, Paarung, Text und Frage wörtlich, IDs unverändert", () => {
-  assert.equal(pilot.items.length, 24);
-  assert.equal(new Set(ids).size, 24);
+test("Pilot: 48 Konstellationen aus dem Bestand, Paarung, Text und Frage wörtlich, IDs unverändert", () => {
+  assert.equal(pilot.items.length, 48);
+  assert.equal(new Set(ids).size, 48);
   for (const it of pilot.items) {
     const c = constellations.find(x => x.id === it.id);
     assert.ok(c, it.id);
@@ -76,12 +76,12 @@ test("Pilot: 24 Konstellationen aus dem Bestand, Paarung, Text und Frage wörtli
     assert.equal(it.artist.id, c.artistId);
     assert.equal(it.theorist.id, c.theoristId);
   }
-  // keine Konzentration auf wenige Personen: zwölf Künstler:innen und zwölf Theoretiker:innen, jede Person genau zweimal
+  // keine Konzentration auf wenige Personen: zwölf Künstler:innen und zwölf Theoretiker:innen, jede Person genau viermal
   for (const key of ["artist", "theorist"]) {
     const count = new Map();
     for (const i of pilot.items) count.set(i[key].id, (count.get(i[key].id) || 0) + 1);
     assert.equal(count.size, 12, key);
-    for (const [id, n] of count) assert.equal(n, 2, `${id} kommt ${n}-mal vor`);
+    for (const [id, n] of count) assert.equal(n, 4, `${id} kommt ${n}-mal vor`);
   }
 });
 
@@ -101,7 +101,7 @@ test("Pilot: Einstieg 40–70 Wörter, drei Aufträge, eigene Texte in Schweizer
     for (const t of [it.einstieg, ...Object.values(it.auftraege)]) assert.ok(!t.includes("ß"), `${it.id}: ß in «${t.slice(0, 40)}…»`);
     for (const a of Object.values(it.auftraege)) assert.ok(a.length > 40 && a.length < 260, `${it.id}: Auftragslänge`);
   }
-  assert.throws(() => build.buildPilot(JSON.stringify({ inhaltsversion: "x", konstellationen: [] })), /genau 24/);
+  assert.throws(() => build.buildPilot(JSON.stringify({ inhaltsversion: "x", konstellationen: [] })), /genau 48/);
 });
 
 test("Pilot: Radplätze gehören den Personen (0–11 je Ring, gleiche Person = gleicher Platz), Zeichen wie in ORNA", () => {
