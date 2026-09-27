@@ -265,7 +265,16 @@ test("Build: eigene Ausgabe, eigener Cache «orma-», Manifest-Kennung und Geltu
   const orna = JSON.parse(readFileSync(new URL("portfolio/nebeneinander-nacheinander/app.webmanifest", root), "utf8"));
   assert.equal(m.name, "ORMA");
   assert.notEqual(m.id, orna.id);
-  assert.equal(m.scope, "./");
+  assert.equal(m.scope, "app/");
+  assert.equal(m.start_url, "app/");
+  // Links der Website auf alpha/orma/ liegen ausserhalb des Geltungsbereichs: Sie öffnen im Browser, nicht in der installierten App
+  const scope = new URL(m.scope, "https://x/alpha/orma/manifest.webmanifest").pathname;
+  assert.ok(!"/alpha/orma/".startsWith(scope), "Website-Link läge im Geltungsbereich der App");
+  assert.ok(r.precache.includes("app/"), "App-Seite nicht offline");
+  // app/index.html ist dieselbe Seite, alle Adressen eine Ebene höher
+  const page = readFileSync(join(out, "index.html"), "utf8"), appPage = readFileSync(join(out, "app/index.html"), "utf8");
+  assert.equal(appPage.replace(/(href|src)="\.\.\//g, '$1="'), page);
+  for (const [, a] of appPage.matchAll(/(?:href|src)="\.\.\/([^"?]+)/g)) assert.ok(existsSync(join(out, a)), `app/ verweist ins Leere: ${a}`);
   // relative Pfade, kein Bezug auf die Website oder ORNA
   for (const f of ["index.html", "js/app.js", "js/wheel.js"]) {
     const c = readFileSync(join(out, f), "utf8");

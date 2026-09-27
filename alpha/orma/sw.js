@@ -4,25 +4,26 @@
 // Die Dateiliste und die Version setzt tools/build-orma.ts zwischen die Marken.
 
 // <!-- ORMA:START -->
-const VERSION = "16093d4e596f";
+const VERSION = "95b0027d6b38";
 const PRECACHE = [
   "./",
+  "app/",
   "icons/apple-touch-icon.png",
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/icon-maskable-512.png",
   "icons/icon.svg",
-  "js/app.js?v=16093d4e596f",
-  "js/card.js?v=16093d4e596f",
-  "js/data.js?v=16093d4e596f",
-  "js/draw.js?v=16093d4e596f",
-  "js/intro.js?v=16093d4e596f",
-  "js/store.js?v=16093d4e596f",
-  "js/symbols.js?v=16093d4e596f",
-  "js/wheel.js?v=16093d4e596f",
+  "js/app.js?v=95b0027d6b38",
+  "js/card.js?v=95b0027d6b38",
+  "js/data.js?v=95b0027d6b38",
+  "js/draw.js?v=95b0027d6b38",
+  "js/intro.js?v=95b0027d6b38",
+  "js/store.js?v=95b0027d6b38",
+  "js/symbols.js?v=95b0027d6b38",
+  "js/wheel.js?v=95b0027d6b38",
   "manifest.webmanifest",
   "og-orma.png",
-  "orma.css?v=16093d4e596f"
+  "orma.css?v=95b0027d6b38"
 ];
 // <!-- ORMA:END -->
 
@@ -48,9 +49,11 @@ self.addEventListener("fetch", event => {
   if (!url.pathname.startsWith(scope)) return;                          // nur der eigene Ordner
 
   if (req.mode === "navigate") {
-    // Die App ist eine einzige Seite: zuerst das Netz (neue Fassung), ohne Netz die gespeicherte
+    // Zwei gleiche Seiten (Website: ./, installierte App: app/): zuerst das Netz (neue Fassung),
+    // ohne Netz die gespeicherte Fassung derselben Seite, sonst die der Website
     event.respondWith(
-      fetch(req).catch(() => caches.open(CACHE).then(c => c.match(new URL("./", self.registration.scope).href)))
+      fetch(req).catch(() => caches.open(CACHE).then(c =>
+        c.match(req, { ignoreSearch: true }).then(hit => hit || c.match(new URL("./", self.registration.scope).href))))
     );
     return;
   }
