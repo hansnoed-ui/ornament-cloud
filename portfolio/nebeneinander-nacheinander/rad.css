@@ -396,6 +396,7 @@
 }
 .rad-install-hilfe[hidden] { display: none; }
 .rad-install-hilfe span { white-space: nowrap; }   /* Namen der Knöpfe nicht trennen */
+.rad-install-chrome { color: var(--text); white-space: nowrap; }
 
 /* Verweis auf die Feldansicht, rechtsbündig unter der Beschreibung */
 .rad-about .rad-more-link {
