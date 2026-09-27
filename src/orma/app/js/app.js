@@ -170,12 +170,9 @@ function renderSpin() {
   svg.setAttribute("role", "button");
   svg.setAttribute("tabindex", "0");
   svg.setAttribute("aria-label", "Rad drehen");
-  const byOuter = [...PILOT].sort((x, y) => x.artist.slot - y.artist.slot);
-  const byInner = [...PILOT].sort((x, y) => x.theorist.slot - y.theorist.slot);
-  const wheel = createWheel(svg, {
-    outer: byOuter.map(p => ({ symbol: p.artist.symbol })),
-    inner: byInner.map(p => ({ symbol: p.theorist.symbol })),
-  });
+  // je Ring jede Person einmal, auf ihrem Platz (eine Person kann in mehreren Konstellationen vorkommen)
+  const ring = key => [...new Map(PILOT.map(p => [p[key].slot, { symbol: p[key].symbol }])).entries()].sort((x, y) => x[0] - y[0]).map(x => x[1]);
+  const wheel = createWheel(svg, { outer: ring("artist"), inner: ring("theorist") });
   const pairBox = h("div", { class: "orma-pair-box", "aria-live": "polite" });
   const spinBtn = btn("Drehen", () => spin({ dir: 1, strength: 0.5 }), "orma-btn orma-btn--primary");
   const skipBtn = btn("Überspringen", () => wheel.skip(), "orma-btn orma-btn--quiet", { hidden: true });

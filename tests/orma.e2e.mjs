@@ -194,7 +194,7 @@ await check("Fortsetzen: Runde nach Schliessen wieder aufnehmen, Eingabe bleibt;
 });
 
 // ---------- Ziehung ----------
-await check("Ziehung in der App: jede Runde eine der zwölf, nie zweimal unmittelbar hintereinander, auch über «Noch eine Runde»", async () => {
+await check("Ziehung in der App: jede Runde eine der 24, nie zweimal unmittelbar hintereinander, auch über «Noch eine Runde»", async () => {
   const { ctx, page } = await open();
   const seen = [];
   await tap(page, "Zu zweit beginnen"); await tap(page, "Beginnen");
@@ -346,9 +346,10 @@ await check("Trennung: ORNA und ORMA nebeneinander – eigene Service Worker, ei
   await page.waitForFunction(async () => (await navigator.serviceWorker.getRegistrations()).filter(r => r.active).length === 2, null, { timeout: 15000 });
   const scopes = (await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).map(r => new URL(r.scope).pathname))).sort();
   assert.deepEqual(scopes, ["/orma/", "/portfolio/nebeneinander-nacheinander/"]);
-  const keys = await page.evaluate(() => caches.keys());
-  assert.ok(keys.some(k => k.startsWith("nn-")), "ORNA-Cache vorhanden");
-  assert.ok(keys.includes(`orma-${built.version}`), "ORMA-Cache vorhanden");
+  // beide Caches vorhanden (kurz warten: der Cache-Eintrag kann dem Registrierungsstatus leicht nachlaufen)
+  const want = `orma-${built.version}`;
+  const ok = await page.waitForFunction(w => caches.keys().then(k => k.some(x => x.startsWith("nn-")) && k.includes(w)), want, { timeout: 10000 }).then(() => true, () => false);
+  assert.ok(ok, `Caches: ${(await page.evaluate(() => caches.keys())).join(", ")}`);
   await playRound(page);
   await tap(page, "Im Gedankenbuch behalten"); await tap(page, "Runde beenden");
   await tap(page, "Unsere Gedanken (1)");

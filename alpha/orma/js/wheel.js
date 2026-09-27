@@ -3,7 +3,7 @@
 // (drawNext), die Ringe fahren nur dorthin. Richtung, Umdrehungen und Dauer kommen aus der Geste.
 // Überspringbar; bei reduzierter Bewegung kurz und ohne Umdrehungen.
 
-import { symbolMarkup } from "./symbols.js?v=5829f2d6cc5f";
+import { symbolMarkup } from "./symbols.js?v=2c61eb83670d";
 
 const NS = "http://www.w3.org/2000/svg";
 const C = 500, SLOTS = 12, STEP = 360 / SLOTS;
@@ -14,6 +14,7 @@ const easeOut = t => 1 - Math.pow(1 - t, 3);
 const mod = (a, m) => ((a % m) + m) % m;
 
 export function createWheel(svg, { outer, inner }) {
+  if (outer.length !== SLOTS || inner.length !== SLOTS) throw new Error(`Rad: je Ring ${SLOTS} Personen erwartet`);
   const ring = (geo, items, cls) => {
     const slots = items.map((it, i) =>
       `<g transform="rotate(${i * STEP} ${C} ${C}) translate(${C} ${C - geo.sym})"><g class="orma-sym">${symbolMarkup(it.symbol, geo.half)}</g></g>`).join("");

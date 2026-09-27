@@ -1,8 +1,8 @@
 // Erzeugt von tools/build-orma.ts – nicht von Hand bearbeiten.
 // Paarung, Text und Frage stammen wörtlich aus dem Bestand von «Nebeneinander, Nacheinander»;
 // Einstieg und Aufträge sind Ergänzungen der ORMA-Redaktion (src/orma/redaktion/pilot.json).
-export const APP = Object.freeze({"name":"ORMA","version":"0.1.0"});
-export const CONTENT_VERSION = "2026-09-27.1";
+export const APP = Object.freeze({"name":"ORMA","version":"0.2.0"});
+export const CONTENT_VERSION = "2026-09-27.2";
 export const PILOT = Object.freeze([
   {
     "id": "eva-hesse__susan-leigh-star",
@@ -290,6 +290,294 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt zwei Orte, die auf der Karte nah beieinander liegen, sich für euch aber weit entfernt anfühlen, oder umgekehrt. Was macht den Weg länger oder kürzer?",
       "einwand": "Ein Meter bleibt ein Meter. Sucht ein Argument dafür, dass der messbare Abstand wichtiger ist als der erlebte Weg.",
       "gestaltung": "Legt zwei Gegenstände einen Schritt voneinander entfernt auf den Boden. Geht einmal gerade und einmal im Bogen an ihnen vorbei. Beschreibt, wann sie euch näher vorkamen."
+    }
+  },
+  {
+    "id": "eva-hesse__george-spencer-brown",
+    "nr": 321,
+    "artist": {
+      "id": "eva-hesse",
+      "name": "Eva Hesse",
+      "symbol": 2,
+      "slot": 0
+    },
+    "theorist": {
+      "id": "george-spencer-brown",
+      "name": "George Spencer-Brown",
+      "symbol": 34,
+      "slot": 9
+    },
+    "text": "George Spencer-Brown beginnt Form mit einer Grenze, die zwei Seiten unterscheidet. Eva Hesses weiche, hängende und alternde Materialien stellen die Stabilität einer solchen Grenze infrage. Eine Kontur kann sich senken, Spannung verlieren oder durch Materialveränderung anders erscheinen. Die Form verschwindet dadurch nicht notwendig. Sie zeigt vielmehr, dass eine Grenze bestehen kann, ohne unveränderlich zu sein.",
+    "question": "Wie stabil muss eine Grenze sein, um Form zu bilden?",
+    "einstieg": "George Spencer-Brown lässt Form mit einer Grenze beginnen, die zwei Seiten unterscheidet. Eva Hesses weiche, hängende und alternde Materialien stellen die Stabilität einer solchen Grenze infrage. Eine Kontur kann sich senken, Spannung verlieren oder durch das Material anders erscheinen. Die Form verschwindet dadurch nicht unbedingt. Sie zeigt, dass eine Grenze bestehen kann, ohne unveränderlich zu sein.",
+    "auftraege": {
+      "beispiel": "Sucht einen Gegenstand, dessen Umriss nachgibt: ein Kissen, ein Pullover über der Stuhllehne, eine Tasche. Wo ist seine Grenze, und wie viel darf sie nachgeben?",
+      "einwand": "Manche Grenzen müssen fest sein, damit etwas funktioniert: eine Türschwelle, eine Linie auf dem Spielfeld. Findet ein Argument dafür, dass Form eine stabile Grenze braucht.",
+      "gestaltung": "Legt mit einer Schnur oder einem Tuch eine Grenze auf den Tisch. Verändert sie dreimal leicht, ohne sie aufzuheben. Ab wann ist es eine andere Form?"
+    }
+  },
+  {
+    "id": "tehching-hsieh__lucy-suchman",
+    "nr": 268,
+    "artist": {
+      "id": "tehching-hsieh",
+      "name": "Tehching Hsieh",
+      "symbol": 9,
+      "slot": 7
+    },
+    "theorist": {
+      "id": "lucy-suchman",
+      "name": "Lucy Suchman",
+      "symbol": 25,
+      "slot": 3
+    },
+    "text": "Tehching Hsieh formuliert Regeln, die ein ganzes Jahr lang gelten sollen. Lucy Suchman zeigt, dass ein Plan die konkrete Handlung nie vollständig vorwegnehmen kann. Je länger Hsiehs Regel dauert, desto mehr ungeplante Situationen muss sie durchqueren: Müdigkeit, Wetter, Krankheit, Begegnungen und praktische Hindernisse. Der Plan bleibt derselbe, aber sein Fortbestand hängt täglich von situierter Koordination ab.",
+    "question": "Wie überlebt ein Plan ein Jahr?",
+    "einstieg": "Tehching Hsieh formuliert Regeln, die ein ganzes Jahr lang gelten sollen. Lucy Suchman zeigt, dass ein Plan die konkrete Handlung nie vollständig vorwegnehmen kann. Je länger Hsiehs Regel dauert, desto mehr Ungeplantes muss sie durchqueren: Müdigkeit, Wetter, Krankheit, Begegnungen und praktische Hindernisse. Der Plan bleibt derselbe, aber sein Fortbestand hängt jeden Tag davon ab, wie er in der Situation umgesetzt wird.",
+    "auftraege": {
+      "beispiel": "Nennt je einen Vorsatz, den ihr länger als einen Monat gehalten habt. Was musstet ihr unterwegs anpassen, damit er bestehen blieb?",
+      "einwand": "Vielleicht ist ein Plan gerade dann stark, wenn er sich nicht an die Situation anpasst. Findet einen Fall, in dem Starrheit besser ist als Anpassung.",
+      "gestaltung": "Schreibt gemeinsam eine Regel für die nächsten sieben Tage, die in einen Satz passt. Notiert darunter drei Situationen, in denen sie schwer einzuhalten wäre."
+    }
+  },
+  {
+    "id": "dan-graham__henri-bergson",
+    "nr": 200,
+    "artist": {
+      "id": "dan-graham",
+      "name": "Dan Graham",
+      "symbol": 17,
+      "slot": 10
+    },
+    "theorist": {
+      "id": "henri-bergson",
+      "name": "Henri Bergson",
+      "symbol": 29,
+      "slot": 7
+    },
+    "text": "Dan Grahams Videoverzögerungen teilen Zeit in genau messbare Sekunden. Henri Bergson unterscheidet solche messbare Zeit von gelebter Dauer. Vor dem Monitor treffen beide aufeinander. Zehn Sekunden lassen sich technisch exakt festlegen, während das Erlebnis, sich selbst verspätet wiederzusehen, sich nicht in dieselben Einheiten zerlegen lässt. Die gemessene Verzögerung erzeugt eine Dauer, die anders vergeht als die Uhr.",
+    "question": "Wie lang sind zehn Sekunden in der Wahrnehmung?",
+    "einstieg": "Dan Grahams Videoverzögerungen teilen Zeit in genau messbare Sekunden. Henri Bergson unterscheidet solche messbare Zeit von gelebter Dauer. Vor dem Monitor treffen beide aufeinander. Zehn Sekunden lassen sich technisch exakt festlegen, doch das Erlebnis, sich selbst verspätet wiederzusehen, zerfällt nicht in dieselben Einheiten. Die gemessene Verzögerung erzeugt eine Dauer, die anders vergeht als die Uhr.",
+    "auftraege": {
+      "beispiel": "Nennt je eine Situation, in der zehn Sekunden sehr lang oder sehr kurz waren. Was hat die Dauer verändert?",
+      "einwand": "Die Uhr ist für alle gleich, und genau darum können wir uns verabreden. Findet ein Argument dafür, dass die gemessene Zeit wichtiger ist als die erlebte.",
+      "gestaltung": "Schliesst beide die Augen und öffnet sie, wenn ihr meint, dass zehn Sekunden vergangen sind. Lasst eine Uhr mitlaufen. Wer lag wie weit daneben, und woran habt ihr euch orientiert?"
+    }
+  },
+  {
+    "id": "felix-gonzalez-torres__michel-serres",
+    "nr": 177,
+    "artist": {
+      "id": "felix-gonzalez-torres",
+      "name": "Felix Gonzalez-Torres",
+      "symbol": 18,
+      "slot": 11
+    },
+    "theorist": {
+      "id": "michel-serres",
+      "name": "Michel Serres",
+      "symbol": 36,
+      "slot": 10
+    },
+    "text": "Felix Gonzalez-Torres lässt Teile seiner Werke den Ausstellungsraum verlassen. Papier wird mitgenommen, Bonbons werden gegessen und Bestände später ergänzt. Michel Serres interessiert sich für Passage und dafür, dass eine Übertragung das Übertragene nicht einfach unverändert von einem Ort zum anderen bringt. Bei Gonzalez-Torres gehört diese Veränderung zur Identität des Werks. Es bleibt nicht trotz seiner Zirkulation bestehen, sondern gerade durch sie.",
+    "question": "Kann Weitergabe eine Form erhalten?",
+    "einstieg": "Felix Gonzalez-Torres lässt Teile seiner Werke den Ausstellungsraum verlassen. Papier wird mitgenommen, Bonbons werden gegessen, die Bestände später ergänzt. Michel Serres interessiert sich für Übergänge und dafür, dass eine Übertragung das Übertragene nicht unverändert von einem Ort zum anderen bringt. Bei Gonzalez-Torres gehört diese Veränderung zum Werk. Es besteht nicht trotz seiner Weitergabe fort, sondern durch sie.",
+    "auftraege": {
+      "beispiel": "Nennt etwas, das ihr weitergegeben habt oder bekommen habt: ein Buch, ein Rezept, ein Witz. Was hat sich auf dem Weg verändert, und was ist geblieben?",
+      "einwand": "Manches soll gerade nicht weitergegeben werden, damit es erhalten bleibt: ein Original, ein Geheimnis, ein Ort. Findet ein Argument dafür, etwas nicht zirkulieren zu lassen.",
+      "gestaltung": "Schreibt einen Satz auf einen Zettel und gebt ihn hin und her. Jede Person darf bei jeder Übergabe genau ein Wort ändern. Nach sechs Übergaben: Ist es noch derselbe Satz?"
+    }
+  },
+  {
+    "id": "rebecca-horn__donna-haraway",
+    "nr": 43,
+    "artist": {
+      "id": "rebecca-horn",
+      "name": "Rebecca Horn",
+      "symbol": 5,
+      "slot": 3
+    },
+    "theorist": {
+      "id": "donna-haraway",
+      "name": "Donna Haraway",
+      "symbol": 21,
+      "slot": 0
+    },
+    "text": "Rebecca Horn verbindet Körper mit Federn, Stäben, Masken und Maschinen. Donna Haraways Cyborg stört gerade die klare Grenze zwischen Organismus und Technik. Horns Erweiterungen illustrieren diese Figur nicht einfach. Sie zeigen körperlich, dass Reichweite, Berührung und Handlung weder nur dem Körper noch nur dem Apparat gehören.",
+    "question": "Wann wird eine technische Erweiterung Teil des Körpers?",
+    "einstieg": "Rebecca Horn verbindet Körper mit Federn, Stäben, Masken und Maschinen. Donna Haraways Figur der Cyborg stört die klare Grenze zwischen Organismus und Technik. Horns Erweiterungen illustrieren diese Figur nicht einfach. Sie lassen körperlich erfahren, dass Reichweite, Berührung und Handlung weder nur dem Körper noch nur dem Apparat gehören.",
+    "auftraege": {
+      "beispiel": "Welches Hilfsmittel spürt ihr beim Benutzen gar nicht mehr als Gegenstand: eine Brille, ein Stift, ein Velo? Seit wann gehört es zu euch?",
+      "einwand": "Ein Werkzeug bleibt ein Werkzeug, man kann es jederzeit weglegen. Sucht ein Argument dafür, dass die Grenze zwischen Körper und Technik klar bleibt.",
+      "gestaltung": "Verlängert einen Arm mit einem Gegenstand, etwa einem Löffel oder Lineal, und berührt damit drei verschiedene Oberflächen. Beschreibt, wo ihr die Berührung spürt."
+    }
+  },
+  {
+    "id": "marina-abramovic__elena-esposito",
+    "nr": 142,
+    "artist": {
+      "id": "marina-abramovic",
+      "name": "Marina Abramović",
+      "symbol": 4,
+      "slot": 2
+    },
+    "theorist": {
+      "id": "elena-esposito",
+      "name": "Elena Esposito",
+      "symbol": 23,
+      "slot": 1
+    },
+    "text": "Marina Abramović kündigt bei vielen Arbeiten Dauer und Bedingungen im Voraus an. Elena Esposito zeigt, dass Vorstellungen von Zukunft die Gegenwart schon verändern, obwohl das Kommende noch nicht eingetreten ist. Wer weiß, dass eine Performance sechs Stunden dauern wird, erlebt bereits den ersten Moment im Horizont dieses Endes. Die festgelegte Dauer erzeugt Erwartungen, ohne den Verlauf festzulegen.",
+    "question": "Wie verändert ein angekündigtes Ende die Gegenwart?",
+    "einstieg": "Marina Abramović kündigt bei vielen Arbeiten Dauer und Bedingungen im Voraus an. Elena Esposito zeigt, dass Vorstellungen von Zukunft die Gegenwart schon verändern, obwohl das Kommende noch nicht eingetreten ist. Wer weiss, dass eine Performance sechs Stunden dauern wird, erlebt schon den ersten Moment im Horizont dieses Endes. Die festgelegte Dauer weckt Erwartungen, ohne den Verlauf festzulegen.",
+    "auftraege": {
+      "beispiel": "Erinnert euch an etwas, dessen Ende von Anfang an feststand: eine Reise, ein Kurs, ein Besuch. Wie hat das Wissen um das Ende den Anfang verändert?",
+      "einwand": "Vielleicht verdirbt ein angekündigtes Ende die Gegenwart, weil man nur noch zählt. Findet ein Argument für Anfänge ohne bekanntes Ende.",
+      "gestaltung": "Vereinbart eine Minute Schweigen und sagt vorher laut, wann sie endet. Wiederholt es ohne Ankündigung, eine Person beendet sie. Was war anders?"
+    }
+  },
+  {
+    "id": "mona-hatoum__judith-butler",
+    "nr": 48,
+    "artist": {
+      "id": "mona-hatoum",
+      "name": "Mona Hatoum",
+      "symbol": 6,
+      "slot": 4
+    },
+    "theorist": {
+      "id": "judith-butler",
+      "name": "Judith Butler",
+      "symbol": 27,
+      "slot": 5
+    },
+    "text": "Judith Butler untersucht, wie Körper innerhalb sozialer Normen als bestimmte Körper erkennbar und lesbar werden. Mona Hatoum lässt häufig vertraute Ordnungen kippen, sodass ein Gegenstand oder Raum seine gewohnte Lesbarkeit verliert. Diese Irritation betrifft nicht nur Bedeutung, sondern den Körper, der sich dazu verhalten muss. Etwas kann bekannt aussehen und dennoch eine andere Bewegung, Distanz oder Vorsicht verlangen. Wahrnehmung und soziale Lesbarkeit geraten dadurch auseinander.",
+    "question": "Was passiert mit einer Norm, wenn der Körper anders handeln muss?",
+    "einstieg": "Judith Butler untersucht, wie Körper innerhalb sozialer Normen als bestimmte Körper erkennbar werden. Mona Hatoum lässt vertraute Ordnungen kippen, sodass ein Gegenstand oder Raum seine gewohnte Lesbarkeit verliert. Das betrifft nicht nur die Bedeutung, sondern den Körper, der sich dazu verhalten muss. Etwas kann bekannt aussehen und dennoch eine andere Bewegung, Distanz oder Vorsicht verlangen.",
+    "auftraege": {
+      "beispiel": "Nennt einen Ort oder Gegenstand, bei dem euer Körper anders reagiert, als das Aussehen erwarten lässt: eine glatte Treppe, ein zu tiefer Stuhl. Welche Regel des Verhaltens kommt dabei ins Wanken?",
+      "einwand": "Normen helfen, weil wir nicht jede Situation neu durchdenken müssen. Findet ein Beispiel, in dem eine eingeübte Norm den Körper schützt.",
+      "gestaltung": "Benutzt einen Alltagsgegenstand für fünf Minuten anders als vorgesehen, etwa eine Tasse mit der anderen Hand oder einen Stuhl verkehrt herum. Notiert, was sich an eurer Haltung ändert."
+    }
+  },
+  {
+    "id": "louise-bourgeois__wendy-hui-kyong-chun",
+    "nr": 148,
+    "artist": {
+      "id": "louise-bourgeois",
+      "name": "Louise Bourgeois",
+      "symbol": 3,
+      "slot": 1
+    },
+    "theorist": {
+      "id": "wendy-hui-kyong-chun",
+      "name": "Wendy Hui Kyong Chun",
+      "symbol": 26,
+      "slot": 4
+    },
+    "text": "Louise Bourgeois kehrt zu bestimmten Erinnerungen und Formen immer wieder zurück. Wendy Hui Kyong Chun untersucht Gewohnheiten, die durch Wiederholung stabil werden. Bourgeois' Wiederkehr unterscheidet sich jedoch von einer beruhigenden Routine. Das Vertraute kann bei jeder Wiederholung eine neue Spannung erzeugen und gerade dadurch wirksam bleiben.",
+    "question": "Kann Wiederholung eine Erinnerung verändern?",
+    "einstieg": "Louise Bourgeois kehrt immer wieder zu bestimmten Erinnerungen und Formen zurück. Wendy Hui Kyong Chun untersucht Gewohnheiten, die durch Wiederholung stabil werden. Bourgeois' Wiederkehr unterscheidet sich jedoch von einer beruhigenden Routine. Das Vertraute kann bei jeder Wiederholung eine neue Spannung erzeugen und gerade dadurch wirksam bleiben. Wiederholung hält fest und verändert zugleich.",
+    "auftraege": {
+      "beispiel": "Nennt ein Lied, einen Ort oder ein Foto, zu dem ihr immer wieder zurückkehrt. Ist es beim letzten Mal dasselbe gewesen wie beim ersten Mal?",
+      "einwand": "Viele Rituale wirken gerade, weil sie immer gleich bleiben. Findet ein Argument dafür, dass Wiederholung eine Erinnerung schützt statt verändert.",
+      "gestaltung": "Zeichnet beide dreimal hintereinander denselben Gegenstand aus dem Gedächtnis, ohne auf die vorherige Zeichnung zu schauen. Vergleicht: Was verschiebt sich von Mal zu Mal?"
+    }
+  },
+  {
+    "id": "on-kawara__hannah-arendt",
+    "nr": 173,
+    "artist": {
+      "id": "on-kawara",
+      "name": "On Kawara",
+      "symbol": 8,
+      "slot": 6
+    },
+    "theorist": {
+      "id": "hannah-arendt",
+      "name": "Hannah Arendt",
+      "symbol": 28,
+      "slot": 6
+    },
+    "text": "On Kawara macht einen einzelnen Tag zu einem dauerhaften Gegenstand. Hannah Arendt versteht die gemeinsame Welt als etwas, das zwischen verschiedenen Menschen bestehen kann und ihre jeweiligen Lebenszeiten überdauert. Kawaras Datumsbild beginnt dagegen mit einem radikal persönlichen Jetzt. Nur an diesem einen Tag kann es entstehen. Sobald es fertig ist, kann genau dieser vergangene Tag jedoch von vielen Menschen zu verschiedenen Zeiten betrachtet werden. Ein einmaliges Jetzt erhält dadurch einen Platz in einer gemeinsamen Welt.",
+    "question": "Wann wird ein einzelner Tag gemeinsam?",
+    "einstieg": "On Kawara macht einen einzelnen Tag zu einem dauerhaften Gegenstand. Sein Datumsbild kann nur an diesem einen Tag entstehen. Hannah Arendt versteht die gemeinsame Welt als etwas, das zwischen Menschen besteht und ihre Lebenszeiten überdauert. Sobald Kawaras Bild fertig ist, können viele Menschen zu verschiedenen Zeiten diesen vergangenen Tag betrachten. Ein persönliches Jetzt erhält einen Platz in einer gemeinsamen Welt.",
+    "auftraege": {
+      "beispiel": "Nennt einen Tag, den viele Menschen gemeinsam erinnern, und einen, den nur ihr kennt. Was macht den einen gemeinsam und den anderen privat?",
+      "einwand": "Ein gemaltes Datum zeigt nur eine Zahl, nicht den Tag selbst. Findet ein Argument dafür, dass ein einzelner Tag gar nicht geteilt werden kann.",
+      "gestaltung": "Haltet den heutigen Tag in einem Gegenstand fest, der morgen noch da ist: ein Zettel, ein Stein, eine Notiz in einem Buch. Was muss darauf stehen, damit jemand anderes ihn versteht?"
+    }
+  },
+  {
+    "id": "doris-salcedo__susan-leigh-star",
+    "nr": 137,
+    "artist": {
+      "id": "doris-salcedo",
+      "name": "Doris Salcedo",
+      "symbol": 7,
+      "slot": 5
+    },
+    "theorist": {
+      "id": "susan-leigh-star",
+      "name": "Susan Leigh Star",
+      "symbol": 24,
+      "slot": 2
+    },
+    "text": "Doris Salcedo macht Verlust in Möbeln, Wänden und öffentlichen Eingriffen sichtbar. Susan Leigh Star fragt nach den oft unsichtbaren Strukturen, die eine gemeinsame Praxis tragen. Auch öffentliches Erinnern braucht solche Bedingungen. Institutionen, Orte, Pflege und Rituale entscheiden mit, ob eine materielle Spur bestehen und wieder aufgesucht werden kann.",
+    "question": "Welche Infrastruktur braucht Erinnerung?",
+    "einstieg": "Doris Salcedo macht Verlust in Möbeln, Wänden und öffentlichen Eingriffen sichtbar. Susan Leigh Star fragt nach den oft unsichtbaren Strukturen, die eine gemeinsame Praxis tragen. Auch öffentliches Erinnern braucht solche Bedingungen. Institutionen, Orte, Pflege und Rituale entscheiden mit, ob eine materielle Spur bestehen bleibt und wieder aufgesucht werden kann.",
+    "auftraege": {
+      "beispiel": "Denkt an ein Denkmal, eine Gedenktafel oder ein Grab, das ihr kennt. Wer sorgt dafür, dass es bleibt, und was würde ohne diese Pflege geschehen?",
+      "einwand": "Vielleicht braucht Erinnerung gar keine Infrastruktur, sondern nur Menschen, die erzählen. Findet ein Beispiel für Erinnerung ohne Ort und ohne Institution.",
+      "gestaltung": "Wählt eine Erinnerung, die ihr beide teilt. Legt fest, wo, wie oft und von wem sie in einem Jahr wieder aufgerufen werden soll. Schreibt diese kleine Infrastruktur in drei Zeilen auf."
+    }
+  },
+  {
+    "id": "sol-lewitt__claude-shannon",
+    "nr": 214,
+    "artist": {
+      "id": "sol-lewitt",
+      "name": "Sol LeWitt",
+      "symbol": 11,
+      "slot": 9
+    },
+    "theorist": {
+      "id": "claude-shannon",
+      "name": "Claude Shannon",
+      "symbol": 39,
+      "slot": 11
+    },
+    "text": "Sol LeWitts Instruktionen lassen sich wie Nachrichten übertragen. Claude Shannon fragt danach, wie Information durch einen Kanal gelangt, unabhängig davon, was sie bedeutet. Genau hier wird LeWitt interessant. Eine knappe Anweisung kann ausreichen, um an verschiedenen Orten sehr komplexe Arbeiten hervorzubringen. Doch zwischen übertragener Information und sichtbarem Werk liegen Entscheidungen, Material und Ausführung. Die Instruktion kann technisch stabil bleiben, während ihre Verkörperung variiert.",
+    "question": "Wie viel Information braucht ein Werk?",
+    "einstieg": "Sol LeWitts Instruktionen lassen sich wie Nachrichten übertragen. Claude Shannon fragt, wie Information durch einen Kanal gelangt, unabhängig davon, was sie bedeutet. Eine knappe Anweisung kann genügen, um an verschiedenen Orten sehr komplexe Arbeiten hervorzubringen. Doch zwischen übertragener Information und sichtbarem Werk liegen Entscheidungen, Material und Ausführung. Die Instruktion bleibt stabil, während ihre Verkörperung sich verändert.",
+    "auftraege": {
+      "beispiel": "Nennt eine sehr kurze Anweisung, die etwas Grosses hervorbringt: eine Spielregel, ein Rezept, eine Wegbeschreibung. Was muss man ergänzen, damit sie funktioniert?",
+      "einwand": "Wenn so viel bei der Ausführung entsteht, liegt das Werk vielleicht gar nicht in der Anweisung. Findet ein Argument dafür, dass die Information allein kein Werk ist.",
+      "gestaltung": "Diktiert euch gegenseitig eine Zeichnung in höchstens zwanzig Wörtern, ohne dass die zeichnende Person nachfragen darf. Vergleicht Vorstellung und Ergebnis: Welche Information hat gefehlt?"
+    }
+  },
+  {
+    "id": "donald-judd__jacques-derrida",
+    "nr": 195,
+    "artist": {
+      "id": "donald-judd",
+      "name": "Donald Judd",
+      "symbol": 10,
+      "slot": 8
+    },
+    "theorist": {
+      "id": "jacques-derrida",
+      "name": "Jacques Derrida",
+      "symbol": 31,
+      "slot": 8
+    },
+    "text": "Donald Judd trennt Körper durch präzise Abstände und macht den Zwischenraum zu einem wesentlichen Teil der Arbeit. Jacques Derrida verwendet den Gedanken des Abstands nicht nur räumlich. Identität entsteht für ihn auch dadurch, dass etwas sich von anderem unterscheidet und nicht vollständig mit sich selbst zusammenfällt. Judds Intervalle geben dieser abstrakten Differenz eine konkrete räumliche Form.",
+    "question": "Kann ein Zwischenraum bestimmen, was ein Ding ist?",
+    "einstieg": "Donald Judd trennt Körper durch präzise Abstände und macht den Zwischenraum zu einem wesentlichen Teil der Arbeit. Jacques Derrida denkt Abstand nicht nur räumlich. Für ihn entsteht Identität auch dadurch, dass sich etwas von anderem unterscheidet und nicht vollständig mit sich selbst zusammenfällt. Judds Intervalle geben dieser abstrakten Differenz eine konkrete räumliche Form.",
+    "auftraege": {
+      "beispiel": "Nennt zwei gleiche Dinge, die erst durch ihren Abstand unterscheidbar werden: zwei Fenster, zwei Stühle, zwei Buchstaben. Was ändert sich, wenn der Abstand kleiner wird?",
+      "einwand": "Ein Ding ist, was es ist, auch ganz allein im leeren Raum. Findet ein Argument dafür, dass Identität nicht vom Abstand zu anderem abhängt.",
+      "gestaltung": "Stellt drei gleiche Gegenstände in eine Reihe. Verändert nur die Abstände zwischen ihnen, zweimal. Beschreibt jedes Mal in einem Satz, was die Reihe jetzt ist."
     }
   }
 ]);

@@ -5,14 +5,14 @@
 // textContent und value in die Seite, nie als HTML.
 // Keine Anmeldung, keine Zählung, keine Netzanfragen ausser dem eigenen Service Worker.
 
-import { APP, CONTENT_VERSION, PILOT } from "./data.js?v=5829f2d6cc5f";
-import { drawNext } from "./draw.js?v=5829f2d6cc5f";
+import { APP, CONTENT_VERSION, PILOT } from "./data.js?v=2c61eb83670d";
+import { drawNext } from "./draw.js?v=2c61eb83670d";
 import {
   KEYS, newRound, loadDraft, saveDraft, clearDraft, loadBook, saveBook, keepRound, setFavorite, deleteEntry,
   deleteAllEntries, makeBackup, mergeBackup, loadText, saveText,
-} from "./store.js?v=5829f2d6cc5f";
-import { createWheel, bindGesture } from "./wheel.js?v=5829f2d6cc5f";
-import { layoutCard, drawCard, canvasMeasure } from "./card.js?v=5829f2d6cc5f";
+} from "./store.js?v=2c61eb83670d";
+import { createWheel, bindGesture } from "./wheel.js?v=2c61eb83670d";
+import { layoutCard, drawCard, canvasMeasure } from "./card.js?v=2c61eb83670d";
 
 // ---------- Umgebung ----------
 const storage = (() => { try { const s = window.localStorage; s.getItem("orma:probe"); return s; } catch { return memoryStorage(); } })();
@@ -170,12 +170,9 @@ function renderSpin() {
   svg.setAttribute("role", "button");
   svg.setAttribute("tabindex", "0");
   svg.setAttribute("aria-label", "Rad drehen");
-  const byOuter = [...PILOT].sort((x, y) => x.artist.slot - y.artist.slot);
-  const byInner = [...PILOT].sort((x, y) => x.theorist.slot - y.theorist.slot);
-  const wheel = createWheel(svg, {
-    outer: byOuter.map(p => ({ symbol: p.artist.symbol })),
-    inner: byInner.map(p => ({ symbol: p.theorist.symbol })),
-  });
+  // je Ring jede Person einmal, auf ihrem Platz (eine Person kann in mehreren Konstellationen vorkommen)
+  const ring = key => [...new Map(PILOT.map(p => [p[key].slot, { symbol: p[key].symbol }])).entries()].sort((x, y) => x[0] - y[0]).map(x => x[1]);
+  const wheel = createWheel(svg, { outer: ring("artist"), inner: ring("theorist") });
   const pairBox = h("div", { class: "orma-pair-box", "aria-live": "polite" });
   const spinBtn = btn("Drehen", () => spin({ dir: 1, strength: 0.5 }), "orma-btn orma-btn--primary");
   const skipBtn = btn("Überspringen", () => wheel.skip(), "orma-btn orma-btn--quiet", { hidden: true });
