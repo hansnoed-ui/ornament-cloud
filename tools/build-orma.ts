@@ -27,6 +27,8 @@ export const ALPHA = join(ROOT, "alpha/orma");
 const META = JSON.parse(readFileSync(join(ROOT, "src/orma/orma.json"), "utf8"));
 const START = "// <!-- ORMA:START -->", END = "// <!-- ORMA:END -->";
 const AUFTRAEGE = ["beispiel", "einwand", "gestaltung"];
+export const PILOT_SIZE = 24;                                   // REGELN §14
+export const RING_SLOTS = 12;                                   // Plätze je Ring (js/wheel.js)
 
 export const words = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
@@ -35,7 +37,7 @@ export function buildPilot(pilotText: string = readFileSync(PILOT_FILE, "utf8"))
   const pilot = JSON.parse(pilotText);
   const errors: string[] = [];
   const list = pilot.konstellationen;
-  if (!Array.isArray(list) || list.length !== 12) errors.push(`genau 12 Konstellationen erwartet, gefunden: ${Array.isArray(list) ? list.length : "keine"}`);
+  if (!Array.isArray(list) || list.length !== PILOT_SIZE) errors.push(`genau ${PILOT_SIZE} Konstellationen erwartet, gefunden: ${Array.isArray(list) ? list.length : "keine"}`);
   if (typeof pilot.inhaltsversion !== "string" || !pilot.inhaltsversion) errors.push("inhaltsversion fehlt");
   const ids = new Set<string>();
   const items = (list || []).map((k: any) => {
@@ -56,11 +58,17 @@ export function buildPilot(pilotText: string = readFileSync(PILOT_FILE, "utf8"))
       auftraege: Object.fromEntries(AUFTRAEGE.map(a => [a, k.auftraege[a].trim()])),
     };
   }).filter(Boolean) as any[];
+  // Das Rad hat zwölf Plätze je Ring: genau zwölf Künstler:innen und zwölf Theoretiker:innen
+  for (const key of ["artist", "theorist"]) {
+    const n = new Set(items.map((x: any) => x[key].id)).size;
+    if (items.length && n !== RING_SLOTS) errors.push(`${key === "artist" ? "Künstler:innen" : "Theoretiker:innen"}: ${n} verschiedene, das Rad hat ${RING_SLOTS} Plätze`);
+  }
   if (errors.length) throw new Error("ORMA-Redaktion ungültig:\n  " + errors.join("\n  "));
-  // Radplätze: Reihenfolge der Ringe wie in ORNA, unter den zwölf ausgewählten Personen
+  // Radplätze gehören den Personen (eine Person kann in mehreren Konstellationen vorkommen):
+  // Reihenfolge der Ringe wie in ORNA, unter den ausgewählten Personen
   const rank = (key: "artist" | "theorist") => {
-    const order = [...items].sort((x, y) => x[key].ringIndex - y[key].ringIndex).map(x => x.id);
-    for (const it of items) it[key].slot = order.indexOf(it.id);
+    const persons = [...new Map(items.map(x => [x[key].id, x[key].ringIndex])).entries()].sort((x, y) => x[1] - y[1]).map(x => x[0]);
+    for (const it of items) it[key].slot = persons.indexOf(it[key].id);
   };
   rank("artist"); rank("theorist");
   for (const it of items) { delete it.artist.ringIndex; delete it.theorist.ringIndex; }

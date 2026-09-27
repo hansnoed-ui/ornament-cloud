@@ -155,9 +155,10 @@ Gerät, auf Grundlage des Werks. Quelle, Build und Dokumentation: `src/orma/` (R
 - **Geltung:** §3 (Auswahl über den ganzen Bestand) und §8 (keine Spielmechanik auf der Radseite)
   gelten für ORNA. ORMA ist ausdrücklich ein Spiel, aber ohne Punkte, Ranglisten, Streaks,
   Zeitdruck und ohne Bewertung von Antworten. Alle übrigen Regeln gelten sinngemäss.
-- **Auswahl:** ORMA zieht aus zwölf freigegebenen Pilot-Konstellationen
-  (`src/orma/redaktion/pilot.json`). Die erste Ziehung erfolgt gleichverteilt, danach ist die zuletzt
-  gezeigte ausgeschlossen, und es wird gleichverteilt aus den übrigen elf gezogen. Gezogen wird ein
+- **Auswahl:** ORMA zieht aus 24 freigegebenen Pilot-Konstellationen
+  (`src/orma/redaktion/pilot.json`; erweitert von zwölf auf 24 am 27. September 2026). Die erste Ziehung
+  erfolgt gleichverteilt, danach ist die zuletzt gezeigte ausgeschlossen, und es wird gleichverteilt aus
+  den übrigen 23 gezogen. Gezogen wird ein
   ganzer Datensatz, die Radstellung folgt daraus; die Geste bestimmt nur den Weg.
 - **Texte:** Paarung, Originaltext, Originalfrage und IDs bleiben unverändert und werden immer mit
   angezeigt (§2 gilt). Neu hinzu kommen je Konstellation ein Einstieg (40–70 Wörter, aus dem

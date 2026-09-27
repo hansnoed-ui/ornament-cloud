@@ -1,4 +1,4 @@
-# ORMA – erste Fassung (0.1.0)
+# ORMA – Alpha-Fassung (0.2.0)
 
 **ORMA** · *Nebeneinander, Nacheinander* · Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke.
 
@@ -67,7 +67,7 @@ NODE_PATH=$(npm root -g) node tests/orma.e2e.mjs                           # Bro
    - «Unsere Gedanken»;
    - aufklappbare Hilfe «So geht eine Runde».
 2. **Beginnen:** Vornamen sind freiwillig; voreingestellt sind «Person A» und «Person B».
-3. **Drehen:** zwei gegenläufige Ringe mit je zwölf Plätzen, aussen die Künstler:innen, innen die
+3. **Drehen:** zwei gegenläufige Ringe mit je zwölf Plätzen (je Person ein Platz), aussen die Künstler:innen, innen die
    Theoretiker:innen, mit denselben Zeichen wie in ORNA.
    - Zuerst wird ein ganzer Datensatz gezogen, erst dann fahren die Ringe dorthin.
    - Die Geste (Tippen oder Wischen) bestimmt nur Richtung, Umdrehungen und Dauer.
@@ -95,16 +95,21 @@ NODE_PATH=$(npm root -g) node tests/orma.e2e.mjs                           # Bro
 
 Zehn Minuten sind eine Orientierung; es gibt keine Uhr, keine Punkte, keine Ranglisten und keine Streaks.
 
-## Die zwölf Pilot-Konstellationen
+## Die 24 Pilot-Konstellationen
 
 Auswahl nach drei Kriterien:
 - konkreter Werkbezug im Originaltext;
 - eine Frage, die ohne Vorwissen verständlich ist;
 - verschiedene gedankliche Zugänge (Zeit, Körper, Erinnerung, Regel, Blick, Raum, Material, Öffentlichkeit).
 
-Zwölf verschiedene Künstler:innen (sechs Frauen, sechs Männer) und zwölf verschiedene Theoretiker:innen,
-damit sich die Auswahl nicht auf wenige Personen konzentriert. Die Nummern sind die redaktionellen
+Zwölf Künstler:innen (sechs Frauen, sechs Männer) und zwölf Theoretiker:innen. Jede Person kommt in genau
+zwei Konstellationen vor, mit zwei verschiedenen Gegenübern. So konzentriert sich die Auswahl nicht auf
+wenige Personen, und das Rad bleibt bei zwölf Plätzen je Ring. Die Nummern sind die redaktionellen
 Nummern des Bestands (326er-Fassung).
+
+Die ersten zwölf stammen aus der Fassung 0.1.0, die zweiten zwölf sind mit 0.2.0 dazugekommen. Dieselben
+Personen sind neu gepaart, gewählt wurden kurze, konkrete Fragen, die sich gut in eine Handlung übersetzen
+lassen.
 
 | Nr | Paarung | Originalfrage | Zugang |
 |---|---|---|---|
@@ -120,6 +125,18 @@ Nummern des Bestands (326er-Fassung).
 | 118 | Doris Salcedo × Jacques Derrida | Wie kann eine Spur Abwesenheit zeigen? | Spur, Verlust |
 | 25 | Sol LeWitt × George Spencer-Brown | Wo liegt die Form: in der Regel oder in ihrer Ausführung? | Regel, Ausführung |
 | 7 | Donald Judd × Michel Serres | Ist Nähe eine Frage des Abstands oder des Weges? | Raum, Weg |
+| 321 | Eva Hesse × George Spencer-Brown | Wie stabil muss eine Grenze sein, um Form zu bilden? | Grenze, Material |
+| 268 | Tehching Hsieh × Lucy Suchman | Wie überlebt ein Plan ein Jahr? | Plan, Dauer |
+| 200 | Dan Graham × Henri Bergson | Wie lang sind zehn Sekunden in der Wahrnehmung? | Zeit, Wahrnehmung |
+| 177 | Felix Gonzalez-Torres × Michel Serres | Kann Weitergabe eine Form erhalten? | Weitergabe |
+| 43 | Rebecca Horn × Donna Haraway | Wann wird eine technische Erweiterung Teil des Körpers? | Körper, Technik |
+| 142 | Marina Abramović × Elena Esposito | Wie verändert ein angekündigtes Ende die Gegenwart? | Zukunft, Dauer |
+| 48 | Mona Hatoum × Judith Butler | Was passiert mit einer Norm, wenn der Körper anders handeln muss? | Norm, Körper |
+| 148 | Louise Bourgeois × Wendy Hui Kyong Chun | Kann Wiederholung eine Erinnerung verändern? | Erinnerung, Wiederholung |
+| 173 | On Kawara × Hannah Arendt | Wann wird ein einzelner Tag gemeinsam? | Tag, Öffentlichkeit |
+| 137 | Doris Salcedo × Susan Leigh Star | Welche Infrastruktur braucht Erinnerung? | Erinnerung, Pflege |
+| 214 | Sol LeWitt × Claude Shannon | Wie viel Information braucht ein Werk? | Anweisung, Information |
+| 195 | Donald Judd × Jacques Derrida | Kann ein Zwischenraum bestimmen, was ein Ding ist? | Abstand, Identität |
 
 **Wo die Texte liegen**
 - Auswahl und neue Texte: `src/orma/redaktion/pilot.json`. Die Datei verweist nur über die ID auf den
@@ -138,7 +155,7 @@ Nummern des Bestands (326er-Fassung).
 | `src/orma/app/js/draw.js` | Ziehung (Gleichverteilung, Rejection Sampling, keine unmittelbare Wiederholung) |
 | `src/orma/app/js/store.js` | Entwurf, Gedankenbuch, Sicherung und Import (Prüfung, kein Überschreiben) |
 | `src/orma/app/js/card.js` | Ergebniskarte als PNG (Layout ohne Browser prüfbar, wächst mit dem Text) |
-| `src/orma/app/js/wheel.js` | zwei gegenläufige Ringe mit je zwölf Plätzen, Geste nur für den Weg |
+| `src/orma/app/js/wheel.js` | zwei gegenläufige Ringe mit je zwölf Plätzen (je Person einer), Geste nur für den Weg |
 | `src/orma/app/js/symbols.js` | Abschrift der Zeichen-Grammatik aus ORNA (Test prüft Gleichheit) |
 | `src/orma/app/manifest.webmanifest`, `sw.js`, `icons/` | Installation und Offline-Betrieb, eigenes Symbol |
 | `src/orma/redaktion/pilot.json` | Auswahl, Einstiege und Spielaufträge |
@@ -178,8 +195,8 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
 
 - **Unit-Tests `tests/orma.test.mjs`: 18/18 bestanden.**
   - Ziehung: Rejection Sampling. Gleichverteilung erste Ziehung und nach einer Konstellation
-    (je 22 000–24 000 Ziehungen). Nie dieselbe unmittelbar wieder, nur freigegebene IDs.
-  - Pilotdaten: Texte, Fragen und IDs wörtlich wie im Bestand. Zwölf verschiedene Personen je Ring.
+    (je 46 000–48 000 Ziehungen, Toleranz ±15 %). Nie dieselbe unmittelbar wieder, nur freigegebene IDs.
+  - Pilotdaten: Texte, Fragen und IDs wörtlich wie im Bestand. Zwölf Personen je Ring, jede genau zweimal, fester Platz je Person.
     Einstieg 40–70 Wörter, kein «ß» in eigenen Texten. Zeichen wie in ORNA.
   - Speicher: Entwurf übersteht Schliessen. Beschädigte Daten führen zu einer Meldung und werden
     aufbewahrt. «Alle löschen» berührt nur das ORMA-Gedankenbuch. Import prüft, überschreibt nichts
@@ -190,7 +207,7 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
     unverändert gegenüber `main`.
   - Alpha: `alpha/orma/` entspricht dem aktuellen Build. Keine Seite ausserhalb von `alpha/` verlinkt
     den Bereich; er steht nicht in der Sitemap und ist mit `noindex` gesperrt.
-- **Browser-Tests `tests/orma.e2e.mjs`: 11/11 bestanden (die ersten zehn in sechs aufeinanderfolgenden Läufen).**
+- **Browser-Tests `tests/orma.e2e.mjs`: 11/11 bestanden, in sechs aufeinanderfolgenden Läufen (Fassung 0.2.0).**
   - ganze Runde am Smartphone (Tippen aufs Rad, Überspringen, Originaltext, Auftrag). Die erste Antwort
     steht weder beim Übergeben noch bei B im Dokument. Mündliche Antwort, Aufdecken, Weiterdenken,
     Ergebniskarte;
@@ -199,7 +216,7 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
     Knöpfe ≥ 48 px;
   - Fortsetzen nach Neuladen, auch mitten in B (zuerst neutrale Übergabe). Kein Verlust zwischen den
     Schritten. Verwerfen nur nach Bestätigung;
-  - 26 Ziehungen in der App: alle aus den zwölf, keine unmittelbare Wiederholung, auch über
+  - 26 Ziehungen in der App: alle aus den 24, keine unmittelbare Wiederholung, auch über
     «Noch eine Runde»;
   - Gedankenbuch: Behalten, Öffnen, Favorit, einzeln Löschen, Sicherung herunterladen. Alles löschen
     mit Abbrechen und Bestätigen. Import zurück; ein zweiter Import überschreibt nichts; eine kaputte
@@ -222,7 +239,7 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
 ## Offene Punkte
 
 **Redaktion (brauchen deine Durchsicht)**
-1. Alle zwölf Einstiege und 36 Spielaufträge sind Entwürfe (`"status": "entwurf"`) und warten auf deine
+1. Alle 24 Einstiege und 72 Spielaufträge sind Entwürfe (`"status": "entwurf"`) und warten auf deine
    Freigabe. Danach `status` auf `"freigegeben"` setzen und `inhaltsversion` hochzählen.
 2. Der Einstieg zu Rebecca Horn × Wendy Hui Kyong Chun endet mit einem eigenen Satz, der deutet
    und nicht mehr nur verdichtet: «Was sonst unbemerkt bleibt, wird hier zur Aufgabe.» Bitte bestätigen

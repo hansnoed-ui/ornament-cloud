@@ -14,6 +14,7 @@ const easeOut = t => 1 - Math.pow(1 - t, 3);
 const mod = (a, m) => ((a % m) + m) % m;
 
 export function createWheel(svg, { outer, inner }) {
+  if (outer.length !== SLOTS || inner.length !== SLOTS) throw new Error(`Rad: je Ring ${SLOTS} Personen erwartet`);
   const ring = (geo, items, cls) => {
     const slots = items.map((it, i) =>
       `<g transform="rotate(${i * STEP} ${C} ${C}) translate(${C} ${C - geo.sym})"><g class="orma-sym">${symbolMarkup(it.symbol, geo.half)}</g></g>`).join("");
