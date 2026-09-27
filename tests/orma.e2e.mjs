@@ -366,6 +366,88 @@ await check("Trennung: ORNA und ORMA nebeneinander – eigene Service Worker, ei
   await ctx.close();
 });
 
+// ---------- Re-Entry (allein) ----------
+const soloStart = page => page.getByRole("button", { name: /^Allein: Re-Entry/ }).click();
+
+await check("Re-Entry, erster Durchgang: allein drehen, lesen, Auftrag, antworten – die Schleife bleibt offen, die Antwort verborgen", async () => {
+  const { ctx, page, errors } = await open();
+  await soloStart(page);
+  await tap(page, "Drehen");
+  await tap(page, "Lesen");
+  await tap(page, "Einen Auftrag wählen");
+  await page.click('[data-auftrag="einwand"]');
+  assert.equal(await button(page, "Ich antworte mündlich").count(), 0, "allein keine mündliche Antwort");
+  await page.fill("#orma-answer-a", "Mein früher Gedanke");
+  await tap(page, "Fertig");
+  assert.equal(await page.textContent("h2"), "Die Schleife ist offen");
+  const loops = await page.evaluate(() => JSON.parse(localStorage.getItem("orma:v1:schleifen")));
+  assert.equal(loops.length, 1);
+  assert.equal(loops[0].text, "Mein früher Gedanke");
+  assert.equal(loops[0].auftrag, "einwand");
+  assert.equal(await page.evaluate(() => localStorage.getItem("orma:v1:entwurf")), null, "Runde abgeschlossen");
+  await page.locator("main").getByRole("button", { name: "Zur Startansicht", exact: true }).click();
+  await page.getByRole("button", { name: "Allein: Re-Entry (1 offen)" }).waitFor();
+  await tap(page, "Unsere Gedanken");
+  assert.match(await page.textContent("main"), /Offene Schleifen \(1\)/);
+  assert.ok(!(await page.content()).includes("Mein früher Gedanke"), "Antwort in der Liste sichtbar");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Re-Entry, zweiter Durchgang: dieselbe Konstellation kehrt zurück – derselbe Auftrag, erste Antwort verborgen, dann aufdecken, dritter Gedanke, Schleife geschlossen", async () => {
+  const { ctx, page, errors } = await open();
+  // für jede Konstellation eine offene Schleife: jede Ziehung trifft auf einen zweiten Durchgang
+  await page.evaluate(ids => localStorage.setItem("orma:v1:schleifen", JSON.stringify(ids.map((id, i) =>
+    ({ id: `s${i}`, constellationId: id, contentVersion: "x", auftrag: "gestaltung", text: `Frühere Antwort ${i}`, at: "2026-09-01T09:00:00.000Z" })))), PILOT);
+  await page.reload(); await page.waitForSelector("html[data-ready]");
+  await page.getByRole("button", { name: `Allein: Re-Entry (${PILOT.length} offen)` }).click();
+  await tap(page, "Drehen");
+  await tap(page, "Lesen");
+  const id = await drawn(page);
+  const n = PILOT.indexOf(id);
+  assert.equal(await page.textContent("h2"), "Du warst schon einmal hier");
+  assert.match(await page.textContent("main"), /Am 1\. September 2026/);
+  assert.ok(!(await page.content()).includes(`Frühere Antwort ${n}`), "erste Antwort beim Wiedersehen sichtbar");
+  await tap(page, "Lesen");
+  await tap(page, "Noch einmal antworten");                                 // keine Auftragswahl: derselbe Auftrag
+  assert.match(await page.textContent(".orma-task"), /Etwas daraus machen/);
+  assert.ok(!(await page.content()).includes(`Frühere Antwort ${n}`), "erste Antwort beim zweiten Schreiben sichtbar");
+  await page.fill("#orma-answer-b", "Heute sehe ich es anders");
+  // Schliessen mitten im zweiten Durchgang: Fortsetzen ohne Übergabe, erste Antwort weiter verborgen
+  await page.reload(); await page.waitForSelector("html[data-ready]");
+  await tap(page, "Runde fortsetzen");
+  assert.equal(await page.inputValue("#orma-answer-b"), "Heute sehe ich es anders");
+  assert.ok(!(await page.content()).includes(`Frühere Antwort ${n}`));
+  await tap(page, "Fertig");
+  await tap(page, "Aufdecken");
+  const answers = await page.locator(".orma-answer").allTextContents();
+  assert.match(answers[0], new RegExp(`Ich, am 1\\. September 2026.*Frühere Antwort ${n}`));
+  assert.match(answers[1], /Ich, am .*Heute sehe ich es anders/);
+  assert.match(await page.textContent("main"), /Was hat sich verändert\?/);
+  await tap(page, "Weiterdenken");
+  await page.fill("#orma-veraendert", "Ich bin vorsichtiger geworden.");
+  await page.fill("#orma-dritter", "Ein dritter Gedanke, der beide hält.");
+  await tap(page, "Zur Ergebniskarte");
+  const card = await page.textContent(".orma-result");
+  assert.match(card, /Der dritte Gedanke/);
+  assert.match(card, /Ein dritter Gedanke, der beide hält\./);
+  const left = await page.evaluate(() => JSON.parse(localStorage.getItem("orma:v1:schleifen")));
+  assert.equal(left.length, PILOT.length - 1, "Schleife geschlossen");
+  assert.ok(!left.some(l => l.constellationId === id));
+  await tap(page, "Im Gedankenbuch behalten");
+  await tap(page, "Karte exportieren");
+  assert.equal(await page.locator('[data-opt="names"]').count(), 0, "allein keine Namen");
+  await page.check('[data-opt="answers"]');
+  await page.check('[data-opt="result"]');
+  await page.waitForFunction(() => Number(document.querySelector(".orma-preview").dataset.height) >= 1350);
+  await tap(page, "Zurück");
+  await tap(page, "Runde beenden");
+  await tap(page, "Unsere Gedanken (1)");
+  assert.match(await page.textContent(".orma-book"), /Re-Entry/);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 // ---------- Alpha-Bereich ----------
 await check("Alpha: alpha/ listet ORMA; alpha/orma/ läuft unter dem Website-Pfad mit eigenem Service Worker", async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });

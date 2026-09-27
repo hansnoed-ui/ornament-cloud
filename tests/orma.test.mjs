@@ -305,3 +305,63 @@ test("Alpha: öffentlich, aber von keiner Seite verlinkt, nicht in der Sitemap, 
   for (const p of ["alpha/index.html", "alpha/orma/index.html"])
     assert.match(readFileSync(new URL(p, root), "utf8"), /<meta name="robots" content="noindex/, p);
 });
+
+// ---------- Re-Entry (allein) ----------
+test("Re-Entry: erster Durchgang öffnet eine Schleife, sie wird zur Konstellation gefunden und nach dem zweiten geschlossen", () => {
+  const s = memory();
+  const r = store.newRound({ mode: "allein" });
+  assert.equal(r.mode, "allein");
+  Object.assign(r, { constellationId: ids[5], contentVersion: pilot.contentVersion, auftrag: "einwand" });
+  r.answers.a.text = "damals gedacht";
+  const { ok, loop } = store.openLoop(s, r, new Date("2026-09-27T10:00:00Z"));
+  assert.ok(ok);
+  assert.equal(store.openLoop(s, r).loop.id, loop.id, "einmal je Runde");
+  assert.equal(store.loadLoops(s).loops.length, 1);
+  assert.equal(store.openLoopFor(s, ids[4]), null);
+  const found = store.openLoopFor(s, ids[5]);
+  assert.deepEqual([found.text, found.auftrag, found.at], ["damals gedacht", "einwand", "2026-09-27T10:00:00.000Z"]);
+  // ältere Schleife zuerst, falls es mehrere gibt
+  const r2 = store.newRound({ mode: "allein" }); Object.assign(r2, { constellationId: ids[5], auftrag: "beispiel" });
+  store.openLoop(s, r2, new Date("2026-09-28T10:00:00Z"));
+  assert.equal(store.openLoopFor(s, ids[5]).id, loop.id);
+  store.closeLoop(s, loop.id);
+  assert.equal(store.openLoopFor(s, ids[5]).id, r2.id);
+  // Modus und Datum des ersten Durchgangs bleiben im Gedankenbuch erhalten
+  const second = store.newRound({ mode: "allein" });
+  Object.assign(second, { constellationId: ids[5], auftrag: "einwand", loopId: loop.id, firstAt: loop.at });
+  const e = store.sanitizeEntry({ ...second, savedAt: new Date().toISOString() });
+  assert.equal(e.mode, "allein");
+  assert.equal(e.firstAt, loop.at);
+  assert.equal("loopId" in e, false);
+});
+
+test("Re-Entry: beschädigte Schleifen werden aufbewahrt; «Alle löschen» entfernt auch Schleifen; Sicherung und Import tragen sie mit", () => {
+  const s = memory({ [store.KEYS.loops]: "kaputt", fremd: "bleibt" });
+  assert.match(store.loadLoops(s).error, /beschädigt/);
+  assert.equal(s.getItem(store.KEYS.loopsDamaged), "kaputt");
+  store.deleteAllEntries(s);
+  assert.equal(s.getItem(store.KEYS.loops), null);
+  assert.equal(s.getItem(store.KEYS.loopsDamaged), null);
+  assert.equal(s.getItem("fremd"), "bleibt");
+
+  const loop = store.sanitizeLoop({ id: "l1", constellationId: ids[0], auftrag: "beispiel", text: "erste", at: "2026-09-27T10:00:00Z" });
+  const backup = JSON.stringify(store.makeBackup([], new Date(), [loop, { id: "l2", constellationId: ids[1], auftrag: "falsch" }]));
+  const res = store.mergeBackup(backup, [], [store.sanitizeLoop({ ...loop, text: "meine Fassung" })]);
+  assert.equal(res.loopsAdded, 0);
+  assert.equal(res.skipped, 1);
+  assert.equal(res.invalid, 1);
+  assert.equal(res.loops[0].text, "meine Fassung", "nicht überschrieben");
+  assert.equal(store.mergeBackup(backup, [], []).loopsAdded, 1);
+  // ältere Sicherung ohne Schleifen bleibt lesbar
+  const old = JSON.stringify({ format: store.BACKUP_FORMAT, version: 1, entries: [] });
+  assert.deepEqual(store.mergeBackup(old, [], []).loops, []);
+});
+
+test("Re-Entry-Karte: Beschriftung mit den Daten der beiden Durchgänge und «Der dritte Gedanke»", () => {
+  const data = { ...cardData(false), labels: { a: "Ich, am 27. September 2026", b: "Ich, am 3. Oktober 2026" }, resultLabel: "Der dritte Gedanke" };
+  const txt = layoutCard(data, { names: false, answers: true, result: true }, measure).ops.map(o => o.text || "").join(" | ");
+  assert.match(txt, /Der dritte Gedanke/);
+  assert.match(txt, /Ich, am 27\. September 2026/);
+  assert.match(txt, /Ich, am 3\. Oktober 2026/);
+  assert.ok(!txt.includes("Zuerst"));
+});

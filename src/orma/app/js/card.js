@@ -37,7 +37,8 @@ export function wrap(text, font, max, measure) {
 }
 
 /**
- * data: { artist, theorist, question, auftrag, names:{a,b}, answers:{a:{text,oral},b}, result:{mode,gemeinsam,a,b}, date }
+ * data: { artist, theorist, question, auftrag, names:{a,b}, answers:{a:{text,oral},b}, result:{mode,gemeinsam,a,b}, date,
+ *         labels?:{a,b}, resultLabel? }  – labels/resultLabel: Re-Entry («Ich, am …», «Der dritte Gedanke»)
  * opts: { names, answers, result } – was persönlich ist, nur auf ausdrückliche Auswahl
  */
 export function layoutCard(data, opts, measure) {
@@ -60,7 +61,8 @@ export function layoutCard(data, opts, measure) {
   gap(40);
   text(data.question, `40px ${SERIF}`, 40, CARD_COLORS.ink, 1.35);
 
-  const who = k => (opts.names && data.names[k]) ? data.names[k] : `Person ${k.toUpperCase()}`;
+  const who = k => (data.labels && data.labels[k]) || ((opts.names && data.names[k]) ? data.names[k] : `Person ${k.toUpperCase()}`);
+  const answerLabel = k => (data.labels ? data.labels[k] : `Zuerst ${who(k)}`);
   const say = a => (a.oral ? "hat mündlich geantwortet." : a.text.trim() || "–");
   const block = (label, body) => {
     text(label, `600 24px ${SANS}`, 24, CARD_COLORS.muted, 1.4);
@@ -75,7 +77,7 @@ export function layoutCard(data, opts, measure) {
     if (data.auftrag && AUFTRAG_LABEL[data.auftrag]) { text(`Spielauftrag: ${AUFTRAG_LABEL[data.auftrag]}`, `600 24px ${SANS}`, 24, CARD_COLORS.accent, 1.4); gap(20); }
   }
   if (hasResult) {
-    if (r.mode === "gemeinsam") block("Unser neuer Gedanke", r.gemeinsam.trim());
+    if (r.mode === "gemeinsam") block(data.resultLabel || "Unser neuer Gedanke", r.gemeinsam.trim());
     else {
       if (r.a.trim()) { block(`Position ${who("a")}`, r.a.trim()); gap(20); }
       if (r.b.trim()) block(`Position ${who("b")}`, r.b.trim());
@@ -83,9 +85,9 @@ export function layoutCard(data, opts, measure) {
   }
   if (opts.answers) {
     if (hasResult) gap(36);
-    block(`Zuerst ${who("a")}`, say(data.answers.a));
+    block(answerLabel("a"), say(data.answers.a));
     gap(20);
-    block(`Zuerst ${who("b")}`, say(data.answers.b));
+    block(answerLabel("b"), say(data.answers.b));
   }
 
   gap(72);
