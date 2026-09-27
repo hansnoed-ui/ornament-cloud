@@ -597,13 +597,16 @@ await check("ORNA-Startbild: vor der Animation blitzt die Seite nicht auf; ohne 
 });
 
 // ---------- Hinweis «Als App installieren» ----------
-await check("Installationshinweis: Chrome/Android öffnet das Installationsfenster, iPhone erklärt die Schritte, sonst kein Hinweis", async () => {
-  // ohne Installationsmöglichkeit: kein Hinweis
+await check("Installationsknopf: überall sichtbar ausser in der App; Chrome öffnet das Installationsfenster, sonst stehen die Schritte da", async () => {
+  // Computer ohne Meldung «installierbar» (z. B. Inkognito, schon installiert): Knopf da, Klick erklärt
   const a = await open({ viewport: { width: 1280, height: 900 } });
-  await a.page.waitForTimeout(300);
-  assert.equal(await a.page.$eval(".rad-install", e => e.hidden), true);
+  assert.equal(await a.page.$eval(".rad-install", e => e.hidden), false);
+  assert.equal(await a.page.$eval(".rad-install-hilfe", e => e.hidden), true);
+  await a.page.click(".rad-install-btn");
+  assert.equal(await a.page.$eval(".rad-install-hilfe", e => e.hidden), false);
+  assert.match(await a.page.$eval(".rad-install-hilfe", e => e.textContent), /Installationssymbol/);
 
-  // Chrome/Android: Browser meldet «installierbar» → Knopf erscheint, Klick ruft das Installationsfenster
+  // Chrome/Android: Browser meldet «installierbar» → Klick ruft das Installationsfenster
   await a.page.evaluate(() => {
     window.__prompted = 0;
     const e = new Event("beforeinstallprompt", { cancelable: true });
@@ -611,29 +614,36 @@ await check("Installationshinweis: Chrome/Android öffnet das Installationsfenst
     e.userChoice = Promise.resolve({ outcome: "accepted" });
     dispatchEvent(e);
   });
-  assert.equal(await a.page.$eval(".rad-install", e => e.hidden), false);
   await a.page.focus(".rad-install-btn");
   await a.page.keyboard.press("Enter");
   assert.equal(await a.page.evaluate(() => window.__prompted), 1);
   await a.page.waitForFunction(() => document.querySelector(".rad-install").hidden);
   await a.ctx.close();
 
-  // iPhone: Knopf sichtbar, Klick zeigt die zwei Schritte
+  // iPhone: Knopf sichtbar, gut sichtbar über dem Rad, Klick zeigt die zwei Schritte
   const b = await open({ ...devices["iPhone 13"] });
   assert.equal(await b.page.$eval(".rad-install", e => e.hidden), false);
-  // gut sichtbar: über dem Rad, im ersten Bildschirm
   assert.ok(await b.page.evaluate(() => {
     const hint = document.querySelector(".rad-install"), stage = document.querySelector(".rad-stage");
     return (hint.compareDocumentPosition(stage) & Node.DOCUMENT_POSITION_FOLLOWING) && hint.getBoundingClientRect().bottom <= stage.getBoundingClientRect().top + 1
       && hint.getBoundingClientRect().bottom <= innerHeight;
   }));
-  assert.equal(await b.page.$eval(".rad-install-hilfe", e => e.hidden), true);
   await b.page.tap(".rad-install-btn");
   assert.equal(await b.page.$eval(".rad-install-hilfe", e => e.hidden), false);
   assert.equal(await b.page.$eval(".rad-install-btn", e => e.getAttribute("aria-expanded")), "true");
-  assert.match(await b.page.$eval(".rad-install-hilfe", e => e.textContent), /Zum Home-Bildschirm/);
+  assert.match(await b.page.$eval(".rad-install-hilfe", e => e.textContent), /«Teilen».*«Zum Home-Bildschirm»/);
   assert.ok(await b.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   await b.ctx.close();
+
+  // in der geöffneten App: kein Knopf
+  const ctx = await browser.newContext({ ...devices["iPhone 13"] });
+  await ctx.addInitScript(() => { Object.defineProperty(Navigator.prototype, "standalone", { value: true, configurable: true }); });
+  const page = await ctx.newPage();
+  await page.goto(base + "app/");
+  await page.waitForFunction(() => document.querySelector(".rad-wheel")?.__rad);
+  await page.waitForTimeout(300);
+  assert.equal(await page.$eval(".rad-install", e => e.hidden), true);
+  await ctx.close();
 });
 
 await browser.close();
