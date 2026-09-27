@@ -150,7 +150,12 @@ Die Adresse jeder Konstellation ist `?pair=<id>`. Nach jeder Drehung wird sie pe
 ## 14. ORMA (freigegeben am 27. September 2026)
 
 ORMA ist eine eigenständige zweite App neben ORNA: ein Kunst- und Denkspiel für zwei Personen an einem
-Gerät, auf Grundlage des Werks. Quelle, Build und Dokumentation: `src/orma/` (README dort).
+Gerät, auf Grundlage des Werks. Dazu kommt der Modus **allein (Re-Entry)** (freigegeben am 27. September
+2026): Eine Person antwortet und lässt die Schleife offen. Bringt das Rad dieselbe Konstellation durch
+Zufall wieder, antwortet sie noch einmal (derselbe Auftrag, ohne die erste Antwort zu sehen), deckt beide
+auf und hält den dritten Gedanken fest. Offene Schleifen werden bei der Ziehung nicht bevorzugt; es gibt
+keinen Mindestabstand. Nach dem zweiten Durchgang ist eine Schleife geschlossen; kommt die Konstellation
+danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (README dort).
 
 - **Geltung:** §3 (Auswahl über den ganzen Bestand) und §8 (keine Spielmechanik auf der Radseite)
   gelten für ORNA. ORMA ist ausdrücklich ein Spiel, aber ohne Punkte, Ranglisten, Streaks,

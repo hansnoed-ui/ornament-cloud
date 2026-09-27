@@ -1,18 +1,22 @@
 // ORMA – Spielablauf für zwei Personen an einem Gerät.
 // Start → Namen → Drehen → Gemeinsam lesen → Auftrag wählen → A antwortet → Übergabe → B antwortet
 // → Aufdecken → Weiterdenken → Ergebniskarte (behalten, exportieren, noch eine Runde).
+// Re-Entry (allein): erster Durchgang Drehen → Lesen → Auftrag → Antwort → Schleife offen. Bringt das Rad
+// dieselbe Konstellation wieder, folgt der zweite Durchgang: Wiedersehen → Lesen → Antwort (derselbe Auftrag,
+// ohne die erste Antwort zu sehen) → Aufdecken → Was hat sich verändert, der dritte Gedanke → Ergebniskarte.
 // Jede Änderung wird sofort als Entwurf gesichert (store.js). Nutzereingaben gehen nur über
 // textContent und value in die Seite, nie als HTML.
 // Keine Anmeldung, keine Zählung, keine Netzanfragen ausser dem eigenen Service Worker.
 
-import { APP, CONTENT_VERSION, PILOT } from "./data.js?v=2c61eb83670d";
-import { drawNext } from "./draw.js?v=2c61eb83670d";
+import { APP, CONTENT_VERSION, PILOT } from "./data.js?v=38475abae4db";
+import { drawNext } from "./draw.js?v=38475abae4db";
 import {
   KEYS, newRound, loadDraft, saveDraft, clearDraft, loadBook, saveBook, keepRound, setFavorite, deleteEntry,
   deleteAllEntries, makeBackup, mergeBackup, loadText, saveText,
-} from "./store.js?v=2c61eb83670d";
-import { createWheel, bindGesture } from "./wheel.js?v=2c61eb83670d";
-import { layoutCard, drawCard, canvasMeasure } from "./card.js?v=2c61eb83670d";
+  loadLoops, saveLoops, openLoopFor, openLoop, closeLoop,
+} from "./store.js?v=38475abae4db";
+import { createWheel, bindGesture } from "./wheel.js?v=38475abae4db";
+import { layoutCard, drawCard, canvasMeasure } from "./card.js?v=38475abae4db";
 
 // ---------- Umgebung ----------
 const storage = (() => { try { const s = window.localStorage; s.getItem("orma:probe"); return s; } catch { return memoryStorage(); } })();
@@ -61,7 +65,10 @@ function show(...nodes) {
 const say = t => { live.textContent = ""; setTimeout(() => { live.textContent = t; }, 30); };
 const noticeNode = () => { if (!notice) return null; const n = h("p", { class: "orma-note", role: "status", text: notice }); notice = ""; return n; };
 
-const nameOf = (r, k) => (r.names[k] || "").trim() || `Person ${k.toUpperCase()}`;
+const solo = r => r.mode === "allein";
+// Re-Entry: die beiden Durchgänge heissen nach ihrem Datum – dieselbe Person, zu verschiedenen Zeiten
+const nameOf = (r, k) => solo(r) ? `Ich, am ${fmtDate(k === "a" ? r.firstAt : r.startedAt)}`
+  : (r.names[k] || "").trim() || `Person ${k.toUpperCase()}`;
 const pairTitle = p => h("p", { class: "orma-pair" }, p.artist.name, h("span", { class: "orma-x", "aria-hidden": "true", text: " × " }), h("span", { class: "sr-only", text: " und " }), p.theorist.name);
 const fmtDate = iso => { try { return new Date(iso).toLocaleDateString("de-CH", { day: "numeric", month: "long", year: "numeric" }); } catch { return ""; } };
 
@@ -73,15 +80,18 @@ function renderStart() {
   const { draft, error } = loadDraft(storage);
   if (error && !notice) notice = error;
   const book = loadBook(storage);
+  const open = loadLoops(storage).loops.length;
   const resumable = draft && (!draft.constellationId || byId.has(draft.constellationId));
+  const fresh = next => (resumable ? confirmView(
+    "Es gibt eine unterbrochene Runde. Wenn du neu beginnst, wird sie verworfen.",
+    "Neu beginnen", () => { clearDraft(storage); next(); }, renderStart) : next());
 
   const actions = h("div", { class: "orma-actions" },
-    btn("Zu zweit beginnen", () => (resumable ? confirmView(
-      "Es gibt eine unterbrochene Runde. Wenn ihr neu beginnt, wird sie verworfen.",
-      "Neu beginnen", () => { clearDraft(storage); renderNames(); }, renderStart) : renderNames()), "orma-btn orma-btn--primary"),
+    btn("Zu zweit beginnen", () => fresh(renderNames), "orma-btn orma-btn--primary"),
+    btn(`Allein: Re-Entry${open ? ` (${open} offen)` : ""}`, () => fresh(startSolo)),
     resumable && btn("Runde fortsetzen", () => {
       round = draft;
-      if (round.step === "antwort-b") round.step = "uebergabe";   // wer das Gerät hält, ist offen: erst wieder übergeben
+      if (!solo(round) && round.step === "antwort-b") round.step = "uebergabe";   // wer das Gerät hält, ist offen: erst wieder übergeben
       renderRound();
     }),
     btn(`Unsere Gedanken${book.entries.length ? ` (${book.entries.length})` : ""}`, renderBook),
@@ -115,6 +125,7 @@ function helpBlock() {
       h("li", { text: "Dann deckt ihr beide Antworten auf und denkt gemeinsam weiter. Einig werden müsst ihr euch nicht." }),
       h("li", { text: "Zum Schluss könnt ihr den Gedanken im Gedankenbuch behalten oder als Bild exportieren." }),
     ),
+    h("p", { class: "orma-small", text: "Allein: Re-Entry. Du spielst beide Rollen, zu verschiedenen Zeiten. Beim ersten Mal antwortest du und lässt die Schleife offen. Bringt das Rad dieselbe Konstellation irgendwann wieder, antwortest du noch einmal, als spätere Version deiner selbst, ohne deine erste Antwort zu sehen. Dann legst du beide nebeneinander und hältst fest, was sich verändert hat: den dritten Gedanken." }),
     h("p", { class: "orma-small", text: "Etwa zehn Minuten, aber ohne Uhr. Es gibt keine richtigen oder falschen Antworten, keine Punkte und keine Wertung. Antworten dürfen vorläufig bleiben und der Paarung widersprechen." }),
     h("p", { class: "orma-small", text: "Installieren: im Browsermenü «App installieren» oder «Zum Startbildschirm hinzufügen» wählen, auf dem iPhone über «Teilen» und «Zum Home-Bildschirm». Danach funktioniert ORMA auch ohne Netz." }),
   );
@@ -152,12 +163,18 @@ function renderNames(prev = {}) {
   );
 }
 
+function startSolo() {
+  round = newRound({ mode: "allein" });
+  persist();
+  renderRound();
+}
+
 // ---------- Runde ----------
 function renderRound() {
   const p = byId.get(round.constellationId);
   if (round.step !== "drehen" && !p) { round.step = "drehen"; round.constellationId = ""; }
   ({
-    drehen: renderSpin, lesen: renderRead, wahl: renderChoice,
+    drehen: renderSpin, wiedersehen: renderAgain, lesen: renderRead, wahl: renderChoice, offen: renderOpenLoop,
     "antwort-a": () => renderAnswer("a"), uebergabe: renderHandover, "antwort-b": () => renderAnswer("b"),
     aufdecken: renderReveal, weiterdenken: renderFurther, karte: renderResult, namen: () => renderNames(round.names),
   }[round.step] || renderSpin)();
@@ -176,7 +193,7 @@ function renderSpin() {
   const pairBox = h("div", { class: "orma-pair-box", "aria-live": "polite" });
   const spinBtn = btn("Drehen", () => spin({ dir: 1, strength: 0.5 }), "orma-btn orma-btn--primary");
   const skipBtn = btn("Überspringen", () => wheel.skip(), "orma-btn orma-btn--quiet", { hidden: true });
-  const goBtn = btn("Gemeinsam lesen", () => go("lesen"), "orma-btn orma-btn--primary", { hidden: true });
+  const goBtn = btn(solo(round) ? "Lesen" : "Gemeinsam lesen", () => go(round.loopId ? "wiedersehen" : "lesen"), "orma-btn orma-btn--primary", { hidden: true });
 
   const landed = p => {
     pairBox.replaceChildren(pairTitle(p));
@@ -191,6 +208,11 @@ function renderSpin() {
     const p = byId.get(id);
     round.constellationId = id;
     round.contentVersion = CONTENT_VERSION;
+    if (solo(round)) {
+      // Re-Entry: gibt es zu dieser Konstellation eine offene Schleife, wird dies ihr zweiter Durchgang
+      const loop = openLoopFor(storage, id);
+      if (loop) Object.assign(round, { loopId: loop.id, firstAt: loop.at, auftrag: loop.auftrag, answers: { ...round.answers, a: { text: loop.text, oral: false } } });
+    }
     saveText(storage, KEYS.last, id);
     persist();
     spinBtn.hidden = true; skipBtn.hidden = false;
@@ -203,9 +225,9 @@ function renderSpin() {
   svg.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); spin({ dir: 1, strength: 0.5 }); } });
 
   show(
-    h("p", { class: "orma-kicker", text: `${nameOf(round, "a")} und ${nameOf(round, "b")}` }),
+    h("p", { class: "orma-kicker", text: solo(round) ? "Allein · Re-Entry" : `${nameOf(round, "a")} und ${nameOf(round, "b")}` }),
     h("h2", { text: "Das Rad bringt zwei zusammen" }),
-    h("p", { class: "orma-muted", text: "Tippen oder wischen. Wie ihr dreht, bestimmt nur den Weg, nicht das Ergebnis." }),
+    h("p", { class: "orma-muted", text: solo(round) ? "Tippen oder wischen. Wie du drehst, bestimmt nur den Weg, nicht das Ergebnis." : "Tippen oder wischen. Wie ihr dreht, bestimmt nur den Weg, nicht das Ergebnis." }),
     h("div", { class: "orma-wheel-wrap" }, svg),
     pairBox,
     h("div", { class: "orma-actions" }, spinBtn, skipBtn, goBtn),
@@ -218,7 +240,7 @@ function renderSpin() {
 function renderRead() {
   const p = byId.get(round.constellationId);
   show(
-    h("p", { class: "orma-kicker", text: "Gemeinsam lesen" }),
+    h("p", { class: "orma-kicker", text: solo(round) ? (round.loopId ? "Zweiter Durchgang" : "Lesen") : "Gemeinsam lesen" }),
     h("h2", {}, p.artist.name, h("span", { class: "orma-x", text: " × " }), p.theorist.name),
     h("span", { class: "orma-label", text: "Zum Einstieg" }),
     h("p", { text: p.einstieg }),
@@ -229,7 +251,41 @@ function renderRead() {
       h("p", { text: p.text }),
       h("p", { class: "orma-small", text: `Aus «Nebeneinander, Nacheinander», Konstellation Nr. ${p.nr}. Der Einstieg oben ist eine Hinführung der ORMA-Redaktion, kein Zitat.` }),
     ),
-    h("div", { class: "orma-actions" }, btn("Einen Auftrag wählen", () => go("wahl"), "orma-btn orma-btn--primary")),
+    h("div", { class: "orma-actions" }, round.loopId
+      ? btn("Noch einmal antworten", () => go("antwort-b"), "orma-btn orma-btn--primary")   // derselbe Auftrag wie beim ersten Mal
+      : btn("Einen Auftrag wählen", () => go("wahl"), "orma-btn orma-btn--primary")),
+  );
+}
+
+// Re-Entry: Wiedersehen mit einer offenen Schleife (nichts von der ersten Antwort)
+function renderAgain() {
+  const p = byId.get(round.constellationId);
+  show(
+    h("p", { class: "orma-kicker", text: "Re-Entry" }),
+    h("h2", { text: "Du warst schon einmal hier" }),
+    pairTitle(p),
+    h("p", { text: `Am ${fmtDate(round.firstAt)} hat dich das Rad schon einmal zu dieser Konstellation gebracht. Jetzt antwortest du noch einmal: mit demselben Auftrag, als spätere Version deiner selbst, ohne deine erste Antwort zu sehen.` }),
+    h("p", { class: "orma-small", text: "Danach legst du beide Antworten nebeneinander." }),
+    h("div", { class: "orma-actions" }, btn("Lesen", () => go("lesen"), "orma-btn orma-btn--primary")),
+  );
+}
+
+// Re-Entry: erster Durchgang abgeschlossen, die Schleife bleibt offen
+function renderOpenLoop() {
+  const p = byId.get(round.constellationId);
+  const { ok } = openLoop(storage, round);
+  const last = round.constellationId;
+  if (ok) clearDraft(storage);
+  show(
+    ok ? null : h("p", { class: "orma-note", text: "Die Schleife liess sich auf diesem Gerät nicht speichern." }),
+    h("p", { class: "orma-kicker", text: "Re-Entry" }),
+    h("h2", { text: "Die Schleife ist offen" }),
+    pairTitle(p),
+    h("p", { text: "Deine Antwort ist auf diesem Gerät gespeichert. Sehen wirst du sie erst wieder im zweiten Durchgang: wenn das Rad dich irgendwann wieder zu dieser Konstellation bringt. Dann antwortest du noch einmal, als spätere Version deiner selbst." }),
+    h("div", { class: "orma-actions" },
+      btn("Weiter drehen", () => { round = newRound({ mode: "allein" }); persist(); saveText(storage, KEYS.last, last); renderRound(); }, "orma-btn orma-btn--primary"),
+      btn("Zur Startansicht", () => { round = null; renderStart(); }, "orma-btn orma-btn--quiet"),
+    ),
   );
 }
 
@@ -238,8 +294,8 @@ function renderChoice() {
   const p = byId.get(round.constellationId);
   show(
     h("p", { class: "orma-kicker", text: "Spielauftrag" }),
-    h("h2", { text: "Was wollt ihr damit machen?" }),
-    h("p", { class: "orma-muted", text: "Wählt gemeinsam einen Auftrag. Er ist eine Anregung von ORMA, keine Aussage der genannten Personen." }),
+    h("h2", { text: solo(round) ? "Was willst du damit machen?" : "Was wollt ihr damit machen?" }),
+    h("p", { class: "orma-muted", text: solo(round) ? "Wähle einen Auftrag. Beim zweiten Durchgang gilt derselbe. Er ist eine Anregung von ORMA, keine Aussage der genannten Personen." : "Wählt gemeinsam einen Auftrag. Er ist eine Anregung von ORMA, keine Aussage der genannten Personen." }),
     h("div", { class: "orma-choice" },
       Object.entries(AUFTRAG).map(([key, label]) => h("button", {
         type: "button", class: "orma-option", "data-auftrag": key,
@@ -260,13 +316,13 @@ function renderAnswer(k) {
   const a = round.answers[k];
   const field = h("textarea", { class: "orma-text", id: `orma-answer-${k}`, maxlength: "4000", rows: "5", value: a.text });
   field.addEventListener("input", () => { a.text = field.value; persist(); });
-  const next = () => (k === "a" ? go("uebergabe") : go("aufdecken"));
+  const next = () => (k === "a" ? go(solo(round) ? "offen" : "uebergabe") : go("aufdecken"));
   const write = [
     h("label", { class: "orma-field", for: `orma-answer-${k}` }, h("span", { text: "Dein Gedanke" }), field),
     h("p", { class: "orma-small", text: "Ein, zwei Sätze genügen. Vorläufiges ist willkommen, Widerspruch zur Paarung auch." }),
     h("div", { class: "orma-actions" },
-      btn(k === "a" ? "Fertig, Gerät weitergeben" : "Fertig", next, "orma-btn orma-btn--primary"),
-      btn("Ich antworte mündlich", () => { a.oral = true; persist(); renderAnswer(k); }),
+      btn(k === "a" && !solo(round) ? "Fertig, Gerät weitergeben" : "Fertig", next, "orma-btn orma-btn--primary"),
+      solo(round) ? null : btn("Ich antworte mündlich", () => { a.oral = true; persist(); renderAnswer(k); }),   // allein: die Antwort ist das, was bleibt
     ),
   ];
   const oral = [
@@ -277,8 +333,8 @@ function renderAnswer(k) {
     ),
   ];
   show(
-    h("p", { class: "orma-kicker", text: k === "a" ? "Zuerst" : "Dann" }),
-    h("h2", { text: `${nameOf(round, k)} antwortet` }),
+    h("p", { class: "orma-kicker", text: solo(round) ? (k === "a" ? "Erster Durchgang" : "Zweiter Durchgang") : k === "a" ? "Zuerst" : "Dann" }),
+    h("h2", { text: solo(round) ? (k === "a" ? "Du antwortest" : "Du antwortest noch einmal") : `${nameOf(round, k)} antwortet` }),
     taskBox(p),
     a.oral ? oral : write,
   );
@@ -309,19 +365,19 @@ function answerCard(k, r = round) {
 function renderReveal() {
   if (!round.revealed) {
     show(
-      h("p", { class: "orma-kicker", text: "Beide haben geantwortet" }),
-      h("h2", { text: "Jetzt gemeinsam aufdecken" }),
-      h("p", { class: "orma-muted", text: "Setzt euch so, dass ihr beide auf den Bildschirm seht." }),
+      h("p", { class: "orma-kicker", text: solo(round) ? "Zwei Durchgänge" : "Beide haben geantwortet" }),
+      h("h2", { text: solo(round) ? "Jetzt aufdecken" : "Jetzt gemeinsam aufdecken" }),
+      h("p", { class: "orma-muted", text: solo(round) ? `Deine Antwort vom ${fmtDate(round.firstAt)} und deine Antwort von heute.` : "Setzt euch so, dass ihr beide auf den Bildschirm seht." }),
       h("div", { class: "orma-actions" }, btn("Aufdecken", () => { round.revealed = true; go("aufdecken"); }, "orma-btn orma-btn--primary")),
     );
     return;
   }
   show(
     h("p", { class: "orma-kicker", text: "Aufgedeckt" }),
-    h("h2", { text: "Zwei Sichtweisen" }),
+    h("h2", { text: solo(round) ? "Zwei Versionen" : "Zwei Sichtweisen" }),
     h("div", { class: "orma-answers orma-answers--two" }, answerCard("a"), answerCard("b")),
-    h("p", { class: "orma-prompt", text: "Was hast du anders gesehen?" }),
-    h("p", { class: "orma-small", text: "Sprecht darüber. Keine Antwort ist richtiger oder klüger als die andere." }),
+    h("p", { class: "orma-prompt", text: solo(round) ? "Was hat sich verändert?" : "Was hast du anders gesehen?" }),
+    h("p", { class: "orma-small", text: solo(round) ? "Keine der beiden Antworten ist richtiger. Beide gehören dir, zu verschiedenen Zeiten." : "Sprecht darüber. Keine Antwort ist richtiger oder klüger als die andere." }),
     h("div", { class: "orma-actions" }, btn("Weiterdenken", () => go("weiterdenken"), "orma-btn orma-btn--primary")),
   );
 }
@@ -347,6 +403,18 @@ function renderFurther() {
     h("input", { type: "radio", name: "orma-mode", value: mode, checked: r.result.mode === mode, onchange: () => { r.result.mode = mode; persist(); drawFields(); } }),
     h("span", { text: label }));
   drawFields();
+  if (solo(r)) {
+    const third = area("dritter", "Der dritte Gedanke", () => r.result.gemeinsam, v => { r.result.gemeinsam = v; r.result.mode = v.trim() ? "gemeinsam" : ""; });
+    show(
+      h("p", { class: "orma-kicker", text: "Weiterdenken" }),
+      h("h2", { text: "Was hat sich verändert?" }),
+      h("p", { class: "orma-small", text: "Freiwillig. Beide Antworten bleiben, wie sie waren; hier kommt nur Neues dazu." }),
+      area("veraendert", "Was hat sich zwischen den beiden Antworten verändert?", () => r.extensions.b, v => { r.extensions.b = v; }),
+      third,
+      h("div", { class: "orma-actions" }, btn("Zur Ergebniskarte", () => { closeLoop(storage, r.loopId); go("karte"); }, "orma-btn orma-btn--primary")),
+    );
+    return;
+  }
   show(
     h("p", { class: "orma-kicker", text: "Weiterdenken" }),
     h("h2", { text: "Was verändert sich durch den Gedanken der anderen Person?" }),
@@ -372,7 +440,7 @@ function resultView(r, p) {
     pairTitle(p),
     h("p", { class: "orma-question", text: p.question }),
   ];
-  if (res.mode === "gemeinsam" && res.gemeinsam.trim()) parts.push(h("span", { class: "orma-label", text: "Unser neuer Gedanke" }), h("p", { text: res.gemeinsam.trim() }));
+  if (res.mode === "gemeinsam" && res.gemeinsam.trim()) parts.push(h("span", { class: "orma-label", text: solo(r) ? "Der dritte Gedanke" : "Unser neuer Gedanke" }), h("p", { text: res.gemeinsam.trim() }));
   if (res.mode === "positionen") {
     if (res.a.trim()) parts.push(h("span", { class: "orma-label", text: `Position ${nameOf(r, "a")}` }), h("p", { text: res.a.trim() }));
     if (res.b.trim()) parts.push(h("span", { class: "orma-label", text: `Position ${nameOf(r, "b")}` }), h("p", { text: res.b.trim() }));
@@ -380,10 +448,10 @@ function resultView(r, p) {
   const ext = ["a", "b"].filter(k => r.extensions[k].trim());
   return h("div", { class: "orma-result" }, parts,
     h("details", { class: "orma-origin" },
-      h("summary", { text: "Erste Antworten und Ergänzungen" }),
+      h("summary", { text: solo(r) ? "Beide Antworten" : "Erste Antworten und Ergänzungen" }),
       r.auftrag ? h("p", { class: "orma-small", text: `Spielauftrag: ${AUFTRAG[r.auftrag]} – ${p.auftraege[r.auftrag]}` }) : null,
       h("div", { class: "orma-answers" }, answerCard("a", r), answerCard("b", r)),
-      ext.map(k => h("p", {}, h("strong", { text: `${nameOf(r, k)} ergänzt: ` }), r.extensions[k].trim())),
+      ext.map(k => h("p", {}, h("strong", { text: solo(r) ? "Was sich verändert hat: " : `${nameOf(r, k)} ergänzt: ` }), r.extensions[k].trim())),
     ));
 }
 
@@ -397,12 +465,12 @@ function renderResult() {
   const last = round.constellationId;
   show(
     noticeNode(),
-    h("h2", { text: "Eure Karte" }),
+    h("h2", { text: solo(round) ? "Deine Karte" : "Eure Karte" }),
     resultView(round, p),
     h("div", { class: "orma-actions" },
       keep,
       btn("Karte exportieren", () => renderExport(round, renderResult)),
-      btn("Noch eine Runde", () => { round = newRound({ names: round.names }); persist(); saveText(storage, KEYS.last, last); renderRound(); }),
+      btn("Noch eine Runde", () => { round = newRound({ names: round.names, mode: round.mode }); persist(); saveText(storage, KEYS.last, last); renderRound(); }),
       btn("Runde beenden", () => { clearDraft(storage); round = null; renderStart(); }, "orma-btn orma-btn--quiet"),
     ),
   );
@@ -426,6 +494,7 @@ function renderExport(r, back) {
     const layout = layoutCard({
       artist: p.artist.name, theorist: p.theorist.name, question: p.question, auftrag: r.auftrag,
       names: r.names, answers: r.answers, result: r.result, date: fmtDate(r.savedAt || r.startedAt),
+      ...(solo(r) ? { labels: { a: nameOf(r, "a"), b: nameOf(r, "b") }, resultLabel: "Der dritte Gedanke" } : {}),
     }, opts, measure);
     drawCard(canvas, layout);
     canvas.toBlob(b => {
@@ -445,10 +514,13 @@ function renderExport(r, back) {
   show(
     h("p", { class: "orma-kicker", text: "Ergebniskarte" }),
     h("h2", { text: "Karte exportieren" }),
-    h("p", { class: "orma-small", text: "Ohne Auswahl zeigt die Karte nur Paarung und Frage. Persönliches kommt nur dazu, wenn ihr es hier anwählt." }),
-    check("result", hasResult ? "Unser Ergebnis zeigen" : "Unser Ergebnis zeigen (nichts festgehalten)", !hasResult),
-    check("answers", "Die ersten Antworten zeigen"),
-    check("names", "Unsere Namen zeigen"),
+    h("p", { class: "orma-small", text: `Ohne Auswahl zeigt die Karte nur Paarung und Frage. Persönliches kommt nur dazu, wenn ${solo(r) ? "du es" : "ihr es"} hier anwählt.` }),
+    solo(r)
+      ? [check("result", hasResult ? "Den dritten Gedanken zeigen" : "Den dritten Gedanken zeigen (nichts festgehalten)", !hasResult),
+        check("answers", "Beide Antworten zeigen")]
+      : [check("result", hasResult ? "Unser Ergebnis zeigen" : "Unser Ergebnis zeigen (nichts festgehalten)", !hasResult),
+        check("answers", "Die ersten Antworten zeigen"),
+        check("names", "Unsere Namen zeigen")],
     img,
     h("div", { class: "orma-actions" }, shareBtn, save, btn("Zurück", back, "orma-btn orma-btn--quiet")),
   );
@@ -458,7 +530,8 @@ function renderExport(r, back) {
 // ---------- Gedankenbuch ----------
 function renderBook() {
   const { entries, error } = loadBook(storage);
-  if (error && !notice) notice = error;
+  const { loops, error: loopError } = loadLoops(storage);
+  if ((error || loopError) && !notice) notice = error || loopError;
   const damaged = loadText(storage, KEYS.bookDamaged);
   const list = entries.length
     ? h("ul", { class: "orma-book" }, entries.map(e => {
@@ -467,7 +540,7 @@ function renderBook() {
       return h("li", {},
         h("button", { type: "button", class: "orma-entry", onclick: () => renderEntry(e.id) },
           h("strong", { text: title }),
-          h("span", { text: `${fmtDate(e.savedAt)}${e.auftrag ? ` · ${AUFTRAG[e.auftrag]}` : ""}` })),
+          h("span", { text: `${fmtDate(e.savedAt)}${solo(e) ? " · Re-Entry" : ""}${e.auftrag ? ` · ${AUFTRAG[e.auftrag]}` : ""}` })),
         h("button", {
           type: "button", class: "orma-fav", "aria-pressed": String(e.favorite), "aria-label": `Favorit: ${title}`, text: e.favorite ? "★" : "☆",
           onclick: () => { setFavorite(storage, e.id, !e.favorite); renderBook(); },
@@ -475,15 +548,32 @@ function renderBook() {
     }))
     : h("p", { class: "orma-muted", text: "Noch keine Gedanken. Nach einer Runde könnt ihr sie hier behalten." });
 
+  // offene Schleifen: nur Paarung und Datum, die Antwort bleibt bis zum zweiten Durchgang verborgen
+  const loopList = loops.length ? [
+    h("span", { class: "orma-label", text: `Offene Schleifen (${loops.length})` }),
+    h("p", { class: "orma-small", text: "Erste Durchgänge im Modus allein. Die Antwort bleibt verborgen, bis das Rad dieselbe Konstellation wieder bringt." }),
+    h("ul", { class: "orma-book orma-loops" }, loops.map(l => {
+      const p = byId.get(l.constellationId);
+      const title = p ? `${p.artist.name} × ${p.theorist.name}` : `Konstellation ${l.constellationId}`;
+      return h("li", {},
+        h("div", { class: "orma-entry" }, h("strong", { text: title }), h("span", { text: `offen seit ${fmtDate(l.at)} · ${AUFTRAG[l.auftrag]}` })),
+        h("button", {
+          type: "button", class: "orma-fav", "aria-label": `Schleife löschen: ${title}`, text: "×",
+          onclick: () => confirmView(`Die offene Schleife zu ${title} wird gelöscht, samt deiner ersten Antwort.`, "Löschen",
+            () => { saveLoops(storage, loadLoops(storage).loops.filter(x => x.id !== l.id)); notice = "Schleife gelöscht."; renderBook(); }, renderBook),
+        }));
+    })),
+  ] : [];
+
   const fileInput = h("input", { type: "file", accept: "application/json,.json", class: "sr-only", id: "orma-import" });
   fileInput.addEventListener("change", async () => {
     const f = fileInput.files && fileInput.files[0];
     if (!f) return;
     const text = f.size > 5_000_000 ? "" : await f.text();
-    const res = mergeBackup(text, loadBook(storage).entries);
+    const res = mergeBackup(text, loadBook(storage).entries, loadLoops(storage).loops);
     if (res.error) notice = res.error;
-    else if (!saveBook(storage, res.entries)) notice = "Die Einträge liessen sich auf diesem Gerät nicht speichern.";
-    else notice = `${res.added} Eintrag/Einträge übernommen${res.skipped ? `, ${res.skipped} schon vorhanden (nicht überschrieben)` : ""}${res.invalid ? `, ${res.invalid} ungültig` : ""}.`;
+    else if (!saveBook(storage, res.entries) || !saveLoops(storage, res.loops)) notice = "Die Einträge liessen sich auf diesem Gerät nicht speichern.";
+    else notice = `${res.added} Eintrag/Einträge übernommen${res.loopsAdded ? `, ${res.loopsAdded} offene Schleife(n)` : ""}${res.skipped ? `, ${res.skipped} schon vorhanden (nicht überschrieben)` : ""}${res.invalid ? `, ${res.invalid} ungültig` : ""}.`;
     renderBook();
   });
   const download = (name, text) => {
@@ -500,8 +590,9 @@ function renderBook() {
     h("h2", { text: "Unsere Gedanken" }),
     h("p", { class: "orma-small", text: "Deine Gedanken bleiben auf diesem Gerät. Beim Löschen der App-Daten können sie verloren gehen." }),
     list,
+    loopList,
     h("div", { class: "orma-actions" },
-      btn("Sicherung herunterladen", () => download(`orma-gedankenbuch-${today}.json`, JSON.stringify(makeBackup(entries), null, 2)), "orma-btn", { disabled: !entries.length }),
+      btn("Sicherung herunterladen", () => download(`orma-gedankenbuch-${today}.json`, JSON.stringify(makeBackup(entries, new Date(), loops), null, 2)), "orma-btn", { disabled: !entries.length && !loops.length }),
       h("label", { class: "orma-btn", for: "orma-import", tabindex: "0", onkeydown: e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInput.click(); } } }, "Sicherung einlesen"),
       fileInput,
     ),
@@ -509,9 +600,9 @@ function renderBook() {
       btn("Herunterladen", () => download(`orma-beschaedigt-${today}.txt`, damaged), "orma-link")) : null,
     h("div", { class: "orma-danger-zone" },
       btn("Alle ORMA-Einträge löschen", () => confirmView(
-        `Alle ${entries.length} Einträge im Gedankenbuch werden auf diesem Gerät gelöscht. Das lässt sich nicht rückgängig machen.`,
+        `Alle ${entries.length} Einträge im Gedankenbuch${loops.length ? ` und ${loops.length} offene Schleife(n)` : ""} werden auf diesem Gerät gelöscht. Das lässt sich nicht rückgängig machen.`,
         "Ja, alle löschen", () => { deleteAllEntries(storage); notice = "Alle Einträge wurden gelöscht."; renderBook(); }, renderBook),
-      "orma-btn orma-btn--danger", { disabled: !entries.length && !damaged }),
+      "orma-btn orma-btn--danger", { disabled: !entries.length && !loops.length && !damaged }),
     ),
     h("div", { class: "orma-actions" }, btn("Zur Startansicht", renderStart, "orma-btn orma-btn--quiet")),
   );

@@ -1,7 +1,7 @@
 // Erzeugt von tools/build-orma.ts – nicht von Hand bearbeiten.
 // Paarung, Text und Frage stammen wörtlich aus dem Bestand von «Nebeneinander, Nacheinander»;
 // Einstieg und Aufträge sind Ergänzungen der ORMA-Redaktion (src/orma/redaktion/pilot.json).
-export const APP = Object.freeze({"name":"ORMA","version":"0.2.0"});
+export const APP = Object.freeze({"name":"ORMA","version":"0.3.0"});
 export const CONTENT_VERSION = "2026-09-27.2";
 export const PILOT = Object.freeze([
   {

@@ -155,6 +155,7 @@ body {
   font-family: var(--serif); font-size: clamp(1.4rem, 6vw, 1.8rem); line-height: 1.2; text-align: center;
 }
 .orma-pair .orma-x { color: var(--accent); padding: 0 0.2em; }
+.orma-view > .orma-pair { min-height: 0; margin: 0.2rem 0 1.2rem; text-align: left; }   /* ausserhalb des Rads: ohne Platzhalter */
 
 /* ---------- Lesen, Wahl ---------- */
 .orma-label {
@@ -221,6 +222,7 @@ body {
   border: 0; background: none; color: var(--text); font: inherit; cursor: pointer;
 }
 .orma-entry strong { display: block; font-family: var(--serif); font-weight: 400; font-size: 1.1rem; }
+.orma-loops .orma-entry { cursor: default; }                    /* offene Schleife: nicht zu öffnen */
 .orma-entry span { font-size: 0.875rem; color: var(--muted); }
 .orma-fav {
   width: var(--touch); flex: none; border: 0; background: none; color: var(--muted);

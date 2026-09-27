@@ -1,4 +1,4 @@
-# ORMA – Alpha-Fassung (0.2.0)
+# ORMA – Alpha-Fassung (0.3.0)
 
 **ORMA** · *Nebeneinander, Nacheinander* · Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke.
 
@@ -94,6 +94,29 @@ NODE_PATH=$(npm root -g) node tests/orma.e2e.mjs                           # Bro
    «Noch eine Runde» und «Runde beenden».
 
 Zehn Minuten sind eine Orientierung; es gibt keine Uhr, keine Punkte, keine Ranglisten und keine Streaks.
+
+## Allein: Re-Entry (seit 0.3.0)
+
+Eine Person spielt beide Rollen, zu verschiedenen Zeiten.
+
+1. **Erster Durchgang:** Drehen, lesen, Auftrag wählen, antworten. Die Runde endet mit «Die Schleife ist
+   offen». Konstellation, Auftrag, Antwort und Zeitpunkt liegen unter `orma:v1:schleifen`.
+2. **Wiederkehr:** Bringt das Rad irgendwann dieselbe Konstellation, beginnt der zweite Durchgang.
+   - Die Ziehung ist dieselbe wie sonst: gleichverteilt über alle 24, nie zweimal hintereinander.
+   - Offene Schleifen werden nicht bevorzugt, und es gibt keinen Mindestabstand.
+   - Die App zeigt nur das Datum des ersten Durchgangs.
+3. **Zweiter Durchgang:** derselbe Auftrag, die erste Antwort bleibt verborgen. Dann folgt das Aufdecken:
+   «Ich, am [Datum]» neben «Ich, am [Datum]».
+4. **Weiterdenken:** «Was hat sich verändert?» und «Der dritte Gedanke». Danach ist die Schleife
+   geschlossen, und die Ergebniskarte kann wie gewohnt ins Gedankenbuch oder exportiert werden. Kommt die
+   Konstellation später wieder, beginnt eine neue Schleife.
+
+**Weitere Regeln**
+- Allein gibt es keine mündliche Antwort und keine Namen.
+- Die Karte beschriftet die beiden Antworten mit ihrem Datum.
+- Offene Schleifen stehen im Gedankenbuch nur mit Paarung und Datum und lassen sich einzeln löschen.
+  «Alle ORMA-Einträge löschen» entfernt auch sie.
+- Sicherung und Import tragen sie mit, ebenfalls ohne Überschreiben.
 
 ## Die 24 Pilot-Konstellationen
 
@@ -193,7 +216,7 @@ mit ORNA und ORMA im selben Browser.
 Alle Prüfungen liefen in Chromium (Playwright) am Linux-Rechner, mobil als «Pixel 7» und «iPhone 13»
 nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
 
-- **Unit-Tests `tests/orma.test.mjs`: 18/18 bestanden.**
+- **Unit-Tests `tests/orma.test.mjs`: 21/21 bestanden** (Stand 0.3.0, mit drei Tests für Re-Entry).
   - Ziehung: Rejection Sampling. Gleichverteilung erste Ziehung und nach einer Konstellation
     (je 46 000–48 000 Ziehungen, Toleranz ±15 %). Nie dieselbe unmittelbar wieder, nur freigegebene IDs.
   - Pilotdaten: Texte, Fragen und IDs wörtlich wie im Bestand. Zwölf Personen je Ring, jede genau zweimal, fester Platz je Person.
@@ -207,7 +230,11 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
     unverändert gegenüber `main`.
   - Alpha: `alpha/orma/` entspricht dem aktuellen Build. Keine Seite ausserhalb von `alpha/` verlinkt
     den Bereich; er steht nicht in der Sitemap und ist mit `noindex` gesperrt.
-- **Browser-Tests `tests/orma.e2e.mjs`: 11/11 bestanden, in sechs aufeinanderfolgenden Läufen (Fassung 0.2.0).**
+- **Browser-Tests `tests/orma.e2e.mjs`: 13/13 bestanden, in drei aufeinanderfolgenden Läufen (Fassung 0.3.0).**
+  - Re-Entry, erster Durchgang: Schleife offen, Antwort gespeichert und in der Liste verborgen, Zähler auf der Startansicht;
+  - Re-Entry, zweiter Durchgang: Wiedersehen mit Datum, derselbe Auftrag, erste Antwort bis zum Aufdecken
+    nicht im Dokument (auch nach Neuladen mitten im zweiten Durchgang), Aufdecken mit Datum, dritter
+    Gedanke, Schleife geschlossen, Eintrag «Re-Entry», Export ohne Namen;
   - ganze Runde am Smartphone (Tippen aufs Rad, Überspringen, Originaltext, Auftrag). Die erste Antwort
     steht weder beim Übergeben noch bei B im Dokument. Mündliche Antwort, Aufdecken, Weiterdenken,
     Ergebniskarte;

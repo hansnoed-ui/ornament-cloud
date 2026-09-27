@@ -1,4 +1,5 @@
-// ORMA – lokaler Speicher: laufende Runde (Entwurf), Gedankenbuch, Sicherung und Import.
+// ORMA – lokaler Speicher: laufende Runde (Entwurf), Gedankenbuch, offene Schleifen (Re-Entry),
+// Sicherung und Import.
 // Alles bleibt auf dem Gerät (localStorage). Alle Schlüssel beginnen mit «orma:», damit ORMA nie
 // Daten anderer Anwendungen derselben Adresse berührt (ORNA speichert nur «orna-intro» in sessionStorage).
 // Nutzereingaben sind immer Text: sie werden hier nur geprüft und gekürzt, nie als HTML behandelt.
@@ -9,11 +10,14 @@ export const KEYS = {
   book: "orma:v1:buch",
   bookDamaged: "orma:v1:buch:beschaedigt",
   last: "orma:v1:zuletzt",
+  loops: "orma:v1:schleifen",
+  loopsDamaged: "orma:v1:schleifen:beschaedigt",
 };
+export const MODES = ["paar", "allein"];
 export const BACKUP_FORMAT = "orma-gedankenbuch";
 export const BACKUP_VERSION = 1;
 export const AUFTRAEGE = ["beispiel", "einwand", "gestaltung"];
-export const STEPS = ["namen", "drehen", "lesen", "wahl", "antwort-a", "uebergabe", "antwort-b", "aufdecken", "weiterdenken", "karte"];
+export const STEPS = ["namen", "drehen", "wiedersehen", "lesen", "wahl", "antwort-a", "offen", "uebergabe", "antwort-b", "aufdecken", "weiterdenken", "karte"];
 const MAX_TEXT = 4000, MAX_NAME = 40;
 
 export function newId() {
@@ -27,11 +31,14 @@ const str = (v, max = MAX_TEXT) => (typeof v === "string" ? v : "").slice(0, max
 const isoOr = (v, fallback) => (typeof v === "string" && !Number.isNaN(Date.parse(v)) ? v : fallback);
 
 /** Eine neue, leere Runde */
-export function newRound({ names = {}, now = new Date() } = {}) {
+export function newRound({ names = {}, now = new Date(), mode = "paar" } = {}) {
   return {
     id: newId(),
     startedAt: now.toISOString(),
     step: "drehen",
+    mode: MODES.includes(mode) ? mode : "paar",
+    loopId: "",                                  // Re-Entry: offene Schleife, zu der dieser zweite Durchgang gehört
+    firstAt: "",                                 // Re-Entry: Zeitpunkt des ersten Durchgangs
     names: { a: str(names.a, MAX_NAME), b: str(names.b, MAX_NAME) },
     constellationId: "",
     contentVersion: "",
@@ -55,6 +62,9 @@ export function sanitizeRound(r) {
     id: r.id,
     startedAt: isoOr(r.startedAt, new Date(0).toISOString()),
     step: STEPS.includes(r.step) ? r.step : "drehen",
+    mode: MODES.includes(r.mode) ? r.mode : "paar",
+    loopId: str(r.loopId, 64),
+    firstAt: isoOr(r.firstAt, ""),
     names: { a: str(r.names && r.names.a, MAX_NAME), b: str(r.names && r.names.b, MAX_NAME) },
     constellationId: r.constellationId,
     contentVersion: str(r.contentVersion, 40),
@@ -74,7 +84,7 @@ export function sanitizeRound(r) {
 export function sanitizeEntry(e) {
   const r = sanitizeRound(e);
   if (!r || !r.constellationId) return null;
-  delete r.step; delete r.revealed; delete r.kept;
+  delete r.step; delete r.revealed; delete r.kept; delete r.loopId;
   return { ...r, savedAt: isoOr(e.savedAt, r.startedAt), favorite: e.favorite === true };
 }
 
@@ -144,21 +154,64 @@ export function deleteEntry(storage, id) {
   return saveBook(storage, entries.filter(e => e.id !== id));
 }
 
-/** Alle ORMA-Einträge löschen: nur das Gedankenbuch (und seine aufbewahrte beschädigte Fassung) */
+/** Alle ORMA-Einträge löschen: Gedankenbuch und offene Schleifen (samt aufbewahrter beschädigter Fassungen) */
 export function deleteAllEntries(storage) {
-  try { storage.removeItem(KEYS.book); storage.removeItem(KEYS.bookDamaged); return true; } catch { return false; }
+  try { for (const k of [KEYS.book, KEYS.bookDamaged, KEYS.loops, KEYS.loopsDamaged]) storage.removeItem(k); return true; } catch { return false; }
+}
+
+// ---------- Offene Schleifen (Re-Entry) ----------
+// Erster Durchgang allein: Konstellation, Auftrag, Antwort und Zeitpunkt. Bringt das Rad dieselbe
+// Konstellation wieder, folgt der zweite Durchgang; danach ist die Schleife geschlossen.
+export function sanitizeLoop(l) {
+  if (!l || typeof l !== "object" || Array.isArray(l)) return null;
+  if (typeof l.id !== "string" || !l.id || l.id.length > 64) return null;
+  if (typeof l.constellationId !== "string" || !l.constellationId || l.constellationId.length > 120) return null;
+  if (!AUFTRAEGE.includes(l.auftrag)) return null;
+  return { id: l.id, constellationId: l.constellationId, contentVersion: str(l.contentVersion, 40), auftrag: l.auftrag, text: str(l.text), at: isoOr(l.at, new Date(0).toISOString()) };
+}
+
+export function loadLoops(storage) {
+  const raw = read(storage, KEYS.loops);
+  if (raw == null) return { loops: [] };
+  let list;
+  try { list = JSON.parse(raw); } catch { list = null; }
+  if (!Array.isArray(list)) {
+    if (read(storage, KEYS.loopsDamaged) == null) write(storage, KEYS.loopsDamaged, raw);
+    return { loops: [], error: "Die offenen Schleifen auf diesem Gerät sind beschädigt. Der alte Inhalt wurde aufbewahrt." };
+  }
+  return { loops: list.map(sanitizeLoop).filter(Boolean) };
+}
+export const saveLoops = (storage, loops) => write(storage, KEYS.loops, JSON.stringify(loops));
+
+/** Älteste offene Schleife zu einer Konstellation, oder null */
+export function openLoopFor(storage, constellationId) {
+  return loadLoops(storage).loops.filter(l => l.constellationId === constellationId).sort((a, b) => (a.at < b.at ? -1 : 1))[0] || null;
+}
+
+/** Ersten Durchgang als offene Schleife speichern (einmal je Runde) */
+export function openLoop(storage, round, now = new Date()) {
+  const { loops } = loadLoops(storage);
+  if (loops.some(l => l.id === round.id)) return { ok: true, loop: loops.find(l => l.id === round.id) };
+  const loop = sanitizeLoop({ id: round.id, constellationId: round.constellationId, contentVersion: round.contentVersion, auftrag: round.auftrag, text: round.answers.a.text, at: now.toISOString() });
+  if (!loop) return { ok: false };
+  return { ok: saveLoops(storage, [...loops, loop]), loop };
+}
+
+export function closeLoop(storage, id) {
+  const { loops } = loadLoops(storage);
+  return saveLoops(storage, loops.filter(l => l.id !== id));
 }
 
 // ---------- Sicherung und Import ----------
-export function makeBackup(entries, now = new Date()) {
-  return { format: BACKUP_FORMAT, version: BACKUP_VERSION, exportedAt: now.toISOString(), entries };
+export function makeBackup(entries, now = new Date(), loops = []) {
+  return { format: BACKUP_FORMAT, version: BACKUP_VERSION, exportedAt: now.toISOString(), entries, loops };
 }
 
 /**
  * Prüft eine Sicherungsdatei und fügt ihre Einträge hinzu. Vorhandene Einträge (gleiche ID) werden
  * nie überschrieben, sondern übersprungen. Ergebnis: neue Gesamtliste und Zählung.
  */
-export function mergeBackup(text, existing) {
+export function mergeBackup(text, existing, existingLoops = []) {
   let data;
   try { data = JSON.parse(text); } catch { return { error: "Die Datei ist keine lesbare ORMA-Sicherung." }; }
   if (!data || data.format !== BACKUP_FORMAT || !Array.isArray(data.entries)) return { error: "Die Datei ist keine ORMA-Sicherung." };
@@ -174,7 +227,17 @@ export function mergeBackup(text, existing) {
     added.push(e);
   }
   const entries = [...existing, ...added].sort((x, y) => (y.savedAt > x.savedAt ? 1 : y.savedAt < x.savedAt ? -1 : 0));
-  return { entries, added: added.length, skipped, invalid };
+  // offene Schleifen (ältere Sicherungen haben keine): ebenfalls ohne Überschreiben
+  const haveLoops = new Set(existingLoops.map(l => l.id));
+  const loopsAdded = [];
+  for (const raw of Array.isArray(data.loops) ? data.loops : []) {
+    const l = sanitizeLoop(raw);
+    if (!l) { invalid += 1; continue; }
+    if (haveLoops.has(l.id)) { skipped += 1; continue; }
+    haveLoops.add(l.id);
+    loopsAdded.push(l);
+  }
+  return { entries, added: added.length, skipped, invalid, loops: [...existingLoops, ...loopsAdded], loopsAdded: loopsAdded.length };
 }
 
 /** Kleine Einstellungen (Namen, zuletzt gezeigte Konstellation) */
