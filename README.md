@@ -24,7 +24,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   zurückholen (`git checkout <commit>^ -- …`), Eintrag in `sitemap.xml` ergänzen
 - `sitemap.xml` – alle Seiten (ohne die Weiterleitung `portfolio/rad-von-zeit-und-raum/`); neue Seiten hier eintragen, ein Test prüft das
 - Installierbare Web-App (PWA) für Rad und Feld: `portfolio/nebeneinander-nacheinander/app.webmanifest`, `sw.js` (offline),
-  `js/pwa.js` (Anmeldung), Symbole in `app/` (erzeugt mit `NODE_PATH=$(npm root -g) node tools/app-icons.mjs`).
+  `js/pwa.js` (Anmeldung), Symbole in `app/` (erzeugt mit `NODE_PATH=$(npm root -g) node tools/app-icons.mjs`:
+  Android leeres Rad = erstes Bild des Startbilds, damit der Systemstartbildschirm nahtlos übergeht; iPhone volles Rad).
   Nach jeder Änderung an Rad- oder Feldseite: `node --experimental-strip-types tools/build-app.ts` (neue Version, Dateiliste;
   läuft auch mit dem Sync, ein Test meldet, wenn es vergessen ging). Als App sind Menü und Portfolio-Link ausgeblendet.
   App-Name ORNA; beim Start der installierten App setzt sich das Rad zusammen (`js/intro.js`, einmal pro Sitzung,

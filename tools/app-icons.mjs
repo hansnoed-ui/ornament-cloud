@@ -1,6 +1,10 @@
-// Erzeugt die App-Symbole der installierbaren Web-App «Nebeneinander, Nacheinander»
-// (portfolio/nebeneinander-nacheinander/app/). Motiv: das Doppelrad als Instrument –
-// zwei Ringe mit Teilung, feste Ablesemarke oben, Fadenkreuz. Schwarz auf der Grundfarbe der Website.
+// Erzeugt die App-Symbole der installierbaren Web-App ORNA (portfolio/nebeneinander-nacheinander/app/).
+//
+// Zwei Motive, schwarz auf der Grundfarbe der Website:
+// – leeres Rad: nur die vier Ringlinien, genau das erste Bild des Startbilds (js/intro.js).
+//   Für Android: Chrome baut daraus den Systemstartbildschirm, danach füllen sich die Ringe nahtlos.
+// – volles Rad: Ringe mit Teilung, Ablesemarke, Fadenkreuz. Für das iPhone (kein Systemstartbildschirm)
+//   und als Symbol im Browser-Tab.
 //
 //   NODE_PATH=$(npm root -g) node tools/app-icons.mjs
 //
@@ -36,18 +40,26 @@ function svg(k) {
     `<g fill="none" stroke="${INK}" stroke-linecap="round">${parts.join("")}${cross}</g>${mark}</svg>`;
 }
 
+/** Leeres Rad: die vier Ringe des Startbilds in denselben Verhältnissen (462 · 344 · 326 · 208 von 1000) */
+function emptySvg(k) {
+  const C = 50, s = 38 * k / 462;
+  const ring = (r, w, o) => `<circle cx="${C}" cy="${C}" r="${(r * s).toFixed(2)}" stroke-width="${(w * k).toFixed(2)}" opacity="${o}"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="${BG}"/>` +
+    `<g fill="none" stroke="${INK}">${ring(462, 1.3, 1)}${ring(344, 0.8, 0.6)}${ring(326, 1.3, 1)}${ring(208, 0.8, 0.6)}</g></svg>`;
+}
+
 const icons = [
-  ["icon-192.png", 192, 1],
-  ["icon-512.png", 512, 1],
-  ["icon-maskable-512.png", 512, 0.78],        // maskierbar: Motiv in der sicheren Zone (innere 80 %)
-  ["apple-touch-icon.png", 180, 0.92],
+  ["icon-192.png", 192, 1, emptySvg],                  // Android: Symbol und Systemstartbildschirm
+  ["icon-512.png", 512, 1, emptySvg],
+  ["icon-maskable-512.png", 512, 0.78, emptySvg],      // maskierbar: Motiv in der sicheren Zone (innere 80 %)
+  ["apple-touch-icon.png", 180, 0.92, svg],            // iPhone: volles Rad
 ];
 
 const browser = await playwright.chromium.launch();
 const page = await browser.newPage();
-for (const [name, size, k] of icons) {
+for (const [name, size, k, draw] of icons) {
   await page.setViewportSize({ width: size, height: size });
-  await page.setContent(`<html><body style="margin:0">${svg(k).replace("<svg ", `<svg width="${size}" height="${size}" `)}</body></html>`);
+  await page.setContent(`<html><body style="margin:0">${draw(k).replace("<svg ", `<svg width="${size}" height="${size}" `)}</body></html>`);
   await page.screenshot({ path: join(OUT, name), clip: { x: 0, y: 0, width: size, height: size } });
 }
 await writeFile(join(OUT, "icon.svg"), svg(1));
