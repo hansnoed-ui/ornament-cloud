@@ -4,7 +4,7 @@
 // Die Dateiliste und die Version setzt tools/build-orma.ts zwischen die Marken.
 
 // <!-- ORMA:START -->
-const VERSION = "95b0027d6b38";
+const VERSION = "3068aea977dc";
 const PRECACHE = [
   "./",
   "app/",
@@ -13,17 +13,17 @@ const PRECACHE = [
   "icons/icon-512.png",
   "icons/icon-maskable-512.png",
   "icons/icon.svg",
-  "js/app.js?v=95b0027d6b38",
-  "js/card.js?v=95b0027d6b38",
-  "js/data.js?v=95b0027d6b38",
-  "js/draw.js?v=95b0027d6b38",
-  "js/intro.js?v=95b0027d6b38",
-  "js/store.js?v=95b0027d6b38",
-  "js/symbols.js?v=95b0027d6b38",
-  "js/wheel.js?v=95b0027d6b38",
+  "js/app.js?v=3068aea977dc",
+  "js/card.js?v=3068aea977dc",
+  "js/data.js?v=3068aea977dc",
+  "js/draw.js?v=3068aea977dc",
+  "js/intro.js?v=3068aea977dc",
+  "js/store.js?v=3068aea977dc",
+  "js/symbols.js?v=3068aea977dc",
+  "js/wheel.js?v=3068aea977dc",
   "manifest.webmanifest",
   "og-orma.png",
-  "orma.css?v=95b0027d6b38"
+  "orma.css?v=3068aea977dc"
 ];
 // <!-- ORMA:END -->
 
