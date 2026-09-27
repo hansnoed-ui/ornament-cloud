@@ -480,14 +480,9 @@
 .orna-wheel .sym-over { stroke-width: 0.9; }
 .orna-wheel .sym-dot { fill: currentColor; stroke: none; }
 
-/* Ringe zeichnen sich */
-.orna-ring {
-  stroke-width: 1.4;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  transition: stroke-dashoffset 0.9s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.orna-ring--thin { stroke-width: 0.8; opacity: 0.6; transition-delay: 0.15s; }
+/* Ringe stehen von Anfang an, genau wie auf dem App-Symbol (Android-Startbildschirm) */
+.orna-ring { stroke-width: 1.4; }
+.orna-ring--thin { stroke-width: 0.8; opacity: 0.6; }
 
 /* Zeichen kommen aus der Streuung an ihren Platz */
 .orna-sym {
@@ -496,7 +491,7 @@
   opacity: 0;
   transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.6);
   transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.5s ease;
-  transition-delay: calc(0.35s + var(--i) * 0.03s);
+  transition-delay: calc(0.15s + var(--i) * 0.03s);
 }
 
 .orna-wheel .orna-mark { fill: currentColor; stroke: none; opacity: 0; transition: opacity 0.4s ease 2.1s; }
@@ -512,7 +507,6 @@
   transition: opacity 0.6s ease 2.2s;
 }
 
-.orna-intro.is-assembling .orna-ring { stroke-dashoffset: 0; }
 .orna-intro.is-assembling .orna-sym { opacity: 1; transform: none; }
 .orna-intro.is-assembling .orna-wheel .orna-mark,
 .orna-intro.is-assembling .orna-wheel .orna-cross,

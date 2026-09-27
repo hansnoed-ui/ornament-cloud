@@ -1,6 +1,7 @@
 // ORNA – Startbild der installierten App: Das Rad setzt sich zusammen.
-// Zuerst zeichnen sich die Ringe, dann finden die 40 Zeichen einzeln ihren Platz,
-// zuletzt erscheinen Achsenmarke und Name. Danach gibt das Bild das Rad frei.
+// Es beginnt mit den leeren Ringen – demselben Bild wie das App-Symbol, aus dem Android den
+// Systemstartbildschirm baut. Dann finden die 40 Zeichen einzeln ihren Platz, zuletzt erscheinen
+// Achsenmarke und Name. Danach gibt das Bild das Rad frei.
 //
 // Nur als App (Startbildschirm) und einmal pro Sitzung; zum Ansehen im Browser: ?intro.
 // Bei reduzierter Bewegung entfällt es ganz. Antippen oder eine Taste überspringt es.
@@ -21,7 +22,7 @@ function run() {
   const C = 500, SLOTS = 20, STEP = 18;
   const OUTER = { edge: 462, inner: 344, sym: 403, half: 42 };
   const INNER = { edge: 326, inner: 208, sym: 267, half: 37 };
-  const circle = (r, cls) => `<circle class="${cls}" cx="${C}" cy="${C}" r="${r}" pathLength="1"/>`;
+  const circle = (r, cls) => `<circle class="${cls}" cx="${C}" cy="${C}" r="${r}"/>`;
 
   // kleine, feste Streuung je Zeichen: woher es kommt und wie es gedreht ist (im Rahmen seines Platzes)
   let seed = 7;
