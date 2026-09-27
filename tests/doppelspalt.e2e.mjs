@@ -653,6 +653,29 @@ await check("Installationsknopf: überall sichtbar ausser in der App; Chrome öf
   await ctx.close();
 });
 
+await check("Installationsknopf, Rückfall «Verknüpfung erstellen»: auf Android immer klein darunter, sonst nicht", async () => {
+  // Android (Chrome): Hinweis sichtbar, unter dem Knopf, Knopf samt Hinweis mittig zwischen Untertitel und Rad
+  const a = await open({ ...devices["Pixel 7"] });
+  assert.equal(await a.page.$eval(".rad-install-alt", e => e.hidden), false);
+  assert.match(await a.page.$eval(".rad-install-alt", e => e.textContent), /«Zum Startbildschirm hinzufügen».*«Verknüpfung erstellen»/);
+  const g = await a.page.evaluate(() => {
+    const lead = [...document.querySelectorAll(".site-header p")].pop().getBoundingClientRect();
+    const btn = document.querySelector(".rad-install-btn").getBoundingClientRect(), alt = document.querySelector(".rad-install-alt").getBoundingClientRect();
+    const st = document.querySelector(".rad-stage").getBoundingClientRect();
+    return { below: alt.top >= btn.bottom, top: btn.top - lead.bottom, bottom: st.top - alt.bottom };
+  });
+  assert.ok(g.below && Math.abs(g.top - g.bottom) <= 1, JSON.stringify(g));
+  assert.ok(await a.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await a.ctx.close();
+  // iPhone und Computer: kein solcher Hinweis
+  for (const opts of [{ ...devices["iPhone 13"] }, { viewport: { width: 1280, height: 900 } }]) {
+    const b = await open(opts);
+    assert.equal(await b.page.$eval(".rad-install", e => e.hidden), false);
+    assert.equal(await b.page.$eval(".rad-install-alt", e => e.hidden), true);
+    await b.ctx.close();
+  }
+});
+
 await check("Installationsknopf im Facebook-Browser: Android öffnet die Seite in Chrome, iPhone erklärt den Weg nach Safari", async () => {
   const fbAndroid = "Mozilla/5.0 (Linux; Android 14; SM-S921B Build/UP1A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/128.0.0.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/480.0.0.0;]";
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, userAgent: fbAndroid, isMobile: true, hasTouch: true });

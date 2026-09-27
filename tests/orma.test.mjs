@@ -285,11 +285,15 @@ test("Build: eigene Ausgabe, eigener Cache «orma-», Manifest-Kennung und Geltu
 });
 
 // Startseite und News verlinken ORMA seit dem 27. September 2026 (REGELN §14) und gehören darum nicht mehr hierher.
-test("Trennung: ORNA-Dateien sind auf diesem Stand unverändert gegenüber main", () => {
+// Eine eigens beauftragte Änderung an ORNA allein ist erlaubt; sie kommt dann als eigener Schritt, nie
+// zusammen mit ORMA-Dateien (seit dem 27. September 2026: Hinweis «Verknüpfung erstellen» in beiden Apps).
+test("Trennung: kein Stand ändert ORMA- und ORNA-Dateien zugleich (gegenüber main)", () => {
   let base;
   try { base = execFileSync("git", ["merge-base", "HEAD", "origin/main"], { cwd: root, encoding: "utf8" }).trim(); } catch { return; }
-  const changed = execFileSync("git", ["diff", "--name-only", base, "--", "portfolio", "styles.css", "sitemap.xml", "tools/build-app.ts", "tools/app-icons.mjs"], { cwd: root, encoding: "utf8" }).trim();
-  assert.equal(changed, "", `geändert: ${changed}`);
+  const diff = paths => execFileSync("git", ["diff", "--name-only", base, "--", ...paths], { cwd: root, encoding: "utf8" }).trim();
+  const orma = diff(["src/orma", "alpha/orma", "tools/build-orma.ts", "tools/orma-icons.mjs", "tools/orma-og.mjs", "tools/serve-orma.mjs"]);
+  const orna = diff(["portfolio", "styles.css", "sitemap.xml", "tools/build-app.ts", "tools/app-icons.mjs"]);
+  assert.ok(!(orma && orna), `ORMA und ORNA zugleich geändert:\n${orma}\n${orna}`);
 });
 
 // ---------- Alpha-Bereich der Website ----------
