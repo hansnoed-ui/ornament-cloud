@@ -11,7 +11,7 @@ und dokumentiert den Entstehungsstand.
 - Bei einem Konflikt zwischen diesen Regeln und einem aktuellen Auftrag gilt der Auftrag.
 - Der Konflikt wird aber zuerst benannt, und es wird auf Freigabe gewartet. Er wird nie
   stillschweigend aufgelöst.
-- Freigegebene Klärungen werden hier nachgetragen (siehe 6a, 8, 9 und 12).
+- Freigegebene Klärungen werden hier nachgetragen (siehe 6a, 8, 9, 12 und 14).
 
 ## 1. Werk
 
@@ -146,6 +146,31 @@ Die Adresse jeder Konstellation ist `?pair=<id>`. Nach jeder Drehung wird sie pe
   vorerst keine sichtbare Auszeichnung. Begründung: Eine Bewertung ohne die Begründung daneben liest
   sich als Urteil über die genannte Person. Sichtbar wird sie erst als zuschaltbare Ebene mit
   erklärendem Satz.
+
+## 14. ORMA (freigegeben am 27. September 2026)
+
+ORMA ist eine eigenständige zweite App neben ORNA: ein Kunst- und Denkspiel für zwei Personen an einem
+Gerät, auf Grundlage des Werks. Quelle, Build und Dokumentation: `src/orma/` (README dort).
+
+- **Geltung:** §3 (Auswahl über den ganzen Bestand) und §8 (keine Spielmechanik auf der Radseite)
+  gelten für ORNA. ORMA ist ausdrücklich ein Spiel, aber ohne Punkte, Ranglisten, Streaks,
+  Zeitdruck und ohne Bewertung von Antworten. Alle übrigen Regeln gelten sinngemäss.
+- **Auswahl:** ORMA zieht aus zwölf freigegebenen Pilot-Konstellationen
+  (`src/orma/redaktion/pilot.json`). Die erste Ziehung erfolgt gleichverteilt, danach ist die zuletzt
+  gezeigte ausgeschlossen, und es wird gleichverteilt aus den übrigen elf gezogen. Gezogen wird ein
+  ganzer Datensatz, die Radstellung folgt daraus; die Geste bestimmt nur den Weg.
+- **Texte:** Paarung, Originaltext, Originalfrage und IDs bleiben unverändert und werden immer mit
+  angezeigt (§2 gilt). Neu hinzu kommen je Konstellation ein Einstieg (40–70 Wörter, aus dem
+  Originaltext abgeleitet) und drei Spielaufträge (Beispiel, Einwand, Gestaltung). Sie liegen getrennt
+  vom Bestand, sind als ORMA-Redaktion gekennzeichnet, sind keine Zitate und keine Äusserungen der
+  genannten Personen und gelten als Entwurf, bis sie freigegeben sind. Die App erzeugt zur Laufzeit
+  keine Texte (§1).
+- **Trennung:** eigene Kennung, eigener Service Worker und Cache (`orma-`), eigener Speicher
+  (`orma:`). ORMA verändert keine ORNA-Dateien und keine ORNA-Daten.
+- **Veröffentlichung:** Bis zur Freigabe liegt ORMA als Alpha-Version unter `alpha/orma/`: öffentlich
+  erreichbar, aber von keiner Seite verlinkt, nicht in der Sitemap und für Suchmaschinen gesperrt
+  (Entscheid vom 27. September 2026, ersetzt «bleibt auf dem Branch `orma`»). Aktualisiert wird die
+  Alpha-Version mit `node --experimental-strip-types tools/build-orma.ts --alpha`.
 
 ## 13. Nicht mehr gültig (aus dem Archiv)
 
