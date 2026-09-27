@@ -5,7 +5,7 @@
 //
 // Die Liste unten schreibt tools/build-app.ts – nicht von Hand pflegen.
 // <!-- APP:START -->
-const VERSION = "0915dfa6caad";
+const VERSION = "ba50b85ef2ac";
 const PRECACHE = [
   "../../icons.js?v=13",
   "../../styles.css?v=19",
@@ -58,8 +58,10 @@ self.addEventListener("fetch", event => {
   if (req.mode === "navigate") {
     // ?pair=… gehört zur selben Seite: gespeichert wird die Seite ohne Suchteil
     const key = url.origin + url.pathname;
+    // «no-cache»: immer beim Server nachfragen, statt bis zu 10 Minuten die Browser-Kopie zu nehmen
+    // (GitHub Pages erlaubt max-age=600) – so ist eine neue Fassung beim nächsten Öffnen da.
     event.respondWith(
-      fetch(req)
+      fetch(req, { cache: "no-cache" })
         .then(res => { if (res.ok) caches.open(CACHE).then(c => c.put(key, res.clone())); return res; })
         .catch(() => caches.match(key).then(hit => hit || caches.match(req, { ignoreSearch: true })))
     );
