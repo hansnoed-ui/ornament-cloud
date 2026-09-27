@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ornament Cloud – Artefakte</title>
   <meta name="description" content="Beobachtung ist Anlass für Veränderung in der Realität.">
-  <link rel="stylesheet" href="styles.css?v=18">
+  <link rel="stylesheet" href="styles.css?v=19">
 </head>
 <body>
   <header class="site-header">
@@ -37,7 +37,7 @@
         </nav>
       </div>
       <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
-      <h1>Artefakte</h1>
+      <h1 class="sr-only">Ornament Cloud</h1>
       <p class="lead">
         Beobachtung ist Anlass für Veränderungen in der Realität.
       </p>
@@ -54,8 +54,26 @@
       dann erscheint eine farbige Fläche mit dem Anfangsbuchstaben.
       Farbvarianten für die Fläche: card--a, card--b, card--c, card--d
     -->
+    <h2 class="category" id="apps">Apps</h2>
+    <section class="grid grid--apps" aria-labelledby="apps">
+
+      <article class="card card--svg">
+        <a class="thumb" href="portfolio/nebeneinander-nacheinander/" tabindex="-1" aria-hidden="true">
+          <svg class="post-anim" data-icon="rad" viewBox="0 0 200 200"></svg>
+        </a>
+        <div class="body">
+          <h2>ORNA</h2>
+          <p>Die App zu «Nebeneinander, Nacheinander»: Auf zwei gegenläufigen Ringen begegnen sich Künstler:innen und Theoretiker:innen. Eine Drehung, eine Begegnung, ein kurzer Text und eine offene Frage. Lässt sich auf dem Startbildschirm installieren und läuft auch ohne Netz.</p>
+          <ul class="tags"><li>App</li><li>Interaktiv</li><li>Offline</li></ul>
+          <a class="link" href="portfolio/nebeneinander-nacheinander/">Öffnen <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+
+    </section>
+
+    <h2 class="category" id="artefakte">Artefakte</h2>
     <div class="slider-dots" role="group" aria-label="Artefakte durchblättern"></div>
-    <section class="grid" aria-label="Artefakte">
+    <section class="grid grid--artefakte" aria-labelledby="artefakte">
 
       <article class="card card--a">
         <div class="thumb" aria-hidden="true">
@@ -114,7 +132,7 @@
     </div>
   </footer>
   <script src="icons.js?v=13" defer></script>
-  <script src="slider.js?v=1" defer></script>
+  <script src="slider.js?v=2" defer></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="vendor/goatcounter/count.js"></script>
 </body>
