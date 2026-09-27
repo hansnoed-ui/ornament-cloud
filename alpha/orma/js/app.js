@@ -8,15 +8,15 @@
 // textContent und value in die Seite, nie als HTML.
 // Keine Anmeldung, keine Zählung, keine Netzanfragen ausser dem eigenen Service Worker.
 
-import { APP, CONTENT_VERSION, PILOT } from "./data.js?v=59ef143bfc6b";
-import { drawNext } from "./draw.js?v=59ef143bfc6b";
+import { APP, CONTENT_VERSION, PILOT } from "./data.js?v=9aa675c8647c";
+import { drawNext } from "./draw.js?v=9aa675c8647c";
 import {
   KEYS, newRound, loadDraft, saveDraft, clearDraft, loadBook, saveBook, keepRound, setFavorite, deleteEntry,
   deleteAllEntries, makeBackup, mergeBackup, loadText, saveText,
   loadLoops, saveLoops, openLoopFor, openLoop, closeLoop,
-} from "./store.js?v=59ef143bfc6b";
-import { createWheel, bindGesture } from "./wheel.js?v=59ef143bfc6b";
-import { layoutCard, drawCard, canvasMeasure } from "./card.js?v=59ef143bfc6b";
+} from "./store.js?v=9aa675c8647c";
+import { createWheel, bindGesture } from "./wheel.js?v=9aa675c8647c";
+import { layoutCard, drawCard, canvasMeasure } from "./card.js?v=9aa675c8647c";
 
 // ---------- Umgebung ----------
 const storage = (() => { try { const s = window.localStorage; s.getItem("orma:probe"); return s; } catch { return memoryStorage(); } })();

@@ -2,7 +2,7 @@
 // Paarung, Text und Frage stammen wörtlich aus dem Bestand von «Nebeneinander, Nacheinander»;
 // Einstieg und Aufträge sind Ergänzungen der ORMA-Redaktion (src/orma/redaktion/pilot.json).
 export const APP = Object.freeze({"name":"ORMA","version":"0.5.0"});
-export const CONTENT_VERSION = "2026-09-27.5";
+export const CONTENT_VERSION = "2026-09-27.6";
 export const PILOT = Object.freeze([
   {
     "id": "eva-hesse__susan-leigh-star",
@@ -720,12 +720,12 @@ export const PILOT = Object.freeze([
     "einstieg": "Eva Hesses Materialien altern, hängen, verfärben sich und verändern ihre Spannung. Man könnte das als Folge einzelner Zustände festhalten. Henri Bergson warnt davor, Zeit so nebeneinanderzulegen. Dauer heisst: Vergangenes wirkt im Jetzt weiter. Hesses Material macht das fast körperlich sichtbar. Das heutige Latex ersetzt nicht das gestrige, seine Form ist aus seiner ganzen Geschichte hervorgegangen.",
     "auftraege": {
       "beispiel": "Schaut euch einen Gegenstand an, der schon lange bei euch lebt: eine Tasche, ein Holzlöffel, ein Buch. Welche Spur seiner Geschichte entdeckt ihr, die ihn gerade schön macht?",
-      "einwand": "Manchmal wünschen wir uns Dinge, die nicht altern. Findet mit Neugier einen Fall, in dem es gut ist, dass etwas unverändert bleibt.",
+      "einwand": "Manchmal wünschen wir uns Dinge, die nicht altern. Findet einen Fall, in dem es gut ist, dass etwas unverändert bleibt.",
       "gestaltung": "Nehmt ein Blatt Papier und faltet es gemeinsam fünfmal, jedes Mal ein wenig anders. Streicht es dann glatt. Erzählt einander, was die Falten jetzt über seine Zeit verraten."
     },
     "auftraegeAllein": {
       "beispiel": "Schau dir einen Gegenstand an, der schon lange bei dir lebt: eine Tasche, einen Holzlöffel, ein Buch. Welche Spur seiner Geschichte entdeckst du, die ihn gerade schön macht?",
-      "einwand": "Manchmal wünschen wir uns Dinge, die nicht altern. Finde mit Neugier einen Fall, in dem es gut ist, dass etwas unverändert bleibt.",
+      "einwand": "Manchmal wünschen wir uns Dinge, die nicht altern. Finde einen Fall, in dem es gut ist, dass etwas unverändert bleibt.",
       "gestaltung": "Nimm ein Blatt Papier und falte es fünfmal, jedes Mal ein wenig anders. Streich es dann glatt. Was verraten dir die Falten jetzt über seine Zeit?"
     }
   },
@@ -865,12 +865,12 @@ export const PILOT = Object.freeze([
     "einstieg": "Marina Abramović bindet Performance an die Anwesenheit eines Körpers in einer Gegenwart, die sich nicht wiederholen lässt. Jacques Derrida zeigt, dass ein Ereignis nur weitergegeben werden kann, wenn Spuren von ihm wiederholbar werden. Fotos, Beschreibungen und Videos retten die ursprüngliche Anwesenheit nicht. Sie schaffen neue Situationen, in denen das Vergangene anders wiederkehrt.",
     "auftraege": {
       "beispiel": "Erzählt einander von einem Moment, den ihr gern festgehalten hättet, und wie ihr ihn heute trotzdem in euch tragt. Was davon lässt sich weitergeben?",
-      "einwand": "Vielleicht bewahrt ein Foto doch mehr, als wir denken. Findet mit Wärme ein Beispiel, in dem eine Aufnahme etwas Wesentliches gerettet hat.",
+      "einwand": "Vielleicht bewahrt ein Foto doch mehr, als wir denken. Findet ein Beispiel, in dem eine Aufnahme etwas Wesentliches gerettet hat.",
       "gestaltung": "Schenkt euch gegenseitig eine Minute ungeteilte Aufmerksamkeit, ohne Telefon, ohne Worte. Beschreibt danach in einem Satz, was davon bleiben soll."
     },
     "auftraegeAllein": {
       "beispiel": "Denk an einen Moment, den du gern festgehalten hättest, und wie du ihn heute trotzdem in dir trägst. Was davon liesse sich weitergeben?",
-      "einwand": "Vielleicht bewahrt ein Foto doch mehr, als wir denken. Finde mit Wärme ein Beispiel, in dem eine Aufnahme etwas Wesentliches gerettet hat.",
+      "einwand": "Vielleicht bewahrt ein Foto doch mehr, als wir denken. Finde ein Beispiel, in dem eine Aufnahme etwas Wesentliches gerettet hat.",
       "gestaltung": "Schenk dem Raum, in dem du bist, eine Minute ungeteilte Aufmerksamkeit, ohne Telefon. Beschreibe danach in einem Satz, was davon bleiben soll."
     }
   },
@@ -1097,12 +1097,12 @@ export const PILOT = Object.freeze([
     "einstieg": "On Kawaras Datumsbilder geben einem Tag eine eindeutige Stelle im Kalender. Henri Bergson unterscheidet solche messbare Zeit von der gelebten Dauer, die nicht aus gleichen Einheiten besteht. Kawaras Regel bringt beides in ein einziges Bild. Der Tag ist genau bezeichnet und abgeschlossen, während die Arbeit an ihm als Müdigkeit, Rhythmus und Aufmerksamkeit erlebt wird.",
     "auftraege": {
       "beispiel": "Nennt ein Datum, das für euch voller Dauer steckt: ein Geburtstag, ein Umzug, ein erster Schultag. Was passt alles in diesen einen Tag?",
-      "einwand": "Kalender helfen, sich zu verabreden und einander zu finden. Findet mit Wohlwollen ein Argument für die Kraft der klaren Zahl.",
+      "einwand": "Kalender helfen, sich zu verabreden und einander zu finden. Findet ein Argument für die Kraft der klaren Zahl.",
       "gestaltung": "Schreibt das heutige Datum langsam und schön auf, jede Ziffer mit Sorgfalt. Erzählt einander, was euch während des Schreibens durch den Kopf ging."
     },
     "auftraegeAllein": {
       "beispiel": "Nenne ein Datum, das für dich voller Dauer steckt: einen Geburtstag, einen Umzug, einen ersten Schultag. Was passt alles in diesen einen Tag?",
-      "einwand": "Kalender helfen Menschen, sich zu verabreden und sich wiederzufinden. Finde mit Wohlwollen ein Argument für die Kraft der klaren Zahl.",
+      "einwand": "Kalender helfen Menschen, sich zu verabreden und sich wiederzufinden. Finde ein Argument für die Kraft der klaren Zahl.",
       "gestaltung": "Schreib das heutige Datum langsam und schön auf, jede Ziffer mit Sorgfalt. Notiere dann, was dir während des Schreibens durch den Kopf ging."
     }
   },
@@ -1329,12 +1329,12 @@ export const PILOT = Object.freeze([
     "einstieg": "Elena Esposito betont, dass Prognosen die Zukunft nicht kennen, sondern in der Gegenwart Erwartungen erzeugen. Rebecca Horns Maschinen scheinen einen Ablauf schon festzulegen. Doch sobald Mechanik auf Körper, Reibung und Raum trifft, wird aus dem vorgesehenen Ablauf ein tatsächliches Ereignis. Die Maschine macht Zukunft berechenbarer, ohne sie schon in Gegenwart zu verwandeln.",
     "auftraege": {
       "beispiel": "Denkt an ein Gerät, dem ihr vertraut, dass es morgen wieder funktioniert. Woher kommt dieses Vertrauen, und hat es euch schon einmal überrascht?",
-      "einwand": "Berechenbarkeit kann entlasten und Raum für Unerwartetes schaffen. Findet mit Zuversicht ein Beispiel, in dem eine gute Vorhersage Freiheit schenkt.",
+      "einwand": "Berechenbarkeit kann entlasten und Raum für Unerwartetes schaffen. Findet ein Beispiel, in dem eine gute Vorhersage Freiheit schenkt.",
       "gestaltung": "Lasst einen Gegenstand dreimal über den Tisch rollen und sagt vorher beide voraus, wo er liegen bleibt. Freut euch über jede Abweichung."
     },
     "auftraegeAllein": {
       "beispiel": "Denk an ein Gerät, dem du vertraust, dass es morgen wieder funktioniert. Woher kommt dieses Vertrauen, und hat es dich schon einmal überrascht?",
-      "einwand": "Berechenbarkeit kann entlasten und Raum für Unerwartetes schaffen. Finde mit Zuversicht ein Beispiel, in dem eine gute Vorhersage Freiheit schenkt.",
+      "einwand": "Berechenbarkeit kann entlasten und Raum für Unerwartetes schaffen. Finde ein Beispiel, in dem eine gute Vorhersage Freiheit schenkt.",
       "gestaltung": "Lass einen Gegenstand dreimal über den Tisch rollen und sag vorher voraus, wo er liegen bleibt. Freu dich über jede Abweichung."
     }
   },
