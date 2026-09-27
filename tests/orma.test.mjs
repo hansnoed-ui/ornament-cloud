@@ -285,12 +285,15 @@ test("Build: eigene Ausgabe, eigener Cache «orma-», Manifest-Kennung und Geltu
 });
 
 // Der Ton (sanft, neugierig, liebevoll, ermutigend) soll in den Sätzen liegen, nicht als Wort darin stehen
-test("Redaktion: Einstiege und Aufträge benennen ihren Ton nicht («Findet liebevoll …»)", () => {
+test("Redaktion: Einstiege und Aufträge benennen ihren Ton nicht («Findet liebevoll …», «Finde mit Wärme …»)", () => {
   const raw = JSON.parse(readFileSync(new URL("src/orma/redaktion/pilot.json", root), "utf8"));
   const ton = /\b(liebevoll|behutsam|wertschätzend|sanft|neugierig|ermutigend|wohlwollend|warmherzig|freundlich(e[rsnm]?)?|achtsam|empower\w*)\b/i;
   const texte = raw.konstellationen.flatMap(k => [k.einstieg, ...Object.values(k.auftraege), ...Object.values(k.auftraege_allein)]);
   assert.equal(texte.length, raw.konstellationen.length * 7);
-  const treffer = texte.filter(t => ton.test(t));
+  // auch als Wendung: «Finde mit Wärme ein Beispiel …» – zwischen Aufforderung und Gegenstand steht keine Haltung
+  const wendung = /\b(Findet|Finde|Sucht|Such|Nennt|Nenne|Erzählt|Erzähl|Beschreibt|Beschreibe)\s+(mit|voller|voll)\s+\p{L}+/u;
+  const haltung = /\bmit\s+(Wärme|Neugier|Wohlwollen|Zuversicht|Liebe|Zärtlichkeit|Sanftheit|Behutsamkeit|Freude|Mut|Offenheit|Geduld|Achtsamkeit|Güte|Herz)\b/;
+  const treffer = texte.filter(t => ton.test(t) || wendung.test(t) || haltung.test(t));
   assert.deepEqual(treffer, []);
 });
 
