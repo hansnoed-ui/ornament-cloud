@@ -38,8 +38,42 @@ const AUFTRAG = {
 let round = null;          // laufende Runde
 let notice = "";           // einmalige Meldung für die nächste Ansicht
 let installPrompt = null;
-const ANDROID = /Android/.test(navigator.userAgent);
+const UA = navigator.userAgent;
+const ANDROID = /Android/.test(UA);
+// iPadOS meldet sich als Mac, unterscheidet sich aber durch Touch
+const IOS = /iPhone|iPad|iPod/.test(UA) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+// Eingebaute Browser von Facebook, Instagram, Messenger u. a. können keine App installieren
+const IN_APP = /FBAN|FBAV|FB_IAB|FBIOS|Instagram|MessengerForiOS|Orca-Android|LinkedInApp|Snapchat|TikTok|musical_ly|Line\/|MicroMessenger|Pinterest|Twitter/.test(UA);
 const STANDALONE = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+
+// Installieren, Schritte je Browser (wie ORNA). Safari auf dem iPhone bietet nie selbst eine Installation an;
+// darum steht der Knopf überall ausser in der App und erklärt die Schritte, wenn der Browser nicht anbietet.
+function installSteps() {
+  if (IN_APP && IOS) return "Im Browser dieser App lässt sich ORMA nicht installieren. Über «···» oder das Menü «In Safari öffnen» wählen, dann dort «Teilen» und «Zum Home-Bildschirm».";
+  if (IN_APP) return "Im Browser dieser App lässt sich ORMA nicht installieren. Über das Menü (⋮) «In Chrome öffnen» wählen und dort noch einmal auf «ORMA als App installieren» tippen.";
+  if (IOS) return "Unten auf «Teilen» tippen (Quadrat mit Pfeil nach oben), dann «Zum Home-Bildschirm» wählen.";
+  if (ANDROID) return "Im Browsermenü (⋮) «App installieren» oder «Zum Startbildschirm hinzufügen» wählen.";
+  if (/Edg\/|Chrome\//.test(UA)) return "Im Browsermenü (⋮) «ORMA installieren» wählen oder in der Adresszeile auf das Installationssymbol klicken. Im Inkognito-Fenster geht es nicht.";
+  if (/Macintosh/.test(UA) && /Safari\//.test(UA) && !/Firefox\//.test(UA)) return "Im Menü «Ablage» «Zum Dock hinzufügen» wählen.";
+  return "Dieser Browser kann ORMA nicht installieren. Auf dem Smartphone geht es direkt, am Computer mit Chrome oder Edge.";
+}
+
+function installBlock() {
+  if (STANDALONE) return [];
+  const help = h("p", { class: "orma-small orma-install-help", id: "orma-install-help", hidden: true, text: installSteps() + " Danach funktioniert ORMA auch ohne Netz." });
+  const b = btn("ORMA als App installieren", async () => {
+    if (installPrompt) {
+      const p = installPrompt; installPrompt = null;
+      p.prompt();
+      const choice = await p.userChoice.catch(() => null);
+      if (choice && choice.outcome === "accepted") b.hidden = true;
+      return;
+    }
+    help.hidden = !help.hidden;
+    b.setAttribute("aria-expanded", String(!help.hidden));
+  }, "orma-link", { "aria-expanded": "false", "aria-controls": "orma-install-help" });
+  return [b, help];
+}
 
 // ---------- DOM-Helfer: Text immer als Text ----------
 function h(tag, props = {}, ...children) {
@@ -104,10 +138,10 @@ function renderStart() {
   if (draft && !resumable) extra.push(h("p", { class: "orma-note", text: "Die unterbrochene Runde gehört zu einer älteren Fassung von ORMA und kann nicht fortgesetzt werden." }),
     btn("Unterbrochene Runde verwerfen", () => { clearDraft(storage); renderStart(); }, "orma-link"));
   else if (resumable) extra.push(btn("Unterbrochene Runde verwerfen", () => confirmView("Die unterbrochene Runde wird gelöscht.", "Verwerfen", () => { clearDraft(storage); renderStart(); }, renderStart), "orma-link"));
-  if (installPrompt) extra.push(btn("ORMA als App installieren", async () => { installPrompt.prompt(); installPrompt = null; }, "orma-link"));
+  extra.push(...installBlock());
   // Android: Manche Geräte lassen die Installation auch in Chrome nicht zu (Warnung «unsichere App»);
   // eine Verknüpfung geht immer. Die Seite erfährt vom Fehlschlag nichts, darum steht der Hinweis immer da.
-  if (ANDROID && !STANDALONE) extra.push(h("p", { class: "orma-small orma-install-alt", text: "Klappt die Installation nicht? Im Browsermenü (⋮) «Zum Startbildschirm hinzufügen» und dann «Verknüpfung erstellen» wählen." }));
+  if (ANDROID && !IN_APP && !STANDALONE) extra.push(h("p", { class: "orma-small orma-install-alt", text: "Klappt die Installation nicht? Im Browsermenü (⋮) «Zum Startbildschirm hinzufügen» und dann «Verknüpfung erstellen» wählen." }));
 
   show(
     noticeNode(),
@@ -641,7 +675,7 @@ function renderEntry(id) {
 // ---------- Start der App ----------
 document.querySelector(".orma-home").addEventListener("click", () => { persist(); round = null; renderStart(); });
 addEventListener("pagehide", persist);
-addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt = e; if (!round && main.querySelector(".orma-claim")) renderStart(); });
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt = e; });
 
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
   addEventListener("load", () => { navigator.serviceWorker.register(new URL("../sw.js", import.meta.url)).catch(() => { /* ohne Offline-Betrieb weiter */ }); });
