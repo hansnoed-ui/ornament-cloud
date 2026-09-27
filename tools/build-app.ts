@@ -13,7 +13,7 @@ const APP = new URL("../portfolio/nebeneinander-nacheinander/", import.meta.url)
 const SW = new URL("sw.js", APP);
 const START = "// <!-- APP:START -->", END = "// <!-- APP:END -->";
 const PAGES = ["./", "feld/"];
-const EXTRA = ["app.webmanifest", "app/icon-192.png", "app/icon-512.png", "app/icon-maskable-512.png", "app/apple-touch-icon.png", "js/pwa.js?v=1"];
+const EXTRA = ["app.webmanifest", "app/icon-192.png", "app/icon-512.png", "app/icon-maskable-512.png", "app/apple-touch-icon.png"];
 
 const fileOf = (u: URL) => new URL(u.pathname.endsWith("/") ? u.pathname + "index.html" : u.pathname, "file://");
 
