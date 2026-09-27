@@ -408,3 +408,78 @@
   main > .back { display: none; }
   .site-header { padding-top: max(24px, env(safe-area-inset-top)); }
 }
+
+/* ---------- ORNA: Startbild der App, das Rad setzt sich zusammen (js/intro.js) ---------- */
+.orna-intro-open { overflow: hidden; }
+
+.orna-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4vh;
+  background: var(--bg);
+  color: var(--text);
+  transition: opacity 0.55s ease;
+  cursor: pointer;
+}
+.orna-intro.is-leaving { opacity: 0; pointer-events: none; }
+
+.orna-wheel {
+  width: min(78vw, 58vh, 460px);
+  height: auto;
+  overflow: visible;
+}
+.orna-wheel path,
+.orna-wheel circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.orna-wheel .sym-line { stroke-width: 1.3; }
+.orna-wheel .sym-ghost { opacity: 0.45; }
+.orna-wheel .sym-over { stroke-width: 0.9; }
+.orna-wheel .sym-dot { fill: currentColor; stroke: none; }
+
+/* Ringe zeichnen sich */
+.orna-ring {
+  stroke-width: 1.4;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.orna-ring--thin { stroke-width: 0.8; opacity: 0.6; transition-delay: 0.15s; }
+
+/* Zeichen kommen aus der Streuung an ihren Platz */
+.orna-sym {
+  transform-box: fill-box;          /* drehen und skalieren um die eigene Mitte */
+  transform-origin: center;
+  opacity: 0;
+  transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.6);
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.5s ease;
+  transition-delay: calc(0.35s + var(--i) * 0.03s);
+}
+
+.orna-wheel .orna-mark { fill: currentColor; stroke: none; opacity: 0; transition: opacity 0.4s ease 2.1s; }
+.orna-wheel .orna-cross { stroke-width: 1; opacity: 0; transition: opacity 0.4s ease 2.1s; }
+
+.orna-name {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 1rem;
+  letter-spacing: 0.6em;
+  padding-left: 0.6em;              /* optisch zentriert trotz Sperrung */
+  opacity: 0;
+  transition: opacity 0.6s ease 2.2s;
+}
+
+.orna-intro.is-assembling .orna-ring { stroke-dashoffset: 0; }
+.orna-intro.is-assembling .orna-sym { opacity: 1; transform: none; }
+.orna-intro.is-assembling .orna-wheel .orna-mark,
+.orna-intro.is-assembling .orna-wheel .orna-cross,
+.orna-intro.is-assembling .orna-name { opacity: 1; }

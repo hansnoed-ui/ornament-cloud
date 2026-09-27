@@ -346,7 +346,8 @@ test("App: Dateiliste und Version des Service Workers sind aktuell (tools/build-
 test("App: Manifest vollständig, Symbole vorhanden und in der angegebenen Grösse", () => {
   const dir = new URL("portfolio/nebeneinander-nacheinander/", root);
   const m = JSON.parse(readFileSync(new URL("app.webmanifest", dir), "utf8"));
-  assert.equal(m.name, "Nebeneinander, Nacheinander");
+  assert.equal(m.name, "ORNA");
+  assert.equal(m.short_name, "ORNA");
   assert.equal(m.start_url, "./");
   assert.equal(m.scope, "./");
   assert.equal(m.display, "standalone");

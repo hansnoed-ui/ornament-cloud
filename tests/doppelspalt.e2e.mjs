@@ -511,6 +511,37 @@ await check("App: Service Worker übernimmt, danach funktionieren Rad, Direktlin
   await ctx.close();
 });
 
+// ---------- ORNA: Startbild der App ----------
+await check("ORNA-Startbild: das Rad setzt sich aus 40 Zeichen zusammen, gibt danach das Rad frei; Antippen überspringt", async () => {
+  const { ctx, page, errors } = await open({ viewport: { width: 390, height: 844 } }, "?intro");
+  await page.waitForSelector(".orna-intro.is-assembling");
+  assert.equal(await page.$$eval(".orna-intro .orna-sym", e => e.length), 40);
+  assert.equal(await page.$eval(".orna-name", e => e.textContent), "ORNA");
+  assert.equal(await page.$eval(".orna-intro", e => e.getAttribute("aria-hidden")), "true");
+  await page.waitForSelector(".orna-intro", { state: "detached", timeout: 6000 });
+  await page.focus(".rad-wheel");
+  await page.keyboard.press("Enter");
+  await waitSelected(page);
+  await assertLanding(page);
+  await page.goto(base + "?intro");
+  await page.waitForSelector(".orna-intro.is-assembling");
+  await page.mouse.click(195, 400);
+  await page.waitForSelector(".orna-intro", { state: "detached", timeout: 1500 });
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("ORNA-Startbild: nicht im normalen Browser, nicht bei reduzierter Bewegung", async () => {
+  const a = await open({ viewport: { width: 390, height: 844 } });
+  await a.page.waitForTimeout(300);
+  assert.equal(await a.page.$(".orna-intro"), null);
+  await a.ctx.close();
+  const b = await open({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" }, "?intro");
+  await b.page.waitForTimeout(300);
+  assert.equal(await b.page.$(".orna-intro"), null);
+  await b.ctx.close();
+});
+
 await browser.close();
 server.close();
 console.log(results.join("\n"));
