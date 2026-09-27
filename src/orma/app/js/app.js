@@ -66,6 +66,8 @@ const say = t => { live.textContent = ""; setTimeout(() => { live.textContent = 
 const noticeNode = () => { if (!notice) return null; const n = h("p", { class: "orma-note", role: "status", text: notice }); notice = ""; return n; };
 
 const solo = r => r.mode === "allein";
+// Spielaufträge: für zwei Personen (ihr) oder im Modus allein in der Du-Form
+const tasks = (p, r) => (solo(r) ? p.auftraegeAllein : p.auftraege);
 // Re-Entry: die beiden Durchgänge heissen nach ihrem Datum – dieselbe Person, zu verschiedenen Zeiten
 const nameOf = (r, k) => solo(r) ? `Ich, am ${fmtDate(k === "a" ? r.firstAt : r.startedAt)}`
   : (r.names[k] || "").trim() || `Person ${k.toUpperCase()}`;
@@ -300,14 +302,14 @@ function renderChoice() {
       Object.entries(AUFTRAG).map(([key, label]) => h("button", {
         type: "button", class: "orma-option", "data-auftrag": key,
         onclick: () => { round.auftrag = key; go("antwort-a"); },
-      }, h("strong", { text: label }), h("span", { text: p.auftraege[key] }))),
+      }, h("strong", { text: label }), h("span", { text: tasks(p, round)[key] }))),
     ),
   );
 }
 
 const taskBox = p => h("div", { class: "orma-task" },
   h("span", { class: "orma-label", style: "margin-top:0", text: `Spielauftrag · ${AUFTRAG[round.auftrag] || ""}` }),
-  h("p", { text: p.auftraege[round.auftrag] || "" }),
+  h("p", { text: tasks(p, round)[round.auftrag] || "" }),
   h("p", { class: "orma-small", text: `Frage: ${p.question}` }));
 
 // D. Getrennt antworten
@@ -449,7 +451,7 @@ function resultView(r, p) {
   return h("div", { class: "orma-result" }, parts,
     h("details", { class: "orma-origin" },
       h("summary", { text: solo(r) ? "Beide Antworten" : "Erste Antworten und Ergänzungen" }),
-      r.auftrag ? h("p", { class: "orma-small", text: `Spielauftrag: ${AUFTRAG[r.auftrag]} – ${p.auftraege[r.auftrag]}` }) : null,
+      r.auftrag ? h("p", { class: "orma-small", text: `Spielauftrag: ${AUFTRAG[r.auftrag]} – ${tasks(p, r)[r.auftrag]}` }) : null,
       h("div", { class: "orma-answers" }, answerCard("a", r), answerCard("b", r)),
       ext.map(k => h("p", {}, h("strong", { text: solo(r) ? "Was sich verändert hat: " : `${nameOf(r, k)} ergänzt: ` }), r.extensions[k].trim())),
     ));
@@ -514,7 +516,7 @@ function renderExport(r, back) {
   show(
     h("p", { class: "orma-kicker", text: "Ergebniskarte" }),
     h("h2", { text: "Karte exportieren" }),
-    h("p", { class: "orma-small", text: `Ohne Auswahl zeigt die Karte nur Paarung und Frage. Persönliches kommt nur dazu, wenn ${solo(r) ? "du es" : "ihr es"} hier anwählt.` }),
+    h("p", { class: "orma-small", text: `Ohne Auswahl zeigt die Karte nur Paarung und Frage. Persönliches kommt nur dazu, ${solo(r) ? "wenn du es hier anwählst" : "wenn ihr es hier anwählt"}.` }),
     solo(r)
       ? [check("result", hasResult ? "Den dritten Gedanken zeigen" : "Den dritten Gedanken zeigen (nichts festgehalten)", !hasResult),
         check("answers", "Beide Antworten zeigen")]
@@ -546,7 +548,7 @@ function renderBook() {
           onclick: () => { setFavorite(storage, e.id, !e.favorite); renderBook(); },
         }));
     }))
-    : h("p", { class: "orma-muted", text: "Noch keine Gedanken. Nach einer Runde könnt ihr sie hier behalten." });
+    : h("p", { class: "orma-muted", text: "Noch keine Gedanken. Nach einer Runde lassen sie sich hier behalten." });
 
   // offene Schleifen: nur Paarung und Datum, die Antwort bleibt bis zum zweiten Durchgang verborgen
   const loopList = loops.length ? [

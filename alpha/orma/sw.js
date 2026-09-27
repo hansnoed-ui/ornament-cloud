@@ -4,7 +4,7 @@
 // Die Dateiliste und die Version setzt tools/build-orma.ts zwischen die Marken.
 
 // <!-- ORMA:START -->
-const VERSION = "38475abae4db";
+const VERSION = "51218b151a5c";
 const PRECACHE = [
   "./",
   "icons/apple-touch-icon.png",
@@ -12,15 +12,15 @@ const PRECACHE = [
   "icons/icon-512.png",
   "icons/icon-maskable-512.png",
   "icons/icon.svg",
-  "js/app.js?v=38475abae4db",
-  "js/card.js?v=38475abae4db",
-  "js/data.js?v=38475abae4db",
-  "js/draw.js?v=38475abae4db",
-  "js/store.js?v=38475abae4db",
-  "js/symbols.js?v=38475abae4db",
-  "js/wheel.js?v=38475abae4db",
+  "js/app.js?v=51218b151a5c",
+  "js/card.js?v=51218b151a5c",
+  "js/data.js?v=51218b151a5c",
+  "js/draw.js?v=51218b151a5c",
+  "js/store.js?v=51218b151a5c",
+  "js/symbols.js?v=51218b151a5c",
+  "js/wheel.js?v=51218b151a5c",
   "manifest.webmanifest",
-  "orma.css?v=38475abae4db"
+  "orma.css?v=51218b151a5c"
 ];
 // <!-- ORMA:END -->
 

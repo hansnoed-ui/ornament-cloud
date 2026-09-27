@@ -1,8 +1,8 @@
 // Erzeugt von tools/build-orma.ts – nicht von Hand bearbeiten.
 // Paarung, Text und Frage stammen wörtlich aus dem Bestand von «Nebeneinander, Nacheinander»;
 // Einstieg und Aufträge sind Ergänzungen der ORMA-Redaktion (src/orma/redaktion/pilot.json).
-export const APP = Object.freeze({"name":"ORMA","version":"0.3.0"});
-export const CONTENT_VERSION = "2026-09-27.2";
+export const APP = Object.freeze({"name":"ORMA","version":"0.3.1"});
+export const CONTENT_VERSION = "2026-09-27.3";
 export const PILOT = Object.freeze([
   {
     "id": "eva-hesse__susan-leigh-star",
@@ -26,6 +26,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Wählt einen Gegenstand in eurer Nähe. Was müsste jemand tun, damit er in zwanzig Jahren noch existiert? Was dürfte sich dabei verändern?",
       "einwand": "Pflege kann ein Werk auch verfälschen. Findet einen Fall, in dem es besser wäre, etwas altern zu lassen, statt es zu erhalten.",
       "gestaltung": "Schreibt für einen Gegenstand, den ihr beide kennt, eine Pflegeanweisung in drei Sätzen: einer erhält ihn, einer verändert ihn, einer lässt offen, wer zuständig ist."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Wähle einen Gegenstand in deiner Nähe. Was müsste jemand tun, damit er in zwanzig Jahren noch existiert? Was dürfte sich dabei verändern?",
+      "einwand": "Pflege kann ein Werk auch verfälschen. Finde einen Fall, in dem es besser wäre, etwas altern zu lassen, statt es zu erhalten.",
+      "gestaltung": "Schreib für einen Gegenstand, den du gut kennst, eine Pflegeanweisung in drei Sätzen: einer erhält ihn, einer verändert ihn, einer lässt offen, wer zuständig ist."
     }
   },
   {
@@ -50,6 +55,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt je einen Zeitstempel aus eurem Alltag: eine Quittung, eine Nachricht, ein Foto mit Datum. Was weiss er über diesen Moment, und was fehlt ihm?",
       "einwand": "Vielleicht ist es gut, dass ein Stempel die Müdigkeit nicht enthält. Findet einen Fall, in dem es hilft, dass Information vom Körper getrennt bleibt.",
       "gestaltung": "Notiert die jetzige Uhrzeit auf einem Zettel und schreibt darunter drei Dinge, die diese Zahl nicht festhält. Legt den Zettel dorthin, wo ihr ihn später wiederfindet."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Nenne einen Zeitstempel aus deinem Alltag: eine Quittung, eine Nachricht, ein Foto mit Datum. Was weiss er über diesen Moment, und was fehlt ihm?",
+      "einwand": "Vielleicht ist es gut, dass ein Stempel die Müdigkeit nicht enthält. Finde einen Fall, in dem es hilft, dass Information vom Körper getrennt bleibt.",
+      "gestaltung": "Notiere die jetzige Uhrzeit auf einem Zettel und schreib darunter drei Dinge, die diese Zahl nicht festhält. Leg den Zettel dorthin, wo du ihn später wiederfindest."
     }
   },
   {
@@ -74,6 +84,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Stellt euch nebeneinander vor ein Fenster oder einen Spiegel und beschreibt beide, was ihr seht. Welcher Unterschied kommt nur von eurem Standort?",
       "einwand": "Manchmal braucht es einen möglichst neutralen Blick: bei einer Messung, vor Gericht, auf einer Karte. Sucht ein Argument gegen die Gebundenheit jedes Blicks.",
       "gestaltung": "Zeichnet denselben Gegenstand von zwei verschiedenen Stellen aus auf Papier. Gebt jeder Zeichnung einen Titel, der den Standpunkt nennt, nicht den Gegenstand."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Stell dich vor ein Fenster oder einen Spiegel und beschreibe, was du siehst. Mach dann einen Schritt zur Seite: Welcher Unterschied kommt nur von deinem Standort?",
+      "einwand": "Manchmal braucht es einen möglichst neutralen Blick: bei einer Messung, vor Gericht, auf einer Karte. Such ein Argument gegen die Gebundenheit jedes Blicks.",
+      "gestaltung": "Zeichne denselben Gegenstand von zwei verschiedenen Stellen aus auf Papier. Gib jeder Zeichnung einen Titel, der den Standpunkt nennt, nicht den Gegenstand."
     }
   },
   {
@@ -98,6 +113,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt etwas, das für euch dasselbe geblieben ist, obwohl alle Teile gewechselt haben: ein Verein, ein Rezept, ein Ritual. Was wird wiederholt, damit es dasselbe bleibt?",
       "einwand": "Gibt es eine Grenze? Beschreibt eine Veränderung, nach der ihr sagen würdet: Das ist nicht mehr dasselbe, auch wenn die Regel noch befolgt wird.",
       "gestaltung": "Erfindet in einem Satz eine Regel, nach der ein Werk aus Alltagsdingen immer wieder neu hergestellt werden kann. Was muss gleich bleiben, was darf wechseln?"
+    },
+    "auftraegeAllein": {
+      "beispiel": "Nenne etwas, das für dich dasselbe geblieben ist, obwohl alle Teile gewechselt haben: ein Verein, ein Rezept, ein Ritual. Was wird wiederholt, damit es dasselbe bleibt?",
+      "einwand": "Gibt es eine Grenze? Beschreibe eine Veränderung, nach der du sagen würdest: Das ist nicht mehr dasselbe, auch wenn die Regel noch befolgt wird.",
+      "gestaltung": "Erfinde in einem Satz eine Regel, nach der ein Werk aus Alltagsdingen immer wieder neu hergestellt werden kann. Was muss gleich bleiben, was darf wechseln?"
     }
   },
   {
@@ -122,6 +142,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Welches Gerät benutzt ihr, ohne darüber nachzudenken? Erinnert euch an das erste Mal, als es noch ungewohnt war. Was habt ihr damals bemerkt?",
       "einwand": "Vielleicht ist Gewohnheit kein Verlust, sondern eine Entlastung. Findet einen Fall, in dem es gut ist, dass Technik unbemerkt bleibt.",
       "gestaltung": "Macht eine alltägliche Handbewegung am Telefon, etwa entsperren oder wischen, zehnmal sehr langsam. Beschreibt, was ihr dabei bemerkt, das sonst verschwindet."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Welches Gerät benutzt du, ohne darüber nachzudenken? Erinnere dich an das erste Mal, als es noch ungewohnt war. Was hast du damals bemerkt?",
+      "einwand": "Vielleicht ist Gewohnheit kein Verlust, sondern eine Entlastung. Finde einen Fall, in dem es gut ist, dass Technik unbemerkt bleibt.",
+      "gestaltung": "Mach eine alltägliche Handbewegung am Telefon, etwa entsperren oder wischen, zehnmal sehr langsam. Beschreibe, was du dabei bemerkst, das sonst verschwindet."
     }
   },
   {
@@ -146,6 +171,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Erinnert euch an eine Situation, in der Zuschauende etwas verändert haben: ein Konzert, eine Rede, ein Spiel. Woran habt ihr gemerkt, dass sie mitgehandelt haben?",
       "einwand": "Nicht jedes Publikum soll mithandeln. Findet ein Beispiel, in dem Zuschauen bewusst ohne Einfluss bleiben soll, und sagt, warum das wichtig sein könnte.",
       "gestaltung": "Legt eine Regel für eine Minute fest, zum Beispiel: Wir schauen uns an, ohne zu sprechen. Führt sie aus. Was hat die andere Person verändert, das nicht in der Regel stand?"
+    },
+    "auftraegeAllein": {
+      "beispiel": "Erinnere dich an eine Situation, in der Zuschauende etwas verändert haben: ein Konzert, eine Rede, ein Spiel. Woran hast du gemerkt, dass sie mitgehandelt haben?",
+      "einwand": "Nicht jedes Publikum soll mithandeln. Finde ein Beispiel, in dem Zuschauen bewusst ohne Einfluss bleiben soll, und sag, warum das wichtig sein könnte.",
+      "gestaltung": "Leg eine Regel für eine Minute fest, zum Beispiel: Ich schaue aus dem Fenster, ohne mich zu bewegen. Führe sie aus. Was hat die Umgebung verändert, das nicht in der Regel stand?"
     }
   },
   {
@@ -170,6 +200,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt einen Ort, den ihr beide kennt. Ist er für euch gleich zugänglich, gleich sicher, gleich vertraut? Was ist für die eine Person anders als für die andere?",
       "einwand": "Vielleicht braucht eine gemeinsame Welt gar keine gleichen Bedingungen. Sucht ein Argument dafür, dass gerade die Verschiedenheit einen Raum gemeinsam macht.",
       "gestaltung": "Stellt einen Gegenstand zwischen euch auf den Tisch. Beschreibt ihn beide in je einem Satz aus eurer Sicht. Schreibt dann einen dritten Satz, der für beide stimmt."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Nenne einen Ort, den du mit anderen teilst. Ist er für alle gleich zugänglich, gleich sicher, gleich vertraut? Was ist für dich anders als für andere?",
+      "einwand": "Vielleicht braucht eine gemeinsame Welt gar keine gleichen Bedingungen. Such ein Argument dafür, dass gerade die Verschiedenheit einen Raum gemeinsam macht.",
+      "gestaltung": "Stell einen Gegenstand vor dich auf den Tisch. Beschreibe ihn in einem Satz aus deiner Sicht und in einem Satz so, wie ihn eine ganz andere Person sehen könnte. Schreib dann einen dritten Satz, der für beide stimmt."
     }
   },
   {
@@ -194,6 +229,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Erzählt einander kurz eine frühe Erinnerung, die ihr schon oft erzählt habt. Was erzählt ihr heute anders als früher?",
       "einwand": "Manche Erinnerungen sollen sich gerade nicht verändern: Zeugenaussagen, Protokolle, Gedenktage. Findet ein Argument dafür, Erinnerung festzuhalten.",
       "gestaltung": "Gebt einer Erinnerung einen kleinen Ort: drei Gegenstände aus eurer Umgebung, auf einem Tisch angeordnet. Was zeigt die Anordnung, das die Erzählung nicht sagt?"
+    },
+    "auftraegeAllein": {
+      "beispiel": "Denk an eine frühe Erinnerung, die du schon oft erzählt hast. Was erzählst du heute anders als früher?",
+      "einwand": "Manche Erinnerungen sollen sich gerade nicht verändern: Zeugenaussagen, Protokolle, Gedenktage. Finde ein Argument dafür, Erinnerung festzuhalten.",
+      "gestaltung": "Gib einer Erinnerung einen kleinen Ort: drei Gegenstände aus deiner Umgebung, auf einem Tisch angeordnet. Was zeigt die Anordnung, das die Erzählung nicht sagt?"
     }
   },
   {
@@ -218,6 +258,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt ein Datum, das ihr schon kennt, obwohl es noch nicht da ist. Was wisst ihr heute darüber, und was kann erst an diesem Tag entstehen?",
       "einwand": "Termine, Fristen und Geburtstage wirken schon, bevor sie da sind. Zeigt an einem Beispiel, wie eine Zukunft die Gegenwart verändert, obwohl sie noch nicht eingetreten ist.",
       "gestaltung": "Schreibt beide das heutige Datum so sorgfältig wie möglich auf ein Blatt. Notiert auf der Rückseite, was morgen auf einem solchen Blatt stehen müsste und was ihr heute noch nicht wissen könnt."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Nenne ein Datum, das du schon kennst, obwohl es noch nicht da ist. Was weisst du heute darüber, und was kann erst an diesem Tag entstehen?",
+      "einwand": "Termine, Fristen und Geburtstage wirken schon, bevor sie da sind. Zeig an einem Beispiel, wie eine Zukunft die Gegenwart verändert, obwohl sie noch nicht eingetreten ist.",
+      "gestaltung": "Schreib das heutige Datum so sorgfältig wie möglich auf ein Blatt. Notiere auf der Rückseite, was morgen auf einem solchen Blatt stehen müsste und was du heute noch nicht wissen kannst."
     }
   },
   {
@@ -242,6 +287,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Sucht in eurer Umgebung eine Spur von etwas, das nicht mehr da ist: einen Abdruck, eine Lücke, eine abgenutzte Stelle. Was erzählt sie über das Fehlende?",
       "einwand": "Eine Spur kann eine Abwesenheit auch verdecken, weil sie etwas Greifbares an ihre Stelle setzt. Wann tröstet eine Spur zu sehr?",
       "gestaltung": "Nehmt einen Gegenstand vom Tisch weg und lasst seinen Platz leer. Schreibt einen Satz, der den leeren Platz beschreibt, ohne den Gegenstand zu nennen."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Such in deiner Umgebung eine Spur von etwas, das nicht mehr da ist: einen Abdruck, eine Lücke, eine abgenutzte Stelle. Was erzählt sie über das Fehlende?",
+      "einwand": "Eine Spur kann eine Abwesenheit auch verdecken, weil sie etwas Greifbares an ihre Stelle setzt. Wann tröstet eine Spur zu sehr?",
+      "gestaltung": "Nimm einen Gegenstand vom Tisch weg und lass seinen Platz leer. Schreib einen Satz, der den leeren Platz beschreibt, ohne den Gegenstand zu nennen."
     }
   },
   {
@@ -266,6 +316,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Denkt an ein Rezept, eine Spielregel oder eine Wegbeschreibung. Wo seid ihr bei der Ausführung von der Anweisung abgewichen, ohne sie zu brechen?",
       "einwand": "Wenn jede Ausführung anders ausfällt: Wozu dann überhaupt eine Regel? Findet ein Argument dafür, dass die Form doch in der Regel liegt.",
       "gestaltung": "Schreibt eine Zeichenanweisung in einem Satz, zum Beispiel: Zieht zehn gerade Linien, die sich nicht berühren. Führt sie beide auf Papier aus und vergleicht die Ergebnisse."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Denk an ein Rezept, eine Spielregel oder eine Wegbeschreibung. Wo bist du bei der Ausführung von der Anweisung abgewichen, ohne sie zu brechen?",
+      "einwand": "Wenn jede Ausführung anders ausfällt: Wozu dann überhaupt eine Regel? Finde ein Argument dafür, dass die Form doch in der Regel liegt.",
+      "gestaltung": "Schreib eine Zeichenanweisung in einem Satz, zum Beispiel: Zieh zehn gerade Linien, die sich nicht berühren. Führe sie zweimal auf Papier aus und vergleiche die beiden Ergebnisse."
     }
   },
   {
@@ -290,6 +345,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt zwei Orte, die auf der Karte nah beieinander liegen, sich für euch aber weit entfernt anfühlen, oder umgekehrt. Was macht den Weg länger oder kürzer?",
       "einwand": "Ein Meter bleibt ein Meter. Sucht ein Argument dafür, dass der messbare Abstand wichtiger ist als der erlebte Weg.",
       "gestaltung": "Legt zwei Gegenstände einen Schritt voneinander entfernt auf den Boden. Geht einmal gerade und einmal im Bogen an ihnen vorbei. Beschreibt, wann sie euch näher vorkamen."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Nenne zwei Orte, die auf der Karte nah beieinander liegen, sich für dich aber weit entfernt anfühlen, oder umgekehrt. Was macht den Weg länger oder kürzer?",
+      "einwand": "Ein Meter bleibt ein Meter. Such ein Argument dafür, dass der messbare Abstand wichtiger ist als der erlebte Weg.",
+      "gestaltung": "Leg zwei Gegenstände einen Schritt voneinander entfernt auf den Boden. Geh einmal gerade und einmal im Bogen an ihnen vorbei. Beschreibe, wann sie dir näher vorkamen."
     }
   },
   {
@@ -314,6 +374,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Sucht einen Gegenstand, dessen Umriss nachgibt: ein Kissen, ein Pullover über der Stuhllehne, eine Tasche. Wo ist seine Grenze, und wie viel darf sie nachgeben?",
       "einwand": "Manche Grenzen müssen fest sein, damit etwas funktioniert: eine Türschwelle, eine Linie auf dem Spielfeld. Findet ein Argument dafür, dass Form eine stabile Grenze braucht.",
       "gestaltung": "Legt mit einer Schnur oder einem Tuch eine Grenze auf den Tisch. Verändert sie dreimal leicht, ohne sie aufzuheben. Ab wann ist es eine andere Form?"
+    },
+    "auftraegeAllein": {
+      "beispiel": "Such einen Gegenstand, dessen Umriss nachgibt: ein Kissen, ein Pullover über der Stuhllehne, eine Tasche. Wo ist seine Grenze, und wie viel darf sie nachgeben?",
+      "einwand": "Manche Grenzen müssen fest sein, damit etwas funktioniert: eine Türschwelle, eine Linie auf dem Spielfeld. Finde ein Argument dafür, dass Form eine stabile Grenze braucht.",
+      "gestaltung": "Leg mit einer Schnur oder einem Tuch eine Grenze auf den Tisch. Verändere sie dreimal leicht, ohne sie aufzuheben. Ab wann ist es eine andere Form?"
     }
   },
   {
@@ -338,6 +403,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt je einen Vorsatz, den ihr länger als einen Monat gehalten habt. Was musstet ihr unterwegs anpassen, damit er bestehen blieb?",
       "einwand": "Vielleicht ist ein Plan gerade dann stark, wenn er sich nicht an die Situation anpasst. Findet einen Fall, in dem Starrheit besser ist als Anpassung.",
       "gestaltung": "Schreibt gemeinsam eine Regel für die nächsten sieben Tage, die in einen Satz passt. Notiert darunter drei Situationen, in denen sie schwer einzuhalten wäre."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Nenne einen Vorsatz, den du länger als einen Monat gehalten hast. Was musstest du unterwegs anpassen, damit er bestehen blieb?",
+      "einwand": "Vielleicht ist ein Plan gerade dann stark, wenn er sich nicht an die Situation anpasst. Finde einen Fall, in dem Starrheit besser ist als Anpassung.",
+      "gestaltung": "Schreib eine Regel für die nächsten sieben Tage, die in einen Satz passt. Notiere darunter drei Situationen, in denen sie schwer einzuhalten wäre."
     }
   },
   {
@@ -362,6 +432,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt je eine Situation, in der zehn Sekunden sehr lang oder sehr kurz waren. Was hat die Dauer verändert?",
       "einwand": "Die Uhr ist für alle gleich, und genau darum können wir uns verabreden. Findet ein Argument dafür, dass die gemessene Zeit wichtiger ist als die erlebte.",
       "gestaltung": "Schliesst beide die Augen und öffnet sie, wenn ihr meint, dass zehn Sekunden vergangen sind. Lasst eine Uhr mitlaufen. Wer lag wie weit daneben, und woran habt ihr euch orientiert?"
+    },
+    "auftraegeAllein": {
+      "beispiel": "Nenne eine Situation, in der zehn Sekunden sehr lang oder sehr kurz waren. Was hat die Dauer verändert?",
+      "einwand": "Die Uhr ist für alle gleich, und genau darum können wir uns verabreden. Finde ein Argument dafür, dass die gemessene Zeit wichtiger ist als die erlebte.",
+      "gestaltung": "Schliess die Augen und öffne sie, wenn du meinst, dass zehn Sekunden vergangen sind. Lass eine Uhr mitlaufen. Wie weit lagst du daneben, und woran hast du dich orientiert?"
     }
   },
   {
@@ -386,6 +461,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt etwas, das ihr weitergegeben habt oder bekommen habt: ein Buch, ein Rezept, ein Witz. Was hat sich auf dem Weg verändert, und was ist geblieben?",
       "einwand": "Manches soll gerade nicht weitergegeben werden, damit es erhalten bleibt: ein Original, ein Geheimnis, ein Ort. Findet ein Argument dafür, etwas nicht zirkulieren zu lassen.",
       "gestaltung": "Schreibt einen Satz auf einen Zettel und gebt ihn hin und her. Jede Person darf bei jeder Übergabe genau ein Wort ändern. Nach sechs Übergaben: Ist es noch derselbe Satz?"
+    },
+    "auftraegeAllein": {
+      "beispiel": "Nenne etwas, das du weitergegeben oder bekommen hast: ein Buch, ein Rezept, einen Witz. Was hat sich auf dem Weg verändert, und was ist geblieben?",
+      "einwand": "Manches soll gerade nicht weitergegeben werden, damit es erhalten bleibt: ein Original, ein Geheimnis, ein Ort. Finde ein Argument dafür, etwas nicht zirkulieren zu lassen.",
+      "gestaltung": "Schreib einen Satz auf einen Zettel und schreib ihn sechsmal ab. Ändere bei jeder Abschrift genau ein Wort. Ist der letzte noch derselbe Satz?"
     }
   },
   {
@@ -410,6 +490,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Welches Hilfsmittel spürt ihr beim Benutzen gar nicht mehr als Gegenstand: eine Brille, ein Stift, ein Velo? Seit wann gehört es zu euch?",
       "einwand": "Ein Werkzeug bleibt ein Werkzeug, man kann es jederzeit weglegen. Sucht ein Argument dafür, dass die Grenze zwischen Körper und Technik klar bleibt.",
       "gestaltung": "Verlängert einen Arm mit einem Gegenstand, etwa einem Löffel oder Lineal, und berührt damit drei verschiedene Oberflächen. Beschreibt, wo ihr die Berührung spürt."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Welches Hilfsmittel spürst du beim Benutzen gar nicht mehr als Gegenstand: eine Brille, einen Stift, ein Velo? Seit wann gehört es zu dir?",
+      "einwand": "Ein Werkzeug bleibt ein Werkzeug, man kann es jederzeit weglegen. Such ein Argument dafür, dass die Grenze zwischen Körper und Technik klar bleibt.",
+      "gestaltung": "Verlängere einen Arm mit einem Gegenstand, etwa einem Löffel oder Lineal, und berühre damit drei verschiedene Oberflächen. Beschreibe, wo du die Berührung spürst."
     }
   },
   {
@@ -434,6 +519,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Erinnert euch an etwas, dessen Ende von Anfang an feststand: eine Reise, ein Kurs, ein Besuch. Wie hat das Wissen um das Ende den Anfang verändert?",
       "einwand": "Vielleicht verdirbt ein angekündigtes Ende die Gegenwart, weil man nur noch zählt. Findet ein Argument für Anfänge ohne bekanntes Ende.",
       "gestaltung": "Vereinbart eine Minute Schweigen und sagt vorher laut, wann sie endet. Wiederholt es ohne Ankündigung, eine Person beendet sie. Was war anders?"
+    },
+    "auftraegeAllein": {
+      "beispiel": "Erinnere dich an etwas, dessen Ende von Anfang an feststand: eine Reise, ein Kurs, ein Besuch. Wie hat das Wissen um das Ende den Anfang verändert?",
+      "einwand": "Vielleicht verdirbt ein angekündigtes Ende die Gegenwart, weil man nur noch zählt. Finde ein Argument für Anfänge ohne bekanntes Ende.",
+      "gestaltung": "Stell einen Wecker auf eine Minute und sei still, bis er klingelt. Wiederhole es ohne Wecker und hör auf, wenn es dir genügt. Was war anders?"
     }
   },
   {
@@ -458,6 +548,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt einen Ort oder Gegenstand, bei dem euer Körper anders reagiert, als das Aussehen erwarten lässt: eine glatte Treppe, ein zu tiefer Stuhl. Welche Regel des Verhaltens kommt dabei ins Wanken?",
       "einwand": "Normen helfen, weil wir nicht jede Situation neu durchdenken müssen. Findet ein Beispiel, in dem eine eingeübte Norm den Körper schützt.",
       "gestaltung": "Benutzt einen Alltagsgegenstand für fünf Minuten anders als vorgesehen, etwa eine Tasse mit der anderen Hand oder einen Stuhl verkehrt herum. Notiert, was sich an eurer Haltung ändert."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Nenne einen Ort oder Gegenstand, bei dem dein Körper anders reagiert, als das Aussehen erwarten lässt: eine glatte Treppe, ein zu tiefer Stuhl. Welche Regel des Verhaltens kommt dabei ins Wanken?",
+      "einwand": "Normen helfen, weil wir nicht jede Situation neu durchdenken müssen. Finde ein Beispiel, in dem eine eingeübte Norm den Körper schützt.",
+      "gestaltung": "Benutze einen Alltagsgegenstand für fünf Minuten anders als vorgesehen, etwa eine Tasse mit der anderen Hand oder einen Stuhl verkehrt herum. Notiere, was sich an deiner Haltung ändert."
     }
   },
   {
@@ -482,6 +577,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt ein Lied, einen Ort oder ein Foto, zu dem ihr immer wieder zurückkehrt. Ist es beim letzten Mal dasselbe gewesen wie beim ersten Mal?",
       "einwand": "Viele Rituale wirken gerade, weil sie immer gleich bleiben. Findet ein Argument dafür, dass Wiederholung eine Erinnerung schützt statt verändert.",
       "gestaltung": "Zeichnet beide dreimal hintereinander denselben Gegenstand aus dem Gedächtnis, ohne auf die vorherige Zeichnung zu schauen. Vergleicht: Was verschiebt sich von Mal zu Mal?"
+    },
+    "auftraegeAllein": {
+      "beispiel": "Nenne ein Lied, einen Ort oder ein Foto, zu dem du immer wieder zurückkehrst. Ist es beim letzten Mal dasselbe gewesen wie beim ersten Mal?",
+      "einwand": "Viele Rituale wirken gerade, weil sie immer gleich bleiben. Finde ein Argument dafür, dass Wiederholung eine Erinnerung schützt statt verändert.",
+      "gestaltung": "Zeichne dreimal hintereinander denselben Gegenstand aus dem Gedächtnis, ohne auf die vorherige Zeichnung zu schauen. Vergleiche: Was verschiebt sich von Mal zu Mal?"
     }
   },
   {
@@ -506,6 +606,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt einen Tag, den viele Menschen gemeinsam erinnern, und einen, den nur ihr kennt. Was macht den einen gemeinsam und den anderen privat?",
       "einwand": "Ein gemaltes Datum zeigt nur eine Zahl, nicht den Tag selbst. Findet ein Argument dafür, dass ein einzelner Tag gar nicht geteilt werden kann.",
       "gestaltung": "Haltet den heutigen Tag in einem Gegenstand fest, der morgen noch da ist: ein Zettel, ein Stein, eine Notiz in einem Buch. Was muss darauf stehen, damit jemand anderes ihn versteht?"
+    },
+    "auftraegeAllein": {
+      "beispiel": "Nenne einen Tag, den viele Menschen gemeinsam erinnern, und einen, den nur du kennst. Was macht den einen gemeinsam und den anderen privat?",
+      "einwand": "Ein gemaltes Datum zeigt nur eine Zahl, nicht den Tag selbst. Finde ein Argument dafür, dass ein einzelner Tag gar nicht geteilt werden kann.",
+      "gestaltung": "Halte den heutigen Tag in einem Gegenstand fest, der morgen noch da ist: ein Zettel, ein Stein, eine Notiz in einem Buch. Was muss darauf stehen, damit jemand anderes ihn versteht?"
     }
   },
   {
@@ -530,6 +635,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Denkt an ein Denkmal, eine Gedenktafel oder ein Grab, das ihr kennt. Wer sorgt dafür, dass es bleibt, und was würde ohne diese Pflege geschehen?",
       "einwand": "Vielleicht braucht Erinnerung gar keine Infrastruktur, sondern nur Menschen, die erzählen. Findet ein Beispiel für Erinnerung ohne Ort und ohne Institution.",
       "gestaltung": "Wählt eine Erinnerung, die ihr beide teilt. Legt fest, wo, wie oft und von wem sie in einem Jahr wieder aufgerufen werden soll. Schreibt diese kleine Infrastruktur in drei Zeilen auf."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Denk an ein Denkmal, eine Gedenktafel oder ein Grab, das du kennst. Wer sorgt dafür, dass es bleibt, und was würde ohne diese Pflege geschehen?",
+      "einwand": "Vielleicht braucht Erinnerung gar keine Infrastruktur, sondern nur Menschen, die erzählen. Finde ein Beispiel für Erinnerung ohne Ort und ohne Institution.",
+      "gestaltung": "Wähle eine Erinnerung, die dir wichtig ist. Leg fest, wo, wie oft und von wem sie in einem Jahr wieder aufgerufen werden soll. Schreib diese kleine Infrastruktur in drei Zeilen auf."
     }
   },
   {
@@ -554,6 +664,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt eine sehr kurze Anweisung, die etwas Grosses hervorbringt: eine Spielregel, ein Rezept, eine Wegbeschreibung. Was muss man ergänzen, damit sie funktioniert?",
       "einwand": "Wenn so viel bei der Ausführung entsteht, liegt das Werk vielleicht gar nicht in der Anweisung. Findet ein Argument dafür, dass die Information allein kein Werk ist.",
       "gestaltung": "Diktiert euch gegenseitig eine Zeichnung in höchstens zwanzig Wörtern, ohne dass die zeichnende Person nachfragen darf. Vergleicht Vorstellung und Ergebnis: Welche Information hat gefehlt?"
+    },
+    "auftraegeAllein": {
+      "beispiel": "Nenne eine sehr kurze Anweisung, die etwas Grosses hervorbringt: eine Spielregel, ein Rezept, eine Wegbeschreibung. Was muss man ergänzen, damit sie funktioniert?",
+      "einwand": "Wenn so viel bei der Ausführung entsteht, liegt das Werk vielleicht gar nicht in der Anweisung. Finde ein Argument dafür, dass die Information allein kein Werk ist.",
+      "gestaltung": "Schreib eine Zeichenanweisung in höchstens zwanzig Wörtern. Leg sie eine Weile weg, lies sie dann und zeichne nur, was dasteht. Vergleiche Vorstellung und Ergebnis: Welche Information hat gefehlt?"
     }
   },
   {
@@ -578,6 +693,11 @@ export const PILOT = Object.freeze([
       "beispiel": "Nennt zwei gleiche Dinge, die erst durch ihren Abstand unterscheidbar werden: zwei Fenster, zwei Stühle, zwei Buchstaben. Was ändert sich, wenn der Abstand kleiner wird?",
       "einwand": "Ein Ding ist, was es ist, auch ganz allein im leeren Raum. Findet ein Argument dafür, dass Identität nicht vom Abstand zu anderem abhängt.",
       "gestaltung": "Stellt drei gleiche Gegenstände in eine Reihe. Verändert nur die Abstände zwischen ihnen, zweimal. Beschreibt jedes Mal in einem Satz, was die Reihe jetzt ist."
+    },
+    "auftraegeAllein": {
+      "beispiel": "Nenne zwei gleiche Dinge, die erst durch ihren Abstand unterscheidbar werden: zwei Fenster, zwei Stühle, zwei Buchstaben. Was ändert sich, wenn der Abstand kleiner wird?",
+      "einwand": "Ein Ding ist, was es ist, auch ganz allein im leeren Raum. Finde ein Argument dafür, dass Identität nicht vom Abstand zu anderem abhängt.",
+      "gestaltung": "Stell drei gleiche Gegenstände in eine Reihe. Verändere nur die Abstände zwischen ihnen, zweimal. Beschreibe jedes Mal in einem Satz, was die Reihe jetzt ist."
     }
   }
 ]);

@@ -47,7 +47,11 @@ export function buildPilot(pilotText: string = readFileSync(PILOT_FILE, "utf8"))
     ids.add(k.id);
     const w = words(k.einstieg || "");
     if (w < 40 || w > 70) errors.push(`${k.id}: Einstieg hat ${w} Wörter (erlaubt 40–70)`);
-    for (const a of AUFTRAEGE) if (typeof k.auftraege?.[a] !== "string" || !k.auftraege[a].trim()) errors.push(`${k.id}: Auftrag «${a}» fehlt`);
+    for (const a of AUFTRAEGE) {
+      if (typeof k.auftraege?.[a] !== "string" || !k.auftraege[a].trim()) errors.push(`${k.id}: Auftrag «${a}» fehlt`);
+      // Modus allein: dieselben Aufträge in der Du-Form (eine Person)
+      if (typeof k.auftraege_allein?.[a] !== "string" || !k.auftraege_allein[a].trim()) errors.push(`${k.id}: Auftrag «${a}» für den Modus allein fehlt`);
+    }
     const ai = artists.findIndex(p => p.id === c.artistId), ti = theorists.findIndex(p => p.id === c.theoristId);
     return {
       id: c.id, nr: c.editorialNumber,
@@ -56,6 +60,7 @@ export function buildPilot(pilotText: string = readFileSync(PILOT_FILE, "utf8"))
       text: c.text, question: c.question,
       einstieg: k.einstieg.trim(),
       auftraege: Object.fromEntries(AUFTRAEGE.map(a => [a, k.auftraege[a].trim()])),
+      auftraegeAllein: Object.fromEntries(AUFTRAEGE.map(a => [a, k.auftraege_allein[a].trim()])),
     };
   }).filter(Boolean) as any[];
   // Das Rad hat zwölf Plätze je Ring: genau zwölf Künstler:innen und zwölf Theoretiker:innen

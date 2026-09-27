@@ -167,7 +167,8 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   ganzer Datensatz, die Radstellung folgt daraus; die Geste bestimmt nur den Weg.
 - **Texte:** Paarung, Originaltext, Originalfrage und IDs bleiben unverändert und werden immer mit
   angezeigt (§2 gilt). Neu hinzu kommen je Konstellation ein Einstieg (40–70 Wörter, aus dem
-  Originaltext abgeleitet) und drei Spielaufträge (Beispiel, Einwand, Gestaltung). Sie liegen getrennt
+  Originaltext abgeleitet) und drei Spielaufträge (Beispiel, Einwand, Gestaltung), für den Modus allein
+  zusätzlich in der Du-Form. Sie liegen getrennt
   vom Bestand, sind als ORMA-Redaktion gekennzeichnet, sind keine Zitate und keine Äusserungen der
   genannten Personen und gelten als Entwurf, bis sie freigegeben sind. Die App erzeugt zur Laufzeit
   keine Texte (§1).
