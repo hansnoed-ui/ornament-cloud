@@ -178,8 +178,10 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
 - **Trennung:** eigene Kennung, eigener Service Worker und Cache (`orma-`), eigener Speicher
   (`orma:`). ORMA verändert keine ORNA-Dateien und keine ORNA-Daten.
 - **Veröffentlichung:** Bis zur Freigabe liegt ORMA als Alpha-Version unter `alpha/orma/`: öffentlich
-  erreichbar, aber von keiner Seite verlinkt, nicht in der Sitemap und für Suchmaschinen gesperrt
-  (Entscheid vom 27. September 2026, ersetzt «bleibt auf dem Branch `orma`»). Aktualisiert wird die
+  erreichbar, nicht in der Sitemap und für Suchmaschinen gesperrt (Entscheid vom 27. September 2026,
+  ersetzt «bleibt auf dem Branch `orma`»). Verlinkt wird ORMA nur von der Startseite (Kategorie «Apps»)
+  und aus den News, stets als Alpha gekennzeichnet (freigegeben am 27. September 2026); andere Seiten
+  verlinken den Alpha-Bereich nicht. Aktualisiert wird die
   Alpha-Version mit `node --experimental-strip-types tools/build-orma.ts --alpha`.
 
 ## 13. Nicht mehr gültig (aus dem Archiv)

@@ -275,10 +275,11 @@ test("Build: eigene Ausgabe, eigener Cache «orma-», Manifest-Kennung und Geltu
   assert.match(data, /Erzeugt von tools\/build-orma\.ts/);
 });
 
+// Startseite und News verlinken ORMA seit dem 27. September 2026 (REGELN §14) und gehören darum nicht mehr hierher.
 test("Trennung: ORNA-Dateien sind auf diesem Stand unverändert gegenüber main", () => {
   let base;
   try { base = execFileSync("git", ["merge-base", "HEAD", "origin/main"], { cwd: root, encoding: "utf8" }).trim(); } catch { return; }
-  const changed = execFileSync("git", ["diff", "--name-only", base, "--", "portfolio", "index.html", "styles.css", "news", "sitemap.xml", "tools/build-app.ts", "tools/app-icons.mjs"], { cwd: root, encoding: "utf8" }).trim();
+  const changed = execFileSync("git", ["diff", "--name-only", base, "--", "portfolio", "styles.css", "sitemap.xml", "tools/build-app.ts", "tools/app-icons.mjs"], { cwd: root, encoding: "utf8" }).trim();
   assert.equal(changed, "", `geändert: ${changed}`);
 });
 
@@ -292,16 +293,23 @@ test("Alpha: alpha/orma ist der aktuelle Build (sonst: tools/build-orma.ts --alp
   for (const f of list(out)) assert.ok(readFileSync(join(out, f)).equals(readFileSync(join(alpha, f))), `veraltet: alpha/orma/${f}`);
 });
 
-test("Alpha: öffentlich, aber von keiner Seite verlinkt, nicht in der Sitemap, für Suchmaschinen gesperrt", () => {
+test("Alpha: nur Startseite und News verlinken ORMA (alpha/orma/), sonst niemand; nicht in der Sitemap, für Suchmaschinen gesperrt", () => {
+  const allowed = new Set(["index.html", "news/index.html"]);            // REGELN §14
+  const found = new Set();
   const skip = new Set(["node_modules", "alpha", "dist", ".git"]);
   const walk = d => readdirSync(d, { withFileTypes: true }).flatMap(e =>
     skip.has(e.name) || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(new URL(e.name + "/", d)) : e.name.endsWith(".html") ? [new URL(e.name, d)] : []);
   for (const f of walk(root)) {
     for (const [, href] of readFileSync(f, "utf8").matchAll(/href="([^"]+)"/g)) {
       if (/^[a-z]+:/i.test(href) && !href.includes("ornament-cloud/alpha")) continue;
-      assert.ok(!new URL(href, f).pathname.includes("/alpha/"), `${f.pathname.slice(root.pathname.length)} verlinkt den Alpha-Bereich: ${href}`);
+      const target = new URL(href, f).pathname, file = f.pathname.slice(root.pathname.length);
+      if (!target.includes("/alpha/")) continue;
+      assert.ok(allowed.has(file), `${file} verlinkt den Alpha-Bereich: ${href}`);
+      assert.ok(target.endsWith("/alpha/orma/"), `${file}: nur ORMA verlinken, nicht ${href}`);
+      found.add(file);
     }
   }
+  assert.deepEqual([...found].sort(), [...allowed].sort(), "Startseite und News verlinken ORMA");
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("/alpha/"));
   for (const p of ["alpha/index.html", "alpha/orma/index.html"])
     assert.match(readFileSync(new URL(p, root), "utf8"), /<meta name="robots" content="noindex/, p);
