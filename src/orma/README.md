@@ -7,11 +7,10 @@ ORMA ist ein kostenloses Kunst- und Denkspiel für zwei Personen an einem Gerät
 Anmeldung, keine Bezahlfunktion, keine Werbung, keine Cloud, keine Zählung und keine KI-Aufrufe.
 Alles bleibt auf dem Gerät.
 
-Stand: 27. September 2026. Die App ist **nicht veröffentlicht**. Zum Ausprobieren liegt sie als Alpha-Version auf
-der Website: <https://hansnoed-ui.github.io/ornament-cloud/alpha/orma/>. Die Übersicht aller Alpha-Versionen
+Stand: 27. September 2026. Die App ist als **Alpha-Version** auf der Website, verlinkt von der Startseite
+(Kategorie «Apps») und aus den News: <https://hansnoed-ui.github.io/ornament-cloud/alpha/orma/>. Die Übersicht aller Alpha-Versionen
 steht unter <https://hansnoed-ui.github.io/ornament-cloud/alpha/>. Der Alpha-Bereich ist öffentlich erreichbar,
-aber von keiner Seite verlinkt, nicht in der Sitemap und für Suchmaschinen gesperrt. Wer die Adresse kennt,
-kann ORMA öffnen.
+nicht in der Sitemap und für Suchmaschinen gesperrt; ausser Startseite und News verlinkt ihn keine Seite.
 
 ## Vorschau und Produktionsbuild
 
@@ -355,6 +354,6 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
 12. Den Build an seinen endgültigen Ort legen, `noindex` entfernen und ORMA in `sitemap.xml` eintragen.
     Die Manifest-Kennung `orma` bleibt dabei gleich. Ob eine installierte Alpha-Version dann von selbst
     auf die neue Adresse wechselt, ist nicht gesichert; im Zweifel die App neu installieren.
-13. Eine Karte in der Kategorie «Apps» auf der Startseite anlegen und bei Bedarf einen News-Eintrag
-    schreiben.
+13. Erledigt am 27. September 2026: Karte in der Kategorie «Apps» auf der Startseite und ein News-Eintrag,
+    beide verlinken auf `alpha/orma/` (REGELN §14). Beim Umzug an den endgültigen Ort beide Links anpassen.
 14. Beim Veröffentlichen die bestehenden Website-Tests um ORMA erweitern (Sitemap, Links).
