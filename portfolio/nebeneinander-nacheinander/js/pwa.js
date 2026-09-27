@@ -1,6 +1,6 @@
 // Installierbare Web-App ORNA
 // 1. meldet den Service Worker an (sw.js im Werkordner, Geltungsbereich Rad und Feld);
-// 2. zeigt auf der Radseite den Hinweis «Als App installieren», aber nur dort, wo es geht:
+// 2. zeigt auf der Radseite über dem Rad den Hinweis «ORNA als App installieren», aber nur dort, wo es geht:
 //    – Chrome, Edge, Android: der Knopf öffnet das Installationsfenster des Browsers;
 //    – iPhone und iPad: der Knopf erklärt die zwei Schritte über «Teilen»;
 //    – bereits als App geöffnet oder anderer Browser: kein Hinweis.

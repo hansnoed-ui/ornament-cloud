@@ -32,7 +32,7 @@
   <meta name="apple-mobile-web-app-title" content="ORNA">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="stylesheet" href="../../styles.css?v=19">
-  <link rel="stylesheet" href="rad.css?v=20">
+  <link rel="stylesheet" href="rad.css?v=21">
   <!-- ORNA-Startbild: vor dem ersten Bild entscheiden, ob es kommt, damit die Seite nicht kurz aufblitzt -->
   <script>
     (function () {
@@ -88,6 +88,12 @@
   </header>
 
   <main class="wrap">
+    <!-- Hinweis «Als App installieren»: gut sichtbar über dem Rad, erscheint nur, wo es geht (js/pwa.js) -->
+    <div class="rad-install" hidden>
+      <button class="rad-install-btn" type="button" aria-expanded="false" aria-controls="rad-install-hilfe"><img src="app/apple-touch-icon.png" alt="" width="28" height="28"><span>ORNA als App installieren</span></button>
+      <p id="rad-install-hilfe" class="rad-install-hilfe" hidden>Unten auf <span>«Teilen»</span> tippen, dann <span>«Zum Home-Bildschirm»</span> wählen. ORNA erscheint danach als eigenes Symbol und läuft auch ohne Netz.</p>
+    </div>
+
     <section class="work rad-stage" aria-label="Das Rad">
       <div class="rad-wheel-wrap">
         <svg class="rad-wheel" viewBox="0 0 1000 1000" role="button" tabindex="0"
@@ -116,10 +122,6 @@
     <section class="rad-about">
       <p class="rad-intro">„Nebeneinander, Nacheinander“ ist eine interaktive Versuchsanordnung zur Verräumlichung und Verzeitlichung von Wahrnehmung. Auf zwei gegenläufigen Rädern begegnen sich Künstler:innen und Theoretiker:innen in zufällig ausgewählten Konstellationen. Raum stellt Möglichkeiten nebeneinander bereit, während die Drehung sie in eine zeitliche Folge versetzt und jeweils eine Begegnung aktualisiert. Aus jeder Begegnung entsteht ein kurzer Text und eine offene Frage, aber keine abschliessende Synthese. Das Rad erzeugt keine Antworten – es erzeugt Konstellationen.</p>
       <p class="rad-more-link"><a href="feld/">Das Feld: alle Konstellationen nebeneinander <span aria-hidden="true">→</span></a></p>
-      <div class="rad-install" hidden>
-        <button class="rad-install-btn" type="button" aria-expanded="false" aria-controls="rad-install-hilfe">Als App installieren</button>
-        <p id="rad-install-hilfe" class="rad-install-hilfe" hidden>Unten auf <span>«Teilen»</span> tippen, dann <span>«Zum Home-Bildschirm»</span> wählen. ORNA erscheint danach als eigenes Symbol und läuft auch ohne Netz.</p>
-      </div>
     </section>
 
     <p class="back"><a href="../">← Zum Portfolio</a></p>
@@ -128,7 +130,7 @@
   <script type="module" src="js/wheel.js?v=11"></script>
   <script type="module" src="js/ticker.js?v=5"></script>
   <script type="module" src="js/intro.js?v=3"></script>
-  <script type="module" src="js/pwa.js?v=2"></script>
+  <script type="module" src="js/pwa.js?v=3"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>
