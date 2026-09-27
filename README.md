@@ -27,6 +27,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `js/pwa.js` (Anmeldung), Symbole in `app/` (erzeugt mit `NODE_PATH=$(npm root -g) node tools/app-icons.mjs`).
   Nach jeder Änderung an Rad- oder Feldseite: `node --experimental-strip-types tools/build-app.ts` (neue Version, Dateiliste;
   läuft auch mit dem Sync, ein Test meldet, wenn es vergessen ging). Als App sind Menü und Portfolio-Link ausgeblendet.
+  App-Name ORNA; beim Start der installierten App setzt sich das Rad zusammen (`js/intro.js`, einmal pro Sitzung,
+  im Browser zum Ansehen mit `?intro`, entfällt bei reduzierter Bewegung).
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)
 - `src/doppelspalt/CLAUDE-CODE-MASTERPROMPT-2026-ARCHIV.md` – ursprünglicher Auftrag, Entstehungsstand mit 99 Konstellationen, nicht mehr verbindlich
