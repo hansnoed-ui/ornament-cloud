@@ -303,7 +303,8 @@ test("Werkbericht: zitierte Fragen stehen wörtlich im Bestand, genannte Paare s
 
 test("sitemap.xml enthält jede Seite (ohne Weiterleitung) genau einmal", () => {
   const xml = readFileSync(new URL("sitemap.xml", root), "utf8");
-  const locs = [...xml.matchAll(/<loc>https:\/\/hansnoed-ui\.github\.io\/ornament-cloud\/([^<]*)<\/loc>/g)].map(m => m[1]);
+  assert.ok(!xml.includes("github.io"), "alte Adresse (github.io) in der Sitemap");
+  const locs = [...xml.matchAll(/<loc>https:\/\/ornament\.cloud\/([^<]*)<\/loc>/g)].map(m => m[1]);
   const pages = [];
   const walk = dir => { for (const e of readdirSync(new URL(dir, root), { withFileTypes: true })) {
     if (e.name.startsWith(".") || ["node_modules", "vendor", "src", "tools", "tests", "assets"].includes(e.name)) continue;
