@@ -723,6 +723,24 @@ h1 {
   color: var(--text);
 }
 
+/* ORMA: dasselbe drehende Rad wie ORNA, vertikal in der Mitte geteilt, die rechte Hälfte invers
+   (REGELN §14). Eine Ebene über der rechten Hälfte kehrt alles dahinter um. */
+.split-invert {
+  position: relative;
+}
+
+.split-invert::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 50%;
+  -webkit-backdrop-filter: invert(1);
+  backdrop-filter: invert(1);
+  pointer-events: none;
+}
+
 .card-date {
   margin-bottom: 4px;
   font-size: 0.75rem;

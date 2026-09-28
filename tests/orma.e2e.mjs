@@ -651,6 +651,29 @@ await check("Startseite (Handy): ORMA steht bei den Apps zuerst, Diamanten über
   await ctx.close();
 });
 
+await check("Startseite und News: ORMA zeigt dasselbe drehende Rad wie ORNA, vertikal geteilt, rechts invers (kein Bild mit Text)", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto(`${origin}/index.html`);
+  const thumb = page.locator('.grid--apps a.thumb[href="alpha/orma/"]');
+  await thumb.scrollIntoViewIfNeeded();
+  assert.equal(await thumb.locator('svg.post-anim[data-icon="rad"]').count(), 1);
+  assert.equal(await thumb.locator("img").count(), 0);
+  assert.ok(await thumb.evaluate(e => e.classList.contains("split-invert")));
+  // links hell, rechts dunkel (Hell-Modus), gemessen nahe am oberen Rand, ausserhalb des Rads
+  const r = await thumb.boundingBox();
+  const links = await brightness(page, r.x + r.width * 0.1, r.y + 8), rechts = await brightness(page, r.x + r.width * 0.9, r.y + 8);
+  assert.ok(links > 200 && rechts < 60, `links ${links}, rechts ${rechts}`);
+  // das Rad dreht: zwei Aufnahmen im Abstand unterscheiden sich
+  const a = await thumb.screenshot(); await page.waitForTimeout(800); const b = await thumb.screenshot();
+  assert.ok(!a.equals(b), "Rad steht still");
+  await page.goto(`${origin}/news/`);
+  const fig = page.locator("details.entry").first().locator(".split-invert svg.post-anim[data-icon=rad]");
+  assert.equal(await fig.count(), 1);
+  assert.equal(await page.locator('details.entry img[src*="og-orma"]').count(), 0);
+  await ctx.close();
+});
+
 // ---------- Termine: Einträge ausblenden, ohne sie zu löschen ----------
 await check("Termine: ausgeblendete Einträge (hidden) sind unsichtbar, dann steht der Hinweis; einer sichtbar → Hinweis weg", async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
