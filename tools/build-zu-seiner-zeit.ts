@@ -207,6 +207,7 @@ function stanzaPage(m: M, s: Stanza, v: string) {
       <h1 class="strophe-titel">${esc(s.title)}</h1>
       <p class="bottom-line">${esc(s.bottomLine)}</p>
       <div class="strophe-text"><p>${esc(s.text)}</p></div>
+      <p class="zsz-zufall"><a class="zsz-knopf" href="../../zufall/?von=${s.id}" data-zufall>Weiter mit dem Zufall <span aria-hidden="true">→</span></a></p>
     </article>
     <section class="weiterdenken" aria-labelledby="weiterdenken">
       <h2 class="zsz-label zsz-abschnitt" id="weiterdenken">Weiterdenken</h2>
@@ -243,6 +244,7 @@ ${c.stanzas.map(id => { const s = m.stanzas[id - 1]; return `        <li><a href
       <h1 class="werk-titel">${esc(m.meta.title)}</h1>
       <p class="werk-untertitel">${esc(m.meta.subtitle)}</p>
       <p class="zsz-meta">${esc(m.meta.structure)}</p>
+      <p class="zsz-zufall"><a class="zsz-knopf" href="zufall/" data-zufall>Mit dem Zufall beginnen <span aria-hidden="true">→</span></a></p>
     </div>
     <div class="zsz-spalte zyklen">
 ${cycles}
