@@ -308,34 +308,45 @@ test("Domain: keine veröffentlichte Datei nennt noch die alte Adresse hansnoed-
   assert.deepEqual(alt, []);
 });
 
-test("Alpha: die Grundlagenpapiere liegen als PDF vor und stehen in der Alpha-Übersicht", () => {
+// Grundlagenpapiere im Alpha-Bereich: je eine eigene Seite mit PDF, Anwendungsprompt (Download, Kopieren, Textfeld),
+// Anleitung und Vorschaubild zum Teilen (tools/alpha-og.mjs)
+const PAPIERE = [
+  { seite: "pruefraster", titel: "Prüfraster: Nebeneinander und Nacheinander", pdf: "pruefraster-nebeneinander-nacheinander.pdf",
+    prompt: "pruefraster-anwendungsprompt-1.0.0.md", art: "Markdown", anfang: /^# Prüfraster: Nebeneinander und Nacheinander\nAnwendungsprompt · Version 1\.0\.0/ },
+  { seite: "verteilapparat", titel: "Der Verteilapparat des Körpers", pdf: "verteilapparat-des-koerpers.pdf",
+    prompt: "verteilapparat-anwendungsprompt-1.0.0.txt", art: "Text", anfang: /^DER VERTEILAPPARAT DES KÖRPERS – PROMPT ZUM KOPIEREN\nVersion 1\.0\.0/ },
+];
+
+test("Alpha: die Grundlagenpapiere stehen in der Übersicht, je mit Seite, PDF und Anwendungsprompt", () => {
   const html = readFileSync(new URL("alpha/index.html", root), "utf8");
-  for (const [datei, titel] of [["pruefraster-nebeneinander-nacheinander.pdf", "Grundlagenpapier (PDF)"],
-                                ["verteilapparat-des-koerpers.pdf", "Der Verteilapparat des Körpers"]]) {
-    assert.equal(readFileSync(new URL(`alpha/${datei}`, root)).subarray(0, 5).toString(), "%PDF-", datei);
-    assert.ok(html.includes(`<a href="${datei}">${titel}</a>`), `nicht verlinkt: ${datei}`);
+  for (const p of PAPIERE) {
+    assert.equal(readFileSync(new URL(`alpha/${p.pdf}`, root)).subarray(0, 5).toString(), "%PDF-", p.pdf);
+    assert.ok(html.includes(`<a href="${p.seite}/">${p.titel}</a>`), `Seite nicht verlinkt: ${p.seite}`);
+    assert.ok(html.includes(`<a href="${p.pdf}">Grundlagenpapier (PDF)</a>`), `PDF nicht verlinkt: ${p.pdf}`);
+    assert.ok(html.includes(`<a href="${p.prompt}" download="${p.prompt}">Anwendungsprompt (${p.art})</a>`), `Prompt nicht verlinkt: ${p.prompt}`);
   }
-  assert.ok(html.includes('<a href="pruefraster/">Prüfraster: Nebeneinander und Nacheinander</a>'));
-  assert.ok(html.includes('<a href="pruefraster-anwendungsprompt-1.0.0.md" download="pruefraster-anwendungsprompt-1.0.0.md">Anwendungsprompt (Markdown)</a>'));
   assert.match(html, /<meta name="robots" content="noindex">/);
 });
 
-test("Alpha, Prüfraster: eigene Seite mit PDF, Anwendungsprompt (Download), Anleitung und Vorschaubild zum Teilen", () => {
-  const html = readFileSync(new URL("alpha/pruefraster/index.html", root), "utf8");
-  const prompt = readFileSync(new URL("alpha/pruefraster-anwendungsprompt-1.0.0.md", root), "utf8");
-  assert.match(prompt, /^# Prüfraster: Nebeneinander und Nacheinander\nAnwendungsprompt · Version 1\.0\.0/);
-  assert.ok(prompt.includes("https://ornament.cloud/alpha/pruefraster-nebeneinander-nacheinander.pdf"), "Quelle im Prompt zeigt auf das PDF");
+for (const p of PAPIERE) test(`Alpha, ${p.titel}: eigene Seite mit PDF, Anwendungsprompt, Anleitung und Vorschaubild`, () => {
+  const html = readFileSync(new URL(`alpha/${p.seite}/index.html`, root), "utf8");
+  const prompt = readFileSync(new URL(`alpha/${p.prompt}`, root), "utf8");
+  assert.match(prompt, p.anfang);
+  assert.ok(prompt.includes(`https://ornament.cloud/alpha/${p.pdf}`), "Quelle im Prompt zeigt auf das PDF");
   assert.match(html, /<meta name="robots" content="noindex">/);
-  assert.ok(html.includes('href="../pruefraster-nebeneinander-nacheinander.pdf"'));
-  assert.ok(html.includes('href="../pruefraster-anwendungsprompt-1.0.0.md" download="pruefraster-anwendungsprompt-1.0.0.md"'));
+  assert.ok(html.includes(`<h1>${p.titel}</h1>`));
+  assert.ok(html.includes(`href="../${p.pdf}"`));
+  assert.ok(html.includes(`href="../${p.prompt}" download="${p.prompt}"`));
+  assert.ok(html.includes(`data-kopieren="../${p.prompt}"`));
   assert.ok(html.includes("So gehst du vor") && html.includes("«Meine Eingabe»"));
   // Textfeld zum Markieren und Kopieren: derselbe Text wie die Datei
   const feld = html.match(/<textarea[^>]*>([\s\S]*?)<\/textarea>/)[1]
     .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
   assert.equal(feld, prompt, "Textfeld weicht von der Datei ab");
-  assert.ok(html.includes('<meta property="og:image" content="https://ornament.cloud/alpha/pruefraster/og-pruefraster.png">'));
-  assert.ok(html.includes('<meta property="og:url" content="https://ornament.cloud/alpha/pruefraster/">'));
-  const png = readFileSync(new URL("alpha/pruefraster/og-pruefraster.png", root));
+  assert.ok(html.includes(`<meta property="og:image" content="https://ornament.cloud/alpha/${p.seite}/og-${p.seite}.png">`));
+  assert.ok(html.includes(`<meta property="og:url" content="https://ornament.cloud/alpha/${p.seite}/">`));
+  assert.ok(html.includes(`<meta property="og:title" content="${p.titel}">`));
+  const png = readFileSync(new URL(`alpha/${p.seite}/og-${p.seite}.png`, root));
   assert.equal(png.subarray(1, 4).toString(), "PNG");
   assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630]);
 });

@@ -514,29 +514,32 @@ await check("Startbild: wie ORNA 40 Zeichen und Name, links hell, rechts dunkel 
 });
 
 // ---------- Alpha-Bereich ----------
-await check("Alpha, Prüfraster: Seite aus der Übersicht, Prompt lässt sich herunterladen und kopieren", async () => {
+for (const [titel, seite, datei, anfang] of [
+  ["Prüfraster: Nebeneinander und Nacheinander", "pruefraster", "pruefraster-anwendungsprompt-1.0.0.md", /^# Prüfraster: Nebeneinander und Nacheinander/],
+  ["Der Verteilapparat des Körpers", "verteilapparat", "verteilapparat-anwendungsprompt-1.0.0.txt", /^DER VERTEILAPPARAT DES KÖRPERS/],
+]) await check(`Alpha, ${titel}: Seite aus der Übersicht, Prompt lässt sich herunterladen, kopieren und im Textfeld markieren`, async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", permissions: ["clipboard-read", "clipboard-write"] });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
   await page.goto(`${origin}/alpha/`);
-  await page.getByRole("link", { name: "Prüfraster: Nebeneinander und Nacheinander" }).click();
-  await page.waitForURL(/\/alpha\/pruefraster\/$/);
+  await page.getByRole("link", { name: titel, exact: true }).click();
+  await page.waitForURL(new RegExp(`/alpha/${seite}/$`));
   const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("link", { name: /Anwendungsprompt herunterladen/ }).click()]);
-  assert.equal(dl.suggestedFilename(), "pruefraster-anwendungsprompt-1.0.0.md");
+  assert.equal(dl.suggestedFilename(), datei);
   await page.getByRole("button", { name: "Prompt kopieren" }).click();
   await page.locator(".pr-status", { hasText: "Kopiert" }).waitFor();
-  assert.match(await page.evaluate(() => navigator.clipboard.readText()), /^# Prüfraster: Nebeneinander und Nacheinander/);
+  const kopiert = await page.evaluate(() => navigator.clipboard.readText());
+  assert.match(kopiert, anfang);
   // Textfeld: aufklappen, alles markieren – die Auswahl ist der ganze Prompt
   await page.getByText("Prompt hier anzeigen").click();
   await page.getByRole("button", { name: "Alles markieren" }).click();
-  const [auswahl, datei] = await page.evaluate(async () => {
+  const [auswahl, text] = await page.evaluate(async d => {
     const t = document.querySelector(".pr-text textarea");
-    return [t.value.slice(t.selectionStart, t.selectionEnd), await (await fetch("../pruefraster-anwendungsprompt-1.0.0.md")).text()];
-  });
-  assert.equal(auswahl, datei);
-  const pdf = await page.request.get(`${origin}/alpha/pruefraster-nebeneinander-nacheinander.pdf`);
-  assert.equal(pdf.status(), 200);
+    return [t.value.slice(t.selectionStart, t.selectionEnd), await (await fetch("../" + d)).text()];
+  }, datei);
+  assert.equal(auswahl, text);
+  assert.equal(kopiert, text);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   assert.deepEqual(errors, []);
   await ctx.close();
