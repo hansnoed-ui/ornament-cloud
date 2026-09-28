@@ -1,0 +1,246 @@
+/* «Zu seiner Zeit» – Gestaltung (von Hand gepflegt).
+   Wissenschaftliche Edition + Künstlerbuch: viel Weissraum, Schwarz und Grau, Serif für Titel, Bottom-Line
+   und Strophentext, Sans für Navigation und Metadaten. Keine Schatten, Karten, Verläufe oder Symbole. */
+
+:root {
+  --papier: #ffffff;
+  --tinte: #141414;
+  --grau: #6e6e6e;
+  --linie: #dcdcdc;
+  --leicht: #f4f4f4;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --spalte: 720px;
+  --rand: 24px;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --papier: #111111;
+    --tinte: #e9e9e7;
+    --grau: #9a9a97;
+    --linie: #333333;
+    --leicht: #1b1b1b;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--papier);
+  color: var(--tinte);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--tinte); outline-offset: 3px; }
+main:focus { outline: none; }
+
+.zsz-skip { position: absolute; left: -9999px; }
+.zsz-skip:focus { left: var(--rand); top: 12px; background: var(--papier); padding: 4px 8px; }
+
+/* ---------- Kopf und Fuss ---------- */
+.zsz-kopf {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  align-items: baseline;
+  justify-content: space-between;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 28px var(--rand);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+}
+.zsz-werk { font-family: var(--serif); font-size: 1.05rem; letter-spacing: 0.02em; text-decoration: none; }
+.zsz-nav { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.zsz-nav a { color: var(--grau); text-decoration: none; }
+.zsz-nav a:hover, .zsz-nav a[aria-current="page"] { color: var(--tinte); text-decoration: underline; }
+
+.zsz-fuss {
+  max-width: 1120px;
+  margin: 120px auto 0;
+  padding: 24px var(--rand) 48px;
+  border-top: 1px solid var(--linie);
+  color: var(--grau);
+  font-size: 0.8125rem;
+}
+
+/* ---------- Grundformen ---------- */
+.zsz-spalte { max-width: calc(var(--spalte) + 2 * var(--rand)); margin: 0 auto; padding: 0 var(--rand); }
+
+.zsz-label, .zsz-meta {
+  margin: 0;
+  color: var(--grau);
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.zsz-meta { text-transform: none; letter-spacing: 0.06em; font-weight: 400; font-size: 0.8125rem; }
+.zsz-abschnitt { margin: 0 0 28px; color: var(--tinte); }
+.zsz-nr { font-family: var(--sans); font-variant-numeric: tabular-nums; color: var(--grau); font-size: 0.8em; margin-right: 0.35em; }
+.zsz-roemisch { font-family: var(--sans); font-size: 0.55em; letter-spacing: 0.12em; color: var(--grau); vertical-align: 0.3em; margin-right: 0.6em; }
+.zsz-hinweis { color: var(--grau); font-size: 0.8125rem; }
+.zsz-weiter { margin: 28px 0 0; font-size: 0.875rem; }
+
+.zsz-liste { list-style: none; margin: 0 0 32px; padding: 0; }
+.zsz-liste li { padding: 6px 0; border-top: 1px solid var(--linie); }
+.zsz-liste li:last-child { border-bottom: 1px solid var(--linie); }
+.zsz-liste a { font-family: var(--serif); font-size: 1.05rem; text-decoration: none; }
+.zsz-liste a:hover { text-decoration: underline; }
+.zsz-liste [aria-current] { font-family: var(--serif); font-size: 1.05rem; }
+.zsz-liste [aria-current]::before { content: "→ "; color: var(--grau); }
+
+.bottom-line { font-family: var(--serif); }
+.verweis-werk { font-style: italic; }
+
+/* ---------- Strophe ---------- */
+.strophe { padding-top: 56px; }
+.strophe-titel {
+  margin: 14px 0 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(2.25rem, 6vw, 3.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.005em;
+}
+.strophe .bottom-line {
+  margin: 24px 0 0;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--linie);
+  font-size: clamp(1.3rem, 2.6vw, 1.6rem);
+  line-height: 1.4;
+}
+.strophe-text p {
+  margin: 32px 0 0;
+  font-family: var(--serif);
+  font-size: clamp(1.1rem, 2.1vw, 1.25rem);
+  line-height: 1.7;
+  hyphens: auto;
+}
+
+/* Weiterdenken: vier ruhige Spalten, auf schmalen Bildschirmen untereinander */
+.weiterdenken { max-width: 1120px; margin: 112px auto 0; padding: 0 var(--rand); }
+.verweise { list-style: none; margin: 0; padding: 0; display: grid; gap: 0 40px; grid-template-columns: 1fr; }
+.verweis { padding: 20px 0 28px; border-top: 1px solid var(--tinte); }
+.verweis p { margin: 0; }
+.verweis-person { margin-top: 12px !important; font-size: 1.05rem; font-weight: 500; }
+.verweis-person a { text-decoration: none; border-bottom: 1px solid var(--linie); }
+.verweis-person a:hover { border-bottom-color: var(--tinte); }
+.verweis .verweis-werk { margin-top: 4px; color: var(--tinte); font-size: 0.9375rem; }
+.verweis-note { margin-top: 12px !important; color: var(--grau); font-size: 0.875rem; line-height: 1.55; }
+@media (min-width: 900px) {
+  .verweise { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* Seitenpanel */
+.zsz-panel {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(440px, 100%);
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 32px 28px 40px;
+  border: 0;
+  border-left: 1px solid var(--linie);
+  background: var(--papier);
+  color: var(--tinte);
+  overflow-y: auto;
+}
+.zsz-panel::backdrop { background: rgba(0, 0, 0, 0.18); }
+.zsz-panel h2 { margin: 10px 0 6px; font-family: var(--serif); font-weight: 400; font-size: 1.9rem; line-height: 1.15; }
+.zsz-panel h3 { margin: 28px 0 8px; }
+.zsz-panel p { margin: 0; line-height: 1.55; }
+.zsz-panel-zu { display: flex; justify-content: flex-end; margin: 0 0 16px; }
+.zsz-panel-zu button {
+  padding: 6px 0; border: 0; background: none; color: var(--grau); font: inherit; font-size: 0.8125rem;
+  letter-spacing: 0.06em; text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer;
+}
+.zsz-panel[open] { animation: panel-ein 0.22s ease-out; }
+@keyframes panel-ein { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Blättern und Verwandtes */
+.blaettern {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 96px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  border-top: 1px solid var(--linie);
+  border-bottom: 1px solid var(--linie);
+  font-family: var(--serif);
+  font-size: 1.05rem;
+}
+.blaettern a { text-decoration: none; }
+.blaettern a:hover { text-decoration: underline; }
+.blaettern .vor { text-align: right; margin-left: auto; }
+.verwandt { margin-top: 72px; }
+.verwandt h3 { margin: 32px 0 10px; }
+
+/* ---------- Startseite ---------- */
+.titelei { padding-top: 72px; padding-bottom: 32px; }
+.werk-titel {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(2.6rem, 8vw, 4.75rem);
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+}
+.werk-untertitel { margin: 20px 0 20px; max-width: 30em; font-family: var(--serif); font-size: clamp(1.2rem, 2.6vw, 1.5rem); line-height: 1.4; color: var(--grau); }
+.zyklus { margin-top: 88px; }
+.zyklus h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(1.7rem, 4vw, 2.2rem); }
+.zyklus-deck { margin: 10px 0 28px; color: var(--grau); font-size: 0.9375rem; }
+.zyklus-strophen { list-style: none; margin: 0; padding: 0; }
+.zyklus-strophen li { padding: 16px 0 18px; border-top: 1px solid var(--linie); }
+.zyklus-strophen li:last-child { border-bottom: 1px solid var(--linie); }
+.zyklus-strophen a { font-family: var(--serif); font-size: 1.2rem; text-decoration: none; }
+.zyklus-strophen a:hover .zyklus-titel { text-decoration: underline; }
+.zyklus-strophen .bottom-line { margin: 6px 0 0; font-size: 1.05rem; line-height: 1.5; color: var(--grau); }
+
+/* ---------- Verweisseiten ---------- */
+.verweisseite, .spur { padding-top: 56px; }
+.verweisseite .zsz-abschnitt { margin-top: 56px; }
+.stellen { list-style: none; margin: 0; padding: 0; }
+.stellen li { padding: 20px 0 24px; border-top: 1px solid var(--linie); }
+.stellen p { margin: 0; }
+.stelle-titel { margin-top: 6px !important; font-family: var(--serif); font-size: 1.3rem; }
+.stelle-titel a { text-decoration: none; }
+.stelle-titel a:hover { text-decoration: underline; }
+.stellen .verweis-werk { margin-top: 4px; font-size: 0.9375rem; }
+.stellen .verweis-note { margin-top: 8px !important; }
+.personen a { font-size: 1rem; }
+
+/* ---------- Spur ---------- */
+.spur-pfad { margin: 0 0 32px; }
+.spur-aktuell { padding-bottom: 32px; margin-bottom: 40px; border-bottom: 1px solid var(--tinte); }
+.spur-aktuell .zsz-label { margin-bottom: 14px; }
+.spur-titel { margin: 8px 0 0; font-family: var(--serif); font-size: clamp(2rem, 5.5vw, 3rem); line-height: 1.1; }
+.spur-titel:focus { outline: none; }
+.spur-aktuell .bottom-line { margin: 18px 0 0; font-size: clamp(1.2rem, 2.4vw, 1.45rem); line-height: 1.4; }
+.spur-nachbarn { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+.spur-gruppe h2 { margin: 0 0 10px; }
+.spur-neu { animation: spur-ein 0.28s ease-out; }
+@keyframes spur-ein { from { opacity: 0.2; } to { opacity: 1; } }
+
+@media (max-width: 560px) {
+  .spur-nachbarn { grid-template-columns: 1fr; }
+  .blaettern { flex-direction: column; }
+  .blaettern .vor { margin-left: 0; text-align: left; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zsz-panel[open], .spur-neu { animation: none; }
+}
