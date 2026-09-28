@@ -40,7 +40,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `zu-seiner-zeit/` – Hypertext «Zu seiner Zeit» (49 Strophen, Spur, Zufall, Verweise), erzeugt mit
   `node --experimental-strip-types tools/build-zu-seiner-zeit.ts` aus `src/data/zu-seiner-zeit.json` (unverändert) und
   `src/data/zu-seiner-zeit.extra.json`; Gestaltung `zu-seiner-zeit/zsz.css`, Verhalten `zu-seiner-zeit/zsz.js`. Alles Weitere in `src/zu-seiner-zeit/README.md`
-- `alpha/` – Alpha-Versionen, öffentlich erreichbar, nicht in der Sitemap, `noindex`; nur ORMA ist von Startseite und News verlinkt (Test prüft das);
+- `alpha/` – Alpha-Versionen, öffentlich erreichbar, nicht in der Sitemap, `noindex`; ORMA ist von Startseite und News verlinkt, die Seiten der Grundlagenpapiere (`alpha/pruefraster/`, `alpha/verteilapparat/`) aus den News (REGELN §14, Test prüft das);
   `alpha/orma/` ist ORMA, erzeugt mit `node --experimental-strip-types tools/build-orma.ts --alpha`
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)

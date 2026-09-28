@@ -373,8 +373,11 @@ test("Alpha: alpha/orma ist der aktuelle Build (sonst: tools/build-orma.ts --alp
   for (const f of list(out)) assert.ok(readFileSync(join(out, f)).equals(readFileSync(join(alpha, f))), `veraltet: alpha/orma/${f}`);
 });
 
-test("Alpha: nur Startseite und News verlinken ORMA (alpha/orma/), sonst niemand; nicht in der Sitemap, für Suchmaschinen gesperrt", () => {
-  const allowed = new Set(["index.html", "news/index.html"]);            // REGELN §14
+test("Alpha: nur Startseite und News verlinken den Alpha-Bereich (ORMA; News auch die Grundlagenpapiere); nicht in der Sitemap, noindex", () => {
+  // REGELN §14: Startseite → nur ORMA; News → ORMA und die Seiten der beiden Grundlagenpapiere (seit 28. September 2026)
+  const ziele = { "index.html": ["/alpha/orma/"], "news/index.html": ["/alpha/orma/", "/alpha/pruefraster/", "/alpha/verteilapparat/"] };
+  const allowed = new Set(Object.keys(ziele));
+  const gefunden = new Set();
   const found = new Set();
   const skip = new Set(["node_modules", "alpha", "dist", ".git"]);
   const walk = d => readdirSync(d, { withFileTypes: true }).flatMap(e =>
@@ -385,13 +388,15 @@ test("Alpha: nur Startseite und News verlinken ORMA (alpha/orma/), sonst niemand
       const target = new URL(href, f).pathname, file = f.pathname.slice(root.pathname.length);
       if (!target.includes("/alpha/")) continue;
       assert.ok(allowed.has(file), `${file} verlinkt den Alpha-Bereich: ${href}`);
-      assert.ok(target.endsWith("/alpha/orma/"), `${file}: nur ORMA verlinken, nicht ${href}`);
+      assert.ok(ziele[file].some(z => target.endsWith(z)), `${file}: ${href} ist im Alpha-Bereich nicht freigegeben`);
       found.add(file);
+      gefunden.add(`${file} → ${ziele[file].find(z => target.endsWith(z))}`);
     }
   }
   assert.deepEqual([...found].sort(), [...allowed].sort(), "Startseite und News verlinken ORMA");
+  for (const z of ziele["news/index.html"]) assert.ok(gefunden.has(`news/index.html → ${z}`), `News verlinken ${z} nicht`);
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("/alpha/"));
-  for (const p of ["alpha/index.html", "alpha/orma/index.html"])
+  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html"])
     assert.match(readFileSync(new URL(p, root), "utf8"), /<meta name="robots" content="noindex/, p);
 });
 

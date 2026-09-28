@@ -557,6 +557,25 @@ for (const [titel, seite, datei, anfang] of [
   await ctx.close();
 });
 
+await check("News: Eintrag zu den beiden Prüfrastern zuoberst, Links führen zu beiden Seiten", async () => {
+  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
+  const page = await ctx.newPage();
+  await page.goto(`${origin}/news/`);
+  const e = page.locator("details.entry").first();
+  assert.match(await e.locator("h2").textContent(), /Zwei Prüfraster/);
+  await e.locator("summary").click();
+  assert.ok(await e.locator("svg[role=img]").isVisible());
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await e.getByRole("link", { name: "Der Verteilapparat des Körpers" }).click();
+  await page.waitForURL(/\/alpha\/verteilapparat\/$/);
+  await page.goBack();
+  const e2 = page.locator("details.entry").first();
+  if (!(await e2.evaluate(d => d.open))) await e2.locator("summary").click();   // nach Zurück wieder zugeklappt
+  await e2.getByRole("link", { name: "Prüfraster: Nebeneinander und Nacheinander" }).click();
+  await page.waitForURL(/\/alpha\/pruefraster\/$/);
+  await ctx.close();
+});
+
 await check("Alpha: alpha/ listet ORMA; alpha/orma/ läuft unter dem Website-Pfad mit eigenem Service Worker", async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
   const page = await ctx.newPage();
@@ -722,7 +741,7 @@ await check("Startseite und News: ORMA zeigt dasselbe drehende Rad wie ORNA, ver
   const a = await thumb.screenshot(); await page.waitForTimeout(800); const b = await thumb.screenshot();
   assert.ok(!a.equals(b), "Rad steht still");
   await page.goto(`${origin}/news/`);
-  const fig = page.locator("details.entry").first().locator(".split-invert svg.post-anim[data-icon=rad]");
+  const fig = page.locator("details.entry", { has: page.locator("h2", { hasText: "ORMA – ein neues Spiel" }) }).locator(".split-invert svg.post-anim[data-icon=rad]");
   assert.equal(await fig.count(), 1);
   assert.equal(await page.locator('details.entry img[src*="og-orma"]').count(), 0);
   await ctx.close();
