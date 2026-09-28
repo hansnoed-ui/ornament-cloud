@@ -20,6 +20,9 @@ export const EXTRA = join(ROOT, "src/data/zu-seiner-zeit.extra.json");
 export const OUT = join(ROOT, "zu-seiner-zeit");
 const SITE = "https://ornament.cloud/";
 const BASE = "zu-seiner-zeit/";
+export const OG_IMAGE = "og-zu-seiner-zeit.png";         // erzeugt mit tools/zsz-og.mjs, nicht vom Build
+const OG_ALT = (m: { meta: { title: string; subtitle: string } }) =>
+  `${m.meta.title} – ${m.meta.subtitle}. Daneben sieben Reihen zu sieben Punkten: 49 Strophen in sieben Zyklen.`;
 const GENERATED = ["index.html", "strophe", "verweis", "begriff", "spur", "zufall", "zsz-daten.json"];
 
 // ---------- Hilfen ----------
@@ -144,6 +147,17 @@ function page(m: M, o: { depth: number; title: string; description: string; body
   <title>${esc(o.title)}</title>
   <meta name="description" content="${esc(o.description)}">
   <link rel="canonical" href="${SITE}${BASE}${o.path}">${o.noindex ? '\n  <meta name="robots" content="noindex">' : ""}
+  <!-- Vorschaubild beim Teilen (tools/zsz-og.mjs) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ornament.cloud">
+  <meta property="og:url" content="${SITE}${BASE}${o.path}">
+  <meta property="og:title" content="${esc(o.title)}">
+  <meta property="og:description" content="${esc(o.description)}">
+  <meta property="og:image" content="${SITE}${BASE}${OG_IMAGE}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="${esc(OG_ALT(m))}">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
   <link rel="stylesheet" href="${p}zsz.css?v=${o.v}">
