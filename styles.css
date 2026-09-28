@@ -682,6 +682,17 @@ h1 {
     order: -1;          /* auf dem Handy zuerst: Stellenfeld */
   }
 
+  /* Ausnahme: Raster mit .grid--stapel bleiben auch auf dem Handy untereinander (Portfolio) */
+  .grid.grid--stapel {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin: 0;
+    padding: 0 0 64px;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
   /* Diamanten oberhalb der Karte: zeigen die Position und laden zum Wischen ein */
   .slider-dots {
     display: flex;
