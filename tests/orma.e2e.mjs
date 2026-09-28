@@ -525,14 +525,17 @@ for (const [titel, seite, datei, anfang] of [
   await page.goto(`${origin}/alpha/`);
   await page.getByRole("link", { name: titel, exact: true }).click();
   await page.waitForURL(new RegExp(`/alpha/${seite}/$`));
-  // Knöpfe mittig und auf dem Handy gleich breit
-  const knoepfe = await page.locator(".pr-aktionen").evaluateAll(zeilen => zeilen.map(z => {
+  // Knopfzeilen: gleicher Abstand zum Abschnitt davor und danach (die leere Kopiermeldung macht keine Lücke)
+  const abstaende = await page.locator(".pr-block > .pr-aktionen").evaluateAll(zeilen => zeilen.map(z => {
+    const sichtbar = e => e && e.getBoundingClientRect().height > 0;
+    let vor = z.previousElementSibling, nach = z.nextElementSibling;
+    while (nach && !sichtbar(nach)) nach = nach.nextElementSibling;
     const r = z.getBoundingClientRect();
-    return [...z.querySelectorAll(".pr-knopf")].filter(k => !k.hidden).map(k => { const b = k.getBoundingClientRect(); return [b.left - r.left, r.right - b.right, b.width]; });
+    return [Math.round(r.top - vor.getBoundingClientRect().bottom), nach ? Math.round(nach.getBoundingClientRect().top - r.bottom) : null];
   }));
-  for (const zeile of knoepfe) for (const [l, rr, w] of zeile) {
-    assert.ok(Math.abs(l - rr) <= 2, `nicht mittig: ${JSON.stringify(zeile)}`);
-    assert.ok(Math.abs(w - zeile[0][2]) <= 1, `ungleich breit: ${JSON.stringify(zeile)}`);
+  for (const [oben, unten] of abstaende) {
+    assert.ok(oben >= 20, `zu knapp über den Knöpfen: ${JSON.stringify(abstaende)}`);
+    if (unten !== null) assert.ok(Math.abs(oben - unten) <= 2, `ungleich oben/unten: ${JSON.stringify(abstaende)}`);
   }
   const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("link", { name: /Anwendungsprompt herunterladen/ }).click()]);
   assert.equal(dl.suggestedFilename(), datei);
