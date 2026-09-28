@@ -10,7 +10,7 @@ const SERIF = 'Georgia, "Times New Roman", serif';
 const SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 export const CARD_COLORS = { bg: "#f8f8f6", ink: "#1f1d1a", muted: "#6b665e", line: "#d9d4ca", accent: "#c2410c" };
 // Herkunft: die bestehende, veröffentlichte Seite des Werks (keine eigene ORMA-Adresse)
-export const ORIGIN = "hansnoed-ui.github.io/ornament-cloud · Nebeneinander, Nacheinander";
+export const ORIGIN = "ornament.cloud · Nebeneinander, Nacheinander";
 
 const AUFTRAG_LABEL = { beispiel: "Ein Beispiel finden", einwand: "Einen Einwand finden", gestaltung: "Etwas daraus machen" };
 
