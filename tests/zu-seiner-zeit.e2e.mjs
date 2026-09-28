@@ -153,6 +153,27 @@ await check("Zufall: landet auf einer Strophe, nie auf der gerade geöffneten; Z
   await ctx.close();
 });
 
+await check("Durchklicken: «Mit dem Zufall beginnen» führt in eine Strophe, «Weiter mit dem Zufall» in eine andere", async () => {
+  const { ctx, page, errors } = await open("");
+  const knopf = page.getByRole("link", { name: "Mit dem Zufall beginnen" });
+  const k = await knopf.boundingBox(), z = await page.locator(".zyklus").first().boundingBox();
+  assert.ok(k.y + k.height <= z.y, "vor dem ersten Zyklus");
+  await knopf.click();
+  await page.waitForURL(/\/strophe\/\d+-/);
+  const nr = () => Number(new URL(page.url()).pathname.match(/strophe\/(\d+)-/)[1]);
+  let vorher = nr();
+  for (let i = 0; i < 6; i++) {
+    const w = page.getByRole("link", { name: "Weiter mit dem Zufall" });
+    const b = await w.boundingBox(), t = await page.locator(".strophe-text").boundingBox(), v = await page.locator(".weiterdenken").boundingBox();
+    assert.ok(b.y >= t.y + t.height && b.y + b.height <= v.y, "unter der Strophe, vor Weiterdenken");
+    await w.click();
+    await page.waitForURL(u => /\/strophe\/\d+-/.test(u.pathname) && Number(u.pathname.match(/strophe\/(\d+)-/)[1]) !== vorher);
+    vorher = nr();
+  }
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 await check("Startseite und Portfolio: 49 Strophen mit Bottom-Line; Portfolio verlinkt das Projekt", async () => {
   const { ctx, page } = await open("");
   assert.equal(await page.locator(".zyklus-strophen li").count(), 49);

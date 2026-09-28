@@ -81,6 +81,9 @@ test("Strophenseite: Meta, Titel, direkt darunter die Bottom-Line, dann Text, We
     const bl = `<p class="bottom-line">${esc(s.bottomLine)}</p>`;
     assert.ok(html.includes(`${meta}\n      ${titel}\n      ${bl}\n      <div class="strophe-text"><p>${esc(s.text)}</p></div>`), `Aufbau ${s.id}`);
     assert.ok(i("Weiterdenken") > i("strophe-text") && i('aria-label="Blättern"') > i("Weiterdenken") && i("Verwandte Strophen") > i('aria-label="Blättern"'));
+    // direkt unter der Strophe: weiter mit dem Zufall, ohne die geöffnete Strophe
+    const knopf = `<a class="zsz-knopf" href="../../zufall/?von=${s.id}" data-zufall>Weiter mit dem Zufall`;
+    assert.ok(i(knopf) > i("strophe-text") && i(knopf) < i("</article>") && i(knopf) < i("Weiterdenken"), `Zufall-Knopf ${s.id}`);
     assert.equal((html.match(/<li class="verweis">/g) || []).length, 4);
     assert.equal((html.match(/<dialog class="zsz-panel"/g) || []).length, 4);
     assert.ok(!/href="https?:/.test(html.replace(/https:\/\/ornament\.cloud\/zu-seiner-zeit\//g, "")), "keine externen Links ohne Eintrag");
@@ -92,6 +95,8 @@ test("Strophenseite: Meta, Titel, direkt darunter die Bottom-Line, dann Text, We
 test("Startseite: sieben Zyklen, jede Strophe mit Nummer, Titel und Bottom-Line", () => {
   const html = read("index.html");
   assert.equal((html.match(/<section class="zyklus"/g) || []).length, 7);
+  const knopf = html.indexOf('<a class="zsz-knopf" href="zufall/" data-zufall>Mit dem Zufall beginnen');
+  assert.ok(knopf > 0 && knopf < html.indexOf('<section class="zyklus"'), "Einstieg mit dem Zufall vor dem ersten Zyklus");
   for (const s of m.stanzas) assert.ok(html.includes(`<a href="strophe/${s.slug}/"><span class="zsz-nr">${s.id}</span> <span class="zyklus-titel">${esc(s.title)}</span></a>\n          <p class="bottom-line">${esc(s.bottomLine)}</p>`), `${s.id}`);
 });
 

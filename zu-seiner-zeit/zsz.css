@@ -92,6 +92,22 @@ main:focus { outline: none; }
 .zsz-hinweis { color: var(--grau); font-size: 0.8125rem; }
 .zsz-weiter { margin: 28px 0 0; font-size: 0.875rem; }
 
+/* Einstieg und Weiterlesen mit dem Zufall: ein ruhiger Knopf, feine Linie, keine Fläche */
+.zsz-zufall { margin: 40px 0 0; }
+.zsz-knopf {
+  display: inline-block;
+  padding: 12px 22px;
+  border: 1px solid var(--tinte);
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.zsz-knopf:hover, .zsz-knopf:focus-visible { background: var(--tinte); color: var(--papier); text-decoration: none; }
+@media (prefers-reduced-motion: reduce) { .zsz-knopf { transition: none; } }
+
 .zsz-liste { list-style: none; margin: 0 0 32px; padding: 0; }
 .zsz-liste li { padding: 6px 0; border-top: 1px solid var(--linie); }
 .zsz-liste li:last-child { border-bottom: 1px solid var(--linie); }
