@@ -308,6 +308,14 @@ test("Domain: keine veröffentlichte Datei nennt noch die alte Adresse hansnoed-
   assert.deepEqual(alt, []);
 });
 
+test("Alpha: das Grundlagenpapier «Prüfraster» liegt als PDF vor und steht in der Alpha-Übersicht", () => {
+  const pdf = readFileSync(new URL("alpha/pruefraster-nebeneinander-nacheinander.pdf", root));
+  assert.equal(pdf.subarray(0, 5).toString(), "%PDF-");
+  const html = readFileSync(new URL("alpha/index.html", root), "utf8");
+  assert.match(html, /<a href="pruefraster-nebeneinander-nacheinander\.pdf">Prüfraster: Nebeneinander und Nacheinander<\/a>/);
+  assert.match(html, /<meta name="robots" content="noindex">/);
+});
+
 // Startseite und News verlinken ORMA seit dem 27. September 2026 (REGELN §14) und gehören darum nicht mehr hierher.
 // Eine eigens beauftragte Änderung an ORNA allein ist erlaubt; sie kommt dann als eigener Schritt, nie
 // zusammen mit ORMA-Dateien (seit dem 27. September 2026: Hinweis «Verknüpfung erstellen» in beiden Apps).
