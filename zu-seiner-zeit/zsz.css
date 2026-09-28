@@ -238,6 +238,7 @@ main:focus { outline: none; }
 .stellen .verweis-werk { margin-top: 4px; font-size: 0.9375rem; }
 .stellen .verweis-note { margin-top: 8px !important; }
 .personen a { font-size: 1rem; }
+.verweis-gruppe { margin-top: 64px; }   /* Abstand über Soziologie, Philosophie, Kunst, Literatur */
 
 /* ---------- Spur ---------- */
 .spur-pfad { margin: 0 0 32px; }

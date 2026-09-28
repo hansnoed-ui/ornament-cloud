@@ -289,11 +289,12 @@ ${occ}
   return page(m, { depth: 2, title: `${p.name} – ${m.meta.title}`, description: `${p.name}: ${p.occurrences.length === 1 ? "eine Strophe" : p.occurrences.length + " Strophen"} in ${m.meta.title}`, body, seite: "verweis", path: `verweis/${p.slug}/`, v });
 }
 
-const nachname = (n: string) => n.split(" ").slice(-1)[0];
+// Nachname zum Sortieren: letztes Wort ohne Zusätze in Klammern («Marilyn Strathern (Hg.)» → Strathern)
+const nachname = (n: string) => n.replace(/\s*\([^)]*\)/g, "").trim().split(" ").slice(-1)[0];
 function personsIndex(m: M, v: string) {
   const sorted = [...m.persons].sort((a, b) => nachname(a.name).localeCompare(nachname(b.name), "de") || a.name.localeCompare(b.name, "de"));
   const groups = ["Soziologie", "Philosophie", "Kunst", "Literatur"];
-  const list = groups.map(g => `      <section aria-labelledby="g-${slugify(g)}">
+  const list = groups.map(g => `      <section class="verweis-gruppe" aria-labelledby="g-${slugify(g)}">
         <h2 class="zsz-label zsz-abschnitt" id="g-${slugify(g)}">${g}</h2>
         <ul class="zsz-liste personen">${sorted.filter(p => p.disciplines.includes(g)).map(p => `<li><a href="${p.slug}/">${esc(p.name)}</a> <span class="zsz-hinweis">${p.occurrences.map(o => o.stanza).join(", ")}</span></li>`).join("")}</ul>
       </section>`).join("\n");
