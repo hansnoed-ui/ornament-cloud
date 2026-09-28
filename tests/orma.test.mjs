@@ -329,6 +329,10 @@ test("Alpha, Prüfraster: eigene Seite mit PDF, Anwendungsprompt (Download), Anl
   assert.ok(html.includes('href="../pruefraster-nebeneinander-nacheinander.pdf"'));
   assert.ok(html.includes('href="../pruefraster-anwendungsprompt-1.0.0.md" download="pruefraster-anwendungsprompt-1.0.0.md"'));
   assert.ok(html.includes("So gehst du vor") && html.includes("«Meine Eingabe»"));
+  // Textfeld zum Markieren und Kopieren: derselbe Text wie die Datei
+  const feld = html.match(/<textarea[^>]*>([\s\S]*?)<\/textarea>/)[1]
+    .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+  assert.equal(feld, prompt, "Textfeld weicht von der Datei ab");
   assert.ok(html.includes('<meta property="og:image" content="https://ornament.cloud/alpha/pruefraster/og-pruefraster.png">'));
   assert.ok(html.includes('<meta property="og:url" content="https://ornament.cloud/alpha/pruefraster/">'));
   const png = readFileSync(new URL("alpha/pruefraster/og-pruefraster.png", root));

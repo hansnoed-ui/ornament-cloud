@@ -527,6 +527,14 @@ await check("Alpha, Prüfraster: Seite aus der Übersicht, Prompt lässt sich he
   await page.getByRole("button", { name: "Prompt kopieren" }).click();
   await page.locator(".pr-status", { hasText: "Kopiert" }).waitFor();
   assert.match(await page.evaluate(() => navigator.clipboard.readText()), /^# Prüfraster: Nebeneinander und Nacheinander/);
+  // Textfeld: aufklappen, alles markieren – die Auswahl ist der ganze Prompt
+  await page.getByText("Prompt hier anzeigen").click();
+  await page.getByRole("button", { name: "Alles markieren" }).click();
+  const [auswahl, datei] = await page.evaluate(async () => {
+    const t = document.querySelector(".pr-text textarea");
+    return [t.value.slice(t.selectionStart, t.selectionEnd), await (await fetch("../pruefraster-anwendungsprompt-1.0.0.md")).text()];
+  });
+  assert.equal(auswahl, datei);
   const pdf = await page.request.get(`${origin}/alpha/pruefraster-nebeneinander-nacheinander.pdf`);
   assert.equal(pdf.status(), 200);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
