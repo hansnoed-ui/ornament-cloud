@@ -308,11 +308,13 @@ test("Domain: keine veröffentlichte Datei nennt noch die alte Adresse hansnoed-
   assert.deepEqual(alt, []);
 });
 
-test("Alpha: das Grundlagenpapier «Prüfraster» liegt als PDF vor und steht in der Alpha-Übersicht", () => {
-  const pdf = readFileSync(new URL("alpha/pruefraster-nebeneinander-nacheinander.pdf", root));
-  assert.equal(pdf.subarray(0, 5).toString(), "%PDF-");
+test("Alpha: die Grundlagenpapiere liegen als PDF vor und stehen in der Alpha-Übersicht", () => {
   const html = readFileSync(new URL("alpha/index.html", root), "utf8");
-  assert.match(html, /<a href="pruefraster-nebeneinander-nacheinander\.pdf">Prüfraster: Nebeneinander und Nacheinander<\/a>/);
+  for (const [datei, titel] of [["pruefraster-nebeneinander-nacheinander.pdf", "Prüfraster: Nebeneinander und Nacheinander"],
+                                ["verteilapparat-des-koerpers.pdf", "Der Verteilapparat des Körpers"]]) {
+    assert.equal(readFileSync(new URL(`alpha/${datei}`, root)).subarray(0, 5).toString(), "%PDF-", datei);
+    assert.ok(html.includes(`<a href="${datei}">${titel}</a>`), `nicht verlinkt: ${datei}`);
+  }
   assert.match(html, /<meta name="robots" content="noindex">/);
 });
 
