@@ -8,15 +8,15 @@
 // textContent und value in die Seite, nie als HTML.
 // Keine Anmeldung, keine Zählung, keine Netzanfragen ausser dem eigenen Service Worker.
 
-import { APP, CONTENT_VERSION, PILOT } from "./data.js?v=4745b954d171";
-import { drawNext } from "./draw.js?v=4745b954d171";
+import { APP, CONTENT_VERSION, PILOT } from "./data.js?v=f5bc19f7d147";
+import { drawNext } from "./draw.js?v=f5bc19f7d147";
 import {
   KEYS, newRound, loadDraft, saveDraft, clearDraft, loadBook, saveBook, keepRound, setFavorite, deleteEntry,
   deleteAllEntries, makeBackup, mergeBackup, loadText, saveText,
   loadLoops, saveLoops, openLoopFor, openLoop, closeLoop,
-} from "./store.js?v=4745b954d171";
-import { createWheel, bindGesture } from "./wheel.js?v=4745b954d171";
-import { layoutCard, drawCard, canvasMeasure } from "./card.js?v=4745b954d171";
+} from "./store.js?v=f5bc19f7d147";
+import { createWheel, bindGesture } from "./wheel.js?v=f5bc19f7d147";
+import { layoutCard, drawCard, canvasMeasure } from "./card.js?v=f5bc19f7d147";
 
 // ---------- Umgebung ----------
 const storage = (() => { try { const s = window.localStorage; s.getItem("orma:probe"); return s; } catch { return memoryStorage(); } })();
@@ -149,7 +149,7 @@ function renderStart() {
     h("p", { class: "orma-sub", text: "Nebeneinander, Nacheinander" }),
     h("p", { class: "orma-claim" }, h("strong", { text: "Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke." })),
     actions,
-    ...extra,
+    extra.length ? h("div", { class: "orma-extra" }, ...extra) : null,
     helpBlock(),
     h("p", { class: "orma-foot", text: `ORMA ${APP.version} · Inhalt ${CONTENT_VERSION} · kostenlos, ohne Anmeldung, ohne Werbung. Alles bleibt auf diesem Gerät.` }),
   );
