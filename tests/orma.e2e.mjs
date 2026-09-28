@@ -161,6 +161,17 @@ await check("Bildschirmtastatur (nachgebildet: niedrige Ansicht): Antwortfeld un
   await ctx.close();
 });
 
+await check("Startansicht: «Unterbrochene Runde verwerfen» und «ORMA als App installieren» stehen untereinander, nicht in einer Zeile", async () => {
+  const { ctx, page } = await open({ viewport: { width: 986, height: 800 }, isMobile: false, hasTouch: false });
+  await tap(page, "Zu zweit beginnen"); await tap(page, "Beginnen"); await tap(page, "Drehen");
+  await page.reload(); await page.waitForSelector("html[data-ready]");
+  const a = await button(page, "Unterbrochene Runde verwerfen").boundingBox();
+  const b = await button(page, "ORMA als App installieren").boundingBox();
+  assert.ok(b.y >= a.y + a.height - 1, `überlappen oder stehen nebeneinander: ${JSON.stringify([a, b])}`);
+  assert.ok(Math.abs(a.x - b.x) <= 1, "linksbündig untereinander");
+  await ctx.close();
+});
+
 // ---------- Fortsetzen ----------
 await check("Fortsetzen: Runde nach Schliessen wieder aufnehmen, Eingabe bleibt; bei B zuerst neutral übergeben; verwerfen mit Bestätigung", async () => {
   const { ctx, page } = await open();

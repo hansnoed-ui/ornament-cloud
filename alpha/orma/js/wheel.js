@@ -3,7 +3,7 @@
 // (drawNext), die Ringe fahren nur dorthin. Richtung, Umdrehungen und Dauer kommen aus der Geste.
 // Überspringbar; bei reduzierter Bewegung kurz und ohne Umdrehungen.
 
-import { symbolMarkup } from "./symbols.js?v=4745b954d171";
+import { symbolMarkup } from "./symbols.js?v=f5bc19f7d147";
 
 const NS = "http://www.w3.org/2000/svg";
 const C = 500, SLOTS = 12, STEP = 360 / SLOTS;

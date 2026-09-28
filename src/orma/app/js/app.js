@@ -149,7 +149,7 @@ function renderStart() {
     h("p", { class: "orma-sub", text: "Nebeneinander, Nacheinander" }),
     h("p", { class: "orma-claim" }, h("strong", { text: "Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke." })),
     actions,
-    ...extra,
+    extra.length ? h("div", { class: "orma-extra" }, ...extra) : null,
     helpBlock(),
     h("p", { class: "orma-foot", text: `ORMA ${APP.version} · Inhalt ${CONTENT_VERSION} · kostenlos, ohne Anmeldung, ohne Werbung. Alles bleibt auf diesem Gerät.` }),
   );
