@@ -38,6 +38,8 @@ Startseite (7 Zyklen mit Nummer, Titel, Bottom-Line), `strophe/<slug>/` (49), `v
 `begriff/<slug>/` (sobald Begriffe eingetragen sind), `spur/` (`?s=37` oder `?p=<person>`), `zufall/` (`?von=37`,
 `noindex`), `zsz-daten.json` für Spur und Zufall – und den Block `ZSZ:START … ZSZ:END` in `sitemap.xml`.
 Von Hand gepflegt: `zu-seiner-zeit/zsz.css` (Gestaltung) und `zu-seiner-zeit/zsz.js` (Seitenpanel, Spur, Zufall).
+Vorschaubild zum Teilen (Facebook, X; 1200 × 630, auf allen Seiten eingebunden, Beschreibung = Bottom-Line bzw.
+Untertitel): `NODE_PATH=$(npm root -g) node tools/zsz-og.mjs` → `zu-seiner-zeit/og-zu-seiner-zeit.png`.
 Nach jeder Änderung an Daten, CSS oder JS den Build laufen lassen; ein Test meldet veraltete Seiten.
 
 ## Verhalten
