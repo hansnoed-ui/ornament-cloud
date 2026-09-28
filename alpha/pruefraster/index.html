@@ -24,14 +24,19 @@
     .pr-block h2 { margin: 0 0 0.4rem; font-family: var(--serif); font-weight: 400; font-size: 1.6rem; }
     .pr-block p { margin: 0.5rem 0 0; max-width: 38em; }
     .pr-meta { color: var(--muted); font-size: 0.9rem; }
-    .pr-aktionen { display: flex; flex-wrap: wrap; gap: 12px; margin: 1.25rem 0 0; }
+    /* Knöpfe mittig; auf dem Handy gleich breit untereinander */
+    .pr-aktionen { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 1.5rem 0 0; }
+    @media (max-width: 560px) {
+      .pr-aktionen { flex-direction: column; align-items: stretch; }
+      .pr-aktionen .pr-knopf { justify-content: center; }
+    }
     .pr-knopf {
-      display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 20px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 22px;
       border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text);
       font: inherit; font-size: 0.95rem; text-decoration: none; cursor: pointer;
     }
     .pr-knopf:hover, .pr-knopf:focus-visible { background: var(--text); color: var(--bg); outline: none; }
-    .pr-status { min-height: 1.4em; color: var(--muted); font-size: 0.9rem; }
+    .pr-status { min-height: 1.4em; color: var(--muted); font-size: 0.9rem; text-align: center; }
     .pr-schritte { max-width: 38em; margin: 1rem 0 0; padding-left: 1.3rem; }
     .pr-schritte li { margin: 0.45rem 0; }
     .pr-text { margin: 1.25rem 0 0; }

@@ -525,6 +525,15 @@ for (const [titel, seite, datei, anfang] of [
   await page.goto(`${origin}/alpha/`);
   await page.getByRole("link", { name: titel, exact: true }).click();
   await page.waitForURL(new RegExp(`/alpha/${seite}/$`));
+  // Knöpfe mittig und auf dem Handy gleich breit
+  const knoepfe = await page.locator(".pr-aktionen").evaluateAll(zeilen => zeilen.map(z => {
+    const r = z.getBoundingClientRect();
+    return [...z.querySelectorAll(".pr-knopf")].filter(k => !k.hidden).map(k => { const b = k.getBoundingClientRect(); return [b.left - r.left, r.right - b.right, b.width]; });
+  }));
+  for (const zeile of knoepfe) for (const [l, rr, w] of zeile) {
+    assert.ok(Math.abs(l - rr) <= 2, `nicht mittig: ${JSON.stringify(zeile)}`);
+    assert.ok(Math.abs(w - zeile[0][2]) <= 1, `ungleich breit: ${JSON.stringify(zeile)}`);
+  }
   const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("link", { name: /Anwendungsprompt herunterladen/ }).click()]);
   assert.equal(dl.suggestedFilename(), datei);
   await page.getByRole("button", { name: "Prompt kopieren" }).click();
