@@ -310,12 +310,30 @@ test("Domain: keine veröffentlichte Datei nennt noch die alte Adresse hansnoed-
 
 test("Alpha: die Grundlagenpapiere liegen als PDF vor und stehen in der Alpha-Übersicht", () => {
   const html = readFileSync(new URL("alpha/index.html", root), "utf8");
-  for (const [datei, titel] of [["pruefraster-nebeneinander-nacheinander.pdf", "Prüfraster: Nebeneinander und Nacheinander"],
+  for (const [datei, titel] of [["pruefraster-nebeneinander-nacheinander.pdf", "Grundlagenpapier (PDF)"],
                                 ["verteilapparat-des-koerpers.pdf", "Der Verteilapparat des Körpers"]]) {
     assert.equal(readFileSync(new URL(`alpha/${datei}`, root)).subarray(0, 5).toString(), "%PDF-", datei);
     assert.ok(html.includes(`<a href="${datei}">${titel}</a>`), `nicht verlinkt: ${datei}`);
   }
+  assert.ok(html.includes('<a href="pruefraster/">Prüfraster: Nebeneinander und Nacheinander</a>'));
+  assert.ok(html.includes('<a href="pruefraster-anwendungsprompt-1.0.0.md" download="pruefraster-anwendungsprompt-1.0.0.md">Anwendungsprompt (Markdown)</a>'));
   assert.match(html, /<meta name="robots" content="noindex">/);
+});
+
+test("Alpha, Prüfraster: eigene Seite mit PDF, Anwendungsprompt (Download), Anleitung und Vorschaubild zum Teilen", () => {
+  const html = readFileSync(new URL("alpha/pruefraster/index.html", root), "utf8");
+  const prompt = readFileSync(new URL("alpha/pruefraster-anwendungsprompt-1.0.0.md", root), "utf8");
+  assert.match(prompt, /^# Prüfraster: Nebeneinander und Nacheinander\nAnwendungsprompt · Version 1\.0\.0/);
+  assert.ok(prompt.includes("https://ornament.cloud/alpha/pruefraster-nebeneinander-nacheinander.pdf"), "Quelle im Prompt zeigt auf das PDF");
+  assert.match(html, /<meta name="robots" content="noindex">/);
+  assert.ok(html.includes('href="../pruefraster-nebeneinander-nacheinander.pdf"'));
+  assert.ok(html.includes('href="../pruefraster-anwendungsprompt-1.0.0.md" download="pruefraster-anwendungsprompt-1.0.0.md"'));
+  assert.ok(html.includes("So gehst du vor") && html.includes("«Meine Eingabe»"));
+  assert.ok(html.includes('<meta property="og:image" content="https://ornament.cloud/alpha/pruefraster/og-pruefraster.png">'));
+  assert.ok(html.includes('<meta property="og:url" content="https://ornament.cloud/alpha/pruefraster/">'));
+  const png = readFileSync(new URL("alpha/pruefraster/og-pruefraster.png", root));
+  assert.equal(png.subarray(1, 4).toString(), "PNG");
+  assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630]);
 });
 
 // Startseite und News verlinken ORMA seit dem 27. September 2026 (REGELN §14) und gehören darum nicht mehr hierher.

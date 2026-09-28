@@ -1,0 +1,224 @@
+# Prüfraster: Nebeneinander und Nacheinander
+Anwendungsprompt · Version 1.0.0 · 28. September 2026
+
+Grundlage: Christian Strickler, „Prüfraster: Nebeneinander und Nacheinander“, Arbeitsstand 28. September 2026.
+Quelle: https://ornament.cloud/alpha/pruefraster-nebeneinander-nacheinander.pdf
+
+Diese Fassung übersetzt das Grundlagenpapier in Arbeitsanweisungen. Sie ist keine wortgetreue Abschrift. Die ausdrücklich gekennzeichneten Präzisierungen am Ende gehören zur Anwendungsversion, nicht zum Originaltext.
+
+## Auftrag
+
+Wende das folgende Raster auf das bereitgestellte Material an. Untersuche konkrete Operationen: Was tut ein Ansatz mit Unterschieden, Wiederholung und Aktualisierung? Ein Ansatz kann eine Theorie, Kunstpraxis, ein Mess- oder Verwaltungsverfahren, ein technisches System, eine handwerkliche oder rituelle Praxis sein.
+
+Beurteile keine Personen, keine Gesamtqualität und keinen Erkenntnisgewinn. Erzeuge weder eine Gesamtnote noch eine Rangliste. Die Koordinaten sind begründete Einschätzungen innerhalb dieses Modells, keine objektiven Messungen.
+
+## 1. Eingabe und Abgrenzung
+
+Benötigt werden:
+- Fall: Was soll untersucht werden?
+- Operation: Welcher konkrete Zugriff oder Vorgang steht zur Prüfung?
+- Kontext: In welcher Situation und für welchen Gebrauch findet er statt?
+- Register: „begriff“, „vollzug“ oder „beide“.
+- Material: Beschreibung, Textauszug, dokumentierte Beobachtung oder anderes auswertbares Material.
+- Ausgabeformat: „lesbar“ oder „json“. Ohne Angabe gilt „lesbar“.
+
+Ein Lebenswerk, eine Institution oder eine Disziplin umfasst viele Operationen. Verlange eine Eingrenzung, wenn nicht klar ist, welcher Vorgang untersucht werden soll. Eine stellvertretende Operation darf nur als ausdrücklich begrenzte Auswahl behandelt werden. Übertrage ihre Werte nicht auf das Ganze.
+
+Fehlt das Register, frage nach. Bei „beide“ erstelle zwei getrennte Analysen desselben Falls. Bilde keinen Mittelwert zwischen ihnen. Ein Registerwechsel darf niemals innerhalb einer einzigen Platzierung erfolgen.
+
+Nutze das bereitgestellte Material als Beleggrundlage. Kennzeichne zusätzlich verwendete Quellen gesondert und verwende sie nur, wenn sie tatsächlich vorliegen oder abgerufen wurden. Ein Link allein ist noch kein gelesener Beleg. Erfinde keine Zitate, Fundstellen, Beobachtungen oder Eigenschaften. Vergib bei fehlender Grundlage keine Ersatzwerte.
+
+Bei einer Eingabe in normaler Sprache kannst du die nötigen Felder aus den Angaben entnehmen. Vergib für unnummeriertes Material fortlaufende IDs wie M1 und M2. Die Behauptung in einer Beschreibung und ein unabhängig dokumentierter Befund sind als unterschiedliche Belegarten kenntlich zu machen.
+
+## 2. Die beiden unabhängigen Achsen
+
+VERRÄUMLICHUNG: Herstellung eines Nebeneinanders. Unterschiede werden so angeordnet, dass mehrere zugleich verfügbar sind und einzeln wieder aufgesucht werden können. Prüfstein ist die Rückkehr: Was lässt sich wiederfinden, vergleichen und als dieselbe Stelle erkennen?
+
+VERZEITLICHUNG: Herstellung eines Nacheinanders. Eine Möglichkeit wird aktualisiert und schliesst dabei andere aus. Prüfstein ist die Irreversibilität: Was verändert sich durch die Aktualisierung, sodass eine Wiederkehr keine identische Rückkehr ist? Ein beliebig wiederholbarer Abruf genügt dafür nicht. Weder blosse Dauer noch sichtbare Bewegung noch beliebige Variation begründen allein einen hohen Wert.
+
+Die Achsen sind unabhängig. Beide können stark, schwach oder unterschiedlich stark ausgeprägt sein. Untersuche den Zugriff auf ein Bild, einen Text oder eine Datenbank, nicht die Materialgattung als solche.
+
+Platziere ausschliesslich auf der im Modell so bezeichneten Ebene der Kommunikation: an einer für andere zugänglichen Form, Beschreibung oder Praxis. Unmittelbare Wahrnehmung und Bewusstsein erhalten keine eigenen Koordinaten. Soweit sie vorausgesetzt werden, gehören sie zu den Voraussetzungen und Grenzen der Analyse.
+
+## 3. Register und Skalenanker
+
+BEGRIFF: Wie ausdrücklich und differenziert kann der Ansatz die Operationen benennen und unterscheiden?
+- Verräumlichung 1: Anordnung kommt als Problem nicht vor.
+- Verräumlichung 5: Stelle, Anordnung und Wiederholbarkeit sind eigens theoretisiert.
+- Verzeitlichung 1: Aktualisierung und Irreversibilität bleiben unbegriffen.
+- Verzeitlichung 5: Ereignis, Aktualisierung und Nichtidentität sind eigens theoretisiert.
+
+VOLLZUG: Wie stark führt der Ansatz die Operationen tatsächlich aus?
+- Verräumlichung 1: Er erzeugt kaum wieder auffindbare Stellen.
+- Verräumlichung 5: Er erzeugt dichte, adressierbare, wieder aufsuchbare Anordnungen.
+- Verzeitlichung 1: Wiederholung bleibt Abruf; es entsteht kaum neue Gegenwart.
+- Verzeitlichung 5: Jede Aktualisierung fällt merklich anders aus. Prüfe dabei zusätzlich Irreversibilität und die Unterscheidung zwischen organisierter Differenz und blosser Streuung.
+
+Verwende ganze Zahlen von 1 bis 5. Die Werte 2, 3 und 4 sind begründete Zwischenpositionen zwischen den jeweiligen Ankern. Das PDF gibt dafür keine eigenen Schwellen vor. Begründe deshalb jeden Zwischenwert am Material, ohne eine zusätzliche Messskala zu erfinden. Fehlende Information ist weder der Wert 1 noch der Mittelwert 3.
+
+## 4. Acht Prüffragen
+
+Beantworte vor der Platzierung alle acht Fragen knapp und registergerecht. Im Begriffsregister prüfst du, was der Ansatz begrifflich erfasst; im Vollzugsregister, was tatsächlich geschieht. Markiere unbeantwortbare Fragen als offen.
+
+1. Was wird hier wiederholbar gemacht?
+2. Welche Stelle lässt sich wieder aufsuchen, und durch wen?
+3. Woran erkennt man, dass die Wiederkehr gelungen ist?
+4. Was fällt bei jeder Aktualisierung anders aus?
+5. Ist diese Differenz beabsichtigt oder blosse Streuung?
+6. Welche Invarianten hält der Ansatz stabil, damit die Differenz überhaupt erscheint?
+7. Welche Seite wird vorausgesetzt, ohne thematisiert zu werden?
+8. Was kann hier scheitern, und wird das Scheitern bemerkt?
+
+Die Fragen 1 bis 3 prüfen die Verräumlichung, 4 bis 6 die Verzeitlichung, 7 und 8 die Voraussetzungen und Prüfbarkeit. Frage 6 fragt nach den stabilen Bedingungen, an denen eine Differenz erst erkennbar wird. Frage 8 verlangt ein mögliches Scheitern; fehlende Fehlerkontrolle kann selbst ein Befund sein, ist aber keine Einladung zu erfundenen Eigenschaften.
+
+## 5. Verbindliche Platzierungsregel
+
+1. Wähle genau ein Register pro Analyse.
+2. Benenne die konkrete Operation und ihren Kontext.
+3. Beantworte die acht Prüffragen anhand des Materials.
+4. Setze Verräumlichung und Verzeitlichung jeweils von 1 bis 5. Begründe jeden Wert mit einem Satz, der ein beobachtbares oder im Text nachweisbares Merkmal nennt. Verweise auf den passenden Materialbeleg.
+5. Benenne den blinden Fleck: Welche für diese Operation nötige Seite oder Bedingung wird vorausgesetzt, ohne selbst angemessen bearbeitet oder thematisiert zu werden? Erläutere, weshalb die Operation darauf angewiesen ist. Benenne keine beliebige Schwäche und keine unbelegte Absicht.
+6. Wenn Schritt 5 nicht begründet gelingt, nimm die gesamte Platzierung zurück. Gib für beide Werte „offen“ beziehungsweise null aus. Behalte belegbare Beobachtungen bei und benenne die fehlende Grundlage.
+
+Auch bei zwei hohen Werten muss eine konkrete Voraussetzung angegeben werden. Erzwinge keinen blinden Fleck, um die Analyse abzuschliessen. Dass ein Text etwas nicht erwähnt, beweist noch nicht, dass es in der Praxis fehlt.
+
+Wenn Material, Operation oder Register noch unklar sind, lautet der Status „klaerung_noetig“. Wenn eine bereits geprüfte Platzierung an einer fehlenden Begründung oder Voraussetzung scheitert, lautet er „zurueckgenommen“. Nur eine begründete Platzierung mit benanntem und belegtem blinden Fleck erhält „platziert“. Bei beiden anderen Status bleiben beide Werte null. Stelle nur die nötigen, möglichst konkreten Rückfragen.
+
+## 6. Felder und Beispiele
+
+Die Feldnamen sind Orientierungshilfen:
+- „Ordnung“: Verräumlichung stark, Verzeitlichung schwach.
+- „Ereignis“: Verräumlichung schwach, Verzeitlichung stark.
+- „Doppelspalt“: beide stark.
+- „Stilles Operieren“: beide schwach im jeweils gewählten Register; siehe Präzisierung P1.
+
+Oben rechts ist keine Bestnote. Das PDF legt keine numerischen Grenzen zwischen den Feldern fest. Gib deshalb nur bei einem klaren Befund eine qualitative Feldtendenz an; andernfalls null. Leite daraus niemals die Zahlen ab.
+
+Das PDF enthält vier beispielhafte Platzierungen im Vollzugsregister: kalibriertes Messinstrument (5, 2), Sozialversicherungsverfahren (5, 2), Feed eines Empfehlungssystems (5, 3), handwerkliche Praxis am Material (2, 4). Sie sind Fallskizzen des Autors, keine festen Werte für alle Vertreter dieser Gruppen. Übertrage sie nicht automatisch auf einen neuen Fall. Prüfe besonders bei berechneten Abläufen die konkrete Rückholbarkeit; siehe P3.
+
+## 7. Ausgabe
+
+Bei „lesbar“ liefere pro Register:
+- Fall, eingegrenzte Operation und Register.
+- Kurze Antworten auf die acht Prüffragen, möglichst in einer kompakten Tabelle mit Materialbelegen.
+- Beide Werte mit je einem Begründungssatz, oder ausdrücklich „offen“.
+- Den blinden Fleck und seine Begründung, oder den Grund der Rücknahme.
+- Höchstens eine Feldtendenz, die verbleibenden Unsicherheiten und nötige Rückfragen.
+- Einen kurzen Hinweis auf die für diesen Fall relevanten Grenzen des Rasters.
+
+Bei „json“ antworte ausschliesslich mit einem gültigen JSON-Objekt nach der untenstehenden Struktur, ohne Markdown oder weiteren Begleittext. Behalte alle Schlüssel bei. Verwende null für nicht begründbare Einzelangaben, niemals 0 als Ersatzwert. Verwende [] für leere Listen. Gib keine privaten Zwischengedanken aus, sondern nur Befunde, Belege und knappe Begründungen.
+
+Belegverweise nennen Material-IDs und, soweit vorhanden, eine genaue Stelle, etwa „M1, Absatz 2“. Führe alle tatsächlich verwendeten Materialien unter „quellen“ auf. Die Quelle des Rasters begründet die Methode, nicht Eigenschaften des untersuchten Falls.
+
+## 8. Grenzen und gekennzeichnete Präzisierungen
+
+GRENZEN: Die Analyse ist kontextabhängig. Dieselbe Anordnung kann je nach Anschluss anders funktionieren. Das Raster erfasst keine Gesamtqualität, keinen Erkenntnisgewinn und keine umfassende Wahrheit eines Ansatzes. Zugang, Macht und die Verteilung von Kosten erfordern eine zusätzliche Untersuchung; die Frage „durch wen?“ ersetzt diese nicht. Unmittelbares Erleben wird nicht direkt gemessen. Der eigene blinde Fleck des Rasters ist die Annahme, dass sich Operationen aus Zusammenhängen isolieren und vergleichen lassen. Nenne diese Grenzen ohne sie als zusätzliche Achsen einzubauen.
+
+P1 — Registerkonflikt im Original: Abschnitt 4 trennt begriffliche Selbstbeschreibung und tatsächlichen Vollzug. Abschnitt 6 verbindet dagegen das Feld unten links im Vollzugsregister mit fehlender Selbstbeschreibung. Diese Anwendungsversion gibt der ausdrücklichen Registerregel aus Abschnitt 4 Vorrang: Fehlende Selbstbeschreibung allein senkt keinen Vollzugswert. Das Feld „Stilles Operieren“ darf dort nur aus schwacher Ausprägung beider Operationen folgen.
+
+P2 — Skalenformat: Ganze Zahlen, null-Werte, Statusangaben, Materialbelege und JSON-Struktur sind Festlegungen dieser Anwendungsversion. Die Anker 1 und 5 stammen aus dem PDF; die Zwischenwerte sind nicht empirisch kalibriert. Die Forderung nach dokumentierten Belegen und der Verzicht auf Werte bei unzureichendem Material machen die Anwendung prüfbar, erweitern aber die formale Rücknahmeregel des PDFs.
+
+P3 — Berechnung und Rückholbarkeit: Abschnitt 8 begründet den Beispielwert eines Feeds unter anderem mit seiner Berechnung. Diese Anwendungsversion übernimmt daraus keine allgemeine Regel „berechnet = reversibel“. Massgebend bleibt der Prüfstein aus Abschnitt 2: die tatsächliche Rückholbarkeit der jeweils untersuchten Operation. Ein reproduzierbarer Inhalt und ein unwiederbringlicher Gebrauch sind getrennt zu untersuchen. Das ist eine ausdrücklich gekennzeichnete Präzisierung der Beispielanwendung.
+
+P4 — Modellstatus: Verwende die theoretischen Grundannahmen als Regeln dieser Untersuchung. Stelle sie durch die Anwendung nicht als unabhängig bewiesene Tatsachen dar. Eine schema-konforme Antwort garantiert noch keine sachlich richtige Analyse.
+
+## JSON-Ausgabestruktur
+
+Das folgende Objekt zeigt den Zustand ohne Eingabematerial. Ersetze seine Inhalte durch die fallbezogenen Befunde. Bei „beide“ enthält „analysen“ zwei Objekte, eines mit „begriff“ und eines mit „vollzug“. Bei genau einem angefragten Register enthält die Liste genau dessen Analyse. Ein unbekanntes Register bleibt null; erfinde keine Wahl.
+
+```json
+{
+  "prompt_version": "1.0.0",
+  "fall": null,
+  "analysen": [
+    {
+      "register": null,
+      "status": "klaerung_noetig",
+      "operation": null,
+      "kontext": null,
+      "prueffragen": {
+        "q1": {
+          "befund": null,
+          "belege": []
+        },
+        "q2": {
+          "befund": null,
+          "belege": []
+        },
+        "q3": {
+          "befund": null,
+          "belege": []
+        },
+        "q4": {
+          "befund": null,
+          "belege": []
+        },
+        "q5": {
+          "befund": null,
+          "belege": []
+        },
+        "q6": {
+          "befund": null,
+          "belege": []
+        },
+        "q7": {
+          "befund": null,
+          "belege": []
+        },
+        "q8": {
+          "befund": null,
+          "belege": []
+        }
+      },
+      "verraeumlichung": {
+        "wert": null,
+        "begruendung": null,
+        "belege": []
+      },
+      "verzeitlichung": {
+        "wert": null,
+        "begruendung": null,
+        "belege": []
+      },
+      "blinder_fleck": {
+        "voraussetzung": null,
+        "begruendung": null,
+        "belege": []
+      },
+      "feldtendenz": null,
+      "unsicherheiten": [],
+      "ruecknahmegrund": null,
+      "rueckfragen": [
+        "Welcher konkrete Vorgang soll anhand welchen Materials in welchem Register untersucht werden?"
+      ]
+    }
+  ],
+  "quellen": [],
+  "grenzen": [
+    "Das Raster setzt voraus, dass sich Operationen aus ihrem Zusammenhang isolieren und vergleichen lassen."
+  ]
+}
+```
+
+Zulässige Feldtendenzen: „Ordnung“, „Ereignis“, „Doppelspalt“, „Stilles Operieren“ oder null.
+Jeder Eintrag in „quellen“ hat die Schlüssel „id“, „herkunft“ (bereitgestellt oder zusaetzlich) und „fundstelle“ (Text oder null).
+
+## Meine Eingabe
+
+Fülle die folgenden Angaben aus. Leere Felder sind fehlende Informationen und dürfen nicht als Fallmaterial interpretiert werden. Du kannst stattdessen dieselben Angaben als normalen Text anhängen. Materialeinträge erhalten jeweils eine ID, ihren auswertbaren Inhalt und gegebenenfalls eine Fundstelle.
+
+```json
+{
+  "fall": "",
+  "operation": null,
+  "kontext": null,
+  "register": null,
+  "material": [],
+  "ausgabeformat": "lesbar"
+}
+```
+
+Form eines Materialeintrags:
+```json
+{"id": "M1", "inhalt": "Hier die konkrete Beschreibung oder den Textauszug einsetzen.", "fundstelle": "Optional: Titel, Seite, Absatz oder URL der tatsächlich gelesenen Quelle."}
+```
