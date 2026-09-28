@@ -1,0 +1,1747 @@
+{
+  "title": "Zu seiner Zeit",
+  "subtitle": "Plateaus zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation",
+  "version": "Arbeitsfassung",
+  "date": "2026-09-28",
+  "structure": "7 Zyklen × 7 Strophen = 49 Strophen",
+  "editorial_rules": {
+    "main_text": "pro Strophe etwa 80–110 Wörter als Zielgrösse",
+    "bottom_line": "eine verdichtete Bottom-Line pro Strophe",
+    "references": [
+      "Soziologie",
+      "Philosophie",
+      "Kunst",
+      "Literatur"
+    ],
+    "gender_balance": "pro Strophe 2 weibliche und 2 männliche Positionen als redaktionelle Regel",
+    "reference_function": "Resonanz- und Anschlussstellen, keine Beweiskette"
+  },
+  "movement": [
+    "Operation",
+    "Rekursion",
+    "Adresse",
+    "Koppelung",
+    "Kunst",
+    "Plattform",
+    "Zukunft"
+  ],
+  "cycles": [
+    {
+      "roman": "I",
+      "name": "Operation",
+      "deck": "Vom Geschehen zur Zeit: Operationen werden erst im Anschluss zu einer Geschichte.",
+      "stanzas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "roman": "II",
+      "name": "Rekursion",
+      "deck": "Wie Vergangenes wirksam bleibt, ohne fortzubestehen.",
+      "stanzas": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ]
+    },
+    {
+      "roman": "III",
+      "name": "Adresse",
+      "deck": "Wie Wiedererkennbarkeit sozial zugerechnet und erwartbar wird.",
+      "stanzas": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    {
+      "roman": "IV",
+      "name": "Koppelung",
+      "deck": "Wie getrennte Ordnungen füreinander wirksam werden, ohne sich zu vereinigen.",
+      "stanzas": [
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ]
+    },
+    {
+      "roman": "V",
+      "name": "Kunst",
+      "deck": "Wie Wahrnehmungsdifferenz gesellschaftlich wiederverwendbar bleibt.",
+      "stanzas": [
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35
+      ]
+    },
+    {
+      "roman": "VI",
+      "name": "Plattform",
+      "deck": "Wie Wiedererkennbarkeit in Wahrscheinlichkeit verwandelt – und Wahrscheinlichkeit wieder als Umwelt zurückgegeben wird.",
+      "stanzas": [
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42
+      ]
+    },
+    {
+      "roman": "VII",
+      "name": "Zukunft",
+      "deck": "Unter welchen Bedingungen trotz dieser Reduktionen Andersweitergehen möglich bleibt.",
+      "stanzas": [
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49
+      ]
+    }
+  ],
+  "stanzas": [
+    {
+      "number": 1,
+      "title": "Die Brücke",
+      "cycle": {
+        "roman": "I",
+        "name": "Operation"
+      },
+      "text": "Jede Theorie beginnt mit einer Brücke. Sie verbindet Begriffe, noch bevor sie weiss, ob auf der anderen Seite überhaupt etwas auf sie wartet. Darin liegt ihre eigentliche Kühnheit. Nicht die Wahrheit ist ihr erster Schritt, sondern die Unterstellung einer Verbindung. Erst wenn spätere Operationen diese Verbindung wieder aufnehmen, erhält sie den Anschein einer notwendigen Ordnung. Was wir Ursprung nennen, ist deshalb meist nichts anderes als der erste geglückte Anschluss. Brücken werden nicht gebaut, weil Ufer existieren; Ufer entstehen, weil Brücken gelernt haben, ihre eigene Richtung zu erinnern.",
+      "bottom_line": "Nicht die Welt begründet den Anschluss – der Anschluss erfindet die Welt, die ihn im Nachhinein notwendig erscheinen lässt.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Niklas Luhmann, Soziale Systeme",
+          "resonance": "Operationen gewinnen Zusammenhang erst durch Anschluss."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Karen Barad, Meeting the Universe Halfway",
+          "resonance": "Relationen setzen keine bereits fertigen Relata voraus."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Mona Hatoum, Measures of Distance",
+          "resonance": "Nähe und Distanz entstehen in einer vermittelten Beziehung."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Franz Kafka, Die Brücke",
+          "resonance": "Die Brücke wird selbst zum prekären Ereignis des Verbindens."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 2,
+      "title": "Das Ereignis",
+      "cycle": {
+        "roman": "I",
+        "name": "Operation"
+      },
+      "text": "Ereignisse besitzen keine Zukunft. Sie ereignen sich, verschwinden und hinterlassen zunächst nichts als ihre eigene Vollendung. Erst eine spätere Operation entscheidet, ob sie als Anfang, Zufall, Fehler oder Wendepunkt erinnert werden sollen. Gerade deshalb täuscht die Vorstellung einer linearen Geschichte. Sie liest in das Vergangene eine Richtung hinein, die damals noch gar nicht existierte. Geschichte entsteht nicht durch Ereignisse, sondern durch ihre wiederholte Auswahl. Jede Gegenwart schreibt ihre Vorgeschichte neu und nennt dieses Ergebnis schliesslich Entwicklung. Das Vergangene verändert sich deshalb mit jedem gelungenen Anschluss.",
+      "bottom_line": "Nicht Ereignisse schaffen Geschichte; Geschichte schafft ihre Ereignisse.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Barbara Adam, Time and Social Theory",
+          "resonance": "Soziale Zeit entsteht in Praktiken der Ordnung und Erwartung."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Alfred North Whitehead, Process and Reality",
+          "resonance": "Wirklichkeit wird als Ereignis- und Prozessgeschehen gedacht."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "On Kawara, Today Series",
+          "resonance": "Das Datum fixiert ein Ereignis, ohne dessen spätere Bedeutung festzulegen."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Virginia Woolf, Mrs Dalloway",
+          "resonance": "Ein Tag wird durch Erinnerung und Gegenwart fortwährend neu geschichtet."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 3,
+      "title": "Der Anschluss",
+      "cycle": {
+        "roman": "I",
+        "name": "Operation"
+      },
+      "text": "Die eigentliche Leistung eines Systems besteht nicht darin, etwas hervorzubringen, sondern darin, weiterzumachen. Jede Operation verschwindet im Augenblick ihres Vollzugs. Dauer entsteht deshalb nicht durch Bestand, sondern durch Wiederaufnahme. Was wir Identität nennen, ist nichts anderes als die erfolgreiche Gewohnheit, den nächsten Schritt an den vorherigen anzuschliessen. Jeder misslungene Anschluss eröffnet dagegen eine andere Geschichte. Systeme leben deshalb nicht von Stabilität, sondern von der unwahrscheinlichen Fähigkeit, den eigenen Abbruch immer wieder in Fortsetzung zu verwandeln.",
+      "bottom_line": "Kontinuität ist kein Zustand – sie ist die unwahrscheinlichste aller Operationen.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Niklas Luhmann, Soziale Systeme",
+          "resonance": "Autopoiesis besteht in der rekursiven Produktion weiterer Operationen."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Jacques Derrida, La différance",
+          "resonance": "Fortsetzung beruht auf Spur, Wiederholung und Verschiebung."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Lygia Clark, Bichos",
+          "resonance": "Form entsteht jeweils neu im Vollzug ihrer nächsten Artikulation."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Clarice Lispector, A paixão segundo G.H.",
+          "resonance": "Erfahrung setzt sich fort, indem ihre bisherige Ordnung zerfällt."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 4,
+      "title": "Der Beobachter",
+      "cycle": {
+        "roman": "I",
+        "name": "Operation"
+      },
+      "text": "Der Beobachter erscheint gewöhnlich als Ursprung der Unterscheidung. Tatsächlich tritt er immer zu spät auf. Sobald etwas bezeichnet wird, ist die Unterscheidung bereits vollzogen; der Beobachter findet sie nur noch vor. Seine eigentliche Leistung besteht deshalb nicht im Sehen, sondern im Wiederverwenden einer Differenz. Auch Selbstbeobachtung entkommt diesem Problem nicht. Sie beobachtet niemals den Ursprung ihres Sehens, sondern immer nur dessen bereits entstandene Spur. Der erste Beobachter bleibt deshalb grundsätzlich unbeobachtbar.",
+      "bottom_line": "Der Beobachter sieht alles – ausser den Beginn seines eigenen Sehens.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Niklas Luhmann, Die Wissenschaft der Gesellschaft",
+          "resonance": "Beobachtung operiert als Unterscheiden und Bezeichnen."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Donna Haraway, Situated Knowledges",
+          "resonance": "Jede Beobachtung hat einen situierten Standpunkt und damit Grenzen."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Cindy Sherman, Untitled Film Stills",
+          "resonance": "Beobachtung und beobachtete Identität verschieben sich gegenseitig."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Jorge Luis Borges, Pierre Menard, Autor des Quijote",
+          "resonance": "Dasselbe Zeichen wird durch den Ort seiner Beobachtung ein anderes."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 5,
+      "title": "Der blinde Fleck",
+      "cycle": {
+        "roman": "I",
+        "name": "Operation"
+      },
+      "text": "Jede Operation vollzieht sich unter Bedingungen, die sie selbst nicht beobachten kann. Nicht weil ihr Informationen fehlen, sondern weil ihre eigene Form bestimmt, was überhaupt als Information erscheinen darf. Der blinde Fleck ist deshalb kein Defizit des Wissens, sondern seine Voraussetzung. Wer ihn beseitigen wollte, müsste ausserhalb seiner eigenen Operation treten – und würde gerade dadurch eine neue Unterscheidung mit einem neuen blinden Fleck erzeugen. Erkenntnis erweitert ihr Gesichtsfeld nicht, indem sie Blindheit überwindet, sondern indem sie lernt, ihre eigenen Grenzen produktiv zu variieren.",
+      "bottom_line": "Der blinde Fleck ist nicht das Ende der Erkenntnis – er ist ihr Anfang.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Elena Esposito, Die Beobachtung der Kybernetik",
+          "resonance": "Beobachtung zweiter Ordnung macht die Selektivität des Beobachtens sichtbar."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "George Spencer-Brown, Laws of Form",
+          "resonance": "Jede Bezeichnung setzt eine unbezeichnete Seite voraus."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "René Magritte, La condition humaine",
+          "resonance": "Bild und Welt werden durch eine unsichtbare Grenze unterschieden."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Clarice Lispector, A paixão segundo G.H.",
+          "resonance": "Erkenntnis beginnt dort, wo vertraute Unterscheidungen unhaltbar werden."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 6,
+      "title": "Die Verspätung",
+      "cycle": {
+        "roman": "I",
+        "name": "Operation"
+      },
+      "text": "Jede Gegenwart erscheint sich selbst unmittelbar. Tatsächlich kommt sie immer zu spät. Noch bevor eine Operation sich als gegenwärtig erfährt, ist sie bereits vergangen und kann nur durch weitere Operationen wieder aufgenommen werden. Was wir Präsenz nennen, ist deshalb kein zeitlicher Punkt, sondern eine fortlaufende Rekonstruktion. Gegenwart lebt davon, dass sie ihre eigene Verspätung ununterbrochen vergisst. Gerade diese kleine Verzögerung ermöglicht Erinnerung, Erwartung und Anschluss. Ohne sie gäbe es weder Zeit noch Geschichte, sondern bloss das lautlose Erlöschen isolierter Ereignisse.",
+      "bottom_line": "Gegenwart ist die Kunst, ihre eigene Verspätung zu übersehen.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Barbara Adam, Time and Social Theory",
+          "resonance": "Gegenwart ist sozial organisiert und nie bloss ein neutraler Zeitpunkt."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Edmund Husserl, Vorlesungen zur Phänomenologie des inneren Zeitbewusstseins",
+          "resonance": "Retention und Protention strukturieren das erlebte Jetzt."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Hito Steyerl, In Free Fall",
+          "resonance": "Gegenwart erscheint als instabiler Zustand fortgesetzter Verschiebung."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Marcel Proust, À la recherche du temps perdu",
+          "resonance": "Vergangenheit wird erst in späteren Gegenwarten wirksam."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 7,
+      "title": "Die Zeit",
+      "cycle": {
+        "roman": "I",
+        "name": "Operation"
+      },
+      "text": "Zeit vergeht nicht. Sie besitzt weder einen eigenen Strom noch ein verborgenes Kontinuum, auf dem Ereignisse transportiert würden. Jede Operation endet mit ihrem Vollzug; nichts wandert von selbst in die Zukunft. Was fortbesteht, ist ausschliesslich die Möglichkeit späterer Anschlüsse. Vergangenheit entsteht dort, wo Gegenwart frühere Operationen erneut verwendet. Zukunft entsteht dort, wo sie andere Möglichkeiten eröffnet. Zeit bezeichnet deshalb kein Medium, sondern die Form, in der Systeme ihre eigene Rekursivität beobachten. Was als Dauer erscheint, ist die Erinnerung erfolgreicher Anschlüsse; was als Bruch erscheint, deren Ausbleiben.",
+      "bottom_line": "Zeit ist die Selbstbeobachtung rekursiver Operationen.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Niklas Luhmann, Soziale Systeme; Die Zukunft kann nicht beginnen",
+          "resonance": "Zeit ordnet Aktualität und Nichtaktualität innerhalb gegenwärtiger Operationen."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Isabelle Stengers, Thinking with Whitehead",
+          "resonance": "Zeitlichkeit wird aus Werden und irreversiblen Beziehungen gedacht."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Christian Marclay, The Clock",
+          "resonance": "Chronologische Zeit wird aus tausenden heterogenen Filmgegenwarten montiert."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Virginia Woolf, To the Lighthouse",
+          "resonance": "Dauer entsteht in der Verschiebung zwischen Ereignis, Erinnerung und Abwesenheit."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 8,
+      "title": "Der Speicher",
+      "cycle": {
+        "roman": "II",
+        "name": "Rekursion"
+      },
+      "text": "Der Speicher gehört zu den erfolgreichsten Metaphern der Moderne. Bibliotheken speichern Wissen, Computer speichern Daten, Gehirne speichern Erinnerungen. Die Metapher wirkt so selbstverständlich, dass kaum noch gefragt wird, was mit ihr eigentlich erklärt werden soll. Ein Speicher beantwortet lediglich die Frage, wo etwas bleibt. Er erklärt jedoch nicht, weshalb etwas Jahre später wieder Bedeutung gewinnt. Zwischen Ablage und erneuter Wirksamkeit liegt eine Leistung, die weder Archive noch Festplatten noch Gehirne besitzen. Systeme erinnern nicht, weil sie speichern. Sie erinnern, weil sie frühere Operationen unter veränderten Bedingungen erneut verwenden können. Erst diese Wiederverwendbarkeit erzeugt Vergangenheit als gegenwärtige Möglichkeit.",
+      "bottom_line": "Speichern erklärt Bestand. Wiederverwendbarkeit erklärt Zeit.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Elena Esposito, Soziales Vergessen",
+          "resonance": "Gedächtnis ist Selektionsleistung und nicht bloss Ablage."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Henri Bergson, Matière et mémoire",
+          "resonance": "Gedächtnis lässt sich nicht auf materielle Speicherung reduzieren."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Christian Boltanski, Réserve",
+          "resonance": "Aufbewahrung produziert eine Gegenwart der Abwesenheit."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Ursula K. Le Guin, Always Coming Home",
+          "resonance": "Archive werden als spätere Konstruktionen kultureller Wiederverwendung inszeniert."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 9,
+      "title": "Das Gedächtnis",
+      "cycle": {
+        "roman": "II",
+        "name": "Rekursion"
+      },
+      "text": "Gedächtnis beginnt nicht dort, wo etwas aufbewahrt wird, sondern dort, wo etwas erneut verwendbar wird. Zwischen einer vergangenen und einer gegenwärtigen Operation besteht keine verborgene Verbindung, die über die Zeit hinweg bestehen geblieben wäre. Was wiederkehrt, kehrt niemals unverändert zurück. Jede Wiederaufnahme verändert zugleich das, was sie wieder aufnimmt. Gerade deshalb besitzt Gedächtnis keinen Ort. Es ist weder ein Archiv noch ein Organ, sondern eine gegenwärtige Leistung, die entscheidet, welche Unterschiede erneut wirksam werden können und welche endgültig im Rauschen verschwinden. Nicht Vergangenheit wird bewahrt, sondern Anschlussfähigkeit erzeugt.",
+      "bottom_line": "Gedächtnis erinnert keine Vergangenheit – es rekursiert Unterschiede.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Niklas Luhmann, Soziale Systeme",
+          "resonance": "Gedächtnis wirkt über Strukturen gegenwärtiger Selektion."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Gilles Deleuze, Différence et répétition",
+          "resonance": "Wiederholung erzeugt Differenz statt identische Rückkehr."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Doris Salcedo, Atrabiliarios",
+          "resonance": "Spuren des Vergangenen bleiben wirksam, ohne Gegenwart zu werden."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Toni Morrison, Beloved",
+          "resonance": "Vergangenheit kehrt transformiert und handlungswirksam in die Gegenwart zurück."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 10,
+      "title": "Die Erinnerung",
+      "cycle": {
+        "roman": "II",
+        "name": "Rekursion"
+      },
+      "text": "Erinnerung führt nicht in die Vergangenheit zurück. Sie beginnt in der Gegenwart. Erst wenn eine aktuelle Operation einen früheren Unterschied erneut verwendet, entsteht der Eindruck, etwas Vergangenes kehre wieder. Tatsächlich kehrt nichts zurück. Erinnerung ist kein Wiederfinden, sondern ein Wiederherstellen unter veränderten Bedingungen. Deshalb verändert jede Erinnerung zugleich das Erinnerte. Sie erzeugt eine Vergangenheit, die vor ihrer gegenwärtigen Aktualisierung in genau dieser Form niemals existiert hat. Nicht weil sie unwahr wäre, sondern weil Vergangenheit grundsätzlich nur als rekursive Leistung gegenwärtiger Operationen erscheinen kann.",
+      "bottom_line": "Erinnerung rekonstruiert nicht Vergangenheit – sie produziert Gegenwart mit Vergangenheit.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Maurice Halbwachs, Les cadres sociaux de la mémoire",
+          "resonance": "Erinnerung wird in sozialen Bezugsrahmen rekonstruiert."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Hannah Arendt, Between Past and Future",
+          "resonance": "Vergangenheit gewinnt Bedeutung aus der gegenwärtigen Zwischenstellung."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Sophie Calle, Douleur exquise",
+          "resonance": "Wiederholtes Erzählen verwandelt die erinnerte Erfahrung."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Marcel Proust, À la recherche du temps perdu",
+          "resonance": "Erinnerung erzeugt eine neue Gegenwart des Vergangenen."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 11,
+      "title": "Die Spur",
+      "cycle": {
+        "roman": "II",
+        "name": "Rekursion"
+      },
+      "text": "Spuren erinnern sich an nichts. Sie besitzen weder Gedächtnis noch Bedeutung. Ein Fussabdruck im Sand, ein vergilbtes Foto oder eine Falte im Papier bewahren keine Vergangenheit auf. Sie unterscheiden sich von jedem anderen Material lediglich dadurch, dass spätere Operationen sie wieder verwenden können. Die Spur ist deshalb niemals Erinnerung; sie ist ihre Voraussetzung. Ob sie zum Beweis, zur Erzählung, zum Kunstwerk oder zum Abfall wird, entscheidet sich nicht im Augenblick ihrer Entstehung, sondern in jeder neuen Gegenwart, die sie aufgreift. Spuren tragen Vergangenheit nicht in sich. Sie machen sie lediglich möglich.",
+      "bottom_line": "Die Spur bewahrt nichts – sie hält Wiederverwendbarkeit offen.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Aleida Assmann, Erinnerungsräume",
+          "resonance": "Materielle Spuren benötigen kulturelle Formen ihrer Reaktivierung."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Jacques Derrida, De la grammatologie",
+          "resonance": "Die Spur unterläuft die Vorstellung reiner Präsenz."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Rachel Whiteread, House",
+          "resonance": "Abwesenheit wird als materiell lesbare Spur geformt."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "W. G. Sebald, Austerlitz",
+          "resonance": "Bilder und Orte werden zu prekären Auslösern später Erinnerung."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 12,
+      "title": "Das Vergessen",
+      "cycle": {
+        "roman": "II",
+        "name": "Rekursion"
+      },
+      "text": "Vergessen löscht nichts. Die Welt kennt keine Instanz, welche die Vergangenheit nachträglich auslöschen könnte. Was verschwindet, ist allein die Möglichkeit ihrer Wiederaufnahme. Vergessen bezeichnet deshalb nicht den Verlust einer Erinnerung, sondern die fortlaufende Einschränkung dessen, was unter neuen Bedingungen nochmals anschlussfähig werden kann. Gerade darin liegt seine schöpferische Kraft. Würde alles jederzeit gleich verfügbar bleiben, verlöre jede Wiederverwendung ihre Unterscheidbarkeit. Nicht das Erinnern ordnet Vergangenheit, sondern das Vergessen begrenzt sie. Jede Ordnung beginnt mit dem, was sie nicht mehr erneut verwendet.",
+      "bottom_line": "Vergessen vernichtet keine Vergangenheit – es begrenzt Wiederverwendbarkeit.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Elena Esposito, Soziales Vergessen",
+          "resonance": "Vergessen ist eine positive Bedingung selektiver Erinnerung."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Friedrich Nietzsche, Zur Genealogie der Moral",
+          "resonance": "Aktives Vergessen schafft Spielraum für Gegenwart und Handlung."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Doris Salcedo, Shibboleth",
+          "resonance": "Die geschlossene Spur bleibt als nicht beseitigte Differenz sichtbar."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Jorge Luis Borges, Funes el memorioso",
+          "resonance": "Vollständige Erinnerung erscheint als Unfähigkeit zur Abstraktion."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 13,
+      "title": "Das Archiv",
+      "cycle": {
+        "roman": "II",
+        "name": "Rekursion"
+      },
+      "text": "Ein Archiv erinnert sich an nichts. Es bewahrt weder Wissen noch Vergangenheit, sondern ordnet Materialien nach Regeln ihrer möglichen Wiederauffindbarkeit. Dokumente, Bilder oder Gegenstände werden dadurch nicht bedeutsam; sie werden lediglich verfügbar. Erst eine spätere Operation entscheidet, ob aus einer Akte ein Beweis, aus einer Fotografie ein Zeugnis oder aus einem Gegenstand ein Kunstwerk wird. Archive produzieren deshalb keine Geschichte. Sie organisieren die Bedingungen, unter denen Vergangenheit wieder anschlussfähig werden kann. Ihre eigentliche Leistung besteht nicht im Bewahren, sondern im Offenhalten zukünftiger Verwendungen.",
+      "bottom_line": "Archive speichern keine Vergangenheit – sie organisieren zukünftige Wiederverwendbarkeit.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Aleida Assmann, Erinnerungsräume",
+          "resonance": "Archive organisieren kulturelle Verfügbarkeit jenseits aktueller Erinnerung."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Michel Foucault, L’archéologie du savoir",
+          "resonance": "Das Archiv bezeichnet Regeln dessen, was sagbar und wiederholbar wird."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Walid Raad, The Atlas Group",
+          "resonance": "Archivform und Dokumentstatus werden künstlerisch destabilisiert."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Anne Carson, Nox",
+          "resonance": "Das private Archiv bleibt fragmentarisch und erzeugt Bedeutung erst im Arrangement."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 14,
+      "title": "Die Geschichte",
+      "cycle": {
+        "roman": "II",
+        "name": "Rekursion"
+      },
+      "text": "Geschichte beginnt nicht mit vergangenen Ereignissen. Ereignisse vergehen. Geschichte entsteht erst dort, wo Gesellschaft Unterschiede rekursiv aufgreift und sie unter veränderten Bedingungen erneut wirksam werden lässt. Deshalb wächst Geschichte nicht mit der Zeit. Sie verändert sich mit jeder Gegenwart, die entscheidet, welche Spuren, Dokumente und Erzählungen nochmals anschlussfähig werden. Vergangenes besitzt keine eigene Dauer; es existiert nur in den Formen seiner Wiederverwendung. Geschichte ist weder Gedächtnis noch Archiv. Sie ist die fortlaufende Rekonfiguration dessen, was eine Gesellschaft für ihre eigene Zukunft noch einmal gebrauchen kann.",
+      "bottom_line": "Geschichte ist die gesellschaftliche Form der Wiederverwendbarkeit von Vergangenheit.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Maurice Halbwachs, La mémoire collective",
+          "resonance": "Vergangenheit wird in wechselnden sozialen Rahmen rekonstruiert."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Hannah Arendt, Between Past and Future",
+          "resonance": "Geschichte steht in einer Gegenwart zwischen Herkunft und Möglichkeit."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Susan Hiller, The J. Street Project",
+          "resonance": "Dokumentation verändert, was als erinnerbare Geschichte sichtbar bleibt."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "W. G. Sebald, Die Ringe des Saturn",
+          "resonance": "Geschichte entsteht aus Montage, Spur und gegenwärtiger Wanderung."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 15,
+      "title": "Die Adresse",
+      "cycle": {
+        "roman": "III",
+        "name": "Adresse"
+      },
+      "text": "Keine Operation beginnt bei einem Subjekt. Jede Operation beginnt mit einer Adresse. Etwas wird angesprochen, bezeichnet, aufgerufen oder zurückgewiesen, lange bevor entschieden ist, wer oder was dieses Etwas überhaupt sein soll. Adressen bezeichnen deshalb keine vorhandenen Einheiten; sie erzeugen die Möglichkeit, dass Kommunikation sich auf etwas beziehen und an frühere Bezüge anschliessen kann. Menschen, Organisationen, Tiere, Maschinen oder Begriffe werden erst durch wiederholte Adressierungen zu stabilen sozialen Formen. Nicht Identität begründet die Adresse. Die Adresse begründet die Möglichkeit von Identität. Wo keine Adresse entsteht, kann auch nichts dauerhaft sozial erscheinen.",
+      "bottom_line": "Die Adresse geht jeder Identität voraus.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Niklas Luhmann, Die Form „Person“",
+          "resonance": "Kommunikation bündelt Erwartungen an wiedererkennbare soziale Adressen."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Adriana Cavarero, Relating Narratives",
+          "resonance": "Das Wer einer Person entsteht relational und narrativ."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Sophie Calle, Suite vénitienne",
+          "resonance": "Eine Person erscheint über adressierbare Spuren und Beobachtungen."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Italo Calvino, Le città invisibili",
+          "resonance": "Namen halten Orte zusammen, deren Identität sich im Erzählen verändert."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 16,
+      "title": "Der Name",
+      "cycle": {
+        "roman": "III",
+        "name": "Adresse"
+      },
+      "text": "Ein Name sagt nicht, wer jemand ist. Er sorgt dafür, dass dieselbe Adresse auch dann wiederaufgerufen werden kann, wenn ihr Träger abwesend, verändert oder widersprüchlich geworden ist. Namen verdichten vergangene Adressierungen zu einer Form, an die Erwartungen, Geschichten und Verantwortungen anschliessen. Darin liegt ihre Macht und ihre Gewalt. Wer einen Namen erhält, wird sozial auffindbar, aber auch festgelegt; wer umbenannt wird, verliert nicht nur ein Wort, sondern eine bereits organisierte Zukunft möglicher Zuschreibungen. Der Name gehört deshalb niemandem ganz. Er zirkuliert zwischen Eigengebrauch und Fremdverwendung und hält eine soziale Einheit dort zusammen, wo keine Identität sich selbst genügt.",
+      "bottom_line": "Der Name macht Abwesenheit adressierbar.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Pierre Bourdieu, Language and Symbolic Power",
+          "resonance": "Benennung wirkt als soziale Einsetzung und Zurechnung."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Adriana Cavarero, Relating Narratives",
+          "resonance": "Der Eigenname hält die Einzigartigkeit einer adressierbaren Person offen."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Lubaina Himid, Naming the Money",
+          "resonance": "Benennung gibt anonymisierten Figuren Geschichte und soziale Adresse zurück."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Paul Auster, City of Glass",
+          "resonance": "Namen, Rollen und Identitäten geraten in ein Spiel wechselseitiger Ersetzung."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 17,
+      "title": "Die Person",
+      "cycle": {
+        "roman": "III",
+        "name": "Adresse"
+      },
+      "text": "Eine Person ist nicht der Mensch, den sie bezeichnet. Sie ist die Form, in der Kommunikation zahlreiche Erwartungen auf eine wiedererkennbare Adresse bündelt. Wer als freundlich, unzuverlässig, krank, zuständig oder gefährlich gilt, wird nicht vollständig beschrieben, sondern für weitere Anschlüsse vorbereitet. Darin liegt die Entlastung der Person: Niemand muss in jeder Begegnung neu erfunden werden. Darin liegt zugleich ihre Härte: Was einmal zugerechnet wurde, kehrt als Erwartung zurück und begrenzt, was künftig noch glaubhaft erscheinen kann. Personen bestehen deshalb weder aus Eigenschaften noch aus Innerlichkeit. Sie entstehen, indem Adressierungen sich verdichten und ihre eigene Wiederholung erwarten.",
+      "bottom_line": "Die Person ist das Gedächtnis einer Adresse.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Cornelia Bohn, Inklusion, Exklusion und die Person",
+          "resonance": "Personen fungieren als soziale Formen der Zurechnung."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Judith Butler, Giving an Account of Oneself",
+          "resonance": "Selbstbeschreibung bleibt an soziale Normen und Adressierungen gebunden."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Christian Boltanski, Les Suisses morts",
+          "resonance": "Personen werden durch Namen, Bilder und archivierte Spuren sozial präsent."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Franz Kafka, Der Prozess",
+          "resonance": "Eine Person wird von Zuschreibungen bestimmt, deren Ordnung sie nicht kontrolliert."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 18,
+      "title": "Die Rolle",
+      "cycle": {
+        "roman": "III",
+        "name": "Adresse"
+      },
+      "text": "Eine Rolle ist keine Maske, hinter der sich die wirkliche Person verbirgt. Sie ist eine Ordnung von Erwartungen, die bereits besteht, bevor jemand sie übernimmt. Lehrerin, Mutter, Patient, Künstler oder Richterin bezeichnen keine Eigenschaften, sondern Positionen, von denen aus bestimmte Handlungen wahrscheinlich und andere erklärungsbedürftig werden. Rollen entlasten Personen, weil sie nicht ihre ganze Individualität in jede Situation einbringen müssen. Zugleich setzen sie Grenzen: Wer eine Rolle übernimmt, wird an Erwartungen gemessen, die nicht mit ihm entstanden sind. So macht die Rolle soziale Beziehungen wiederholbar, indem sie Personen austauschbar macht, ohne sie vollständig zu ersetzen.",
+      "bottom_line": "Die Rolle macht Erwartungen von Personen unabhängig.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Erving Goffman, The Presentation of Self in Everyday Life",
+          "resonance": "Rollen strukturieren Situationen, Erwartungen und Selbstdarstellungen."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Judith Butler, Gender Trouble",
+          "resonance": "Wiederholte Performanz stabilisiert soziale Identitäten ohne festen Kern."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Gillian Wearing, Album",
+          "resonance": "Rolle, Gesicht und biografische Zuschreibung werden gegeneinander verschoben."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Luigi Pirandello, Sei personaggi in cerca d’autore",
+          "resonance": "Figur, Rolle und Person lösen sich voneinander."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 19,
+      "title": "Die Erwartung",
+      "cycle": {
+        "roman": "III",
+        "name": "Adresse"
+      },
+      "text": "Erwartungen sagen nicht voraus, was geschehen wird. Sie legen fest, welche Abweichung als Überraschung erscheinen kann. Wer einen Namen hört, einer Person begegnet oder eine Rolle besetzt, betritt kein offenes Feld; bereits ist vorgezeichnet, was wahrscheinlich, passend oder zumutbar wirkt. Erwartungen binden Zukunft an gegenwärtige Adressen, ohne sie bestimmen zu können. Gerade weil sie enttäuschbar sind, bleiben sie lernfähig und sozial wirksam. Jede Enttäuschung verändert entweder die Erwartung oder die Adresse, der sie zugerechnet wird. So entsteht Ordnung nicht durch Gewissheit, sondern durch die fortlaufende Bearbeitung dessen, was anders eintritt.",
+      "bottom_line": "Die Erwartung ist die Zukunft einer Adresse.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Elena Esposito, Die Fiktion der wahrscheinlichen Realität",
+          "resonance": "Erwartungen strukturieren Ungewissheit, ohne Zukunft festzulegen."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Reinhart Koselleck, Vergangene Zukunft",
+          "resonance": "Erfahrungsraum und Erwartungshorizont ordnen historische Zeit."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Yoko Ono, Grapefruit",
+          "resonance": "Anweisungen erzeugen Erwartungen, deren Ausführung offen bleibt."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Samuel Beckett, En attendant Godot",
+          "resonance": "Erwartung organisiert Gegenwart, ohne ihre Erfüllung garantieren zu können."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 20,
+      "title": "Die Verantwortung",
+      "cycle": {
+        "roman": "III",
+        "name": "Adresse"
+      },
+      "text": "Verantwortung entsteht nicht im Inneren einer Person. Sie entsteht, wenn Kommunikation eine Handlung und ihre Folgen einer Adresse zurechnet. Wer verantwortlich gemacht wird, bleibt für etwas erreichbar, das bereits geschehen ist und dennoch weitere Antworten verlangt. Darin verbindet Verantwortung Vergangenheit und Zukunft: Sie hält eine Adresse über wechselnde Situationen hinweg fest und erwartet von ihr Rechtfertigung, Wiedergutmachung oder Veränderung. Diese Bindung kann Handlung ermöglichen, aber auch Schuld verteilen, Zuständigkeiten verschieben und Macht verdecken. Verantwortung bezeichnet deshalb keine moralische Eigenschaft. Sie ist das soziale Verfahren, mit dem Folgen einen antwortfähigen Ort erhalten.",
+      "bottom_line": "Verantwortung bindet Folgen an eine Adresse.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Marilyn Strathern (Hg.), Audit Cultures",
+          "resonance": "Zurechnung und Rechenschaft organisieren institutionelle Verantwortlichkeit."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Emmanuel Levinas, Autrement qu’être",
+          "resonance": "Verantwortung beginnt in der Ansprechbarkeit durch den Anderen."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Teresa Margolles, ¿De qué otra cosa podríamos hablar?",
+          "resonance": "Folgen gesellschaftlicher Gewalt werden an Wahrnehmung und Öffentlichkeit adressiert."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "J. M. Coetzee, Disgrace",
+          "resonance": "Verantwortung bleibt strittig zwischen Schuld, Antwort und sozialer Zurechnung."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 21,
+      "title": "Die Anerkennung",
+      "cycle": {
+        "roman": "III",
+        "name": "Adresse"
+      },
+      "text": "Anerkennung entdeckt keine bereits vorhandene Identität. Sie bestätigt eine Adresse als gültigen Ort weiterer Kommunikation. Wer anerkannt wird, darf sprechen, handeln, erinnern und Ansprüche stellen, ohne bei jeder Begegnung die eigene Zugehörigkeit neu beweisen zu müssen. Doch Anerkennung ist niemals vollständig. Sie erfasst eine Person nur in Formen, die sozial lesbar sind, und kann gerade dadurch anderes an ihr übersehen oder ausschliessen. Auch Verkennung hält Adressen wirksam, indem sie ihnen fremde Eigenschaften zuschreibt. Anerkennung ist deshalb kein Besitz, sondern ein fortlaufender sozialer Vollzug, in dem sich entscheidet, wer als wer erscheinen kann.",
+      "bottom_line": "Anerkennung verleiht einer Adresse soziale Geltung.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Michèle Lamont, The Dignity of Working Men",
+          "resonance": "Anerkennung hängt an sozialen Grenzziehungen und Bewertungsordnungen."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Axel Honneth, Kampf um Anerkennung",
+          "resonance": "Anerkennung wird als Bedingung sozialer Selbstbeziehung gefasst."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Kerry James Marshall, Mastry",
+          "resonance": "Sichtbarkeit und kunsthistorische Anerkennung werden neu verteilt."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Bernardine Evaristo, Girl, Woman, Other",
+          "resonance": "Identitäten werden durch überlagerte Anerkennungs- und Verkennungsverhältnisse erzählt."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 22,
+      "title": "Die Grenze",
+      "cycle": {
+        "roman": "IV",
+        "name": "Koppelung"
+      },
+      "text": "Eine Grenze liegt nicht zwischen bereits fertigen Systemen. Sie entsteht mit jeder Operation, die etwas fortsetzt und anderes ausschliesst. Erst diese Unterscheidung erzeugt ein Innen, dem weitere Operationen zugerechnet werden können, und ein Aussen, das nicht verschwindet, sondern als Umwelt wirksam bleibt. Grenzen verhindern deshalb Beziehung nicht; sie machen sie möglich. Nur was sich nicht ineinander auflöst, kann sich berühren, irritieren oder koppeln. Die Grenze ist keine Mauer, sondern eine fortlaufend erneuerte Form, an der Eigenes und Fremdes zugleich entstehen. Wo sie fällt, beginnt nicht Einheit, sondern der Verlust jeder unterscheidbaren Beziehung.",
+      "bottom_line": "Nur was getrennt bleibt, kann sich berühren.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Susan Leigh Star, Ecologies of Knowledge",
+          "resonance": "Grenzobjekte koordinieren verschiedene soziale Welten ohne deren Verschmelzung."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Georg Simmel, Brücke und Tür",
+          "resonance": "Grenzen und Verbindungen werden als wechselseitig erzeugte Formen gedacht."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Mona Hatoum, Homebound",
+          "resonance": "Nähe wird durch Barriere, Strom und Unzugänglichkeit zugleich erzeugt."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Franz Kafka, Vor dem Gesetz",
+          "resonance": "Die Grenze existiert als relationale Ordnung von Zugang und Aufschub."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 23,
+      "title": "Die Berührung",
+      "cycle": {
+        "roman": "IV",
+        "name": "Koppelung"
+      },
+      "text": "Berührung hebt keine Grenze auf. Sie ist der Augenblick, in dem zwei getrennte Ordnungen aneinander Folgen erzeugen. Eine Hand spürt die andere nicht so, wie diese sich selbst spürt; jede Seite erzeugt aus dem Kontakt ein eigenes Ereignis. Gerade deshalb kann Berührung weder Besitz noch Verschmelzung sein. Sie verändert, ohne etwas unverändert zu übertragen. In ihr wird die Grenze empfindlich: Druck, Wärme, Widerstand und Nähe erscheinen nur, weil Körper einander nicht werden. Auch soziale Berührung folgt dieser Logik. Sie lässt Fremdes wirksam werden, ohne es in Eigenes zu verwandeln. Wo Berührung gelingt, bleibt Differenz nicht trotz, sondern durch Nähe erhalten.",
+      "bottom_line": "Berührung ist die Grenze in Ereignisform.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Eva Illouz, Cold Intimacies",
+          "resonance": "Nähe ist sozial geformt und an Kommunikationsordnungen gebunden."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Jean-Luc Nancy, Corpus",
+          "resonance": "Körperlichkeit erscheint als Mitsein an Grenzen und Oberflächen."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Lygia Clark, Bichos",
+          "resonance": "Berührung verändert die Form, ohne Werk und Betrachter zu vereinigen."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Ocean Vuong, On Earth We’re Briefly Gorgeous",
+          "resonance": "Körperliche Nähe bleibt von Differenz, Erinnerung und Verletzlichkeit durchzogen."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 24,
+      "title": "Die Irritation",
+      "cycle": {
+        "roman": "IV",
+        "name": "Koppelung"
+      },
+      "text": "Eine Irritation dringt nicht von aussen in ein System ein. Sie entsteht, wenn eine fremde Veränderung innerhalb eigener Unterscheidungen Folgen auslöst. Dasselbe Geräusch kann erschrecken, beruhigen oder unbemerkt bleiben; nicht der Reiz bestimmt die Reaktion, sondern die Ordnung, die ihn als Abweichung verarbeitet. Irritation beweist daher weder Offenheit noch Geschlossenheit allein. Sie bezeichnet die paradoxe Stelle, an der ein System von etwas abhängt, das es nicht übernehmen kann. Fremdes wird wirksam, indem es seine Fremdheit verliert und als eigene Differenz fortgesetzt wird. Koppelung beginnt dort, wo solche Irritationen wieder erwartbar werden.",
+      "bottom_line": "Irritation ist Fremdwirkung in Eigenform.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Niklas Luhmann, Die Gesellschaft der Gesellschaft",
+          "resonance": "Irritation ist systemeigene Verarbeitung umweltbezogener Differenzen."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Isabelle Stengers, Thinking with Whitehead",
+          "resonance": "Beziehungen werden über wechselseitige Bedingungen des Werdens gedacht."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Ann Veronica Janssens, Blue, Red and Yellow",
+          "resonance": "Wahrnehmung wird durch eine Umwelt irritiert, die keine stabile Orientierung gewährt."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Samuel Beckett, The Unnamable",
+          "resonance": "Störung wird zur Form einer Rede, die ihren eigenen Anschluss nicht sichern kann."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 25,
+      "title": "Der Körper",
+      "cycle": {
+        "roman": "IV",
+        "name": "Koppelung"
+      },
+      "text": "Der Körper ist keine Brücke, über die Welt unverändert in das Bewusstsein gelangt. Er ist eine Membran, die nichts wirksam werden lässt, ohne es zu verwandeln. Licht, Druck, Temperatur oder ein fremder Blick werden nicht übernommen, sondern in Empfindungen, Bewegungen, Spannungen und Bereitschaften übersetzt. Auch das Bewusstsein verfügt nicht über den Körper, als wäre er sein Besitz. Es begegnet ihm als Schmerz, Lust, Erschöpfung oder Unruhe – als einer Nähe, die niemals vollständig durchsichtig wird. Kommunikation kann diese Zustände benennen, beobachten und adressieren, aber weder den Schmerz noch die Wahrnehmung eines anderen übernehmen. Im Körper wird Umwelt empfindlich, ohne aufzuhören, Umwelt zu sein. Er koppelt, indem er trennt, und verbindet, indem er jede Wirkung in eine eigene Form zwingt.",
+      "bottom_line": "Der Körper verwandelt Fremdwirkung in Empfindlichkeit.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Annemarie Mol, The Body Multiple",
+          "resonance": "Körper entstehen in unterschiedlichen Praktiken als verschiedene, gekoppelte Wirklichkeiten."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Maurice Merleau-Ponty, Phénoménologie de la perception",
+          "resonance": "Leiblichkeit ist Bedingung eines präreflexiven Weltbezugs."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Ana Mendieta, Silueta Series",
+          "resonance": "Körper und Umgebung schreiben sich ineinander ein, ohne identisch zu werden."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Franz Kafka, Die Verwandlung",
+          "resonance": "Der Körper verändert die sozialen Anschlüsse einer Person radikal."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 26,
+      "title": "Die Wahrnehmung",
+      "cycle": {
+        "roman": "IV",
+        "name": "Koppelung"
+      },
+      "text": "Wahrnehmung bezeichnet die prekäre Stelle, an der der Körper für das Bewusstsein gegenwärtig wird, ohne deshalb zu dessen Operation zu werden. Bewusstsein muss dabei nicht reflexiv sein: Es sieht, hört, spürt, bevor es beobachtet, dass es sieht, hört oder spürt. Bei Luhmann bleibt dieses irreflexive Geschehen dennoch psychische Operation; der Körper ermöglicht und irritiert sie, operiert aber jenseits der Systemgrenze. Genau hier setzt Merleau-Pontys Einwand an: Der Leib steht der Wahrnehmung nicht als Umwelt gegenüber, sondern vollzieht bereits einen präreflexiven Weltbezug. Wahrnehmung markiert damit weniger eine Übertragung vom Körper ins Bewusstsein als eine theoretische Bruchstelle: Was Luhmann operativ trennt, erscheint phänomenologisch als ursprüngliche Verschränkung.",
+      "bottom_line": "Wahrnehmung macht eine Grenze gegenwärtig, die sie selbst nicht aufheben kann.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Niklas Luhmann, Soziale Systeme; Die Kunst der Gesellschaft",
+          "resonance": "Wahrnehmung bleibt psychische Operation und kann Kommunikation nur irritieren."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Maurice Merleau-Ponty, Phénoménologie de la perception",
+          "resonance": "Wahrnehmung ist leiblicher Weltbezug vor reflexiver Objektivierung."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Ann Veronica Janssens, immersive Licht- und Nebelarbeiten",
+          "resonance": "Wahrnehmungsbedingungen selbst werden zum Gegenstand der Erfahrung."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Olga Tokarczuk, Bieguni / Unrast",
+          "resonance": "Körper, Bewegung und Wahrnehmung erscheinen als unstabile Ordnungen von Nähe."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 27,
+      "title": "Die Übersetzung",
+      "cycle": {
+        "roman": "IV",
+        "name": "Koppelung"
+      },
+      "text": "Übersetzung überträgt nichts unverändert von einer Ordnung in eine andere. Wahrnehmung wird nicht zu Sprache, Schmerz nicht zur Mitteilung und ein Gedanke nicht zur Kommunikation. Jede Seite erzeugt aus dem, was sie erreicht, eine eigene Form. Darin liegt der Verlust jeder Übersetzung – und zugleich ihre Möglichkeit: Nur weil Gleichheit unerreichbar ist, kann etwas unter veränderten Bedingungen fortgesetzt werden. Darin berührt sich Übersetzung mit Deleuzes Begriff der Wiederholung, die kein Identisches reproduziert, sondern Differenz hervorbringt. Anders als bei Deleuze geht es hier jedoch nicht primär um die schöpferische Entfaltung des Neuen, sondern um Anschluss zwischen operativ getrennten Ordnungen. Übersetzung beseitigt Differenz nicht; sie macht sie anschlussfähig.",
+      "bottom_line": "Übersetzung ist Wiederholung ohne Identität.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Susan Leigh Star, Boundary Objects",
+          "resonance": "Übersetzung ermöglicht Kooperation ohne vollständigen Konsens."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Gilles Deleuze, Différence et répétition",
+          "resonance": "Wiederholung produziert Differenz statt identischer Kopie."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Shilpa Gupta, Sprach- und Grenzarbeiten",
+          "resonance": "Übertragung zeigt politische und mediale Bedingungen des Sprechens."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Walter Benjamin, Die Aufgabe des Übersetzers",
+          "resonance": "Übersetzung ist Fortleben und Transformation, nicht blosse Kopie."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 28,
+      "title": "Die Koppelung",
+      "cycle": {
+        "roman": "IV",
+        "name": "Koppelung"
+      },
+      "text": "Koppelung schafft keine gemeinsame Operation. Sie stabilisiert vielmehr eine Beziehung, in der getrennte Ordnungen ihre Eigenständigkeit gerade dadurch bewahren, dass bestimmte Veränderungen füreinander wiederholt relevant werden. Ein Körper koppelt Organismus, Nervensystem, Bewusstsein und Kommunikation nicht zu einem Ganzen; an ihm verdichten sich Übergänge, an denen jede Seite aus fremden Wirkungen eigene Ereignisse erzeugt. Solche Beziehungen übertragen weder Sinn noch Materie unverändert. Sie erzeugen Erwartbarkeit an Grenzen. Koppelung bezeichnet deshalb keine Brücke zwischen Systemen, sondern die Geschichte wiederholter Irritationen, durch die getrennte Prozesse aufeinander eingestellt werden.",
+      "bottom_line": "Koppelung stabilisiert Differenz als wechselseitige Wirksamkeit.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Niklas Luhmann, Soziale Systeme",
+          "resonance": "Strukturelle Koppelung verbindet operative Geschlossenheit mit Umweltabhängigkeit."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Karen Barad, Meeting the Universe Halfway",
+          "resonance": "Wirksamkeit entsteht relational, ohne einfache Übertragung vorauszusetzen."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Pierre Huyghe, After ALife Ahead",
+          "resonance": "Biologische, technische und räumliche Prozesse bleiben verschieden und beeinflussen einander."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Daisy Hildyard, Emergency",
+          "resonance": "Menschliche und mehr-als-menschliche Prozesse werden als verflochtene, nicht identische Wirklichkeiten erzählt."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 29,
+      "title": "Das Material",
+      "cycle": {
+        "roman": "V",
+        "name": "Kunst"
+      },
+      "text": "Material ist nicht der stumme Stoff, dem eine künstlerische Idee nachträglich Form verleiht. Holz fasert, Farbe verläuft, Stoff spannt sich, Metall ermüdet, digitale Systeme erzeugen Fehler und Abhängigkeiten. Im Arbeiten antwortet Material, indem es Absichten ermöglicht, ablenkt oder zurückweist. Seine Widerstände sind keine äusseren Hindernisse, sondern Bedingungen dafür, dass etwas entstehen kann, das vorher nicht vollständig entworfen war. Auch nach seiner Bearbeitung bleibt Material tätig: Es altert, verändert seine Oberfläche und reagiert auf Licht, Feuchtigkeit, Berührung und Zeit. Kunst beginnt dort, wo diese Eigenbewegung nicht beseitigt, sondern als Mitwirkung zugelassen wird.",
+      "bottom_line": "Material ist der Widerstand, durch den Form möglich wird.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Annemarie Mol, The Body Multiple",
+          "resonance": "Materialität erscheint als etwas, das in Praktiken mitwirkt und Unterschiede erzeugt."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Jane Bennett, Vibrant Matter",
+          "resonance": "Materie wird als wirksame, nicht bloss passive Bedingung gedacht."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Richard Serra, Verb List",
+          "resonance": "Materialhandlungen und Widerstände werden zu Generatoren der Form."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Francis Ponge, Le Parti pris des choses",
+          "resonance": "Dinge widersetzen sich der blossen Verfügung durch Sprache."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 30,
+      "title": "Die Form",
+      "cycle": {
+        "roman": "V",
+        "name": "Kunst"
+      },
+      "text": "Form ist keine Hülle, die einem Material nachträglich aufgezwungen wird. Sie ist eine vorläufige Ordnung, in der Material, Raum, Zeit, Aufmerksamkeit und Erwartung so aufeinander bezogen werden, dass eine Differenz wiederkehren kann. Eine Form bleibt nicht deshalb dieselbe, weil sie unverändert wäre. Sie bleibt wiedererkennbar, obwohl ihre Ausführung, ihr Kontext und ihre Bedeutung wechseln. Gerade diese Portabilität macht sie gesellschaftlich wirksam: Formen können zitiert, verschoben, vergessen und wiederaufgenommen werden. Wo Material Widerstand erzeugt, macht Form diesen Widerstand unterscheidbar und für weitere Operationen verfügbar. Sie speichert nichts; sie organisiert Wiederverwendbarkeit.",
+      "bottom_line": "Form macht Differenz wiederverwendbar.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Caroline Levine, Forms",
+          "resonance": "Formen organisieren Relationen und können zwischen Situationen zirkulieren."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Gilles Deleuze, Différence et répétition",
+          "resonance": "Form gewinnt Wiedererkennbarkeit durch Differenz in der Wiederholung."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Constantin Brâncuși, Bird in Space",
+          "resonance": "Variation hält eine Form über unterschiedliche materielle Ausführungen wiedererkennbar."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Maggie Nelson, Bluets",
+          "resonance": "Eine fragmentarische Form organisiert Wiederkehr ohne lineare Einheit."
+        }
+      ],
+      "editorial_status": "redaktionelle Rekonstruktion"
+    },
+    {
+      "number": 31,
+      "title": "Das Werk",
+      "cycle": {
+        "roman": "V",
+        "name": "Kunst"
+      },
+      "text": "Nicht jede Form ist ein Werk. Zum Werk wird Form erst, wenn sie eine Adresse an sich bindet: einen Titel, einen Namen, eine Autorschaft, eine Geschichte der Zurechnung. Diese Adresse kann bleiben, obwohl das materielle Objekt wechselt, verschwindet oder nie im klassischen Sinn vorhanden war. Bazon Brock macht aus dem „Künstler ohne Werk“ eine Position; Duchamps öffentliches Schweigen wurde durch die heimliche Arbeit an Étant donnés nachträglich anders lesbar; Beuys dehnt das Werk bis in Handlung und soziale Plastik. Das Werk ist deshalb kein fester Gegenstand. Es ist die Form, unter der Veränderungen als Fortsetzung derselben künstlerischen Adresse wiedererkannt werden können.",
+      "bottom_line": "Das Werk ist die adressierte Form, in der selbst Veränderung, Handlung und Ausbleiben als Fortsetzung wiedererkennbar werden.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Shannon Jackson, Social Works",
+          "resonance": "Kunstwerke hängen an sozialen Infrastrukturen und Formen der Unterstützung."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Juliane Rebentisch, Ästhetik der Installation",
+          "resonance": "Werkidentität entsteht in einer offenen Relation von Objekt, Raum und Betrachter."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Bazon Brock, Künstler ohne Werk / Action Teaching",
+          "resonance": "Werkstatus kann als adressierte Praxis statt als Objekt organisiert werden."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Enrique Vila-Matas, Bartleby y compañía",
+          "resonance": "Das Nicht-Schreiben wird selbst als literarisch adressierbare Form beobachtbar."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 32,
+      "title": "Der Stil",
+      "cycle": {
+        "roman": "V",
+        "name": "Kunst"
+      },
+      "text": "Stil ist nicht die Handschrift, in der sich ein unverwechselbares Inneres verrät. Das Werk bindet Form an eine Adresse; Stil entsteht, wenn an dieser Adresse über verschiedene Werke hinweg bestimmte Arten des Wählens, Verknüpfens und Weglassens wiedererkennbar werden. Ein Rhythmus, eine Leerstelle, eine Farbspannung oder selbst eine Verweigerung kann wiederkehren, ohne sich zu wiederholen. Deshalb kann Stil Medien wechseln, den Künstler überleben und sich von ihm lösen – als Schule, Epoche oder Manier. Gerade darin liegt seine Gefahr: Was zunächst Differenz erzeugte, gerinnt zur Erwartung und verlangt schliesslich vom Neuen, wieder so auszusehen wie seine frühere Abweichung.",
+      "bottom_line": "Stil ist die Wiederkehr einer Differenz als Erwartung.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Marielle Macé, Façons de lire, manières d’être",
+          "resonance": "Stil wird als Form des Lebens, Lesens und Wiedererkennens verstanden."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Nelson Goodman, Ways of Worldmaking",
+          "resonance": "Stil fungiert als symptomatische Form von Klassifikation und Referenz."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Hanne Darboven, Schreib- und Zahlensysteme",
+          "resonance": "Regelhafte Wiederholung erzeugt Wiedererkennbarkeit durch Variation."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Ben Lerner, 10:04",
+          "resonance": "Stil entsteht in der Wiederaufnahme und Verschiebung eigener Formen."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 33,
+      "title": "Das Publikum",
+      "cycle": {
+        "roman": "V",
+        "name": "Kunst"
+      },
+      "text": "Ein Publikum ist keine Menge, die dasselbe sieht. Wahrnehmung bleibt unübertragbar; niemand kann die Farbe, Spannung oder Langeweile eines anderen übernehmen. Gemeinsamkeit entsteht deshalb nicht im Erleben, sondern in den Anschlüssen daran. Menschen vergleichen, erzählen, widersprechen, kehren zurück und lernen dabei, auf anderes empfindlich zu werden. Das Publikum vereinigt Wahrnehmungen nicht. Es kultiviert Bedingungen, unter denen getrennte Wahrnehmungen einander irritieren und verändern können. Darin liegt seine eigentümliche Sozialität: Man muss nicht dasselbe gesehen haben, um an demselben Werk anders weiterzusehen. Öffentlichkeit beginnt dort, wo Differenz nicht beseitigt, sondern als veränderbare Empfindlichkeit wiederverwendet wird.",
+      "bottom_line": "Das Publikum kultiviert die Empfindlichkeit getrennter Wahrnehmungen.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Antoine Hennion, The Passion for Music / Soziologie des amateurs",
+          "resonance": "Geschmack und Empfindlichkeit entstehen in Praktiken des Sich-Einlassens."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Juliane Rebentisch, Ästhetik der Installation",
+          "resonance": "Ästhetische Erfahrung bleibt an die jeweilige Vollzugssituation gebunden."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Lygia Clark, Caminhando und relationale Arbeiten",
+          "resonance": "Betrachtung wird zur veränderlichen Praxis der Beteiligung."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Italo Calvino, Palomar",
+          "resonance": "Beobachtung erscheint als trainierbare und zugleich unabschliessbare Empfindlichkeit."
+        }
+      ],
+      "editorial_status": "redaktionelle Rekonstruktion"
+    },
+    {
+      "number": 34,
+      "title": "Die Ausstellung",
+      "cycle": {
+        "roman": "V",
+        "name": "Kunst"
+      },
+      "text": "Eine Ausstellung zeigt nicht einfach Werke. Sie setzt sie in Beziehungen. Nähe, Abstand, Reihenfolge, Licht, Architektur, Beschriftung und Wegführung bestimmen mit, was gleichzeitig sichtbar wird und was sich gegenseitig verdeckt. Dasselbe Werk kann in einer anderen Nachbarschaft eine andere Frage stellen. Die Ausstellung erzeugt daher keine gemeinsame Wahrnehmung, aber sie verteilt Möglichkeiten des Sehens: Sie beschleunigt, verzögert, isoliert, verdichtet und lässt Übergänge entstehen. Ihre Ordnung bleibt vorläufig; mit jedem Schritt verändert sich das Verhältnis der Dinge erneut. Ausstellung ist deshalb weniger Behälter als Choreografie – eine räumliche Form der Koppelung, in der Werke, Körper und Erwartungen füreinander neue Empfindlichkeiten gewinnen.",
+      "bottom_line": "Die Ausstellung ordnet Beziehungen, bevor sie Bedeutungen ordnet.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Tony Bennett, The Birth of the Museum",
+          "resonance": "Ausstellungsräume organisieren Öffentlichkeit, Bewegung und Sichtbarkeit."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Mieke Bal, Double Exposures",
+          "resonance": "Ausstellen wird als diskursive und räumliche Praxis des Zeigens gelesen."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Fred Wilson, Mining the Museum",
+          "resonance": "Neuordnung der Präsentation verändert die Lesbarkeit vorhandener Objekte."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Olivia Laing, Funny Weather",
+          "resonance": "Kunstwahrnehmung wird aus Situationen, Begegnungen und Öffentlichkeit heraus beschrieben."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 35,
+      "title": "Die Kunst",
+      "cycle": {
+        "roman": "V",
+        "name": "Kunst"
+      },
+      "text": "Kunst ist weder Material, Form noch Werk, weder Stil, Publikum noch Ausstellung. Sie entsteht, wenn diese Unterschiede so aufeinander zurückwirken, dass Wahrnehmung gesellschaftlich wieder aufgegriffen werden kann, ohne sich in einer eindeutigen Mitteilung zu erschöpfen. Material widersteht, Form unterscheidet, das Werk bindet an eine Adresse, Stil erzeugt Erwartung, Publikum kultiviert Empfindlichkeit, Ausstellung ordnet Beziehungen. Keine dieser Operationen besitzt die Kunst für sich. Erst ihre rekursive Koppelung hält einen Bereich offen, in dem etwas wiederholt werden kann, ohne dasselbe zu bleiben. Kunst bewahrt daher keine Bedeutung. Sie organisiert die Möglichkeit, dass Wahrnehmung anders wiederkehrt.",
+      "bottom_line": "Kunst hält Wahrnehmung gesellschaftlich wiederverwendbar, indem sie ihre Differenz offenhält.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Nathalie Heinich, Le paradigme de l’art contemporain",
+          "resonance": "Kunstordnungen stabilisieren sich durch Institutionen, Kategorien und Grenzverschiebungen."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Jacques Rancière, Aisthesis",
+          "resonance": "Ästhetik ordnet Formen des Wahrnehmbaren und ihrer Teilhabe."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Hito Steyerl, Duty Free Art",
+          "resonance": "Bilder zirkulieren durch heterogene institutionelle, technische und ökonomische Ordnungen."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Michel Houellebecq, La carte et le territoire",
+          "resonance": "Werk, Künstlerfigur, Markt und Repräsentation werden rekursiv aufeinander bezogen."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 36,
+      "title": "Das Profil",
+      "cycle": {
+        "roman": "VI",
+        "name": "Plattform"
+      },
+      "text": "Eine Adresse macht erreichbar; ein Profil macht wiedererkennbar. Es sammelt nicht einfach Vergangenheit, sondern ordnet vergangene Operationen so, dass sie einer Adresse zugerechnet und erneut unterschieden werden können. Klicks, Käufe, Wege, Kontakte oder Verweildauern werden dadurch nicht zum Bild einer Person. Sie bilden eine selektive Geschichte ihrer beobachtbaren Anschlüsse. Das Profil verdichtet diese Geschichte zu wiederverwendbaren Unterschieden. Was wiederholt zugerechnet werden kann, erscheint als Muster; was als Muster erscheint, kann verglichen werden. Damit beginnt die Verschiebung von Erinnerung zu Berechnung: Vergangenheit wird nicht bewahrt, um zu wissen, wer jemand ist, sondern um abzuschätzen, was als Nächstes wahrscheinlich werden könnte.",
+      "bottom_line": "Das Profil verwandelt adressierbare Vergangenheit in berechenbare Wiedererkennbarkeit.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Elena Esposito, Arbeiten zu algorithmischer Vorhersage",
+          "resonance": "Algorithmische Systeme müssen Personen nicht vollständig kennen. Es genügt, vergangene Operationen so zu verdichten, dass Korrelationen und Erwartungen für weitere Selektionen entstehen."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Gilles Deleuze, Différence et répétition",
+          "resonance": "Wiederholung reproduziert kein identisches Ursprüngliches; sie erzeugt Differenzen zwischen Wiederholungen. Auch das Profil entsteht aus Vergleichbarkeit, nicht aus Identität."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Sophie Calle, Arbeiten zu Spur, Verfolgung und Abwesenheit",
+          "resonance": "Personen erscheinen aus Wegen, Fotografien, Berichten, Gegenständen und Lücken. Die adressierte Person fällt nie mit ihren Spuren zusammen."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Jorge Luis Borges, Funes el memorioso",
+          "resonance": "Funes erinnert jedes Detail und kann gerade deshalb kaum abstrahieren. Erst Auswahl und Vergleich verwandeln Vergangenheit in Muster."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 37,
+      "title": "Die Information",
+      "cycle": {
+        "roman": "VI",
+        "name": "Plattform"
+      },
+      "text": "Information liegt nicht in den Daten. Ein Unterschied wird informativ, wenn er unter bestimmten Bedingungen für eine weitere Operation einen Unterschied macht. Das Profil stellt unzählige Spuren bereit; erst ihre Auswahl, Relation und Wiederverwendung erzeugen Information. Derselbe Klick kann für Werbung, Betrugserkennung, Musikempfehlung oder Forschung etwas anderes bedeuten. Information besitzt deshalb keine von ihrer Verwendung unabhängige Einheit. Sie entsteht in einer Beobachtungsordnung, die festlegt, welche Differenzen anschlussfähig werden. Plattformen automatisieren diese Ordnung: Sie entscheiden fortlaufend, welche Unterschiede für kommende Berechnungen relevant bleiben. Information ist damit nicht der Rohstoff der Berechnung, sondern bereits ihr erstes Ergebnis.",
+      "bottom_line": "Information entsteht, wenn ein Unterschied unter Bedingungen seiner Wiederverwendung anschlussfähig wird.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Klaus Kusanowsky, Überlegungen zu information expert systems",
+          "resonance": "Information erscheint nicht als vorliegender Bestand, sondern als Effekt von Systemen, die Unterschiede auswählen, kombinieren und erneut zur Voraussetzung weiterer Operationen machen."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Karen Barad, Meeting the Universe Halfway",
+          "resonance": "Eigenschaften und Grenzen sind nicht einfach vorgegeben, sondern entstehen innerhalb bestimmter Anordnungen des Beobachtens und Handelns. Was als Information zählt, hängt davon ab, wie Unterschiede geschnitten werden."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Hito Steyerl, Arbeiten zur Zirkulation digitaler Bilder",
+          "resonance": "Bilder können Datei, Ware, Beweis, Waffe, Trainingsmaterial oder Kunstwerk sein. Ihre Information verändert sich mit den Zusammenhängen ihrer Wiederverwendung."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Stanisław Lem, His Master’s Voice",
+          "resonance": "Ein vermeintliches ausserirdisches Signal konfrontiert Wissenschaftler mit der Frage, ob eine empfangene Differenz überhaupt Information ist. Bedeutung entsteht nicht aus dem Signal allein."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 38,
+      "title": "Die Wahrscheinlichkeit",
+      "cycle": {
+        "roman": "VI",
+        "name": "Plattform"
+      },
+      "text": "Wahrscheinlichkeit beseitigt Kontingenz nicht. Sie ordnet sie. Zwischen dem, was geschehen ist, und dem, was geschehen könnte, entsteht eine Verteilung ungleicher Erwartungen. Das Unwahrscheinliche bleibt möglich, wird aber anders behandelt als das Wahrscheinliche. Dadurch lässt sich Zukunft operativ bearbeiten, ohne sie kennen zu müssen. Für Plattformen ist diese Verschiebung entscheidend: Ein Profil muss nicht sagen, was jemand tun wird. Es genügt, verschiedene nächste Anschlüsse unterschiedlich wahrscheinlich zu machen. Wahrscheinlichkeit verwandelt Unwissen in eine vergleichbare Form. Sie reduziert Zukunft, ohne sie festzulegen – und bereitet gerade dadurch die Selektion vor.",
+      "bottom_line": "Wahrscheinlichkeit verwandelt offene Kontingenz in ungleich gewichtete Zukunft.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Barbara Adam, Arbeiten zur gesellschaftlichen Zukunft",
+          "resonance": "Zukünftiges wird bereits gegenwärtig durch Erwartungen, Planungen und Risiken wirksam, obwohl es nicht gegenwärtig gemacht werden kann."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Ian Hacking, The Emergence of Probability",
+          "resonance": "Wahrscheinlichkeit misst nicht bloss Unsicherheit; sie etabliert eine eigene Weise, mit Ereignissen umzugehen, deren einzelne Ausgänge unbestimmt bleiben."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Vera Molnár, regelbasierte und algorithmische Arbeiten",
+          "resonance": "Programmierte Ordnung verbindet sich mit kontrollierten Abweichungen und Zufall. Das Werk entsteht aus einem strukturierten Möglichkeitsfeld."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Thomas Pynchon, Gravity’s Rainbow",
+          "resonance": "Statistik, Vorhersage und Wahrscheinlichkeit verschieben die Grenze zwischen Beobachtung und Steuerung."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 39,
+      "title": "Der Algorithmus",
+      "cycle": {
+        "roman": "VI",
+        "name": "Plattform"
+      },
+      "text": "Ein Algorithmus macht Wahrscheinlichkeit operativ. Er berechnet nicht einfach, sondern setzt Unterschiede in eine Reihenfolge: relevanter oder weniger relevant, sichtbar oder unsichtbar, zuerst oder später. Damit übersetzt er eine Verteilung möglicher Anschlüsse in eine konkrete Selektionsordnung. Seine Macht liegt nicht darin, Zukunft sicher vorherzusagen, sondern darin, Gegenwart asymmetrisch vorzubereiten. Was höher gewichtet wird, erhält eher Gelegenheit, Anschluss zu erzeugen; was niedriger gewichtet wird, verschwindet nicht, wird aber unwahrscheinlicher wahrnehmbar. Der Algorithmus entscheidet deshalb nicht anstelle der Nutzerinnen und Nutzer. Er verändert die Bedingungen, unter denen deren nächste Entscheidung stattfindet.",
+      "bottom_line": "Der Algorithmus verwandelt Wahrscheinlichkeit in eine Ordnung ungleicher Anschlusschancen.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Tarleton Gillespie, The Relevance of Algorithms",
+          "resonance": "Algorithmen stellen gesellschaftlich relevante Ordnungen des Sichtbaren her. Relevanz ist kein neutrales Finden bereits vorhandener Wichtigkeit."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Yuk Hui, On the Existence of Digital Objects",
+          "resonance": "Digitale Operationen bringen Relationen hervor und organisieren sie; ein digitales Objekt besteht nicht unabhängig von den Verfahren seiner Aktualisierung."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Anna Ridler, Arbeiten mit Datensätzen und maschinellem Lernen",
+          "resonance": "Die Arbeiten machen die menschlichen Entscheidungen sichtbar, die scheinbar autonome Berechnungen vorbereiten: Sammeln, Ordnen, Beschriften und Klassifizieren."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Patricia Lockwood, No One Is Talking About This",
+          "resonance": "Der Portal-Strom des Romans zeigt eine Gegenwart, deren Wahrnehmung bereits durch Reihenfolge, Wiederholung und technische Selektion organisiert ist."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 40,
+      "title": "Die Empfehlung",
+      "cycle": {
+        "roman": "VI",
+        "name": "Plattform"
+      },
+      "text": "Die Empfehlung ist der Moment, in dem Berechnung die Grenze des Modells überschreitet. Eine Wahrscheinlichkeit, die intern nur Zahl, Gewicht oder Rang war, erscheint nun als Gegenstand der Welt: dieses Lied, dieser Mensch, dieses Video, dieser Weg. Empfehlung zwingt nicht. Gerade deshalb ist sie wirksam. Sie besetzt eine mögliche nächste Stelle, bevor eine eigene Suche begonnen hat, und präsentiert diese Vorbesetzung als Hilfe. Die Prognose wird dadurch sozial anschlussfähig. Was berechnet wurde, kann gewählt, ignoriert, geteilt oder zurückgewiesen werden. Jede dieser Reaktionen erzeugt zugleich neue Spuren. Empfehlung ist deshalb Selektion und Messinstrument in derselben Operation.",
+      "bottom_line": "Die Empfehlung gibt berechnete Wahrscheinlichkeit als mögliche nächste Welt zurück.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Taina Bucher, If...Then",
+          "resonance": "Algorithmische Macht zeigt sich nicht nur in verborgener Berechnung, sondern auch in den Situationen und Empfindungen, die Algorithmen für Nutzende erzeugen."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Bernard Stiegler, Arbeiten zu Aufmerksamkeit und technischen Gedächtnissen",
+          "resonance": "Technische Systeme speichern nicht nur Vergangenes, sondern organisieren Aufmerksamkeit und Erwartungen auf Kommendes hin."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Amalia Ulman, Excellences & Perfections",
+          "resonance": "Die Arbeit benutzt die Erwartungen sozialer Plattformen als Material und zeigt, wie Selbstdarstellung innerhalb bereits etablierter Muster von Sichtbarkeit operiert."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Dave Eggers, The Circle",
+          "resonance": "Personalisierung erscheint als Dienstleistung und zugleich als fortschreitende Organisation dessen, was sichtbar, erwartbar und sozial anschlussfähig wird."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 41,
+      "title": "Der Feed",
+      "cycle": {
+        "roman": "VI",
+        "name": "Plattform"
+      },
+      "text": "Der Feed ordnet Empfehlungen zu einer Gegenwart. Er zeigt nicht einfach, was vorhanden ist, sondern erzeugt eine fortlaufende Umwelt aus bereits gewichteten Möglichkeiten. Jede Auswahl erscheint dabei als Jetzt: sichtbar, anklickbar, kommentierbar, überspringbar. Doch dieses Jetzt ist aus Vergangenheit berechnet und auf weitere Datenerzeugung angelegt. Der Feed prognostiziert nicht nur Verhalten; er stellt die Situation her, in der das prognostizierte Verhalten stattfinden kann. Damit wird Vorhersage rekursiv. Was gezeigt wird, beeinflusst, was getan wird; was getan wird, verändert, was künftig gezeigt werden kann. Der Feed ist die Gegenwart einer Prognose, die ihre eigenen Voraussetzungen nachliefert.",
+      "bottom_line": "Der Feed macht Prognose zur gegenwärtigen Umwelt ihrer nächsten Überprüfung.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "José van Dijck, The Culture of Connectivity",
+          "resonance": "Plattformen organisieren Verbindungen als technische und kulturelle Ordnung programmierter Konnektivität."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Byung-Chul Han, Arbeiten zur digitalen Gegenwart",
+          "resonance": "Digitale Kommunikation erzeugt eine hoch beschleunigte Aktualisierungsordnung, in der Dauer schwerer auszubilden ist."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Christian Marclay, The Clock",
+          "resonance": "Tausende Filmfragmente werden zu einer Gegenwart montiert, die fortlaufend auf ihre eigene Zeit verweist. Der Strom besteht aus diskreten Selektionen."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Jenny Offill, fragmentarische Romane",
+          "resonance": "Gegenwart entsteht aus kurzen Beobachtungen, Nachrichten, Zitaten und Unterbrechungen; Zusammenhang bildet sich erst im seriellen Anschluss heterogener Elemente."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 42,
+      "title": "Die Plattform",
+      "cycle": {
+        "roman": "VI",
+        "name": "Plattform"
+      },
+      "text": "Die Plattform verbindet Profil, Information, Wahrscheinlichkeit, Algorithmus, Empfehlung und Feed zu einem rekursiven Zusammenhang. Sie beobachtet Verhalten, verdichtet es, berechnet mögliche Anschlüsse und gibt ausgewählte Möglichkeiten als Umwelt zurück. Diese Umwelt erzeugt neues Verhalten, das wiederum beobachtet werden kann. Der Kreis schliesst sich jedoch nie vollständig: Nutzerinnen, Inhalte, Geräte, Institutionen und Ereignisse bleiben eigensinnig und produzieren Abweichungen. Gerade deshalb muss die Plattform fortlaufend lernen. Ihre Leistung besteht nicht in totaler Kontrolle, sondern in der Organisation einer Rückkopplung, in der Wiedererkennbarkeit Wahrscheinlichkeit erzeugt und Wahrscheinlichkeit die Bedingungen ihrer nächsten Bestätigung mitgestaltet.",
+      "bottom_line": "Die Plattform verwandelt Wiedererkennbarkeit in Wahrscheinlichkeit und Wahrscheinlichkeit in Umwelt.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "David Beer, Metric Power; The Data Gaze",
+          "resonance": "Messung und Datenanalyse beschreiben Gesellschaft nicht bloss, sondern bringen Klassifikationen, Bewertungen und Handlungsmöglichkeiten mit hervor."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Luciana Parisi, Contagious Architecture",
+          "resonance": "Algorithmische Berechnung ist nicht reine Ausführung eines vollständig vorgegebenen Plans; sie produziert Relationen und Resultate, deren konkrete Form nicht einfach ausgeschrieben ist."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Rafael Lozano-Hemmer, Pulse Room",
+          "resonance": "Körperliche Signale des Publikums werden in eine technische Umwelt übersetzt, die sich mit jeder neuen Teilnahme verändert. Beobachtung wird Bestandteil der nächsten Situation."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Jennifer Egan, The Candy House",
+          "resonance": "Externalisiertes Gedächtnis, soziale Netzwerke und algorithmische Auswertung verbinden Vergangenheit mit neuer technischer Handlungswirksamkeit."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 43,
+      "title": "Die Identität",
+      "cycle": {
+        "roman": "VII",
+        "name": "Zukunft"
+      },
+      "text": "Identität ist nicht die Gleichheit eines Dinges mit sich selbst. Sie entsteht dort, wo Veränderung über Zeit hinweg derselben Adresse zugerechnet werden kann. Eine Person, ein Werk oder eine Organisation bleibt nicht identisch, weil alles gleich bleibt, sondern weil Unterschiede als Veränderungen von etwas Wiedererkennbarem behandelt werden. Identität vermittelt deshalb zwischen Erfahrung und Erwartung. Sie hält genug Kontinuität fest, damit Abweichung überhaupt auffallen kann, und genug Offenheit, damit Veränderung zurechenbar bleibt. Gegen Plattformprofile wird diese Unterscheidung wichtig: Berechenbare Wiedererkennbarkeit ist noch keine Identität. Identität ist die Form, in der Veränderung fortgesetzt werden kann, ohne in Gleichheit aufzugehen.",
+      "bottom_line": "Identität macht Veränderung intertemporal zurechenbar.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Anselm Strauss, Mirrors and Masks",
+          "resonance": "Identität erscheint nicht als unveränderlicher Kern, sondern als etwas, das sich in sozialen Beziehungen und biografischen Übergängen fortlaufend bildet."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Paul Ricœur, Oneself as Another",
+          "resonance": "Die Unterscheidung von idem und ipse trennt Gleichheit von Selbigkeit: Jemand kann derselbe bleiben, ohne in allen Eigenschaften gleich zu bleiben."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Gillian Wearing, Masken, Rekonstruktionen und Selbstinszenierungen",
+          "resonance": "Sichtbare Gleichheit und personale Identität werden voneinander gelöst; Wiedererkennbarkeit wird selbst zum Gegenstand der Arbeit."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Virginia Woolf, Orlando",
+          "resonance": "Orlando bleibt als Figur zurechenbar, obwohl Jahrhunderte, soziale Rollen und Geschlecht wechseln. Identität wird durch Veränderung erzählbar."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 44,
+      "title": "Die Möglichkeit",
+      "cycle": {
+        "roman": "VII",
+        "name": "Zukunft"
+      },
+      "text": "Möglichkeit ist kein Vorrat unsichtbarer Welten hinter der Wirklichkeit. Sie wird gegenwärtig mitgeführt, wenn ein Anschluss als realisierbar, denkbar oder erwartbar erscheint, ohne bereits aktualisiert zu sein. Jede Struktur begrenzt solche Möglichkeiten, sonst wäre keine Auswahl möglich. Aber sie vernichtet sie nicht notwendig. Eine Tür eröffnet andere Anschlüsse als eine Wand; eine Sprache andere Sätze als Schweigen; eine Institution andere Entscheidungen als eine private Laune. Möglichkeit ist deshalb strukturierte Offenheit. Sie besteht nicht im Beliebigen, sondern darin, dass eine gegenwärtige Ordnung mehr als eine eigene Fortsetzung zulässt. Zukunft beginnt dort, wo dieses Mehr praktisch erreichbar bleibt.",
+      "bottom_line": "Möglichkeit ist die gegenwärtige Erreichbarkeit eines noch nicht aktualisierten Anschlusses.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Ann Mische, Arbeiten zu projects and possibilities",
+          "resonance": "Akteure entwerfen, vergleichen und bearbeiten Zukunft gegenwärtig. Möglichkeiten sind soziale Orientierungen, keine ausserhalb der Gegenwart lagernden Gegenstände."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Ernst Bloch, Das Prinzip Hoffnung",
+          "resonance": "Das Noch-Nicht ist kein blosses Nichts, sondern gegenwärtige Offenheit auf Möglichkeiten hin, deren Realisierung von konkreten Bedingungen abhängt."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Yoko Ono, Grapefruit",
+          "resonance": "Instruktionen schlagen mögliche Handlungen vor. Ihre Form legt Bedingungen fest, ohne die jeweilige Aktualisierung vollständig zu bestimmen."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Robert Musil, Der Mann ohne Eigenschaften",
+          "resonance": "Der Möglichkeitssinn bezeichnet die Fähigkeit, Wirklichkeit nicht mit ihrer Notwendigkeit zu verwechseln und andere Ordnungen mitzusehen."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 45,
+      "title": "Die Kontingenz",
+      "cycle": {
+        "roman": "VII",
+        "name": "Zukunft"
+      },
+      "text": "Kontingenz bezeichnet weder Chaos noch Optionsfülle. Kontingent ist, was so ist, aber auch anders sein könnte. Jede Ordnung muss diese Andersmöglichkeit reduzieren, um anschlussfähig zu werden: Erwartungen, Regeln, Gewohnheiten und Wahrscheinlichkeiten begrenzen, was als nächster Schritt in Frage kommt. Die entscheidende Frage lautet daher nicht, wie möglichst viel Kontingenz erhalten werden kann. Eine völlig unbestimmte Situation wäre ebenso anschlussarm wie eine vollständig festgelegte. Zukunft benötigt eingeschränkte Kontingenz: Strukturen, die Auswahl ermöglichen, ohne ihre Alternativen endgültig zu entwirklichen. Kontingenz ist die Differenz zwischen einer wirklichen Fortsetzung und den anderen Fortsetzungen, die weiterhin erreichbar geblieben sind.",
+      "bottom_line": "Zukunft braucht nicht maximale, sondern fortschreibbar eingeschränkte Kontingenz.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Niklas Luhmann, Arbeiten zum Kontingenzbegriff",
+          "resonance": "Kontingent ist, was weder notwendig noch unmöglich ist. Strukturen reduzieren Komplexität und führen zugleich einen Horizont anderer Möglichkeiten mit."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Judith Butler, Arbeiten zur Wiederholung von Normen",
+          "resonance": "Normen stabilisieren sich durch Wiederholung, ohne dadurch notwendig zu werden. Gerade die Wiederholung lässt Variation und Verschiebung zu."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Mona Hatoum, Arbeiten mit verschobenen Alltagsgegenständen und Räumen",
+          "resonance": "Vertraute Formen bleiben erkennbar und erscheinen zugleich als anders möglich; Selbstverständlichkeit wird instabil."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Milan Kundera, Die unerträgliche Leichtigkeit des Seins",
+          "resonance": "Weil ein Leben nicht probeweise wiederholt werden kann, bleiben Notwendigkeit und Zufall unentscheidbar verschränkt."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 46,
+      "title": "Die Unterbrechung",
+      "cycle": {
+        "roman": "VII",
+        "name": "Zukunft"
+      },
+      "text": "Eine Unterbrechung erzeugt noch keine Zukunft. Ein Ausfall, ein Schock oder eine Verweigerung kann eine Folge ebenso gut zerstören, lähmen oder zu ihrer alten Form zurückzwingen. Entscheidend ist, ob durch die Unterbrechung eine andere Fortsetzung anschlussfähig wird. Erst dann verändert sie die Struktur des Weitergehens. Das gilt für Gespräche, Institutionen, Kunstwerke und technische Systeme. Unterbrechung ist deshalb keine romantische Gegenfigur zur Ordnung. Sie ist eine Prüfung der Ordnung: Kann sie Abweichung aufnehmen, ohne sie sofort zu normalisieren oder abzubrechen? Zukunft entsteht nicht im Riss selbst, sondern in den Anschlüssen, die der Riss möglich macht.",
+      "bottom_line": "Eine Unterbrechung öffnet Zukunft erst, wenn nach ihr etwas anders anschliessen kann.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Harold Garfinkel, Studies in Ethnomethodology / Breaching Experiments",
+          "resonance": "Störungen alltäglicher Erwartungen provozieren häufig Reparaturleistungen. Eine Normverletzung erzeugt nicht automatisch eine neue Ordnung."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Hannah Arendt, The Human Condition",
+          "resonance": "Mit Natalität verbindet Arendt Handeln mit der Möglichkeit eines Anfangs. Entscheidend ist nicht der Bruch allein, sondern dass eine neue Folge beginnen kann."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Doris Salcedo, Shibboleth",
+          "resonance": "Ein Riss im Boden der Tate Modern macht Trennung räumlich gegenwärtig und zwingt die Institution, Architektur und Geschichte anders wahrzunehmen."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Samuel Beckett, Waiting for Godot",
+          "resonance": "Auf unzählige Unterbrechungen folgt gerade kein wirklicher Neubeginn. Der negative Fall zeigt, dass Aufschub die Struktur der Fortsetzung nicht notwendig verändert."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 47,
+      "title": "Das Neue",
+      "cycle": {
+        "roman": "VII",
+        "name": "Zukunft"
+      },
+      "text": "Das Neue ist nicht einfach das, was vorher nicht da war. Überraschungen können folgenlos bleiben, Moden verschwinden, Zufälle sich sofort in bekannte Muster einfügen. Neuheit wird theoretisch erst dort interessant, wo ein Ereignis verändert, was danach möglich ist. Es verschiebt Erwartungen, Regeln, Wahrnehmungen oder Beziehungen und erzeugt Anschlussformen, die vorher nicht auf dieselbe Weise erreichbar waren. Deshalb kann auch Wiederholung neu sein: wenn sie ihre Bedingungen verändert. Das Neue steht nicht ausserhalb der Geschichte, sondern greift in ihre Fortsetzung ein. Es ist keine Eigenschaft eines Gegenstands, sondern eine Differenz im Raum der folgenden Möglichkeiten.",
+      "bottom_line": "Neu ist, was verändert, was anschliessend möglich ist.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Michel Callon, Arbeiten zu Innovation und Übersetzung",
+          "resonance": "Neues wird nicht als isolierter Einfall wirksam; Innovation verändert Netze von Akteuren, technischen Gegenständen, Interessen und Übersetzungen."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Gilbert Simondon, L’individuation à la lumière des notions de forme et d’information",
+          "resonance": "Individuation geht aus metastabilen Situationen hervor. Neues entsteht, indem vorhandene Spannungen eine Form hervorbringen, die weitere Individuation verändert."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Lygia Clark, relationale Objekte und partizipative Arbeiten",
+          "resonance": "Das Werk verlagert sich vom fertigen Gegenstand in einen Vollzug, der Rolle und Wahrnehmungsfähigkeit der Beteiligten verändert."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Ursula K. Le Guin, spekulative Romane",
+          "resonance": "Andere soziale Ordnungen fungieren als Experimente damit, welche Handlungen, Beziehungen und Begriffe unter veränderten Bedingungen möglich werden."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 48,
+      "title": "Die Freiheit",
+      "cycle": {
+        "roman": "VII",
+        "name": "Zukunft"
+      },
+      "text": "Freiheit ist weder Beliebigkeit noch Abwesenheit von Bedingungen. Handeln ist immer strukturiert: durch Körper, Sprache, Geschichte, Institutionen, Technik und andere Menschen. Freiheit zeigt sich deshalb nicht darin, ohne Voraussetzungen zu beginnen, sondern darin, mit ihnen anders umgehen zu können. Eine Erwartung kann übernommen, zurückgewiesen, verschoben oder umgeformt werden; eine Regel kann befolgt, ausgelegt oder zum Gegenstand neuer Regeln gemacht werden. Freiheit benötigt Möglichkeiten, aber auch Fähigkeiten und Bedingungen, sie wahrzunehmen und zu bearbeiten. Sie ist strukturierte Verfügung über Kontingenz. Unfreiheit beginnt dort, wo Alternativen formal bestehen, aber praktisch nicht mehr anschlussfähig werden.",
+      "bottom_line": "Freiheit ist die Fähigkeit, strukturierte Kontingenz aufzunehmen, zurückzuweisen oder umzuformen.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Pierre Bourdieu, Arbeiten zu Habitus und Praxis",
+          "resonance": "Praktiken sind weder frei von Geschichte noch mechanisch determiniert; sie entstehen als strukturierte Improvisationen innerhalb ungleich verteilter Möglichkeitsräume."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Simone de Beauvoir, Pour une morale de l’ambiguïté",
+          "resonance": "Freiheit ist situiert. Sie verwirklicht sich nicht ausserhalb von Bedingungen und anderen Freiheiten, sondern in der Auseinandersetzung mit ihnen."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Tania Bruguera, Arte Útil",
+          "resonance": "Kunst wird als gesellschaftliche Handlungsmöglichkeit untersucht. Entscheidend ist, ob Situationen entstehen, in denen Beteiligte tatsächlich anders handeln können."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Ralph Ellison, Invisible Man",
+          "resonance": "Handlungsspielraum entsteht zunehmend dort, wo der Erzähler sich weigert, vollständig in den von anderen angebotenen Identitäten aufzugehen."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    },
+    {
+      "number": 49,
+      "title": "Die Zukunft",
+      "cycle": {
+        "roman": "VII",
+        "name": "Zukunft"
+      },
+      "text": "Zukunft ist nicht das, was später kommt. Was später kommt, wird beim Eintreten Gegenwart. Zukunft bezeichnet den gegenwärtigen Überschuss dessen, was anders weitergehen könnte, über das, was bereits erwartet, berechnet oder vorbereitet ist. Jede Ordnung reduziert diesen Überschuss, sonst könnte sie nicht fortfahren. Doch wenn sie ihn vollständig verbrauchte, könnte sie auf Veränderungen nur noch als Störung reagieren. Zukunftsfähig ist deshalb nicht die offenste Ordnung, sondern eine, die ihre eigene Fortsetzung strukturiert, ohne alle Alternativen vorwegzunehmen. Zukunft ist die erhaltene Differenz zwischen organisierter Erwartung und weiterhin erreichbarem Andersweitergehen.",
+      "bottom_line": "Zukunft ist der gegenwärtig erhaltene Überschuss des Andersweitergehenkönnens über die bereits organisierte Erwartung.",
+      "references": [
+        {
+          "domain": "Soziologie",
+          "citation": "Helga Nowotny, Time: The Modern and Postmodern Experience",
+          "resonance": "Eine erweiterte Gegenwart zieht immer grössere Teile der Zukunft durch Planung und Erwartung in gegenwärtige Entscheidungen hinein."
+        },
+        {
+          "domain": "Philosophie",
+          "citation": "Alfred North Whitehead, Process and Reality",
+          "resonance": "Wirklichkeit besteht aus Ereignissen des Werdens; Kreativität bezeichnet die Möglichkeit, dass aus Gegebenem eine neue konkrete Ordnung entsteht."
+        },
+        {
+          "domain": "Kunst",
+          "citation": "Katie Paterson, Future Library",
+          "resonance": "Das Werk organisiert Zukunft über hundert Jahre sehr genau und hält zugleich offen, welche Texte, Leserinnen und gesellschaftlichen Bedingungen einmal zusammentreffen."
+        },
+        {
+          "domain": "Literatur",
+          "citation": "Ted Chiang, Story of Your Life; What’s Expected of Us",
+          "resonance": "Die Erzählungen prüfen, wie sich Handeln verändert, wenn Zukunft vorhersehbar erscheint, und unterscheiden Wissen über Kommendes von Handlungsmöglichkeit."
+        }
+      ],
+      "editorial_status": "Arbeitsfassung"
+    }
+  ]
+}
