@@ -174,6 +174,22 @@ await check("Durchklicken: «Mit dem Zufall beginnen» führt in eine Strophe, �
   await ctx.close();
 });
 
+await check("Verweise: deutlicher Abstand über jeder Disziplin; sortiert nach Nachname (ohne «(Hg.)»)", async () => {
+  const { ctx, page } = await open("verweis/", { ...devices["Pixel 7"] });
+  const meta = await box(page, ".zsz-spalte > .zsz-meta");
+  const soz = await box(page, "#g-soziologie");
+  assert.ok(soz.y - (meta.y + meta.height) >= 48, `Abstand über «Soziologie»: ${soz.y - (meta.y + meta.height)}`);
+  const phil = await box(page, "#g-philosophie"), vorher = await page.locator(".verweis-gruppe").first().boundingBox();
+  assert.ok(phil.y - (vorher.y + vorher.height) >= 48, "Abstand über «Philosophie»");
+  const namen = await page.locator(".verweis-gruppe").first().locator("a").allTextContents();
+  assert.notEqual(namen[0], "Marilyn Strathern (Hg.)");
+  const nach = n => n.replace(/\s*\([^)]*\)/g, "").split(" ").pop();
+  const i = namen.indexOf("Marilyn Strathern (Hg.)");
+  assert.ok(i > 0 && nach(namen[i - 1]).localeCompare("Strathern", "de") <= 0 && (i === namen.length - 1 || nach(namen[i + 1]).localeCompare("Strathern", "de") >= 0),
+    `Strathern an falscher Stelle: ${namen.slice(i - 1, i + 2)}`);
+  await ctx.close();
+});
+
 await check("Startseite und Portfolio: 49 Strophen mit Bottom-Line; Portfolio verlinkt das Projekt", async () => {
   const { ctx, page } = await open("");
   assert.equal(await page.locator(".zyklus-strophen li").count(), 49);
