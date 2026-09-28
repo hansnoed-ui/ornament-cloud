@@ -240,8 +240,8 @@ test("Karte: lange Texte und Umlaute werden umbrochen, nie abgeschnitten; die Ka
   assert.ok(joined.includes("Donaudampf"), "überlanges Wort erhalten");
   // der Fuss überlappt den Inhalt nicht
   const texts = long.ops.filter(o => o.type === "text");
-  const footY = Math.min(...texts.filter(o => /September|github/.test(o.text)).map(o => o.y));
-  const bodyY = Math.max(...texts.filter(o => !/September|github/.test(o.text)).map(o => o.y));
+  const footY = Math.min(...texts.filter(o => /September|ornament\.cloud/.test(o.text)).map(o => o.y));
+  const bodyY = Math.max(...texts.filter(o => !/September|ornament\.cloud/.test(o.text)).map(o => o.y));
   assert.ok(footY > bodyY + 40);
   assert.deepEqual(wrap("ä ö ü", "10px x", 1000, measure), ["ä ö ü"]);
 });
@@ -297,6 +297,17 @@ test("Redaktion: Einstiege und Aufträge benennen ihren Ton nicht («Findet lieb
   assert.deepEqual(treffer, []);
 });
 
+// Seit dem 28. September 2026 läuft die Website unter https://ornament.cloud/ (GitHub Pages mit eigener Domain, Datei CNAME).
+test("Domain: keine veröffentlichte Datei nennt noch die alte Adresse hansnoed-ui.github.io", () => {
+  assert.equal(readFileSync(new URL("CNAME", root), "utf8").trim(), "ornament.cloud");
+  const skip = new Set(["node_modules", "dist", ".git", "tests"]);
+  const walk = d => readdirSync(d, { withFileTypes: true }).flatMap(e =>
+    skip.has(e.name) || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(new URL(e.name + "/", d))
+      : /\.(html|js|json|xml|webmanifest|txt)$/.test(e.name) ? [new URL(e.name, d)] : []);
+  const alt = walk(root).map(f => f.pathname.slice(root.pathname.length)).filter(f => readFileSync(new URL(f, root), "utf8").includes("hansnoed-ui.github.io"));
+  assert.deepEqual(alt, []);
+});
+
 // Startseite und News verlinken ORMA seit dem 27. September 2026 (REGELN §14) und gehören darum nicht mehr hierher.
 // Eine eigens beauftragte Änderung an ORNA allein ist erlaubt; sie kommt dann als eigener Schritt, nie
 // zusammen mit ORMA-Dateien (seit dem 27. September 2026: Hinweis «Verknüpfung erstellen» in beiden Apps).
@@ -327,7 +338,7 @@ test("Alpha: nur Startseite und News verlinken ORMA (alpha/orma/), sonst niemand
     skip.has(e.name) || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(new URL(e.name + "/", d)) : e.name.endsWith(".html") ? [new URL(e.name, d)] : []);
   for (const f of walk(root)) {
     for (const [, href] of readFileSync(f, "utf8").matchAll(/href="([^"]+)"/g)) {
-      if (/^[a-z]+:/i.test(href) && !href.includes("ornament-cloud/alpha")) continue;
+      if (/^[a-z]+:/i.test(href) && !/(ornament-cloud|ornament\.cloud)\/alpha/.test(href)) continue;
       const target = new URL(href, f).pathname, file = f.pathname.slice(root.pathname.length);
       if (!target.includes("/alpha/")) continue;
       assert.ok(allowed.has(file), `${file} verlinkt den Alpha-Bereich: ${href}`);

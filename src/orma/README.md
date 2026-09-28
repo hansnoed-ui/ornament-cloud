@@ -8,8 +8,8 @@ Anmeldung, keine Bezahlfunktion, keine Werbung, keine Cloud, keine Zählung und 
 Alles bleibt auf dem Gerät.
 
 Stand: 27. September 2026. Die App ist als **Alpha-Version** auf der Website, verlinkt von der Startseite
-(Kategorie «Apps») und aus den News: <https://hansnoed-ui.github.io/ornament-cloud/alpha/orma/>. Die Übersicht aller Alpha-Versionen
-steht unter <https://hansnoed-ui.github.io/ornament-cloud/alpha/>. Der Alpha-Bereich ist öffentlich erreichbar,
+(Kategorie «Apps») und aus den News: <https://ornament.cloud/alpha/orma/>. Die Übersicht aller Alpha-Versionen
+steht unter <https://ornament.cloud/alpha/>. Der Alpha-Bereich ist öffentlich erreichbar,
 nicht in der Sitemap und für Suchmaschinen gesperrt; ausser Startseite und News verlinkt ihn keine Seite.
 
 ## Vorschau und Produktionsbuild
@@ -332,7 +332,7 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
    aufklappbare «Zugang zu vorhandenen Belegen» zeigt darum nur den Originaltext und die Nummer.
    Sollen Belege dazukommen, braucht es eine redaktionelle Quelle dafür.
 6. Der Herkunftshinweis auf der Karte lautet
-   «hansnoed-ui.github.io/ornament-cloud · Nebeneinander, Nacheinander». Das ist die bestehende
+   «ornament.cloud · Nebeneinander, Nacheinander». Das ist die bestehende
    Website-Adresse; eine ORMA-Adresse gibt es noch nicht.
 
 **Technik und Geräte (nicht geprüft)**
