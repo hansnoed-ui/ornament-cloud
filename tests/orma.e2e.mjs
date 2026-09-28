@@ -514,6 +514,26 @@ await check("Startbild: wie ORNA 40 Zeichen und Name, links hell, rechts dunkel 
 });
 
 // ---------- Alpha-Bereich ----------
+await check("Alpha, Prüfraster: Seite aus der Übersicht, Prompt lässt sich herunterladen und kopieren", async () => {
+  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", permissions: ["clipboard-read", "clipboard-write"] });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on("pageerror", e => errors.push(e.message));
+  await page.goto(`${origin}/alpha/`);
+  await page.getByRole("link", { name: "Prüfraster: Nebeneinander und Nacheinander" }).click();
+  await page.waitForURL(/\/alpha\/pruefraster\/$/);
+  const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("link", { name: /Anwendungsprompt herunterladen/ }).click()]);
+  assert.equal(dl.suggestedFilename(), "pruefraster-anwendungsprompt-1.0.0.md");
+  await page.getByRole("button", { name: "Prompt kopieren" }).click();
+  await page.locator(".pr-status", { hasText: "Kopiert" }).waitFor();
+  assert.match(await page.evaluate(() => navigator.clipboard.readText()), /^# Prüfraster: Nebeneinander und Nacheinander/);
+  const pdf = await page.request.get(`${origin}/alpha/pruefraster-nebeneinander-nacheinander.pdf`);
+  assert.equal(pdf.status(), 200);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 await check("Alpha: alpha/ listet ORMA; alpha/orma/ läuft unter dem Website-Pfad mit eigenem Service Worker", async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
   const page = await ctx.newPage();
