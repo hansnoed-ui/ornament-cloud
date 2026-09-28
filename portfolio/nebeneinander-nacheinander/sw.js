@@ -5,10 +5,10 @@
 //
 // Die Liste unten schreibt tools/build-app.ts – nicht von Hand pflegen.
 // <!-- APP:START -->
-const VERSION = "078e74b91710";
+const VERSION = "0a2a298f15a3";
 const PRECACHE = [
   "../../icons.js?v=13",
-  "../../styles.css?v=20",
+  "../../styles.css?v=21",
   "../../vendor/goatcounter/count.js",
   "./",
   "app.webmanifest",
