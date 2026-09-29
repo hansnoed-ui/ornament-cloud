@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ornament Cloud – Artefakte</title>
+  <title>Ornament Cloud</title>
   <meta name="description" content="Beobachtung ist Anlass für Veränderung in der Realität.">
-  <link rel="stylesheet" href="styles.css?v=21">
+  <link rel="stylesheet" href="styles.css?v=22">
 </head>
 <body>
   <header class="site-header">
@@ -46,17 +46,12 @@
 
   <main class="wrap">
     <!--
-      Neues Artefakt hinzufügen:
-      Einen <article class="card">-Block kopieren und Titel, Text, Tags und Link anpassen.
-      Vorschau: Standbild (.jpg) und Videoschleife (.mp4 und .webm) in /assets ablegen und wie
-      bei den bestehenden Karten per <img> und <video> einbinden. Ohne Vorschau
-      <div class="thumb" aria-hidden="true"><span>X</span></div> verwenden,
-      dann erscheint eine farbige Fläche mit dem Anfangsbuchstaben.
-      Farbvarianten für die Fläche: card--a, card--b, card--c, card--d
+      Aufbau: Apps, Zettelkasten, Prüfraster, Rückmeldungen. Jede Karte ist ein <article class="card">-Block.
+      Die Raster (.grid--stapel) stehen auf dem Handy untereinander. Die Artefakte (Videos) stehen im Portfolio.
+      Alpha-Seiten nur mit Freigabe verlinken (REGELN §14, ein Test prüft das).
     -->
     <h2 class="category" id="apps">Apps</h2>
-    <div class="slider-dots" role="group" aria-label="Apps durchblättern" data-label="App"></div>
-    <section class="grid grid--apps" aria-labelledby="apps">
+    <section class="grid grid--stapel grid--apps" aria-labelledby="apps">
 
       <!-- ORMA: Alpha-Version, verlinkt von hier und aus den News (REGELN §14) -->
       <article class="card card--svg">
@@ -84,58 +79,58 @@
       </article>
     </section>
 
-    <h2 class="category" id="artefakte">Artefakte</h2>
-    <div class="slider-dots" role="group" aria-label="Artefakte durchblättern"></div>
-    <section class="grid grid--artefakte" aria-labelledby="artefakte">
+    <h2 class="category" id="zettelkasten">Zettelkasten</h2>
+    <section class="grid grid--stapel" aria-labelledby="zettelkasten">
 
-      <article class="card card--a">
-        <div class="thumb" aria-hidden="true">
-          <img src="assets/reentry.jpg" alt="" loading="lazy">
-          <video poster="assets/reentry.jpg" autoplay muted loop playsinline preload="metadata">
-            <source src="assets/reentry.mp4?v=2" type="video/mp4">
-            <source src="assets/reentry.webm?v=2" type="video/webm">
-          </video>
-        </div>
+      <article class="card card--svg">
+        <a class="thumb" href="zu-seiner-zeit/" tabindex="-1" aria-hidden="true">
+          <svg class="zsz-vorschau" viewBox="0 0 200 200" fill="currentColor" style="width:78%;height:auto;aspect-ratio:1/1;color:var(--text)" role="img" aria-label="Sieben Reihen zu sieben Punkten: 49 Strophen in sieben Zyklen, eine davon hervorgehoben."><circle cx="40" cy="40" r="1.6"/><circle cx="60" cy="40" r="1.6"/><circle cx="80" cy="40" r="1.6"/><circle cx="100" cy="40" r="1.6"/><circle cx="120" cy="40" r="1.6"/><circle cx="140" cy="40" r="1.6"/><circle cx="160" cy="40" r="1.6"/><circle cx="40" cy="60" r="1.6"/><circle cx="60" cy="60" r="1.6"/><circle cx="80" cy="60" r="1.6"/><circle cx="100" cy="60" r="1.6"/><circle cx="120" cy="60" r="1.6"/><circle cx="140" cy="60" r="1.6"/><circle cx="160" cy="60" r="1.6"/><circle cx="40" cy="80" r="1.6"/><circle cx="60" cy="80" r="1.6"/><circle cx="80" cy="80" r="1.6"/><circle cx="100" cy="80" r="1.6"/><circle cx="120" cy="80" r="1.6"/><circle cx="140" cy="80" r="1.6"/><circle cx="160" cy="80" r="1.6"/><circle cx="40" cy="100" r="1.6"/><circle cx="60" cy="100" r="1.6"/><circle cx="80" cy="100" r="1.6"/><circle cx="100" cy="100" r="1.6"/><circle cx="120" cy="100" r="1.6"/><circle cx="140" cy="100" r="1.6"/><circle cx="160" cy="100" r="1.6"/><circle cx="40" cy="120" r="1.6"/><circle cx="60" cy="120" r="1.6"/><circle cx="80" cy="120" r="1.6"/><circle cx="100" cy="120" r="1.6"/><circle cx="120" cy="120" r="1.6"/><circle cx="140" cy="120" r="1.6"/><circle cx="160" cy="120" r="1.6"/><circle cx="40" cy="140" r="1.6"/><circle cx="60" cy="140" r="3.2"/><circle cx="80" cy="140" r="1.6"/><circle cx="100" cy="140" r="1.6"/><circle cx="120" cy="140" r="1.6"/><circle cx="140" cy="140" r="1.6"/><circle cx="160" cy="140" r="1.6"/><circle cx="40" cy="160" r="1.6"/><circle cx="60" cy="160" r="1.6"/><circle cx="80" cy="160" r="1.6"/><circle cx="100" cy="160" r="1.6"/><circle cx="120" cy="160" r="1.6"/><circle cx="140" cy="160" r="1.6"/><circle cx="160" cy="160" r="1.6"/></svg>
+        </a>
         <div class="body">
-          <h2>Re-entry-Knoten, Helix, S/F-Band</h2>
-          <p>Eine 3D-Animation in drei Schritten. Eine Schleife läuft in ihren eigenen Innenraum zurück und kreuzt sich. Entlang der Zeitachse auseinandergezogen, wird sie zur Helix, und aus dem Widerspruch wird ein Nacheinander. Zuletzt wird sie zum verwundenen Band, dessen zwei Seiten Selbst- und Fremdreferenz zeigen. Die Ansicht lässt sich mit der Maus drehen.</p>
-          <ul class="tags"><li>3D</li><li>WebGL</li><li>Systemtheorie</li></ul>
-          <a class="link" href="werke/reentry/" target="_blank" rel="noopener">Ansehen <span aria-hidden="true">→</span></a>
+          <h2>Zu seiner Zeit</h2>
+          <p>Plateaus zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation: 49 Strophen in sieben Zyklen, von der Operation bis zur Zukunft. Ein Hypertext, in dem nie alles zugleich sichtbar ist – jede Navigation zeigt eine neue lokale Konstellation.</p>
+          <ul class="tags"><li>Hypertext</li><li>Zettelkasten</li><li>Text</li><li>Arbeitsfassung</li></ul>
+          <a class="link" href="zu-seiner-zeit/">Lesen <span aria-hidden="true">→</span></a>
+          <a class="link link--next" href="zu-seiner-zeit/spur/">Die Spur <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+    </section>
+
+    <!-- Prüfraster: Alpha, von hier verlinkt seit dem 29. September 2026 (REGELN §14) -->
+    <h2 class="category" id="pruefraster">Prüfraster</h2>
+    <section class="grid grid--stapel" aria-labelledby="pruefraster">
+
+      <article class="card card--svg">
+        <a class="thumb" href="alpha/pruefraster/" tabindex="-1" aria-hidden="true">
+          <svg viewBox="0 0 200 200" fill="currentColor" style="width:78%;height:auto;aspect-ratio:1/1;color:var(--text)" role="img" aria-label="Vierfeld mit den Achsen Verräumlichung und Verzeitlichung, das Feld Doppelspalt oben rechts hervorgehoben."><rect x="100" y="30" width="70" height="70"/><rect x="30" y="30" width="140" height="140" fill="none" stroke="currentColor" stroke-width="1.2"/><line x1="100" y1="30" x2="100" y2="170" stroke="currentColor" stroke-width="0.8"/><line x1="30" y1="100" x2="170" y2="100" stroke="currentColor" stroke-width="0.8"/><text x="65" y="69" text-anchor="middle" font-family="var(--serif)" font-size="11">Ereignis</text><text x="135" y="69" text-anchor="middle" font-family="var(--serif)" font-size="11" fill="var(--surface)">Doppelspalt</text><text x="65" y="132.5" text-anchor="middle" font-family="var(--serif)" font-size="11">Stilles</text><text x="65" y="145.5" text-anchor="middle" font-family="var(--serif)" font-size="11">Operieren</text><text x="135" y="139" text-anchor="middle" font-family="var(--serif)" font-size="11">Ordnung</text><text x="100" y="188" text-anchor="middle" font-size="7" letter-spacing="0.8" opacity="0.7">VERRÄUMLICHUNG →</text><text x="14" y="100" text-anchor="middle" font-size="7" letter-spacing="0.8" opacity="0.7" transform="rotate(-90 14 100)">VERZEITLICHUNG →</text></svg>
+        </a>
+        <div class="body">
+          <h2>Nebeneinander und Nacheinander</h2>
+          <p>Verräumlichung und Verzeitlichung als Achsen für die Ordnung von Theorien, Kunstpraxen und weiteren Ansätzen. Grundlagenpapier und Anwendungsprompt für einen KI-Assistenten, mit Anleitung.</p>
+          <ul class="tags"><li>Grundlagenpapier</li><li>Prompt</li><li>Alpha</li></ul>
+          <a class="link" href="alpha/pruefraster/">Ansehen <span aria-hidden="true">→</span></a>
         </div>
       </article>
 
-      <article class="card card--b">
-        <div class="thumb" aria-hidden="true">
-          <img src="assets/formen-der-zeit.jpg?v=2" alt="" loading="lazy">
-          <video poster="assets/formen-der-zeit.jpg?v=2" autoplay muted loop playsinline preload="metadata">
-            <source src="assets/formen-der-zeit.mp4?v=2" type="video/mp4">
-            <source src="assets/formen-der-zeit.webm?v=2" type="video/webm">
-          </video>
-        </div>
+      <article class="card card--svg">
+        <a class="thumb" href="alpha/verteilapparat/" tabindex="-1" aria-hidden="true">
+          <svg viewBox="0 0 200 200" fill="currentColor" style="width:78%;height:auto;aspect-ratio:1/1;color:var(--text)" role="img" aria-label="Vierfeld mit den Achsen Selbstbeschreibung und Fremderfassung, das Feld Ausgeliefertsein oben links hervorgehoben."><rect x="30" y="30" width="70" height="70"/><rect x="30" y="30" width="140" height="140" fill="none" stroke="currentColor" stroke-width="1.2"/><line x1="100" y1="30" x2="100" y2="170" stroke="currentColor" stroke-width="0.8"/><line x1="30" y1="100" x2="170" y2="100" stroke="currentColor" stroke-width="0.8"/><text x="65" y="62.5" text-anchor="middle" font-family="var(--serif)" font-size="11" fill="var(--surface)">Ausgeliefert-</text><text x="65" y="75.5" text-anchor="middle" font-family="var(--serif)" font-size="11" fill="var(--surface)">sein</text><text x="135" y="62.5" text-anchor="middle" font-family="var(--serif)" font-size="11">Verhandelbare</text><text x="135" y="75.5" text-anchor="middle" font-family="var(--serif)" font-size="11">Teilhabe</text><text x="65" y="139" text-anchor="middle" font-family="var(--serif)" font-size="11">Verschwinden</text><text x="135" y="132.5" text-anchor="middle" font-family="var(--serif)" font-size="11">Privilegierte</text><text x="135" y="145.5" text-anchor="middle" font-family="var(--serif)" font-size="11">Opazität</text><text x="100" y="188" text-anchor="middle" font-size="7" letter-spacing="0.8" opacity="0.7">SELBSTBESCHREIBUNG →</text><text x="14" y="100" text-anchor="middle" font-size="7" letter-spacing="0.8" opacity="0.7" transform="rotate(-90 14 100)">FREMDERFASSUNG →</text></svg>
+        </a>
         <div class="body">
-          <h2>Formen der Zeit</h2>
-          <p>Eine animierte Reise durch historische Zeitvorstellungen: Aristoteles, Augustinus, Newton, Kant, Bergson, Einstein, Deleuze und Luhmann. Am Ende verdichtet sich alles auf zwei Bewegungen, Raumbildung und Zeitbildung.</p>
-          <ul class="tags"><li>Animation</li><li>SVG</li><li>Philosophie</li></ul>
-          <a class="link" href="werke/formen-der-zeit/" target="_blank" rel="noopener">Ansehen <span aria-hidden="true">→</span></a>
+          <h2>Der Verteilapparat des Körpers</h2>
+          <p>Ein Prüfinstrument dafür, wessen Körperereignis wie weit kommt, unter welcher Beschreibung, wer sie berichtigen kann und was daraus materiell folgt. Grundlagenpapier und Anwendungsprompt für einen KI-Assistenten, mit Anleitung.</p>
+          <ul class="tags"><li>Grundlagenpapier</li><li>Prompt</li><li>Alpha</li></ul>
+          <a class="link" href="alpha/verteilapparat/">Ansehen <span aria-hidden="true">→</span></a>
         </div>
       </article>
+    </section>
 
-      <article class="card card--d mobile-first">
-        <div class="thumb" aria-hidden="true">
-          <img src="assets/stellenfeld.jpg" alt="" loading="lazy">
-          <video poster="assets/stellenfeld.jpg" autoplay muted loop playsinline preload="metadata">
-            <source src="assets/stellenfeld.mp4" type="video/mp4">
-            <source src="assets/stellenfeld.webm" type="video/webm">
-          </video>
-        </div>
-        <div class="body">
-          <h2>Stellenfeld</h2>
-          <p>Eine 3D-Animation in sechs Stationen: Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre. Objekte besetzen ein leuchtendes Gitter, das Gitter wandert weiter, ein Werk bleibt stehen. Die Kamera lässt sich mit der Maus drehen.</p>
-          <ul class="tags"><li>3D</li><li>WebGL</li><li>Raum</li></ul>
-          <a class="link" href="werke/stellenfeld/" target="_blank" rel="noopener">Ansehen <span aria-hidden="true">→</span></a>
-        </div>
-      </article>
-
+    <!-- Rückmeldungen: Kommentare über giscus (GitHub Discussions), erscheinen sofort, Einstellungen in kommentare.js -->
+    <section class="rueckmeldung" aria-labelledby="rueckmeldungen">
+      <h2 class="category" id="rueckmeldungen">Rückmeldungen</h2>
+      <p class="lead">Danke für die Bereitschaft, diese frühen Versionen mit uns zu testen. Wir freuen uns über jede Rückmeldung.</p>
+      <div class="kommentare" id="kommentare"></div>
+      <p class="kommentare-hinweis" hidden>Kommentare erscheinen sofort und für alle sichtbar. Zum Schreiben braucht es ein GitHub-Konto; gespeichert werden sie über giscus in den GitHub Discussions dieser Website.</p>
     </section>
   </main>
 
@@ -145,7 +140,7 @@
     </div>
   </footer>
   <script src="icons.js?v=13" defer></script>
-  <script src="slider.js?v=3" defer></script>
+  <script src="kommentare.js?v=1" defer></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="vendor/goatcounter/count.js"></script>
 </body>

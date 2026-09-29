@@ -817,3 +817,19 @@ h1 {
   .work { grid-template-columns: 1fr; gap: 24px; padding: 20px; }
 }
 
+
+/* Startseite: Rückmeldungen (Kommentare über giscus, siehe kommentare.js) */
+.rueckmeldung {
+  padding-bottom: 64px;
+}
+
+.rueckmeldung .lead {
+  margin-bottom: 24px;
+}
+
+.kommentare-hinweis {
+  margin: 16px 0 0;
+  max-width: 56ch;
+  font-size: 0.85rem;
+  color: var(--muted);
+}

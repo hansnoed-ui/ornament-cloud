@@ -699,28 +699,80 @@ await check("Aktualisieren: neue Fassung sofort beim nächsten Öffnen, auch wen
   }
 });
 
-// ---------- Startseite: Apps als Wisch-Galerie ----------
-await check("Startseite (Handy): ORMA steht bei den Apps zuerst, Diamanten über Apps und Artefakten folgen dem Wischen", async () => {
+// ---------- Startseite: Apps, Zettelkasten, Prüfraster, Rückmeldungen ----------
+await check("Startseite (Handy): Apps, Zettelkasten und Prüfraster untereinander, ORMA zuerst; Artefakte stehen unten im Portfolio", async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
   await page.goto(`${origin}/index.html`);
-  const apps = page.getByRole("group", { name: "Apps durchblättern" });
-  const dots = apps.getByRole("button");
-  await dots.first().waitFor();
-  assert.equal(await dots.count(), 2);
-  assert.equal(await dots.nth(0).getAttribute("aria-label"), "App 1 von 2: ORMA");
-  assert.equal(await dots.nth(1).getAttribute("aria-label"), "App 2 von 2: ORNA");
-  assert.equal(await dots.nth(0).getAttribute("aria-current"), "true");
-  // Antippen des zweiten Diamanten wischt zu ORNA
-  await dots.nth(1).click();
-  await page.waitForFunction(() => document.querySelector('[aria-label="App 2 von 2: ORNA"]').getAttribute("aria-current") === "true");
-  // die Artefakte-Galerie behält ihre eigenen Diamanten
-  const art = page.getByRole("group", { name: "Artefakte durchblättern" }).getByRole("button");
-  assert.ok(await art.count() >= 2);
-  assert.match(await art.first().getAttribute("aria-label"), /^Artefakt 1 von /);
+  assert.deepEqual(await page.locator("h2.category").allTextContents(), ["Apps", "Zettelkasten", "Prüfraster", "Rückmeldungen"]);
+  assert.deepEqual(await page.locator(".grid--apps .card h2").allTextContents(), ["ORMA", "ORNA"]);
+  assert.equal(await page.locator(".slider-dots, .grid--artefakte, video").count(), 0);
+  // alle Karten untereinander, gleich eingerückt, ohne seitliches Wischen
+  const karten = await page.locator("main .card").evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y), Math.round(r.bottom)]; }));
+  assert.equal(karten.length, 5);
+  for (let i = 1; i < karten.length; i++) assert.ok(karten[i][0] === karten[0][0] && karten[i][1] >= karten[i - 1][2], `untereinander: ${JSON.stringify(karten)}`);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  assert.ok(await page.locator(".card", { hasText: "Zu seiner Zeit" }).locator(".tags li", { hasText: "Zettelkasten" }).isVisible());
+  for (const [titel, ziel] of [["Nebeneinander und Nacheinander", /\/alpha\/pruefraster\/$/], ["Der Verteilapparat des Körpers", /\/alpha\/verteilapparat\/$/]]) {
+    const karte = page.locator("#pruefraster + .grid .card", { hasText: titel });
+    assert.ok(await karte.locator(".tags li", { hasText: "Alpha" }).isVisible(), `${titel}: als Alpha gekennzeichnet`);
+    await karte.getByRole("link", { name: "Ansehen" }).click();
+    await page.waitForURL(ziel);
+    await page.goBack();
+  }
+  // die drei Artefakte am Ende des Portfolios
+  await page.goto(`${origin}/portfolio/`);
+  const titel = await page.locator(".grid--stapel .card h2").allTextContents();
+  assert.deepEqual(titel.slice(-3), ["Re-entry-Knoten, Helix, S/F-Band", "Formen der Zeit", "Stellenfeld"]);
+  for (const src of await page.locator(".grid--stapel video source").evaluateAll(els => els.map(e => e.src)))
+    assert.equal((await page.request.get(src)).status(), 200, src);
   assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Startseite (Desktop): ORMA und ORNA nebeneinander, die beiden Prüfraster nebeneinander", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto(`${origin}/index.html`);
+  for (const sel of [".grid--apps .card", "#pruefraster + .grid .card"]) {
+    const ys = await page.locator(sel).evaluateAll(els => els.map(e => Math.round(e.getBoundingClientRect().y)));
+    assert.equal(ys.length, 2);
+    assert.equal(ys[0], ys[1], `${sel} nebeneinander`);
+  }
+  await ctx.close();
+});
+
+await check("Rückmeldungen: ohne Kategorie-ID kein fremdes Skript; mit ID lädt giscus erst in Sichtweite, mit den richtigen Einstellungen", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
+  const page = await ctx.newPage();
+  const fremd = [];
+  page.on("request", r => { if (!r.url().startsWith(origin)) fremd.push(r.url()); });
+  await page.route("https://giscus.app/**", r => r.fulfill({ status: 200, contentType: "text/javascript", body: "" }));
+  await page.goto(`${origin}/index.html`);
+  assert.ok(await page.getByText("Danke für die Bereitschaft, diese frühen Versionen mit uns zu testen.").isVisible());
+  await page.locator("#kommentare").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  assert.deepEqual(fremd.filter(u => u.includes("giscus")), []);
+  assert.equal(await page.locator(".kommentare-hinweis").isVisible(), false);
+  // eingerichtet: Kategorie-ID gesetzt
+  await page.route(/kommentare\.js/, async r => {
+    const body = (await (await r.fetch()).text()).replace("var CATEGORY_ID = '';", "var CATEGORY_ID = 'DIC_test';");
+    await r.fulfill({ status: 200, contentType: "text/javascript", body });
+  });
+  await page.goto(`${origin}/index.html`);
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator("#kommentare script").count(), 0, "lädt erst in Sichtweite");
+  await page.locator("#kommentare").scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => document.querySelector("#kommentare script"));
+  const d = await page.locator("#kommentare script").evaluate(s => ({ ...s.dataset, src: s.src }));
+  assert.equal(d.src, "https://giscus.app/client.js");
+  assert.equal(d.repo, "hansnoed-ui/ornament-cloud");
+  assert.equal(d.categoryId, "DIC_test");
+  assert.equal(d.mapping, "specific");
+  assert.equal(d.lang, "de");
+  assert.ok(await page.locator(".kommentare-hinweis").isVisible());
   await ctx.close();
 });
 

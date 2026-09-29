@@ -373,9 +373,10 @@ test("Alpha: alpha/orma ist der aktuelle Build (sonst: tools/build-orma.ts --alp
   for (const f of list(out)) assert.ok(readFileSync(join(out, f)).equals(readFileSync(join(alpha, f))), `veraltet: alpha/orma/${f}`);
 });
 
-test("Alpha: nur Startseite und News verlinken den Alpha-Bereich (ORMA; News auch die Grundlagenpapiere); nicht in der Sitemap, noindex", () => {
-  // REGELN §14: Startseite → nur ORMA; News → ORMA und die Seiten der beiden Grundlagenpapiere (seit 28. September 2026)
-  const ziele = { "index.html": ["/alpha/orma/"], "news/index.html": ["/alpha/orma/", "/alpha/pruefraster/", "/alpha/verteilapparat/"] };
+test("Alpha: nur Startseite und News verlinken den Alpha-Bereich (ORMA und die Grundlagenpapiere); nicht in der Sitemap, noindex", () => {
+  // REGELN §14: Startseite und News → ORMA und die Seiten der beiden Grundlagenpapiere (News seit 28., Startseite seit 29. September 2026)
+  const papiere = ["/alpha/orma/", "/alpha/pruefraster/", "/alpha/verteilapparat/"];
+  const ziele = { "index.html": papiere, "news/index.html": papiere };
   const allowed = new Set(Object.keys(ziele));
   const gefunden = new Set();
   const found = new Set();
@@ -394,7 +395,7 @@ test("Alpha: nur Startseite und News verlinken den Alpha-Bereich (ORMA; News auc
     }
   }
   assert.deepEqual([...found].sort(), [...allowed].sort(), "Startseite und News verlinken ORMA");
-  for (const z of ziele["news/index.html"]) assert.ok(gefunden.has(`news/index.html → ${z}`), `News verlinken ${z} nicht`);
+  for (const [f, zs] of Object.entries(ziele)) for (const z of zs) assert.ok(gefunden.has(`${f} → ${z}`), `${f} verlinkt ${z} nicht`);
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("/alpha/"));
   for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html"])
     assert.match(readFileSync(new URL(p, root), "utf8"), /<meta name="robots" content="noindex/, p);
