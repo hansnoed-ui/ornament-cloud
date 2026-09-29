@@ -293,14 +293,17 @@ ${occ}
 const nachname = (n: string) => n.replace(/\s*\([^)]*\)/g, "").trim().split(" ").slice(-1)[0];
 function personsIndex(m: M, v: string) {
   const sorted = [...m.persons].sort((a, b) => nachname(a.name).localeCompare(nachname(b.name), "de") || a.name.localeCompare(b.name, "de"));
-  const groups = ["Soziologie", "Philosophie", "Kunst", "Literatur"];
+  // Rubriken aus den Daten (nicht fest verdrahtet): nach Verweisposition ¹–⁴, dann nach erstem Vorkommen –
+  // so steht z. B. «Kybernetik» (Strophe 4, ¹) nach «Soziologie» und vor «Philosophie»
+  const groups: string[] = [];
+  for (let i = 0; i < 4; i++) for (const s of m.stanzas) { const g = s.references[i]?.discipline; if (g && !groups.includes(g)) groups.push(g); }
   const list = groups.map(g => `      <section class="verweis-gruppe" aria-labelledby="g-${slugify(g)}">
         <h2 class="zsz-label zsz-abschnitt" id="g-${slugify(g)}">${g}</h2>
         <ul class="zsz-liste personen">${sorted.filter(p => p.disciplines.includes(g)).map(p => `<li><a href="${p.slug}/">${esc(p.name)}</a> <span class="zsz-hinweis">${p.occurrences.map(o => o.stanza).join(", ")}</span></li>`).join("")}</ul>
       </section>`).join("\n");
   const body = `    <div class="zsz-spalte">
       <h1 class="strophe-titel">Verweise</h1>
-      <p class="zsz-meta">${m.persons.length} Personen · je Strophe Soziologie, Philosophie, Kunst, Literatur</p>
+      <p class="zsz-meta">${m.persons.length} Personen · je Strophe vier Verweise: ${groups.join(", ")}</p>
 ${list}
     </div>`;
   return page(m, { depth: 1, title: `Verweise – ${m.meta.title}`, description: `Alle Personen, auf die ${m.meta.title} verweist.`, body, seite: "verweise", path: "verweis/", v });

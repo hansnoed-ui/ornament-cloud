@@ -8,6 +8,9 @@ Veröffentlicht unter `https://ornament.cloud/zu-seiner-zeit/`, im Portfolio ver
 
 - `src/data/zu-seiner-zeit.json` – **Single Source of Truth**. Texte, Titel, Bottom-Lines und Verweise werden
   wörtlich übernommen und nie automatisch umgeschrieben. Eine neue Fassung ersetzt die Datei als Ganzes.
+  Stand: Redaktionsfassung vom 29. September 2026 (21 Haupttexte mit Leitsätzen, Untertitel Zyklus II, 19 Verweise
+  in 15 Strophen aus `Zu_seiner_Zeit_49_Strophen_Redaktion_2026-09-29.md`; alles Übrige aus der Arbeitsfassung vom 28. September).
+  Die Rubrik je Verweis steht in `domain`; der Personenindex bildet seine Gruppen daraus (z. B. «Kybernetik» in Strophe 4).
 - `src/data/zu-seiner-zeit.extra.json` – Ergänzungen, die in der Hauptdatei fehlen. Nur eintragen, was belegt ist:
 
   ```json
@@ -56,6 +59,6 @@ Nach jeder Änderung an Daten, CSS oder JS den Build laufen lassen; ein Test mel
 
 ## Hinweise zur Arbeitsfassung (nicht auf der Website)
 
-- Wortzahl ausserhalb der Zielgrösse 80–110: Nr. 3 (75), Nr. 4 (71), Nr. 25 (119).
+- Wortzahl ausserhalb der Zielgrösse 80–110: Nr. 3 (75), Nr. 25 (119).
 - Status «redaktionelle Rekonstruktion»: Nr. 30 Die Form, Nr. 33 Das Publikum.
 - Begrifflich verwandte Strophen (B), externe Links und Begriffe: noch nicht eingetragen.
