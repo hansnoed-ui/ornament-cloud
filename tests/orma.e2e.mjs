@@ -752,7 +752,7 @@ await check("Startseite (Desktop): ORMA und ORNA nebeneinander, die beiden Prüf
   await ctx.close();
 });
 
-await check("Rückmeldungen: ohne Kategorie-ID kein fremdes Skript; mit ID lädt giscus erst in Sichtweite, mit den richtigen Einstellungen", async () => {
+await check("Rückmeldungen: giscus lädt erst in Sichtweite, mit den richtigen Einstellungen; ohne Kategorie-ID kein fremdes Skript", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
   const fremd = [];
@@ -760,27 +760,33 @@ await check("Rückmeldungen: ohne Kategorie-ID kein fremdes Skript; mit ID lädt
   await page.route("https://giscus.app/**", r => r.fulfill({ status: 200, contentType: "text/javascript", body: "" }));
   await page.goto(`${origin}/index.html`);
   assert.ok(await page.getByText("Danke für die Bereitschaft, diese frühen Versionen mit uns zu testen.").isVisible());
-  await page.locator("#kommentare").scrollIntoViewIfNeeded();
-  await page.waitForTimeout(300);
-  assert.deepEqual(fremd.filter(u => u.includes("giscus")), []);
-  assert.equal(await page.locator(".kommentare-hinweis").isVisible(), false);
-  // eingerichtet: Kategorie-ID gesetzt
-  await page.route(/kommentare\.js/, async r => {
-    const body = (await (await r.fetch()).text()).replace("var CATEGORY_ID = '';", "var CATEGORY_ID = 'DIC_test';");
-    await r.fulfill({ status: 200, contentType: "text/javascript", body });
-  });
-  await page.goto(`${origin}/index.html`);
   await page.waitForTimeout(300);
   assert.equal(await page.locator("#kommentare script").count(), 0, "lädt erst in Sichtweite");
+  assert.deepEqual(fremd, []);
   await page.locator("#kommentare").scrollIntoViewIfNeeded();
   await page.waitForFunction(() => document.querySelector("#kommentare script"));
   const d = await page.locator("#kommentare script").evaluate(s => ({ ...s.dataset, src: s.src }));
   assert.equal(d.src, "https://giscus.app/client.js");
   assert.equal(d.repo, "hansnoed-ui/ornament-cloud");
-  assert.equal(d.categoryId, "DIC_test");
+  assert.equal(d.repoId, "R_kgDOUqqcJQ");
+  assert.equal(d.category, "Announcements");
+  assert.match(d.categoryId, /^DIC_kwDOUqqcJ/);
   assert.equal(d.mapping, "specific");
+  assert.equal(d.term, "Startseite: Rückmeldungen");
   assert.equal(d.lang, "de");
   assert.ok(await page.locator(".kommentare-hinweis").isVisible());
+  // nicht eingerichtet (Kategorie-ID leer): nur der Dank, kein fremdes Skript, kein Hinweis
+  fremd.length = 0;
+  await page.route(/kommentare\.js/, async r => {
+    const body = (await (await r.fetch()).text()).replace(/var CATEGORY_ID = '[^']*';/, "var CATEGORY_ID = '';");
+    await r.fulfill({ status: 200, contentType: "text/javascript", body });
+  });
+  await page.goto(`${origin}/index.html`);
+  await page.locator("#kommentare").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator("#kommentare script").count(), 0);
+  assert.deepEqual(fremd, []);
+  assert.equal(await page.locator(".kommentare-hinweis").isVisible(), false);
   await ctx.close();
 });
 

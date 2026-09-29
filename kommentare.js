@@ -15,7 +15,7 @@
   var REPO = 'hansnoed-ui/ornament-cloud';
   var REPO_ID = 'R_kgDOUqqcJQ';
   var CATEGORY = 'Announcements';
-  var CATEGORY_ID = '';
+  var CATEGORY_ID = 'DIC_kwDOUqqcJc4DGorG';
   var TERM = 'Startseite: Rückmeldungen';
 
   var box = document.getElementById('kommentare');
