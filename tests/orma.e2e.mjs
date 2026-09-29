@@ -722,6 +722,14 @@ await check("Startseite (Handy): Apps, Zettelkasten und Prüfraster untereinande
     await page.waitForURL(ziel);
     await page.goBack();
   }
+  // Vierfelder der Prüfraster: jedes Wort bleibt in seiner Zelle, auch mit breiter Serifenschrift (wie auf Android)
+  await page.addStyleTag({ content: ':root { --serif: "DejaVu Serif", serif; }' });
+  const raender = await page.evaluate(() => [...document.querySelectorAll('svg[aria-label^="Vierfeld"] text[font-size="9.5"]')].map(t => {
+    const bb = t.getBBox(), x = +t.getAttribute("x");
+    return [t.textContent, Math.min(bb.x - (x - 40), x + 40 - bb.x - bb.width)];
+  }));
+  assert.equal(raender.length, 12);
+  for (const [wort, rand] of raender) assert.ok(rand >= 2, `${wort} ragt aus der Zelle (${rand})`);
   // die drei Artefakte am Ende des Portfolios
   await page.goto(`${origin}/portfolio/`);
   const titel = await page.locator(".grid--stapel .card h2").allTextContents();
