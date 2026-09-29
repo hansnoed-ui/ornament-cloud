@@ -182,7 +182,8 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   ersetzt «bleibt auf dem Branch `orma`»). Verlinkt wird ORMA nur von der Startseite (Kategorie «Apps»)
   und aus den News, stets als Alpha gekennzeichnet (freigegeben am 27. September 2026). Aus den News
   verlinkt werden ausserdem die Seiten der beiden Grundlagenpapiere `alpha/pruefraster/` und
-  `alpha/verteilapparat/` (freigegeben am 28. September 2026); andere Seiten verlinken den Alpha-Bereich
+  `alpha/verteilapparat/` (freigegeben am 28. September 2026), seit dem 29. September 2026 auch von der
+  Startseite (Kategorie «Prüfraster», als Alpha gekennzeichnet); andere Seiten verlinken den Alpha-Bereich
   nicht. Aktualisiert wird die
   Alpha-Version mit `node --experimental-strip-types tools/build-orma.ts --alpha`.
 

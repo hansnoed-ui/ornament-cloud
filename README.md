@@ -3,7 +3,11 @@
 Einfache statische Website (reines HTML/CSS), die eine Auswahl meiner Claude-Artefakte präsentiert.
 Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CDNs oder Google geladen.
 
-- `index.html` – Startseite; jedes Artefakt ist ein `<article class="card">`-Block
+- `index.html` – Startseite: Apps, Zettelkasten («Zu seiner Zeit»), Prüfraster und Rückmeldungen; jede Karte ist ein `<article class="card">`-Block.
+  Die Artefakte (Videos) stehen seit dem 29. September 2026 unten im Portfolio
+- `kommentare.js` – Rückmeldungen auf der Startseite über giscus (GitHub Discussions dieses Repositorys, ohne Prüfung sichtbar);
+  lädt `giscus.app` erst, wenn der Abschnitt in Sicht kommt, und nur wenn `CATEGORY_ID` eingetragen ist (Einrichten: Kommentar im Skript).
+  Einzige Ausnahme von «keine fremden Dateien» (freigegeben am 29. September 2026)
 - `styles.css` – Gestaltung (inkl. automatischem Dark Mode und Farben des Hintergrunds)
 - `icons.js` – animierte Schwarz-Weiss-Symbole des Footer-Menüs (Dauer in `PERIOD`)
 - `news/` – News als aufklappbare Einträge; neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
@@ -40,7 +44,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `zu-seiner-zeit/` – Hypertext «Zu seiner Zeit» (49 Strophen, Spur, Zufall, Verweise), erzeugt mit
   `node --experimental-strip-types tools/build-zu-seiner-zeit.ts` aus `src/data/zu-seiner-zeit.json` (unverändert) und
   `src/data/zu-seiner-zeit.extra.json`; Gestaltung `zu-seiner-zeit/zsz.css`, Verhalten `zu-seiner-zeit/zsz.js`. Alles Weitere in `src/zu-seiner-zeit/README.md`
-- `alpha/` – Alpha-Versionen, öffentlich erreichbar, nicht in der Sitemap, `noindex`; ORMA ist von Startseite und News verlinkt, die Seiten der Grundlagenpapiere (`alpha/pruefraster/`, `alpha/verteilapparat/`) aus den News (REGELN §14, Test prüft das);
+- `alpha/` – Alpha-Versionen, öffentlich erreichbar, nicht in der Sitemap, `noindex`; ORMA und die Seiten der Grundlagenpapiere (`alpha/pruefraster/`, `alpha/verteilapparat/`) sind von Startseite und News verlinkt (REGELN §14, Test prüft das);
   `alpha/orma/` ist ORMA, erzeugt mit `node --experimental-strip-types tools/build-orma.ts --alpha`
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)
@@ -53,7 +57,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `NODE_PATH=$(npm root -g) node tools/og-image.mjs`
 - `tests/` – Prüfungen des Rads: `node --experimental-strip-types --no-warnings --test tests/doppelspalt.test.mjs`
   und im Browser (Playwright): `node tests/doppelspalt.e2e.mjs`
-- `slider.js` – Punkte unter der Wisch-Galerie der Artefakte auf dem Smartphone (Wischen selbst per CSS)
+- `slider.js` – Punkte über einer Wisch-Galerie auf dem Smartphone (Wischen selbst per CSS); zurzeit auf keiner Seite eingebunden,
+  alle Raster stehen auf dem Handy untereinander (`.grid--stapel`). Wieder einschalten: `<div class="slider-dots" …>` vor das Raster, `.grid--stapel` weg, Skript einbinden
 - `bg.js` – animierter Hintergrund (Lemniskaten und Schleifen als SVG, Tempo in `CONFIG`); zurzeit auf keiner Seite eingebunden. Wieder einschalten: `<div class="bg" aria-hidden="true"><svg class="bg-field" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg></div>` direkt nach `<body>` und `<script src="bg.js?v=2" defer></script>` vor `</body>`
 - `assets/` – Vorschau-Videos (.mp4/.webm) und Standbilder (.jpg)
 - `werke/<name>/index.html` – lokale Kopien der Artefakte
