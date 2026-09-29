@@ -495,3 +495,10 @@ test("Symbol und Vorschaubild: ORNA-Motiv geteilt, PNG-Grössen stimmen, Vorscha
   assert.ok(r.precache.includes("og-orma.png"));
   assert.match(html, /<script type="module" src="js\/intro\.js\?v=/);
 });
+
+test("Alpha: oben links führt «Ornament Cloud» zur Startseite und «Alpha» zur Alpha-Übersicht", () => {
+  for (const [p, start, alpha] of [["alpha/index.html", "../", "./"], ["alpha/pruefraster/index.html", "../../", "../"], ["alpha/verteilapparat/index.html", "../../", "../"]]) {
+    const kopf = readFileSync(new URL(p, root), "utf8").match(/<p class="eyebrow brand">(.*?)<\/p>/)[1];
+    assert.match(kopf, new RegExp(`<a href="${start.replace(/\./g, "\\.")}"[^>]*>Ornament Cloud</a> · <a href="${alpha.replace(/\./g, "\\.")}"[^>]*>Alpha</a>`), p);
+  }
+});
