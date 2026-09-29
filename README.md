@@ -65,7 +65,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `vendor/three/` – three.js r128 (MIT-Lizenz) für die 3D-Artefakte
 - `vendor/goatcounter/count.js` – Zählskript von GoatCounter (ISC-Lizenz), lokal eingebunden auf allen Seiten.
   Statistik: https://ornament-cloud.goatcounter.com – ohne Cookies und ohne persönliche Daten; auf localhost wird nicht gezählt.
-  Eigene Besuche ausschliessen: einmal `…/ornament-cloud/#toggle-goatcounter` im jeweiligen Browser aufrufen.
+  Eigene Besuche ausschliessen: einmal `https://ornament.cloud/#toggle-goatcounter` im jeweiligen Browser aufrufen
+  (gilt pro Browser und Adresse; seit dem Umzug auf ornament.cloud heissen die Pfade `/news/` statt `/ornament-cloud/news/`).
   Ereignisse des Rads: `rad-drehung/<wischen|tippen|taste|nochmal>`, `rad-paar/<id>`, `rad-direktlink/<id>`, `rad-teilen/<id>`
 - `vendor/fonts/` – Schriften Newsreader und Instrument Sans (SIL Open Font License)
 
