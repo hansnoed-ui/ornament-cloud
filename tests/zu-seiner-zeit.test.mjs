@@ -16,7 +16,10 @@ test("Daten: 49 Strophen in sieben Zyklen zu sieben, je vier Verweise in fester 
   assert.equal(raw.stanzas.length, 49);
   assert.deepEqual(raw.cycles.map(c => `${c.roman} ${c.name}`), ["I Operation", "II Rekursion", "III Adresse", "IV Koppelung", "V Kunst", "VI Plattform", "VII Zukunft"]);
   for (const c of raw.cycles) assert.equal(c.stanzas.length, 7);
-  for (const s of raw.stanzas) assert.deepEqual(s.references.map(r => r.domain), ["Soziologie", "Philosophie", "Kunst", "Literatur"]);
+  // Rubriken je Position; einzige Ausnahme seit der Redaktionsfassung vom 29. September 2026: Strophe 4, ¹ Kybernetik (von Foerster)
+  for (const s of raw.stanzas) assert.deepEqual(s.references.map(r => r.domain), [s.number === 4 ? "Kybernetik" : "Soziologie", "Philosophie", "Kunst", "Literatur"], `${s.number}`);
+  assert.deepEqual(raw.stanzas.map(s => s.number), Array.from({ length: 49 }, (_, i) => i + 1));
+  assert.equal(raw.stanzas.flatMap(s => s.references).length, 196);
   assert.equal(raw.stanzas[36].references[0].citation.split(", ")[0], "Klaus Kusanowsky");   // Korrektur vom 28. September 2026
 });
 
@@ -116,7 +119,25 @@ test("Startseite: sieben Zyklen, jede Strophe mit Nummer, Titel und Bottom-Line"
 
 test("Verweisseiten: jede Person mit allen Strophen, in denen sie vorkommt", () => {
   const luhmann = m.persons.find(p => p.name === "Niklas Luhmann");
-  assert.deepEqual(luhmann.occurrences.map(o => o.stanza), [1, 3, 4, 7, 9, 15, 24, 26, 28, 45]);
+  assert.deepEqual(luhmann.occurrences.map(o => o.stanza), [1, 3, 7, 15, 24, 26, 28, 45]);   // 4 → von Foerster, 9 → Connerton
+  const person = n => m.persons.find(p => p.name === n);
+  assert.deepEqual(person("Heinz von Foerster").occurrences.map(o => [o.stanza, o.discipline, o.work]), [[4, "Kybernetik", "On Constructing a Reality"]]);
+  assert.deepEqual(person("Paul Connerton").occurrences.map(o => [o.stanza, o.discipline, o.work]), [[9, "Soziologie", "How Societies Remember"]]);
+  // gezielte Wiederkehr desselben Werks: Caminhando (33, 47), Album (18, 43)
+  assert.deepEqual(person("Lygia Clark").works.find(w => w.work === "Caminhando").stanzas, [33, 47]);
+  assert.deepEqual(person("Gillian Wearing").works.find(w => w.work === "Album").stanzas, [18, 43]);
+  for (const [a, b] of [[33, 47], [18, 43]]) {
+    const r = m.stanzas[a - 1].references.find(x => x.internalLinks.some(l => l.id === b));
+    assert.ok(r?.internalLinks.find(l => l.id === b).sameWork, `${a} → ${b}: dasselbe Werk`);
+  }
+  // Personenindex: Zahl aus den Daten, Rubriken aus den Daten (von Foerster unter Kybernetik, nicht unter Soziologie)
+  const namen = new Set(raw.stanzas.flatMap(s => s.references.map(r => r.citation.split(", ")[0])));
+  assert.equal(m.persons.length, namen.size);
+  const index = read("verweis/index.html");
+  assert.ok(index.includes(`${namen.size} Personen · je Strophe vier Verweise: Soziologie, Kybernetik, Philosophie, Kunst, Literatur`));
+  const gruppe = g => index.split(`id="g-${g}"`)[1].split("</section>")[0];
+  assert.ok(gruppe("kybernetik").includes(">Heinz von Foerster</a>") && !gruppe("soziologie").includes("von Foerster"));
+  assert.ok(gruppe("soziologie").includes(">Paul Connerton</a>"));
   for (const p of m.persons) {
     const html = read(`verweis/${p.slug}/index.html`);
     assert.ok(html.includes(`<h1 class="strophe-titel">${esc(p.name)}</h1>`));
