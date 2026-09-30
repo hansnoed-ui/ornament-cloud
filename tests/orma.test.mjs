@@ -397,7 +397,7 @@ test("Alpha: nur Startseite und News verlinken den Alpha-Bereich (ORMA und die G
   assert.deepEqual([...found].sort(), [...allowed].sort(), "Startseite und News verlinken ORMA");
   for (const [f, zs] of Object.entries(ziele)) for (const z of zs) assert.ok(gefunden.has(`${f} → ${z}`), `${f} verlinkt ${z} nicht`);
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("/alpha/"));
-  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html"])
+  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html"])
     assert.match(readFileSync(new URL(p, root), "utf8"), /<meta name="robots" content="noindex/, p);
 });
 
@@ -501,4 +501,25 @@ test("Alpha: oben links führt «Ornament Cloud» zur Startseite und «Alpha» z
     const kopf = readFileSync(new URL(p, root), "utf8").match(/<p class="eyebrow brand">(.*?)<\/p>/)[1];
     assert.match(kopf, new RegExp(`<a href="${start.replace(/\./g, "\\.")}"[^>]*>Ornament Cloud</a> · <a href="${alpha.replace(/\./g, "\\.")}"[^>]*>Alpha</a>`), p);
   }
+});
+
+// Prüfraster in Arbeit (tools/build-alpha-texte.ts): Seiten aus src/alpha/*.md, deutlich als «Zurzeit in Arbeit» markiert
+test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, zuunterst in der Übersicht, ohne die zwei PDF-Links", async () => {
+  const at = await import(new URL("tools/build-alpha-texte.ts", root).href);
+  for (const f of at.build()) assert.equal(readFileSync(new URL(f.pfad, root), "utf8"), f.inhalt, `${f.pfad} veraltet: node --experimental-strip-types tools/build-alpha-texte.ts`);
+  const uebersicht = readFileSync(new URL("alpha/index.html", root), "utf8");
+  const eintraege = [...uebersicht.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map(m => m[1]);
+  assert.deepEqual(eintraege.slice(-2), ["gesellschaftskonzepte/", "journalistische-texte/"], "zuunterst");
+  for (const r of at.RASTER) {
+    const html = readFileSync(new URL(`alpha/${r.seite}/index.html`, root), "utf8");
+    assert.match(html, /<p class="at-arbeit">Zurzeit in Arbeit<\/p>/);
+    assert.ok(uebersicht.split(`href="${r.seite}/"`)[1].split("</li>")[0].includes('<p class="alpha-arbeit">Zurzeit in Arbeit</p>'), `${r.seite}: Vermerk in der Übersicht`);
+    assert.ok(html.includes(`href="../${r.datei}" download`));
+    assert.ok(!/dissent\.is|unifr\.ch/.test(html + readFileSync(new URL(`alpha/${r.datei}`, root), "utf8")), "keine Links auf PDF-Kopien");
+  }
+  // Markdown → HTML: Tabelle, verschachtelte Liste, Zitat, Hervorhebung, nur https-Links
+  const h = at.markdown("# A\n\n> Zitat *kursiv*\n\n| x | y |\n| --- | --- |\n| **1** | 2 |\n\n1. eins\n   - unter\n2. zwei\n\n[gut](https://a.ch) [schlecht](javascript:x)");
+  assert.ok(h.includes('<h2 id="a">A</h2>') && h.includes("<blockquote><p>Zitat <em>kursiv</em></p></blockquote>"));
+  assert.ok(h.includes("<td><strong>1</strong></td>") && h.includes("<ol><li>eins<ul><li>unter</li></ul></li><li>zwei</li></ol>"));
+  assert.ok(h.includes('<a href="https://a.ch" rel="noopener">gut</a>') && !h.includes("javascript:x\""));
 });
