@@ -730,10 +730,11 @@ await check("Startseite (Handy): Apps, Zettelkasten und Prüfraster untereinande
   }));
   assert.equal(raender.length, 12);
   for (const [wort, rand] of raender) assert.ok(rand >= 2, `${wort} ragt aus der Zelle (${rand})`);
-  // die drei Artefakte am Ende des Portfolios
+  // die Artefakte am Ende des Portfolios
   await page.goto(`${origin}/portfolio/`);
   const titel = await page.locator(".grid--stapel .card h2").allTextContents();
-  assert.deepEqual(titel.slice(-3), ["Re-entry-Knoten, Helix, S/F-Band", "Formen der Zeit", "Stellenfeld"]);
+  assert.deepEqual(titel.slice(-2), ["Re-entry-Knoten, Helix, S/F-Band", "Stellenfeld"]);   // «Formen der Zeit» ausgeblendet (30. September 2026)
+  assert.ok(!titel.includes("Formen der Zeit"));
   for (const src of await page.locator(".grid--stapel video source").evaluateAll(els => els.map(e => e.src)))
     assert.equal((await page.request.get(src)).status(), 200, src);
   assert.deepEqual(errors, []);
