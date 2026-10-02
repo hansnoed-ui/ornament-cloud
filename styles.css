@@ -322,7 +322,7 @@ h1 {
 }
 
 /* Navigation oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» (orange), darunter «Das Dritte Rad» (violett),
-   beide als Buttons mit ganz feinem Rahmen. Der aktive (aria-current) trägt den vollen Rahmen und einen zweiten, feinen Ring, der andere einen blassen Rahmen.
+   beide als Buttons mit ganz feinem Rahmen. Der aktive (aria-current) ist invers gesetzt: Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite.
    Im Kopf der Website steht sie im Header-Menü, auf den Alpha-Seiten über dem Titel. */
 .seitenweg {
   display: grid;
@@ -335,9 +335,10 @@ h1 {
 .wrap > .seitenweg { margin-bottom: 8px; }
 
 .seitenweg a {
+  --weg: var(--accent);   /* die Farbe des Buttons: Schrift und Rahmen, beim aktiven die Fläche */
   padding: 3px 14px;
-  border: 1px solid currentColor;   /* ohne color-mix: voller Rahmen */
-  border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+  border: 1px solid var(--weg);   /* ohne color-mix: voller Rahmen */
+  border: 1px solid color-mix(in srgb, var(--weg) 40%, transparent);
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
@@ -345,26 +346,31 @@ h1 {
   text-align: center;
   text-transform: uppercase;
   text-decoration: none;
-  color: var(--accent);
+  color: var(--weg);
 }
 
-.seitenweg a + a { color: var(--weg-rad); }
+.seitenweg a + a { --weg: var(--weg-rad); }
 
-.seitenweg a:hover,
-.seitenweg a[aria-current] { border-color: currentColor; }
+.seitenweg a:hover { border-color: var(--weg); }
 
-/* aktiv: voller Rahmen und ein zweiter feiner Ring ausserhalb. Keine Tönung: schon 5 % drücken den Kontrast der orangen Schrift auf OMNA COLOR unter 4,5 */
+/* aktiv: invers, die Fläche in der Farbe des Buttons, die Schrift in der Farbe der Seite (Kontrast ab 4,5 in beiden Modi) */
 .seitenweg a[aria-current] {
-  outline: 1px solid currentColor;
-  outline-offset: 2px;
+  border-color: var(--weg);
+  background: var(--weg);
+  color: var(--bg);
+}
+
+/* Erzwungene Farben (Windows, hoher Kontrast) nehmen die Fläche weg: dort bleibt der aktive Button mit einem feinen Ring kenntlich */
+@media (forced-colors: active) {
+  .seitenweg a[aria-current] { outline: 1px solid currentColor; outline-offset: 2px; }
 }
 
 .seitenweg a:focus-visible {
-  outline: 2px solid currentColor;
+  outline: 2px solid var(--weg);
   outline-offset: 2px;
 }
 
-/* Hauptmenü (Neuordnung vom 2. Oktober 2026): vier Wörter in einer Reihe, ohne Symbole und Animationen.
+/* Hauptmenü (Neuordnung vom 2. Oktober 2026): vier Wörter in einer Reihe, ohne Symbole und Animationen, in der serifenlosen Schrift der Seite (Wunsch vom 2. Oktober 2026: moderner als die frühere Serife).
    Die Seite, auf der man ist, trägt aria-current und steht unterstrichen; auf den Seiten darunter (z. B. ORNA unter «Apps») ebenfalls. */
 .menu {
   display: flex;
@@ -377,8 +383,10 @@ h1 {
 .menu-item {
   padding: 2px 0;
   border-bottom: 1px solid transparent;
-  font-family: var(--serif);
-  font-size: 1.15rem;
+  font-family: var(--font);
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   line-height: 1.45;
   color: var(--text);
   text-decoration: none;
@@ -842,21 +850,4 @@ h1 {
 @media (max-width: 640px) {
   .stellenfeld { margin-bottom: 40px; }
   .stellenfeld iframe { aspect-ratio: 4 / 5; }
-}
-
-
-/* Startseite: Rückmeldungen (Kommentare über giscus, siehe kommentare.js) */
-.rueckmeldung {
-  padding-bottom: 64px;
-}
-
-.rueckmeldung .lead {
-  margin-bottom: 24px;
-}
-
-.kommentare-hinweis {
-  margin: 16px 0 0;
-  max-width: 56ch;
-  font-size: 0.85rem;
-  color: var(--muted);
 }

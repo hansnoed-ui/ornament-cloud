@@ -43,7 +43,8 @@ const kacheln = (page, wo) => page.locator(`${wo} a.drad-kachel`).evaluateAll((a
   grund: x.querySelector("em").textContent, href: x.getAttribute("href"), hier: x.classList.contains("hier"),
 })));
 const text = (page, sel) => page.locator(sel).first().textContent();
-/** Abstand in px vom unteren Rand der Navigation oben links bis zum oberen Rand des Rads (der Titel steht nicht mehr dazwischen), und vom unteren Rand des Rads bis zu den Knöpfen «Drehen» und «Brücke» */
+/** Abstand in px vom unteren Rand der Navigation oben links bis zum oberen Rand des Rads (der Titel steht nicht mehr dazwischen), und vom unteren Rand des Rads bis zu den Knöpfen «Drehen» und «Brücke».
+ *  Auf der Startseite des Rads ist er grösser (Wunsch vom 2. Oktober 2026), im späteren Verlauf mit den Karten und beim Lesen sind es die engen Abstände von früher: oben max(8, clamp(16, 5 vh, 56)), unten 32 px. */
 const luftUnterNav = (page) => page.evaluate(() => document.getElementById("wheel").getBoundingClientRect().top - document.querySelector("nav.seitenweg").getBoundingClientRect().bottom);
 const luftUnterRad = (page) => page.evaluate(() => document.getElementById("go").getBoundingClientRect().top - document.getElementById("wheel").getBoundingClientRect().bottom);
 /** Links in der Radseite (Karten, Lesen, Wege), die nicht im Rad selbst bleiben, also auf Originalseiten oder sonst woanders hin führen */
@@ -153,8 +154,8 @@ await check("Schlichte Seite: kein Titel über dem Rad, «Drehen» und «Brücke
   assert.deepEqual(await stil("#bridge"), await stil("#go"), "«Brücke» ist wie «Drehen» gestaltet");
   assert.equal(await page.locator("#bridge").getAttribute("aria-label"), "Brücke schlagen", "vorgelesen bleibt es verständlich");
   const oben = await luftUnterNav(page);
-  assert.ok(oben >= 16 && oben <= 90, `das Rad folgt gleich auf die Navigation, kein Titel dazwischen (${Math.round(oben)} px)`);
-  assert.ok(await luftUnterRad(page) >= 28, "zwischen Rad und den Knöpfen ist mehr Luft als die früheren 14 px");
+  assert.ok(oben >= 56 && oben <= 120, `das Rad folgt auf die Navigation, kein Titel dazwischen, mit Raum nach oben (${Math.round(oben)} px)`);
+  assert.ok(await luftUnterRad(page) >= 48, "zwischen Rad und den Knöpfen ist viel mehr Luft als die früheren 14 px");
   const kein = async () => {
     assert.equal(await page.locator("#start, #faeden, .drad-start").count(), 0);
     assert.equal(await page.locator("button, a", { hasText: /Zurück zum Start/ }).count(), 0, "kein «Zurück zum Start»");
@@ -499,7 +500,7 @@ await check("Handy: kein waagerechtes Scrollen, Karten, Lesen, Wege und Leiste p
   {
     const { ctx, page } = await open("alpha/drittes-rad/", handy);
     const oben = await luftUnterNav(page);
-    assert.ok(oben >= 16 && oben <= 90 && await luftUnterRad(page) >= 28, `Handy: das Rad folgt gleich auf die Navigation (${Math.round(oben)} px), mehr Luft zwischen Rad und Knöpfen`);
+    assert.ok(oben >= 56 && oben <= 120 && await luftUnterRad(page) >= 48, `Handy: das Rad folgt auf die Navigation mit Raum nach oben (${Math.round(oben)} px), viel Luft zwischen Rad und Knöpfen`);
     await page.click("#go");
     await page.locator("#result").waitFor({ state: "visible" });
     const w = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
@@ -661,6 +662,60 @@ await check("Finger: führt man das Rad während des Auslaufs mit «Das Dritte R
   await ctx.close();
 });
 
+await check("Startseite des Rads: mehr Raum über und unter dem Rad (Wunsch vom 2. Oktober 2026), im späteren Verlauf mit Karten und beim Lesen bleiben die engen Abstände von früher; Computer und Handy", async () => {
+  const messen = async (page) => {                                                                       // ganz oben, sonst hält «sticky» das Rad fest, während die Navigation wegscrollt
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    return { oben: Math.round(await luftUnterNav(page)), unten: Math.round(await luftUnterRad(page)) };
+  };
+  for (const [wo, opts, hoehe] of [["Computer", { viewport: { width: 1280, height: 800 } }, 800], ["Handy", HANDY, 800]]) {
+    const { ctx, page, errors } = await open("alpha/drittes-rad/", opts);
+    await page.waitForFunction(() => window.radGeladen === true);
+    const eng = { oben: Math.round(Math.max(8, Math.min(56, Math.max(16, hoehe * .05)))), unten: 32 };          // die Abstände von früher
+    const start = await messen(page);
+    assert.ok(start.oben >= eng.oben + 24 && start.unten >= eng.unten + 16, `${wo}: Startseite mit mehr Raum als früher: ${JSON.stringify(start)} gegen ${JSON.stringify(eng)}`);
+    assert.ok(start.oben <= 130 && start.unten <= 90, `${wo}: nicht masslos (${JSON.stringify(start)})`);
+    // gedreht: die Karten stehen da, die engen Abstände von früher
+    await page.click("#go");
+    await page.locator("#result").waitFor({ state: "visible" });
+    assert.deepEqual(await messen(page), eng, `${wo}: mit den Karten bleiben die engen Abstände`);
+    // ein Stück geöffnet (Lesen): ebenso
+    await page.click("#cZeit h2 a");
+    await page.locator("#lese").waitFor({ state: "visible" });
+    assert.deepEqual(await messen(page), eng, `${wo}: beim Lesen bleiben die engen Abstände`);
+    // zurück auf den Start (die Navigation «Das Dritte Rad»): wieder der weite Abstand
+    await page.locator("nav.seitenweg a", { hasText: "Das Dritte Rad" }).click();
+    await page.waitForFunction(() => document.getElementById("lese").hidden && document.getElementById("result").hidden);
+    assert.deepEqual(await messen(page), start, `${wo}: zurück auf der Startseite wieder der weite Abstand`);
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+});
+
+await check("Startseite des Rads: die Abstände weichen sanft, sobald die Karten erscheinen; bei «weniger Bewegung» springen sie", async () => {
+  const reihe = (page) => page.evaluate(() => new Promise((fertig) => {
+    const m = document.querySelector("main"), g = document.querySelector(".wheelbox"), w = (e, k) => parseFloat(getComputedStyle(e)[k]), reihe = [];
+    reihe.push([w(m, "marginTop"), w(g, "rowGap")]);
+    document.getElementById("result").hidden = false;                                  // wie wenn die Karten erscheinen
+    const t0 = performance.now();
+    (function bild() { reihe.push([w(m, "marginTop"), w(g, "rowGap")]); if (performance.now() - t0 < 1000) requestAnimationFrame(bild); else fertig(reihe); })();
+  }));
+  for (const [wie, opts] of [["mit Bewegung", MIT_BEWEGUNG], ["weniger Bewegung", {}]]) {
+    const { ctx, page, errors } = await open("alpha/drittes-rad/", { viewport: { width: 1280, height: 800 }, ...opts });
+    await page.waitForFunction(() => window.radGeladen === true);
+    const r = await reihe(page), oben = r.map((x) => x[0]), gap = r.map((x) => x[1]);
+    assert.equal(oben[0], 72, `${wie}: Startseite: Abstand nach oben 9 vh = 72 px`);
+    assert.equal(gap[0], 56, `${wie}: Startseite: Abstand zu den Knöpfen 7 vh = 56 px`);
+    assert.equal(oben.at(-1), 40, `${wie}: mit den Karten 5 vh = 40 px wie früher`);
+    assert.equal(gap.at(-1), 32, `${wie}: mit den Karten 32 px wie früher`);
+    assert.ok(oben.every((v, i) => !i || v <= oben[i - 1]) && gap.every((v, i) => !i || v <= gap[i - 1]), `${wie}: nur enger werden, nie zurückspringen`);
+    const dazwischen = (xs, von, bis) => xs.filter((v) => v > bis && v < von).length;
+    if (wie === "mit Bewegung") assert.ok(dazwischen(oben, 72, 40) >= 3 && dazwischen(gap, 56, 32) >= 3, `mit Bewegung gleiten die Abstände in mehreren Bildschritten (${oben.length} Messungen, oben ${dazwischen(oben, 72, 40)}, unten ${dazwischen(gap, 56, 32)})`);
+    else assert.ok(dazwischen(oben, 72, 40) === 0 && dazwischen(gap, 56, 32) === 0, "bei «weniger Bewegung» gibt es keine Zwischenschritte");
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+});
+
 await check("Navigation oben links: «Ornament Cloud» und darunter «Das Dritte Rad» auf Computer und Handy, auf Startseite, Zettelkasten, ORNA, Alpha-Seiten und im Rad", async () => {
   const seiten = ["", "news/", "termine/", "portfolio/", "portfolio/nebeneinander-nacheinander/", "portfolio/nebeneinander-nacheinander/feld/", "zu-seiner-zeit/", "zu-seiner-zeit/strophe/13-das-archiv/",
     "zu-seiner-zeit/verweis/yoko-ono/", "alpha/", "alpha/pruefraster/", "alpha/verteilapparat/", "alpha/gesellschaftskonzepte/", "alpha/journalistische-texte/", "alpha/omna-color/", "alpha/drittes-rad/"];
@@ -683,7 +738,7 @@ await check("Navigation oben links: «Ornament Cloud» und darunter «Das Dritte
   }
 });
 
-await check("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen, der aktive ist markiert (voller Rahmen, zweiter feiner Ring); farblich getrennt (Orange und Violett, je mit Kontrast ab 4,5 zum Hintergrund) und auf jeder Seite genau so gross gesetzt wie auf der Website, hell und dunkel, Computer und Handy", async () => {
+await check("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen, der aktive ist invers gesetzt (Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite); farblich getrennt (Orange und Violett, je mit Kontrast ab 4,5) und auf jeder Seite genau so gross gesetzt wie auf der Website, hell und dunkel, Computer und Handy", async () => {
   const seiten = ["", "news/", "portfolio/", "portfolio/nebeneinander-nacheinander/", "zu-seiner-zeit/", "zu-seiner-zeit/strophe/13-das-archiv/", "alpha/", "alpha/pruefraster/", "alpha/gesellschaftskonzepte/", "alpha/omna-color/", "alpha/drittes-rad/"];
   const FARBEN = { hell: ["rgb(194, 65, 12)", "rgb(91, 63, 196)"], dunkel: ["rgb(240, 138, 93)", "rgb(167, 148, 255)"] };           // «Ornament Cloud» orange, «Das Dritte Rad» violett
   const rgb = (c) => c.match(/[\d.]+/g).slice(0, 3).map(Number);
@@ -704,23 +759,53 @@ await check("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen, d
           stil: [c.fontSize, c.fontWeight, c.letterSpacing, c.textTransform, c.fontFamily, c.lineHeight, c.paddingTop, c.paddingLeft, c.textAlign].join(" | "), breite: Math.round(b.width), hoehe: Math.round(b.height) }; }));
       const grund = await page.evaluate(() => { const n = (e) => getComputedStyle(e).backgroundColor, ok = (c) => !/^rgba\(.*, 0\)$|^transparent$/.test(c); return [n(document.body), n(document.documentElement)].find(ok) || "rgb(255, 255, 255)"; });
       const farben = u === "alpha/drittes-rad/" ? FARBEN.dunkel : FARBEN[modus];          // das Rad ist immer dunkel
-      assert.deepEqual(m.map((x) => x.color), farben, `${was}: Orange und Violett`);
-      for (const x of m) assert.ok(kontrast(x.color, grund) >= 4.5, `${was}: Kontrast ${kontrast(x.color, grund).toFixed(2)} (${x.color} auf ${grund})`);
       // Buttons: ganz feiner Rahmen (1 px, rund), beide gleich breit; aktiv ist im Rad «Das Dritte Rad», sonst «Ornament Cloud»
       assert.deepEqual(m.map((x) => x.aktiv), u === "alpha/drittes-rad/" ? [null, "page"] : [u === "" ? "page" : "true", null], `${was}: aria-current auf dem aktiven Button`);
       assert.equal(m[0].breite, m[1].breite, `${was}: beide Buttons gleich breit`);
       m.forEach((x, i) => {
-        const aktiv = x.aktiv !== null, r = farbe(x.rahmenFarbe), f = farbe(x.flaeche), ring = farbe(x.ringFarbe);
-        assert.equal(x.rahmen, "1px 1px 1px 1px solid 999px", `${was}: Button ${i + 1}: Rahmen 1 px ringsum, durchgezogen, Pillenform`);
-        assert.ok(naheBei(r.rgb, rgb(x.color), 1.5) && Math.abs(r.a - (aktiv ? 1 : .4)) < .02, `${was}: Button ${i + 1}: Rahmen in der Farbe der Schrift, ${aktiv ? "voll (aktiv)" : "blass, 40 % (nicht aktiv)"}: ${x.rahmenFarbe}`);
-        assert.equal(f.a, 0, `${was}: Button ${i + 1}: keine Fläche (eine Tönung drückt den Kontrast der Schrift): ${x.flaeche}`);
-        if (aktiv) assert.ok(x.ring === "solid 1px 2px" && naheBei(ring.rgb, rgb(x.color), 1.5) && ring.a === 1, `${was}: Button ${i + 1}: aktiv mit einem zweiten feinen Ring (1 px, Abstand 2 px, Farbe der Schrift): ${x.ring} ${x.ringFarbe}`);
-        else assert.ok(x.ring.startsWith("none"), `${was}: Button ${i + 1}: nicht aktiv ohne Ring: ${x.ring}`);
+        const aktiv = x.aktiv !== null, weg = rgb(farben[i]), r = farbe(x.rahmenFarbe), f = farbe(x.flaeche), schrift = farbe(x.color), nr = `${was}: Button ${i + 1}`;
+        assert.equal(x.rahmen, "1px 1px 1px 1px solid 999px", `${nr}: Rahmen 1 px ringsum, durchgezogen, Pillenform`);
+        assert.ok(x.ring.startsWith("none"), `${nr}: kein Ring ausserhalb (der aktive hat keinen zweiten Ring mehr): ${x.ring}`);
+        if (aktiv) {
+          // invers: Fläche und voller Rahmen in der Farbe des Buttons, die Schrift in der Farbe der Seite
+          assert.ok(naheBei(f.rgb, weg, 1.5) && f.a === 1, `${nr}: aktiv, die Fläche in der Farbe des Buttons (${farben[i]}): ${x.flaeche}`);
+          assert.ok(naheBei(r.rgb, weg, 1.5) && Math.abs(r.a - 1) < .02, `${nr}: aktiv, voller Rahmen in der Farbe des Buttons: ${x.rahmenFarbe}`);
+          assert.ok(naheBei(schrift.rgb, rgb(grund), 1.5), `${nr}: aktiv, die Schrift in der Farbe der Seite (${grund}): ${x.color}`);
+          assert.ok(kontrast(x.color, x.flaeche) >= 4.5, `${nr}: aktiv, Kontrast Schrift auf Fläche ${kontrast(x.color, x.flaeche).toFixed(2)} (${x.color} auf ${x.flaeche})`);
+        } else {
+          // nicht aktiv: Schrift in der Farbe des Buttons, ohne Fläche, blasser Rahmen
+          assert.ok(naheBei(schrift.rgb, weg, 1.5), `${nr}: Schrift in der Farbe des Buttons (${farben[i]}): ${x.color}`);
+          assert.ok(kontrast(x.color, grund) >= 4.5, `${nr}: Kontrast ${kontrast(x.color, grund).toFixed(2)} (${x.color} auf ${grund})`);
+          assert.equal(f.a, 0, `${nr}: nicht aktiv ohne Fläche: ${x.flaeche}`);
+          assert.ok(naheBei(r.rgb, weg, 1.5) && Math.abs(r.a - .4) < .02, `${nr}: blasser Rahmen in der Farbe des Buttons, 40 %: ${x.rahmenFarbe}`);
+        }
       });
+      // Tastaturfokus: Ring 2 px im Abstand 2 px in der Farbe des Buttons, auch beim aktiven, dessen Schrift in der Farbe der Seite steht
+      for (let i = 0; i < 2; i++) {
+        let da = false;
+        for (let n = 0; n < 8 && !da; n++) { await page.keyboard.press("Tab"); da = await page.evaluate((k) => document.activeElement === document.querySelectorAll("nav.seitenweg a")[k], i); }
+        assert.ok(da, `${was}: Button ${i + 1} per Tab erreichbar`);
+        const fo = await page.evaluate(() => { const c = getComputedStyle(document.activeElement); return { ring: [c.outlineStyle, c.outlineWidth, c.outlineOffset].join(" "), farbe: c.outlineColor, sichtbar: document.activeElement.matches(":focus-visible") }; });
+        assert.ok(fo.sichtbar && fo.ring === "solid 2px 2px" && naheBei(farbe(fo.farbe).rgb, rgb(farben[i]), 1.5) && farbe(fo.farbe).a === 1, `${was}: Button ${i + 1}: Fokusring 2 px in der Farbe des Buttons: ${fo.ring} ${fo.farbe}`);
+        assert.ok(kontrast(fo.farbe, grund) >= 3, `${was}: Button ${i + 1}: Fokusring gegen den Grund mindestens 3 : 1 (${kontrast(fo.farbe, grund).toFixed(2)})`);
+      }
       if (!website) website = m;
       assert.deepEqual(m.map(({ stil, rahmen, breite, hoehe }) => ({ stil, rahmen, breite, hoehe })), website.map(({ stil, rahmen, breite, hoehe }) => ({ stil, rahmen, breite, hoehe })), `${was}: Schrift, Rahmen, Grösse und Breite wie auf der Startseite der Website`);
       await page.close();
     }
+    await ctx.close();
+  }
+});
+
+await check("Navigation: in erzwungenen Farben (Windows, hoher Kontrast) fällt die Fläche weg, dort bleibt der aktive Button mit einem feinen Ring kenntlich und der andere hat keinen", async () => {
+  for (const u of ["", "zu-seiner-zeit/", "alpha/omna-color/", "alpha/drittes-rad/"]) {
+    const ctx = await browser.newContext({ reducedMotion: "reduce", forcedColors: "active", viewport: { width: 1000, height: 700 } });
+    const page = await ctx.newPage();
+    await page.goto(base + u);
+    assert.equal(await page.evaluate(() => matchMedia("(forced-colors: active)").matches), true, "erzwungene Farben sind an");
+    const m = await page.locator("nav.seitenweg a").evaluateAll((a) => a.map((x) => { const c = getComputedStyle(x); return { aktiv: x.hasAttribute("aria-current"), ring: [c.outlineStyle, c.outlineWidth, c.outlineOffset].join(" ") }; }));
+    assert.equal(m.length, 2, u);
+    for (const x of m) assert.equal(x.ring.startsWith("solid 1px 2px"), x.aktiv, `${u || "Startseite"}: ${x.aktiv ? "der aktive Button hat den feinen Ring" : "der andere hat keinen Ring"} (${x.ring})`);
     await ctx.close();
   }
 });

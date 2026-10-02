@@ -1,6 +1,7 @@
 // Navigation oben links (Wunsch von Christian, freigegeben am 2. Oktober 2026, REGELN §14):
 // Jede Seite trägt oben links «Ornament Cloud» (zur Startseite) und darunter «Das Dritte Rad» (zum Start des Rads), beide als Buttons mit ganz
-// feinem Rahmen; der aktive (aria-current) ist markiert: «Das Dritte Rad» im Rad, «Ornament Cloud» auf allen anderen Seiten.
+// feinem Rahmen; der aktive (aria-current) ist markiert, und zwar invers (Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite):
+// «Das Dritte Rad» im Rad, «Ornament Cloud» auf allen anderen Seiten.
 // Ausgenommen sind ORMA (eigene App, Trennung nach §14), die drei Werke im Vollbild und die Weiterleitung auf die frühere Adresse von ORNA.
 //   node --experimental-strip-types --no-warnings --test tests/navigation.test.mjs
 import test from "node:test";
@@ -65,8 +66,9 @@ test("Navigation: die beiden Links sind farblich getrennt (Orange, Violett) und 
     const css = cssVon(p), html = lies(p);
     const erster = css.match(/\.seitenweg a \{([^}]*)\}/);
     assert.ok(erster, `${p}: Regel für den ersten Link`);
-    assert.match(erster[1], /color:\s*var\(--(accent|weg-start)\)/, `${p}: «Ornament Cloud» in Orange`);
-    assert.match(css, /\.seitenweg a \+ a \{[^}]*color:\s*var\(--weg-rad\)/, `${p}: «Das Dritte Rad» in Violett, davon getrennt`);
+    assert.match(erster[1], /--weg:\s*var\(--(accent|weg-start)\)/, `${p}: «Ornament Cloud» in Orange (die Farbe des Buttons steht in --weg)`);
+    assert.match(css, /\.seitenweg a \+ a \{[^}]*--weg:\s*var\(--weg-rad\)/, `${p}: «Das Dritte Rad» in Violett, davon getrennt`);
+    assert.match(erster[1], /(?:^|[;\s])color:\s*var\(--weg\)/, `${p}: die Schrift steht in der Farbe des Buttons`);
     assert.match(css, /--weg-rad:\s*#[0-9a-f]{6}/i, `${p}: das Violett ist festgelegt`);
     assert.match(erster[1], /text-transform:\s*uppercase/, `${p}: Grossbuchstaben wie auf der Website`);
     assert.match(erster[1], /font-weight:\s*600|font:\s*600\s/, `${p}: Gewicht 600 wie auf der Website`);
@@ -94,33 +96,68 @@ const regeln = (css) => {
   return aus;
 };
 
-test("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen (1 px, blass), der aktive hat den vollen Rahmen und einen zweiten feinen Ring, überall gleich gesetzt (Wunsch von Christian, 2. Oktober 2026)", () => {
+/** Teilt ein Stylesheet in den Inhalt aller @media-Blöcke mit dieser Bedingung (Klammern gezählt) und den Rest */
+const ausMedia = (css, bedingung) => {
+  const kopf = new RegExp(`@media\\s*\\(\\s*${bedingung}\\s*\\)\\s*\\{`, "g");
+  let innen = "", rest = css.replace(/\/\*[\s\S]*?\*\//g, ""), m;
+  while ((m = kopf.exec(rest))) {
+    let tiefe = 1, i = kopf.lastIndex;
+    while (tiefe && i < rest.length) tiefe += rest[i] === "{" ? 1 : rest[i] === "}" ? -1 : 0, i++;
+    innen += rest.slice(kopf.lastIndex, i - 1) + "\n";
+    rest = rest.slice(0, m.index) + rest.slice(i);
+    kopf.lastIndex = m.index;
+  }
+  return { innen, rest };
+};
+
+/** die Variable, in der die Seite ihren Grund hält: die letzte var(--…) im background von html oder body (Rad: hinter dem Sternenhimmel) */
+const grundVariable = (r) => {
+  const werte = ["html", "body"].flatMap((sel) => [...(r.get(sel)?.get("background") ?? []), ...(r.get(sel)?.get("background-color") ?? [])]);
+  return werte.flatMap((v) => [...v.matchAll(/var\((--[a-z-]+)\)/g)].map((m) => m[1])).at(-1);
+};
+
+test("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen (1 px, blass); der aktive ist invers gesetzt, Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite; überall gleich (Wunsch von Christian, 2. Oktober 2026)", () => {
   let gesehen = 0;
+  const gruende = new Set();
   for (const p of seiten) {
-    const r = regeln(cssVon(p)), w = (sel, name) => r.get(sel)?.get(name) ?? [];
+    const { innen: erzwungen, rest } = ausMedia(cssVon(p), "forced-colors:\\s*active");
+    const r = regeln(rest), w = (sel, name) => r.get(sel)?.get(name) ?? [];
     const was = (t) => `${p}: ${t}`;
     // der Button: Polster, Rahmen 1 px (blass, dazu ein voller Rahmen für Browser ohne color-mix), Pillenform, Text in der Mitte
     assert.deepEqual(w(".seitenweg a", "padding"), ["3px 14px"], was("Polster 3px 14px"));
-    assert.deepEqual(w(".seitenweg a", "border"), ["1px solid currentColor", "1px solid color-mix(in srgb, currentColor 40%, transparent)"], was("Rahmen 1 px, blass (40 %), davor der volle Rahmen als Ersatz"));
+    assert.deepEqual(w(".seitenweg a", "border"), ["1px solid var(--weg)", "1px solid color-mix(in srgb, var(--weg) 40%, transparent)"], was("Rahmen 1 px, blass (40 %), davor der volle Rahmen als Ersatz"));
     assert.deepEqual(w(".seitenweg a", "border-radius"), ["999px"], was("Pillenform"));
     assert.deepEqual(w(".seitenweg a", "text-align"), ["center"], was("Text in der Mitte der gleich breiten Buttons"));
     // beide gleich breit (so breit wie der längere), linksbündig, mit Abstand
     assert.deepEqual(w(".seitenweg", "grid-template-columns"), ["max-content"], was("beide Buttons gleich breit"));
     assert.deepEqual(w(".seitenweg", "justify-content"), ["start"], was("linksbündig"));
-    assert.deepEqual(w(".seitenweg", "gap"), ["8px"], was("Abstand zwischen den Buttons (Platz für den Ring des aktiven)"));
-    // aktiv (aria-current): voller Rahmen und ein zweiter feiner Ring ausserhalb, keine Fläche (schon 5 % Tönung drücken den Kontrast der orangen Schrift auf OMNA COLOR unter 4,5)
-    assert.deepEqual(w(".seitenweg a[aria-current]", "border-color"), ["currentColor"], was("aktiv: voller Rahmen"));
-    assert.deepEqual(w(".seitenweg a[aria-current]", "outline"), ["1px solid currentColor"], was("aktiv: zweiter feiner Ring"));
-    assert.deepEqual(w(".seitenweg a[aria-current]", "outline-offset"), ["2px"], was("aktiv: Ring mit Abstand zum Rahmen"));
-    for (const sel of [".seitenweg a", ".seitenweg a[aria-current]", ".seitenweg a:hover"]) assert.equal(w(sel, "background").length + w(sel, "background-color").length, 0, was(`${sel}: keine Fläche`));
-    assert.deepEqual(w(".seitenweg a:hover", "border-color"), ["currentColor"], was("beim Darüberfahren: voller Rahmen"));
-    assert.deepEqual(w(".seitenweg a:focus-visible", "outline"), ["2px solid currentColor"], was("Tastaturfokus sichtbar"));
+    assert.deepEqual(w(".seitenweg", "gap"), ["8px"], was("Abstand zwischen den Buttons (Platz für den Fokusring)"));
+    // nicht aktiv: ohne Fläche, beim Darüberfahren der Rahmen voll
+    for (const sel of [".seitenweg a", ".seitenweg a:hover"]) assert.equal(w(sel, "background").length + w(sel, "background-color").length, 0, was(`${sel}: ohne Fläche`));
+    assert.deepEqual(w(".seitenweg a:hover", "border-color"), ["var(--weg)"], was("beim Darüberfahren: voller Rahmen"));
+    // aktiv (aria-current): invers, die Fläche und der volle Rahmen in der Farbe des Buttons, die Schrift in der Farbe der Seite, kein zweiter Ring mehr
+    const grund = grundVariable(r);
+    assert.match(grund ?? "", /^--(bg|papier|night)$/, was(`die Seite hält ihren Grund in einer Variablen (${grund})`));
+    gruende.add(grund);
+    assert.deepEqual(w(".seitenweg a[aria-current]", "background"), ["var(--weg)"], was("aktiv: Fläche in der Farbe des Buttons"));
+    assert.deepEqual(w(".seitenweg a[aria-current]", "border-color"), ["var(--weg)"], was("aktiv: voller Rahmen in der Farbe des Buttons"));
+    assert.deepEqual(w(".seitenweg a[aria-current]", "color"), [`var(${grund})`], was("aktiv: Schrift in der Farbe der Seite"));
+    assert.deepEqual(w(".seitenweg a[aria-current]", "outline"), [], was("aktiv: kein zweiter Ring ausserhalb mehr"));
+    assert.deepEqual(w(".seitenweg a[aria-current]", "outline-offset"), [], was("aktiv: kein Ringabstand mehr"));
+    // Tastaturfokus: Ring in der Farbe des Buttons (sichtbar auch auf dem aktiven)
+    assert.deepEqual(w(".seitenweg a:focus-visible", "outline"), ["2px solid var(--weg)"], was("Tastaturfokus sichtbar, in der Farbe des Buttons"));
     assert.deepEqual(w(".seitenweg a:focus-visible", "outline-offset"), ["2px"], was("Tastaturfokus mit Abstand"));
+    // erzwungene Farben (hoher Kontrast) nehmen die Fläche weg: nur dort bleibt der aktive mit einem feinen Ring kenntlich, sonst nichts
+    const e = regeln(erzwungen);
+    assert.deepEqual([...e.keys()], [".seitenweg a[aria-current]"], was("erzwungene Farben: nur der aktive Button hat eine eigene Regel"));
+    assert.deepEqual(e.get(".seitenweg a[aria-current]")?.get("outline"), ["1px solid currentColor"], was("erzwungene Farben: feiner Ring um den aktiven"));
+    assert.deepEqual(e.get(".seitenweg a[aria-current]")?.get("outline-offset"), ["2px"], was("erzwungene Farben: Ring mit Abstand"));
     // keine Unterstreichung mehr beim Darüberfahren (es sind Buttons)
     assert.equal(w(".seitenweg a:hover", "text-decoration").length + w(".seitenweg a:focus-visible", "text-decoration").length, 0, was("keine Unterstreichung bei Hover und Fokus"));
     gesehen += 1;
   }
   assert.ok(gesehen >= 200, `alle Seiten geprüft (${gesehen})`);
+  assert.deepEqual([...gruende].sort(), ["--bg", "--night", "--papier"], "die vier Gestaltungen (Website, Zettelkasten, Rad, OMNA COLOR) nehmen je ihren Grund");
 });
 
 test("Navigation: ORMA, die Werke und die Weiterleitung bleiben ohne (Ausnahmen sind benannt und vorhanden)", () => {

@@ -191,7 +191,8 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   Alpha-Version mit `node --experimental-strip-types tools/build-orma.ts --alpha`.
 - **Menü und Seiten** (Neuordnung vom 2. Oktober 2026, Wunsch von Christian): Die Startseite trägt den Titel
   «Raumstellen, Zeitobjekte», darunter das Stellenfeld (`werke/stellenfeld/`), in die Seite eingebettet und
-  kein Beitrag; danach die Rückmeldungen. Das Menü in der Kopfzeile hat vier Einträge, nur Text, ohne die
+  kein Beitrag; sonst nichts (die Rückmeldungen über giscus sind auf Wunsch vom 2. Oktober 2026 entfernt).
+  Das Menü in der Kopfzeile hat vier Einträge, nur Text, in der serifenlosen Schrift der Seite, ohne die
   kleinen Animationen: «Zettelkasten» (führt direkt in den Zettelkasten, `zu-seiner-zeit/`), «Apps» (`apps/`:
   ORNA, ORMA), «Masterprompts» (`masterprompts/`: die vier Prüfraster in der bisherigen Reihenfolge) und
   «Web» (`web/`: OMNA COLOR, Das Dritte Rad). Der Eintrag der aktuellen Seite ist unterstrichen
@@ -212,9 +213,9 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   und beim Dritten Rad in der Seite selbst). Die beiden Links sind farblich getrennt («Ornament Cloud» orange,
   «Das Dritte Rad» violett) und auf jeder Seite gleich gesetzt wie auf der Website (Schrift der Website, 0,8 rem,
   Gewicht 600, Grossbuchstaben, Laufweite 0,12 em; Wunsch von Christian, 2. Oktober 2026). Beide sind Buttons
-  mit ganz feinem Rahmen (1 px, Pillenform, gleich breit); der aktive ist markiert (`aria-current`, voller Rahmen
-  und ein zweiter feiner Ring): im Rad «Das Dritte Rad», auf allen anderen Seiten «Ornament Cloud» (Wunsch von
-  Christian, 2. Oktober 2026; keine Fläche, wegen des Kontrasts der Schrift). Aufbau, Farben, Rahmen, Markierung,
+  mit ganz feinem Rahmen (1 px, Pillenform, gleich breit); der aktive ist markiert (`aria-current`) und invers gesetzt
+  (Fläche und Rahmen in der Farbe des Buttons, die Schrift in der Farbe der Seite, Kontrast ab 4,5): im Rad
+  «Das Dritte Rad», auf allen anderen Seiten «Ornament Cloud» (Wunsch von Christian, 2. Oktober 2026). Aufbau, Farben, Rahmen, Markierung,
   Grösse und Ausnahmen hält `tests/navigation.test.mjs` fest.
 
 ## 13. Nicht mehr gültig (aus dem Archiv)

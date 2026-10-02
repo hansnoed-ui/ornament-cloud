@@ -54,17 +54,25 @@ body { margin: 0; color: var(--ivory); font: 400 16px/1.55 var(--body); padding:
     radial-gradient(1px 1px at 66% 90%, #fff7 50%, transparent 52%), radial-gradient(1.2px 1.2px at 44% 6%, #fff6 50%, transparent 52%),
     radial-gradient(ellipse 80% 60% at 30% 35%, #2a1f5a 0%, transparent 70%), radial-gradient(ellipse 70% 60% at 80% 80%, #1d2a52 0%, transparent 70%), var(--night);
   background-attachment: fixed; }
-/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» und darunter «Das Dritte Rad», farblich getrennt, beide als Buttons mit ganz feinem Rahmen (der aktive mit vollem Rahmen und einem zweiten, feinen Ring) und genau so gesetzt wie auf der Website (styles.css: Schrift, Grösse, Gewicht, Laufweite, Grossbuchstaben) */
+/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» und darunter «Das Dritte Rad», farblich getrennt, beide als Buttons mit ganz feinem Rahmen (der aktive invers: Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite) und genau so gesetzt wie auf der Website (styles.css: Schrift, Grösse, Gewicht, Laufweite, Grossbuchstaben) */
 .seitenweg { max-width: 980px; margin: 0 auto 8px; display: grid; grid-template-columns: max-content; justify-content: start; gap: 8px; }
-.seitenweg a { padding: 3px 14px; border: 1px solid currentColor; border: 1px solid color-mix(in srgb, currentColor 40%, transparent); border-radius: 999px; font: 600 .8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .12em; text-align: center; text-transform: uppercase; text-decoration: none; color: var(--weg-start); }
-.seitenweg a + a { color: var(--weg-rad); }
-.seitenweg a:hover, .seitenweg a[aria-current] { border-color: currentColor; }
-.seitenweg a[aria-current] { outline: 1px solid currentColor; outline-offset: 2px; }
-.seitenweg a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.seitenweg a { --weg: var(--weg-start); padding: 3px 14px; border: 1px solid var(--weg); border: 1px solid color-mix(in srgb, var(--weg) 40%, transparent); border-radius: 999px; font: 600 .8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .12em; text-align: center; text-transform: uppercase; text-decoration: none; color: var(--weg); }
+.seitenweg a + a { --weg: var(--weg-rad); }
+.seitenweg a:hover { border-color: var(--weg); }
+.seitenweg a[aria-current] { border-color: var(--weg); background: var(--weg); color: var(--night); }
+@media (forced-colors: active) { .seitenweg a[aria-current] { outline: 1px solid currentColor; outline-offset: 2px; } }
+.seitenweg a:focus-visible { outline: 2px solid var(--weg); outline-offset: 2px; }
 main { max-width: 980px; margin: clamp(16px, 5vh, 56px) auto 0; display: grid; gap: 28px; }
 .nur-lesen { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }   /* der Titel steht nicht mehr über dem Rad (auf Wunsch), die Überschrift bleibt für Vorlesegeräte */
 .stage { display: grid; gap: 28px; align-items: start; }
 .wheelbox { display: grid; gap: 32px; justify-items: center; }   /* Abstand zwischen Rad und den Knöpfen «Drehen» und «Brücke» */
+/* Startseite des Rads (noch nichts gedreht, nichts geöffnet; Wunsch vom 2. Oktober 2026: mehr Raum nach oben und unten): das Rad steht freier zwischen der Navigation und den Knöpfen,
+   die Abstände wachsen mit der Fensterhöhe. Sobald Karten oder ein Stück offen sind, gelten wieder die engen Abstände von oben (so gefallen sie), und die Abstände weichen sanft.
+   Ohne :has() (sehr alte Browser) bleibt es bei den engen Abständen. */
+body:not(:has(#result:not([hidden]), #lese:not([hidden]))) main { margin-top: clamp(40px, 9vh, 96px); }
+body:not(:has(#result:not([hidden]), #lese:not([hidden]))) .wheelbox { gap: clamp(40px, 7vh, 72px); }
+main { transition: margin-top .45s ease; }
+.wheelbox { transition: gap .45s ease; }
 .wheel { width: min(100%, 480px); aspect-ratio: 1; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: width .3s; }
 .wheel.zieht { cursor: grabbing; }
 .wheel:focus-visible { outline: 1px solid var(--gold-hi); outline-offset: 8px; border-radius: 50%; }
@@ -90,7 +98,7 @@ main { max-width: 980px; margin: clamp(16px, 5vh, 56px) auto 0; display: grid; g
 .wheel[data-fokus="zeit"] #zeit, .wheel[data-fokus="form"] #form, .wheel[data-fokus="farbe"] #farbe { filter: drop-shadow(0 0 2.4px #f0d78fcc); }   /* der Ring des offenen Stücks leuchtet */
 .tick { fill: var(--gold-hi); filter: drop-shadow(0 0 3px #f0d78f); }
 .core { fill: #0d0b1a; stroke: var(--gold); stroke-width: .5; }
-@media (prefers-reduced-motion: reduce) { .spin { transition-duration: .01s !important; } .halo, .pulse { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .spin { transition-duration: .01s !important; } .halo, .pulse { animation: none; } main, .wheelbox { transition: none; } }
 button { font: 500 1rem var(--body); cursor: pointer; }
 button.go { color: var(--gold-hi); background: transparent; border: 1px solid var(--gold); border-radius: 999px; padding: 11px 34px; letter-spacing: .12em; text-transform: uppercase; font-size: .85rem; box-shadow: 0 0 22px #c9a45c33, inset 0 0 14px #c9a45c22; }
 button.go:hover:not(:disabled), button.go:focus-visible { background: #c9a45c22; }

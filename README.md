@@ -5,12 +5,12 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 
 - `index.html` – Startseite (Neuordnung vom 2. Oktober 2026, Wunsch von Christian): der Titel «Raumstellen, Zeitobjekte», darunter der Satz «Beobachtung ist Anlass für Veränderungen in der Realität.»
   (er steht auf der Vorschaukarte zum Teilen, `tests/teilen.test.mjs` hält beides zusammen) und das Stellenfeld, in die Seite eingebettet (kein Beitrag, keine Karte): ein `<iframe>` auf `werke/stellenfeld/`,
-  dazu die Rückmeldungen. Die Karten (Apps, Zettelkasten, Prüfraster) stehen nicht mehr hier, sondern auf den Seiten des Menüs (siehe unten).
+  sonst steht nichts auf der Seite: die Rückmeldungen (giscus, `kommentare.js`) sind auf Wunsch von Christian vom 2. Oktober 2026 entfernt. Die Karten (Apps, Zettelkasten, Prüfraster) stehen nicht mehr hier, sondern auf den Seiten des Menüs (siehe unten).
   Das Stellenfeld ist die 3D-Ansicht selbst, drehbar (Ziehen), Zoom mit Strg + Mausrad; sie lädt `vendor/three/` und rechnet nur, solange sie im Bild ist.
   Eingebettet erkennt sich `werke/stellenfeld/index.html` an `window.self !== window.top` (Klasse `eingebettet` am `<html>`): senkrechtes Wischen und das Mausrad blättern die Seite weiter
   (`touch-action: pan-y`, Rad nur mit Strg/Cmd zoomen, keine Tastenkürzel), waagrecht dreht die Kamera; im Vollbild und auf der eigenen Seite gilt wie bisher alles. GoatCounter ignoriert Rahmen, die Einbettung wird nicht gezählt.
   Bei «weniger Bewegung» steht die Szene still (Standbild, «Abspielen»)
-- Menü (`<nav class="menu">`, Neuordnung vom 2. Oktober 2026): vier Wörter ohne Symbole und Animationen, immer in dieser Reihenfolge: **Zettelkasten** (führt direkt zu `zu-seiner-zeit/`), **Apps** (`apps/`),
+- Menü (`<nav class="menu">`, Neuordnung vom 2. Oktober 2026): vier Wörter ohne Symbole und Animationen, in der serifenlosen Schrift der Seite (`--font`, Gewicht 500; Wunsch vom 2. Oktober 2026: moderner als die frühere Serife), immer in dieser Reihenfolge: **Zettelkasten** (führt direkt zu `zu-seiner-zeit/`), **Apps** (`apps/`),
   **Masterprompts** (`masterprompts/`), **Web** (`web/`). Es steht in den Kopfzeilen von Startseite, News, Termine, Portfolio, den drei neuen Seiten und von ORNA (Rad, Feld und die App-Abschriften, dort ausgeblendet);
   Zettelkasten, Alpha-Seiten, ORMA und Werke haben es nicht. Aktiv ist, wo man ist (`aria-current="page"`; auf ORNA, das unter Apps hängt: `true`), der Eintrag ist dann unterstrichen.
   Das Markup steht von Hand in den Seiten (`tests/struktur.test.mjs` prüft Reihenfolge, Ziele und aktiven Eintrag auf allen elf Seiten). News, Termine und Portfolio bleiben unter ihren Adressen, tragen das Menü und sind sonst nicht verlinkt (Entscheid von Christian, 2. Oktober 2026)
@@ -18,20 +18,17 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `masterprompts/` – Seite «Masterprompts»: die vier Prüfraster als Beiträge, in der Reihenfolge der Alpha-Übersicht: «Nebeneinander und Nacheinander», «Der Verteilapparat des Körpers»,
   «Prüfraster für Gesellschaftskonzepte», «Prüfraster journalistischer Texte» (alle als Alpha gekennzeichnet, die letzten beiden «In Arbeit»); zwei mal zwei (`.grid--paare`), die Vorschauen sind gezeichnete Vierfelder, Dreieck und Zeilen (SVG in der Seite)
 - `web/` – Seite «Web»: die Beiträge OMNA COLOR und Das Dritte Rad (Alpha, Prototyp). Die Vorschau ist je ein Bild (640 × 800, dunkel): `assets/vorschau-omna-color.jpg` und `assets/vorschau-drittes-rad.jpg`, erzeugt mit `tools/start-og.mjs vorschau`
-- `kommentare.js` – Rückmeldungen auf der Startseite über giscus (GitHub Discussions dieses Repositorys, ohne Prüfung sichtbar);
-  lädt `giscus.app` erst, wenn der Abschnitt in Sicht kommt, und nur wenn `CATEGORY_ID` eingetragen ist (Einrichten: Kommentar im Skript).
-  Einzige Ausnahme von «keine fremden Dateien» (freigegeben am 29. September 2026)
 - `styles.css` – Gestaltung (inkl. automatischem Dark Mode und Farben des Hintergrunds)
 - Navigation oben links (`<nav class="seitenweg">`, REGELN §14, Wunsch vom 2. Oktober 2026): auf jeder Seite «Ornament Cloud» (Startseite) und darunter «Das Dritte Rad» (Start des Rads),
   an die Stelle der früheren Zeile «Ornament Cloud · Alpha». Das Markup steht in den Seiten von Hand und in den Erzeugern `tools/build-zu-seiner-zeit.ts` und `tools/build-alpha-texte.ts`;
   die Gestaltung folgt der Seitenfamilie (`styles.css` für Website und Alpha-Texte, `zu-seiner-zeit/zsz.css`, bei OMNA COLOR und beim Dritten Rad in der Seite selbst).
   Die beiden Links sind farblich getrennt («Ornament Cloud» orange wie der Akzent der Website, «Das Dritte Rad» violett, `--weg-rad`; im dunklen Modus hellere Töne; das Dritte Rad ist immer dunkel)
   und auf jeder Seite gleich gesetzt wie auf der Website (Schrift der Website, 0,8 rem, Gewicht 600, Grossbuchstaben, Laufweite 0,12 em); Wunsch vom 2. Oktober 2026.
-  Beide Links sind Buttons mit ganz feinem Rahmen (1 px, Pillenform, gleich breit, Abstand 8 px; Rahmen blass, 40 % der Schriftfarbe). Der aktive trägt `aria-current`, einen vollen Rahmen und einen zweiten feinen Ring
-  (`outline` 1 px, Abstand 2 px); keine Fläche, denn schon 5 % Tönung drücken den Kontrast der orangen Schrift unter 4,5. Aktiv ist im Rad «Das Dritte Rad» (`aria-current="page"`), auf der Startseite
-  «Ornament Cloud» (`page`), auf allen anderen Seiten ebenfalls «Ornament Cloud» (`true`: man ist in der Website). Beim Darüberfahren wird der Rahmen voll, der Tastaturfokus ist ein Ring von 2 px.
+  Beide Links sind Buttons mit ganz feinem Rahmen (1 px, Pillenform, gleich breit, Abstand 8 px; Rahmen blass, 40 % der Schriftfarbe). Der aktive trägt `aria-current` und ist invers gesetzt (Wunsch vom 2. Oktober 2026): Fläche und Rahmen in der Farbe des Buttons (je Link in der Variablen `--weg`),
+  die Schrift in der Farbe der Seite (`--bg`, `--papier`, `--night`; Kontrast ab 4,5); in erzwungenen Farben (Windows, hoher Kontrast) bleibt er mit einem feinen Ring kenntlich. Aktiv ist im Rad «Das Dritte Rad» (`aria-current="page"`), auf der Startseite
+  «Ornament Cloud» (`page`), auf allen anderen Seiten ebenfalls «Ornament Cloud» (`true`: man ist in der Website). Beim Darüberfahren wird der Rahmen voll, der Tastaturfokus ist ein Ring von 2 px in der Farbe des Buttons.
   Ausgenommen sind ORMA (eigene App), `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`. Neue Seiten brauchen sie ebenfalls; `tests/navigation.test.mjs` meldet fehlende.
-  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 26: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
+  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 27: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
 - `icons.js` – gezeichnete, animierte Schwarz-Weiss-Symbole: die Welle unter dem Kopf, das Rad der Karten ORNA und ORMA, Prozess, Inklusion und Turm (News, Termine); die Symbole des früheren Menüs (reentry, zeit, stellen) sind entfernt (Dauer in `PERIOD`, Marke `?v=` zurzeit 14)
 - `news/` – News als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
 - `termine/` – Termine als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen
@@ -85,7 +82,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   die beiden anderen laufen gegenläufig wie ineinandergreifende Zahnräder, nach dem Loslassen läuft das Rad mit dem Schwung aus. Die Auslaufkurve kommt aus ORNA (`portfolio/nebeneinander-nacheinander/js/lib/spin.js`):
   sie beginnt mit dem Tempo der Geste und endet mit Tempo null genau auf dem Ziel, 2,6 bis 6,8 Sekunden. Die Geste bestimmt nur Richtung, Tempo und Dauer, welche Stücke das Rad zeigt, bleibt Zufall.
   Ein Antippen dreht wie bisher; bei «weniger Bewegung» dreht auch die Geste ohne Auslauf; ein Wisch in den Ecken neben dem Kreis blättert auf dem Handy die Seite (das Rad sperrt das Blättern, `touch-action: none`).
-  Mehr Luft zwischen Rad und Knöpfen (Wunsch vom 2. Oktober 2026). Keine Texteingaben: das Satzfeld unter den Karten ist weg, «Karte kopieren» kopiert nur die Karte (Zeit, Form, Farbe).
+  Mehr Luft zwischen Rad und Knöpfen (Wunsch vom 2. Oktober 2026), und auf der Startseite des Rads (noch nichts gedreht oder geöffnet) mehr Raum über und unter dem Rad: oben `clamp(40px, 9vh, 96px)`, zwischen Rad und Knöpfen `clamp(40px, 7vh, 72px)`,
+  mit Karten und beim Lesen die engen Abstände von früher (oben `clamp(16px, 5vh, 56px)`, unten 32 px; Wunsch vom 2. Oktober 2026, «im späteren Verlauf mit den Kästchen sieht es gut aus»). Das regelt eine CSS-Regel mit `:has()` auf `#result` und `#lese`, der Übergang dauert 0,45 s (bei «weniger Bewegung» springt er). Keine Texteingaben: das Satzfeld unter den Karten ist weg, «Karte kopieren» kopiert nur die Karte (Zeit, Form, Farbe).
   Kein Titel über dem Rad und kein Text darunter, kein «Zurück zum Start», kein Kasten «Fäden»; `faeden()` bleibt in `engine.js` (ein Test deckt sie ab), damit eine ältere Seite im Zwischenspeicher des Browsers keinen Export vermisst.
   Adressen: `?t=<Strophe>~<Konstellation>~<Übung>~<Farbe>~<Zeichen>` (mit `&f=zeit|form|farbe` für das offene Stück) stellt einen Stand wieder her, `?von=<strophe|paar|uebung|person>~<Kennung>` dreht von einem Stück aus weiter;
   «Zurück» im Browser folgt dem Verlauf. Auf den Originalseiten (Strophe, ORNA, OMNA COLOR) erscheint nur mit `?rad=1` am unteren Rand dieselbe Auswahl aus `weiter.js` (Kacheln aus `kacheln.js`).
