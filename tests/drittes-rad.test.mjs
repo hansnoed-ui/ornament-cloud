@@ -346,13 +346,14 @@ test("Gestaltung: im Rad selbst kein Text und keine Zahlen, die Schrift ist Inst
   assert.ok(!/ZYKLEN\[[^\]]*\]\[0\]|romisch|römisch/i.test(seite.split("// ---- Zeit:")[1].split("// ---- Form:")[0]), "keine römischen Zahlen im Zeitring");
 });
 
-test("Schlichte Seite (Wunsch vom 2. Oktober 2026): nichts unter dem Titel, «Brücke» wie «Drehen», kein «Zurück zum Start», kein Kasten «Fäden»", () => {
+test("Schlichte Seite (Wunsch vom 2. Oktober 2026): nichts unter dem Titel, «Brücke» wie «Drehen», kein «Zurück zum Start», kein Kasten «Fäden», keine Links zu den Originalseiten", () => {
   const seite = lies("alpha/drittes-rad/index.html");
   assert.match(seite, /<header>\s*<h1>Das Dritte Rad<\/h1>\s*<\/header>/, "unter dem Titel steht nichts");
   assert.match(seite, /<button class="go" id="go" type="button">Drehen<\/button><button class="go" id="bridge" type="button" aria-label="Brücke schlagen">Brücke<\/button><\/div>/, "zwei gleich gestaltete Knöpfe, sonst keiner");
   for (const f of ["index.html", "engine.js", "kacheln.js", "weiter.js"])
     assert.ok(!/Zurück zum Start|id="start"|drad-start|class="quiet start"/.test(lies(`alpha/drittes-rad/${f}`)), `${f}: kein «Zurück zum Start»`);
   assert.ok(!/id="faeden"|\.faeden|\bfaeden\(|text: "Fäden"/.test(seite), "kein Kasten «Fäden» auf der Seite");
+  assert.ok(!/öffnen ↗|class: "original"|\.original\b|adresse\.(strophe|paar|uebung)\(/.test(seite), "keine Links zu den Originalseiten («… öffnen ↗»)");
   assert.equal(typeof E.faeden, "function", "die Funktion bleibt im Modul, damit eine ältere Seite im Zwischenspeicher keinen Export vermisst");
 });
 

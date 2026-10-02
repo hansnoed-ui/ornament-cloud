@@ -120,8 +120,6 @@ textarea { width: 100%; min-height: 96px; font: 400 1rem/1.5 var(--body); backgr
 .lese li b { font-weight: 500; color: var(--ivory); }
 .lese li .meta { font-size: .85rem; }
 .lese a { color: var(--gold-hi); text-underline-offset: 3px; }
-.lese .original { font-size: .85rem; }
-.lese .original a { color: var(--mute); }
 .lese .zeichen-paar { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
 .lese .zeichen-paar figure { margin: 0; display: grid; justify-items: center; gap: 4px; font-size: .8rem; color: var(--mute); }
 .lese .zeichen-paar svg { width: 52px; height: 52px; }
@@ -185,8 +183,8 @@ addEventListener("load", function () { setTimeout(function () { if (!window.radG
 </script>
 <script type="module">
 import { symbolMarkup, SYMBOL_COUNT } from "../../portfolio/nebeneinander-nacheinander/js/symbols.js";
-import { ZYKLEN, THEMEN, STROPHEN, PERSONEN, nameVon, nrVon, ziehung, bruecke, adresse, strophe, paar, uebung, paareVon, wegeImSpiel, rueckkehr } from "./engine.js?v=2d916f53";
-import { kachelnBauen, KACHELN_CSS } from "./kacheln.js?v=2d916f53";
+import { ZYKLEN, THEMEN, STROPHEN, PERSONEN, nameVon, nrVon, ziehung, bruecke, adresse, strophe, paar, uebung, paareVon, wegeImSpiel, rueckkehr } from "./engine.js?v=903834b2";
+import { kachelnBauen, KACHELN_CSS } from "./kacheln.js?v=903834b2";
 
 const GOETHE = ["schön", "edel", "gut", "nützlich", "gemein", "Phantasie", "unnötig"];   // Goethe 1809: Eigenschaften je Farbe (Rot bis Violett), nur auf den Karten; Phantasie steht für den blauvioletten Bereich
 // Tierkreis: zwölf Zeichen als eigene Linien (kein Schriftzeichen, damit sie überall gleich aussehen)
@@ -390,7 +388,6 @@ function lese() {
       return li; })));
     const an = (s.v || []).map((id) => STROPHEN.find((x) => x.n === id)).filter(Boolean);
     if (an.length) k.push(h("h3", { text: "Anklänge" }), h("ul", {}, ...an.map((x) => h("li", {}, lnk(`${x.n} · ${x.t}`, adresse.spiel(rueckkehr({ art: "strophe", slug: x.s }), "zeit")), h("span", { class: "meta", text: x.b })))));
-    k.push(h("p", { class: "original" }, h("a", { href: adresse.strophe(s), text: "Im Zettelkasten öffnen ↗" })));
   } else if (fokus === "form") {
     const ids = [c.artistId, c.theoristId];
     k.push(h("small", { class: "art", text: "ORNA · Begegnung" }),
@@ -402,14 +399,12 @@ function lese() {
       return li; })));
     const imZ = ids.flatMap((id) => STROPHEN.filter((x) => x.r.some((r) => r.s === id)).slice(0, 3).map((x) => [id, x]));
     if (imZ.length) k.push(h("h3", { text: "Im Zettelkasten" }), h("ul", {}, ...imZ.map(([id, x]) => h("li", {}, h("b", { text: nameVon(id) }), lnk(`${x.n} · ${x.t}`, adresse.spiel(rueckkehr({ art: "strophe", slug: x.s }, Math.random, { person: id, paar: c }), "zeit"))))));
-    k.push(h("p", { class: "original" }, h("a", { href: adresse.paar(c), text: "In ORNA öffnen ↗" })));
   } else {
     const col = THEMEN[cur.ic][1], dot = h("span", { class: "dot" }); dot.style.background = col; dot.style.color = col;
     const chip = (name) => h("span", { class: "chip", text: name });
     k.push(h("small", { class: "art", text: `OMNA COLOR · Übung ${e.id}` }), h("h2", { tabindex: "-1" }, dot, e.n),
       h("div", { class: "chips" }, chip(`Thema ${e.t}`), ...(e.nb || []).map((n) => chip(`Nachbar ${n}`)), chip(`${e.d} Min.`), chip(`Goethe 1809: ${GOETHE[cur.ic]}`)),
-      h("p", { class: "meta", text: "Material: " + e.m }), h("p", { class: "text", text: e.a }), h("p", { class: "frage" }, h("small", { text: "Zum Schluss" }), e.f),
-      h("p", { class: "original" }, h("a", { href: adresse.uebung(e), text: "In OMNA COLOR öffnen ↗" })));
+      h("p", { class: "meta", text: "Material: " + e.m }), h("p", { class: "text", text: e.a }), h("p", { class: "frage" }, h("small", { text: "Zum Schluss" }), e.f));
   }
   $("lese").replaceChildren(...k);
   $("wege").replaceChildren(h("h3", { text: "Wie geht es weiter?" }), kachelnBauen(wegeImSpiel(alsZiel(), fokus)));
