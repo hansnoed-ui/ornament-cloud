@@ -516,7 +516,7 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
   assert.match(omna, /<a href="\.\.\/\.\.\/">Ornament Cloud<\/a> · <a href="\.\.\/">Alpha<\/a>/);
   const rad3 = readFileSync(new URL("alpha/drittes-rad/index.html", root), "utf8");
   assert.ok(!/(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/.test(rad3), "Das Dritte Rad lädt nichts von fremden Servern");
-  assert.match(rad3, /const JEV_URL = "";/, "jev bleibt ohne Proxy ausgeschaltet");
+  assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon/.test(rad3), "Das Dritte Rad ruft keinen Dienst auf (jev wird nur beim Bauen gefragt)");
   assert.match(rad3, /<a href="\.\.\/\.\.\/">Ornament Cloud<\/a> · <a href="\.\.\/">Alpha<\/a>/);
   for (const r of at.RASTER) {
     const html = readFileSync(new URL(`alpha/${r.seite}/index.html`, root), "utf8");
