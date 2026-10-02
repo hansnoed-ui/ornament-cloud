@@ -2,8 +2,8 @@
 // Wird von den Seiten nur geladen, wenn die Adresse ?rad= trägt (dynamischer Import); sonst bleibt alles, wie es ist.
 // Vier Wege in jedem Schritt: zurück ins Rad, Zettelkasten, ORNA, OMNA COLOR. Sie führen ins Rad zurück, wo das Spiel im Design des Rads weitergeht.
 // Importe mit ?v=<Marke>: setzt tools/build-drittes-rad.ts (gegen alte Module im Zwischenspeicher des Browsers, siehe dort).
-import { wege, WURZEL } from "./engine.js?v=903834b2";
-import { kachelnBauen, KACHELN_CSS } from "./kacheln.js?v=903834b2";
+import { wege, WURZEL } from "./engine.js?v=ce8c1ac1";
+import { kachelnBauen, KACHELN_CSS } from "./kacheln.js?v=ce8c1ac1";
 
 const W = new URL(WURZEL).pathname;
 const IN = { zeit: W + "zu-seiner-zeit/", form: W + "portfolio/nebeneinander-nacheinander/", farbe: W + "alpha/omna-color/" };
