@@ -2,7 +2,7 @@
 // Jede Seite trägt oben links «Ornament Cloud» (zur Startseite) und darunter «Das Dritte Rad» (zum Start des Rads), beide als Buttons mit ganz
 // feinem Rahmen; der aktive (aria-current) ist markiert, und zwar invers (Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite):
 // «Das Dritte Rad» im Rad, «Ornament Cloud» auf allen anderen Seiten. Auf der Website stehen beide Links in einer Farbe (hell Anthrazit, dunkel helles
-// Sonnengelb) mit einer feinen Linie darunter (Wunsch vom 2. Oktober 2026, 19:00 UTC); das Dritte Rad behält Orange und Violett und hat keine Linie.
+// Sonnengelb) mit einer feinen Linie darunter (Wunsch vom 2. Oktober 2026, 19:00 UTC); das Dritte Rad behält Orange und Violett und hat eine Linie in seinem Elfenbein.
 // Ausgenommen sind ORMA (eigene App, Trennung nach §14), die drei Werke im Vollbild und die Weiterleitung auf die frühere Adresse von ORNA.
 //   node --experimental-strip-types --no-warnings --test tests/navigation.test.mjs
 import test from "node:test";
@@ -172,14 +172,16 @@ test("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen (1 px, bl
   assert.deepEqual([...gruende].sort(), ["--bg", "--night", "--papier"], "die vier Gestaltungen (Website, Zettelkasten, Rad, OMNA COLOR) nehmen je ihren Grund");
 });
 
-test("Navigation: unter der Kopfzeile steht eine feine Linie in der Farbe der Hauptlinks, auf den Seiten mit Menü die Welle, sonst eine gerade Linie von 1 px; das Dritte Rad hat keine; im Zettelkasten ist der Abstand bis zum Titel grösser (Wunsch von Christian, 2. Oktober 2026, 19:00 UTC)", () => {
+test("Navigation: unter der Kopfzeile steht eine feine Linie in der Farbe der Hauptlinks, auf den Seiten mit Menü die Welle, sonst eine gerade Linie von 1 px; das Dritte Rad hat eine gerade Linie; im Zettelkasten ist der Abstand bis zum Titel grösser (Wunsch von Christian, 2. Oktober 2026, 19:00 UTC)", () => {
   let wellen = 0, gerade = 0;
   for (const p of seiten) {
     const html = lies(p), css = cssVon(p), r = regeln(ausMedia(css, "forced-colors:\\s*active").rest), w = (sel, name) => r.get(sel)?.get(name) ?? [];
     const was = (t) => `${p}: ${t}`;
     const nachLinks = [...r.keys()].filter((k) => /\.seitenweg::after$/.test(k));
     if (imRad(p)) {
-      assert.deepEqual(nachLinks, [], was("das Rad hat keine Linie unter den Links"));
+      assert.deepEqual(nachLinks, [".seitenweg::after"], was("das Rad hat eine gerade Linie unter den Links (Wunsch vom 2. Oktober 2026, 19:35 UTC)"));
+      assert.deepEqual([w(".seitenweg::after", "position"), w(".seitenweg::after", "content")].flat(), ["absolute", '""'], was("die Linie schiebt nichts"));
+      assert.ok(w(".seitenweg::after", "border-top").every((v) => v.startsWith("1px solid")) && w(".seitenweg::after", "border-top").length > 0, was("Linie von 1 px"));
       assert.ok(!html.includes('class="divider"'), was("das Rad hat keine Welle"));
       continue;
     }
