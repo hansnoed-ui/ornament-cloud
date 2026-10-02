@@ -281,6 +281,21 @@ function release() {
 }
 wheel.addEventListener("pointerup", release);
 wheel.addEventListener("pointercancel", release);
+
+// Direktlink von «Das Dritte Rad»: ?u=<Nummer> zeigt diese Übung, das Rad steht auf ihrem Thema
+(function direkt() {
+  const u = new URLSearchParams(location.search).get("u");
+  const e = u && EX.find((x) => x.id === u);
+  const a = e ? THEMES.findIndex((t) => t.name === e.t) : -1;
+  if (a < 0) return;
+  show(e, a, null);
+  setTransition(false);
+  outerDeg = -(a + .5) * S; innerDeg = (a + .5) * S;
+  $("outer").style.transform = `rotate(${outerDeg}deg)`; $("inner").style.transform = `rotate(${-innerDeg}deg)`;
+  $("mixdot").style.fill = THEMES[a].c;
+  requestAnimationFrame(() => setTransition(true));
+})();
+if (/[?&]rad=/.test(location.search)) import("../drittes-rad/weiter.js");   // «Das Dritte Rad»: Auswahl nur mit ?rad=
 </script>
 
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->

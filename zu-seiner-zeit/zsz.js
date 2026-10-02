@@ -128,6 +128,9 @@ if (typeof document !== "undefined") {
   function zufall(d) {
     const von = Number(new URLSearchParams(location.search).get("von"));
     const id = andereStrophe(d.stanzas.length, von);
-    location.replace(new URL(`strophe/${d.stanzas[id - 1].slug}/`, basis));   // ersetzt: Zurück führt zur vorherigen Strophe
+    location.replace(new URL(`strophe/${d.stanzas[id - 1].slug}/${/[?&]rad=/.test(location.search) ? "?rad=1" : ""}`, basis));   // ersetzt: Zurück führt zur vorherigen Strophe
   }
+
+  // «Das Dritte Rad» (alpha/drittes-rad/): die Auswahl am unteren Rand erscheint nur, wenn die Adresse ?rad= trägt
+  if (/[?&]rad=/.test(location.search)) import("../alpha/drittes-rad/weiter.js");
 }
