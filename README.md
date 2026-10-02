@@ -49,7 +49,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `zu-seiner-zeit/` – Hypertext «Zu seiner Zeit» (49 Strophen, Spur, Zufall, Verweise), erzeugt mit
   `node --experimental-strip-types tools/build-zu-seiner-zeit.ts` aus `src/data/zu-seiner-zeit.json` (unverändert) und
   `src/data/zu-seiner-zeit.extra.json`; Gestaltung `zu-seiner-zeit/zsz.css`, Verhalten `zu-seiner-zeit/zsz.js`. Alles Weitere in `src/zu-seiner-zeit/README.md`
-- `alpha/` – Alpha-Versionen, öffentlich erreichbar, nicht in der Sitemap, `noindex`; ORMA und die Seiten der Grundlagenpapiere (`alpha/pruefraster/`, `alpha/verteilapparat/`) sind von Startseite und News verlinkt (REGELN §14, Test prüft das);
+- `alpha/` – Alpha-Versionen, öffentlich erreichbar, nicht in der Sitemap, `noindex`; ORMA und die Seiten der Grundlagenpapiere (`alpha/pruefraster/`, `alpha/verteilapparat/`) sind von Startseite und News verlinkt (REGELN §14, Test prüft das); die Übersicht `alpha/` selbst ist von keiner Seite verlinkt (Entscheid vom 2. Oktober 2026, `tests/navigation.test.mjs` prüft das), nur per Adresse erreichbar;
   `alpha/orma/` ist ORMA, erzeugt mit `node --experimental-strip-types tools/build-orma.ts --alpha`
   Prüfraster in Arbeit (`alpha/gesellschaftskonzepte/`, `alpha/journalistische-texte/`, unten in der Übersicht direkt vor OMNA COLOR, «Zurzeit in Arbeit»):
   Quelle `src/alpha/*.md`, Seiten und Markdown-Download erzeugt mit `node --experimental-strip-types tools/build-alpha-texte.ts`

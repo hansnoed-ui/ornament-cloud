@@ -158,7 +158,6 @@ export function seite(r: typeof RASTER[number], md: string): string {
     <article class="at-text">
 ${body}
     </article>
-    <p class="back"><a href="../">← Zur Alpha-Übersicht</a></p>
   </main>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>

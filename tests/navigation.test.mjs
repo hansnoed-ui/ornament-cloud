@@ -62,8 +62,18 @@ test("Navigation: ORMA, die Werke und die Weiterleitung bleiben ohne (Ausnahmen 
   }
 });
 
+test("Navigation: keine Seite verlinkt die Alpha-Übersicht (alpha/), sie ist nur per Adresse erreichbar (Entscheid von Christian, 2. Oktober 2026)", () => {
+  assert.ok(existsSync(new URL("alpha/index.html", root)), "die Übersicht selbst gibt es weiter");
+  for (const p of alle) {
+    for (const [, href] of lies(p).matchAll(/<a\b[^>]*\shref="([^"]*)"/g)) {
+      const u = new URL(href, new URL(p, "https://ornament.cloud/"));
+      assert.ok(!(u.hostname === "ornament.cloud" && /^\/alpha\/(index\.html)?$/.test(u.pathname)), `${p}: ${href} führt zur Alpha-Übersicht`);
+    }
+  }
+});
+
 test("Navigation: REGELN §14 nennt die Freigabe vom 2. Oktober 2026 und die Ausnahmen", () => {
   const regeln = lies("src/doppelspalt/REGELN.md");
   assert.match(regeln, /\*\*Navigation oben links\*\* \(freigegeben am 2\. Oktober 2026/);
-  for (const wort of ["«Ornament Cloud»", "«Das Dritte Rad»", "ORMA", "werke/", "tests/navigation.test.mjs"]) assert.ok(regeln.split("**Navigation oben links**")[1].includes(wort), `§14 nennt ${wort}`);
+  for (const wort of ["«Ornament Cloud»", "«Das Dritte Rad»", "Alpha-Übersicht", "ORMA", "werke/", "tests/navigation.test.mjs"]) assert.ok(regeln.split("**Navigation oben links**")[1].includes(wort), `§14 nennt ${wort}`);
 });

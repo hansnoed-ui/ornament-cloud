@@ -189,9 +189,10 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
 - **Navigation oben links** (freigegeben am 2. Oktober 2026, Ausnahme zu «andere Seiten verlinken den
   Alpha-Bereich nicht»): Jede Seite trägt oben links «Ornament Cloud» (zur Startseite) und darunter
   «Das Dritte Rad» (zum Start des Rads, `alpha/drittes-rad/`). Das ist der einzige Alpha-Link, den alle
-  Seiten haben. Die frühere Zeile «Ornament Cloud · Alpha» entfällt; die Alpha-Übersicht bleibt unter
-  `alpha/` und unten auf den Alpha-Textseiten erreichbar. Ausgenommen sind ORMA (eigene App, siehe
-  Trennung), die drei Werke unter `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`.
+  Seiten haben. Die frühere Zeile «Ornament Cloud · Alpha» entfällt, ebenso der Link «← Zur Alpha-Übersicht»
+  unten auf den Alpha-Textseiten: Die Alpha-Übersicht `alpha/` ist von keiner Seite verlinkt (Entscheid
+  von Christian am 2. Oktober 2026) und nur per Adresse erreichbar. Ausgenommen sind ORMA (eigene App,
+  siehe Trennung), die drei Werke unter `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`.
   Die Gestaltung folgt der jeweiligen Seitenfamilie (`styles.css`, `zu-seiner-zeit/zsz.css`, bei OMNA COLOR
   und beim Dritten Rad in der Seite selbst). Aufbau und Ausnahmen hält `tests/navigation.test.mjs` fest.
 

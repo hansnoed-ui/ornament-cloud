@@ -498,12 +498,12 @@ test("Symbol und Vorschaubild: ORNA-Motiv geteilt, PNG-Grössen stimmen, Vorscha
   assert.match(html, /<script type="module" src="js\/intro\.js\?v=/);
 });
 
-test("Alpha: oben links stehen «Ornament Cloud» und «Das Dritte Rad» (kein «Alpha» mehr); die Alpha-Übersicht bleibt unten auf den Textseiten verlinkt", () => {
+test("Alpha: oben links stehen «Ornament Cloud» und «Das Dritte Rad» (kein «Alpha» mehr), unten steht kein Link zur Alpha-Übersicht", () => {
   for (const p of ["alpha/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html"]) {
     const html = readFileSync(new URL(p, root), "utf8");
     assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="[^"]+">Ornament Cloud<\/a>\s*<a href="[^"]+">Das Dritte Rad<\/a>\s*<\/nav>/, p);
     assert.ok(!/class="eyebrow brand"|Ornament Cloud<\/a> · <a/.test(html), `${p}: die frühere Zeile «Ornament Cloud · Alpha» ist weg`);
-    if (p !== "alpha/index.html") assert.match(html, /<p class="back"[^>]*><a href="\.\.\/">← Zur Alpha-Übersicht<\/a><\/p>/, `${p}: Link zur Alpha-Übersicht unten`);
+    assert.ok(!html.includes("Zur Alpha-Übersicht"), `${p}: kein Link zur Alpha-Übersicht (Entscheid vom 2. Oktober 2026, tests/navigation.test.mjs prüft alle Seiten)`);
   }
 });
 
