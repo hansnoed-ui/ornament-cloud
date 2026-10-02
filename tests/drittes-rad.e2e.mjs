@@ -872,7 +872,7 @@ await check("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen, d
   }
 });
 
-await check("Kopfzeile: unter den Hauptlinks steht eine feine Linie in deren Farbe, auf den Seiten mit Menü die Welle, sonst eine gerade Linie über die Spaltenbreite, im Rad keine; im Zettelkasten bleibt mehr Raum bis zum Titel «Zu seiner Zeit» (Wunsch vom 2. Oktober 2026, 19:00 UTC); hell und dunkel, Computer und Handy", async () => {
+await check("Kopfzeile: unter den Hauptlinks steht eine feine Linie in deren Farbe, auf den Seiten mit Menü die Welle, sonst eine gerade Linie über die Spaltenbreite, im Rad ebenfalls eine gerade Linie; im Zettelkasten bleibt mehr Raum bis zum Titel «Zu seiner Zeit» (Wunsch vom 2. Oktober 2026, 19:00 UTC); hell und dunkel, Computer und Handy", async () => {
   const seiten = [["", "Welle"], ["apps/", "Welle"], ["news/", "Welle"], ["portfolio/nebeneinander-nacheinander/", "Welle"], ["portfolio/nebeneinander-nacheinander/feld/", "Welle"],
     ["alpha/", "gerade"], ["alpha/pruefraster/", "gerade"], ["alpha/omna-color/", "gerade"], ["zu-seiner-zeit/", "gerade"], ["zu-seiner-zeit/strophe/13-das-archiv/", "gerade"], ["zu-seiner-zeit/verweis/", "gerade"],
     ["alpha/drittes-rad/", "keine"]];
@@ -910,8 +910,10 @@ await check("Kopfzeile: unter den Hauptlinks steht eine feine Linie in deren Far
       });
       const spalte = Math.min(1040, m.breite - 40);                                              // so breit wie die Spalte der Seite
       if (art === "keine") {
-        assert.equal(m.nach.inhalt, "none", `${was}: im Rad keine Linie unter den Links`);
-        assert.equal(m.svg, null, `${was}: und keine Welle`);
+        const n = m.nach;
+        assert.deepEqual([n.inhalt, n.rand, n.randStil, n.position], ['""', "1px", "solid", "absolute"], `${was}: im Rad eine Linie von 1 px unter den Links: ${JSON.stringify(n)}`);
+        assert.ok(Math.abs(n.breit - spalte) <= 1 && Math.abs(m.navLinks + n.links - m.links) <= .5, `${was}: die Linie läuft über die Spalte, bündig mit den Links`);
+        assert.equal(m.svg, null, `${was}: aber keine Welle`);
       } else {
         assert.equal(m.linkFarbe, LINK[modus], `${was}: die Links stehen in ${LINK[modus]}`);
         if (art === "Welle") {
