@@ -8,6 +8,8 @@
        Das Dritte Rad: Zeit (Zu seiner Zeit), Form (ORNA) und Farbe (OMNA COLOR) drehen auf einer Achse. Das Spiel bleibt auf dieser Seite im Design des Rads:
        Jede Karte öffnet ihr Stück (ganze Strophe, ganze Konstellation, ganze Übung), und in jedem Schritt gibt es vier Wege: zurück ins Rad, Zettelkasten, ORNA, OMNA COLOR.
        Auf den Originalseiten erscheint über ?rad=1 dieselbe Auswahl (weiter.js), sie führt ins Rad zurück.
+       Das Rad dreht auf Tippen, Enter, «Drehen» und mit dem Finger: Der angefasste Ring folgt der Geste, die Nachbarn laufen gegenläufig, nach dem Loslassen läuft das Rad mit dem Schwung
+       der Geste aus (Auslaufkurve aus ORNA, js/lib/spin.js). Die Geste bestimmt nur Richtung, Tempo und Dauer, welche Stücke das Rad zeigt, bleibt Zufall.
        Logik in engine.js, Daten in daten.js (erzeugt mit tools/build-drittes-rad.ts), Nähe nach jev in jev.js (erzeugt mit tools/build-jev-bruecken.ts), ORNA-Daten direkt aus dem Rad.
        Bewusst dunkel und mystisch gestaltet (auf Wunsch, 2. Oktober 2026), das Rad selbst ohne Text und Zahlen, die Schrift schlicht wie in den anderen Fassungen (Instrument Sans);
        die ruhige Gestaltung nach REGELN §5 gilt für ORNA, nicht für diese Seite.
@@ -22,6 +24,7 @@
   <style>
 :root {
   --night: #0d0b1a; --gold: #c9a45c; --gold-hi: #f0d78f; --ivory: #ece3c8; --mute: #a89f86; --line: #4a3f26;
+  --weg-start: #f08a5d; --weg-rad: #a794ff;   /* Navigation oben links: «Ornament Cloud» orange, «Das Dritte Rad» violett (wie auf der Website, dort im dunklen Modus) */
   --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
   color-scheme: dark;
 }
@@ -36,16 +39,17 @@ body { margin: 0; color: var(--ivory); font: 400 16px/1.55 var(--body); padding:
     radial-gradient(1px 1px at 66% 90%, #fff7 50%, transparent 52%), radial-gradient(1.2px 1.2px at 44% 6%, #fff6 50%, transparent 52%),
     radial-gradient(ellipse 80% 60% at 30% 35%, #2a1f5a 0%, transparent 70%), radial-gradient(ellipse 70% 60% at 80% 80%, #1d2a52 0%, transparent 70%), var(--night);
   background-attachment: fixed; }
-/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud», darunter «Das Dritte Rad» */
-.seitenweg { max-width: 980px; margin: 0 auto 8px; display: grid; justify-items: start; font-size: .8rem; color: var(--mute); }
-.seitenweg a { padding: 3px 0; color: inherit; text-decoration: none; }
-.seitenweg a:hover, .seitenweg a:focus-visible { color: var(--gold-hi); text-decoration: underline; }
+/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» und darunter «Das Dritte Rad», farblich getrennt und genau so gesetzt wie auf der Website (styles.css: Schrift, Grösse, Gewicht, Laufweite, Grossbuchstaben) */
+.seitenweg { max-width: 980px; margin: 0 auto 8px; display: grid; justify-items: start; }
+.seitenweg a { padding: 3px 0; font: 600 .8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; color: var(--weg-start); }
+.seitenweg a + a { color: var(--weg-rad); }
+.seitenweg a:hover, .seitenweg a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
 main { max-width: 980px; margin: clamp(16px, 5vh, 56px) auto 0; display: grid; gap: 28px; }
-h1 { font: 500 clamp(1.9rem, 5.5vw, 2.6rem)/1.1 var(--body); margin: 0; color: var(--gold-hi); letter-spacing: -.005em; text-shadow: 0 0 24px #c9a45c44; }
-header { margin-bottom: clamp(14px, 3vh, 28px); }   /* zusätzlich zum Abstand von main: mehr Luft zwischen Titel und Rad */
+.nur-lesen { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }   /* der Titel steht nicht mehr über dem Rad (auf Wunsch), die Überschrift bleibt für Vorlesegeräte */
 .stage { display: grid; gap: 28px; align-items: start; }
 .wheelbox { display: grid; gap: 32px; justify-items: center; }   /* Abstand zwischen Rad und den Knöpfen «Drehen» und «Brücke» */
-.wheel { width: min(100%, 480px); aspect-ratio: 1; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: width .3s; }
+.wheel { width: min(100%, 480px); aspect-ratio: 1; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: width .3s; }
+.wheel.zieht { cursor: grabbing; }
 .wheel:focus-visible { outline: 1px solid var(--gold-hi); outline-offset: 8px; border-radius: 50%; }
 .wheel svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .halo { animation: halo 120s linear infinite; }
@@ -134,9 +138,7 @@ button.quiet:disabled { opacity: .4; cursor: default; }
   <a href="./" aria-current="page">Das Dritte Rad</a>
 </nav>
 <main>
-  <header>
-    <h1>Das Dritte Rad</h1>
-  </header>
+  <h1 class="nur-lesen">Das Dritte Rad</h1>
   <p class="bridge-note" id="ladefehler" role="alert" hidden>Das Rad konnte nicht geladen werden. Das passiert manchmal kurz nach einer Aktualisierung der Seite. Bitte lade sie neu, am besten mit Strg+Umschalt+R (am Mac Cmd+Umschalt+R).</p>
   <div class="stage">
     <section class="wheelbox" aria-label="Rad">
@@ -181,6 +183,7 @@ addEventListener("load", function () { setTimeout(function () { if (!window.radG
 </script>
 <script type="module">
 import { symbolMarkup, SYMBOL_COUNT } from "../../portfolio/nebeneinander-nacheinander/js/symbols.js";
+import { planRing, positionAt } from "../../portfolio/nebeneinander-nacheinander/js/lib/spin.js";   // Auslaufkurve des Doppelrads: beginnt mit dem Tempo der Geste, endet mit Tempo null auf dem Ziel
 import { ZYKLEN, THEMEN, STROPHEN, PERSONEN, nameVon, nrVon, ziehung, bruecke, adresse, strophe, paar, uebung, paareVon, wegeImSpiel, rueckkehr } from "./engine.js?v=903834b2";
 import { kachelnBauen, KACHELN_CSS } from "./kacheln.js?v=903834b2";
 
@@ -261,7 +264,7 @@ $("farbe").innerHTML = THEMEN.map(([, c], i) => `<path class="seg" d="${sector(1
 $("sonne").innerHTML = Array.from({ length: 24 }, (_, i) => { const [a, b] = pt(5.4, i * 15), [c, d] = pt(i % 2 ? 9.6 : 13, i * 15); return `<path class="hair" d="M${a} ${b}L${c} ${d}"/>`; }).join("") + `<circle r="4.2" fill="#f0d78f"/><circle class="hair" r="5.4"/>`;
 
 // ---- Zustand: cur = { iz, i_f, ic, s, c, e, note, fokus } (fokus: zeit | form | farbe = welches Stück gerade ganz offen ist, sonst null) ----
-let busy = false, dz = 0, df = 0, dc = 0, cur = null, timer = 0;
+let busy = false, dz = 0, df = 0, dc = 0, cur = null, timer = 0, raf = 0, griff = null;
 const m = (x) => ((x % 360) + 360) % 360;
 const land = (deg, idx, step, up) => { const t = -(idx + .2 + Math.random() * .6) * step; return up ? deg + 720 + m(t - deg) : deg - 720 - m(deg - t); };
 const rest = (idx, step) => -(idx + .5) * step;
@@ -271,20 +274,43 @@ const sperre = (an) => { busy = an; $("go").disabled = an; $("bridge").disabled 
 const stand = (z, fokus = null) => ({ iz: ZYKLEN.findIndex((x) => x[0] === z.strophe.c), i_f: nrVon(z.person), ic: THEMEN.findIndex((x) => x[0] === z.uebung.t), s: z.strophe, c: z.paar, e: z.uebung, note: z.notiz || "", fokus });
 const alsZiel = () => ({ strophe: cur.s, paar: cur.c, uebung: cur.e, person: PERSONEN[cur.i_f].id });
 const FOKUS = ["zeit", "form", "farbe"];
+// Mit dem Finger: V_MIN, V_MAX in Grad pro Sekunde (sanfter Anstoss bis kräftiger Flick, wie in ORNA); KOPPLUNG: wird ein Ring angefasst (Zeit, Form, Farbe), folgt er dem Finger,
+// die Nachbarn laufen gegenläufig, wie ineinandergreifende Zahnräder (Faktor je Ring: Zeit, Form, Farbe)
+const V_MIN = 220, V_MAX = 2600;
+const KOPPLUNG = [[1, -.8, .64], [-.8, 1, -.8], [.64, -.8, 1]];
 
-/** ziel: von bruecke() oder rueckkehr() oder leer (Zufall). Die Karten erscheinen, wenn das Rad steht. */
-function spin(ziel, push = false) {
+/** ziel: von bruecke() oder rueckkehr() oder leer (Zufall). geste: { v, ring } vom Anwerfen mit dem Finger (nur bei Zufall). Die Karten erscheinen, wenn das Rad steht. */
+function spin(ziel, push = false, geste = null) {
   if (busy) return; sperre(true);
   const iz = ziel ? ZYKLEN.findIndex((c) => c[0] === ziel.strophe.c) : Math.floor(Math.random() * NZ);
   const i_f = ziel ? nrVon(ziel.person) : Math.floor(Math.random() * NF);
   const ic = ziel ? THEMEN.findIndex((t) => t[0] === ziel.uebung.t) : Math.floor(Math.random() * NC);
   const z = ziel || ziehung(iz, i_f, ic);
+  $("result").hidden = true; $("lese").hidden = true; $("wege").hidden = true; $("wheel").dataset.fokus = "";
+  const fertig = () => { cur = { iz, i_f, ic, s: z.strophe, c: z.paar, e: z.uebung, note: z.notiz || "", fokus: null }; zeige({ scroll: true, schreibe: push ? "push" : "replace" }); sperre(false); };
+  if (geste && !ziel && !reduce()) return anwerfen(geste, [iz, i_f, ic], fertig);
   dz = land(dz, iz, SZ, false); df = land(df, i_f, SF, true); dc = land(dc, ic, SC, false);
   apply([3200, 4400, 5600]);
-  $("result").hidden = true; $("lese").hidden = true; $("wege").hidden = true; $("wheel").dataset.fokus = "";
-  timer = setTimeout(() => { cur = { iz, i_f, ic, s: z.strophe, c: z.paar, e: z.uebung, note: z.notiz || "", fokus: null }; zeige({ scroll: true, schreibe: push ? "push" : "replace" }); sperre(false); }, reduce() ? 50 : 5700);
+  timer = setTimeout(fertig, reduce() ? 50 : 5700);
+}
+/** Das Rad läuft mit dem Schwung der Geste aus und landet genau auf den gezogenen Stücken: je Ring eine Auslaufkurve, die mit dem Tempo des Fingers beginnt (nach ORNA). Die Ringe laufen nacheinander aus. */
+function anwerfen({ v, ring }, ziele, fertig) {
+  const stark = Math.min(1, Math.max(0, (Math.abs(v) - 240) / 1800)), basis = 2.6 + 2.6 * stark;           // 2,6 s (sanft) bis 5,2 s (kräftiger Flick) für den ersten Ring
+  const von = [dz, df, dc], schritt = [SZ, SF, SC];
+  const plaene = ziele.map((idx, i) => planRing({
+    from: von[i], velocity: v * KOPPLUNG[ring][i] * (i === ring ? 1 : .9 + .2 * Math.random()), target: m(-(idx + .2 + Math.random() * .6) * schritt[i]),
+    prefDuration: basis + .8 * i, n: i === ring ? [2.2, 3, 4.2] : [1.8, 2.4, 3.6] }));
+  const dauer = Math.max(...plaene.map((p) => p.T)), t0 = performance.now();
+  const lauf = (jetzt) => {
+    const t = (jetzt - t0) / 1000;
+    [dz, df, dc] = plaene.map((p) => positionAt(p, t));
+    apply([0, 0, 0]);
+    if (t < dauer) raf = requestAnimationFrame(lauf); else fertig();
+  };
+  raf = requestAnimationFrame(lauf);
 }
 const bruecken = () => spin(bruecke(), !!cur);
+const abbrechen = () => { clearTimeout(timer); cancelAnimationFrame(raf); griff = null; $("wheel").classList.remove("zieht"); };   // eine laufende Drehung oder Geste endet, wenn man im Rad woandershin geht
 
 // ---- Adressen: ?t=<Strophe>~<Konstellation>~<Übung>~<Farbe>~<Zeichen> (+ &f=<offenes Stück>) stellt Ringe und Ansicht wieder her; ?von=<Art>~<Nr> dreht von einem Stück aus weiter ----
 function adresseLesen(search) {
@@ -305,7 +331,7 @@ function schreibe(wie) { if (!wie) return; try { history[wie === "push" ? "pushS
 
 /** zu einer Adresse im Rad gehen. anim: voll (Drehen), schnell (kurze Drehung), keine. push: neuer Verlaufseintrag */
 function geheZu(search, { anim = "keine", push = false, scroll = false } = {}) {
-  clearTimeout(timer); if (busy) sperre(false);
+  abbrechen(); if (busy) sperre(false);
   const r = adresseLesen(search);
   if (r.art === "stand") {
     cur = r.cur;
@@ -413,6 +439,44 @@ $("bridge").addEventListener("click", bruecken);
 $("again").addEventListener("click", () => { window.scrollTo({ top: 0, behavior: reduce() ? "auto" : "smooth" }); spin(undefined, true); });
 $("wheel").addEventListener("click", () => spin(undefined, !!cur));
 $("wheel").addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); spin(undefined, !!cur); } });
+// Das Rad lässt sich mit dem Finger oder der Maus fassen: der angefasste Ring folgt der Geste, nach dem Loslassen läuft das Rad mit ihrem Schwung aus (ein Antippen dreht wie bisher über click).
+// Aussen fasst man die Zeit, in der Mitte die Form, innen die Farbe. Ein Wisch in den Ecken ausserhalb des Kreises blättert auf dem Handy die Seite, denn das Rad sperrt das Blättern (touch-action: none).
+{
+  const rad = $("wheel");
+  const mitte = () => { const b = rad.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2, einheit: b.width / 240 }; };   // einheit: Pixel je Einheit der Zeichnung (viewBox 240)
+  const winkel = (ev, c) => Math.atan2(ev.clientX - c.x, -(ev.clientY - c.y)) * 180 / Math.PI;                                                           // Grad im Uhrzeigersinn, 0 oben
+  rad.addEventListener("pointerdown", (ev) => {
+    if (!ev.isPrimary || ev.button) return;
+    const c = mitte(), r = Math.hypot(ev.clientX - c.x, ev.clientY - c.y) / c.einheit;
+    if (r > 124) { if (ev.pointerType === "touch") griff = { id: ev.pointerId, blaettern: true, y: ev.clientY }; return; }
+    if (busy) return;
+    try { rad.setPointerCapture(ev.pointerId); } catch { /* Zeiger schon weg */ }
+    apply([0, 0, 0]);                                                         // ein noch laufender Übergang (etwa nach einem Link) endet hier
+    rad.classList.add("zieht");
+    griff = { id: ev.pointerId, ring: r > 69 ? 0 : r > 43 ? 1 : 2, letzter: winkel(ev, c), summe: 0, t0: ev.timeStamp, x0: ev.clientX, y0: ev.clientY, proben: [{ t: ev.timeStamp, d: 0 }] };
+  });
+  rad.addEventListener("pointermove", (ev) => {
+    if (!griff || ev.pointerId !== griff.id) return;
+    if (griff.blaettern) { scrollBy(0, griff.y - ev.clientY); griff.y = ev.clientY; return; }
+    const a = winkel(ev, mitte()), d = ((a - griff.letzter + 540) % 360) - 180, k = KOPPLUNG[griff.ring];
+    griff.letzter = a; griff.summe += d;
+    dz += d * k[0]; df += d * k[1]; dc += d * k[2]; apply([0, 0, 0]);
+    griff.proben.push({ t: ev.timeStamp, d });
+    while (griff.proben.length > 2 && ev.timeStamp - griff.proben[0].t > 100) griff.proben.shift();   // das Tempo gilt für die letzten 100 ms vor dem Loslassen
+  });
+  const loslassen = (ev) => {
+    if (!griff || ev.pointerId !== griff.id) return;
+    const g = griff; griff = null; rad.classList.remove("zieht");
+    if (g.blaettern || (Math.hypot(ev.clientX - g.x0, ev.clientY - g.y0) < 6 && ev.timeStamp - g.t0 < 350)) return;   // Blättern, oder Antippen: dann dreht click
+    const jetzt = ev.timeStamp, letzte = g.proben.filter((p) => jetzt - p.t <= 100), ende = letzte.length ? letzte[letzte.length - 1].t : jetzt;
+    const dauer = letzte.length > 1 ? (ende - letzte[0].t) / 1000 : 0;
+    let v = dauer > .008 ? letzte.slice(1).reduce((s, p) => s + p.d, 0) / dauer * Math.exp(-Math.max(0, jetzt - ende - 40) / 50) : 0;   // wer vor dem Loslassen innehält, bremst den Schwung
+    v = Math.abs(v) < V_MIN ? V_MIN * (Math.sign(v) || Math.sign(g.summe) || 1) : Math.max(-V_MAX, Math.min(V_MAX, v));
+    spin(undefined, !!cur, { v, ring: g.ring });
+  };
+  rad.addEventListener("pointerup", loslassen);
+  rad.addEventListener("pointercancel", loslassen);
+}
 // Links innerhalb der Radseite (Karten, Wege, Verknüpfungen) bleiben im Spiel: kein Neuladen, der Verlauf stimmt
 document.addEventListener("click", (ev) => {
   const a = ev.target.closest && ev.target.closest("a[href]");

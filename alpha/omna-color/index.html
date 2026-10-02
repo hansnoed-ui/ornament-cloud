@@ -23,6 +23,7 @@
   --btn-fg: #f2f3f6;
   --ink: #2b2417; --paper2: #f3ead4;
   --c0: #e5484d; --c1: #f08a24; --c2: #f2c230; --c3: #3da35d; --c4: #2f7de1; --c5: #4b4fc4; --c6: #9b51c9;
+  --weg-start: #c2410c; --weg-rad: #5b3fc4;   /* Navigation oben links: «Ornament Cloud» orange, «Das Dritte Rad» violett (wie auf der Website) */
   --display: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
   --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
 }
@@ -30,11 +31,13 @@
   :root:not([data-theme="light"]) {
     --bg: #12141b; --surface: #1b1e28; --fg: #e8eaf1; --muted: #9aa1b5; --line: #2d3141;
     --btn-bg: #e8eaf1; --btn-fg: #12141b; --ink: #efe3c6; --paper2: #2a2418; color-scheme: dark;
+    --weg-start: #f08a5d; --weg-rad: #a794ff;
   }
 }
 :root[data-theme="dark"] {
   --bg: #12141b; --surface: #1b1e28; --fg: #e8eaf1; --muted: #9aa1b5; --line: #2d3141;
   --btn-bg: #e8eaf1; --btn-fg: #12141b; --ink: #efe3c6; --paper2: #2a2418; color-scheme: dark;
+  --weg-start: #f08a5d; --weg-rad: #a794ff;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -75,10 +78,11 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--c4); outlin
 .idline { color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
 .empty { color: var(--muted); margin: 0; }
 .again { justify-self: start; font: 500 .9rem var(--body); background: none; color: var(--fg); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; cursor: pointer; }
-/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud», darunter «Das Dritte Rad» */
-.seitenweg { max-width: 980px; margin: 0 auto 8px; display: grid; justify-items: start; font-size: .8rem; color: var(--muted); }
-.seitenweg a { padding: 3px 0; color: inherit; text-decoration: none; }
-.seitenweg a:hover, .seitenweg a:focus-visible { color: var(--fg); text-decoration: underline; }
+/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» orange, darunter «Das Dritte Rad» violett */
+.seitenweg { max-width: 980px; margin: 0 auto 8px; display: grid; justify-items: start; }
+.seitenweg a { padding: 3px 0; font: 600 .8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; color: var(--weg-start); }   /* genau so gesetzt wie auf der Website (styles.css) */
+.seitenweg a + a { color: var(--weg-rad); }
+.seitenweg a:hover, .seitenweg a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
 @media (min-width: 800px) {
   /* Rad und Knopf als eigene Rasterzellen, damit die Karte zur Radmitte ausgerichtet wird und nicht zur Mitte von Rad + Knopf */
   .stage { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); grid-template-areas: "rad karte" "knopf ."; row-gap: 16px; }

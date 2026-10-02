@@ -346,15 +346,41 @@ test("Gestaltung: im Rad selbst kein Text und keine Zahlen, die Schrift ist Inst
   assert.ok(!/ZYKLEN\[[^\]]*\]\[0\]|romisch|römisch/i.test(seite.split("// ---- Zeit:")[1].split("// ---- Form:")[0]), "keine römischen Zahlen im Zeitring");
 });
 
-test("Schlichte Seite (Wunsch vom 2. Oktober 2026): nichts unter dem Titel, «Brücke» wie «Drehen», kein «Zurück zum Start», kein Kasten «Fäden», keine Links zu den Originalseiten", () => {
+test("Schlichte Seite (Wunsch vom 2. Oktober 2026): kein Titel über dem Rad, «Brücke» wie «Drehen», kein «Zurück zum Start», kein Kasten «Fäden», keine Links zu den Originalseiten", () => {
   const seite = lies("alpha/drittes-rad/index.html");
-  assert.match(seite, /<header>\s*<h1>Das Dritte Rad<\/h1>\s*<\/header>/, "unter dem Titel steht nichts");
+  assert.ok(!/<header[\s>]/.test(seite), "kein Kopf mit Titel über dem Rad");
+  assert.match(seite, /<h1 class="nur-lesen">Das Dritte Rad<\/h1>/, "die Überschrift bleibt für Vorlesegeräte und Suchhilfen");
+  assert.match(seite, /\.nur-lesen \{[^}]*position: absolute;[^}]*width: 1px; height: 1px;[^}]*overflow: hidden;[^}]*clip: rect\(0 0 0 0\)/, "und ist nicht zu sehen");
+  assert.ok(!/(^|\n)h1 \{/.test(seite), "kein sichtbarer Titel mehr gestaltet");
   assert.match(seite, /<button class="go" id="go" type="button">Drehen<\/button><button class="go" id="bridge" type="button" aria-label="Brücke schlagen">Brücke<\/button><\/div>/, "zwei gleich gestaltete Knöpfe, sonst keiner");
   for (const f of ["index.html", "engine.js", "kacheln.js", "weiter.js"])
     assert.ok(!/Zurück zum Start|id="start"|drad-start|class="quiet start"/.test(lies(`alpha/drittes-rad/${f}`)), `${f}: kein «Zurück zum Start»`);
   assert.ok(!/id="faeden"|\.faeden|\bfaeden\(|text: "Fäden"/.test(seite), "kein Kasten «Fäden» auf der Seite");
   assert.ok(!/öffnen ↗|class: "original"|\.original\b|adresse\.(strophe|paar|uebung)\(/.test(seite), "keine Links zu den Originalseiten («… öffnen ↗»)");
   assert.equal(typeof E.faeden, "function", "die Funktion bleibt im Modul, damit eine ältere Seite im Zwischenspeicher keinen Export vermisst");
+});
+
+test("Finger (Wunsch vom 2. Oktober 2026): das Rad lässt sich mit Finger und Maus fassen; die Auslaufkurve kommt aus ORNA, die Geste bestimmt nur Richtung, Tempo und Dauer, nie das Ziel", async () => {
+  const seite = lies("alpha/drittes-rad/index.html");
+  assert.match(seite, /import \{ planRing, positionAt \} from "\.\.\/\.\.\/portfolio\/nebeneinander-nacheinander\/js\/lib\/spin\.js";/, "dieselbe Auslaufkurve wie das Doppelrad in ORNA");
+  const spin = await import(new URL("portfolio/nebeneinander-nacheinander/js/lib/spin.js", root).href);
+  assert.equal(typeof spin.planRing, "function"); assert.equal(typeof spin.positionAt, "function");
+  assert.match(seite, /\.wheel \{[^}]*cursor: grab;[^}]*touch-action: none;/, "Greifhand, und das Rad sperrt das Blättern, damit der Finger es drehen kann");
+  assert.match(seite, /\.wheel\.zieht \{ cursor: grabbing; \}/);
+  for (const ev of ["pointerdown", "pointermove", "pointerup", "pointercancel"]) assert.match(seite, new RegExp(`rad\\.addEventListener\\("${ev}"`), `${ev} am Rad`);
+  assert.match(seite, /setPointerCapture\(ev\.pointerId\)/, "Finger und Maus bleiben am Rad, auch wenn sie den Kreis verlassen");
+  assert.match(seite, /const V_MIN = 220, V_MAX = 2600;/, "Tempo der Geste in den Grenzen von ORNA");
+  assert.match(seite, /const KOPPLUNG = \[\[1, -\.8, \.64\], \[-\.8, 1, -\.8\], \[\.64, -\.8, 1\]\];/, "der angefasste Ring folgt, die Nachbarn laufen gegenläufig");
+  // das Ziel steht fest, bevor die Geste ins Spiel kommt: Zufall in spin(), anwerfen() bekommt nur die Stücke
+  const kopf = seite.split("function spin(")[1].split("function anwerfen(")[0];
+  assert.ok(kopf.indexOf("Math.random() * NZ") > 0 && kopf.indexOf("Math.random() * NZ") < kopf.indexOf("anwerfen(geste, [iz, i_f, ic]"), "die Stücke werden vor dem Anwerfen gezogen");
+  assert.match(kopf, /if \(geste && !ziel && !reduce\(\)\) return anwerfen\(/, "nur beim Zufall und nur mit Bewegung; Brücke und «weniger Bewegung» drehen wie bisher");
+  const anwerfen = seite.split("function anwerfen(")[1].split("const bruecken")[0];
+  assert.match(anwerfen, /target: m\(-\(idx \+ \.2 \+ Math\.random\(\) \* \.6\) \* schritt\[i\]\)/, "das Ziel ist ein Zufallspunkt innerhalb des gezogenen Stücks");
+  assert.ok(!/\b(v|ring|geste)\b/.test(anwerfen.split("target:")[1].split("prefDuration")[0]), "das Ziel hängt nicht von der Geste ab");
+  assert.match(seite, /const abbrechen = \(\) => \{ clearTimeout\(timer\); cancelAnimationFrame\(raf\);/, "ein laufender Auslauf lässt sich abbrechen");
+  assert.match(seite, /function geheZu\([^)]*\) \{\s*abbrechen\(\);/, "wer im Rad woandershin geht, beendet den Auslauf");
+  assert.match(seite, /Antippen: dann dreht click|Antippen dreht wie bisher über click/, "ein Antippen dreht wie bisher über click");
 });
 
 test("Weitergehen vorn, keine Texteingaben (Wunsch vom 2. Oktober 2026): die vier Wege über dem offenen Stück, kein Satzfeld", () => {
