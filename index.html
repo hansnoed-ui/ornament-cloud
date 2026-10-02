@@ -21,7 +21,7 @@
   <meta name="twitter:title" content="Ornament Cloud">
   <meta name="twitter:description" content="Beobachtung ist Anlass für Veränderung in der Realität.">
   <meta name="twitter:image" content="https://ornament.cloud/assets/og-ornament-cloud.png">
-  <link rel="stylesheet" href="styles.css?v=26">
+  <link rel="stylesheet" href="styles.css?v=27">
 </head>
 <body>
   <header class="site-header">
@@ -48,7 +48,7 @@
 
   <main class="wrap">
     <!--
-      Aufbau: das Stellenfeld (eingebettet, kein Beitrag), Rückmeldungen. Zettelkasten, Apps, Masterprompts und Web stehen im Menü oben
+      Aufbau: das Stellenfeld (eingebettet, kein Beitrag), sonst nichts; die Rückmeldungen (giscus) sind auf Wunsch weg. Zettelkasten, Apps, Masterprompts und Web stehen im Menü oben
       (Neuordnung vom 2. Oktober 2026): Zettelkasten unter zu-seiner-zeit/, Apps unter apps/, Masterprompts unter masterprompts/, Web unter web/.
       Die Karten (<article class="card">) liegen dort. Alpha-Seiten nur mit Freigabe verlinken (REGELN §14, ein Test prüft das).
     -->
@@ -56,14 +56,6 @@
       <iframe src="werke/stellenfeld/" title="Stellenfeld: eine 3D-Animation in sechs Stationen, Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre. Ziehen dreht die Kamera." loading="lazy" allow="fullscreen" allowfullscreen></iframe>
       <figcaption>Stellenfeld: Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre. Ziehen dreht die Kamera, Strg + Mausrad zoomt. <a href="werke/stellenfeld/">Als eigene Seite öffnen</a></figcaption>
     </figure>
-
-    <!-- Rückmeldungen: Kommentare über giscus (GitHub Discussions), erscheinen sofort, Einstellungen in kommentare.js -->
-    <section class="rueckmeldung" aria-labelledby="rueckmeldungen">
-      <h2 class="category" id="rueckmeldungen">Rückmeldungen</h2>
-      <p class="lead">Danke für die Bereitschaft, diese frühen Versionen mit uns zu testen. Wir freuen uns über jede Rückmeldung.</p>
-      <div class="kommentare" id="kommentare"></div>
-      <p class="kommentare-hinweis" hidden>Kommentare erscheinen sofort und für alle sichtbar. Zum Schreiben braucht es ein GitHub-Konto; gespeichert werden sie über giscus in den GitHub Discussions dieser Website.</p>
-    </section>
   </main>
 
   <footer class="site-footer">
@@ -72,7 +64,6 @@
     </div>
   </footer>
   <script src="icons.js?v=14" defer></script>
-  <script src="kommentare.js?v=2" defer></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="vendor/goatcounter/count.js"></script>
 </body>

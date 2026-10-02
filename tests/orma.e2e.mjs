@@ -699,7 +699,7 @@ await check("Aktualisieren: neue Fassung sofort beim nächsten Öffnen, auch wen
   }
 });
 
-// ---------- Apps, Masterprompts, Portfolio und Rückmeldungen (Neuordnung vom 2. Oktober 2026: die Karten liegen nicht mehr auf der Startseite) ----------
+// ---------- Apps, Masterprompts, Portfolio, Startseite (Neuordnung vom 2. Oktober 2026: die Karten liegen nicht mehr auf der Startseite, die Rückmeldungen sind entfernt) ----------
 await check("Apps und Masterprompts (Handy): Karten untereinander, ORNA vor ORMA, die vier Prüfraster in der Reihenfolge der Alpha-Übersicht; Artefakte stehen unten im Portfolio", async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
   const page = await ctx.newPage();
@@ -773,48 +773,21 @@ await check("Apps und Masterprompts (Desktop): ORNA und ORMA nebeneinander, die 
   await ctx.close();
 });
 
-await check("Rückmeldungen: giscus lädt erst in Sichtweite, mit den richtigen Einstellungen; ohne Kategorie-ID kein fremdes Skript", async () => {
+await check("Startseite ohne Rückmeldungen (auf Wunsch vom 2. Oktober 2026 entfernt): kein Abschnitt, kein giscus, kein Skript, keine Anfrage an giscus.app, auch am Seitenende nicht", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
-  const fremd = [];
-  page.on("request", r => { if (!r.url().startsWith(origin)) fremd.push(r.url()); });
-  await page.route("https://giscus.app/**", r => r.fulfill({ status: 200, contentType: "text/javascript", body: "" }));
-  // Die Rückmeldungen stehen auf der Startseite gleich unter dem Stellenfeld, also schon in Sichtweite (giscus lädt 600 px davor).
-  // Für die Probe «erst bei Annäherung» schiebt ein Platzhalter sie weit nach unten.
-  await page.route(`${origin}/index.html`, async r => {
-    const antwort = await r.fetch();
-    await r.fulfill({ response: antwort, body: (await antwort.text()).replace('<section class="rueckmeldung"', '<div style="height:3000px"></div><section class="rueckmeldung"') });
-  });
+  const anfragen = [];
+  page.on("request", r => anfragen.push(r.url()));
+  await page.route("https://giscus.app/**", r => r.fulfill({ status: 200, contentType: "text/javascript", body: "" }));     // käme eine Anfrage, bliebe sie nicht unbemerkt
   await page.goto(`${origin}/index.html`);
-  assert.ok(await page.getByText("Danke für die Bereitschaft, diese frühen Versionen mit uns zu testen.").isVisible());
-  assert.ok(await page.locator("#kommentare").evaluate(e => e.getBoundingClientRect().top) > 3000, "Platzhalter wirkt");
-  await page.waitForTimeout(300);
-  assert.equal(await page.locator("#kommentare script").count(), 0, "lädt erst in Sichtweite");
-  assert.deepEqual(fremd, []);
-  await page.locator("#kommentare").scrollIntoViewIfNeeded();
-  await page.waitForFunction(() => document.querySelector("#kommentare script"));
-  const d = await page.locator("#kommentare script").evaluate(s => ({ ...s.dataset, src: s.src }));
-  assert.equal(d.src, "https://giscus.app/client.js");
-  assert.equal(d.repo, "hansnoed-ui/ornament-cloud");
-  assert.equal(d.repoId, "R_kgDOUqqcJQ");
-  assert.equal(d.category, "Announcements");
-  assert.match(d.categoryId, /^DIC_kwDOUqqcJ/);
-  assert.equal(d.mapping, "specific");
-  assert.equal(d.term, "Startseite: Rückmeldungen");
-  assert.equal(d.lang, "de");
-  assert.ok(await page.locator(".kommentare-hinweis").isVisible());
-  // nicht eingerichtet (Kategorie-ID leer): nur der Dank, kein fremdes Skript, kein Hinweis
-  fremd.length = 0;
-  await page.route(/kommentare\.js/, async r => {
-    const body = (await (await r.fetch()).text()).replace(/var CATEGORY_ID = '[^']*';/, "var CATEGORY_ID = '';");
-    await r.fulfill({ status: 200, contentType: "text/javascript", body });
-  });
-  await page.goto(`${origin}/index.html`);
-  await page.locator("#kommentare").scrollIntoViewIfNeeded();
-  await page.waitForTimeout(300);
-  assert.equal(await page.locator("#kommentare script").count(), 0);
-  assert.deepEqual(fremd, []);
-  assert.equal(await page.locator(".kommentare-hinweis").isVisible(), false);
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(700);                                                           // giscus hätte vor dem Seitenende längst geladen
+  assert.equal(await page.getByText("Rückmeldung", { exact: false }).count(), 0, "nirgends ein Wort über Rückmeldungen");
+  assert.equal(await page.locator("#kommentare, .kommentare-hinweis, .rueckmeldung, .giscus, iframe.giscus-frame, script[src*='kommentare'], script[src*='giscus']").count(), 0, "kein Abschnitt, kein Skript");
+  assert.deepEqual(anfragen.filter(u => /giscus|kommentare/i.test(u)), [], "weder kommentare.js noch giscus.app wird angefragt");
+  assert.equal((await page.request.get(`${origin}/kommentare.js`)).status(), 404, "die Datei gibt es nicht mehr");
+  assert.equal(await page.locator("h2").count(), 0, "unter dem Stellenfeld folgt keine Überschrift mehr");
+  assert.equal(await page.locator("main > *").count(), 1, "in main steht nur das Stellenfeld");
   await ctx.close();
 });
 

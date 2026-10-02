@@ -69,28 +69,33 @@ test("Menü: vier Wörter in fester Reihenfolge, ohne Symbole und Animationen, a
   assert.deepEqual(mitMenu, Object.keys(MENUSEITEN).sort(), "Seiten mit Menü");
 });
 
-test("Menü: Gestaltung ohne Symbole (Wörter in einer Reihe, aktiver unterstrichen, auf dem Handy zwei mal zwei)", () => {
+test("Menü: Gestaltung ohne Symbole, in der serifenlosen Schrift der Seite (Wörter in einer Reihe, aktiver unterstrichen, auf dem Handy zwei mal zwei)", () => {
   const css = lies("styles.css");
   assert.ok(!/menu-icon|menu-sub|menu-text|menu-title/.test(css), "keine Regeln für Symbole und Untertitel des früheren Menüs");
   const regel = (sel) => css.match(new RegExp(`(?:^|\\n)${sel.replace(/[.[\]()*+?^$|\\]/g, "\\$&")}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
   assert.match(regel(".menu"), /display:\s*flex/);
   assert.match(regel(".menu"), /flex-wrap:\s*wrap/);
-  assert.match(regel(".menu-item"), /font-family:\s*var\(--serif\)/);
+  // moderner (Wunsch von Christian, 2. Oktober 2026): serifenlos, in der Schrift der Seite wie die Buttons oben links, nicht mehr die Serife der Überschriften
+  assert.match(regel(".menu-item"), /font-family:\s*var\(--font\)/, "Schrift der Seite");
+  assert.doesNotMatch(regel(".menu-item"), /var\(--serif\)|Georgia|Times/, "keine Serife");
+  assert.match(css, /--font:\s*system-ui[^;]*,\s*sans-serif;/, "die Schrift der Seite ist serifenlos (system-ui … sans-serif)");
+  assert.match(regel(".menu-item"), /font-weight:\s*500/, "Gewicht 500");
   assert.match(regel(".menu-item"), /text-decoration:\s*none/);
   assert.ok(parseFloat(regel(".menu-item").match(/font-size:\s*([\d.]+)rem/)?.[1]) >= 1, "die Wörter des Menüs sind mindestens 1 rem gross");
   assert.match(css, /\.menu-item\[aria-current\][^{]*\{[^}]*border-bottom-color:\s*currentColor/, "aktiver Eintrag unterstrichen");
   assert.match(css, /@media \(max-width: 520px\)\s*\{\s*\.menu\s*\{[^}]*display:\s*grid[^}]*repeat\(2, max-content\)/, "Handy: zwei mal zwei");
 });
 
-test("Startseite: Titel «Raumstellen, Zeitobjekte», darunter der Satz und das Stellenfeld eingebettet; keine Karten, nur die Rückmeldungen", () => {
+test("Startseite: Titel «Raumstellen, Zeitobjekte», darunter der Satz und das Stellenfeld eingebettet; keine Karten und keine Rückmeldungen", () => {
   const html = lies("index.html").replace(/<!--[\s\S]*?-->/g, "");        // geprüft wird, was die Seite zeigt, nicht die Kommentare
   assert.match(html, /<h1>Raumstellen, Zeitobjekte<\/h1>/);
   assert.ok(!/<h1 class="sr-only">/.test(html), "der Titel ist sichtbar");
   const lead = html.match(/<p class="lead">\s*([^<]+?)\s*<\/p>/)[1];
   assert.equal(lead, "Beobachtung ist Anlass für Veränderungen in der Realität.", "der Satz steht weiter unter dem Titel (die Vorschaukarte trägt ihn)");
   const stelle = (s) => { const i = html.indexOf(s); assert.ok(i > 0, s); return i; };
-  assert.ok(stelle("<h1>") < stelle('<p class="lead">') && stelle('<p class="lead">') < stelle('<figure class="stellenfeld">') && stelle('<figure class="stellenfeld">') < stelle('id="rueckmeldungen"'),
-    "Reihenfolge: Titel, Satz, Stellenfeld, Rückmeldungen");
+  assert.ok(stelle("<h1>") < stelle('<p class="lead">') && stelle('<p class="lead">') < stelle('<figure class="stellenfeld">') && stelle('<figure class="stellenfeld">') < stelle("</main>"),
+    "Reihenfolge: Titel, Satz, Stellenfeld, dann endet die Seite (sie hat nur noch den Fuss)");
+  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div)\b/g)].map((m) => m[1]), ["figure"], "in main steht nur das Stellenfeld");
   const rahmen = html.match(/<figure class="stellenfeld">\s*<iframe ([^>]*)><\/iframe>/);
   assert.ok(rahmen, "das Stellenfeld ist ein iframe in einer figure, keine Karte");
   assert.match(rahmen[1], /src="werke\/stellenfeld\/"/);
@@ -99,9 +104,18 @@ test("Startseite: Titel «Raumstellen, Zeitobjekte», darunter der Satz und das 
   assert.match(rahmen[1], /allow="fullscreen"/, "Vollbild im eingebetteten Stellenfeld");
   assert.match(html, /<a href="werke\/stellenfeld\/">Als eigene Seite öffnen<\/a>/);
   assert.ok(!/<article|class="card|<video|class="grid/.test(html), "keine Beiträge und keine Karten mehr auf der Startseite");
-  assert.deepEqual([...html.matchAll(/<h2[^>]*>([^<]+)<\/h2>/g)].map((m) => m[1]), ["Rückmeldungen"]);
+  assert.deepEqual([...html.matchAll(/<h2[^>]*>([^<]+)<\/h2>/g)].map((m) => m[1]), [], "keine Überschriften unter dem Stellenfeld");
   assert.ok(!/href="(zu-seiner-zeit|alpha|portfolio)\//.test(html.replace(/<nav class="(seitenweg|menu)"[\s\S]*?<\/nav>/g, "")), "die Wege führen über Menü und Navigation, nicht über Karten");
   assert.deepEqual([...html.matchAll(/data-icon="([a-z]+)"/g)].map((m) => m[1]), ["wave"], "nur die Welle ist animiert");
+});
+
+test("Startseite: die Rückmeldungen (giscus) sind auf Wunsch von Christian weg, mit Skript und Gestaltung (2. Oktober 2026)", () => {
+  const html = lies("index.html").replace(/<!--[\s\S]*?-->/g, "");        // was die Seite zeigt und lädt, nicht die Kommentare
+  assert.ok(!/giscus|kommentare|rueckmeldung|Rückmeldung/i.test(html), "die Startseite spricht nirgends mehr von Rückmeldungen und lädt kein Skript dafür");
+  assert.ok(!existsSync(new URL("kommentare.js", root)), "kommentare.js ist gelöscht");
+  assert.ok(!/\.rueckmeldung|\.kommentare|giscus/i.test(lies("styles.css")), "keine Regeln mehr für die Rückmeldungen");
+  assert.deepEqual([...html.matchAll(/<script\b[^>]*\ssrc="([^"]+)"/g)].map((m) => m[1].replace(/\?.*$/, "")), ["icons.js", "vendor/goatcounter/count.js"], "nur die Skripte der Wellenzeichnung und der Besuchsstatistik");
+  assert.ok(!/^- `kommentare\.js`/m.test(lies("README.md")), "die README führt kommentare.js nicht mehr als Datei auf");
 });
 
 test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die Seite, Zoomen mit Strg, Pause ausserhalb des Bildes", () => {

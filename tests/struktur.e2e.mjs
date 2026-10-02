@@ -23,7 +23,7 @@ async function check(name, fn) {
   try { await fn(); results.push(["ok", name]); console.log("ok  ", name); }
   catch (e) { results.push(["FAIL", name]); console.log("FAIL", name, "\n     ", e.message.split("\n").slice(0, 6).join("\n      ")); }
 }
-// Fehler der Seite; Anfragen ins Netz (Zählung, Kommentare) schlagen in der Prüfumgebung fehl und zählen nicht
+// Fehler der Seite; Anfragen ins Netz (Zählung) schlagen in der Prüfumgebung fehl und zählen nicht
 function fehler(page) {
   const liste = [];
   page.on("pageerror", (e) => liste.push(e.message));
@@ -207,17 +207,23 @@ await check("Stellenfeld eingebettet (Handy): senkrechtes Wischen blättert die 
 });
 
 await check("Stellenfeld eingebettet: ausserhalb des Bildes rechnet die Szene nicht, beim Zurückblättern läuft sie weiter", async () => {
-  const { ctx, page, frame } = await startseite({ viewport: { width: 1200, height: 400 } });
+  // Die Seite endet seit dem 2. Oktober 2026 nach dem Stellenfeld (die Rückmeldungen darunter sind weg): man kann den Rahmen nicht mehr nach oben aus dem Fenster blättern.
+  // Ein niedriges Fenster legt ihn dafür von Anfang an unter den unteren Rand: Titel und Satz stehen davor.
+  const { ctx, page, frame } = await startseite({ viewport: { width: 1200, height: 300 } });
   const lauf = async () => { const a = await frame.evaluate(() => window.__raf); await page.waitForTimeout(700); return [a, await frame.evaluate(() => window.__raf)]; };
+  await page.evaluate(() => scrollTo(0, 0));
+  await page.waitForTimeout(1000);
+  assert.ok((await box(page.locator(".stellenfeld iframe"))).y > 300, "der Rahmen liegt unter dem unteren Rand des Fensters");
+  let [a, b] = await lauf();
+  assert.equal(b, a, `ausserhalb des Bildes steht sie still (${a} → ${b})`);
   await page.evaluate(() => scrollTo(0, 340));
   await page.waitForTimeout(500);
-  let [a, b] = await lauf();
-  assert.ok(b > a, `im Bild läuft sie (${a} → ${b})`);
-  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
-  await page.waitForTimeout(1000);
-  assert.ok((await box(page.locator(".stellenfeld iframe"))).b < 0, "der Rahmen ist weggeblättert");
   [a, b] = await lauf();
-  assert.equal(b, a, `weggeblättert steht sie still (${a} → ${b})`);
+  assert.ok(b > a, `im Bild läuft sie (${a} → ${b})`);
+  await page.evaluate(() => scrollTo(0, 0));
+  await page.waitForTimeout(1000);
+  [a, b] = await lauf();
+  assert.equal(b, a, `wieder ausserhalb steht sie still (${a} → ${b})`);
   await page.evaluate(() => scrollTo(0, 340));
   await page.waitForTimeout(800);
   [a, b] = await lauf();
@@ -297,6 +303,28 @@ await check("Menü: der Eintrag der Seite ist unterstrichen (aria-current), die 
   await page.keyboard.press("Tab");              // Tastaturfokus: erster Eintrag des Menüs
   const f = await page.evaluate(() => { const e = document.activeElement, c = getComputedStyle(e); return { text: e.textContent, kontur: c.outlineStyle, breite: c.outlineWidth }; });
   assert.deepEqual(f, { text: "Zettelkasten", kontur: "solid", breite: "2px" });
+  await ctx.close();
+});
+
+await check("Menü: serifenlose Schrift der Seite in mittlerem Gewicht (Wunsch vom 2. Oktober 2026: moderner als die frühere Serife); die Überschriften bleiben in der Serife", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 } });
+  const page = await ctx.newPage();
+  for (const pfad of ["/", "/apps/", "/masterprompts/", "/web/", "/news/", "/portfolio/nebeneinander-nacheinander/"]) {
+    await page.goto(origin + pfad);
+    const s = await page.evaluate(() => {
+      const st = (e) => getComputedStyle(e);
+      return { menu: [...document.querySelectorAll(".menu-item")].map((e) => ({ familie: st(e).fontFamily, gewicht: st(e).fontWeight, px: parseFloat(st(e).fontSize), aktiv: e.hasAttribute("aria-current") })),
+        text: st(document.body).fontFamily, h1: st(document.querySelector("h1")).fontFamily };
+    });
+    assert.equal(s.menu.length, 4, pfad);
+    for (const [i, m] of s.menu.entries()) {
+      assert.equal(m.familie, s.text, `${pfad}: Eintrag ${i + 1} in der Schrift der Seite`);
+      assert.ok(/^system-ui/.test(m.familie) && /sans-serif$/.test(m.familie) && !/Georgia|Times/.test(m.familie), `${pfad}: Eintrag ${i + 1} serifenlos (${m.familie})`);
+      assert.equal(m.gewicht, "500", `${pfad}: Eintrag ${i + 1} im Gewicht 500, auch der aktive`);
+      assert.ok(m.px >= 16, `${pfad}: Eintrag ${i + 1} mindestens 16 px gross (${m.px})`);
+    }
+    assert.ok(/Georgia/.test(s.h1), `${pfad}: die Überschrift bleibt in der Serife (${s.h1})`);
+  }
   await ctx.close();
 });
 
