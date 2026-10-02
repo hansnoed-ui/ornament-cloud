@@ -194,7 +194,10 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   von Christian am 2. Oktober 2026) und nur per Adresse erreichbar. Ausgenommen sind ORMA (eigene App,
   siehe Trennung), die drei Werke unter `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`.
   Die Gestaltung folgt der jeweiligen Seitenfamilie (`styles.css`, `zu-seiner-zeit/zsz.css`, bei OMNA COLOR
-  und beim Dritten Rad in der Seite selbst). Aufbau und Ausnahmen hält `tests/navigation.test.mjs` fest.
+  und beim Dritten Rad in der Seite selbst). Die beiden Links sind farblich getrennt («Ornament Cloud» orange,
+  «Das Dritte Rad» violett) und auf jeder Seite gleich gesetzt wie auf der Website (Schrift der Website, 0,8 rem,
+  Gewicht 600, Grossbuchstaben, Laufweite 0,12 em; Wunsch von Christian, 2. Oktober 2026). Aufbau, Farben,
+  Grösse und Ausnahmen hält `tests/navigation.test.mjs` fest.
 
 ## 13. Nicht mehr gültig (aus dem Archiv)
 

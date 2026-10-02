@@ -12,8 +12,10 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - Navigation oben links (`<nav class="seitenweg">`, REGELN §14, Wunsch vom 2. Oktober 2026): auf jeder Seite «Ornament Cloud» (Startseite) und darunter «Das Dritte Rad» (Start des Rads),
   an die Stelle der früheren Zeile «Ornament Cloud · Alpha». Das Markup steht in den Seiten von Hand und in den Erzeugern `tools/build-zu-seiner-zeit.ts` und `tools/build-alpha-texte.ts`;
   die Gestaltung folgt der Seitenfamilie (`styles.css` für Website und Alpha-Texte, `zu-seiner-zeit/zsz.css`, bei OMNA COLOR und beim Dritten Rad in der Seite selbst).
+  Die beiden Links sind farblich getrennt («Ornament Cloud» orange wie der Akzent der Website, «Das Dritte Rad» violett, `--weg-rad`; im dunklen Modus hellere Töne; das Dritte Rad ist immer dunkel)
+  und auf jeder Seite gleich gesetzt wie auf der Website (Schrift der Website, 0,8 rem, Gewicht 600, Grossbuchstaben, Laufweite 0,12 em); Wunsch vom 2. Oktober 2026.
   Ausgenommen sind ORMA (eigene App), `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`. Neue Seiten brauchen sie ebenfalls; `tests/navigation.test.mjs` meldet fehlende.
-  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 23: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
+  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 24: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
 - `icons.js` – animierte Schwarz-Weiss-Symbole des Footer-Menüs (Dauer in `PERIOD`)
 - `news/` – News als aufklappbare Einträge; neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
 - `termine/` – Termine als aufklappbare Einträge; neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen
@@ -60,11 +62,15 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   Farbe = sieben Themen aus OMNA COLOR) zeigen drei Karten. Jede Karte öffnet ihr Stück im Rad selbst (ganze Strophe, ganze Begegnung, ganze Übung, mit Verknüpfungen in die anderen Bereiche),
   und in jedem Schritt gibt es vier Wege: zurück ins Rad (es dreht vom offenen Stück aus weiter), Zettelkasten, ORNA, OMNA COLOR. Beim offenen Stück stehen die vier Wege («Wie geht es weiter?») über dem Stück,
   nicht darunter, damit das Weitergehen vorn liegt (Wunsch vom 2. Oktober 2026). Das Rad selbst trägt keinen Text und keine Zahlen,
-  die Schrift ist Instrument Sans wie in den anderen Fassungen. Die Seite ist schlicht (auf Wunsch vom 2. Oktober 2026): Titel, Rad, darunter zwei gleich gestaltete Knöpfe, «Drehen» und «Brücke»
+  die Schrift ist Instrument Sans wie in den anderen Fassungen. Die Seite ist schlicht (auf Wunsch vom 2. Oktober 2026): Rad ohne sichtbaren Titel (die Überschrift «Das Dritte Rad» bleibt für Vorlesegeräte, `.nur-lesen`), darunter zwei gleich gestaltete Knöpfe, «Drehen» und «Brücke»
   (drei Wege, eine Brücke zu schlagen: eine Strophe, die eine ORNA-Person tatsächlich nennt; eine Brücke, die jev beim Bauen als nah bewertet hat; in jedem fünften Fall eine absurde), dann die drei Karten mit den leisen Knöpfen «Karte kopieren» und «Noch einmal drehen».
   Oben links steht die Navigation der ganzen Website («Ornament Cloud», darunter «Das Dritte Rad»); «Das Dritte Rad» setzt das Rad auf den Start zurück, ohne die Seite neu zu laden.
-  Mehr Luft zwischen Titel und Rad und zwischen Rad und Knöpfen (Wunsch vom 2. Oktober 2026). Keine Texteingaben: das Satzfeld unter den Karten ist weg, «Karte kopieren» kopiert nur die Karte (Zeit, Form, Farbe).
-  Kein Text unter dem Titel, kein «Zurück zum Start», kein Kasten «Fäden»; `faeden()` bleibt in `engine.js` (ein Test deckt sie ab), damit eine ältere Seite im Zwischenspeicher des Browsers keinen Export vermisst.
+  Das Rad dreht auf Tippen, Enter, «Drehen» und mit dem Finger oder der Maus (Wunsch vom 2. Oktober 2026): Der angefasste Ring (aussen die Zeit, in der Mitte die Form, innen die Farbe) folgt der Geste,
+  die beiden anderen laufen gegenläufig wie ineinandergreifende Zahnräder, nach dem Loslassen läuft das Rad mit dem Schwung aus. Die Auslaufkurve kommt aus ORNA (`portfolio/nebeneinander-nacheinander/js/lib/spin.js`):
+  sie beginnt mit dem Tempo der Geste und endet mit Tempo null genau auf dem Ziel, 2,6 bis 6,8 Sekunden. Die Geste bestimmt nur Richtung, Tempo und Dauer, welche Stücke das Rad zeigt, bleibt Zufall.
+  Ein Antippen dreht wie bisher; bei «weniger Bewegung» dreht auch die Geste ohne Auslauf; ein Wisch in den Ecken neben dem Kreis blättert auf dem Handy die Seite (das Rad sperrt das Blättern, `touch-action: none`).
+  Mehr Luft zwischen Rad und Knöpfen (Wunsch vom 2. Oktober 2026). Keine Texteingaben: das Satzfeld unter den Karten ist weg, «Karte kopieren» kopiert nur die Karte (Zeit, Form, Farbe).
+  Kein Titel über dem Rad und kein Text darunter, kein «Zurück zum Start», kein Kasten «Fäden»; `faeden()` bleibt in `engine.js` (ein Test deckt sie ab), damit eine ältere Seite im Zwischenspeicher des Browsers keinen Export vermisst.
   Adressen: `?t=<Strophe>~<Konstellation>~<Übung>~<Farbe>~<Zeichen>` (mit `&f=zeit|form|farbe` für das offene Stück) stellt einen Stand wieder her, `?von=<strophe|paar|uebung|person>~<Kennung>` dreht von einem Stück aus weiter;
   «Zurück» im Browser folgt dem Verlauf. Auf den Originalseiten (Strophe, ORNA, OMNA COLOR) erscheint nur mit `?rad=1` am unteren Rand dieselbe Auswahl aus `weiter.js` (Kacheln aus `kacheln.js`).
   Alle vier Wege führen von dort ins Rad zurück, wo das Spiel weitergeht. Die Radseite selbst verlinkt nicht mehr auf die Originalseiten (kein «… öffnen ↗», Wunsch vom 2. Oktober 2026): Strophe, Begegnung und Übung werden ganz im Rad gelesen.

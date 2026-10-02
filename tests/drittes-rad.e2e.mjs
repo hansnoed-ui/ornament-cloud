@@ -1,6 +1,6 @@
 // «Das Dritte Rad» – Browser-Tests (Playwright, Chromium): Rad ohne Text, Karten, Lesen im Rad, vier Wege, Rückkehr, Verlauf,
 // Leiste auf den Originalseiten (Zettelkasten, ORNA, OMNA COLOR), Handy, alte Module im Zwischenspeicher (wie bei GitHub Pages), Hinweis bei Ladefehler.
-//   NODE_PATH=$(npm root -g) node tests/drittes-rad.e2e.mjs
+//   NODE_PATH=$(npm root -g) node tests/drittes-rad.e2e.mjs        (mit NUR=Finger oder einem anderen Wort aus dem Namen nur ein Teil der Tests)
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
@@ -14,12 +14,15 @@ const { chromium } = playwright;
 const root = new URL("../", import.meta.url);
 const { startServer } = await import(new URL("tools/serve-orma.mjs", root).href);
 const E = await import(new URL("alpha/drittes-rad/engine.js", root).href);
+const { SYMBOL_COUNT } = await import(new URL("portfolio/nebeneinander-nacheinander/js/symbols.js", root).href);
 const server = await startServer(0);
 const base = `http://localhost:${server.address().port}/`;
 const browser = await chromium.launch();
 const results = [];
 
+const nur = process.env.NUR && new RegExp(process.env.NUR);      // NUR=Finger node tests/drittes-rad.e2e.mjs: nur die Tests, deren Name dazu passt
 async function check(name, fn) {
+  if (nur && !nur.test(name)) return;
   try { await fn(); results.push(["ok", name]); console.log("ok  ", name); }
   catch (e) { results.push(["FAIL", name]); console.log("FAIL", name, "\n     ", e.message.split("\n").slice(0, 6).join("\n      ")); }
 }
@@ -40,11 +43,45 @@ const kacheln = (page, wo) => page.locator(`${wo} a.drad-kachel`).evaluateAll((a
   grund: x.querySelector("em").textContent, href: x.getAttribute("href"), hier: x.classList.contains("hier"),
 })));
 const text = (page, sel) => page.locator(sel).first().textContent();
-/** Abstand in px vom Ende des Titels bis zum oberen Rand des Rads, und vom unteren Rand des Rads bis zu den Knöpfen «Drehen» und «Brücke» */
-const luftUnterTitel = (page) => page.evaluate(() => document.getElementById("wheel").getBoundingClientRect().top - document.querySelector("h1").getBoundingClientRect().bottom);
+/** Abstand in px vom unteren Rand der Navigation oben links bis zum oberen Rand des Rads (der Titel steht nicht mehr dazwischen), und vom unteren Rand des Rads bis zu den Knöpfen «Drehen» und «Brücke» */
+const luftUnterNav = (page) => page.evaluate(() => document.getElementById("wheel").getBoundingClientRect().top - document.querySelector("nav.seitenweg").getBoundingClientRect().bottom);
 const luftUnterRad = (page) => page.evaluate(() => document.getElementById("go").getBoundingClientRect().top - document.getElementById("wheel").getBoundingClientRect().bottom);
 /** Links in der Radseite (Karten, Lesen, Wege), die nicht im Rad selbst bleiben, also auf Originalseiten oder sonst woanders hin führen */
 const ausDemRad = (page) => page.locator("main a[href]").evaluateAll((a) => a.map((x) => new URL(x.href, location.href)).filter((u) => u.origin !== location.origin || u.pathname !== location.pathname).map((u) => u.href));
+
+const HANDY = { viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true };
+const MIT_BEWEGUNG = { reducedMotion: "no-preference" };      // open() setzt sonst «weniger Bewegung» voraus; der Auslauf nach der Geste läuft nur mit Bewegung über requestAnimationFrame
+
+/** Drehung der drei Ringe (Zeit, Form, Farbe) in Grad, so wie die Seite sie setzt */
+const ringe = (page) => page.evaluate(() => ["zeit", "form", "farbe"].map((id) => parseFloat(document.getElementById(id).style.transform.replace("rotate(", "")) || 0));
+const winkelAbstand = (a, b) => { const d = (((a - b) % 360) + 360) % 360; return Math.min(d, 360 - d); };
+/** Finger auf dem Rad mit echten Touch-Ereignissen (CDP): ein Bogen um die Mitte. radius in Einheiten der Zeichnung (viewBox 240: Zeit 70 bis 124, Form 44 bis 69, Farbe bis 43),
+ *  von und schritt in Grad im Uhrzeigersinn ab oben. Mit loslassen: false bleibt der Finger liegen, die Verbindung kommt zurück, mit loslassen(cdp) hebt man ihn. */
+async function fingerBogen(page, { radius = 100, von = 270, schritte = 8, schritt = 8, pause = 16, loslassen: hebt = true } = {}) {
+  await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));               // nach der Landung blättert die Seite zu den Karten: das Rad steht wieder oben im Bild
+  await page.waitForTimeout(120);
+  const b = await page.locator("#wheel").boundingBox();
+  const cx = b.x + b.width / 2, cy = b.y + b.height / 2, R = radius * b.width / 240;
+  const pt = (a) => ({ x: cx + R * Math.sin(a * Math.PI / 180), y: cy - R * Math.cos(a * Math.PI / 180) });
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [pt(von)] });
+  for (let i = 1; i <= schritte; i++) { await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [pt(von + i * schritt)] }); await page.waitForTimeout(pause); }
+  if (hebt) await loslassen(cdp);
+  return cdp;
+}
+const loslassen = (cdp) => cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+/** wartet, bis das Rad steht: Karten da, «Drehen» wieder frei */
+const steht = (page) => page.waitForFunction(() => !document.getElementById("go").disabled && !document.getElementById("result").hidden, null, { timeout: 15000 });
+/** Die Ringe stehen auf den Stücken der Karten: die Adresse (?t=Strophe~Konstellation~Übung~Farbe~Zeichen) gegen die Winkel der Ringe; im Stück liegt der Zeiger zwischen 20 und 80 Prozent */
+async function pruefeLandung(page, was) {
+  const [sl, , , ic, i_f] = new URL(page.url()).searchParams.get("t").split("~");
+  const soll = [E.ZYKLEN.findIndex((z) => z[0] === E.strophe(sl).c), +i_f, +ic], schritt = [360 / E.ZYKLEN.length, 360 / SYMBOL_COUNT, 360 / E.THEMEN.length];
+  (await ringe(page)).forEach((deg, i) => {
+    const x = (((-deg % 360) + 360) % 360) / schritt[i], name = ["Zeit", "Form", "Farbe"][i];
+    assert.equal(Math.floor(x), soll[i], `${was}: der Ring ${name} steht auf dem Stück der Karte (${x.toFixed(2)} statt ${soll[i]})`);
+    assert.ok(x - Math.floor(x) >= .18 && x - Math.floor(x) <= .82, `${was}: der Ring ${name} steht innerhalb des Stücks, nicht an der Kante (${x.toFixed(2)})`);
+  });
+}
 
 /** Nachbildung von GitHub Pages: der Browser darf jede Datei zehn Minuten ohne Nachfrage behalten (Cache-Control: max-age=600), der Test-Server oben sagt dagegen no-cache.
  *  Mit alt.set(pfad, text) liefert sie für den Pfad (ohne Abfrage) vorübergehend eine ältere Fassung. Hat der Browser sie einmal geholt, hält er sie auch nach der «Aktualisierung».
@@ -104,15 +141,19 @@ await check("Rad: Drehen zeigt drei Karten und eine Adresse, die den Stand wiede
   await ctx.close();
 });
 
-await check("Schlichte Seite: unter dem Titel steht nichts, «Drehen» und «Brücke» sehen gleich aus, kein «Zurück zum Start», kein Kasten «Fäden», keine Links zu den Originalseiten, keine Texteingaben", async () => {
+await check("Schlichte Seite: kein Titel über dem Rad, «Drehen» und «Brücke» sehen gleich aus, kein «Zurück zum Start», kein Kasten «Fäden», keine Links zu den Originalseiten, keine Texteingaben", async () => {
   const { ctx, page, errors } = await open("alpha/drittes-rad/");
-  assert.equal((await page.locator("header").innerText()).trim(), "Das Dritte Rad", "nur der Titel");
+  assert.equal(await page.locator("header").count(), 0, "kein Kopf mit Titel über dem Rad");
+  const titel = await page.locator("h1").evaluate((h) => { const b = h.getBoundingClientRect(); return { text: h.textContent, breite: b.width, hoehe: b.height, position: getComputedStyle(h).position }; });
+  assert.equal(titel.text, "Das Dritte Rad", "die Überschrift bleibt für Vorlesegeräte");
+  assert.ok(titel.breite <= 1 && titel.hoehe <= 1 && titel.position === "absolute", "der Titel steht nicht mehr über dem Rad: er ist nicht zu sehen");
   assert.deepEqual(await page.locator(".wheelbox .row button").allTextContents(), ["Drehen", "Brücke"], "zwei Knöpfe unter dem Rad");
   const stil = (id) => page.locator(id).evaluate((b) => { const c = getComputedStyle(b); return Object.fromEntries(["fontSize", "fontWeight", "letterSpacing", "textTransform", "color", "borderTopColor", "borderTopWidth", "borderRadius",
     "paddingTop", "paddingLeft", "boxShadow", "backgroundColor"].map((k) => [k, c[k]])); });
   assert.deepEqual(await stil("#bridge"), await stil("#go"), "«Brücke» ist wie «Drehen» gestaltet");
   assert.equal(await page.locator("#bridge").getAttribute("aria-label"), "Brücke schlagen", "vorgelesen bleibt es verständlich");
-  assert.ok(await luftUnterTitel(page) >= 48, "zwischen Titel und Rad ist mehr Luft als die früheren 28 px");
+  const oben = await luftUnterNav(page);
+  assert.ok(oben >= 16 && oben <= 90, `das Rad folgt gleich auf die Navigation, kein Titel dazwischen (${Math.round(oben)} px)`);
   assert.ok(await luftUnterRad(page) >= 28, "zwischen Rad und den Knöpfen ist mehr Luft als die früheren 14 px");
   const kein = async () => {
     assert.equal(await page.locator("#start, #faeden, .drad-start").count(), 0);
@@ -457,7 +498,8 @@ await check("Handy: kein waagerechtes Scrollen, Karten, Lesen, Wege und Leiste p
   };
   {
     const { ctx, page } = await open("alpha/drittes-rad/", handy);
-    assert.ok(await luftUnterTitel(page) >= 48 && await luftUnterRad(page) >= 28, "Handy: mehr Luft zwischen Titel, Rad und Knöpfen");
+    const oben = await luftUnterNav(page);
+    assert.ok(oben >= 16 && oben <= 90 && await luftUnterRad(page) >= 28, `Handy: das Rad folgt gleich auf die Navigation (${Math.round(oben)} px), mehr Luft zwischen Rad und Knöpfen`);
     await page.click("#go");
     await page.locator("#result").waitFor({ state: "visible" });
     const w = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
@@ -483,6 +525,142 @@ await check("Handy: kein waagerechtes Scrollen, Karten, Lesen, Wege und Leiste p
   }
 });
 
+// ---------- Das Rad mit dem Finger drehen (Wunsch vom 2. Oktober 2026) ----------
+await check("Finger: der angefasste Ring folgt der Geste, die anderen laufen gegenläufig; nach dem Loslassen läuft das Rad in Richtung der Geste aus und landet genau auf den Stücken der Karten (im und gegen den Uhrzeigersinn)", async () => {
+  const { ctx, page, errors } = await open("alpha/drittes-rad/", { ...HANDY, ...MIT_BEWEGUNG });
+  await page.waitForFunction(() => window.radGeladen === true);
+  assert.equal(await page.locator("#wheel").evaluate((w) => getComputedStyle(w).cursor), "grab", "die Hand zum Greifen");
+  for (const richtung of [1, -1]) {
+    const was = richtung > 0 ? "im Uhrzeigersinn" : "gegen den Uhrzeigersinn";
+    const vor = await ringe(page);
+    const cdp = await fingerBogen(page, { radius: 100, von: 270, schritte: 8, schritt: 8 * richtung, loslassen: false });
+    const weg = (await ringe(page)).map((x, i) => x - vor[i]);
+    assert.ok(Math.abs(weg[0] - 64 * richtung) < 2, `${was}: die Zeit (angefasst) folgt dem Finger genau (${weg[0].toFixed(1)}° statt ${64 * richtung}°)`);
+    assert.ok(Math.abs(weg[1] + .8 * 64 * richtung) < 2, `${was}: die Form läuft gegenläufig (${weg[1].toFixed(1)}°)`);
+    assert.ok(Math.abs(weg[2] - .64 * 64 * richtung) < 2, `${was}: die Farbe läuft mit der Zeit (${weg[2].toFixed(1)}°)`);
+    const gesehen = await page.locator("#zeit").evaluate((g) => { const m = new DOMMatrixReadOnly(getComputedStyle(g).transform); return Math.atan2(m.b, m.a) * 180 / Math.PI; });
+    assert.ok(winkelAbstand(gesehen, vor[0] + weg[0]) < 1.5, `${was}: auch auf dem Bildschirm folgt der Ring dem Finger ohne Verzögerung (${gesehen.toFixed(1)}°)`);
+    assert.equal(await page.locator("#wheel").evaluate((w) => w.classList.contains("zieht") && getComputedStyle(w).cursor === "grabbing"), true, `${was}: beim Ziehen die geschlossene Hand`);
+    await loslassen(cdp);
+    const a0 = (await ringe(page))[0];
+    await page.waitForTimeout(250);
+    const a1 = (await ringe(page))[0];
+    await page.waitForTimeout(250);
+    const a2 = (await ringe(page))[0];
+    assert.ok((a1 - a0) * richtung > 5 && (a2 - a1) * richtung > 5, `${was}: das Rad läuft mit dem Schwung weiter (${a0.toFixed(0)}° → ${a1.toFixed(0)}° → ${a2.toFixed(0)}°)`);
+    assert.equal(await page.locator("#go").isDisabled(), true, `${was}: «Drehen» ist gesperrt, solange das Rad läuft`);
+    assert.equal(await page.locator("#result").isHidden(), true, `${was}: keine Karten während des Laufs`);
+    assert.equal(await page.locator("#wheel").evaluate((w) => w.classList.contains("zieht")), false, `${was}: nach dem Loslassen keine geschlossene Hand mehr`);
+    const zweite = await fingerBogen(page, { radius: 100, von: 90, schritte: 2, schritt: 5, loslassen: false });   // ein laufendes Rad lässt sich nicht greifen
+    assert.equal(await page.locator("#wheel").evaluate((w) => w.classList.contains("zieht")), false, `${was}: ein laufendes Rad lässt sich nicht greifen`);
+    await loslassen(zweite);
+    await steht(page);
+    await pruefeLandung(page, was);
+    assert.match(page.url(), /\?t=/, `${was}: die Adresse hält den Stand`);
+  }
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Finger: auf der Form (mittlerer Ring) und auf der Farbe (innerer Ring) folgt der angefasste Ring, die beiden anderen laufen gegenläufig", async () => {
+  for (const [radius, name, faktor] of [[56, "Form", [-.8, 1, -.8]], [30, "Farbe", [.64, -.8, 1]]]) {
+    const { ctx, page, errors } = await open("alpha/drittes-rad/", { ...HANDY, ...MIT_BEWEGUNG });
+    await page.waitForFunction(() => window.radGeladen === true);
+    const vor = await ringe(page);
+    const cdp = await fingerBogen(page, { radius, von: 300, schritte: 6, schritt: 7, loslassen: false });
+    const weg = (await ringe(page)).map((x, i) => x - vor[i]);
+    faktor.forEach((f, i) => assert.ok(Math.abs(weg[i] - 42 * f) < 2, `${name}: Ring ${["Zeit", "Form", "Farbe"][i]} dreht um ${weg[i].toFixed(1)}° statt ${(42 * f).toFixed(1)}°`));
+    await loslassen(cdp);
+    await steht(page);
+    await pruefeLandung(page, name);
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+});
+
+await check("Maus: Ziehen am Rad dreht es wie der Finger, ein Klick ohne Ziehen dreht wie bisher", async () => {
+  const { ctx, page, errors } = await open("alpha/drittes-rad/", { viewport: { width: 1200, height: 900 }, ...MIT_BEWEGUNG });
+  await page.waitForFunction(() => window.radGeladen === true);
+  const b = await page.locator("#wheel").boundingBox(), cx = b.x + b.width / 2, cy = b.y + b.height / 2, R = 100 * b.width / 240;
+  const pt = (a) => [cx + R * Math.sin(a * Math.PI / 180), cy - R * Math.cos(a * Math.PI / 180)];
+  const vor = await ringe(page);
+  await page.mouse.move(...pt(270));
+  await page.mouse.down();
+  for (let i = 1; i <= 6; i++) { await page.mouse.move(...pt(270 + i * 10)); await page.waitForTimeout(14); }
+  const weg = (await ringe(page)).map((x, i) => x - vor[i]);
+  assert.ok(Math.abs(weg[0] - 60) < 2 && Math.abs(weg[1] + 48) < 2, `die Maus führt die Ringe (${weg.map((x) => x.toFixed(1)).join("°, ")}°)`);
+  assert.equal(await page.locator("#wheel").evaluate((w) => getComputedStyle(w).cursor), "grabbing");
+  await page.mouse.up();
+  await steht(page);
+  await pruefeLandung(page, "Maus");
+  assert.equal(await page.locator("#wheel").evaluate((w) => getComputedStyle(w).cursor), "grab");
+  await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
+  await page.waitForTimeout(120);
+  await page.mouse.click(...pt(0));                                        // Klick ohne Ziehen: dreht wie bisher (über click)
+  assert.equal(await page.locator("#go").isDisabled(), true, "der Klick hat das Rad gedreht");
+  await steht(page);
+  await pruefeLandung(page, "Klick");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Finger: ein Antippen dreht das Rad wie bisher, auch ein Antippen mitten im Rad; bei «weniger Bewegung» dreht auch die Geste ohne Auslauf und landet genau", async () => {
+  const { ctx, page, errors } = await open("alpha/drittes-rad/", HANDY);          // weniger Bewegung
+  await page.waitForFunction(() => window.radGeladen === true);
+  const b = await page.locator("#wheel").boundingBox();
+  await page.touchscreen.tap(b.x + b.width / 2 + 30, b.y + b.height / 2 - 100);
+  await page.locator("#result").waitFor({ state: "visible" });
+  assert.match(page.url(), /\?t=/);
+  await pruefeLandung(page, "Antippen");
+  const url = page.url();
+  await fingerBogen(page, { radius: 100, von: 200, schritte: 6, schritt: 14, pause: 12 });      // Geste bei «weniger Bewegung»
+  await page.waitForFunction((u) => location.href !== u, url, { timeout: 5000 });
+  await steht(page);
+  await pruefeLandung(page, "Geste bei weniger Bewegung");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Finger: ein Wisch in der Ecke neben dem Kreis blättert die Seite (das Rad sperrt das Blättern), er dreht nichts", async () => {
+  const { ctx, page, errors } = await open("alpha/drittes-rad/", { ...HANDY, viewport: { width: 390, height: 520 }, ...MIT_BEWEGUNG });
+  await page.waitForFunction(() => window.radGeladen === true);
+  const b = await page.locator("#wheel").boundingBox();
+  const platz = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+  assert.ok(platz >= 60, `die Seite lässt sich blättern (${platz} px)`);
+  const weg = Math.min(100, platz - 4), x = b.x + 12, y = b.y + b.height - 12;
+  assert.ok(y + 4 < 520, "die Ecke liegt im Bild");
+  const vor = await ringe(page);
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
+  for (let i = 1; i <= 10; i++) { await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y: y - i * weg / 10 }] }); await page.waitForTimeout(12); }
+  await loslassen(cdp);
+  await page.waitForTimeout(150);
+  const gescrollt = await page.evaluate(() => scrollY);
+  assert.ok(Math.abs(gescrollt - weg) < 4, `die Seite blättert mit dem Finger (${gescrollt} px statt ${weg} px)`);
+  assert.deepEqual(await ringe(page), vor, "das Rad hat sich nicht gedreht");
+  assert.equal(await page.locator("#go").isDisabled(), false, "und läuft auch nicht");
+  assert.equal(await page.locator("#result").isHidden(), true);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Finger: führt man das Rad während des Auslaufs mit «Das Dritte Rad» auf den Start zurück, endet der Auslauf, und es erscheinen keine Karten nachträglich", async () => {
+  const { ctx, page, errors } = await open("alpha/drittes-rad/", { ...HANDY, ...MIT_BEWEGUNG });
+  await page.waitForFunction(() => window.radGeladen === true);
+  await fingerBogen(page, { radius: 100, von: 270, schritte: 6, schritt: 12, pause: 10 });
+  await page.waitForTimeout(400);
+  assert.equal(await page.locator("#go").isDisabled(), true, "das Rad läuft");
+  await page.locator("nav.seitenweg a", { hasText: "Das Dritte Rad" }).click();
+  await page.waitForFunction(() => !document.getElementById("go").disabled);
+  assert.deepEqual(await ringe(page), [0, 0, 0], "die Ringe stehen wieder am Anfang");
+  await page.waitForTimeout(1800);                                          // der abgebrochene Auslauf darf nichts mehr zeigen
+  assert.equal(await page.locator("#result").isHidden(), true, "keine nachträglichen Karten");
+  assert.equal(new URL(page.url()).search, "", "und keine Adresse eines Stands");
+  assert.deepEqual(await ringe(page), [0, 0, 0], "die Ringe bleiben stehen");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 await check("Navigation oben links: «Ornament Cloud» und darunter «Das Dritte Rad» auf Computer und Handy, auf Startseite, Zettelkasten, ORNA, Alpha-Seiten und im Rad", async () => {
   const seiten = ["", "news/", "termine/", "portfolio/", "portfolio/nebeneinander-nacheinander/", "portfolio/nebeneinander-nacheinander/feld/", "zu-seiner-zeit/", "zu-seiner-zeit/strophe/13-das-archiv/",
     "zu-seiner-zeit/verweis/yoko-ono/", "alpha/", "alpha/pruefraster/", "alpha/verteilapparat/", "alpha/gesellschaftskonzepte/", "alpha/journalistische-texte/", "alpha/omna-color/", "alpha/drittes-rad/"];
@@ -499,6 +677,32 @@ await check("Navigation oben links: «Ornament Cloud» und darunter «Das Dritte
       assert.ok(Math.abs(nav[0].left - nav[1].left) < 1 && nav[1].top >= nav[0].bottom - 1, `${was}: «Das Dritte Rad» steht linksbündig unter «Ornament Cloud»`);
       assert.ok(nav[0].top < 120 && nav[0].left < 200, `${was}: ganz oben links (${Math.round(nav[0].left)}, ${Math.round(nav[0].top)})`);
       assert.deepEqual(fehler, [], was);
+      await page.close();
+    }
+    await ctx.close();
+  }
+});
+
+await check("Navigation: die beiden Links sind farblich getrennt (Orange und Violett, je mit Kontrast ab 4,5 zum Hintergrund) und auf jeder Seite genau so gross gesetzt wie auf der Website, hell und dunkel, Computer und Handy", async () => {
+  const seiten = ["", "news/", "portfolio/", "portfolio/nebeneinander-nacheinander/", "zu-seiner-zeit/", "zu-seiner-zeit/strophe/13-das-archiv/", "alpha/", "alpha/pruefraster/", "alpha/gesellschaftskonzepte/", "alpha/omna-color/", "alpha/drittes-rad/"];
+  const FARBEN = { hell: ["rgb(194, 65, 12)", "rgb(91, 63, 196)"], dunkel: ["rgb(240, 138, 93)", "rgb(167, 148, 255)"] };           // «Ornament Cloud» orange, «Das Dritte Rad» violett
+  const rgb = (c) => c.match(/[\d.]+/g).slice(0, 3).map(Number);
+  const hell = (c) => { const [r, g, b] = rgb(c).map((v) => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }); return .2126 * r + .7152 * g + .0722 * b; };
+  const kontrast = (a, b) => { const [x, y] = [hell(a), hell(b)].sort((m, n) => n - m); return (x + .05) / (y + .05); };
+  for (const [modus, scheme] of [["hell", "light"], ["dunkel", "dark"]]) for (const [wo, opts] of [["Computer", { viewport: { width: 1280, height: 800 } }], ["Handy", HANDY]]) {
+    const ctx = await browser.newContext({ reducedMotion: "reduce", colorScheme: scheme, ...opts });
+    let website = null;
+    for (const u of seiten) {
+      const page = await ctx.newPage(), was = `${modus}, ${wo}, ${u || "Startseite"}`;
+      await page.goto(base + u);
+      const m = await page.locator("nav.seitenweg a").evaluateAll((a) => a.map((x) => { const c = getComputedStyle(x), b = x.getBoundingClientRect();
+        return { color: c.color, stil: [c.fontSize, c.fontWeight, c.letterSpacing, c.textTransform, c.fontFamily, c.lineHeight].join(" | "), breite: Math.round(b.width), hoehe: Math.round(b.height) }; }));
+      const grund = await page.evaluate(() => { const n = (e) => getComputedStyle(e).backgroundColor, ok = (c) => !/^rgba\(.*, 0\)$|^transparent$/.test(c); return [n(document.body), n(document.documentElement)].find(ok) || "rgb(255, 255, 255)"; });
+      const farben = u === "alpha/drittes-rad/" ? FARBEN.dunkel : FARBEN[modus];          // das Rad ist immer dunkel
+      assert.deepEqual(m.map((x) => x.color), farben, `${was}: Orange und Violett`);
+      for (const x of m) assert.ok(kontrast(x.color, grund) >= 4.5, `${was}: Kontrast ${kontrast(x.color, grund).toFixed(2)} (${x.color} auf ${grund})`);
+      if (!website) website = m;
+      assert.deepEqual(m.map(({ stil, breite, hoehe }) => ({ stil, breite, hoehe })), website.map(({ stil, breite, hoehe }) => ({ stil, breite, hoehe })), `${was}: Schrift, Grösse und Breite wie auf der Startseite der Website`);
       await page.close();
     }
     await ctx.close();

@@ -5,6 +5,7 @@
   --muted: #6b665e;
   --border: #e4e0d8;
   --accent: #c2410c;
+  --weg-rad: #5b3fc4;   /* «Das Dritte Rad» in der Navigation oben links; «Ornament Cloud» steht im Akzent */
 
   --thumb-a: #e8d5c4;
   --thumb-b: #cfdde6;
@@ -31,6 +32,7 @@
     --muted: #a39d93;
     --border: #34312c;
     --accent: #f08a5d;
+    --weg-rad: #a794ff;
 
     --thumb-a: #4a3a2e;
     --thumb-b: #2e3f4a;
@@ -319,7 +321,7 @@ h1 {
   text-decoration: none;
 }
 
-/* Navigation oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud», darunter «Das Dritte Rad».
+/* Navigation oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» (orange), darunter «Das Dritte Rad» (violett).
    Im Kopf der Website steht sie im Header-Menü, auf den Alpha-Seiten über dem Titel. */
 .seitenweg {
   display: grid;
@@ -338,6 +340,8 @@ h1 {
   text-decoration: none;
   color: var(--accent);
 }
+
+.seitenweg a + a { color: var(--weg-rad); }
 
 .seitenweg a:hover,
 .seitenweg a:focus-visible {
