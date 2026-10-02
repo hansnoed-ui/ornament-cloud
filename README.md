@@ -104,12 +104,16 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `node --experimental-strip-types tools/sync-doppelspalt-data.ts`
 - `tools/og-image.mjs` – erzeugt das Vorschaubild für Facebook/X (`assets/og-nebeneinander-nacheinander.png`) aus dem Rad:
   `NODE_PATH=$(npm root -g) node tools/og-image.mjs`
+- `tools/start-og.mjs` – erzeugt die Vorschaukarten (1200 × 630) für das Teilen auf Social Media (Wunsch vom 2. Oktober 2026): für die Startseite `assets/og-ornament-cloud.png`
+  (eine Wolke aus den 40 Zeichen von ORNA neben dem Satz der Startseite) und für das Dritte Rad `alpha/drittes-rad/og-drittes-rad.jpg` (das Rad aus der Seite; JPEG, damit die Datei unter 300 KB bleibt):
+  `NODE_PATH=$(npm root -g) node tools/start-og.mjs` (mit `start` oder `rad` nur ein Bild). Die Angaben für Facebook, X, LinkedIn und WhatsApp (`og:*`, `twitter:*`) stehen im Kopf der beiden Seiten,
+  `tests/teilen.test.mjs` prüft sie. Ändert sich der Satz der Startseite oder das Rad, das Bild neu erzeugen.
 - `tests/` – Prüfungen des Rads: `node --experimental-strip-types --no-warnings --test tests/doppelspalt.test.mjs`
   und im Browser (Playwright): `node tests/doppelspalt.e2e.mjs`
 - `slider.js` – Punkte über einer Wisch-Galerie auf dem Smartphone (Wischen selbst per CSS); zurzeit auf keiner Seite eingebunden,
   alle Raster stehen auf dem Handy untereinander (`.grid--stapel`). Wieder einschalten: `<div class="slider-dots" …>` vor das Raster, `.grid--stapel` weg, Skript einbinden
 - `bg.js` – animierter Hintergrund (Lemniskaten und Schleifen als SVG, Tempo in `CONFIG`); zurzeit auf keiner Seite eingebunden. Wieder einschalten: `<div class="bg" aria-hidden="true"><svg class="bg-field" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg></div>` direkt nach `<body>` und `<script src="bg.js?v=2" defer></script>` vor `</body>`
-- `assets/` – Vorschau-Videos (.mp4/.webm) und Standbilder (.jpg)
+- `assets/` – Vorschau-Videos (.mp4/.webm) und Standbilder (.jpg), dazu die Vorschaukarten zum Teilen (`og-*.png`)
 - `werke/<name>/index.html` – lokale Kopien der Artefakte
 - `vendor/three/` – three.js r128 (MIT-Lizenz) für die 3D-Artefakte
 - `vendor/goatcounter/count.js` – Zählskript von GoatCounter (ISC-Lizenz), lokal eingebunden auf allen Seiten.
