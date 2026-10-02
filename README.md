@@ -126,7 +126,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `tests/teilen.test.mjs` prüft sie. Ändert sich der Satz der Startseite oder das Rad, das Bild neu erzeugen. Mit `vorschau` entstehen die beiden Bilder der Seite «Web» (4 : 5, 640 × 800, JPEG).
 - `tests/` – Prüfungen des Rads: `node --experimental-strip-types --no-warnings --test tests/doppelspalt.test.mjs`
   und im Browser (Playwright): `node tests/doppelspalt.e2e.mjs`. Aufbau der Website (Menü, Startseite, Apps, Masterprompts, Web, Versionsmarken): `tests/struktur.test.mjs`;
-  im Browser `NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs` (Menü auf allen Breiten, das eingebettete Stellenfeld mit Mausrad, Wischen und Pause ausserhalb des Bildes)
+  im Browser `NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs` (Menü auf allen Breiten, das eingebettete Stellenfeld mit Mausrad, Wischen, Vollbild und Pause ausserhalb des Bildes)
 - `slider.js` – Punkte über einer Wisch-Galerie auf dem Smartphone (Wischen selbst per CSS); zurzeit auf keiner Seite eingebunden,
   alle Raster stehen auf dem Handy untereinander (`.grid--stapel`). Wieder einschalten: `<div class="slider-dots" …>` vor das Raster, `.grid--stapel` weg, Skript einbinden
 - `bg.js` – animierter Hintergrund (Lemniskaten und Schleifen als SVG, Tempo in `CONFIG`); zurzeit auf keiner Seite eingebunden. Wieder einschalten: `<div class="bg" aria-hidden="true"><svg class="bg-field" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg></div>` direkt nach `<body>` und `<script src="bg.js?v=2" defer></script>` vor `</body>`

@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script>
-/* Eingebettet (Startseite von ornament.cloud, <iframe>): senkrechtes Wischen und das Mausrad blättern die Seite weiter, statt hier hängenzubleiben.
+/* Eingebettet (Startseite von ornament.cloud, <iframe>): senkrechtes Wischen und das Mausrad blättern die Seite weiter, statt hier hängenzubleiben;
+   Strg + Mausrad zoomt, die Tastenkürzel sind aus (die Leertaste soll blättern). Im Vollbild gilt alles wie auf der eigenen Seite.
    Gezählt wird die Einbettung nicht (GoatCounter ignoriert Frames). */
 try { if (window.self !== window.top) document.documentElement.classList.add('eingebettet'); } catch (e) { document.documentElement.classList.add('eingebettet'); }
 </script>
@@ -344,7 +345,7 @@ body.rec #stage canvas{cursor:none}
   canvas.addEventListener('dblclick', function(){ yaw = 0; pitch = 0; zoom = 1; });
   canvas.addEventListener('wheel', function(e){ if (eingebettet && !document.fullscreenElement && !e.ctrlKey && !e.metaKey) return; e.preventDefault(); zoom = Math.max(0.55, Math.min(1.8, zoom*Math.exp(e.deltaY*0.001))); }, { passive:false });
   window.addEventListener('keydown', function(e){
-    if (eingebettet || (e.target && e.target.tagName === 'INPUT')) return;
+    if ((eingebettet && !document.fullscreenElement) || (e.target && e.target.tagName === 'INPUT')) return;
     if (e.key === ' ') { e.preventDefault(); setPlaying(!playing); }
     else if (e.key === 'f' || e.key === 'F') { fullBtn.click(); }
     else if (e.key === 't' || e.key === 'T') { txtBtn.click(); }

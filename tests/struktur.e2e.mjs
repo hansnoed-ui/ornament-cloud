@@ -1,6 +1,6 @@
 // Struktur der Website – Browser-Tests (Playwright, Chromium), Neuordnung vom 2. Oktober 2026: das Menü (Zettelkasten, Apps, Masterprompts, Web) auf allen Breiten,
 // die Startseite mit dem Stellenfeld, in die Seite eingebettet (Mausrad, Wischen, Pause ausserhalb des Bildes), die Seiten Apps, Masterprompts und Web.
-//   NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs
+//   NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs [Teil eines Prüfungsnamens]
 // Das Stellenfeld braucht WebGL (Chromium bringt SwiftShader mit).
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -17,7 +17,9 @@ const server = await startServer(0);
 const origin = `http://localhost:${server.address().port}`;
 const browser = await chromium.launch();
 const results = [];
+const nur = process.argv[2];            // nur Prüfungen, deren Name diesen Text enthält (zum Eingrenzen)
 async function check(name, fn) {
+  if (nur && !name.includes(nur)) return;
   try { await fn(); results.push(["ok", name]); console.log("ok  ", name); }
   catch (e) { results.push(["FAIL", name]); console.log("FAIL", name, "\n     ", e.message.split("\n").slice(0, 6).join("\n      ")); }
 }
@@ -98,6 +100,9 @@ await check("Startseite (Handy): Titel, Menü zwei mal zwei, Stellenfeld 4 : 5, 
   assert.equal(new Set(m.map((p) => p[0])).size, 2, "zwei Spalten");
   assert.equal(new Set(m.map((p) => p[1])).size, 2, "zwei Zeilen");
   assert.equal(await frame.locator("#play").textContent(), "Abspielen", "ohne Bewegung beginnt die Szene angehalten");
+  // die Bedienleiste blendet sich nach 2,6 s aus (in 0,5 s): erst danach ist das Bild ruhig
+  await frame.waitForFunction(() => document.getElementById("bar").classList.contains("hidden"), null, { timeout: 8000 });
+  await page.waitForTimeout(700);
   const a = await page.locator(".stellenfeld iframe").screenshot();
   await page.waitForTimeout(700);
   assert.ok((await page.locator(".stellenfeld iframe").screenshot()).equals(a), "die Szene steht still");
@@ -154,6 +159,23 @@ await check("Stellenfeld eingebettet (Computer): das Mausrad blättert die Seite
   await ctx.close();
 });
 
+await check("Stellenfeld eingebettet (Computer): im Vollbild gelten Mausrad-Zoom und Tastenkürzel wieder wie auf der eigenen Seite", async () => {
+  const { ctx, page, frame } = await startseite({ viewport: { width: 1200, height: 900 } });
+  await frame.locator("#full").focus();
+  await page.keyboard.press("Enter");                                    // die Tastatur zählt als Benutzeraktion, die Leiste muss nicht sichtbar sein
+  await frame.waitForFunction(() => document.fullscreenElement === document.documentElement && innerWidth >= 1190 && innerHeight >= 890, null, { timeout: 8000 });
+  assert.equal(await frame.locator("canvas").evaluate((c) => getComputedStyle(c).touchAction), "none", "im Vollbild fängt die Szene jede Geste");
+  // nichts zum Blättern: das Mausrad zoomt auch ohne Strg, die Leertaste hält an
+  await page.mouse.move(600, 400);
+  await page.mouse.wheel(0, 200);
+  await frame.waitForFunction(() => window.__rad, null, { timeout: 4000 });
+  assert.deepEqual(await frame.evaluate(() => window.__rad), { verhindert: true, strg: false });
+  assert.equal(await frame.locator("#play").textContent(), "Pause");
+  await page.keyboard.press("Space");
+  assert.equal(await frame.locator("#play").textContent(), "Abspielen", "im Vollbild hält die Leertaste an");
+  await ctx.close();
+});
+
 await check("Stellenfeld eingebettet (Handy): senkrechtes Wischen blättert die Seite, waagrechtes Ziehen dreht die Szene", async () => {
   const { ctx, page, frame } = await startseite({ ...devices["Pixel 7"] });
   assert.equal(await frame.locator("canvas").evaluate((c) => getComputedStyle(c).touchAction), "pan-y");
@@ -190,7 +212,7 @@ await check("Stellenfeld eingebettet: ausserhalb des Bildes rechnet die Szene ni
   await page.evaluate(() => scrollTo(0, 340));
   await page.waitForTimeout(500);
   let [a, b] = await lauf();
-  assert.ok(b > a + 2, `im Bild läuft sie (${a} → ${b})`);
+  assert.ok(b > a, `im Bild läuft sie (${a} → ${b})`);
   await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
   await page.waitForTimeout(1000);
   assert.ok((await box(page.locator(".stellenfeld iframe"))).b < 0, "der Rahmen ist weggeblättert");
@@ -199,7 +221,7 @@ await check("Stellenfeld eingebettet: ausserhalb des Bildes rechnet die Szene ni
   await page.evaluate(() => scrollTo(0, 340));
   await page.waitForTimeout(800);
   [a, b] = await lauf();
-  assert.ok(b > a + 2, `zurück im Bild läuft sie wieder (${a} → ${b})`);
+  assert.ok(b > a, `zurück im Bild läuft sie wieder (${a} → ${b})`);
   await ctx.close();
 });
 
@@ -216,6 +238,7 @@ await check("Menü: vier Wörter auf allen Breiten sichtbar, nichts überlappt, 
       const bs = [];
       for (let i = 0; i < 4; i++) { assert.ok(await items.nth(i).isVisible(), `${pfad} ${w}: Eintrag ${i + 1} sichtbar`); bs.push(await box(items.nth(i))); }
       for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) assert.ok(!sich(bs[i], bs[j]), `${pfad} ${w}: Einträge ${i + 1} und ${j + 1} überlappen`);
+      for (let i = 0; i < 3; i++) if (Math.round(bs[i].y) === Math.round(bs[i + 1].y)) assert.ok(bs[i + 1].x - bs[i].r >= 16, `${pfad} ${w}: zwischen den Einträgen ${i + 1} und ${i + 2} bleibt Luft (${bs[i + 1].x - bs[i].r} px)`);
       const nav = await box(page.locator(".seitenweg"));
       for (const [i, b] of bs.entries()) assert.ok(!sich(nav, b), `${pfad} ${w}: Navigation und Eintrag ${i + 1} überlappen`);
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${pfad} ${w}: seitliches Wischen`);

@@ -112,7 +112,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
   assert.match(seite, /#stage canvas\{[^}]*touch-action:none/, "allein auf der Seite bleibt es bei none");
   assert.match(seite, /\.eingebettet:fullscreen #stage canvas\{touch-action:none\}/, "im Vollbild dreht jede Geste");
   assert.match(seite, /if \(eingebettet && !document\.fullscreenElement && !e\.ctrlKey && !e\.metaKey\) return;/, "Mausrad: eingebettet nur mit Strg zoomen");
-  assert.match(seite, /if \(eingebettet \|\| \(e\.target && e\.target\.tagName === 'INPUT'\)\) return;/, "keine Tastenkürzel, die Leertaste soll blättern");
+  assert.match(seite, /if \(\(eingebettet && !document\.fullscreenElement\) \|\| \(e\.target && e\.target\.tagName === 'INPUT'\)\) return;/, "eingebettet keine Tastenkürzel (die Leertaste soll blättern), im Vollbild schon");
   assert.match(seite, /new IntersectionObserver/, "ausserhalb des Sichtbereichs rechnet die Szene nicht weiter");
   assert.match(seite, /if \(sichtbar\) requestAnimationFrame\(frame\); else laeuft = false;/);
 });

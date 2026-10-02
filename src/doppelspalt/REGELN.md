@@ -198,8 +198,9 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   (`aria-current`; auf den ORNA-Seiten «Apps»). News, Termine und Portfolio bleiben unter ihren Adressen und
   tragen das neue Menü, sind aber nirgends mehr verlinkt (Entscheid vom 2. Oktober 2026). Das eingebettete
   Stellenfeld ist die drehbare 3D-Ansicht selbst: Ziehen dreht, senkrechtes Wischen und das Mausrad blättern
-  die Seite, Strg + Mausrad zoomt, ausserhalb des Bildes rechnet die Szene nicht, bei «weniger Bewegung»
-  steht sie still. Aufbau und Verhalten halten `tests/struktur.test.mjs` und `tests/struktur.e2e.mjs` fest.
+  die Seite, Strg + Mausrad zoomt, die Tastenkürzel sind aus (die Leertaste blättert), im Vollbild gilt alles
+  wie auf der eigenen Seite, ausserhalb des Bildes rechnet die Szene nicht, bei «weniger Bewegung» steht sie
+  still. Aufbau und Verhalten halten `tests/struktur.test.mjs` und `tests/struktur.e2e.mjs` fest.
 - **Navigation oben links** (freigegeben am 2. Oktober 2026, Ausnahme zu «andere Seiten verlinken den
   Alpha-Bereich nicht»): Jede Seite trägt oben links «Ornament Cloud» (zur Startseite) und darunter
   «Das Dritte Rad» (zum Start des Rads, `alpha/drittes-rad/`). Das ist der einzige Alpha-Link, den alle
