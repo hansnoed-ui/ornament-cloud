@@ -23,7 +23,7 @@
   --btn-fg: #f2f3f6;
   --ink: #2b2417; --paper2: #f3ead4;
   --c0: #e5484d; --c1: #f08a24; --c2: #f2c230; --c3: #3da35d; --c4: #2f7de1; --c5: #4b4fc4; --c6: #9b51c9;
-  --weg-start: #c2410c; --weg-rad: #5b3fc4;   /* Navigation oben links: «Ornament Cloud» orange, «Das Dritte Rad» violett (wie auf der Website) */
+  --hauptlink: #353b40;   /* die Hauptlinks oben links und die feine Linie darunter: im hellen Modus Anthrazit, wie auf der Website (Wunsch vom 2. Oktober 2026, 19:00 UTC) */
   --display: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
   --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
 }
@@ -31,20 +31,20 @@
   :root:not([data-theme="light"]) {
     --bg: #12141b; --surface: #1b1e28; --fg: #e8eaf1; --muted: #9aa1b5; --line: #2d3141;
     --btn-bg: #e8eaf1; --btn-fg: #12141b; --ink: #efe3c6; --paper2: #2a2418; color-scheme: dark;
-    --weg-start: #f08a5d; --weg-rad: #a794ff;
+    --hauptlink: #ffd84d;   /* im dunklen Modus ein helles Sonnengelb */
   }
 }
 :root[data-theme="dark"] {
   --bg: #12141b; --surface: #1b1e28; --fg: #e8eaf1; --muted: #9aa1b5; --line: #2d3141;
   --btn-bg: #e8eaf1; --btn-fg: #12141b; --ink: #efe3c6; --paper2: #2a2418; color-scheme: dark;
-  --weg-start: #f08a5d; --weg-rad: #a794ff;
+  --hauptlink: #ffd84d;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html:not(:has(:fullscreen)) { scrollbar-gutter: stable; }   /* Platz für den Bildlaufbalken immer da: die Navigation oben links bleibt auf jeder Seite an derselben Stelle */
 body { margin: 0; }
 body { background: var(--bg); color: var(--fg); font: 16px/1.5 var(--body); padding-inline: 20px; padding-block: 55px 40px; }
-main { max-width: 1040px; margin-inline: auto; margin-top: clamp(28px, 9vh, 104px); display: grid; gap: 28px; }
+main { max-width: 1040px; margin-inline: auto; margin-top: calc(clamp(28px, 9vh, 104px) - 16px); display: grid; gap: 28px; }   /* 16 px weniger: so viel Platz braucht die Linie unter den Hauptlinks, der Inhalt bleibt, wo er war */
 header p { margin: 0; color: var(--muted); max-width: 52ch; }
 .stage { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); align-items: start; }
 .wheelbox { display: grid; gap: 16px; justify-items: center; }
@@ -79,12 +79,13 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--c4); outlin
 .idline { color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
 .empty { color: var(--muted); margin: 0; }
 .again { justify-self: start; font: 500 .9rem var(--body); background: none; color: var(--fg); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; cursor: pointer; }
-/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» orange, darunter «Das Dritte Rad» violett, beide als Buttons mit ganz feinem Rahmen, der aktive (aria-current) invers: Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite.
+/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» und darunter «Das Dritte Rad», beide in derselben Farbe (--hauptlink: hell Anthrazit, dunkel ein helles Sonnengelb) und beide als Buttons mit ganz feinem Rahmen,
+   der aktive (aria-current) invers: Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite. Darunter steht eine feine Linie in derselben Farbe.
    Die Stelle ist auf jeder Seite dieselbe (Wunsch vom 2. Oktober 2026, 18:08 UTC): die der Website, also bündig mit einer Spalte von 1040 px, die in der Mitte steht (bis 1080 px Fensterbreite 20 px vom Rand),
    oben 55 px, bis 760 px Fensterbreite 40 px. Ein Browsertest misst sie auf allen Seiten (REGELN §14). */
-.seitenweg { max-width: 1040px; margin: 0 auto 8px; display: grid; grid-template-columns: max-content; justify-content: start; gap: 8px; }
-.seitenweg a { --weg: var(--weg-start); padding: 3px 14px; border: 1px solid var(--weg); border: 1px solid color-mix(in srgb, var(--weg) 40%, transparent); border-radius: 999px; font: 600 .8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .12em; text-align: center; text-transform: uppercase; text-decoration: none; color: var(--weg); }   /* genau so gesetzt wie auf der Website (styles.css) */
-.seitenweg a + a { --weg: var(--weg-rad); }
+.seitenweg { position: relative; max-width: 1040px; margin: 0 auto 8px; padding-bottom: 16px; display: grid; grid-template-columns: max-content; justify-content: start; gap: 8px; }
+.seitenweg::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; border-top: 1px solid var(--hauptlink); }   /* die feine Linie unter den Hauptlinks */
+.seitenweg a { --weg: var(--hauptlink); padding: 3px 14px; border: 1px solid var(--weg); border: 1px solid color-mix(in srgb, var(--weg) 40%, transparent); border-radius: 999px; font: 600 .8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .12em; text-align: center; text-transform: uppercase; text-decoration: none; color: var(--weg); }   /* genau so gesetzt wie auf der Website (styles.css) */
 .seitenweg a:hover { border-color: var(--weg); }
 .seitenweg a[aria-current] { border-color: var(--weg); background: var(--weg); color: var(--bg); }
 @media (forced-colors: active) { .seitenweg a[aria-current] { outline: 1px solid currentColor; outline-offset: 2px; } }
