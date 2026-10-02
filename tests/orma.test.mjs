@@ -397,7 +397,7 @@ test("Alpha: nur Startseite und News verlinken den Alpha-Bereich (ORMA und die G
   assert.deepEqual([...found].sort(), [...allowed].sort(), "Startseite und News verlinken ORMA");
   for (const [f, zs] of Object.entries(ziele)) for (const z of zs) assert.ok(gefunden.has(`${f} → ${z}`), `${f} verlinkt ${z} nicht`);
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("/alpha/"));
-  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html"])
+  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html", "alpha/omna-color/index.html"])
     assert.match(readFileSync(new URL(p, root), "utf8"), /<meta name="robots" content="noindex/, p);
 });
 
@@ -504,12 +504,16 @@ test("Alpha: oben links führt «Ornament Cloud» zur Startseite und «Alpha» z
 });
 
 // Prüfraster in Arbeit (tools/build-alpha-texte.ts): Seiten aus src/alpha/*.md, deutlich als «Zurzeit in Arbeit» markiert
-test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, zuunterst in der Übersicht, ohne die zwei PDF-Links", async () => {
+test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Übersicht (vor OMNA COLOR), ohne die zwei PDF-Links", async () => {
   const at = await import(new URL("tools/build-alpha-texte.ts", root).href);
   for (const f of at.build()) assert.equal(readFileSync(new URL(f.pfad, root), "utf8"), f.inhalt, `${f.pfad} veraltet: node --experimental-strip-types tools/build-alpha-texte.ts`);
   const uebersicht = readFileSync(new URL("alpha/index.html", root), "utf8");
   const eintraege = [...uebersicht.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(eintraege.slice(-2), ["gesellschaftskonzepte/", "journalistische-texte/"], "zuunterst");
+  // Die Prüfraster in Arbeit stehen zusammen ganz unten, nur OMNA COLOR (Prototyp, seit 2. Oktober 2026) folgt danach
+  assert.deepEqual(eintraege.slice(-3), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/"], "zuunterst, danach OMNA COLOR");
+  const omna = readFileSync(new URL("alpha/omna-color/index.html", root), "utf8");
+  assert.ok(!/(src|href)="https?:/.test(omna), "OMNA COLOR lädt nichts von fremden Servern");
+  assert.match(omna, /<a href="\.\.\/\.\.\/">Ornament Cloud<\/a> · <a href="\.\.\/">Alpha<\/a>/);
   for (const r of at.RASTER) {
     const html = readFileSync(new URL(`alpha/${r.seite}/index.html`, root), "utf8");
     assert.match(html, /<p class="at-arbeit">Zurzeit in Arbeit<\/p>/);
