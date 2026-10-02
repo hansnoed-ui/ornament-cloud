@@ -8,6 +8,7 @@
 // Zugang: Läuft ein Proxy, der den Schlüssel einsetzt, genügt NODE_USE_ENV_PROXY=1; sonst TYPESAFE_API_KEY setzen.
 // Abgerufene Antworten liegen in $TMPDIR/jev-bruecken-cache.jsonl, ein abgebrochener Lauf setzt dort fort.
 // Nach Änderungen an Strophen, Konstellationen oder Übungen (Anzahl, Reihenfolge) wird jev.js ungültig (Prüfsumme) und muss neu erzeugt werden.
+// Danach tools/build-drittes-rad.ts laufen lassen: es setzt die Versionsmarke (?v=) in den Importen der Radmodule, die jev.js einschließt.
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -125,7 +126,7 @@ export async function main(argv: string[]) {
     `export const JEV = {\n  modell: ${JSON.stringify(modell)}, stand: ${JSON.stringify(heute)}, pruefsumme: ${JSON.stringify(E.PRUEFSUMME)},\n` +
     zeilen("zf", listen.zf) + zeilen("zc", listen.zc) + zeilen("fz", listen.fz) + zeilen("fc", listen.fc) + zeilen("cz", listen.cz) + zeilen("cf", listen.cf) + `};\n`;
   writeFileSync(AUSGABE, inhalt);
-  console.log(`geschrieben: alpha/drittes-rad/jev.js (${(inhalt.length / 1024).toFixed(0)} KB)`);
+  console.log(`geschrieben: alpha/drittes-rad/jev.js (${(inhalt.length / 1024).toFixed(0)} KB)\nDanach die Versionsmarke setzen: node --experimental-strip-types --no-warnings tools/build-drittes-rad.ts`);
 }
 
 if (import.meta.url === pathToFileURL(resolve(process.argv[1])).href) await main(process.argv.slice(2));

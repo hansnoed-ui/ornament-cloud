@@ -53,9 +53,10 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   eine einzige Datei `index.html` mit den Übungen als Daten im Skript (Stand Kartographie v0.5), von Hand gepflegt
   `alpha/drittes-rad/` ist «Das Dritte Rad» (Prototyp, zuunterst in der Übersicht): drei Ringe auf einer Achse (Zeit = sieben Zyklen aus «Zu seiner Zeit», Form = 40 Zeichen aus ORNA,
   Farbe = sieben Themen aus OMNA COLOR) zeigen drei Karten. Jede Karte öffnet ihr Stück im Rad selbst (ganze Strophe, ganze Begegnung, ganze Übung, mit Verknüpfungen in die anderen Bereiche),
-  und in jedem Schritt gibt es vier Wege: zurück ins Rad (es dreht vom offenen Stück aus weiter), Zettelkasten, ORNA, OMNA COLOR; dazu immer «Zurück zum Start». Das Rad selbst trägt keinen Text und keine Zahlen,
-  die Schrift ist Instrument Sans wie in den anderen Fassungen. Dazu «Fäden» (gemeinsame Person, gemeinsame Wörter oder Nähe nach jev), «Brücke schlagen» (drei Wege: eine Strophe, die eine ORNA-Person tatsächlich nennt;
-  eine Brücke, die jev beim Bauen als nah bewertet hat; in jedem fünften Fall eine absurde) und ein Satzfeld mit «Karte kopieren».
+  und in jedem Schritt gibt es vier Wege: zurück ins Rad (es dreht vom offenen Stück aus weiter), Zettelkasten, ORNA, OMNA COLOR. Das Rad selbst trägt keinen Text und keine Zahlen,
+  die Schrift ist Instrument Sans wie in den anderen Fassungen. Die Seite ist schlicht (auf Wunsch vom 2. Oktober 2026): Titel, Rad, darunter zwei gleich gestaltete Knöpfe, «Drehen» und «Brücke»
+  (drei Wege, eine Brücke zu schlagen: eine Strophe, die eine ORNA-Person tatsächlich nennt; eine Brücke, die jev beim Bauen als nah bewertet hat; in jedem fünften Fall eine absurde), und ein Satzfeld mit «Karte kopieren».
+  Kein Text unter dem Titel, kein «Zurück zum Start», kein Kasten «Fäden»; `faeden()` bleibt in `engine.js` (ein Test deckt sie ab), damit eine ältere Seite im Zwischenspeicher des Browsers keinen Export vermisst.
   Adressen: `?t=<Strophe>~<Konstellation>~<Übung>~<Farbe>~<Zeichen>` (mit `&f=zeit|form|farbe` für das offene Stück) stellt einen Stand wieder her, `?von=<strophe|paar|uebung|person>~<Kennung>` dreht von einem Stück aus weiter;
   «Zurück» im Browser folgt dem Verlauf. Auf den Originalseiten (Strophe, ORNA, OMNA COLOR) erscheint nur mit `?rad=1` am unteren Rand dieselbe Auswahl aus `weiter.js` (Kacheln aus `kacheln.js`).
   Alle vier Wege führen von dort ins Rad zurück, wo das Spiel weitergeht; die Originale bleiben über «… öffnen ↗» erreichbar.
@@ -64,6 +65,12 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `kacheln.js` (die vier Wege als Kacheln, gemeinsam für Rad und Leiste), `weiter.js` (Leiste auf den Originalseiten),
   `daten.js` (erzeugt mit `node --experimental-strip-types tools/build-drittes-rad.ts` aus `src/data/zu-seiner-zeit.json` und `alpha/omna-color/index.html`; ein Test meldet, wenn sie veraltet ist),
   `jev.js` (erzeugt mit `tools/build-jev-bruecken.ts`, siehe unten).
+  Versionsmarke: GitHub Pages lässt Browser jede Datei zehn Minuten ohne Nachfrage behalten. Direkt nach einer Aktualisierung bekäme eine frische Seite sonst alte Module aus dem Zwischenspeicher
+  («does not provide an export named …»), und das Rad bliebe leer. Darum tragen alle Importe der Radmodule in `index.html`, `engine.js`, `kacheln.js` und `weiter.js` ein `?v=<Marke>`. Die Marke folgt dem Inhalt der vier Module
+  (`engine.js`, `kacheln.js`, `daten.js`, `jev.js`) und wird vom selben Aufruf gesetzt wie `daten.js` (`tools/build-drittes-rad.ts`): nach jeder Änderung an einer dieser Dateien ausführen, ein Test meldet fehlende oder veraltete Marken
+  und Importe von Modulen, die die Marke nicht erfasst. `weiter.js` selbst bleibt ohne Marke (die Zeile auf den Originalseiten bleibt, wie sie ist), holt seine Module aber mit Marke; ORNA-Daten und `symbols.js` gehören ORNA und tragen keine.
+  Neue Exporte dürfen dazukommen, vorhandene sollten bleiben, solange ältere Seiten noch im Zwischenspeicher liegen können (zehn Minuten). Startet das Rad trotzdem nicht, steht auf der Seite ein Hinweis mit dem harten Neuladen (`#ladefehler`, nach 2,5 Sekunden).
+  Der Test-Server `tools/serve-orma.mjs` liefert `no-cache` und zeigt solche Fehler nie; darum bildet der Test «Zwischenspeicher» in `tests/drittes-rad.e2e.mjs` GitHub Pages nach (`max-age=600`, alte Module im Browser).
   ORNA (Personen, 326 Konstellationen) wird direkt aus `portfolio/nebeneinander-nacheinander/js/data/` gelesen. OMNA COLOR zeigt mit `?u=<Nummer>` eine bestimmte Übung.
   Symbolik nach drei alten Kreisen, nur als Gestaltung und ohne Beschriftung: Tierkreis (Sternenband, zwölf selbst gezeichnete Zeichen, Sonne), Alchemie-Kreis (Zeichen der vier Elemente, sieben Planetenzeichen, Siebenstern, Dreieck mit drei Zeichen),
   Goethes Farbenkreis von 1809 (schön, edel, gut, nützlich, gemein, unnötig je Farbe, nur auf den Karten; «Phantasie» für den Indigo-Sektor ergänzt). Die Seite ist bewusst dunkel und mystisch (REGELN §5 gilt für ORNA).

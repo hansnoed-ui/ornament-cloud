@@ -1,7 +1,8 @@
 // «Das Dritte Rad» – Browser-Tests (Playwright, Chromium): Rad ohne Text, Karten, Lesen im Rad, vier Wege, Rückkehr, Verlauf,
-// Leiste auf den Originalseiten (Zettelkasten, ORNA, OMNA COLOR), Handy.
+// Leiste auf den Originalseiten (Zettelkasten, ORNA, OMNA COLOR), Handy, alte Module im Zwischenspeicher (wie bei GitHub Pages), Hinweis bei Ladefehler.
 //   NODE_PATH=$(npm root -g) node tests/drittes-rad.e2e.mjs
 import assert from "node:assert/strict";
+import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 
@@ -40,25 +41,45 @@ const kacheln = (page, wo) => page.locator(`${wo} a.drad-kachel`).evaluateAll((a
 })));
 const text = (page, sel) => page.locator(sel).first().textContent();
 
+/** Nachbildung von GitHub Pages: der Browser darf jede Datei zehn Minuten ohne Nachfrage behalten (Cache-Control: max-age=600), der Test-Server oben sagt dagegen no-cache.
+ *  Mit alt.set(pfad, text) liefert sie für den Pfad (ohne Abfrage) vorübergehend eine ältere Fassung. Hat der Browser sie einmal geholt, hält er sie auch nach der «Aktualisierung».
+ *  /probe holt die vier Module des Rads unter ihren Adressen ohne Marke und meldet deren Namen. */
+async function pagesNachbildung() {
+  const alt = new Map(), ursprung = base.replace("localhost", "127.0.0.1");
+  const server = createServer(async (req, res) => {
+    const u = new URL(req.url, "http://x");
+    if (u.pathname === "/probe") {
+      res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
+      res.end(`<!doctype html><meta charset="utf-8"><title>probe</title><script type="module">
+        window.geholt = Object.fromEntries(await Promise.all(["engine", "kacheln", "daten", "jev"].map(async (n) => [n, Object.keys(await import("/alpha/drittes-rad/" + n + ".js"))])));
+        window.fertig = true;</script>`);
+      return;
+    }
+    if (alt.has(u.pathname) && !u.search) { res.writeHead(200, { "content-type": "text/javascript; charset=utf-8", "cache-control": "max-age=600" }); res.end(alt.get(u.pathname)); return; }
+    const r = await fetch(ursprung + u.pathname.slice(1) + u.search);
+    res.writeHead(r.status, { "content-type": r.headers.get("content-type") ?? "text/plain", "cache-control": "max-age=600" });
+    res.end(Buffer.from(await r.arrayBuffer()));
+  });
+  await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
+  return { alt, base: `http://127.0.0.1:${server.address().port}/`, close: () => server.close() };
+}
+
 // ein fester Stand: Konstellation Sol LeWitt × Henri Bergson mit der Strophe und der Übung, die das Rad dazu findet
 const z0 = E.rueckkehr({ art: "paar", id: "sol-lewitt__henri-bergson" }, zufall(7));
 const ST = { strophe: z0.strophe, paar: z0.paar, uebung: z0.uebung, person: z0.person };
 const stUrl = (fokus) => rel(E.adresse.spiel(ST, fokus));
 const zeitTitel = (s) => `${s.n} · ${s.t}`, formTitel = (c) => `${E.nameVon(c.artistId)} × ${E.nameVon(c.theoristId)}`;
 
-await check("Rad: Drehen zeigt drei Karten, Fäden und eine Adresse, die den Stand wiederherstellt; Zurück im Verlauf", async () => {
+await check("Rad: Drehen zeigt drei Karten und eine Adresse, die den Stand wiederherstellt; Zurück im Verlauf", async () => {
   const { ctx, page, errors } = await open("alpha/drittes-rad/");
   assert.equal(await page.locator("#result").isHidden(), true);
-  assert.equal(await page.locator("#start").isHidden(), true, "vor dem ersten Drehen gibt es kein «Zurück zum Start»");
   await page.click("#go");
   await page.locator("#result").waitFor({ state: "visible" });
   const karten = () => page.locator("#result h2 a").evaluateAll(a => a.map(x => x.getAttribute("href")));
   const links = await karten();
   assert.equal(links.length, 3);
   ["zeit", "form", "farbe"].forEach((f, i) => assert.match(links[i], new RegExp(`/alpha/drittes-rad/\\?t=[^&]+&f=${f}$`), "jede Karte öffnet ihr Stück im Rad"));
-  assert.ok(await page.locator("#faeden").textContent());
   assert.match(page.url(), /\?t=[^&]+$/);
-  assert.equal(await page.locator("#start").isVisible(), true);
   const url = page.url();
   await page.goto("about:blank");
   await page.goto(url);                                    // Rückkehr: gleiche Karten ohne Drehen
@@ -74,6 +95,34 @@ await check("Rad: Drehen zeigt drei Karten, Fäden und eine Adresse, die den Sta
   await page.locator("#wheel").focus();
   await page.keyboard.press("Enter");
   await page.waitForFunction((u) => location.href !== u && !document.getElementById("go").disabled, url);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Schlichte Seite: unter dem Titel steht nichts, «Drehen» und «Brücke» sehen gleich aus, kein «Zurück zum Start», kein Kasten «Fäden»", async () => {
+  const { ctx, page, errors } = await open("alpha/drittes-rad/");
+  assert.equal((await page.locator("header").innerText()).trim(), "Das Dritte Rad", "nur der Titel");
+  assert.deepEqual(await page.locator(".wheelbox .row button").allTextContents(), ["Drehen", "Brücke"], "zwei Knöpfe unter dem Rad");
+  const stil = (id) => page.locator(id).evaluate((b) => { const c = getComputedStyle(b); return Object.fromEntries(["fontSize", "fontWeight", "letterSpacing", "textTransform", "color", "borderTopColor", "borderTopWidth", "borderRadius",
+    "paddingTop", "paddingLeft", "boxShadow", "backgroundColor"].map((k) => [k, c[k]])); });
+  assert.deepEqual(await stil("#bridge"), await stil("#go"), "«Brücke» ist wie «Drehen» gestaltet");
+  assert.equal(await page.locator("#bridge").getAttribute("aria-label"), "Brücke schlagen", "vorgelesen bleibt es verständlich");
+  const kein = async () => {
+    assert.equal(await page.locator("#start, #faeden, .drad-start").count(), 0);
+    assert.equal(await page.locator("button, a", { hasText: /Zurück zum Start/ }).count(), 0, "kein «Zurück zum Start»");
+    assert.equal(await page.locator("h3", { hasText: /^Fäden$/ }).count(), 0, "kein Kasten «Fäden»");
+  };
+  await kein();
+  await page.click("#go");
+  await page.locator("#result").waitFor({ state: "visible" });
+  await kein();
+  await page.click("#bridge");
+  await page.waitForFunction(() => !document.getElementById("bridge").disabled);
+  await page.locator("#result").waitFor({ state: "visible" });
+  await kein();
+  await page.click("#cForm h2 a");
+  await page.locator("#lese").waitFor({ state: "visible" });
+  await kein();
   assert.deepEqual(errors, []);
   await ctx.close();
 });
@@ -100,7 +149,7 @@ await check("Rad: kein Text und keine Zahlen im Rad, Schrift Instrument Sans wie
   await ctx.close();
 });
 
-await check("Rad: Brücke schlagen nennt die Brücke und zeigt drei Karten", async () => {
+await check("Rad: «Brücke» nennt die Brücke und zeigt drei Karten", async () => {
   const { ctx, page, errors } = await open("alpha/drittes-rad/");
   await page.click("#bridge");
   await page.locator("#result").waitFor({ state: "visible" });
@@ -155,7 +204,7 @@ await check("Rad: jede Karte öffnet ihr Stück im Rad (ganze Strophe, ganze Beg
     assert.deepEqual(k.map(x => x.label), LABEL);
     assert.deepEqual(k.filter(x => x.hier).map(x => x.bereich), [fokus], "der Weg im eigenen Bereich zeigt «hier weiter»");
     assert.ok(k.every(x => x.titel && x.grund && x.href.includes("/alpha/drittes-rad/")), "alle Wege führen ins Rad");
-    assert.ok(await page.locator("#wege a.start", { hasText: "Zurück zum Start" }).isVisible());
+    assert.equal(await page.locator("#wege a").count(), 4, "nur die vier Wege, kein «Zurück zum Start»");
     await page.goBack();
     await page.locator("#result").waitFor({ state: "visible" });
     assert.equal(await page.locator("#lese").isHidden(), true);
@@ -227,7 +276,7 @@ await check("Rad: Verknüpfungen im Lesen (→ in ORNA, Anklänge, weitere Begeg
   await ctx.close();
 });
 
-await check("Rad: «Zurück ins Rad» dreht von dem Stück aus weiter, bei dem man steht; «Zurück zum Start» leert das Rad", async () => {
+await check("Rad: «Zurück ins Rad» dreht von dem Stück aus weiter, bei dem man steht", async () => {
   const { ctx, page, errors } = await open(stUrl("zeit"));
   await page.locator("#lese").waitFor({ state: "visible" });
   await page.locator('#wege a.drad-kachel[data-bereich="rad"]').click();
@@ -244,22 +293,6 @@ await check("Rad: «Zurück ins Rad» dreht von dem Stück aus weiter, bei dem m
   await page.locator('#wege a.drad-kachel[data-bereich="rad"]').click();
   await page.locator("#result").waitFor({ state: "visible" });
   assert.ok((await text(page, "#cFarbe h2 a")).startsWith(ST.uebung.n), "die Übung bleibt liegen");
-  // Zurück zum Start aus dem Lesen
-  await page.goto(base + stUrl("form"));
-  await page.locator("#lese").waitFor({ state: "visible" });
-  await page.locator("#wege a.start").click();
-  await page.waitForFunction(() => location.search === "");
-  for (const id of ["#lese", "#wege", "#result", "#start"]) assert.equal(await page.locator(id).isHidden(), true, id);
-  assert.equal(await page.locator("#wheel").getAttribute("data-fokus"), "");
-  assert.equal(await page.evaluate(() => document.body.classList.contains("lesend")), false);
-  await page.click("#go");                                                // und es geht von vorn weiter
-  await page.locator("#result").waitFor({ state: "visible" });
-  await page.locator("#start").click();                                   // der Knopf neben dem Rad macht dasselbe
-  await page.waitForFunction(() => location.search === "");
-  assert.equal(await page.locator("#result").isHidden(), true);
-  assert.equal(await page.locator("#start").isHidden(), true);
-  await page.goBack();                                                    // Verlauf: wieder im Stand davor
-  await page.locator("#result").waitFor({ state: "visible" });
   assert.deepEqual(errors, []);
   await ctx.close();
 });
@@ -296,7 +329,7 @@ await check("Rad: ungültige Adressen (?t=, &f=) fallen auf den Start zurück, o
   }
 });
 
-await check("Zettelkasten: Leiste mit vier Wegen (Rad zuerst) und «Zurück zum Start»; Spur-Link bleibt im Spiel; ein Weg führt ins Rad", async () => {
+await check("Zettelkasten: Leiste mit vier Wegen (Rad zuerst), sonst nichts; Spur-Link bleibt im Spiel; ein Weg führt ins Rad", async () => {
   const { ctx, page, errors } = await open("zu-seiner-zeit/strophe/13-das-archiv/?rad=1");
   await page.locator(".drad").waitFor();
   const w = await kacheln(page, ".drad");
@@ -305,7 +338,7 @@ await check("Zettelkasten: Leiste mit vier Wegen (Rad zuerst) und «Zurück zum 
   assert.deepEqual(w.filter(x => x.hier).map(x => x.bereich), ["zeit"], "hier steht der Zettelkasten");
   assert.equal(w[0].href, `${base}alpha/drittes-rad/?von=strophe~13-das-archiv`, "das Rad dreht von dieser Strophe aus weiter");
   assert.ok(w.slice(1).every(x => x.href.startsWith(`${base}alpha/drittes-rad/?t=`)), "die Wege führen ins Rad");
-  assert.equal(await page.locator(".drad-start").getAttribute("href"), `${base}alpha/drittes-rad/`);
+  assert.equal(await page.locator(".drad a:not(.drad-kachel)").count(), 0, "kein «Zurück zum Start» in der Leiste");
   await page.locator(".zsz-nav a", { hasText: "Spur" }).click();
   await page.waitForURL(/\/spur\/\?rad=1/);
   await page.locator(".drad").waitFor();
@@ -321,7 +354,7 @@ await check("Zettelkasten: Leiste mit vier Wegen (Rad zuerst) und «Zurück zum 
   await ctx.close();
 });
 
-await check("ORNA: Leiste mit vier Wegen folgt der Drehung; Rad-Kachel führt ins Rad zurück, «Zurück zum Start» an den Anfang", async () => {
+await check("ORNA: Leiste mit vier Wegen folgt der Drehung; Rad-Kachel führt ins Rad zurück", async () => {
   const start = "sol-lewitt__henri-bergson";
   const { ctx, page, errors } = await open(`portfolio/nebeneinander-nacheinander/?pair=${start}&rad=1`);
   await page.locator(".drad").waitFor();
@@ -344,9 +377,8 @@ await check("ORNA: Leiste mit vier Wegen folgt der Drehung; Rad-Kachel führt in
   assert.equal(await text(page, "#cForm h2 a"), formTitel(E.paar(neu)), "die Konstellation aus ORNA bleibt im Rad liegen");
   await page.goBack();                                       // zurück in ORNA, die Leiste ist wieder da
   await page.waitForURL(/portfolio\/nebeneinander-nacheinander\//);
-  await page.locator(".drad-start").click();
-  await page.waitForURL(/alpha\/drittes-rad\/$/);
-  assert.equal(await page.locator("#result").isHidden(), true);
+  await page.locator(".drad").waitFor();
+  assert.equal((await kacheln(page, ".drad")).length, 4);
   assert.deepEqual(errors, []);
   await ctx.close();
 });
@@ -412,6 +444,64 @@ await check("Handy: kein waagerechtes Scrollen, Karten, Lesen, Wege und Leiste p
     await passt(page, u);
     const h = await page.locator(".drad").evaluate(n => n.offsetHeight / innerHeight);
     assert.ok(h < 0.3, `${u}: die Leiste nimmt ${Math.round(h * 100)} % des Bildschirms`);
+    await ctx.close();
+  }
+});
+
+await check("Zwischenspeicher: hält der Browser nach einer Aktualisierung noch alte Module (zehn Minuten wie bei GitHub Pages), startet das Rad trotzdem, auch die Auswahl auf einer Originalseite", async () => {
+  const pages = await pagesNachbildung();
+  const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
+  const page = await ctx.newPage(), fehler = [];
+  page.on("pageerror", (e) => fehler.push(e.message));
+  try {
+    // vorher: der Browser holt die Module in einer älteren Fassung, der die neuen Namen fehlen, und behält sie
+    for (const n of ["engine", "kacheln", "daten", "jev"]) pages.alt.set(`/alpha/drittes-rad/${n}.js`, "export const alt = true;");
+    await page.goto(pages.base + "probe");
+    await page.waitForFunction(() => window.fertig);
+    // «Aktualisierung»: der Server liefert wieder die heutige Fassung, im Browser liegen noch die alten Dateien
+    pages.alt.clear();
+    await page.goto(pages.base + "probe");
+    await page.waitForFunction(() => window.fertig);
+    assert.deepEqual(await page.evaluate(() => window.geholt.engine), ["alt"], "Voraussetzung des Versuchs: der Browser liefert die alte engine.js aus seinem Zwischenspeicher");
+    // die Seite selbst kommt frisch vom Server, ihre Module teils aus dem Zwischenspeicher
+    await page.goto(pages.base + "alpha/drittes-rad/");
+    const geladen = Date.now();
+    await page.waitForFunction(() => window.radGeladen === true, null, { timeout: 8000 }).catch(() => {});
+    assert.deepEqual(fehler, [], "Das Rad bricht beim Laden nicht ab (sonst: «does not provide an export named …»)");
+    assert.equal(await page.evaluate(() => window.radGeladen), true, "das Rad ist gestartet");
+    assert.ok(await page.locator("#sonne > *").count() > 0, "der Kern ist gezeichnet");
+    assert.ok(await page.locator("#zeit path").count() > 0 && await page.locator("#form path").count() > 0 && await page.locator("#farbe path").count() > 0, "alle drei Ringe sind gezeichnet");
+    await page.click("#go");
+    await page.locator("#result").waitFor({ state: "visible", timeout: 12000 });
+    assert.equal(await page.locator("#result h2 a").count(), 3, "Drehen zeigt drei Karten");
+    await page.waitForTimeout(Math.max(0, 2800 - (Date.now() - geladen)));           // länger als die Frist des Hinweises (2,5 s nach dem Laden)
+    assert.equal(await page.locator("#ladefehler").isHidden(), true, "kein Hinweis auf einen Ladefehler, wenn das Rad läuft");
+    // die Auswahl auf einer Originalseite lädt weiter.js ohne Marke und holt ihre Module mit Marke
+    await page.goto(pages.base + "zu-seiner-zeit/strophe/13-das-archiv/?rad=1");
+    await page.locator(".drad").waitFor({ timeout: 8000 });
+    assert.equal(await page.locator(".drad a.drad-kachel").count(), 4, "vier Wege");
+    assert.deepEqual(fehler, []);
+  } finally { await ctx.close(); pages.close(); }
+});
+
+await check("Hinweis bei Ladefehler: lädt das Rad nicht, steht kurz danach ein Hinweis mit dem harten Neuladen auf der Seite; sonst bleibt er verborgen", async () => {
+  {
+    const ctx = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1200, height: 900 } });
+    const page = await ctx.newPage();
+    await page.route("**/alpha/drittes-rad/engine.js*", (route) => route.abort());
+    await page.goto(base + "alpha/drittes-rad/");
+    await page.locator("#ladefehler").waitFor({ state: "visible", timeout: 8000 });
+    assert.match(await page.locator("#ladefehler").textContent(), /nicht geladen werden.*Strg\+Umschalt\+R.*Cmd\+Umschalt\+R/);
+    assert.equal(await page.evaluate(() => window.radGeladen), undefined);
+    assert.equal(await page.locator("h1").textContent(), "Das Dritte Rad", "die Seite selbst bleibt stehen");
+    await ctx.close();
+  }
+  {
+    const { ctx, page, errors } = await open("alpha/drittes-rad/");
+    await page.waitForFunction(() => window.radGeladen === true);
+    await page.waitForTimeout(2800);                          // länger als die Frist des Hinweises
+    assert.equal(await page.locator("#ladefehler").isHidden(), true);
+    assert.deepEqual(errors, []);
     await ctx.close();
   }
 });

@@ -1,11 +1,12 @@
 // «Das Dritte Rad»: gemeinsame Logik für das Rad (index.html) und die Auswahl auf den Zielseiten (weiter.js).
 // Verbindet drei Bestände: Zettelkasten (Strophen, daten.js), ORNA (Personen, Konstellationen, direkt aus dem Rad) und OMNA COLOR (Übungen, daten.js).
 // Alles läuft im Browser. Nichts wird gesendet. Zufall und Gewichtung sind nur Vorschläge, das Los darf absurd sein (Auftrag vom 2. Oktober 2026).
-import { ZYKLEN, THEMEN, STROPHEN, UEBUNGEN } from "./daten.js";
+// Importe mit ?v=<Marke>: setzt tools/build-drittes-rad.ts (gegen alte Module im Zwischenspeicher des Browsers, siehe dort).
+import { ZYKLEN, THEMEN, STROPHEN, UEBUNGEN } from "./daten.js?v=2d916f53";
 import { constellations } from "../../portfolio/nebeneinander-nacheinander/js/data/constellations.js";
 import { artists } from "../../portfolio/nebeneinander-nacheinander/js/data/artists.js";
 import { theorists } from "../../portfolio/nebeneinander-nacheinander/js/data/theorists.js";
-import { JEV } from "./jev.js";
+import { JEV } from "./jev.js?v=2d916f53";
 
 export { ZYKLEN, THEMEN, STROPHEN, UEBUNGEN };
 export const KONSTELLATIONEN = constellations;
@@ -312,7 +313,8 @@ export function rueckkehr(von, zufall = Math.random, vorgabe = {}) {
   return { strophe: s, paar: c, uebung: e, person, absurd: false, notiz };
 }
 
-/** Fäden zwischen den drei Karten: gemeinsame Personen und Wörter, als kurze Sätze */
+/** Fäden zwischen den drei Karten: gemeinsame Personen und Wörter, als kurze Sätze. Die Radseite zeigt sie nicht mehr (Wunsch vom 2. Oktober 2026); die Funktion bleibt,
+ *  damit eine ältere Fassung der Seite, die noch im Zwischenspeicher des Browsers liegt, keinen Export vermisst. */
 export function faeden(s, c, e) {
   const z = profilStrophe(s), f = profilPaar(c), u = profilUebung(e), zeilen = [];
   for (const p of [c.artistId, c.theoristId]) if (z.personen.has(p)) zeilen.push(`Die Strophe nennt ${nameVon(p)}, und ${nameVon(p)} ist Teil der Konstellation.`);

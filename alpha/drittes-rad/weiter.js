@@ -1,8 +1,9 @@
 // «Das Dritte Rad»: die Auswahl am unteren Rand der Originalseiten (Strophe, ORNA, OMNA COLOR), wenn man aus dem Spiel hierher kommt.
 // Wird von den Seiten nur geladen, wenn die Adresse ?rad= trägt (dynamischer Import); sonst bleibt alles, wie es ist.
 // Vier Wege in jedem Schritt: zurück ins Rad, Zettelkasten, ORNA, OMNA COLOR. Sie führen ins Rad zurück, wo das Spiel im Design des Rads weitergeht.
-import { wege, adresse, WURZEL } from "./engine.js";
-import { kachelnBauen, KACHELN_CSS } from "./kacheln.js";
+// Importe mit ?v=<Marke>: setzt tools/build-drittes-rad.ts (gegen alte Module im Zwischenspeicher des Browsers, siehe dort).
+import { wege, WURZEL } from "./engine.js?v=2d916f53";
+import { kachelnBauen, KACHELN_CSS } from "./kacheln.js?v=2d916f53";
 
 const W = new URL(WURZEL).pathname;
 const IN = { zeit: W + "zu-seiner-zeit/", form: W + "portfolio/nebeneinander-nacheinander/", farbe: W + "alpha/omna-color/" };
@@ -33,8 +34,6 @@ css.textContent = KACHELN_CSS + `
 .drad *{box-sizing:border-box}
 .drad-kopf{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .drad-kopf b{font-weight:500;letter-spacing:.16em;text-transform:uppercase;font-size:.68rem;color:#c9a45c}
-.drad-start{color:inherit;text-decoration:none;border:1px solid #5b4d2e;border-radius:999px;padding:3px 12px;font-size:.8rem}
-.drad-start:hover,.drad-start:focus-visible{border-color:#f0d78f;outline:none}
 `;
 
 const nav = document.createElement("nav");
@@ -50,8 +49,7 @@ function zeichne() {
   letzte = schluessel;
   const kopf = document.createElement("div"); kopf.className = "drad-kopf";
   const b = document.createElement("b"); b.textContent = "Das Dritte Rad · weiter";
-  const start = document.createElement("a"); start.className = "drad-start"; start.href = adresse.start; start.textContent = "↺ Zurück zum Start";
-  kopf.append(b, start);
+  kopf.append(b);
   nav.replaceChildren(kopf, kachelnBauen(wege(a), { kompakt: true, breit: true }));
 }
 

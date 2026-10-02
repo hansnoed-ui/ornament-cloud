@@ -33,6 +33,56 @@ test("daten.js entspricht den Quellen (Zettelkasten, OMNA COLOR)", async () => {
   for (const f of b.build()) assert.equal(lies(f.pfad), f.inhalt, `${f.pfad} veraltet: node --experimental-strip-types tools/build-drittes-rad.ts`);
 });
 
+// ---------- Versionsmarke: nach einer Aktualisierung keine alten Module aus dem Zwischenspeicher ----------
+// GitHub Pages lässt Browser jede Datei zehn Minuten ohne Nachfrage behalten. Frische Seite plus altes Modul gibt «does not provide an export named …», und das Rad bleibt leer.
+test("Versionsmarke: jeder Import eines Radmoduls trägt dieselbe, aktuelle Marke; Module ausserhalb der Marke gibt es nicht", async () => {
+  const b = await import(new URL("tools/build-drittes-rad.ts", root).href);
+  const marke = b.marke(Object.fromEntries(b.MODULE.map((n) => [n, lies(`alpha/drittes-rad/${n}`)])));
+  assert.match(marke, /^[0-9a-f]{8}$/);
+  const IMPORT = /(?:\bfrom\s*|\bimport\s*\(\s*)["'](\.\/[^"'?]+)(\?v=[0-9a-f]{8})?["']/g;      // Importe innerhalb des Rad-Ordners (ORNA und symbols.js liegen ausserhalb und tragen keine Marke)
+  const erwartet = { "index.html": 2, "engine.js": 2, "kacheln.js": 1, "weiter.js": 2 };
+  assert.deepEqual([...b.MIT_MARKE].sort(), Object.keys(erwartet).sort(), "alle Dateien, die Radmodule importieren, werden gestempelt");
+  for (const f of b.MIT_MARKE) {
+    const importe = [...lies(`alpha/drittes-rad/${f}`).matchAll(IMPORT)];
+    assert.equal(importe.length, erwartet[f], `${f}: Importe aus dem Rad-Ordner (neues Modul? dann in MODULE von tools/build-drittes-rad.ts aufnehmen)`);
+    for (const [, datei, m] of importe) {
+      assert.ok(b.MODULE.includes(datei.slice(2)), `${f}: ${datei} gehört nicht zu MODULE, die Marke würde es nicht erfassen`);
+      assert.equal(m, `?v=${marke}`, `${f}: Import von ${datei} ohne aktuelle Marke (node --experimental-strip-types tools/build-drittes-rad.ts)`);
+    }
+  }
+  const e = lies("alpha/drittes-rad/engine.js");
+  assert.ok(!/(?<!\/)\/\/[^\n]*\bfrom\s+"\.\/(?:engine|kacheln|daten|jev)\.js"/.test(e), "kein auskommentierter Import mit alter Adresse");
+  assert.ok(!lies("alpha/drittes-rad/daten.js").includes("?v="), "daten.js importiert nichts");
+});
+
+test("Versionsmarke: folgt dem Inhalt der Module (nicht den Marken selbst), Seite und weiter.js gehen nicht ein", async () => {
+  const b = await import(new URL("tools/build-drittes-rad.ts", root).href);
+  const d = Object.fromEntries(b.MODULE.map((n) => [n, lies(`alpha/drittes-rad/${n}`)]));
+  const m = b.marke(d);
+  assert.deepEqual([...b.MODULE].sort(), ["daten.js", "engine.js", "jev.js", "kacheln.js"], "die vier Module, die zusammen geladen werden müssen");
+  // Fixpunkt: mit beliebigen oder ohne Marken im Text kommt dieselbe Marke heraus, und Stempeln ändert sie nicht
+  const mit = (x) => Object.fromEntries(Object.entries(d).map(([n, t]) => [n, b.stempeln(t, x)]));
+  assert.equal(b.marke(mit("00000000")), m);
+  assert.equal(b.marke(mit("ffffffff")), m);
+  assert.equal(b.marke(Object.fromEntries(Object.entries(d).map(([n, t]) => [n, t.replace(/\?v=[0-9a-f]{8}/g, "")]))), m);
+  assert.equal(b.stempeln(b.stempeln('import x from "./engine.js";', "11111111"), "22222222"), 'import x from "./engine.js?v=22222222";');
+  assert.equal(b.stempeln('import("../../portfolio/x/js/data/artists.js")', "11111111"), 'import("../../portfolio/x/js/data/artists.js")', "fremde Importe bleiben ohne Marke");
+  // jede Änderung an einem Modul ergibt eine neue Marke, damit der Browser alle vier neu holt
+  for (const n of b.MODULE) assert.notEqual(b.marke({ ...d, [n]: d[n] + "\n// geändert" }), m, `Änderung an ${n}`);
+  assert.notEqual(b.marke({ ...d, "engine.js": d["engine.js"].replace('"./daten.js', '"./jev.js') }), m, "auch ein anderer Import ändert die Marke");
+});
+
+test("Hinweis bei Ladefehler: verborgen, erscheint nur ohne Meldung des Moduls, die Meldung ist die letzte Zeile des Moduls", () => {
+  const seite = lies("alpha/drittes-rad/index.html");
+  assert.match(seite, /<p class="bridge-note" id="ladefehler" role="alert" hidden>[^<]*Strg\+Umschalt\+R/, "Hinweis vorhanden, verborgen, nennt das harte Neuladen");
+  const klassisch = seite.split("<script>")[1].split("</script>")[0];
+  assert.match(klassisch, /addEventListener\("load"[\s\S]*if \(!window\.radGeladen\) document\.getElementById\("ladefehler"\)\.hidden = false/, "klassisches Skript: ohne radGeladen erscheint der Hinweis");
+  assert.ok(seite.indexOf("<script>") < seite.indexOf('<script type="module">'), "das klassische Skript steht vor dem Modul und läuft auch, wenn das Modul nicht lädt");
+  const modul = seite.split('<script type="module">')[1].split("</script>")[0];
+  assert.match(modul.trimEnd(), /\nwindow\.radGeladen = true;[^\n]*$/, "window.radGeladen = true ist die letzte Zeile des Moduls");
+  assert.equal(modul.match(/radGeladen/g).length, 1);
+});
+
 test("Bestand: 40 Personen, 326 Konstellationen, 49 Strophen mit Volltext, 180 Übungen, 7 Zyklen und 7 Themen", () => {
   assert.equal(E.PERSONEN.length, 40);
   assert.equal(E.KONSTELLATIONEN.length, 326);
@@ -294,6 +344,16 @@ test("Gestaltung: im Rad selbst kein Text und keine Zahlen, die Schrift ist Inst
   const alles = seite + lies("alpha/drittes-rad/kacheln.js") + lies("alpha/drittes-rad/weiter.js");
   assert.ok(!/(?<!sans-)\bserif\b|Newsreader|Georgia|Cormorant|Palatino|italic/i.test(alles.replace(/<!--[\s\S]*?-->/g, "")), "keine Serifen, keine Kursive");
   assert.ok(!/ZYKLEN\[[^\]]*\]\[0\]|romisch|römisch/i.test(seite.split("// ---- Zeit:")[1].split("// ---- Form:")[0]), "keine römischen Zahlen im Zeitring");
+});
+
+test("Schlichte Seite (Wunsch vom 2. Oktober 2026): nichts unter dem Titel, «Brücke» wie «Drehen», kein «Zurück zum Start», kein Kasten «Fäden»", () => {
+  const seite = lies("alpha/drittes-rad/index.html");
+  assert.match(seite, /<header>\s*<h1>Das Dritte Rad<\/h1>\s*<\/header>/, "unter dem Titel steht nichts");
+  assert.match(seite, /<button class="go" id="go" type="button">Drehen<\/button><button class="go" id="bridge" type="button" aria-label="Brücke schlagen">Brücke<\/button><\/div>/, "zwei gleich gestaltete Knöpfe, sonst keiner");
+  for (const f of ["index.html", "engine.js", "kacheln.js", "weiter.js"])
+    assert.ok(!/Zurück zum Start|id="start"|drad-start|class="quiet start"/.test(lies(`alpha/drittes-rad/${f}`)), `${f}: kein «Zurück zum Start»`);
+  assert.ok(!/id="faeden"|\.faeden|\bfaeden\(|text: "Fäden"/.test(seite), "kein Kasten «Fäden» auf der Seite");
+  assert.equal(typeof E.faeden, "function", "die Funktion bleibt im Modul, damit eine ältere Seite im Zwischenspeicher keinen Export vermisst");
 });
 
 test("Seiten: nichts von fremden Servern, Auswahl nur mit ?rad=, kein Eintrag in der Sitemap", () => {
