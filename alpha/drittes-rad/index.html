@@ -59,9 +59,7 @@ body { margin: 0; color: var(--ivory); font: 400 16px/1.55 var(--body); padding:
    Die Stelle ist auf jeder Seite dieselbe (Wunsch vom 2. Oktober 2026, 18:08 UTC): die der Website, also bündig mit einer Spalte von 1040 px, die in der Mitte steht (bis 1080 px Fensterbreite 20 px vom Rand),
    oben 55 px, bis 760 px Fensterbreite 40 px (der Körper trägt den Abstand oben, damit sein Hintergrund bis ganz nach oben reicht). Ein Browsertest misst sie auf allen Seiten (REGELN §14). */
 .seitenweg { max-width: 1040px; margin: 0 auto 8px; display: grid; grid-template-columns: max-content; justify-content: start; gap: 8px; }
-/* feine Linie unter den Links (Wunsch vom 2. Oktober 2026, 19:35 UTC), über die Spalte, schiebt nur den Inhalt darunter */
-.seitenweg { position: relative; padding-bottom: 12px; }
-.seitenweg::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; border-top: 1px solid var(--ivory); border-top: 1px solid color-mix(in srgb, var(--ivory) 40%, transparent); }
+/* Keine Trennlinie unter den Links: sie gehört zur Website, das Rad bleibt ohne (Wunsch vom 2. Oktober 2026, 19:00 UTC; bestätigt um 20:08 UTC, als eine eingebaute Linie wieder weg sollte). */
 .seitenweg a { --weg: var(--weg-start); padding: 3px 14px; border: 1px solid var(--weg); border: 1px solid color-mix(in srgb, var(--weg) 40%, transparent); border-radius: 999px; font: 600 .8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .12em; text-align: center; text-transform: uppercase; text-decoration: none; color: var(--weg); }
 .seitenweg a + a { --weg: var(--weg-rad); }
 .seitenweg a:hover { border-color: var(--weg); }
@@ -78,7 +76,7 @@ main { max-width: 1040px; margin: clamp(16px, 5vh, 56px) auto 0; display: grid; 
    Ohne :has() (sehr alte Browser) bleibt es bei den engen Abständen. */
 body:not(:has(#result:not([hidden]), #lese:not([hidden]))) main { margin-top: clamp(40px, 9vh, 96px); }
 body:not(:has(#result:not([hidden]), #lese:not([hidden]))) .wheelbox { gap: clamp(40px, 7vh, 72px); }
-body:not(:has(#result:not([hidden]), #lese:not([hidden]))) { padding-bottom: 8px; }   /* (seit der Linie unter den Links 8 statt 24 px)  unten weniger Rand als später (56 px): mit der Navigation an der gemeinsamen, tieferen Stelle beginnt die Startseite sonst schon bei 1280 × 800 zu blättern, obwohl alles im Bild ist */
+body:not(:has(#result:not([hidden]), #lese:not([hidden]))) { padding-bottom: 24px; }   /* unten weniger Rand als später (56 px): mit der Navigation an der gemeinsamen, tieferen Stelle beginnt die Startseite sonst schon bei 1280 × 800 zu blättern, obwohl alles im Bild ist */
 main { transition: margin-top .45s ease; }
 .wheelbox { transition: gap .45s ease; }
 .wheel { width: min(100%, 480px); aspect-ratio: 1; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: width .3s; }

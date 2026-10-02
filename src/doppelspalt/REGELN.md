@@ -214,7 +214,7 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   derselben Farbe, `--hauptlink`: im hellen Modus Anthrazit (`#353b40`), im dunklen ein helles Sonnengelb (`#ffd84d`);
   das Dritte Rad behält «Ornament Cloud» orange und «Das Dritte Rad» violett (Wunsch von Christian, 2. Oktober 2026, 19:00 UTC).
   Unter der Kopfzeile steht eine feine Linie in derselben Farbe: auf den Seiten mit Menü die Welle (`.divider`), auf Zettelkasten,
-  Alpha-Texten und OMNA COLOR eine gerade Linie von 1 px, so breit wie die Spalte; das Dritte Rad hat sie ebenfalls (in Elfenbein, 40 %). Im Zettelkasten
+  Alpha-Texten und OMNA COLOR eine gerade Linie von 1 px, so breit wie die Spalte; das Dritte Rad hat bewusst keine (Wunsch von Christian, 2. Oktober 2026, 19:00 und 20:08 UTC). Im Zettelkasten
   bleiben bis zum Titel «Zu seiner Zeit» 28 px (vorher 12 px). Auf jeder Seite sind die Links gleich gesetzt wie auf der Website
   (Schrift der Website, 0,8 rem, Gewicht 600, Grossbuchstaben, Laufweite 0,12 em; Wunsch von Christian, 2. Oktober 2026). Beide sind Buttons
   mit ganz feinem Rahmen (1 px, Pillenform, gleich breit); der aktive ist markiert (`aria-current`) und invers gesetzt
