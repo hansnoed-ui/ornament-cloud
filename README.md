@@ -51,10 +51,19 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   (neue Fassung: Datei in `src/alpha/` ersetzen, Eintrag in `RASTER` anpassen, Build laufen lassen; ein Test meldet veraltete Seiten)
   `alpha/omna-color/` ist OMNA COLOR (Prototyp, zuunterst in der Übersicht): Farbkreis mit Gegenrad, zieht eine von 180 Gestaltungsübungen;
   eine einzige Datei `index.html` mit den Übungen als Daten im Skript (Stand Kartographie v0.5), von Hand gepflegt
-  `alpha/drittes-rad/` ist «Das Dritte Rad» (Prototyp, zuunterst in der Übersicht): drei Ringe (Zeit = Zyklen aus «Zu seiner Zeit», Form = 40 Zeichen aus ORNA,
-  Farbe = Themen von OMNA COLOR) ergeben drei Karten und einen eigenen Satz; eine Datei `index.html`, Daten im Skript, von Hand gepflegt, Zeichen aus `js/symbols.js` von ORNA.
-  jev (api.typesafe.ai) ist vorbereitet, aber aus: `JEV_URL` im Skript ist leer; er bräuchte einen eigenen Proxy (der Schlüssel darf nie in die Seite),
-  der `{satz, strophe, text, zyklen}` entgegennimmt und `{score, zyklus}` zurückgibt. Der Schalter erscheint erst, wenn `JEV_URL` gesetzt ist, und sendet nur nach Haken
+  `alpha/drittes-rad/` ist «Das Dritte Rad» (Prototyp, zuunterst in der Übersicht): drei Ringe auf einer Achse (Zeit = sieben Zyklen aus «Zu seiner Zeit», Form = 40 Zeichen aus ORNA,
+  Farbe = sieben Themen aus OMNA COLOR) zeigen drei Karten, jede führt weiter (ganze Strophe, Konstellation in ORNA, Übung in OMNA COLOR). Dazu «Fäden» (gemeinsame Person oder Wörter),
+  «Brücke schlagen» (eine Strophe, die eine ORNA-Person tatsächlich nennt, mit deren Konstellation und einer nahen Übung; jede fünfte Brücke ist absurd) und ein Satzfeld mit «Karte kopieren».
+  Auf den Zielseiten erscheint nur mit `?rad=1` am unteren Rand die Auswahl aus `weiter.js`: höchstens zwei Wege (je ein Vorschlag in den beiden anderen Bereichen) und immer «Zurück zum Start».
+  Zielseiten laden sie per `import()` (Zettelkasten in `zu-seiner-zeit/zsz.js`, ORNA und OMNA COLOR als Einzeiler am Seitenende); ohne `?rad=` ändert sich dort nichts.
+  Dateien: `index.html` (Rad, von Hand), `engine.js` (Verknüpfung: Wörter auf den Stamm gekürzt, seltene gemeinsame Wörter und gemeinsame Personen zählen, Ziehung unter den besten vier, nie ganz berechenbar),
+  `weiter.js` (Auswahl), `daten.js` (erzeugt mit `node --experimental-strip-types tools/build-drittes-rad.ts` aus `src/data/zu-seiner-zeit.json` und `alpha/omna-color/index.html`; ein Test meldet, wenn sie veraltet ist).
+  ORNA (Personen, 326 Konstellationen) wird direkt aus `portfolio/nebeneinander-nacheinander/js/data/` gelesen. OMNA COLOR zeigt mit `?u=<Nummer>` eine bestimmte Übung.
+  Symbolik nach drei alten Kreisen, nur als Gestaltung: Tierkreis (Sternenband, zwölf selbst gezeichnete Zeichen, Sonne), Alchemie-Kreis (Schriftring «Solve et coagula · Tempus Forma Color», Siebenstern, Dreieck mit drei Zeichen),
+  Goethes Farbenkreis von 1809 (schön, edel, gut, nützlich, gemein, unnötig je Farbe; «Phantasie» für den Indigo-Sektor ergänzt). Die Seite ist bewusst dunkel und mystisch (REGELN §5 gilt für ORNA).
+  Zählen, Speichern und Senden: nichts. jev (api.typesafe.ai) ist vorbereitet, aber aus: `JEV_URL` im Skript ist leer; er bräuchte einen eigenen Proxy (der Schlüssel darf nie in die Seite),
+  der `{satz, strophe, text, zyklen}` entgegennimmt und `{score, zyklus}` zurückgibt. Der Schalter erscheint erst, wenn `JEV_URL` gesetzt ist, und sendet nur nach Haken.
+  Tests: `node --experimental-strip-types --no-warnings --test tests/drittes-rad.test.mjs` und `NODE_PATH=$(npm root -g) node tests/drittes-rad.e2e.mjs`
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)
 - `src/doppelspalt/CLAUDE-CODE-MASTERPROMPT-2026-ARCHIV.md` – ursprünglicher Auftrag, Entstehungsstand mit 99 Konstellationen, nicht mehr verbindlich
