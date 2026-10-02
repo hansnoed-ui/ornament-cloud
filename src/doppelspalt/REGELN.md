@@ -217,6 +217,13 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   (Fläche und Rahmen in der Farbe des Buttons, die Schrift in der Farbe der Seite, Kontrast ab 4,5): im Rad
   «Das Dritte Rad», auf allen anderen Seiten «Ornament Cloud» (Wunsch von Christian, 2. Oktober 2026). Aufbau, Farben, Rahmen, Markierung,
   Grösse und Ausnahmen hält `tests/navigation.test.mjs` fest.
+  Die Stelle ist auf jeder Seite dieselbe (Wunsch von Christian, 2. Oktober 2026, 18:08 UTC): die der Website, bündig mit einer
+  Spalte von 1040 px, die in der Mitte steht (bis 1080 px Breite der Seite 20 px vom Rand), oben 55 px, bis 760 px Breite 40 px.
+  Seitenfamilien mit eigenem Aufbau (Zettelkasten, Rad, OMNA COLOR) setzen dieselben Werte, ihr Kopf und ihr Inhalt stehen
+  bündig darunter. `html { scrollbar-gutter: stable }` hält den Platz für den Bildlaufbalken auf jeder Seite frei, sonst
+  rutschte die Navigation dort, wo Balken Platz brauchen (Windows), auf Seiten, die zu kurz zum Blättern sind, um die halbe
+  Balkenbreite. Wer eine Seitenfamilie anlegt, übernimmt die Werte; `tests/drittes-rad.e2e.mjs` misst die Stelle auf allen
+  Familien (Computer, Tablet, Handy, hell, dunkel, mit und ohne Balken) und im Rad beim Drehen und Lesen.
 
 ## 13. Nicht mehr gültig (aus dem Archiv)
 

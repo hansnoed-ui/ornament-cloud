@@ -674,6 +674,7 @@ await check("Startseite des Rads: mehr Raum über und unter dem Rad (Wunsch vom 
     const start = await messen(page);
     assert.ok(start.oben >= eng.oben + 24 && start.unten >= eng.unten + 16, `${wo}: Startseite mit mehr Raum als früher: ${JSON.stringify(start)} gegen ${JSON.stringify(eng)}`);
     assert.ok(start.oben <= 130 && start.unten <= 90, `${wo}: nicht masslos (${JSON.stringify(start)})`);
+    if (wo === "Computer") assert.ok(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight), "Computer: die Startseite passt bei 1280 × 800 ohne Blättern (die gemeinsame Stelle der Hauptlinks rückt sie nach unten, unten bleiben darum nur 24 px Rand)");
     // gedreht: die Karten stehen da, die engen Abstände von früher
     await page.click("#go");
     await page.locator("#result").waitFor({ state: "visible" });
@@ -734,6 +735,79 @@ await check("Navigation oben links: «Ornament Cloud» und darunter «Das Dritte
       assert.deepEqual(fehler, [], was);
       await page.close();
     }
+    await ctx.close();
+  }
+});
+
+await check("Navigation: die beiden Hauptlinks stehen auf jeder Seite an genau derselben Stelle (Wunsch vom 2. Oktober 2026, 18:08 UTC), auf Computer, Tablet und Handy, hell und dunkel, mit und ohne Bildlaufbalken, und im Rad bleiben sie beim Drehen und Lesen dort", async () => {
+  const seiten = ["", "news/", "termine/", "portfolio/", "apps/", "masterprompts/", "web/",
+    "portfolio/nebeneinander-nacheinander/", "portfolio/nebeneinander-nacheinander/feld/", "portfolio/nebeneinander-nacheinander/app/", "portfolio/nebeneinander-nacheinander/app/feld/",
+    "alpha/", "alpha/pruefraster/", "alpha/verteilapparat/", "alpha/gesellschaftskonzepte/", "alpha/journalistische-texte/", "alpha/omna-color/", "alpha/drittes-rad/",
+    "zu-seiner-zeit/", "zu-seiner-zeit/spur/", "zu-seiner-zeit/strophe/13-das-archiv/", "zu-seiner-zeit/verweis/", "zu-seiner-zeit/verweis/yoko-ono/"];       // «zufall/» springt gleich zu einer Strophe weiter und ist damit schon dabei
+  /** Stelle der beiden Links im Dokument (also mit dem Bildlauf gerechnet), ihre Grösse, ob man sie trifft (nichts liegt darüber), und der linke Rand der Spalte der Seite, wo sie eine eigene hat */
+  const stelle = (page) => page.evaluate(() => {
+    const links = [...document.querySelectorAll("nav.seitenweg a")].map((x) => {
+      const b = x.getBoundingClientRect(), hit = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+      return { x: b.left + scrollX, y: b.top + scrollY, b: b.width, h: b.height, trifft: hit === x || x.contains(hit) };
+    });
+    const werk = document.querySelector(".zsz-werk"), haupt = document.querySelector("body > main");
+    return { links, breite: document.documentElement.getBoundingClientRect().width, seitlich: scrollX, zettelkasten: werk ? werk.getBoundingClientRect().left : null, haupt: haupt ? haupt.getBoundingClientRect().left : null };
+  });
+  const rund = (l) => l.map((e) => [e.x, e.y, e.b, e.h].map((v) => Math.round(v * 2) / 2));
+  // die Stelle der Website: bündig mit einer Spalte von 1040 px, in der Mitte (bis 1080 px Breite der Seite 20 px vom Rand), oben 55 px, bis 760 px Fensterbreite 40 px; die Breite der Seite ohne den Platz für den Bildlaufbalken
+  const soll = (breite, fenster) => ({ x: Math.max(20, (breite - 1040) / 2), y: fenster <= 760 ? 40 : 55 });
+  const darstellungen = [["hell", "light", 1920, 1080], ["hell", "light", 1280, 800], ["hell", "light", 1024, 768], ["hell", "light", 768, 1024], ["hell", "light", 760, 900], ["hell", "light", 390, 844],
+    ["dunkel", "dark", 1280, 800], ["dunkel", "dark", 390, 844]];
+  // zweiter Browser mit klassischen Bildlaufbalken (wie unter Windows): Seiten, die zu kurz zum Blättern sind, würden die Spalte sonst um die halbe Balkenbreite verschieben
+  const mitBalken = await chromium.launch({ ignoreDefaultArgs: ["--hide-scrollbars"] });
+  // dritter Browser mit Bildlaufbalken, die sich über die Seite legen und keinen Platz brauchen (wie auf dem Mac und auf dem Handy): dort bleibt die Stelle der Website unverändert, bei 1280 px Breite 120 px vom Rand
+  const ueberlagert = await chromium.launch({ ignoreDefaultArgs: ["--hide-scrollbars"], args: ["--enable-features=OverlayScrollbar,FluentOverlayScrollbar"] });
+  try {
+    for (const [wie, b, modus, scheme, w, h] of [...darstellungen.map((d) => ["ohne Balken", browser, ...d]), ["mit Balken", mitBalken, "hell", "light", 1280, 800], ["mit Balken", mitBalken, "hell", "light", 1920, 1080], ["mit Balken", mitBalken, "dunkel", "dark", 1440, 900],
+      ["Balken darüber", ueberlagert, "hell", "light", 1280, 800], ["Balken darüber", ueberlagert, "dunkel", "dark", 390, 844]]) {
+      const ctx = await b.newContext({ reducedMotion: "reduce", colorScheme: scheme, viewport: { width: w, height: h } });
+      const page = await ctx.newPage(), fehler = [];
+      page.on("pageerror", (e) => fehler.push(e.message));
+      let start = null;
+      for (const u of seiten) {
+        const was = `${modus}, ${w} × ${h}, ${wie}, ${u || "Startseite"}`;
+        await page.goto(base + u);
+        if (u === "alpha/drittes-rad/") await page.waitForFunction(() => window.radGeladen === true);
+        const m = await stelle(page), links = m.links;
+        assert.equal(links.length, 2, `${was}: zwei Links`);
+        if (u === "") {                                                     // die Website ist der Massstab: ihre Stelle nach der Formel, alle anderen Seiten daneben
+          start = rund(links);
+          const s = soll(m.breite, w);
+          assert.ok(Math.abs(links[0].x - s.x) <= .5 && Math.abs(links[0].y - s.y) <= .5, `${was}: die Stelle der Website (${links[0].x}, ${links[0].y}) statt (${s.x}, ${s.y})`);
+        }
+        assert.deepEqual(rund(links), start, `${was}: gleiche Stelle und Grösse wie auf der Startseite (x, y, Breite, Höhe)`);
+        assert.ok(links.every((l) => l.trifft), `${was}: beide Links liegen frei, nichts steht darüber`);
+        assert.equal(m.seitlich, 0, `${was}: kein seitlicher Bildlauf`);
+        // bündig mit der Spalte der Seite: der Kopf des Zettelkastens, das Rad und OMNA COLOR beginnen links dort, wo die Navigation beginnt
+        if (m.zettelkasten !== null) assert.ok(Math.abs(m.zettelkasten - links[0].x) <= .5, `${was}: «Zu seiner Zeit» steht bündig unter der Navigation (${m.zettelkasten} gegen ${links[0].x})`);
+        if (/^alpha\/(drittes-rad|omna-color)\//.test(u)) assert.ok(Math.abs(m.haupt - links[0].x) <= .5, `${was}: der Inhalt steht bündig unter der Navigation (${m.haupt} gegen ${links[0].x})`);
+      }
+      assert.deepEqual(fehler, [], `${modus}, ${w} × ${h}, ${wie}`);
+      await ctx.close();
+    }
+  } finally { await mitBalken.close(); await ueberlagert.close(); }
+  // im Rad bleibt die Navigation beim Drehen, beim Lesen und beim Zurückkehren auf dem Start an ihrer Stelle
+  for (const [wo, opts] of [["Computer", { viewport: { width: 1280, height: 800 } }], ["Handy", HANDY]]) {
+    const { ctx, page, errors } = await open("alpha/drittes-rad/", opts);
+    await page.waitForFunction(() => window.radGeladen === true);
+    const start = rund((await stelle(page)).links);
+    const wieStart = async (was) => assert.deepEqual(rund((await stelle(page)).links), start, `${wo}: ${was} steht die Navigation an derselben Stelle`);
+    await page.click("#go");
+    await page.locator("#result").waitFor({ state: "visible" });
+    await wieStart("mit den Karten");
+    await page.click("#cZeit h2 a");
+    await page.locator("#lese").waitFor({ state: "visible" });
+    await wieStart("beim Lesen");
+    await page.locator("nav.seitenweg a", { hasText: "Das Dritte Rad" }).click();
+    await page.waitForFunction(() => document.getElementById("lese").hidden && document.getElementById("result").hidden);
+    await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
+    await wieStart("zurück auf dem Start");
+    assert.deepEqual(errors, []);
     await ctx.close();
   }
 });
