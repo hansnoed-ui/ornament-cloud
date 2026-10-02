@@ -2,11 +2,11 @@
 // Verbindet drei Bestände: Zettelkasten (Strophen, daten.js), ORNA (Personen, Konstellationen, direkt aus dem Rad) und OMNA COLOR (Übungen, daten.js).
 // Alles läuft im Browser. Nichts wird gesendet. Zufall und Gewichtung sind nur Vorschläge, das Los darf absurd sein (Auftrag vom 2. Oktober 2026).
 // Importe mit ?v=<Marke>: setzt tools/build-drittes-rad.ts (gegen alte Module im Zwischenspeicher des Browsers, siehe dort).
-import { ZYKLEN, THEMEN, STROPHEN, UEBUNGEN } from "./daten.js?v=ce8c1ac1";
+import { ZYKLEN, THEMEN, STROPHEN, UEBUNGEN } from "./daten.js?v=6c5b0487";
 import { constellations } from "../../portfolio/nebeneinander-nacheinander/js/data/constellations.js";
 import { artists } from "../../portfolio/nebeneinander-nacheinander/js/data/artists.js";
 import { theorists } from "../../portfolio/nebeneinander-nacheinander/js/data/theorists.js";
-import { JEV } from "./jev.js?v=ce8c1ac1";
+import { JEV } from "./jev.js?v=6c5b0487";
 
 export { ZYKLEN, THEMEN, STROPHEN, UEBUNGEN };
 export const KONSTELLATIONEN = constellations;
