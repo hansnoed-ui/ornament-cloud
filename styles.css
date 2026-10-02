@@ -52,6 +52,13 @@
   box-sizing: border-box;
 }
 
+/* Der Platz für den Bildlaufbalken ist immer da (wo Balken Platz brauchen, z. B. Windows): sonst rutscht die Spalte, und mit ihr die Navigation oben links, um die halbe Balkenbreite,
+   sobald eine Seite zu kurz zum Blättern ist. Die Navigation steht auf jeder Seite an derselben Stelle (REGELN §14).
+   Nicht im Vollbild (das eingebettete Stellenfeld): sonst bliebe der Platz am Rand leer und das Bild um die Balkenbreite zu schmal. */
+html:not(:has(:fullscreen)) {
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   background: var(--bg);
