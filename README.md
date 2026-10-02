@@ -14,8 +14,11 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   die Gestaltung folgt der Seitenfamilie (`styles.css` für Website und Alpha-Texte, `zu-seiner-zeit/zsz.css`, bei OMNA COLOR und beim Dritten Rad in der Seite selbst).
   Die beiden Links sind farblich getrennt («Ornament Cloud» orange wie der Akzent der Website, «Das Dritte Rad» violett, `--weg-rad`; im dunklen Modus hellere Töne; das Dritte Rad ist immer dunkel)
   und auf jeder Seite gleich gesetzt wie auf der Website (Schrift der Website, 0,8 rem, Gewicht 600, Grossbuchstaben, Laufweite 0,12 em); Wunsch vom 2. Oktober 2026.
+  Beide Links sind Buttons mit ganz feinem Rahmen (1 px, Pillenform, gleich breit, Abstand 8 px; Rahmen blass, 40 % der Schriftfarbe). Der aktive trägt `aria-current`, einen vollen Rahmen und einen zweiten feinen Ring
+  (`outline` 1 px, Abstand 2 px); keine Fläche, denn schon 5 % Tönung drücken den Kontrast der orangen Schrift unter 4,5. Aktiv ist im Rad «Das Dritte Rad» (`aria-current="page"`), auf der Startseite
+  «Ornament Cloud» (`page`), auf allen anderen Seiten ebenfalls «Ornament Cloud» (`true`: man ist in der Website). Beim Darüberfahren wird der Rahmen voll, der Tastaturfokus ist ein Ring von 2 px.
   Ausgenommen sind ORMA (eigene App), `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`. Neue Seiten brauchen sie ebenfalls; `tests/navigation.test.mjs` meldet fehlende.
-  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 24: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
+  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 25: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
 - `icons.js` – animierte Schwarz-Weiss-Symbole des Footer-Menüs (Dauer in `PERIOD`)
 - `news/` – News als aufklappbare Einträge; neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
 - `termine/` – Termine als aufklappbare Einträge; neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen

@@ -321,21 +321,28 @@ h1 {
   text-decoration: none;
 }
 
-/* Navigation oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» (orange), darunter «Das Dritte Rad» (violett).
+/* Navigation oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» (orange), darunter «Das Dritte Rad» (violett),
+   beide als Buttons mit ganz feinem Rahmen. Der aktive (aria-current) trägt den vollen Rahmen und einen zweiten, feinen Ring, der andere einen blassen Rahmen.
    Im Kopf der Website steht sie im Header-Menü, auf den Alpha-Seiten über dem Titel. */
 .seitenweg {
   display: grid;
-  justify-items: start;
+  grid-template-columns: max-content;   /* beide Buttons gleich breit, so breit wie der längere */
+  justify-content: start;
+  gap: 8px;
   margin: 15px 0 0;
 }
 
 .wrap > .seitenweg { margin-bottom: 8px; }
 
 .seitenweg a {
-  padding: 3px 0;
+  padding: 3px 14px;
+  border: 1px solid currentColor;   /* ohne color-mix: voller Rahmen */
+  border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+  border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.12em;
+  text-align: center;
   text-transform: uppercase;
   text-decoration: none;
   color: var(--accent);
@@ -344,9 +351,17 @@ h1 {
 .seitenweg a + a { color: var(--weg-rad); }
 
 .seitenweg a:hover,
+.seitenweg a[aria-current] { border-color: currentColor; }
+
+/* aktiv: voller Rahmen und ein zweiter feiner Ring ausserhalb. Keine Tönung: schon 5 % drücken den Kontrast der orangen Schrift auf OMNA COLOR unter 4,5 */
+.seitenweg a[aria-current] {
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
+}
+
 .seitenweg a:focus-visible {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 .menu {

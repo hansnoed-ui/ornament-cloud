@@ -54,11 +54,13 @@ body { margin: 0; color: var(--ivory); font: 400 16px/1.55 var(--body); padding:
     radial-gradient(1px 1px at 66% 90%, #fff7 50%, transparent 52%), radial-gradient(1.2px 1.2px at 44% 6%, #fff6 50%, transparent 52%),
     radial-gradient(ellipse 80% 60% at 30% 35%, #2a1f5a 0%, transparent 70%), radial-gradient(ellipse 70% 60% at 80% 80%, #1d2a52 0%, transparent 70%), var(--night);
   background-attachment: fixed; }
-/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» und darunter «Das Dritte Rad», farblich getrennt und genau so gesetzt wie auf der Website (styles.css: Schrift, Grösse, Gewicht, Laufweite, Grossbuchstaben) */
-.seitenweg { max-width: 980px; margin: 0 auto 8px; display: grid; justify-items: start; }
-.seitenweg a { padding: 3px 0; font: 600 .8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; color: var(--weg-start); }
+/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» und darunter «Das Dritte Rad», farblich getrennt, beide als Buttons mit ganz feinem Rahmen (der aktive mit vollem Rahmen und einem zweiten, feinen Ring) und genau so gesetzt wie auf der Website (styles.css: Schrift, Grösse, Gewicht, Laufweite, Grossbuchstaben) */
+.seitenweg { max-width: 980px; margin: 0 auto 8px; display: grid; grid-template-columns: max-content; justify-content: start; gap: 8px; }
+.seitenweg a { padding: 3px 14px; border: 1px solid currentColor; border: 1px solid color-mix(in srgb, currentColor 40%, transparent); border-radius: 999px; font: 600 .8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .12em; text-align: center; text-transform: uppercase; text-decoration: none; color: var(--weg-start); }
 .seitenweg a + a { color: var(--weg-rad); }
-.seitenweg a:hover, .seitenweg a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+.seitenweg a:hover, .seitenweg a[aria-current] { border-color: currentColor; }
+.seitenweg a[aria-current] { outline: 1px solid currentColor; outline-offset: 2px; }
+.seitenweg a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 main { max-width: 980px; margin: clamp(16px, 5vh, 56px) auto 0; display: grid; gap: 28px; }
 .nur-lesen { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }   /* der Titel steht nicht mehr über dem Rad (auf Wunsch), die Überschrift bleibt für Vorlesegeräte */
 .stage { display: grid; gap: 28px; align-items: start; }

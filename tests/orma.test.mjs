@@ -501,7 +501,7 @@ test("Symbol und Vorschaubild: ORNA-Motiv geteilt, PNG-Grössen stimmen, Vorscha
 test("Alpha: oben links stehen «Ornament Cloud» und «Das Dritte Rad» (kein «Alpha» mehr), unten steht kein Link zur Alpha-Übersicht", () => {
   for (const p of ["alpha/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html"]) {
     const html = readFileSync(new URL(p, root), "utf8");
-    assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="[^"]+">Ornament Cloud<\/a>\s*<a href="[^"]+">Das Dritte Rad<\/a>\s*<\/nav>/, p);
+    assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="[^"]+" aria-current="true">Ornament Cloud<\/a>\s*<a href="[^"]+">Das Dritte Rad<\/a>\s*<\/nav>/, p);
     assert.ok(!/class="eyebrow brand"|Ornament Cloud<\/a> · <a/.test(html), `${p}: die frühere Zeile «Ornament Cloud · Alpha» ist weg`);
     assert.ok(!html.includes("Zur Alpha-Übersicht"), `${p}: kein Link zur Alpha-Übersicht (Entscheid vom 2. Oktober 2026, tests/navigation.test.mjs prüft alle Seiten)`);
   }
@@ -517,7 +517,7 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
   assert.deepEqual(eintraege.slice(-4), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/", "drittes-rad/"], "zuunterst, danach OMNA COLOR und Das Dritte Rad");
   const omna = readFileSync(new URL("alpha/omna-color/index.html", root), "utf8");
   assert.ok(!/(src|href)="https?:/.test(omna), "OMNA COLOR lädt nichts von fremden Servern");
-  assert.match(omna, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/">Ornament Cloud<\/a>\s*<a href="\.\.\/drittes-rad\/">Das Dritte Rad<\/a>\s*<\/nav>/);
+  assert.match(omna, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/" aria-current="true">Ornament Cloud<\/a>\s*<a href="\.\.\/drittes-rad\/">Das Dritte Rad<\/a>\s*<\/nav>/);
   const rad3 = readFileSync(new URL("alpha/drittes-rad/index.html", root), "utf8");
   assert.ok(!/(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/.test(rad3), "Das Dritte Rad lädt nichts von fremden Servern");
   assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon/.test(rad3), "Das Dritte Rad ruft keinen Dienst auf (jev wird nur beim Bauen gefragt)");
