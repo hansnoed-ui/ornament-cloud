@@ -357,6 +357,15 @@ test("Schlichte Seite (Wunsch vom 2. Oktober 2026): nichts unter dem Titel, «Br
   assert.equal(typeof E.faeden, "function", "die Funktion bleibt im Modul, damit eine ältere Seite im Zwischenspeicher keinen Export vermisst");
 });
 
+test("Weitergehen vorn, keine Texteingaben (Wunsch vom 2. Oktober 2026): die vier Wege über dem offenen Stück, kein Satzfeld", () => {
+  const seite = lies("alpha/drittes-rad/index.html");
+  const html = seite.slice(seite.indexOf("<body>"), seite.indexOf("<script"));
+  assert.ok(html.indexOf('id="wege"') > 0 && html.indexOf('id="wege"') < html.indexOf('id="lese"'), "#wege steht vor #lese: oben der Weg weiter, darunter das Stück");
+  assert.ok(!/<textarea|<input|<label|contenteditable|id="satz"|Ein Satz, der|\$\("satz"\)|class="satz"|\.satz\b|textarea\s*\{/.test(seite), "kein Textfeld, keine Beschriftung eines Textfelds, kein Rest davon im Skript oder in den Regeln");
+  assert.match(html, /<div class="row">\s*<button class="quiet" id="copy" type="button">Karte kopieren<\/button>\s*<button class="quiet" id="again" type="button">Noch einmal drehen<\/button>\s*<\/div>/, "unter den Karten bleiben die beiden leisen Knöpfe");
+  assert.match(seite, /\$\("wege"\)\.replaceChildren\(h\("h2", \{ text: "Wie geht es weiter\?" \}\)/, "die Überschrift der Wege steht vor der Überschrift des Stücks und ist darum eine h2");
+});
+
 test("Seiten: nichts von fremden Servern, Auswahl nur mit ?rad=, kein Eintrag in der Sitemap", () => {
   const seite = lies("alpha/drittes-rad/index.html");
   assert.ok(!/(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/.test(seite), "keine fremden Server");

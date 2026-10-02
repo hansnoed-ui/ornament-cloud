@@ -40,6 +40,9 @@ const kacheln = (page, wo) => page.locator(`${wo} a.drad-kachel`).evaluateAll((a
   grund: x.querySelector("em").textContent, href: x.getAttribute("href"), hier: x.classList.contains("hier"),
 })));
 const text = (page, sel) => page.locator(sel).first().textContent();
+/** Abstand in px vom Ende des Titels bis zum oberen Rand des Rads, und vom unteren Rand des Rads bis zu den Knöpfen «Drehen» und «Brücke» */
+const luftUnterTitel = (page) => page.evaluate(() => document.getElementById("wheel").getBoundingClientRect().top - document.querySelector("h1").getBoundingClientRect().bottom);
+const luftUnterRad = (page) => page.evaluate(() => document.getElementById("go").getBoundingClientRect().top - document.getElementById("wheel").getBoundingClientRect().bottom);
 /** Links in der Radseite (Karten, Lesen, Wege), die nicht im Rad selbst bleiben, also auf Originalseiten oder sonst woanders hin führen */
 const ausDemRad = (page) => page.locator("main a[href]").evaluateAll((a) => a.map((x) => new URL(x.href, location.href)).filter((u) => u.origin !== location.origin || u.pathname !== location.pathname).map((u) => u.href));
 
@@ -101,7 +104,7 @@ await check("Rad: Drehen zeigt drei Karten und eine Adresse, die den Stand wiede
   await ctx.close();
 });
 
-await check("Schlichte Seite: unter dem Titel steht nichts, «Drehen» und «Brücke» sehen gleich aus, kein «Zurück zum Start», kein Kasten «Fäden», keine Links zu den Originalseiten", async () => {
+await check("Schlichte Seite: unter dem Titel steht nichts, «Drehen» und «Brücke» sehen gleich aus, kein «Zurück zum Start», kein Kasten «Fäden», keine Links zu den Originalseiten, keine Texteingaben", async () => {
   const { ctx, page, errors } = await open("alpha/drittes-rad/");
   assert.equal((await page.locator("header").innerText()).trim(), "Das Dritte Rad", "nur der Titel");
   assert.deepEqual(await page.locator(".wheelbox .row button").allTextContents(), ["Drehen", "Brücke"], "zwei Knöpfe unter dem Rad");
@@ -109,12 +112,15 @@ await check("Schlichte Seite: unter dem Titel steht nichts, «Drehen» und «Br�
     "paddingTop", "paddingLeft", "boxShadow", "backgroundColor"].map((k) => [k, c[k]])); });
   assert.deepEqual(await stil("#bridge"), await stil("#go"), "«Brücke» ist wie «Drehen» gestaltet");
   assert.equal(await page.locator("#bridge").getAttribute("aria-label"), "Brücke schlagen", "vorgelesen bleibt es verständlich");
+  assert.ok(await luftUnterTitel(page) >= 48, "zwischen Titel und Rad ist mehr Luft als die früheren 28 px");
+  assert.ok(await luftUnterRad(page) >= 28, "zwischen Rad und den Knöpfen ist mehr Luft als die früheren 14 px");
   const kein = async () => {
     assert.equal(await page.locator("#start, #faeden, .drad-start").count(), 0);
     assert.equal(await page.locator("button, a", { hasText: /Zurück zum Start/ }).count(), 0, "kein «Zurück zum Start»");
     assert.equal(await page.locator("h3", { hasText: /^Fäden$/ }).count(), 0, "kein Kasten «Fäden»");
     assert.equal(await page.locator("a", { hasText: "öffnen ↗" }).count(), 0, "keine Links «… öffnen ↗» zu den Originalseiten");
     assert.deepEqual(await ausDemRad(page), [], "alle Links bleiben im Rad");
+    assert.equal(await page.locator("textarea, input, select, label, [contenteditable]").count(), 0, "keine Texteingaben");
   };
   await kein();
   await page.click("#go");
@@ -129,6 +135,23 @@ await check("Schlichte Seite: unter dem Titel steht nichts, «Drehen» und «Br�
     await page.locator("#lese").waitFor({ state: "visible" });
     await kein();
   }
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Rad: unter den Karten nur «Karte kopieren» und «Noch einmal drehen»; kopiert wird die Karte ohne Satz, ohne Fehler; «Noch einmal drehen» dreht neu", async () => {
+  const { ctx, page, errors } = await open(stUrl());
+  await ctx.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.locator("#result").waitFor({ state: "visible" });
+  assert.deepEqual(await page.locator("#result .row button").allTextContents(), ["Karte kopieren", "Noch einmal drehen"]);
+  await page.click("#copy");
+  await page.waitForFunction(() => document.getElementById("copy").textContent === "Kopiert");
+  assert.equal(await page.evaluate(() => navigator.clipboard.readText()),
+    ["Das Dritte Rad", `Zeit: ${zeitTitel(ST.strophe)}`, `Form: ${formTitel(ST.paar)}`, `Farbe: ${ST.uebung.n} (${ST.uebung.t})`].join("\n"), "die Karte, ohne Satz und ohne leere Zeile am Ende");
+  await page.click("#again");
+  await page.waitForFunction(() => !document.getElementById("go").disabled);
+  await page.locator("#result").waitFor({ state: "visible" });
+  assert.equal(await page.locator("#result h2 a").count(), 3, "neue Karten");
   assert.deepEqual(errors, []);
   await ctx.close();
 });
@@ -166,7 +189,7 @@ await check("Rad: «Brücke» nennt die Brücke und zeigt drei Karten", async ()
   await ctx.close();
 });
 
-await check("Rad: jede Karte öffnet ihr Stück im Rad (ganze Strophe, ganze Begegnung, ganze Übung), mit vier Wegen darunter; Zurück bringt die Karten wieder", async () => {
+await check("Rad: jede Karte öffnet ihr Stück im Rad (ganze Strophe, ganze Begegnung, ganze Übung), mit den vier Wegen darüber; Zurück bringt die Karten wieder", async () => {
   const { ctx, page, errors } = await open(stUrl());
   await page.locator("#result").waitFor({ state: "visible" });
   const kartenVorher = await page.locator("#result").innerText();
@@ -210,6 +233,10 @@ await check("Rad: jede Karte öffnet ihr Stück im Rad (ganze Strophe, ganze Beg
     assert.deepEqual(k.filter(x => x.hier).map(x => x.bereich), [fokus], "der Weg im eigenen Bereich zeigt «hier weiter»");
     assert.ok(k.every(x => x.titel && x.grund && x.href.includes("/alpha/drittes-rad/")), "alle Wege führen ins Rad");
     assert.equal(await page.locator("#wege a").count(), 4, "nur die vier Wege, kein «Zurück zum Start»");
+    const lage = await page.evaluate(() => { const r = (id) => { const b = document.getElementById(id).getBoundingClientRect(); return { top: b.top, bottom: b.bottom }; }; return { wege: r("wege"), lese: r("lese"), hoehe: innerHeight }; });
+    assert.ok(lage.wege.bottom <= lage.lese.top + 1, "die vier Wege stehen über dem offenen Stück");
+    assert.ok(lage.wege.top >= 0 && lage.wege.bottom <= lage.hoehe, "nach dem Öffnen sind die vier Wege im Bild, ohne zu scrollen");
+    assert.equal(await page.locator("#wege h2").textContent(), "Wie geht es weiter?");
     await page.goBack();
     await page.locator("#result").waitFor({ state: "visible" });
     assert.equal(await page.locator("#lese").isHidden(), true);
@@ -430,6 +457,7 @@ await check("Handy: kein waagerechtes Scrollen, Karten, Lesen, Wege und Leiste p
   };
   {
     const { ctx, page } = await open("alpha/drittes-rad/", handy);
+    assert.ok(await luftUnterTitel(page) >= 48 && await luftUnterRad(page) >= 28, "Handy: mehr Luft zwischen Titel, Rad und Knöpfen");
     await page.click("#go");
     await page.locator("#result").waitFor({ state: "visible" });
     const w = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
@@ -440,6 +468,8 @@ await check("Handy: kein waagerechtes Scrollen, Karten, Lesen, Wege und Leiste p
       await page.click(`${k} h2 a`);
       await page.locator("#lese").waitFor({ state: "visible" });
       await passt(page, `Lesen ${k}`);
+      const oben = await page.evaluate(() => [document.getElementById("wege").getBoundingClientRect().top, document.getElementById("lese").getBoundingClientRect().top, innerHeight]);
+      assert.ok(oben[0] >= 0 && oben[0] < oben[1] && oben[0] < oben[2], `Lesen ${k}: die vier Wege stehen oben im Bild, vor dem Stück`);
     }
     await ctx.close();
   }
