@@ -397,7 +397,7 @@ test("Alpha: nur Startseite und News verlinken den Alpha-Bereich (ORMA und die G
   assert.deepEqual([...found].sort(), [...allowed].sort(), "Startseite und News verlinken ORMA");
   for (const [f, zs] of Object.entries(ziele)) for (const z of zs) assert.ok(gefunden.has(`${f} → ${z}`), `${f} verlinkt ${z} nicht`);
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("/alpha/"));
-  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html", "alpha/omna-color/index.html"])
+  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html", "alpha/omna-color/index.html", "alpha/drittes-rad/index.html"])
     assert.match(readFileSync(new URL(p, root), "utf8"), /<meta name="robots" content="noindex/, p);
 });
 
@@ -510,10 +510,14 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
   const uebersicht = readFileSync(new URL("alpha/index.html", root), "utf8");
   const eintraege = [...uebersicht.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map(m => m[1]);
   // Die Prüfraster in Arbeit stehen zusammen ganz unten, nur OMNA COLOR (Prototyp, seit 2. Oktober 2026) folgt danach
-  assert.deepEqual(eintraege.slice(-3), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/"], "zuunterst, danach OMNA COLOR");
+  assert.deepEqual(eintraege.slice(-4), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/", "drittes-rad/"], "zuunterst, danach OMNA COLOR und Das Dritte Rad");
   const omna = readFileSync(new URL("alpha/omna-color/index.html", root), "utf8");
   assert.ok(!/(src|href)="https?:/.test(omna), "OMNA COLOR lädt nichts von fremden Servern");
   assert.match(omna, /<a href="\.\.\/\.\.\/">Ornament Cloud<\/a> · <a href="\.\.\/">Alpha<\/a>/);
+  const rad3 = readFileSync(new URL("alpha/drittes-rad/index.html", root), "utf8");
+  assert.ok(!/(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/.test(rad3), "Das Dritte Rad lädt nichts von fremden Servern");
+  assert.match(rad3, /const JEV_URL = "";/, "jev bleibt ohne Proxy ausgeschaltet");
+  assert.match(rad3, /<a href="\.\.\/\.\.\/">Ornament Cloud<\/a> · <a href="\.\.\/">Alpha<\/a>/);
   for (const r of at.RASTER) {
     const html = readFileSync(new URL(`alpha/${r.seite}/index.html`, root), "utf8");
     assert.match(html, /<p class="at-arbeit">Zurzeit in Arbeit<\/p>/);

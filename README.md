@@ -51,6 +51,10 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   (neue Fassung: Datei in `src/alpha/` ersetzen, Eintrag in `RASTER` anpassen, Build laufen lassen; ein Test meldet veraltete Seiten)
   `alpha/omna-color/` ist OMNA COLOR (Prototyp, zuunterst in der Übersicht): Farbkreis mit Gegenrad, zieht eine von 180 Gestaltungsübungen;
   eine einzige Datei `index.html` mit den Übungen als Daten im Skript (Stand Kartographie v0.5), von Hand gepflegt
+  `alpha/drittes-rad/` ist «Das Dritte Rad» (Prototyp, zuunterst in der Übersicht): drei Ringe (Zeit = Zyklen aus «Zu seiner Zeit», Form = 40 Zeichen aus ORNA,
+  Farbe = Themen von OMNA COLOR) ergeben drei Karten und einen eigenen Satz; eine Datei `index.html`, Daten im Skript, von Hand gepflegt, Zeichen aus `js/symbols.js` von ORNA.
+  jev (api.typesafe.ai) ist vorbereitet, aber aus: `JEV_URL` im Skript ist leer; er bräuchte einen eigenen Proxy (der Schlüssel darf nie in die Seite),
+  der `{satz, strophe, text, zyklen}` entgegennimmt und `{score, zyklus}` zurückgibt. Der Schalter erscheint erst, wenn `JEV_URL` gesetzt ist, und sendet nur nach Haken
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)
 - `src/doppelspalt/CLAUDE-CODE-MASTERPROMPT-2026-ARCHIV.md` – ursprünglicher Auftrag, Entstehungsstand mit 99 Konstellationen, nicht mehr verbindlich
