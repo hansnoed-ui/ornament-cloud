@@ -145,6 +145,8 @@ button.quiet:disabled { opacity: .4; cursor: default; }
 .lese p { margin: 0; max-width: 64ch; }
 .lese .lead { font: 500 1.1rem/1.45 var(--body); color: var(--gold-hi); }
 .lese .text { color: #e4dcc4; line-height: 1.65; }
+.lese .schritte { margin: 0; padding-left: 1.3em; max-width: 64ch; }
+.lese .schritte li { margin: 0 0 4px; }
 .lese .frage { color: var(--gold-hi); }
 .lese .frage small { display: block; color: var(--gold); font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; }
 .lese .meta { color: var(--mute); font-size: .88rem; }
@@ -215,8 +217,8 @@ addEventListener("load", function () { setTimeout(function () { if (!window.radG
 <script type="module">
 import { symbolMarkup, SYMBOL_COUNT } from "../../portfolio/nebeneinander-nacheinander/js/symbols.js";
 import { planRing, positionAt } from "../../portfolio/nebeneinander-nacheinander/js/lib/spin.js";   // Auslaufkurve des Doppelrads: beginnt mit dem Tempo der Geste, endet mit Tempo null auf dem Ziel
-import { ZYKLEN, THEMEN, STROPHEN, PERSONEN, nameVon, nrVon, ziehung, bruecke, adresse, strophe, paar, uebung, paareVon, wegeImSpiel, rueckkehr } from "./engine.js?v=903834b2";
-import { kachelnBauen, KACHELN_CSS } from "./kacheln.js?v=903834b2";
+import { ZYKLEN, THEMEN, STROPHEN, PERSONEN, nameVon, nrVon, ziehung, bruecke, adresse, strophe, paar, uebung, paareVon, wegeImSpiel, rueckkehr } from "./engine.js?v=ce8c1ac1";
+import { kachelnBauen, KACHELN_CSS } from "./kacheln.js?v=ce8c1ac1";
 
 const GOETHE = ["schön", "edel", "gut", "nützlich", "gemein", "Phantasie", "unnötig"];   // Goethe 1809: Eigenschaften je Farbe (Rot bis Violett), nur auf den Karten; Phantasie steht für den blauvioletten Bereich
 // Tierkreis: zwölf Zeichen als eigene Linien (kein Schriftzeichen, damit sie überall gleich aussehen)
@@ -425,7 +427,7 @@ function uebersicht() {
     h("h2", {}, dot, h("a", { href: zielFarbe(), "data-anim": "keine", text: `${e.n} (${THEMEN[ic][0]})` })),
     h("div", { class: "chips" }, h("span", { class: "chip", text: `Goethe 1809: ${GOETHE[ic]}` }), h("span", { class: "chip", text: `${e.d} Min.` })),
     h("p", { class: "meta", text: "Material: " + e.m }),
-    h("p", { text: e.a }),
+    h("ol", { class: "schritte" }, ...e.a.map((t) => h("li", { text: t }))),
     h("span", { class: "go-on", text: "Die ganze Übung" }));
   $("note").hidden = !cur.note; $("note").textContent = cur.note || "";
 }
@@ -458,7 +460,7 @@ function lese() {
     const chip = (name) => h("span", { class: "chip", text: name });
     k.push(h("small", { class: "art", text: `OMNA COLOR · Übung ${e.id}` }), h("h2", { tabindex: "-1" }, dot, e.n),
       h("div", { class: "chips" }, chip(`Thema ${e.t}`), ...(e.nb || []).map((n) => chip(`Nachbar ${n}`)), chip(`${e.d} Min.`), chip(`Goethe 1809: ${GOETHE[cur.ic]}`)),
-      h("p", { class: "meta", text: "Material: " + e.m }), h("p", { class: "text", text: e.a }), h("p", { class: "frage" }, h("small", { text: "Zum Schluss" }), e.f));
+      h("p", { class: "meta", text: "Material: " + e.m }), h("ol", { class: "schritte text" }, ...e.a.map((t) => h("li", { text: t }))), h("p", { class: "frage" }, h("small", { text: "Zum Schluss" }), e.f));
   }
   $("lese").replaceChildren(...k);
   $("wege").replaceChildren(h("h2", { text: "Wie geht es weiter?" }), kachelnBauen(wegeImSpiel(alsZiel(), fokus)));

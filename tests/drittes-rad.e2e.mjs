@@ -255,7 +255,7 @@ await check("Rad: jede Karte öffnet ihr Stück im Rad (ganze Strophe, ganze Beg
       assert.equal(await text(page, "#lese .chip"), `Thema ${e.t}`);
       assert.ok((await page.locator("#lese .chips").innerText()).includes(`${e.d} Min.`) && (await page.locator("#lese .chips").innerText()).includes("Goethe 1809"));
       assert.ok((await page.locator("#lese").innerText()).includes("Material: " + e.m));
-      assert.equal(await text(page, "#lese p.text"), e.a);
+      assert.deepEqual(await page.locator("#lese ol.schritte li").allInnerTexts(), e.a);
       assert.ok((await text(page, "#lese .frage")).includes(e.f));
     },
   };
