@@ -106,7 +106,6 @@ export function markdown(md: string): string {
 
 export function seite(r: typeof RASTER[number], md: string): string {
   const body = markdown(md.split("\n").slice(r.kopfZeilen).join("\n"));
-  const S = 'style="color:inherit;text-decoration:none"';
   return `<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -117,7 +116,7 @@ export function seite(r: typeof RASTER[number], md: string): string {
        Erzeugt mit tools/build-alpha-texte.ts aus src/alpha/${r.datei} – nicht von Hand bearbeiten. -->
   <meta name="robots" content="noindex">
   <meta name="description" content="${esc(r.beschreibung)}">
-  <link rel="stylesheet" href="../../styles.css?v=22">
+  <link rel="stylesheet" href="../../styles.css?v=23">
   <style>
     .at-arbeit { display: inline-block; margin: 1.25rem 0 0; padding: 6px 14px; border: 1.5px solid var(--accent); border-radius: 999px;
       color: var(--accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -144,7 +143,10 @@ export function seite(r: typeof RASTER[number], md: string): string {
 <body>
   <header class="site-header">
     <div class="wrap">
-      <p class="eyebrow brand"><a href="../../" ${S}>Ornament Cloud</a> · <a href="../" ${S}>Alpha</a></p>
+      <nav class="seitenweg" aria-label="Ornament Cloud">
+        <a href="../../">Ornament Cloud</a>
+        <a href="../drittes-rad/">Das Dritte Rad</a>
+      </nav>
       <h1>${esc(r.titel)}</h1>
       <p class="lead">${esc(r.untertitel)}</p>
       <p class="at-arbeit">Zurzeit in Arbeit</p>

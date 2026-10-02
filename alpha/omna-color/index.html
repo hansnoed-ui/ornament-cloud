@@ -75,9 +75,10 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--c4); outlin
 .idline { color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
 .empty { color: var(--muted); margin: 0; }
 .again { justify-self: start; font: 500 .9rem var(--body); background: none; color: var(--fg); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; cursor: pointer; }
-.crumb { max-width: 980px; margin: 0 auto 8px; font-size: .8rem; color: var(--muted); }
-.crumb a { color: inherit; text-decoration: none; }
-.crumb a:hover, .crumb a:focus-visible { color: var(--fg); text-decoration: underline; }
+/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud», darunter «Das Dritte Rad» */
+.seitenweg { max-width: 980px; margin: 0 auto 8px; display: grid; justify-items: start; font-size: .8rem; color: var(--muted); }
+.seitenweg a { padding: 3px 0; color: inherit; text-decoration: none; }
+.seitenweg a:hover, .seitenweg a:focus-visible { color: var(--fg); text-decoration: underline; }
 @media (min-width: 800px) {
   /* Rad und Knopf als eigene Rasterzellen, damit die Karte zur Radmitte ausgerichtet wird und nicht zur Mitte von Rad + Knopf */
   .stage { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); grid-template-areas: "rad karte" "knopf ."; row-gap: 16px; }
@@ -90,7 +91,10 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--c4); outlin
 </style>
 </head>
 <body>
-<nav class="crumb"><a href="../../">Ornament Cloud</a> · <a href="../">Alpha</a></nav>
+<nav class="seitenweg" aria-label="Ornament Cloud">
+  <a href="../../">Ornament Cloud</a>
+  <a href="../drittes-rad/">Das Dritte Rad</a>
+</nav>
 <main>
   <div class="stage">
     <section class="wheelbox" aria-label="Farbkreis">

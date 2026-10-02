@@ -373,8 +373,10 @@ test("Alpha: alpha/orma ist der aktuelle Build (sonst: tools/build-orma.ts --alp
   for (const f of list(out)) assert.ok(readFileSync(join(out, f)).equals(readFileSync(join(alpha, f))), `veraltet: alpha/orma/${f}`);
 });
 
-test("Alpha: nur Startseite und News verlinken den Alpha-Bereich (ORMA und die Grundlagenpapiere); nicht in der Sitemap, noindex", () => {
-  // REGELN §14: Startseite und News → ORMA und die Seiten der beiden Grundlagenpapiere (News seit 28., Startseite seit 29. September 2026)
+test("Alpha: nur Startseite und News verlinken den Alpha-Bereich (ORMA und die Grundlagenpapiere), dazu die Navigation oben links; nicht in der Sitemap, noindex", () => {
+  // REGELN §14: Startseite und News → ORMA und die Seiten der beiden Grundlagenpapiere (News seit 28., Startseite seit 29. September 2026).
+  // Ausnahme: die Navigation oben links («Ornament Cloud», «Das Dritte Rad», seit 2. Oktober 2026) steht auf jeder Seite; sie wird hier herausgenommen
+  // und in tests/navigation.test.mjs geprüft (genau diese zwei Links, auf allen Seiten ausser ORMA und den Werken).
   const papiere = ["/alpha/orma/", "/alpha/pruefraster/", "/alpha/verteilapparat/"];
   const ziele = { "index.html": papiere, "news/index.html": papiere };
   const allowed = new Set(Object.keys(ziele));
@@ -384,7 +386,7 @@ test("Alpha: nur Startseite und News verlinken den Alpha-Bereich (ORMA und die G
   const walk = d => readdirSync(d, { withFileTypes: true }).flatMap(e =>
     skip.has(e.name) || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(new URL(e.name + "/", d)) : e.name.endsWith(".html") ? [new URL(e.name, d)] : []);
   for (const f of walk(root)) {
-    for (const [, href] of readFileSync(f, "utf8").matchAll(/href="([^"]+)"/g)) {
+    for (const [, href] of readFileSync(f, "utf8").replace(/<nav class="seitenweg"[\s\S]*?<\/nav>/, "").matchAll(/href="([^"]+)"/g)) {
       if (/^[a-z]+:/i.test(href) && !/(ornament-cloud|ornament\.cloud)\/alpha/.test(href)) continue;
       const target = new URL(href, f).pathname, file = f.pathname.slice(root.pathname.length);
       if (!target.includes("/alpha/")) continue;
@@ -496,10 +498,12 @@ test("Symbol und Vorschaubild: ORNA-Motiv geteilt, PNG-Grössen stimmen, Vorscha
   assert.match(html, /<script type="module" src="js\/intro\.js\?v=/);
 });
 
-test("Alpha: oben links führt «Ornament Cloud» zur Startseite und «Alpha» zur Alpha-Übersicht", () => {
-  for (const [p, start, alpha] of [["alpha/index.html", "../", "./"], ["alpha/pruefraster/index.html", "../../", "../"], ["alpha/verteilapparat/index.html", "../../", "../"]]) {
-    const kopf = readFileSync(new URL(p, root), "utf8").match(/<p class="eyebrow brand">(.*?)<\/p>/)[1];
-    assert.match(kopf, new RegExp(`<a href="${start.replace(/\./g, "\\.")}"[^>]*>Ornament Cloud</a> · <a href="${alpha.replace(/\./g, "\\.")}"[^>]*>Alpha</a>`), p);
+test("Alpha: oben links stehen «Ornament Cloud» und «Das Dritte Rad» (kein «Alpha» mehr); die Alpha-Übersicht bleibt unten auf den Textseiten verlinkt", () => {
+  for (const p of ["alpha/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html"]) {
+    const html = readFileSync(new URL(p, root), "utf8");
+    assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="[^"]+">Ornament Cloud<\/a>\s*<a href="[^"]+">Das Dritte Rad<\/a>\s*<\/nav>/, p);
+    assert.ok(!/class="eyebrow brand"|Ornament Cloud<\/a> · <a/.test(html), `${p}: die frühere Zeile «Ornament Cloud · Alpha» ist weg`);
+    if (p !== "alpha/index.html") assert.match(html, /<p class="back"[^>]*><a href="\.\.\/">← Zur Alpha-Übersicht<\/a><\/p>/, `${p}: Link zur Alpha-Übersicht unten`);
   }
 });
 
@@ -513,11 +517,11 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
   assert.deepEqual(eintraege.slice(-4), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/", "drittes-rad/"], "zuunterst, danach OMNA COLOR und Das Dritte Rad");
   const omna = readFileSync(new URL("alpha/omna-color/index.html", root), "utf8");
   assert.ok(!/(src|href)="https?:/.test(omna), "OMNA COLOR lädt nichts von fremden Servern");
-  assert.match(omna, /<a href="\.\.\/\.\.\/">Ornament Cloud<\/a> · <a href="\.\.\/">Alpha<\/a>/);
+  assert.match(omna, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/">Ornament Cloud<\/a>\s*<a href="\.\.\/drittes-rad\/">Das Dritte Rad<\/a>\s*<\/nav>/);
   const rad3 = readFileSync(new URL("alpha/drittes-rad/index.html", root), "utf8");
   assert.ok(!/(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/.test(rad3), "Das Dritte Rad lädt nichts von fremden Servern");
   assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon/.test(rad3), "Das Dritte Rad ruft keinen Dienst auf (jev wird nur beim Bauen gefragt)");
-  assert.match(rad3, /<a href="\.\.\/\.\.\/">Ornament Cloud<\/a> · <a href="\.\.\/">Alpha<\/a>/);
+  assert.match(rad3, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/">Ornament Cloud<\/a>\s*<a href="\.\/" aria-current="page">Das Dritte Rad<\/a>\s*<\/nav>/);
   for (const r of at.RASTER) {
     const html = readFileSync(new URL(`alpha/${r.seite}/index.html`, root), "utf8");
     assert.match(html, /<p class="at-arbeit">Zurzeit in Arbeit<\/p>/);

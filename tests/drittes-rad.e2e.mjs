@@ -483,6 +483,64 @@ await check("Handy: kein waagerechtes Scrollen, Karten, Lesen, Wege und Leiste p
   }
 });
 
+await check("Navigation oben links: «Ornament Cloud» und darunter «Das Dritte Rad» auf Computer und Handy, auf Startseite, Zettelkasten, ORNA, Alpha-Seiten und im Rad", async () => {
+  const seiten = ["", "news/", "termine/", "portfolio/", "portfolio/nebeneinander-nacheinander/", "portfolio/nebeneinander-nacheinander/feld/", "zu-seiner-zeit/", "zu-seiner-zeit/strophe/13-das-archiv/",
+    "zu-seiner-zeit/verweis/yoko-ono/", "alpha/", "alpha/pruefraster/", "alpha/verteilapparat/", "alpha/gesellschaftskonzepte/", "alpha/journalistische-texte/", "alpha/omna-color/", "alpha/drittes-rad/"];
+  for (const [wo, opts] of [["Computer", { viewport: { width: 1280, height: 800 } }], ["Handy", { viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true }]]) {
+    const ctx = await browser.newContext({ reducedMotion: "reduce", ...opts });
+    for (const u of seiten) {
+      const page = await ctx.newPage(), fehler = [];
+      page.on("pageerror", (e) => fehler.push(e.message));
+      await page.goto(base + u);
+      const nav = await page.locator("nav.seitenweg a").evaluateAll((a) => a.map((x) => { const b = x.getBoundingClientRect(); return { text: x.textContent, left: b.left, top: b.top, bottom: b.bottom, hoehe: b.height, sichtbar: x.offsetParent !== null }; }));
+      const was = `${wo} ${u || "Startseite"}`;
+      assert.deepEqual(nav.map((x) => x.text), ["Ornament Cloud", "Das Dritte Rad"], was);
+      assert.ok(nav.every((x) => x.sichtbar && x.hoehe >= 24), `${was}: sichtbar, mindestens 24 px hoch zum Tippen`);
+      assert.ok(Math.abs(nav[0].left - nav[1].left) < 1 && nav[1].top >= nav[0].bottom - 1, `${was}: «Das Dritte Rad» steht linksbündig unter «Ornament Cloud»`);
+      assert.ok(nav[0].top < 120 && nav[0].left < 200, `${was}: ganz oben links (${Math.round(nav[0].left)}, ${Math.round(nav[0].top)})`);
+      assert.deepEqual(fehler, [], was);
+      await page.close();
+    }
+    await ctx.close();
+  }
+});
+
+await check("Navigation: «Ornament Cloud» führt zur Startseite, «Das Dritte Rad» zum Start des Rads; im Rad bleibt man auf der Seite, der Verlauf stimmt", async () => {
+  const gehe = async (page, von, link, ziel) => {
+    await page.goto(base + von);
+    await Promise.all([page.waitForURL((u) => u.pathname === ziel), page.locator("nav.seitenweg a", { hasText: link }).click()]);
+  };
+  const { ctx, page, errors } = await open("");
+  await gehe(page, "", "Das Dritte Rad", "/alpha/drittes-rad/");
+  await page.waitForFunction(() => window.radGeladen === true);
+  assert.equal(await page.locator("#result").isHidden(), true, "der Start des Rads: noch keine Karten");
+  assert.equal(await page.locator("nav.seitenweg a[aria-current='page']").textContent(), "Das Dritte Rad");
+  await gehe(page, "alpha/drittes-rad/", "Ornament Cloud", "/");
+  assert.ok(await page.locator(".site-header .menu").count(), "die Startseite der Website");
+  for (const [von, link, ziel] of [["zu-seiner-zeit/strophe/13-das-archiv/", "Ornament Cloud", "/"], ["zu-seiner-zeit/strophe/13-das-archiv/", "Das Dritte Rad", "/alpha/drittes-rad/"],
+    ["portfolio/nebeneinander-nacheinander/", "Das Dritte Rad", "/alpha/drittes-rad/"], ["alpha/pruefraster/", "Ornament Cloud", "/"], ["alpha/omna-color/", "Das Dritte Rad", "/alpha/drittes-rad/"]]) await gehe(page, von, link, ziel);
+  // im Rad: «Das Dritte Rad» setzt auf den Start zurück, ohne Neuladen; Zurück bringt den Stand wieder
+  await page.goto(base + stUrl("zeit"));
+  await page.locator("#lese").waitFor({ state: "visible" });
+  await page.evaluate(() => { window.nichtNeuGeladen = true; });
+  const stand = page.url();
+  await page.locator("nav.seitenweg a", { hasText: "Das Dritte Rad" }).click();
+  await page.waitForFunction(() => location.search === "");
+  assert.equal(await page.evaluate(() => window.nichtNeuGeladen), true, "kein Neuladen");
+  assert.equal(await page.locator("#lese").isHidden(), true);
+  assert.equal(await page.locator("#wege").isHidden(), true);
+  assert.equal(await page.locator("#result").isHidden(), true);
+  assert.equal(await page.locator("#wheel").getAttribute("data-fokus"), "", "kein Ring leuchtet");
+  await page.goBack();
+  await page.waitForFunction((u) => location.href === u, stand);
+  await page.locator("#lese").waitFor({ state: "visible" });
+  assert.equal(await text(page, "#lese h2"), zeitTitel(ST.strophe), "Zurück: das offene Stück");
+  await page.locator("nav.seitenweg a", { hasText: "Ornament Cloud" }).click();
+  await page.waitForURL((u) => u.pathname === "/");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 await check("Zwischenspeicher: hält der Browser nach einer Aktualisierung noch alte Module (zehn Minuten wie bei GitHub Pages), startet das Rad trotzdem, auch die Auswahl auf einer Originalseite", async () => {
   const pages = await pagesNachbildung();
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });

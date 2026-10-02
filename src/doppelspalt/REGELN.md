@@ -184,8 +184,16 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   verlinkt werden ausserdem die Seiten der beiden Grundlagenpapiere `alpha/pruefraster/` und
   `alpha/verteilapparat/` (freigegeben am 28. September 2026), seit dem 29. September 2026 auch von der
   Startseite (Kategorie «Prüfraster», als Alpha gekennzeichnet); andere Seiten verlinken den Alpha-Bereich
-  nicht. Aktualisiert wird die
+  nicht (Ausnahme: die Navigation oben links, siehe unten). Aktualisiert wird die
   Alpha-Version mit `node --experimental-strip-types tools/build-orma.ts --alpha`.
+- **Navigation oben links** (freigegeben am 2. Oktober 2026, Ausnahme zu «andere Seiten verlinken den
+  Alpha-Bereich nicht»): Jede Seite trägt oben links «Ornament Cloud» (zur Startseite) und darunter
+  «Das Dritte Rad» (zum Start des Rads, `alpha/drittes-rad/`). Das ist der einzige Alpha-Link, den alle
+  Seiten haben. Die frühere Zeile «Ornament Cloud · Alpha» entfällt; die Alpha-Übersicht bleibt unter
+  `alpha/` und unten auf den Alpha-Textseiten erreichbar. Ausgenommen sind ORMA (eigene App, siehe
+  Trennung), die drei Werke unter `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`.
+  Die Gestaltung folgt der jeweiligen Seitenfamilie (`styles.css`, `zu-seiner-zeit/zsz.css`, bei OMNA COLOR
+  und beim Dritten Rad in der Seite selbst). Aufbau und Ausnahmen hält `tests/navigation.test.mjs` fest.
 
 ## 13. Nicht mehr gültig (aus dem Archiv)
 

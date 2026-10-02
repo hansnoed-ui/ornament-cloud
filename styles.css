@@ -319,6 +319,32 @@ h1 {
   text-decoration: none;
 }
 
+/* Navigation oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud», darunter «Das Dritte Rad».
+   Im Kopf der Website steht sie im Header-Menü, auf den Alpha-Seiten über dem Titel. */
+.seitenweg {
+  display: grid;
+  justify-items: start;
+  margin: 15px 0 0;
+}
+
+.wrap > .seitenweg { margin-bottom: 8px; }
+
+.seitenweg a {
+  padding: 3px 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--accent);
+}
+
+.seitenweg a:hover,
+.seitenweg a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .menu {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));   /* immer gleich breite Spalten */
@@ -415,6 +441,7 @@ h1 {
   .topbar { flex-direction: column; gap: 16px; margin-bottom: 16px; }
   .divider { margin-bottom: 28px; }
   .brand { margin-top: 0; }
+  .seitenweg { margin-top: 0; }
   .menu { width: 100%; gap: 12px; }
   .menu-item { flex-direction: column; align-items: stretch; gap: 8px; }
   .menu-icon { flex: none; width: 100%; }
