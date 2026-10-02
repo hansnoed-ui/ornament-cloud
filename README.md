@@ -59,7 +59,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   Kein Text unter dem Titel, kein «Zurück zum Start», kein Kasten «Fäden»; `faeden()` bleibt in `engine.js` (ein Test deckt sie ab), damit eine ältere Seite im Zwischenspeicher des Browsers keinen Export vermisst.
   Adressen: `?t=<Strophe>~<Konstellation>~<Übung>~<Farbe>~<Zeichen>` (mit `&f=zeit|form|farbe` für das offene Stück) stellt einen Stand wieder her, `?von=<strophe|paar|uebung|person>~<Kennung>` dreht von einem Stück aus weiter;
   «Zurück» im Browser folgt dem Verlauf. Auf den Originalseiten (Strophe, ORNA, OMNA COLOR) erscheint nur mit `?rad=1` am unteren Rand dieselbe Auswahl aus `weiter.js` (Kacheln aus `kacheln.js`).
-  Alle vier Wege führen von dort ins Rad zurück, wo das Spiel weitergeht; die Originale bleiben über «… öffnen ↗» erreichbar.
+  Alle vier Wege führen von dort ins Rad zurück, wo das Spiel weitergeht. Die Radseite selbst verlinkt nicht mehr auf die Originalseiten (kein «… öffnen ↗», Wunsch vom 2. Oktober 2026): Strophe, Begegnung und Übung werden ganz im Rad gelesen.
+  Die Originalseiten bleiben unter ihren Adressen erreichbar, und die Leiste mit `?rad=1` bleibt bestehen; sie erreicht man nur noch über eine direkte Adresse.
   Zielseiten laden `weiter.js` per `import()` (Zettelkasten in `zu-seiner-zeit/zsz.js`, ORNA und OMNA COLOR als Einzeiler am Seitenende); ohne `?rad=` ändert sich dort nichts.
   Dateien: `index.html` (Rad und Ansichten, von Hand), `engine.js` (Verknüpfung: Wörter auf den Stamm gekürzt, seltene gemeinsame Wörter, gemeinsame Personen und jevs Nähe zählen, Ziehung unter den besten vier, nie ganz berechenbar; Rückkehr ins Rad),
   `kacheln.js` (die vier Wege als Kacheln, gemeinsam für Rad und Leiste), `weiter.js` (Leiste auf den Originalseiten),

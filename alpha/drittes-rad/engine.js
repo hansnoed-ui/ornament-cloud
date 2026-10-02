@@ -2,11 +2,11 @@
 // Verbindet drei Bestände: Zettelkasten (Strophen, daten.js), ORNA (Personen, Konstellationen, direkt aus dem Rad) und OMNA COLOR (Übungen, daten.js).
 // Alles läuft im Browser. Nichts wird gesendet. Zufall und Gewichtung sind nur Vorschläge, das Los darf absurd sein (Auftrag vom 2. Oktober 2026).
 // Importe mit ?v=<Marke>: setzt tools/build-drittes-rad.ts (gegen alte Module im Zwischenspeicher des Browsers, siehe dort).
-import { ZYKLEN, THEMEN, STROPHEN, UEBUNGEN } from "./daten.js?v=2d916f53";
+import { ZYKLEN, THEMEN, STROPHEN, UEBUNGEN } from "./daten.js?v=903834b2";
 import { constellations } from "../../portfolio/nebeneinander-nacheinander/js/data/constellations.js";
 import { artists } from "../../portfolio/nebeneinander-nacheinander/js/data/artists.js";
 import { theorists } from "../../portfolio/nebeneinander-nacheinander/js/data/theorists.js";
-import { JEV } from "./jev.js?v=2d916f53";
+import { JEV } from "./jev.js?v=903834b2";
 
 export { ZYKLEN, THEMEN, STROPHEN, UEBUNGEN };
 export const KONSTELLATIONEN = constellations;
@@ -19,6 +19,7 @@ export const nrVon = (id) => personNr.get(id);
 export const nameVon = (id) => PERSONEN[personNr.get(id)]?.name ?? verweisName.get(id) ?? id;
 
 // ---------- Adressen der Ziele (rad=1 lässt dort die Auswahl erscheinen) ----------
+// strophe, paar und uebung führen auf die Originalseiten. Die Radseite verlinkt dorthin seit dem 2. Oktober 2026 nicht mehr (Wunsch von Christian), die Adressen bleiben für Tests und spätere Verwendung.
 export const adresse = {
   strophe: (s) => `${WURZEL}zu-seiner-zeit/strophe/${s.s}/?rad=1`,
   paar: (c) => `${WURZEL}portfolio/nebeneinander-nacheinander/?pair=${c.id}&rad=1`,

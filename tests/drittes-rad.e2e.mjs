@@ -40,6 +40,8 @@ const kacheln = (page, wo) => page.locator(`${wo} a.drad-kachel`).evaluateAll((a
   grund: x.querySelector("em").textContent, href: x.getAttribute("href"), hier: x.classList.contains("hier"),
 })));
 const text = (page, sel) => page.locator(sel).first().textContent();
+/** Links in der Radseite (Karten, Lesen, Wege), die nicht im Rad selbst bleiben, also auf Originalseiten oder sonst woanders hin führen */
+const ausDemRad = (page) => page.locator("main a[href]").evaluateAll((a) => a.map((x) => new URL(x.href, location.href)).filter((u) => u.origin !== location.origin || u.pathname !== location.pathname).map((u) => u.href));
 
 /** Nachbildung von GitHub Pages: der Browser darf jede Datei zehn Minuten ohne Nachfrage behalten (Cache-Control: max-age=600), der Test-Server oben sagt dagegen no-cache.
  *  Mit alt.set(pfad, text) liefert sie für den Pfad (ohne Abfrage) vorübergehend eine ältere Fassung. Hat der Browser sie einmal geholt, hält er sie auch nach der «Aktualisierung».
@@ -99,7 +101,7 @@ await check("Rad: Drehen zeigt drei Karten und eine Adresse, die den Stand wiede
   await ctx.close();
 });
 
-await check("Schlichte Seite: unter dem Titel steht nichts, «Drehen» und «Brücke» sehen gleich aus, kein «Zurück zum Start», kein Kasten «Fäden»", async () => {
+await check("Schlichte Seite: unter dem Titel steht nichts, «Drehen» und «Brücke» sehen gleich aus, kein «Zurück zum Start», kein Kasten «Fäden», keine Links zu den Originalseiten", async () => {
   const { ctx, page, errors } = await open("alpha/drittes-rad/");
   assert.equal((await page.locator("header").innerText()).trim(), "Das Dritte Rad", "nur der Titel");
   assert.deepEqual(await page.locator(".wheelbox .row button").allTextContents(), ["Drehen", "Brücke"], "zwei Knöpfe unter dem Rad");
@@ -111,6 +113,8 @@ await check("Schlichte Seite: unter dem Titel steht nichts, «Drehen» und «Br�
     assert.equal(await page.locator("#start, #faeden, .drad-start").count(), 0);
     assert.equal(await page.locator("button, a", { hasText: /Zurück zum Start/ }).count(), 0, "kein «Zurück zum Start»");
     assert.equal(await page.locator("h3", { hasText: /^Fäden$/ }).count(), 0, "kein Kasten «Fäden»");
+    assert.equal(await page.locator("a", { hasText: "öffnen ↗" }).count(), 0, "keine Links «… öffnen ↗» zu den Originalseiten");
+    assert.deepEqual(await ausDemRad(page), [], "alle Links bleiben im Rad");
   };
   await kein();
   await page.click("#go");
@@ -120,9 +124,11 @@ await check("Schlichte Seite: unter dem Titel steht nichts, «Drehen» und «Br�
   await page.waitForFunction(() => !document.getElementById("bridge").disabled);
   await page.locator("#result").waitFor({ state: "visible" });
   await kein();
-  await page.click("#cForm h2 a");
-  await page.locator("#lese").waitFor({ state: "visible" });
-  await kein();
+  for (const fokus of ["form", "zeit", "farbe"]) {                  // alle drei Ansichten zum Lesen
+    await page.goto(base + stUrl(fokus));
+    await page.locator("#lese").waitFor({ state: "visible" });
+    await kein();
+  }
   assert.deepEqual(errors, []);
   await ctx.close();
 });
@@ -164,6 +170,7 @@ await check("Rad: jede Karte öffnet ihr Stück im Rad (ganze Strophe, ganze Beg
   const { ctx, page, errors } = await open(stUrl());
   await page.locator("#result").waitFor({ state: "visible" });
   const kartenVorher = await page.locator("#result").innerText();
+  assert.deepEqual(await ausDemRad(page), [], "auch die Karten verlinken nur ins Rad");
   const e = ST.uebung, c = ST.paar, s = ST.strophe;
   const lesen = {
     zeit: async () => {
@@ -171,14 +178,12 @@ await check("Rad: jede Karte öffnet ihr Stück im Rad (ganze Strophe, ganze Beg
       assert.equal(await page.locator("#lese p.text").count(), s.x.split(/\n{2,}/).length, "der ganze Text");
       assert.equal(await text(page, "#lese .lead"), s.b);
       assert.ok(await page.locator("#lese h3", { hasText: "Verweise" }).count());
-      assert.match(await page.locator("#lese .original a").getAttribute("href"), /\/zu-seiner-zeit\/strophe\/[^/]+\/\?rad=1$/);
     },
     form: async () => {
       assert.equal(await text(page, "#lese h2"), formTitel(c));
       assert.equal(await page.locator("#lese .zeichen-paar figure").count(), 2, "beide Zeichen");
       assert.equal(await text(page, "#lese p.text"), c.text);
       assert.ok((await text(page, "#lese .frage")).includes(c.question));
-      assert.match(await page.locator("#lese .original a").getAttribute("href"), /\/portfolio\/nebeneinander-nacheinander\/\?pair=[^&]+&rad=1$/);
     },
     farbe: async () => {
       assert.equal(await text(page, "#lese h2"), e.n);
@@ -187,7 +192,6 @@ await check("Rad: jede Karte öffnet ihr Stück im Rad (ganze Strophe, ganze Beg
       assert.ok((await page.locator("#lese").innerText()).includes("Material: " + e.m));
       assert.equal(await text(page, "#lese p.text"), e.a);
       assert.ok((await text(page, "#lese .frage")).includes(e.f));
-      assert.match(await page.locator("#lese .original a").getAttribute("href"), /\/alpha\/omna-color\/\?u=\d+&rad=1$/);
     },
   };
   for (const [karte, fokus] of [["#cZeit", "zeit"], ["#cForm", "form"], ["#cFarbe", "farbe"]]) {
@@ -199,6 +203,7 @@ await check("Rad: jede Karte öffnet ihr Stück im Rad (ganze Strophe, ganze Beg
     assert.equal(await page.locator("#wheel").getAttribute("data-fokus"), fokus, "der Ring des offenen Stücks leuchtet");
     assert.equal(await page.evaluate(() => document.activeElement?.closest("#lese") !== null && document.activeElement.tagName), "H2", "der Fokus liegt auf der Überschrift");
     await lesen[fokus]();
+    assert.deepEqual(await ausDemRad(page), [], "kein Link führt aus dem Rad auf eine Originalseite («… öffnen ↗» gibt es nicht mehr)");
     const k = await kacheln(page, "#wege");
     assert.deepEqual(k.map(x => x.bereich), BEREICHE, "vier Wege in fester Reihenfolge");
     assert.deepEqual(k.map(x => x.label), LABEL);
