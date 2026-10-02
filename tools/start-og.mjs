@@ -86,7 +86,7 @@ if (!wahl || wahl === "start") {
     let wurf = null;
     for (let start = 1; start <= 80; start++) { const v = verteilen(start); if (!wurf || v.eng > wurf.eng) wurf = v; }
     const pts = wurf.pts;
-    // Zeichen: alle 40 genau einmal, in gemischter Reihenfolge; einige in Orange und Violett wie die Navigation der Seite
+    // Zeichen: alle 40 genau einmal, in gemischter Reihenfolge; einige in Orange und Violett wie die Navigation des Rads
     const reihe = Array.from({ length: ANZAHL }, (_, i) => i % SYMBOL_COUNT).sort(() => zufall() - .5);
     const farbe = (x, y) => { const t = (x - 120) / 300 - (y - 130) / 240; return t > .5 ? VIOLETT : t < -.46 ? ORANGE : INK; };   // oben rechts Violett, unten links Orange
     const zeichen = pts.map(([x, y], i) => `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(zufall() * 16 - 8).toFixed(1)})" style="color:${farbe(x, y)}">${symbolMarkup(reihe[i], 19)}</g>`).join("");

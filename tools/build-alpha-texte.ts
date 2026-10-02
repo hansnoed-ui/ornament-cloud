@@ -116,7 +116,7 @@ export function seite(r: typeof RASTER[number], md: string): string {
        Erzeugt mit tools/build-alpha-texte.ts aus src/alpha/${r.datei} – nicht von Hand bearbeiten. -->
   <meta name="robots" content="noindex">
   <meta name="description" content="${esc(r.beschreibung)}">
-  <link rel="stylesheet" href="../../styles.css?v=28">
+  <link rel="stylesheet" href="../../styles.css?v=29">
   <style>
     .at-arbeit { display: inline-block; margin: 1.25rem 0 0; padding: 6px 14px; border: 1.5px solid var(--accent); border-radius: 999px;
       color: var(--accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }

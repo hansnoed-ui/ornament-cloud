@@ -812,9 +812,10 @@ await check("Navigation: die beiden Hauptlinks stehen auf jeder Seite an genau d
   }
 });
 
-await check("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen, der aktive ist invers gesetzt (Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite); farblich getrennt (Orange und Violett, je mit Kontrast ab 4,5) und auf jeder Seite genau so gross gesetzt wie auf der Website, hell und dunkel, Computer und Handy", async () => {
+await check("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen, der aktive ist invers gesetzt (Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite); auf der Website beide in einer Farbe (hell Anthrazit, dunkel helles Sonnengelb), im Rad Orange und Violett, je mit Kontrast ab 4,5, und auf jeder Seite genau so gross gesetzt wie auf der Website, hell und dunkel, Computer und Handy", async () => {
   const seiten = ["", "news/", "portfolio/", "portfolio/nebeneinander-nacheinander/", "zu-seiner-zeit/", "zu-seiner-zeit/strophe/13-das-archiv/", "alpha/", "alpha/pruefraster/", "alpha/gesellschaftskonzepte/", "alpha/omna-color/", "alpha/drittes-rad/"];
-  const FARBEN = { hell: ["rgb(194, 65, 12)", "rgb(91, 63, 196)"], dunkel: ["rgb(240, 138, 93)", "rgb(167, 148, 255)"] };           // «Ornament Cloud» orange, «Das Dritte Rad» violett
+  const FARBEN = { hell: ["rgb(53, 59, 64)", "rgb(53, 59, 64)"], dunkel: ["rgb(255, 216, 77)", "rgb(255, 216, 77)"] };               // auf der Website beide Links in einer Farbe: hell Anthrazit #353b40, dunkel helles Sonnengelb #ffd84d (Wunsch vom 2. Oktober 2026, 19:00 UTC)
+  const FARBEN_RAD = ["rgb(240, 138, 93)", "rgb(167, 148, 255)"];                                                                  // im Rad bleibt «Ornament Cloud» orange, «Das Dritte Rad» violett (die Seite ist immer dunkel)
   const rgb = (c) => c.match(/[\d.]+/g).slice(0, 3).map(Number);
   const hell = (c) => { const [r, g, b] = (typeof c === "string" ? rgb(c) : c).map((v) => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }); return .2126 * r + .7152 * g + .0722 * b; };
   const kontrast = (a, b) => { const [x, y] = [hell(a), hell(b)].sort((m, n) => n - m); return (x + .05) / (y + .05); };
@@ -832,7 +833,7 @@ await check("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen, d
           ring: [c.outlineStyle, c.outlineWidth, c.outlineOffset].join(" "), ringFarbe: c.outlineColor,
           stil: [c.fontSize, c.fontWeight, c.letterSpacing, c.textTransform, c.fontFamily, c.lineHeight, c.paddingTop, c.paddingLeft, c.textAlign].join(" | "), breite: Math.round(b.width), hoehe: Math.round(b.height) }; }));
       const grund = await page.evaluate(() => { const n = (e) => getComputedStyle(e).backgroundColor, ok = (c) => !/^rgba\(.*, 0\)$|^transparent$/.test(c); return [n(document.body), n(document.documentElement)].find(ok) || "rgb(255, 255, 255)"; });
-      const farben = u === "alpha/drittes-rad/" ? FARBEN.dunkel : FARBEN[modus];          // das Rad ist immer dunkel
+      const farben = u === "alpha/drittes-rad/" ? FARBEN_RAD : FARBEN[modus];          // das Rad ist immer dunkel und behält seine Farben
       // Buttons: ganz feiner Rahmen (1 px, rund), beide gleich breit; aktiv ist im Rad «Das Dritte Rad», sonst «Ornament Cloud»
       assert.deepEqual(m.map((x) => x.aktiv), u === "alpha/drittes-rad/" ? [null, "page"] : [u === "" ? "page" : "true", null], `${was}: aria-current auf dem aktiven Button`);
       assert.equal(m[0].breite, m[1].breite, `${was}: beide Buttons gleich breit`);
@@ -865,6 +866,78 @@ await check("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen, d
       }
       if (!website) website = m;
       assert.deepEqual(m.map(({ stil, rahmen, breite, hoehe }) => ({ stil, rahmen, breite, hoehe })), website.map(({ stil, rahmen, breite, hoehe }) => ({ stil, rahmen, breite, hoehe })), `${was}: Schrift, Rahmen, Grösse und Breite wie auf der Startseite der Website`);
+      await page.close();
+    }
+    await ctx.close();
+  }
+});
+
+await check("Kopfzeile: unter den Hauptlinks steht eine feine Linie in deren Farbe, auf den Seiten mit Menü die Welle, sonst eine gerade Linie über die Spaltenbreite, im Rad keine; im Zettelkasten bleibt mehr Raum bis zum Titel «Zu seiner Zeit» (Wunsch vom 2. Oktober 2026, 19:00 UTC); hell und dunkel, Computer und Handy", async () => {
+  const seiten = [["", "Welle"], ["apps/", "Welle"], ["news/", "Welle"], ["portfolio/nebeneinander-nacheinander/", "Welle"], ["portfolio/nebeneinander-nacheinander/feld/", "Welle"],
+    ["alpha/", "gerade"], ["alpha/pruefraster/", "gerade"], ["alpha/omna-color/", "gerade"], ["zu-seiner-zeit/", "gerade"], ["zu-seiner-zeit/strophe/13-das-archiv/", "gerade"], ["zu-seiner-zeit/verweis/", "gerade"],
+    ["alpha/drittes-rad/", "keine"]];
+  const LINK = { hell: "rgb(53, 59, 64)", dunkel: "rgb(255, 216, 77)" };                           // Anthrazit, helles Sonnengelb
+  /** Farben der Bildpunkte eines Ausschnitts, wie sie auf dem Bildschirm stehen (der Ausschnitt wird in einer Zeichenfläche der Seite gelesen) */
+  const bildpunkte = async (page, clip) => {
+    const png = (await page.screenshot({ clip })).toString("base64");
+    return page.evaluate(async (b64) => {
+      const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode();
+      const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+      const x = c.getContext("2d"); x.drawImage(img, 0, 0);
+      const d = x.getImageData(0, 0, img.width, img.height).data, aus = [];
+      for (let i = 0; i < d.length; i += 4) aus.push([d[i], d[i + 1], d[i + 2]]);
+      return aus;
+    }, png);
+  };
+  const rgb = (c) => c.match(/[\d.]+/g).slice(0, 3).map(Number);
+  for (const [modus, scheme] of [["hell", "light"], ["dunkel", "dark"]]) for (const [wo, opts] of [["Computer", { viewport: { width: 1280, height: 800 } }], ["Handy", HANDY]]) {
+    const ctx = await browser.newContext({ reducedMotion: "reduce", colorScheme: scheme, ...opts });
+    for (const [u, art] of seiten) {
+      const page = await ctx.newPage(), was = `${modus}, ${wo}, ${u || "Startseite"}`;
+      await page.goto(base + u);
+      if (art === "Welle") await page.waitForSelector(".divider .wave");
+      if (art === "keine") await page.waitForFunction(() => window.radGeladen === true);
+      const m = await page.evaluate(() => {
+        const nav = document.querySelector("nav.seitenweg"), a = [...nav.querySelectorAll("a")], r = (e) => e.getBoundingClientRect(), nb = r(nav);
+        const nach = getComputedStyle(nav, "::after"), svg = document.querySelector(".divider"), welle = document.querySelector(".divider .wave"), werk = document.querySelector(".zsz-werk");
+        return {
+          linkFarbe: getComputedStyle(a.at(-1)).color, links: r(a[0]).left, knopfUnten: r(a.at(-1)).bottom, navLinks: nb.left, navUnten: nb.bottom, breite: document.documentElement.getBoundingClientRect().width,
+          nach: { inhalt: nach.content, rand: nach.borderTopWidth, randStil: nach.borderTopStyle, farbe: nach.borderTopColor, position: nach.position, links: parseFloat(nach.left), unten: parseFloat(nach.bottom), breit: parseFloat(nach.width) },
+          svg: svg && { oben: r(svg).top, links: r(svg).left, breit: r(svg).width, farbe: getComputedStyle(svg).color },
+          welle: welle && { strich: getComputedStyle(welle).stroke, deckkraft: getComputedStyle(welle).opacity, dicke: getComputedStyle(welle).strokeWidth },
+          werkOben: werk ? r(werk).top : null,
+        };
+      });
+      const spalte = Math.min(1040, m.breite - 40);                                              // so breit wie die Spalte der Seite
+      if (art === "keine") {
+        assert.equal(m.nach.inhalt, "none", `${was}: im Rad keine Linie unter den Links`);
+        assert.equal(m.svg, null, `${was}: und keine Welle`);
+      } else {
+        assert.equal(m.linkFarbe, LINK[modus], `${was}: die Links stehen in ${LINK[modus]}`);
+        if (art === "Welle") {
+          assert.equal(m.svg.farbe, LINK[modus], `${was}: die Welle steht in der Farbe der Links (${m.svg.farbe})`);
+          assert.deepEqual([m.welle.strich, m.welle.deckkraft, m.welle.dicke], [LINK[modus], "1", "0.8px"], `${was}: Welle in der Farbe der Links, voll deckend, fein`);
+          assert.ok(m.svg.oben >= m.navUnten - .5, `${was}: die Welle liegt unter den Links (${m.svg.oben} gegen ${m.navUnten})`);
+          assert.ok(Math.abs(m.svg.links - m.links) <= .5 && Math.abs(m.svg.breit - spalte) <= 1, `${was}: die Welle läuft über die Spalte (${m.svg.links} / ${m.svg.breit} gegen ${m.links} / ${spalte})`);
+          assert.equal(m.nach.inhalt, "none", `${was}: keine zweite, gerade Linie neben der Welle`);
+        } else {
+          const n = m.nach, linieY = m.navUnten - n.unten - 1;                                      // obere Kante der Linie von 1 px
+          assert.deepEqual([n.inhalt, n.rand, n.randStil, n.position], ['""', "1px", "solid", "absolute"], `${was}: eine Linie von 1 px, durchgezogen, schiebt nichts: ${JSON.stringify(n)}`);
+          assert.equal(n.farbe, LINK[modus], `${was}: die Linie in der Farbe der Links (${n.farbe})`);
+          assert.ok(linieY - m.knopfUnten >= 12, `${was}: die Linie liegt unter dem unteren Button (${linieY - m.knopfUnten} px)`);
+          assert.ok(Math.abs(m.navLinks + n.links - m.links) <= .5 && Math.abs(n.breit - spalte) <= 1, `${was}: die Linie läuft über die Spalte, bündig mit den Links (${m.navLinks + n.links} / ${n.breit} gegen ${m.links} / ${spalte})`);
+          // und sie ist wirklich zu sehen: am linken Ende, in der Mitte und am rechten Ende steht in einer der drei Bildzeilen um sie herum genau diese Farbe
+          for (const [wo2, x] of [["am linken Ende", m.links + 2], ["in der Mitte", m.links + spalte / 2], ["am rechten Ende", m.links + spalte - 3]]) {
+            const punkte = await bildpunkte(page, { x: Math.floor(x), y: Math.floor(linieY) - 1, width: 1, height: 3 });
+            assert.ok(punkte.some((pt) => pt.every((v, i) => Math.abs(v - rgb(LINK[modus])[i]) <= 2)), `${was}: die Linie ist ${wo2} zu sehen (${JSON.stringify(punkte)})`);
+          }
+          // Zettelkasten: bis zum Titel «Zu seiner Zeit» 28 px unter der Linie (früher 12 px unter den Links)
+          if (m.werkOben !== null) {
+            assert.ok(m.werkOben - m.knopfUnten >= 40 && m.werkOben - linieY >= 24, `${was}: im Zettelkasten mehr Raum bis zum Titel: ${(m.werkOben - m.knopfUnten).toFixed(0)} px unter den Links, ${(m.werkOben - linieY).toFixed(0)} px unter der Linie (früher 12)`);
+            assert.ok(m.werkOben - m.knopfUnten <= 56, `${was}: nicht masslos (${(m.werkOben - m.knopfUnten).toFixed(0)} px)`);
+          }
+        }
+      }
       await page.close();
     }
     await ctx.close();

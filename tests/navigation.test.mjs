@@ -1,7 +1,8 @@
 // Navigation oben links (Wunsch von Christian, freigegeben am 2. Oktober 2026, REGELN §14):
 // Jede Seite trägt oben links «Ornament Cloud» (zur Startseite) und darunter «Das Dritte Rad» (zum Start des Rads), beide als Buttons mit ganz
 // feinem Rahmen; der aktive (aria-current) ist markiert, und zwar invers (Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite):
-// «Das Dritte Rad» im Rad, «Ornament Cloud» auf allen anderen Seiten.
+// «Das Dritte Rad» im Rad, «Ornament Cloud» auf allen anderen Seiten. Auf der Website stehen beide Links in einer Farbe (hell Anthrazit, dunkel helles
+// Sonnengelb) mit einer feinen Linie darunter (Wunsch vom 2. Oktober 2026, 19:00 UTC); das Dritte Rad behält Orange und Violett und hat keine Linie.
 // Ausgenommen sind ORMA (eigene App, Trennung nach §14), die drei Werke im Vollbild und die Weiterleitung auf die frühere Adresse von ORNA.
 //   node --experimental-strip-types --no-warnings --test tests/navigation.test.mjs
 import test from "node:test";
@@ -61,26 +62,37 @@ test("Navigation: jede Seite bringt die Gestaltung mit (eigene Regeln in der Sei
   for (const p of seiten) assert.match(cssVon(p), /\.seitenweg a\b/, `${p}: Regeln für .seitenweg fehlen`);
 });
 
-test("Navigation: die beiden Links sind farblich getrennt (Orange, Violett) und auf jeder Seite genau so gesetzt wie auf der Website (Wunsch von Christian, 2. Oktober 2026)", () => {
+const imRad = (p) => p.startsWith("alpha/drittes-rad/");
+
+test("Navigation: auf der Website stehen beide Links in derselben Farbe (hell Anthrazit, dunkel helles Sonnengelb), im Dritten Rad bleiben sie orange und violett; überall genau so gesetzt wie auf der Website (Wunsch von Christian, 2. Oktober 2026, 19:00 UTC)", () => {
   for (const p of seiten) {
     const css = cssVon(p), html = lies(p);
     const erster = css.match(/\.seitenweg a \{([^}]*)\}/);
     assert.ok(erster, `${p}: Regel für den ersten Link`);
-    assert.match(erster[1], /--weg:\s*var\(--(accent|weg-start)\)/, `${p}: «Ornament Cloud» in Orange (die Farbe des Buttons steht in --weg)`);
-    assert.match(css, /\.seitenweg a \+ a \{[^}]*--weg:\s*var\(--weg-rad\)/, `${p}: «Das Dritte Rad» in Violett, davon getrennt`);
+    if (imRad(p)) {
+      assert.match(erster[1], /--weg:\s*var\(--weg-start\)/, `${p}: «Ornament Cloud» im Rad in Orange (die Farbe des Buttons steht in --weg)`);
+      assert.match(css, /\.seitenweg a \+ a \{[^}]*--weg:\s*var\(--weg-rad\)/, `${p}: «Das Dritte Rad» im Rad in Violett, davon getrennt`);
+      assert.match(css, /--weg-rad:\s*#[0-9a-f]{6}/i, `${p}: das Violett ist festgelegt`);
+      assert.doesNotMatch(css, /--hauptlink/, `${p}: das Rad kennt die Farbe der Website nicht`);
+    } else {
+      assert.match(erster[1], /--weg:\s*var\(--hauptlink\)/, `${p}: beide Links in der Farbe der Hauptlinks (die Farbe des Buttons steht in --weg)`);
+      assert.doesNotMatch(css, /\.seitenweg a \+ a\s*\{/, `${p}: kein zweiter Farbton für «Das Dritte Rad»`);
+      assert.match(css, /--hauptlink:\s*#[0-9a-f]{6}/i, `${p}: die Farbe ist festgelegt`);
+      assert.doesNotMatch(css, /--weg-(start|rad)/, `${p}: Orange und Violett der früheren Navigation sind weg`);
+    }
     assert.match(erster[1], /(?:^|[;\s])color:\s*var\(--weg\)/, `${p}: die Schrift steht in der Farbe des Buttons`);
-    assert.match(css, /--weg-rad:\s*#[0-9a-f]{6}/i, `${p}: das Violett ist festgelegt`);
     assert.match(erster[1], /text-transform:\s*uppercase/, `${p}: Grossbuchstaben wie auf der Website`);
     assert.match(erster[1], /font-weight:\s*600|font:\s*600\s/, `${p}: Gewicht 600 wie auf der Website`);
     assert.match(erster[1], /font-size:\s*0?\.8rem|font:\s*600\s+0?\.8rem/, `${p}: Schriftgrösse 0,8 rem wie auf der Website`);
     assert.match(erster[1], /letter-spacing:\s*0?\.12em/, `${p}: Laufweite 0,12 em wie auf der Website`);
     if (!/<link rel="stylesheet" href="[^"]*styles\.css/.test(html)) assert.match(erster[1], /system-ui, -apple-system, "Segoe UI", Roboto/, `${p}: dieselbe Schrift wie auf der Website`);
   }
-  // das Violett und das Orange sind je ein Wert für hell und für dunkel, überall derselbe
+  // die Farbe der Hauptlinks ist je ein Wert für hell und für dunkel, auf der ganzen Website derselbe; im Rad bleiben Orange und Violett (die Seite ist immer dunkel)
   const werte = (p, name) => [...cssVon(p).matchAll(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, "gi"))].map((m) => m[1].toLowerCase());
-  const sammlung = (name) => new Set(seiten.flatMap((p) => werte(p, name)));
-  assert.deepEqual([...sammlung("--weg-rad")].sort(), ["#5b3fc4", "#a794ff"], "Violett: hell #5b3fc4, dunkel #a794ff");
-  assert.deepEqual([...sammlung("--weg-start")].sort(), ["#c2410c", "#f08a5d"], "Orange: hell #c2410c, dunkel #f08a5d (auf der Website der Akzent)");
+  const sammlung = (name, auswahl) => new Set(seiten.filter(auswahl).flatMap((p) => werte(p, name)));
+  assert.deepEqual([...sammlung("--hauptlink", (p) => !imRad(p))].sort(), ["#353b40", "#ffd84d"], "Hauptlinks auf der Website: hell Anthrazit #353b40, dunkel helles Sonnengelb #ffd84d");
+  assert.deepEqual([...sammlung("--weg-rad", imRad)], ["#a794ff"], "Violett im Rad: #a794ff");
+  assert.deepEqual([...sammlung("--weg-start", imRad)], ["#f08a5d"], "Orange im Rad: #f08a5d");
 });
 
 /** Regeln eines Stylesheets: Selektor (Leerraum vereinheitlicht) → Deklarationen (Eigenschaft → alle Werte in der Reihenfolge, in der sie stehen) */
@@ -160,6 +172,42 @@ test("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen (1 px, bl
   assert.deepEqual([...gruende].sort(), ["--bg", "--night", "--papier"], "die vier Gestaltungen (Website, Zettelkasten, Rad, OMNA COLOR) nehmen je ihren Grund");
 });
 
+test("Navigation: unter der Kopfzeile steht eine feine Linie in der Farbe der Hauptlinks, auf den Seiten mit Menü die Welle, sonst eine gerade Linie von 1 px; das Dritte Rad hat keine; im Zettelkasten ist der Abstand bis zum Titel grösser (Wunsch von Christian, 2. Oktober 2026, 19:00 UTC)", () => {
+  let wellen = 0, gerade = 0;
+  for (const p of seiten) {
+    const html = lies(p), css = cssVon(p), r = regeln(ausMedia(css, "forced-colors:\\s*active").rest), w = (sel, name) => r.get(sel)?.get(name) ?? [];
+    const was = (t) => `${p}: ${t}`;
+    const nachLinks = [...r.keys()].filter((k) => /\.seitenweg::after$/.test(k));
+    if (imRad(p)) {
+      assert.deepEqual(nachLinks, [], was("das Rad hat keine Linie unter den Links"));
+      assert.ok(!html.includes('class="divider"'), was("das Rad hat keine Welle"));
+      continue;
+    }
+    if (html.includes('class="divider"')) {
+      // Seiten mit Menü: die Welle der Website, in der Farbe der Hauptlinks
+      assert.deepEqual(w(".divider", "color"), ["var(--hauptlink)"], was("die Welle steht in der Farbe der Hauptlinks"));
+      assert.deepEqual(w(".divider .wave", "stroke"), ["currentColor"], was("die Welle zeichnet in dieser Farbe"));
+      assert.deepEqual(w(".divider .wave", "opacity"), [], was("die Welle ist voll deckend, nicht blasser als die Links"));
+      assert.deepEqual(w(".divider .wave", "stroke-width"), ["0.8"], was("die Welle bleibt fein"));
+      assert.deepEqual(nachLinks.filter((k) => k !== ".wrap > .seitenweg::after"), [], was("auf Seiten mit Menü keine zweite, gerade Linie"));
+      wellen += 1;
+    } else {
+      // Zettelkasten, Alpha-Texte, OMNA COLOR: eine gerade Linie von 1 px am unteren Rand der Navigation
+      assert.equal(nachLinks.length, 1, was(`genau eine Linie unter den Links (${nachLinks.join(", ")})`));
+      const sel = nachLinks[0];
+      assert.deepEqual(w(sel, "border-top"), ["1px solid var(--hauptlink)"], was("feine Linie, 1 px, in der Farbe der Hauptlinks"));
+      assert.deepEqual(w(sel, "position"), ["absolute"], was("die Linie schiebt nichts"));
+      assert.deepEqual(w(sel, "bottom"), ["0"], was("am unteren Rand der Navigation"));
+      assert.deepEqual(w(sel, "content"), ['""'], was("leeres Element"));
+      assert.deepEqual(w(sel.replace(/::after$/, ""), "position"), ["relative"], was("die Navigation ist der Bezug der Linie"));
+      gerade += 1;
+    }
+    // Zettelkasten: mehr Raum zwischen den Hauptlinks (samt Linie) und dem Titel «Zu seiner Zeit»: 28 px statt 12 px
+    if (/zsz\.css/.test(html)) assert.deepEqual(w(".seitenweg + .zsz-kopf", "padding-top"), ["28px"], was("Zettelkasten: 28 px bis zum Titel «Zu seiner Zeit»"));
+  }
+  assert.ok(wellen >= 10 && gerade >= 150, `alle Seiten geprüft (Wellen ${wellen}, gerade Linien ${gerade})`);
+});
+
 test("Navigation: ORMA, die Werke und die Weiterleitung bleiben ohne (Ausnahmen sind benannt und vorhanden)", () => {
   for (const [name, re] of AUSNAHMEN) {
     const treffer = alle.filter((p) => re.test(p));
@@ -181,5 +229,5 @@ test("Navigation: keine Seite verlinkt die Alpha-Übersicht (alpha/), sie ist nu
 test("Navigation: REGELN §14 nennt die Freigabe vom 2. Oktober 2026 und die Ausnahmen", () => {
   const regeln = lies("src/doppelspalt/REGELN.md");
   assert.match(regeln, /\*\*Navigation oben links\*\* \(freigegeben am 2\. Oktober 2026/);
-  for (const wort of ["«Ornament Cloud»", "«Das Dritte Rad»", "Alpha-Übersicht", "ORMA", "werke/", "Buttons", "aria-current", "tests/navigation.test.mjs"]) assert.ok(regeln.split("**Navigation oben links**")[1].includes(wort), `§14 nennt ${wort}`);
+  for (const wort of ["«Ornament Cloud»", "«Das Dritte Rad»", "Alpha-Übersicht", "ORMA", "werke/", "Buttons", "aria-current", "tests/navigation.test.mjs", "Anthrazit", "Sonnengelb", "feine Linie", "--hauptlink"]) assert.ok(regeln.split("**Navigation oben links**")[1].includes(wort), `§14 nennt ${wort}`);
 });

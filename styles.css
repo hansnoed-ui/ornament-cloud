@@ -5,7 +5,7 @@
   --muted: #6b665e;
   --border: #e4e0d8;
   --accent: #c2410c;
-  --weg-rad: #5b3fc4;   /* «Das Dritte Rad» in der Navigation oben links; «Ornament Cloud» steht im Akzent */
+  --hauptlink: #353b40;   /* die Hauptlinks oben links und die feine Linie darunter: im hellen Modus Anthrazit (Wunsch vom 2. Oktober 2026, 19:00 UTC) */
 
   --thumb-a: #e8d5c4;
   --thumb-b: #cfdde6;
@@ -32,7 +32,7 @@
     --muted: #a39d93;
     --border: #34312c;
     --accent: #f08a5d;
-    --weg-rad: #a794ff;
+    --hauptlink: #ffd84d;   /* im dunklen Modus ein helles Sonnengelb */
 
     --thumb-a: #4a3a2e;
     --thumb-b: #2e3f4a;
@@ -304,13 +304,13 @@ h1 {
   margin-bottom: 20px;
 }
 
-/* Trennlinie zwischen Header-Menü und Seiteninhalt */
+/* Trennlinie zwischen Header-Menü und Seiteninhalt: eine feine Welle in der Farbe der Hauptlinks (Wunsch vom 2. Oktober 2026) */
 .divider {
   display: block;
   width: 100%;
   height: 32px;
   margin: 0 0 30px;
-  color: var(--text);
+  color: var(--hauptlink);
 }
 
 .divider .wave {
@@ -318,7 +318,6 @@ h1 {
   stroke: currentColor;
   stroke-width: 0.8;
   stroke-linecap: round;
-  opacity: 0.5;
   vector-effect: non-scaling-stroke;
 }
 
@@ -328,9 +327,10 @@ h1 {
   text-decoration: none;
 }
 
-/* Navigation oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» (orange), darunter «Das Dritte Rad» (violett),
-   beide als Buttons mit ganz feinem Rahmen. Der aktive (aria-current) ist invers gesetzt: Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite.
-   Im Kopf der Website steht sie im Header-Menü, auf den Alpha-Seiten über dem Titel. */
+/* Hauptlinks oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» und darunter «Das Dritte Rad», beide in derselben Farbe (--hauptlink: hell Anthrazit, dunkel ein helles Sonnengelb)
+   und beide als Buttons mit ganz feinem Rahmen. Der aktive (aria-current) ist invers gesetzt: Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite.
+   Nur «Das Dritte Rad» selbst behält Orange und Violett. Unter der Kopfzeile steht eine feine Linie in derselben Farbe: die Welle (.divider), auf Seiten ohne Menü eine gerade Linie.
+   Im Kopf der Website steht die Navigation im Header-Menü, auf den Alpha-Seiten über dem Titel. */
 .seitenweg {
   display: grid;
   grid-template-columns: max-content;   /* beide Buttons gleich breit, so breit wie der längere */
@@ -339,10 +339,20 @@ h1 {
   margin: 15px 0 0;
 }
 
-.wrap > .seitenweg { margin-bottom: 8px; }
+/* Seiten ohne Menü (Alpha-Texte): die Navigation steht direkt über dem Titel, eine gerade, feine Linie in der Farbe der Hauptlinks trennt sie davon */
+.wrap > .seitenweg { position: relative; margin-bottom: 28px; padding-bottom: 16px; }
+
+.wrap > .seitenweg::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-top: 1px solid var(--hauptlink);
+}
 
 .seitenweg a {
-  --weg: var(--accent);   /* die Farbe des Buttons: Schrift und Rahmen, beim aktiven die Fläche */
+  --weg: var(--hauptlink);   /* die Farbe des Buttons: Schrift und Rahmen, beim aktiven die Fläche */
   padding: 3px 14px;
   border: 1px solid var(--weg);   /* ohne color-mix: voller Rahmen */
   border: 1px solid color-mix(in srgb, var(--weg) 40%, transparent);
@@ -355,8 +365,6 @@ h1 {
   text-decoration: none;
   color: var(--weg);
 }
-
-.seitenweg a + a { --weg: var(--weg-rad); }
 
 .seitenweg a:hover { border-color: var(--weg); }
 
