@@ -53,9 +53,11 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   eine einzige Datei `index.html` mit den Übungen als Daten im Skript (Stand Kartographie v0.5), von Hand gepflegt
   `alpha/drittes-rad/` ist «Das Dritte Rad» (Prototyp, zuunterst in der Übersicht): drei Ringe auf einer Achse (Zeit = sieben Zyklen aus «Zu seiner Zeit», Form = 40 Zeichen aus ORNA,
   Farbe = sieben Themen aus OMNA COLOR) zeigen drei Karten. Jede Karte öffnet ihr Stück im Rad selbst (ganze Strophe, ganze Begegnung, ganze Übung, mit Verknüpfungen in die anderen Bereiche),
-  und in jedem Schritt gibt es vier Wege: zurück ins Rad (es dreht vom offenen Stück aus weiter), Zettelkasten, ORNA, OMNA COLOR. Das Rad selbst trägt keinen Text und keine Zahlen,
+  und in jedem Schritt gibt es vier Wege: zurück ins Rad (es dreht vom offenen Stück aus weiter), Zettelkasten, ORNA, OMNA COLOR. Beim offenen Stück stehen die vier Wege («Wie geht es weiter?») über dem Stück,
+  nicht darunter, damit das Weitergehen vorn liegt (Wunsch vom 2. Oktober 2026). Das Rad selbst trägt keinen Text und keine Zahlen,
   die Schrift ist Instrument Sans wie in den anderen Fassungen. Die Seite ist schlicht (auf Wunsch vom 2. Oktober 2026): Titel, Rad, darunter zwei gleich gestaltete Knöpfe, «Drehen» und «Brücke»
-  (drei Wege, eine Brücke zu schlagen: eine Strophe, die eine ORNA-Person tatsächlich nennt; eine Brücke, die jev beim Bauen als nah bewertet hat; in jedem fünften Fall eine absurde), und ein Satzfeld mit «Karte kopieren».
+  (drei Wege, eine Brücke zu schlagen: eine Strophe, die eine ORNA-Person tatsächlich nennt; eine Brücke, die jev beim Bauen als nah bewertet hat; in jedem fünften Fall eine absurde), dann die drei Karten mit den leisen Knöpfen «Karte kopieren» und «Noch einmal drehen».
+  Mehr Luft zwischen Titel und Rad und zwischen Rad und Knöpfen (Wunsch vom 2. Oktober 2026). Keine Texteingaben: das Satzfeld unter den Karten ist weg, «Karte kopieren» kopiert nur die Karte (Zeit, Form, Farbe).
   Kein Text unter dem Titel, kein «Zurück zum Start», kein Kasten «Fäden»; `faeden()` bleibt in `engine.js` (ein Test deckt sie ab), damit eine ältere Seite im Zwischenspeicher des Browsers keinen Export vermisst.
   Adressen: `?t=<Strophe>~<Konstellation>~<Übung>~<Farbe>~<Zeichen>` (mit `&f=zeit|form|farbe` für das offene Stück) stellt einen Stand wieder her, `?von=<strophe|paar|uebung|person>~<Kennung>` dreht von einem Stück aus weiter;
   «Zurück» im Browser folgt dem Verlauf. Auf den Originalseiten (Strophe, ORNA, OMNA COLOR) erscheint nur mit `?rad=1` am unteren Rand dieselbe Auswahl aus `weiter.js` (Kacheln aus `kacheln.js`).

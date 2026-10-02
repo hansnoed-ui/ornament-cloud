@@ -41,8 +41,9 @@ body { margin: 0; color: var(--ivory); font: 400 16px/1.55 var(--body); padding:
 .crumb a:hover, .crumb a:focus-visible { color: var(--gold-hi); text-decoration: underline; }
 main { max-width: 980px; margin: clamp(16px, 5vh, 56px) auto 0; display: grid; gap: 28px; }
 h1 { font: 500 clamp(1.9rem, 5.5vw, 2.6rem)/1.1 var(--body); margin: 0; color: var(--gold-hi); letter-spacing: -.005em; text-shadow: 0 0 24px #c9a45c44; }
+header { margin-bottom: clamp(14px, 3vh, 28px); }   /* zusätzlich zum Abstand von main: mehr Luft zwischen Titel und Rad */
 .stage { display: grid; gap: 28px; align-items: start; }
-.wheelbox { display: grid; gap: 14px; justify-items: center; }
+.wheelbox { display: grid; gap: 32px; justify-items: center; }   /* Abstand zwischen Rad und den Knöpfen «Drehen» und «Brücke» */
 .wheel { width: min(100%, 480px); aspect-ratio: 1; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: width .3s; }
 .wheel:focus-visible { outline: 1px solid var(--gold-hi); outline-offset: 8px; border-radius: 50%; }
 .wheel svg { width: 100%; height: 100%; display: block; overflow: visible; }
@@ -72,7 +73,7 @@ button { font: 500 1rem var(--body); cursor: pointer; }
 button.go { color: var(--gold-hi); background: transparent; border: 1px solid var(--gold); border-radius: 999px; padding: 11px 34px; letter-spacing: .12em; text-transform: uppercase; font-size: .85rem; box-shadow: 0 0 22px #c9a45c33, inset 0 0 14px #c9a45c22; }
 button.go:hover:not(:disabled), button.go:focus-visible { background: #c9a45c22; }
 button.go:disabled { opacity: .4; cursor: default; }
-button:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visible { outline: 1px solid var(--gold-hi); outline-offset: 3px; }
+button:focus-visible, a:focus-visible { outline: 1px solid var(--gold-hi); outline-offset: 3px; }
 button.quiet, a.quiet { background: none; color: var(--ivory); border: 0; padding: 4px 0; font: 400 .9rem var(--body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 button.quiet:disabled { opacity: .4; cursor: default; }
 .rechts { display: grid; gap: 20px; min-width: 0; }
@@ -98,12 +99,9 @@ button.quiet:disabled { opacity: .4; cursor: default; }
 .form-card > svg { width: 56px; height: 56px; grid-row: 1 / span 4; }
 .form-card > div { display: grid; gap: 5px; }
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; box-shadow: 0 0 8px currentColor; }
-.lese h3, .wege h3 { margin: 0; font: 500 .7rem var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
-.satz { display: grid; gap: 10px; }
-.satz label { font-size: .85rem; color: var(--mute); }
-textarea { width: 100%; min-height: 96px; font: 400 1rem/1.5 var(--body); background: #120f26cc; color: var(--ivory); border: 1px solid var(--line); border-radius: 10px; padding: 12px; resize: vertical; }
+.lese h3, .wege h2 { margin: 0; font: 500 .7rem var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
 .row { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; justify-content: center; }
-.satz .row { justify-content: flex-start; }
+.cards > .row { justify-content: flex-start; }
 /* geöffnetes Stück: ganze Strophe, ganze Konstellation, ganze Übung im Design des Rads */
 .lese { display: grid; gap: 12px; background: linear-gradient(160deg, #1b1738cc, #100d20cc); border: 1px solid var(--gold); border-radius: 14px; padding: 22px 24px; box-shadow: 0 0 30px #c9a45c22; scroll-margin-top: 16px; }
 .lese h2 { font: 500 clamp(1.5rem, 4vw, 1.9rem)/1.15 var(--body); margin: 0; color: var(--ivory); text-wrap: balance; }
@@ -124,7 +122,7 @@ textarea { width: 100%; min-height: 96px; font: 400 1rem/1.5 var(--body); backgr
 .lese .zeichen-paar figure { margin: 0; display: grid; justify-items: center; gap: 4px; font-size: .8rem; color: var(--mute); }
 .lese .zeichen-paar svg { width: 52px; height: 52px; }
 .lese .zeichen-paar .am-rad { color: var(--gold-hi); }
-.wege { display: grid; gap: 10px; }
+.wege { display: grid; gap: 10px; scroll-margin-top: 16px; }
 @media (min-width: 800px) { .stage { grid-template-columns: minmax(0, 480px) minmax(0, 1fr); } .wheelbox { position: sticky; top: 24px; } }
 @media (max-width: 799px) { body.lesend .wheel { width: min(72%, 300px); } .lese { padding: 18px 16px; } }
 </style>
@@ -156,22 +154,18 @@ textarea { width: 100%; min-height: 96px; font: 400 1rem/1.5 var(--body); backgr
       <div class="row"><button class="go" id="go" type="button">Drehen</button><button class="go" id="bridge" type="button" aria-label="Brücke schlagen">Brücke</button></div>
     </section>
     <section class="rechts" id="rechts">
+      <nav class="wege" id="wege" aria-label="Wie geht es weiter?" hidden></nav>
       <div class="cards" id="result" aria-live="polite" hidden>
         <p class="bridge-note" id="note" hidden></p>
         <article class="card" id="cZeit"></article>
         <article class="card form-card" id="cForm"></article>
         <article class="card" id="cFarbe"></article>
-        <div class="satz">
-          <label for="satz">Ein Satz, der Zeit, Form und Farbe verbindet</label>
-          <textarea id="satz" maxlength="400"></textarea>
-          <div class="row">
-            <button class="quiet" id="copy" type="button">Karte kopieren</button>
-            <button class="quiet" id="again" type="button">Noch einmal drehen</button>
-          </div>
+        <div class="row">
+          <button class="quiet" id="copy" type="button">Karte kopieren</button>
+          <button class="quiet" id="again" type="button">Noch einmal drehen</button>
         </div>
       </div>
       <article class="lese" id="lese" hidden></article>
-      <nav class="wege" id="wege" aria-label="Wie geht es weiter?" hidden></nav>
     </section>
   </div>
 </main>
@@ -340,7 +334,7 @@ function zeige({ scroll = false, schreibe: wie = null, fokussiere = false } = {}
   $("result").hidden = !!fokus; $("lese").hidden = !fokus; $("wege").hidden = !fokus;
   if (fokus) lese(); else uebersicht();
   schreibe(wie);
-  const ziel = fokus ? $("lese") : $("result");
+  const ziel = fokus ? $("wege") : $("result");   // beim offenen Stück steht oben der Weg weiter, darunter das Stück
   if (scroll || fokussiere) ziel.scrollIntoView({ behavior: reduce() ? "auto" : "smooth", block: fokus || !matchMedia("(min-width: 800px)").matches ? "start" : "nearest" });
   if (fokussiere && fokus) $("lese").querySelector("h2")?.focus({ preventScroll: true });
 }
@@ -373,10 +367,9 @@ function uebersicht() {
     h("p", { text: e.a }),
     h("span", { class: "go-on", text: "Die ganze Übung" }));
   $("note").hidden = !cur.note; $("note").textContent = cur.note || "";
-  $("satz").value = "";
 }
 
-/** das offene Stück ganz, mit Verknüpfungen in die anderen Bereiche, darunter die vier Wege */
+/** das offene Stück ganz, mit Verknüpfungen in die anderen Bereiche; die vier Wege stehen darüber (#wege), damit das Weitergehen vorn liegt */
 function lese() {
   const { fokus, s, c, e, iz, i_f } = cur, k = [];
   if (fokus === "zeit") {
@@ -407,7 +400,7 @@ function lese() {
       h("p", { class: "meta", text: "Material: " + e.m }), h("p", { class: "text", text: e.a }), h("p", { class: "frage" }, h("small", { text: "Zum Schluss" }), e.f));
   }
   $("lese").replaceChildren(...k);
-  $("wege").replaceChildren(h("h3", { text: "Wie geht es weiter?" }), kachelnBauen(wegeImSpiel(alsZiel(), fokus)));
+  $("wege").replaceChildren(h("h2", { text: "Wie geht es weiter?" }), kachelnBauen(wegeImSpiel(alsZiel(), fokus)));
 }
 
 // ---- Bedienung ----
@@ -430,7 +423,7 @@ geheZu(location.search, { anim: "keine" });
 
 $("copy").addEventListener("click", async () => {
   if (!cur) return;
-  const txt = ["Das Dritte Rad", `Zeit: ${cur.s.n} · ${cur.s.t}`, `Form: ${nameVon(cur.c.artistId)} × ${nameVon(cur.c.theoristId)}`, `Farbe: ${cur.e.n} (${THEMEN[cur.ic][0]})`, "", $("satz").value.trim()].join("\n");
+  const txt = ["Das Dritte Rad", `Zeit: ${cur.s.n} · ${cur.s.t}`, `Form: ${nameVon(cur.c.artistId)} × ${nameVon(cur.c.theoristId)}`, `Farbe: ${cur.e.n} (${THEMEN[cur.ic][0]})`].join("\n");
   try { await navigator.clipboard.writeText(txt); $("copy").textContent = "Kopiert"; setTimeout(() => ($("copy").textContent = "Karte kopieren"), 1800); } catch { $("copy").textContent = "Kopieren nicht möglich"; }
 });
 window.radGeladen = true;   // letzte Zeile: das Rad ist gestartet (siehe Hinweis #ladefehler oben)
