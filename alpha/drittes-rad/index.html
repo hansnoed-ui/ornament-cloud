@@ -5,26 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Das Dritte Rad – Ornament Cloud · Alpha</title>
   <!-- Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14).
-       Das Dritte Rad: Zeit (Zu seiner Zeit), Form (ORNA) und Farbe (OMNA COLOR) drehen auf einer Achse. Jede der drei Karten führt weiter
-       (Strophe, Konstellation, Übung); dort erscheint über ?rad=1 die Auswahl aus weiter.js (zwei Wege und «Zurück zum Start»).
-       Logik und Verknüpfung in engine.js, Daten in daten.js (erzeugt mit tools/build-drittes-rad.ts), ORNA-Daten direkt aus dem Rad.
-       Bewusst dunkel und mystisch gestaltet (auf Wunsch, 2. Oktober 2026); die ruhige Gestaltung nach REGELN §5 gilt für ORNA, nicht für diese Seite.
-       Symbolik in Anlehnung an drei alte Kreise: Tierkreis (Sternenband, zwölf Zeichen, Sonne), Alchemie-Kreis (Schriftring, Dreieck, Siebenstern)
-       und Goethes Farbenkreis von 1809 (Eigenschaften je Farbe).
-       jev (api.typesafe.ai) ist nur über einen eigenen Proxy erreichbar (JEV_URL, zurzeit leer = aus), nie direkt aus dem Browser. -->
+       Das Dritte Rad: Zeit (Zu seiner Zeit), Form (ORNA) und Farbe (OMNA COLOR) drehen auf einer Achse. Das Spiel bleibt auf dieser Seite im Design des Rads:
+       Jede Karte öffnet ihr Stück (ganze Strophe, ganze Konstellation, ganze Übung), und in jedem Schritt gibt es vier Wege: zurück ins Rad, Zettelkasten, ORNA, OMNA COLOR.
+       Auf den Originalseiten erscheint über ?rad=1 dieselbe Auswahl (weiter.js), sie führt ins Rad zurück.
+       Logik in engine.js, Daten in daten.js (erzeugt mit tools/build-drittes-rad.ts), Nähe nach jev in jev.js (erzeugt mit tools/build-jev-bruecken.ts), ORNA-Daten direkt aus dem Rad.
+       Bewusst dunkel und mystisch gestaltet (auf Wunsch, 2. Oktober 2026), das Rad selbst ohne Text und Zahlen, die Schrift schlicht wie in den anderen Fassungen (Instrument Sans);
+       die ruhige Gestaltung nach REGELN §5 gilt für ORNA, nicht für diese Seite.
+       Symbolik in Anlehnung an drei alte Kreise: Tierkreis (Sternenband, zwölf Zeichen, Sonne), Alchemie-Kreis (Zeichen der Elemente, sieben Planetenzeichen, Dreieck, Siebenstern)
+       und Goethes Farbenkreis von 1809 (Farben, Eigenschaften je Farbe auf den Karten).
+       jev wird nur beim Bauen gefragt (jev.js), die Seite ruft keinen Dienst auf und sendet nichts. -->
   <meta name="robots" content="noindex">
-  <meta name="description" content="Das Dritte Rad: Zeit, Form und Farbe drehen gegeneinander, die Treffer führen in Zettelkasten, ORNA und OMNA COLOR.">
+  <meta name="description" content="Das Dritte Rad: Zeit, Form und Farbe drehen gegeneinander, die Treffer öffnen Stücke aus Zettelkasten, ORNA und OMNA COLOR, und von jedem aus geht es weiter.">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
   <style>
 :root {
   --night: #0d0b1a; --gold: #c9a45c; --gold-hi: #f0d78f; --ivory: #ece3c8; --mute: #a89f86; --line: #4a3f26;
-  --display: "Newsreader", Georgia, serif; --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { background: var(--night); }
-body { margin: 0; color: var(--ivory); font: 16px/1.55 var(--body); padding: 24px 16px 56px; min-height: 100vh;
+body { margin: 0; color: var(--ivory); font: 400 16px/1.55 var(--body); padding: 24px 16px 56px; min-height: 100vh;
   background:
     radial-gradient(1.2px 1.2px at 12% 18%, #fff8 50%, transparent 52%), radial-gradient(1px 1px at 78% 12%, #fff7 50%, transparent 52%),
     radial-gradient(1.4px 1.4px at 33% 72%, #fff6 50%, transparent 52%), radial-gradient(1px 1px at 91% 64%, #fff8 50%, transparent 52%),
@@ -36,11 +38,11 @@ body { margin: 0; color: var(--ivory); font: 16px/1.55 var(--body); padding: 24p
 .crumb a { color: inherit; text-decoration: none; }
 .crumb a:hover, .crumb a:focus-visible { color: var(--gold-hi); text-decoration: underline; }
 main { max-width: 980px; margin: clamp(16px, 5vh, 56px) auto 0; display: grid; gap: 28px; }
-h1 { font: italic 400 clamp(2rem, 6vw, 2.8rem)/1.05 var(--display); margin: 0 0 8px; color: var(--gold-hi); letter-spacing: .01em; text-shadow: 0 0 24px #c9a45c55; }
-header p { margin: 0; color: var(--mute); max-width: 58ch; }
+h1 { font: 500 clamp(1.9rem, 5.5vw, 2.6rem)/1.1 var(--body); margin: 0 0 8px; color: var(--gold-hi); letter-spacing: -.005em; text-shadow: 0 0 24px #c9a45c44; }
+header p { margin: 0; color: var(--mute); max-width: 60ch; }
 .stage { display: grid; gap: 28px; align-items: start; }
-.wheelbox { display: grid; gap: 18px; justify-items: center; }
-.wheel { width: min(100%, 480px); aspect-ratio: 1; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.wheelbox { display: grid; gap: 14px; justify-items: center; }
+.wheel { width: min(100%, 480px); aspect-ratio: 1; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: width .3s; }
 .wheel:focus-visible { outline: 1px solid var(--gold-hi); outline-offset: 8px; border-radius: 50%; }
 .wheel svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .halo { animation: halo 120s linear infinite; }
@@ -52,18 +54,16 @@ header p { margin: 0; color: var(--mute); max-width: 58ch; }
 .fine { fill: none; stroke: var(--gold); stroke-width: .25; opacity: .6; }
 .seg { stroke: var(--gold); stroke-width: .3; }
 .zeit-seg { fill: #1a1636e6; }
-.roman { font: italic 500 6.6px var(--display); fill: var(--gold-hi); text-anchor: middle; dominant-baseline: central; }
 .form-disc { fill: #120f26e6; }
 .sym-line { fill: none; stroke: var(--gold-hi); stroke-width: .09; stroke-linecap: round; }
 .sym-dot { fill: var(--gold-hi); }
 .sym-ghost { opacity: .45; }
 .zeichen { fill: none; stroke: var(--gold-hi); stroke-width: .6; stroke-linecap: round; stroke-linejoin: round; }
 .stern { fill: var(--gold-hi); }
-.schrift { font: 500 3.1px var(--display); fill: var(--gold); letter-spacing: .2px; }
-.goethe { font: italic 500 3.5px var(--display); fill: #fff8e6; stroke: #0d0b1a; stroke-width: .5px; paint-order: stroke; letter-spacing: .1px; }
 .siegel { fill: none; stroke: var(--gold-hi); stroke-width: .35; opacity: .5; pointer-events: none; }
 .siegel-scheibe { fill: #0d0b1a; stroke: var(--gold-hi); stroke-width: .5; }
 .spin { transition-property: transform; transition-timing-function: cubic-bezier(.3, .05, .15, 1); }
+.wheel[data-fokus="zeit"] #zeit, .wheel[data-fokus="form"] #form, .wheel[data-fokus="farbe"] #farbe { filter: drop-shadow(0 0 2.4px #f0d78fcc); }   /* der Ring des offenen Stücks leuchtet */
 .tick { fill: var(--gold-hi); filter: drop-shadow(0 0 3px #f0d78f); }
 .core { fill: #0d0b1a; stroke: var(--gold); stroke-width: .5; }
 @media (prefers-reduced-motion: reduce) { .spin { transition-duration: .01s !important; } .halo, .pulse { animation: none; } }
@@ -72,22 +72,23 @@ button.go { color: var(--gold-hi); background: transparent; border: 1px solid va
 button.go:hover:not(:disabled), button.go:focus-visible { background: #c9a45c22; }
 button.go:disabled { opacity: .4; cursor: default; }
 button:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visible { outline: 1px solid var(--gold-hi); outline-offset: 3px; }
-button.quiet { background: none; color: var(--ivory); border: 0; padding: 4px 0; font-size: .9rem; text-decoration: underline; text-underline-offset: 3px; }
+button.quiet, a.quiet { background: none; color: var(--ivory); border: 0; padding: 4px 0; font: 400 .9rem var(--body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 button.quiet:disabled { opacity: .4; cursor: default; }
+.rechts { display: grid; gap: 20px; min-width: 0; }
 .cards { display: grid; gap: 14px; }
-.bridge-note { margin: 0; padding: 10px 14px; border-left: 2px solid var(--gold); color: var(--gold-hi); font: italic 1rem/1.4 var(--display); }
+.bridge-note { margin: 0; padding: 10px 14px; border-left: 2px solid var(--gold); color: var(--gold-hi); font: 400 1rem/1.45 var(--body); }
 .card { position: relative; display: grid; gap: 5px; background: linear-gradient(160deg, #1b1738cc, #100d20cc); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; transition: border-color .25s, box-shadow .25s, transform .25s; }
 .card:hover, .card:focus-within { border-color: var(--gold); box-shadow: 0 0 26px #c9a45c2a; transform: translateY(-1px); }
-.card h2 { font: italic 400 1.45rem/1.2 var(--display); margin: 0; color: var(--ivory); text-wrap: balance; }
+.card h2 { font: 500 1.3rem/1.25 var(--body); margin: 0; color: var(--ivory); text-wrap: balance; }
 .card h2 a { color: inherit; text-decoration: none; }
 .card h2 a::after { content: ""; position: absolute; inset: 0; border-radius: 12px; }   /* ganze Karte ist der Link */
 .card h2 a:focus-visible { outline: none; }
 .card:focus-within { outline: 1px solid var(--gold-hi); outline-offset: 3px; }
-.card small { color: var(--gold); font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; }
+.card small, .lese small.art { color: var(--gold); font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; }
 .card p { margin: 0; max-width: 62ch; color: #d6ccb0; }
-.card .lead { font: italic 1.02rem/1.45 var(--display); color: var(--ivory); }
+.card .lead { font: 500 1rem/1.45 var(--body); color: var(--ivory); }
 .card .meta { color: var(--mute); font-size: .85rem; }
-.card .frage { font: italic .98rem/1.45 var(--display); color: var(--gold-hi); }
+.card .frage { font: 400 .98rem/1.45 var(--body); color: var(--gold-hi); }
 .card .go-on { margin-top: 4px; font-size: .85rem; color: var(--gold-hi); }
 .card .go-on::after { content: " →"; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -97,17 +98,40 @@ button.quiet:disabled { opacity: .4; cursor: default; }
 .form-card > div { display: grid; gap: 5px; }
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; box-shadow: 0 0 8px currentColor; }
 .faeden { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 4px; }
-.faeden h3 { margin: 0; font: 500 .7rem var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+.faeden h3, .lese h3, .wege h3 { margin: 0; font: 500 .7rem var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
 .faeden ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; color: #d6ccb0; font-size: .92rem; }
 .faeden li::before { content: "✦ "; color: var(--gold); }
 .satz { display: grid; gap: 10px; }
 .satz label { font-size: .85rem; color: var(--mute); }
-textarea { width: 100%; min-height: 96px; font: 1rem/1.5 var(--display); background: #120f26cc; color: var(--ivory); border: 1px solid var(--line); border-radius: 10px; padding: 12px; resize: vertical; }
+textarea { width: 100%; min-height: 96px; font: 400 1rem/1.5 var(--body); background: #120f26cc; color: var(--ivory); border: 1px solid var(--line); border-radius: 10px; padding: 12px; resize: vertical; }
 .row { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; justify-content: center; }
 .satz .row { justify-content: flex-start; }
-.jev { font-size: .9rem; color: var(--mute); display: flex; gap: 8px; align-items: flex-start; max-width: 60ch; }
-.jev-out { font-size: .9rem; color: var(--mute); margin: 0; }
+/* geöffnetes Stück: ganze Strophe, ganze Konstellation, ganze Übung im Design des Rads */
+.lese { display: grid; gap: 12px; background: linear-gradient(160deg, #1b1738cc, #100d20cc); border: 1px solid var(--gold); border-radius: 14px; padding: 22px 24px; box-shadow: 0 0 30px #c9a45c22; scroll-margin-top: 16px; }
+.lese h2 { font: 500 clamp(1.5rem, 4vw, 1.9rem)/1.15 var(--body); margin: 0; color: var(--ivory); text-wrap: balance; }
+.lese h2:focus { outline: none; }
+.lese p { margin: 0; max-width: 64ch; }
+.lese .lead { font: 500 1.1rem/1.45 var(--body); color: var(--gold-hi); }
+.lese .text { color: #e4dcc4; line-height: 1.65; }
+.lese .frage { color: var(--gold-hi); }
+.lese .frage small { display: block; color: var(--gold); font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; }
+.lese .meta { color: var(--mute); font-size: .88rem; }
+.lese h3 { margin-top: 8px; }
+.lese ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.lese li { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; color: #d6ccb0; font-size: .95rem; }
+.lese li b { font-weight: 500; color: var(--ivory); }
+.lese li .meta { font-size: .85rem; }
+.lese a { color: var(--gold-hi); text-underline-offset: 3px; }
+.lese .original { font-size: .85rem; }
+.lese .original a { color: var(--mute); }
+.lese .zeichen-paar { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+.lese .zeichen-paar figure { margin: 0; display: grid; justify-items: center; gap: 4px; font-size: .8rem; color: var(--mute); }
+.lese .zeichen-paar svg { width: 52px; height: 52px; }
+.lese .zeichen-paar .am-rad { color: var(--gold-hi); }
+.wege { display: grid; gap: 10px; }
+.wege .start { justify-self: start; }
 @media (min-width: 800px) { .stage { grid-template-columns: minmax(0, 480px) minmax(0, 1fr); } .wheelbox { position: sticky; top: 24px; } }
+@media (max-width: 799px) { body.lesend .wheel { width: min(72%, 300px); } .lese { padding: 18px 16px; } }
 </style>
 </head>
 <body>
@@ -115,7 +139,7 @@ textarea { width: 100%; min-height: 96px; font: 1rem/1.5 var(--display); backgro
 <main>
   <header>
     <h1>Das Dritte Rad</h1>
-    <p>Drei Ringe drehen auf einer Achse: aussen die Zeit, in der Mitte die Form, innen die Farbe. Wenn sie stehen, öffnet jede Karte einen Weg weiter, und du schreibst einen Satz, der alle drei verbindet.</p>
+    <p>Drei Ringe drehen auf einer Achse: aussen die Zeit, in der Mitte die Form, innen die Farbe. Jede Karte öffnet ein Stück aus Zettelkasten, ORNA oder OMNA COLOR, und von dort geht es immer weiter, auch zurück ins Rad.</p>
   </header>
   <div class="stage">
     <section class="wheelbox" aria-label="Rad">
@@ -125,7 +149,7 @@ textarea { width: 100%; min-height: 96px; font: 1rem/1.5 var(--display); backgro
           <circle r="124" fill="url(#glow)"></circle>
           <g id="sternenband" class="halo" style="transform-origin: 0 0"></g>
           <g id="tierkreis" class="halo gegen" style="transform-origin: 0 0"></g>
-          <g id="schriftring" class="halo" style="transform-origin: 0 0"></g>
+          <g id="elemente" class="halo" style="transform-origin: 0 0"></g>
           <g id="zeit" class="spin"></g>
           <g id="form" class="spin"></g>
           <g id="farbe" class="spin"></g>
@@ -134,34 +158,36 @@ textarea { width: 100%; min-height: 96px; font: 1rem/1.5 var(--display); backgro
           <path class="tick" d="M 0 -108 L 3.4 -116 L 0 -124 L -3.4 -116 Z"></path>
         </svg>
       </div>
-      <div class="row"><button class="go" id="go" type="button">Drehen</button><button class="quiet" id="bridge" type="button">Brücke schlagen</button></div>
+      <div class="row"><button class="go" id="go" type="button">Drehen</button><button class="quiet" id="bridge" type="button">Brücke schlagen</button><button class="quiet" id="start" type="button" hidden>↺ Zurück zum Start</button></div>
     </section>
-    <section class="cards" id="result" aria-live="polite" hidden>
-      <p class="bridge-note" id="note" hidden></p>
-      <article class="card" id="cZeit"></article>
-      <article class="card form-card" id="cForm"></article>
-      <article class="card" id="cFarbe"></article>
-      <div class="faeden" id="faeden"></div>
-      <div class="satz">
-        <label for="satz">Ein Satz, der Zeit, Form und Farbe verbindet</label>
-        <textarea id="satz" maxlength="400"></textarea>
-        <div class="row">
-          <button class="quiet" id="copy" type="button">Karte kopieren</button>
-          <button class="quiet" id="again" type="button">Noch einmal drehen</button>
+    <section class="rechts" id="rechts">
+      <div class="cards" id="result" aria-live="polite" hidden>
+        <p class="bridge-note" id="note" hidden></p>
+        <article class="card" id="cZeit"></article>
+        <article class="card form-card" id="cForm"></article>
+        <article class="card" id="cFarbe"></article>
+        <div class="faeden" id="faeden"></div>
+        <div class="satz">
+          <label for="satz">Ein Satz, der Zeit, Form und Farbe verbindet</label>
+          <textarea id="satz" maxlength="400"></textarea>
+          <div class="row">
+            <button class="quiet" id="copy" type="button">Karte kopieren</button>
+            <button class="quiet" id="again" type="button">Noch einmal drehen</button>
+          </div>
         </div>
-        <label class="jev" id="jevbox" hidden><input type="checkbox" id="jev"> <span>Gegenrad fragen (freiwillig): Der Satz und die Strophe werden an jev gesendet, einen Dienst von TypeSafe, und kommen als Zahl und Zyklus zurück. Ohne Haken bleibt alles auf diesem Gerät.</span></label>
-        <p class="jev-out" id="jevout" hidden></p>
       </div>
+      <article class="lese" id="lese" hidden></article>
+      <nav class="wege" id="wege" aria-label="Wie geht es weiter?" hidden></nav>
     </section>
   </div>
 </main>
 
 <script type="module">
 import { symbolMarkup, SYMBOL_COUNT } from "../../portfolio/nebeneinander-nacheinander/js/symbols.js";
-import { ZYKLEN, THEMEN, PERSONEN, nameVon, nrVon, ziehung, bruecke, faeden, adresse, strophe, paar, uebung } from "./engine.js";
+import { ZYKLEN, THEMEN, STROPHEN, PERSONEN, nameVon, nrVon, ziehung, bruecke, faeden, adresse, strophe, paar, uebung, paareVon, wegeImSpiel, rueckkehr } from "./engine.js";
+import { kachelnBauen, KACHELN_CSS } from "./kacheln.js";
 
-const JEV_URL = "";   // Adresse des Proxys zu api.typesafe.ai (der Schlüssel liegt nur dort); leer = Schalter bleibt verborgen
-const GOETHE = ["schön", "edel", "gut", "nützlich", "gemein", "Phantasie", "unnötig"];   // Goethe 1809: Eigenschaften je Farbe (Rot bis Violett); Phantasie steht dort für den blauvioletten Bereich
+const GOETHE = ["schön", "edel", "gut", "nützlich", "gemein", "Phantasie", "unnötig"];   // Goethe 1809: Eigenschaften je Farbe (Rot bis Violett), nur auf den Karten; Phantasie steht für den blauvioletten Bereich
 // Tierkreis: zwölf Zeichen als eigene Linien (kein Schriftzeichen, damit sie überall gleich aussehen)
 const TIERKREIS = [
   "M0,4.5 V-0.5 M0,-0.5 C0,-5 -4.6,-5 -4.6,-1.8 M0,-0.5 C0,-5 4.6,-5 4.6,-1.8",
@@ -177,6 +203,18 @@ const TIERKREIS = [
   "M-4.8,-1.2 L-2.8,-3 L-0.8,-1.2 L1.2,-3 L3.2,-1.2 L4.8,-2.6 M-4.8,3 L-2.8,1.2 L-0.8,3 L1.2,1.2 L3.2,3 L4.8,1.6",
   "M-3.4,-4.6 C-0.6,-2.4 -0.6,2.4 -3.4,4.6 M3.4,-4.6 C0.6,-2.4 0.6,2.4 3.4,4.6 M-4.8,0 H4.8",
 ];
+// Sieben Zeichen für die sieben Zyklen (nach den alten Planetenzeichen der Alchemie), die Zuordnung ist Schmuck
+const PLANETEN = [
+  { d: "M-4,0 A4,4 0 1 0 4,0 A4,4 0 1 0 -4,0", punkt: true },                                                                       // Sonne
+  { d: "M1.2,-4.6 A4.8,4.8 0 1 0 1.2,4.6 A3.6,3.6 0 1 1 1.2,-4.6 Z" },                                                              // Mond
+  { d: "M-2.4,-5.6 A2.4,2.4 0 0 0 2.4,-5.6 M-2,-1.8 A2,2 0 1 0 2,-1.8 A2,2 0 1 0 -2,-1.8 M0,0.2 V5 M-1.9,3.2 H1.9" },               // Merkur
+  { d: "M-2.3,-2.8 A2.3,2.3 0 1 0 2.3,-2.8 A2.3,2.3 0 1 0 -2.3,-2.8 M0,-0.5 V5 M-1.9,2.6 H1.9" },                                  // Venus
+  { d: "M-3.6,1.2 A2.6,2.6 0 1 0 1.6,1.2 A2.6,2.6 0 1 0 -3.6,1.2 M0.84,-0.64 L4.6,-4.4 M1.8,-4.4 H4.6 V-1.6" },                    // Mars
+  { d: "M-4,-3.2 C-2.6,-5.6 1.4,-5 1.4,-2 C1.4,0.2 -2.4,2 -4,3.8 H4.2 M2,-5.2 V4.8" },                                            // Jupiter
+  { d: "M-1.4,-5.2 V3 M-3.6,-3.2 H0.8 M-1.4,-0.4 C0.4,-2.2 3.6,-1.6 3.6,0.8 C3.6,3.2 1.8,4.4 0.4,5.2" },                          // Saturn
+];
+// Die vier Elemente als Dreiecke (Feuer, Wasser, Luft, Erde), sechsmal um den Kreis
+const ELEMENTE = ["M0,-2 L1.8,1.3 H-1.8 Z", "M0,2 L1.8,-1.3 H-1.8 Z", "M0,-2 L1.8,1.3 H-1.8 Z M-1.1,0.1 H1.1", "M0,2 L1.8,-1.3 H-1.8 Z M-1.1,-0.1 H1.1"];
 
 const $ = (id) => document.getElementById(id);
 const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -185,6 +223,7 @@ const sector = (r1, r2, a0, a1) => { const [x1, y1] = pt(r2, a0), [x2, y2] = pt(
 const NZ = ZYKLEN.length, NF = SYMBOL_COUNT, NC = THEMEN.length;
 const SZ = 360 / NZ, SF = 360 / NF, SC = 360 / NC;
 const h = (t, a = {}, ...k) => { const e = document.createElement(t); for (const [n, v] of Object.entries(a)) n === "class" ? (e.className = v) : n === "text" ? (e.textContent = v) : e.setAttribute(n, v); e.append(...k.filter((x) => x != null)); return e; };
+const stil = document.createElement("style"); stil.textContent = KACHELN_CSS; document.head.append(stil);
 
 // ---- Sternenband (Tierkreis-Rand): feste Sterne, damit das Bild bei jedem Laden gleich ist ----
 {
@@ -198,23 +237,17 @@ const h = (t, a = {}, ...k) => { const e = document.createElement(t); for (const
 $("tierkreis").innerHTML = `<circle class="hair" r="112.6"/><circle class="hair" r="100.6"/>` +
   TIERKREIS.map((d, i) => { const [a, b] = pt(100.6, i * 30), [c, e] = pt(112.6, i * 30), [x, y] = pt(106.6, i * 30 + 15);
     return `<path class="fine" d="M${a} ${b}L${c} ${e}"/><g transform="translate(${x} ${y}) rotate(${i * 30 + 15}) scale(.56)"><path class="zeichen" d="${d}"/></g>`; }).join("");
-// ---- Schriftring (Alchemie-Kreis): lateinisch Zeit, Form, Farbe ----
-{
-  const U = 2 * Math.PI * 97.2, T = "SOLVE ET COAGULA · TEMPUS FORMA COLOR · UT SUPRA SIC INFRA · ".repeat(2).trim();
-  $("schriftring").innerHTML = `<circle class="hair" r="100.2"/><circle class="hair" r="94.4"/>
-    <path id="schriftpfad" d="M0 -97.2 A97.2 97.2 0 1 1 -0.01 -97.2" fill="none"/>
-    <text class="schrift"><textPath href="#schriftpfad" textLength="${(U - 2).toFixed(1)}" lengthAdjust="spacing">${T}</textPath></text>`;
-}
-// ---- Zeit: sieben Zyklen ----
-$("zeit").innerHTML = ZYKLEN.map(([r], i) => { const [tx, ty] = pt(82, (i + .5) * SZ); return `<path class="seg zeit-seg" d="${sector(70, 94, i * SZ, (i + 1) * SZ)}"/><text class="roman" x="${tx}" y="${ty}">${r}</text>`; }).join("");
+// ---- Elementenring (Alchemie-Kreis): vierundzwanzig kleine Dreiecke, ohne Schrift ----
+$("elemente").innerHTML = `<circle class="hair" r="100.2"/><circle class="hair" r="94.4"/>` +
+  Array.from({ length: 24 }, (_, i) => { const [x, y] = pt(97.3, (i + .5) * 15); return `<g transform="translate(${x} ${y}) rotate(${(i + .5) * 15}) scale(.78)"><path class="zeichen" style="stroke-width:.5" d="${ELEMENTE[i % 4]}"/></g>`; }).join("");
+// ---- Zeit: sieben Zyklen, jeder mit einem Zeichen ----
+$("zeit").innerHTML = ZYKLEN.map((_, i) => { const [tx, ty] = pt(82, (i + .5) * SZ), g = PLANETEN[i];
+  return `<path class="seg zeit-seg" d="${sector(70, 94, i * SZ, (i + 1) * SZ)}"/><g transform="translate(${tx} ${ty}) rotate(${((i + .5) * SZ).toFixed(2)}) scale(.95)"><path class="zeichen" d="${g.d}"/>${g.punkt ? '<circle class="stern" r=".9"/>' : ""}</g>`; }).join("");
 // ---- Form: vierzig Zeichen ----
 $("form").innerHTML = `<circle class="form-disc" r="68"/><circle class="hair" r="68"/><circle class="hair" r="44"/>` +
   Array.from({ length: NF }, (_, i) => { const [x, y] = pt(56, (i + .5) * SF); return `<g transform="translate(${x} ${y})">${symbolMarkup(i, 4.4)}</g>`; }).join("");
-// ---- Farbe: sieben Themen, dazu Goethes Eigenschaften (1809) entlang der Felder ----
-$("farbe").innerHTML = THEMEN.map(([, c], i) => `<path class="seg" d="${sector(17, 42, i * SC, (i + 1) * SC)}" style="fill:${c}" opacity=".93"/>`).join("") +
-  THEMEN.map((_, i) => { const [x0, y0] = pt(29.6, i * SC + 2), [x1, y1] = pt(29.6, (i + 1) * SC - 2);
-    return `<path id="gp${i}" d="M${x0} ${y0} A29.6 29.6 0 0 1 ${x1} ${y1}" fill="none"/><text class="goethe"><textPath href="#gp${i}" startOffset="50%" text-anchor="middle">${GOETHE[i]}</textPath></text>`; }).join("") +
-  `<circle class="hair" r="42"/><circle class="hair" r="17"/>`;
+// ---- Farbe: sieben Themen ----
+$("farbe").innerHTML = THEMEN.map(([, c], i) => `<path class="seg" d="${sector(17, 42, i * SC, (i + 1) * SC)}" style="fill:${c}" opacity=".93"/>`).join("") + `<circle class="hair" r="42"/><circle class="hair" r="17"/>`;
 // ---- Siegel (steht still über den Ringen): Siebenstern, umgekehrtes Dreieck mit drei Zeichen ----
 {
   const v = (k) => pt(94, k * 360 / 7), P = [0, 2, 4, 6, 1, 3, 5, 0].map((k) => v(k).join(",")), D = [60, 180, 300].map((a) => pt(68, a));
@@ -230,16 +263,20 @@ $("farbe").innerHTML = THEMEN.map(([, c], i) => `<path class="seg" d="${sector(1
 // ---- Sonne in der Mitte (Tierkreis): Strahlen lang und kurz im Wechsel ----
 $("sonne").innerHTML = Array.from({ length: 24 }, (_, i) => { const [a, b] = pt(5.4, i * 15), [c, d] = pt(i % 2 ? 9.6 : 13, i * 15); return `<path class="hair" d="M${a} ${b}L${c} ${d}"/>`; }).join("") + `<circle r="4.2" fill="#f0d78f"/><circle class="hair" r="5.4"/>`;
 
-// ---- Drehen ----
-let busy = false, dz = 0, df = 0, dc = 0, cur = null;
+// ---- Zustand: cur = { iz, i_f, ic, s, c, e, note, fokus } (fokus: zeit | form | farbe = welches Stück gerade ganz offen ist, sonst null) ----
+let busy = false, dz = 0, df = 0, dc = 0, cur = null, timer = 0;
 const m = (x) => ((x % 360) + 360) % 360;
 const land = (deg, idx, step, up) => { const t = -(idx + .2 + Math.random() * .6) * step; return up ? deg + 720 + m(t - deg) : deg - 720 - m(deg - t); };
 const rest = (idx, step) => -(idx + .5) * step;
+const kurz = (ziel, jetzt) => jetzt + m(ziel - jetzt + 180) - 180;   // kürzester Weg zum Ziel
 const apply = (ms) => [["zeit", dz, ms[0]], ["form", df, ms[1]], ["farbe", dc, ms[2]]].forEach(([id, d, t]) => { const g = $(id); g.style.transitionDuration = t + "ms"; g.style.transform = `rotate(${d}deg)`; });
 const sperre = (an) => { busy = an; $("go").disabled = an; $("bridge").disabled = an; };
+const stand = (z, fokus = null) => ({ iz: ZYKLEN.findIndex((x) => x[0] === z.strophe.c), i_f: nrVon(z.person), ic: THEMEN.findIndex((x) => x[0] === z.uebung.t), s: z.strophe, c: z.paar, e: z.uebung, note: z.notiz || "", fokus });
+const alsZiel = () => ({ strophe: cur.s, paar: cur.c, uebung: cur.e, person: PERSONEN[cur.i_f].id });
+const FOKUS = ["zeit", "form", "farbe"];
 
-/** ziel: von bruecke() oder leer (Zufall). Die Karten erscheinen, wenn das Rad steht. */
-function spin(ziel) {
+/** ziel: von bruecke() oder rueckkehr() oder leer (Zufall). Die Karten erscheinen, wenn das Rad steht. */
+function spin(ziel, push = false) {
   if (busy) return; sperre(true);
   const iz = ziel ? ZYKLEN.findIndex((c) => c[0] === ziel.strophe.c) : Math.floor(Math.random() * NZ);
   const i_f = ziel ? nrVon(ziel.person) : Math.floor(Math.random() * NF);
@@ -247,87 +284,163 @@ function spin(ziel) {
   const z = ziel || ziehung(iz, i_f, ic);
   dz = land(dz, iz, SZ, false); df = land(df, i_f, SF, true); dc = land(dc, ic, SC, false);
   apply([3200, 4400, 5600]);
-  $("result").hidden = true;
-  setTimeout(() => { cur = { iz, i_f, ic, s: z.strophe, c: z.paar, e: z.uebung, note: z.notiz || "" }; show(true); sperre(false); }, reduce() ? 50 : 5700);
+  $("result").hidden = true; $("lese").hidden = true; $("wege").hidden = true; $("wheel").dataset.fokus = "";
+  timer = setTimeout(() => { cur = { iz, i_f, ic, s: z.strophe, c: z.paar, e: z.uebung, note: z.notiz || "", fokus: null }; zeige({ scroll: true, schreibe: push ? "push" : "replace" }); sperre(false); }, reduce() ? 50 : 5700);
 }
-const bruecken = () => spin(bruecke());
+const bruecken = () => spin(bruecke(), !!cur);
 
-// ---- Karten ----
+// ---- Adressen: ?t=<Strophe>~<Konstellation>~<Übung>~<Farbe>~<Zeichen> (+ &f=<offenes Stück>) stellt Ringe und Ansicht wieder her; ?von=<Art>~<Nr> dreht von einem Stück aus weiter ----
+function adresseLesen(search) {
+  const q = new URLSearchParams(search), raw = q.get("t"), v = q.get("von");
+  if (raw) {
+    const [sl, pid, eid, ic, i_f] = raw.split("~");
+    const s = strophe(sl), c = paar(pid), e = uebung(eid), iz = s ? ZYKLEN.findIndex((x) => x[0] === s.c) : -1;
+    if (s && c && e && /^\d+$/.test(ic) && /^\d+$/.test(i_f) && +ic < NC && +i_f < NF && THEMEN[+ic][0] === e.t) {
+      const f = q.get("f");
+      return { art: "stand", cur: { iz, i_f: +i_f, ic: +ic, s, c, e, note: "", fokus: FOKUS.includes(f) ? f : null } };
+    }
+  }
+  if (v) { const [art, id] = v.split("~"); return { art: "von", ziel: rueckkehr({ art, slug: id, id }) }; }
+  return { art: "start" };
+}
+const adresseVon = () => "?t=" + encodeURIComponent([cur.s.s, cur.c.id, cur.e.id, cur.ic, cur.i_f].join("~")) + (cur.fokus ? "&f=" + cur.fokus : "");
+function schreibe(wie) { if (!wie) return; try { history[wie === "push" ? "pushState" : "replaceState"](history.state, "", adresseVon()); } catch { /* eingebettete Ansicht */ } }
+
+/** zu einer Adresse im Rad gehen. anim: voll (Drehen), schnell (kurze Drehung), keine. push: neuer Verlaufseintrag */
+function geheZu(search, { anim = "keine", push = false, scroll = false } = {}) {
+  clearTimeout(timer); if (busy) sperre(false);
+  const r = adresseLesen(search);
+  if (r.art === "stand") {
+    cur = r.cur;
+    dz = kurz(rest(cur.iz, SZ), dz); df = kurz(rest(cur.i_f, SF), df); dc = kurz(rest(cur.ic, SC), dc);
+    apply(anim === "keine" || reduce() ? [0, 0, 0] : [1300, 1300, 1300]);
+    zeige({ scroll, schreibe: push ? "push" : null, fokussiere: scroll || anim !== "keine" });   // Fokus auf die Überschrift des offenen Stücks, wenn man sich im Rad bewegt (Link, Zurück), nicht beim ersten Laden
+  } else if (r.art === "von") {
+    if (push) { try { history.pushState(history.state, "", search); } catch { /* eingebettete Ansicht */ } }
+    setTimeout(() => spin(r.ziel || undefined), reduce() ? 0 : 450);
+  } else {
+    nullstellung(push);
+  }
+}
+function nullstellung(push) {
+  cur = null; dz = df = dc = 0; apply(reduce() ? [0, 0, 0] : [1300, 1300, 1300]);
+  for (const id of ["result", "lese", "wege"]) $(id).hidden = true;
+  $("wheel").dataset.fokus = ""; $("start").hidden = true; document.body.classList.remove("lesend");
+  if (push) { try { history.pushState(history.state, "", location.pathname); } catch { /* eingebettete Ansicht */ } }
+}
+
+// ---- Ansichten ----
 const ersterSatz = (t) => t.split(/(?<=[.!?])\s+/)[0];
-function show(scroll) {
+const lnk = (text, url, anim = "schnell") => h("a", { href: url, "data-anim": anim, text });
+const zielZeit = () => adresse.spiel(alsZiel(), "zeit"), zielForm = () => adresse.spiel(alsZiel(), "form"), zielFarbe = () => adresse.spiel(alsZiel(), "farbe");
+
+function zeige({ scroll = false, schreibe: wie = null, fokussiere = false } = {}) {
+  const { fokus } = cur;
+  $("wheel").dataset.fokus = fokus || "";
+  $("start").hidden = false;
+  document.body.classList.toggle("lesend", !!fokus);
+  $("result").hidden = !!fokus; $("lese").hidden = !fokus; $("wege").hidden = !fokus;
+  if (fokus) lese(); else uebersicht();
+  schreibe(wie);
+  const ziel = fokus ? $("lese") : $("result");
+  if (scroll || fokussiere) ziel.scrollIntoView({ behavior: reduce() ? "auto" : "smooth", block: fokus || !matchMedia("(min-width: 800px)").matches ? "start" : "nearest" });
+  if (fokussiere && fokus) $("lese").querySelector("h2")?.focus({ preventScroll: true });
+}
+
+function uebersicht() {
   const { iz, i_f, ic, s, c, e } = cur;
-  try { history.replaceState(history.state, "", "?t=" + encodeURIComponent([s.s, c.id, e.id, ic, i_f].join("~"))); } catch { /* eingebettete Ansicht */ }
-  // Zeit
   const verweise = [...new Set(s.r.map((r) => r.p))];
   $("cZeit").replaceChildren(
     h("small", { text: `Zeit · Zettelkasten · Zyklus ${ZYKLEN[iz][0]} · ${ZYKLEN[iz][1]}` }),
-    h("h2", {}, h("a", { href: adresse.strophe(s), text: `${s.n} · ${s.t}` })),
+    h("h2", {}, h("a", { href: zielZeit(), "data-anim": "keine", text: `${s.n} · ${s.t}` })),
     h("p", { class: "lead", text: s.b }),
     h("p", { class: "meta", text: "Verweise: " + verweise.join(" · ") }),
     h("span", { class: "go-on", text: "Den ganzen Text lesen" }));
-  // Form
   const f = $("cForm");
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.setAttribute("viewBox", "-1.2 -1.2 2.4 2.4"); svg.setAttribute("aria-hidden", "true"); svg.innerHTML = symbolMarkup(i_f, 1);
-  const titel = h("h2", {}, h("a", { href: adresse.paar(c) }));
+  const titel = h("h2", {}, h("a", { href: zielForm(), "data-anim": "keine" }));
   const a = titel.firstChild;
   [c.artistId, c.theoristId].forEach((id, k) => { if (k) a.append(" × "); const n = h("span", { text: nameVon(id) }); if (nrVon(id) === i_f) n.style.color = "var(--gold-hi)"; a.append(n); });
   f.replaceChildren(svg, h("div", {},
     h("small", { text: `Form · ORNA · das Rad zeigt ${PERSONEN[i_f].name}` }), titel,
     h("p", { class: "lead", text: ersterSatz(c.text) }), h("p", { class: "frage", text: c.question }),
-    h("span", { class: "go-on", text: "Die ganze Begegnung in ORNA" })));
-  // Farbe
+    h("span", { class: "go-on", text: "Die ganze Begegnung" })));
   const col = THEMEN[ic][1];
   const dot = h("span", { class: "dot" }); dot.style.background = col; dot.style.color = col;
   $("cFarbe").replaceChildren(
     h("small", { text: "Farbe · OMNA COLOR" }),
-    h("h2", {}, dot, h("a", { href: adresse.uebung(e), text: `${e.n} (${THEMEN[ic][0]})` })),
+    h("h2", {}, dot, h("a", { href: zielFarbe(), "data-anim": "keine", text: `${e.n} (${THEMEN[ic][0]})` })),
     h("div", { class: "chips" }, h("span", { class: "chip", text: `Goethe 1809: ${GOETHE[ic]}` }), h("span", { class: "chip", text: `${e.d} Min.` })),
     h("p", { class: "meta", text: "Material: " + e.m }),
     h("p", { text: e.a }),
-    h("span", { class: "go-on", text: "Die Übung in OMNA COLOR" }));
-  // Fäden
+    h("span", { class: "go-on", text: "Die ganze Übung" }));
   const fz = faeden(s, c, e);
   $("faeden").replaceChildren(h("h3", { text: "Fäden" }),
     fz.length ? h("ul", {}, ...fz.map((t) => h("li", { text: t }))) : h("p", { class: "meta", text: "Kein Faden gefunden: ein Los. Auch das ist eine Brücke." }));
   $("note").hidden = !cur.note; $("note").textContent = cur.note || "";
-  $("satz").value = ""; $("jevout").hidden = true; $("jevbox").hidden = !JEV_URL;
-  $("result").hidden = false;
-  if (scroll) $("result").scrollIntoView({ behavior: reduce() ? "auto" : "smooth", block: matchMedia("(min-width: 800px)").matches ? "nearest" : "start" });
+  $("satz").value = "";
 }
 
-// ---- Rückkehr (Zurück-Taste, Link): ?t=<Strophe>~<Konstellation>~<Übung>~<Farbe>~<Zeichen> stellt Ringe und Karten wieder her ----
-(function restore() {
-  const raw = new URLSearchParams(location.search).get("t"); if (!raw) return;
-  const [sl, pid, eid, ic, i_f] = raw.split("~");
-  const s = strophe(sl), c = paar(pid), e = uebung(eid), iz = s ? ZYKLEN.findIndex((x) => x[0] === s.c) : -1;
-  if (!s || !c || !e || !(ic >= 0 && ic < NC) || !(i_f >= 0 && i_f < NF) || THEMEN[+ic][0] !== e.t) return;
-  cur = { iz, i_f: +i_f, ic: +ic, s, c, e, note: "" };
-  dz = rest(iz, SZ); df = rest(+i_f, SF); dc = rest(+ic, SC);
-  apply([0, 0, 0]); show(false);
-})();
+/** das offene Stück ganz, mit Verknüpfungen in die anderen Bereiche, darunter die vier Wege */
+function lese() {
+  const { fokus, s, c, e, iz, i_f } = cur, k = [];
+  if (fokus === "zeit") {
+    k.push(h("small", { class: "art", text: `Zettelkasten · Zyklus ${ZYKLEN[iz][0]} · ${ZYKLEN[iz][1]}` }), h("h2", { tabindex: "-1", text: `${s.n} · ${s.t}` }), h("p", { class: "lead", text: s.b }));
+    for (const t of s.x.split(/\n{2,}/)) k.push(h("p", { class: "text", text: t }));
+    k.push(h("h3", { text: "Verweise" }), h("ul", {}, ...s.r.map((r) => {
+      const li = h("li", {}, h("b", { text: r.p }), h("span", { class: "meta", text: [r.w, r.d].filter(Boolean).join(" · ") }), h("span", { text: r.n }));
+      if (nrVon(r.s) !== undefined) li.append(lnk("→ in ORNA", adresse.spiel(rueckkehr({ art: "strophe", slug: s.s }, Math.random, { person: r.s }), "form")));
+      return li; })));
+    const an = (s.v || []).map((id) => STROPHEN.find((x) => x.n === id)).filter(Boolean);
+    if (an.length) k.push(h("h3", { text: "Anklänge" }), h("ul", {}, ...an.map((x) => h("li", {}, lnk(`${x.n} · ${x.t}`, adresse.spiel(rueckkehr({ art: "strophe", slug: x.s }), "zeit")), h("span", { class: "meta", text: x.b })))));
+    k.push(h("p", { class: "original" }, h("a", { href: adresse.strophe(s), text: "Im Zettelkasten öffnen ↗" })));
+  } else if (fokus === "form") {
+    const ids = [c.artistId, c.theoristId];
+    k.push(h("small", { class: "art", text: "ORNA · Begegnung" }),
+      h("div", { class: "zeichen-paar" }, ...ids.map((id) => { const fig = h("figure", { class: nrVon(id) === i_f ? "am-rad" : "" }), sv = document.createElementNS("http://www.w3.org/2000/svg", "svg"); sv.setAttribute("viewBox", "-1.2 -1.2 2.4 2.4"); sv.setAttribute("aria-hidden", "true"); sv.innerHTML = symbolMarkup(nrVon(id), 1); fig.append(sv, h("figcaption", { text: nameVon(id) })); return fig; })),
+      h("h2", { tabindex: "-1", text: ids.map(nameVon).join(" × ") }), h("p", { class: "text", text: c.text }), h("p", { class: "frage" }, h("small", { text: "Frage" }), c.question));
+    k.push(h("h3", { text: "Weitere Begegnungen" }), h("ul", {}, ...ids.map((id) => {
+      const li = h("li", {}, h("b", { text: nameVon(id) }));
+      for (const x of paareVon(nrVon(id)).filter((x) => x !== c).slice(0, 4)) li.append(lnk(`mit ${nameVon(x.artistId === id ? x.theoristId : x.artistId)}`, adresse.spiel(rueckkehr({ art: "paar", id: x.id }, Math.random, { person: id }), "form")));
+      return li; })));
+    const imZ = ids.flatMap((id) => STROPHEN.filter((x) => x.r.some((r) => r.s === id)).slice(0, 3).map((x) => [id, x]));
+    if (imZ.length) k.push(h("h3", { text: "Im Zettelkasten" }), h("ul", {}, ...imZ.map(([id, x]) => h("li", {}, h("b", { text: nameVon(id) }), lnk(`${x.n} · ${x.t}`, adresse.spiel(rueckkehr({ art: "strophe", slug: x.s }, Math.random, { person: id, paar: c }), "zeit"))))));
+    k.push(h("p", { class: "original" }, h("a", { href: adresse.paar(c), text: "In ORNA öffnen ↗" })));
+  } else {
+    const col = THEMEN[cur.ic][1], dot = h("span", { class: "dot" }); dot.style.background = col; dot.style.color = col;
+    const chip = (name) => h("span", { class: "chip", text: name });
+    k.push(h("small", { class: "art", text: `OMNA COLOR · Übung ${e.id}` }), h("h2", { tabindex: "-1" }, dot, e.n),
+      h("div", { class: "chips" }, chip(`Thema ${e.t}`), ...(e.nb || []).map((n) => chip(`Nachbar ${n}`)), chip(`${e.d} Min.`), chip(`Goethe 1809: ${GOETHE[cur.ic]}`)),
+      h("p", { class: "meta", text: "Material: " + e.m }), h("p", { class: "text", text: e.a }), h("p", { class: "frage" }, h("small", { text: "Zum Schluss" }), e.f),
+      h("p", { class: "original" }, h("a", { href: adresse.uebung(e), text: "In OMNA COLOR öffnen ↗" })));
+  }
+  $("lese").replaceChildren(...k);
+  $("wege").replaceChildren(h("h3", { text: "Wie geht es weiter?" }), kachelnBauen(wegeImSpiel(alsZiel(), fokus)), h("a", { class: "quiet start", href: adresse.start, text: "↺ Zurück zum Start" }));
+}
 
-$("go").addEventListener("click", () => spin());
+// ---- Bedienung ----
+$("go").addEventListener("click", () => spin(undefined, !!cur));
 $("bridge").addEventListener("click", bruecken);
-$("again").addEventListener("click", () => { window.scrollTo({ top: 0, behavior: reduce() ? "auto" : "smooth" }); spin(); });
-$("wheel").addEventListener("click", () => spin());
-$("wheel").addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); spin(); } });
+$("start").addEventListener("click", () => nullstellung(true));
+$("again").addEventListener("click", () => { window.scrollTo({ top: 0, behavior: reduce() ? "auto" : "smooth" }); spin(undefined, true); });
+$("wheel").addEventListener("click", () => spin(undefined, !!cur));
+$("wheel").addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); spin(undefined, !!cur); } });
+// Links innerhalb der Radseite (Karten, Wege, Verknüpfungen) bleiben im Spiel: kein Neuladen, der Verlauf stimmt
+document.addEventListener("click", (ev) => {
+  const a = ev.target.closest && ev.target.closest("a[href]");
+  if (!a || ev.defaultPrevented || ev.button || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey || a.target === "_blank") return;
+  const u = new URL(a.href, location.href);
+  if (u.origin !== location.origin || u.pathname !== location.pathname) return;
+  ev.preventDefault();
+  geheZu(u.search, { anim: a.dataset.anim || "schnell", push: true, scroll: true });
+});
+addEventListener("popstate", () => geheZu(location.search, { anim: "schnell" }));
+geheZu(location.search, { anim: "keine" });
 
 $("copy").addEventListener("click", async () => {
   if (!cur) return;
   const txt = ["Das Dritte Rad", `Zeit: ${cur.s.n} · ${cur.s.t}`, `Form: ${nameVon(cur.c.artistId)} × ${nameVon(cur.c.theoristId)}`, `Farbe: ${cur.e.n} (${THEMEN[cur.ic][0]})`, "", $("satz").value.trim()].join("\n");
   try { await navigator.clipboard.writeText(txt); $("copy").textContent = "Kopiert"; setTimeout(() => ($("copy").textContent = "Karte kopieren"), 1800); } catch { $("copy").textContent = "Kopieren nicht möglich"; }
-});
-
-// Gegenrad (freiwillig): sendet erst nach Haken und nur beim Verlassen des Satzfelds
-$("satz").addEventListener("change", async () => {
-  if (!JEV_URL || !$("jev").checked || !$("satz").value.trim() || !cur) return;
-  const out = $("jevout"); out.hidden = false; out.textContent = "Gegenrad denkt …";
-  try {
-    const r = await fetch(JEV_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ satz: $("satz").value.trim(), strophe: cur.s.t, text: cur.s.b, zyklen: ZYKLEN.map((x) => x[1]) }) });
-    if (!r.ok) throw 0;
-    const j = await r.json();
-    out.textContent = `Nähe zur Strophe: ${Math.round(j.score * 100)} % · passt am ehesten zu Zyklus ${j.zyklus}`;
-  } catch { out.textContent = "Das Gegenrad ist gerade nicht erreichbar. Dein Satz bleibt, wie er ist."; }
 });
 </script>
 

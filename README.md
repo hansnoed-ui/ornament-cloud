@@ -52,17 +52,26 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `alpha/omna-color/` ist OMNA COLOR (Prototyp, zuunterst in der Übersicht): Farbkreis mit Gegenrad, zieht eine von 180 Gestaltungsübungen;
   eine einzige Datei `index.html` mit den Übungen als Daten im Skript (Stand Kartographie v0.5), von Hand gepflegt
   `alpha/drittes-rad/` ist «Das Dritte Rad» (Prototyp, zuunterst in der Übersicht): drei Ringe auf einer Achse (Zeit = sieben Zyklen aus «Zu seiner Zeit», Form = 40 Zeichen aus ORNA,
-  Farbe = sieben Themen aus OMNA COLOR) zeigen drei Karten, jede führt weiter (ganze Strophe, Konstellation in ORNA, Übung in OMNA COLOR). Dazu «Fäden» (gemeinsame Person oder Wörter),
-  «Brücke schlagen» (eine Strophe, die eine ORNA-Person tatsächlich nennt, mit deren Konstellation und einer nahen Übung; jede fünfte Brücke ist absurd) und ein Satzfeld mit «Karte kopieren».
-  Auf den Zielseiten erscheint nur mit `?rad=1` am unteren Rand die Auswahl aus `weiter.js`: höchstens zwei Wege (je ein Vorschlag in den beiden anderen Bereichen) und immer «Zurück zum Start».
-  Zielseiten laden sie per `import()` (Zettelkasten in `zu-seiner-zeit/zsz.js`, ORNA und OMNA COLOR als Einzeiler am Seitenende); ohne `?rad=` ändert sich dort nichts.
-  Dateien: `index.html` (Rad, von Hand), `engine.js` (Verknüpfung: Wörter auf den Stamm gekürzt, seltene gemeinsame Wörter und gemeinsame Personen zählen, Ziehung unter den besten vier, nie ganz berechenbar),
-  `weiter.js` (Auswahl), `daten.js` (erzeugt mit `node --experimental-strip-types tools/build-drittes-rad.ts` aus `src/data/zu-seiner-zeit.json` und `alpha/omna-color/index.html`; ein Test meldet, wenn sie veraltet ist).
+  Farbe = sieben Themen aus OMNA COLOR) zeigen drei Karten. Jede Karte öffnet ihr Stück im Rad selbst (ganze Strophe, ganze Begegnung, ganze Übung, mit Verknüpfungen in die anderen Bereiche),
+  und in jedem Schritt gibt es vier Wege: zurück ins Rad (es dreht vom offenen Stück aus weiter), Zettelkasten, ORNA, OMNA COLOR; dazu immer «Zurück zum Start». Das Rad selbst trägt keinen Text und keine Zahlen,
+  die Schrift ist Instrument Sans wie in den anderen Fassungen. Dazu «Fäden» (gemeinsame Person, gemeinsame Wörter oder Nähe nach jev), «Brücke schlagen» (drei Wege: eine Strophe, die eine ORNA-Person tatsächlich nennt;
+  eine Brücke, die jev beim Bauen als nah bewertet hat; in jedem fünften Fall eine absurde) und ein Satzfeld mit «Karte kopieren».
+  Adressen: `?t=<Strophe>~<Konstellation>~<Übung>~<Farbe>~<Zeichen>` (mit `&f=zeit|form|farbe` für das offene Stück) stellt einen Stand wieder her, `?von=<strophe|paar|uebung|person>~<Kennung>` dreht von einem Stück aus weiter;
+  «Zurück» im Browser folgt dem Verlauf. Auf den Originalseiten (Strophe, ORNA, OMNA COLOR) erscheint nur mit `?rad=1` am unteren Rand dieselbe Auswahl aus `weiter.js` (Kacheln aus `kacheln.js`).
+  Alle vier Wege führen von dort ins Rad zurück, wo das Spiel weitergeht; die Originale bleiben über «… öffnen ↗» erreichbar.
+  Zielseiten laden `weiter.js` per `import()` (Zettelkasten in `zu-seiner-zeit/zsz.js`, ORNA und OMNA COLOR als Einzeiler am Seitenende); ohne `?rad=` ändert sich dort nichts.
+  Dateien: `index.html` (Rad und Ansichten, von Hand), `engine.js` (Verknüpfung: Wörter auf den Stamm gekürzt, seltene gemeinsame Wörter, gemeinsame Personen und jevs Nähe zählen, Ziehung unter den besten vier, nie ganz berechenbar; Rückkehr ins Rad),
+  `kacheln.js` (die vier Wege als Kacheln, gemeinsam für Rad und Leiste), `weiter.js` (Leiste auf den Originalseiten),
+  `daten.js` (erzeugt mit `node --experimental-strip-types tools/build-drittes-rad.ts` aus `src/data/zu-seiner-zeit.json` und `alpha/omna-color/index.html`; ein Test meldet, wenn sie veraltet ist),
+  `jev.js` (erzeugt mit `tools/build-jev-bruecken.ts`, siehe unten).
   ORNA (Personen, 326 Konstellationen) wird direkt aus `portfolio/nebeneinander-nacheinander/js/data/` gelesen. OMNA COLOR zeigt mit `?u=<Nummer>` eine bestimmte Übung.
-  Symbolik nach drei alten Kreisen, nur als Gestaltung: Tierkreis (Sternenband, zwölf selbst gezeichnete Zeichen, Sonne), Alchemie-Kreis (Schriftring «Solve et coagula · Tempus Forma Color», Siebenstern, Dreieck mit drei Zeichen),
-  Goethes Farbenkreis von 1809 (schön, edel, gut, nützlich, gemein, unnötig je Farbe; «Phantasie» für den Indigo-Sektor ergänzt). Die Seite ist bewusst dunkel und mystisch (REGELN §5 gilt für ORNA).
-  Zählen, Speichern und Senden: nichts. jev (api.typesafe.ai) ist vorbereitet, aber aus: `JEV_URL` im Skript ist leer; er bräuchte einen eigenen Proxy (der Schlüssel darf nie in die Seite),
-  der `{satz, strophe, text, zyklen}` entgegennimmt und `{score, zyklus}` zurückgibt. Der Schalter erscheint erst, wenn `JEV_URL` gesetzt ist, und sendet nur nach Haken.
+  Symbolik nach drei alten Kreisen, nur als Gestaltung und ohne Beschriftung: Tierkreis (Sternenband, zwölf selbst gezeichnete Zeichen, Sonne), Alchemie-Kreis (Zeichen der vier Elemente, sieben Planetenzeichen, Siebenstern, Dreieck mit drei Zeichen),
+  Goethes Farbenkreis von 1809 (schön, edel, gut, nützlich, gemein, unnötig je Farbe, nur auf den Karten; «Phantasie» für den Indigo-Sektor ergänzt). Die Seite ist bewusst dunkel und mystisch (REGELN §5 gilt für ORNA).
+  Zählen, Speichern und Senden: nichts. jev (api.typesafe.ai, ein Beurteiler, kein Texter) wird nur beim Bauen gefragt: `NODE_USE_ENV_PROXY=1 node --experimental-strip-types --no-warnings tools/build-jev-bruecken.ts`
+  lässt ihn einmal bewerten, welche Strophen, Konstellationen und Übungen gedanklich zusammenpassen (rund 560 Aufrufe mit den eigenen Beständen als Text, erster Lauf am 2. Oktober 2026, geschätzt rund 22 Cent),
+  und legt je Stück die acht nächsten Nachbarn in `jev.js` ab. Die Seite ruft jev nie auf und sendet keine Besuchertexte. Ändern sich Strophen, Konstellationen oder Übungen (Anzahl, Reihenfolge),
+  passt die Prüfsumme nicht mehr: ein Test meldet es, bis `jev.js` neu erzeugt ist, und bis dahin bleibt jev in der Seite still. Zugang beim Bauen: ein Proxy, der den Schlüssel einsetzt, oder `TYPESAFE_API_KEY` in der Umgebung (nie in eine Datei);
+  Antworten liegen zwischengespeichert in `$TMPDIR/jev-bruecken-cache.jsonl`, `--probe` zeigt drei Beispiele, ohne etwas zu schreiben.
   Tests: `node --experimental-strip-types --no-warnings --test tests/drittes-rad.test.mjs` und `NODE_PATH=$(npm root -g) node tests/drittes-rad.e2e.mjs`
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)
