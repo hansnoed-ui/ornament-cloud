@@ -13,7 +13,9 @@
        die ruhige Gestaltung nach REGELN §5 gilt für ORNA, nicht für diese Seite.
        Symbolik in Anlehnung an drei alte Kreise: Tierkreis (Sternenband, zwölf Zeichen, Sonne), Alchemie-Kreis (Zeichen der Elemente, sieben Planetenzeichen, Dreieck, Siebenstern)
        und Goethes Farbenkreis von 1809 (Farben, Eigenschaften je Farbe auf den Karten).
-       jev wird nur beim Bauen gefragt (jev.js), die Seite ruft keinen Dienst auf und sendet nichts. -->
+       jev wird nur beim Bauen gefragt (jev.js), die Seite ruft keinen Dienst auf und sendet nichts.
+       Die Importe tragen ?v=<Marke> (gesetzt von tools/build-drittes-rad.ts): GitHub Pages lässt Browser Dateien zehn Minuten ohne Nachfrage behalten, die Marke verhindert, dass nach einer
+       Aktualisierung alte und neue Module gemischt werden und das Rad leer bleibt. Startet das Rad trotzdem nicht, steht ein Hinweis auf der Seite (#ladefehler). -->
   <meta name="robots" content="noindex">
   <meta name="description" content="Das Dritte Rad: Zeit, Form und Farbe drehen gegeneinander, die Treffer öffnen Stücke aus Zettelkasten, ORNA und OMNA COLOR, und von jedem aus geht es weiter.">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
@@ -38,8 +40,7 @@ body { margin: 0; color: var(--ivory); font: 400 16px/1.55 var(--body); padding:
 .crumb a { color: inherit; text-decoration: none; }
 .crumb a:hover, .crumb a:focus-visible { color: var(--gold-hi); text-decoration: underline; }
 main { max-width: 980px; margin: clamp(16px, 5vh, 56px) auto 0; display: grid; gap: 28px; }
-h1 { font: 500 clamp(1.9rem, 5.5vw, 2.6rem)/1.1 var(--body); margin: 0 0 8px; color: var(--gold-hi); letter-spacing: -.005em; text-shadow: 0 0 24px #c9a45c44; }
-header p { margin: 0; color: var(--mute); max-width: 60ch; }
+h1 { font: 500 clamp(1.9rem, 5.5vw, 2.6rem)/1.1 var(--body); margin: 0; color: var(--gold-hi); letter-spacing: -.005em; text-shadow: 0 0 24px #c9a45c44; }
 .stage { display: grid; gap: 28px; align-items: start; }
 .wheelbox { display: grid; gap: 14px; justify-items: center; }
 .wheel { width: min(100%, 480px); aspect-ratio: 1; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: width .3s; }
@@ -97,10 +98,7 @@ button.quiet:disabled { opacity: .4; cursor: default; }
 .form-card > svg { width: 56px; height: 56px; grid-row: 1 / span 4; }
 .form-card > div { display: grid; gap: 5px; }
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; box-shadow: 0 0 8px currentColor; }
-.faeden { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 4px; }
-.faeden h3, .lese h3, .wege h3 { margin: 0; font: 500 .7rem var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
-.faeden ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; color: #d6ccb0; font-size: .92rem; }
-.faeden li::before { content: "✦ "; color: var(--gold); }
+.lese h3, .wege h3 { margin: 0; font: 500 .7rem var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
 .satz { display: grid; gap: 10px; }
 .satz label { font-size: .85rem; color: var(--mute); }
 textarea { width: 100%; min-height: 96px; font: 400 1rem/1.5 var(--body); background: #120f26cc; color: var(--ivory); border: 1px solid var(--line); border-radius: 10px; padding: 12px; resize: vertical; }
@@ -129,7 +127,6 @@ textarea { width: 100%; min-height: 96px; font: 400 1rem/1.5 var(--body); backgr
 .lese .zeichen-paar svg { width: 52px; height: 52px; }
 .lese .zeichen-paar .am-rad { color: var(--gold-hi); }
 .wege { display: grid; gap: 10px; }
-.wege .start { justify-self: start; }
 @media (min-width: 800px) { .stage { grid-template-columns: minmax(0, 480px) minmax(0, 1fr); } .wheelbox { position: sticky; top: 24px; } }
 @media (max-width: 799px) { body.lesend .wheel { width: min(72%, 300px); } .lese { padding: 18px 16px; } }
 </style>
@@ -139,8 +136,8 @@ textarea { width: 100%; min-height: 96px; font: 400 1rem/1.5 var(--body); backgr
 <main>
   <header>
     <h1>Das Dritte Rad</h1>
-    <p>Drei Ringe drehen auf einer Achse: aussen die Zeit, in der Mitte die Form, innen die Farbe. Jede Karte öffnet ein Stück aus Zettelkasten, ORNA oder OMNA COLOR, und von dort geht es immer weiter, auch zurück ins Rad.</p>
   </header>
+  <p class="bridge-note" id="ladefehler" role="alert" hidden>Das Rad konnte nicht geladen werden. Das passiert manchmal kurz nach einer Aktualisierung der Seite. Bitte lade sie neu, am besten mit Strg+Umschalt+R (am Mac Cmd+Umschalt+R).</p>
   <div class="stage">
     <section class="wheelbox" aria-label="Rad">
       <div class="wheel" id="wheel" role="button" tabindex="0" aria-label="Drehen. Aussen Zeit, mittig Form, innen Farbe.">
@@ -158,7 +155,7 @@ textarea { width: 100%; min-height: 96px; font: 400 1rem/1.5 var(--body); backgr
           <path class="tick" d="M 0 -108 L 3.4 -116 L 0 -124 L -3.4 -116 Z"></path>
         </svg>
       </div>
-      <div class="row"><button class="go" id="go" type="button">Drehen</button><button class="quiet" id="bridge" type="button">Brücke schlagen</button><button class="quiet" id="start" type="button" hidden>↺ Zurück zum Start</button></div>
+      <div class="row"><button class="go" id="go" type="button">Drehen</button><button class="go" id="bridge" type="button" aria-label="Brücke schlagen">Brücke</button></div>
     </section>
     <section class="rechts" id="rechts">
       <div class="cards" id="result" aria-live="polite" hidden>
@@ -166,7 +163,6 @@ textarea { width: 100%; min-height: 96px; font: 400 1rem/1.5 var(--body); backgr
         <article class="card" id="cZeit"></article>
         <article class="card form-card" id="cForm"></article>
         <article class="card" id="cFarbe"></article>
-        <div class="faeden" id="faeden"></div>
         <div class="satz">
           <label for="satz">Ein Satz, der Zeit, Form und Farbe verbindet</label>
           <textarea id="satz" maxlength="400"></textarea>
@@ -182,10 +178,15 @@ textarea { width: 100%; min-height: 96px; font: 400 1rem/1.5 var(--body); backgr
   </div>
 </main>
 
+<script>
+// Startet das Rad nicht (etwa weil der Browser kurz nach einer Aktualisierung noch alte Dateien hält), steht das auf der Seite statt eines stillen, leeren Rads.
+// Das Modul meldet sich als letzte Zeile mit window.radGeladen; ohne diese Meldung erscheint der Hinweis kurz nach dem Laden.
+addEventListener("load", function () { setTimeout(function () { if (!window.radGeladen) document.getElementById("ladefehler").hidden = false; }, 2500); });
+</script>
 <script type="module">
 import { symbolMarkup, SYMBOL_COUNT } from "../../portfolio/nebeneinander-nacheinander/js/symbols.js";
-import { ZYKLEN, THEMEN, STROPHEN, PERSONEN, nameVon, nrVon, ziehung, bruecke, faeden, adresse, strophe, paar, uebung, paareVon, wegeImSpiel, rueckkehr } from "./engine.js";
-import { kachelnBauen, KACHELN_CSS } from "./kacheln.js";
+import { ZYKLEN, THEMEN, STROPHEN, PERSONEN, nameVon, nrVon, ziehung, bruecke, adresse, strophe, paar, uebung, paareVon, wegeImSpiel, rueckkehr } from "./engine.js?v=2d916f53";
+import { kachelnBauen, KACHELN_CSS } from "./kacheln.js?v=2d916f53";
 
 const GOETHE = ["schön", "edel", "gut", "nützlich", "gemein", "Phantasie", "unnötig"];   // Goethe 1809: Eigenschaften je Farbe (Rot bis Violett), nur auf den Karten; Phantasie steht für den blauvioletten Bereich
 // Tierkreis: zwölf Zeichen als eigene Linien (kein Schriftzeichen, damit sie überall gleich aussehen)
@@ -325,7 +326,7 @@ function geheZu(search, { anim = "keine", push = false, scroll = false } = {}) {
 function nullstellung(push) {
   cur = null; dz = df = dc = 0; apply(reduce() ? [0, 0, 0] : [1300, 1300, 1300]);
   for (const id of ["result", "lese", "wege"]) $(id).hidden = true;
-  $("wheel").dataset.fokus = ""; $("start").hidden = true; document.body.classList.remove("lesend");
+  $("wheel").dataset.fokus = ""; document.body.classList.remove("lesend");
   if (push) { try { history.pushState(history.state, "", location.pathname); } catch { /* eingebettete Ansicht */ } }
 }
 
@@ -337,7 +338,6 @@ const zielZeit = () => adresse.spiel(alsZiel(), "zeit"), zielForm = () => adress
 function zeige({ scroll = false, schreibe: wie = null, fokussiere = false } = {}) {
   const { fokus } = cur;
   $("wheel").dataset.fokus = fokus || "";
-  $("start").hidden = false;
   document.body.classList.toggle("lesend", !!fokus);
   $("result").hidden = !!fokus; $("lese").hidden = !fokus; $("wege").hidden = !fokus;
   if (fokus) lese(); else uebersicht();
@@ -374,9 +374,6 @@ function uebersicht() {
     h("p", { class: "meta", text: "Material: " + e.m }),
     h("p", { text: e.a }),
     h("span", { class: "go-on", text: "Die ganze Übung" }));
-  const fz = faeden(s, c, e);
-  $("faeden").replaceChildren(h("h3", { text: "Fäden" }),
-    fz.length ? h("ul", {}, ...fz.map((t) => h("li", { text: t }))) : h("p", { class: "meta", text: "Kein Faden gefunden: ein Los. Auch das ist eine Brücke." }));
   $("note").hidden = !cur.note; $("note").textContent = cur.note || "";
   $("satz").value = "";
 }
@@ -415,13 +412,12 @@ function lese() {
       h("p", { class: "original" }, h("a", { href: adresse.uebung(e), text: "In OMNA COLOR öffnen ↗" })));
   }
   $("lese").replaceChildren(...k);
-  $("wege").replaceChildren(h("h3", { text: "Wie geht es weiter?" }), kachelnBauen(wegeImSpiel(alsZiel(), fokus)), h("a", { class: "quiet start", href: adresse.start, text: "↺ Zurück zum Start" }));
+  $("wege").replaceChildren(h("h3", { text: "Wie geht es weiter?" }), kachelnBauen(wegeImSpiel(alsZiel(), fokus)));
 }
 
 // ---- Bedienung ----
 $("go").addEventListener("click", () => spin(undefined, !!cur));
 $("bridge").addEventListener("click", bruecken);
-$("start").addEventListener("click", () => nullstellung(true));
 $("again").addEventListener("click", () => { window.scrollTo({ top: 0, behavior: reduce() ? "auto" : "smooth" }); spin(undefined, true); });
 $("wheel").addEventListener("click", () => spin(undefined, !!cur));
 $("wheel").addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); spin(undefined, !!cur); } });
@@ -442,6 +438,7 @@ $("copy").addEventListener("click", async () => {
   const txt = ["Das Dritte Rad", `Zeit: ${cur.s.n} · ${cur.s.t}`, `Form: ${nameVon(cur.c.artistId)} × ${nameVon(cur.c.theoristId)}`, `Farbe: ${cur.e.n} (${THEMEN[cur.ic][0]})`, "", $("satz").value.trim()].join("\n");
   try { await navigator.clipboard.writeText(txt); $("copy").textContent = "Kopiert"; setTimeout(() => ($("copy").textContent = "Karte kopieren"), 1800); } catch { $("copy").textContent = "Kopieren nicht möglich"; }
 });
+window.radGeladen = true;   // letzte Zeile: das Rad ist gestartet (siehe Hinweis #ladefehler oben)
 </script>
 
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
