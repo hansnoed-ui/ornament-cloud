@@ -36,9 +36,10 @@ body { margin: 0; color: var(--ivory); font: 400 16px/1.55 var(--body); padding:
     radial-gradient(1px 1px at 66% 90%, #fff7 50%, transparent 52%), radial-gradient(1.2px 1.2px at 44% 6%, #fff6 50%, transparent 52%),
     radial-gradient(ellipse 80% 60% at 30% 35%, #2a1f5a 0%, transparent 70%), radial-gradient(ellipse 70% 60% at 80% 80%, #1d2a52 0%, transparent 70%), var(--night);
   background-attachment: fixed; }
-.crumb { max-width: 980px; margin: 0 auto 8px; font-size: .8rem; color: var(--mute); }
-.crumb a { color: inherit; text-decoration: none; }
-.crumb a:hover, .crumb a:focus-visible { color: var(--gold-hi); text-decoration: underline; }
+/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud», darunter «Das Dritte Rad» */
+.seitenweg { max-width: 980px; margin: 0 auto 8px; display: grid; justify-items: start; font-size: .8rem; color: var(--mute); }
+.seitenweg a { padding: 3px 0; color: inherit; text-decoration: none; }
+.seitenweg a:hover, .seitenweg a:focus-visible { color: var(--gold-hi); text-decoration: underline; }
 main { max-width: 980px; margin: clamp(16px, 5vh, 56px) auto 0; display: grid; gap: 28px; }
 h1 { font: 500 clamp(1.9rem, 5.5vw, 2.6rem)/1.1 var(--body); margin: 0; color: var(--gold-hi); letter-spacing: -.005em; text-shadow: 0 0 24px #c9a45c44; }
 header { margin-bottom: clamp(14px, 3vh, 28px); }   /* zusätzlich zum Abstand von main: mehr Luft zwischen Titel und Rad */
@@ -128,7 +129,10 @@ button.quiet:disabled { opacity: .4; cursor: default; }
 </style>
 </head>
 <body>
-<nav class="crumb"><a href="../../">Ornament Cloud</a> · <a href="../">Alpha</a></nav>
+<nav class="seitenweg" aria-label="Ornament Cloud">
+  <a href="../../">Ornament Cloud</a>
+  <a href="./" aria-current="page">Das Dritte Rad</a>
+</nav>
 <main>
   <header>
     <h1>Das Dritte Rad</h1>

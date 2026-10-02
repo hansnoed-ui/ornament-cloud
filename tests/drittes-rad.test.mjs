@@ -370,7 +370,7 @@ test("Seiten: nichts von fremden Servern, Auswahl nur mit ?rad=, kein Eintrag in
   const seite = lies("alpha/drittes-rad/index.html");
   assert.ok(!/(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/.test(seite), "keine fremden Server");
   assert.match(seite, /<meta name="robots" content="noindex/);
-  assert.match(seite, /<a href="\.\.\/\.\.\/">Ornament Cloud<\/a> · <a href="\.\.\/">Alpha<\/a>/);
+  assert.match(seite, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/">Ornament Cloud<\/a>\s*<a href="\.\/" aria-current="page">Das Dritte Rad<\/a>\s*<\/nav>/);
   assert.match(lies("zu-seiner-zeit/zsz.js"), /\[\?&\]rad=\/\.test\(location\.search\)\) import\("\.\.\/alpha\/drittes-rad\/weiter\.js"\)/);
   assert.match(lies("portfolio/nebeneinander-nacheinander/index.html"), /\[\?&\]rad=\/\.test\(location\.search\)\) import\("\.\.\/\.\.\/alpha\/drittes-rad\/weiter\.js"\)/);
   assert.match(lies("alpha/omna-color/index.html"), /\[\?&\]rad=\/\.test\(location\.search\)\) import\("\.\.\/drittes-rad\/weiter\.js"\)/);

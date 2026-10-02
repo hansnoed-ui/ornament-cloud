@@ -9,6 +9,11 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   lädt `giscus.app` erst, wenn der Abschnitt in Sicht kommt, und nur wenn `CATEGORY_ID` eingetragen ist (Einrichten: Kommentar im Skript).
   Einzige Ausnahme von «keine fremden Dateien» (freigegeben am 29. September 2026)
 - `styles.css` – Gestaltung (inkl. automatischem Dark Mode und Farben des Hintergrunds)
+- Navigation oben links (`<nav class="seitenweg">`, REGELN §14, Wunsch vom 2. Oktober 2026): auf jeder Seite «Ornament Cloud» (Startseite) und darunter «Das Dritte Rad» (Start des Rads),
+  an die Stelle der früheren Zeile «Ornament Cloud · Alpha». Das Markup steht in den Seiten von Hand und in den Erzeugern `tools/build-zu-seiner-zeit.ts` und `tools/build-alpha-texte.ts`;
+  die Gestaltung folgt der Seitenfamilie (`styles.css` für Website und Alpha-Texte, `zu-seiner-zeit/zsz.css`, bei OMNA COLOR und beim Dritten Rad in der Seite selbst).
+  Ausgenommen sind ORMA (eigene App), `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`. Neue Seiten brauchen sie ebenfalls; `tests/navigation.test.mjs` meldet fehlende.
+  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 23: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
 - `icons.js` – animierte Schwarz-Weiss-Symbole des Footer-Menüs (Dauer in `PERIOD`)
 - `news/` – News als aufklappbare Einträge; neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
 - `termine/` – Termine als aufklappbare Einträge; neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen
@@ -57,6 +62,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   nicht darunter, damit das Weitergehen vorn liegt (Wunsch vom 2. Oktober 2026). Das Rad selbst trägt keinen Text und keine Zahlen,
   die Schrift ist Instrument Sans wie in den anderen Fassungen. Die Seite ist schlicht (auf Wunsch vom 2. Oktober 2026): Titel, Rad, darunter zwei gleich gestaltete Knöpfe, «Drehen» und «Brücke»
   (drei Wege, eine Brücke zu schlagen: eine Strophe, die eine ORNA-Person tatsächlich nennt; eine Brücke, die jev beim Bauen als nah bewertet hat; in jedem fünften Fall eine absurde), dann die drei Karten mit den leisen Knöpfen «Karte kopieren» und «Noch einmal drehen».
+  Oben links steht die Navigation der ganzen Website («Ornament Cloud», darunter «Das Dritte Rad»); «Das Dritte Rad» setzt das Rad auf den Start zurück, ohne die Seite neu zu laden.
   Mehr Luft zwischen Titel und Rad und zwischen Rad und Knöpfen (Wunsch vom 2. Oktober 2026). Keine Texteingaben: das Satzfeld unter den Karten ist weg, «Karte kopieren» kopiert nur die Karte (Zeit, Form, Farbe).
   Kein Text unter dem Titel, kein «Zurück zum Start», kein Kasten «Fäden»; `faeden()` bleibt in `engine.js` (ein Test deckt sie ab), damit eine ältere Seite im Zwischenspeicher des Browsers keinen Export vermisst.
   Adressen: `?t=<Strophe>~<Konstellation>~<Übung>~<Farbe>~<Zeichen>` (mit `&f=zeit|form|farbe` für das offene Stück) stellt einen Stand wieder her, `?von=<strophe|paar|uebung|person>~<Kennung>` dreht von einem Stück aus weiter;

@@ -64,6 +64,21 @@ main:focus { outline: none; }
 .zsz-nav a { color: var(--grau); text-decoration: none; }
 .zsz-nav a:hover, .zsz-nav a[aria-current="page"] { color: var(--tinte); text-decoration: underline; }
 
+/* Navigation oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud», darunter «Das Dritte Rad».
+   Sie steht über dem Kopf, bündig mit dessen Inhalt. */
+.seitenweg {
+  display: grid;
+  justify-items: start;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 16px var(--rand) 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+}
+.seitenweg a { padding: 3px 0; color: var(--grau); text-decoration: none; }
+.seitenweg a:hover, .seitenweg a:focus-visible { color: var(--tinte); text-decoration: underline; }
+.seitenweg + .zsz-kopf { padding-top: 12px; }
+
 .zsz-fuss {
   max-width: 1120px;
   margin: 120px auto 0;
