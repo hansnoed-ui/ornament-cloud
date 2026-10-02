@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+/* Eingebettet (Startseite von ornament.cloud, <iframe>): senkrechtes Wischen und das Mausrad blättern die Seite weiter, statt hier hängenzubleiben.
+   Gezählt wird die Einbettung nicht (GoatCounter ignoriert Frames). */
+try { if (window.self !== window.top) document.documentElement.classList.add('eingebettet'); } catch (e) { document.documentElement.classList.add('eingebettet'); }
+</script>
 <title>Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre</title>
 <link href="../../vendor/fonts/fonts.css" rel="stylesheet">
 <style>
@@ -24,6 +29,8 @@ body{margin:0;height:100%;overflow:hidden;background:var(--stage);font-family:"I
 #stage{position:relative;width:100%;height:100%;overflow:hidden;background:var(--stage)}
 #stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
 #stage canvas:active{cursor:grabbing}
+.eingebettet #stage canvas{touch-action:pan-y}            /* senkrecht blättert die Seite, waagrecht dreht die Kamera */
+.eingebettet:fullscreen #stage canvas{touch-action:none}
 .vignette{position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(ellipse 75% 70% at 50% 48%, rgba(5,7,10,0) 55%, rgba(5,7,10,.55) 85%, rgba(5,7,10,.9) 100%)}
 .scrim{position:absolute;inset:0;pointer-events:none;
@@ -291,6 +298,7 @@ body.rec #stage canvas{cursor:none}
 
   // ---------- Bedienung ----------
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var eingebettet = document.documentElement.classList.contains('eingebettet');
   var tau = reduce ? 0.3 : 0, playing = !reduce, last = performance.now(), scrubbing = false;
   var yaw = 0, pitch = 0, zoom = 1;
   var bar = document.getElementById('bar'), playBtn = document.getElementById('play');
@@ -334,9 +342,9 @@ body.rec #stage canvas{cursor:none}
   canvas.addEventListener('pointerup', function(){ drag = null; });
   canvas.addEventListener('pointercancel', function(){ drag = null; });
   canvas.addEventListener('dblclick', function(){ yaw = 0; pitch = 0; zoom = 1; });
-  canvas.addEventListener('wheel', function(e){ e.preventDefault(); zoom = Math.max(0.55, Math.min(1.8, zoom*Math.exp(e.deltaY*0.001))); }, { passive:false });
+  canvas.addEventListener('wheel', function(e){ if (eingebettet && !document.fullscreenElement && !e.ctrlKey && !e.metaKey) return; e.preventDefault(); zoom = Math.max(0.55, Math.min(1.8, zoom*Math.exp(e.deltaY*0.001))); }, { passive:false });
   window.addEventListener('keydown', function(e){
-    if (e.target && e.target.tagName === 'INPUT') return;
+    if (eingebettet || (e.target && e.target.tagName === 'INPUT')) return;
     if (e.key === ' ') { e.preventDefault(); setPlaying(!playing); }
     else if (e.key === 'f' || e.key === 'F') { fullBtn.click(); }
     else if (e.key === 't' || e.key === 'T') { txtBtn.click(); }
@@ -534,7 +542,15 @@ body.rec #stage canvas{cursor:none}
 
     if (!scrubbing) scrub.value = Math.round(tau*1000);
     if (composer) composer.render(); else renderer.render(scene, camera);
-    requestAnimationFrame(frame);
+    if (sichtbar) requestAnimationFrame(frame); else laeuft = false;
+  }
+  // Ausserhalb des Sichtbereichs (eingebettet: weggeblättert) rechnet die Szene nicht weiter
+  var sichtbar = true, laeuft = true;
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function(en){
+      sichtbar = en[en.length-1].isIntersecting;
+      if (sichtbar && !laeuft) { laeuft = true; last = performance.now(); requestAnimationFrame(frame); }
+    }).observe(stage);
   }
   requestAnimationFrame(frame);
 })();

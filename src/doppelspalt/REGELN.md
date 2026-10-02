@@ -179,13 +179,27 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   (`orma:`). ORMA verändert keine ORNA-Dateien und keine ORNA-Daten.
 - **Veröffentlichung:** Bis zur Freigabe liegt ORMA als Alpha-Version unter `alpha/orma/`: öffentlich
   erreichbar, nicht in der Sitemap und für Suchmaschinen gesperrt (Entscheid vom 27. September 2026,
-  ersetzt «bleibt auf dem Branch `orma`»). Verlinkt wird ORMA nur von der Startseite (Kategorie «Apps»)
-  und aus den News, stets als Alpha gekennzeichnet (freigegeben am 27. September 2026). Aus den News
-  verlinkt werden ausserdem die Seiten der beiden Grundlagenpapiere `alpha/pruefraster/` und
-  `alpha/verteilapparat/` (freigegeben am 28. September 2026), seit dem 29. September 2026 auch von der
-  Startseite (Kategorie «Prüfraster», als Alpha gekennzeichnet); andere Seiten verlinken den Alpha-Bereich
-  nicht (Ausnahme: die Navigation oben links, siehe unten). Aktualisiert wird die
+  ersetzt «bleibt auf dem Branch `orma`»). Verlinkt wird ORMA nur von der Seite «Apps» (`apps/`) und aus
+  den News, stets als Alpha gekennzeichnet (freigegeben am 27. September 2026; bis zur Neuordnung vom
+  2. Oktober 2026 stand der Link auf der Startseite). Aus den News verlinkt werden ausserdem die Seiten der
+  beiden Grundlagenpapiere `alpha/pruefraster/` und `alpha/verteilapparat/` (freigegeben am
+  28. September 2026). Alle vier Prüfraster verlinkt die Seite «Masterprompts» (`masterprompts/`, als Alpha
+  gekennzeichnet; seit dem 29. September 2026 standen sie auf der Startseite), OMNA COLOR und das Dritte Rad
+  die Seite «Web» (`web/`, als Alpha gekennzeichnet; Wunsch von Christian, 2. Oktober 2026). Die Startseite
+  verlinkt keine Alpha-Seite mehr; andere Seiten verlinken den Alpha-Bereich nicht (Ausnahme: die
+  Navigation oben links, siehe unten). Aktualisiert wird die
   Alpha-Version mit `node --experimental-strip-types tools/build-orma.ts --alpha`.
+- **Menü und Seiten** (Neuordnung vom 2. Oktober 2026, Wunsch von Christian): Die Startseite trägt den Titel
+  «Raumstellen, Zeitobjekte», darunter das Stellenfeld (`werke/stellenfeld/`), in die Seite eingebettet und
+  kein Beitrag; danach die Rückmeldungen. Das Menü in der Kopfzeile hat vier Einträge, nur Text, ohne die
+  kleinen Animationen: «Zettelkasten» (führt direkt in den Zettelkasten, `zu-seiner-zeit/`), «Apps» (`apps/`:
+  ORNA, ORMA), «Masterprompts» (`masterprompts/`: die vier Prüfraster in der bisherigen Reihenfolge) und
+  «Web» (`web/`: OMNA COLOR, Das Dritte Rad). Der Eintrag der aktuellen Seite ist unterstrichen
+  (`aria-current`; auf den ORNA-Seiten «Apps»). News, Termine und Portfolio bleiben unter ihren Adressen und
+  tragen das neue Menü, sind aber nirgends mehr verlinkt (Entscheid vom 2. Oktober 2026). Das eingebettete
+  Stellenfeld ist die drehbare 3D-Ansicht selbst: Ziehen dreht, senkrechtes Wischen und das Mausrad blättern
+  die Seite, Strg + Mausrad zoomt, ausserhalb des Bildes rechnet die Szene nicht, bei «weniger Bewegung»
+  steht sie still. Aufbau und Verhalten halten `tests/struktur.test.mjs` und `tests/struktur.e2e.mjs` fest.
 - **Navigation oben links** (freigegeben am 2. Oktober 2026, Ausnahme zu «andere Seiten verlinken den
   Alpha-Bereich nicht»): Jede Seite trägt oben links «Ornament Cloud» (zur Startseite) und darunter
   «Das Dritte Rad» (zum Start des Rads, `alpha/drittes-rad/`). Das ist der einzige Alpha-Link, den alle

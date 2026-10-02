@@ -1,12 +1,15 @@
 // Erzeugt die Vorschaukarten (Open Graph / X-Karte, 1200 × 630) für das Teilen auf Social Media:
 //   Startseite       ornament.cloud                      → assets/og-ornament-cloud.png
 //   Das Dritte Rad   ornament.cloud/alpha/drittes-rad/   → alpha/drittes-rad/og-drittes-rad.jpg   (JPEG: der Farbverlauf der Seite wird als PNG über 500 KB gross, WhatsApp mag es kleiner)
+// und die Bilder der beiden Karten auf der Seite «Web» (Hochformat 4 : 5, 640 × 800, dunkel in beiden Farbmodi):
+//   OMNA COLOR       das Farbrad aus der Seite           → assets/vorschau-omna-color.jpg
+//   Das Dritte Rad   das Rad aus der Seite               → assets/vorschau-drittes-rad.jpg
 // Startseite: eine Wolke aus den 40 Zeichen von ORNA (direkt aus symbols.js gezeichnet), daneben Name und Satz der Startseite.
 // Das Dritte Rad: das Rad selbst, aus der Seite übernommen, daneben der Titel auf dem nachtblauen Grund der Seite.
 // Die Anordnung der Zeichen ist festgelegt (Zufallsfolge mit Startwert), das Bild wird bei jedem Lauf gleich.
 //
-//   NODE_PATH=$(npm root -g) node tools/start-og.mjs           (beide)
-//   NODE_PATH=$(npm root -g) node tools/start-og.mjs start     (nur die Startseite; «rad» nur das Dritte Rad)
+//   NODE_PATH=$(npm root -g) node tools/start-og.mjs           (alle)
+//   NODE_PATH=$(npm root -g) node tools/start-og.mjs start     (nur die Startseite; «rad» nur die Karte vom Dritten Rad, «vorschau» nur die beiden Bilder der Seite «Web»)
 //
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
@@ -175,6 +178,60 @@ if (!wahl || wahl === "rad") {
   await page.screenshot({ path: out, type: "jpeg", quality: 92 });
   console.log("geschrieben:", out);
   await page.close();
+}
+
+// ---------- Bilder der Seite «Web» ----------
+if (!wahl || wahl === "vorschau") {
+  const hochformat = { viewport: { width: 640, height: 800 }, deviceScaleFactor: 1, reducedMotion: "reduce" };
+  // OMNA COLOR: das Farbrad im dunklen Modus der Seite, sonst nichts
+  {
+    const page = await browser.newPage({ ...hochformat, colorScheme: "dark" });
+    await page.goto(`${base}alpha/omna-color/`);
+    await page.waitForFunction(() => document.querySelectorAll("#outer path.seg").length > 0);
+    await page.addStyleTag({ content: `
+      html, body { margin: 0 !important; padding: 0 !important; }
+      body { display: grid !important; place-items: center; width: 640px; height: 800px; overflow: hidden; }
+      .seitenweg, .controls, #card { display: none !important; }
+      main { margin: 0 !important; display: block !important; }
+      .stage { display: block !important; }
+      .wheel { width: 540px !important; margin: 0 auto; cursor: default; }` });
+    await page.waitForTimeout(300);
+    const out = fileURLToPath(new URL("../assets/vorschau-omna-color.jpg", import.meta.url));
+    await page.screenshot({ path: out, type: "jpeg", quality: 88 });
+    console.log("geschrieben:", out);
+    await page.close();
+  }
+  // Das Dritte Rad: das Rad auf dem nachtblauen Grund der Seite
+  {
+    const page = await browser.newPage({ ...hochformat, colorScheme: "dark" });
+    await page.goto(`${base}alpha/drittes-rad/`);
+    await page.waitForFunction(() => window.radGeladen === true);
+    await page.waitForTimeout(400);
+    await page.evaluate(() => {
+      const rad = document.getElementById("svg").cloneNode(true);
+      rad.removeAttribute("id");
+      document.head.insertAdjacentHTML("beforeend", `<style>
+        html, body { margin: 0 !important; padding: 0 !important; width: 640px; height: 800px; overflow: hidden; }
+        .vorschau { position: relative; width: 640px; height: 800px; overflow: hidden; }
+        .vorschau .rad { position: absolute; left: 20px; top: 100px; width: 600px; height: 600px; }
+        .vorschau .rad svg { width: 100%; height: 100%; display: block; overflow: visible; }
+      </style>`);
+      document.body.className = "";
+      document.body.innerHTML = "";
+      const box = document.createElement("div");
+      box.className = "vorschau";
+      const holder = document.createElement("div");
+      holder.className = "rad";
+      holder.append(rad);
+      box.append(holder);
+      document.body.append(box);
+    });
+    await page.waitForTimeout(300);
+    const out = fileURLToPath(new URL("../assets/vorschau-drittes-rad.jpg", import.meta.url));
+    await page.screenshot({ path: out, type: "jpeg", quality: 88 });
+    console.log("geschrieben:", out);
+    await page.close();
+  }
 }
 
 await browser.close();

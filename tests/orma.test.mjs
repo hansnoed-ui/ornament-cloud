@@ -351,7 +351,7 @@ for (const p of PAPIERE) test(`Alpha, ${p.titel}: eigene Seite mit PDF, Anwendun
   assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630]);
 });
 
-// Startseite und News verlinken ORMA seit dem 27. September 2026 (REGELN §14) und gehören darum nicht mehr hierher.
+// Apps (früher die Startseite) und News verlinken ORMA seit dem 27. September 2026 (REGELN §14) und gehören darum nicht mehr hierher.
 // Eine eigens beauftragte Änderung an ORNA allein ist erlaubt; sie kommt dann als eigener Schritt, nie
 // zusammen mit ORMA-Dateien (seit dem 27. September 2026: Hinweis «Verknüpfung erstellen» in beiden Apps).
 test("Trennung: kein Stand ändert ORMA- und ORNA-Dateien zugleich (gegenüber main)", () => {
@@ -373,12 +373,19 @@ test("Alpha: alpha/orma ist der aktuelle Build (sonst: tools/build-orma.ts --alp
   for (const f of list(out)) assert.ok(readFileSync(join(out, f)).equals(readFileSync(join(alpha, f))), `veraltet: alpha/orma/${f}`);
 });
 
-test("Alpha: nur Startseite und News verlinken den Alpha-Bereich (ORMA und die Grundlagenpapiere), dazu die Navigation oben links; nicht in der Sitemap, noindex", () => {
-  // REGELN §14: Startseite und News → ORMA und die Seiten der beiden Grundlagenpapiere (News seit 28., Startseite seit 29. September 2026).
+test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (ORMA, Prüfraster, OMNA COLOR, Das Dritte Rad), dazu die Navigation oben links; nicht in der Sitemap, noindex", () => {
+  // REGELN §14: News → ORMA und die Seiten der beiden Grundlagenpapiere (seit 28. September 2026).
+  // Neuordnung vom 2. Oktober 2026 (Wunsch von Christian): Die Startseite verlinkt den Alpha-Bereich nicht mehr, die Karten liegen auf den Seiten
+  // «Apps» (ORMA), «Masterprompts» (die vier Prüfraster, in der Reihenfolge der Alpha-Übersicht) und «Web» (OMNA COLOR, Das Dritte Rad).
   // Ausnahme: die Navigation oben links («Ornament Cloud», «Das Dritte Rad», seit 2. Oktober 2026) steht auf jeder Seite; sie wird hier herausgenommen
   // und in tests/navigation.test.mjs geprüft (genau diese zwei Links, auf allen Seiten ausser ORMA und den Werken).
   const papiere = ["/alpha/orma/", "/alpha/pruefraster/", "/alpha/verteilapparat/"];
-  const ziele = { "index.html": papiere, "news/index.html": papiere };
+  const ziele = {
+    "news/index.html": papiere,
+    "apps/index.html": ["/alpha/orma/"],
+    "masterprompts/index.html": ["/alpha/pruefraster/", "/alpha/verteilapparat/", "/alpha/gesellschaftskonzepte/", "/alpha/journalistische-texte/"],
+    "web/index.html": ["/alpha/omna-color/", "/alpha/drittes-rad/"],
+  };
   const allowed = new Set(Object.keys(ziele));
   const gefunden = new Set();
   const found = new Set();
@@ -396,7 +403,7 @@ test("Alpha: nur Startseite und News verlinken den Alpha-Bereich (ORMA und die G
       gefunden.add(`${file} → ${ziele[file].find(z => target.endsWith(z))}`);
     }
   }
-  assert.deepEqual([...found].sort(), [...allowed].sort(), "Startseite und News verlinken ORMA");
+  assert.deepEqual([...found].sort(), [...allowed].sort(), "News, Apps, Masterprompts und Web verlinken den Alpha-Bereich, die Startseite nicht");
   for (const [f, zs] of Object.entries(ziele)) for (const z of zs) assert.ok(gefunden.has(`${f} → ${z}`), `${f} verlinkt ${z} nicht`);
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("/alpha/"));
   for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html", "alpha/omna-color/index.html", "alpha/drittes-rad/index.html"])

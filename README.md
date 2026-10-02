@@ -3,8 +3,21 @@
 Einfache statische Website (reines HTML/CSS), die eine Auswahl meiner Claude-Artefakte präsentiert.
 Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CDNs oder Google geladen.
 
-- `index.html` – Startseite: Apps, Zettelkasten («Zu seiner Zeit»), Prüfraster und Rückmeldungen; jede Karte ist ein `<article class="card">`-Block.
-  Die Artefakte (Videos) stehen seit dem 29. September 2026 unten im Portfolio
+- `index.html` – Startseite (Neuordnung vom 2. Oktober 2026, Wunsch von Christian): der Titel «Raumstellen, Zeitobjekte», darunter der Satz «Beobachtung ist Anlass für Veränderungen in der Realität.»
+  (er steht auf der Vorschaukarte zum Teilen, `tests/teilen.test.mjs` hält beides zusammen) und das Stellenfeld, in die Seite eingebettet (kein Beitrag, keine Karte): ein `<iframe>` auf `werke/stellenfeld/`,
+  dazu die Rückmeldungen. Die Karten (Apps, Zettelkasten, Prüfraster) stehen nicht mehr hier, sondern auf den Seiten des Menüs (siehe unten).
+  Das Stellenfeld ist die 3D-Ansicht selbst, drehbar (Ziehen), Zoom mit Strg + Mausrad; sie lädt `vendor/three/` und rechnet nur, solange sie im Bild ist.
+  Eingebettet erkennt sich `werke/stellenfeld/index.html` an `window.self !== window.top` (Klasse `eingebettet` am `<html>`): senkrechtes Wischen und das Mausrad blättern die Seite weiter
+  (`touch-action: pan-y`, Rad nur mit Strg/Cmd zoomen, keine Tastenkürzel), waagrecht dreht die Kamera; im Vollbild und auf der eigenen Seite gilt wie bisher alles. GoatCounter ignoriert Rahmen, die Einbettung wird nicht gezählt.
+  Bei «weniger Bewegung» steht die Szene still (Standbild, «Abspielen»)
+- Menü (`<nav class="menu">`, Neuordnung vom 2. Oktober 2026): vier Wörter ohne Symbole und Animationen, immer in dieser Reihenfolge: **Zettelkasten** (führt direkt zu `zu-seiner-zeit/`), **Apps** (`apps/`),
+  **Masterprompts** (`masterprompts/`), **Web** (`web/`). Es steht in den Kopfzeilen von Startseite, News, Termine, Portfolio, den drei neuen Seiten und von ORNA (Rad, Feld und die App-Abschriften, dort ausgeblendet);
+  Zettelkasten, Alpha-Seiten, ORMA und Werke haben es nicht. Aktiv ist, wo man ist (`aria-current="page"`; auf ORNA, das unter Apps hängt: `true`), der Eintrag ist dann unterstrichen.
+  Das Markup steht von Hand in den Seiten (`tests/struktur.test.mjs` prüft Reihenfolge, Ziele und aktiven Eintrag auf allen elf Seiten). News, Termine und Portfolio bleiben unter ihren Adressen, tragen das Menü und sind sonst nicht verlinkt (Entscheid von Christian, 2. Oktober 2026)
+- `apps/` – Seite «Apps»: die Beiträge ORNA und ORMA (ORMA als Alpha gekennzeichnet; Vorschau ist das drehende Rad aus `icons.js`), in dieser Reihenfolge
+- `masterprompts/` – Seite «Masterprompts»: die vier Prüfraster als Beiträge, in der Reihenfolge der Alpha-Übersicht: «Nebeneinander und Nacheinander», «Der Verteilapparat des Körpers»,
+  «Prüfraster für Gesellschaftskonzepte», «Prüfraster journalistischer Texte» (alle als Alpha gekennzeichnet, die letzten beiden «In Arbeit»); zwei mal zwei (`.grid--paare`), die Vorschauen sind gezeichnete Vierfelder, Dreieck und Zeilen (SVG in der Seite)
+- `web/` – Seite «Web»: die Beiträge OMNA COLOR und Das Dritte Rad (Alpha, Prototyp). Die Vorschau ist je ein Bild (640 × 800, dunkel): `assets/vorschau-omna-color.jpg` und `assets/vorschau-drittes-rad.jpg`, erzeugt mit `tools/start-og.mjs vorschau`
 - `kommentare.js` – Rückmeldungen auf der Startseite über giscus (GitHub Discussions dieses Repositorys, ohne Prüfung sichtbar);
   lädt `giscus.app` erst, wenn der Abschnitt in Sicht kommt, und nur wenn `CATEGORY_ID` eingetragen ist (Einrichten: Kommentar im Skript).
   Einzige Ausnahme von «keine fremden Dateien» (freigegeben am 29. September 2026)
@@ -18,11 +31,11 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   (`outline` 1 px, Abstand 2 px); keine Fläche, denn schon 5 % Tönung drücken den Kontrast der orangen Schrift unter 4,5. Aktiv ist im Rad «Das Dritte Rad» (`aria-current="page"`), auf der Startseite
   «Ornament Cloud» (`page`), auf allen anderen Seiten ebenfalls «Ornament Cloud» (`true`: man ist in der Website). Beim Darüberfahren wird der Rahmen voll, der Tastaturfokus ist ein Ring von 2 px.
   Ausgenommen sind ORMA (eigene App), `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`. Neue Seiten brauchen sie ebenfalls; `tests/navigation.test.mjs` meldet fehlende.
-  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 25: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
-- `icons.js` – animierte Schwarz-Weiss-Symbole des Footer-Menüs (Dauer in `PERIOD`)
-- `news/` – News als aufklappbare Einträge; neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
-- `termine/` – Termine als aufklappbare Einträge; neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen
-- `portfolio/` – Werkübersicht (Karten); jedes Werk mit eigener Seite, z. B. `portfolio/nebeneinander-nacheinander/`
+  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 26: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
+- `icons.js` – gezeichnete, animierte Schwarz-Weiss-Symbole: die Welle unter dem Kopf, das Rad der Karten ORNA und ORMA, Prozess, Inklusion und Turm (News, Termine); die Symbole des früheren Menüs (reentry, zeit, stellen) sind entfernt (Dauer in `PERIOD`, Marke `?v=` zurzeit 14)
+- `news/` – News als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
+- `termine/` – Termine als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen
+- `portfolio/` – Werkübersicht (Karten), nicht im Menü und nicht verlinkt; jedes Werk mit eigener Seite, z. B. `portfolio/nebeneinander-nacheinander/`
 - `portfolio/nebeneinander-nacheinander/` – interaktives Doppelrad: `index.html`, `rad.css`, `js/wheel.js` (Rad, Geste, Ablauf),
   `js/lib/spin.js` (Drehphysik), `js/lib/geometry.js`, `js/symbols.js` (40 Zeichen), `js/ticker.js` (Laufband mit allen Namen), `js/lib/random.js`, `js/lib/validation.js`;
   Namen der beiden getroffenen Plätze am Rad nach dem Stillstand, Legende aller 40 Namen mit Schalter «Namen zeigen» (REGELN §6a);
@@ -54,7 +67,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `zu-seiner-zeit/` – Hypertext «Zu seiner Zeit» (49 Strophen, Spur, Zufall, Verweise), erzeugt mit
   `node --experimental-strip-types tools/build-zu-seiner-zeit.ts` aus `src/data/zu-seiner-zeit.json` (unverändert) und
   `src/data/zu-seiner-zeit.extra.json`; Gestaltung `zu-seiner-zeit/zsz.css`, Verhalten `zu-seiner-zeit/zsz.js`. Alles Weitere in `src/zu-seiner-zeit/README.md`
-- `alpha/` – Alpha-Versionen, öffentlich erreichbar, nicht in der Sitemap, `noindex`; ORMA und die Seiten der Grundlagenpapiere (`alpha/pruefraster/`, `alpha/verteilapparat/`) sind von Startseite und News verlinkt (REGELN §14, Test prüft das); die Übersicht `alpha/` selbst ist von keiner Seite verlinkt (Entscheid vom 2. Oktober 2026, `tests/navigation.test.mjs` prüft das), nur per Adresse erreichbar;
+- `alpha/` – Alpha-Versionen, öffentlich erreichbar, nicht in der Sitemap, `noindex`; von der Startseite aus ist nichts verlinkt (ausser «Das Dritte Rad» in der Navigation oben links); ORMA, die vier Prüfraster, OMNA COLOR und das Dritte Rad hängen an den Seiten Apps, Masterprompts und Web, ORMA und die Seiten der beiden Grundlagenpapiere (`alpha/pruefraster/`, `alpha/verteilapparat/`) auch an den News (REGELN §14, `tests/orma.test.mjs` prüft das); die Übersicht `alpha/` selbst ist von keiner Seite verlinkt (Entscheid vom 2. Oktober 2026, `tests/navigation.test.mjs` prüft das), nur per Adresse erreichbar;
   `alpha/orma/` ist ORMA, erzeugt mit `node --experimental-strip-types tools/build-orma.ts --alpha`
   Prüfraster in Arbeit (`alpha/gesellschaftskonzepte/`, `alpha/journalistische-texte/`, unten in der Übersicht direkt vor OMNA COLOR, «Zurzeit in Arbeit»):
   Quelle `src/alpha/*.md`, Seiten und Markdown-Download erzeugt mit `node --experimental-strip-types tools/build-alpha-texte.ts`
@@ -110,13 +123,14 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `tools/start-og.mjs` – erzeugt die Vorschaukarten (1200 × 630) für das Teilen auf Social Media (Wunsch vom 2. Oktober 2026): für die Startseite `assets/og-ornament-cloud.png`
   (eine Wolke aus den 40 Zeichen von ORNA neben dem Satz der Startseite) und für das Dritte Rad `alpha/drittes-rad/og-drittes-rad.jpg` (das Rad aus der Seite; JPEG, damit die Datei unter 300 KB bleibt):
   `NODE_PATH=$(npm root -g) node tools/start-og.mjs` (mit `start` oder `rad` nur ein Bild). Die Angaben für Facebook, X, LinkedIn und WhatsApp (`og:*`, `twitter:*`) stehen im Kopf der beiden Seiten,
-  `tests/teilen.test.mjs` prüft sie. Ändert sich der Satz der Startseite oder das Rad, das Bild neu erzeugen.
+  `tests/teilen.test.mjs` prüft sie. Ändert sich der Satz der Startseite oder das Rad, das Bild neu erzeugen. Mit `vorschau` entstehen die beiden Bilder der Seite «Web» (4 : 5, 640 × 800, JPEG).
 - `tests/` – Prüfungen des Rads: `node --experimental-strip-types --no-warnings --test tests/doppelspalt.test.mjs`
-  und im Browser (Playwright): `node tests/doppelspalt.e2e.mjs`
+  und im Browser (Playwright): `node tests/doppelspalt.e2e.mjs`. Aufbau der Website (Menü, Startseite, Apps, Masterprompts, Web, Versionsmarken): `tests/struktur.test.mjs`;
+  im Browser `NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs` (Menü auf allen Breiten, das eingebettete Stellenfeld mit Mausrad, Wischen und Pause ausserhalb des Bildes)
 - `slider.js` – Punkte über einer Wisch-Galerie auf dem Smartphone (Wischen selbst per CSS); zurzeit auf keiner Seite eingebunden,
   alle Raster stehen auf dem Handy untereinander (`.grid--stapel`). Wieder einschalten: `<div class="slider-dots" …>` vor das Raster, `.grid--stapel` weg, Skript einbinden
 - `bg.js` – animierter Hintergrund (Lemniskaten und Schleifen als SVG, Tempo in `CONFIG`); zurzeit auf keiner Seite eingebunden. Wieder einschalten: `<div class="bg" aria-hidden="true"><svg class="bg-field" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg></div>` direkt nach `<body>` und `<script src="bg.js?v=2" defer></script>` vor `</body>`
-- `assets/` – Vorschau-Videos (.mp4/.webm) und Standbilder (.jpg), dazu die Vorschaukarten zum Teilen (`og-*.png`)
+- `assets/` – Vorschau-Videos (.mp4/.webm) und Standbilder (.jpg), dazu die Vorschaukarten zum Teilen (`og-*.png`) und die Bilder der Seite «Web» (`vorschau-*.jpg`)
 - `werke/<name>/index.html` – lokale Kopien der Artefakte
 - `vendor/three/` – three.js r128 (MIT-Lizenz) für die 3D-Artefakte
 - `vendor/goatcounter/count.js` – Zählskript von GoatCounter (ISC-Lizenz), lokal eingebunden auf allen Seiten.
