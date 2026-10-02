@@ -78,11 +78,13 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--c4); outlin
 .idline { color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
 .empty { color: var(--muted); margin: 0; }
 .again { justify-self: start; font: 500 .9rem var(--body); background: none; color: var(--fg); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; cursor: pointer; }
-/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» orange, darunter «Das Dritte Rad» violett */
-.seitenweg { max-width: 980px; margin: 0 auto 8px; display: grid; justify-items: start; }
-.seitenweg a { padding: 3px 0; font: 600 .8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; color: var(--weg-start); }   /* genau so gesetzt wie auf der Website (styles.css) */
+/* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» orange, darunter «Das Dritte Rad» violett, beide als Buttons mit ganz feinem Rahmen, der aktive (aria-current) mit vollem Rahmen und einem zweiten, feinen Ring */
+.seitenweg { max-width: 980px; margin: 0 auto 8px; display: grid; grid-template-columns: max-content; justify-content: start; gap: 8px; }
+.seitenweg a { padding: 3px 14px; border: 1px solid currentColor; border: 1px solid color-mix(in srgb, currentColor 40%, transparent); border-radius: 999px; font: 600 .8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .12em; text-align: center; text-transform: uppercase; text-decoration: none; color: var(--weg-start); }   /* genau so gesetzt wie auf der Website (styles.css) */
 .seitenweg a + a { color: var(--weg-rad); }
-.seitenweg a:hover, .seitenweg a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+.seitenweg a:hover, .seitenweg a[aria-current] { border-color: currentColor; }
+.seitenweg a[aria-current] { outline: 1px solid currentColor; outline-offset: 2px; }
+.seitenweg a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 @media (min-width: 800px) {
   /* Rad und Knopf als eigene Rasterzellen, damit die Karte zur Radmitte ausgerichtet wird und nicht zur Mitte von Rad + Knopf */
   .stage { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); grid-template-areas: "rad karte" "knopf ."; row-gap: 16px; }
@@ -96,7 +98,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--c4); outlin
 </head>
 <body>
 <nav class="seitenweg" aria-label="Ornament Cloud">
-  <a href="../../">Ornament Cloud</a>
+  <a href="../../" aria-current="true">Ornament Cloud</a>
   <a href="../drittes-rad/">Das Dritte Rad</a>
 </nav>
 <main>

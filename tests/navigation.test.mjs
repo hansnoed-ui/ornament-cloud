@@ -1,5 +1,6 @@
 // Navigation oben links (Wunsch von Christian, freigegeben am 2. Oktober 2026, REGELN §14):
-// Jede Seite trägt oben links «Ornament Cloud» (zur Startseite) und darunter «Das Dritte Rad» (zum Start des Rads).
+// Jede Seite trägt oben links «Ornament Cloud» (zur Startseite) und darunter «Das Dritte Rad» (zum Start des Rads), beide als Buttons mit ganz
+// feinem Rahmen; der aktive (aria-current) ist markiert: «Das Dritte Rad» im Rad, «Ornament Cloud» auf allen anderen Seiten.
 // Ausgenommen sind ORMA (eigene App, Trennung nach §14), die drei Werke im Vollbild und die Weiterleitung auf die frühere Adresse von ORNA.
 //   node --experimental-strip-types --no-warnings --test tests/navigation.test.mjs
 import test from "node:test";
@@ -26,14 +27,16 @@ test("Navigation: jede Seite trägt oben links genau «Ornament Cloud» und «Da
     const html = lies(p);
     const navs = [...html.matchAll(/<nav class="seitenweg" aria-label="Ornament Cloud">([\s\S]*?)<\/nav>/g)];
     assert.equal(navs.length, 1, `${p}: genau eine Navigation oben links`);
-    const links = [...navs[0][1].matchAll(/<a href="([^"]+)"( aria-current="page")?>([^<]+)<\/a>/g)];
+    const links = [...navs[0][1].matchAll(/<a href="([^"]+)"(?: aria-current="(page|true)")?>([^<]+)<\/a>/g)];
     assert.deepEqual(links.map((l) => l[3]), ["Ornament Cloud", "Das Dritte Rad"], `${p}: zwei Links in dieser Reihenfolge`);
     assert.equal(navs[0][1].replace(/<a [^>]*>[^<]*<\/a>/g, "").trim(), "", `${p}: sonst nichts in der Navigation`);
     const von = new URL(p, "http://x/");
     const ziel = links.map((l) => new URL(l[1], von).pathname);
     assert.deepEqual(ziel, ["/", "/alpha/drittes-rad/"], `${p}: Startseite und Start des Rads`);
     for (const z of ziel) assert.ok(existsSync(new URL(z.slice(1) + "index.html", root)), `${p}: ${z} gibt es`);
-    assert.deepEqual(links.map((l) => !!l[2]), [p === "index.html", p === "alpha/drittes-rad/index.html"], `${p}: aria-current nur auf der eigenen Seite`);
+    // aktiv ist genau ein Link: im Rad «Das Dritte Rad», sonst «Ornament Cloud»; «page», wo der Link auf die Seite selbst zeigt (Startseite, Start des Rads), sonst «true»
+    const imRad = p.startsWith("alpha/drittes-rad/");
+    assert.deepEqual(links.map((l) => l[2] ?? null), imRad ? [null, "page"] : [p === "index.html" ? "page" : "true", null], `${p}: aria-current genau auf dem aktiven Link`);
     const ort = html.indexOf('<nav class="seitenweg"');
     const inhalt = ["<main", "<h1"].map((t) => html.indexOf(t)).filter((i) => i >= 0);          // nicht jede Seite hat eine h1 (OMNA COLOR)
     assert.ok(inhalt.length > 0 && ort > html.indexOf("<body") && inhalt.every((i) => ort < i), `${p}: die Navigation steht ganz oben, vor Titel und Inhalt`);
@@ -78,6 +81,48 @@ test("Navigation: die beiden Links sind farblich getrennt (Orange, Violett) und 
   assert.deepEqual([...sammlung("--weg-start")].sort(), ["#c2410c", "#f08a5d"], "Orange: hell #c2410c, dunkel #f08a5d (auf der Website der Akzent)");
 });
 
+/** Regeln eines Stylesheets: Selektor (Leerraum vereinheitlicht) → Deklarationen (Eigenschaft → alle Werte in der Reihenfolge, in der sie stehen) */
+const regeln = (css) => {
+  const aus = new Map();
+  for (const [, kopf, rumpf] of css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    for (const sel of kopf.split(",").map((t) => t.trim().replace(/\s+/g, " ")).filter(Boolean)) {
+      const d = aus.get(sel) ?? new Map();
+      for (const [, name, wert] of rumpf.matchAll(/([a-z-]+)\s*:\s*([^;]+);?/g)) d.set(name, [...(d.get(name) ?? []), wert.trim().replace(/\s+/g, " ")]);
+      aus.set(sel, d);
+    }
+  }
+  return aus;
+};
+
+test("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen (1 px, blass), der aktive hat den vollen Rahmen und einen zweiten feinen Ring, überall gleich gesetzt (Wunsch von Christian, 2. Oktober 2026)", () => {
+  let gesehen = 0;
+  for (const p of seiten) {
+    const r = regeln(cssVon(p)), w = (sel, name) => r.get(sel)?.get(name) ?? [];
+    const was = (t) => `${p}: ${t}`;
+    // der Button: Polster, Rahmen 1 px (blass, dazu ein voller Rahmen für Browser ohne color-mix), Pillenform, Text in der Mitte
+    assert.deepEqual(w(".seitenweg a", "padding"), ["3px 14px"], was("Polster 3px 14px"));
+    assert.deepEqual(w(".seitenweg a", "border"), ["1px solid currentColor", "1px solid color-mix(in srgb, currentColor 40%, transparent)"], was("Rahmen 1 px, blass (40 %), davor der volle Rahmen als Ersatz"));
+    assert.deepEqual(w(".seitenweg a", "border-radius"), ["999px"], was("Pillenform"));
+    assert.deepEqual(w(".seitenweg a", "text-align"), ["center"], was("Text in der Mitte der gleich breiten Buttons"));
+    // beide gleich breit (so breit wie der längere), linksbündig, mit Abstand
+    assert.deepEqual(w(".seitenweg", "grid-template-columns"), ["max-content"], was("beide Buttons gleich breit"));
+    assert.deepEqual(w(".seitenweg", "justify-content"), ["start"], was("linksbündig"));
+    assert.deepEqual(w(".seitenweg", "gap"), ["8px"], was("Abstand zwischen den Buttons (Platz für den Ring des aktiven)"));
+    // aktiv (aria-current): voller Rahmen und ein zweiter feiner Ring ausserhalb, keine Fläche (schon 5 % Tönung drücken den Kontrast der orangen Schrift auf OMNA COLOR unter 4,5)
+    assert.deepEqual(w(".seitenweg a[aria-current]", "border-color"), ["currentColor"], was("aktiv: voller Rahmen"));
+    assert.deepEqual(w(".seitenweg a[aria-current]", "outline"), ["1px solid currentColor"], was("aktiv: zweiter feiner Ring"));
+    assert.deepEqual(w(".seitenweg a[aria-current]", "outline-offset"), ["2px"], was("aktiv: Ring mit Abstand zum Rahmen"));
+    for (const sel of [".seitenweg a", ".seitenweg a[aria-current]", ".seitenweg a:hover"]) assert.equal(w(sel, "background").length + w(sel, "background-color").length, 0, was(`${sel}: keine Fläche`));
+    assert.deepEqual(w(".seitenweg a:hover", "border-color"), ["currentColor"], was("beim Darüberfahren: voller Rahmen"));
+    assert.deepEqual(w(".seitenweg a:focus-visible", "outline"), ["2px solid currentColor"], was("Tastaturfokus sichtbar"));
+    assert.deepEqual(w(".seitenweg a:focus-visible", "outline-offset"), ["2px"], was("Tastaturfokus mit Abstand"));
+    // keine Unterstreichung mehr beim Darüberfahren (es sind Buttons)
+    assert.equal(w(".seitenweg a:hover", "text-decoration").length + w(".seitenweg a:focus-visible", "text-decoration").length, 0, was("keine Unterstreichung bei Hover und Fokus"));
+    gesehen += 1;
+  }
+  assert.ok(gesehen >= 200, `alle Seiten geprüft (${gesehen})`);
+});
+
 test("Navigation: ORMA, die Werke und die Weiterleitung bleiben ohne (Ausnahmen sind benannt und vorhanden)", () => {
   for (const [name, re] of AUSNAHMEN) {
     const treffer = alle.filter((p) => re.test(p));
@@ -99,5 +144,5 @@ test("Navigation: keine Seite verlinkt die Alpha-Übersicht (alpha/), sie ist nu
 test("Navigation: REGELN §14 nennt die Freigabe vom 2. Oktober 2026 und die Ausnahmen", () => {
   const regeln = lies("src/doppelspalt/REGELN.md");
   assert.match(regeln, /\*\*Navigation oben links\*\* \(freigegeben am 2\. Oktober 2026/);
-  for (const wort of ["«Ornament Cloud»", "«Das Dritte Rad»", "Alpha-Übersicht", "ORMA", "werke/", "tests/navigation.test.mjs"]) assert.ok(regeln.split("**Navigation oben links**")[1].includes(wort), `§14 nennt ${wort}`);
+  for (const wort of ["«Ornament Cloud»", "«Das Dritte Rad»", "Alpha-Übersicht", "ORMA", "werke/", "Buttons", "aria-current", "tests/navigation.test.mjs"]) assert.ok(regeln.split("**Navigation oben links**")[1].includes(wort), `§14 nennt ${wort}`);
 });

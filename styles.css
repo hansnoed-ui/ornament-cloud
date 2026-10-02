@@ -288,7 +288,7 @@ h1 {
   margin: 0;
 }
 
-/* Header-Menü: Name links, drei animierte Symbole rechts */
+/* Kopfzeile: Navigation links, Hauptmenü rechts */
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -321,21 +321,28 @@ h1 {
   text-decoration: none;
 }
 
-/* Navigation oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» (orange), darunter «Das Dritte Rad» (violett).
+/* Navigation oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» (orange), darunter «Das Dritte Rad» (violett),
+   beide als Buttons mit ganz feinem Rahmen. Der aktive (aria-current) trägt den vollen Rahmen und einen zweiten, feinen Ring, der andere einen blassen Rahmen.
    Im Kopf der Website steht sie im Header-Menü, auf den Alpha-Seiten über dem Titel. */
 .seitenweg {
   display: grid;
-  justify-items: start;
+  grid-template-columns: max-content;   /* beide Buttons gleich breit, so breit wie der längere */
+  justify-content: start;
+  gap: 8px;
   margin: 15px 0 0;
 }
 
 .wrap > .seitenweg { margin-bottom: 8px; }
 
 .seitenweg a {
-  padding: 3px 0;
+  padding: 3px 14px;
+  border: 1px solid currentColor;   /* ohne color-mix: voller Rahmen */
+  border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+  border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.12em;
+  text-align: center;
   text-transform: uppercase;
   text-decoration: none;
   color: var(--accent);
@@ -344,85 +351,50 @@ h1 {
 .seitenweg a + a { color: var(--weg-rad); }
 
 .seitenweg a:hover,
-.seitenweg a:focus-visible {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.seitenweg a[aria-current] { border-color: currentColor; }
+
+/* aktiv: voller Rahmen und ein zweiter feiner Ring ausserhalb. Keine Tönung: schon 5 % drücken den Kontrast der orangen Schrift auf OMNA COLOR unter 4,5 */
+.seitenweg a[aria-current] {
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
 }
 
+.seitenweg a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Hauptmenü (Neuordnung vom 2. Oktober 2026): vier Wörter in einer Reihe, ohne Symbole und Animationen.
+   Die Seite, auf der man ist, trägt aria-current und steht unterstrichen; auf den Seiten darunter (z. B. ORNA unter «Apps») ebenfalls. */
 .menu {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));   /* immer gleich breite Spalten */
-  gap: 24px;
-  width: min(100%, 680px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 2px 28px;
+  margin-top: 15px;   /* auf der Höhe des ersten Buttons links */
 }
 
 .menu-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
+  padding: 2px 0;
+  border-bottom: 1px solid transparent;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  line-height: 1.45;
   color: var(--text);
   text-decoration: none;
+  transition: border-color 0.2s ease;
 }
 
-.menu-icon {
-  display: block;
-  flex: 0 0 72px;
-  width: 72px;
-  aspect-ratio: 1 / 1;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  transition: border-color 0.2s ease, background-color 0.25s ease, color 0.25s ease;
-}
-
-/* Invers-Effekt: beim Überfahren helle Linien auf dunkler Fläche */
-.menu-item:hover .menu-icon,
-.menu-item:focus-visible .menu-icon {
-  background: var(--text);
-  color: var(--surface);
-}
-
-.menu-item:hover .menu-icon .werk,
-.menu-item:focus-visible .menu-icon .werk {
-  fill: var(--text);
-}
-
-.menu-item:hover .menu-icon,
-.menu-item:focus-visible .menu-icon,
-.menu-item[aria-current] .menu-icon {
-  border-color: var(--text);
-}
+.menu-item:hover,
+.menu-item:focus-visible,
+.menu-item[aria-current] { border-bottom-color: currentColor; }
 
 .menu-item:focus-visible {
-  outline: none;
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }
 
-.menu-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.menu-title {
-  font-family: var(--serif);
-  font-size: 1.05rem;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
-  hyphens: auto;
-}
-
-.menu-sub {
-  font-size: 0.75rem;
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-/* Linien der Symbole: Breite in Bildschirmpixeln, unabhängig von der Grösse */
-.menu-icon path,
-.menu-icon circle,
-.menu-icon rect,
+/* Linien der gezeichneten Vorschauen: Breite in Bildschirmpixeln, unabhängig von der Grösse */
 .post-anim path,
 .post-anim circle {
   fill: none;
@@ -432,25 +404,17 @@ h1 {
   vector-effect: non-scaling-stroke;
 }
 
-.menu-icon .bold { stroke-width: 1.6; }
-.menu-icon .mid { stroke-width: 1; }
-.menu-icon .thin { stroke-width: 0.7; }
-.menu-icon .dash { stroke-dasharray: 2 3; }
-.menu-icon .fill { fill: currentColor; stroke: none; }
-.menu-icon .hatch { fill: currentColor; fill-opacity: 0.12; stroke: none; }
-.menu-icon .werk { fill: var(--surface); stroke-width: 1.6; }
-
-/* Schmale Bildschirme: Name oben, darunter drei gleich breite Spalten */
+/* Schmale Bildschirme: Navigation oben, darunter das Menü (auf dem Handy zwei mal zwei) */
 @media (max-width: 760px) {
   .topbar { flex-direction: column; gap: 16px; margin-bottom: 16px; }
   .divider { margin-bottom: 28px; }
   .brand { margin-top: 0; }
   .seitenweg { margin-top: 0; }
-  .menu { width: 100%; gap: 12px; }
-  .menu-item { flex-direction: column; align-items: stretch; gap: 8px; }
-  .menu-icon { flex: none; width: 100%; }
-  .menu-title { font-size: 0.95rem; }
-  .menu-sub { font-size: 0.7rem; white-space: normal; }
+  .menu { justify-content: flex-start; margin-top: 0; }
+}
+
+@media (max-width: 520px) {
+  .menu { display: grid; grid-template-columns: repeat(2, max-content); gap: 4px 32px; }
 }
 
 /* News-Einträge */
@@ -677,6 +641,11 @@ h1 {
   .post-body h2 { font-size: 1.4rem; }
 }
 
+/* Vier Karten als zwei mal zwei (Masterprompts), jede so breit wie in einem Raster mit drei Spalten; auf dem Handy bleibt .grid--stapel untereinander */
+@media (min-width: 641px) {
+  .grid--paare { grid-template-columns: repeat(2, minmax(0, 330px)); }
+}
+
 /* Smartphone: Artefakte als Wisch-Galerie, immer eines auf einmal */
 .slider-dots {
   display: none;
@@ -846,6 +815,33 @@ h1 {
 
 @media (max-width: 760px) {
   .work { grid-template-columns: 1fr; gap: 24px; padding: 20px; }
+}
+
+
+/* Startseite: das Stellenfeld (werke/stellenfeld/), unter dem Titel in die Seite eingebettet, kein Beitrag und keine Karte.
+   Die Bühne bleibt in beiden Farbmodi dunkel, sie ist Teil des Werks. */
+.stellenfeld {
+  margin: 0 0 56px;
+}
+
+.stellenfeld iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: var(--radius);
+  background: #05070a;
+}
+
+.stellenfeld figcaption {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .stellenfeld { margin-bottom: 40px; }
+  .stellenfeld iframe { aspect-ratio: 4 / 5; }
 }
 
 

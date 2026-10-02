@@ -166,7 +166,7 @@ function page(m: M, o: { depth: number; title: string; description: string; body
 <body data-seite="${o.seite}">
   <a class="zsz-skip" href="#inhalt">Zum Inhalt</a>
   <nav class="seitenweg" aria-label="Ornament Cloud">
-    <a href="${site}">Ornament Cloud</a>
+    <a href="${site}" aria-current="true">Ornament Cloud</a>
     <a href="${site}alpha/drittes-rad/">Das Dritte Rad</a>
   </nav>
   <header class="zsz-kopf">

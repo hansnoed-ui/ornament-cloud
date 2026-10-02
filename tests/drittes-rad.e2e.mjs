@@ -683,12 +683,15 @@ await check("Navigation oben links: «Ornament Cloud» und darunter «Das Dritte
   }
 });
 
-await check("Navigation: die beiden Links sind farblich getrennt (Orange und Violett, je mit Kontrast ab 4,5 zum Hintergrund) und auf jeder Seite genau so gross gesetzt wie auf der Website, hell und dunkel, Computer und Handy", async () => {
+await check("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen, der aktive ist markiert (voller Rahmen, zweiter feiner Ring); farblich getrennt (Orange und Violett, je mit Kontrast ab 4,5 zum Hintergrund) und auf jeder Seite genau so gross gesetzt wie auf der Website, hell und dunkel, Computer und Handy", async () => {
   const seiten = ["", "news/", "portfolio/", "portfolio/nebeneinander-nacheinander/", "zu-seiner-zeit/", "zu-seiner-zeit/strophe/13-das-archiv/", "alpha/", "alpha/pruefraster/", "alpha/gesellschaftskonzepte/", "alpha/omna-color/", "alpha/drittes-rad/"];
   const FARBEN = { hell: ["rgb(194, 65, 12)", "rgb(91, 63, 196)"], dunkel: ["rgb(240, 138, 93)", "rgb(167, 148, 255)"] };           // «Ornament Cloud» orange, «Das Dritte Rad» violett
   const rgb = (c) => c.match(/[\d.]+/g).slice(0, 3).map(Number);
-  const hell = (c) => { const [r, g, b] = rgb(c).map((v) => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }); return .2126 * r + .7152 * g + .0722 * b; };
+  const hell = (c) => { const [r, g, b] = (typeof c === "string" ? rgb(c) : c).map((v) => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }); return .2126 * r + .7152 * g + .0722 * b; };
   const kontrast = (a, b) => { const [x, y] = [hell(a), hell(b)].sort((m, n) => n - m); return (x + .05) / (y + .05); };
+  /** rgb(…), rgba(…) oder color(srgb … / a) aus getComputedStyle → { rgb: [0 bis 255], a } */
+  const farbe = (c) => { const z = c.match(/-?[\d.]+(?:e-?\d+)?/g).map(Number), k = c.startsWith("color(") ? 255 : 1; return { rgb: z.slice(0, 3).map((v) => v * k), a: z.length > 3 ? z[3] : 1 }; };
+  const naheBei = (x, y, d) => x.every((v, i) => Math.abs(v - y[i]) <= d);
   for (const [modus, scheme] of [["hell", "light"], ["dunkel", "dark"]]) for (const [wo, opts] of [["Computer", { viewport: { width: 1280, height: 800 } }], ["Handy", HANDY]]) {
     const ctx = await browser.newContext({ reducedMotion: "reduce", colorScheme: scheme, ...opts });
     let website = null;
@@ -696,13 +699,26 @@ await check("Navigation: die beiden Links sind farblich getrennt (Orange und Vio
       const page = await ctx.newPage(), was = `${modus}, ${wo}, ${u || "Startseite"}`;
       await page.goto(base + u);
       const m = await page.locator("nav.seitenweg a").evaluateAll((a) => a.map((x) => { const c = getComputedStyle(x), b = x.getBoundingClientRect();
-        return { color: c.color, stil: [c.fontSize, c.fontWeight, c.letterSpacing, c.textTransform, c.fontFamily, c.lineHeight].join(" | "), breite: Math.round(b.width), hoehe: Math.round(b.height) }; }));
+        return { color: c.color, aktiv: x.getAttribute("aria-current"), rahmen: [c.borderTopWidth, c.borderRightWidth, c.borderBottomWidth, c.borderLeftWidth, c.borderTopStyle, c.borderTopLeftRadius].join(" "), rahmenFarbe: c.borderTopColor, flaeche: c.backgroundColor,
+          ring: [c.outlineStyle, c.outlineWidth, c.outlineOffset].join(" "), ringFarbe: c.outlineColor,
+          stil: [c.fontSize, c.fontWeight, c.letterSpacing, c.textTransform, c.fontFamily, c.lineHeight, c.paddingTop, c.paddingLeft, c.textAlign].join(" | "), breite: Math.round(b.width), hoehe: Math.round(b.height) }; }));
       const grund = await page.evaluate(() => { const n = (e) => getComputedStyle(e).backgroundColor, ok = (c) => !/^rgba\(.*, 0\)$|^transparent$/.test(c); return [n(document.body), n(document.documentElement)].find(ok) || "rgb(255, 255, 255)"; });
       const farben = u === "alpha/drittes-rad/" ? FARBEN.dunkel : FARBEN[modus];          // das Rad ist immer dunkel
       assert.deepEqual(m.map((x) => x.color), farben, `${was}: Orange und Violett`);
       for (const x of m) assert.ok(kontrast(x.color, grund) >= 4.5, `${was}: Kontrast ${kontrast(x.color, grund).toFixed(2)} (${x.color} auf ${grund})`);
+      // Buttons: ganz feiner Rahmen (1 px, rund), beide gleich breit; aktiv ist im Rad «Das Dritte Rad», sonst «Ornament Cloud»
+      assert.deepEqual(m.map((x) => x.aktiv), u === "alpha/drittes-rad/" ? [null, "page"] : [u === "" ? "page" : "true", null], `${was}: aria-current auf dem aktiven Button`);
+      assert.equal(m[0].breite, m[1].breite, `${was}: beide Buttons gleich breit`);
+      m.forEach((x, i) => {
+        const aktiv = x.aktiv !== null, r = farbe(x.rahmenFarbe), f = farbe(x.flaeche), ring = farbe(x.ringFarbe);
+        assert.equal(x.rahmen, "1px 1px 1px 1px solid 999px", `${was}: Button ${i + 1}: Rahmen 1 px ringsum, durchgezogen, Pillenform`);
+        assert.ok(naheBei(r.rgb, rgb(x.color), 1.5) && Math.abs(r.a - (aktiv ? 1 : .4)) < .02, `${was}: Button ${i + 1}: Rahmen in der Farbe der Schrift, ${aktiv ? "voll (aktiv)" : "blass, 40 % (nicht aktiv)"}: ${x.rahmenFarbe}`);
+        assert.equal(f.a, 0, `${was}: Button ${i + 1}: keine Fläche (eine Tönung drückt den Kontrast der Schrift): ${x.flaeche}`);
+        if (aktiv) assert.ok(x.ring === "solid 1px 2px" && naheBei(ring.rgb, rgb(x.color), 1.5) && ring.a === 1, `${was}: Button ${i + 1}: aktiv mit einem zweiten feinen Ring (1 px, Abstand 2 px, Farbe der Schrift): ${x.ring} ${x.ringFarbe}`);
+        else assert.ok(x.ring.startsWith("none"), `${was}: Button ${i + 1}: nicht aktiv ohne Ring: ${x.ring}`);
+      });
       if (!website) website = m;
-      assert.deepEqual(m.map(({ stil, breite, hoehe }) => ({ stil, breite, hoehe })), website.map(({ stil, breite, hoehe }) => ({ stil, breite, hoehe })), `${was}: Schrift, Grösse und Breite wie auf der Startseite der Website`);
+      assert.deepEqual(m.map(({ stil, rahmen, breite, hoehe }) => ({ stil, rahmen, breite, hoehe })), website.map(({ stil, rahmen, breite, hoehe }) => ({ stil, rahmen, breite, hoehe })), `${was}: Schrift, Rahmen, Grösse und Breite wie auf der Startseite der Website`);
       await page.close();
     }
     await ctx.close();

@@ -699,25 +699,32 @@ await check("Aktualisieren: neue Fassung sofort beim nächsten Öffnen, auch wen
   }
 });
 
-// ---------- Startseite: Apps, Zettelkasten, Prüfraster, Rückmeldungen ----------
-await check("Startseite (Handy): Apps, Zettelkasten und Prüfraster untereinander, ORMA zuerst; Artefakte stehen unten im Portfolio", async () => {
+// ---------- Apps, Masterprompts, Portfolio und Rückmeldungen (Neuordnung vom 2. Oktober 2026: die Karten liegen nicht mehr auf der Startseite) ----------
+await check("Apps und Masterprompts (Handy): Karten untereinander, ORNA vor ORMA, die vier Prüfraster in der Reihenfolge der Alpha-Übersicht; Artefakte stehen unten im Portfolio", async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
-  await page.goto(`${origin}/index.html`);
-  assert.deepEqual(await page.locator("h2.category").allTextContents(), ["Apps", "Zettelkasten", "Prüfraster", "Rückmeldungen"]);
-  assert.deepEqual(await page.locator(".grid--apps .card h2").allTextContents(), ["ORMA", "ORNA"]);
-  assert.equal(await page.locator(".slider-dots, .grid--artefakte, video").count(), 0);
   // alle Karten untereinander, gleich eingerückt, ohne seitliches Wischen
-  const karten = await page.locator("main .card").evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y), Math.round(r.bottom)]; }));
-  assert.equal(karten.length, 5);
-  for (let i = 1; i < karten.length; i++) assert.ok(karten[i][0] === karten[0][0] && karten[i][1] >= karten[i - 1][2], `untereinander: ${JSON.stringify(karten)}`);
-  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-  assert.ok(await page.locator(".card", { hasText: "Zu seiner Zeit" }).locator(".tags li", { hasText: "Zettelkasten" }).isVisible());
-  for (const [titel, ziel] of [["Nebeneinander und Nacheinander", /\/alpha\/pruefraster\/$/], ["Der Verteilapparat des Körpers", /\/alpha\/verteilapparat\/$/]]) {
-    const karte = page.locator("#pruefraster + .grid .card", { hasText: titel });
-    assert.ok(await karte.locator(".tags li", { hasText: "Alpha" }).isVisible(), `${titel}: als Alpha gekennzeichnet`);
+  const untereinander = async anzahl => {
+    assert.equal(await page.locator(".slider-dots, .grid--artefakte, video").count(), 0);
+    const karten = await page.locator("main .card").evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y), Math.round(r.bottom)]; }));
+    assert.equal(karten.length, anzahl);
+    for (let i = 1; i < karten.length; i++) assert.ok(karten[i][0] === karten[0][0] && karten[i][1] >= karten[i - 1][2], `untereinander: ${JSON.stringify(karten)}`);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  };
+  await page.goto(`${origin}/apps/`);
+  assert.deepEqual(await page.locator("main .card h2").allTextContents(), ["ORNA", "ORMA"]);
+  await untereinander(2);
+  assert.ok(await page.locator(".card", { hasText: "ORMA" }).locator(".tags li", { hasText: "Alpha" }).isVisible());
+  await page.goto(`${origin}/masterprompts/`);
+  assert.deepEqual(await page.locator("main .card h2").allTextContents(),
+    ["Nebeneinander und Nacheinander", "Der Verteilapparat des Körpers", "Prüfraster für Gesellschaftskonzepte", "Prüfraster journalistischer Texte"]);
+  await untereinander(4);
+  const ziele = [/\/alpha\/pruefraster\/$/, /\/alpha\/verteilapparat\/$/, /\/alpha\/gesellschaftskonzepte\/$/, /\/alpha\/journalistische-texte\/$/];
+  for (const [i, ziel] of ziele.entries()) {
+    const karte = page.locator("main .card").nth(i);
+    assert.ok(await karte.locator(".tags li", { hasText: "Alpha" }).isVisible(), `Karte ${i + 1}: als Alpha gekennzeichnet`);
     await karte.getByRole("link", { name: "Ansehen" }).click();
     await page.waitForURL(ziel);
     await page.goBack();
@@ -730,7 +737,14 @@ await check("Startseite (Handy): Apps, Zettelkasten und Prüfraster untereinande
   }));
   assert.equal(raender.length, 12);
   for (const [wort, rand] of raender) assert.ok(rand >= 2, `${wort} ragt aus der Zelle (${rand})`);
-  // die Artefakte am Ende des Portfolios
+  // Dreieck und fünf Zeilen (Gesellschaftskonzepte, journalistische Texte): jedes Wort bleibt im Bild, die Zeilen im Rahmen (26 bis 186)
+  const neu = await page.evaluate(() => [...document.querySelectorAll('svg[aria-label^="Dreieck"] text[font-size="9.5"], svg[aria-label^="Fünf Zeilen"] text[font-size="9.5"]')].map(t => {
+    const bb = t.getBBox(), zeilen = t.closest("svg").getAttribute("aria-label").startsWith("Fünf"), [von, bis] = zeilen ? [26, 186] : [0, 200];
+    return [t.textContent, Math.min(bb.x - von, bis - bb.x - bb.width)];
+  }));
+  assert.equal(neu.length, 8);
+  for (const [wort, rand] of neu) assert.ok(rand >= 2, `${wort} ragt aus dem Bild (${rand})`);
+  // die Artefakte am Ende des Portfolios (das Stellenfeld steht ausserdem auf der Startseite)
   await page.goto(`${origin}/portfolio/`);
   const titel = await page.locator(".grid--stapel .card h2").allTextContents();
   assert.deepEqual(titel.slice(-2), ["Re-entry-Knoten, Helix, S/F-Band", "Stellenfeld"]);   // «Formen der Zeit» ausgeblendet (30. September 2026)
@@ -741,15 +755,21 @@ await check("Startseite (Handy): Apps, Zettelkasten und Prüfraster untereinande
   await ctx.close();
 });
 
-await check("Startseite (Desktop): ORMA und ORNA nebeneinander, die beiden Prüfraster nebeneinander", async () => {
+await check("Apps und Masterprompts (Desktop): ORNA und ORMA nebeneinander, die vier Prüfraster zwei mal zwei", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
-  await page.goto(`${origin}/index.html`);
-  for (const sel of [".grid--apps .card", "#pruefraster + .grid .card"]) {
-    const ys = await page.locator(sel).evaluateAll(els => els.map(e => Math.round(e.getBoundingClientRect().y)));
-    assert.equal(ys.length, 2);
-    assert.equal(ys[0], ys[1], `${sel} nebeneinander`);
-  }
+  const lage = () => page.locator("main .card").evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y)]; }));
+  await page.goto(`${origin}/apps/`);
+  let l = await lage();
+  assert.equal(l.length, 2);
+  assert.equal(l[0][1], l[1][1], "ORNA und ORMA nebeneinander");
+  await page.goto(`${origin}/masterprompts/`);
+  l = await lage();
+  assert.equal(l.length, 4);
+  assert.equal(l[0][1], l[1][1], "Zeile eins");
+  assert.equal(l[2][1], l[3][1], "Zeile zwei");
+  assert.ok(l[2][1] > l[0][1], "zwei Zeilen");
+  assert.ok(l[0][0] === l[2][0] && l[1][0] === l[3][0] && l[1][0] > l[0][0], "zwei Spalten");
   await ctx.close();
 });
 
@@ -759,8 +779,15 @@ await check("Rückmeldungen: giscus lädt erst in Sichtweite, mit den richtigen 
   const fremd = [];
   page.on("request", r => { if (!r.url().startsWith(origin)) fremd.push(r.url()); });
   await page.route("https://giscus.app/**", r => r.fulfill({ status: 200, contentType: "text/javascript", body: "" }));
+  // Die Rückmeldungen stehen auf der Startseite gleich unter dem Stellenfeld, also schon in Sichtweite (giscus lädt 600 px davor).
+  // Für die Probe «erst bei Annäherung» schiebt ein Platzhalter sie weit nach unten.
+  await page.route(`${origin}/index.html`, async r => {
+    const antwort = await r.fetch();
+    await r.fulfill({ response: antwort, body: (await antwort.text()).replace('<section class="rueckmeldung"', '<div style="height:3000px"></div><section class="rueckmeldung"') });
+  });
   await page.goto(`${origin}/index.html`);
   assert.ok(await page.getByText("Danke für die Bereitschaft, diese frühen Versionen mit uns zu testen.").isVisible());
+  assert.ok(await page.locator("#kommentare").evaluate(e => e.getBoundingClientRect().top) > 3000, "Platzhalter wirkt");
   await page.waitForTimeout(300);
   assert.equal(await page.locator("#kommentare script").count(), 0, "lädt erst in Sichtweite");
   assert.deepEqual(fremd, []);
@@ -791,11 +818,11 @@ await check("Rückmeldungen: giscus lädt erst in Sichtweite, mit den richtigen 
   await ctx.close();
 });
 
-await check("Startseite und News: ORMA zeigt dasselbe drehende Rad wie ORNA, vertikal geteilt, rechts invers (kein Bild mit Text)", async () => {
+await check("Apps und News: ORMA zeigt dasselbe drehende Rad wie ORNA, vertikal geteilt, rechts invers (kein Bild mit Text)", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
-  await page.goto(`${origin}/index.html`);
-  const thumb = page.locator('.grid--apps a.thumb[href="alpha/orma/"]');
+  await page.goto(`${origin}/apps/`);
+  const thumb = page.locator('a.thumb[href="../alpha/orma/"]');
   await thumb.scrollIntoViewIfNeeded();
   assert.equal(await thumb.locator('svg.post-anim[data-icon="rad"]').count(), 1);
   assert.equal(await thumb.locator("img").count(), 0);
