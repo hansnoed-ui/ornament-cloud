@@ -15,12 +15,8 @@ import { pathToFileURL } from "node:url";
 const ROOT = new URL("../", import.meta.url);
 
 export const RASTER = [
-  {
-    seite: "gesellschaftskonzepte", datei: "pruefraster-gesellschaftskonzepte-0.4.md", kopfZeilen: 6,
-    titel: "Prüfraster für Gesellschaftskonzepte", untertitel: "Einheit · Operation · Vermittlung",
-    meta: "Entwurf 0.4 · 3. Oktober 2026 · Arbeitsfassung",
-    beschreibung: "Ein voraussetzungsarmes Modell zur Vorprüfung von Ansätzen, die eine Gesellschaftsdiagnose beanspruchen.",
-  },
+  // «Prüfraster für Gesellschaftskonzepte» hat seit dem 3. Oktober 2026 eine eigene Seite wie die ersten beiden Prüfraster
+  // (PDF, Anwendungsprompt, Anleitung): alpha/gesellschaftskonzepte/index.html, von Hand gepflegt.
   {
     seite: "journalistische-texte", datei: "pruefraster-journalistische-texte-0.3.md", kopfZeilen: 5,
     titel: "Prüfraster journalistischer Texte", untertitel: "Ereignis · Kontext · Übergang · Gegenprobe · Systembezüge",

@@ -70,7 +70,9 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `src/data/zu-seiner-zeit.extra.json`; Gestaltung `zu-seiner-zeit/zsz.css`, Verhalten `zu-seiner-zeit/zsz.js`. Alles Weitere in `src/zu-seiner-zeit/README.md`
 - `alpha/` – Alpha-Versionen, öffentlich erreichbar, nicht in der Sitemap, `noindex`; von der Startseite aus ist nichts verlinkt (ausser «Das Dritte Rad» in der Navigation oben links); ORMA, die vier Prüfraster, OMNA COLOR und das Dritte Rad hängen an den Seiten Apps, Masterprompts und Web, ORMA und die Seiten der beiden Grundlagenpapiere (`alpha/pruefraster/`, `alpha/verteilapparat/`) auch an den News (REGELN §14, `tests/orma.test.mjs` prüft das); die Übersicht `alpha/` selbst ist von keiner Seite verlinkt (Entscheid vom 2. Oktober 2026, `tests/navigation.test.mjs` prüft das), nur per Adresse erreichbar;
   `alpha/orma/` ist ORMA, erzeugt mit `node --experimental-strip-types tools/build-orma.ts --alpha`
-  Prüfraster in Arbeit (`alpha/gesellschaftskonzepte/`, `alpha/journalistische-texte/`, unten in der Übersicht direkt vor OMNA COLOR, «Zurzeit in Arbeit»):
+  `alpha/gesellschaftskonzepte/` ist seit dem 3. Oktober 2026 eine Seite wie `alpha/pruefraster/` (PDF, Anwendungsprompt 0.4.0, Anleitung,
+  Vorschaubild aus `tools/alpha-og.mjs`), weiterhin «Zurzeit in Arbeit».
+  Prüfraster in Arbeit als Textseite (`alpha/journalistische-texte/`, unten in der Übersicht direkt vor OMNA COLOR, «Zurzeit in Arbeit»):
   Quelle `src/alpha/*.md`, Seiten und Markdown-Download erzeugt mit `node --experimental-strip-types tools/build-alpha-texte.ts`
   (neue Fassung: Datei in `src/alpha/` ersetzen, Eintrag in `RASTER` anpassen, Build laufen lassen; ein Test meldet veraltete Seiten)
   `alpha/omna-color/` ist OMNA COLOR (Prototyp, zuunterst in der Übersicht): Farbkreis mit Gegenrad, zieht eine von 180 Gestaltungsübungen;

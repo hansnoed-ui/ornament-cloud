@@ -315,6 +315,9 @@ const PAPIERE = [
     prompt: "pruefraster-anwendungsprompt-1.0.0.md", art: "Markdown", anfang: /^# Prüfraster: Nebeneinander und Nacheinander\nAnwendungsprompt · Version 1\.0\.0/ },
   { seite: "verteilapparat", titel: "Der Verteilapparat des Körpers", pdf: "verteilapparat-des-koerpers.pdf",
     prompt: "verteilapparat-anwendungsprompt-1.0.0.txt", art: "Text", anfang: /^DER VERTEILAPPARAT DES KÖRPERS – PROMPT ZUM KOPIEREN\nVersion 1\.0\.0/ },
+  // seit dem 3. Oktober 2026 wie die ersten beiden; Prompt von Claude entworfen, vom Autor freigegeben
+  { seite: "gesellschaftskonzepte", titel: "Prüfraster für Gesellschaftskonzepte", pdf: "pruefraster-gesellschaftskonzepte-0.4.pdf",
+    prompt: "gesellschaftskonzepte-anwendungsprompt-0.4.0.md", art: "Markdown", anfang: /^# Prüfraster für Gesellschaftskonzepte\nAnwendungsprompt · Version 0\.4\.0/ },
 ];
 
 test("Alpha: die Grundlagenpapiere stehen in der Übersicht, je mit Seite, PDF und Anwendungsprompt", () => {
@@ -529,10 +532,13 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
   assert.ok(!/(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/.test(rad3), "Das Dritte Rad lädt nichts von fremden Servern");
   assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon/.test(rad3), "Das Dritte Rad ruft keinen Dienst auf (jev wird nur beim Bauen gefragt)");
   assert.match(rad3, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/">Ornament Cloud<\/a>\s*<a href="\.\/" aria-current="page">Das Dritte Rad<\/a>\s*<\/nav>/);
+  // beide sind in Arbeit: deutlicher Vermerk auf der Seite und in der Übersicht
+  for (const seite of ["gesellschaftskonzepte", "journalistische-texte"]) {
+    assert.match(readFileSync(new URL(`alpha/${seite}/index.html`, root), "utf8"), /<p class="(?:at|pr)-arbeit">Zurzeit in Arbeit<\/p>/, `${seite}: Vermerk auf der Seite`);
+    assert.ok(uebersicht.split(`href="${seite}/"`)[1].split("</li>")[0].includes('<p class="alpha-arbeit">Zurzeit in Arbeit</p>'), `${seite}: Vermerk in der Übersicht`);
+  }
   for (const r of at.RASTER) {
     const html = readFileSync(new URL(`alpha/${r.seite}/index.html`, root), "utf8");
-    assert.match(html, /<p class="at-arbeit">Zurzeit in Arbeit<\/p>/);
-    assert.ok(uebersicht.split(`href="${r.seite}/"`)[1].split("</li>")[0].includes('<p class="alpha-arbeit">Zurzeit in Arbeit</p>'), `${r.seite}: Vermerk in der Übersicht`);
     assert.ok(html.includes(`href="../${r.datei}" download`));
     assert.ok(!/dissent\.is|unifr\.ch/.test(html + readFileSync(new URL(`alpha/${r.datei}`, root), "utf8")), "keine Links auf PDF-Kopien");
   }
