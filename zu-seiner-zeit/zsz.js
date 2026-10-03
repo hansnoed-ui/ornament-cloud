@@ -5,6 +5,18 @@
 //   Nachbarn zum neuen Mittelpunkt und legt einen Eintrag in der Browser-Geschichte an.
 // – Zufall: wählt gleichverteilt eine der 49 Strophen, nie unmittelbar die gerade geöffnete.
 // Die beiden Zufallsfunktionen sind rein und werden in tests/zu-seiner-zeit.test.mjs geprüft.
+// Sprachen: Deutsch unter zu-seiner-zeit/, Englisch unter en/, Spanisch unter es/; die Daten (zsz-daten.json) liegen
+// je Sprache in deren Wurzel (body data-basis), Gestaltung und Verhalten gibt es nur einmal.
+
+/** Texte der Oberfläche im Browser, je Sprache (lang des Dokuments) */
+export const TEXTE = {
+  de: { aktuell: "Aktuell", verweisseite: "Verweisseite", inStrophen: "In den Strophen", lesen: "Strophe lesen", vorher: "Vorher",
+    danach: "Danach", verwandt: "Verwandt", resonanzen: "Resonanzen", ueber: "über", pfad: "Bisherige Spur", spur: "Spur" },
+  en: { aktuell: "Current", verweisseite: "Reference page", inStrophen: "In the stanzas", lesen: "Read the stanza", vorher: "Before",
+    danach: "After", verwandt: "Related", resonanzen: "Resonances", ueber: "via", pfad: "Trace so far", spur: "Trace" },
+  es: { aktuell: "Actual", verweisseite: "Página de la referencia", inStrophen: "En las estrofas", lesen: "Leer la estrofa", vorher: "Antes",
+    danach: "Después", verwandt: "Relacionadas", resonanzen: "Resonancias", ueber: "a través de", pfad: "Huella hasta ahora", spur: "Huella" },
+};
 
 /** Gleichverteilte ganze Zahl in [0, n) aus kryptografischem Zufall (Verwerfen statt Modulo-Verzerrung) */
 export function zufallsZahl(n, bytes = a => crypto.getRandomValues(a)) {
@@ -23,7 +35,11 @@ export function andereStrophe(anzahl, ausser, zahl = zufallsZahl) {
 if (typeof document !== "undefined") {
   const seite = document.body.dataset.seite;
   const reduziert = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const basis = new URL(document.querySelector('link[rel="stylesheet"]').href.replace(/zsz\.css.*$/, ""));
+  const T = TEXTE[document.documentElement.lang] || TEXTE.de;
+  // Wurzel der Sprache (zu-seiner-zeit/, …/en/ oder …/es/); ältere Seiten ohne data-basis: Ordner der Gestaltung
+  const basis = document.body.dataset.basis
+    ? new URL(document.body.dataset.basis, location.href)
+    : new URL(document.querySelector('link[rel="stylesheet"]').href.replace(/zsz\.css.*$/, ""));
   const daten = () => fetch(new URL("zsz-daten.json", basis)).then(r => r.json());
 
   if (seite === "strophe") seitenpanel();
@@ -86,29 +102,29 @@ if (typeof document !== "undefined") {
       let html;
       if (m.p) {
         const x = P[m.p];
-        html = `<section class="spur-aktuell"><h2 class="zsz-label">Aktuell</h2>
+        html = `<section class="spur-aktuell"><h2 class="zsz-label">${T.aktuell}</h2>
           <p class="spur-titel" tabindex="-1">${esc(x.name)}</p><p class="zsz-meta">${esc(x.disciplines.join(", "))}</p>
-          <p class="zsz-weiter"><a href="../verweis/${m.p}/">Verweisseite <span aria-hidden="true">→</span></a></p></section>
-          ${gruppe("In den Strophen", x.stanzas.map(id => knotenS(id)).join(""))}`;
+          <p class="zsz-weiter"><a href="../verweis/${m.p}/">${T.verweisseite} <span aria-hidden="true">→</span></a></p></section>
+          ${gruppe(T.inStrophen, x.stanzas.map(id => knotenS(id)).join(""))}`;
       } else {
         const s = stro(m.s);
         const verwandt = [...s.conceptual.map(id => knotenS(id)),
-          ...s.resonances.map(r => knotenS(r.id, ` <span class="zsz-hinweis">über ${r.via.map(v => esc(P[v].name)).join(", ")}</span>`))].join("");
-        html = `<section class="spur-aktuell"><h2 class="zsz-label">Aktuell</h2>
+          ...s.resonances.map(r => knotenS(r.id, ` <span class="zsz-hinweis">${T.ueber} ${r.via.map(v => esc(P[v].name)).join(", ")}</span>`))].join("");
+        html = `<section class="spur-aktuell"><h2 class="zsz-label">${T.aktuell}</h2>
           <p class="zsz-meta">${s.cycle} · ${esc(s.cycleTitle)}</p>
           <p class="spur-titel" tabindex="-1"><span class="zsz-nr">${s.id}</span> ${esc(s.title)}</p>
           <p class="bottom-line">${esc(s.bottomLine)}</p>
-          <p class="zsz-weiter"><a href="../strophe/${s.slug}/">Strophe lesen <span aria-hidden="true">→</span></a></p></section>
+          <p class="zsz-weiter"><a href="../strophe/${s.slug}/">${T.lesen} <span aria-hidden="true">→</span></a></p></section>
           <div class="spur-nachbarn">
-          ${gruppe("Vorher", m.s > 1 ? knotenS(m.s - 1) : "")}
-          ${gruppe("Danach", m.s < S.length ? knotenS(m.s + 1) : "")}
+          ${gruppe(T.vorher, m.s > 1 ? knotenS(m.s - 1) : "")}
+          ${gruppe(T.danach, m.s < S.length ? knotenS(m.s + 1) : "")}
           </div>
-          ${gruppe("Verwandt", verwandt)}
-          ${gruppe("Resonanzen", s.refs.map(r => knotenP(r.slug)).join(""))}`;
+          ${gruppe(T.verwandt, verwandt)}
+          ${gruppe(T.resonanzen, s.refs.map(r => knotenP(r.slug)).join(""))}`;
       }
-      const spurzeile = pfad.length > 1 ? `<p class="spur-pfad zsz-meta" aria-label="Bisherige Spur">${pfad.map(esc).join(" → ")}</p>` : "";
+      const spurzeile = pfad.length > 1 ? `<p class="spur-pfad zsz-meta" aria-label="${T.pfad}">${pfad.map(esc).join(" → ")}</p>` : "";
       feld.innerHTML = spurzeile + html;
-      document.title = `${name} · Spur – Zu seiner Zeit`;
+      document.title = `${name} · ${T.spur} – Zu seiner Zeit`;
       if (!reduziert) { feld.classList.remove("spur-neu"); void feld.offsetWidth; feld.classList.add("spur-neu"); }
       if (fokus) feld.querySelector(".spur-titel").focus({ preventScroll: true });
     };

@@ -163,3 +163,62 @@ test("Zufall: gleichverteilt, nie unmittelbar dieselbe Strophe", () => {
   for (let i = 0; i < 5000; i++) { const n = andereStrophe(49, 37); assert.notEqual(n, 37); seen.add(n); }
   assert.equal(seen.size, 48);
 });
+
+// ---------- Übersetzungen (Englisch, Spanisch; seit 3. Oktober 2026) ----------
+for (const lang of ["en", "es"]) {
+  test(`Übersetzung ${lang}: vollständig, Namen und Adressen wie im Original, Seiten aktuell`, () => {
+    const tr = JSON.parse(readFileSync(new URL(`src/data/zu-seiner-zeit.${lang}.json`, root), "utf8"));
+    assert.equal(tr.lang, lang);
+    assert.deepEqual(Object.keys(tr.stanzas).map(Number), Array.from({ length: 49 }, (_, i) => i + 1));
+    const mt = build.model(undefined, undefined, lang);
+    assert.equal(mt.lang, lang);
+    assert.equal(mt.stanzas.length, 49);
+    assert.equal(mt.persons.length, m.persons.length, "dieselben Personen");
+    assert.equal(mt.cycles.length, 7);
+    for (const [i, s] of mt.stanzas.entries()) {
+      const de = m.stanzas[i], t = tr.stanzas[s.id];
+      assert.equal(s.slug, de.slug, `${s.id}: dieselbe Adresse wie auf Deutsch`);
+      assert.equal(s.title, t.title); assert.equal(s.bottomLine, t.bottom_line); assert.equal(s.text, t.text);
+      assert.notEqual(s.text, de.text, `${s.id}: Text übersetzt`);
+      assert.equal(s.references.length, 4);
+      s.references.forEach((r, k) => {
+        assert.equal(r.person, de.references[k].person, `${s.id}/${k + 1}: Name wie im Original`);
+        assert.equal(r.slug, de.references[k].slug);
+        assert.equal(r.note, t.notes[k]);
+        if (!t.works?.[k]) assert.equal(r.work, de.references[k].work, `${s.id}/${k + 1}: Werktitel wie im Original`);
+      });
+    }
+    // dieselben Resonanzen wie auf Deutsch (Personen) – Werkgleichheit bleibt erhalten
+    assert.deepEqual(mt.stanzas.map(s => s.related.resonances.map(r => r.id)), m.stanzas.map(s => s.related.resonances.map(r => r.id)));
+    const ft = build.files(mt);
+    assert.equal(ft.size, build.files(m).size, "gleich viele Seiten wie auf Deutsch");
+    for (const [k, c] of ft) {
+      assert.ok(k.startsWith(`${lang}/`), k);
+      assert.equal(readFileSync(new URL(`zu-seiner-zeit/${k}`, root), "utf8"), c, `${k} veraltet: node --experimental-strip-types tools/build-zu-seiner-zeit.ts`);
+    }
+    // Oberfläche übersetzt: keine deutschen Bedienwörter (Inhalte und Werktitel ausgenommen)
+    const start = ft.get(`${lang}/index.html`), strophe = ft.get(`${lang}/strophe/${mt.stanzas[36].slug}/index.html`);
+    assert.match(start, new RegExp(`<html lang="${lang}">`));
+    for (const wort of ["Weiterdenken", "Mit dem Zufall beginnen", "Weiter mit dem Zufall", "Verwandte Strophen", "Schliessen", "Zum Inhalt", ">Spur<", ">Verweise<"])
+      assert.ok(!strophe.includes(wort) && !start.includes(wort), `${lang}: «${wort}» nicht übersetzt`);
+  });
+}
+
+test("Sprachwechsel: jede Seite in jeder Sprache führt auf dieselbe Seite in den anderen, mit hreflang; Sitemap mit allen Sprachen", () => {
+  const alle = build.files();
+  assert.equal(alle.size, 3 * build.files(m).size);
+  const sitemap = readFileSync(new URL("sitemap.xml", root), "utf8");
+  for (const [k, c] of alle) {
+    if (!k.endsWith("index.html")) continue;
+    const ziele = [...c.matchAll(/<nav class="zsz-sprachen"[^>]*>([\s\S]*?)<\/nav>/g)][0][1];
+    const links = [...ziele.matchAll(/<a href="([^"]+)" hreflang="(\w+)"/g)];
+    assert.deepEqual(links.map(l => l[2]), ["de", "en", "es"], k);
+    for (const [, href] of links) {
+      const ziel = new URL(href + (href.endsWith("/") ? "index.html" : ""), new URL(`zu-seiner-zeit/${k}`, root)).pathname.split("/zu-seiner-zeit/")[1];
+      assert.ok(alle.has(ziel), `${k}: Sprachlink ${href} führt ins Leere`);
+    }
+    assert.equal((c.match(/<a [^>]*aria-current="true">(Deutsch|English|Español)</g) || []).length, 1, `${k}: genau eine aktuelle Sprache`);
+    for (const l of ["de", "en", "es", "x-default"]) assert.ok(c.includes(`hreflang="${l}" href="https://ornament.cloud/zu-seiner-zeit/`), `${k}: hreflang ${l}`);
+    if (!c.includes('content="noindex"')) assert.ok(sitemap.includes(`<loc>https://ornament.cloud/zu-seiner-zeit/${k.replace(/index\.html$/, "")}</loc>`), `${k} fehlt in der Sitemap`);
+  }
+});
