@@ -75,9 +75,9 @@ In Abschnitt D:
 
 ## Begleitende Änderung: Streichung im Hauptweg
 
-Abschnitt 12 verlangt, dass künftige Erweiterungen mit einer Streichung einhergehen. Vorgeschlagen wird deshalb, die **Optionensymmetrie in G11** in ein optionales Modul zu verschieben. Sie bliebe Bestandteil des Rasters, würde aber nur bei Texten mit ausdrücklicher Handlungsempfehlung zugeschaltet. G11 behielte im Hauptweg Norm, Folgen und Entscheidungsschwelle.
+Abschnitt 12 verlangt, dass künftige Erweiterungen mit einer Streichung einhergehen. Erwogen wurde, die **Optionensymmetrie in G11** in ein optionales Modul zu verschieben, das nur bei Texten mit ausdrücklicher Handlungsempfehlung zugeschaltet wird.
 
-*Zu entscheiden:* ob diese Verschiebung jetzt erfolgen soll oder erst, wenn sich die Optionensymmetrie bei Nachricht, Reportage und Interview tatsächlich als regelmässig nicht einschlägig erwiesen hat.
+*Entschieden am 3. Oktober 2026:* Die Verschiebung erfolgt **noch nicht**. Sie wird erst vorgenommen, wenn sich die Optionensymmetrie bei Nachricht, Reportage und Interview tatsächlich als regelmässig nicht einschlägig erwiesen hat. Bis dahin bleibt G11 unverändert im Hauptweg; die Frage einer Streichung zugunsten von Modul W bleibt offen.
 
 ## Entstehungsbedingung und Erprobung
 
