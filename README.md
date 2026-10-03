@@ -67,7 +67,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   eigener Build (`tools/build-orma.ts` → `src/orma/dist/`, nicht eingecheckt), noch nicht veröffentlicht. Alles Weitere in `src/orma/README.md`
 - `zu-seiner-zeit/` – Hypertext «Zu seiner Zeit» (49 Strophen, Spur, Zufall, Verweise), erzeugt mit
   `node --experimental-strip-types tools/build-zu-seiner-zeit.ts` aus `src/data/zu-seiner-zeit.json` (unverändert) und
-  `src/data/zu-seiner-zeit.extra.json`; Gestaltung `zu-seiner-zeit/zsz.css`, Verhalten `zu-seiner-zeit/zsz.js`. Alles Weitere in `src/zu-seiner-zeit/README.md`
+  `src/data/zu-seiner-zeit.extra.json`; Gestaltung `zu-seiner-zeit/zsz.css`, Verhalten `zu-seiner-zeit/zsz.js`. Englisch und Spanisch unter `zu-seiner-zeit/en/` und `/es/` (aus `src/data/zu-seiner-zeit.en.json`, `.es.json`, Sprachwechsel oben auf jeder Seite). Alles Weitere in `src/zu-seiner-zeit/README.md`
 - `alpha/` – Alpha-Versionen, öffentlich erreichbar, nicht in der Sitemap, `noindex`; von der Startseite aus ist nichts verlinkt (ausser «Das Dritte Rad» in der Navigation oben links); ORMA, die vier Prüfraster, OMNA COLOR und das Dritte Rad hängen an den Seiten Apps, Masterprompts und Web, ORMA und die Seiten der beiden Grundlagenpapiere (`alpha/pruefraster/`, `alpha/verteilapparat/`) auch an den News (REGELN §14, `tests/orma.test.mjs` prüft das); die Übersicht `alpha/` selbst ist von keiner Seite verlinkt (Entscheid vom 2. Oktober 2026, `tests/navigation.test.mjs` prüft das), nur per Adresse erreichbar;
   `alpha/orma/` ist ORMA, erzeugt mit `node --experimental-strip-types tools/build-orma.ts --alpha`
   `alpha/gesellschaftskonzepte/` ist seit dem 3. Oktober 2026 eine Seite wie `alpha/pruefraster/` (PDF, Anwendungsprompt 0.4.0, Anleitung,

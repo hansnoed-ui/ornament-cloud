@@ -1,0 +1,608 @@
+{
+ "_hinweis": "English translation of src/data/zu-seiner-zeit.json (stanzas, lead sentences, notes on the references, cycles). Names and work titles stay as in the original; only descriptive work references (works) are translated. Built with tools/build-zu-seiner-zeit.ts.",
+ "lang": "en",
+ "subtitle": "Plateaus on Operation, Art, Society and Artificial Communication",
+ "structure": "7 cycles × 7 stanzas = 49 stanzas",
+ "version": "Edited version, translated from the German",
+ "domains": {
+  "Soziologie": "Sociology",
+  "Philosophie": "Philosophy",
+  "Kunst": "Art",
+  "Literatur": "Literature",
+  "Kybernetik": "Cybernetics"
+ },
+ "cycles": {
+  "I": {
+   "name": "Operation",
+   "deck": "From occurrence to time: operations become a history only in their connection."
+  },
+  "II": {
+   "name": "Recursion",
+   "deck": "How the past remains effective in traces, practices and narratives."
+  },
+  "III": {
+   "name": "Address",
+   "deck": "How recognisability is socially attributed and becomes expectable."
+  },
+  "IV": {
+   "name": "Coupling",
+   "deck": "How separate orders become effective for one another without uniting."
+  },
+  "V": {
+   "name": "Art",
+   "deck": "How differences of perception remain socially reusable."
+  },
+  "VI": {
+   "name": "Platform",
+   "deck": "How recognisability is turned into probability – and probability is returned again as environment."
+  },
+  "VII": {
+   "name": "Future",
+   "deck": "Under what conditions, despite these reductions, going on otherwise remains possible."
+  }
+ },
+ "stanzas": {
+  "1": {
+   "title": "The Bridge",
+   "bottom_line": "It is not the world that grounds the connection – the connection invents the world that afterwards makes it appear necessary.",
+   "text": "Every theory begins with a bridge. It links concepts before it even knows whether anything is waiting for it on the other side. Therein lies its real daring. Its first step is not truth but the presumption of a connection. Only when later operations take up this connection again does it acquire the appearance of a necessary order. What we call an origin is therefore usually nothing other than the first successful connection. Bridges are not built because banks exist; banks come into being because bridges have learned to remember their own direction.",
+   "notes": [
+    "Operations gain coherence only through connection.",
+    "Relations do not presuppose relata that are already given.",
+    "Closeness and distance emerge in a mediated relationship.",
+    "The bridge itself becomes the precarious event of connecting."
+   ]
+  },
+  "2": {
+   "title": "The Event",
+   "bottom_line": "What has happened has happened; its history changes with every connection.",
+   "text": "An event takes place and is over the next moment. What has happened cannot afterwards be undone. What remains open, by contrast, is the place it will be given in a history. A later connection can turn it into a beginning, a mistake, a coincidence or a turning point. The idea of a straight line of development reads a direction into earlier moments that was still open at the time. Every present selects traces and orders them anew. In doing so it changes the history that can be told about what happened. Precisely because the event is past, its meaning is never settled once and for all.",
+   "notes": [
+    "Social time arises in practices of ordering and expectation.",
+    "Reality is conceived as a happening of events and processes.",
+    "The date fixes an event without determining its later meaning.",
+    "A single day is continually layered anew through memory and present."
+   ]
+  },
+  "3": {
+   "title": "The Connection",
+   "bottom_line": "Continuity is not a state – it is the most improbable of all operations.",
+   "text": "The real achievement of a system lies not in producing something but in carrying on. Every operation vanishes in the moment it is performed. Duration therefore arises not from persistence but from resumption. What we call identity is nothing other than the successful habit of connecting the next step to the previous one. Every failed connection, by contrast, opens up a different history. Systems therefore live not on stability but on the improbable ability to turn their own breaking off into continuation, again and again.",
+   "notes": [
+    "Autopoiesis consists in the recursive production of further operations.",
+    "Continuation rests on trace, repetition and displacement.",
+    "Form arises anew each time in the performance of its next articulation.",
+    "Experience continues as its previous order falls apart."
+   ]
+  },
+  "4": {
+   "title": "The Observer",
+   "bottom_line": "The observer can observe the distinction of their present observing only later.",
+   "text": "To observe means to use a distinction and to indicate one of its sides. The observer does not stand over against this operation as an additional authority: the observer becomes determinable only through the way of observing. While seeing something, the observer cannot at the same time observe, as the same operation, the distinction with which they are seeing. A later observation can make this precondition visible; to do so it again uses a distinction of its own. Self-observation thus shifts its blind spot instead of abolishing it once and for all. Even the supposed beginning of observing appears as a beginning only from a later perspective.",
+   "notes": [
+    "An observer cannot be subtracted from their own construction of reality; every later observation again brings its own preconditions.",
+    "Every observation has a situated standpoint and therefore limits.",
+    "Observation and observed identity displace one another.",
+    "The same sign becomes a different one through the place from which it is observed."
+   ]
+  },
+  "5": {
+   "title": "The Blind Spot",
+   "bottom_line": "The blind spot is not the end of knowledge – it is its beginning.",
+   "text": "Every operation takes place under conditions it cannot itself observe. Not because it lacks information, but because its own form determines what may appear as information at all. The blind spot is therefore not a deficit of knowledge but its precondition. Whoever wanted to remove it would have to step outside their own operation – and in doing so would produce a new distinction with a new blind spot. Knowledge widens its field of vision not by overcoming blindness, but by learning to vary its own limits productively.",
+   "notes": [
+    "Second-order observation makes the selectivity of observing visible.",
+    "Every indication presupposes an unmarked side.",
+    "Image and world are distinguished by an invisible boundary.",
+    "Knowledge begins where familiar distinctions become untenable."
+   ]
+  },
+  "6": {
+   "title": "The Delay",
+   "bottom_line": "The present is the art of overlooking its own delay.",
+   "text": "Every present appears to itself as immediate. In fact it always arrives too late. Even before an operation experiences itself as present, it has already passed and can only be taken up again through further operations. What we call presence is therefore not a point in time but an ongoing reconstruction. The present lives on continually forgetting its own delay. It is precisely this small lag that makes memory, expectation and connection possible. Without it there would be neither time nor history, only the silent extinguishing of isolated events.",
+   "notes": [
+    "The present is socially organised and never merely a neutral point in time.",
+    "Retention and protention structure the lived now.",
+    "The present appears as an unstable state of continued displacement.",
+    "The past becomes effective only in later presents."
+   ]
+  },
+  "7": {
+   "title": "Time",
+   "bottom_line": "Time is the condition that something other than its repetition can follow an operation.",
+   "text": "Time does not carry events like a current from one place to another. An operation ends with its performance; what has happened cannot be repeated as if it were still present. At the same time a later operation can connect to it and, under changed conditions, make something else of it. Here lies the tension between past and future: what has happened is fixed, its possible continuations are not. Duration arises when connections become possible again; a break changes their conditions. In this stanza, time names the difference that every resumption carries with it: what comes next can connect without going on in the same way.",
+   "notes": [
+    "Time orders actuality and non-actuality within present operations.",
+    "Temporality is thought from becoming and irreversible relations.",
+    "Chronological time is assembled from thousands of heterogeneous film presents.",
+    "Duration arises in the displacement between event, memory and absence."
+   ]
+  },
+  "8": {
+   "title": "The Store",
+   "bottom_line": "Storage keeps something available; resumption gives it a new present.",
+   "text": "A library keeps books, a hard drive data. Such stores keep material states available and protect them against rapid disappearance. That does not yet explain why something gains meaning years later. A recovered book has to be read, a data set selected, a find brought into a question. Storage creates a possible later encounter; remembering begins with its present performance. The two often need each other, but they do not coincide. Even a fully preserved document can become illegible if its language and its context are lost. The store secures availability; it does not decide the next use.",
+   "notes": [
+    "Memory is an achievement of selection and not mere filing.",
+    "Memory cannot be reduced to material storage.",
+    "Keeping produces a present of absence.",
+    "Archives are staged as later constructions of cultural reuse."
+   ]
+  },
+  "9": {
+   "title": "Memory",
+   "bottom_line": "Memory makes the past effective again in changed practices.",
+   "text": "Memory shows itself when the past becomes effective again in a present practice. A story calls up earlier events differently from a gesture, a practised movement of the hand or a ritual. Such resumptions have a history; they take place under conditions that have changed. The body, too, carries habits and abilities without having an image of the past ready at every moment. Memory can therefore be reduced neither to filing nor to conscious recollection. It is bound to materials, bodies and social forms and remains at the same time a present achievement. What returns, returns in a new situation.",
+   "notes": [
+    "Bodily practices and rituals pass on social memory without it being reducible to conscious representation.",
+    "Repetition produces difference instead of identical return.",
+    "Traces of the past remain effective without becoming present.",
+    "The past returns to the present transformed and capable of acting."
+   ]
+  },
+  "10": {
+   "title": "Remembering",
+   "bottom_line": "Remembering gives what has happened a present, verifiable shape.",
+   "text": "Remembering happens in the present. When an experience is told, an image looked at or an earlier sentence read again, the past takes on a present-day shape. This shape can change without the past event itself becoming a different one after the fact. Memories draw on traces, fill in gaps and are bound to expectations. They can contradict one another; objects and testimonies at the same time set limits to their interpretations. What is remembered is therefore neither an unchanged copy nor a free invention. Remembering establishes a relation to what has happened and can only be questioned anew from later presents.",
+   "notes": [
+    "Memory is reconstructed within social frameworks.",
+    "The past gains meaning from the in-between position of the present.",
+    "Repeated telling transforms the remembered experience.",
+    "Remembering produces a new present of the past."
+   ]
+  },
+  "11": {
+   "title": "The Trace",
+   "bottom_line": "The trace holds a past effect materially without fixing its meaning.",
+   "text": "A footprint in the sand, a yellowed photograph or a crease in paper remembers nothing. Yet every trace has a material constitution that makes later interpretations possible and limits them. The print does not by itself say who passed by; nor can any movement whatsoever be attributed to it. Whether a trace becomes evidence, a story, a work of art or rubbish is decided in a later practice. Its material remains stubborn in the process. The trace links a past occurrence with possible present questions without already carrying the answer within itself.",
+   "notes": [
+    "Material traces need cultural forms of reactivation.",
+    "The trace undermines the idea of pure presence.",
+    "Absence is shaped as a materially legible trace.",
+    "Images and places become precarious triggers of late memory."
+   ]
+  },
+  "12": {
+   "title": "Forgetting",
+   "bottom_line": "Forgetting changes what remains within reach, and for whom.",
+   "text": "Forgetting takes several forms. A document can be destroyed, an ability can wither, a name can disappear from public records. In other cases a trace remains, but the paths to it become unusable or improbable. Social forgetting thus helps to order what can be told, examined or expected again. This selection brings relief; but it can also push people and events out of reachable memory. Forgetting is therefore neither merely a lack nor always a creative achievement. Its consequences depend on what is lost, for whom something becomes inaccessible and who can decide about it.",
+   "notes": [
+    "Forgetting is a positive condition of selective remembering.",
+    "Active forgetting creates room for the present and for action.",
+    "The closed trace remains visible as a difference that has not been removed.",
+    "Total recall appears as an inability to abstract."
+   ]
+  },
+  "13": {
+   "title": "The Archive",
+   "bottom_line": "The archive keeps and orders what can be found again in the future.",
+   "text": "An archive keeps documents and objects. At the same time it orders them according to rules that determine what can be taken in, described and found again. These rules create future possibilities and limit them: without cataloguing, even what has been preserved remains hard to reach; what was never collected cannot simply be called back. A file becomes evidence only through questions, procedures and contradiction. Archives therefore do not tell history by themselves. They provide material and shape which histories can be made from it. Their achievement lies in combining preservation, selection and access – and thus also in the power to set these conditions.",
+   "notes": [
+    "Archives organise cultural availability beyond present memory.",
+    "His concept of the archive refers to rules of what can be said and repeated; it widens and unsettles the institutional concept of the archive discussed here.",
+    "The form of the archive and the status of the document are destabilised artistically.",
+    "The private archive remains fragmentary and produces meaning only in its arrangement."
+   ]
+  },
+  "14": {
+   "title": "History",
+   "bottom_line": "History interprets the past anew and remains bound to its traces.",
+   "text": "Past events have happened, even if no one tells of them any longer. History arises when a society orders, disputes and reinterprets its traces, testimonies and traditions. With every present, other questions and previously overlooked documents can become important. That changes the history that can be told; what has happened does not thereby become arbitrary. A claim must prove itself against the available traces, against other accounts and against their gaps. History is neither identical with the archive nor the mere sum of memories. It is a contested, present work on a past that is not exhausted by its use today.",
+   "notes": [
+    "The past is reconstructed in changing social frameworks.",
+    "History stands in a present between origin and possibility.",
+    "Documentation changes what remains visible as rememberable history.",
+    "History arises from montage, trace and present wandering."
+   ]
+  },
+  "15": {
+   "title": "The Address",
+   "bottom_line": "The address makes social attribution possible across absence.",
+   "text": "Communication needs addresses to which statements, expectations and answers can be attributed. A name, an organisation or a technical account makes someone or something reachable even when its bearer is absent. Such addresses come into being and change through repeated reference. They are not, however, the origin of every bodily or mental occurrence. Their domain is social attribution: who is addressed as the same place, who can answer, who remains responsible? An address keeps these possibilities open across individual situations. How someone is addressed influences their social identity without coinciding with their life.",
+   "notes": [
+    "Communication bundles expectations onto recognisable social addresses.",
+    "The who of a person emerges relationally and narratively.",
+    "A person appears through addressable traces and observations.",
+    "Names hold together places whose identity changes in the telling."
+   ]
+  },
+  "16": {
+   "title": "The Name",
+   "bottom_line": "The name makes absence addressable.",
+   "text": "A name does not say who someone is. It ensures that the same address can be called up again even when its bearer has become absent, changed or contradictory. Names condense past addressings into a form to which expectations, stories and responsibilities connect. Therein lie their power and their violence. Whoever receives a name becomes socially findable, but also fixed; whoever is renamed loses not just a word but an already organised future of possible attributions. The name therefore belongs entirely to no one. It circulates between one's own use and the use of others and holds a social unity together where no identity is sufficient unto itself.",
+   "notes": [
+    "Naming works as social institution and attribution.",
+    "The proper name keeps open the uniqueness of an addressable person.",
+    "Naming gives anonymised figures back their history and social address.",
+    "Names, roles and identities are drawn into a game of mutual substitution."
+   ]
+  },
+  "17": {
+   "title": "The Person",
+   "bottom_line": "The person is the memory of an address.",
+   "text": "A person is not the human being it designates. It is the form in which communication bundles numerous expectations onto a recognisable address. Whoever is considered friendly, unreliable, ill, responsible or dangerous is not fully described but prepared for further connections. Therein lies the relief the person provides: no one has to be invented anew in every encounter. Therein lies at the same time its harshness: what was once attributed returns as expectation and limits what can still appear credible in future. Persons therefore consist neither of properties nor of inwardness. They come into being as addressings condense and expect their own repetition.",
+   "notes": [
+    "Persons function as social forms of attribution.",
+    "Self-description remains bound to social norms and addressings.",
+    "Persons become socially present through names, images and archived traces.",
+    "A person is determined by attributions whose order they do not control."
+   ]
+  },
+  "18": {
+   "title": "The Role",
+   "bottom_line": "The role makes expectations independent of persons.",
+   "text": "A role is not a mask behind which the real person hides. It is an order of expectations that already exists before anyone takes it on. Teacher, mother, patient, artist or judge do not designate properties but positions from which certain actions become probable and others call for explanation. Roles relieve persons because they need not bring their whole individuality into every situation. At the same time they set limits: whoever takes on a role is measured against expectations that did not come into being with them. In this way the role makes social relationships repeatable by making persons interchangeable without replacing them entirely.",
+   "notes": [
+    "Roles structure situations, expectations and self-presentations.",
+    "Repeated performance stabilises social identities without a fixed core.",
+    "Role, face and biographical attribution are shifted against one another.",
+    "Character, role and person come apart from one another."
+   ]
+  },
+  "19": {
+   "title": "Expectation",
+   "bottom_line": "Expectations order what can come as a surprise at an address.",
+   "text": "Expectations do not predict with certainty what will happen. They determine what can count as fitting, deviant or surprising. A name, a role and a familiar relationship bring such expectations with them; through them the future is already ordered in the present. Disappointments can change an expectation. But they can also lead to its reinforcement when the deviation is treated as an exception or attributed to a person. Precisely therein lies its social persistence. An expectation links an address with possible next events and at the same time determines how the unexpected can be dealt with.",
+   "notes": [
+    "Expectations structure uncertainty without fixing the future.",
+    "Space of experience and horizon of expectation order historical time.",
+    "Instructions produce expectations whose execution remains open.",
+    "Expectation organises the present without being able to guarantee its fulfilment."
+   ]
+  },
+  "20": {
+   "title": "Responsibility",
+   "bottom_line": "Responsibility binds consequences to an address.",
+   "text": "Responsibility does not arise inside a person. It arises when communication attributes an action and its consequences to an address. Whoever is held responsible remains reachable for something that has already happened and yet demands further answers. In this, responsibility links past and future: it holds an address fast across changing situations and expects justification, reparation or change from it. This bond can make action possible, but it can also distribute guilt, shift competences and conceal power. Responsibility therefore does not designate a moral property. It is the social procedure through which consequences receive a place capable of answering.",
+   "notes": [
+    "Attribution and accountability organise institutional responsibility.",
+    "Responsibility begins in being addressable by the Other.",
+    "The consequences of social violence are addressed to perception and the public.",
+    "Responsibility remains contested between guilt, response and social attribution."
+   ]
+  },
+  "21": {
+   "title": "Recognition",
+   "bottom_line": "Recognition gives an address social validity.",
+   "text": "Recognition does not discover an identity that already exists. It confirms an address as a valid place of further communication. Whoever is recognised may speak, act, remember and make claims without having to prove their belonging anew in every encounter. Yet recognition is never complete. It grasps a person only in forms that are socially legible, and precisely thereby can overlook or exclude other things about them. Misrecognition, too, keeps addresses effective by attributing alien properties to them. Recognition is therefore not a possession but an ongoing social performance in which it is decided who can appear as whom.",
+   "notes": [
+    "Recognition depends on social boundary-drawing and orders of evaluation.",
+    "Recognition is understood as a condition of social self-relation.",
+    "Visibility and art-historical recognition are redistributed.",
+    "Identities are narrated through overlapping relations of recognition and misrecognition."
+   ]
+  },
+  "22": {
+   "title": "The Boundary",
+   "bottom_line": "Only what remains separate can touch.",
+   "text": "A boundary does not lie between systems that are already complete. It comes into being with every operation that continues something and excludes something else. Only this distinction produces an inside to which further operations can be attributed, and an outside that does not disappear but remains effective as environment. Boundaries therefore do not prevent relationship; they make it possible. Only what does not dissolve into one another can touch, irritate or couple. The boundary is not a wall but a continually renewed form at which one's own and the other come into being at the same time. Where it falls, what begins is not unity but the loss of any distinguishable relationship.",
+   "notes": [
+    "Boundary objects coordinate different social worlds without merging them.",
+    "Boundaries and connections are thought as mutually produced forms.",
+    "Closeness is produced at once by barrier, current and inaccessibility.",
+    "The boundary exists as a relational order of access and deferral."
+   ]
+  },
+  "23": {
+   "title": "Touch",
+   "bottom_line": "Touch is the boundary in the form of an event.",
+   "text": "Touch does not abolish a boundary. It is the moment in which two separate orders produce consequences in each other. One hand does not feel the other as the other feels itself; each side produces its own event from the contact. Precisely for this reason touch can be neither possession nor fusion. It changes without transferring anything unchanged. In it the boundary becomes sensitive: pressure, warmth, resistance and closeness appear only because bodies do not become one another. Social touch, too, follows this logic. It lets the foreign become effective without turning it into one's own. Where touch succeeds, difference is preserved not despite closeness but through it.",
+   "notes": [
+    "Closeness is socially shaped and bound to orders of communication.",
+    "Corporeality appears as being-with at boundaries and surfaces.",
+    "Touch changes the form without uniting work and viewer.",
+    "Bodily closeness remains shot through with difference, memory and vulnerability."
+   ]
+  },
+  "24": {
+   "title": "Irritation",
+   "bottom_line": "Irritation is an outside effect in a form of one's own.",
+   "text": "An irritation does not penetrate a system from outside. It arises when a foreign change triggers consequences within the system's own distinctions. The same sound can startle, soothe or go unnoticed; it is not the stimulus that determines the reaction but the order that processes it as a deviation. Irritation therefore proves neither openness nor closure alone. It designates the paradoxical point at which a system depends on something it cannot take over. The foreign becomes effective by losing its foreignness and being continued as a difference of the system's own. Coupling begins where such irritations become expectable again.",
+   "notes": [
+    "Irritation is a system's own processing of differences relating to its environment.",
+    "Relations are thought through mutual conditions of becoming.",
+    "Perception is irritated by an environment that grants no stable orientation.",
+    "Disturbance becomes the form of a speech that cannot secure its own connection."
+   ]
+  },
+  "25": {
+   "title": "The Body",
+   "bottom_line": "The body turns outside effects into sensitivity.",
+   "text": "The body is not a bridge across which the world reaches consciousness unchanged. It is a membrane that lets nothing become effective without transforming it. Light, pressure, temperature or someone else's gaze are not taken over but translated into sensations, movements, tensions and readinesses. Consciousness, too, does not have the body at its disposal as if it were its possession. It encounters it as pain, pleasure, exhaustion or restlessness – as a closeness that never becomes fully transparent. Communication can name, observe and address these states, but it can take over neither the pain nor the perception of another. In the body, the environment becomes sensitive without ceasing to be environment. It couples by separating, and connects by forcing every effect into a form of its own.",
+   "notes": [
+    "Bodies emerge in different practices as distinct, coupled realities.",
+    "Embodiment is the condition of a pre-reflective relation to the world.",
+    "Body and surroundings inscribe themselves into each other without becoming identical.",
+    "The body radically changes a person's social connections."
+   ]
+  },
+  "26": {
+   "title": "Perception",
+   "bottom_line": "Perception makes the boundary between body and consciousness questionable.",
+   "text": "Perception makes a theoretical boundary palpable. For Luhmann it is a mental operation: consciousness sees and hears even when it does not reflect on it. The body enables and irritates this performance but cannot simply be equated with consciousness. From Merleau-Ponty's phenomenology another question can be asked: can the lived body be set over against perception as environment at all, if it already performs a pre-reflective relation to the world? This juxtaposition is constructed by the stanza; it is not a direct exchange between the two authors. Precisely their difference shows how much depends on where the boundary between body and consciousness is drawn.",
+   "notes": [
+    "Perception remains a mental operation and can only irritate communication.",
+    "Perception is a bodily relation to the world prior to reflective objectification.",
+    "The conditions of perception themselves become the object of experience.",
+    "Body, movement and perception appear as unstable orders of closeness."
+   ],
+   "works": {
+    "2": "immersive light and fog works"
+   }
+  },
+  "27": {
+   "title": "Translation",
+   "bottom_line": "Translation is repetition without identity.",
+   "text": "Translation transfers nothing unchanged from one order into another. Perception does not become language, pain does not become a message, and a thought does not become communication. Each side produces a form of its own from what reaches it. Therein lies the loss in every translation – and at the same time its possibility: only because sameness is unattainable can something be continued under changed conditions. Here translation touches on Deleuze's concept of repetition, which reproduces nothing identical but brings forth difference. Unlike in Deleuze, however, the concern here is not primarily the creative unfolding of the new, but connection between operationally separate orders. Translation does not remove difference; it makes it connectable.",
+   "notes": [
+    "Translation enables cooperation without complete consensus.",
+    "Repetition produces difference instead of an identical copy.",
+    "Transfer shows the political and medial conditions of speaking.",
+    "Translation is afterlife and transformation, not mere copy."
+   ],
+   "works": {
+    "2": "works on language and borders"
+   }
+  },
+  "28": {
+   "title": "Coupling",
+   "bottom_line": "Coupling stabilises effects at boundaries whose emergence itself remains to be questioned.",
+   "text": "Coupling designates a relationship in which distinguishable processes repeatedly become effective for one another. A body does not bring organism, nervous system, consciousness and communication together into a single operation. At it, transitions arise at which each side forms events of its own from effects. Repetition makes such irritations expectable without abolishing differences. The concept thereby explains how separate orders can depend on one another. A further question remains open: how are the boundaries drawn at which we distinguish these orders in the first place? It cannot be answered by appealing to coupling once more, and it makes the relationship itself the object of observation.",
+   "notes": [
+    "Structural coupling links operational closure with dependence on the environment.",
+    "Intra-actions raise the question of how the boundaries and units arise that are distinguished here as orders capable of coupling.",
+    "Biological, technical and spatial processes remain distinct and influence one another.",
+    "Human and more-than-human processes are narrated as entangled, non-identical realities."
+   ]
+  },
+  "29": {
+   "title": "The Material",
+   "bottom_line": "Material is the resistance through which form becomes possible.",
+   "text": "Material is not the mute stuff to which an artistic idea gives form after the fact. Wood splinters, paint runs, fabric tightens, metal fatigues, digital systems produce errors and dependencies. In the work, material answers by enabling, deflecting or rejecting intentions. Its resistances are not external obstacles but conditions for something to emerge that was not fully designed beforehand. Even after it has been worked, material remains active: it ages, changes its surface and reacts to light, moisture, touch and time. Art begins where this movement of its own is not eliminated but admitted as participation.",
+   "notes": [
+    "Materiality appears as something that takes part in practices and produces differences.",
+    "Matter is thought as an effective, not merely passive, condition.",
+    "Material actions and resistances become generators of form.",
+    "Things resist being simply disposed of by language."
+   ]
+  },
+  "30": {
+   "title": "The Form",
+   "bottom_line": "Form makes difference reusable.",
+   "text": "Form is not a casing forced onto a material after the fact. It is a provisional order in which material, space, time, attention and expectation are related to one another so that a difference can recur. A form does not remain the same because it is unchanged. It remains recognisable although its execution, its context and its meaning change. It is precisely this portability that makes it socially effective: forms can be quoted, shifted, forgotten and taken up again. Where material produces resistance, form makes this resistance distinguishable and available for further operations. It stores nothing; it organises reusability.",
+   "notes": [
+    "Forms organise relations and can circulate between situations.",
+    "Form gains recognisability through difference in repetition.",
+    "Variation keeps a form recognisable across different material executions.",
+    "A fragmentary form organises recurrence without linear unity."
+   ]
+  },
+  "31": {
+   "title": "The Work",
+   "bottom_line": "A work remains recognisable as a particular form; an artistic address can carry several works.",
+   "text": "Not every form is a work. A work needs conditions under which, when executed differently or viewed later, it can be recognised as this work: a title, for instance, a shape, a rule of performance or a documented action. This is to be distinguished from the address of an artist, to which several works can be attributed. Bazon Brock's “artist without a work” shifts precisely the relationship between these two addresses. The later knowledge of Duchamp's Étant donnés changes the story about his public pause from making works, without turning his entire output into a single work. The identity of a work arises through the repeatable attribution of a particular form.",
+   "notes": [
+    "Artworks depend on social infrastructures and forms of support.",
+    "The identity of a work arises in an open relation of object, space and viewer.",
+    "The status of a work can be organised as an addressed practice rather than as an object.",
+    "Not writing itself becomes observable as a form that can be addressed as literature."
+   ]
+  },
+  "32": {
+   "title": "Style",
+   "bottom_line": "Style is the recurrence of a difference as expectation.",
+   "text": "Style is not the handwriting in which an unmistakable interior betrays itself. The work binds form to an address; style arises when, at this address, particular ways of choosing, linking and leaving out become recognisable across different works. A rhythm, a blank, a tension of colour or even a refusal can recur without repeating itself. That is why style can change media, outlive the artist and detach itself from them – as a school, an epoch or a manner. Precisely therein lies its danger: what first produced difference congeals into expectation and finally demands of the new that it look once more like its earlier deviation.",
+   "notes": [
+    "Style is understood as a form of living, reading and recognising.",
+    "Style functions as a symptomatic form of classification and reference.",
+    "Serial procedures, dated materials and historical images link repetition with a recognisable artistic order.",
+    "Style arises in taking up and shifting one's own forms."
+   ]
+  },
+  "33": {
+   "title": "The Audience",
+   "bottom_line": "The audience cultivates the sensitivity of separate perceptions.",
+   "text": "An audience is not a crowd that sees the same thing. Perception remains untransferable; no one can take over another person's colour, tension or boredom. Commonality therefore arises not in experience but in what connects to it. People compare, tell, contradict, come back, and in doing so learn to become sensitive to other things. The audience does not unite perceptions. It cultivates conditions under which separate perceptions can irritate and change one another. Therein lies its peculiar sociality: one does not have to have seen the same thing in order to go on seeing the same work differently. The public begins where difference is not removed but reused as a sensitivity that can change.",
+   "notes": [
+    "Taste and sensitivity arise in practices of engaging with something.",
+    "Aesthetic experience remains bound to the particular situation of its performance.",
+    "Cutting a Möbius strip shifts the work into a single, unrepeatable act by those taking part.",
+    "Observation appears as a sensitivity that can be trained and yet never completed."
+   ]
+  },
+  "34": {
+   "title": "The Exhibition",
+   "bottom_line": "The exhibition orders relations before it orders meanings.",
+   "text": "An exhibition does not simply show works. It sets them in relation. Closeness, distance, sequence, light, architecture, labelling and routing help determine what becomes visible at the same time and what conceals what. The same work can ask a different question in a different neighbourhood. The exhibition therefore produces no shared perception, but it distributes possibilities of seeing: it accelerates, delays, isolates, condenses and lets transitions emerge. Its order remains provisional; with every step the relation between things changes again. An exhibition is therefore less a container than a choreography – a spatial form of coupling in which works, bodies and expectations gain new sensitivities for one another.",
+   "notes": [
+    "Exhibition spaces organise the public, movement and visibility.",
+    "Exhibiting is read as a discursive and spatial practice of showing.",
+    "Rearranging the presentation changes the legibility of existing objects.",
+    "The perception of art is described from situations, encounters and the public."
+   ]
+  },
+  "35": {
+   "title": "Art",
+   "bottom_line": "Art keeps perception socially reusable by keeping its difference open.",
+   "text": "Art is neither material, form nor work, neither style, audience nor exhibition. It arises when these differences act back on one another in such a way that perception can be taken up socially without being exhausted in an unambiguous message. Material resists, form distinguishes, the work binds to an address, style produces expectation, the audience cultivates sensitivity, the exhibition orders relations. None of these operations possesses art on its own. Only their recursive coupling keeps open a domain in which something can be repeated without remaining the same. Art therefore preserves no meaning. It organises the possibility that perception returns differently.",
+   "notes": [
+    "Orders of art stabilise themselves through institutions, categories and shifts of boundaries.",
+    "Aesthetics orders forms of the perceptible and of taking part in it.",
+    "Images circulate through heterogeneous institutional, technical and economic orders.",
+    "Work, the figure of the artist, market and representation are recursively related to one another."
+   ]
+  },
+  "36": {
+   "title": "The Profile",
+   "bottom_line": "The profile turns addressable traces into calculable recognisability.",
+   "text": "An address makes reachable; a profile makes recognisable. It collects past clicks, purchases, routes, contacts or dwell times and assigns them to an address. What emerges is not an image of the whole person but a selection of comparable features. What appears as a pattern can be compared with other patterns and used for future decisions. Depending on the purpose, the same person is broken down into different calculable segments. Memory thereby shifts towards prediction: the past is used again to make next connections more probable. The addressed human being and the calculated profile do not coincide; yet the profile can determine what that person encounters next.",
+   "notes": [
+    "Algorithmic profiling addresses persons without knowing them in the sense of a personal relationship.",
+    "Data-shaped divisions and continuous modulation describe a recognisability that does not presuppose a complete person.",
+    "From what people in a found address book say, a portrait of the absent man emerges that offers no complete knowledge of his person.",
+    "Funes remembers every detail and precisely for that reason can hardly abstract. Only selection and comparison turn the past into patterns."
+   ]
+  },
+  "37": {
+   "title": "Information",
+   "bottom_line": "Information arises when a difference has consequences within a particular order.",
+   "text": "A data set can be stored; a selection from it becomes informative only for a particular question and a possible connection. The same click can have a different effect in a music recommendation than in a fraud check. Between recording and information lie rules of comparing, weighting and using. These rules are not neutral themselves: they help decide which difference stands out and which goes unconsidered. Platforms automate parts of this selection and use its results for later calculations. Data are certainly a material and technical starting point in this. Information here designates the effect of a difference within an order of observation and action.",
+   "notes": [
+    "Information appears not as an existing stock but as an effect of systems that select and combine differences and make them again the precondition of further operations.",
+    "Properties and boundaries are not simply given but arise within particular arrangements of observing and acting. What counts as information depends on how differences are cut.",
+    "The circulation and processing of digital images change their value, legibility and possible use.",
+    "A supposed extraterrestrial signal confronts scientists with the question of whether a received difference is information at all. Meaning does not arise from the signal alone."
+   ],
+   "works": {
+    "0": "reflections on information expert systems"
+   }
+  },
+  "38": {
+   "title": "Probability",
+   "bottom_line": "Probability turns open contingency into an unequally weighted future.",
+   "text": "Probability does not remove contingency. It orders it. Between what has happened and what could happen, a distribution of unequal expectations arises. The improbable remains possible but is treated differently from the probable. This makes it possible to work on the future operationally without having to know it. For platforms this shift is decisive: a profile does not have to say what someone will do. It is enough to make different next connections differently probable. Probability turns ignorance into a comparable form. It reduces the future without fixing it – and precisely thereby prepares the selection.",
+   "notes": [
+    "What is to come already becomes effective in the present through expectations, plans and risks, although it cannot be made present.",
+    "Probability does not merely measure uncertainty; it establishes its own way of dealing with events whose individual outcomes remain undetermined.",
+    "Systematic arrangements of concentric squares are disturbed by programmed deviations; chance works within a designed rule.",
+    "Statistics, prediction and probability shift the boundary between observation and control."
+   ],
+   "works": {
+    "0": "works on the social future"
+   }
+  },
+  "39": {
+   "title": "The Algorithm",
+   "bottom_line": "Algorithmic ranking distributes unequal chances of the next connection.",
+   "text": "On platforms, algorithmic selection procedures order content and suggestions: more or less relevant, visible or invisible, first or later. Such procedures can calculate probabilities from data and translate them into a concrete ranking. This requires prior decisions about what is collected, labelled and counted as success. The power of this ranking lies in preparing the present unequally. What ranks higher is more likely to get the chance to trigger a further connection; what is rarely shown is more easily overlooked. Users can object or choose differently. But their deviations, too, meet an already ordered selection and can enter again as data.",
+   "notes": [
+    "Algorithms produce socially relevant orders of the visible. Relevance is not a neutral finding of an importance that already exists.",
+    "Digital operations bring forth and organise relations; a digital object does not exist independently of the procedures of its actualisation.",
+    "Thousands of hand-labelled photographs of tulips make visible the work of selection and classification on which machine learning rests.",
+    "The novel's stream of the portal shows a present whose perception is already organised by sequence, repetition and technical selection."
+   ]
+  },
+  "40": {
+   "title": "The Recommendation",
+   "bottom_line": "The recommendation returns calculated probability as a possible next world.",
+   "text": "The recommendation is the moment at which calculation crosses the boundary of the model. A probability that internally was only a number, a weight or a rank now appears as an object in the world: this song, this person, this video, this route. A recommendation does not compel. That is precisely why it is effective. It occupies a possible next place before a search of one's own has begun, and presents this pre-occupation as help. The prediction thereby becomes socially connectable. What was calculated can be chosen, ignored, shared or rejected. Each of these reactions at the same time produces new traces. A recommendation is therefore selection and measuring instrument in one and the same operation.",
+   "notes": [
+    "Algorithmic power shows itself not only in hidden calculation but also in the situations and feelings that algorithms produce for users.",
+    "Technical orders of attention intervene in cultural memory and in the formation of future expectations.",
+    "The work uses the expectations of social platforms as material and shows how self-presentation operates within already established patterns of visibility.",
+    "Personalisation appears as a service and at the same time as the progressive organisation of what becomes visible, expectable and socially connectable."
+   ]
+  },
+  "41": {
+   "title": "The Feed",
+   "bottom_line": "The feed makes prediction the present environment of its next verification.",
+   "text": "The feed orders recommendations into a present. It does not simply show what exists but produces a continuous environment from possibilities that have already been weighted. Every selection appears as a now: visible, clickable, open to comment, skippable. Yet this now is calculated from the past and designed for further production of data. The feed does not only predict behaviour; it creates the situation in which the predicted behaviour can take place. Prediction thereby becomes recursive. What is shown influences what is done; what is done changes what can be shown in future. The feed is the present of a prediction that supplies its own preconditions after the fact.",
+   "notes": [
+    "Platforms organise connections as a technical and cultural order of programmed connectivity.",
+    "Digital communication produces a highly accelerated order of actualisation in which duration is harder to form.",
+    "Thousands of film fragments are assembled into a present that continually refers to its own time. The stream consists of discrete selections.",
+    "Short observations, news items and reports of crisis form an interrupted present that is linked only in the reading."
+   ],
+   "works": {
+    "1": "works on the digital present"
+   }
+  },
+  "42": {
+   "title": "The Platform",
+   "bottom_line": "The platform returns calculated possibilities as environment and processes their consequences.",
+   "text": "The platform links profiles, data, calculations, recommendations and feeds into a feedback loop. It observes behaviour, condenses it into patterns and provides selected possibilities as a new environment. This environment influences further actions, which can be observed again. The circle remains open: people, institutions, events and technical errors produce deviations. Where systems additionally generate texts, images or answers, these outputs too become possible next occasions for communication. The platform thus organises not only visibility but changes what can be connected to. Its predictions gain effect by helping to shape the present against which they will later be tested.",
+   "notes": [
+    "Measurement and data analysis do not merely describe society but help bring forth classifications, evaluations and possibilities of action.",
+    "Algorithmic calculation is not the pure execution of a fully predetermined plan; it produces relations and results whose concrete form is not simply written out.",
+    "The audience's bodily signals are translated into a technical environment that changes with every new participation. Observation becomes part of the next situation.",
+    "Externalised memory, social networks and algorithmic analysis link the past with a new technical capacity to act."
+   ]
+  },
+  "43": {
+   "title": "Identity",
+   "bottom_line": "Identity makes change attributable across time.",
+   "text": "Identity is not the sameness of a thing with itself. It arises where change can be attributed to the same address across time. A person, a work or an organisation does not remain identical because everything stays the same, but because differences are treated as changes of something recognisable. Identity therefore mediates between experience and expectation. It holds on to enough continuity for deviation to be noticed at all, and enough openness for change to remain attributable. Against platform profiles this distinction becomes important: calculable recognisability is not yet identity. Identity is the form in which change can be continued without dissolving into sameness.",
+   "notes": [
+    "Identity appears not as an unchangeable core but as something continually formed in social relationships and biographical transitions.",
+    "The distinction between idem and ipse separates sameness from selfhood: someone can remain the same without remaining alike in all their properties.",
+    "Masked reconstructions of family photographs separate visible resemblance and personal continuity; here the question of one's own identity comes to the fore.",
+    "Orlando remains attributable as a figure although centuries, social roles and gender change. Identity becomes narratable through change."
+   ]
+  },
+  "44": {
+   "title": "Possibility",
+   "bottom_line": "Possibility is the present reachability of a connection not yet actualised.",
+   "text": "Possibility is not a stock of invisible worlds behind reality. It is carried along in the present when a connection appears realisable, conceivable or expectable without already being actualised. Every structure limits such possibilities, otherwise no selection would be possible. But it does not necessarily destroy them. A door opens up other connections than a wall; a language other sentences than silence; an institution other decisions than a private whim. Possibility is therefore structured openness. It consists not in the arbitrary but in a present order admitting more than one continuation of its own. The future begins where this more remains practically within reach.",
+   "notes": [
+    "Futures are projected, compared and socially negotiated in present action.",
+    "The not-yet is not mere nothingness but present openness towards possibilities whose realisation depends on concrete conditions.",
+    "Instructions propose possible actions. Their form sets conditions without fully determining each actualisation.",
+    "The sense of possibility designates the ability not to confuse reality with its necessity and to see other orders as well."
+   ]
+  },
+  "45": {
+   "title": "Contingency",
+   "bottom_line": "Contingency becomes a chance for the future where alternatives remain within reach and structures remain revisable.",
+   "text": "Contingent is what is so and could also be otherwise. This possibility of being otherwise is not yet a practically available alternative. An order can be changeable while people have no access to the means of changing it. Expectations, rules and probabilities limit the next connections; in doing so they make decisions possible. What matters is whether such limitations remain open to being worked on. An undetermined situation offers as little hold as one that excludes every deviation. The future needs structures that allow selection and make revision possible. The question of contingency therefore leads on to the question of who can actually recognise, try out and reach alternatives.",
+   "notes": [
+    "Contingent is what is neither necessary nor impossible. Structures reduce complexity and at the same time carry along a horizon of other possibilities.",
+    "Norms stabilise themselves through repetition without thereby becoming necessary. It is precisely repetition that allows variation and displacement.",
+    "Familiar forms remain recognisable and at the same time appear as possible otherwise; what is taken for granted becomes unstable.",
+    "Because a life cannot be repeated on trial, necessity and chance remain undecidably entangled."
+   ],
+   "works": {
+    "0": "works on the concept of contingency",
+    "1": "works on the repetition of norms",
+    "2": "works with displaced everyday objects and spaces"
+   }
+  },
+  "46": {
+   "title": "The Interruption",
+   "bottom_line": "An interruption opens up the future only if something can connect differently after it.",
+   "text": "An interruption does not yet produce a future. A failure, a shock or a refusal can just as well destroy a sequence, paralyse it or force it back into its old form. What matters is whether the interruption makes a different continuation connectable. Only then does it change the structure of going on. This holds for conversations, institutions, works of art and technical systems. Interruption is therefore not a romantic counter-figure to order. It is a test of order: can it take in deviation without immediately normalising it or breaking off? The future does not arise in the rupture itself, but in the connections the rupture makes possible.",
+   "notes": [
+    "Disruptions of everyday expectations often provoke work of repair. A breach of norms does not automatically produce a new order.",
+    "With natality, Arendt links action with the possibility of a beginning. What matters is not the break alone but that a new sequence can begin.",
+    "A crack in the floor of Tate Modern makes separation spatially present and forces the institution to perceive architecture and history differently.",
+    "Countless interruptions are followed by no real new beginning. The negative case shows that deferral does not necessarily change the structure of continuation."
+   ]
+  },
+  "47": {
+   "title": "The New",
+   "bottom_line": "New is what changes what is possible afterwards.",
+   "text": "The new is not simply what was not there before. Surprises can remain without consequence, fashions disappear, coincidences fit at once into familiar patterns. Novelty becomes theoretically interesting only where an event changes what is possible afterwards. It shifts expectations, rules, perceptions or relationships and produces forms of connection that were not reachable in the same way before. That is why repetition, too, can be new: when it changes its conditions. The new does not stand outside history but intervenes in its continuation. It is not a property of an object but a difference in the space of the possibilities that follow.",
+   "notes": [
+    "A technical innovation becomes effective only within a web of participants, interests and objects.",
+    "Individuation emerges from metastable situations. The new arises as existing tensions bring forth a form that changes further individuation.",
+    "The single, unrepeatable cut changes what is still possible afterwards in the continuing form; here the effect on the next step of action comes to the fore.",
+    "Two differently organised societies show how rules open up and limit possibilities and can be changed in conflict."
+   ]
+  },
+  "48": {
+   "title": "Freedom",
+   "bottom_line": "Freedom is the ability to take up, reject or reshape structured contingency.",
+   "text": "Freedom is neither arbitrariness nor the absence of conditions. Action is always structured: by bodies, language, history, institutions, technology and other people. Freedom therefore shows itself not in beginning without preconditions, but in being able to deal with them differently. An expectation can be adopted, rejected, shifted or reshaped; a rule can be followed, interpreted or made the object of new rules. Freedom needs possibilities, but also abilities and conditions to perceive them and work on them. It is a structured disposal over contingency. Unfreedom begins where alternatives formally exist but no longer become practically connectable.",
+   "notes": [
+    "Practices are neither free of history nor mechanically determined; they arise as structured improvisations within unequally distributed spaces of possibility.",
+    "Freedom is situated. It is realised not outside conditions and other freedoms but in engaging with them.",
+    "Art is examined as a social possibility of action. What matters is whether situations arise in which those involved can actually act differently.",
+    "Room for action increasingly arises where the narrator refuses to be wholly absorbed into the identities offered by others."
+   ],
+   "works": {
+    "0": "works on habitus and practice"
+   }
+  },
+  "49": {
+   "title": "The Future",
+   "bottom_line": "The future is the preserved room to go on otherwise than is already expected.",
+   "text": "Later events will occur, however open an order is today. In this project, future means more: the present room for continuations that are not yet fully expected or prepared. Every order must restrict possibilities in order to be able to act. It endangers its own capacity for a future when it can treat deviations only as errors and can no longer reach alternatives. Openness consists neither in the arbitrary nor in the assurance of a better outcome. It shows itself in whether experiences, objections and new conditions can change a continuation. The future of the stanza is this preserved surplus of going on otherwise over expectation that is already organised.",
+   "notes": [
+    "An extended present draws ever larger parts of the future into present decisions through planning and expectation.",
+    "Reality consists of events of becoming; creativity designates the possibility that a new concrete order arises from what is given.",
+    "The work organises the future very precisely over a hundred years and at the same time keeps open which texts, readers and social conditions will one day come together.",
+    "The stories examine how action changes when the future appears foreseeable, and distinguish knowledge of what is to come from the possibility of action."
+   ]
+  }
+ }
+}

@@ -91,6 +91,24 @@ main:focus { outline: none; }
 @media (forced-colors: active) { .seitenweg a[aria-current] { outline: 1px solid currentColor; outline-offset: 2px; } }
 .seitenweg a:focus-visible { outline: 2px solid var(--weg); outline-offset: 2px; }
 .seitenweg + .zsz-kopf { padding-top: 28px; }
+/* Sprachwechsel (seit 3. Oktober 2026: Deutsch, English, Español): drei gut sichtbare Knöpfe im Kopf, auf dem Computer rechts nach dem Menü,
+   auf dem Handy in einer eigenen Zeile darunter; die aktuelle Sprache gefüllt. Jeder Knopf führt auf dieselbe Seite in der anderen Sprache.
+   Der Titel «Zu seiner Zeit» bleibt an seiner Stelle (Abstand unter den Hauptlinks, siehe oben). */
+.zsz-sprachen { display: flex; flex-wrap: wrap; gap: 8px; align-self: center; }
+.zsz-sprachen a {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 16px;
+  border: 1px solid var(--tinte);
+  border-radius: 999px;
+  font: 600 0.875rem/1.2 var(--sans);
+  letter-spacing: 0.03em;
+  color: var(--tinte);
+  text-decoration: none;
+}
+.zsz-sprachen a:hover { background: var(--leicht); }
+.zsz-sprachen a[aria-current] { background: var(--tinte); color: var(--papier); border-width: 2px; padding: 3px 15px; }   /* dicker Rahmen: auch bei erzwungenen Farben erkennbar */
 
 .zsz-fuss {
   max-width: 1080px;

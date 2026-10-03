@@ -25,6 +25,17 @@ Veröffentlicht unter `https://ornament.cloud/zu-seiner-zeit/`, im Portfolio ver
   `begriffe` = Begriffsseiten unter `begriff/<slug>/`. Ohne Eintrag bleibt alles leer; auf der Website erscheint
   dann nichts (keine Platzhalter). Der Build bricht bei unbekannten Nummern, Personen oder unsicheren Links ab.
 
+## Übersetzungen (seit 3. Oktober 2026)
+
+- `src/data/zu-seiner-zeit.en.json` (Englisch) und `src/data/zu-seiner-zeit.es.json` (Spanisch): je Strophe Titel, Leitsatz,
+  Haupttext und die vier Notizen zu den Verweisen (`notes`), dazu Untertitel, Aufbau, Fassung, Zyklen (Name, Untertitel) und die
+  Rubriken (`domains`). Namen und Werktitel bleiben wie im Original; nur beschreibende Werkangaben («Arbeiten zu …») sind unter `works`
+  übersetzt. Der Titel «Zu seiner Zeit» bleibt in allen Sprachen.
+- Seiten unter `zu-seiner-zeit/en/` und `zu-seiner-zeit/es/` mit denselben Adressen wie die deutsche Fassung (die Adressen kommen immer
+  aus dem deutschen Titel). Oben im Kopf jeder Seite der Sprachwechsel «Deutsch · English · Español» auf dieselbe Seite; `hreflang` und
+  Sitemap für alle drei Sprachen. Texte der Oberfläche: `UI` in `tools/build-zu-seiner-zeit.ts`, im Browser `TEXTE` in `zsz.js`.
+- Ändert sich der deutsche Text, müssen die Übersetzungen nachgeführt werden (der Build prüft nur Vollständigkeit, nicht Inhalt).
+
 ## Abgeleitetes Datenmodell (tools/build-zu-seiner-zeit.ts, `model()`)
 
 - Strophe: `id`, `slug` (`37-die-information`), `cycle`, `cycleTitle`, `title`, `bottomLine`, `text`, `status`,

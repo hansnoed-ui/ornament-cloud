@@ -1,0 +1,608 @@
+{
+ "_hinweis": "Traducción al español de src/data/zu-seiner-zeit.json (estrofas, frases guía, notas de las referencias, ciclos). Nombres y títulos de obras como en el original; solo se traducen las referencias descriptivas a obras (works). Se genera con tools/build-zu-seiner-zeit.ts.",
+ "lang": "es",
+ "subtitle": "Mesetas sobre operación, arte, sociedad y comunicación artificial",
+ "structure": "7 ciclos × 7 estrofas = 49 estrofas",
+ "version": "Versión editada, traducida del alemán",
+ "domains": {
+  "Soziologie": "Sociología",
+  "Philosophie": "Filosofía",
+  "Kunst": "Arte",
+  "Literatur": "Literatura",
+  "Kybernetik": "Cibernética"
+ },
+ "cycles": {
+  "I": {
+   "name": "Operación",
+   "deck": "Del acontecer al tiempo: las operaciones solo se convierten en historia en la conexión."
+  },
+  "II": {
+   "name": "Recursión",
+   "deck": "Cómo el pasado sigue siendo eficaz en huellas, prácticas y relatos."
+  },
+  "III": {
+   "name": "Dirección",
+   "deck": "Cómo la reconocibilidad se atribuye socialmente y se vuelve esperable."
+  },
+  "IV": {
+   "name": "Acoplamiento",
+   "deck": "Cómo órdenes separados se vuelven eficaces unos para otros sin unirse."
+  },
+  "V": {
+   "name": "Arte",
+   "deck": "Cómo la diferencia de percepción sigue siendo socialmente reutilizable."
+  },
+  "VI": {
+   "name": "Plataforma",
+   "deck": "Cómo la reconocibilidad se convierte en probabilidad, y la probabilidad vuelve a devolverse como entorno."
+  },
+  "VII": {
+   "name": "Futuro",
+   "deck": "Bajo qué condiciones, pese a estas reducciones, sigue siendo posible seguir de otro modo."
+  }
+ },
+ "stanzas": {
+  "1": {
+   "title": "El puente",
+   "bottom_line": "No es el mundo el que funda la conexión: la conexión inventa el mundo que, a posteriori, la hace parecer necesaria.",
+   "text": "Toda teoría comienza con un puente. Une conceptos antes incluso de saber si al otro lado hay algo que la espera. En ello reside su verdadera audacia. Su primer paso no es la verdad, sino la suposición de un vínculo. Solo cuando operaciones posteriores retoman ese vínculo adquiere la apariencia de un orden necesario. Lo que llamamos origen no suele ser, por tanto, otra cosa que la primera conexión lograda. Los puentes no se construyen porque existan orillas; las orillas surgen porque los puentes han aprendido a recordar su propia dirección.",
+   "notes": [
+    "Las operaciones adquieren coherencia solo a través de la conexión.",
+    "Las relaciones no presuponen relata ya dados.",
+    "La cercanía y la distancia surgen en una relación mediada.",
+    "El puente mismo se convierte en el acontecimiento precario de unir."
+   ]
+  },
+  "2": {
+   "title": "El acontecimiento",
+   "bottom_line": "Lo que ha sucedido ha sucedido; su historia cambia con cada conexión.",
+   "text": "Un acontecimiento tiene lugar y al instante siguiente ha pasado. Lo sucedido no puede deshacerse después. Lo que queda abierto, en cambio, es el lugar que recibirá en una historia. Una conexión posterior puede convertirlo en comienzo, error, azar o punto de inflexión. La idea de un desarrollo en línea recta proyecta sobre momentos anteriores una dirección que entonces todavía estaba abierta. Cada presente selecciona huellas y las ordena de nuevo. Con ello cambia la historia que puede contarse sobre lo sucedido. Precisamente porque el acontecimiento ha pasado, su significado nunca queda fijado de una vez por todas.",
+   "notes": [
+    "El tiempo social surge en prácticas de ordenación y expectativa.",
+    "La realidad se piensa como un acontecer de eventos y procesos.",
+    "La fecha fija un acontecimiento sin determinar su significado posterior.",
+    "Un día se estratifica de nuevo, una y otra vez, a través del recuerdo y el presente."
+   ]
+  },
+  "3": {
+   "title": "La conexión",
+   "bottom_line": "La continuidad no es un estado: es la más improbable de todas las operaciones.",
+   "text": "El verdadero logro de un sistema no consiste en producir algo, sino en seguir adelante. Cada operación desaparece en el instante de su realización. La duración no surge, por tanto, de la permanencia, sino de la reanudación. Lo que llamamos identidad no es otra cosa que el hábito logrado de conectar el paso siguiente con el anterior. Cada conexión fallida, en cambio, abre otra historia. Por eso los sistemas no viven de la estabilidad, sino de la improbable capacidad de convertir, una y otra vez, su propia interrupción en continuación.",
+   "notes": [
+    "La autopoiesis consiste en la producción recursiva de nuevas operaciones.",
+    "La continuación descansa en la huella, la repetición y el desplazamiento.",
+    "La forma surge cada vez de nuevo en la realización de su siguiente articulación.",
+    "La experiencia continúa a medida que su orden anterior se desintegra."
+   ]
+  },
+  "4": {
+   "title": "El observador",
+   "bottom_line": "El observador solo puede observar más tarde la distinción de su observar presente.",
+   "text": "Observar significa usar una distinción e indicar uno de sus lados. El observador no se sitúa frente a esta operación como una instancia adicional: solo se vuelve determinable por el modo de su observar. Mientras ve algo, no puede observar al mismo tiempo, como la misma operación, la distinción con la que está viendo. Una observación posterior puede hacer visible ese presupuesto; para ello vuelve a usar una distinción propia. Así, la autoobservación desplaza su punto ciego en lugar de suprimirlo de una vez por todas. También el supuesto comienzo del observar aparece como comienzo solo desde una perspectiva posterior.",
+   "notes": [
+    "Un observador no puede descontarse de su propia construcción de la realidad; cada observación posterior trae de nuevo sus propios presupuestos.",
+    "Toda observación tiene un punto de vista situado y, por tanto, límites.",
+    "La observación y la identidad observada se desplazan mutuamente.",
+    "El mismo signo se vuelve otro por el lugar desde el que se observa."
+   ]
+  },
+  "5": {
+   "title": "El punto ciego",
+   "bottom_line": "El punto ciego no es el final del conocimiento: es su comienzo.",
+   "text": "Toda operación se realiza bajo condiciones que ella misma no puede observar. No porque le falte información, sino porque su propia forma determina lo que puede aparecer como información. El punto ciego no es, por tanto, un déficit del saber, sino su presupuesto. Quien quisiera eliminarlo tendría que salir de su propia operación, y precisamente con ello produciría una nueva distinción con un nuevo punto ciego. El conocimiento no amplía su campo de visión superando la ceguera, sino aprendiendo a variar de forma productiva sus propios límites.",
+   "notes": [
+    "La observación de segundo orden hace visible la selectividad del observar.",
+    "Toda indicación presupone un lado no marcado.",
+    "Imagen y mundo se distinguen por un límite invisible.",
+    "El conocimiento comienza donde las distinciones familiares se vuelven insostenibles."
+   ]
+  },
+  "6": {
+   "title": "El retraso",
+   "bottom_line": "El presente es el arte de pasar por alto su propio retraso.",
+   "text": "Todo presente se aparece a sí mismo como inmediato. En realidad, siempre llega tarde. Antes incluso de que una operación se experimente como presente, ya ha pasado y solo puede retomarse mediante otras operaciones. Lo que llamamos presencia no es, por tanto, un punto en el tiempo, sino una reconstrucción continua. El presente vive de olvidar sin cesar su propio retraso. Es precisamente este pequeño desfase el que hace posibles el recuerdo, la expectativa y la conexión. Sin él no habría ni tiempo ni historia, sino solo el apagarse silencioso de acontecimientos aislados.",
+   "notes": [
+    "El presente está organizado socialmente y nunca es un mero punto neutral en el tiempo.",
+    "La retención y la protención estructuran el ahora vivido.",
+    "El presente aparece como un estado inestable de desplazamiento continuo.",
+    "El pasado solo se vuelve eficaz en presentes posteriores."
+   ]
+  },
+  "7": {
+   "title": "El tiempo",
+   "bottom_line": "El tiempo es la condición de que a una operación pueda seguirle algo distinto de su repetición.",
+   "text": "El tiempo no lleva los acontecimientos de un lugar a otro como una corriente. Una operación termina con su realización; lo que ha sucedido no puede repetirse como si aún fuera presente. Al mismo tiempo, una operación posterior puede conectar con ello y, en condiciones cambiadas, hacer de ello otra cosa. Aquí reside la tensión entre pasado y futuro: lo sucedido está fijado; sus posibles continuaciones, no. La duración surge cuando las conexiones vuelven a ser posibles; una ruptura cambia sus condiciones. En esta estrofa, el tiempo designa la diferencia que toda reanudación lleva consigo: lo siguiente puede conectar sin continuar del mismo modo.",
+   "notes": [
+    "El tiempo ordena actualidad y no actualidad dentro de las operaciones presentes.",
+    "La temporalidad se piensa desde el devenir y las relaciones irreversibles.",
+    "El tiempo cronológico se monta a partir de miles de presentes cinematográficos heterogéneos.",
+    "La duración surge en el desplazamiento entre acontecimiento, recuerdo y ausencia."
+   ]
+  },
+  "8": {
+   "title": "El almacén",
+   "bottom_line": "El almacenamiento mantiene algo disponible; la reanudación le da un nuevo presente.",
+   "text": "Una biblioteca conserva libros; un disco duro, datos. Tales almacenes mantienen disponibles estados materiales y los protegen de una desaparición rápida. Con ello aún no se explica por qué algo adquiere significado años después. Un libro encontrado tiene que ser leído; un conjunto de datos, seleccionado; un hallazgo, llevado a una pregunta. El almacenamiento crea un posible encuentro posterior; el recuerdo comienza con su realización presente. Ambos se necesitan a menudo, pero no coinciden. Incluso un documento conservado por completo puede volverse ilegible si se pierden su lengua y su contexto. El almacén asegura la disponibilidad; no decide sobre el uso siguiente.",
+   "notes": [
+    "La memoria es un logro de selección y no un mero archivo.",
+    "La memoria no puede reducirse al almacenamiento material.",
+    "La conservación produce un presente de la ausencia.",
+    "Los archivos se escenifican como construcciones posteriores de reutilización cultural."
+   ]
+  },
+  "9": {
+   "title": "La memoria",
+   "bottom_line": "La memoria hace que el pasado vuelva a ser eficaz en prácticas cambiadas.",
+   "text": "La memoria se muestra cuando el pasado vuelve a ser eficaz en una práctica presente. Un relato evoca acontecimientos anteriores de otro modo que un gesto, un movimiento de la mano ejercitado o un ritual. Tales reanudaciones tienen historia; se realizan bajo condiciones que han cambiado. También el cuerpo lleva hábitos y capacidades sin tener en todo momento una imagen del pasado a disposición. Por eso la memoria no puede reducirse ni al archivo ni al recuerdo consciente. Está ligada a materiales, cuerpos y formas sociales, y sigue siendo a la vez un logro presente. Lo que vuelve, vuelve en una situación nueva.",
+   "notes": [
+    "Las prácticas corporales y los rituales transmiten la memoria social sin que esta pueda reducirse a una representación consciente.",
+    "La repetición produce diferencia en lugar de un retorno idéntico.",
+    "Las huellas del pasado siguen siendo eficaces sin volverse presente.",
+    "El pasado vuelve al presente transformado y con capacidad de actuar."
+   ]
+  },
+  "10": {
+   "title": "El recuerdo",
+   "bottom_line": "El recuerdo da a lo sucedido una forma presente y verificable.",
+   "text": "El recuerdo sucede en el presente. Cuando se cuenta una experiencia, se mira una imagen o se vuelve a leer una frase anterior, el pasado adquiere una forma actual. Esa forma puede cambiar sin que el acontecimiento pasado se convierta después en otro. Los recuerdos recurren a huellas, completan lagunas y están ligados a expectativas. Pueden contradecirse entre sí; los objetos y los testimonios ponen a la vez límites a sus interpretaciones. Lo recordado no es, por tanto, ni una copia inalterada ni una invención libre. El recuerdo establece una relación con lo que ha sucedido y solo puede volver a interrogarse desde presentes posteriores.",
+   "notes": [
+    "El recuerdo se reconstruye en marcos sociales de referencia.",
+    "El pasado adquiere significado desde la posición intermedia del presente.",
+    "Contar una y otra vez transforma la experiencia recordada.",
+    "El recuerdo produce un nuevo presente del pasado."
+   ]
+  },
+  "11": {
+   "title": "La huella",
+   "bottom_line": "La huella retiene materialmente un efecto pasado sin fijar su significado.",
+   "text": "Una pisada en la arena, una foto amarillenta o un pliegue en el papel no recuerdan nada. Sin embargo, toda huella tiene una constitución material que hace posibles y limita las interpretaciones posteriores. La impronta no informa por sí sola de quién pasó por allí; tampoco puede atribuírsele cualquier movimiento. Que una huella se convierta en prueba, relato, obra de arte o desecho se decide en una práctica posterior. Su material sigue siendo obstinado en ello. La huella une un acontecer pasado con posibles preguntas presentes sin llevar ya en sí la respuesta.",
+   "notes": [
+    "Las huellas materiales necesitan formas culturales de reactivación.",
+    "La huella socava la idea de una presencia pura.",
+    "La ausencia se moldea como huella materialmente legible.",
+    "Imágenes y lugares se convierten en detonantes precarios de un recuerdo tardío."
+   ]
+  },
+  "12": {
+   "title": "El olvido",
+   "bottom_line": "El olvido cambia lo que sigue siendo alcanzable, y para quién.",
+   "text": "El olvido tiene varias formas. Un documento puede ser destruido, una capacidad atrofiarse, un nombre desaparecer de los registros públicos. En otros casos, una huella permanece, pero los caminos hacia ella se vuelven inservibles o improbables. El olvido social contribuye así a ordenar lo que puede volver a contarse, examinarse o esperarse. Esta selección alivia; pero también puede expulsar a personas y acontecimientos de la memoria alcanzable. El olvido no es, por tanto, ni una mera carencia ni siempre un logro creativo. Sus consecuencias dependen de lo que se pierde, de para quién algo se vuelve inaccesible y de quién puede decidir al respecto.",
+   "notes": [
+    "El olvido es una condición positiva del recuerdo selectivo.",
+    "El olvido activo crea margen para el presente y la acción.",
+    "La huella cerrada sigue siendo visible como diferencia no eliminada.",
+    "La memoria total aparece como incapacidad de abstracción."
+   ]
+  },
+  "13": {
+   "title": "El archivo",
+   "bottom_line": "El archivo conserva y ordena lo que podrá volver a encontrarse en el futuro.",
+   "text": "Un archivo conserva documentos y objetos. Al mismo tiempo los ordena según reglas que determinan qué puede ser recibido, descrito y vuelto a encontrar. Estas reglas crean posibilidades futuras y las limitan: sin catalogación, incluso lo conservado sigue siendo difícil de alcanzar; lo que nunca se recogió no puede simplemente volver a llamarse. Un expediente solo se convierte en prueba mediante preguntas, procedimientos y contradicción. Por eso los archivos no cuentan historia por sí mismos. Ponen material a disposición y determinan qué historias pueden surgir de él. Su logro reside en la unión de conservación, selección y acceso, y con ello también en el poder de fijar estas condiciones.",
+   "notes": [
+    "Los archivos organizan la disponibilidad cultural más allá del recuerdo actual.",
+    "Su concepto de archivo se refiere a las reglas de lo decible y de lo repetible; amplía e inquieta el concepto institucional de archivo que se trata aquí.",
+    "La forma del archivo y el estatus del documento se desestabilizan artísticamente.",
+    "El archivo privado sigue siendo fragmentario y produce significado solo en su disposición."
+   ]
+  },
+  "14": {
+   "title": "La historia",
+   "bottom_line": "La historia reinterpreta el pasado y sigue ligada a sus huellas.",
+   "text": "Los acontecimientos pasados han sucedido, aunque ya nadie hable de ellos. La historia surge cuando una sociedad ordena, discute y vuelve a interpretar sus huellas, testimonios y tradiciones. Con cada presente pueden volverse importantes otras preguntas y documentos hasta entonces pasados por alto. Eso cambia la historia que puede contarse; lo sucedido no se vuelve por ello arbitrario. Una afirmación tiene que sostenerse frente a las huellas disponibles, frente a otros relatos y frente a sus lagunas. La historia no es idéntica al archivo ni la mera suma de recuerdos. Es un trabajo presente y disputado sobre un pasado que no se agota en su uso actual.",
+   "notes": [
+    "El pasado se reconstruye en marcos sociales cambiantes.",
+    "La historia se sitúa en un presente entre la procedencia y la posibilidad.",
+    "La documentación cambia lo que sigue siendo visible como historia recordable.",
+    "La historia surge del montaje, la huella y el deambular presente."
+   ]
+  },
+  "15": {
+   "title": "La dirección",
+   "bottom_line": "La dirección hace posible la atribución social más allá de la ausencia.",
+   "text": "La comunicación necesita direcciones a las que puedan atribuirse enunciados, expectativas y respuestas. Un nombre, una organización o una cuenta técnica hacen que alguien o algo sea alcanzable incluso cuando su portador está ausente. Tales direcciones surgen y cambian mediante referencias repetidas. Sin embargo, no son el origen de todo acontecer corporal o psíquico. Su ámbito es la atribución social: ¿a quién se interpela como el mismo lugar, quién puede responder, quién sigue siendo responsable? Una dirección mantiene abiertas estas posibilidades más allá de situaciones particulares. Cómo se interpela a alguien influye en su identidad social sin coincidir con su vida.",
+   "notes": [
+    "La comunicación agrupa expectativas en direcciones sociales reconocibles.",
+    "El quién de una persona surge de forma relacional y narrativa.",
+    "Una persona aparece a través de huellas y observaciones direccionables.",
+    "Los nombres mantienen unidos lugares cuya identidad cambia al narrarse."
+   ]
+  },
+  "16": {
+   "title": "El nombre",
+   "bottom_line": "El nombre hace direccionable la ausencia.",
+   "text": "Un nombre no dice quién es alguien. Se encarga de que la misma dirección pueda volver a invocarse incluso cuando su portador se ha vuelto ausente, distinto o contradictorio. Los nombres condensan interpelaciones pasadas en una forma a la que se conectan expectativas, historias y responsabilidades. En ello residen su poder y su violencia. Quien recibe un nombre se vuelve socialmente localizable, pero también queda fijado; a quien se le cambia el nombre no pierde solo una palabra, sino un futuro ya organizado de posibles atribuciones. Por eso el nombre no pertenece del todo a nadie. Circula entre el uso propio y el uso ajeno y mantiene unida una unidad social allí donde ninguna identidad se basta a sí misma.",
+   "notes": [
+    "Nombrar actúa como investidura y atribución social.",
+    "El nombre propio mantiene abierta la singularidad de una persona direccionable.",
+    "Nombrar devuelve a figuras anonimizadas su historia y su dirección social.",
+    "Nombres, roles e identidades entran en un juego de sustitución recíproca."
+   ]
+  },
+  "17": {
+   "title": "La persona",
+   "bottom_line": "La persona es la memoria de una dirección.",
+   "text": "Una persona no es el ser humano al que designa. Es la forma en que la comunicación agrupa numerosas expectativas en una dirección reconocible. Quien es tenido por amable, poco fiable, enfermo, competente o peligroso no queda descrito por completo, sino preparado para conexiones posteriores. En ello reside el alivio que ofrece la persona: nadie tiene que ser inventado de nuevo en cada encuentro. En ello reside a la vez su dureza: lo que una vez se atribuyó vuelve como expectativa y limita lo que en el futuro todavía puede parecer creíble. Por eso las personas no consisten ni en propiedades ni en interioridad. Surgen en la medida en que las interpelaciones se condensan y esperan su propia repetición.",
+   "notes": [
+    "Las personas funcionan como formas sociales de atribución.",
+    "La autodescripción sigue ligada a normas e interpelaciones sociales.",
+    "Las personas se hacen socialmente presentes a través de nombres, imágenes y huellas archivadas.",
+    "Una persona queda determinada por atribuciones cuyo orden no controla."
+   ]
+  },
+  "18": {
+   "title": "El rol",
+   "bottom_line": "El rol hace que las expectativas sean independientes de las personas.",
+   "text": "Un rol no es una máscara tras la que se oculta la persona verdadera. Es un orden de expectativas que ya existe antes de que alguien lo asuma. Maestra, madre, paciente, artista o jueza no designan propiedades, sino posiciones desde las que ciertas acciones se vuelven probables y otras requieren explicación. Los roles alivian a las personas porque no tienen que llevar toda su individualidad a cada situación. Al mismo tiempo ponen límites: quien asume un rol es medido con expectativas que no surgieron con él. Así, el rol hace repetibles las relaciones sociales al volver intercambiables a las personas sin sustituirlas del todo.",
+   "notes": [
+    "Los roles estructuran situaciones, expectativas y presentaciones de sí.",
+    "La performatividad repetida estabiliza identidades sociales sin un núcleo fijo.",
+    "Rol, rostro y atribución biográfica se desplazan unos frente a otros.",
+    "Personaje, rol y persona se separan entre sí."
+   ]
+  },
+  "19": {
+   "title": "La expectativa",
+   "bottom_line": "Las expectativas ordenan lo que en el futuro puede sorprender en una dirección.",
+   "text": "Las expectativas no predicen con seguridad lo que va a ocurrir. Determinan lo que puede considerarse adecuado, desviado o sorprendente. Un nombre, un rol y una relación familiar traen consigo tales expectativas; con ello el futuro ya queda ordenado en el presente. Las decepciones pueden cambiar una expectativa. Pero también pueden llevar a reforzarla cuando la desviación se trata como excepción o se atribuye a una persona. Precisamente en ello reside su persistencia social. Una expectativa une una dirección con posibles acontecimientos siguientes y determina a la vez cómo puede tratarse lo inesperado.",
+   "notes": [
+    "Las expectativas estructuran la incertidumbre sin fijar el futuro.",
+    "El espacio de experiencia y el horizonte de expectativa ordenan el tiempo histórico.",
+    "Las instrucciones producen expectativas cuya ejecución queda abierta.",
+    "La espera organiza el presente sin poder garantizar su cumplimiento."
+   ]
+  },
+  "20": {
+   "title": "La responsabilidad",
+   "bottom_line": "La responsabilidad vincula las consecuencias a una dirección.",
+   "text": "La responsabilidad no surge en el interior de una persona. Surge cuando la comunicación atribuye una acción y sus consecuencias a una dirección. Quien es hecho responsable sigue siendo alcanzable por algo que ya ha sucedido y que, sin embargo, exige más respuestas. En ello la responsabilidad une pasado y futuro: retiene una dirección a través de situaciones cambiantes y espera de ella justificación, reparación o cambio. Este vínculo puede hacer posible la acción, pero también repartir culpas, desplazar competencias y ocultar poder. Por eso la responsabilidad no designa una propiedad moral. Es el procedimiento social mediante el cual las consecuencias reciben un lugar capaz de responder.",
+   "notes": [
+    "La atribución y la rendición de cuentas organizan la responsabilidad institucional.",
+    "La responsabilidad comienza en ser interpelable por el Otro.",
+    "Las consecuencias de la violencia social se dirigen a la percepción y al espacio público.",
+    "La responsabilidad sigue siendo disputada entre culpa, respuesta y atribución social."
+   ]
+  },
+  "21": {
+   "title": "El reconocimiento",
+   "bottom_line": "El reconocimiento confiere validez social a una dirección.",
+   "text": "El reconocimiento no descubre una identidad ya existente. Confirma una dirección como lugar válido de comunicación posterior. Quien es reconocido puede hablar, actuar, recordar y plantear reclamaciones sin tener que demostrar de nuevo su pertenencia en cada encuentro. Pero el reconocimiento nunca es completo. Capta a una persona solo en formas socialmente legibles y, precisamente por ello, puede pasar por alto o excluir otras cosas de ella. También el desconocimiento mantiene eficaces las direcciones al atribuirles propiedades ajenas. Por eso el reconocimiento no es una posesión, sino una realización social continua en la que se decide quién puede aparecer como quién.",
+   "notes": [
+    "El reconocimiento depende de trazados sociales de límites y de órdenes de valoración.",
+    "El reconocimiento se entiende como condición de la autorrelación social.",
+    "La visibilidad y el reconocimiento histórico-artístico se redistribuyen.",
+    "Las identidades se narran a través de relaciones superpuestas de reconocimiento y desconocimiento."
+   ]
+  },
+  "22": {
+   "title": "El límite",
+   "bottom_line": "Solo lo que permanece separado puede tocarse.",
+   "text": "Un límite no se encuentra entre sistemas ya acabados. Surge con cada operación que continúa algo y excluye otra cosa. Solo esta distinción produce un dentro al que pueden atribuirse otras operaciones, y un fuera que no desaparece, sino que sigue siendo eficaz como entorno. Por eso los límites no impiden la relación; la hacen posible. Solo lo que no se disuelve lo uno en lo otro puede tocarse, irritarse o acoplarse. El límite no es un muro, sino una forma que se renueva continuamente y en la que surgen a la vez lo propio y lo ajeno. Donde cae, no comienza la unidad, sino la pérdida de toda relación distinguible.",
+   "notes": [
+    "Los objetos de frontera coordinan distintos mundos sociales sin fusionarlos.",
+    "Límites y conexiones se piensan como formas producidas recíprocamente.",
+    "La cercanía se produce a la vez mediante barrera, corriente e inaccesibilidad.",
+    "El límite existe como orden relacional de acceso y aplazamiento."
+   ]
+  },
+  "23": {
+   "title": "El contacto",
+   "bottom_line": "El contacto es el límite en forma de acontecimiento.",
+   "text": "El contacto no suprime un límite. Es el instante en que dos órdenes separados producen consecuencias el uno en el otro. Una mano no siente a la otra como esta se siente a sí misma; cada lado produce a partir del contacto un acontecimiento propio. Precisamente por eso el contacto no puede ser ni posesión ni fusión. Transforma sin transferir nada inalterado. En él, el límite se vuelve sensible: presión, calor, resistencia y cercanía aparecen solo porque los cuerpos no se convierten el uno en el otro. También el contacto social sigue esta lógica. Hace eficaz lo ajeno sin convertirlo en propio. Donde el contacto se logra, la diferencia no se conserva a pesar de la cercanía, sino a través de ella.",
+   "notes": [
+    "La cercanía está formada socialmente y ligada a órdenes de comunicación.",
+    "La corporalidad aparece como ser-con en límites y superficies.",
+    "El contacto cambia la forma sin unir obra y espectador.",
+    "La cercanía corporal sigue atravesada por la diferencia, el recuerdo y la vulnerabilidad."
+   ]
+  },
+  "24": {
+   "title": "La irritación",
+   "bottom_line": "La irritación es un efecto ajeno en forma propia.",
+   "text": "Una irritación no penetra en un sistema desde fuera. Surge cuando un cambio ajeno desencadena consecuencias dentro de las propias distinciones. El mismo ruido puede asustar, tranquilizar o pasar desapercibido; no es el estímulo el que determina la reacción, sino el orden que lo procesa como desviación. Por eso la irritación no prueba por sí sola ni apertura ni clausura. Designa el lugar paradójico en el que un sistema depende de algo que no puede asumir. Lo ajeno se vuelve eficaz al perder su extrañeza y continuar como diferencia propia. El acoplamiento comienza allí donde tales irritaciones vuelven a ser esperables.",
+   "notes": [
+    "La irritación es el procesamiento propio del sistema de diferencias referidas al entorno.",
+    "Las relaciones se piensan a través de condiciones recíprocas del devenir.",
+    "La percepción es irritada por un entorno que no concede una orientación estable.",
+    "La perturbación se convierte en la forma de un habla que no puede asegurar su propia conexión."
+   ]
+  },
+  "25": {
+   "title": "El cuerpo",
+   "bottom_line": "El cuerpo convierte el efecto ajeno en sensibilidad.",
+   "text": "El cuerpo no es un puente por el que el mundo llegue inalterado a la conciencia. Es una membrana que no deja que nada se vuelva eficaz sin transformarlo. La luz, la presión, la temperatura o una mirada ajena no se asumen, sino que se traducen en sensaciones, movimientos, tensiones y disposiciones. Tampoco la conciencia dispone del cuerpo como si fuera su posesión. Lo encuentra como dolor, placer, agotamiento o inquietud: como una cercanía que nunca se vuelve del todo transparente. La comunicación puede nombrar, observar e interpelar estos estados, pero no puede asumir ni el dolor ni la percepción de otro. En el cuerpo, el entorno se vuelve sensible sin dejar de ser entorno. Acopla separando y une obligando a cada efecto a adoptar una forma propia.",
+   "notes": [
+    "Los cuerpos surgen en distintas prácticas como realidades diferentes y acopladas.",
+    "La corporalidad es condición de una relación prerreflexiva con el mundo.",
+    "Cuerpo y entorno se inscriben el uno en el otro sin volverse idénticos.",
+    "El cuerpo cambia radicalmente las conexiones sociales de una persona."
+   ]
+  },
+  "26": {
+   "title": "La percepción",
+   "bottom_line": "La percepción vuelve cuestionable el límite entre cuerpo y conciencia.",
+   "text": "La percepción hace perceptible un límite teórico. Para Luhmann es una operación psíquica: la conciencia ve y oye aunque no reflexione sobre ello. El cuerpo hace posible e irrita esta realización, pero no puede equipararse sin más con la conciencia. Desde la fenomenología de Merleau-Ponty puede plantearse otra pregunta: ¿puede siquiera oponerse el cuerpo vivido a la percepción como entorno, si ya realiza una relación prerreflexiva con el mundo? Esta confrontación la construye la estrofa; no es un debate directo entre ambos autores. Precisamente su diferencia muestra cuánto depende de dónde se trace el límite entre cuerpo y conciencia.",
+   "notes": [
+    "La percepción sigue siendo una operación psíquica y solo puede irritar a la comunicación.",
+    "La percepción es una relación corporal con el mundo anterior a la objetivación reflexiva.",
+    "Las propias condiciones de la percepción se convierten en objeto de la experiencia.",
+    "Cuerpo, movimiento y percepción aparecen como órdenes inestables de cercanía."
+   ],
+   "works": {
+    "2": "trabajos inmersivos con luz y niebla"
+   }
+  },
+  "27": {
+   "title": "La traducción",
+   "bottom_line": "La traducción es repetición sin identidad.",
+   "text": "La traducción no transfiere nada inalterado de un orden a otro. La percepción no se convierte en lenguaje, el dolor no se convierte en comunicado y un pensamiento no se convierte en comunicación. Cada lado produce una forma propia a partir de lo que le llega. En ello reside la pérdida de toda traducción y, a la vez, su posibilidad: solo porque la igualdad es inalcanzable puede algo continuar en condiciones cambiadas. Aquí la traducción roza el concepto deleuziano de repetición, que no reproduce nada idéntico, sino que produce diferencia. A diferencia de Deleuze, sin embargo, no se trata aquí ante todo del despliegue creativo de lo nuevo, sino de la conexión entre órdenes operativamente separados. La traducción no elimina la diferencia; la hace conectable.",
+   "notes": [
+    "La traducción hace posible la cooperación sin un consenso completo.",
+    "La repetición produce diferencia en lugar de una copia idéntica.",
+    "La transferencia muestra las condiciones políticas y mediales del habla.",
+    "La traducción es supervivencia y transformación, no mera copia."
+   ],
+   "works": {
+    "2": "trabajos sobre lengua y fronteras"
+   }
+  },
+  "28": {
+   "title": "El acoplamiento",
+   "bottom_line": "El acoplamiento estabiliza efectos en límites cuyo surgimiento sigue siendo cuestionable.",
+   "text": "El acoplamiento designa una relación en la que procesos distinguibles se vuelven eficaces una y otra vez los unos para los otros. Un cuerpo no reúne organismo, sistema nervioso, conciencia y comunicación en una única operación. En él surgen transiciones en las que cada lado forma acontecimientos propios a partir de efectos. La repetición hace esperables tales irritaciones sin suprimir las diferencias. Con ello el concepto explica cómo órdenes separados pueden depender unos de otros. Queda abierta otra pregunta: ¿cómo se trazan los límites en los que distinguimos estos órdenes en primer lugar? No puede responderse solo apelando de nuevo al acoplamiento, y convierte la relación misma en objeto de observación.",
+   "notes": [
+    "El acoplamiento estructural une la clausura operativa con la dependencia del entorno.",
+    "Las intraacciones plantean la pregunta de cómo surgen los límites y las unidades que aquí se distinguen como órdenes acoplables.",
+    "Procesos biológicos, técnicos y espaciales siguen siendo distintos y se influyen mutuamente.",
+    "Los procesos humanos y más-que-humanos se narran como realidades entrelazadas y no idénticas."
+   ]
+  },
+  "29": {
+   "title": "El material",
+   "bottom_line": "El material es la resistencia a través de la cual la forma se vuelve posible.",
+   "text": "El material no es la materia muda a la que una idea artística da forma a posteriori. La madera se astilla, la pintura se corre, la tela se tensa, el metal se fatiga, los sistemas digitales producen errores y dependencias. En el trabajo, el material responde haciendo posibles, desviando o rechazando las intenciones. Sus resistencias no son obstáculos externos, sino condiciones para que pueda surgir algo que no estaba del todo diseñado de antemano. Incluso después de trabajado, el material sigue activo: envejece, cambia su superficie y reacciona a la luz, la humedad, el contacto y el tiempo. El arte comienza allí donde este movimiento propio no se elimina, sino que se admite como colaboración.",
+   "notes": [
+    "La materialidad aparece como algo que participa en las prácticas y produce diferencias.",
+    "La materia se piensa como condición eficaz, no meramente pasiva.",
+    "Las acciones sobre el material y sus resistencias se convierten en generadoras de la forma.",
+    "Las cosas se resisten a quedar simplemente a disposición del lenguaje."
+   ]
+  },
+  "30": {
+   "title": "La forma",
+   "bottom_line": "La forma hace reutilizable la diferencia.",
+   "text": "La forma no es una envoltura impuesta a un material a posteriori. Es un orden provisional en el que material, espacio, tiempo, atención y expectativa se relacionan de modo que una diferencia pueda volver. Una forma no sigue siendo la misma porque permanezca inalterada. Sigue siendo reconocible aunque cambien su ejecución, su contexto y su significado. Precisamente esta portabilidad la hace socialmente eficaz: las formas pueden citarse, desplazarse, olvidarse y retomarse. Donde el material produce resistencia, la forma hace distinguible esa resistencia y la pone a disposición de otras operaciones. No almacena nada; organiza la reutilizabilidad.",
+   "notes": [
+    "Las formas organizan relaciones y pueden circular entre situaciones.",
+    "La forma adquiere reconocibilidad a través de la diferencia en la repetición.",
+    "La variación mantiene reconocible una forma a través de distintas ejecuciones materiales.",
+    "Una forma fragmentaria organiza el retorno sin unidad lineal."
+   ]
+  },
+  "31": {
+   "title": "La obra",
+   "bottom_line": "Una obra sigue siendo reconocible como forma determinada; una dirección artística puede sostener varias obras.",
+   "text": "No toda forma es una obra. Una obra necesita condiciones bajo las cuales, con una ejecución cambiada o en una contemplación posterior, pueda reconocerse como esta obra: por ejemplo, un título, una figura, una regla de ejecución o una acción documentada. De ello se distingue la dirección de una artista o de un artista, a la que pueden atribuirse varias obras. El «artista sin obra» de Bazon Brock desplaza precisamente la relación entre estas dos direcciones. El conocimiento posterior de Étant donnés de Duchamp cambia el relato sobre su pausa pública en la producción de obras, sin convertir toda su creación en una única obra. La identidad de la obra surge de la atribución repetible de una forma determinada.",
+   "notes": [
+    "Las obras de arte dependen de infraestructuras sociales y de formas de apoyo.",
+    "La identidad de la obra surge en una relación abierta entre objeto, espacio y espectador.",
+    "El estatus de obra puede organizarse como práctica dirigida en lugar de como objeto.",
+    "El no escribir se vuelve observable en sí mismo como forma literariamente direccionable."
+   ]
+  },
+  "32": {
+   "title": "El estilo",
+   "bottom_line": "El estilo es el retorno de una diferencia como expectativa.",
+   "text": "El estilo no es la caligrafía en la que se delata una interioridad inconfundible. La obra vincula la forma a una dirección; el estilo surge cuando, en esa dirección, determinados modos de elegir, enlazar y omitir se vuelven reconocibles a través de distintas obras. Un ritmo, un vacío, una tensión de color o incluso un rechazo pueden volver sin repetirse. Por eso el estilo puede cambiar de medio, sobrevivir al artista y desprenderse de él: como escuela, época o manera. Precisamente en ello reside su peligro: lo que al principio producía diferencia se coagula en expectativa y acaba exigiendo a lo nuevo que vuelva a parecerse a su desviación anterior.",
+   "notes": [
+    "El estilo se entiende como forma de vida, de lectura y de reconocimiento.",
+    "El estilo funciona como forma sintomática de clasificación y referencia.",
+    "Procedimientos seriales, materiales fechados e imágenes históricas unen la repetición con un orden artístico reconocible.",
+    "El estilo surge al retomar y desplazar las propias formas."
+   ]
+  },
+  "33": {
+   "title": "El público",
+   "bottom_line": "El público cultiva la sensibilidad de percepciones separadas.",
+   "text": "Un público no es una multitud que ve lo mismo. La percepción sigue siendo intransferible; nadie puede asumir el color, la tensión o el aburrimiento de otro. Lo común no surge, por tanto, en la vivencia, sino en las conexiones con ella. Las personas comparan, cuentan, contradicen, vuelven, y aprenden así a volverse sensibles a otras cosas. El público no une las percepciones. Cultiva condiciones bajo las cuales percepciones separadas pueden irritarse y cambiarse mutuamente. En ello reside su peculiar socialidad: no hace falta haber visto lo mismo para seguir viendo de otro modo la misma obra. Lo público comienza allí donde la diferencia no se elimina, sino que se reutiliza como sensibilidad cambiante.",
+   "notes": [
+    "El gusto y la sensibilidad surgen en prácticas de implicarse con algo.",
+    "La experiencia estética sigue ligada a la situación concreta de su realización.",
+    "Cortar una banda de Möbius desplaza la obra a una realización única de quienes participan.",
+    "La observación aparece como una sensibilidad que puede entrenarse y que, a la vez, nunca se completa."
+   ]
+  },
+  "34": {
+   "title": "La exposición",
+   "bottom_line": "La exposición ordena relaciones antes de ordenar significados.",
+   "text": "Una exposición no muestra simplemente obras. Las pone en relación. La cercanía, la distancia, el orden, la luz, la arquitectura, los rótulos y el recorrido determinan en parte qué se vuelve visible al mismo tiempo y qué se oculta mutuamente. La misma obra puede plantear otra pregunta en otra vecindad. La exposición no produce, por tanto, una percepción común, pero distribuye posibilidades de ver: acelera, retrasa, aísla, condensa y deja surgir transiciones. Su orden sigue siendo provisional; con cada paso cambia de nuevo la relación entre las cosas. Por eso la exposición es menos un recipiente que una coreografía: una forma espacial de acoplamiento en la que obras, cuerpos y expectativas adquieren nuevas sensibilidades los unos para los otros.",
+   "notes": [
+    "Los espacios expositivos organizan lo público, el movimiento y la visibilidad.",
+    "Exponer se lee como práctica discursiva y espacial del mostrar.",
+    "Reordenar la presentación cambia la legibilidad de objetos existentes.",
+    "La percepción del arte se describe a partir de situaciones, encuentros y lo público."
+   ]
+  },
+  "35": {
+   "title": "El arte",
+   "bottom_line": "El arte mantiene la percepción socialmente reutilizable manteniendo abierta su diferencia.",
+   "text": "El arte no es ni material, ni forma, ni obra; ni estilo, ni público, ni exposición. Surge cuando estas diferencias actúan unas sobre otras de modo que la percepción pueda retomarse socialmente sin agotarse en un mensaje unívoco. El material resiste, la forma distingue, la obra vincula a una dirección, el estilo produce expectativa, el público cultiva sensibilidad, la exposición ordena relaciones. Ninguna de estas operaciones posee el arte por sí sola. Solo su acoplamiento recursivo mantiene abierto un ámbito en el que algo puede repetirse sin seguir siendo lo mismo. Por eso el arte no conserva ningún significado. Organiza la posibilidad de que la percepción vuelva de otro modo.",
+   "notes": [
+    "Los órdenes del arte se estabilizan mediante instituciones, categorías y desplazamientos de límites.",
+    "La estética ordena formas de lo perceptible y de la participación en ello.",
+    "Las imágenes circulan a través de órdenes institucionales, técnicos y económicos heterogéneos.",
+    "Obra, figura del artista, mercado y representación se relacionan recursivamente entre sí."
+   ]
+  },
+  "36": {
+   "title": "El perfil",
+   "bottom_line": "El perfil convierte huellas direccionables en reconocibilidad calculable.",
+   "text": "Una dirección hace alcanzable; un perfil hace reconocible. Recoge clics, compras, trayectos, contactos o tiempos de permanencia pasados y los asigna a una dirección. No surge una imagen de la persona entera, sino una selección de rasgos comparables. Lo que aparece como patrón puede compararse con otros patrones y utilizarse para decisiones futuras. La misma persona se descompone, según el propósito, en distintos segmentos calculables. Con ello el recuerdo se desplaza hacia la predicción: el pasado se utiliza de nuevo para hacer más probables las conexiones siguientes. El ser humano interpelado y el perfil calculado no coinciden; aun así, el perfil puede determinar qué le saldrá al paso a continuación.",
+   "notes": [
+    "La perfilación algorítmica interpela a las personas sin conocerlas en el sentido de una relación personal.",
+    "Las divisiones en forma de datos y la modulación continua describen una reconocibilidad que no presupone una persona completa.",
+    "A partir de lo que cuentan las personas de una agenda encontrada surge un retrato del ausente que no ofrece un conocimiento completo de su persona.",
+    "Funes recuerda cada detalle y precisamente por eso apenas puede abstraer. Solo la selección y la comparación convierten el pasado en patrones."
+   ]
+  },
+  "37": {
+   "title": "La información",
+   "bottom_line": "La información surge cuando una diferencia tiene consecuencias en un orden determinado.",
+   "text": "Un conjunto de datos puede almacenarse; una selección de él solo se vuelve informativa para una pregunta determinada y una posible conexión. El mismo clic puede producir algo distinto en una recomendación musical que en un control de fraude. Entre el registro y la información median reglas de comparar, ponderar y utilizar. Estas reglas no son neutrales en sí mismas: contribuyen a decidir qué diferencia llama la atención y cuál queda sin considerar. Las plataformas automatizan partes de esta selección y utilizan sus resultados para cálculos posteriores. Los datos son, sin duda, un punto de partida material y técnico. La información designa aquí el efecto de una diferencia dentro de un orden de observación y acción.",
+   "notes": [
+    "La información no aparece como un acervo existente, sino como efecto de sistemas que seleccionan y combinan diferencias y vuelven a convertirlas en presupuesto de otras operaciones.",
+    "Las propiedades y los límites no están simplemente dados, sino que surgen dentro de disposiciones determinadas del observar y el actuar. Lo que cuenta como información depende de cómo se cortan las diferencias.",
+    "La circulación y el tratamiento de las imágenes digitales cambian su valor, su legibilidad y su posible uso.",
+    "Una supuesta señal extraterrestre enfrenta a unos científicos con la pregunta de si una diferencia recibida es siquiera información. El significado no surge de la señal sola."
+   ],
+   "works": {
+    "0": "reflexiones sobre information expert systems"
+   }
+  },
+  "38": {
+   "title": "La probabilidad",
+   "bottom_line": "La probabilidad convierte la contingencia abierta en un futuro ponderado de forma desigual.",
+   "text": "La probabilidad no elimina la contingencia. La ordena. Entre lo que ha sucedido y lo que podría suceder surge una distribución de expectativas desiguales. Lo improbable sigue siendo posible, pero se trata de otro modo que lo probable. Así el futuro puede trabajarse operativamente sin tener que conocerlo. Para las plataformas, este desplazamiento es decisivo: un perfil no tiene que decir qué hará alguien. Basta con hacer que distintas conexiones siguientes sean probables en distinta medida. La probabilidad convierte la ignorancia en una forma comparable. Reduce el futuro sin fijarlo, y precisamente así prepara la selección.",
+   "notes": [
+    "Lo futuro ya se vuelve eficaz en el presente a través de expectativas, planificaciones y riesgos, aunque no pueda hacerse presente.",
+    "La probabilidad no mide simplemente la incertidumbre; establece un modo propio de tratar acontecimientos cuyos resultados particulares siguen indeterminados.",
+    "Disposiciones sistemáticas de cuadrados concéntricos se ven perturbadas por desviaciones programadas; el azar actúa dentro de una regla diseñada.",
+    "La estadística, la predicción y la probabilidad desplazan el límite entre observación y control."
+   ],
+   "works": {
+    "0": "trabajos sobre el futuro social"
+   }
+  },
+  "39": {
+   "title": "El algoritmo",
+   "bottom_line": "El ranking algorítmico distribuye oportunidades desiguales para la conexión siguiente.",
+   "text": "En las plataformas, procedimientos algorítmicos de selección ordenan contenidos y sugerencias: más o menos relevante, visible o invisible, primero o después. Tales procedimientos pueden calcular probabilidades a partir de datos y traducirlas a un ranking concreto. Para ello hacen falta decisiones previas sobre qué se recoge, se etiqueta y se valora como éxito. El poder de este ranking reside en preparar el presente de forma desigual. Lo que está más arriba tiene más ocasión de desencadenar una conexión posterior; lo que rara vez se muestra pasa desapercibido con más facilidad. Las personas usuarias pueden objetar o elegir de otro modo. Pero también sus desviaciones se encuentran con una selección ya ordenada y pueden volver a entrar como datos.",
+   "notes": [
+    "Los algoritmos producen órdenes socialmente relevantes de lo visible. La relevancia no es un hallazgo neutral de una importancia ya existente.",
+    "Las operaciones digitales producen y organizan relaciones; un objeto digital no existe con independencia de los procedimientos de su actualización.",
+    "Miles de fotografías de tulipanes etiquetadas a mano hacen visible el trabajo de selección y clasificación en el que se basa el aprendizaje automático.",
+    "El flujo del portal en la novela muestra un presente cuya percepción ya está organizada por el orden, la repetición y la selección técnica."
+   ]
+  },
+  "40": {
+   "title": "La recomendación",
+   "bottom_line": "La recomendación devuelve la probabilidad calculada como posible mundo siguiente.",
+   "text": "La recomendación es el momento en que el cálculo cruza el límite del modelo. Una probabilidad que internamente solo era número, peso o rango aparece ahora como objeto del mundo: esta canción, esta persona, este vídeo, este camino. La recomendación no obliga. Precisamente por eso es eficaz. Ocupa un posible lugar siguiente antes de que haya comenzado una búsqueda propia, y presenta esta ocupación previa como ayuda. La predicción se vuelve así socialmente conectable. Lo calculado puede elegirse, ignorarse, compartirse o rechazarse. Cada una de estas reacciones produce a la vez nuevas huellas. Por eso la recomendación es selección e instrumento de medida en una misma operación.",
+   "notes": [
+    "El poder algorítmico no se muestra solo en el cálculo oculto, sino también en las situaciones y sensaciones que los algoritmos producen para las personas usuarias.",
+    "Los órdenes técnicos de la atención intervienen en la memoria cultural y en la formación de expectativas futuras.",
+    "La obra utiliza como material las expectativas de las plataformas sociales y muestra cómo la presentación de sí opera dentro de patrones de visibilidad ya establecidos.",
+    "La personalización aparece como servicio y, a la vez, como organización progresiva de lo que se vuelve visible, esperable y socialmente conectable."
+   ]
+  },
+  "41": {
+   "title": "El feed",
+   "bottom_line": "El feed convierte la predicción en el entorno presente de su siguiente verificación.",
+   "text": "El feed ordena recomendaciones en un presente. No muestra simplemente lo que existe, sino que produce un entorno continuo a partir de posibilidades ya ponderadas. Cada selección aparece como un ahora: visible, clicable, comentable, saltable. Pero este ahora está calculado a partir del pasado y orientado a seguir produciendo datos. El feed no solo predice el comportamiento; produce la situación en la que el comportamiento predicho puede tener lugar. Con ello la predicción se vuelve recursiva. Lo que se muestra influye en lo que se hace; lo que se hace cambia lo que podrá mostrarse en el futuro. El feed es el presente de una predicción que suministra después sus propios presupuestos.",
+   "notes": [
+    "Las plataformas organizan las conexiones como orden técnico y cultural de una conectividad programada.",
+    "La comunicación digital produce un orden de actualización muy acelerado en el que la duración se forma con más dificultad.",
+    "Miles de fragmentos de películas se montan en un presente que remite continuamente a su propio tiempo. El flujo consiste en selecciones discretas.",
+    "Observaciones breves, noticias y avisos de crisis forman un presente interrumpido que solo se enlaza en la lectura."
+   ],
+   "works": {
+    "1": "trabajos sobre el presente digital"
+   }
+  },
+  "42": {
+   "title": "La plataforma",
+   "bottom_line": "La plataforma devuelve posibilidades calculadas como entorno y procesa sus consecuencias.",
+   "text": "La plataforma une perfiles, datos, cálculos, recomendaciones y feeds en una retroalimentación. Observa el comportamiento, lo condensa en patrones y ofrece posibilidades seleccionadas como nuevo entorno. Este entorno influye en otras acciones, que pueden volver a observarse. El círculo sigue abierto: personas, instituciones, acontecimientos y errores técnicos producen desviaciones. Donde los sistemas generan además textos, imágenes o respuestas, también estos resultados se convierten en posibles ocasiones siguientes de comunicación. Así, la plataforma no solo organiza la visibilidad, sino que cambia aquello con lo que puede conectarse. Sus predicciones ganan efecto al colaborar en el presente frente al que más tarde serán comprobadas.",
+   "notes": [
+    "La medición y el análisis de datos no solo describen la sociedad, sino que contribuyen a producir clasificaciones, valoraciones y posibilidades de acción.",
+    "El cálculo algorítmico no es la mera ejecución de un plan completamente predeterminado; produce relaciones y resultados cuya forma concreta no está simplemente escrita de antemano.",
+    "Las señales corporales del público se traducen en un entorno técnico que cambia con cada nueva participación. La observación pasa a formar parte de la situación siguiente.",
+    "La memoria externalizada, las redes sociales y el análisis algorítmico unen el pasado con una nueva capacidad técnica de actuar."
+   ]
+  },
+  "43": {
+   "title": "La identidad",
+   "bottom_line": "La identidad hace atribuible el cambio a través del tiempo.",
+   "text": "La identidad no es la igualdad de una cosa consigo misma. Surge allí donde el cambio puede atribuirse a la misma dirección a lo largo del tiempo. Una persona, una obra o una organización no siguen siendo idénticas porque todo permanezca igual, sino porque las diferencias se tratan como cambios de algo reconocible. Por eso la identidad media entre experiencia y expectativa. Retiene suficiente continuidad para que una desviación pueda llamar la atención, y suficiente apertura para que el cambio siga siendo atribuible. Frente a los perfiles de las plataformas, esta distinción se vuelve importante: la reconocibilidad calculable no es todavía identidad. La identidad es la forma en que el cambio puede continuar sin disolverse en igualdad.",
+   "notes": [
+    "La identidad no aparece como un núcleo inmutable, sino como algo que se forma continuamente en las relaciones sociales y en las transiciones biográficas.",
+    "La distinción entre idem e ipse separa la igualdad de la mismidad: alguien puede seguir siendo el mismo sin seguir siendo igual en todas sus propiedades.",
+    "Reconstrucciones enmascaradas de fotografías familiares separan el parecido visible y la continuidad personal; aquí pasa a primer plano la pregunta por la propia identidad.",
+    "Orlando sigue siendo atribuible como figura aunque cambien los siglos, los roles sociales y el sexo. La identidad se vuelve narrable a través del cambio."
+   ]
+  },
+  "44": {
+   "title": "La posibilidad",
+   "bottom_line": "La posibilidad es la alcanzabilidad presente de una conexión aún no actualizada.",
+   "text": "La posibilidad no es una reserva de mundos invisibles detrás de la realidad. Se lleva consigo en el presente cuando una conexión aparece como realizable, pensable o esperable sin estar ya actualizada. Toda estructura limita tales posibilidades; de lo contrario, no sería posible ninguna selección. Pero no las destruye necesariamente. Una puerta abre otras conexiones que un muro; una lengua, otras frases que el silencio; una institución, otras decisiones que un capricho privado. La posibilidad es, por tanto, apertura estructurada. No consiste en lo arbitrario, sino en que un orden presente admita más de una continuación propia. El futuro comienza allí donde ese más sigue siendo prácticamente alcanzable.",
+   "notes": [
+    "Los futuros se proyectan, se comparan y se negocian socialmente en la acción presente.",
+    "El todavía-no no es una mera nada, sino apertura presente hacia posibilidades cuya realización depende de condiciones concretas.",
+    "Las instrucciones proponen acciones posibles. Su forma fija condiciones sin determinar por completo cada actualización.",
+    "El sentido de la posibilidad designa la capacidad de no confundir la realidad con su necesidad y de ver también otros órdenes."
+   ]
+  },
+  "45": {
+   "title": "La contingencia",
+   "bottom_line": "La contingencia se convierte en oportunidad de futuro allí donde las alternativas siguen siendo alcanzables y las estructuras revisables.",
+   "text": "Contingente es lo que es así y también podría ser de otro modo. Esta posibilidad de ser de otro modo no es todavía una alternativa disponible en la práctica. Un orden puede ser modificable mientras las personas no tienen acceso a los medios para cambiarlo. Las expectativas, las reglas y las probabilidades limitan las conexiones siguientes; con ello hacen posibles las decisiones. Lo decisivo es si tales limitaciones siguen siendo trabajables. Una situación indeterminada ofrece tan poco sostén como una que excluye toda desviación. Para el futuro hacen falta estructuras que permitan la selección y hagan posible la revisión. Por eso la pregunta por la contingencia lleva a la pregunta de quién puede realmente reconocer, ensayar y alcanzar alternativas.",
+   "notes": [
+    "Contingente es lo que no es ni necesario ni imposible. Las estructuras reducen la complejidad y llevan consigo a la vez un horizonte de otras posibilidades.",
+    "Las normas se estabilizan mediante la repetición sin volverse por ello necesarias. Precisamente la repetición permite la variación y el desplazamiento.",
+    "Las formas familiares siguen siendo reconocibles y aparecen a la vez como posibles de otro modo; lo evidente se vuelve inestable.",
+    "Como una vida no puede repetirse a modo de ensayo, la necesidad y el azar siguen entrelazados de forma indecidible."
+   ],
+   "works": {
+    "0": "trabajos sobre el concepto de contingencia",
+    "1": "trabajos sobre la repetición de normas",
+    "2": "trabajos con objetos cotidianos y espacios desplazados"
+   }
+  },
+  "46": {
+   "title": "La interrupción",
+   "bottom_line": "Una interrupción solo abre el futuro si después de ella algo puede conectar de otro modo.",
+   "text": "Una interrupción no produce todavía un futuro. Un fallo, un choque o una negativa pueden igualmente destruir una secuencia, paralizarla u obligarla a volver a su forma anterior. Lo decisivo es si la interrupción hace conectable otra continuación. Solo entonces cambia la estructura del seguir adelante. Esto vale para conversaciones, instituciones, obras de arte y sistemas técnicos. La interrupción no es, por tanto, una figura romántica opuesta al orden. Es una prueba del orden: ¿puede acoger la desviación sin normalizarla o interrumpirla de inmediato? El futuro no surge en la grieta misma, sino en las conexiones que la grieta hace posibles.",
+   "notes": [
+    "Las perturbaciones de las expectativas cotidianas provocan a menudo trabajos de reparación. Una transgresión de normas no produce automáticamente un orden nuevo.",
+    "Con la natalidad, Arendt une la acción con la posibilidad de un comienzo. Lo decisivo no es la ruptura sola, sino que pueda comenzar una nueva secuencia.",
+    "Una grieta en el suelo de la Tate Modern hace espacialmente presente la separación y obliga a la institución a percibir de otro modo la arquitectura y la historia.",
+    "A innumerables interrupciones no les sigue precisamente ningún nuevo comienzo real. El caso negativo muestra que el aplazamiento no cambia necesariamente la estructura de la continuación."
+   ]
+  },
+  "47": {
+   "title": "Lo nuevo",
+   "bottom_line": "Nuevo es lo que cambia lo que es posible después.",
+   "text": "Lo nuevo no es simplemente lo que antes no estaba ahí. Las sorpresas pueden quedar sin consecuencias, las modas desaparecer, las casualidades encajar de inmediato en patrones conocidos. La novedad solo se vuelve teóricamente interesante allí donde un acontecimiento cambia lo que es posible después. Desplaza expectativas, reglas, percepciones o relaciones y produce formas de conexión que antes no eran alcanzables del mismo modo. Por eso también la repetición puede ser nueva: cuando cambia sus condiciones. Lo nuevo no está fuera de la historia, sino que interviene en su continuación. No es una propiedad de un objeto, sino una diferencia en el espacio de las posibilidades siguientes.",
+   "notes": [
+    "Una innovación técnica solo se vuelve eficaz dentro de un entramado de participantes, intereses y objetos.",
+    "La individuación surge de situaciones metaestables. Lo nuevo surge cuando tensiones existentes producen una forma que cambia la individuación posterior.",
+    "El corte único cambia lo que todavía es posible después en la forma continua; aquí pasa a primer plano el efecto sobre el siguiente paso de la acción.",
+    "Dos sociedades organizadas de manera distinta muestran cómo las reglas abren y limitan posibilidades y pueden cambiarse en el conflicto."
+   ]
+  },
+  "48": {
+   "title": "La libertad",
+   "bottom_line": "La libertad es la capacidad de asumir, rechazar o transformar la contingencia estructurada.",
+   "text": "La libertad no es ni arbitrariedad ni ausencia de condiciones. La acción siempre está estructurada: por cuerpos, lenguaje, historia, instituciones, técnica y otras personas. Por eso la libertad no se muestra en comenzar sin presupuestos, sino en poder tratarlos de otro modo. Una expectativa puede asumirse, rechazarse, desplazarse o transformarse; una regla puede seguirse, interpretarse o convertirse en objeto de nuevas reglas. La libertad necesita posibilidades, pero también capacidades y condiciones para percibirlas y trabajarlas. Es una disposición estructurada sobre la contingencia. La falta de libertad comienza allí donde las alternativas existen formalmente, pero ya no se vuelven conectables en la práctica.",
+   "notes": [
+    "Las prácticas no están ni libres de historia ni determinadas mecánicamente; surgen como improvisaciones estructuradas dentro de espacios de posibilidad desigualmente distribuidos.",
+    "La libertad está situada. No se realiza fuera de las condiciones y de otras libertades, sino en la confrontación con ellas.",
+    "El arte se examina como posibilidad social de acción. Lo decisivo es si surgen situaciones en las que quienes participan pueden realmente actuar de otro modo.",
+    "El margen de acción surge cada vez más allí donde el narrador se niega a disolverse por completo en las identidades que le ofrecen otros."
+   ],
+   "works": {
+    "0": "trabajos sobre habitus y práctica"
+   }
+  },
+  "49": {
+   "title": "El futuro",
+   "bottom_line": "El futuro es el margen conservado para seguir adelante de otro modo de lo que ya se espera.",
+   "text": "Habrá acontecimientos posteriores, por abierto que esté hoy un orden. En este proyecto, futuro significa más: el margen presente para continuaciones que todavía no están del todo esperadas ni preparadas. Todo orden tiene que restringir posibilidades para poder actuar. Pone en peligro su propia capacidad de futuro cuando ya solo puede tratar las desviaciones como errores y ya no puede alcanzar alternativas. La apertura no consiste ni en lo arbitrario ni en la garantía de un desenlace mejor. Se muestra en si experiencias, objeciones y nuevas condiciones pueden cambiar una continuación. El futuro de la estrofa es este excedente conservado del seguir de otro modo sobre la expectativa ya organizada.",
+   "notes": [
+    "Un presente ampliado arrastra partes cada vez mayores del futuro a las decisiones presentes mediante la planificación y la expectativa.",
+    "La realidad consiste en acontecimientos del devenir; la creatividad designa la posibilidad de que surja un nuevo orden concreto a partir de lo dado.",
+    "La obra organiza el futuro con gran precisión a lo largo de cien años y mantiene abierto a la vez qué textos, lectoras y condiciones sociales coincidirán algún día.",
+    "Los relatos examinan cómo cambia la acción cuando el futuro parece previsible, y distinguen el saber sobre lo venidero de la posibilidad de actuar."
+   ]
+  }
+ }
+}
