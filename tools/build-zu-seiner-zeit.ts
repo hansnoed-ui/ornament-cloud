@@ -24,6 +24,8 @@ export const OUT = join(ROOT, "zu-seiner-zeit");
 const SITE = "https://ornament.cloud/";
 const BASE = "zu-seiner-zeit/";
 export const OG_IMAGE = "og-zu-seiner-zeit.png";         // erzeugt mit tools/zsz-og.mjs, nicht vom Build
+// Vorschaubild je Sprache (alle drei liegen in zu-seiner-zeit/, ausserhalb der generierten Ordner en/ und es/)
+export const OG_BILD = { de: OG_IMAGE, en: "og-zu-seiner-zeit-en.png", es: "og-zu-seiner-zeit-es.png" } as const;
 const GENERATED = ["index.html", "strophe", "verweis", "begriff", "spur", "zufall", "zsz-daten.json", "en", "es"];
 export const LANGS = ["de", "en", "es"] as const;
 export type Lang = typeof LANGS[number];
@@ -238,7 +240,7 @@ ${LANGS.map(l => `  <link rel="alternate" hreflang="${l}" href="${url(l)}">`).jo
   <meta property="og:url" content="${url(m.lang)}">
   <meta property="og:title" content="${esc(o.title)}">
   <meta property="og:description" content="${esc(o.description)}">
-  <meta property="og:image" content="${SITE}${BASE}${OG_IMAGE}">
+  <meta property="og:image" content="${SITE}${BASE}${OG_BILD[m.lang]}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="${esc(`${m.meta.title} – ${m.meta.subtitle}. ${u.ogAlt}`)}">
