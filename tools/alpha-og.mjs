@@ -3,7 +3,8 @@
 // dunkel hervorgehoben – wie in der Abbildung des Papiers.
 //
 //   NODE_PATH=$(npm root -g) node tools/alpha-og.mjs
-//     → alpha/pruefraster/og-pruefraster.png, alpha/verteilapparat/og-verteilapparat.png
+//     → alpha/pruefraster/og-pruefraster.png, alpha/verteilapparat/og-verteilapparat.png,
+//       alpha/gesellschaftskonzepte/og-gesellschaftskonzepte.png
 //
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
@@ -26,6 +27,12 @@ const KARTEN = [
     unter: "Wessen Körperereignis wie weit kommt, unter welcher Beschreibung, wer sie berichtigen kann und was daraus materiell folgt",
     adresse: "ornament.cloud/alpha/verteilapparat", x: "SELBSTBESCHREIBUNG →", y: "FREMDERFASSUNG →",
     felder: [["Ausgeliefert-", "sein"], ["Verhandelbare", "Teilhabe"], ["Verschwinden"], ["Privilegierte", "Opazität"]], dunkel: 0 },
+  // Typologie des Papiers: oben mehrere eigenständige Operationen, unten eine Hauptoperation; links Vermittlung als Verfahren,
+  // rechts durch Ersatzform. Betont ist «Tragfähige Beschreibung».
+  { out: "../alpha/gesellschaftskonzepte/og-gesellschaftskonzepte.png", titel: "Prüfraster für Gesellschaftskonzepte",
+    unter: "Einheit · Operation · Vermittlung: Kann ein Ansatz sagen, wie aus einer Absicht eine Wirkung wird?",
+    adresse: "ornament.cloud/alpha/gesellschaftskonzepte", x: "VERFAHREN → ERSATZFORM", y: "EINE → MEHRERE OPERATIONEN",
+    felder: [["Tragfähige", "Beschreibung"], ["Panorama"], ["Milieu-", "beschreibung"], ["Programm"]], dunkel: 0, titelGroesse: 56 },
 ];
 
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
@@ -48,7 +55,7 @@ function html(k) {
   .feld { font: 400 24px ${SERIF}; fill: #1f1d1a; }
 </style></head><body><div class="k">
   <p class="ober">Grundlagenpapier · Anwendungsprompt</p>
-  <h1>${esc(k.titel)}</h1>
+  <h1${k.titelGroesse ? ` style="font-size:${k.titelGroesse}px"` : ""}>${esc(k.titel)}</h1>
   <p class="unter">${esc(k.unter)}</p>
   <p class="fuss">Christian Strickler · <span>${esc(k.adresse)}</span></p>
   <svg viewBox="0 0 360 360">
