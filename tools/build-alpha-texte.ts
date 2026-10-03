@@ -16,9 +16,9 @@ const ROOT = new URL("../", import.meta.url);
 
 export const RASTER = [
   {
-    seite: "gesellschaftskonzepte", datei: "pruefraster-gesellschaftskonzepte-0.3.md", kopfZeilen: 6,
+    seite: "gesellschaftskonzepte", datei: "pruefraster-gesellschaftskonzepte-0.4.md", kopfZeilen: 6,
     titel: "Prüfraster für Gesellschaftskonzepte", untertitel: "Einheit · Operation · Vermittlung",
-    meta: "Entwurf 0.3 · 30. September 2026 · Arbeitsfassung",
+    meta: "Entwurf 0.4 · 3. Oktober 2026 · Arbeitsfassung",
     beschreibung: "Ein voraussetzungsarmes Modell zur Vorprüfung von Ansätzen, die eine Gesellschaftsdiagnose beanspruchen.",
   },
   {
