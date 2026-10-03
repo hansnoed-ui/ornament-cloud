@@ -559,6 +559,16 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
     assert.equal(feld, prompt, "Textfeld weicht von der Datei ab");
     assert.ok(uebersicht.includes(`<a href="${r.prompt.datei}" download="${r.prompt.datei}">Anwendungsprompt (Markdown)</a>`), "Prompt in der Übersicht");
   }
+  // Vorschlag zur nächsten Fassung: eigener, markierter Abschnitt unter dem Raster; Raster und Prompt bleiben unverändert
+  for (const r of at.RASTER.filter(r => r.vorschlag)) {
+    const html = readFileSync(new URL(`alpha/${r.seite}/index.html`, root), "utf8");
+    assert.ok(html.indexOf('<article class="at-text">') < html.indexOf('id="vorschlag"'), "Vorschlag steht unter dem Raster");
+    assert.ok(html.includes("Vorschlag · nicht Bestandteil der geltenden Fassung") && html.includes('href="#vorschlag"'), "markiert und im Kopf verlinkt");
+    const ids = [...html.matchAll(/ id="([^"]+)"/g)].map(m => m[1]);
+    assert.equal(new Set(ids).size, ids.length, "keine doppelten Anker");
+    const raster = readFileSync(new URL(`alpha/${r.datei}`, root), "utf8");
+    assert.ok(!raster.includes("Modul W") && !(r.prompt && readFileSync(new URL(`alpha/${r.prompt.datei}`, root), "utf8").includes("Modul W")), "Raster und Prompt ohne den Vorschlag");
+  }
   // Markdown → HTML: Tabelle, verschachtelte Liste, Zitat, Hervorhebung, nur https-Links
   const h = at.markdown("# A\n\n> Zitat *kursiv*\n\n| x | y |\n| --- | --- |\n| **1** | 2 |\n\n1. eins\n   - unter\n2. zwei\n\n[gut](https://a.ch) [schlecht](javascript:x)");
   assert.ok(h.includes('<h2 id="a">A</h2>') && h.includes("<blockquote><p>Zitat <em>kursiv</em></p></blockquote>"));

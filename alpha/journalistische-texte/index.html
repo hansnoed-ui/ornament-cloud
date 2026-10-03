@@ -31,6 +31,11 @@
     .at-tabelle th, .at-tabelle td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
     .at-tabelle th { border-bottom-color: var(--text); font-weight: 600; }
     /* Anwendungsprompt: gleich gesetzt wie auf den Seiten der anderen Prüfraster (alpha/gesellschaftskonzepte/) */
+    /* Vorschlag zur nächsten Fassung: unter dem Raster, deutlich als Vorschlag markiert */
+    .at-vorschlag { border-top: 2px solid var(--accent); }
+    .at-vorschlag-marke { display: inline-block; margin: 0; padding: 4px 12px; border: 1.5px solid var(--accent); border-radius: 999px;
+      color: var(--accent); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+    .at-vorschlag-link { display: block; margin: 0.9rem 0 0; color: var(--text); font-size: 0.95rem; }
     .pr-block { margin: 2.5rem 0 0; padding: 1.75rem 0 0; border-top: 1px solid var(--border); }
     .pr-block h2 { margin: 0 0 0.4rem; font-family: var(--serif); font-weight: 400; font-size: 1.6rem; }
     .pr-block p { margin: 0.5rem 0 0; max-width: 38em; }
@@ -70,6 +75,7 @@
       <p class="at-arbeit">Zurzeit in Arbeit</p>
       <p class="at-hinweis">Fassung 0.4 · 3. Oktober 2026 · Arbeitsfassung für das Projekt von Christian Strickler</p>
       <a class="at-knopf" href="../pruefraster-journalistische-texte-0.4.md" download="pruefraster-journalistische-texte-0.4.md">Raster als Markdown herunterladen <span aria-hidden="true">↓</span></a>
+      <a class="at-vorschlag-link" href="#vorschlag">Vorschlag für Fassung 0.5: Modul Wissenschaftskommunikation <span aria-hidden="true">↓</span></a>
     </div>
   </header>
   <main class="wrap">
@@ -604,6 +610,46 @@ Besondere Frage (optional):
 <p>Die Module und Fragen dieser Fassung sind eine eigenständige Weiterentwicklung der Projekttexte. Die folgenden Quellen stützen die benannten theoretischen und berufsethischen Ausgangspunkte; sie enthalten dieses Prüfraster nicht. Onlinezugriff der Q-Quellen: 29. September 2026.</p>
 <p>Für die in 6.4 angesprochene Vorsorgenorm wurde bewusst keine bestimmte Lesart des Vorsorgeprinzips festgeschrieben und keine Quelle beigezogen. Das Raster verlangt nur, dass eine solche Norm als Norm erkennbar wird; welche Fassung sie erhält, bleibt dem geprüften Text und der jeweiligen Debatte überlassen.</p>
 <ul><li><strong>Projektgrundlage:</strong> «Prüfraster journalistischer Texte. Ereignis · Kontext · Übergang», Fassungen 0.2 und 0.3, 29. September 2026; «Prüfraster: Nebeneinander und Nacheinander», 28. September 2026; «Der Verteilapparat des Körpers», 28. September 2026. Verwendet wurden die vorliegenden Fassungen.</li><li><strong>Q1:</strong> Schweizer Presserat. <em>Richtlinien zur Erklärung der Pflichten und Rechte der Journalistinnen und Journalisten</em>. Insbesondere 1.1, 2.3, 3.1, 3.8/3.9 und 5.1. <a href="https://presserat.ch/journalistenkodex/richtlinien/" rel="noopener">Offizielle Richtlinien</a>.</li><li><strong>Q2:</strong> Luhmann, N. (1996). <em>Die Realität der Massenmedien</em>. 2., erweiterte Auflage. Westdeutscher Verlag. Insbesondere Kapitel 3 «Codierung» und Kapitel 5 «Nachrichten und Berichte». Grundlage für die Unterscheidung zwischen Mediencode und der Wahrheitserwartung an Berichterstattung.</li><li><strong>Q3:</strong> Luhmann, N. (2000). <em>Die Politik der Gesellschaft</em>. Herausgegeben von André Kieserling. Suhrkamp. Insbesondere Kapitel 3 zur politischen Codierung; in der zugänglichen Ausgabe S. 99–100.</li><li><strong>Q4:</strong> Luhmann, N. (1988). <em>Die Wirtschaft der Gesellschaft</em>. Suhrkamp. Theoretischer Bezug für wirtschaftliche Operationen und Zahlungen. <a href="https://www.suhrkamp.de/buch/niklas-luhmann-die-wirtschaft-der-gesellschaft-t-9783518287521" rel="noopener">Verlagsseite</a>. Der verlinkte Verlagstext ist keine frei zugängliche Volltextausgabe; ergänzend wurde die Darstellung wirtschaftlicher Zahlungen in <em>Die Politik der Gesellschaft</em>, S. 185 und 383–384, herangezogen.</li><li><strong>Q5:</strong> Luhmann, N. (1990). <em>Paradigm lost: Über die ethische Reflexion der Moral</em>. Suhrkamp. <a href="https://www.suhrkamp.de/buch/niklas-luhmann-paradigm-lost-ueber-die-ethische-reflexion-der-moral-t-9783518283974" rel="noopener">Verlagsseite mit Originalauszug</a>. Der Auszug erläutert moralische Kommunikation als Kommunikation von Achtung und Missachtung und grenzt sie von spezifischen Leistungsbewertungen ab.</li></ul>
+    </article>
+    <article class="at-text at-vorschlag" id="vorschlag">
+      <p class="at-vorschlag-marke">Vorschlag · nicht Bestandteil der geltenden Fassung</p>
+<h2 id="vorschlag-fur-fassung-0-5-modul-w-wissenschaftskommunikation">Vorschlag für Fassung 0.5 – Modul W: Wissenschaftskommunikation</h2>
+<p><strong>Status:</strong> Entwurf zur Erprobung, nicht Bestandteil von 0.4. Formuliert am 3. Oktober 2026 nach einer Anwendung des Rasters auf einen Forschungsblog.</p>
+<h3 id="einsatzbedingung">Einsatzbedingung</h3>
+<p>Das Modul wird nur zugeschaltet, wenn Forschende über eigene Forschung schreiben: Forschungsblog, Institutsbeitrag, Gastbeitrag zu einer eigenen Publikation, Medienmitteilung einer Hochschule, Thread zu einem Paper. Es ersetzt keinen Prüfschritt des Hauptwegs, sondern ergänzt drei Stellen, die bei dieser Textsorte regelmässig tragen.</p>
+<p>Für diese Textsorte gelten zwei Vorbemerkungen:</p>
+<ul><li>Der berufsethische Bezug auf den Presserat (2) ist nur eingeschränkt einschlägig. An seine Stelle treten die Anforderungen guter wissenschaftlicher Praxis an Nachvollziehbarkeit und Offenlegung.</li><li>Das Modul «Verteilung von Stimme, Glaubwürdigkeit und Folgen» (8) ist häufig nicht einschlägig und wird dann als solches vermerkt.</li></ul>
+<h3 id="w1-status-des-falls">W1 – Status des Falls</h3>
+<p>Für Zahlen unterscheidet 3.1 Marker, Abwägungsgrösse und Beleg. Für Fallgeschichten, Vignetten, Pilotversuche und Einzelbeobachtungen gilt eine entsprechende Unterscheidung:</p>
+<div class="at-tabelle"><table><thead><tr><th scope="col">Status</th><th scope="col">Woran erkennbar</th><th scope="col">Zu prüfen</th></tr></thead><tbody><tr><td><strong>Illustration</strong></td><td>soll einen bereits begründeten Gedanken anschaulich machen</td><td>Wäre der Gedanke ohne den Fall gleich begründet? Wird der Fall später doch als Stütze verwendet?</td></tr><tr><td><strong>Exploration</strong></td><td>soll ein Phänomen erst sichtbar machen oder eine Frage aufwerfen</td><td>Wird offengelegt, wie der Fall entstanden ist und was an ihm durch die Anordnung bedingt sein kann? Bleibt der Schluss bei einer Frage oder einem Kandidaten?</td></tr><tr><td><strong>Beleg</strong></td><td>soll eine Aussage über Häufigkeit, Ursache oder Mechanismus stützen</td><td>Protokoll, Auswahl, Vergleichs- oder Kontrollbedingungen; siehe G1–G3.</td></tr></tbody></table></div>
+<p><strong>Prüfregel:</strong> Entscheidend ist nicht, wie der Fall eingeführt wird, sondern welche Arbeit er im weiteren Text leistet. Ein ausdrücklich als Illustration oder Exploration ausgewiesener Fall darf nicht als fehlender Beleg kritisiert werden. Der Befund entsteht erst, wenn der Fall seinen Status wechselt: wenn ein Text ihn als Exploration einführt und an späterer Stelle eine Kausalaussage auf ihn stützt.</p>
+<p><strong>Besonders bei Versuchen mit KI-Systemen und anderen interaktiven Anordnungen:</strong> Haben die Forschenden selbst Eingaben ausgewählt, weitergegeben, gerahmt oder zusammengefasst, gehört ihr Anteil zur Anordnung. Zu prüfen ist, ob ein beobachtetes Muster dem untersuchten System oder der Vermittlung zugerechnet wird und ob der Text diese Zurechnung begründet (G3).</p>
+<p><strong>Gegenprobe der Analyse:</strong> Eine sorgfältig begrenzte Exploration ist eine eigene Leistung. Dass sie nichts beweist, ist kein Befund.</p>
+<h3 id="w2-selbstbericht">W2 – Selbstbericht</h3>
+<p>Im Wissenschaftsblog sind Autor:in, Quelle und interessierte Partei häufig dieselbe Person. Das ist kein Mangel, verändert aber die Prüfung:</p>
+<div class="at-tabelle"><table><thead><tr><th scope="col">Prüffeld</th><th scope="col">Leitfrage</th></tr></thead><tbody><tr><td>Rolle</td><td>Berichtet die Person über eigene Forschung, über die Forschung anderer oder über ein Feld, an dem sie beteiligt ist?</td></tr><tr><td>Methodische Mindestangaben</td><td>Welche Angaben wären nötig, damit die zentrale Aussage prüfbar wird: Material, Auswahl, Ablauf, Versionen, Vergleichsbedingungen? Welche davon nennt der Text, welche verweist er weiter, welche fehlen?</td></tr><tr><td>Selbstbegrenzung</td><td>Wo markiert der Text die Reichweite seiner Ergebnisse selbst? Hält er diese Begrenzung bis zum Schluss durch?</td></tr><tr><td>Anschlussinteresse</td><td>Zielt der Beitrag erkennbar auch auf Aufmerksamkeit für eine Publikation, ein Projekt oder einen Forschungsansatz? Verändert das die Behauptungsstärke von Titel und Schluss?</td></tr></tbody></table></div>
+<p><strong>Grenze:</strong> Ein Anschlussinteresse ist bei dieser Textsorte normal und kein Beleg für Übertreibung. Ein Befund entsteht erst an einer konkreten Stelle, an der die Behauptungsstärke über das Material hinausgeht. Fehlende Methodenangaben sind im Blogformat oft formatbedingt (4.4); zu prüfen ist dann, ob sie im Verweis tatsächlich stehen (W3).</p>
+<h3 id="w3-blog-und-fachpublikation">W3 – Blog und Fachpublikation</h3>
+<p>Der Modus «verteilt» (4.3) ist bei dieser Textsorte der Normalfall. Geprüft wird deshalb nicht nur, ob der Verweis zugänglich ist, sondern wie sich die beiden Texte zueinander verhalten:</p>
+<ul><li><strong>Publikationsstatus:</strong> begutachtet und erschienen, angenommen, eingereicht, Preprint, Vortrag? Ist der Status im Text erkennbar?</li><li><strong>Behauptungsstärke im Vergleich:</strong> Sagt der Blog dasselbe wie die Publikation, spitzt er zu, oder ist er vorsichtiger? Titel und Schlussabsatz gesondert vergleichen.</li><li><strong>Verlagerte Begründung:</strong> Welche tragende Begründung verweist der Blog an die Publikation? Ist sie dort tatsächlich zu finden?</li></ul>
+<p>Liegt die Publikation nicht vor, lautet der Befund: «Verhältnis zur Fachpublikation in der geprüften Fassung nicht beurteilbar.» Der Blog wird dann als eigenständiger Text geprüft, mit dem ausdrücklichen Vorbehalt, dass Lücken an anderer Stelle geschlossen sein können.</p>
+<h3 id="erganzungen-im-fallblatt">Ergänzungen im Fallblatt</h3>
+<p>In Abschnitt A:</p>
+<ul><li>Selbstbericht: ja / nein; Rolle der Autorin oder des Autors:</li><li>Publikationsstatus der Bezugspublikation; liegt sie vor?</li></ul>
+<p>In Abschnitt B:</p>
+<ul><li>Status tragender Fälle: Illustration / Exploration / Beleg (W1); Statuswechsel:</li><li>Methodische Mindestangaben: genannt / verwiesen / fehlend (W2):</li></ul>
+<p>In Abschnitt D:</p>
+<ul><li>Verhältnis Blog und Publikation: gleich / zugespitzt / vorsichtiger / nicht beurteilbar (W3):</li></ul>
+<h3 id="kurzes-anwendungsbeispiel-frei-erfunden">Kurzes Anwendungsbeispiel, frei erfunden</h3>
+<blockquote><p>«In einem kleinen Pilotversuch liessen wir drei Chatbots dieselbe Aufgabe lösen. Einer weigerte sich auffallend oft. Das zeigt: Sicherheitsfilter machen Systeme systematisch weniger hilfsbereit.»</p></blockquote>
+<p><strong>Status des Falls (W1):</strong> als Pilotversuch eingeführt, also Exploration. Der letzte Satz stützt darauf eine allgemeine Kausalaussage («systematisch», «machen»). Der Fall wechselt seinen Status.</p>
+<p><strong>Selbstbericht (W2):</strong> Es fehlen Aufgabe, Zahl der Durchläufe, Versionen und eine Erklärung, warum gerade Sicherheitsfilter die Ursache sein sollen (G3).</p>
+<p><strong>Minimaler Verbesserungsvorschlag:</strong> «Das wirft die Frage auf, ob Sicherheitsfilter Systeme weniger hilfsbereit machen. Ein Pilotversuch kann das nicht entscheiden.»</p>
+<h3 id="begleitende-anderung-streichung-im-hauptweg">Begleitende Änderung: Streichung im Hauptweg</h3>
+<p>Abschnitt 12 verlangt, dass künftige Erweiterungen mit einer Streichung einhergehen. Vorgeschlagen wird deshalb, die <strong>Optionensymmetrie in G11</strong> in ein optionales Modul zu verschieben. Sie bliebe Bestandteil des Rasters, würde aber nur bei Texten mit ausdrücklicher Handlungsempfehlung zugeschaltet. G11 behielte im Hauptweg Norm, Folgen und Entscheidungsschwelle.</p>
+<p><em>Zu entscheiden:</em> ob diese Verschiebung jetzt erfolgen soll oder erst, wenn sich die Optionensymmetrie bei Nachricht, Reportage und Interview tatsächlich als regelmässig nicht einschlägig erwiesen hat.</p>
+<h3 id="entstehungsbedingung-und-erprobung">Entstehungsbedingung und Erprobung</h3>
+<p>Das Modul ist aus einer einzigen Anwendung hervorgegangen: einem Forschungsblog, der eine Vignette aus einem Versuch mit zwei Sprachmodellen zu einer organisationstheoretischen These weiterführt. Vor einer Übernahme wird vorgeschlagen, es an mindestens zwei weiteren Wissenschaftsblogs aus anderen Fächern zu erproben, etwa einer empirischen Studie mit Zahlen und einem geisteswissenschaftlichen Essay. Festzuhalten ist dabei, ob W1 bis W3 jeweils einen Befund tragen oder regelmässig «nicht einschlägig» bleiben.</p>
     </article>
   </main>
   <script>
