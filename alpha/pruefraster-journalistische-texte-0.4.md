@@ -1,11 +1,11 @@
 # Prüfraster journalistischer Texte
 
 **Ereignis · Kontext · Übergang · Gegenprobe · Systembezüge**  
-**Fassung 0.3 · 29. September 2026 · Arbeitsfassung für das Projekt von Christian Strickler**
+**Fassung 0.4 · 3. Oktober 2026 · Arbeitsfassung für das Projekt von Christian Strickler**
 
 > Wie macht ein journalistischer Text aus ausgewähltem Material eine Aussage, welche Unterscheidungen tragen diese Aussage, und was könnte ihre Geltung begrenzen oder verändern?
 
-Diese Fassung entwickelt «Ereignis · Kontext · Übergang», Fassung 0.2, weiter. Sie verbindet das Prüfraster «Nebeneinander und Nacheinander» mit ausgewählten Fragen aus dem «Verteilapparat des Körpers». Die neuen Prüfverfahren sind methodische Vorschläge, keine bereits empirisch validierte Skala.
+Diese Fassung entwickelt «Ereignis · Kontext · Übergang», Fassung 0.3, weiter. Sie ergänzt vier Prüfstellen, die sich bei einer Anwendung auf einen Risiko-Essay als nötig erwiesen haben, markiert zwei weitere Vorschläge als zurückgestellt und strafft Abschnitt 6.2. Die neuen Prüfverfahren sind methodische Vorschläge, keine bereits empirisch validierte Skala.
 
 ## 1. Zweck und Gebrauch
 
@@ -21,22 +21,25 @@ Ein ökonomischer Blick ist nicht schon ein Fehler, eine moralische Wertung nich
 
 **Zwei Nutzungsweisen:** Für eine Kurzprüfung werden die stärkste zentrale Aussage, ihr entscheidender Übergang, zwei bis drei Schlüsselbegriffe und die zwei ergiebigsten Gegenproben untersucht. Für eine Vollprüfung werden höchstens drei zentrale Aussagen rekonstruiert, die folgenden Module durchlaufen und die relevanten Gegenproben ausgewählt. Nicht jede Prüfung verlangt jeden Prüfschritt.
 
-### Was sich gegenüber 0.2 ändert
+### Was sich gegenüber 0.3 ändert
 
-1. Aussagen werden vor der Gegenprobe nach ihrem Geltungsanspruch unterschieden.
-2. Begriffliche Selbstbeobachtung und die tatsächliche Verwendung von Begriffen erhalten getrennte Prüffragen.
-3. Systembezüge werden am Gebrauch und am Bewertungsmassstab rekonstruiert, nicht an einzelnen Wörtern abgelesen.
-4. Die Gegenprobe umfasst zwölf gezielt auswählbare Verfahren und ein verbindliches Protokoll.
-5. Gegenprobe im Text und Gegenprobe durch die Analyse werden getrennt ausgewiesen.
-6. Formatbedingungen entschuldigen begrenzte Ausführlichkeit, aber keine sachlich ungedeckte Behauptungsstärke.
-7. Verteilungsfragen und Korrekturmöglichkeiten werden bei entsprechender Relevanz einbezogen.
-8. Jede zentrale Kritik erhält eine eigene Gegenprobe. Auch «kein wesentlicher Mangel gefunden» ist ein vollständiges Ergebnis.
+1. Der **Status quantifizierter Unsicherheit** wird eigens geprüft: Marker, Abwägungsgrösse oder Beleg (3.1).
+2. **G11** wird um **Optionensymmetrie** und die **Entscheidungsschwelle** erweitert. Die Schwelle war in 4.3 bereits als Anforderung genannt, hatte aber kein eigenes Prüffeld.
+3. Die Übersetzungsprobe erhält den Fall **Unentschiedenheit → Entscheidung** samt Spiegelfall (6.4).
+4. Die Belegdisziplin erfasst **übersetzte Vorlagen und fehlende Verweise** (2).
+5. **6.2 gestrafft:** die Tabelle der weiteren Bezüge wird zur Liste, die Begriffspaare gehen von sieben auf fünf zurück.
+6. Zwei weitere Ergänzungen sind **als Vorschlag markiert und nicht übernommen** (5.3, G7).
+7. Das Fallblatt erhält drei Felder für die neuen Prüfstellen.
 
 ## 2. Prüfgegenstand und Belegdisziplin
 
 Zunächst erfassen: Titel, Autor:in, Medium, Datum, Textsorte, Umfang, geprüfte Version und Vollständigkeit. Eine Nachricht, ein Kommentar, eine Reportage, ein Interview, eine Glosse und ein persönliches Zeugnis stellen unterschiedliche Ansprüche. Mischformen werden abschnittsweise behandelt.
 
 Die Analyse benennt ihre Materialgrenze: Liegen nur Überschrift und Vorspann vor, nur ein Auszug oder der vollständige Beitrag samt zugänglichen Verweisen? Ein verlinkter Text zählt erst dann als geprüfte Begründung, wenn die einschlägige Stelle tatsächlich gelesen wurde. Bilder, Bildlegenden und Diagramme werden nur beurteilt, soweit sie vorliegen.
+
+**Übersetzte und bearbeitete Vorlagen.** Eine Übersetzung ist selbst eine Bearbeitung. Modalitäten, Einschränkungen und Verbstärke können verschoben sein. Befunde zur Behauptungsstärke gelten deshalb zunächst nur für die geprüfte Sprachfassung. Wo ein Befund daran hängt, wird die Stelle im Original abgeglichen oder der Befund ausdrücklich als sprachfassungsabhängig gekennzeichnet. Dasselbe gilt für Kürzungen, Zweitveröffentlichungen und redaktionell veränderte Übernahmen.
+
+**Fehlende Verweise.** Liegen die Verweise der Vorlage nicht vor, etwa bei einer Übersetzung, einem Repost, einer Druckfassung oder hinter einer Bezahlschranke, ist der Modus «verteilt» (4.3) nicht prüfbar. Jedes «nicht belegt» lautet dann «in der geprüften Fassung nicht zugänglich». Das ist ein Befund über das Material, nicht über den Text.
 
 Absätze erhalten einfache Fundstellen. Überschrift, Vorspann und Bildlegende bleiben eigene Einheiten: Sie können mehr behaupten als der Haupttext. Redaktionelle Titel und Autorentext dürfen dabei nicht ohne Beleg derselben Person zugerechnet werden.
 
@@ -74,6 +77,22 @@ Ein Werturteil wird nicht dadurch widerlegt, dass eine andere Person anders wert
 
 Satire und literarische Zuspitzung werden nach ihrem erkennbaren Modus gelesen. Konkrete Tatsachenbehauptungen und gegen Personen gerichtete Vorwürfe behalten trotzdem einen prüfbaren Gehalt.
 
+### 3.1 Quantifizierte Unsicherheit
+
+Eine Zahl ist nicht schon deshalb eine Präzisionsbehauptung, weil sie eine Zahl ist. Prozentwerte, Spannen und Grössenordnungen werden auch eingesetzt, um eine Unentschiedenheit sichtbar zu machen. Drei Verwendungen sind zu unterscheiden:
+
+| Status | Woran erkennbar | Zu prüfen |
+| --- | --- | --- |
+| **Marker** | ausdrücklich als nicht kalibriert eingeführt; soll Grössenordnung oder Nichtvernachlässigbarkeit anzeigen | Bliebe der Schluss ohne die Zahl bestehen? Wird sie später doch wie ein Messwert behandelt? |
+| **Abwägungsgrösse** | geht in eine Rechnung, einen Vergleich oder eine Schwelle ein | Woher stammt sie? Welche Rechnung wird mit ihr geführt, und ist deren Ergebnis gegenüber plausiblen Alternativwerten stabil? |
+| **Beleg** | wird als Ergebnis eines Verfahrens präsentiert | Erhebung, Modell, Stichprobe, Frageformulierung, Unsicherheitsintervall; siehe G1 und G5. |
+
+**Prüfregel:** Entscheidend ist nicht, wie die Zahl eingeführt wird, sondern welche Arbeit sie im weiteren Text leistet. Zwei Fragen genügen meist. Woraus entsteht sie: aus Daten, aus einem Modell, aus einer Befragung von Fachleuten oder aus der eigenen Unsicherheit der Autorin? Und: Bliebe der zentrale Schluss ohne sie bestehen? Lautet die Antwort ja, ist sie Illustration und darf nicht als tragender Beleg kritisiert werden. Lautet sie nein, muss die Zahl ihre Entstehung offenlegen.
+
+Eine aus Unsicherheit gebildete Zahl, etwa der Mittelwert einer selbst als nicht kalibriert bezeichneten Spanne, ist eine zulässige Darstellungsform. Sie darf nur nicht an späterer Stelle wie ein Messwert verwendet werden. Der Befund lautet dann nicht «die Zahl ist falsch», sondern «die Zahl wechselt ihren Status». Das ist ein Fall der Austauschprobe (5.1), angewendet auf eine Grösse statt auf einen Begriff.
+
+Gegenprobe der Analyse: Eine Zahl, die der Text ausdrücklich als unsicher kennzeichnet, darf nicht zum Hauptbefund gemacht werden, nur weil sie die zitierfähigste Stelle ist.
+
 ## 4. Vollzug: Ereignis, Kontext und Übergang
 
 ### 4.1 Ereignis – was wird nacheinander angeordnet?
@@ -107,9 +126,10 @@ Verräumlichung meint hier die Stabilisierung einer Ordnung, in der Unterschiede
 | Messwert oder Wirkung | Bewertung | Ziel und Massstab; Verteilung; Nebenfolgen. |
 | Rückblick | Zukunftserwartung | damalige Offenheit; heutige Bedingungen; alternative Entwicklungen. |
 | Möglichkeit | Wahrscheinlichkeit | Gründe für eine abgestufte Erwartung; ein denkbarer Verlauf genügt nicht. |
-| Risiko oder Wahrscheinlichkeit | Handlungsnotwendigkeit | Schadensausmass; Handlungskosten; Alternativen; ausdrücklich gesetzte Entscheidungsschwelle. |
+| Risiko oder Wahrscheinlichkeit | Handlungsnotwendigkeit | Schadensausmass; Handlungskosten; Alternativen; ausdrücklich gesetzte Entscheidungsschwelle (G11). |
+| Unentschiedenheit | Handlungspflicht oder Abwarten | ausgewiesene Vorsorge- oder Zurückhaltungsnorm; Kosten beider Richtungen (6.4). |
 | Erfolg in einem Bereich | Geltung in einem anderen | eine zusätzliche Brückenprämisse zwischen den Bewertungsmassstäben. |
-| Kritik am Bestehenden | Überlegenheit einer Alternative | vergleichbar strenge Prüfung von Umsetzung, Kosten und Folgen. |
+| Kritik am Bestehenden | Überlegenheit einer Alternative | vergleichbar strenge Prüfung von Umsetzung, Kosten und Folgen (G11). |
 
 Auch Wörter wie «deshalb», «immerhin», «trotzdem», «nur», «bereits» und «noch» können den entscheidenden Schritt vollziehen. Ebenso kann ihn die Montage aus Überschrift, Bild, Zitat und Zahl nahelegen.
 
@@ -117,7 +137,7 @@ Auch Wörter wie «deshalb», «immerhin», «trotzdem», «nur», «bereits» u
 
 - **Vollzogen:** Der Text behauptet den Schluss selbst.
 - **Ausgelagert:** Die Anordnung legt einen Schluss nahe, den das Publikum ergänzen soll. Das ist zunächst eine Lesarthypothese, keine erwiesene Wirkung.
-- **Verteilt:** Ein Teil der Begründung liegt in einem tatsächlich zugänglichen Verweis oder anderen Beitrag. Festhalten, was dort geleistet wird und ob der aktuelle Text diesen Zusammenhang verständlich macht.
+- **Verteilt:** Ein Teil der Begründung liegt in einem tatsächlich zugänglichen Verweis oder anderen Beitrag. Festhalten, was dort geleistet wird und ob der aktuelle Text diesen Zusammenhang verständlich macht. Sind die Verweise in der geprüften Fassung nicht vorhanden, ist dieser Modus nicht beurteilbar (2).
 
 Für jeden zentralen Übergang lassen sich Material **M**, unausgesprochene oder ausdrückliche Brückenprämisse **B** und Schluss **T** notieren: **Aus M folgt T nur unter B.** Nicht jeder journalistische Schluss ist deduktiv; bei plausiblen Deutungen wird deshalb nach der Stärke der Unterstützung gefragt.
 
@@ -168,6 +188,10 @@ Kann der Text zwischen Quelle und Sachverhalt, Messung und Deutung, Ereignis und
 
 **Ergebnis:** Die tragende Unterscheidung benennen, ihre Zuordnungsregel prüfen und eine konkrete Stelle markieren, an der sie trägt oder ihre Bedeutung wechselt.
 
+> **Offener Vorschlag, nicht Bestandteil von 0.4 – «Durchhalten des eigenen Vorbehalts».**
+> Zusätzliches Prüffeld: Markiert der Text einen Begriff ausdrücklich als strittig und arbeitet danach ungebrochen in genau jenem Register weiter, dessen Geltung er offengelassen hat? Beobachtbar etwa, wenn ein Beitrag die Zuschreibung von Absichten als fraglich bezeichnet und das tragende Szenario anschliessend durchgehend im Absichtsregister erzählt. Der Befund wäre keine Inkonsistenz, sondern eine Registerdifferenz zwischen Reflexion und Verwendung.
+> *Grund der Zurückstellung:* nah an der bestehenden Reflexivitätsfrage; ausserdem droht die Gefahr, normale sprachliche Ökonomie als Mangel zu verbuchen. Ein Text kann einen Vorbehalt einmal setzen und ihn danach voraussetzen. Vor einer Übernahme an mindestens drei Texten unterschiedlicher Sorte erproben und festlegen, woran sich der Unterschied zwischen Verkürzung und stillschweigender Rücknahme zeigt.
+
 ## 6. Funktionssysteme und Wechsel des Bewertungsmassstabs
 
 ### 6.1 Was hier zugeordnet wird
@@ -200,28 +224,24 @@ Die folgende Tabelle ist eine Suchhilfe im Anschluss an Luhmann, keine automatis
 
 Die politische Zweitcodierung Regierung/Opposition ist nicht auf jede Herrschaftsform und jede politische Passage schematisch anzuwenden. Ebenso bedeutet Luhmanns Mediencode nicht, dass journalistische Wahrheitssuche entbehrlich wäre. Eine soziologische Beschreibung der Selektion und eine berufsethische Anforderung sind verschiedene Ebenen. [Q1–Q3]
 
-Je nach Ressort werden weitere Bezüge geprüft. Hier genügen **operative Prüfhorizonte**, ohne umstrittene Codefragen festzuschreiben:
+Je nach Ressort werden weitere Bezüge geprüft. Hier genügen **operative Prüfhorizonte**, ohne umstrittene Codefragen festzuschreiben. In Klammern jeweils die typische ungesicherte Übertragung:
 
-| Weiterer Bezug | Prüfhorizont | Typische ungesicherte Übertragung |
-| --- | --- | --- |
-| Medizin/Krankenbehandlung | Diagnose, Behandlungsbedürftigkeit, Gesundheit und Krankheit | Aus diagnostischer Einordnung folgt vermeintlich moralische Minderwertigkeit oder politische Unzuständigkeit. |
-| Erziehung/Bildung | Lernen, Vermittlung, Bewertung, Selektion | Aus einem Testergebnis wird ein Urteil über den Wert einer Person oder eine angeblich allgemeine Begabung. |
-| Kunst | Formentscheidungen, Wahrnehmungsangebote, kunstinterne Vergleichsmassstäbe | Aus Marktpreis, Publikumserfolg oder moralischer Zustimmung wird unmittelbar künstlerische Qualität. |
-| Religion | Bezug auf Transzendenz, Glaubensbindung, religiöse Deutung | Aus religiöser Autorität wird eine für alle verbindliche politische oder rechtliche Forderung. |
+- **Medizin und Krankenbehandlung** – Diagnose, Behandlungsbedürftigkeit, Gesundheit und Krankheit. (Aus diagnostischer Einordnung folgt vermeintlich moralische Minderwertigkeit oder politische Unzuständigkeit.)
+- **Erziehung und Bildung** – Lernen, Vermittlung, Bewertung, Selektion. (Aus einem Testergebnis wird ein Urteil über den Wert einer Person oder über eine angeblich allgemeine Begabung.)
+- **Kunst** – Formentscheidungen, Wahrnehmungsangebote, kunstinterne Vergleichsmassstäbe. (Aus Marktpreis, Publikumserfolg oder moralischer Zustimmung wird unmittelbar künstlerische Qualität.)
+- **Religion** – Bezug auf Transzendenz, Glaubensbindung, religiöse Deutung. (Aus religiöser Autorität wird eine für alle verbindliche politische oder rechtliche Forderung.)
 
 **Moral steht quer dazu.** In Luhmanns Verständnis führt moralische Kommunikation Bedingungen von Achtung und Missachtung mit; sie ist nicht einfach ein weiteres ausdifferenziertes Funktionssystem neben Politik, Wirtschaft und Recht. Für die Analyse ist besonders relevant, ob die Bewertung einer bestimmten Leistung zur Bewertung der ganzen Person wird. Nicht jede fachliche Kritik ist deshalb moralische Missachtung. [Q5]
 
 Auch «Sicherheit», «Ökologie», «Migration», «Kultur» oder «Technik» bezeichnen hier zunächst Themen, Probleme oder Semantiken. Sie werden nicht durch ihre blosse Nennung zu eigenständigen Funktionssystemen. Parteien, Firmen, Schulen und Redaktionen sind Organisationen, keine Synonyme für ein ganzes Funktionssystem.
 
-**Mehrdeutige Begriffspaare praktisch prüfen:** Die Gegenseiten in dieser Tabelle sind mögliche Rekonstruktionen, keine automatisch zu unterstellenden Unterscheidungen und keine zusätzlichen Systemcodes.
+**Mehrdeutige Begriffspaare praktisch prüfen:** Die Gegenseiten sind mögliche Rekonstruktionen, keine automatisch zu unterstellenden Unterscheidungen und keine zusätzlichen Systemcodes. Wertende Einzelbegriffe wie «modern» oder «effizient» werden über 5.2 geprüft.
 
 | Begriffspaar | Mögliche Bezüge | Entscheidende Rückfrage |
 | --- | --- | --- |
-| effizient / ineffizient | Wirtschaft, Verwaltung, Medizin, pädagogische Organisation | Welches Ergebnis wird mit welchem Aufwand erreicht, und wer setzt das Ziel? |
 | legitim / illegitim | Politik, Recht, Moral | Geht es um demokratische Zustimmung, rechtliche Geltung oder moralische Rechtfertigung? |
 | vernünftig / unvernünftig | Wissenschaft, Politik, Wirtschaft, Alltag | Bedeutet «vernünftig» gut belegt, durchsetzbar, kostengünstig oder mit einem bevorzugten Wert vereinbar? |
 | normal / abweichend | Statistik, Medizin, Recht, Moral | Ist «normal» häufig, gesund, regelkonform oder erwünscht? Wird zwischen diesen Bedeutungen gewechselt? |
-| modern / rückständig | politische, wirtschaftliche, pädagogische oder ästhetische Semantik | Warum soll das zeitlich Neuere sachlich überlegen sein? |
 | sicher / gefährlich | Recht, Politik, Medizin, Wirtschaft | Welcher Schaden für wen, mit welcher Wahrscheinlichkeit und unter welchen Bedingungen? |
 | wertvoll / wertlos | Wirtschaft, Kunst, Moral | Geht es um Preis, künstlerische Leistung, persönlichen Nutzen oder die Achtung einer Person? |
 
@@ -252,8 +272,13 @@ Beispiele, frei erfunden:
 - **Politik → Wissenschaft:** «Die Mehrheit will es, also stimmen die zugrunde liegenden Tatsachenbehauptungen.» Welche unabhängige Evidenz trägt die Behauptung?
 - **Moral → Prognose:** «Die Person handelt verwerflich, also wird sie zwangsläufig scheitern.» Welche kausale Annahme verbindet Missbilligung und erwarteten Verlauf?
 - **Massenmedien → Relevanz:** «Darüber wird überall berichtet, also ist es das grösste Problem.» Welche von der Aufmerksamkeit unabhängige Vergleichsbasis gibt es?
+- **Unentschiedenheit → Entscheidung:** «Die Fachwelt ist sich uneins, also muss gehandelt werden.» Welche Norm verbindet das Ausbleiben eines Ergebnisses mit einer Handlungspflicht? Wird sie als Norm ausgewiesen oder als Folgerung präsentiert?
 
 Ein Wechsel ist häufig sachlich nötig: Eine Behandlung muss medizinisch sinnvoll, rechtlich zulässig und finanzierbar sein können. Problematisch wird der Schluss, wenn ein positiver Befund im ersten Bereich die Prüfung im zweiten ersetzen soll.
+
+**Der letzte Fall verdient eigene Aufmerksamkeit.** Er kommt in der Risiko-, Umwelt-, Technik- und Gesundheitsberichterstattung regelmässig vor, und übersetzt wird dort kein positiver Befund, sondern dessen Ausbleiben. Die Brückenprämisse ist dann eine Vorsorgenorm: Ab welcher Kombination von Schadensausmass, Irreversibilität und Unsicherheit soll gehandelt werden? Solche Normen sind begründbar und in mehreren Rechts- und Politikfeldern etabliert. Das Raster schreibt keine bestimmte Lesart des Vorsorgeprinzips fest. Es verlangt nur, dass die Norm als Norm erkennbar wird, denn mit ihr gerät auch die andere Seite der Abwägung in den Blick: Kosten, Nebenfolgen, Durchsetzbarkeit und Beendigungsbedingungen des empfohlenen Handelns (G11).
+
+**Spiegelbildlich prüfen:** «Die Fachwelt ist sich uneins, also ist Handeln verfrüht.» Auch das ist ein Schluss aus einer Unentschiedenheit und braucht dieselbe Offenlegung. Das Raster bevorzugt hier keine der beiden Richtungen.
 
 **Ergebnis:** Benennen, ob der Text Perspektiven nebeneinanderstellt, ihren Wechsel begründet oder einen Massstab unbemerkt für einen anderen einsetzt.
 
@@ -285,6 +310,8 @@ Grundgesamtheit, Nenner, Auswahlregel und Fälle ohne das behauptete Merkmal suc
 
 Eine ernsthafte alternative Erklärung mit Mechanismus angeben. Dann nach Unterschieden suchen, die bei Erklärung A und Erklärung B zu erwarten wären. Drittfaktoren, umgekehrte Kausalität und Auswahlwirkungen prüfen.
 
+Besonders ergiebig bei Vorfällen, die unter künstlichen oder absichtlich gelockerten Bedingungen entstanden sind: Dann konkurriert die Erklärung «das System zeigt diese Eigenschaft» regelmässig mit «die Versuchsanordnung belohnte dieses Verhalten».
+
 **Grenze:** Ein gedachtes «ohne X» ist ein kontrafaktisches Szenario, kein beobachteter Gegenbeleg. Seine Tragfähigkeit hängt an den Annahmen und an passenden Vergleichsmöglichkeiten.
 
 ### G4 – Gegenanalogie und Nichtähnlichkeit
@@ -293,6 +320,8 @@ Eine ernsthafte alternative Erklärung mit Mechanismus angeben. Dann nach Unters
 
 Zuerst festlegen, worin die Fälle verglichen werden: Institutionen, Ressourcen, Interessen, Mechanismen oder zeitliche Verläufe. Dann einen für die Schlussfolgerung relevanten Unterschied suchen. Ergänzend einen ähnlich gelagerten Fall mit anderem Ausgang prüfen, soweit zugänglich.
 
+Bei historischen Präzedenzfällen zusätzlich prüfen, was der Präzedenzfall tatsächlich geleistet hat und nicht nur, dass es ihn gab. Ein Regime, das Verbreitung verwaltet hat, belegt nicht, dass Entwicklung gestoppt werden kann.
+
 **Grenze:** Nicht jede Verschiedenheit zerstört eine Analogie. Auch die Gegenanalogie muss ihre Vergleichbarkeit begründen. Namen, Bilder und emotionale Ähnlichkeit ersetzen keinen gemeinsamen Mechanismus.
 
 ### G5 – Massstabs- und Robustheitsprobe
@@ -300,6 +329,8 @@ Zuerst festlegen, worin die Fälle verglichen werden: Institutionen, Ressourcen,
 **Frage:** Bleibt der Befund bei anderen sachlich vertretbaren Bezugsgrössen bestehen?
 
 Absolute und relative Zahlen, Bestand und Veränderung, kurze und längere Zeiträume sowie gegebenenfalls Verteilungen statt nur Durchschnittswerte vergleichen. Prüfen, ob eine plausible andere Kategorisierung das Ergebnis wesentlich verändert.
+
+Bei Umfragewerten zusätzlich die Frageformulierung mitführen. Zustimmung zu einer konkreten Vorlage, Zustimmung zu einem allgemeinen Ziel und Zustimmung zu einer Verlangsamung sind verschiedene Gegenstände. Behauptete **Trends** verlangen mindestens zwei vergleichbar erhobene Zeitpunkte.
 
 **Grenze:** Die Alternative muss inhaltlich begründet sein. So lange Zeiträume oder Nenner wechseln, bis das gewünschte Resultat erscheint, wäre selbst selektives Prüfen.
 
@@ -319,11 +350,17 @@ Prognosegegenstand, Bedingungen und Horizont festhalten. Möglichkeit, Wahrschei
 
 **Grenze:** Eine probabilistische Prognose wird nicht durch jeden abweichenden Einzelfall widerlegt. Auch Eingriffe nach einer Warnung können den Verlauf verändern. «Die Warnung hat es verhindert» ist allerdings eine zusätzliche kausale Behauptung, die eigene Belege braucht.
 
+> **Offener Vorschlag, nicht Bestandteil von 0.4 – strukturelle Nichtprüfbarkeit.**
+> Zusatzfrage: Existiert für diese Aussage vor dem Eintritt überhaupt ein Gegenindikator, oder ist sie so gebaut, dass jede Entwicklung mit ihr vereinbar bleibt? Das beträfe insbesondere Aussagen über einmalige, irreversible Ereignisse.
+> *Grund der Zurückstellung:* Die Frage ist präzise, ihre Beantwortung aber stark sachabhängig. Ohne eigene Risikotheorie lässt sich «kein Gegenindikator möglich» kaum von «kein Gegenindikator gesucht» trennen, und das Raster soll Argumentationen prüfen, nicht selbst Risiken bewerten. 7.2 deckt den praktisch wichtigsten Teil bereits ab: Abschirmung liegt erst vor, wenn gegensätzliche Befunde ohne unterscheidendes Zusatzkriterium gleichermassen als Bestätigung verbucht werden.
+
 ### G8 – Begriffs- und Grenzfallprobe
 
 **Frage:** Funktioniert die Zuordnungsregel auch bei einem schwierigen Fall?
 
 Den Schlüsselbegriff definieren, einen Grenzfall einsetzen und mit einer präziseren Bezeichnung paraphrasieren. Prüfen, ob «Freiheit», «Erfolg» oder «Gefahr» während des Arguments die Bedeutung wechseln. Wo die Analyse selbst eine Gegenseite ergänzt, diese Ergänzung bestreitbar halten.
+
+Besonders beachten, ob die **Bezugsgrösse** eines Begriffs zwischen den Teilschlüssen wechselt, etwa wenn eine schwache Fassung einen Schritt trägt und eine starke Fassung den nächsten.
 
 **Grenze:** Alltagssprache muss nicht überall fachsprachlich sein. Entscheidend ist, ob die Unschärfe für den Schluss benötigt wird oder nur eine unschädliche Verdichtung darstellt.
 
@@ -343,13 +380,28 @@ Einen im Argument übersprungenen Massstab ergänzen: wirtschaftlicher Erfolg un
 
 **Grenze:** Der Wechsel allein ist kein Mangel. Er kann begründet, transparent und für die Frage unverzichtbar sein. Das Raster verlangt keine «Reinheit» der Funktionssysteme im journalistischen Text.
 
-### G11 – Norm-, Handlungs- und Folgenprobe
+### G11 – Norm-, Handlungs- und Folgenprobe mit Optionensymmetrie
 
 **Frage:** Bleibt das Urteil bei konsistenter Anwendung seines Massstabs bestehen, und schneidet die empfohlene Handlung gegenüber realistischen Alternativen tatsächlich besser ab?
 
 Norm und Tatsachenannahmen trennen. Grenzfälle, Zielkonflikte, Rechte, Nebenfolgen, Umsetzung und Kosten des Nichthandelns prüfen. Festhalten, wer kurzfristig und wer langfristig gewinnt oder verliert und ob Korrektur möglich bleibt.
 
-**Grenze:** Praktische Entscheidungen können trotz offener Tatsachenlage erforderlich sein. Ein niedrig wahrscheinlicher, sehr schwerer Schaden kann Vorsorge begründen; daraus folgt nicht, dass der Schadenseintritt wahrscheinlich wäre.
+**Optionensymmetrie.** G9 prüft, ob dieselbe Regel bei einem anderen Akteur gälte. Hier wird geprüft, ob derselbe Massstab auch für die empfohlene Option gilt. Beide Pfade nebeneinanderstellen:
+
+| Prüffeld | Kritisierter Pfad | Empfohlener Pfad |
+| --- | --- | --- |
+| Behauptete Folgen | | |
+| Angesetzter Unsicherheitsgrad | | |
+| Umsetzung und Durchsetzbarkeit | | |
+| Verifikation: woran erkennt man Einhaltung? | | |
+| Kosten und Nebenfolgen, auch verlagerte | | |
+| Revidierbarkeit | | |
+
+Ein Text muss beide Spalten nicht gleich ausführlich füllen; die Formatbedingung gilt auch hier (4.4). Der Befund entsteht erst, wenn der **Unsicherheitsmassstab selbst** asymmetrisch angesetzt wird: wenn also auf der einen Seite ungelöste Fachstreitigkeiten als hinreichender Grund zum Handeln gelten und auf der anderen offene Umsetzungs- und Verifikationsfragen als nachrangig behandelt werden.
+
+**Entscheidungsschwelle.** Zusätzlich festhalten, ob der Text sagt, unter welchen Bedingungen seine Empfehlung nicht mehr gälte. Welche Evidenz würde die Gegenoption rechtfertigen? Was würde eine empfohlene Massnahme beenden? Wer entscheidet darüber? Fehlt diese Angabe, ist die Empfehlung nicht widerlegbar gefasst. Das ist ein Mangel an Prüfbarkeit, kein Beleg für Unaufrichtigkeit.
+
+**Grenze:** Nicht jede Empfehlung verlangt einen ausgearbeiteten Umsetzungsplan. Ein Text darf eine Richtung fordern und die Ausgestaltung anderen überlassen. Der Einwand greift erst, wenn die Umsetzbarkeit selbst eine Voraussetzung des Schlusses ist. Praktische Entscheidungen können zudem trotz offener Tatsachenlage erforderlich sein: Ein niedrig wahrscheinlicher, sehr schwerer Schaden kann Vorsorge begründen; daraus folgt nicht, dass der Schadenseintritt wahrscheinlich wäre.
 
 ### G12 – Gegenprobe der eigenen Analyse
 
@@ -389,6 +441,8 @@ Vier Beschreibungen genügen; sie sind keine Punkteskala:
 - **Durchgeführt:** Relevantes Material wird daran geprüft und die Konsequenz für die Aussage ausgewiesen.
 
 Für **Text** und **Analyse** getrennt vergeben. Zusätzlich **nicht einschlägig** oder **nicht beurteilbar** zulassen. Ein Kommentar braucht keine ausformulierte Falsifikationsanleitung; entscheidend ist, ob seine tragenden Tatsachenannahmen und Schlussregeln angemessen prüfbar bleiben.
+
+Die Belastbarkeit kann innerhalb desselben Textes stark schwanken. Es ist ein eigener, häufiger Befund, wenn ein Beitrag seine Lagebeurteilung sorgfältig gegenprüft und seine Handlungsempfehlung nicht.
 
 Eine gegen Einwände abgeschirmte Diagnose liegt erst dann nahe, wenn gegensätzliche Befunde ohne unterscheidendes Zusatzkriterium gleichermassen als Bestätigung verbucht werden. Eine Theorie, die verschiedene Verläufe unter jeweils anderen ausdrücklich prüfbaren Bedingungen erklärt, ist deshalb noch nicht abgeschirmt.
 
@@ -450,6 +504,7 @@ Mögliche Profile sind: **nachvollziehbar und revisionsfähig**; **routiniert, a
 
 - Text, Quelle, Datum, Version:
 - Textsorte und geprüfter Umfang:
+- Sprachfassung; Zugänglichkeit der Verweise:
 - Zentrale Aussage(n), maximal drei:
 - Aussageart, Modalität und Geltungsbereich:
 - Stärkste Stelle zugunsten des Textes:
@@ -461,6 +516,7 @@ Mögliche Profile sind: **nachvollziehbar und revisionsfähig**; **routiniert, a
 - Entscheidender Übergang M → B → T:
 - Modus: vollzogen / ausgelagert / verteilt:
 - Formatbedingung und angemessene Behauptungsstärke:
+- Status tragender Zahlenangaben: Marker / Abwägungsgrösse / Beleg (3.1):
 - Drei bis fünf Schlüsselbegriffe mit Fundstellen:
 - Tragende Unterscheidung(en) und markierte Seite:
 - Begriffliche Präzision; relevante Bedeutungswechsel:
@@ -471,6 +527,7 @@ Mögliche Profile sind: **nachvollziehbar und revisionsfähig**; **routiniert, a
 - Rolle: Gegenstand / zitiertes Kriterium / übernommener Massstab / reflektierter Wechsel:
 - Zuordnungssicherheit und alternative Lesart:
 - Zentraler Wechsel des Massstabs samt Brückenprämisse:
+- Falls einschlägig: ausgewiesene Vorsorge- oder Zurückhaltungsnorm (6.4):
 
 ### D. Gegenprobe und Verteilung
 
@@ -479,6 +536,8 @@ Mögliche Profile sind: **nachvollziehbar und revisionsfähig**; **routiniert, a
 - Unterscheidendes Kriterium und Prüfweg:
 - Status der Durchführung:
 - Tatsächliches Ergebnis und Konsequenz:
+- Optionensymmetrie: Unsicherheitsmassstab für kritisierten und empfohlenen Pfad:
+- Benannte Entscheidungsschwelle oder Beendigungsbedingung:
 - Gegenprobe im Text: nicht erkennbar / erwähnt / operationalisiert / durchgeführt / nicht einschlägig / nicht beurteilbar:
 - Gegenprobe durch die Analyse: dieselben Statusangaben:
 - Gegebenenfalls Stimme, Glaubwürdigkeit, Korrekturwege und Folgen:
@@ -515,6 +574,8 @@ Die Ausgabe darf knapp sein, auch wenn intern ausführlich geprüft wurde. Sie s
 
 **Begriffsarbeit:** «Erfolg» bezeichnet zuerst geringere Kosten pro Fall, danach eine insgesamt richtige Reform. Für diesen Bedeutungswechsel fehlen zusätzliche Kriterien. «Fall» setzt zudem voraus, dass die erfassten Fälle vor und nach der Reform hinreichend vergleichbar sind.
 
+**Status der Zahl (3.1):** Die zwölf Prozent werden als Beleg verwendet, nicht als Marker. Damit muss ihre Erhebung offengelegt sein; ohne Nenner und Falldefinition trägt sie den behaupteten Schluss nicht.
+
 **Systembezug:** Ein wirtschaftlicher Massstab wird zur Grundlage einer politischen Gesamtbewertung; die Bezeichnung der Kritiker:innen als unverantwortlich führt eine moralische Beurteilung ein. Wirtschaftliche Kosten zu berücksichtigen ist berechtigt. Ungeklärt bleibt, ob dieses Kriterium das umfassende Urteil allein tragen kann.
 
 **Gegenprobe G3:** Könnte die Kostensenkung auch aus einer geänderten Fallzusammensetzung, geänderten Buchung oder anderen gleichzeitig eingeführten Massnahmen resultieren? Nötig wäre Material, das diese Erklärungen unterscheidet. Status: vorgeschlagen, nicht durchgeführt.
@@ -535,15 +596,21 @@ Das Raster bevorzugt nachvollziehbare Begriffe, begründete Übergänge und korr
 
 Systemzuordnungen sind begründete Rekonstruktionen. Die Theorie funktionaler Differenzierung ist eine Perspektive unter anderen; sie deckt nicht jede gesellschaftliche Unterscheidung ab. Ein Text kann andere Perspektiven mit guten Gründen verwenden. Auch die Systemanalyse muss erklären, welchen konkreten Erkenntnisgewinn sie gegenüber einer einfachen Argumentationsanalyse erzielt.
 
+**Entstehungsbedingung dieser Fassung.** 0.4 ist aus einem einzelnen Anwendungsfall hervorgegangen, einem ungewöhnlich selbstreflexiven Risiko-Essay mit quantifizierter Unsicherheit und einer starken Handlungsempfehlung. Was dieser Fall sichtbar gemacht hat, ist nicht repräsentativ für die Lücken des Rasters insgesamt. Die vier Ergänzungen stehen deshalb unter Erprobungsvorbehalt, insbesondere für Nachricht, Reportage und Interview, bei denen weder quantifizierte Unsicherheit noch Empfehlungen die Hauptlast tragen. Sollte sich 3.1 oder die Optionensymmetrie dort regelmässig als «nicht einschlägig» erweisen, gehören beide in ein optionales Modul statt in den Hauptweg.
+
+**Wachstumsgrenze.** Mit 0.3 und 0.4 hat das Raster deutlich an Umfang gewonnen. Künftige Erweiterungen sollten mit einer Streichung einhergehen. Eine Fassung, die nur wächst, verliert ihre Brauchbarkeit für die Kurzprüfung.
+
 Vorgeschlagene Kalibrierung: Mehrere Personen prüfen dieselbe kleine Auswahl unterschiedlicher Textsorten zunächst unabhängig. Verglichen werden die zentralen Aussagen, die rekonstruierten Übergänge, die Systemzuordnungen und die Ergebnisse der Gegenproben. Wiederkehrende Unterschiede führen zur Präzisierung des Rasters. Das ist ein nächster methodischer Schritt, keine bereits durchgeführte Validierung.
 
 **Arbeitsregel:** Eine Kritik ist umso brauchbarer, je genauer sie sagen kann, welche zusätzliche Information oder welche kleinere Formulierungsänderung den beanstandeten Schluss tragfähig machen würde.
 
 ## Quellen und Status der theoretischen Bezüge
 
-Die Module und Fragen dieser Fassung sind eine eigenständige Weiterentwicklung der Projekttexte. Die folgenden Quellen stützen die benannten theoretischen und berufsethischen Ausgangspunkte; sie enthalten dieses Prüfraster nicht. Onlinezugriff: 29. September 2026.
+Die Module und Fragen dieser Fassung sind eine eigenständige Weiterentwicklung der Projekttexte. Die folgenden Quellen stützen die benannten theoretischen und berufsethischen Ausgangspunkte; sie enthalten dieses Prüfraster nicht. Onlinezugriff der Q-Quellen: 29. September 2026.
 
-- **Projektgrundlage:** «Prüfraster journalistischer Texte. Ereignis · Kontext · Übergang», Fassung 0.2, 29. September 2026; «Prüfraster: Nebeneinander und Nacheinander», 28. September 2026; «Der Verteilapparat des Körpers», 28. September 2026. Verwendet wurden die vorliegenden Fassungen.
+Für die in 6.4 angesprochene Vorsorgenorm wurde bewusst keine bestimmte Lesart des Vorsorgeprinzips festgeschrieben und keine Quelle beigezogen. Das Raster verlangt nur, dass eine solche Norm als Norm erkennbar wird; welche Fassung sie erhält, bleibt dem geprüften Text und der jeweiligen Debatte überlassen.
+
+- **Projektgrundlage:** «Prüfraster journalistischer Texte. Ereignis · Kontext · Übergang», Fassungen 0.2 und 0.3, 29. September 2026; «Prüfraster: Nebeneinander und Nacheinander», 28. September 2026; «Der Verteilapparat des Körpers», 28. September 2026. Verwendet wurden die vorliegenden Fassungen.
 - **Q1:** Schweizer Presserat. *Richtlinien zur Erklärung der Pflichten und Rechte der Journalistinnen und Journalisten*. Insbesondere 1.1, 2.3, 3.1, 3.8/3.9 und 5.1. [Offizielle Richtlinien](https://presserat.ch/journalistenkodex/richtlinien/).
 - **Q2:** Luhmann, N. (1996). *Die Realität der Massenmedien*. 2., erweiterte Auflage. Westdeutscher Verlag. Insbesondere Kapitel 3 «Codierung» und Kapitel 5 «Nachrichten und Berichte». Grundlage für die Unterscheidung zwischen Mediencode und der Wahrheitserwartung an Berichterstattung.
 - **Q3:** Luhmann, N. (2000). *Die Politik der Gesellschaft*. Herausgegeben von André Kieserling. Suhrkamp. Insbesondere Kapitel 3 zur politischen Codierung; in der zugänglichen Ausgabe S. 99–100.
