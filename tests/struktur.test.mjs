@@ -1,5 +1,5 @@
-// Struktur der Website (Neuordnung vom 2. Oktober 2026, Wunsch von Christian): Die Startseite trägt den Titel «Raumstellen, Zeitobjekte» und darunter das
-// Stellenfeld, in die Seite eingebettet (kein Beitrag). Das Menü hat vier Wörter ohne Symbole und Animationen: Zettelkasten (führt direkt in den Zettelkasten),
+// Struktur der Website (Neuordnung vom 2. Oktober 2026, Wunsch von Christian): Die Startseite trägt den Satz «Beobachtung ist Anlass …» (seit 3. Oktober 2026
+// ohne den sichtbaren Titel «Raumstellen, Zeitobjekte», etwas grösser gesetzt) und darunter das Stellenfeld, in die Seite eingebettet (kein Beitrag). Das Menü hat vier Wörter ohne Symbole und Animationen: Zettelkasten (führt direkt in den Zettelkasten),
 // Apps (ORNA, ORMA), Masterprompts (die vier Prüfraster in der Reihenfolge der Alpha-Übersicht), Web (OMNA COLOR, Das Dritte Rad). Die Karten liegen auf den
 // Seiten apps/, masterprompts/ und web/. News, Termine und Portfolio bleiben unter ihren Adressen, tragen das Menü und sind sonst nicht verlinkt.
 //   node --experimental-strip-types --no-warnings --test tests/struktur.test.mjs
@@ -86,15 +86,19 @@ test("Menü: Gestaltung ohne Symbole, in der serifenlosen Schrift der Seite (Wö
   assert.match(css, /@media \(max-width: 520px\)\s*\{\s*\.menu\s*\{[^}]*display:\s*grid[^}]*repeat\(2, max-content\)/, "Handy: zwei mal zwei");
 });
 
-test("Startseite: Titel «Raumstellen, Zeitobjekte», darunter der Satz und das Stellenfeld eingebettet; keine Karten und keine Rückmeldungen", () => {
+test("Startseite: kein sichtbarer Titel mehr, oben der Satz (etwas grösser), darunter das Stellenfeld eingebettet; keine Karten und keine Rückmeldungen", () => {
   const html = lies("index.html").replace(/<!--[\s\S]*?-->/g, "");        // geprüft wird, was die Seite zeigt, nicht die Kommentare
-  assert.match(html, /<h1>Raumstellen, Zeitobjekte<\/h1>/);
-  assert.ok(!/<h1 class="sr-only">/.test(html), "der Titel ist sichtbar");
-  const lead = html.match(/<p class="lead">\s*([^<]+?)\s*<\/p>/)[1];
+  // Wunsch vom 3. Oktober 2026: Titel «Raumstellen, Zeitobjekte» gestrichen; für Vorlesegeräte bleibt eine unsichtbare Überschrift
+  assert.ok(!html.includes("Raumstellen, Zeitobjekte"), "der frühere Titel ist weg");
+  assert.match(html, /<h1 class="sr-only">Ornament Cloud<\/h1>/);
+  const lead = html.match(/<p class="lead lead--start">\s*([^<]+?)\s*<\/p>/)[1];
+  const css = lies("styles.css");
+  const gross = css.match(/\.lead--start\s*\{[^}]*font-size:\s*clamp\(([\d.]+)rem/);
+  assert.ok(gross && parseFloat(gross[1]) > 1.1, "der Satz ist grösser als die übrigen Einleitungen (1.1 rem)");
   assert.equal(lead, "Beobachtung ist Anlass für Veränderungen in der Realität.", "der Satz steht weiter unter dem Titel (die Vorschaukarte trägt ihn)");
   const stelle = (s) => { const i = html.indexOf(s); assert.ok(i > 0, s); return i; };
-  assert.ok(stelle("<h1>") < stelle('<p class="lead">') && stelle('<p class="lead">') < stelle('<figure class="stellenfeld">') && stelle('<figure class="stellenfeld">') < stelle("</main>"),
-    "Reihenfolge: Titel, Satz, Stellenfeld, dann endet die Seite (sie hat nur noch den Fuss)");
+  assert.ok(stelle("<h1") < stelle('<p class="lead') && stelle('<p class="lead') < stelle('<figure class="stellenfeld">') && stelle('<figure class="stellenfeld">') < stelle("</main>"),
+    "Reihenfolge: (unsichtbarer) Titel, Satz, Stellenfeld, dann endet die Seite (sie hat nur noch den Fuss)");
   assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div)\b/g)].map((m) => m[1]), ["figure"], "in main steht nur das Stellenfeld");
   const rahmen = html.match(/<figure class="stellenfeld">\s*<iframe ([^>]*)><\/iframe>/);
   assert.ok(rahmen, "das Stellenfeld ist ein iframe in einer figure, keine Karte");

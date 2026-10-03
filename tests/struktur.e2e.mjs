@@ -65,14 +65,16 @@ const box = (loc) => loc.evaluate((e) => { const r = e.getBoundingClientRect(); 
 const sich = (a, b) => a.x < b.r - 0.5 && b.x < a.r - 0.5 && a.y < b.b - 0.5 && b.y < a.b - 0.5;     // Rechtecke überlappen
 
 // ---------- Startseite ----------
-await check("Startseite (Computer): Titel, darunter der Satz und das Stellenfeld 16 : 9 in die Seite eingebettet; die Szene steht und läuft", async () => {
+await check("Startseite (Computer): kein sichtbarer Titel, der Satz grösser, darunter das Stellenfeld 16 : 9 in die Seite eingebettet; die Szene steht und läuft", async () => {
   const { ctx, page, frame, errors } = await startseite({ viewport: { width: 1200, height: 900 } });
-  assert.equal(await page.locator("h1").textContent(), "Raumstellen, Zeitobjekte");
-  assert.ok(await page.locator("h1").isVisible());
+  assert.equal(await page.locator("h1").textContent(), "Ornament Cloud");
+  assert.equal(await page.locator("h1").evaluate((e) => e.getBoundingClientRect().width), 1, "der Titel ist nur für Vorlesegeräte da");
+  const px = (sel) => page.locator(sel).evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+  assert.ok(await px(".site-header .lead") >= 20, "der Satz ist grösser gesetzt");
   assert.equal(await page.locator("main .card, main article, main video").count(), 0, "kein Beitrag, keine Karte");
-  const h1 = await box(page.locator("h1")), lead = await box(page.locator(".site-header .lead")), fig = await box(page.locator(".stellenfeld iframe"));
+  const lead = await box(page.locator(".site-header .lead")), fig = await box(page.locator(".stellenfeld iframe"));
   assert.equal(await page.locator(".site-header .lead").textContent().then((t) => t.trim()), "Beobachtung ist Anlass für Veränderungen in der Realität.");
-  assert.ok(h1.b <= lead.y + 1 && lead.b <= fig.y + 1, `Titel, Satz, Stellenfeld untereinander: ${JSON.stringify([h1.b, lead.y, lead.b, fig.y])}`);
+  assert.ok(lead.b <= fig.y + 1, `Satz und Stellenfeld untereinander: ${JSON.stringify([lead.y, lead.b, fig.y])}`);
   assert.ok(fig.w >= 1000 && Math.abs(fig.h / fig.w - 9 / 16) < 0.01, `16 : 9, ${fig.w} × ${fig.h}`);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   assert.ok(await frame.evaluate(() => document.documentElement.classList.contains("eingebettet")), "das Stellenfeld erkennt, dass es eingebettet ist");
@@ -89,9 +91,9 @@ await check("Startseite (Computer): Titel, darunter der Satz und das Stellenfeld
   await ctx.close();
 });
 
-await check("Startseite (Handy): Titel, Menü zwei mal zwei, Stellenfeld 4 : 5, kein seitliches Wischen; bei «weniger Bewegung» steht die Szene still", async () => {
+await check("Startseite (Handy): Satz, Menü zwei mal zwei, Stellenfeld 4 : 5, kein seitliches Wischen; bei «weniger Bewegung» steht die Szene still", async () => {
   const { ctx, page, frame, errors } = await startseite({ ...devices["Pixel 7"], reducedMotion: "reduce" });
-  assert.ok(await page.locator("h1").isVisible());
+  assert.ok(await page.locator(".site-header .lead").isVisible());
   const fig = await box(page.locator(".stellenfeld iframe"));
   assert.ok(Math.abs(fig.h / fig.w - 5 / 4) < 0.01, `4 : 5, ${fig.w} × ${fig.h}`);
   assert.ok(fig.w >= 340 && fig.r <= 412, "so breit wie die Seite");
@@ -208,12 +210,12 @@ await check("Stellenfeld eingebettet (Handy): senkrechtes Wischen blättert die 
 
 await check("Stellenfeld eingebettet: ausserhalb des Bildes rechnet die Szene nicht, beim Zurückblättern läuft sie weiter", async () => {
   // Die Seite endet seit dem 2. Oktober 2026 nach dem Stellenfeld (die Rückmeldungen darunter sind weg): man kann den Rahmen nicht mehr nach oben aus dem Fenster blättern.
-  // Ein niedriges Fenster legt ihn dafür von Anfang an unter den unteren Rand: Titel und Satz stehen davor.
-  const { ctx, page, frame } = await startseite({ viewport: { width: 1200, height: 300 } });
+  // Ein niedriges Fenster legt ihn dafür von Anfang an unter den unteren Rand: Kopf und Satz stehen davor (seit dem 3. Oktober 2026 ohne Titel, darum 200 px).
+  const { ctx, page, frame } = await startseite({ viewport: { width: 1200, height: 200 } });
   const lauf = async () => { const a = await frame.evaluate(() => window.__raf); await page.waitForTimeout(700); return [a, await frame.evaluate(() => window.__raf)]; };
   await page.evaluate(() => scrollTo(0, 0));
   await page.waitForTimeout(1000);
-  assert.ok((await box(page.locator(".stellenfeld iframe"))).y > 300, "der Rahmen liegt unter dem unteren Rand des Fensters");
+  assert.ok((await box(page.locator(".stellenfeld iframe"))).y > 200, "der Rahmen liegt unter dem unteren Rand des Fensters");
   let [a, b] = await lauf();
   assert.equal(b, a, `ausserhalb des Bildes steht sie still (${a} → ${b})`);
   await page.evaluate(() => scrollTo(0, 340));

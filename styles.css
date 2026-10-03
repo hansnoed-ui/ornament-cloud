@@ -168,6 +168,12 @@ h1 {
   color: var(--muted);
 }
 
+/* Startseite (seit 3. Oktober 2026 ohne sichtbaren Titel): der Satz unter der Welle etwas grösser */
+.lead--start {
+  font-size: clamp(1.3rem, 3vw, 1.6rem);
+  line-height: 1.4;
+}
+
 /* Raster */
 .grid {
   display: grid;
@@ -433,7 +439,7 @@ h1 {
   .divider { margin-bottom: 28px; }
   .brand { margin-top: 0; }
   .seitenweg { margin-top: 0; }
-  .menu { justify-content: flex-start; margin-top: 0; }
+  .menu { justify-content: flex-start; margin-top: 16px; }   /* seit 3. Oktober 2026 etwas tiefer: mehr Luft unter den Buttons */
 }
 
 @media (max-width: 520px) {
