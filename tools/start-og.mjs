@@ -1,15 +1,18 @@
 // Erzeugt die Vorschaukarten (Open Graph / X-Karte, 1200 × 630) für das Teilen auf Social Media:
 //   Startseite       ornament.cloud                      → assets/og-ornament-cloud.png
+//   Masterprompts    ornament.cloud/masterprompts/       → assets/og-masterprompts.png
 //   Das Dritte Rad   ornament.cloud/alpha/drittes-rad/   → alpha/drittes-rad/og-drittes-rad.jpg   (JPEG: der Farbverlauf der Seite wird als PNG über 500 KB gross, WhatsApp mag es kleiner)
 // und die Bilder der beiden Karten auf der Seite «Web» (Hochformat 4 : 5, 640 × 800, dunkel in beiden Farbmodi):
 //   OMNA COLOR       das Farbrad aus der Seite           → assets/vorschau-omna-color.jpg
 //   Das Dritte Rad   das Rad aus der Seite               → assets/vorschau-drittes-rad.jpg
 // Startseite: eine Wolke aus den 40 Zeichen von ORNA (direkt aus symbols.js gezeichnet), daneben Name und Satz der Startseite.
+// Masterprompts: wie die Startseite links Titel, Welle und Satz der Seite; rechts die vier gezeichneten Vorschauen der Prüfraster,
+// direkt aus masterprompts/index.html übernommen (zwei mal zwei, als Karten wie auf der Seite).
 // Das Dritte Rad: das Rad selbst, aus der Seite übernommen, daneben der Titel auf dem nachtblauen Grund der Seite.
 // Die Anordnung der Zeichen ist festgelegt (Zufallsfolge mit Startwert), das Bild wird bei jedem Lauf gleich.
 //
 //   NODE_PATH=$(npm root -g) node tools/start-og.mjs           (alle)
-//   NODE_PATH=$(npm root -g) node tools/start-og.mjs start     (nur die Startseite; «rad» nur die Karte vom Dritten Rad, «vorschau» nur die beiden Bilder der Seite «Web»)
+//   NODE_PATH=$(npm root -g) node tools/start-og.mjs start     (nur die Startseite; «masterprompts» nur die Karte der Seite Masterprompts, «rad» nur die Karte vom Dritten Rad, «vorschau» nur die beiden Bilder der Seite «Web»)
 //
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
@@ -125,6 +128,50 @@ if (!wahl || wahl === "start") {
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(300);
   const out = fileURLToPath(new URL("../assets/og-ornament-cloud.png", import.meta.url));
+  await page.screenshot({ path: out });
+  console.log("geschrieben:", out);
+  await page.close();
+}
+
+// ---------- Masterprompts ----------
+if (!wahl || wahl === "masterprompts") {
+  const page = await seite();
+  await page.goto(`${base}masterprompts/`);
+  await page.evaluate(() => {
+    const vorschauen = [...document.querySelectorAll("article.card .thumb svg")].map((svg) => svg.outerHTML);
+    const satz = document.querySelector(".site-header .lead").textContent.trim();
+    document.head.innerHTML = `<meta charset="utf-8"><link rel="stylesheet" href="/vendor/fonts/fonts.css"><style>
+      html, body { margin: 0; background: #f8f8f6; }
+      .og { --text: #1f1d1a; --surface: #ffffff; --serif: Newsreader, Georgia, serif;
+        box-sizing: border-box; position: relative; width: 1200px; height: 630px; overflow: hidden; color: #1f1d1a; font-family: "Instrument Sans", system-ui, sans-serif; }
+      .links { position: absolute; left: 88px; top: 0; bottom: 0; width: 520px; display: flex; flex-direction: column; justify-content: center; }
+      .titel { margin: 0; font: 400 76px/0.98 Newsreader, Georgia, serif; letter-spacing: -.015em; }
+      .welle { display: block; width: 440px; height: 26px; margin: 34px 0 30px; overflow: visible; }
+      .welle path { fill: none; stroke: #1f1d1a; stroke-opacity: .55; stroke-width: 1.4; stroke-linecap: round; }
+      .satz { margin: 0; width: 470px; font: 400 31px/1.34 Newsreader, Georgia, serif; color: #6b665e; }
+      .adresse { position: absolute; left: 88px; bottom: 56px; margin: 0; font: 600 17px/1 "Instrument Sans", system-ui, sans-serif; letter-spacing: .22em; text-transform: uppercase; color: #c2410c; }
+      .raster { position: absolute; left: 640px; top: 61px; display: grid; grid-template-columns: repeat(2, 242px); gap: 20px; }
+      .kachel { box-sizing: border-box; width: 242px; height: 242px; display: grid; place-items: center; background: #ffffff; border: 1px solid #e4e0d8; border-radius: 14px; }
+      .kachel svg { width: 86% !important; }
+    </style>`;
+    // dieselbe feine, leicht unruhige Welle wie auf der Startseitenkarte (feste Folge, damit das Bild bei jedem Lauf gleich wird)
+    let s = 20261003, w = "M0 14";
+    const z = () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    for (let x = 6; x <= 440; x += 6) w += ` L${x} ${(13 + Math.sin(x / 34) * 4.2 + Math.sin(x / 11.3) * 1.6 + (z() - .5) * 1.1).toFixed(2)}`;
+    document.body.className = "";
+    document.body.innerHTML = `<div class="og">
+      <div class="links">
+        <h1 class="titel">Masterprompts</h1>
+        <svg class="welle" viewBox="0 0 440 26" aria-hidden="true"><path d="${w}"/></svg>
+        <p class="satz">${satz}</p>
+      </div>
+      <p class="adresse">ornament.cloud/masterprompts</p>
+      <div class="raster">${vorschauen.map((v) => `<div class="kachel">${v}</div>`).join("")}</div>
+    </div>`;
+  });
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(300);
+  const out = fileURLToPath(new URL("../assets/og-masterprompts.png", import.meta.url));
   await page.screenshot({ path: out });
   console.log("geschrieben:", out);
   await page.close();
