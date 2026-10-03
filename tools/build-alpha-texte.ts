@@ -1,6 +1,8 @@
 // Alpha-Bereich: Prüfraster, die als Markdown vorliegen und zurzeit in Arbeit sind, als eigene Seiten.
 // Quelle: src/alpha/<datei>.md (Fassung des Autors; die Website ändert daran nichts). Erzeugt je Raster
 // alpha/<seite>/index.html und die Markdown-Datei zum Herunterladen unter alpha/<datei>.md.
+// Hat ein Raster einen Anwendungsprompt (src/alpha/<prompt>), steht er über dem Text wie bei den anderen
+// Prüfrastern: Download, Kopieren, Textfeld (identisch mit der Datei) und «So gehst du vor»; die Datei liegt unter alpha/<prompt>.
 //
 //   node --experimental-strip-types tools/build-alpha-texte.ts
 //
@@ -22,6 +24,8 @@ export const RASTER = [
     titel: "Prüfraster journalistischer Texte", untertitel: "Ereignis · Kontext · Übergang · Gegenprobe · Systembezüge",
     meta: "Fassung 0.4 · 3. Oktober 2026 · Arbeitsfassung für das Projekt von Christian Strickler",
     beschreibung: "Wie macht ein journalistischer Text aus ausgewähltem Material eine Aussage, welche Unterscheidungen tragen diese Aussage, und was könnte ihre Geltung begrenzen oder verändern?",
+    // seit dem 3. Oktober 2026: Anwendungsprompt aus Fassung 0.4, von Claude entworfen (Festlegungen A1–A3 gekennzeichnet)
+    prompt: { datei: "journalistische-texte-anwendungsprompt-0.4.0.md", version: "0.4.0", datum: "3. Oktober 2026" },
   },
 ];
 
@@ -100,7 +104,62 @@ export function markdown(md: string): string {
   return out.join("\n");
 }
 
-export function seite(r: typeof RASTER[number], md: string): string {
+type Raster = typeof RASTER[number];
+
+/** Abschnitt «Anwendungsprompt» (nur für Raster mit Prompt) */
+function promptBlock(r: Raster, text: string): string {
+  const p = r.prompt;
+  const kb = Math.round(Buffer.byteLength(text) / 1024);
+  return `    <section class="pr-block" aria-labelledby="prompt">
+      <h2 id="prompt">Anwendungsprompt</h2>
+      <p class="pr-meta">Version ${p.version} · ${p.datum} · Textdatei (Markdown), ${kb} KB</p>
+      <p>Übersetzt das Raster in Arbeitsanweisungen für einen KI-Assistenten (zum Beispiel Claude). Damit lässt sich ein journalistischer Text prüfen: Aussage und Modalität, der entscheidende Übergang vom Material zur Aussage, tragende Begriffe, Wechsel des Bewertungsmassstabs, gezielte Gegenproben und ein blinder Fleck nur mit Nachweis – als Kurz- oder Vollprüfung, mit Fundstellen und gekennzeichneten Befunden, oder mit «offen» und Rückfragen statt erfundener Belege.</p>
+      <p class="pr-aktionen">
+        <a class="pr-knopf" href="../${p.datei}" download="${p.datei}">Anwendungsprompt herunterladen <span aria-hidden="true">↓</span></a>
+        <button class="pr-knopf" type="button" data-kopieren="../${p.datei}" hidden>Prompt kopieren</button>
+      </p>
+      <p class="pr-status" role="status" aria-live="polite"></p>
+      <details class="pr-text">
+        <summary>Prompt hier anzeigen – zum Markieren und Kopieren</summary>
+        <p class="pr-meta">Ins Feld tippen, alles markieren und kopieren. Der Text ist identisch mit der Datei zum Herunterladen.</p>
+        <textarea readonly rows="18" spellcheck="false" aria-label="Anwendungsprompt, Version ${p.version}">${esc(text).replace(/&quot;/g, '"')}</textarea>
+        <p class="pr-aktionen pr-aktionen--klein"><button class="pr-knopf" type="button" data-markieren>Alles markieren</button></p>
+      </details>
+      <h3 class="pr-meta pr-schritte-titel">So gehst du vor</h3>
+      <ol class="pr-schritte">
+        <li>Den Prompt kopieren (Knopf oder Textfeld oben) oder herunterladen und die Datei mit einem Texteditor öffnen.</li>
+        <li>Den ganzen Text in einen neuen Chat mit einem KI-Assistenten einfügen.</li>
+        <li>Ganz unten bei «Meine Eingabe» eintragen: Kurz- oder Vollprüfung, Angaben zum Text (Titel, Autor:in, Medium, Datum, Textsorte), ob es eine Übersetzung ist und ob die Verweise vorliegen, und den Text selbst – Überschrift, Vorspann und Bildlegenden gesondert.</li>
+        <li>Absenden. Die Antwort kommt als lesbarer Bericht: faire Wiedergabe der Aussage, höchstens drei Befunde mit Fundstellen, der entscheidende Übergang, die wichtigste Gegenprobe, ein blinder Fleck nur mit Nachweis und eine Quintessenz. Ohne Angabe wird eine Kurzprüfung gemacht.</li>
+      </ol>
+      <p class="pr-meta">Der Prompt ist eine Anwendungsversion, keine wortgetreue Abschrift des Rasters; seine eigenen Festlegungen (A1–A3) sind darin gekennzeichnet. Die beiden im Raster zurückgestellten Vorschläge wendet er nicht an. Darunter steht das Raster selbst.</p>
+    </section>
+`;
+}
+
+const PROMPT_SKRIPT = `  <script>
+    // «Alles markieren»: markiert den ganzen Prompt im Textfeld (auch auf dem Handy)
+    (function () {
+      var m = document.querySelector("[data-markieren]"), t = document.querySelector(".pr-text textarea");
+      if (!m || !t) return;
+      m.addEventListener("click", function () { t.focus(); t.select(); t.setSelectionRange(0, t.value.length); });
+    })();
+    // «Prompt kopieren»: nur sichtbar, wo der Browser die Zwischenablage anbietet; sonst bleibt der Download
+    (function () {
+      var b = document.querySelector("[data-kopieren]"), status = document.querySelector(".pr-status");
+      if (!b || !navigator.clipboard || !window.fetch) return;
+      b.hidden = false;
+      b.addEventListener("click", function () {
+        fetch(b.getAttribute("data-kopieren")).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+          .then(function (t) { return navigator.clipboard.writeText(t); })
+          .then(function () { status.textContent = "Kopiert. Jetzt in einen neuen Chat einfügen und unten «Meine Eingabe» ausfüllen."; })
+          .catch(function () { status.textContent = "Kopieren ging nicht – bitte den Prompt herunterladen."; });
+      });
+    })();
+  </script>
+`;
+
+export function seite(r: Raster, md: string, prompt?: string): string {
   const body = markdown(md.split("\n").slice(r.kopfZeilen).join("\n"));
   return `<!DOCTYPE html>
 <html lang="de">
@@ -134,6 +193,32 @@ export function seite(r: typeof RASTER[number], md: string): string {
     .at-tabelle table { border-collapse: collapse; min-width: 34em; font-size: 0.9rem; }
     .at-tabelle th, .at-tabelle td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
     .at-tabelle th { border-bottom-color: var(--text); font-weight: 600; }
+    /* Anwendungsprompt: gleich gesetzt wie auf den Seiten der anderen Prüfraster (alpha/gesellschaftskonzepte/) */
+    .pr-block { margin: 2.5rem 0 0; padding: 1.75rem 0 0; border-top: 1px solid var(--border); }
+    .pr-block h2 { margin: 0 0 0.4rem; font-family: var(--serif); font-weight: 400; font-size: 1.6rem; }
+    .pr-block p { margin: 0.5rem 0 0; max-width: 38em; }
+    .pr-meta { color: var(--muted); font-size: 0.9rem; }
+    .pr-block .pr-aktionen { display: flex; flex-wrap: wrap; gap: 12px; margin: 1.75rem 0; }
+    .pr-block .pr-status { margin: -0.75rem 0 1.75rem; }
+    .pr-block .pr-status:empty { display: none; }
+    .pr-block .pr-text { margin: 0; }
+    .pr-block .pr-aktionen--klein { margin: 1rem 0 0; }
+    .pr-knopf {
+      display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 20px;
+      border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text);
+      font: inherit; font-size: 0.95rem; text-decoration: none; cursor: pointer;
+    }
+    .pr-knopf:hover, .pr-knopf:focus-visible { background: var(--text); color: var(--bg); outline: none; }
+    .pr-status { color: var(--muted); font-size: 0.9rem; }
+    .pr-schritte-titel { margin: 1.25rem 0 0; font-weight: 600; }
+    .pr-schritte { max-width: 38em; margin: 1rem 0 0; padding-left: 1.3rem; }
+    .pr-schritte li { margin: 0.45rem 0; }
+    .pr-text summary { cursor: pointer; font-size: 0.95rem; text-decoration: underline; text-underline-offset: 3px; }
+    .pr-text textarea {
+      display: block; box-sizing: border-box; width: 100%; margin: 0.75rem 0 0; padding: 14px;
+      border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text);
+      font: 0.85rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; resize: vertical;
+    }
   </style>
 </head>
 <body>
@@ -147,15 +232,15 @@ export function seite(r: typeof RASTER[number], md: string): string {
       <p class="lead">${esc(r.untertitel)}</p>
       <p class="at-arbeit">Zurzeit in Arbeit</p>
       <p class="at-hinweis">${esc(r.meta)}</p>
-      <a class="at-knopf" href="../${r.datei}" download="${r.datei}">Als Markdown herunterladen <span aria-hidden="true">↓</span></a>
+      <a class="at-knopf" href="../${r.datei}" download="${r.datei}">${r.prompt ? "Raster als Markdown herunterladen" : "Als Markdown herunterladen"} <span aria-hidden="true">↓</span></a>
     </div>
   </header>
   <main class="wrap">
-    <article class="at-text">
+${prompt === undefined ? "" : promptBlock(r, prompt)}    <article class="at-text">
 ${body}
     </article>
   </main>
-  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+${prompt === undefined ? "" : PROMPT_SKRIPT}  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>
 </html>
@@ -165,7 +250,9 @@ ${body}
 export function build(): { pfad: string; inhalt: string }[] {
   return RASTER.flatMap(r => {
     const md = readFileSync(new URL(`src/alpha/${r.datei}`, ROOT), "utf8");
-    return [{ pfad: `alpha/${r.seite}/index.html`, inhalt: seite(r, md) }, { pfad: `alpha/${r.datei}`, inhalt: md }];
+    const prompt = r.prompt && readFileSync(new URL(`src/alpha/${r.prompt.datei}`, ROOT), "utf8");
+    return [{ pfad: `alpha/${r.seite}/index.html`, inhalt: seite(r, md, prompt || undefined) }, { pfad: `alpha/${r.datei}`, inhalt: md },
+      ...(prompt ? [{ pfad: `alpha/${r.prompt.datei}`, inhalt: prompt }] : [])];
   });
 }
 

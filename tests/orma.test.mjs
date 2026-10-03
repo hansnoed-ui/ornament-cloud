@@ -544,6 +544,21 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
     assert.ok(html.includes(`href="../${r.datei}" download`));
     assert.ok(!/dissent\.is|unifr\.ch/.test(html + readFileSync(new URL(`alpha/${r.datei}`, root), "utf8")), "keine Links auf PDF-Kopien");
   }
+  // Raster mit Anwendungsprompt (seit 3. Oktober 2026: journalistische Texte): Prompt über dem Raster, wie bei den anderen Prüfrastern
+  for (const r of at.RASTER.filter(r => r.prompt)) {
+    const html = readFileSync(new URL(`alpha/${r.seite}/index.html`, root), "utf8");
+    const prompt = readFileSync(new URL(`alpha/${r.prompt.datei}`, root), "utf8");
+    assert.equal(prompt, readFileSync(new URL(`src/alpha/${r.prompt.datei}`, root), "utf8"), "Prompt-Datei wie die Quelle");
+    assert.ok(prompt.startsWith(`# ${r.titel}\nAnwendungsprompt · Version ${r.prompt.version}`), "Kopf des Prompts");
+    assert.ok(prompt.includes(`Quelle: https://ornament.cloud/alpha/${r.datei}`), "Quelle im Prompt zeigt auf die Fassung");
+    assert.match(prompt, /A1 — [\s\S]*A2 — [\s\S]*A3 — [\s\S]*\n## Meine Eingabe\n/, "Festlegungen gekennzeichnet, Eingabe am Ende");
+    assert.ok(html.includes(`href="../${r.prompt.datei}" download="${r.prompt.datei}"`) && html.includes(`data-kopieren="../${r.prompt.datei}"`));
+    assert.ok(html.includes("So gehst du vor") && html.includes("«Meine Eingabe»"));
+    assert.ok(html.indexOf('id="prompt"') < html.indexOf('<article class="at-text">'), "Prompt steht über dem Raster");
+    const feld = html.match(/<textarea[^>]*>([\s\S]*?)<\/textarea>/)[1].replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+    assert.equal(feld, prompt, "Textfeld weicht von der Datei ab");
+    assert.ok(uebersicht.includes(`<a href="${r.prompt.datei}" download="${r.prompt.datei}">Anwendungsprompt (Markdown)</a>`), "Prompt in der Übersicht");
+  }
   // Markdown → HTML: Tabelle, verschachtelte Liste, Zitat, Hervorhebung, nur https-Links
   const h = at.markdown("# A\n\n> Zitat *kursiv*\n\n| x | y |\n| --- | --- |\n| **1** | 2 |\n\n1. eins\n   - unter\n2. zwei\n\n[gut](https://a.ch) [schlecht](javascript:x)");
   assert.ok(h.includes('<h2 id="a">A</h2>') && h.includes("<blockquote><p>Zitat <em>kursiv</em></p></blockquote>"));
