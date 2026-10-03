@@ -3,6 +3,8 @@
 // alpha/<seite>/index.html und die Markdown-Datei zum Herunterladen unter alpha/<datei>.md.
 // Hat ein Raster einen Anwendungsprompt (src/alpha/<prompt>), steht er über dem Text wie bei den anderen
 // Prüfrastern: Download, Kopieren, Textfeld (identisch mit der Datei) und «So gehst du vor»; die Datei liegt unter alpha/<prompt>.
+// Ein Vorschlag zur nächsten Fassung (src/alpha/<vorschlag.datei>) steht als eigener, markierter Abschnitt unter dem Raster;
+// das Raster selbst bleibt unverändert.
 //
 //   node --experimental-strip-types tools/build-alpha-texte.ts
 //
@@ -26,6 +28,8 @@ export const RASTER = [
     beschreibung: "Wie macht ein journalistischer Text aus ausgewähltem Material eine Aussage, welche Unterscheidungen tragen diese Aussage, und was könnte ihre Geltung begrenzen oder verändern?",
     // seit dem 3. Oktober 2026: Anwendungsprompt aus Fassung 0.4, von Claude entworfen (Festlegungen A1–A3 gekennzeichnet)
     prompt: { datei: "journalistische-texte-anwendungsprompt-0.4.0.md", version: "0.4.0", datum: "3. Oktober 2026" },
+    // seit dem 3. Oktober 2026: Modul W «Wissenschaftskommunikation», von Claude entworfen, zur Erprobung (nicht Teil von 0.4, nicht im Prompt)
+    vorschlag: { datei: "pruefraster-journalistische-texte-0.5-vorschlag-modul-w.md", kurz: "Vorschlag für Fassung 0.5: Modul Wissenschaftskommunikation" },
   },
 ];
 
@@ -159,7 +163,16 @@ const PROMPT_SKRIPT = `  <script>
   </script>
 `;
 
-export function seite(r: Raster, md: string, prompt?: string): string {
+/** Abschnitt «Vorschlag für die nächste Fassung» unter dem Raster */
+function vorschlagBlock(text: string): string {
+  return `    <article class="at-text at-vorschlag" id="vorschlag">
+      <p class="at-vorschlag-marke">Vorschlag · nicht Bestandteil der geltenden Fassung</p>
+${markdown(text)}
+    </article>
+`;
+}
+
+export function seite(r: Raster, md: string, prompt?: string, vorschlag?: string): string {
   const body = markdown(md.split("\n").slice(r.kopfZeilen).join("\n"));
   return `<!DOCTYPE html>
 <html lang="de">
@@ -194,6 +207,11 @@ export function seite(r: Raster, md: string, prompt?: string): string {
     .at-tabelle th, .at-tabelle td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
     .at-tabelle th { border-bottom-color: var(--text); font-weight: 600; }
     /* Anwendungsprompt: gleich gesetzt wie auf den Seiten der anderen Prüfraster (alpha/gesellschaftskonzepte/) */
+    /* Vorschlag zur nächsten Fassung: unter dem Raster, deutlich als Vorschlag markiert */
+    .at-vorschlag { border-top: 2px solid var(--accent); }
+    .at-vorschlag-marke { display: inline-block; margin: 0; padding: 4px 12px; border: 1.5px solid var(--accent); border-radius: 999px;
+      color: var(--accent); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+    .at-vorschlag-link { display: block; margin: 0.9rem 0 0; color: var(--text); font-size: 0.95rem; }
     .pr-block { margin: 2.5rem 0 0; padding: 1.75rem 0 0; border-top: 1px solid var(--border); }
     .pr-block h2 { margin: 0 0 0.4rem; font-family: var(--serif); font-weight: 400; font-size: 1.6rem; }
     .pr-block p { margin: 0.5rem 0 0; max-width: 38em; }
@@ -232,14 +250,15 @@ export function seite(r: Raster, md: string, prompt?: string): string {
       <p class="lead">${esc(r.untertitel)}</p>
       <p class="at-arbeit">Zurzeit in Arbeit</p>
       <p class="at-hinweis">${esc(r.meta)}</p>
-      <a class="at-knopf" href="../${r.datei}" download="${r.datei}">${r.prompt ? "Raster als Markdown herunterladen" : "Als Markdown herunterladen"} <span aria-hidden="true">↓</span></a>
+      <a class="at-knopf" href="../${r.datei}" download="${r.datei}">${r.prompt ? "Raster als Markdown herunterladen" : "Als Markdown herunterladen"} <span aria-hidden="true">↓</span></a>${vorschlag === undefined ? "" : `
+      <a class="at-vorschlag-link" href="#vorschlag">${esc(r.vorschlag.kurz)} <span aria-hidden="true">↓</span></a>`}
     </div>
   </header>
   <main class="wrap">
 ${prompt === undefined ? "" : promptBlock(r, prompt)}    <article class="at-text">
 ${body}
     </article>
-  </main>
+${vorschlag === undefined ? "" : vorschlagBlock(vorschlag)}  </main>
 ${prompt === undefined ? "" : PROMPT_SKRIPT}  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>
@@ -251,7 +270,8 @@ export function build(): { pfad: string; inhalt: string }[] {
   return RASTER.flatMap(r => {
     const md = readFileSync(new URL(`src/alpha/${r.datei}`, ROOT), "utf8");
     const prompt = r.prompt && readFileSync(new URL(`src/alpha/${r.prompt.datei}`, ROOT), "utf8");
-    return [{ pfad: `alpha/${r.seite}/index.html`, inhalt: seite(r, md, prompt || undefined) }, { pfad: `alpha/${r.datei}`, inhalt: md },
+    const vorschlag = r.vorschlag && readFileSync(new URL(`src/alpha/${r.vorschlag.datei}`, ROOT), "utf8");
+    return [{ pfad: `alpha/${r.seite}/index.html`, inhalt: seite(r, md, prompt || undefined, vorschlag || undefined) }, { pfad: `alpha/${r.datei}`, inhalt: md },
       ...(prompt ? [{ pfad: `alpha/${r.prompt.datei}`, inhalt: prompt }] : [])];
   });
 }
