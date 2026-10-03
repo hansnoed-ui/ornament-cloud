@@ -75,6 +75,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   Prüfraster in Arbeit als Textseite (`alpha/journalistische-texte/`, unten in der Übersicht direkt vor OMNA COLOR, «Zurzeit in Arbeit»):
   Quelle `src/alpha/*.md`, Seiten und Markdown-Download erzeugt mit `node --experimental-strip-types tools/build-alpha-texte.ts`
   (neue Fassung: Datei in `src/alpha/` ersetzen, Eintrag in `RASTER` anpassen, Build laufen lassen; ein Test meldet veraltete Seiten)
+  Seit dem 3. Oktober 2026 mit Anwendungsprompt (`src/alpha/journalistische-texte-anwendungsprompt-0.4.0.md`, im `RASTER`-Eintrag unter `prompt`):
+  der Build setzt ihn über das Raster (Download, Kopieren, Textfeld, «So gehst du vor») und legt die Datei unter `alpha/` ab
   `alpha/omna-color/` ist OMNA COLOR (Prototyp, zuunterst in der Übersicht): Farbkreis mit Gegenrad, zieht eine von 180 Gestaltungsübungen;
   eine einzige Datei `index.html` mit den Übungen als Daten im Skript (Stand Kartographie v0.5), von Hand gepflegt
   `alpha/drittes-rad/` ist «Das Dritte Rad» (Prototyp, zuunterst in der Übersicht): drei Ringe auf einer Achse (Zeit = sieben Zyklen aus «Zu seiner Zeit», Form = 40 Zeichen aus ORNA,
