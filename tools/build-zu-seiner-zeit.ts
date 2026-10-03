@@ -265,7 +265,6 @@ ${LANGS.map(l => `  <link rel="alternate" hreflang="${l}" href="${url(l)}">`).jo
       <a href="${p}spur/"${o.seite === "spur" ? ' aria-current="page"' : ""}>${u.spur}</a>
       <a href="${p}zufall/${o.seite === "strophe" ? `?von=${o.path.match(/strophe\/(\d+)-/)?.[1] ?? ""}` : ""}" data-zufall>${u.zufall}</a>
       <a href="${p}verweis/"${o.seite === "verweise" ? ' aria-current="page"' : ""}>${u.verweise}</a>
-      <a class="zsz-site" href="${site}">ornament.cloud</a>
     </nav>
   </header>
   <main id="inhalt" tabindex="-1">
