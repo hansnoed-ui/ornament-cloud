@@ -50,18 +50,20 @@ main:focus { outline: none; }
 .zsz-skip:focus { left: var(--rand); top: 12px; background: var(--papier); padding: 4px 8px; }
 
 /* ---------- Kopf und Fuss ---------- */
+/* Kopf (seit 3. Oktober 2026): untereinander der Titel «Zu seiner Zeit» (in allen Sprachen deutsch), die Sprachwahl, das Menü;
+   überall gleich, mit demselben Abstand zwischen den dreien */
 .zsz-kopf {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 24px;
-  align-items: baseline;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
   max-width: 1080px;
   margin: 0 auto;
   padding: 28px var(--rand);
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
 }
+@media (max-width: 760px) { .zsz-kopf { gap: 24px; } }   /* auf dem Handy mehr Luft zwischen Titel, Sprachwahl und Menü */
 .zsz-werk { font-family: var(--serif); font-size: 1.05rem; letter-spacing: 0.02em; text-decoration: none; }
 .zsz-nav { display: flex; flex-wrap: wrap; gap: 4px 20px; }
 .zsz-nav a { color: var(--grau); text-decoration: none; }
@@ -91,10 +93,10 @@ main:focus { outline: none; }
 @media (forced-colors: active) { .seitenweg a[aria-current] { outline: 1px solid currentColor; outline-offset: 2px; } }
 .seitenweg a:focus-visible { outline: 2px solid var(--weg); outline-offset: 2px; }
 .seitenweg + .zsz-kopf { padding-top: 28px; }
-/* Sprachwechsel (seit 3. Oktober 2026: Deutsch, English, Español): drei gut sichtbare Knöpfe im Kopf, auf dem Computer rechts nach dem Menü,
-   auf dem Handy in einer eigenen Zeile darunter; die aktuelle Sprache gefüllt. Jeder Knopf führt auf dieselbe Seite in der anderen Sprache.
+/* Sprachwechsel (seit 3. Oktober 2026: Deutsch, English, Español): drei gut sichtbare Knöpfe im Kopf, zwischen Titel und Menü;
+   die aktuelle Sprache gefüllt. Jeder Knopf führt auf dieselbe Seite in der anderen Sprache.
    Der Titel «Zu seiner Zeit» bleibt an seiner Stelle (Abstand unter den Hauptlinks, siehe oben). */
-.zsz-sprachen { display: flex; flex-wrap: wrap; gap: 8px; align-self: center; }
+.zsz-sprachen { display: flex; flex-wrap: wrap; gap: 8px; }
 .zsz-sprachen a {
   min-height: 36px;
   display: inline-flex;
