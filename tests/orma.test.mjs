@@ -532,6 +532,8 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
   assert.ok(!/(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/.test(rad3), "Das Dritte Rad lädt nichts von fremden Servern");
   assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon/.test(rad3), "Das Dritte Rad ruft keinen Dienst auf (jev wird nur beim Bauen gefragt)");
   assert.match(rad3, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/">Ornament Cloud<\/a>\s*<a href="\.\/" aria-current="page">Das Dritte Rad<\/a>\s*<\/nav>/);
+  // Gesellschaftskonzepte: das lange Wort im Feld darf trennen (sonst läuft es auf dem Handy ins Nachbarfeld)
+  assert.ok(readFileSync(new URL("alpha/gesellschaftskonzepte/index.html", root), "utf8").includes("<strong>Milieu&shy;beschreibung</strong>"));
   // beide sind in Arbeit: deutlicher Vermerk auf der Seite und in der Übersicht
   for (const seite of ["gesellschaftskonzepte", "journalistische-texte"]) {
     assert.match(readFileSync(new URL(`alpha/${seite}/index.html`, root), "utf8"), /<p class="(?:at|pr)-arbeit">Zurzeit in Arbeit<\/p>/, `${seite}: Vermerk auf der Seite`);
