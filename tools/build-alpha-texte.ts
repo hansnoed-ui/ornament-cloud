@@ -18,9 +18,9 @@ export const RASTER = [
   // «Prüfraster für Gesellschaftskonzepte» hat seit dem 3. Oktober 2026 eine eigene Seite wie die ersten beiden Prüfraster
   // (PDF, Anwendungsprompt, Anleitung): alpha/gesellschaftskonzepte/index.html, von Hand gepflegt.
   {
-    seite: "journalistische-texte", datei: "pruefraster-journalistische-texte-0.3.md", kopfZeilen: 5,
+    seite: "journalistische-texte", datei: "pruefraster-journalistische-texte-0.4.md", kopfZeilen: 5,
     titel: "Prüfraster journalistischer Texte", untertitel: "Ereignis · Kontext · Übergang · Gegenprobe · Systembezüge",
-    meta: "Fassung 0.3 · 29. September 2026 · Arbeitsfassung für das Projekt von Christian Strickler",
+    meta: "Fassung 0.4 · 3. Oktober 2026 · Arbeitsfassung für das Projekt von Christian Strickler",
     beschreibung: "Wie macht ein journalistischer Text aus ausgewähltem Material eine Aussage, welche Unterscheidungen tragen diese Aussage, und was könnte ihre Geltung begrenzen oder verändern?",
   },
 ];
