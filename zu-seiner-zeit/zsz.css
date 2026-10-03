@@ -51,11 +51,11 @@ main:focus { outline: none; }
 
 /* ---------- Kopf und Fuss ---------- */
 /* Kopf (seit 3. Oktober 2026): untereinander der Titel «Zu seiner Zeit» (in allen Sprachen deutsch), die Sprachwahl, das Menü;
-   überall gleich, mit demselben Abstand zwischen den dreien */
+   überall gleich, mit demselben Abstand zwischen den dreien (24 px, auf Handy und Computer) */
 .zsz-kopf {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
   align-items: flex-start;
   max-width: 1080px;
   margin: 0 auto;
@@ -63,7 +63,6 @@ main:focus { outline: none; }
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
 }
-@media (max-width: 760px) { .zsz-kopf { gap: 24px; } }   /* auf dem Handy mehr Luft zwischen Titel, Sprachwahl und Menü */
 .zsz-werk { font-family: var(--serif); font-size: 1.05rem; letter-spacing: 0.02em; text-decoration: none; }
 .zsz-nav { display: flex; flex-wrap: wrap; gap: 4px 20px; }
 .zsz-nav a { color: var(--grau); text-decoration: none; }
