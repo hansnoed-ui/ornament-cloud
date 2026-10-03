@@ -96,12 +96,16 @@ test("Strophenseite: Meta, Titel, direkt darunter die Bottom-Line, dann Text, We
 });
 
 test("Teilen: jede Seite trägt das Vorschaubild (1200 × 630, absolute Adresse), Titel und Beschreibung", () => {
-  const png = readFileSync(new URL("zu-seiner-zeit/" + build.OG_IMAGE, root));
-  assert.equal(png.subarray(1, 4).toString(), "PNG");
-  assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630]);
+  for (const lang of build.LANGS) {
+    const png = readFileSync(new URL("zu-seiner-zeit/" + build.OG_BILD[lang], root));
+    assert.equal(png.subarray(1, 4).toString(), "PNG", lang);
+    assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630], lang);
+  }
+  assert.equal(new Set(Object.values(build.OG_BILD)).size, build.LANGS.length, "je Sprache ein eigenes Bild");
   for (const [k, c] of build.files()) {
     if (!k.endsWith("index.html")) continue;
-    assert.ok(c.includes(`<meta property="og:image" content="https://ornament.cloud/zu-seiner-zeit/${build.OG_IMAGE}">`), k);
+    const lang = /^(en|es)\//.exec(k)?.[1] ?? "de";
+    assert.ok(c.includes(`<meta property="og:image" content="https://ornament.cloud/zu-seiner-zeit/${build.OG_BILD[lang]}">`), k);
     assert.ok(c.includes('<meta name="twitter:card" content="summary_large_image">'), k);
     assert.ok(c.includes(`<meta property="og:url" content="https://ornament.cloud/zu-seiner-zeit/${k.replace(/index\.html$/, "")}">`), k);
   }
