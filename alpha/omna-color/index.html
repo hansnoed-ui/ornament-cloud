@@ -11,6 +11,10 @@
   <meta name="robots" content="noindex">
   <meta name="description" content="OMNA COLOR: Zwei Farbräder drehen gegeneinander und wählen eine Gestaltungsübung.">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <script>
+    // Eingebettet (Startseite der Website, seit 4. Oktober 2026): ohne Hauptlinks und Rand; GoatCounter zählt Rahmen ohnehin nicht
+    if (window.self !== window.top) document.documentElement.classList.add('eingebettet');
+  </script>
   <style>
 /* Layout: Rad links, Übung rechts; auf dem Telefon untereinander. Farben nur im Rad, sonst ruhige kühle Neutrale. */
 :root {
@@ -95,6 +99,12 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--c4); outlin
 @media (forced-colors: active) { .seitenweg a[aria-current] { outline: 1px solid currentColor; outline-offset: 2px; } }
 .seitenweg a:focus-visible { outline: 2px solid var(--weg); outline-offset: 2px; }
 @media (max-width: 760px) { body { padding-block-start: 40px; } }
+/* Eingebettet auf der Startseite: nur das Spiel, ohne Hauptlinks, ohne eigenen Rand und Bildlauf; der Rahmen wächst mit (Höhe setzt die Startseite).
+   Kein vh: im Rahmen hinge es an dessen Höhe. Der Grund bleibt durchsichtig, damit das Spiel auf der Seite steht und nicht in einem Kasten. */
+html.eingebettet { scrollbar-gutter: auto; overflow: hidden; }
+html.eingebettet body { padding: 4px 4px 8px; background: transparent; }
+.eingebettet .seitenweg { display: none; }
+.eingebettet main { margin-top: 0; }
 @media (min-width: 800px) {
   /* Rad und Knopf als eigene Rasterzellen, damit die Karte zur Radmitte ausgerichtet wird und nicht zur Mitte von Rad + Knopf */
   .stage { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); grid-template-areas: "rad karte" "knopf ."; row-gap: 16px; }

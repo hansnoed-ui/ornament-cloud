@@ -2,9 +2,10 @@
 //   Startseite       ornament.cloud                      → assets/og-ornament-cloud.png
 //   Masterprompts    ornament.cloud/masterprompts/       → assets/og-masterprompts.png
 //   Das Dritte Rad   ornament.cloud/alpha/drittes-rad/   → alpha/drittes-rad/og-drittes-rad.jpg   (JPEG: der Farbverlauf der Seite wird als PNG über 500 KB gross, WhatsApp mag es kleiner)
-// und die Bilder der beiden Karten auf der Seite «Web» (Hochformat 4 : 5, 640 × 800, dunkel in beiden Farbmodi):
+// und die Bilder der Karten auf der Seite «Web» (Hochformat 4 : 5, 640 × 800, dunkel in beiden Farbmodi):
 //   OMNA COLOR       das Farbrad aus der Seite           → assets/vorschau-omna-color.jpg
 //   Das Dritte Rad   das Rad aus der Seite               → assets/vorschau-drittes-rad.jpg
+//   Stellenfeld      die erste Station der Szene         → assets/vorschau-stellenfeld.jpg   (seit 4. Oktober 2026, als das Stellenfeld von der Startseite auf «Web» zog)
 // Startseite: eine Wolke aus den 40 Zeichen von ORNA (direkt aus symbols.js gezeichnet), daneben Name und Satz der Startseite.
 // Masterprompts: wie die Startseite links Titel, Welle und Satz der Seite; rechts die vier gezeichneten Vorschauen der Prüfraster,
 // direkt aus masterprompts/index.html übernommen (zwei mal zwei, als Karten wie auf der Seite).
@@ -12,7 +13,7 @@
 // Die Anordnung der Zeichen ist festgelegt (Zufallsfolge mit Startwert), das Bild wird bei jedem Lauf gleich.
 //
 //   NODE_PATH=$(npm root -g) node tools/start-og.mjs           (alle)
-//   NODE_PATH=$(npm root -g) node tools/start-og.mjs start     (nur die Startseite; «masterprompts» nur die Karte der Seite Masterprompts, «rad» nur die Karte vom Dritten Rad, «vorschau» nur die beiden Bilder der Seite «Web»)
+//   NODE_PATH=$(npm root -g) node tools/start-og.mjs start     (nur die Startseite; «masterprompts» nur die Karte der Seite Masterprompts, «rad» nur die Karte vom Dritten Rad, «vorschau» nur die Bilder der Seite «Web»)
 //
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
@@ -275,6 +276,18 @@ if (!wahl || wahl === "vorschau") {
     });
     await page.waitForTimeout(300);
     const out = fileURLToPath(new URL("../assets/vorschau-drittes-rad.jpg", import.meta.url));
+    await page.screenshot({ path: out, type: "jpeg", quality: 88 });
+    console.log("geschrieben:", out);
+    await page.close();
+  }
+  // Stellenfeld: die Szene im Hochformat, ohne Bedienleiste (bei «weniger Bewegung» steht sie auf der ersten Station still)
+  {
+    const page = await browser.newPage({ ...hochformat, colorScheme: "dark" });
+    await page.goto(`${base}werke/stellenfeld/`);
+    await page.waitForSelector("canvas");
+    await page.addStyleTag({ content: "#bar { display: none !important; }" });
+    await page.waitForTimeout(2500);
+    const out = fileURLToPath(new URL("../assets/vorschau-stellenfeld.jpg", import.meta.url));
     await page.screenshot({ path: out, type: "jpeg", quality: 88 });
     console.log("geschrieben:", out);
     await page.close();

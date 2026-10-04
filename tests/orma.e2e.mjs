@@ -744,7 +744,7 @@ await check("Apps und Masterprompts (Handy): Karten untereinander, ORNA vor ORMA
   }));
   assert.equal(neu.length, 8);
   for (const [wort, rand] of neu) assert.ok(rand >= 2, `${wort} ragt aus dem Bild (${rand})`);
-  // die Artefakte am Ende des Portfolios (das Stellenfeld steht ausserdem auf der Startseite)
+  // die Artefakte am Ende des Portfolios (das Stellenfeld steht ausserdem auf der Seite «Web»)
   await page.goto(`${origin}/portfolio/`);
   const titel = await page.locator(".grid--stapel .card h2").allTextContents();
   assert.deepEqual(titel.slice(-2), ["Re-entry-Knoten, Helix, S/F-Band", "Stellenfeld"]);   // «Formen der Zeit» ausgeblendet (30. September 2026)
@@ -786,8 +786,8 @@ await check("Startseite ohne Rückmeldungen (auf Wunsch vom 2. Oktober 2026 entf
   assert.equal(await page.locator("#kommentare, .kommentare-hinweis, .rueckmeldung, .giscus, iframe.giscus-frame, script[src*='kommentare'], script[src*='giscus']").count(), 0, "kein Abschnitt, kein Skript");
   assert.deepEqual(anfragen.filter(u => /giscus|kommentare/i.test(u)), [], "weder kommentare.js noch giscus.app wird angefragt");
   assert.equal((await page.request.get(`${origin}/kommentare.js`)).status(), 404, "die Datei gibt es nicht mehr");
-  assert.equal(await page.locator("h2").count(), 0, "unter dem Stellenfeld folgt keine Überschrift mehr");
-  assert.equal(await page.locator("main > *").count(), 1, "in main steht nur das Stellenfeld");
+  assert.equal(await page.locator("h2").count(), 0, "unter OMNA COLOR folgt keine Überschrift mehr");
+  assert.equal(await page.locator("main > *").count(), 1, "in main steht nur OMNA COLOR (seit 4. Oktober 2026, vorher das Stellenfeld)");
   await ctx.close();
 });
 
