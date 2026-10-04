@@ -847,28 +847,27 @@ h1 {
 }
 
 
-/* Startseite: das Stellenfeld (werke/stellenfeld/), unter dem Titel in die Seite eingebettet, kein Beitrag und keine Karte.
-   Die Bühne bleibt in beiden Farbmodi dunkel, sie ist Teil des Werks. */
-.stellenfeld {
+/* Startseite (seit 4. Oktober 2026): OMNA COLOR zum direkten Spielen, unter dem Satz in die Seite eingebettet, kein Beitrag und keine Karte
+   (das Stellenfeld ist als Beitrag auf die Seite «Web» gezogen). Der Rahmen ist so hoch wie das Spiel: die Startseite setzt die Höhe,
+   bis dahin hält min-height den Platz. color-scheme wie die Seite im Rahmen, damit sein Grund durchsichtig bleibt. */
+.omna {
   margin: 0 0 56px;
 }
 
-.stellenfeld iframe {
+.omna iframe {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  min-height: 560px;
   border: 0;
-  border-radius: var(--radius);
-  background: #05070a;
+  color-scheme: light dark;
 }
 
-.stellenfeld figcaption {
+.omna figcaption {
   margin-top: 10px;
   font-size: 0.85rem;
   color: var(--muted);
 }
 
 @media (max-width: 640px) {
-  .stellenfeld { margin-bottom: 40px; }
-  .stellenfeld iframe { aspect-ratio: 4 / 5; }
+  .omna { margin-bottom: 40px; }
 }

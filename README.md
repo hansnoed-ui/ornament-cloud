@@ -3,13 +3,14 @@
 Einfache statische Website (reines HTML/CSS), die eine Auswahl meiner Claude-Artefakte präsentiert.
 Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CDNs oder Google geladen.
 
-- `index.html` – Startseite (Neuordnung vom 2. Oktober 2026, Wunsch von Christian): der Titel «Raumstellen, Zeitobjekte», darunter der Satz «Beobachtung ist Anlass für Veränderungen in der Realität.»
-  (er steht auf der Vorschaukarte zum Teilen, `tests/teilen.test.mjs` hält beides zusammen) und das Stellenfeld, in die Seite eingebettet (kein Beitrag, keine Karte): ein `<iframe>` auf `werke/stellenfeld/`,
-  sonst steht nichts auf der Seite: die Rückmeldungen (giscus, `kommentare.js`) sind auf Wunsch von Christian vom 2. Oktober 2026 entfernt. Die Karten (Apps, Zettelkasten, Prüfraster) stehen nicht mehr hier, sondern auf den Seiten des Menüs (siehe unten).
-  Das Stellenfeld ist die 3D-Ansicht selbst, drehbar (Ziehen), Zoom mit Strg + Mausrad; sie lädt `vendor/three/` und rechnet nur, solange sie im Bild ist.
-  Eingebettet erkennt sich `werke/stellenfeld/index.html` an `window.self !== window.top` (Klasse `eingebettet` am `<html>`): senkrechtes Wischen und das Mausrad blättern die Seite weiter
-  (`touch-action: pan-y`, Rad nur mit Strg/Cmd zoomen, keine Tastenkürzel), waagrecht dreht die Kamera; im Vollbild und auf der eigenen Seite gilt wie bisher alles. GoatCounter ignoriert Rahmen, die Einbettung wird nicht gezählt.
-  Bei «weniger Bewegung» steht die Szene still (Standbild, «Abspielen»)
+- `index.html` – Startseite (Neuordnung vom 2. Oktober 2026, Wunsch von Christian; seit 3. Oktober ohne sichtbaren Titel): der Satz «Beobachtung ist Anlass für Veränderungen in der Realität.»
+  (er steht auf der Vorschaukarte zum Teilen, `tests/teilen.test.mjs` hält beides zusammen) und darunter seit dem 4. Oktober 2026 **OMNA COLOR zum direkten Spielen**:
+  ein `<iframe>` auf `alpha/omna-color/` (freigegebene Ausnahme von REGELN §14, ein Test prüft genau diese Einbettung), kein Beitrag und keine Karte; der Beitrag zu OMNA COLOR bleibt auf «Web».
+  Eingebettet erkennt sich `alpha/omna-color/index.html` an `window.self !== window.top` (Klasse `eingebettet` am `<html>`): ohne Hauptlinks, Rand und eigenen Bildlauf, Grund durchsichtig;
+  die Startseite setzt die Höhe des Rahmens auf die Höhe des Spiels (kleines Skript unten in `index.html`, ResizeObserver), so wächst er mit, wenn eine Übung erscheint. GoatCounter zählt Rahmen nicht.
+  Sonst steht nichts auf der Seite: die Rückmeldungen (giscus, `kommentare.js`) sind auf Wunsch von Christian vom 2. Oktober 2026 entfernt.
+  Das Stellenfeld (`werke/stellenfeld/`, früher hier eingebettet) ist seit dem 4. Oktober 2026 ein Beitrag auf «Web» (Vorschau `assets/vorschau-stellenfeld.jpg` aus `tools/start-og.mjs`).
+  Es behält seinen Einbettungsmodus (`window.self !== window.top`: senkrechtes Wischen und das Mausrad blättern, Zoom nur mit Strg/Cmd), auch wenn es zurzeit nirgends eingebettet ist.
 - Menü (`<nav class="menu">`, Neuordnung vom 2. Oktober 2026): vier Wörter ohne Symbole und Animationen, in der serifenlosen Schrift der Seite (`--font`, Gewicht 500; Wunsch vom 2. Oktober 2026: moderner als die frühere Serife), immer in dieser Reihenfolge: **Zettelkasten** (führt direkt zu `zu-seiner-zeit/`), **Apps** (`apps/`),
   **Masterprompts** (`masterprompts/`), **Web** (`web/`). Es steht in den Kopfzeilen von Startseite, News, Termine, Portfolio, den drei neuen Seiten und von ORNA (Rad, Feld und die App-Abschriften, dort ausgeblendet);
   Zettelkasten, Alpha-Seiten, ORMA und Werke haben es nicht. Aktiv ist, wo man ist (`aria-current="page"`; auf ORNA, das unter Apps hängt: `true`), der Eintrag ist dann unterstrichen.
@@ -17,7 +18,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `apps/` – Seite «Apps»: die Beiträge ORNA und ORMA (ORMA als Alpha gekennzeichnet; Vorschau ist das drehende Rad aus `icons.js`), in dieser Reihenfolge
 - `masterprompts/` – Seite «Masterprompts»: die vier Prüfraster als Beiträge, in der Reihenfolge der Alpha-Übersicht: «Nebeneinander und Nacheinander», «Der Verteilapparat des Körpers»,
   «Prüfraster für Gesellschaftskonzepte», «Prüfraster journalistischer Texte» (alle als Alpha gekennzeichnet, die letzten beiden «In Arbeit»); zwei mal zwei (`.grid--paare`), die Vorschauen sind gezeichnete Vierfelder, Dreieck und Zeilen (SVG in der Seite)
-- `web/` – Seite «Web»: die Beiträge OMNA COLOR und Das Dritte Rad (Alpha, Prototyp). Die Vorschau ist je ein Bild (640 × 800, dunkel): `assets/vorschau-omna-color.jpg` und `assets/vorschau-drittes-rad.jpg`, erzeugt mit `tools/start-og.mjs vorschau`
+- `web/` – Seite «Web»: die Beiträge OMNA COLOR und Das Dritte Rad (Alpha, Prototyp) und seit dem 4. Oktober 2026 das Stellenfeld (kein Alpha). Die Vorschau ist je ein Bild (640 × 800, dunkel): `assets/vorschau-omna-color.jpg`, `assets/vorschau-drittes-rad.jpg` und `assets/vorschau-stellenfeld.jpg`, erzeugt mit `tools/start-og.mjs vorschau`
 - `styles.css` – Gestaltung (inkl. automatischem Dark Mode und Farben des Hintergrunds)
 - Navigation oben links (`<nav class="seitenweg">`, REGELN §14, Wunsch vom 2. Oktober 2026): auf jeder Seite «Ornament Cloud» (Startseite) und darunter «Das Dritte Rad» (Start des Rads),
   an die Stelle der früheren Zeile «Ornament Cloud · Alpha». Das Markup steht in den Seiten von Hand und in den Erzeugern `tools/build-zu-seiner-zeit.ts` und `tools/build-alpha-texte.ts`;
@@ -32,7 +33,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   die Schrift in der Farbe der Seite (`--bg`, `--papier`, `--night`; Kontrast ab 4,5); in erzwungenen Farben (Windows, hoher Kontrast) bleibt er mit einem feinen Ring kenntlich. Aktiv ist im Rad «Das Dritte Rad» (`aria-current="page"`), auf der Startseite
   «Ornament Cloud» (`page`), auf allen anderen Seiten ebenfalls «Ornament Cloud» (`true`: man ist in der Website). Beim Darüberfahren wird der Rahmen voll, der Tastaturfokus ist ein Ring von 2 px in der Farbe des Buttons.
   Ausgenommen sind ORMA (eigene App), `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`. Neue Seiten brauchen sie ebenfalls; `tests/navigation.test.mjs` meldet fehlende.
-  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 30: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
+  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 31: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
 - `icons.js` – gezeichnete, animierte Schwarz-Weiss-Symbole: die Welle unter dem Kopf, das Rad der Karten ORNA und ORMA, Prozess, Inklusion und Turm (News, Termine); die Symbole des früheren Menüs (reentry, zeit, stellen) sind entfernt (Dauer in `PERIOD`, Marke `?v=` zurzeit 14)
 - `news/` – News als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
 - `termine/` – Termine als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen
@@ -132,7 +133,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `tests/teilen.test.mjs` prüft sie. Ändert sich der Satz der Startseite oder das Rad, das Bild neu erzeugen. Mit `vorschau` entstehen die beiden Bilder der Seite «Web» (4 : 5, 640 × 800, JPEG).
 - `tests/` – Prüfungen des Rads: `node --experimental-strip-types --no-warnings --test tests/doppelspalt.test.mjs`
   und im Browser (Playwright): `node tests/doppelspalt.e2e.mjs`. Aufbau der Website (Menü, Startseite, Apps, Masterprompts, Web, Versionsmarken): `tests/struktur.test.mjs`;
-  im Browser `NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs` (Menü auf allen Breiten, das eingebettete Stellenfeld mit Mausrad, Wischen, Vollbild und Pause ausserhalb des Bildes)
+  im Browser `NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs` (Menü auf allen Breiten, OMNA COLOR eingebettet auf der Startseite, die Seite Web mit dem Stellenfeld)
 - `slider.js` – Punkte über einer Wisch-Galerie auf dem Smartphone (Wischen selbst per CSS); zurzeit auf keiner Seite eingebunden,
   alle Raster stehen auf dem Handy untereinander (`.grid--stapel`). Wieder einschalten: `<div class="slider-dots" …>` vor das Raster, `.grid--stapel` weg, Skript einbinden
 - `bg.js` – animierter Hintergrund (Lemniskaten und Schleifen als SVG, Tempo in `CONFIG`); zurzeit auf keiner Seite eingebunden. Wieder einschalten: `<div class="bg" aria-hidden="true"><svg class="bg-field" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg></div>` direkt nach `<body>` und `<script src="bg.js?v=2" defer></script>` vor `</body>`

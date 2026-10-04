@@ -1,5 +1,5 @@
 // Struktur der Website (Neuordnung vom 2. Oktober 2026, Wunsch von Christian): Die Startseite trägt den Satz «Beobachtung ist Anlass …» (seit 3. Oktober 2026
-// ohne den sichtbaren Titel «Raumstellen, Zeitobjekte», etwas grösser gesetzt) und darunter das Stellenfeld, in die Seite eingebettet (kein Beitrag). Das Menü hat vier Wörter ohne Symbole und Animationen: Zettelkasten (führt direkt in den Zettelkasten),
+// ohne den sichtbaren Titel «Raumstellen, Zeitobjekte», etwas grösser gesetzt) und darunter seit 4. Oktober 2026 OMNA COLOR zum direkten Spielen (eingebettet, kein Beitrag; das Stellenfeld ist ein Beitrag auf «Web»). Das Menü hat vier Wörter ohne Symbole und Animationen: Zettelkasten (führt direkt in den Zettelkasten),
 // Apps (ORNA, ORMA), Masterprompts (die vier Prüfraster in der Reihenfolge der Alpha-Übersicht), Web (OMNA COLOR, Das Dritte Rad). Die Karten liegen auf den
 // Seiten apps/, masterprompts/ und web/. News, Termine und Portfolio bleiben unter ihren Adressen, tragen das Menü und sind sonst nicht verlinkt.
 //   node --experimental-strip-types --no-warnings --test tests/struktur.test.mjs
@@ -86,7 +86,7 @@ test("Menü: Gestaltung ohne Symbole, in der serifenlosen Schrift der Seite (Wö
   assert.match(css, /@media \(max-width: 520px\)\s*\{\s*\.menu\s*\{[^}]*display:\s*grid[^}]*repeat\(2, max-content\)/, "Handy: zwei mal zwei");
 });
 
-test("Startseite: kein sichtbarer Titel mehr, oben der Satz (etwas grösser), darunter das Stellenfeld eingebettet; keine Karten und keine Rückmeldungen", () => {
+test("Startseite: kein sichtbarer Titel, oben der Satz (etwas grösser), darunter OMNA COLOR zum Spielen eingebettet; keine Karten und keine Rückmeldungen", () => {
   const html = lies("index.html").replace(/<!--[\s\S]*?-->/g, "");        // geprüft wird, was die Seite zeigt, nicht die Kommentare
   // Wunsch vom 3. Oktober 2026: Titel «Raumstellen, Zeitobjekte» gestrichen; für Vorlesegeräte bleibt eine unsichtbare Überschrift
   assert.ok(!html.includes("Raumstellen, Zeitobjekte"), "der frühere Titel ist weg");
@@ -95,20 +95,27 @@ test("Startseite: kein sichtbarer Titel mehr, oben der Satz (etwas grösser), da
   const css = lies("styles.css");
   const gross = css.match(/\.lead--start\s*\{[^}]*font-size:\s*clamp\(([\d.]+)rem/);
   assert.ok(gross && parseFloat(gross[1]) > 1.1, "der Satz ist grösser als die übrigen Einleitungen (1.1 rem)");
-  assert.equal(lead, "Beobachtung ist Anlass für Veränderungen in der Realität.", "der Satz steht weiter unter dem Titel (die Vorschaukarte trägt ihn)");
+  assert.equal(lead, "Beobachtung ist Anlass für Veränderungen in der Realität.", "der Satz steht weiter oben (die Vorschaukarte trägt ihn)");
   const stelle = (s) => { const i = html.indexOf(s); assert.ok(i > 0, s); return i; };
-  assert.ok(stelle("<h1") < stelle('<p class="lead') && stelle('<p class="lead') < stelle('<figure class="stellenfeld">') && stelle('<figure class="stellenfeld">') < stelle("</main>"),
-    "Reihenfolge: (unsichtbarer) Titel, Satz, Stellenfeld, dann endet die Seite (sie hat nur noch den Fuss)");
-  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div)\b/g)].map((m) => m[1]), ["figure"], "in main steht nur das Stellenfeld");
-  const rahmen = html.match(/<figure class="stellenfeld">\s*<iframe ([^>]*)><\/iframe>/);
-  assert.ok(rahmen, "das Stellenfeld ist ein iframe in einer figure, keine Karte");
-  assert.match(rahmen[1], /src="werke\/stellenfeld\/"/);
-  assert.match(rahmen[1], /title="Stellenfeld: [^"]+"/, "der Rahmen trägt einen Titel für Vorlesegeräte");
-  assert.match(rahmen[1], /loading="lazy"/);
-  assert.match(rahmen[1], /allow="fullscreen"/, "Vollbild im eingebetteten Stellenfeld");
-  assert.match(html, /<a href="werke\/stellenfeld\/">Als eigene Seite öffnen<\/a>/);
-  assert.ok(!/<article|class="card|<video|class="grid/.test(html), "keine Beiträge und keine Karten mehr auf der Startseite");
-  assert.deepEqual([...html.matchAll(/<h2[^>]*>([^<]+)<\/h2>/g)].map((m) => m[1]), [], "keine Überschriften unter dem Stellenfeld");
+  assert.ok(stelle("<h1") < stelle('<p class="lead') && stelle('<p class="lead') < stelle('<figure class="omna">') && stelle('<figure class="omna">') < stelle("</main>"),
+    "Reihenfolge: (unsichtbarer) Titel, Satz, OMNA COLOR, dann endet die Seite (sie hat nur noch den Fuss)");
+  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div)\b/g)].map((m) => m[1]), ["figure"], "in main steht nur OMNA COLOR");
+  // Wunsch vom 4. Oktober 2026: OMNA COLOR direkt zum Spielen (kein Bild, keine Vorschau), aus dem Alpha-Bereich eingebettet – freigegebene Ausnahme von REGELN §14
+  const rahmen = html.match(/<figure class="omna">\s*<iframe ([^>]*)><\/iframe>/);
+  assert.ok(rahmen, "OMNA COLOR ist ein iframe in einer figure, keine Karte");
+  assert.match(rahmen[1], /src="alpha\/omna-color\/"/);
+  assert.match(rahmen[1], /title="OMNA COLOR: [^"]+"/, "der Rahmen trägt einen Titel für Vorlesegeräte");
+  assert.deepEqual([...html.matchAll(/<iframe [^>]*src="([^"]+)"/g)].map((m) => m[1]), ["alpha/omna-color/"], "genau diese eine Einbettung");
+  assert.match(html, /Mehr dazu unter <a href="web\/">Web<\/a>/, "der Beitrag bleibt auf «Web»");
+  assert.ok(!html.includes("stellenfeld"), "das Stellenfeld ist nicht mehr auf der Startseite");
+  const omna = lies("alpha/omna-color/index.html");
+  assert.match(omna, /if \(window\.self !== window\.top\) document\.documentElement\.classList\.add\('eingebettet'\)/, "OMNA COLOR erkennt die Einbettung");
+  assert.ok(omna.indexOf("classList.add('eingebettet')") < omna.indexOf("<style>"), "vor dem ersten Anstrich");
+  assert.match(omna, /\.eingebettet \.seitenweg \{ display: none; \}/, "eingebettet ohne Hauptlinks (die Startseite hat sie schon)");
+  assert.match(omna, /\.eingebettet main \{ margin-top: 0; \}/, "eingebettet kein vh-Abstand (er hinge an der Höhe des Rahmens)");
+  assert.match(html, /new ResizeObserver\(passe\)\.observe\(f\.contentDocument\.body\)/, "der Rahmen wächst mit dem Spiel");
+  assert.ok(!/<article|class="card|<video|class="grid/.test(html), "keine Beiträge und keine Karten auf der Startseite");
+  assert.deepEqual([...html.matchAll(/<h2[^>]*>([^<]+)<\/h2>/g)].map((m) => m[1]), [], "keine Überschriften");
   assert.ok(!/href="(zu-seiner-zeit|alpha|portfolio)\//.test(html.replace(/<nav class="(seitenweg|menu)"[\s\S]*?<\/nav>/g, "")), "die Wege führen über Menü und Navigation, nicht über Karten");
   assert.deepEqual([...html.matchAll(/data-icon="([a-z]+)"/g)].map((m) => m[1]), ["wave"], "nur die Welle ist animiert");
 });
@@ -138,7 +145,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 const SEITEN = {
   apps: { titel: "Apps", karten: [["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
-  web: { titel: "Web", karten: [["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"]] },
+  web: { titel: "Web", karten: [["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"]] },
 };
 
 test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und Eintrag in der Sitemap", () => {
@@ -181,13 +188,14 @@ test("Masterprompts: die vier Prüfraster als Beiträge, in der Reihenfolge der 
   assert.ok(k.every((x) => /<svg [^>]*role="img" aria-label="[^"]{20,}"/.test(x.html)), "jede Karte trägt eine gezeichnete Vorschau mit Beschreibung");
 });
 
-test("Web: OMNA COLOR und Das Dritte Rad als Beiträge mit Bild (4 : 5, dunkel), Alpha gekennzeichnet; die Bilder erzeugt tools/start-og.mjs", () => {
+test("Web: OMNA COLOR und Das Dritte Rad (Alpha) und das Stellenfeld als Beiträge mit Bild (4 : 5, dunkel); die Bilder erzeugt tools/start-og.mjs", () => {
   const html = lies("web/index.html");
   const k = karten(html);
   assert.deepEqual(k.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
-  assert.ok(k.every((x) => x.tags.includes("Alpha") && x.tags.includes("Prototyp")));
+  assert.ok(k.slice(0, 2).every((x) => x.tags.includes("Alpha") && x.tags.includes("Prototyp")), "die beiden Räder sind Alpha");
+  assert.ok(!k[2].tags.includes("Alpha"), "das Stellenfeld liegt nicht im Alpha-Bereich");
   const erzeuger = lies("tools/start-og.mjs");
-  for (const [i, datei] of ["vorschau-omna-color.jpg", "vorschau-drittes-rad.jpg"].entries()) {
+  for (const [i, datei] of ["vorschau-omna-color.jpg", "vorschau-drittes-rad.jpg", "vorschau-stellenfeld.jpg"].entries()) {
     assert.match(k[i].html, new RegExp(`<img src="\\.\\./assets/${datei}" alt="" width="640" height="800" loading="lazy">`));
     const bild = readFileSync(new URL(`assets/${datei}`, root));
     assert.deepEqual(bild.subarray(0, 3), Buffer.from([0xff, 0xd8, 0xff]), `${datei}: JPEG`);

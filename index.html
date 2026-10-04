@@ -21,7 +21,7 @@
   <meta name="twitter:title" content="Ornament Cloud">
   <meta name="twitter:description" content="Beobachtung ist Anlass für Veränderung in der Realität.">
   <meta name="twitter:image" content="https://ornament.cloud/assets/og-ornament-cloud.png">
-  <link rel="stylesheet" href="styles.css?v=30">
+  <link rel="stylesheet" href="styles.css?v=31">
 </head>
 <body>
   <header class="site-header">
@@ -48,13 +48,13 @@
 
   <main class="wrap">
     <!--
-      Aufbau: das Stellenfeld (eingebettet, kein Beitrag), sonst nichts; die Rückmeldungen (giscus) sind auf Wunsch weg. Zettelkasten, Apps, Masterprompts und Web stehen im Menü oben
-      (Neuordnung vom 2. Oktober 2026): Zettelkasten unter zu-seiner-zeit/, Apps unter apps/, Masterprompts unter masterprompts/, Web unter web/.
-      Die Karten (<article class="card">) liegen dort. Alpha-Seiten nur mit Freigabe verlinken (REGELN §14, ein Test prüft das).
+      Aufbau: OMNA COLOR zum direkten Spielen (eingebettet aus alpha/omna-color/, seit 4. Oktober 2026 statt des Stellenfelds), sonst nichts.
+      Die Einbettung ist eine freigegebene Ausnahme von REGELN §14 (4. Oktober 2026); der Beitrag zu OMNA COLOR bleibt auf der Seite «Web», das Stellenfeld ebenfalls dort.
+      Zettelkasten, Apps, Masterprompts und Web stehen im Menü oben (Neuordnung vom 2. Oktober 2026). Die Karten (<article class="card">) liegen dort.
     -->
-    <figure class="stellenfeld">
-      <iframe src="werke/stellenfeld/" title="Stellenfeld: eine 3D-Animation in sechs Stationen, Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre. Ziehen dreht die Kamera." loading="lazy" allow="fullscreen" allowfullscreen></iframe>
-      <figcaption>Stellenfeld: Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre. Ziehen dreht die Kamera, Strg + Mausrad zoomt. <a href="werke/stellenfeld/">Als eigene Seite öffnen</a></figcaption>
+    <figure class="omna">
+      <iframe src="alpha/omna-color/" title="OMNA COLOR: zwei Farbräder drehen gegeneinander und wählen eine von 180 Gestaltungsübungen. Drehen mit dem Knopf oder durch Ziehen am Rad."></iframe>
+      <figcaption>OMNA COLOR: Zwei Farbräder drehen gegeneinander. Zeigen sie zwei Farben, verbindet die Übung beide Themen, zeigen sie dieselbe Farbe, bleibt es beim reinen Thema. Drehen mit dem Knopf oder durch Ziehen am Rad. Mehr dazu unter <a href="web/">Web</a>.</figcaption>
     </figure>
   </main>
 
@@ -63,6 +63,17 @@
       <p>Präsentiert von <a href="https://ornament.cloud/c/bisherige-projekte">ornament.cloud</a> · © 2026</p>
     </div>
   </footer>
+  <script>
+    // OMNA COLOR eingebettet: der Rahmen ist so hoch wie das Spiel (Rad, Übung, Hinweise) und hat keinen eigenen Bildlauf
+    (function () {
+      var f = document.querySelector(".omna iframe");
+      if (!f) return;
+      function passe() { try { f.style.height = Math.ceil(f.contentDocument.body.getBoundingClientRect().height) + "px"; } catch (e) {} }
+      function an() { passe(); try { new ResizeObserver(passe).observe(f.contentDocument.body); } catch (e) {} }
+      f.addEventListener("load", an);
+      try { if (f.contentDocument && f.contentDocument.readyState === "complete" && f.contentDocument.body.childElementCount) an(); } catch (e) {}
+    })();
+  </script>
   <script src="icons.js?v=14" defer></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="vendor/goatcounter/count.js"></script>
