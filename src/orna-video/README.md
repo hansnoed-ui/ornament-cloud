@@ -6,7 +6,7 @@ Das Video ist nicht Teil der Website; hier liegt nur der Quellcode, damit es sic
 
 ## Ablauf
 
-0. Intro: das Signet von ornament.cloud in kurzer Fassung (doppelt so schnell, 3 s)
+0. Intro: das Signet von ornament.cloud in kurzer Fassung (doppelt so schnell, 3 s), darüber «ORNA» und «app • web» im Rot-Orange der Seite
 1. Titel «Zufällige Begegnungen» (darüber ORNA), das Rad baut sich aus den 40 Zeichen auf
 2. Oben die beiden Ringe (aussen 20 Künstler:innen, innen 20 Theoretiker:innen), unten «Zwei Ringe, gegenläufig»
 3. Eine Drehung, eine Begegnung: Eva Hesse × Susan Leigh Star und ihre Frage

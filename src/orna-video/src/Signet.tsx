@@ -36,8 +36,12 @@ const breiten = (): number[] => {
   return NAME.split("").map((z) => c.measureText(z).width);
 };
 
-/** tempo: 1 = Abschluss (180 Bilder), 2 = kurze Fassung als Intro (90 Bilder) */
-export const Signet: React.FC<{ tempo?: number }> = ({ tempo = 1 }) => {
+// Obere Kante der Schlaufe (für den Kopf im Intro)
+const OBEN = Math.min(...PUNKTE.map((p) => bild(p)[1]));
+
+/** tempo: 1 = Abschluss (180 Bilder), 2 = kurze Fassung als Intro (90 Bilder).
+ *  kopf: im Intro steht über der Schlaufe «ORNA», darunter «app • web» (Wunsch vom 5. Oktober 2026), im Rot-Orange der Seite. */
+export const Signet: React.FC<{ tempo?: number; kopf?: boolean }> = ({ tempo = 1, kopf = false }) => {
   const f = useCurrentFrame() * tempo;
   // 0–14 leer; 14–56 die Schlaufe zeichnet sich; ab 40 läuft der Punkt (eine Runde in 54 Bildern)
   const gezeichnet = interpolate(f, [14, 56], [0, 1], { ...klemm, easing: Easing.bezier(0.45, 0, 0.25, 1) });
@@ -56,6 +60,18 @@ export const Signet: React.FC<{ tempo?: number }> = ({ tempo = 1 }) => {
           pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - gezeichnet} />
         <circle cx={px} cy={py} r={13} fill={FARBE.akzent} opacity={punktSicht} />
       </svg>
+      {kopf ? (
+        <div style={{
+          position: "absolute", left: 0, right: 0, top: OBEN - 230, display: "flex", flexDirection: "column", alignItems: "center", gap: 18,
+          color: FARBE.akzent, fontFamily: SANS, opacity: interpolate(f, [10, 40], [0, 1], klemm),
+          translate: `0 ${interpolate(f, [10, 40], [16, 0], { ...klemm, easing: weich })}px`,
+        }}>
+          <div style={{ fontWeight: 600, fontSize: 56, letterSpacing: "0.22em", marginRight: "-0.22em" }}>ORNA</div>
+          <div style={{ fontWeight: 500, fontSize: 32, letterSpacing: "0.16em", marginRight: "-0.16em", display: "flex", alignItems: "center", gap: "0.5em" }}>
+            app<span style={{ fontSize: "0.6em" }}>•</span>web
+          </div>
+        </div>
+      ) : null}
       <div style={{ position: "absolute", top: 1120, left: (1080 - breite) / 2, display: "flex", gap: abstand }}>
         {NAME.split("").map((z, i) => {
           const a = 58 + i * 2;           // Kästchen erscheinen nacheinander
