@@ -108,6 +108,10 @@ await check("Startseite: «Drehen» steht beim Laden im Fenster (Laptop, iPhone)
     const welle = await box(page.locator("main .divider")), video = await box(page.locator(".erklaervideo video"));
     assert.ok(f.y + f.h <= welle.y + 1 && welle.b <= video.y + 1, "Spiel, Welle, Video untereinander");
     assert.ok(video.h <= h, `das Video passt ins Fenster (${video.h} von ${h})`);
+    // seit 5. Oktober 2026 eingemittet, die Bildunterschrift so breit wie das Video
+    const mitte = await box(page.locator("main")), unter = await box(page.locator(".erklaervideo figcaption"));
+    assert.ok(Math.abs(video.x + video.w / 2 - (mitte.x + mitte.w / 2)) <= 1, `das Video steht in der Mitte (${video.x}, ${video.w}, ${mitte.x}, ${mitte.w})`);
+    assert.ok(Math.abs(unter.x - video.x) <= 1 && Math.abs(unter.w - video.w) <= 1, "Bildunterschrift bündig mit dem Video");
     assert.equal(await page.locator(".erklaervideo video").evaluate((v) => v.preload), "none", "das Video lädt erst beim Abspielen");
     assert.deepEqual(errors, []);
     await ctx.close();

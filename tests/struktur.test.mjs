@@ -103,6 +103,8 @@ test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OM
   assert.ok(unten.indexOf('<svg class="divider" data-icon="wave"') < unten.indexOf('<figure class="erklaervideo">'), "Welle, dann das Video");
   assert.match(html, /<video controls playsinline preload="none" poster="assets\/orna-erklaervideo\.jpg"[^>]*>\s*<source src="assets\/orna-erklaervideo\.mp4" type="video\/mp4">/, "das Video lädt erst beim Abspielen");
   for (const datei of ["assets/orna-erklaervideo.mp4", "assets/orna-erklaervideo.jpg"]) assert.ok(existsSync(new URL(datei, root)), datei);
+  // Wunsch vom 5. Oktober 2026: im Fuss die Adresse für Fragen und Anmerkungen zur Website
+  assert.match(html, /<footer class="site-footer">[\s\S]*<p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail\.com">hansnoed@gmail\.com<\/a><\/p>[\s\S]*<\/footer>/, "Kontakt im Fuss");
   assert.match(lies("alpha/omna-color/index.html"), /\.eingebettet \.wheel \{ width: min\(100%, 420px, var\(--rad-max, 420px\)\); \}/, "eingebettet höchstens so gross wie auf der eigenen Seite");
   assert.match(html, /setProperty\("--rad-max"/, "die Startseite begrenzt das Rad auf die Fensterhöhe");
   // Wunsch vom 4. Oktober 2026: OMNA COLOR direkt zum Spielen (kein Bild, keine Vorschau), aus dem Alpha-Bereich eingebettet – freigegebene Ausnahme von REGELN §14

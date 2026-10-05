@@ -295,6 +295,10 @@ h1 {
   margin: 0;
 }
 
+.site-footer p + p {
+  margin-top: 6px;
+}
+
 /* Kopfzeile: Navigation links, Hauptmenü rechts */
 .topbar {
   display: flex;
@@ -873,6 +877,7 @@ h1 {
 
 .erklaervideo video {
   display: block;
+  margin: 0 auto;                                      /* eingemittet (seit 5. Oktober 2026) */
   width: min(100%, 420px, (100vh - 80px) * 9 / 16);   /* passt auch auf niedrigen Bildschirmen ganz ins Fenster */
   height: auto;
   aspect-ratio: 9 / 16;
@@ -882,8 +887,8 @@ h1 {
 }
 
 .erklaervideo figcaption {
-  max-width: 420px;
-  margin-top: 10px;
+  width: min(100%, 420px, (100vh - 80px) * 9 / 16);   /* so breit wie das Video und mit ihm eingemittet */
+  margin: 10px auto 0;
   font-size: 0.85rem;
   color: var(--muted);
 }
