@@ -930,26 +930,44 @@ h1 {
   color: var(--muted);
 }
 
-.rueckkanal-knopf {
-  margin: 16px 0 0;
+.rueckkanal .rueckkanal-knopf {   /* mit .rueckkanal davor, sonst setzt «.rueckkanal p» den Abstand auf 0 */
+  margin: 22px 0 0;
 }
 
-/* Der Link trägt sich wie ein Knopf, bleibt aber ein Link: auf dem Handy breit genug zum Treffen */
+/* Der Link trägt sich wie ein Knopf, bleibt aber ein Link. Seit 5. Oktober 2026 (Wunsch: «chicer einpassen») wie die Knöpfe
+   der Prüfraster: feiner Rahmen in der Textfarbe, keine Fläche, beim Darüberfahren invers; auf dem Handy hoch genug zum Treffen */
 .rueckkanal .knopf {
-  display: inline-block;
-  padding: 10px 20px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--surface);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text);
   text-decoration: none;
-  background: var(--accent);
-  border: 1px solid var(--accent);
+  background: none;
+  border: 1px solid var(--text);
   border-radius: 999px;
-  transition: opacity 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.rueckkanal .knopf:hover {
-  opacity: 0.88;
+.rueckkanal .knopf::after {
+  content: "→";
+  color: var(--accent);
+  transition: color 0.2s ease;
+}
+
+.rueckkanal .knopf:hover,
+.rueckkanal .knopf:focus-visible {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.rueckkanal .knopf:hover::after,
+.rueckkanal .knopf:focus-visible::after {
+  color: inherit;
 }
 
 .rueckkanal .knopf:focus-visible {
@@ -959,7 +977,7 @@ h1 {
 
 /* Kleingedrucktes unter dem Knopf: was passiert und wie man wieder herauskommt */
 .rueckkanal .klein {
-  margin: 12px 0 0;
+  margin: 16px 0 0;
   font-size: 0.8rem;
   color: var(--muted);
 }
