@@ -14,7 +14,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   (`assets/orna-erklaervideo.mp4`, Vorschaubild `assets/orna-erklaervideo.jpg`, lädt erst beim Abspielen; Quellcode `src/videos/src/orna/`).
   Sonst steht nichts auf der Seite: die Rückmeldungen (giscus, `kommentare.js`) sind auf Wunsch von Christian vom 2. Oktober 2026 entfernt.
   Unter dem Inhalt, vor dem Fuss, steht seit dem 5. Oktober 2026 der **Rückkanal** (`<section class="rueckkanal">`): die Anmeldung für die Mail, wenn etwas fertig ist.
-  Ein reines Formular ohne fremdes Skript (REGELN §11); es schickt direkt an den Dienst, dessen Bestätigungsseite in einem neuen Tab öffnet. Wird der Dienst gewechselt, ändert sich nur das Ziel in `action`.
+  Bewusst ohne Dienst und ohne Formular: ein `mailto`-Link, der eine fertige Mail an `hansnoed@gmail.com` mit dem Betreff «Liste» öffnet (REGELN §11 — beim Aufruf der Seite wird nichts von aussen geholt, beim Klick nichts an Dritte geschickt).
+  Die Adressen bleiben im eigenen Mailprogramm, versendet wird mit BCC. Wächst die Liste über ein paar Dutzend, tritt ein Dienst an die Stelle des Links; dann ändert sich nur dieser Block, die Gestaltung in `styles.css` bleibt.
   Derselbe Block steht auf «Apps», «Masterprompts», «Web» und «News»; `tests/struktur.test.mjs` prüft ihn auf der Startseite.
   Das Stellenfeld (`werke/stellenfeld/`, früher hier eingebettet) ist seit dem 4. Oktober 2026 ein Beitrag auf «Web» (Vorschau `assets/vorschau-stellenfeld.jpg` aus `tools/start-og.mjs`).
   Es behält seinen Einbettungsmodus (`window.self !== window.top`: senkrechtes Wischen und das Mausrad blättern, Zoom nur mit Strg/Cmd), auch wenn es zurzeit nirgends eingebettet ist.

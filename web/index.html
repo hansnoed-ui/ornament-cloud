@@ -80,21 +80,17 @@
 
   <!--
     Rückkanal (seit 5. Oktober 2026): Anmeldung für die Mail, wenn etwas fertig ist.
-    Reines Formular, kein fremdes Skript (REGELN §11). Es schickt direkt an den Dienst;
-    dessen Bestätigungsseite öffnet in einem neuen Tab (target="_blank"), damit diese Seite
-    stehen bleibt. Der Dienst schickt eine Bestätigungsmail, erst danach ist jemand eingetragen.
-    Wird der Dienst gewechselt, ändert sich nur die Adresse in action — sonst nichts.
-    ADRESSE EINTRAGEN: NAME durch den eigenen Kontonamen ersetzen.
+    Bewusst ohne Dienst und ohne Formular: ein mailto-Link, der eine fertige Mail öffnet.
+    So wird beim Aufruf der Seite nichts von aussen geholt und beim Klick nichts an Dritte
+    geschickt (REGELN §11); die Adressen bleiben im eigenen Mailprogramm. Versendet wird
+    später mit BCC. Wächst die Liste über ein paar Dutzend, tritt hier ein Dienst an die
+    Stelle des Links — dann ändert sich nur dieser Block.
   -->
   <section class="rueckkanal wrap" aria-labelledby="rueckkanal-titel">
     <h2 id="rueckkanal-titel">Wenn etwas fertig ist, schreibe ich</h2>
     <p>Kein Rhythmus und keine Ankündigungen. Eine kurze Mail, wenn ein Raster, eine App oder ein Text so weit ist, dass man damit arbeiten kann.</p>
-    <form action="https://buttondown.com/api/emails/embed-subscribe/NAME" method="post" target="_blank" rel="noopener">
-      <label class="sr-only" for="rueckkanal-mail">E-Mail-Adresse</label>
-      <input id="rueckkanal-mail" type="email" name="email" placeholder="E-Mail-Adresse" autocomplete="email" required>
-      <button type="submit">Eintragen</button>
-    </form>
-    <p class="klein">Du bekommst eine Mail zum Bestätigen. Abmelden mit einem Klick, die Adresse wird nicht weitergegeben.</p>
+    <p class="rueckkanal-knopf"><a class="knopf" href="mailto:hansnoed@gmail.com?subject=Liste&amp;body=Bitte%20nimm%20mich%20in%20die%20Liste%20auf.">Eintragen lassen</a></p>
+    <p class="klein">Der Link öffnet eine fertige Mail, du musst sie nur abschicken. Austragen mit einer Antwort; die Adresse bleibt bei mir und wird nicht weitergegeben.</p>
   </section>
 
   <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->

@@ -896,11 +896,10 @@ h1 {
 /* ---------------------------------------------------------------------------
    Rückkanal: Anmeldung für die Mail, wenn etwas fertig ist (5. Oktober 2026)
 
-   Reines HTML-Formular, kein fremdes Skript und keine fremde Datei (REGELN §11 und
-   README: es wird nichts von CDNs geladen). Das Formular schickt direkt an den
-   Dienst; dessen Bestätigungsseite öffnet in einem neuen Tab, damit die Seite
-   stehen bleibt. Wird der Dienst gewechselt, ändert sich nur das action-Ziel
-   im HTML — hier nichts.
+   Kein Formular und kein Dienst, sondern ein mailto-Link, der wie ein Knopf aussieht:
+   Beim Aufruf der Seite wird nichts von aussen geholt und beim Klick nichts an Dritte
+   geschickt (REGELN §11). Tritt später ein Dienst an die Stelle des Links, bleibt die
+   Gestaltung hier und nur das HTML ändert sich.
 
    Steht zwischen </main> und <footer class="site-footer">.
    --------------------------------------------------------------------------- */
@@ -929,61 +928,34 @@ h1 {
   color: var(--muted);
 }
 
-/* Umbricht auf dem Smartphone in zwei Zeilen; kein horizontales Scrollen (REGELN §10) */
-.rueckkanal form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.rueckkanal-knopf {
   margin: 16px 0 0;
 }
 
-.rueckkanal input[type="email"] {
-  flex: 1 1 15rem;
-  min-width: 0;                 /* ohne dies sprengt ein Flex-Feld schmale Bildschirme */
-  padding: 10px 12px;
-  font: inherit;
-  font-size: 0.95rem;
-  color: var(--text);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-}
-
-.rueckkanal input[type="email"]::placeholder {
-  color: var(--muted);
-  opacity: 1;                   /* Firefox blendet Platzhalter sonst zusätzlich ab */
-}
-
-.rueckkanal input[type="email"]:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-color: var(--accent);
-}
-
-.rueckkanal button {
-  flex: 0 0 auto;
+/* Der Link trägt sich wie ein Knopf, bleibt aber ein Link: auf dem Handy breit genug zum Treffen */
+.rueckkanal .knopf {
+  display: inline-block;
   padding: 10px 20px;
-  font: inherit;
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--surface);
+  text-decoration: none;
   background: var(--accent);
   border: 1px solid var(--accent);
   border-radius: 999px;
-  cursor: pointer;
   transition: opacity 0.2s ease;
 }
 
-.rueckkanal button:hover {
+.rueckkanal .knopf:hover {
   opacity: 0.88;
 }
 
-.rueckkanal button:focus-visible {
+.rueckkanal .knopf:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
-/* Kleingedrucktes unter dem Formular: doppelte Bestätigung und Abmeldung */
+/* Kleingedrucktes unter dem Knopf: was passiert und wie man wieder herauskommt */
 .rueckkanal .klein {
   margin: 12px 0 0;
   font-size: 0.8rem;
@@ -991,7 +963,7 @@ h1 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rueckkanal button {
+  .rueckkanal .knopf {
     transition: none;
   }
 }
