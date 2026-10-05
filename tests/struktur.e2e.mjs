@@ -57,7 +57,7 @@ await check("Startseite (Computer): kein sichtbarer Titel und kein Satz, unter d
   assert.equal(await page.locator("h1").textContent(), "Ornament Cloud");
   assert.equal(await page.locator("h1").evaluate((e) => e.getBoundingClientRect().width), 1, "der Titel ist nur für Vorlesegeräte da");
   assert.equal(await page.locator(".site-header .lead").count(), 0, "kein Satz mehr unter der Welle");
-  assert.equal(await page.locator("main .card, main article, main video").count(), 0, "kein Beitrag, keine Karte");
+  assert.equal(await page.locator("main .card, main article").count(), 0, "kein Beitrag, keine Karte");
   const welle = await box(page.locator(".site-header .divider")), f = await box(page.locator(".omna iframe"));
   assert.ok(welle.b <= f.y + 1 && f.y - welle.b <= 120, `unter der Welle gleich das Spiel (${Math.round(f.y - welle.b)} px)`);
   assert.ok(await frame.evaluate(() => document.documentElement.classList.contains("eingebettet")), "OMNA COLOR erkennt die Einbettung");
@@ -94,6 +94,24 @@ await check("Startseite (Handy): Menü zwei mal zwei, OMNA COLOR so breit wie di
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "auch mit der Übung kein seitliches Wischen");
   assert.deepEqual(errors, []);
   await ctx.close();
+});
+
+await check("Startseite: «Drehen» steht beim Laden im Fenster (Laptop, iPhone), das Rad höchstens so gross wie auf der eigenen Seite; darunter Welle und Erklärvideo", async () => {
+  for (const opts of [{ viewport: { width: 1366, height: 657 } }, { ...devices["iPhone 13"] }, { viewport: { width: 1920, height: 1080 } }]) {
+    const { ctx, page, frame, errors } = await startseite(opts);
+    const f = await box(page.locator(".omna iframe"));
+    const knopf = await frame.locator("#go").evaluate((e) => e.getBoundingClientRect().bottom);
+    const rad = await frame.locator("#wheel").evaluate((e) => e.getBoundingClientRect().width);
+    const h = page.viewportSize().height;
+    assert.ok(f.y + knopf <= h, `«Drehen» im Fenster (${Math.round(f.y + knopf)} von ${h})`);
+    assert.ok(rad <= 420.5, `das Rad höchstens 420 px (${rad})`);
+    const welle = await box(page.locator("main .divider")), video = await box(page.locator(".erklaervideo video"));
+    assert.ok(f.y + f.h <= welle.y + 1 && welle.b <= video.y + 1, "Spiel, Welle, Video untereinander");
+    assert.ok(video.h <= h, `das Video passt ins Fenster (${video.h} von ${h})`);
+    assert.equal(await page.locator(".erklaervideo video").evaluate((v) => v.preload), "none", "das Video lädt erst beim Abspielen");
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
 });
 
 await check("Startseite: der Rahmen ist durchsichtig, das Spiel steht auf dem Grund der Seite (hell und dunkel)", async () => {

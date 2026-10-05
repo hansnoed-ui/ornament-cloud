@@ -9,6 +9,9 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   ein `<iframe>` auf `alpha/omna-color/` (freigegebene Ausnahme von REGELN §14, ein Test prüft genau diese Einbettung), kein Beitrag und keine Karte; der Beitrag zu OMNA COLOR bleibt auf «Web».
   Eingebettet erkennt sich `alpha/omna-color/index.html` an `window.self !== window.top` (Klasse `eingebettet` am `<html>`): ohne Hauptlinks, Rand und eigenen Bildlauf, Grund durchsichtig;
   die Startseite setzt die Höhe des Rahmens auf die Höhe des Spiels (kleines Skript unten in `index.html`, ResizeObserver), so wächst er mit, wenn eine Übung erscheint. GoatCounter zählt Rahmen nicht.
+  Seit dem 5. Oktober 2026 ist das Rad dort höchstens so gross wie auf der eigenen Seite (420 px) und nie grösser, als das Fenster unter dem Kopf Platz lässt
+  (`--rad-max`, von der Startseite gesetzt): «Drehen» steht beim Laden im Fenster. Darunter, durch eine zweite Welle getrennt, das **Erklärvideo zu ORNA**
+  (`assets/orna-erklaervideo.mp4`, Vorschaubild `assets/orna-erklaervideo.jpg`, lädt erst beim Abspielen; Quellcode `src/orna-video/`).
   Sonst steht nichts auf der Seite: die Rückmeldungen (giscus, `kommentare.js`) sind auf Wunsch von Christian vom 2. Oktober 2026 entfernt.
   Das Stellenfeld (`werke/stellenfeld/`, früher hier eingebettet) ist seit dem 4. Oktober 2026 ein Beitrag auf «Web» (Vorschau `assets/vorschau-stellenfeld.jpg` aus `tools/start-og.mjs`).
   Es behält seinen Einbettungsmodus (`window.self !== window.top`: senkrechtes Wischen und das Mausrad blättern, Zoom nur mit Strg/Cmd), auch wenn es zurzeit nirgends eingebettet ist.
@@ -34,7 +37,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   die Schrift in der Farbe der Seite (`--bg`, `--papier`, `--night`; Kontrast ab 4,5); in erzwungenen Farben (Windows, hoher Kontrast) bleibt er mit einem feinen Ring kenntlich. Aktiv ist im Rad «Das Dritte Rad» (`aria-current="page"`), auf der Startseite
   «Ornament Cloud» (`page`), auf allen anderen Seiten ebenfalls «Ornament Cloud» (`true`: man ist in der Website). Beim Darüberfahren wird der Rahmen voll, der Tastaturfokus ist ein Ring von 2 px in der Farbe des Buttons.
   Ausgenommen sind ORMA (eigene App), `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`. Neue Seiten brauchen sie ebenfalls; `tests/navigation.test.mjs` meldet fehlende.
-  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 32: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
+  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 33: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
 - `icons.js` – gezeichnete, animierte Schwarz-Weiss-Symbole: die Welle unter dem Kopf, das Rad der Karten ORNA und ORMA, Prozess, Inklusion und Turm (News, Termine); die Symbole des früheren Menüs (reentry, zeit, stellen) sind entfernt (Dauer in `PERIOD`, Marke `?v=` zurzeit 14)
 - `news/` – News als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
 - `termine/` – Termine als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen
@@ -65,7 +68,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   im Browser zum Ansehen mit `?intro`, entfällt bei reduzierter Bewegung).
   Hinweis «Als App installieren» auf der Radseite (`js/pwa.js`): nur wo möglich – Chrome/Edge/Android öffnen das
   Installationsfenster, iPhone/iPad zeigen die zwei Schritte; als App geöffnet kein Hinweis. Ereignisse `rad-app/hinweis`, `rad-app/installiert`.
-- `src/orna-video/` – Quellcode des Erklärvideos zu ORNA (Remotion, Hochformat 9:16, 51,5 s, mit Signet von ornament.cloud als Intro und am Schluss; 5. Oktober 2026). Nicht Teil der Website; Daten und Schriften holt `gen.mjs` aus ORNA und `vendor/fonts/`. Rendern: siehe `src/orna-video/README.md`
+- `src/orna-video/` – Quellcode des Erklärvideos zu ORNA (Remotion, Hochformat 9:16, 51,5 s, mit Signet von ornament.cloud als Intro und am Schluss; 5. Oktober 2026). Das fertige Video steht seit dem 5. Oktober 2026 auf der Startseite (`assets/orna-erklaervideo.mp4`); Daten und Schriften holt `gen.mjs` aus ORNA und `vendor/fonts/`. Rendern: siehe `src/orna-video/README.md`
 - `src/orma/` – ORMA, zweite eigenständige App (Spiel zu zweit oder allein als Re-Entry, 48 Konstellationen, Gedankenbuch, Ergebniskarte);
   eigener Build (`tools/build-orma.ts` → `src/orma/dist/`, nicht eingecheckt), noch nicht veröffentlicht. Alles Weitere in `src/orma/README.md`
 - `zu-seiner-zeit/` – Hypertext «Zu seiner Zeit» (49 Strophen, Spur, Zufall, Verweise), erzeugt mit

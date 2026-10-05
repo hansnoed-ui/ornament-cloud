@@ -21,7 +21,7 @@
   <meta name="twitter:title" content="Ornament Cloud">
   <meta name="twitter:description" content="Beobachtung ist Anlass für Veränderung in der Realität.">
   <meta name="twitter:image" content="https://ornament.cloud/assets/og-ornament-cloud.png">
-  <link rel="stylesheet" href="styles.css?v=32">
+  <link rel="stylesheet" href="styles.css?v=33">
 </head>
 <body>
   <header class="site-header">
@@ -45,13 +45,21 @@
 
   <main class="wrap">
     <!--
-      Aufbau: OMNA COLOR zum direkten Spielen (eingebettet aus alpha/omna-color/, seit 4. Oktober 2026 statt des Stellenfelds), sonst nichts.
+      Aufbau: OMNA COLOR zum direkten Spielen (eingebettet aus alpha/omna-color/, seit 4. Oktober 2026 statt des Stellenfelds),
+      darunter, durch die Welle getrennt, das Erklärvideo zu ORNA (seit 5. Oktober 2026; Quellcode in src/orna-video/).
       Die Einbettung ist eine freigegebene Ausnahme von REGELN §14 (4. Oktober 2026); der Beitrag zu OMNA COLOR bleibt auf der Seite «Web», das Stellenfeld ebenfalls dort.
       Zettelkasten, Apps, Masterprompts und Web stehen im Menü oben (Neuordnung vom 2. Oktober 2026). Die Karten (<article class="card">) liegen dort.
     -->
     <figure class="omna">
       <iframe src="alpha/omna-color/" title="OMNA COLOR: zwei Farbräder drehen gegeneinander und wählen eine von 180 Gestaltungsübungen. Drehen mit dem Knopf oder durch Ziehen am Rad."></iframe>
       <figcaption>OMNA COLOR: Zwei Farbräder drehen gegeneinander. Zeigen sie zwei Farben, verbindet die Übung beide Themen, zeigen sie dieselbe Farbe, bleibt es beim reinen Thema. Drehen mit dem Knopf oder durch Ziehen am Rad. Mehr dazu unter <a href="web/">Web</a>.</figcaption>
+    </figure>
+    <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
+    <figure class="erklaervideo">
+      <video controls playsinline preload="none" poster="assets/orna-erklaervideo.jpg" width="1080" height="1920" aria-label="Erklärvideo zu ORNA, ohne Ton">
+        <source src="assets/orna-erklaervideo.mp4" type="video/mp4">
+      </video>
+      <figcaption>ORNA – Zufällige Begegnungen: wie sich Künstler:innen und Theoretiker:innen auf zwei Ringen begegnen und nach welchen Kriterien die Paarungen geprüft sind. Erklärvideo, 51 Sekunden, ohne Ton. Mehr dazu unter <a href="apps/">Apps</a>.</figcaption>
     </figure>
   </main>
 
@@ -66,7 +74,22 @@
       var f = document.querySelector(".omna iframe");
       if (!f) return;
       function passe() { try { f.style.height = Math.ceil(f.contentDocument.body.getBoundingClientRect().height) + "px"; } catch (e) {} }
-      function an() { passe(); try { new ResizeObserver(passe).observe(f.contentDocument.body); } catch (e) {} }
+      // das Rad höchstens so gross, dass «Drehen» beim Laden über dem unteren Fensterrand steht (nur bei neuer Breite neu,
+      // damit es beim Blättern auf dem Handy nicht springt, wenn die Adressleiste ein- und ausfährt)
+      var breite = 0;
+      function radGroesse() {
+        try {
+          if (window.innerWidth === breite) return;
+          breite = window.innerWidth;
+          var d = f.contentDocument, rad = d.getElementById("wheel"), knopf = d.getElementById("go");
+          if (!rad || !knopf) return;
+          var oben = f.getBoundingClientRect().top + window.scrollY + rad.getBoundingClientRect().top;
+          var frei = window.innerHeight - oben - 16 - knopf.getBoundingClientRect().height - 24;
+          d.documentElement.style.setProperty("--rad-max", Math.max(240, Math.floor(frei * 224 / 232)) + "px");
+        } catch (e) {}
+      }
+      window.addEventListener("resize", radGroesse);
+      function an() { radGroesse(); passe(); try { new ResizeObserver(passe).observe(f.contentDocument.body); } catch (e) {} }
       f.addEventListener("load", an);
       try { if (f.contentDocument && f.contentDocument.readyState === "complete" && f.contentDocument.body.childElementCount) an(); } catch (e) {}
     })();
