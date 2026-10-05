@@ -320,7 +320,7 @@ test("Zählung: Alpha-Übersicht und die Seiten der drei Prüfraster binden Goat
 // Anleitung und Vorschaubild zum Teilen (tools/alpha-og.mjs)
 const PAPIERE = [
   { seite: "pruefraster", titel: "Prüfraster: Nebeneinander und Nacheinander", pdf: "pruefraster-nebeneinander-nacheinander.pdf",
-    prompt: "pruefraster-anwendungsprompt-1.0.0.md", art: "Markdown", anfang: /^# Prüfraster: Nebeneinander und Nacheinander\nAnwendungsprompt · Version 1\.0\.0/ },
+    prompt: "pruefraster-anwendungsprompt-2.0.0.md", art: "Markdown", anfang: /^# Prüfraster: Nebeneinander und Nacheinander\nAnwendungsprompt · Version 2\.0\.0 · 5\. Oktober 2026/ },
   { seite: "verteilapparat", titel: "Der Verteilapparat des Körpers", pdf: "verteilapparat-des-koerpers.pdf",
     prompt: "verteilapparat-anwendungsprompt-1.0.0.txt", art: "Text", anfang: /^DER VERTEILAPPARAT DES KÖRPERS – PROMPT ZUM KOPIEREN\nVersion 1\.0\.0/ },
   // seit dem 3. Oktober 2026 wie die ersten beiden; Prompt von Claude entworfen, vom Autor freigegeben
@@ -360,6 +360,16 @@ for (const p of PAPIERE) test(`Alpha, ${p.titel}: eigene Seite mit PDF, Anwendun
   const png = readFileSync(new URL(`alpha/${p.seite}/og-${p.seite}.png`, root));
   assert.equal(png.subarray(1, 4).toString(), "PNG");
   assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630]);
+});
+
+// Prüfraster «Nebeneinander und Nacheinander»: seit dem 5. Oktober 2026 der überarbeitete Arbeitsstand (PDF, 10 Seiten) mit Anwendungsprompt 2.0.0
+test("Alpha, Prüfraster: Arbeitsstand 5. Oktober 2026 im PDF, auf der Seite und im Prompt; die alte Prompt-Datei ist weg", () => {
+  assert.ok(readFileSync(new URL("alpha/pruefraster-nebeneinander-nacheinander.pdf", root)).includes("Arbeitsstand 5. Oktober 2026"), "PDF ist der neue Stand");
+  const html = readFileSync(new URL("alpha/pruefraster/index.html", root), "utf8");
+  assert.ok(html.includes("Arbeitsstand 5. Oktober 2026") && html.includes("PDF, 10 Seiten") && html.includes("Version 2.0.0 · 5. Oktober 2026"));
+  const prompt = readFileSync(new URL("alpha/pruefraster-anwendungsprompt-2.0.0.md", root), "utf8");
+  assert.ok(prompt.includes('"raster_fassung": "Arbeitsstand 5. Oktober 2026"') && prompt.includes("Kontrollfrage:"));
+  assert.ok(!existsSync(new URL("alpha/pruefraster-anwendungsprompt-1.0.0.md", root)));
 });
 
 // Apps (früher die Startseite) und News verlinken ORMA seit dem 27. September 2026 (REGELN §14) und gehören darum nicht mehr hierher.
