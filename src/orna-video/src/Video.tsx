@@ -249,7 +249,7 @@ const Intro: React.FC = () => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill style={{ opacity: interpolate(f, [T.titel - T.intro - 12, T.titel - T.intro], [1, 0], klemm) }}>
-      <Signet tempo={2} />
+      <Signet tempo={2} kopf />
     </AbsoluteFill>
   );
 };
