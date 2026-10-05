@@ -36,7 +36,7 @@ const vor = (lang: Lang) => lang === "de" ? "" : lang + "/";          // Unteror
 
 // Texte der Oberfläche je Sprache (die Inhalte kommen aus den Daten)
 const UI = {
-  de: { skip: "Zum Inhalt", spur: "Spur", zufall: "Zufall", verweise: "Verweise", sprache: "Sprache", weiterdenken: "Weiterdenken",
+  de: { skip: "Zum Inhalt", kontakt: "Fragen und Anmerkungen zur Website", spur: "Spur", zufall: "Zufall", verweise: "Verweise", sprache: "Sprache", weiterdenken: "Weiterdenken",
     schliessen: "Schliessen", verweis: "Verweis", fuerDiese: "Für diese Strophe", weitere: "Weitere Strophen", dasselbeWerk: "dasselbe Werk",
     alleStellen: (n: string) => `Alle Stellen zu ${n}`, externerLink: "Externer Link", weiterZufall: "Weiter mit dem Zufall", blaettern: "Blättern",
     verwandt: "Verwandte Strophen", sequenz: "Sequenz", begrifflich: "Begrifflich verwandt", resonanzen: "Resonanzen über Personen und Werke",
@@ -50,7 +50,7 @@ const UI = {
     ogAlt: "Daneben sieben Reihen zu sieben Punkten: 49 Strophen in sieben Zyklen.",
     monate: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
     datum: (d: number, m: string, y: number) => `${d}. ${m} ${y}` },
-  en: { skip: "Skip to content", spur: "Trace", zufall: "Chance", verweise: "References", sprache: "Language", weiterdenken: "Thinking further",
+  en: { skip: "Skip to content", kontakt: "Questions and comments about the website", spur: "Trace", zufall: "Chance", verweise: "References", sprache: "Language", weiterdenken: "Thinking further",
     schliessen: "Close", verweis: "Reference", fuerDiese: "For this stanza", weitere: "Further stanzas", dasselbeWerk: "same work",
     alleStellen: (n: string) => `All passages on ${n}`, externerLink: "External link", weiterZufall: "Continue by chance", blaettern: "Browse",
     verwandt: "Related stanzas", sequenz: "Sequence", begrifflich: "Conceptually related", resonanzen: "Resonances through persons and works",
@@ -64,7 +64,7 @@ const UI = {
     ogAlt: "Beside it, seven rows of seven dots: 49 stanzas in seven cycles.",
     monate: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
     datum: (d: number, m: string, y: number) => `${d} ${m} ${y}` },
-  es: { skip: "Ir al contenido", spur: "Huella", zufall: "Azar", verweise: "Referencias", sprache: "Idioma", weiterdenken: "Seguir pensando",
+  es: { skip: "Ir al contenido", kontakt: "Preguntas y comentarios sobre el sitio web", spur: "Huella", zufall: "Azar", verweise: "Referencias", sprache: "Idioma", weiterdenken: "Seguir pensando",
     schliessen: "Cerrar", verweis: "Referencia", fuerDiese: "Para esta estrofa", weitere: "Otras estrofas", dasselbeWerk: "la misma obra",
     alleStellen: (n: string) => `Todos los pasajes sobre ${n}`, externerLink: "Enlace externo", weiterZufall: "Seguir con el azar", blaettern: "Hojear",
     verwandt: "Estrofas relacionadas", sequenz: "Secuencia", begrifflich: "Relacionadas conceptualmente", resonanzen: "Resonancias a través de personas y obras",
@@ -272,6 +272,7 @@ ${o.body}
   </main>
   <footer class="zsz-fuss">
     <p>${esc(m.meta.title)} · ${esc(m.meta.version)} · ${esc(DATUM(m.meta.date, m.lang))}</p>
+    <p>${u.kontakt}: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
   </footer>
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="${site}vendor/goatcounter/count.js"></script>
 </body>
