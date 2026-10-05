@@ -21,7 +21,7 @@
   <meta name="twitter:title" content="Masterprompts">
   <meta name="twitter:description" content="Vier Prüfraster zum genaueren Hinsehen: Nebeneinander und Nacheinander, Der Verteilapparat des Körpers, Gesellschaftskonzepte und journalistische Texte.">
   <meta name="twitter:image" content="https://ornament.cloud/assets/og-masterprompts.png">
-  <link rel="stylesheet" href="../styles.css?v=34">
+  <link rel="stylesheet" href="../styles.css?v=35">
 </head>
 <body>
   <header class="site-header">
@@ -103,6 +103,25 @@
 
     <p class="back"><a href="../">← Zur Startseite</a></p>
   </main>
+
+  <!--
+    Rückkanal (seit 5. Oktober 2026): Anmeldung für die Mail, wenn etwas fertig ist.
+    Reines Formular, kein fremdes Skript (REGELN §11). Es schickt direkt an den Dienst;
+    dessen Bestätigungsseite öffnet in einem neuen Tab (target="_blank"), damit diese Seite
+    stehen bleibt. Der Dienst schickt eine Bestätigungsmail, erst danach ist jemand eingetragen.
+    Wird der Dienst gewechselt, ändert sich nur die Adresse in action — sonst nichts.
+    ADRESSE EINTRAGEN: NAME durch den eigenen Kontonamen ersetzen.
+  -->
+  <section class="rueckkanal wrap" aria-labelledby="rueckkanal-titel">
+    <h2 id="rueckkanal-titel">Wenn etwas fertig ist, schreibe ich</h2>
+    <p>Kein Rhythmus und keine Ankündigungen. Eine kurze Mail, wenn ein Raster, eine App oder ein Text so weit ist, dass man damit arbeiten kann.</p>
+    <form action="https://buttondown.com/api/emails/embed-subscribe/NAME" method="post" target="_blank" rel="noopener">
+      <label class="sr-only" for="rueckkanal-mail">E-Mail-Adresse</label>
+      <input id="rueckkanal-mail" type="email" name="email" placeholder="E-Mail-Adresse" autocomplete="email" required>
+      <button type="submit">Eintragen</button>
+    </form>
+    <p class="klein">Du bekommst eine Mail zum Bestätigen. Abmelden mit einem Klick, die Adresse wird nicht weitergegeben.</p>
+  </section>
 
   <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
   <footer class="site-footer">

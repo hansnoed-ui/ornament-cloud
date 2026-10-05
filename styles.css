@@ -892,3 +892,113 @@ h1 {
   font-size: 0.85rem;
   color: var(--muted);
 }
+
+/* ---------------------------------------------------------------------------
+   Rückkanal: Anmeldung für die Mail, wenn etwas fertig ist (5. Oktober 2026)
+
+   Reines HTML-Formular, kein fremdes Skript und keine fremde Datei (REGELN §11 und
+   README: es wird nichts von CDNs geladen). Das Formular schickt direkt an den
+   Dienst; dessen Bestätigungsseite öffnet in einem neuen Tab, damit die Seite
+   stehen bleibt. Wird der Dienst gewechselt, ändert sich nur das action-Ziel
+   im HTML — hier nichts.
+
+   Steht zwischen </main> und <footer class="site-footer">.
+   --------------------------------------------------------------------------- */
+
+.rueckkanal {
+  margin: 56px 0 0;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.rueckkanal h2 {
+  margin: 0 0 8px;
+  font-family: var(--font);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.rueckkanal p {
+  margin: 0;
+  max-width: 54ch;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* Umbricht auf dem Smartphone in zwei Zeilen; kein horizontales Scrollen (REGELN §10) */
+.rueckkanal form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+}
+
+.rueckkanal input[type="email"] {
+  flex: 1 1 15rem;
+  min-width: 0;                 /* ohne dies sprengt ein Flex-Feld schmale Bildschirme */
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.rueckkanal input[type="email"]::placeholder {
+  color: var(--muted);
+  opacity: 1;                   /* Firefox blendet Platzhalter sonst zusätzlich ab */
+}
+
+.rueckkanal input[type="email"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--accent);
+}
+
+.rueckkanal button {
+  flex: 0 0 auto;
+  padding: 10px 20px;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--surface);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.rueckkanal button:hover {
+  opacity: 0.88;
+}
+
+.rueckkanal button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Kleingedrucktes unter dem Formular: doppelte Bestätigung und Abmeldung */
+.rueckkanal .klein {
+  margin: 12px 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rueckkanal button {
+    transition: none;
+  }
+}
+
+/* Hinweis auf den Feed unter dem Vorspann der News-Seite */
+.lead-feed {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
