@@ -82,6 +82,9 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `alpha/orma/` ist ORMA, erzeugt mit `node --experimental-strip-types tools/build-orma.ts --alpha`
   `alpha/gesellschaftskonzepte/` ist seit dem 3. Oktober 2026 eine Seite wie `alpha/pruefraster/` (PDF, Anwendungsprompt 0.4.0, Anleitung,
   Vorschaubild aus `tools/alpha-og.mjs`), weiterhin «Zurzeit in Arbeit».
+  `alpha/metastabilitaet/` (seit 5. Oktober 2026) steht für sich: die Analyse «Allgemeines, Konkretes und Metastabilität» als PDF
+  (`alpha/allgemeines-konkretes-metastabilitaet.pdf`) mit Vorschaubild zum Teilen (`NUR=metastabilitaet node tools/alpha-og.mjs`); ohne Navigation oben links,
+  von keiner Seite verlinkt, auch nicht von der Übersicht `alpha/` (Ausnahme in REGELN §14, `tests/navigation.test.mjs` und `tests/orma.test.mjs`)
   Prüfraster in Arbeit als Textseite (`alpha/journalistische-texte/`, unten in der Übersicht direkt vor OMNA COLOR, «Zurzeit in Arbeit»):
   Quelle `src/alpha/*.md`, Seiten und Markdown-Download erzeugt mit `node --experimental-strip-types tools/build-alpha-texte.ts`
   (neue Fassung: Datei in `src/alpha/` ersetzen, Eintrag in `RASTER` anpassen, Build laufen lassen; ein Test meldet veraltete Seiten)

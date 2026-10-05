@@ -208,7 +208,9 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   Seiten haben. Die frühere Zeile «Ornament Cloud · Alpha» entfällt, ebenso der Link «← Zur Alpha-Übersicht»
   unten auf den Alpha-Textseiten: Die Alpha-Übersicht `alpha/` ist von keiner Seite verlinkt (Entscheid
   von Christian am 2. Oktober 2026) und nur per Adresse erreichbar. Ausgenommen sind ORMA (eigene App,
-  siehe Trennung), die drei Werke unter `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`.
+  siehe Trennung), die drei Werke unter `werke/` (Vollbild), die Weiterleitung `portfolio/rad-von-zeit-und-raum/` und die Seite der Analyse
+  «Allgemeines, Konkretes und Metastabilität» `alpha/metastabilitaet/` (freigegeben am 5. Oktober 2026): Sie steht für sich, ist von keiner Seite
+  verlinkt, nicht in der Sitemap, führt nur zum PDF (`alpha/allgemeines-konkretes-metastabilitaet.pdf`) und gibt ihm eine Adresse mit Vorschaubild zum Teilen.
   Die Gestaltung folgt der jeweiligen Seitenfamilie (`styles.css`, `zu-seiner-zeit/zsz.css`, bei OMNA COLOR
   und beim Dritten Rad in der Seite selbst). Auf der Website (alle Seiten ausser dem Dritten Rad) stehen beide Links in
   derselben Farbe, `--hauptlink`: im hellen Modus Anthrazit (`#353b40`), im dunklen ein helles Sonnengelb (`#ffd84d`);

@@ -372,6 +372,24 @@ test("Alpha, Prüfraster: Arbeitsstand 5. Oktober 2026 im PDF, auf der Seite und
   assert.ok(!existsSync(new URL("alpha/pruefraster-anwendungsprompt-1.0.0.md", root)));
 });
 
+// Analyse «Allgemeines, Konkretes und Metastabilität» (5. Oktober 2026): eigene Seite mit Vorschaubild, steht für sich (REGELN §14)
+test("Alpha, Metastabilität: Seite mit PDF und Vorschaubild, ohne Navigation, von keiner Seite verlinkt, nicht in der Sitemap", () => {
+  const html = readFileSync(new URL("alpha/metastabilitaet/index.html", root), "utf8");
+  assert.equal(readFileSync(new URL("alpha/allgemeines-konkretes-metastabilitaet.pdf", root)).subarray(0, 5).toString(), "%PDF-");
+  assert.match(html, /<meta name="robots" content="noindex">/);
+  assert.ok(!html.includes('class="seitenweg"'), "keine Navigation oben links");
+  const links = [...html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(links, ["../allgemeines-konkretes-metastabilitaet.pdf", "mailto:hansnoed@gmail.com"], "führt nur zum PDF (und zur Kontaktadresse)");
+  assert.ok(html.includes('<meta property="og:image" content="https://ornament.cloud/alpha/metastabilitaet/og-metastabilitaet.png">'));
+  const png = readFileSync(new URL("alpha/metastabilitaet/og-metastabilitaet.png", root));
+  assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630]);
+  assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("metastabilitaet"));
+  const walk = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e) => ["node_modules", ".git", "dist"].includes(e.name) ? []
+    : e.isDirectory() ? walk(new URL(e.name + "/", d), vor + e.name + "/") : e.name.endsWith(".html") ? [vor + e.name] : []);
+  for (const p of walk(root)) if (!p.startsWith("alpha/metastabilitaet/"))
+    assert.ok(!/metastabilitaet/.test(readFileSync(new URL(p, root), "utf8")), `${p} verlinkt die Analyse`);
+});
+
 // Apps (früher die Startseite) und News verlinken ORMA seit dem 27. September 2026 (REGELN §14) und gehören darum nicht mehr hierher.
 // Eine eigens beauftragte Änderung an ORNA allein ist erlaubt; sie kommt dann als eigener Schritt, nie
 // zusammen mit ORMA-Dateien (seit dem 27. September 2026: Hinweis «Verknüpfung erstellen» in beiden Apps).
