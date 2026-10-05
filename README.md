@@ -3,8 +3,9 @@
 Einfache statische Website (reines HTML/CSS), die eine Auswahl meiner Claude-Artefakte präsentiert.
 Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CDNs oder Google geladen.
 
-- `index.html` – Startseite (Neuordnung vom 2. Oktober 2026, Wunsch von Christian; seit 3. Oktober ohne sichtbaren Titel): der Satz «Beobachtung ist Anlass für Veränderungen in der Realität.»
-  (er steht auf der Vorschaukarte zum Teilen, `tests/teilen.test.mjs` hält beides zusammen) und darunter seit dem 4. Oktober 2026 **OMNA COLOR zum direkten Spielen**:
+- `index.html` – Startseite (Neuordnung vom 2. Oktober 2026, Wunsch von Christian; seit 3. Oktober ohne sichtbaren Titel, seit 5. Oktober auch ohne den Satz
+  «Beobachtung ist Anlass für Veränderungen in der Realität.», der nur noch in Beschreibung und Vorschaukarte zum Teilen steht, `tests/teilen.test.mjs` hält beides zusammen):
+  unter der Welle seit dem 4. Oktober 2026 **OMNA COLOR zum direkten Spielen**:
   ein `<iframe>` auf `alpha/omna-color/` (freigegebene Ausnahme von REGELN §14, ein Test prüft genau diese Einbettung), kein Beitrag und keine Karte; der Beitrag zu OMNA COLOR bleibt auf «Web».
   Eingebettet erkennt sich `alpha/omna-color/index.html` an `window.self !== window.top` (Klasse `eingebettet` am `<html>`): ohne Hauptlinks, Rand und eigenen Bildlauf, Grund durchsichtig;
   die Startseite setzt die Höhe des Rahmens auf die Höhe des Spiels (kleines Skript unten in `index.html`, ResizeObserver), so wächst er mit, wenn eine Übung erscheint. GoatCounter zählt Rahmen nicht.
@@ -33,7 +34,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   die Schrift in der Farbe der Seite (`--bg`, `--papier`, `--night`; Kontrast ab 4,5); in erzwungenen Farben (Windows, hoher Kontrast) bleibt er mit einem feinen Ring kenntlich. Aktiv ist im Rad «Das Dritte Rad» (`aria-current="page"`), auf der Startseite
   «Ornament Cloud» (`page`), auf allen anderen Seiten ebenfalls «Ornament Cloud» (`true`: man ist in der Website). Beim Darüberfahren wird der Rahmen voll, der Tastaturfokus ist ein Ring von 2 px in der Farbe des Buttons.
   Ausgenommen sind ORMA (eigene App), `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`. Neue Seiten brauchen sie ebenfalls; `tests/navigation.test.mjs` meldet fehlende.
-  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 31: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
+  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 32: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
 - `icons.js` – gezeichnete, animierte Schwarz-Weiss-Symbole: die Welle unter dem Kopf, das Rad der Karten ORNA und ORMA, Prozess, Inklusion und Turm (News, Termine); die Symbole des früheren Menüs (reentry, zeit, stellen) sind entfernt (Dauer in `PERIOD`, Marke `?v=` zurzeit 14)
 - `news/` – News als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
 - `termine/` – Termine als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen
@@ -140,7 +141,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 - `assets/` – Vorschau-Videos (.mp4/.webm) und Standbilder (.jpg), dazu die Vorschaukarten zum Teilen (`og-*.png`) und die Bilder der Seite «Web» (`vorschau-*.jpg`)
 - `werke/<name>/index.html` – lokale Kopien der Artefakte
 - `vendor/three/` – three.js r128 (MIT-Lizenz) für die 3D-Artefakte
-- `vendor/goatcounter/count.js` – Zählskript von GoatCounter (ISC-Lizenz), lokal eingebunden auf allen Seiten.
+- `vendor/goatcounter/count.js` – Zählskript von GoatCounter (ISC-Lizenz), lokal eingebunden auf allen Seiten (seit 5. Oktober 2026 auch auf der Alpha-Übersicht und den drei Prüfrastern; ohne Zählung bleiben ORMA und die ältere Seite `portfolio/rad-von-zeit-und-raum/`).
   Statistik: https://ornament-cloud.goatcounter.com – ohne Cookies und ohne persönliche Daten; auf localhost wird nicht gezählt.
   Eigene Besuche ausschliessen: einmal `https://ornament.cloud/#toggle-goatcounter` im jeweiligen Browser aufrufen
   (gilt pro Browser und Adresse; seit dem Umzug auf ornament.cloud heissen die Pfade `/news/` statt `/ornament-cloud/news/`).

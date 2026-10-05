@@ -86,19 +86,17 @@ test("Menü: Gestaltung ohne Symbole, in der serifenlosen Schrift der Seite (Wö
   assert.match(css, /@media \(max-width: 520px\)\s*\{\s*\.menu\s*\{[^}]*display:\s*grid[^}]*repeat\(2, max-content\)/, "Handy: zwei mal zwei");
 });
 
-test("Startseite: kein sichtbarer Titel, oben der Satz (etwas grösser), darunter OMNA COLOR zum Spielen eingebettet; keine Karten und keine Rückmeldungen", () => {
+test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OMNA COLOR zum Spielen eingebettet; keine Karten und keine Rückmeldungen", () => {
   const html = lies("index.html").replace(/<!--[\s\S]*?-->/g, "");        // geprüft wird, was die Seite zeigt, nicht die Kommentare
   // Wunsch vom 3. Oktober 2026: Titel «Raumstellen, Zeitobjekte» gestrichen; für Vorlesegeräte bleibt eine unsichtbare Überschrift
   assert.ok(!html.includes("Raumstellen, Zeitobjekte"), "der frühere Titel ist weg");
   assert.match(html, /<h1 class="sr-only">Ornament Cloud<\/h1>/);
-  const lead = html.match(/<p class="lead lead--start">\s*([^<]+?)\s*<\/p>/)[1];
-  const css = lies("styles.css");
-  const gross = css.match(/\.lead--start\s*\{[^}]*font-size:\s*clamp\(([\d.]+)rem/);
-  assert.ok(gross && parseFloat(gross[1]) > 1.1, "der Satz ist grösser als die übrigen Einleitungen (1.1 rem)");
-  assert.equal(lead, "Beobachtung ist Anlass für Veränderungen in der Realität.", "der Satz steht weiter oben (die Vorschaukarte trägt ihn)");
+  // Wunsch vom 5. Oktober 2026: auch der Satz «Beobachtung ist Anlass …» steht nicht mehr auf der Seite (er bleibt in Beschreibung und Vorschaukarte)
+  assert.ok(!/<p class="lead/.test(html) && !/>\s*Beobachtung ist Anlass/.test(html), "kein Satz mehr unter der Welle");
+  assert.ok(!lies("styles.css").includes(".lead--start"), "keine Regel mehr für den Satz");
   const stelle = (s) => { const i = html.indexOf(s); assert.ok(i > 0, s); return i; };
-  assert.ok(stelle("<h1") < stelle('<p class="lead') && stelle('<p class="lead') < stelle('<figure class="omna">') && stelle('<figure class="omna">') < stelle("</main>"),
-    "Reihenfolge: (unsichtbarer) Titel, Satz, OMNA COLOR, dann endet die Seite (sie hat nur noch den Fuss)");
+  assert.ok(stelle("<h1") < stelle('<figure class="omna">') && stelle('<figure class="omna">') < stelle("</main>"),
+    "Reihenfolge: (unsichtbarer) Titel, OMNA COLOR, dann endet die Seite (sie hat nur noch den Fuss)");
   assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div)\b/g)].map((m) => m[1]), ["figure"], "in main steht nur OMNA COLOR");
   // Wunsch vom 4. Oktober 2026: OMNA COLOR direkt zum Spielen (kein Bild, keine Vorschau), aus dem Alpha-Bereich eingebettet – freigegebene Ausnahme von REGELN §14
   const rahmen = html.match(/<figure class="omna">\s*<iframe ([^>]*)><\/iframe>/);

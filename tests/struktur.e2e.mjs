@@ -52,14 +52,14 @@ const box = (loc) => loc.evaluate((e) => { const r = e.getBoundingClientRect(); 
 const sich = (a, b) => a.x < b.r - 0.5 && b.x < a.r - 0.5 && a.y < b.b - 0.5 && b.y < a.b - 0.5;     // Rechtecke überlappen
 
 // ---------- Startseite: OMNA COLOR zum Spielen ----------
-await check("Startseite (Computer): kein sichtbarer Titel, der Satz grösser, darunter OMNA COLOR eingebettet und spielbar; der Rahmen wächst mit der Übung, ohne eigenen Bildlauf", async () => {
+await check("Startseite (Computer): kein sichtbarer Titel und kein Satz, unter der Welle OMNA COLOR eingebettet und spielbar; der Rahmen wächst mit der Übung, ohne eigenen Bildlauf", async () => {
   const { ctx, page, frame, errors } = await startseite({ viewport: { width: 1200, height: 900 }, reducedMotion: "reduce" });
   assert.equal(await page.locator("h1").textContent(), "Ornament Cloud");
   assert.equal(await page.locator("h1").evaluate((e) => e.getBoundingClientRect().width), 1, "der Titel ist nur für Vorlesegeräte da");
-  assert.ok(await page.locator(".site-header .lead").evaluate((e) => parseFloat(getComputedStyle(e).fontSize)) >= 20, "der Satz ist grösser gesetzt");
+  assert.equal(await page.locator(".site-header .lead").count(), 0, "kein Satz mehr unter der Welle");
   assert.equal(await page.locator("main .card, main article, main video").count(), 0, "kein Beitrag, keine Karte");
-  const lead = await box(page.locator(".site-header .lead")), f = await box(page.locator(".omna iframe"));
-  assert.ok(lead.b <= f.y + 1, "Satz, dann das Spiel");
+  const welle = await box(page.locator(".site-header .divider")), f = await box(page.locator(".omna iframe"));
+  assert.ok(welle.b <= f.y + 1 && f.y - welle.b <= 120, `unter der Welle gleich das Spiel (${Math.round(f.y - welle.b)} px)`);
   assert.ok(await frame.evaluate(() => document.documentElement.classList.contains("eingebettet")), "OMNA COLOR erkennt die Einbettung");
   assert.equal(await frame.locator(".seitenweg").isVisible(), false, "keine zweiten Hauptlinks im Rahmen");
   assert.ok(await frame.locator("#wheel").isVisible() && await frame.locator("#go").isVisible(), "Rad und Knopf sind da");
@@ -77,9 +77,8 @@ await check("Startseite (Computer): kein sichtbarer Titel, der Satz grösser, da
   await ctx.close();
 });
 
-await check("Startseite (Handy): Satz, Menü zwei mal zwei, OMNA COLOR so breit wie die Seite und spielbar (Tippen aufs Rad dreht), kein seitliches Wischen", async () => {
+await check("Startseite (Handy): Menü zwei mal zwei, OMNA COLOR so breit wie die Seite und spielbar (Tippen aufs Rad dreht), kein seitliches Wischen", async () => {
   const { ctx, page, frame, errors } = await startseite({ ...devices["Pixel 7"], reducedMotion: "reduce" });
-  assert.ok(await page.locator(".site-header .lead").isVisible());
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   const m = await page.locator(".menu-item").evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y)]; }));
   assert.equal(new Set(m.map((p) => p[0])).size, 2, "zwei Spalten");

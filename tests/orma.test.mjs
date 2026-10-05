@@ -308,6 +308,14 @@ test("Domain: keine veröffentlichte Datei nennt noch die alte Adresse hansnoed-
   assert.deepEqual(alt, []);
 });
 
+// Besuchsstatistik (seit 5. Oktober 2026 auch auf der Alpha-Übersicht und den drei Prüfrastern; ORMA bewusst nicht, Rückfrage offen)
+test("Zählung: Alpha-Übersicht und die Seiten der drei Prüfraster binden GoatCounter lokal ein", () => {
+  for (const [p, pre] of [["alpha/index.html", "../"], ["alpha/pruefraster/index.html", "../../"], ["alpha/verteilapparat/index.html", "../../"], ["alpha/gesellschaftskonzepte/index.html", "../../"]]) {
+    const html = readFileSync(new URL(p, root), "utf8");
+    assert.ok(html.includes(`<script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="${pre}vendor/goatcounter/count.js"></script>`), p);
+  }
+});
+
 // Grundlagenpapiere im Alpha-Bereich: je eine eigene Seite mit PDF, Anwendungsprompt (Download, Kopieren, Textfeld),
 // Anleitung und Vorschaubild zum Teilen (tools/alpha-og.mjs)
 const PAPIERE = [
