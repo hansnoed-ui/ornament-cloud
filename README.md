@@ -65,7 +65,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   im Browser zum Ansehen mit `?intro`, entfällt bei reduzierter Bewegung).
   Hinweis «Als App installieren» auf der Radseite (`js/pwa.js`): nur wo möglich – Chrome/Edge/Android öffnen das
   Installationsfenster, iPhone/iPad zeigen die zwei Schritte; als App geöffnet kein Hinweis. Ereignisse `rad-app/hinweis`, `rad-app/installiert`.
-- `src/orna-video/` – Quellcode des Erklärvideos zu ORNA (Remotion, Hochformat 9:16, 45 s, mit Signet von ornament.cloud am Schluss; 5. Oktober 2026). Nicht Teil der Website; Daten und Schriften holt `gen.mjs` aus ORNA und `vendor/fonts/`. Rendern: siehe `src/orna-video/README.md`
+- `src/orna-video/` – Quellcode des Erklärvideos zu ORNA (Remotion, Hochformat 9:16, 51,5 s, mit Signet von ornament.cloud als Intro und am Schluss; 5. Oktober 2026). Nicht Teil der Website; Daten und Schriften holt `gen.mjs` aus ORNA und `vendor/fonts/`. Rendern: siehe `src/orna-video/README.md`
 - `src/orma/` – ORMA, zweite eigenständige App (Spiel zu zweit oder allein als Re-Entry, 48 Konstellationen, Gedankenbuch, Ergebniskarte);
   eigener Build (`tools/build-orma.ts` → `src/orma/dist/`, nicht eingecheckt), noch nicht veröffentlicht. Alles Weitere in `src/orma/README.md`
 - `zu-seiner-zeit/` – Hypertext «Zu seiner Zeit» (49 Strophen, Spur, Zufall, Verweise), erzeugt mit

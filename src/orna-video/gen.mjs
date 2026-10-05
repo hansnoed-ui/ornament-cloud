@@ -7,6 +7,14 @@ import { constellations } from "../../portfolio/nebeneinander-nacheinander/js/da
 import { symbolMarkup } from "../../portfolio/nebeneinander-nacheinander/js/symbols.js";
 import { copyFileSync, mkdirSync, writeFileSync } from "node:fs";
 
+/** die ersten n Sätze eines Texts, unverändert */
+function auszug(text, n) {
+  const saetze = text.match(/[^.!?]+[.!?]+(\s+|$)/g);
+  const teil = saetze.slice(0, n).join("").trim();
+  if (!text.startsWith(teil)) throw new Error("Auszug weicht vom Text ab");
+  return teil;
+}
+
 const ai = Object.fromEntries(artists.map((p, i) => [p.id, i]));
 const ti = Object.fromEntries(theorists.map((p, i) => [p.id, i]));
 // die Konstellation, auf der das Rad im Video stehen bleibt (Beispiel aus dem Werkbericht)
@@ -19,7 +27,8 @@ writeFileSync("src/data/orna.json", JSON.stringify({
   symbols: Array.from({ length: 40 }, (_, i) => symbolMarkup(i, 1)),
   pairs: constellations.map((c) => [ai[c.artistId], ti[c.theoristId]]),
   count: constellations.length,
-  beispiel: { a: ai[beispiel.artistId], t: ti[beispiel.theoristId], question: beispiel.question },
+  // Auszug für die Textszene: die ersten beiden Sätze, Wort für Wort aus dem Text der Konstellation (im Video mit «…» als Auszug gekennzeichnet)
+  beispiel: { a: ai[beispiel.artistId], t: ti[beispiel.theoristId], question: beispiel.question, auszug: auszug(beispiel.text, 2) },
 }));
 
 mkdirSync("public", { recursive: true });
