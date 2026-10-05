@@ -259,6 +259,13 @@ ${prompt === undefined ? "" : promptBlock(r, prompt)}    <article class="at-text
 ${body}
     </article>
 ${vorschlag === undefined ? "" : vorschlagBlock(vorschlag)}  </main>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+    </div>
+  </footer>
 ${prompt === undefined ? "" : PROMPT_SKRIPT}  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

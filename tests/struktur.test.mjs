@@ -242,3 +242,21 @@ test("News, Termine und Portfolio: bleiben unter ihren Adressen (mit Menü, in d
     }
   }
 });
+
+test("Kontakt: «Fragen und Anmerkungen zur Website» unten auf allen Seiten mit Text (Wunsch vom 5. Oktober 2026), im Zettelkasten in allen drei Sprachen", () => {
+  const MAIL = '<a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a>';
+  const seiten = ["index.html", "web/index.html", "apps/index.html", "masterprompts/index.html", "news/index.html", "termine/index.html", "portfolio/index.html",
+    "portfolio/nebeneinander-nacheinander/index.html", "portfolio/nebeneinander-nacheinander/feld/index.html",
+    "portfolio/nebeneinander-nacheinander/app/index.html", "portfolio/nebeneinander-nacheinander/app/feld/index.html",
+    "alpha/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html"];
+  for (const s of seiten) {
+    const html = lies(s);
+    assert.match(html, new RegExp(`</main>[\\s\\S]*<footer class="site-footer">[\\s\\S]*<p>Fragen und Anmerkungen zur Website: ${MAIL.replace(/[.]/g, "\\.")}</p>[\\s\\S]*</footer>`), s);
+  }
+  const omna = lies("alpha/omna-color/index.html");
+  assert.ok(omna.includes(`<footer class="kontakt">\n  <p>Fragen und Anmerkungen zur Website: ${MAIL}</p>`), "OMNA COLOR");
+  assert.ok(omna.includes(".eingebettet .kontakt { display: none; }"), "OMNA COLOR eingebettet ohne Kontakt (die Startseite hat ihn im Fuss)");
+  for (const [s, satz] of [["zu-seiner-zeit/index.html", "Fragen und Anmerkungen zur Website"], ["zu-seiner-zeit/en/index.html", "Questions and comments about the website"], ["zu-seiner-zeit/es/spur/index.html", "Preguntas y comentarios sobre el sitio web"]]) {
+    assert.ok(lies(s).includes(`<footer class="zsz-fuss">`) && lies(s).includes(`<p>${satz}: ${MAIL}</p>`), s);
+  }
+});
