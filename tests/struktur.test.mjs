@@ -122,7 +122,12 @@ test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OM
   assert.match(omna, /\.eingebettet main \{ margin-top: 0; \}/, "eingebettet kein vh-Abstand (er hinge an der Höhe des Rahmens)");
   assert.match(html, /new ResizeObserver\(passe\)\.observe\(f\.contentDocument\.body\)/, "der Rahmen wächst mit dem Spiel");
   assert.ok(!/<article|class="card|class="grid/.test(html), "keine Beiträge und keine Karten auf der Startseite");
-  assert.deepEqual([...html.matchAll(/<h2[^>]*>([^<]+)<\/h2>/g)].map((m) => m[1]), [], "keine Überschriften");
+  // Seit dem 5. Oktober 2026 steht unter dem Fuss der Rückkanal (Anmeldung für die Mail); er ist das Einzige
+  // ausserhalb von <main> und bringt die einzige Überschrift mit. Sonst bleibt die Seite ohne Überschriften.
+  const ohneRueckkanal = html.replace(/<section class="rueckkanal[\s\S]*?<\/section>/, "");
+  assert.deepEqual([...ohneRueckkanal.matchAll(/<h2[^>]*>([^<]+)<\/h2>/g)].map((m) => m[1]), [], "ausser dem Rückkanal keine Überschriften");
+  assert.equal([...html.matchAll(/<section class="rueckkanal/g)].length, 1, "der Rückkanal steht genau einmal");
+  assert.ok(html.indexOf("</main>") < html.indexOf('<section class="rueckkanal'), "der Rückkanal steht nach dem Inhalt, vor dem Fuss");
   assert.ok(!/href="(zu-seiner-zeit|alpha|portfolio)\//.test(html.replace(/<nav class="(seitenweg|menu)"[\s\S]*?<\/nav>/g, "")), "die Wege führen über Menü und Navigation, nicht über Karten");
   assert.deepEqual([...html.matchAll(/data-icon="([a-z]+)"/g)].map((m) => m[1]), ["wave", "wave"], "nur die Wellen sind animiert (unter dem Kopf und vor dem Video)");
 });
