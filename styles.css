@@ -168,12 +168,6 @@ h1 {
   color: var(--muted);
 }
 
-/* Startseite (seit 3. Oktober 2026 ohne sichtbaren Titel): der Satz unter der Welle etwas grösser */
-.lead--start {
-  font-size: clamp(1.3rem, 3vw, 1.6rem);
-  line-height: 1.4;
-}
-
 /* Raster */
 .grid {
   display: grid;

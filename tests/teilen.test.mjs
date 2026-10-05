@@ -71,8 +71,9 @@ test("Teilen: die Startseite steht in der Sitemap, Das Dritte Rad nicht und blei
 test("Teilen: tools/start-og.mjs erzeugt genau diese beiden Bilder und trägt den Satz der Startseite; README nennt es", () => {
   const erzeuger = lies("tools/start-og.mjs");
   for (const s of SEITEN) assert.ok(erzeuger.includes(s.bild.split("/").slice(-2).join("/")) || erzeuger.includes(s.bild.split("/").pop()), `${s.bild} im Erzeuger`);
-  const satz = lies("index.html").match(/<p class="lead[^"]*">\s*([^<]+?)\s*<\/p>/)[1];
-  assert.ok(erzeuger.includes(satz), `der Satz der Startseite («${satz}») steht im Bild; ändert er sich, Bild neu erzeugen`);
+  // der Satz steht seit dem 5. Oktober 2026 nicht mehr auf der Startseite, wohl aber in der Bildbeschreibung der Vorschaukarte und im Bild selbst
+  const satz = lies("index.html").match(/<meta property="og:image:alt" content="[^"]*«([^»]+)»/)[1];
+  assert.ok(erzeuger.includes(satz), `der Satz der Vorschaukarte («${satz}») steht im Bild; ändert er sich, Bild neu erzeugen`);
   assert.ok(erzeuger.includes("Das Dritte<br>Rad"), "der Titel des Rads steht im Bild");
   const readme = lies("README.md");
   assert.ok(readme.includes("tools/start-og.mjs") && readme.includes("og-ornament-cloud.png") && readme.includes("og-drittes-rad.jpg"), "README nennt Erzeuger und Bilder");
