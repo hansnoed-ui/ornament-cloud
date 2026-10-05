@@ -3,46 +3,20 @@
 // Inhalte: Namen, Zeichen und die Konstellation Eva Hesse × Susan Leigh Star aus den Daten von ORNA (unverändert);
 // Raum und Zeit aus dem Werkbericht und dem Prüfraster «Nebeneinander und Nacheinander»; die sechs Prüfdimensionen
 // und die Sätze zum Feld wörtlich aus dem Werkbericht (src/doppelspalt/werkbericht.md).
+// Intro, Outro, Stil und Textbausteine kommen aus der gemeinsamen Vorlage (src/vorlage/).
 import React from "react";
-import { AbsoluteFill, Easing, Sequence, interpolate, useCurrentFrame, continueRender, delayRender } from "remotion";
+import { AbsoluteFill, Easing, Sequence, interpolate, useCurrentFrame } from "remotion";
 import daten from "./data/orna.json";
 import { Rad, zielDrehung } from "./Rad";
-import { FARBE, SANS, SERIF, schriften } from "./theme";
-import { Signet } from "./Signet";
+import { FARBE, SANS, SERIF } from "../vorlage/stil";
+import { Auszug, Grund, INTRO, Intro, Leise, Marke, OUTRO, Oben, Outro, Titel, Unten, blende, klemm, steig } from "../vorlage/Bausteine";
 
 // ---------- Zeitplan (Bilder) ----------
-// Reihenfolge (Wunsch vom 5. Oktober 2026): Titel, Ringe, Drehung, Raum, Zeit, Prüfdimensionen, Feld, Schluss
-// Zum Abschluss (seit 5. Oktober 2026) das animierte Signet von ornament.cloud, als kurze Fassung auch als Intro;
-// nach der Drehung eine Szene mit einem Auszug aus dem Text der Konstellation
+// Reihenfolge (Wunsch vom 5. Oktober 2026): Intro, Titel, Ringe, Drehung, Textauszug, Raum, Zeit, Prüfdimensionen, Feld, Schluss, Outro
 export const T = {
-  intro: 0, titel: 90, ringe: 180, drehung: 285, halt: 435, text: 525, raum: 705, zeit: 810,
-  kriterien: 930, feld: 1155, schluss: 1275, signet: 1365, ende: 1545,
+  intro: 0, titel: INTRO, ringe: 180, drehung: 285, halt: 435, text: 525, raum: 705, zeit: 810,
+  kriterien: 930, feld: 1155, schluss: 1275, signet: 1365, ende: 1365 + OUTRO,
 };
-
-const klemm = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
-const weich = Easing.bezier(0.16, 1, 0.3, 1);
-/** Ein- und Ausblenden eines Abschnitts von a bis b (je 12 Bilder) */
-const blende = (f: number, a: number, b: number, d = 12) =>
-  interpolate(f, [a, a + d, b - d, b], [0, 1, 1, 0], klemm);
-const steig = (f: number, a: number, d = 18) => interpolate(f, [a, a + d], [24, 0], { ...klemm, easing: weich });
-
-// ---------- Bausteine ----------
-const Marke: React.FC<{ children: React.ReactNode; farbe?: string }> = ({ children, farbe = FARBE.akzent }) => (
-  <div style={{ fontFamily: SANS, fontWeight: 600, fontSize: 30, letterSpacing: "0.16em", textTransform: "uppercase", color: farbe }}>{children}</div>
-);
-const Titel: React.FC<{ children: React.ReactNode; groesse?: number }> = ({ children, groesse = 76 }) => (
-  <div style={{ fontFamily: SERIF, fontWeight: 400, fontSize: groesse, lineHeight: 1.12, color: FARBE.text, textWrap: "balance" }}>{children}</div>
-);
-const Leise: React.FC<{ children: React.ReactNode; groesse?: number }> = ({ children, groesse = 40 }) => (
-  <div style={{ fontFamily: SANS, fontSize: groesse, lineHeight: 1.35, color: FARBE.leise, textWrap: "balance" }}>{children}</div>
-);
-/** Textblock oben (über dem Rad) oder unten (unter dem Rad), im sicheren Bereich */
-const Oben: React.FC<{ children: React.ReactNode; o: number; y: number }> = ({ children, o, y }) => (
-  <div style={{ position: "absolute", left: 90, right: 90, top: 150, opacity: o, translate: `0 ${y}px`, display: "flex", flexDirection: "column", gap: 22 }}>{children}</div>
-);
-const Unten: React.FC<{ children: React.ReactNode; o: number; y: number }> = ({ children, o, y }) => (
-  <div style={{ position: "absolute", left: 90, right: 90, top: 1475, opacity: o, translate: `0 ${y}px`, display: "flex", flexDirection: "column", gap: 16 }}>{children}</div>
-);
 
 // ---------- Das Rad als durchgehende Ebene ----------
 const TREFFER = { a: daten.beispiel.a, t: daten.beispiel.t };
@@ -139,25 +113,6 @@ const SzeneDrehung: React.FC = () => {
   );
 };
 
-// Auszug aus dem Text der Konstellation: gross und gut lesbar, sechs Sekunden
-const SzeneText: React.FC = () => {
-  const f = useCurrentFrame();
-  const d = T.raum - T.text;
-  return (
-    <>
-      <Oben o={blende(f, 8, d)} y={steig(f, 8)}>
-        <Marke>{daten.artists[TREFFER.a]} × {daten.theorists[TREFFER.t]}</Marke>
-      </Oben>
-      <div style={{ position: "absolute", left: 90, right: 90, top: 560, opacity: blende(f, 14, d), translate: `0 ${steig(f, 14)}px` }}>
-        <div style={{ fontFamily: SERIF, fontSize: 62, lineHeight: 1.32, color: FARBE.text, textWrap: "pretty" }}>
-          {daten.beispiel.auszug} […]
-        </div>
-        <div style={{ marginTop: 44 }}><Leise groesse={32}>Auszug aus dem Text zur Konstellation</Leise></div>
-      </div>
-    </>
-  );
-};
-
 const DIMENSIONEN: [string, string][] = [
   ["Werkpräzision", "Welches Werk, welche Werkgruppe, welches Verfahren ist gemeint?"],
   ["Theoriepräzision", "Welcher Begriff aus welchem Text trägt die Beziehung, und wo endet die Übertragung?"],
@@ -244,28 +199,19 @@ const SzeneSchluss: React.FC = () => {
   );
 };
 
-// Intro: das Signet in kurzer Fassung (doppelt so schnell), am Ende ausgeblendet
-const Intro: React.FC = () => {
-  const f = useCurrentFrame();
-  return (
-    <AbsoluteFill style={{ opacity: interpolate(f, [T.titel - T.intro - 12, T.titel - T.intro], [1, 0], klemm) }}>
-      <Signet tempo={2} kopf />
-    </AbsoluteFill>
-  );
-};
-
 // ---------- Das ganze Video ----------
 export const OrnaVideo: React.FC = () => {
-  const [handle] = React.useState(() => delayRender("Schriften"));
-  React.useEffect(() => { schriften.then(() => continueRender(handle)); }, [handle]);
   return (
-    <AbsoluteFill style={{ backgroundColor: FARBE.grund }}>
+    <Grund>
       <RadEbene />
-      <Sequence name="Intro" from={T.intro} durationInFrames={T.titel - T.intro}><Intro /></Sequence>
+      <Sequence name="Intro" from={T.intro} durationInFrames={INTRO}><Intro kopf={{ titel: "ORNA", unter: ["app", "web"] }} /></Sequence>
       <Sequence name="Titel" from={T.titel} durationInFrames={T.ringe - T.titel}><SzeneTitel /></Sequence>
       <Sequence name="Ringe" from={T.ringe} durationInFrames={T.drehung - T.ringe}><SzeneRinge /></Sequence>
       <Sequence name="Drehung" from={T.drehung} durationInFrames={T.text - T.drehung}><SzeneDrehung /></Sequence>
-      <Sequence name="Text" from={T.text} durationInFrames={T.raum - T.text}><SzeneText /></Sequence>
+      <Sequence name="Text" from={T.text} durationInFrames={T.raum - T.text}>
+        <Auszug kennzeile={`${daten.artists[TREFFER.a]} × ${daten.theorists[TREFFER.t]}`} text={daten.beispiel.auszug}
+          hinweis="Auszug aus dem Text zur Konstellation" dauer={T.raum - T.text} />
+      </Sequence>
       <Sequence name="Raum" from={T.raum} durationInFrames={T.zeit - T.raum}>
         <SzeneAchse nr="Achse 1" name="Verräumlichung" satz="Raum lässt Unterschiede nebeneinander erscheinen." pruefstein="Rückkehr"
           frage="Was lässt sich wiederfinden, vergleichen und als dieselbe Stelle erkennen?" dauer={T.zeit - T.raum} />
@@ -277,7 +223,7 @@ export const OrnaVideo: React.FC = () => {
       <Sequence name="Kriterien" from={T.kriterien} durationInFrames={T.feld - T.kriterien}><SzeneKriterien /></Sequence>
       <Sequence name="Feld" from={T.feld} durationInFrames={T.schluss - T.feld}><SzeneFeld /></Sequence>
       <Sequence name="Schluss" from={T.schluss} durationInFrames={T.signet - T.schluss}><SzeneSchluss /></Sequence>
-      <Sequence name="Signet" from={T.signet} durationInFrames={T.ende - T.signet}><Signet /></Sequence>
-    </AbsoluteFill>
+      <Sequence name="Outro" from={T.signet} durationInFrames={OUTRO}><Outro /></Sequence>
+    </Grund>
   );
 };

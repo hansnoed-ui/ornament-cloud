@@ -98,7 +98,7 @@ test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OM
   assert.ok(stelle("<h1") < stelle('<figure class="omna">') && stelle('<figure class="omna">') < stelle("</main>"),
     "Reihenfolge: (unsichtbarer) Titel, OMNA COLOR, dann endet die Seite (sie hat nur noch den Fuss)");
   assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div)\b/g)].map((m) => m[1]), ["figure", "figure"], "in main stehen OMNA COLOR und das Erklärvideo");
-  // seit 5. Oktober 2026: unter OMNA COLOR, durch die Welle getrennt, das Erklärvideo zu ORNA (Quellcode src/orna-video/)
+  // seit 5. Oktober 2026: unter OMNA COLOR, durch die Welle getrennt, das Erklärvideo zu ORNA (Quellcode src/videos/src/orna/)
   const unten = html.slice(stelle('<figure class="omna">'));
   assert.ok(unten.indexOf('<svg class="divider" data-icon="wave"') < unten.indexOf('<figure class="erklaervideo">'), "Welle, dann das Video");
   assert.match(html, /<video controls playsinline preload="none" poster="assets\/orna-erklaervideo\.jpg"[^>]*>\s*<source src="assets\/orna-erklaervideo\.mp4" type="video\/mp4">/, "das Video lädt erst beim Abspielen");

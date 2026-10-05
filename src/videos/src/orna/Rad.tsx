@@ -3,7 +3,7 @@
 // Die 40 Zeichen kommen unverändert aus symbols.js (über src/data/orna.json).
 import React from "react";
 import daten from "./data/orna.json";
-import { FARBE } from "./theme";
+import { FARBE } from "../vorlage/stil";
 
 const C = 500;
 const OUTER = { edge: 462, inner: 344, sym: 403, half: 42 };

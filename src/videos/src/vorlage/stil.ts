@@ -1,4 +1,5 @@
-// Farben und Schriften wie auf ornament.cloud (styles.css, heller Modus) und im Rad von ORNA
+// Stil aller Videos von ornament.cloud: Farben und Schriften wie auf der Website (styles.css, heller Modus), Hochformat 9:16, 30 fps.
+// Die Schriften kopiert vorbereiten.mjs aus vendor/fonts/ nach public/.
 import { loadFont } from "@remotion/fonts";
 import { staticFile } from "remotion";
 
