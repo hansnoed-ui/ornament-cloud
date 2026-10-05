@@ -905,7 +905,9 @@ h1 {
    --------------------------------------------------------------------------- */
 
 .rueckkanal {
-  margin: 56px 0 0;
+  /* in der Spalte der Seite (wie .wrap: 1080 px mit 20 px Rand, also 1040 px Inhalt), seitlich nie näher als 20 px am Fensterrand, unten Luft zum Fuss */
+  max-width: none;
+  margin: 56px max(20px, calc((100% - 1040px) / 2)) 48px;
   padding: 24px;
   background: var(--surface);
   border: 1px solid var(--border);

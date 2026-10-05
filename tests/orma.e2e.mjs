@@ -786,7 +786,9 @@ await check("Startseite ohne Rückmeldungen (auf Wunsch vom 2. Oktober 2026 entf
   assert.equal(await page.locator("#kommentare, .kommentare-hinweis, .rueckmeldung, .giscus, iframe.giscus-frame, script[src*='kommentare'], script[src*='giscus']").count(), 0, "kein Abschnitt, kein Skript");
   assert.deepEqual(anfragen.filter(u => /giscus|kommentare/i.test(u)), [], "weder kommentare.js noch giscus.app wird angefragt");
   assert.equal((await page.request.get(`${origin}/kommentare.js`)).status(), 404, "die Datei gibt es nicht mehr");
-  assert.equal(await page.locator("h2").count(), 0, "unter OMNA COLOR folgt keine Überschrift mehr");
+  assert.equal(await page.locator("main h2").count(), 0, "unter OMNA COLOR folgt keine Überschrift mehr");
+  // seit 5. Oktober 2026 einzige Überschrift: die des Rückkanals, nach dem Inhalt
+  assert.deepEqual(await page.locator("h2").evaluateAll((h) => h.map((e) => e.id)), ["rueckkanal-titel"], "nur die Überschrift des Rückkanals");
   assert.equal(await page.locator("main > figure").count(), 2, "in main stehen OMNA COLOR und das Erklärvideo zu ORNA (seit 5. Oktober 2026)");
   await ctx.close();
 });

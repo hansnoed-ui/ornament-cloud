@@ -113,6 +113,11 @@ await check("Startseite: «Drehen» steht beim Laden im Fenster (Laptop, iPhone)
     assert.ok(Math.abs(video.x + video.w / 2 - (mitte.x + mitte.w / 2)) <= 1, `das Video steht in der Mitte (${video.x}, ${video.w}, ${mitte.x}, ${mitte.w})`);
     assert.ok(Math.abs(unter.x - video.x) <= 1 && Math.abs(unter.w - video.w) <= 1, "Bildunterschrift bündig mit dem Video");
     assert.equal(await page.locator(".erklaervideo video").evaluate((v) => v.preload), "none", "das Video lädt erst beim Abspielen");
+    // Rückkanal (seit 5. Oktober 2026): in der Spalte der Seite, bündig mit dem Fuss, nie am Fensterrand
+    const kasten = await box(page.locator(".rueckkanal")), fuss = await box(page.locator(".site-footer p").first());
+    const breite = page.viewportSize().width;
+    assert.ok(kasten.x >= 19.5 && kasten.r <= breite - 19.5, `Rückkanal mit Rand (${kasten.x}–${kasten.r} von ${breite})`);
+    assert.ok(Math.abs(kasten.x - fuss.x) <= 1, `Rückkanal bündig mit dem Fuss (${kasten.x} / ${fuss.x})`);
     assert.deepEqual(errors, []);
     await ctx.close();
   }
