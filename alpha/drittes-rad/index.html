@@ -80,6 +80,10 @@ body:not(:has(#result:not([hidden]), #lese:not([hidden]))) { padding-bottom: 24p
 main { transition: margin-top .45s ease; }
 .wheelbox { transition: gap .45s ease; }
 .wheel { width: min(100%, 480px); aspect-ratio: 1; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: width .3s; }
+/* Desktop (Wunsch vom 5. Oktober 2026, wie bei OMNA COLOR auf der Startseite): das Rad höchstens so gross, dass «Drehen» und «Brücke» beim Laden über dem unteren Fensterrand stehen.
+   Abzug: Navigation oben (120 px), Abstand darüber und darunter wie auf der Startseite des Rads, Knöpfe (40 px) und der Rand unten (24 px), so blättert die Startseite nicht; nie kleiner als 280 px.
+   Gilt auch mit offenen Karten (dort sind die Abstände kleiner), damit das Rad nicht springt. Auf dem Handy bleibt es, wie es ist. */
+@media (min-width: 761px) { .wheel { width: min(100%, 480px, max(280px, 100vh - 184px - clamp(40px, 9vh, 96px) - clamp(40px, 7vh, 72px))); } }
 .wheel.zieht { cursor: grabbing; }
 .wheel:focus-visible { outline: 1px solid var(--gold-hi); outline-offset: 8px; border-radius: 50%; }
 .wheel svg { width: 100%; height: 100%; display: block; overflow: visible; }
