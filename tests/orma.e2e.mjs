@@ -515,7 +515,7 @@ await check("Startbild: wie ORNA 40 Zeichen und Name, links hell, rechts dunkel 
 
 // ---------- Alpha-Bereich ----------
 for (const [titel, seite, datei, anfang] of [
-  ["Prüfraster: Nebeneinander und Nacheinander", "pruefraster", "pruefraster-anwendungsprompt-1.0.0.md", /^# Prüfraster: Nebeneinander und Nacheinander/],
+  ["Prüfraster: Nebeneinander und Nacheinander", "pruefraster", "pruefraster-anwendungsprompt-2.0.0.md", /^# Prüfraster: Nebeneinander und Nacheinander/],
   ["Der Verteilapparat des Körpers", "verteilapparat", "verteilapparat-anwendungsprompt-1.0.0.txt", /^DER VERTEILAPPARAT DES KÖRPERS/],
 ]) await check(`Alpha, ${titel}: Seite aus der Übersicht, Prompt lässt sich herunterladen, kopieren und im Textfeld markieren`, async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", permissions: ["clipboard-read", "clipboard-write"] });
