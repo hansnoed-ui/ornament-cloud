@@ -27,7 +27,7 @@ const PFAD = PUNKTE.map((p, i) => `${i ? "L" : "M"}${bild(p).map((v) => v.toFixe
 
 const NAME = "ornament.cloud";
 // Schriftzug (Wunsch vom 5. Oktober 2026): etwas kleiner, feiner (Gewicht 400) und mit mehr Buchstabenabstand
-const KASTEN = 60, ABSTAND = 4, SCHRIFT = 62, GEWICHT = 400, SPERRUNG = 0.14 * SCHRIFT;
+const KASTEN = 52, ABSTAND = 4, SCHRIFT = 52, GEWICHT = 400, SPERRUNG = 0.14 * SCHRIFT;   // seit 5. Oktober 2026 kleiner (vorher 62 px) und tiefer
 
 /** Breite jedes Zeichens in der Schrift der Website (ohne Zwischenspeicher: gemessen wird erst, wenn die Schrift geladen ist) */
 const breiten = (): number[] => {
@@ -75,7 +75,7 @@ export const Signet: React.FC<{ tempo?: number; kopf?: boolean }> = ({ tempo = 1
           </div>
         </div>
       ) : null}
-      <div style={{ position: "absolute", top: 1120, left: (1080 - breite) / 2, display: "flex", gap: abstand }}>
+      <div style={{ position: "absolute", top: 1175, left: (1080 - breite) / 2, display: "flex", gap: abstand }}>
         {NAME.split("").map((z, i) => {
           const a = 58 + i * 2;           // Kästchen erscheinen nacheinander
           const b = 78 + i * 3;           // dann bildet sich aus jedem ein Buchstabe

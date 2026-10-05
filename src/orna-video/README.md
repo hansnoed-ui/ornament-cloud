@@ -19,7 +19,7 @@ Das Video ist nicht Teil der Website; hier liegt nur der Quellcode, damit es sic
 9. Signet von ornament.cloud (`src/Signet.tsx`): heller Bildschirm, die Re-entry-Schlaufe zeichnet sich (flache Ausgangsform
    des Artefakts «Re-entry-Knoten», `werke/reentry/`), ein orangeroter Punkt durchläuft sie; darunter erscheinen Kästchen,
    aus jedem bildet sich ein Buchstabe von «ornament.cloud», dann rücken sie zusammen
-   (Instrument Sans, Gewicht 400, 62 px, gesperrt)
+   (Instrument Sans, Gewicht 400, 52 px, gesperrt)
 
 Zeitplan in `src/Video.tsx` (`T`), das Rad in `src/Rad.tsx` (nachgezeichnet nach `portfolio/nebeneinander-nacheinander/js/wheel.js`),
 Farben und Schriften in `src/theme.ts`. Namen, Zeichen, Paarungen und die Frage kommen unverändert aus den Daten von ORNA (`gen.mjs`);
