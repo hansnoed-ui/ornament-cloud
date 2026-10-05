@@ -1,10 +1,10 @@
-// Abschluss: animiertes Signet von ornament.cloud (Wunsch vom 5. Oktober 2026).
+// Vorlage für alle Videos von ornament.cloud: das animierte Signet (Intro in kurzer Fassung, Outro in voller Länge), seit 5. Oktober 2026.
 // Zuerst ein leerer, heller Bildschirm. In der Mitte zeichnet sich die Re-entry-Schlaufe (die flache Ausgangsform
 // des Artefakts «Re-entry-Knoten», werke/reentry/: r = LB + LA · cos t), ein orangeroter Punkt durchläuft sie.
 // Darunter erscheinen zuerst nur Kästchen, eines je Zeichen, und aus jedem bildet sich ein Buchstabe von «ornament.cloud».
 import React from "react";
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
-import { FARBE, SANS } from "./theme";
+import { FARBE, SANS } from "./stil";
 
 const klemm = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 const weich = Easing.bezier(0.16, 1, 0.3, 1);
@@ -39,9 +39,12 @@ const breiten = (): number[] => {
 // Obere Kante der Schlaufe (für den Kopf im Intro)
 const OBEN = Math.min(...PUNKTE.map((p) => bild(p)[1]));
 
-/** tempo: 1 = Abschluss (180 Bilder), 2 = kurze Fassung als Intro (90 Bilder).
- *  kopf: im Intro steht über der Schlaufe «ORNA», darunter «app • web» (Wunsch vom 5. Oktober 2026), im Rot-Orange der Seite. */
-export const Signet: React.FC<{ tempo?: number; kopf?: boolean }> = ({ tempo = 1, kopf = false }) => {
+/** Kopfzeile über der Schlaufe (im Intro): ein Name in Versalien, darunter Stichworte mit kleinem Punkt dazwischen, im Rot-Orange der Seite.
+ *  Beispiel aus dem ORNA-Video: { titel: "ORNA", unter: ["app", "web"] } */
+export type Kopf = { titel: string; unter?: string[] };
+
+/** tempo: 1 = Outro (180 Bilder), 2 = kurze Fassung als Intro (90 Bilder). kopf: nur im Intro. */
+export const Signet: React.FC<{ tempo?: number; kopf?: Kopf | null }> = ({ tempo = 1, kopf = null }) => {
   const bildNr = useCurrentFrame();
   const f = bildNr * tempo;
   // 0–14 leer; 14–56 die Schlaufe zeichnet sich; ab 40 läuft der Punkt (eine Runde in 54 Bildern)
@@ -69,10 +72,14 @@ export const Signet: React.FC<{ tempo?: number; kopf?: boolean }> = ({ tempo = 1
           color: FARBE.akzent, fontFamily: SANS, opacity: interpolate(f, [10, 40], [0, 1], klemm),
           translate: `0 ${interpolate(f, [10, 40], [16, 0], { ...klemm, easing: weich })}px`,
         }}>
-          <div style={{ fontWeight: 600, fontSize: 44, letterSpacing: "0.22em", marginRight: "-0.22em" }}>ORNA</div>
-          <div style={{ fontWeight: 500, fontSize: 32, letterSpacing: "0.16em", marginRight: "-0.16em", display: "flex", alignItems: "center", gap: "0.5em" }}>
-            app<span style={{ fontSize: "0.6em" }}>•</span>web
-          </div>
+          <div style={{ fontWeight: 600, fontSize: 44, letterSpacing: "0.22em", marginRight: "-0.22em", textTransform: "uppercase" }}>{kopf.titel}</div>
+          {kopf.unter?.length ? (
+            <div style={{ fontWeight: 500, fontSize: 32, letterSpacing: "0.16em", marginRight: "-0.16em", display: "flex", alignItems: "center", gap: "0.5em" }}>
+              {kopf.unter.map((w, i) => (
+                <React.Fragment key={i}>{i ? <span style={{ fontSize: "0.6em" }}>•</span> : null}{w}</React.Fragment>
+              ))}
+            </div>
+          ) : null}
         </div>
       ) : null}
       <div style={{ position: "absolute", top: 1175, left: (1080 - breite) / 2, display: "flex", gap: abstand }}>

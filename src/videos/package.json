@@ -1,7 +1,7 @@
 {
-  "name": "orna-video",
+  "name": "ornament-videos",
   "version": "1.0.0",
-  "description": "ORNA – Erklärvideo (Remotion), Hochformat 9:16",
+  "description": "Videos von ornament.cloud (Remotion), Hochformat 9:16, mit gemeinsamer Vorlage",
   "repository": {},
   "license": "UNLICENSED",
   "private": true,
@@ -21,9 +21,10 @@
     "typescript": "5.9.3"
   },
   "scripts": {
-    "daten": "node gen.mjs",
-    "dev": "node gen.mjs && remotion studio",
-    "render": "node gen.mjs && remotion render OrnaVideo out/orna-erklaervideo.mp4 --codec=h264 --crf=20",
+    "vorbereiten": "node vorbereiten.mjs",
+    "neu": "node neues-video.mjs",
+    "dev": "node vorbereiten.mjs && remotion studio",
+    "render:orna": "node vorbereiten.mjs && remotion render OrnaVideo out/orna-erklaervideo.mp4 --codec=h264 --crf=20",
     "lint": "eslint src && tsc"
   }
 }

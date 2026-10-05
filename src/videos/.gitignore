@@ -1,0 +1,5 @@
+# Erzeugt oder installiert, wird nicht eingecheckt (npm i, vorbereiten.mjs, Rendern)
+node_modules
+out/
+public/
+src/*/data/
