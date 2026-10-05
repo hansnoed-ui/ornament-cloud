@@ -97,7 +97,14 @@ test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OM
   const stelle = (s) => { const i = html.indexOf(s); assert.ok(i > 0, s); return i; };
   assert.ok(stelle("<h1") < stelle('<figure class="omna">') && stelle('<figure class="omna">') < stelle("</main>"),
     "Reihenfolge: (unsichtbarer) Titel, OMNA COLOR, dann endet die Seite (sie hat nur noch den Fuss)");
-  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div)\b/g)].map((m) => m[1]), ["figure"], "in main steht nur OMNA COLOR");
+  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div)\b/g)].map((m) => m[1]), ["figure", "figure"], "in main stehen OMNA COLOR und das Erklärvideo");
+  // seit 5. Oktober 2026: unter OMNA COLOR, durch die Welle getrennt, das Erklärvideo zu ORNA (Quellcode src/orna-video/)
+  const unten = html.slice(stelle('<figure class="omna">'));
+  assert.ok(unten.indexOf('<svg class="divider" data-icon="wave"') < unten.indexOf('<figure class="erklaervideo">'), "Welle, dann das Video");
+  assert.match(html, /<video controls playsinline preload="none" poster="assets\/orna-erklaervideo\.jpg"[^>]*>\s*<source src="assets\/orna-erklaervideo\.mp4" type="video\/mp4">/, "das Video lädt erst beim Abspielen");
+  for (const datei of ["assets/orna-erklaervideo.mp4", "assets/orna-erklaervideo.jpg"]) assert.ok(existsSync(new URL(datei, root)), datei);
+  assert.match(lies("alpha/omna-color/index.html"), /\.eingebettet \.wheel \{ width: min\(100%, 420px, var\(--rad-max, 420px\)\); \}/, "eingebettet höchstens so gross wie auf der eigenen Seite");
+  assert.match(html, /setProperty\("--rad-max"/, "die Startseite begrenzt das Rad auf die Fensterhöhe");
   // Wunsch vom 4. Oktober 2026: OMNA COLOR direkt zum Spielen (kein Bild, keine Vorschau), aus dem Alpha-Bereich eingebettet – freigegebene Ausnahme von REGELN §14
   const rahmen = html.match(/<figure class="omna">\s*<iframe ([^>]*)><\/iframe>/);
   assert.ok(rahmen, "OMNA COLOR ist ein iframe in einer figure, keine Karte");
@@ -112,10 +119,10 @@ test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OM
   assert.match(omna, /\.eingebettet \.seitenweg \{ display: none; \}/, "eingebettet ohne Hauptlinks (die Startseite hat sie schon)");
   assert.match(omna, /\.eingebettet main \{ margin-top: 0; \}/, "eingebettet kein vh-Abstand (er hinge an der Höhe des Rahmens)");
   assert.match(html, /new ResizeObserver\(passe\)\.observe\(f\.contentDocument\.body\)/, "der Rahmen wächst mit dem Spiel");
-  assert.ok(!/<article|class="card|<video|class="grid/.test(html), "keine Beiträge und keine Karten auf der Startseite");
+  assert.ok(!/<article|class="card|class="grid/.test(html), "keine Beiträge und keine Karten auf der Startseite");
   assert.deepEqual([...html.matchAll(/<h2[^>]*>([^<]+)<\/h2>/g)].map((m) => m[1]), [], "keine Überschriften");
   assert.ok(!/href="(zu-seiner-zeit|alpha|portfolio)\//.test(html.replace(/<nav class="(seitenweg|menu)"[\s\S]*?<\/nav>/g, "")), "die Wege führen über Menü und Navigation, nicht über Karten");
-  assert.deepEqual([...html.matchAll(/data-icon="([a-z]+)"/g)].map((m) => m[1]), ["wave"], "nur die Welle ist animiert");
+  assert.deepEqual([...html.matchAll(/data-icon="([a-z]+)"/g)].map((m) => m[1]), ["wave", "wave"], "nur die Wellen sind animiert (unter dem Kopf und vor dem Video)");
 });
 
 test("Startseite: die Rückmeldungen (giscus) sind auf Wunsch von Christian weg, mit Skript und Gestaltung (2. Oktober 2026)", () => {

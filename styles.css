@@ -845,7 +845,7 @@ h1 {
    (das Stellenfeld ist als Beitrag auf die Seite «Web» gezogen). Der Rahmen ist so hoch wie das Spiel: die Startseite setzt die Höhe,
    bis dahin hält min-height den Platz. color-scheme wie die Seite im Rahmen, damit sein Grund durchsichtig bleibt. */
 .omna {
-  margin: 0 0 56px;
+  margin: -28px 0 40px;   /* etwas näher an die Welle, wie auf der eigenen Seite von OMNA COLOR (5. Oktober 2026) */
 }
 
 .omna iframe {
@@ -863,5 +863,27 @@ h1 {
 }
 
 @media (max-width: 640px) {
-  .omna { margin-bottom: 40px; }
+  .omna { margin-bottom: 32px; }
+}
+
+/* Startseite: unter OMNA COLOR, durch die Welle getrennt, das Erklärvideo zu ORNA (Hochformat 9:16, 5. Oktober 2026) */
+.erklaervideo {
+  margin: 0 0 56px;
+}
+
+.erklaervideo video {
+  display: block;
+  width: min(100%, 420px, (100vh - 80px) * 9 / 16);   /* passt auch auf niedrigen Bildschirmen ganz ins Fenster */
+  height: auto;
+  aspect-ratio: 9 / 16;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.erklaervideo figcaption {
+  max-width: 420px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--muted);
 }

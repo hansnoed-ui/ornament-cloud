@@ -2,7 +2,8 @@
 
 Kurzes Video zu ORNA («Nebeneinander, Nacheinander»), gebaut mit [Remotion](https://www.remotion.dev) (React → MP4).
 Hochformat 9:16 (1080 × 1920), 30 fps, 51,5 s, ohne Ton. Entstanden am 5. Oktober 2026.
-Das Video ist nicht Teil der Website; hier liegt nur der Quellcode, damit es sich später anpassen lässt.
+Das fertige Video steht auf der Startseite unter OMNA COLOR (`assets/orna-erklaervideo.mp4`, Vorschaubild `assets/orna-erklaervideo.jpg`,
+ein Standbild aus dem Intro bei 2,6 s). Nach einer Änderung neu rendern, nach `yuv420p` umwandeln (siehe unten) und beide Dateien ersetzen.
 
 ## Ablauf
 

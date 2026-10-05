@@ -787,7 +787,7 @@ await check("Startseite ohne Rückmeldungen (auf Wunsch vom 2. Oktober 2026 entf
   assert.deepEqual(anfragen.filter(u => /giscus|kommentare/i.test(u)), [], "weder kommentare.js noch giscus.app wird angefragt");
   assert.equal((await page.request.get(`${origin}/kommentare.js`)).status(), 404, "die Datei gibt es nicht mehr");
   assert.equal(await page.locator("h2").count(), 0, "unter OMNA COLOR folgt keine Überschrift mehr");
-  assert.equal(await page.locator("main > *").count(), 1, "in main steht nur OMNA COLOR (seit 4. Oktober 2026, vorher das Stellenfeld)");
+  assert.equal(await page.locator("main > figure").count(), 2, "in main stehen OMNA COLOR und das Erklärvideo zu ORNA (seit 5. Oktober 2026)");
   await ctx.close();
 });
 

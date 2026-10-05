@@ -105,6 +105,9 @@ html.eingebettet { scrollbar-gutter: auto; overflow: hidden; }
 html.eingebettet body { padding: 4px 4px 8px; background: transparent; }
 .eingebettet .seitenweg { display: none; }
 .eingebettet main { margin-top: 0; }
+/* Auf der Startseite höchstens so gross wie hier, aber nie grösser, als das Fenster unter dem Kopf der Startseite Platz lässt:
+   «Drehen» bleibt beim Laden sichtbar (die Startseite setzt --rad-max, seit 5. Oktober 2026) */
+.eingebettet .wheel { width: min(100%, 420px, var(--rad-max, 420px)); }
 @media (min-width: 800px) {
   /* Rad und Knopf als eigene Rasterzellen, damit die Karte zur Radmitte ausgerichtet wird und nicht zur Mitte von Rad + Knopf */
   .stage { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); grid-template-areas: "rad karte" "knopf ."; row-gap: 16px; }
