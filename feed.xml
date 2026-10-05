@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Erzeugt aus news/index.html mit tools/build-feed.ts. Nicht von Hand ändern. -->
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Ornament Cloud</title>
+    <link>https://ornament.cloud/news/</link>
+    <atom:link href="https://ornament.cloud/feed.xml" rel="self" type="application/rss+xml"/>
+    <description>Neuigkeiten und Arbeitsstände.</description>
+    <language>de-ch</language>
+    <!-- Nur der Tag, nicht die Uhrzeit: So ist ein Neubau am selben Tag Zeichen für Zeichen dieselbe Datei und erzeugt keine leere Änderung in git. -->
+    <lastBuildDate>Mon, 05 Oct 2026 12:00:00 +0000</lastBuildDate>
+    <item>
+      <title>Zwei Prüfraster: Nebeneinander und Nacheinander, Der Verteilapparat des Körpers</title>
+      <link>https://ornament.cloud/news/#pruefraster-nebeneinander-verteilapparat</link>
+      <guid isPermaLink="false">https://ornament.cloud/news/#pruefraster-nebeneinander-verteilapparat</guid>
+      <pubDate>Mon, 28 Sep 2026 12:00:00 +0000</pubDate>
+      <description><![CDATA[<p><em>Grundlagenpapiere und Anwendungsprompts · Arbeitsstand</em></p>
+<p>Zwei Werkzeuge, um genauer hinzusehen. Das «Prüfraster: Nebeneinander und Nacheinander» ordnet Theorien, Kunstpraxen und andere Ansätze danach, was sie mit Unterschieden tun: ob sie ein Nebeneinander herstellen, zu dem man zurückkehren kann, oder ein Nacheinander, das sich nicht zurückholen lässt. «Der Verteilapparat des Körpers» fragt, wessen Körperereignis wie weit kommt, unter welcher Beschreibung, wer sie berichtigen kann und was daraus materiell folgt – in sieben Schwellen vom Auffälligen bis zur Entscheidung.</p>
+<p>Zu beiden gibt es das Grundlagenpapier als PDF und einen Anwendungsprompt: Man kopiert ihn in einen Chat mit einem KI-Assistenten, beschreibt einen konkreten Fall und erhält eine begründete Analyse – oder gezielte Rückfragen, wenn das Material nicht reicht. Beides ist ein Arbeitsstand; Rückmeldungen sind willkommen.</p>
+<p><a href="https://ornament.cloud/alpha/pruefraster/">Prüfraster: Nebeneinander und Nacheinander</a> · <a href="https://ornament.cloud/alpha/verteilapparat/">Der Verteilapparat des Körpers</a></p>]]></description>
+    </item>
+    <item>
+      <title>ORMA – ein neues Spiel mit dem Zufall</title>
+      <link>https://ornament.cloud/news/#orma-alpha</link>
+      <guid isPermaLink="false">https://ornament.cloud/news/#orma-alpha</guid>
+      <pubDate>Sun, 27 Sep 2026 12:00:00 +0000</pubDate>
+      <description><![CDATA[<p><em>Kunst- und Denkspiel · zu zweit oder allein · Alpha</em></p>
+<p>Ein Rad dreht sich. Es bringt eine Künstlerin oder einen Künstler mit einer Theoretikerin oder einem Theoretiker zusammen: Eva Hesse und Henri Bergson, Tehching Hsieh und Donna Haraway, Mona Hatoum und Hannah Arendt. Welche Begegnung entsteht, entscheidet der Zufall. Was daraus wird, entscheidest du.</p>
+<p>ORMA ist ein Kunst- und Denkspiel, irgendwo zwischen Theorie, Kunst, Selbstwahrnehmung und Tagebuch. Zu zweit antwortet ihr getrennt auf dieselbe Frage, deckt eure Antworten auf und denkt gemeinsam weiter. Allein spielst du «Re-Entry»: Du antwortest heute, und wenn das Rad dieselbe Konstellation irgendwann wiederbringt, antwortest du noch einmal, als spätere Version deiner selbst. Was hat sich verändert?</p>
+<p>48 Konstellationen, kleine Aufgaben für Kopf und Hände, kein Richtig und kein Falsch. Kostenlos, ohne Anmeldung, und deine Gedanken bleiben auf deinem Gerät. ORMA ist noch eine Alpha-Version, Rückmeldungen sind willkommen: <a href="https://ornament.cloud/alpha/orma/">ORMA spielen</a>.</p>]]></description>
+    </item>
+    <item>
+      <title>ORNA – Nebeneinander, Nacheinander als App</title>
+      <link>https://ornament.cloud/news/#orna-app</link>
+      <guid isPermaLink="false">https://ornament.cloud/news/#orna-app</guid>
+      <pubDate>Sun, 27 Sep 2026 12:00:00 +0000</pubDate>
+      <description><![CDATA[<p><em>App für Smartphone und Tablet · ohne App Store</em></p>
+<p>Das Doppelrad «Nebeneinander, Nacheinander» gibt es jetzt auch als App: ORNA. Sie wird direkt von der Website auf den Home-Bildschirm gelegt, ohne App Store – auf der <a href="https://ornament.cloud/portfolio/nebeneinander-nacheinander/">Seite des Rads</a> steht dafür oben der Knopf «ORNA als App installieren», auf dem iPhone über «Teilen» und «Zum Home-Bildschirm». Beim Öffnen setzt sich das Rad aus den leeren Ringen zusammen: Die vierzig Zeichen finden einzeln ihren Platz, dann erscheint der Name. Danach läuft alles wie auf der Website, ohne Menü, im Vollbild und auch ohne Netz. Jede Drehung zieht eine der kuratierten Konstellationen und endet mit einer offenen Frage.</p>]]></description>
+    </item>
+  </channel>
+</rss>

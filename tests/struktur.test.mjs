@@ -122,7 +122,12 @@ test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OM
   assert.match(omna, /\.eingebettet main \{ margin-top: 0; \}/, "eingebettet kein vh-Abstand (er hinge an der Höhe des Rahmens)");
   assert.match(html, /new ResizeObserver\(passe\)\.observe\(f\.contentDocument\.body\)/, "der Rahmen wächst mit dem Spiel");
   assert.ok(!/<article|class="card|class="grid/.test(html), "keine Beiträge und keine Karten auf der Startseite");
-  assert.deepEqual([...html.matchAll(/<h2[^>]*>([^<]+)<\/h2>/g)].map((m) => m[1]), [], "keine Überschriften");
+  // Seit dem 5. Oktober 2026 steht unter dem Fuss der Rückkanal (Anmeldung für die Mail); er ist das Einzige
+  // ausserhalb von <main> und bringt die einzige Überschrift mit. Sonst bleibt die Seite ohne Überschriften.
+  const ohneRueckkanal = html.replace(/<section class="rueckkanal[\s\S]*?<\/section>/, "");
+  assert.deepEqual([...ohneRueckkanal.matchAll(/<h2[^>]*>([^<]+)<\/h2>/g)].map((m) => m[1]), [], "ausser dem Rückkanal keine Überschriften");
+  assert.equal([...html.matchAll(/<section class="rueckkanal/g)].length, 1, "der Rückkanal steht genau einmal");
+  assert.ok(html.indexOf("</main>") < html.indexOf('<section class="rueckkanal'), "der Rückkanal steht nach dem Inhalt, vor dem Fuss");
   assert.ok(!/href="(zu-seiner-zeit|alpha|portfolio)\//.test(html.replace(/<nav class="(seitenweg|menu)"[\s\S]*?<\/nav>/g, "")), "die Wege führen über Menü und Navigation, nicht über Karten");
   assert.deepEqual([...html.matchAll(/data-icon="([a-z]+)"/g)].map((m) => m[1]), ["wave", "wave"], "nur die Wellen sind animiert (unter dem Kopf und vor dem Video)");
 });
@@ -225,6 +230,27 @@ test("Versionsmarken: styles.css und icons.js tragen auf allen Seiten dieselbe M
   const bekannt = icons.match(/var FACTORY = \{([^}]*)\}/)[1].split(",").map((s) => s.split(":")[0].trim());
   assert.deepEqual(bekannt.sort(), ["inklusion", "prozess", "rad", "turm", "wave"], "reentry, zeit und stellen (frühere Menü-Symbole) sind entfernt");
   for (const p of htmlSeiten()) for (const m of lies(p).matchAll(/data-icon="([a-z]+)"/g)) assert.ok(bekannt.includes(m[1]), `${p}: Symbol «${m[1]}» gibt es nicht in icons.js`);
+});
+
+test("Rückkanal: auf Startseite, Apps, Masterprompts, Web und News, zwischen Inhalt und Fuss, als mailto ohne Dienst (5. Oktober 2026)", () => {
+  // Entscheid vom 5. Oktober 2026: kein Formular und kein fremder Dienst, sondern ein mailto-Link.
+  // Beim Aufruf der Seite wird nichts von aussen geholt, beim Klick nichts an Dritte geschickt (REGELN §11).
+  const mit = ["index.html", "apps/index.html", "masterprompts/index.html", "web/index.html", "news/index.html"];
+  for (const seite of mit) {
+    const html = lies(seite);
+    const block = html.match(/<section class="rueckkanal[\s\S]*?<\/section>/);
+    assert.ok(block, `${seite}: kein Rückkanal`);
+    assert.equal([...html.matchAll(/<section class="rueckkanal/g)].length, 1, `${seite}: der Rückkanal steht genau einmal`);
+    assert.ok(html.indexOf("</main>") < html.indexOf('<section class="rueckkanal'), `${seite}: der Rückkanal steht nach dem Inhalt`);
+    assert.ok(html.indexOf('<section class="rueckkanal') < html.indexOf('<footer class="site-footer">'), `${seite}: und vor dem Fuss`);
+    assert.match(block[0], /href="mailto:hansnoed@gmail\.com\?subject=Liste&amp;body=[^"]+"/, `${seite}: mailto mit Betreff und fertigem Text`);
+    assert.ok(!/<form|<input|<button/.test(block[0]), `${seite}: kein Formular — der Entscheid war der mailto-Link`);
+    assert.match(block[0], /<h2 id="rueckkanal-titel">Wenn etwas fertig ist, schreibe ich<\/h2>/, `${seite}: Überschrift`);
+    assert.match(block[0], /aria-labelledby="rueckkanal-titel"/, `${seite}: der Abschnitt trägt seinen Namen für Vorlesegeräte`);
+  }
+  // Auf allen fünf Seiten derselbe Block, Zeichen für Zeichen
+  const bloecke = new Set(mit.map((s) => lies(s).match(/<section class="rueckkanal[\s\S]*?<\/section>/)[0]));
+  assert.equal(bloecke.size, 1, "der Rückkanal ist auf allen Seiten gleich");
 });
 
 test("News, Termine und Portfolio: bleiben unter ihren Adressen (mit Menü, in der Sitemap), werden aber von keiner Seite verlinkt", () => {

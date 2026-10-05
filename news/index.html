@@ -4,7 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>News – Ornament Cloud</title>
-  <link rel="stylesheet" href="../styles.css?v=34">
+  <!-- Feed: wer die News abonniert, bekommt neue Einträge im eigenen Leseprogramm (erzeugt aus dieser Seite, siehe tools/build-feed.ts) -->
+  <link rel="alternate" type="application/rss+xml" title="Ornament Cloud – News" href="../feed.xml">
+  <link rel="stylesheet" href="../styles.css?v=36">
 </head>
 <body>
   <header class="site-header">
@@ -24,6 +26,8 @@
       <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
       <h1>News</h1>
       <p class="lead">Neuigkeiten und Arbeitsstände.</p>
+      <!-- Der Feed steht hier sichtbar, weil die meisten Leseprogramme ihn sonst nur über den Kopf der Seite finden -->
+      <p class="lead-feed"><a href="../feed.xml">Diese Seite als Feed abonnieren</a></p>
     </div>
   </header>
 
@@ -32,8 +36,11 @@
       Neuer Eintrag: einen <details class="entry">-Block kopieren und oberhalb einfügen,
       damit der neueste Eintrag oben steht. Im <summary> stehen Datum, Titel und
       Untertitel (immer sichtbar), in .entry-body Animation und Text (aufklappbar).
+      Jeder Eintrag braucht eine eigene id: Sie ist das Sprungziel (news/#id) und die
+      unveränderliche Adresse im Feed. Danach `node --experimental-strip-types tools/build-feed.ts`
+      laufen lassen, sonst meldet tests/feed.test.mjs den Unterschied.
     -->
-    <details class="entry">
+    <details class="entry" id="pruefraster-nebeneinander-verteilapparat">
       <summary class="entry-head">
         <span class="entry-text">
           <time datetime="2026-09-28">28. September 2026</time>
@@ -55,7 +62,7 @@
       </div>
     </details>
 
-    <details class="entry">
+    <details class="entry" id="orma-alpha">
       <summary class="entry-head">
         <span class="entry-text">
           <time datetime="2026-09-27">27. September 2026</time>
@@ -80,7 +87,7 @@
       </div>
     </details>
 
-    <details class="entry">
+    <details class="entry" id="orna-app">
       <summary class="entry-head">
         <span class="entry-text">
           <time datetime="2026-09-27">27. September 2026</time>
@@ -103,6 +110,21 @@
 
     <p class="back"><a href="../">← Zur Startseite</a></p>
   </main>
+
+  <!--
+    Rückkanal (seit 5. Oktober 2026): Anmeldung für die Mail, wenn etwas fertig ist.
+    Bewusst ohne Dienst und ohne Formular: ein mailto-Link, der eine fertige Mail öffnet.
+    So wird beim Aufruf der Seite nichts von aussen geholt und beim Klick nichts an Dritte
+    geschickt (REGELN §11); die Adressen bleiben im eigenen Mailprogramm. Versendet wird
+    später mit BCC. Wächst die Liste über ein paar Dutzend, tritt hier ein Dienst an die
+    Stelle des Links — dann ändert sich nur dieser Block.
+  -->
+  <section class="rueckkanal wrap" aria-labelledby="rueckkanal-titel">
+    <h2 id="rueckkanal-titel">Wenn etwas fertig ist, schreibe ich</h2>
+    <p>Kein Rhythmus und keine Ankündigungen. Eine kurze Mail, wenn ein Raster, eine App oder ein Text so weit ist, dass man damit arbeiten kann.</p>
+    <p class="rueckkanal-knopf"><a class="knopf" href="mailto:hansnoed@gmail.com?subject=Liste&amp;body=Bitte%20nimm%20mich%20in%20die%20Liste%20auf.">Eintragen lassen</a></p>
+    <p class="klein">Der Link öffnet eine fertige Mail, du musst sie nur abschicken. Austragen mit einer Antwort; die Adresse bleibt bei mir und wird nicht weitergegeben.</p>
+  </section>
 
   <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
   <footer class="site-footer">

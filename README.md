@@ -13,6 +13,10 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   (`--rad-max`, von der Startseite gesetzt): «Drehen» steht beim Laden im Fenster. Darunter, durch eine zweite Welle getrennt, das **Erklärvideo zu ORNA**
   (`assets/orna-erklaervideo.mp4`, Vorschaubild `assets/orna-erklaervideo.jpg`, lädt erst beim Abspielen; Quellcode `src/videos/src/orna/`).
   Sonst steht nichts auf der Seite: die Rückmeldungen (giscus, `kommentare.js`) sind auf Wunsch von Christian vom 2. Oktober 2026 entfernt.
+  Unter dem Inhalt, vor dem Fuss, steht seit dem 5. Oktober 2026 der **Rückkanal** (`<section class="rueckkanal">`): die Anmeldung für die Mail, wenn etwas fertig ist.
+  Bewusst ohne Dienst und ohne Formular: ein `mailto`-Link, der eine fertige Mail an `hansnoed@gmail.com` mit dem Betreff «Liste» öffnet (REGELN §11 — beim Aufruf der Seite wird nichts von aussen geholt, beim Klick nichts an Dritte geschickt).
+  Die Adressen bleiben im eigenen Mailprogramm, versendet wird mit BCC. Wächst die Liste über ein paar Dutzend, tritt ein Dienst an die Stelle des Links; dann ändert sich nur dieser Block, die Gestaltung in `styles.css` bleibt.
+  Derselbe Block steht auf «Apps», «Masterprompts», «Web» und «News»; `tests/struktur.test.mjs` prüft ihn auf der Startseite.
   Das Stellenfeld (`werke/stellenfeld/`, früher hier eingebettet) ist seit dem 4. Oktober 2026 ein Beitrag auf «Web» (Vorschau `assets/vorschau-stellenfeld.jpg` aus `tools/start-og.mjs`).
   Es behält seinen Einbettungsmodus (`window.self !== window.top`: senkrechtes Wischen und das Mausrad blättern, Zoom nur mit Strg/Cmd), auch wenn es zurzeit nirgends eingebettet ist.
 - Menü (`<nav class="menu">`, Neuordnung vom 2. Oktober 2026): vier Wörter ohne Symbole und Animationen, in der serifenlosen Schrift der Seite (`--font`, Gewicht 500; Wunsch vom 2. Oktober 2026: moderner als die frühere Serife), immer in dieser Reihenfolge: **Zettelkasten** (führt direkt zu `zu-seiner-zeit/`), **Apps** (`apps/`),
@@ -37,7 +41,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   die Schrift in der Farbe der Seite (`--bg`, `--papier`, `--night`; Kontrast ab 4,5); in erzwungenen Farben (Windows, hoher Kontrast) bleibt er mit einem feinen Ring kenntlich. Aktiv ist im Rad «Das Dritte Rad» (`aria-current="page"`), auf der Startseite
   «Ornament Cloud» (`page`), auf allen anderen Seiten ebenfalls «Ornament Cloud» (`true`: man ist in der Website). Beim Darüberfahren wird der Rahmen voll, der Tastaturfokus ist ein Ring von 2 px in der Farbe des Buttons.
   Ausgenommen sind ORMA (eigene App), `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`. Neue Seiten brauchen sie ebenfalls; `tests/navigation.test.mjs` meldet fehlende.
-  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 34: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
+  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 36: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
 - `icons.js` – gezeichnete, animierte Schwarz-Weiss-Symbole: die Welle unter dem Kopf, das Rad der Karten ORNA und ORMA, Prozess, Inklusion und Turm (News, Termine); die Symbole des früheren Menüs (reentry, zeit, stellen) sind entfernt (Dauer in `PERIOD`, Marke `?v=` zurzeit 14)
 - `news/` – News als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
 - `termine/` – Termine als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen

@@ -892,3 +892,87 @@ h1 {
   font-size: 0.85rem;
   color: var(--muted);
 }
+
+/* ---------------------------------------------------------------------------
+   Rückkanal: Anmeldung für die Mail, wenn etwas fertig ist (5. Oktober 2026)
+
+   Kein Formular und kein Dienst, sondern ein mailto-Link, der wie ein Knopf aussieht:
+   Beim Aufruf der Seite wird nichts von aussen geholt und beim Klick nichts an Dritte
+   geschickt (REGELN §11). Tritt später ein Dienst an die Stelle des Links, bleibt die
+   Gestaltung hier und nur das HTML ändert sich.
+
+   Steht zwischen </main> und <footer class="site-footer">.
+   --------------------------------------------------------------------------- */
+
+.rueckkanal {
+  /* in der Spalte der Seite (wie .wrap: 1080 px mit 20 px Rand, also 1040 px Inhalt), seitlich nie näher als 20 px am Fensterrand, unten Luft zum Fuss */
+  max-width: none;
+  margin: 56px max(20px, calc((100% - 1040px) / 2)) 48px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.rueckkanal h2 {
+  margin: 0 0 8px;
+  font-family: var(--font);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.rueckkanal p {
+  margin: 0;
+  max-width: 54ch;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.rueckkanal-knopf {
+  margin: 16px 0 0;
+}
+
+/* Der Link trägt sich wie ein Knopf, bleibt aber ein Link: auf dem Handy breit genug zum Treffen */
+.rueckkanal .knopf {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--surface);
+  text-decoration: none;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  transition: opacity 0.2s ease;
+}
+
+.rueckkanal .knopf:hover {
+  opacity: 0.88;
+}
+
+.rueckkanal .knopf:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Kleingedrucktes unter dem Knopf: was passiert und wie man wieder herauskommt */
+.rueckkanal .klein {
+  margin: 12px 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rueckkanal .knopf {
+    transition: none;
+  }
+}
+
+/* Hinweis auf den Feed unter dem Vorspann der News-Seite */
+.lead-feed {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}

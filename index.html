@@ -21,7 +21,9 @@
   <meta name="twitter:title" content="Ornament Cloud">
   <meta name="twitter:description" content="Beobachtung ist Anlass für Veränderung in der Realität.">
   <meta name="twitter:image" content="https://ornament.cloud/assets/og-ornament-cloud.png">
-  <link rel="stylesheet" href="styles.css?v=34">
+  <!-- Feed: wer die News abonniert, bekommt neue Einträge im eigenen Leseprogramm (erzeugt aus news/index.html, siehe tools/build-feed.ts) -->
+  <link rel="alternate" type="application/rss+xml" title="Ornament Cloud – News" href="feed.xml">
+  <link rel="stylesheet" href="styles.css?v=36">
 </head>
 <body>
   <header class="site-header">
@@ -62,6 +64,21 @@
       <figcaption>ORNA – Zufällige Begegnungen: wie sich Künstler:innen und Theoretiker:innen auf zwei Ringen begegnen und nach welchen Kriterien die Paarungen geprüft sind. Erklärvideo, 51 Sekunden, ohne Ton. Mehr dazu unter <a href="apps/">Apps</a>.</figcaption>
     </figure>
   </main>
+
+  <!--
+    Rückkanal (seit 5. Oktober 2026): Anmeldung für die Mail, wenn etwas fertig ist.
+    Bewusst ohne Dienst und ohne Formular: ein mailto-Link, der eine fertige Mail öffnet.
+    So wird beim Aufruf der Seite nichts von aussen geholt und beim Klick nichts an Dritte
+    geschickt (REGELN §11); die Adressen bleiben im eigenen Mailprogramm. Versendet wird
+    später mit BCC. Wächst die Liste über ein paar Dutzend, tritt hier ein Dienst an die
+    Stelle des Links — dann ändert sich nur dieser Block.
+  -->
+  <section class="rueckkanal wrap" aria-labelledby="rueckkanal-titel">
+    <h2 id="rueckkanal-titel">Wenn etwas fertig ist, schreibe ich</h2>
+    <p>Kein Rhythmus und keine Ankündigungen. Eine kurze Mail, wenn ein Raster, eine App oder ein Text so weit ist, dass man damit arbeiten kann.</p>
+    <p class="rueckkanal-knopf"><a class="knopf" href="mailto:hansnoed@gmail.com?subject=Liste&amp;body=Bitte%20nimm%20mich%20in%20die%20Liste%20auf.">Eintragen lassen</a></p>
+    <p class="klein">Der Link öffnet eine fertige Mail, du musst sie nur abschicken. Austragen mit einer Antwort; die Adresse bleibt bei mir und wird nicht weitergegeben.</p>
+  </section>
 
   <footer class="site-footer">
     <div class="wrap">
