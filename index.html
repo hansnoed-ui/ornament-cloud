@@ -56,7 +56,7 @@
     </figure>
     <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
     <figure class="erklaervideo">
-      <video controls playsinline preload="none" poster="assets/orna-erklaervideo.jpg" width="1080" height="1920" aria-label="Erklärvideo zu ORNA, ohne Ton">
+      <video controls playsinline preload="none" poster="assets/orna-erklaervideo.jpg" muted width="1080" height="1920" aria-label="Erklärvideo zu ORNA, ohne Ton">
         <source src="assets/orna-erklaervideo.mp4" type="video/mp4">
       </video>
       <figcaption>ORNA – Zufällige Begegnungen: wie sich Künstler:innen und Theoretiker:innen auf zwei Ringen begegnen und nach welchen Kriterien die Paarungen geprüft sind. Erklärvideo, 51 Sekunden, ohne Ton. Mehr dazu unter <a href="apps/">Apps</a>.</figcaption>
@@ -93,6 +93,20 @@
       function an() { radGroesse(); passe(); try { new ResizeObserver(passe).observe(f.contentDocument.body); } catch (e) {} }
       f.addEventListener("load", an);
       try { if (f.contentDocument && f.contentDocument.readyState === "complete" && f.contentDocument.body.childElementCount) an(); } catch (e) {}
+    })();
+    // Erklärvideo (Wunsch vom 5. Oktober 2026): spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt.
+    // Es lädt erst dann (preload="none"); stumm (muted), sonst lassen Browser es nicht von selbst spielen – es hat ohnehin keinen Ton.
+    // Bei «weniger Bewegung» spielt es nur auf Knopfdruck.
+    (function () {
+      var v = document.querySelector(".erklaervideo video");
+      if (!v || !("IntersectionObserver" in window)) return;
+      if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      new IntersectionObserver(function (eintraege) {
+        eintraege.forEach(function (e) {
+          if (e.isIntersecting) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+          else if (!v.paused) v.pause();
+        });
+      }, { threshold: 0.5 }).observe(v);
     })();
   </script>
   <script src="icons.js?v=14" defer></script>

@@ -118,6 +118,38 @@ await check("Startseite: «Drehen» steht beim Laden im Fenster (Laptop, iPhone)
   }
 });
 
+await check("Startseite: das Erklärvideo spielt von selbst, sobald es im Bild ist, und hält an, wenn es das Bild verlässt; bei «weniger Bewegung» nicht (Wunsch vom 5. Oktober 2026)", async () => {
+  for (const reducedMotion of ["no-preference", "reduce"]) {
+    const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 }, reducedMotion });
+    // play() und pause() zählen: der Testbrowser spielt H.264 nicht unbedingt ab, gezählt wird der Versuch
+    await ctx.addInitScript(() => {
+      window.__video = { play: 0, pause: 0 };
+      const play = HTMLMediaElement.prototype.play, pause = HTMLMediaElement.prototype.pause;
+      HTMLMediaElement.prototype.play = function () { window.__video.play += 1; return play.call(this); };
+      HTMLMediaElement.prototype.pause = function () { window.__video.pause += 1; return pause.call(this); };
+    });
+    const page = await ctx.newPage();
+    await page.goto(origin + "/");
+    await rahmen(page);
+    const v = page.locator(".erklaervideo video");
+    assert.equal(await v.evaluate((e) => e.muted), true, "stumm, sonst spielt es nicht von selbst");
+    await page.waitForTimeout(300);
+    assert.equal((await page.evaluate(() => window.__video)).play, 0, "beim Laden (Video nicht im Bild) spielt nichts");
+    await v.scrollIntoViewIfNeeded();
+    if (reducedMotion === "reduce") {
+      await page.waitForTimeout(500);
+      assert.equal((await page.evaluate(() => window.__video)).play, 0, "bei «weniger Bewegung» nur auf Knopfdruck");
+    } else {
+      await page.waitForFunction(() => window.__video.play > 0, null, { timeout: 5000 });
+      await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
+      await page.waitForTimeout(500);
+      const n = await page.evaluate(() => window.__video);
+      assert.ok(n.pause > 0 || (await v.evaluate((e) => e.paused)), "ausserhalb des Bildes angehalten");
+    }
+    await ctx.close();
+  }
+});
+
 await check("Startseite: der Rahmen ist durchsichtig, das Spiel steht auf dem Grund der Seite (hell und dunkel)", async () => {
   for (const colorScheme of ["light", "dark"]) {
     const { ctx, page } = await startseite({ viewport: { width: 1200, height: 900 }, colorScheme });

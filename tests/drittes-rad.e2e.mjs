@@ -1052,6 +1052,20 @@ await check("Hinweis bei Ladefehler: lädt das Rad nicht, steht kurz danach ein 
   }
 });
 
+await check("Desktop: «Drehen» und «Brücke» stehen beim Laden im Fenster, das Rad höchstens 480 px und nie unter 280 px (Wunsch vom 5. Oktober 2026, wie OMNA COLOR auf der Startseite)", async () => {
+  for (const [width, height] of [[1366, 657], [1280, 720], [1536, 730], [1920, 960]]) {
+    const { ctx, page, errors } = await open("alpha/drittes-rad/", { viewport: { width, height } });
+    await page.waitForSelector("#wheel svg");
+    const m = await page.evaluate(() => ({ go: document.getElementById("go").getBoundingClientRect().bottom, bruecke: document.getElementById("bridge").getBoundingClientRect().bottom,
+      rad: document.getElementById("wheel").getBoundingClientRect().width, blatt: document.documentElement.scrollHeight }));
+    assert.ok(m.go <= height && m.bruecke <= height, `${width} × ${height}: Knöpfe im Fenster (${Math.round(m.go)})`);
+    assert.ok(m.rad <= 480.5 && m.rad >= 279.5, `${width} × ${height}: Rad ${m.rad} px`);
+    assert.ok(m.blatt <= height + 1, `${width} × ${height}: die Startseite blättert nicht (${m.blatt})`);
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+});
+
 await browser.close();
 server.close();
 const failed = results.filter(r => r[0] !== "ok");
