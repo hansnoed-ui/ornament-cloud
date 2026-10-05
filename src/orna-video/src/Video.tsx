@@ -1,4 +1,4 @@
-// ORNA – Erklärvideo im Hochformat (1080 × 1920, 30 fps, 45 s, ohne Ton)
+// ORNA – Erklärvideo im Hochformat (1080 × 1920, 30 fps, 51,5 s, ohne Ton)
 // Das Rad ist eine durchgehende Ebene (sein Zustand hängt nur am Bild), die Texte liegen als Szenen darüber.
 // Inhalte: Namen, Zeichen und die Konstellation Eva Hesse × Susan Leigh Star aus den Daten von ORNA (unverändert);
 // Raum und Zeit aus dem Werkbericht und dem Prüfraster «Nebeneinander und Nacheinander»; die sechs Prüfdimensionen
@@ -12,10 +12,11 @@ import { Signet } from "./Signet";
 
 // ---------- Zeitplan (Bilder) ----------
 // Reihenfolge (Wunsch vom 5. Oktober 2026): Titel, Ringe, Drehung, Raum, Zeit, Prüfdimensionen, Feld, Schluss
-// Zum Abschluss (seit 5. Oktober 2026) das animierte Signet von ornament.cloud
+// Zum Abschluss (seit 5. Oktober 2026) das animierte Signet von ornament.cloud, als kurze Fassung auch als Intro;
+// nach der Drehung eine Szene mit einem Auszug aus dem Text der Konstellation
 export const T = {
-  titel: 0, ringe: 105, drehung: 225, halt: 375, raum: 465, zeit: 585,
-  kriterien: 720, feld: 945, schluss: 1065, signet: 1170, ende: 1350,
+  intro: 0, titel: 90, ringe: 180, drehung: 285, halt: 435, text: 525, raum: 705, zeit: 810,
+  kriterien: 930, feld: 1155, schluss: 1275, signet: 1365, ende: 1545,
 };
 
 const klemm = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
@@ -56,15 +57,14 @@ const RadEbene: React.FC = () => {
   const drift = f >= T.schluss ? 0 : interpolate(f, [T.zeit, T.kriterien], [0, 0.6 * (T.kriterien - T.zeit)], klemm);
   const aussen = lauf * ZIEL_AUSSEN + drift;
   const innen = lauf * ZIEL_INNEN - drift;
-  const sichtbar = interpolate(f, [12, 90], [0, 1], klemm);
+  const sichtbar = interpolate(f, [T.titel + 8, T.titel + 80], [0, 1], klemm);
   const zurueck = f >= T.schluss ? 1 : interpolate(f, [T.halt, T.halt + 20, T.raum, T.raum + 20], [0, 1, 1, 0], klemm);
   const treffer = (f >= T.halt && f < T.raum + 20) || f >= T.schluss ? TREFFER : null;
-  const achse = interpolate(f, [60, 90], [0, 1], klemm);
-  // weg während Prüfdimensionen und Feld, zum Schluss wieder da
-  const o = Math.min(
-    interpolate(f, [0, 10], [0, 1], klemm),
-    interpolate(f, [T.kriterien, T.kriterien + 24, T.schluss, T.schluss + 24, T.signet - 14, T.signet], [1, 0, 0, 1, 1, 0], klemm),
-  );
+  const achse = interpolate(f, [T.titel + 50, T.titel + 80], [0, 1], klemm);
+  // erst nach dem Intro; weg während Textauszug, Prüfdimensionen und Feld; zum Schluss wieder da
+  const o = interpolate(f,
+    [T.titel, T.titel + 10, T.text, T.text + 18, T.raum - 12, T.raum, T.kriterien, T.kriterien + 24, T.schluss, T.schluss + 24, T.signet - 14, T.signet],
+    [0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0], klemm);
   const s = interpolate(f, [T.kriterien, T.kriterien + 24, T.schluss, T.schluss + 24], [1, 0.9, 0.9, 1], klemm);
   return (
     <div style={{ position: "absolute", left: 90, top: 545, opacity: o, scale: s }}>
@@ -121,7 +121,7 @@ const SzeneAchse: React.FC<{ nr: string; name: string; satz: string; pruefstein:
 
 const SzeneDrehung: React.FC = () => {
   const f = useCurrentFrame();
-  const d = T.raum - T.drehung;
+  const d = T.text - T.drehung;
   const stop = T.halt - T.drehung;
   return (
     <>
@@ -135,6 +135,25 @@ const SzeneDrehung: React.FC = () => {
           {daten.beispiel.question}
         </div>
       </Unten>
+    </>
+  );
+};
+
+// Auszug aus dem Text der Konstellation: gross und gut lesbar, sechs Sekunden
+const SzeneText: React.FC = () => {
+  const f = useCurrentFrame();
+  const d = T.raum - T.text;
+  return (
+    <>
+      <Oben o={blende(f, 8, d)} y={steig(f, 8)}>
+        <Marke>{daten.artists[TREFFER.a]} × {daten.theorists[TREFFER.t]}</Marke>
+      </Oben>
+      <div style={{ position: "absolute", left: 90, right: 90, top: 560, opacity: blende(f, 14, d), translate: `0 ${steig(f, 14)}px` }}>
+        <div style={{ fontFamily: SERIF, fontSize: 62, lineHeight: 1.32, color: FARBE.text, textWrap: "pretty" }}>
+          {daten.beispiel.auszug} […]
+        </div>
+        <div style={{ marginTop: 44 }}><Leise groesse={32}>Auszug aus dem Text zur Konstellation</Leise></div>
+      </div>
     </>
   );
 };
@@ -225,6 +244,16 @@ const SzeneSchluss: React.FC = () => {
   );
 };
 
+// Intro: das Signet in kurzer Fassung (doppelt so schnell), am Ende ausgeblendet
+const Intro: React.FC = () => {
+  const f = useCurrentFrame();
+  return (
+    <AbsoluteFill style={{ opacity: interpolate(f, [T.titel - T.intro - 12, T.titel - T.intro], [1, 0], klemm) }}>
+      <Signet tempo={2} />
+    </AbsoluteFill>
+  );
+};
+
 // ---------- Das ganze Video ----------
 export const OrnaVideo: React.FC = () => {
   const [handle] = React.useState(() => delayRender("Schriften"));
@@ -232,9 +261,11 @@ export const OrnaVideo: React.FC = () => {
   return (
     <AbsoluteFill style={{ backgroundColor: FARBE.grund }}>
       <RadEbene />
+      <Sequence name="Intro" from={T.intro} durationInFrames={T.titel - T.intro}><Intro /></Sequence>
       <Sequence name="Titel" from={T.titel} durationInFrames={T.ringe - T.titel}><SzeneTitel /></Sequence>
       <Sequence name="Ringe" from={T.ringe} durationInFrames={T.drehung - T.ringe}><SzeneRinge /></Sequence>
-      <Sequence name="Drehung" from={T.drehung} durationInFrames={T.raum - T.drehung}><SzeneDrehung /></Sequence>
+      <Sequence name="Drehung" from={T.drehung} durationInFrames={T.text - T.drehung}><SzeneDrehung /></Sequence>
+      <Sequence name="Text" from={T.text} durationInFrames={T.raum - T.text}><SzeneText /></Sequence>
       <Sequence name="Raum" from={T.raum} durationInFrames={T.zeit - T.raum}>
         <SzeneAchse nr="Achse 1" name="Verräumlichung" satz="Raum lässt Unterschiede nebeneinander erscheinen." pruefstein="Rückkehr"
           frage="Was lässt sich wiederfinden, vergleichen und als dieselbe Stelle erkennen?" dauer={T.zeit - T.raum} />
