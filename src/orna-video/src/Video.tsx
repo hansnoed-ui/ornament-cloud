@@ -1,4 +1,4 @@
-// ORNA – Erklärvideo im Hochformat (1080 × 1920, 30 fps, 42,5 s, ohne Ton)
+// ORNA – Erklärvideo im Hochformat (1080 × 1920, 30 fps, 45 s, ohne Ton)
 // Das Rad ist eine durchgehende Ebene (sein Zustand hängt nur am Bild), die Texte liegen als Szenen darüber.
 // Inhalte: Namen, Zeichen und die Konstellation Eva Hesse × Susan Leigh Star aus den Daten von ORNA (unverändert);
 // Raum und Zeit aus dem Werkbericht und dem Prüfraster «Nebeneinander und Nacheinander»; die sechs Prüfdimensionen
@@ -8,12 +8,14 @@ import { AbsoluteFill, Easing, Sequence, interpolate, useCurrentFrame, continueR
 import daten from "./data/orna.json";
 import { Rad, zielDrehung } from "./Rad";
 import { FARBE, SANS, SERIF, schriften } from "./theme";
+import { Signet } from "./Signet";
 
 // ---------- Zeitplan (Bilder) ----------
 // Reihenfolge (Wunsch vom 5. Oktober 2026): Titel, Ringe, Drehung, Raum, Zeit, Prüfdimensionen, Feld, Schluss
+// Zum Abschluss (seit 5. Oktober 2026) das animierte Signet von ornament.cloud
 export const T = {
   titel: 0, ringe: 105, drehung: 225, halt: 375, raum: 465, zeit: 585,
-  kriterien: 735, feld: 1005, schluss: 1155, ende: 1275,
+  kriterien: 720, feld: 945, schluss: 1065, signet: 1170, ende: 1350,
 };
 
 const klemm = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
@@ -61,7 +63,7 @@ const RadEbene: React.FC = () => {
   // weg während Prüfdimensionen und Feld, zum Schluss wieder da
   const o = Math.min(
     interpolate(f, [0, 10], [0, 1], klemm),
-    interpolate(f, [T.kriterien, T.kriterien + 24, T.schluss, T.schluss + 24], [1, 0, 0, 1], klemm),
+    interpolate(f, [T.kriterien, T.kriterien + 24, T.schluss, T.schluss + 24, T.signet - 14, T.signet], [1, 0, 0, 1, 1, 0], klemm),
   );
   const s = interpolate(f, [T.kriterien, T.kriterien + 24, T.schluss, T.schluss + 24], [1, 0.9, 0.9, 1], klemm);
   return (
@@ -77,7 +79,7 @@ const SzeneTitel: React.FC = () => {
   return (
     <Oben o={blende(f, 0, T.ringe - T.titel)} y={steig(f, 0)}>
       <Marke>ORNA</Marke>
-      <Titel groesse={104}>Nebeneinander,<br />Nacheinander</Titel>
+      <Titel groesse={104}>Zufällige<br />Begegnungen</Titel>
     </Oben>
   );
 };
@@ -167,7 +169,7 @@ const SzeneKriterien: React.FC = () => {
           );
         })}
       </div>
-      <div style={{ position: "absolute", left: 90, right: 90, top: 1730, opacity: interpolate(f, [190, 205], [0, 1], klemm) }}>
+      <div style={{ position: "absolute", left: 90, right: 90, top: 1730, opacity: interpolate(f, [160, 174], [0, 1], klemm) }}>
         <Marke farbe={FARBE.text}>Werk- und Theoriepräzision sind Mindestbedingungen.</Marke>
       </div>
     </AbsoluteFill>
@@ -209,12 +211,13 @@ const SzeneFeld: React.FC = () => {
 
 const SzeneSchluss: React.FC = () => {
   const f = useCurrentFrame();
+  const aus = interpolate(f, [T.signet - T.schluss - 14, T.signet - T.schluss], [1, 0], klemm);
   return (
     <>
-      <Oben o={interpolate(f, [10, 26], [0, 1], klemm)} y={steig(f, 10)}>
-        <Titel groesse={72}>Das Rad erzeugt keine Antworten. Es erzeugt Konstellationen.</Titel>
+      <Oben o={Math.min(interpolate(f, [10, 26], [0, 1], klemm), aus)} y={steig(f, 10)}>
+        <Titel groesse={72}>Dieses Rad erzeugt keine Antworten. Es erzeugt Konstellationen.</Titel>
       </Oben>
-      <Unten o={interpolate(f, [30, 46], [0, 1], klemm)} y={steig(f, 30)}>
+      <Unten o={Math.min(interpolate(f, [30, 46], [0, 1], klemm), aus)} y={steig(f, 30)}>
         <Marke>ORNA</Marke>
         <Leise>ornament.cloud · Apps</Leise>
       </Unten>
@@ -242,7 +245,8 @@ export const OrnaVideo: React.FC = () => {
       </Sequence>
       <Sequence name="Kriterien" from={T.kriterien} durationInFrames={T.feld - T.kriterien}><SzeneKriterien /></Sequence>
       <Sequence name="Feld" from={T.feld} durationInFrames={T.schluss - T.feld}><SzeneFeld /></Sequence>
-      <Sequence name="Schluss" from={T.schluss} durationInFrames={T.ende - T.schluss}><SzeneSchluss /></Sequence>
+      <Sequence name="Schluss" from={T.schluss} durationInFrames={T.signet - T.schluss}><SzeneSchluss /></Sequence>
+      <Sequence name="Signet" from={T.signet} durationInFrames={T.ende - T.signet}><Signet /></Sequence>
     </AbsoluteFill>
   );
 };

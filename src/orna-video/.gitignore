@@ -1,5 +1,5 @@
 # Erzeugt oder installiert, wird nicht eingecheckt (gen.mjs, npm i, Rendern)
-node_modules/
+node_modules
 out/
 public/
 src/data/
