@@ -4,7 +4,7 @@
 //
 //   NODE_PATH=$(npm root -g) node tools/alpha-og.mjs
 //     → alpha/pruefraster/og-pruefraster.png, alpha/verteilapparat/og-verteilapparat.png,
-//       alpha/gesellschaftskonzepte/og-gesellschaftskonzepte.png
+//       alpha/gesellschaftskonzepte/og-gesellschaftskonzepte.png, alpha/metastabilitaet/og-metastabilitaet.png
 //
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
@@ -33,7 +33,15 @@ const KARTEN = [
     unter: "Einheit · Operation · Vermittlung: Kann ein Ansatz sagen, wie aus einer Absicht eine Wirkung wird?",
     adresse: "ornament.cloud/alpha/gesellschaftskonzepte", x: "VERFAHREN → ERSATZFORM", y: "EINE → MEHRERE OPERATIONEN",
     felder: [["Tragfähige", "Beschreibung"], ["Panorama"], ["Milieu-", "beschreibung"], ["Programm"]], dunkel: 0, titelGroesse: 56 },
+  // Analyse mit dem Prüfraster (5. Oktober 2026): dasselbe Vierfeld, aber kein Feld betont – die Analyse vergibt bewusst keine Koordinaten
+  { out: "../alpha/metastabilitaet/og-metastabilitaet.png", titel: "Allgemeines, Konkretes und Metastabilität",
+    unter: "Eine vertiefte Analyse mit dem Prüfraster «Nebeneinander, Nacheinander»",
+    adresse: "ornament.cloud/alpha/metastabilitaet", x: "VERRÄUMLICHUNG →", y: "VERZEITLICHUNG →",
+    felder: [["Ereignis"], ["Doppelspalt"], ["Stilles", "Operieren"], ["Ordnung"]], dunkel: null, titelGroesse: 58,
+    ober: "Vertiefte Analyse · PDF", fuss: "" },
 ];
+// nur einzelne Bilder neu: NUR=metastabilitaet node tools/alpha-og.mjs
+const NUR = process.env.NUR;
 
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
 const feldText = (zeilen, x, y, hell) => zeilen.map((z, i) =>
@@ -41,7 +49,7 @@ const feldText = (zeilen, x, y, hell) => zeilen.map((z, i) =>
 
 function html(k) {
   const pos = [[90, 90], [270, 90], [90, 270], [270, 270]];
-  const [dx, dy] = [[0, 0], [180, 0], [0, 180], [180, 180]][k.dunkel];
+  const [dx, dy] = k.dunkel === null ? [0, 0] : [[0, 0], [180, 0], [0, 180], [180, 180]][k.dunkel];
   return `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><style>
   html, body { margin: 0; width: 1200px; height: 630px; background: #f8f8f6; color: #1f1d1a; }
   .k { position: relative; width: 1200px; height: 630px; box-sizing: border-box; padding: 80px 88px; }
@@ -54,12 +62,12 @@ function html(k) {
   .lab { font: 500 13px ${SANS}; letter-spacing: 0.14em; fill: #6b665e; }
   .feld { font: 400 24px ${SERIF}; fill: #1f1d1a; }
 </style></head><body><div class="k">
-  <p class="ober">Grundlagenpapier · Anwendungsprompt</p>
+  <p class="ober">${esc(k.ober ?? "Grundlagenpapier · Anwendungsprompt")}</p>
   <h1${k.titelGroesse ? ` style="font-size:${k.titelGroesse}px"` : ""}>${esc(k.titel)}</h1>
   <p class="unter">${esc(k.unter)}</p>
-  <p class="fuss">Christian Strickler · <span>${esc(k.adresse)}</span></p>
+  <p class="fuss">${esc(k.fuss ?? "Christian Strickler · ")}<span>${esc(k.adresse)}</span></p>
   <svg viewBox="0 0 360 360">
-    <rect x="${dx}" y="${dy}" width="180" height="180" fill="#1f1d1a"/>
+    ${k.dunkel === null ? "" : `<rect x="${dx}" y="${dy}" width="180" height="180" fill="#1f1d1a"/>`}
     <rect x="0" y="0" width="360" height="360" fill="none" stroke="#1f1d1a" stroke-width="1.5"/>
     <line x1="180" y1="0" x2="180" y2="360" stroke="#1f1d1a" stroke-width="1"/>
     <line x1="0" y1="180" x2="360" y2="180" stroke="#1f1d1a" stroke-width="1"/>
@@ -72,7 +80,7 @@ function html(k) {
 
 const browser = await playwright.chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1, colorScheme: "light" });
-for (const k of KARTEN) {
+for (const k of KARTEN.filter((k) => !NUR || k.out.includes(NUR))) {
   const out = fileURLToPath(new URL(k.out, import.meta.url));
   await page.setContent(html(k));
   await page.screenshot({ path: out });

@@ -3,7 +3,8 @@
 // feinem Rahmen; der aktive (aria-current) ist markiert, und zwar invers (Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite):
 // «Das Dritte Rad» im Rad, «Ornament Cloud» auf allen anderen Seiten. Auf der Website stehen beide Links in einer Farbe (hell Anthrazit, dunkel helles
 // Sonnengelb) mit einer feinen Linie darunter (Wunsch vom 2. Oktober 2026, 19:00 UTC); das Dritte Rad behält Orange und Violett und hat keine Linie.
-// Ausgenommen sind ORMA (eigene App, Trennung nach §14), die drei Werke im Vollbild und die Weiterleitung auf die frühere Adresse von ORNA.
+// Ausgenommen sind ORMA (eigene App, Trennung nach §14), die drei Werke im Vollbild, die Weiterleitung auf die frühere Adresse von ORNA
+// und die für sich stehende Seite der Analyse «Allgemeines, Konkretes und Metastabilität» (5. Oktober 2026).
 //   node --experimental-strip-types --no-warnings --test tests/navigation.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -15,6 +16,7 @@ const AUSNAHMEN = [
   ["ORMA (eigene App)", /^(alpha\/orma|src\/orma)\//],
   ["Werke im Vollbild", /^werke\//],
   ["Weiterleitung auf die frühere Adresse von ORNA", /^portfolio\/rad-von-zeit-und-raum\//],
+  ["Analyse «Allgemeines, Konkretes und Metastabilität», steht für sich (5. Oktober 2026)", /^alpha\/metastabilitaet\//],
 ];
 const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git"]);
 const walk = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e) =>
