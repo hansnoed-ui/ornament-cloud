@@ -55,5 +55,7 @@ export const L = {
   lehmannY: "Verzeitlichung: Die gelernte Unterscheidung bleibt wirksam. Das zweite Sehen kann nicht mehr zum ersten zurück.",
   duell: "Re‑entry: Die Unterscheidung kehrt in sich selbst zurück. Re‑exit: In den Humanmedien tritt die Kunst aus ihrem eigenen Code aus – und holt die Menschen herein.",
   podest: "Alle drei erschliessen Raum und Zeit – jeder auf seine Weise. Das Prüfraster vergibt keine Medaillen.",
+  duellYEntry: "Die Form läuft in sich zurück und oszilliert. Daraus entstehen Gedächtnis und ein Vorher/Nachher.",
+  duellYExit: "Gelingt die Kunst gegen ihre Kriterien, misst das nächste Werk an anderen. Der Kriterienwandel wirkt weiter.",
   reexitNur: "Re-exit gilt bei Lehmann nur für die Humanmedien: Kunst, Liebe, Religion – nicht für Wissenschaft, Recht oder Wirtschaft.",
 };

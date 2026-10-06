@@ -14,7 +14,7 @@ import { AUTOR, Abschnitt, Blase, Feld, Grundpunkte, Iris, Kasten, Knall, P, Pop
 import { L, Z } from "./zitate";
 
 // Zeitplan in Bildern (30 fps). Die Szenen überlappen um UEBER Bilder: die nächste öffnet sich mit einer Kreisblende über der vorigen.
-const D = { titel: 210, raster: 300, luhmann: 420, baecker: 420, lehmann: 450, xyLuhmann: 330, xyBaecker: 330, xyLehmann: 330, duell: 270, differenzen: 420, pointe: 300, schluss: 270 };
+const D = { titel: 210, raster: 300, luhmann: 420, baecker: 420, lehmann: 450, xyLuhmann: 330, xyBaecker: 330, xyLehmann: 330, duell: 390, differenzen: 420, pointe: 300, schluss: 270 };
 const UEBER = 18;
 /** das Signet am Schluss bleibt nach seiner Animation noch 2 s stehen (Wunsch vom 6. Oktober 2026) */
 const OUTRO_LANG = OUTRO + 60;
@@ -450,9 +450,16 @@ const Duell: React.FC = () => {
           <path d="M410 175 l-30 -20 v40z" fill={P.koral} opacity={f > 98 ? 1 : 0} />
         </svg>
       </Feld>
-      <Knall p={pop(f, 50, 220)} x={295} y={860} r={190} farbe={P.tuerkis} innen={P.gelb} text="RE-ENTRY!" groesse={50} textfarbe={P.weiss} drehung={-8} />
-      <Knall p={pop(f, 100, 220)} x={785} y={860} r={190} farbe={P.koral} innen={P.gelb} text="RE-EXIT!" groesse={62} textfarbe={P.weiss} drehung={7} />
-      <Kasten f={f} a={120} top={1050} groesse={40}>{L.duell}</Kasten>
+      <Knall p={pop(f, 50, 220)} x={295} y={780} r={150} farbe={P.tuerkis} innen={P.gelb} text="RE-ENTRY!" groesse={42} textfarbe={P.weiss} drehung={-8} />
+      <Knall p={pop(f, 100, 220)} x={785} y={780} r={150} farbe={P.koral} innen={P.gelb} text="RE-EXIT!" groesse={50} textfarbe={P.weiss} drehung={7} />
+      {/* Y explizit (Wunsch vom 6. Oktober 2026): worin bei re-entry und bei re-exit die Verzeitlichung liegt */}
+      {[L.duellYEntry, L.duellYExit].map((t, i) => (
+        <div key={i} style={{ position: "absolute", left: 70 + i * 490, top: 905, width: 450, opacity: ein(f, 130 + i * 25), transform: `translateY(${interpolate(f, [130 + i * 25, 146 + i * 25], [20, 0], klemm)}px)` }}>
+          <div style={{ display: "inline-block", padding: "6px 14px", background: P.rot, border: `5px solid ${P.ink}`, ...fett(24, { color: P.weiss, textTransform: "uppercase", letterSpacing: "0.05em" }) }}>Y · Verzeitlichung</div>
+          <div style={fett(28, { marginTop: 10, lineHeight: 1.18 })}>{t}</div>
+        </div>
+      ))}
+      <Kasten f={f} a={185} top={1140} groesse={36}>{L.duell}</Kasten>
     </Grundpunkte>
   );
 };
