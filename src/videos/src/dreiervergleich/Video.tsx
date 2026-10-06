@@ -240,7 +240,7 @@ const Lehmann: React.FC = () => {
             <svg width="220" height="210" viewBox="-10 -10 120 115"><path d="M50 0 L62 36 L100 38 L70 60 L80 98 L50 76 L20 98 L30 60 L0 38 L38 36 Z" fill={P.gelb} stroke={P.ink} strokeWidth="6" strokeLinejoin="round" /></svg>
             <div style={fett(36, { textAlign: "center", marginTop: -10 })}>gelungen</div>
           </div>
-          <Kasten f={f} a={150} top={900} groesse={48}>{Z.reexit}</Kasten>
+          <Kasten f={f} a={150} top={900} groesse={48} klein={L.reexitNur}>{Z.reexit}</Kasten>
         </Abschnitt>
         {/* c · BRUCH!, BRUCH!, BRUCH! – jedes Mal blasser */}
         <Abschnitt f={f} a={290} b={450}>
@@ -418,10 +418,16 @@ const Duell: React.FC = () => {
       {/* rechts: die Kunst tritt aus ihrem Code aus (Lehmann) */}
       <Feld x={560} y={200} w={450} h={520} farbe={P.weiss}>
         <div style={fett(28, { position: "absolute", left: 20, top: 16 })}><span style={{ background: AUTOR.lehmann.farbe, padding: "2px 8px" }}>Lehmann</span></div>
-        <div style={{ position: "absolute", left: 70, top: 170, width: 220, height: 220, border: `10px solid ${P.ink}`, ...fett(30, { display: "grid", placeItems: "center" }) }}>Code</div>
+        <div style={{ position: "absolute", left: 80, top: 80, width: 190, height: 190, border: `10px solid ${P.ink}`, ...fett(30, { display: "grid", placeItems: "center" }) }}>Code</div>
+        {/* re-exit gilt bei Lehmann nur für die Humanmedien (Hinweis von Christian, 6. Oktober 2026) */}
+        <div style={{ position: "absolute", left: 24, right: 24, top: 315, opacity: ein(f, 105) }}>
+          <div style={{ display: "inline-block", padding: "6px 12px", background: P.koral, border: `5px solid ${P.ink}`, ...fett(24, { textTransform: "uppercase", letterSpacing: "0.04em" }) }}>nur in Humanmedien</div>
+          <div style={fett(28, { marginTop: 10 })}>Kunst · Liebe · Religion</div>
+          <div style={fett(24, { marginTop: 6, color: P.grau, textDecoration: "line-through", textDecorationThickness: 3 })}>Wissenschaft · Recht · Wirtschaft</div>
+        </div>
         <svg width="436" height="546" viewBox="0 0 450 560" style={{ position: "absolute", inset: 0 }}>
-          <path d={`M305 290 H${305 + 105 * interpolate(f, [70, 100], [0, 1], klemm)}`} stroke={P.koral} strokeWidth="14" />
-          <path d="M410 290 l-30 -20 v40z" fill={P.koral} opacity={f > 98 ? 1 : 0} />
+          <path d={`M285 175 H${285 + 125 * interpolate(f, [70, 100], [0, 1], klemm)}`} stroke={P.koral} strokeWidth="14" />
+          <path d="M410 175 l-30 -20 v40z" fill={P.koral} opacity={f > 98 ? 1 : 0} />
         </svg>
       </Feld>
       <Knall p={pop(f, 50, 220)} x={295} y={860} r={190} farbe={P.tuerkis} innen={P.gelb} text="RE-ENTRY!" groesse={50} textfarbe={P.weiss} drehung={-8} />

@@ -52,5 +52,6 @@ export const L = {
   lehmannX: "Verräumlichung: Das Vergleichsmodell stellt Werk, Medium und Reflexion verschiedener Epochen nebeneinander.",
   lehmannZeilen: ["Stil gelöst", "Werk negiert", "neu gekoppelt"],
   lehmannY: "Verzeitlichung: Die gelernte Unterscheidung bleibt wirksam. Das zweite Sehen kann nicht mehr zum ersten zurück.",
-  duell: "Re-entry: Die Unterscheidung kehrt in sich selbst zurück. Re-exit: Die Kunst tritt aus ihrem eigenen Code aus – und holt die Menschen herein.",
+  duell: "Re‑entry: Die Unterscheidung kehrt in sich selbst zurück. Re‑exit: In den Humanmedien tritt die Kunst aus ihrem eigenen Code aus – und holt die Menschen herein.",
+  reexitNur: "Re-exit gilt bei Lehmann nur für die Humanmedien: Kunst, Liebe, Religion – nicht für Wissenschaft, Recht oder Wirtschaft.",
 };

@@ -106,7 +106,7 @@ Intro und Outro sind das Signet der Vorlage im Pop-Stil (`Signet` mit `stil`; oh
    Lehmann (Werk · Medium · Reflexion, re-exit, «BRUCH!» wird blasser)
 5.–7. Raum und Zeit je Autor: Luhmann (Objekte verlassen ihre Stellen / Stellen verlassen ihre Objekte; die Y-Texte sagen jeweils, worin die Verzeitlichung liegt), Baecker (Form auf einen Blick / re-entry, Oszillation, Gedächtnis),
    Lehmann (Vergleichsmodell / Erfahrung lernt)
-8. Duell: RE-ENTRY! gegen RE-EXIT!
+8. Duell: RE-ENTRY! gegen RE-EXIT! (re-exit markiert: bei Lehmann nur in den Humanmedien Kunst, Liebe, Religion; nicht Wissenschaft, Recht, Wirtschaft)
 9. Differenzen: Lehmann → Luhmann (keine schlichte Wahl «mit» oder «ohne Menschen»), Lehmann → Baecker (Rezension 2008)
 10. Siegertreppchen sackt zusammen: kein philosophisches Ranking; 11. Die offene Frage; 12. Outro
 
