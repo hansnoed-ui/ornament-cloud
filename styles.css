@@ -226,15 +226,9 @@ h1 {
 
 /* Bei reduzierter Bewegung nur das Standbild zeigen */
 @media (prefers-reduced-motion: reduce) {
-  .thumb video:not(.beitrag-video) {
+  .thumb video {
     display: none;
   }
-}
-
-/* Video-Beitrag auf «Web» (6. Oktober 2026): bleibt auch bei «weniger Bewegung» sichtbar, startet dann aber nicht von selbst */
-.thumb .beitrag-video {
-  object-fit: contain;            /* 9 : 16 ganz im Rahmen 4 : 5, seitlich Fläche */
-  background: var(--surface);
 }
 
 .card--b .thumb { background: var(--thumb-b); }

@@ -295,7 +295,7 @@ await check("Menü führt zu den Seiten: Zettelkasten direkt in den Zettelkasten
 });
 
 // ---------- Web ----------
-await check("Web: das Comic-Video (9 : 16, ganz im Rahmen 4 : 5) spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt; bei «weniger Bewegung» nicht (6. Oktober 2026)", async () => {
+await check("Videoseite: das Comic-Video (9 : 16) spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt; bei «weniger Bewegung» nicht (6. Oktober 2026)", async () => {
   for (const reducedMotion of ["no-preference", "reduce"]) {
     const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 }, reducedMotion });
     await ctx.addInitScript(() => {
@@ -306,14 +306,14 @@ await check("Web: das Comic-Video (9 : 16, ganz im Rahmen 4 : 5) spielt von selb
     });
     const page = await ctx.newPage();
     await page.goto(origin + "/web/");
-    const v = page.locator(".beitrag-video");
+    await page.locator("main .card").first().getByRole("link", { name: "Öffnen" }).click();
+    await page.waitForURL(/\/web\/poststrukturalismus\/$/);
+    const v = page.locator(".erklaervideo video");
     assert.equal(await v.evaluate((e) => e.muted), true, "stumm");
     assert.equal(await v.evaluate((e) => e.preload), "none");
-    const t = await box(page.locator("main .card--video .thumb"));
-    assert.ok(Math.abs(t.h / t.w - 5 / 4) < 0.01, "Rahmen im Format 4 : 5");
-    assert.equal(await v.evaluate((e) => getComputedStyle(e).objectFit), "contain", "das Hochformat wird ganz gezeigt, nicht beschnitten");
-    await page.waitForTimeout(300);
-    assert.equal((await page.evaluate(() => window.__video)).play, 0, "ausserhalb des Bildes spielt nichts");
+    const b = await box(v);
+    assert.ok(Math.abs(b.h / b.w - 16 / 9) < 0.02, "Hochformat 9 : 16");
+    await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
     await v.scrollIntoViewIfNeeded();
     if (reducedMotion === "reduce") {
       await page.waitForTimeout(500);
@@ -330,17 +330,18 @@ await check("Web: das Comic-Video (9 : 16, ganz im Rahmen 4 : 5) spielt von selb
   }
 });
 
-await check("Web: vier Karten, drei mit Bild (640 × 800, dunkel), die beiden Räder nebeneinander; die Karten führen zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld", async () => {
+await check("Web: vier Karten mit Bild (640 × 800), zuoberst das Comic-Video, drei in einer Reihe; die Karten führen zur Videoseite, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
   const errors = fehler(page);
   await page.goto(origin + "/web/");
   await page.locator("main img").last().scrollIntoViewIfNeeded();
   await page.waitForFunction(() => [...document.querySelectorAll("main img")].every((i) => i.complete && i.naturalWidth > 0));
-  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), [[640, 800], [640, 800], [640, 800]]);
+  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), [[640, 800], [640, 800], [640, 800], [640, 800]]);
   const ys = await page.locator("main .card").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().y)));
   assert.deepEqual(ys.length, 4);
   assert.equal(ys[0], ys[1], "nebeneinander");
+  assert.equal(ys[1], ys[2], "drei in einer Reihe");
   const t = await box(page.locator("main .thumb").first());
   assert.ok(Math.abs(t.h / t.w - 5 / 4) < 0.01, "Bild im Format 4 : 5");
   // die Karte nach ihrer Überschrift wählen (der Text des Dritten Rads nennt auch OMNA COLOR)
