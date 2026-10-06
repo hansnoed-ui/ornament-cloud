@@ -15,11 +15,13 @@ import { L, Z } from "./zitate";
 // Zeitplan in Bildern (30 fps). Die Szenen überlappen um UEBER Bilder: die nächste öffnet sich mit einer Kreisblende über der vorigen.
 const D = { titel: 210, raster: 300, luhmann: 420, baecker: 420, lehmann: 450, xyLuhmann: 330, xyBaecker: 330, xyLehmann: 330, duell: 270, differenzen: 420, pointe: 300, schluss: 270 };
 const UEBER = 18;
+/** das Signet am Schluss bleibt nach seiner Animation noch 2 s stehen (Wunsch vom 6. Oktober 2026) */
+const OUTRO_LANG = OUTRO + 60;
 export const T = (() => {
   const t: Record<string, number> = { intro: 0 };
   let a = INTRO - UEBER;
   for (const [k, d] of Object.entries(D)) { t[k] = a; a += d - UEBER; }
-  t.signet = a; t.ende = a + OUTRO;
+  t.signet = a; t.ende = a + OUTRO_LANG;
   return t as Record<keyof typeof D | "intro" | "signet" | "ende", number>;
 })();
 
@@ -70,8 +72,11 @@ const Raster: React.FC = () => {
             <div key={i} style={{ position: "absolute", left: 40 + (i % 3) * 130, top: 110 + Math.floor(i / 3) * 130, width: 110, height: 110, border: `6px solid ${P.ink}`, background: i === 4 && zurueck ? P.gelb : P.weiss, ...(i === 4 && zurueck ? {} : benday("rgba(23,71,201,.18)", 3, 12)) }} />
           ))}
           <div style={{ position: "absolute", left: 40 + 130 + 30, top: 110 + 130 + 30 - weg * 160, width: 50, height: 50, borderRadius: "50%", background: P.rot, border: `6px solid ${P.ink}` }} />
-          <div style={fett(34, { position: "absolute", left: 24, right: 24, top: 400, lineHeight: 1.15, opacity: ein(f, 40) })}>{Z.x}:</div>
-          <div style={fett(26, { fontWeight: 600, position: "absolute", left: 24, right: 24, top: 448, lineHeight: 1.2, opacity: ein(f, 50) })}>{Z.xText}</div>
+          {/* Begriff und Erklärung untereinander, unten im Feld verankert (der Begriff darf umbrechen, ohne die Erklärung zu überdecken) */}
+          <div style={{ position: "absolute", left: 24, right: 24, bottom: 20, display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={fett(31, { lineHeight: 1.1, opacity: ein(f, 40) })}>{Z.x}:</div>
+            <div style={fett(26, { fontWeight: 600, lineHeight: 1.2, opacity: ein(f, 50) })}>{Z.xText}</div>
+          </div>
         </Feld>
         {/* Y */}
         <Feld x={560} y={210} w={450} h={560} farbe={P.weiss}>
@@ -80,8 +85,11 @@ const Raster: React.FC = () => {
             const k = interpolate(f, [70 + i * 9, 81 + i * 9], [0, 60], klemm);
             return <div key={i} style={{ position: "absolute", left: 40 + i * 62, top: 140, width: 34, height: 200, background: [P.koral, P.gelb, P.tuerkis, P.blau, P.rot, P.himmel][i], border: `6px solid ${P.ink}`, borderRadius: 6, transformOrigin: "100% 100%", transform: `rotate(${k}deg)` }} />;
           })}
-          <div style={fett(34, { position: "absolute", left: 24, right: 24, top: 400, lineHeight: 1.15, opacity: ein(f, 90) })}>{Z.y}:</div>
-          <div style={fett(26, { fontWeight: 600, position: "absolute", left: 24, right: 24, top: 448, lineHeight: 1.2, opacity: ein(f, 100) })}>{Z.yText}</div>
+          {/* Begriff und Erklärung untereinander, unten im Feld verankert (der Begriff darf umbrechen, ohne die Erklärung zu überdecken) */}
+          <div style={{ position: "absolute", left: 24, right: 24, bottom: 20, display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={fett(31, { lineHeight: 1.1, opacity: ein(f, 90) })}>{Z.y}:</div>
+            <div style={fett(26, { fontWeight: 600, lineHeight: 1.2, opacity: ein(f, 100) })}>{Z.yText}</div>
+          </div>
         </Feld>
         <Kasten f={f} a={150} top={840} groesse={48} klein={Z.anders}>«{Z.zeit}»</Kasten>
       </AbsoluteFill>
@@ -257,9 +265,9 @@ const XY: React.FC<{ autor: { name: string; farbe: string }; punkte: string; x: 
     <Grundpunkte farbe={punkte}>
       <Schild f={f} farbe={autor.farbe}>{autor.name} · Raum und Zeit</Schild>
       <div style={{ opacity: ein(f, 6, 12) }}>
-        <Feld x={70} y={170} w={940} h={400}>{x(f)}{kopf("X · Verräumlichung", P.blau)}</Feld>
+        <Feld x={70} y={170} w={940} h={370}>{x(f)}{kopf("X · Verräumlichung", P.blau)}</Feld>
       </div>
-      <Kasten f={f} a={30} top={590} groesse={38}>{xText}</Kasten>
+      <Kasten f={f} a={30} top={560} groesse={38}>{xText}</Kasten>
       <div style={{ opacity: ein(f, 150, 12), transform: `translateY(${interpolate(f, [150, 166], [30, 0], klemm)}px)` }}>
         <Feld x={70} y={790} w={940} h={360}>{y(f - 150)}{kopf("Y · Verzeitlichung", P.rot)}</Feld>
       </div>
@@ -322,11 +330,11 @@ const XYBaecker: React.FC = () => (
       return (
         <>
           {Array.from({ length: zeilen }, (_, i) => <div key={i} style={{ position: "absolute", left: 50, top: 90 + i * 44, height: 16, width: interpolate(f, [10 + i * 8, 18 + i * 8], [0, 300 - (i % 3) * 50], klemm), background: "#00000030", borderRadius: 8 }} />)}
-          <div style={fett(26, { position: "absolute", left: 50, top: 350, color: P.dunkel })}>nacheinander</div>
-          <svg width="460" height="320" viewBox="0 0 460 320" style={{ position: "absolute", left: 440, top: 40, transform: `scale(${schnapp})`, transformOrigin: "50% 60%" }}>
+          <div style={fett(26, { position: "absolute", left: 50, top: 312, color: P.dunkel })}>nacheinander</div>
+          <svg width="460" height="320" viewBox="0 0 460 320" style={{ position: "absolute", left: 440, top: 10, transform: `scale(${schnapp})`, transformOrigin: "50% 60%" }}>
             {[[30, 290, 400, 250], [90, 230, 280, 170], [150, 170, 160, 100]].map(([x, y, w, h], i) => <path key={i} d={`M${x} ${y} H${x + w} V${y - h}`} fill="none" stroke={[P.blau, P.rot, P.ink][i]} strokeWidth="12" />)}
           </svg>
-          <div style={fett(26, { position: "absolute", left: 600, top: 350, color: P.dunkel, opacity: ein(f, 80) })}>auf einen Blick</div>
+          <div style={fett(26, { position: "absolute", left: 600, top: 312, color: P.dunkel, opacity: ein(f, 80) })}>auf einen Blick</div>
         </>
       );
     }}
@@ -463,7 +471,7 @@ const Differenzen: React.FC = () => {
           <div style={{ position: "absolute", left: 470 + Math.sin(f / 9) * 30, top: 380 + Math.cos(f / 11) * 20, transform: `scale(${pop(f, 250)})` }}>
             <svg width="300" height="300" viewBox="0 0 300 300"><circle cx="120" cy="120" r="90" fill="rgba(127,211,255,.45)" stroke={P.ink} strokeWidth="16" /><path d="M185 185 L270 270" stroke={P.ink} strokeWidth="30" strokeLinecap="round" /></svg>
           </div>
-          <Stempel f={f} a={290} x={440} y={250} text="TEILWEISE UNTERBESTIMMT" farbe={P.rot} groesse={30} drehung={8} />
+          <Stempel f={f} a={290} x={480} y={292} text="TEILWEISE UNTERBESTIMMT" farbe={P.rot} groesse={28} drehung={8} />
           <Kasten f={f} a={265} top={880} groesse={46} klein={Z.rezensionTitel}>«{Z.rezension}»</Kasten>
         </Abschnitt>
       </AbsoluteFill>
@@ -490,7 +498,7 @@ const Pointe: React.FC = () => {
           );
         })}
         <Knall p={pop(f, 118, 220)} x={540} y={300} r={210} farbe={P.rot} textfarbe={P.gelb} text="KRACH!" groesse={84} drehung={-4} />
-        <Stempel f={f} a={150} x={150} y={850} text={Z.ranking.toUpperCase()} farbe={P.blau} groesse={48} drehung={-5} />
+        <Stempel f={f} a={150} x={110} y={850} text={Z.ranking.toUpperCase()} farbe={P.blau} groesse={40} drehung={-5} />
         <Kasten f={f} a={30} b={180} top={1020} groesse={50}>{Z.keinRang}.</Kasten>
         <Kasten f={f} a={185} top={1000} groesse={42} klein={<>{Z.mitpruefen}.</>}>{Z.passung}</Kasten>
       </AbsoluteFill>
@@ -530,6 +538,6 @@ export const DreiervergleichVideo: React.FC = () => (
     {SZENEN.map(([k, Szene], i) => (
       <Sequence key={k} from={T[k]} durationInFrames={D[k]}><Iris dauer={UEBER} mitte={ECKEN[i % ECKEN.length]}><Szene /></Iris></Sequence>
     ))}
-    <Sequence from={T.signet} durationInFrames={OUTRO}><Iris dauer={UEBER} mitte={[540, 720]}><PopOutro /></Iris></Sequence>
+    <Sequence from={T.signet} durationInFrames={OUTRO_LANG}><Iris dauer={UEBER} mitte={[540, 720]}><PopOutro /></Iris></Sequence>
   </Grund>
 );

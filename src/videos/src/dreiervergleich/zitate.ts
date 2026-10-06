@@ -45,12 +45,12 @@ export const Z = {
  *  Baecker, Form und Formen der Kommunikation (2005) und Studien zur nächsten Gesellschaft (2007), nach Spencer-Browns Laws of Form (re-entry, Oszillation, Gedächtnis);
  *  Lehmann, Avantgarde heute (2006), Ästhetische Erfahrung (2016), Kunst – Liebe – Religion. Theorie der Humanmedien (2025; re-exit, Einschluss der Subjekte). */
 export const L = {
-  luhmannX: "Raum heisst bei Luhmann: Objekte können ihre Stellen verlassen. Die Stelle bleibt – man kann zu ihr zurückkehren.",
-  luhmannY: "Zeit heisst umgekehrt: Die Stellen verlassen ihre Objekte. Jede Gegenwart vergeht, weiter geht es nur im Anschluss.",
-  baeckerX: "Die Form zeigt auf einer Fläche, was ein Text nacheinander erzählen müsste: Unterscheidungen, Kontexte, Beobachter.",
-  baeckerY: "Re-entry: Die Unterscheidung tritt in sich selbst wieder ein. Sie oszilliert – daraus werden Gedächtnis und Zeit.",
-  lehmannX: "Das Vergleichsmodell stellt Werk, Medium und Reflexion verschiedener Epochen nebeneinander.",
+  luhmannX: "Verräumlichung: Objekte können ihre Stellen verlassen, die Stelle bleibt. Zu ihr kann man zurückkehren.",
+  luhmannY: "Verzeitlichung: Die Gegenwart verlässt ihre Stelle und kommt nicht zurück. Was geschehen ist, bindet, was als Nächstes anschliessen kann.",
+  baeckerX: "Verräumlichung: Die Form zeigt auf einer Fläche, was ein Text nacheinander erzählen müsste: Unterscheidungen, Kontexte, Beobachter.",
+  baeckerY: "Verzeitlichung: Im Wiedereintritt erinnert die Form ihren eigenen Vollzug. Jeder Durchlauf verändert die Bedingungen des nächsten.",
+  lehmannX: "Verräumlichung: Das Vergleichsmodell stellt Werk, Medium und Reflexion verschiedener Epochen nebeneinander.",
   lehmannZeilen: ["Stil gelöst", "Werk negiert", "neu gekoppelt"],
-  lehmannY: "Ästhetische Erfahrung lernt: Wer eine Unterscheidung einmal gesehen hat, sieht beim nächsten Mal anders.",
+  lehmannY: "Verzeitlichung: Die gelernte Unterscheidung bleibt wirksam. Das zweite Sehen kann nicht mehr zum ersten zurück.",
   duell: "Re-entry: Die Unterscheidung kehrt in sich selbst zurück. Re-exit: Die Kunst tritt aus ihrem eigenen Code aus – und holt die Menschen herein.",
 };

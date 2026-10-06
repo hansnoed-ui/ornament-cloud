@@ -175,7 +175,7 @@ export const PopIntro: React.FC<{ kopf: Kopf }> = ({ kopf }) => {
   return (
     <Grundpunkte farbe="rgba(224,20,30,.55)">
       <Mittig><Signet tempo={2} stil={POPSIGNET} /></Mittig>
-      <div style={{ position: "absolute", left: 0, right: 0, top: 150, display: "flex", justifyContent: "center", opacity: ein(f, 6, 12), transform: `translateY(${interpolate(f, [6, 22], [-30, 0], klemm)}px)` }}>
+      <div style={{ position: "absolute", left: 0, right: 0, top: 78, display: "flex", justifyContent: "center", opacity: ein(f, 6, 12), transform: `translateY(${interpolate(f, [6, 22], [-30, 0], klemm)}px)` }}>
         <div style={{ background: P.gelb, border: `7px solid ${P.ink}`, padding: "20px 40px 16px", textAlign: "center" }}>
           <div style={fett(64, { letterSpacing: "0.12em", textTransform: "uppercase", lineHeight: 1 })}>{kopf.titel}</div>
           {kopf.unter?.length ? <div style={fett(32, { fontWeight: 600, letterSpacing: "0.06em", marginTop: 12 })}>{kopf.unter.join("  •  ")}</div> : null}
