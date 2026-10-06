@@ -295,7 +295,7 @@ await check("Menü führt zu den Seiten: Zettelkasten direkt in den Zettelkasten
 });
 
 // ---------- Web ----------
-await check("Web: das Comic-Video (4 : 5) spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt; bei «weniger Bewegung» nicht (6. Oktober 2026)", async () => {
+await check("Web: das Comic-Video (9 : 16, ganz im Rahmen 4 : 5) spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt; bei «weniger Bewegung» nicht (6. Oktober 2026)", async () => {
   for (const reducedMotion of ["no-preference", "reduce"]) {
     const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 }, reducedMotion });
     await ctx.addInitScript(() => {
@@ -310,7 +310,8 @@ await check("Web: das Comic-Video (4 : 5) spielt von selbst, sobald es zur Hälf
     assert.equal(await v.evaluate((e) => e.muted), true, "stumm");
     assert.equal(await v.evaluate((e) => e.preload), "none");
     const t = await box(page.locator("main .card--video .thumb"));
-    assert.ok(Math.abs(t.h / t.w - 5 / 4) < 0.01, "Video im Format 4 : 5");
+    assert.ok(Math.abs(t.h / t.w - 5 / 4) < 0.01, "Rahmen im Format 4 : 5");
+    assert.equal(await v.evaluate((e) => getComputedStyle(e).objectFit), "contain", "das Hochformat wird ganz gezeigt, nicht beschnitten");
     await page.waitForTimeout(300);
     assert.equal((await page.evaluate(() => window.__video)).play, 0, "ausserhalb des Bildes spielt nichts");
     await v.scrollIntoViewIfNeeded();
