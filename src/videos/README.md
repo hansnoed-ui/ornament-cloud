@@ -90,6 +90,28 @@ Namen, ihre Operationen als Gegenstände; Lyotard (Leugnungsbeispiel) und Butler
 
 `npx remotion render DoppelpruefungVideo out/doppelpruefung.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
 
+## «Drei im Doppelspalt» (6. Oktober 2026)
+
+Gut 2 Minuten, nur **3:4** (1080 × 1440, `DreiervergleichVideo`), ohne Ton. Wie «Liebling …», aber farblich anders und mit viel Roy Lichtenstein
+(Strahlenkranz, Knall mit Lautwort, Gedankenwolke, Stempel; Wunsch von Christian): zeigt witzig und auf den Punkt, wie die Vergleichende Analyse
+«Nebeneinander, Nacheinander | Luhmann, Baecker, Lehmann» (Erweiterte Arbeitsfassung, 5. Oktober 2026) die drei Zugänge prüft und wo sie sich unterscheiden.
+Quelle `src/dreiervergleich/`: `Video.tsx` (Szenen), `Pop.tsx` (Palette und Lichtenstein-Bausteine; jeder Autor in seiner Farbe aus der Streugrafik der Studie:
+Luhmann türkis, Baecker gelb, Lehmann korallrot; Grundbausteine aus `doppelpruefung/Comic.tsx`), `zitate.ts` (alle Sätze wörtlich aus der Studie, mit Seitenangabe;
+gegen den PDF-Text geprüft). Autoren nur als Namen, ihre Begriffe als Gegenstände.
+
+0. Intro «Doppelspalt», darunter «Luhmann • Baecker • Lehmann»; Titel mit drei Namenskarten und «ZACK!»
+1. Das Prüfraster: X (Bestimmbare Rückkehr), Y (Folgenreicher Vollzug), «Zeit ist die Bedingung dafür, dass es anders weitergehen kann»
+2. Luhmann: Information · Mitteilung · Verstehen, Gedankenwolke «Verstehen ist zudem nicht Zustimmung.», Ereignisse vergehen, Entscheidung zweimal gestempelt
+3. Baecker: Formzeichen, «Das Wort «nächste» begründet keinen hohen Y-Wert.», die grafische Eleganz einer Form («SCHICK!»)
+4. Lehmann: Werk · Medium · Reflexion, re-exit, «BRUCH!» wird mit jeder Wiederholung blasser
+5. Differenzen: Lehmann → Luhmann (keine schlichte Wahl «mit» oder «ohne Menschen»), Lehmann → Baecker (Rezension 2008)
+6. Gegenprobe: dieselbe Klanginstallation – «Dies belegt zunächst die Übernahme von Worten.»
+7. Streugrafik: die drei Punkte «zur Lesbarkeit» auseinandergezogen, dann «KORREKTUR»: gleiche Quadrantenlage, verschiedene Prüfleistungen
+8. Siegertreppchen sackt zusammen: kein philosophisches Ranking; das Raster prüft sich selbst mit
+9. Die offene Frage; 10. Outro
+
+`npx remotion render DreiervergleichVideo out/dreiervergleich.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
+
 ## Rendern ohne Internetzugang zu remotion.media
 
 Remotion lädt sonst einen eigenen Browser herunter; stattdessen einen vorhandenen angeben:

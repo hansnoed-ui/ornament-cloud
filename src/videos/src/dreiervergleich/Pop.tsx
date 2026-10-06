@@ -1,0 +1,124 @@
+// Pop-Art-Bausteine für das Video «Drei im Doppelspalt» (6. Oktober 2026, Wunsch von Christian: wie «Liebling …», aber farblich leicht anders, viel Roy Lichtenstein).
+// Die Grundbausteine (Federn, Blenden, Ben-Day-Punkte, Sprechblase) kommen aus ../doppelpruefung/Comic; hier die eigene Palette und die Lichtenstein-Elemente:
+// Strahlenkranz, Knall mit Lautwort, Gedankenwolke, Stempel, Erzählkasten mit Auf- und Abtritt.
+// Farben: jeder Autor in seiner Farbe aus der Streugrafik der Studie (Luhmann türkis, Baecker gelb, Lehmann korallrot), dazu Lichtenstein-Blau und -Rot;
+// Grund ein warmes Papierweiss statt reinem Weiss. Nur 3:4 (1080 × 1440).
+import React from "react";
+import { AbsoluteFill, interpolate } from "remotion";
+import { SANS, SERIF } from "../vorlage/stil";
+import { benday, ein, klemm, pop } from "../doppelpruefung/Comic";
+
+export const P = {
+  tuerkis: "#12b5a9", gelb: "#ffd21f", koral: "#ff5b4a", blau: "#1747c9", rot: "#e0141e", himmel: "#7fd3ff",
+  ink: "#000000", papier: "#fff9ee", weiss: "#ffffff", grau: "#8a8580", dunkel: "#3a3734",
+};
+export const AUTOR = {
+  luhmann: { name: "Niklas Luhmann", farbe: P.tuerkis },
+  baecker: { name: "Dirk Baecker", farbe: P.gelb },
+  lehmann: { name: "Harry Lehmann", farbe: P.koral },
+};
+
+export const fett = (groesse: number, extra: React.CSSProperties = {}): React.CSSProperties => ({ fontFamily: SANS, fontWeight: 700, fontSize: groesse, ...extra });
+
+/** Grund: warmes Papier mit groben Ben-Day-Punkten in einer Farbe */
+export const Grundpunkte: React.FC<{ farbe?: string; children?: React.ReactNode }> = ({ farbe = "rgba(23,71,201,.20)", children }) => (
+  <AbsoluteFill style={{ backgroundColor: P.papier }}>
+    <AbsoluteFill style={benday(farbe, 4.6, 21)} />
+    {children}
+  </AbsoluteFill>
+);
+
+/** Strahlenkranz hinter einem Knall (abwechselnd zwei Farben), dreht sich langsam */
+export const Strahlen: React.FC<{ f: number; cx: number; cy: number; a: string; b: string; n?: number }> = ({ f, cx, cy, a, b, n = 24 }) => {
+  const r = 1600, w = (Math.PI * 2) / n;
+  return (
+    <svg width="1080" height="1440" style={{ position: "absolute", inset: 0 }}>
+      <rect width="1080" height="1440" fill={a} />
+      <g transform={`rotate(${f * 0.15} ${cx} ${cy})`}>
+        {Array.from({ length: n / 2 }, (_, i) => {
+          const s = i * 2 * w;
+          return <path key={i} d={`M${cx} ${cy} L${cx + r * Math.cos(s)} ${cy + r * Math.sin(s)} L${cx + r * Math.cos(s + w)} ${cy + r * Math.sin(s + w)} Z`} fill={b} />;
+        })}
+      </g>
+    </svg>
+  );
+};
+
+/** gezackter Knall mit Lautwort, wie «WHAAM!» */
+export const Knall: React.FC<{ p: number; x: number; y: number; r?: number; farbe?: string; text: string; groesse?: number; textfarbe?: string; drehung?: number; opacity?: number }> = ({ p, x, y, r = 200, farbe = P.gelb, text, groesse = 84, textfarbe = P.rot, drehung = -6, opacity = 1 }) => {
+  const n = 22;
+  const pkt = Array.from({ length: n }, (_, i) => { const rr = i % 2 ? r * 0.62 : r * (0.95 + ((i * 37) % 9) / 40), w = (i / n) * Math.PI * 2; return `${rr * Math.cos(w)},${rr * 0.78 * Math.sin(w)}`; }).join(" ");
+  return (
+    <div style={{ position: "absolute", left: x - r, top: y - r, width: 2 * r, height: 2 * r, transform: `scale(${p}) rotate(${drehung}deg)`, opacity }}>
+      <svg width={2 * r} height={2 * r} viewBox={`${-r} ${-r} ${2 * r} ${2 * r}`} style={{ position: "absolute", inset: 0, overflow: "visible" }}>
+        <polygon points={pkt} fill={P.ink} transform="translate(12 12)" />
+        <polygon points={pkt} fill={farbe} stroke={P.ink} strokeWidth="9" strokeLinejoin="round" />
+      </svg>
+      <div style={fett(groesse, { position: "absolute", inset: 0, display: "grid", placeItems: "center", color: textfarbe, letterSpacing: "-0.02em", WebkitTextStroke: `4px ${P.ink}`, paintOrder: "stroke fill", fontStyle: "italic" })}>{text}</div>
+    </div>
+  );
+};
+
+/** Gedankenwolke wie in Lichtensteins Liebes-Comics (Wellenrand, kleine Bläschen darunter) */
+export const Wolke: React.FC<{ p: number; x: number; y: number; w: number; h: number; children: React.ReactNode; farbe?: string }> = ({ p, x, y, w, h, children, farbe = P.weiss }) => {
+  const bogen = 18, rx = w / 2, ry = h / 2;
+  const kreise = Array.from({ length: bogen }, (_, i) => { const t = (i / bogen) * Math.PI * 2; return [rx + rx * 0.92 * Math.cos(t), ry + ry * 0.86 * Math.sin(t)]; });
+  return (
+    <div style={{ position: "absolute", left: x, top: y, width: w, height: h + 120, transform: `scale(${p})`, transformOrigin: "30% 100%" }}>
+      <svg width={w} height={h + 120} style={{ position: "absolute", inset: 0, overflow: "visible" }}>
+        {kreise.map(([cx, cy], i) => <circle key={`s${i}`} cx={cx} cy={cy} r={Math.min(w, h) * 0.17} fill={P.ink} />)}
+        <ellipse cx={rx} cy={ry} rx={rx * 0.92 + 4} ry={ry * 0.86 + 4} fill={P.ink} />
+        {kreise.map(([cx, cy], i) => <circle key={`w${i}`} cx={cx} cy={cy} r={Math.min(w, h) * 0.17 - 8} fill={farbe} />)}
+        <ellipse cx={rx} cy={ry} rx={rx * 0.92} ry={ry * 0.86} fill={farbe} />
+        <circle cx={w * 0.22} cy={h + 30} r="26" fill={farbe} stroke={P.ink} strokeWidth="8" />
+        <circle cx={w * 0.14} cy={h + 88} r="15" fill={farbe} stroke={P.ink} strokeWidth="7" />
+      </svg>
+      <div style={{ position: "absolute", left: w * 0.12, right: w * 0.12, top: 0, height: h, display: "grid", placeItems: "center", textAlign: "center" }}>{children}</div>
+    </div>
+  );
+};
+
+/** Stempel: fällt gross herein und sitzt schräg */
+export const Stempel: React.FC<{ f: number; a: number; x: number; y: number; text: string; farbe?: string; groesse?: number; drehung?: number }> = ({ f, a, x, y, text, farbe = P.rot, groesse = 60, drehung = -9 }) => {
+  const p = pop(f, a, 260);
+  return (
+    <div style={{
+      position: "absolute", left: x, top: y, padding: "14px 30px", border: `10px solid ${farbe}`, borderRadius: 14, background: "rgba(255,255,255,.82)",
+      transform: `scale(${interpolate(p, [0, 1], [2.8, 1])}) rotate(${drehung}deg)`, opacity: f >= a ? 1 : 0, ...fett(groesse, { color: farbe, letterSpacing: "0.03em", whiteSpace: "nowrap" }),
+    }}>{text}</div>
+  );
+};
+
+/** Erzählkasten (gelb, schwarzer Rand) mit Auftritt ab a und Abtritt bis b; zitiert wird wörtlich aus der Studie */
+export const Kasten: React.FC<{ f: number; a: number; b?: number; top: number; groesse?: number; farbe?: string; children: React.ReactNode; klein?: React.ReactNode; links?: number }> = ({ f, a, b = 1e9, top, groesse = 44, farbe = P.gelb, children, klein, links = 70 }) => {
+  const o = Math.min(ein(f, a, 10), interpolate(f, [b - 10, b], [1, 0], klemm));
+  return (
+    <div style={{ position: "absolute", left: links, right: 70, top, opacity: o, transform: `translateY(${interpolate(f, [a, a + 14], [26, 0], klemm)}px)` }}>
+      <div style={{ display: "inline-block", background: farbe, border: `6px solid ${P.ink}`, padding: "18px 26px", boxShadow: `9px 9px 0 ${P.ink}`, ...fett(groesse, { fontWeight: 600, lineHeight: 1.22, color: P.ink, textWrap: "balance" }) }}>{children}</div>
+      {klein ? <div style={{ marginTop: 18, fontFamily: SERIF, fontStyle: "italic", fontSize: 34, color: P.dunkel }}>{klein}</div> : null}
+    </div>
+  );
+};
+
+/** Bildfeld mit dicker Kontur und hartem Schatten */
+export const Feld: React.FC<{ x: number; y: number; w: number; h: number; farbe?: string; style?: React.CSSProperties; children?: React.ReactNode }> = ({ x, y, w, h, farbe = P.weiss, style, children }) => (
+  <div style={{ position: "absolute", left: x, top: y, width: w, height: h, background: farbe, border: `7px solid ${P.ink}`, borderRadius: 6, boxShadow: `14px 14px 0 ${P.ink}`, boxSizing: "border-box", overflow: "hidden", ...style }}>{children}</div>
+);
+
+/** Namensschild eines Autors, schräg, in seiner Farbe */
+export const Schild: React.FC<{ f: number; a?: number; farbe: string; children: React.ReactNode; top?: number }> = ({ f, a = 0, farbe, children, top = 70 }) => {
+  const p = pop(f, a);
+  return (
+    <div style={{
+      position: "absolute", left: 70, top, ...fett(48, { letterSpacing: "-0.01em" }), background: farbe, border: `6px solid ${P.ink}`, padding: "10px 26px", boxShadow: `9px 9px 0 ${P.ink}`,
+      transform: `translateX(${interpolate(p, [0, 1], [-800, 0])}px) rotate(-2deg)`, ...benday("rgba(255,255,255,.28)", 3.5, 14), backgroundColor: farbe,
+    }}>{children}</div>
+  );
+};
+
+/** Abschnitt innerhalb einer Szene: sichtbar von a bis b, mit weichem Wechsel */
+export const Abschnitt: React.FC<{ f: number; a: number; b: number; children: React.ReactNode }> = ({ f, a, b, children }) => {
+  if (f < a - 1 || f > b + 1) return null;
+  const o = Math.min(interpolate(f, [a, a + 10], [0, 1], klemm), interpolate(f, [b - 10, b], [1, 0], klemm));
+  return <AbsoluteFill style={{ opacity: o }}>{children}</AbsoluteFill>;
+};
