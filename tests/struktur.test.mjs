@@ -286,3 +286,13 @@ test("Kontakt: «Fragen und Anmerkungen zur Website» unten auf allen Seiten mit
     assert.ok(lies(s).includes(`<footer class="zsz-fuss">`) && lies(s).includes(`<p>${satz}: ${MAIL}</p>`), s);
   }
 });
+
+test("OMNA COLOR: Rad im Entwurf A (6. Oktober 2026) – ohne Papierring und Körnung, durchsichtige Fugen, Nadeln als Zeiger, eckige Knöpfe", () => {
+  const html = lies("alpha/omna-color/index.html");
+  assert.ok(!html.includes('id="grain"') && !html.includes("var(--paper2)"), "kein Papierring, keine Körnung");
+  assert.match(html, /const FUGE = [\d.]+;/, "Felder mit gleich breiter, durchsichtiger Fuge");
+  assert.match(html, /build\(\$\("outer"\), 66, 104\);[\s\S]*build\(\$\("inner"\), 30, 60\);/, "zwei Ringe mit Luft dazwischen");
+  assert.equal([...html.matchAll(/<path class="tick" d="M 0 -\d+ V -\d+"/g)].length, 2, "zwei Nadeln als Zeiger");
+  assert.match(html, /button\.go \{[^}]*border-radius: 5px;/, "«Drehen» eckig mit leicht gerundeten Ecken");
+  assert.match(html, /\.again \{[^}]*border-radius: 5px;/, "«Noch einmal» ebenso");
+});
