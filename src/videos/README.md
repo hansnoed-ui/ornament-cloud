@@ -23,7 +23,7 @@ neues-video.mjs       Gerüst für ein neues Video
 
 ## Stil (Vorlage)
 
-- **Intro** (90 Bilder, 3 s): das Signet in kurzer Fassung, darüber eine Kopfzeile im Rot-Orange der Seite,
+- **Intro** (90 Bilder, 3 s; andere Bildhöhen mit `hoehe`, z. B. 1440 für 3:4): das Signet in kurzer Fassung, darüber eine Kopfzeile im Rot-Orange der Seite,
   z. B. `{ titel: "ORNA", unter: ["app", "web"] }` → «ORNA», darunter «app • web» (kleiner Punkt dazwischen)
 - **Outro** (180 Bilder, 6 s): das Signet in voller Länge – Schlaufe zeichnet sich, Punkt läuft, aus Kästchen werden
   die Buchstaben von «ornament.cloud», die dann zusammenrücken (Instrument Sans 400, 52 px, gesperrt; der Punkt im Rot-Orange)
@@ -66,6 +66,29 @@ ein Standbild aus dem Intro bei 2,6 s). Nach einer Änderung neu rendern (`npm r
 
 Namen, Zeichen, Paarungen und die Frage kommen unverändert aus den Daten von ORNA; die Achsen aus dem Prüfraster
 «Nebeneinander und Nacheinander», die Prüfdimensionen und die Sätze zum Feld wörtlich aus `src/doppelspalt/werkbericht.md`.
+
+## «Liebling, ich habe den Poststrukturalismus strukturiert» (6. Oktober 2026)
+
+Etwa 2 Minuten, **3:4** (1080 × 1440, `DoppelpruefungVideo`) und **9:16** (1080 × 1920, `DoppelpruefungHoch`; dieselbe Bühne mittig), ohne Ton, Comic-Stil mit etwas Roy Lichtenstein (Ben-Day-Punkte, Grundfarben, gelbe Erzählkästen; Wunsch von Christian): zeigt spielerisch, wie die Studie
+«Poststrukturalistische Theorie – Doppelprüfung» zwölf Positionen mit dem Prüfraster Nebeneinander / Nacheinander und dem
+Verteilapparat des Körpers prüft. Quelle `src/doppelpruefung/`: `Video.tsx` (Szenen), `Comic.tsx` (eigener Stil nur für dieses Video:
+dicke Konturen, harte Schatten, Punktraster, satte Farben), `zitate.ts` (alle Stellen wörtlich aus der Studie, mit Seitenangabe; gegen den
+PDF-Text geprüft). Intro und Outro sind das Signet der Vorlage (`Intro`/`Outro` mit `hoehe={1440}`). Theoretiker:innen erscheinen nur als
+Namen, ihre Operationen als Gegenstände; Lyotard (Leugnungsbeispiel) und Butler (Fall Reimer) nur als Punkte der Streugrafik, ohne Witz und Bild.
+
+0. Intro «Poststrukturalismus», darunter «Doppelprüfung • 12 Positionen»; dann der Titel: zwölf Karten liegen durcheinander und rasten in ein Raster ein
+1. Die Leitfrage in drei Sprechblasen
+2. Zwei Raster: Stempel «dieselbe Stelle?» (X), Dominosteine (Y), sieben Schranken (Verteilapparat)
+3. Zwölf Karten, Stempel «Begriff · Interpretation»
+4. Förderband mit acht Prüffragen, Zusatzprüfung mit drei Lämpchen
+5. Vier Miniaturen: Derrida (Unterschrift), Deleuze (AB AB A … B?), Foucault (Fenster, Register), Baudrillard (Ausstechform «Modell»)
+6. Streugrafik der zwölf Positionen
+7. Sieben Schranken am Beispiel von Foucaults Pestreglement
+8. Sichtbarkeit ≠ Gehör
+9. Die drei Schlussfragen
+10. Outro
+
+`npx remotion render DoppelpruefungVideo out/doppelpruefung.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
 
 ## Rendern ohne Internetzugang zu remotion.media
 

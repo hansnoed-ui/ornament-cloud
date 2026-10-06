@@ -56,18 +56,25 @@ export const Auszug: React.FC<{ kennzeile: React.ReactNode; text: string; hinwei
 export const INTRO = 90;    // Bilder (3 s)
 export const OUTRO = 180;   // Bilder (6 s)
 
-/** Intro: das Signet in kurzer Fassung (doppelt so schnell), mit Kopfzeile, am Ende ausgeblendet */
-export const Intro: React.FC<{ kopf: Kopf }> = ({ kopf }) => {
+/** Das Signet ist für 1920 px Höhe gezeichnet; bei anderen Formaten (z. B. 3:4, 1440 px) wird es mittig verschoben */
+const Mitte: React.FC<{ hoehe: number; children: React.ReactNode }> = ({ hoehe, children }) => (
+  <AbsoluteFill style={{ overflow: "hidden", backgroundColor: FARBE.grund }}>
+    <div style={{ position: "absolute", left: 0, width: 1080, height: 1920, top: (hoehe - 1920) / 2 }}>{children}</div>
+  </AbsoluteFill>
+);
+
+/** Intro: das Signet in kurzer Fassung (doppelt so schnell), mit Kopfzeile, am Ende ausgeblendet. hoehe: Bildhöhe des Videos (Standard 1920) */
+export const Intro: React.FC<{ kopf: Kopf; hoehe?: number }> = ({ kopf, hoehe = 1920 }) => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill style={{ opacity: interpolate(f, [INTRO - 12, INTRO], [1, 0], klemm) }}>
-      <Signet tempo={2} kopf={kopf} />
+      <Mitte hoehe={hoehe}><Signet tempo={2} kopf={kopf} /></Mitte>
     </AbsoluteFill>
   );
 };
 
 /** Outro: das Signet in voller Länge, ohne Kopfzeile */
-export const Outro: React.FC = () => <Signet />;
+export const Outro: React.FC<{ hoehe?: number }> = ({ hoehe = 1920 }) => <Mitte hoehe={hoehe}><Signet /></Mitte>;
 
 /** Grund jedes Videos: heller Hintergrund, wartet mit dem Rendern, bis die Schriften geladen sind */
 export const Grund: React.FC<{ children: React.ReactNode }> = ({ children }) => {
