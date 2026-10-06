@@ -6,7 +6,8 @@
 // Hochwertiger (Wunsch vom 6. Oktober 2026): jede Szene ein gerahmtes Bildfeld wie eine Comicseite, keine Schlagschatten im Web-Stil,
 // Punktraster als Halbton-Verlauf, Erzählkästen in Versalien bündig in der Ecke, Knall doppelt gezackt.
 import React from "react";
-import { AbsoluteFill, interpolate } from "remotion";
+import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
+import { Signet, type Kopf, type SignetStil } from "../vorlage/Signet";
 import { SANS, SERIF } from "../vorlage/stil";
 import { benday, ein, klemm, pop } from "../doppelpruefung/Comic";
 
@@ -147,3 +148,46 @@ export const Abschnitt: React.FC<{ f: number; a: number; b: number; children: Re
   const o = Math.min(interpolate(f, [a, a + 10], [0, 1], klemm), interpolate(f, [b - 10, b], [1, 0], klemm));
   return <AbsoluteFill style={{ opacity: o }}>{children}</AbsoluteFill>;
 };
+
+/** Kreisblende: die Szene öffnet sich in den ersten «dauer» Bildern von einem Punkt aus über der vorigen, mit schwarzem Rand am Kreis */
+export const Iris: React.FC<{ dauer: number; mitte: [number, number]; children: React.ReactNode }> = ({ dauer, mitte, children }) => {
+  const f = useCurrentFrame();
+  const t = interpolate(f, [0, dauer], [0, 1], { ...klemm, easing: Easing.bezier(0.55, 0, 0.35, 1) });
+  const r = t * 1900;
+  if (t >= 1) return <AbsoluteFill>{children}</AbsoluteFill>;
+  return (
+    <AbsoluteFill>
+      <AbsoluteFill style={{ clipPath: `circle(${r}px at ${mitte[0]}px ${mitte[1]}px)` }}>{children}</AbsoluteFill>
+      <svg width="1080" height="1440" style={{ position: "absolute", inset: 0 }}><circle cx={mitte[0]} cy={mitte[1]} r={r} fill="none" stroke={P.ink} strokeWidth="14" /></svg>
+    </AbsoluteFill>
+  );
+};
+
+/** Das Signet der Vorlage im Pop-Stil: kräftige schwarze Schlaufe, roter Punkt, fette Buchstaben; die Bühne (1920 hoch) steht mittig im 3:4-Bild */
+const POPSIGNET: SignetStil = { grund: "transparent", tinte: P.ink, punkt: P.rot, strich: 13, punktR: 26, gewicht: 700 };
+const Mittig: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div style={{ position: "absolute", left: 0, width: 1080, height: 1920, top: (1440 - 1920) / 2 }}>{children}</div>
+);
+
+/** Intro: Bildfeld mit Halbton, darin das Signet in kurzer Fassung; der Kopf als gelber Erzählkasten */
+export const PopIntro: React.FC<{ kopf: Kopf }> = ({ kopf }) => {
+  const f = useCurrentFrame();
+  return (
+    <Grundpunkte farbe="rgba(224,20,30,.55)">
+      <Mittig><Signet tempo={2} stil={POPSIGNET} /></Mittig>
+      <div style={{ position: "absolute", left: 0, right: 0, top: 150, display: "flex", justifyContent: "center", opacity: ein(f, 6, 12), transform: `translateY(${interpolate(f, [6, 22], [-30, 0], klemm)}px)` }}>
+        <div style={{ background: P.gelb, border: `7px solid ${P.ink}`, padding: "20px 40px 16px", textAlign: "center" }}>
+          <div style={fett(64, { letterSpacing: "0.12em", textTransform: "uppercase", lineHeight: 1 })}>{kopf.titel}</div>
+          {kopf.unter?.length ? <div style={fett(32, { fontWeight: 600, letterSpacing: "0.06em", marginTop: 12 })}>{kopf.unter.join("  •  ")}</div> : null}
+        </div>
+      </div>
+    </Grundpunkte>
+  );
+};
+
+/** Outro: das Signet in voller Länge im Pop-Stil */
+export const PopOutro: React.FC = () => (
+  <Grundpunkte farbe="rgba(23,71,201,.5)">
+    <Mittig><Signet stil={POPSIGNET} /></Mittig>
+  </Grundpunkte>
+);

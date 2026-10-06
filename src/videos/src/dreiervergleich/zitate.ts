@@ -1,5 +1,5 @@
 // Wörtliche Stellen aus «Nebeneinander, Nacheinander | Luhmann, Baecker, Lehmann. Vergleichende Analyse» (Erweiterte Arbeitsfassung, 5. Oktober 2026, 18 Seiten).
-// Nicht verändern. Geprüft gegen den Text des PDFs (Seitenangaben des PDFs).
+// Z: nicht verändern, geprüft gegen den Text des PDFs (Seitenangaben des PDFs). L (unten): eigene Lesart, nicht als Zitat gezeigt.
 export const Z = {
   untertitel: ["Kommunikation und Anschluss", "Formen, Kontexte und Medien", "Erfahrung und Kriterienwandel"], // S. 18 (Grafik)
   x: "Bestimmbare Rückkehr", // S. 2
@@ -31,15 +31,6 @@ export const Z = {
   rezensionTitel: "Lehmanns Rezension von 2008", // S. 8
   rezension: "produktive, aber teilweise unterbestimmte Geschichtskonstruktion", // S. 8
   buch: "Studien zur nächsten Gesellschaft", // S. 8
-  // Klanginstallation
-  gegenprobe: "Gegenprobe: dieselbe Klanginstallation", // S. 12
-  situation: "Ein gleiches Angebot ist noch keine gleiche Situation", // S. 12
-  kontext: "Entstehungskontext", // S. 12
-  worte: "Dies belegt zunächst die Übernahme von Worten.", // S. 12
-  wahrnehmung: "Eine Veränderung der Wahrnehmung müsste genauer gezeigt werden.", // S. 12
-  // Streugrafik
-  suggerierte: "Dies suggerierte Unterschiede, die die Analyse nicht begründet.", // S. 14
-  quadrant: "gleiche Quadrantenlage, verschiedene Prüfleistungen", // S. 14
   // Pointe und Schluss
   keinRang: "Die hohe Position ist keine Qualitätsauszeichnung", // S. 13
   ranking: "kein philosophisches Ranking", // S. 17
@@ -49,9 +40,17 @@ export const Z = {
   frage: "Wann verändern Kunst und Reflexion die Kriterien, nach denen wir überhaupt von derselben Ordnung sprechen?", // S. 17
 };
 
-/** Streugrafik (S. 18, Detail 3–5): die drei teilen einen Ort; graue Punkte nur als ungefähre Lage der bisherigen Positionen, ohne Namen */
-export const ORT = { X: 4.6, Y: 4.72 };
-export const GRAU: [number, number][] = [
-  [3.55, 4.95], [3.25, 4.65], [3.45, 4.45], [3.65, 4.2], [3.15, 4.05], [3.75, 3.9], [4.05, 4.72], [4.05, 4.15], [4.2, 4.02], [4.35, 4.25],
-  [4.45, 4.55], [4.42, 4.05], [4.65, 4.85], [4.7, 4.48], [4.92, 4.92], [4.05, 3.65], [4.85, 3.72], [4.75, 3.45], [4.8, 3.1],
-];
+/** Eigene Lesart (Überarbeitung vom 6. Oktober 2026: «Die Inhalte müssen nicht getreu der Analyse sein»). Ohne Anführungszeichen gezeigt, nicht als Zitat.
+ *  Grundlagen: Luhmann, Die Kunst der Gesellschaft (1995), Raum und Zeit als Medien der Wahrnehmung (Stellen und Objekte);
+ *  Baecker, Form und Formen der Kommunikation (2005) und Studien zur nächsten Gesellschaft (2007), nach Spencer-Browns Laws of Form (re-entry, Oszillation, Gedächtnis);
+ *  Lehmann, Avantgarde heute (2006), Ästhetische Erfahrung (2016), Kunst – Liebe – Religion. Theorie der Humanmedien (2025; re-exit, Einschluss der Subjekte). */
+export const L = {
+  luhmannX: "Raum heisst bei Luhmann: Objekte können ihre Stellen verlassen. Die Stelle bleibt – man kann zu ihr zurückkehren.",
+  luhmannY: "Zeit heisst umgekehrt: Die Stellen verlassen ihre Objekte. Jede Gegenwart vergeht, weiter geht es nur im Anschluss.",
+  baeckerX: "Die Form zeigt auf einer Fläche, was ein Text nacheinander erzählen müsste: Unterscheidungen, Kontexte, Beobachter.",
+  baeckerY: "Re-entry: Die Unterscheidung tritt in sich selbst wieder ein. Sie oszilliert – daraus werden Gedächtnis und Zeit.",
+  lehmannX: "Das Vergleichsmodell stellt Werk, Medium und Reflexion verschiedener Epochen nebeneinander.",
+  lehmannZeilen: ["Stil gelöst", "Werk negiert", "neu gekoppelt"],
+  lehmannY: "Ästhetische Erfahrung lernt: Wer eine Unterscheidung einmal gesehen hat, sieht beim nächsten Mal anders.",
+  duell: "Re-entry: Die Unterscheidung kehrt in sich selbst zurück. Re-exit: Die Kunst tritt aus ihrem eigenen Code aus – und holt die Menschen herein.",
+};

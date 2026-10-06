@@ -1,21 +1,24 @@
 // Video «Drei im Doppelspalt der Wahrnehmung» (Titel von Christian, 6. Oktober 2026): zeigt witzig und auf den Punkt, wie die Vergleichende Analyse
 // «Nebeneinander, Nacheinander | Luhmann, Baecker, Lehmann» (Erweiterte Arbeitsfassung, 5. Oktober 2026) die drei Zugänge prüft – und wo sie sich unterscheiden.
 // 3:4 (1080 × 1440), 30 fps, ohne Ton, etwa 2 Minuten. Pop-Art mit viel Roy Lichtenstein (Wunsch), farblich anders als «Liebling …» (Pop.tsx).
-// Intro und Outro: Signet der Vorlage. Die Autoren erscheinen nur als Namen in ihrer Farbe, ihre Begriffe als Gegenstände (keine Karikaturen).
-// Alle Sätze in Kästen und Blasen wörtlich aus der Studie (zitate.ts); Lautwörter (ZACK!, BRUCH! …) und Beschriftungen der Bilder sind Comic.
+// Intro und Outro: Signet der Vorlage im Pop-Stil (PopIntro, PopOutro). Die Autoren erscheinen nur als Namen in ihrer Farbe, ihre Begriffe als Gegenstände (keine Karikaturen).
+// Überarbeitung vom 6. Oktober 2026 (Wunsch von Christian): ohne Klanginstallation und Streugrafik; nach den drei Grundoperationen je eine Szene, wie der Autor
+// verräumlicht (X) und verzeitlicht (Y), dann das Duell re-entry / re-exit; Kreisblenden statt harter Wechsel. Die Inhalte dürfen über die Studie hinausgehen:
+// Sätze mit «…» sind wörtlich aus der Studie (Z in zitate.ts), Sätze ohne Anführungszeichen eigene Lesart (L in zitate.ts). Lautwörter und Beschriftungen sind Comic.
 import React from "react";
 import { AbsoluteFill, Sequence, interpolate, useCurrentFrame } from "remotion";
-import { Grund, INTRO, Intro, OUTRO, Outro } from "../vorlage/Bausteine";
-import { aus, benday, ein, klemm, pop } from "../doppelpruefung/Comic";
-import { AUTOR, Abschnitt, Blase, Feld, Grundpunkte, Kasten, Knall, P, Rahmen, Schild, Stempel, Strahlen, Wolke, fett } from "./Pop";
-import { GRAU, ORT, Z } from "./zitate";
+import { Grund, INTRO, OUTRO } from "../vorlage/Bausteine";
+import { benday, ein, klemm, pop } from "../doppelpruefung/Comic";
+import { AUTOR, Abschnitt, Blase, Feld, Grundpunkte, Iris, Kasten, Knall, P, PopIntro, PopOutro, Rahmen, Schild, Stempel, Strahlen, Wolke, fett } from "./Pop";
+import { L, Z } from "./zitate";
 
-// Zeitplan in Bildern (30 fps)
-const D = { titel: 210, raster: 300, luhmann: 420, baecker: 420, lehmann: 450, differenzen: 420, klang: 390, grafik: 420, pointe: 300, schluss: 270 };
+// Zeitplan in Bildern (30 fps). Die Szenen überlappen um UEBER Bilder: die nächste öffnet sich mit einer Kreisblende über der vorigen.
+const D = { titel: 210, raster: 300, luhmann: 420, baecker: 420, lehmann: 450, xyLuhmann: 330, xyBaecker: 330, xyLehmann: 330, duell: 270, differenzen: 420, pointe: 300, schluss: 270 };
+const UEBER = 18;
 export const T = (() => {
   const t: Record<string, number> = { intro: 0 };
-  let a = INTRO;
-  for (const [k, d] of Object.entries(D)) { t[k] = a; a += d; }
+  let a = INTRO - UEBER;
+  for (const [k, d] of Object.entries(D)) { t[k] = a; a += d - UEBER; }
   t.signet = a; t.ende = a + OUTRO;
   return t as Record<keyof typeof D | "intro" | "signet" | "ende", number>;
 })();
@@ -26,7 +29,7 @@ const NAMEN = [AUTOR.luhmann, AUTOR.baecker, AUTOR.lehmann];
 const Titel: React.FC = () => {
   const f = useCurrentFrame();
   return (
-    <AbsoluteFill style={{ opacity: aus(f, D.titel) }}>
+    <AbsoluteFill>
       <Strahlen f={f} cx={540} cy={820} a={P.gelb} b={P.weiss} />
       <AbsoluteFill style={benday("rgba(224,20,30,.22)", 4.5, 20)} />
       <Blase x={70} y={80} w={940} farbe={P.weiss} p={pop(f, 8, 150)} drehung={-2}>
@@ -58,7 +61,7 @@ const Raster: React.FC = () => {
   const zurueck = f > 30 && sprung > 48;
   return (
     <Grundpunkte farbe="rgba(23,71,201,0.47)">
-      <AbsoluteFill style={{ opacity: aus(f, D.raster) }}>
+      <AbsoluteFill>
         <Schild f={f} farbe={P.weiss}>Das Prüfraster</Schild>
         {/* X */}
         <Feld x={70} y={210} w={450} h={560} farbe={P.weiss}>
@@ -92,7 +95,7 @@ const Luhmann: React.FC = () => {
   const fuge = interpolate(f, [40, 70], [0, 1], { ...klemm, easing: (t) => 1 - Math.pow(1 - t, 3) });
   return (
     <Grundpunkte farbe="rgba(18,181,169,0.62)">
-      <AbsoluteFill style={{ opacity: aus(f, D.luhmann) }}>
+      <AbsoluteFill>
         <Schild f={f} farbe={AUTOR.luhmann.farbe}>{AUTOR.luhmann.name}</Schild>
         {/* a · Information, Mitteilung, Verstehen rasten ein; die Liebes-Comic-Wolke */}
         <Abschnitt f={f} a={0} b={190}>
@@ -167,7 +170,7 @@ const Baecker: React.FC = () => {
   const haken = [[150, 520, 760], [250, 440, 560], [350, 360, 360]];
   return (
     <Grundpunkte farbe="rgba(255,210,31,0.85)">
-      <AbsoluteFill style={{ opacity: aus(f, D.baecker) }}>
+      <AbsoluteFill>
         <Schild f={f} farbe={AUTOR.baecker.farbe}>{AUTOR.baecker.name}</Schild>
         <Feld x={70} y={220} w={940} h={600}>
           <svg width="926" height="586" viewBox="0 0 940 600" style={{ position: "absolute", inset: 0 }}>
@@ -197,7 +200,7 @@ const Lehmann: React.FC = () => {
   const f = useCurrentFrame();
   return (
     <Grundpunkte farbe="rgba(255,91,74,0.57)">
-      <AbsoluteFill style={{ opacity: aus(f, D.lehmann) }}>
+      <AbsoluteFill>
         <Schild f={f} farbe={AUTOR.lehmann.farbe}>{AUTOR.lehmann.name}</Schild>
         {/* a · Werk, Medium, Reflexion */}
         <Abschnitt f={f} a={0} b={130}>
@@ -245,12 +248,187 @@ const Lehmann: React.FC = () => {
   );
 };
 
+// ---------- 4b · Wie sie verräumlichen (X) und verzeitlichen (Y) ----------
+// Oben das X-Bild mit Erzählkasten, darunter ab Bild 150 das Y-Bild mit Erzählkasten.
+const XY: React.FC<{ autor: { name: string; farbe: string }; punkte: string; x: (f: number) => React.ReactNode; y: (f: number) => React.ReactNode; xText: string; yText: string }> = ({ autor, punkte, x, y, xText, yText }) => {
+  const f = useCurrentFrame();
+  const kopf = (text: string, farbe: string) => <div style={{ position: "absolute", left: 0, top: 0, padding: "10px 20px 8px", background: farbe, borderRight: `6px solid ${P.ink}`, borderBottom: `6px solid ${P.ink}`, ...fett(28, { letterSpacing: "0.06em", textTransform: "uppercase", color: P.weiss }) }}>{text}</div>;
+  return (
+    <Grundpunkte farbe={punkte}>
+      <Schild f={f} farbe={autor.farbe}>{autor.name} · Raum und Zeit</Schild>
+      <div style={{ opacity: ein(f, 6, 12) }}>
+        <Feld x={70} y={170} w={940} h={400}>{x(f)}{kopf("X · Verräumlichung", P.blau)}</Feld>
+      </div>
+      <Kasten f={f} a={30} top={590} groesse={38}>{xText}</Kasten>
+      <div style={{ opacity: ein(f, 150, 12), transform: `translateY(${interpolate(f, [150, 166], [30, 0], klemm)}px)` }}>
+        <Feld x={70} y={790} w={940} h={360}>{y(f - 150)}{kopf("Y · Verzeitlichung", P.rot)}</Feld>
+      </div>
+      <Kasten f={f} a={175} top={1170} groesse={38}>{yText}</Kasten>
+    </Grundpunkte>
+  );
+};
+
+/** Luhmann. X: Objekte verlassen ihre Stellen, die Stellen bleiben. Y: Stellen verlassen ihre Objekte, weiter geht es nur im Anschluss. */
+const XYLuhmann: React.FC = () => (
+  <XY autor={AUTOR.luhmann} punkte="rgba(18,181,169,.6)" xText={L.luhmannX} yText={L.luhmannY}
+    x={(f) => {
+      // fünf Stellen; zwei Objekte tauschen die Plätze, die Stellen bleiben stehen
+      const t = interpolate(f, [40, 80], [0, 1], { ...klemm, easing: (v) => v * v * (3 - 2 * v) });
+      const objekte = [[0, 3], [1, 1], [3, 0], [4, 4]];
+      return (
+        <>
+          {Array.from({ length: 5 }, (_, i) => (
+            <div key={i} style={{ position: "absolute", left: 70 + i * 170, top: 150, width: 130, height: 130, border: `6px dashed ${P.ink}`, boxSizing: "border-box" }}>
+              <div style={fett(24, { position: "absolute", left: 0, right: 0, bottom: -40, textAlign: "center", color: P.dunkel })}>Stelle {i + 1}</div>
+            </div>
+          ))}
+          {objekte.map(([von, nach], i) => {
+            const pos = von + (nach - von) * t, hop = Math.sin(t * Math.PI) * (von === nach ? 0 : 110);
+            return <div key={i} style={{ position: "absolute", left: 92 + pos * 170, top: 172 - hop, width: 86, height: 86, borderRadius: "50%", border: `6px solid ${P.ink}`, ...benday("rgba(255,255,255,.4)", 3.5, 13), backgroundColor: [P.koral, P.gelb, P.tuerkis, P.himmel][i] }} />;
+          })}
+        </>
+      );
+    }}
+    y={(f) => {
+      // ein Band von Stellen läuft nach links; links fallen die Objekte heraus, rechts kommt eine neue Stelle und ein Objekt schliesst an
+      const lauf = Math.max(0, f) * 3.2;
+      return (
+        <>
+          {Array.from({ length: 8 }, (_, i) => {
+            const sx = 60 + i * 170 - lauf;
+            if (sx < -200 || sx > 1000) return null;
+            const faellt = sx < 60 ? (60 - sx) * 1.6 : 0;
+            const da = sx < 700 || f > (sx - 700) / 3.2;
+            return (
+              <React.Fragment key={i}>
+                <div style={{ position: "absolute", left: sx, top: 150, width: 130, height: 130, border: `6px dashed ${P.ink}`, boxSizing: "border-box", opacity: sx < 0 ? 0.4 : 1 }} />
+                {da ? <div style={{ position: "absolute", left: sx + 22, top: 172 + faellt, width: 86, height: 86, borderRadius: "50%", border: `6px solid ${P.ink}`, backgroundColor: [P.koral, P.gelb, P.tuerkis, P.himmel][i % 4], transform: `rotate(${faellt}deg)` }} /> : null}
+              </React.Fragment>
+            );
+          })}
+          <div style={fett(30, { position: "absolute", right: 30, top: 70, color: P.dunkel })}>Gegenwart →</div>
+        </>
+      );
+    }}
+  />
+);
+
+/** Baecker. X: die Form zeigt auf einer Fläche, was der Text nacheinander erzählt. Y: re-entry – die Unterscheidung tritt in sich selbst ein und oszilliert. */
+const XYBaecker: React.FC = () => (
+  <XY autor={AUTOR.baecker} punkte="rgba(255,210,31,.85)" xText={L.baeckerX} yText={L.baeckerY}
+    x={(f) => {
+      // links ein Text, Zeile für Zeile; rechts dieselben Unterscheidungen auf einen Schlag als Form
+      const zeilen = 6, schnapp = pop(f, 70, 220);
+      return (
+        <>
+          {Array.from({ length: zeilen }, (_, i) => <div key={i} style={{ position: "absolute", left: 50, top: 90 + i * 44, height: 16, width: interpolate(f, [10 + i * 8, 18 + i * 8], [0, 300 - (i % 3) * 50], klemm), background: "#00000030", borderRadius: 8 }} />)}
+          <div style={fett(26, { position: "absolute", left: 50, top: 350, color: P.dunkel })}>nacheinander</div>
+          <svg width="460" height="320" viewBox="0 0 460 320" style={{ position: "absolute", left: 440, top: 40, transform: `scale(${schnapp})`, transformOrigin: "50% 60%" }}>
+            {[[30, 290, 400, 250], [90, 230, 280, 170], [150, 170, 160, 100]].map(([x, y, w, h], i) => <path key={i} d={`M${x} ${y} H${x + w} V${y - h}`} fill="none" stroke={[P.blau, P.rot, P.ink][i]} strokeWidth="12" />)}
+          </svg>
+          <div style={fett(26, { position: "absolute", left: 600, top: 350, color: P.dunkel, opacity: ein(f, 80) })}>auf einen Blick</div>
+        </>
+      );
+    }}
+    y={(f) => {
+      // eine Unterscheidung, deren Linie in ihre eigene Innenseite zurückläuft; ein Licht springt zwischen innen und aussen
+      const z = interpolate(f, [5, 45], [0, 1], klemm), an = Math.floor(Math.max(0, f - 50) / 10) % 2 === 0;
+      return (
+        <>
+          <svg width="940" height="360" viewBox="0 0 940 360" style={{ position: "absolute", inset: 0 }}>
+            <path d="M120 270 H560 V90" fill="none" stroke={P.ink} strokeWidth="12" />
+            <path d="M560 90 C 700 90, 720 300, 560 300 C 420 300, 380 210, 300 210" fill="none" stroke={P.rot} strokeWidth="10" strokeDasharray="900" strokeDashoffset={900 * (1 - z)} />
+            <path d="M300 210 l26 -16 v32z" fill={P.rot} opacity={z > 0.95 ? 1 : 0} />
+          </svg>
+          <div style={fett(30, { position: "absolute", left: 160, top: 120, padding: "6px 16px", border: `5px solid ${P.ink}`, background: f > 50 && an ? P.gelb : P.weiss })}>innen</div>
+          <div style={fett(30, { position: "absolute", left: 700, top: 60, padding: "6px 16px", border: `5px solid ${P.ink}`, background: f > 50 && !an ? P.gelb : P.weiss })}>aussen</div>
+          {f > 60 ? <div style={fett(30, { position: "absolute", left: 720, top: 250, color: P.rot, transform: `rotate(-6deg) scale(${pop(f, 60)})` })}>Gedächtnis!</div> : null}
+        </>
+      );
+    }}
+  />
+);
+
+/** Lehmann. X: Vergleichsmodell – frühere und spätere Konstellationen nebeneinander. Y: Erfahrung lernt – das zweite Sehen ist ein anderes. */
+const XYLehmann: React.FC = () => (
+  <XY autor={AUTOR.lehmann} punkte="rgba(255,91,74,.55)" xText={L.lehmannX} yText={L.lehmannY}
+    x={(f) => {
+      const spalten = Z.drei, zeilen = L.lehmannZeilen;
+      return (
+        <>
+          {spalten.map((s, i) => <div key={s} style={fett(28, { position: "absolute", left: 300 + i * 210, top: 70, width: 190, textAlign: "center", opacity: ein(f, 5 + i * 5) })}>{s}</div>)}
+          {zeilen.map((z, j) => (
+            <React.Fragment key={z}>
+              <div style={fett(24, { position: "absolute", left: 40, top: 140 + j * 76, width: 240, lineHeight: 1.05, opacity: ein(f, 20 + j * 14) })}>{z}</div>
+              {spalten.map((_, i) => {
+                const voll = [[1, 1, 0], [0, 1, 1], [1, 0, 1]][j][i];
+                return <div key={i} style={{ position: "absolute", left: 300 + i * 210 + 40, top: 130 + j * 76, width: 110, height: 56, border: `5px solid ${P.ink}`, ...(voll ? benday("rgba(255,255,255,.4)", 3, 11) : {}), backgroundColor: voll ? [P.koral, P.gelb, P.himmel][i] : P.weiss, transform: `scale(${pop(f, 25 + j * 14 + i * 4, 240)})` }} />;
+              })}
+            </React.Fragment>
+          ))}
+        </>
+      );
+    }}
+    y={(f) => {
+      // dasselbe Bild zweimal: beim zweiten Mal bleiben die gelernten Unterscheidungen als Linien darin stehen
+      const zweit = f > 70;
+      const bild = (x: number, gelernt: boolean, a: number) => (
+        <div style={{ position: "absolute", left: x, top: 70, width: 340, height: 230, border: `6px solid ${P.ink}`, background: P.weiss, overflow: "hidden", transform: `scale(${pop(f, a, 200)})` }}>
+          <div style={{ position: "absolute", left: 20, top: 20, width: 140, height: 190, background: P.rot }} />
+          <div style={{ position: "absolute", left: 170, top: 20, width: 150, height: 90, background: P.gelb }} />
+          <div style={{ position: "absolute", left: 170, top: 120, width: 150, height: 90, ...benday(P.blau, 4, 13) }} />
+          {gelernt ? <svg width="340" height="230" style={{ position: "absolute", inset: 0 }}><path d="M90 0 V230 M0 115 H340 M245 0 V230" stroke={P.ink} strokeWidth="5" strokeDasharray="14 10" /></svg> : null}
+        </div>
+      );
+      return (
+        <>
+          {bild(60, false, 0)}
+          <div style={fett(26, { position: "absolute", left: 60, top: 310, color: P.dunkel })}>1. Mal</div>
+          {zweit ? bild(520, true, 70) : null}
+          {zweit ? <div style={fett(26, { position: "absolute", left: 520, top: 310, color: P.dunkel })}>2. Mal: anders gesehen</div> : null}
+          <div style={fett(70, { position: "absolute", left: 420, top: 130, opacity: ein(f, 60) })}>→</div>
+        </>
+      );
+    }}
+  />
+);
+
+// ---------- 4c · Duell: re-entry gegen re-exit ----------
+const Duell: React.FC = () => {
+  const f = useCurrentFrame();
+  return (
+    <Grundpunkte farbe="rgba(224,20,30,.5)">
+      <Schild f={f} farbe={P.weiss}>Duell</Schild>
+      {/* links: die Form kehrt in sich ein (Luhmann, Baecker) */}
+      <Feld x={70} y={200} w={450} h={520} farbe={P.weiss}>
+        <div style={fett(28, { position: "absolute", left: 20, top: 16, lineHeight: 1.1 })}><span style={{ background: AUTOR.luhmann.farbe, padding: "2px 8px" }}>Luhmann</span> <span style={{ background: AUTOR.baecker.farbe, padding: "2px 8px" }}>Baecker</span></div>
+        <svg width="436" height="546" viewBox="0 0 450 560" style={{ position: "absolute", inset: 0 }}>
+          <path d="M60 420 H330 V220" fill="none" stroke={P.ink} strokeWidth="12" />
+          <path d={`M330 220 C 420 220, 430 400, 300 400 C 220 400, 210 330, 150 330`} fill="none" stroke={P.tuerkis} strokeWidth="11" strokeDasharray="600" strokeDashoffset={600 * (1 - interpolate(f, [20, 60], [0, 1], klemm))} />
+        </svg>
+      </Feld>
+      {/* rechts: die Kunst tritt aus ihrem Code aus (Lehmann) */}
+      <Feld x={560} y={200} w={450} h={520} farbe={P.weiss}>
+        <div style={fett(28, { position: "absolute", left: 20, top: 16 })}><span style={{ background: AUTOR.lehmann.farbe, padding: "2px 8px" }}>Lehmann</span></div>
+        <div style={{ position: "absolute", left: 70, top: 170, width: 220, height: 220, border: `10px solid ${P.ink}`, ...fett(30, { display: "grid", placeItems: "center" }) }}>Code</div>
+        <svg width="436" height="546" viewBox="0 0 450 560" style={{ position: "absolute", inset: 0 }}>
+          <path d={`M305 290 H${305 + 105 * interpolate(f, [70, 100], [0, 1], klemm)}`} stroke={P.koral} strokeWidth="14" />
+          <path d="M410 290 l-30 -20 v40z" fill={P.koral} opacity={f > 98 ? 1 : 0} />
+        </svg>
+      </Feld>
+      <Knall p={pop(f, 50, 220)} x={295} y={860} r={190} farbe={P.tuerkis} innen={P.gelb} text="RE-ENTRY!" groesse={50} textfarbe={P.weiss} drehung={-8} />
+      <Knall p={pop(f, 100, 220)} x={785} y={860} r={190} farbe={P.koral} innen={P.gelb} text="RE-EXIT!" groesse={62} textfarbe={P.weiss} drehung={7} />
+      <Kasten f={f} a={120} top={1050} groesse={40}>{L.duell}</Kasten>
+    </Grundpunkte>
+  );
+};
+
 // ---------- 5 · Differenzen ----------
 const Differenzen: React.FC = () => {
   const f = useCurrentFrame();
   return (
     <Grundpunkte farbe="rgba(23,71,201,0.47)">
-      <AbsoluteFill style={{ opacity: aus(f, D.differenzen) }}>
+      <AbsoluteFill>
         <Schild f={f} farbe={P.weiss}>Differenzen</Schild>
         {/* a · Lehmann korrigiert Luhmann: weder «mit» noch «ohne Menschen» */}
         <Abschnitt f={f} a={0} b={220}>
@@ -266,7 +444,7 @@ const Differenzen: React.FC = () => {
               background: i ? P.himmel : P.gelb, transform: `scale(${pop(f, 60 + i * 12, 200)})`, ...fett(44, { display: "grid", placeItems: "center" }),
             }}>{w}</div>
           ))}
-          <Stempel f={f} a={110} x={260} y={600} text="KEINE SCHLICHTE WAHL" farbe={P.rot} groesse={52} drehung={-7} />
+          <Stempel f={f} a={110} x={250} y={672} text="KEINE SCHLICHTE WAHL" farbe={P.rot} groesse={52} drehung={-7} />
           <Kasten f={f} a={95} top={860} groesse={42}>{Z.menschen}</Kasten>
         </Abschnitt>
         {/* b · Lehmann über Baecker, 2008 */}
@@ -293,89 +471,6 @@ const Differenzen: React.FC = () => {
   );
 };
 
-// ---------- 6 · Gegenprobe: dieselbe Klanginstallation ----------
-const Klang: React.FC = () => {
-  const f = useCurrentFrame();
-  const Lautsprecher: React.FC<{ x: number; y: number }> = ({ x, y }) => (
-    <div style={{ position: "absolute", left: x, top: y }}>
-      <div style={{ width: 110, height: 160, background: P.dunkel, border: `6px solid ${P.ink}`, borderRadius: 10, display: "grid", placeItems: "center" }}>
-        <div style={{ width: 70, height: 70, borderRadius: "50%", background: P.grau, border: `6px solid ${P.ink}`, transform: `scale(${1 + Math.max(0, Math.sin(f / 3)) * 0.12})` }} />
-      </div>
-      {[0, 1, 2].map((k) => <div key={k} style={{ position: "absolute", left: 120 + k * 26, top: 30 + k * -14, width: 40 + k * 26, height: 100 + k * 28, borderRadius: "0 100% 100% 0", border: `6px solid ${P.ink}`, borderLeft: "none", opacity: (Math.sin(f / 5 - k) + 1) / 2 }} />)}
-    </div>
-  );
-  const kopf = (x: number, y: number, farbe: string) => <div style={{ position: "absolute", left: x, top: y, width: 90, height: 90, borderRadius: "50%", background: farbe, border: `6px solid ${P.ink}` }} />;
-  return (
-    <Grundpunkte farbe="rgba(127,211,255,0.85)">
-      <AbsoluteFill style={{ opacity: aus(f, D.klang) }}>
-        <Schild f={f} farbe={P.himmel}>{Z.gegenprobe}</Schild>
-        <Feld x={70} y={210} w={940} h={620} farbe={P.weiss}>
-          <Lautsprecher x={40} y={50} /><Lautsprecher x={380} y={50} /><Lautsprecher x={720} y={50} />
-          <div style={fett(34, { position: "absolute", left: 40, top: 250, color: P.dunkel })}>{f < 120 ? "1. Besuch · 10 Minuten" : "2. Besuch · dieselbe Folge"}</div>
-          {/* Besucher:innen als Köpfe */}
-          {kopf(120, 470, P.koral)}{kopf(420, 490, P.gelb)}{kopf(720, 470, P.tuerkis)}
-          {f > 175 && f < 270 ? [0, 1, 2].map((i) => (
-            <div key={i} style={{ position: "absolute", left: [60, 360, 660][i], top: 340, transform: `scale(${pop(f, 180 + i * 10, 220)})`, transformOrigin: "30% 100%", background: P.weiss, border: `6px solid ${P.ink}`, borderRadius: 30, padding: "12px 20px", ...fett(30) }}>{Z.kontext}!</div>
-          )) : null}
-          {f >= 270 ? [0, 1, 2].map((i) => <div key={i} style={fett(80, { position: "absolute", left: [140, 440, 740][i], top: 350, color: P.rot, WebkitTextStroke: `3px ${P.ink}`, transform: `scale(${pop(f, 275 + i * 8, 220)})` })}>?</div>) : null}
-          {f >= 120 && f < 175 ? <div style={{ position: "absolute", left: 300, top: 330, padding: "12px 22px", background: P.gelb, border: `6px solid ${P.ink}`, transform: `scale(${pop(f, 125)}) rotate(-3deg)`, ...fett(32) }}>Info: {Z.kontext}</div> : null}
-          {f >= 260 ? <div style={fett(30, { position: "absolute", left: 40, bottom: 26, color: P.dunkel, opacity: ein(f, 262) })}>Neue Klangfolge – Reaktion: unverändert.</div> : null}
-        </Feld>
-        <Kasten f={f} a={30} b={180} top={900} groesse={52}>{Z.situation}</Kasten>
-        <Kasten f={f} a={200} top={900} groesse={50} klein={Z.wahrnehmung}>{Z.worte}</Kasten>
-      </AbsoluteFill>
-    </Grundpunkte>
-  );
-};
-
-// ---------- 7 · Streugrafik: auseinandergezogen, korrigiert ----------
-const Grafik: React.FC = () => {
-  const f = useCurrentFrame();
-  // Bereich 3–5 auf beiden Achsen, wie das Detail der Studie (S. 18)
-  const X = (v: number) => 110 + (v - 3) * 380, Y = (v: number) => 830 - (v - 3) * 360;
-  const ausein = interpolate(f, [70, 120], [0, 1], klemm) * (1 - interpolate(f, [190, 205], [0, 1], klemm));
-  const versatz = [[-150, -60], [110, 150], [-210, 120]];
-  return (
-    <Grundpunkte farbe="rgba(18,181,169,0.52)">
-      <AbsoluteFill style={{ opacity: aus(f, D.grafik) }}>
-        <Schild f={f} farbe={P.weiss}>Die Streugrafik</Schild>
-        <Feld x={70} y={190} w={940} h={900}>
-          <svg width="926" height="886" viewBox="0 0 940 900" style={{ position: "absolute", inset: 0 }}>
-            <path d={`M110 830 H880 M110 830 V60`} stroke={P.ink} strokeWidth="7" />
-            <g fontFamily="Instrument Sans" fontWeight={700} fontSize="28">
-              {[3, 4, 5].map((v) => <React.Fragment key={v}><text x={X(v)} y="872" textAnchor="middle">{v}</text><text x="80" y={Y(v) + 10} textAnchor="middle">{v}</text></React.Fragment>)}
-              <text x="880" y="815" textAnchor="end" fontSize="26">X · Verräumlichung →</text>
-              <text x="130" y="44" fontSize="26">Y · Verzeitlichung ↑</text>
-            </g>
-            <rect x={X(4)} y={Y(5)} width={X(5) - X(4)} height={Y(4) - Y(5)} fill="rgba(18,181,169,.12)" stroke={P.ink} strokeWidth="5" strokeDasharray="18 12" opacity={ein(f, 20)} />
-            {GRAU.map(([gx, gy], i) => <circle key={i} cx={X(gx)} cy={Y(gy)} r="11" fill={P.grau} opacity={ein(f, 10 + i * 2) * 0.8} />)}
-            {NAMEN.map((n, i) => {
-              const s = pop(f, 30 + i * 8, 200);
-              const cx = X(ORT.X) + versatz[i][0] * ausein, cy = Y(ORT.Y) + versatz[i][1] * ausein;
-              return <circle key={n.name} cx={cx + 6} cy={cy + 6 - (1 - s) * 400} r={30 - i * 6} fill={P.ink} />;
-            })}
-            {NAMEN.map((n, i) => {
-              const s = pop(f, 30 + i * 8, 200);
-              const cx = X(ORT.X) + versatz[i][0] * ausein, cy = Y(ORT.Y) + versatz[i][1] * ausein;
-              return <circle key={n.name} cx={cx} cy={cy - (1 - s) * 400} r={30 - i * 6} fill={n.farbe} stroke={P.ink} strokeWidth="5" />;
-            })}
-          </svg>
-          {/* die Namen hängen an ihren Punkten (Lage wie im Detail der Studie: Luhmann oben links, Baecker rechts, Lehmann unten links) */}
-          {NAMEN.map((n, i) => {
-            const cx = (X(ORT.X) + versatz[i][0] * ausein) * (926 / 940), cy = (Y(ORT.Y) + versatz[i][1] * ausein) * (886 / 900);
-            const [dx, dy] = [[-330, -92], [-120, 46], [-340, -12]][i];
-            return <div key={n.name} style={{ position: "absolute", left: cx + dx, top: cy + dy, opacity: ein(f, 40 + i * 8), padding: "6px 14px", background: n.farbe, border: `5px solid ${P.ink}`, whiteSpace: "nowrap", ...fett(30) }}>{n.name}</div>;
-          })}
-          {f > 80 && f < 190 ? <div style={fett(36, { position: "absolute", left: 600, top: 520, color: P.blau, transform: "rotate(-6deg)" })}>«zur Lesbarkeit»</div> : null}
-        </Feld>
-        <Stempel f={f} a={180} x={250} y={560} text="KORREKTUR" farbe={P.rot} groesse={80} drehung={-10} />
-        <Kasten f={f} a={130} b={290} top={1150} groesse={44}>{Z.suggerierte}</Kasten>
-        <Kasten f={f} a={300} top={1150} groesse={48}>{Z.quadrant}.</Kasten>
-      </AbsoluteFill>
-    </Grundpunkte>
-  );
-};
-
 // ---------- 8 · Pointe: kein Treppchen ----------
 const Pointe: React.FC = () => {
   const f = useCurrentFrame();
@@ -383,7 +478,7 @@ const Pointe: React.FC = () => {
   const hoehen = [260, 180, 120];
   return (
     <Grundpunkte farbe="rgba(255,210,31,0.85)">
-      <AbsoluteFill style={{ opacity: aus(f, D.pointe) }}>
+      <AbsoluteFill>
         {/* das Siegertreppchen, das zu einer Ebene zusammensackt */}
         {[1, 0, 2].map((rang, k) => {
           const n = NAMEN[k], h = hoehen[rang] + (160 - hoehen[rang]) * flach;
@@ -407,7 +502,7 @@ const Pointe: React.FC = () => {
 const Schluss: React.FC = () => {
   const f = useCurrentFrame();
   return (
-    <AbsoluteFill style={{ opacity: aus(f, D.schluss) }}>
+    <AbsoluteFill>
       <Strahlen f={f} cx={540} cy={700} a={P.himmel} b={P.weiss} n={28} />
       <AbsoluteFill style={benday("rgba(23,71,201,.18)", 4.5, 20)} />
       <Schild f={f} farbe={P.gelb}>{Z.offen}</Schild>
@@ -422,19 +517,19 @@ const Schluss: React.FC = () => {
   );
 };
 
+// Reihenfolge der Szenen; jede öffnet sich mit einer Kreisblende (Mittelpunkt wechselt zwischen den Ecken)
+const SZENEN: [keyof typeof D, React.FC][] = [
+  ["titel", Titel], ["raster", Raster], ["luhmann", Luhmann], ["baecker", Baecker], ["lehmann", Lehmann],
+  ["xyLuhmann", XYLuhmann], ["xyBaecker", XYBaecker], ["xyLehmann", XYLehmann], ["duell", Duell], ["differenzen", Differenzen], ["pointe", Pointe], ["schluss", Schluss],
+];
+const ECKEN: [number, number][] = [[900, 1250], [150, 200], [930, 180], [120, 1260]];
+
 export const DreiervergleichVideo: React.FC = () => (
   <Grund>
-    <Sequence durationInFrames={INTRO}><Intro hoehe={1440} kopf={{ titel: "Doppelspalt", unter: ["Luhmann", "Baecker", "Lehmann"] }} /></Sequence>
-    <Sequence from={T.titel} durationInFrames={D.titel}><Titel /></Sequence>
-    <Sequence from={T.raster} durationInFrames={D.raster}><Raster /></Sequence>
-    <Sequence from={T.luhmann} durationInFrames={D.luhmann}><Luhmann /></Sequence>
-    <Sequence from={T.baecker} durationInFrames={D.baecker}><Baecker /></Sequence>
-    <Sequence from={T.lehmann} durationInFrames={D.lehmann}><Lehmann /></Sequence>
-    <Sequence from={T.differenzen} durationInFrames={D.differenzen}><Differenzen /></Sequence>
-    <Sequence from={T.klang} durationInFrames={D.klang}><Klang /></Sequence>
-    <Sequence from={T.grafik} durationInFrames={D.grafik}><Grafik /></Sequence>
-    <Sequence from={T.pointe} durationInFrames={D.pointe}><Pointe /></Sequence>
-    <Sequence from={T.schluss} durationInFrames={D.schluss}><Schluss /></Sequence>
-    <Sequence from={T.signet} durationInFrames={OUTRO}><Outro hoehe={1440} /></Sequence>
+    <Sequence durationInFrames={INTRO}><PopIntro kopf={{ titel: "Doppelspalt", unter: ["Luhmann", "Baecker", "Lehmann"] }} /></Sequence>
+    {SZENEN.map(([k, Szene], i) => (
+      <Sequence key={k} from={T[k]} durationInFrames={D[k]}><Iris dauer={UEBER} mitte={ECKEN[i % ECKEN.length]}><Szene /></Iris></Sequence>
+    ))}
+    <Sequence from={T.signet} durationInFrames={OUTRO}><Iris dauer={UEBER} mitte={[540, 720]}><PopOutro /></Iris></Sequence>
   </Grund>
 );

@@ -92,24 +92,25 @@ Namen, ihre Operationen als Gegenstände; Lyotard (Leugnungsbeispiel) und Butler
 
 ## «Drei im Doppelspalt der Wahrnehmung» (6. Oktober 2026)
 
-Gut 2 Minuten, nur **3:4** (1080 × 1440, `DreiervergleichVideo`), ohne Ton. Wie «Liebling …», aber farblich anders und mit viel Roy Lichtenstein
-(Strahlenkranz, Knall mit Lautwort, Gedankenwolke, Stempel; Wunsch von Christian): zeigt witzig und auf den Punkt, wie die Vergleichende Analyse
-«Nebeneinander, Nacheinander | Luhmann, Baecker, Lehmann» (Erweiterte Arbeitsfassung, 5. Oktober 2026) die drei Zugänge prüft und wo sie sich unterscheiden.
-Quelle `src/dreiervergleich/`: `Video.tsx` (Szenen), `Pop.tsx` (Palette und Lichtenstein-Bausteine; jeder Autor in seiner Farbe aus der Streugrafik der Studie:
-Luhmann türkis, Baecker gelb, Lehmann korallrot; Grundbausteine aus `doppelpruefung/Comic.tsx`), `zitate.ts` (alle Sätze wörtlich aus der Studie, mit Seitenangabe;
-gegen den PDF-Text geprüft). Autoren nur als Namen, ihre Begriffe als Gegenstände.
+Gut 2 Minuten (2:16), nur **3:4** (1080 × 1440, `DreiervergleichVideo`), ohne Ton. Wie «Liebling …», aber farblich anders und hochwertiger mit viel Roy Lichtenstein
+(jede Szene ein gerahmtes Bildfeld, Halbton-Verläufe, Erzählkästen in Versalien, doppelt gezackte Knalle, Gedankenwolke, Stempel; Wunsch von Christian).
+Vergleicht Luhmann, Baecker und Lehmann im Prüfraster Nebeneinander / Nacheinander, ausgehend von der Vergleichenden Analyse
+«Nebeneinander, Nacheinander | Luhmann, Baecker, Lehmann» (5. Oktober 2026), aber nicht an sie gebunden.
+Quelle `src/dreiervergleich/`: `Video.tsx` (Szenen, Kreisblenden), `Pop.tsx` (Palette, Lichtenstein-Bausteine, `Iris`, `PopIntro`/`PopOutro`; jeder Autor in seiner Farbe:
+Luhmann türkis, Baecker gelb, Lehmann korallrot), `zitate.ts` (`Z`: wörtlich aus der Studie, gegen den PDF-Text geprüft, mit «…» gezeigt; `L`: eigene Lesart, ohne Anführungszeichen).
+Intro und Outro sind das Signet der Vorlage im Pop-Stil (`Signet` mit `stil`; ohne `stil` bleibt es in allen anderen Videos unverändert, gegen Standbilder geprüft).
 
-0. Intro «Doppelspalt», darunter «Luhmann • Baecker • Lehmann»; Titel mit drei Namenskarten und «ZACK!»
-1. Das Prüfraster: X (Bestimmbare Rückkehr), Y (Folgenreicher Vollzug), «Zeit ist die Bedingung dafür, dass es anders weitergehen kann»
-2. Luhmann: Information · Mitteilung · Verstehen, Gedankenwolke «Verstehen ist zudem nicht Zustimmung.», Ereignisse vergehen, Entscheidung zweimal gestempelt
-3. Baecker: Formzeichen, «Das Wort «nächste» begründet keinen hohen Y-Wert.», die grafische Eleganz einer Form («SCHICK!»)
-4. Lehmann: Werk · Medium · Reflexion, re-exit, «BRUCH!» wird mit jeder Wiederholung blasser
-5. Differenzen: Lehmann → Luhmann (keine schlichte Wahl «mit» oder «ohne Menschen»), Lehmann → Baecker (Rezension 2008)
-6. Gegenprobe: dieselbe Klanginstallation – «Dies belegt zunächst die Übernahme von Worten.»
-7. Streugrafik: die drei Punkte «zur Lesbarkeit» auseinandergezogen, dann «KORREKTUR»: gleiche Quadrantenlage, verschiedene Prüfleistungen
-8. Siegertreppchen sackt zusammen: kein philosophisches Ranking; das Raster prüft sich selbst mit
-9. Die offene Frage; 10. Outro
+0. Intro: Signet mit gelbem Kopfkasten «Doppelspalt», darunter «Luhmann • Baecker • Lehmann»; Titel mit drei Namenskarten
+1. Das Prüfraster: X (Bestimmbare Rückkehr), Y (Folgenreicher Vollzug)
+2.–4. Die Grundoperationen: Luhmann (Information · Mitteilung · Verstehen, Ereignisse, Entscheidung), Baecker (Form, «nächste», grafische Eleganz),
+   Lehmann (Werk · Medium · Reflexion, re-exit, «BRUCH!» wird blasser)
+5.–7. Raum und Zeit je Autor: Luhmann (Objekte verlassen ihre Stellen / Stellen verlassen ihre Objekte), Baecker (Form auf einen Blick / re-entry, Oszillation, Gedächtnis),
+   Lehmann (Vergleichsmodell / Erfahrung lernt)
+8. Duell: RE-ENTRY! gegen RE-EXIT!
+9. Differenzen: Lehmann → Luhmann (keine schlichte Wahl «mit» oder «ohne Menschen»), Lehmann → Baecker (Rezension 2008)
+10. Siegertreppchen sackt zusammen: kein philosophisches Ranking; 11. Die offene Frage; 12. Outro
 
+Die Szenen öffnen sich mit einer Kreisblende über der vorigen (18 Bilder Überlappung).
 `npx remotion render DreiervergleichVideo out/dreiervergleich.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
 
 ## Rendern ohne Internetzugang zu remotion.media

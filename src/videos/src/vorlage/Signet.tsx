@@ -30,9 +30,9 @@ const NAME = "ornament.cloud";
 const KASTEN = 52, ABSTAND = 4, SCHRIFT = 52, GEWICHT = 400, SPERRUNG = 0.14 * SCHRIFT;   // seit 5. Oktober 2026 kleiner (vorher 62 px) und tiefer
 
 /** Breite jedes Zeichens in der Schrift der Website (ohne Zwischenspeicher: gemessen wird erst, wenn die Schrift geladen ist) */
-const breiten = (): number[] => {
+const breiten = (gewicht = GEWICHT): number[] => {
   const c = document.createElement("canvas").getContext("2d")!;
-  c.font = `${GEWICHT} ${SCHRIFT}px ${SANS}`;
+  c.font = `${gewicht} ${SCHRIFT}px ${SANS}`;
   return NAME.split("").map((z) => c.measureText(z).width);
 };
 
@@ -43,8 +43,13 @@ const OBEN = Math.min(...PUNKTE.map((p) => bild(p)[1]));
  *  Beispiel aus dem ORNA-Video: { titel: "ORNA", unter: ["app", "web"] } */
 export type Kopf = { titel: string; unter?: string[] };
 
-/** tempo: 1 = Outro (180 Bilder), 2 = kurze Fassung als Intro (90 Bilder). kopf: nur im Intro. */
-export const Signet: React.FC<{ tempo?: number; kopf?: Kopf | null }> = ({ tempo = 1, kopf = null }) => {
+/** Optionaler Stil für ein einzelnes Video (seit 6. Oktober 2026, «Drei im Doppelspalt der Wahrnehmung»: Pop-Art).
+ *  Ohne Angabe bleibt das Signet genau wie in allen anderen Videos. */
+export type SignetStil = { grund?: string; tinte?: string; punkt?: string; strich?: number; punktR?: number; gewicht?: number };
+
+/** tempo: 1 = Outro (180 Bilder), 2 = kurze Fassung als Intro (90 Bilder). kopf: nur im Intro. stil: siehe SignetStil. */
+export const Signet: React.FC<{ tempo?: number; kopf?: Kopf | null; stil?: SignetStil }> = ({ tempo = 1, kopf = null, stil = {} }) => {
+  const { grund = FARBE.grund, tinte = FARBE.text, punkt: punktFarbe = FARBE.akzent, strich = 3, punktR = 13, gewicht = GEWICHT } = stil;
   const bildNr = useCurrentFrame();
   const f = bildNr * tempo;
   // 0–14 leer; 14–56 die Schlaufe zeichnet sich; ab 40 läuft der Punkt (eine Runde in 54 Bildern)
@@ -56,15 +61,15 @@ export const Signet: React.FC<{ tempo?: number; kopf?: Kopf | null }> = ({ tempo
   const punktSicht = interpolate(f, [40, 48], [0, 1], klemm);
   // nachdem alle Buchstaben stehen, rücken die Kästchen auf die natürliche Breite der Buchstaben zusammen
   const zusammen = interpolate(f, [128, 146], [0, 1], { ...klemm, easing: Easing.bezier(0.65, 0, 0.35, 1) });
-  const w = breiten().map((b) => interpolate(zusammen, [0, 1], [KASTEN, b]));
+  const w = breiten(gewicht).map((b) => interpolate(zusammen, [0, 1], [KASTEN, b]));
   const abstand = interpolate(zusammen, [0, 1], [ABSTAND, SPERRUNG]);
   const breite = w.reduce((x, y) => x + y, 0) + (NAME.length - 1) * abstand;
   return (
-    <AbsoluteFill style={{ backgroundColor: FARBE.grund }}>
+    <AbsoluteFill style={{ backgroundColor: grund }}>
       <svg width={1080} height={1920} style={{ position: "absolute", inset: 0 }}>
-        <path d={PFAD} fill="none" stroke={FARBE.text} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"
+        <path d={PFAD} fill="none" stroke={tinte} strokeWidth={strich} strokeLinecap="round" strokeLinejoin="round"
           pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - gezeichnet} />
-        <circle cx={px} cy={py} r={13} fill={FARBE.akzent} opacity={punktSicht} />
+        <circle cx={px} cy={py} r={punktR} fill={punktFarbe} opacity={punktSicht} />
       </svg>
       {kopf ? (
         <div style={{
@@ -93,12 +98,12 @@ export const Signet: React.FC<{ tempo?: number; kopf?: Kopf | null }> = ({ tempo
               {/* das Kästchen: zuerst eine Fläche, die sich zum Buchstaben zusammenzieht */}
               <div style={{
                 position: "absolute", inset: 0, opacity: kasten * (1 - wird),
-                border: `3px solid ${FARBE.text}`, background: FARBE.text + "14",
+                border: `${Math.max(3, strich * 0.6)}px solid ${tinte}`, background: tinte + "14",
                 scale: interpolate(wird, [0, 1], [1, 0.55]), borderRadius: interpolate(wird, [0, 1], [0, 18]),
               }} />
               <div style={{
                 position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: SANS, fontWeight: GEWICHT, fontSize: SCHRIFT, lineHeight: 1, color: z === "." ? FARBE.akzent : FARBE.text,
+                fontFamily: SANS, fontWeight: gewicht, fontSize: SCHRIFT, lineHeight: 1, color: z === "." ? punktFarbe : tinte,
                 opacity: wird, scale: interpolate(wird, [0, 1], [1.35, 1]),
                 clipPath: `inset(${interpolate(wird, [0, 1], [50, 0])}% ${interpolate(wird, [0, 1], [50, 0])}%)`,
               }}>{z}</div>
