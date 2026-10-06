@@ -157,7 +157,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 const SEITEN = {
   apps: { titel: "Apps", karten: [["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
-  web: { titel: "Web", karten: [["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"]] },
+  web: { titel: "Web", karten: [["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "../alpha/poststrukturalismus-doppelpruefung.pdf"]] },
 };
 
 test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und Eintrag in der Sitemap", () => {
@@ -173,7 +173,7 @@ test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und 
     assert.ok(sitemap.includes(`<loc>https://ornament.cloud/${ordner}/</loc>`), `${ordner}/ steht in der Sitemap`);
     assert.match(html, /<p class="back"><a href="\.\.\/">← Zur Startseite<\/a><\/p>/);
     assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/" aria-current="true">Ornament Cloud<\/a>\s*<a href="\.\.\/alpha\/drittes-rad\/">Das Dritte Rad<\/a>\s*<\/nav>/);
-    assert.ok(!/class="card--b|card--d|<video/.test(html));
+    assert.ok(!/class="card--b|card--d/.test(html) && (ordner === "web" || !/<video/.test(html)), "Videos nur auf «Web»");
     assert.equal(stand([...html.matchAll(/styles\.css\?v=(\d+)/g)]).length, 1);
   }
 });
@@ -206,6 +206,16 @@ test("Web: OMNA COLOR und Das Dritte Rad (Alpha) und das Stellenfeld als Beiträ
   assert.deepEqual(k.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
   assert.ok(k.slice(0, 2).every((x) => x.tags.includes("Alpha") && x.tags.includes("Prototyp")), "die beiden Räder sind Alpha");
   assert.ok(!k[2].tags.includes("Alpha"), "das Stellenfeld liegt nicht im Alpha-Bereich");
+  // das Comic-Video (4 : 5, 6. Oktober 2026): letzter Beitrag, spielt von selbst, verlinkt nur die Studie als PDF
+  const v = k[3];
+  assert.equal([...v.html.matchAll(/<a /g)].length, 1, "ein Link: die Studie");
+  assert.ok(existsSync(new URL("alpha/poststrukturalismus-doppelpruefung.pdf", root)), "das PDF liegt im Alpha-Bereich");
+  assert.match(v.html, /<video class="beitrag-video" controls muted playsinline preload="none" poster="\.\.\/assets\/poststrukturalismus-4x5\.jpg" width="864" height="1080"/);
+  assert.match(v.html, /<source src="\.\.\/assets\/poststrukturalismus-4x5\.mp4" type="video\/mp4">/);
+  for (const d of ["poststrukturalismus-4x5.mp4", "poststrukturalismus-4x5.jpg"]) assert.ok(existsSync(new URL(`assets/${d}`, root)), d);
+  assert.deepEqual(jpegMass(readFileSync(new URL("assets/poststrukturalismus-4x5.jpg", root))), [864, 1080], "Vorschaubild 4 : 5");
+  assert.ok(readFileSync(new URL("assets/poststrukturalismus-4x5.mp4", root)).length < 14_000_000, "Video unter 14 MB");
+  assert.match(html, /new IntersectionObserver/, "Autoplay über IntersectionObserver");
   const erzeuger = lies("tools/start-og.mjs");
   for (const [i, datei] of ["vorschau-omna-color.jpg", "vorschau-drittes-rad.jpg", "vorschau-stellenfeld.jpg"].entries()) {
     assert.match(k[i].html, new RegExp(`<img src="\\.\\./assets/${datei}" alt="" width="640" height="800" loading="lazy">`));

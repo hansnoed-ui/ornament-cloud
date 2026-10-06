@@ -295,7 +295,41 @@ await check("Menü führt zu den Seiten: Zettelkasten direkt in den Zettelkasten
 });
 
 // ---------- Web ----------
-await check("Web: drei Karten mit Bild (640 × 800, dunkel), die beiden Räder nebeneinander; die Karten führen zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld", async () => {
+await check("Web: das Comic-Video (4 : 5) spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt; bei «weniger Bewegung» nicht (6. Oktober 2026)", async () => {
+  for (const reducedMotion of ["no-preference", "reduce"]) {
+    const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 }, reducedMotion });
+    await ctx.addInitScript(() => {
+      window.__video = { play: 0, pause: 0 };
+      const play = HTMLMediaElement.prototype.play, pause = HTMLMediaElement.prototype.pause;
+      HTMLMediaElement.prototype.play = function () { window.__video.play += 1; return play.call(this); };
+      HTMLMediaElement.prototype.pause = function () { window.__video.pause += 1; return pause.call(this); };
+    });
+    const page = await ctx.newPage();
+    await page.goto(origin + "/web/");
+    const v = page.locator(".beitrag-video");
+    assert.equal(await v.evaluate((e) => e.muted), true, "stumm");
+    assert.equal(await v.evaluate((e) => e.preload), "none");
+    const t = await box(page.locator("main .card--video .thumb"));
+    assert.ok(Math.abs(t.h / t.w - 5 / 4) < 0.01, "Video im Format 4 : 5");
+    await page.waitForTimeout(300);
+    assert.equal((await page.evaluate(() => window.__video)).play, 0, "ausserhalb des Bildes spielt nichts");
+    await v.scrollIntoViewIfNeeded();
+    if (reducedMotion === "reduce") {
+      await page.waitForTimeout(500);
+      assert.equal((await page.evaluate(() => window.__video)).play, 0, "bei «weniger Bewegung» nur auf Knopfdruck");
+      assert.ok(await v.isVisible(), "das Video bleibt mit Bedienelementen sichtbar");
+    } else {
+      await page.waitForFunction(() => window.__video.play > 0, null, { timeout: 5000 });
+      await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
+      await page.waitForTimeout(500);
+      const n = await page.evaluate(() => window.__video);
+      assert.ok(n.pause > 0 || (await v.evaluate((e) => e.paused)), "ausserhalb des Bildes angehalten");
+    }
+    await ctx.close();
+  }
+});
+
+await check("Web: vier Karten, drei mit Bild (640 × 800, dunkel), die beiden Räder nebeneinander; die Karten führen zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
   const errors = fehler(page);
@@ -304,7 +338,7 @@ await check("Web: drei Karten mit Bild (640 × 800, dunkel), die beiden Räder n
   await page.waitForFunction(() => [...document.querySelectorAll("main img")].every((i) => i.complete && i.naturalWidth > 0));
   assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), [[640, 800], [640, 800], [640, 800]]);
   const ys = await page.locator("main .card").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().y)));
-  assert.deepEqual(ys.length, 3);
+  assert.deepEqual(ys.length, 4);
   assert.equal(ys[0], ys[1], "nebeneinander");
   const t = await box(page.locator("main .thumb").first());
   assert.ok(Math.abs(t.h / t.w - 5 / 4) < 0.01, "Bild im Format 4 : 5");
