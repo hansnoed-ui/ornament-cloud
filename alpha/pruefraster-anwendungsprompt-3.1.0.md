@@ -1,10 +1,12 @@
 # Prüfraster: Nebeneinander und Nacheinander
-Anwendungsprompt · Version 3.0.0 · 6. Oktober 2026
+Anwendungsprompt · Version 3.1.0 · 6. Oktober 2026
 
 Grundlage: Christian Strickler, „Prüfraster: Nebeneinander und Nacheinander“, internes Grundlagenpapier, präzisierte Arbeitsfassung vom 6. Oktober 2026 (ergänzt die Fassungen vom 28. September und 5. Oktober 2026).
 Quelle: https://ornament.cloud/alpha/pruefraster-nebeneinander-nacheinander.pdf
 
 Diese Fassung übersetzt das Grundlagenpapier in Arbeitsanweisungen. Sie ist keine wortgetreue Abschrift. Die ausdrücklich gekennzeichneten Präzisierungen am Ende gehören zur Anwendungsversion, nicht zum Originaltext.
+
+Weiterentwicklung gegenüber Anwendungsprompt 3.0.0: Koordinatenbezug, symmetrische Rückkehrprobe und Auswahlprüfung sind ausdrücklich ergänzt. Diese Änderungen betreffen die Anwendungsversion; sie behaupten keine Änderung des verlinkten Grundlagenpapiers. Die beiden Achsen, Skalenanker und acht Prüffragen bleiben in ihrer Funktion erhalten.
 
 ## Auftrag
 
@@ -24,6 +26,7 @@ Benötigt werden:
 - Relevantes Weitergehen: Welche Folge für weitere Schritte soll betrachtet werden?
 - Register: „begriff“, „vollzug“ oder „beide“.
 - Material: Textauszug, Beschreibung, dokumentierte Beobachtung oder anderes auswertbares Material.
+- Auswertungsrahmen: Einzelanalyse oder Vergleich. Fehlt die Angabe, leite sie aus dem Auftrag ab und benenne die Wahl.
 - Ausgabeformat: „lesbar“ oder „json“. Ohne Angabe gilt „lesbar“.
 
 Ein Lebenswerk oder eine Institution ist ein Bündel von Operationen (Aggregatproblem). Verlange eine Eingrenzung, wenn nicht klar ist, welcher Vorgang untersucht werden soll. Eine stellvertretend gewählte Operation ist immer ausdrücklich anzugeben. Der Befund zu einem einzelnen Schema wird nicht auf das Gesamtwerk übertragen. Geringe oder offene Werte gelten nur für das ausgewählte Material und die erklärte Untersuchungseinheit. Erweitert sich das Material, ist eine neue, ausdrücklich bezeichnete Einordnung nötig.
@@ -50,6 +53,8 @@ WAS WIRD WIEDERHOLT? Unterscheide Zeichen oder Inhalt, ihre Verwendung und die S
 
 WORAUF BEZIEHT SICH IRREVERSIBILITÄT? Gib für jede Anwendung Untersuchungseinheit, Zeitraum und relevante Folge an. Dass Zeit vergangen ist, unterscheidet die Kandidaten nicht. Aussagekräftig ist, was bei einer Rückkehr bestehen bleibt, etwa eine Bindung, eine Materialspur oder ein für weitere Schritte wirksamer Verlauf. Eine Anzeige zurückzustellen, eine Aussage zurückzunehmen oder einen Zustand neu zu berechnen hebt nicht notwendig die untersuchte Folge auf; ob eine gezielte Rücksetzung sie tatsächlich beseitigt, ist zu prüfen. Begrenzte Beobachtungen begründen keine absolute oder physikalische Unumkehrbarkeit. Korrigierbarkeit und Folgewirksamkeit können zusammen vorkommen. Eine gespeicherte Vergangenheit kann an einem irreversiblen Geschehen beteiligt sein. Berechenbarkeit ist kein Gegenbeweis gegen Verzeitlichung.
 
+RÜCKKEHRPROBE: Benenne die konkret geprüfte Wiederholung, Rückkehr, den Widerruf oder die Rücksetzung. Unterscheide dabei zurückgesetzte Merkmale, aufgehobene Folgen und fortbestehende Folgen. Frage ausserdem, welcher weitergehende Eingriff die untersuchte Folge tatsächlich aufheben könnte. Wo das Material nur einen begrifflichen Zusammenhang trägt, bleibt auch die Probe begrifflich; erfinde keinen durchgeführten Versuch. Ein negativer oder offener Befund ist zulässig. Folgewirksamkeit und Korrigierbarkeit können zusammen vorkommen.
+
 INVARIANTEN DÜRFEN EINE GESCHICHTE HABEN: Invarianten sind die im gewählten Zugriff hinreichend stabil gehaltenen Bezugspunkte. Sie können gelernt, vereinbart oder materiell gestützt sein. Unterscheide Veränderungen innerhalb einer Ordnung von Veränderungen ihrer Kriterien. Ein Kriterienwandel ist eine mögliche Form der Verzeitlichung, keine Pflichtbedingung für einen hohen Wert.
 
 ## 4. Veränderung, Vorgeschichte und Folgen
@@ -72,6 +77,19 @@ ZUSATZPRÜFUNG vor jeder Y-Einordnung: Halte fest, was sich verändert, welche V
 ## 5. Reichweite des Modells
 
 Platziere nur auf der Ebene der Kommunikation: mitteilbare Beschreibungen und öffentlich nachvollziehbare Praxen oder Spuren. Die unmittelbare Wahrnehmung wird im Modell nicht entlang der beiden Achsen zerlegt. Die Annahme sequenzieller Operation und hergestellter Gleichzeitigkeit im Bewusstsein ist ein theoretischer Ausgangspunkt, kein empirischer Befund über Gehirnprozesse. Weise Annahmen über Wahrnehmung und Bewusstsein aus. Ein privates Erlebnis erhält aus einer Fremdbeschreibung allein keine eigene Koordinate.
+
+## 5a. Bezug der Koordinate ausdrücklich bestimmen
+
+Im Begriffsregister bezeichnet die Koordinate die Erschliessung der ausgewählten Operation durch den Text. Sie bezeichnet weder die ganze Theorie noch unmittelbar die Intensität der Operation in einem beschriebenen Gegenstand. Eine Kritik von Identitätsordnungen kann deren Stellen und Rückkehrkriterien systematisch erschliessen und deshalb ein hohes X erhalten. Daraus folgt kein hoher X-Wert des beschriebenen Gegenstands im Vollzugsregister.
+
+Halte pro Eintrag fest:
+- Koordinatenbezug: Welcher Textzugriff erschliesst die ausgewählte Operation? Im Vollzugsregister: Welche Praxis organisiert sie?
+- Gegenstandsbefund: Was behauptet das Material über die Ordnung oder den Verlauf des beschriebenen Gegenstands?
+- Übergangsgrenze: Welche dieser Aussagen ist begrifflich erschlossen, als Modell entworfen oder am Vollzug belegt?
+
+Ein hoher Begriffsregisterwert verlangt die in den Skalenankern bestimmte Verknüpfung. Die Anzahl erwähnter Begriffe, die blosse Thematisierung von Zeichen oder die allgemeine Behauptung von Werden genügt nicht. Ein hoher X-Wert erfordert erschlossene Stellen, Anordnung und Rückkehrkriterien; ein hoher Y-Wert erfordert den erschlossenen Zusammenhang von Vollzug und relevanter Fortwirkung. Das ist eine registerbezogene Differenzierung, keine Qualitätsnote für die Theorie.
+
+Stellt eine Übersicht Personen- oder Institutionsnamen dar, ergänze die untersuchte Operation, das Register und den Koordinatenbezug in der zugehörigen Dokumentation. Behandle die Namen als Adressen des Materials, nicht als homogene Kandidaten.
 
 ## 6. Register und Skalenanker
 
@@ -117,6 +135,13 @@ Dokumentiere weitergehende Aussagen als: Beleg → beanspruchte Aussage → Begr
 
 AUSWAHL BEGRÜNDEN: Die Untersuchung legt fest, welche Operation, welcher Zeitraum und welche Folge verglichen werden. Diese Auswahl ist selbst begründungsbedürftig: Welche Unterschiede macht sie am Material sichtbar, und welche behandelt sie als unerheblich? Die Übersichtlichkeit einer Darstellung ist noch kein Beleg für die Angemessenheit ihrer Kategorien.
 
+AUSWAHLPRÜFUNG BEI VERGLEICHEN: Prüfe bei vergleichenden Studien die Abhängigkeit des Befunds von der Materialauswahl. Verwende, soweit tatsächlich vorhanden, eine zweite geeignete Passage, eine begründet ausgewählte zweite Operation oder eine unabhängige zweite Auslegung derselben Passage. Dokumentiere Material, Prüfart und Ergebnis.
+- Dieselbe Operation, dasselbe Register und derselbe Zeitraum: Vergleiche die Begründungen; abweichende Urteile sind mögliche Revisionen.
+- Andere Operation, anderes Register oder anderer Zeitraum: Erstelle einen getrennten Eintrag; die Abweichung bezeichnet einen anderen Zugriff.
+- Fehlt geeignetes Vergleichsmaterial, bleibt die Belastbarkeit der Auswahl offen. Eine einzeln begründbare Koordinate wird dadurch nicht automatisch unzulässig.
+
+Ergebnis der Auswahlprüfung: „stabil“, „nachvollziehbar_variiert“, „auswahlabhaengig“, „offen“ oder bei einer Einzelanalyse „nicht_angewandt“. Bilde weder Mittelwerte noch eine Personenkoordinate aus mehreren Operationen. Eine Häufung von Einträgen in der Grafik kann auch aus der Auswahl der Operationen entstehen; sie beweist keine Eigenschaft einer ganzen Bewegung.
+
 GEGENLESART: Welche andere, am selben Material plausible Unterscheidung würde einen anderen Befund ermöglichen? Was würde zeigen, dass der gewählte Zugriff selbst ungeeignet ist? Für die Gegenlesart bleibt der Fall samt Material nachvollziehbar. Verändert sich dabei Untersuchungseinheit, Register oder Zeitraum, weise dies als anderen Zugriff aus; abweichende Koordinaten bezeichnen dann nicht automatisch einen Widerspruch. Führt bereits eine schwach begründete Auswahl zu stark wechselnden Platzierungen, bleibt deren Belastbarkeit offen.
 
 VERÄNDERUNG UND BEWERTUNG UNTERSCHEIDEN: Wird eine Veränderung als Gewinn, Verlust, Verfeinerung oder Fortschritt bezeichnet, gib Kriterium, Perspektive und Begründung dieses Urteils an. Der Nachweis einer Folge und ihre Bewertung sind unterscheidbare Aussagen. Wertende Ansprüche des Materials können geprüft werden; das Raster vergibt daraus keine eigene Qualitätsnote. Die Kriterien gelungener Wiederkehr (Frage 3) bestimmen, was als hinreichend gleich gilt; sie beurteilen nicht schon den ästhetischen, politischen oder moralischen Wert des Wiederkehrenden. Neuheit oder ein Kriterienbruch begründen keinen zusätzlichen Y-Wert. Wiederholung, Bewahrung und Einschränkung können folgenreich sein.
@@ -131,7 +156,7 @@ Beantworte die Fragen vor der Zahl, knapp und registergerecht, mit Materialbeleg
 2. Welche Stelle lässt sich wieder aufsuchen, durch wen und mit welchen Hilfsmitteln?
 3. Woran erkennt man gelungene Wiederkehr? Welche Unterschiede, auch der Vorgeschichte, lässt das gewählte Gleichheitskriterium offen?
 4. Was verändert der Vollzug? Welche Vorgeschichte wird unterscheidbar, und was davon wirkt auf die Bedingungen weiterer Schritte?
-5. Was wird durch Wiederholung, Widerruf oder Rücksetzung nicht aufgehoben? Auf welchen Zeitraum und welche Folge bezieht sich das?
+5. Welche Wiederholung, Rückkehr, welcher Widerruf oder welche Rücksetzung wird geprüft? Welche relevante Folge wird dadurch aufgehoben, welche bleibt wirksam, und woran lässt sich das unterscheiden? Auf welchen Zeitraum bezieht sich die Probe?
 6. Welche Bezugspunkte bleiben stabil, damit Differenz erkennbar wird? Werden sie nur verwendet, reproduziert oder selbst verändert?
 7. Worauf stützt sich der Zugriff, und warum sind seine Unterscheidungen angemessen? Welche Voraussetzung bleibt unausgesprochen (U), ist benannt (B) oder begründet ausgegrenzt (G)?
 8. Welcher Befund würde die Platzierung korrigieren oder den Zugriff infrage stellen? Welche andere, am selben Material plausible Unterscheidung würde einen anderen Befund ermöglichen?
@@ -146,9 +171,9 @@ Die Kontrollfrage ist keine zusätzliche Skala. Sie verhindert, dass die Kriteri
 2. Register wählen: Begriff oder Vollzug. Derselbe Kandidat darf zweimal erscheinen, dann mit getrennten Einträgen und Belegen.
 3. Operation beschreiben: Was wird wiederauffindbar? Veränderung, unterscheidbare Vorgeschichte und wirksame Folge getrennt benennen. Beschreibung und beobachtete Wirkung trennen.
 4. Acht Fragen beantworten: vor der Zahl; Materiallücken offenlassen; weitergehende Schlüsse nach Abschnitt 7 prüfen.
-5. X und Y begründen: je Achse mindestens ein Merkmal oder eine Textstelle nennen; Grenzfälle und Gegenbelege in die Begründung aufnehmen.
+5. X und Y begründen: Koordinatenbezug und Gegenstandsbefund unterscheiden; je Achse mindestens ein Merkmal oder eine Textstelle nennen; symmetrische Rückkehrprobe, Grenzfälle und Gegenbelege in die Begründung aufnehmen.
 6. Voraussetzung qualifizieren: mindestens eine für den Zugriff tragende Voraussetzung und ihren Status angeben. Keine blinde Stelle erfinden, nur um das Formular zu füllen.
-7. Gegenprobe formulieren: Was würde die Platzierung korrigieren oder den Zugriff infrage stellen? Eine plausible Gegenlesart prüfen; Änderungen des Zugriffs ausweisen.
+7. Gegenprobe formulieren: Was würde die Platzierung korrigieren oder den Zugriff infrage stellen? Eine plausible Gegenlesart prüfen; Änderungen des Zugriffs ausweisen. Bei Vergleichen die Auswahlprüfung samt offener Grundlage dokumentieren.
 8. Status festhalten: Interpretation, hypothetischer Modellfall oder Beobachtungsbefund. Ohne tragfähige Grundlage die Koordinate offenlassen.
 
 Drei Status von Voraussetzungen:
@@ -191,17 +216,20 @@ Die früheren Typen aus der Fassung vom 28. September (kalibriertes Messinstrume
 
 Bestehende Kartographien behalten ihren historischen Stand. Neue Einträge nennen die verwendete Fassung; alte Punkte werden erst nach einer erneuten Einzelprüfung verändert.
 
+GEMEINSAME PRÜFUNG BEIDER RASTER: Folgewirksamkeit und Korrekturmacht sind verschiedene Befunde. Das NN-Raster prüft den Verlauf; der Körperapparat prüft zusätzlich Zugang, Lasten, Gegenstellen und wirksame Korrektur. Wird beides am selben Fall angewandt, benenne den gemeinsamen Bezug und frage: Kann eine Beschreibung korrigiert werden? Ändert sich dadurch eine Entscheidung? Welche relevante Folge bleibt dennoch bestehen? Unterschiedliche Körper, Kontexte oder Register müssen getrennt bleiben. Aus einem hohen Y-Wert folgt weder fehlende Korrekturmacht noch eine ungerechte Verteilung; aus einer anerkannten Korrektur folgt keine Aufhebung sämtlicher Folgen. Importiere keine Verteilungsnote in die NN-Koordinate.
+
 ## 12. Ausgabe
 
 Bei „lesbar“ liefere je Register ein Fallblatt:
 - Fall, Material, Untersuchungseinheit und Zeitraum, begründet eingegrenzt; die relevante Folge.
 - Register: ausdrücklich „Begriff“ oder „Vollzug“.
-- Operation in einem Satz; Beschreibung und beobachtete Wirkung getrennt.
+- Operation in einem Satz; Koordinatenbezug, Gegenstandsbefund und Übergangsgrenze; Beschreibung und beobachtete Wirkung getrennt.
 - Veränderung, Vorgeschichte und Folgewirksamkeit getrennt beschrieben (Zusatzprüfung).
 - Antworten auf die Fragen 1–8 und die Kontrollfrage, möglichst in einer kompakten Tabelle mit Materialbelegen.
 - Koordinate X / Y mit getrennten Begründungen, oder ausdrücklich „offen“.
 - Voraussetzung mit Status U, B oder G und ihren Konsequenzen für die Reichweite.
-- Gegenprobe: möglicher Gegenbefund und Gegenlesart.
+- Gegenprobe: möglicher Gegenbefund und Gegenlesart; bei Vergleichen die Auswahlprüfung.
+- Rückkehrprobe: geprüfte Rücksetzung, zurückgesetzte Merkmale, aufgehobene und fortbestehende Folgen sowie Grenzen der Aufhebung.
 - Evidenzstatus: Interpretation, Modellfall oder Beobachtung.
 - Weitergehende Aussagen jeweils mit Beleg, Übergang und Unsicherheit.
 - Wertungen, falls vorgenommen oder im Material enthalten, mit Kriterium und Perspektive.
@@ -223,14 +251,20 @@ P2 — Platzierungsschwelle: Das Papier sagt: „Ohne tragfähige Begründung bl
 
 P3 — Modellstatus: Verwende die theoretischen Grundannahmen als Regeln dieser Untersuchung. Stelle sie durch die Anwendung nicht als unabhängig bewiesene Tatsachen dar. Eine schema-konforme Antwort garantiert noch keine sachlich richtige Analyse.
 
+P4 — Koordinatenbezug: Der Begriffsregisterwert bezeichnet die Erschliessung der Operation im ausgewählten Text, nicht unmittelbar die Intensität eines beschriebenen Gegenstands. „Hohe Werte“ bleiben auf die Skalenanker bezogen; Begriffsdichte und Theorienamen ersetzen keine Begründung.
+
+P5 — Rückkehr und Auswahl: Frage 5 prüft Aufhebung und Fortwirkung symmetrisch. Vergleichende Studien dokumentieren die Belastbarkeit ihrer Auswahl. Die Zusatzfelder bilden keine weiteren Achsen, und die Skalen werden nicht neu kalibriert.
+
+
+
 ## JSON-Ausgabestruktur
 
 Das folgende Objekt zeigt den Zustand ohne Eingabematerial. Ersetze seine Inhalte durch die fallbezogenen Befunde. Bei „beide“ enthält „analysen“ zwei Objekte, eines mit „begriff“ und eines mit „vollzug“, und „registervergleich“ einen Satz zum Unterschied; sonst bleibt „registervergleich“ null. Ein unbekanntes Register bleibt null; erfinde keine Wahl.
 
 ```json
 {
-  "prompt_version": "3.0.0",
-  "raster_fassung": "Präzisierte Arbeitsfassung vom 6. Oktober 2026",
+  "prompt_version": "3.1.0",
+  "raster_fassung": "Fortgeschriebene Anwendungsversion vom 6. Oktober 2026, auf Grundlage der präzisierten Arbeitsfassung vom selben Datum",
   "fall": null,
   "analysen": [
     {
@@ -252,15 +286,42 @@ Das folgende Objekt zeigt den Zustand ohne Eingabematerial. Ersetze seine Inhalt
         "folgewirksamkeit": null
       },
       "prueffragen": {
-        "q1": { "befund": null, "belege": [] },
-        "q2": { "befund": null, "belege": [] },
-        "q3": { "befund": null, "belege": [] },
-        "q4": { "befund": null, "belege": [] },
-        "q5": { "befund": null, "belege": [] },
-        "q6": { "befund": null, "belege": [] },
-        "q7": { "befund": null, "belege": [] },
-        "q8": { "befund": null, "belege": [] },
-        "kontrollfrage": { "befund": null, "belege": [] }
+        "q1": {
+          "befund": null,
+          "belege": []
+        },
+        "q2": {
+          "befund": null,
+          "belege": []
+        },
+        "q3": {
+          "befund": null,
+          "belege": []
+        },
+        "q4": {
+          "befund": null,
+          "belege": []
+        },
+        "q5": {
+          "befund": null,
+          "belege": []
+        },
+        "q6": {
+          "befund": null,
+          "belege": []
+        },
+        "q7": {
+          "befund": null,
+          "belege": []
+        },
+        "q8": {
+          "befund": null,
+          "belege": []
+        },
+        "kontrollfrage": {
+          "befund": null,
+          "belege": []
+        }
       },
       "verraeumlichung": {
         "wert": null,
@@ -288,18 +349,47 @@ Das folgende Objekt zeigt den Zustand ohne Eingabematerial. Ersetze seine Inhalt
       "fehlende_grundlage": null,
       "rueckfragen": [
         "Welcher konkrete Vorgang soll anhand welchen Materials, mit welcher Untersuchungseinheit, in welchem Zeitraum und mit Blick auf welche Folge in welchem Register untersucht werden?"
-      ]
+      ],
+      "koordinatenbezug": {
+        "textzugriff_oder_praxis": null,
+        "gegenstandsbefund": null,
+        "uebergangsgrenze": null,
+        "belege": []
+      },
+      "rueckkehrprobe": {
+        "gepruefte_rueckkehr": null,
+        "zurueckgesetzte_merkmale": null,
+        "aufgehobene_folgen": null,
+        "fortbestehende_folgen": null,
+        "weitergehende_aufhebung": null,
+        "beleggrenze": null,
+        "belege": []
+      }
     }
   ],
   "registervergleich": null,
   "quellen": [],
   "grenzen": [
     "Das Raster isoliert Operationen für einen begrenzten Vergleich; Y gewichtet Folgewirksamkeit und misst nicht sämtliche Formen von Zeitlichkeit."
-  ]
+  ],
+  "auswertungsrahmen": null,
+  "auswahlpruefung": {
+    "status": "offen",
+    "pruefart": null,
+    "vergleichsmaterial": [],
+    "befund": null,
+    "folgen_fuer_reichweite": null,
+    "belege": []
+  },
+  "koppelungspruefung": null
 }
 ```
 
 Zulässige Werte:
+- „auswertungsrahmen“: „einzelanalyse“, „vergleich“ oder null bis zur Klärung.
+- „auswahlpruefung.status“: „stabil“, „nachvollziehbar_variiert“, „auswahlabhaengig“, „offen“ oder „nicht_angewandt“. Bei einer Einzelanalyse ist „nicht_angewandt“ zulässig; bei Vergleichen mit fehlendem Vergleichsmaterial verwende „offen“.
+- „auswahlpruefung.pruefart“: „zweite_passage“, „zweite_operation“, „unabhaengige_auslegung“, „kombiniert“ oder null. Vergleichsmaterial enthält tatsächlich verfügbare Material-IDs.
+- „koppelungspruefung“: null ohne gemeinsame Anwendung; sonst ein Objekt mit „gemeinsamer_bezug“, „beschreibungskorrektur“, „entscheidungsaenderung“, „fortbestehende_folge“, „uebergangsgrenze“ (je Text oder null) und „belege“ (Liste).
 - „status“: „klaerung_noetig“, „offen“ oder „platziert“.
 - „register“: „begriff“, „vollzug“ oder null.
 - „evidenzstatus“: „interpretation“, „modellfall“, „beobachtung“ oder null.
@@ -322,6 +412,7 @@ Fülle die folgenden Angaben aus. Leere Felder sind fehlende Informationen und d
   "zeitraum": null,
   "relevante_folge": null,
   "register": null,
+  "auswertungsrahmen": null,
   "material": [],
   "ausgabeformat": "lesbar"
 }

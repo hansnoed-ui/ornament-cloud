@@ -320,9 +320,9 @@ test("Zählung: Alpha-Übersicht und die Seiten der drei Prüfraster binden Goat
 // Anleitung und Vorschaubild zum Teilen (tools/alpha-og.mjs)
 const PAPIERE = [
   { seite: "pruefraster", titel: "Prüfraster: Nebeneinander und Nacheinander", pdf: "pruefraster-nebeneinander-nacheinander.pdf",
-    prompt: "pruefraster-anwendungsprompt-3.0.0.md", art: "Markdown", anfang: /^# Prüfraster: Nebeneinander und Nacheinander\nAnwendungsprompt · Version 3\.0\.0 · 6\. Oktober 2026/ },
+    prompt: "pruefraster-anwendungsprompt-3.1.0.md", art: "Markdown", anfang: /^# Prüfraster: Nebeneinander und Nacheinander\nAnwendungsprompt · Version 3\.1\.0 · 6\. Oktober 2026/ },
   { seite: "verteilapparat", titel: "Der Verteilapparat des Körpers", pdf: "verteilapparat-des-koerpers.pdf",
-    prompt: "verteilapparat-anwendungsprompt-1.0.0.txt", art: "Text", anfang: /^DER VERTEILAPPARAT DES KÖRPERS – PROMPT ZUM KOPIEREN\nVersion 1\.0\.0/ },
+    prompt: "verteilapparat-anwendungsprompt-2.0.0.txt", art: "Text", anfang: /^DER VERTEILAPPARAT DES KÖRPERS – PROMPT ZUM KOPIEREN\nVersion 2\.0\.0 · 6\. Oktober 2026/ },
   // seit dem 3. Oktober 2026 wie die ersten beiden; Prompt von Claude entworfen, vom Autor freigegeben
   { seite: "gesellschaftskonzepte", titel: "Prüfraster für Gesellschaftskonzepte", pdf: "pruefraster-gesellschaftskonzepte-0.4.pdf",
     prompt: "gesellschaftskonzepte-anwendungsprompt-0.4.0.md", art: "Markdown", anfang: /^# Prüfraster für Gesellschaftskonzepte\nAnwendungsprompt · Version 0\.4\.0/ },
@@ -362,14 +362,15 @@ for (const p of PAPIERE) test(`Alpha, ${p.titel}: eigene Seite mit PDF, Anwendun
   assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630]);
 });
 
-// Prüfraster «Nebeneinander und Nacheinander»: seit dem 6. Oktober 2026 die präzisierte Arbeitsfassung (PDF, 13 Seiten) mit Anwendungsprompt 3.0.0
+// Prüfraster «Nebeneinander und Nacheinander»: seit dem 6. Oktober 2026 die präzisierte Arbeitsfassung (PDF, 13 Seiten) mit Anwendungsprompt 3.1.0 (Verteilapparat 2.0.0 seit 6. Oktober 2026)
 test("Alpha, Prüfraster: Fassung vom 6. Oktober 2026 im PDF, auf der Seite und im Prompt; die alten Prompt-Dateien sind weg", () => {
   assert.ok(readFileSync(new URL("alpha/pruefraster-nebeneinander-nacheinander.pdf", root)).includes("6. Oktober 2026"), "PDF ist der neue Stand");
   const html = readFileSync(new URL("alpha/pruefraster/index.html", root), "utf8");
-  assert.ok(html.includes("Präzisierte Arbeitsfassung vom 6. Oktober 2026") && html.includes("PDF, 13 Seiten") && html.includes("Version 3.0.0 · 6. Oktober 2026"));
-  const prompt = readFileSync(new URL("alpha/pruefraster-anwendungsprompt-3.0.0.md", root), "utf8");
-  assert.ok(prompt.includes('"raster_fassung": "Präzisierte Arbeitsfassung vom 6. Oktober 2026"') && prompt.includes("Kontrollfrage:") && prompt.includes("ZUSATZPRÜFUNG"));
-  for (const alt of ["1.0.0", "2.0.0"]) assert.ok(!existsSync(new URL(`alpha/pruefraster-anwendungsprompt-${alt}.md`, root)), alt);
+  assert.ok(html.includes("Präzisierte Arbeitsfassung vom 6. Oktober 2026") && html.includes("PDF, 13 Seiten") && html.includes("Version 3.1.0 · 6. Oktober 2026"));
+  const prompt = readFileSync(new URL("alpha/pruefraster-anwendungsprompt-3.1.0.md", root), "utf8");
+  assert.ok(prompt.includes("präzisierte Arbeitsfassung vom 6. Oktober 2026") && prompt.includes("Kontrollfrage:") && prompt.includes("ZUSATZPRÜFUNG"));
+  for (const alt of ["1.0.0", "2.0.0", "3.0.0"]) assert.ok(!existsSync(new URL(`alpha/pruefraster-anwendungsprompt-${alt}.md`, root)), alt);
+  assert.ok(!existsSync(new URL("alpha/verteilapparat-anwendungsprompt-1.0.0.txt", root)), "Verteilapparat 1.0.0 ist ersetzt");
 });
 
 // Analyse «Allgemeines, Konkretes und Metastabilität» (5. Oktober 2026): eigene Seite mit Vorschaubild, steht für sich (REGELN §14)
