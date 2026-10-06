@@ -21,6 +21,7 @@ const MENUSEITEN = {
   "apps/index.html": ["apps/", "page"],
   "masterprompts/index.html": ["masterprompts/", "page"],
   "web/index.html": ["web/", "page"],
+  "web/poststrukturalismus/index.html": ["web/", "true"],   // die Videoseite gehört zu «Web» (6. Oktober 2026)
   [`${ORNA}index.html`]: ["apps/", "true"],           // ORNA gehört zu den Apps
   [`${ORNA}feld/index.html`]: ["apps/", "true"],
   [`${ORNA}app/index.html`]: ["apps/", "true"],       // die App-Seiten sind Abschriften, ihre Kopfzeile ist ausgeblendet
@@ -157,7 +158,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 const SEITEN = {
   apps: { titel: "Apps", karten: [["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
-  web: { titel: "Web", karten: [["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "../alpha/poststrukturalismus-doppelpruefung.pdf"]] },
+  web: { titel: "Web", karten: [["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"]] },
 };
 
 test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und Eintrag in der Sitemap", () => {
@@ -200,22 +201,20 @@ test("Masterprompts: die vier Prüfraster als Beiträge, in der Reihenfolge der 
   assert.ok(k.every((x) => /<svg [^>]*role="img" aria-label="[^"]{20,}"/.test(x.html)), "jede Karte trägt eine gezeichnete Vorschau mit Beschreibung");
 });
 
-test("Web: OMNA COLOR und Das Dritte Rad (Alpha) und das Stellenfeld als Beiträge mit Bild (4 : 5, dunkel); die Bilder erzeugt tools/start-og.mjs", () => {
+test("Web: zuoberst das Comic-Video, dann OMNA COLOR und Das Dritte Rad (Alpha) und das Stellenfeld, alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs", () => {
   const html = lies("web/index.html");
-  const k = karten(html);
-  assert.deepEqual(k.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
+  const alle = karten(html);
+  assert.deepEqual(alle.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
+  // das Comic-Video (6. Oktober 2026): zuoberst, klickbar mit Vorschaubild, führt auf die eigene Videoseite und verlinkt die Studie als PDF
+  const [v, ...k] = alle;
+  assert.match(v.html, /<a class="thumb" href="poststrukturalismus\/" tabindex="-1" aria-hidden="true">\s*<img src="\.\.\/assets\/vorschau-poststrukturalismus\.jpg" alt="" width="640" height="800" loading="lazy">/, "das Vorschaubild führt auf die Videoseite");
+  assert.deepEqual([...v.html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((m) => m[1]), ["poststrukturalismus/", "poststrukturalismus/", "../alpha/poststrukturalismus-doppelpruefung.pdf"], "Bild, «Öffnen» und die Studie als PDF");
+  assert.ok(!/<video/.test(html), "auf «Web» selbst läuft kein Video mehr, es spielt auf der Videoseite");
+  const vorschau = readFileSync(new URL("assets/vorschau-poststrukturalismus.jpg", root));
+  assert.deepEqual(jpegMass(vorschau), [640, 800], "Vorschaubild 640 × 800");
+  assert.ok(vorschau.length < 150_000, `Vorschaubild ${vorschau.length} Byte, unter 150 KB`);
   assert.ok(k.slice(0, 2).every((x) => x.tags.includes("Alpha") && x.tags.includes("Prototyp")), "die beiden Räder sind Alpha");
   assert.ok(!k[2].tags.includes("Alpha"), "das Stellenfeld liegt nicht im Alpha-Bereich");
-  // das Comic-Video (Hochformat 9 : 16 im Rahmen 4 : 5, 6. Oktober 2026): letzter Beitrag, spielt von selbst, verlinkt nur die Studie als PDF
-  const v = k[3];
-  assert.equal([...v.html.matchAll(/<a /g)].length, 1, "ein Link: die Studie");
-  assert.ok(existsSync(new URL("alpha/poststrukturalismus-doppelpruefung.pdf", root)), "das PDF liegt im Alpha-Bereich");
-  assert.match(v.html, /<video class="beitrag-video" controls muted playsinline preload="none" poster="\.\.\/assets\/poststrukturalismus-9x16\.jpg" width="608" height="1080"/);
-  assert.match(v.html, /<source src="\.\.\/assets\/poststrukturalismus-9x16\.mp4" type="video\/mp4">/);
-  for (const d of ["poststrukturalismus-9x16.mp4", "poststrukturalismus-9x16.jpg"]) assert.ok(existsSync(new URL(`assets/${d}`, root)), d);
-  assert.deepEqual(jpegMass(readFileSync(new URL("assets/poststrukturalismus-9x16.jpg", root))), [608, 1080], "Vorschaubild 9 : 16");
-  assert.ok(readFileSync(new URL("assets/poststrukturalismus-9x16.mp4", root)).length < 14_000_000, "Video unter 14 MB");
-  assert.match(html, /new IntersectionObserver/, "Autoplay über IntersectionObserver");
   const erzeuger = lies("tools/start-og.mjs");
   for (const [i, datei] of ["vorschau-omna-color.jpg", "vorschau-drittes-rad.jpg", "vorschau-stellenfeld.jpg"].entries()) {
     assert.match(k[i].html, new RegExp(`<img src="\\.\\./assets/${datei}" alt="" width="640" height="800" loading="lazy">`));
@@ -225,6 +224,22 @@ test("Web: OMNA COLOR und Das Dritte Rad (Alpha) und das Stellenfeld als Beiträ
     assert.ok(bild.length < 150_000, `${datei}: ${bild.length} Byte, unter 150 KB`);
     assert.ok(erzeuger.includes(datei), `tools/start-og.mjs erzeugt ${datei}`);
   }
+});
+
+test("Videoseite web/poststrukturalismus/: das Comic-Video (9 : 16) spielt von selbst, sobald es zur Hälfte im Bild ist; Link zur Studie als PDF und zurück zu «Web»", () => {
+  const html = lies("web/poststrukturalismus/index.html");
+  assert.match(html, /<title>Liebling, ich habe den Poststrukturalismus strukturiert – Ornament Cloud<\/title>/);
+  assert.match(html, /<link rel="canonical" href="https:\/\/ornament\.cloud\/web\/poststrukturalismus\/">/);
+  assert.ok(lies("sitemap.xml").includes("<loc>https://ornament.cloud/web/poststrukturalismus/</loc>"), "in der Sitemap");
+  assert.match(html, /<figure class="erklaervideo">\s*<video controls muted playsinline preload="none" poster="\.\.\/\.\.\/assets\/poststrukturalismus-9x16\.jpg" width="608" height="1080"[^>]*>\s*<source src="\.\.\/\.\.\/assets\/poststrukturalismus-9x16\.mp4" type="video\/mp4">/);
+  for (const d of ["poststrukturalismus-9x16.mp4", "poststrukturalismus-9x16.jpg", "vorschau-poststrukturalismus.jpg"]) assert.ok(existsSync(new URL(`assets/${d}`, root)), d);
+  assert.deepEqual(jpegMass(readFileSync(new URL("assets/poststrukturalismus-9x16.jpg", root))), [608, 1080], "Standbild 9 : 16");
+  assert.ok(readFileSync(new URL("assets/poststrukturalismus-9x16.mp4", root)).length < 14_000_000, "Video unter 14 MB");
+  assert.match(html, /new IntersectionObserver/, "Autoplay über IntersectionObserver");
+  assert.match(html, /prefers-reduced-motion: reduce/, "bei «weniger Bewegung» nicht von selbst");
+  assert.match(html, /<a href="\.\.\/\.\.\/alpha\/poststrukturalismus-doppelpruefung\.pdf">Studie als PDF<\/a>/);
+  assert.ok(existsSync(new URL("alpha/poststrukturalismus-doppelpruefung.pdf", root)), "das PDF liegt im Alpha-Bereich");
+  assert.match(html, /<p class="back"><a href="\.\.\/">← Zu Web<\/a><\/p>/);
 });
 
 test("Versionsmarken: styles.css und icons.js tragen auf allen Seiten dieselbe Marke, icons.js kennt nur Symbole, die es noch gibt", () => {
@@ -281,7 +296,7 @@ test("News, Termine und Portfolio: bleiben unter ihren Adressen (mit Menü, in d
 
 test("Kontakt: «Fragen und Anmerkungen zur Website» unten auf allen Seiten mit Text (Wunsch vom 5. Oktober 2026), im Zettelkasten in allen drei Sprachen", () => {
   const MAIL = '<a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a>';
-  const seiten = ["index.html", "web/index.html", "apps/index.html", "masterprompts/index.html", "news/index.html", "termine/index.html", "portfolio/index.html",
+  const seiten = ["index.html", "web/index.html", "web/poststrukturalismus/index.html", "apps/index.html", "masterprompts/index.html", "news/index.html", "termine/index.html", "portfolio/index.html",
     "portfolio/nebeneinander-nacheinander/index.html", "portfolio/nebeneinander-nacheinander/feld/index.html",
     "portfolio/nebeneinander-nacheinander/app/index.html", "portfolio/nebeneinander-nacheinander/app/feld/index.html",
     "alpha/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html"];

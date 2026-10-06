@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Liebling, ich habe den Poststrukturalismus strukturiert – Ornament Cloud</title>
+  <meta name="description" content="Ein Comic-Video von gut zwei Minuten: wie zwölf poststrukturalistische Positionen mit zwei Prüfrastern geprüft wurden.">
+  <link rel="canonical" href="https://ornament.cloud/web/poststrukturalismus/">
+  <link rel="stylesheet" href="../../styles.css?v=40">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <div class="topbar">
+        <nav class="seitenweg" aria-label="Ornament Cloud">
+          <a href="../../" aria-current="true">Ornament Cloud</a>
+          <a href="../../alpha/drittes-rad/">Das Dritte Rad</a>
+        </nav>
+        <nav class="menu" aria-label="Hauptmenü">
+          <a class="menu-item" href="../../zu-seiner-zeit/">Zettelkasten</a>
+          <a class="menu-item" href="../../apps/">Apps</a>
+          <a class="menu-item" href="../../masterprompts/">Masterprompts</a>
+          <a class="menu-item" href="../../web/" aria-current="true">Web</a>
+        </nav>
+      </div>
+      <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
+      <h1>Liebling, ich habe den Poststrukturalismus strukturiert</h1>
+      <p class="lead">Ein Comic-Video: wie zwölf poststrukturalistische Positionen mit zwei Prüfrastern geprüft wurden, dem Raster «Nebeneinander und Nacheinander» und dem «Verteilapparat des Körpers».</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!--
+      Videoseite (Wunsch von Christian, 6. Oktober 2026): der Beitrag auf «Web» führt hierher. Die Hochformat-Fassung 9 : 16 (assets/poststrukturalismus-9x16.mp4,
+      Quelle src/videos/src/doppelpruefung/, Composition DoppelpruefungHoch); spielt stumm von selbst, sobald es zur Hälfte im Bild ist, bei «weniger Bewegung» nicht.
+      Das PDF der Studie liegt im Alpha-Bereich; der Link ist freigegeben (6. Oktober 2026, REGELN §14).
+    -->
+    <figure class="erklaervideo">
+      <video controls muted playsinline preload="none" poster="../../assets/poststrukturalismus-9x16.jpg" width="608" height="1080" aria-label="Comic-Video «Liebling, ich habe den Poststrukturalismus strukturiert», gut zwei Minuten, ohne Ton">
+        <source src="../../assets/poststrukturalismus-9x16.mp4" type="video/mp4">
+      </video>
+      <figcaption>Gut zwei Minuten, ohne Ton. Das Video folgt der Studie «Poststrukturalistische Theorie – Doppelprüfung»: <a href="../../alpha/poststrukturalismus-doppelpruefung.pdf">Studie als PDF</a>.</figcaption>
+    </figure>
+
+    <p class="back"><a href="../">← Zu Web</a></p>
+  </main>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+    </div>
+  </footer>
+  <script>
+    // Das Video spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt (stumm, lädt erst dann).
+    // Bei «weniger Bewegung» spielt es nur auf Knopfdruck.
+    (function () {
+      var v = document.querySelector(".erklaervideo video");
+      if (!v || !("IntersectionObserver" in window)) return;
+      if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      new IntersectionObserver(function (eintraege) {
+        eintraege.forEach(function (e) {
+          if (e.isIntersecting) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+          else if (!v.paused) v.pause();
+        });
+      }, { threshold: 0.5 }).observe(v);
+    })();
+  </script>
+  <script src="../../icons.js?v=14" defer></script>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+</body>
+</html>

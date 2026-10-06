@@ -425,6 +425,7 @@ test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (
     "apps/index.html": ["/alpha/orma/"],
     "masterprompts/index.html": ["/alpha/pruefraster/", "/alpha/verteilapparat/", "/alpha/gesellschaftskonzepte/", "/alpha/journalistische-texte/"],
     "web/index.html": ["/alpha/omna-color/", "/alpha/drittes-rad/", "/alpha/poststrukturalismus-doppelpruefung.pdf"],   // das PDF zum Comic-Video seit 6. Oktober 2026
+    "web/poststrukturalismus/index.html": ["/alpha/poststrukturalismus-doppelpruefung.pdf"],   // die Videoseite, ebenso
   };
   const allowed = new Set(Object.keys(ziele));
   const gefunden = new Set();
@@ -443,7 +444,7 @@ test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (
       gefunden.add(`${file} → ${ziele[file].find(z => target.endsWith(z))}`);
     }
   }
-  assert.deepEqual([...found].sort(), [...allowed].sort(), "News, Apps, Masterprompts und Web verlinken den Alpha-Bereich, die Startseite nicht");
+  assert.deepEqual([...found].sort(), [...allowed].sort(), "News, Apps, Masterprompts, Web und die Videoseite verlinken den Alpha-Bereich, die Startseite nicht");
   // Freigegebene Ausnahme (4. Oktober 2026): die Startseite bettet OMNA COLOR zum Spielen ein, als einzige Seite und nur dieses eine Werk aus dem Alpha-Bereich
   const rahmen = walk(root).flatMap(f => [...readFileSync(f, "utf8").matchAll(/<iframe [^>]*src="([^"]+)"/g)]
     .map(m => [f.pathname.slice(root.pathname.length), new URL(m[1], f).pathname]).filter(([, z]) => z.includes("/alpha/")));
