@@ -69,7 +69,7 @@ Namen, Zeichen, Paarungen und die Frage kommen unverändert aus den Daten von OR
 
 ## «Liebling, ich habe den Poststrukturalismus strukturiert» (6. Oktober 2026)
 
-Etwa 2 Minuten, **3:4** (1080 × 1440, `DoppelpruefungVideo`) und **9:16** (1080 × 1920, `DoppelpruefungHoch`; dieselbe Bühne mittig), ohne Ton, Comic-Stil mit etwas Roy Lichtenstein (Ben-Day-Punkte, Grundfarben, gelbe Erzählkästen; Wunsch von Christian): zeigt spielerisch, wie die Studie
+Etwa 2 Minuten, **3:4** (1080 × 1440, `DoppelpruefungVideo`), **4:5** (1080 × 1350, `DoppelpruefungVierFuenf`; Punktebühne leicht verkleinert, für die Seite «Web», dort als 864 × 1080 ohne Ton, `assets/poststrukturalismus-4x5.mp4`) und **9:16** (1080 × 1920, `DoppelpruefungHoch`; dieselbe Bühne mittig), ohne Ton, Comic-Stil mit etwas Roy Lichtenstein (Ben-Day-Punkte, Grundfarben, gelbe Erzählkästen; Wunsch von Christian): zeigt spielerisch, wie die Studie
 «Poststrukturalistische Theorie – Doppelprüfung» zwölf Positionen mit dem Prüfraster Nebeneinander / Nacheinander und dem
 Verteilapparat des Körpers prüft. Quelle `src/doppelpruefung/`: `Video.tsx` (Szenen), `Comic.tsx` (eigener Stil nur für dieses Video:
 dicke Konturen, harte Schatten, Punktraster, satte Farben), `zitate.ts` (alle Stellen wörtlich aus der Studie, mit Seitenangabe; gegen den

@@ -416,7 +416,7 @@ test("Alpha: alpha/orma ist der aktuelle Build (sonst: tools/build-orma.ts --alp
 test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (ORMA, Prüfraster, OMNA COLOR, Das Dritte Rad), dazu die Navigation oben links; nicht in der Sitemap, noindex", () => {
   // REGELN §14: News → ORMA und die Seiten der beiden Grundlagenpapiere (seit 28. September 2026).
   // Neuordnung vom 2. Oktober 2026 (Wunsch von Christian): Die Startseite verlinkt den Alpha-Bereich nicht mehr, die Karten liegen auf den Seiten
-  // «Apps» (ORMA), «Masterprompts» (die vier Prüfraster, in der Reihenfolge der Alpha-Übersicht) und «Web» (OMNA COLOR, Das Dritte Rad).
+  // «Apps» (ORMA), «Masterprompts» (die vier Prüfraster, in der Reihenfolge der Alpha-Übersicht) und «Web» (OMNA COLOR, Das Dritte Rad; seit 6. Oktober 2026 auch die Studie zum Comic-Video als PDF).
   // Ausnahme: die Navigation oben links («Ornament Cloud», «Das Dritte Rad», seit 2. Oktober 2026) steht auf jeder Seite; sie wird hier herausgenommen
   // und in tests/navigation.test.mjs geprüft (genau diese zwei Links, auf allen Seiten ausser ORMA und den Werken).
   const papiere = ["/alpha/orma/", "/alpha/pruefraster/", "/alpha/verteilapparat/"];
@@ -424,7 +424,7 @@ test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (
     "news/index.html": papiere,
     "apps/index.html": ["/alpha/orma/"],
     "masterprompts/index.html": ["/alpha/pruefraster/", "/alpha/verteilapparat/", "/alpha/gesellschaftskonzepte/", "/alpha/journalistische-texte/"],
-    "web/index.html": ["/alpha/omna-color/", "/alpha/drittes-rad/"],
+    "web/index.html": ["/alpha/omna-color/", "/alpha/drittes-rad/", "/alpha/poststrukturalismus-doppelpruefung.pdf"],   // das PDF zum Comic-Video seit 6. Oktober 2026
   };
   const allowed = new Set(Object.keys(ziele));
   const gefunden = new Set();
