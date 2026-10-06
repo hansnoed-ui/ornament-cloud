@@ -54,17 +54,14 @@ header p { margin: 0; color: var(--muted); max-width: 52ch; }
 .wheelbox { display: grid; gap: 16px; justify-items: center; }
 .wheel { width: min(100%, 420px); aspect-ratio: 224 / 232; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
 .wheel svg { width: 100%; height: 100%; overflow: visible; display: block; }
-.spin path.seg { stroke: var(--ink); stroke-width: .6; stroke-linejoin: round; }
-.ring { fill: none; stroke: var(--ink); stroke-width: .6; }
-.tick { fill: var(--ink); }
-#mixdot { fill: var(--surface); stroke: var(--ink); stroke-width: .8; }
+/* Rad seit 6. Oktober 2026 (Wunsch von Christian, Entwurf A «Flach & präzise»): ohne Papierring und Körnung, satte Flächen ohne Konturen,
+   feine durchsichtige Fugen zwischen den Feldern (darum stimmen sie auch eingebettet und im dunklen Modus), die Ringe durch Luft getrennt, Zeiger als schlanke Nadeln */
+.tick { fill: none; stroke: var(--ink); stroke-linecap: round; }
+#mixdot { fill: var(--surface); stroke: var(--ink); stroke-width: .6; }
 .spin { transition: transform 5.6s cubic-bezier(.45, 0, .15, 1); }
-@media (prefers-reduced-motion: reduce) { .spin path { stroke: var(--bg); stroke-width: 1.5; }
-.tick { fill: var(--fg); }
-#mixdot { fill: var(--surface); stroke: var(--bg); stroke-width: 1.5; }
-.spin { transition-duration: .01s; } }
+@media (prefers-reduced-motion: reduce) { .spin { transition-duration: .01s; } }
 .controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: center; }
-button.go { font: 500 1rem var(--body); background: var(--btn-bg); color: var(--btn-fg); border: 0; border-radius: 999px; padding: 12px 28px; cursor: pointer; }
+button.go { font: 500 1rem var(--body); background: var(--btn-bg); color: var(--btn-fg); border: 0; border-radius: 5px; padding: 12px 30px; cursor: pointer; }   /* seit 6. Oktober 2026 eckig mit ganz leicht gerundeten Ecken */
 button.go:disabled { opacity: .45; cursor: default; }
 button:focus-visible, input:focus-visible { outline: 3px solid var(--c4); outline-offset: 3px; }
 .mix { display: flex; align-items: center; gap: 8px; font-size: .95rem; color: var(--muted); cursor: pointer; }
@@ -86,7 +83,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--c4); outlin
 .end small { display: block; color: var(--muted); font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2px; }
 .idline { color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
 .empty { color: var(--muted); margin: 0; }
-.again { justify-self: start; font: 500 .9rem var(--body); background: none; color: var(--fg); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; cursor: pointer; }
+.again { justify-self: start; font: 500 .9rem var(--body); background: none; color: var(--fg); border: 1px solid var(--line); border-radius: 5px; padding: 6px 16px; cursor: pointer; }
 /* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» und darunter «Das Dritte Rad», beide in derselben Farbe (--hauptlink: hell Anthrazit, dunkel ein helles Sonnengelb) und beide als Buttons mit ganz feinem Rahmen,
    der aktive (aria-current) invers: Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite. Darunter steht eine feine Linie in derselben Farbe.
    Die Stelle ist auf jeder Seite dieselbe (Wunsch vom 2. Oktober 2026, 18:08 UTC): die der Website, also bündig mit einer Spalte von 1040 px, die in der Mitte steht (bis 1080 px Fensterbreite 20 px vom Rand),
@@ -134,21 +131,11 @@ html.eingebettet body { padding: 4px 4px 8px; background: transparent; }
     <section class="wheelbox" aria-label="Farbkreis">
       <div class="wheel" id="wheel" role="img" aria-label="Farbkreis mit sieben Themen, aussen und innen ein Rad">
         <svg viewBox="-112 -120 224 232" id="svg">
-          <defs>
-            <filter id="grain" x="-10%" y="-10%" width="120%" height="120%">
-              <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="9"/>
-              <feColorMatrix values="0 0 0 0 .2  0 0 0 0 .15  0 0 0 0 .05  0 0 0 .55 -.12"/>
-            </filter>
-            <clipPath id="disc"><circle r="108"/></clipPath>
-          </defs>
-          <circle r="108" fill="var(--paper2)" stroke="var(--ink)" stroke-width=".8"></circle>
           <g id="outer" class="spin"></g>
           <g id="inner" class="spin"></g>
-          <circle class="ring" r="25"></circle>
-          <circle id="mixdot" r="21" cx="0" cy="0"></circle>
-          <rect x="-112" y="-112" width="224" height="224" filter="url(#grain)" clip-path="url(#disc)" style="mix-blend-mode:multiply;pointer-events:none" opacity=".55"></rect>
-          <path class="tick" d="M -5 -118 L 5 -118 L 0 -105 Z"></path>
-          <path class="tick" d="M -3.5 -62 L 3.5 -62 L 0 -56 Z"></path>
+          <circle id="mixdot" r="22" cx="0" cy="0"></circle>
+          <path class="tick" d="M 0 -118 V -100" stroke-width="2.2"></path>
+          <path class="tick" d="M 0 -66 V -55" stroke-width="1.8"></path>
         </svg>
       </div>
       <div class="controls">
@@ -185,28 +172,26 @@ const NS = "http://www.w3.org/2000/svg";
 const $ = (id) => document.getElementById(id);
 
 function pt(r, deg) { const a = deg * Math.PI / 180; return [r * Math.sin(a), -r * Math.cos(a)]; }
-function sector(r1, r2, a0, a1) {
-  const [x1, y1] = pt(r2, a0), [x2, y2] = pt(r2, a1), [x3, y3] = pt(r1, a1), [x4, y4] = pt(r1, a0);
+// Feld mit Fuge: die Kanten liegen um FUGE/2 neben der Speiche, so ist die Fuge überall gleich breit und durchsichtig
+const FUGE = 1.6;
+function feld(r1, r2, a0, a1) {
+  const d = (r) => Math.asin(FUGE / 2 / r) * 180 / Math.PI;
+  const [x1, y1] = pt(r2, a0 + d(r2)), [x2, y2] = pt(r2, a1 - d(r2)), [x3, y3] = pt(r1, a1 - d(r1)), [x4, y4] = pt(r1, a0 + d(r1));
   return `M${x1} ${y1} A${r2} ${r2} 0 0 1 ${x2} ${y2} L${x3} ${y3} A${r1} ${r1} 0 0 0 ${x4} ${y4} Z`;
 }
 function build(g, r1, r2) {
   THEMES.forEach((t, i) => {
     const p = document.createElementNS(NS, "path");
     p.setAttribute("class", "seg");
-    p.setAttribute("d", sector(r1, r2, i * S, (i + 1) * S));
+    p.setAttribute("d", feld(r1, r2, i * S, (i + 1) * S));
     p.setAttribute("fill", t.c);
     g.appendChild(p);
   });
 }
-// Äusseres Rad: Farbring plus Namensring mit den Themen
-build($("outer"), 64, 94);
+// Äusseres Rad (seit 6. Oktober 2026 breiter, ohne Namensring), dazwischen Luft, inneres Rad
+build($("outer"), 66, 104);
 (function labels() {
   const g = $("outer");
-  const band = document.createElementNS(NS, "path");
-  band.setAttribute("d", sector(94, 107, 0, 359.99));
-  band.setAttribute("fill", "none");
-  const c1 = document.createElementNS(NS, "circle"); c1.setAttribute("r", 94); c1.setAttribute("class", "ring");
-  g.appendChild(c1);
   THEMES.forEach((t, i) => {
     const a0 = i * S + 1.5, a1 = (i + 1) * S - 1.5;
     const [x0, y0] = pt(99.5, a0), [x1, y1] = pt(99.5, a1);
@@ -217,7 +202,7 @@ build($("outer"), 64, 94);
     g.appendChild(path);
   });
 })();
-build($("inner"), 28, 58);
+build($("inner"), 30, 60);
 
 
 let outerDeg = 0, innerDeg = 0, busy = false, outerIdx = null, innerIdx = null;
