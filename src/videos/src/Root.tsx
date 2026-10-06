@@ -8,7 +8,9 @@ import { DoppelpruefungVideo, T as TDoppelpruefung } from "./doppelpruefung/Vide
 export const RemotionRoot: React.FC = () => (
   <>
     <Composition id="OrnaVideo" component={OrnaVideo} durationInFrames={T.ende} fps={FPS} width={BREITE} height={HOEHE} />
-    <Composition id="DoppelpruefungVideo" component={DoppelpruefungVideo} durationInFrames={TDoppelpruefung.ende} fps={FPS} width={BREITE} height={1440} />   {/* 3:4 (Wunsch vom 6. Oktober 2026) */}
+    {/* «Liebling, ich habe den Poststrukturalismus strukturiert»: 3:4 und 9:16 (Wunsch vom 6. Oktober 2026) */}
+    <Composition id="DoppelpruefungVideo" component={DoppelpruefungVideo} durationInFrames={TDoppelpruefung.ende} fps={FPS} width={BREITE} height={1440} defaultProps={{ hoehe: 1440 }} />
+    <Composition id="DoppelpruefungHoch" component={DoppelpruefungVideo} durationInFrames={TDoppelpruefung.ende} fps={FPS} width={BREITE} height={HOEHE} defaultProps={{ hoehe: HOEHE }} />
     {/* neue Videos: Composition */}
   </>
 );

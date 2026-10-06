@@ -67,16 +67,16 @@ ein Standbild aus dem Intro bei 2,6 s). Nach einer Änderung neu rendern (`npm r
 Namen, Zeichen, Paarungen und die Frage kommen unverändert aus den Daten von ORNA; die Achsen aus dem Prüfraster
 «Nebeneinander und Nacheinander», die Prüfdimensionen und die Sätze zum Feld wörtlich aus `src/doppelspalt/werkbericht.md`.
 
-## Doppelprüfung – Poststrukturalismus (6. Oktober 2026)
+## «Liebling, ich habe den Poststrukturalismus strukturiert» (6. Oktober 2026)
 
-Etwa 2 Minuten, **3:4** (1080 × 1440), ohne Ton, Comic-Stil (Wunsch von Christian): zeigt spielerisch, wie die Studie
+Etwa 2 Minuten, **3:4** (1080 × 1440, `DoppelpruefungVideo`) und **9:16** (1080 × 1920, `DoppelpruefungHoch`; dieselbe Bühne mittig), ohne Ton, Comic-Stil mit etwas Roy Lichtenstein (Ben-Day-Punkte, Grundfarben, gelbe Erzählkästen; Wunsch von Christian): zeigt spielerisch, wie die Studie
 «Poststrukturalistische Theorie – Doppelprüfung» zwölf Positionen mit dem Prüfraster Nebeneinander / Nacheinander und dem
 Verteilapparat des Körpers prüft. Quelle `src/doppelpruefung/`: `Video.tsx` (Szenen), `Comic.tsx` (eigener Stil nur für dieses Video:
 dicke Konturen, harte Schatten, Punktraster, satte Farben), `zitate.ts` (alle Stellen wörtlich aus der Studie, mit Seitenangabe; gegen den
 PDF-Text geprüft). Intro und Outro sind das Signet der Vorlage (`Intro`/`Outro` mit `hoehe={1440}`). Theoretiker:innen erscheinen nur als
 Namen, ihre Operationen als Gegenstände; Lyotard (Leugnungsbeispiel) und Butler (Fall Reimer) nur als Punkte der Streugrafik, ohne Witz und Bild.
 
-0. Intro «Doppelprüfung», darunter «Poststrukturalismus • 12 Positionen»
+0. Intro «Poststrukturalismus», darunter «Doppelprüfung • 12 Positionen»; dann der Titel: zwölf Karten liegen durcheinander und rasten in ein Raster ein
 1. Die Leitfrage in drei Sprechblasen
 2. Zwei Raster: Stempel «dieselbe Stelle?» (X), Dominosteine (Y), sieben Schranken (Verteilapparat)
 3. Zwölf Karten, Stempel «Begriff · Interpretation»

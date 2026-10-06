@@ -1,5 +1,6 @@
-// Video «Doppelprüfung» (6. Oktober 2026): zeigt spielerisch, wie die Studie «Poststrukturalistische Theorie – Doppelprüfung»
-// zwölf Positionen mit zwei Rastern prüft. 3:4 (1080 × 1440), 30 fps, ohne Ton, etwa 2 Minuten, Comic-Stil (Wunsch von Christian).
+// Video «Liebling, ich habe den Poststrukturalismus strukturiert» (Titel von Christian, 6. Oktober 2026): zeigt spielerisch, wie die Studie «Poststrukturalistische Theorie – Doppelprüfung»
+// zwölf Positionen mit zwei Rastern prüft. 3:4 (1080 × 1440) und 9:16 (1080 × 1920), 30 fps, ohne Ton, etwa 2 Minuten,
+// Comic-Stil mit etwas Roy Lichtenstein (Wunsch von Christian).
 // Intro und Outro: Signet der Vorlage. Theoretiker:innen erscheinen nur als Namen, ihre Operationen als Gegenstände (keine Karikaturen).
 // Lyotard (Leugnungsbeispiel) und Butler (Fall Reimer) nur als Punkte in der Streugrafik, ohne Witz und ohne Bild (freigegeben).
 // Alle Zitate wörtlich aus der Studie (zitate.ts).
@@ -7,11 +8,11 @@ import React from "react";
 import { AbsoluteFill, Sequence, interpolate, useCurrentFrame } from "remotion";
 import { Grund, INTRO, Intro, OUTRO, Outro } from "../vorlage/Bausteine";
 import { SANS } from "../vorlage/stil";
-import { Abzeichen, Blase, C, Etikett, H, Panel, Punkte, Satz, aus, ein, klemm, pop } from "./Comic";
+import { Abzeichen, Blase, C, Etikett, Hoehe, Panel, Punkte, Satz, aus, benday, ein, klemm, pop } from "./Comic";
 import { NAMEN, OPERATIONEN, PUNKTE, SCHWELLEN, Z } from "./zitate";
 
 // Zeitplan in Bildern (30 fps)
-const D = { leitfrage: 240, maschinen: 300, karten: 240, band: 300, mini: 225, grafik: 450, schranken: 450, pointe: 240, schluss: 270 };
+const D = { titel: 210, leitfrage: 240, maschinen: 300, karten: 240, band: 300, mini: 225, grafik: 450, schranken: 450, pointe: 240, schluss: 270 };
 export const T = (() => {
   const t: Record<string, number> = { intro: 0 };
   let a = INTRO;
@@ -21,6 +22,37 @@ export const T = (() => {
 })();
 
 const fett = (groesse: number, extra: React.CSSProperties = {}): React.CSSProperties => ({ fontFamily: SANS, fontWeight: 700, fontSize: groesse, ...extra });
+
+// ---------- 0 · Titel: «Liebling, ich habe den Poststrukturalismus strukturiert» ----------
+// Zwölf Karten liegen wild durcheinander und rasten dann in ein ordentliches Raster ein; dahinter ein Pop-Art-Knall.
+const Titel: React.FC = () => {
+  const f = useCurrentFrame();
+  const farben = [C.rot, C.blau, C.gelb, C.mag, C.minz, C.orange, C.violett, C.blau, C.rot, C.gelb, C.minz, C.mag];
+  const ordnung = interpolate(f, [95, 135], [0, 1], { ...klemm, easing: (t) => 1 - Math.pow(1 - t, 3) });
+  const knall = pop(f, 0, 140);
+  const zacken = Array.from({ length: 28 }, (_, i) => { const r = i % 2 ? 250 : 420, w = (i / 28) * Math.PI * 2; return `${540 + r * Math.cos(w)},${930 + r * 0.8 * Math.sin(w)}`; }).join(" ");
+  return (
+    <Punkte farbe="rgba(232,32,42,.30)">
+      <AbsoluteFill style={{ opacity: aus(f, D.titel) }}>
+        <svg width="1080" height="1440" style={{ position: "absolute", inset: 0, transform: `scale(${knall})`, transformOrigin: "540px 930px" }}>
+          <defs><pattern id="bd" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="9" cy="9" r="5" fill={C.rot} /></pattern></defs>
+          <polygon points={zacken} fill={C.gelb} stroke={C.ink} strokeWidth="9" strokeLinejoin="round" />
+          <polygon points={zacken} fill="url(#bd)" opacity=".35" />
+        </svg>
+        {Array.from({ length: 12 }, (_, i) => {
+          const p = pop(f, 6 + i * 3, 200);
+          const chaos = [[120, 620, -28], [700, 700, 35], [380, 1080, 12], [820, 1150, -40], [60, 980, 50], [520, 640, -15], [260, 820, 70], [760, 900, -8], [430, 860, 24], [140, 1240, -55], [600, 1260, 18], [880, 600, 44]][i];
+          const ord = [130 + (i % 4) * 210, 700 + Math.floor(i / 4) * 170, 0];
+          const x = chaos[0] + (ord[0] - chaos[0]) * ordnung, y = chaos[1] + (ord[1] - chaos[1]) * ordnung, r = chaos[2] * (1 - ordnung);
+          return <div key={i} style={{ position: "absolute", left: x, top: y + (1 - p) * -900, width: 180, height: 130, border: `6px solid ${C.ink}`, borderRadius: 8, boxShadow: `7px 7px 0 ${C.ink}`, transform: `rotate(${r}deg)`, ...benday("rgba(255,255,255,.3)", 4, 16), backgroundColor: farben[i] }} />;
+        })}
+        <Blase x={70} y={90} w={940} farbe={C.papier} p={pop(f, 30, 160)} drehung={-1.5}>
+          <span style={{ fontSize: 66, lineHeight: 1.08, textTransform: "uppercase", letterSpacing: "-0.01em", display: "block" }}>Liebling, ich habe den Poststrukturalismus strukturiert</span>
+        </Blase>
+      </AbsoluteFill>
+    </Punkte>
+  );
+};
 
 // ---------- 1 · Die Leitfrage in drei Sprechblasen ----------
 const Leitfrage: React.FC = () => {
@@ -109,7 +141,7 @@ const Karten: React.FC = () => {
           return (
             <div key={n} style={{
               position: "absolute", left: 70 + sp * 320, top: 210 + ze * 190, width: 290, height: 150, background: farben[i], border: `6px solid ${C.ink}`, borderRadius: 10,
-              boxShadow: `8px 8px 0 ${C.ink}`, boxSizing: "border-box", padding: 16, display: "grid", alignContent: "end",
+              boxShadow: `8px 8px 0 ${C.ink}`, boxSizing: "border-box", padding: 16, display: "grid", alignContent: "end", ...benday("rgba(255,255,255,.28)", 4, 16), backgroundColor: farben[i],
               transform: `translate(${(1 - p) * (sp - 1) * 400}px, ${(1 - p) * -700}px) rotate(${(1 - p) * 40 + [-2, 1, 3, -1][i % 4]}deg)`,
               ...fett(32, { color: hell ? C.ink : C.papier, lineHeight: 1.1 }),
             }}>{n}</div>
@@ -446,21 +478,25 @@ const Schluss: React.FC = () => {
   );
 };
 
-export const DoppelpruefungVideo: React.FC = () => (
-  <Grund>
-    <Sequence durationInFrames={INTRO}><Intro hoehe={H} kopf={{ titel: "Doppelprüfung", unter: ["Poststrukturalismus", "12 Positionen"] }} /></Sequence>
-    <Sequence from={T.leitfrage} durationInFrames={D.leitfrage}><Leitfrage /></Sequence>
-    <Sequence from={T.maschinen} durationInFrames={D.maschinen}><Maschinen /></Sequence>
-    <Sequence from={T.karten} durationInFrames={D.karten}><Karten /></Sequence>
-    <Sequence from={T.band} durationInFrames={D.band}><Band /></Sequence>
-    <Sequence from={T.mini} durationInFrames={D.mini}><Derrida /></Sequence>
-    <Sequence from={T.mini + D.mini} durationInFrames={D.mini}><Deleuze /></Sequence>
-    <Sequence from={T.mini + 2 * D.mini} durationInFrames={D.mini}><Foucault /></Sequence>
-    <Sequence from={T.mini + 3 * D.mini} durationInFrames={D.mini}><Baudrillard /></Sequence>
-    <Sequence from={T.grafik} durationInFrames={D.grafik}><Grafik /></Sequence>
-    <Sequence from={T.schranken} durationInFrames={D.schranken}><Schranken /></Sequence>
-    <Sequence from={T.pointe} durationInFrames={D.pointe}><Pointe /></Sequence>
-    <Sequence from={T.schluss} durationInFrames={D.schluss}><Schluss /></Sequence>
-    <Sequence from={T.signet} durationInFrames={OUTRO}><Outro hoehe={H} /></Sequence>
-  </Grund>
+/** hoehe: 1440 (3:4) oder 1920 (9:16); die Szenen stehen mittig, Intro und Outro passen sich an */
+export const DoppelpruefungVideo: React.FC<{ hoehe?: number }> = ({ hoehe = 1440 }) => (
+  <Hoehe.Provider value={hoehe}>
+    <Grund>
+      <Sequence durationInFrames={INTRO}><Intro hoehe={hoehe} kopf={{ titel: "Poststrukturalismus", unter: ["Doppelprüfung", "12 Positionen"] }} /></Sequence>
+      <Sequence from={T.titel} durationInFrames={D.titel}><Titel /></Sequence>
+      <Sequence from={T.leitfrage} durationInFrames={D.leitfrage}><Leitfrage /></Sequence>
+      <Sequence from={T.maschinen} durationInFrames={D.maschinen}><Maschinen /></Sequence>
+      <Sequence from={T.karten} durationInFrames={D.karten}><Karten /></Sequence>
+      <Sequence from={T.band} durationInFrames={D.band}><Band /></Sequence>
+      <Sequence from={T.mini} durationInFrames={D.mini}><Derrida /></Sequence>
+      <Sequence from={T.mini + D.mini} durationInFrames={D.mini}><Deleuze /></Sequence>
+      <Sequence from={T.mini + 2 * D.mini} durationInFrames={D.mini}><Foucault /></Sequence>
+      <Sequence from={T.mini + 3 * D.mini} durationInFrames={D.mini}><Baudrillard /></Sequence>
+      <Sequence from={T.grafik} durationInFrames={D.grafik}><Grafik /></Sequence>
+      <Sequence from={T.schranken} durationInFrames={D.schranken}><Schranken /></Sequence>
+      <Sequence from={T.pointe} durationInFrames={D.pointe}><Pointe /></Sequence>
+      <Sequence from={T.schluss} durationInFrames={D.schluss}><Schluss /></Sequence>
+      <Sequence from={T.signet} durationInFrames={OUTRO}><Outro hoehe={hoehe} /></Sequence>
+    </Grund>
+  </Hoehe.Provider>
 );
