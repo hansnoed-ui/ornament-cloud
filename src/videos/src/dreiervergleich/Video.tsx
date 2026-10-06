@@ -6,8 +6,8 @@
 import React from "react";
 import { AbsoluteFill, Sequence, interpolate, useCurrentFrame } from "remotion";
 import { Grund, INTRO, Intro, OUTRO, Outro } from "../vorlage/Bausteine";
-import { Blase, aus, benday, ein, klemm, pop } from "../doppelpruefung/Comic";
-import { AUTOR, Abschnitt, Feld, Grundpunkte, Kasten, Knall, P, Schild, Stempel, Strahlen, Wolke, fett } from "./Pop";
+import { aus, benday, ein, klemm, pop } from "../doppelpruefung/Comic";
+import { AUTOR, Abschnitt, Blase, Feld, Grundpunkte, Kasten, Knall, P, Rahmen, Schild, Stempel, Strahlen, Wolke, fett } from "./Pop";
 import { GRAU, ORT, Z } from "./zitate";
 
 // Zeitplan in Bildern (30 fps)
@@ -36,7 +36,7 @@ const Titel: React.FC = () => {
         const p = pop(f, 40 + i * 14, 170);
         return (
           <div key={n.name} style={{
-            position: "absolute", left: 90 + i * 40, top: 560 + i * 200, width: 760, padding: "22px 30px", border: `7px solid ${P.ink}`, borderRadius: 10, boxShadow: `12px 12px 0 ${P.ink}`,
+            position: "absolute", left: 90 + i * 40, top: 560 + i * 200, width: 760, padding: "22px 30px", border: `7px solid ${P.ink}`, borderRadius: 10, 
             ...benday("rgba(255,255,255,.3)", 4, 16), backgroundColor: n.farbe, transform: `translateX(${(1 - p) * (i % 2 ? 1200 : -1200)}px) rotate(${[-2, 1.5, -1][i]}deg)`,
           }}>
             <div style={fett(64, { lineHeight: 1 })}>{n.name}</div>
@@ -45,6 +45,7 @@ const Titel: React.FC = () => {
         );
       })}
       <Knall p={pop(f, 100, 200)} x={830} y={1250} r={190} farbe={P.rot} textfarbe={P.gelb} text="ZACK!" groesse={88} drehung={8} />
+      <Rahmen />
     </AbsoluteFill>
   );
 };
@@ -56,7 +57,7 @@ const Raster: React.FC = () => {
   const sprung = (f - 30) % 70, weg = f > 30 ? Math.sin(Math.min(1, sprung / 50) * Math.PI) : 0;
   const zurueck = f > 30 && sprung > 48;
   return (
-    <Grundpunkte farbe="rgba(23,71,201,.18)">
+    <Grundpunkte farbe="rgba(23,71,201,0.47)">
       <AbsoluteFill style={{ opacity: aus(f, D.raster) }}>
         <Schild f={f} farbe={P.weiss}>Das Prüfraster</Schild>
         {/* X */}
@@ -90,7 +91,7 @@ const Luhmann: React.FC = () => {
   const f = useCurrentFrame();
   const fuge = interpolate(f, [40, 70], [0, 1], { ...klemm, easing: (t) => 1 - Math.pow(1 - t, 3) });
   return (
-    <Grundpunkte farbe="rgba(18,181,169,.24)">
+    <Grundpunkte farbe="rgba(18,181,169,0.62)">
       <AbsoluteFill style={{ opacity: aus(f, D.luhmann) }}>
         <Schild f={f} farbe={AUTOR.luhmann.farbe}>{AUTOR.luhmann.name}</Schild>
         {/* a · Information, Mitteilung, Verstehen rasten ein; die Liebes-Comic-Wolke */}
@@ -101,7 +102,7 @@ const Luhmann: React.FC = () => {
             return (
               <div key={w} style={{
                 position: "absolute", left: x0 + (x1 - x0) * fuge, top: 240 + (1 - p) * -500, width: 280 + (1 - fuge) * -20, height: 120, boxSizing: "border-box",
-                border: `7px solid ${P.ink}`, background: [P.tuerkis, P.weiss, P.himmel][i], ...fett(40, { display: "grid", placeItems: "center" }), boxShadow: `8px 8px 0 ${P.ink}`,
+                border: `7px solid ${P.ink}`, background: [P.tuerkis, P.weiss, P.himmel][i], ...fett(40, { display: "grid", placeItems: "center" }), 
                 transform: `rotate(${(1 - fuge) * [-8, 6, -5][i]}deg)`,
               }}>{w}</div>
             );
@@ -165,7 +166,7 @@ const Baecker: React.FC = () => {
   // Formzeichen (Haken wie in Spencer-Browns Notation), ineinander geschachtelt, zeichnen sich nacheinander
   const haken = [[150, 520, 760], [250, 440, 560], [350, 360, 360]];
   return (
-    <Grundpunkte farbe="rgba(255,210,31,.42)">
+    <Grundpunkte farbe="rgba(255,210,31,0.85)">
       <AbsoluteFill style={{ opacity: aus(f, D.baecker) }}>
         <Schild f={f} farbe={AUTOR.baecker.farbe}>{AUTOR.baecker.name}</Schild>
         <Feld x={70} y={220} w={940} h={600}>
@@ -195,7 +196,7 @@ const Baecker: React.FC = () => {
 const Lehmann: React.FC = () => {
   const f = useCurrentFrame();
   return (
-    <Grundpunkte farbe="rgba(255,91,74,.22)">
+    <Grundpunkte farbe="rgba(255,91,74,0.57)">
       <AbsoluteFill style={{ opacity: aus(f, D.lehmann) }}>
         <Schild f={f} farbe={AUTOR.lehmann.farbe}>{AUTOR.lehmann.name}</Schild>
         {/* a · Werk, Medium, Reflexion */}
@@ -204,7 +205,7 @@ const Lehmann: React.FC = () => {
             const p = pop(f, 8 + i * 12, 170);
             return (
               <div key={w} style={{
-                position: "absolute", left: 100 + i * 300, top: 300 + (i % 2) * 120, width: 260, height: 260, borderRadius: "50%", border: `8px solid ${P.ink}`, boxShadow: `10px 10px 0 ${P.ink}`,
+                position: "absolute", left: 100 + i * 300, top: 300 + (i % 2) * 120, width: 260, height: 260, borderRadius: "50%", border: `8px solid ${P.ink}`, 
                 ...benday("rgba(255,255,255,.35)", 4, 16), backgroundColor: [P.koral, P.gelb, P.himmel][i], transform: `scale(${p})`, ...fett(44, { display: "grid", placeItems: "center" }),
               }}>{w}</div>
             );
@@ -248,7 +249,7 @@ const Lehmann: React.FC = () => {
 const Differenzen: React.FC = () => {
   const f = useCurrentFrame();
   return (
-    <Grundpunkte farbe="rgba(23,71,201,.18)">
+    <Grundpunkte farbe="rgba(23,71,201,0.47)">
       <AbsoluteFill style={{ opacity: aus(f, D.differenzen) }}>
         <Schild f={f} farbe={P.weiss}>Differenzen</Schild>
         {/* a · Lehmann korrigiert Luhmann: weder «mit» noch «ohne Menschen» */}
@@ -261,7 +262,7 @@ const Differenzen: React.FC = () => {
           <Blase x={90} y={300} w={880} farbe={P.koral} p={pop(f, 20, 170)} drehung={-1.5}>{Z.korrektur}</Blase>
           {["mit Menschen", "ohne Menschen"].map((w, i) => (
             <div key={w} style={{
-              position: "absolute", left: 120 + i * 440, top: 560, width: 360, height: 140, borderRadius: 70, border: `8px solid ${P.ink}`, boxShadow: `10px 10px 0 ${P.ink}`,
+              position: "absolute", left: 120 + i * 440, top: 560, width: 360, height: 140, borderRadius: 70, border: `8px solid ${P.ink}`, 
               background: i ? P.himmel : P.gelb, transform: `scale(${pop(f, 60 + i * 12, 200)})`, ...fett(44, { display: "grid", placeItems: "center" }),
             }}>{w}</div>
           ))}
@@ -276,7 +277,7 @@ const Differenzen: React.FC = () => {
             <span style={{ background: AUTOR.baecker.farbe, padding: "4px 14px", border: `5px solid ${P.ink}` }}>Baecker</span>
           </div>
           {/* das Buch */}
-          <div style={{ position: "absolute", left: 140, top: 300, width: 360, height: 480, background: AUTOR.baecker.farbe, border: `8px solid ${P.ink}`, boxShadow: `14px 14px 0 ${P.ink}`, transform: `scale(${pop(f, 228, 170)}) rotate(-4deg)`, padding: 30, boxSizing: "border-box", ...fett(46, { lineHeight: 1.1 }) }}>
+          <div style={{ position: "absolute", left: 140, top: 300, width: 360, height: 480, background: AUTOR.baecker.farbe, border: `8px solid ${P.ink}`, transform: `scale(${pop(f, 228, 170)}) rotate(-4deg)`, padding: 30, boxSizing: "border-box", ...fett(46, { lineHeight: 1.1 }) }}>
             {Z.buch}
             <div style={{ position: "absolute", left: 30, right: 30, bottom: 40, height: 14, background: P.ink }} />
           </div>
@@ -305,7 +306,7 @@ const Klang: React.FC = () => {
   );
   const kopf = (x: number, y: number, farbe: string) => <div style={{ position: "absolute", left: x, top: y, width: 90, height: 90, borderRadius: "50%", background: farbe, border: `6px solid ${P.ink}` }} />;
   return (
-    <Grundpunkte farbe="rgba(127,211,255,.42)">
+    <Grundpunkte farbe="rgba(127,211,255,0.85)">
       <AbsoluteFill style={{ opacity: aus(f, D.klang) }}>
         <Schild f={f} farbe={P.himmel}>{Z.gegenprobe}</Schild>
         <Feld x={70} y={210} w={940} h={620} farbe={P.weiss}>
@@ -335,7 +336,7 @@ const Grafik: React.FC = () => {
   const ausein = interpolate(f, [70, 120], [0, 1], klemm) * (1 - interpolate(f, [190, 205], [0, 1], klemm));
   const versatz = [[-150, -60], [110, 150], [-210, 120]];
   return (
-    <Grundpunkte farbe="rgba(18,181,169,.2)">
+    <Grundpunkte farbe="rgba(18,181,169,0.52)">
       <AbsoluteFill style={{ opacity: aus(f, D.grafik) }}>
         <Schild f={f} farbe={P.weiss}>Die Streugrafik</Schild>
         <Feld x={70} y={190} w={940} h={900}>
@@ -381,7 +382,7 @@ const Pointe: React.FC = () => {
   const flach = interpolate(f, [120, 145], [0, 1], { ...klemm, easing: (t) => t * t });
   const hoehen = [260, 180, 120];
   return (
-    <Grundpunkte farbe="rgba(255,210,31,.4)">
+    <Grundpunkte farbe="rgba(255,210,31,0.85)">
       <AbsoluteFill style={{ opacity: aus(f, D.pointe) }}>
         {/* das Siegertreppchen, das zu einer Ebene zusammensackt */}
         {[1, 0, 2].map((rang, k) => {
@@ -389,7 +390,7 @@ const Pointe: React.FC = () => {
           return (
             <div key={n.name} style={{ position: "absolute", left: 90 + k * 310, bottom: 1440 - 800, width: 290, transform: `scale(${pop(f, 10 + k * 10, 180)})`, transformOrigin: "50% 100%" }}>
               <div style={fett(34, { textAlign: "center", marginBottom: 14, lineHeight: 1.05 })}>{n.name}</div>
-              <div style={{ height: h, background: n.farbe, border: `7px solid ${P.ink}`, boxShadow: `10px 10px 0 ${P.ink}`, ...fett(90, { display: "grid", placeItems: "center" }) }}>{flach < 0.5 ? rang + 1 : "="}</div>
+              <div style={{ height: h, background: n.farbe, border: `7px solid ${P.ink}`, ...fett(90, { display: "grid", placeItems: "center" }) }}>{flach < 0.5 ? rang + 1 : "="}</div>
             </div>
           );
         })}
@@ -414,8 +415,9 @@ const Schluss: React.FC = () => {
         <span style={fett(60, { lineHeight: 1.12 })}>{Z.frage}</span>
       </Wolke>
       <div style={{ position: "absolute", left: 0, right: 0, top: 1150, display: "flex", justifyContent: "center", gap: 26 }}>
-        {NAMEN.map((n, i) => <div key={n.name} style={{ padding: "10px 18px", background: n.farbe, border: `6px solid ${P.ink}`, boxShadow: `7px 7px 0 ${P.ink}`, transform: `scale(${pop(f, 90 + i * 10)}) rotate(${[-3, 2, -2][i]}deg)`, ...fett(32) }}>{n.name}</div>)}
+        {NAMEN.map((n, i) => <div key={n.name} style={{ padding: "10px 18px", background: n.farbe, border: `6px solid ${P.ink}`, transform: `scale(${pop(f, 90 + i * 10)}) rotate(${[-3, 2, -2][i]}deg)`, ...fett(32) }}>{n.name}</div>)}
       </div>
+      <Rahmen />
     </AbsoluteFill>
   );
 };

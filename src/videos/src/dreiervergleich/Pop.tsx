@@ -3,6 +3,8 @@
 // Strahlenkranz, Knall mit Lautwort, Gedankenwolke, Stempel, Erzählkasten mit Auf- und Abtritt.
 // Farben: jeder Autor in seiner Farbe aus der Streugrafik der Studie (Luhmann türkis, Baecker gelb, Lehmann korallrot), dazu Lichtenstein-Blau und -Rot;
 // Grund ein warmes Papierweiss statt reinem Weiss. Nur 3:4 (1080 × 1440).
+// Hochwertiger (Wunsch vom 6. Oktober 2026): jede Szene ein gerahmtes Bildfeld wie eine Comicseite, keine Schlagschatten im Web-Stil,
+// Punktraster als Halbton-Verlauf, Erzählkästen in Versalien bündig in der Ecke, Knall doppelt gezackt.
 import React from "react";
 import { AbsoluteFill, interpolate } from "remotion";
 import { SANS, SERIF } from "../vorlage/stil";
@@ -20,11 +22,22 @@ export const AUTOR = {
 
 export const fett = (groesse: number, extra: React.CSSProperties = {}): React.CSSProperties => ({ fontFamily: SANS, fontWeight: 700, fontSize: groesse, ...extra });
 
-/** Grund: warmes Papier mit groben Ben-Day-Punkten in einer Farbe */
-export const Grundpunkte: React.FC<{ farbe?: string; children?: React.ReactNode }> = ({ farbe = "rgba(23,71,201,.20)", children }) => (
-  <AbsoluteFill style={{ backgroundColor: P.papier }}>
-    <AbsoluteFill style={benday(farbe, 4.6, 21)} />
+/** Rahmen des Bildfelds (wie ein Comic-Panel auf der Seite): Papierrand aussen, schwarze Kontur */
+export const RAND = 26;
+export const Rahmen: React.FC = () => (
+  <AbsoluteFill style={{ pointerEvents: "none" }}>
+    <div style={{ position: "absolute", inset: 0, borderStyle: "solid", borderColor: P.papier, borderWidth: RAND }} />
+    <div style={{ position: "absolute", inset: RAND, border: `9px solid ${P.ink}` }} />
+  </AbsoluteFill>
+);
+
+/** Grund: weisses Bildfeld, oben rechts ein Halbton-Verlauf aus Ben-Day-Punkten in einer Farbe, aussen der Rahmen */
+export const Grundpunkte: React.FC<{ farbe?: string; children?: React.ReactNode }> = ({ farbe = "rgba(23,71,201,.55)", children }) => (
+  <AbsoluteFill style={{ backgroundColor: P.weiss }}>
+    <AbsoluteFill style={{ ...benday(farbe, 4.4, 17), WebkitMaskImage: "radial-gradient(ellipse 95% 70% at 92% 6%, #000 0%, rgba(0,0,0,.55) 35%, transparent 72%)", maskImage: "radial-gradient(ellipse 95% 70% at 92% 6%, #000 0%, rgba(0,0,0,.55) 35%, transparent 72%)" }} />
+    <AbsoluteFill style={{ ...benday(farbe, 3.2, 17), WebkitMaskImage: "radial-gradient(ellipse 80% 55% at 4% 100%, #000 0%, transparent 70%)", maskImage: "radial-gradient(ellipse 80% 55% at 4% 100%, #000 0%, transparent 70%)" }} />
     {children}
+    <Rahmen />
   </AbsoluteFill>
 );
 
@@ -44,20 +57,32 @@ export const Strahlen: React.FC<{ f: number; cx: number; cy: number; a: string; 
   );
 };
 
-/** gezackter Knall mit Lautwort, wie «WHAAM!» */
-export const Knall: React.FC<{ p: number; x: number; y: number; r?: number; farbe?: string; text: string; groesse?: number; textfarbe?: string; drehung?: number; opacity?: number }> = ({ p, x, y, r = 200, farbe = P.gelb, text, groesse = 84, textfarbe = P.rot, drehung = -6, opacity = 1 }) => {
-  const n = 22;
-  const pkt = Array.from({ length: n }, (_, i) => { const rr = i % 2 ? r * 0.62 : r * (0.95 + ((i * 37) % 9) / 40), w = (i / n) * Math.PI * 2; return `${rr * Math.cos(w)},${rr * 0.78 * Math.sin(w)}`; }).join(" ");
+/** doppelt gezackter Knall mit Lautwort, wie «WHAAM!»: aussen eine Farbe, innen eine zweite */
+export const Knall: React.FC<{ p: number; x: number; y: number; r?: number; farbe?: string; innen?: string; text: string; groesse?: number; textfarbe?: string; drehung?: number; opacity?: number }> = ({ p, x, y, r = 200, farbe = P.gelb, innen, text, groesse = 84, textfarbe = P.rot, drehung = -6, opacity = 1 }) => {
+  const zacken = (n: number, k: number) => Array.from({ length: n }, (_, i) => { const rr = (i % 2 ? r * 0.6 : r * (0.94 + ((i * 37) % 9) / 45)) * k, w = (i / n) * Math.PI * 2 + 0.1; return `${rr * Math.cos(w)},${rr * 0.8 * Math.sin(w)}`; }).join(" ");
   return (
     <div style={{ position: "absolute", left: x - r, top: y - r, width: 2 * r, height: 2 * r, transform: `scale(${p}) rotate(${drehung}deg)`, opacity }}>
       <svg width={2 * r} height={2 * r} viewBox={`${-r} ${-r} ${2 * r} ${2 * r}`} style={{ position: "absolute", inset: 0, overflow: "visible" }}>
-        <polygon points={pkt} fill={P.ink} transform="translate(12 12)" />
-        <polygon points={pkt} fill={farbe} stroke={P.ink} strokeWidth="9" strokeLinejoin="round" />
+        <polygon points={zacken(26, 1)} fill={farbe} stroke={P.ink} strokeWidth="8" strokeLinejoin="miter" />
+        <polygon points={zacken(18, 0.74)} fill={innen ?? (farbe === P.gelb ? P.weiss : P.gelb)} stroke={P.ink} strokeWidth="5" strokeLinejoin="miter" />
       </svg>
-      <div style={fett(groesse, { position: "absolute", inset: 0, display: "grid", placeItems: "center", color: textfarbe, letterSpacing: "-0.02em", WebkitTextStroke: `4px ${P.ink}`, paintOrder: "stroke fill", fontStyle: "italic" })}>{text}</div>
+      <div style={fett(groesse, { position: "absolute", inset: 0, display: "grid", placeItems: "center", color: textfarbe, letterSpacing: "-0.01em", WebkitTextStroke: `5px ${P.ink}`, paintOrder: "stroke fill", fontWeight: 800, transform: "skewX(-8deg)" })}>{text}</div>
     </div>
   );
 };
+
+/** Sprechblase: weiss, kräftige Kontur, Spitze unten links (ohne Schatten) */
+export const Blase: React.FC<{ x: number; y: number; w: number; farbe: string; p: number; drehung?: number; children: React.ReactNode }> = ({ x, y, w, farbe, p, drehung = 0, children }) => (
+  <div style={{ position: "absolute", left: x, top: y, width: w, transform: `scale(${p}) rotate(${drehung}deg)`, transformOrigin: "20% 100%" }}>
+    <div style={{ position: "relative", background: farbe, border: `8px solid ${P.ink}`, borderRadius: 44, padding: "30px 40px", ...fett(50, { lineHeight: 1.12, letterSpacing: "0.01em", textTransform: "uppercase" }) }}>
+      {children}
+      <svg width="80" height="70" style={{ position: "absolute", left: 70, bottom: -64, overflow: "visible" }}>
+        <path d="M0 0 L14 62 L60 0" fill={farbe} stroke={P.ink} strokeWidth="8" strokeLinejoin="miter" />
+        <path d="M5 -7 H55" stroke={farbe} strokeWidth="10" />
+      </svg>
+    </div>
+  </div>
+);
 
 /** Gedankenwolke wie in Lichtensteins Liebes-Comics (Wellenrand, kleine Bläschen darunter) */
 export const Wolke: React.FC<{ p: number; x: number; y: number; w: number; h: number; children: React.ReactNode; farbe?: string }> = ({ p, x, y, w, h, children, farbe = P.weiss }) => {
@@ -89,29 +114,29 @@ export const Stempel: React.FC<{ f: number; a: number; x: number; y: number; tex
   );
 };
 
-/** Erzählkasten (gelb, schwarzer Rand) mit Auftritt ab a und Abtritt bis b; zitiert wird wörtlich aus der Studie */
+/** Erzählkasten wie bei Lichtenstein: gelb, Versalien, schwarze Kontur, ohne Schatten; Auftritt ab a, Abtritt bis b; zitiert wird wörtlich aus der Studie */
 export const Kasten: React.FC<{ f: number; a: number; b?: number; top: number; groesse?: number; farbe?: string; children: React.ReactNode; klein?: React.ReactNode; links?: number }> = ({ f, a, b = 1e9, top, groesse = 44, farbe = P.gelb, children, klein, links = 70 }) => {
   const o = Math.min(ein(f, a, 10), interpolate(f, [b - 10, b], [1, 0], klemm));
   return (
-    <div style={{ position: "absolute", left: links, right: 70, top, opacity: o, transform: `translateY(${interpolate(f, [a, a + 14], [26, 0], klemm)}px)` }}>
-      <div style={{ display: "inline-block", background: farbe, border: `6px solid ${P.ink}`, padding: "18px 26px", boxShadow: `9px 9px 0 ${P.ink}`, ...fett(groesse, { fontWeight: 600, lineHeight: 1.22, color: P.ink, textWrap: "balance" }) }}>{children}</div>
-      {klein ? <div style={{ marginTop: 18, fontFamily: SERIF, fontStyle: "italic", fontSize: 34, color: P.dunkel }}>{klein}</div> : null}
+    <div style={{ position: "absolute", left: links, right: 70, top, opacity: o, transform: `translateY(${interpolate(f, [a, a + 14], [20, 0], klemm)}px)` }}>
+      <div style={{ display: "inline-block", background: farbe, border: `6px solid ${P.ink}`, padding: "20px 28px 18px", ...fett(groesse * 0.92, { lineHeight: 1.2, letterSpacing: "0.015em", textTransform: "uppercase", color: P.ink, textWrap: "balance" }) }}>{children}</div>
+      {klein ? <div style={{ marginTop: 16, fontFamily: SERIF, fontStyle: "italic", fontSize: 34, color: P.dunkel }}>{klein}</div> : null}
     </div>
   );
 };
 
-/** Bildfeld mit dicker Kontur und hartem Schatten */
+/** Bildfeld innerhalb der Szene: kräftige Kontur, ohne Schatten */
 export const Feld: React.FC<{ x: number; y: number; w: number; h: number; farbe?: string; style?: React.CSSProperties; children?: React.ReactNode }> = ({ x, y, w, h, farbe = P.weiss, style, children }) => (
-  <div style={{ position: "absolute", left: x, top: y, width: w, height: h, background: farbe, border: `7px solid ${P.ink}`, borderRadius: 6, boxShadow: `14px 14px 0 ${P.ink}`, boxSizing: "border-box", overflow: "hidden", ...style }}>{children}</div>
+  <div style={{ position: "absolute", left: x, top: y, width: w, height: h, background: farbe, border: `7px solid ${P.ink}`, boxSizing: "border-box", overflow: "hidden", ...style }}>{children}</div>
 );
 
-/** Namensschild eines Autors, schräg, in seiner Farbe */
-export const Schild: React.FC<{ f: number; a?: number; farbe: string; children: React.ReactNode; top?: number }> = ({ f, a = 0, farbe, children, top = 70 }) => {
-  const p = pop(f, a);
+/** Kopfkasten oben links, bündig in der Ecke des Bildfelds (wie Lichtensteins Erzählkästen), in der Farbe des Autors */
+export const Schild: React.FC<{ f: number; a?: number; farbe: string; children: React.ReactNode; top?: number }> = ({ f, a = 0, farbe, children }) => {
+  const p = pop(f, a, 200);
   return (
     <div style={{
-      position: "absolute", left: 70, top, ...fett(48, { letterSpacing: "-0.01em" }), background: farbe, border: `6px solid ${P.ink}`, padding: "10px 26px", boxShadow: `9px 9px 0 ${P.ink}`,
-      transform: `translateX(${interpolate(p, [0, 1], [-800, 0])}px) rotate(-2deg)`, ...benday("rgba(255,255,255,.28)", 3.5, 14), backgroundColor: farbe,
+      position: "absolute", left: RAND + 9, top: RAND + 9, padding: "20px 34px 18px 40px", background: farbe, borderRight: `7px solid ${P.ink}`, borderBottom: `7px solid ${P.ink}`,
+      ...fett(40, { letterSpacing: "0.05em", textTransform: "uppercase" }), clipPath: `inset(0 ${(1 - Math.min(1, p)) * 100}% 0 0)`,
     }}>{children}</div>
   );
 };
