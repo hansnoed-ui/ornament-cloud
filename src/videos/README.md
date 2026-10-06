@@ -90,7 +90,7 @@ Namen, ihre Operationen als Gegenstände; Lyotard (Leugnungsbeispiel) und Butler
 
 `npx remotion render DoppelpruefungVideo out/doppelpruefung.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
 
-## «Drei im Doppelspalt» (6. Oktober 2026)
+## «Drei im Doppelspalt der Wahrnehmung» (6. Oktober 2026)
 
 Gut 2 Minuten, nur **3:4** (1080 × 1440, `DreiervergleichVideo`), ohne Ton. Wie «Liebling …», aber farblich anders und mit viel Roy Lichtenstein
 (Strahlenkranz, Knall mit Lautwort, Gedankenwolke, Stempel; Wunsch von Christian): zeigt witzig und auf den Punkt, wie die Vergleichende Analyse

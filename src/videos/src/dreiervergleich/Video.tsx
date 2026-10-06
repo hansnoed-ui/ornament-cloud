@@ -1,4 +1,4 @@
-// Video «Drei im Doppelspalt» (Titel von Christian, 6. Oktober 2026): zeigt witzig und auf den Punkt, wie die Vergleichende Analyse
+// Video «Drei im Doppelspalt der Wahrnehmung» (Titel von Christian, 6. Oktober 2026): zeigt witzig und auf den Punkt, wie die Vergleichende Analyse
 // «Nebeneinander, Nacheinander | Luhmann, Baecker, Lehmann» (Erweiterte Arbeitsfassung, 5. Oktober 2026) die drei Zugänge prüft – und wo sie sich unterscheiden.
 // 3:4 (1080 × 1440), 30 fps, ohne Ton, etwa 2 Minuten. Pop-Art mit viel Roy Lichtenstein (Wunsch), farblich anders als «Liebling …» (Pop.tsx).
 // Intro und Outro: Signet der Vorlage. Die Autoren erscheinen nur als Namen in ihrer Farbe, ihre Begriffe als Gegenstände (keine Karikaturen).
@@ -30,7 +30,7 @@ const Titel: React.FC = () => {
       <Strahlen f={f} cx={540} cy={820} a={P.gelb} b={P.weiss} />
       <AbsoluteFill style={benday("rgba(224,20,30,.22)", 4.5, 20)} />
       <Blase x={70} y={80} w={940} farbe={P.weiss} p={pop(f, 8, 150)} drehung={-2}>
-        <span style={{ fontSize: 104, lineHeight: 1.0, textTransform: "uppercase", letterSpacing: "-0.02em", display: "block" }}>Drei im Doppelspalt</span>
+        <span style={{ fontSize: 82, lineHeight: 1.0, textTransform: "uppercase", letterSpacing: "-0.02em", display: "block" }}>Drei im<br />Doppelspalt<br />der Wahrnehmung</span>
       </Blase>
       {NAMEN.map((n, i) => {
         const p = pop(f, 40 + i * 14, 170);

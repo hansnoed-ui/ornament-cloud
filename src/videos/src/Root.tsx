@@ -12,7 +12,7 @@ export const RemotionRoot: React.FC = () => (
     {/* «Liebling, ich habe den Poststrukturalismus strukturiert»: 3:4 und 9:16 (Wunsch vom 6. Oktober 2026) */}
     <Composition id="DoppelpruefungVideo" component={DoppelpruefungVideo} durationInFrames={TDoppelpruefung.ende} fps={FPS} width={BREITE} height={1440} defaultProps={{ hoehe: 1440 }} />
     <Composition id="DoppelpruefungHoch" component={DoppelpruefungVideo} durationInFrames={TDoppelpruefung.ende} fps={FPS} width={BREITE} height={HOEHE} defaultProps={{ hoehe: HOEHE }} />
-    {/* «Drei im Doppelspalt»: Luhmann, Baecker, Lehmann, nur 3:4 (Wunsch vom 6. Oktober 2026) */}
+    {/* «Drei im Doppelspalt der Wahrnehmung»: Luhmann, Baecker, Lehmann, nur 3:4 (Wunsch vom 6. Oktober 2026) */}
     <Composition id="DreiervergleichVideo" component={DreiervergleichVideo} durationInFrames={TDreiervergleich.ende} fps={FPS} width={BREITE} height={1440} />
     {/* neue Videos: Composition */}
   </>
