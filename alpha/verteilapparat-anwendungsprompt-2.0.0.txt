@@ -1,5 +1,5 @@
 DER VERTEILAPPARAT DES KÖRPERS – PROMPT ZUM KOPIEREN
-Version 1.0.0 · UTF-8
+Version 2.0.0 · 6. Oktober 2026 · UTF-8
 
 Kopiere den gesamten Text in einen KI-Chat und ergänze unten deinen Fall mit Material. Alternativ kannst du die Datei hochladen und den Fall in einer separaten Nachricht beschreiben. Die Standardausgabe ist ein lesbares Fallblatt. Für eine strukturierte Ausgabe setze ausgabeformat auf json.
 
@@ -8,50 +8,85 @@ Die Markierungen trennen Anweisung, Schemas und Eingabe. Die Schemas sind Format
 
 <anweisung>
 # Der Verteilapparat des Körpers
-Anwendungsprompt · Version 1.0.0 · 28. September 2026
+Anwendungsprompt · Version 2.0.0 · 6. Oktober 2026
 
 Grundlage: Christian Strickler, „Der Verteilapparat des Körpers“, internes Grundlagenpapier, Stand 28. September 2026.
 Quelle: https://ornament.cloud/alpha/verteilapparat-des-koerpers.pdf
 
-Diese Anwendungsversion überführt das Papier in überprüfbare Arbeitsanweisungen. Sie bewahrt die sieben Schwellen, sechs Querkriterien, vier Leitfragen, das Vierfeld und die drei Ebenen des Apparats. Die am Ende gekennzeichneten Präzisierungen gehören zur Anwendungsversion. Die Datei ist eigenständig nutzbar; das Grundlagen-PDF muss nicht zusätzlich vorliegen.
+Diese Anwendungsversion entwickelt Anwendungsprompt 1.0.0 weiter. Sie bewahrt sieben Schwellen, sechs Querkriterien, vier Leitfragen und drei Ebenen. Das Vierfeld erhält neutrale Bezeichnungen; seine bisherigen Namen werden als belegpflichtige Deutungsmuster geprüft. Formatmacht, tatsächliche Erfassung und Entscheidungsverwendung werden getrennt. Für Theorieaufträge ist ein eigenständiger Anschlussmodus ergänzt. Die Änderungen gehören zu dieser Anwendungsversion und behaupten keine Änderung des verlinkten Grundlagenpapiers. Die Datei ist eigenständig nutzbar; das Grundlagen-PDF muss nicht zusätzlich vorliegen.
 
 ## Auftrag und Reichweite
 
-Untersuche an einem konkreten Fall, wessen Körperereignis unter welcher Beschreibung kommunikativ anschlussfähig wird, wer diese Beschreibung korrigieren kann und welche materiellen Folgen entstehen. Erstelle ein belegbares Fallprofil. Analysiere Chancen, Bedingungen und dokumentierte Folgen; behaupte keine Kausalerklärung, Prognose oder Absicht einzelner Akteure.
+Untersuche im Fall-Modus, wessen Körperereignis unter welcher Beschreibung kommunikativ anschlussfähig wird, wer diese Beschreibung korrigieren kann und welche materiellen Folgen entstehen. Erstelle ein belegbares Fallprofil. Im Theorie-Modus prüfe ausdrücklich begriffliche Anschlussmöglichkeiten und Grenzen, ohne einen Körperfall zu fingieren. Analysiere Chancen, Bedingungen und dokumentierte Folgen; behaupte keine Kausalerklärung, Prognose oder Absicht einzelner Akteure.
 
-Ein Körperereignis ist hier ein Geschehen am Körper, etwa Verletzung, Erschöpfung, Hunger, Schwangerschaft, Untersuchung oder Tod. Ein blosses Thema wie „Gesundheit“, „Migration“ oder „Social Media“ ist noch kein hinreichend abgegrenzter Fall. Verlange dann eine Konkretisierung. Die Formulierung „der Körper nimmt wahr“ ist im Papier eine Arbeitsformel; der Status des Körpers als eigenes operatives System bleibt ausdrücklich offen.
+Ein Körperereignis ist hier ein Geschehen am Körper, etwa Verletzung, Erschöpfung, Hunger, Schwangerschaft, Untersuchung oder Tod. Ein blosses Thema wie „Gesundheit“, „Migration“ oder „Social Media“ ist noch kein hinreichend abgegrenzter Fall. Verlange bei einem Fallauftrag dann eine Konkretisierung; bei einem eindeutigen Theorieauftrag verwende die theoretische Anschlussprüfung. Die Formulierung „der Körper nimmt wahr“ ist im Papier eine Arbeitsformel; der Status des Körpers als eigenes operatives System bleibt ausdrücklich offen.
 
 Unterscheide zwei Anschlusswege: Selbstbeschreibung über Stimme, Geste, Bild oder Text und Fremderfassung über Messung, Diagnose, Statistik oder Algorithmus. Sie können sich auf denselben Körper beziehen und sehr verschieden verlaufen. Eine Person kann kaum gehört und dennoch intensiv erfasst werden. Unterscheide ausserdem Körperereignis, bewusste Erfahrung und Kommunikation darüber. Erfinde keinen unmittelbaren Zugang zum Erleben einer Person.
 
 ## 1. Eingabe und Belege
 
-Benötigt werden Fall, konkretes Körperereignis, Kontext und Zeitraum sowie auswertbares Material. Die Eingabe kann als normaler Text oder gemäss „eingabe_schema“ erfolgen. Ausgabeformat ist „lesbar“, sofern nicht ausdrücklich „json“ verlangt wird.
+Benötigt werden Analysemodus und auswertbares Material. Für die Fallprüfung werden zusätzlich Fall, konkretes Körperereignis, Kontext und Zeitraum benötigt; für die theoretische Anschlussprüfung Untersuchungsgegenstand, ausgewählte Operation und Materialumfang. Die Eingabe kann als normaler Text oder gemäss „eingabe_schema“ erfolgen. Ausgabeformat ist „lesbar“, sofern nicht ausdrücklich „json“ verlangt wird. Die Materialart, etwa Regeltext, Beteiligtenbericht, Fallrekonstruktion, Modellbeispiel oder literarische Szene, ist ausdrücklich zu kennzeichnen. Sie begrenzt, was als Vollzug oder Folge behauptet werden darf.
 
 Nutze bereitgestellte Quellen. Zusätzlich verwendete Quellen müssen tatsächlich vorliegen oder abgerufen worden sein und gesondert ausgewiesen werden. Ein ungelesener Link ist kein Beleg. Vergib fortlaufende Material-IDs wie M1 und M2, wenn keine angegeben wurden. Erfinde keine Daten, Zitate, Akteninhalte, Regeln, Fristen, Rechtswege oder Quellen. Unterscheide Angaben von Beteiligten, dokumentierte Verfahrensbefunde und deine eigene Deutung.
 
 Fehlende Information bedeutet „offen“, nicht „blockiert“. Das Fehlen eines Belegs für Gehör oder Erfassung ist kein Beleg für deren Fehlen. Erkläre benannte Alternativbeschreibungen nur dann für verdrängt, wenn diese Verdrängung im Material nachweisbar ist. Ein eigener Vorschlag bleibt ein „analytischer_vorschlag“.
 
-Wenn überhaupt kein konkreter Fall oder auswertbares Material vorliegt, stelle wenige gezielte Rückfragen. Erzeuge dann kein fiktives Profil. Vergleiche einen Fall nur dann mit anderen Fällen als „typisch“ oder „abweichend“, wenn tatsächlich vergleichbares Material vorliegt. Die Muster aus dem Raster allein beweisen keine Häufigkeit.
+Wenn kein auswertbares Material vorliegt oder im Fall-Modus kein abgrenzbarer Fall, stelle wenige gezielte Rückfragen. Erzeuge kein fiktives Profil. Im Theorie-Modus ist ein fehlender Körperfall erwartbar und wird nicht durch erfundene Schwellenbefunde ersetzt. Vergleiche einen Fall nur dann mit anderen Fällen als „typisch“ oder „abweichend“, wenn tatsächlich vergleichbares Material vorliegt. Die Muster aus dem Raster allein beweisen keine Häufigkeit.
+
+## 1a. Fallprüfung oder theoretische Anschlussprüfung
+
+Wähle vor der Auswertung den Analysemodus und begründe die Wahl:
+- „fallpruefung“: Ein Körperereignis, Betrachtungsrahmen, Zeitraum und auswertbares Material liegen vor oder können eindeutig aus dem Material abgegrenzt werden. Das Material darf einen beobachteten Fall, einen Regeltext oder einen ausdrücklich gekennzeichneten Modellfall tragen; diese Evidenzarten werden nicht gleichgesetzt. Die sieben Schwellen, sechs Querkriterien, drei Ebenen und vier Leitfragen werden angewandt.
+- „theoretische_anschlusspruefung“: Der Auftrag betrifft einen Ansatz oder Text, ohne einen hinreichend abgegrenzten Körperfall vorzugeben. Prüfe seine begrifflichen Anschlussmöglichkeiten nach den vier Fragen unten. Vergib keine Vierfeldposition, keine Körper-IDs und keine Schwellenbefunde für erfundene Personen.
+
+Fehlt eine ausdrückliche Modusangabe, leite sie nur aus einem eindeutigen Auftrag ab: Ein konkreter Fallauftrag führt zur Fallprüfung; ein Theorieauftrag ohne Körperfall zur theoretischen Anschlussprüfung. Benenne die Ableitung. Bei unklarem Auftrag oder fehlendem auswertbarem Material gilt „klaerung_noetig“; stelle wenige gezielte Fragen. Das Fehlen eines Körperfalls allein ist im ausdrücklich gewählten Theorie-Modus kein Klärungsfehler.
+
+Theoretische Anschlussprüfung:
+1. Welche Körperereignisse und Unterscheidungen erschliesst der ausgewählte Ansatz? Benenne Textstellen, nicht bloss mögliche Themen.
+2. Wie unterscheidet er Körperereignis, Erfahrung, Ausdruck und fremde Beschreibung? Welche Übergänge begründet er, welche setzt er voraus?
+3. Was erschliesst er über Formatmacht, tatsächliche Erfassung und Entscheidungsverwendung? Welche Organisation oder Gegenstelle bestimmt er, welche lässt er offen?
+4. Was erschliesst er über Zugang zur Korrektur, Berücksichtigung und geänderte Entscheidungen? Welche Fallrecherche wäre nötig, um beanspruchte materielle Folgen zu prüfen?
+
+Die Anschlussprüfung bewertet begriffliche Möglichkeiten und Grenzen. Eine im Text entworfene Stimme beweist kein tatsächlich berücksichtigtes Gehör; die Analyse darf dennoch die begriffliche Unterscheidung anerkennen. Textbelege, begriffliche Aussagen und beanspruchte Fallwirkungen bleiben getrennt. Ein theoretisches Beispiel kann als Modellfall gesondert untersucht werden, wenn Ereignis und Betrachtungsrahmen tragfähig abgegrenzt sind; weise dann den Moduswechsel und den neuen Evidenzrahmen aus.
 
 ## 2. Körper und Betrachtungsrahmen unterscheiden
+
+Die Abschnitte 2–8 betreffen die Fallprüfung. Im Theorie-Modus dienen ihre Unterscheidungen als begriffliche Bezugspunkte; sie verlangen kein fiktives Fallblatt.
 
 Benenne die betroffenen und mitbetroffenen Personen oder Gruppen, soweit das Material dies trägt. Frage auch, wessen Perspektive im Material fehlt. Unterscheide eine dokumentierte Auslassung von einer blossen Recherchefrage. Schreibe niemandem aufgrund von Vermutungen Geschlecht, Klasse, Herkunft, Aufenthaltsstatus, Krankheit oder andere Merkmale zu.
 
 Untersuche unterschiedliche Körper, Institutionen, Zeitabschnitte oder Kontexte bei Bedarf als getrennte Profile. Vergib Körper-IDs K1, K2 usw. Ein Profil verweist auf genau einen Körper oder eine ausdrücklich abgegrenzte Gruppe und einen konkreten Betrachtungsrahmen. Eine Gruppenaussage darf nicht automatisch als Aussage über jedes Mitglied gelten.
 
-## 3. Zuerst im Vierfeld verorten
+## 3. Vierfeld deskriptiv verorten, Deutungsmuster gesondert prüfen
 
-Schätze Selbstbeschreibung und Fremderfassung getrennt und jeweils begründet als „stark“, „schwach“ oder „offen“ ein. Selbstbeschreibung meint hier nicht bloss die Möglichkeit, etwas zu veröffentlichen, sondern auch, ob die eigene Darstellung als relevante Stimme berücksichtigt wird. Fremderfassung betrifft Beschreibungen durch andere und deren institutionelle oder technische Wirksamkeit. Nenne die konkreten Anhaltspunkte; verwende keine Punkteskala. Bei widersprüchlicher oder unzureichender Grundlage bleibt die betreffende Einschätzung offen oder der Kontext wird weiter aufgeteilt.
+Schätze Selbstbeschreibung und Fremderfassung getrennt und jeweils begründet als „stark“, „schwach“ oder „offen“ ein. Selbstbeschreibung meint hier, ob die eigene Darstellung als relevante Stimme berücksichtigt wird; blosse Veröffentlichung genügt nicht. Fremderfassung meint die tatsächlich wirksame institutionelle oder technische Erfassung im benannten Kontext. Ihre Stärke lässt sich nicht allein aus der Macht zur Vorgabe eines Formats oder aus der Erwähnung eines Körpers ableiten. Nenne die konkreten Anhaltspunkte; verwende keine Punkteskala.
 
-Die Zuordnung folgt dem Vierfeld des Papiers:
-- Selbstbeschreibung schwach, Fremderfassung stark: „Ausgeliefertsein“.
-- Selbstbeschreibung stark, Fremderfassung stark: „Verhandelbare Teilhabe“.
-- Selbstbeschreibung schwach, Fremderfassung schwach: „Verschwinden“.
-- Selbstbeschreibung stark, Fremderfassung schwach: „Privilegierte Opazität“.
+Die vier Positionen erhalten zunächst neutrale Bezeichnungen:
+- Selbstbeschreibung schwach / Fremderfassung stark: „SB_schwach_FE_stark“.
+- Selbstbeschreibung stark / Fremderfassung stark: „SB_stark_FE_stark“.
+- Selbstbeschreibung schwach / Fremderfassung schwach: „SB_schwach_FE_schwach“.
+- Selbstbeschreibung stark / Fremderfassung schwach: „SB_stark_FE_schwach“.
 
-Ist eine Achse offen, bleibt das Feld null. Die Namen bezeichnen Modellpositionen, keine Identitäten oder abschliessenden Urteile. Insbesondere beweist „Verhandelbare Teilhabe“ noch keinen wirksamen Einspruchsweg. Ob geringe Erfassung Schutz bietet oder Ansprüche erschwert, ist gesondert zu prüfen.
+Ist eine Dimension offen, bleibt die Position null. Die Position gilt für einen Körper oder eine abgegrenzte Gruppe in genau einem Betrachtungsrahmen, nicht für eine Person als Identität. Bei widersprüchlichem Material trenne den Kontext weiter oder lasse die Dimension offen.
 
-Diese erste Verortung ist vorläufig. Prüfe und korrigiere sie nach dem Durchgang durch die Schwellen anhand der Befunde. Berichte die abschliessend begründete Verortung und gegebenenfalls, weshalb sie sich geändert hat.
+Die bisherigen Feldnamen „Ausgeliefertsein“, „Verhandelbare Teilhabe“, „Verschwinden“ und „Privilegierte Opazität“ bleiben als gesondert zu prüfende Deutungsmuster erhalten. Eine Position erfüllt keines dieser Muster automatisch. Prüfe insbesondere: Welche Folgen zeigen eine tatsächliche Abhängigkeit? Was ist wirklich verhandelbar? In welcher Gegenstelle verschwindet ein Anspruch? Worin besteht ein belegbarer Vorteil geringer Erfassung? Benenne passende Muster mit Beleg und Unsicherheit; fehlen diese, bleibt die Musterliste leer. Erfassung kann schützen, geringe Erfassung kann Schutz bieten oder Ansprüche erschweren.
+
+Die erste Position ist vorläufig. Prüfe sie anhand der sieben Schwellen und der drei Funktionen des fremden Anschlusswegs; berichte die abschliessend begründete Position und eine etwaige Änderung.
+
+## 3a. Drei Funktionen des fremden Anschlusswegs trennen
+
+Fremde Beschreibungen können unterschiedliche Funktionen haben. Prüfe je einen belegbaren Träger und lasse fehlende Zusammenhänge offen:
+- FORMATMACHT: Wer bestimmt, welche Kategorien, Ausdrucksformen oder Beweise als zulässig gelten? Eine mächtige Formatvorgabe kann eine Erfassung auch verhindern.
+- ERFASSUNG UND SPEICHERUNG: Welche Angaben über den Körper werden tatsächlich erhoben, übernommen oder gespeichert, von wem und mit welcher institutionellen oder technischen Wirksamkeit? Erhebung, Übernahme und dauerhafte Speicherung sind ihrerseits zu unterscheiden. Fehlende Speicherung beweist keine fehlende Erfassung.
+- ENTSCHEIDUNGSVERWENDUNG: Welche Stelle verwendet welche Beschreibung für eine konkrete Entscheidung? Benenne Zuständigkeit, Entscheidungsgrundlage, Entscheidung und materielle Folge, soweit belegt. Eine Akte belegt nicht schon ihre Verwendung.
+
+Diese Funktionen sind keine zusätzlichen Achsen und keine notwendige Abfolge. Die Formatmacht eines Akteurs und die tatsächlich wirksame Erfassung eines Körpers können auseinanderfallen. Die Vierfeld-Dimension „Fremderfassung“ bezieht sich auf die wirksame Erfassung im benannten Kontext. Starke Formatmacht allein begründet weder „stark“ noch „schwach“ in dieser Dimension. Ebenso ist eine gefällte Entscheidung gesondert zu belegen. Bei widersprüchlichen Trägern oder Kontexten trenne die Profile; löse die Spannung nicht durch eine pauschale Gesamteinschätzung auf.
+
+## 3b. Korrektur und Folgen getrennt prüfen
+
+Unterscheide den formalen Einspruchsweg, seine tatsächliche Nutzung, die Berücksichtigung des Einspruchs, eine geänderte Beschreibung und eine geänderte Entscheidung. Benenne Kosten und zuständige Stellen. Die Möglichkeit eines Einspruchs beweist keine Berücksichtigung; Berücksichtigung beweist keine Änderung.
+
+Prüfe anschliessend: Welche untersuchte Folge bleibt trotz möglicher oder tatsächlicher Korrektur bestehen? Eine korrigierte Akte macht einen bereits vollzogenen Eingriff nicht rückgängig. Eine neue Entscheidung kann spätere Folgen ändern, ohne frühere Belastungen aufzuheben. Umgekehrt kann eine wirksame Korrektur eine bestimmte Folge neutralisieren. Benenne solche Fälle symmetrisch, ohne allgemeine Irreversibilität oder automatische Folgenlosigkeit zu behaupten.
 
 ## 4. Sieben Schwellen prüfen
 
@@ -76,7 +111,7 @@ Prüfe quer zu den Schwellen:
 - ÜBERSETZUNGSLAST: Wer muss das Ereignis in ein institutionell oder medial brauchbares Format übersetzen? Welche Arbeit, Zeit, Kenntnisse oder Kosten sind dafür nötig?
 - LATENZ: Welche Wartezeiten und Verzögerungen sind dokumentiert? Welche Folgen hat ihr Zeitpunkt? Unterstelle einer Verzögerung keine Absicht.
 - AGGREGATIONSNIVEAU: Geht es um die einzelne Person, eine Gruppe oder eine Population? Was wird beim Wechsel der Ebene sichtbar und was verschwindet?
-- REVIDIERBARKEIT: Wer kann eine Beschreibung berichtigen, anfechten, löschen oder verweigern? Unterscheide formale Möglichkeiten von tatsächlicher Nutzbarkeit und benenne ihren Preis.
+- REVIDIERBARKEIT: Wer kann eine Beschreibung berichtigen, anfechten, löschen oder verweigern? Unterscheide formalen Weg, tatsächliche Nutzung, Berücksichtigung, geänderte Beschreibung und geänderte Entscheidung. Benenne Kosten und verbleibende Folgen; nutze Querverweise auf die Korrekturprüfung.
 - FOLGENVERTEILUNG: Wer trägt Geld-, Zeit-, Zugangs-, Gesundheits- oder andere materielle Folgen einer Beschreibung, Fehlbeschreibung oder unterlassenen Entscheidung? Behaupte keine Asymmetrie ohne Material.
 
 Verweise bei Bedarf auf mehrere Schwellen. Leite aus diesen Kriterien keine Gesamtnote ab.
@@ -93,7 +128,7 @@ Prüfe alle drei Ebenen und suche je einen konkreten Träger. Wenn er nicht bele
 
 1. Wird an das Körperereignis angeschlossen? Geschieht überhaupt Kommunikation darüber, und über welchen Weg?
 2. Unter welcher Beschreibung? Rekonstruiere den vorherrschenden Begriff, seine zuständige Gegenstelle und mögliche Alternativen. Unterscheide dokumentierte Alternativen, belegbar verdrängte Alternativen und eigene analytische Vorschläge.
-3. Wer kann diese Beschreibung berichtigen, anfechten oder verweigern? Unterscheide formale Wege, tatsächliche Nutzbarkeit und Kosten für die betroffene Person.
+3. Wer kann diese Beschreibung berichtigen, anfechten oder verweigern? Unterscheide formale Wege, tatsächliche Nutzung, Berücksichtigung, geänderte Beschreibung, geänderte Entscheidung und Kosten für die betroffene Person.
 4. Welche materiellen Folgen entstehen? Benenne, soweit belegt, Geld, Zugang, Aufenthalt, Behandlung, Freiheit, Arbeit oder Zeit und ordne sie den betroffenen Körpern oder Stellen zu. Unterscheide eingetretene, angeordnete und nur erwartete Folgen in der Formulierung.
 
 Die Schwellen und Querkriterien begründen diese vier Antworten. Sie dürfen sich nicht widersprechen. Unterscheide die Rekonstruktion einer Beschreibung von deiner Zustimmung zu ihr.
@@ -110,13 +145,17 @@ Das Ziel „anfechtbare Anschlussfähigkeit“ wird im Papier ausdrücklich bena
 
 Der Verteilapparat ergänzt das Raster „Nebeneinander und Nacheinander“ um Chancen, Lasten und Folgen von Übersetzungen. Importiere dessen Koordinaten und 1-bis-5-Skala nicht in diese Analyse.
 
+GEMEINSAME PRÜFUNG BEIDER RASTER: Folgewirksamkeit und Korrekturmacht sind verschiedene Befunde. Das NN-Raster prüft den Verlauf; der Körperapparat prüft zusätzlich Zugang, Lasten, Gegenstellen und wirksame Korrektur. Wird beides am selben Fall angewandt, benenne den gemeinsamen Bezug und frage: Kann eine Beschreibung korrigiert werden? Ändert sich dadurch eine Entscheidung? Welche relevante Folge bleibt dennoch bestehen? Unterschiedliche Körper, Kontexte oder Register müssen getrennt bleiben. Aus einem hohen Y-Wert folgt weder fehlende Korrekturmacht noch eine ungerechte Verteilung; aus einer anerkannten Korrektur folgt keine Aufhebung sämtlicher Folgen. Importiere keine Verteilungsnote in die NN-Koordinate.
+
 ## 9. Ausgabe
 
-Bei „lesbar“ erstelle ein kompaktes Fallblatt mit Fall und Quellen, Körperereignis und beteiligten Körpern, Vierfeldposition, einer Tabelle der sieben Schwellen, den vier Leitfragen, den sechs Querkriterien, den drei Ebenen, der Gegenprüfung und den Grenzen. Fasse Wiederholungen durch Querverweise zusammen. Markiere offene Stellen sichtbar. Bei mehreren Profilen trenne die jeweiligen Körper und Kontexte.
+Bei „lesbar“ im Modus „fallpruefung“: Erstelle ein kompaktes Fallblatt mit Fall, Materialstatus und Evidenzrahmen, Körperereignis, beteiligten Körpern, neutraler Vierfeldposition, Tabelle der sieben Schwellen, drei Funktionen des fremden Anschlusswegs, vier Leitfragen, sechs Querkriterien, drei Ebenen, Korrekturprüfung, Schutzgegenprobe und Grenzen. Deutungsmuster erscheinen gesondert mit ihren Belegen. Fasse Wiederholungen durch Querverweise zusammen. Markiere offene Stellen sichtbar. Bei mehreren Körpern oder Betrachtungsrahmen trenne die Profile.
 
-Bei „json“ gib ausschliesslich ein gültiges JSON-Objekt gemäss „ausgabe_schema“ dieser Datei aus, ohne Markdown oder Begleittext. Behalte alle vorgesehenen Schlüssel bei. Verwende null für fehlende Einzelwerte und [] für leere Listen. „quellen“ führt ausschliesslich tatsächlich verwendete Materialien mit ID, Herkunft und Fundstelle. Belegverweise enthalten ihre IDs und, wenn möglich, die genaue Stelle. Keine privaten Zwischengedanken, sondern prüfbare Befunde und kurze Begründungen ausgeben.
+Bei „lesbar“ im Modus „theoretische_anschlusspruefung“: Erstelle ein kürzeres Blatt mit Untersuchungsgegenstand, ausgewählter Operation, Materialumfang, Antworten auf die vier Anschlussfragen, begründeten und offenen Übergängen sowie benötigter Fallrecherche. Die Vierfeld- und Schwellentabellen entfallen. Bezeichne die Ausgabe ausdrücklich als theoretische Anschlussprüfung.
 
-Der Status „klaerung_noetig“ gilt ohne abgrenzbaren Fall oder auswertbares Material; „profile“ bleibt dann leer. „teilprofil“ kennzeichnet auswertbare, aber lückenhafte Fälle. „profil“ kennzeichnet eine im gewählten Rahmen durchgeführte Analyse, keine verifizierte Wahrheit oder Vollständigkeit der Weltbeschreibung. Offene Angaben und fehlende Träger sind weiterhin kenntlich zu machen; bei wesentlichen offenen Befunden verwende „teilprofil“.
+Bei „json“ gib ausschliesslich ein gültiges JSON-Objekt gemäss „ausgabe_schema“ dieser Datei aus, ohne Markdown oder Begleittext. Behalte alle vorgesehenen Schlüssel bei. Verwende null für fehlende Einzelwerte und [] für leere Listen. Im Theorie-Modus bleiben „profile“ und „beteiligte_koerper“ leer; „theorieanschluss“ enthält die begriffliche Prüfung. „koerperereignis“ und „kontext_und_zeitraum“ bleiben als Fallbefunde offen. Im Fall-Modus bleibt „theorieanschluss“ null. „quellen“ führt ausschliesslich tatsächlich verwendete Materialien mit ID, Herkunft, Materialart und Fundstelle. Belegverweise enthalten ihre IDs und, wenn möglich, genaue Stellen. Keine privaten Zwischengedanken, sondern prüfbare Befunde und kurze Begründungen ausgeben.
+
+Der Status „klaerung_noetig“ gilt bei unklarem Auftrag, fehlendem Material oder bei fehlender Abgrenzung im Fall-Modus; „profile“ bleibt leer und „theorieanschluss“ null. Bereits bekannte Körperdaten dürfen quellengebunden unter „beteiligte_koerper“ erhalten bleiben. „teilprofil“ kennzeichnet auswertbare, aber lückenhafte Fälle. „profil“ kennzeichnet eine im gewählten Rahmen durchgeführte Fallanalyse, keine verifizierte Wahrheit oder Vollständigkeit der Weltbeschreibung. „anschlusspruefung“ kennzeichnet eine durchgeführte theoretische Anschlussprüfung, auch wenn einzelne begriffliche Übergänge offen bleiben. Sie ist kein unvollständiges empirisches Profil.
 
 ## 10. Gekennzeichnete Präzisierungen gegenüber dem Grundlagenpapier
 
@@ -124,11 +163,16 @@ P1 — Fehlende Angaben: „offen“, begründetes „nicht_anwendbar“, Befund
 
 P2 — Zwei Wege: Das Ausgabeformat dokumentiert Selbstbeschreibung und Fremderfassung je Schwelle getrennt. Diese formale Ausarbeitung macht die im Papier zentrale Asymmetrie prüfbar; sie behauptet keinen identischen Ablauf beider Wege. Funktionen ohne sinnvolle Entsprechung müssen als solche begründet werden.
 
-P3 — Vierfeld: Die Einordnung ist qualitativ; das Papier liefert keine numerischen Schwellen. Feldnamen ersetzen keinen Nachweis von Schutz, Anfechtbarkeit, Privileg oder Ausgeliefertsein. Solche Eigenschaften sind an den konkreten Befunden zu prüfen.
+P3 — Vierfeld: Die Einordnung bleibt qualitativ. Version 2.0.0 verwendet neutrale Feldbezeichnungen. Die bisherigen Namen sind gesonderte Deutungsmuster mit eigener Beweislast. Diese Änderung ist eine bewusste Weiterentwicklung der Anwendung, keine wortgetreue Wiedergabe der Feldnamen des Grundlagenpapiers.
 
 P4 — Aussagen des Papiers: Allgemeine Zuspitzungen über Kostenverteilung, Wirkung von Fristen, Reichweite von Gegendarstellungen oder Ablehnungsquoten werden als zu prüfende Annahmen behandelt, nicht als automatisch geltende Falltatsachen. Die angekündigte Zurückhaltung bei Kausalerklärungen und Absichtszuschreibungen hat Vorrang vor entsprechenden Deutungen in den Anwendungsbeispielen. Das normative Ziel wird gesondert ausgewiesen.
 
 P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Fallanalysen. Sammle solche Vorschläge in „revisionsvorschlaege“, jeweils mit Anlass und Beleg. Ändere in derselben Auswertung weder die sieben Schwellen noch deren Bedeutung stillschweigend. Eine übernommene Änderung erhält eine neue Modell- oder Prompt-Version, damit Fälle vergleichbar bleiben.
+P6 — Fremder Anschluss: Formatmacht, Erfassung/Speicherung und Entscheidungsverwendung werden als drei Funktionen getrennt; sie bilden keine neuen Achsen und keine lineare Abfolge. Der Vierfeldwert für Fremderfassung bezeichnet die wirksame Erfassung, nicht pauschal sämtliche fremde Macht.
+
+P7 — Zwei Analysemodi: Die Fallprüfung bewahrt das vollständige Raster. Die theoretische Anschlussprüfung hat ein kürzeres eigenes Ausgabeformat und erlaubt weder Vierfeldzuordnung noch fingierte Schwellenbefunde.
+
+P8 — Korrektur und Folge: Berücksichtigung, geänderte Beschreibung, geänderte Entscheidung und fortbestehende Folgen werden unterschieden. Dies ergänzt die Revidierbarkeitsprüfung und verändert keine der sieben Schwellen.
 </anweisung>
 
 <eingabe_schema>
@@ -174,6 +218,12 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
               "string",
               "null"
             ]
+          },
+          "materialart": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -189,6 +239,19 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
         "lesbar",
         "json"
       ]
+    },
+    "analysemodus": {
+      "enum": [
+        "fallpruefung",
+        "theoretische_anschlusspruefung",
+        null
+      ]
+    },
+    "operation": {
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "required": [
@@ -197,7 +260,9 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
     "kontext",
     "zeitraum",
     "material",
-    "ausgabeformat"
+    "ausgabeformat",
+    "analysemodus",
+    "operation"
   ],
   "additionalProperties": false,
   "$schema": "https://json-schema.org/draft/2020-12/schema"
@@ -209,7 +274,7 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
   "type": "object",
   "properties": {
     "prompt_version": {
-      "const": "1.0.0"
+      "const": "2.0.0"
     },
     "fall": {
       "type": [
@@ -221,7 +286,8 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
       "enum": [
         "profil",
         "teilprofil",
-        "klaerung_noetig"
+        "klaerung_noetig",
+        "anschlusspruefung"
       ]
     },
     "koerperereignis": {
@@ -330,15 +396,45 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
               "string",
               "null"
             ]
+          },
+          "materialart": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
           "id",
           "herkunft",
-          "fundstelle"
+          "fundstelle",
+          "materialart"
         ],
         "additionalProperties": false
       }
+    },
+    "analysemodus": {
+      "enum": [
+        "fallpruefung",
+        "theoretische_anschlusspruefung",
+        null
+      ]
+    },
+    "modus_begruendung": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "theorieanschluss": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/theorieanschluss"
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "required": [
@@ -351,11 +447,14 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
     "profile",
     "offene_fragen",
     "revisionsvorschlaege",
-    "quellen"
+    "quellen",
+    "analysemodus",
+    "modus_begruendung",
+    "theorieanschluss"
   ],
   "additionalProperties": false,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Der Verteilapparat des Körpers – Fallprofil 1.0.0",
+  "title": "Der Verteilapparat des Körpers – Fall- oder Theorieprüfung 2.0.0",
   "$defs": {
     "befund": {
       "type": "object",
@@ -563,10 +662,10 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
         },
         "position": {
           "enum": [
-            "Ausgeliefertsein",
-            "Verhandelbare Teilhabe",
-            "Verschwinden",
-            "Privilegierte Opazität",
+            "SB_schwach_FE_stark",
+            "SB_stark_FE_stark",
+            "SB_schwach_FE_schwach",
+            "SB_stark_FE_schwach",
             null
           ]
         },
@@ -607,7 +706,7 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
           "then": {
             "properties": {
               "position": {
-                "const": "Ausgeliefertsein"
+                "const": "SB_schwach_FE_stark"
               }
             }
           }
@@ -634,7 +733,7 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
           "then": {
             "properties": {
               "position": {
-                "const": "Verhandelbare Teilhabe"
+                "const": "SB_stark_FE_stark"
               }
             }
           }
@@ -661,7 +760,7 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
           "then": {
             "properties": {
               "position": {
-                "const": "Verschwinden"
+                "const": "SB_schwach_FE_schwach"
               }
             }
           }
@@ -688,7 +787,7 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
           "then": {
             "properties": {
               "position": {
-                "const": "Privilegierte Opazität"
+                "const": "SB_stark_FE_schwach"
               }
             }
           }
@@ -939,12 +1038,24 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
                 },
                 "kosten": {
                   "$ref": "#/$defs/befund"
+                },
+                "beruecksichtigung": {
+                  "$ref": "#/$defs/befund"
+                },
+                "beschreibungsaenderung": {
+                  "$ref": "#/$defs/befund"
+                },
+                "entscheidungsaenderung": {
+                  "$ref": "#/$defs/befund"
                 }
               },
               "required": [
                 "formal",
                 "faktisch",
-                "kosten"
+                "kosten",
+                "beruecksichtigung",
+                "beschreibungsaenderung",
+                "entscheidungsaenderung"
               ],
               "additionalProperties": false
             },
@@ -1009,11 +1120,29 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
                   "Späte Anerkennung",
                   "Statistische Sichtbarkeit",
                   "Widerspruch kostet Anschluss",
-                  "Sichtbarkeit als Risiko"
+                  "Sichtbarkeit als Risiko",
+                  "Ausgeliefertsein",
+                  "Verhandelbare Teilhabe",
+                  "Verschwinden",
+                  "Privilegierte Opazität"
                 ]
               },
               "befund": {
-                "$ref": "#/$defs/befund"
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/befund"
+                  },
+                  {
+                    "properties": {
+                      "status": {
+                        "enum": [
+                          "belegt",
+                          "deutung"
+                        ]
+                      }
+                    }
+                  }
+                ]
               }
             },
             "required": [
@@ -1030,6 +1159,54 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
             "type": "string",
             "minLength": 1
           }
+        },
+        "evidenzrahmen": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fremder_anschluss": {
+          "type": "object",
+          "properties": {
+            "formatmacht": {
+              "$ref": "#/$defs/befund"
+            },
+            "erfassung_und_speicherung": {
+              "$ref": "#/$defs/befund"
+            },
+            "entscheidungsverwendung": {
+              "$ref": "#/$defs/befund"
+            }
+          },
+          "required": [
+            "formatmacht",
+            "erfassung_und_speicherung",
+            "entscheidungsverwendung"
+          ],
+          "additionalProperties": false
+        },
+        "folgewirksamkeit_und_korrektur": {
+          "type": "object",
+          "properties": {
+            "untersuchte_folge": {
+              "$ref": "#/$defs/befund"
+            },
+            "moegliche_korrektur": {
+              "$ref": "#/$defs/befund"
+            },
+            "tatsaechliche_korrektur": {
+              "$ref": "#/$defs/befund"
+            },
+            "fortbestehende_folgen": {
+              "$ref": "#/$defs/befund"
+            }
+          },
+          "required": [
+            "untersuchte_folge",
+            "moegliche_korrektur",
+            "tatsaechliche_korrektur",
+            "fortbestehende_folgen"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -1044,7 +1221,97 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
         "rueckwirkungen",
         "gegenpruefung_erfassung_als_schutz",
         "befundmuster",
-        "was_das_modell_nicht_erklaert"
+        "was_das_modell_nicht_erklaert",
+        "evidenzrahmen",
+        "fremder_anschluss",
+        "folgewirksamkeit_und_korrektur"
+      ],
+      "additionalProperties": false
+    },
+    "theorieanschluss": {
+      "type": "object",
+      "properties": {
+        "untersuchungsgegenstand": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "materialumfang": {
+          "$ref": "#/$defs/befund"
+        },
+        "koerperereignisse_und_unterscheidungen": {
+          "$ref": "#/$defs/befund"
+        },
+        "erfahrung_ausdruck_und_fremdbeschreibung": {
+          "$ref": "#/$defs/befund"
+        },
+        "formatmacht_erfassung_und_entscheidung": {
+          "$ref": "#/$defs/befund"
+        },
+        "organisation_und_korrektur": {
+          "$ref": "#/$defs/befund"
+        },
+        "uebergaenge": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "textbeleg": {
+                "type": "string",
+                "minLength": 1
+              },
+              "begriffliche_aussage": {
+                "type": "string",
+                "minLength": 1
+              },
+              "beanspruchte_fallwirkung": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "uebergangsbegruendung": {
+                "$ref": "#/$defs/befund"
+              },
+              "unsicherheit": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "textbeleg",
+              "begriffliche_aussage",
+              "beanspruchte_fallwirkung",
+              "uebergangsbegruendung",
+              "unsicherheit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "grenzen_und_fallrecherche": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "untersuchungsgegenstand",
+        "operation",
+        "materialumfang",
+        "koerperereignisse_und_unterscheidungen",
+        "erfahrung_ausdruck_und_fremdbeschreibung",
+        "formatmacht_erfassung_und_entscheidung",
+        "organisation_und_korrektur",
+        "uebergaenge",
+        "grenzen_und_fallrecherche"
       ],
       "additionalProperties": false
     }
@@ -1063,6 +1330,9 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
           "profile": {
             "maxItems": 0
           },
+          "theorieanschluss": {
+            "type": "null"
+          },
           "offene_fragen": {
             "minItems": 1
           }
@@ -1074,14 +1344,85 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
             "type": "string",
             "minLength": 1
           },
+          "quellen": {
+            "minItems": 1
+          },
+          "modus_begruendung": {
+            "type": "string",
+            "minLength": 1
+          },
+          "analysemodus": {
+            "enum": [
+              "fallpruefung",
+              "theoretische_anschlusspruefung"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "anschlusspruefung"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "analysemodus": {
+            "const": "theoretische_anschlusspruefung"
+          },
+          "profile": {
+            "maxItems": 0
+          },
+          "beteiligte_koerper": {
+            "maxItems": 0
+          },
+          "theorieanschluss": {
+            "$ref": "#/$defs/theorieanschluss"
+          },
+          "koerperereignis": {
+            "properties": {
+              "status": {
+                "const": "offen"
+              }
+            }
+          },
+          "kontext_und_zeitraum": {
+            "properties": {
+              "status": {
+                "const": "offen"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "profil",
+              "teilprofil"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "analysemodus": {
+            "const": "fallpruefung"
+          },
           "profile": {
             "minItems": 1
           },
           "beteiligte_koerper": {
             "minItems": 1
           },
-          "quellen": {
-            "minItems": 1
+          "theorieanschluss": {
+            "type": "null"
           },
           "koerperereignis": {
             "properties": {
@@ -1102,12 +1443,13 @@ P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Falla
 
 MEINE EINGABE
 
-Ergänze die folgende Vorlage oder beschreibe deinen Fall darunter in normaler Sprache. Ein Eintrag in material enthält id, inhalt und fundstelle, zum Beispiel eine Material-ID M1, den tatsächlichen Textauszug und seine Quelle. Wenn keine Fundstelle vorhanden ist, verwende null.
-
+Ergänze die Vorlage oder beschreibe den Auftrag in normaler Sprache. Bei einer Theorieprüfung bezeichnet „fall“ den untersuchten Ansatz oder Text; Körperereignis, Kontext und Zeitraum des Falls bleiben null. „operation“ grenzt den theoretischen Zugriff ein. Setze „analysemodus“ ausdrücklich oder lasse ihn bei einem eindeutigen Auftrag ableiten. Leere Felder sind keine Belege. Material enthält tatsächliche Inhalte, IDs und Fundstellen; „materialart“ kann zusätzlich angegeben werden.
 
 <eingabe>
 {
   "fall": "",
+  "analysemodus": null,
+  "operation": null,
   "koerperereignis": null,
   "kontext": null,
   "zeitraum": null,
