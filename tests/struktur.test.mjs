@@ -206,15 +206,15 @@ test("Web: OMNA COLOR und Das Dritte Rad (Alpha) und das Stellenfeld als Beiträ
   assert.deepEqual(k.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
   assert.ok(k.slice(0, 2).every((x) => x.tags.includes("Alpha") && x.tags.includes("Prototyp")), "die beiden Räder sind Alpha");
   assert.ok(!k[2].tags.includes("Alpha"), "das Stellenfeld liegt nicht im Alpha-Bereich");
-  // das Comic-Video (4 : 5, 6. Oktober 2026): letzter Beitrag, spielt von selbst, verlinkt nur die Studie als PDF
+  // das Comic-Video (Hochformat 9 : 16 im Rahmen 4 : 5, 6. Oktober 2026): letzter Beitrag, spielt von selbst, verlinkt nur die Studie als PDF
   const v = k[3];
   assert.equal([...v.html.matchAll(/<a /g)].length, 1, "ein Link: die Studie");
   assert.ok(existsSync(new URL("alpha/poststrukturalismus-doppelpruefung.pdf", root)), "das PDF liegt im Alpha-Bereich");
-  assert.match(v.html, /<video class="beitrag-video" controls muted playsinline preload="none" poster="\.\.\/assets\/poststrukturalismus-4x5\.jpg" width="864" height="1080"/);
-  assert.match(v.html, /<source src="\.\.\/assets\/poststrukturalismus-4x5\.mp4" type="video\/mp4">/);
-  for (const d of ["poststrukturalismus-4x5.mp4", "poststrukturalismus-4x5.jpg"]) assert.ok(existsSync(new URL(`assets/${d}`, root)), d);
-  assert.deepEqual(jpegMass(readFileSync(new URL("assets/poststrukturalismus-4x5.jpg", root))), [864, 1080], "Vorschaubild 4 : 5");
-  assert.ok(readFileSync(new URL("assets/poststrukturalismus-4x5.mp4", root)).length < 14_000_000, "Video unter 14 MB");
+  assert.match(v.html, /<video class="beitrag-video" controls muted playsinline preload="none" poster="\.\.\/assets\/poststrukturalismus-9x16\.jpg" width="608" height="1080"/);
+  assert.match(v.html, /<source src="\.\.\/assets\/poststrukturalismus-9x16\.mp4" type="video\/mp4">/);
+  for (const d of ["poststrukturalismus-9x16.mp4", "poststrukturalismus-9x16.jpg"]) assert.ok(existsSync(new URL(`assets/${d}`, root)), d);
+  assert.deepEqual(jpegMass(readFileSync(new URL("assets/poststrukturalismus-9x16.jpg", root))), [608, 1080], "Vorschaubild 9 : 16");
+  assert.ok(readFileSync(new URL("assets/poststrukturalismus-9x16.mp4", root)).length < 14_000_000, "Video unter 14 MB");
   assert.match(html, /new IntersectionObserver/, "Autoplay über IntersectionObserver");
   const erzeuger = lies("tools/start-og.mjs");
   for (const [i, datei] of ["vorschau-omna-color.jpg", "vorschau-drittes-rad.jpg", "vorschau-stellenfeld.jpg"].entries()) {

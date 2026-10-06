@@ -37,7 +37,7 @@ export const Punkte: React.FC<{ farbe?: string; children?: React.ReactNode }> = 
     <AbsoluteFill style={{ backgroundColor: C.papier }}>
       <AbsoluteFill style={benday(farbe, 4.2, 20)} />
       {/* niedrigere Bilder (4:5 = 1350) zeigen die ganze Bühne etwas verkleinert, nichts wird abgeschnitten */}
-      <div style={{ position: "absolute", left: 0, width: B, height: H, top: (hoehe - H) / 2, transform: `scale(${Math.min(1, hoehe / H)})`, transformOrigin: "50% 50%" }}>{children}</div>
+      <div style={{ position: "absolute", left: 0, width: B, height: H, top: (hoehe - H) / 2 }}>{children}</div>
     </AbsoluteFill>
   );
 };
