@@ -22,6 +22,7 @@ export const Z = {
   // Lehmann
   drei: ["Werk", "Medium", "Reflexion"], // S. 5
   avantgarde: "In «Avantgarde heute» unterscheidet Lehmann Werk, Medium und Reflexion.", // S. 5
+  codierung: "Selbstnegation der Codierung", // S. 7
   reexit: "Kunst kann gelingen, indem sie etablierte Kriterien des Gelingens ausser Kraft setzt.", // S. 7
   bruch: "Ein Bruch kann zum wiederholbaren Stil und zur vertrauten Erwartung werden.", // S. 7
   lehmannPflicht: "Eine neue Deutung von nachweisbarem Lernen und Wirkung unterscheiden.", // S. 9
@@ -53,5 +54,6 @@ export const L = {
   lehmannZeilen: ["Stil gelöst", "Werk negiert", "neu gekoppelt"],
   lehmannY: "Verzeitlichung: Die gelernte Unterscheidung bleibt wirksam. Das zweite Sehen kann nicht mehr zum ersten zurück.",
   duell: "Re‑entry: Die Unterscheidung kehrt in sich selbst zurück. Re‑exit: In den Humanmedien tritt die Kunst aus ihrem eigenen Code aus – und holt die Menschen herein.",
+  podest: "Alle drei erschliessen Raum und Zeit – jeder auf seine Weise. Das Prüfraster vergibt keine Medaillen.",
   reexitNur: "Re-exit gilt bei Lehmann nur für die Humanmedien: Kunst, Liebe, Religion – nicht für Wissenschaft, Recht oder Wirtschaft.",
 };

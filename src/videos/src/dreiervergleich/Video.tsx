@@ -8,6 +8,7 @@
 import React from "react";
 import { AbsoluteFill, Sequence, interpolate, useCurrentFrame } from "remotion";
 import { Grund, INTRO, OUTRO } from "../vorlage/Bausteine";
+import { SERIF } from "../vorlage/stil";
 import { benday, ein, klemm, pop } from "../doppelpruefung/Comic";
 import { AUTOR, Abschnitt, Blase, Feld, Grundpunkte, Iris, Kasten, Knall, P, PopIntro, PopOutro, Rahmen, Schild, Stempel, Strahlen, Wolke, fett } from "./Pop";
 import { L, Z } from "./zitate";
@@ -17,9 +18,11 @@ const D = { titel: 210, raster: 300, luhmann: 420, baecker: 420, lehmann: 450, x
 const UEBER = 18;
 /** das Signet am Schluss bleibt nach seiner Animation noch 2 s stehen (Wunsch vom 6. Oktober 2026) */
 const OUTRO_LANG = OUTRO + 60;
+/** das Signet am Anfang bleibt ebenfalls länger stehen (Wunsch vom 6. Oktober 2026) */
+const INTRO_LANG = INTRO + 45;
 export const T = (() => {
   const t: Record<string, number> = { intro: 0 };
-  let a = INTRO - UEBER;
+  let a = INTRO_LANG - UEBER;
   for (const [k, d] of Object.entries(D)) { t[k] = a; a += d - UEBER; }
   t.signet = a; t.ende = a + OUTRO_LANG;
   return t as Record<keyof typeof D | "intro" | "signet" | "ende", number>;
@@ -181,7 +184,7 @@ const Baecker: React.FC = () => {
       <AbsoluteFill>
         <Schild f={f} farbe={AUTOR.baecker.farbe}>{AUTOR.baecker.name}</Schild>
         <Feld x={70} y={220} w={940} h={600}>
-          <svg width="926" height="586" viewBox="0 0 940 600" style={{ position: "absolute", inset: 0 }}>
+          <svg width="926" height="586" viewBox="0 0 940 600" style={{ position: "absolute", inset: 0, opacity: interpolate(f, [120, 135, 285, 300], [1, 0.22, 0.22, 1], klemm) }}>
             {haken.map(([x, y, w], i) => {
               const z = interpolate(f, [15 + i * 22, 40 + i * 22], [0, 1], klemm);
               const glanz = f > 300;
@@ -189,11 +192,27 @@ const Baecker: React.FC = () => {
             })}
             {["a", "b", "c"].map((b, i) => <text key={b} x={[180, 290, 400][i]} y={[480, 400, 320][i]} fontFamily="Newsreader" fontStyle="italic" fontSize="54" opacity={ein(f, 60 + i * 10)}>{b}</text>)}
           </svg>
+          {/* Y explizit (Wunsch vom 6. Oktober 2026): eine Skala Verzeitlichung 1–5; «NÄCHSTE →» treibt den Wert hoch, nach dem Stempel «Y?» fällt er zurück */}
+          {f > 118 && f < 300 ? (() => {
+            const Y = (v: number) => 520 - (v - 1) * 105;
+            const wert = interpolate(f, [130, 160, 190, 215], [1, 5, 5, 1.6], klemm);
+            return (
+              <div style={{ position: "absolute", inset: 0, opacity: interpolate(f, [118, 130, 285, 300], [0, 1, 1, 0], klemm) }}>
+                <svg width="926" height="586" viewBox="0 0 940 600" style={{ position: "absolute", inset: 0 }}>
+                  <path d={`M150 ${Y(1) + 20} V${Y(5) - 30}`} stroke={P.ink} strokeWidth="8" />
+                  <path d={`M150 ${Y(5) - 50} l-16 26 h32z`} fill={P.ink} />
+                  {[1, 2, 3, 4, 5].map((v) => <React.Fragment key={v}><path d={`M138 ${Y(v)} H162`} stroke={P.ink} strokeWidth="6" /><text x="112" y={Y(v) + 11} textAnchor="end" fontFamily="Instrument Sans" fontWeight={700} fontSize="30">{v}</text></React.Fragment>)}
+                  <text x="60" y={Y(3)} fontFamily="Instrument Sans" fontWeight={700} fontSize="30" fill={P.rot} textAnchor="middle" transform={`rotate(-90 60 ${Y(3)})`}>Y · Verzeitlichung</text>
+                  <circle cx="150" cy={Y(wert)} r="24" fill={f > 190 ? P.grau : P.rot} stroke={P.ink} strokeWidth="6" />
+                </svg>
+              </div>
+            );
+          })() : null}
           {/* Leuchtreklame «nächste Gesellschaft →» */}
           <div style={{ position: "absolute", left: 470, top: 40, opacity: f > 120 && f < 300 ? 1 : 0, transform: `scale(${pop(f, 120, 200)}) rotate(4deg)`, padding: "14px 24px", background: P.blau, border: `6px solid ${P.ink}`, borderRadius: 12, boxShadow: `0 0 0 ${8 + Math.sin(f / 3) * 4}px ${P.himmel}88`, ...fett(40, { color: P.gelb }) }}>NÄCHSTE →</div>
           {f > 300 ? Array.from({ length: 7 }, (_, i) => <div key={i} style={fett(64, { position: "absolute", left: [80, 820, 300, 640, 140, 760, 470][i], top: [70, 120, 60, 430, 300, 520, 180][i], color: P.gelb, WebkitTextStroke: `3px ${P.ink}`, transform: `scale(${pop(f, 300 + i * 6, 260) * (0.8 + 0.2 * Math.sin(f / 4 + i))})` })}>✦</div>) : null}
         </Feld>
-        {f < 300 ? <Stempel f={f} a={185} x={540} y={330} text="Y?" farbe={P.rot} groesse={90} drehung={12} /> : null}
+        {f < 300 ? <Stempel f={f} a={185} x={300} y={300} text="Y?" farbe={P.rot} groesse={90} drehung={12} /> : null}
         <Knall p={pop(f, 305, 200)} x={820} y={860} r={170} farbe={P.koral} textfarbe={P.weiss} text="SCHICK!" groesse={64} drehung={-8} />
         <Kasten f={f} a={20} b={125} top={900} groesse={52}>{Z.form}</Kasten>
         <Kasten f={f} a={135} b={295} top={900} groesse={52}>{Z.naechste}</Kasten>
@@ -419,8 +438,9 @@ const Duell: React.FC = () => {
       <Feld x={560} y={200} w={450} h={520} farbe={P.weiss}>
         <div style={fett(28, { position: "absolute", left: 20, top: 16 })}><span style={{ background: AUTOR.lehmann.farbe, padding: "2px 8px" }}>Lehmann</span></div>
         <div style={{ position: "absolute", left: 80, top: 80, width: 190, height: 190, border: `10px solid ${P.ink}`, ...fett(30, { display: "grid", placeItems: "center" }) }}>Code</div>
+        <div style={{ position: "absolute", left: 24, top: 284, fontFamily: SERIF, fontStyle: "italic", fontSize: 24, color: P.dunkel, opacity: ein(f, 100) }}>«{Z.codierung}»</div>
         {/* re-exit gilt bei Lehmann nur für die Humanmedien (Hinweis von Christian, 6. Oktober 2026) */}
-        <div style={{ position: "absolute", left: 24, right: 24, top: 315, opacity: ein(f, 105) }}>
+        <div style={{ position: "absolute", left: 24, right: 24, top: 332, opacity: ein(f, 105) }}>
           <div style={{ display: "inline-block", padding: "6px 12px", background: P.koral, border: `5px solid ${P.ink}`, ...fett(24, { textTransform: "uppercase", letterSpacing: "0.04em" }) }}>nur in Humanmedien</div>
           <div style={fett(28, { marginTop: 10 })}>Kunst · Liebe · Religion</div>
           <div style={fett(24, { marginTop: 6, color: P.grau, textDecoration: "line-through", textDecorationThickness: 3 })}>Wissenschaft · Recht · Wirtschaft</div>
@@ -505,7 +525,7 @@ const Pointe: React.FC = () => {
         })}
         <Knall p={pop(f, 118, 220)} x={540} y={300} r={210} farbe={P.rot} textfarbe={P.gelb} text="KRACH!" groesse={84} drehung={-4} />
         <Stempel f={f} a={150} x={110} y={850} text={Z.ranking.toUpperCase()} farbe={P.blau} groesse={40} drehung={-5} />
-        <Kasten f={f} a={30} b={180} top={1020} groesse={50}>{Z.keinRang}.</Kasten>
+        <Kasten f={f} a={30} b={180} top={1020} groesse={48}>{L.podest}</Kasten>
         <Kasten f={f} a={185} top={1000} groesse={42} klein={<>{Z.mitpruefen}.</>}>{Z.passung}</Kasten>
       </AbsoluteFill>
     </Grundpunkte>
@@ -540,7 +560,7 @@ const ECKEN: [number, number][] = [[900, 1250], [150, 200], [930, 180], [120, 12
 
 export const DreiervergleichVideo: React.FC = () => (
   <Grund>
-    <Sequence durationInFrames={INTRO}><PopIntro kopf={{ titel: "Doppelspalt", unter: ["Luhmann", "Baecker", "Lehmann"] }} /></Sequence>
+    <Sequence durationInFrames={INTRO_LANG}><PopIntro kopf={{ titel: "Doppelspalt", unter: ["Luhmann", "Baecker", "Lehmann"] }} /></Sequence>
     {SZENEN.map(([k, Szene], i) => (
       <Sequence key={k} from={T[k]} durationInFrames={D[k]}><Iris dauer={UEBER} mitte={ECKEN[i % ECKEN.length]}><Szene /></Iris></Sequence>
     ))}

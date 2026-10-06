@@ -92,7 +92,7 @@ Namen, ihre Operationen als Gegenstände; Lyotard (Leugnungsbeispiel) und Butler
 
 ## «Drei im Doppelspalt der Wahrnehmung» (6. Oktober 2026)
 
-Gut 2 Minuten (2:18; das Signet steht am Schluss 2 s länger), nur **3:4** (1080 × 1440, `DreiervergleichVideo`), ohne Ton. Wie «Liebling …», aber farblich anders und hochwertiger mit viel Roy Lichtenstein
+Gut 2 Minuten (2:20; das Signet steht am Anfang 1,5 s und am Schluss 2 s länger), nur **3:4** (1080 × 1440, `DreiervergleichVideo`), ohne Ton. Wie «Liebling …», aber farblich anders und hochwertiger mit viel Roy Lichtenstein
 (jede Szene ein gerahmtes Bildfeld, Halbton-Verläufe, Erzählkästen in Versalien, doppelt gezackte Knalle, Gedankenwolke, Stempel; Wunsch von Christian).
 Vergleicht Luhmann, Baecker und Lehmann im Prüfraster Nebeneinander / Nacheinander, ausgehend von der Vergleichenden Analyse
 «Nebeneinander, Nacheinander | Luhmann, Baecker, Lehmann» (5. Oktober 2026), aber nicht an sie gebunden.
@@ -102,13 +102,13 @@ Intro und Outro sind das Signet der Vorlage im Pop-Stil (`Signet` mit `stil`; oh
 
 0. Intro: Signet mit gelbem Kopfkasten «Doppelspalt», darunter «Luhmann • Baecker • Lehmann»; Titel mit drei Namenskarten
 1. Das Prüfraster: X (Bestimmbare Rückkehr), Y (Folgenreicher Vollzug)
-2.–4. Die Grundoperationen: Luhmann (Information · Mitteilung · Verstehen, Ereignisse, Entscheidung), Baecker (Form, «nächste», grafische Eleganz),
+2.–4. Die Grundoperationen: Luhmann (Information · Mitteilung · Verstehen, Ereignisse, Entscheidung), Baecker (Form, «nächste» mit einer Y-Skala im Bild, grafische Eleganz),
    Lehmann (Werk · Medium · Reflexion, re-exit, «BRUCH!» wird blasser)
 5.–7. Raum und Zeit je Autor: Luhmann (Objekte verlassen ihre Stellen / Stellen verlassen ihre Objekte; die Y-Texte sagen jeweils, worin die Verzeitlichung liegt), Baecker (Form auf einen Blick / re-entry, Oszillation, Gedächtnis),
    Lehmann (Vergleichsmodell / Erfahrung lernt)
 8. Duell: RE-ENTRY! gegen RE-EXIT! (re-exit markiert: bei Lehmann nur in den Humanmedien Kunst, Liebe, Religion; nicht Wissenschaft, Recht, Wirtschaft)
 9. Differenzen: Lehmann → Luhmann (keine schlichte Wahl «mit» oder «ohne Menschen»), Lehmann → Baecker (Rezension 2008)
-10. Siegertreppchen sackt zusammen: kein philosophisches Ranking; 11. Die offene Frage; 12. Outro
+10. Siegertreppchen sackt zusammen: «Alle drei erschliessen Raum und Zeit – jeder auf seine Weise. Das Prüfraster vergibt keine Medaillen.», kein philosophisches Ranking; 11. Die offene Frage; 12. Outro
 
 Die Szenen öffnen sich mit einer Kreisblende über der vorigen (18 Bilder Überlappung).
 `npx remotion render DreiervergleichVideo out/dreiervergleich.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
