@@ -154,9 +154,10 @@ export const Iris: React.FC<{ dauer: number; mitte: [number, number]; children: 
   const f = useCurrentFrame();
   const t = interpolate(f, [0, dauer], [0, 1], { ...klemm, easing: Easing.bezier(0.55, 0, 0.35, 1) });
   const r = t * 1900;
-  if (t >= 1) return <AbsoluteFill>{children}</AbsoluteFill>;
+  // jede Szene ist eine eigene Ebene (isolation), damit nichts mit z-index aus der vorigen über die nächste ragt
+  if (t >= 1) return <AbsoluteFill style={{ isolation: "isolate" }}>{children}</AbsoluteFill>;
   return (
-    <AbsoluteFill>
+    <AbsoluteFill style={{ isolation: "isolate" }}>
       <AbsoluteFill style={{ clipPath: `circle(${r}px at ${mitte[0]}px ${mitte[1]}px)` }}>{children}</AbsoluteFill>
       <svg width="1080" height="1440" style={{ position: "absolute", inset: 0 }}><circle cx={mitte[0]} cy={mitte[1]} r={r} fill="none" stroke={P.ink} strokeWidth="14" /></svg>
     </AbsoluteFill>
