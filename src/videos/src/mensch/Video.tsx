@@ -14,10 +14,12 @@ import { TEXTE, TexteKontext, ZETTEL, useTX, type Sprache } from "./texte";
 // Zeitplan in Bildern je Sprachfassung; die Szenen überlappen um UEBER Bilder (Kreisblende). Die englische Fassung hat zusätzlich «Meanwhile in England».
 const D_DE = { frage: 390, warum: 240, zweiRaster: 270, gefunden: 360, organisation: 330, wende: 390, still: 480, nn: 620, luecke: 390, verteil: 450, faelle: 420, theorien: 270, feld: 360, bisher: 450 };
 const D_EN = { frage: 390, warum: 240, zweiRaster: 270, gefunden: 360, organisation: 330, wende: 390, still: 480, nn: 640, luecke: 390, verteil: 450, faelle: 450, england: 540, theorien: 270, feld: 360, bisher: 450 };
+const D_ES = { frage: 420, warum: 270, zweiRaster: 270, gefunden: 390, organisation: 360, wende: 420, still: 510, nn: 680, luecke: 420, verteil: 480, faelle: 480, england: 570, theorien: 300, feld: 390, bisher: 450 };
 type Szene = keyof typeof D_EN;
 const UEBER = 18, INTRO_LANG = INTRO + 45, OUTRO_LANG = OUTRO + 60;
 export const zeitplan = (sprache: Sprache) => {
-  const D: Partial<Record<Szene, number>> = sprache === "en" ? D_EN : D_DE;
+  // Spanisch wie Englisch, aber längere Sätze: etwas mehr Lesezeit
+  const D: Partial<Record<Szene, number>> = sprache === "en" ? D_EN : sprache === "es" ? D_ES : D_DE;
   const t: Record<string, number> = { intro: 0 };
   let a = INTRO_LANG - UEBER;
   for (const [k, d] of Object.entries(D)) { t[k] = a; a += (d as number) - UEBER; }
@@ -214,7 +216,7 @@ const Wende: React.FC = () => {
       {geraete.map((g, i) => {
         const p = pop(f, g.a, 200);
         return (
-          <div key={g.label} style={{ position: "absolute", left: 70 + i * 40, top: 180 + i * 120, width: 360, height: 100, background: g.farbe, border: `6px solid ${P.ink}`, transform: `translateX(${(1 - p) * -700}px) rotate(${[-3, 2, -2, 3][i]}deg)`, display: "flex", alignItems: "center", gap: 18, padding: "0 20px", boxSizing: "border-box", ...fett(38) }}>
+          <div key={g.label} style={{ position: "absolute", left: 70 + i * 40, top: 180 + i * 120, minWidth: 360, whiteSpace: "nowrap", height: 100, background: g.farbe, border: `6px solid ${P.ink}`, transform: `translateX(${(1 - p) * -700}px) rotate(${[-3, 2, -2, 3][i]}deg)`, display: "flex", alignItems: "center", gap: 18, padding: "0 20px", boxSizing: "border-box", ...fett(38) }}>
             <span style={{ fontSize: 46 }}>{["▣", "◎", "♥", "…"][i]}</span>{g.label}
           </div>
         );
@@ -616,7 +618,7 @@ const SZENEN: [Szene, React.FC][] = [
 ];
 const ECKEN: [number, number][] = [[900, 1250], [150, 200], [930, 180], [120, 1260]];
 
-/** sprache: "de" (Standard) oder "en" */
+/** sprache: "de" (Standard), "en" oder "es" */
 export const MenschVideo: React.FC<{ sprache?: Sprache }> = ({ sprache = "de" }) => {
   const { D, T: Z } = zeitplan(sprache);
   const tx = TEXTE[sprache];
