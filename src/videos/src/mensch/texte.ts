@@ -3,7 +3,7 @@
 // Habermas/Luhmann, Theorie der Gesellschaft oder Sozialtechnologie (1971); Luhmann, Soziale Systeme (1984) und Die Gesellschaft der Gesellschaft (1997);
 // Lindemann, Die Grenzen des Sozialen (2002); Esposito, Artificial Communication? (2017); Lehmann, Kunst – Liebe – Religion. Theorie der Humanmedien (2025).
 // Fälle: «Scheininvalide» (IV-Debatte seit 2003), Recht auf Nichterreichbarkeit (Arbeitsgesetz, Telearbeit, parlamentarische Initiative Burkart).
-// Nur englisch (Wunsch von Christian, 7. Oktober 2026), Szene «Meanwhile in England», recherchiert: Mencap, Death by Indifference (2007);
+// Szene «Unterdessen in England» / «Meanwhile in England» (Wunsch von Christian, 7. Oktober 2026; zuerst nur englisch, dann in allen Fassungen), recherchiert: Mencap, Death by Indifference (2007);
 // Confidential Inquiry into Premature Deaths of People with Learning Disabilities, CIPOLD (2013: Männer 13, Frauen 20 Jahre früher);
 // Public Health England (2015: bis zu 35 000 Erwachsene mit Lernbehinderung erhalten Psychopharmaka ohne die Erkrankung) und NHS-Programm STOMP (2016);
 // LeDeR-Bericht 2023 (medianes Sterbealter 62,5 Jahre, fast 20 Jahre früher; rund 40 % der Todesfälle vermeidbar); «diagnostic overshadowing».
@@ -74,7 +74,18 @@ const DE = {
   nichterreichbar: "Recht auf Nichterreichbarkeit",
   faelle: "Es greift in der Politik: bei den «Scheininvaliden» seit 2003 und beim Recht auf Nichterreichbarkeit im Arbeitsgesetz.",
   wer: "Und wer steht für diese Schwellen ein? Kaum jemand.",
-  england: null as null | { karten: [string, string][]; stempel: string; text1: string; text2: string },
+  // seit 7. Oktober 2026 auch deutsch (Wunsch von Christian)
+  england: {
+    karten: [
+      ["2007", "Mencap, «Death by Indifference»: sechs Todesfälle im Spital"],
+      ["2013", "Vertrauliche Untersuchung: Männer mit Lernbehinderung sterben 13, Frauen 20 Jahre früher"],
+      ["2015", "Bis zu 35 000 Erwachsene erhalten Psychopharmaka ohne die Erkrankung, gegen die sie wirken → STOMP, 2016"],
+      ["2023", "LeDeR: medianes Sterbealter 62,5 – fast 20 Jahre früher; 4 von 10 Todesfällen vermeidbar"],
+    ],
+    stempel: "DIAGNOSTIC OVERSHADOWING",
+    text1: "In England zeigen Studien, was es heisst, beschrieben, aber nicht gehört zu werden: Menschen mit Lernbehinderung können Schmerz oft nicht in Worte fassen – er wird als Verhalten gelesen und mit Psychopharmaka behandelt statt untersucht.",
+    text2: "Der Zustand des Körpers verschlechtert sich. Viele sterben Jahre zu früh – und viele dieser Todesfälle gelten als vermeidbar.",
+  } as null | { karten: [string, string][]; stempel: string; text1: string; text2: string },
   theorieKarten: ["Systemtheorie", "Poststrukturalismus", "Formtheorie", "Ästhetik"],
   apparat: "Verteilapparat",
   gefundenZahl: "Körperereignisse gefunden:",
@@ -87,7 +98,7 @@ const DE = {
   schild: {
     frage: "Die alte Frage", gefunden: "Ich fand mich", organisation: "Sogar in der Organisation", wende: "Die Wende",
     still: "Suchrichtung 1 · der stille Körper", nn: "Suchrichtung 2 · Nebeneinander, Nacheinander", luecke: "Beschrieben ≠ gehört",
-    verteil: "Suchrichtung 3 · der Verteilapparat", faelle: "Zwei Beispiele", england: "", theorien: "Und in Theorien?", feld: "Ich im Feld",
+    verteil: "Suchrichtung 3 · der Verteilapparat", faelle: "Zwei Beispiele aus der Schweiz", england: "Unterdessen in England", theorien: "Und in Theorien?", feld: "Ich im Feld",
   },
 };
 export type Texte = typeof DE;
@@ -184,8 +195,101 @@ const EN: Texte = {
   },
 };
 
-export type Sprache = "de" | "en";
-export const TEXTE: Record<Sprache, Texte> = { de: DE, en: EN };
+/** Spanische Fassung (Wunsch vom 7. Oktober 2026): wie die englische, mit Schweizer Kontext und der Szene über England */
+const ES: Texte = {
+  debatte: [
+    ["1971", "Habermas / Luhmann: ¿teoría de la sociedad o tecnología social?"],
+    ["1984", "Sistemas sociales: el ser humano en el entorno de la sociedad"],
+    ["1997", "La sociedad de la sociedad: radicalmente antihumanista"],
+    ["2002", "Lindemann: ¿quién cuenta como persona?"],
+    ["2017", "Esposito: comunicar con algoritmos"],
+    ["2025", "Lehmann: medios humanos – que entren las personas"],
+  ],
+  kopfUnter: ["Cuerpo", "Teoría", "Máquinas"],
+  frage: "En cuanto aparece el nombre de Luhmann, alguien pregunta: ¿y dónde queda el ser humano?",
+  sofort: "Siempre. Enseguida.",
+  mensch: "Mensch, Niklas!",
+  warum: "Por qué nunca busqué el cuerpo en la teoría de sistemas – y por qué ahora hablo de él …",
+  zweiRaster: "… y por qué desarrollé dos rejillas de análisis …",
+  rasterNamen: ["Uno al lado del otro, uno tras otro", "El aparato de distribución del cuerpo"],
+  nnFelder: ["Suceso", "Doble rendija", "Operar en silencio", "Orden"],
+  zurueck: "Pero volvamos al ser humano en Luhmann …",
+  gefunden: "Leo a Luhmann desde hace más de diez años. No me encuentro en un sistema, sino en los acoplamientos: cuerpo, conciencia, comunicación.",
+  systeme: ["Conciencia", "Cuerpo", "Comunicación"],
+  kopplungen: ["Percepción", "Lenguaje"],
+  organisation: "Incluso en las organizaciones, las personas llevan memoria, alternativas descartadas y la historia oral de la casa – hacia dentro y hacia fuera.",
+  muendlich: ["¿te acuerdas …?", "antes decíamos …"],
+  vermisst: "No me eché de menos.",
+  geraete: ["Ordenador", "Internet", "Redes sociales", "IA"],
+  umwelt: "ENTORNO",
+  wende: "Luego los ordenadores, internet, las redes sociales – y ahora máquinas que participan en la comunicación sin conciencia.",
+  wo: "¿Se desplaza el ser humano, el cuerpo, aún más hacia el entorno? ¿Dónde estaba – y dónde está ahora?",
+  still: "Lo que eché de menos no fue el ser humano. Fue el cuerpo silencioso, no percibido.",
+  stillListe: ["Defensa inmunitaria", "Digestión", "Metabolismo", "Hormonas", "Renovación celular", "Cicatrización"],
+  messung: "MEDICIÓN",
+  messwerte: ["PCR 12 mg/l", "HbA1c 6,1 %", "Sueño 5:40 h"],
+  gemessen: "No se siente, se mide: análisis de sangre, imágenes y wearables lo llevan, sin pasar por la conciencia, a la comunicación.",
+  nnSchritte: [
+    "El espacio y el tiempo son medios de la percepción.",
+    "Las teorías que tratan la espacialización y la temporalización remiten por eso también a la percepción.",
+    "Y así a personas y animales – a cuerpos.",
+    "La mayoría de las valoraciones de la rejilla coinciden bastante bien con mi propia percepción.",
+    "Así me ayuda a acoplar percepción y comunicación.",
+    "Y encuentro algo nuevo: Karen Barad puntúa de una manera muy interesante. Tengo que investigarlo.",
+  ],
+  raumZeit: ["Espacio", "Tiempo"],
+  rasterIch: ["Rejilla", "yo"],
+  wahrnehmungKommunikation: ["Percepción", "Comunicación"],
+  klick: "¡CLIC!",
+  fremd: ["Teoría", "Diagnóstico", "Lectura", "Peritaje"],
+  kommunikation: "Comunicación",
+  selbst: "Yo siento …",
+  stopp: "STOP",
+  beschrieben: "DESCRITO ≠ ESCUCHADO",
+  luecke1: "Pero aunque una teoría describa e incluya el cuerpo, su vivencia todavía no accede a la comunicación.",
+  luecke2: "Y lo que cuento de mí mismo aún no tiene posibilidades de ser recogido – menos aún frente a una descripción ajena.",
+  va1: "La segunda rejilla pregunta: ¿hasta dónde llega el suceso corporal de quién? Siete umbrales, dos vías: voz y medición.",
+  va2: "De ahí salen cuatro campos: escuchado y registrado, solo una de las dos cosas – o ninguna.",
+  schwellen: ["perceptible", "expresable", "accesible", "legible", "creíble", "archivable", "decidible"],
+  wege: ["Voz", "Medición"],
+  achsen: ["escuchado →", "registrado →"],
+  felder: [["A merced", "registrado, apenas escuchado"], ["Participación negociable", "escuchado y registrado"], ["Desaparición", "ninguna de las dos"], ["Opacidad privilegiada", "escuchado, apenas registrado"]],
+  akte: "Expediente de invalidez",
+  seit: "Suiza, desde 2003",
+  scheininvalide: "«FALSOS INVÁLIDOS»",
+  anruf: "22:47 Jefe",
+  nichterreichbar: "Derecho a no estar localizable",
+  faelle: "En Suiza llega hasta la política: la campaña contra los «falsos inválidos» en el seguro de invalidez desde 2003, y el derecho a no estar localizable en la reforma de la ley laboral para el teletrabajo.",
+  wer: "¿Y quién defiende estos umbrales? Casi nadie.",
+  england: {
+    karten: [
+      ["2007", "Mencap, «Death by Indifference»: seis muertes en el hospital"],
+      ["2013", "Investigación confidencial: los hombres con discapacidad intelectual mueren 13 años antes, las mujeres 20"],
+      ["2015", "Hasta 35.000 adultos con psicofármacos sin la enfermedad que tratan → STOMP, 2016"],
+      ["2023", "LeDeR: mediana de edad al morir 62,5 – casi 20 años antes; 4 de cada 10 muertes evitables"],
+    ],
+    stempel: "DIAGNOSTIC OVERSHADOWING",
+    text1: "En Inglaterra, los estudios muestran qué significa ser descrito pero no escuchado: las personas con discapacidad intelectual a menudo no pueden expresar el dolor – se lee como conducta y se trata con psicofármacos en lugar de examinarlo.",
+    text2: "El estado del cuerpo empeora. Muchas mueren años antes de tiempo – y muchas de estas muertes se consideran evitables.",
+  },
+  theorieKarten: ["Teoría de sistemas", "Posestructuralismo", "Teoría de la forma", "Estética"],
+  apparat: "Aparato de distribución",
+  gefundenZahl: "Sucesos corporales hallados:",
+  theorien: "Aplicada a las teorías modernas, encuentra poco: apenas conocen sucesos corporales.",
+  feld1: "Desarrollo las rejillas caso por caso – en diálogo con mis LLM – y las muestro en las redes sociales para encontrar nueva contingencia.",
+  feld2: "Investigo dentro del campo que estudio.",
+  bisher: "Hasta aquí la historia …",
+  folgt: "Continuará",
+  rueckblick: ["La vieja pregunta", "Yo en los acoplamientos", "Llegan las máquinas", "El cuerpo silencioso", "Rejilla 1: espacio y tiempo", "Rejilla 2: aparato de distribución", "Yo en el campo"],
+  schild: {
+    frage: "La vieja pregunta", gefunden: "Me encontré", organisation: "Incluso en la organización", wende: "El giro",
+    still: "Línea de búsqueda 1 · el cuerpo silencioso", nn: "Línea de búsqueda 2 · uno al lado del otro, uno tras otro", luecke: "Descrito ≠ escuchado",
+    verteil: "Línea de búsqueda 3 · el aparato de distribución", faelle: "Dos ejemplos de Suiza", england: "Mientras tanto, en Inglaterra", theorien: "¿Y en las teorías?", feld: "Yo en el campo",
+  },
+};
+
+export type Sprache = "de" | "en" | "es";
+export const TEXTE: Record<Sprache, Texte> = { de: DE, en: EN, es: ES };
 /** Texte der aktuellen Sprachfassung (gesetzt in MenschVideo) */
 export const TexteKontext = React.createContext<Texte>(DE);
 export const useTX = () => React.useContext(TexteKontext);

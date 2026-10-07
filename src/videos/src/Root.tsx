@@ -18,6 +18,7 @@ export const RemotionRoot: React.FC = () => (
     {/* «Mensch, Niklas!»: 3:4 (7. Oktober 2026) */}
     <Composition id="MenschVideo" component={MenschVideo} durationInFrames={TMensch.ende} fps={FPS} width={BREITE} height={1440} />
     <Composition id="MenschVideoEN" component={MenschVideo} durationInFrames={zeitplanMensch("en").T.ende} fps={FPS} width={BREITE} height={1440} defaultProps={{ sprache: "en" as const }} />
+    <Composition id="MenschVideoES" component={MenschVideo} durationInFrames={zeitplanMensch("es").T.ende} fps={FPS} width={BREITE} height={1440} defaultProps={{ sprache: "es" as const }} />
     {/* neue Videos: Composition */}
   </>
 );
