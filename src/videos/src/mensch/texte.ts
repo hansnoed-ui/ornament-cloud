@@ -3,7 +3,7 @@
 // Habermas/Luhmann, Theorie der Gesellschaft oder Sozialtechnologie (1971); Luhmann, Soziale Systeme (1984) und Die Gesellschaft der Gesellschaft (1997);
 // Lindemann, Die Grenzen des Sozialen (2002); Esposito, Artificial Communication? (2017); Lehmann, Kunst – Liebe – Religion. Theorie der Humanmedien (2025).
 // Fälle: «Scheininvalide» (IV-Debatte seit 2003), Recht auf Nichterreichbarkeit (Arbeitsgesetz, Telearbeit, parlamentarische Initiative Burkart).
-// Nur englisch (Wunsch von Christian, 7. Oktober 2026), Szene «Meanwhile in England», recherchiert: Mencap, Death by Indifference (2007);
+// Szene «Unterdessen in England» / «Meanwhile in England» (Wunsch von Christian, 7. Oktober 2026; zuerst nur englisch, dann in allen Fassungen), recherchiert: Mencap, Death by Indifference (2007);
 // Confidential Inquiry into Premature Deaths of People with Learning Disabilities, CIPOLD (2013: Männer 13, Frauen 20 Jahre früher);
 // Public Health England (2015: bis zu 35 000 Erwachsene mit Lernbehinderung erhalten Psychopharmaka ohne die Erkrankung) und NHS-Programm STOMP (2016);
 // LeDeR-Bericht 2023 (medianes Sterbealter 62,5 Jahre, fast 20 Jahre früher; rund 40 % der Todesfälle vermeidbar); «diagnostic overshadowing».
@@ -74,7 +74,18 @@ const DE = {
   nichterreichbar: "Recht auf Nichterreichbarkeit",
   faelle: "Es greift in der Politik: bei den «Scheininvaliden» seit 2003 und beim Recht auf Nichterreichbarkeit im Arbeitsgesetz.",
   wer: "Und wer steht für diese Schwellen ein? Kaum jemand.",
-  england: null as null | { karten: [string, string][]; stempel: string; text1: string; text2: string },
+  // seit 7. Oktober 2026 auch deutsch (Wunsch von Christian)
+  england: {
+    karten: [
+      ["2007", "Mencap, «Death by Indifference»: sechs Todesfälle im Spital"],
+      ["2013", "Vertrauliche Untersuchung: Männer mit Lernbehinderung sterben 13, Frauen 20 Jahre früher"],
+      ["2015", "Bis zu 35 000 Erwachsene erhalten Psychopharmaka ohne die Erkrankung, gegen die sie wirken → STOMP, 2016"],
+      ["2023", "LeDeR: medianes Sterbealter 62,5 – fast 20 Jahre früher; 4 von 10 Todesfällen vermeidbar"],
+    ],
+    stempel: "DIAGNOSTIC OVERSHADOWING",
+    text1: "In England zeigen Studien, was es heisst, beschrieben, aber nicht gehört zu werden: Menschen mit Lernbehinderung können Schmerz oft nicht in Worte fassen – er wird als Verhalten gelesen und mit Psychopharmaka behandelt statt untersucht.",
+    text2: "Der Zustand des Körpers verschlechtert sich. Viele sterben Jahre zu früh – und viele dieser Todesfälle gelten als vermeidbar.",
+  } as null | { karten: [string, string][]; stempel: string; text1: string; text2: string },
   theorieKarten: ["Systemtheorie", "Poststrukturalismus", "Formtheorie", "Ästhetik"],
   apparat: "Verteilapparat",
   gefundenZahl: "Körperereignisse gefunden:",
@@ -87,7 +98,7 @@ const DE = {
   schild: {
     frage: "Die alte Frage", gefunden: "Ich fand mich", organisation: "Sogar in der Organisation", wende: "Die Wende",
     still: "Suchrichtung 1 · der stille Körper", nn: "Suchrichtung 2 · Nebeneinander, Nacheinander", luecke: "Beschrieben ≠ gehört",
-    verteil: "Suchrichtung 3 · der Verteilapparat", faelle: "Zwei Beispiele", england: "", theorien: "Und in Theorien?", feld: "Ich im Feld",
+    verteil: "Suchrichtung 3 · der Verteilapparat", faelle: "Zwei Beispiele aus der Schweiz", england: "Unterdessen in England", theorien: "Und in Theorien?", feld: "Ich im Feld",
   },
 };
 export type Texte = typeof DE;

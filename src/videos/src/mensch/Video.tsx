@@ -12,7 +12,7 @@ import { Geist, Ich, Punktmuster, Zettel } from "./Figuren";
 import { TEXTE, TexteKontext, ZETTEL, useTX, type Sprache } from "./texte";
 
 // Zeitplan in Bildern je Sprachfassung; die Szenen überlappen um UEBER Bilder (Kreisblende). Die englische Fassung hat zusätzlich «Meanwhile in England».
-const D_DE = { frage: 390, warum: 240, zweiRaster: 270, gefunden: 360, organisation: 330, wende: 390, still: 480, nn: 620, luecke: 390, verteil: 450, faelle: 420, theorien: 270, feld: 360, bisher: 450 };
+const D_DE = { frage: 390, warum: 240, zweiRaster: 270, gefunden: 360, organisation: 330, wende: 390, still: 480, nn: 620, luecke: 390, verteil: 450, faelle: 420, england: 540, theorien: 270, feld: 360, bisher: 450 };
 const D_EN = { frage: 390, warum: 240, zweiRaster: 270, gefunden: 360, organisation: 330, wende: 390, still: 480, nn: 640, luecke: 390, verteil: 450, faelle: 450, england: 540, theorien: 270, feld: 360, bisher: 450 };
 const D_ES = { frage: 420, warum: 270, zweiRaster: 270, gefunden: 390, organisation: 360, wende: 420, still: 510, nn: 680, luecke: 420, verteil: 480, faelle: 480, england: 570, theorien: 300, feld: 390, bisher: 450 };
 type Szene = keyof typeof D_EN;
@@ -506,7 +506,7 @@ const Faelle: React.FC = () => {
   );
 };
 
-// ---------- 8b · Meanwhile in England (nur in der englischen Fassung) ----------
+// ---------- 8b · Meanwhile in England (in allen Fassungen; deutsch «Unterdessen in England») ----------
 // Wunsch von Christian (7. Oktober 2026): Studien zum (Nicht-)Gehörtwerden der Körper von Menschen mit Lernbehinderung – Schmerz wird als Verhalten gelesen
 // («diagnostic overshadowing») und mit Psychopharmaka behandelt statt untersucht; viele frühe, vermeidbare Todesfälle. Belege in texte.ts.
 const England: React.FC = () => {

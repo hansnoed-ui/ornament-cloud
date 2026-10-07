@@ -132,6 +132,7 @@ Christian erzählt in der Ich-Form, woran und warum er seit einigen Monaten arbe
 eigene Zeitachse `zeitplan("en")`. Die politischen Beispiele sind als Schweizer Kontext ausgewiesen («Two examples from Switzerland»).
 Zusätzliche Szene «Meanwhile in England» nach den Beispielen: Studien zum (Nicht-)Gehörtwerden der Körper von Menschen mit Lernbehinderung
 (Mencap 2007, CIPOLD 2013, PHE 2015 / STOMP 2016, LeDeR 2023; «diagnostic overshadowing»), Belege im Kopf von `texte.ts`.
+Seit dem 7. Oktober 2026 zeigt auch die deutsche Fassung die Szene («Unterdessen in England»; Schild der Fälle «Zwei Beispiele aus der Schweiz»).
 **Spanische Fassung** (`MenschVideoES`, gut drei Minuten dreissig, 7. Oktober 2026): wie die englische (Schweizer Kontext, Szene «Mientras tanto, en Inglaterra»),
 Texte `TEXTE.es`, Zeitachse `zeitplan("es")` mit etwas mehr Lesezeit; der Stempel «DIAGNOSTIC OVERSHADOWING» bleibt als Fachbegriff englisch.
 
