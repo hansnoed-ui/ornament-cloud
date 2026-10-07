@@ -893,6 +893,15 @@ h1 {
   color: var(--muted);
 }
 
+/* Videos im Format 3 : 4 («Mensch, Niklas!», 7. Oktober 2026): breiter, Höhe ebenfalls aufs Fenster begrenzt */
+.erklaervideo--34 video {
+  width: min(100%, 600px, (100vh - 80px) * 3 / 4);
+  aspect-ratio: 3 / 4;
+}
+.erklaervideo--34 figcaption {
+  width: min(100%, 600px, (100vh - 80px) * 3 / 4);
+}
+
 /* ---------------------------------------------------------------------------
    Rückkanal: Anmeldung für die Mail, wenn etwas fertig ist (5. Oktober 2026)
 

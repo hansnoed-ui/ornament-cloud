@@ -295,8 +295,8 @@ await check("Menü führt zu den Seiten: Zettelkasten direkt in den Zettelkasten
 });
 
 // ---------- Web ----------
-await check("Videoseite: das Comic-Video (9 : 16) spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt; bei «weniger Bewegung» nicht (6. Oktober 2026)", async () => {
-  for (const reducedMotion of ["no-preference", "reduce"]) {
+await check("Videoseiten: «Mensch, Niklas!» (3 : 4) und «Liebling …» (9 : 16) spielen von selbst, sobald sie zur Hälfte im Bild sind, und halten an, wenn sie das Bild verlassen; bei «weniger Bewegung» nicht", async () => {
+  for (const [titel, adresse, format] of [["Mensch, Niklas!", /\/web\/mensch-niklas\/$/, 4 / 3], ["Liebling, ich habe den Poststrukturalismus strukturiert", /\/web\/poststrukturalismus\/$/, 16 / 9]]) for (const reducedMotion of ["no-preference", "reduce"]) {
     const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 }, reducedMotion });
     await ctx.addInitScript(() => {
       window.__video = { play: 0, pause: 0 };
@@ -306,13 +306,13 @@ await check("Videoseite: das Comic-Video (9 : 16) spielt von selbst, sobald es z
     });
     const page = await ctx.newPage();
     await page.goto(origin + "/web/");
-    await page.locator("main .card").first().getByRole("link", { name: "Öffnen" }).click();
-    await page.waitForURL(/\/web\/poststrukturalismus\/$/);
+    await page.locator("main .card").filter({ has: page.getByRole("heading", { name: titel, exact: true }) }).getByRole("link", { name: "Öffnen" }).click();
+    await page.waitForURL(adresse);
     const v = page.locator(".erklaervideo video");
     assert.equal(await v.evaluate((e) => e.muted), true, "stumm");
     assert.equal(await v.evaluate((e) => e.preload), "none");
     const b = await box(v);
-    assert.ok(Math.abs(b.h / b.w - 16 / 9) < 0.02, "Hochformat 9 : 16");
+    assert.ok(Math.abs(b.h / b.w - format) < 0.02, `${titel}: Format ${b.w} × ${b.h}`);
     await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
     await v.scrollIntoViewIfNeeded();
     if (reducedMotion === "reduce") {
@@ -321,6 +321,8 @@ await check("Videoseite: das Comic-Video (9 : 16) spielt von selbst, sobald es z
       assert.ok(await v.isVisible(), "das Video bleibt mit Bedienelementen sichtbar");
     } else {
       await page.waitForFunction(() => window.__video.play > 0, null, { timeout: 5000 });
+      // ganz nach oben und das Fenster niedrig machen: dann ist das Video sicher nicht mehr zur Hälfte im Bild (das grosse 3 : 4 bliebe es sonst)
+      await page.setViewportSize({ width: 1366, height: 300 });
       await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
       await page.waitForTimeout(500);
       const n = await page.evaluate(() => window.__video);
@@ -330,16 +332,16 @@ await check("Videoseite: das Comic-Video (9 : 16) spielt von selbst, sobald es z
   }
 });
 
-await check("Web: vier Karten mit Bild (640 × 800), zuoberst das Comic-Video, drei in einer Reihe; die Karten führen zur Videoseite, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld", async () => {
+await check("Web: fünf Karten mit Bild (640 × 800), zuoberst «Mensch, Niklas!», drei in einer Reihe; die Karten führen zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
   const errors = fehler(page);
   await page.goto(origin + "/web/");
   await page.locator("main img").last().scrollIntoViewIfNeeded();
   await page.waitForFunction(() => [...document.querySelectorAll("main img")].every((i) => i.complete && i.naturalWidth > 0));
-  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), [[640, 800], [640, 800], [640, 800], [640, 800]]);
+  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), [[640, 800], [640, 800], [640, 800], [640, 800], [640, 800]]);
   const ys = await page.locator("main .card").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().y)));
-  assert.deepEqual(ys.length, 4);
+  assert.deepEqual(ys.length, 5);
   assert.equal(ys[0], ys[1], "nebeneinander");
   assert.equal(ys[1], ys[2], "drei in einer Reihe");
   const t = await box(page.locator("main .thumb").first());
