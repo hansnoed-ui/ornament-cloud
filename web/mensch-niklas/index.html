@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mensch, Niklas! – Ornament Cloud</title>
-  <meta name="description" content="Ein Comic-Video von gut drei Minuten, auch auf Englisch: Christian Strickler erzählt, woran und warum er seit einigen Monaten arbeitet – Luhmann, der stille Körper und zwei Prüfraster.">
+  <meta name="description" content="Ein Comic-Video von gut drei Minuten, auch auf Englisch und Spanisch: Christian Strickler erzählt, woran und warum er seit einigen Monaten arbeitet – Luhmann, der stille Körper und zwei Prüfraster.">
   <link rel="canonical" href="https://ornament.cloud/web/mensch-niklas/">
   <link rel="stylesheet" href="../../styles.css?v=41">
 </head>
@@ -25,7 +25,7 @@
       </div>
       <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
       <h1>Mensch, Niklas!</h1>
-      <p class="lead">Ein Comic-Video in eigener Sache: woran und warum ich seit einigen Monaten arbeite – die alte Frage nach dem Menschen bei Luhmann, der stille, nicht wahrgenommene Körper und zwei Prüfraster. Unten auch auf Englisch.</p>
+      <p class="lead">Ein Comic-Video in eigener Sache: woran und warum ich seit einigen Monaten arbeite – die alte Frage nach dem Menschen bei Luhmann, der stille, nicht wahrgenommene Körper und zwei Prüfraster. Unten auch auf Englisch und Spanisch.</p>
     </div>
   </header>
 
@@ -51,6 +51,14 @@
       <figcaption><strong>English version.</strong> Just over three minutes, no sound. To be continued. <a href="../../assets/mensch-niklas-en-3x4.mp4" download="mensch-niklas-english.mp4">Download video (MP4)</a></figcaption>
     </figure>
 
+    <!-- Spanische Fassung (Wunsch von Christian, 7. Oktober 2026): assets/mensch-niklas-es-3x4.mp4, Composition MenschVideoES; wie die englische. -->
+    <figure class="erklaervideo erklaervideo--34" lang="es">
+      <video controls muted playsinline preload="none" poster="../../assets/mensch-niklas-es-3x4.jpg" width="810" height="1080" aria-label="Vídeo cómic «Mensch, Niklas!», versión en español, algo más de tres minutos, sin sonido">
+        <source src="../../assets/mensch-niklas-es-3x4.mp4" type="video/mp4">
+      </video>
+      <figcaption><strong>Versión en español.</strong> Algo más de tres minutos, sin sonido. Continuará. <a href="../../assets/mensch-niklas-es-3x4.mp4" download="mensch-niklas-espanol.mp4">Descargar vídeo (MP4)</a></figcaption>
+    </figure>
+
     <p class="back"><a href="../">← Zu Web</a></p>
   </main>
 
@@ -61,7 +69,7 @@
     </div>
   </footer>
   <script>
-    // Jedes Video (deutsch und englisch) spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt (stumm, lädt erst dann).
+    // Jedes Video (deutsch, englisch, spanisch) spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt (stumm, lädt erst dann).
     // Bei «weniger Bewegung» spielen sie nur auf Knopfdruck.
     (function () {
       var videos = document.querySelectorAll(".erklaervideo video");

@@ -344,7 +344,7 @@ await check("Videoseite «Mensch, Niklas!»: die englische Fassung darunter spie
   const errors = fehler(page);
   await page.goto(origin + "/web/mensch-niklas/");
   const [de, en] = [page.locator(".erklaervideo video").first(), page.locator('.erklaervideo[lang="en"] video')];
-  assert.equal(await page.locator(".erklaervideo video").count(), 2, "deutsch und englisch");
+  assert.equal(await page.locator(".erklaervideo video").count(), 3, "deutsch, englisch, spanisch");
   assert.equal(await en.evaluate((e) => e.muted), true, "stumm");
   await en.evaluate((e) => e.scrollIntoView({ block: "center", behavior: "instant" }));
   await page.waitForFunction(() => window.__gespielt.includes("en"), null, { timeout: 5000 });
