@@ -53,11 +53,11 @@ const Frage: React.FC = () => {
       <div style={{ position: "absolute", left: 70, right: 70, top: 405, height: 10, background: P.ink, transform: `scaleX(${interpolate(f, [10, 40], [0, 1], klemm)})`, transformOrigin: "0 50%" }} />
       {DEBATTE.map(([jahr, text], i) => {
         const p = pop(f, 30 + i * 22, 200), oben = i % 2 === 0;
-        const x = 70 + i * 156;
+        const x = 70 + Math.floor(i / 2) * 305;
         return (
           <React.Fragment key={jahr}>
             <div style={{ position: "absolute", left: x + 14, top: 398, width: 24, height: 24, borderRadius: "50%", background: P.rot, border: `5px solid ${P.ink}`, transform: `scale(${p})` }} />
-            <div style={{ position: "absolute", left: Math.min(x, 1010 - 300), top: oben ? 170 : 450, width: 300, padding: "10px 14px", background: P.weiss, border: `5px solid ${P.ink}`, transform: `scale(${p}) rotate(${oben ? -1.5 : 1.5}deg)`, transformOrigin: oben ? "20% 100%" : "20% 0%", zIndex: i }}>
+            <div style={{ position: "absolute", left: x, top: oben ? 170 : 450, width: 290, padding: "10px 14px", background: P.weiss, border: `5px solid ${P.ink}`, transform: `scale(${p}) rotate(${oben ? -1.5 : 1.5}deg)`, transformOrigin: oben ? "20% 100%" : "20% 0%", zIndex: i }}>
               <div style={fett(40, { color: P.blau, lineHeight: 1 })}>{jahr}</div>
               <div style={fett(24, { fontWeight: 600, lineHeight: 1.15, marginTop: 6 })}>{text}</div>
             </div>
@@ -65,7 +65,7 @@ const Frage: React.FC = () => {
         );
       })}
       <Erzaehl f={f} a={170} b={290} x={70} y={720} w={560} groesse={38}>{TX.frage}</Erzaehl>
-      <Knall p={pop(f, 290, 200)} x={330} y={860} r={210} farbe={P.gelb} innen={P.weiss} text={TX.sofort.toUpperCase()} groesse={56} textfarbe={P.rot} drehung={-6} />
+      {TX.sofort.split(" ").map((w, i) => <Knall key={w} p={pop(f, 290 + i * 14, 200)} x={[220, 400][i]} y={[820, 960][i]} r={150} farbe={i ? P.koral : P.gelb} innen={i ? P.gelb : P.weiss} text={w.toUpperCase()} groesse={46} textfarbe={i ? P.weiss : P.rot} drehung={[-8, 6][i]} />)}
       <Geist x={110} y={1030} massstab={1.05} schwebe={f} opacity={ein(f, 40, 20)} />
       <Ich x={600} y={940} massstab={1.03} spricht={f > 320} />
       <Blase x={560} y={760} w={420} farbe={P.weiss} p={pop(f, 320, 180)} drehung={2}><span style={{ fontSize: 46 }}>{TX.mensch}</span></Blase>
@@ -84,7 +84,7 @@ const Gefunden: React.FC = () => {
       {TX.schichten.map(([ebene, was], i) => {
         const p = pop(f, 40 + i * 30, 200), links = i !== 1;
         return (
-          <div key={ebene} style={{ position: "absolute", left: links ? 70 : 640, top: [330, 420, 700][i], width: 370, transform: `scale(${p}) rotate(${links ? -2 : 2}deg)` }}>
+          <div key={ebene} style={{ position: "absolute", left: links ? 60 : 730, top: [300, 440, 720][i], width: links ? 330 : 280, transform: `scale(${p}) rotate(${links ? -2 : 2}deg)` }}>
             <div style={{ padding: "12px 18px", background: farben[i], border: `6px solid ${P.ink}`, ...benday("rgba(255,255,255,.3)", 3.4, 13), backgroundColor: farben[i] }}>
               <div style={fett(26, { textTransform: "uppercase", letterSpacing: "0.06em" })}>{ebene}</div>
               <div style={fett(32, { lineHeight: 1.1 })}>{was} <span style={{ color: P.weiss, WebkitTextStroke: `2px ${P.ink}` }}>✓</span></div>
@@ -216,7 +216,7 @@ const Still: React.FC = () => {
 // ---------- 6 · Suchrichtung 2: Nebeneinander, Nacheinander ----------
 const NN: React.FC = () => {
   const f = useCurrentFrame();
-  const punkte: [number, number, number][] = [[260, 600, 0], [380, 420, 1], [520, 560, 2], [640, 300, 3], [760, 470, 4], [450, 330, 5], [830, 260, 6]];
+  const punkte: [number, number, number][] = [[260, 470, 0], [380, 420, 1], [520, 490, 2], [640, 300, 3], [760, 470, 4], [450, 330, 5], [830, 260, 6]];
   return (
     <Grundpunkte farbe="rgba(23,71,201,.45)">
       <Schild f={f} farbe={P.blau}><span style={{ color: P.weiss }}>Suchrichtung 2 · Nebeneinander, Nacheinander</span></Schild>
@@ -241,7 +241,7 @@ const NN: React.FC = () => {
 // ---------- 7 · Suchrichtung 3: der Verteilapparat ----------
 const Verteil: React.FC = () => {
   const f = useCurrentFrame();
-  const sx = (i: number) => 150 + i * 120;
+  const sx = (i: number) => 150 + i * 106;
   // zwei Kugeln: Stimme (bleibt bei «glaubwürdig» hängen), Messung (kommt durch)
   const stimme = interpolate(f, [30, 170], [60, sx(4) - 30], klemm), messung = interpolate(f, [40, 200], [60, 1000], klemm);
   const vier = f > 240;
@@ -253,8 +253,8 @@ const Verteil: React.FC = () => {
           <Feld x={70} y={180} w={940} h={600}>
             {TX.schwellen.map((s, i) => (
               <React.Fragment key={s}>
-                <div style={{ position: "absolute", left: sx(i) - 7, top: 90, width: 14, height: 400, background: P.ink, transform: `scaleY(${pop(f, 6 + i * 4, 240)})`, transformOrigin: "50% 100%" }} />
-                <div style={fett(22, { position: "absolute", left: sx(i) - 110, top: 40, width: 220, textAlign: "center", transform: "rotate(-14deg)", opacity: ein(f, 10 + i * 4) })}>{s}</div>
+                <div style={{ position: "absolute", left: sx(i) - 7, top: 150, width: 14, height: 360, background: P.ink, transform: `scaleY(${pop(f, 6 + i * 4, 240)})`, transformOrigin: "50% 100%" }} />
+                <div style={fett(22, { position: "absolute", left: sx(i) - 6, top: 116, whiteSpace: "nowrap", transform: "rotate(-38deg)", transformOrigin: "0% 100%", opacity: ein(f, 10 + i * 4) })}>{s}</div>
               </React.Fragment>
             ))}
             {[["Stimme", 200, P.koral, stimme], ["Messung", 400, P.blau, messung]].map(([n, y, farbe, x]) => (
