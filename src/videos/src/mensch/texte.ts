@@ -17,6 +17,7 @@ export const T = {
   frage: "Kaum fällt der Name Luhmann, fragt jemand: Und wo bleibt der Mensch?",
   sofort: "Immer. Sofort.",
   mensch: "Mensch, Niklas!",
+  warum: "Warum ich den Körper in der Systemtheorie bisher nicht gesucht habe – und trotzdem jetzt darüber spreche …",
   gefunden: "Seit über zehn Jahren lese ich Luhmann. Ich finde mich nicht in einem System, sondern in den Kopplungen: Körper, Bewusstsein, Kommunikation.",
   kopplungen: ["Wahrnehmung", "Sprache"],
   organisation: "Selbst in der Organisation tragen Personen Erinnerung, verworfene Alternativen und die mündliche Geschichte des Hauses – nach innen wie nach aussen.",

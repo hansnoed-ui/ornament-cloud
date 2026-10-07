@@ -12,7 +12,7 @@ import { Geist, Ich, Punktmuster, Zettel } from "./Figuren";
 import { DEBATTE, T as TX, ZETTEL } from "./texte";
 
 // Zeitplan in Bildern; die Szenen überlappen um UEBER Bilder (Kreisblende)
-const D = { frage: 390, gefunden: 300, organisation: 330, wende: 390, still: 480, nn: 620, luecke: 390, verteil: 450, faelle: 420, theorien: 270, feld: 360, bisher: 450 };
+const D = { frage: 390, warum: 240, gefunden: 300, organisation: 330, wende: 390, still: 480, nn: 620, luecke: 390, verteil: 450, faelle: 420, theorien: 270, feld: 360, bisher: 450 };
 const UEBER = 18, INTRO_LANG = INTRO + 45, OUTRO_LANG = OUTRO + 60;
 export const T = (() => {
   const t: Record<string, number> = { intro: 0 };
@@ -70,6 +70,22 @@ const Frage: React.FC = () => {
       <Ich x={600} y={940} massstab={1.03} spricht={f > 320} />
       <Blase x={560} y={760} w={420} farbe={P.weiss} p={pop(f, 320, 180)} drehung={2}><span style={{ fontSize: 46 }}>{TX.mensch}</span></Blase>
     </Grundpunkte>
+  );
+};
+
+// ---------- 1b · Zwischentitel: warum ich den Körper bisher nicht gesucht habe ----------
+// Ankündigung im Lichtenstein-Stil (Wunsch von Christian, 7. Oktober 2026): das Gesicht gross, die Frage als Gedankenwolke, der Geist lugt herein.
+const Warum: React.FC = () => {
+  const f = useCurrentFrame();
+  return (
+    <AbsoluteFill>
+      <Strahlen f={f} cx={540} cy={980} a={P.himmel} b={P.weiss} n={30} />
+      <AbsoluteFill style={benday("rgba(23,71,201,.18)", 4.5, 20)} />
+      <Wolke p={pop(f, 12, 140)} x={80} y={110} w={920} h={480}><span style={fett(52, { lineHeight: 1.12 })}>{TX.warum}</span></Wolke>
+      <Ich x={250} y={760} massstab={1.45} id="ich-warum" />
+      <Geist x={800} y={980} massstab={0.8} schwebe={f} opacity={ein(f, 90, 20)} spiegeln />
+      <Rahmen />
+    </AbsoluteFill>
   );
 };
 
@@ -522,7 +538,7 @@ const Bisher: React.FC = () => {
 };
 
 const SZENEN: [keyof typeof D, React.FC][] = [
-  ["frage", Frage], ["gefunden", Gefunden], ["organisation", Organisation], ["wende", Wende], ["still", Still], ["nn", NN],
+  ["frage", Frage], ["warum", Warum], ["gefunden", Gefunden], ["organisation", Organisation], ["wende", Wende], ["still", Still], ["nn", NN],
   ["luecke", Luecke], ["verteil", Verteil], ["faelle", Faelle], ["theorien", Theorien], ["feld", Feld10], ["bisher", Bisher],
 ];
 const ECKEN: [number, number][] = [[900, 1250], [150, 200], [930, 180], [120, 1260]];
