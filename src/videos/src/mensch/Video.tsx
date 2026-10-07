@@ -12,7 +12,7 @@ import { Geist, Ich, Punktmuster, Zettel } from "./Figuren";
 import { DEBATTE, T as TX, ZETTEL } from "./texte";
 
 // Zeitplan in Bildern; die Szenen überlappen um UEBER Bilder (Kreisblende)
-const D = { frage: 390, gefunden: 300, organisation: 330, wende: 390, still: 480, nn: 330, verteil: 450, faelle: 420, theorien: 270, feld: 360, bisher: 450 };
+const D = { frage: 390, gefunden: 300, organisation: 330, wende: 390, still: 480, nn: 620, verteil: 450, faelle: 420, theorien: 270, feld: 360, bisher: 450 };
 const UEBER = 18, INTRO_LANG = INTRO + 45, OUTRO_LANG = OUTRO + 60;
 export const T = (() => {
   const t: Record<string, number> = { intro: 0 };
@@ -226,26 +226,88 @@ const Still: React.FC = () => {
 };
 
 // ---------- 6 · Suchrichtung 2: Nebeneinander, Nacheinander ----------
+// Die Intuition hinter dem ersten Raster als Kette in sechs Bildern (Wunsch von Christian, 7. Oktober 2026):
+// Raum und Zeit sind Wahrnehmungsmedien → Theorien mit Verräumlichung und Verzeitlichung zeigen auf Wahrnehmung → auf Menschen und Tiere, auf Körper →
+// die Einschätzungen des Rasters treffen die eigene Wahrnehmung nicht schlecht → so lässt sich Wahrnehmung an Kommunikation anschliessen → Pointe: Karen Barad.
+const SCHRITT = 85;
 const NN: React.FC = () => {
   const f = useCurrentFrame();
-  const punkte: [number, number, number][] = [[260, 470, 0], [380, 420, 1], [520, 490, 2], [640, 300, 3], [760, 470, 4], [450, 330, 5], [830, 260, 6]];
+  const kachel = (i: number, inhalt: React.ReactNode) => {
+    const sp = i % 2, ze = Math.floor(i / 2), a = 15 + i * SCHRITT, aktiv = f >= a && f < a + SCHRITT;
+    return (
+      <div key={i} style={{ position: "absolute", left: 70 + sp * 480, top: 205 + ze * 258, width: 460, height: 238, background: P.weiss, border: `7px solid ${P.ink}`, boxSizing: "border-box", overflow: "hidden",
+        transform: `scale(${pop(f, a, 200)})`, outline: aktiv ? `6px solid ${P.rot}` : "none", outlineOffset: 4 }}>
+        <div style={fett(30, { position: "absolute", left: 0, top: 0, width: 48, height: 48, background: P.gelb, borderRight: `5px solid ${P.ink}`, borderBottom: `5px solid ${P.ink}`, display: "grid", placeItems: "center" })}>{i + 1}</div>
+        {inhalt}
+      </div>
+    );
+  };
+  const auge = (x: number, y: number, s = 1) => (
+    <svg width={140 * s} height={90 * s} viewBox="0 0 140 90" style={{ position: "absolute", left: x, top: y }}>
+      <path d="M5 45 Q70 -15 135 45 Q70 105 5 45 Z" fill={P.weiss} stroke={P.ink} strokeWidth="7" /><circle cx="70" cy="45" r="22" fill={P.blau} stroke={P.ink} strokeWidth="5" /><circle cx="70" cy="45" r="9" fill={P.ink} />
+    </svg>
+  );
+  const barad = 15 + 5 * SCHRITT;
   return (
     <Grundpunkte farbe="rgba(23,71,201,.45)">
       <Schild f={f} farbe={P.blau}><span style={{ color: P.weiss }}>Suchrichtung 2 · Nebeneinander, Nacheinander</span></Schild>
-      <Feld x={70} y={180} w={940} h={620}>
-        <svg width="926" height="606" viewBox="0 0 940 620" style={{ position: "absolute", inset: 0 }}>
-          <path d={`M120 540 H${120 + 760 * interpolate(f, [5, 30], [0, 1], klemm)} M120 540 V${540 - 480 * interpolate(f, [5, 30], [0, 1], klemm)}`} stroke={P.ink} strokeWidth="8" />
-          <g fontFamily="Instrument Sans" fontWeight={700} opacity={ein(f, 25)}>
-            <text x="880" y="590" textAnchor="end" fontSize="30" fill={P.blau}>X · Verräumlichung (Raum) →</text>
-            <text x="70" y="540" fontSize="30" fill={P.rot} transform="rotate(-90 70 540)">Y · Verzeitlichung (Zeit) →</text>
-          </g>
-          {punkte.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="18" fill={[P.koral, P.gelb, P.tuerkis, P.himmel, P.blau, P.rot, P.gelb][i]} stroke={P.ink} strokeWidth="5" transform={`translate(0 ${(1 - pop(f, 40 + i * 9, 220)) * -500})`} />)}
+      {/* 1 · Raum und Zeit sind Wahrnehmungsmedien */}
+      {kachel(0, <>
+        {auge(70, 70)}
+        <svg width="130" height="130" viewBox="0 0 130 130" style={{ position: "absolute", left: 260, top: 50 }}><circle cx="65" cy="65" r="55" fill={P.gelb} stroke={P.ink} strokeWidth="7" /><path d={`M65 65 L65 25 M65 65 L${65 + Math.cos(f / 10) * 32} ${65 + Math.sin(f / 10) * 32}`} stroke={P.ink} strokeWidth="7" strokeLinecap="round" /></svg>
+        <div style={fett(26, { position: "absolute", left: 60, top: 190 })}>Raum</div><div style={fett(26, { position: "absolute", left: 290, top: 190 })}>Zeit</div>
+      </>)}
+      {/* 2 · Theorien mit X und Y zeigen auf Wahrnehmung */}
+      {kachel(1, <>
+        <svg width="200" height="170" viewBox="0 0 200 170" style={{ position: "absolute", left: 50, top: 50 }}><path d="M20 150 H190 M20 150 V10" stroke={P.ink} strokeWidth="7" /><text x="185" y="140" textAnchor="end" fontFamily="Instrument Sans" fontWeight={700} fontSize="26" fill={P.blau}>X</text><text x="30" y="30" fontFamily="Instrument Sans" fontWeight={700} fontSize="26" fill={P.rot}>Y</text><circle cx="140" cy="50" r="14" fill={P.koral} stroke={P.ink} strokeWidth="5" /></svg>
+        <div style={fett(60, { position: "absolute", left: 250, top: 70 })}>→</div>
+        {auge(300, 80, 0.9)}
+      </>)}
+      {/* 3 · also auf Menschen und Tiere – auf Körper */}
+      {kachel(2, <svg width="446" height="228" viewBox="0 0 446 228" style={{ position: "absolute", inset: 0 }}>
+        <circle cx="130" cy="70" r="30" fill="#ffd8b5" stroke={P.ink} strokeWidth="6" /><path d="M90 200 V130 Q90 105 130 105 Q170 105 170 130 V200 Z" fill={P.tuerkis} stroke={P.ink} strokeWidth="6" />
+        <ellipse cx="320" cy="150" rx="70" ry="35" fill="#c98a4b" stroke={P.ink} strokeWidth="6" /><circle cx="390" cy="105" r="28" fill="#c98a4b" stroke={P.ink} strokeWidth="6" /><path d="M378 80 l-6 -24 l18 14 M398 80 l8 -22 l6 22" fill="#c98a4b" stroke={P.ink} strokeWidth="5" strokeLinejoin="round" />
+        <path d="M275 180 V210 M300 182 V212 M345 182 V212 M368 180 V210" stroke={P.ink} strokeWidth="9" strokeLinecap="round" /><path d="M250 140 q -30 -10 -36 -40" fill="none" stroke={P.ink} strokeWidth="8" strokeLinecap="round" />
+      </svg>)}
+      {/* 4 · die Einschätzung des Rasters trifft die eigene Wahrnehmung nicht schlecht */}
+      {kachel(3, <>
+        {[["Raster", 150, P.blau], ["ich", 136, P.koral]].map(([n, h, farbe], k) => (
+          <React.Fragment key={n as string}>
+            <div style={{ position: "absolute", left: 110 + k * 140, bottom: 50, width: 90, height: (h as number) * interpolate(f, [15 + 3 * SCHRITT, 45 + 3 * SCHRITT], [0, 1], klemm), background: farbe as string, border: `6px solid ${P.ink}` }} />
+            <div style={fett(24, { position: "absolute", left: 100 + k * 140, bottom: 12, width: 110, textAlign: "center" })}>{n as string}</div>
+          </React.Fragment>
+        ))}
+        <div style={fett(60, { position: "absolute", left: 360, top: 60, color: P.tuerkis, WebkitTextStroke: `2px ${P.ink}`, opacity: ein(f, 50 + 3 * SCHRITT) })}>≈</div>
+      </>)}
+      {/* 5 · Wahrnehmung an Kommunikation anschliessen */}
+      {kachel(4, (() => {
+        const st = interpolate(f, [25 + 4 * SCHRITT, 60 + 4 * SCHRITT], [0, 1], klemm);
+        return (
+          <>
+            <div style={fett(22, { position: "absolute", left: 30, top: 60 })}>Wahrnehmung</div>
+            <div style={fett(22, { position: "absolute", right: 24, top: 60 })}>Kommunikation</div>
+            <svg width="446" height="228" viewBox="0 0 446 228" style={{ position: "absolute", inset: 0 }}>
+              <path d={`M20 150 C 80 150, 90 ${150}, ${120 + st * 120} 150`} fill="none" stroke={P.ink} strokeWidth="10" />
+              <rect x={110 + st * 120} y="125" width="60" height="50" fill={P.gelb} stroke={P.ink} strokeWidth="6" />
+              <path d={`M${170 + st * 120} 138 h22 M${170 + st * 120} 162 h22`} stroke={P.ink} strokeWidth="7" />
+              <rect x="310" y="110" width="110" height="80" rx="10" fill={P.tuerkis} stroke={P.ink} strokeWidth="6" />
+              <path d="M330 138 h22 M330 162 h22" stroke={P.ink} strokeWidth="7" />
+            </svg>
+            {st >= 1 ? <div style={fett(34, { position: "absolute", left: 210, top: 180, color: P.rot, transform: `rotate(-6deg) scale(${pop(f, 60 + 4 * SCHRITT)})` })}>KLICK!</div> : null}
+          </>
+        );
+      })())}
+      {/* 6 · Pointe: Karen Barad */}
+      {kachel(5, <>
+        <svg width="446" height="228" viewBox="0 0 446 228" style={{ position: "absolute", inset: 0 }}>
+          <path d="M60 205 H430 M60 205 V20" stroke={P.ink} strokeWidth="6" />
+          {[[120, 150], [170, 110], [230, 160], [260, 90], [300, 130], [340, 70], [200, 60], [380, 120]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="9" fill={P.grau} />)}
+          <circle cx="410" cy="34" r={18 + Math.max(0, Math.sin((f - barad) / 5)) * 8} fill={P.koral} stroke={P.ink} strokeWidth="6" opacity={ein(f, barad + 20)} />
         </svg>
-        {/* ein wahrnehmender Körper wandert suchend durchs Raster */}
-        <div style={{ position: "absolute", left: interpolate(f, [90, 300], [120, 700], klemm), top: 380 - Math.abs(Math.sin(f / 9)) * 40, padding: "6px 14px", background: P.weiss, border: `5px solid ${P.ink}`, borderRadius: 30, opacity: ein(f, 90), ...fett(28) }}>Körper?</div>
-      </Feld>
-      <Erzaehl f={f} a={20} b={160} x={70} y={850} w={940} groesse={38}>{TX.nn1}</Erzaehl>
-      <Erzaehl f={f} a={170} x={70} y={850} w={940} groesse={38}>{TX.nn2}</Erzaehl>
+        <div style={fett(30, { position: "absolute", left: 150, top: 22, padding: "4px 12px", background: P.gelb, border: `5px solid ${P.ink}`, opacity: ein(f, barad + 25) })}>Karen Barad! →</div>
+      </>)}
+      <Knall p={pop(f, barad + 45, 200)} x={860} y={1130} r={140} farbe={P.koral} innen={P.gelb} text="WOW!" groesse={56} textfarbe={P.weiss} drehung={8} />
+      {TX.nnSchritte.map((t, i) => <Erzaehl key={i} f={f} a={20 + i * SCHRITT} b={i < 5 ? 20 + (i + 1) * SCHRITT : 1e9} x={70} y={1020} w={i === 5 ? 660 : 940} groesse={i === 5 ? 34 : 38}>{t}</Erzaehl>)}
     </Grundpunkte>
   );
 };
