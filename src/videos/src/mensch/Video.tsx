@@ -107,9 +107,9 @@ const ZweiRaster: React.FC = () => {
       {raster.map(([titel, felder, farben], k) => (
         <div key={titel} style={{ position: "absolute", left: 80 + k * 470, top: 600, width: 440, transform: `scale(${pop(f, 60 + k * 40, 180)}) rotate(${k ? 2 : -2}deg)` }}>
           <div style={{ padding: "10px 16px", background: P.weiss, border: `6px solid ${P.ink}`, borderBottom: "none", ...fett(28, { lineHeight: 1.1 }) }}>{titel}</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", border: `6px solid ${P.ink}`, background: P.ink, gap: 6 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", border: `6px solid ${P.ink}`, background: P.ink, gap: 6 }}>
             {felder.map((n, i) => (
-              <div key={n} style={{ height: 200, padding: 14, boxSizing: "border-box", ...benday("rgba(255,255,255,.3)", 3.4, 13), backgroundColor: farben[i], opacity: ein(f, 70 + k * 40 + i * 8), ...fett(28, { lineHeight: 1.1, display: "flex", alignItems: "flex-end" }) }}>{n}</div>
+              <div key={n} style={{ height: 200, padding: 14, boxSizing: "border-box", ...benday("rgba(255,255,255,.3)", 3.4, 13), backgroundColor: farben[i], opacity: ein(f, 70 + k * 40 + i * 8), ...fett(25, { lineHeight: 1.1, display: "flex", alignItems: "flex-end", hyphens: "manual" }) }}>{n.replace("Ausgeliefertsein", "Ausgeliefert\u00adsein")}</div>
             ))}
           </div>
         </div>
