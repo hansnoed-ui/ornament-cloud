@@ -1,34 +1,46 @@
-// Texte für «Mensch, Niklas!» (Christian Strickler erzählt, woran und warum er seit einigen Monaten arbeitet; 7. Oktober 2026).
+// Texte für «Mensch, Niklas!» (Christian Strickler erzählt, woran und warum er seit einigen Monaten arbeitet; 7. Oktober 2026), deutsch und englisch.
 // Eigene Lesart in der Ich-Form, erarbeitet mit Christian; keine wörtlichen Zitate. Jahreszahlen und Titel der Debatte recherchiert:
 // Habermas/Luhmann, Theorie der Gesellschaft oder Sozialtechnologie (1971); Luhmann, Soziale Systeme (1984) und Die Gesellschaft der Gesellschaft (1997);
 // Lindemann, Die Grenzen des Sozialen (2002); Esposito, Artificial Communication? (2017); Lehmann, Kunst – Liebe – Religion. Theorie der Humanmedien (2025).
 // Fälle: «Scheininvalide» (IV-Debatte seit 2003), Recht auf Nichterreichbarkeit (Arbeitsgesetz, Telearbeit, parlamentarische Initiative Burkart).
+// Nur englisch (Wunsch von Christian, 7. Oktober 2026), Szene «Meanwhile in England», recherchiert: Mencap, Death by Indifference (2007);
+// Confidential Inquiry into Premature Deaths of People with Learning Disabilities, CIPOLD (2013: Männer 13, Frauen 20 Jahre früher);
+// Public Health England (2015: bis zu 35 000 Erwachsene mit Lernbehinderung erhalten Psychopharmaka ohne die Erkrankung) und NHS-Programm STOMP (2016);
+// LeDeR-Bericht 2023 (medianes Sterbealter 62,5 Jahre, fast 20 Jahre früher; rund 40 % der Todesfälle vermeidbar); «diagnostic overshadowing».
+import React from "react";
 
-export const DEBATTE: [string, string][] = [
-  ["1971", "Habermas / Luhmann: Theorie der Gesellschaft oder Sozialtechnologie?"],
-  ["1984", "Soziale Systeme: der Mensch in der Umwelt der Gesellschaft"],
-  ["1997", "Die Gesellschaft der Gesellschaft: radikal antihumanistisch"],
-  ["2002", "Lindemann: Wer zählt überhaupt als Person?"],
-  ["2017", "Esposito: Kommunikation mit Algorithmen"],
-  ["2025", "Lehmann: Humanmedien – die Menschen sollen hinein"],
-];
-
-export const T = {
+const DE = {
+  debatte: [
+    ["1971", "Habermas / Luhmann: Theorie der Gesellschaft oder Sozialtechnologie?"],
+    ["1984", "Soziale Systeme: der Mensch in der Umwelt der Gesellschaft"],
+    ["1997", "Die Gesellschaft der Gesellschaft: radikal antihumanistisch"],
+    ["2002", "Lindemann: Wer zählt überhaupt als Person?"],
+    ["2017", "Esposito: Kommunikation mit Algorithmen"],
+    ["2025", "Lehmann: Humanmedien – die Menschen sollen hinein"],
+  ] as [string, string][],
+  kopfUnter: ["Körper", "Theorie", "Maschinen"],
   frage: "Kaum fällt der Name Luhmann, fragt jemand: Und wo bleibt der Mensch?",
   sofort: "Immer. Sofort.",
   mensch: "Mensch, Niklas!",
   warum: "Warum ich den Körper in der Systemtheorie bisher nicht gesucht habe – und trotzdem jetzt darüber spreche …",
   zweiRaster: "… und dafür zwei Prüfraster entwickelt habe …",
+  rasterNamen: ["Nebeneinander, Nacheinander", "Der Verteilapparat des Körpers"],
   nnFelder: ["Ereignis", "Doppelspalt", "Stilles Operieren", "Ordnung"],
   zurueck: "Aber zurück zum Menschen bei Luhmann …",
   gefunden: "Seit über zehn Jahren lese ich Luhmann. Ich finde mich nicht in einem System, sondern in den Kopplungen: Körper, Bewusstsein, Kommunikation.",
+  systeme: ["Bewusstsein", "Körper", "Kommunikation"],
   kopplungen: ["Wahrnehmung", "Sprache"],
   organisation: "Selbst in der Organisation tragen Personen Erinnerung, verworfene Alternativen und die mündliche Geschichte des Hauses – nach innen wie nach aussen.",
+  muendlich: ["weisst du noch …", "damals hiess es …"],
   vermisst: "Ich vermisste mich nicht.",
+  geraete: ["Computer", "Internet", "Social Media", "KI"],
+  umwelt: "UMWELT",
   wende: "Dann Computer, Internet, Social Media – und jetzt Maschinen, die mitreden, ohne Bewusstsein.",
   wo: "Rückt der Mensch, rückt sein Körper damit noch weiter in die Umwelt? Wo war er – und wo ist er jetzt?",
   still: "Mir fehlte nicht der Mensch. Mir fehlte der stille, nicht wahrgenommene Körper.",
   stillListe: ["Immunabwehr", "Verdauung", "Stoffwechsel", "Hormone", "Zellerneuerung", "Wundheilung"],
+  messung: "MESSUNG",
+  messwerte: ["CRP 12 mg/l", "HbA1c 6,1 %", "Schlaf 5:40 h"],
   gemessen: "Er wird nicht gespürt, aber gemessen: Blutwerte, Scans, Wearables tragen ihn am Bewusstsein vorbei in die Kommunikation.",
   nnSchritte: [
     "Raum und Zeit sind Medien der Wahrnehmung.",
@@ -38,21 +50,145 @@ export const T = {
     "So hilft es mir, Wahrnehmung an Kommunikation anzuschliessen.",
     "Und ich stosse auf Neues: Karen Barad schneidet extrem interessant ab. Da muss ich mich kümmern.",
   ],
+  raumZeit: ["Raum", "Zeit"],
+  rasterIch: ["Raster", "ich"],
+  wahrnehmungKommunikation: ["Wahrnehmung", "Kommunikation"],
+  klick: "KLICK!",
+  fremd: ["Theorie", "Diagnose", "Messwert", "Gutachten"],
+  kommunikation: "Kommunikation",
+  selbst: "Mir geht es …",
+  stopp: "STOPP",
+  beschrieben: "BESCHRIEBEN ≠ GEHÖRT",
   luecke1: "Doch selbst wenn eine Theorie den Körper beschreibt und einbaut: Sein Erleben findet damit noch keinen Zugang zur Kommunikation.",
   luecke2: "Und meine Selbstauskunft hat damit noch keine Anschlusschance – schon gar nicht gegen eine Fremdbeschreibung.",
   va1: "Das zweite Raster fragt: Wessen Körperereignis kommt wie weit? Sieben Schwellen, zwei Wege: Stimme und Messung.",
   va2: "Daraus vier Felder: gehört und erfasst, nur eines davon – oder keines.",
   schwellen: ["auffällig", "artikulierbar", "zugänglich", "lesbar", "glaubwürdig", "speicherbar", "entscheidungsfähig"],
+  wege: ["Stimme", "Messung"],
+  achsen: ["gehört →", "erfasst →"],
   felder: [["Ausgeliefertsein", "erfasst, kaum gehört"], ["Verhandelbare Teilhabe", "gehört und erfasst"], ["Verschwinden", "weder noch"], ["Privilegierte Opazität", "gehört, kaum erfasst"]] as [string, string][],
+  akte: "IV-Akte",
+  seit: "seit 2003",
+  scheininvalide: "«SCHEININVALIDE»",
+  anruf: "22:47 Chef",
+  nichterreichbar: "Recht auf Nichterreichbarkeit",
   faelle: "Es greift in der Politik: bei den «Scheininvaliden» seit 2003 und beim Recht auf Nichterreichbarkeit im Arbeitsgesetz.",
   wer: "Und wer steht für diese Schwellen ein? Kaum jemand.",
+  england: null as null | { karten: [string, string][]; stempel: string; text1: string; text2: string },
+  theorieKarten: ["Systemtheorie", "Poststrukturalismus", "Formtheorie", "Ästhetik"],
+  apparat: "Verteilapparat",
+  gefundenZahl: "Körperereignisse gefunden:",
   theorien: "Auf moderne Theorien angewandt, findet es wenig: Sie kennen kaum Körperereignisse.",
   feld1: "Ich entwickle die Raster von Fall zu Fall weiter – im Gespräch mit meinen LLMs – und zeige sie in sozialen Medien, um neue Kontingenz zu finden.",
   feld2: "Ich forsche mitten in dem Feld, das ich untersuche.",
   bisher: "The story so far …",
   folgt: "Fortsetzung folgt",
   rueckblick: ["Die alte Frage", "Ich in den Kopplungen", "Maschinen reden mit", "Der stille Körper", "Raster 1: Raum und Zeit", "Raster 2: Verteilapparat", "Ich im Feld"],
+  schild: {
+    frage: "Die alte Frage", gefunden: "Ich fand mich", organisation: "Sogar in der Organisation", wende: "Die Wende",
+    still: "Suchrichtung 1 · der stille Körper", nn: "Suchrichtung 2 · Nebeneinander, Nacheinander", luecke: "Beschrieben ≠ gehört",
+    verteil: "Suchrichtung 3 · der Verteilapparat", faelle: "Zwei Beispiele", england: "", theorien: "Und in Theorien?", feld: "Ich im Feld",
+  },
 };
+export type Texte = typeof DE;
+
+const EN: Texte = {
+  debatte: [
+    ["1971", "Habermas / Luhmann: theory of society or social technology?"],
+    ["1984", "Social Systems: the human being in the environment of society"],
+    ["1997", "Theory of Society: radically anti-humanist"],
+    ["2002", "Lindemann: who counts as a person at all?"],
+    ["2017", "Esposito: communicating with algorithms"],
+    ["2025", "Lehmann: human media – bring people back in"],
+  ],
+  kopfUnter: ["Body", "Theory", "Machines"],
+  frage: "The moment Luhmann's name comes up, someone asks: and where is the human being?",
+  sofort: "Always. Instantly.",
+  mensch: "Mensch, Niklas!",
+  warum: "Why I never looked for the body in systems theory – and why I am talking about it now …",
+  zweiRaster: "… and why I built two analytical grids for it …",
+  rasterNamen: ["Side by Side, One After Another", "The Body's Distribution Apparatus"],
+  nnFelder: ["Event", "Double slit", "Silent operating", "Order"],
+  zurueck: "But back to the human being in Luhmann …",
+  gefunden: "I have been reading Luhmann for more than ten years. I find myself not in one system but in the couplings: body, consciousness, communication.",
+  systeme: ["Consciousness", "Body", "Communication"],
+  kopplungen: ["Perception", "Language"],
+  organisation: "Even in organisations, people carry memory, discarded alternatives and the oral history of the house – inwards and outwards.",
+  muendlich: ["remember when …", "back then we said …"],
+  vermisst: "I didn't miss myself.",
+  geraete: ["Computer", "Internet", "Social media", "AI"],
+  umwelt: "ENVIRONMENT",
+  wende: "Then computers, the internet, social media – and now machines that join the conversation without consciousness.",
+  wo: "Does the human being, does the body move even further into the environment? Where was it – and where is it now?",
+  still: "What I missed was not the human being. It was the silent, unperceived body.",
+  stillListe: ["Immune defence", "Digestion", "Metabolism", "Hormones", "Cell renewal", "Wound healing"],
+  messung: "MEASUREMENT",
+  messwerte: ["CRP 12 mg/l", "HbA1c 6.1 %", "Sleep 5:40 h"],
+  gemessen: "It is not felt, but measured: blood values, scans and wearables carry it past consciousness into communication.",
+  nnSchritte: [
+    "Space and time are media of perception.",
+    "Theories that deal with spatialisation and temporalisation therefore also point to perception.",
+    "And so to humans and animals – to bodies.",
+    "Most of the grid's assessments match my own perception quite well.",
+    "So it helps me connect perception to communication.",
+    "And I come across something new: Karen Barad scores in an extremely interesting way. I need to look into that.",
+  ],
+  raumZeit: ["Space", "Time"],
+  rasterIch: ["Grid", "me"],
+  wahrnehmungKommunikation: ["Perception", "Communication"],
+  klick: "CLICK!",
+  fremd: ["Theory", "Diagnosis", "Reading", "Assessment"],
+  kommunikation: "Communication",
+  selbst: "I feel …",
+  stopp: "STOP",
+  beschrieben: "DESCRIBED ≠ HEARD",
+  luecke1: "But even if a theory describes and includes the body, its experience does not yet gain access to communication.",
+  luecke2: "And my account of myself has no chance of being taken up yet – least of all against a description by others.",
+  va1: "The second grid asks: whose bodily event gets how far? Seven thresholds, two paths: voice and measurement.",
+  va2: "Which gives four fields: heard and recorded, only one of the two – or neither.",
+  schwellen: ["noticeable", "articulable", "accessible", "legible", "credible", "storable", "decision-ready"],
+  wege: ["Voice", "Measurement"],
+  achsen: ["heard →", "recorded →"],
+  felder: [["At the mercy", "recorded, hardly heard"], ["Negotiable participation", "heard and recorded"], ["Disappearance", "neither"], ["Privileged opacity", "heard, hardly recorded"]],
+  akte: "Disability insurance file",
+  seit: "Switzerland, since 2003",
+  scheininvalide: "«BOGUS INVALIDS»",
+  anruf: "22:47 Boss",
+  nichterreichbar: "Right to be unreachable",
+  faelle: "In Switzerland it reaches into politics: the campaign against “bogus invalids” in disability insurance since 2003, and the right to be unreachable in the reform of the Labour Act for remote work.",
+  wer: "And who stands up for these thresholds? Hardly anyone.",
+  england: {
+    karten: [
+      ["2007", "Mencap, “Death by Indifference”: six deaths in hospital"],
+      ["2013", "Confidential inquiry: men with learning disabilities die 13, women 20 years earlier"],
+      ["2015", "Up to 35,000 adults on psychotropic drugs without the condition they treat → STOMP, 2016"],
+      ["2023", "LeDeR: median age at death 62.5 – almost 20 years earlier; 4 in 10 deaths avoidable"],
+    ],
+    stempel: "DIAGNOSTIC OVERSHADOWING",
+    text1: "In England, studies show what it means to be described but not heard: people with learning disabilities often cannot put pain into words – it is read as behaviour and treated with psychotropic drugs instead of being examined.",
+    text2: "The body's condition gets worse. Many die years too early – and many of these deaths are judged avoidable.",
+  },
+  theorieKarten: ["Systems theory", "Poststructuralism", "Form theory", "Aesthetics"],
+  apparat: "Distribution apparatus",
+  gefundenZahl: "Bodily events found:",
+  theorien: "Applied to modern theories, it finds little: they hardly know any bodily events.",
+  feld1: "I develop the grids case by case – in conversation with my LLMs – and show them on social media to find new contingency.",
+  feld2: "I am doing research right inside the field I study.",
+  bisher: "The story so far …",
+  folgt: "To be continued",
+  rueckblick: ["The old question", "Me in the couplings", "Machines join in", "The silent body", "Grid 1: space and time", "Grid 2: distribution apparatus", "Me in the field"],
+  schild: {
+    frage: "The old question", gefunden: "I found myself", organisation: "Even in the organisation", wende: "The turn",
+    still: "Line of search 1 · the silent body", nn: "Line of search 2 · side by side, one after another", luecke: "Described ≠ heard",
+    verteil: "Line of search 3 · the distribution apparatus", faelle: "Two examples from Switzerland", england: "Meanwhile in England", theorien: "And in theories?", feld: "Me in the field",
+  },
+};
+
+export type Sprache = "de" | "en";
+export const TEXTE: Record<Sprache, Texte> = { de: DE, en: EN };
+/** Texte der aktuellen Sprachfassung (gesetzt in MenschVideo) */
+export const TexteKontext = React.createContext<Texte>(DE);
+export const useTX = () => React.useContext(TexteKontext);
 
 /** Zettel des Geists: Nummern im Stil eines Zettelkastens (frei erfunden, nur als Bild) */
 export const ZETTEL = ["21/3d7", "9/8a", "57/12b1", "1/13c", "32/5g2", "76/4"];

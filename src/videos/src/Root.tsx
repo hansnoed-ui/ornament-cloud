@@ -4,7 +4,7 @@ import { OrnaVideo, T } from "./orna/Video";
 import { BREITE, FPS, HOEHE } from "./vorlage/stil";
 import { DoppelpruefungVideo, T as TDoppelpruefung } from "./doppelpruefung/Video";
 import { DreiervergleichVideo, T as TDreiervergleich } from "./dreiervergleich/Video";
-import { MenschVideo, T as TMensch } from "./mensch/Video";
+import { MenschVideo, T as TMensch, zeitplan as zeitplanMensch } from "./mensch/Video";
 // neue Videos: Import
 
 export const RemotionRoot: React.FC = () => (
@@ -17,6 +17,7 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="DreiervergleichVideo" component={DreiervergleichVideo} durationInFrames={TDreiervergleich.ende} fps={FPS} width={BREITE} height={1440} />
     {/* «Mensch, Niklas!»: 3:4 (7. Oktober 2026) */}
     <Composition id="MenschVideo" component={MenschVideo} durationInFrames={TMensch.ende} fps={FPS} width={BREITE} height={1440} />
+    <Composition id="MenschVideoEN" component={MenschVideo} durationInFrames={zeitplanMensch("en").T.ende} fps={FPS} width={BREITE} height={1440} defaultProps={{ sprache: "en" as const }} />
     {/* neue Videos: Composition */}
   </>
 );

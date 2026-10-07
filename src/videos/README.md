@@ -118,7 +118,7 @@ Die Szenen öffnen sich mit einer Kreisblende über der vorigen (18 Bilder Über
 Gut drei Minuten, **3:4** (1080 × 1440, `MenschVideo`), ohne Ton, im Stil von «Drei im Doppelspalt der Wahrnehmung» (Bausteine aus `dreiervergleich/Pop.tsx`).
 Christian erzählt in der Ich-Form, woran und warum er seit einigen Monaten arbeitet; mit ihm erarbeitet. Quelle `src/mensch/`: `Video.tsx` (Szenen),
 `Figuren.tsx` (der Erzähler stilisiert: Brille, Wuschelkopf, um die 50; Luhmann als Laken-Geist mit Zettelkasten, der nur mit Zettelnummern antwortet),
-`texte.ts` (eigene Lesart, keine Zitate; Jahreszahlen der Debatte recherchiert). Auf der Website: `web/mensch-niklas/` (`assets/mensch-niklas-3x4.mp4`).
+`texte.ts` (eigene Lesart, keine Zitate; Jahreszahlen der Debatte recherchiert). Auf der Website: `web/mensch-niklas/` (`assets/mensch-niklas-3x4.mp4`, darunter englisch `assets/mensch-niklas-en-3x4.mp4`; 810 × 1080, crf 28, ohne Ton).
 
 1. Die alte Frage (Zeitstrahl 1971–2025, «Immer. Sofort.», «Mensch, Niklas!»); Zwischentitel «Warum ich den Körper … bisher nicht gesucht habe – und trotzdem jetzt darüber spreche …»;
    «… und dafür zwei Prüfraster entwickelt habe …» (beide Vierfelder ohne Erklärung)
@@ -127,6 +127,11 @@ Christian erzählt in der Ich-Form, woran und warum er seit einigen Monaten arbe
 4. Nebeneinander, Nacheinander als Kette in sechs Bildern bis zur Pointe Karen Barad; «Beschrieben ≠ gehört»; der Verteilapparat; zwei Beispiele
    («Scheininvalide», Recht auf Nichterreichbarkeit); in Theorien kaum Körperereignisse; ich im Feld (LLMs, soziale Medien)
 5. The story so far … – Fortsetzung folgt; Outro
+
+**Englische Fassung** (`MenschVideoEN`, gut drei Minuten zwanzig, Wunsch vom 7. Oktober 2026): gleiche Grafik, Texte aus `texte.ts` (`TEXTE.en`),
+eigene Zeitachse `zeitplan("en")`. Die politischen Beispiele sind als Schweizer Kontext ausgewiesen («Two examples from Switzerland»).
+Zusätzliche Szene «Meanwhile in England» nach den Beispielen: Studien zum (Nicht-)Gehörtwerden der Körper von Menschen mit Lernbehinderung
+(Mencap 2007, CIPOLD 2013, PHE 2015 / STOMP 2016, LeDeR 2023; «diagnostic overshadowing»), Belege im Kopf von `texte.ts`.
 
 ## Rendern ohne Internetzugang zu remotion.media
 

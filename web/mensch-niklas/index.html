@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mensch, Niklas! – Ornament Cloud</title>
-  <meta name="description" content="Ein Comic-Video von gut drei Minuten: Christian Strickler erzählt, woran und warum er seit einigen Monaten arbeitet – Luhmann, der stille Körper und zwei Prüfraster.">
+  <meta name="description" content="Ein Comic-Video von gut drei Minuten, auch auf Englisch: Christian Strickler erzählt, woran und warum er seit einigen Monaten arbeitet – Luhmann, der stille Körper und zwei Prüfraster.">
   <link rel="canonical" href="https://ornament.cloud/web/mensch-niklas/">
   <link rel="stylesheet" href="../../styles.css?v=41">
 </head>
@@ -25,7 +25,7 @@
       </div>
       <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
       <h1>Mensch, Niklas!</h1>
-      <p class="lead">Ein Comic-Video in eigener Sache: woran und warum ich seit einigen Monaten arbeite – die alte Frage nach dem Menschen bei Luhmann, der stille, nicht wahrgenommene Körper und zwei Prüfraster.</p>
+      <p class="lead">Ein Comic-Video in eigener Sache: woran und warum ich seit einigen Monaten arbeite – die alte Frage nach dem Menschen bei Luhmann, der stille, nicht wahrgenommene Körper und zwei Prüfraster. Unten auch auf Englisch.</p>
     </div>
   </header>
 
@@ -41,6 +41,15 @@
       <figcaption>Gut drei Minuten, ohne Ton. Fortsetzung folgt.</figcaption>
     </figure>
 
+    <!-- Englische Fassung (Wunsch von Christian, 7. Oktober 2026): assets/mensch-niklas-en-3x4.mp4, Composition MenschVideoEN; Schweizer Kontext der Beispiele
+         ausgewiesen, zusätzlich die Szene «Meanwhile in England» (Studien zu Menschen mit Lernbehinderung, Belege in src/videos/src/mensch/texte.ts). -->
+    <figure class="erklaervideo erklaervideo--34" lang="en">
+      <video controls muted playsinline preload="none" poster="../../assets/mensch-niklas-en-3x4.jpg" width="810" height="1080" aria-label="Comic video «Mensch, Niklas!», English version, just over three minutes, no sound">
+        <source src="../../assets/mensch-niklas-en-3x4.mp4" type="video/mp4">
+      </video>
+      <figcaption><strong>English version.</strong> Just over three minutes, no sound. To be continued.</figcaption>
+    </figure>
+
     <p class="back"><a href="../">← Zu Web</a></p>
   </main>
 
@@ -51,18 +60,20 @@
     </div>
   </footer>
   <script>
-    // Das Video spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt (stumm, lädt erst dann).
-    // Bei «weniger Bewegung» spielt es nur auf Knopfdruck.
+    // Jedes Video (deutsch und englisch) spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt (stumm, lädt erst dann).
+    // Bei «weniger Bewegung» spielen sie nur auf Knopfdruck.
     (function () {
-      var v = document.querySelector(".erklaervideo video");
-      if (!v || !("IntersectionObserver" in window)) return;
+      var videos = document.querySelectorAll(".erklaervideo video");
+      if (!videos.length || !("IntersectionObserver" in window)) return;
       if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      new IntersectionObserver(function (eintraege) {
+      var beobachter = new IntersectionObserver(function (eintraege) {
         eintraege.forEach(function (e) {
+          var v = e.target;
           if (e.isIntersecting) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
           else if (!v.paused) v.pause();
         });
-      }, { threshold: 0.5 }).observe(v);
+      }, { threshold: 0.5 });
+      videos.forEach(function (v) { beobachter.observe(v); });
     })();
   </script>
   <script src="../../icons.js?v=14" defer></script>
