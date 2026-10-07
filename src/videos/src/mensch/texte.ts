@@ -17,8 +17,8 @@ export const T = {
   frage: "Kaum fällt der Name Luhmann, fragt jemand: Und wo bleibt der Mensch?",
   sofort: "Immer. Sofort.",
   mensch: "Mensch, Niklas!",
-  gefunden: "Seit über zehn Jahren lese ich Luhmann – und finde mich: als Kommunikation, als Bewusstsein, als wahrnehmenden Körper.",
-  schichten: [["Sozial", "Kommunikation"], ["Psychisch", "Bewusstsein"], ["Körper", "Wahrnehmung: Raum und Zeit"]] as [string, string][],
+  gefunden: "Seit über zehn Jahren lese ich Luhmann. Ich finde mich nicht in einem System, sondern in den Kopplungen: Körper, Bewusstsein, Kommunikation.",
+  kopplungen: ["Wahrnehmung", "Sprache"],
   organisation: "Selbst in der Organisation tragen Personen Erinnerung, verworfene Alternativen und die mündliche Geschichte des Hauses – nach innen wie nach aussen.",
   vermisst: "Ich vermisste mich nicht.",
   wende: "Dann Computer, Internet, Social Media – und jetzt Maschinen, die mitreden, ohne Bewusstsein.",
@@ -39,7 +39,7 @@ export const T = {
   feld2: "Ich forsche mitten in dem Feld, das ich untersuche.",
   bisher: "The story so far …",
   folgt: "Fortsetzung folgt",
-  rueckblick: ["Die alte Frage", "Ich fand mich", "Maschinen reden mit", "Der stille Körper", "Raster 1: Raum und Zeit", "Raster 2: Verteilapparat", "Ich im Feld"],
+  rueckblick: ["Die alte Frage", "Ich in den Kopplungen", "Maschinen reden mit", "Der stille Körper", "Raster 1: Raum und Zeit", "Raster 2: Verteilapparat", "Ich im Feld"],
 };
 
 /** Zettel des Geists: Nummern im Stil eines Zettelkastens (frei erfunden, nur als Bild) */

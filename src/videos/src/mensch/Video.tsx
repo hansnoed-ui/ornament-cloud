@@ -73,26 +73,38 @@ const Frage: React.FC = () => {
   );
 };
 
-// ---------- 2 · Ich habe mich gefunden ----------
+// ---------- 2 · Ich fand mich – in den Kopplungen ----------
+// Nicht in einem System, sondern in den Kopplungen von Körper, Bewusstsein und Kommunikation (Hinweis von Christian, 7. Oktober 2026):
+// Wahrnehmung koppelt Körper und Bewusstsein, Sprache koppelt Bewusstsein und Kommunikation; zwischen Körper und Kommunikation keine direkte Kopplung («?»).
 const Gefunden: React.FC = () => {
   const f = useCurrentFrame();
-  const farben = [P.tuerkis, P.koral, P.gelb];
+  const systeme: [string, number, number, string][] = [["Bewusstsein", 540, 265, P.koral], ["Körper", 220, 715, P.gelb], ["Kommunikation", 860, 715, P.tuerkis]];
+  const baender: [number, number, string, number, number][] = [[0, 1, TX.kopplungen[0], 300, 455], [0, 2, TX.kopplungen[1], 780, 455]];
   return (
     <Grundpunkte farbe="rgba(18,181,169,.55)">
       <Schild f={f} farbe={P.tuerkis}>Ich fand mich</Schild>
-      <Ich x={300} y={250} massstab={1.2} />
-      {TX.schichten.map(([ebene, was], i) => {
-        const p = pop(f, 40 + i * 30, 200), links = i !== 1;
-        return (
-          <div key={ebene} style={{ position: "absolute", left: links ? 60 : 730, top: [300, 440, 720][i], width: links ? 330 : 280, transform: `scale(${p}) rotate(${links ? -2 : 2}deg)` }}>
-            <div style={{ padding: "12px 18px", background: farben[i], border: `6px solid ${P.ink}`, ...benday("rgba(255,255,255,.3)", 3.4, 13), backgroundColor: farben[i] }}>
-              <div style={fett(26, { textTransform: "uppercase", letterSpacing: "0.06em" })}>{ebene}</div>
-              <div style={fett(32, { lineHeight: 1.1 })}>{was} <span style={{ color: P.weiss, WebkitTextStroke: `2px ${P.ink}` }}>✓</span></div>
-            </div>
-          </div>
-        );
-      })}
-      <Erzaehl f={f} a={130} x={70} y={1010} w={940} groesse={38}>{TX.gefunden}</Erzaehl>
+      <svg width="1080" height="1440" style={{ position: "absolute", inset: 0 }}>
+        {baender.map(([a, b], i) => {
+          const z = interpolate(f, [40 + i * 30, 70 + i * 30], [0, 1], klemm), [, x1, y1] = systeme[a], [, x2, y2] = systeme[b];
+          return <path key={i} d={`M${x1} ${y1} L${x1 + (x2 - x1) * z} ${y1 + (y2 - y1) * z}`} stroke={P.ink} strokeWidth="26" strokeLinecap="round" />;
+        })}
+        {baender.map(([a, b], i) => {
+          const z = interpolate(f, [40 + i * 30, 70 + i * 30], [0, 1], klemm), [, x1, y1] = systeme[a], [, x2, y2] = systeme[b];
+          return <path key={`i${i}`} d={`M${x1} ${y1} L${x1 + (x2 - x1) * z} ${y1 + (y2 - y1) * z}`} stroke={P.himmel} strokeWidth="12" strokeLinecap="round" />;
+        })}
+        <path d="M220 715 H860" stroke={P.ink} strokeWidth="6" strokeDasharray="18 14" opacity={ein(f, 110)} />
+      </svg>
+      {systeme.map(([name, x, y, farbe], i) => (
+        <div key={name} style={{ position: "absolute", left: x - 160, top: y - 65, width: 320, height: 130, border: `7px solid ${P.ink}`, boxSizing: "border-box", ...benday("rgba(255,255,255,.3)", 3.4, 13), backgroundColor: farbe, transform: `scale(${pop(f, 8 + i * 10, 200)})`, ...fett(33, { display: "grid", placeItems: "center" }) }}>{name}</div>
+      ))}
+      {baender.map(([, , text, x, y], i) => (
+        <div key={text} style={{ position: "absolute", left: x - 150, top: y - 32, width: 300, textAlign: "center", whiteSpace: "nowrap", padding: "8px 10px", background: P.weiss, border: `5px solid ${P.ink}`, transform: `scale(${pop(f, 75 + i * 30, 220)}) rotate(${i ? 3 : -3}deg)`, ...fett(30) }}>
+          {text} <span style={{ color: P.tuerkis, WebkitTextStroke: `1.5px ${P.ink}` }}>✓</span>
+        </div>
+      ))}
+      <div style={fett(56, { position: "absolute", left: 520, top: 735, color: P.rot, WebkitTextStroke: `2px ${P.ink}`, opacity: ein(f, 115) })}>?</div>
+      <Ich x={430} y={440} massstab={0.62} id="ich-kopplung" style={{ opacity: ein(f, 130, 15) }} />
+      <Erzaehl f={f} a={140} x={70} y={900} w={940} groesse={38}>{TX.gefunden}</Erzaehl>
     </Grundpunkte>
   );
 };
@@ -289,13 +301,13 @@ const Verteil: React.FC = () => {
   );
 };
 
-// ---------- 8 · Zwei Fälle ----------
+// ---------- 8 · Zwei Beispiele ----------
 const Faelle: React.FC = () => {
   const f = useCurrentFrame();
   const klingel = f > 90 ? Math.sin(f * 1.4) * 6 : 0;
   return (
     <Grundpunkte farbe="rgba(255,210,31,.8)">
-      <Schild f={f} farbe={P.gelb}>Zwei Fälle</Schild>
+      <Schild f={f} farbe={P.gelb}>Zwei Beispiele</Schild>
       {/* Akte mit Stempel */}
       <Feld x={70} y={180} w={450} h={470}>
         <div style={{ position: "absolute", left: 60, top: 80, width: 300, height: 320, background: "#f3e2b8", border: `6px solid ${P.ink}`, transform: "rotate(-3deg)" }}>
