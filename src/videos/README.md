@@ -90,6 +90,44 @@ Namen, ihre Operationen als Gegenstände; Lyotard (Leugnungsbeispiel) und Butler
 
 `npx remotion render DoppelpruefungVideo out/doppelpruefung.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
 
+## «Drei im Doppelspalt der Wahrnehmung» (6. Oktober 2026)
+
+Gut 2 Minuten (2:24; das Signet steht am Anfang 1,5 s und am Schluss 2 s länger), nur **3:4** (1080 × 1440, `DreiervergleichVideo`), ohne Ton. Wie «Liebling …», aber farblich anders und hochwertiger mit viel Roy Lichtenstein
+(jede Szene ein gerahmtes Bildfeld, Halbton-Verläufe, Erzählkästen in Versalien, doppelt gezackte Knalle, Gedankenwolke, Stempel; Wunsch von Christian).
+Vergleicht Luhmann, Baecker und Lehmann im Prüfraster Nebeneinander / Nacheinander, ausgehend von der Vergleichenden Analyse
+«Nebeneinander, Nacheinander | Luhmann, Baecker, Lehmann» (5. Oktober 2026), aber nicht an sie gebunden.
+Quelle `src/dreiervergleich/`: `Video.tsx` (Szenen, Kreisblenden), `Pop.tsx` (Palette, Lichtenstein-Bausteine, `Iris`, `PopIntro`/`PopOutro`; jeder Autor in seiner Farbe:
+Luhmann türkis, Baecker gelb, Lehmann korallrot), `zitate.ts` (`Z`: wörtlich aus der Studie, gegen den PDF-Text geprüft, mit «…» gezeigt; `L`: eigene Lesart, ohne Anführungszeichen).
+Intro und Outro sind das Signet der Vorlage im Pop-Stil (`Signet` mit `stil`; ohne `stil` bleibt es in allen anderen Videos unverändert, gegen Standbilder geprüft).
+
+0. Intro: Signet mit gelbem Kopfkasten «Doppelspalt», darunter «Luhmann • Baecker • Lehmann»; Titel mit drei Namenskarten
+1. Das Prüfraster: X (Bestimmbare Rückkehr), Y (Folgenreicher Vollzug)
+2.–4. Die Grundoperationen: Luhmann (Information · Mitteilung · Verstehen, Ereignisse, Entscheidung), Baecker (Form, «nächste» mit einer Y-Skala im Bild, grafische Eleganz),
+   Lehmann (Werk · Medium · Reflexion, re-exit, «BRUCH!» wird blasser)
+5.–7. Raum und Zeit je Autor: Luhmann (Objekte verlassen ihre Stellen / Stellen verlassen ihre Objekte; die Y-Texte sagen jeweils, worin die Verzeitlichung liegt), Baecker (Form auf einen Blick / re-entry, Oszillation, Gedächtnis),
+   Lehmann (Vergleichsmodell / Erfahrung lernt)
+8. Duell: RE-ENTRY! gegen RE-EXIT!, je mit der Verzeitlichung (Oszillation, Gedächtnis / Kriterienwandel wirkt weiter); re-exit markiert: bei Lehmann nur in den Humanmedien Kunst, Liebe, Religion; nicht Wissenschaft, Recht, Wirtschaft
+9. Differenzen: Lehmann → Luhmann (keine schlichte Wahl «mit» oder «ohne Menschen»), Lehmann → Baecker (Rezension 2008)
+10. Siegertreppchen sackt zusammen: «Alle drei erschliessen Raum und Zeit – jeder auf seine Weise. Das Prüfraster vergibt keine Medaillen.», kein philosophisches Ranking; 11. Die offene Frage; 12. Outro
+
+Die Szenen öffnen sich mit einer Kreisblende über der vorigen (18 Bilder Überlappung).
+`npx remotion render DreiervergleichVideo out/dreiervergleich.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
+
+## «Mensch, Niklas!» (7. Oktober 2026)
+
+Gut drei Minuten, **3:4** (1080 × 1440, `MenschVideo`), ohne Ton, im Stil von «Drei im Doppelspalt der Wahrnehmung» (Bausteine aus `dreiervergleich/Pop.tsx`).
+Christian erzählt in der Ich-Form, woran und warum er seit einigen Monaten arbeitet; mit ihm erarbeitet. Quelle `src/mensch/`: `Video.tsx` (Szenen),
+`Figuren.tsx` (der Erzähler stilisiert: Brille, Wuschelkopf, um die 50; Luhmann als Laken-Geist mit Zettelkasten, der nur mit Zettelnummern antwortet),
+`texte.ts` (eigene Lesart, keine Zitate; Jahreszahlen der Debatte recherchiert). Auf der Website: `web/mensch-niklas/` (`assets/mensch-niklas-3x4.mp4`).
+
+1. Die alte Frage (Zeitstrahl 1971–2025, «Immer. Sofort.», «Mensch, Niklas!»); Zwischentitel «Warum ich den Körper … bisher nicht gesucht habe – und trotzdem jetzt darüber spreche …»;
+   «… und dafür zwei Prüfraster entwickelt habe …» (beide Vierfelder ohne Erklärung)
+2. «Aber zurück zum Menschen bei Luhmann …»: ich in den Kopplungen von Körper, Bewusstsein, Kommunikation; sogar in der Organisation
+3. Die Wende (Computer, Internet, Social Media, KI); der stille, nicht wahrgenommene Körper (gemessen statt gespürt)
+4. Nebeneinander, Nacheinander als Kette in sechs Bildern bis zur Pointe Karen Barad; «Beschrieben ≠ gehört»; der Verteilapparat; zwei Beispiele
+   («Scheininvalide», Recht auf Nichterreichbarkeit); in Theorien kaum Körperereignisse; ich im Feld (LLMs, soziale Medien)
+5. The story so far … – Fortsetzung folgt; Outro
+
 ## Rendern ohne Internetzugang zu remotion.media
 
 Remotion lädt sonst einen eigenen Browser herunter; stattdessen einen vorhandenen angeben:

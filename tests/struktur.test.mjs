@@ -21,7 +21,8 @@ const MENUSEITEN = {
   "apps/index.html": ["apps/", "page"],
   "masterprompts/index.html": ["masterprompts/", "page"],
   "web/index.html": ["web/", "page"],
-  "web/poststrukturalismus/index.html": ["web/", "true"],   // die Videoseite gehört zu «Web» (6. Oktober 2026)
+  "web/poststrukturalismus/index.html": ["web/", "true"],
+  "web/mensch-niklas/index.html": ["web/", "true"],          // die Videoseite «Mensch, Niklas!» (7. Oktober 2026)   // die Videoseite gehört zu «Web» (6. Oktober 2026)
   [`${ORNA}index.html`]: ["apps/", "true"],           // ORNA gehört zu den Apps
   [`${ORNA}feld/index.html`]: ["apps/", "true"],
   [`${ORNA}app/index.html`]: ["apps/", "true"],       // die App-Seiten sind Abschriften, ihre Kopfzeile ist ausgeblendet
@@ -158,7 +159,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 const SEITEN = {
   apps: { titel: "Apps", karten: [["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
-  web: { titel: "Web", karten: [["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"]] },
+  web: { titel: "Web", karten: [["Mensch, Niklas!", "mensch-niklas/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"]] },
 };
 
 test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und Eintrag in der Sitemap", () => {
@@ -201,12 +202,18 @@ test("Masterprompts: die vier Prüfraster als Beiträge, in der Reihenfolge der 
   assert.ok(k.every((x) => /<svg [^>]*role="img" aria-label="[^"]{20,}"/.test(x.html)), "jede Karte trägt eine gezeichnete Vorschau mit Beschreibung");
 });
 
-test("Web: zuoberst das Comic-Video, dann OMNA COLOR und Das Dritte Rad (Alpha) und das Stellenfeld, alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs", () => {
+test("Web: zuoberst «Mensch, Niklas!», dann das Comic-Video «Liebling …», OMNA COLOR und Das Dritte Rad (Alpha) und das Stellenfeld, alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs", () => {
   const html = lies("web/index.html");
   const alle = karten(html);
   assert.deepEqual(alle.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
   // das Comic-Video (6. Oktober 2026): zuoberst, klickbar mit Vorschaubild, führt auf die eigene Videoseite und verlinkt die Studie als PDF
-  const [v, ...k] = alle;
+  const [m, v, ...k] = alle;
+  // «Mensch, Niklas!» (7. Oktober 2026): ganz zuoberst, klickbar mit Vorschaubild, führt nur auf die eigene Videoseite
+  assert.match(m.html, /<a class="thumb" href="mensch-niklas\/" tabindex="-1" aria-hidden="true">\s*<img src="\.\.\/assets\/vorschau-mensch-niklas\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  assert.deepEqual([...m.html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((x) => x[1]), ["mensch-niklas/", "mensch-niklas/"], "Bild und «Öffnen»");
+  const vorschauMensch = readFileSync(new URL("assets/vorschau-mensch-niklas.jpg", root));
+  assert.deepEqual(jpegMass(vorschauMensch), [640, 800], "Vorschaubild 640 × 800");
+  assert.ok(vorschauMensch.length < 150_000, `Vorschaubild ${vorschauMensch.length} Byte, unter 150 KB`);
   assert.match(v.html, /<a class="thumb" href="poststrukturalismus\/" tabindex="-1" aria-hidden="true">\s*<img src="\.\.\/assets\/vorschau-poststrukturalismus\.jpg" alt="" width="640" height="800" loading="lazy">/, "das Vorschaubild führt auf die Videoseite");
   assert.deepEqual([...v.html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((m) => m[1]), ["poststrukturalismus/", "poststrukturalismus/", "../alpha/poststrukturalismus-doppelpruefung.pdf"], "Bild, «Öffnen» und die Studie als PDF");
   assert.ok(!/<video/.test(html), "auf «Web» selbst läuft kein Video mehr, es spielt auf der Videoseite");
@@ -240,6 +247,21 @@ test("Videoseite web/poststrukturalismus/: das Comic-Video (9 : 16) spielt von s
   assert.match(html, /<a href="\.\.\/\.\.\/alpha\/poststrukturalismus-doppelpruefung\.pdf">Studie als PDF<\/a>/);
   assert.ok(existsSync(new URL("alpha/poststrukturalismus-doppelpruefung.pdf", root)), "das PDF liegt im Alpha-Bereich");
   assert.match(html, /<p class="back"><a href="\.\.\/">← Zu Web<\/a><\/p>/);
+});
+
+test("Videoseite web/mensch-niklas/: «Mensch, Niklas!» (3 : 4) spielt von selbst, sobald es zur Hälfte im Bild ist; zurück zu «Web» (7. Oktober 2026)", () => {
+  const html = lies("web/mensch-niklas/index.html");
+  assert.match(html, /<title>Mensch, Niklas! – Ornament Cloud<\/title>/);
+  assert.match(html, /<link rel="canonical" href="https:\/\/ornament\.cloud\/web\/mensch-niklas\/">/);
+  assert.ok(lies("sitemap.xml").includes("<loc>https://ornament.cloud/web/mensch-niklas/</loc>"), "in der Sitemap");
+  assert.match(html, /<figure class="erklaervideo erklaervideo--34">\s*<video controls muted playsinline preload="none" poster="\.\.\/\.\.\/assets\/mensch-niklas-3x4\.jpg" width="810" height="1080"[^>]*>\s*<source src="\.\.\/\.\.\/assets\/mensch-niklas-3x4\.mp4" type="video\/mp4">/);
+  assert.deepEqual(jpegMass(readFileSync(new URL("assets/mensch-niklas-3x4.jpg", root))), [810, 1080], "Standbild 3 : 4");
+  assert.ok(readFileSync(new URL("assets/mensch-niklas-3x4.mp4", root)).length < 14_000_000, "Video unter 14 MB");
+  assert.match(html, /new IntersectionObserver/, "Autoplay über IntersectionObserver");
+  assert.match(html, /prefers-reduced-motion: reduce/, "bei «weniger Bewegung» nicht von selbst");
+  assert.ok(!html.includes("/alpha/") || !/href="[^"]*alpha\/(?!drittes-rad)/.test(html), "verlinkt nichts im Alpha-Bereich ausser der Navigation");
+  assert.match(html, /<p class="back"><a href="\.\.\/">← Zu Web<\/a><\/p>/);
+  assert.match(lies("styles.css"), /\.erklaervideo--34 video \{[^}]*aspect-ratio: 3 \/ 4;/, "eigene Breite und Seitenverhältnis für 3 : 4");
 });
 
 test("Versionsmarken: styles.css und icons.js tragen auf allen Seiten dieselbe Marke, icons.js kennt nur Symbole, die es noch gibt", () => {
@@ -296,7 +318,7 @@ test("News, Termine und Portfolio: bleiben unter ihren Adressen (mit Menü, in d
 
 test("Kontakt: «Fragen und Anmerkungen zur Website» unten auf allen Seiten mit Text (Wunsch vom 5. Oktober 2026), im Zettelkasten in allen drei Sprachen", () => {
   const MAIL = '<a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a>';
-  const seiten = ["index.html", "web/index.html", "web/poststrukturalismus/index.html", "apps/index.html", "masterprompts/index.html", "news/index.html", "termine/index.html", "portfolio/index.html",
+  const seiten = ["index.html", "web/index.html", "web/poststrukturalismus/index.html", "web/mensch-niklas/index.html", "apps/index.html", "masterprompts/index.html", "news/index.html", "termine/index.html", "portfolio/index.html",
     "portfolio/nebeneinander-nacheinander/index.html", "portfolio/nebeneinander-nacheinander/feld/index.html",
     "portfolio/nebeneinander-nacheinander/app/index.html", "portfolio/nebeneinander-nacheinander/app/feld/index.html",
     "alpha/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html"];
