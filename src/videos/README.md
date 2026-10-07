@@ -118,7 +118,7 @@ Die Szenen öffnen sich mit einer Kreisblende über der vorigen (18 Bilder Über
 Gut drei Minuten, **3:4** (1080 × 1440, `MenschVideo`), ohne Ton, im Stil von «Drei im Doppelspalt der Wahrnehmung» (Bausteine aus `dreiervergleich/Pop.tsx`).
 Christian erzählt in der Ich-Form, woran und warum er seit einigen Monaten arbeitet; mit ihm erarbeitet. Quelle `src/mensch/`: `Video.tsx` (Szenen),
 `Figuren.tsx` (der Erzähler stilisiert: Brille, Wuschelkopf, um die 50; Luhmann als Laken-Geist mit Zettelkasten, der nur mit Zettelnummern antwortet),
-`texte.ts` (eigene Lesart, keine Zitate; Jahreszahlen der Debatte recherchiert). Auf der Website: `web/mensch-niklas/` (`assets/mensch-niklas-3x4.mp4`).
+`texte.ts` (eigene Lesart, keine Zitate; Jahreszahlen der Debatte recherchiert). Auf der Website: `web/mensch-niklas/` (`assets/mensch-niklas-3x4.mp4`, darunter englisch `assets/mensch-niklas-en-3x4.mp4`; 810 × 1080, crf 28, ohne Ton).
 
 1. Die alte Frage (Zeitstrahl 1971–2025, «Immer. Sofort.», «Mensch, Niklas!»); Zwischentitel «Warum ich den Körper … bisher nicht gesucht habe – und trotzdem jetzt darüber spreche …»;
    «… und dafür zwei Prüfraster entwickelt habe …» (beide Vierfelder ohne Erklärung)

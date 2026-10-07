@@ -308,7 +308,7 @@ await check("Videoseiten: «Mensch, Niklas!» (3 : 4) und «Liebling …» (9 : 
     await page.goto(origin + "/web/");
     await page.locator("main .card").filter({ has: page.getByRole("heading", { name: titel, exact: true }) }).getByRole("link", { name: "Öffnen" }).click();
     await page.waitForURL(adresse);
-    const v = page.locator(".erklaervideo video");
+    const v = page.locator(".erklaervideo video").first();
     assert.equal(await v.evaluate((e) => e.muted), true, "stumm");
     assert.equal(await v.evaluate((e) => e.preload), "none");
     const b = await box(v);
@@ -330,6 +330,27 @@ await check("Videoseiten: «Mensch, Niklas!» (3 : 4) und «Liebling …» (9 : 
     }
     await ctx.close();
   }
+});
+
+await check("Videoseite «Mensch, Niklas!»: die englische Fassung darunter spielt von selbst, sobald sie zur Hälfte im Bild ist, die deutsche hält dann an (7. Oktober 2026)", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 } });
+  // gezählt wird der Aufruf von play() je Sprache (der Testbrowser spielt H.264 nicht unbedingt ab)
+  await ctx.addInitScript(() => {
+    window.__gespielt = [];
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () { window.__gespielt.push(this.closest("[lang]").lang); return play.call(this); };
+  });
+  const page = await ctx.newPage();
+  const errors = fehler(page);
+  await page.goto(origin + "/web/mensch-niklas/");
+  const [de, en] = [page.locator(".erklaervideo video").first(), page.locator('.erklaervideo[lang="en"] video')];
+  assert.equal(await page.locator(".erklaervideo video").count(), 2, "deutsch und englisch");
+  assert.equal(await en.evaluate((e) => e.muted), true, "stumm");
+  await en.evaluate((e) => e.scrollIntoView({ block: "center", behavior: "instant" }));
+  await page.waitForFunction(() => window.__gespielt.includes("en"), null, { timeout: 5000 });
+  assert.equal(await de.evaluate((e) => e.paused), true, "die deutsche Fassung ist ausserhalb des Bildes angehalten");
+  assert.deepEqual(errors, []);
+  await ctx.close();
 });
 
 await check("Web: fünf Karten mit Bild (640 × 800), zuoberst «Mensch, Niklas!», drei in einer Reihe; die Karten führen zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld", async () => {
