@@ -34,6 +34,8 @@ export const T = {
     "So hilft es mir, Wahrnehmung an Kommunikation anzuschliessen.",
     "Und ich stosse auf Neues: Karen Barad schneidet extrem interessant ab. Da muss ich mich kümmern.",
   ],
+  luecke1: "Doch selbst wenn eine Theorie den Körper beschreibt und einbaut: Sein Erleben findet damit noch keinen Zugang zur Kommunikation.",
+  luecke2: "Und meine Selbstauskunft hat damit noch keine Anschlusschance – schon gar nicht gegen eine Fremdbeschreibung.",
   va1: "Das zweite Raster fragt: Wessen Körperereignis kommt wie weit? Sieben Schwellen, zwei Wege: Stimme und Messung.",
   va2: "Daraus vier Felder: gehört und erfasst, nur eines davon – oder keines.",
   schwellen: ["auffällig", "artikulierbar", "zugänglich", "lesbar", "glaubwürdig", "speicherbar", "entscheidungsfähig"],

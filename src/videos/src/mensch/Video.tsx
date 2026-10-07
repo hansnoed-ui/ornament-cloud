@@ -12,7 +12,7 @@ import { Geist, Ich, Punktmuster, Zettel } from "./Figuren";
 import { DEBATTE, T as TX, ZETTEL } from "./texte";
 
 // Zeitplan in Bildern; die Szenen überlappen um UEBER Bilder (Kreisblende)
-const D = { frage: 390, gefunden: 300, organisation: 330, wende: 390, still: 480, nn: 620, verteil: 450, faelle: 420, theorien: 270, feld: 360, bisher: 450 };
+const D = { frage: 390, gefunden: 300, organisation: 330, wende: 390, still: 480, nn: 620, luecke: 390, verteil: 450, faelle: 420, theorien: 270, feld: 360, bisher: 450 };
 const UEBER = 18, INTRO_LANG = INTRO + 45, OUTRO_LANG = OUTRO + 60;
 export const T = (() => {
   const t: Record<string, number> = { intro: 0 };
@@ -312,6 +312,47 @@ const NN: React.FC = () => {
   );
 };
 
+// ---------- 6b · Beschrieben ist nicht gehört ----------
+// Überleitung zum Verteilapparat (Argument von Christian, 7. Oktober 2026): Auch wenn eine Theorie den Körper beschreibt und einbaut,
+// findet sein Erleben damit noch keinen Zugang zur Kommunikation, und die Selbstauskunft hat noch keine Anschlusschance – schon gar nicht gegen eine Fremdbeschreibung.
+const Luecke: React.FC = () => {
+  const f = useCurrentFrame();
+  const fremd = ["Theorie", "Diagnose", "Messwert", "Gutachten"];
+  const box = { x: 700, y: 560, w: 310, h: 170 };
+  // die Selbstauskunft wandert vom Kopf zur Kommunikation und bleibt an der Schranke stehen
+  const weg = interpolate(f, [120, 200], [0, 1], { ...klemm, easing: (v) => 1 - Math.pow(1 - v, 2) });
+  const bx = 250 + weg * 230, by = 930 - weg * 300, zittern = f > 200 && f < 240 ? Math.sin(f * 2) * 5 : 0;
+  return (
+    <Grundpunkte farbe="rgba(224,20,30,.45)">
+      <Schild f={f} farbe={P.weiss}>Beschrieben ≠ gehört</Schild>
+      {/* Kommunikation */}
+      <div style={{ position: "absolute", left: box.x, top: box.y, width: box.w, height: box.h, border: `7px solid ${P.ink}`, boxSizing: "border-box", ...benday("rgba(255,255,255,.3)", 3.4, 13), backgroundColor: P.tuerkis, transform: `scale(${pop(f, 5, 200)})`, ...fett(34, { display: "grid", placeItems: "center" }) }}>Kommunikation</div>
+      {/* Fremdbeschreibungen: erscheinen oben und fliegen laut in die Kommunikation */}
+      {fremd.map((n, i) => {
+        const a = 10 + i * 18, flug = interpolate(f, [100 + i * 12, 135 + i * 12], [0, 1], { ...klemm, easing: (v) => v * v });
+        const x0 = 90 + (i % 2) * 300, y0 = 190 + Math.floor(i / 2) * 150;
+        const zx = box.x - 70 + (i % 2) * 40, zy = box.y - 70 - i * 58;
+        const x = x0 + (zx - x0) * flug, y = y0 + (zy - y0) * flug;
+        return (
+          <div key={n} style={{ position: "absolute", left: x, top: y, transform: `scale(${pop(f, a, 220) * (1 - flug * 0.25)}) rotate(${[-3, 2, 3, -2][i]}deg)`, transformOrigin: "0 0", display: "flex", alignItems: "center", gap: 10 }}>
+            <svg width="70" height="56" viewBox="0 0 70 56"><path d="M6 20 H22 L56 4 V52 L22 36 H6 Z" fill={P.gelb} stroke={P.ink} strokeWidth="5" strokeLinejoin="round" /><path d="M62 18 q6 10 0 20" fill="none" stroke={P.ink} strokeWidth="4" strokeLinecap="round" /></svg>
+            <div style={{ padding: "10px 18px", background: P.weiss, border: `6px solid ${P.ink}`, ...fett(36) }}>{n}</div>
+          </div>
+        );
+      })}
+      {/* Schranke vor der Kommunikation */}
+      <div style={{ position: "absolute", left: 610, top: 520, width: 26, height: 260, border: `6px solid ${P.ink}`, background: `repeating-linear-gradient(0deg, ${P.rot} 0 30px, ${P.weiss} 30px 60px)`, transform: `scaleY(${pop(f, 150, 220)})`, transformOrigin: "50% 100%" }} />
+      {/* die eigene Auskunft: klein */}
+      <div style={{ position: "absolute", left: bx + zittern, top: by, padding: "10px 18px", borderRadius: 26, background: P.weiss, border: `5px solid ${P.ink}`, opacity: ein(f, 110), ...fett(28, { fontStyle: "italic", fontWeight: 600, whiteSpace: "nowrap" }) }}>Mir geht es …</div>
+      {f > 205 ? <div style={fett(30, { position: "absolute", left: 470, top: 560, color: P.rot, transform: `rotate(-10deg) scale(${pop(f, 205)})` })}>STOPP</div> : null}
+      <Ich x={60} y={1010} massstab={0.78} spricht={f > 110 && f < 200} id="ich-luecke" />
+      <Stempel f={f} a={300} x={110} y={820} text="BESCHRIEBEN ≠ GEHÖRT" farbe={P.rot} groesse={52} drehung={-8} />
+      <Erzaehl f={f} a={20} b={190} x={390} y={1010} w={620} groesse={33}>{TX.luecke1}</Erzaehl>
+      <Erzaehl f={f} a={200} x={390} y={1010} w={620} groesse={33}>{TX.luecke2}</Erzaehl>
+    </Grundpunkte>
+  );
+};
+
 // ---------- 7 · Suchrichtung 3: der Verteilapparat ----------
 const Verteil: React.FC = () => {
   const f = useCurrentFrame();
@@ -482,7 +523,7 @@ const Bisher: React.FC = () => {
 
 const SZENEN: [keyof typeof D, React.FC][] = [
   ["frage", Frage], ["gefunden", Gefunden], ["organisation", Organisation], ["wende", Wende], ["still", Still], ["nn", NN],
-  ["verteil", Verteil], ["faelle", Faelle], ["theorien", Theorien], ["feld", Feld10], ["bisher", Bisher],
+  ["luecke", Luecke], ["verteil", Verteil], ["faelle", Faelle], ["theorien", Theorien], ["feld", Feld10], ["bisher", Bisher],
 ];
 const ECKEN: [number, number][] = [[900, 1250], [150, 200], [930, 180], [120, 1260]];
 
