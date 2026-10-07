@@ -128,6 +128,11 @@ Christian erzählt in der Ich-Form, woran und warum er seit einigen Monaten arbe
    («Scheininvalide», Recht auf Nichterreichbarkeit); in Theorien kaum Körperereignisse; ich im Feld (LLMs, soziale Medien)
 5. The story so far … – Fortsetzung folgt; Outro
 
+**Englische Fassung** (`MenschVideoEN`, gut drei Minuten zwanzig, Wunsch vom 7. Oktober 2026): gleiche Grafik, Texte aus `texte.ts` (`TEXTE.en`),
+eigene Zeitachse `zeitplan("en")`. Die politischen Beispiele sind als Schweizer Kontext ausgewiesen («Two examples from Switzerland»).
+Zusätzliche Szene «Meanwhile in England» nach den Beispielen: Studien zum (Nicht-)Gehörtwerden der Körper von Menschen mit Lernbehinderung
+(Mencap 2007, CIPOLD 2013, PHE 2015 / STOMP 2016, LeDeR 2023; «diagnostic overshadowing»), Belege im Kopf von `texte.ts`.
+
 ## Rendern ohne Internetzugang zu remotion.media
 
 Remotion lädt sonst einen eigenen Browser herunter; stattdessen einen vorhandenen angeben:

@@ -9,18 +9,22 @@ import { Grund, INTRO, OUTRO } from "../vorlage/Bausteine";
 import { benday, ein, klemm, pop } from "../doppelpruefung/Comic";
 import { Blase, Feld, Grundpunkte, Iris, Knall, P, PopIntro, PopOutro, Rahmen, Schild, Stempel, Strahlen, Wolke, fett } from "../dreiervergleich/Pop";
 import { Geist, Ich, Punktmuster, Zettel } from "./Figuren";
-import { DEBATTE, T as TX, ZETTEL } from "./texte";
+import { TEXTE, TexteKontext, ZETTEL, useTX, type Sprache } from "./texte";
 
-// Zeitplan in Bildern; die Szenen überlappen um UEBER Bilder (Kreisblende)
-const D = { frage: 390, warum: 240, zweiRaster: 270, gefunden: 360, organisation: 330, wende: 390, still: 480, nn: 620, luecke: 390, verteil: 450, faelle: 420, theorien: 270, feld: 360, bisher: 450 };
+// Zeitplan in Bildern je Sprachfassung; die Szenen überlappen um UEBER Bilder (Kreisblende). Die englische Fassung hat zusätzlich «Meanwhile in England».
+const D_DE = { frage: 390, warum: 240, zweiRaster: 270, gefunden: 360, organisation: 330, wende: 390, still: 480, nn: 620, luecke: 390, verteil: 450, faelle: 420, theorien: 270, feld: 360, bisher: 450 };
+const D_EN = { frage: 390, warum: 240, zweiRaster: 270, gefunden: 360, organisation: 330, wende: 390, still: 480, nn: 640, luecke: 390, verteil: 450, faelle: 450, england: 540, theorien: 270, feld: 360, bisher: 450 };
+type Szene = keyof typeof D_EN;
 const UEBER = 18, INTRO_LANG = INTRO + 45, OUTRO_LANG = OUTRO + 60;
-export const T = (() => {
+export const zeitplan = (sprache: Sprache) => {
+  const D: Partial<Record<Szene, number>> = sprache === "en" ? D_EN : D_DE;
   const t: Record<string, number> = { intro: 0 };
   let a = INTRO_LANG - UEBER;
-  for (const [k, d] of Object.entries(D)) { t[k] = a; a += d - UEBER; }
+  for (const [k, d] of Object.entries(D)) { t[k] = a; a += (d as number) - UEBER; }
   t.signet = a; t.ende = a + OUTRO_LANG;
-  return t as Record<keyof typeof D | "intro" | "signet" | "ende", number>;
-})();
+  return { D, T: t };
+};
+export const T = zeitplan("de").T;
 
 /** Erzählkasten in der Ich-Form: gelb, Versalien, frei platziert; sichtbar von a bis b */
 const Erzaehl: React.FC<{ f: number; a: number; b?: number; x: number; y: number; w: number; groesse?: number; farbe?: string; children: React.ReactNode }> = ({ f, a, b = 1e9, x, y, w, groesse = 38, farbe = P.gelb, children }) => {
@@ -46,12 +50,13 @@ const Zettelflug: React.FC<{ f: number; a: number; x0: number; y0: number; ziel:
 // ---------- 1 · Die alte Frage ----------
 const Frage: React.FC = () => {
   const f = useCurrentFrame();
+  const TX = useTX();
   return (
     <Grundpunkte farbe="rgba(23,71,201,.45)">
-      <Schild f={f} farbe={P.weiss}>Die alte Frage</Schild>
+      <Schild f={f} farbe={P.weiss}>{TX.schild.frage}</Schild>
       {/* Zeitstrahl der Debatte */}
       <div style={{ position: "absolute", left: 70, right: 70, top: 405, height: 10, background: P.ink, transform: `scaleX(${interpolate(f, [10, 40], [0, 1], klemm)})`, transformOrigin: "0 50%" }} />
-      {DEBATTE.map(([jahr, text], i) => {
+      {TX.debatte.map(([jahr, text], i) => {
         const p = pop(f, 30 + i * 22, 200), oben = i % 2 === 0;
         const x = 70 + Math.floor(i / 2) * 305;
         return (
@@ -77,6 +82,7 @@ const Frage: React.FC = () => {
 // Ankündigung im Lichtenstein-Stil (Wunsch von Christian, 7. Oktober 2026): das Gesicht gross, die Frage als Gedankenwolke, der Geist lugt herein.
 const Warum: React.FC = () => {
   const f = useCurrentFrame();
+  const TX = useTX();
   return (
     <AbsoluteFill>
       <Strahlen f={f} cx={540} cy={980} a={P.himmel} b={P.weiss} n={30} />
@@ -95,9 +101,10 @@ const Warum: React.FC = () => {
 // Verteilapparat: Ausgeliefertsein, Verhandelbare Teilhabe, Verschwinden, Privilegierte Opazität.
 const ZweiRaster: React.FC = () => {
   const f = useCurrentFrame();
+  const TX = useTX();
   const raster: [string, string[], string[]][] = [
-    ["Nebeneinander, Nacheinander", TX.nnFelder, [P.koral, P.gelb, "#cfcac3", P.himmel]],
-    ["Der Verteilapparat des Körpers", TX.felder.map(([n]) => n), [P.koral, P.tuerkis, "#cfcac3", P.gelb]],
+    [TX.rasterNamen[0], TX.nnFelder, [P.koral, P.gelb, "#cfcac3", P.himmel]],
+    [TX.rasterNamen[1], TX.felder.map(([n]) => n), [P.koral, P.tuerkis, "#cfcac3", P.gelb]],
   ];
   return (
     <AbsoluteFill>
@@ -124,11 +131,12 @@ const ZweiRaster: React.FC = () => {
 // Wahrnehmung koppelt Körper und Bewusstsein, Sprache koppelt Bewusstsein und Kommunikation; zwischen Körper und Kommunikation keine direkte Kopplung («?»).
 const Gefunden: React.FC = () => {
   const f = useCurrentFrame();
-  const systeme: [string, number, number, string][] = [["Bewusstsein", 540, 265, P.koral], ["Körper", 220, 715, P.gelb], ["Kommunikation", 860, 715, P.tuerkis]];
+  const TX = useTX();
+  const systeme: [string, number, number, string][] = [[TX.systeme[0], 540, 265, P.koral], [TX.systeme[1], 220, 715, P.gelb], [TX.systeme[2], 860, 715, P.tuerkis]];
   const baender: [number, number, string, number, number][] = [[0, 1, TX.kopplungen[0], 300, 455], [0, 2, TX.kopplungen[1], 780, 455]];
   return (
     <Grundpunkte farbe="rgba(18,181,169,.55)">
-      <Schild f={f} farbe={P.tuerkis}>Ich fand mich</Schild>
+      <Schild f={f} farbe={P.tuerkis}>{TX.schild.gefunden}</Schild>
       <svg width="1080" height="1440" style={{ position: "absolute", inset: 0 }}>
         {baender.map(([a, b], i) => {
           const z = interpolate(f, [40 + i * 30, 70 + i * 30], [0, 1], klemm), [, x1, y1] = systeme[a], [, x2, y2] = systeme[b];
@@ -159,11 +167,12 @@ const Gefunden: React.FC = () => {
 // ---------- 3 · Sogar in der Organisation ----------
 const Organisation: React.FC = () => {
   const f = useCurrentFrame();
+  const TX = useTX();
   // Organigramm: Kästchen mit Köpfen; aus ihnen Gedankenwolken (Alternativen) und Sprechblasen (mündliche Geschichte)
   const knoten: [number, number][] = [[430, 180], [200, 360], [430, 360], [660, 360], [200, 540], [660, 540]];
   return (
     <Grundpunkte farbe="rgba(255,210,31,.8)">
-      <Schild f={f} farbe={P.gelb}>Sogar in der Organisation</Schild>
+      <Schild f={f} farbe={P.gelb}>{TX.schild.organisation}</Schild>
       <svg width="1080" height="1440" style={{ position: "absolute", inset: 0 }}>
         <path d="M520 270 V320 M290 320 H750 M290 320 V360 M520 320 V360 M750 320 V360 M290 450 V540 M750 450 V540" stroke={P.ink} strokeWidth="7" fill="none" opacity={ein(f, 10)} />
       </svg>
@@ -175,7 +184,7 @@ const Organisation: React.FC = () => {
       {[["A?", 120, 250], ["B?", 860, 250], ["C?", 860, 470]].map(([t, x, y], i) => (
         <div key={i} style={{ position: "absolute", left: x as number, top: y as number, padding: "8px 16px", borderRadius: 30, background: P.himmel, border: `5px solid ${P.ink}`, transform: `scale(${pop(f, 60 + i * 10)})`, ...fett(30) }}>{t}</div>
       ))}
-      {["weisst du noch …", "damals hiess es …"].map((t, i) => (
+      {TX.muendlich.map((t, i) => (
         <div key={t} style={{ position: "absolute", left: [80, 650][i], top: 645, padding: "10px 18px", borderRadius: 26, background: P.weiss, border: `5px solid ${P.ink}`, transform: `scale(${pop(f, 90 + i * 14)}) rotate(${i ? 3 : -3}deg)`, ...fett(28, { fontStyle: "italic", fontWeight: 600 }) }}>{t}</div>
       ))}
       <Erzaehl f={f} a={30} b={205} x={70} y={725} w={940} groesse={34}>{TX.organisation}</Erzaehl>
@@ -190,16 +199,17 @@ const Organisation: React.FC = () => {
 // ---------- 4 · Die Wende ----------
 const Wende: React.FC = () => {
   const f = useCurrentFrame();
+  const TX = useTX();
   const schub = interpolate(f, [40, 200], [0, 1], klemm);
   const geraete = [
-    { label: "Computer", farbe: P.himmel, a: 20 }, { label: "Internet", farbe: P.tuerkis, a: 60 }, { label: "Social Media", farbe: P.koral, a: 100 }, { label: "KI", farbe: P.gelb, a: 140 },
+    { label: TX.geraete[0], farbe: P.himmel, a: 20 }, { label: TX.geraete[1], farbe: P.tuerkis, a: 60 }, { label: TX.geraete[2], farbe: P.koral, a: 100 }, { label: TX.geraete[3], farbe: P.gelb, a: 140 },
   ];
   return (
     <Grundpunkte farbe="rgba(224,20,30,.45)">
-      <Schild f={f} farbe={P.weiss}>Die Wende</Schild>
+      <Schild f={f} farbe={P.weiss}>{TX.schild.wende}</Schild>
       {/* Umwelt am rechten Rand */}
       <div style={{ position: "absolute", right: 35, top: 160, bottom: 35, width: 230, borderLeft: `7px dashed ${P.ink}`, ...benday("rgba(23,71,201,.35)", 3.4, 13), opacity: ein(f, 60) }}>
-        <div style={fett(34, { position: "absolute", top: 20, left: 0, right: 0, textAlign: "center", letterSpacing: "0.1em" })}>UMWELT</div>
+        <div style={fett(TX.umwelt.length > 7 ? 26 : 34, { position: "absolute", top: 20, left: 0, right: 0, textAlign: "center", letterSpacing: TX.umwelt.length > 7 ? "0.02em" : "0.1em" })}>{TX.umwelt}</div>
       </div>
       {geraete.map((g, i) => {
         const p = pop(f, g.a, 200);
@@ -219,11 +229,12 @@ const Wende: React.FC = () => {
 // ---------- 5 · Suchrichtung 1: der stille, nicht wahrgenommene Körper ----------
 const Still: React.FC = () => {
   const f = useCurrentFrame();
+  const TX = useTX();
   const mess = f > 230;
   const puls = (Math.sin(f / 5) + 1) / 2;
   return (
     <Grundpunkte farbe="rgba(18,181,169,.55)">
-      <Schild f={f} farbe={P.tuerkis}>Suchrichtung 1 · der stille Körper</Schild>
+      <Schild f={f} farbe={P.tuerkis}>{TX.schild.still}</Schild>
       {/* Körper im Röntgenblick */}
       <svg width="1080" height="1440" style={{ position: "absolute", inset: 0 }}>
         <defs><Punktmuster id="still-grau" farbe="rgba(0,0,0,.18)" r={2.6} a={10} /></defs>
@@ -259,10 +270,10 @@ const Still: React.FC = () => {
           <svg width="316" height="186" style={{ position: "absolute", inset: 0 }}>
             <path d={Array.from({ length: 40 }, (_, i) => `${i ? "L" : "M"}${i * 8} ${100 + Math.sin(i * 0.9 + f / 4) * 30 * (i % 7 === 3 ? 2 : 0.6)}`).join(" ")} fill="none" stroke={P.tuerkis} strokeWidth="5" />
           </svg>
-          <div style={fett(24, { position: "absolute", left: 14, top: 10, color: P.gelb })}>MESSUNG</div>
+          <div style={fett(24, { position: "absolute", left: 14, top: 10, color: P.gelb })}>{TX.messung}</div>
         </div>
       ) : null}
-      {mess ? ["CRP 12 mg/l", "HbA1c 6,1 %", "Schlaf 5:40 h"].map((t, i) => {
+      {mess ? TX.messwerte.map((t, i) => {
         const p = pop(f, 270 + i * 18, 200);
         return <div key={t} style={{ position: "absolute", left: 620 + i * 20, top: 760 + i * 70, padding: "8px 16px", background: P.weiss, border: `5px solid ${P.ink}`, transform: `scale(${p}) rotate(${[-3, 2, -1][i]}deg)`, ...fett(30) }}>{t} →</div>;
       }) : null}
@@ -279,6 +290,7 @@ const Still: React.FC = () => {
 const SCHRITT = 85;
 const NN: React.FC = () => {
   const f = useCurrentFrame();
+  const TX = useTX();
   const kachel = (i: number, inhalt: React.ReactNode) => {
     const sp = i % 2, ze = Math.floor(i / 2), a = 15 + i * SCHRITT, aktiv = f >= a && f < a + SCHRITT;
     return (
@@ -297,12 +309,12 @@ const NN: React.FC = () => {
   const barad = 15 + 5 * SCHRITT;
   return (
     <Grundpunkte farbe="rgba(23,71,201,.45)">
-      <Schild f={f} farbe={P.blau}><span style={{ color: P.weiss }}>Suchrichtung 2 · Nebeneinander, Nacheinander</span></Schild>
+      <Schild f={f} farbe={P.blau}><span style={{ color: P.weiss }}>{TX.schild.nn}</span></Schild>
       {/* 1 · Raum und Zeit sind Wahrnehmungsmedien */}
       {kachel(0, <>
         {auge(70, 70)}
         <svg width="130" height="130" viewBox="0 0 130 130" style={{ position: "absolute", left: 260, top: 50 }}><circle cx="65" cy="65" r="55" fill={P.gelb} stroke={P.ink} strokeWidth="7" /><path d={`M65 65 L65 25 M65 65 L${65 + Math.cos(f / 10) * 32} ${65 + Math.sin(f / 10) * 32}`} stroke={P.ink} strokeWidth="7" strokeLinecap="round" /></svg>
-        <div style={fett(26, { position: "absolute", left: 60, top: 190 })}>Raum</div><div style={fett(26, { position: "absolute", left: 290, top: 190 })}>Zeit</div>
+        <div style={fett(26, { position: "absolute", left: 60, top: 190 })}>{TX.raumZeit[0]}</div><div style={fett(26, { position: "absolute", left: 290, top: 190 })}>{TX.raumZeit[1]}</div>
       </>)}
       {/* 2 · Theorien mit X und Y zeigen auf Wahrnehmung */}
       {kachel(1, <>
@@ -318,7 +330,7 @@ const NN: React.FC = () => {
       </svg>)}
       {/* 4 · die Einschätzung des Rasters trifft die eigene Wahrnehmung nicht schlecht */}
       {kachel(3, <>
-        {[["Raster", 150, P.blau], ["ich", 136, P.koral]].map(([n, h, farbe], k) => (
+        {[[TX.rasterIch[0], 150, P.blau], [TX.rasterIch[1], 136, P.koral]].map(([n, h, farbe], k) => (
           <React.Fragment key={n as string}>
             <div style={{ position: "absolute", left: 110 + k * 140, bottom: 50, width: 90, height: (h as number) * interpolate(f, [15 + 3 * SCHRITT, 45 + 3 * SCHRITT], [0, 1], klemm), background: farbe as string, border: `6px solid ${P.ink}` }} />
             <div style={fett(24, { position: "absolute", left: 100 + k * 140, bottom: 12, width: 110, textAlign: "center" })}>{n as string}</div>
@@ -331,8 +343,8 @@ const NN: React.FC = () => {
         const st = interpolate(f, [25 + 4 * SCHRITT, 60 + 4 * SCHRITT], [0, 1], klemm);
         return (
           <>
-            <div style={fett(22, { position: "absolute", left: 30, top: 60 })}>Wahrnehmung</div>
-            <div style={fett(22, { position: "absolute", right: 24, top: 60 })}>Kommunikation</div>
+            <div style={fett(22, { position: "absolute", left: 30, top: 60 })}>{TX.wahrnehmungKommunikation[0]}</div>
+            <div style={fett(22, { position: "absolute", right: 24, top: 60 })}>{TX.wahrnehmungKommunikation[1]}</div>
             <svg width="446" height="228" viewBox="0 0 446 228" style={{ position: "absolute", inset: 0 }}>
               <path d={`M20 150 C 80 150, 90 ${150}, ${120 + st * 120} 150`} fill="none" stroke={P.ink} strokeWidth="10" />
               <rect x={110 + st * 120} y="125" width="60" height="50" fill={P.gelb} stroke={P.ink} strokeWidth="6" />
@@ -340,7 +352,7 @@ const NN: React.FC = () => {
               <rect x="310" y="110" width="110" height="80" rx="10" fill={P.tuerkis} stroke={P.ink} strokeWidth="6" />
               <path d="M330 138 h22 M330 162 h22" stroke={P.ink} strokeWidth="7" />
             </svg>
-            {st >= 1 ? <div style={fett(34, { position: "absolute", left: 210, top: 180, color: P.rot, transform: `rotate(-6deg) scale(${pop(f, 60 + 4 * SCHRITT)})` })}>KLICK!</div> : null}
+            {st >= 1 ? <div style={fett(34, { position: "absolute", left: 210, top: 180, color: P.rot, transform: `rotate(-6deg) scale(${pop(f, 60 + 4 * SCHRITT)})` })}>{TX.klick}</div> : null}
           </>
         );
       })())}
@@ -364,16 +376,17 @@ const NN: React.FC = () => {
 // findet sein Erleben damit noch keinen Zugang zur Kommunikation, und die Selbstauskunft hat noch keine Anschlusschance – schon gar nicht gegen eine Fremdbeschreibung.
 const Luecke: React.FC = () => {
   const f = useCurrentFrame();
-  const fremd = ["Theorie", "Diagnose", "Messwert", "Gutachten"];
+  const TX = useTX();
+  const fremd = TX.fremd;
   const box = { x: 700, y: 560, w: 310, h: 170 };
   // die Selbstauskunft wandert vom Kopf zur Kommunikation und bleibt an der Schranke stehen
   const weg = interpolate(f, [120, 200], [0, 1], { ...klemm, easing: (v) => 1 - Math.pow(1 - v, 2) });
   const bx = 250 + weg * 230, by = 930 - weg * 300, zittern = f > 200 && f < 240 ? Math.sin(f * 2) * 5 : 0;
   return (
     <Grundpunkte farbe="rgba(224,20,30,.45)">
-      <Schild f={f} farbe={P.weiss}>Beschrieben ≠ gehört</Schild>
+      <Schild f={f} farbe={P.weiss}>{TX.schild.luecke}</Schild>
       {/* Kommunikation */}
-      <div style={{ position: "absolute", left: box.x, top: box.y, width: box.w, height: box.h, border: `7px solid ${P.ink}`, boxSizing: "border-box", ...benday("rgba(255,255,255,.3)", 3.4, 13), backgroundColor: P.tuerkis, transform: `scale(${pop(f, 5, 200)})`, ...fett(34, { display: "grid", placeItems: "center" }) }}>Kommunikation</div>
+      <div style={{ position: "absolute", left: box.x, top: box.y, width: box.w, height: box.h, border: `7px solid ${P.ink}`, boxSizing: "border-box", ...benday("rgba(255,255,255,.3)", 3.4, 13), backgroundColor: P.tuerkis, transform: `scale(${pop(f, 5, 200)})`, ...fett(34, { display: "grid", placeItems: "center" }) }}>{TX.kommunikation}</div>
       {/* Fremdbeschreibungen: erscheinen oben und fliegen laut in die Kommunikation */}
       {fremd.map((n, i) => {
         const a = 10 + i * 18, flug = interpolate(f, [100 + i * 12, 135 + i * 12], [0, 1], { ...klemm, easing: (v) => v * v });
@@ -390,10 +403,10 @@ const Luecke: React.FC = () => {
       {/* Schranke vor der Kommunikation */}
       <div style={{ position: "absolute", left: 610, top: 520, width: 26, height: 260, border: `6px solid ${P.ink}`, background: `repeating-linear-gradient(0deg, ${P.rot} 0 30px, ${P.weiss} 30px 60px)`, transform: `scaleY(${pop(f, 150, 220)})`, transformOrigin: "50% 100%" }} />
       {/* die eigene Auskunft: klein */}
-      <div style={{ position: "absolute", left: bx + zittern, top: by, padding: "10px 18px", borderRadius: 26, background: P.weiss, border: `5px solid ${P.ink}`, opacity: ein(f, 110), ...fett(28, { fontStyle: "italic", fontWeight: 600, whiteSpace: "nowrap" }) }}>Mir geht es …</div>
-      {f > 205 ? <div style={fett(30, { position: "absolute", left: 470, top: 560, color: P.rot, transform: `rotate(-10deg) scale(${pop(f, 205)})` })}>STOPP</div> : null}
+      <div style={{ position: "absolute", left: bx + zittern, top: by, padding: "10px 18px", borderRadius: 26, background: P.weiss, border: `5px solid ${P.ink}`, opacity: ein(f, 110), ...fett(28, { fontStyle: "italic", fontWeight: 600, whiteSpace: "nowrap" }) }}>{TX.selbst}</div>
+      {f > 205 ? <div style={fett(30, { position: "absolute", left: 470, top: 560, color: P.rot, transform: `rotate(-10deg) scale(${pop(f, 205)})` })}>{TX.stopp}</div> : null}
       <Ich x={60} y={1010} massstab={0.78} spricht={f > 110 && f < 200} id="ich-luecke" />
-      <Stempel f={f} a={300} x={110} y={820} text="BESCHRIEBEN ≠ GEHÖRT" farbe={P.rot} groesse={52} drehung={-8} />
+      <Stempel f={f} a={300} x={110} y={820} text={TX.beschrieben} farbe={P.rot} groesse={52} drehung={-8} />
       <Erzaehl f={f} a={20} b={190} x={390} y={1010} w={620} groesse={33}>{TX.luecke1}</Erzaehl>
       <Erzaehl f={f} a={200} x={390} y={1010} w={620} groesse={33}>{TX.luecke2}</Erzaehl>
     </Grundpunkte>
@@ -403,13 +416,14 @@ const Luecke: React.FC = () => {
 // ---------- 7 · Suchrichtung 3: der Verteilapparat ----------
 const Verteil: React.FC = () => {
   const f = useCurrentFrame();
+  const TX = useTX();
   const sx = (i: number) => 150 + i * 106;
   // zwei Kugeln: Stimme (bleibt bei «glaubwürdig» hängen), Messung (kommt durch)
   const stimme = interpolate(f, [30, 170], [60, sx(4) - 30], klemm), messung = interpolate(f, [40, 200], [60, 1000], klemm);
   const vier = f > 240;
   return (
     <Grundpunkte farbe="rgba(255,91,74,.5)">
-      <Schild f={f} farbe={P.koral}>Suchrichtung 3 · der Verteilapparat</Schild>
+      <Schild f={f} farbe={P.koral}>{TX.schild.verteil}</Schild>
       {!vier || f < 260 ? (
         <div style={{ opacity: interpolate(f, [240, 258], [1, 0], klemm) }}>
           <Feld x={70} y={180} w={940} h={600}>
@@ -419,21 +433,21 @@ const Verteil: React.FC = () => {
                 <div style={fett(22, { position: "absolute", left: sx(i) - 6, top: 116, whiteSpace: "nowrap", transform: "rotate(-38deg)", transformOrigin: "0% 100%", opacity: ein(f, 10 + i * 4) })}>{s}</div>
               </React.Fragment>
             ))}
-            {[["Stimme", 200, P.koral, stimme], ["Messung", 400, P.blau, messung]].map(([n, y, farbe, x]) => (
+            {[[TX.wege[0], 200, P.koral, stimme], [TX.wege[1], 400, P.blau, messung]].map(([n, y, farbe, x]) => (
               <React.Fragment key={n as string}>
                 <div style={{ position: "absolute", left: 20, right: 20, top: (y as number) + 30, height: 6, background: "#00000022" }} />
                 <div style={fett(26, { position: "absolute", left: 20, top: (y as number) - 18, color: farbe as string })}>{n as string}</div>
                 <div style={{ position: "absolute", left: x as number, top: (y as number) + 8, width: 50, height: 50, borderRadius: "50%", background: farbe as string, border: `6px solid ${P.ink}` }} />
               </React.Fragment>
             ))}
-            {f > 170 ? <div style={fett(28, { position: "absolute", left: sx(4) - 80, top: 250, color: P.rot, transform: `rotate(-8deg) scale(${pop(f, 170)})` })}>STOPP</div> : null}
+            {f > 170 ? <div style={fett(28, { position: "absolute", left: sx(4) - 80, top: 250, color: P.rot, transform: `rotate(-8deg) scale(${pop(f, 170)})` })}>{TX.stopp}</div> : null}
           </Feld>
         </div>
       ) : null}
       {vier ? (
         <div style={{ position: "absolute", left: 70, top: 180, width: 940, height: 600, opacity: ein(f, 245) }}>
-          <div style={fett(30, { position: "absolute", left: 0, top: 0, width: 940, textAlign: "center" })}>gehört →</div>
-          <div style={fett(30, { position: "absolute", left: -10, top: 300, transform: "rotate(-90deg)", transformOrigin: "0 0" })}>erfasst →</div>
+          <div style={fett(30, { position: "absolute", left: 0, top: 0, width: 940, textAlign: "center" })}>{TX.achsen[0]}</div>
+          <div style={fett(30, { position: "absolute", left: -10, top: 300, transform: "rotate(-90deg)", transformOrigin: "0 0" })}>{TX.achsen[1]}</div>
           {[TX.felder[0], TX.felder[1], TX.felder[2], TX.felder[3]].map(([name, was], i) => {
             const zelle = [[0, 0], [1, 0], [0, 1], [1, 1]][i];
             return (
@@ -454,27 +468,28 @@ const Verteil: React.FC = () => {
 // ---------- 8 · Zwei Beispiele ----------
 const Faelle: React.FC = () => {
   const f = useCurrentFrame();
+  const TX = useTX();
   const klingel = f > 90 ? Math.sin(f * 1.4) * 6 : 0;
   return (
     <Grundpunkte farbe="rgba(255,210,31,.8)">
-      <Schild f={f} farbe={P.gelb}>Zwei Beispiele</Schild>
+      <Schild f={f} farbe={P.gelb}>{TX.schild.faelle}</Schild>
       {/* Akte mit Stempel */}
       <Feld x={70} y={180} w={450} h={470}>
-        <div style={{ position: "absolute", left: 60, top: 80, width: 300, height: 320, background: "#f3e2b8", border: `6px solid ${P.ink}`, transform: "rotate(-3deg)" }}>
-          <div style={fett(28, { position: "absolute", left: 20, top: 16 })}>IV-Akte</div>
+        <div style={{ position: "absolute", left: 60, top: 50, width: 300, height: 290, background: "#f3e2b8", border: `6px solid ${P.ink}`, transform: "rotate(-3deg)" }}>
+          <div style={fett(28, { position: "absolute", left: 20, top: 16, right: 20, lineHeight: 1.1 })}>{TX.akte}</div>
           {[0, 1, 2, 3].map((i) => <div key={i} style={{ position: "absolute", left: 20, right: 20, top: 80 + i * 40, height: 12, background: "#00000022" }} />)}
         </div>
-        <div style={fett(30, { position: "absolute", left: 24, bottom: 18, color: P.dunkel })}>seit 2003</div>
+        <div style={fett(30, { position: "absolute", left: 24, bottom: 18, color: P.dunkel })}>{TX.seit}</div>
       </Feld>
-      <Stempel f={f} a={40} x={60} y={420} text="«SCHEININVALIDE»" farbe={P.rot} groesse={40} drehung={-12} />
+      <Stempel f={f} a={40} x={60} y={420} text={TX.scheininvalide} farbe={P.rot} groesse={40} drehung={-12} />
       {/* Telefon nach Feierabend */}
       <Feld x={560} y={180} w={450} h={470} farbe={P.blau}>
         <div style={{ position: "absolute", right: 40, top: 30, width: 70, height: 70, borderRadius: "50%", background: P.gelb, boxShadow: `-18px 0 0 0 ${P.blau} inset`, border: `5px solid ${P.ink}` }} />
         <div style={{ position: "absolute", left: 150, top: 140, width: 150, height: 250, background: P.dunkel, border: `7px solid ${P.ink}`, borderRadius: 22, transform: `rotate(${klingel}deg)` }}>
-          <div style={{ position: "absolute", inset: 14, background: f > 90 ? P.gelb : P.himmel, borderRadius: 8, ...fett(26, { display: "grid", placeItems: "center", textAlign: "center" }) }}>{f > 90 ? "22:47 Chef" : ""}</div>
+          <div style={{ position: "absolute", inset: 14, background: f > 90 ? P.gelb : P.himmel, borderRadius: 8, ...fett(26, { display: "grid", placeItems: "center", textAlign: "center" }) }}>{f > 90 ? TX.anruf : ""}</div>
         </div>
         {f > 90 ? <div style={fett(46, { position: "absolute", left: 40, top: 150, color: P.gelb, WebkitTextStroke: `3px ${P.ink}`, transform: `rotate(-12deg) scale(${pop(f, 90)})` })}>RING!</div> : null}
-        <div style={fett(26, { position: "absolute", left: 24, bottom: 18, color: P.weiss })}>Recht auf Nichterreichbarkeit</div>
+        <div style={fett(26, { position: "absolute", left: 24, bottom: 18, color: P.weiss })}>{TX.nichterreichbar}</div>
       </Feld>
       <Erzaehl f={f} a={30} b={240} x={70} y={720} w={940} groesse={38}>{TX.faelle}</Erzaehl>
       {/* wer steht ein? leere Liste mit Lupe */}
@@ -489,21 +504,46 @@ const Faelle: React.FC = () => {
   );
 };
 
+// ---------- 8b · Meanwhile in England (nur in der englischen Fassung) ----------
+// Wunsch von Christian (7. Oktober 2026): Studien zum (Nicht-)Gehörtwerden der Körper von Menschen mit Lernbehinderung – Schmerz wird als Verhalten gelesen
+// («diagnostic overshadowing») und mit Psychopharmaka behandelt statt untersucht; viele frühe, vermeidbare Todesfälle. Belege in texte.ts.
+const England: React.FC = () => {
+  const f = useCurrentFrame();
+  const TX = useTX();
+  const e = TX.england;
+  if (!e) return null;
+  return (
+    <Grundpunkte farbe="rgba(23,71,201,.45)">
+      <Schild f={f} farbe={P.blau}><span style={{ color: P.weiss }}>{TX.schild.england}</span></Schild>
+      {e.karten.map(([jahr, text], i) => (
+        <div key={jahr} style={{ position: "absolute", left: 70 + (i % 2) * 480, top: 190 + Math.floor(i / 2) * 270, width: 460, height: 245, padding: "16px 20px", boxSizing: "border-box", background: P.weiss, border: `6px solid ${P.ink}`, transform: `scale(${pop(f, 15 + i * 25, 200)}) rotate(${[-1.5, 1.5, 1, -1][i]}deg)` }}>
+          <div style={fett(46, { color: P.blau, lineHeight: 1 })}>{jahr}</div>
+          <div style={fett(27, { fontWeight: 600, lineHeight: 1.18, marginTop: 10 })}>{text}</div>
+        </div>
+      ))}
+      <Stempel f={f} a={140} x={200} y={1130} text={e.stempel} farbe={P.rot} groesse={48} drehung={-9} />
+      <Erzaehl f={f} a={30} b={270} x={70} y={760} w={940} groesse={33}>{e.text1}</Erzaehl>
+      <Erzaehl f={f} a={280} x={70} y={760} w={940} groesse={38}>{e.text2}</Erzaehl>
+    </Grundpunkte>
+  );
+};
+
 // ---------- 9 · In Theorien: kaum Ereignisse ----------
 const Theorien: React.FC = () => {
   const f = useCurrentFrame();
-  const karten = ["Systemtheorie", "Poststrukturalismus", "Formtheorie", "Ästhetik"];
+  const TX = useTX();
+  const karten = TX.theorieKarten;
   const gefunden = f > 170 ? 1 : 0;
   return (
     <Grundpunkte farbe="rgba(127,211,255,.8)">
-      <Schild f={f} farbe={P.himmel}>Und in Theorien?</Schild>
+      <Schild f={f} farbe={P.himmel}>{TX.schild.theorien}</Schild>
       {/* Drehkreuz des Apparats */}
-      <div style={{ position: "absolute", left: 470, top: 200, width: 140, height: 520, background: P.koral, border: `7px solid ${P.ink}`, ...fett(30, { writingMode: "vertical-rl", display: "grid", placeItems: "center" }) }}>Verteilapparat</div>
+      <div style={{ position: "absolute", left: 470, top: 200, width: 140, height: 520, background: P.koral, border: `7px solid ${P.ink}`, ...fett(30, { writingMode: "vertical-rl", display: "grid", placeItems: "center" }) }}>{TX.apparat}</div>
       {karten.map((k, i) => {
         const x = interpolate(f, [10 + i * 35, 70 + i * 35], [-420, 1100], klemm);
         return <div key={k} style={{ position: "absolute", left: x, top: 250 + (i % 2) * 230, width: 360, height: 160, background: P.weiss, border: `6px solid ${P.ink}`, display: "grid", placeItems: "center", ...fett(36), transform: `rotate(${[-3, 2, -2, 3][i]}deg)` }}>{k}</div>;
       })}
-      <div style={{ position: "absolute", left: 70, top: 760, padding: "14px 22px", background: P.weiss, border: `6px solid ${P.ink}`, opacity: ein(f, 20), ...fett(36) }}>Körperereignisse gefunden: <span style={{ color: P.rot }}>{gefunden}</span></div>
+      <div style={{ position: "absolute", left: 70, top: 760, padding: "14px 22px", background: P.weiss, border: `6px solid ${P.ink}`, opacity: ein(f, 20), ...fett(36) }}>{TX.gefundenZahl} <span style={{ color: P.rot }}>{gefunden}</span></div>
       <Geist x={760} y={760} massstab={0.85} schwebe={f} spiegeln />
       <Zettelflug f={f} a={190} x0={820} y0={820} ziel={[[620, 860, 8]]} nummern={["?"]} />
       <Erzaehl f={f} a={60} x={70} y={1080} w={940} groesse={38}>{TX.theorien}</Erzaehl>
@@ -514,10 +554,11 @@ const Theorien: React.FC = () => {
 // ---------- 10 · Ich bin im Feld ----------
 const Feld10: React.FC = () => {
   const f = useCurrentFrame();
+  const TX = useTX();
   const w = f / 40;
   return (
     <Grundpunkte farbe="rgba(18,181,169,.55)">
-      <Schild f={f} farbe={P.tuerkis}>Ich im Feld</Schild>
+      <Schild f={f} farbe={P.tuerkis}>{TX.schild.feld}</Schild>
       {/* Schlaufe: ich – LLM – soziale Medien – ich */}
       <svg width="1080" height="1440" style={{ position: "absolute", inset: 0 }}>
         <ellipse cx="540" cy="520" rx="400" ry="300" fill="none" stroke={P.ink} strokeWidth="8" strokeDasharray="30 18" strokeDashoffset={-f * 3} opacity={ein(f, 10)} />
@@ -544,6 +585,7 @@ const Feld10: React.FC = () => {
 // ---------- 11 · The story so far … ----------
 const Bisher: React.FC = () => {
   const f = useCurrentFrame();
+  const TX = useTX();
   const farben = [P.himmel, P.tuerkis, P.koral, "#cfcac3", P.blau, P.koral, P.tuerkis];
   return (
     <AbsoluteFill>
@@ -568,18 +610,26 @@ const Bisher: React.FC = () => {
   );
 };
 
-const SZENEN: [keyof typeof D, React.FC][] = [
+const SZENEN: [Szene, React.FC][] = [
   ["frage", Frage], ["warum", Warum], ["zweiRaster", ZweiRaster], ["gefunden", Gefunden], ["organisation", Organisation], ["wende", Wende], ["still", Still], ["nn", NN],
-  ["luecke", Luecke], ["verteil", Verteil], ["faelle", Faelle], ["theorien", Theorien], ["feld", Feld10], ["bisher", Bisher],
+  ["luecke", Luecke], ["verteil", Verteil], ["faelle", Faelle], ["england", England], ["theorien", Theorien], ["feld", Feld10], ["bisher", Bisher],
 ];
 const ECKEN: [number, number][] = [[900, 1250], [150, 200], [930, 180], [120, 1260]];
 
-export const MenschVideo: React.FC = () => (
-  <Grund>
-    <Sequence durationInFrames={INTRO_LANG}><PopIntro kopf={{ titel: "Mensch, Niklas!", unter: ["Körper", "Theorie", "Maschinen"] }} /></Sequence>
-    {SZENEN.map(([k, Szene], i) => (
-      <Sequence key={k} from={T[k]} durationInFrames={D[k]}><Iris dauer={UEBER} mitte={ECKEN[i % ECKEN.length]}><Szene /></Iris></Sequence>
-    ))}
-    <Sequence from={T.signet} durationInFrames={OUTRO_LANG}><Iris dauer={UEBER} mitte={[540, 720]}><PopOutro /></Iris></Sequence>
-  </Grund>
-);
+/** sprache: "de" (Standard) oder "en" */
+export const MenschVideo: React.FC<{ sprache?: Sprache }> = ({ sprache = "de" }) => {
+  const { D, T: Z } = zeitplan(sprache);
+  const tx = TEXTE[sprache];
+  const szenen = SZENEN.filter(([k]) => D[k] !== undefined);
+  return (
+    <TexteKontext.Provider value={tx}>
+      <Grund>
+        <Sequence durationInFrames={INTRO_LANG}><PopIntro kopf={{ titel: tx.mensch, unter: tx.kopfUnter }} /></Sequence>
+        {szenen.map(([k, Szene], i) => (
+          <Sequence key={k} from={Z[k]} durationInFrames={D[k]}><Iris dauer={UEBER} mitte={ECKEN[i % ECKEN.length]}><Szene /></Iris></Sequence>
+        ))}
+        <Sequence from={Z.signet} durationInFrames={OUTRO_LANG}><Iris dauer={UEBER} mitte={[540, 720]}><PopOutro /></Iris></Sequence>
+      </Grund>
+    </TexteKontext.Provider>
+  );
+};
