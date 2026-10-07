@@ -113,6 +113,21 @@ Intro und Outro sind das Signet der Vorlage im Pop-Stil (`Signet` mit `stil`; oh
 Die Szenen öffnen sich mit einer Kreisblende über der vorigen (18 Bilder Überlappung).
 `npx remotion render DreiervergleichVideo out/dreiervergleich.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
 
+## «Mensch, Niklas!» (7. Oktober 2026)
+
+Gut drei Minuten, **3:4** (1080 × 1440, `MenschVideo`), ohne Ton, im Stil von «Drei im Doppelspalt der Wahrnehmung» (Bausteine aus `dreiervergleich/Pop.tsx`).
+Christian erzählt in der Ich-Form, woran und warum er seit einigen Monaten arbeitet; mit ihm erarbeitet. Quelle `src/mensch/`: `Video.tsx` (Szenen),
+`Figuren.tsx` (der Erzähler stilisiert: Brille, Wuschelkopf, um die 50; Luhmann als Laken-Geist mit Zettelkasten, der nur mit Zettelnummern antwortet),
+`texte.ts` (eigene Lesart, keine Zitate; Jahreszahlen der Debatte recherchiert). Auf der Website: `web/mensch-niklas/` (`assets/mensch-niklas-3x4.mp4`).
+
+1. Die alte Frage (Zeitstrahl 1971–2025, «Immer. Sofort.», «Mensch, Niklas!»); Zwischentitel «Warum ich den Körper … bisher nicht gesucht habe – und trotzdem jetzt darüber spreche …»;
+   «… und dafür zwei Prüfraster entwickelt habe …» (beide Vierfelder ohne Erklärung)
+2. «Aber zurück zum Menschen bei Luhmann …»: ich in den Kopplungen von Körper, Bewusstsein, Kommunikation; sogar in der Organisation
+3. Die Wende (Computer, Internet, Social Media, KI); der stille, nicht wahrgenommene Körper (gemessen statt gespürt)
+4. Nebeneinander, Nacheinander als Kette in sechs Bildern bis zur Pointe Karen Barad; «Beschrieben ≠ gehört»; der Verteilapparat; zwei Beispiele
+   («Scheininvalide», Recht auf Nichterreichbarkeit); in Theorien kaum Körperereignisse; ich im Feld (LLMs, soziale Medien)
+5. The story so far … – Fortsetzung folgt; Outro
+
 ## Rendern ohne Internetzugang zu remotion.media
 
 Remotion lädt sonst einen eigenen Browser herunter; stattdessen einen vorhandenen angeben:

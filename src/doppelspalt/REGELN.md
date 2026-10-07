@@ -195,7 +195,7 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   Das Menü in der Kopfzeile hat vier Einträge, nur Text, in der serifenlosen Schrift der Seite, ohne die
   kleinen Animationen: «Zettelkasten» (führt direkt in den Zettelkasten, `zu-seiner-zeit/`), «Apps» (`apps/`:
   ORNA, ORMA), «Masterprompts» (`masterprompts/`: die vier Prüfraster in der bisherigen Reihenfolge) und
-  «Web» (`web/`: OMNA COLOR, Das Dritte Rad, Stellenfeld und zuoberst das Comic-Video zur Doppelprüfung mit eigener Videoseite `web/poststrukturalismus/`; Karte und Videoseite verlinken die Studie als PDF – Freigabe 6. Oktober 2026). Der Eintrag der aktuellen Seite ist unterstrichen
+  «Web» (`web/`: ganz oben das Comic-Video «Mensch, Niklas!» mit Videoseite `web/mensch-niklas/` (7. Oktober 2026), dann das Comic-Video zur Doppelprüfung, OMNA COLOR, Das Dritte Rad, Stellenfeld; zum Comic-Video zur Doppelprüfung mit eigener Videoseite `web/poststrukturalismus/`; Karte und Videoseite verlinken die Studie als PDF – Freigabe 6. Oktober 2026). Der Eintrag der aktuellen Seite ist unterstrichen
   (`aria-current`; auf den ORNA-Seiten «Apps»). News, Termine und Portfolio bleiben unter ihren Adressen und
   tragen das neue Menü, sind aber nirgends mehr verlinkt (Entscheid vom 2. Oktober 2026). Das eingebettete
   Stellenfeld ist die drehbare 3D-Ansicht selbst: Ziehen dreht, senkrechtes Wischen und das Mausrad blättern
