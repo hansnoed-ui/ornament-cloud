@@ -22,7 +22,7 @@ const DE = {
   frage: "Kaum fällt der Name Luhmann, fragt jemand: Und wo bleibt der Mensch?",
   sofort: "Immer. Sofort.",
   mensch: "Mensch, Niklas!",
-  warum: "Warum ich den Körper in der Systemtheorie bisher nicht gesucht habe – und trotzdem jetzt darüber spreche …",
+  warum: "Warum ich den Körper in der Systemtheorie bisher nicht gesucht habe – und warum ich jetzt trotzdem darüber spreche …",
   zweiRaster: "… und dafür zwei Prüfraster entwickelt habe …",
   rasterNamen: ["Nebeneinander, Nacheinander", "Der Verteilapparat des Körpers"],
   nnFelder: ["Ereignis", "Doppelspalt", "Stilles Operieren", "Ordnung"],

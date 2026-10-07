@@ -266,6 +266,11 @@ test("Videoseite web/mensch-niklas/: «Mensch, Niklas!» (3 : 4) spielt von selb
   // Herunterladen (Wunsch vom 7. Oktober 2026): unter jedem Video ein Link auf dieselbe Datei
   assert.match(html, /<a href="\.\.\/\.\.\/assets\/mensch-niklas-3x4\.mp4" download="mensch-niklas\.mp4">Video herunterladen \(MP4\)<\/a>/);
   assert.match(html, /<a href="\.\.\/\.\.\/assets\/mensch-niklas-en-3x4\.mp4" download="mensch-niklas-english\.mp4">Download video \(MP4\)<\/a>/);
+  // Spanische Fassung zuunterst (7. Oktober 2026), ebenfalls mit Download
+  assert.match(html, /<figure class="erklaervideo erklaervideo--34" lang="es">\s*<video controls muted playsinline preload="none" poster="\.\.\/\.\.\/assets\/mensch-niklas-es-3x4\.jpg" width="810" height="1080"[^>]*>\s*<source src="\.\.\/\.\.\/assets\/mensch-niklas-es-3x4\.mp4" type="video\/mp4">/);
+  assert.match(html, /<a href="\.\.\/\.\.\/assets\/mensch-niklas-es-3x4\.mp4" download="mensch-niklas-espanol\.mp4">Descargar vídeo \(MP4\)<\/a>/);
+  assert.deepEqual(jpegMass(readFileSync(new URL("assets/mensch-niklas-es-3x4.jpg", root))), [810, 1080], "spanisches Standbild 3 : 4");
+  assert.ok(readFileSync(new URL("assets/mensch-niklas-es-3x4.mp4", root)).length < 14_000_000, "spanisches Video unter 14 MB");
   assert.match(html, /new IntersectionObserver/, "Autoplay über IntersectionObserver");
   assert.match(html, /prefers-reduced-motion: reduce/, "bei «weniger Bewegung» nicht von selbst");
   assert.ok(!html.includes("/alpha/") || !/href="[^"]*alpha\/(?!drittes-rad)/.test(html), "verlinkt nichts im Alpha-Bereich ausser der Navigation");
