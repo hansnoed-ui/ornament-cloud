@@ -12,7 +12,7 @@ import { Geist, Ich, Punktmuster, Zettel } from "./Figuren";
 import { DEBATTE, T as TX, ZETTEL } from "./texte";
 
 // Zeitplan in Bildern; die Szenen überlappen um UEBER Bilder (Kreisblende)
-const D = { frage: 390, warum: 240, gefunden: 300, organisation: 330, wende: 390, still: 480, nn: 620, luecke: 390, verteil: 450, faelle: 420, theorien: 270, feld: 360, bisher: 450 };
+const D = { frage: 390, warum: 240, zweiRaster: 270, gefunden: 360, organisation: 330, wende: 390, still: 480, nn: 620, luecke: 390, verteil: 450, faelle: 420, theorien: 270, feld: 360, bisher: 450 };
 const UEBER = 18, INTRO_LANG = INTRO + 45, OUTRO_LANG = OUTRO + 60;
 export const T = (() => {
   const t: Record<string, number> = { intro: 0 };
@@ -89,6 +89,36 @@ const Warum: React.FC = () => {
   );
 };
 
+// ---------- 1c · … und dafür zwei Prüfraster entwickelt habe ----------
+// Die beiden Vierfelder kurz gezeigt, ohne Erklärung (Wunsch von Christian, 7. Oktober 2026).
+// Nebeneinander, Nacheinander: Felder wie in der Streugrafik der Vergleichsanalyse (Ereignis, Doppelspalt, Stilles Operieren, Ordnung);
+// Verteilapparat: Ausgeliefertsein, Verhandelbare Teilhabe, Verschwinden, Privilegierte Opazität.
+const ZweiRaster: React.FC = () => {
+  const f = useCurrentFrame();
+  const raster: [string, string[], string[]][] = [
+    ["Nebeneinander, Nacheinander", TX.nnFelder, [P.koral, P.gelb, "#cfcac3", P.himmel]],
+    ["Der Verteilapparat des Körpers", TX.felder.map(([n]) => n), [P.koral, P.tuerkis, "#cfcac3", P.gelb]],
+  ];
+  return (
+    <AbsoluteFill>
+      <Strahlen f={f} cx={540} cy={900} a={P.gelb} b={P.weiss} n={30} />
+      <AbsoluteFill style={benday("rgba(224,20,30,.18)", 4.5, 20)} />
+      <Wolke p={pop(f, 8, 140)} x={110} y={90} w={860} h={300}><span style={fett(52, { lineHeight: 1.12 })}>{TX.zweiRaster}</span></Wolke>
+      {raster.map(([titel, felder, farben], k) => (
+        <div key={titel} style={{ position: "absolute", left: 80 + k * 470, top: 600, width: 440, transform: `scale(${pop(f, 60 + k * 40, 180)}) rotate(${k ? 2 : -2}deg)` }}>
+          <div style={{ padding: "10px 16px", background: P.weiss, border: `6px solid ${P.ink}`, borderBottom: "none", ...fett(28, { lineHeight: 1.1 }) }}>{titel}</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", border: `6px solid ${P.ink}`, background: P.ink, gap: 6 }}>
+            {felder.map((n, i) => (
+              <div key={n} style={{ height: 200, padding: 14, boxSizing: "border-box", ...benday("rgba(255,255,255,.3)", 3.4, 13), backgroundColor: farben[i], opacity: ein(f, 70 + k * 40 + i * 8), ...fett(28, { lineHeight: 1.1, display: "flex", alignItems: "flex-end" }) }}>{n}</div>
+            ))}
+          </div>
+        </div>
+      ))}
+      <Rahmen />
+    </AbsoluteFill>
+  );
+};
+
 // ---------- 2 · Ich fand mich – in den Kopplungen ----------
 // Nicht in einem System, sondern in den Kopplungen von Körper, Bewusstsein und Kommunikation (Hinweis von Christian, 7. Oktober 2026):
 // Wahrnehmung koppelt Körper und Bewusstsein, Sprache koppelt Bewusstsein und Kommunikation; zwischen Körper und Kommunikation keine direkte Kopplung («?»).
@@ -120,7 +150,8 @@ const Gefunden: React.FC = () => {
       ))}
       <div style={fett(56, { position: "absolute", left: 520, top: 735, color: P.rot, WebkitTextStroke: `2px ${P.ink}`, opacity: ein(f, 115) })}>?</div>
       <Ich x={430} y={440} massstab={0.62} id="ich-kopplung" style={{ opacity: ein(f, 130, 15) }} />
-      <Erzaehl f={f} a={140} x={70} y={900} w={940} groesse={38}>{TX.gefunden}</Erzaehl>
+      <Erzaehl f={f} a={10} b={135} x={70} y={900} w={940} groesse={44}>{TX.zurueck}</Erzaehl>
+      <Erzaehl f={f} a={145} x={70} y={900} w={940} groesse={38}>{TX.gefunden}</Erzaehl>
     </Grundpunkte>
   );
 };
@@ -145,9 +176,9 @@ const Organisation: React.FC = () => {
         <div key={i} style={{ position: "absolute", left: x as number, top: y as number, padding: "8px 16px", borderRadius: 30, background: P.himmel, border: `5px solid ${P.ink}`, transform: `scale(${pop(f, 60 + i * 10)})`, ...fett(30) }}>{t}</div>
       ))}
       {["weisst du noch …", "damals hiess es …"].map((t, i) => (
-        <div key={t} style={{ position: "absolute", left: [80, 650][i], top: 660, padding: "10px 18px", borderRadius: 26, background: P.weiss, border: `5px solid ${P.ink}`, transform: `scale(${pop(f, 90 + i * 14)}) rotate(${i ? 3 : -3}deg)`, ...fett(28, { fontStyle: "italic", fontWeight: 600 }) }}>{t}</div>
+        <div key={t} style={{ position: "absolute", left: [80, 650][i], top: 645, padding: "10px 18px", borderRadius: 26, background: P.weiss, border: `5px solid ${P.ink}`, transform: `scale(${pop(f, 90 + i * 14)}) rotate(${i ? 3 : -3}deg)`, ...fett(28, { fontStyle: "italic", fontWeight: 600 }) }}>{t}</div>
       ))}
-      <Erzaehl f={f} a={30} b={205} x={70} y={790} w={940} groesse={36}>{TX.organisation}</Erzaehl>
+      <Erzaehl f={f} a={30} b={205} x={70} y={725} w={940} groesse={34}>{TX.organisation}</Erzaehl>
       <Geist x={760} y={1020} massstab={0.95} schwebe={f} spiegeln />
       <Zettelflug f={f} a={120} x0={830} y0={1080} ziel={[[560, 1090, -8]]} nummern={["44/2c"]} />
       <Ich x={70} y={960} massstab={0.95} />
@@ -538,7 +569,7 @@ const Bisher: React.FC = () => {
 };
 
 const SZENEN: [keyof typeof D, React.FC][] = [
-  ["frage", Frage], ["warum", Warum], ["gefunden", Gefunden], ["organisation", Organisation], ["wende", Wende], ["still", Still], ["nn", NN],
+  ["frage", Frage], ["warum", Warum], ["zweiRaster", ZweiRaster], ["gefunden", Gefunden], ["organisation", Organisation], ["wende", Wende], ["still", Still], ["nn", NN],
   ["luecke", Luecke], ["verteil", Verteil], ["faelle", Faelle], ["theorien", Theorien], ["feld", Feld10], ["bisher", Bisher],
 ];
 const ECKEN: [number, number][] = [[900, 1250], [150, 200], [930, 180], [120, 1260]];
