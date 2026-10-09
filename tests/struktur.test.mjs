@@ -211,7 +211,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 const SEITEN = {
   apps: { titel: "Apps", karten: [["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
-  web: { titel: "Web", karten: [["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["Mensch, Niklas!", "mensch-niklas/"]] },
+  web: { titel: "Web", karten: [["Die Paradoxie der Stadt", "../alpha/stadt/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["Mensch, Niklas!", "mensch-niklas/"]] },
 };
 
 test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und Eintrag in der Sitemap", () => {
@@ -221,7 +221,7 @@ test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und 
     const html = lies(`${ordner}/index.html`);
     assert.match(html, new RegExp(`<title>${s.titel} – Ornament Cloud</title>`));
     assert.match(html, new RegExp(`<h1>${s.titel}</h1>`));
-    assert.match(html, /<p class="lead">[^<]{10,}<\/p>/);
+    assert.match(html, /<p class="lead">[^<]{5,}<\/p>/);   // «Tests» auf «Web» (Wunsch von Christian, 9. Oktober 2026) ist kurz
     assert.match(html, new RegExp(`<link rel="canonical" href="https://ornament\\.cloud/${ordner}/">`));
     assert.match(html, /<meta name="description" content="[^"]{20,}">/);
     assert.ok(sitemap.includes(`<loc>https://ornament.cloud/${ordner}/</loc>`), `${ordner}/ steht in der Sitemap`);
@@ -254,12 +254,19 @@ test("Masterprompts: die vier Prüfraster als Beiträge, in der Reihenfolge der 
   assert.ok(k.every((x) => /<svg [^>]*role="img" aria-label="[^"]{20,}"/.test(x.html)), "jede Karte trägt eine gezeichnete Vorschau mit Beschreibung");
 });
 
-test("Web: OMNA COLOR und Das Dritte Rad (Alpha), das Stellenfeld, dann zuunterst die drei Videos: das Erklärvideo zu ORNA, «Liebling …» und als letztes «Mensch, Niklas!», alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs", () => {
+test("Web: zuoberst «Die Paradoxie der Stadt» (Alpha, auch im Vollbild), dann OMNA COLOR und Das Dritte Rad (Alpha), das Stellenfeld, dann zuunterst die drei Videos: das Erklärvideo zu ORNA, «Liebling …» und als letztes «Mensch, Niklas!», alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs", () => {
   const html = lies("web/index.html");
   const alle = karten(html);
   assert.deepEqual(alle.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
   // Wunsch vom 9. Oktober 2026: die beiden Videos stehen zuunterst, «Mensch, Niklas!» als letztes
-  const k = alle.slice(0, 3), [o, v, m] = alle.slice(3);
+  const stadt = alle[0], k = alle.slice(1, 4), [o, v, m] = alle.slice(4);
+  // «Die Paradoxie der Stadt» (9. Oktober 2026): zuoberst, Alpha, mit Vorschaubild; öffnet normal oder gleich im Vollbild
+  assert.match(stadt.html, /<a class="thumb" href="\.\.\/alpha\/stadt\/" tabindex="-1" aria-hidden="true">\s*<img src="\.\.\/assets\/vorschau-stadt\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  assert.deepEqual([...stadt.html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((x) => x[1]), ["../alpha/stadt/", "../alpha/stadt/", "../alpha/stadt/?vollbild"], "Bild, «Öffnen» und «Im Vollbild öffnen»");
+  assert.ok(stadt.tags.includes("Alpha") && stadt.tags.includes("Prototyp"));
+  const vorschauStadt = readFileSync(new URL("assets/vorschau-stadt.jpg", root));
+  assert.deepEqual(jpegMass(vorschauStadt), [640, 800], "Vorschaubild 640 × 800");
+  assert.ok(vorschauStadt.length < 150_000 && lies("tools/start-og.mjs").includes("vorschau-stadt.jpg"), "unter 150 KB, erzeugt von tools/start-og.mjs");
   // das Erklärvideo zu ORNA (9. Oktober 2026, bis dahin auf der Startseite): vor den beiden anderen Videos, klickbar mit Vorschaubild, führt nur auf die eigene Videoseite
   assert.match(o.html, /<a class="thumb" href="orna-erklaervideo\/" tabindex="-1" aria-hidden="true">\s*<img src="\.\.\/assets\/vorschau-orna-erklaervideo\.jpg" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual([...o.html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((x) => x[1]), ["orna-erklaervideo/", "orna-erklaervideo/"], "Bild und «Öffnen»");

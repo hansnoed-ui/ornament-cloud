@@ -424,7 +424,7 @@ test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (
     "news/index.html": papiere,
     "apps/index.html": ["/alpha/orma/"],
     "masterprompts/index.html": ["/alpha/pruefraster/", "/alpha/verteilapparat/", "/alpha/gesellschaftskonzepte/", "/alpha/journalistische-texte/"],
-    "web/index.html": ["/alpha/omna-color/", "/alpha/drittes-rad/", "/alpha/poststrukturalismus-doppelpruefung.pdf"],   // das PDF zum Comic-Video seit 6. Oktober 2026
+    "web/index.html": ["/alpha/stadt/", "/alpha/omna-color/", "/alpha/drittes-rad/", "/alpha/poststrukturalismus-doppelpruefung.pdf"],   // das PDF zum Comic-Video seit 6. Oktober 2026, die Stadt seit 9. Oktober 2026
     "web/poststrukturalismus/index.html": ["/alpha/poststrukturalismus-doppelpruefung.pdf"],   // die Videoseite, ebenso
   };
   const allowed = new Set(Object.keys(ziele));
@@ -451,7 +451,7 @@ test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (
   assert.deepEqual(rahmen.map(([f, z]) => `${f} → ${z.replace(/^.*\/alpha\//, "alpha/")}`), [], "keine Seite bettet etwas aus dem Alpha-Bereich ein");
   for (const [f, zs] of Object.entries(ziele)) for (const z of zs) assert.ok(gefunden.has(`${f} → ${z}`), `${f} verlinkt ${z} nicht`);
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("/alpha/"));
-  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html", "alpha/omna-color/index.html", "alpha/drittes-rad/index.html"])
+  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html", "alpha/omna-color/index.html", "alpha/drittes-rad/index.html", "alpha/stadt/index.html"])
     assert.match(readFileSync(new URL(p, root), "utf8"), /<meta name="robots" content="noindex/, p);
 });
 
@@ -565,8 +565,8 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
   for (const f of at.build()) assert.equal(readFileSync(new URL(f.pfad, root), "utf8"), f.inhalt, `${f.pfad} veraltet: node --experimental-strip-types tools/build-alpha-texte.ts`);
   const uebersicht = readFileSync(new URL("alpha/index.html", root), "utf8");
   const eintraege = [...uebersicht.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map(m => m[1]);
-  // Die Prüfraster in Arbeit stehen zusammen ganz unten, nur OMNA COLOR (Prototyp, seit 2. Oktober 2026) folgt danach
-  assert.deepEqual(eintraege.slice(-4), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/", "drittes-rad/"], "zuunterst, danach OMNA COLOR und Das Dritte Rad");
+  // Die Prüfraster in Arbeit stehen zusammen ganz unten, danach nur die Prototypen: OMNA COLOR, Das Dritte Rad (2. Oktober 2026) und «Die Paradoxie der Stadt» (9. Oktober 2026)
+  assert.deepEqual(eintraege.slice(-5), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/", "drittes-rad/", "stadt/"], "zuunterst, danach OMNA COLOR, Das Dritte Rad und die Stadt");
   const omna = readFileSync(new URL("alpha/omna-color/index.html", root), "utf8");
   assert.ok(!/(src|href)="https?:/.test(omna), "OMNA COLOR lädt nichts von fremden Servern");
   assert.match(omna, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/" aria-current="true">Ornament Cloud<\/a>\s*<a href="\.\.\/drittes-rad\/">Das Dritte Rad<\/a>\s*<\/nav>/);
