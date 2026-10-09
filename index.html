@@ -53,6 +53,21 @@
     .start-weiter:hover, .start-weiter:focus-visible { color: var(--bg); background: var(--accent); }
     .start-weiter:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
     @media (prefers-reduced-motion: reduce) { .start { transition: none; } }
+    /* Lead und drei Kästen (Wunsch von Christian, 9. Oktober 2026): Gestaltung nur hier, damit styles.css (?v=) unberührt bleibt */
+    .lead--start { margin: -8px 0 0; max-width: none; font-family: var(--serif); font-size: clamp(1.45rem, 4.4vw, 2.2rem); line-height: 1.2; color: var(--text); }
+    .kaesten { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 8px 0 56px; }
+    .kasten {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+      min-height: 150px; padding: 26px 10px 22px; min-width: 0;
+      color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      font: 500 1.15rem/1.2 var(--font); text-decoration: none;
+    }
+    .kasten svg { width: 56px; height: 56px; fill: none; stroke: currentColor; stroke-width: 1.5px; stroke-linecap: round; stroke-linejoin: round; }
+    .kasten svg * { vector-effect: non-scaling-stroke; }
+    .kasten:hover { border-color: var(--text); }
+    .kasten:hover svg { color: var(--accent); }
+    .kasten:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+    @media (max-width: 520px) { .kaesten { gap: 8px; } .kasten { min-height: 110px; padding: 18px 4px 14px; gap: 10px; font-size: 1rem; } .kasten svg { width: 40px; height: 40px; } }
   </style>
   <script>
     // Entscheidet vor dem ersten Anstrich, ob die Startanimation läuft (die Klasse start-an deckt die Seite sofort ab, es gibt kein Aufblitzen)
@@ -86,20 +101,32 @@
       </div>
       <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
       <h1 class="sr-only">Ornament Cloud</h1>
+      <p class="lead lead--start">Dreh- und Wendepunkte für Theorie und Praxis</p>
     </div>
   </header>
 
   <main class="wrap">
     <!--
-      Aufbau: OMNA COLOR zum direkten Spielen (eingebettet aus alpha/omna-color/, seit 4. Oktober 2026 statt des Stellenfelds), sonst nichts.
-      Das Erklärvideo zu ORNA stand hier von 5. bis 9. Oktober 2026 darunter; es ist seitdem ein Beitrag auf «Web» (web/orna-erklaervideo/, Quellcode src/videos/src/orna/).
-      Die Einbettung ist eine freigegebene Ausnahme von REGELN §14 (4. Oktober 2026); der Beitrag zu OMNA COLOR bleibt auf der Seite «Web», das Stellenfeld ebenfalls dort.
-      Zettelkasten, Apps, Masterprompts und Web stehen im Menü oben (Neuordnung vom 2. Oktober 2026). Die Karten (<article class="card">) liegen dort.
+      Aufbau: Lead im Kopf, hier drei Kästen (Wunsch von Christian, 9. Oktober 2026): Apps, Prompts und Web, nebeneinander, mit gezeichneten Symbolen
+      (Apps: vier Felder, Prompts: Sprechblase mit Eingabezeichen, Web: Globus). Sie führen auf die Seiten des Menüs (apps/, masterprompts/, web/); der Zettelkasten steht nur im Menü.
+      Die Symbole sind schlichte Zeichnungen in der Schriftfarbe (kein data-icon, nicht animiert) und für Vorlesegeräte verborgen: der Name im Kasten sagt alles.
+      OMNA COLOR war hier von 4. bis 9. Oktober 2026 zum direkten Spielen eingebettet (alpha/omna-color/, freigegebene Ausnahme von REGELN §14); es ist seitdem ein Beitrag auf «Web»
+      und nicht mehr Teil der Startseite. Das Erklärvideo zu ORNA, das von 5. bis 9. Oktober 2026 darunter stand, ist ebenfalls auf «Web» (web/orna-erklaervideo/).
     -->
-    <figure class="omna">
-      <iframe src="alpha/omna-color/" title="OMNA COLOR: zwei Farbräder drehen gegeneinander und wählen eine von 180 Gestaltungsübungen. Drehen mit dem Knopf oder durch Ziehen am Rad."></iframe>
-      <figcaption>OMNA COLOR: Zwei Farbräder drehen gegeneinander. Zeigen sie zwei Farben, verbindet die Übung beide Themen, zeigen sie dieselbe Farbe, bleibt es beim reinen Thema. Drehen mit dem Knopf oder durch Ziehen am Rad. Mehr dazu unter <a href="web/">Web</a>.</figcaption>
-    </figure>
+    <nav class="kaesten" aria-label="Apps, Prompts und Web">
+      <a class="kasten" href="apps/">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>
+        <span>Apps</span>
+      </a>
+      <a class="kasten" href="masterprompts/">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-7.5L7 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M7.5 8.5l3 2.25-3 2.25"/><path d="M12.5 13h4"/></svg>
+        <span>Prompts</span>
+      </a>
+      <a class="kasten" href="web/">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5S9.6 5.8 12 3.5z"/></svg>
+        <span>Web</span>
+      </a>
+    </nav>
   </main>
 
   <!--
@@ -156,30 +183,6 @@
       v.src = dunkel ? "assets/start-animation-dunkel.mp4?v=3" : "assets/start-animation.mp4?v=3";
       var p = v.play();
       if (p && p.catch) p.catch(weg);
-    })();
-    // OMNA COLOR eingebettet: der Rahmen ist so hoch wie das Spiel (Rad, Übung, Hinweise) und hat keinen eigenen Bildlauf
-    (function () {
-      var f = document.querySelector(".omna iframe");
-      if (!f) return;
-      function passe() { try { f.style.height = Math.ceil(f.contentDocument.body.getBoundingClientRect().height) + "px"; } catch (e) {} }
-      // das Rad höchstens so gross, dass «Drehen» beim Laden über dem unteren Fensterrand steht (nur bei neuer Breite neu,
-      // damit es beim Blättern auf dem Handy nicht springt, wenn die Adressleiste ein- und ausfährt)
-      var breite = 0;
-      function radGroesse() {
-        try {
-          if (window.innerWidth === breite) return;
-          breite = window.innerWidth;
-          var d = f.contentDocument, rad = d.getElementById("wheel"), knopf = d.getElementById("go");
-          if (!rad || !knopf) return;
-          var oben = f.getBoundingClientRect().top + window.scrollY + rad.getBoundingClientRect().top;
-          var frei = window.innerHeight - oben - 16 - knopf.getBoundingClientRect().height - 24;
-          d.documentElement.style.setProperty("--rad-max", Math.max(240, Math.floor(frei * 224 / 232)) + "px");
-        } catch (e) {}
-      }
-      window.addEventListener("resize", radGroesse);
-      function an() { radGroesse(); passe(); try { new ResizeObserver(passe).observe(f.contentDocument.body); } catch (e) {} }
-      f.addEventListener("load", an);
-      try { if (f.contentDocument && f.contentDocument.readyState === "complete" && f.contentDocument.body.childElementCount) an(); } catch (e) {}
     })();
   </script>
   <script src="icons.js?v=14" defer></script>

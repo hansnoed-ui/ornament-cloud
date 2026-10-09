@@ -4,14 +4,15 @@ Einfache statische Website (reines HTML/CSS), die eine Auswahl meiner Claude-Art
 Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CDNs oder Google geladen.
 
 - `index.html` – Startseite (Neuordnung vom 2. Oktober 2026, Wunsch von Christian; seit 3. Oktober ohne sichtbaren Titel, seit 5. Oktober auch ohne den Satz
-  «Beobachtung ist Anlass für Veränderungen in der Realität.», der nur noch in Beschreibung und Vorschaukarte zum Teilen steht, `tests/teilen.test.mjs` hält beides zusammen):
-  unter der Welle seit dem 4. Oktober 2026 **OMNA COLOR zum direkten Spielen**:
-  ein `<iframe>` auf `alpha/omna-color/` (freigegebene Ausnahme von REGELN §14, ein Test prüft genau diese Einbettung), kein Beitrag und keine Karte; der Beitrag zu OMNA COLOR bleibt auf «Web».
-  Eingebettet erkennt sich `alpha/omna-color/index.html` an `window.self !== window.top` (Klasse `eingebettet` am `<html>`): ohne Hauptlinks, Rand und eigenen Bildlauf, Grund durchsichtig;
-  die Startseite setzt die Höhe des Rahmens auf die Höhe des Spiels (kleines Skript unten in `index.html`, ResizeObserver), so wächst er mit, wenn eine Übung erscheint. GoatCounter zählt Rahmen nicht.
-  Seit dem 5. Oktober 2026 ist das Rad dort höchstens so gross wie auf der eigenen Seite (420 px) und nie grösser, als das Fenster unter dem Kopf Platz lässt
-  (`--rad-max`, von der Startseite gesetzt): «Drehen» steht beim Laden im Fenster. Das **Erklärvideo zu ORNA** (`assets/orna-erklaervideo.mp4`, Vorschaubild `assets/orna-erklaervideo.jpg`; Quellcode `src/videos/src/orna/`)
-  stand von 5. bis 9. Oktober 2026 darunter; seit dem 9. Oktober 2026 (Wunsch von Christian) ist es kein Teil der Startseite mehr, sondern ein Beitrag auf «Web» mit eigener Videoseite `web/orna-erklaervideo/` (Karte «ORNA – Zufällige Begegnungen» vor den beiden anderen Videos, Vorschau `assets/vorschau-orna-erklaervideo.jpg`, ein Standbild aus dem Titel, 640 × 800).
+  «Beobachtung ist Anlass für Veränderungen in der Realität.», der nur noch in Beschreibung und Vorschaukarte zum Teilen steht, `tests/teilen.test.mjs` hält beides zusammen;
+  seit dem 9. Oktober 2026 steht unter der Welle der **Lead «Dreh- und Wendepunkte für Theorie und Praxis»** (`<p class="lead lead--start">`, Serife, sichtbar; Wunsch von Christian, der Titel `<h1>` bleibt unsichtbar)
+  und darunter, als Inhalt der Seite, **drei Kästen nebeneinander für «Apps», «Prompts» und «Web»** (`<nav class="kaesten">`, je ein gezeichnetes Symbol: Apps vier Felder, Prompts Sprechblase mit Eingabezeichen, Web Globus;
+  sie führen auf `apps/`, `masterprompts/` und `web/`, der Zettelkasten steht nur im Menü; auch auf dem Handy drei Spalten; Gestaltung im Kopf der Seite, `styles.css` und seine `?v=`-Marke bleiben unberührt).
+  **OMNA COLOR ist seit dem 9. Oktober 2026 nicht mehr auf der Startseite** (Wunsch von Christian): es war vom 4. bis 9. Oktober 2026 als `<iframe>` auf `alpha/omna-color/` zum direkten Spielen eingebettet
+  (freigegebene Ausnahme von REGELN §14; die Ausnahme ist nicht mehr in Gebrauch, `tests/orma.test.mjs` verlangt jetzt, dass keine Seite etwas aus dem Alpha-Bereich einbettet). Der Beitrag zu OMNA COLOR steht auf «Web», das Spiel unter `alpha/omna-color/`.
+  Dessen Einbettungsmodus (`window.self !== window.top`, Klasse `eingebettet` am `<html>`, `--rad-max`) ist im Spiel selbst geblieben und zurzeit ungenutzt, ebenso die Regeln `.omna` in `styles.css`.
+  Das **Erklärvideo zu ORNA** (`assets/orna-erklaervideo.mp4`, Vorschaubild `assets/orna-erklaervideo.jpg`; Quellcode `src/videos/src/orna/`)
+  stand von 5. bis 9. Oktober 2026 unter OMNA COLOR auf der Startseite; seit dem 9. Oktober 2026 (Wunsch von Christian) ist es kein Teil der Startseite mehr, sondern ein Beitrag auf «Web» mit eigener Videoseite `web/orna-erklaervideo/` (Karte «ORNA – Zufällige Begegnungen» vor den beiden anderen Videos, Vorschau `assets/vorschau-orna-erklaervideo.jpg`, ein Standbild aus dem Titel, 640 × 800).
   Im Fuss führt «Präsentiert von ornament.cloud» seit dem 9. Oktober 2026 zur Startseite (`./`; vorher auf «bisherige-projekte»).
   Seit dem 9. Oktober 2026 läuft vor der Startseite eine **Startanimation** (Wunsch von Christian): die 14 Zeichen von «ornament.cloud» wachsen als Linienwachstum (differential line growth),
   das fertige Wort steht kurz und blendet aus, danach blendet die Seite in die Startseite über (ohne Signet, mit Ausblenden, Wunsch vom 9. Oktober 2026); quadratisches Video, 11 Sekunden, ohne Ton und ohne Text (`assets/start-animation.mp4` hell, `assets/start-animation-dunkel.mp4` dunkel, je gut 3 MB, 1080 × 1080; Quellcode `src/videos/src/wachstum/`,
@@ -154,7 +155,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `tests/teilen.test.mjs` prüft sie. Ändert sich der Satz der Startseite oder das Rad, das Bild neu erzeugen. Mit `vorschau` entstehen die beiden Bilder der Seite «Web» (4 : 5, 640 × 800, JPEG).
 - `tests/` – Prüfungen des Rads: `node --experimental-strip-types --no-warnings --test tests/doppelspalt.test.mjs`
   und im Browser (Playwright): `node tests/doppelspalt.e2e.mjs`. Aufbau der Website (Menü, Startseite, Apps, Masterprompts, Web, Versionsmarken): `tests/struktur.test.mjs`;
-  im Browser `NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs` (Menü auf allen Breiten, OMNA COLOR eingebettet auf der Startseite, die Seite Web mit dem Stellenfeld)
+  im Browser `NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs` (Menü auf allen Breiten, die Startseite mit Lead und drei Kästen, die Seite Web mit dem Stellenfeld)
 - `slider.js` – Punkte über einer Wisch-Galerie auf dem Smartphone (Wischen selbst per CSS); zurzeit auf keiner Seite eingebunden,
   alle Raster stehen auf dem Handy untereinander (`.grid--stapel`). Wieder einschalten: `<div class="slider-dots" …>` vor das Raster, `.grid--stapel` weg, Skript einbinden
 - `bg.js` – animierter Hintergrund (Lemniskaten und Schleifen als SVG, Tempo in `CONFIG`); zurzeit auf keiner Seite eingebunden. Wieder einschalten: `<div class="bg" aria-hidden="true"><svg class="bg-field" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg></div>` direkt nach `<body>` und `<script src="bg.js?v=2" defer></script>` vor `</body>`

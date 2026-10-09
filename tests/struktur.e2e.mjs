@@ -1,5 +1,5 @@
 // Struktur der Website – Browser-Tests (Playwright, Chromium), Neuordnung vom 2. Oktober 2026: das Menü (Zettelkasten, Apps, Masterprompts, Web) auf allen Breiten,
-// die Startseite mit OMNA COLOR zum Spielen (seit 4. Oktober 2026, eingebettet, der Rahmen wächst mit), die Seiten Apps, Masterprompts und Web (mit dem Stellenfeld).
+// die Startseite (seit 9. Oktober 2026 Lead und drei Kästen; OMNA COLOR war vom 4. bis 9. Oktober 2026 eingebettet), die Seiten Apps, Masterprompts und Web (mit dem Stellenfeld).
 //   NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs [Teil eines Prüfungsnamens]
 // Das Stellenfeld braucht WebGL (Chromium bringt SwiftShader mit).
 import assert from "node:assert/strict";
@@ -43,80 +43,52 @@ async function startseite(opts = {}, url = "/") {
   const page = await ctx.newPage();
   const errors = fehler(page);
   await page.goto(origin + url);
-  const frame = await rahmen(page);
-  return { ctx, page, frame, errors };
+  return { ctx, page, errors };
 }
-/** Der Rahmen von OMNA COLOR, sobald das Rad gezeichnet ist und der Rahmen seine Höhe hat */
-async function rahmen(page) {
-  await page.waitForFunction(() => {
-    const f = document.querySelector(".omna iframe"), d = f?.contentDocument;
-    return d?.querySelectorAll("#outer path.seg").length > 0 && f.style.height;
-  }, null, { timeout: 15000 });
-  return page.frames().find((f) => f.url().endsWith("/alpha/omna-color/"));
-}
-/** Hat der Rahmen einen eigenen Bildlauf? (Inhalt höher als der Rahmen) */
-const innenLauf = (frame) => frame.evaluate(() => document.body.getBoundingClientRect().height - innerHeight);
 const box = (loc) => loc.evaluate((e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height, r: r.right, b: r.bottom }; });
 const sich = (a, b) => a.x < b.r - 0.5 && b.x < a.r - 0.5 && a.y < b.b - 0.5 && b.y < a.b - 0.5;     // Rechtecke überlappen
 
-// ---------- Startseite: OMNA COLOR zum Spielen ----------
-await check("Startseite (Computer): kein sichtbarer Titel und kein Satz, unter der Welle OMNA COLOR eingebettet und spielbar; der Rahmen wächst mit der Übung, ohne eigenen Bildlauf", async () => {
-  const { ctx, page, frame, errors } = await startseite({ viewport: { width: 1200, height: 900 }, reducedMotion: "reduce" });
+// ---------- Startseite: Lead und drei Kästen ----------
+// Wunsch von Christian, 9. Oktober 2026: unter der Welle der Lead «Dreh- und Wendepunkte für Theorie und Praxis», darunter drei Kästen für Apps, Prompts und Web.
+// OMNA COLOR (4. bis 9. Oktober 2026 eingebettet, zum Spielen) und das Erklärvideo zu ORNA sind von der Startseite weg; sie stehen auf «Web».
+await check("Startseite (Computer): kein sichtbarer Titel, unter der Welle der Lead, darunter die drei Kästen; kein Spiel, kein Rahmen, kein Video, keine Karte", async () => {
+  const { ctx, page, errors } = await startseite({ viewport: { width: 1200, height: 900 }, reducedMotion: "reduce" });
   assert.equal(await page.locator("h1").textContent(), "Ornament Cloud");
   assert.equal(await page.locator("h1").evaluate((e) => e.getBoundingClientRect().width), 1, "der Titel ist nur für Vorlesegeräte da");
-  assert.equal(await page.locator(".site-header .lead").count(), 0, "kein Satz mehr unter der Welle");
+  assert.equal(await page.locator(".site-header .lead").count(), 1);
+  assert.equal((await page.locator(".site-header .lead").textContent()).trim(), "Dreh- und Wendepunkte für Theorie und Praxis");
+  assert.ok(await page.locator(".site-header .lead").isVisible(), "der Lead ist sichtbar");
+  assert.equal(await page.getByText("Beobachtung ist Anlass").count(), 0, "der frühere Satz steht nicht auf der Seite");
   assert.equal(await page.locator("main .card, main article").count(), 0, "kein Beitrag, keine Karte");
-  const welle = await box(page.locator(".site-header .divider")), f = await box(page.locator(".omna iframe"));
-  assert.ok(welle.b <= f.y + 1 && f.y - welle.b <= 120, `unter der Welle gleich das Spiel (${Math.round(f.y - welle.b)} px)`);
-  assert.ok(await frame.evaluate(() => document.documentElement.classList.contains("eingebettet")), "OMNA COLOR erkennt die Einbettung");
-  assert.equal(await frame.locator(".seitenweg").isVisible(), false, "keine zweiten Hauptlinks im Rahmen");
-  assert.ok(await frame.locator("#wheel").isVisible() && await frame.locator("#go").isVisible(), "Rad und Knopf sind da");
-  assert.ok(Math.abs(await innenLauf(frame)) <= 2, `der Rahmen ist so hoch wie das Spiel (${await innenLauf(frame)})`);
-  assert.ok(f.w >= 1000, `so breit wie die Spalte (${f.w})`);
-  const vorher = f.h;
-  await frame.locator("#go").click();
-  await frame.locator("#card").waitFor({ state: "visible", timeout: 8000 });
-  assert.ok((await frame.locator("#card h2").textContent()).trim().length > 0, "eine Übung erscheint");
-  await page.waitForTimeout(300);
-  assert.ok(Math.abs(await innenLauf(frame)) <= 2, `auch mit der Übung kein eigener Bildlauf (${await innenLauf(frame)})`);
-  assert.ok((await box(page.locator(".omna iframe"))).h >= vorher - 1, "der Rahmen wächst mit oder bleibt");
+  assert.equal(await page.locator("iframe, video:not(#start video), .omna, .erklaervideo, #wheel").count(), 0, "kein Spiel, kein Rahmen, kein Video auf der Seite");
+  assert.deepEqual(await page.locator("main > *").evaluateAll((els) => els.map((e) => e.className)), ["kaesten"], "main enthält nur die drei Kästen");
+  const welle = await box(page.locator(".site-header .divider")), lead = await box(page.locator(".site-header .lead")), kaesten = await box(page.locator(".kaesten"));
+  assert.ok(welle.b <= lead.y + 1 && lead.b <= kaesten.y + 1, "von oben nach unten: Welle, Lead, Kästen");
+  assert.ok(kaesten.y - lead.b <= 90, `die Kästen folgen dem Lead (${Math.round(kaesten.y - lead.b)} px)`);
+  assert.ok(kaesten.b <= 900, "die Kästen stehen beim Laden im Fenster");
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   assert.deepEqual(errors, []);
   await ctx.close();
 });
 
-await check("Startseite (Handy): Menü zwei mal zwei, OMNA COLOR so breit wie die Seite und spielbar (Tippen aufs Rad dreht), kein seitliches Wischen", async () => {
-  const { ctx, page, frame, errors } = await startseite({ ...devices["Pixel 7"], reducedMotion: "reduce" });
-  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-  const m = await page.locator(".menu-item").evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y)]; }));
-  assert.equal(new Set(m.map((p) => p[0])).size, 2, "zwei Spalten");
-  assert.equal(new Set(m.map((p) => p[1])).size, 2, "zwei Zeilen");
-  const f = await box(page.locator(".omna iframe"));
-  assert.ok(f.x >= 0 && f.r <= 412 && f.w >= 330, `so breit wie die Seite (${f.x}–${f.r})`);
-  const rad = await box(frame.locator("#wheel"));
-  assert.ok(rad.w >= 300 && rad.r <= f.w + 1, `das Rad passt in den Rahmen (${rad.w})`);
-  await frame.locator("#wheel").tap();
-  await frame.locator("#card").waitFor({ state: "visible", timeout: 8000 });
-  await page.waitForTimeout(300);
-  assert.ok(Math.abs(await innenLauf(frame)) <= 2, "kein eigener Bildlauf im Rahmen");
-  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "auch mit der Übung kein seitliches Wischen");
-  assert.deepEqual(errors, []);
-  await ctx.close();
+await check("Startseite (Handy): Menü zwei mal zwei, Lead, drei Kästen in drei Spalten im Fenster, kein seitliches Wischen", async () => {
+  for (const opts of [{ ...devices["Pixel 7"] }, { ...devices["iPhone 13"] }, { viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true }]) {
+    const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    const m = await page.locator(".menu-item").evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y)]; }));
+    assert.equal(new Set(m.map((p) => p[0])).size, 2, "zwei Spalten");
+    assert.equal(new Set(m.map((p) => p[1])).size, 2, "zwei Zeilen");
+    const lead = await box(page.locator(".site-header .lead")), k = await box(page.locator(".kaesten"));
+    assert.ok(lead.x >= 19 && lead.r <= page.viewportSize().width - 19, "der Lead hat Rand und bricht um");
+    assert.ok(k.y >= lead.b && k.b <= page.viewportSize().height, `die Kästen stehen im Fenster (${Math.round(k.b)} von ${page.viewportSize().height})`);
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
 });
 
-await check("Startseite: «Drehen» steht beim Laden im Fenster (Laptop, iPhone), das Rad höchstens so gross wie auf der eigenen Seite; darunter kein Video mehr (seit 9. Oktober 2026 auf «Web»)", async () => {
+await check("Startseite: Rückkanal in der Spalte der Seite, bündig mit dem Fuss, nie am Fensterrand (seit 5. Oktober 2026)", async () => {
   for (const opts of [{ viewport: { width: 1366, height: 657 } }, { ...devices["iPhone 13"] }, { viewport: { width: 1920, height: 1080 } }]) {
-    const { ctx, page, frame, errors } = await startseite(opts);
-    const f = await box(page.locator(".omna iframe"));
-    const knopf = await frame.locator("#go").evaluate((e) => e.getBoundingClientRect().bottom);
-    const rad = await frame.locator("#wheel").evaluate((e) => e.getBoundingClientRect().width);
-    const h = page.viewportSize().height;
-    assert.ok(f.y + knopf <= h, `«Drehen» im Fenster (${Math.round(f.y + knopf)} von ${h})`);
-    assert.ok(rad <= 420.5, `das Rad höchstens 420 px (${rad})`);
-    // Wunsch vom 9. Oktober 2026: das Erklärvideo zu ORNA ist von der Startseite weg (es steht auf «Web»), unter dem Spiel folgt nur noch der Rückkanal
-    assert.equal(await page.locator("main .erklaervideo, main video, main .divider").count(), 0, "unter OMNA COLOR steht nichts mehr in main");
-    assert.equal(await page.locator("main > *").count(), 1, "main enthält nur OMNA COLOR");
-    // Rückkanal (seit 5. Oktober 2026): in der Spalte der Seite, bündig mit dem Fuss, nie am Fensterrand
+    const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
     const kasten = await box(page.locator(".rueckkanal")), fuss = await box(page.locator(".site-footer p").first());
     const breite = page.viewportSize().width;
     assert.ok(kasten.x >= 19.5 && kasten.r <= breite - 19.5, `Rückkanal mit Rand (${kasten.x}–${kasten.r} von ${breite})`);
@@ -126,22 +98,40 @@ await check("Startseite: «Drehen» steht beim Laden im Fenster (Laptop, iPhone)
   }
 });
 
-await check("Startseite: der Rahmen ist durchsichtig, das Spiel steht auf dem Grund der Seite (hell und dunkel)", async () => {
-  for (const colorScheme of ["light", "dark"]) {
-    const { ctx, page } = await startseite({ viewport: { width: 1200, height: 900 }, colorScheme });
-    const f = await box(page.locator(".omna iframe"));
-    // ein Punkt im Rahmen neben dem Rad (links oben), und einer auf der Seite darüber
-    const bild = await page.screenshot({ clip: { x: f.x + 2, y: f.y + 2, width: 2, height: 2 } });
-    const seite = await page.screenshot({ clip: { x: f.x + 2, y: f.y - 6, width: 2, height: 2 } });
-    const farbe = (png) => page.evaluate(async (b64) => {
-      const img = new Image(); img.src = "data:image/png;base64," + b64; await img.decode();
-      const c = document.createElement("canvas"); c.width = c.height = 2; const g = c.getContext("2d"); g.drawImage(img, 0, 0);
-      return [...g.getImageData(0, 0, 1, 1).data.slice(0, 3)];
-    }, png.toString("base64"));
-    const [a, b] = [await farbe(bild), await farbe(seite)];
-    assert.ok(a.every((v, i) => Math.abs(v - b[i]) <= 3), `${colorScheme}: im Rahmen ${a}, daneben ${b}`);
+await check("Startseite: drei Kästen nebeneinander für Apps, Prompts und Web mit Symbolen, in der Spalte der Seite; sie führen auf die Seiten (Wunsch vom 9. Oktober 2026)", async () => {
+  for (const opts of [{ viewport: { width: 1200, height: 900 } }, { ...devices["iPhone 13"] }, { viewport: { width: 320, height: 640 } }]) {
+    const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
+    const k = page.locator(".kaesten .kasten");
+    assert.deepEqual(await k.locator("span").allTextContents(), ["Apps", "Prompts", "Web"]);
+    assert.deepEqual(await k.evaluateAll((els) => els.map((e) => e.getAttribute("href"))), ["apps/", "masterprompts/", "web/"]);
+    const b = await k.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: Math.round(r.y), w: r.width, h: r.height, r: r.right }; }));
+    assert.ok(b[0].y === b[1].y && b[1].y === b[2].y, "nebeneinander in einer Reihe");
+    assert.ok(b[0].x < b[1].x && b[1].x < b[2].x && b[0].r <= b[1].x && b[1].r <= b[2].x, "Apps, Prompts, Web von links nach rechts, ohne Überlappung");
+    assert.ok(Math.abs(b[0].w - b[1].w) < 1 && Math.abs(b[1].w - b[2].w) < 1, "gleich breit");
+    const breite = page.viewportSize().width;
+    assert.ok(b[0].x >= 19 && b[2].r <= breite - 19, `mit Rand (${b[0].x}–${b[2].r} von ${breite})`);
+    for (const kasten of await k.all()) {
+      const s = await box(kasten.locator("svg"));
+      assert.ok(s.w >= 36 && s.h >= 36, `Symbol sichtbar (${s.w} × ${s.h})`);
+      assert.equal(await kasten.locator("svg").getAttribute("aria-hidden"), "true", "das Symbol ist für Vorlesegeräte verborgen");
+    }
+    assert.ok(Math.min(...b.map((x) => x.h)) >= 100, "die Kästen sind der Inhalt der Seite: mindestens 100 px hoch");
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "kein seitliches Wischen");
+    assert.deepEqual(errors, []);
     await ctx.close();
   }
+  // jeder Kasten führt auf seine Seite
+  for (const [name, ziel] of [["Apps", /\/apps\/$/], ["Prompts", /\/masterprompts\/$/], ["Web", /\/web\/$/]]) {
+    const { ctx, page } = await startseite({ viewport: { width: 1200, height: 900 }, reducedMotion: "reduce" });
+    await page.locator(".kaesten .kasten").filter({ hasText: name }).click();
+    await page.waitForURL(ziel);
+    await ctx.close();
+  }
+  // dunkel: Kästen auf dem Grund der Seite, Beschriftung hell
+  const { ctx, page } = await startseite({ viewport: { width: 1200, height: 900 }, colorScheme: "dark", reducedMotion: "reduce" });
+  const farben = await page.locator(".kasten").first().evaluate((e) => { const c = getComputedStyle(e); return [c.backgroundColor, c.color]; });
+  assert.deepEqual(farben, ["rgb(33, 31, 28)", "rgb(236, 232, 225)"], "im dunklen Modus: Fläche und Schrift der Seite");
+  await ctx.close();
 });
 
 // ---------- Menü ----------
