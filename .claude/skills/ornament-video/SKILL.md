@@ -50,6 +50,6 @@ Für Remotion-Details helfen die Remotion-Skills (`npx skills add remotion-dev/s
 ## Auf die Website (nur auf Wunsch)
 
 - Datei nach `assets/<name>.mp4`, Vorschaubild 540 × 960 als `assets/<name>.jpg` (Standbild aus dem Intro, ffmpeg).
-- Einbinden wie auf der Startseite: `<video controls playsinline preload="none" poster=… width="1080" height="1920" aria-label="…, ohne Ton">`,
-  Höhe auf das Fenster begrenzt (siehe `.erklaervideo` in `styles.css`). Tests (`tests/struktur.*`) ergänzen, `?v=` erhöhen.
+- Einbinden als Beitrag auf «Web» mit eigener Videoseite, wie `web/orna-erklaervideo/`, `web/poststrukturalismus/` und `web/mensch-niklas/` (Karte mit Vorschau 640 × 800 in `web/index.html`, Seite mit `<video controls muted playsinline preload="none" poster=… width="1080" height="1920" aria-label="…, ohne Ton">`,
+  Höhe auf das Fenster begrenzt, siehe `.erklaervideo` in `styles.css`; Eintrag in `sitemap.xml`). Tests (`tests/struktur.*`) ergänzen, `?v=` erhöhen.
 - Quellcode des Videos immer mit einchecken (`src/videos/src/<name>/`), README in `src/videos/` ergänzen.

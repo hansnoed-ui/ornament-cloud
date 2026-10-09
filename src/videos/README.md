@@ -53,8 +53,8 @@ Braucht das Video Daten aus der Website, kommt ein `src/<name>/daten.mjs` dazu (
 
 ## ORNA – Erklärvideo
 
-51,5 s. Das fertige Video steht auf der Startseite unter OMNA COLOR (`assets/orna-erklaervideo.mp4`, Vorschaubild `assets/orna-erklaervideo.jpg`,
-ein Standbild aus dem Intro bei 2,6 s). Nach einer Änderung neu rendern (`npm run render:orna`), nach `yuv420p` umwandeln (siehe unten) und beide Dateien ersetzen.
+51,5 s. Das fertige Video steht seit dem 9. Oktober 2026 auf «Web» (Videoseite `web/orna-erklaervideo/`, davor von 5. bis 9. Oktober 2026 auf der Startseite unter OMNA COLOR; `assets/orna-erklaervideo.mp4`, Standbild `assets/orna-erklaervideo.jpg`,
+ein Standbild aus dem Intro bei 2,6 s; Vorschau der Karte `assets/vorschau-orna-erklaervideo.jpg`, 640 × 800, ein Ausschnitt aus dem Titelbild bei 5 s). Nach einer Änderung neu rendern (`npm run render:orna`), nach `yuv420p` umwandeln (siehe unten) und beide Dateien ersetzen.
 
 0. Intro mit «ORNA» und «app • web»
 1. Titel «Zufällige Begegnungen» (darüber ORNA), das Rad baut sich aus den 40 Zeichen auf
