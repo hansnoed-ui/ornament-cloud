@@ -67,6 +67,8 @@
     #karte { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
     .einstieg { position: absolute; inset: 0; display: grid; place-content: center; gap: 18px; padding: 24px; text-align: center;
       background: color-mix(in srgb, var(--s-papier) 82%, transparent); }
+    /* ist der Einstieg höher als die Karte (kleines Fenster, In-App-Browser), wird er nicht oben abgeschnitten, sondern lässt sich blättern */
+    .einstieg { overflow-y: auto; align-content: safe center; overscroll-behavior: contain; }
     .einstieg[hidden] { display: none; }
     .einstieg-text { margin: 0; font-family: var(--serif); font-size: clamp(1.15rem, 2.4vw, 1.7rem); line-height: 1.35; max-width: 30em; }
     .einstieg-wege { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
@@ -169,6 +171,10 @@
       .leiste { gap: 6px; } .leiste button { min-height: 40px; }
       .tempo button { padding: 6px 9px; font-size: 0.82rem; }
       .felder { grid-template-columns: 1fr; }
+      .einstieg { gap: 10px; padding: 14px 12px; }
+      .einstieg-text { font-size: 1.05rem; line-height: 1.32; }
+      .einstieg-wege { gap: 8px; }
+      .einstieg-wege button, .einstieg .impuls { min-height: 40px; padding: 6px 14px; font-size: 0.88rem; }
     }
     /* Vollbild: Stadt und Panel füllen den Bildschirm (Fullscreen-Schnittstelle, wo vorhanden; sonst das ganze Fenster, etwa auf dem iPhone) */
     html.stadt-vollbild { overflow: hidden; }
