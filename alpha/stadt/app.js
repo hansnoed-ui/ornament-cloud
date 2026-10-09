@@ -1,11 +1,11 @@
 // «Die Paradoxie der Stadt» – Bedienung: Uhr, Begleiten, Verändern (mit Vorschau), Sichtweisen, Protokoll, Vergleiche, Modell.
 // Die Simulation (modell.js) läuft mit festem Schritt; die Bildrate bestimmt nur, wie viele Schritte je Bild gerechnet werden.
-import * as M from "./modell.js?v=7";
-import { zeichne, farben, positionVon } from "./ansicht.js?v=7";
-import { nebeneinanderNacheinander, verteilapparat, befragungAuswertung, SCHWELLEN } from "./raster.js?v=7";
-import { VERBINDUNG, BANK } from "./stadtplan.js?v=7";
-import * as F from "./fragen.js?v=7";
-import { liveAdresse, liveVerbindung } from "./live.js?v=7";
+import * as M from "./modell.js?v=8";
+import { zeichne, farben, positionVon } from "./ansicht.js?v=8";
+import { nebeneinanderNacheinander, verteilapparat, befragungAuswertung, SCHWELLEN } from "./raster.js?v=8";
+import { VERBINDUNG, BANK } from "./stadtplan.js?v=8";
+import * as F from "./fragen.js?v=8";
+import { liveAdresse, liveVerbindung } from "./live.js?v=8";
 
 const $ = (s, w = document) => w.querySelector(s);
 const $$ = (s, w = document) => [...w.querySelectorAll(s)];
@@ -31,7 +31,7 @@ let tabelle = null, tabelleFehler = null;
 
 // ---------- Start ----------
 async function start() {
-  try { tabelle = (await import("./jev.js?v=7")).JEV; if (!M.tabelleGueltig(tabelle)) { tabelleFehler = "Prüfsumme passt nicht zu den Fragen"; tabelle = null; } }
+  try { tabelle = (await import("./jev.js?v=8")).JEV; if (!M.tabelleGueltig(tabelle)) { tabelleFehler = "Prüfsumme passt nicht zu den Fragen"; tabelle = null; } }
   catch (e) { tabelleFehler = "jev-Tabelle nicht geladen"; tabelle = null; }
   await new Promise((r) => setTimeout(r, 30));    // erst die Seite zeigen, dann die Stadt anlegen (Vorlauf rund eine Sekunde)
   neuerLauf();
@@ -80,6 +80,8 @@ function bild(jetzt) {
   requestAnimationFrame(bild);
 }
 function groesse() {
+  const p = $("#panel");
+  if (p && !p.classList.contains("offen")) document.documentElement.style.setProperty("--panel-zu", Math.ceil(p.getBoundingClientRect().height) + "px");
   const c = $("#karte"), box = c.parentElement.getBoundingClientRect();
   ui.dpr = Math.min(2, devicePixelRatio || 1);
   c.width = Math.round(box.width * ui.dpr); c.height = Math.round(box.height * ui.dpr);

@@ -201,7 +201,7 @@
     html.stadt-vollbild .stadt .panel { position: static; max-height: 100%; }
     #vollbild[aria-pressed="true"] { background: var(--text); color: var(--bg); }
     @media (max-width: 900px) {
-      html.stadt-vollbild .stadt { padding: 8px 8px 56px; grid-template-columns: 1fr; }
+      html.stadt-vollbild .stadt { padding: 8px 8px calc(var(--panel-zu, 104px) + 8px); grid-template-columns: 1fr; }   /* unten Platz fürs zugeklappte Panel, damit die Meldung unter der Karte lesbar bleibt (app.js misst es) */
       html.stadt-vollbild .stadt .panel { position: fixed; top: auto; height: auto; max-height: 46vh; }
       html.stadt-vollbild .stadt .lagezeile { display: none; }
     }
@@ -209,7 +209,7 @@
   </style>
   <!-- ?vollbild (Link «Im Vollbild öffnen»): sofort im Vollbild aufbauen, nicht erst nach dem Vorlauf der Stadt -->
   <script>if (/[?&]vollbild(?:[=&]|$)/.test(location.search)) document.documentElement.classList.add("stadt-vollbild");</script>
-  <script type="module" src="app.js?v=7"></script>
+  <script type="module" src="app.js?v=8"></script>
 </head>
 <body>
   <header class="site-header">
