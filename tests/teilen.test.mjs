@@ -1,4 +1,4 @@
-// Teilen auf Social Media (Wunsch von Christian, 2. Oktober 2026; Masterprompts seit 3. Oktober): Startseite, Masterprompts und «Das Dritte Rad» tragen eine Vorschaukarte
+// Teilen auf Social Media (Wunsch von Christian, 2. Oktober 2026; Masterprompts seit 3. Oktober, «Die Paradoxie der Stadt» seit 9. Oktober): Startseite, Masterprompts, «Das Dritte Rad» und die Stadt tragen eine Vorschaukarte
 // (Open Graph für Facebook, LinkedIn, WhatsApp, Messenger; X-Karte), Bilder 1200 × 630 unter absoluter Adresse. Erzeugt mit tools/start-og.mjs.
 //   node --experimental-strip-types --no-warnings --test tests/teilen.test.mjs
 import test from "node:test";
@@ -11,6 +11,7 @@ const SEITEN = [
   { datei: "index.html", url: "https://ornament.cloud/", titel: "Ornament Cloud", bild: "assets/og-ornament-cloud.png", art: "png", canonical: true },
   { datei: "masterprompts/index.html", url: "https://ornament.cloud/masterprompts/", titel: "Masterprompts", bild: "assets/og-masterprompts.png", art: "png", canonical: true },
   { datei: "alpha/drittes-rad/index.html", url: "https://ornament.cloud/alpha/drittes-rad/", titel: "Das Dritte Rad", bild: "alpha/drittes-rad/og-drittes-rad.jpg", art: "jpg", canonical: false },
+  { datei: "alpha/stadt/index.html", url: "https://ornament.cloud/alpha/stadt/", titel: "Die Paradoxie der Stadt", bild: "alpha/stadt/og-stadt.jpg", art: "jpg", canonical: false },   // seit 9. Oktober 2026
 ];
 /** alle meta-Angaben einer Seite: property oder name → content */
 const metas = (html) => new Map([...html.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)].map((m) => [m[1], m[2]]));
