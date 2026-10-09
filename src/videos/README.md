@@ -13,6 +13,10 @@ src/
     stil.ts           Farben, Schriften (Newsreader, Instrument Sans), Format
     Signet.tsx        Re-entry-Schlaufe mit Punkt, Schriftzug «ornament.cloud»; optional Kopfzeile darüber
     Bausteine.tsx     Intro (3 s), Outro (6 s), Grund, Marke, Titel, Leise, Oben, Unten, Auszug, blende, steig
+  wachstum/           Linienwachstum spielt «ornament.cloud», 1 : 1, ohne Text (9. Oktober 2026); auch die Startanimation der Website
+    Wachstum.ts       die Simulation (Punkte, Abstossung, Feder, Kantenteilung, Grenze), deterministisch
+    Formen.ts         die beiden Grenzen: atmende Wolke aus Kreisen, Buchstaben des Namens (Maske, Abstandsfeld, Keime)
+    Video.tsx         Zeitplan T und Szenen
   orna/               Erklärvideo zu ORNA (5. Oktober 2026)
     Video.tsx         Zeitplan T und Szenen
     Rad.tsx           das Doppelrad, nachgezeichnet nach portfolio/nebeneinander-nacheinander/js/wheel.js
@@ -135,6 +139,39 @@ Zusätzliche Szene «Meanwhile in England» nach den Beispielen: Studien zum (Ni
 Seit dem 7. Oktober 2026 zeigt auch die deutsche Fassung die Szene («Unterdessen in England»; Schild der Fälle «Zwei Beispiele aus der Schweiz»).
 **Spanische Fassung** (`MenschVideoES`, gut drei Minuten dreissig, 7. Oktober 2026): wie die englische (Schweizer Kontext, Szene «Mientras tanto, en Inglaterra»),
 Texte `TEXTE.es`, Zeitachse `zeitplan("es")` mit etwas mehr Lesezeit; der Stempel «DIAGNOSTIC OVERSHADOWING» bleibt als Fachbegriff englisch.
+
+## «wachstum» – Linienwachstum spielt ornament.cloud (9. Oktober 2026)
+
+36 s, **1 : 1** (1080 × 1080, `WachstumVideo`), ohne Ton und ohne Text. Nachbau eines Processing-Sketches zu «differential line growth»:
+Punkte einer geschlossenen Linie stossen sich ab (`minNodeDist` 15), eine Feder zieht jeden zum nächsten, zu lange Kanten teilen sich,
+eine Grenze drückt die Linie nach innen. Quelle `src/wachstum/` (`Wachstum.ts`, `Formen.ts`, `Video.tsx`), keine Daten aus der Website.
+
+0. Intro: Signet kurz, **ohne Kopfzeile** (eigener Wrapper in `Video.tsx`, die Vorlage bleibt unverändert)
+1. Das Ornament in der Wolke (10 s): ein Ring aus 30 Punkten wächst zum Labyrinth in einer atmenden Wolke (Kreise, flacher Boden); ihr Umriss im Rot-Orange, zum Schluss zieht sie ab
+2. Die Zeichen (17 s): 14 kleine Ringe, einer je Zeichen von «orna / ment. / cloud» (Instrument Sans 700, dreizeilig, damit die Zeichen gross genug für das Muster sind),
+   wachsen nacheinander in Leserichtung; Grenze ist die Form des Zeichens (Abstandsfeld der Schrift), der Punkt im Rot-Orange
+3. Outro: Signet in voller Länge
+
+**Zwei Änderungen am Sketch**, ohne die er nicht wächst: Mit `maxEdgeLength = 12` wird nie geteilt (der Abstand stellt sich bei 0,6 · `minNodeDist` = 9 ein, die Linie bleibt ein Ring von 30 Punkten),
+und unter 9 teilt jede Teilung die nächste aus (über 12 000 Punkte in 150 Schritten). Darum liegt `maxEdge` bei 8, und je Schritt werden nur so viele Kanten geteilt (zufällig unter den zu langen,
+fester Startwert), wie das Punktziel des Rings verlangt. Die Zeichen sind halb so gross gerechnet wie die Wolke (`minDist` 7,5). Alles ist deterministisch; wer ein früheres Bild verlangt, rechnet von vorn.
+
+`npx remotion render WachstumVideo out/wachstum.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
+
+### Startanimation der Website (9. Oktober 2026)
+
+Wunsch von Christian nach dem Video «wachstum»: nur die Zeichen (Sekunden 13–30 davon), ohne Wolke, ohne Intro und ohne das Signet am Ende; erst 1,4-mal so schnell, dann auf 11 Sekunden gekürzt (17 s → 11 s, gut 1,5-mal so schnell).
+Compositions `StartAnimation` (hell, Farben der Website) und `StartAnimationDunkel` (dunkel: Grund `#171614`, Linie `#ece8e1`, Punkt `#f08a5d`, wie `styles.css` im dunklen Modus), beide 1080 × 1080, 330 Bilder.
+Dieselben Rechenschritte wie im Video, nur dichter (`TEMPO_START` = 510 / 330 Schritte je Bild gegenüber dem Video «wachstum»); das fertige Wort steht von etwa 8,7 s bis 10,3 s, dann blenden die Zeichen in 20 Bildern aus (`AUS_START`, Wunsch vom 9. Oktober 2026),
+und die Seite blendet den leeren Grund in die Startseite über. Sie läuft auf der Startseite vor dem Inhalt (siehe README im Hauptordner).
+
+```bash
+cd src/videos && npm run render:start        # out/start-hell.mp4 und out/start-dunkel.mp4 (Vollbereich, crf 18)
+# für das Web: in den Bereich tv und BT.709 umrechnen, 3 MB statt 15 MB (Grund bleibt auf ±1 Stufe gleich wie die Seite)
+ffmpeg -i out/start-hell.mp4 -vf "scale=in_range=pc:out_range=tv:in_color_matrix=bt601:out_color_matrix=bt709:flags=accurate_rnd+full_chroma_int,format=yuv420p" \
+  -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv -c:v libx264 -crf 28 -preset slow -movflags +faststart -an ../../assets/start-animation.mp4
+# dunkel ebenso mit out/start-dunkel.mp4 nach ../../assets/start-animation-dunkel.mp4
+```
 
 ## Rendern ohne Internetzugang zu remotion.media
 

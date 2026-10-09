@@ -16,6 +16,14 @@ const { startServer } = await import(new URL("tools/serve-orma.mjs", root).href)
 const server = await startServer(0);
 const origin = `http://localhost:${server.address().port}`;
 const browser = await chromium.launch();
+// Die Startanimation (9. Oktober 2026) läuft in einer neuen Sitzung über der Startseite. Die übrigen Prüfungen laden die Startseite, als hätten sie sie schon gesehen;
+// die Prüfungen «Startanimation …» unten legen ihre Kontexte mit neuerKontext an (ohne diese Marke).
+const neuerKontext = browser.newContext.bind(browser);
+browser.newContext = async (opts) => {
+  const c = await neuerKontext(opts);
+  await c.addInitScript(() => { try { sessionStorage.setItem("start-animation", "1"); } catch { /* ohne Speicher */ } });
+  return c;
+};
 const results = [];
 const nur = process.argv[2];            // nur Prüfungen, deren Name diesen Text enthält (zum Eingrenzen)
 async function check(name, fn) {
@@ -401,6 +409,117 @@ await check("Web: «Stellenfeld» öffnet die Szene allein auf der Seite; dort g
   await page.keyboard.press("Space");
   assert.equal(await page.locator("#play").textContent(), "Abspielen", "Leertaste: anhalten");
   assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+
+// ---------- Startanimation (9. Oktober 2026) ----------
+// Chromium der Prüfumgebung spielt kein H.264: Das Video wird ersetzt (Quelle merken, play() hängt), das Ende löst die Prüfung selbst aus.
+const stubVideo = () => {
+  window.__start = { src: [], play: 0 };
+  Object.defineProperty(HTMLMediaElement.prototype, "src", { configurable: true, get() { return this.__src || ""; }, set(v) { window.__start.src.push(v); this.__src = v; } });
+  HTMLMediaElement.prototype.play = function () { window.__start.play += 1; return new Promise(() => {}); };
+  HTMLMediaElement.prototype.load = function () {};
+};
+async function startKontext(opts = {}, { stub = true, url = "/" } = {}) {
+  const ctx = await neuerKontext({ viewport: { width: 1200, height: 800 }, ...opts });
+  if (stub) await ctx.addInitScript(stubVideo);
+  const page = await ctx.newPage();
+  const errors = fehler(page);
+  await page.goto(origin + url);
+  return { ctx, page, errors };
+}
+const startAn = (page) => page.evaluate(() => document.documentElement.classList.contains("start-an"));
+const startFrei = (page) => page.waitForFunction(() => !document.documentElement.classList.contains("start-an"), null, { timeout: 5000 });
+
+await check("Startanimation: neue Sitzung deckt die Seite ab, spielt das helle Video, sperrt die Seite dahinter; «Skip intro» gibt sie frei, danach läuft sie nicht wieder", async () => {
+  const { ctx, page, errors } = await startKontext();
+  assert.equal(await startAn(page), true);
+  const flaeche = await page.locator("#start").evaluate((e) => { const r = e.getBoundingClientRect(), c = getComputedStyle(e); return { w: r.width, h: r.height, pos: c.position, z: +c.zIndex, bg: c.backgroundColor, frei: document.documentElement.clientWidth }; });
+  assert.deepEqual([flaeche.h, flaeche.pos], [800, "fixed"]);
+  assert.ok(flaeche.frei - flaeche.w <= 20, "deckt das ganze Fenster (höchstens der reservierte Streifen des Bildlaufbalkens bleibt, scrollbar-gutter: stable)");
+  assert.ok(flaeche.z >= 1000);
+  assert.equal(flaeche.bg, "rgb(248, 248, 246)", "Grund wie die Seite (und das Video)");
+  const v = await page.evaluate(() => window.__start);
+  assert.deepEqual(v.src, ["assets/start-animation.mp4?v=3"], "im hellen Modus das helle Video");
+  assert.equal(v.play, 1);
+  const video = await page.locator("#start video").evaluate((e) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height, muted: e.muted }; });
+  assert.deepEqual([video.w, video.h, video.muted], [800, 800, true], "quadratisch, so gross wie das Fenster hoch ist, ohne Ton");
+  const knopf = await page.getByRole("button", { name: "Skip intro" }).evaluate((e) => { const r = e.getBoundingClientRect(), c = getComputedStyle(e); return { r: r.right, b: r.bottom, h: r.height, farbe: c.color, rand: c.borderTopColor, radius: parseFloat(c.borderTopLeftRadius), innen: innerWidth }; });
+  assert.equal(knopf.farbe, "rgb(194, 65, 12)", "Schrift orange wie die Seite (--accent)");
+  assert.equal(knopf.rand, "rgb(194, 65, 12)", "Rahmen orange");
+  assert.ok(knopf.radius > 0 && knopf.radius <= 8, `nur leicht gerundet, keine Pille (${knopf.radius} px)`);
+  assert.ok(knopf.h >= 44, "mindestens 44 px hoch");
+  assert.equal(Math.round(800 - knopf.b), 24, "24 px über dem unteren Rand");
+  assert.ok(knopf.innen - knopf.r >= 24 && knopf.innen - knopf.r <= 60, "unten rechts, mit Abstand zum Rand");
+  assert.equal(await page.evaluate(() => sessionStorage.getItem("start-animation")), "1", "gemerkt, sobald sie läuft");
+  assert.equal(await page.evaluate(() => document.querySelector("main").inert && document.querySelector("header").inert && document.querySelector("footer").inert && !document.getElementById("start").inert), true, "Kopf, Inhalt und Fuss sind gesperrt, die Animation nicht");
+  assert.equal(await page.evaluate(() => document.documentElement.style.overflow), "hidden", "kein Blättern dahinter");
+  await page.getByRole("button", { name: "Skip intro" }).click();
+  await startFrei(page);
+  assert.equal(await page.evaluate(() => document.querySelector("main").inert || document.querySelector("header").inert), false, "die Seite ist wieder frei");
+  assert.equal(await page.evaluate(() => document.documentElement.style.overflow), "", "Blättern wieder möglich");
+  assert.equal(await page.locator("#start").evaluate((e) => getComputedStyle(e).display), "none");
+  await page.reload();
+  assert.equal(await startAn(page), false, "in derselben Sitzung läuft sie nicht noch einmal");
+  assert.equal(await page.evaluate(() => window.__start.play), 0);
+  await page.goto(origin + "/?start");
+  assert.equal(await startAn(page), true, "?start zeigt sie wieder (Vorschau)");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Startanimation: im dunklen Modus das dunkle Video auf dunklem Grund", async () => {
+  const { ctx, page, errors } = await startKontext({ colorScheme: "dark" });
+  assert.deepEqual((await page.evaluate(() => window.__start)).src, ["assets/start-animation-dunkel.mp4?v=3"]);
+  assert.equal(await page.locator("#start").evaluate((e) => getComputedStyle(e).backgroundColor), "rgb(23, 22, 20)", "Grund wie die Seite im dunklen Modus");
+  assert.equal(await page.locator(".start-weiter").evaluate((e) => getComputedStyle(e).color), "rgb(240, 138, 93)", "der Knopf im dunklen Modus: das Orange der Seite dort");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Startanimation: bei «weniger Bewegung», bei «Daten sparen» und ohne Skript läuft sie nie", async () => {
+  for (const [name, opts, init] of [["weniger Bewegung", { reducedMotion: "reduce" }, null], ["Daten sparen", {}, () => Object.defineProperty(navigator, "connection", { value: { saveData: true } })], ["ohne Skript", { javaScriptEnabled: false }, null]]) {
+    const ctx = await neuerKontext({ viewport: { width: 1200, height: 800 }, ...opts });
+    await ctx.addInitScript(stubVideo);
+    if (init) await ctx.addInitScript(init);
+    const page = await ctx.newPage();
+    await page.goto(origin + "/");
+    assert.equal(await startAn(page), false, name);
+    assert.equal(await page.locator("#start").evaluate((e) => getComputedStyle(e).display), "none", `${name}: nichts verdeckt die Seite`);
+    if (opts.javaScriptEnabled !== false) assert.equal(await page.evaluate(() => window.__start.play), 0, `${name}: nichts wird geladen`);
+    await page.goto(origin + "/?start");
+    if (opts.reducedMotion) assert.equal(await startAn(page), false, "auch ?start hält sich an «weniger Bewegung»");
+    await ctx.close();
+  }
+});
+
+await check("Startanimation: Ende des Videos, Fehler, Tippen, Taste und abgelehntes play() geben die Seite frei", async () => {
+  for (const [name, aktion] of [
+    ["Ende", (page) => page.evaluate(() => document.querySelector("#start video").dispatchEvent(new Event("ended")))],
+    ["Fehler", (page) => page.evaluate(() => document.querySelector("#start video").dispatchEvent(new Event("error")))],
+    ["Tippen", (page) => page.mouse.click(300, 300)],
+    ["Taste", (page) => page.keyboard.press("Escape")],
+  ]) {
+    const { ctx, page, errors } = await startKontext();
+    assert.equal(await startAn(page), true, name);
+    await aktion(page);
+    await startFrei(page);
+    assert.deepEqual(errors, [], name);
+    await ctx.close();
+  }
+});
+
+await check("Startanimation: lässt der Browser das Video nicht von selbst spielen, kommt die Seite sofort", async () => {
+  const ctx = await neuerKontext({ viewport: { width: 1200, height: 800 } });
+  await ctx.addInitScript(() => {
+    Object.defineProperty(HTMLMediaElement.prototype, "src", { configurable: true, get() { return this.__src || ""; }, set(v) { this.__src = v; } });
+    HTMLMediaElement.prototype.play = () => Promise.reject(new DOMException("blockiert", "NotAllowedError"));
+    HTMLMediaElement.prototype.load = function () {};
+  });
+  const page = await ctx.newPage();
+  await page.goto(origin + "/");
+  await startFrei(page);
   await ctx.close();
 });
 

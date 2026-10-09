@@ -25,6 +25,7 @@
     "neu": "node neues-video.mjs",
     "dev": "node vorbereiten.mjs && remotion studio",
     "render:orna": "node vorbereiten.mjs && remotion render OrnaVideo out/orna-erklaervideo.mp4 --codec=h264 --crf=20",
-    "lint": "eslint src && tsc"
+    "lint": "eslint src && tsc",
+    "render:start": "node vorbereiten.mjs && remotion render StartAnimation out/start-hell.mp4 --codec=h264 --crf=18 && remotion render StartAnimationDunkel out/start-dunkel.mp4 --codec=h264 --crf=18"
   }
 }

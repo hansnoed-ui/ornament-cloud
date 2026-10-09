@@ -134,6 +134,55 @@ test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OM
   assert.deepEqual([...html.matchAll(/data-icon="([a-z]+)"/g)].map((m) => m[1]), ["wave", "wave"], "nur die Wellen sind animiert (unter dem Kopf und vor dem Video)");
 });
 
+test("Startseite: Startanimation (9. Oktober 2026) – Video hell und dunkel, nur auf dieser Seite, einmal pro Sitzung, nicht bei «weniger Bewegung», Überspringen, Notausgang", () => {
+  const roh = lies("index.html");
+  const html = roh.replace(/<!--[\s\S]*?-->/g, "");
+  // Markup: gleich nach <body>, vor Kopf und Inhalt, ausserhalb von <main>; das Video hat keine Quelle im Markup (das Skript wählt hell oder dunkel)
+  assert.match(html, /<body>\s*<div class="start" id="start">\s*<video muted playsinline preload="auto" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback><\/video>\s*<button class="start-weiter" type="button" lang="en">Skip intro<\/button>\s*<\/div>\s*<header class="site-header">/);
+  assert.ok(html.indexOf('id="start"') < html.indexOf("<main"), "die Startanimation liegt vor dem Inhalt");
+  // Dateien: hell und dunkel, quadratisch, ohne Ton
+  for (const d of ["assets/start-animation.mp4", "assets/start-animation-dunkel.mp4"]) {
+    assert.ok(existsSync(new URL(d, root)), d);
+    assert.ok(readFileSync(new URL(d, root)).length < 5_000_000, `${d} bleibt unter 5 MB (es lädt vor der Seite)`);
+    assert.match(html, new RegExp(d.replace(/[.-]/g, "\\$&") + "\\?v=\\d+"), `${d} trägt eine Marke ?v=`);
+  }
+  // Kopf: die Klasse start-an kommt vor dem ersten Anstrich; Bedingungen: einmal pro Sitzung (sessionStorage), nicht bei «weniger Bewegung», nicht bei «Daten sparen», Vorschau mit ?start
+  const kopf = html.slice(html.indexOf("<head>"), html.indexOf("</head>"));
+  assert.match(kopf, /sessionStorage\.getItem\("start-animation"\) === "1"/);
+  assert.match(kopf, /prefers-reduced-motion: reduce/);
+  assert.match(kopf, /navigator\.connection && navigator\.connection\.saveData/);
+  assert.match(kopf, /\/\[\?&\]start\(=\|&\|#\|\$\)\/\.test\(location\.search\)/, "?start spielt sie noch einmal");
+  assert.match(kopf, /classList\.add\("start-an"\)/);
+  // Gestaltung: ohne Skript nie sichtbar; deckt die ganze Seite; blendet aus; fällt das Skript aus, gibt die Seite sich nach 45 Sekunden selbst frei
+  assert.match(kopf, /\.start \{ display: none; \}/);
+  assert.match(kopf, /html\.start-an \.start \{[^}]*position: fixed; inset: 0;[^}]*background: var\(--bg\);/);
+  assert.match(kopf, /html\.start-an \.start\.start-weg \{ opacity: 0; pointer-events: none; \}/);
+  assert.match(kopf, /animation: start-notaus 0s linear 45s forwards/);
+  assert.match(kopf, /@keyframes start-notaus \{ to \{ visibility: hidden; pointer-events: none; \} \}/);
+  assert.match(kopf, /\.start video \{[^}]*aspect-ratio: 1 \/ 1;/, "das Video ist quadratisch");
+  // der Knopf «Skip intro» (Wunsch vom 9. Oktober 2026; englische Beschriftung, darum lang="en"): unten rechts, orange wie die Seite (--accent), nur leicht gerundet, mindestens 44 px hoch
+  assert.match(kopf, /\.start-weiter \{[^}]*right: max\(24px, env\(safe-area-inset-right\)\); bottom: max\(24px, env\(safe-area-inset-bottom\)\);/, "unten rechts");
+  assert.match(kopf, /\.start-weiter \{[^}]*min-height: 44px;/, "Tippfläche");
+  assert.match(kopf, /\.start-weiter \{[^}]*color: var\(--accent\);[^}]*border: 1\.5px solid var\(--accent\); border-radius: 6px;/, "orange, nur leicht gerundet (keine Pille)");
+  assert.ok(!lies("styles.css").includes(".start-weiter"), "die Gestaltung steht in der Startseite, styles.css (?v=) bleibt unberührt");
+  // Skript: Video nach Farbschema, Ende, Fehler, Hängen, Tippen, Taste, Knopf; die Seite darunter ist währenddessen inert
+  const skript = html.slice(html.indexOf('var d = document.documentElement, el = document.getElementById("start")'));
+  assert.match(skript, /matchMedia\("\(prefers-color-scheme: dark\)"\)\.matches/);
+  assert.match(skript, /v\.src = dunkel \? "assets\/start-animation-dunkel\.mp4\?v=\d+" : "assets\/start-animation\.mp4\?v=\d+"/);
+  for (const ereignis of ['v.addEventListener("ended", weg)', 'v.addEventListener("error", weg)', 'el.addEventListener("pointerdown", weg)', 'knopf.addEventListener("click", weg)', 'addEventListener("keydown", weg, { once: true })']) assert.ok(skript.includes(ereignis), ereignis);
+  assert.match(skript, /p\.catch\(weg\)/, "lässt der Browser das Video nicht von selbst spielen, kommt die Seite sofort");
+  assert.match(skript, /setTimeout\(weg, 6000\)/, "bleibt das Video hängen, kommt die Seite nach sechs Sekunden");
+  assert.match(skript, /k\.inert = true/);
+  assert.match(skript, /k\.inert = false/);
+  assert.ok(!skript.includes(".focus("), "kein erzwungener Fokus (er zeigte einen Ring auf dem Handy)");
+  // Die Videos kommen aus src/videos (Composition StartAnimation, hell und dunkel; die Zeichen in 11 statt 17 Sekunden wie im Video «wachstum», ohne Signet, die Zeichen blenden am Ende aus)
+  const root_ = lies("src/videos/src/Root.tsx");
+  assert.match(root_, /<Composition id="StartAnimation" /);
+  assert.match(root_, /<Composition id="StartAnimationDunkel" [^>]*defaultProps=\{\{ dunkel: true \}\}/);
+  assert.match(lies("src/videos/src/wachstum/Video.tsx"), /const DAUER_START = 330;[\s\S]*export const TEMPO_START = T\.buchstabenLaenge \/ DAUER_START;/, "11 Sekunden (330 Bilder), dieselben Rechenschritte wie das Video «wachstum»");
+  assert.match(lies("src/videos/src/wachstum/Video.tsx"), /const AUS_START = 20;[\s\S]*aus=\{AUS_START\}/, "die letzten 20 Bilder blenden die Zeichen aus");
+});
+
 test("Startseite: die Rückmeldungen (giscus) sind auf Wunsch von Christian weg, mit Skript und Gestaltung (2. Oktober 2026)", () => {
   const html = lies("index.html").replace(/<!--[\s\S]*?-->/g, "");        // was die Seite zeigt und lädt, nicht die Kommentare
   assert.ok(!/giscus|kommentare|rueckmeldung|Rückmeldung/i.test(html), "die Startseite spricht nirgends mehr von Rückmeldungen und lädt kein Skript dafür");
