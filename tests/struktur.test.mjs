@@ -171,11 +171,11 @@ test("Startseite: Startanimation (9. Oktober 2026) – Video hell und dunkel, nu
   assert.match(skript, /k\.inert = true/);
   assert.match(skript, /k\.inert = false/);
   assert.ok(!skript.includes(".focus("), "kein erzwungener Fokus (er zeigte einen Ring auf dem Handy)");
-  // Die Videos kommen aus src/videos (Composition StartAnimation, hell und dunkel; die Zeichen 1,4-mal so schnell wie im Video «wachstum»)
+  // Die Videos kommen aus src/videos (Composition StartAnimation, hell und dunkel; die Zeichen in 11 statt 17 Sekunden wie im Video «wachstum», ohne Signet)
   const root_ = lies("src/videos/src/Root.tsx");
   assert.match(root_, /<Composition id="StartAnimation" /);
   assert.match(root_, /<Composition id="StartAnimationDunkel" [^>]*defaultProps=\{\{ dunkel: true \}\}/);
-  assert.match(lies("src/videos/src/wachstum/Video.tsx"), /export const TEMPO_START = 1\.4;/);
+  assert.match(lies("src/videos/src/wachstum/Video.tsx"), /const DAUER_START = 330;\s*export const TEMPO_START = T\.buchstabenLaenge \/ DAUER_START;/, "11 Sekunden (330 Bilder), dieselben Rechenschritte wie das Video «wachstum»");
 });
 
 test("Startseite: die Rückmeldungen (giscus) sind auf Wunsch von Christian weg, mit Skript und Gestaltung (2. Oktober 2026)", () => {

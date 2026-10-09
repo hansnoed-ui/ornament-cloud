@@ -1,7 +1,8 @@
 // Video «wachstum» (9. Oktober 2026), 1 : 1 (1080 × 1080), ohne Ton und ohne Text: das Linienwachstum (differential line growth)
 // spielt «ornament.cloud» – erst das Ornament in einer atmenden Wolke, dann wächst aus 14 kleinen Ringen je ein Zeichen des Namens.
 // Intro und Outro sind das Signet der Vorlage (Intro ohne Kopfzeile, weil das Video keinen Text hat).
-// Dazu die Startanimation der Website (9. Oktober 2026): nur die Zeichen, 1,4-mal so schnell, dann das Signet – hell und dunkel (Farben der Website).
+// Dazu die Startanimation der Website (9. Oktober 2026): nur die Zeichen, in 11 s statt 17 s, ohne Signet am Ende – hell und dunkel (Farben der Website).
+// Sie endet mit dem fertigen Wort; die Seite blendet es in die Startseite über.
 import React from "react";
 import { AbsoluteFill, Easing, Sequence, interpolate, useCurrentFrame } from "remotion";
 import { Grund, INTRO, OUTRO, Outro, klemm } from "../vorlage/Bausteine";
@@ -23,10 +24,10 @@ export const T = {
   ende: INTRO + 300 + 510 + OUTRO,
 };
 
-// Startanimation der Website: die Zeichen 1,4-mal so schnell (17 s → 12,1 s), danach das Signet unverändert (6 s)
-export const TEMPO_START = 1.4;
-const ZEICHEN_START = Math.round(T.buchstabenLaenge / TEMPO_START);
-export const TStart = { signet: ZEICHEN_START, ende: ZEICHEN_START + OUTRO };
+// Startanimation der Website: dieselben Zeichen in 11 s statt 17 s (gut 1,5-mal so schnell), ohne Signet; das fertige Wort bleibt bis zum Ende stehen
+const DAUER_START = 330;
+export const TEMPO_START = T.buchstabenLaenge / DAUER_START;
+export const TStart = { ende: DAUER_START };
 
 // Farben: hell wie die Website im hellen Modus, dunkel wie im dunklen Modus (styles.css)
 type Farben = { grund: string; tinte: string; punkt: string };
@@ -107,24 +108,15 @@ const Wolke: React.FC = () => {
 
 // ---------- Szene 2: aus 14 Ringen wachsen die Zeichen ----------
 // tempo: Vielfaches der Rechenschritte je Bild (dieselben Schritte, also dasselbe Bild, nur schneller); laenge: Bilder der Szene
-const Zeichen: React.FC<{ tempo?: number; laenge?: number; farben?: Farben }> = ({ tempo = 1, laenge = T.buchstabenLaenge, farben = HELL }) => {
+const Zeichen: React.FC<{ tempo?: number; laenge?: number; farben?: Farben; ausblenden?: boolean }> = ({ tempo = 1, laenge = T.buchstabenLaenge, farben = HELL, ausblenden = true }) => {
   const f = useCurrentFrame();
   const lauf = buchstaben(Math.round(f * SCHRITTE_BUCHSTABEN * tempo));
   return (
-    <AbsoluteFill style={{ opacity: interpolate(f, [laenge - 14, laenge], [1, 0], klemm) }}>
+    <AbsoluteFill style={{ opacity: ausblenden ? interpolate(f, [laenge - 14, laenge], [1, 0], klemm) : 1 }}>
       <svg width={BILD} height={BILD} style={{ position: "absolute", inset: 0 }}><Linien lauf={lauf} farben={farben} /></svg>
     </AbsoluteFill>
   );
 };
-
-// Outro in den Farben der Website (die Vorlage kennt nur die helle; hier das Signet mit stil, Mitte wie in Bausteine.tsx)
-const SignetEnde: React.FC<{ farben: Farben }> = ({ farben }) => (
-  <AbsoluteFill style={{ overflow: "hidden", backgroundColor: farben.grund }}>
-    <div style={{ position: "absolute", left: 0, width: 1080, height: 1920, top: (HOEHE - 1920) / 2 }}>
-      <Signet stil={{ grund: farben.grund, tinte: farben.tinte, punkt: farben.punkt }} />
-    </div>
-  </AbsoluteFill>
-);
 
 export const WachstumVideo: React.FC = () => (
   <Grund>
@@ -135,14 +127,13 @@ export const WachstumVideo: React.FC = () => (
   </Grund>
 );
 
-/** Startanimation der Website: die Zeichen wachsen (1,4-mal so schnell), dann das Signet; hell oder dunkel */
+/** Startanimation der Website: die Zeichen wachsen (11 s statt 17 s) und bleiben als fertiges Wort stehen; hell oder dunkel */
 export const StartAnimation: React.FC<{ dunkel?: boolean }> = ({ dunkel = false }) => {
   const farben = dunkel ? DUNKEL : HELL;
   return (
     <Grund>
       <AbsoluteFill style={{ backgroundColor: farben.grund }}>
-        <Sequence durationInFrames={TStart.signet}><Zeichen tempo={TEMPO_START} laenge={TStart.signet} farben={farben} /></Sequence>
-        <Sequence from={TStart.signet} durationInFrames={OUTRO}><SignetEnde farben={farben} /></Sequence>
+        <Zeichen tempo={TEMPO_START} laenge={TStart.ende} farben={farben} ausblenden={false} />
       </AbsoluteFill>
     </Grund>
   );

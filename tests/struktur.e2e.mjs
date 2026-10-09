@@ -441,7 +441,7 @@ await check("Startanimation: neue Sitzung deckt die Seite ab, spielt das helle V
   assert.ok(flaeche.z >= 1000);
   assert.equal(flaeche.bg, "rgb(248, 248, 246)", "Grund wie die Seite (und das Video)");
   const v = await page.evaluate(() => window.__start);
-  assert.deepEqual(v.src, ["assets/start-animation.mp4?v=1"], "im hellen Modus das helle Video");
+  assert.deepEqual(v.src, ["assets/start-animation.mp4?v=2"], "im hellen Modus das helle Video");
   assert.equal(v.play, 1);
   const video = await page.locator("#start video").evaluate((e) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height, muted: e.muted }; });
   assert.deepEqual([video.w, video.h, video.muted], [800, 800, true], "quadratisch, so gross wie das Fenster hoch ist, ohne Ton");
@@ -464,7 +464,7 @@ await check("Startanimation: neue Sitzung deckt die Seite ab, spielt das helle V
 
 await check("Startanimation: im dunklen Modus das dunkle Video auf dunklem Grund", async () => {
   const { ctx, page, errors } = await startKontext({ colorScheme: "dark" });
-  assert.deepEqual((await page.evaluate(() => window.__start)).src, ["assets/start-animation-dunkel.mp4?v=1"]);
+  assert.deepEqual((await page.evaluate(() => window.__start)).src, ["assets/start-animation-dunkel.mp4?v=2"]);
   assert.equal(await page.locator("#start").evaluate((e) => getComputedStyle(e).backgroundColor), "rgb(23, 22, 20)", "Grund wie die Seite im dunklen Modus");
   assert.deepEqual(errors, []);
   await ctx.close();
