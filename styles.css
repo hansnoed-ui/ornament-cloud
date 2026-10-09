@@ -299,16 +299,20 @@ h1 {
   margin-top: 6px;
 }
 
-/* Kopfzeile: Navigation links, Hauptmenü rechts */
+/* Kopfzeile (seit 10. Oktober 2026, Wunsch von Christian): die Welle steht direkt unter den beiden Hauptlinks. Am Computer stehen die vier Kästchen des Menüs
+   rechts neben den Hauptlinks und die Welle unter beiden; auf schmalen Bildschirmen untereinander: Hauptlinks, Welle, Kästchen (Reihenfolge im Markup). */
 .topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 32px;
-  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: start;
+  column-gap: 32px;
+  margin-bottom: 30px;
 }
+.topbar > .seitenweg { grid-column: 1; grid-row: 1; }
+.topbar > .menu { grid-column: 2; grid-row: 1; justify-self: end; }
+.topbar > .divider { grid-column: 1 / -1; grid-row: 2; margin: 18px 0 0; }
 
-/* Trennlinie zwischen Header-Menü und Seiteninhalt: eine feine Welle in der Farbe der Hauptlinks (Wunsch vom 2. Oktober 2026) */
+/* Die feine Welle in der Farbe der Hauptlinks (Wunsch vom 2. Oktober 2026), seit 10. Oktober 2026 direkt unter den Hauptlinks, über dem Menü */
 .divider {
   display: block;
   width: 100%;
@@ -397,9 +401,8 @@ h1 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
-  width: min(100%, 368px);
-  flex: none;
-  margin-top: 4px;
+  width: 392px;
+  margin-top: 15px;   /* auf der Höhe des ersten Buttons links */
 }
 
 .menu-item {
@@ -456,13 +459,13 @@ h1 {
   vector-effect: non-scaling-stroke;
 }
 
-/* Schmale Bildschirme: Navigation oben, darunter das Menü (vier Kästchen nebeneinander) */
+/* Schmale Bildschirme: etwas weniger Raum unter dem Menü */
 @media (max-width: 760px) {
-  .topbar { flex-direction: column; gap: 16px; margin-bottom: 16px; }
-  .divider { margin-bottom: 28px; }
+  .topbar { display: flex; flex-direction: column; align-items: stretch; margin-bottom: 24px; }
+  .topbar > .divider { margin: 10px 0 18px; }
+  .menu { width: 100%; max-width: 420px; margin-top: 0; }
   .brand { margin-top: 0; }
   .seitenweg { margin-top: 0; }
-  .menu { width: 100%; max-width: 420px; margin-top: 4px; }   /* unter der Navigation, alle vier Kästchen nebeneinander */
 }
 
 @media (max-width: 360px) {

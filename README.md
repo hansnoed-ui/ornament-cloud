@@ -5,8 +5,8 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
 
 - `index.html` – Startseite (Neuordnung vom 2. Oktober 2026, Wunsch von Christian; seit 3. Oktober ohne sichtbaren Titel, seit 5. Oktober auch ohne den Satz
   «Beobachtung ist Anlass für Veränderungen in der Realität.», der nur noch in Beschreibung und Vorschaukarte zum Teilen steht, `tests/teilen.test.mjs` hält beides zusammen;
-  seit dem 9. Oktober 2026 steht unter der Welle der **Lead «Dreh- und Wendepunkte für Theorie und Praxis»** (`<p class="lead lead--start">`, Serife, sichtbar; Wunsch von Christian, der Titel `<h1>` bleibt unsichtbar)
-  und darunter **OMNA COLOR zum direkten Spielen** (seit 10. Oktober 2026 wieder, Wunsch von Christian): ein `<iframe>` auf `alpha/omna-color/` (freigegebene Ausnahme von REGELN §14, wie schon vom 4. bis 9. Oktober 2026;
+  der Lead «Dreh- und Wendepunkte für Theorie und Praxis» (9. bis 10. Oktober 2026) ist auf Wunsch von Christian wieder weg; der Titel `<h1>` bleibt unsichtbar.
+  Unter dem Kopf (Hauptlinks, Welle, Menü) steht direkt **OMNA COLOR zum direkten Spielen** (seit 10. Oktober 2026 wieder, Wunsch von Christian): ein `<iframe>` auf `alpha/omna-color/` (freigegebene Ausnahme von REGELN §14, wie schon vom 4. bis 9. Oktober 2026;
   `tests/orma.test.mjs` lässt nur diese eine Einbettung zu). Der Rahmen wächst mit dem Spiel; «Drehen» muss beim Laden nicht im Fenster stehen. Nach dem Drehen meldet das Spiel
   `postMessage({ omna: "uebung" })`, und die Startseite blättert zur gezogenen Übung. Der Beitrag zu OMNA COLOR steht weiter auf «Web». Die drei Kästen Apps, Prompts und Web, die vom 9. bis
   10. Oktober 2026 unter dem Lead standen, sind seit dem 10. Oktober 2026 mit «Zettel» das Menü oben auf allen Seiten.
@@ -34,7 +34,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   die Schrift in der Farbe der Seite (`--bg`, `--papier`, `--night`; Kontrast ab 4,5); in erzwungenen Farben (Windows, hoher Kontrast) bleibt er mit einem feinen Ring kenntlich. Aktiv ist im Rad «Das Dritte Rad» (`aria-current="page"`), auf der Startseite
   «Ornament Cloud» (`page`), auf allen anderen Seiten ebenfalls «Ornament Cloud» (`true`: man ist in der Website). Beim Darüberfahren wird der Rahmen voll, der Tastaturfokus ist ein Ring von 2 px in der Farbe des Buttons.
   Ausgenommen sind ORMA (eigene App), `werke/` (Vollbild) und die Weiterleitung `portfolio/rad-von-zeit-und-raum/`. Neue Seiten brauchen sie ebenfalls; `tests/navigation.test.mjs` meldet fehlende.
-  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 42: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
+  Wird `styles.css` geändert, `?v=` hochzählen (zurzeit 44: in den Seiten, in `tools/build-alpha-texte.ts`, danach `tools/build-app.ts` für die App-Seiten und den Service Worker von ORNA)
 - `icons.js` – gezeichnete, animierte Schwarz-Weiss-Symbole: die Welle unter dem Kopf, das Rad der Karten ORNA und ORMA, Prozess, Inklusion und Turm (News, Termine); die Symbole des früheren Menüs (reentry, zeit, stellen) sind entfernt (Dauer in `PERIOD`, Marke `?v=` zurzeit 14)
 - `news/` – News als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Eintrag = `<details class="entry">`-Block kopieren und oben einfügen
 - `termine/` – Termine als aufklappbare Einträge (nicht im Menü, nicht verlinkt); neuer Termin = `<details class="entry">`-Block kopieren und oben einfügen
@@ -152,7 +152,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `tests/teilen.test.mjs` prüft sie. Ändert sich der Satz der Startseite oder das Rad, das Bild neu erzeugen. Mit `vorschau` entstehen die beiden Bilder der Seite «Web» (4 : 5, 640 × 800, JPEG).
 - `tests/` – Prüfungen des Rads: `node --experimental-strip-types --no-warnings --test tests/doppelspalt.test.mjs`
   und im Browser (Playwright): `node tests/doppelspalt.e2e.mjs`. Aufbau der Website (Menü, Startseite, Apps, Masterprompts, Web, Versionsmarken): `tests/struktur.test.mjs`;
-  im Browser `NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs` (Menü auf allen Breiten, die Startseite mit Lead und OMNA COLOR, die Seite Web mit dem Stellenfeld)
+  im Browser `NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs` (Menü auf allen Breiten, die Startseite mit OMNA COLOR, die Seite Web mit dem Stellenfeld)
 - `slider.js` – Punkte über einer Wisch-Galerie auf dem Smartphone (Wischen selbst per CSS); zurzeit auf keiner Seite eingebunden,
   alle Raster stehen auf dem Handy untereinander (`.grid--stapel`). Wieder einschalten: `<div class="slider-dots" …>` vor das Raster, `.grid--stapel` weg, Skript einbinden
 - `bg.js` – animierter Hintergrund (Lemniskaten und Schleifen als SVG, Tempo in `CONFIG`); zurzeit auf keiner Seite eingebunden. Wieder einschalten: `<div class="bg" aria-hidden="true"><svg class="bg-field" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg></div>` direkt nach `<body>` und `<script src="bg.js?v=2" defer></script>` vor `</body>`

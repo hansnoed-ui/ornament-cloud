@@ -49,27 +49,25 @@ const box = (loc) => loc.evaluate((e) => { const r = e.getBoundingClientRect(); 
 const sich = (a, b) => a.x < b.r - 0.5 && b.x < a.r - 0.5 && a.y < b.b - 0.5 && b.y < a.b - 0.5;     // Rechtecke überlappen
 
 // ---------- Startseite: Lead und drei Kästen ----------
-// Wunsch von Christian, 9. Oktober 2026: unter der Welle der Lead «Dreh- und Wendepunkte für Theorie und Praxis».
-// Seit 10. Oktober 2026 (Wunsch von Christian) darunter wieder OMNA COLOR zum Spielen (wie 4. bis 9. Oktober 2026); die Kästen Apps, Prompts und Web sind mit «Zettel» das Menü oben.
-await check("Startseite (Computer): kein sichtbarer Titel, oben das Menü mit den vier Kästchen, unter der Welle der Lead, darunter OMNA COLOR; kein Video, keine Karte", async () => {
+// Seit 10. Oktober 2026 (Wunsch von Christian): die Welle direkt unter den beiden Hauptlinks (Handy: Hauptlinks, Welle, die vier Kästchen; Computer: Kästchen rechts daneben, Welle unter beiden); dann OMNA COLOR.
+// Der Lead «Dreh- und Wendepunkte für Theorie und Praxis» (9. bis 10. Oktober 2026) ist weg.
+await check("Startseite (Computer): kein sichtbarer Titel und kein Lead; Hauptlinks und Menü nebeneinander, darunter die Welle, dann OMNA COLOR; kein Video, keine Karte", async () => {
   const { ctx, page, errors } = await startseite({ viewport: { width: 1200, height: 900 }, reducedMotion: "reduce" });
   assert.equal(await page.locator("h1").textContent(), "Ornament Cloud");
   assert.equal(await page.locator("h1").evaluate((e) => e.getBoundingClientRect().width), 1, "der Titel ist nur für Vorlesegeräte da");
-  assert.equal(await page.locator(".site-header .lead").count(), 1);
-  assert.equal((await page.locator(".site-header .lead").textContent()).trim(), "Dreh- und Wendepunkte für Theorie und Praxis");
-  assert.ok(await page.locator(".site-header .lead").isVisible(), "der Lead ist sichtbar");
-  assert.equal(await page.getByText("Beobachtung ist Anlass").count(), 0, "der frühere Satz steht nicht auf der Seite");
+  assert.equal(await page.locator(".lead").count(), 0, "kein Lead");
+  assert.equal(await page.getByText("Dreh- und Wendepunkte").count(), 0);
   assert.equal(await page.locator("main .card, main article").count(), 0, "kein Beitrag, keine Karte");
-  assert.equal(await page.locator("video:not(#start video), .erklaervideo, .kaesten").count(), 0, "kein Video, keine Kästen unter dem Lead");
+  assert.equal(await page.locator("video:not(#start video), .erklaervideo, .kaesten").count(), 0, "kein Video, keine Kästen");
   assert.deepEqual(await page.locator("main > *").evaluateAll((els) => els.map((e) => e.className)), ["omna"], "main enthält OMNA COLOR");
-  const menu = await box(page.locator(".site-header .menu")), welle = await box(page.locator(".site-header .divider")), lead = await box(page.locator(".site-header .lead")), rahmen = await box(page.locator(".omna iframe"));
-  assert.ok(menu.b <= welle.y + 1 && welle.b <= lead.y + 1 && lead.b <= rahmen.y + 1, "von oben nach unten: Menü, Welle, Lead, OMNA COLOR");
+  const links = await box(page.locator(".site-header .seitenweg")), welle = await box(page.locator(".site-header .divider")), menu = await box(page.locator(".site-header .menu")), rahmen = await box(page.locator(".omna iframe"));
+  assert.ok(links.b <= welle.y + 1 && menu.b <= welle.y + 1 && welle.b <= rahmen.y + 1, "Computer: Hauptlinks und Menü nebeneinander, darunter die Welle, dann OMNA COLOR");
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   assert.deepEqual(errors, []);
   await ctx.close();
 });
 
-await check("Startseite: OMNA COLOR unter dem Lead spielbar; der Rahmen wächst ohne eigenen Bildlauf, und nach dem Drehen blättert die Seite zur gezogenen Übung (Computer, Handy)", async () => {
+await check("Startseite: OMNA COLOR unter dem Menü spielbar; der Rahmen wächst ohne eigenen Bildlauf, und nach dem Drehen blättert die Seite zur gezogenen Übung (Computer, Handy)", async () => {
   for (const opts of [{ viewport: { width: 1200, height: 800 } }, { ...devices["Pixel 7"] }]) {
     const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
     await page.waitForFunction(() => { const f = document.querySelector(".omna iframe"), d = f?.contentDocument; return d?.querySelectorAll("#outer path.seg").length > 0 && f.style.height; }, null, { timeout: 15000 });
@@ -90,16 +88,15 @@ await check("Startseite: OMNA COLOR unter dem Lead spielbar; der Rahmen wächst 
   }
 });
 
-await check("Startseite (Handy): die vier Kästchen des Menüs in einer Reihe, darunter der Lead; kein seitliches Wischen", async () => {
+await check("Startseite (Handy): Hauptlinks, darunter die Welle, darunter die vier Kästchen des Menüs in einer Reihe; kein seitliches Wischen", async () => {
   for (const opts of [{ ...devices["Pixel 7"] }, { ...devices["iPhone 13"] }, { viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true }]) {
     const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     const m = await page.locator(".menu-item").evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y)]; }));
     assert.equal(new Set(m.map((p) => p[1])).size, 1, "eine Reihe");
     assert.equal(new Set(m.map((p) => p[0])).size, 4, "vier Spalten");
-    const lead = await box(page.locator(".site-header .lead")), menu = await box(page.locator(".menu"));
-    assert.ok(lead.x >= 19 && lead.r <= page.viewportSize().width - 19, "der Lead hat Rand und bricht um");
-    assert.ok(menu.b <= lead.y && lead.b <= page.viewportSize().height, "Menü und Lead stehen beim Laden im Fenster");
+    const links = await box(page.locator(".seitenweg")), welle = await box(page.locator(".divider")), menu = await box(page.locator(".menu"));
+    assert.ok(links.b <= welle.y + 1 && welle.b <= menu.y + 1 && menu.b <= page.viewportSize().height, "Hauptlinks, Welle, Menü, alles beim Laden im Fenster");
     assert.deepEqual(errors, []);
     await ctx.close();
   }
@@ -118,7 +115,7 @@ await check("Startseite: Rückkanal in der Spalte der Seite, bündig mit dem Fus
 });
 
 // ---------- Menü ----------
-await check("Menü: vier Kästchen (Zettel, Apps, Prompts, Web) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Computer rechts oben, Handy unter der Navigation", async () => {
+await check("Menü: vier Kästchen (Zettel, Apps, Prompts, Web) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
   const ctx = await browser.newContext();
   for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/"]) {
     for (const w of [320, 360, 390, 412, 600, 768, 1024, 1280]) {
@@ -145,8 +142,13 @@ await check("Menü: vier Kästchen (Zettel, Apps, Prompts, Web) mit Symbol auf a
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${pfad} ${w}: seitliches Wischen`);
       const wrap = await box(page.locator(".site-header .wrap"));
       for (const [i, b] of bs.entries()) assert.ok(b.x >= wrap.x - 1 && b.r <= wrap.r + 1, `${pfad} ${w}: Kästchen ${i + 1} liegt innerhalb der Seite`);
-      if (w <= 760) assert.ok(bs[0].y >= nav.b, `${pfad} ${w}: unter der Navigation`);
-      if (w >= 1024) assert.ok(Math.abs(bs[3].r - wrap.r + 20) <= 2, `${pfad} ${w}: rechtsbündig (${bs[3].r} gegen ${wrap.r - 20})`);
+      const welle = await box(page.locator(".site-header .divider"));
+      assert.ok(nav.b <= welle.y + 1, `${pfad} ${w}: die Welle steht unter den Hauptlinks`);
+      if (w <= 760) {
+        assert.ok(welle.b <= bs[0].y + 1 && Math.abs(bs[0].x - nav.x) <= 1, `${pfad} ${w}: Handy: unter der Welle, linksbündig mit der Navigation`);
+      } else {
+        assert.ok(bs[0].b <= welle.y + 1 && Math.abs(bs[3].r - wrap.r + 20) <= 2, `${pfad} ${w}: Computer: rechts oben neben den Hauptlinks, die Welle unter beiden (${bs[3].r} gegen ${wrap.r - 20})`);
+      }
       await page.close();
     }
   }

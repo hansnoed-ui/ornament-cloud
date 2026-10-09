@@ -55,6 +55,8 @@ test("Menü: vier Kästchen mit Symbol und Namen (Zettel, Apps, Prompts, Web) in
     const html = lies(datei);
     const nav = html.match(/<nav class="menu" aria-label="Hauptmenü">([\s\S]*?)<\/nav>/);
     assert.ok(nav, `${datei}: Menü fehlt`);
+    // seit 10. Oktober 2026: die Welle direkt unter den beiden Hauptlinks, darunter das Menü
+    assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">[\s\S]*?<\/nav>\s*<svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"><\/svg>\s*<nav class="menu"/, `${datei}: Hauptlinks, Welle, Menü`);
     assert.ok(!/data-icon|menu-sub|menu-title/.test(nav[1]), `${datei}: keine animierten Symbole, keine Untertitel`);
     const eintraege = [...nav[1].matchAll(/<a class="menu-item" href="([^"]+)"(?: aria-current="(page|true)")?>(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>([^<]+)<\/span><\/a>/g)];
     assert.equal(eintraege.length, 4, `${datei}: vier Kästchen mit verborgenem Symbol und Namen`);
@@ -90,22 +92,21 @@ test("Menü: Kästchen in der serifenlosen Schrift der Seite, vier in einer Reih
   assert.ok(!/@media[^{]*\{\s*\.menu\s*\{[^}]*repeat\(2/.test(css), "auf dem Handy nicht mehr zwei mal zwei");
 });
 
-test("Startseite: kein sichtbarer Titel, unter der Welle der Lead, darunter OMNA COLOR zum Spielen; kein Video, keine Karten und keine Rückmeldungen", () => {
+test("Startseite: kein sichtbarer Titel und kein Lead, unter dem Kopf OMNA COLOR zum Spielen; kein Video, keine Karten und keine Rückmeldungen", () => {
   const html = lies("index.html").replace(/<!--[\s\S]*?-->/g, "");        // geprüft wird, was die Seite zeigt, nicht die Kommentare
   // Wunsch vom 3. Oktober 2026: Titel «Raumstellen, Zeitobjekte» gestrichen; für Vorlesegeräte bleibt eine unsichtbare Überschrift
   assert.ok(!html.includes("Raumstellen, Zeitobjekte"), "der frühere Titel ist weg");
   assert.match(html, /<h1 class="sr-only">Ornament Cloud<\/h1>/);
   // Wunsch vom 5. Oktober 2026: auch der Satz «Beobachtung ist Anlass …» steht nicht mehr auf der Seite (er bleibt in Beschreibung und Vorschaukarte)
   assert.ok(!/>\s*Beobachtung ist Anlass/.test(html), "der frühere Satz steht nicht mehr auf der Seite");
-  // Wunsch vom 9. Oktober 2026: unter der Welle steht ein Lead; seine Gestaltung steht in der Startseite, nicht in styles.css
-  assert.deepEqual([...html.matchAll(/<p class="lead[^"]*">([^<]*)<\/p>/g)].map((m) => m[1]), ["Dreh- und Wendepunkte für Theorie und Praxis"], "genau dieser Lead");
-  assert.match(html, /<h1 class="sr-only">Ornament Cloud<\/h1>\s*<p class="lead lead--start">/, "der Lead folgt dem unsichtbaren Titel im Kopf");
-  assert.ok(!lies("styles.css").includes(".lead--start") && html.includes(".lead--start {"), "die Gestaltung des Leads steht in der Startseite (styles.css und ?v= bleiben unberührt)");
+  // Der Lead «Dreh- und Wendepunkte für Theorie und Praxis» (9. bis 10. Oktober 2026) ist auf Wunsch vom 10. Oktober 2026 wieder weg
+  assert.ok(!/class="lead|Dreh- und Wendepunkte|\.lead--start/.test(html), "kein Lead auf der Startseite");
+  assert.match(html, /<\/nav>\s*<\/div>\s*<h1 class="sr-only">Ornament Cloud<\/h1>\s*<\/div>\s*<\/header>/, "im Kopf nach dem Menü nur noch der unsichtbare Titel");
   // Die drei Kästen Apps, Prompts und Web standen vom 9. bis 10. Oktober 2026 unter dem Lead; seit dem 10. Oktober 2026 sind sie mit «Zettel» das Menü oben
   assert.ok(!/class="kaesten|class="kasten|\.kaesten \{/.test(html), "keine Kästen mehr unter dem Lead (sie sind jetzt das Menü)");
   const stelle = (s) => { const i = html.indexOf(s); assert.ok(i > 0, s); return i; };
   assert.ok(stelle('<nav class="menu"') < stelle("<h1") && stelle("<h1") < stelle('<figure class="omna">') && stelle('<figure class="omna">') < stelle("</main>"),
-    "Reihenfolge: das Menü mit den Kästchen, (unsichtbarer) Titel, Lead, darunter OMNA COLOR (seit 10. Oktober 2026), dann nur noch Rückkanal und Fuss");
+    "Reihenfolge: das Menü mit den Kästchen, (unsichtbarer) Titel, darunter OMNA COLOR (seit 10. Oktober 2026), dann nur noch Rückkanal und Fuss");
   assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div|iframe|video|nav)\b/g)].map((m) => m[1]), ["figure", "iframe"], "in main steht nur OMNA COLOR");
   // Wunsch vom 9. Oktober 2026: das Erklärvideo zu ORNA (5. bis 9. Oktober 2026 auf der Startseite) ist von der Startseite weg und steht auf «Web» (web/orna-erklaervideo/);
   // die Startanimation (ausserhalb von main) hat ihr eigenes Video
