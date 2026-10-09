@@ -27,7 +27,7 @@
   <!--
     Startanimation (Wunsch vom 9. Oktober 2026): bevor die Startseite erscheint, wachsen die Zeichen von «ornament.cloud» als Linienwachstum, das fertige Wort blendet aus, dann blendet die Seite über
     (Video, ohne Ton, 11 Sekunden; Quellcode src/videos/src/wachstum/, Composition StartAnimation und StartAnimationDunkel). Sie läuft nur auf dieser Seite, einmal pro Sitzung
-    (Vorschau jederzeit mit ?start), nicht bei «weniger Bewegung» und nicht bei «Daten sparen». Tippen, eine Taste oder der Knopf «Intro überspringen» (unten rechts, orange) beendet sie; läuft das Video nicht an, kommt die Seite sofort.
+    (Vorschau jederzeit mit ?start), nicht bei «weniger Bewegung» und nicht bei «Daten sparen». Tippen, eine Taste oder der Knopf «Skip intro» (unten rechts, orange) beendet sie; läuft das Video nicht an, kommt die Seite sofort.
     Die Gestaltung steht hier in der Seite (nur die Startseite braucht sie), damit styles.css (?v=) unverändert bleibt. Ohne Skript erscheint sie nie.
   -->
   <style>
@@ -68,7 +68,7 @@
 <body>
   <div class="start" id="start">
     <video muted playsinline preload="auto" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback></video>
-    <button class="start-weiter" type="button">Intro überspringen</button>
+    <button class="start-weiter" type="button" lang="en">Skip intro</button>
   </div>
   <header class="site-header">
     <div class="wrap">
@@ -132,7 +132,7 @@
   </footer>
   <script>
     // Startanimation (siehe Kommentar im Kopf): Video je nach hellem oder dunklem Modus; die Seite darunter ist währenddessen nicht erreichbar (inert).
-    // Endet das Video, bei Fehler, wenn es nicht von selbst anläuft (nach 6 Sekunden) oder stehen bleibt, bei Tippen, Taste oder «Intro überspringen»: ausblenden und freigeben.
+    // Endet das Video, bei Fehler, wenn es nicht von selbst anläuft (nach 6 Sekunden) oder stehen bleibt, bei Tippen, Taste oder «Skip intro»: ausblenden und freigeben.
     (function () {
       var d = document.documentElement, el = document.getElementById("start");
       if (!el || !d.classList.contains("start-an")) return;
