@@ -527,6 +527,19 @@ await check("Handy: kein waagerechtes Scrollen, Karten, Lesen, Wege und Leiste p
 });
 
 // ---------- Das Rad mit dem Finger drehen (Wunsch vom 2. Oktober 2026) ----------
+await check("Handy, mit Bewegung: nach dem Drehen steht die erste Karte ganz im Fenster, nicht oben angeschnitten (10. Oktober 2026)", async () => {
+  // die Abstände über dem Rad schrumpfen, sobald Karten da sind; ohne «sofort» blätterte die Seite um diesen Betrag zu weit
+  const { ctx, page, errors } = await open("alpha/drittes-rad/", { viewport: { width: 412, height: 839 }, isMobile: true, hasTouch: true, reducedMotion: "no-preference" });
+  await page.waitForFunction(() => window.radGeladen === true);
+  await page.click("#go");
+  await page.locator("#result").waitFor({ state: "visible", timeout: 10000 });
+  await page.waitForTimeout(1800);   // Blättern und Übergänge sind vorbei
+  const oben = await page.locator("#result > .card:not([hidden])").first().evaluate((e) => e.getBoundingClientRect().top);
+  assert.ok(oben >= 8 && oben <= 40, `erste Karte oben mit etwas Luft im Fenster (${Math.round(oben)} px)`);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 await check("Finger: der angefasste Ring folgt der Geste, die anderen laufen gegenläufig; nach dem Loslassen läuft das Rad in Richtung der Geste aus und landet genau auf den Stücken der Karten (im und gegen den Uhrzeigersinn)", async () => {
   const { ctx, page, errors } = await open("alpha/drittes-rad/", { ...HANDY, ...MIT_BEWEGUNG });
   await page.waitForFunction(() => window.radGeladen === true);

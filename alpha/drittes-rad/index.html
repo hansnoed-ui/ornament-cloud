@@ -79,6 +79,7 @@ body:not(:has(#result:not([hidden]), #lese:not([hidden]))) .wheelbox { gap: clam
 body:not(:has(#result:not([hidden]), #lese:not([hidden]))) { padding-bottom: 24px; }   /* unten weniger Rand als später (56 px): mit der Navigation an der gemeinsamen, tieferen Stelle beginnt die Startseite sonst schon bei 1280 × 800 zu blättern, obwohl alles im Bild ist */
 main { transition: margin-top .45s ease; }
 .wheelbox { transition: gap .45s ease; }
+body.sofort main, body.sofort .wheelbox { transition: none; }   /* beim Blättern zum Ergebnis: Abstände sofort setzen, sonst schrumpft die Seite über dem Ziel noch, während sie blättert, und die erste Karte wird oben angeschnitten (10. Oktober 2026) */
 .wheel { width: min(100%, 480px); aspect-ratio: 1; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: width .3s; }
 /* Desktop (Wunsch vom 5. Oktober 2026, wie bei OMNA COLOR auf der Startseite): das Rad höchstens so gross, dass «Drehen» und «Brücke» beim Laden über dem unteren Fensterrand stehen.
    Abzug: Navigation oben (120 px), Abstand darüber und darunter wie auf der Startseite des Rads, Knöpfe (40 px) und der Rand unten (24 px), so blättert die Startseite nicht; nie kleiner als 280 px.
@@ -117,7 +118,7 @@ button:focus-visible, a:focus-visible { outline: 1px solid var(--gold-hi); outli
 button.quiet, a.quiet { background: none; color: var(--ivory); border: 0; padding: 4px 0; font: 400 .9rem var(--body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 button.quiet:disabled { opacity: .4; cursor: default; }
 .rechts { display: grid; gap: 20px; min-width: 0; }
-.cards { display: grid; gap: 14px; }
+.cards { display: grid; gap: 14px; scroll-margin-top: 16px; }
 .bridge-note { margin: 0; padding: 10px 14px; border-left: 2px solid var(--gold); color: var(--gold-hi); font: 400 1rem/1.45 var(--body); }
 .card { position: relative; display: grid; gap: 5px; background: linear-gradient(160deg, #1b1738cc, #100d20cc); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; transition: border-color .25s, box-shadow .25s, transform .25s; }
 .card:hover, .card:focus-within { border-color: var(--gold); box-shadow: 0 0 26px #c9a45c2a; transform: translateY(-1px); }
@@ -402,7 +403,11 @@ function zeige({ scroll = false, schreibe: wie = null, fokussiere = false } = {}
   if (fokus) lese(); else uebersicht();
   schreibe(wie);
   const ziel = fokus ? $("wege") : $("result");   // beim offenen Stück steht oben der Weg weiter, darunter das Stück
-  if (scroll || fokussiere) ziel.scrollIntoView({ behavior: reduce() ? "auto" : "smooth", block: fokus || !matchMedia("(min-width: 800px)").matches ? "start" : "nearest" });
+  if (scroll || fokussiere) {
+    document.body.classList.add("sofort"); void document.body.offsetHeight;   // erst die endgültigen Abstände, dann das Ziel berechnen
+    ziel.scrollIntoView({ behavior: reduce() ? "auto" : "smooth", block: fokus || !matchMedia("(min-width: 800px)").matches ? "start" : "nearest" });
+    requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove("sofort")));
+  }
   if (fokussiere && fokus) $("lese").querySelector("h2")?.focus({ preventScroll: true });
 }
 
