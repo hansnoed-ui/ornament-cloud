@@ -221,7 +221,7 @@ test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und 
     const html = lies(`${ordner}/index.html`);
     assert.match(html, new RegExp(`<title>${s.titel} – Ornament Cloud</title>`));
     assert.match(html, new RegExp(`<h1>${s.titel}</h1>`));
-    assert.match(html, /<p class="lead">[^<]{10,}<\/p>/);
+    assert.match(html, /<p class="lead">[^<]{5,}<\/p>/);   // «Tests» auf «Web» (Wunsch von Christian, 9. Oktober 2026) ist kurz
     assert.match(html, new RegExp(`<link rel="canonical" href="https://ornament\\.cloud/${ordner}/">`));
     assert.match(html, /<meta name="description" content="[^"]{20,}">/);
     assert.ok(sitemap.includes(`<loc>https://ornament.cloud/${ordner}/</loc>`), `${ordner}/ steht in der Sitemap`);
