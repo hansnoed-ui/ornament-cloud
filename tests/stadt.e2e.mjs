@@ -138,7 +138,14 @@ await check("Vollbild: der Knopf schaltet um, Stadt und Panel füllen den Bildsc
   await ctx.close();
   const h = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const p = await h.newPage();
-  await p.goto(base + "?vollbild&figuren=32");
+  // schon vor dem Vorlauf (app.js zurückgehalten) steht die Seite im Vollbild – kein Zwischenbild in der normalen Ansicht
+  let freigeben; const zurueck = new Promise((r) => (freigeben = r));
+  await p.route(/\/alpha\/stadt\/app\.js/, async (route) => { await zurueck; await route.continue(); });
+  await p.goto(base + "?vollbild&figuren=32", { waitUntil: "commit" });
+  await p.waitForSelector("#panel", { state: "attached" });
+  const frueh = await p.evaluate(() => ({ pos: getComputedStyle(document.getElementById("stadt")).position, karte: document.querySelector(".karte-box").getBoundingClientRect().height }));
+  assert.ok(frueh.pos === "fixed" && frueh.karte > 500, `sofort im Vollbild (${frueh.pos}, ${Math.round(frueh.karte)})`);
+  freigeben();
   await p.waitForSelector(".stadt.bereit", { timeout: 30000 });
   m = await p.evaluate(() => ({ an: document.getElementById("stadt").classList.contains("vollbild"), karte: document.querySelector(".karte-box").getBoundingClientRect(), panelTop: document.getElementById("panel").getBoundingClientRect().top, sw: document.documentElement.scrollWidth }));
   assert.ok(m.an, "?vollbild");

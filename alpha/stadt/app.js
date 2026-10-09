@@ -1,11 +1,11 @@
 // «Die Paradoxie der Stadt» – Bedienung: Uhr, Begleiten, Verändern (mit Vorschau), Sichtweisen, Protokoll, Vergleiche, Modell.
 // Die Simulation (modell.js) läuft mit festem Schritt; die Bildrate bestimmt nur, wie viele Schritte je Bild gerechnet werden.
-import * as M from "./modell.js?v=6";
-import { zeichne, farben, positionVon } from "./ansicht.js?v=6";
-import { nebeneinanderNacheinander, verteilapparat, befragungAuswertung, SCHWELLEN } from "./raster.js?v=6";
-import { VERBINDUNG, BANK } from "./stadtplan.js?v=6";
-import * as F from "./fragen.js?v=6";
-import { liveAdresse, liveVerbindung } from "./live.js?v=6";
+import * as M from "./modell.js?v=7";
+import { zeichne, farben, positionVon } from "./ansicht.js?v=7";
+import { nebeneinanderNacheinander, verteilapparat, befragungAuswertung, SCHWELLEN } from "./raster.js?v=7";
+import { VERBINDUNG, BANK } from "./stadtplan.js?v=7";
+import * as F from "./fragen.js?v=7";
+import { liveAdresse, liveVerbindung } from "./live.js?v=7";
 
 const $ = (s, w = document) => w.querySelector(s);
 const $$ = (s, w = document) => [...w.querySelectorAll(s)];
@@ -31,7 +31,7 @@ let tabelle = null, tabelleFehler = null;
 
 // ---------- Start ----------
 async function start() {
-  try { tabelle = (await import("./jev.js?v=6")).JEV; if (!M.tabelleGueltig(tabelle)) { tabelleFehler = "Prüfsumme passt nicht zu den Fragen"; tabelle = null; } }
+  try { tabelle = (await import("./jev.js?v=7")).JEV; if (!M.tabelleGueltig(tabelle)) { tabelleFehler = "Prüfsumme passt nicht zu den Fragen"; tabelle = null; } }
   catch (e) { tabelleFehler = "jev-Tabelle nicht geladen"; tabelle = null; }
   await new Promise((r) => setTimeout(r, 30));    // erst die Seite zeigen, dann die Stadt anlegen (Vorlauf rund eine Sekunde)
   neuerLauf();
