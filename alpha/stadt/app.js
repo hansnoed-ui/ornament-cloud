@@ -230,7 +230,8 @@ const ZUSTAND = (z, f) => {
   if (f.zustand === "verweilt") return `verweilt: ${M.ORTE[f.ort]?.name ?? f.ort}`;
   if (f.zustand === "pause") return "macht eine Pause auf einer Bank";
   if (f.wartetSeit !== null) return `wartet seit ${Math.round(z.t - f.wartetSeit)} s ${f.pfad && M.KANTE[f.pfad.kanten[f.pi]]?.art === "ampel" ? "an der Ampel" : "an der Strasse"}${ziel ? ` (unterwegs zum ${ziel})` : ""}`;
-  return f.heimweg ? "auf dem Heimweg" : ziel ? `unterwegs zum ${ziel}` : "unterwegs";
+  const statt = a && a.ziel !== a.a.ort && M.ORTE[a.a.ort] ? ` (statt zum ${M.ORTE[a.a.ort].name})` : "";
+  return f.heimweg ? "auf dem Heimweg" : ziel ? `unterwegs zum ${ziel}${statt}` : "unterwegs";
 };
 const STATUS = { offen: "offen", unterwegs: "unterwegs", erledigt: "erledigt", aufgegeben: "aufgegeben", verschoben: "verschoben" };
 const ART = { arbeit: "Arbeit (Bus)", einkauf: "Einkauf im Laden", besorgung: "Besorgung am Kiosk", bringen: "Kind zur Schule bringen", abholen: "Kind abholen", hund: "Runde mit dem Hund", freizeit: "Freizeit", atelier: "Offener Abend" };
@@ -256,7 +257,7 @@ function begleitenHtml() {
       <p class="leise">${e.gewohnheit ? "Gewählt aus Gewohnheit, ohne neu abzuwägen. " : ""}${e.irrtum ? "Die Figur ging dabei von einer Strasse aus, die es so nicht mehr gibt. " : ""}Wahrscheinlichkeiten: ${e.quelle === "jev" ? "jev-Tabelle (beim Bauen eingeschätzt)" : "Ersatzregeln"}. Gezogen wird mit dem Startwert, nicht immer das Wahrscheinlichste.</p></details>`;
   }
   const wege = [...f.wege].reverse().slice(0, 8);
-  h += `<h4>Wege</h4>${wege.length ? `<table class="tab"><thead><tr><th>Tag</th><th>Ziel</th><th>Ausgang</th><th>Dauer</th><th>Warten</th></tr></thead><tbody>${wege.map((w) => `<tr><td>${w.tag}</td><td>${esc(M.ORTE[w.ziel]?.name ?? w.ziel)}</td><td>${w.status}${w.wahl && WAHL[w.wahl] && w.wahl !== "gleich" ? ` <span class="leise">(${WAHL[w.wahl]})</span>` : ""}</td><td>${w.status === "aufgegeben" ? "–" : M.dauerText(w.dauer)}</td><td>${Math.round(w.warten)} s</td></tr>`).join("")}</tbody></table>` : `<p class="leise">Noch keine Wege.</p>`}
+  h += `<h4>Wege</h4>${wege.length ? `<table class="tab"><thead><tr><th>Tag</th><th>Ziel</th><th>Ausgang</th><th>Dauer</th><th>Warten</th></tr></thead><tbody>${wege.map((w) => `<tr><td>${w.tag || "Vorlauf"}</td><td>${esc(M.ORTE[w.ziel]?.name ?? w.ziel)}</td><td>${w.status}${w.wahl && WAHL[w.wahl] && w.wahl !== "gleich" ? ` <span class="leise">(${WAHL[w.wahl]})</span>` : ""}</td><td>${w.status === "aufgegeben" ? "–" : M.dauerText(w.dauer)}</td><td>${Math.round(w.warten)} s</td></tr>`).join("")}</tbody></table>` : `<p class="leise">Noch keine Wege.</p>`}
     <h4>Erinnert sich an</h4><ul class="erlebt">${[...f.erlebt].reverse().slice(0, 6).map((x) => `<li><span class="leise">${x.tag ? `Tag ${x.tag}` : "Vortag"}, ${M.uhr(x.t)}</span> ${esc(x.text)}</li>`).join("") || "<li class='leise'>noch nichts</li>"}</ul>
     <p class="leise">${Object.values(f.bekannt).filter((n) => n >= 2).length} Bekanntschaften · Abkürzungen: ${[f.kennt.durchgang && "Durchgang", f.kennt.trampel && "Trampelpfad"].filter(Boolean).join(", ") || "keine"} · feste Gewohnheiten: ${Object.entries(f.gewohnheit).filter(([, g]) => g.staerke >= 0.4).map(([k, g]) => `${M.ORTE[k]?.name ?? k} → ${WAHL[g.wahl] ?? g.wahl}`).join(", ") || "keine"}</p></section>`;
   h += verteilapparatHtml(z, f);
@@ -493,7 +494,7 @@ function modellHtml() {
     <p class="leise">Unterschieden werden Veränderung, Vorgeschichte und fortwirkende Folge. Viel Bewegung ist nicht schon Verzeitlichung; stabile Abläufe verlangen keine stillstehenden Figuren; dass die Stadt Fläche hat, ist noch keine Verräumlichung – erst die Karte mit festen Orten macht Unterschiede wiederauffindbar. Kontrollfrage: Nach welchen Kriterien gilt eine Rückkehr hier als dieselbe – und könnten diese Kriterien im weiteren Verlauf selbst fraglich werden? Raster: Christian Strickler, «Nebeneinander und Nacheinander».</p>
   </details>
   <section><h3>Quellen und Redlichkeit</h3>
-    <p>Ausgangspunkt: Klaus Kusanowskys Grafik «Urbane Paradoxien: Die Systematik der Stadt», erarbeitet mit NotebookLM.<br>Beobachtungsraster: Christian Strickler, «Nebeneinander, Nacheinander» und «Der Verteilapparat des Körpers».<br>Diese Anwendung ist eine eigenständige, vereinfachende Weiterentwicklung.</p>
+    <p>Ausgangspunkt: Klaus Kusanowskys Grafik «Urbane Paradoxien: Die Systematik der Stadt», erarbeitet mit NotebookLM. Er hat damit soziologische Literatur ausgewertet und eine gegliederte Übersicht erstellt, als Anfang für eine ausführlich-systematische Erarbeitung des Themas.<br>Beobachtungsraster: Christian Strickler, «Nebeneinander, Nacheinander» und «Der Verteilapparat des Körpers».<br>Diese Anwendung ist eine eigenständige, vereinfachende Weiterentwicklung.</p>
     <table class="tab quellen"><thead><tr><th>Quelle (nach der Grafik)</th><th>dort genanntes Thema</th><th>im Modell als Frage</th></tr></thead><tbody>
       <tr><td>Frank Eckardt (Hg.), Handbuch Stadtsoziologie, 2012 – darin Annette Harth, «Stadtplanung», S. 337–364; Detlef Sack, «Urbane Governance», S. 311–335; Sybille Frank, «Eigenlogik der Städte», S. 289–309. <a href="https://doi.org/10.1007/978-3-531-94112-7">doi:10.1007/978-3-531-94112-7</a></td><td>Raum als soziales Machtkonstrukt</td><td>Ordnung ohne Gesamtplan; wer entscheidet über Bedingungen</td></tr>
       <tr><td>Eberhard Brandt, Manfred Haack, Bernd Törkel: Verkehrskollaps. Diagnose und Therapie, 1994</td><td>Kapazitätsgrenzen und Rebound</td><td>A: Spur, Fahrzeit, Nachfrage</td></tr>

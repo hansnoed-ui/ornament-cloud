@@ -42,7 +42,8 @@ export const KNOTEN = K;
 //      ampel, zebra, frei (Queren ausserhalb der Querungen), treppe, rampe, deck (Brückenbelag)
 // nur: Schlüssel der Bedingung in verfuegbar(); ohne «nur» gibt es die Kante immer.
 const E = [];
-const kante = (a, b, art = "weg", extra = {}) => { const id = `${a}~${b}`; E.push({ id, a, b, art, len: extra.len ?? Math.hypot(K[a].x - K[b].x, K[a].y - K[b].y), ...extra }); return id; };
+// zwei Kanten zwischen denselben Knoten (Zebrastreifen, freies Queren) brauchen verschiedene Kennungen
+const kante = (a, b, art = "weg", extra = {}) => { const id = E.some((e) => e.id === `${a}~${b}`) ? `${a}~${b}~${art}` : `${a}~${b}`; E.push({ id, a, b, art, len: extra.len ?? Math.hypot(K[a].x - K[b].x, K[a].y - K[b].y), ...extra }); return id; };
 const kette = (ids, art = "weg") => { for (let i = 1; i < ids.length; i++) kante(ids[i - 1], ids[i], art); };
 
 kette(["hn20", "hn40", "hn150", "hn230", "hn300", "hn390", "hn470", "hn560", "hn580"]);

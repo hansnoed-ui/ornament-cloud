@@ -140,6 +140,15 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   passt die Prüfsumme nicht mehr: ein Test meldet es, bis `jev.js` neu erzeugt ist, und bis dahin bleibt jev in der Seite still. Zugang beim Bauen: ein Proxy, der den Schlüssel einsetzt, oder `TYPESAFE_API_KEY` in der Umgebung (nie in eine Datei);
   Antworten liegen zwischengespeichert in `$TMPDIR/jev-bruecken-cache.jsonl`, `--probe` zeigt drei Beispiele, ohne etwas zu schreiben.
   Tests: `node --experimental-strip-types --no-warnings --test tests/drittes-rad.test.mjs` und `NODE_PATH=$(npm root -g) node tests/drittes-rad.e2e.mjs`
+  `alpha/stadt/` ist «Die Stadt, die weitergeht» (Prototyp seit 9. Oktober 2026, zuunterst in der Übersicht, von keiner Seite der Website verlinkt): ein interaktives Stadtlabor nach Klaus Kusanowskys Grafik
+  «Urbane Paradoxien: Die Systematik der Stadt» (NotebookLM). Ein Quartier mit 72 Bewohner:innen (auf schwächeren Geräten 40), Passant:innen, Autos von aussen, Bus und Ampel lebt mit festem Takt und Startwert;
+  vier Erfahrungsfelder an derselben Stadt: A Fahrspur, Bus, Zebrastreifen, Tempo 30 (echte Rückkopplung Kapazität → Fahrzeit → Nachfrage, kein Zeitschalter), B Verbindung mit Zaun, Brücke mit Treppen oder Rampen,
+  C Sichtweisen (Verkehrsfluss, Erreichbarkeit, Aufenthalt, Belastung einzelner; Gewichtung nur als gewählte Wertung), D Offener Abend im Atelier (erreicht, anwesend, beteiligt, mitbestimmend; erfundene Modellszene nach Motiven von Kureishi, kein Zitat).
+  Dazu Begleiten einer Person, Protokoll mit «Warum?», Vergleich «vorher» aus dem gemerkten Zustand und Alternativen, «Nur Massnahme zurücknehmen» getrennt von «Lauf zurücksetzen», und die beiden Prüfraster als «Genauer hinsehen».
+  jev (api.typesafe.ai) hat beim Bauen 377 beschriebene Lagen eingeschätzt (Querung, Fahrt, Teilnahme): `NODE_USE_ENV_PROXY=1 node --experimental-strip-types --no-warnings tools/build-jev-stadt.ts` schreibt `alpha/stadt/jev.js`
+  (Fragen in `alpha/stadt/fragen.js`, Prüfsumme; erster Lauf am 9. Oktober 2026, etwa 2 Cent). Die Seite ruft jev nie auf und sendet nichts; ohne gültige Tabelle laufen Ersatzregeln. Modell, Parameter, Grenzen und eine Prüfraster-Karte: `alpha/stadt/MODELL.md`.
+  Module mit `?v=1`; bei Änderungen an einem Modul die Marke in allen Importen und in `index.html` hochzählen.
+  Tests: `node --experimental-strip-types --no-warnings --test tests/stadt.test.mjs` und `NODE_PATH=$(npm root -g) node tests/stadt.e2e.mjs`
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)
 - `src/doppelspalt/CLAUDE-CODE-MASTERPROMPT-2026-ARCHIV.md` – ursprünglicher Auftrag, Entstehungsstand mit 99 Konstellationen, nicht mehr verbindlich
