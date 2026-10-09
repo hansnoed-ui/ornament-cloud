@@ -445,10 +445,10 @@ test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (
     }
   }
   assert.deepEqual([...found].sort(), [...allowed].sort(), "News, Apps, Masterprompts, Web und die Videoseite verlinken den Alpha-Bereich, die Startseite nicht");
-  // Freigegebene Ausnahme (4. Oktober 2026): die Startseite bettet OMNA COLOR zum Spielen ein, als einzige Seite und nur dieses eine Werk aus dem Alpha-Bereich
+  // Die Ausnahme vom 4. Oktober 2026 (die Startseite bettet OMNA COLOR zum Spielen ein) ist seit dem 9. Oktober 2026 nicht mehr in Gebrauch: keine Seite bettet etwas aus dem Alpha-Bereich ein
   const rahmen = walk(root).flatMap(f => [...readFileSync(f, "utf8").matchAll(/<iframe [^>]*src="([^"]+)"/g)]
     .map(m => [f.pathname.slice(root.pathname.length), new URL(m[1], f).pathname]).filter(([, z]) => z.includes("/alpha/")));
-  assert.deepEqual(rahmen.map(([f, z]) => `${f} → ${z.replace(/^.*\/alpha\//, "alpha/")}`), ["index.html → alpha/omna-color/"], "nur die Startseite bettet ein, nur OMNA COLOR");
+  assert.deepEqual(rahmen.map(([f, z]) => `${f} → ${z.replace(/^.*\/alpha\//, "alpha/")}`), [], "keine Seite bettet etwas aus dem Alpha-Bereich ein");
   for (const [f, zs] of Object.entries(ziele)) for (const z of zs) assert.ok(gefunden.has(`${f} → ${z}`), `${f} verlinkt ${z} nicht`);
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("/alpha/"));
   for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html", "alpha/omna-color/index.html", "alpha/drittes-rad/index.html"])

@@ -1,5 +1,5 @@
 // Struktur der Website (Neuordnung vom 2. Oktober 2026, Wunsch von Christian): Die Startseite trägt den Satz «Beobachtung ist Anlass …» (seit 3. Oktober 2026
-// ohne den sichtbaren Titel «Raumstellen, Zeitobjekte», etwas grösser gesetzt) und darunter seit 4. Oktober 2026 OMNA COLOR zum direkten Spielen (eingebettet, kein Beitrag; das Stellenfeld ist ein Beitrag auf «Web»). Das Menü hat vier Wörter ohne Symbole und Animationen: Zettelkasten (führt direkt in den Zettelkasten),
+// ohne den sichtbaren Titel «Raumstellen, Zeitobjekte», etwas grösser gesetzt) und darunter seit 4. Oktober 2026 OMNA COLOR zum direkten Spielen (eingebettet, bis 9. Oktober 2026; seitdem Lead und drei Kästen; kein Beitrag; das Stellenfeld ist ein Beitrag auf «Web»). Das Menü hat vier Wörter ohne Symbole und Animationen: Zettelkasten (führt direkt in den Zettelkasten),
 // Apps (ORNA, ORMA), Masterprompts (die vier Prüfraster in der Reihenfolge der Alpha-Übersicht), Web (OMNA COLOR, Das Dritte Rad). Die Karten liegen auf den
 // Seiten apps/, masterprompts/ und web/. News, Termine und Portfolio bleiben unter ihren Adressen, tragen das Menü und sind sonst nicht verlinkt.
 //   node --experimental-strip-types --no-warnings --test tests/struktur.test.mjs
@@ -89,14 +89,14 @@ test("Menü: Gestaltung ohne Symbole, in der serifenlosen Schrift der Seite (Wö
   assert.match(css, /@media \(max-width: 520px\)\s*\{\s*\.menu\s*\{[^}]*display:\s*grid[^}]*repeat\(2, max-content\)/, "Handy: zwei mal zwei");
 });
 
-test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OMNA COLOR zum Spielen eingebettet; keine Karten und keine Rückmeldungen", () => {
+test("Startseite: kein sichtbarer Titel, unter der Welle der Lead, darunter drei Kästen (Apps, Prompts, Web); kein eingebettetes Spiel, kein Video, keine Karten und keine Rückmeldungen", () => {
   const html = lies("index.html").replace(/<!--[\s\S]*?-->/g, "");        // geprüft wird, was die Seite zeigt, nicht die Kommentare
   // Wunsch vom 3. Oktober 2026: Titel «Raumstellen, Zeitobjekte» gestrichen; für Vorlesegeräte bleibt eine unsichtbare Überschrift
   assert.ok(!html.includes("Raumstellen, Zeitobjekte"), "der frühere Titel ist weg");
   assert.match(html, /<h1 class="sr-only">Ornament Cloud<\/h1>/);
   // Wunsch vom 5. Oktober 2026: auch der Satz «Beobachtung ist Anlass …» steht nicht mehr auf der Seite (er bleibt in Beschreibung und Vorschaukarte)
   assert.ok(!/>\s*Beobachtung ist Anlass/.test(html), "der frühere Satz steht nicht mehr auf der Seite");
-  // Wunsch vom 9. Oktober 2026: unter der Welle steht ein Lead, darunter (unter OMNA COLOR) drei Kästen für Apps, Prompts und Web; die Gestaltung steht in der Startseite, nicht in styles.css
+  // Wunsch vom 9. Oktober 2026: unter der Welle steht ein Lead, darunter drei Kästen für Apps, Prompts und Web; die Gestaltung steht in der Startseite, nicht in styles.css
   assert.deepEqual([...html.matchAll(/<p class="lead[^"]*">([^<]*)<\/p>/g)].map((m) => m[1]), ["Dreh- und Wendepunkte für Theorie und Praxis"], "genau dieser Lead");
   assert.match(html, /<h1 class="sr-only">Ornament Cloud<\/h1>\s*<p class="lead lead--start">/, "der Lead folgt dem unsichtbaren Titel im Kopf");
   assert.ok(!lies("styles.css").includes(".lead--start") && html.includes(".lead--start {"), "die Gestaltung des Leads steht in der Startseite (styles.css und ?v= bleiben unberührt)");
@@ -107,11 +107,10 @@ test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OM
   assert.ok(!/data-icon/.test(kaesten[1]), "die Symbole sind nicht animiert");
   assert.match(html, /\.kaesten \{ display: grid; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/, "drei Spalten, auch auf dem Handy");
   const stelle = (s) => { const i = html.indexOf(s); assert.ok(i > 0, s); return i; };
-  assert.ok(stelle("<h1") < stelle('<figure class="omna">') && stelle('<figure class="omna">') < stelle("</main>"),
-    "Reihenfolge: (unsichtbarer) Titel, OMNA COLOR, dann endet die Seite (sie hat nur noch den Fuss)");
-  assert.ok(stelle('<figure class="omna">') < stelle('<nav class="kaesten"') && stelle('<nav class="kaesten"') < stelle("</main>"), "die Kästen stehen unter OMNA COLOR (so bleibt «Drehen» beim Laden im Fenster)");
-  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div)\b/g)].map((m) => m[1]), ["figure"], "in main steht nur OMNA COLOR");
-  // Wunsch vom 9. Oktober 2026: das Erklärvideo zu ORNA (seit 5. Oktober 2026 unter OMNA COLOR) ist von der Startseite weg und steht auf «Web» (web/orna-erklaervideo/);
+  assert.ok(stelle("<h1") < stelle('<nav class="kaesten"') && stelle('<nav class="kaesten"') < stelle("</main>"),
+    "Reihenfolge: (unsichtbarer) Titel, Lead, die drei Kästen, dann endet die Seite (sie hat nur noch den Rückkanal und den Fuss)");
+  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div|iframe|video)\b/g)].map((m) => m[1]), [], "in main stehen nur die Kästen");
+  // Wunsch vom 9. Oktober 2026: das Erklärvideo zu ORNA (5. bis 9. Oktober 2026 auf der Startseite) ist von der Startseite weg und steht auf «Web» (web/orna-erklaervideo/);
   // die Startanimation (ausserhalb von main) hat ihr eigenes Video
   const inMain = html.slice(stelle("<main"), stelle("</main>"));
   assert.ok(!/<video|erklaervideo|orna-erklaervideo/.test(inMain), "kein Video in main");
@@ -122,22 +121,11 @@ test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OM
   assert.ok(!html.includes("bisherige-projekte"), "kein Link mehr auf «bisherige-projekte»");
   // Wunsch vom 5. Oktober 2026: im Fuss die Adresse für Fragen und Anmerkungen zur Website
   assert.match(html, /<footer class="site-footer">[\s\S]*<p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail\.com">hansnoed@gmail\.com<\/a><\/p>[\s\S]*<\/footer>/, "Kontakt im Fuss");
-  assert.match(lies("alpha/omna-color/index.html"), /\.eingebettet \.wheel \{ width: min\(100%, 420px, var\(--rad-max, 420px\)\); \}/, "eingebettet höchstens so gross wie auf der eigenen Seite");
-  assert.match(html, /setProperty\("--rad-max"/, "die Startseite begrenzt das Rad auf die Fensterhöhe");
-  // Wunsch vom 4. Oktober 2026: OMNA COLOR direkt zum Spielen (kein Bild, keine Vorschau), aus dem Alpha-Bereich eingebettet – freigegebene Ausnahme von REGELN §14
-  const rahmen = html.match(/<figure class="omna">\s*<iframe ([^>]*)><\/iframe>/);
-  assert.ok(rahmen, "OMNA COLOR ist ein iframe in einer figure, keine Karte");
-  assert.match(rahmen[1], /src="alpha\/omna-color\/"/);
-  assert.match(rahmen[1], /title="OMNA COLOR: [^"]+"/, "der Rahmen trägt einen Titel für Vorlesegeräte");
-  assert.deepEqual([...html.matchAll(/<iframe [^>]*src="([^"]+)"/g)].map((m) => m[1]), ["alpha/omna-color/"], "genau diese eine Einbettung");
-  assert.match(html, /Mehr dazu unter <a href="web\/">Web<\/a>/, "der Beitrag bleibt auf «Web»");
-  assert.ok(!html.includes("stellenfeld"), "das Stellenfeld ist nicht mehr auf der Startseite");
-  const omna = lies("alpha/omna-color/index.html");
-  assert.match(omna, /if \(window\.self !== window\.top\) document\.documentElement\.classList\.add\('eingebettet'\)/, "OMNA COLOR erkennt die Einbettung");
-  assert.ok(omna.indexOf("classList.add('eingebettet')") < omna.indexOf("<style>"), "vor dem ersten Anstrich");
-  assert.match(omna, /\.eingebettet \.seitenweg \{ display: none; \}/, "eingebettet ohne Hauptlinks (die Startseite hat sie schon)");
-  assert.match(omna, /\.eingebettet main \{ margin-top: 0; \}/, "eingebettet kein vh-Abstand (er hinge an der Höhe des Rahmens)");
-  assert.match(html, /new ResizeObserver\(passe\)\.observe\(f\.contentDocument\.body\)/, "der Rahmen wächst mit dem Spiel");
+  // Wunsch vom 9. Oktober 2026: auch OMNA COLOR ist von der Startseite weg (4. bis 9. Oktober 2026 dort zum Spielen eingebettet); es bleibt ein Beitrag auf «Web»
+  assert.ok(!/<iframe|omna/i.test(html.replace(/<nav class="(seitenweg|menu)"[\s\S]*?<\/nav>/g, "")), "keine Einbettung und kein Wort über OMNA COLOR auf der Startseite");
+  assert.ok(!html.includes("--rad-max") && !html.includes("ResizeObserver"), "kein Skript mehr für den Rahmen");
+  assert.ok(!html.includes("stellenfeld"), "das Stellenfeld ist nicht auf der Startseite");
+  assert.ok(existsSync(new URL("alpha/omna-color/index.html", root)) && lies("web/index.html").includes('<h2>OMNA COLOR</h2>'), "OMNA COLOR bleibt unter seiner Adresse und als Beitrag auf «Web»");
   assert.ok(!/<article|class="card|class="grid/.test(html), "keine Beiträge und keine Karten auf der Startseite");
   // Seit dem 5. Oktober 2026 steht unter dem Fuss der Rückkanal (Anmeldung für die Mail); er ist das Einzige
   // ausserhalb von <main> und bringt die einzige Überschrift mit. Sonst bleibt die Seite ohne Überschriften.
