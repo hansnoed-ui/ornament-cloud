@@ -789,7 +789,7 @@ await check("Startseite ohne Rückmeldungen (auf Wunsch vom 2. Oktober 2026 entf
   assert.equal(await page.locator("main h2").count(), 0, "in main steht keine Überschrift");
   // seit 5. Oktober 2026 einzige Überschrift: die des Rückkanals, nach dem Inhalt
   assert.deepEqual(await page.locator("h2").evaluateAll((h) => h.map((e) => e.id)), ["rueckkanal-titel"], "nur die Überschrift des Rückkanals");
-  assert.deepEqual(await page.locator("main > *").evaluateAll((els) => els.map((e) => e.className)), ["kaesten", "omna"], "in main stehen die drei Kästen und darunter OMNA COLOR (seit 10. Oktober 2026 wieder; das Erklärvideo zu ORNA ist seit 9. Oktober 2026 auf «Web»)");
+  assert.deepEqual(await page.locator("main > *").evaluateAll((els) => els.map((e) => e.className)), ["omna"], "in main steht OMNA COLOR (seit 10. Oktober 2026 wieder; die Kästen sind das Menü, das Erklärvideo zu ORNA ist seit 9. Oktober 2026 auf «Web»)");
   await ctx.close();
 });
 

@@ -10,7 +10,7 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
 
-const MENU = [["Zettelkasten", "zu-seiner-zeit/"], ["Apps", "apps/"], ["Masterprompts", "masterprompts/"], ["Web", "web/"]];
+const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Web", "web/"], ["Zettel", "zu-seiner-zeit/"]];   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
 const ORNA = "portfolio/nebeneinander-nacheinander/";
 // Seiten mit dem Menü → Eintrag, der aktiv ist ([Ordner, aria-current]); null: keiner (die Seite hängt an keinem Menüpunkt)
 const MENUSEITEN = {
@@ -50,20 +50,24 @@ const jpegMass = (buf) => {            // Breite und Höhe aus dem ersten Rahmen
   throw new Error("kein JPEG");
 };
 
-test("Menü: vier Wörter in fester Reihenfolge, ohne Symbole und Animationen, auf allen Seiten der Website; aktiv ist, wo man ist", () => {
+test("Menü: vier Kästchen mit Symbol und Namen (Apps, Prompts, Web, Zettel) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
   for (const [datei, aktiv] of Object.entries(MENUSEITEN)) {
     const html = lies(datei);
     const nav = html.match(/<nav class="menu" aria-label="Hauptmenü">([\s\S]*?)<\/nav>/);
     assert.ok(nav, `${datei}: Menü fehlt`);
-    assert.ok(!/<svg|data-icon|menu-icon|menu-text|menu-sub|menu-title/.test(nav[1]), `${datei}: das Menü hat keine Symbole und keine Untertitel mehr`);
-    const eintraege = [...nav[1].matchAll(/<a class="menu-item" href="([^"]+)"(?: aria-current="(page|true)")?>([^<]+)<\/a>/g)];
-    assert.equal(eintraege.length, 4, `${datei}: vier Einträge`);
-    assert.deepEqual(eintraege.map((e) => e[3]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Zettelkasten, Apps, Masterprompts, Web`);
+    // seit 10. Oktober 2026: die Welle direkt unter den beiden Hauptlinks, darunter das Menü
+    assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">[\s\S]*?<\/nav>\s*<svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"><\/svg>\s*<nav class="menu"/, `${datei}: Hauptlinks, Welle, Menü`);
+    assert.ok(!/data-icon|menu-sub|menu-title/.test(nav[1]), `${datei}: keine animierten Symbole, keine Untertitel`);
+    const eintraege = [...nav[1].matchAll(/<a class="menu-item" href="([^"]+)"(?: aria-current="(page|true)")?>(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>([^<]+)<\/span><\/a>/g)];
+    assert.equal(eintraege.length, 4, `${datei}: vier Kästchen mit verborgenem Symbol und Namen`);
+    assert.deepEqual(eintraege.map((e) => e[4]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Apps, Prompts, Web, Zettel (Zettel zuletzt seit 10. Oktober 2026)`);
     for (const [i, e] of eintraege.entries()) {
       const ziel = new URL(e[1], new URL(datei, root));
       assert.equal(ziel.pathname, new URL(MENU[i][1], root).pathname, `${datei}: ${MENU[i][0]} führt nach ${MENU[i][1]}`);
       assert.ok(existsSync(new URL(MENU[i][1] + "index.html", root)), `${datei}: ${MENU[i][1]} gibt es`);
     }
+    // überall dieselben Symbole
+    if (datei !== "index.html") assert.deepEqual(eintraege.map((e) => e[3]), [...lies("index.html").match(/<nav class="menu"[\s\S]*?<\/nav>/)[0].matchAll(/<svg[\s\S]*?<\/svg>/g)].map((m) => m[0]), `${datei}: dieselben Symbole wie auf der Startseite`);
     // genau der Eintrag der Seite ist aktiv (page: man ist auf der Seite, true: auf einer Seite darunter), sonst keiner
     assert.deepEqual(eintraege.map((e) => e[2] ?? null), MENU.map((m) => (aktiv && m[1] === aktiv[0] ? aktiv[1] : null)), `${datei}: aktiver Eintrag`);
   }
@@ -72,44 +76,38 @@ test("Menü: vier Wörter in fester Reihenfolge, ohne Symbole und Animationen, a
   assert.deepEqual(mitMenu, Object.keys(MENUSEITEN).sort(), "Seiten mit Menü");
 });
 
-test("Menü: Gestaltung ohne Symbole, in der serifenlosen Schrift der Seite (Wörter in einer Reihe, aktiver unterstrichen, auf dem Handy zwei mal zwei)", () => {
+test("Menü: Kästchen in der serifenlosen Schrift der Seite, vier in einer Reihe (auch auf dem Handy), der aktive mit kräftigerem Rand", () => {
   const css = lies("styles.css");
-  assert.ok(!/menu-icon|menu-sub|menu-text|menu-title/.test(css), "keine Regeln für Symbole und Untertitel des früheren Menüs");
+  assert.ok(!/menu-icon|menu-sub|menu-text|menu-title/.test(css), "keine Regeln für das Menü vor dem 2. Oktober 2026");
   const regel = (sel) => css.match(new RegExp(`(?:^|\\n)${sel.replace(/[.[\]()*+?^$|\\]/g, "\\$&")}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
-  assert.match(regel(".menu"), /display:\s*flex/);
-  assert.match(regel(".menu"), /flex-wrap:\s*wrap/);
-  // moderner (Wunsch von Christian, 2. Oktober 2026): serifenlos, in der Schrift der Seite wie die Buttons oben links, nicht mehr die Serife der Überschriften
+  assert.match(regel(".menu"), /display:\s*grid/);
+  assert.match(regel(".menu"), /grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/, "vier gleich breite Spalten, auf allen Breiten");
   assert.match(regel(".menu-item"), /font-family:\s*var\(--font\)/, "Schrift der Seite");
   assert.doesNotMatch(regel(".menu-item"), /var\(--serif\)|Georgia|Times/, "keine Serife");
   assert.match(css, /--font:\s*system-ui[^;]*,\s*sans-serif;/, "die Schrift der Seite ist serifenlos (system-ui … sans-serif)");
   assert.match(regel(".menu-item"), /font-weight:\s*500/, "Gewicht 500");
   assert.match(regel(".menu-item"), /text-decoration:\s*none/);
-  assert.ok(parseFloat(regel(".menu-item").match(/font-size:\s*([\d.]+)rem/)?.[1]) >= 1, "die Wörter des Menüs sind mindestens 1 rem gross");
-  assert.match(css, /\.menu-item\[aria-current\][^{]*\{[^}]*border-bottom-color:\s*currentColor/, "aktiver Eintrag unterstrichen");
-  assert.match(css, /@media \(max-width: 520px\)\s*\{\s*\.menu\s*\{[^}]*display:\s*grid[^}]*repeat\(2, max-content\)/, "Handy: zwei mal zwei");
+  assert.match(regel(".menu-item"), /border:\s*1px solid var\(--border\)/, "ein Kästchen mit feinem Rand");
+  assert.match(css, /\.menu-item\[aria-current\]\s*\{[^}]*border-color:\s*var\(--text\)/, "aktiver Eintrag mit kräftigerem Rand");
+  assert.ok(!/@media[^{]*\{\s*\.menu\s*\{[^}]*repeat\(2/.test(css), "auf dem Handy nicht mehr zwei mal zwei");
 });
 
-test("Startseite: kein sichtbarer Titel, unter der Welle der Lead, darunter drei Kästen (Apps, Prompts, Web); kein eingebettetes Spiel, kein Video, keine Karten und keine Rückmeldungen", () => {
+test("Startseite: kein sichtbarer Titel und kein Lead, unter dem Kopf OMNA COLOR zum Spielen; kein Video, keine Karten und keine Rückmeldungen", () => {
   const html = lies("index.html").replace(/<!--[\s\S]*?-->/g, "");        // geprüft wird, was die Seite zeigt, nicht die Kommentare
   // Wunsch vom 3. Oktober 2026: Titel «Raumstellen, Zeitobjekte» gestrichen; für Vorlesegeräte bleibt eine unsichtbare Überschrift
   assert.ok(!html.includes("Raumstellen, Zeitobjekte"), "der frühere Titel ist weg");
   assert.match(html, /<h1 class="sr-only">Ornament Cloud<\/h1>/);
   // Wunsch vom 5. Oktober 2026: auch der Satz «Beobachtung ist Anlass …» steht nicht mehr auf der Seite (er bleibt in Beschreibung und Vorschaukarte)
   assert.ok(!/>\s*Beobachtung ist Anlass/.test(html), "der frühere Satz steht nicht mehr auf der Seite");
-  // Wunsch vom 9. Oktober 2026: unter der Welle steht ein Lead, darunter drei Kästen für Apps, Prompts und Web; die Gestaltung steht in der Startseite, nicht in styles.css
-  assert.deepEqual([...html.matchAll(/<p class="lead[^"]*">([^<]*)<\/p>/g)].map((m) => m[1]), ["Dreh- und Wendepunkte für Theorie und Praxis"], "genau dieser Lead");
-  assert.match(html, /<h1 class="sr-only">Ornament Cloud<\/h1>\s*<p class="lead lead--start">/, "der Lead folgt dem unsichtbaren Titel im Kopf");
-  assert.ok(!lies("styles.css").includes(".lead--start") && html.includes(".lead--start {"), "die Gestaltung des Leads steht in der Startseite (styles.css und ?v= bleiben unberührt)");
-  const kaesten = html.match(/<nav class="kaesten" aria-label="Apps, Prompts und Web">([\s\S]*?)<\/nav>/);
-  assert.ok(kaesten, "die drei Kästen");
-  assert.deepEqual([...kaesten[1].matchAll(/<a class="kasten" href="([^"]+)">[\s\S]*?<span>([^<]+)<\/span>/g)].map((m) => [m[2], m[1]]), [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Web", "web/"]], "Apps, Prompts, Web in dieser Reihenfolge, auf die Seiten des Menüs");
-  assert.equal([...kaesten[1].matchAll(/<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">/g)].length, 3, "ein verborgenes Symbol je Kasten");
-  assert.ok(!/data-icon/.test(kaesten[1]), "die Symbole sind nicht animiert");
-  assert.match(html, /\.kaesten \{ display: grid; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/, "drei Spalten, auch auf dem Handy");
+  // Der Lead «Dreh- und Wendepunkte für Theorie und Praxis» (9. bis 10. Oktober 2026) ist auf Wunsch vom 10. Oktober 2026 wieder weg
+  assert.ok(!/class="lead|Dreh- und Wendepunkte|\.lead--start/.test(html), "kein Lead auf der Startseite");
+  assert.match(html, /<\/nav>\s*<\/div>\s*<h1 class="sr-only">Ornament Cloud<\/h1>\s*<\/div>\s*<\/header>/, "im Kopf nach dem Menü nur noch der unsichtbare Titel");
+  // Die drei Kästen Apps, Prompts und Web standen vom 9. bis 10. Oktober 2026 unter dem Lead; seit dem 10. Oktober 2026 sind sie mit «Zettel» das Menü oben
+  assert.ok(!/class="kaesten|class="kasten|\.kaesten \{/.test(html), "keine Kästen mehr unter dem Lead (sie sind jetzt das Menü)");
   const stelle = (s) => { const i = html.indexOf(s); assert.ok(i > 0, s); return i; };
-  assert.ok(stelle("<h1") < stelle('<nav class="kaesten"') && stelle('<nav class="kaesten"') < stelle('<figure class="omna">') && stelle('<figure class="omna">') < stelle("</main>"),
-    "Reihenfolge: (unsichtbarer) Titel, Lead, die drei Kästen, darunter OMNA COLOR (seit 10. Oktober 2026), dann nur noch Rückkanal und Fuss");
-  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div|iframe|video)\b/g)].map((m) => m[1]), ["figure", "iframe"], "in main stehen die Kästen und OMNA COLOR");
+  assert.ok(stelle('<nav class="menu"') < stelle("<h1") && stelle("<h1") < stelle('<figure class="omna">') && stelle('<figure class="omna">') < stelle("</main>"),
+    "Reihenfolge: das Menü mit den Kästchen, (unsichtbarer) Titel, darunter OMNA COLOR (seit 10. Oktober 2026), dann nur noch Rückkanal und Fuss");
+  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div|iframe|video|nav)\b/g)].map((m) => m[1]), ["figure", "iframe"], "in main steht nur OMNA COLOR");
   // Wunsch vom 9. Oktober 2026: das Erklärvideo zu ORNA (5. bis 9. Oktober 2026 auf der Startseite) ist von der Startseite weg und steht auf «Web» (web/orna-erklaervideo/);
   // die Startanimation (ausserhalb von main) hat ihr eigenes Video
   const inMain = html.slice(stelle("<main"), stelle("</main>"));
@@ -121,7 +119,7 @@ test("Startseite: kein sichtbarer Titel, unter der Welle der Lead, darunter drei
   assert.ok(!html.includes("bisherige-projekte"), "kein Link mehr auf «bisherige-projekte»");
   // Wunsch vom 5. Oktober 2026: im Fuss die Adresse für Fragen und Anmerkungen zur Website
   assert.match(html, /<footer class="site-footer">[\s\S]*<p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail\.com">hansnoed@gmail\.com<\/a><\/p>[\s\S]*<\/footer>/, "Kontakt im Fuss");
-  // Wunsch vom 10. Oktober 2026: OMNA COLOR wieder zum Spielen eingebettet (wie 4. bis 9. Oktober 2026), jetzt unter den drei Kästen; «Drehen» muss beim Laden
+  // Wunsch vom 10. Oktober 2026: OMNA COLOR wieder zum Spielen eingebettet (wie 4. bis 9. Oktober 2026), jetzt unter dem Lead; «Drehen» muss beim Laden
   // nicht im Fenster stehen (kein --rad-max mehr), nach dem Drehen blättert die Seite zur gezogenen Übung (Nachricht «uebung» aus dem Rahmen)
   assert.equal([...html.matchAll(/<iframe [^>]*src="([^"]+)"/g)].map((m) => m[1]).join(), "alpha/omna-color/", "genau ein Rahmen: OMNA COLOR");
   assert.ok(!html.includes("--rad-max") && html.includes("ResizeObserver"), "der Rahmen wächst mit dem Spiel, das Rad wird nicht verkleinert");

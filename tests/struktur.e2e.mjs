@@ -1,4 +1,4 @@
-// Struktur der Website – Browser-Tests (Playwright, Chromium), Neuordnung vom 2. Oktober 2026: das Menü (Zettelkasten, Apps, Masterprompts, Web) auf allen Breiten,
+// Struktur der Website – Browser-Tests (Playwright, Chromium), Neuordnung vom 2. Oktober 2026: das Menü (seit 10. Oktober 2026 vier Kästchen: Apps, Prompts, Web, Zettel) auf allen Breiten,
 // die Startseite (seit 9. Oktober 2026 Lead und drei Kästen; OMNA COLOR war vom 4. bis 9. Oktober 2026 eingebettet), die Seiten Apps, Masterprompts und Web (mit dem Stellenfeld).
 //   NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs [Teil eines Prüfungsnamens]
 // Das Stellenfeld braucht WebGL (Chromium bringt SwiftShader mit).
@@ -49,31 +49,25 @@ const box = (loc) => loc.evaluate((e) => { const r = e.getBoundingClientRect(); 
 const sich = (a, b) => a.x < b.r - 0.5 && b.x < a.r - 0.5 && a.y < b.b - 0.5 && b.y < a.b - 0.5;     // Rechtecke überlappen
 
 // ---------- Startseite: Lead und drei Kästen ----------
-// Wunsch von Christian, 9. Oktober 2026: unter der Welle der Lead «Dreh- und Wendepunkte für Theorie und Praxis», darunter drei Kästen für Apps, Prompts und Web.
-// Seit 10. Oktober 2026 (Wunsch von Christian) unter den Kästen wieder OMNA COLOR zum Spielen (wie 4. bis 9. Oktober 2026); das Erklärvideo zu ORNA steht auf «Web».
-await check("Startseite (Computer): kein sichtbarer Titel, unter der Welle der Lead, darunter die drei Kästen, darunter OMNA COLOR; kein Video, keine Karte", async () => {
+// Seit 10. Oktober 2026 (Wunsch von Christian): die Welle direkt unter den beiden Hauptlinks (Handy: Hauptlinks, Welle, die vier Kästchen; Computer: Kästchen rechts daneben, Welle unter beiden); dann OMNA COLOR.
+// Der Lead «Dreh- und Wendepunkte für Theorie und Praxis» (9. bis 10. Oktober 2026) ist weg.
+await check("Startseite (Computer): kein sichtbarer Titel und kein Lead; Hauptlinks und Menü nebeneinander, darunter die Welle, dann OMNA COLOR; kein Video, keine Karte", async () => {
   const { ctx, page, errors } = await startseite({ viewport: { width: 1200, height: 900 }, reducedMotion: "reduce" });
   assert.equal(await page.locator("h1").textContent(), "Ornament Cloud");
   assert.equal(await page.locator("h1").evaluate((e) => e.getBoundingClientRect().width), 1, "der Titel ist nur für Vorlesegeräte da");
-  assert.equal(await page.locator(".site-header .lead").count(), 1);
-  assert.equal((await page.locator(".site-header .lead").textContent()).trim(), "Dreh- und Wendepunkte für Theorie und Praxis");
-  assert.ok(await page.locator(".site-header .lead").isVisible(), "der Lead ist sichtbar");
-  assert.equal(await page.getByText("Beobachtung ist Anlass").count(), 0, "der frühere Satz steht nicht auf der Seite");
+  assert.equal(await page.locator(".lead").count(), 0, "kein Lead");
+  assert.equal(await page.getByText("Dreh- und Wendepunkte").count(), 0);
   assert.equal(await page.locator("main .card, main article").count(), 0, "kein Beitrag, keine Karte");
-  assert.equal(await page.locator("video:not(#start video), .erklaervideo").count(), 0, "kein Video auf der Seite");
-  assert.deepEqual(await page.locator("main > *").evaluateAll((els) => els.map((e) => e.className)), ["kaesten", "omna"], "main enthält die drei Kästen und darunter OMNA COLOR");
-  const welle = await box(page.locator(".site-header .divider")), lead = await box(page.locator(".site-header .lead")), kaesten = await box(page.locator(".kaesten"));
-  assert.ok(welle.b <= lead.y + 1 && lead.b <= kaesten.y + 1, "von oben nach unten: Welle, Lead, Kästen");
-  assert.ok(kaesten.y - lead.b <= 90, `die Kästen folgen dem Lead (${Math.round(kaesten.y - lead.b)} px)`);
-  assert.ok(kaesten.b <= 900, "die Kästen stehen beim Laden im Fenster");
-  const rahmen = await box(page.locator(".omna iframe"));
-  assert.ok(rahmen.y >= kaesten.b, "OMNA COLOR steht unter den Kästen");
+  assert.equal(await page.locator("video:not(#start video), .erklaervideo, .kaesten").count(), 0, "kein Video, keine Kästen");
+  assert.deepEqual(await page.locator("main > *").evaluateAll((els) => els.map((e) => e.className)), ["omna"], "main enthält OMNA COLOR");
+  const links = await box(page.locator(".site-header .seitenweg")), welle = await box(page.locator(".site-header .divider")), menu = await box(page.locator(".site-header .menu")), rahmen = await box(page.locator(".omna iframe"));
+  assert.ok(links.b <= welle.y + 1 && menu.b <= welle.y + 1 && welle.b <= rahmen.y + 1, "Computer: Hauptlinks und Menü nebeneinander, darunter die Welle, dann OMNA COLOR");
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   assert.deepEqual(errors, []);
   await ctx.close();
 });
 
-await check("Startseite: OMNA COLOR unter den Kästen spielbar; der Rahmen wächst ohne eigenen Bildlauf, und nach dem Drehen blättert die Seite zur gezogenen Übung (Computer, Handy)", async () => {
+await check("Startseite: OMNA COLOR unter dem Menü spielbar; der Rahmen wächst ohne eigenen Bildlauf, und nach dem Drehen blättert die Seite zur gezogenen Übung (Computer, Handy)", async () => {
   for (const opts of [{ viewport: { width: 1200, height: 800 } }, { ...devices["Pixel 7"] }]) {
     const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
     await page.waitForFunction(() => { const f = document.querySelector(".omna iframe"), d = f?.contentDocument; return d?.querySelectorAll("#outer path.seg").length > 0 && f.style.height; }, null, { timeout: 15000 });
@@ -94,16 +88,15 @@ await check("Startseite: OMNA COLOR unter den Kästen spielbar; der Rahmen wäch
   }
 });
 
-await check("Startseite (Handy): Menü zwei mal zwei, Lead, drei Kästen in drei Spalten im Fenster, kein seitliches Wischen", async () => {
+await check("Startseite (Handy): Hauptlinks, darunter die Welle, darunter die vier Kästchen des Menüs in einer Reihe; kein seitliches Wischen", async () => {
   for (const opts of [{ ...devices["Pixel 7"] }, { ...devices["iPhone 13"] }, { viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true }]) {
     const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     const m = await page.locator(".menu-item").evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y)]; }));
-    assert.equal(new Set(m.map((p) => p[0])).size, 2, "zwei Spalten");
-    assert.equal(new Set(m.map((p) => p[1])).size, 2, "zwei Zeilen");
-    const lead = await box(page.locator(".site-header .lead")), k = await box(page.locator(".kaesten"));
-    assert.ok(lead.x >= 19 && lead.r <= page.viewportSize().width - 19, "der Lead hat Rand und bricht um");
-    assert.ok(k.y >= lead.b && k.b <= page.viewportSize().height, `die Kästen stehen im Fenster (${Math.round(k.b)} von ${page.viewportSize().height})`);
+    assert.equal(new Set(m.map((p) => p[1])).size, 1, "eine Reihe");
+    assert.equal(new Set(m.map((p) => p[0])).size, 4, "vier Spalten");
+    const links = await box(page.locator(".seitenweg")), welle = await box(page.locator(".divider")), menu = await box(page.locator(".menu"));
+    assert.ok(links.b <= welle.y + 1 && welle.b <= menu.y + 1 && menu.b <= page.viewportSize().height, "Hauptlinks, Welle, Menü, alles beim Laden im Fenster");
     assert.deepEqual(errors, []);
     await ctx.close();
   }
@@ -121,68 +114,40 @@ await check("Startseite: Rückkanal in der Spalte der Seite, bündig mit dem Fus
   }
 });
 
-await check("Startseite: drei Kästen nebeneinander für Apps, Prompts und Web mit Symbolen, in der Spalte der Seite; sie führen auf die Seiten (Wunsch vom 9. Oktober 2026)", async () => {
-  for (const opts of [{ viewport: { width: 1200, height: 900 } }, { ...devices["iPhone 13"] }, { viewport: { width: 320, height: 640 } }]) {
-    const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
-    const k = page.locator(".kaesten .kasten");
-    assert.deepEqual(await k.locator("span").allTextContents(), ["Apps", "Prompts", "Web"]);
-    assert.deepEqual(await k.evaluateAll((els) => els.map((e) => e.getAttribute("href"))), ["apps/", "masterprompts/", "web/"]);
-    const b = await k.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: Math.round(r.y), w: r.width, h: r.height, r: r.right }; }));
-    assert.ok(b[0].y === b[1].y && b[1].y === b[2].y, "nebeneinander in einer Reihe");
-    assert.ok(b[0].x < b[1].x && b[1].x < b[2].x && b[0].r <= b[1].x && b[1].r <= b[2].x, "Apps, Prompts, Web von links nach rechts, ohne Überlappung");
-    assert.ok(Math.abs(b[0].w - b[1].w) < 1 && Math.abs(b[1].w - b[2].w) < 1, "gleich breit");
-    const breite = page.viewportSize().width;
-    assert.ok(b[0].x >= 19 && b[2].r <= breite - 19, `mit Rand (${b[0].x}–${b[2].r} von ${breite})`);
-    for (const kasten of await k.all()) {
-      const s = await box(kasten.locator("svg"));
-      assert.ok(s.w >= 36 && s.h >= 36, `Symbol sichtbar (${s.w} × ${s.h})`);
-      assert.equal(await kasten.locator("svg").getAttribute("aria-hidden"), "true", "das Symbol ist für Vorlesegeräte verborgen");
-    }
-    assert.ok(Math.min(...b.map((x) => x.h)) >= 100, "die Kästen sind der Inhalt der Seite: mindestens 100 px hoch");
-    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "kein seitliches Wischen");
-    assert.deepEqual(errors, []);
-    await ctx.close();
-  }
-  // jeder Kasten führt auf seine Seite
-  for (const [name, ziel] of [["Apps", /\/apps\/$/], ["Prompts", /\/masterprompts\/$/], ["Web", /\/web\/$/]]) {
-    const { ctx, page } = await startseite({ viewport: { width: 1200, height: 900 }, reducedMotion: "reduce" });
-    await page.locator(".kaesten .kasten").filter({ hasText: name }).click();
-    await page.waitForURL(ziel);
-    await ctx.close();
-  }
-  // dunkel: Kästen auf dem Grund der Seite, Beschriftung hell
-  const { ctx, page } = await startseite({ viewport: { width: 1200, height: 900 }, colorScheme: "dark", reducedMotion: "reduce" });
-  const farben = await page.locator(".kasten").first().evaluate((e) => { const c = getComputedStyle(e); return [c.backgroundColor, c.color]; });
-  assert.deepEqual(farben, ["rgb(33, 31, 28)", "rgb(236, 232, 225)"], "im dunklen Modus: Fläche und Schrift der Seite");
-  await ctx.close();
-});
-
 // ---------- Menü ----------
-await check("Menü: vier Wörter auf allen Breiten sichtbar, nichts überlappt, kein seitliches Wischen; Computer in einer Reihe rechts, Handy zwei mal zwei", async () => {
+await check("Menü: vier Kästchen (Apps, Prompts, Web, Zettel) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
   const ctx = await browser.newContext();
-  for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/"]) {
+  for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/"]) {
     for (const w of [320, 360, 390, 412, 600, 768, 1024, 1280]) {
       const page = await ctx.newPage();
+      await page.addInitScript(() => { try { sessionStorage.setItem("start-animation", "1"); } catch {} });
       await page.setViewportSize({ width: w, height: 800 });
       await page.goto(origin + pfad);
       const items = page.locator(".menu-item");
       assert.equal(await items.count(), 4);
+      assert.deepEqual(await items.locator("span").allTextContents(), ["Apps", "Prompts", "Web", "Zettel"], `${pfad} ${w}: Namen`);
       const bs = [];
-      for (let i = 0; i < 4; i++) { assert.ok(await items.nth(i).isVisible(), `${pfad} ${w}: Eintrag ${i + 1} sichtbar`); bs.push(await box(items.nth(i))); }
-      for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) assert.ok(!sich(bs[i], bs[j]), `${pfad} ${w}: Einträge ${i + 1} und ${j + 1} überlappen`);
-      for (let i = 0; i < 3; i++) if (Math.round(bs[i].y) === Math.round(bs[i + 1].y)) assert.ok(bs[i + 1].x - bs[i].r >= 16, `${pfad} ${w}: zwischen den Einträgen ${i + 1} und ${i + 2} bleibt Luft (${bs[i + 1].x - bs[i].r} px)`);
+      for (let i = 0; i < 4; i++) { assert.ok(await items.nth(i).isVisible(), `${pfad} ${w}: Kästchen ${i + 1} sichtbar`); bs.push(await box(items.nth(i))); }
+      for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) assert.ok(!sich(bs[i], bs[j]), `${pfad} ${w}: Kästchen ${i + 1} und ${j + 1} überlappen`);
+      assert.equal(new Set(bs.map((b) => Math.round(b.y))).size, 1, `${pfad} ${w}: eine Reihe`);
+      assert.ok(bs.every((b) => Math.abs(b.w - bs[0].w) < 1 && b.w >= 60 && b.h >= 56), `${pfad} ${w}: gleich gross, mindestens 60 × 56 px (${Math.round(bs[0].w)} × ${Math.round(bs[0].h)})`);
+      for (let i = 0; i < 4; i++) {
+        const svg = await box(items.nth(i).locator("svg"));
+        assert.ok(svg.w >= 22 && svg.h >= 22, `${pfad} ${w}: Symbol ${i + 1} sichtbar`);
+        const t = await items.nth(i).locator("span").evaluate((e) => e.scrollWidth <= e.clientWidth + 0.5);
+        assert.ok(t, `${pfad} ${w}: Name ${i + 1} passt ins Kästchen`);
+      }
       const nav = await box(page.locator(".seitenweg"));
-      for (const [i, b] of bs.entries()) assert.ok(!sich(nav, b), `${pfad} ${w}: Navigation und Eintrag ${i + 1} überlappen`);
+      for (const [i, b] of bs.entries()) assert.ok(!sich(nav, b), `${pfad} ${w}: Navigation und Kästchen ${i + 1} überlappen`);
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${pfad} ${w}: seitliches Wischen`);
       const wrap = await box(page.locator(".site-header .wrap"));
-      for (const [i, b] of bs.entries()) assert.ok(b.x >= wrap.x - 1 && b.r <= wrap.r + 1, `${pfad} ${w}: Eintrag ${i + 1} liegt innerhalb der Seite`);
-      if (w <= 520) {
-        assert.equal(new Set(bs.map((b) => Math.round(b.x))).size, 2, `${pfad} ${w}: zwei Spalten`);
-        assert.equal(new Set(bs.map((b) => Math.round(b.y))).size, 2, `${pfad} ${w}: zwei Zeilen`);
-      }
-      if (w >= 1024) {
-        assert.equal(new Set(bs.map((b) => Math.round(b.y))).size, 1, `${pfad} ${w}: eine Reihe`);
-        assert.ok(Math.abs(bs[3].r - wrap.r + 20) <= 2, `${pfad} ${w}: rechtsbündig (${bs[3].r} gegen ${wrap.r - 20})`);
+      for (const [i, b] of bs.entries()) assert.ok(b.x >= wrap.x - 1 && b.r <= wrap.r + 1, `${pfad} ${w}: Kästchen ${i + 1} liegt innerhalb der Seite`);
+      const welle = await box(page.locator(".site-header .divider"));
+      assert.ok(nav.b <= welle.y + 1, `${pfad} ${w}: die Welle steht unter den Hauptlinks`);
+      if (w <= 760) {
+        assert.ok(welle.b <= bs[0].y + 1 && Math.abs(bs[0].x - nav.x) <= 1, `${pfad} ${w}: Handy: unter der Welle, linksbündig mit der Navigation`);
+      } else {
+        assert.ok(bs[0].b <= welle.y + 1 && Math.abs(bs[3].r - wrap.r + 20) <= 2, `${pfad} ${w}: Computer: rechts oben neben den Hauptlinks, die Welle unter beiden (${bs[3].r} gegen ${wrap.r - 20})`);
       }
       await page.close();
     }
@@ -190,28 +155,26 @@ await check("Menü: vier Wörter auf allen Breiten sichtbar, nichts überlappt, 
   await ctx.close();
 });
 
-await check("Menü: der Eintrag der Seite ist unterstrichen (aria-current), die anderen nicht; Darüberfahren und Tastaturfokus zeigen sich", async () => {
+await check("Menü: das Kästchen der Seite hat einen kräftigeren Rand (aria-current), die anderen nicht; Darüberfahren und Tastaturfokus zeigen sich", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 } });
   const page = await ctx.newPage();
-  const strich = (name) => page.getByRole("navigation", { name: "Hauptmenü" }).getByRole("link", { name }).evaluate((e) => {
+  const rand = (name) => page.getByRole("navigation", { name: "Hauptmenü" }).getByRole("link", { name }).evaluate((e) => {
     const c = getComputedStyle(e);
-    return { unten: c.borderBottomColor, breite: c.borderBottomWidth, kontur: c.outlineStyle === "none" ? 0 : parseFloat(c.outlineWidth), schrift: c.color, aktiv: e.getAttribute("aria-current") };
+    return { rand: c.borderTopColor, schatten: c.boxShadow, schrift: c.color, aktiv: e.getAttribute("aria-current") };
   });
-  const durchsichtig = (c) => /^rgba\(.*, 0\)$|^transparent$/.test(c);
-  for (const [pfad, aktiv, art] of [["/apps/", "Apps", "page"], ["/masterprompts/", "Masterprompts", "page"], ["/web/", "Web", "page"], ["/portfolio/nebeneinander-nacheinander/", "Apps", "true"], ["/", null, null], ["/news/", null, null]]) {
+  for (const [pfad, aktiv, art] of [["/apps/", "Apps", "page"], ["/masterprompts/", "Prompts", "page"], ["/web/", "Web", "page"], ["/portfolio/nebeneinander-nacheinander/", "Apps", "true"], ["/", null, null], ["/news/", null, null]]) {
     await page.goto(origin + pfad);
-    for (const name of ["Zettelkasten", "Apps", "Masterprompts", "Web"]) {
-      const s = await strich(name);
+    for (const name of ["Apps", "Prompts", "Web", "Zettel"]) {
+      const s = await rand(name);
       if (name === aktiv) {
         assert.equal(s.aktiv, art, `${pfad}: ${name} ist aktiv (${art})`);
-        assert.ok(!durchsichtig(s.unten) && s.breite === "1px" && s.unten === s.schrift, `${pfad}: ${name} unterstrichen in der Schriftfarbe (${JSON.stringify(s)})`);
+        assert.ok(s.rand === s.schrift && s.schatten !== "none", `${pfad}: ${name} mit kräftigem Rand in der Schriftfarbe (${JSON.stringify(s)})`);
       } else {
         assert.equal(s.aktiv, null, `${pfad}: ${name} nicht aktiv`);
-        assert.ok(durchsichtig(s.unten), `${pfad}: ${name} ohne Strich`);
+        assert.ok(s.rand !== s.schrift && s.schatten === "none", `${pfad}: ${name} mit feinem Rand`);
       }
     }
   }
-  // der Strich blendet in 0,2 s ein und aus: so lange warten, bis die Farbe steht
   const warte = async (bedingung, text) => {
     const ende = Date.now() + 3000;
     for (;;) {
@@ -222,13 +185,13 @@ await check("Menü: der Eintrag der Seite ist unterstrichen (aria-current), die 
   };
   await page.goto(origin + "/apps/");
   await page.getByRole("navigation", { name: "Hauptmenü" }).getByRole("link", { name: "Web" }).hover();
-  await warte(async () => { const s = await strich("Web"); return s.breite === "1px" && s.unten === s.schrift; }, "Darüberfahren: Strich in der Schriftfarbe");
+  await warte(async () => { const s = await rand("Web"); return s.rand === s.schrift; }, "Darüberfahren: Rand in der Schriftfarbe");
   await page.mouse.move(5, 500);
-  await warte(async () => durchsichtig((await strich("Web")).unten), "Maus weg: kein Strich mehr");
+  await warte(async () => { const s = await rand("Web"); return s.rand !== s.schrift; }, "Maus weg: wieder der feine Rand");
   await page.getByRole("navigation", { name: "Ornament Cloud" }).getByRole("link", { name: "Das Dritte Rad" }).focus();
-  await page.keyboard.press("Tab");              // Tastaturfokus: erster Eintrag des Menüs
+  await page.keyboard.press("Tab");              // Tastaturfokus: erstes Kästchen des Menüs
   const f = await page.evaluate(() => { const e = document.activeElement, c = getComputedStyle(e); return { text: e.textContent, kontur: c.outlineStyle, breite: c.outlineWidth }; });
-  assert.deepEqual(f, { text: "Zettelkasten", kontur: "solid", breite: "2px" });
+  assert.deepEqual(f, { text: "Apps", kontur: "solid", breite: "2px" });
   await ctx.close();
 });
 
@@ -247,17 +210,17 @@ await check("Menü: serifenlose Schrift der Seite in mittlerem Gewicht (Wunsch v
       assert.equal(m.familie, s.text, `${pfad}: Eintrag ${i + 1} in der Schrift der Seite`);
       assert.ok(/^system-ui/.test(m.familie) && /sans-serif$/.test(m.familie) && !/Georgia|Times/.test(m.familie), `${pfad}: Eintrag ${i + 1} serifenlos (${m.familie})`);
       assert.equal(m.gewicht, "500", `${pfad}: Eintrag ${i + 1} im Gewicht 500, auch der aktive`);
-      assert.ok(m.px >= 16, `${pfad}: Eintrag ${i + 1} mindestens 16 px gross (${m.px})`);
+      assert.ok(m.px >= 12.5, `${pfad}: Eintrag ${i + 1} mindestens 12,5 px gross (${m.px})`);
     }
     assert.ok(/Georgia/.test(s.h1), `${pfad}: die Überschrift bleibt in der Serife (${s.h1})`);
   }
   await ctx.close();
 });
 
-await check("Menü führt zu den Seiten: Zettelkasten direkt in den Zettelkasten, Apps, Masterprompts, Web; auch von ORNA aus", async () => {
+await check("Menü führt zu den Seiten: Apps, Prompts, Web und Zettel direkt in den Zettelkasten; auch von ORNA aus", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 } });
   const page = await ctx.newPage();
-  for (const [name, url, h1] of [["Zettelkasten", /\/zu-seiner-zeit\/$/, "Zu seiner Zeit"], ["Apps", /\/apps\/$/, "Apps"], ["Masterprompts", /\/masterprompts\/$/, "Masterprompts"], ["Web", /\/web\/$/, "Web"]]) {
+  for (const [name, url, h1] of [["Zettel", /\/zu-seiner-zeit\/$/, "Zu seiner Zeit"], ["Apps", /\/apps\/$/, "Apps"], ["Prompts", /\/masterprompts\/$/, "Masterprompts"], ["Web", /\/web\/$/, "Web"]]) {
     for (const von of ["/", "/news/", "/portfolio/nebeneinander-nacheinander/feld/"]) {
       await page.goto(origin + von);
       await page.getByRole("navigation", { name: "Hauptmenü" }).getByRole("link", { name }).click();

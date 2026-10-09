@@ -299,16 +299,20 @@ h1 {
   margin-top: 6px;
 }
 
-/* Kopfzeile: Navigation links, Hauptmenü rechts */
+/* Kopfzeile (seit 10. Oktober 2026, Wunsch von Christian): die Welle steht direkt unter den beiden Hauptlinks. Am Computer stehen die vier Kästchen des Menüs
+   rechts neben den Hauptlinks und die Welle unter beiden; auf schmalen Bildschirmen untereinander: Hauptlinks, Welle, Kästchen (Reihenfolge im Markup). */
 .topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 32px;
-  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: start;
+  column-gap: 32px;
+  margin-bottom: 30px;
 }
+.topbar > .seitenweg { grid-column: 1; grid-row: 1; }
+.topbar > .menu { grid-column: 2; grid-row: 1; justify-self: end; }
+.topbar > .divider { grid-column: 1 / -1; grid-row: 2; margin: 20px 0 0; }   /* wie vor dem 10. Oktober 2026: 20 px unter Links und Menü, 30 px bis zum Titel */
 
-/* Trennlinie zwischen Header-Menü und Seiteninhalt: eine feine Welle in der Farbe der Hauptlinks (Wunsch vom 2. Oktober 2026) */
+/* Die feine Welle in der Farbe der Hauptlinks (Wunsch vom 2. Oktober 2026), seit 10. Oktober 2026 direkt unter den Hauptlinks, über dem Menü */
 .divider {
   display: block;
   width: 100%;
@@ -389,35 +393,59 @@ h1 {
   outline-offset: 2px;
 }
 
-/* Hauptmenü (Neuordnung vom 2. Oktober 2026): vier Wörter in einer Reihe, ohne Symbole und Animationen, in der serifenlosen Schrift der Seite (Wunsch vom 2. Oktober 2026: moderner als die frühere Serife).
-   Die Seite, auf der man ist, trägt aria-current und steht unterstrichen; auf den Seiten darunter (z. B. ORNA unter «Apps») ebenfalls. */
+/* Hauptmenü (seit 10. Oktober 2026, Wunsch von Christian): vier Kästchen mit gezeichnetem Symbol und Namen – Zettel, Apps, Prompts, Web –
+   an der Stelle des früheren Wortmenüs (2. bis 10. Oktober 2026); auf dem Handy alle vier nebeneinander. Die Symbole sind schlichte Zeichnungen in der
+   Schriftfarbe, nicht animiert und für Vorlesegeräte verborgen (der Name im Kästchen sagt alles). Die Seite, auf der man ist, trägt aria-current
+   und hat einen kräftigeren Rand; auf den Seiten darunter (z. B. ORNA unter «Apps») ebenfalls. */
 .menu {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 2px 28px;
-  margin-top: 15px;   /* auf der Höhe des ersten Buttons links */
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: 368px;
+  margin-top: 4px;
 }
 
 .menu-item {
-  padding: 2px 0;
-  border-bottom: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 4px 8px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   font-family: var(--font);
-  font-size: 1.05rem;
+  font-size: 0.88rem;
   font-weight: 500;
   letter-spacing: 0.01em;
-  line-height: 1.45;
-  color: var(--text);
+  line-height: 1.2;
   text-decoration: none;
   transition: border-color 0.2s ease;
 }
 
-.menu-item:hover,
-.menu-item:focus-visible,
-.menu-item[aria-current] { border-bottom-color: currentColor; }
+.menu-item span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.menu-item svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.menu-item svg * { vector-effect: non-scaling-stroke; }
+
+.menu-item:hover { border-color: var(--text); }
+.menu-item:hover svg { color: var(--accent); }
+.menu-item[aria-current] { border-color: var(--text); box-shadow: inset 0 0 0 1px var(--text); }
 
 .menu-item:focus-visible {
-  outline: 2px solid currentColor;
+  outline: 2px solid var(--text);
   outline-offset: 3px;
 }
 
@@ -431,17 +459,19 @@ h1 {
   vector-effect: non-scaling-stroke;
 }
 
-/* Schmale Bildschirme: Navigation oben, darunter das Menü (auf dem Handy zwei mal zwei) */
+/* Schmale Bildschirme: etwas weniger Raum unter dem Menü */
 @media (max-width: 760px) {
-  .topbar { flex-direction: column; gap: 16px; margin-bottom: 16px; }
-  .divider { margin-bottom: 28px; }
+  .topbar { display: flex; flex-direction: column; align-items: stretch; margin-bottom: 24px; }
+  .topbar > .divider { margin: 10px 0 18px; }
+  .menu { width: 100%; max-width: 420px; margin-top: 0; }
   .brand { margin-top: 0; }
   .seitenweg { margin-top: 0; }
-  .menu { justify-content: flex-start; margin-top: 16px; }   /* seit 3. Oktober 2026 etwas tiefer: mehr Luft unter den Buttons */
 }
 
-@media (max-width: 520px) {
-  .menu { display: grid; grid-template-columns: repeat(2, max-content); gap: 4px 32px; }
+@media (max-width: 360px) {
+  .menu { gap: 6px; }
+  .menu-item { padding: 8px 2px 6px; font-size: 0.8rem; }
+  .menu-item svg { width: 24px; height: 24px; }
 }
 
 /* News-Einträge */

@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://ornament.cloud/assets/og-ornament-cloud.png">
   <!-- Feed: wer die News abonniert, bekommt neue Einträge im eigenen Leseprogramm (erzeugt aus news/index.html, siehe tools/build-feed.ts) -->
   <link rel="alternate" type="application/rss+xml" title="Ornament Cloud – News" href="feed.xml">
-  <link rel="stylesheet" href="styles.css?v=41">
+  <link rel="stylesheet" href="styles.css?v=45">
   <!--
     Startanimation (Wunsch vom 9. Oktober 2026): bevor die Startseite erscheint, wachsen die Zeichen von «ornament.cloud» als Linienwachstum, das fertige Wort blendet aus, dann blendet die Seite über
     (Video, ohne Ton, 11 Sekunden; Quellcode src/videos/src/wachstum/, Composition StartAnimation und StartAnimationDunkel). Sie läuft nur auf dieser Seite, einmal pro Sitzung
@@ -53,24 +53,8 @@
     .start-weiter:hover, .start-weiter:focus-visible { color: var(--bg); background: var(--accent); }
     .start-weiter:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
     @media (prefers-reduced-motion: reduce) { .start { transition: none; } }
-    /* Lead und drei Kästen (Wunsch von Christian, 9. Oktober 2026): Gestaltung nur hier, damit styles.css (?v=) unberührt bleibt */
-    .lead--start { margin: -8px 0 0; max-width: none; font-family: var(--serif); font-size: clamp(1.45rem, 4.4vw, 2.2rem); line-height: 1.2; color: var(--text); }
-    .kaesten { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 8px 0 56px; }
-    .kasten {
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
-      min-height: 150px; padding: 26px 10px 22px; min-width: 0;
-      color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-      font: 500 1.15rem/1.2 var(--font); text-decoration: none;
-    }
-    .kasten svg { width: 56px; height: 56px; fill: none; stroke: currentColor; stroke-width: 1.5px; stroke-linecap: round; stroke-linejoin: round; }
-    .kasten svg * { vector-effect: non-scaling-stroke; }
-    .kasten:hover { border-color: var(--text); }
-    .kasten:hover svg { color: var(--accent); }
-    .kasten:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
-    @media (max-width: 520px) { .kaesten { gap: 8px; } .kasten { min-height: 110px; padding: 18px 4px 14px; gap: 10px; font-size: 1rem; } .kasten svg { width: 40px; height: 40px; } }
-    /* OMNA COLOR unter den Kästen (seit 10. Oktober 2026): der Rahmen aus styles.css, hier nur der Abstand (dort sitzt er näher an der Welle) */
-    .kaesten + .omna { margin: 0 0 48px; }
-    @media (max-width: 520px) { .kaesten { margin-bottom: 36px; } }
+    /* OMNA COLOR direkt unter dem Kopf (seit 10. Oktober 2026): der Rahmen aus styles.css, hier nur der Abstand */
+    main > .omna { margin: 0 0 48px; }
   </style>
   <script>
     // Entscheidet vor dem ersten Anstrich, ob die Startanimation läuft (die Klasse start-an deckt die Seite sofort ab, es gibt kein Aufblitzen)
@@ -95,43 +79,25 @@
           <a href="./" aria-current="page">Ornament Cloud</a>
           <a href="alpha/drittes-rad/">Das Dritte Rad</a>
         </nav>
+        <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
         <nav class="menu" aria-label="Hauptmenü">
-          <a class="menu-item" href="zu-seiner-zeit/">Zettelkasten</a>
-          <a class="menu-item" href="apps/">Apps</a>
-          <a class="menu-item" href="masterprompts/">Masterprompts</a>
-          <a class="menu-item" href="web/">Web</a>
+          <a class="menu-item" href="apps/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg><span>Apps</span></a>
+          <a class="menu-item" href="masterprompts/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-7.5L7 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M7.5 8.5l3 2.25-3 2.25"/><path d="M12.5 13h4"/></svg><span>Prompts</span></a>
+          <a class="menu-item" href="web/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5S9.6 5.8 12 3.5z"/></svg><span>Web</span></a>
+          <a class="menu-item" href="zu-seiner-zeit/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h11.5A1.5 1.5 0 0 1 20 5v11"/><rect x="4" y="6.5" width="13" height="14" rx="1.5"/><path d="M7 10.5h7"/><path d="M7 13.5h7"/><path d="M7 16.5h4"/></svg><span>Zettel</span></a>
         </nav>
       </div>
-      <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
       <h1 class="sr-only">Ornament Cloud</h1>
-      <p class="lead lead--start">Dreh- und Wendepunkte für Theorie und Praxis</p>
     </div>
   </header>
 
   <main class="wrap">
     <!--
-      Aufbau: Lead im Kopf, hier drei Kästen (Wunsch von Christian, 9. Oktober 2026): Apps, Prompts und Web, nebeneinander, mit gezeichneten Symbolen
-      (Apps: vier Felder, Prompts: Sprechblase mit Eingabezeichen, Web: Globus). Sie führen auf die Seiten des Menüs (apps/, masterprompts/, web/); der Zettelkasten steht nur im Menü.
-      Die Symbole sind schlichte Zeichnungen in der Schriftfarbe (kein data-icon, nicht animiert) und für Vorlesegeräte verborgen: der Name im Kasten sagt alles.
-      Unter den Kästen seit 10. Oktober 2026 wieder OMNA COLOR zum direkten Spielen (Wunsch von Christian; eingebettet aus alpha/omna-color/, freigegebene Ausnahme
-      von REGELN §14, wie schon vom 4. bis 9. Oktober 2026). «Drehen» muss beim Laden nicht im Fenster stehen; nach dem Drehen blättert die Seite zur gezogenen Übung.
+      Aufbau: im Kopf die Navigation, die Welle und die vier Kästchen des Menüs; darunter OMNA COLOR zum direkten Spielen (der Lead «Dreh- und Wendepunkte für Theorie und Praxis», 9. bis 10. Oktober 2026, ist weg) (seit 10. Oktober 2026 wieder, Wunsch von Christian; eingebettet aus alpha/omna-color/,
+      freigegebene Ausnahme von REGELN §14, wie schon vom 4. bis 9. Oktober 2026). «Drehen» muss beim Laden nicht im Fenster stehen; nach dem Drehen blättert
+      die Seite zur gezogenen Übung. Die drei Kästen Apps, Prompts und Web (9. bis 10. Oktober 2026 hier) sind mit «Zettel» das Menü oben auf allen Seiten.
       OMNA COLOR bleibt zugleich ein Beitrag auf «Web». Das Erklärvideo zu ORNA, das von 5. bis 9. Oktober 2026 hier stand, ist auf «Web» (web/orna-erklaervideo/).
     -->
-    <nav class="kaesten" aria-label="Apps, Prompts und Web">
-      <a class="kasten" href="apps/">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>
-        <span>Apps</span>
-      </a>
-      <a class="kasten" href="masterprompts/">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-7.5L7 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M7.5 8.5l3 2.25-3 2.25"/><path d="M12.5 13h4"/></svg>
-        <span>Prompts</span>
-      </a>
-      <a class="kasten" href="web/">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5S9.6 5.8 12 3.5z"/></svg>
-        <span>Web</span>
-      </a>
-    </nav>
-
     <figure class="omna">
       <iframe src="alpha/omna-color/" title="OMNA COLOR: zwei Farbräder drehen gegeneinander und wählen eine von 180 Gestaltungsübungen. Drehen mit dem Knopf oder durch Ziehen am Rad."></iframe>
       <figcaption>OMNA COLOR: Zwei Farbräder drehen gegeneinander. Zeigen sie zwei Farben, verbindet die Übung beide Themen, zeigen sie dieselbe Farbe, bleibt es beim reinen Thema. Drehen mit dem Knopf oder durch Ziehen am Rad. Mehr dazu unter <a href="web/">Web</a>.</figcaption>
