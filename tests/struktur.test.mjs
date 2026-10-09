@@ -138,7 +138,7 @@ test("Startseite: Startanimation (9. Oktober 2026) – Video hell und dunkel, nu
   const roh = lies("index.html");
   const html = roh.replace(/<!--[\s\S]*?-->/g, "");
   // Markup: gleich nach <body>, vor Kopf und Inhalt, ausserhalb von <main>; das Video hat keine Quelle im Markup (das Skript wählt hell oder dunkel)
-  assert.match(html, /<body>\s*<div class="start" id="start">\s*<video muted playsinline preload="auto" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback><\/video>\s*<button class="start-weiter" type="button">Überspringen<\/button>\s*<\/div>\s*<header class="site-header">/);
+  assert.match(html, /<body>\s*<div class="start" id="start">\s*<video muted playsinline preload="auto" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback><\/video>\s*<button class="start-weiter" type="button">Intro überspringen<\/button>\s*<\/div>\s*<header class="site-header">/);
   assert.ok(html.indexOf('id="start"') < html.indexOf("<main"), "die Startanimation liegt vor dem Inhalt");
   // Dateien: hell und dunkel, quadratisch, ohne Ton
   for (const d of ["assets/start-animation.mp4", "assets/start-animation-dunkel.mp4"]) {
@@ -160,6 +160,10 @@ test("Startseite: Startanimation (9. Oktober 2026) – Video hell und dunkel, nu
   assert.match(kopf, /animation: start-notaus 0s linear 45s forwards/);
   assert.match(kopf, /@keyframes start-notaus \{ to \{ visibility: hidden; pointer-events: none; \} \}/);
   assert.match(kopf, /\.start video \{[^}]*aspect-ratio: 1 \/ 1;/, "das Video ist quadratisch");
+  // der Knopf «Intro überspringen» (Wunsch vom 9. Oktober 2026): unten rechts, orange wie die Seite (--accent), nur leicht gerundet, mindestens 44 px hoch
+  assert.match(kopf, /\.start-weiter \{[^}]*right: max\(24px, env\(safe-area-inset-right\)\); bottom: max\(24px, env\(safe-area-inset-bottom\)\);/, "unten rechts");
+  assert.match(kopf, /\.start-weiter \{[^}]*min-height: 44px;/, "Tippfläche");
+  assert.match(kopf, /\.start-weiter \{[^}]*color: var\(--accent\);[^}]*border: 1\.5px solid var\(--accent\); border-radius: 6px;/, "orange, nur leicht gerundet (keine Pille)");
   assert.ok(!lies("styles.css").includes(".start-weiter"), "die Gestaltung steht in der Startseite, styles.css (?v=) bleibt unberührt");
   // Skript: Video nach Farbschema, Ende, Fehler, Hängen, Tippen, Taste, Knopf; die Seite darunter ist währenddessen inert
   const skript = html.slice(html.indexOf('var d = document.documentElement, el = document.getElementById("start")'));

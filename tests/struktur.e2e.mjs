@@ -432,7 +432,7 @@ async function startKontext(opts = {}, { stub = true, url = "/" } = {}) {
 const startAn = (page) => page.evaluate(() => document.documentElement.classList.contains("start-an"));
 const startFrei = (page) => page.waitForFunction(() => !document.documentElement.classList.contains("start-an"), null, { timeout: 5000 });
 
-await check("Startanimation: neue Sitzung deckt die Seite ab, spielt das helle Video, sperrt die Seite dahinter; «Überspringen» gibt sie frei, danach läuft sie nicht wieder", async () => {
+await check("Startanimation: neue Sitzung deckt die Seite ab, spielt das helle Video, sperrt die Seite dahinter; «Intro überspringen» gibt sie frei, danach läuft sie nicht wieder", async () => {
   const { ctx, page, errors } = await startKontext();
   assert.equal(await startAn(page), true);
   const flaeche = await page.locator("#start").evaluate((e) => { const r = e.getBoundingClientRect(), c = getComputedStyle(e); return { w: r.width, h: r.height, pos: c.position, z: +c.zIndex, bg: c.backgroundColor, frei: document.documentElement.clientWidth }; });
@@ -445,10 +445,17 @@ await check("Startanimation: neue Sitzung deckt die Seite ab, spielt das helle V
   assert.equal(v.play, 1);
   const video = await page.locator("#start video").evaluate((e) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height, muted: e.muted }; });
   assert.deepEqual([video.w, video.h, video.muted], [800, 800, true], "quadratisch, so gross wie das Fenster hoch ist, ohne Ton");
+  const knopf = await page.getByRole("button", { name: "Intro überspringen" }).evaluate((e) => { const r = e.getBoundingClientRect(), c = getComputedStyle(e); return { r: r.right, b: r.bottom, h: r.height, farbe: c.color, rand: c.borderTopColor, radius: parseFloat(c.borderTopLeftRadius), innen: innerWidth }; });
+  assert.equal(knopf.farbe, "rgb(194, 65, 12)", "Schrift orange wie die Seite (--accent)");
+  assert.equal(knopf.rand, "rgb(194, 65, 12)", "Rahmen orange");
+  assert.ok(knopf.radius > 0 && knopf.radius <= 8, `nur leicht gerundet, keine Pille (${knopf.radius} px)`);
+  assert.ok(knopf.h >= 44, "mindestens 44 px hoch");
+  assert.equal(Math.round(800 - knopf.b), 24, "24 px über dem unteren Rand");
+  assert.ok(knopf.innen - knopf.r >= 24 && knopf.innen - knopf.r <= 60, "unten rechts, mit Abstand zum Rand");
   assert.equal(await page.evaluate(() => sessionStorage.getItem("start-animation")), "1", "gemerkt, sobald sie läuft");
   assert.equal(await page.evaluate(() => document.querySelector("main").inert && document.querySelector("header").inert && document.querySelector("footer").inert && !document.getElementById("start").inert), true, "Kopf, Inhalt und Fuss sind gesperrt, die Animation nicht");
   assert.equal(await page.evaluate(() => document.documentElement.style.overflow), "hidden", "kein Blättern dahinter");
-  await page.getByRole("button", { name: "Überspringen" }).click();
+  await page.getByRole("button", { name: "Intro überspringen" }).click();
   await startFrei(page);
   assert.equal(await page.evaluate(() => document.querySelector("main").inert || document.querySelector("header").inert), false, "die Seite ist wieder frei");
   assert.equal(await page.evaluate(() => document.documentElement.style.overflow), "", "Blättern wieder möglich");
@@ -466,6 +473,7 @@ await check("Startanimation: im dunklen Modus das dunkle Video auf dunklem Grund
   const { ctx, page, errors } = await startKontext({ colorScheme: "dark" });
   assert.deepEqual((await page.evaluate(() => window.__start)).src, ["assets/start-animation-dunkel.mp4?v=3"]);
   assert.equal(await page.locator("#start").evaluate((e) => getComputedStyle(e).backgroundColor), "rgb(23, 22, 20)", "Grund wie die Seite im dunklen Modus");
+  assert.equal(await page.locator(".start-weiter").evaluate((e) => getComputedStyle(e).color), "rgb(240, 138, 93)", "der Knopf im dunklen Modus: das Orange der Seite dort");
   assert.deepEqual(errors, []);
   await ctx.close();
 });

@@ -27,7 +27,7 @@
   <!--
     Startanimation (Wunsch vom 9. Oktober 2026): bevor die Startseite erscheint, wachsen die Zeichen von «ornament.cloud» als Linienwachstum, das fertige Wort blendet aus, dann blendet die Seite über
     (Video, ohne Ton, 11 Sekunden; Quellcode src/videos/src/wachstum/, Composition StartAnimation und StartAnimationDunkel). Sie läuft nur auf dieser Seite, einmal pro Sitzung
-    (Vorschau jederzeit mit ?start), nicht bei «weniger Bewegung» und nicht bei «Daten sparen». Tippen, eine Taste oder «Überspringen» beendet sie; läuft das Video nicht an, kommt die Seite sofort.
+    (Vorschau jederzeit mit ?start), nicht bei «weniger Bewegung» und nicht bei «Daten sparen». Tippen, eine Taste oder der Knopf «Intro überspringen» (unten rechts, orange) beendet sie; läuft das Video nicht an, kommt die Seite sofort.
     Die Gestaltung steht hier in der Seite (nur die Startseite braucht sie), damit styles.css (?v=) unverändert bleibt. Ohne Skript erscheint sie nie.
   -->
   <style>
@@ -44,14 +44,14 @@
     @keyframes start-notaus { to { visibility: hidden; pointer-events: none; } }
     .start video { display: block; width: min(100vw, 100vh, 1080px); width: min(100vw, 100dvh, 1080px); height: auto; aspect-ratio: 1 / 1; }
     .start-weiter {
-      position: absolute; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); translate: -50% 0;
-      min-height: 44px; padding: 0 22px;
+      position: absolute; right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom));
+      min-height: 44px; padding: 0 20px;
       font: 600 0.8rem/1 var(--font); letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--muted); background: transparent; border: 1px solid var(--border); border-radius: 999px;
+      color: var(--accent); background: transparent; border: 1.5px solid var(--accent); border-radius: 6px;
       cursor: pointer;
     }
-    .start-weiter:hover { color: var(--text); border-color: var(--text); }
-    .start-weiter:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+    .start-weiter:hover, .start-weiter:focus-visible { color: var(--bg); background: var(--accent); }
+    .start-weiter:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
     @media (prefers-reduced-motion: reduce) { .start { transition: none; } }
   </style>
   <script>
@@ -68,7 +68,7 @@
 <body>
   <div class="start" id="start">
     <video muted playsinline preload="auto" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback></video>
-    <button class="start-weiter" type="button">Überspringen</button>
+    <button class="start-weiter" type="button">Intro überspringen</button>
   </div>
   <header class="site-header">
     <div class="wrap">
@@ -132,7 +132,7 @@
   </footer>
   <script>
     // Startanimation (siehe Kommentar im Kopf): Video je nach hellem oder dunklem Modus; die Seite darunter ist währenddessen nicht erreichbar (inert).
-    // Endet das Video, bei Fehler, wenn es nicht von selbst anläuft (nach 6 Sekunden) oder stehen bleibt, bei Tippen, Taste oder «Überspringen»: ausblenden und freigeben.
+    // Endet das Video, bei Fehler, wenn es nicht von selbst anläuft (nach 6 Sekunden) oder stehen bleibt, bei Tippen, Taste oder «Intro überspringen»: ausblenden und freigeben.
     (function () {
       var d = document.documentElement, el = document.getElementById("start");
       if (!el || !d.classList.contains("start-an")) return;
