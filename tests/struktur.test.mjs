@@ -10,7 +10,7 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
 
-const MENU = [["Zettel", "zu-seiner-zeit/"], ["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Web", "web/"]];   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
+const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Web", "web/"], ["Zettel", "zu-seiner-zeit/"]];   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
 const ORNA = "portfolio/nebeneinander-nacheinander/";
 // Seiten mit dem Menü → Eintrag, der aktiv ist ([Ordner, aria-current]); null: keiner (die Seite hängt an keinem Menüpunkt)
 const MENUSEITEN = {
@@ -50,7 +50,7 @@ const jpegMass = (buf) => {            // Breite und Höhe aus dem ersten Rahmen
   throw new Error("kein JPEG");
 };
 
-test("Menü: vier Kästchen mit Symbol und Namen (Zettel, Apps, Prompts, Web) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
+test("Menü: vier Kästchen mit Symbol und Namen (Apps, Prompts, Web, Zettel) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
   for (const [datei, aktiv] of Object.entries(MENUSEITEN)) {
     const html = lies(datei);
     const nav = html.match(/<nav class="menu" aria-label="Hauptmenü">([\s\S]*?)<\/nav>/);
@@ -60,7 +60,7 @@ test("Menü: vier Kästchen mit Symbol und Namen (Zettel, Apps, Prompts, Web) in
     assert.ok(!/data-icon|menu-sub|menu-title/.test(nav[1]), `${datei}: keine animierten Symbole, keine Untertitel`);
     const eintraege = [...nav[1].matchAll(/<a class="menu-item" href="([^"]+)"(?: aria-current="(page|true)")?>(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>([^<]+)<\/span><\/a>/g)];
     assert.equal(eintraege.length, 4, `${datei}: vier Kästchen mit verborgenem Symbol und Namen`);
-    assert.deepEqual(eintraege.map((e) => e[4]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Zettel, Apps, Prompts, Web`);
+    assert.deepEqual(eintraege.map((e) => e[4]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Apps, Prompts, Web, Zettel (Zettel zuletzt seit 10. Oktober 2026)`);
     for (const [i, e] of eintraege.entries()) {
       const ziel = new URL(e[1], new URL(datei, root));
       assert.equal(ziel.pathname, new URL(MENU[i][1], root).pathname, `${datei}: ${MENU[i][0]} führt nach ${MENU[i][1]}`);

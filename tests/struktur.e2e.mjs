@@ -1,4 +1,4 @@
-// Struktur der Website – Browser-Tests (Playwright, Chromium), Neuordnung vom 2. Oktober 2026: das Menü (seit 10. Oktober 2026 vier Kästchen: Zettel, Apps, Prompts, Web) auf allen Breiten,
+// Struktur der Website – Browser-Tests (Playwright, Chromium), Neuordnung vom 2. Oktober 2026: das Menü (seit 10. Oktober 2026 vier Kästchen: Apps, Prompts, Web, Zettel) auf allen Breiten,
 // die Startseite (seit 9. Oktober 2026 Lead und drei Kästen; OMNA COLOR war vom 4. bis 9. Oktober 2026 eingebettet), die Seiten Apps, Masterprompts und Web (mit dem Stellenfeld).
 //   NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs [Teil eines Prüfungsnamens]
 // Das Stellenfeld braucht WebGL (Chromium bringt SwiftShader mit).
@@ -115,7 +115,7 @@ await check("Startseite: Rückkanal in der Spalte der Seite, bündig mit dem Fus
 });
 
 // ---------- Menü ----------
-await check("Menü: vier Kästchen (Zettel, Apps, Prompts, Web) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
+await check("Menü: vier Kästchen (Apps, Prompts, Web, Zettel) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
   const ctx = await browser.newContext();
   for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/"]) {
     for (const w of [320, 360, 390, 412, 600, 768, 1024, 1280]) {
@@ -125,7 +125,7 @@ await check("Menü: vier Kästchen (Zettel, Apps, Prompts, Web) mit Symbol auf a
       await page.goto(origin + pfad);
       const items = page.locator(".menu-item");
       assert.equal(await items.count(), 4);
-      assert.deepEqual(await items.locator("span").allTextContents(), ["Zettel", "Apps", "Prompts", "Web"], `${pfad} ${w}: Namen`);
+      assert.deepEqual(await items.locator("span").allTextContents(), ["Apps", "Prompts", "Web", "Zettel"], `${pfad} ${w}: Namen`);
       const bs = [];
       for (let i = 0; i < 4; i++) { assert.ok(await items.nth(i).isVisible(), `${pfad} ${w}: Kästchen ${i + 1} sichtbar`); bs.push(await box(items.nth(i))); }
       for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) assert.ok(!sich(bs[i], bs[j]), `${pfad} ${w}: Kästchen ${i + 1} und ${j + 1} überlappen`);
@@ -164,7 +164,7 @@ await check("Menü: das Kästchen der Seite hat einen kräftigeren Rand (aria-cu
   });
   for (const [pfad, aktiv, art] of [["/apps/", "Apps", "page"], ["/masterprompts/", "Prompts", "page"], ["/web/", "Web", "page"], ["/portfolio/nebeneinander-nacheinander/", "Apps", "true"], ["/", null, null], ["/news/", null, null]]) {
     await page.goto(origin + pfad);
-    for (const name of ["Zettel", "Apps", "Prompts", "Web"]) {
+    for (const name of ["Apps", "Prompts", "Web", "Zettel"]) {
       const s = await rand(name);
       if (name === aktiv) {
         assert.equal(s.aktiv, art, `${pfad}: ${name} ist aktiv (${art})`);
@@ -191,7 +191,7 @@ await check("Menü: das Kästchen der Seite hat einen kräftigeren Rand (aria-cu
   await page.getByRole("navigation", { name: "Ornament Cloud" }).getByRole("link", { name: "Das Dritte Rad" }).focus();
   await page.keyboard.press("Tab");              // Tastaturfokus: erstes Kästchen des Menüs
   const f = await page.evaluate(() => { const e = document.activeElement, c = getComputedStyle(e); return { text: e.textContent, kontur: c.outlineStyle, breite: c.outlineWidth }; });
-  assert.deepEqual(f, { text: "Zettel", kontur: "solid", breite: "2px" });
+  assert.deepEqual(f, { text: "Apps", kontur: "solid", breite: "2px" });
   await ctx.close();
 });
 
@@ -217,7 +217,7 @@ await check("Menü: serifenlose Schrift der Seite in mittlerem Gewicht (Wunsch v
   await ctx.close();
 });
 
-await check("Menü führt zu den Seiten: Zettel direkt in den Zettelkasten, Apps, Prompts, Web; auch von ORNA aus", async () => {
+await check("Menü führt zu den Seiten: Apps, Prompts, Web und Zettel direkt in den Zettelkasten; auch von ORNA aus", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 } });
   const page = await ctx.newPage();
   for (const [name, url, h1] of [["Zettel", /\/zu-seiner-zeit\/$/, "Zu seiner Zeit"], ["Apps", /\/apps\/$/, "Apps"], ["Prompts", /\/masterprompts\/$/, "Masterprompts"], ["Web", /\/web\/$/, "Web"]]) {

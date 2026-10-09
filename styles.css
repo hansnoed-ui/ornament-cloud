@@ -310,7 +310,7 @@ h1 {
 }
 .topbar > .seitenweg { grid-column: 1; grid-row: 1; }
 .topbar > .menu { grid-column: 2; grid-row: 1; justify-self: end; }
-.topbar > .divider { grid-column: 1 / -1; grid-row: 2; margin: 18px 0 0; }
+.topbar > .divider { grid-column: 1 / -1; grid-row: 2; margin: 20px 0 0; }   /* wie vor dem 10. Oktober 2026: 20 px unter Links und Menü, 30 px bis zum Titel */
 
 /* Die feine Welle in der Farbe der Hauptlinks (Wunsch vom 2. Oktober 2026), seit 10. Oktober 2026 direkt unter den Hauptlinks, über dem Menü */
 .divider {
@@ -401,8 +401,8 @@ h1 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
-  width: 392px;
-  margin-top: 15px;   /* auf der Höhe des ersten Buttons links */
+  width: 368px;
+  margin-top: 4px;
 }
 
 .menu-item {
