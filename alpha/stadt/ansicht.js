@@ -1,7 +1,7 @@
 // «Die Paradoxie der Stadt» – Zeichnung der Stadt auf einer Canvas (Draufsicht). Liest den Zustand, verändert ihn nie.
 // Gezeichnet wird in Metern (die Transformation macht daraus Pixel); Farben kommen aus CSS-Variablen der Seite (hell und dunkel).
-import { KNOTEN, KANTEN, ORTE, BANK, BAENKE, BLOECKE, WOHNUNGEN, KORRIDORE, VERBINDUNG, BREITE, HOEHE, X_AMPEL, X_ZEBRA, X_HALT, bedingungen, ampelZeiten } from "./stadtplan.js?v=4";
-import { gesamtzeit } from "./modell.js?v=4";
+import { KNOTEN, KANTEN, ORTE, BANK, BAENKE, BLOECKE, WOHNUNGEN, KORRIDORE, VERBINDUNG, BREITE, HOEHE, X_AMPEL, X_ZEBRA, X_HALT, bedingungen, ampelZeiten } from "./stadtplan.js?v=5";
+import { gesamtzeit } from "./modell.js?v=5";
 
 const VAR = ["papier", "block", "dach", "gruen", "baum", "strasse", "markierung", "weg", "linie", "text", "leise", "koralle", "vergleich", "auto", "bus", "figur", "hof"];
 export function farben(el) {
@@ -35,7 +35,8 @@ export function zeichne(ctx, stadt, a) {
   }
   // Kiosk und Zwischennutzung
   markeHaus(ctx, 470, 80, 22, 14, c, lw, c.koralle);
-  if (z.m.zwischennutzung) markeHaus(ctx, 226, 166, 22, 12, c, lw, c.vergleich);
+  // das leere Ladenlokal ist immer da; mit der Zwischennutzung bekommt es Farbe und Namen
+  markeHaus(ctx, 104, 160, 32, 14, c, lw, z.m.zwischennutzung ? c.vergleich : c.weg);
 
   // ---------- Strassen ----------
   const spur = z.m.spur, oben = spur ? 195 : 200, unten = spur ? 225 : 220;
@@ -137,7 +138,7 @@ export function zeichne(ctx, stadt, a) {
   for (const [t, x, y] of [["Hauptstrasse", 70, 210], ["Nordstrasse", 520, 55]]) text(ctx, a, t, x, y, c.markierung, null, kl, "center", false, true);
   for (const o of ["laden", "kiosk", "platz", "park", "schule", "atelier"]) { const p = ORTE[o]; text(ctx, a, p.name, p.x, p.y + (o === "kiosk" ? -10 : o === "schule" ? 14 : 12), c.leise, c.papier, kl, "center"); }
   text(ctx, a, "Bus", X_HALT, 176, c.leise, c.papier, kl - 1, "center");
-  if (z.m.zwischennutzung) text(ctx, a, "Zwischennutzung", 237, 160, c.leise, c.papier, kl - 1, "center");
+  if (z.m.zwischennutzung) text(ctx, a, "Zwischennutzung", 120, 152, c.leise, c.papier, kl - 1, "center");
   if (z.trampelSichtbar) text(ctx, a, "Trampelpfad", 172, 150, c.leise, c.papier, kl - 1, "center");
 }
 
@@ -253,7 +254,7 @@ function vorschau(ctx, z, [schluessel, wert], c, lw, px, dpr) {
   if (schluessel === "bus" && wert) { for (const y of [182, 238]) ctx.strokeRect(X_HALT - 14, y - 5, 28, 10); }
   if (schluessel === "ruhe" && wert) { for (const x of [60, 540]) { ctx.beginPath(); ctx.arc(x, 186, 6, 0, 7); ctx.stroke(); } }
   if (schluessel === "durchgang" && wert) linie(ctx, 150, 232, 150, 330);
-  if (schluessel === "zwischennutzung" && wert) ctx.strokeRect(224, 164, 26, 16);
+  if (schluessel === "zwischennutzung" && wert) ctx.strokeRect(101, 157, 38, 20);
   if (schluessel === "bank") { const b = BANK[wert]; ctx.strokeRect(b.x - 7, b.y - 4, 14, 8); }
   if (schluessel === "verbindung") {
     const v = VERBINDUNG[wert];

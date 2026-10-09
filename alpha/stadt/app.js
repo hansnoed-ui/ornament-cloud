@@ -1,11 +1,11 @@
 // «Die Paradoxie der Stadt» – Bedienung: Uhr, Begleiten, Verändern (mit Vorschau), Sichtweisen, Protokoll, Vergleiche, Modell.
 // Die Simulation (modell.js) läuft mit festem Schritt; die Bildrate bestimmt nur, wie viele Schritte je Bild gerechnet werden.
-import * as M from "./modell.js?v=4";
-import { zeichne, farben, positionVon } from "./ansicht.js?v=4";
-import { nebeneinanderNacheinander, verteilapparat, befragungAuswertung, SCHWELLEN } from "./raster.js?v=4";
-import { VERBINDUNG, BANK } from "./stadtplan.js?v=4";
-import * as F from "./fragen.js?v=4";
-import { liveAdresse, liveVerbindung } from "./live.js?v=4";
+import * as M from "./modell.js?v=5";
+import { zeichne, farben, positionVon } from "./ansicht.js?v=5";
+import { nebeneinanderNacheinander, verteilapparat, befragungAuswertung, SCHWELLEN } from "./raster.js?v=5";
+import { VERBINDUNG, BANK } from "./stadtplan.js?v=5";
+import * as F from "./fragen.js?v=5";
+import { liveAdresse, liveVerbindung } from "./live.js?v=5";
 
 const $ = (s, w = document) => w.querySelector(s);
 const $$ = (s, w = document) => [...w.querySelectorAll(s)];
@@ -31,7 +31,7 @@ let tabelle = null, tabelleFehler = null;
 
 // ---------- Start ----------
 async function start() {
-  try { tabelle = (await import("./jev.js?v=4")).JEV; if (!M.tabelleGueltig(tabelle)) { tabelleFehler = "Prüfsumme passt nicht zu den Fragen"; tabelle = null; } }
+  try { tabelle = (await import("./jev.js?v=5")).JEV; if (!M.tabelleGueltig(tabelle)) { tabelleFehler = "Prüfsumme passt nicht zu den Fragen"; tabelle = null; } }
   catch (e) { tabelleFehler = "jev-Tabelle nicht geladen"; tabelle = null; }
   await new Promise((r) => setTimeout(r, 30));    // erst die Seite zeigen, dann die Stadt anlegen (Vorlauf rund eine Sekunde)
   neuerLauf();
@@ -280,7 +280,7 @@ function begleitenHtml() {
   h += `<section class="karte-person"><h3>${esc(f.name)}</h3>
     <p class="merkmale">${M.beschreibe(f).map(esc).join(" · ") || "ohne besondere Angaben"}${f.eilig ? " · hat heute wenig Zeit" : ""}</p>
     <p class="jetzt"><strong>Jetzt:</strong> ${esc(ZUSTAND(z, f))}</p>
-    <h4>Heute</h4><ul class="programm">${f.programm.map((p) => `<li><span>${ART[p.art]}</span> <span class="leise">${p.abend && p.status === "offen" ? "entscheidet um 16.30" : STATUS[p.status]}</span></li>`).join("") || "<li>nichts geplant</li>"}</ul>`;
+    <h4>Heute</h4><ul class="programm">${f.programm.map((p) => `<li><span>${p.text ? esc(p.text[0].toUpperCase() + p.text.slice(1)) : p.art === "arbeitsort" ? `Arbeit im ${esc(M.ORTE[p.ort].name)}` : ART[p.art]}</span> <span class="leise">${p.abend && p.status === "offen" ? "entscheidet um 16.30" : STATUS[p.status]}</span></li>`).join("") || "<li>nichts geplant</li>"}</ul>`;
   if (ui.liveAdresse) {
     const z2 = ui.stadt.r.live?.zuletzt;
     h += `<div class="live"><button type="button" class="schalter" data-aktion="live" aria-pressed="${ui.live}"><b>jev live fragen</b><span>Bevor ${esc(f.name)} die Hauptstrasse quert, fragt die Seite jev, genauer beschrieben als in der Tabelle: Umweg in Minuten, Müdigkeit, Erfahrung an der Ampel. Gesendet werden nur diese Angaben, kein Name. Bis die Antwort da ist, bleibt die Person stehen; ohne Antwort gilt die Tabelle.</span></button>
@@ -359,7 +359,7 @@ function veraendernHtml() {
     ${wahlListe(z, "bank", Object.entries(BANK).map(([k, b]) => [k, `Bank ${b.name}`, null]), "Eine Bank versetzen")}
     <div class="schalter-reihe">
       ${schalter(z, "durchgang", "Durchgang öffnen", "durch den Hof im Süden; wer ihn sieht, kann ihn lernen")}
-      ${schalter(z, "zwischennutzung", "Zwischennutzung zulassen", "leeres Ladenlokal an der Hauptstrasse, Nordseite")}
+      ${schalter(z, "zwischennutzung", "Zwischennutzung zulassen", "leeres Ladenlokal im Block West, an der Hauptstrasse")}
     </div>
     <p class="leise">Es gibt keinen Knopf «Gemeinschaft erzeugen». Was daraus wird, zeigt erst der weitere Verlauf.</p>
   </section>

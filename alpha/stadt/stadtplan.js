@@ -33,7 +33,7 @@ knoten("hof", 150, 280);
 knoten("bn", 300, 181); knoten("bs", 300, 239); knoten("rmn", 345, 181); knoten("rms", 345, 239);
 
 // Türen (Ziele): Laden, Kiosk, Schule, Atelier, Zwischennutzung
-knoten("laden", 330, 262); knoten("kiosk", 480, 80); knoten("schule", 300, 350); knoten("atelier", 330, 130); knoten("zwischen", 236, 176);
+knoten("laden", 330, 262); knoten("kiosk", 480, 80); knoten("schule", 300, 350); knoten("atelier", 330, 130); knoten("zwischen", 120, 176);   // leeres Ladenlokal im Block West, an der Hauptstrasse
 
 export const KNOTEN = K;
 
@@ -70,7 +70,7 @@ kante("sv230", "pl", "weg"); kante("pl", "ladenvor", "weg"); kante("hs300", "lad
 // Durchgang durch den Hof (Massnahme «Durchgang öffnen»)
 kante("hs150", "hof", "durchgang", { nur: "durchgang" }); kante("hof", "sg150", "durchgang", { nur: "durchgang" });
 // Türen
-kante("ladenvor", "laden", "tuer"); kante("ns470", "kiosk", "tuer"); kante("sg300", "schule", "tuer"); kante("aw130", "atelier", "tuer"); kante("hn230", "zwischen", "tuer", { nur: "zwischennutzung" });
+kante("ladenvor", "laden", "tuer"); kante("ns470", "kiosk", "tuer"); kante("sg300", "schule", "tuer"); kante("aw130", "atelier", "tuer"); kante("hn150", "zwischen", "tuer", { nur: "zwischennutzung" });
 
 // Querungen der Hauptstrasse (Länge: Gehsteig zu Gehsteig)
 kante("hn300", "hs300", "ampel", { q: "ampel300", nur: "ampel" });
@@ -149,7 +149,7 @@ export const ORTE = {
   atelier: { name: "Atelier", knoten: "atelier", seite: "n", x: 330, y: 130 },
   haltN: { name: "Haltestelle Nord", knoten: "hn390", seite: "n", x: 390, y: 182, aufenthalt: true },
   haltS: { name: "Haltestelle Süd", knoten: "hs390", seite: "s", x: 390, y: 238, aufenthalt: true },
-  zwischen: { name: "Zwischennutzung", knoten: "zwischen", seite: "n", x: 236, y: 172, aufenthalt: true, nur: "zwischennutzung" },
+  zwischen: { name: "Zwischennutzung", knoten: "zwischen", seite: "n", x: 120, y: 168, aufenthalt: true, nur: "zwischennutzung" },
 };
 /** Die eine Bank, die man versetzen kann (Kleine Voraussetzungen) */
 export const BANK = {
