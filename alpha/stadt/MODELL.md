@@ -58,6 +58,8 @@ Dazu Passant:innen von ausserhalb (50 bis 200 je Stunde): Sie gehen von Rand zu 
 
 Zugang beim Bauen: ein Proxy, der den Schlüssel einsetzt, oder `TYPESAFE_API_KEY` in der Umgebung (nie in eine Datei).
 
+**jev live.** Schaltet man beim Begleiten «jev live fragen» ein, fragt die Seite für die begleitete Person bei jeder Querung jev selbst, über einen eigenen Cloudflare Worker (`tools/jev-worker/`). Die Lage ist genauer beschrieben als in der Tabelle: Mehrzeit in Minuten statt Stufen, müde oder nicht, Wartezeit an der Ampel aus der eigenen Erfahrung, Gewohnheit, das konkrete Ersatzziel. Bis die Antwort da ist, bleibt die Person stehen («überlegt»); kommt keine, gilt die Tabelle. Unter «Wie zuletzt entschieden» stehen die Live-Antwort und die Tabelle nebeneinander. Mit jev live ist ein Lauf nicht mehr genau wiederholbar; Vergleichszweige fragen nie live und nehmen die Tabelle.
+
 ## Autoverkehr
 
 Zwei Strassen von Rand zu Rand, Autos folgen einander (Abstand, Beschleunigung), halten an Rot und am besetzten Zebrastreifen. Ampel bei der Haltestelle (Umlauf, Autogrün, Fussgrün in Sekunden): heute 90/35/20, mit zusätzlicher Spur 90/45/15, Tempo 30 60/25/20, Schnellverbindung mit Ampel 100/60/15; mit Brücke keine Ampel. Tempo 50, Schnellverbindung 60, Tempo 30 mit Pförtnerampel (ein Auto je 8 Sekunden und Richtung). Nordstrasse rund 34 km/h mit Verlangsamung an drei Kreuzungen. Rand des Modells: Stehen vor dem Quartier mehr als 150 Autos, weichen weitere auf andere Strassen der Region aus (gezählt als «umgeleitet»).

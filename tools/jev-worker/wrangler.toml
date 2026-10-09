@@ -1,0 +1,14 @@
+# Cloudflare Worker «jev live» für Die Paradoxie der Stadt (siehe worker.js und README.md in diesem Ordner)
+name = "jev-stadt"
+main = "worker.js"
+compatibility_date = "2025-09-01"
+
+[vars]
+# Seiten, die fragen dürfen (durch Kommas getrennt). Zum lokalen Testen vorübergehend ergänzen: ,http://localhost:8771
+ERLAUBT = "https://ornament.cloud"
+
+# Höchstens 20 Anfragen je Minute und Adresse (Rate Limiting der Workers)
+[[ratelimits]]
+name = "BEGRENZUNG"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }

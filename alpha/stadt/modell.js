@@ -3,8 +3,8 @@
 // (Kanal, Tag, Figur, Zähler), damit zusätzliche Ziehungen in einem Vergleichszweig die übrigen Ereignisse nicht verschieben.
 // Der ganze Zustand liegt in stadt.z (einfache Daten, klonbar); stadt.r hält nur abgeleitete Hilfen (Graph, jev-Tabelle).
 import { KNOTEN, KANTEN, KANTE, ORTE, BANK, BAENKE, WOHNUNGEN, VERBINDUNG, KORRIDORE, HALT_S, AMPEL_S, ZEBRA_S, X_AMPEL, X_ZEBRA,
-  bedingungen, verfuegbar, ampelZeiten, tempoHaupt, spurenHaupt, BREITE } from "./stadtplan.js?v=2";
-import * as F from "./fragen.js?v=2";
+  bedingungen, verfuegbar, ampelZeiten, tempoHaupt, spurenHaupt, BREITE } from "./stadtplan.js?v=4";
+import * as F from "./fragen.js?v=4";
 
 export const DT = 1;                        // Sekunden Stadtzeit je Schritt
 export const TAG_DAUER = 16 * 3600;         // 06.00 bis 22.00 Uhr; die Nacht wird übersprungen
@@ -217,7 +217,7 @@ export function wirklichkeit(m) {
 }
 const spitzeStunde = (h) => h === 1 || h === 2 || h === 10 || h === 11 || h === 12;   // 07–09 und 16–19 Uhr (Stunden ab 06.00)
 
-export const kopie = (stadt) => ({ z: structuredClone(stadt.z), r: stadt.r });
+export const kopie = (stadt) => ({ z: structuredClone(stadt.z), r: { ...stadt.r, live: null } });   // Kopien und Zweige fragen nie live
 
 // ---------- jev oder Ersatzregel ----------
 function querungWahrsch(stadt, lage, person) {
@@ -462,7 +462,7 @@ function figurenSchritt(stadt) {
         f.energie = Math.min(1, f.energie + (f.zustand === "pause" ? 0.004 : 0.002) * DT);
         if (z.t >= f.bis) weiter(stadt, f);
         break;
-      case "zuhause_bleibt": break;
+      case "ueberlegt": starteHeimweg(stadt, f, f.ueberlegtVon); break;
     }
     if (f.zustand === "geht" && f.wartetSeit !== null && KANTE[f.pfad.kanten[f.pi]]?.art === "zebra") zebra = true;
     if (f.zustand === "geht" && f.wartetSeit === null && KANTE[f.pfad?.kanten[f.pi]]?.art === "zebra") zebra = true;
@@ -486,6 +486,7 @@ function starteAufgabe(stadt, f, a, von) {
   a.status = "unterwegs";
   const ort = ORTE[a.ort];
   const entscheid = querungsEntscheid(stadt, f, von, a.ort, a.zweck);
+  if (entscheid.wahl === "ueberlegt") { a.status = "offen"; if (a.art === "bringen") f.mitKind = false; return; }   // jev live antwortet noch; nächster Schritt fragt wieder nach
   f.aufgabe = { a, ziel: a.ort, start: z.t, wahl: entscheid.wahl, lage: entscheid.lage, gewohnheit: entscheid.gewohnheit, irrtum: entscheid.irrtum, p: entscheid.p, person: entscheid.person, direkt: entscheid.direkt, warten: 0, umweg: 0 };
   if (entscheid.wahl === "auslassen") {
     if (a.art === "bringen") f.mitKind = false;
@@ -562,6 +563,22 @@ function querungsEntscheid(stadt, f, von, ziel, zweck, heimweg = false) {
   };
   let p = querungWahrsch(stadt, lage, person);
   if (heimweg) { delete p.auslassen; delete p.ersatz; p = Object.keys(p).length ? F.normiere(p) : { eben: 1 }; }
+  // jev live (nur für die begleitete Person, nur wenn eingeschaltet): die Lage genauer beschrieben, die Antwort ersetzt die Tabelle.
+  // Bis sie da ist, bleibt die Person stehen und «überlegt»; kommt keine (Fehler, Zeitüberschreitung), gilt die Tabelle.
+  let quelle = stadt.r.tabelle ? "jev" : "ersatz", pTabelle = null;
+  const live = stadt.r.live;
+  if (live && live.figur === f.id && !f.passant && Object.keys(p).length > 1) {
+    let key = JSON.stringify(liveEingabe(z, f, lage, person, p, wege, direkt, ziel, heimweg));
+    if (f.liveFrage && (live.ausstehend[f.liveFrage] || live.antworten[f.liveFrage] !== undefined)) key = f.liveFrage;   // die gestellte Frage gilt, auch wenn sich die Lage inzwischen leicht verschoben hat
+    const a = live.antworten[key];
+    if (a === undefined) {
+      if (!live.ausstehend[key]) live.frage(key, JSON.parse(key));
+      f.liveFrage = key; f.ueberlegtSeit ??= z.t;
+      return { wahl: "ueberlegt" };
+    }
+    f.liveFrage = null; f.ueberlegtSeit = null;
+    if (a) { pTabelle = p; p = F.normiere(Object.fromEntries(Object.keys(p).map((k) => [k, (a[k] ?? 0) + 1e-4]))); quelle = "jev live"; z.liveGenutzt = true; }
+  }
   // Gewohnheit: wer denselben Weg schon oft gleich gegangen ist, prüft nicht jedes Mal neu
   const g = f.gewohnheit[ziel];
   const u = zufall(z.seed, K.wahl, f.id, z.tag, f.zaehler++);
@@ -576,8 +593,25 @@ function querungsEntscheid(stadt, f, von, ziel, zweck, heimweg = false) {
     : lage.eben === "lang" || lage.eben === "mittel" ? "Umweg oder Wartezeit" : f.eilig ? "keine Zeit" : "anderes";
   const w = wirklichkeit(z.m), irrtum = Object.keys(w).some((k) => f.glaubt[k] !== w[k]);
   // für die Begleitansicht: wie zuletzt über die Hauptstrasse entschieden wurde (Lage, Wahrscheinlichkeiten, Wahl)
-  f.entscheid = { tag: z.tag, t: z.t, ziel, lage, person, p, wahl, gewohnheit: ausGewohnheit, irrtum, heimweg, quelle: stadt.r.tabelle ? "jev" : "ersatz" };
+  f.entscheid = { tag: z.tag, t: z.t, ziel, lage, person, p, pTabelle, wahl, gewohnheit: ausGewohnheit, irrtum, heimweg, quelle };
   return { wahl, wege, lage, person, p, gewohnheit: ausGewohnheit, direkt, direktLaenge, grund, irrtum };
+}
+/** die Lage der begleiteten Person für jev live (fragen.js: liveLage prüft dasselbe im Worker): Minuten statt Stufen, Müdigkeit, Erfahrung */
+function liveEingabe(z, f, lage, person, p, wege, direkt, ziel, heimweg) {
+  const opt = Object.keys(p);
+  const min = (w) => Math.min(60, Math.max(0, Math.round(((w.zeit - direkt) / 60) * 2) / 2));
+  const g = f.gewohnheit[ziel];
+  const ersatz = opt.includes("ersatz") ? ERSATZ[ziel](z) : null;
+  return {
+    person, zweck: lage.zweck, ziel: heimweg ? "zuhause" : F.LIVE_ZIELE[ziel] ? ziel : "zuhause", optionen: opt,
+    mehrzeit: { eben: opt.includes("eben") ? min(wege.eben) : null, bruecke: opt.includes("bruecke") ? min(wege.bruecke) : null },
+    bruecke: opt.includes("bruecke") ? (f.glaubt.treppe ? "treppe" : "rampe") : "keine",
+    verkehr: opt.includes("frei") ? (lage.frei === "dicht" ? "dicht" : "ruhig") : "zaun",
+    wartenAmpel: f.erwartet.ampel300 === undefined ? null : Math.min(900, Math.round(f.erwartet.ampel300)),
+    eilig: !!f.eilig, muede: f.energie < 0.4, mitKind: !!f.mitKind,
+    ersatzziel: ersatz && F.LIVE_ZIELE[ersatz] ? ersatz : null,
+    gewohnheit: g && g.staerke >= 0.2 && F.QUERUNG_WAHL[g.wahl] ? g.wahl : null,
+  };
 }
 function verkehrDicht(z) {
   let n = 0; for (const a of z.autos) if (a.k === "H" && !a.bus) n++;
@@ -773,6 +807,7 @@ function starteHeimweg(stadt, f, von) {
   const z = stadt.z;
   f.aufgabe = null;
   const e = querungsEntscheid(stadt, f, von, f.heim, "fest", true);
+  if (e.wahl === "ueberlegt") { f.zustand = "ueberlegt"; f.ueberlegtVon = von; f.heimweg = false; return; }
   const p = e.wege[e.wahl] ?? weg(f, von, f.heim, null, z) ?? weg({ ...f, glaubt: wirklichkeit(z.m) }, von, f.heim, null, z);
   f.heimweg = true;
   if (!p) { f.zustand = "heim"; f.x = f.hx; f.y = f.hy; f.heimweg = false; return; }
@@ -1148,7 +1183,7 @@ export const ATELIER_TEXT = {
 
 /** Lauf vom gemerkten Zustand aus wiederholen (für Vergleiche): Zustand klonen, Massnahmen setzen, Sekunden rechnen */
 export function zweig(stadt, z0, massnahmen = {}) {
-  const s = { z: structuredClone(z0), r: stadt.r };
+  const s = { z: structuredClone(z0), r: { ...stadt.r, live: null } };
   for (const [k, v] of Object.entries(massnahmen)) wendeAn(s.z, k, v);
   return s;
 }

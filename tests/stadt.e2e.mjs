@@ -150,6 +150,40 @@ await check("Vollbild: der Knopf schaltet um, Stadt und Panel füllen den Bildsc
   await h.close();
 });
 
+await check("jev live: ohne Worker-Adresse kein Schalter; mit Adresse fragt die Seite erst nach dem Einschalten, nur für die begleitete Person, ohne Namen", async () => {
+  const ohne = await oeffne();
+  await ohne.page.click("#einstieg-begleiten");
+  assert.equal(await ohne.page.locator('[data-aktion="live"]').count(), 0, "ohne Adresse kein Schalter");
+  await ohne.ctx.close();
+  const anfragen = [];
+  const ctx = await browser.newContext({ viewport: { width: 1300, height: 900 } });
+  const page = await ctx.newPage();
+  const fehler = []; page.on("pageerror", (e) => fehler.push(e.message));
+  await page.route("https://jev-test.example/**", async (route) => {
+    const lage = JSON.parse(route.request().postData());
+    anfragen.push(lage);
+    await route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ wahrscheinlichkeiten: Object.fromEntries(lage.optionen.map((o, i) => [o, i === 0 ? 1 : 0])), modell: "jev-test", zwischengespeichert: false }) });
+  });
+  await page.goto(base + "?debug&figuren=32&jevlive=https://jev-test.example/stadt/querung");
+  await page.waitForSelector(".stadt.bereit", { timeout: 30000 });
+  await page.click("#einstieg-umsehen");
+  await page.waitForTimeout(1500);
+  assert.equal(anfragen.length, 0, "vor dem Einschalten wird nichts gesendet");
+  // eine Figur, deren nächster Weg über die Hauptstrasse führt
+  const id = await page.evaluate(() => { const { stadt, M } = window.stadtTest, z = stadt.z; const f = z.figuren.find((f) => f.zustand === "heim" && f.programm.filter((p) => p.status === "offen" && !p.abend).sort((a, b) => a.ab - b.ab).slice(0, 1).some((p) => p.ab > z.t && p.ab < z.t + 3 * 3600 && M.ORTE[p.ort].seite !== f.seite)); return f.id; });
+  await page.click("#t-begleiten");
+  await page.selectOption("#wer", String(id));
+  await page.click('[data-aktion="live"]');
+  assert.equal(await page.locator('[data-aktion="live"]').getAttribute("aria-pressed"), "true");
+  await page.click('[data-tempo="2"]');
+  await page.waitForFunction((id) => window.stadtTest.stadt.z.figuren[id].entscheid?.quelle === "jev live", id, { timeout: 60000 });
+  assert.ok(anfragen.length >= 1);
+  const namen = await page.evaluate(() => window.stadtTest.stadt.z.figuren.map((f) => f.name));
+  for (const a of anfragen) { const t = JSON.stringify(a); assert.ok(!namen.some((n) => t.includes(`"${n}"`)), "kein Name in der Anfrage"); }
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
 await browser.close(); server.close();
 console.log(`${ergebnisse.filter(Boolean).length} von ${ergebnisse.length} bestanden`);
 process.exit(ergebnisse.every(Boolean) ? 0 : 1);

@@ -218,3 +218,59 @@ export function normiere(w) {
 /** FNV-1a über die Fragen: ändern sich Wortlaut oder Auswahl, passt jev.js nicht mehr und die Seite nimmt die Ersatzregeln */
 function fnv(t) { let h = 0x811c9dc5; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16).padStart(8, "0"); }
 export const PRUEFSUMME = fnv(JSON.stringify([PERSONEN, QUERUNG, QUERUNG_WAHL, FAHRT, FAHRT_WAHL, FAHRT_PERSON, LAGEN, TEILNAHME, TEILNAHME_WAHL]));
+
+// ---------- jev live: eine einzelne Lage der begleiteten Person, genauer beschrieben als in der Tabelle ----------
+// Die Seite schickt nur diese Angaben (Zahlen und feste Wörter, keine Namen, kein freier Text). Der Worker (tools/jev-worker/)
+// prüft sie mit liveLage() und baut daraus selbst die Frage an jev; so kann über ihn nichts anderes gefragt werden.
+export const LIVE_ZIELE = {
+  laden: ["der Laden", "zum Laden"], kiosk: ["der Kiosk", "zum Kiosk"], park: ["der Park", "in den Park"], platz: ["der Platz", "auf den Platz"],
+  schule: ["die Schule", "zur Schule"], atelier: ["das Atelier", "ins Atelier"], haltN: ["die Bushaltestelle", "zur Bushaltestelle"],
+  zwischen: ["die Zwischennutzung", "in die Zwischennutzung"], zuhause: ["die eigene Wohnung", "nach Hause"],
+};
+const LIVE_SCHLUESSEL = ["person", "zweck", "ziel", "optionen", "mehrzeit", "bruecke", "verkehr", "wartenAmpel", "eilig", "muede", "mitKind", "ersatzziel", "gewohnheit"];
+/** prüft eine Live-Lage streng und gibt sie bereinigt zurück; wirft bei allem, was nicht vorgesehen ist */
+export function liveLage(e) {
+  const fehler = (t) => { throw new Error(`ungültig: ${t}`); };
+  if (!e || typeof e !== "object" || Array.isArray(e)) fehler("keine Lage");
+  for (const k of Object.keys(e)) if (!LIVE_SCHLUESSEL.includes(k)) fehler(`unbekannter Schlüssel ${k}`);
+  const wahl = (k, liste) => { if (!liste.includes(e[k])) fehler(k); return e[k]; };
+  const zahl = (x, max, k) => { if (x === null || x === undefined) return null; if (typeof x !== "number" || !Number.isFinite(x) || x < 0 || x > max) fehler(k); return Math.round(x * 2) / 2; };
+  const ja = (k) => { if (typeof e[k] !== "boolean") fehler(k); return e[k]; };
+  const optionen = Array.isArray(e.optionen) ? [...new Set(e.optionen)] : fehler("optionen");
+  if (optionen.length < 2 || optionen.some((o) => !QUERUNG_WAHL[o])) fehler("optionen");
+  const m = e.mehrzeit && typeof e.mehrzeit === "object" ? e.mehrzeit : fehler("mehrzeit");
+  for (const k of Object.keys(m)) if (!["eben", "bruecke"].includes(k)) fehler("mehrzeit");
+  const l = {
+    person: wahl("person", Object.keys(PERSONEN)), zweck: wahl("zweck", Object.keys(QUERUNG.zweck)), ziel: wahl("ziel", Object.keys(LIVE_ZIELE)),
+    optionen: Object.keys(QUERUNG_WAHL).filter((o) => optionen.includes(o)),
+    mehrzeit: { eben: zahl(m.eben, 60, "mehrzeit.eben"), bruecke: zahl(m.bruecke, 60, "mehrzeit.bruecke") },
+    bruecke: wahl("bruecke", ["keine", "treppe", "rampe"]), verkehr: wahl("verkehr", ["ruhig", "dicht", "zaun"]),
+    wartenAmpel: e.wartenAmpel === null ? null : Math.round(zahl(e.wartenAmpel, 900, "wartenAmpel")),
+    eilig: ja("eilig"), muede: ja("muede"), mitKind: ja("mitKind"),
+    ersatzziel: e.ersatzziel === null ? null : wahl("ersatzziel", Object.keys(LIVE_ZIELE)),
+    gewohnheit: e.gewohnheit === null ? null : wahl("gewohnheit", Object.keys(QUERUNG_WAHL)),
+  };
+  if (l.optionen.includes("eben") !== (l.mehrzeit.eben !== null)) fehler("eben ohne Zeit");
+  if (l.optionen.includes("bruecke") !== (l.mehrzeit.bruecke !== null && l.bruecke !== "keine")) fehler("Brücke ohne Zeit");
+  if (l.optionen.includes("frei") === (l.verkehr === "zaun")) fehler("frei und Zaun");
+  if (l.optionen.includes("ersatz") !== (l.ersatzziel !== null)) fehler("Ersatz ohne Ziel");
+  return l;
+}
+const minuten = (x) => (x < 1 ? "weniger als eine Minute" : x === 1 ? "etwa eine Minute" : `etwa ${String(x).replace(".", ",")} Minuten`);
+/** die Frage an jev für eine geprüfte Live-Lage: Zustand (Text) und Auswahl */
+export function liveFrage(l) {
+  const zustand = {
+    quartier: "Ein kleines Stadtquartier: Eine Hauptstrasse trennt die Wohngebiete im Norden und im Süden. Im Süden liegen Laden, Platz und Schule, im Norden Park, Atelier und ein kleiner Kiosk.",
+    lage: `Jemand will zu Fuss auf die andere Seite der Hauptstrasse, Ziel: ${LIVE_ZIELE[l.ziel][0]}.`,
+    person: `Es ist ${PERSONEN[l.person]}${l.eilig && l.person !== "eilig" ? "; sie hat heute wenig Zeit" : ""}${l.muede ? "; sie ist gerade müde und bräuchte bald eine Pause" : ""}${l.mitKind && l.person !== "kind" ? "; sie hat ein kleines Kind dabei" : ""}.`,
+    zweck: QUERUNG.zweck[l.zweck],
+    querung: l.mehrzeit.eben === null ? QUERUNG.eben.keine : `Über die ebenerdige Querung (Ampel oder Zebrastreifen) dauert der Weg, Warten eingerechnet, ${minuten(l.mehrzeit.eben)} länger als direkt.`,
+    bruecke: l.bruecke === "keine" || l.mehrzeit.bruecke === null ? QUERUNG.bruecke.keine
+      : `Es gibt eine Fussgängerbrücke mit ${l.bruecke === "treppe" ? "Treppen auf beiden Seiten" : "langen Rampen und leichter Steigung"}; über sie dauert der Weg ${minuten(l.mehrzeit.bruecke)} länger als direkt.`,
+    ausserhalb: QUERUNG.frei[l.verkehr === "zaun" ? "nein" : l.verkehr],
+    ersatz: l.ersatzziel ? `Auf der eigenen Strassenseite gibt es ein ähnliches Ziel: ${LIVE_ZIELE[l.ersatzziel][0]}.` : QUERUNG.ersatz.nein,
+    erfahrung: [l.wartenAmpel !== null ? `An der Ampel hat sie zuletzt etwa ${l.wartenAmpel} Sekunden gewartet.` : null, l.gewohnheit ? `Gewohnt ist sie: ${QUERUNG_WAHL[l.gewohnheit]}.` : null].filter(Boolean).join(" ") || "Keine besondere Erfahrung mit diesem Weg.",
+  };
+  const kriterien = Object.fromEntries(l.optionen.map((o) => [o, o === "ersatz" && l.ersatzziel ? `geht stattdessen ${LIVE_ZIELE[l.ersatzziel][1]}, auf der eigenen Strassenseite` : QUERUNG_WAHL[o]]));
+  return { zustand, fragen: { wahl: { type: "choice", instructions: "Was tut diese Person in dieser Lage am ehesten?", criteria: kriterien } } };
+}

@@ -22,8 +22,10 @@ test("jev-Tabelle: passt zu den Fragen (sonst tools/build-jev-stadt.ts laufen la
   for (const l of F.querungLagen()) for (const p of Object.keys(F.PERSONEN)) if (F.querungOptionen(l, p).length > 1) assert.ok(JEV.querung[F.querungSchluessel(l)]?.[p], `Querung ${F.querungSchluessel(l)} ${p}`);
   for (const l of F.fahrtLagen()) assert.ok(JEV.fahrt[F.fahrtSchluessel(l)], `Fahrt ${F.fahrtSchluessel(l)}`);
   for (const l of F.teilnahmeLagen()) for (const lage of Object.keys(F.LAGEN)) assert.ok(JEV.teilnahme[F.teilnahmeSchluessel(l)]?.[lage]);
-  // die Seite ruft jev nie auf: kein Netzaufruf in den Modulen der Seite
+  // die Seite ruft jev nie direkt auf: nur live.js sendet, und nur an den eigenen Worker (der Schlüssel liegt dort)
   for (const d of ["modell.js", "app.js", "ansicht.js", "raster.js", "fragen.js", "stadtplan.js", "index.html"]) assert.ok(!/fetch\(|XMLHttpRequest|sendBeacon|WebSocket/.test(readFileSync(new URL(`alpha/stadt/${d}`, root), "utf8")), d);
+  const live = readFileSync(new URL("alpha/stadt/live.js", root), "utf8");
+  assert.ok(!/typesafe|authorization|Bearer/i.test(live), "live.js kennt weder jev noch einen Schlüssel");
 });
 
 test("Ohne jev-Tabelle (fehlt oder falsche Prüfsumme) läuft die Stadt mit den Ersatzregeln", () => {
@@ -155,4 +157,36 @@ test("Wege: jede Kante hat eine eigene Kennung; mit Zebrastreifen bleibt niemand
   M.laufe(s, 4 * 3600);
   assert.ok(s.z.passanten.length < 40, `Passant:innen unterwegs: ${s.z.passanten.length}`);
   assert.ok(s.z.messung.heute.querungen.zebra > 0, "der Zebrastreifen wird benutzt");
+});
+
+test("jev live: die begleitete Person überlegt, bis die Antwort da ist, und entscheidet dann danach; ohne Antwort gilt die Tabelle; Zweige fragen nie", () => {
+  const s = neu({ figuren: 72 });
+  const gefragt = [];
+  const live = { figur: null, antworten: {}, ausstehend: {}, frage(key, lage) { live.ausstehend[key] = true; gefragt.push([key, F.liveLage(lage)]); } };
+  s.r.live = live;
+  // jemand, der heute noch die Strasse quert: die erste Figur, die in der nächsten Stunde eine Querung entscheidet
+  const t = s.z.t;
+  const kandidat = s.z.figuren.find((f) => f.zustand === "heim" && f.programm.filter((p) => p.status === "offen" && !p.abend).sort((a, b) => a.ab - b.ab).slice(0, 1).some((p) => p.ab > t && p.ab < t + 3 * 3600 && M.ORTE[p.ort].seite !== f.seite));
+  live.figur = kandidat.id;
+  for (let i = 0; i < 4 * 3600 && !gefragt.length; i++) M.schritt(s);
+  assert.ok(gefragt.length === 1, "eine Frage, streng geprüft (liveLage wirft sonst)");
+  const [key, lage] = gefragt[0];
+  M.laufe(s, 120);
+  assert.equal(gefragt.length, 1, "solange die Antwort aussteht, keine zweite Frage");
+  assert.ok(kandidat.liveFrage === key, "die Person wartet auf genau diese Antwort");
+  // Antwort: alles auf die letzte Möglichkeit
+  const letzte = lage.optionen.at(-1);
+  delete live.ausstehend[key]; live.antworten[key] = Object.fromEntries(lage.optionen.map((o) => [o, o === letzte ? 1 : 0]));
+  M.laufe(s, 5);
+  assert.equal(kandidat.entscheid.quelle, "jev live");
+  assert.ok(kandidat.entscheid.pTabelle, "die Tabelle steht zum Vergleich daneben");
+  assert.ok(kandidat.entscheid.wahl === letzte || kandidat.entscheid.gewohnheit, `gewählt: ${kandidat.entscheid.wahl}`);
+  assert.equal(M.zweig(s, s.z).r.live, null, "Zweige fragen nie live");
+  // ohne Antwort (null): die Tabelle
+  const s2 = neu({ figuren: 72 });
+  const live2 = { figur: kandidat.id, antworten: {}, ausstehend: {}, frage(key) { live2.antworten[key] = null; } };
+  s2.r.live = live2;
+  const vorher = s2.z.figuren[kandidat.id].entscheid?.t;
+  for (let i = 0; i < 4 * 3600 && s2.z.figuren[kandidat.id].entscheid?.t === vorher; i++) M.schritt(s2);
+  assert.equal(s2.z.figuren[kandidat.id].entscheid.quelle, "jev");
 });

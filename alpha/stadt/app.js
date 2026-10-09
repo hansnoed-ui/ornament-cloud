@@ -1,10 +1,11 @@
 // «Die Paradoxie der Stadt» – Bedienung: Uhr, Begleiten, Verändern (mit Vorschau), Sichtweisen, Protokoll, Vergleiche, Modell.
 // Die Simulation (modell.js) läuft mit festem Schritt; die Bildrate bestimmt nur, wie viele Schritte je Bild gerechnet werden.
-import * as M from "./modell.js?v=2";
-import { zeichne, farben, positionVon } from "./ansicht.js?v=2";
-import { nebeneinanderNacheinander, verteilapparat, befragungAuswertung, SCHWELLEN } from "./raster.js?v=2";
-import { VERBINDUNG, BANK } from "./stadtplan.js?v=2";
-import * as F from "./fragen.js?v=2";
+import * as M from "./modell.js?v=4";
+import { zeichne, farben, positionVon } from "./ansicht.js?v=4";
+import { nebeneinanderNacheinander, verteilapparat, befragungAuswertung, SCHWELLEN } from "./raster.js?v=4";
+import { VERBINDUNG, BANK } from "./stadtplan.js?v=4";
+import * as F from "./fragen.js?v=4";
+import { liveAdresse, liveVerbindung } from "./live.js?v=4";
 
 const $ = (s, w = document) => w.querySelector(s);
 const $$ = (s, w = document) => [...w.querySelectorAll(s)];
@@ -23,13 +24,14 @@ const SICHTEN = {
 const ui = {
   stadt: null, laeuft: !WENIGER_BEWEGUNG, tempo: 0, folge: null, sicht: "fluss", vorschau: null, tab: "begleiten",
   k: 1, ox: 0, oy: 0, zoom: 1, gewicht: { reise: 1, erreich: 1, aufenthalt: 1, belastung: 1 }, vergleich: null, rechnet: false,
+  live: false, liveAdresse: liveAdresse(params),
   zuletzt: 0, rest: 0, gemeldet: 0, protokollGesehen: 0, letzteMeldung: 0, panelOffen: false,
 };
 let tabelle = null, tabelleFehler = null;
 
 // ---------- Start ----------
 async function start() {
-  try { tabelle = (await import("./jev.js?v=2")).JEV; if (!M.tabelleGueltig(tabelle)) { tabelleFehler = "Prüfsumme passt nicht zu den Fragen"; tabelle = null; } }
+  try { tabelle = (await import("./jev.js?v=4")).JEV; if (!M.tabelleGueltig(tabelle)) { tabelleFehler = "Prüfsumme passt nicht zu den Fragen"; tabelle = null; } }
   catch (e) { tabelleFehler = "jev-Tabelle nicht geladen"; tabelle = null; }
   await new Promise((r) => setTimeout(r, 30));    // erst die Seite zeigen, dann die Stadt anlegen (Vorlauf rund eine Sekunde)
   neuerLauf();
@@ -52,6 +54,13 @@ function neuerLauf(latent = ui.stadt?.z.params.latent ?? "mittel") {
   ui.stadt = M.neueStadt({ seed, figuren: figurenZahl(), latent, tabelle });
   ui.vergleich = null; ui.protokollGesehen = 0;
   if (ui.folge !== null && ui.folge >= ui.stadt.z.figuren.length) ui.folge = null;
+  liveSetzen(ui.live);
+}
+/** jev live ein- oder ausschalten: nur für die begleitete Person; ohne begleitete Person fragt niemand */
+function liveSetzen(an) {
+  ui.live = an && !!ui.liveAdresse;
+  ui.stadt.r.live = ui.live ? liveVerbindung(ui.liveAdresse, { beiAntwort: () => panelAktualisieren() }) : null;
+  if (ui.stadt.r.live) ui.stadt.r.live.figur = ui.folge;
 }
 
 // ---------- Zeit und Bild ----------
@@ -171,7 +180,7 @@ function antippen(e) {
   const wx = ui.ox + ((e.clientX - r.left) * ui.dpr) / ui.k, wy = ui.oy + ((e.clientY - r.top) * ui.dpr) / ui.k;
   let best = null, bd = (14 * ui.dpr) / ui.k;
   for (const f of ui.stadt.z.figuren) { if (f.zustand === "heim" || f.zustand === "weg" || f.zustand === "drinnen") continue; const d = Math.hypot(f.x - wx, f.y - wy); if (d < bd) { bd = d; best = f; } }
-  if (best) { ui.folge = best.id; zeigeTab("begleiten"); return; }
+  if (best) { ui.folge = best.id; if (ui.stadt.r.live) ui.stadt.r.live.figur = ui.folge; zeigeTab("begleiten"); return; }
   // Orte: Eingriffe direkt am betroffenen Ort
   if (wy > 192 && wy < 228) return zeigeTab("veraendern", wx > 270 && wx < 330 ? "abschnitt-b" : "abschnitt-a");
   if (Math.abs(wx - 150) < 14 && wy > 236 && wy < 326) return zeigeTab("veraendern", "abschnitt-klein");
@@ -183,6 +192,7 @@ function folgeJemandem() {
   const unterwegs = z.figuren.filter((f) => f.zustand === "geht");
   const f = unterwegs.find((x) => x.mobil !== "gehend") ?? unterwegs[0] ?? z.figuren[0];
   ui.folge = f.id;
+  if (ui.stadt.r.live) ui.stadt.r.live.figur = ui.folge;
   const p = positionVon(f); passeAusschnitt(p);
 }
 function impuls() {
@@ -245,6 +255,7 @@ function lagezeile() {
 const ZUSTAND = (z, f) => {
   const a = f.aufgabe;
   const ziel = a ? M.ORTE[a.ziel]?.name ?? a.ziel : null;
+  if (f.zustand === "ueberlegt" || (f.liveFrage && f.ueberlegtSeit !== null && f.ueberlegtSeit !== undefined)) return "überlegt, wie sie die Hauptstrasse quert (fragt jev live)";
   if (f.zustand === "heim") return "zu Hause";
   if (f.zustand === "weg") return "mit dem Bus unterwegs, ausserhalb des Quartiers";
   if (f.zustand === "wartet_bus") return `wartet an der Haltestelle (seit ${Math.round((z.t - f.wartetSeit) / 60)} min)`;
@@ -270,13 +281,19 @@ function begleitenHtml() {
     <p class="merkmale">${M.beschreibe(f).map(esc).join(" · ") || "ohne besondere Angaben"}${f.eilig ? " · hat heute wenig Zeit" : ""}</p>
     <p class="jetzt"><strong>Jetzt:</strong> ${esc(ZUSTAND(z, f))}</p>
     <h4>Heute</h4><ul class="programm">${f.programm.map((p) => `<li><span>${ART[p.art]}</span> <span class="leise">${p.abend && p.status === "offen" ? "entscheidet um 16.30" : STATUS[p.status]}</span></li>`).join("") || "<li>nichts geplant</li>"}</ul>`;
+  if (ui.liveAdresse) {
+    const z2 = ui.stadt.r.live?.zuletzt;
+    h += `<div class="live"><button type="button" class="schalter" data-aktion="live" aria-pressed="${ui.live}"><b>jev live fragen</b><span>Bevor ${esc(f.name)} die Hauptstrasse quert, fragt die Seite jev, genauer beschrieben als in der Tabelle: Umweg in Minuten, Müdigkeit, Erfahrung an der Ampel. Gesendet werden nur diese Angaben, kein Name. Bis die Antwort da ist, bleibt die Person stehen; ohne Antwort gilt die Tabelle.</span></button>
+      ${ui.live && z2 ? `<p class="leise">Zuletzt: ${z2.ok ? `Antwort von ${esc(z2.modell)}${z2.zwischengespeichert ? " (zwischengespeichert)" : ""}` : `jev live nicht erreichbar (${esc(z2.fehler)}), die Tabelle gilt`}.</p>` : ""}</div>`;
+  }
   const e = f.entscheid;
   if (e && e.lage) {
     const rang = Object.entries(e.p).sort((a, b) => b[1] - a[1]);
     h += `<details data-id="entscheid"><summary>Wie zuletzt über die Hauptstrasse entschieden wurde</summary>
       <p class="leise">Tag ${e.tag}, ${M.uhr(e.t)}, ${e.heimweg ? "Heimweg" : `Weg zum ${esc(M.ORTE[e.ziel]?.name ?? e.ziel)}`}. Als ${esc(F.PERSONEN[e.person])}.</p>
       <ul class="balken">${rang.map(([k, p]) => `<li${k === e.wahl ? ' class="gewaehlt"' : ""}><span>${WAHL[k] ?? k}</span><span class="b" style="--w:${Math.round(p * 100)}%"></span><span>${Math.round(p * 100)} %</span></li>`).join("")}</ul>
-      <p class="leise">${e.gewohnheit ? "Gewählt aus Gewohnheit, ohne neu abzuwägen. " : ""}${e.irrtum ? "Die Figur ging dabei von einer Strasse aus, die es so nicht mehr gibt. " : ""}Wahrscheinlichkeiten: ${e.quelle === "jev" ? "jev-Tabelle (beim Bauen eingeschätzt)" : "Ersatzregeln"}. Gezogen wird mit dem Startwert, nicht immer das Wahrscheinlichste.</p></details>`;
+      ${e.pTabelle ? `<p class="leise">Zum Vergleich die Tabelle für dieselbe Lage in Stufen: ${Object.entries(e.pTabelle).sort((a, b) => b[1] - a[1]).map(([k, p]) => `${WAHL[k] ?? k} ${Math.round(p * 100)} %`).join(", ")}.</p>` : ""}
+      <p class="leise">${e.gewohnheit ? "Gewählt aus Gewohnheit, ohne neu abzuwägen. " : ""}${e.irrtum ? "Die Figur ging dabei von einer Strasse aus, die es so nicht mehr gibt. " : ""}Wahrscheinlichkeiten: ${e.quelle === "jev live" ? "jev live, eben gefragt" : e.quelle === "jev" ? "jev-Tabelle (beim Bauen eingeschätzt)" : "Ersatzregeln"}. Gezogen wird mit dem Startwert, nicht immer das Wahrscheinlichste.</p></details>`;
   }
   const wege = [...f.wege].reverse().slice(0, 8);
   h += `<h4>Wege</h4>${wege.length ? `<table class="tab"><thead><tr><th>Tag</th><th>Ziel</th><th>Ausgang</th><th>Dauer</th><th>Warten</th></tr></thead><tbody>${wege.map((w) => `<tr><td>${w.tag || "Vorlauf"}</td><td>${esc(M.ORTE[w.ziel]?.name ?? w.ziel)}</td><td>${w.status}${w.wahl && WAHL[w.wahl] && w.wahl !== "gleich" ? ` <span class="leise">(${WAHL[w.wahl]})</span>` : ""}</td><td>${w.status === "aufgegeben" ? "–" : M.dauerText(w.dauer)}</td><td>${Math.round(w.warten)} s</td></tr>`).join("")}</tbody></table>` : `<p class="leise">Noch keine Wege.</p>`}
@@ -299,7 +316,7 @@ function verteilapparatHtml(z, f) {
       <dt>Welche Folgen entstehen, und kann sie widersprechen?</dt><dd>${esc(v.folgen)} ${esc(v.widerspruch)}</dd>
     </dl>
     <table class="tab schwellen"><caption>Sieben Schwellen, je Anschlussweg (keine Kette, keine Punkte)</caption><thead><tr><th>Schwelle</th><th>Selbstbeschreibung</th><th>Fremderfassung</th></tr></thead><tbody>
-    ${SCHWELLEN.map((s) => `<tr><th>${s}</th><td><span class="st st-${v.schwellen[s].selbst.status}">${STAT[v.schwellen[s].selbst.status]}</span> ${esc(v.schwellen[s].selbst.befund)}</td><td><span class="st st-${v.schwellen[s].fremd.status}">${STAT[v.schwellen[s].fremd.status]}</span> ${esc(v.schwellen[s].fremd.befund)}</td></tr>`).join("")}
+    ${SCHWELLEN.map((s) => `<tr><th scope="row">${s}</th><td data-weg="Selbstbeschreibung"><span class="st st-${v.schwellen[s].selbst.status}">${STAT[v.schwellen[s].selbst.status]}</span> ${esc(v.schwellen[s].selbst.befund)}</td><td data-weg="Fremderfassung"><span class="st st-${v.schwellen[s].fremd.status}">${STAT[v.schwellen[s].fremd.status]}</span> ${esc(v.schwellen[s].fremd.befund)}</td></tr>`).join("")}
     </tbody></table>
     <p class="leise">Modellfall. Erleben, Selbstbeschreibung, Fremderfassung und Entscheidung sind hier getrennt; keine Pflicht zur Auskunft, geringe Sichtbarkeit gilt nicht automatisch als Nachteil. Raster: Christian Strickler, «Der Verteilapparat des Körpers».</p>`}
   </details>`;
@@ -499,7 +516,7 @@ function modellHtml() {
       <li><b>Ein gemeinsamer Zustand.</b> ${z.figuren.length} Figuren mit Tagesprogramm, Zeit, Kraft, Wegwissen und Erinnerung; dazu Fahrten von aussen, ein Bus, Ampel, Bänke und Orte. Alle vier Kapitel fragen dieselbe Stadt.</li>
       <li><b>Fester Takt, fester Startwert.</b> Eine Sekunde Stadtzeit je Schritt, Startwert ${z.seed}. Gleiche Ausgangslage, gleicher Lauf. Tag von 6 bis 22 Uhr; die Nacht wird übersprungen.</li>
       <li><b>Entscheidungen.</b> Wer die Hauptstrasse queren muss, wählt zwischen Ampel oder Zebrastreifen, Brücke, Queren zwischen den Autos, einem Ersatzziel und Verzicht – nach Umweg, Wartezeit, Zweck und der eigenen Lage, mit Gewohnheiten und begrenztem Wissen. Fahrten von aussen wählen Auto, Bus, eine ruhigere Zeit oder Verzicht; etwa ein Drittel überlegt täglich neu.</li>
-      <li><b>Woher die Neigungen kommen:</b> ${tabelle ? `jev (${esc(tabelle.modell)}, api.typesafe.ai) hat am ${esc(tabelle.stand)} beim Bauen ${tabelle.aufrufe} beschriebene Lagen eingeschätzt. Ein Sprachmodell-Urteil über plausible Reaktionen, keine gemessene Häufigkeit. Die Seite ruft jev nie auf und sendet nichts.` : `Ersatzregeln (${esc(tabelleFehler ?? "")}). Die Stadt läuft trotzdem; die Neigungen sind dann einfache Abwägungen von Zeit und Zweck.`}</li>
+      <li><b>Woher die Neigungen kommen:</b> ${tabelle ? `jev (${esc(tabelle.modell)}, api.typesafe.ai) hat am ${esc(tabelle.stand)} beim Bauen ${tabelle.aufrufe} beschriebene Lagen eingeschätzt. Ein Sprachmodell-Urteil über plausible Reaktionen, keine gemessene Häufigkeit. Die Seite ruft jev von sich aus nie auf.${ui.liveAdresse ? " Nur wenn du beim Begleiten «jev live fragen» einschaltest, fragt sie über einen eigenen Worker (der Schlüssel liegt dort, nicht in der Seite), und nur für die begleitete Person." : ""}` : `Ersatzregeln (${esc(tabelleFehler ?? "")}). Die Stadt läuft trotzdem; die Neigungen sind dann einfache Abwägungen von Zeit und Zweck.`}</li>
       <li><b>Rückkopplung statt Zeitschaltuhr.</b> Mehr Kapazität senkt die Fahrzeit; die Fahrzeit wirkt über Erfahrung und aktuelle Lage auf die Wahl; die Wahl wirkt auf die Fahrzeit. Ob eine Entlastung bleibt, hängt an der regionalen Nachfrage.</li>
       <li><b>Erinnerung bleibt.</b> Figuren merken sich Wartezeiten, Gewohnheiten, Bekanntschaften und was sie über die Strasse glauben. Zurücknehmen ändert die Strasse, nicht das Gedächtnis. Das ist eine Annahme dieses Modells, keine Behauptung über reale Menschen.</li>
       <li><b>Keine Glücksvariable.</b> Wünsche, Verzögerungen und Belastungen bleiben getrennte Grössen. Kein Sieg, keine Gesamtnote.</li>
@@ -542,12 +559,13 @@ function panelKlick(e) {
   switch (b.dataset.aktion) {
     case "zurueck": { const k = b.dataset.schluessel; M.nimmZurueck(s, k); melde(`Zurückgenommen: ${M.massnahmeText(k, true)}. Nur die Massnahme – was die Figuren gelernt haben, bleibt.`); panelAktualisieren(true); break; }
     case "jemand": folgeJemandem(); panelAktualisieren(true); break;
-    case "folge-id": ui.folge = +b.dataset.id; zeigeTab("begleiten"); break;
+    case "folge-id": ui.folge = +b.dataset.id; if (s.r.live) s.r.live.figur = ui.folge; zeigeTab("begleiten"); break;
+    case "live": liveSetzen(!ui.live); melde(ui.live ? "jev live ist an: Die begleitete Person fragt jev, bevor sie die Hauptstrasse quert." : "jev live ist aus: Die Stadt rechnet wieder nur mit der Tabelle."); panelAktualisieren(true); break;
     case "vergleich-vorher": {
       const vor = s.vorEingriff, extra = +b.dataset.tage;
       const ende = vor.z.tag * M.TAG_DAUER + M.TAG_DAUER - 1 + extra * M.TAG_DAUER;
       const ziel = Math.max(ende, M.gesamtzeit(s.z));
-      rechneVergleich(`Mit und ohne «${M.massnahmeText(vor.schluessel, vor.wert)}»`, `Ab Tag ${vor.z.tag}, ${M.uhr(vor.z.t)}, bis Tag ${Math.floor(ziel / M.TAG_DAUER)} um ${M.uhr(ziel % M.TAG_DAUER)}. Kennzahlen ab dem Tag des Eingriffs.`,
+      rechneVergleich(`Mit und ohne «${M.massnahmeText(vor.schluessel, vor.wert)}»`, `Ab Tag ${vor.z.tag}, ${M.uhr(vor.z.t)}, bis Tag ${Math.floor(ziel / M.TAG_DAUER)} um ${M.uhr(ziel % M.TAG_DAUER)}. Kennzahlen ab dem Tag des Eingriffs.${s.z.liveGenutzt ? " Antworten von jev live werden in den Zweigen nicht wiederholt; dort gilt die Tabelle." : ""}`,
         [{ name: "ohne", s: M.zweig(s, vor.z) }, { name: "mit", s: M.zweig(s, vor.z, { [vor.schluessel]: vor.wert }) }], ziel, vor.z.tag);
       break;
     }
@@ -562,6 +580,7 @@ function panelKlick(e) {
 }
 function panelWechsel(e) {
   const el = e.target, s = ui.stadt;
+  queueMicrotask(() => { if (s.r.live) s.r.live.figur = ui.folge; });
   if (el.dataset.aktion === "folge") { ui.folge = el.value === "" ? null : +el.value; if (ui.folge !== null) passeAusschnitt(positionVon(s.z.figuren[ui.folge])); panelAktualisieren(true); return; }
   if (el.dataset.aktion === "sicht") { ui.sicht = el.value; panelAktualisieren(true); return; }
   if (el.dataset.aktion === "latent") { neuerLauf(el.value); melde(`Neuer Lauf mit regionaler Nachfrage «${el.value}».`); panelAktualisieren(true); return; }
