@@ -13,7 +13,7 @@ src/
     stil.ts           Farben, Schriften (Newsreader, Instrument Sans), Format
     Signet.tsx        Re-entry-Schlaufe mit Punkt, Schriftzug «ornament.cloud»; optional Kopfzeile darüber
     Bausteine.tsx     Intro (3 s), Outro (6 s), Grund, Marke, Titel, Leise, Oben, Unten, Auszug, blende, steig
-  wachstum/           Linienwachstum spielt «ornament.cloud», 1 : 1, ohne Text (9. Oktober 2026)
+  wachstum/           Linienwachstum spielt «ornament.cloud», 1 : 1, ohne Text (9. Oktober 2026); auch die Startanimation der Website
     Wachstum.ts       die Simulation (Punkte, Abstossung, Feder, Kantenteilung, Grenze), deterministisch
     Formen.ts         die beiden Grenzen: atmende Wolke aus Kreisen, Buchstaben des Namens (Maske, Abstandsfeld, Keime)
     Video.tsx         Zeitplan T und Szenen
@@ -157,6 +157,20 @@ und unter 9 teilt jede Teilung die nächste aus (über 12 000 Punkte in 150 Schr
 fester Startwert), wie das Punktziel des Rings verlangt. Die Zeichen sind halb so gross gerechnet wie die Wolke (`minDist` 7,5). Alles ist deterministisch; wer ein früheres Bild verlangt, rechnet von vorn.
 
 `npx remotion render WachstumVideo out/wachstum.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
+
+### Startanimation der Website (9. Oktober 2026)
+
+Wunsch von Christian nach dem Video «wachstum»: Sekunden 13–36 davon, die Zeichen 1,4-mal so schnell (17 s → 12,1 s), das Signet unverändert (6 s), zusammen 18,1 s, ohne die Wolke und ohne Intro.
+Compositions `StartAnimation` (hell, Farben der Website) und `StartAnimationDunkel` (dunkel: Grund `#171614`, Linie `#ece8e1`, Punkt `#f08a5d`, wie `styles.css` im dunklen Modus), beide 1080 × 1080, 544 Bilder.
+Dieselben Rechenschritte wie im Video, nur dichter (`TEMPO_START` = 1,4: 1,4-mal so viele Schritte je Bild). Sie läuft auf der Startseite vor dem Inhalt (siehe README im Hauptordner).
+
+```bash
+cd src/videos && npm run render:start        # out/start-hell.mp4 und out/start-dunkel.mp4 (Vollbereich, crf 18)
+# für das Web: in den Bereich tv und BT.709 umrechnen, 3 MB statt 15 MB (Grund bleibt auf ±1 Stufe gleich wie die Seite)
+ffmpeg -i out/start-hell.mp4 -vf "scale=in_range=pc:out_range=tv:in_color_matrix=bt601:out_color_matrix=bt709:flags=accurate_rnd+full_chroma_int,format=yuv420p" \
+  -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv -c:v libx264 -crf 28 -preset slow -movflags +faststart -an ../../assets/start-animation.mp4
+# dunkel ebenso mit out/start-dunkel.mp4 nach ../../assets/start-animation-dunkel.mp4
+```
 
 ## Rendern ohne Internetzugang zu remotion.media
 

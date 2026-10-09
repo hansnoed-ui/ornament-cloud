@@ -1,5 +1,5 @@
 // Die beiden Grenzen des Videos «wachstum»: eine atmende Wolke aus Kreisen und die Buchstaben von «ornament.cloud».
-import { FARBE, SANS } from "../vorlage/stil";
+import { SANS } from "../vorlage/stil";
 import { BILD, type Form, type Ring } from "./Wachstum";
 
 // ---------- Wolke ----------
@@ -149,5 +149,3 @@ export const buchstabenForm = (flaeche: number): Buchstaben => {
   return { form, ringe };
 };
 
-export const TINTE = FARBE.text;
-export const PUNKT = FARBE.akzent;

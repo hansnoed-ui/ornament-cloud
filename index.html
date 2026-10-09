@@ -24,8 +24,52 @@
   <!-- Feed: wer die News abonniert, bekommt neue Einträge im eigenen Leseprogramm (erzeugt aus news/index.html, siehe tools/build-feed.ts) -->
   <link rel="alternate" type="application/rss+xml" title="Ornament Cloud – News" href="feed.xml">
   <link rel="stylesheet" href="styles.css?v=41">
+  <!--
+    Startanimation (Wunsch vom 9. Oktober 2026): bevor die Startseite erscheint, wachsen die Zeichen von «ornament.cloud» als Linienwachstum, dann zeichnet sich das Signet
+    (Video, ohne Ton, 18 Sekunden; Quellcode src/videos/src/wachstum/, Composition StartAnimation und StartAnimationDunkel). Sie läuft nur auf dieser Seite, einmal pro Sitzung
+    (Vorschau jederzeit mit ?start), nicht bei «weniger Bewegung» und nicht bei «Daten sparen». Tippen, eine Taste oder «Überspringen» beendet sie; läuft das Video nicht an, kommt die Seite sofort.
+    Die Gestaltung steht hier in der Seite (nur die Startseite braucht sie), damit styles.css (?v=) unverändert bleibt. Ohne Skript erscheint sie nie.
+  -->
+  <style>
+    .start { display: none; }
+    html.start-an .start {
+      display: flex; align-items: center; justify-content: center;
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--bg);
+      touch-action: none; overscroll-behavior: contain;
+      transition: opacity 0.7s ease;
+      animation: start-notaus 0s linear 45s forwards;      /* fällt das Skript unten aus, gibt die Seite sich nach 45 Sekunden selbst frei */
+    }
+    html.start-an .start.start-weg { opacity: 0; pointer-events: none; }
+    @keyframes start-notaus { to { visibility: hidden; pointer-events: none; } }
+    .start video { display: block; width: min(100vw, 100vh, 1080px); width: min(100vw, 100dvh, 1080px); height: auto; aspect-ratio: 1 / 1; }
+    .start-weiter {
+      position: absolute; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); translate: -50% 0;
+      min-height: 44px; padding: 0 22px;
+      font: 600 0.8rem/1 var(--font); letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); background: transparent; border: 1px solid var(--border); border-radius: 999px;
+      cursor: pointer;
+    }
+    .start-weiter:hover { color: var(--text); border-color: var(--text); }
+    .start-weiter:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+    @media (prefers-reduced-motion: reduce) { .start { transition: none; } }
+  </style>
+  <script>
+    // Entscheidet vor dem ersten Anstrich, ob die Startanimation läuft (die Klasse start-an deckt die Seite sofort ab, es gibt kein Aufblitzen)
+    (function () {
+      var gesehen = false;
+      try { gesehen = sessionStorage.getItem("start-animation") === "1"; } catch (e) {}
+      var ruhig = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var spar = navigator.connection && navigator.connection.saveData;
+      if (!ruhig && !spar && (!gesehen || /[?&]start(=|&|#|$)/.test(location.search))) document.documentElement.classList.add("start-an");
+    })();
+  </script>
 </head>
 <body>
+  <div class="start" id="start">
+    <video muted playsinline preload="auto" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback></video>
+    <button class="start-weiter" type="button">Überspringen</button>
+  </div>
   <header class="site-header">
     <div class="wrap">
       <div class="topbar">
@@ -87,6 +131,39 @@
     </div>
   </footer>
   <script>
+    // Startanimation (siehe Kommentar im Kopf): Video je nach hellem oder dunklem Modus; die Seite darunter ist währenddessen nicht erreichbar (inert).
+    // Endet das Video, bei Fehler, wenn es nicht von selbst anläuft (nach 6 Sekunden) oder stehen bleibt, bei Tippen, Taste oder «Überspringen»: ausblenden und freigeben.
+    (function () {
+      var d = document.documentElement, el = document.getElementById("start");
+      if (!el || !d.classList.contains("start-an")) return;
+      var v = el.querySelector("video"), knopf = el.querySelector(".start-weiter"), fertig = false, haengt;
+      try { sessionStorage.setItem("start-animation", "1"); } catch (e) {}
+      var dahinter = [].filter.call(document.body.children, function (k) { return k !== el && k.tagName !== "SCRIPT"; });
+      dahinter.forEach(function (k) { k.inert = true; });
+      d.style.overflow = "hidden";
+      function weg() {
+        if (fertig) return;
+        fertig = true;
+        clearTimeout(haengt);
+        dahinter.forEach(function (k) { k.inert = false; });
+        d.style.overflow = "";
+        el.classList.add("start-weg");
+        setTimeout(function () { d.classList.remove("start-an"); v.pause(); v.removeAttribute("src"); v.load(); }, 750);
+      }
+      function warte() { clearTimeout(haengt); haengt = setTimeout(weg, 6000); }
+      v.addEventListener("ended", weg);
+      v.addEventListener("error", weg);
+      v.addEventListener("waiting", warte);
+      v.addEventListener("playing", function () { clearTimeout(haengt); });
+      el.addEventListener("pointerdown", weg);
+      knopf.addEventListener("click", weg);
+      addEventListener("keydown", weg, { once: true });
+      warte();
+      var dunkel = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+      v.src = dunkel ? "assets/start-animation-dunkel.mp4?v=1" : "assets/start-animation.mp4?v=1";
+      var p = v.play();
+      if (p && p.catch) p.catch(weg);
+    })();
     // OMNA COLOR eingebettet: der Rahmen ist so hoch wie das Spiel (Rad, Übung, Hinweise) und hat keinen eigenen Bildlauf
     (function () {
       var f = document.querySelector(".omna iframe");
