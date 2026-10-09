@@ -60,14 +60,19 @@ const box = (loc) => loc.evaluate((e) => { const r = e.getBoundingClientRect(); 
 const sich = (a, b) => a.x < b.r - 0.5 && b.x < a.r - 0.5 && a.y < b.b - 0.5 && b.y < a.b - 0.5;     // Rechtecke überlappen
 
 // ---------- Startseite: OMNA COLOR zum Spielen ----------
-await check("Startseite (Computer): kein sichtbarer Titel und kein Satz, unter der Welle OMNA COLOR eingebettet und spielbar; der Rahmen wächst mit der Übung, ohne eigenen Bildlauf", async () => {
+await check("Startseite (Computer): kein sichtbarer Titel, unter der Welle der Lead, dann OMNA COLOR eingebettet und spielbar; der Rahmen wächst mit der Übung, ohne eigenen Bildlauf", async () => {
   const { ctx, page, frame, errors } = await startseite({ viewport: { width: 1200, height: 900 }, reducedMotion: "reduce" });
   assert.equal(await page.locator("h1").textContent(), "Ornament Cloud");
   assert.equal(await page.locator("h1").evaluate((e) => e.getBoundingClientRect().width), 1, "der Titel ist nur für Vorlesegeräte da");
-  assert.equal(await page.locator(".site-header .lead").count(), 0, "kein Satz mehr unter der Welle");
+  // Wunsch vom 9. Oktober 2026: unter der Welle steht ein Lead (der frühere Satz «Beobachtung ist Anlass …» bleibt weg)
+  assert.equal(await page.locator(".site-header .lead").count(), 1);
+  assert.equal((await page.locator(".site-header .lead").textContent()).trim(), "Dreh- und Wendepunkte für Theorie und Praxis");
+  assert.ok(await page.locator(".site-header .lead").isVisible(), "der Lead ist sichtbar");
+  assert.equal(await page.getByText("Beobachtung ist Anlass").count(), 0, "der frühere Satz steht nicht auf der Seite");
   assert.equal(await page.locator("main .card, main article").count(), 0, "kein Beitrag, keine Karte");
   const welle = await box(page.locator(".site-header .divider")), f = await box(page.locator(".omna iframe"));
-  assert.ok(welle.b <= f.y + 1 && f.y - welle.b <= 120, `unter der Welle gleich das Spiel (${Math.round(f.y - welle.b)} px)`);
+  const lead = await box(page.locator(".site-header .lead"));
+  assert.ok(welle.b <= lead.y + 1 && lead.b <= f.y + 1 && f.y - welle.b <= 140, `unter der Welle der Lead, dann gleich das Spiel (${Math.round(f.y - welle.b)} px)`);
   assert.ok(await frame.evaluate(() => document.documentElement.classList.contains("eingebettet")), "OMNA COLOR erkennt die Einbettung");
   assert.equal(await frame.locator(".seitenweg").isVisible(), false, "keine zweiten Hauptlinks im Rahmen");
   assert.ok(await frame.locator("#wheel").isVisible() && await frame.locator("#go").isVisible(), "Rad und Knopf sind da");
@@ -115,13 +120,46 @@ await check("Startseite: «Drehen» steht beim Laden im Fenster (Laptop, iPhone)
     assert.ok(rad <= 420.5, `das Rad höchstens 420 px (${rad})`);
     // Wunsch vom 9. Oktober 2026: das Erklärvideo zu ORNA ist von der Startseite weg (es steht auf «Web»), unter dem Spiel folgt nur noch der Rückkanal
     assert.equal(await page.locator("main .erklaervideo, main video, main .divider").count(), 0, "unter OMNA COLOR steht nichts mehr in main");
-    assert.equal(await page.locator("main > *").count(), 1, "main enthält nur OMNA COLOR");
+    assert.deepEqual(await page.locator("main > *").evaluateAll((els) => els.map((e) => e.className)), ["omna", "kaesten"], "main enthält OMNA COLOR und darunter die drei Kästen");
     // Rückkanal (seit 5. Oktober 2026): in der Spalte der Seite, bündig mit dem Fuss, nie am Fensterrand
     const kasten = await box(page.locator(".rueckkanal")), fuss = await box(page.locator(".site-footer p").first());
     const breite = page.viewportSize().width;
     assert.ok(kasten.x >= 19.5 && kasten.r <= breite - 19.5, `Rückkanal mit Rand (${kasten.x}–${kasten.r} von ${breite})`);
     assert.ok(Math.abs(kasten.x - fuss.x) <= 1, `Rückkanal bündig mit dem Fuss (${kasten.x} / ${fuss.x})`);
     assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+});
+
+await check("Startseite: drei Kästen nebeneinander für Apps, Prompts und Web mit Symbolen, unter dem Spiel, in der Spalte der Seite; sie führen auf die Seiten (Wunsch vom 9. Oktober 2026)", async () => {
+  for (const opts of [{ viewport: { width: 1200, height: 900 } }, { ...devices["iPhone 13"] }, { viewport: { width: 320, height: 640 } }]) {
+    const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
+    const k = page.locator(".kaesten .kasten");
+    assert.deepEqual(await k.locator("span").allTextContents(), ["Apps", "Prompts", "Web"]);
+    assert.deepEqual(await k.evaluateAll((els) => els.map((e) => e.getAttribute("href"))), ["apps/", "masterprompts/", "web/"]);
+    const b = await k.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: Math.round(r.y), w: r.width, h: r.height, r: r.right }; }));
+    assert.ok(b[0].y === b[1].y && b[1].y === b[2].y, "nebeneinander in einer Reihe");
+    assert.ok(b[0].x < b[1].x && b[1].x < b[2].x && b[0].r <= b[1].x && b[1].r <= b[2].x, "Apps, Prompts, Web von links nach rechts, ohne Überlappung");
+    assert.ok(Math.abs(b[0].w - b[1].w) < 1 && Math.abs(b[1].w - b[2].w) < 1, "gleich breit");
+    const breite = page.viewportSize().width;
+    assert.ok(b[0].x >= 19 && b[2].r <= breite - 19, `mit Rand (${b[0].x}–${b[2].r} von ${breite})`);
+    const rahmen = await box(page.locator(".omna iframe"));
+    assert.ok(b[0].y >= rahmen.y + rahmen.h - 1, "die Kästen stehen unter dem Spiel (so bleibt «Drehen» beim Laden im Fenster)");
+    for (const kasten of await k.all()) {
+      const s = await box(kasten.locator("svg"));
+      assert.ok(s.w >= 30 && s.h >= 30, `Symbol sichtbar (${s.w} × ${s.h})`);
+      assert.equal(await kasten.locator("svg").getAttribute("aria-hidden"), "true", "das Symbol ist für Vorlesegeräte verborgen");
+    }
+    assert.ok(Math.min(...b.map((x) => x.h)) >= 60, "Tippfläche mindestens 60 px hoch");
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "kein seitliches Wischen");
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+  // jeder Kasten führt auf seine Seite
+  for (const [name, ziel] of [["Apps", /\/apps\/$/], ["Prompts", /\/masterprompts\/$/], ["Web", /\/web\/$/]]) {
+    const { ctx, page } = await startseite({ viewport: { width: 1200, height: 900 }, reducedMotion: "reduce" });
+    await page.locator(".kaesten .kasten").filter({ hasText: name }).click();
+    await page.waitForURL(ziel);
     await ctx.close();
   }
 });

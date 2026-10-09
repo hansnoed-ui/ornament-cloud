@@ -4,8 +4,11 @@ Einfache statische Website (reines HTML/CSS), die eine Auswahl meiner Claude-Art
 Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CDNs oder Google geladen.
 
 - `index.html` – Startseite (Neuordnung vom 2. Oktober 2026, Wunsch von Christian; seit 3. Oktober ohne sichtbaren Titel, seit 5. Oktober auch ohne den Satz
-  «Beobachtung ist Anlass für Veränderungen in der Realität.», der nur noch in Beschreibung und Vorschaukarte zum Teilen steht, `tests/teilen.test.mjs` hält beides zusammen):
-  unter der Welle seit dem 4. Oktober 2026 **OMNA COLOR zum direkten Spielen**:
+  «Beobachtung ist Anlass für Veränderungen in der Realität.», der nur noch in Beschreibung und Vorschaukarte zum Teilen steht, `tests/teilen.test.mjs` hält beides zusammen;
+  seit dem 9. Oktober 2026 steht unter der Welle der **Lead «Dreh- und Wendepunkte für Theorie und Praxis»** (`<p class="lead lead--start">`, Serife, sichtbar; Wunsch von Christian, der Titel `<h1>` bleibt unsichtbar)
+  und unter OMNA COLOR **drei Kästen nebeneinander für «Apps», «Prompts» und «Web»** (`<nav class="kaesten">`, je ein gezeichnetes Symbol: Apps vier Felder, Prompts Sprechblase mit Eingabezeichen, Web Globus; sie führen auf `apps/`, `masterprompts/` und `web/`,
+  der Zettelkasten steht nur im Menü; auch auf dem Handy drei Spalten; Gestaltung im Kopf der Seite, `styles.css` und seine `?v=`-Marke bleiben unberührt). Die Kästen stehen bewusst unter dem Spiel: darüber schrumpfte das Rad auf Laptops und Handys auf 240 px und «Drehen» läge unter dem Fensterrand):
+  unter der Welle (nach dem Lead) seit dem 4. Oktober 2026 **OMNA COLOR zum direkten Spielen**:
   ein `<iframe>` auf `alpha/omna-color/` (freigegebene Ausnahme von REGELN §14, ein Test prüft genau diese Einbettung), kein Beitrag und keine Karte; der Beitrag zu OMNA COLOR bleibt auf «Web».
   Eingebettet erkennt sich `alpha/omna-color/index.html` an `window.self !== window.top` (Klasse `eingebettet` am `<html>`): ohne Hauptlinks, Rand und eigenen Bildlauf, Grund durchsichtig;
   die Startseite setzt die Höhe des Rahmens auf die Höhe des Spiels (kleines Skript unten in `index.html`, ResizeObserver), so wächst er mit, wenn eine Übung erscheint. GoatCounter zählt Rahmen nicht.

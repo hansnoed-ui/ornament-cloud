@@ -95,11 +95,21 @@ test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OM
   assert.ok(!html.includes("Raumstellen, Zeitobjekte"), "der frühere Titel ist weg");
   assert.match(html, /<h1 class="sr-only">Ornament Cloud<\/h1>/);
   // Wunsch vom 5. Oktober 2026: auch der Satz «Beobachtung ist Anlass …» steht nicht mehr auf der Seite (er bleibt in Beschreibung und Vorschaukarte)
-  assert.ok(!/<p class="lead/.test(html) && !/>\s*Beobachtung ist Anlass/.test(html), "kein Satz mehr unter der Welle");
-  assert.ok(!lies("styles.css").includes(".lead--start"), "keine Regel mehr für den Satz");
+  assert.ok(!/>\s*Beobachtung ist Anlass/.test(html), "der frühere Satz steht nicht mehr auf der Seite");
+  // Wunsch vom 9. Oktober 2026: unter der Welle steht ein Lead, darunter (unter OMNA COLOR) drei Kästen für Apps, Prompts und Web; die Gestaltung steht in der Startseite, nicht in styles.css
+  assert.deepEqual([...html.matchAll(/<p class="lead[^"]*">([^<]*)<\/p>/g)].map((m) => m[1]), ["Dreh- und Wendepunkte für Theorie und Praxis"], "genau dieser Lead");
+  assert.match(html, /<h1 class="sr-only">Ornament Cloud<\/h1>\s*<p class="lead lead--start">/, "der Lead folgt dem unsichtbaren Titel im Kopf");
+  assert.ok(!lies("styles.css").includes(".lead--start") && html.includes(".lead--start {"), "die Gestaltung des Leads steht in der Startseite (styles.css und ?v= bleiben unberührt)");
+  const kaesten = html.match(/<nav class="kaesten" aria-label="Apps, Prompts und Web">([\s\S]*?)<\/nav>/);
+  assert.ok(kaesten, "die drei Kästen");
+  assert.deepEqual([...kaesten[1].matchAll(/<a class="kasten" href="([^"]+)">[\s\S]*?<span>([^<]+)<\/span>/g)].map((m) => [m[2], m[1]]), [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Web", "web/"]], "Apps, Prompts, Web in dieser Reihenfolge, auf die Seiten des Menüs");
+  assert.equal([...kaesten[1].matchAll(/<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">/g)].length, 3, "ein verborgenes Symbol je Kasten");
+  assert.ok(!/data-icon/.test(kaesten[1]), "die Symbole sind nicht animiert");
+  assert.match(html, /\.kaesten \{ display: grid; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/, "drei Spalten, auch auf dem Handy");
   const stelle = (s) => { const i = html.indexOf(s); assert.ok(i > 0, s); return i; };
   assert.ok(stelle("<h1") < stelle('<figure class="omna">') && stelle('<figure class="omna">') < stelle("</main>"),
     "Reihenfolge: (unsichtbarer) Titel, OMNA COLOR, dann endet die Seite (sie hat nur noch den Fuss)");
+  assert.ok(stelle('<figure class="omna">') < stelle('<nav class="kaesten"') && stelle('<nav class="kaesten"') < stelle("</main>"), "die Kästen stehen unter OMNA COLOR (so bleibt «Drehen» beim Laden im Fenster)");
   assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div)\b/g)].map((m) => m[1]), ["figure"], "in main steht nur OMNA COLOR");
   // Wunsch vom 9. Oktober 2026: das Erklärvideo zu ORNA (seit 5. Oktober 2026 unter OMNA COLOR) ist von der Startseite weg und steht auf «Web» (web/orna-erklaervideo/);
   // die Startanimation (ausserhalb von main) hat ihr eigenes Video
