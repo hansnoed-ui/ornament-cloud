@@ -163,7 +163,9 @@
 
     /* Schmale Bildschirme: grosse Stadtfläche, das Panel klappt von unten auf */
     @media (max-width: 900px) {
-      .stadt { grid-template-columns: 1fr; padding: 0 12px 96px; }
+      /* z-index 2: das feste Panel liegt in main; main muss über dem Fuss (z-index 1, styles.css) liegen, sonst scheint der Fuss durchs Panel */
+      .stadt { grid-template-columns: 1fr; padding: 0 12px 96px; z-index: 2; }
+      .site-footer { padding-bottom: 150px; }   /* der Fuss bleibt über dem zugeklappten Panel lesbar */
       .buehne { position: static; }
       .karte-box { aspect-ratio: auto; height: min(52vh, 520px); }
       .panel { position: fixed; top: auto; left: 0; right: 0; bottom: 0; z-index: 30; max-height: 46vh; border-radius: 16px 16px 0 0; box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.18); }
@@ -190,22 +192,24 @@
     }
     /* Vollbild: Stadt und Panel füllen den Bildschirm (Fullscreen-Schnittstelle, wo vorhanden; sonst das ganze Fenster, etwa auf dem iPhone) */
     html.stadt-vollbild { overflow: hidden; }
-    .stadt.vollbild { position: fixed; inset: 0; z-index: 40; max-width: none; margin: 0; padding: 12px; height: 100vh; height: 100dvh; background: var(--bg); grid-template-rows: minmax(0, 1fr); }
-    .stadt.vollbild .buehne { position: static; display: flex; flex-direction: column; height: 100%; min-height: 0; }
-    .stadt.vollbild .karte-box { flex: 1 1 auto; aspect-ratio: auto; height: auto; min-height: 0; }
-    .stadt.vollbild .leiste { margin-bottom: 8px; }
-    .stadt.vollbild .meldung { margin: 6px 0 0; min-height: 1.4em; font-size: 0.95rem; }
-    .stadt.vollbild .legende { display: none; }
-    .stadt.vollbild .panel { position: static; max-height: 100%; }
+    html.stadt-vollbild .stadt { position: fixed; inset: 0; z-index: 40; max-width: none; margin: 0; padding: 12px; height: 100vh; height: 100dvh; background: var(--bg); grid-template-rows: minmax(0, 1fr); }
+    html.stadt-vollbild .stadt .buehne { position: static; display: flex; flex-direction: column; height: 100%; min-height: 0; }
+    html.stadt-vollbild .stadt .karte-box { flex: 1 1 auto; aspect-ratio: auto; height: auto; min-height: 0; }
+    html.stadt-vollbild .stadt .leiste { margin-bottom: 8px; }
+    html.stadt-vollbild .stadt .meldung { margin: 6px 0 0; min-height: 1.4em; font-size: 0.95rem; }
+    html.stadt-vollbild .stadt .legende { display: none; }
+    html.stadt-vollbild .stadt .panel { position: static; max-height: 100%; }
     #vollbild[aria-pressed="true"] { background: var(--text); color: var(--bg); }
     @media (max-width: 900px) {
-      .stadt.vollbild { padding: 8px 8px 56px; grid-template-columns: 1fr; }
-      .stadt.vollbild .panel { position: fixed; top: auto; height: auto; max-height: 46vh; }
-      .stadt.vollbild .lagezeile { display: none; }
+      html.stadt-vollbild .stadt { padding: 8px 8px calc(var(--panel-zu, 104px) + 8px); grid-template-columns: 1fr; }   /* unten Platz fürs zugeklappte Panel, damit die Meldung unter der Karte lesbar bleibt (app.js misst es) */
+      html.stadt-vollbild .stadt .panel { position: fixed; top: auto; height: auto; max-height: 46vh; }
+      html.stadt-vollbild .stadt .lagezeile { display: none; }
     }
     @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
   </style>
-  <script type="module" src="app.js?v=6"></script>
+  <!-- ?vollbild (Link «Im Vollbild öffnen»): sofort im Vollbild aufbauen, nicht erst nach dem Vorlauf der Stadt -->
+  <script>if (/[?&]vollbild(?:[=&]|$)/.test(location.search)) document.documentElement.classList.add("stadt-vollbild");</script>
+  <script type="module" src="app.js?v=8"></script>
 </head>
 <body>
   <header class="site-header">

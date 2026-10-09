@@ -6,7 +6,7 @@
 // und die Bilder der Karten auf der Seite «Web» (Hochformat 4 : 5, 640 × 800, dunkel in beiden Farbmodi):
 //   OMNA COLOR       das Farbrad aus der Seite           → assets/vorschau-omna-color.jpg
 //   Das Dritte Rad   das Rad aus der Seite               → assets/vorschau-drittes-rad.jpg
-//   Paradoxie der Stadt  die Stadt um 07.30 Uhr, hochkant  → assets/vorschau-stadt.jpg   (seit 9. Oktober 2026, zuoberst auf «Web»; hell wie die Grafik, «stadt» erzeugt nur dieses Bild)
+//   Paradoxie der Stadt  der Kopf der Seite um 07.30 Uhr, dunkel, in Handybreite  → assets/vorschau-stadt.jpg   (seit 9. Oktober 2026, zuoberst auf «Web»; «stadt» erzeugt nur dieses Bild)
 //   Stellenfeld      die erste Station der Szene         → assets/vorschau-stellenfeld.jpg   (seit 4. Oktober 2026, als das Stellenfeld von der Startseite auf «Web» zog)
 // Startseite: eine Wolke aus den 40 Zeichen von ORNA (direkt aus symbols.js gezeichnet), daneben Name und Satz der Startseite.
 // Masterprompts: wie die Startseite links Titel, Welle und Satz der Seite; rechts die vier gezeichneten Vorschauen der Prüfraster,
@@ -319,20 +319,21 @@ if (!wahl || wahl === "vorschau" || wahl === "stadt") {
     console.log("geschrieben:", out);
     await page.close();
   }
-  // Die Paradoxie der Stadt (mit «stadt» nur dieses Bild): nur die Karte, hell wie die Grafik von Kusanowsky; «weniger Bewegung» hält sie am ersten Morgen um 07.30 Uhr an (immer dasselbe Bild)
+  // Die Paradoxie der Stadt (mit «stadt» nur dieses Bild): der Kopf der Seite im dunklen Modus, wie auf dem Handy – Titel, Unterzeile, Bedienleiste, Karte
+  // (Wunsch von Christian, 9. Oktober 2026). Gerechnet wird in Handybreite (360 px) und auf 640 × 800 hochskaliert; «weniger Bewegung» hält die Stadt
+  // am ersten Morgen um 07.30 Uhr an (immer dasselbe Bild).
   {
-    const page = await browser.newPage({ ...hochformat, colorScheme: "light" });
+    const page = await browser.newPage({ viewport: { width: 360, height: 450 }, deviceScaleFactor: 640 / 360, isMobile: true, hasTouch: true, reducedMotion: "reduce", colorScheme: "dark" });
     await page.goto(`${base}alpha/stadt/?seed=7&figuren=72`);
     await page.waitForSelector(".stadt.bereit", { timeout: 30000 });
     await page.addStyleTag({ content: `
-      .site-header, .leiste, .meldung, .lagezeile, .legende, .panel, .site-footer, #einstieg { display: none !important; }
-      html, body { margin: 0 !important; overflow: hidden; }
-      .stadt { display: block !important; padding: 0 !important; max-width: none !important; }
-      .karte-box { width: 640px !important; height: 800px !important; aspect-ratio: auto !important; border: 0 !important; border-radius: 0 !important; }` });
-    await page.evaluate(() => dispatchEvent(new Event("resize")));
-    await page.waitForTimeout(500);
+      .seitenweg, .meldung, .lagezeile, .legende, .panel, .site-footer, #einstieg { display: none !important; }
+      .site-header { padding-top: 22px !important; padding-bottom: 18px !important; }
+      html, body { overflow: hidden; }` });
+    await page.evaluate(() => { scrollTo(0, 0); dispatchEvent(new Event("resize")); });
+    await page.waitForTimeout(600);
     const out = fileURLToPath(new URL("../assets/vorschau-stadt.jpg", import.meta.url));
-    await page.screenshot({ path: out, type: "jpeg", quality: 86 });
+    await page.screenshot({ path: out, type: "jpeg", quality: 88 });
     console.log("geschrieben:", out);
     await page.close();
   }

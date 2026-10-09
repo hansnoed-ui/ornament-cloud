@@ -3,8 +3,8 @@
 // (Kanal, Tag, Figur, Zähler), damit zusätzliche Ziehungen in einem Vergleichszweig die übrigen Ereignisse nicht verschieben.
 // Der ganze Zustand liegt in stadt.z (einfache Daten, klonbar); stadt.r hält nur abgeleitete Hilfen (Graph, jev-Tabelle).
 import { KNOTEN, KANTEN, KANTE, ORTE, BANK, BAENKE, WOHNUNGEN, VERBINDUNG, KORRIDORE, HALT_S, AMPEL_S, ZEBRA_S, X_AMPEL, X_ZEBRA,
-  bedingungen, verfuegbar, ampelZeiten, tempoHaupt, spurenHaupt, BREITE } from "./stadtplan.js?v=6";
-import * as F from "./fragen.js?v=6";
+  bedingungen, verfuegbar, ampelZeiten, tempoHaupt, spurenHaupt, BREITE } from "./stadtplan.js?v=8";
+import * as F from "./fragen.js?v=8";
 
 export const DT = 1;                        // Sekunden Stadtzeit je Schritt
 export const TAG_DAUER = 16 * 3600;         // 06.00 bis 22.00 Uhr; die Nacht wird übersprungen

@@ -1,7 +1,7 @@
 // «Die Paradoxie der Stadt» – Zeichnung der Stadt auf einer Canvas (Draufsicht). Liest den Zustand, verändert ihn nie.
 // Gezeichnet wird in Metern (die Transformation macht daraus Pixel); Farben kommen aus CSS-Variablen der Seite (hell und dunkel).
-import { KNOTEN, KANTEN, ORTE, BANK, BAENKE, BLOECKE, WOHNUNGEN, KORRIDORE, VERBINDUNG, BREITE, HOEHE, X_AMPEL, X_ZEBRA, X_HALT, bedingungen, ampelZeiten } from "./stadtplan.js?v=6";
-import { gesamtzeit } from "./modell.js?v=6";
+import { KNOTEN, KANTEN, ORTE, BANK, BAENKE, BLOECKE, WOHNUNGEN, KORRIDORE, VERBINDUNG, BREITE, HOEHE, X_AMPEL, X_ZEBRA, X_HALT, bedingungen, ampelZeiten } from "./stadtplan.js?v=8";
+import { gesamtzeit } from "./modell.js?v=8";
 
 const VAR = ["papier", "block", "dach", "gruen", "baum", "strasse", "markierung", "weg", "linie", "text", "leise", "koralle", "vergleich", "auto", "bus", "figur", "hof"];
 export function farben(el) {
@@ -25,7 +25,9 @@ export function zeichne(ctx, stadt, a) {
     ctx.fillStyle = art === "park" ? c.gruen : art === "hof" ? c.hof : c.block;
     rund(ctx, x, y, w, h, 3); ctx.fill();
     ctx.strokeStyle = c.linie; lw(1); ctx.stroke();
-    if (art === "wohnen") haeuser(ctx, x, y, w, h, c, lw);
+    // Kiosk (Block Ost, oben links an der Nordstrasse) und das leere Ladenlokal (Block West, unten rechts zur Hauptstrasse) stehen an der Stelle eines Hauses;
+    // das Ladenlokal ist immer da, mit der Zwischennutzung bekommt es Farbe und Namen
+    if (art === "wohnen") haeuser(ctx, x, y, w, h, c, lw, x === 460 && y === 78 ? { "0,0": c.koralle } : x === 50 && y === 78 ? { "2,1": z.m.zwischennutzung ? c.vergleich : c.weg } : {});
     if (art === "park") { ctx.fillStyle = c.baum; for (let i = 0; i < 16; i++) { const tx = x + 8 + ((i * 37) % (w - 16)), ty = y + 8 + ((i * 53) % (h - 16)); if (Math.abs(tx - 225) < 10 || Math.abs(ty - 128) < 8) continue; ctx.beginPath(); ctx.arc(tx, ty, 4.5, 0, 7); ctx.fill(); } }
     if (art === "atelier") { ctx.fillStyle = c.dach; rund(ctx, x + 14, y + 22, 60, 40, 2); ctx.fill(); ctx.strokeStyle = c.linie; lw(1); ctx.stroke(); ctx.fillStyle = c.koralle; ctx.fillRect(x + 14, y + 22, 60, 4); }
     if (art === "laden") { ctx.fillStyle = c.dach; rund(ctx, x + 70, y + 8, 60, 34, 2); ctx.fill(); ctx.strokeStyle = c.linie; lw(1); ctx.stroke();
@@ -33,10 +35,6 @@ export function zeichne(ctx, stadt, a) {
     if (art === "schule") { ctx.fillStyle = c.dach; rund(ctx, x + 30, y + 6, 80, 30, 2); ctx.fill(); ctx.strokeStyle = c.linie; lw(1); ctx.stroke(); }
     if (art === "hof") { ctx.fillStyle = c.papier; rund(ctx, x + 12, y + 18, w - 24, h - 36, 2); ctx.fill(); }
   }
-  // Kiosk und Zwischennutzung
-  markeHaus(ctx, 470, 80, 22, 14, c, lw, c.koralle);
-  // das leere Ladenlokal ist immer da; mit der Zwischennutzung bekommt es Farbe und Namen
-  markeHaus(ctx, 104, 160, 32, 14, c, lw, z.m.zwischennutzung ? c.vergleich : c.weg);
 
   // ---------- Strassen ----------
   const spur = z.m.spur, oben = spur ? 195 : 200, unten = spur ? 225 : 220;
@@ -151,15 +149,17 @@ export function positionVon(f) {
 // ---------- Bausteine ----------
 function rund(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
 function linie(ctx, x1, y1, x2, y2) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
-function haeuser(ctx, x, y, w, h, c, lw) {
-  ctx.fillStyle = c.dach; ctx.strokeStyle = c.linie; lw(0.8);
+/** Häuser im Raster des Blocks; marken: { "Spalte,Zeile": Farbe } zeichnet dort statt eines Hauses ein Geschäft mit farbiger Kante (zur Strasse hin) */
+function haeuser(ctx, x, y, w, h, c, lw, marken = {}) {
   const n = Math.max(1, Math.round(w / 32)), m = h > 60 ? 2 : 1;
   for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) {
     const hx = x + 5 + (i * (w - 10)) / n, hy = y + 5 + (j * (h - 10)) / m, hw = (w - 10) / n - 5, hh = (h - 10) / m - 6;
+    const akzent = marken[`${i},${j}`];
+    ctx.fillStyle = c.dach; ctx.strokeStyle = c.linie; lw(akzent ? 1 : 0.8);
     rund(ctx, hx, hy, hw, hh, 1.5); ctx.fill(); ctx.stroke();
+    if (akzent) { ctx.fillStyle = akzent; ctx.fillRect(hx, j === 0 ? hy : hy + hh - 2.5, hw, 2.5); }
   }
 }
-function markeHaus(ctx, x, y, w, h, c, lw, akzent) { ctx.fillStyle = c.dach; rund(ctx, x, y, w, h, 1.5); ctx.fill(); ctx.strokeStyle = c.linie; lw(1); ctx.stroke(); ctx.fillStyle = akzent; ctx.fillRect(x, y, w, 2.5); }
 function streifen(ctx, x, oben, unten, farbe, lw) { ctx.fillStyle = farbe; for (let y = oben + 1.5; y < unten - 1; y += 3) ctx.fillRect(x - 4, y, 8, 1.6); }
 function signal(ctx, x, y, gruen, c) {
   ctx.fillStyle = c.linie; rund(ctx, x - 2, y - 3.4, 4, 6.8, 1); ctx.fill();
@@ -254,7 +254,7 @@ function vorschau(ctx, z, [schluessel, wert], c, lw, px, dpr) {
   if (schluessel === "bus" && wert) { for (const y of [182, 238]) ctx.strokeRect(X_HALT - 14, y - 5, 28, 10); }
   if (schluessel === "ruhe" && wert) { for (const x of [60, 540]) { ctx.beginPath(); ctx.arc(x, 186, 6, 0, 7); ctx.stroke(); } }
   if (schluessel === "durchgang" && wert) linie(ctx, 150, 232, 150, 330);
-  if (schluessel === "zwischennutzung" && wert) ctx.strokeRect(101, 157, 38, 20);
+  if (schluessel === "zwischennutzung" && wert) ctx.strokeRect(105.3, 125, 27.7, 45);
   if (schluessel === "bank") { const b = BANK[wert]; ctx.strokeRect(b.x - 7, b.y - 4, 14, 8); }
   if (schluessel === "verbindung") {
     const v = VERBINDUNG[wert];
