@@ -1,6 +1,7 @@
 // Erzeugt die Vorschaukarten (Open Graph / X-Karte, 1200 × 630) für das Teilen auf Social Media:
 //   Startseite       ornament.cloud                      → assets/og-ornament-cloud.png
 //   Masterprompts    ornament.cloud/masterprompts/       → assets/og-masterprompts.png
+//   Die Paradoxie der Stadt  ornament.cloud/alpha/stadt/  → alpha/stadt/og-stadt.jpg   (seit 9. Oktober 2026; mit «stadt» nur die beiden Bilder der Stadt)
 //   Das Dritte Rad   ornament.cloud/alpha/drittes-rad/   → alpha/drittes-rad/og-drittes-rad.jpg   (JPEG: der Farbverlauf der Seite wird als PNG über 500 KB gross, WhatsApp mag es kleiner)
 // und die Bilder der Karten auf der Seite «Web» (Hochformat 4 : 5, 640 × 800, dunkel in beiden Farbmodi):
 //   OMNA COLOR       das Farbrad aus der Seite           → assets/vorschau-omna-color.jpg
@@ -225,6 +226,43 @@ if (!wahl || wahl === "rad") {
   await page.waitForTimeout(300);
   const out = fileURLToPath(new URL("../alpha/drittes-rad/og-drittes-rad.jpg", import.meta.url));
   await page.screenshot({ path: out, type: "jpeg", quality: 92 });
+  console.log("geschrieben:", out);
+  await page.close();
+}
+
+// ---------- Die Paradoxie der Stadt: Vorschaukarte zum Teilen (1200 × 630, mit «stadt» zusammen mit dem Bild für «Web») ----------
+// Links Titel und Satz der Seite auf gebrochenem Weiss, rechts die Stadt selbst um 07.30 Uhr (Startwert 7, «weniger Bewegung» hält sie an: immer dasselbe Bild).
+if (!wahl || wahl === "stadt") {
+  const page = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1, colorScheme: "light", reducedMotion: "reduce" });
+  await page.goto(`${base}alpha/stadt/?seed=7&figuren=72`);
+  await page.waitForSelector(".stadt.bereit", { timeout: 30000 });
+  await page.addStyleTag({ content: `
+    .site-header, .leiste, .meldung, .lagezeile, .legende, .panel, .site-footer, #einstieg { display: none !important; }
+    html, body { margin: 0 !important; width: 1200px; height: 630px; overflow: hidden; background: #f6f3ec !important; }
+    .stadt { display: block !important; padding: 0 !important; max-width: none !important; }
+    .karte-box { position: absolute !important; left: 600px; top: 0; width: 600px !important; height: 630px !important; aspect-ratio: auto !important; border: 0 !important; border-left: 2px solid #2b2926 !important; border-radius: 0 !important; }
+    .og-text { position: absolute; left: 64px; top: 70px; width: 480px; color: #1f1d1a; }
+    .og-text .ober { margin: 0 0 26px; font: 600 17px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .22em; text-transform: uppercase; color: #d94c55; }
+    .og-text h1 { margin: 0; font: 400 74px/1.04 Georgia, "Times New Roman", serif; letter-spacing: -.01em; }
+    .og-text .satz { margin: 28px 0 0; font: 400 27px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #3a3631; }
+    .og-text .fuss { margin: 40px 0 0; padding-top: 20px; border-top: 1px solid #c8c2b6; }
+    .og-text .quelle { margin: 0; font: 400 19px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #625d55; }
+    .og-text .adresse { margin: 12px 0 0; font: 500 19px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .04em; color: #1f1d1a; }` });
+  await page.evaluate(() => {
+    document.body.insertAdjacentHTML("beforeend", `<div class="og-text">
+      <p class="ober">Ornament Cloud</p>
+      <h1>Die Paradoxie<br>der Stadt</h1>
+      <p class="satz">Planen. Umwege machen.<br>Anders weitergehen.</p>
+      <div class="fuss">
+        <p class="quelle">Nach der Grafik «Urbane Paradoxien» von Klaus&nbsp;Kusanowsky</p>
+        <p class="adresse">ornament.cloud/alpha/stadt</p>
+      </div>
+    </div>`);
+    dispatchEvent(new Event("resize"));
+  });
+  await page.waitForTimeout(500);
+  const out = fileURLToPath(new URL("../alpha/stadt/og-stadt.jpg", import.meta.url));
+  await page.screenshot({ path: out, type: "jpeg", quality: 88 });
   console.log("geschrieben:", out);
   await page.close();
 }
