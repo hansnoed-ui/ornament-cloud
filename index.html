@@ -68,6 +68,9 @@
     .kasten:hover svg { color: var(--accent); }
     .kasten:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
     @media (max-width: 520px) { .kaesten { gap: 8px; } .kasten { min-height: 110px; padding: 18px 4px 14px; gap: 10px; font-size: 1rem; } .kasten svg { width: 40px; height: 40px; } }
+    /* OMNA COLOR unter den Kästen (seit 10. Oktober 2026): der Rahmen aus styles.css, hier nur der Abstand (dort sitzt er näher an der Welle) */
+    .kaesten + .omna { margin: 0 0 48px; }
+    @media (max-width: 520px) { .kaesten { margin-bottom: 36px; } }
   </style>
   <script>
     // Entscheidet vor dem ersten Anstrich, ob die Startanimation läuft (die Klasse start-an deckt die Seite sofort ab, es gibt kein Aufblitzen)
@@ -110,8 +113,9 @@
       Aufbau: Lead im Kopf, hier drei Kästen (Wunsch von Christian, 9. Oktober 2026): Apps, Prompts und Web, nebeneinander, mit gezeichneten Symbolen
       (Apps: vier Felder, Prompts: Sprechblase mit Eingabezeichen, Web: Globus). Sie führen auf die Seiten des Menüs (apps/, masterprompts/, web/); der Zettelkasten steht nur im Menü.
       Die Symbole sind schlichte Zeichnungen in der Schriftfarbe (kein data-icon, nicht animiert) und für Vorlesegeräte verborgen: der Name im Kasten sagt alles.
-      OMNA COLOR war hier von 4. bis 9. Oktober 2026 zum direkten Spielen eingebettet (alpha/omna-color/, freigegebene Ausnahme von REGELN §14); es ist seitdem ein Beitrag auf «Web»
-      und nicht mehr Teil der Startseite. Das Erklärvideo zu ORNA, das von 5. bis 9. Oktober 2026 darunter stand, ist ebenfalls auf «Web» (web/orna-erklaervideo/).
+      Unter den Kästen seit 10. Oktober 2026 wieder OMNA COLOR zum direkten Spielen (Wunsch von Christian; eingebettet aus alpha/omna-color/, freigegebene Ausnahme
+      von REGELN §14, wie schon vom 4. bis 9. Oktober 2026). «Drehen» muss beim Laden nicht im Fenster stehen; nach dem Drehen blättert die Seite zur gezogenen Übung.
+      OMNA COLOR bleibt zugleich ein Beitrag auf «Web». Das Erklärvideo zu ORNA, das von 5. bis 9. Oktober 2026 hier stand, ist auf «Web» (web/orna-erklaervideo/).
     -->
     <nav class="kaesten" aria-label="Apps, Prompts und Web">
       <a class="kasten" href="apps/">
@@ -127,6 +131,11 @@
         <span>Web</span>
       </a>
     </nav>
+
+    <figure class="omna">
+      <iframe src="alpha/omna-color/" title="OMNA COLOR: zwei Farbräder drehen gegeneinander und wählen eine von 180 Gestaltungsübungen. Drehen mit dem Knopf oder durch Ziehen am Rad."></iframe>
+      <figcaption>OMNA COLOR: Zwei Farbräder drehen gegeneinander. Zeigen sie zwei Farben, verbindet die Übung beide Themen, zeigen sie dieselbe Farbe, bleibt es beim reinen Thema. Drehen mit dem Knopf oder durch Ziehen am Rad. Mehr dazu unter <a href="web/">Web</a>.</figcaption>
+    </figure>
   </main>
 
   <!--
@@ -183,6 +192,27 @@
       v.src = dunkel ? "assets/start-animation-dunkel.mp4?v=3" : "assets/start-animation.mp4?v=3";
       var p = v.play();
       if (p && p.catch) p.catch(weg);
+    })();
+    // OMNA COLOR eingebettet: der Rahmen ist so hoch wie das Spiel (Rad, Übung, Hinweise) und hat keinen eigenen Bildlauf.
+    // Nach dem Drehen meldet das Spiel «uebung»; dann blättert die Seite zur gezogenen Übung (wenn sie nicht schon ganz zu sehen ist).
+    (function () {
+      var f = document.querySelector(".omna iframe");
+      if (!f) return;
+      function passe() { try { f.style.height = Math.ceil(f.contentDocument.body.getBoundingClientRect().height) + "px"; } catch (e) {} }
+      function an() { passe(); try { new ResizeObserver(passe).observe(f.contentDocument.body); } catch (e) {} }
+      f.addEventListener("load", an);
+      try { if (f.contentDocument && f.contentDocument.readyState === "complete" && f.contentDocument.body.childElementCount) an(); } catch (e) {}
+      addEventListener("message", function (e) {
+        if (e.origin !== location.origin || e.source !== f.contentWindow || !e.data || e.data.omna !== "uebung") return;
+        passe();
+        try {
+          var karte = f.contentDocument.getElementById("card"), rahmen = f.getBoundingClientRect(), r = karte.getBoundingClientRect();
+          var oben = rahmen.top + r.top, unten = rahmen.top + r.bottom;
+          if (oben >= 0 && unten <= innerHeight) return;
+          var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+          scrollTo({ top: Math.max(0, scrollY + oben - 16), behavior: still ? "auto" : "smooth" });
+        } catch (e) {}
+      });
     })();
   </script>
   <script src="icons.js?v=14" defer></script>

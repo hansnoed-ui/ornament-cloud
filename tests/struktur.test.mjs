@@ -107,9 +107,9 @@ test("Startseite: kein sichtbarer Titel, unter der Welle der Lead, darunter drei
   assert.ok(!/data-icon/.test(kaesten[1]), "die Symbole sind nicht animiert");
   assert.match(html, /\.kaesten \{ display: grid; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/, "drei Spalten, auch auf dem Handy");
   const stelle = (s) => { const i = html.indexOf(s); assert.ok(i > 0, s); return i; };
-  assert.ok(stelle("<h1") < stelle('<nav class="kaesten"') && stelle('<nav class="kaesten"') < stelle("</main>"),
-    "Reihenfolge: (unsichtbarer) Titel, Lead, die drei Kästen, dann endet die Seite (sie hat nur noch den Rückkanal und den Fuss)");
-  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div|iframe|video)\b/g)].map((m) => m[1]), [], "in main stehen nur die Kästen");
+  assert.ok(stelle("<h1") < stelle('<nav class="kaesten"') && stelle('<nav class="kaesten"') < stelle('<figure class="omna">') && stelle('<figure class="omna">') < stelle("</main>"),
+    "Reihenfolge: (unsichtbarer) Titel, Lead, die drei Kästen, darunter OMNA COLOR (seit 10. Oktober 2026), dann nur noch Rückkanal und Fuss");
+  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div|iframe|video)\b/g)].map((m) => m[1]), ["figure", "iframe"], "in main stehen die Kästen und OMNA COLOR");
   // Wunsch vom 9. Oktober 2026: das Erklärvideo zu ORNA (5. bis 9. Oktober 2026 auf der Startseite) ist von der Startseite weg und steht auf «Web» (web/orna-erklaervideo/);
   // die Startanimation (ausserhalb von main) hat ihr eigenes Video
   const inMain = html.slice(stelle("<main"), stelle("</main>"));
@@ -121,9 +121,12 @@ test("Startseite: kein sichtbarer Titel, unter der Welle der Lead, darunter drei
   assert.ok(!html.includes("bisherige-projekte"), "kein Link mehr auf «bisherige-projekte»");
   // Wunsch vom 5. Oktober 2026: im Fuss die Adresse für Fragen und Anmerkungen zur Website
   assert.match(html, /<footer class="site-footer">[\s\S]*<p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail\.com">hansnoed@gmail\.com<\/a><\/p>[\s\S]*<\/footer>/, "Kontakt im Fuss");
-  // Wunsch vom 9. Oktober 2026: auch OMNA COLOR ist von der Startseite weg (4. bis 9. Oktober 2026 dort zum Spielen eingebettet); es bleibt ein Beitrag auf «Web»
-  assert.ok(!/<iframe|omna/i.test(html.replace(/<nav class="(seitenweg|menu)"[\s\S]*?<\/nav>/g, "")), "keine Einbettung und kein Wort über OMNA COLOR auf der Startseite");
-  assert.ok(!html.includes("--rad-max") && !html.includes("ResizeObserver"), "kein Skript mehr für den Rahmen");
+  // Wunsch vom 10. Oktober 2026: OMNA COLOR wieder zum Spielen eingebettet (wie 4. bis 9. Oktober 2026), jetzt unter den drei Kästen; «Drehen» muss beim Laden
+  // nicht im Fenster stehen (kein --rad-max mehr), nach dem Drehen blättert die Seite zur gezogenen Übung (Nachricht «uebung» aus dem Rahmen)
+  assert.equal([...html.matchAll(/<iframe [^>]*src="([^"]+)"/g)].map((m) => m[1]).join(), "alpha/omna-color/", "genau ein Rahmen: OMNA COLOR");
+  assert.ok(!html.includes("--rad-max") && html.includes("ResizeObserver"), "der Rahmen wächst mit dem Spiel, das Rad wird nicht verkleinert");
+  assert.match(html, /e\.origin !== location\.origin \|\| e\.source !== f\.contentWindow/, "nur Nachrichten aus dem eigenen Rahmen");
+  assert.match(lies("alpha/omna-color/index.html"), /parent\.postMessage\(\{ omna: "uebung" \}, location\.origin\)/, "OMNA COLOR meldet eingebettet die gezogene Übung");
   assert.ok(!html.includes("stellenfeld"), "das Stellenfeld ist nicht auf der Startseite");
   assert.ok(existsSync(new URL("alpha/omna-color/index.html", root)) && lies("web/index.html").includes('<h2>OMNA COLOR</h2>'), "OMNA COLOR bleibt unter seiner Adresse und als Beitrag auf «Web»");
   assert.ok(!/<article|class="card|class="grid/.test(html), "keine Beiträge und keine Karten auf der Startseite");
@@ -211,7 +214,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 const SEITEN = {
   apps: { titel: "Apps", karten: [["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
-  web: { titel: "Web", karten: [["Die Paradoxie der Stadt", "../alpha/stadt/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["Mensch, Niklas!", "mensch-niklas/"]] },
+  web: { titel: "Web", karten: [["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["Mensch, Niklas!", "mensch-niklas/"]] },
 };
 
 test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und Eintrag in der Sitemap", () => {
@@ -254,19 +257,17 @@ test("Masterprompts: die vier Prüfraster als Beiträge, in der Reihenfolge der 
   assert.ok(k.every((x) => /<svg [^>]*role="img" aria-label="[^"]{20,}"/.test(x.html)), "jede Karte trägt eine gezeichnete Vorschau mit Beschreibung");
 });
 
-test("Web: zuoberst «Die Paradoxie der Stadt» (Alpha, auch im Vollbild), dann OMNA COLOR und Das Dritte Rad (Alpha), das Stellenfeld, dann zuunterst die drei Videos: das Erklärvideo zu ORNA, «Liebling …» und als letztes «Mensch, Niklas!», alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs", () => {
+test("Web: OMNA COLOR und Das Dritte Rad (Alpha), das Stellenfeld, dann zuunterst die drei Videos: das Erklärvideo zu ORNA, «Liebling …» und als letztes «Mensch, Niklas!», alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs; «Die Paradoxie der Stadt» zurzeit nur auf Alpha", () => {
   const html = lies("web/index.html");
   const alle = karten(html);
   assert.deepEqual(alle.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
   // Wunsch vom 9. Oktober 2026: die beiden Videos stehen zuunterst, «Mensch, Niklas!» als letztes
-  const stadt = alle[0], k = alle.slice(1, 4), [o, v, m] = alle.slice(4);
-  // «Die Paradoxie der Stadt» (9. Oktober 2026): zuoberst, Alpha, mit Vorschaubild; öffnet normal oder gleich im Vollbild
-  assert.match(stadt.html, /<a class="thumb" href="\.\.\/alpha\/stadt\/" tabindex="-1" aria-hidden="true">\s*<img src="\.\.\/assets\/vorschau-stadt\.jpg" alt="" width="640" height="800" loading="lazy">/);
-  assert.deepEqual([...stadt.html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((x) => x[1]), ["../alpha/stadt/", "../alpha/stadt/", "../alpha/stadt/?vollbild"], "Bild, «Öffnen» und «Im Vollbild öffnen»");
-  assert.ok(stadt.tags.includes("Alpha") && stadt.tags.includes("Prototyp"));
+  const k = alle.slice(0, 3), [o, v, m] = alle.slice(3);
+  // «Die Paradoxie der Stadt» (Wunsch vom 10. Oktober 2026): zurzeit nicht auf «Web», nur auf der Alpha-Seite, dort auch direkt im Vollbild
+  assert.ok(!/href="[^"]*alpha\/stadt\//.test(html), "keine Karte und kein Link zur Stadt auf «Web»");
+  assert.match(lies("alpha/index.html"), /<a href="stadt\/">Die Paradoxie der Stadt<\/a>[\s\S]*?<a href="stadt\/\?vollbild">Im Vollbild öffnen<\/a>/);
   const vorschauStadt = readFileSync(new URL("assets/vorschau-stadt.jpg", root));
-  assert.deepEqual(jpegMass(vorschauStadt), [640, 800], "Vorschaubild 640 × 800");
-  assert.ok(vorschauStadt.length < 150_000 && lies("tools/start-og.mjs").includes("vorschau-stadt.jpg"), "unter 150 KB, erzeugt von tools/start-og.mjs");
+  assert.deepEqual(jpegMass(vorschauStadt), [640, 800], "das Vorschaubild für später bleibt: 640 × 800");
   // das Erklärvideo zu ORNA (9. Oktober 2026, bis dahin auf der Startseite): vor den beiden anderen Videos, klickbar mit Vorschaubild, führt nur auf die eigene Videoseite
   assert.match(o.html, /<a class="thumb" href="orna-erklaervideo\/" tabindex="-1" aria-hidden="true">\s*<img src="\.\.\/assets\/vorschau-orna-erklaervideo\.jpg" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual([...o.html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((x) => x[1]), ["orna-erklaervideo/", "orna-erklaervideo/"], "Bild und «Öffnen»");

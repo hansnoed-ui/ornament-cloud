@@ -50,8 +50,8 @@ const sich = (a, b) => a.x < b.r - 0.5 && b.x < a.r - 0.5 && a.y < b.b - 0.5 && 
 
 // ---------- Startseite: Lead und drei Kästen ----------
 // Wunsch von Christian, 9. Oktober 2026: unter der Welle der Lead «Dreh- und Wendepunkte für Theorie und Praxis», darunter drei Kästen für Apps, Prompts und Web.
-// OMNA COLOR (4. bis 9. Oktober 2026 eingebettet, zum Spielen) und das Erklärvideo zu ORNA sind von der Startseite weg; sie stehen auf «Web».
-await check("Startseite (Computer): kein sichtbarer Titel, unter der Welle der Lead, darunter die drei Kästen; kein Spiel, kein Rahmen, kein Video, keine Karte", async () => {
+// Seit 10. Oktober 2026 (Wunsch von Christian) unter den Kästen wieder OMNA COLOR zum Spielen (wie 4. bis 9. Oktober 2026); das Erklärvideo zu ORNA steht auf «Web».
+await check("Startseite (Computer): kein sichtbarer Titel, unter der Welle der Lead, darunter die drei Kästen, darunter OMNA COLOR; kein Video, keine Karte", async () => {
   const { ctx, page, errors } = await startseite({ viewport: { width: 1200, height: 900 }, reducedMotion: "reduce" });
   assert.equal(await page.locator("h1").textContent(), "Ornament Cloud");
   assert.equal(await page.locator("h1").evaluate((e) => e.getBoundingClientRect().width), 1, "der Titel ist nur für Vorlesegeräte da");
@@ -60,15 +60,38 @@ await check("Startseite (Computer): kein sichtbarer Titel, unter der Welle der L
   assert.ok(await page.locator(".site-header .lead").isVisible(), "der Lead ist sichtbar");
   assert.equal(await page.getByText("Beobachtung ist Anlass").count(), 0, "der frühere Satz steht nicht auf der Seite");
   assert.equal(await page.locator("main .card, main article").count(), 0, "kein Beitrag, keine Karte");
-  assert.equal(await page.locator("iframe, video:not(#start video), .omna, .erklaervideo, #wheel").count(), 0, "kein Spiel, kein Rahmen, kein Video auf der Seite");
-  assert.deepEqual(await page.locator("main > *").evaluateAll((els) => els.map((e) => e.className)), ["kaesten"], "main enthält nur die drei Kästen");
+  assert.equal(await page.locator("video:not(#start video), .erklaervideo").count(), 0, "kein Video auf der Seite");
+  assert.deepEqual(await page.locator("main > *").evaluateAll((els) => els.map((e) => e.className)), ["kaesten", "omna"], "main enthält die drei Kästen und darunter OMNA COLOR");
   const welle = await box(page.locator(".site-header .divider")), lead = await box(page.locator(".site-header .lead")), kaesten = await box(page.locator(".kaesten"));
   assert.ok(welle.b <= lead.y + 1 && lead.b <= kaesten.y + 1, "von oben nach unten: Welle, Lead, Kästen");
   assert.ok(kaesten.y - lead.b <= 90, `die Kästen folgen dem Lead (${Math.round(kaesten.y - lead.b)} px)`);
   assert.ok(kaesten.b <= 900, "die Kästen stehen beim Laden im Fenster");
+  const rahmen = await box(page.locator(".omna iframe"));
+  assert.ok(rahmen.y >= kaesten.b, "OMNA COLOR steht unter den Kästen");
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   assert.deepEqual(errors, []);
   await ctx.close();
+});
+
+await check("Startseite: OMNA COLOR unter den Kästen spielbar; der Rahmen wächst ohne eigenen Bildlauf, und nach dem Drehen blättert die Seite zur gezogenen Übung (Computer, Handy)", async () => {
+  for (const opts of [{ viewport: { width: 1200, height: 800 } }, { ...devices["Pixel 7"] }]) {
+    const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
+    await page.waitForFunction(() => { const f = document.querySelector(".omna iframe"), d = f?.contentDocument; return d?.querySelectorAll("#outer path.seg").length > 0 && f.style.height; }, null, { timeout: 15000 });
+    const frame = page.frames().find((f) => f.url().endsWith("/alpha/omna-color/"));
+    assert.ok(await frame.evaluate(() => document.documentElement.classList.contains("eingebettet")), "OMNA COLOR erkennt die Einbettung");
+    const innen = () => frame.evaluate(() => document.body.getBoundingClientRect().height - innerHeight);
+    assert.ok(Math.abs(await innen()) <= 2, "der Rahmen ist so hoch wie das Spiel");
+    await frame.locator("#go").scrollIntoViewIfNeeded();
+    await frame.locator("#go").click();
+    await frame.locator("#card").waitFor({ state: "visible", timeout: 8000 });
+    await page.waitForFunction(() => { const f = document.querySelector(".omna iframe"), k = f.contentDocument.getElementById("card"); const oben = f.getBoundingClientRect().top + k.getBoundingClientRect().top; return oben >= -1 && oben < innerHeight - 80; }, null, { timeout: 5000 });
+    const titel = await frame.locator("#card h2").evaluate((e) => { const f = parent.document.querySelector(".omna iframe"); return [e.textContent.trim(), f.getBoundingClientRect().top + e.getBoundingClientRect().top]; });
+    assert.ok(titel[0].length > 0 && titel[1] >= 0 && titel[1] < page.viewportSize().height, `die gezogene Übung steht im Fenster (${Math.round(titel[1])})`);
+    assert.ok(Math.abs(await innen()) <= 2, "auch mit der Übung kein eigener Bildlauf");
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "kein seitliches Wischen");
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
 });
 
 await check("Startseite (Handy): Menü zwei mal zwei, Lead, drei Kästen in drei Spalten im Fenster, kein seitliches Wischen", async () => {
@@ -314,20 +337,19 @@ await check("Videoseite «Mensch, Niklas!»: die englische Fassung darunter spie
   await ctx.close();
 });
 
-await check("Web: sieben Karten mit Bild (640 × 800), zuoberst «Die Paradoxie der Stadt» (9. Oktober 2026), zuunterst die drei Videos mit «Mensch, Niklas!» als letztem, drei in einer Reihe; die Karten führen zur Stadt (auch im Vollbild), zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld", async () => {
+await check("Web: sechs Karten mit Bild (640 × 800), zuunterst die drei Videos mit «Mensch, Niklas!» als letztem, drei in einer Reihe; die Karten führen zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld; die Stadt steht zurzeit nur auf Alpha (seit 10. Oktober 2026)", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
   const errors = fehler(page);
   await page.goto(origin + "/web/");
   await page.locator("main img").last().scrollIntoViewIfNeeded();
   await page.waitForFunction(() => [...document.querySelectorAll("main img")].every((i) => i.complete && i.naturalWidth > 0));
-  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), Array(7).fill([640, 800]));
+  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), Array(6).fill([640, 800]));
   const ys = await page.locator("main .card").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().y)));
-  assert.deepEqual(ys.length, 7);
+  assert.deepEqual(ys.length, 6);
   assert.ok(ys[0] === ys[1] && ys[1] === ys[2], "drei in einer Reihe");
   assert.ok(ys[3] > ys[2] && ys[3] === ys[4] && ys[4] === ys[5], "drei in der zweiten Reihe");
-  assert.ok(ys[6] > ys[5], "«Mensch, Niklas!» allein in der dritten");
-  assert.deepEqual(await page.locator("main .card h2").allTextContents(), ["Die Paradoxie der Stadt", "OMNA COLOR", "Das Dritte Rad", "Stellenfeld", "ORNA – Zufällige Begegnungen", "Liebling, ich habe den Poststrukturalismus strukturiert", "Mensch, Niklas!"], "Reihenfolge: zuoberst die Stadt, zuunterst die Videos, «Mensch, Niklas!» als letztes");
+  assert.deepEqual(await page.locator("main .card h2").allTextContents(), ["OMNA COLOR", "Das Dritte Rad", "Stellenfeld", "ORNA – Zufällige Begegnungen", "Liebling, ich habe den Poststrukturalismus strukturiert", "Mensch, Niklas!"], "Reihenfolge: zuunterst die Videos, «Mensch, Niklas!» als letztes");
   const t = await box(page.locator("main .thumb").first());
   assert.ok(Math.abs(t.h / t.w - 5 / 4) < 0.01, "Bild im Format 4 : 5");
   // die Karte nach ihrer Überschrift wählen (der Text des Dritten Rads nennt auch OMNA COLOR)
@@ -341,8 +363,10 @@ await check("Web: sieben Karten mit Bild (640 × 800), zuoberst «Die Paradoxie 
   await karte("Das Dritte Rad").getByRole("link", { name: "Öffnen" }).click();
   await page.waitForURL(/\/alpha\/drittes-rad\/$/);
   await page.waitForFunction(() => window.radGeladen === true);
-  await page.goBack();
-  await karte("Die Paradoxie der Stadt").getByRole("link", { name: "Im Vollbild öffnen" }).click();
+  assert.equal(await page.goBack().then(() => page.locator('main a[href*="alpha/stadt"]').count()), 0, "keine Karte zur Stadt auf «Web»");
+  // die Stadt öffnet sich von der Alpha-Seite aus auch gleich im Vollbild
+  await page.goto(origin + "/alpha/");
+  await page.getByRole("link", { name: "Im Vollbild öffnen" }).click();
   await page.waitForURL(/\/alpha\/stadt\/\?vollbild$/);
   await page.waitForSelector(".stadt.bereit.vollbild", { timeout: 30000 });
   assert.deepEqual(errors, []);

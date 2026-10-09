@@ -273,7 +273,9 @@ function spin(dir = 1, flick = false) {
     const b = pure ? null : innerIdx;
     show(pick(THEMES[outerIdx].name, b === null ? null : THEMES[b].name), outerIdx, b);
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    $("card").scrollIntoView({ behavior: still ? "auto" : "smooth", block: matchMedia("(min-width: 800px)").matches ? "nearest" : "start" });
+    // eingebettet (Startseite): die Seite aussen blättert selbst zur Übung, sie kennt den ganzen Bildlauf
+    if (document.documentElement.classList.contains("eingebettet")) parent.postMessage({ omna: "uebung" }, location.origin);
+    else $("card").scrollIntoView({ behavior: still ? "auto" : "smooth", block: matchMedia("(min-width: 800px)").matches ? "nearest" : "start" });
     busy = false; $("go").disabled = false;
   }, wait);
 }
