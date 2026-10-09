@@ -13,6 +13,10 @@ src/
     stil.ts           Farben, Schriften (Newsreader, Instrument Sans), Format
     Signet.tsx        Re-entry-Schlaufe mit Punkt, Schriftzug «ornament.cloud»; optional Kopfzeile darüber
     Bausteine.tsx     Intro (3 s), Outro (6 s), Grund, Marke, Titel, Leise, Oben, Unten, Auszug, blende, steig
+  wachstum/           Linienwachstum spielt «ornament.cloud», 1 : 1, ohne Text (9. Oktober 2026)
+    Wachstum.ts       die Simulation (Punkte, Abstossung, Feder, Kantenteilung, Grenze), deterministisch
+    Formen.ts         die beiden Grenzen: atmende Wolke aus Kreisen, Buchstaben des Namens (Maske, Abstandsfeld, Keime)
+    Video.tsx         Zeitplan T und Szenen
   orna/               Erklärvideo zu ORNA (5. Oktober 2026)
     Video.tsx         Zeitplan T und Szenen
     Rad.tsx           das Doppelrad, nachgezeichnet nach portfolio/nebeneinander-nacheinander/js/wheel.js
@@ -135,6 +139,24 @@ Zusätzliche Szene «Meanwhile in England» nach den Beispielen: Studien zum (Ni
 Seit dem 7. Oktober 2026 zeigt auch die deutsche Fassung die Szene («Unterdessen in England»; Schild der Fälle «Zwei Beispiele aus der Schweiz»).
 **Spanische Fassung** (`MenschVideoES`, gut drei Minuten dreissig, 7. Oktober 2026): wie die englische (Schweizer Kontext, Szene «Mientras tanto, en Inglaterra»),
 Texte `TEXTE.es`, Zeitachse `zeitplan("es")` mit etwas mehr Lesezeit; der Stempel «DIAGNOSTIC OVERSHADOWING» bleibt als Fachbegriff englisch.
+
+## «wachstum» – Linienwachstum spielt ornament.cloud (9. Oktober 2026)
+
+36 s, **1 : 1** (1080 × 1080, `WachstumVideo`), ohne Ton und ohne Text. Nachbau eines Processing-Sketches zu «differential line growth»:
+Punkte einer geschlossenen Linie stossen sich ab (`minNodeDist` 15), eine Feder zieht jeden zum nächsten, zu lange Kanten teilen sich,
+eine Grenze drückt die Linie nach innen. Quelle `src/wachstum/` (`Wachstum.ts`, `Formen.ts`, `Video.tsx`), keine Daten aus der Website.
+
+0. Intro: Signet kurz, **ohne Kopfzeile** (eigener Wrapper in `Video.tsx`, die Vorlage bleibt unverändert)
+1. Das Ornament in der Wolke (10 s): ein Ring aus 30 Punkten wächst zum Labyrinth in einer atmenden Wolke (Kreise, flacher Boden); ihr Umriss im Rot-Orange, zum Schluss zieht sie ab
+2. Die Zeichen (17 s): 14 kleine Ringe, einer je Zeichen von «orna / ment. / cloud» (Instrument Sans 700, dreizeilig, damit die Zeichen gross genug für das Muster sind),
+   wachsen nacheinander in Leserichtung; Grenze ist die Form des Zeichens (Abstandsfeld der Schrift), der Punkt im Rot-Orange
+3. Outro: Signet in voller Länge
+
+**Zwei Änderungen am Sketch**, ohne die er nicht wächst: Mit `maxEdgeLength = 12` wird nie geteilt (der Abstand stellt sich bei 0,6 · `minNodeDist` = 9 ein, die Linie bleibt ein Ring von 30 Punkten),
+und unter 9 teilt jede Teilung die nächste aus (über 12 000 Punkte in 150 Schritten). Darum liegt `maxEdge` bei 8, und je Schritt werden nur so viele Kanten geteilt (zufällig unter den zu langen,
+fester Startwert), wie das Punktziel des Rings verlangt. Die Zeichen sind halb so gross gerechnet wie die Wolke (`minDist` 7,5). Alles ist deterministisch; wer ein früheres Bild verlangt, rechnet von vorn.
+
+`npx remotion render WachstumVideo out/wachstum.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
 
 ## Rendern ohne Internetzugang zu remotion.media
 

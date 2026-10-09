@@ -5,6 +5,7 @@ import { BREITE, FPS, HOEHE } from "./vorlage/stil";
 import { DoppelpruefungVideo, T as TDoppelpruefung } from "./doppelpruefung/Video";
 import { DreiervergleichVideo, T as TDreiervergleich } from "./dreiervergleich/Video";
 import { MenschVideo, T as TMensch, zeitplan as zeitplanMensch } from "./mensch/Video";
+import { WachstumVideo, T as TWachstum } from "./wachstum/Video";
 // neue Videos: Import
 
 export const RemotionRoot: React.FC = () => (
@@ -19,6 +20,8 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="MenschVideo" component={MenschVideo} durationInFrames={TMensch.ende} fps={FPS} width={BREITE} height={1440} />
     <Composition id="MenschVideoEN" component={MenschVideo} durationInFrames={zeitplanMensch("en").T.ende} fps={FPS} width={BREITE} height={1440} defaultProps={{ sprache: "en" as const }} />
     <Composition id="MenschVideoES" component={MenschVideo} durationInFrames={zeitplanMensch("es").T.ende} fps={FPS} width={BREITE} height={1440} defaultProps={{ sprache: "es" as const }} />
+    {/* «wachstum»: Linienwachstum spielt ornament.cloud, 1:1 (9. Oktober 2026) */}
+    <Composition id="WachstumVideo" component={WachstumVideo} durationInFrames={TWachstum.ende} fps={FPS} width={BREITE} height={1080} />
     {/* neue Videos: Composition */}
   </>
 );
