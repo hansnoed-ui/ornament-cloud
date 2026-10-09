@@ -361,7 +361,7 @@ await check("Videoseite «Mensch, Niklas!»: die englische Fassung darunter spie
   await ctx.close();
 });
 
-await check("Web: fünf Karten mit Bild (640 × 800), zuoberst «Mensch, Niklas!», drei in einer Reihe; die Karten führen zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld", async () => {
+await check("Web: fünf Karten mit Bild (640 × 800), zuunterst die beiden Videos und «Mensch, Niklas!» als letzte, drei in einer Reihe; die Karten führen zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
   const errors = fehler(page);

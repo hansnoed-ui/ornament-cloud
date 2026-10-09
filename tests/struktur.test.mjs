@@ -208,7 +208,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 const SEITEN = {
   apps: { titel: "Apps", karten: [["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
-  web: { titel: "Web", karten: [["Mensch, Niklas!", "mensch-niklas/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"]] },
+  web: { titel: "Web", karten: [["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["Mensch, Niklas!", "mensch-niklas/"]] },
 };
 
 test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und Eintrag in der Sitemap", () => {
@@ -251,13 +251,14 @@ test("Masterprompts: die vier Prüfraster als Beiträge, in der Reihenfolge der 
   assert.ok(k.every((x) => /<svg [^>]*role="img" aria-label="[^"]{20,}"/.test(x.html)), "jede Karte trägt eine gezeichnete Vorschau mit Beschreibung");
 });
 
-test("Web: zuoberst «Mensch, Niklas!», dann das Comic-Video «Liebling …», OMNA COLOR und Das Dritte Rad (Alpha) und das Stellenfeld, alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs", () => {
+test("Web: OMNA COLOR und Das Dritte Rad (Alpha), das Stellenfeld, dann zuunterst die beiden Comic-Videos «Liebling …» und als letztes «Mensch, Niklas!», alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs", () => {
   const html = lies("web/index.html");
   const alle = karten(html);
   assert.deepEqual(alle.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
-  // das Comic-Video (6. Oktober 2026): zuoberst, klickbar mit Vorschaubild, führt auf die eigene Videoseite und verlinkt die Studie als PDF
-  const [m, v, ...k] = alle;
-  // «Mensch, Niklas!» (7. Oktober 2026): ganz zuoberst, klickbar mit Vorschaubild, führt nur auf die eigene Videoseite
+  // Wunsch vom 9. Oktober 2026: die beiden Videos stehen zuunterst, «Mensch, Niklas!» als letztes
+  const k = alle.slice(0, 3), [v, m] = alle.slice(3);
+  // das Comic-Video (6. Oktober 2026): klickbar mit Vorschaubild, führt auf die eigene Videoseite und verlinkt die Studie als PDF
+  // «Mensch, Niklas!» (7. Oktober 2026): klickbar mit Vorschaubild, führt nur auf die eigene Videoseite
   assert.match(m.html, /<a class="thumb" href="mensch-niklas\/" tabindex="-1" aria-hidden="true">\s*<img src="\.\.\/assets\/vorschau-mensch-niklas\.jpg" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual([...m.html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((x) => x[1]), ["mensch-niklas/", "mensch-niklas/"], "Bild und «Öffnen»");
   const vorschauMensch = readFileSync(new URL("assets/vorschau-mensch-niklas.jpg", root));
