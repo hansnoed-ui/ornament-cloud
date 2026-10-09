@@ -162,8 +162,8 @@ fester Startwert), wie das Punktziel des Rings verlangt. Die Zeichen sind halb s
 
 Wunsch von Christian nach dem Video «wachstum»: nur die Zeichen (Sekunden 13–30 davon), ohne Wolke, ohne Intro und ohne das Signet am Ende; erst 1,4-mal so schnell, dann auf 11 Sekunden gekürzt (17 s → 11 s, gut 1,5-mal so schnell).
 Compositions `StartAnimation` (hell, Farben der Website) und `StartAnimationDunkel` (dunkel: Grund `#171614`, Linie `#ece8e1`, Punkt `#f08a5d`, wie `styles.css` im dunklen Modus), beide 1080 × 1080, 330 Bilder.
-Dieselben Rechenschritte wie im Video, nur dichter (`TEMPO_START` = 510 / 330 Schritte je Bild gegenüber dem Video «wachstum»); das fertige Wort steht von etwa 8,7 s bis zum Ende, die Seite blendet es in die Startseite über
-(das Video selbst blendet nichts aus). Sie läuft auf der Startseite vor dem Inhalt (siehe README im Hauptordner).
+Dieselben Rechenschritte wie im Video, nur dichter (`TEMPO_START` = 510 / 330 Schritte je Bild gegenüber dem Video «wachstum»); das fertige Wort steht von etwa 8,7 s bis 10,3 s, dann blenden die Zeichen in 20 Bildern aus (`AUS_START`, Wunsch vom 9. Oktober 2026),
+und die Seite blendet den leeren Grund in die Startseite über. Sie läuft auf der Startseite vor dem Inhalt (siehe README im Hauptordner).
 
 ```bash
 cd src/videos && npm run render:start        # out/start-hell.mp4 und out/start-dunkel.mp4 (Vollbereich, crf 18)

@@ -25,7 +25,7 @@
   <link rel="alternate" type="application/rss+xml" title="Ornament Cloud – News" href="feed.xml">
   <link rel="stylesheet" href="styles.css?v=41">
   <!--
-    Startanimation (Wunsch vom 9. Oktober 2026): bevor die Startseite erscheint, wachsen die Zeichen von «ornament.cloud» als Linienwachstum, das fertige Wort blendet in die Seite über
+    Startanimation (Wunsch vom 9. Oktober 2026): bevor die Startseite erscheint, wachsen die Zeichen von «ornament.cloud» als Linienwachstum, das fertige Wort blendet aus, dann blendet die Seite über
     (Video, ohne Ton, 11 Sekunden; Quellcode src/videos/src/wachstum/, Composition StartAnimation und StartAnimationDunkel). Sie läuft nur auf dieser Seite, einmal pro Sitzung
     (Vorschau jederzeit mit ?start), nicht bei «weniger Bewegung» und nicht bei «Daten sparen». Tippen, eine Taste oder «Überspringen» beendet sie; läuft das Video nicht an, kommt die Seite sofort.
     Die Gestaltung steht hier in der Seite (nur die Startseite braucht sie), damit styles.css (?v=) unverändert bleibt. Ohne Skript erscheint sie nie.
@@ -160,7 +160,7 @@
       addEventListener("keydown", weg, { once: true });
       warte();
       var dunkel = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
-      v.src = dunkel ? "assets/start-animation-dunkel.mp4?v=2" : "assets/start-animation.mp4?v=2";
+      v.src = dunkel ? "assets/start-animation-dunkel.mp4?v=3" : "assets/start-animation.mp4?v=3";
       var p = v.play();
       if (p && p.catch) p.catch(weg);
     })();
