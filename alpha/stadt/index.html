@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Die Stadt, die weitergeht – Ornament Cloud · Alpha</title>
+  <!-- Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). Von keiner Seite der Website verlinkt, nur aus der Alpha-Übersicht. -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Ein kleines lebendiges Quartier zum Beobachten und Verändern: Fahrspur, Brücke, Bank, Atelier. Planen. Umwege machen. Anders weitergehen.">
+  <link rel="stylesheet" href="../../styles.css?v=41">
+  <style>
+    /* Farben der Stadt: gebrochenes Weiss, dunkle Konturen, Grau, Korallrot; Petrol als zweite Farbe für Vergleiche und Aufenthalt */
+    :root {
+      --s-papier: #f6f3ec; --s-block: #e7e2d8; --s-dach: #d8d2c6; --s-gruen: #dfe6d2; --s-baum: #b5c3a0; --s-hof: #ede8de;
+      --s-strasse: #9d9990; --s-markierung: #f6f3ec; --s-weg: #c8c2b6; --s-linie: #2b2926; --s-text: #1f1d1a; --s-leise: #625d55;
+      --s-koralle: #d94c55; --s-vergleich: #2b7a80; --s-auto: #4a4741; --s-bus: #d94c55; --s-figur: #22201d;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --s-papier: #1c1b19; --s-block: #2b2926; --s-dach: #36332f; --s-gruen: #26301f; --s-baum: #3d4c35; --s-hof: #25231f;
+        --s-strasse: #4d4a44; --s-markierung: #8e897f; --s-weg: #4a4640; --s-linie: #d6d0c6; --s-text: #ece8e1; --s-leise: #a8a196;
+        --s-koralle: #f0767d; --s-vergleich: #63b6bc; --s-auto: #bcb6ab; --s-bus: #f0767d; --s-figur: #f2eee7;
+      }
+    }
+    .site-header { padding-bottom: 12px; }
+    .site-header h1 { margin-bottom: 0.2rem; }
+    .nur-lesen { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    .stadt { position: relative; z-index: 1; max-width: 1360px; margin: 0 auto; padding: 0 20px 48px; display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 20px; align-items: start; }
+    .buehne { position: sticky; top: 12px; min-width: 0; }
+    .leiste { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin: 0 0 10px; }
+    .knopf, .leiste button, .einstieg button, .tabs button {
+      min-height: 44px; padding: 8px 16px; border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text);
+      font: inherit; font-size: 0.92rem; cursor: pointer;
+    }
+    .knopf:hover, .leiste button:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .knopf:focus-visible, .leiste button:focus-visible, .einstieg button:focus-visible, .panel button:focus-visible, .panel select:focus-visible, .panel input:focus-visible, .panel summary:focus-visible { outline: 2px solid var(--s-koralle); outline-offset: 2px; }
+    .knopf.klein { min-height: 36px; padding: 4px 12px; font-size: 0.85rem; }
+    .knopf:disabled { opacity: 0.45; cursor: default; }
+    #lauf { min-width: 92px; font-weight: 600; }
+    #lauf[aria-pressed="false"] { background: var(--text); color: var(--bg); }
+    .tempo { display: inline-flex; gap: 0; }
+    .tempo button { border-radius: 0; margin-left: -1px; padding: 8px 12px; }
+    .tempo button:first-child { border-radius: 999px 0 0 999px; margin-left: 0; }
+    .tempo button:last-child { border-radius: 0 999px 999px 0; }
+    .tempo button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+    .uhr { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 8.5em; }
+    .zoom button { width: 44px; padding: 0; font-size: 1.2rem; }
+    #neustart { border-color: var(--muted); color: var(--muted); }
+
+    .karte-box { position: relative; aspect-ratio: 600 / 420; border: 1px solid var(--s-linie); border-radius: 12px; overflow: hidden; background: var(--s-papier); }
+    #karte { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+    .einstieg { position: absolute; inset: 0; display: grid; place-content: center; gap: 18px; padding: 24px; text-align: center;
+      background: color-mix(in srgb, var(--s-papier) 82%, transparent); }
+    .einstieg[hidden] { display: none; }
+    .einstieg-text { margin: 0; font-family: var(--serif); font-size: clamp(1.15rem, 2.4vw, 1.7rem); line-height: 1.35; max-width: 30em; }
+    .einstieg-wege { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .einstieg-wege button { background: var(--s-papier); }
+    .einstieg .impuls { justify-self: center; border-color: var(--s-koralle); color: var(--s-koralle); background: var(--s-papier); }
+    .stadt:not(.bereit) .einstieg-wege, .stadt:not(.bereit) .impuls { visibility: hidden; }
+    .laedt { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .stadt.bereit .laedt { display: none; }
+    .meldung { min-height: 1.6em; margin: 10px 0 4px; font-family: var(--serif); font-size: 1.05rem; }
+    .lagezeile { margin: 0; color: var(--muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+    .legende { margin: 4px 0 0; color: var(--muted); font-size: 0.82rem; }
+    .legende i { display: inline-block; width: 9px; height: 9px; margin: 0 4px 0 10px; vertical-align: -1px; background: var(--s-figur); border-radius: 50%; }
+    .legende i.q { border-radius: 2px; } .legende i.p { background: radial-gradient(circle, var(--s-papier) 30%, var(--s-figur) 32%); }
+    .legende i.a { width: 14px; height: 7px; border-radius: 2px; background: var(--s-auto); } .legende i.b { width: 22px; height: 7px; border-radius: 2px; background: var(--s-bus); }
+
+    .panel { position: sticky; top: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; max-height: calc(100vh - 24px); }
+    .griff { display: none; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; border-bottom: 1px solid var(--border); }
+    .tabs button { min-height: 36px; padding: 4px 12px; font-size: 0.85rem; border-color: var(--border); position: relative; }
+    .tabs button[aria-selected="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .tabs .zahl { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--s-koralle); color: #fff; font-size: 0.7rem; line-height: 18px; }
+    .panel-inhalt { overflow: auto; padding: 4px 16px 20px; font-size: 0.92rem; overscroll-behavior: contain; }
+    .panel h3 { margin: 18px 0 6px; font-family: var(--serif); font-weight: 400; font-size: 1.3rem; }
+    .panel h4 { margin: 14px 0 4px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+    .panel section + section { border-top: 1px solid var(--border); margin-top: 16px; }
+    .leitfrage { font-family: var(--serif); font-size: 1.05rem; font-style: italic; margin: 12px 0 8px; }
+    .leise { color: var(--muted); font-size: 0.85rem; }
+    .zeile { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .panel select { min-height: 40px; max-width: 100%; padding: 4px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font: inherit; }
+    .zeile select { flex: 1 1 200px; }
+    .schalter-reihe { display: grid; gap: 8px; }
+    .schalter { display: grid; gap: 2px; width: 100%; min-height: 44px; padding: 10px 14px; text-align: left; border: 1px solid var(--border); border-radius: 10px; background: none; color: var(--text); font: inherit; cursor: pointer; }
+    .schalter b { font-weight: 600; } .schalter span { color: var(--muted); font-size: 0.82rem; }
+    .schalter[aria-pressed="true"] { border-color: var(--s-koralle); box-shadow: inset 4px 0 0 var(--s-koralle); }
+    .schalter[aria-pressed="true"] b::after { content: " · an"; color: var(--s-koralle); }
+    .schalter:hover { border-color: var(--text); }
+    .schalter.hervor { outline: 3px solid var(--s-koralle); outline-offset: 2px; }
+    .wahl { border: 0; margin: 8px 0; padding: 0; display: grid; gap: 4px; }
+    .wahl legend { padding: 0; margin-bottom: 4px; font-weight: 600; }
+    .wahl label { display: flex; gap: 8px; align-items: flex-start; min-height: 40px; padding: 6px 8px; border-radius: 8px; cursor: pointer; }
+    .wahl label:hover { background: color-mix(in srgb, var(--text) 6%, transparent); }
+    .wahl label span { display: grid; } .wahl small { color: var(--muted); }
+    .wahl input { margin-top: 4px; accent-color: var(--s-koralle); }
+    .wahl.kompakt { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    .felder { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .feld { display: grid; gap: 2px; font-size: 0.82rem; color: var(--muted); }
+    .aktiv { background: color-mix(in srgb, var(--s-koralle) 7%, transparent); margin: 12px -16px 0; padding: 2px 16px 10px; }
+    .aktiv ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+    .aktiv li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; align-items: center; }
+    .karte-person h3 { margin-bottom: 0; }
+    .merkmale { margin: 2px 0 8px; color: var(--muted); }
+    .programm, .erlebt { margin: 0; padding-left: 1.1rem; }
+    .programm li { display: flex; justify-content: space-between; gap: 8px; }
+    .tab { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 6px 0; }
+    .tab th, .tab td { padding: 4px 6px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    .tab thead th { color: var(--muted); font-weight: 600; }
+    .tab caption { text-align: left; color: var(--muted); font-size: 0.8rem; padding: 4px 0; }
+    .breit { overflow-x: auto; }
+    .balken { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 4px; }
+    .balken li { display: grid; grid-template-columns: 9em 1fr 4.2em; gap: 8px; align-items: center; font-size: 0.82rem; }
+    .balken.einzel li { grid-template-columns: 6.5em 1fr 9.5em; }
+    .balken .b { height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--s-leise) var(--w), color-mix(in srgb, var(--s-leise) 15%, transparent) var(--w)); }
+    .balken li.gewaehlt span:first-child { font-weight: 700; } .balken li.gewaehlt .b { background: linear-gradient(90deg, var(--s-koralle) var(--w), color-mix(in srgb, var(--s-koralle) 15%, transparent) var(--w)); }
+    .link { border: 0; padding: 0; background: none; color: var(--text); text-decoration: underline; text-underline-offset: 3px; font: inherit; cursor: pointer; text-align: left; }
+    details { margin: 10px 0; } summary { cursor: pointer; min-height: 32px; }
+    .genauer { border: 1px solid var(--border); border-radius: 10px; padding: 6px 12px; }
+    .genauer > summary { font-weight: 600; }
+    .fragen dt { margin-top: 10px; font-weight: 600; } .fragen dd { margin: 2px 0 0; } .fragen ul { margin: 0; padding-left: 1.1rem; }
+    .st { display: inline-block; padding: 0 6px; border-radius: 999px; border: 1px solid currentColor; font-size: 0.72rem; white-space: nowrap; }
+    .st-blockiert { color: var(--s-koralle); } .st-umgeleitet { color: var(--s-vergleich); } .st-passiert { color: var(--text); } .st-offen, .st-nicht_anwendbar { color: var(--muted); border-style: dashed; }
+    .schwellen th { font-weight: 600; }
+    .instrument { padding: 8px 10px; border-left: 3px solid var(--s-vergleich); background: color-mix(in srgb, var(--s-vergleich) 7%, transparent); font-size: 0.85rem; }
+    .mini { margin: 8px 0; } .mini figcaption { font-size: 0.78rem; color: var(--muted); } .mini svg { width: 100%; max-width: 260px; height: 50px; } .mini rect { fill: var(--s-leise); }
+    .regler { display: grid; grid-template-columns: 1fr 120px 1.5em; gap: 8px; align-items: center; font-size: 0.85rem; }
+    .regler input { accent-color: var(--s-koralle); }
+    .wertung { padding: 8px 10px; border: 1px dashed var(--muted); border-radius: 8px; font-size: 0.85rem; }
+    .protokoll { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .protokoll li { padding: 0 0 8px; border-bottom: 1px solid var(--border); }
+    .protokoll .zeit { display: block; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .protokoll .p-massnahme, .protokoll .p-ruecknahme { padding-left: 10px; border-left: 3px solid var(--s-koralle); }
+    .protokoll .p-entstehung { padding-left: 10px; border-left: 3px solid var(--s-vergleich); }
+    .protokoll .p-szene { padding-left: 10px; border-left: 3px dashed var(--muted); font-style: italic; }
+    .probe { border-left: 3px solid var(--s-vergleich); padding-left: 10px; } .probe p { margin: 4px 0; }
+    .annahmen { padding-left: 1.1rem; } .annahmen li { margin: 6px 0; }
+    .quellen td { font-size: 0.78rem; }
+    progress { width: 100%; accent-color: var(--s-koralle); }
+
+    /* Schmale Bildschirme: grosse Stadtfläche, das Panel klappt von unten auf */
+    @media (max-width: 900px) {
+      .stadt { grid-template-columns: 1fr; padding: 0 12px 96px; }
+      .buehne { position: static; }
+      .karte-box { aspect-ratio: auto; height: min(64vh, 560px); }
+      .panel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; max-height: 72vh; border-radius: 16px 16px 0 0; box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.18); }
+      .panel:not(.offen) .panel-inhalt { display: none; }
+      .panel:not(.offen) .tabs { flex-wrap: nowrap; overflow-x: auto; }
+      .griff { display: block; width: 100%; min-height: 44px; border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
+      .griff::before { content: ""; display: block; width: 44px; height: 4px; margin: 0 auto 6px; border-radius: 2px; background: var(--muted); }
+      .tabs { flex-wrap: nowrap; overflow-x: auto; }
+      .tabs button { flex: none; }
+      .leiste { gap: 6px; } .leiste button { min-height: 40px; }
+      .tempo button { padding: 6px 9px; font-size: 0.82rem; }
+      .felder { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+  <script type="module" src="app.js?v=1"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="seitenweg" aria-label="Ornament Cloud">
+        <a href="../../" aria-current="true">Ornament Cloud</a>
+        <a href="../drittes-rad/">Das Dritte Rad</a>
+      </nav>
+      <h1>Die Stadt, die weitergeht</h1>
+      <p class="lead">Planen. Umwege machen. Anders weitergehen.</p>
+    </div>
+  </header>
+
+  <main class="stadt" id="stadt">
+    <div class="buehne">
+      <div class="leiste" role="toolbar" aria-label="Zeit und Ansicht">
+        <button type="button" id="lauf" aria-pressed="true">Pause</button>
+        <span class="tempo" role="group" aria-label="Tempo">
+          <button type="button" data-tempo="0" aria-pressed="true">1 Min/s</button><button type="button" data-tempo="1" aria-pressed="false">5 Min/s</button><button type="button" data-tempo="2" aria-pressed="false">30 Min/s</button>
+        </span>
+        <span id="uhr" class="uhr">Tag 1 · 07.30</span>
+        <span class="zoom" role="group" aria-label="Ausschnitt"><button type="button" id="zoom-minus" aria-label="Kleiner">−</button><button type="button" id="zoom-plus" aria-label="Grösser">+</button></span>
+        <button type="button" id="neustart">Lauf zurücksetzen</button>
+      </div>
+      <div class="karte-box">
+        <canvas id="karte" role="img" aria-label="Draufsicht auf das Quartier: Im Norden Wohnhäuser, Park, Atelier und Kiosk an der Nordstrasse; in der Mitte die Hauptstrasse mit Ampel und Bushaltestelle; im Süden Laden, Platz, Schule und Wohnblöcke. Figuren gehen, warten, verweilen; Autos und Busse fahren. Was hier passiert, steht auch in der Lagezeile, im Protokoll und beim Begleiten."></canvas>
+        <div id="einstieg" class="einstieg">
+          <p class="einstieg-text">Diese Stadt hat viele Pläne. Einen gemeinsamen hat sie nicht.<br>Beobachte sie, verändere etwas und folge den Folgen.</p>
+          <p class="laedt">Die Stadt erwacht …</p>
+          <div class="einstieg-wege">
+            <button type="button" id="einstieg-umsehen">Einfach umsehen</button>
+            <button type="button" id="einstieg-begleiten">Eine Person begleiten</button>
+            <button type="button" id="einstieg-veraendern">Etwas verändern</button>
+          </div>
+          <button type="button" id="einstieg-impuls" class="impuls">Mehr Platz für Autos?</button>
+        </div>
+        <noscript><p class="einstieg">Die Stadt braucht JavaScript.</p></noscript>
+      </div>
+      <p id="meldung" class="meldung" role="status" aria-live="polite"></p>
+      <p id="lagezeile" class="lagezeile"></p>
+      <p class="legende" aria-hidden="true">Figuren: <i></i>zu Fuss<i class="p"></i>mit Pausenbedarf<i class="q"></i>mit Rollstuhl<i></i>▪ mit Kinderwagen <i class="a"></i>Auto<i class="b"></i>Bus · grau: Passant:innen von ausserhalb · korall umrandet: begleitet</p>
+    </div>
+
+    <aside id="panel" class="panel" aria-label="Stadt erkunden">
+      <button type="button" id="panel-griff" class="griff" aria-expanded="false" aria-controls="panel-inhalt">Erkunden</button>
+      <div class="tabs" role="tablist" aria-label="Erkunden">
+        <button type="button" role="tab" id="t-begleiten" data-tab="begleiten" aria-controls="tab-begleiten" aria-selected="true">Begleiten</button>
+        <button type="button" role="tab" id="t-veraendern" data-tab="veraendern" aria-controls="tab-veraendern" aria-selected="false" tabindex="-1">Verändern</button>
+        <button type="button" role="tab" id="t-sichten" data-tab="sichten" aria-controls="tab-sichten" aria-selected="false" tabindex="-1">Sichtweisen</button>
+        <button type="button" role="tab" id="t-protokoll" data-tab="protokoll" aria-controls="tab-protokoll" aria-selected="false" tabindex="-1">Protokoll<span id="protokoll-neu" class="zahl" hidden></span></button>
+        <button type="button" role="tab" id="t-vergleichen" data-tab="vergleichen" aria-controls="tab-vergleichen" aria-selected="false" tabindex="-1">Vergleichen</button>
+        <button type="button" role="tab" id="t-modell" data-tab="modell" aria-controls="tab-modell" aria-selected="false" tabindex="-1">Modell</button>
+      </div>
+      <div id="panel-inhalt" class="panel-inhalt">
+        <div role="tabpanel" id="tab-begleiten" aria-labelledby="t-begleiten" tabindex="0"></div>
+        <div role="tabpanel" id="tab-veraendern" aria-labelledby="t-veraendern" tabindex="0" hidden></div>
+        <div role="tabpanel" id="tab-sichten" aria-labelledby="t-sichten" tabindex="0" hidden></div>
+        <div role="tabpanel" id="tab-protokoll" aria-labelledby="t-protokoll" tabindex="0" hidden></div>
+        <div role="tabpanel" id="tab-vergleichen" aria-labelledby="t-vergleichen" tabindex="0" hidden></div>
+        <div role="tabpanel" id="tab-modell" aria-labelledby="t-modell" tabindex="0" hidden></div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+    </div>
+  </footer>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+</body>
+</html>
