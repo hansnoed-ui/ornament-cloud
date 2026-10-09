@@ -38,7 +38,7 @@ Alles steht in `stadt.z` (einfache Daten, mit `structuredClone` kopierbar). Die 
 
 ## Figuren
 
-72 Bewohner:innen mit Wohnung, Tagesprogramm (Arbeit mit dem Bus, Kind zur Schule bringen und abholen, Einkauf im Laden, Besorgung am Kiosk, Park, Platz, Runden mit dem Hund, Offener Abend im Atelier), Gehgeschwindigkeit, Kraft (Pausen auf Bänken), Zeitdruck (täglich neu gezogen), Wegwissen (Durchgang und Trampelpfad muss man erst entdecken), Glauben über die Strasse (wird nur am Ort selbst berichtigt), erwarteten Wartezeiten, Gewohnheiten, Bekanntschaften und einer kleinen Erinnerung.
+72 Bewohner:innen mit Wohnung, einer Tätigkeit (Bus zur Arbeit, Arbeit im Laden, im Atelier oder in der Schule, von zu Hause, Studium, Schichtbetrieb, pensioniert oder nichts davon), ein bis zwei Vorlieben mit eigenen Zeiten (Kaffee am Platz, Schach im Park, Lesen auf der Bank, Zeitung am Kiosk, Runde am frühen Morgen oder am Abend, nachmittags auf dem Platz, Plaudern vor dem Laden), Tagesprogramm (dazu Kind zur Schule bringen und abholen, Einkauf, Besorgung, Runden mit dem Hund, Offener Abend im Atelier), Gehgeschwindigkeit, Kraft (Pausen auf Bänken), Zeitdruck (täglich neu gezogen), Wegwissen (Durchgang und Trampelpfad muss man erst entdecken), Glauben über die Strasse (wird nur am Ort selbst berichtigt), erwarteten Wartezeiten, Gewohnheiten, Bekanntschaften und einer kleinen Erinnerung.
 Unterwegs mit Rollstuhl, mit Kinderwagen oder mit Pausenbedarf: jede Art kommt sicher mehrmals vor; sie wird nach Nummer verteilt, nicht nach Namen. Namen sagen nichts über Verhalten.
 
 Dazu Passant:innen von ausserhalb (50 bis 200 je Stunde): Sie gehen von Rand zu Rand oder von der Haltestelle zur Schule, entscheiden an der Strasse nach denselben Regeln, kennen die Strasse so, wie sie beim Betreten ist, und haben kein Gedächtnis.
@@ -57,6 +57,8 @@ Dazu Passant:innen von ausserhalb (50 bis 200 je Stunde): Sie gehen von Rand zu 
     NODE_USE_ENV_PROXY=1 node --experimental-strip-types --no-warnings tools/build-jev-stadt.ts --probe    drei Beispiele
 
 Zugang beim Bauen: ein Proxy, der den Schlüssel einsetzt, oder `TYPESAFE_API_KEY` in der Umgebung (nie in eine Datei).
+
+**jev live.** Schaltet man beim Begleiten «jev live fragen» ein, fragt die Seite für die begleitete Person bei jeder Querung jev selbst, über einen eigenen Cloudflare Worker (`tools/jev-worker/`). Die Lage ist genauer beschrieben als in der Tabelle: Mehrzeit in Minuten statt Stufen, müde oder nicht, Wartezeit an der Ampel aus der eigenen Erfahrung, Gewohnheit, das konkrete Ersatzziel. Bis die Antwort da ist, bleibt die Person stehen («überlegt»); kommt keine, gilt die Tabelle. Unter «Wie zuletzt entschieden» stehen die Live-Antwort und die Tabelle nebeneinander. Mit jev live ist ein Lauf nicht mehr genau wiederholbar; Vergleichszweige fragen nie live und nehmen die Tabelle.
 
 ## Autoverkehr
 
@@ -100,7 +102,7 @@ Aus der Grafik (Inspiration und Untersuchungsmaterial; die Modellregeln sind dar
 - Martin Burkhardt: Die gesellschaftlichen Kosten des Autoverkehrs, 1980.
 - Christian Ude (Hg.): Titel in der Grafik nicht genannt, offen.
 - J. G. Ballard: Concrete Island / Die Betoninsel, Original 1974; die Grafik nennt 1979, die verwendete Ausgabe ist ungeklärt.
-- Hanif Kureishi: The Buddha of Suburbia / Der Buddha aus der Vorstadt, 1990. Die Szene mit der vorgegebenen Rolle ist eine erfundene Modellszene, kein Zitat.
+- Hanif Kureishi: The Buddha of Suburbia / Der Buddha aus der Vorstadt, 1990. Die Szene mit der vorgegebenen Rolle (im Protokoll «Erfundene Szene») ist erfunden, kein Zitat.
 
 Empirische Anregungen: Anciaes und Jones (2016), «Pedestrians avoid busy roads», https://discovery.ucl.ac.uk/id/eprint/1496266/ · Mindell et al. (2017), Triangulation zur Messung von Trennwirkung, https://discovery.ucl.ac.uk/id/eprint/1542116/ · Jane Jacobs (1958), «Downtown is for People».
 

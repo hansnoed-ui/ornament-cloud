@@ -3,8 +3,8 @@
 // (Kanal, Tag, Figur, Zähler), damit zusätzliche Ziehungen in einem Vergleichszweig die übrigen Ereignisse nicht verschieben.
 // Der ganze Zustand liegt in stadt.z (einfache Daten, klonbar); stadt.r hält nur abgeleitete Hilfen (Graph, jev-Tabelle).
 import { KNOTEN, KANTEN, KANTE, ORTE, BANK, BAENKE, WOHNUNGEN, VERBINDUNG, KORRIDORE, HALT_S, AMPEL_S, ZEBRA_S, X_AMPEL, X_ZEBRA,
-  bedingungen, verfuegbar, ampelZeiten, tempoHaupt, spurenHaupt, BREITE } from "./stadtplan.js?v=2";
-import * as F from "./fragen.js?v=2";
+  bedingungen, verfuegbar, ampelZeiten, tempoHaupt, spurenHaupt, BREITE } from "./stadtplan.js?v=6";
+import * as F from "./fragen.js?v=6";
 
 export const DT = 1;                        // Sekunden Stadtzeit je Schritt
 export const TAG_DAUER = 16 * 3600;         // 06.00 bis 22.00 Uhr; die Nacht wird übersprungen
@@ -43,19 +43,50 @@ export const BESCHREIBUNG = {
   hund: "geht dreimal am Tag mit dem Hund",
 };
 
+/** Tätigkeit: eine je Figur. arbeitsort: arbeitet im Quartier (Ort, Beginn, Ende in Stunden ab 06.00); bus: fährt mit dem Bus weg (Abfahrt, Rückkehr) */
+export const TAETIG = {
+  bus: { text: "fährt morgens mit dem Bus zur Arbeit", anteil: 0.28 },
+  laden: { text: "arbeitet im Laden", anteil: 0.06, arbeitsort: ["laden", 1.2, 8] },
+  atelier: { text: "arbeitet im Atelier", anteil: 0.05, arbeitsort: ["atelier", 3, 11] },
+  schule: { text: "arbeitet in der Schule", anteil: 0.06, arbeitsort: ["schule", 1.25, 9.5] },
+  zuhause: { text: "arbeitet von zu Hause", anteil: 0.11 },
+  studium: { text: "studiert und fährt mittags mit dem Bus", anteil: 0.08 },
+  schicht: { text: "arbeitet im Schichtbetrieb bis spätabends", anteil: 0.06 },
+  pension: { text: "ist pensioniert", anteil: 0.17 },
+  frei: { text: null, anteil: 0.13 },
+};
+/** Vorlieben: eine oder zwei je Figur; an etwa drei von vier Tagen. ab: frühester Beginn [von, bis] in Stunden ab 06.00, dauer in Minuten */
+export const VORLIEBEN = {
+  kaffee: { text: "trinkt morgens gern einen Kaffee am Platz", ort: "platz", ab: [1.5, 3.5], dauer: [15, 35] },
+  schach: { text: "spielt nachmittags Schach im Park", ort: "park", ab: [8, 9.5], dauer: [60, 120] },
+  lesen: { text: "liest gern auf einer Bank im Park", ort: "park", ab: [4, 9], dauer: [30, 70] },
+  zeitung: { text: "holt morgens die Zeitung am Kiosk", ort: "kiosk", ab: [0.6, 2.5], dauer: [2, 5], art: "besorgung" },
+  morgen: { text: "dreht früh am Morgen eine Runde im Park", ort: "park", ab: [0.1, 1], dauer: [5, 12] },
+  abend: { text: "geht abends noch eine Runde", ort: "park", ab: [13, 14.5], dauer: [10, 25] },
+  platz: { text: "sitzt nachmittags gern auf dem Platz", ort: "platz", ab: [8, 11], dauer: [30, 60] },
+  plaudern: { text: "bleibt beim Einkaufen gern zum Plaudern", ort: null },
+};
+
 function neueFigur(seed, i, wohnung) {
   const u = (k) => zufall(seed, K.figur, i, k);
   // jede Art kommt sicher mehrmals vor (nach Nummer verteilt, nicht nach Namen); alles Übrige variiert mit dem Startwert
   const mobil = i % 16 === 3 ? "rollstuhl" : i % 9 === 5 ? "kinderwagen" : i % 7 === 2 ? "pause" : "gehend";
   const tempo = { gehend: 1.15 + u(2) * 0.4, pause: 0.85 + u(2) * 0.2, rollstuhl: 1.0 + u(2) * 0.25, kinderwagen: 1.0 + u(2) * 0.25 }[mobil];
-  const arbeit = u(3) < 0.42;
+  // Tätigkeit nach Anteilen; Vorlieben: eine, manchmal zwei verschiedene
+  let r = u(3), taetig = "frei";
+  for (const [k, t] of Object.entries(TAETIG)) { if (r < t.anteil) { taetig = k; break; } r -= t.anteil; }
+  const vk = Object.keys(VORLIEBEN), v1 = vk[Math.floor(u(30) * vk.length)], v2 = vk[Math.floor(u(31) * vk.length)];
+  const vorlieben = u(32) < 0.45 && v2 !== v1 ? [v1, v2] : [v1];
+  const arbeit = taetig === "bus" || taetig === "studium" || taetig === "schicht";
+  const elternteil = mobil !== "rollstuhl" && u(5) < 0.2;
   return {
     id: i, name: NAMEN[i % NAMEN.length], wohnung: wohnung.id, heim: wohnung.knoten, seite: wohnung.seite, hx: wohnung.x, hy: wohnung.y,
-    hund: u(15) < 0.18, mobil, tempo, arbeit, spaet: arbeit && u(4) < 0.4 && !(mobil !== "rollstuhl" && u(5) < 0.2), elternteil: mobil !== "rollstuhl" && u(5) < 0.2, knapp: u(6) < 0.25, neu: u(7) < 0.18, interesse: u(8) < 0.5,
+    hund: u(15) < 0.18, mobil, tempo, arbeit, taetig, vorlieben, elternteil,
+    spaet: !elternteil && (taetig === "schicht" || (taetig === "bus" && u(4) < 0.35)), knapp: u(6) < 0.25, neu: u(7) < 0.18, interesse: u(8) < 0.5,
     x: wohnung.x, y: wohnung.y, zustand: "heim", ort: null, pfad: null, pi: 0, d: 0, wartetSeit: null, bis: 0,
     aufgabe: null, programm: [], energie: 1, mitKind: false, eilig: false,
     glaubt: null, kennt: { trampel: false, durchgang: false }, erwartet: {},
-    gewohnheit: {}, bekannt: {}, ortGut: {}, erlebt: [], wege: [], befragt: [], zaehler: 0, entscheid: null, atelierEntscheid: null,
+    gewohnheit: {}, bekannt: {}, ortGut: vorlieben.includes("plaudern") ? { laden: 0.3 } : {}, erlebt: [], wege: [], befragt: [], zaehler: 0, entscheid: null, atelierEntscheid: null,
     atelier: { erreicht: 0, anwesend: 0, beteiligt: 0, gruppe: false, rolle: false, einladung: null },
   };
 }
@@ -77,8 +108,11 @@ export function lebenslage(f) {
 }
 export function beschreibe(f) {
   const t = [];
+  if (TAETIG[f.taetig]?.text) t.push(TAETIG[f.taetig].text);
+  if (f.taetig === "bus" && f.spaet) t.push(BESCHREIBUNG.spaet);
+  for (const v of f.vorlieben ?? []) t.push(VORLIEBEN[v].text);
   if (f.mobil !== "gehend") t.push(BESCHREIBUNG[f.mobil]);
-  for (const k of ["elternteil", "arbeit", "spaet", "knapp", "neu", "interesse", "hund"]) if (f[k]) t.push(BESCHREIBUNG[k]);
+  for (const k of ["elternteil", "knapp", "neu", "interesse", "hund"]) if (f[k]) t.push(BESCHREIBUNG[k]);
   return t;
 }
 
@@ -217,7 +251,7 @@ export function wirklichkeit(m) {
 }
 const spitzeStunde = (h) => h === 1 || h === 2 || h === 10 || h === 11 || h === 12;   // 07–09 und 16–19 Uhr (Stunden ab 06.00)
 
-export const kopie = (stadt) => ({ z: structuredClone(stadt.z), r: stadt.r });
+export const kopie = (stadt) => ({ z: structuredClone(stadt.z), r: { ...stadt.r, live: null } });   // Kopien und Zweige fragen nie live
 
 // ---------- jev oder Ersatzregel ----------
 function querungWahrsch(stadt, lage, person) {
@@ -256,15 +290,28 @@ function neuerTag(stadt) {
     const p = (art, ort, ab, bis, zweck, extra = {}) => f.programm.push({ art, ort, ab, bis, zweck, status: "offen", ...extra });
     // morgens das Kind zur Schule bringen, nachmittags abholen (fester Termin)
     if (f.elternteil) p("bringen", "schule", 1.2 * 3600 + u(10) * 600, 2.1 * 3600, "fest");
-    if (f.arbeit) p("arbeit", "haltN", (f.elternteil ? 2.2 : 1) * 3600 + u(1) * (f.elternteil ? 1800 : 5400), 4 * 3600, "fest", { zurueck: (f.spaet ? 13.2 : f.elternteil ? 8.6 : 10 + u(2) * 2.5) * 3600 });
+    if (f.taetig === "bus") p("arbeit", "haltN", (f.elternteil ? 2.2 : 1) * 3600 + u(1) * (f.elternteil ? 1800 : 5400), 4 * 3600, "fest", { zurueck: (f.spaet ? 13.2 : f.elternteil ? 8.6 : 10 + u(2) * 2.5) * 3600 });
+    if (f.taetig === "studium") p("arbeit", "haltN", (2.8 + u(1) * 1.2) * 3600, 5 * 3600, "fest", { zurueck: (9.5 + u(2)) * 3600 });
+    if (f.taetig === "schicht") p("arbeit", "haltN", (6.4 + u(1) * 0.6) * 3600, 8 * 3600, "fest", { zurueck: 15.5 * 3600 });
+    const ao = TAETIG[f.taetig]?.arbeitsort;
+    if (ao) p("arbeitsort", ao[0], (ao[1] - 0.2 + u(1) * 0.3) * 3600, (ao[1] + 1) * 3600, "fest", { ende: (ao[2] + u(2) * 0.5) * 3600 });
+    // Vorlieben: an etwa drei von vier Tagen, zu ihrer Zeit, wenn die Arbeit es zulässt
+    for (const [j, v] of (f.vorlieben ?? []).entries()) {
+      const d = VORLIEBEN[v];
+      if (!d.ort || u(40 + j) > 0.75) continue;
+      const ab = (d.ab[0] + u(42 + j) * (d.ab[1] - d.ab[0])) * 3600;
+      p(d.art ?? "vorliebe", d.ort, ab, ab + 1.5 * 3600, d.art === "besorgung" ? "verschiebbar" : "freizeit", { dauer: (d.dauer[0] + u(44 + j) * (d.dauer[1] - d.dauer[0])) * 60, text: d.text.replace(/^(trinkt|spielt|liest|holt|dreht|geht|sitzt) /, "").replace(/ gern| morgens| nachmittags| abends| früh am Morgen/g, "") });
+    }
+    if (f.taetig === "zuhause" && u(46) < 0.6) { const ab = (5.5 + u(47) * 2) * 3600; p("freizeit", u(48) < 0.5 ? "platz" : "park", ab, ab + 3600, "freizeit", { dauer: (10 + u(49) * 20) * 60, text: "Pause vom Schreibtisch" }); }
     // kleine Besorgung am Kiosk im Norden (Zeitung, Brot), verschiebbar
     if (u(9) < 0.35) { const ab = (f.arbeit ? 11.5 + u(11) * 2 : 1 + u(11) * 5) * 3600; p("besorgung", "kiosk", ab, ab + 2 * 3600, "verschiebbar"); }
     const verschoben = f.wege.some((w) => w.tag === z.tag - 1 && w.ziel === "laden" && w.status === "aufgegeben");
     if (u(3) < (verschoben ? 0.85 : 0.55)) { const ab = (f.arbeit ? (f.spaet ? 13.4 : 12.6) : 2.5 + u(4) * 9) * 3600; p("einkauf", "laden", ab, Math.min(ab + 3 * 3600, 14.5 * 3600), "verschiebbar"); }
     if (f.elternteil) p("abholen", "schule", 9.6 * 3600, 10.2 * 3600, "fest");
-    if (u(5) < (f.arbeit ? 0.3 : 0.6) && !(f.arbeit && f.spaet)) { const ort = u(6) < 0.55 ? "park" : "platz"; const ab = (f.arbeit ? 12.4 + u(7) * 2 : 1.5 + u(7) * 11) * 3600; p("freizeit", ort, ab, ab + 2 * 3600, "freizeit"); }
-    if (!f.arbeit && u(12) < 0.3) { const ab = (1 + u(13) * 3) * 3600; p("freizeit", u(14) < 0.6 ? "park" : "platz", ab, ab + 3600, "freizeit"); }
-    if (!f.arbeit && u(16) < 0.5) { const ab = (8.5 + u(17) * 4) * 3600; p("freizeit", u(18) < 0.5 ? "park" : "platz", ab, ab + 3600, "freizeit"); }
+    const beschaeftigt = f.arbeit || !!ao || f.taetig === "zuhause";
+    if (u(5) < (beschaeftigt ? 0.3 : 0.6) && !(f.arbeit && f.spaet)) { const ort = u(6) < 0.55 ? "park" : "platz"; const ab = (f.arbeit ? 12.4 + u(7) * 2 : 1.5 + u(7) * 11) * 3600; p("freizeit", ort, ab, ab + 2 * 3600, "freizeit"); }
+    if (!beschaeftigt && u(12) < (f.taetig === "pension" ? 0.5 : 0.3)) { const ab = (1 + u(13) * 3) * 3600; p("freizeit", u(14) < 0.6 ? "park" : "platz", ab, ab + 3600, "freizeit"); }
+    if (!beschaeftigt && u(16) < 0.5) { const ab = (8.5 + u(17) * 4) * 3600; p("freizeit", u(18) < 0.5 ? "park" : "platz", ab, ab + 3600, "freizeit"); }
     // mit dem Hund: drei kurze Runden in den Park
     if (f.hund) for (const [i, h] of [[0, 0.6], [1, 6], [2, 13.8]]) { const ab = (h + u(20 + i) * 0.8) * 3600; if (!(f.arbeit && h > 1 && h < 11)) p("hund", "park", ab, ab + 3600, "freizeit"); }
     if (f.interesse) p("atelier", "atelier", 0, 0, "freizeit", { abend: true });
@@ -462,7 +509,7 @@ function figurenSchritt(stadt) {
         f.energie = Math.min(1, f.energie + (f.zustand === "pause" ? 0.004 : 0.002) * DT);
         if (z.t >= f.bis) weiter(stadt, f);
         break;
-      case "zuhause_bleibt": break;
+      case "ueberlegt": starteHeimweg(stadt, f, f.ueberlegtVon); break;
     }
     if (f.zustand === "geht" && f.wartetSeit !== null && KANTE[f.pfad.kanten[f.pi]]?.art === "zebra") zebra = true;
     if (f.zustand === "geht" && f.wartetSeit === null && KANTE[f.pfad?.kanten[f.pi]]?.art === "zebra") zebra = true;
@@ -486,6 +533,7 @@ function starteAufgabe(stadt, f, a, von) {
   a.status = "unterwegs";
   const ort = ORTE[a.ort];
   const entscheid = querungsEntscheid(stadt, f, von, a.ort, a.zweck);
+  if (entscheid.wahl === "ueberlegt") { a.status = "offen"; if (a.art === "bringen") f.mitKind = false; return; }   // jev live antwortet noch; nächster Schritt fragt wieder nach
   f.aufgabe = { a, ziel: a.ort, start: z.t, wahl: entscheid.wahl, lage: entscheid.lage, gewohnheit: entscheid.gewohnheit, irrtum: entscheid.irrtum, p: entscheid.p, person: entscheid.person, direkt: entscheid.direkt, warten: 0, umweg: 0 };
   if (entscheid.wahl === "auslassen") {
     if (a.art === "bringen") f.mitKind = false;
@@ -562,6 +610,22 @@ function querungsEntscheid(stadt, f, von, ziel, zweck, heimweg = false) {
   };
   let p = querungWahrsch(stadt, lage, person);
   if (heimweg) { delete p.auslassen; delete p.ersatz; p = Object.keys(p).length ? F.normiere(p) : { eben: 1 }; }
+  // jev live (nur für die begleitete Person, nur wenn eingeschaltet): die Lage genauer beschrieben, die Antwort ersetzt die Tabelle.
+  // Bis sie da ist, bleibt die Person stehen und «überlegt»; kommt keine (Fehler, Zeitüberschreitung), gilt die Tabelle.
+  let quelle = stadt.r.tabelle ? "jev" : "ersatz", pTabelle = null;
+  const live = stadt.r.live;
+  if (live && live.figur === f.id && !f.passant && Object.keys(p).length > 1) {
+    let key = JSON.stringify(liveEingabe(z, f, lage, person, p, wege, direkt, ziel, heimweg));
+    if (f.liveFrage && (live.ausstehend[f.liveFrage] || live.antworten[f.liveFrage] !== undefined)) key = f.liveFrage;   // die gestellte Frage gilt, auch wenn sich die Lage inzwischen leicht verschoben hat
+    const a = live.antworten[key];
+    if (a === undefined) {
+      if (!live.ausstehend[key]) live.frage(key, JSON.parse(key));
+      f.liveFrage = key; f.ueberlegtSeit ??= z.t;
+      return { wahl: "ueberlegt" };
+    }
+    f.liveFrage = null; f.ueberlegtSeit = null;
+    if (a) { pTabelle = p; p = F.normiere(Object.fromEntries(Object.keys(p).map((k) => [k, (a[k] ?? 0) + 1e-4]))); quelle = "jev live"; z.liveGenutzt = true; }
+  }
   // Gewohnheit: wer denselben Weg schon oft gleich gegangen ist, prüft nicht jedes Mal neu
   const g = f.gewohnheit[ziel];
   const u = zufall(z.seed, K.wahl, f.id, z.tag, f.zaehler++);
@@ -576,8 +640,25 @@ function querungsEntscheid(stadt, f, von, ziel, zweck, heimweg = false) {
     : lage.eben === "lang" || lage.eben === "mittel" ? "Umweg oder Wartezeit" : f.eilig ? "keine Zeit" : "anderes";
   const w = wirklichkeit(z.m), irrtum = Object.keys(w).some((k) => f.glaubt[k] !== w[k]);
   // für die Begleitansicht: wie zuletzt über die Hauptstrasse entschieden wurde (Lage, Wahrscheinlichkeiten, Wahl)
-  f.entscheid = { tag: z.tag, t: z.t, ziel, lage, person, p, wahl, gewohnheit: ausGewohnheit, irrtum, heimweg, quelle: stadt.r.tabelle ? "jev" : "ersatz" };
+  f.entscheid = { tag: z.tag, t: z.t, ziel, lage, person, p, pTabelle, wahl, gewohnheit: ausGewohnheit, irrtum, heimweg, quelle };
   return { wahl, wege, lage, person, p, gewohnheit: ausGewohnheit, direkt, direktLaenge, grund, irrtum };
+}
+/** die Lage der begleiteten Person für jev live (fragen.js: liveLage prüft dasselbe im Worker): Minuten statt Stufen, Müdigkeit, Erfahrung */
+function liveEingabe(z, f, lage, person, p, wege, direkt, ziel, heimweg) {
+  const opt = Object.keys(p);
+  const min = (w) => Math.min(60, Math.max(0, Math.round(((w.zeit - direkt) / 60) * 2) / 2));
+  const g = f.gewohnheit[ziel];
+  const ersatz = opt.includes("ersatz") ? ERSATZ[ziel](z) : null;
+  return {
+    person, zweck: lage.zweck, ziel: heimweg ? "zuhause" : F.LIVE_ZIELE[ziel] ? ziel : "zuhause", optionen: opt,
+    mehrzeit: { eben: opt.includes("eben") ? min(wege.eben) : null, bruecke: opt.includes("bruecke") ? min(wege.bruecke) : null },
+    bruecke: opt.includes("bruecke") ? (f.glaubt.treppe ? "treppe" : "rampe") : "keine",
+    verkehr: opt.includes("frei") ? (lage.frei === "dicht" ? "dicht" : "ruhig") : "zaun",
+    wartenAmpel: f.erwartet.ampel300 === undefined ? null : Math.min(900, Math.round(f.erwartet.ampel300)),
+    eilig: !!f.eilig, muede: f.energie < 0.4, mitKind: !!f.mitKind,
+    ersatzziel: ersatz && F.LIVE_ZIELE[ersatz] ? ersatz : null,
+    gewohnheit: g && g.staerke >= 0.2 && F.QUERUNG_WAHL[g.wahl] ? g.wahl : null,
+  };
 }
 function verkehrDicht(z) {
   let n = 0; for (const a of z.autos) if (a.k === "H" && !a.bus) n++;
@@ -742,6 +823,8 @@ function angekommen(stadt, f) {
   else if (a.art === "abholen") { f.zustand = "drinnen"; f.bis = Math.max(z.t + 60, 10 * 3600) + 120; }
   else if (a.art === "bringen") { f.zustand = "drinnen"; f.bis = z.t + 90 + u * 120; }
   else if (a.art === "besorgung") { f.zustand = "drinnen"; f.bis = z.t + 60 + u * 120; }
+  else if (a.art === "arbeitsort") { f.zustand = "drinnen"; f.bis = Math.max(z.t + 600, a.ende); erinnere(z, f, `beginnt die Arbeit im ${ORTE[a.ort].name}`, "arbeit"); }
+  else if (a.dauer) { f.zustand = "verweilt"; f.aufenthaltSeit = z.t; f.bis = z.t + a.dauer; }
   else if (a.art === "hund") { f.zustand = "verweilt"; f.aufenthaltSeit = z.t; f.bis = z.t + 300 + u * 600; }
   else { f.zustand = "verweilt"; f.aufenthaltSeit = z.t; f.bis = z.t + (ziel === "park" ? 1200 + u * 2400 : 900 + u * 1800); }
 }
@@ -773,6 +856,7 @@ function starteHeimweg(stadt, f, von) {
   const z = stadt.z;
   f.aufgabe = null;
   const e = querungsEntscheid(stadt, f, von, f.heim, "fest", true);
+  if (e.wahl === "ueberlegt") { f.zustand = "ueberlegt"; f.ueberlegtVon = von; f.heimweg = false; return; }
   const p = e.wege[e.wahl] ?? weg(f, von, f.heim, null, z) ?? weg({ ...f, glaubt: wirklichkeit(z.m) }, von, f.heim, null, z);
   f.heimweg = true;
   if (!p) { f.zustand = "heim"; f.x = f.hx; f.y = f.hy; f.heimweg = false; return; }
@@ -892,8 +976,8 @@ function atelierAnkunft(stadt, f) {
     f.atelier.beteiligt++; abend.beteiligt++;
     if (m.rolle === "vorgegeben" && !f.atelier.rolle) {
       f.atelier.rolle = true;
-      protokolliere(z, "szene", `Erfundene Modellszene: Die Leitung bietet ${f.name} eine Rolle an, so wie sie sich jemanden aus dem Quartier vorstellt. ${f.name} spielt mit; ob beim nächsten Mal wieder, ist offen.`,
-        { perspektive: true, mechanismus: "Mit vorgegebener Rolle bringt sich die Figur beim nächsten Abend seltener aktiv ein (Annahme des Modells).", frage: "Wer beschreibt hier wen – und kann die Figur die Beschreibung ändern?", belege: { figur: f.id }, anregung: "angeregt von Motiven aus Hanif Kureishis «The Buddha of Suburbia» (1990); kein Zitat" });
+      protokolliere(z, "szene", `Im Atelier wird Theater gespielt. Die Leitung gibt ${f.name} eine Rolle – so, wie sie sich «jemanden aus dem Quartier» vorstellt, nicht so, wie ${f.name} sich selbst sieht. ${f.name} spielt mit. Dabei sein darf ${f.name}; mitreden, wie ${f.name} gezeigt wird, nicht.`,
+        { perspektive: true, mechanismus: `Im Modell bringt sich ${f.name} danach seltener aktiv ein: Wer in eine fremde Rolle gesteckt wird, macht beim nächsten Mal eher weniger mit. Das ist eine Annahme, keine Messung.`, frage: "Wer beschreibt hier wen – und kann die Person die Beschreibung ändern? (Ausprobieren unter «Verändern»: «Rolle mitgestalten» oder «offene Programmgruppe».)", belege: { figur: f.id }, anregung: "Erfundene Szene, kein Zitat. Angeregt von Hanif Kureishis Roman «The Buddha of Suburbia» (1990), in dem ein junger Mann eine Rolle spielen soll, die andere für ihn ausgedacht haben." });
     }
     if (m.programm === "gruppe" && f.atelier.beteiligt >= 2 && !f.atelier.gruppe) {
       f.atelier.gruppe = true;
@@ -1148,7 +1232,7 @@ export const ATELIER_TEXT = {
 
 /** Lauf vom gemerkten Zustand aus wiederholen (für Vergleiche): Zustand klonen, Massnahmen setzen, Sekunden rechnen */
 export function zweig(stadt, z0, massnahmen = {}) {
-  const s = { z: structuredClone(z0), r: stadt.r };
+  const s = { z: structuredClone(z0), r: { ...stadt.r, live: null } };
   for (const [k, v] of Object.entries(massnahmen)) wendeAn(s.z, k, v);
   return s;
 }
