@@ -789,7 +789,7 @@ await check("Startseite ohne Rückmeldungen (auf Wunsch vom 2. Oktober 2026 entf
   assert.equal(await page.locator("main h2").count(), 0, "unter OMNA COLOR folgt keine Überschrift mehr");
   // seit 5. Oktober 2026 einzige Überschrift: die des Rückkanals, nach dem Inhalt
   assert.deepEqual(await page.locator("h2").evaluateAll((h) => h.map((e) => e.id)), ["rueckkanal-titel"], "nur die Überschrift des Rückkanals");
-  assert.equal(await page.locator("main > figure").count(), 2, "in main stehen OMNA COLOR und das Erklärvideo zu ORNA (seit 5. Oktober 2026)");
+  assert.equal(await page.locator("main > figure").count(), 1, "in main steht nur OMNA COLOR (das Erklärvideo zu ORNA ist seit 9. Oktober 2026 auf «Web»)");
   await ctx.close();
 });
 

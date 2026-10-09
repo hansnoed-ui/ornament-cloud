@@ -91,21 +91,14 @@
 
   <main class="wrap">
     <!--
-      Aufbau: OMNA COLOR zum direkten Spielen (eingebettet aus alpha/omna-color/, seit 4. Oktober 2026 statt des Stellenfelds),
-      darunter, durch die Welle getrennt, das Erklärvideo zu ORNA (seit 5. Oktober 2026; Quellcode in src/videos/src/orna/).
+      Aufbau: OMNA COLOR zum direkten Spielen (eingebettet aus alpha/omna-color/, seit 4. Oktober 2026 statt des Stellenfelds), sonst nichts.
+      Das Erklärvideo zu ORNA stand hier von 5. bis 9. Oktober 2026 darunter; es ist seitdem ein Beitrag auf «Web» (web/orna-erklaervideo/, Quellcode src/videos/src/orna/).
       Die Einbettung ist eine freigegebene Ausnahme von REGELN §14 (4. Oktober 2026); der Beitrag zu OMNA COLOR bleibt auf der Seite «Web», das Stellenfeld ebenfalls dort.
       Zettelkasten, Apps, Masterprompts und Web stehen im Menü oben (Neuordnung vom 2. Oktober 2026). Die Karten (<article class="card">) liegen dort.
     -->
     <figure class="omna">
       <iframe src="alpha/omna-color/" title="OMNA COLOR: zwei Farbräder drehen gegeneinander und wählen eine von 180 Gestaltungsübungen. Drehen mit dem Knopf oder durch Ziehen am Rad."></iframe>
       <figcaption>OMNA COLOR: Zwei Farbräder drehen gegeneinander. Zeigen sie zwei Farben, verbindet die Übung beide Themen, zeigen sie dieselbe Farbe, bleibt es beim reinen Thema. Drehen mit dem Knopf oder durch Ziehen am Rad. Mehr dazu unter <a href="web/">Web</a>.</figcaption>
-    </figure>
-    <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
-    <figure class="erklaervideo">
-      <video controls playsinline preload="none" poster="assets/orna-erklaervideo.jpg" muted width="1080" height="1920" aria-label="Erklärvideo zu ORNA, ohne Ton">
-        <source src="assets/orna-erklaervideo.mp4" type="video/mp4">
-      </video>
-      <figcaption>ORNA – Zufällige Begegnungen: wie sich Künstler:innen und Theoretiker:innen auf zwei Ringen begegnen und nach welchen Kriterien die Paarungen geprüft sind. Erklärvideo, 51 Sekunden, ohne Ton. Mehr dazu unter <a href="apps/">Apps</a>.</figcaption>
     </figure>
   </main>
 
@@ -126,7 +119,7 @@
 
   <footer class="site-footer">
     <div class="wrap">
-      <p>Präsentiert von <a href="https://ornament.cloud/c/bisherige-projekte">ornament.cloud</a> · © 2026</p>
+      <p>Präsentiert von <a href="./">ornament.cloud</a> · © 2026</p>
       <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
     </div>
   </footer>
@@ -187,20 +180,6 @@
       function an() { radGroesse(); passe(); try { new ResizeObserver(passe).observe(f.contentDocument.body); } catch (e) {} }
       f.addEventListener("load", an);
       try { if (f.contentDocument && f.contentDocument.readyState === "complete" && f.contentDocument.body.childElementCount) an(); } catch (e) {}
-    })();
-    // Erklärvideo (Wunsch vom 5. Oktober 2026): spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt.
-    // Es lädt erst dann (preload="none"); stumm (muted), sonst lassen Browser es nicht von selbst spielen – es hat ohnehin keinen Ton.
-    // Bei «weniger Bewegung» spielt es nur auf Knopfdruck.
-    (function () {
-      var v = document.querySelector(".erklaervideo video");
-      if (!v || !("IntersectionObserver" in window)) return;
-      if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      new IntersectionObserver(function (eintraege) {
-        eintraege.forEach(function (e) {
-          if (e.isIntersecting) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
-          else if (!v.paused) v.pause();
-        });
-      }, { threshold: 0.5 }).observe(v);
     })();
   </script>
   <script src="icons.js?v=14" defer></script>

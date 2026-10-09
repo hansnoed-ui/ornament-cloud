@@ -21,6 +21,7 @@ const MENUSEITEN = {
   "apps/index.html": ["apps/", "page"],
   "masterprompts/index.html": ["masterprompts/", "page"],
   "web/index.html": ["web/", "page"],
+  "web/orna-erklaervideo/index.html": ["web/", "true"],       // die Videoseite des Erklärvideos zu ORNA (9. Oktober 2026)
   "web/poststrukturalismus/index.html": ["web/", "true"],
   "web/mensch-niklas/index.html": ["web/", "true"],          // die Videoseite «Mensch, Niklas!» (7. Oktober 2026)   // die Videoseite gehört zu «Web» (6. Oktober 2026)
   [`${ORNA}index.html`]: ["apps/", "true"],           // ORNA gehört zu den Apps
@@ -99,12 +100,16 @@ test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OM
   const stelle = (s) => { const i = html.indexOf(s); assert.ok(i > 0, s); return i; };
   assert.ok(stelle("<h1") < stelle('<figure class="omna">') && stelle('<figure class="omna">') < stelle("</main>"),
     "Reihenfolge: (unsichtbarer) Titel, OMNA COLOR, dann endet die Seite (sie hat nur noch den Fuss)");
-  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div)\b/g)].map((m) => m[1]), ["figure", "figure"], "in main stehen OMNA COLOR und das Erklärvideo");
-  // seit 5. Oktober 2026: unter OMNA COLOR, durch die Welle getrennt, das Erklärvideo zu ORNA (Quellcode src/videos/src/orna/)
-  const unten = html.slice(stelle('<figure class="omna">'));
-  assert.ok(unten.indexOf('<svg class="divider" data-icon="wave"') < unten.indexOf('<figure class="erklaervideo">'), "Welle, dann das Video");
-  assert.match(html, /<video controls playsinline preload="none" poster="assets\/orna-erklaervideo\.jpg"[^>]*>\s*<source src="assets\/orna-erklaervideo\.mp4" type="video\/mp4">/, "das Video lädt erst beim Abspielen");
-  for (const datei of ["assets/orna-erklaervideo.mp4", "assets/orna-erklaervideo.jpg"]) assert.ok(existsSync(new URL(datei, root)), datei);
+  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div)\b/g)].map((m) => m[1]), ["figure"], "in main steht nur OMNA COLOR");
+  // Wunsch vom 9. Oktober 2026: das Erklärvideo zu ORNA (seit 5. Oktober 2026 unter OMNA COLOR) ist von der Startseite weg und steht auf «Web» (web/orna-erklaervideo/);
+  // die Startanimation (ausserhalb von main) hat ihr eigenes Video
+  const inMain = html.slice(stelle("<main"), stelle("</main>"));
+  assert.ok(!/<video|erklaervideo|orna-erklaervideo/.test(inMain), "kein Video in main");
+  assert.ok(!html.includes("orna-erklaervideo"), "die Startseite verweist nicht mehr auf das Video");
+  for (const datei of ["assets/orna-erklaervideo.mp4", "assets/orna-erklaervideo.jpg", "assets/vorschau-orna-erklaervideo.jpg"]) assert.ok(existsSync(new URL(datei, root)), `${datei} liegt weiter da (Videoseite und Karte auf «Web»)`);
+  // Wunsch vom 9. Oktober 2026: der Link im Fuss («Präsentiert von ornament.cloud») führt zur Startseite, nicht zu «bisherige-projekte»
+  assert.match(html, /<footer class="site-footer">[\s\S]*<p>Präsentiert von <a href="\.\/">ornament\.cloud<\/a> · © 2026<\/p>[\s\S]*<\/footer>/, "Fusslink zur Startseite");
+  assert.ok(!html.includes("bisherige-projekte"), "kein Link mehr auf «bisherige-projekte»");
   // Wunsch vom 5. Oktober 2026: im Fuss die Adresse für Fragen und Anmerkungen zur Website
   assert.match(html, /<footer class="site-footer">[\s\S]*<p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail\.com">hansnoed@gmail\.com<\/a><\/p>[\s\S]*<\/footer>/, "Kontakt im Fuss");
   assert.match(lies("alpha/omna-color/index.html"), /\.eingebettet \.wheel \{ width: min\(100%, 420px, var\(--rad-max, 420px\)\); \}/, "eingebettet höchstens so gross wie auf der eigenen Seite");
@@ -131,7 +136,7 @@ test("Startseite: kein sichtbarer Titel und kein Satz, unter der Welle gleich OM
   assert.equal([...html.matchAll(/<section class="rueckkanal/g)].length, 1, "der Rückkanal steht genau einmal");
   assert.ok(html.indexOf("</main>") < html.indexOf('<section class="rueckkanal'), "der Rückkanal steht nach dem Inhalt, vor dem Fuss");
   assert.ok(!/href="(zu-seiner-zeit|alpha|portfolio)\//.test(html.replace(/<nav class="(seitenweg|menu)"[\s\S]*?<\/nav>/g, "")), "die Wege führen über Menü und Navigation, nicht über Karten");
-  assert.deepEqual([...html.matchAll(/data-icon="([a-z]+)"/g)].map((m) => m[1]), ["wave", "wave"], "nur die Wellen sind animiert (unter dem Kopf und vor dem Video)");
+  assert.deepEqual([...html.matchAll(/data-icon="([a-z]+)"/g)].map((m) => m[1]), ["wave"], "nur die Welle unter dem Kopf ist animiert");
 });
 
 test("Startseite: Startanimation (9. Oktober 2026) – Video hell und dunkel, nur auf dieser Seite, einmal pro Sitzung, nicht bei «weniger Bewegung», Überspringen, Notausgang", () => {
@@ -208,7 +213,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 const SEITEN = {
   apps: { titel: "Apps", karten: [["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
-  web: { titel: "Web", karten: [["Mensch, Niklas!", "mensch-niklas/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"]] },
+  web: { titel: "Web", karten: [["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["Mensch, Niklas!", "mensch-niklas/"]] },
 };
 
 test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und Eintrag in der Sitemap", () => {
@@ -251,13 +256,20 @@ test("Masterprompts: die vier Prüfraster als Beiträge, in der Reihenfolge der 
   assert.ok(k.every((x) => /<svg [^>]*role="img" aria-label="[^"]{20,}"/.test(x.html)), "jede Karte trägt eine gezeichnete Vorschau mit Beschreibung");
 });
 
-test("Web: zuoberst «Mensch, Niklas!», dann das Comic-Video «Liebling …», OMNA COLOR und Das Dritte Rad (Alpha) und das Stellenfeld, alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs", () => {
+test("Web: OMNA COLOR und Das Dritte Rad (Alpha), das Stellenfeld, dann zuunterst die drei Videos: das Erklärvideo zu ORNA, «Liebling …» und als letztes «Mensch, Niklas!», alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs", () => {
   const html = lies("web/index.html");
   const alle = karten(html);
   assert.deepEqual(alle.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
-  // das Comic-Video (6. Oktober 2026): zuoberst, klickbar mit Vorschaubild, führt auf die eigene Videoseite und verlinkt die Studie als PDF
-  const [m, v, ...k] = alle;
-  // «Mensch, Niklas!» (7. Oktober 2026): ganz zuoberst, klickbar mit Vorschaubild, führt nur auf die eigene Videoseite
+  // Wunsch vom 9. Oktober 2026: die beiden Videos stehen zuunterst, «Mensch, Niklas!» als letztes
+  const k = alle.slice(0, 3), [o, v, m] = alle.slice(3);
+  // das Erklärvideo zu ORNA (9. Oktober 2026, bis dahin auf der Startseite): vor den beiden anderen Videos, klickbar mit Vorschaubild, führt nur auf die eigene Videoseite
+  assert.match(o.html, /<a class="thumb" href="orna-erklaervideo\/" tabindex="-1" aria-hidden="true">\s*<img src="\.\.\/assets\/vorschau-orna-erklaervideo\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  assert.deepEqual([...o.html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((x) => x[1]), ["orna-erklaervideo/", "orna-erklaervideo/"], "Bild und «Öffnen»");
+  const vorschauOrna = readFileSync(new URL("assets/vorschau-orna-erklaervideo.jpg", root));
+  assert.deepEqual(jpegMass(vorschauOrna), [640, 800], "Vorschaubild 640 × 800");
+  assert.ok(vorschauOrna.length < 150_000, `Vorschaubild ${vorschauOrna.length} Byte, unter 150 KB`);
+  // das Comic-Video (6. Oktober 2026): klickbar mit Vorschaubild, führt auf die eigene Videoseite und verlinkt die Studie als PDF
+  // «Mensch, Niklas!» (7. Oktober 2026): klickbar mit Vorschaubild, führt nur auf die eigene Videoseite
   assert.match(m.html, /<a class="thumb" href="mensch-niklas\/" tabindex="-1" aria-hidden="true">\s*<img src="\.\.\/assets\/vorschau-mensch-niklas\.jpg" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual([...m.html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((x) => x[1]), ["mensch-niklas/", "mensch-niklas/"], "Bild und «Öffnen»");
   const vorschauMensch = readFileSync(new URL("assets/vorschau-mensch-niklas.jpg", root));
@@ -280,6 +292,23 @@ test("Web: zuoberst «Mensch, Niklas!», dann das Comic-Video «Liebling …», 
     assert.ok(bild.length < 150_000, `${datei}: ${bild.length} Byte, unter 150 KB`);
     assert.ok(erzeuger.includes(datei), `tools/start-og.mjs erzeugt ${datei}`);
   }
+});
+
+test("Videoseite web/orna-erklaervideo/: das Erklärvideo zu ORNA (9 : 16) spielt von selbst, sobald es zur Hälfte im Bild ist; zurück zu «Web» (9. Oktober 2026, vorher auf der Startseite)", () => {
+  const html = lies("web/orna-erklaervideo/index.html");
+  assert.match(html, /<title>ORNA – Zufällige Begegnungen – Ornament Cloud<\/title>/);
+  assert.match(html, /<link rel="canonical" href="https:\/\/ornament\.cloud\/web\/orna-erklaervideo\/">/);
+  assert.ok(lies("sitemap.xml").includes("<loc>https://ornament.cloud/web/orna-erklaervideo/</loc>"), "in der Sitemap");
+  assert.match(html, /<h1>ORNA – Zufällige Begegnungen<\/h1>/);
+  assert.match(html, /<figure class="erklaervideo">\s*<video controls muted playsinline preload="none" poster="\.\.\/\.\.\/assets\/orna-erklaervideo\.jpg" width="1080" height="1920"[^>]*>\s*<source src="\.\.\/\.\.\/assets\/orna-erklaervideo\.mp4" type="video\/mp4">/, "das Video lädt erst beim Abspielen");
+  for (const d of ["orna-erklaervideo.mp4", "orna-erklaervideo.jpg", "vorschau-orna-erklaervideo.jpg"]) assert.ok(existsSync(new URL(`assets/${d}`, root)), d);
+  assert.deepEqual(jpegMass(readFileSync(new URL("assets/orna-erklaervideo.jpg", root))), [540, 960], "Standbild 9 : 16");
+  assert.ok(readFileSync(new URL("assets/orna-erklaervideo.mp4", root)).length < 14_000_000, "Video unter 14 MB");
+  assert.match(html, /new IntersectionObserver\(/, "spielt von selbst, sobald es zur Hälfte im Bild ist");
+  assert.match(html, /prefers-reduced-motion: reduce/, "bei «weniger Bewegung» nur auf Knopfdruck");
+  assert.match(html, /<a href="\.\.\/\.\.\/apps\/">Apps<\/a>/, "Verweis auf die App");
+  assert.match(html, /<p class="back"><a href="\.\.\/">← Zu Web<\/a><\/p>/);
+  assert.match(html, /Fragen und Anmerkungen zur Website/, "Kontakt im Fuss");
 });
 
 test("Videoseite web/poststrukturalismus/: das Comic-Video (9 : 16) spielt von selbst, sobald es zur Hälfte im Bild ist; Link zur Studie als PDF und zurück zu «Web»", () => {
@@ -381,7 +410,7 @@ test("News, Termine und Portfolio: bleiben unter ihren Adressen (mit Menü, in d
 
 test("Kontakt: «Fragen und Anmerkungen zur Website» unten auf allen Seiten mit Text (Wunsch vom 5. Oktober 2026), im Zettelkasten in allen drei Sprachen", () => {
   const MAIL = '<a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a>';
-  const seiten = ["index.html", "web/index.html", "web/poststrukturalismus/index.html", "web/mensch-niklas/index.html", "apps/index.html", "masterprompts/index.html", "news/index.html", "termine/index.html", "portfolio/index.html",
+  const seiten = ["index.html", "web/index.html", "web/orna-erklaervideo/index.html", "web/poststrukturalismus/index.html", "web/mensch-niklas/index.html", "apps/index.html", "masterprompts/index.html", "news/index.html", "termine/index.html", "portfolio/index.html",
     "portfolio/nebeneinander-nacheinander/index.html", "portfolio/nebeneinander-nacheinander/feld/index.html",
     "portfolio/nebeneinander-nacheinander/app/index.html", "portfolio/nebeneinander-nacheinander/app/feld/index.html",
     "alpha/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html"];

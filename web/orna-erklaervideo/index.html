@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ORNA – Zufällige Begegnungen – Ornament Cloud</title>
+  <meta name="description" content="Erklärvideo zu ORNA, 51 Sekunden, ohne Ton: wie sich Künstler:innen und Theoretiker:innen auf zwei Ringen begegnen und nach welchen Kriterien die Paarungen geprüft sind.">
+  <link rel="canonical" href="https://ornament.cloud/web/orna-erklaervideo/">
+  <link rel="stylesheet" href="../../styles.css?v=41">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <div class="topbar">
+        <nav class="seitenweg" aria-label="Ornament Cloud">
+          <a href="../../" aria-current="true">Ornament Cloud</a>
+          <a href="../../alpha/drittes-rad/">Das Dritte Rad</a>
+        </nav>
+        <nav class="menu" aria-label="Hauptmenü">
+          <a class="menu-item" href="../../zu-seiner-zeit/">Zettelkasten</a>
+          <a class="menu-item" href="../../apps/">Apps</a>
+          <a class="menu-item" href="../../masterprompts/">Masterprompts</a>
+          <a class="menu-item" href="../../web/" aria-current="true">Web</a>
+        </nav>
+      </div>
+      <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
+      <h1>ORNA – Zufällige Begegnungen</h1>
+      <p class="lead">Ein Erklärvideo: wie sich Künstler:innen und Theoretiker:innen auf zwei Ringen begegnen und nach welchen Kriterien die Paarungen geprüft sind.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!--
+      Videoseite (Wunsch von Christian, 9. Oktober 2026): das Erklärvideo zu ORNA stand seit dem 5. Oktober 2026 auf der Startseite und steht seitdem hier; der Beitrag auf «Web»
+      führt hierher, vor den beiden anderen Videos. Hochformat 9 : 16 (assets/orna-erklaervideo.mp4, Quelle src/videos/src/orna/, Composition OrnaVideo); spielt stumm von selbst,
+      sobald es zur Hälfte im Bild ist, bei «weniger Bewegung» nicht.
+    -->
+    <figure class="erklaervideo">
+      <video controls muted playsinline preload="none" poster="../../assets/orna-erklaervideo.jpg" width="1080" height="1920" aria-label="Erklärvideo zu ORNA, ohne Ton">
+        <source src="../../assets/orna-erklaervideo.mp4" type="video/mp4">
+      </video>
+      <figcaption>Erklärvideo, 51 Sekunden, ohne Ton. Mehr zur App unter <a href="../../apps/">Apps</a>.</figcaption>
+    </figure>
+
+    <p class="back"><a href="../">← Zu Web</a></p>
+  </main>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+    </div>
+  </footer>
+  <script>
+    // Das Video spielt von selbst, sobald es zur Hälfte im Bild ist, und hält an, wenn es das Bild verlässt (stumm, lädt erst dann).
+    // Bei «weniger Bewegung» spielt es nur auf Knopfdruck.
+    (function () {
+      var v = document.querySelector(".erklaervideo video");
+      if (!v || !("IntersectionObserver" in window)) return;
+      if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      new IntersectionObserver(function (eintraege) {
+        eintraege.forEach(function (e) {
+          if (e.isIntersecting) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+          else if (!v.paused) v.pause();
+        });
+      }, { threshold: 0.5 }).observe(v);
+    })();
+  </script>
+  <script src="../../icons.js?v=14" defer></script>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+</body>
+</html>

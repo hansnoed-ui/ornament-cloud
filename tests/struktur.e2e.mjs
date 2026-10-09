@@ -104,7 +104,7 @@ await check("Startseite (Handy): Menü zwei mal zwei, OMNA COLOR so breit wie di
   await ctx.close();
 });
 
-await check("Startseite: «Drehen» steht beim Laden im Fenster (Laptop, iPhone), das Rad höchstens so gross wie auf der eigenen Seite; darunter Welle und Erklärvideo", async () => {
+await check("Startseite: «Drehen» steht beim Laden im Fenster (Laptop, iPhone), das Rad höchstens so gross wie auf der eigenen Seite; darunter kein Video mehr (seit 9. Oktober 2026 auf «Web»)", async () => {
   for (const opts of [{ viewport: { width: 1366, height: 657 } }, { ...devices["iPhone 13"] }, { viewport: { width: 1920, height: 1080 } }]) {
     const { ctx, page, frame, errors } = await startseite(opts);
     const f = await box(page.locator(".omna iframe"));
@@ -113,52 +113,15 @@ await check("Startseite: «Drehen» steht beim Laden im Fenster (Laptop, iPhone)
     const h = page.viewportSize().height;
     assert.ok(f.y + knopf <= h, `«Drehen» im Fenster (${Math.round(f.y + knopf)} von ${h})`);
     assert.ok(rad <= 420.5, `das Rad höchstens 420 px (${rad})`);
-    const welle = await box(page.locator("main .divider")), video = await box(page.locator(".erklaervideo video"));
-    assert.ok(f.y + f.h <= welle.y + 1 && welle.b <= video.y + 1, "Spiel, Welle, Video untereinander");
-    assert.ok(video.h <= h, `das Video passt ins Fenster (${video.h} von ${h})`);
-    // seit 5. Oktober 2026 eingemittet, die Bildunterschrift so breit wie das Video
-    const mitte = await box(page.locator("main")), unter = await box(page.locator(".erklaervideo figcaption"));
-    assert.ok(Math.abs(video.x + video.w / 2 - (mitte.x + mitte.w / 2)) <= 1, `das Video steht in der Mitte (${video.x}, ${video.w}, ${mitte.x}, ${mitte.w})`);
-    assert.ok(Math.abs(unter.x - video.x) <= 1 && Math.abs(unter.w - video.w) <= 1, "Bildunterschrift bündig mit dem Video");
-    assert.equal(await page.locator(".erklaervideo video").evaluate((v) => v.preload), "none", "das Video lädt erst beim Abspielen");
+    // Wunsch vom 9. Oktober 2026: das Erklärvideo zu ORNA ist von der Startseite weg (es steht auf «Web»), unter dem Spiel folgt nur noch der Rückkanal
+    assert.equal(await page.locator("main .erklaervideo, main video, main .divider").count(), 0, "unter OMNA COLOR steht nichts mehr in main");
+    assert.equal(await page.locator("main > *").count(), 1, "main enthält nur OMNA COLOR");
     // Rückkanal (seit 5. Oktober 2026): in der Spalte der Seite, bündig mit dem Fuss, nie am Fensterrand
     const kasten = await box(page.locator(".rueckkanal")), fuss = await box(page.locator(".site-footer p").first());
     const breite = page.viewportSize().width;
     assert.ok(kasten.x >= 19.5 && kasten.r <= breite - 19.5, `Rückkanal mit Rand (${kasten.x}–${kasten.r} von ${breite})`);
     assert.ok(Math.abs(kasten.x - fuss.x) <= 1, `Rückkanal bündig mit dem Fuss (${kasten.x} / ${fuss.x})`);
     assert.deepEqual(errors, []);
-    await ctx.close();
-  }
-});
-
-await check("Startseite: das Erklärvideo spielt von selbst, sobald es im Bild ist, und hält an, wenn es das Bild verlässt; bei «weniger Bewegung» nicht (Wunsch vom 5. Oktober 2026)", async () => {
-  for (const reducedMotion of ["no-preference", "reduce"]) {
-    const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 }, reducedMotion });
-    // play() und pause() zählen: der Testbrowser spielt H.264 nicht unbedingt ab, gezählt wird der Versuch
-    await ctx.addInitScript(() => {
-      window.__video = { play: 0, pause: 0 };
-      const play = HTMLMediaElement.prototype.play, pause = HTMLMediaElement.prototype.pause;
-      HTMLMediaElement.prototype.play = function () { window.__video.play += 1; return play.call(this); };
-      HTMLMediaElement.prototype.pause = function () { window.__video.pause += 1; return pause.call(this); };
-    });
-    const page = await ctx.newPage();
-    await page.goto(origin + "/");
-    await rahmen(page);
-    const v = page.locator(".erklaervideo video");
-    assert.equal(await v.evaluate((e) => e.muted), true, "stumm, sonst spielt es nicht von selbst");
-    await page.waitForTimeout(300);
-    assert.equal((await page.evaluate(() => window.__video)).play, 0, "beim Laden (Video nicht im Bild) spielt nichts");
-    await v.scrollIntoViewIfNeeded();
-    if (reducedMotion === "reduce") {
-      await page.waitForTimeout(500);
-      assert.equal((await page.evaluate(() => window.__video)).play, 0, "bei «weniger Bewegung» nur auf Knopfdruck");
-    } else {
-      await page.waitForFunction(() => window.__video.play > 0, null, { timeout: 5000 });
-      await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
-      await page.waitForTimeout(500);
-      const n = await page.evaluate(() => window.__video);
-      assert.ok(n.pause > 0 || (await v.evaluate((e) => e.paused)), "ausserhalb des Bildes angehalten");
-    }
     await ctx.close();
   }
 });
@@ -303,8 +266,8 @@ await check("Menü führt zu den Seiten: Zettelkasten direkt in den Zettelkasten
 });
 
 // ---------- Web ----------
-await check("Videoseiten: «Mensch, Niklas!» (3 : 4) und «Liebling …» (9 : 16) spielen von selbst, sobald sie zur Hälfte im Bild sind, und halten an, wenn sie das Bild verlassen; bei «weniger Bewegung» nicht", async () => {
-  for (const [titel, adresse, format] of [["Mensch, Niklas!", /\/web\/mensch-niklas\/$/, 4 / 3], ["Liebling, ich habe den Poststrukturalismus strukturiert", /\/web\/poststrukturalismus\/$/, 16 / 9]]) for (const reducedMotion of ["no-preference", "reduce"]) {
+await check("Videoseiten: ORNA (9 : 16, seit 9. Oktober 2026 hier statt auf der Startseite), «Mensch, Niklas!» (3 : 4) und «Liebling …» (9 : 16) spielen von selbst, sobald sie zur Hälfte im Bild sind, und halten an, wenn sie das Bild verlassen; bei «weniger Bewegung» nicht", async () => {
+  for (const [titel, adresse, format] of [["ORNA – Zufällige Begegnungen", /\/web\/orna-erklaervideo\/$/, 16 / 9], ["Mensch, Niklas!", /\/web\/mensch-niklas\/$/, 4 / 3], ["Liebling, ich habe den Poststrukturalismus strukturiert", /\/web\/poststrukturalismus\/$/, 16 / 9]]) for (const reducedMotion of ["no-preference", "reduce"]) {
     const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 }, reducedMotion });
     await ctx.addInitScript(() => {
       window.__video = { play: 0, pause: 0 };
@@ -361,18 +324,20 @@ await check("Videoseite «Mensch, Niklas!»: die englische Fassung darunter spie
   await ctx.close();
 });
 
-await check("Web: fünf Karten mit Bild (640 × 800), zuoberst «Mensch, Niklas!», drei in einer Reihe; die Karten führen zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld", async () => {
+await check("Web: sechs Karten mit Bild (640 × 800), zuunterst die drei Videos mit «Mensch, Niklas!» als letztem, drei in einer Reihe; die Karten führen zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
   const errors = fehler(page);
   await page.goto(origin + "/web/");
   await page.locator("main img").last().scrollIntoViewIfNeeded();
   await page.waitForFunction(() => [...document.querySelectorAll("main img")].every((i) => i.complete && i.naturalWidth > 0));
-  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), [[640, 800], [640, 800], [640, 800], [640, 800], [640, 800]]);
+  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), [[640, 800], [640, 800], [640, 800], [640, 800], [640, 800], [640, 800]]);
   const ys = await page.locator("main .card").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().y)));
-  assert.deepEqual(ys.length, 5);
+  assert.deepEqual(ys.length, 6);
   assert.equal(ys[0], ys[1], "nebeneinander");
   assert.equal(ys[1], ys[2], "drei in einer Reihe");
+  assert.ok(ys[3] > ys[2] && ys[3] === ys[4] && ys[4] === ys[5], "die drei Videos bilden die zweite Reihe");
+  assert.deepEqual(await page.locator("main .card h2").allTextContents(), ["OMNA COLOR", "Das Dritte Rad", "Stellenfeld", "ORNA – Zufällige Begegnungen", "Liebling, ich habe den Poststrukturalismus strukturiert", "Mensch, Niklas!"], "Reihenfolge: zuunterst die Videos, «Mensch, Niklas!» als letztes");
   const t = await box(page.locator("main .thumb").first());
   assert.ok(Math.abs(t.h / t.w - 5 / 4) < 0.01, "Bild im Format 4 : 5");
   // die Karte nach ihrer Überschrift wählen (der Text des Dritten Rads nennt auch OMNA COLOR)
