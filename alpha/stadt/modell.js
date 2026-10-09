@@ -3,8 +3,8 @@
 // (Kanal, Tag, Figur, Zähler), damit zusätzliche Ziehungen in einem Vergleichszweig die übrigen Ereignisse nicht verschieben.
 // Der ganze Zustand liegt in stadt.z (einfache Daten, klonbar); stadt.r hält nur abgeleitete Hilfen (Graph, jev-Tabelle).
 import { KNOTEN, KANTEN, KANTE, ORTE, BANK, BAENKE, WOHNUNGEN, VERBINDUNG, KORRIDORE, HALT_S, AMPEL_S, ZEBRA_S, X_AMPEL, X_ZEBRA,
-  bedingungen, verfuegbar, ampelZeiten, tempoHaupt, spurenHaupt, BREITE } from "./stadtplan.js?v=5";
-import * as F from "./fragen.js?v=5";
+  bedingungen, verfuegbar, ampelZeiten, tempoHaupt, spurenHaupt, BREITE } from "./stadtplan.js?v=6";
+import * as F from "./fragen.js?v=6";
 
 export const DT = 1;                        // Sekunden Stadtzeit je Schritt
 export const TAG_DAUER = 16 * 3600;         // 06.00 bis 22.00 Uhr; die Nacht wird übersprungen
@@ -976,8 +976,8 @@ function atelierAnkunft(stadt, f) {
     f.atelier.beteiligt++; abend.beteiligt++;
     if (m.rolle === "vorgegeben" && !f.atelier.rolle) {
       f.atelier.rolle = true;
-      protokolliere(z, "szene", `Erfundene Modellszene: Die Leitung bietet ${f.name} eine Rolle an, so wie sie sich jemanden aus dem Quartier vorstellt. ${f.name} spielt mit; ob beim nächsten Mal wieder, ist offen.`,
-        { perspektive: true, mechanismus: "Mit vorgegebener Rolle bringt sich die Figur beim nächsten Abend seltener aktiv ein (Annahme des Modells).", frage: "Wer beschreibt hier wen – und kann die Figur die Beschreibung ändern?", belege: { figur: f.id }, anregung: "angeregt von Motiven aus Hanif Kureishis «The Buddha of Suburbia» (1990); kein Zitat" });
+      protokolliere(z, "szene", `Im Atelier wird Theater gespielt. Die Leitung gibt ${f.name} eine Rolle – so, wie sie sich «jemanden aus dem Quartier» vorstellt, nicht so, wie ${f.name} sich selbst sieht. ${f.name} spielt mit. Dabei sein darf ${f.name}; mitreden, wie ${f.name} gezeigt wird, nicht.`,
+        { perspektive: true, mechanismus: `Im Modell bringt sich ${f.name} danach seltener aktiv ein: Wer in eine fremde Rolle gesteckt wird, macht beim nächsten Mal eher weniger mit. Das ist eine Annahme, keine Messung.`, frage: "Wer beschreibt hier wen – und kann die Person die Beschreibung ändern? (Ausprobieren unter «Verändern»: «Rolle mitgestalten» oder «offene Programmgruppe».)", belege: { figur: f.id }, anregung: "Erfundene Szene, kein Zitat. Angeregt von Hanif Kureishis Roman «The Buddha of Suburbia» (1990), in dem ein junger Mann eine Rolle spielen soll, die andere für ihn ausgedacht haben." });
     }
     if (m.programm === "gruppe" && f.atelier.beteiligt >= 2 && !f.atelier.gruppe) {
       f.atelier.gruppe = true;

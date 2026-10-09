@@ -121,7 +121,7 @@ test("Ereignisse im Protokoll lassen sich im Zustand nachweisen", () => {
   const p = s.z.protokoll;
   assert.ok(p.some((e) => e.art === "massnahme") && p.some((e) => e.art === "ruecknahme"));
   for (const e of p) {
-    if (e.art === "szene") { assert.ok(e.perspektive && /Modellszene/.test(e.text) && /kein Zitat/.test(e.anregung)); assert.ok(s.z.figuren[e.belege.figur].atelier.rolle); }
+    if (e.art === "szene") { assert.ok(e.perspektive && /Rolle/.test(e.text) && /Erfundene Szene, kein Zitat/.test(e.anregung)); assert.ok(s.z.figuren[e.belege.figur].atelier.rolle); }
     if (e.art === "rueckkehr") for (const id of e.belege.figuren) assert.ok(s.z.figuren[id].wege.some((w) => (w.status === "ersetzt" || w.status === "aufgegeben") && (w.gewohnheit || w.irrtum)), `Figur ${id}`);
     if (/Am Laden gehen heute weniger/.test(e.text)) { const t = s.z.messung.tage.find((x) => x.tag === e.tag); if (t) assert.equal(t.zaehlung.laden[e.belege.stunde], e.belege.heute); }
     if (/Nordstrasse fuhren heute/.test(e.text)) { const t = s.z.messung.tage.find((x) => x.tag === e.tag); assert.equal(t.autos.N, e.belege.heute); }

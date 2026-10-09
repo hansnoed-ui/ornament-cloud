@@ -1,11 +1,11 @@
 // «Die Paradoxie der Stadt» – Bedienung: Uhr, Begleiten, Verändern (mit Vorschau), Sichtweisen, Protokoll, Vergleiche, Modell.
 // Die Simulation (modell.js) läuft mit festem Schritt; die Bildrate bestimmt nur, wie viele Schritte je Bild gerechnet werden.
-import * as M from "./modell.js?v=5";
-import { zeichne, farben, positionVon } from "./ansicht.js?v=5";
-import { nebeneinanderNacheinander, verteilapparat, befragungAuswertung, SCHWELLEN } from "./raster.js?v=5";
-import { VERBINDUNG, BANK } from "./stadtplan.js?v=5";
-import * as F from "./fragen.js?v=5";
-import { liveAdresse, liveVerbindung } from "./live.js?v=5";
+import * as M from "./modell.js?v=6";
+import { zeichne, farben, positionVon } from "./ansicht.js?v=6";
+import { nebeneinanderNacheinander, verteilapparat, befragungAuswertung, SCHWELLEN } from "./raster.js?v=6";
+import { VERBINDUNG, BANK } from "./stadtplan.js?v=6";
+import * as F from "./fragen.js?v=6";
+import { liveAdresse, liveVerbindung } from "./live.js?v=6";
 
 const $ = (s, w = document) => w.querySelector(s);
 const $$ = (s, w = document) => [...w.querySelectorAll(s)];
@@ -31,7 +31,7 @@ let tabelle = null, tabelleFehler = null;
 
 // ---------- Start ----------
 async function start() {
-  try { tabelle = (await import("./jev.js?v=5")).JEV; if (!M.tabelleGueltig(tabelle)) { tabelleFehler = "Prüfsumme passt nicht zu den Fragen"; tabelle = null; } }
+  try { tabelle = (await import("./jev.js?v=6")).JEV; if (!M.tabelleGueltig(tabelle)) { tabelleFehler = "Prüfsumme passt nicht zu den Fragen"; tabelle = null; } }
   catch (e) { tabelleFehler = "jev-Tabelle nicht geladen"; tabelle = null; }
   await new Promise((r) => setTimeout(r, 30));    // erst die Seite zeigen, dann die Stadt anlegen (Vorlauf rund eine Sekunde)
   neuerLauf();
@@ -303,22 +303,24 @@ function begleitenHtml() {
   return h;
 }
 function verteilapparatHtml(z, f) {
-  const v = verteilapparat(z, f, ui.sicht);
-  const STAT = { passiert: "passiert", blockiert: "blockiert", umgeleitet: "umgeleitet", offen: "offen", nicht_anwendbar: "nicht anwendbar" };
-  return `<details class="genauer" data-id="verteilapparat"><summary>Genauer hinsehen: Der Verteilapparat des Körpers</summary>
-    ${!v.vorgang ? `<p class="leise">Noch kein Weg, an dem sich das prüfen liesse.</p>` : `
-    <p><strong>Vorgang:</strong> ${esc(v.vorgang)}</p>
+  const v = verteilapparat(z, f, ui.sicht), n = esc(f.name);
+  const STAT = { passiert: "ja", blockiert: "nein", umgeleitet: "nur teilweise", offen: "unklar", nicht_anwendbar: "entfällt" };
+  const FRAGE = { "auffällig": "Fällt es auf?", "artikulierbar": "Gibt es Worte dafür?", "zugänglich": "Erreicht es jemanden, der zuhört oder zählt?", "lesbar": "Passt es ins Raster der Erhebung?", "glaubwürdig": "Wird es geglaubt?", "speicherbar": "Wird es festgehalten?", "entscheidungsfähig": "Wird darüber entschieden?" };
+  return `<details class="genauer" data-id="verteilapparat"><summary>Genauer hinsehen: Wer bemerkt diesen Weg? <span class="leise">(Raster «Der Verteilapparat des Körpers»)</span></summary>
+    ${!v.vorgang ? `<p class="leise">Noch kein Weg, an dem sich das zeigen liesse.</p>` : `
+    <p class="leise">Was ${n} unterwegs erlebt, und was davon bei denen ankommt, die die Stadt planen – über zwei Wege: ${n} sagt es selbst (in der Kurzbefragung), oder es wird gezählt (Kamera am Laden).</p>
+    <p><strong>Der Weg:</strong> ${esc(v.vorgang)}</p>
     <dl class="fragen">
-      <dt>Was erlebt die Figur im Modell?</dt><dd>${v.erleben.map(esc).join("<br>")}</dd>
-      <dt>Was sagt oder signalisiert sie davon?</dt><dd>${esc(v.selbstbeschreibung)}</dd>
-      <dt>Was erfassen andere?</dt><dd>${esc(v.fremderfassung)}</dd>
-      <dt>Unter welcher Beschreibung wird reagiert? (Sichtweise «${SICHTEN[ui.sicht].name}»)</dt><dd>${esc(v.beschreibung)}</dd>
-      <dt>Welche Folgen entstehen, und kann sie widersprechen?</dt><dd>${esc(v.folgen)} ${esc(v.widerspruch)}</dd>
+      <dt>Was hat ${n} erlebt?</dt><dd>${v.erleben.map(esc).join("<br>")}</dd>
+      <dt>Hat ${n} davon jemandem erzählt?</dt><dd>${esc(v.selbstbeschreibung)}</dd>
+      <dt>Wer hat es sonst bemerkt?</dt><dd>${esc(v.fremderfassung)}</dd>
+      <dt>Wie erscheint der Weg in der Sichtweise «${SICHTEN[ui.sicht].name}»?</dt><dd>${esc(v.beschreibung)}</dd>
+      <dt>Was folgt daraus – und kann ${n} widersprechen?</dt><dd>${esc(v.folgen)} ${esc(v.widerspruch)}</dd>
     </dl>
-    <table class="tab schwellen"><caption>Sieben Schwellen, je Anschlussweg (keine Kette, keine Punkte)</caption><thead><tr><th>Schwelle</th><th>Selbstbeschreibung</th><th>Fremderfassung</th></tr></thead><tbody>
-    ${SCHWELLEN.map((s) => `<tr><th scope="row">${s}</th><td data-weg="Selbstbeschreibung"><span class="st st-${v.schwellen[s].selbst.status}">${STAT[v.schwellen[s].selbst.status]}</span> ${esc(v.schwellen[s].selbst.befund)}</td><td data-weg="Fremderfassung"><span class="st st-${v.schwellen[s].fremd.status}">${STAT[v.schwellen[s].fremd.status]}</span> ${esc(v.schwellen[s].fremd.befund)}</td></tr>`).join("")}
+    <table class="tab schwellen"><caption>Sieben Hürden, bis aus einem Erlebnis eine Entscheidung wird. Jede für sich, ohne Punkte.</caption><thead><tr><th>Hürde</th><th>Wenn ${n} es selbst sagt</th><th>Wenn gezählt wird</th></tr></thead><tbody>
+    ${SCHWELLEN.map((s) => `<tr><th scope="row">${FRAGE[s]} <span class="leise">(${s})</span></th><td data-weg="Wenn ${n} es selbst sagt"><span class="st st-${v.schwellen[s].selbst.status}">${STAT[v.schwellen[s].selbst.status]}</span> ${esc(v.schwellen[s].selbst.befund)}</td><td data-weg="Wenn gezählt wird"><span class="st st-${v.schwellen[s].fremd.status}">${STAT[v.schwellen[s].fremd.status]}</span> ${esc(v.schwellen[s].fremd.befund)}</td></tr>`).join("")}
     </tbody></table>
-    <p class="leise">Modellfall. Erleben, Selbstbeschreibung, Fremderfassung und Entscheidung sind hier getrennt; keine Pflicht zur Auskunft, geringe Sichtbarkeit gilt nicht automatisch als Nachteil. Raster: Christian Strickler, «Der Verteilapparat des Körpers».</p>`}
+    <p class="leise">Ein erfundener Fall aus dem Modell. Nicht gesehen zu werden ist nicht automatisch schlecht, und niemand muss Auskunft geben. Raster: Christian Strickler, «Der Verteilapparat des Körpers».</p>`}
   </details>`;
 }
 
@@ -428,13 +430,13 @@ function verlaufTage(z, f, titel) {
 }
 
 // ---------- Protokoll ----------
-const PROT = { massnahme: "Massnahme", ruecknahme: "Rücknahme", beobachtung: "Beobachtung", entstehung: "Entstanden", szene: "Modellszene", teilnahme: "Teilnahme", rueckkehr: "Was bleibt" };
+const PROT = { massnahme: "Massnahme", ruecknahme: "Rücknahme", beobachtung: "Beobachtung", entstehung: "Entstanden", szene: "Erfundene Szene", teilnahme: "Teilnahme", rueckkehr: "Was bleibt" };
 function protokollHtml() {
   const z = ui.stadt.z;
   const zahl = $("#protokoll-neu"); if (zahl) { zahl.hidden = true; zahl.textContent = ""; }
   const l = [...z.protokoll].reverse();
   return `<p class="leise">Handlungen, Zeitpunkte und beobachtete Folgen in diesem Lauf. Jede Meldung beruht auf dem Zustand der Simulation; «Warum?» nennt den im Modell aktiven Mechanismus und eine offene Frage. Ein einzelner Lauf ist kein Kausalnachweis.</p>
-    <ol class="protokoll">${l.map((e) => `<li class="p-${e.art}"><span class="zeit">Tag ${e.tag}, ${M.uhr(e.t)} · ${PROT[e.art] ?? e.art}${e.perspektive ? " · Modellierte Perspektive" : ""}</span> ${esc(e.text)}
+    <ol class="protokoll">${l.map((e) => `<li class="p-${e.art}"><span class="zeit">Tag ${e.tag}, ${M.uhr(e.t)} · ${PROT[e.art] ?? e.art}${e.perspektive ? " · aus Sicht einer Figur" : ""}</span> ${esc(e.text)}
       ${e.mechanismus || e.frage ? `<details data-id="p${e.id}"><summary>Warum?</summary>${e.mechanismus ? `<p>${esc(e.mechanismus)}</p>` : ""}${e.frage ? `<p><i>${esc(e.frage)}</i></p>` : ""}${e.anregung ? `<p class="leise">${esc(e.anregung)}</p>` : ""}</details>` : ""}</li>`).join("") || "<li class='leise'>Noch nichts. Die Stadt läuft auch ohne dich.</li>"}</ol>`;
 }
 
@@ -523,14 +525,15 @@ function modellHtml() {
     </ul>
     <fieldset class="wahl kompakt"><legend>Regionale Nachfrage (verschiebbare Fahrten) – startet einen neuen Lauf</legend>${Object.keys(M.LATENT).map((l) => `<label><input type="radio" name="latent" value="${l}" data-aktion="latent"${z.params.latent === l ? " checked" : ""}> ${l}</label>`).join("")}</fieldset>
     <p class="leise">Mehr in <a href="MODELL.md">MODELL.md</a> (Parameter, Regeln, Grenzen).</p></section>
-  <details class="genauer" data-id="nn"><summary>Genauer hinsehen: Nebeneinander, Nacheinander</summary>
+  <details class="genauer" data-id="nn"><summary>Genauer hinsehen: Was bleibt, was ändert sich? <span class="leise">(Raster «Nebeneinander, Nacheinander»)</span></summary>
+    <p class="leise">Eine Stadt verändert sich ständig. Diese vier Fragen trennen: was gleich bleibt, was sich ändert, was davon nachwirkt – und was ein Zurücknehmen nicht ungeschehen macht.</p>
     <dl class="fragen">
-      <dt>Was bleibt wiedererkennbar und vergleichbar?</dt><dd><ul>${nn.wiedererkennbar.map((t) => `<li>${esc(t)}</li>`).join("")}</ul></dd>
-      <dt>Was verändert sich im Verlauf?</dt><dd><ul>${nn.verlauf.map((t) => `<li>${esc(t)}</li>`).join("")}</ul></dd>
-      <dt>Was davon beeinflusst spätere Möglichkeiten?</dt><dd><ul>${nn.fortwirkend.map((t) => `<li>${esc(t)}</li>`).join("")}</ul></dd>
-      <dt>Was bleibt nach Rücknahme eines Eingriffs bestehen?</dt><dd>${nn.ruecknahmen.length ? nn.ruecknahmen.map((r) => `<div class="probe"><p><b>Rückkehrprobe:</b> ${esc(r.gepruefte_rueckkehr)}</p><p><b>Zurückgesetzt:</b> ${esc(r.zurueckgesetzte_merkmale)}</p><p><b>Aufgehoben:</b> ${esc(r.aufgehobene_folgen)}</p><p><b>Fortbestehend:</b></p><ul>${r.fortbestehende_folgen.map((t) => `<li>${esc(t)}</li>`).join("")}</ul><p><b>Was weiter aufheben würde:</b> ${esc(r.weitergehende_aufhebung)}</p><p class="leise">${esc(r.beleggrenze)}</p></div>`).join("") : "Noch keine Massnahme zurückgenommen. Probiere es: verändere etwas, warte einen Tag, nimm es zurück."}</dd>
+      <dt>Was bleibt gleich, sodass man vergleichen kann?</dt><dd><ul>${nn.wiedererkennbar.map((t) => `<li>${esc(t)}</li>`).join("")}</ul></dd>
+      <dt>Was hat sich seit deinem letzten Eingriff verändert?</dt><dd><ul>${nn.verlauf.map((t) => `<li>${esc(t)}</li>`).join("")}</ul></dd>
+      <dt>Was wirkt weiter und prägt die nächsten Tage?</dt><dd><ul>${nn.fortwirkend.map((t) => `<li>${esc(t)}</li>`).join("")}</ul></dd>
+      <dt>Was bleibt, wenn du etwas zurücknimmst?</dt><dd>${nn.ruecknahmen.length ? nn.ruecknahmen.map((r) => `<div class="probe"><p>${esc(r.gepruefte_rueckkehr)}</p><p><b>Wieder wie vorher:</b> ${esc(r.zurueckgesetzte_merkmale)} ${esc(r.aufgehobene_folgen)}</p><p><b>Nicht wie vorher:</b></p><ul>${r.fortbestehende_folgen.map((t) => `<li>${esc(t)}</li>`).join("")}</ul><p><b>Was ganz zurück führen würde:</b> ${esc(r.weitergehende_aufhebung)}</p><p class="leise">${esc(r.beleggrenze)}</p></div>`).join("") : "Noch nichts zurückgenommen. Probiere es: Verändere etwas, lass einen Tag laufen, nimm es zurück – und schau hier wieder nach."}</dd>
     </dl>
-    <p class="leise">Unterschieden werden Veränderung, Vorgeschichte und fortwirkende Folge. Viel Bewegung ist nicht schon Verzeitlichung; stabile Abläufe verlangen keine stillstehenden Figuren; dass die Stadt Fläche hat, ist noch keine Verräumlichung – erst die Karte mit festen Orten macht Unterschiede wiederauffindbar. Kontrollfrage: Nach welchen Kriterien gilt eine Rückkehr hier als dieselbe – und könnten diese Kriterien im weiteren Verlauf selbst fraglich werden? Raster: Christian Strickler, «Nebeneinander und Nacheinander».</p>
+    <p class="leise">Viel Bewegung heisst noch nicht, dass sich etwas verändert: Die Figuren gehen jeden Tag ihre Wege, und trotzdem kann alles beim Alten bleiben. Umgekehrt kann eine Gewohnheit bleiben, obwohl die Strasse längst wieder anders ist. Offene Frage: Woran erkennt man, dass es «wieder wie vorher» ist – und könnte genau das sich mit der Zeit ändern? Raster: Christian Strickler, «Nebeneinander und Nacheinander».</p>
   </details>
   <section><h3>Quellen und Redlichkeit</h3>
     <p>Ausgangspunkt: Klaus Kusanowskys Grafik «Urbane Paradoxien: Die Systematik der Stadt», erarbeitet mit NotebookLM. Er hat damit soziologische Literatur ausgewertet und eine gegliederte Übersicht erstellt, als Anfang für eine ausführlich-systematische Erarbeitung des Themas.<br>Beobachtungsraster: Christian Strickler, «Nebeneinander, Nacheinander» und «Der Verteilapparat des Körpers».<br>Diese Anwendung ist eine eigenständige, vereinfachende Weiterentwicklung.</p>
@@ -540,7 +543,7 @@ function modellHtml() {
       <tr><td>Martin Burkhardt: Die gesellschaftlichen Kosten des Autoverkehrs, 1980</td><td>Gesellschaftliche Kosten des Verkehrs</td><td>C: was eine Zahl zeigt, was sie auslässt</td></tr>
       <tr><td>Christian Ude (Hg.) – Titel in der Grafik nicht genannt, offen</td><td>Legitimation und Zukunftsrhetorik</td><td>offen</td></tr>
       <tr><td>J. G. Ballard: Concrete Island / Die Betoninsel (Original 1974; die Grafik nennt 1979, verwendete Ausgabe ungeklärt)</td><td>Isolation im Zentrum</td><td>B: Verbindung, die trennt</td></tr>
-      <tr><td>Hanif Kureishi: The Buddha of Suburbia / Der Buddha aus der Vorstadt, 1990</td><td>Habitus und Mobilität</td><td>D: Teilnahme unter fremder Beschreibung (erfundene Modellszene, kein Zitat)</td></tr>
+      <tr><td>Hanif Kureishi: The Buddha of Suburbia / Der Buddha aus der Vorstadt, 1990</td><td>Habitus und Mobilität</td><td>D: Mitmachen in einer Rolle, die andere ausgedacht haben (erfundene Szene, kein Zitat)</td></tr>
     </tbody></table>
     <p class="leise">Die Literatur ist Inspiration und Untersuchungsmaterial; die Modellregeln sind daraus nicht belegt, und die Grafik ersetzt keine Lektüre. Im Sinn des Rasters «Nebeneinander und Nacheinander» bleiben Koordinaten für diese Werke offen: Als Material liegt nur die Grafik vor, und ein Titel ist noch kein gelesener Beleg. Literarische Szenen liefern Beobachtungsperspektiven, keine Häufigkeiten. Empirische Anregungen: Anciaes und Jones (2016), «Pedestrians avoid busy roads»; Mindell et al. (2017) zur Messung von Trennwirkung (community severance); Jane Jacobs (1958), «Downtown is for People».</p>
   </section>`;

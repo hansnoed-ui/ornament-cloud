@@ -102,7 +102,7 @@ Aus der Grafik (Inspiration und Untersuchungsmaterial; die Modellregeln sind dar
 - Martin Burkhardt: Die gesellschaftlichen Kosten des Autoverkehrs, 1980.
 - Christian Ude (Hg.): Titel in der Grafik nicht genannt, offen.
 - J. G. Ballard: Concrete Island / Die Betoninsel, Original 1974; die Grafik nennt 1979, die verwendete Ausgabe ist ungeklärt.
-- Hanif Kureishi: The Buddha of Suburbia / Der Buddha aus der Vorstadt, 1990. Die Szene mit der vorgegebenen Rolle ist eine erfundene Modellszene, kein Zitat.
+- Hanif Kureishi: The Buddha of Suburbia / Der Buddha aus der Vorstadt, 1990. Die Szene mit der vorgegebenen Rolle (im Protokoll «Erfundene Szene») ist erfunden, kein Zitat.
 
 Empirische Anregungen: Anciaes und Jones (2016), «Pedestrians avoid busy roads», https://discovery.ucl.ac.uk/id/eprint/1496266/ · Mindell et al. (2017), Triangulation zur Messung von Trennwirkung, https://discovery.ucl.ac.uk/id/eprint/1542116/ · Jane Jacobs (1958), «Downtown is for People».
 
