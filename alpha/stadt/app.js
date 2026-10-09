@@ -1,4 +1,4 @@
-// «Die Stadt, die weitergeht» – Bedienung: Uhr, Begleiten, Verändern (mit Vorschau), Sichtweisen, Protokoll, Vergleiche, Modell.
+// «Die Paradoxie der Stadt» – Bedienung: Uhr, Begleiten, Verändern (mit Vorschau), Sichtweisen, Protokoll, Vergleiche, Modell.
 // Die Simulation (modell.js) läuft mit festem Schritt; die Bildrate bestimmt nur, wie viele Schritte je Bild gerechnet werden.
 import * as M from "./modell.js?v=1";
 import { zeichne, farben, positionVon } from "./ansicht.js?v=1";

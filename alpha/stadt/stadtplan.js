@@ -1,4 +1,4 @@
-// «Die Stadt, die weitergeht» – der Stadtplan: Wege, Querungen, Strassen, Orte und Häuser.
+// «Die Paradoxie der Stadt» – der Stadtplan: Wege, Querungen, Strassen, Orte und Häuser.
 // Masse in Metern; die Karte ist 600 × 420 m, Norden oben. Nur Daten und Geometrie, kein Zustand, kein Zeichnen.
 // Was es gibt, hängt von den Massnahmen ab (verfuegbar()); die Figuren planen dagegen mit dem, was sie glauben (modell.js).
 

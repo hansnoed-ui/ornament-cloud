@@ -1,4 +1,4 @@
-// Alpha: «Die Stadt, die weitergeht». Lässt jev EINMAL beim Bauen einschätzen, wie Figuren in beschriebenen Lagen am ehesten wählen
+// Alpha: «Die Paradoxie der Stadt». Lässt jev EINMAL beim Bauen einschätzen, wie Figuren in beschriebenen Lagen am ehesten wählen
 // (Querung der Hauptstrasse, Fahrt durch das Quartier, Teilnahme am Offenen Abend), und legt die Wahrscheinlichkeiten in alpha/stadt/jev.js ab.
 // Die Seite ruft jev nie auf und sendet nichts. Die Fragen stehen in alpha/stadt/fragen.js; ändern sie sich, passt die Prüfsumme nicht mehr,
 // die Seite nimmt bis zum nächsten Lauf die Ersatzregeln, und ein Test meldet es.

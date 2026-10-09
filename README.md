@@ -140,7 +140,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   passt die Prüfsumme nicht mehr: ein Test meldet es, bis `jev.js` neu erzeugt ist, und bis dahin bleibt jev in der Seite still. Zugang beim Bauen: ein Proxy, der den Schlüssel einsetzt, oder `TYPESAFE_API_KEY` in der Umgebung (nie in eine Datei);
   Antworten liegen zwischengespeichert in `$TMPDIR/jev-bruecken-cache.jsonl`, `--probe` zeigt drei Beispiele, ohne etwas zu schreiben.
   Tests: `node --experimental-strip-types --no-warnings --test tests/drittes-rad.test.mjs` und `NODE_PATH=$(npm root -g) node tests/drittes-rad.e2e.mjs`
-  `alpha/stadt/` ist «Die Stadt, die weitergeht» (Prototyp seit 9. Oktober 2026, zuunterst in der Übersicht, von keiner Seite der Website verlinkt): ein interaktives Stadtlabor nach Klaus Kusanowskys Grafik
+  `alpha/stadt/` ist «Die Paradoxie der Stadt» (Prototyp seit 9. Oktober 2026, zuunterst in der Übersicht, von keiner Seite der Website verlinkt): ein interaktives Stadtlabor nach Klaus Kusanowskys Grafik
   «Urbane Paradoxien: Die Systematik der Stadt» (NotebookLM). Ein Quartier mit 72 Bewohner:innen (auf schwächeren Geräten 40), Passant:innen, Autos von aussen, Bus und Ampel lebt mit festem Takt und Startwert;
   vier Erfahrungsfelder an derselben Stadt: A Fahrspur, Bus, Zebrastreifen, Tempo 30 (echte Rückkopplung Kapazität → Fahrzeit → Nachfrage, kein Zeitschalter), B Verbindung mit Zaun, Brücke mit Treppen oder Rampen,
   C Sichtweisen (Verkehrsfluss, Erreichbarkeit, Aufenthalt, Belastung einzelner; Gewichtung nur als gewählte Wertung), D Offener Abend im Atelier (erreicht, anwesend, beteiligt, mitbestimmend; erfundene Modellszene nach Motiven von Kureishi, kein Zitat).

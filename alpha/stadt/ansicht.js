@@ -1,4 +1,4 @@
-// «Die Stadt, die weitergeht» – Zeichnung der Stadt auf einer Canvas (Draufsicht). Liest den Zustand, verändert ihn nie.
+// «Die Paradoxie der Stadt» – Zeichnung der Stadt auf einer Canvas (Draufsicht). Liest den Zustand, verändert ihn nie.
 // Gezeichnet wird in Metern (die Transformation macht daraus Pixel); Farben kommen aus CSS-Variablen der Seite (hell und dunkel).
 import { KNOTEN, KANTEN, ORTE, BANK, BAENKE, BLOECKE, WOHNUNGEN, KORRIDORE, VERBINDUNG, BREITE, HOEHE, X_AMPEL, X_ZEBRA, X_HALT, bedingungen, ampelZeiten } from "./stadtplan.js?v=1";
 import { gesamtzeit } from "./modell.js?v=1";

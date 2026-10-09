@@ -1,4 +1,4 @@
-// «Die Stadt, die weitergeht» (alpha/stadt/) – Prüfungen des Modells ohne Browser. Sie folgen den Abnahmepunkten des Auftrags vom 9. Oktober 2026.
+// «Die Paradoxie der Stadt» (alpha/stadt/) – Prüfungen des Modells ohne Browser. Sie folgen den Abnahmepunkten des Auftrags vom 9. Oktober 2026.
 //   node --experimental-strip-types --no-warnings --test tests/stadt.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";

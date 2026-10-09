@@ -1,4 +1,4 @@
-# Die Stadt, die weitergeht – So funktioniert das Modell
+# Die Paradoxie der Stadt – So funktioniert das Modell
 
 Alpha, Stand 9. Oktober 2026. Ein vereinfachtes Denkmodell, keine wissenschaftlich validierte Prognose.
 

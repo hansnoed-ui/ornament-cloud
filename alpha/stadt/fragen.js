@@ -1,4 +1,4 @@
-// «Die Stadt, die weitergeht» – die Fragen an jev und die Ersatzregeln.
+// «Die Paradoxie der Stadt» – die Fragen an jev und die Ersatzregeln.
 // jev (api.typesafe.ai) ist ein Beurteiler: Er schätzt zu einer beschriebenen Lage, wie wahrscheinlich jede vorgegebene Wahl ist.
 // tools/build-jev-stadt.ts stellt ihm diese Fragen EINMAL beim Bauen und legt die Antworten in jev.js ab. Die Seite ruft jev nie auf.
 // Die Simulation schlägt in der Tabelle nach; fehlt die Tabelle oder passt die Prüfsumme nicht, gelten die einfachen Ersatzregeln unten.

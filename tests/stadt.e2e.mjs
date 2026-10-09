@@ -1,4 +1,4 @@
-// «Die Stadt, die weitergeht» – Browser-Tests (Playwright, Chromium): die Stadt lebt beim Öffnen, Pause hält die Zeit an, Eingriff am Ort mit Protokoll,
+// «Die Paradoxie der Stadt» – Browser-Tests (Playwright, Chromium): die Stadt lebt beim Öffnen, Pause hält die Zeit an, Eingriff am Ort mit Protokoll,
 // Sichtweisen ändern nichts an der Stadt, Handy ohne seitliches Scrollen, und ohne jev-Tabelle läuft die Grundsimulation weiter.
 //   NODE_PATH=$(npm root -g) node tests/stadt.e2e.mjs
 import assert from "node:assert/strict";

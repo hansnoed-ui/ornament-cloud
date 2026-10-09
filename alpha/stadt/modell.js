@@ -1,4 +1,4 @@
-// «Die Stadt, die weitergeht» – das Modell. Reine Rechnung, kein Zeichnen, kein DOM: läuft im Browser und in den Tests.
+// «Die Paradoxie der Stadt» – das Modell. Reine Rechnung, kein Zeichnen, kein DOM: läuft im Browser und in den Tests.
 // Ein fester Zeitschritt (1 Sekunde Stadtzeit), ein Startwert, Zufall nur über zufall(): Jede Ziehung hängt an einem eigenen Schlüssel
 // (Kanal, Tag, Figur, Zähler), damit zusätzliche Ziehungen in einem Vergleichszweig die übrigen Ereignisse nicht verschieben.
 // Der ganze Zustand liegt in stadt.z (einfache Daten, klonbar); stadt.r hält nur abgeleitete Hilfen (Graph, jev-Tabelle).

@@ -1,4 +1,4 @@
-// «Die Stadt, die weitergeht» – die beiden Raster als freiwillige Beobachtungshilfen («Genauer hinsehen»).
+// «Die Paradoxie der Stadt» – die beiden Raster als freiwillige Beobachtungshilfen («Genauer hinsehen»).
 // Liest nur den Zustand. Keine Punkte über Menschen, keine Gesamtnote; fehlende Grundlage heisst «offen».
 // Grundlagen: Christian Strickler, «Nebeneinander und Nacheinander» (Anwendungsprompt 3.2.0) und «Der Verteilapparat des Körpers» (2.1.0).
 import { ORTE, uhr, fortbestehend, KATEGORIEN, dauerText, wirklichkeit } from "./modell.js?v=1";

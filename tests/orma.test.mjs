@@ -565,7 +565,7 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
   for (const f of at.build()) assert.equal(readFileSync(new URL(f.pfad, root), "utf8"), f.inhalt, `${f.pfad} veraltet: node --experimental-strip-types tools/build-alpha-texte.ts`);
   const uebersicht = readFileSync(new URL("alpha/index.html", root), "utf8");
   const eintraege = [...uebersicht.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map(m => m[1]);
-  // Die Prüfraster in Arbeit stehen zusammen ganz unten, danach nur die Prototypen: OMNA COLOR, Das Dritte Rad (2. Oktober 2026) und «Die Stadt, die weitergeht» (9. Oktober 2026)
+  // Die Prüfraster in Arbeit stehen zusammen ganz unten, danach nur die Prototypen: OMNA COLOR, Das Dritte Rad (2. Oktober 2026) und «Die Paradoxie der Stadt» (9. Oktober 2026)
   assert.deepEqual(eintraege.slice(-5), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/", "drittes-rad/", "stadt/"], "zuunterst, danach OMNA COLOR, Das Dritte Rad und die Stadt");
   const omna = readFileSync(new URL("alpha/omna-color/index.html", root), "utf8");
   assert.ok(!/(src|href)="https?:/.test(omna), "OMNA COLOR lädt nichts von fremden Servern");
