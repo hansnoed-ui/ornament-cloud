@@ -125,6 +125,31 @@ await check("Weniger Bewegung: die Stadt startet angehalten und sagt es", async 
   await ctx.close();
 });
 
+await check("Vollbild: der Knopf schaltet um, Stadt und Panel füllen den Bildschirm; ?vollbild öffnet gleich so, auch auf dem Handy ohne Vollbild-Schnittstelle", async () => {
+  const { ctx, page, fehler } = await oeffne({ viewport: { width: 1280, height: 800 } });
+  await page.click("#vollbild");
+  await page.waitForTimeout(400);
+  let m = await page.evaluate(() => ({ an: document.getElementById("stadt").classList.contains("vollbild"), knopf: document.getElementById("vollbild").getAttribute("aria-pressed"), h: document.querySelector(".karte-box").getBoundingClientRect().height, panel: document.getElementById("panel").getBoundingClientRect().right }));
+  assert.ok(m.an && m.knopf === "true", "an");
+  assert.ok(m.h > 600, `Karte füllt die Höhe (${m.h})`);
+  assert.ok(m.panel <= 1280 && m.panel > 1200, "Panel rechts daneben");
+  await page.click("#vollbild"); await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(() => document.getElementById("stadt").classList.contains("vollbild")), false, "wieder aus");
+  await ctx.close();
+  const h = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const p = await h.newPage();
+  await p.goto(base + "?vollbild&figuren=32");
+  await p.waitForSelector(".stadt.bereit", { timeout: 30000 });
+  m = await p.evaluate(() => ({ an: document.getElementById("stadt").classList.contains("vollbild"), karte: document.querySelector(".karte-box").getBoundingClientRect(), panelTop: document.getElementById("panel").getBoundingClientRect().top, sw: document.documentElement.scrollWidth }));
+  assert.ok(m.an, "?vollbild");
+  assert.ok(m.karte.top < 200 && m.karte.height > 500, `Karte gross (${Math.round(m.karte.top)}, ${Math.round(m.karte.height)})`);
+  assert.ok(m.panelTop > 700, "Panel zugeklappt unten");
+  assert.ok(m.sw <= 391, "kein seitliches Scrollen");
+  await p.click("#einstieg-umsehen");
+  assert.deepEqual(fehler, []);
+  await h.close();
+});
+
 await browser.close(); server.close();
 console.log(`${ergebnisse.filter(Boolean).length} von ${ergebnisse.length} bestanden`);
 process.exit(ergebnisse.every(Boolean) ? 0 : 1);

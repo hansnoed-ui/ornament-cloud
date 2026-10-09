@@ -185,7 +185,8 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
   beiden Grundlagenpapiere `alpha/pruefraster/` und `alpha/verteilapparat/` (freigegeben am
   28. September 2026). Alle vier Prüfraster verlinkt die Seite «Masterprompts» (`masterprompts/`, als Alpha
   gekennzeichnet; seit dem 29. September 2026 standen sie auf der Startseite), OMNA COLOR und das Dritte Rad
-  die Seite «Web» (`web/`, als Alpha gekennzeichnet; Wunsch von Christian, 2. Oktober 2026). Die Startseite
+  die Seite «Web» (`web/`, als Alpha gekennzeichnet; Wunsch von Christian, 2. Oktober 2026), seit dem 9. Oktober 2026
+  zuoberst auch «Die Paradoxie der Stadt» (`alpha/stadt/`, auch direkt im Vollbild: `alpha/stadt/?vollbild`; Wunsch von Christian). Die Startseite
   verlinkt keine Alpha-Seite mehr; andere Seiten verlinken den Alpha-Bereich nicht (Ausnahme: die
   Navigation oben links, siehe unten). Aktualisiert wird die
   Alpha-Version mit `node --experimental-strip-types tools/build-orma.ts --alpha`.

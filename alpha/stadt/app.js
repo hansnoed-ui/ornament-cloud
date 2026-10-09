@@ -1,10 +1,10 @@
 // «Die Paradoxie der Stadt» – Bedienung: Uhr, Begleiten, Verändern (mit Vorschau), Sichtweisen, Protokoll, Vergleiche, Modell.
 // Die Simulation (modell.js) läuft mit festem Schritt; die Bildrate bestimmt nur, wie viele Schritte je Bild gerechnet werden.
-import * as M from "./modell.js?v=1";
-import { zeichne, farben, positionVon } from "./ansicht.js?v=1";
-import { nebeneinanderNacheinander, verteilapparat, befragungAuswertung, SCHWELLEN } from "./raster.js?v=1";
-import { VERBINDUNG, BANK } from "./stadtplan.js?v=1";
-import * as F from "./fragen.js?v=1";
+import * as M from "./modell.js?v=2";
+import { zeichne, farben, positionVon } from "./ansicht.js?v=2";
+import { nebeneinanderNacheinander, verteilapparat, befragungAuswertung, SCHWELLEN } from "./raster.js?v=2";
+import { VERBINDUNG, BANK } from "./stadtplan.js?v=2";
+import * as F from "./fragen.js?v=2";
 
 const $ = (s, w = document) => w.querySelector(s);
 const $$ = (s, w = document) => [...w.querySelectorAll(s)];
@@ -29,7 +29,7 @@ let tabelle = null, tabelleFehler = null;
 
 // ---------- Start ----------
 async function start() {
-  try { tabelle = (await import("./jev.js?v=1")).JEV; if (!M.tabelleGueltig(tabelle)) { tabelleFehler = "Prüfsumme passt nicht zu den Fragen"; tabelle = null; } }
+  try { tabelle = (await import("./jev.js?v=2")).JEV; if (!M.tabelleGueltig(tabelle)) { tabelleFehler = "Prüfsumme passt nicht zu den Fragen"; tabelle = null; } }
   catch (e) { tabelleFehler = "jev-Tabelle nicht geladen"; tabelle = null; }
   await new Promise((r) => setTimeout(r, 30));    // erst die Seite zeigen, dann die Stadt anlegen (Vorlauf rund eine Sekunde)
   neuerLauf();
@@ -80,10 +80,12 @@ function groesse() {
 /** Massstab: die ganze Stadthöhe passt hinein; ist die Fläche schmaler als die Stadt, wird um die Hauptstrasse herum verschoben */
 function passeAusschnitt(mitte = null) {
   const c = $("#karte");
-  const grund = Math.min(c.width / 600, c.height / 420);
+  // quer: die ganze Stadt passt hinein; hochkant (Handy): die Höhe füllt die Fläche, seitlich wird mit dem Finger verschoben
+  const grund = c.height > c.width ? c.height / 420 : Math.min(c.width / 600, c.height / 420);
   ui.k = grund * ui.zoom;
   const sichtB = c.width / ui.k, sichtH = c.height / ui.k;
-  const mx = mitte?.x ?? (ui.ox + (ui.sichtB ?? sichtB) / 2 || 300), my = mitte?.y ?? (ui.oy + (ui.sichtH ?? sichtH) / 2 || 210);
+  // ohne Vorgabe bleibt die Mitte, wo sie war; am Anfang die Kreuzung beim Laden
+  const mx = mitte?.x ?? (ui.sichtB === undefined ? 300 : ui.ox + ui.sichtB / 2), my = mitte?.y ?? (ui.sichtH === undefined ? 210 : ui.oy + ui.sichtH / 2);
   ui.ox = sichtB >= 600 ? (600 - sichtB) / 2 : Math.max(0, Math.min(600 - sichtB, mx - sichtB / 2));
   ui.oy = sichtH >= 420 ? (420 - sichtH) / 2 : Math.max(0, Math.min(420 - sichtH, my - sichtH / 2));
   ui.sichtB = sichtB; ui.sichtH = sichtH;
@@ -102,6 +104,10 @@ function baueBedienung() {
     melde("Die Stadt wird neu angelegt …");
     setTimeout(() => { neuerLauf(); melde("Lauf zurückgesetzt: dieselbe Ausgangslage, derselbe Startwert. Alle Erinnerungen sind gelöscht."); panelAktualisieren(true); }, 30);
   });
+  $("#vollbild").addEventListener("click", () => vollbild(!ui.vollbild));
+  document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && ui.vollbild && ui.echtesVollbild) vollbild(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && ui.vollbild && !document.fullscreenElement) vollbild(false); });
+  if (params.has("vollbild")) vollbild(true);
   $("#zoom-plus").addEventListener("click", () => zoomen(1.4));
   $("#zoom-minus").addEventListener("click", () => zoomen(1 / 1.4));
   setzeLauf(ui.laeuft); tempoKnoepfe();
@@ -135,13 +141,29 @@ function baueBedienung() {
   $("#panel").addEventListener("input", panelEingabe);
   for (const ev of ["pointerover", "focusin"]) $("#panel").addEventListener(ev, (e) => { const el = e.target.closest("[data-vorschau]"); if (el) ui.vorschau = JSON.parse(el.dataset.vorschau); });
   for (const ev of ["pointerout", "focusout"]) $("#panel").addEventListener(ev, (e) => { if (e.target.closest("[data-vorschau]")) ui.vorschau = null; });
-  zeigeTab("begleiten");
+  zeigeTab("begleiten", null, false);   // auf dem Handy bleibt das Panel beim Laden zu, sonst verdeckt es den Einstieg
+}
+/** Vollbild: die Fullscreen-Schnittstelle, wo der Browser sie für ein Element erlaubt; sonst füllt die Stadt das Fenster (gleiche Gestaltung, Klasse «vollbild») */
+function vollbild(an) {
+  const el = $("#stadt");
+  ui.vollbild = an;
+  el.classList.toggle("vollbild", an);
+  document.documentElement.classList.toggle("stadt-vollbild", an);
+  const b = $("#vollbild"); b.setAttribute("aria-pressed", String(an)); b.textContent = an ? "Vollbild beenden" : "Vollbild";
+  if (an && el.requestFullscreen && !document.fullscreenElement) { ui.echtesVollbild = true; el.requestFullscreen().catch(() => (ui.echtesVollbild = false)); }
+  if (!an && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  if (!an) ui.echtesVollbild = false;
+  requestAnimationFrame(() => { groesse(); requestAnimationFrame(groesse); });
 }
 function setzeLauf(an) { ui.laeuft = an; const b = $("#lauf"); b.setAttribute("aria-pressed", String(an)); b.textContent = an ? "Pause" : "Start"; }
 function tempoKnoepfe() { $$("[data-tempo]").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.tempo === ui.tempo))); }
 function zoomen(f) { const mitte = { x: ui.ox + ui.sichtB / 2, y: ui.oy + ui.sichtH / 2 }; ui.zoom = Math.max(1, Math.min(4, ui.zoom * f)); passeAusschnitt(mitte); }
 function schliesseEinstieg() { $("#einstieg").hidden = true; }
-function panel(offen) { ui.panelOffen = offen; $("#panel").classList.toggle("offen", offen); $("#panel-griff").setAttribute("aria-expanded", String(offen)); }
+function panel(offen) {
+  ui.panelOffen = offen; $("#panel").classList.toggle("offen", offen); $("#panel-griff").setAttribute("aria-expanded", String(offen));
+  // Handy: die Karte nach oben holen, damit sie über dem aufgeklappten Panel sichtbar bleibt
+  if (offen && !ui.vollbild && matchMedia("(max-width: 900px)").matches) $(".karte-box").scrollIntoView({ block: "start", behavior: WENIGER_BEWEGUNG ? "auto" : "smooth" });
+}
 function melde(t) { const el = $("#meldung"); el.textContent = t; ui.letzteMeldung = performance.now(); }
 
 function antippen(e) {
@@ -171,12 +193,12 @@ function impuls() {
 }
 
 // ---------- Tabs und Panels ----------
-function zeigeTab(tab, anker = null) {
+function zeigeTab(tab, anker = null, oeffnen = true) {
   ui.tab = tab;
   $$("[role=tab]").forEach((t) => { const an = t.dataset.tab === tab; t.setAttribute("aria-selected", String(an)); t.tabIndex = an ? 0 : -1; });
   $$("[role=tabpanel]").forEach((p) => (p.hidden = p.id !== `tab-${tab}`));
   panelAktualisieren(true);
-  if (matchMedia("(max-width: 900px)").matches) panel(true);
+  if (oeffnen && matchMedia("(max-width: 900px)").matches) panel(true);
   if (anker) { const el = document.getElementById(anker); el?.scrollIntoView({ block: "start", behavior: WENIGER_BEWEGUNG ? "auto" : "smooth" }); el?.querySelector("button, select, input")?.focus({ preventScroll: true }); }
 }
 function panelAktualisieren(sofort = false) {

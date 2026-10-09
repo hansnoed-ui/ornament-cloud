@@ -5,6 +5,7 @@
 // und die Bilder der Karten auf der Seite «Web» (Hochformat 4 : 5, 640 × 800, dunkel in beiden Farbmodi):
 //   OMNA COLOR       das Farbrad aus der Seite           → assets/vorschau-omna-color.jpg
 //   Das Dritte Rad   das Rad aus der Seite               → assets/vorschau-drittes-rad.jpg
+//   Paradoxie der Stadt  die Stadt um 07.30 Uhr, hochkant  → assets/vorschau-stadt.jpg   (seit 9. Oktober 2026, zuoberst auf «Web»; hell wie die Grafik, «stadt» erzeugt nur dieses Bild)
 //   Stellenfeld      die erste Station der Szene         → assets/vorschau-stellenfeld.jpg   (seit 4. Oktober 2026, als das Stellenfeld von der Startseite auf «Web» zog)
 // Startseite: eine Wolke aus den 40 Zeichen von ORNA (direkt aus symbols.js gezeichnet), daneben Name und Satz der Startseite.
 // Masterprompts: wie die Startseite links Titel, Welle und Satz der Seite; rechts die vier gezeichneten Vorschauen der Prüfraster,
@@ -229,10 +230,10 @@ if (!wahl || wahl === "rad") {
 }
 
 // ---------- Bilder der Seite «Web» ----------
-if (!wahl || wahl === "vorschau") {
+if (!wahl || wahl === "vorschau" || wahl === "stadt") {
   const hochformat = { viewport: { width: 640, height: 800 }, deviceScaleFactor: 1, reducedMotion: "reduce" };
   // OMNA COLOR: das Farbrad im dunklen Modus der Seite, sonst nichts
-  {
+  if (wahl !== "stadt") {
     const page = await browser.newPage({ ...hochformat, colorScheme: "dark" });
     await page.goto(`${base}alpha/omna-color/`);
     await page.waitForFunction(() => document.querySelectorAll("#outer path.seg").length > 0);
@@ -250,7 +251,7 @@ if (!wahl || wahl === "vorschau") {
     await page.close();
   }
   // Das Dritte Rad: das Rad auf dem nachtblauen Grund der Seite
-  {
+  if (wahl !== "stadt") {
     const page = await browser.newPage({ ...hochformat, colorScheme: "dark" });
     await page.goto(`${base}alpha/drittes-rad/`);
     await page.waitForFunction(() => window.radGeladen === true);
@@ -280,8 +281,25 @@ if (!wahl || wahl === "vorschau") {
     console.log("geschrieben:", out);
     await page.close();
   }
-  // Stellenfeld: die Szene im Hochformat, ohne Bedienleiste (bei «weniger Bewegung» steht sie auf der ersten Station still)
+  // Die Paradoxie der Stadt (mit «stadt» nur dieses Bild): nur die Karte, hell wie die Grafik von Kusanowsky; «weniger Bewegung» hält sie am ersten Morgen um 07.30 Uhr an (immer dasselbe Bild)
   {
+    const page = await browser.newPage({ ...hochformat, colorScheme: "light" });
+    await page.goto(`${base}alpha/stadt/?seed=7&figuren=72`);
+    await page.waitForSelector(".stadt.bereit", { timeout: 30000 });
+    await page.addStyleTag({ content: `
+      .site-header, .leiste, .meldung, .lagezeile, .legende, .panel, .site-footer, #einstieg { display: none !important; }
+      html, body { margin: 0 !important; overflow: hidden; }
+      .stadt { display: block !important; padding: 0 !important; max-width: none !important; }
+      .karte-box { width: 640px !important; height: 800px !important; aspect-ratio: auto !important; border: 0 !important; border-radius: 0 !important; }` });
+    await page.evaluate(() => dispatchEvent(new Event("resize")));
+    await page.waitForTimeout(500);
+    const out = fileURLToPath(new URL("../assets/vorschau-stadt.jpg", import.meta.url));
+    await page.screenshot({ path: out, type: "jpeg", quality: 86 });
+    console.log("geschrieben:", out);
+    await page.close();
+  }
+  // Stellenfeld: die Szene im Hochformat, ohne Bedienleiste (bei «weniger Bewegung» steht sie auf der ersten Station still)
+  if (wahl !== "stadt") {
     const page = await browser.newPage({ ...hochformat, colorScheme: "dark" });
     await page.goto(`${base}werke/stellenfeld/`);
     await page.waitForSelector("canvas");
