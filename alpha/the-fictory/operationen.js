@@ -1,12 +1,14 @@
-// «The Fictory» – EIN zusammenhängender Prozess in festen Schritten (30 je Sekunde, 30 Sekunden).
+// «The Fictory» – EIN zusammenhängender Prozess in festen Schritten (30 je Sekunde, 35 Sekunden).
 // Das ganze Eingangsbild wird zu Material: jede Fläche wird ein Teil, grosse Flächen werden in Kacheln zerschnitten. Nach dem
-// Eingangsbild gibt es das Bild nur noch als seine Teile auf dunklem Grund. Sechs Operationen folgen aufeinander; jede plant ihren
+// Eingangsbild gibt es das Bild nur noch als seine Teile auf dunklem Grund, bis sie es am Ende neu zusammensetzen. Sechs Operationen folgen aufeinander; jede plant ihren
 // Verlauf aus dem Zustand, den die vorige hinterlassen hat:
 //   1 Neue Nachbarschaften   → Fugen öffnen sich, alle Teile gehen in ein Archiv-Raster nach einer Regel; die Ankunftsreihenfolge bleibt im Zustand
 //   2 Abfolge als Bild       → die Ankunftsreihenfolge wird zur Zeitachse (längs die Folge, quer die Lage aus dem Original); Zwischenstände bleiben als Spur
 //   3 Wirksame Spuren        → jeder Schritt meidet das Spurenfeld, das alle früheren Schritte hinterlassen haben
 //   4 Gekoppelte Beziehungen → Kopplungen aus den Nachbarschaften im Bild versuchen es wieder zusammenzusetzen; Spuren machen zäh, ein Anstoss verdreht
 //   5 Anders weitergehen     → ein einziger Schnitt durch das Gefüge (gelegt, wo die meiste Spur liegt) trennt alle Kopplungen über ihn; eine Seite bricht weg
+//   6 Neu zusammengesetzt    → jedes Teil kehrt an seine Herkunftsstelle zurück und das Ursprungsbild setzt sich neu zusammen; wo Spur liegt, kommt ein Teil
+//                              später und langsamer an (die Spuren bestimmen die Reihenfolge, nicht mehr das Ziel). Es bleiben feine Fugen.
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
 import { zufall } from "./analyse.js?v=11";
@@ -20,8 +22,9 @@ export const STATIONEN = Object.freeze([
   { nr: 3, titel: "Wirksame Spuren", ende: 19 },
   { nr: 4, titel: "Gekoppelte Beziehungen", ende: 24.5 },
   { nr: 5, titel: "Anders weitergehen", ende: 30 },
+  { nr: 6, titel: "Neu zusammengesetzt", ende: 35 },
 ]);
-export const SCHLUESSEL = Object.freeze(STATIONEN.map((s) => Math.round(s.ende * TAKT)));   // [60, 225, 390, 570, 735, 900]
+export const SCHLUESSEL = Object.freeze(STATIONEN.map((s) => Math.round(s.ende * TAKT)));   // [60, 225, 390, 570, 735, 900, 1050]
 export const GESAMT = SCHLUESSEL[SCHLUESSEL.length - 1];
 const RASTER = 48;                      // Zellen je Bildhöhe im Spurenfeld
 const FELD = 80;                        // Zellen je Bildhöhe im wuchernden Feld (Reaktions-Diffusion)
@@ -163,7 +166,7 @@ export function anfang(M) {
     teile: M.teile.map((e, z) => ({ x: e.hx, y: e.hy, rot: 0, s: 1, a: 1, kontur: 0, z: (e.figur ? 1000 : 0) + z, loch: 0, fest: !e.beweglich, erschoepft: false })),
     grundAlpha: 1, spurAlpha: 1, gliederung: 0, stempel: [], spuren: new Float32Array(M.gw * M.gh),
     feldA: new Float32Array(M.fw * M.fh).fill(1), feldB: new Float32Array(M.fw * M.fh), feldAlpha: 0,
-    ankunft: [], federn: [], kopplungAlpha: 0, anstoss: null, schnitt: null,
+    ankunft: [], federn: [], kopplungAlpha: 0, anstoss: null, schnitt: null, schnittAlpha: 1,
     plan: null, ereignisse: [],
   };
 }
@@ -174,7 +177,7 @@ export function kopie(z) {
     federn: z.federn.map((f) => ({ ...f })), plan: z.plan ? JSON.parse(JSON.stringify(z.plan)) : null, ereignisse: z.ereignisse.slice() };
 }
 
-const station = (schritt) => { let i = 1; while (i < SCHLUESSEL.length - 1 && schritt >= SCHLUESSEL[i]) i++; return i; };   // laufende Station (1–5) für schritt ≥ 60
+const station = (schritt) => { let i = 1; while (i < SCHLUESSEL.length - 1 && schritt >= SCHLUESSEL[i]) i++; return i; };   // laufende Station (1–6) für schritt ≥ 60
 
 /** Ein Schritt des Prozesses (verändert z). */
 export function schritt(M, z) {
@@ -191,7 +194,7 @@ export function schritt(M, z) {
     z.feldAlpha = Math.min(1, z.feldAlpha + 1 / 60);
   }
   z.schritt = n + 1;
-  if (z.schritt === GESAMT) z.ereignisse.push({ schritt: GESAMT, text: "Ende des Laufs: Der Zustand bleibt stehen; es gibt keinen erzwungenen Rücksprung zum Anfang." });
+  if (z.schritt === GESAMT) z.ereignisse.push({ schritt: GESAMT, text: "Ende des Laufs: Das Ursprungsbild steht wieder, aus seinen Teilen neu zusammengesetzt; der Zustand bleibt stehen." });
   return z;
 }
 
@@ -275,7 +278,7 @@ function bewege(t, q, p) {
   return u;
 }
 
-// ---------- die fünf Operationen ----------
+// ---------- die sechs Operationen ----------
 const OPS = {
   // 1 · Neue Nachbarschaften: Fugen öffnen sich, dann gehen alle Teile in ein Archiv-Raster, geordnet nach einer am Bild begründeten Regel
   1: {
@@ -493,7 +496,41 @@ const OPS = {
       z.spurAlpha = 1 - 0.45 * glatt(p / 0.5);                              // die Spuren treten zurück, damit der Bruch lesbar bleibt
     },
   },
+
+  // 6 · Neu zusammengesetzt: alle Kopplungen sind gelöst; jedes Teil gleitet an seine Herkunftsstelle, in Originalgrösse und ohne Drehung.
+  //     Die Reihenfolge kommt aus dem erreichten Zustand: je weniger Spur und Feld unter einem Teil, desto früher und rascher kehrt es zurück.
+  //     Zuletzt schliessen sich die Fugen bis auf eine feine Linie; Schnitt, Kopplungen und Spuren treten zurück.
+  6: {
+    plan(M, z, r) {
+      const zaeh = z.teile.map((t, i) => ({ i, mu: t.fest ? Infinity : beweglichkeit(M, z, i) })).sort((a, b) => b.mu - a.mu || a.i - b.i);
+      const N = zaeh.length, ziel = {};
+      zaeh.forEach(({ i }, k) => {
+        const t = z.teile[i], e = M.teile[i], f = N > 1 ? k / (N - 1) : 0;
+        const wende = Math.atan2(Math.sin(-t.rot), Math.cos(-t.rot));            // kürzester Weg zur Lage im Original
+        ziel[i] = { x0: t.x, y0: t.y, s0: t.s, rot0: t.rot, x: e.hx, y: e.hy, s: 1, rot: t.rot + wende, start: 0.04 + 0.4 * f, dauer: 0.3 + 0.12 * f, z: anfangsEbene(M, i) };
+      });
+      const zuerst = zaeh.slice(0, 3).map(({ i }) => name(M.teile[i])), zuletzt = zaeh.slice(-2).map(({ i }) => name(M.teile[i]));
+      z.ereignisse.push({ schritt: z.schritt, kurz: "Jedes Teil kehrt zurück: das Bild setzt sich neu zusammen.", text: `Schritt 6: Alle Kopplungen lösen sich; jedes der ${N} Teile kehrt an seine Herkunftsstelle zurück, in Originalgrösse und ohne Drehung, und das Ursprungsbild setzt sich neu zusammen. Die Spuren bestimmen die Reihenfolge: zuerst ${zuerst.join(", ")} (wenig Spur), zuletzt ${zuletzt.join(", ")}. Es bleiben feine Fugen.` });
+      return { ziel, schnitt0: z.schnittAlpha ?? 1, kopplung0: z.kopplungAlpha, spur0: z.spurAlpha };
+    },
+    lauf(M, z, p) {
+      const P = z.plan;
+      for (const [i, q] of Object.entries(P.ziel)) {
+        const t = z.teile[i];
+        if (p < q.start) continue;
+        const u = bewege(t, q, p);
+        if (u >= 1) t.z = q.z;                                                 // angekommen: wieder in der Ebene des Anfangs (Drehung bleibt ein volles Vielfaches, kein Sprung)
+      }
+      z.schnittAlpha = P.schnitt0 * (1 - glatt(p / 0.3));
+      z.kopplungAlpha = P.kopplung0 * (1 - glatt(p / 0.2));
+      z.spurAlpha = P.spur0 * (1 - 0.6 * glatt(p / 0.6));
+      // wenn alle angekommen sind: die Fugen zeichnen sich ab und gehen bis auf eine feine Linie zurück
+      z.gliederung = 0.7 * glatt((p - 0.8) / 0.08) - 0.5 * glatt((p - 0.9) / 0.1);
+    },
+  },
 };
+/** Ebene eines Teils wie im Anfangszustand (Figuren obenauf) */
+const anfangsEbene = (M, i) => (M.teile[i].figur ? 1000 : 0) + i;
 
 /** Beweglichkeit eines Teils: Spuren unter ihm und das gewucherte Feld machen es zäh (Folgewirksamkeit), R5 macht grosse Teile schwer */
 function beweglichkeit(M, z, i) {
@@ -542,7 +579,7 @@ export function zustandsSchluessel(z) {
   const add = (v) => { h ^= v & 0xffffffff; h = Math.imul(h, 0x01000193) >>> 0; };
   add(z.schritt);
   for (const t of z.teile) [t.x, t.y, t.rot, t.s, t.a, t.kontur, t.loch, t.z].forEach((v) => add(r(v)));
-  [z.grundAlpha, z.spurAlpha, z.kopplungAlpha].forEach((v) => add(r(v)));
+  [z.grundAlpha, z.spurAlpha, z.kopplungAlpha, z.gliederung, z.schnittAlpha ?? 1].forEach((v) => add(r(v)));
   add(z.stempel.length);
   for (let k = 0; k < z.spuren.length; k++) if (z.spuren[k]) add(k * 31 + r(z.spuren[k]));
   let feld = 0; for (let k = 0; k < z.feldB.length; k++) feld += z.feldB[k] * ((k % 97) + 1);
@@ -551,7 +588,7 @@ export function zustandsSchluessel(z) {
   return h.toString(16).padStart(8, "0");
 }
 
-/** Beschreibung der fünf Operationen für die Standbilder, aus dem tatsächlichen Lauf */
+/** Beschreibung der sechs Operationen für die Standbilder, aus dem tatsächlichen Lauf */
 export function beschreibungen(M, schluesselZustaende) {
   const aus = (st) => (schluesselZustaende[st]?.ereignisse ?? []).filter((e) => e.schritt >= SCHLUESSEL[st - 1] && e.schritt < SCHLUESSEL[st]).map((e) => e.text);
   const kurz = (st) => (schluesselZustaende[st]?.ereignisse ?? []).find((e) => e.kurz && e.schritt >= SCHLUESSEL[st - 1] && e.schritt < SCHLUESSEL[st])?.kurz ?? "";
