@@ -2,8 +2,8 @@
 // Farbgruppen nachgeschärft).
 // Nach dem Eingangsbild steht alles auf dunklem Grund. zeichne() bildet einen Zustand in beliebiger Grösse ab; Vorschau, Video und
 // Standbild in hoher Auflösung nutzen dieselbe Funktion mit demselben Zustand. In die Bilder kommt keine Schrift.
-import { konturen, lab, leitfarbe } from "./analyse.js?v=4";
-import { zeichneFeld } from "./feld.js?v=4";
+import { konturen, lab, leitfarbe } from "./analyse.js?v=5";
+import { zeichneFeld } from "./feld.js?v=5";
 
 export const NACHT = "#151412";
 export const PAPIER = "#f4f1ea";
@@ -102,18 +102,22 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     // das Punktraster ändert sich nur mit neuen Stempeln: in der Vorschau aus einer Schicht, die nur dann neu entsteht
     let raster = spurCache?.raster;
-    if (!raster || raster.width !== W || raster.height !== H || spurCache.rasterStempel !== z.stempel.length || spurCache.rasterLauf !== M) {
+    // in der Vorschau höchstens alle acht Schritte neu (sonst bei jedem Stempel); zurück auf der Zeitleiste sofort
+    const veraltet = spurCache && spurCache.rasterStempel !== z.stempel.length && (Math.abs(z.schritt - (spurCache.rasterSchritt ?? -99)) >= 8 || z.schritt < spurCache.rasterSchritt);
+    if (!raster || raster.width !== W || raster.height !== H || spurCache.rasterLauf !== M || veraltet || !spurCache) {
       raster = leinwand(W, H);
       const rx = raster.getContext("2d");
       rx.fillStyle = PAPIER;
-      const zelle = S / M.gh;
+      const zelle = S / M.gh, STUFEN = 6;
+      // nach Spurstärke in sechs Stufen gesammelt: wenige Füllungen statt tausender einzelner
+      const pfade = Array.from({ length: STUFEN }, () => new Path2D());
       for (let gy = 0; gy < M.gh; gy++) for (let gx = 0; gx < M.gw; gx++) {
-        const s = Math.min(1, z.spuren[gy * M.gw + gx] / 5);
-        const d = Math.max(1, S * (0.0012 + 0.0032 * s));
-        rx.globalAlpha = 0.1 + 0.6 * s;
-        rx.fillRect((gx + 0.5) * zelle - d / 2, (gy + 0.5) * zelle - d / 2, d, d);
+        const k = Math.min(STUFEN - 1, Math.round((Math.min(1, z.spuren[gy * M.gw + gx] / 5)) * (STUFEN - 1)));
+        const d = Math.max(1, S * (0.0012 + 0.0032 * (k / (STUFEN - 1))));
+        pfade[k].rect((gx + 0.5) * zelle - d / 2, (gy + 0.5) * zelle - d / 2, d, d);
       }
-      if (spurCache) Object.assign(spurCache, { raster, rasterStempel: z.stempel.length, rasterLauf: M });
+      pfade.forEach((pf, k) => { rx.globalAlpha = 0.1 + 0.6 * (k / (STUFEN - 1)); rx.fill(pf); });
+      if (spurCache) Object.assign(spurCache, { raster, rasterStempel: z.stempel.length, rasterLauf: M, rasterSchritt: z.schritt });
     }
     ctx.globalAlpha = technik;
     ctx.drawImage(raster, 0, 0);

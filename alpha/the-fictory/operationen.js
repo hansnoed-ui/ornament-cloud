@@ -9,8 +9,8 @@
 //   5 Anders weitergehen     → ein einziger Schnitt durch das Gefüge (gelegt, wo die meiste Spur liegt) trennt alle Kopplungen über ihn; eine Seite bricht weg
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall } from "./analyse.js?v=4";
-import { REGELN } from "./regeln.js?v=4";
+import { zufall } from "./analyse.js?v=5";
+import { REGELN } from "./regeln.js?v=5";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
@@ -355,21 +355,23 @@ const OPS = {
     },
   },
 
-  // 3 · Wirksame Spuren: dieselbe Operation zehnmal; jedes Teil stempelt und rückt dorthin, wo am wenigsten Spur liegt, und dreht sich dabei in seine Richtung
+  // 3 · Wirksame Spuren: dieselbe Operation zehnmal; jedes Teil stempelt und rückt dorthin, wo am wenigsten Spur liegt, und dreht sich dabei in seine Richtung.
+  //     Die Teile sind gegeneinander versetzt (bis zu gut einer halben Runde): ein Wogen statt eines Takts, und die Arbeit verteilt sich auf viele Bilder.
   3: {
     plan(M, z, r) {
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 3: Zehnmal stempeln und weiterrücken; jedes Teil wählt die Nachbarstelle mit der geringsten Spur und dreht sich in seine Richtung (Spuren bisher: ${z.stempel.length}).` });
-      return { runde: -1, runden: 10, ziel: {}, r: Math.floor(r() * 2 ** 31) };
+      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 3: Zehnmal stempeln und weiterrücken, gegeneinander versetzt; jedes Teil wählt die Nachbarstelle mit der geringsten Spur und dreht sich in seine Richtung (Spuren bisher: ${z.stempel.length}).` });
+      return { runden: 10, runde: z.teile.map(() => -1), ziel: {}, r: Math.floor(r() * 2 ** 31) };
     },
     lauf(M, z, p) {
-      const P = z.plan, runde = Math.min(P.runden - 1, Math.floor((p / 0.9) * P.runden));
-      if (runde > P.runde && p < 0.9) {
-        P.runde = runde;
-        const r = zufall((P.r + runde * 7919) >>> 0);
-        const reihe = z.teile.map((t, i) => i).sort((a, b) => z.teile[a].z - z.teile[b].z);
-        for (const i of reihe) {
-          const t = z.teile[i], e = M.teile[i];
-          if (!e.beweglich || t.erschoepft) continue;
+      const P = z.plan, takt = (p / 0.88) * P.runden;
+      const versatz = (i) => ((i * 7) % 12) / 12 * 0.6;
+      const reihe = z.teile.map((t, i) => i).sort((a, b) => z.teile[a].z - z.teile[b].z);
+      for (const i of reihe) {
+        const t = z.teile[i], e = M.teile[i];
+        const runde = Math.floor(takt - versatz(i));
+        if (runde > P.runde[i] && runde < P.runden && e.beweglich && !t.erschoepft) {
+          P.runde[i] = runde;
+          const r = zufall((P.r + runde * 7919 + i * 104729) >>> 0);
           stempeln(M, z, i, 0.11);
           const weite = 0.6 * Math.max(e.w, e.h) * t.s + 0.035;
           let best = null;
@@ -385,11 +387,9 @@ const OPS = {
           let dw = best.w - t.rot; dw = Math.atan2(Math.sin(dw), Math.cos(dw));
           P.ziel[i] = { x0: t.x, y0: t.y, x: best.x, y: best.y, rot0: t.rot, rot: t.rot + dw * 0.35, von: runde };
         }
-      }
-      const lokal = (p / 0.9) * P.runden - P.runde;
-      for (const [i, q] of Object.entries(P.ziel)) {
-        if (q.von !== P.runde) continue;
-        const t = z.teile[i], u = glatt(p >= 0.9 ? 1 : lokal / 0.7);
+        const q = P.ziel[i];
+        if (!q) continue;
+        const u = glatt((takt - versatz(i) - q.von) / 0.7);
         t.x = q.x0 + (q.x - q.x0) * u; t.y = q.y0 + (q.y - q.y0) * u; t.rot = q.rot0 + (q.rot - q.rot0) * u;
       }
     },
