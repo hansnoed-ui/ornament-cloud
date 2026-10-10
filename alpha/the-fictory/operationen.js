@@ -9,8 +9,8 @@
 //   5 Figur und Grund        → Umkehrung: die Teile werden Silhouetten, der Zwischenraum der erreichten Lage trägt das Material des Grundes
 //   6 Anders weitergehen     → ein einziger Schnitt durch das Gefüge (gelegt, wo die meiste Spur liegt) trennt alle Kopplungen über ihn; eine Seite bricht weg
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall, konturen } from "./analyse.js?v=2";
-import { REGELN } from "./regeln.js?v=2";
+import { zufall, konturen } from "./analyse.js?v=3";
+import { REGELN } from "./regeln.js?v=3";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
@@ -25,6 +25,9 @@ export const STATIONEN = Object.freeze([
 export const SCHLUESSEL = Object.freeze(STATIONEN.map((s) => Math.round(s.ende * TAKT)));   // [60, 195, 330, 480, 630, 765, 900]
 export const GESAMT = SCHLUESSEL[SCHLUESSEL.length - 1];
 const RASTER = 48;                      // Zellen je Bildhöhe im Spurenfeld
+const FELD = 80;                        // Zellen je Bildhöhe im wuchernden Feld (Reaktions-Diffusion)
+// Gray-Scott nach Karl Sims (A, B, Diffusion 1 und 0.5, Zufuhr f, Abbau k): «Koralle», ein Muster, das von Keimen aus wuchert
+const RD = Object.freeze({ dA: 1, dB: 0.5, f: 0.0545, k: 0.062, runden: 1 });
 const HOECHSTENS = 72;                  // so viele Teile höchstens
 
 const glatt = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
@@ -117,7 +120,8 @@ export function erzeugeLauf(analyse, lauf = {}) {
   for (const e of teile) e.beweglich = regel === "R4" ? e.kontrast > median || e.figur : true;
   const groesster = Math.max(...teile.map((e) => e.anteil));
   for (const e of teile) e.last = regel === "R5" ? 1 + 3 * Math.sqrt(e.anteil / groesster) : 1;
-  return { analyse: A, seed, regel, neutralisiere: lauf.neutralisiere ?? null, seite, ah, aw, gw, gh, teile, karte, nachbarn, kachelGroesse: kachel, verworfen };
+  const fh = FELD, fw = Math.ceil(seite * FELD);
+  return { analyse: A, seed, regel, neutralisiere: lauf.neutralisiere ?? null, seite, ah, aw, gw, gh, fw, fh, teile, karte, nachbarn, kachelGroesse: kachel, verworfen };
 }
 
 /** Liegt der normierte Punkt (px, py) im Teil e, wenn es in der Lage (x, y, m) steht? */
@@ -149,6 +153,7 @@ export function anfang(M) {
     schritt: 0,
     teile: M.teile.map((e, z) => ({ x: e.hx, y: e.hy, rot: 0, s: 1, a: 1, kontur: 0, z: (e.figur ? 1000 : 0) + z, loch: 0, fest: !e.beweglich, erschoepft: false })),
     grundAlpha: 1, spurAlpha: 1, umkehr: 0, gliederung: 0, stempel: [], spuren: new Float32Array(M.gw * M.gh),
+    feldA: new Float32Array(M.fw * M.fh).fill(1), feldB: new Float32Array(M.fw * M.fh), feldAlpha: 0,
     ankunft: [], federn: [], kopplungAlpha: 0, anstoss: null, schnitt: null,
     luecke: [], lueckeAlpha: 0, plan: null, ereignisse: [],
   };
@@ -156,7 +161,7 @@ export function anfang(M) {
 
 /** tiefe Kopie (für Momentaufnahmen und Zeitleiste); die Stempel wachsen nur an und werden flach kopiert */
 export function kopie(z) {
-  return { ...z, teile: z.teile.map((t) => ({ ...t })), stempel: z.stempel.slice(), spuren: z.spuren.slice(), ankunft: z.ankunft.slice(),
+  return { ...z, teile: z.teile.map((t) => ({ ...t })), stempel: z.stempel.slice(), spuren: z.spuren.slice(), feldA: z.feldA.slice(), feldB: z.feldB.slice(), ankunft: z.ankunft.slice(),
     federn: z.federn.map((f) => ({ ...f })), luecke: z.luecke, plan: z.plan ? JSON.parse(JSON.stringify(z.plan)) : null, ereignisse: z.ereignisse.slice() };
 }
 
@@ -173,6 +178,8 @@ export function schritt(M, z) {
     const st = station(n), von = SCHLUESSEL[st - 1], bis = SCHLUESSEL[st];
     if (n === von) planen(M, z, st);
     OPS[st].lauf(M, z, (n - von) / (bis - von), n - von);
+    wuchern(M, z);
+    z.feldAlpha = Math.min(1, z.feldAlpha + 1 / 60);
   }
   z.schritt = n + 1;
   if (z.schritt === GESAMT) z.ereignisse.push({ schritt: GESAMT, text: "Ende des Laufs: Der Zustand bleibt stehen; es gibt keinen erzwungenen Rücksprung zum Anfang." });
@@ -183,8 +190,8 @@ export function schritt(M, z) {
 function planen(M, z, st) {
   const r = zufall((M.seed ^ Math.imul(st + 1, 0x9e3779b1)) >>> 0);
   if (M.neutralisiere === st) {
-    z.spuren.fill(0);
-    z.ereignisse.push({ schritt: z.schritt, text: `Gegenprobe: Spurenfeld vor Schritt ${st} gelöscht (sichtbare Spuren bleiben, wirken aber nicht mehr).` });
+    z.spuren.fill(0); z.feldA.fill(1); z.feldB.fill(0);
+    z.ereignisse.push({ schritt: z.schritt, text: `Gegenprobe: Spurenfeld und wucherndes Feld vor Schritt ${st} gelöscht (gestempelte Spuren bleiben sichtbar, wirken aber nicht mehr).` });
   }
   z.plan = OPS[st].plan(M, z, r);
 }
@@ -195,7 +202,34 @@ function stempeln(M, z, i, alpha, m = null, x = null, y = null) {
   const mm = m ?? matrix(t.rot, t.s), xx = x ?? t.x, yy = y ?? t.y;
   z.stempel.push({ i, x: xx, y: yy, m: mm, a: alpha });
   zellen(M, e, xx, yy, mm, (k) => { z.spuren[k] += 1; });
+  // jeder Stempel ist ein Keim des wuchernden Felds (3 × 3 Zellen um seine Mitte)
+  const fx = Math.floor(xx * M.fh), fy = Math.floor(yy * M.fh);
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+    const x = fx + dx, y = fy + dy;
+    if (x >= 0 && y >= 0 && x < M.fw && y < M.fh) { z.feldB[y * M.fw + x] = 1; z.feldA[y * M.fw + x] = 0; }
+  }
 }
+/** Reaktions-Diffusion (Gray-Scott, 9-Punkte-Laplace): das Feld wuchert von den Keimen aus weiter, auch wo nicht mehr gestempelt wird */
+function wuchern(M, z) {
+  const { fw: w, fh: h } = M, { dA, dB, f, k } = RD;
+  let A = z.feldA, B = z.feldB;
+  const A2 = new Float32Array(A.length), B2 = new Float32Array(B.length);
+  for (let r = 0; r < RD.runden; r++) {
+    for (let y = 0; y < h; y++) {
+      const o = y > 0 ? -w : 0, u = y < h - 1 ? w : 0;
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x, l = x > 0 ? -1 : 0, rr = x < w - 1 ? 1 : 0;
+        const la = 0.2 * (A[i + l] + A[i + rr] + A[i + o] + A[i + u]) + 0.05 * (A[i + o + l] + A[i + o + rr] + A[i + u + l] + A[i + u + rr]) - A[i];
+        const lb = 0.2 * (B[i + l] + B[i + rr] + B[i + o] + B[i + u]) + 0.05 * (B[i + o + l] + B[i + o + rr] + B[i + u + l] + B[i + u + rr]) - B[i];
+        const abb = A[i] * B[i] * B[i];
+        A2[i] = Math.min(1, Math.max(0, A[i] + dA * la - abb + f * (1 - A[i])));
+        B2[i] = Math.min(1, Math.max(0, B[i] + dB * lb + abb - (k + f) * B[i]));
+      }
+    }
+    A.set(A2); B.set(B2);
+  }
+}
+const feldAn = (M, z, x, y) => z.feldB[klemme(Math.floor(y * M.fh), 0, M.fh - 1) * M.fw + klemme(Math.floor(x * M.fh), 0, M.fw - 1)];
 function spurUnter(M, z, i, x, y, m) {
   let s = 0, c = 0;
   zellen(M, M.teile[i], x, y, m, (k) => { s += z.spuren[k]; c++; });
@@ -460,11 +494,11 @@ const OPS = {
   },
 };
 
-/** Beweglichkeit eines Teils: Spuren unter ihm machen es zäh (Folgewirksamkeit), R5 macht grosse Teile schwer */
+/** Beweglichkeit eines Teils: Spuren unter ihm und das gewucherte Feld machen es zäh (Folgewirksamkeit), R5 macht grosse Teile schwer */
 function beweglichkeit(M, z, i) {
   const t = z.teile[i];
   if (t.fest) return 0;
-  return 1 / ((1 + 0.6 * spurUnter(M, z, i, t.x, t.y, matrix(t.rot, t.s))) * M.teile[i].last);
+  return 1 / ((1 + 0.6 * spurUnter(M, z, i, t.x, t.y, matrix(t.rot, t.s)) + 2 * feldAn(M, z, t.x, t.y)) * M.teile[i].last);
 }
 
 /** Entspannung der Kopplungen (Lage, Drehung und Grösse übertragen sich) */
@@ -531,6 +565,8 @@ export function zustandsSchluessel(z) {
   [z.grundAlpha, z.spurAlpha, z.umkehr, z.lueckeAlpha, z.kopplungAlpha].forEach((v) => add(r(v)));
   add(z.stempel.length);
   for (let k = 0; k < z.spuren.length; k++) if (z.spuren[k]) add(k * 31 + r(z.spuren[k]));
+  let feld = 0; for (let k = 0; k < z.feldB.length; k++) feld += z.feldB[k] * ((k % 97) + 1);
+  add(r(feld / 1000));
   for (const l of z.luecke) for (const [x, y] of l) { add(r(x)); add(r(y)); }
   for (const f of z.federn) add(f.aktiv ? 1 : 0);
   return h.toString(16).padStart(8, "0");

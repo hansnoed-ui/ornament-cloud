@@ -38,7 +38,10 @@
     .werkbank .bg-status { color: var(--staub); }
 
     .buehne[hidden] { display: none; }
-    .buehne canvas { display: block; width: 100%; height: auto; max-height: 76vh; object-fit: contain; background: var(--werkbank); }
+    .buehne-flaeche { position: relative; margin: 0 auto; width: 100%; }
+    .buehne-flaeche canvas { display: block; width: 100%; height: auto; background: var(--werkbank); }
+    .buehne-flaeche #daten { position: absolute; inset: 0; height: 100%; background: none; pointer-events: none; }
+    .buehne-flaeche #daten[hidden] { display: none; }
     .stand { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin: 18px 0 6px; }
     .stand-name { margin: 0; font-family: var(--t-titel); font-size: clamp(1.35rem, 3vw, 1.9rem); line-height: 1.15; }
     .stand-name .ziffer { color: var(--leit); margin-right: 0.3em; }
@@ -73,7 +76,8 @@
     }
     .marken button::before { content: ""; width: 1px; height: 7px; background: currentColor; }
     .marken button .ziffer { font-family: var(--t-titel); font-size: 1rem; }
-    .marken button .titel { white-space: nowrap; }
+    .marken button .titel { white-space: nowrap; visibility: hidden; }
+    .marken button[aria-current="true"] .titel, .marken button:hover .titel, .marken button:focus-visible .titel { visibility: visible; }
     .marken button:first-child { transform: none; justify-items: start; }
     .marken button:last-child { transform: translateX(-100%); justify-items: end; }
     .marken button[aria-current="true"], .marken button:hover { color: var(--kreide); }
@@ -107,6 +111,7 @@
     .werkbank .bg-knopf:hover { background: color-mix(in srgb, var(--kreide) 12%, transparent); }
     .werkbank .bg-knopf.voll { background: var(--leit); border-color: var(--leit); color: var(--werkbank); }
     .werkbank .bg-knopf.leise { border-color: var(--fuge); color: var(--staub); }
+    .werkbank .bg-knopf[aria-pressed="true"]:not(.voll) { background: color-mix(in srgb, var(--kreide) 14%, transparent); }
     .bg-knopf:focus-visible, .bg-seite input:focus-visible, .bg-seite select:focus-visible, .bg-seite summary:focus-visible, .bg-wahl input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
     .werkbank .bg-knopf:focus-visible, .werkbank label:focus-within { outline: 2px solid var(--leit); outline-offset: 3px; }
     .bg-datei { position: absolute; opacity: 0; width: 1px; height: 1px; }
@@ -197,7 +202,7 @@
     }
     @media (prefers-reduced-motion: reduce) { .ablage, .kontaktbogen canvas { transition: none; } }
   </style>
-  <script type="module" src="app.js?v=2"></script>
+  <script type="module" src="app.js?v=3"></script>
 </head>
 <body>
   <header class="site-header">
@@ -225,7 +230,10 @@
       </div>
 
       <div class="buehne" id="buehne-box" hidden>
-        <canvas id="buehne" aria-label="Die Animation"></canvas>
+        <div class="buehne-flaeche" id="buehne-flaeche">
+          <canvas id="buehne" aria-label="Die Animation"></canvas>
+          <canvas id="daten" aria-hidden="true"></canvas>
+        </div>
         <div class="stand">
           <p class="stand-name" id="stand-name" aria-live="polite"></p>
           <p class="stand-zeit" id="uhr"></p>
@@ -237,6 +245,7 @@
         <div class="werkbank-knoepfe">
           <button type="button" class="bg-knopf voll" id="spielen" aria-pressed="false">Abspielen</button>
           <button type="button" class="bg-knopf" id="neustart">Neustart</button>
+          <button type="button" class="bg-knopf" id="daten-knopf" aria-pressed="true" title="Zeigt Lage und Namen der Teile und die Zähler des Laufs über der Animation. Nicht in Standbildern und Video.">Daten</button>
           <button type="button" class="bg-knopf leise" id="anderes-bild">Anderes Bild</button>
         </div>
         <h2 class="nur-lesen">Sechs Standbilder</h2>

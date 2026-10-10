@@ -111,6 +111,12 @@ test("Zerlegung: das ganze Bild wird Material, grosse Flächen in Kacheln; das O
   for (const k of [1, 2, 3, 4, 5, 6]) assert.equal(zustaende[k].grundAlpha, 0, `Schlüsselzustand ${k} ohne Original`);
   assert.equal(zustaende[5].umkehr, 1, "Umkehrung in Schritt 5");
   assert.ok(zustaende[6].federn.some((f) => !f.aktiv), "der Schnitt in Schritt 6 trennt Kopplungen");
+  // das wuchernde Feld: leer bis zu den ersten Stempeln, danach wächst es weiter, auch wo nicht mehr gestempelt wird
+  const flaeche = (z) => z.feldB.filter((v) => v > 0.2).length / z.feldB.length;
+  assert.equal(flaeche(zustaende[1]), 0);
+  assert.ok(flaeche(zustaende[3]) > 0.05, `Feld nach Schritt 3: ${flaeche(zustaende[3])}`);
+  assert.notEqual(flaeche(zustaende[5]), flaeche(zustaende[4]), "es verändert sich nach dem letzten Stempel weiter");
+  assert.equal(zustaende[4].stempel.length, zustaende[5].stempel.length);
 });
 
 test("Ereignisse beschreiben jede der sechs Operationen", () => {

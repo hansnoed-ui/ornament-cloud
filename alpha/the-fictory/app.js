@@ -1,12 +1,13 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen } from "./analyse.js?v=2";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=2";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=2";
-import { REGELN } from "./regeln.js?v=2";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=2";
-import { JEV } from "./jev.js?v=2";
-import { zip } from "./zip.js?v=2";
+import { analysiere, konturen, leitfarbe } from "./analyse.js?v=3";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=3";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=3";
+import { REGELN } from "./regeln.js?v=3";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=3";
+import { JEV } from "./jev.js?v=3";
+import { zip } from "./zip.js?v=3";
+import { feldMitShader } from "./feld.js?v=3";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln
@@ -73,19 +74,8 @@ async function ladeDatei(datei) {
   }
 }
 
-/** Leitfarbe der Werkbank: die Farbgruppe mit der stärksten Buntheit, gewichtet nach Fläche */
-function setzeLeitfarbe(A) {
-  const gruppen = new Map();
-  for (const F of A.flaechen) {
-    const g = gruppen.get(F.cluster) ?? { px: 0, rgb: [0, 0, 0], a: 0, b: 0 };
-    g.px += F.px; g.a += F.lab[1] * F.px; g.b += F.lab[2] * F.px;
-    F.rgb.forEach((v, k) => { g.rgb[k] += v * F.px; });
-    gruppen.set(F.cluster, g);
-  }
-  let best = null, wert = -1;
-  for (const g of gruppen.values()) { const w = Math.hypot(g.a / g.px, g.b / g.px) * Math.sqrt(g.px); if (w > wert) { wert = w; best = g; } }
-  if (best) document.documentElement.style.setProperty("--leit-roh", `rgb(${best.rgb.map((v) => Math.round(v / best.px)).join(",")})`);
-}
+/** Leitfarbe der Werkbank: aus dem Bild (analyse.js) */
+function setzeLeitfarbe(A) { document.documentElement.style.setProperty("--leit-roh", `rgb(${leitfarbe(A).join(",")})`); }
 
 // ---------- 2 · Analyse ----------
 function neuAnalysieren() {
@@ -247,6 +237,8 @@ async function erzeugen(stumm = false) {
   L.beschreibung = beschreibungen(M, keys);
   const [bw, bh] = mass(A.seite, BUEHNE_SEITE);
   const c = $("buehne"); c.width = bw; c.height = bh;
+  const d = $("daten"); d.width = bw; d.height = bh;
+  $("buehne-flaeche").style.width = `min(100%, calc(76vh * ${A.seite.toFixed(4)}))`;
   zeigeStandbilder(); zeigeMarken(); zeigeEreignisse(keys[6]);
   $("ergebnis").hidden = false; $("gegen-bilder").hidden = true;
   $("ablage").hidden = true; $("buehne-box").hidden = false;
@@ -284,6 +276,7 @@ function zustandBei(k) {
 function zeichneBuehne() {
   const L = S.lauf, c = $("buehne");
   zeichne(c.getContext("2d"), c.width, c.height, L.z, L.M, L.mat, L.spurCache);
+  zeichneDaten();
   const n = L.z.schritt;
   $("zeitleiste").value = n;
   const st = n < SCHLUESSEL[0] ? 0 : STATIONEN.find((s) => n <= SCHLUESSEL[s.nr] && n > (SCHLUESSEL[s.nr - 1] ?? -1))?.nr ?? 6;
@@ -301,6 +294,30 @@ function zeichneBuehne() {
   let zuletzt = 0;
   for (let k = 1; k < SCHLUESSEL.length; k++) if (n >= SCHLUESSEL[k]) zuletzt = k;
   for (const li of $("standbilder").children) li.setAttribute("aria-current", String(Number(li.dataset.nr) === zuletzt));
+}
+/** Datenebene über der Animation (nur in der Ansicht, nie in Standbild oder Video): Fadenkreuz je Teil, Namen der Figuren, Zähler */
+function zeichneDaten() {
+  const L = S.lauf, c = $("daten"), ctx = c.getContext("2d"), W = c.width, H = c.height, z = L.z;
+  ctx.clearRect(0, 0, W, H);
+  if ($("daten-knopf").getAttribute("aria-pressed") !== "true" || z.schritt < SCHLUESSEL[0]) return;
+  const kreide = "rgba(235,230,220,", f = Math.max(1, H / 700);
+  ctx.lineWidth = f; ctx.font = `${Math.round(11 * f)}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`; ctx.textBaseline = "top";
+  for (const [i, t] of z.teile.entries()) {
+    const e = L.M.teile[i], x = t.x * H, y = t.y * H, r = (e.figur ? 7 : 4) * f;
+    ctx.strokeStyle = kreide + (e.figur ? "0.85)" : "0.45)");
+    ctx.beginPath(); ctx.moveTo(x - r, y); ctx.lineTo(x + r, y); ctx.moveTo(x, y - r); ctx.lineTo(x, y + r); ctx.stroke();
+    if (e.figur) { ctx.fillStyle = kreide + "0.85)"; ctx.fillText(e.kachel >= 0 ? `F${e.region + 1}.${e.kachel + 1}` : `F${e.region + 1}`, x + r + 3 * f, y + 2 * f); }
+  }
+  let feld = 0; for (const v of z.feldB) if (v > 0.2) feld++;
+  const zeilen = [
+    `t ${zahl(z.schritt / TAKT)} s  Schritt ${z.schritt}/${GESAMT}`,
+    `Teile ${z.teile.length}  Spuren ${z.stempel.length}`,
+    `Feld ${Math.round((feld / z.feldB.length) * 100)} %  Kopplungen ${z.federn.filter((k) => k.aktiv).length}/${z.federn.length}`,
+  ];
+  const zh = 15 * f, pad = 10 * f, breite = Math.max(...zeilen.map((t) => ctx.measureText(t).width)) + 2 * pad;
+  ctx.fillStyle = "rgba(21,20,18,0.72)"; ctx.fillRect(pad, pad, breite, zeilen.length * zh + pad);
+  ctx.fillStyle = kreide + "0.9)";
+  zeilen.forEach((t, k) => ctx.fillText(t, 2 * pad, pad * 1.5 + k * zh));
 }
 function spiele() {
   const L = S.lauf;
@@ -549,12 +566,13 @@ $("video").addEventListener("click", video);
 $("protokoll").addEventListener("click", () => herunterladen(new Blob([JSON.stringify(protokoll(), null, 2)], { type: "application/json" }), dateiname("protokoll.json")));
 $("protokoll-laden").addEventListener("change", (e) => { const f = e.target.files?.[0]; if (f) protokollLaden(f); e.target.value = ""; });
 $("gegenprobe").addEventListener("click", gegenprobe);
+$("daten-knopf").addEventListener("click", (e) => { const an = e.currentTarget.getAttribute("aria-pressed") !== "true"; e.currentTarget.setAttribute("aria-pressed", String(an)); if (S.lauf) zeichneDaten(); });
 $("anderes-bild").addEventListener("click", () => { stoppe(); $("datei").click(); });
 
 const vt = videoTyp();
 if (!vt) { $("video").disabled = true; $("video").title = "Dieser Browser kann keine Videos aus einer Zeichenfläche aufnehmen."; }
 else $("video").textContent = `Animation als ${vt.endung.toUpperCase()}`;
-$("integrationen").textContent = `Tatsächlich aktiv: Bildanalyse und Prozess laufen nur in diesem Browser (keine Übertragung, keine Bildgenerierung). ORNA: der Bestand mit ${BESTAND} Konstellationen wird gelesen, gezogen wird wie in ORNA. jev: ${jevGueltig() ? `wählte beim Bauen (${JEV.stand}, ${JEV.modell}) für jede Konstellation Regel und Satz vor; diese Seite ruft jev nicht auf` : "keine gültige Tabelle, die Regel folgt Stichworten im Text"}. Video: ${vt ? vt.mime : "in diesem Browser nicht verfügbar"}.`;
+$("integrationen").textContent = `Tatsächlich aktiv: Bildanalyse und Prozess laufen nur in diesem Browser (keine Übertragung, keine Bildgenerierung). ORNA: der Bestand mit ${BESTAND} Konstellationen wird gelesen, gezogen wird wie in ORNA. jev: ${jevGueltig() ? `wählte beim Bauen (${JEV.stand}, ${JEV.modell}) für jede Konstellation Regel und Satz vor; diese Seite ruft jev nicht auf` : "keine gültige Tabelle, die Regel folgt Stichworten im Text"}. Video: ${vt ? vt.mime : "in diesem Browser nicht verfügbar"}. Feld: ${feldMitShader() ? "WebGL-Shader" : "ohne WebGL, einfache Darstellung"}.`;
 zeigeRegler();
 
 // für die Browser-Tests (tests/fictory.e2e.mjs)

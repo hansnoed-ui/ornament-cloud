@@ -396,3 +396,17 @@ export function konturen(feld, w, h, schwelle = 0.5) {
   }
   return linien;
 }
+
+/** Leitfarbe eines Bildes: die Farbgruppe mit der stärksten Buntheit, gewichtet nach Fläche (sRGB 0–255) */
+export function leitfarbe(A) {
+  const gruppen = new Map();
+  for (const F of A.flaechen) {
+    const g = gruppen.get(F.cluster) ?? { px: 0, rgb: [0, 0, 0], a: 0, b: 0 };
+    g.px += F.px; g.a += F.lab[1] * F.px; g.b += F.lab[2] * F.px;
+    F.rgb.forEach((v, k) => { g.rgb[k] += v * F.px; });
+    gruppen.set(F.cluster, g);
+  }
+  let best = null, wert = -1;
+  for (const g of gruppen.values()) { const w = Math.hypot(g.a / g.px, g.b / g.px) * Math.sqrt(g.px); if (w > wert) { wert = w; best = g; } }
+  return best ? best.rgb.map((v) => Math.round(v / best.px)) : [235, 230, 220];
+}
