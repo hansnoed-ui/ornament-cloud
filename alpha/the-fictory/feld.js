@@ -28,11 +28,11 @@ void main() {
   float koerper = smoothstep(0.12, 0.32, v);
   float rand = 1.0 - smoothstep(0.0, 0.025, abs(v - 0.2));                 // Kontur der wuchernden Form
   float iso = smoothstep(0.42, 0.5, abs(fract(v * 9.0) - 0.5));          // feine Höhenlinien im Innern
-  // wenig Fläche, viel Linie: der Körper bleibt ein Hauch, Kontur und Höhenlinien tragen
-  vec3 c = leit * 0.13 * koerper;
-  c += mix(leit, vec3(1.0), 0.5) * rand * 0.95;
-  c += leit * iso * koerper * 0.45;
-  c += vec3(1.0) * pow(v, 4.0) * 0.12;
+  // wenig Fläche, feine Linie: der Körper bleibt ein Hauch, Kontur und Höhenlinien gedämpft, damit die Teile davor klar stehen
+  vec3 c = leit * 0.07 * koerper;
+  c += mix(leit, vec3(1.0), 0.35) * rand * 0.42;
+  c += leit * iso * koerper * 0.2;
+  c += vec3(1.0) * pow(v, 4.0) * 0.05;
   gl_FragColor = vec4(c * alpha, 1.0);
 }`;
 
@@ -96,7 +96,7 @@ export function zeichneFeld(ctx, W, H, z, M, leit, staerke, vorschau = false) {
   } else {
     const c = document.createElement("canvas"); c.width = fw; c.height = fh;
     const bild = new ImageData(fw, fh);
-    for (let i = 0; i < bytes.length; i++) { const v = bytes[i] / 255 * staerke; bild.data.set([leit[0] * v, leit[1] * v, leit[2] * v, 255], i * 4); }
+    for (let i = 0; i < bytes.length; i++) { const v = bytes[i] / 255 * staerke * 0.45; bild.data.set([leit[0] * v, leit[1] * v, leit[2] * v, 255], i * 4); }
     c.getContext("2d").putImageData(bild, 0, 0);
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
     ctx.drawImage(c, 0, 0, W, H);

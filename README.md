@@ -162,8 +162,9 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   Die Seite ruft jev nie auf; ohne gültige Tabelle (Prüfsumme über Regeln und Bestand) ordnet sie über Stichworte zu. Ändern sich Name oder Eingriff einer Regel, die Tabelle neu erzeugen. Beispielbild `beispiel.jpg` aus `NODE_PATH=$(npm root -g) node tools/fictory-beispiel.mjs`.
   Seit Fassung 3 (10. Oktober 2026, Wunsch von Christian: «TouchDesigner-Ästhetik», Richtungen «Spuren als Feld» und «Raster und Scanlines»): Jeder Stempel ist Keim eines wuchernden Felds (Reaktions-Diffusion nach Gray-Scott, 80 Zellen je Bildhöhe, Teil des Zustands, macht Teile zäh, wird von der Gegenprobe mit gelöscht),
   gezeichnet mit einem WebGL-Shader (`feld.js`, ohne WebGL ein einfacher Ersatz) als Kontur und Höhenlinien in der Leitfarbe des Bildes; das Raster des Spurenfelds als Punktgitter (heller, wo Spur liegt) und Scanlines im Verhältnis zur Bildhöhe, beides auch in Standbild und Video.
+  Hintergrund gedämpft (Rückmeldung vom 10. Oktober 2026: «dezenter, mehr Kontrast zum Bildmaterial»): gestempelte Spuren mit 45 % Deckkraft, Feldkontur und Höhenlinien etwa halb so hell, Punktraster und Scanlines schwächer.
   Die Datenebene (Fadenkreuze, Namen der Figuren, Zähler; Knopf «Daten») liegt nur über der Live-Ansicht. Seite als «Werkbank» (dunkles Band, Leitfarbe aus dem Bild, Massstab, Kontaktbogen), gestaltet mit dem Skill `frontend-design`.
-  Module mit `?v=12`; bei Änderungen die Marke in allen Importen und in `index.html` hochzählen.
+  Module mit `?v=13`; bei Änderungen die Marke in allen Importen und in `index.html` hochzählen.
   Tests: `node --experimental-strip-types --no-warnings --test tests/fictory.test.mjs` und `NODE_PATH=$(npm root -g) node tests/fictory.e2e.mjs` (mit `SCHNELL=1` ohne die Videoaufnahme)
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)
