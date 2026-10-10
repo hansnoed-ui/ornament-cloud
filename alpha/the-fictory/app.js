@@ -1,12 +1,12 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen, leitfarbe } from "./analyse.js?v=9";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=9";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=9";
-import { REGELN } from "./regeln.js?v=9";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=9";
-import { JEV } from "./jev.js?v=9";
-import { zip } from "./zip.js?v=9";
+import { analysiere, konturen, leitfarbe } from "./analyse.js?v=10";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=10";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=10";
+import { REGELN } from "./regeln.js?v=10";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=10";
+import { JEV } from "./jev.js?v=10";
+import { zip } from "./zip.js?v=10";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln
@@ -62,7 +62,11 @@ async function ladeDatei(datei) {
     const img = $("original");
     img.src = URL.createObjectURL(datei); img.alt = `Eingangsbild ${S.bild.name}`; img.hidden = false;
     $("ablage").classList.add("belegt"); $("ablage").hidden = false; $("buehne-box").hidden = true;
-    $("status-laden").textContent = `${S.bild.name}, ${bw} × ${bh} px. Prüfe unten die Analyse und erzeuge dann den Lauf.`;
+    // geladen: «Erzeugen» gleich auf der Werkbank; «Bild wählen» wird zu einem leisen «Anderes Bild»
+    $("erzeugen-werkbank").hidden = false;
+    const wahl = document.querySelector('label[for="datei"]');
+    wahl.classList.remove("voll"); wahl.firstChild.textContent = "Anderes Bild";
+    $("status-laden").textContent = `${S.bild.name}, ${bw} × ${bh} px. Gleich erzeugen, oder unten Analyse und ORNA anpassen.`;
     stoppe(); S.lauf = null; $("ergebnis").hidden = true;
     neuAnalysieren();
     setzeLeitfarbe(S.A);
@@ -81,6 +85,7 @@ function neuAnalysieren() {
   S.A = analysiere(S.analyseBild, S.einstellungen);
   S.A.konturen = null;
   zeichneGliederung(); zeigeTeile(); zeigeBefunde();
+  $("analyse-kurz").textContent = `${S.A.flaechen.length} Flächen, ${S.A.zentren.length} Farbgruppen, ${S.A.teile.length} Figuren`;
   if (S.lauf) $("status-erzeugen").textContent = "Die Analyse hat sich geändert. «Erzeugen» übernimmt sie.";
 }
 function regionKonturen(A) {
@@ -600,6 +605,7 @@ $("neuer-startwert").addEventListener("click", () => {
   if (S.orna) ornaZiehen(); else { S.seed = neuerStartwert(); zeigeStartwert(); }
 });
 $("erzeugen").addEventListener("click", () => erzeugen());
+$("erzeugen-werkbank").addEventListener("click", () => erzeugen());
 $("spielen").addEventListener("click", () => (S.spielt ? stoppe() : spiele()));
 $("zeitleiste").addEventListener("input", (e) => springe(Number(e.target.value)));
 $("neustart").addEventListener("click", () => { if (!S.lauf) return; stoppe(); neustartZustand(); zeichneBuehne(); spiele(); });
