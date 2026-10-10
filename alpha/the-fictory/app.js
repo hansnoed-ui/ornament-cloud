@@ -1,12 +1,13 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen, leitfarbe } from "./analyse.js?v=12";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=12";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=12";
-import { REGELN } from "./regeln.js?v=12";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=12";
-import { JEV } from "./jev.js?v=12";
-import { zip } from "./zip.js?v=12";
+import { analysiere, konturen, leitfarbe } from "./analyse.js?v=13";
+import { mitDauer } from "./dauer.js?v=13";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=13";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=13";
+import { REGELN } from "./regeln.js?v=13";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=13";
+import { JEV } from "./jev.js?v=13";
+import { zip } from "./zip.js?v=13";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln
@@ -524,8 +525,11 @@ async function video() {
     const warte = t0 + ((f + 1) * 1000) / TAKT - performance.now();
     await new Promise((ok) => setTimeout(ok, Math.max(0, warte)));
   }
+  const sekunden = (performance.now() - t0) / 1000;
   rec.stop(); await fertig;
-  const blob = new Blob(stuecke, { type: typ.mime.split(";")[0] });
+  // die Länge in die Datei schreiben (MediaRecorder lässt sie offen; manche Player zeigen sonst wenige Sekunden an)
+  const roh = new Uint8Array(await new Blob(stuecke).arrayBuffer());
+  const blob = new Blob([mitDauer(roh, sekunden)], { type: typ.mime.split(";")[0] });
   herunterladen(blob, dateiname(`animation.${typ.endung}`));
   knopf.disabled = false; fort.hidden = true;
   $("status-export").textContent = `Video: ${typ.endung.toUpperCase()} (${typ.mime}), ${w} × ${h} px, ${GESAMT / TAKT} s und eine Sekunde Halt, ${(blob.size / 1e6).toFixed(1)} MB.`;

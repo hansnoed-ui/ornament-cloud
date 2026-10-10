@@ -11,8 +11,8 @@
 //                              später und langsamer an (die Spuren bestimmen die Reihenfolge, nicht mehr das Ziel). Es bleiben feine Fugen.
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall } from "./analyse.js?v=12";
-import { REGELN } from "./regeln.js?v=12";
+import { zufall } from "./analyse.js?v=13";
+import { REGELN } from "./regeln.js?v=13";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
@@ -480,6 +480,7 @@ const OPS = {
     },
     lauf(M, z, p) {
       const P = z.plan, weg = new Set(P.weg), v = 0.022 * (1 - glatt(p / 0.85));
+      const vorher = z.teile.map((t) => [t.x, t.y, t.rot]);
       for (const [i, t] of z.teile.entries()) {
         if (t.fest) continue;
         const mu = beweglichkeit(M, z, i);
@@ -494,6 +495,7 @@ const OPS = {
       for (const [i, t] of z.teile.entries()) imBild(M, t, M.teile[i]);
       z.kopplungAlpha = P.kopplung0 * (1 - glatt(p / 0.3));
       z.spurAlpha = 1 - 0.45 * glatt(p / 0.5);                              // die Spuren treten zurück, damit der Bruch lesbar bleibt
+      z.teile.forEach((t, i) => { t.vx = t.x - vorher[i][0]; t.vy = t.y - vorher[i][1]; t.vr = t.rot - vorher[i][2]; });   // Restbewegung je Schritt, für den Übergang zu Schritt 6
     },
   },
 
@@ -507,18 +509,24 @@ const OPS = {
       zaeh.forEach(({ i }, k) => {
         const t = z.teile[i], e = M.teile[i], f = N > 1 ? k / (N - 1) : 0;
         const wende = Math.atan2(Math.sin(-t.rot), Math.cos(-t.rot));            // kürzester Weg zur Lage im Original
-        ziel[i] = { x0: t.x, y0: t.y, s0: t.s, rot0: t.rot, x: e.hx, y: e.hy, s: 1, rot: t.rot + wende, start: 0.03 + 0.35 * f, dauer: 0.42 + 0.08 * f, z: anfangsEbene(M, i) };
+        ziel[i] = { x0: t.x, y0: t.y, s0: t.s, rot0: t.rot, x: e.hx, y: e.hy, s: 1, rot: t.rot + wende, vx: t.vx ?? 0, vy: t.vy ?? 0, vr: t.vr ?? 0, start: 0.3 * f, dauer: 0.45 + 0.08 * f, z: anfangsEbene(M, i) };
       });
       const zuerst = zaeh.slice(0, 3).map(({ i }) => name(M.teile[i])), zuletzt = zaeh.slice(-2).map(({ i }) => name(M.teile[i]));
       z.ereignisse.push({ schritt: z.schritt, kurz: "Jedes Teil kehrt zurück: das Bild setzt sich neu zusammen.", text: `Schritt 6: Alle Kopplungen lösen sich; jedes der ${N} Teile kehrt an seine Herkunftsstelle zurück, in Originalgrösse und ohne Drehung, und das Ursprungsbild setzt sich neu zusammen. Die Spuren bestimmen die Reihenfolge: zuerst ${zuerst.join(", ")} (wenig Spur), zuletzt ${zuletzt.join(", ")}. Es bleiben feine Fugen.` });
       return { ziel, schnitt0: z.schnittAlpha ?? 1, kopplung0: z.kopplungAlpha, spur0: z.spurAlpha };
     },
-    lauf(M, z, p) {
+    lauf(M, z, p, k) {
       const P = z.plan;
+      // Übergang ohne Halt: jedes Teil behält zuerst seine Restbewegung aus Schritt 5, die ausklingt (Zeitkonstante AUSKLANG Schritte),
+      // und geht von dieser gleitenden Lage weich in den Weg zur Herkunftsstelle über
+      const AUSKLANG = 14, drift = AUSKLANG * (1 - Math.exp(-(k + 1) / AUSKLANG));        // k + 1: schon im ersten Schritt weiter
       for (const [i, q] of Object.entries(P.ziel)) {
         const t = z.teile[i];
-        if (p < q.start) continue;
-        const u = bewege(t, q, p);
+        const u = glatt((p - q.start) / q.dauer);
+        const ax = q.x0 + q.vx * drift, ay = q.y0 + q.vy * drift;
+        t.x = ax + (q.x - ax) * u; t.y = ay + (q.y - ay) * u;
+        const ar = q.rot0 + q.vr * drift;
+        t.s = q.s0 + (q.s - q.s0) * u; t.rot = ar + (q.rot - ar) * u;
         if (u >= 1) t.z = q.z;                                                 // angekommen: wieder in der Ebene des Anfangs (Drehung bleibt ein volles Vielfaches, kein Sprung)
       }
       z.schnittAlpha = P.schnitt0 * (1 - glatt(p / 0.3));

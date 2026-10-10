@@ -2,13 +2,15 @@
 // Farbgruppen nachgeschärft).
 // Nach dem Eingangsbild steht alles auf dunklem Grund. zeichne() bildet einen Zustand in beliebiger Grösse ab; Vorschau, Video und
 // Standbild in hoher Auflösung nutzen dieselbe Funktion mit demselben Zustand. In die Bilder kommt keine Schrift.
-import { konturen, lab, leitfarbe } from "./analyse.js?v=12";
-import { zeichneFeld } from "./feld.js?v=12";
+import { konturen, lab, leitfarbe } from "./analyse.js?v=13";
+import { zeichneFeld } from "./feld.js?v=13";
 
 export const NACHT = "#151412";
 export const PAPIER = "#f4f1ea";
 export const TINTE = "#1f1d1a";
-const KLEIN = 1100;          // bis zu dieser Höhe in Pixeln zeichnet die Vorschau aus verkleinertem Material
+const KLEIN = 1100;
+// Hintergrund (gestempelte Spuren, Feld, Punktraster) gedämpft, damit das Bildmaterial der Teile klar davor steht (Rückmeldung vom 10. Oktober 2026)
+const SPUR_DECKKRAFT = 0.45;          // bis zu dieser Höhe in Pixeln zeichnet die Vorschau aus verkleinertem Material
 
 const leinwand = (w, h) => {
   const c = document.createElement("canvas");
@@ -118,7 +120,7 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
         const d = Math.max(1, S * (0.0012 + 0.0032 * (k / (STUFEN - 1))));
         pfade[k].rect((gx + 0.5) * zelle - d / 2, (gy + 0.5) * zelle - d / 2, d, d);
       }
-      pfade.forEach((pf, k) => { rx.globalAlpha = 0.1 + 0.6 * (k / (STUFEN - 1)); rx.fill(pf); });
+      pfade.forEach((pf, k) => { rx.globalAlpha = 0.06 + 0.3 * (k / (STUFEN - 1)); rx.fill(pf); });
       if (spurCache) Object.assign(spurCache, { raster, rasterStempel: z.stempel.length, rasterLauf: M, rasterSchritt: z.schritt });
     }
     ctx.globalAlpha = technik;
@@ -150,9 +152,9 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
       for (let k = spurCache.anzahl; k < z.stempel.length; k++) { const s = z.stempel[k]; sc.globalAlpha = s.a; teil(sc, s.i, s.x, s.y, s.m, q(mat.teile[s.i].gross, mat.teile[s.i].klein)); }
       sc.setTransform(1, 0, 0, 1, 0, 0);
       spurCache.anzahl = z.stempel.length;
-      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = spur; ctx.drawImage(spurCache.canvas, 0, 0);
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = spur * SPUR_DECKKRAFT; ctx.drawImage(spurCache.canvas, 0, 0);
     } else {
-      for (const s of z.stempel) { ctx.globalAlpha = s.a * spur; teil(ctx, s.i, s.x, s.y, s.m, q(mat.teile[s.i].gross, mat.teile[s.i].klein)); }
+      for (const s of z.stempel) { ctx.globalAlpha = s.a * spur * SPUR_DECKKRAFT; teil(ctx, s.i, s.x, s.y, s.m, q(mat.teile[s.i].gross, mat.teile[s.i].klein)); }
     }
   }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -187,7 +189,7 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
   if (technik > 0.001) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     const abstand = Math.max(2, Math.round(S / 300)), dicke = Math.max(1, Math.round(abstand / 2.5));
-    ctx.globalAlpha = 0.22 * technik; ctx.fillStyle = "#000";
+    ctx.globalAlpha = 0.16 * technik; ctx.fillStyle = "#000";
     for (let y = 0; y < H; y += abstand) ctx.fillRect(0, y, W, dicke);
   }
   // 8 · die Zerlegung (nur beim Übergang aus dem Eingangsbild)

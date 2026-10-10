@@ -210,9 +210,20 @@ if (!process.env.SCHNELL) await check("Video: eine Animation in einem unterstüt
     const T = window.fictoryTest, blob = await T.video();
     const v = document.createElement("video"); v.muted = true; v.src = URL.createObjectURL(blob);
     await new Promise((ok, nein) => { v.onloadedmetadata = ok; v.onerror = () => nein(new Error("Video nicht lesbar")); });
-    return { typ: blob.type, groesse: blob.size, breite: v.videoWidth, hoehe: v.videoHeight };
+    // die Länge steht in der Datei (MP4: Kopf «mvhd», WebM: «Duration» in Info), nicht nur im Player errechnet
+    const d = new Uint8Array(await blob.arrayBuffer()), dv = new DataView(d.buffer);
+    let kopf = null;
+    for (let i = 0; i < Math.min(d.length, 4096) - 4; i++) {
+      if (d[i] === 0x6d && d[i + 1] === 0x76 && d[i + 2] === 0x68 && d[i + 3] === 0x64) {           // mvhd
+        const lang = d[i + 4] === 1, ts = dv.getUint32(i + (lang ? 24 : 16));
+        kopf = (lang ? Number(dv.getBigUint64(i + 28)) : dv.getUint32(i + 20)) / ts; break;
+      }
+      if (d[i] === 0x44 && d[i + 1] === 0x89 && d[i + 2] === 0x88) { kopf = dv.getFloat64(i + 3) / 1000; break; }   // Duration (ms bei üblicher Skala)
+    }
+    return { typ: blob.type, groesse: blob.size, breite: v.videoWidth, hoehe: v.videoHeight, dauer: v.duration, kopf };
   });
   assert.match(info.typ, /^video\/(webm|mp4)$/);
+  assert.ok(info.kopf > 25 && Math.abs(info.kopf - info.dauer) < 1.5, `Länge im Dateikopf ${info.kopf} s, Player ${info.dauer} s`);
   assert.ok(info.groesse > 50000 && info.breite > 0 && info.hoehe > 0, JSON.stringify(info));
   await ctx.close();
 });
