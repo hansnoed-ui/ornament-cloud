@@ -335,7 +335,7 @@ export function analysiere(bild, opt = {}) {
       id: "grund", thema: "Figur-Grund-Beziehungen und Gewichtungen", schaltbar: false,
       befund: `Grund: ${grund.map((f) => name(f.id)).join(", ") || "–"} (${prozent(grundAnteil)} des Bildes, am Rand gelegen). Schwerpunkt der Teile ${lage(ax, ay)}.`,
       lesart: "Randnahe, grosse Flächen werden als Grund gelesen, kleinere mit Kontrast als Figuren. Antippen in der Vorschau korrigiert das.",
-      eingriff: "Schritt 5 kehrt Figur und Grund um: Die Teile werden Silhouetten, der Zwischenraum zwischen ihnen trägt das Material des Grundes.",
+      eingriff: "Auch der Grund wird zu Teilen. Figuren liegen obenauf, und die gewichtigste trägt den Anstoss in Schritt 4.",
       flaechen: grund.map((f) => f.id),
     },
   ].map((b) => ({ ...b, aktiv: !verworfen.has(b.id) }));
