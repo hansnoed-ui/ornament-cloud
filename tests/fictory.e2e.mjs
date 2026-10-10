@@ -63,7 +63,7 @@ await check("Ohne ORNA: Bild laden, Analyse mit getrenntem Befund, Lesart und Ei
   await page.waitForSelector("#schritt-analyse:not([hidden])");
   assert.equal(await page.locator(".bg-befund").count(), 6);
   for (const t of ["Befund", "Lesart", "Eingriff"]) assert.equal(await page.locator(".bg-befund dt", { hasText: t }).count(), 6, t);
-  assert.match(await page.locator("#status-laden").textContent(), /1200 × 860 px/);
+  assert.match(await page.locator("#status-laden").textContent(), /1080 × 1528 px/);
   assert.match(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--leit-roh")), /rgb\(/, "Leitfarbe aus dem Bild");
   assert.ok(await page.locator("#neu-ziehen").isHidden(), "ohne ORNA kein «Neu ziehen»");
   await page.click("#erzeugen");
@@ -155,10 +155,11 @@ await check("Sechs verschiedene PNG in höherer Auflösung, jedes aus demselben 
   assert.equal(r.length, 6);
   for (const x of r) {
     assert.equal(x.typ, "image/png");
-    assert.ok(x.breite >= 1600 && x.breite > x.vorschauBreite, `${x.nr}: höhere Auflösung (${x.breite} gegenüber ${x.vorschauBreite})`);
-    assert.equal(Math.round((x.breite / x.hoehe) * 100), Math.round((1200 / 860) * 100), "Seitenverhältnis des Eingangsbildes");
+    assert.ok(Math.max(x.breite, x.hoehe) >= 1600 && x.breite > x.vorschauBreite, `${x.nr}: höhere Auflösung (${x.breite} × ${x.hoehe} gegenüber ${x.vorschauBreite})`);   // längste Seite mindestens 1600
+    assert.equal(Math.round((x.breite / x.hoehe) * 100), Math.round((1080 / 1528) * 100), "Seitenverhältnis des Eingangsbildes (Hochformat)");
     const d = abstand(x.gross, x.klein);
-    assert.ok(d < 4, `${x.nr}: Standbild und Schlüsselzustand stimmen überein (mittlere Abweichung ${d.toFixed(2)})`);
+    // gleicher Zustand: mit dem feinlinigen Beispielbild bis knapp 5 (Linien und Scanlines beim Verkleinern); verschiedene Zustände über 20
+    assert.ok(d < 8, `${x.nr}: Standbild und Schlüsselzustand stimmen überein (mittlere Abweichung ${d.toFixed(2)})`);
   }
   for (let i = 0; i < 6; i++) for (let j = i + 1; j < 6; j++) {
     const d = abstand(r[i].gross, r[j].gross);
