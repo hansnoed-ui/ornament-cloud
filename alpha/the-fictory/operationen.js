@@ -9,8 +9,8 @@
 //   5 Anders weitergehen     → ein einziger Schnitt durch das Gefüge (gelegt, wo die meiste Spur liegt) trennt alle Kopplungen über ihn; eine Seite bricht weg
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall } from "./analyse.js?v=10";
-import { REGELN } from "./regeln.js?v=10";
+import { zufall } from "./analyse.js?v=11";
+import { REGELN } from "./regeln.js?v=11";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([

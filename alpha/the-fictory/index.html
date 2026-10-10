@@ -38,11 +38,30 @@
     .site-header h1 { font-family: var(--t-titel); font-weight: 400; font-size: clamp(2.6rem, 7vw, 4.4rem); letter-spacing: -0.02em; line-height: 1; }
     .site-header .lead { font-family: var(--t-titel); font-size: clamp(1.1rem, 2.4vw, 1.4rem); max-width: 30em; }
     /* die fünf Schritte in Kürze, unter dem Titel */
-    .ablauf { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 22px 0 0; padding: 0; list-style: none; counter-reset: schritt; font-size: 0.92rem; color: var(--muted); max-width: 62em; }
-    .ablauf li { counter-increment: schritt; display: flex; align-items: baseline; gap: 0.45em; }
-    .ablauf li::before { content: counter(schritt); font-family: var(--t-titel); font-size: 1.15rem; color: var(--text); }
-    .ablauf b { font-weight: 600; color: var(--text); }
-    @media (max-width: 560px) { .ablauf { display: grid; gap: 4px; } }
+    /* fünf Schritte als ruhige Zeitleiste: Ziffer, feine Linie zum nächsten Schritt, Name, kurze Erklärung.
+       Optionale Schritte (2, 3) mit blasser Ziffer und gestrichelter Linie. Auf dem Handy senkrecht. */
+    .ablauf { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0 18px; margin: 30px 0 0; padding: 0; list-style: none; counter-reset: schritt; max-width: 60em; }
+    .ablauf li { counter-increment: schritt; display: grid; grid-template-rows: auto auto auto; align-content: start; gap: 2px; }
+    .ablauf li::before {
+      content: counter(schritt); display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+      font-family: var(--t-titel); font-size: 1.9rem; line-height: 1; color: var(--text);
+    }
+    .ablauf li::after { content: ""; grid-row: 1; align-self: center; margin: 0 0 8px 1.6em; border-top: 1px solid var(--text); opacity: 0.55; }
+    .ablauf li::before, .ablauf li::after { grid-column: 1; grid-row: 1; }
+    .ablauf li:last-child::after { display: none; }
+    .ablauf li.frei::before { color: var(--muted); }
+    .ablauf li.frei::after { border-top-style: dashed; opacity: 0.45; }
+    .ablauf b { font-weight: 600; font-size: 0.98rem; color: var(--text); }
+    .ablauf span { font-size: 0.86rem; line-height: 1.4; color: var(--muted); }
+    @media (max-width: 640px) {
+      .ablauf { grid-template-columns: minmax(0, 1fr); gap: 0; margin-top: 24px; }
+      .ablauf li { grid-template-columns: 2.4rem minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 10px; padding-bottom: 14px; position: relative; }
+      .ablauf li::before { grid-row: 1 / span 2; grid-column: 1; margin: 0; align-items: flex-start; font-size: 1.6rem; justify-content: center; width: 2.4rem; }
+      /* ohne Rasterplatz, sonst wäre die Rasterzelle der Bezugsrahmen der absoluten Linie */
+      .ablauf li::after { grid-area: auto; align-self: auto; margin: 0; position: absolute; left: 1.2rem; top: 2.2rem; bottom: 6px; border-top: 0; border-left: 1px solid var(--text); }
+      .ablauf li.frei::after { border-left-style: dashed; }
+      .ablauf b, .ablauf span { grid-column: 2; }
+    }
     /* Schritt 2 zum Aufklappen */
     .bg-auf { margin: 14px 0 0; }
     .bg-auf > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 10px 0; cursor: pointer; list-style: none; }
@@ -231,7 +250,7 @@
     }
     @media (prefers-reduced-motion: reduce) { .ablage, .kontaktbogen canvas { transition: none; } }
   </style>
-  <script type="module" src="app.js?v=10"></script>
+  <script type="module" src="app.js?v=11"></script>
 </head>
 <body>
   <header class="site-header">
@@ -243,11 +262,11 @@
       <h1>The Fictory</h1>
       <p class="lead">Ein Bild zerfällt in seine Teile und geht weiter.</p>
       <ol class="ablauf" aria-label="So geht es">
-        <li><b>Bild laden</b> – oder das Beispielbild nehmen</li>
-        <li><b>Analyse prüfen</b> – wenn du willst</li>
-        <li><b>ORNA</b> – eine Regel ziehen, wenn du willst</li>
-        <li><b>Erzeugen</b> – 30 Sekunden Animation</li>
-        <li><b>Ansehen und speichern</b> – Video, Standbilder</li>
+        <li><b>Bild laden</b><span>oder das Beispielbild</span></li>
+        <li class="frei"><b>Analyse prüfen</b><span>wenn du willst</span></li>
+        <li class="frei"><b>ORNA</b><span>eine Regel ziehen, wenn du willst</span></li>
+        <li><b>Erzeugen</b><span>30 Sekunden Animation</span></li>
+        <li><b>Ansehen und speichern</b><span>Video und Standbilder</span></li>
       </ol>
     </div>
   </header>
