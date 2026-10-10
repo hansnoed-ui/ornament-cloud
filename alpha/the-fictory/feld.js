@@ -36,7 +36,7 @@ void main() {
   gl_FragColor = vec4(c * alpha, 1.0);
 }`;
 
-let gl = null, glCanvas = null, programm = null, tex = null, versucht = false;
+let gl = null, glCanvas = null, programm = null, tex = null, versucht = false, puffer = null;
 
 function bereit() {
   if (versucht) return Boolean(gl);
@@ -72,7 +72,9 @@ export const feldMitShader = () => bereit();
 /** zeichnet das Feld (z.feldB, Raster M.fw × M.fh) additiv («screen») in ctx */
 export function zeichneFeld(ctx, W, H, z, M, leit, staerke, vorschau = false) {
   if (staerke <= 0.001) return;
-  const { fw, fh } = M, bytes = new Uint8Array(fw * fh);
+  const { fw, fh } = M;
+  if (!puffer || puffer.length !== fw * fh) puffer = new Uint8Array(fw * fh);       // wiederverwendet: kein neuer Speicher je Bild
+  const bytes = puffer;
   for (let i = 0; i < bytes.length; i++) bytes[i] = Math.max(0, Math.min(255, Math.round(z.feldB[i] * 255)));
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);

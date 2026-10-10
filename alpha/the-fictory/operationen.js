@@ -9,8 +9,8 @@
 //   5 Anders weitergehen     → ein einziger Schnitt durch das Gefüge (gelegt, wo die meiste Spur liegt) trennt alle Kopplungen über ihn; eine Seite bricht weg
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall } from "./analyse.js?v=5";
-import { REGELN } from "./regeln.js?v=5";
+import { zufall } from "./analyse.js?v=6";
+import { REGELN } from "./regeln.js?v=6";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
@@ -219,10 +219,12 @@ function stempeln(M, z, i, alpha, m = null, x = null, y = null) {
   }
 }
 /** Reaktions-Diffusion (Gray-Scott, 9-Punkte-Laplace): das Feld wuchert von den Keimen aus weiter, auch wo nicht mehr gestempelt wird */
+const ablage = new Map();          // wiederverwendete Rechenfelder: kein neuer Speicher je Schritt (sonst räumt der Browser ständig auf und die Wiedergabe stockt)
 function wuchern(M, z) {
   const { fw: w, fh: h } = M, { dA, dB, f, k } = RD;
   let A = z.feldA, B = z.feldB;
-  const A2 = new Float32Array(A.length), B2 = new Float32Array(B.length);
+  if (!ablage.has(A.length)) ablage.set(A.length, [new Float32Array(A.length), new Float32Array(A.length)]);
+  const [A2, B2] = ablage.get(A.length);
   for (let r = 0; r < RD.runden; r++) {
     for (let y = 0; y < h; y++) {
       const o = y > 0 ? -w : 0, u = y < h - 1 ? w : 0;

@@ -1,13 +1,13 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen, leitfarbe } from "./analyse.js?v=5";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=5";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=5";
-import { REGELN } from "./regeln.js?v=5";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=5";
-import { JEV } from "./jev.js?v=5";
-import { zip } from "./zip.js?v=5";
-import { feldMitShader } from "./feld.js?v=5";
+import { analysiere, konturen, leitfarbe } from "./analyse.js?v=6";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=6";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=6";
+import { REGELN } from "./regeln.js?v=6";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=6";
+import { JEV } from "./jev.js?v=6";
+import { zip } from "./zip.js?v=6";
+import { feldMitShader } from "./feld.js?v=6";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln
@@ -273,13 +273,37 @@ function zustandBei(k) {
 }
 
 // ---------- 5 · Ansehen ----------
-function zeichneBuehne() {
+/** Lagen der Teile vor dem nächsten Schritt (für das Überblenden in der Anzeige), in einem wiederverwendeten Feld */
+function merkeLagen(L) {
+  const n = L.z.teile.length;
+  if (!L.vorher || L.vorher.length !== n * 4) L.vorher = new Float64Array(n * 4);
+  L.z.teile.forEach((t, i) => { L.vorher[i * 4] = t.x; L.vorher[i * 4 + 1] = t.y; L.vorher[i * 4 + 2] = t.rot; L.vorher[i * 4 + 3] = t.s; });
+  L.vorherSchritt = L.z.schritt;
+}
+/** Anzeigezustand: zwischen dem vorigen und dem aktuellen Schritt übergeblendet (f = 0 … 1) */
+function anzeige(L, f) {
+  const z = L.z;
+  if (f >= 1 || !L.vorher || L.vorherSchritt !== z.schritt - 1) return z;
+  L.anzeigeTeile ??= [];
+  const teile = L.anzeigeTeile;
+  teile.length = z.teile.length;
+  z.teile.forEach((t, i) => {
+    const v = L.vorher, a = teile[i] ?? (teile[i] = {});
+    Object.assign(a, t);
+    a.x = v[i * 4] + (t.x - v[i * 4]) * f; a.y = v[i * 4 + 1] + (t.y - v[i * 4 + 1]) * f;
+    a.rot = v[i * 4 + 2] + (t.rot - v[i * 4 + 2]) * f; a.s = v[i * 4 + 3] + (t.s - v[i * 4 + 3]) * f;
+  });
+  return { ...z, teile };
+}
+function zeichneBuehne(f = 1) {
   const L = S.lauf, c = $("buehne");
-  const t0 = performance.now();
-  zeichne(c.getContext("2d"), c.width, c.height, L.z, L.M, L.mat, L.spurCache);
+  const t0 = performance.now(), z = anzeige(L, f);
+  zeichne(c.getContext("2d"), c.width, c.height, z, L.M, L.mat, L.spurCache);
   if (S.spielt) passeAufloesungAn(performance.now() - t0);
-  zeichneDaten();
+  zeichneDaten(z);
   const n = L.z.schritt;
+  if (L.angezeigt === n) return;                                          // Zeitleiste und Texte nur bei neuem Schritt anfassen
+  L.angezeigt = n;
   $("zeitleiste").value = n;
   const st = n < SCHLUESSEL[0] ? 0 : STATIONEN.find((s) => n <= SCHLUESSEL[s.nr] && n > (SCHLUESSEL[s.nr - 1] ?? -1))?.nr ?? STATIONEN.length - 1;
   const schl = SCHLUESSEL.indexOf(n);
@@ -305,14 +329,14 @@ function passeAufloesungAn(ms) {
   const mittel = zeiten.reduce((a, b) => a + b, 0) / zeiten.length;
   zeiten.length = 0;
   const c = $("buehne"), lang = Math.max(c.width, c.height);
-  if (mittel > 26 && lang > 560) {
+  if (mittel > 26 && lang > 560 && (S.lauf.verkleinert = (S.lauf.verkleinert ?? 0) + 1) <= 2) {
     const [w, h] = mass(S.lauf.M.seite, Math.round(lang * 0.8));
     c.width = w; c.height = h; $("daten").width = w; $("daten").height = h;
   }
 }
 /** Datenebene über der Animation (nur in der Ansicht, nie in Standbild oder Video): Fadenkreuz je Teil, Namen der Figuren, Zähler */
-function zeichneDaten() {
-  const L = S.lauf, c = $("daten"), ctx = c.getContext("2d"), W = c.width, H = c.height, z = L.z;
+function zeichneDaten(z = S.lauf.z) {
+  const L = S.lauf, c = $("daten"), ctx = c.getContext("2d"), W = c.width, H = c.height;
   ctx.clearRect(0, 0, W, H);
   if ($("daten-knopf").getAttribute("aria-pressed") !== "true" || z.schritt < SCHLUESSEL[0]) return;
   const kreide = "rgba(235,230,220,", f = Math.max(1, H / 700);
@@ -341,14 +365,18 @@ function spiele() {
   S.spielt = true;
   $("spielen").textContent = "Pause"; $("spielen").setAttribute("aria-pressed", "true");
   let start = performance.now(), basis = L.z.schritt;
+  // Die Simulation rechnet 30 Schritte je Sekunde; der Bildschirm zeigt meist 60 oder mehr Bilder. Zwischen zwei Schritten werden die Lagen
+  // der Teile darum weich übergeblendet (nur in der Anzeige; die Zustände, Standbilder und das Video bleiben dieselben).
   const tick = (jetzt) => {
     if (!S.spielt || S.lauf !== L) return;
-    const soll = Math.min(GESAMT, basis + Math.floor(((jetzt - start) / 1000) * TAKT));
+    const genau = basis + ((jetzt - start) / 1000) * TAKT;
+    const ziel = Math.min(GESAMT, Math.floor(genau) + 1);
     let n = 0;
-    while (L.z.schritt < soll && n < 8) { schritt(L.M, L.z); merke(L.z); n++; }
-    if (L.z.schritt < soll) { start = jetzt; basis = L.z.schritt; }      // zu langsam: nicht springen, sondern nachziehen
-    if (n) zeichneBuehne();                                               // nur zeichnen, wenn sich der Zustand geändert hat
-    if (L.z.schritt >= GESAMT) { stoppe(); return; }
+    while (L.z.schritt < ziel && n < 8) { merkeLagen(L); schritt(L.M, L.z); merke(L.z); n++; }
+    if (L.z.schritt < ziel) { start = jetzt; basis = L.z.schritt - 1; }  // zu langsam: nicht springen, sondern nachziehen
+    const f = Math.max(0, Math.min(1, genau - (L.z.schritt - 1)));
+    zeichneBuehne(f);
+    if (L.z.schritt >= GESAMT && f >= 1) { stoppe(); return; }
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
