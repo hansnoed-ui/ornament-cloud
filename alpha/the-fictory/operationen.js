@@ -1,4 +1,4 @@
-// «The Fictory» – EIN zusammenhängender Prozess in festen Schritten (30 je Sekunde, 35 Sekunden).
+// «The Fictory» – EIN zusammenhängender Prozess in festen Schritten (30 je Sekunde, 30 Sekunden).
 // Das ganze Eingangsbild wird zu Material: jede Fläche wird ein Teil, grosse Flächen werden in Kacheln zerschnitten. Nach dem
 // Eingangsbild gibt es das Bild nur noch als seine Teile auf dunklem Grund, bis sie es am Ende neu zusammensetzen. Sechs Operationen folgen aufeinander; jede plant ihren
 // Verlauf aus dem Zustand, den die vorige hinterlassen hat:
@@ -11,20 +11,20 @@
 //                              später und langsamer an (die Spuren bestimmen die Reihenfolge, nicht mehr das Ziel). Es bleiben feine Fugen.
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall } from "./analyse.js?v=11";
-import { REGELN } from "./regeln.js?v=11";
+import { zufall } from "./analyse.js?v=12";
+import { REGELN } from "./regeln.js?v=12";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
   { nr: 0, titel: "Eingangsbild", ende: 2 },
-  { nr: 1, titel: "Neue Nachbarschaften", ende: 7.5 },
-  { nr: 2, titel: "Abfolge als Bild", ende: 13 },
-  { nr: 3, titel: "Wirksame Spuren", ende: 19 },
-  { nr: 4, titel: "Gekoppelte Beziehungen", ende: 24.5 },
-  { nr: 5, titel: "Anders weitergehen", ende: 30 },
-  { nr: 6, titel: "Neu zusammengesetzt", ende: 35 },
+  { nr: 1, titel: "Neue Nachbarschaften", ende: 7 },
+  { nr: 2, titel: "Abfolge als Bild", ende: 12 },
+  { nr: 3, titel: "Wirksame Spuren", ende: 17.5 },          // die längste Station: sechs Runden, ruhig
+  { nr: 4, titel: "Gekoppelte Beziehungen", ende: 22.5 },
+  { nr: 5, titel: "Anders weitergehen", ende: 26 },
+  { nr: 6, titel: "Neu zusammengesetzt", ende: 30 },
 ]);
-export const SCHLUESSEL = Object.freeze(STATIONEN.map((s) => Math.round(s.ende * TAKT)));   // [60, 225, 390, 570, 735, 900, 1050]
+export const SCHLUESSEL = Object.freeze(STATIONEN.map((s) => Math.round(s.ende * TAKT)));   // [60, 210, 360, 525, 675, 780, 900]
 export const GESAMT = SCHLUESSEL[SCHLUESSEL.length - 1];
 const RASTER = 48;                      // Zellen je Bildhöhe im Spurenfeld
 const FELD = 80;                        // Zellen je Bildhöhe im wuchernden Feld (Reaktions-Diffusion)
@@ -507,7 +507,7 @@ const OPS = {
       zaeh.forEach(({ i }, k) => {
         const t = z.teile[i], e = M.teile[i], f = N > 1 ? k / (N - 1) : 0;
         const wende = Math.atan2(Math.sin(-t.rot), Math.cos(-t.rot));            // kürzester Weg zur Lage im Original
-        ziel[i] = { x0: t.x, y0: t.y, s0: t.s, rot0: t.rot, x: e.hx, y: e.hy, s: 1, rot: t.rot + wende, start: 0.04 + 0.4 * f, dauer: 0.3 + 0.12 * f, z: anfangsEbene(M, i) };
+        ziel[i] = { x0: t.x, y0: t.y, s0: t.s, rot0: t.rot, x: e.hx, y: e.hy, s: 1, rot: t.rot + wende, start: 0.03 + 0.35 * f, dauer: 0.42 + 0.08 * f, z: anfangsEbene(M, i) };
       });
       const zuerst = zaeh.slice(0, 3).map(({ i }) => name(M.teile[i])), zuletzt = zaeh.slice(-2).map(({ i }) => name(M.teile[i]));
       z.ereignisse.push({ schritt: z.schritt, kurz: "Jedes Teil kehrt zurück: das Bild setzt sich neu zusammen.", text: `Schritt 6: Alle Kopplungen lösen sich; jedes der ${N} Teile kehrt an seine Herkunftsstelle zurück, in Originalgrösse und ohne Drehung, und das Ursprungsbild setzt sich neu zusammen. Die Spuren bestimmen die Reihenfolge: zuerst ${zuerst.join(", ")} (wenig Spur), zuletzt ${zuletzt.join(", ")}. Es bleiben feine Fugen.` });
@@ -525,7 +525,7 @@ const OPS = {
       z.kopplungAlpha = P.kopplung0 * (1 - glatt(p / 0.2));
       z.spurAlpha = P.spur0 * (1 - 0.6 * glatt(p / 0.6));
       // wenn alle angekommen sind: die Fugen zeichnen sich ab und gehen bis auf eine feine Linie zurück
-      z.gliederung = 0.7 * glatt((p - 0.8) / 0.08) - 0.5 * glatt((p - 0.9) / 0.1);
+      z.gliederung = 0.7 * glatt((p - 0.86) / 0.06) - 0.5 * glatt((p - 0.92) / 0.08);
     },
   },
 };

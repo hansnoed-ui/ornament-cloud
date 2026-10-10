@@ -1,12 +1,12 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen, leitfarbe } from "./analyse.js?v=11";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=11";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=11";
-import { REGELN } from "./regeln.js?v=11";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=11";
-import { JEV } from "./jev.js?v=11";
-import { zip } from "./zip.js?v=11";
+import { analysiere, konturen, leitfarbe } from "./analyse.js?v=12";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=12";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=12";
+import { REGELN } from "./regeln.js?v=12";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=12";
+import { JEV } from "./jev.js?v=12";
+import { zip } from "./zip.js?v=12";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln

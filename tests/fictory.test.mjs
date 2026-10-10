@@ -63,9 +63,9 @@ test("Konturen sind geschlossene Linienzüge", () => {
   assert.deepEqual(k[0][0], k[0][k[0].length - 1]);
 });
 
-test("Prozess: genau sieben Stationen (Eingangsbild und sechs Schlüsselzustände), 35 Sekunden, reproduzierbar", () => {
-  assert.deepEqual(O.SCHLUESSEL, [60, 225, 390, 570, 735, 900, 1050]);
-  assert.equal(O.GESAMT / O.TAKT, 35);
+test("Prozess: genau sieben Stationen (Eingangsbild und sechs Schlüsselzustände), 30 Sekunden, reproduzierbar", () => {
+  assert.deepEqual(O.SCHLUESSEL, [60, 210, 360, 525, 675, 780, 900]);
+  assert.equal(O.GESAMT / O.TAKT, 30);
   const a = lauf(), b = lauf();
   assert.deepEqual(a.keys, b.keys, "gleicher Startwert, gleiche Zustände");
   assert.equal(new Set(a.keys).size, 7, "alle Schlüsselzustände verschieden");
