@@ -6,23 +6,22 @@
 //   2 Abfolge als Bild       → die Ankunftsreihenfolge wird zur Spirale (früh innen, spät aussen); Zwischenstände bleiben als Spur
 //   3 Wirksame Spuren        → jeder Schritt meidet das Spurenfeld, das alle früheren Schritte hinterlassen haben
 //   4 Gekoppelte Beziehungen → Kopplungen aus den Nachbarschaften im Bild versuchen es wieder zusammenzusetzen; Spuren machen zäh, ein Anstoss verdreht
-//   5 Figur und Grund        → Umkehrung: die Teile werden Silhouetten, der Zwischenraum der erreichten Lage trägt das Material des Grundes
-//   6 Anders weitergehen     → ein einziger Schnitt durch das Gefüge (gelegt, wo die meiste Spur liegt) trennt alle Kopplungen über ihn; eine Seite bricht weg
+//   5 Anders weitergehen     → ein einziger Schnitt durch das Gefüge (gelegt, wo die meiste Spur liegt) trennt alle Kopplungen über ihn; eine Seite bricht weg
+// (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall, konturen } from "./analyse.js?v=3";
-import { REGELN } from "./regeln.js?v=3";
+import { zufall } from "./analyse.js?v=4";
+import { REGELN } from "./regeln.js?v=4";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
   { nr: 0, titel: "Eingangsbild", ende: 2 },
-  { nr: 1, titel: "Neue Nachbarschaften", ende: 6.5 },
-  { nr: 2, titel: "Abfolge als Bild", ende: 11 },
-  { nr: 3, titel: "Wirksame Spuren", ende: 16 },
-  { nr: 4, titel: "Gekoppelte Beziehungen", ende: 21 },
-  { nr: 5, titel: "Figur und Grund", ende: 25.5 },
-  { nr: 6, titel: "Anders weitergehen", ende: 30 },
+  { nr: 1, titel: "Neue Nachbarschaften", ende: 7.5 },
+  { nr: 2, titel: "Abfolge als Bild", ende: 13 },
+  { nr: 3, titel: "Wirksame Spuren", ende: 19 },
+  { nr: 4, titel: "Gekoppelte Beziehungen", ende: 24.5 },
+  { nr: 5, titel: "Anders weitergehen", ende: 30 },
 ]);
-export const SCHLUESSEL = Object.freeze(STATIONEN.map((s) => Math.round(s.ende * TAKT)));   // [60, 195, 330, 480, 630, 765, 900]
+export const SCHLUESSEL = Object.freeze(STATIONEN.map((s) => Math.round(s.ende * TAKT)));   // [60, 225, 390, 570, 735, 900]
 export const GESAMT = SCHLUESSEL[SCHLUESSEL.length - 1];
 const RASTER = 48;                      // Zellen je Bildhöhe im Spurenfeld
 const FELD = 80;                        // Zellen je Bildhöhe im wuchernden Feld (Reaktions-Diffusion)
@@ -121,7 +120,17 @@ export function erzeugeLauf(analyse, lauf = {}) {
   const groesster = Math.max(...teile.map((e) => e.anteil));
   for (const e of teile) e.last = regel === "R5" ? 1 + 3 * Math.sqrt(e.anteil / groesster) : 1;
   const fh = FELD, fw = Math.ceil(seite * FELD);
-  return { analyse: A, seed, regel, neutralisiere: lauf.neutralisiere ?? null, seite, ah, aw, gw, gh, fw, fh, teile, karte, nachbarn, kachelGroesse: kachel, verworfen };
+  // R6: die Herkunftsstellen der Figuren bleiben im wuchernden Feld offen (dort wächst nichts)
+  let leer = null;
+  if (regel === "R6") {
+    leer = new Uint8Array(fw * fh);
+    for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) {
+      const ax = Math.min(aw - 1, Math.floor(((x + 0.5) / fh) * ah)), ay = Math.min(ah - 1, Math.floor(((y + 0.5) / fh) * ah));
+      const e = teile[karte[ay * aw + ax]];
+      if (e.figur && e.beweglich) leer[y * fw + x] = 1;
+    }
+  }
+  return { leer, analyse: A, seed, regel, neutralisiere: lauf.neutralisiere ?? null, seite, ah, aw, gw, gh, fw, fh, teile, karte, nachbarn, kachelGroesse: kachel, verworfen };
 }
 
 /** Liegt der normierte Punkt (px, py) im Teil e, wenn es in der Lage (x, y, m) steht? */
@@ -152,20 +161,20 @@ export function anfang(M) {
   return {
     schritt: 0,
     teile: M.teile.map((e, z) => ({ x: e.hx, y: e.hy, rot: 0, s: 1, a: 1, kontur: 0, z: (e.figur ? 1000 : 0) + z, loch: 0, fest: !e.beweglich, erschoepft: false })),
-    grundAlpha: 1, spurAlpha: 1, umkehr: 0, gliederung: 0, stempel: [], spuren: new Float32Array(M.gw * M.gh),
+    grundAlpha: 1, spurAlpha: 1, gliederung: 0, stempel: [], spuren: new Float32Array(M.gw * M.gh),
     feldA: new Float32Array(M.fw * M.fh).fill(1), feldB: new Float32Array(M.fw * M.fh), feldAlpha: 0,
     ankunft: [], federn: [], kopplungAlpha: 0, anstoss: null, schnitt: null,
-    luecke: [], lueckeAlpha: 0, plan: null, ereignisse: [],
+    plan: null, ereignisse: [],
   };
 }
 
 /** tiefe Kopie (für Momentaufnahmen und Zeitleiste); die Stempel wachsen nur an und werden flach kopiert */
 export function kopie(z) {
   return { ...z, teile: z.teile.map((t) => ({ ...t })), stempel: z.stempel.slice(), spuren: z.spuren.slice(), feldA: z.feldA.slice(), feldB: z.feldB.slice(), ankunft: z.ankunft.slice(),
-    federn: z.federn.map((f) => ({ ...f })), luecke: z.luecke, plan: z.plan ? JSON.parse(JSON.stringify(z.plan)) : null, ereignisse: z.ereignisse.slice() };
+    federn: z.federn.map((f) => ({ ...f })), plan: z.plan ? JSON.parse(JSON.stringify(z.plan)) : null, ereignisse: z.ereignisse.slice() };
 }
 
-const station = (schritt) => { let i = 1; while (i < SCHLUESSEL.length - 1 && schritt >= SCHLUESSEL[i]) i++; return i; };   // laufende Station (1–6) für schritt ≥ 60
+const station = (schritt) => { let i = 1; while (i < SCHLUESSEL.length - 1 && schritt >= SCHLUESSEL[i]) i++; return i; };   // laufende Station (1–5) für schritt ≥ 60
 
 /** Ein Schritt des Prozesses (verändert z). */
 export function schritt(M, z) {
@@ -227,6 +236,7 @@ function wuchern(M, z) {
       }
     }
     A.set(A2); B.set(B2);
+    if (M.leer && z.schritt >= SCHLUESSEL[0]) for (let i = 0; i < M.leer.length; i++) if (M.leer[i]) { A[i] = 1; B[i] = 0; }
   }
 }
 const feldAn = (M, z, x, y) => z.feldB[klemme(Math.floor(y * M.fh), 0, M.fh - 1) * M.fw + klemme(Math.floor(x * M.fh), 0, M.fw - 1)];
@@ -261,7 +271,7 @@ function bewege(t, q, p) {
   return u;
 }
 
-// ---------- die sechs Operationen ----------
+// ---------- die fünf Operationen ----------
 const OPS = {
   // 1 · Neue Nachbarschaften: Fugen öffnen sich, dann gehen alle Teile in ein Archiv-Raster, geordnet nach einer am Bild begründeten Regel
   1: {
@@ -308,7 +318,7 @@ const OPS = {
         const q = z.plan.ziel[i];
         if (!q || p < q.start) { t.s = fuge; continue; }
         bewege(t, q, p);
-        if (M.regel === "R6") t.loch = 1;                                   // R6: die verlassene Stelle bleibt offen
+        if (M.regel === "R6" && M.teile[i].figur) t.loch = 1;              // R6: die verlassene Stelle einer Figur bleibt offen (Umriss; im Feld wächst dort nichts)
       }
     },
   },
@@ -430,28 +440,11 @@ const OPS = {
     },
   },
 
-  // 5 · Figur und Grund: Umkehrung – die Teile werden dunkle Silhouetten mit heller Kontur, der Zwischenraum der erreichten Lage trägt das Material des Grundes
+  // 5 · Anders weitergehen: ein einziger Schnitt durch das Gefüge, gelegt durch die Stelle mit der meisten Spur; alle Kopplungen über ihn
+  //     reissen, die abgetrennte Seite bricht weg und dreht sich
   5: {
-    plan(M, z) {
-      z.luecke = zwischenraum(M, z);
-      const flaeche = z.luecke.reduce((s, l) => s + Math.abs(polyFlaeche(l)), 0);
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 5: Umkehrung. Die ${M.teile.length} Teile werden Silhouetten; der Zwischenraum der erreichten Lage (${Math.round(flaeche / M.seite * 100)} % des Bildes, ${z.luecke.length} Form${z.luecke.length === 1 ? "" : "en"}) wird mit dem Material des Grundes gefüllt und trägt das Bild${M.regel === "R6" ? "; die offenen Leerstellen gehen in ihn ein" : ""}.` });
-      return {};
-    },
-    lauf(M, z, p) {
-      z.lueckeAlpha = glatt(p / 0.5);
-      z.umkehr = glatt(p / 0.5);
-      z.kopplungAlpha = Math.max(0, z.kopplungAlpha - 0.02);
-      z.spurAlpha = 1 - 0.75 * glatt(p / 0.5);
-      for (const t of z.teile) t.kontur = glatt(p / 0.5);
-    },
-  },
-
-  // 6 · Anders weitergehen: ein einziger Schnitt durch das Gefüge, gelegt durch die Stelle mit der meisten Spur; alle Kopplungen über ihn
-  //     reissen, die abgetrennte Seite bricht weg und dreht sich, Farben kehren zurück, der Zwischenraum wird laufend neu bestimmt
-  6: {
     plan(M, z, r) {
-      if (M.regel === "R2") spiegelSpur(M, z, z.teile.map((t) => ({ x: t.x, y: t.y, rot: t.rot, s: t.s })), "Schlüsselzustand 5");
+      if (M.regel === "R2") spiegelSpur(M, z, z.teile.map((t) => ({ x: t.x, y: t.y, rot: t.rot, s: t.s })), "Schlüsselzustand 4");
       // Ort: das Teil mit der meisten Spur unter sich; Richtung: quer zur Hauptachse
       let ort = 0, meist = -1;
       z.teile.forEach((t, i) => { const s = spurUnter(M, z, i, t.x, t.y, matrix(t.rot, t.s)); if (s > meist) { meist = s; ort = i; } });
@@ -468,10 +461,10 @@ const OPS = {
       const richtung = kleiner ? 1 : -1;
       const drall = z.teile.map(() => (r() - 0.5) * 0.06);
       z.schnitt = { x: px, y: py, w };
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 6: Eingriff – ein Schnitt quer zur Hauptachse, zwischen ${name(M.teile[ort])} (das Teil mit der meisten Spur, ${meist.toFixed(1)}) und dem Schwerpunkt des Gefüges. ${gerissen} Kopplungen reissen; ${weg.size} Teile brechen weg und drehen sich, ${z.teile.length - weg.size} halten zusammen. Farben kehren zurück.` });
-      return { weg: [...weg], dx: nx * richtung, dy: ny * richtung, drall, a0: z.teile.map((t) => t.a) };
+      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 5: Eingriff – ein Schnitt quer zur Hauptachse, zwischen ${name(M.teile[ort])} (das Teil mit der meisten Spur, ${meist.toFixed(1)}) und dem Schwerpunkt des Gefüges. ${gerissen} Kopplungen reissen; ${weg.size} Teile brechen weg und drehen sich, ${z.teile.length - weg.size} halten zusammen.` });
+      return { weg: [...weg], dx: nx * richtung, dy: ny * richtung, drall, kopplung0: z.kopplungAlpha };
     },
-    lauf(M, z, p, k) {
+    lauf(M, z, p) {
       const P = z.plan, weg = new Set(P.weg), v = 0.022 * (1 - glatt(p / 0.85));
       for (const [i, t] of z.teile.entries()) {
         if (t.fest) continue;
@@ -485,11 +478,8 @@ const OPS = {
       }
       entspannen(M, z, 1, 0.12);
       for (const [i, t] of z.teile.entries()) imBild(M, t, M.teile[i]);
-      z.umkehr = 1 - glatt(p / 0.45);
-      for (const t of z.teile) t.kontur = 1 - 0.7 * glatt(p / 0.45);
-      z.kopplungAlpha = 0;
-      if (k % 6 === 0 || p >= 0.995) z.luecke = zwischenraum(M, z);
-      z.lueckeAlpha = 1 - 0.25 * glatt(p);
+      z.kopplungAlpha = P.kopplung0 * (1 - glatt(p / 0.3));
+      z.spurAlpha = 1 - 0.45 * glatt(p / 0.5);                              // die Spuren treten zurück, damit der Bruch lesbar bleibt
     },
   },
 };
@@ -519,35 +509,6 @@ function entspannen(M, z, runden, staerke) {
   }
 }
 
-/** Belegung der Teile im Spurenraster (0/1) */
-function belegung(M, z) {
-  const O = new Float32Array(M.gw * M.gh);
-  z.teile.forEach((t, i) => zellen(M, M.teile[i], t.x, t.y, matrix(t.rot, t.s), (k) => { O[k] = 1; }));
-  return O;
-}
-function weich(F, w, h, r) {
-  let A = F;
-  for (let pass = 0; pass < 2; pass++) {
-    const B = new Float32Array(w * h), C = new Float32Array(w * h);
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let s = 0, c = 0; for (let d = -r; d <= r; d++) { const xx = x + d; if (xx >= 0 && xx < w) { s += A[y * w + xx]; c++; } } B[y * w + x] = s / c; }
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let s = 0, c = 0; for (let d = -r; d <= r; d++) { const yy = y + d; if (yy >= 0 && yy < h) { s += B[yy * w + x]; c++; } } C[y * w + x] = s / c; }
-    A = C;
-  }
-  return A;
-}
-/** Zwischenraum: Stellen in der Nähe der Teile, die keines bedeckt (mit R6 dazu die offenen Leerstellen), als Linienzüge in normierten Koordinaten */
-function zwischenraum(M, z) {
-  const { gw, gh } = M;
-  const O = belegung(M, z);
-  const naehe = weich(O, gw, gh, 4);
-  const G = new Float32Array(gw * gh);
-  for (let k = 0; k < G.length; k++) G[k] = naehe[k] > 0.05 && O[k] === 0 ? 1 : 0;
-  if (M.regel === "R6") M.teile.forEach((e, i) => { const t = z.teile[i]; if (Math.hypot(t.x - e.hx, t.y - e.hy) > e.radius * 0.5) zellen(M, e, e.hx, e.hy, [1, 0, 0, 1], (k) => { if (!O[k]) G[k] = 1; }); });
-  const W = weich(G, gw, gh, 1);
-  return konturen(W, gw, gh, 0.5).map((zug) => zug.map(([x, y]) => [(x + 0.5) / gh, (y + 0.5) / gh]));
-}
-function polyFlaeche(p) { let s = 0; for (let i = 0; i < p.length; i++) { const [x1, y1] = p[i], [x2, y2] = p[(i + 1) % p.length]; s += x1 * y2 - x2 * y1; } return s / 2; }
-
 /** Lauf bis zu einem Schritt (ab Anfang oder ab einer Momentaufnahme) */
 export function bis(M, ziel, start = null) {
   const z = start ? kopie(start) : anfang(M);
@@ -562,17 +523,16 @@ export function zustandsSchluessel(z) {
   const add = (v) => { h ^= v & 0xffffffff; h = Math.imul(h, 0x01000193) >>> 0; };
   add(z.schritt);
   for (const t of z.teile) [t.x, t.y, t.rot, t.s, t.a, t.kontur, t.loch, t.z].forEach((v) => add(r(v)));
-  [z.grundAlpha, z.spurAlpha, z.umkehr, z.lueckeAlpha, z.kopplungAlpha].forEach((v) => add(r(v)));
+  [z.grundAlpha, z.spurAlpha, z.kopplungAlpha].forEach((v) => add(r(v)));
   add(z.stempel.length);
   for (let k = 0; k < z.spuren.length; k++) if (z.spuren[k]) add(k * 31 + r(z.spuren[k]));
   let feld = 0; for (let k = 0; k < z.feldB.length; k++) feld += z.feldB[k] * ((k % 97) + 1);
   add(r(feld / 1000));
-  for (const l of z.luecke) for (const [x, y] of l) { add(r(x)); add(r(y)); }
   for (const f of z.federn) add(f.aktiv ? 1 : 0);
   return h.toString(16).padStart(8, "0");
 }
 
-/** Beschreibung der sechs Operationen für die Standbilder, aus dem tatsächlichen Lauf */
+/** Beschreibung der fünf Operationen für die Standbilder, aus dem tatsächlichen Lauf */
 export function beschreibungen(M, schluesselZustaende) {
   const aus = (st) => (schluesselZustaende[st]?.ereignisse ?? []).filter((e) => e.schritt >= SCHLUESSEL[st - 1] && e.schritt < SCHLUESSEL[st]).map((e) => e.text);
   return STATIONEN.slice(1).map((s) => ({ nr: s.nr, titel: s.titel, text: aus(s.nr).join(" ") }));

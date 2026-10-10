@@ -1,13 +1,13 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen, leitfarbe } from "./analyse.js?v=3";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=3";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=3";
-import { REGELN } from "./regeln.js?v=3";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=3";
-import { JEV } from "./jev.js?v=3";
-import { zip } from "./zip.js?v=3";
-import { feldMitShader } from "./feld.js?v=3";
+import { analysiere, konturen, leitfarbe } from "./analyse.js?v=4";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=4";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=4";
+import { REGELN } from "./regeln.js?v=4";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=4";
+import { JEV } from "./jev.js?v=4";
+import { zip } from "./zip.js?v=4";
+import { feldMitShader } from "./feld.js?v=4";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln
@@ -16,7 +16,7 @@ const EXPORT_MIN = 1600;        // Standbilder mindestens so lang (längste Seit
 const BUEHNE_SEITE = 1080;      // Vorschau der Animation
 const VIDEO_SEITE = 1080;       // Video
 const MERKEN = 15;              // Momentaufnahme alle 15 Schritte (Zeitleiste)
-const VERSION = "2.0";
+const VERSION = "4.0";
 
 const S = {
   bild: null, arbeit: null, analyseBild: null, A: null,
@@ -239,7 +239,7 @@ async function erzeugen(stumm = false) {
   const c = $("buehne"); c.width = bw; c.height = bh;
   const d = $("daten"); d.width = bw; d.height = bh;
   $("buehne-flaeche").style.width = `min(100%, calc(76vh * ${A.seite.toFixed(4)}))`;
-  zeigeStandbilder(); zeigeMarken(); zeigeEreignisse(keys[6]);
+  zeigeStandbilder(); zeigeMarken(); zeigeEreignisse(keys[STATIONEN.length - 1]);
   $("ergebnis").hidden = false; $("gegen-bilder").hidden = true;
   $("ablage").hidden = true; $("buehne-box").hidden = false;
   $("status-erzeugen").textContent = `Erzeugt: ${M.teile.length} Teile (${M.teile.filter((e) => e.kachel >= 0).length} davon Kacheln grosser Flächen), Regel ${regel ? `${regel} (${REGELN[regel].name})` : "keine (ohne ORNA)"}, Startwert ${S.seed}.`;
@@ -281,7 +281,7 @@ function zeichneBuehne() {
   zeichneDaten();
   const n = L.z.schritt;
   $("zeitleiste").value = n;
-  const st = n < SCHLUESSEL[0] ? 0 : STATIONEN.find((s) => n <= SCHLUESSEL[s.nr] && n > (SCHLUESSEL[s.nr - 1] ?? -1))?.nr ?? 6;
+  const st = n < SCHLUESSEL[0] ? 0 : STATIONEN.find((s) => n <= SCHLUESSEL[s.nr] && n > (SCHLUESSEL[s.nr - 1] ?? -1))?.nr ?? STATIONEN.length - 1;
   const schl = SCHLUESSEL.indexOf(n);
   const name = $("stand-name");
   if (name.dataset.st !== String(st)) {
@@ -449,15 +449,15 @@ function integrationen() {
 }
 async function allePNG() {
   const L = S.lauf; if (!L) return;
-  $("status-export").textContent = "Sechs Standbilder werden gerechnet …";
+  $("status-export").textContent = "Fünf Standbilder werden gerechnet …";
   const dateien = [];
-  for (let nr = 1; nr <= 6; nr++) {
+  for (let nr = 1; nr < SCHLUESSEL.length; nr++) {
     const { blob, name } = await standbildPNG(nr);
     dateien.push({ name, bytes: new Uint8Array(await blob.arrayBuffer()) });
   }
   dateien.push({ name: dateiname("protokoll.json"), bytes: new TextEncoder().encode(JSON.stringify(protokoll(), null, 2)) });
   herunterladen(new Blob([zip(dateien)], { type: "application/zip" }), dateiname("standbilder.zip"));
-  $("status-export").textContent = `ZIP mit sechs PNG (${exportMass().join(" × ")} px) und dem Protokoll.`;
+  $("status-export").textContent = `ZIP mit fünf PNG (${exportMass().join(" × ")} px) und dem Protokoll.`;
 }
 function videoTyp() {
   if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream) return null;
@@ -515,7 +515,7 @@ async function protokollLaden(datei) {
     neuAnalysieren(); zeigeOrna(); zeigeStartwert();
     await erzeugen(true);
     const gleich = S.lauf.schluessel.every((s, i) => s === p.lauf.schluesselzustaende[i]?.zustand);
-    $("status-export").textContent = gleich ? "Lauf aus dem Protokoll wiederholt: alle sieben Schlüsselzustände stimmen überein." : "Lauf wiederholt, aber die Schlüsselzustände weichen ab (andere Fassung der Anwendung?).";
+    $("status-export").textContent = gleich ? "Lauf aus dem Protokoll wiederholt: alle sechs Schlüsselzustände stimmen überein." : "Lauf wiederholt, aber die Schlüsselzustände weichen ab (andere Fassung der Anwendung?).";
   } catch (e) { $("status-export").textContent = `Protokoll nicht lesbar: ${e.message}`; }
 }
 function gegenprobe() {

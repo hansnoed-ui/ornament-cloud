@@ -1,9 +1,9 @@
 // «The Fictory» – Material und Darstellung. Alles Bildmaterial stammt aus dem Eingangsbild: die Teile der Zerlegung (Kanten an den
-// Farbgruppen nachgeschärft), ihre Silhouetten und ein Grundbild (der Grund des Bildes, Figuren mit der Grundfarbe geschlossen).
+// Farbgruppen nachgeschärft).
 // Nach dem Eingangsbild steht alles auf dunklem Grund. zeichne() bildet einen Zustand in beliebiger Grösse ab; Vorschau, Video und
 // Standbild in hoher Auflösung nutzen dieselbe Funktion mit demselben Zustand. In die Bilder kommt keine Schrift.
-import { konturen, lab, leitfarbe } from "./analyse.js?v=3";
-import { zeichneFeld } from "./feld.js?v=3";
+import { konturen, lab, leitfarbe } from "./analyse.js?v=4";
+import { zeichneFeld } from "./feld.js?v=4";
 
 export const NACHT = "#151412";
 export const PAPIER = "#f4f1ea";
@@ -41,14 +41,12 @@ export function baueMaterial(quelle, A, M) {
     return indikator(id, x0, y0) * (1 - tx) * (1 - ty) + indikator(id, x0 + 1, y0) * tx * (1 - ty) + indikator(id, x0, y0 + 1) * (1 - tx) * ty + indikator(id, x0 + 1, y0 + 1) * tx * ty;
   };
   const f = Math.min(1, KLEIN / Hs);
-  const nacht = [0x15, 0x14, 0x12];
   const teile = M.teile.map((e) => {
     const b = e.bbox;
     const sx0 = Math.max(0, Math.floor((b.x0 - 1) * faktor)), sy0 = Math.max(0, Math.floor((b.y0 - 1) * faktor));
     const sx1 = Math.min(Ws, Math.ceil((b.x1 + 2) * faktor)), sy1 = Math.min(Hs, Math.ceil((b.y1 + 2) * faktor));
     const w = sx1 - sx0, h = sy1 - sy0;
     const bild = qx.getImageData(sx0, sy0, w, h), d = bild.data;
-    const schatten = new ImageData(w, h), l = schatten.data;
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
       const v = bilinear(e.i, (sx0 + x + 0.5) / faktor - 0.5, (sy0 + y + 0.5) / faktor - 0.5);
       const i = (y * w + x) * 4;
@@ -57,11 +55,9 @@ export function baueMaterial(quelle, A, M) {
       else if (v <= 0.04) a = 0;
       else a = naechste(d[i], d[i + 1], d[i + 2]) === e.cluster ? (v > 0.12 ? 255 : 0) : (v > 0.8 ? 255 : 0);   // Rand an der Farbgruppe nachgeschärft
       d[i + 3] = a;
-      l[i] = nacht[0]; l[i + 1] = nacht[1]; l[i + 2] = nacht[2]; l[i + 3] = a;
     }
-    const gross = leinwand(w, h), schattenGross = leinwand(w, h);
+    const gross = leinwand(w, h);
     gross.getContext("2d").putImageData(bild, 0, 0);
-    schattenGross.getContext("2d").putImageData(schatten, 0, 0);
     // Kontur in Koordinaten relativ zum Schwerpunkt (normiert)
     const px0 = Math.max(0, b.x0 - 2), py0 = Math.max(0, b.y0 - 2), pw = Math.min(aw, b.x1 + 3) - px0, ph = Math.min(ah, b.y1 + 3) - py0;
     const feld = new Float32Array(pw * ph);
@@ -69,40 +65,15 @@ export function baueMaterial(quelle, A, M) {
     const kontur = konturen(feld, pw, ph, 0.5).map((zug) => zug.map(([x, y]) => [(px0 + x + 0.5) / ah - e.hx, (py0 + y + 0.5) / ah - e.hy]));
     const umriss = new Path2D();
     for (const zug of kontur) { zug.forEach(([x, y], k) => (k ? umriss.lineTo(x, y) : umriss.moveTo(x, y))); umriss.closePath(); }
-    return { umriss, gross, klein: verkleinert(gross, f), schattenGross, schattenKlein: verkleinert(schattenGross, f), ox: sx0 / Hs - e.hx, oy: sy0 / Hs - e.hy, w: w / Hs, h: h / Hs, kontur };
+    return { umriss, gross, klein: verkleinert(gross, f), ox: sx0 / Hs - e.hx, oy: sy0 / Hs - e.hy, w: w / Hs, h: h / Hs, kontur };
   });
-  // Grundbild: Grundflächen im Original, alles andere in der mittleren Grundfarbe
-  const grund = new Set(A.grund);
-  let gr = 0, gg = 0, gb = 0, gs = 0;
-  for (const id of grund) { const F = A.flaechen[id]; gr += F.rgb[0] * F.px; gg += F.rgb[1] * F.px; gb += F.rgb[2] * F.px; gs += F.px; }
-  const grundFarbe = gs ? [gr / gs, gg / gs, gb / gs].map(Math.round) : [200, 196, 188];
-  const klein = leinwand(aw, ah), maske = leinwand(aw, ah);
-  const kd = new ImageData(aw, ah), md = new ImageData(aw, ah);
-  for (let i = 0; i < aw * ah; i++) {
-    kd.data.set([...grundFarbe, 255], i * 4);
-    md.data.set([255, 255, 255, grund.has(A.region[i]) ? 255 : 0], i * 4);
-  }
-  klein.getContext("2d").putImageData(kd, 0, 0); maske.getContext("2d").putImageData(md, 0, 0);
-  const grundbild = leinwand(Ws, Hs), gx = grundbild.getContext("2d");
-  gx.imageSmoothingQuality = "high";
-  gx.drawImage(klein, 0, 0, Ws, Hs);
-  const echt = leinwand(Ws, Hs), ex = echt.getContext("2d");
-  ex.imageSmoothingQuality = "high";
-  ex.drawImage(maske, 0, 0, Ws, Hs);
-  ex.globalCompositeOperation = "source-in";
-  ex.drawImage(quelle, 0, 0);
-  gx.drawImage(echt, 0, 0);
   // Zerlegung (alle Teilgrenzen) für den Übergang aus dem Eingangsbild
   const gliederung = new Path2D();
   for (const e of M.teile) for (const zug of teile[e.i].kontur) { zug.forEach(([x, y], k) => (k ? gliederung.lineTo(x + e.hx, y + e.hy) : gliederung.moveTo(x + e.hx, y + e.hy))); gliederung.closePath(); }
-  return { Hs, Ws, quelle, quelleKlein: verkleinert(quelle, f), grundbild, grundbildKlein: verkleinert(grundbild, f), teile, gliederung, grundFarbe, leit: leitfarbe(A), klein: f };
+  return { Hs, Ws, quelle, quelleKlein: verkleinert(quelle, f), teile, gliederung, leit: leitfarbe(A), klein: f };
 }
 
 const matrix = (rot, s) => [s * Math.cos(rot), s * Math.sin(rot), -s * Math.sin(rot), s * Math.cos(rot)];
-function pfad(ctx, zuege) {
-  ctx.beginPath();
-  for (const zug of zuege) { zug.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath(); }
-}
 
 /**
  * zeichnet den Zustand z in ctx (Breite W, Höhe H Pixel; Seitenverhältnis wie das Eingangsbild).
@@ -156,22 +127,6 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
     ctx.setLineDash([0.005, 0.006]); ctx.stroke(mat.teile[i].umriss); ctx.setLineDash([]);
   });
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  // 3 · Zwischenraum als tragende Form, gefüllt mit dem Material des Grundes
-  if (z.lueckeAlpha > 0.001 && z.luecke.length) {
-    ctx.setTransform(S, 0, 0, S, 0, 0);
-    pfad(ctx, z.luecke);
-    ctx.save();
-    ctx.clip("evenodd");
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.globalAlpha = z.lueckeAlpha;
-    ctx.drawImage(q(mat.grundbild, mat.grundbildKlein), 0, 0, W, H);
-    ctx.restore();
-    ctx.globalAlpha = z.lueckeAlpha * 0.7;
-    ctx.lineWidth = Math.max(1, S * 0.002) / S;
-    ctx.strokeStyle = PAPIER;
-    ctx.stroke();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-  }
   // 4 · Spuren: gestempelte frühere Lagen (in der Vorschau aus einer eigenen, schrittweise wachsenden Schicht)
   const spur = z.spurAlpha ?? 1;
   if (z.stempel.length && spur > 0.001) {
@@ -198,13 +153,11 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
     for (const f of z.federn) { if (!f.aktiv) continue; const a = z.teile[f.i], b = z.teile[f.j]; ctx.moveTo(S * a.x, S * a.y); ctx.lineTo(S * b.x, S * b.y); }
     ctx.stroke();
   }
-  // 6 · die Teile in ihrer Lage, in der Reihenfolge ihrer Ebene; bei der Umkehrung als Silhouette mit heller Kontur
+  // 6 · die Teile in ihrer Lage, in der Reihenfolge ihrer Ebene
   const reihe = z.teile.map((t, i) => i).sort((a, b) => z.teile[a].z - z.teile[b].z || a - b);
-  const umkehr = z.umkehr ?? 0;
   for (const i of reihe) {
     const t = z.teile[i], m = matrix(t.rot, t.s), T = mat.teile[i];
-    if (t.a * (1 - umkehr) > 0.001) { ctx.globalAlpha = t.a * (1 - umkehr); teil(ctx, i, t.x, t.y, m, q(T.gross, T.klein)); }
-    if (umkehr > 0.001) { ctx.globalAlpha = umkehr; teil(ctx, i, t.x, t.y, m, q(T.schattenGross, T.schattenKlein)); }
+    if (t.a > 0.001) { ctx.globalAlpha = t.a; teil(ctx, i, t.x, t.y, m, q(T.gross, T.klein)); }
     if (t.kontur > 0.001) {
       ctx.setTransform(S * m[0], S * m[1], S * m[2], S * m[3], S * t.x, S * t.y);
       ctx.globalAlpha = t.kontur * 0.85; ctx.strokeStyle = PAPIER; ctx.lineWidth = Math.max(1, S * 0.0018) / (S * t.s); ctx.lineJoin = "round";
@@ -212,8 +165,8 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
     }
   }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  // 7 · der Schnitt aus Schritt 6
-  if (z.schnitt && z.schritt >= 765) {
+  // 7 · der Schnitt aus Schritt 5
+  if (z.schnitt) {
     const { x, y, w } = z.schnitt, d = 2;
     ctx.globalAlpha = 0.7; ctx.strokeStyle = PAPIER; ctx.lineWidth = Math.max(1, S * 0.0016); ctx.setLineDash([S * 0.012, S * 0.008]);
     ctx.beginPath(); ctx.moveTo(S * (x - Math.cos(w) * d), S * (y - Math.sin(w) * d)); ctx.lineTo(S * (x + Math.cos(w) * d), S * (y + Math.sin(w) * d)); ctx.stroke();

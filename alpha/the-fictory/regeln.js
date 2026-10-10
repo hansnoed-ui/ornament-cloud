@@ -7,13 +7,13 @@ export const REGELN = Object.freeze({
   R1: {
     name: "Keine Rückkehr an dieselbe Stelle",
     kurz: "Eine Stelle mit Spur ist für spätere Schritte gesperrt.",
-    eingriff: "In den Schritten 3 und 6 darf kein Teil auf eine Stelle zurück, an der schon eine Spur liegt. Findet ein Teil keine freie Stelle, bleibt es stehen.",
+    eingriff: "In den Schritten 3 und 5 darf kein Teil auf eine Stelle zurück, an der schon eine Spur liegt. Findet ein Teil keine freie Stelle, bleibt es stehen.",
     stichworte: ["wiederhol", "rückkehr", "zurückkehr", "stempel", "verbrauch", "derselb", "unumkehr", "irrevers", "nicht rückgängig", "wiederkehr"],
   },
   R2: {
     name: "Verzögerter Spiegel",
     kurz: "Eine frühere Anordnung kehrt gespiegelt und verspätet als Spur zurück.",
-    eingriff: "Zu Beginn der Schritte 2 und 6 kehrt die Anordnung eines früheren Schlüsselzustands an der Hauptachse gespiegelt als Spur zurück. Diese Spuren wirken danach wie alle anderen als Hindernis und Zähigkeit.",
+    eingriff: "Zu Beginn der Schritte 2 und 5 kehrt die Anordnung eines früheren Schlüsselzustands an der Hauptachse gespiegelt als Spur zurück. Diese Spuren wirken danach wie alle anderen als Hindernis und Zähigkeit.",
     stichworte: ["spiegel", "beobacht", "verzöger", "rückkopp", "zeitversetz", "video", "feedback", "selbstbild", "abbild"],
   },
   R3: {
@@ -31,13 +31,13 @@ export const REGELN = Object.freeze({
   R5: {
     name: "Fortwirkende Last",
     kurz: "Grosse Teile sind schwer, alles sinkt nach Fläche gewichtet.",
-    eingriff: "Grosse Teile tragen Gewicht: Sie bewegen sich langsamer, und in den Schritten 4 und 6 sinken alle Teile nach unten, gewichtet nach ihrer Fläche.",
+    eingriff: "Grosse Teile tragen Gewicht: Sie bewegen sich langsamer, und in den Schritten 4 und 5 sinken alle Teile nach unten, gewichtet nach ihrer Fläche.",
     stichworte: ["körper", "gewicht", "schwer", "material", "masse", "last", "haut", "leib", "gravit", "fleisch", "stoff"],
   },
   R6: {
     name: "Die Leerstelle bleibt",
-    kurz: "Verlassene Stellen bleiben offen und tragen später die Zwischenform.",
-    eingriff: "Jede verlassene Stelle bleibt als Aussparung offen, statt sich wieder zu schliessen, und geht in Schritt 5 in die tragende Zwischenform ein.",
+    kurz: "Die verlassenen Stellen der Figuren bleiben offen; dort wächst nichts.",
+    eingriff: "Die Stellen, die die Figuren verlassen, bleiben offen: Ihr Umriss bleibt sichtbar, und das wuchernde Feld kann dort nicht wachsen.",
     stichworte: ["leer", "abwesen", "lücke", "verlust", "verschwind", "schweig", "fehl", "zwischenraum", "erinner", "vergessen"],
   },
   R7: {

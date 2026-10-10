@@ -63,12 +63,12 @@ test("Konturen sind geschlossene Linienzüge", () => {
   assert.deepEqual(k[0][0], k[0][k[0].length - 1]);
 });
 
-test("Prozess: genau sieben Stationen (Eingangsbild und sechs Schlüsselzustände), 30 Sekunden, reproduzierbar", () => {
-  assert.deepEqual(O.SCHLUESSEL, [60, 195, 330, 480, 630, 765, 900]);
+test("Prozess: genau sechs Stationen (Eingangsbild und fünf Schlüsselzustände), 30 Sekunden, reproduzierbar", () => {
+  assert.deepEqual(O.SCHLUESSEL, [60, 225, 390, 570, 735, 900]);
   assert.equal(O.GESAMT / O.TAKT, 30);
   const a = lauf(), b = lauf();
   assert.deepEqual(a.keys, b.keys, "gleicher Startwert, gleiche Zustände");
-  assert.equal(new Set(a.keys).size, 7, "alle Schlüsselzustände verschieden");
+  assert.equal(new Set(a.keys).size, 6, "alle Schlüsselzustände verschieden");
   assert.notDeepEqual(lauf({ seed: 7 }).keys.slice(3), a.keys.slice(3), "anderer Startwert, anderer Verlauf ab Schritt 3");
   // Neustart: ein neuer Anfang hat keine Spuren
   const z = O.anfang(a.M);
@@ -79,14 +79,14 @@ test("Prozess: genau sieben Stationen (Eingangsbild und sechs Schlüsselzuständ
 test("Prozess: Momentaufnahme und Weiterrechnen ergeben denselben Zustand (Zeitleiste)", () => {
   const { M, keys } = lauf();
   const mitte = O.bis(M, 400);
-  assert.equal(O.zustandsSchluessel(O.bis(M, 630, mitte)), keys[4]);
+  assert.equal(O.zustandsSchluessel(O.bis(M, O.SCHLUESSEL[4], mitte)), keys[4]);
 });
 
 test("Folgewirksamkeit: Wird das Spurenfeld vor Schritt 4 gelöscht, ändern sich die späteren Schlüsselzustände – die früheren nicht", () => {
   const a = lauf(), b = lauf({ neutralisiere: 4 });
   assert.deepEqual(b.keys.slice(0, 4), a.keys.slice(0, 4));
-  for (const k of [4, 5, 6]) assert.notEqual(b.keys[k], a.keys[k], `Schlüsselzustand ${k}`);
-  const verschiebung = a.zustaende[6].teile.reduce((s, t, i) => s + Math.hypot(t.x - b.zustaende[6].teile[i].x, t.y - b.zustaende[6].teile[i].y), 0);
+  for (const k of [4, 5]) assert.notEqual(b.keys[k], a.keys[k], `Schlüsselzustand ${k}`);
+  const verschiebung = a.zustaende[5].teile.reduce((s, t, i) => s + Math.hypot(t.x - b.zustaende[5].teile[i].x, t.y - b.zustaende[5].teile[i].y), 0);
   assert.ok(verschiebung > 0.02, `die Teile stehen anders (${verschiebung.toFixed(3)})`);
   // auch Schritt 3 hängt an den Spuren aus Schritt 2
   assert.notEqual(lauf({ neutralisiere: 3 }).keys[3], a.keys[3]);
@@ -99,7 +99,7 @@ test("Jede ORNA-Regel verändert den Lauf tatsächlich", () => {
   for (const r of REGEL_IDS) assert.notDeepEqual(lauf({ regel: r }).keys, ohne, r);
 });
 
-test("Zerlegung: das ganze Bild wird Material, grosse Flächen in Kacheln; das Original verschwindet, in Schritt 5 kehren sich Figur und Grund um", () => {
+test("Zerlegung: das ganze Bild wird Material, grosse Flächen in Kacheln; das Original verschwindet; das Feld wuchert weiter; der Schnitt trennt", () => {
   const { karte, teile } = O.zerlege(A);
   assert.ok(teile.length > A.flaechen.length && teile.length <= 72, `${teile.length} Teile`);
   assert.ok([...karte].every((k) => k >= 0 && k < teile.length), "jedes Pixel gehört zu einem Teil");
@@ -108,21 +108,23 @@ test("Zerlegung: das ganze Bild wird Material, grosse Flächen in Kacheln; das O
   assert.deepEqual([...new Set(teile.filter((e) => e.figur).map((e) => e.region))].sort((a, b) => a - b), [...A.teile].sort((a, b) => a - b), "Figuren aus der Analyse");
   const { zustaende } = lauf();
   assert.equal(zustaende[0].grundAlpha, 1, "Eingangsbild");
-  for (const k of [1, 2, 3, 4, 5, 6]) assert.equal(zustaende[k].grundAlpha, 0, `Schlüsselzustand ${k} ohne Original`);
-  assert.equal(zustaende[5].umkehr, 1, "Umkehrung in Schritt 5");
-  assert.ok(zustaende[6].federn.some((f) => !f.aktiv), "der Schnitt in Schritt 6 trennt Kopplungen");
+  for (const k of [1, 2, 3, 4, 5]) assert.equal(zustaende[k].grundAlpha, 0, `Schlüsselzustand ${k} ohne Original`);
+  assert.ok(zustaende[5].federn.some((f) => !f.aktiv), "der Schnitt in Schritt 5 trennt Kopplungen");
   // das wuchernde Feld: leer bis zu den ersten Stempeln, danach wächst es weiter, auch wo nicht mehr gestempelt wird
   const flaeche = (z) => z.feldB.filter((v) => v > 0.2).length / z.feldB.length;
   assert.equal(flaeche(zustaende[1]), 0);
   assert.ok(flaeche(zustaende[3]) > 0.05, `Feld nach Schritt 3: ${flaeche(zustaende[3])}`);
   assert.notEqual(flaeche(zustaende[5]), flaeche(zustaende[4]), "es verändert sich nach dem letzten Stempel weiter");
   assert.equal(zustaende[4].stempel.length, zustaende[5].stempel.length);
+  // R6: an den Herkunftsstellen der Figuren wächst nichts
+  const r6 = lauf({ regel: "R6" });
+  assert.ok(r6.M.leer.some((v) => v) && r6.M.leer.every((v, i) => !v || r6.zustaende[5].feldB[i] === 0), "R6 hält die Leerstellen frei");
 });
 
 test("Ereignisse beschreiben jede der sechs Operationen", () => {
   const { M, zustaende } = lauf({ regel: "R2" });
   const b = O.beschreibungen(M, zustaende);
-  assert.deepEqual(b.map((x) => x.titel), ["Neue Nachbarschaften", "Abfolge als Bild", "Wirksame Spuren", "Gekoppelte Beziehungen", "Figur und Grund", "Anders weitergehen"]);
+  assert.deepEqual(b.map((x) => x.titel), ["Neue Nachbarschaften", "Abfolge als Bild", "Wirksame Spuren", "Gekoppelte Beziehungen", "Anders weitergehen"]);
   for (const x of b) assert.match(x.text, new RegExp(`Schritt ${x.nr}`));
   assert.match(b[1].text, /R2/);
 });

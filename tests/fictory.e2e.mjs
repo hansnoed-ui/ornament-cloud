@@ -1,4 +1,4 @@
-// «The Fictory» – Browser-Tests (Playwright, Chromium) mit dem Beispielbild: genau eine abspielbare Animation, genau sechs verschiedene PNG,
+// «The Fictory» – Browser-Tests (Playwright, Chromium) mit dem Beispielbild: genau eine abspielbare Animation, genau fünf verschiedene PNG,
 // Standbilder = Schlüsselzustände in höherer Auflösung, reproduzierbarer Neustart, Betrieb ohne ORNA und ohne jev, keine Anfragen nach aussen,
 // Video, Protokoll und Wiederholung aus dem Protokoll, Gegenprobe, Handy ohne seitliches Scrollen.
 //   NODE_PATH=$(npm root -g) node tests/fictory.e2e.mjs            (mit SCHNELL=1 ohne die Videoaufnahme von gut 30 Sekunden)
@@ -47,7 +47,7 @@ const vergleiche = (page) => page.evaluate(async () => {
     const x = c.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(quelle, 0, 0, c.width, c.height);
     return [...x.getImageData(0, 0, c.width, c.height).data].filter((_, i) => i % 4 !== 3);
   };
-  for (let nr = 1; nr <= 6; nr++) {
+  for (let nr = 1; nr <= 5; nr++) {
     const { blob, breite, hoehe, name } = await T.standbildPNG(nr);
     const bmp = await createImageBitmap(blob);
     const vorschau = document.querySelector(`canvas[data-standbild="${nr}"]`);
@@ -57,7 +57,7 @@ const vergleiche = (page) => page.evaluate(async () => {
 });
 const abstand = (a, b) => a.reduce((s, v, i) => s + Math.abs(v - b[i]), 0) / a.length;
 
-await check("Ohne ORNA: Bild laden, Analyse mit getrenntem Befund, Lesart und Eingriff, genau eine Animation und sechs Standbilder", async () => {
+await check("Ohne ORNA: Bild laden, Analyse mit getrenntem Befund, Lesart und Eingriff, genau eine Animation und fünf Standbilder", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await page.click("#beispiel");
   await page.waitForSelector("#schritt-analyse:not([hidden])");
@@ -71,8 +71,8 @@ await check("Ohne ORNA: Bild laden, Analyse mit getrenntem Befund, Lesart und Ei
   assert.equal(await page.locator("canvas#buehne").count(), 1, "genau eine Animation");
   assert.ok(await page.locator("#buehne").isVisible() && await page.locator("#ablage").isHidden(), "die Werkbank zeigt die Animation");
   assert.equal(await page.locator("video").count(), 0);
-  assert.equal(await page.locator("#standbilder li").count(), 6);
-  assert.equal(await page.locator("#standbilder li h3").allTextContents().then((t) => t.join("|")), "1Neue Nachbarschaften|2Abfolge als Bild|3Wirksame Spuren|4Gekoppelte Beziehungen|5Figur und Grund|6Anders weitergehen");
+  assert.equal(await page.locator("#standbilder li").count(), 5);
+  assert.equal(await page.locator("#standbilder li h3").allTextContents().then((t) => t.join("|")), "1Neue Nachbarschaften|2Abfolge als Bild|3Wirksame Spuren|4Gekoppelte Beziehungen|5Anders weitergehen");
   for (const p of await page.locator("#standbilder li p").allTextContents()) assert.ok(p.length > 40, "Operationsbeschreibung");
   assert.equal(await page.evaluate(() => window.fictoryTest.S.orna), null);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, [], "keine Anfrage nach aussen");
@@ -104,11 +104,11 @@ await check("Abspielen, Pause, Zeitleiste und Neustart; der Neustart löscht die
   await ctx.close();
 });
 
-await check("Sechs verschiedene PNG in höherer Auflösung, jedes aus demselben Schlüsselzustand wie sein Standbild", async () => {
+await check("Fünf verschiedene PNG in höherer Auflösung, jedes aus demselben Schlüsselzustand wie sein Standbild", async () => {
   const { ctx, page } = await oeffne();
   await mitBeispiel(page);
   const r = await vergleiche(page);
-  assert.equal(r.length, 6);
+  assert.equal(r.length, 5);
   for (const x of r) {
     assert.equal(x.typ, "image/png");
     assert.ok(x.breite >= 1600 && x.breite > x.vorschauBreite, `${x.nr}: höhere Auflösung (${x.breite} gegenüber ${x.vorschauBreite})`);
@@ -116,18 +116,18 @@ await check("Sechs verschiedene PNG in höherer Auflösung, jedes aus demselben 
     const d = abstand(x.gross, x.klein);
     assert.ok(d < 4, `${x.nr}: Standbild und Schlüsselzustand stimmen überein (mittlere Abweichung ${d.toFixed(2)})`);
   }
-  for (let i = 0; i < 6; i++) for (let j = i + 1; j < 6; j++) {
+  for (let i = 0; i < 5; i++) for (let j = i + 1; j < 5; j++) {
     const d = abstand(r[i].gross, r[j].gross);
     assert.ok(d > 6, `Standbild ${i + 1} und ${j + 1} unterscheiden sich (${d.toFixed(1)})`);
   }
-  assert.equal(new Set(r.map((x) => x.name)).size, 6);
+  assert.equal(new Set(r.map((x) => x.name)).size, 5);
   // gemeinsamer Download
   const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#alle-png")]);
   assert.match(dl.suggestedFilename(), /standbilder\.zip$/);
   const fs = await import("node:fs");
   const zipBytes = fs.readFileSync(await dl.path());
   const namen = (zipBytes.toString("latin1").match(/the-fictory-[a-z0-9-]+\.(png|json)/g) ?? []);
-  assert.equal(new Set(namen.filter((n) => n.endsWith(".png"))).size, 6, "sechs PNG im ZIP");
+  assert.equal(new Set(namen.filter((n) => n.endsWith(".png"))).size, 5, "fünf PNG im ZIP");
   assert.ok(namen.some((n) => n.endsWith("protokoll.json")));
   await ctx.close();
 });
@@ -149,7 +149,7 @@ await check("Mit ORNA: Konstellation, Herkunft, Gedanke und Eingriff sichtbar un
   await p2.click("#erzeugen"); await p2.waitForSelector("#ergebnis:not([hidden])");
   await p2.setInputFiles("#protokoll-laden", { name: "protokoll.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(p)) });
   await p2.waitForFunction(() => /wiederholt/.test(document.getElementById("status-export").textContent));
-  assert.match(await p2.locator("#status-export").textContent(), /alle sieben Schlüsselzustände stimmen überein/);
+  assert.match(await p2.locator("#status-export").textContent(), /alle sechs Schlüsselzustände stimmen überein/);
   assert.equal(await p2.evaluate(() => window.fictoryTest.S.orna.id), p.orna.konstellation);
   assert.deepEqual(fehler, []);
   await ctx2.close(); await ctx.close();
@@ -161,7 +161,7 @@ await check("Ohne jev-Tabelle: ORNA ordnet über Stichworte zu, alles andere lä
   const q = await page.evaluate(() => window.fictoryTest.S.orna.ableitung.quelle);
   assert.ok(["stichworte", "zufall"].includes(q), q);
   assert.match(await page.locator("#integrationen").textContent(), /keine gültige Tabelle/);
-  assert.equal(await page.locator("#standbilder li").count(), 6);
+  assert.equal(await page.locator("#standbilder li").count(), 5);
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
