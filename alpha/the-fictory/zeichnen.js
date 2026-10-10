@@ -2,8 +2,8 @@
 // Farbgruppen nachgeschärft).
 // Nach dem Eingangsbild steht alles auf dunklem Grund. zeichne() bildet einen Zustand in beliebiger Grösse ab; Vorschau, Video und
 // Standbild in hoher Auflösung nutzen dieselbe Funktion mit demselben Zustand. In die Bilder kommt keine Schrift.
-import { konturen, lab, leitfarbe } from "./analyse.js?v=5";
-import { zeichneFeld } from "./feld.js?v=5";
+import { konturen, lab, leitfarbe } from "./analyse.js?v=6";
+import { zeichneFeld } from "./feld.js?v=6";
 
 export const NACHT = "#151412";
 export const PAPIER = "#f4f1ea";
@@ -105,8 +105,10 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
     // in der Vorschau höchstens alle acht Schritte neu (sonst bei jedem Stempel); zurück auf der Zeitleiste sofort
     const veraltet = spurCache && spurCache.rasterStempel !== z.stempel.length && (Math.abs(z.schritt - (spurCache.rasterSchritt ?? -99)) >= 8 || z.schritt < spurCache.rasterSchritt);
     if (!raster || raster.width !== W || raster.height !== H || spurCache.rasterLauf !== M || veraltet || !spurCache) {
-      raster = leinwand(W, H);
+      // dieselbe Fläche wiederverwenden, wenn die Grösse stimmt (keine neue Zeichenfläche je Neuaufbau)
+      if (!raster || raster.width !== W || raster.height !== H) raster = leinwand(W, H);
       const rx = raster.getContext("2d");
+      rx.setTransform(1, 0, 0, 1, 0, 0); rx.globalAlpha = 1; rx.clearRect(0, 0, W, H);
       rx.fillStyle = PAPIER;
       const zelle = S / M.gh, STUFEN = 6;
       // nach Spurstärke in sechs Stufen gesammelt: wenige Füllungen statt tausender einzelner
@@ -135,8 +137,13 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
   const spur = z.spurAlpha ?? 1;
   if (z.stempel.length && spur > 0.001) {
     if (spurCache) {
-      if (!spurCache.canvas || spurCache.canvas.width !== W || spurCache.canvas.height !== H || spurCache.anzahl > z.stempel.length || spurCache.lauf !== M) {
+      if (!spurCache.canvas || spurCache.anzahl > z.stempel.length || spurCache.lauf !== M) {
         spurCache.canvas = leinwand(W, H); spurCache.anzahl = 0; spurCache.lauf = M;
+      } else if (spurCache.canvas.width !== W || spurCache.canvas.height !== H) {
+        // neue Grösse der Vorschau: die bisherige Spurenschicht wird übernommen und skaliert, nicht alle Spuren neu gezeichnet
+        const neu = leinwand(W, H), nx = neu.getContext("2d");
+        nx.imageSmoothingEnabled = true; nx.drawImage(spurCache.canvas, 0, 0, W, H);
+        spurCache.canvas = neu;
       }
       const sc = spurCache.canvas.getContext("2d");
       sc.imageSmoothingEnabled = true;
