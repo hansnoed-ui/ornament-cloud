@@ -9,8 +9,8 @@
 //   5 Anders weitergehen     → ein einziger Schnitt durch das Gefüge (gelegt, wo die meiste Spur liegt) trennt alle Kopplungen über ihn; eine Seite bricht weg
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall } from "./analyse.js?v=6";
-import { REGELN } from "./regeln.js?v=6";
+import { zufall } from "./analyse.js?v=7";
+import { REGELN } from "./regeln.js?v=7";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
@@ -258,9 +258,11 @@ function spiegelSpur(M, z, lagen, welcher) {
   z.ereignisse.push({ schritt: z.schritt, text: `Regel R2: Die Anordnung von ${welcher} kehrt gespiegelt (Achse ${grad(w)}) als ${lagen.length} Spuren zurück.` });
 }
 function imBild(M, t, e) {
+  // zurück ins Bild, aber in kleinen Schritten (wächst ein Teil am Rand, springt es nicht)
   const rand = Math.min(0.4, e.radius * t.s * 0.4 + 0.01);
-  t.x = klemme(t.x, Math.min(rand, M.seite / 2), Math.max(M.seite - rand, M.seite / 2));
-  t.y = klemme(t.y, Math.min(rand, 0.5), Math.max(1 - rand, 0.5));
+  const x = klemme(t.x, Math.min(rand, M.seite / 2), Math.max(M.seite - rand, M.seite / 2));
+  const y = klemme(t.y, Math.min(rand, 0.5), Math.max(1 - rand, 0.5));
+  t.x += klemme(x - t.x, -0.006, 0.006); t.y += klemme(y - t.y, -0.006, 0.006);
 }
 function rasten(M, punkte, g) {
   return punkte.map((p) => ({ x: M.seite / 2 + Math.round((p.x - M.seite / 2) / g) * g, y: 0.5 + Math.round((p.y - 0.5) / g) * g }));
@@ -340,7 +342,8 @@ const OPS = {
         let x = cx + Math.cos(winkel) * radius * Math.max(1, M.seite) * 0.95, y = cy + Math.sin(winkel) * radius;
         if (M.regel === "R3") ({ x, y } = rasten(M, [{ x, y }], 0.06)[0]);
         const s = Math.min(1.6, (0.05 + 0.14 * f) / Math.max(0.02, Math.max(e.w, e.h)));
-        ziel[i] = { x0: t.x, y0: t.y, s0: t.s, rot0: t.rot, x, y, s, rot: winkel + Math.PI / 2, start: f * 0.5, dauer: 0.3 * e.last, z: (e.figur ? 1000 : 0) + (e.eingeschlossen && !M.verworfen.has("ueberlagerung") ? 500 : 0) + k, stempel: [0, 0.5] };
+        let wende = winkel + Math.PI / 2 - t.rot; wende = Math.atan2(Math.sin(wende), Math.cos(wende));  // immer der kürzeste Weg, nie mehrere Umdrehungen
+        ziel[i] = { x0: t.x, y0: t.y, s0: t.s, rot0: t.rot, x, y, s, rot: t.rot + wende, start: f * 0.45, dauer: 0.42 * e.last, z: (e.figur ? 1000 : 0) + (e.eingeschlossen && !M.verworfen.has("ueberlagerung") ? 500 : 0) + k, stempel: [0, 0.5] };
         if (!e.beweglich) Object.assign(ziel[i], { x: t.x, y: t.y, s: t.s, rot: t.rot });
       });
       z.ereignisse.push({ schritt: z.schritt, text: `Schritt 2: Die Ankunftsreihenfolge aus Schritt 1 wird zur Spirale (Goldener Winkel ab ${grad(dreh)}): früh Angekommenes innen und klein, spät Angekommenes aussen, gross und obenauf; jeder Zwischenstand bleibt als Spur.` });
@@ -357,12 +360,12 @@ const OPS = {
     },
   },
 
-  // 3 · Wirksame Spuren: dieselbe Operation zehnmal; jedes Teil stempelt und rückt dorthin, wo am wenigsten Spur liegt, und dreht sich dabei in seine Richtung.
+  // 3 · Wirksame Spuren: dieselbe Operation sechsmal; jedes Teil stempelt und rückt dorthin, wo am wenigsten Spur liegt, und dreht sich dabei in seine Richtung.
   //     Die Teile sind gegeneinander versetzt (bis zu gut einer halben Runde): ein Wogen statt eines Takts, und die Arbeit verteilt sich auf viele Bilder.
   3: {
     plan(M, z, r) {
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 3: Zehnmal stempeln und weiterrücken, gegeneinander versetzt; jedes Teil wählt die Nachbarstelle mit der geringsten Spur und dreht sich in seine Richtung (Spuren bisher: ${z.stempel.length}).` });
-      return { runden: 10, runde: z.teile.map(() => -1), ziel: {}, r: Math.floor(r() * 2 ** 31) };
+      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 3: Sechsmal stempeln und weitergleiten, gegeneinander versetzt; jedes Teil wählt die Nachbarstelle mit der geringsten Spur und dreht sich in seine Richtung (Spuren bisher: ${z.stempel.length}).` });
+      return { runden: 6, runde: z.teile.map(() => -1), ziel: {}, r: Math.floor(r() * 2 ** 31) };
     },
     lauf(M, z, p) {
       const P = z.plan, takt = (p / 0.88) * P.runden;
@@ -375,7 +378,7 @@ const OPS = {
           P.runde[i] = runde;
           const r = zufall((P.r + runde * 7919 + i * 104729) >>> 0);
           stempeln(M, z, i, 0.11);
-          const weite = 0.6 * Math.max(e.w, e.h) * t.s + 0.035;
+          const weite = 0.42 * Math.max(e.w, e.h) * t.s + 0.028;
           let best = null;
           for (let k = 0; k < 12; k++) {
             const w = (k / 12) * 2 * Math.PI + r() * 0.4;
@@ -391,7 +394,8 @@ const OPS = {
         }
         const q = P.ziel[i];
         if (!q) continue;
-        const u = glatt((takt - versatz(i) - q.von) / 0.7);
+        // durchgleiten: fast gleichförmig über die ganze Runde, nur leicht weich an den Wegpunkten (kein Anhalten und Losfahren)
+        const l = Math.max(0, Math.min(1, takt - versatz(i) - q.von)), u = 0.7 * l + 0.3 * glatt(l);
         t.x = q.x0 + (q.x - q.x0) * u; t.y = q.y0 + (q.y - q.y0) * u; t.rot = q.rot0 + (q.rot - q.rot0) * u;
       }
     },
@@ -429,7 +433,7 @@ const OPS = {
       d.rot = P.rot0 + (Math.PI / 2) * glatt(p / 0.5);
       for (const [i, t] of z.teile.entries()) if (!t.fest) t.s = P.s0[i] + (1 - P.s0[i]) * glatt(p / 0.6);
       z.kopplungAlpha = 0.8 * glatt(p / 0.15) * (1 - 0.6 * glatt((p - 0.6) / 0.4));
-      entspannen(M, z, 2, 0.22);
+      entspannen(M, z, 2, 0.22 * (0.12 + 0.88 * glatt(p / 0.3)));          // Kopplungen sanft einblenden, sonst springen weit entfernte Teile
       // das Ganze sammelt sich zur Bildmitte
       const mx = z.teile.reduce((s, t) => s + t.x, 0) / z.teile.length, my = z.teile.reduce((s, t) => s + t.y, 0) / z.teile.length;
       for (const [i, t] of z.teile.entries()) {
@@ -496,6 +500,7 @@ function beweglichkeit(M, z, i) {
 /** Entspannung der Kopplungen (Lage, Drehung und Grösse übertragen sich) */
 function entspannen(M, z, runden, staerke) {
   const mu = z.teile.map((t, i) => (i === z.anstoss ? 0.2 : 1) * beweglichkeit(M, z, i));
+  const vorher = z.teile.map((t) => [t.x, t.y, t.rot]);
   for (let r = 0; r < runden; r++) {
     for (const f of z.federn) {
       if (!f.aktiv) continue;
@@ -509,6 +514,13 @@ function entspannen(M, z, runden, staerke) {
       a.rot += dr * 0.03 * ma; b.rot -= dr * 0.03 * mb;
     }
   }
+  // kein Teil bewegt sich je Schritt weiter als 0,9 % der Bildhöhe (auch wenn sich die Korrekturen vieler Kopplungen addieren)
+  const GRENZE = 0.009;
+  z.teile.forEach((t, k) => {
+    const dx = t.x - vorher[k][0], dy = t.y - vorher[k][1], d = Math.hypot(dx, dy);
+    if (d > GRENZE) { t.x = vorher[k][0] + (dx * GRENZE) / d; t.y = vorher[k][1] + (dy * GRENZE) / d; }
+    if (k !== z.anstoss) t.rot = vorher[k][2] + klemme(t.rot - vorher[k][2], -0.05, 0.05);     // höchstens knapp 3° Drehung je Schritt
+  });
 }
 
 /** Lauf bis zu einem Schritt (ab Anfang oder ab einer Momentaufnahme) */
