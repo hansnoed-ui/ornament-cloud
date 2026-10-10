@@ -12,6 +12,7 @@ const { REGELN, REGEL_IDS, saetze, pruefsumme } = await import(new URL("regeln.j
 const { JEV } = await import(new URL("jev.js", dir).href);
 const { constellations } = await import(new URL("portfolio/nebeneinander-nacheinander/js/data/constellations.js", root).href);
 const { zip, crc32 } = await import(new URL("zip.js", dir).href);
+const { mitDauer } = await import(new URL("dauer.js", dir).href);
 
 /** synthetisches Bild: heller Grund, zwei rote Rechtecke, blaue Scheibe mit gelbem Punkt, dunkler Balken, gelbe Scheibe */
 function bild() {
@@ -200,4 +201,36 @@ test("ZIP: Prüfsumme und Aufbau", () => {
   const z = zip([{ name: "a.txt", bytes: new TextEncoder().encode("hallo") }]);
   assert.equal(new DataView(z.buffer).getUint32(0, true), 0x04034b50);
   assert.equal(new DataView(z.buffer).getUint32(z.length - 22, true), 0x06054b50);
+});
+
+test("Video-Länge: fragmentiertes MP4 und WebM ohne Länge bekommen sie nachgetragen, das Bild bleibt unverändert", () => {
+  // MP4 wie von MediaRecorder: Kopf mit Länge 0 (Film) und der Länge des ersten Stücks (Spur), danach zwei Stücke à 30 Proben zu 1000 (Zeitbasis 30000)
+  const u32 = (n) => [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255];
+  const box = (t, ...inhalt) => { const b = inhalt.flat(); return [...u32(b.length + 8), ...[...t].map((c) => c.charCodeAt(0)), ...b]; };
+  const voll = (v, f, ...rest) => [v, (f >>> 16) & 255, (f >>> 8) & 255, f & 255, ...rest.flat()];
+  const mvhd = box("mvhd", voll(0, 0, u32(0), u32(0), u32(1000), u32(0), new Array(80).fill(0)));
+  const tkhd = box("tkhd", voll(0, 3, u32(0), u32(0), u32(1), u32(0), u32(1000), new Array(60).fill(0)));
+  const mdhd = box("mdhd", voll(0, 0, u32(0), u32(0), u32(30000), u32(30000), [0, 0, 0, 0]));
+  const moov = box("moov", mvhd, box("trak", tkhd, box("mdia", mdhd)), box("mvex", box("trex", voll(0, 0, u32(1), u32(1), u32(0), u32(0), u32(0)))));
+  const stueck = (basis) => box("moof", box("traf", box("tfhd", voll(0, 0x020000, u32(1))), box("tfdt", voll(1, 0, [0, 0, 0, 0], u32(basis))),
+    box("trun", voll(0, 0x100, u32(30), ...Array.from({ length: 30 }, () => u32(1000)))))).concat(box("mdat", [1, 2, 3]));
+  const datei = new Uint8Array([...box("ftyp", [..."isom"].map((c) => c.charCodeAt(0)), u32(0)), ...moov, ...stueck(0), ...stueck(30000)]);
+  const neu = mitDauer(datei.slice(), 99), v = new DataView(neu.buffer);
+  const bei = (t) => { for (let i = 0; i < neu.length - 4; i++) if (String.fromCharCode(...neu.subarray(i, i + 4)) === t) return i - 4; };
+  assert.equal(neu.length, datei.length);
+  assert.equal(v.getUint32(bei("mvhd") + 24), 2000, "Film: 2 s in Zeitbasis 1000 (aus den Stücken, nicht aus der Angabe 99)");
+  assert.equal(v.getUint32(bei("tkhd") + 28), 2000, "Spur");
+  assert.equal(v.getUint32(bei("mdhd") + 24), 60000, "Medium: 2 s in Zeitbasis 30000");
+  assert.equal([...neu].filter((b, i) => b !== datei[i]).length <= 8, true, "nur die Längenfelder ändern sich");
+  // WebM wie von MediaRecorder: Segment mit unbekannter Grösse, Info ohne Duration
+  const ebml = [0x1a, 0x45, 0xdf, 0xa3, 0x84, 0x42, 0x86, 0x81, 0x01];
+  const info = [0x15, 0x49, 0xa9, 0x66, 0x87, 0x2a, 0xd7, 0xb1, 0x83, 0x0f, 0x42, 0x40];
+  const cluster = [0x1f, 0x43, 0xb6, 0x75, 0x83, 7, 8, 9];
+  const webm = new Uint8Array([...ebml, 0x18, 0x53, 0x80, 0x67, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, ...info, ...cluster]);
+  const w = mitDauer(webm, 31.5);
+  const k = [...w].findIndex((b, i) => b === 0x44 && w[i + 1] === 0x89 && w[i + 2] === 0x88);
+  assert.ok(k > 0, "Duration eingefügt");
+  assert.equal(new DataView(w.buffer, w.byteOffset).getFloat64(k + 3), 31500, "31,5 s in Millisekunden (TimecodeScale 1 000 000)");
+  assert.deepEqual([...w.subarray(w.length - cluster.length)], cluster, "der Cluster (das Bild) bleibt gleich");
+  assert.deepEqual([...mitDauer(new Uint8Array([1, 2, 3]), 5)], [1, 2, 3], "Unbekanntes bleibt unverändert");
 });
