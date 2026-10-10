@@ -70,7 +70,7 @@ function bereit() {
 export const feldMitShader = () => bereit();
 
 /** zeichnet das Feld (z.feldB, Raster M.fw × M.fh) additiv («screen») in ctx */
-export function zeichneFeld(ctx, W, H, z, M, leit, staerke) {
+export function zeichneFeld(ctx, W, H, z, M, leit, staerke, vorschau = false) {
   if (staerke <= 0.001) return;
   const { fw, fh } = M, bytes = new Uint8Array(fw * fh);
   for (let i = 0; i < bytes.length; i++) bytes[i] = Math.max(0, Math.min(255, Math.round(z.feldB[i] * 255)));
@@ -79,14 +79,17 @@ export function zeichneFeld(ctx, W, H, z, M, leit, staerke) {
   ctx.globalCompositeOperation = "screen";
   ctx.globalAlpha = 1;
   if (bereit()) {
-    if (glCanvas.width !== W || glCanvas.height !== H) { glCanvas.width = W; glCanvas.height = H; }
-    gl.viewport(0, 0, W, H);
+    // das Feld ist weich: der Shader rechnet in halber Auflösung, das Ergebnis wird hochskaliert
+    const w = Math.max(2, Math.round(W / 2)), h = Math.max(2, Math.round(H / 2));
+    if (glCanvas.width !== w || glCanvas.height !== h) { glCanvas.width = w; glCanvas.height = h; }
+    gl.viewport(0, 0, w, h);
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, fw, fh, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, bytes);
     gl.uniform2f(gl.getUniformLocation(programm, "texel"), 1 / fw, 1 / fh);
     gl.uniform3f(gl.getUniformLocation(programm, "leit"), leit[0] / 255, leit[1] / 255, leit[2] / 255);
     gl.uniform1f(gl.getUniformLocation(programm, "alpha"), staerke);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = vorschau ? "low" : "high";
     ctx.drawImage(glCanvas, 0, 0, W, H);
   } else {
     const c = document.createElement("canvas"); c.width = fw; c.height = fh;

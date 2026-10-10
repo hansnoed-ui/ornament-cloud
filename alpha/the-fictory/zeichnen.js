@@ -67,7 +67,9 @@ export function baueMaterial(quelle, A, M) {
     const feld = new Float32Array(pw * ph);
     for (let y = 0; y < ph; y++) for (let x = 0; x < pw; x++) feld[y * pw + x] = indikator(e.i, px0 + x, py0 + y);
     const kontur = konturen(feld, pw, ph, 0.5).map((zug) => zug.map(([x, y]) => [(px0 + x + 0.5) / ah - e.hx, (py0 + y + 0.5) / ah - e.hy]));
-    return { gross, klein: verkleinert(gross, f), schattenGross, schattenKlein: verkleinert(schattenGross, f), ox: sx0 / Hs - e.hx, oy: sy0 / Hs - e.hy, w: w / Hs, h: h / Hs, kontur };
+    const umriss = new Path2D();
+    for (const zug of kontur) { zug.forEach(([x, y], k) => (k ? umriss.lineTo(x, y) : umriss.moveTo(x, y))); umriss.closePath(); }
+    return { umriss, gross, klein: verkleinert(gross, f), schattenGross, schattenKlein: verkleinert(schattenGross, f), ox: sx0 / Hs - e.hx, oy: sy0 / Hs - e.hy, w: w / Hs, h: h / Hs, kontur };
   });
   // Grundbild: Grundflächen im Original, alles andere in der mittleren Grundfarbe
   const grund = new Set(A.grund);
@@ -91,8 +93,8 @@ export function baueMaterial(quelle, A, M) {
   ex.drawImage(quelle, 0, 0);
   gx.drawImage(echt, 0, 0);
   // Zerlegung (alle Teilgrenzen) für den Übergang aus dem Eingangsbild
-  const gliederung = [];
-  for (const e of M.teile) for (const zug of teile[e.i].kontur) gliederung.push(zug.map(([x, y]) => [x + e.hx, y + e.hy]));
+  const gliederung = new Path2D();
+  for (const e of M.teile) for (const zug of teile[e.i].kontur) { zug.forEach(([x, y], k) => (k ? gliederung.lineTo(x + e.hx, y + e.hy) : gliederung.moveTo(x + e.hx, y + e.hy))); gliederung.closePath(); }
   return { Hs, Ws, quelle, quelleKlein: verkleinert(quelle, f), grundbild, grundbildKlein: verkleinert(grundbild, f), teile, gliederung, grundFarbe, leit: leitfarbe(A), klein: f };
 }
 
@@ -108,11 +110,12 @@ function pfad(ctx, zuege) {
  */
 export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
   const S = H, kleinOk = S <= mat.Hs * mat.klein * 1.05;
+  const vorschau = Boolean(spurCache);          // laufende Ansicht: einfachere Glättung beim Skalieren; Standbild und Video in höchster Qualität
   const q = (gross, klein) => (kleinOk ? klein : gross);
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
-  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = vorschau ? "low" : "high";
   ctx.fillStyle = NACHT; ctx.fillRect(0, 0, W, H);
   const teil = (c, i, x, y, m, bild) => {
     const T = mat.teile[i];
@@ -124,16 +127,25 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
   // 1a · das wuchernde Feld (Shader) und das Raster des Spurenfelds: jede Zelle ein Punkt, heller und grösser, wo Spur liegt
   const technik = 1 - z.grundAlpha;
   if (technik > 0.001) {
-    zeichneFeld(ctx, W, H, z, M, mat.leit, (z.feldAlpha ?? 0) * technik);
+    zeichneFeld(ctx, W, H, z, M, mat.leit, (z.feldAlpha ?? 0) * technik, vorschau);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.fillStyle = PAPIER;
-    const zelle = S / M.gh;
-    for (let gy = 0; gy < M.gh; gy++) for (let gx = 0; gx < M.gw; gx++) {
-      const s = Math.min(1, z.spuren[gy * M.gw + gx] / 5);
-      const d = Math.max(1, S * (0.0012 + 0.0032 * s));
-      ctx.globalAlpha = technik * (0.1 + 0.6 * s);
-      ctx.fillRect((gx + 0.5) * zelle - d / 2, (gy + 0.5) * zelle - d / 2, d, d);
+    // das Punktraster ändert sich nur mit neuen Stempeln: in der Vorschau aus einer Schicht, die nur dann neu entsteht
+    let raster = spurCache?.raster;
+    if (!raster || raster.width !== W || raster.height !== H || spurCache.rasterStempel !== z.stempel.length || spurCache.rasterLauf !== M) {
+      raster = leinwand(W, H);
+      const rx = raster.getContext("2d");
+      rx.fillStyle = PAPIER;
+      const zelle = S / M.gh;
+      for (let gy = 0; gy < M.gh; gy++) for (let gx = 0; gx < M.gw; gx++) {
+        const s = Math.min(1, z.spuren[gy * M.gw + gx] / 5);
+        const d = Math.max(1, S * (0.0012 + 0.0032 * s));
+        rx.globalAlpha = 0.1 + 0.6 * s;
+        rx.fillRect((gx + 0.5) * zelle - d / 2, (gy + 0.5) * zelle - d / 2, d, d);
+      }
+      if (spurCache) Object.assign(spurCache, { raster, rasterStempel: z.stempel.length, rasterLauf: M });
     }
+    ctx.globalAlpha = technik;
+    ctx.drawImage(raster, 0, 0);
   }
   // 2 · offene Leerstellen (R6): Umriss an der verlassenen Stelle
   z.teile.forEach((t, i) => {
@@ -141,7 +153,7 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
     const e = M.teile[i];
     ctx.setTransform(S, 0, 0, S, S * e.hx, S * e.hy);
     ctx.globalAlpha = t.loch * 0.55; ctx.strokeStyle = PAPIER; ctx.lineWidth = Math.max(0.8, S * 0.0014) / S;
-    ctx.setLineDash([0.005, 0.006]); pfad(ctx, mat.teile[i].kontur); ctx.stroke(); ctx.setLineDash([]);
+    ctx.setLineDash([0.005, 0.006]); ctx.stroke(mat.teile[i].umriss); ctx.setLineDash([]);
   });
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   // 3 · Zwischenraum als tragende Form, gefüllt mit dem Material des Grundes
@@ -196,7 +208,7 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
     if (t.kontur > 0.001) {
       ctx.setTransform(S * m[0], S * m[1], S * m[2], S * m[3], S * t.x, S * t.y);
       ctx.globalAlpha = t.kontur * 0.85; ctx.strokeStyle = PAPIER; ctx.lineWidth = Math.max(1, S * 0.0018) / (S * t.s); ctx.lineJoin = "round";
-      pfad(ctx, T.kontur); ctx.stroke();
+      ctx.stroke(T.umriss);
     }
   }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -218,9 +230,8 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
   if (z.gliederung > 0.001) {
     ctx.setTransform(S, 0, 0, S, 0, 0);
     ctx.lineWidth = Math.max(1, S * 0.0016) / S; ctx.lineJoin = "round";
-    pfad(ctx, mat.gliederung);
-    ctx.globalAlpha = z.gliederung * 0.9; ctx.strokeStyle = NACHT; ctx.lineWidth *= 2.2; ctx.stroke();
-    ctx.globalAlpha = z.gliederung; ctx.strokeStyle = PAPIER; ctx.lineWidth /= 2.2; ctx.stroke();
+    ctx.globalAlpha = z.gliederung * 0.9; ctx.strokeStyle = NACHT; ctx.lineWidth *= 2.2; ctx.stroke(mat.gliederung);
+    ctx.globalAlpha = z.gliederung; ctx.strokeStyle = PAPIER; ctx.lineWidth /= 2.2; ctx.stroke(mat.gliederung);
   }
   ctx.restore();
 }

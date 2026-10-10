@@ -275,7 +275,9 @@ function zustandBei(k) {
 // ---------- 5 · Ansehen ----------
 function zeichneBuehne() {
   const L = S.lauf, c = $("buehne");
+  const t0 = performance.now();
   zeichne(c.getContext("2d"), c.width, c.height, L.z, L.M, L.mat, L.spurCache);
+  if (S.spielt) passeAufloesungAn(performance.now() - t0);
   zeichneDaten();
   const n = L.z.schritt;
   $("zeitleiste").value = n;
@@ -294,6 +296,19 @@ function zeichneBuehne() {
   let zuletzt = 0;
   for (let k = 1; k < SCHLUESSEL.length; k++) if (n >= SCHLUESSEL[k]) zuletzt = k;
   for (const li of $("standbilder").children) li.setAttribute("aria-current", String(Number(li.dataset.nr) === zuletzt));
+}
+/** Flüssige Wiedergabe: braucht ein Bild im Mittel zu lange, zeichnet die Vorschau mit weniger Pixeln (Standbild und Video bleiben unberührt) */
+const zeiten = [];
+function passeAufloesungAn(ms) {
+  zeiten.push(ms);
+  if (zeiten.length < 12) return;
+  const mittel = zeiten.reduce((a, b) => a + b, 0) / zeiten.length;
+  zeiten.length = 0;
+  const c = $("buehne"), lang = Math.max(c.width, c.height);
+  if (mittel > 26 && lang > 560) {
+    const [w, h] = mass(S.lauf.M.seite, Math.round(lang * 0.8));
+    c.width = w; c.height = h; $("daten").width = w; $("daten").height = h;
+  }
 }
 /** Datenebene über der Animation (nur in der Ansicht, nie in Standbild oder Video): Fadenkreuz je Teil, Namen der Figuren, Zähler */
 function zeichneDaten() {
@@ -332,7 +347,7 @@ function spiele() {
     let n = 0;
     while (L.z.schritt < soll && n < 8) { schritt(L.M, L.z); merke(L.z); n++; }
     if (L.z.schritt < soll) { start = jetzt; basis = L.z.schritt; }      // zu langsam: nicht springen, sondern nachziehen
-    zeichneBuehne();
+    if (n) zeichneBuehne();                                               // nur zeichnen, wenn sich der Zustand geändert hat
     if (L.z.schritt >= GESAMT) { stoppe(); return; }
     requestAnimationFrame(tick);
   };
