@@ -1,6 +1,6 @@
-// Beispielbild für «Das Bild geht weiter» (alpha/das-bild-geht-weiter/beispiel.jpg): eine selbst gezeichnete Komposition mit Überlagerung,
+// Beispielbild für «The Fictory» (alpha/the-fictory/beispiel.jpg): eine selbst gezeichnete Komposition mit Überlagerung,
 // Wiederholung, Unterbrechung und Grund, damit alle Befunde der Analyse etwas zu sehen haben. Mit festem Zufall, also immer gleich.
-//   NODE_PATH=$(npm root -g) node tools/bildgang-beispiel.mjs
+//   NODE_PATH=$(npm root -g) node tools/fictory-beispiel.mjs
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import { writeFileSync } from "node:fs";
@@ -41,6 +41,6 @@ const daten = await page.evaluate(() => {
   x.putImageData(bild, 0, 0);
   return c.toDataURL("image/jpeg", 0.9);
 });
-writeFileSync(new URL("../alpha/das-bild-geht-weiter/beispiel.jpg", import.meta.url), Buffer.from(daten.split(",")[1], "base64"));
+writeFileSync(new URL("../alpha/the-fictory/beispiel.jpg", import.meta.url), Buffer.from(daten.split(",")[1], "base64"));
 await browser.close();
-console.log("geschrieben: alpha/das-bild-geht-weiter/beispiel.jpg");
+console.log("geschrieben: alpha/the-fictory/beispiel.jpg");

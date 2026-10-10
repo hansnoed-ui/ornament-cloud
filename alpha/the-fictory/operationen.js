@@ -1,4 +1,4 @@
-// «Das Bild geht weiter» – EIN zusammenhängender Prozess in festen Schritten (30 je Sekunde, 30 Sekunden).
+// «The Fictory» – EIN zusammenhängender Prozess in festen Schritten (30 je Sekunde, 30 Sekunden).
 // Sechs Operationen folgen aufeinander; jede plant ihren Verlauf aus dem Zustand, den die vorige hinterlassen hat:
 //   1 Neue Nachbarschaften   → die Ankunftsreihenfolge wird Teil des Zustands
 //   2 Abfolge als Bild       → liest die Ankunftsreihenfolge; Staffelung und Zwischenstände hinterlassen Spuren

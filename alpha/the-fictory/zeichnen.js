@@ -1,4 +1,4 @@
-// «Das Bild geht weiter» – Material und Darstellung. Alles Bildmaterial stammt aus dem Eingangsbild: ausgeschnittene Teile (Kanten an den
+// «The Fictory» – Material und Darstellung. Alles Bildmaterial stammt aus dem Eingangsbild: ausgeschnittene Teile (Kanten an den
 // Farbgruppen nachgeschärft), Aussparungen und ein Grundbild (der Grund des Bildes, Figuren mit der Grundfarbe geschlossen).
 // zeichne() bildet einen Zustand in beliebiger Grösse ab; Vorschau, Video und Standbild in hoher Auflösung nutzen dieselbe Funktion
 // mit demselben Zustand. In die Bilder kommt keine Schrift.

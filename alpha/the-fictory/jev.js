@@ -1,4 +1,4 @@
-// Automatisch erzeugt von tools/build-jev-bildgang.ts – nicht von Hand bearbeiten.
+// Automatisch erzeugt von tools/build-jev-fictory.ts – nicht von Hand bearbeiten.
 // jev (jev-1.13.0, api.typesafe.ai) hat am 2026-10-10 einmal eingeschätzt, welche Operationsregel aus regeln.js sich am ehesten aus einem Gedanken
 // jeder ORNA-Konstellation ableiten lässt (regel: Wahrscheinlichkeiten) und welcher Satz des Textes ihn trägt (satz: Satznummer ab 0 je Regel).
 // Ein Sprachmodell-Urteil über eine gestalterische Übersetzung, keine Aussage über die Personen. Die Seite ruft jev nie auf.

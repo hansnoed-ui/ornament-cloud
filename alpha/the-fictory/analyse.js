@@ -1,7 +1,7 @@
-// «Das Bild geht weiter» – Erschliessung des Eingangsbildes mit nachvollziehbaren Verfahren: Farbgruppen (k-Means im Lab-Raum),
+// «The Fictory» – Erschliessung des Eingangsbildes mit nachvollziehbaren Verfahren: Farbgruppen (k-Means im Lab-Raum),
 // zusammenhängende Flächen, Kanten, Nachbarschaften, Lagen und Formmasse. Das ist eine farb- und geometriebasierte Gliederung,
 // kein semantisches Bildverständnis: Sie erkennt keine Gegenstände und behauptet nichts über die Entstehung des Bildes.
-// Reine Rechnung ohne DOM, damit sie auch in Node geprüft werden kann (tests/bildgang.test.mjs).
+// Reine Rechnung ohne DOM, damit sie auch in Node geprüft werden kann (tests/fictory.test.mjs).
 //
 // Koordinaten: normiert auf die Bildhöhe (y von 0 bis 1, x von 0 bis Seitenverhältnis), damit Analyse, Simulation und Ausgabe
 // in jeder Auflösung dieselben Stellen meinen.

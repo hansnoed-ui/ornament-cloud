@@ -1,4 +1,4 @@
-// «Das Bild geht weiter» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
+// «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
 import { analysiere, konturen } from "./analyse.js?v=1";
 import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=1";
@@ -346,7 +346,7 @@ function exportMass() {
   const lang = Math.max(EXPORT_MIN, Math.min(ARBEIT_SEITE, Math.max(S.bild.breite, S.bild.hoehe)));
   return mass(S.lauf.M.seite, lang);
 }
-const dateiname = (rest) => `das-bild-geht-weiter-${slug(S.bild.name.replace(/\.[a-z0-9]+$/i, ""))}-${S.lauf.seed}-${rest}`;
+const dateiname = (rest) => `the-fictory-${slug(S.bild.name.replace(/\.[a-z0-9]+$/i, ""))}-${S.lauf.seed}-${rest}`;
 /** Standbild in hoher Auflösung aus demselben Schlüsselzustand */
 async function standbildPNG(nr) {
   const L = S.lauf, [w, h] = exportMass(), c = leinwand(w, h);
@@ -356,7 +356,7 @@ async function standbildPNG(nr) {
 function protokoll() {
   const L = S.lauf, A = S.A;
   return {
-    anwendung: "Das Bild geht weiter", version: VERSION, erstellt: new Date().toISOString(),
+    anwendung: "The Fictory", version: VERSION, erstellt: new Date().toISOString(),
     hinweis: "Farb- und geometriebasierte Gliederung, kein semantisches Bildverständnis. Keine Zahlenbewertung nach dem Prüfraster. Eine ORNA-Ableitung ist eine gestalterische Interpretation.",
     bild: S.bild,
     analyse: { einstellungen: A.einstellungen, analysegroesse: [A.breite, A.hoehe], flaechen: A.flaechen.length, farbgruppen: A.zentren.length,
@@ -437,7 +437,7 @@ async function video() {
 async function protokollLaden(datei) {
   try {
     const p = JSON.parse(await datei.text());
-    if (p.anwendung !== "Das Bild geht weiter") throw new Error("kein Protokoll dieser Anwendung");
+    if (!["The Fictory", "Das Bild geht weiter"].includes(p.anwendung)) throw new Error("kein Protokoll dieser Anwendung");
     if (p.bild?.sha256 !== S.bild?.sha256) { $("status-export").textContent = `Das Protokoll gehört zu einem anderen Bild (${p.bild?.name ?? "?"}). Lade zuerst dieses Bild.`; return; }
     S.einstellungen = { ...p.analyse.einstellungen };
     $("farben").value = S.einstellungen.farben; $("mindest").value = Math.round(S.einstellungen.mindestanteil * 1000); $("regel").value = S.einstellungen.regel ?? "";
@@ -522,7 +522,7 @@ else $("video").textContent = `Animation als ${vt.endung.toUpperCase()}`;
 $("integrationen").textContent = `Tatsächlich aktiv: Bildanalyse und Prozess laufen nur in diesem Browser (keine Übertragung, keine Bildgenerierung). ORNA: der Bestand mit ${BESTAND} Konstellationen wird gelesen, gezogen wird wie in ORNA. jev: ${jevGueltig() ? `wählte beim Bauen (${JEV.stand}, ${JEV.modell}) für jede Konstellation Regel und Satz vor; diese Seite ruft jev nicht auf` : "keine gültige Tabelle, die Regel folgt Stichworten im Text"}. Video: ${vt ? vt.mime : "in diesem Browser nicht verfügbar"}.`;
 zeigeRegler();
 
-// für die Browser-Tests (tests/bildgang.e2e.mjs)
-window.bildgangTest = { S, zustandBei, zustandsSchluessel, standbildPNG, video, gegenprobe, protokoll, protokollLaden, springe, SCHLUESSEL, GESAMT,
+// für die Browser-Tests (tests/fictory.e2e.mjs)
+window.fictoryTest = { S, zustandBei, zustandsSchluessel, standbildPNG, video, gegenprobe, protokoll, protokollLaden, springe, SCHLUESSEL, GESAMT,
   bereit: true, abweichungen: () => S.abweichungen };
-document.documentElement.classList.add("bildgang-bereit");
+document.documentElement.classList.add("fictory-bereit");

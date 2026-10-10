@@ -1,7 +1,7 @@
-// «Das Bild geht weiter» – die sieben Operationsregeln, in die ein Gedanke aus einer ORNA-Konstellation übersetzt werden kann.
+// «The Fictory» – die sieben Operationsregeln, in die ein Gedanke aus einer ORNA-Konstellation übersetzt werden kann.
 // Jede Regel ist eine konkrete Änderung an den Bildoperationen (operationen.js liest nur die Kennung). Die Zuordnung zu einem Text
 // ist eine gestalterische Interpretation, keine Aussage über die genannten Personen.
-// Gemeinsam für Seite (orna.js), Simulation (operationen.js) und den Bau der jev-Tabelle (tools/build-jev-bildgang.ts).
+// Gemeinsam für Seite (orna.js), Simulation (operationen.js) und den Bau der jev-Tabelle (tools/build-jev-fictory.ts).
 
 export const REGELN = Object.freeze({
   R1: {

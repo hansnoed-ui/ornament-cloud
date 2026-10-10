@@ -1,11 +1,11 @@
-// «Das Bild geht weiter» (alpha/das-bild-geht-weiter/): Analyse, Prozess, ORNA-Ableitung und jev-Tabelle ohne Browser.
-//   node --experimental-strip-types --no-warnings --test tests/bildgang.test.mjs
+// «The Fictory» (alpha/the-fictory/): Analyse, Prozess, ORNA-Ableitung und jev-Tabelle ohne Browser.
+//   node --experimental-strip-types --no-warnings --test tests/fictory.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 
 const root = new URL("../", import.meta.url);
-const dir = new URL("alpha/das-bild-geht-weiter/", root);
+const dir = new URL("alpha/the-fictory/", root);
 const { analysiere, konturen } = await import(new URL("analyse.js", dir).href);
 const O = await import(new URL("operationen.js", dir).href);
 const { REGELN, REGEL_IDS, saetze, pruefsumme } = await import(new URL("regeln.js", dir).href);
@@ -108,8 +108,8 @@ test("Ereignisse beschreiben jede der sechs Operationen", () => {
 });
 
 test("jev-Tabelle: gültige Prüfsumme, jede Konstellation mit Wahrscheinlichkeiten je Regel und einem Satz des Textes", () => {
-  assert.ok(JEV, "jev.js ist erzeugt (tools/build-jev-bildgang.ts)");
-  assert.equal(JEV.pruefsumme, pruefsumme(constellations), "Tabelle veraltet: NODE_USE_ENV_PROXY=1 node --experimental-strip-types --no-warnings tools/build-jev-bildgang.ts");
+  assert.ok(JEV, "jev.js ist erzeugt (tools/build-jev-fictory.ts)");
+  assert.equal(JEV.pruefsumme, pruefsumme(constellations), "Tabelle veraltet: NODE_USE_ENV_PROXY=1 node --experimental-strip-types --no-warnings tools/build-jev-fictory.ts");
   assert.equal(Object.keys(JEV.eintraege).length, constellations.length);
   for (const k of constellations) {
     const e = JEV.eintraege[k.id];
@@ -152,8 +152,8 @@ test("Alpha: Seite mit Navigation, noindex, in der Übersicht zuunterst, nicht i
   assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/" aria-current="true">Ornament Cloud<\/a>\s*<a href="\.\.\/drittes-rad\/">Das Dritte Rad<\/a>\s*<\/nav>/);
   const uebersicht = readFileSync(new URL("alpha/index.html", root), "utf8");
   const eintraege = [...uebersicht.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map((m) => m[1]);
-  assert.equal(eintraege.at(-1), "das-bild-geht-weiter/");
-  assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("das-bild-geht-weiter"));
+  assert.equal(eintraege.at(-1), "the-fictory/");
+  assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("the-fictory"));
 });
 
 test("ZIP: Prüfsumme und Aufbau", () => {

@@ -1,7 +1,7 @@
-// «Das Bild geht weiter» – Browser-Tests (Playwright, Chromium) mit dem Beispielbild: genau eine abspielbare Animation, genau sechs verschiedene PNG,
+// «The Fictory» – Browser-Tests (Playwright, Chromium) mit dem Beispielbild: genau eine abspielbare Animation, genau sechs verschiedene PNG,
 // Standbilder = Schlüsselzustände in höherer Auflösung, reproduzierbarer Neustart, Betrieb ohne ORNA und ohne jev, keine Anfragen nach aussen,
 // Video, Protokoll und Wiederholung aus dem Protokoll, Gegenprobe, Handy ohne seitliches Scrollen.
-//   NODE_PATH=$(npm root -g) node tests/bildgang.e2e.mjs            (mit SCHNELL=1 ohne die Videoaufnahme von gut 30 Sekunden)
+//   NODE_PATH=$(npm root -g) node tests/fictory.e2e.mjs            (mit SCHNELL=1 ohne die Videoaufnahme von gut 30 Sekunden)
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { join } from "node:path";
@@ -12,7 +12,7 @@ try { playwright = require("playwright"); } catch { playwright = require(join(pr
 const root = new URL("../", import.meta.url);
 const { startServer } = await import(new URL("tools/serve-orma.mjs", root).href);
 const server = await startServer(0);
-const base = `http://localhost:${server.address().port}/alpha/das-bild-geht-weiter/`;
+const base = `http://localhost:${server.address().port}/alpha/the-fictory/`;
 const browser = await playwright.chromium.launch();
 const ergebnisse = [];
 async function check(name, fn) {
@@ -28,7 +28,7 @@ async function oeffne(opts = {}, vorher = null) {
   page.on("request", (r) => { const u = new URL(r.url()); if (!["localhost", "127.0.0.1"].includes(u.hostname) && u.protocol.startsWith("http")) fremd.push(r.url()); });
   if (vorher) await vorher(page);
   await page.goto(base);
-  await page.waitForFunction(() => window.bildgangTest?.bereit);
+  await page.waitForFunction(() => window.fictoryTest?.bereit);
   return { ctx, page, fehler, fremd };
 }
 async function mitBeispiel(page, orna = false) {
@@ -37,11 +37,11 @@ async function mitBeispiel(page, orna = false) {
   if (orna) await page.check('input[name="orna"][value="ziehen"]');
   await page.click("#erzeugen");
   await page.waitForSelector("#ergebnis:not([hidden])");
-  await page.evaluate(() => window.bildgangTest.springe(0));
+  await page.evaluate(() => window.fictoryTest.springe(0));
 }
 /** PNG-Blobs der sechs Standbilder als kleine Graustufen-Vektoren und die Vorschau des Schlüsselzustands im Vergleich */
 const vergleiche = (page) => page.evaluate(async () => {
-  const T = window.bildgangTest, out = [];
+  const T = window.fictoryTest, out = [];
   const klein = async (quelle) => {
     const c = document.createElement("canvas"); c.width = 160; c.height = Math.round(160 / T.S.lauf.M.seite);
     const x = c.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(quelle, 0, 0, c.width, c.height);
@@ -72,7 +72,7 @@ await check("Ohne ORNA: Bild laden, Analyse mit getrenntem Befund, Lesart und Ei
   assert.equal(await page.locator("#standbilder li").count(), 6);
   assert.equal(await page.locator("#standbilder li h3").allTextContents().then((t) => t.join("|")), "1 · Neue Nachbarschaften|2 · Abfolge als Bild|3 · Wirksame Spuren|4 · Gekoppelte Beziehungen|5 · Figur und Grund|6 · Anders weitergehen");
   for (const p of await page.locator("#standbilder li p").allTextContents()) assert.ok(p.length > 40, "Operationsbeschreibung");
-  assert.equal(await page.evaluate(() => window.bildgangTest.S.orna), null);
+  assert.equal(await page.evaluate(() => window.fictoryTest.S.orna), null);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, [], "keine Anfrage nach aussen");
   await ctx.close();
 });
@@ -82,20 +82,20 @@ await check("Abspielen, Pause, Zeitleiste und Neustart; der Neustart löscht die
   await mitBeispiel(page);
   await page.click("#spielen");
   await page.waitForTimeout(1500);
-  const n1 = await page.evaluate(() => window.bildgangTest.S.lauf.z.schritt);
+  const n1 = await page.evaluate(() => window.fictoryTest.S.lauf.z.schritt);
   assert.ok(n1 > 15, `läuft (${n1})`);
   await page.click("#spielen");
-  const n2 = await page.evaluate(() => window.bildgangTest.S.lauf.z.schritt); await page.waitForTimeout(600);
-  assert.equal(await page.evaluate(() => window.bildgangTest.S.lauf.z.schritt), n2, "Pause hält an");
+  const n2 = await page.evaluate(() => window.fictoryTest.S.lauf.z.schritt); await page.waitForTimeout(600);
+  assert.equal(await page.evaluate(() => window.fictoryTest.S.lauf.z.schritt), n2, "Pause hält an");
   await page.locator("#zeitleiste").fill("700");
-  const spaet = await page.evaluate(() => { const z = window.bildgangTest.S.lauf.z; return { n: z.schritt, stempel: z.stempel.length, spur: z.spuren.reduce((s, v) => s + v, 0) }; });
+  const spaet = await page.evaluate(() => { const z = window.fictoryTest.S.lauf.z; return { n: z.schritt, stempel: z.stempel.length, spur: z.spuren.reduce((s, v) => s + v, 0) }; });
   assert.equal(spaet.n, 700); assert.ok(spaet.stempel > 20 && spaet.spur > 0, "Spuren liegen vor");
   await page.click("#neustart"); await page.click("#spielen");     // Neustart spielt sofort; anhalten, um den Anfang zu prüfen
-  const neu = await page.evaluate(() => { const L = window.bildgangTest.S.lauf; return { n: L.z.schritt, stempel: L.z.stempel.length, cache: [...L.cache.keys()].every((k) => k <= L.z.schritt) }; });
+  const neu = await page.evaluate(() => { const L = window.fictoryTest.S.lauf; return { n: L.z.schritt, stempel: L.z.stempel.length, cache: [...L.cache.keys()].every((k) => k <= L.z.schritt) }; });
   assert.ok(neu.n < 30 && neu.stempel === 0 && neu.cache, `Neustart vom Anfang ohne Spuren (${JSON.stringify(neu)})`);
   // lebendig weiterrechnen bis Schritt 480 (wie die Wiedergabe) und mit dem gespeicherten Schlüsselzustand vergleichen
   const gleich = await page.evaluate(() => {
-    const T = window.bildgangTest, L = T.S.lauf;
+    const T = window.fictoryTest, L = T.S.lauf;
     return T.zustandsSchluessel(T.zustandBei(T.SCHLUESSEL[3])) === L.schluessel[3] && T.abweichungen() === 0;
   });
   assert.ok(gleich, "Schlüsselzustand nach dem Neustart identisch");
@@ -124,7 +124,7 @@ await check("Sechs verschiedene PNG in höherer Auflösung, jedes aus demselben 
   assert.match(dl.suggestedFilename(), /standbilder\.zip$/);
   const fs = await import("node:fs");
   const zipBytes = fs.readFileSync(await dl.path());
-  const namen = (zipBytes.toString("latin1").match(/das-bild-geht-weiter-[a-z0-9-]+\.(png|json)/g) ?? []);
+  const namen = (zipBytes.toString("latin1").match(/the-fictory-[a-z0-9-]+\.(png|json)/g) ?? []);
   assert.equal(new Set(namen.filter((n) => n.endsWith(".png"))).size, 6, "sechs PNG im ZIP");
   assert.ok(namen.some((n) => n.endsWith("protokoll.json")));
   await ctx.close();
@@ -136,7 +136,7 @@ await check("Mit ORNA: Konstellation, Herkunft, Gedanke und Eingriff sichtbar un
   const karte = await page.locator("#orna-karte").innerText();
   for (const t of ["Konstellation", "Herkunft", "Gedanke", "Eingriff", "Gestalterische Interpretation", "ORNA · Nebeneinander, Nacheinander"]) assert.ok(karte.includes(t), t);
   assert.match(karte, / × /);
-  const p = await page.evaluate(() => window.bildgangTest.protokoll());
+  const p = await page.evaluate(() => window.fictoryTest.protokoll());
   assert.ok(p.orna.konstellation && Number.isInteger(p.lauf.startwert) && /^R[1-7]$/.test(p.lauf.regel));
   assert.equal(p.orna.regel, p.lauf.regel);
   const text = await page.evaluate((id) => import("../../portfolio/nebeneinander-nacheinander/js/data/constellations.js").then((m) => m.constellations.find((k) => k.id === id).text), p.orna.konstellation);
@@ -148,7 +148,7 @@ await check("Mit ORNA: Konstellation, Herkunft, Gedanke und Eingriff sichtbar un
   await p2.setInputFiles("#protokoll-laden", { name: "protokoll.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(p)) });
   await p2.waitForFunction(() => /wiederholt/.test(document.getElementById("status-export").textContent));
   assert.match(await p2.locator("#status-export").textContent(), /alle sieben Schlüsselzustände stimmen überein/);
-  assert.equal(await p2.evaluate(() => window.bildgangTest.S.orna.id), p.orna.konstellation);
+  assert.equal(await p2.evaluate(() => window.fictoryTest.S.orna.id), p.orna.konstellation);
   assert.deepEqual(fehler, []);
   await ctx2.close(); await ctx.close();
 });
@@ -156,7 +156,7 @@ await check("Mit ORNA: Konstellation, Herkunft, Gedanke und Eingriff sichtbar un
 await check("Ohne jev-Tabelle: ORNA ordnet über Stichworte zu, alles andere läuft gleich", async () => {
   const { ctx, page, fehler } = await oeffne({}, (pg) => pg.route(/\/jev\.js(\?|$)/, (r) => r.fulfill({ contentType: "text/javascript", body: "export const JEV = null;\n" })));
   await mitBeispiel(page, true);
-  const q = await page.evaluate(() => window.bildgangTest.S.orna.ableitung.quelle);
+  const q = await page.evaluate(() => window.fictoryTest.S.orna.ableitung.quelle);
   assert.ok(["stichworte", "zufall"].includes(q), q);
   assert.match(await page.locator("#integrationen").textContent(), /keine gültige Tabelle/);
   assert.equal(await page.locator("#standbilder li").count(), 6);
@@ -167,7 +167,7 @@ await check("Ohne jev-Tabelle: ORNA ordnet über Stichworte zu, alles andere lä
 await check("Gegenprobe: ohne wirksame Spuren ein anderes Ende", async () => {
   const { ctx, page } = await oeffne();
   await mitBeispiel(page);
-  const g = await page.evaluate(() => window.bildgangTest.gegenprobe());
+  const g = await page.evaluate(() => window.fictoryTest.gegenprobe());
   assert.notEqual(g.mit, g.ohne);
   assert.ok(g.verschiebung > 0.01, `Verschiebung ${g.verschiebung}`);
   assert.ok(await page.locator("#gegen-bilder").isVisible());
@@ -188,7 +188,7 @@ if (!process.env.SCHNELL) await check("Video: eine Animation in einem unterstüt
   const { ctx, page } = await oeffne();
   await mitBeispiel(page);
   const info = await page.evaluate(async () => {
-    const T = window.bildgangTest, blob = await T.video();
+    const T = window.fictoryTest, blob = await T.video();
     const v = document.createElement("video"); v.muted = true; v.src = URL.createObjectURL(blob);
     await new Promise((ok, nein) => { v.onloadedmetadata = ok; v.onerror = () => nein(new Error("Video nicht lesbar")); });
     return { typ: blob.type, groesse: blob.size, breite: v.videoWidth, hoehe: v.videoHeight };

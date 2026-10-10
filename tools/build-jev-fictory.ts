@@ -1,22 +1,22 @@
-// Alpha: «Das Bild geht weiter». Lässt jev EINMAL beim Bauen prüfen, welche der sieben Operationsregeln (alpha/das-bild-geht-weiter/regeln.js)
+// Alpha: «The Fictory». Lässt jev EINMAL beim Bauen prüfen, welche der sieben Operationsregeln (alpha/the-fictory/regeln.js)
 // sich am ehesten aus einem Gedanken jeder ORNA-Konstellation ableiten lässt, und welcher Satz des Textes diesen Gedanken trägt.
-// Ergebnis: alpha/das-bild-geht-weiter/jev.js (Wahrscheinlichkeiten je Regel, Satznummer je Regel). Die Seite ruft jev nie auf und sendet nichts;
+// Ergebnis: alpha/the-fictory/jev.js (Wahrscheinlichkeiten je Regel, Satznummer je Regel). Die Seite ruft jev nie auf und sendet nichts;
 // sie zieht die Regel reproduzierbar aus diesen Wahrscheinlichkeiten. jev ist ein Beurteiler (Wahrscheinlichkeit je Auswahl), kein Texter
 // (api.typesafe.ai, POST /v1/systemone). Texte und Sätze bleiben unverändert; jev wählt nur aus.
 //
-//   NODE_USE_ENV_PROXY=1 node --experimental-strip-types --no-warnings tools/build-jev-bildgang.ts            voller Lauf (326 Aufrufe)
-//   NODE_USE_ENV_PROXY=1 node --experimental-strip-types --no-warnings tools/build-jev-bildgang.ts --probe    drei Beispiele ansehen, nichts schreiben
+//   NODE_USE_ENV_PROXY=1 node --experimental-strip-types --no-warnings tools/build-jev-fictory.ts            voller Lauf (326 Aufrufe)
+//   NODE_USE_ENV_PROXY=1 node --experimental-strip-types --no-warnings tools/build-jev-fictory.ts --probe    drei Beispiele ansehen, nichts schreiben
 //
 // Zugang: Läuft ein Proxy, der den Schlüssel einsetzt, genügt NODE_USE_ENV_PROXY=1; sonst TYPESAFE_API_KEY setzen (nie in eine Datei).
-// Abgerufene Antworten liegen in $TMPDIR/jev-bildgang-cache.jsonl (nach Prüfsumme getrennt), ein abgebrochener Lauf setzt dort fort.
+// Abgerufene Antworten liegen in $TMPDIR/jev-fictory-cache.jsonl (nach Prüfsumme getrennt), ein abgebrochener Lauf setzt dort fort.
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const ROOT = new URL("../", import.meta.url);
-const AUSGABE = new URL("alpha/das-bild-geht-weiter/jev.js", ROOT);
-const CACHE = join(process.env.TMPDIR || tmpdir(), "jev-bildgang-cache.jsonl");
+const AUSGABE = new URL("alpha/the-fictory/jev.js", ROOT);
+const CACHE = join(process.env.TMPDIR || tmpdir(), "jev-fictory-cache.jsonl");
 const URL_API = "https://api.typesafe.ai/v1/systemone";
 const MODELL = "jev-latest";
 const PARALLEL = 6;
@@ -41,7 +41,7 @@ const runde = (p: Record<string, number>) => Object.fromEntries(Object.entries(p
 
 export async function main(argv: string[]) {
   const probe = argv.includes("--probe");
-  const { REGELN, REGEL_IDS, saetze, pruefsumme } = await import(new URL("alpha/das-bild-geht-weiter/regeln.js", ROOT).href);
+  const { REGELN, REGEL_IDS, saetze, pruefsumme } = await import(new URL("alpha/the-fictory/regeln.js", ROOT).href);
   const { constellations } = await import(new URL("portfolio/nebeneinander-nacheinander/js/data/constellations.js", ROOT).href);
   const { artists } = await import(new URL("portfolio/nebeneinander-nacheinander/js/data/artists.js", ROOT).href);
   const { theorists } = await import(new URL("portfolio/nebeneinander-nacheinander/js/data/theorists.js", ROOT).href);
@@ -103,14 +103,14 @@ export async function main(argv: string[]) {
     return `    ${JSON.stringify(a.k)}: { regel: ${JSON.stringify(e.regel)}, satz: ${JSON.stringify(e.satz)} }`;
   });
   const inhalt =
-    `// Automatisch erzeugt von tools/build-jev-bildgang.ts – nicht von Hand bearbeiten.\n` +
+    `// Automatisch erzeugt von tools/build-jev-fictory.ts – nicht von Hand bearbeiten.\n` +
     `// jev (${modell}, api.typesafe.ai) hat am ${heute} einmal eingeschätzt, welche Operationsregel aus regeln.js sich am ehesten aus einem Gedanken\n` +
     `// jeder ORNA-Konstellation ableiten lässt (regel: Wahrscheinlichkeiten) und welcher Satz des Textes ihn trägt (satz: Satznummer ab 0 je Regel).\n` +
     `// Ein Sprachmodell-Urteil über eine gestalterische Übersetzung, keine Aussage über die Personen. Die Seite ruft jev nie auf.\n` +
     `// Gilt nur, solange die Prüfsumme zu Regeln und Bestand passt; sonst nimmt die Seite die Stichwort-Zuordnung.\n` +
     `export const JEV = {\n  modell: ${JSON.stringify(modell)}, stand: ${JSON.stringify(heute)}, pruefsumme: ${JSON.stringify(PS)}, aufrufe: ${auftraege.length},\n  eintraege: {\n${zeilen.join(",\n")}\n  },\n};\n`;
   writeFileSync(AUSGABE, inhalt);
-  console.log(`geschrieben: alpha/das-bild-geht-weiter/jev.js (${(inhalt.length / 1024).toFixed(0)} KB)`);
+  console.log(`geschrieben: alpha/the-fictory/jev.js (${(inhalt.length / 1024).toFixed(0)} KB)`);
 }
 
 if (import.meta.url === pathToFileURL(resolve(process.argv[1])).href) await main(process.argv.slice(2));

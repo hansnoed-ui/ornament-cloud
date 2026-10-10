@@ -1,4 +1,4 @@
-// «Das Bild geht weiter» – optionale ORNA-Konstellation. Gezogen wird wie in ORNA: gleichverteilt über den ganzen kuratierten Bestand
+// «The Fictory» – optionale ORNA-Konstellation. Gezogen wird wie in ORNA: gleichverteilt über den ganzen kuratierten Bestand
 // (crypto.getRandomValues, Rejection Sampling, nie dieselbe zweimal unmittelbar hintereinander; REGELN §3), aus den Daten von ORNA, die
 // hier nur gelesen werden. Aus der gezogenen Konstellation wird EINE Operationsregel (regeln.js) für den ganzen Lauf abgeleitet:
 // mit der jev-Tabelle (jev.js, beim Bauen erzeugt), sonst über Stichworte im Text. Der Gedanke ist immer ein unveränderter Satz des Textes.
