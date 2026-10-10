@@ -304,7 +304,7 @@ export function analysiere(bild, opt = {}) {
       id: "anordnung", thema: "Nachbarschaften, Abstände und Anordnungen", schaltbar: true,
       befund: `Hauptachse der Teile ${grad(achsWinkel)} (Streckung ${achsStaerke.toFixed(1)} : 1); mittlerer Abstand zum nächsten Teil ${prozent(nnMittel)} der Bildhöhe, Streuung ${prozent(nnStreu)}.`,
       lesart: achsStaerke >= 1.6 ? `Die Teile reihen sich eher entlang einer Richtung von ${grad(achsWinkel)}.` : "Die Teile verteilen sich ohne deutliche Vorzugsrichtung.",
-      eingriff: `Schritt 1 legt das Archiv-Raster entlang ${achsStaerke >= 1.6 && achseAktiv ? "dieser Achse" : "der längeren Bildseite"} an; Schritt 2 beginnt seine Spirale in dieser Richtung.`,
+      eingriff: `Schritt 1 legt das Archiv-Raster entlang ${achsStaerke >= 1.6 && achseAktiv ? "dieser Achse" : "der längeren Bildseite"} an; Schritt 2 legt in dieser Richtung die Zeitachse.`,
       flaechen: teile.map((f) => f.id),
     },
     {
@@ -328,7 +328,7 @@ export function analysiere(bild, opt = {}) {
         ? `${einschluesse.length ? `${einschluesse.slice(0, 4).map((e) => `${name(e.innen)} liegt ganz innerhalb von ${name(e.aussen)}`).join("; ")}` : "Keine Fläche liegt ganz in einer anderen"}${unterbrechungen.length ? `; ${unterbrechungen.length} Unterbrechung(en) durch eine dritte Fläche` : ""}.`
         : "Keine eingeschlossenen Flächen und keine Unterbrechungen durch Dritte gefunden.",
       lesart: einschluesse.length || unterbrechungen.length ? "Mögliche Verdeckung: Die innere oder trennende Fläche kann vor der anderen liegen – oder eine Öffnung in ihr sein. Die Gliederung entscheidet das nicht." : "Hinweise auf Überlagerung ergeben sich aus der Gliederung nicht.",
-      eingriff: "Schritt 2 legt die Teile in einer Spirale übereinander; eingeschlossene Teile bleiben dabei über ihrer Umgebung (wenn diese Lesart gilt).",
+      eingriff: "Schritt 2 legt die Teile auf der Zeitachse übereinander; eingeschlossene Teile bleiben dabei über ihrer Umgebung (wenn diese Lesart gilt).",
       flaechen: einschluesse.flatMap((e) => [e.innen, e.aussen]),
     },
     {
