@@ -1,12 +1,12 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen, leitfarbe } from "./analyse.js?v=10";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=10";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=10";
-import { REGELN } from "./regeln.js?v=10";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=10";
-import { JEV } from "./jev.js?v=10";
-import { zip } from "./zip.js?v=10";
+import { analysiere, konturen, leitfarbe } from "./analyse.js?v=11";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=11";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=11";
+import { REGELN } from "./regeln.js?v=11";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=11";
+import { JEV } from "./jev.js?v=11";
+import { zip } from "./zip.js?v=11";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln
@@ -481,7 +481,7 @@ function integrationen() {
 }
 async function allePNG() {
   const L = S.lauf; if (!L) return;
-  $("status-export").textContent = "Fünf Standbilder werden gerechnet …";
+  $("status-export").textContent = `${SCHLUESSEL.length - 1} Standbilder werden gerechnet …`;
   const dateien = [];
   for (let nr = 1; nr < SCHLUESSEL.length; nr++) {
     const { blob, name } = await standbildPNG(nr);
@@ -489,7 +489,7 @@ async function allePNG() {
   }
   dateien.push({ name: dateiname("protokoll.json"), bytes: new TextEncoder().encode(JSON.stringify(protokoll(), null, 2)) });
   herunterladen(new Blob([zip(dateien)], { type: "application/zip" }), dateiname("standbilder.zip"));
-  $("status-export").textContent = `ZIP mit fünf PNG (${exportMass().join(" × ")} px) und dem Protokoll.`;
+  $("status-export").textContent = `ZIP mit ${SCHLUESSEL.length - 1} PNG (${exportMass().join(" × ")} px) und dem Protokoll.`;
 }
 function videoTyp() {
   if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream) return null;
@@ -547,18 +547,19 @@ async function protokollLaden(datei) {
     neuAnalysieren(); zeigeOrna(); zeigeStartwert();
     await erzeugen(true);
     const gleich = S.lauf.schluessel.every((s, i) => s === p.lauf.schluesselzustaende[i]?.zustand);
-    $("status-export").textContent = gleich ? "Lauf aus dem Protokoll wiederholt: alle sechs Schlüsselzustände stimmen überein." : "Lauf wiederholt, aber die Schlüsselzustände weichen ab (andere Fassung der Anwendung?).";
+    $("status-export").textContent = gleich ? `Lauf aus dem Protokoll wiederholt: alle ${SCHLUESSEL.length} Schlüsselzustände stimmen überein.` : "Lauf wiederholt, aber die Schlüsselzustände weichen ab (andere Fassung der Anwendung?).";
   } catch (e) { $("status-export").textContent = `Protokoll nicht lesbar: ${e.message}`; }
 }
 function gegenprobe() {
   const L = S.lauf; if (!L) return;
   const M2 = erzeugeLauf(S.A, { seed: L.seed, regel: L.regel, neutralisiere: 4 });
-  const mit = zustandBei(GESAMT), ohne = bis(M2, GESAMT);
+  // verglichen wird vor dem Zusammensetzen (Ende von Schritt 5): dort zeigt sich, was die Spuren bewirkt haben
+  const vor = SCHLUESSEL[STATIONEN.length - 2], mit = zustandBei(vor), ohne = bis(M2, vor);
   const [w, h] = mass(L.M.seite, 640);
   for (const [id, z] of [["gegen-mit", mit], ["gegen-ohne", ohne]]) { const c = $(id); c.width = w; c.height = h; zeichne(c.getContext("2d"), w, h, z, L.M, L.mat); }
   const verschiebung = mit.teile.reduce((s, t, i) => s + Math.hypot(t.x - ohne.teile[i].x, t.y - ohne.teile[i].y), 0) / mit.teile.length;
   const gerissen = (z) => z.federn.filter((f) => !f.aktiv).length;
-  $("gegen-mit-text").textContent = `Mit wirksamen Spuren (Standbild 6). Gerissene Kopplungen: ${gerissen(mit)}.`;
+  $("gegen-mit-text").textContent = `Mit wirksamen Spuren (Standbild ${STATIONEN.length - 2}). Gerissene Kopplungen: ${gerissen(mit)}.`;
   $("gegen-ohne-text").textContent = `Spurenfeld vor Schritt 4 gelöscht. Gerissene Kopplungen: ${gerissen(ohne)}. Die Teile stehen im Mittel ${zahl(verschiebung * 100)} % der Bildhöhe anders.`;
   $("gegen-bilder").hidden = false;
   return { verschiebung, mit: zustandsSchluessel(mit), ohne: zustandsSchluessel(ohne) };

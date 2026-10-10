@@ -2,8 +2,8 @@
 // Farbgruppen nachgeschärft).
 // Nach dem Eingangsbild steht alles auf dunklem Grund. zeichne() bildet einen Zustand in beliebiger Grösse ab; Vorschau, Video und
 // Standbild in hoher Auflösung nutzen dieselbe Funktion mit demselben Zustand. In die Bilder kommt keine Schrift.
-import { konturen, lab, leitfarbe } from "./analyse.js?v=10";
-import { zeichneFeld } from "./feld.js?v=10";
+import { konturen, lab, leitfarbe } from "./analyse.js?v=11";
+import { zeichneFeld } from "./feld.js?v=11";
 
 export const NACHT = "#151412";
 export const PAPIER = "#f4f1ea";
@@ -177,9 +177,9 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
   }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   // 7 · der Schnitt aus Schritt 5
-  if (z.schnitt) {
+  if (z.schnitt && (z.schnittAlpha ?? 1) > 0.001) {
     const { x, y, w } = z.schnitt, d = 2;
-    ctx.globalAlpha = 0.7; ctx.strokeStyle = PAPIER; ctx.lineWidth = Math.max(1, S * 0.0016); ctx.setLineDash([S * 0.012, S * 0.008]);
+    ctx.globalAlpha = 0.7 * (z.schnittAlpha ?? 1); ctx.strokeStyle = PAPIER; ctx.lineWidth = Math.max(1, S * 0.0016); ctx.setLineDash([S * 0.012, S * 0.008]);
     ctx.beginPath(); ctx.moveTo(S * (x - Math.cos(w) * d), S * (y - Math.sin(w) * d)); ctx.lineTo(S * (x + Math.cos(w) * d), S * (y + Math.sin(w) * d)); ctx.stroke();
     ctx.setLineDash([]);
   }
