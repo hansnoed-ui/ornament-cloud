@@ -250,7 +250,7 @@
     }
     @media (prefers-reduced-motion: reduce) { .ablage, .kontaktbogen canvas { transition: none; } }
   </style>
-  <script type="module" src="app.js?v=11"></script>
+  <script type="module" src="app.js?v=12"></script>
 </head>
 <body>
   <header class="site-header">
@@ -265,7 +265,7 @@
         <li><b>Bild laden</b><span>oder das Beispielbild</span></li>
         <li class="frei"><b>Analyse prüfen</b><span>wenn du willst</span></li>
         <li class="frei"><b>ORNA</b><span>eine Regel ziehen, wenn du willst</span></li>
-        <li><b>Erzeugen</b><span>35 Sekunden Animation</span></li>
+        <li><b>Erzeugen</b><span>30 Sekunden Animation</span></li>
         <li><b>Ansehen und speichern</b><span>Video und Standbilder</span></li>
       </ol>
     </div>
@@ -295,7 +295,7 @@
           <p class="stand-zeit" id="uhr"></p>
         </div>
         <div class="massstab">
-          <input type="range" id="zeitleiste" min="0" max="1050" step="1" value="0" aria-label="Zeitleiste">
+          <input type="range" id="zeitleiste" min="0" max="900" step="1" value="0" aria-label="Zeitleiste">
           <div class="marken" id="marken"></div>
         </div>
         <div class="werkbank-knoepfe">
@@ -368,7 +368,7 @@
 
     <section class="bg-schritt" id="schritt-erzeugen" aria-labelledby="h-erzeugen" hidden>
       <h2 id="h-erzeugen"><span class="nr">4</span>Erzeugen</h2>
-      <p class="bg-hinweis">35 Sekunden, sechs Schritte. Jeder baut auf dem vorigen auf, zuletzt setzt sich das Bild neu zusammen. Die Standbilder sind Momente dieses Laufs.</p>
+      <p class="bg-hinweis">30 Sekunden, sechs Schritte. Jeder baut auf dem vorigen auf, zuletzt setzt sich das Bild neu zusammen. Die Standbilder sind Momente dieses Laufs.</p>
       <div class="bg-knoepfe">
         <button type="button" class="bg-knopf voll" id="erzeugen">Erzeugen</button>
         <button type="button" class="bg-knopf klein leise" id="neuer-startwert">Neuer Startwert</button>

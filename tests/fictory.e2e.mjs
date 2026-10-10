@@ -1,7 +1,7 @@
 // «The Fictory» – Browser-Tests (Playwright, Chromium) mit dem Beispielbild: genau eine abspielbare Animation, genau sechs verschiedene PNG,
 // Standbilder = Schlüsselzustände in höherer Auflösung, reproduzierbarer Neustart, Betrieb ohne ORNA und ohne jev, keine Anfragen nach aussen,
 // Video, Protokoll und Wiederholung aus dem Protokoll, Gegenprobe, Handy ohne seitliches Scrollen.
-//   NODE_PATH=$(npm root -g) node tests/fictory.e2e.mjs            (mit SCHNELL=1 ohne die Videoaufnahme von gut 35 Sekunden)
+//   NODE_PATH=$(npm root -g) node tests/fictory.e2e.mjs            (mit SCHNELL=1 ohne die Videoaufnahme von gut 30 Sekunden)
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { join } from "node:path";
