@@ -300,19 +300,20 @@ await check("Videoseite «Mensch, Niklas!»: die englische Fassung darunter spie
   await ctx.close();
 });
 
-await check("Web: sechs Karten mit Bild (640 × 800), zuunterst die drei Videos mit «Mensch, Niklas!» als letztem, drei in einer Reihe; die Karten führen zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld; die Stadt steht zurzeit nur auf Alpha (seit 10. Oktober 2026)", async () => {
+await check("Web: sieben Karten mit Bild (640 × 800), zuoberst The Fictory, zuunterst die drei Videos mit «Mensch, Niklas!» als letztem, drei in einer Reihe; die Karten führen zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld; die Stadt steht zurzeit nur auf Alpha (seit 10. Oktober 2026)", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
   const errors = fehler(page);
   await page.goto(origin + "/web/");
   await page.locator("main img").last().scrollIntoViewIfNeeded();
   await page.waitForFunction(() => [...document.querySelectorAll("main img")].every((i) => i.complete && i.naturalWidth > 0));
-  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), Array(6).fill([640, 800]));
+  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), Array(7).fill([640, 800]));
   const ys = await page.locator("main .card").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().y)));
-  assert.deepEqual(ys.length, 6);
+  assert.deepEqual(ys.length, 7);
   assert.ok(ys[0] === ys[1] && ys[1] === ys[2], "drei in einer Reihe");
   assert.ok(ys[3] > ys[2] && ys[3] === ys[4] && ys[4] === ys[5], "drei in der zweiten Reihe");
-  assert.deepEqual(await page.locator("main .card h2").allTextContents(), ["OMNA COLOR", "Das Dritte Rad", "Stellenfeld", "ORNA – Zufällige Begegnungen", "Liebling, ich habe den Poststrukturalismus strukturiert", "Mensch, Niklas!"], "Reihenfolge: zuunterst die Videos, «Mensch, Niklas!» als letztes");
+  assert.ok(ys[6] > ys[5], "die siebte in der dritten Reihe");
+  assert.deepEqual(await page.locator("main .card h2").allTextContents(), ["The Fictory", "OMNA COLOR", "Das Dritte Rad", "Stellenfeld", "ORNA – Zufällige Begegnungen", "Liebling, ich habe den Poststrukturalismus strukturiert", "Mensch, Niklas!"], "Reihenfolge: zuunterst die Videos, «Mensch, Niklas!» als letztes");
   const t = await box(page.locator("main .thumb").first());
   assert.ok(Math.abs(t.h / t.w - 5 / 4) < 0.01, "Bild im Format 4 : 5");
   // die Karte nach ihrer Überschrift wählen (der Text des Dritten Rads nennt auch OMNA COLOR)

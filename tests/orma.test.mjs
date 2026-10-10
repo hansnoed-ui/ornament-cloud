@@ -424,7 +424,7 @@ test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (
     "news/index.html": papiere,
     "apps/index.html": ["/alpha/orma/"],
     "masterprompts/index.html": ["/alpha/pruefraster/", "/alpha/verteilapparat/", "/alpha/gesellschaftskonzepte/", "/alpha/journalistische-texte/"],
-    "web/index.html": ["/alpha/omna-color/", "/alpha/drittes-rad/", "/alpha/poststrukturalismus-doppelpruefung.pdf"],   // das PDF zum Comic-Video seit 6. Oktober 2026; die Stadt war vom 9. bis 10. Oktober 2026 hier
+    "web/index.html": ["/alpha/the-fictory/", "/alpha/omna-color/", "/alpha/drittes-rad/", "/alpha/poststrukturalismus-doppelpruefung.pdf"],   // das PDF zum Comic-Video seit 6. Oktober 2026; die Stadt war vom 9. bis 10. Oktober 2026 hier
     "web/poststrukturalismus/index.html": ["/alpha/poststrukturalismus-doppelpruefung.pdf"],   // die Videoseite, ebenso
   };
   const allowed = new Set(Object.keys(ziele));

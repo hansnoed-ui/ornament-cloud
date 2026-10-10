@@ -1,13 +1,12 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen, leitfarbe } from "./analyse.js?v=8";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=8";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=8";
-import { REGELN } from "./regeln.js?v=8";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=8";
-import { JEV } from "./jev.js?v=8";
-import { zip } from "./zip.js?v=8";
-import { feldMitShader } from "./feld.js?v=8";
+import { analysiere, konturen, leitfarbe } from "./analyse.js?v=9";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=9";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=9";
+import { REGELN } from "./regeln.js?v=9";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=9";
+import { JEV } from "./jev.js?v=9";
+import { zip } from "./zip.js?v=9";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln
@@ -202,7 +201,7 @@ function zeigeOrna() {
     <dt>Gedanke</dt><dd><blockquote class="satz"></blockquote><span class="bg-hinweis satz-quelle"></span></dd>
     <dt>Eingriff</dt><dd><strong class="regel"></strong><br><span class="eingriff"></span></dd>
     <dt>Passung</dt><dd class="passung"></dd>
-    <dt>Kennzeichnung</dt><dd><span class="bg-marke">Gestalterische Interpretation</span> Die Übersetzung des Satzes in eine Bildregel ist eine Lesart dieser Anwendung, keine Aussage der genannten Personen und keine theoretische Herleitung.</dd>
+    <dt>Kennzeichnung</dt><dd><span class="bg-marke">Gestalterische Interpretation</span> Keine Aussage der genannten Personen.</dd>
     <dt>Ganzer Text</dt><dd><details><summary>anzeigen</summary><p class="text"></p><p class="frage"></p></details></dd>
   </dl>`;
   const k = a.konstellation;
@@ -417,7 +416,7 @@ function zeigeStandbilder() {
     const h = document.createElement("h3");
     const ziffer = document.createElement("span"); ziffer.className = "ziffer"; ziffer.textContent = b.nr;
     h.append(ziffer, b.titel);
-    const p = document.createElement("p"); p.textContent = b.text;
+    const p = document.createElement("p"); p.textContent = b.kurz || b.text; p.title = b.text;
     const k = document.createElement("div"); k.className = "bg-knoepfe";
     const png = document.createElement("button"); png.type = "button"; png.className = "bg-knopf klein"; png.textContent = "PNG";
     png.setAttribute("aria-label", `Standbild ${b.nr} als PNG herunterladen`);
@@ -615,7 +614,7 @@ $("anderes-bild").addEventListener("click", () => { stoppe(); $("datei").click()
 const vt = videoTyp();
 if (!vt) { $("video").disabled = true; $("video").title = "Dieser Browser kann keine Videos aus einer Zeichenfläche aufnehmen."; }
 else $("video").textContent = `Animation als ${vt.endung.toUpperCase()}`;
-$("integrationen").textContent = `Tatsächlich aktiv: Bildanalyse und Prozess laufen nur in diesem Browser (keine Übertragung, keine Bildgenerierung). ORNA: der Bestand mit ${BESTAND} Konstellationen wird gelesen, gezogen wird wie in ORNA. jev: ${jevGueltig() ? `wählte beim Bauen (${JEV.stand}, ${JEV.modell}) für jede Konstellation Regel und Satz vor; diese Seite ruft jev nicht auf` : "keine gültige Tabelle, die Regel folgt Stichworten im Text"}. Video: ${vt ? vt.mime : "in diesem Browser nicht verfügbar"}. Feld: ${feldMitShader() ? "WebGL-Shader" : "ohne WebGL, einfache Darstellung"}.`;
+$("integrationen").textContent = `Läuft ganz im Browser, nichts wird hochgeladen. ORNA: ${BESTAND} Konstellationen. jev: ${jevGueltig() ? "hat die Regeln beim Bauen vorgeschlagen und wird hier nicht aufgerufen" : "keine gültige Tabelle, die Regel folgt Stichworten"}. Video: ${vt ? vt.endung.toUpperCase() : "in diesem Browser nicht möglich"}.`;
 zeigeRegler();
 
 // für die Browser-Tests (tests/fictory.e2e.mjs)

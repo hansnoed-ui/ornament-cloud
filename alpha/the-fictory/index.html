@@ -6,7 +6,22 @@
   <title>The Fictory – Ornament Cloud · Alpha</title>
   <!-- Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). Zuoberst in der Alpha-Übersicht, sonst nicht verlinkt. -->
   <meta name="robots" content="noindex">
-  <meta name="description" content="Ein Bild auf die Werkbank legen, es zerlegen lassen und zusehen, wie es weitergeht: eine Animation und fünf Standbilder nach dem Prüfraster «Nebeneinander, Nacheinander».">
+  <meta name="description" content="Ein Bild zerfällt in seine Teile und geht weiter: eine Animation und fünf Standbilder nach «Nebeneinander, Nacheinander».">
+  <!-- Vorschaukarte beim Teilen (tools/fictory-og.mjs, 1200 × 630) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ornament.cloud">
+  <meta property="og:locale" content="de_CH">
+  <meta property="og:url" content="https://ornament.cloud/alpha/the-fictory/">
+  <meta property="og:title" content="The Fictory">
+  <meta property="og:description" content="Leg ein Bild auf die Werkbank: Es zerfällt in seine Teile, ordnet sich neu, hinterlässt Spuren und findet nie ganz zurück.">
+  <meta property="og:image" content="https://ornament.cloud/alpha/the-fictory/og-the-fictory.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fictory: links der Titel und der Satz «Ein Bild zerfällt in seine Teile und geht weiter.», rechts ein zerlegtes Bild mit Blumenfarben auf dunklem Grund, mit Fadenkreuzen, Namen der Teile und Feldlinien.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Fictory">
+  <meta name="twitter:description" content="Leg ein Bild auf die Werkbank: Es zerfällt in seine Teile, ordnet sich neu, hinterlässt Spuren und findet nie ganz zurück.">
+  <meta name="twitter:image" content="https://ornament.cloud/alpha/the-fictory/og-the-fictory.jpg">
   <link rel="stylesheet" href="../../styles.css?v=45">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
   <style>
@@ -202,7 +217,7 @@
     }
     @media (prefers-reduced-motion: reduce) { .ablage, .kontaktbogen canvas { transition: none; } }
   </style>
-  <script type="module" src="app.js?v=8"></script>
+  <script type="module" src="app.js?v=9"></script>
 </head>
 <body>
   <header class="site-header">
@@ -212,7 +227,7 @@
         <a href="../drittes-rad/">Das Dritte Rad</a>
       </nav>
       <h1>The Fictory</h1>
-      <p class="lead">Ein Bild wird zerlegt und geht weiter: eine Animation, fünf Standbilder, nach «Nebeneinander, Nacheinander».</p>
+      <p class="lead">Ein Bild zerfällt in seine Teile und geht weiter.</p>
     </div>
   </header>
 
@@ -226,7 +241,7 @@
           <label class="bg-knopf voll" for="datei">Bild wählen<input class="bg-datei" type="file" id="datei" accept="image/*"></label>
           <button type="button" class="bg-knopf" id="beispiel">Beispielbild</button>
         </div>
-        <p class="bg-status" id="status-laden" role="status">Es bleibt in diesem Browser und wird nirgends hochgeladen.</p>
+        <p class="bg-status" id="status-laden" role="status">Es bleibt auf deinem Gerät.</p>
       </div>
 
       <div class="buehne" id="buehne-box" hidden>
@@ -245,7 +260,7 @@
         <div class="werkbank-knoepfe">
           <button type="button" class="bg-knopf voll" id="spielen" aria-pressed="false">Abspielen</button>
           <button type="button" class="bg-knopf" id="neustart">Neustart</button>
-          <button type="button" class="bg-knopf" id="daten-knopf" aria-pressed="true" title="Zeigt Lage und Namen der Teile und die Zähler des Laufs über der Animation. Nicht in Standbildern und Video.">Daten</button>
+          <button type="button" class="bg-knopf" id="daten-knopf" aria-pressed="true" title="Blendet Namen, Lagen und Zähler ein. Nicht in Standbildern und Video.">Daten</button>
           <button type="button" class="bg-knopf leise" id="anderes-bild">Anderes Bild</button>
         </div>
         <h2 class="nur-lesen">Fünf Standbilder</h2>
@@ -257,7 +272,7 @@
   <main class="bg-seite" id="app">
     <section class="bg-schritt" id="schritt-analyse" aria-labelledby="h-analyse" hidden>
       <h2 id="h-analyse"><span class="nr">2</span>Analyse prüfen</h2>
-      <p class="bg-hinweis">Die Gliederung beruht auf Farben, zusammenhängenden Flächen, Kanten und Lagen. Sie erkennt keine Gegenstände und sagt nichts über die Entstehung des Bildes. Tippe in die Vorschau, um sie zu korrigieren.</p>
+      <p class="bg-hinweis">So liest die App dein Bild: Farben, Flächen, Kanten, Lagen. Sie erkennt keine Dinge. Tippe in die Vorschau, um zu korrigieren.</p>
       <div class="bg-analyse">
         <div>
           <div class="bg-vorschau"><canvas id="gliederung" aria-label="Vorschau der Bildgliederung: Flächen in ihrer mittleren Farbe, Figuren mit kräftiger Kontur, Grund schraffiert"></canvas></div>
@@ -271,7 +286,7 @@
               <label><input type="radio" name="ansicht" value="original"><span>Original</span></label>
             </span>
           </div>
-          <p class="bg-hinweis">Alle Flächen werden zu Teilen. Figuren liegen obenauf und tragen den Anstoss in Schritt 4.</p>
+          <p class="bg-hinweis">Alles wird zu Teilen. Figuren liegen obenauf.</p>
           <div class="bg-teile" id="teile" aria-label="Figuren"></div>
         </div>
         <div class="bg-regler">
@@ -296,7 +311,7 @@
 
     <section class="bg-schritt" id="schritt-orna" aria-labelledby="h-orna" hidden>
       <h2 id="h-orna"><span class="nr">3</span>ORNA <span class="bg-marke">optional</span></h2>
-      <p class="bg-hinweis">Eine Konstellation aus dem Bestand von ORNA kann den ganzen Lauf beeinflussen: Ein Satz aus ihrem Text wird in eine Operationsregel übersetzt.</p>
+      <p class="bg-hinweis">Eine gezogene Konstellation aus ORNA gibt dem Lauf eine Regel.</p>
       <div class="bg-knoepfe">
         <span class="bg-wahl" role="radiogroup" aria-label="ORNA einbeziehen">
           <label><input type="radio" name="orna" value="ohne" checked><span>Ohne ORNA</span></label>
@@ -309,7 +324,7 @@
 
     <section class="bg-schritt" id="schritt-erzeugen" aria-labelledby="h-erzeugen" hidden>
       <h2 id="h-erzeugen"><span class="nr">4</span>Erzeugen</h2>
-      <p class="bg-hinweis">Das ganze Bild wird zerlegt: jede Fläche ein Teil, grosse Flächen in Kacheln. Danach gibt es das Bild nur noch als seine Teile. Fünf Operationen in 30 Sekunden; jede plant aus dem Zustand, den die vorige hinterlassen hat. Die Standbilder sind Zustände dieses einen Laufs.</p>
+      <p class="bg-hinweis">30 Sekunden, fünf Schritte. Jeder baut auf dem vorigen auf. Die Standbilder sind Momente dieses Laufs.</p>
       <div class="bg-knoepfe">
         <button type="button" class="bg-knopf voll" id="erzeugen">Erzeugen</button>
         <button type="button" class="bg-knopf klein leise" id="neuer-startwert">Neuer Startwert</button>
@@ -333,7 +348,7 @@
 
       <div class="bg-gegen">
         <h3>Gegenprobe</h3>
-        <p class="bg-hinweis">Wirkt eine frühere Veränderung tatsächlich weiter? Derselbe Lauf noch einmal, mit denselben Regeln und demselben Startwert, nur werden vor Schritt 4 das Spurenfeld und das wuchernde Feld gelöscht. Die gezeichneten Spuren bleiben sichtbar, wirken aber nicht mehr.</p>
+        <p class="bg-hinweis">Derselbe Lauf, nur ohne wirksame Spuren ab Schritt 4. Was ändert sich?</p>
         <div class="bg-knoepfe"><button type="button" class="bg-knopf klein" id="gegenprobe">Gegenprobe rechnen</button></div>
         <div class="bg-gegen-bilder" id="gegen-bilder" hidden>
           <figure><canvas id="gegen-mit"></canvas><figcaption id="gegen-mit-text"></figcaption></figure>
@@ -347,10 +362,9 @@
     <section class="bg-schritt bg-methode" aria-labelledby="h-methode">
       <h2 id="h-methode">Was hier geschieht</h2>
       <ul>
-        <li><strong>Verräumlichung:</strong> Die Gliederung macht Stellen wiederauffindbar. Als «dieselbe Stelle» gilt eine zusammenhängende Fläche einer Farbgruppe (F1, F2 …); grosse Flächen werden in Kacheln geteilt (F3.2 …). Ein Teil bleibt dasselbe Teil, wo immer es hinwandert, und seine Herkunftsstelle bleibt adressierbar.</li>
-        <li><strong>Verzeitlichung:</strong> Ein Spurenfeld nimmt jede gestempelte Lage auf, und jeder Stempel lässt ein Feld weiterwuchern, auch wenn nicht mehr gestempelt wird. Spätere Schritte meiden die Spuren (Schritt 3), werden von Spuren und Feld gebremst, wenn die Kopplungen das Bild wieder zusammenziehen (Schritt 4), und legen danach ihren Schnitt (Schritt 5). Das Bild kehrt nie ganz zurück. Die Gegenprobe zeigt, was sich ändert, wenn beides fehlt.</li>
-        <li>Bewegung allein belegt keine Folgewirksamkeit, und eine stabile Ordnung kann bewegte Teile enthalten. Es gibt keine Zahlenbewertung nach dem Raster und keine Note.</li>
-        <li>Untersucht werden die hier ausgeführten Bildoperationen, nicht die Entstehung des Eingangsbildes und nicht die Wirkung auf das Publikum.</li>
+        <li><strong>Nebeneinander:</strong> Jedes Teil bleibt auffindbar (F1, F2 …), wo immer es hinwandert.</li>
+        <li><strong>Nacheinander:</strong> Spuren und ein wucherndes Feld bremsen und lenken die späteren Schritte. Das Bild findet nie ganz zurück.</li>
+        <li>Keine Bewertung. Keine Aussage darüber, wie das Bild entstanden ist oder wie es wirkt.</li>
         <li id="integrationen">Integrationen werden beim Laden ermittelt.</li>
       </ul>
     </section>
