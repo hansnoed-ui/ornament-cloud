@@ -61,14 +61,30 @@ async function ladeDatei(datei) {
     $("farben").value = 6; $("mindest").value = 4; $("regel").value = "";
     const img = $("original");
     img.src = URL.createObjectURL(datei); img.alt = `Eingangsbild ${S.bild.name}`; img.hidden = false;
-    $("status-laden").textContent = `${S.bild.name} · ${bw} × ${bh} px`;
+    $("ablage").classList.add("belegt"); $("ablage").hidden = false; $("buehne-box").hidden = true;
+    $("status-laden").textContent = `${S.bild.name}, ${bw} × ${bh} px. Prüfe unten die Analyse und erzeuge dann den Lauf.`;
     stoppe(); S.lauf = null; $("ergebnis").hidden = true;
     neuAnalysieren();
+    setzeLeitfarbe(S.A);
     for (const id of ["schritt-analyse", "schritt-orna", "schritt-erzeugen"]) $(id).hidden = false;
     zeigeStartwert();
   } catch (e) {
     $("status-laden").textContent = `Das Bild liess sich nicht lesen (${e.message}).`;
   }
+}
+
+/** Leitfarbe der Werkbank: die Farbgruppe mit der stärksten Buntheit, gewichtet nach Fläche */
+function setzeLeitfarbe(A) {
+  const gruppen = new Map();
+  for (const F of A.flaechen) {
+    const g = gruppen.get(F.cluster) ?? { px: 0, rgb: [0, 0, 0], a: 0, b: 0 };
+    g.px += F.px; g.a += F.lab[1] * F.px; g.b += F.lab[2] * F.px;
+    F.rgb.forEach((v, k) => { g.rgb[k] += v * F.px; });
+    gruppen.set(F.cluster, g);
+  }
+  let best = null, wert = -1;
+  for (const g of gruppen.values()) { const w = Math.hypot(g.a / g.px, g.b / g.px) * Math.sqrt(g.px); if (w > wert) { wert = w; best = g; } }
+  if (best) document.documentElement.style.setProperty("--leit-roh", `rgb(${best.rgb.map((v) => Math.round(v / best.px)).join(",")})`);
 }
 
 // ---------- 2 · Analyse ----------
@@ -204,7 +220,7 @@ function zeigeOrna() {
   karte.querySelector(".herkunft").textContent = a.herkunft;
   karte.querySelector(".satz").textContent = a.satz ? `«${a.satz}»` : "–";
   karte.querySelector(".satz-quelle").textContent = a.satz ? `Satz ${a.satzNr + 1} des Konstellationstexts, unverändert.` : "Kein Satz trägt ein Stichwort einer Regel.";
-  karte.querySelector(".regel").textContent = `${a.regel} · ${R.name}`;
+  karte.querySelector(".regel").textContent = `${a.regel}: ${R.name}`;
   karte.querySelector(".eingriff").textContent = R.eingriff;
   karte.querySelector(".passung").textContent = `${a.passung[0].toUpperCase()}${a.passung.slice(1)}. ${a.begruendung}`;
   const c = konstellation(k.id);
@@ -233,10 +249,11 @@ async function erzeugen(stumm = false) {
   const c = $("buehne"); c.width = bw; c.height = bh;
   zeigeStandbilder(); zeigeMarken(); zeigeEreignisse(keys[6]);
   $("ergebnis").hidden = false; $("gegen-bilder").hidden = true;
+  $("ablage").hidden = true; $("buehne-box").hidden = false;
   $("status-erzeugen").textContent = `Erzeugt: ${M.teile.length} Teile (${M.teile.filter((e) => e.kachel >= 0).length} davon Kacheln grosser Flächen), Regel ${regel ? `${regel} (${REGELN[regel].name})` : "keine (ohne ORNA)"}, Startwert ${S.seed}.`;
   zeichneBuehne();
   if (!stumm) {
-    $("ergebnis").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    $("werkbank").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) spiele();
   }
 }
@@ -271,8 +288,19 @@ function zeichneBuehne() {
   $("zeitleiste").value = n;
   const st = n < SCHLUESSEL[0] ? 0 : STATIONEN.find((s) => n <= SCHLUESSEL[s.nr] && n > (SCHLUESSEL[s.nr - 1] ?? -1))?.nr ?? 6;
   const schl = SCHLUESSEL.indexOf(n);
-  $("uhr").textContent = `${zahl(n / TAKT)} s von ${GESAMT / TAKT} s · ${st === 0 ? "Eingangsbild" : `Schritt ${st}: ${STATIONEN[st].titel}`}${schl > 0 ? ` · Schlüsselzustand ${schl} = Standbild ${schl}` : ""}`;
+  const name = $("stand-name");
+  if (name.dataset.st !== String(st)) {
+    name.dataset.st = st; name.textContent = "";
+    const z = document.createElement("span"); z.className = "ziffer"; z.textContent = st;
+    name.append(z, st === 0 ? "Eingangsbild" : STATIONEN[st].titel);
+  }
+  $("uhr").textContent = `${zahl(n / TAKT)} von ${GESAMT / TAKT} Sekunden${schl > 0 ? `, Standbild ${schl}` : ""}`;
+  $("zeitleiste").style.setProperty("--fortschritt", `${(n / GESAMT) * 100}%`);
   for (const b of $("marken").children) b.setAttribute("aria-current", String(Number(b.dataset.nr) === schl));
+  // im Kontaktbogen ist das Standbild markiert, dessen Zustand zuletzt erreicht wurde
+  let zuletzt = 0;
+  for (let k = 1; k < SCHLUESSEL.length; k++) if (n >= SCHLUESSEL[k]) zuletzt = k;
+  for (const li of $("standbilder").children) li.setAttribute("aria-current", String(Number(li.dataset.nr) === zuletzt));
 }
 function spiele() {
   const L = S.lauf;
@@ -307,7 +335,10 @@ function zeigeMarken() {
   const box = $("marken"); box.textContent = "";
   for (const s of STATIONEN) {
     const b = document.createElement("button");
-    b.type = "button"; b.dataset.nr = s.nr; b.textContent = s.nr;
+    b.type = "button"; b.dataset.nr = s.nr;
+    const z = document.createElement("span"); z.className = "ziffer"; z.textContent = s.nr;
+    const t = document.createElement("span"); t.className = "titel"; t.textContent = s.nr === 0 ? "Bild" : s.titel;
+    b.append(z, t);
     b.style.left = `${(SCHLUESSEL[s.nr] / GESAMT) * 100}%`;
     b.setAttribute("aria-label", s.nr === 0 ? "Zum Eingangsbild mit Gliederung" : `Zu Schlüsselzustand ${s.nr}: ${s.titel}`);
     b.addEventListener("click", () => springe(SCHLUESSEL[s.nr]));
@@ -318,19 +349,21 @@ function zeigeStandbilder() {
   const L = S.lauf, liste = $("standbilder"); liste.textContent = "";
   const [tw, th] = mass(L.M.seite, 640);
   for (const b of L.beschreibung) {
-    const li = document.createElement("li");
+    const li = document.createElement("li"); li.dataset.nr = b.nr;
     const c = leinwand(tw, th);
     c.setAttribute("role", "img"); c.setAttribute("aria-label", `Standbild ${b.nr}: ${b.titel}`); c.dataset.standbild = b.nr;
     zeichne(c.getContext("2d"), tw, th, zustandBei(SCHLUESSEL[b.nr]), L.M, L.mat);
     c.addEventListener("click", () => springe(SCHLUESSEL[b.nr]));
-    const h = document.createElement("h3"); h.textContent = `${b.nr} · ${b.titel}`;
+    const h = document.createElement("h3");
+    const ziffer = document.createElement("span"); ziffer.className = "ziffer"; ziffer.textContent = b.nr;
+    h.append(ziffer, b.titel);
     const p = document.createElement("p"); p.textContent = b.text;
     const k = document.createElement("div"); k.className = "bg-knoepfe";
     const png = document.createElement("button"); png.type = "button"; png.className = "bg-knopf klein"; png.textContent = "PNG";
     png.setAttribute("aria-label", `Standbild ${b.nr} als PNG herunterladen`);
     png.addEventListener("click", async () => { const { blob, name } = await standbildPNG(b.nr); herunterladen(blob, name); });
     const zeig = document.createElement("button"); zeig.type = "button"; zeig.className = "bg-knopf klein leise"; zeig.textContent = "In der Animation";
-    zeig.addEventListener("click", () => { springe(SCHLUESSEL[b.nr]); $("buehne").scrollIntoView({ block: "center" }); });
+    zeig.addEventListener("click", () => { springe(SCHLUESSEL[b.nr]); $("buehne").scrollIntoView({ block: "start" }); });
     k.append(png, zeig);
     li.append(c, h, p, k);
     liste.append(li);
@@ -477,10 +510,11 @@ $("beispiel").addEventListener("click", async () => {
   const r = await fetch("beispiel.jpg");
   ladeDatei(new File([await r.blob()], "beispiel.jpg", { type: "image/jpeg" }));
 });
-const ablage = $("ablage");
-ablage.addEventListener("dragover", (e) => { e.preventDefault(); ablage.classList.add("ueber"); });
-ablage.addEventListener("dragleave", () => ablage.classList.remove("ueber"));
-ablage.addEventListener("drop", (e) => { e.preventDefault(); ablage.classList.remove("ueber"); const f = e.dataTransfer?.files?.[0]; if (f && f.type.startsWith("image/")) ladeDatei(f); });
+// Ein Bild darf überall auf die Werkbank fallen
+const ablage = $("ablage"), werkbank = $("werkbank");
+werkbank.addEventListener("dragover", (e) => { e.preventDefault(); ablage.classList.add("ueber"); });
+werkbank.addEventListener("dragleave", () => ablage.classList.remove("ueber"));
+werkbank.addEventListener("drop", (e) => { e.preventDefault(); ablage.classList.remove("ueber"); const f = e.dataTransfer?.files?.[0]; if (f && f.type.startsWith("image/")) ladeDatei(f); });
 $("gliederung").addEventListener("click", (e) => {
   const c = e.currentTarget, r = c.getBoundingClientRect(), A = S.A;
   const p = { x: ((e.clientX - r.left) / r.width) * A.seite, y: (e.clientY - r.top) / r.height };
@@ -515,6 +549,7 @@ $("video").addEventListener("click", video);
 $("protokoll").addEventListener("click", () => herunterladen(new Blob([JSON.stringify(protokoll(), null, 2)], { type: "application/json" }), dateiname("protokoll.json")));
 $("protokoll-laden").addEventListener("change", (e) => { const f = e.target.files?.[0]; if (f) protokollLaden(f); e.target.value = ""; });
 $("gegenprobe").addEventListener("click", gegenprobe);
+$("anderes-bild").addEventListener("click", () => { stoppe(); $("datei").click(); });
 
 const vt = videoTyp();
 if (!vt) { $("video").disabled = true; $("video").title = "Dieser Browser kann keine Videos aus einer Zeichenfläche aufnehmen."; }

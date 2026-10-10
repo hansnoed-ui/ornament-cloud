@@ -43,7 +43,7 @@ export function ableiten(id, seed) {
   const r = zufall((seed ^ 0xa5a5a5a5) >>> 0);
   const basis = {
     konstellation: { id: k.id, nummer: k.editorialNumber, kuenstler: person(k.artistId), theoretiker: person(k.theoristId), frage: k.question },
-    herkunft: `ORNA · Nebeneinander, Nacheinander · kuratierter Bestand (${BESTAND} Konstellationen) · Datensatz ${k.id} (redaktionelle Nummer ${k.editorialNumber})`,
+    herkunft: `ORNA, «Nebeneinander, Nacheinander»: kuratierter Bestand von ${BESTAND} Konstellationen, Datensatz ${k.id} (redaktionelle Nummer ${k.editorialNumber})`,
   };
   if (jevGueltig() && JEV.eintraege[id]) {
     const e = JEV.eintraege[id];

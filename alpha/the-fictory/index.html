@@ -4,121 +4,198 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>The Fictory – Ornament Cloud · Alpha</title>
-  <!-- Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). Nur aus der Alpha-Übersicht verlinkt. -->
+  <!-- Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). Zuoberst in der Alpha-Übersicht, sonst nicht verlinkt. -->
   <meta name="robots" content="noindex">
-  <meta name="description" content="Ein Bild laden, seine Gliederung prüfen und daraus eine zusammenhängende Animation und sechs Standbilder entwickeln – nach dem Prüfraster «Nebeneinander, Nacheinander».">
+  <meta name="description" content="Ein Bild auf die Werkbank legen, es zerlegen lassen und zusehen, wie es weitergeht: eine Animation und sechs Standbilder nach dem Prüfraster «Nebeneinander, Nacheinander».">
   <link rel="stylesheet" href="../../styles.css?v=45">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
   <style>
+    /* Gestaltung: eine Werkbank (dunkles Band, Farbe = Grund der Animation, darum schwebt das Bild ohne Rahmen) und eine ruhige Arbeitsspalte.
+       Die Leitfarbe (--leit) kommt aus dem geladenen Bild, aus seiner kräftigsten Farbgruppe; bis dahin die Akzentfarbe der Website. */
+    :root {
+      --werkbank: #151412; --kreide: #ebe6dc; --staub: #9a9388; --fuge: #34312c;
+      --leit-roh: var(--kreide);           /* neutral, bis ein Bild seine Leitfarbe mitbringt */
+      --leit: color-mix(in oklab, var(--leit-roh) 72%, var(--kreide));
+      --t-text: "Instrument Sans", var(--font);
+      --t-titel: "Newsreader", var(--serif);
+    }
+    body { font-family: var(--t-text); }
+    .site-header h1 { font-family: var(--t-titel); font-weight: 400; font-size: clamp(2.6rem, 7vw, 4.4rem); letter-spacing: -0.02em; line-height: 1; }
+    .site-header .lead { font-family: var(--t-titel); font-size: clamp(1.1rem, 2.4vw, 1.4rem); max-width: 30em; }
     .nur-lesen { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-    .bg-seite { max-width: 1000px; margin: 0 auto; padding: 0 20px 64px; }
-    .bg-schritt { margin: 0; padding: 28px 0 32px; border-top: 1px solid var(--border); }
-    .bg-schritt[hidden] { display: none; }
-    .bg-schritt > h2 { margin: 0 0 0.35rem; font-family: var(--serif); font-weight: 400; font-size: 1.45rem; }
-    .bg-schritt > h2 .nr { color: var(--muted); margin-right: 0.35em; }
-    .bg-hinweis { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.9rem; max-width: 42em; }
-    .bg-knoepfe { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; margin: 16px 0 0; }
+
+    /* ---------- Werkbank ---------- */
+    .werkbank { background: var(--werkbank); color: var(--kreide); padding: clamp(20px, 4vw, 44px) 0 clamp(28px, 5vw, 56px); }
+    .werkbank-innen { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+    .ablage { display: grid; place-items: center; gap: 22px; min-height: clamp(320px, 52vh, 560px); padding: 28px 16px; border: 1px dashed var(--fuge); border-radius: 10px; text-align: center; transition: border-color 0.2s; }
+    .ablage.ueber { border-color: var(--leit); }
+    .ablage[hidden] { display: none; }
+    .ablage-satz { margin: 0; font-family: var(--t-titel); font-size: clamp(1.5rem, 3.6vw, 2.4rem); line-height: 1.2; max-width: 18em; }
+    .ablage img { display: block; max-width: 100%; max-height: 62vh; }
+    .ablage img[hidden] { display: none; }
+    .ablage.belegt { border-style: solid; border-color: transparent; min-height: 0; padding: 0; }
+    .ablage.belegt .ablage-satz { display: none; }
+    .werkbank .bg-status { color: var(--staub); }
+
+    .buehne[hidden] { display: none; }
+    .buehne canvas { display: block; width: 100%; height: auto; max-height: 76vh; object-fit: contain; background: var(--werkbank); }
+    .stand { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin: 18px 0 6px; }
+    .stand-name { margin: 0; font-family: var(--t-titel); font-size: clamp(1.35rem, 3vw, 1.9rem); line-height: 1.15; }
+    .stand-name .ziffer { color: var(--leit); margin-right: 0.3em; }
+    .stand-zeit { margin: 0; color: var(--staub); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+
+    /* die Zeitleiste als Massstab: ein Strich je Sekunde, die sechs Stationen beschriftet */
+    .massstab { position: relative; padding: 0 0 4px; }
+    .massstab input[type="range"] {
+      -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 34px; margin: 0; background: transparent; cursor: pointer;
+    }
+    .massstab input[type="range"]::-webkit-slider-runnable-track {
+      height: 34px;
+      background:
+        linear-gradient(var(--leit), var(--leit)) 0 50% / var(--fortschritt, 0%) 2px no-repeat,
+        linear-gradient(var(--fuge), var(--fuge)) 0 50% / 100% 2px no-repeat,
+        repeating-linear-gradient(90deg, var(--staub) 0 1px, transparent 1px calc(100% / 30)) 0 100% / 100% 8px no-repeat;
+    }
+    .massstab input[type="range"]::-moz-range-track {
+      height: 34px;
+      background:
+        linear-gradient(var(--fuge), var(--fuge)) 0 50% / 100% 2px no-repeat,
+        repeating-linear-gradient(90deg, var(--staub) 0 1px, transparent 1px calc(100% / 30)) 0 100% / 100% 8px no-repeat;
+    }
+    .massstab input[type="range"]::-moz-range-progress { height: 2px; background: var(--leit); }
+    .massstab input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 3px; height: 34px; margin-top: 0; background: var(--kreide); border: 0; border-radius: 1px; }
+    .massstab input[type="range"]::-moz-range-thumb { width: 3px; height: 34px; background: var(--kreide); border: 0; border-radius: 1px; }
+    .massstab input[type="range"]:focus-visible { outline: 2px solid var(--leit); outline-offset: 4px; }
+    .marken { position: relative; height: 40px; margin-top: 2px; }
+    .marken button {
+      position: absolute; top: 0; transform: translateX(-50%); display: grid; justify-items: center; gap: 1px; min-width: 32px; min-height: 36px; padding: 2px 4px;
+      border: 0; background: none; color: var(--staub); font: inherit; font-size: 0.78rem; line-height: 1.2; cursor: pointer;
+    }
+    .marken button::before { content: ""; width: 1px; height: 7px; background: currentColor; }
+    .marken button .ziffer { font-family: var(--t-titel); font-size: 1rem; }
+    .marken button .titel { white-space: nowrap; }
+    .marken button:first-child { transform: none; justify-items: start; }
+    .marken button:last-child { transform: translateX(-100%); justify-items: end; }
+    .marken button[aria-current="true"], .marken button:hover { color: var(--kreide); }
+    .marken button[aria-current="true"] .ziffer { color: var(--leit); }
+    .marken button:focus-visible { outline: 2px solid var(--leit); outline-offset: 2px; }
+    .werkbank-knoepfe { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 0; }
+
+    /* Kontaktbogen: die sechs Standbilder = die sechs Schlüsselzustände */
+    .kontaktbogen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 20px; margin: 36px 0 0; padding: 28px 0 0; border-top: 1px solid var(--fuge); list-style: none; }
+    .kontaktbogen li { display: grid; gap: 8px; align-content: start; }
+    .kontaktbogen canvas { display: block; width: 100%; height: auto; cursor: pointer; outline: 1px solid transparent; outline-offset: 5px; transition: outline-color 0.25s; }
+    .kontaktbogen li[aria-current="true"] canvas { outline-color: var(--leit); }
+    .kontaktbogen h3 { margin: 4px 0 0; font-family: var(--t-titel); font-weight: 400; font-size: 1.2rem; line-height: 1.2; }
+    .kontaktbogen h3 .ziffer { color: var(--leit); margin-right: 0.3em; }
+    .kontaktbogen p { margin: 0; color: var(--staub); font-size: 0.86rem; line-height: 1.5; max-width: 40em; }
+    .kontaktbogen .bg-knoepfe { margin: 2px 0 0; }
+
+    /* Knöpfe: auf der Werkbank hell auf dunkel, in der Spalte dunkel auf hell */
     .bg-knopf {
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 8px 18px;
-      border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.95rem;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 8px 20px;
+      border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.95rem; font-weight: 500;
       text-decoration: none; cursor: pointer;
     }
     .bg-knopf:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
-    .bg-knopf:focus-visible, .bg-seite input:focus-visible, .bg-seite select:focus-visible, .bg-seite summary:focus-visible, .bg-wahl input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .bg-knopf.voll, .bg-knopf[aria-pressed="true"] { background: var(--text); color: var(--bg); }
-    .bg-knopf.klein { min-height: 36px; padding: 4px 13px; font-size: 0.86rem; }
+    .bg-knopf.voll { background: var(--text); color: var(--bg); }
+    .bg-knopf.klein { min-height: 36px; padding: 4px 14px; font-size: 0.86rem; }
+    .bg-knopf.leise { border-color: var(--border); color: var(--muted); }
     .bg-knopf:disabled { opacity: 0.45; cursor: default; }
     .bg-knopf[hidden] { display: none; }
-    .bg-knopf.leise { border-color: var(--border); color: var(--muted); }
-    .bg-status { min-height: 1.4em; margin: 10px 0 0; color: var(--muted); font-size: 0.9rem; }
+    .werkbank .bg-knopf { border-color: var(--kreide); color: var(--kreide); }
+    .werkbank .bg-knopf:hover { background: color-mix(in srgb, var(--kreide) 12%, transparent); }
+    .werkbank .bg-knopf.voll { background: var(--leit); border-color: var(--leit); color: var(--werkbank); }
+    .werkbank .bg-knopf.leise { border-color: var(--fuge); color: var(--staub); }
+    .bg-knopf:focus-visible, .bg-seite input:focus-visible, .bg-seite select:focus-visible, .bg-seite summary:focus-visible, .bg-wahl input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .werkbank .bg-knopf:focus-visible, .werkbank label:focus-within { outline: 2px solid var(--leit); outline-offset: 3px; }
     .bg-datei { position: absolute; opacity: 0; width: 1px; height: 1px; }
-    .bg-ablage { display: grid; place-items: center; gap: 10px; min-height: 160px; margin: 16px 0 0; padding: 24px; border: 1px dashed var(--muted); border-radius: var(--radius); text-align: center; }
-    .bg-ablage.ueber { background: color-mix(in srgb, var(--text) 6%, transparent); }
-    .bg-ablage img { max-width: 100%; max-height: 220px; border-radius: 6px; }
+    .bg-knoepfe { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; margin: 16px 0 0; }
 
-    /* Analyse */
-    .bg-analyse { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; align-items: start; margin-top: 18px; }
-    .bg-vorschau { position: relative; }
-    .bg-vorschau canvas { display: block; width: 100%; height: auto; border-radius: 6px; cursor: pointer; touch-action: manipulation; background: #f4f1ea; }
-    .bg-zeile { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0 0; font-size: 0.9rem; }
+    /* ---------- Arbeitsspalte ---------- */
+    .bg-seite { max-width: 1000px; margin: 0 auto; padding: 0 20px 64px; }
+    .bg-schritt { margin: 0; padding: 36px 0 36px; border-top: 1px solid var(--border); }
+    .bg-schritt:first-child { border-top: 0; }
+    .bg-schritt[hidden] { display: none; }
+    .bg-schritt > h2 { display: flex; align-items: baseline; gap: 0.5em; margin: 0 0 0.4rem; font-family: var(--t-titel); font-weight: 400; font-size: clamp(1.5rem, 3vw, 1.85rem); }
+    .bg-schritt > h2 .nr { font-size: 1.15em; color: var(--muted); }
+    .bg-hinweis { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.92rem; line-height: 1.55; max-width: 40em; }
+    .bg-status { min-height: 1.4em; margin: 10px 0 0; color: var(--muted); font-size: 0.9rem; }
+    .bg-marke { display: inline-block; padding: 1px 9px; border: 1px solid var(--muted); border-radius: 999px; color: var(--muted); font-family: var(--t-text); font-size: 0.78rem; }
+
+    .bg-analyse { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 28px; align-items: start; margin-top: 20px; }
+    .bg-vorschau canvas { display: block; width: 100%; height: auto; cursor: pointer; touch-action: manipulation; background: #f4f1ea; }
+    .bg-zeile { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0 0; font-size: 0.9rem; }
     .bg-wahl { display: inline-flex; border: 1px solid var(--text); border-radius: 999px; overflow: hidden; }
     .bg-wahl label { position: relative; }
     .bg-wahl input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-    .bg-wahl span { display: inline-block; min-height: 36px; padding: 7px 13px; font-size: 0.86rem; }
+    .bg-wahl span { display: inline-block; min-height: 36px; padding: 7px 14px; font-size: 0.86rem; }
     .bg-wahl input:checked + span { background: var(--text); color: var(--bg); }
-    .bg-regler { display: grid; gap: 12px; margin: 0; font-size: 0.9rem; }
+    .bg-regler { display: grid; gap: 14px; margin: 0; font-size: 0.92rem; }
     .bg-regler label { display: grid; gap: 4px; }
-    .bg-regler output { color: var(--muted); }
+    .bg-regler output { color: var(--muted); font-variant-numeric: tabular-nums; }
     .bg-regler input[type="range"] { width: 100%; accent-color: var(--text); }
-    .bg-regler select { min-height: 40px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; }
+    .bg-regler select { min-height: 42px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; }
     .bg-teile { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
     .bg-teile button { min-width: 44px; min-height: 36px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.82rem; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
     .bg-teile button[aria-pressed="true"] { border-color: var(--text); font-weight: 600; }
     .bg-teile i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.25); }
-    .bg-befunde { display: grid; gap: 0; margin: 22px 0 0; border-top: 1px solid var(--border); }
-    .bg-befund { padding: 14px 0; border-bottom: 1px solid var(--border); }
-    .bg-befund h3 { margin: 0 0 6px; font-size: 0.98rem; font-weight: 600; }
-    .bg-befund dl { display: grid; grid-template-columns: 7.2em minmax(0, 1fr); gap: 4px 12px; margin: 0; font-size: 0.9rem; }
-    .bg-befund dt { color: var(--muted); }
-    .bg-befund dd { margin: 0; }
-    .bg-befund.verworfen dd.lesart, .bg-befund.verworfen dd.eingriff { text-decoration: line-through; color: var(--muted); }
-    .bg-befund label { display: inline-flex; gap: 6px; align-items: center; margin-top: 8px; font-size: 0.86rem; cursor: pointer; }
 
-    /* ORNA */
-    .bg-karte { margin: 16px 0 0; padding: 18px 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    /* Befund, Lesart, Eingriff: drei Spalten derselben Zeile, damit die Trennung sichtbar bleibt */
+    .bg-befunde { margin: 28px 0 0; }
+    .bg-befunde-kopf, .bg-befund dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 20px; }
+    .bg-befunde-kopf { padding: 0 0 8px; border-bottom: 1px solid var(--text); color: var(--muted); font-size: 0.86rem; }
+    .bg-befund { padding: 14px 0 16px; border-bottom: 1px solid var(--border); }
+    .bg-befund h3 { margin: 0 0 8px; font-family: var(--t-titel); font-weight: 400; font-size: 1.15rem; }
+    .bg-befund dl { margin: 0; font-size: 0.9rem; line-height: 1.5; }
+    .bg-befund dt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .bg-befund dd { margin: 0; }
+    .bg-befund dd.lesart { color: var(--text); font-style: italic; font-family: var(--t-titel); font-size: 1rem; }
+    .bg-befund.verworfen dd.lesart, .bg-befund.verworfen dd.eingriff { text-decoration: line-through; color: var(--muted); }
+    .bg-befund label { display: inline-flex; gap: 6px; align-items: center; margin-top: 10px; font-size: 0.86rem; cursor: pointer; }
+
+    .bg-karte { margin: 18px 0 0; padding: 20px 22px; border-left: 3px solid var(--leit-roh); background: var(--surface); }
     .bg-karte[hidden] { display: none; }
-    .bg-karte dl { display: grid; grid-template-columns: 8.5em minmax(0, 1fr); gap: 8px 14px; margin: 0; font-size: 0.92rem; }
+    .bg-karte dl { display: grid; grid-template-columns: 8.5em minmax(0, 1fr); gap: 10px 16px; margin: 0; font-size: 0.92rem; }
     .bg-karte dt { color: var(--muted); }
     .bg-karte dd { margin: 0; }
-    .bg-karte blockquote { margin: 0; font-family: var(--serif); font-size: 1.05rem; line-height: 1.45; }
-    .bg-karte .titel { font-family: var(--serif); font-size: 1.25rem; }
-    .bg-marke { display: inline-block; padding: 1px 8px; border: 1px solid var(--muted); border-radius: 999px; color: var(--muted); font-size: 0.78rem; }
+    .bg-karte blockquote { margin: 0; font-family: var(--t-titel); font-size: 1.15rem; line-height: 1.45; }
+    .bg-karte .titel { font-family: var(--t-titel); font-size: 1.35rem; }
 
-    /* Ergebnis */
-    .bg-buehne { position: relative; margin: 16px 0 0; }
-    .bg-buehne canvas { display: block; width: 100%; height: auto; max-height: 78vh; object-fit: contain; border-radius: 6px; background: #151412; }
-    .bg-steuer { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px 14px; align-items: center; margin: 12px 0 0; }
-    .bg-zeit { position: relative; }
-    .bg-zeit input { width: 100%; margin: 0; accent-color: var(--text); min-height: 32px; }
-    .bg-marken { position: relative; height: 18px; font-size: 0.72rem; color: var(--muted); }
-    .bg-marken button { position: absolute; top: 0; transform: translateX(-50%); min-width: 24px; padding: 0 4px; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; font-variant-numeric: tabular-nums; }
-    .bg-marken button[aria-current="true"] { color: var(--text); font-weight: 700; }
-    .bg-uhr { margin: 2px 0 0; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
-    .bg-standbilder { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 18px; margin: 28px 0 0; padding: 0; list-style: none; }
-    .bg-standbilder li { display: grid; gap: 8px; align-content: start; }
-    .bg-standbilder canvas { display: block; width: 100%; height: auto; border-radius: 4px; background: #151412; cursor: pointer; }
-    .bg-standbilder h3 { margin: 0; font-size: 0.98rem; font-weight: 600; }
-    .bg-standbilder p { margin: 0; font-size: 0.86rem; color: var(--muted); }
-    .bg-standbilder .bg-knoepfe { margin: 2px 0 0; }
-    .bg-export { margin: 28px 0 0; padding: 18px 0 0; border-top: 1px solid var(--border); }
-    .bg-export h3, .bg-gegen h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+    .bg-export { margin: 8px 0 0; }
+    .bg-export h3, .bg-gegen h3 { margin: 0; font-family: var(--t-titel); font-weight: 400; font-size: 1.2rem; }
     .bg-fortschritt { width: 100%; height: 6px; margin: 10px 0 0; accent-color: var(--text); }
     .bg-fortschritt[hidden] { display: none; }
-    .bg-gegen { margin: 28px 0 0; padding: 18px 0 0; border-top: 1px solid var(--border); }
-    .bg-gegen-bilder { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 12px 0 0; }
+    .bg-gegen { margin: 32px 0 0; padding: 22px 0 0; border-top: 1px solid var(--border); }
+    .bg-gegen-bilder { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 14px 0 0; }
     .bg-gegen-bilder[hidden] { display: none; }
     .bg-gegen-bilder figure { margin: 0; }
-    .bg-gegen-bilder canvas { display: block; width: 100%; height: auto; border-radius: 4px; background: #151412; }
+    .bg-gegen-bilder canvas { display: block; width: 100%; height: auto; background: var(--werkbank); }
     .bg-gegen-bilder figcaption { margin: 6px 0 0; font-size: 0.84rem; color: var(--muted); }
-    .bg-protokoll { margin: 18px 0 0; font-size: 0.88rem; }
+    .bg-protokoll { margin: 22px 0 0; font-size: 0.88rem; }
     .bg-protokoll summary { cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
     .bg-protokoll ol { margin: 10px 0 0; padding-left: 1.3rem; }
     .bg-protokoll li { margin: 4px 0; }
-    .bg-methode { font-size: 0.9rem; }
-    .bg-methode ul { margin: 0.6rem 0 0; padding-left: 1.2rem; max-width: 44em; }
-    .bg-methode li { margin: 0.35rem 0; }
+    .bg-methode { font-size: 0.92rem; }
+    .bg-methode ul { margin: 0.6rem 0 0; padding-left: 1.2rem; max-width: 44em; line-height: 1.55; }
+    .bg-methode li { margin: 0.4rem 0; }
 
     @media (max-width: 760px) {
+      .kontaktbogen { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 12px; }
+      .kontaktbogen p { display: none; }
+      .marken button .titel { display: none; }
       .bg-analyse { grid-template-columns: minmax(0, 1fr); }
-      .bg-standbilder { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 12px; }
-      .bg-steuer { grid-template-columns: auto auto; }
-      .bg-zeit { grid-column: 1 / -1; grid-row: 1; }
-      .bg-befund dl, .bg-karte dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
-      .bg-befund dd, .bg-karte dd { margin-bottom: 6px; }
+      .bg-befunde-kopf { display: none; }
+      .bg-befund dl { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+      .bg-befund dt { position: static; width: auto; height: auto; clip: auto; color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+      .bg-karte dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+      .bg-karte dd { margin-bottom: 8px; }
     }
     @media (max-width: 420px) {
-      .bg-standbilder { grid-template-columns: minmax(0, 1fr); }
+      .werkbank-innen { padding: 0 16px; }
       .bg-gegen-bilder { grid-template-columns: minmax(0, 1fr); }
     }
+    @media (prefers-reduced-motion: reduce) { .ablage, .kontaktbogen canvas { transition: none; } }
   </style>
   <script type="module" src="app.js?v=2"></script>
 </head>
@@ -130,32 +207,52 @@
         <a href="../drittes-rad/">Das Dritte Rad</a>
       </nav>
       <h1>The Fictory</h1>
-      <p class="lead">Ein Bild, seine Gliederung, ein Prozess. Nebeneinander, Nacheinander.</p>
+      <p class="lead">Ein Bild wird zerlegt und geht weiter: eine Animation, sechs Standbilder, nach «Nebeneinander, Nacheinander».</p>
     </div>
   </header>
 
-  <main class="bg-seite" id="app">
-    <section class="bg-schritt" id="schritt-laden" aria-labelledby="h-laden">
-      <h2 id="h-laden"><span class="nr">1</span>Bild laden</h2>
-      <p class="bg-hinweis">Das Bild bleibt in diesem Browser. Es wird nirgends hochgeladen; Original und Seitenverhältnis bleiben erhalten.</p>
-      <div class="bg-ablage" id="ablage">
+  <!-- Die Werkbank: zuerst Ablage, dann das Original, nach «Erzeugen» die Animation mit Massstab und Kontaktbogen -->
+  <section class="werkbank" id="werkbank" aria-label="Werkbank">
+    <div class="werkbank-innen">
+      <div class="ablage" id="ablage">
+        <p class="ablage-satz">Leg ein Bild auf die Werkbank.</p>
         <img id="original" alt="" hidden>
         <div class="bg-knoepfe">
           <label class="bg-knopf voll" for="datei">Bild wählen<input class="bg-datei" type="file" id="datei" accept="image/*"></label>
           <button type="button" class="bg-knopf" id="beispiel">Beispielbild</button>
         </div>
-        <p class="bg-status" id="status-laden" role="status">oder ein Bild hierher ziehen</p>
+        <p class="bg-status" id="status-laden" role="status">Es bleibt in diesem Browser und wird nirgends hochgeladen.</p>
       </div>
-    </section>
 
+      <div class="buehne" id="buehne-box" hidden>
+        <canvas id="buehne" aria-label="Die Animation"></canvas>
+        <div class="stand">
+          <p class="stand-name" id="stand-name" aria-live="polite"></p>
+          <p class="stand-zeit" id="uhr"></p>
+        </div>
+        <div class="massstab">
+          <input type="range" id="zeitleiste" min="0" max="900" step="1" value="0" aria-label="Zeitleiste">
+          <div class="marken" id="marken"></div>
+        </div>
+        <div class="werkbank-knoepfe">
+          <button type="button" class="bg-knopf voll" id="spielen" aria-pressed="false">Abspielen</button>
+          <button type="button" class="bg-knopf" id="neustart">Neustart</button>
+          <button type="button" class="bg-knopf leise" id="anderes-bild">Anderes Bild</button>
+        </div>
+        <h2 class="nur-lesen">Sechs Standbilder</h2>
+        <ol class="kontaktbogen" id="standbilder"></ol>
+      </div>
+    </div>
+  </section>
+
+  <main class="bg-seite" id="app">
     <section class="bg-schritt" id="schritt-analyse" aria-labelledby="h-analyse" hidden>
       <h2 id="h-analyse"><span class="nr">2</span>Analyse prüfen</h2>
-      <p class="bg-hinweis">Farb- und geometriebasierte Gliederung (Farbgruppen, zusammenhängende Flächen, Kanten, Lagen). Sie erkennt keine Gegenstände und sagt nichts über die Entstehung des Bildes. Befund, Lesart und Eingriff stehen getrennt; Lesarten lassen sich verwerfen, die Gliederung lässt sich durch Antippen korrigieren.</p>
+      <p class="bg-hinweis">Die Gliederung beruht auf Farben, zusammenhängenden Flächen, Kanten und Lagen. Sie erkennt keine Gegenstände und sagt nichts über die Entstehung des Bildes. Tippe in die Vorschau, um sie zu korrigieren.</p>
       <div class="bg-analyse">
         <div>
           <div class="bg-vorschau"><canvas id="gliederung" aria-label="Vorschau der Bildgliederung: Flächen in ihrer mittleren Farbe, Figuren mit kräftiger Kontur, Grund schraffiert"></canvas></div>
           <div class="bg-zeile">
-            <span>Antippen:</span>
             <span class="bg-wahl" role="radiogroup" aria-label="Was ein Tipp in der Vorschau tut">
               <label><input type="radio" name="tipp" value="teil" checked><span>Figur an/aus</span></label>
               <label><input type="radio" name="tipp" value="grund"><span>Grund ↔ Figur</span></label>
@@ -182,7 +279,10 @@
           <div class="bg-knoepfe"><button type="button" class="bg-knopf klein leise" id="zuruecksetzen">Korrekturen zurücksetzen</button></div>
         </div>
       </div>
-      <div class="bg-befunde" id="befunde"></div>
+      <div class="bg-befunde">
+        <div class="bg-befunde-kopf" aria-hidden="true"><span>Befund</span><span>Lesart</span><span>Eingriff</span></div>
+        <div id="befunde"></div>
+      </div>
     </section>
 
     <section class="bg-schritt" id="schritt-orna" aria-labelledby="h-orna" hidden>
@@ -200,34 +300,20 @@
 
     <section class="bg-schritt" id="schritt-erzeugen" aria-labelledby="h-erzeugen" hidden>
       <h2 id="h-erzeugen"><span class="nr">4</span>Erzeugen</h2>
-      <p class="bg-hinweis">Das ganze Bild wird zerlegt: jede Fläche ein Teil, grosse Flächen in Kacheln. Danach gibt es das Bild nur noch als seine Teile. Ein Prozess von 30 Sekunden mit sechs Operationen; jede plant ihren Verlauf aus dem Zustand, den die vorige hinterlassen hat. Die sechs Standbilder sind Zustände dieses einen Laufs.</p>
+      <p class="bg-hinweis">Das ganze Bild wird zerlegt: jede Fläche ein Teil, grosse Flächen in Kacheln. Danach gibt es das Bild nur noch als seine Teile. Sechs Operationen in 30 Sekunden; jede plant aus dem Zustand, den die vorige hinterlassen hat. Die Standbilder sind Zustände dieses einen Laufs.</p>
       <div class="bg-knoepfe">
         <button type="button" class="bg-knopf voll" id="erzeugen">Erzeugen</button>
-        <span class="bg-status" id="startwert"></span>
         <button type="button" class="bg-knopf klein leise" id="neuer-startwert">Neuer Startwert</button>
       </div>
+      <p class="bg-status" id="startwert"></p>
       <p class="bg-status" id="status-erzeugen" role="status"></p>
     </section>
 
     <section class="bg-schritt" id="ergebnis" aria-labelledby="h-ergebnis" hidden>
-      <h2 id="h-ergebnis"><span class="nr">5</span>Ansehen und exportieren</h2>
-      <div class="bg-buehne"><canvas id="buehne" aria-label="Die Animation"></canvas></div>
-      <div class="bg-steuer">
-        <button type="button" class="bg-knopf voll" id="spielen" aria-pressed="false">Abspielen</button>
-        <div class="bg-zeit">
-          <input type="range" id="zeitleiste" min="0" max="900" step="1" value="0" aria-label="Zeitleiste">
-          <div class="bg-marken" id="marken"></div>
-        </div>
-        <button type="button" class="bg-knopf" id="neustart">Neustart</button>
-      </div>
-      <p class="bg-uhr" id="uhr" aria-live="off"></p>
-
-      <ol class="bg-standbilder" id="standbilder"></ol>
-
+      <h2 id="h-ergebnis"><span class="nr">5</span>Exportieren und prüfen</h2>
       <div class="bg-export">
-        <h3>Herunterladen</h3>
         <div class="bg-knoepfe">
-          <button type="button" class="bg-knopf" id="alle-png">Alle sechs (ZIP)</button>
+          <button type="button" class="bg-knopf" id="alle-png">Alle sechs Standbilder (ZIP)</button>
           <button type="button" class="bg-knopf" id="video">Animation als Video</button>
           <button type="button" class="bg-knopf" id="protokoll">Protokoll (JSON)</button>
           <label class="bg-knopf leise" for="protokoll-laden">Lauf aus Protokoll wiederholen<input class="bg-datei" type="file" id="protokoll-laden" accept="application/json,.json"></label>
@@ -238,7 +324,7 @@
 
       <div class="bg-gegen">
         <h3>Gegenprobe</h3>
-        <p class="bg-hinweis">Wirkt eine frühere Veränderung tatsächlich weiter? Derselbe Lauf noch einmal, mit denselben Regeln und demselben Startwert, nur wird vor Schritt 4 das Spurenfeld gelöscht (die gezeichneten Spuren bleiben sichtbar, wirken aber nicht mehr).</p>
+        <p class="bg-hinweis">Wirkt eine frühere Veränderung tatsächlich weiter? Derselbe Lauf noch einmal, mit denselben Regeln und demselben Startwert, nur wird vor Schritt 4 das Spurenfeld gelöscht. Die gezeichneten Spuren bleiben sichtbar, wirken aber nicht mehr.</p>
         <div class="bg-knoepfe"><button type="button" class="bg-knopf klein" id="gegenprobe">Gegenprobe rechnen</button></div>
         <div class="bg-gegen-bilder" id="gegen-bilder" hidden>
           <figure><canvas id="gegen-mit"></canvas><figcaption id="gegen-mit-text"></figcaption></figure>
@@ -252,7 +338,7 @@
     <section class="bg-schritt bg-methode" aria-labelledby="h-methode">
       <h2 id="h-methode">Was hier geschieht</h2>
       <ul>
-        <li><strong>Verräumlichung:</strong> Die Gliederung macht Stellen wiederauffindbar. Als «dieselbe Stelle» gilt eine zusammenhängende Fläche einer Farbgruppe (Name F1, F2 …); grosse Flächen werden in Kacheln geteilt (F3.2 …). Ein Teil bleibt dasselbe Teil, wo immer es hinwandert, und seine Herkunftsstelle bleibt adressierbar.</li>
+        <li><strong>Verräumlichung:</strong> Die Gliederung macht Stellen wiederauffindbar. Als «dieselbe Stelle» gilt eine zusammenhängende Fläche einer Farbgruppe (F1, F2 …); grosse Flächen werden in Kacheln geteilt (F3.2 …). Ein Teil bleibt dasselbe Teil, wo immer es hinwandert, und seine Herkunftsstelle bleibt adressierbar.</li>
         <li><strong>Verzeitlichung:</strong> Ein Spurenfeld nimmt jede gestempelte Lage auf. Spätere Schritte meiden es (Schritt 3), werden von ihm gebremst, wenn die Kopplungen das Bild wieder zusammenziehen (Schritt 4), und legen danach ihren Schnitt (Schritt 6). Das Bild kehrt nie ganz zurück. Die Gegenprobe zeigt, was sich ändert, wenn dieses Feld fehlt.</li>
         <li>Bewegung allein belegt keine Folgewirksamkeit, und eine stabile Ordnung kann bewegte Teile enthalten. Es gibt keine Zahlenbewertung nach dem Raster und keine Note.</li>
         <li>Untersucht werden die hier ausgeführten Bildoperationen, nicht die Entstehung des Eingangsbildes und nicht die Wirkung auf das Publikum.</li>

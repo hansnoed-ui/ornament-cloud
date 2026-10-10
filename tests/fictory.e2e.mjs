@@ -64,13 +64,15 @@ await check("Ohne ORNA: Bild laden, Analyse mit getrenntem Befund, Lesart und Ei
   assert.equal(await page.locator(".bg-befund").count(), 6);
   for (const t of ["Befund", "Lesart", "Eingriff"]) assert.equal(await page.locator(".bg-befund dt", { hasText: t }).count(), 6, t);
   assert.match(await page.locator("#status-laden").textContent(), /1200 × 860 px/);
+  assert.match(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--leit-roh")), /rgb\(/, "Leitfarbe aus dem Bild");
   assert.ok(await page.locator("#neu-ziehen").isHidden(), "ohne ORNA kein «Neu ziehen»");
   await page.click("#erzeugen");
   await page.waitForSelector("#ergebnis:not([hidden])");
-  assert.equal(await page.locator("#ergebnis canvas#buehne").count(), 1, "genau eine Animation");
-  assert.equal(await page.locator("#ergebnis video").count(), 0);
+  assert.equal(await page.locator("canvas#buehne").count(), 1, "genau eine Animation");
+  assert.ok(await page.locator("#buehne").isVisible() && await page.locator("#ablage").isHidden(), "die Werkbank zeigt die Animation");
+  assert.equal(await page.locator("video").count(), 0);
   assert.equal(await page.locator("#standbilder li").count(), 6);
-  assert.equal(await page.locator("#standbilder li h3").allTextContents().then((t) => t.join("|")), "1 · Neue Nachbarschaften|2 · Abfolge als Bild|3 · Wirksame Spuren|4 · Gekoppelte Beziehungen|5 · Figur und Grund|6 · Anders weitergehen");
+  assert.equal(await page.locator("#standbilder li h3").allTextContents().then((t) => t.join("|")), "1Neue Nachbarschaften|2Abfolge als Bild|3Wirksame Spuren|4Gekoppelte Beziehungen|5Figur und Grund|6Anders weitergehen");
   for (const p of await page.locator("#standbilder li p").allTextContents()) assert.ok(p.length > 40, "Operationsbeschreibung");
   assert.equal(await page.evaluate(() => window.fictoryTest.S.orna), null);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, [], "keine Anfrage nach aussen");
@@ -134,7 +136,7 @@ await check("Mit ORNA: Konstellation, Herkunft, Gedanke und Eingriff sichtbar un
   const { ctx, page, fehler } = await oeffne();
   await mitBeispiel(page, true);
   const karte = await page.locator("#orna-karte").innerText();
-  for (const t of ["Konstellation", "Herkunft", "Gedanke", "Eingriff", "Gestalterische Interpretation", "ORNA · Nebeneinander, Nacheinander"]) assert.ok(karte.includes(t), t);
+  for (const t of ["Konstellation", "Herkunft", "Gedanke", "Eingriff", "Gestalterische Interpretation", "ORNA, «Nebeneinander, Nacheinander»"]) assert.ok(karte.includes(t), t);
   assert.match(karte, / × /);
   const p = await page.evaluate(() => window.fictoryTest.protokoll());
   assert.ok(p.orna.konstellation && Number.isInteger(p.lauf.startwert) && /^R[1-7]$/.test(p.lauf.regel));
