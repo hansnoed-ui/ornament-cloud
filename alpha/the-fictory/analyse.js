@@ -297,14 +297,14 @@ export function analysiere(bild, opt = {}) {
       id: "flaechen", thema: "Grenzen, Konturen und Flächen", schaltbar: false,
       befund: `${flaechen.length} zusammenhängende Flächen in ${zentren.length} Farbgruppen; mittlere Kantenstärke ${kantendichte.toFixed(1)} (Helligkeitsänderung je Pixel, Analyse ${w} × ${h} px).`,
       lesart: kantendichte > 6 || flaechen.length > 40 ? "Das Bild ist kleinteilig gegliedert; die Flächen sind eine Vereinfachung, die feine Übergänge zusammenfasst." : "Das Bild lässt sich in wenige, klar begrenzte Flächen gliedern.",
-      eingriff: `${teile.length} Flächen werden als Teile ausgeschnitten (${teile.map((f) => name(f.id)).join(", ")}); der Rest bleibt Grund oder untergeordnete Fläche.`,
+      eingriff: `Das ganze Bild wird Material: alle ${flaechen.length} Flächen werden zu Teilen, grosse in Kacheln zerschnitten. Figuren (${teile.map((f) => name(f.id)).join(", ")}) liegen obenauf; das Original verschwindet nach dem ersten Schritt.`,
       flaechen: teile.map((f) => f.id),
     },
     {
       id: "anordnung", thema: "Nachbarschaften, Abstände und Anordnungen", schaltbar: true,
       befund: `Hauptachse der Teile ${grad(achsWinkel)} (Streckung ${achsStaerke.toFixed(1)} : 1); mittlerer Abstand zum nächsten Teil ${prozent(nnMittel)} der Bildhöhe, Streuung ${prozent(nnStreu)}.`,
       lesart: achsStaerke >= 1.6 ? `Die Teile reihen sich eher entlang einer Richtung von ${grad(achsWinkel)}.` : "Die Teile verteilen sich ohne deutliche Vorzugsrichtung.",
-      eingriff: `Schritt 1 reiht die Teile entlang ${achsStaerke >= 1.6 && achseAktiv ? "dieser Achse" : "der längeren Bildseite"} neu.`,
+      eingriff: `Schritt 1 legt das Archiv-Raster entlang ${achsStaerke >= 1.6 && achseAktiv ? "dieser Achse" : "der längeren Bildseite"} an; Schritt 2 beginnt seine Spirale in dieser Richtung.`,
       flaechen: teile.map((f) => f.id),
     },
     {
@@ -319,7 +319,7 @@ export function analysiere(bild, opt = {}) {
       id: "verbindung", thema: "Verbindungen und Unterbrechungen", schaltbar: kontakte.length > 0,
       befund: `${kontakte.length} Berührungen zwischen Teilen${kontakte.length ? ` (${kontakte.slice(0, 5).map(([a, b]) => `${name(a)}–${name(b)}`).join(", ")}${kontakte.length > 5 ? " …" : ""})` : ""}; ${unterbrechungen.length} gleichfarbige Paare, zwischen denen eine andere Fläche liegt${unterbrechungen.length ? ` (${unterbrechungen.slice(0, 3).map((u) => `${name(u.a)} | ${name(u.durch)} | ${name(u.b)}`).join(", ")})` : ""}.`,
       lesart: unterbrechungen.length ? "Eine gleichfarbige, unterbrochene Folge kann als eine durchlaufende Fläche gelesen werden, die an einer Stelle unterbrochen ist." : "Die Teile hängen eher über Nachbarschaft als über unterbrochene Linien zusammen.",
-      eingriff: "Berührungen und nächste Nachbarn im Bild werden in Schritt 4 zu Kopplungen mit der ursprünglichen Distanz als Ruhelänge.",
+      eingriff: "Gemeinsame Grenzen im Bild werden in Schritt 4 zu Kopplungen mit der ursprünglichen Distanz als Ruhelänge: Sie ziehen das zerlegte Bild wieder zusammen.",
       flaechen: kontakte.flat(),
     },
     {
@@ -328,14 +328,14 @@ export function analysiere(bild, opt = {}) {
         ? `${einschluesse.length ? `${einschluesse.slice(0, 4).map((e) => `${name(e.innen)} liegt ganz innerhalb von ${name(e.aussen)}`).join("; ")}` : "Keine Fläche liegt ganz in einer anderen"}${unterbrechungen.length ? `; ${unterbrechungen.length} Unterbrechung(en) durch eine dritte Fläche` : ""}.`
         : "Keine eingeschlossenen Flächen und keine Unterbrechungen durch Dritte gefunden.",
       lesart: einschluesse.length || unterbrechungen.length ? "Mögliche Verdeckung: Die innere oder trennende Fläche kann vor der anderen liegen – oder eine Öffnung in ihr sein. Die Gliederung entscheidet das nicht." : "Hinweise auf Überlagerung ergeben sich aus der Gliederung nicht.",
-      eingriff: "Schritt 2 legt die Teile in einer Staffelung übereinander; eingeschlossene Teile bleiben dabei über ihrer Umgebung (wenn diese Lesart gilt).",
+      eingriff: "Schritt 2 legt die Teile in einer Spirale übereinander; eingeschlossene Teile bleiben dabei über ihrer Umgebung (wenn diese Lesart gilt).",
       flaechen: einschluesse.flatMap((e) => [e.innen, e.aussen]),
     },
     {
       id: "grund", thema: "Figur-Grund-Beziehungen und Gewichtungen", schaltbar: false,
       befund: `Grund: ${grund.map((f) => name(f.id)).join(", ") || "–"} (${prozent(grundAnteil)} des Bildes, am Rand gelegen). Schwerpunkt der Teile ${lage(ax, ay)}.`,
       lesart: "Randnahe, grosse Flächen werden als Grund gelesen, kleinere mit Kontrast als Figuren. Antippen in der Vorschau korrigiert das.",
-      eingriff: "Schritt 5 macht die Zwischenräume zwischen den Teilen zur tragenden Form und füllt sie mit dem Material des Grundes.",
+      eingriff: "Schritt 5 kehrt Figur und Grund um: Die Teile werden Silhouetten, der Zwischenraum zwischen ihnen trägt das Material des Grundes.",
       flaechen: grund.map((f) => f.id),
     },
   ].map((b) => ({ ...b, aktiv: !verworfen.has(b.id) }));

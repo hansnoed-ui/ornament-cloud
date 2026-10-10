@@ -1,14 +1,16 @@
 // «The Fictory» – EIN zusammenhängender Prozess in festen Schritten (30 je Sekunde, 30 Sekunden).
-// Sechs Operationen folgen aufeinander; jede plant ihren Verlauf aus dem Zustand, den die vorige hinterlassen hat:
-//   1 Neue Nachbarschaften   → die Ankunftsreihenfolge wird Teil des Zustands
-//   2 Abfolge als Bild       → liest die Ankunftsreihenfolge; Staffelung und Zwischenstände hinterlassen Spuren
+// Das ganze Eingangsbild wird zu Material: jede Fläche wird ein Teil, grosse Flächen werden in Kacheln zerschnitten. Nach dem
+// Eingangsbild gibt es das Bild nur noch als seine Teile auf dunklem Grund. Sechs Operationen folgen aufeinander; jede plant ihren
+// Verlauf aus dem Zustand, den die vorige hinterlassen hat:
+//   1 Neue Nachbarschaften   → Fugen öffnen sich, alle Teile gehen in ein Archiv-Raster nach einer Regel; die Ankunftsreihenfolge bleibt im Zustand
+//   2 Abfolge als Bild       → die Ankunftsreihenfolge wird zur Spirale (früh innen, spät aussen); Zwischenstände bleiben als Spur
 //   3 Wirksame Spuren        → jeder Schritt meidet das Spurenfeld, das alle früheren Schritte hinterlassen haben
-//   4 Gekoppelte Beziehungen → Kopplungen aus dem Bild; das Spurenfeld macht Stellen zäh und lenkt so die Entspannung
-//   5 Figur und Grund        → der Zwischenraum der erreichten Lage wird zur tragenden Form
-//   6 Anders weitergehen     → eine Kopplung wird getrennt (gewählt nach den Spuren); die Folgen hängen an Netz und Spuren
+//   4 Gekoppelte Beziehungen → Kopplungen aus den Nachbarschaften im Bild versuchen es wieder zusammenzusetzen; Spuren machen zäh, ein Anstoss verdreht
+//   5 Figur und Grund        → Umkehrung: die Teile werden Silhouetten, der Zwischenraum der erreichten Lage trägt das Material des Grundes
+//   6 Anders weitergehen     → ein einziger Schnitt durch das Gefüge (gelegt, wo die meiste Spur liegt) trennt alle Kopplungen über ihn; eine Seite bricht weg
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall, konturen } from "./analyse.js?v=1";
-import { REGELN } from "./regeln.js?v=1";
+import { zufall, konturen } from "./analyse.js?v=2";
+import { REGELN } from "./regeln.js?v=2";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
@@ -23,15 +25,81 @@ export const STATIONEN = Object.freeze([
 export const SCHLUESSEL = Object.freeze(STATIONEN.map((s) => Math.round(s.ende * TAKT)));   // [60, 195, 330, 480, 630, 765, 900]
 export const GESAMT = SCHLUESSEL[SCHLUESSEL.length - 1];
 const RASTER = 48;                      // Zellen je Bildhöhe im Spurenfeld
+const HOECHSTENS = 72;                  // so viele Teile höchstens
 
 const glatt = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 const klemme = (v, a, b) => Math.max(a, Math.min(b, v));
 const matrix = (rot, s) => [s * Math.cos(rot), s * Math.sin(rot), -s * Math.sin(rot), s * Math.cos(rot)];
-const name = (e) => `F${e.region + 1}`;
+export const teilName = (e) => (e.kachel >= 0 ? `F${e.region + 1}.${e.kachel + 1}` : `F${e.region + 1}`);
+const name = teilName;
+const grad = (w) => `${Math.round(((w * 180) / Math.PI + 360) % 180)}°`;
 
 /** Spiegelung an einer Geraden durch die Bildmitte mit Winkel w (als 2 × 2-Matrix in Canvas-Reihenfolge a, b, c, d) */
 const spiegel = (w) => [Math.cos(2 * w), Math.sin(2 * w), Math.sin(2 * w), -Math.cos(2 * w)];
 const mal = (p, q) => [p[0] * q[0] + p[2] * q[1], p[1] * q[0] + p[3] * q[1], p[0] * q[2] + p[2] * q[3], p[1] * q[2] + p[3] * q[3]];
+
+/**
+ * Zerlegung: jede Fläche ein Teil, grosse Flächen in Kacheln eines Rasters. Ergebnis: Teilkarte (Teilnummer je Analysepixel) und Teile.
+ * Figuren aus der Analyse (A.teile) sind als solche markiert; sie liegen obenauf und tragen den Anstoss.
+ */
+export function zerlege(A) {
+  const { breite: aw, hoehe: ah, region } = A, n = aw * ah;
+  const figuren = new Set(A.teile);
+  const mindest = Math.max(6, Math.round((A.einstellungen?.mindestanteil ?? 0.004) * n));
+  for (let kachel = Math.round(ah * 0.2); ; kachel = Math.round(kachel * 1.2)) {
+    const grenze = kachel * kachel * 2.2;
+    const schluessel = new Int32Array(n);
+    const zaehl = new Map();
+    const kx = Math.ceil(aw / kachel);
+    for (let i = 0; i < n; i++) {
+      const r = region[i], F = A.flaechen[r];
+      const k = F.px > grenze ? Math.floor((i / aw) / kachel) * kx + Math.floor((i % aw) / kachel) : -1;
+      const s = r * 100000 + (k + 1);
+      schluessel[i] = s;
+      zaehl.set(s, (zaehl.get(s) ?? 0) + 1);
+    }
+    // zu kleine Kachelreste gehen in die grösste Kachel derselben Fläche
+    const groesste = new Map();
+    for (const [s, c] of zaehl) { const r = Math.floor(s / 100000); if (!groesste.has(r) || c > zaehl.get(groesste.get(r))) groesste.set(r, s); }
+    const ziel = new Map();
+    for (const [s, c] of zaehl) ziel.set(s, c >= mindest ? s : groesste.get(Math.floor(s / 100000)));
+    const arten = [...new Set(ziel.values())].sort((a, b) => a - b);
+    if (arten.length > HOECHSTENS && kachel < ah) continue;
+    const nummer = new Map(arten.map((s, i) => [s, i]));
+    const karte = new Int32Array(n);
+    for (let i = 0; i < n; i++) karte[i] = nummer.get(ziel.get(schluessel[i]));
+    // Masse je Teil
+    const T = arten.map((s, i) => ({ i, region: Math.floor(s / 100000), kachelRoh: (s % 100000) - 1, px: 0, sx: 0, sy: 0, x0: aw, y0: ah, x1: 0, y1: 0 }));
+    for (let y = 0; y < ah; y++) for (let x = 0; x < aw; x++) {
+      const t = T[karte[y * aw + x]];
+      t.px++; t.sx += x; t.sy += y;
+      if (x < t.x0) t.x0 = x; if (x > t.x1) t.x1 = x; if (y < t.y0) t.y0 = y; if (y > t.y1) t.y1 = y;
+    }
+    // Nachbarschaften der Teile (gemeinsame Grenze in der Teilkarte)
+    const nb = new Map();
+    const kante = (a, b) => { if (a === b) return; const k = a < b ? `${a}-${b}` : `${b}-${a}`; nb.set(k, (nb.get(k) ?? 0) + 1); };
+    for (let y = 0; y < ah; y++) for (let x = 0; x < aw; x++) {
+      const i = y * aw + x;
+      if (x < aw - 1) kante(karte[i], karte[i + 1]);
+      if (y < ah - 1) kante(karte[i], karte[i + aw]);
+    }
+    const proFlaeche = new Map();
+    const teile = T.map((t) => {
+      const F = A.flaechen[t.region];
+      const hx = (t.sx / t.px + 0.5) / ah, hy = (t.sy / t.px + 0.5) / ah;
+      const ecken = [[t.x0, t.y0], [t.x1 + 1, t.y0], [t.x0, t.y1 + 1], [t.x1 + 1, t.y1 + 1]].map(([x, y]) => Math.hypot(x / ah - hx, y / ah - hy));
+      const nr = proFlaeche.get(t.region) ?? 0;
+      proFlaeche.set(t.region, nr + 1);
+      return { i: t.i, region: t.region, kachel: t.kachelRoh >= 0 ? nr : -1, cluster: F.cluster, rgb: F.rgb, hx, hy, w: (t.x1 - t.x0 + 1) / ah, h: (t.y1 - t.y0 + 1) / ah,
+        radius: Math.max(...ecken), bbox: { x0: t.x0, y0: t.y0, x1: t.x1, y1: t.y1 }, px: t.px, anteil: t.px / n, kontrast: F.kontrast,
+        helligkeit: 0.2126 * F.rgb[0] + 0.7152 * F.rgb[1] + 0.0722 * F.rgb[2], eingeschlossen: F.eingeschlossenIn !== null, figur: figuren.has(t.region), rolle: F.rolle };
+    });
+    // Kachelnummern nur dort, wo eine Fläche wirklich geteilt ist
+    for (const e of teile) if (proFlaeche.get(e.region) === 1) e.kachel = -1;
+    const nachbarn = [...nb.entries()].map(([k, l]) => { const [a, b] = k.split("-").map(Number); return { a, b, l }; });
+    return { karte, teile, nachbarn, kachel };
+  }
+}
 
 /**
  * Baut das feste Modell eines Laufs aus der Analyse. lauf: { seed, regel (R1–R7 oder null), neutralisiere (Stationsnummer, vor der das Spurenfeld gelöscht wird; nur für die Gegenprobe) }
@@ -42,23 +110,14 @@ export function erzeugeLauf(analyse, lauf = {}) {
   const A = analyse, ah = A.hoehe, aw = A.breite, seite = A.seite;
   const gh = RASTER, gw = Math.ceil(seite * RASTER);
   const verworfen = new Set(A.einstellungen?.verworfen ?? []);
-  const teile = A.teile.map((id, i) => {
-    const f = A.flaechen[id];
-    const b = f.bbox;
-    const ecken = [[b.x0, b.y0], [b.x1 + 1, b.y0], [b.x0, b.y1 + 1], [b.x1 + 1, b.y1 + 1]].map(([x, y]) => Math.hypot(x / ah - f.cx, y / ah - f.cy));
-    return { i, region: id, cluster: f.cluster, rgb: f.rgb, hx: f.cx, hy: f.cy, w: (b.x1 - b.x0 + 1) / ah, h: (b.y1 - b.y0 + 1) / ah, radius: Math.max(...ecken),
-      anteil: f.anteil, kontrast: f.kontrast, helligkeit: 0.2126 * f.rgb[0] + 0.7152 * f.rgb[1] + 0.0722 * f.rgb[2], eingeschlossen: f.eingeschlossenIn !== null };
-  });
+  const { karte, teile, nachbarn, kachel } = zerlege(A);
   // R4: nur Teile mit deutlichem Kontrast bewegen sich
   const kontraste = teile.map((e) => e.kontrast).sort((a, b) => a - b);
   const median = kontraste.length ? kontraste[Math.floor(kontraste.length / 2)] : 0;
-  for (const e of teile) e.beweglich = regel === "R4" ? e.kontrast >= median : true;
-  if (teile.length && !teile.some((e) => e.beweglich)) teile[0].beweglich = true;
-  const gesamt = teile.reduce((s, e) => s + e.anteil, 0) || 1;
-  for (const e of teile) e.last = regel === "R5" ? 1 + 6 * e.anteil / gesamt * teile.length / 2 : 1;
-
-  const modell = { analyse: A, seed, regel, neutralisiere: lauf.neutralisiere ?? null, seite, ah, aw, gw, gh, teile, verworfen, region: A.region };
-  return modell;
+  for (const e of teile) e.beweglich = regel === "R4" ? e.kontrast > median || e.figur : true;
+  const groesster = Math.max(...teile.map((e) => e.anteil));
+  for (const e of teile) e.last = regel === "R5" ? 1 + 3 * Math.sqrt(e.anteil / groesster) : 1;
+  return { analyse: A, seed, regel, neutralisiere: lauf.neutralisiere ?? null, seite, ah, aw, gw, gh, teile, karte, nachbarn, kachelGroesse: kachel, verworfen };
 }
 
 /** Liegt der normierte Punkt (px, py) im Teil e, wenn es in der Lage (x, y, m) steht? */
@@ -67,8 +126,8 @@ function belegt(M, e, x, y, m, px, py) {
   if (Math.abs(det) < 1e-9) return false;
   const lx = (m[3] * dx - m[2] * dy) / det, ly = (-m[1] * dx + m[0] * dy) / det;
   const ax = Math.floor((e.hx + lx) * M.ah), ay = Math.floor((e.hy + ly) * M.ah);
-  if (ax < 0 || ay < 0 || ax >= M.aw || ay >= M.ah) return false;
-  return M.region[ay * M.aw + ax] === e.region;
+  if (ax < e.bbox.x0 || ay < e.bbox.y0 || ax > e.bbox.x1 || ay > e.bbox.y1) return false;
+  return M.karte[ay * M.aw + ax] === e.i;
 }
 
 /** alle Zellen des Spurenfelds, die das Teil in dieser Lage bedeckt */
@@ -77,16 +136,19 @@ function zellen(M, e, x, y, m, fn) {
   const r = e.radius * s + 1 / M.gh;
   const x0 = Math.max(0, Math.floor((x - r) * M.gh)), x1 = Math.min(M.gw - 1, Math.ceil((x + r) * M.gh));
   const y0 = Math.max(0, Math.floor((y - r) * M.gh)), y1 = Math.min(M.gh - 1, Math.ceil((y + r) * M.gh));
+  let treffer = 0;
   for (let gy = y0; gy <= y1; gy++) for (let gx = x0; gx <= x1; gx++)
-    if (belegt(M, e, x, y, m, (gx + 0.5) / M.gh, (gy + 0.5) / M.gh)) fn(gy * M.gw + gx);
+    if (belegt(M, e, x, y, m, (gx + 0.5) / M.gh, (gy + 0.5) / M.gh)) { fn(gy * M.gw + gx); treffer++; }
+  // kleine Teile, die zwischen die Zellmitten fallen, belegen ihre Mittelzelle
+  if (!treffer && x >= 0 && y >= 0 && x < M.seite && y < 1) fn(klemme(Math.floor(y * M.gh), 0, M.gh - 1) * M.gw + klemme(Math.floor(x * M.gh), 0, M.gw - 1));
 }
 
 /** Anfangszustand: alle Teile an ihrer Stelle im Bild, keine Spuren */
 export function anfang(M) {
   return {
     schritt: 0,
-    teile: M.teile.map((e, z) => ({ x: e.hx, y: e.hy, rot: 0, s: 1, a: 1, kontur: 0, z, loch: 0, fest: !e.beweglich, erschoepft: false })),
-    grundAlpha: 1, spurAlpha: 1, gliederung: 0, stempel: [], spuren: new Float32Array(M.gw * M.gh),
+    teile: M.teile.map((e, z) => ({ x: e.hx, y: e.hy, rot: 0, s: 1, a: 1, kontur: 0, z: (e.figur ? 1000 : 0) + z, loch: 0, fest: !e.beweglich, erschoepft: false })),
+    grundAlpha: 1, spurAlpha: 1, umkehr: 0, gliederung: 0, stempel: [], spuren: new Float32Array(M.gw * M.gh),
     ankunft: [], federn: [], kopplungAlpha: 0, anstoss: null, schnitt: null,
     luecke: [], lueckeAlpha: 0, plan: null, ereignisse: [],
   };
@@ -95,9 +157,8 @@ export function anfang(M) {
 /** tiefe Kopie (für Momentaufnahmen und Zeitleiste); die Stempel wachsen nur an und werden flach kopiert */
 export function kopie(z) {
   return { ...z, teile: z.teile.map((t) => ({ ...t })), stempel: z.stempel.slice(), spuren: z.spuren.slice(), ankunft: z.ankunft.slice(),
-    federn: z.federn.map((f) => ({ ...f })), luecke: z.luecke, plan: z.plan ? structuredCloneLite(z.plan) : null, ereignisse: z.ereignisse.slice() };
+    federn: z.federn.map((f) => ({ ...f })), luecke: z.luecke, plan: z.plan ? JSON.parse(JSON.stringify(z.plan)) : null, ereignisse: z.ereignisse.slice() };
 }
-function structuredCloneLite(o) { return JSON.parse(JSON.stringify(o)); }
 
 const station = (schritt) => { let i = 1; while (i < SCHLUESSEL.length - 1 && schritt >= SCHLUESSEL[i]) i++; return i; };   // laufende Station (1–6) für schritt ≥ 60
 
@@ -106,13 +167,12 @@ export function schritt(M, z) {
   const n = z.schritt;
   if (n >= GESAMT) return z;
   if (n < SCHLUESSEL[0]) {
-    // Station 0: das Eingangsbild, in der zweiten Sekunde zeigt sich die verwendete Gliederung
+    // Station 0: das Eingangsbild, in der zweiten Sekunde zeigt sich die Zerlegung
     z.gliederung = glatt((n - TAKT) / (TAKT * 0.8));
   } else {
     const st = station(n), von = SCHLUESSEL[st - 1], bis = SCHLUESSEL[st];
     if (n === von) planen(M, z, st);
-    const p = (n - von) / (bis - von);
-    OPS[st].lauf(M, z, p, n - von, bis - von);
+    OPS[st].lauf(M, z, (n - von) / (bis - von), n - von);
   }
   z.schritt = n + 1;
   if (z.schritt === GESAMT) z.ereignisse.push({ schritt: GESAMT, text: "Ende des Laufs: Der Zustand bleibt stehen; es gibt keinen erzwungenen Rücksprung zum Anfang." });
@@ -129,7 +189,7 @@ function planen(M, z, st) {
   z.plan = OPS[st].plan(M, z, r);
 }
 
-// ---------- Hilfen für Spuren ----------
+// ---------- Hilfen ----------
 function stempeln(M, z, i, alpha, m = null, x = null, y = null) {
   const t = z.teile[i], e = M.teile[i];
   const mm = m ?? matrix(t.rot, t.s), xx = x ?? t.x, yy = y ?? t.y;
@@ -141,61 +201,35 @@ function spurUnter(M, z, i, x, y, m) {
   zellen(M, M.teile[i], x, y, m, (k) => { s += z.spuren[k]; c++; });
   return c ? s / c : 0;
 }
-const spurAn = (M, z, x, y) => {
-  const gx = klemme(Math.floor(x * M.gh), 0, M.gw - 1), gy = klemme(Math.floor(y * M.gh), 0, M.gh - 1);
-  return z.spuren[gy * M.gw + gx];
-};
+const spurAn = (M, z, x, y) => z.spuren[klemme(Math.floor(y * M.gh), 0, M.gh - 1) * M.gw + klemme(Math.floor(x * M.gh), 0, M.gw - 1)];
 /** R2: die Anordnung eines früheren Zustands kehrt gespiegelt an der Hauptachse als Spur zurück */
 function spiegelSpur(M, z, lagen, welcher) {
   const w = M.analyse.hauptachse.verwendet, S = spiegel(w), cx = M.seite / 2, cy = 0.5;
   for (const [i, l] of lagen.entries()) {
     const dx = l.x - cx, dy = l.y - cy;
-    const x = cx + S[0] * dx + S[2] * dy, y = cy + S[1] * dx + S[3] * dy;
-    stempeln(M, z, i, 0.2, mal(S, matrix(l.rot, l.s)), x, y);
+    stempeln(M, z, i, 0.22, mal(S, matrix(l.rot, l.s)), cx + S[0] * dx + S[2] * dy, cy + S[1] * dx + S[3] * dy);
   }
-  z.ereignisse.push({ schritt: z.schritt, text: `Regel R2: Die Anordnung von ${welcher} kehrt gespiegelt (Achse ${Math.round(w * 180 / Math.PI)}°) als ${lagen.length} Spuren zurück.` });
+  z.ereignisse.push({ schritt: z.schritt, text: `Regel R2: Die Anordnung von ${welcher} kehrt gespiegelt (Achse ${grad(w)}) als ${lagen.length} Spuren zurück.` });
 }
-
-/** Rand: Mittelpunkte bleiben im Bild */
 function imBild(M, t, e) {
-  const rand = Math.min(0.45, e.radius * t.s * 0.6 + 0.02);
+  const rand = Math.min(0.4, e.radius * t.s * 0.4 + 0.01);
   t.x = klemme(t.x, Math.min(rand, M.seite / 2), Math.max(M.seite - rand, M.seite / 2));
   t.y = klemme(t.y, Math.min(rand, 0.5), Math.max(1 - rand, 0.5));
 }
-
-/** Zielpunkte entlang einer Geraden durch die Mitte (Richtung w), mit Breiten b, in Reihen */
-function reihe(M, breiten, w, abstandFaktor = 1.1) {
-  const ux = Math.cos(w), uy = Math.sin(w), nx = -uy, ny = ux, cx = M.seite / 2, cy = 0.5;
-  // verfügbare Länge der Geraden im Bild
-  const tx = Math.abs(ux) > 1e-6 ? (M.seite / 2) / Math.abs(ux) : Infinity, ty = Math.abs(uy) > 1e-6 ? 0.5 / Math.abs(uy) : Infinity;
-  const laenge = 2 * Math.min(tx, ty) * 0.86;
-  const summe = breiten.reduce((a, b) => a + b, 0) * abstandFaktor;
-  let reihen = 1, s = Math.min(1, laenge / summe);
-  if (s < 0.55 && breiten.length >= 4) { reihen = 2; s = Math.min(1, laenge / (summe / 2 + Math.max(...breiten))); }
-  const ziele = [];
-  const proReihe = Math.ceil(breiten.length / reihen);
-  for (let rr = 0; rr < reihen; rr++) {
-    const teil = breiten.slice(rr * proReihe, (rr + 1) * proReihe);
-    const gesamt = teil.reduce((a, b) => a + b * s * abstandFaktor, 0);
-    let pos = -gesamt / 2;
-    const versatz = reihen === 1 ? 0 : (rr - 0.5) * Math.max(...breiten) * s * 1.25;
-    for (const b of teil) {
-      pos += (b * s * abstandFaktor) / 2;
-      ziele.push({ x: cx + ux * pos + nx * versatz, y: cy + uy * pos + ny * versatz });
-      pos += (b * s * abstandFaktor) / 2;
-    }
-  }
-  return { ziele, s, reihen };
+function rasten(M, punkte, g) {
+  return punkte.map((p) => ({ x: M.seite / 2 + Math.round((p.x - M.seite / 2) / g) * g, y: 0.5 + Math.round((p.y - 0.5) / g) * g }));
 }
-function rasten(M, punkte, s) {
-  const groessen = M.teile.map((e) => Math.max(e.w, e.h) * s).sort((a, b) => a - b);
-  const g = Math.max(0.04, groessen[Math.floor(groessen.length / 2)] * 0.9);
-  return { g, punkte: punkte.map((p) => ({ x: M.seite / 2 + Math.round((p.x - M.seite / 2) / g) * g, y: 0.5 + Math.round((p.y - 0.5) / g) * g })) };
+/** Bewegung von Lage zu Lage mit Verzögerung und Dauer (Anteile der Station) */
+function bewege(t, q, p) {
+  const u = glatt((p - q.start) / q.dauer);
+  t.x = q.x0 + (q.x - q.x0) * u; t.y = q.y0 + (q.y - q.y0) * u; t.s = q.s0 + (q.s - q.s0) * u;
+  if (q.rot !== undefined) t.rot = q.rot0 + (q.rot - q.rot0) * u;
+  return u;
 }
 
 // ---------- die sechs Operationen ----------
 const OPS = {
-  // 1 · Neue Nachbarschaften: Teile nach einer am Bild begründeten Regel entlang der Hauptachse reihen
+  // 1 · Neue Nachbarschaften: Fugen öffnen sich, dann gehen alle Teile in ein Archiv-Raster, geordnet nach einer am Bild begründeten Regel
   1: {
     plan(M, z, r) {
       const A = M.analyse, w = A.hauptachse.verwendet;
@@ -204,228 +238,224 @@ const OPS = {
         groesse: (a, b) => b.anteil - a.anteil,
         helligkeit: (a, b) => a.helligkeit - b.helligkeit,
       }[A.regel] ?? ((a, b) => b.anteil - a.anteil);
-      // Farbgruppen in der Reihenfolge ihres Farbtons, damit «nach Farbe» eine nachvollziehbare Reihe ist
-      const beweglich = M.teile.filter((e) => e.beweglich).sort((a, b) => nachRegel(a, b) || a.region - b.region);
-      const breiten = beweglich.map((e) => Math.abs(e.w * Math.cos(w)) + Math.abs(e.h * Math.sin(w)));
-      let { ziele, s, reihen } = reihe(M, breiten, w);
-      let raster = null;
-      if (M.regel === "R3") { const rr = rasten(M, ziele, s); ziele = rr.punkte; raster = rr.g; }
+      const beweglich = M.teile.filter((e) => e.beweglich).sort((a, b) => nachRegel(a, b) || a.i - b.i);
+      const N = beweglich.length;
+      // Raster: Zeilen entlang der Hauptachse (waagrecht, wenn sie eher waagrecht liegt, sonst spaltenweise)
+      const quer = Math.abs(Math.cos(w)) >= Math.abs(Math.sin(w));
+      const spalten = Math.max(1, Math.round(Math.sqrt(N * (quer ? M.seite : 1 / M.seite) * 1.0)));
+      const zeilen = Math.ceil(N / spalten);
+      const [nx, ny] = quer ? [spalten, zeilen] : [zeilen, spalten];
+      const rand = 0.06, zw = (M.seite - 2 * rand) / nx, zh = (1 - 2 * rand) / ny, zelle = Math.min(zw, zh);
       const ziel = {};
       beweglich.forEach((e, k) => {
         const t = z.teile[e.i];
-        let { x, y } = ziele[k];
-        if (M.regel === "R5") y = Math.min(0.92, y + 0.12 * (e.last - 1) / 3);
+        const a = k % spalten, b = Math.floor(k / spalten);
+        const [cx, cy] = quer ? [a, b] : [b, a];
+        let x = rand + (cx + 0.5) * zw, y = rand + (cy + 0.5) * zh;
+        if (M.regel === "R3") ({ x, y } = rasten(M, [{ x, y }], zelle)[0]);
+        if (M.regel === "R5") y = Math.min(0.94, y + 0.05 * (e.last - 1));
+        const s = Math.min(2.2, (zelle * 0.86) / Math.max(e.w, e.h));       // jedes Teil auf die Zelle gebracht: kleine wachsen, grosse schrumpfen
         const weg = Math.hypot(x - t.x, y - t.y);
-        ziel[e.i] = { x0: t.x, y0: t.y, x, y, s0: t.s, s, start: k * 0.045, dauer: 0.18 + weg * 0.55 * e.last };
+        ziel[e.i] = { x0: t.x, y0: t.y, s0: 0.88, x, y, s, rot0: 0, rot: 0, start: 0.2 + k * (0.25 / Math.max(1, N)), dauer: (0.15 + weg * 0.6) * e.last };
       });
-      // Ankunft = Start + Weg: eine Folge, die erst aus der Bewegung entsteht; auf 82 % der Station gestreckt
       const ende = Math.max(...Object.values(ziel).map((q) => q.start + q.dauer), 1e-6);
-      for (const q of Object.values(ziel)) { q.start *= 0.82 / ende; q.dauer *= 0.82 / ende; }
+      for (const q of Object.values(ziel)) { q.start = 0.2 + (q.start - 0.2) * 0.65 / (ende - 0.2); q.dauer *= 0.65 / (ende - 0.2); }
       const ankunft = Object.entries(ziel).sort((a, b) => a[1].start + a[1].dauer - (b[1].start + b[1].dauer) || a[0] - b[0]).map(([i]) => Number(i));
       z.ankunft = ankunft;
       const regeltext = { farbe: "nach Farbgruppe", groesse: "nach Fläche", helligkeit: "nach Helligkeit" }[A.regel];
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 1: ${beweglich.length} Teile ${regeltext} entlang ${Math.round(((w * 180 / Math.PI) + 180) % 180)}° gereiht (${reihen} Reihe${reihen > 1 ? "n" : ""}, Massstab ${s.toFixed(2)}${raster ? `, Raster ${raster.toFixed(3)}` : ""}). Ankunftsreihenfolge: ${ankunft.map((i) => name(M.teile[i])).join(" → ")}.` });
-      return { ziel, s, reihen, raster, regel: A.regel, winkel: w };
+      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 1: Das Bild wird in ${M.teile.length} Teile zerlegt (Flächen, grosse Flächen in Kacheln); ${N} Teile gehen ${regeltext} in ein Archiv-Raster von ${nx} × ${ny} Feldern, jedes auf seine Feldgrösse gebracht${M.regel === "R3" ? ", eingerastet" : ""}. Zuerst angekommen: ${ankunft.slice(0, 4).map((i) => name(M.teile[i])).join(", ")} …` });
+      return { ziel, nx, ny };
     },
     lauf(M, z, p) {
-      z.gliederung = 1 - glatt(p / 0.25);
-      z.grundAlpha = 1 - 0.45 * glatt(p / 0.6);
-      for (const [i, q] of Object.entries(z.plan.ziel)) {
-        const t = z.teile[i], u = glatt((p - q.start) / q.dauer);
-        t.x = q.x0 + (q.x - q.x0) * u; t.y = q.y0 + (q.y - q.y0) * u; t.s = q.s0 + (q.s - q.s0) * u;
-        t.loch = Math.max(t.loch, glatt((p - q.start) / (q.dauer * 0.3)));
+      z.gliederung = 1 - glatt(p / 0.15);
+      z.grundAlpha = 1 - glatt(p / 0.18);                                   // das Original verschwindet; es bleiben die Teile
+      const fuge = 1 - 0.12 * glatt(p / 0.15);                              // Fugen öffnen sich: jedes Teil schrumpft um seinen Schwerpunkt
+      for (const [i, t] of z.teile.entries()) {
+        const q = z.plan.ziel[i];
+        if (!q || p < q.start) { t.s = fuge; continue; }
+        bewege(t, q, p);
+        if (M.regel === "R6") t.loch = 1;                                   // R6: die verlassene Stelle bleibt offen
       }
     },
   },
 
-  // 2 · Abfolge als Bild: die Ankunftsreihenfolge wird zur Staffelung; jeder Zwischenstand bleibt als Spur
+  // 2 · Abfolge als Bild: die Ankunftsreihenfolge wird zur Spirale; früh Angekommenes innen und klein, spät Angekommenes aussen, gross und obenauf
   2: {
     plan(M, z, r) {
       if (M.regel === "R2") spiegelSpur(M, z, M.teile.map((e) => ({ x: e.hx, y: e.hy, rot: 0, s: 1 })), "Schlüsselzustand 0 (Eingangsbild)");
       const folge = z.ankunft.length ? z.ankunft : M.teile.map((e) => e.i);
-      const w = M.analyse.hauptachse.verwendet;
-      const nx = -Math.sin(w), ny = Math.cos(w);
-      // Richtung der Staffelung: entlang der Achse, um 30° zur Normalen geneigt
-      const vx = Math.cos(w) * 0.87 + nx * 0.5, vy = Math.sin(w) * 0.87 + ny * 0.5;
-      const N = folge.length, cx = M.seite / 2, cy = 0.5;
-      const reichweite = Math.min(Math.abs(vx) > 1e-6 ? M.seite / 2 / Math.abs(vx) : 9, Math.abs(vy) > 1e-6 ? 0.5 / Math.abs(vy) : 9) * 1.3;
+      const N = folge.length, cx = M.seite / 2, cy = 0.5, gold = Math.PI * (3 - Math.sqrt(5));
+      const dreh = M.analyse.hauptachse.verwendet;
       const ziel = {};
       folge.forEach((i, k) => {
         const t = z.teile[i], e = M.teile[i];
-        const u = N > 1 ? k / (N - 1) - 0.5 : 0;
-        const sZiel = Math.min(t.s * (0.8 + 0.4 * (N > 1 ? k / (N - 1) : 1)), 0.28 / Math.max(0.01, e.radius));   // was später ankam, steht grösser und weiter vorn (nie über gut die halbe Bildhöhe)
-        let x = cx + vx * u * reichweite, y = cy + vy * u * reichweite;
-        if (M.regel === "R3") ({ x, y } = rasten(M, [{ x, y }], sZiel).punkte[0]);
-        ziel[i] = { x0: t.x, y0: t.y, s0: t.s, x, y, s: sZiel, start: (k / Math.max(1, N)) * 0.5, dauer: 0.32 * (e.beweglich ? e.last : 1), z: k + (e.eingeschlossen && !M.verworfen.has("ueberlagerung") ? N : 0), stempel: [0, 0.5] };
-        if (!e.beweglich) { ziel[i].x = t.x; ziel[i].y = t.y; ziel[i].s = t.s; }
+        const f = N > 1 ? k / (N - 1) : 1;
+        const winkel = dreh + k * gold, radius = 0.46 * Math.sqrt((k + 0.5) / N);
+        let x = cx + Math.cos(winkel) * radius * Math.max(1, M.seite) * 0.95, y = cy + Math.sin(winkel) * radius;
+        if (M.regel === "R3") ({ x, y } = rasten(M, [{ x, y }], 0.06)[0]);
+        const s = Math.min(1.6, (0.05 + 0.14 * f) / Math.max(0.02, Math.max(e.w, e.h)));
+        ziel[i] = { x0: t.x, y0: t.y, s0: t.s, rot0: t.rot, x, y, s, rot: winkel + Math.PI / 2, start: f * 0.5, dauer: 0.3 * e.last, z: (e.figur ? 1000 : 0) + (e.eingeschlossen && !M.verworfen.has("ueberlagerung") ? 500 : 0) + k, stempel: [0, 0.5] };
+        if (!e.beweglich) Object.assign(ziel[i], { x: t.x, y: t.y, s: t.s, rot: t.rot });
       });
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 2: Die Ankunftsreihenfolge aus Schritt 1 wird zur Staffelung (zuerst angekommen hinten und kleiner); jeder Zwischenstand bleibt als Spur.` });
-      return { ziel, folge };
+      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 2: Die Ankunftsreihenfolge aus Schritt 1 wird zur Spirale (Goldener Winkel ab ${grad(dreh)}): früh Angekommenes innen und klein, spät Angekommenes aussen, gross und obenauf; jeder Zwischenstand bleibt als Spur.` });
+      return { ziel };
     },
     lauf(M, z, p) {
       for (const [i, q] of Object.entries(z.plan.ziel)) {
-        const t = z.teile[i], u = glatt((p - q.start) / q.dauer);
-        // Zwischenstände beim Losgehen und auf halbem Weg werden gestempelt
-        for (let k = 0; k < q.stempel.length; k++) if (u > q.stempel[k] && q.stempel[k] >= 0) { stempeln(M, z, Number(i), k === 0 ? 0.2 : 0.11); q.stempel[k] = -1; }
-        t.x = q.x0 + (q.x - q.x0) * u; t.y = q.y0 + (q.y - q.y0) * u; t.s = q.s0 + (q.s - q.s0) * u;
+        const t = z.teile[i];
+        const u = glatt((p - q.start) / q.dauer);
+        for (let k = 0; k < q.stempel.length; k++) if (q.stempel[k] >= 0 && u > q.stempel[k]) { stempeln(M, z, Number(i), k === 0 ? 0.22 : 0.12); q.stempel[k] = -1; }
+        bewege(t, q, p);
         if (u > 0) t.z = q.z;
       }
     },
   },
 
-  // 3 · Wirksame Spuren: dieselbe Operation achtmal; jeder Schritt meidet das Spurenfeld, das die früheren hinterlassen haben
+  // 3 · Wirksame Spuren: dieselbe Operation zehnmal; jedes Teil stempelt und rückt dorthin, wo am wenigsten Spur liegt, und dreht sich dabei in seine Richtung
   3: {
     plan(M, z, r) {
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 3: Achtmal stempeln und weiterrücken; jedes Teil wählt die Nachbarstelle mit der geringsten Spur (Spuren bisher: ${z.stempel.length}).` });
-      return { runde: -1, runden: 8, ziel: {}, r: Math.floor(r() * 2 ** 31), gesperrt: 0 };
+      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 3: Zehnmal stempeln und weiterrücken; jedes Teil wählt die Nachbarstelle mit der geringsten Spur und dreht sich in seine Richtung (Spuren bisher: ${z.stempel.length}).` });
+      return { runde: -1, runden: 10, ziel: {}, r: Math.floor(r() * 2 ** 31) };
     },
     lauf(M, z, p) {
-      const P = z.plan, runde = Math.min(P.runden - 1, Math.floor((p / 0.88) * P.runden));
-      if (runde > P.runde && p < 0.88) {
+      const P = z.plan, runde = Math.min(P.runden - 1, Math.floor((p / 0.9) * P.runden));
+      if (runde > P.runde && p < 0.9) {
         P.runde = runde;
         const r = zufall((P.r + runde * 7919) >>> 0);
         const reihe = z.teile.map((t, i) => i).sort((a, b) => z.teile[a].z - z.teile[b].z);
         for (const i of reihe) {
           const t = z.teile[i], e = M.teile[i];
           if (!e.beweglich || t.erschoepft) continue;
-          const m = matrix(t.rot, t.s);
-          stempeln(M, z, i, 0.13);
-          const schrittweite = 0.55 * Math.max(e.w, e.h) * t.s + 0.025;
+          stempeln(M, z, i, 0.11);
+          const weite = 0.6 * Math.max(e.w, e.h) * t.s + 0.035;
           let best = null;
           for (let k = 0; k < 12; k++) {
-            const w = (k / 12) * 2 * Math.PI + r() * 0.3;
-            const x = t.x + Math.cos(w) * schrittweite, y = t.y + Math.sin(w) * schrittweite;
-            const rand = e.radius * t.s * 0.5;
-            if (x < rand || y < rand || x > M.seite - rand || y > 1 - rand) continue;
+            const w = (k / 12) * 2 * Math.PI + r() * 0.4;
+            const x = t.x + Math.cos(w) * weite, y = t.y + Math.sin(w) * weite;
+            if (x < 0.02 || y < 0.02 || x > M.seite - 0.02 || y > 0.98) continue;
             if (M.regel === "R1" && spurAn(M, z, x, y) > 0.5) continue;           // keine Rückkehr auf eine Stelle mit Spur
-            const wert = spurUnter(M, z, i, x, y, m) + 0.12 * r() + 0.35 * Math.hypot(x - M.seite / 2, y - 0.5);
-            if (!best || wert < best.wert) best = { x, y, wert };
+            const wert = spurUnter(M, z, i, x, y, matrix(t.rot, t.s)) + 0.15 * r();
+            if (!best || wert < best.wert) best = { x, y, w, wert };
           }
-          if (!best) { t.erschoepft = true; P.gesperrt++; z.ereignisse.push({ schritt: z.schritt, text: `Regel R1: ${name(e)} findet keine Stelle ohne Spur und bleibt stehen.` }); continue; }
-          P.ziel[i] = { x0: t.x, y0: t.y, x: best.x, y: best.y, von: runde };
+          if (!best) { t.erschoepft = true; z.ereignisse.push({ schritt: z.schritt, text: `Regel R1: ${name(e)} findet keine Stelle ohne Spur und bleibt stehen.` }); continue; }
+          let dw = best.w - t.rot; dw = Math.atan2(Math.sin(dw), Math.cos(dw));
+          P.ziel[i] = { x0: t.x, y0: t.y, x: best.x, y: best.y, rot0: t.rot, rot: t.rot + dw * 0.35, von: runde };
         }
       }
-      const lokal = ((p / 0.88) * P.runden) - P.runde;
+      const lokal = (p / 0.9) * P.runden - P.runde;
       for (const [i, q] of Object.entries(P.ziel)) {
         if (q.von !== P.runde) continue;
-        const t = z.teile[i], u = glatt(p >= 0.88 ? 1 : lokal / 0.7);
-        t.x = q.x0 + (q.x - q.x0) * u; t.y = q.y0 + (q.y - q.y0) * u;
+        const t = z.teile[i], u = glatt(p >= 0.9 ? 1 : lokal / 0.7);
+        t.x = q.x0 + (q.x - q.x0) * u; t.y = q.y0 + (q.y - q.y0) * u; t.rot = q.rot0 + (q.rot - q.rot0) * u;
       }
-      z.grundAlpha = 0.55 - 0.1 * glatt(p);
-      if (M.regel !== "R6") for (const t of z.teile) t.loch = Math.min(t.loch, 1 - 0.35 * glatt(p));
     },
   },
 
-  // 4 · Gekoppelte Beziehungen: Federn aus den Nachbarschaften im Bild; ein Anstoss am gewichtigsten Teil überträgt sich, das Spurenfeld macht zäh
+  // 4 · Gekoppelte Beziehungen: Kopplungen zwischen Teilen, die im Bild aneinandergrenzten, mit der Distanz von damals; sie ziehen das Bild
+  //     wieder zusammen, aber Spuren machen zäh und ein Anstoss am gewichtigsten Teil verdreht alles, was an ihm hängt
   4: {
     plan(M, z, r) {
-      const A = M.analyse, T = M.teile, N = T.length;
+      const T = M.teile, N = T.length;
       const d = (a, b) => Math.hypot(T[a].hx - T[b].hx, T[a].hy - T[b].hy);
       // Gerüst: minimaler Spannbaum über die Lagen im Eingangsbild (jedes Teil hängt am Netz)
       const imBaum = new Set([0]), kanten = [];
+      const naechste = new Float64Array(N).fill(Infinity), von = new Int32Array(N).fill(0);
+      for (let b = 1; b < N; b++) naechste[b] = d(0, b);
       while (imBaum.size < N) {
-        let best = null;
-        for (const a of imBaum) for (let b = 0; b < N; b++) if (!imBaum.has(b)) { const l = d(a, b); if (!best || l < best.l) best = { a, b, l }; }
-        imBaum.add(best.b); kanten.push({ i: best.a, j: best.b, art: "baum" });
+        let best = -1;
+        for (let b = 0; b < N; b++) if (!imBaum.has(b) && (best < 0 || naechste[b] < naechste[best])) best = b;
+        imBaum.add(best); kanten.push({ i: von[best], j: best, art: "baum" });
+        for (let b = 0; b < N; b++) if (!imBaum.has(b)) { const l = d(best, b); if (l < naechste[b]) { naechste[b] = l; von[b] = best; } }
       }
       const schon = new Set(kanten.map((k) => `${Math.min(k.i, k.j)}-${Math.max(k.i, k.j)}`));
       const dazu = (i, j, art) => { const k = `${Math.min(i, j)}-${Math.max(i, j)}`; if (i !== j && !schon.has(k)) { schon.add(k); kanten.push({ i, j, art }); } };
-      if (!M.verworfen.has("verbindung")) for (const [a, b] of A.kontakte) { const i = T.findIndex((e) => e.region === a), j = T.findIndex((e) => e.region === b); if (i >= 0 && j >= 0) dazu(i, j, "beruehrung"); }
-      if (M.regel === "R7") for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) if (T[i].cluster === T[j].cluster) dazu(i, j, "farbe");
-      const mittelS = z.teile.reduce((s, t) => s + t.s, 0) / Math.max(1, N);
-      z.federn = kanten.map((k) => ({ ...k, L: d(k.i, k.j) * mittelS, k: k.art === "baum" ? 0.5 : 0.35, aktiv: true }));
-      const anstoss = [...T].sort((a, b) => b.anteil - a.anteil)[0]?.i ?? 0;
+      if (!M.verworfen.has("verbindung")) for (const { a, b, l } of M.nachbarn) if (l >= 3) dazu(a, b, "grenze");
+      if (M.regel === "R7") for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) if (T[i].cluster === T[j].cluster && d(i, j) < 0.35) dazu(i, j, "farbe");
+      z.federn = kanten.map((k) => ({ ...k, L: d(k.i, k.j), k: k.art === "baum" ? 0.6 : 0.4, aktiv: true }));
+      const anstoss = [...T].filter((e) => e.figur).sort((a, b) => b.anteil - a.anteil)[0]?.i ?? [...T].sort((a, b) => b.anteil - a.anteil)[0].i;
       z.anstoss = anstoss;
       const t = z.teile[anstoss];
-      const wachstum = Math.max(1, Math.min(1.35, 0.34 / Math.max(0.01, T[anstoss].radius * t.s)));
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 4: ${z.federn.length} Kopplungen (${kanten.filter((k) => k.art === "baum").length} Gerüst, ${kanten.filter((k) => k.art === "beruehrung").length} Berührung${M.regel === "R7" ? `, ${kanten.filter((k) => k.art === "farbe").length} gleiche Farbe` : ""}); Anstoss: ${name(T[anstoss])} dreht um 60°${wachstum > 1.01 ? ` und wächst um ${Math.round((wachstum - 1) * 100)} %` : ""}. Stellen mit Spur sind zäh.` });
-      return { rot0: t.rot, s0: t.s, wachstum };
+      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 4: ${z.federn.length} Kopplungen mit der Distanz aus dem Eingangsbild (${kanten.filter((k) => k.art === "baum").length} Gerüst, ${kanten.filter((k) => k.art === "grenze").length} gemeinsame Grenzen${M.regel === "R7" ? `, ${kanten.filter((k) => k.art === "farbe").length} gleiche Farbe` : ""}) ziehen das Bild wieder zusammen; alle Teile kehren zur Originalgrösse zurück. Anstoss: ${name(T[anstoss])} dreht um 90°. Stellen mit Spur sind zäh.` });
+      return { rot0: t.rot, s0: z.teile.map((x) => x.s) };
     },
     lauf(M, z, p) {
       const P = z.plan, d = z.teile[z.anstoss];
-      d.rot = P.rot0 + (Math.PI / 3) * glatt(p / 0.6);
-      d.s = P.s0 * (1 + (P.wachstum - 1) * glatt(p / 0.6));
-      z.kopplungAlpha = glatt(p / 0.2) * 0.9;
-      entspannen(M, z, 1);
-      if (M.regel === "R5") for (const [i, t] of z.teile.entries()) if (!t.fest) t.y += 0.0012 * (M.teile[i].last - 1);
-      for (const [i, t] of z.teile.entries()) imBild(M, t, M.teile[i]);
-      if (M.regel !== "R6") for (const t of z.teile) t.loch = Math.min(t.loch, 0.65);
+      d.rot = P.rot0 + (Math.PI / 2) * glatt(p / 0.5);
+      for (const [i, t] of z.teile.entries()) if (!t.fest) t.s = P.s0[i] + (1 - P.s0[i]) * glatt(p / 0.6);
+      z.kopplungAlpha = 0.8 * glatt(p / 0.15) * (1 - 0.6 * glatt((p - 0.6) / 0.4));
+      entspannen(M, z, 2, 0.22);
+      // das Ganze sammelt sich zur Bildmitte
+      const mx = z.teile.reduce((s, t) => s + t.x, 0) / z.teile.length, my = z.teile.reduce((s, t) => s + t.y, 0) / z.teile.length;
+      for (const [i, t] of z.teile.entries()) {
+        if (t.fest) continue;
+        const mu = beweglichkeit(M, z, i);
+        t.x += (M.seite / 2 - mx) * 0.04 * mu; t.y += (0.5 - my) * 0.04 * mu;
+        if (M.regel === "R5") t.y += 0.0015 * (M.teile[i].last - 1);
+        imBild(M, t, M.teile[i]);
+      }
     },
   },
 
-  // 5 · Figur und Grund: der Zwischenraum der erreichten Lage wird mit dem Material des Grundes zur tragenden Form, die Teile treten als Kontur zurück
+  // 5 · Figur und Grund: Umkehrung – die Teile werden dunkle Silhouetten mit heller Kontur, der Zwischenraum der erreichten Lage trägt das Material des Grundes
   5: {
     plan(M, z) {
       z.luecke = zwischenraum(M, z);
       const flaeche = z.luecke.reduce((s, l) => s + Math.abs(polyFlaeche(l)), 0);
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 5: Der Zwischenraum der erreichten Lage (${Math.round(flaeche / M.seite * 100)} % des Bildes, ${z.luecke.length} Form${z.luecke.length === 1 ? "" : "en"}) wird mit dem Material des Grundes gefüllt${M.regel === "R6" ? "; die offenen Leerstellen gehen in ihn ein" : ""}.` });
+      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 5: Umkehrung. Die ${M.teile.length} Teile werden Silhouetten; der Zwischenraum der erreichten Lage (${Math.round(flaeche / M.seite * 100)} % des Bildes, ${z.luecke.length} Form${z.luecke.length === 1 ? "" : "en"}) wird mit dem Material des Grundes gefüllt und trägt das Bild${M.regel === "R6" ? "; die offenen Leerstellen gehen in ihn ein" : ""}.` });
       return {};
     },
     lauf(M, z, p) {
-      z.lueckeAlpha = glatt(p / 0.6);
-      z.kopplungAlpha = 0.9 * (1 - glatt(p / 0.4));
-      z.grundAlpha = 0.45 - 0.35 * glatt(p / 0.6);
-      z.spurAlpha = 1 - 0.7 * glatt(p / 0.6);
-      for (const t of z.teile) { t.a = 1 - 0.85 * glatt(p / 0.6); t.kontur = glatt(p / 0.5); }
+      z.lueckeAlpha = glatt(p / 0.5);
+      z.umkehr = glatt(p / 0.5);
+      z.kopplungAlpha = Math.max(0, z.kopplungAlpha - 0.02);
+      z.spurAlpha = 1 - 0.75 * glatt(p / 0.5);
+      for (const t of z.teile) t.kontur = glatt(p / 0.5);
     },
   },
 
-  // 6 · Anders weitergehen: ein kleiner Eingriff – eine Gerüst-Kopplung wird getrennt (die mit der meisten Spur auf ihrer Strecke); Netz und Spuren bestimmen die Folgen
+  // 6 · Anders weitergehen: ein einziger Schnitt durch das Gefüge, gelegt durch die Stelle mit der meisten Spur; alle Kopplungen über ihn
+  //     reissen, die abgetrennte Seite bricht weg und dreht sich, Farben kehren zurück, der Zwischenraum wird laufend neu bestimmt
   6: {
     plan(M, z, r) {
       if (M.regel === "R2") spiegelSpur(M, z, z.teile.map((t) => ({ x: t.x, y: t.y, rot: t.rot, s: t.s })), "Schlüsselzustand 5");
-      // Ziel des Eingriffs: die Gerüst-Kopplung, über der am meisten Spur liegt; Kopplungen, deren Trennung das Netz teilt, gehen vor
-      const zusammen = (ohne) => {
-        const nb = z.teile.map(() => []);
-        z.federn.forEach((g, k) => { if (g.aktiv && k !== ohne) { nb[g.i].push(g.j); nb[g.j].push(g.i); } });
-        const gesehen = new Set([0]), st = [0];
-        while (st.length) for (const k of nb[st.pop()]) if (!gesehen.has(k)) { gesehen.add(k); st.push(k); }
-        return gesehen.size === z.teile.length;
-      };
-      let best = -1, wert = -1, spurMenge = 0;
-      z.federn.forEach((f, k) => {
-        if (f.art !== "baum" || !f.aktiv) return;
-        const a = z.teile[f.i], b = z.teile[f.j];
-        let s = 0;
-        for (let q = 1; q < 12; q++) s += spurAn(M, z, a.x + (b.x - a.x) * q / 12, a.y + (b.y - a.y) * q / 12);
-        const w = s / 11 + (zusammen(k) ? 0 : 1000);
-        if (w > wert) { wert = w; best = k; spurMenge = s / 11; }
-      });
-      const a0 = z.teile.map((t) => t.a), k0 = z.teile.map((t) => t.kontur);
-      if (best < 0) return { a0, k0 };
-      const f = z.federn[best];
-      f.aktiv = false; z.schnitt = best;
-      // welche Teile hängen danach noch mit f.j zusammen (über alle verbleibenden Kopplungen)?
-      const nb = z.teile.map(() => []);
-      for (const g of z.federn) if (g.aktiv) { nb[g.i].push(g.j); nb[g.j].push(g.i); }
-      const seiteB = new Set([f.j]), st = [f.j];
-      while (st.length) for (const k of nb[st.pop()]) if (!seiteB.has(k)) { seiteB.add(k); st.push(k); }
-      const getrennt = !seiteB.has(f.i);
-      const a = z.teile[f.i], b = z.teile[f.j];
-      let dx = b.x - a.x, dy = b.y - a.y; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
-      const staerke = 0.016;
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 6: Eingriff – die Kopplung ${name(M.teile[f.i])}–${name(M.teile[f.j])} (mittlere Spur ${spurMenge.toFixed(1)} auf ihrer Strecke) wird getrennt. ${getrennt ? `Das Netz zerfällt in zwei Gruppen (${seiteB.size} und ${z.teile.length - seiteB.size} Teile), die auseinanderdriften.` : "Andere Kopplungen halten das Netz zusammen; nur die Spannung löst sich."} Der Zwischenraum wird laufend neu bestimmt.` });
-      return { seiteB: [...seiteB], getrennt, dx, dy, staerke, a0, k0 };
+      // Ort: das Teil mit der meisten Spur unter sich; Richtung: quer zur Hauptachse
+      let ort = 0, meist = -1;
+      z.teile.forEach((t, i) => { const s = spurUnter(M, z, i, t.x, t.y, matrix(t.rot, t.s)); if (s > meist) { meist = s; ort = i; } });
+      const w = M.analyse.hauptachse.verwendet + Math.PI / 2;
+      // die Linie geht durch die Mitte zwischen diesem Teil und dem Schwerpunkt des Gefüges
+      const mx = z.teile.reduce((s, t) => s + t.x, 0) / z.teile.length, my = z.teile.reduce((s, t) => s + t.y, 0) / z.teile.length;
+      const px = (z.teile[ort].x + mx) / 2, py = (z.teile[ort].y + my) / 2, nx = -Math.sin(w), ny = Math.cos(w);     // Normale der Schnittlinie
+      const seite = (t) => (t.x - px) * nx + (t.y - py) * ny > 0;
+      let gerissen = 0;
+      for (const f of z.federn) if (f.aktiv && seite(z.teile[f.i]) !== seite(z.teile[f.j])) { f.aktiv = false; gerissen++; }
+      const B = z.teile.map((t, i) => i).filter((i) => seite(z.teile[i]));
+      const kleiner = B.length <= z.teile.length / 2;
+      const weg = new Set(kleiner ? B : z.teile.map((t, i) => i).filter((i) => !seite(z.teile[i])));
+      const richtung = kleiner ? 1 : -1;
+      const drall = z.teile.map(() => (r() - 0.5) * 0.06);
+      z.schnitt = { x: px, y: py, w };
+      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 6: Eingriff – ein Schnitt quer zur Hauptachse, zwischen ${name(M.teile[ort])} (das Teil mit der meisten Spur, ${meist.toFixed(1)}) und dem Schwerpunkt des Gefüges. ${gerissen} Kopplungen reissen; ${weg.size} Teile brechen weg und drehen sich, ${z.teile.length - weg.size} halten zusammen. Farben kehren zurück.` });
+      return { weg: [...weg], dx: nx * richtung, dy: ny * richtung, drall, a0: z.teile.map((t) => t.a) };
     },
     lauf(M, z, p, k) {
-      const P = z.plan;
-      if (P.seiteB) {
-        const B = new Set(P.seiteB), v = P.staerke * (1 - glatt(p / 0.8)) * (P.getrennt ? 1 : 0.35);
-        for (const [i, t] of z.teile.entries()) {
-          if (t.fest) continue;
-          const sgn = B.has(i) ? 1 : -1, mu = beweglichkeit(M, z, i);
-          let nx = t.x + sgn * P.dx * v * mu, ny = t.y + sgn * P.dy * v * mu;
-          if (M.regel === "R1" && spurAn(M, z, nx, ny) > 2.5 && spurAn(M, z, nx, ny) > spurAn(M, z, t.x, t.y)) continue;   // nicht tiefer in die Spur
-          t.x = nx; t.y = ny;
-          if (M.regel === "R5") t.y += 0.0012 * (M.teile[i].last - 1);
+      const P = z.plan, weg = new Set(P.weg), v = 0.022 * (1 - glatt(p / 0.85));
+      for (const [i, t] of z.teile.entries()) {
+        if (t.fest) continue;
+        const mu = beweglichkeit(M, z, i);
+        if (weg.has(i)) {
+          const nx = t.x + P.dx * v * (0.6 + 0.4 * mu), ny = t.y + P.dy * v * (0.6 + 0.4 * mu);
+          if (!(M.regel === "R1" && spurAn(M, z, nx, ny) > 3 && spurAn(M, z, nx, ny) > spurAn(M, z, t.x, t.y))) { t.x = nx; t.y = ny; }
+          t.rot += P.drall[i] * (1 - glatt(p / 0.85));
         }
+        if (M.regel === "R5") t.y += 0.0012 * (M.teile[i].last - 1);
       }
-      entspannen(M, z, 1);
+      entspannen(M, z, 1, 0.12);
       for (const [i, t] of z.teile.entries()) imBild(M, t, M.teile[i]);
-      for (const [i, t] of z.teile.entries()) { t.a = P.a0[i] + (1 - P.a0[i]) * glatt(p / 0.5); t.kontur = P.k0[i] * (1 - 0.65 * glatt(p / 0.5)); }
-      z.kopplungAlpha = 0.5 * glatt((p - 0.1) / 0.3);
-      if (k % 6 === 0 || p >= 0.999) z.luecke = zwischenraum(M, z);
-      z.lueckeAlpha = 1 - 0.15 * glatt(p);
+      z.umkehr = 1 - glatt(p / 0.45);
+      for (const t of z.teile) t.kontur = 1 - 0.7 * glatt(p / 0.45);
+      z.kopplungAlpha = 0;
+      if (k % 6 === 0 || p >= 0.995) z.luecke = zwischenraum(M, z);
+      z.lueckeAlpha = 1 - 0.25 * glatt(p);
     },
   },
 };
@@ -434,26 +464,23 @@ const OPS = {
 function beweglichkeit(M, z, i) {
   const t = z.teile[i];
   if (t.fest) return 0;
-  return 1 / ((1 + 0.9 * spurUnter(M, z, i, t.x, t.y, matrix(t.rot, t.s))) * M.teile[i].last);
+  return 1 / ((1 + 0.6 * spurUnter(M, z, i, t.x, t.y, matrix(t.rot, t.s))) * M.teile[i].last);
 }
 
-/** eine Runde Entspannung der Kopplungen (Lage, Drehung und Grösse übertragen sich) */
-function entspannen(M, z, runden) {
-  const mu = z.teile.map((t, i) => (i === z.anstoss ? 0.25 : 1) * beweglichkeit(M, z, i));
+/** Entspannung der Kopplungen (Lage, Drehung und Grösse übertragen sich) */
+function entspannen(M, z, runden, staerke) {
+  const mu = z.teile.map((t, i) => (i === z.anstoss ? 0.2 : 1) * beweglichkeit(M, z, i));
   for (let r = 0; r < runden; r++) {
     for (const f of z.federn) {
       if (!f.aktiv) continue;
       const a = z.teile[f.i], b = z.teile[f.j];
       const dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy) || 1e-6;
-      const fehler = (l - f.L) / l * f.k * 0.12, ma = mu[f.i], mb = mu[f.j], summe = ma + mb;
+      const fehler = ((l - f.L) / l) * f.k * staerke, ma = mu[f.i], mb = mu[f.j], summe = ma + mb;
       if (summe <= 0) continue;
       a.x += dx * fehler * (ma / summe); a.y += dy * fehler * (ma / summe);
       b.x -= dx * fehler * (mb / summe); b.y -= dy * fehler * (mb / summe);
-      // Drehung und Grösse gleichen sich über die Kopplung an
-      const dr = b.rot - a.rot;
-      a.rot += dr * 0.02 * ma; b.rot -= dr * 0.02 * mb;
-      const ds = b.s - a.s;
-      a.s += ds * 0.006 * ma; b.s -= ds * 0.006 * mb;
+      let dr = b.rot - a.rot; dr = Math.atan2(Math.sin(dr), Math.cos(dr));
+      a.rot += dr * 0.03 * ma; b.rot -= dr * 0.03 * mb;
     }
   }
 }
@@ -480,8 +507,8 @@ function zwischenraum(M, z) {
   const O = belegung(M, z);
   const naehe = weich(O, gw, gh, 4);
   const G = new Float32Array(gw * gh);
-  for (let k = 0; k < G.length; k++) G[k] = naehe[k] > 0.06 && O[k] === 0 ? 1 : 0;
-  if (M.regel === "R6") M.teile.forEach((e, i) => { if (z.teile[i].loch > 0.5) zellen(M, e, e.hx, e.hy, [1, 0, 0, 1], (k) => { if (!O[k]) G[k] = 1; }); });
+  for (let k = 0; k < G.length; k++) G[k] = naehe[k] > 0.05 && O[k] === 0 ? 1 : 0;
+  if (M.regel === "R6") M.teile.forEach((e, i) => { const t = z.teile[i]; if (Math.hypot(t.x - e.hx, t.y - e.hy) > e.radius * 0.5) zellen(M, e, e.hx, e.hy, [1, 0, 0, 1], (k) => { if (!O[k]) G[k] = 1; }); });
   const W = weich(G, gw, gh, 1);
   return konturen(W, gw, gh, 0.5).map((zug) => zug.map(([x, y]) => [(x + 0.5) / gh, (y + 0.5) / gh]));
 }
@@ -501,7 +528,7 @@ export function zustandsSchluessel(z) {
   const add = (v) => { h ^= v & 0xffffffff; h = Math.imul(h, 0x01000193) >>> 0; };
   add(z.schritt);
   for (const t of z.teile) [t.x, t.y, t.rot, t.s, t.a, t.kontur, t.loch, t.z].forEach((v) => add(r(v)));
-  [z.grundAlpha, z.spurAlpha, z.lueckeAlpha, z.kopplungAlpha].forEach((v) => add(r(v)));
+  [z.grundAlpha, z.spurAlpha, z.umkehr, z.lueckeAlpha, z.kopplungAlpha].forEach((v) => add(r(v)));
   add(z.stempel.length);
   for (let k = 0; k < z.spuren.length; k++) if (z.spuren[k]) add(k * 31 + r(z.spuren[k]));
   for (const l of z.luecke) for (const [x, y] of l) { add(r(x)); add(r(y)); }

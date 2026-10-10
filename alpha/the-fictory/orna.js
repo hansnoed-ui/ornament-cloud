@@ -7,9 +7,9 @@ import { constellations } from "../../portfolio/nebeneinander-nacheinander/js/da
 import { artists } from "../../portfolio/nebeneinander-nacheinander/js/data/artists.js";
 import { theorists } from "../../portfolio/nebeneinander-nacheinander/js/data/theorists.js";
 import { drawConstellation } from "../../portfolio/nebeneinander-nacheinander/js/lib/random.js";
-import { REGELN, REGEL_IDS, saetze, pruefsumme } from "./regeln.js?v=1";
-import { JEV } from "./jev.js?v=1";
-import { zufall } from "./analyse.js?v=1";
+import { REGELN, REGEL_IDS, saetze, pruefsumme } from "./regeln.js?v=2";
+import { JEV } from "./jev.js?v=2";
+import { zufall } from "./analyse.js?v=2";
 
 export const BESTAND = constellations.length;
 export const jevGueltig = () => Boolean(JEV && JEV.pruefsumme === pruefsumme(constellations) && JEV.eintraege);
@@ -43,7 +43,7 @@ export function ableiten(id, seed) {
   const r = zufall((seed ^ 0xa5a5a5a5) >>> 0);
   const basis = {
     konstellation: { id: k.id, nummer: k.editorialNumber, kuenstler: person(k.artistId), theoretiker: person(k.theoristId), frage: k.question },
-    herkunft: `ORNA · Nebeneinander, Nacheinander · kuratierter Bestand (${BESTAND} Konstellationen) · Datensatz ${k.id} (redaktionelle Nummer ${k.editorialNumber})`,
+    herkunft: `ORNA, «Nebeneinander, Nacheinander»: kuratierter Bestand von ${BESTAND} Konstellationen, Datensatz ${k.id} (redaktionelle Nummer ${k.editorialNumber})`,
   };
   if (jevGueltig() && JEV.eintraege[id]) {
     const e = JEV.eintraege[id];

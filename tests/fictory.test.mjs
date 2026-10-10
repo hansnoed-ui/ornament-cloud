@@ -99,6 +99,20 @@ test("Jede ORNA-Regel verändert den Lauf tatsächlich", () => {
   for (const r of REGEL_IDS) assert.notDeepEqual(lauf({ regel: r }).keys, ohne, r);
 });
 
+test("Zerlegung: das ganze Bild wird Material, grosse Flächen in Kacheln; das Original verschwindet, in Schritt 5 kehren sich Figur und Grund um", () => {
+  const { karte, teile } = O.zerlege(A);
+  assert.ok(teile.length > A.flaechen.length && teile.length <= 72, `${teile.length} Teile`);
+  assert.ok([...karte].every((k) => k >= 0 && k < teile.length), "jedes Pixel gehört zu einem Teil");
+  assert.equal(teile.reduce((s, e) => s + e.px, 0), A.breite * A.hoehe);
+  assert.ok(teile.some((e) => e.kachel >= 0), "der grosse Grund ist in Kacheln geteilt");
+  assert.deepEqual([...new Set(teile.filter((e) => e.figur).map((e) => e.region))].sort((a, b) => a - b), [...A.teile].sort((a, b) => a - b), "Figuren aus der Analyse");
+  const { zustaende } = lauf();
+  assert.equal(zustaende[0].grundAlpha, 1, "Eingangsbild");
+  for (const k of [1, 2, 3, 4, 5, 6]) assert.equal(zustaende[k].grundAlpha, 0, `Schlüsselzustand ${k} ohne Original`);
+  assert.equal(zustaende[5].umkehr, 1, "Umkehrung in Schritt 5");
+  assert.ok(zustaende[6].federn.some((f) => !f.aktiv), "der Schnitt in Schritt 6 trennt Kopplungen");
+});
+
 test("Ereignisse beschreiben jede der sechs Operationen", () => {
   const { M, zustaende } = lauf({ regel: "R2" });
   const b = O.beschreibungen(M, zustaende);
