@@ -7,9 +7,9 @@ import { constellations } from "../../portfolio/nebeneinander-nacheinander/js/da
 import { artists } from "../../portfolio/nebeneinander-nacheinander/js/data/artists.js";
 import { theorists } from "../../portfolio/nebeneinander-nacheinander/js/data/theorists.js";
 import { drawConstellation } from "../../portfolio/nebeneinander-nacheinander/js/lib/random.js";
-import { REGELN, REGEL_IDS, saetze, pruefsumme } from "./regeln.js?v=2";
-import { JEV } from "./jev.js?v=2";
-import { zufall } from "./analyse.js?v=2";
+import { REGELN, REGEL_IDS, saetze, pruefsumme } from "./regeln.js?v=3";
+import { JEV } from "./jev.js?v=3";
+import { zufall } from "./analyse.js?v=3";
 
 export const BESTAND = constellations.length;
 export const jevGueltig = () => Boolean(JEV && JEV.pruefsumme === pruefsumme(constellations) && JEV.eintraege);

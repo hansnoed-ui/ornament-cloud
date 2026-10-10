@@ -2,7 +2,8 @@
 // Farbgruppen nachgeschärft), ihre Silhouetten und ein Grundbild (der Grund des Bildes, Figuren mit der Grundfarbe geschlossen).
 // Nach dem Eingangsbild steht alles auf dunklem Grund. zeichne() bildet einen Zustand in beliebiger Grösse ab; Vorschau, Video und
 // Standbild in hoher Auflösung nutzen dieselbe Funktion mit demselben Zustand. In die Bilder kommt keine Schrift.
-import { konturen, lab } from "./analyse.js?v=2";
+import { konturen, lab, leitfarbe } from "./analyse.js?v=3";
+import { zeichneFeld } from "./feld.js?v=3";
 
 export const NACHT = "#151412";
 export const PAPIER = "#f4f1ea";
@@ -92,7 +93,7 @@ export function baueMaterial(quelle, A, M) {
   // Zerlegung (alle Teilgrenzen) für den Übergang aus dem Eingangsbild
   const gliederung = [];
   for (const e of M.teile) for (const zug of teile[e.i].kontur) gliederung.push(zug.map(([x, y]) => [x + e.hx, y + e.hy]));
-  return { Hs, Ws, quelle, quelleKlein: verkleinert(quelle, f), grundbild, grundbildKlein: verkleinert(grundbild, f), teile, gliederung, grundFarbe, klein: f };
+  return { Hs, Ws, quelle, quelleKlein: verkleinert(quelle, f), grundbild, grundbildKlein: verkleinert(grundbild, f), teile, gliederung, grundFarbe, leit: leitfarbe(A), klein: f };
 }
 
 const matrix = (rot, s) => [s * Math.cos(rot), s * Math.sin(rot), -s * Math.sin(rot), s * Math.cos(rot)];
@@ -120,6 +121,20 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
   };
   // 1 · das Eingangsbild, solange es noch nicht zerlegt ist
   if (z.grundAlpha > 0.001) { ctx.globalAlpha = z.grundAlpha; ctx.drawImage(q(mat.quelle, mat.quelleKlein), 0, 0, W, H); }
+  // 1a · das wuchernde Feld (Shader) und das Raster des Spurenfelds: jede Zelle ein Punkt, heller und grösser, wo Spur liegt
+  const technik = 1 - z.grundAlpha;
+  if (technik > 0.001) {
+    zeichneFeld(ctx, W, H, z, M, mat.leit, (z.feldAlpha ?? 0) * technik);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = PAPIER;
+    const zelle = S / M.gh;
+    for (let gy = 0; gy < M.gh; gy++) for (let gx = 0; gx < M.gw; gx++) {
+      const s = Math.min(1, z.spuren[gy * M.gw + gx] / 5);
+      const d = Math.max(1, S * (0.0012 + 0.0032 * s));
+      ctx.globalAlpha = technik * (0.1 + 0.6 * s);
+      ctx.fillRect((gx + 0.5) * zelle - d / 2, (gy + 0.5) * zelle - d / 2, d, d);
+    }
+  }
   // 2 · offene Leerstellen (R6): Umriss an der verlassenen Stelle
   z.teile.forEach((t, i) => {
     if (t.loch <= 0.001) return;
@@ -191,6 +206,13 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
     ctx.globalAlpha = 0.7; ctx.strokeStyle = PAPIER; ctx.lineWidth = Math.max(1, S * 0.0016); ctx.setLineDash([S * 0.012, S * 0.008]);
     ctx.beginPath(); ctx.moveTo(S * (x - Math.cos(w) * d), S * (y - Math.sin(w) * d)); ctx.lineTo(S * (x + Math.cos(w) * d), S * (y + Math.sin(w) * d)); ctx.stroke();
     ctx.setLineDash([]);
+  }
+  // 7a · Scanlines: jede so vielte Zeile abgedunkelt, im Verhältnis zur Bildhöhe (gleich in Vorschau und Export)
+  if (technik > 0.001) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const abstand = Math.max(2, Math.round(S / 300)), dicke = Math.max(1, Math.round(abstand / 2.5));
+    ctx.globalAlpha = 0.22 * technik; ctx.fillStyle = "#000";
+    for (let y = 0; y < H; y += abstand) ctx.fillRect(0, y, W, dicke);
   }
   // 8 · die Zerlegung (nur beim Übergang aus dem Eingangsbild)
   if (z.gliederung > 0.001) {
