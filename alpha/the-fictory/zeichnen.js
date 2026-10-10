@@ -2,8 +2,8 @@
 // Farbgruppen nachgeschärft).
 // Nach dem Eingangsbild steht alles auf dunklem Grund. zeichne() bildet einen Zustand in beliebiger Grösse ab; Vorschau, Video und
 // Standbild in hoher Auflösung nutzen dieselbe Funktion mit demselben Zustand. In die Bilder kommt keine Schrift.
-import { konturen, lab, leitfarbe } from "./analyse.js?v=6";
-import { zeichneFeld } from "./feld.js?v=6";
+import { konturen, lab, leitfarbe } from "./analyse.js?v=7";
+import { zeichneFeld } from "./feld.js?v=7";
 
 export const NACHT = "#151412";
 export const PAPIER = "#f4f1ea";
