@@ -3,14 +3,14 @@
 // Eingangsbild gibt es das Bild nur noch als seine Teile auf dunklem Grund. Sechs Operationen folgen aufeinander; jede plant ihren
 // Verlauf aus dem Zustand, den die vorige hinterlassen hat:
 //   1 Neue Nachbarschaften   → Fugen öffnen sich, alle Teile gehen in ein Archiv-Raster nach einer Regel; die Ankunftsreihenfolge bleibt im Zustand
-//   2 Abfolge als Bild       → die Ankunftsreihenfolge wird zur Spirale (früh innen, spät aussen); Zwischenstände bleiben als Spur
+//   2 Abfolge als Bild       → die Ankunftsreihenfolge wird zur Zeitachse (längs die Folge, quer die Lage aus dem Original); Zwischenstände bleiben als Spur
 //   3 Wirksame Spuren        → jeder Schritt meidet das Spurenfeld, das alle früheren Schritte hinterlassen haben
 //   4 Gekoppelte Beziehungen → Kopplungen aus den Nachbarschaften im Bild versuchen es wieder zusammenzusetzen; Spuren machen zäh, ein Anstoss verdreht
 //   5 Anders weitergehen     → ein einziger Schnitt durch das Gefüge (gelegt, wo die meiste Spur liegt) trennt alle Kopplungen über ihn; eine Seite bricht weg
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall } from "./analyse.js?v=7";
-import { REGELN } from "./regeln.js?v=7";
+import { zufall } from "./analyse.js?v=8";
+import { REGELN } from "./regeln.js?v=8";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
@@ -327,26 +327,30 @@ const OPS = {
     },
   },
 
-  // 2 · Abfolge als Bild: die Ankunftsreihenfolge wird zur Spirale; früh Angekommenes innen und klein, spät Angekommenes aussen, gross und obenauf
+  // 2 · Abfolge als Bild: die Ankunftsreihenfolge wird zur Zeitachse entlang der Hauptachse (früh Angekommenes am Anfang, spät am Ende);
+  //     quer dazu behält jedes Teil seine Lage aus dem Eingangsbild, und alle Teile behalten ihre volle Grösse. Das Bild erscheint als Zeitstreifen
+  //     seiner selbst (dicht, überlagert, für jedes Bild anders), später Angekommenes liegt obenauf
   2: {
     plan(M, z, r) {
       if (M.regel === "R2") spiegelSpur(M, z, M.teile.map((e) => ({ x: e.hx, y: e.hy, rot: 0, s: 1 })), "Schlüsselzustand 0 (Eingangsbild)");
       const folge = z.ankunft.length ? z.ankunft : M.teile.map((e) => e.i);
-      const N = folge.length, cx = M.seite / 2, cy = 0.5, gold = Math.PI * (3 - Math.sqrt(5));
-      const dreh = M.analyse.hauptachse.verwendet;
+      const N = folge.length, cx = M.seite / 2, cy = 0.5;
+      const w = M.analyse.hauptachse.verwendet, ux = Math.cos(w), uy = Math.sin(w), nx = -uy, ny = ux;
+      // Länge der Zeitachse: die Ausdehnung des Bildes in Achsrichtung, mit Rand
+      const laenge = (Math.abs(ux) * M.seite + Math.abs(uy)) * 0.8;
       const ziel = {};
       folge.forEach((i, k) => {
         const t = z.teile[i], e = M.teile[i];
-        const f = N > 1 ? k / (N - 1) : 1;
-        const winkel = dreh + k * gold, radius = 0.46 * Math.sqrt((k + 0.5) / N);
-        let x = cx + Math.cos(winkel) * radius * Math.max(1, M.seite) * 0.95, y = cy + Math.sin(winkel) * radius;
+        const f = N > 1 ? k / (N - 1) : 0.5;
+        const quer = (e.hx - cx) * nx + (e.hy - cy) * ny;                       // Lage quer zur Achse wie im Eingangsbild
+        let x = cx + ux * (f - 0.5) * laenge + nx * quer, y = cy + uy * (f - 0.5) * laenge + ny * quer;
         if (M.regel === "R3") ({ x, y } = rasten(M, [{ x, y }], 0.06)[0]);
-        const s = Math.min(1.6, (0.05 + 0.14 * f) / Math.max(0.02, Math.max(e.w, e.h)));
-        let wende = winkel + Math.PI / 2 - t.rot; wende = Math.atan2(Math.sin(wende), Math.cos(wende));  // immer der kürzeste Weg, nie mehrere Umdrehungen
+        const s = 0.9 + 0.25 * f;                                               // volle Grösse, spät Angekommenes etwas grösser
+        const wende = Math.atan2(Math.sin(-t.rot), Math.cos(-t.rot));           // zurück zur Lage des Originals, kürzester Weg
         ziel[i] = { x0: t.x, y0: t.y, s0: t.s, rot0: t.rot, x, y, s, rot: t.rot + wende, start: f * 0.45, dauer: 0.42 * e.last, z: (e.figur ? 1000 : 0) + (e.eingeschlossen && !M.verworfen.has("ueberlagerung") ? 500 : 0) + k, stempel: [0, 0.5] };
         if (!e.beweglich) Object.assign(ziel[i], { x: t.x, y: t.y, s: t.s, rot: t.rot });
       });
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 2: Die Ankunftsreihenfolge aus Schritt 1 wird zur Spirale (Goldener Winkel ab ${grad(dreh)}): früh Angekommenes innen und klein, spät Angekommenes aussen, gross und obenauf; jeder Zwischenstand bleibt als Spur.` });
+      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 2: Die Ankunftsreihenfolge aus Schritt 1 wird zur Zeitachse entlang ${grad(w)}: früh Angekommenes am Anfang, spät Angekommenes am Ende und obenauf; quer dazu behält jedes Teil seine Lage aus dem Eingangsbild, in voller Grösse. Jeder Zwischenstand bleibt als Spur.` });
       return { ziel };
     },
     lauf(M, z, p) {
@@ -360,11 +364,11 @@ const OPS = {
     },
   },
 
-  // 3 · Wirksame Spuren: dieselbe Operation sechsmal; jedes Teil stempelt und rückt dorthin, wo am wenigsten Spur liegt, und dreht sich dabei in seine Richtung.
+  // 3 · Wirksame Spuren: dieselbe Operation sechsmal; jedes Teil stempelt und rückt dorthin, wo am wenigsten Spur liegt, gebunden an seine Herkunftsstelle, und dreht sich dabei in seine Richtung.
   //     Die Teile sind gegeneinander versetzt (bis zu gut einer halben Runde): ein Wogen statt eines Takts, und die Arbeit verteilt sich auf viele Bilder.
   3: {
     plan(M, z, r) {
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 3: Sechsmal stempeln und weitergleiten, gegeneinander versetzt; jedes Teil wählt die Nachbarstelle mit der geringsten Spur und dreht sich in seine Richtung (Spuren bisher: ${z.stempel.length}).` });
+      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 3: Sechsmal stempeln und weitergleiten, gegeneinander versetzt; jedes Teil wählt die Nachbarstelle mit der geringsten Spur, bleibt aber an seine Herkunftsstelle im Bild gebunden, und dreht sich in seine Richtung (Spuren bisher: ${z.stempel.length}).` });
       return { runden: 6, runde: z.teile.map(() => -1), ziel: {}, r: Math.floor(r() * 2 ** 31) };
     },
     lauf(M, z, p) {
@@ -377,15 +381,16 @@ const OPS = {
         if (runde > P.runde[i] && runde < P.runden && e.beweglich && !t.erschoepft) {
           P.runde[i] = runde;
           const r = zufall((P.r + runde * 7919 + i * 104729) >>> 0);
-          stempeln(M, z, i, 0.11);
-          const weite = 0.42 * Math.max(e.w, e.h) * t.s + 0.028;
+          stempeln(M, z, i, 0.16);
+          const weite = Math.min(0.12, 0.3 * Math.max(e.w, e.h) * t.s + 0.03);
           let best = null;
           for (let k = 0; k < 12; k++) {
             const w = (k / 12) * 2 * Math.PI + r() * 0.4;
             const x = t.x + Math.cos(w) * weite, y = t.y + Math.sin(w) * weite;
             if (x < 0.02 || y < 0.02 || x > M.seite - 0.02 || y > 0.98) continue;
             if (M.regel === "R1" && spurAn(M, z, x, y) > 0.5) continue;           // keine Rückkehr auf eine Stelle mit Spur
-            const wert = spurUnter(M, z, i, x, y, matrix(t.rot, t.s)) + 0.15 * r();
+            // geringe Spur, aber in der Nähe der Herkunft: die Spuren verdichten sich in der Gestalt des Originals
+            const wert = spurUnter(M, z, i, x, y, matrix(t.rot, t.s)) + 0.15 * r() + 2.2 * Math.hypot(x - e.hx, y - e.hy);
             if (!best || wert < best.wert) best = { x, y, w, wert };
           }
           if (!best) { t.erschoepft = true; z.ereignisse.push({ schritt: z.schritt, text: `Regel R1: ${name(e)} findet keine Stelle ohne Spur und bleibt stehen.` }); continue; }
