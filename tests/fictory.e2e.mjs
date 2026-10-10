@@ -79,6 +79,21 @@ await check("Ohne ORNA: Bild laden, Analyse mit getrenntem Befund, Lesart und Ei
   await ctx.close();
 });
 
+await check("Einstieg: die fünf Schritte unter dem Titel; nach dem Laden «Erzeugen» direkt auf der Werkbank; Analyse zugeklappt mit Kurzbefund", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  assert.equal(await page.locator(".ablauf li").count(), 5);
+  assert.ok(await page.locator("#erzeugen-werkbank").isHidden());
+  await page.click("#beispiel");
+  await page.waitForSelector("#erzeugen-werkbank:not([hidden])");
+  assert.match(await page.locator("#analyse-kurz").textContent(), /\d+ Flächen, \d+ Farbgruppen, \d+ Figuren/);
+  assert.equal(await page.locator("#analyse-auf").getAttribute("open"), null, "zugeklappt");
+  await page.click("#erzeugen-werkbank");
+  await page.waitForSelector("#buehne-box:not([hidden])");
+  assert.equal(await page.locator("#standbilder li").count(), 5);
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
 await check("Abspielen, Pause, Zeitleiste und Neustart; der Neustart löscht die Spuren und führt zu denselben Schlüsselzuständen", async () => {
   const { ctx, page } = await oeffne();
   await mitBeispiel(page);
@@ -182,6 +197,8 @@ await check("Handy: kein seitliches Scrollen, Bedienung erreichbar", async () =>
   const breit = await page.evaluate(() => document.documentElement.scrollWidth);
   assert.ok(breit <= 375, `scrollWidth ${breit}`);
   for (const id of ["#spielen", "#neustart", "#zeitleiste"]) { const b = await page.locator(id).boundingBox(); assert.ok(b && b.x >= 0 && b.x + b.width <= 375 && b.height >= 30, id); }
+  assert.ok(await page.locator("#gliederung").isHidden(), "die Analyse ist zugeklappt");
+  await page.locator("#analyse-auf summary").tap();
   await page.locator("#gliederung").tap({ position: { x: 20, y: 20 } });
   await ctx.close();
 });

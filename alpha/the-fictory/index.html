@@ -37,6 +37,20 @@
     body { font-family: var(--t-text); }
     .site-header h1 { font-family: var(--t-titel); font-weight: 400; font-size: clamp(2.6rem, 7vw, 4.4rem); letter-spacing: -0.02em; line-height: 1; }
     .site-header .lead { font-family: var(--t-titel); font-size: clamp(1.1rem, 2.4vw, 1.4rem); max-width: 30em; }
+    /* die fünf Schritte in Kürze, unter dem Titel */
+    .ablauf { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 22px 0 0; padding: 0; list-style: none; counter-reset: schritt; font-size: 0.92rem; color: var(--muted); max-width: 62em; }
+    .ablauf li { counter-increment: schritt; display: flex; align-items: baseline; gap: 0.45em; }
+    .ablauf li::before { content: counter(schritt); font-family: var(--t-titel); font-size: 1.15rem; color: var(--text); }
+    .ablauf b { font-weight: 600; color: var(--text); }
+    @media (max-width: 560px) { .ablauf { display: grid; gap: 4px; } }
+    /* Schritt 2 zum Aufklappen */
+    .bg-auf { margin: 14px 0 0; }
+    .bg-auf > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 10px 0; cursor: pointer; list-style: none; }
+    .bg-auf > summary::-webkit-details-marker { display: none; }
+    .bg-auf > summary .auf { text-decoration: underline; text-underline-offset: 3px; font-size: 0.95rem; }
+    .bg-auf > summary .auf::before { content: "+ "; }
+    .bg-auf[open] > summary .auf::before { content: "– "; }
+    .bg-auf > summary .kurz { color: var(--muted); font-size: 0.92rem; }
     .nur-lesen { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
     /* ---------- Werkbank ---------- */
@@ -217,7 +231,7 @@
     }
     @media (prefers-reduced-motion: reduce) { .ablage, .kontaktbogen canvas { transition: none; } }
   </style>
-  <script type="module" src="app.js?v=9"></script>
+  <script type="module" src="app.js?v=10"></script>
 </head>
 <body>
   <header class="site-header">
@@ -228,6 +242,13 @@
       </nav>
       <h1>The Fictory</h1>
       <p class="lead">Ein Bild zerfällt in seine Teile und geht weiter.</p>
+      <ol class="ablauf" aria-label="So geht es">
+        <li><b>Bild laden</b> – oder das Beispielbild nehmen</li>
+        <li><b>Analyse prüfen</b> – wenn du willst</li>
+        <li><b>ORNA</b> – eine Regel ziehen, wenn du willst</li>
+        <li><b>Erzeugen</b> – 30 Sekunden Animation</li>
+        <li><b>Ansehen und speichern</b> – Video, Standbilder</li>
+      </ol>
     </div>
   </header>
 
@@ -240,6 +261,7 @@
         <div class="bg-knoepfe">
           <label class="bg-knopf voll" for="datei">Bild wählen<input class="bg-datei" type="file" id="datei" accept="image/*"></label>
           <button type="button" class="bg-knopf" id="beispiel">Beispielbild</button>
+          <button type="button" class="bg-knopf voll" id="erzeugen-werkbank" hidden>Erzeugen</button>
         </div>
         <p class="bg-status" id="status-laden" role="status">Es bleibt auf deinem Gerät.</p>
       </div>
@@ -272,6 +294,8 @@
   <main class="bg-seite" id="app">
     <section class="bg-schritt" id="schritt-analyse" aria-labelledby="h-analyse" hidden>
       <h2 id="h-analyse"><span class="nr">2</span>Analyse prüfen</h2>
+      <details class="bg-auf" id="analyse-auf">
+        <summary><span class="auf">Ansehen und korrigieren</span><span class="kurz" id="analyse-kurz"></span></summary>
       <p class="bg-hinweis">So liest die App dein Bild: Farben, Flächen, Kanten, Lagen. Sie erkennt keine Dinge. Tippe in die Vorschau, um zu korrigieren.</p>
       <div class="bg-analyse">
         <div>
@@ -307,6 +331,7 @@
         <div class="bg-befunde-kopf" aria-hidden="true"><span>Befund</span><span>Lesart</span><span>Eingriff</span></div>
         <div id="befunde"></div>
       </div>
+      </details>
     </section>
 
     <section class="bg-schritt" id="schritt-orna" aria-labelledby="h-orna" hidden>
