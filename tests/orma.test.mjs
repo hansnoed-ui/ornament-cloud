@@ -565,8 +565,10 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
   for (const f of at.build()) assert.equal(readFileSync(new URL(f.pfad, root), "utf8"), f.inhalt, `${f.pfad} veraltet: node --experimental-strip-types tools/build-alpha-texte.ts`);
   const uebersicht = readFileSync(new URL("alpha/index.html", root), "utf8");
   const eintraege = [...uebersicht.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map(m => m[1]);
-  // Die Prüfraster in Arbeit stehen zusammen ganz unten, danach nur die Prototypen: OMNA COLOR, Das Dritte Rad (2. Oktober 2026), «Die Paradoxie der Stadt» (9. Oktober 2026) und «The Fictory» (10. Oktober 2026)
-  assert.deepEqual(eintraege.slice(-6), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/", "drittes-rad/", "stadt/", "the-fictory/"], "zuunterst, danach OMNA COLOR, Das Dritte Rad, die Stadt und The Fictory");
+  // Die Prüfraster in Arbeit stehen zusammen ganz unten, danach nur die Prototypen: OMNA COLOR, Das Dritte Rad (2. Oktober 2026) und «Die Paradoxie der Stadt» (9. Oktober 2026);
+  // «The Fictory» steht seit dem 10. Oktober 2026 zuoberst (Wunsch von Christian)
+  assert.deepEqual(eintraege.slice(-5), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/", "drittes-rad/", "stadt/"], "zuunterst, danach OMNA COLOR, Das Dritte Rad und die Stadt");
+  assert.equal(eintraege[0], "the-fictory/", "The Fictory zuoberst");
   const omna = readFileSync(new URL("alpha/omna-color/index.html", root), "utf8");
   assert.ok(!/(src|href)="https?:/.test(omna), "OMNA COLOR lädt nichts von fremden Servern");
   assert.match(omna, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/" aria-current="true">Ornament Cloud<\/a>\s*<a href="\.\.\/drittes-rad\/">Das Dritte Rad<\/a>\s*<\/nav>/);
