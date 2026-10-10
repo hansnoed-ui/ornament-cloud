@@ -12,7 +12,7 @@ const SEITEN = [
   { datei: "masterprompts/index.html", url: "https://ornament.cloud/masterprompts/", titel: "Masterprompts", bild: "assets/og-masterprompts.png", art: "png", canonical: true },
   { datei: "alpha/drittes-rad/index.html", url: "https://ornament.cloud/alpha/drittes-rad/", titel: "Das Dritte Rad", bild: "alpha/drittes-rad/og-drittes-rad.jpg", art: "jpg", canonical: false },
   { datei: "alpha/stadt/index.html", url: "https://ornament.cloud/alpha/stadt/", titel: "Die Paradoxie der Stadt", bild: "alpha/stadt/og-stadt.jpg", art: "jpg", canonical: false },   // seit 9. Oktober 2026
-  { datei: "alpha/the-fictory/index.html", url: "https://ornament.cloud/alpha/the-fictory/", titel: "The Fictory", bild: "alpha/the-fictory/og-the-fictory.jpg", art: "jpg", canonical: false, erzeuger: "tools/fictory-og.mjs" },   // seit 10. Oktober 2026, eigener Erzeuger
+  { datei: "alpha/the-fictory/index.html", url: "https://ornament.cloud/alpha/the-fictory/", titel: "The Fictory", bild: "alpha/the-fictory/og-the-fictory-raster.jpg", art: "jpg", canonical: false, erzeuger: "tools/fictory-og.mjs" },   // seit 10. Oktober 2026, eigener Erzeuger
 ];
 /** alle meta-Angaben einer Seite: property oder name → content */
 const metas = (html) => new Map([...html.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)].map((m) => [m[1], m[2]]));

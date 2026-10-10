@@ -2,7 +2,8 @@
 // Quelle: src/the-fictory/vorschau-quelle.jpg (1600 × 1592), ein Bild von Christian vom 10. Oktober 2026: ein Raster aus 10 × 9 schimmernden Teilen
 // auf tiefem Nachtblau (#00010c). Vorher: ein Standbild in Blau und Ocker, davor ein Bildschirmfoto vom Galaxy S23.
 //   assets/vorschau-the-fictory.jpg       640 × 800   Bild der Beitragskarte auf «Web»
-//   alpha/the-fictory/og-the-fictory.jpg  1200 × 630  Vorschaukarte zum Teilen (Open Graph, X)
+//   alpha/the-fictory/og-the-fictory-raster.jpg  1200 × 630  Vorschaukarte zum Teilen (Open Graph, X)
+//   Neues Motiv, neuer Dateiname: Plattformen und Messenger speichern Vorschaubilder unter ihrer Adresse zwischen und zeigen sonst das alte.
 //
 //   NODE_PATH=$(npm root -g) node tools/fictory-og.mjs
 import { createRequire } from "node:module";
@@ -55,7 +56,7 @@ await bild(1200, 630, `
     <h1>The Fictory</h1>
     <p>Ein Bild zerfällt in seine Teile und geht weiter.</p>
     <div class="fuss"><b>ornament.cloud/alpha/the-fictory</b>Nebeneinander, Nacheinander</div>
-  </div>`, "../alpha/the-fictory/og-the-fictory.jpg");
+  </div>`, "../alpha/the-fictory/og-the-fictory-raster.jpg");
 
 await browser.close();
 server.close();
