@@ -1,13 +1,13 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen, leitfarbe } from "./analyse.js?v=4";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=4";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=4";
-import { REGELN } from "./regeln.js?v=4";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=4";
-import { JEV } from "./jev.js?v=4";
-import { zip } from "./zip.js?v=4";
-import { feldMitShader } from "./feld.js?v=4";
+import { analysiere, konturen, leitfarbe } from "./analyse.js?v=5";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=5";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=5";
+import { REGELN } from "./regeln.js?v=5";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=5";
+import { JEV } from "./jev.js?v=5";
+import { zip } from "./zip.js?v=5";
+import { feldMitShader } from "./feld.js?v=5";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln
