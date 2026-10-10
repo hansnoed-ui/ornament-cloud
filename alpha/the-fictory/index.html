@@ -75,7 +75,7 @@
 
     /* Ergebnis */
     .bg-buehne { position: relative; margin: 16px 0 0; }
-    .bg-buehne canvas { display: block; width: 100%; height: auto; max-height: 78vh; object-fit: contain; border-radius: 6px; background: #f4f1ea; }
+    .bg-buehne canvas { display: block; width: 100%; height: auto; max-height: 78vh; object-fit: contain; border-radius: 6px; background: #151412; }
     .bg-steuer { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px 14px; align-items: center; margin: 12px 0 0; }
     .bg-zeit { position: relative; }
     .bg-zeit input { width: 100%; margin: 0; accent-color: var(--text); min-height: 32px; }
@@ -85,7 +85,7 @@
     .bg-uhr { margin: 2px 0 0; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
     .bg-standbilder { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 18px; margin: 28px 0 0; padding: 0; list-style: none; }
     .bg-standbilder li { display: grid; gap: 8px; align-content: start; }
-    .bg-standbilder canvas { display: block; width: 100%; height: auto; border-radius: 4px; background: #f4f1ea; cursor: pointer; }
+    .bg-standbilder canvas { display: block; width: 100%; height: auto; border-radius: 4px; background: #151412; cursor: pointer; }
     .bg-standbilder h3 { margin: 0; font-size: 0.98rem; font-weight: 600; }
     .bg-standbilder p { margin: 0; font-size: 0.86rem; color: var(--muted); }
     .bg-standbilder .bg-knoepfe { margin: 2px 0 0; }
@@ -97,7 +97,7 @@
     .bg-gegen-bilder { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 12px 0 0; }
     .bg-gegen-bilder[hidden] { display: none; }
     .bg-gegen-bilder figure { margin: 0; }
-    .bg-gegen-bilder canvas { display: block; width: 100%; height: auto; border-radius: 4px; background: #f4f1ea; }
+    .bg-gegen-bilder canvas { display: block; width: 100%; height: auto; border-radius: 4px; background: #151412; }
     .bg-gegen-bilder figcaption { margin: 6px 0 0; font-size: 0.84rem; color: var(--muted); }
     .bg-protokoll { margin: 18px 0 0; font-size: 0.88rem; }
     .bg-protokoll summary { cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
@@ -120,7 +120,7 @@
       .bg-gegen-bilder { grid-template-columns: minmax(0, 1fr); }
     }
   </style>
-  <script type="module" src="app.js?v=1"></script>
+  <script type="module" src="app.js?v=2"></script>
 </head>
 <body>
   <header class="site-header">
@@ -153,11 +153,11 @@
       <p class="bg-hinweis">Farb- und geometriebasierte Gliederung (Farbgruppen, zusammenhängende Flächen, Kanten, Lagen). Sie erkennt keine Gegenstände und sagt nichts über die Entstehung des Bildes. Befund, Lesart und Eingriff stehen getrennt; Lesarten lassen sich verwerfen, die Gliederung lässt sich durch Antippen korrigieren.</p>
       <div class="bg-analyse">
         <div>
-          <div class="bg-vorschau"><canvas id="gliederung" aria-label="Vorschau der Bildgliederung: Flächen in ihrer mittleren Farbe, ausgewählte Teile mit kräftiger Kontur, Grund schraffiert"></canvas></div>
+          <div class="bg-vorschau"><canvas id="gliederung" aria-label="Vorschau der Bildgliederung: Flächen in ihrer mittleren Farbe, Figuren mit kräftiger Kontur, Grund schraffiert"></canvas></div>
           <div class="bg-zeile">
             <span>Antippen:</span>
             <span class="bg-wahl" role="radiogroup" aria-label="Was ein Tipp in der Vorschau tut">
-              <label><input type="radio" name="tipp" value="teil" checked><span>Teil an/aus</span></label>
+              <label><input type="radio" name="tipp" value="teil" checked><span>Figur an/aus</span></label>
               <label><input type="radio" name="tipp" value="grund"><span>Grund ↔ Figur</span></label>
             </span>
             <span class="bg-wahl" role="radiogroup" aria-label="Ansicht der Vorschau">
@@ -165,7 +165,8 @@
               <label><input type="radio" name="ansicht" value="original"><span>Original</span></label>
             </span>
           </div>
-          <div class="bg-teile" id="teile" aria-label="Teile (Flächen) für die Operationen"></div>
+          <p class="bg-hinweis">Alle Flächen werden zu Teilen. Figuren liegen obenauf und tragen den Anstoss in Schritt 4.</p>
+          <div class="bg-teile" id="teile" aria-label="Figuren"></div>
         </div>
         <div class="bg-regler">
           <label>Farbgruppen <output id="farben-wert">6</output><input type="range" id="farben" min="3" max="10" step="1" value="6"></label>
@@ -199,7 +200,7 @@
 
     <section class="bg-schritt" id="schritt-erzeugen" aria-labelledby="h-erzeugen" hidden>
       <h2 id="h-erzeugen"><span class="nr">4</span>Erzeugen</h2>
-      <p class="bg-hinweis">Ein Prozess von 30 Sekunden mit sechs Operationen; jede plant ihren Verlauf aus dem Zustand, den die vorige hinterlassen hat. Die sechs Standbilder sind Zustände dieses einen Laufs.</p>
+      <p class="bg-hinweis">Das ganze Bild wird zerlegt: jede Fläche ein Teil, grosse Flächen in Kacheln. Danach gibt es das Bild nur noch als seine Teile. Ein Prozess von 30 Sekunden mit sechs Operationen; jede plant ihren Verlauf aus dem Zustand, den die vorige hinterlassen hat. Die sechs Standbilder sind Zustände dieses einen Laufs.</p>
       <div class="bg-knoepfe">
         <button type="button" class="bg-knopf voll" id="erzeugen">Erzeugen</button>
         <span class="bg-status" id="startwert"></span>
@@ -251,8 +252,8 @@
     <section class="bg-schritt bg-methode" aria-labelledby="h-methode">
       <h2 id="h-methode">Was hier geschieht</h2>
       <ul>
-        <li><strong>Verräumlichung:</strong> Die Gliederung macht Stellen wiederauffindbar. Als «dieselbe Stelle» gilt eine zusammenhängende Fläche einer Farbgruppe (Name F1, F2 …); ein Teil bleibt dasselbe Teil, wo immer es hinwandert, und seine Herkunftsstelle bleibt als Aussparung adressierbar.</li>
-        <li><strong>Verzeitlichung:</strong> Ein Spurenfeld nimmt jede gestempelte Lage auf. Spätere Schritte meiden es (Schritt 3), werden von ihm gebremst (Schritt 4) und wählen danach ihren Eingriff (Schritt 6). Die Gegenprobe zeigt, was sich ändert, wenn dieses Feld fehlt.</li>
+        <li><strong>Verräumlichung:</strong> Die Gliederung macht Stellen wiederauffindbar. Als «dieselbe Stelle» gilt eine zusammenhängende Fläche einer Farbgruppe (Name F1, F2 …); grosse Flächen werden in Kacheln geteilt (F3.2 …). Ein Teil bleibt dasselbe Teil, wo immer es hinwandert, und seine Herkunftsstelle bleibt adressierbar.</li>
+        <li><strong>Verzeitlichung:</strong> Ein Spurenfeld nimmt jede gestempelte Lage auf. Spätere Schritte meiden es (Schritt 3), werden von ihm gebremst, wenn die Kopplungen das Bild wieder zusammenziehen (Schritt 4), und legen danach ihren Schnitt (Schritt 6). Das Bild kehrt nie ganz zurück. Die Gegenprobe zeigt, was sich ändert, wenn dieses Feld fehlt.</li>
         <li>Bewegung allein belegt keine Folgewirksamkeit, und eine stabile Ordnung kann bewegte Teile enthalten. Es gibt keine Zahlenbewertung nach dem Raster und keine Note.</li>
         <li>Untersucht werden die hier ausgeführten Bildoperationen, nicht die Entstehung des Eingangsbildes und nicht die Wirkung auf das Publikum.</li>
         <li id="integrationen">Integrationen werden beim Laden ermittelt.</li>

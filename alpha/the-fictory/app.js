@@ -1,12 +1,12 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen } from "./analyse.js?v=1";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=1";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=1";
-import { REGELN } from "./regeln.js?v=1";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=1";
-import { JEV } from "./jev.js?v=1";
-import { zip } from "./zip.js?v=1";
+import { analysiere, konturen } from "./analyse.js?v=2";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=2";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=2";
+import { REGELN } from "./regeln.js?v=2";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=2";
+import { JEV } from "./jev.js?v=2";
+import { zip } from "./zip.js?v=2";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln
@@ -15,7 +15,7 @@ const EXPORT_MIN = 1600;        // Standbilder mindestens so lang (längste Seit
 const BUEHNE_SEITE = 1080;      // Vorschau der Animation
 const VIDEO_SEITE = 1080;       // Video
 const MERKEN = 15;              // Momentaufnahme alle 15 Schritte (Zeitleiste)
-const VERSION = "1.0";
+const VERSION = "2.0";
 
 const S = {
   bild: null, arbeit: null, analyseBild: null, A: null,
@@ -145,7 +145,7 @@ function zeigeTeile() {
   for (const F of kandidaten) {
     const b = document.createElement("button");
     b.type = "button"; b.setAttribute("aria-pressed", String(teile.has(F.id)));
-    b.title = `${teile.has(F.id) ? "Teil" : "Nicht ausgewählt"} · ${Math.round(F.anteil * 1000) / 10} % des Bildes`;
+    b.title = `${teile.has(F.id) ? "Figur" : "Keine Figur"} · ${Math.round(F.anteil * 1000) / 10} % des Bildes`;
     const i = document.createElement("i"); i.style.background = `rgb(${F.rgb.join(",")})`;
     b.append(i, `F${F.id + 1}`);
     b.addEventListener("click", () => { S.einstellungen.korrekturen.push({ ...punktIn(A, F.id), art: teile.has(F.id) ? "teil-" : "teil+" }); neuAnalysieren(); });
@@ -223,7 +223,7 @@ async function erzeugen(stumm = false) {
   const regel = S.orna?.ableitung.regel ?? null;
   const M = erzeugeLauf(A, { seed: S.seed, regel });
   const mat = baueMaterial(S.arbeit, A, M);
-  const L = { M, mat, cache: new Map(), z: null, seed: S.seed, regel, schluessel: [], beschreibung: [] };
+  const L = { M, mat, cache: new Map(), z: null, seed: S.seed, regel, schluessel: [], beschreibung: [], spurCache: {} };
   S.lauf = L;
   neustartZustand();
   L.schluessel = SCHLUESSEL.map((k) => zustandsSchluessel(zustandBei(k)));
@@ -233,7 +233,7 @@ async function erzeugen(stumm = false) {
   const c = $("buehne"); c.width = bw; c.height = bh;
   zeigeStandbilder(); zeigeMarken(); zeigeEreignisse(keys[6]);
   $("ergebnis").hidden = false; $("gegen-bilder").hidden = true;
-  $("status-erzeugen").textContent = `Erzeugt: ${M.teile.length} Teile, Regel ${regel ? `${regel} (${REGELN[regel].name})` : "keine (ohne ORNA)"}, Startwert ${S.seed}.`;
+  $("status-erzeugen").textContent = `Erzeugt: ${M.teile.length} Teile (${M.teile.filter((e) => e.kachel >= 0).length} davon Kacheln grosser Flächen), Regel ${regel ? `${regel} (${REGELN[regel].name})` : "keine (ohne ORNA)"}, Startwert ${S.seed}.`;
   zeichneBuehne();
   if (!stumm) {
     $("ergebnis").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
@@ -266,7 +266,7 @@ function zustandBei(k) {
 // ---------- 5 · Ansehen ----------
 function zeichneBuehne() {
   const L = S.lauf, c = $("buehne");
-  zeichne(c.getContext("2d"), c.width, c.height, L.z, L.M, L.mat);
+  zeichne(c.getContext("2d"), c.width, c.height, L.z, L.M, L.mat, L.spurCache);
   const n = L.z.schritt;
   $("zeitleiste").value = n;
   const st = n < SCHLUESSEL[0] ? 0 : STATIONEN.find((s) => n <= SCHLUESSEL[s.nr] && n > (SCHLUESSEL[s.nr - 1] ?? -1))?.nr ?? 6;
@@ -415,13 +415,13 @@ async function video() {
   const knopf = $("video"); knopf.disabled = true;
   const fort = $("fortschritt"); fort.hidden = false; fort.value = 0;
   $("status-export").textContent = `Video wird aufgenommen (${GESAMT / TAKT} s in Echtzeit) …`;
-  const z = anfang(L.M);
-  zeichne(ctx, w, h, z, L.M, L.mat);
+  const z = anfang(L.M), spurCache = {};
+  zeichne(ctx, w, h, z, L.M, L.mat, spurCache);
   rec.start(1000);
   const t0 = performance.now(), nachlauf = TAKT;          // eine Sekunde Halt am Ende
   for (let f = 0; f <= GESAMT + nachlauf; f++) {
     if (f > 0 && z.schritt < GESAMT) schritt(L.M, z);
-    zeichne(ctx, w, h, z, L.M, L.mat);
+    zeichne(ctx, w, h, z, L.M, L.mat, spurCache);
     spur.requestFrame?.();
     fort.value = f / (GESAMT + nachlauf);
     const warte = t0 + ((f + 1) * 1000) / TAKT - performance.now();
@@ -460,9 +460,9 @@ function gegenprobe() {
   const [w, h] = mass(L.M.seite, 640);
   for (const [id, z] of [["gegen-mit", mit], ["gegen-ohne", ohne]]) { const c = $(id); c.width = w; c.height = h; zeichne(c.getContext("2d"), w, h, z, L.M, L.mat); }
   const verschiebung = mit.teile.reduce((s, t, i) => s + Math.hypot(t.x - ohne.teile[i].x, t.y - ohne.teile[i].y), 0) / mit.teile.length;
-  const schnitt = (z) => (z.schnitt === null ? "keine" : `F${L.M.teile[z.federn[z.schnitt].i].region + 1}–F${L.M.teile[z.federn[z.schnitt].j].region + 1}`);
-  $("gegen-mit-text").textContent = `Mit wirksamen Spuren (Standbild 6). Getrennte Kopplung: ${schnitt(mit)}.`;
-  $("gegen-ohne-text").textContent = `Spurenfeld vor Schritt 4 gelöscht. Getrennte Kopplung: ${schnitt(ohne)}. Die Teile stehen im Mittel ${zahl(verschiebung * 100)} % der Bildhöhe anders.`;
+  const gerissen = (z) => z.federn.filter((f) => !f.aktiv).length;
+  $("gegen-mit-text").textContent = `Mit wirksamen Spuren (Standbild 6). Gerissene Kopplungen: ${gerissen(mit)}.`;
+  $("gegen-ohne-text").textContent = `Spurenfeld vor Schritt 4 gelöscht. Gerissene Kopplungen: ${gerissen(ohne)}. Die Teile stehen im Mittel ${zahl(verschiebung * 100)} % der Bildhöhe anders.`;
   $("gegen-bilder").hidden = false;
   return { verschiebung, mit: zustandsSchluessel(mit), ohne: zustandsSchluessel(ohne) };
 }
