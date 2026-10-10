@@ -9,8 +9,8 @@
 //   5 Anders weitergehen     → ein einziger Schnitt durch das Gefüge (gelegt, wo die meiste Spur liegt) trennt alle Kopplungen über ihn; eine Seite bricht weg
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall } from "./analyse.js?v=8";
-import { REGELN } from "./regeln.js?v=8";
+import { zufall } from "./analyse.js?v=9";
+import { REGELN } from "./regeln.js?v=9";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
@@ -311,7 +311,7 @@ const OPS = {
       const ankunft = Object.entries(ziel).sort((a, b) => a[1].start + a[1].dauer - (b[1].start + b[1].dauer) || a[0] - b[0]).map(([i]) => Number(i));
       z.ankunft = ankunft;
       const regeltext = { farbe: "nach Farbgruppe", groesse: "nach Fläche", helligkeit: "nach Helligkeit" }[A.regel];
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 1: Das Bild wird in ${M.teile.length} Teile zerlegt (Flächen, grosse Flächen in Kacheln); ${N} Teile gehen ${regeltext} in ein Archiv-Raster von ${nx} × ${ny} Feldern, jedes auf seine Feldgrösse gebracht${M.regel === "R3" ? ", eingerastet" : ""}. Zuerst angekommen: ${ankunft.slice(0, 4).map((i) => name(M.teile[i])).join(", ")} …` });
+      z.ereignisse.push({ schritt: z.schritt, kurz: `${M.teile.length} Teile, ${regeltext} ins Raster gelegt.`, text: `Schritt 1: Das Bild wird in ${M.teile.length} Teile zerlegt (Flächen, grosse Flächen in Kacheln); ${N} Teile gehen ${regeltext} in ein Archiv-Raster von ${nx} × ${ny} Feldern, jedes auf seine Feldgrösse gebracht${M.regel === "R3" ? ", eingerastet" : ""}. Zuerst angekommen: ${ankunft.slice(0, 4).map((i) => name(M.teile[i])).join(", ")} …` });
       return { ziel, nx, ny };
     },
     lauf(M, z, p) {
@@ -350,7 +350,7 @@ const OPS = {
         ziel[i] = { x0: t.x, y0: t.y, s0: t.s, rot0: t.rot, x, y, s, rot: t.rot + wende, start: f * 0.45, dauer: 0.42 * e.last, z: (e.figur ? 1000 : 0) + (e.eingeschlossen && !M.verworfen.has("ueberlagerung") ? 500 : 0) + k, stempel: [0, 0.5] };
         if (!e.beweglich) Object.assign(ziel[i], { x: t.x, y: t.y, s: t.s, rot: t.rot });
       });
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 2: Die Ankunftsreihenfolge aus Schritt 1 wird zur Zeitachse entlang ${grad(w)}: früh Angekommenes am Anfang, spät Angekommenes am Ende und obenauf; quer dazu behält jedes Teil seine Lage aus dem Eingangsbild, in voller Grösse. Jeder Zwischenstand bleibt als Spur.` });
+      z.ereignisse.push({ schritt: z.schritt, kurz: "Die Reihenfolge der Ankunft wird zur Zeitachse.", text: `Schritt 2: Die Ankunftsreihenfolge aus Schritt 1 wird zur Zeitachse entlang ${grad(w)}: früh Angekommenes am Anfang, spät Angekommenes am Ende und obenauf; quer dazu behält jedes Teil seine Lage aus dem Eingangsbild, in voller Grösse. Jeder Zwischenstand bleibt als Spur.` });
       return { ziel };
     },
     lauf(M, z, p) {
@@ -368,7 +368,7 @@ const OPS = {
   //     Die Teile sind gegeneinander versetzt (bis zu gut einer halben Runde): ein Wogen statt eines Takts, und die Arbeit verteilt sich auf viele Bilder.
   3: {
     plan(M, z, r) {
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 3: Sechsmal stempeln und weitergleiten, gegeneinander versetzt; jedes Teil wählt die Nachbarstelle mit der geringsten Spur, bleibt aber an seine Herkunftsstelle im Bild gebunden, und dreht sich in seine Richtung (Spuren bisher: ${z.stempel.length}).` });
+      z.ereignisse.push({ schritt: z.schritt, kurz: "Sechs Runden: stempeln, ausweichen, nah an der Herkunft bleiben.", text: `Schritt 3: Sechsmal stempeln und weitergleiten, gegeneinander versetzt; jedes Teil wählt die Nachbarstelle mit der geringsten Spur, bleibt aber an seine Herkunftsstelle im Bild gebunden, und dreht sich in seine Richtung (Spuren bisher: ${z.stempel.length}).` });
       return { runden: 6, runde: z.teile.map(() => -1), ziel: {}, r: Math.floor(r() * 2 ** 31) };
     },
     lauf(M, z, p) {
@@ -430,7 +430,7 @@ const OPS = {
       const anstoss = [...T].filter((e) => e.figur).sort((a, b) => b.anteil - a.anteil)[0]?.i ?? [...T].sort((a, b) => b.anteil - a.anteil)[0].i;
       z.anstoss = anstoss;
       const t = z.teile[anstoss];
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 4: ${z.federn.length} Kopplungen mit der Distanz aus dem Eingangsbild (${kanten.filter((k) => k.art === "baum").length} Gerüst, ${kanten.filter((k) => k.art === "grenze").length} gemeinsame Grenzen${M.regel === "R7" ? `, ${kanten.filter((k) => k.art === "farbe").length} gleiche Farbe` : ""}) ziehen das Bild wieder zusammen; alle Teile kehren zur Originalgrösse zurück. Anstoss: ${name(T[anstoss])} dreht um 90°. Stellen mit Spur sind zäh.` });
+      z.ereignisse.push({ schritt: z.schritt, kurz: `${z.federn.length} Kopplungen ziehen das Bild verdreht zusammen.`, text: `Schritt 4: ${z.federn.length} Kopplungen mit der Distanz aus dem Eingangsbild (${kanten.filter((k) => k.art === "baum").length} Gerüst, ${kanten.filter((k) => k.art === "grenze").length} gemeinsame Grenzen${M.regel === "R7" ? `, ${kanten.filter((k) => k.art === "farbe").length} gleiche Farbe` : ""}) ziehen das Bild wieder zusammen; alle Teile kehren zur Originalgrösse zurück. Anstoss: ${name(T[anstoss])} dreht um 90°. Stellen mit Spur sind zäh.` });
       return { rot0: t.rot, s0: z.teile.map((x) => x.s) };
     },
     lauf(M, z, p) {
@@ -472,7 +472,7 @@ const OPS = {
       const richtung = kleiner ? 1 : -1;
       const drall = z.teile.map(() => (r() - 0.5) * 0.06);
       z.schnitt = { x: px, y: py, w };
-      z.ereignisse.push({ schritt: z.schritt, text: `Schritt 5: Eingriff – ein Schnitt quer zur Hauptachse, zwischen ${name(M.teile[ort])} (das Teil mit der meisten Spur, ${meist.toFixed(1)}) und dem Schwerpunkt des Gefüges. ${gerissen} Kopplungen reissen; ${weg.size} Teile brechen weg und drehen sich, ${z.teile.length - weg.size} halten zusammen.` });
+      z.ereignisse.push({ schritt: z.schritt, kurz: `Ein Schnitt: ${weg.size} Teile brechen weg.`, text: `Schritt 5: Eingriff – ein Schnitt quer zur Hauptachse, zwischen ${name(M.teile[ort])} (das Teil mit der meisten Spur, ${meist.toFixed(1)}) und dem Schwerpunkt des Gefüges. ${gerissen} Kopplungen reissen; ${weg.size} Teile brechen weg und drehen sich, ${z.teile.length - weg.size} halten zusammen.` });
       return { weg: [...weg], dx: nx * richtung, dy: ny * richtung, drall, kopplung0: z.kopplungAlpha };
     },
     lauf(M, z, p) {
@@ -554,5 +554,6 @@ export function zustandsSchluessel(z) {
 /** Beschreibung der fünf Operationen für die Standbilder, aus dem tatsächlichen Lauf */
 export function beschreibungen(M, schluesselZustaende) {
   const aus = (st) => (schluesselZustaende[st]?.ereignisse ?? []).filter((e) => e.schritt >= SCHLUESSEL[st - 1] && e.schritt < SCHLUESSEL[st]).map((e) => e.text);
-  return STATIONEN.slice(1).map((s) => ({ nr: s.nr, titel: s.titel, text: aus(s.nr).join(" ") }));
+  const kurz = (st) => (schluesselZustaende[st]?.ereignisse ?? []).find((e) => e.kurz && e.schritt >= SCHLUESSEL[st - 1] && e.schritt < SCHLUESSEL[st])?.kurz ?? "";
+  return STATIONEN.slice(1).map((s) => ({ nr: s.nr, titel: s.titel, kurz: kurz(s.nr), text: aus(s.nr).join(" ") }));
 }

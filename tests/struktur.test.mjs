@@ -212,7 +212,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 const SEITEN = {
   apps: { titel: "Apps", karten: [["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
-  web: { titel: "Web", karten: [["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["Mensch, Niklas!", "mensch-niklas/"]] },
+  web: { titel: "Web", karten: [["The Fictory", "../alpha/the-fictory/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["Mensch, Niklas!", "mensch-niklas/"]] },
 };
 
 test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und Eintrag in der Sitemap", () => {
@@ -260,7 +260,14 @@ test("Web: OMNA COLOR und Das Dritte Rad (Alpha), das Stellenfeld, dann zuunters
   const alle = karten(html);
   assert.deepEqual(alle.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
   // Wunsch vom 9. Oktober 2026: die beiden Videos stehen zuunterst, «Mensch, Niklas!» als letztes
-  const k = alle.slice(0, 3), [o, v, m] = alle.slice(3);
+  const [f] = alle, k = alle.slice(1, 4), [o, v, m] = alle.slice(4);
+  // «The Fictory» (10. Oktober 2026) zuoberst, Alpha, Bild aus tools/fictory-og.mjs
+  assert.ok(f.tags.includes("Alpha") && f.tags.includes("Prototyp"));
+  assert.match(f.html, /<img src="\.\.\/assets\/vorschau-the-fictory\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  const vorschauFictory = readFileSync(new URL("assets/vorschau-the-fictory.jpg", root));
+  assert.deepEqual(jpegMass(vorschauFictory), [640, 800]);
+  assert.ok(vorschauFictory.length < 150_000, `Vorschaubild ${vorschauFictory.length} Byte, unter 150 KB`);
+  assert.ok(lies("tools/fictory-og.mjs").includes("vorschau-the-fictory.jpg"));
   // «Die Paradoxie der Stadt» (Wunsch vom 10. Oktober 2026): zurzeit nicht auf «Web», nur auf der Alpha-Seite, dort auch direkt im Vollbild
   assert.ok(!/href="[^"]*alpha\/stadt\//.test(html), "keine Karte und kein Link zur Stadt auf «Web»");
   assert.match(lies("alpha/index.html"), /<a href="stadt\/">Die Paradoxie der Stadt<\/a>[\s\S]*?<a href="stadt\/\?vollbild">Im Vollbild öffnen<\/a>/);

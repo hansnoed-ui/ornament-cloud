@@ -73,7 +73,7 @@ await check("Ohne ORNA: Bild laden, Analyse mit getrenntem Befund, Lesart und Ei
   assert.equal(await page.locator("video").count(), 0);
   assert.equal(await page.locator("#standbilder li").count(), 5);
   assert.equal(await page.locator("#standbilder li h3").allTextContents().then((t) => t.join("|")), "1Neue Nachbarschaften|2Abfolge als Bild|3Wirksame Spuren|4Gekoppelte Beziehungen|5Anders weitergehen");
-  for (const p of await page.locator("#standbilder li p").allTextContents()) assert.ok(p.length > 40, "Operationsbeschreibung");
+  for (const p of await page.locator("#standbilder li p").allTextContents()) assert.ok(p.length > 15, "Operationsbeschreibung");
   assert.equal(await page.evaluate(() => window.fictoryTest.S.orna), null);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, [], "keine Anfrage nach aussen");
   await ctx.close();

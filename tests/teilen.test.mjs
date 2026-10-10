@@ -12,6 +12,7 @@ const SEITEN = [
   { datei: "masterprompts/index.html", url: "https://ornament.cloud/masterprompts/", titel: "Masterprompts", bild: "assets/og-masterprompts.png", art: "png", canonical: true },
   { datei: "alpha/drittes-rad/index.html", url: "https://ornament.cloud/alpha/drittes-rad/", titel: "Das Dritte Rad", bild: "alpha/drittes-rad/og-drittes-rad.jpg", art: "jpg", canonical: false },
   { datei: "alpha/stadt/index.html", url: "https://ornament.cloud/alpha/stadt/", titel: "Die Paradoxie der Stadt", bild: "alpha/stadt/og-stadt.jpg", art: "jpg", canonical: false },   // seit 9. Oktober 2026
+  { datei: "alpha/the-fictory/index.html", url: "https://ornament.cloud/alpha/the-fictory/", titel: "The Fictory", bild: "alpha/the-fictory/og-the-fictory.jpg", art: "jpg", canonical: false, erzeuger: "tools/fictory-og.mjs" },   // seit 10. Oktober 2026, eigener Erzeuger
 ];
 /** alle meta-Angaben einer Seite: property oder name → content */
 const metas = (html) => new Map([...html.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)].map((m) => [m[1], m[2]]));
@@ -71,7 +72,7 @@ test("Teilen: die Startseite steht in der Sitemap, Das Dritte Rad nicht und blei
 
 test("Teilen: tools/start-og.mjs erzeugt genau diese beiden Bilder und trägt den Satz der Startseite; README nennt es", () => {
   const erzeuger = lies("tools/start-og.mjs");
-  for (const s of SEITEN) assert.ok(erzeuger.includes(s.bild.split("/").slice(-2).join("/")) || erzeuger.includes(s.bild.split("/").pop()), `${s.bild} im Erzeuger`);
+  for (const s of SEITEN) { const e = s.erzeuger ? lies(s.erzeuger) : erzeuger; assert.ok(e.includes(s.bild.split("/").slice(-2).join("/")) || e.includes(s.bild.split("/").pop()), `${s.bild} im Erzeuger`); }
   // der Satz steht seit dem 5. Oktober 2026 nicht mehr auf der Startseite, wohl aber in der Bildbeschreibung der Vorschaukarte und im Bild selbst
   const satz = lies("index.html").match(/<meta property="og:image:alt" content="[^"]*«([^»]+)»/)[1];
   assert.ok(erzeuger.includes(satz), `der Satz der Vorschaukarte («${satz}») steht im Bild; ändert er sich, Bild neu erzeugen`);
