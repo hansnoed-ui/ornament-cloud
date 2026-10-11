@@ -174,6 +174,13 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   hält die Uhr der Animation an und setzt dort fort, statt bis zu acht Schritte auf einmal nachzuholen.
   Module mit `?v=16`; bei Änderungen die Marke in allen Importen und in `index.html` hochzählen.
   Tests: `node --experimental-strip-types --no-warnings --test tests/fictory.test.mjs` und `NODE_PATH=$(npm root -g) node tests/fictory.e2e.mjs` (mit `SCHNELL=1` ohne die Videoaufnahme)
+  `alpha/aufnahme/` ist «Aufnahme» (Prototyp seit 11. Oktober 2026, zuunterst in der Übersicht, sonst nicht verlinkt; Wunsch: einen Weg, Animationen beliebiger Webseiten zu erzeugen oder herunterzuladen): Ein Tab, ein Fenster oder der Bildschirm wird freigegeben (`getDisplayMedia`, bevorzugt ein Tab, nie die Seite selbst),
+  in der Vorschau zieht man den Ausschnitt auf (frei, 9 : 16, 4 : 5, 1 : 1, 16 : 9; neu aufziehen, verschieben, an den Ecken ändern; «Ganzes Bild»), wählt Grösse (wie der Ausschnitt oder kurze Seite 720 bis 2160, längste Kante höchstens 3840, bei festem Format genau im Verhältnis, also 9 : 16 in 1080 = 1080 × 1920),
+  Bildrate (30, 60), Datei (MP4 mit H.264, wo der Browser es kann, sonst WebM) und Dauer (bis zum Stopp oder 5 bis 60 Sekunden, auf Wunsch 3 Sekunden Vorlauf), nimmt auf und lädt das Video herunter (`aufnahme-JJJJ-MM-TT-HHMM.mp4`).
+  Alles bleibt im Browser, nichts wird hochgeladen. Zwei Wege zum Video (`aufnahme.js`): In Chrome und Edge Bild für Bild (MediaStreamTrackProcessor → OffscreenCanvas → MediaStreamTrackGenerator), unabhängig von der Anzeige, darum läuft die Aufnahme auch, wenn man zum anderen Tab wechselt
+  (die Seite bleibt beim Freigeben vorne, `CaptureController.setFocusBehavior`); sonst (Firefox, Safari) über eine Leinwand im Takt der Anzeige, die Seite muss sichtbar bleiben. Die Länge trägt `alpha/the-fictory/dauer.js` in die Datei nach (dieselbe Versionsmarke wie in The Fictory, ein Test prüft das).
+  Ohne Freigabe im Browser (Handy) ein Hinweis auf die Bildschirmaufnahme des Systems. Rechnen mit Ausschnitt und Grösse in `rahmen.js` (ohne DOM).
+  Tests: `node --test tests/aufnahme.test.mjs` und `NODE_PATH=$(npm root -g) node tests/aufnahme.e2e.mjs` (simulierte Freigabe: ein künstlicher, bewegter Bildschirm)
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)
 - `src/doppelspalt/CLAUDE-CODE-MASTERPROMPT-2026-ARCHIV.md` – ursprünglicher Auftrag, Entstehungsstand mit 99 Konstellationen, nicht mehr verbindlich

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aufnahme – Ornament Cloud · Alpha</title>
+  <!-- Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). Nur aus der Alpha-Übersicht verlinkt (seit 11. Oktober 2026). -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Animationen von beliebigen Webseiten als Video sichern: Tab oder Fenster wählen, Ausschnitt und Format festlegen, aufnehmen und als MP4 oder WebM herunterladen. Alles bleibt im Browser.">
+  <link rel="stylesheet" href="../../styles.css?v=45">
+  <style>
+    .site-header { padding-bottom: 12px; }
+    .aufnahme { display: grid; gap: 20px; padding-bottom: 48px; }
+    .schritte { margin: 0; padding-left: 1.3em; color: var(--muted); }
+    .schritte li { margin: 0.15rem 0; }
+    .schritte b { color: var(--text); font-weight: 600; }
+
+    .leiste { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .knopf {
+      min-height: 44px; padding: 8px 18px; border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text);
+      font: inherit; font-size: 0.95rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .knopf:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .knopf:disabled { opacity: 0.45; cursor: default; }
+    .knopf.haupt { background: var(--text); color: var(--bg); font-weight: 600; }
+    .knopf.haupt:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 85%, var(--bg)); }
+    .knopf.rot { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 600; }
+    .knopf:focus-visible, .wahl button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .adresse { display: flex; flex: 1 1 320px; gap: 8px; min-width: 0; }
+    .adresse input { flex: 1; min-width: 0; min-height: 44px; padding: 8px 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); font: inherit; }
+
+    .buehne { position: relative; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+    .leer { display: grid; place-content: center; gap: 6px; min-height: 260px; padding: 24px; text-align: center; color: var(--muted); }
+    .leer p { margin: 0; }
+    .leer .gross { font-family: var(--serif); font-size: 1.35rem; color: var(--text); }
+    .vorschau { position: relative; margin: 0 auto; max-height: 70vh; touch-action: none; user-select: none; -webkit-user-select: none; cursor: crosshair; }
+    .vorschau video { display: block; width: 100%; height: 100%; background: #000; }
+    /* der Ausschnitt: aussen abgedunkelt, innen frei */
+    .rahmen { position: absolute; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.55); outline: 2px solid #fff; cursor: move; }
+    .rahmen::after { content: ""; position: absolute; inset: 0; border: 1px dashed rgba(0, 0, 0, 0.6); pointer-events: none; }
+    .ecke { position: absolute; width: 22px; height: 22px; margin: -11px; border: 2px solid #fff; border-radius: 50%; background: var(--accent); }
+    .ecke[data-ecke="nw"] { left: 0; top: 0; cursor: nwse-resize; }
+    .ecke[data-ecke="ne"] { right: 0; top: 0; margin-right: -11px; cursor: nesw-resize; }
+    .ecke[data-ecke="sw"] { left: 0; bottom: 0; margin-bottom: -11px; cursor: nesw-resize; }
+    .ecke[data-ecke="se"] { right: 0; bottom: 0; margin: 0 -11px -11px 0; cursor: nwse-resize; }
+    .masse { position: absolute; left: 6px; top: 6px; padding: 2px 8px; border-radius: 999px; background: rgba(0, 0, 0, 0.65); color: #fff; font-size: 0.78rem; font-variant-numeric: tabular-nums; pointer-events: none; white-space: nowrap; }
+    .laeuft .ecke { display: none; }
+    .laeuft .vorschau, .laeuft .rahmen { cursor: default; }
+    .laeuft .rahmen { outline-color: var(--accent); }
+    .zaehler { position: absolute; inset: 0; display: grid; place-content: center; font-family: var(--serif); font-size: clamp(4rem, 14vw, 9rem); color: #fff; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.7); pointer-events: none; }
+
+    .einstellungen { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 20px; margin: 0; }
+    .einstellungen > div { display: grid; gap: 6px; align-content: start; }
+    .einstellungen dt, .einstellungen label > span { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .einstellungen dd { margin: 0; }
+    .einstellungen label { display: grid; gap: 6px; }
+    .einstellungen select { min-height: 40px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; }
+    .format { grid-column: 1 / -1; }
+    .wahl { display: flex; flex-wrap: wrap; gap: 6px; }
+    .wahl button { min-height: 40px; padding: 6px 14px; border: 1px solid var(--border); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.9rem; cursor: pointer; }
+    .wahl button[aria-pressed="true"] { border-color: var(--text); background: var(--text); color: var(--bg); }
+    .wahl button:disabled { opacity: 0.45; cursor: default; }
+    .haken { display: flex !important; align-items: center; gap: 8px !important; min-height: 40px; }
+    .haken input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+    .steuerung { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; }
+    .info { margin: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .uhr { font-variant-numeric: tabular-nums; font-weight: 600; }
+    .uhr::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; background: var(--accent); animation: blinken 1s steps(2) infinite; }
+    @keyframes blinken { 50% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .uhr::before { animation: none; } }
+    .meldung { margin: 0; min-height: 1.5em; }
+    .meldung.fehler { color: var(--accent); }
+
+    .ergebnis { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .ergebnis h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 1.3rem; }
+    .ergebnis video { display: block; max-width: 100%; max-height: 60vh; border-radius: 8px; background: #000; }
+    .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
+    .hinweise li { margin: 0.2rem 0; }
+    .kaputt { padding: 16px; border: 1.5px solid var(--accent); border-radius: var(--radius); }
+    .kaputt p { margin: 0.3rem 0; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="seitenweg" aria-label="Ornament Cloud">
+        <a href="../../" aria-current="true">Ornament Cloud</a>
+        <a href="../drittes-rad/">Das Dritte Rad</a>
+      </nav>
+      <h1>Aufnahme</h1>
+      <p class="lead">Animationen von Webseiten als Video sichern.</p>
+    </div>
+  </header>
+
+  <main class="wrap aufnahme" id="aufnahme">
+    <ol class="schritte">
+      <li><b>Seite öffnen:</b> die Webseite mit der Animation in einem anderen Tab (oder Fenster) öffnen.</li>
+      <li><b>Quelle wählen:</b> diesen Tab im Fenster des Browsers freigeben.</li>
+      <li><b>Ausschnitt ziehen</b> und Format, Grösse und Dauer wählen.</li>
+      <li><b>Aufnehmen</b> und das Video herunterladen.</li>
+    </ol>
+
+    <div id="kaputt" class="kaputt" hidden>
+      <p><b>Dieser Browser kann keine Webseiten aufnehmen.</b></p>
+      <p>Am Computer geht es mit Chrome, Edge, Firefox oder Safari. Auf dem Handy hilft die eingebaute Bildschirmaufnahme des Systems.</p>
+    </div>
+
+    <div class="leiste">
+      <form class="adresse" id="oeffnen">
+        <input id="url" type="url" inputmode="url" placeholder="https://… (Seite mit der Animation)" aria-label="Adresse der Seite mit der Animation">
+        <button class="knopf" type="submit">In neuem Tab öffnen</button>
+      </form>
+      <button class="knopf haupt" type="button" id="quelle">Quelle wählen</button>
+      <button class="knopf" type="button" id="beenden" hidden>Freigabe beenden</button>
+    </div>
+
+    <div class="buehne" id="buehne">
+      <div class="leer" id="leer">
+        <p class="gross">Noch keine Quelle</p>
+        <p>Nach «Quelle wählen» erscheint hier der freigegebene Tab. Ziehe darin den Ausschnitt auf.</p>
+      </div>
+      <div class="vorschau" id="vorschau" hidden>
+        <video id="video" muted playsinline autoplay></video>
+        <div class="rahmen" id="rahmen" aria-hidden="true">
+          <span class="masse" id="masse"></span>
+          <span class="ecke" data-ecke="nw"></span><span class="ecke" data-ecke="ne"></span>
+          <span class="ecke" data-ecke="sw"></span><span class="ecke" data-ecke="se"></span>
+        </div>
+        <div class="zaehler" id="zaehler" hidden></div>
+      </div>
+    </div>
+
+    <dl class="einstellungen">
+      <div class="format">
+        <dt id="format-titel">Ausschnitt</dt>
+        <dd class="wahl" role="group" aria-labelledby="format-titel">
+          <button type="button" data-format="frei" aria-pressed="true">Frei</button>
+          <button type="button" data-format="9:16" aria-pressed="false">9 : 16</button>
+          <button type="button" data-format="4:5" aria-pressed="false">4 : 5</button>
+          <button type="button" data-format="1:1" aria-pressed="false">1 : 1</button>
+          <button type="button" data-format="16:9" aria-pressed="false">16 : 9</button>
+          <button type="button" id="ganz">Ganzes Bild</button>
+        </dd>
+      </div>
+      <div><label><span>Grösse</span>
+        <select id="groesse">
+          <option value="original">wie der Ausschnitt</option>
+          <option value="720">720 (kurze Seite)</option>
+          <option value="1080" selected>1080 (kurze Seite)</option>
+          <option value="1440">1440 (kurze Seite)</option>
+          <option value="2160">2160 (kurze Seite)</option>
+        </select></label></div>
+      <div><label><span>Bilder pro Sekunde</span>
+        <select id="fps">
+          <option value="30" selected>30</option>
+          <option value="60">60</option>
+        </select></label></div>
+      <div><label><span>Datei</span>
+        <select id="datei"></select></label></div>
+      <div><label><span>Dauer</span>
+        <select id="dauer">
+          <option value="0" selected>bis ich stoppe</option>
+          <option value="5">5 Sekunden</option>
+          <option value="10">10 Sekunden</option>
+          <option value="15">15 Sekunden</option>
+          <option value="30">30 Sekunden</option>
+          <option value="60">60 Sekunden</option>
+        </select></label></div>
+      <div><label class="haken"><input type="checkbox" id="vorlauf" checked> 3 Sekunden Vorlauf</label></div>
+    </dl>
+
+    <div class="steuerung">
+      <button class="knopf rot" type="button" id="start" disabled>Aufnahme starten</button>
+      <span class="uhr" id="uhr" hidden>0:00</span>
+      <p class="info" id="info"></p>
+    </div>
+    <p class="meldung" id="meldung" role="status" aria-live="polite"></p>
+
+    <section class="ergebnis" id="ergebnis" hidden aria-labelledby="ergebnis-titel">
+      <h2 id="ergebnis-titel">Deine Aufnahme</h2>
+      <video id="film" controls playsinline loop></video>
+      <p class="info" id="film-info"></p>
+      <div class="leiste">
+        <a class="knopf haupt" id="laden" href="#" download>Herunterladen</a>
+        <button class="knopf" type="button" id="verwerfen">Verwerfen</button>
+      </div>
+    </section>
+
+    <ul class="hinweise">
+      <li>Alles bleibt in deinem Browser: Nichts wird hochgeladen, die Aufnahme entsteht und bleibt auf deinem Gerät.</li>
+      <li>Am besten einen <b>Tab</b> freigeben: Dann zählt nur der Inhalt der Seite, ohne Adressleiste und Mauszeiger. In Chrome und Edge bleibt diese Seite dabei vorne, und die Aufnahme läuft auch, wenn du zum anderen Tab wechselst.</li>
+      <li>In Firefox und Safari diese Seite während der Aufnahme sichtbar lassen, etwa mit zwei Fenstern nebeneinander.</li>
+      <li>Ein Tab liefert nur dann neue Bilder, wenn sich etwas bewegt. Steht die Animation still, ruht auch das Video.</li>
+      <li>Nimm nur auf, was du verwenden darfst, und nenne die Quelle.</li>
+    </ul>
+  </main>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+    </div>
+  </footer>
+  <script type="module" src="aufnahme.js"></script>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+</body>
+</html>
