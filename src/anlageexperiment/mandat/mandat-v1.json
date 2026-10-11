@@ -1,0 +1,178 @@
+{
+  "mandat_version": "1.0.0",
+  "stand": "2026-10-11",
+  "status": "ENTWICKLUNGSANNAHME",
+  "status_hinweis": "Diese Konfiguration ist für die Simulation gebaut. Strategie, Universum, Startverteilung und Limits sind Entwicklungsannahmen und nicht als Live-Mandat freigegeben. Eine Live-Aktivierung verlangt eine neue Version mit status FREIGEGEBEN und deine ausdrückliche Bestätigung.",
+  "berichtswaehrung": "USD",
+
+  "startkapital_gesamt_usd": "200.00",
+  "startverteilung_usd": { "ibkr": "100.00", "kraken": "100.00" },
+  "startverteilung_hinweis": "SIMULATIONSBEISPIEL: 100/100 ist veränderbar und keine vereinbarte reale Anlageentscheidung. Die Summe muss dem Gesamtstartkapital entsprechen.",
+
+  "erlaubte_klassen": ["aktie", "etf", "krypto_spot"],
+  "verbote": ["kredit", "hebel", "marge", "leerverkauf", "optionen", "futures", "derivate", "tokenisierte_aktien", "staking", "auszahlung_durch_agent", "zugriff_langfristiges_depot"],
+  "verlustschwelle": "KEINE – es gibt bewusst keine kapital- oder kursabhängige Abschaltung, keinen Stop-Loss und keine Drawdown-Pause.",
+
+  "konten": {
+    "ibkr": {
+      "anbieter": "Interactive Brokers",
+      "kontoart": "cash",
+      "anlagebereich": "Aktien und ETFs",
+      "abwicklung_handelstage": { "aktie": 1, "etf": 1 },
+      "gebuehrenreserve_usd": "2.00",
+      "bekannte_auszahlungskosten_usd": "0.00",
+      "auszahlungskosten_hinweis": "Annahme: erste Auszahlung im Monat kostenlos (IBKR-Preisseite vor Live prüfen)."
+    },
+    "kraken": {
+      "anbieter": "Kraken Pro",
+      "kontoart": "spot",
+      "anlagebereich": "Kryptowährungen (nur Spot)",
+      "abwicklung_handelstage": { "krypto_spot": 0 },
+      "gebuehrenreserve_usd": "1.00",
+      "bekannte_auszahlungskosten_usd": "5.00",
+      "auszahlungskosten_hinweis": "Konservative Annahme für eine USD-Bankauszahlung; tatsächliche Gebühr hängt von Methode und Bank ab (Kraken-Gebührenseite vor Live prüfen)."
+    }
+  },
+
+  "handelskosten": {
+    "ibkr": {
+      "modell": "je_stueck_mit_min_max",
+      "je_stueck_usd": "0.005",
+      "min_je_order_usd": "1.00",
+      "max_anteil_handelswert": "0.01",
+      "quelle": "IBKR Pro Fixed laut öffentlicher Preisseite (Stand Trainingswissen); in dieser Build-Umgebung nicht abrufbar – vor Live prüfen."
+    },
+    "kraken": {
+      "modell": "prozent",
+      "maker_anteil": "0.0040",
+      "taker_anteil": "0.0080",
+      "quelle": "Konservativ: Einstiegsstufe laut mehreren Drittquellen 2026 (0.40 % / 0.80 %); offizielle Gebührenseite in dieser Build-Umgebung nicht abrufbar – vor Live prüfen."
+    },
+    "slippage_anteil": "0.0020",
+    "marktfaehiges_limit_aufschlag": "0.0030"
+  },
+
+  "limits": {
+    "max_anteil_je_instrument": "0.50",
+    "max_order_usd": "60.00",
+    "preisalter_max_sekunden": { "aktie": 900, "etf": 900, "krypto_spot": 180 },
+    "offene_kauforder_max_stunden": 4,
+    "limit_hinweis": "Transparente Positions- und Orderlimits. Keine Verlustgrenze. Live-Werte vor Aktivierung einmalig prüfen."
+  },
+
+  "zyklus_standard": {
+    "zielbetrag_usd": "1000.00",
+    "neustartkapital_usd": "200.00",
+    "langfrist_zufuehrung_usd": "200.00",
+    "auto_zielabwicklung": true,
+    "ueberschuss_an": "an_mich",
+    "ueberschuss_hinweis": "ENTWURFSANNAHME: Ein verfügbarer Nettobetrag über dem Ziel geht im Vorschlag an dich. Änderbar über ueberschuss_an (an_mich | neustart | langfrist) oder im Auszahlungsvorschlag selbst.",
+    "sperrfrist_stunden": 24,
+    "sperrfrist_hinweis": "Nach einer Zielabwicklung, die unter dem Ziel endete, startet frühestens nach dieser Frist und erneuter Kostenprüfung eine neue Zielabwicklung (gegen Ein-/Ausstiegsflattern).",
+    "abgleich_toleranz_usd": "0.05"
+  },
+
+  "universum": [
+    {
+      "id": "AAPL", "name": "Apple Inc.", "klasse": "aktie", "konto": "ibkr", "boerse": "NASDAQ", "waehrung": "USD",
+      "mengen_schritt": "0.0001", "mindest_menge": "0.0001", "mindest_betrag_usd": "1.00", "preis_schritt": "0.01",
+      "bruchstuecke": true, "aktiv": true,
+      "pruefpunkte": ["Bruchstückhandel über API für dein Konto prüfen", "Marktdatenabo für API-Kurse prüfen"]
+    },
+    {
+      "id": "MSFT", "name": "Microsoft Corp.", "klasse": "aktie", "konto": "ibkr", "boerse": "NASDAQ", "waehrung": "USD",
+      "mengen_schritt": "0.0001", "mindest_menge": "0.0001", "mindest_betrag_usd": "1.00", "preis_schritt": "0.01",
+      "bruchstuecke": true, "aktiv": true,
+      "pruefpunkte": ["Bruchstückhandel über API für dein Konto prüfen"]
+    },
+    {
+      "id": "SPY", "name": "SPDR S&P 500 ETF Trust (US-domiziliert)", "klasse": "etf", "konto": "ibkr", "boerse": "NYSEARCA", "waehrung": "USD",
+      "mengen_schritt": "0.0001", "mindest_menge": "0.0001", "mindest_betrag_usd": "1.00", "preis_schritt": "0.01",
+      "bruchstuecke": true, "aktiv": true, "nur_simulation": true,
+      "pruefpunkte": ["US-ETF: Für Schweizer Privatkunden ohne Basisinformationsblatt (FIDLEG/PRIIPs) möglicherweise nicht kaufbar – vor Live klären", "Bruchstückhandel prüfen"]
+    },
+    {
+      "id": "VWRA", "name": "Vanguard FTSE All-World UCITS ETF (Acc), USD", "klasse": "etf", "konto": "ibkr", "boerse": "LSE", "waehrung": "USD",
+      "mengen_schritt": "1", "mindest_menge": "1", "mindest_betrag_usd": "1.00", "preis_schritt": "0.01",
+      "bruchstuecke": false, "aktiv": true,
+      "pruefpunkte": ["UCITS-ETF: für Schweizer Privatkunden in der Regel zugänglich", "Nur ganze Anteile angenommen – bei ~100 USD Kontoguthaben meist nicht kaufbar"]
+    },
+    {
+      "id": "BTC/USD", "name": "Bitcoin (Spot)", "klasse": "krypto_spot", "konto": "kraken", "boerse": "Kraken", "waehrung": "USD",
+      "kraken_paar": "XBTUSD",
+      "mengen_schritt": "0.00000001", "mindest_menge": "0.00005", "mindest_betrag_usd": "0.50", "preis_schritt": "0.1",
+      "bruchstuecke": true, "aktiv": true,
+      "pruefpunkte": ["ordermin/costmin über AssetPairs abrufen", "Schweizer Verfügbarkeit des Paars prüfen"]
+    },
+    {
+      "id": "ETH/USD", "name": "Ether (Spot)", "klasse": "krypto_spot", "konto": "kraken", "boerse": "Kraken", "waehrung": "USD",
+      "kraken_paar": "ETHUSD",
+      "mengen_schritt": "0.00000001", "mindest_menge": "0.002", "mindest_betrag_usd": "0.50", "preis_schritt": "0.01",
+      "bruchstuecke": true, "aktiv": true,
+      "pruefpunkte": ["ordermin/costmin über AssetPairs abrufen"]
+    }
+  ],
+
+  "strategie": {
+    "version": "forschung-0.1.0",
+    "status": "ENTWICKLUNGSANNAHME – nicht als Live-Strategie freigegeben",
+    "beschreibung": "Einfache Trendfolge mit Bargeld als Normalzustand: Kauf nur, wenn der Kurs über seinem gleitenden Durchschnitt liegt, das Momentum positiv und die Schwankung begrenzt ist. Verkauf, wenn der Kurs deutlich unter den Durchschnitt fällt (Trendbruch, kein Stop-Loss auf Kapital). ABWARTEN ist ein gültiges Ergebnis; keine Mindestzahl an Trades; keine Positionsvergrösserung nach Verlusten.",
+    "begruendung": [
+      "Nachvollziehbar und vollständig regelbasiert; das Modell liefert nur Begründung und Gegenargumente, die Menge rechnet der Code.",
+      "Trendfolge ist eine verbreitete, dokumentierte Klasse von Regeln; ein Vorteil gegenüber Kaufen-und-Halten ist damit nicht belegt.",
+      "Wenige Parameter reduzieren die Gefahr, an Testdaten angepasst zu werden."
+    ],
+    "durchschnitt_stunden": 24,
+    "momentum_stunden": 24,
+    "min_momentum": "0.01",
+    "max_schwankung_stunde": "0.03",
+    "ausstieg_band": "0.02",
+    "zielanteil_je_position": "0.45",
+    "min_historie": 30
+  },
+
+  "bewertungsregel": {
+    "version": "jev-regel-0.1.0",
+    "kriterien_version": "jev-kriterien-0.1.0",
+    "min_belegt": "0.60",
+    "max_widerspruch": "0.50",
+    "min_passung": "2.5",
+    "min_konfidenz_aktion": "0.55",
+    "hinweis": "JEVs Werte sind Einschätzungen zu eng umrissenen Fragen, keine Wahrscheinlichkeit eines Kursgewinns."
+  },
+
+  "vergleich": {
+    "ohne_jev_ersatzregel": "ORDER_VORSCHLAGEN genau dann, wenn das Regelsignal KAUF oder VERKAUF ist und alle harten Mandatsprüfungen bestehen. Vorab festgelegt am 2026-10-11, keine Modellaufrufe.",
+    "kaufen_halten_gewichte": {
+      "ibkr": { "AAPL": "0.5", "MSFT": "0.5" },
+      "kraken": { "BTC/USD": "0.5", "ETH/USD": "0.5" }
+    },
+    "kaufen_halten_hinweis": "Vor Beginn festgelegt: gleich gewichtet je Konto, einmal kaufen beim ersten handelbaren Datenzeitpunkt, danach halten."
+  },
+
+  "betriebskosten": {
+    "vertex": {
+      "freigegebenes_budget_usd": "0.00",
+      "max_aufrufe_je_tag": 0,
+      "preis_eingabe_usd_je_mio_token": null,
+      "preis_ausgabe_usd_je_mio_token": null,
+      "max_ausgabe_token": 800,
+      "hinweis": "Kein Budget freigegeben → keine kostenpflichtigen Vertex-Aufrufe. Preise bewusst leer: aus der aktuellen Google-Preisliste für dein Modell eintragen; ohne Preis wird kein echter Aufruf reserviert."
+    },
+    "jev": {
+      "freigegebenes_budget_usd": "0.00",
+      "max_aufrufe_je_tag": 0,
+      "preis_eingabe_usd_je_mio_token": "0.042",
+      "preis_ausgabe_usd_je_mio_token": "0",
+      "hinweis": "Preis aus der bestehenden JEV-Nutzung im Repository (0.042 USD je Mio. Eingabe-Token; Ausgabe laut API-Schema derzeit kostenlos). Kein Budget freigegeben → keine kostenpflichtigen JEV-Aufrufe."
+    },
+    "reserve_aufschlag": "1.5"
+  },
+
+  "simulation": {
+    "startzeit_utc": "2026-10-12T13:00:00Z",
+    "schritt_minuten": 60,
+    "teilfuellung_anteil_quote": "0.5",
+    "seed": 20261011
+  }
+}

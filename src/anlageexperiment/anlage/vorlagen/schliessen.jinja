@@ -1,0 +1,16 @@
+{% extends "basis.jinja" %}
+{% block titel %}Positionen schliessen{% endblock %}
+{% block inhalt %}
+<section class="karte">
+  <h2>POSITIONEN SCHLIESSEN – Umfang und Folgen</h2>
+  <p>Getrennt von PAUSE: PAUSE stoppt nur neue Orders. Hier werden Positionen verkauft – erst nach deiner Bestätigung.</p>
+  {% if v.positionen %}<div class="tabelle"><table><tr><th>Konto</th><th>Instrument</th><th class="r">Menge</th><th class="r">Geldkurs</th><th class="r">Erlös geschätzt</th><th class="r">Gebühr</th><th>Hinweis</th></tr>
+    {% for p in v.positionen %}<tr><td>{{ p.konto }}</td><td>{{ p.instrument }}</td><td class="r">{{ p.menge|menge }}</td><td class="r">{{ p.geldkurs|usd if p.geldkurs else '–' }}</td><td class="r">{{ p.erloes_geschaetzt|usd if p.erloes_geschaetzt else '–' }}</td><td class="r">{{ p.gebuehr|usd if p.gebuehr else '–' }}</td><td>{{ p.hinweis }}{% if p.unter_mindestorder %} Unter Mindestorder – bleibt als Restbestand.{% endif %}</td></tr>{% endfor %}
+  </table></div>{% else %}<p class="leise">Keine Positionen.</p>{% endif %}
+  <ul>{% for f in v.folgen %}<li>{{ f }}</li>{% endfor %}</ul>
+  {% if v.positionen and z.zustand in ('SIMULATION','AKTIV','MANUELL_PAUSIERT','NICHT_HANDELSFAEHIG','ZIEL_ABWICKLUNG') %}
+  <form method="post" action="/aktion/schliessen" class="reihe"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="zurueck" value="/">
+    <label style="flex:1 1 220px">Begründung<input name="begruendung" required></label><button class="gefahr">Ich bestätige: Positionen schliessen</button></form>
+  {% endif %}
+</section>
+{% endblock %}

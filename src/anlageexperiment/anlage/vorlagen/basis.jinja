@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{% block titel %}Anlageexperiment{% endblock %} · {{ modus }}</title>
+<link rel="stylesheet" href="/statisch/stil.css">
+</head>
+<body>
+<div class="modus modus--{{ 'LIVE' if modus == 'LIVE' else 'SIMULATION' }}" role="status">
+  {% if modus == 'LIVE' %}LIVE – ECHTES GELD{% else %}SIMULATION – kein echtes Geld, keine echten Orders{% endif %}
+  {% if kuenstlich %}<small>Kurse sind KÜNSTLICHE BEISPIELDATEN – kein Backtest, keine Prognose</small>{% endif %}
+</div>
+<header class="kopf">
+  <h1>Anlageexperiment</h1>
+  <nav class="reiter">
+    <a href="/" {% if pfad == '/' %}aria-current="page"{% endif %}>Übersicht</a>
+    <a href="/entnahme" {% if pfad == '/entnahme' %}aria-current="page"{% endif %}>Entnahme planen</a>
+    <a href="/journal" {% if pfad == '/journal' %}aria-current="page"{% endif %}>Journal</a>
+    <a href="/vergleich" {% if pfad == '/vergleich' %}aria-current="page"{% endif %}>Vergleich</a>
+    <a href="/kosten" {% if pfad == '/kosten' %}aria-current="page"{% endif %}>Kosten</a>
+  </nav>
+  <span class="uhr">{{ 'Simulationszeit' if modus != 'LIVE' else 'Zeit' }}: {{ uhr.strftime('%d.%m.%Y %H:%M') }} UTC</span>
+</header>
+<main>
+  {% if meldung %}<p class="ok">{{ meldung }}</p>{% endif %}
+  {% if fehler %}<p class="fehler">{{ fehler }}</p>{% endif %}
+  {% block inhalt %}{% endblock %}
+</main>
+<footer>
+  Erfolg nach erfassten Kosten, vor persönlichen Steuern. Keine Gewinnzusage. Das Ziel ist ein änderbarer Experimentwert, kein Termin.
+  Es gibt bewusst keine Verlustgrenze und keinen Stop-Loss; Pausen haben nur technische Gründe oder kommen von dir.
+</footer>
+</body>
+</html>

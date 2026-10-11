@@ -1,0 +1,97 @@
+{% extends "basis.jinja" %}
+{% block titel %}Plan #{{ plan.id }}{% endblock %}
+{% block inhalt %}
+<section class="karte">
+  <h2>{{ 'Auszahlungsvorschlag nach Zielerreichung' if plan.art == 'ZIEL' else 'Manuelle Entnahme' }} #{{ plan.id }} · {{ plan.status }} · Version {{ plan.version }}</h2>
+  <p class="leise">Erstellt {{ plan.erstellt[:16].replace('T',' ') }} UTC{% if plan.geplanter_zeitpunkt %} · verschoben auf {{ plan.geplanter_zeitpunkt }}{% endif %}.
+    Nichts wird automatisch überwiesen. Du führst Überweisungen selbst beim Anbieter aus und bestätigst sie hier.</p>
+  {% if plan.hinweis %}<p class="hinweis">{{ plan.hinweis }}</p>{% endif %}
+  {% if q.fehler %}<div class="fehler">{% for f in q.fehler %}<p>{{ f }}</p>{% endfor %}</div>{% endif %}
+  <div class="tabelle"><table>
+    <tr><th>Verfügbares Bargeld (abgewickelt)</th><td class="r">{{ plan.bargeld_gesamt|usd }}</td></tr>
+    {% if plan.art == 'ZIEL' %}<tr><th>Verfügbarer Nettobetrag (nach Kostenerstattung und Auszahlungskosten)</th><td class="r">{{ plan.verfuegbar_netto|usd }}</td></tr>{% endif %}
+    <tr><th>An dich</th><td class="r"><b>{{ plan.an_mich|usd }}</b></td></tr>
+    <tr><th>Ins langfristige Depot</th><td class="r">{{ plan.langfrist|usd }}</td></tr>
+    <tr><th>Erstattung externer Betriebskosten des Zyklus an dich</th><td class="r">{{ plan.kostenerstattung|usd }}</td></tr>
+    <tr><th>Bekannte Auszahlungskosten</th><td class="r">{{ plan.auszahlungskosten|usd }}</td></tr>
+    {% if plan.art == 'ZIEL' %}<tr><th>Bleibt als Neustartkapital (über beide Konten)</th><td class="r"><b>{{ plan.neustart|usd }}</b>
+      {% if q.behalten %}<span class="leise">({% for k, v in q.behalten.items() %}{{ k }} {{ v|usd }}{% if not loop.last %}, {% endif %}{% endfor %})</span>{% endif %}</td></tr>{% endif %}
+  </table></div>
+  {% if plan.art == 'ZIEL' %}<p class="leise">Standard bei genau {{ p.zielbetrag|usd }} USD netto: Neustart {{ p.neustartkapital|usd }}, langfristig {{ p.langfrist_zufuehrung|usd }}, Rest an dich (bei 1'000: 600/200/200). Ein Überschuss über dem Ziel geht gemäss Entwurfsannahme an dich – änderbar.</p>{% endif %}
+
+  {% if plan.art == 'MANUELL' and q.vorschau %}
+    <h3>Geplante Verkäufe (nur nach deiner Bestätigung)</h3>
+    {% if q.vorschau.verkaeufe %}<div class="tabelle"><table><tr><th>Konto</th><th>Instrument</th><th class="r">Menge</th><th class="r">Erlös geschätzt</th><th class="r">Gebühr</th><th>Markt</th></tr>
+      {% for v in q.vorschau.verkaeufe %}<tr><td>{{ v.konto }}</td><td>{{ v.instrument }}</td><td class="r">{{ v.menge|menge }}</td><td class="r">{{ v.erloes_geschaetzt|usd }}</td><td class="r">{{ v.gebuehr|usd }}</td><td>{{ 'offen' if v.markt_offen else 'geschlossen' }}</td></tr>{% endfor %}
+    </table></div>{% else %}<p class="leise">Keine Verkäufe nötig – genug freies Bargeld.</p>{% endif %}
+    {% for h in q.vorschau.hinweise %}<p class="hinweis">{{ h }}</p>{% endfor %}
+  {% endif %}
+
+  <div class="aktionen" style="margin-top:12px">
+    {% if plan.art == 'MANUELL' and plan.status == 'ENTWURF' %}
+      <form method="post" action="/aktion/entnahme_bestaetigen"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="plan" value="{{ plan.id }}"><input type="hidden" name="zurueck" value="/plan/{{ plan.id }}">
+        <button>Reservieren{% if q.vorschau and q.vorschau.verkaeufe %} und Verkäufe ausführen{% endif %}</button></form>
+    {% endif %}
+    {% if (plan.art == 'ZIEL' and plan.status == 'ENTWURF') or (plan.art == 'MANUELL' and plan.status == 'BEREIT') %}
+      <form method="post" action="/aktion/plan_bestaetigen"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="plan" value="{{ plan.id }}"><input type="hidden" name="zurueck" value="/plan/{{ plan.id }}">
+        <button>Plan bestätigen → Überweisungen vorbereiten</button></form>
+    {% endif %}
+    {% if plan.status == 'VERSCHOBEN' %}
+      <form method="post" action="/aktion/plan_wieder"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="plan" value="{{ plan.id }}"><input type="hidden" name="zurueck" value="/plan/{{ plan.id }}"><button class="zweit">Wieder aufnehmen</button></form>
+    {% endif %}
+  </div>
+
+  {% if plan.status in ('ENTWURF','MANUELL_AUFTEILEN','VERSCHOBEN','BEREIT') %}
+  <details {% if plan.status == 'MANUELL_AUFTEILEN' %}open{% endif %}><summary>Beträge ändern</summary>
+    <form method="post" action="/aktion/plan_bearbeiten" class="reihe"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="plan" value="{{ plan.id }}"><input type="hidden" name="zurueck" value="/plan/{{ plan.id }}">
+      <label>An dich<input class="betrag" name="an_mich" value="{{ plan.an_mich }}" inputmode="decimal"></label>
+      {% if plan.art == 'ZIEL' %}<label>Langfristig<input class="betrag" name="langfrist" value="{{ plan.langfrist }}" inputmode="decimal"></label>
+      <label>Kostenerstattung<input class="betrag" name="kostenerstattung" value="{{ plan.kostenerstattung }}" inputmode="decimal"></label>{% endif %}
+      <label style="flex:1 1 200px">Begründung<input name="begruendung" required></label><button>Als neue Version speichern</button></form>
+    <p class="leise">Der Rest bleibt als Neustartkapital auf den Konten. Geprüft wird nur gegen tatsächlich verfügbares, abgewickeltes Geld – keine Überziehung.</p>
+  </details>
+  {% endif %}
+  {% if plan.status in ('ENTWURF','MANUELL_AUFTEILEN','BEREIT') %}
+  <details><summary>Auszahlung verschieben</summary>
+    <form method="post" action="/aktion/plan_verschieben" class="reihe"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="plan" value="{{ plan.id }}"><input type="hidden" name="zurueck" value="/plan/{{ plan.id }}">
+      <label>Neuer Zeitpunkt (optional)<input type="date" name="zeitpunkt"></label><label>Begründung<input name="begruendung" required></label><button class="zweit">Verschieben</button></form>
+  </details>
+  {% endif %}
+  {% if plan.status in ('ENTWURF','MANUELL_AUFTEILEN','VERSCHOBEN','BEREIT','VERKAEUFE_LAUFEN','BESTAETIGT') %}
+  <details><summary>Plan verwerfen</summary>
+    <form method="post" action="/aktion/plan_verwerfen" class="reihe"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="plan" value="{{ plan.id }}"><input type="hidden" name="zurueck" value="/plan/{{ plan.id }}">
+      <label>Danach<select name="nach"><option value="FORTSETZEN">Zyklus fortsetzen</option><option value="PAUSIEREN">Pausieren</option></select></label>
+      <label>Begründung<input name="begruendung" required></label><button class="warn">Verwerfen</button></form>
+    <p class="leise">Bereits ausgeführte Verkäufe bleiben bestehen. Beim Fortsetzen nach einer Zielerreichung gilt eine Sperrfrist; ohne Zieländerung würde danach erneut abgewickelt.</p>
+  </details>
+  {% endif %}
+</section>
+
+{% if ueb %}
+<section class="karte">
+  <h2>Überweisungen (von dir ausgeführt)</h2>
+  <div class="tabelle"><table><tr><th>#</th><th>Von Konto</th><th>Art</th><th class="r">Betrag</th><th>Status</th><th>Referenz</th><th>Aktion</th></tr>
+  {% for u in ueb %}<tr><td>{{ u.id }}</td><td>{{ u.konto }}</td><td>{{ u.art }}</td><td class="r">{{ u.betrag|usd }}</td><td>{{ u.status }}</td><td class="mono">{{ u.referenz or '' }}</td><td>
+    {% if u.status == 'GEPLANT' %}
+      <form method="post" action="/aktion/ueb_ausgefuehrt" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="ueb" value="{{ u.id }}"><input type="hidden" name="zurueck" value="/plan/{{ plan.id }}"><button class="zweit">Habe ich ausgeführt</button></form>
+    {% elif u.status == 'AUSGEFUEHRT_GEMELDET' %}
+      <form method="post" action="/aktion/ueb_bestaetigt" class="reihe"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="ueb" value="{{ u.id }}"><input type="hidden" name="zurueck" value="/plan/{{ plan.id }}">
+        <label>Referenz/Beleg<input name="referenz" required></label><button>Eingang bestätigen</button></form>
+      <form method="post" action="/aktion/ueb_gescheitert" class="reihe"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="ueb" value="{{ u.id }}"><input type="hidden" name="zurueck" value="/plan/{{ plan.id }}">
+        <label>Geld zurück auf Konto?<select name="geld_zurueck"><option value="1">ja</option><option value="0">nein/unklar</option></select></label><button class="warn">Gescheitert</button></form>
+    {% elif u.status == 'GESCHEITERT' %}
+      <form method="post" action="/aktion/ueb_neu" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="ueb" value="{{ u.id }}"><input type="hidden" name="zurueck" value="/plan/{{ plan.id }}"><button class="zweit">Ersatz planen</button></form>
+    {% endif %}</td></tr>{% endfor %}
+  </table></div>
+  <p class="leise">«Ausgeführt» heisst: Geld hat das Handelskonto verlassen und ist in Transfer – es zählt weder als aktives Kapital noch schon als bestätigter Eingang. Ein neuer Zyklus startet erst nach Bestätigung aller Überweisungen und Abgleich des Restkapitals.</p>
+</section>
+{% endif %}
+
+<section class="karte"><h2>Versionen</h2>
+  <div class="tabelle"><table><tr><th>Version</th><th>Zeit</th><th>Durch</th><th>Begründung</th><th>Werte</th></tr>
+  {% for v in versionen %}{% set w = v.werte|json_laden %}<tr><td>{{ v.version }}</td><td class="mono">{{ v.zeit[:16].replace('T',' ') }}</td><td>{{ v.durch }}</td><td>{{ v.begruendung }}</td>
+    <td class="leise">an dich {{ w.an_mich|usd }}, langfristig {{ w.langfrist|usd }}, Erstattung {{ w.kostenerstattung|usd }}{% if w.neustart %}, Rest {{ w.neustart|usd }}{% endif %}</td></tr>{% endfor %}
+  </table></div>
+</section>
+<p><a href="/">← Übersicht</a></p>
+{% endblock %}

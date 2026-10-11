@@ -1,0 +1,34 @@
+{% extends "basis.jinja" %}
+{% block titel %}Journal{% endblock %}
+{% block inhalt %}
+<section class="karte">
+  <h2>Export</h2>
+  <p><a href="/export.json">Alles als JSON</a> · CSV: {% for t in tabellen %}<a href="/export/{{ t }}.csv">{{ t }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+  <p class="leise">Exporte enthalten nie Zugangsdaten. Erfolg nach erfassten Kosten, vor persönlichen Steuern.</p>
+</section>
+<section class="karte">
+  <h2>Entscheidungsjournal (Hauptsystem)</h2>
+  <p class="leise">Je Entscheidung: Eingabestand, Datenzeiten, Strategie-/Kriterien-/Regelversion, Modellversionen, Ergebnis, Konfidenz und Programmentscheidung. Ein gutes Ausgabeformat belegt keine wirtschaftliche Qualität.</p>
+  {% for e in entscheidungen %}{% set jv = e.jev|json_laden %}{% set vx = e.vertex|json_laden %}{% set mp = e.mandatspruefung|json_laden %}
+  <details><summary><span class="mono">{{ e.zeit[:16].replace('T',' ') }}</span> · {{ e.instrument }} · Signal {{ e.signal }} → <b>{{ e.entscheidung }}</b></summary>
+    <p>{{ e.begruendung }}</p>
+    <p class="leise">Versionen: Strategie {{ e.strategie_version }}, Kriterien {{ e.kriterien_version }}, Regel {{ e.regel_version }} · Datenzeiten {{ e.datenzeiten }}</p>
+    {% if vx %}<p><b>Analyse</b> ({{ vx.quelle }}, {{ vx.modellversion or 'Version unbekannt' }}, {{ vx.status }}): {{ vx.hypothese }}</p>
+      {% if vx.gegenargumente %}<p class="leise">Gegenargumente: {{ vx.gegenargumente|join(' · ') }}</p>{% endif %}{% endif %}
+    {% if jv %}<p><b>JEV</b> ({{ jv.quelle }}, {{ jv.modell or '–' }}, {{ jv.status }}): <span class="mono">{{ jv.antworten }}</span>{% if jv.fehler %} – {{ jv.fehler }}{% endif %}</p>{% endif %}
+    {% if mp %}<p><b>Mandatsprüfung:</b> {{ 'bestanden' if mp.ok else 'abgelehnt' }} {{ mp.gruende|join('; ') }}</p>{% endif %}
+    {% if e.client_id %}<p class="mono">Order {{ e.client_id }}</p>{% endif %}
+    <details><summary>Eingabestand</summary><pre class="mono" style="white-space:pre-wrap">{{ e.eingabe }}</pre></details>
+  </details>
+  {% else %}<p class="leise">Noch keine Einträge.</p>{% endfor %}
+</section>
+<section class="karte"><h2>Zyklen</h2><div class="tabelle"><table><tr><th>#</th><th>Modus</th><th>Zustand</th><th>Start</th><th>Ende</th><th class="r">Startkapital</th><th>Ergebnis</th><th>Ziel erreicht am</th></tr>
+  {% for c in zyklen %}<tr><td>{{ c.nummer }}</td><td>{{ c.modus }}</td><td>{{ c.zustand }}</td><td class="mono">{{ (c.start or '')[:16] }}</td><td class="mono">{{ (c.ende or '')[:16] }}</td><td class="r">{{ c.startkapital|usd }}</td><td>{{ c.ergebnis or '–' }}</td><td class="mono">{{ (c.ziel_erreicht_am or '–')[:16] }}</td></tr>{% endfor %}</table></div></section>
+<section class="karte"><h2>Parameterversionen (deine Entscheidungen)</h2><div class="tabelle"><table><tr><th>v</th><th>Zeit</th><th class="r">Ziel</th><th>Auto</th><th class="r">Neustart</th><th class="r">Langfristig</th><th>Überschuss</th><th>Durch</th><th>Begründung</th></tr>
+  {% for p in parameter %}<tr><td>{{ p.version }}</td><td class="mono">{{ p.zeit[:16] }}</td><td class="r">{{ p.zielbetrag|usd }}</td><td>{{ 'an' if p.auto_zielabwicklung else 'aus' }}</td><td class="r">{{ p.neustartkapital|usd }}</td><td class="r">{{ p.langfrist_zufuehrung|usd }}</td><td>{{ p.ueberschuss_an }}</td><td>{{ p.durch }}</td><td>{{ p.begruendung }}</td></tr>{% endfor %}</table></div></section>
+<section class="karte"><h2>Zustandswechsel</h2><div class="tabelle"><table>{% for w in wechsel %}<tr><td class="mono">{{ w.zeit[:16] }}</td><td>{{ w.von or '–' }} → {{ w.nach }}</td><td>{{ w.durch }}</td><td>{{ w.grund }}</td></tr>{% endfor %}</table></div></section>
+<section class="karte"><h2>Orders</h2><div class="tabelle"><table><tr><th>Client-ID</th><th>Zeit</th><th>Seite</th><th>Instrument</th><th class="r">Menge</th><th class="r">Gefüllt</th><th class="r">Limit</th><th>Status</th><th>Zweck</th><th>Notiz</th></tr>
+  {% for o in orders %}<tr><td class="mono">{{ o.client_id }}</td><td class="mono">{{ o.erstellt[:16] }}</td><td>{{ o.seite }}</td><td>{{ o.instrument }}</td><td class="r">{{ o.menge|menge }}</td><td class="r">{{ o.gefuellt|menge }}</td><td class="r">{{ o.limit_preis|usd }}</td><td>{{ o.status }}</td><td>{{ o.zweck }}</td><td class="leise">{{ o.notiz or '' }}</td></tr>{% endfor %}</table></div></section>
+<section class="karte"><h2>Buchungen</h2><div class="tabelle"><table><tr><th>Zeit</th><th>Konto</th><th>Art</th><th class="r">Betrag USD</th><th>Instrument</th><th class="r">Menge</th><th>Verfügbar ab</th><th>Notiz</th></tr>
+  {% for b in buchungen %}<tr><td class="mono">{{ b.zeit[:16] }}</td><td>{{ b.konto }}</td><td title="{{ arten[b.art] }}">{{ b.art }}</td><td class="r">{{ b.betrag|usd(4) }}</td><td>{{ b.instrument or '' }}</td><td class="r">{{ b.menge|menge if b.instrument else '' }}</td><td class="mono">{{ (b.verfuegbar_ab or '')[:16] }}</td><td class="leise">{{ b.notiz or '' }}</td></tr>{% endfor %}</table></div></section>
+{% endblock %}

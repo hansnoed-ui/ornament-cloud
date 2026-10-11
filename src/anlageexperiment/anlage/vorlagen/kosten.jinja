@@ -1,0 +1,30 @@
+{% extends "basis.jinja" %}
+{% block titel %}Kosten{% endblock %}
+{% block inhalt %}
+<section class="karte">
+  <h2>Externe Betriebskosten</h2>
+  <div class="raster">
+    <div class="zahl"><span>Bezahlt</span><b>{{ ext.BEZAHLT|usd(4) }} USD</b></div>
+    <div class="zahl"><span>Offene Verbindlichkeiten</span><b>{{ ext.OFFEN|usd(4) }} USD</b></div>
+    <div class="zahl"><span>Reserviert (laufende Aufrufe)</span><b>{{ ext.RESERVIERT|usd(4) }} USD</b></div>
+  </div>
+  <p class="leise">Modellkosten werden vor jedem Aufruf konservativ reserviert und danach aus der Token-Zählung abgerechnet. Die Abrechnung bei Google bzw. TypeSafe kann verzögert eintreffen; Google-Budgetwarnungen sind keine harte Sperre – die harte Sperre ist das freigegebene Budget hier.
+    Kosten, die direkt vom Handelskonto abgebucht werden, werden dort verbucht und nicht doppelt abgezogen. Ein Zuschuss wird sichtbar gebucht und mindert den Aufwand nicht.</p>
+  <h3>Budgets laut Mandat</h3>
+  <div class="tabelle"><table><tr><th>Anbieter</th><th class="r">Freigegeben</th><th class="r">Verbraucht/reserviert</th><th class="r">Max. Aufrufe/Tag</th><th>Preis Eingabe / Ausgabe je Mio. Token</th></tr>
+    {% for a, c in cfg.items() if a in ('vertex','jev') %}<tr><td>{{ a }}</td><td class="r">{{ c.freigegebenes_budget_usd|usd }}</td><td class="r">{{ budgets[a].summe|usd(4) }}</td><td class="r">{{ c.max_aufrufe_je_tag }}</td><td>{{ c.preis_eingabe_usd_je_mio_token or 'unbekannt' }} / {{ c.preis_ausgabe_usd_je_mio_token or 'unbekannt' }}</td></tr>{% endfor %}
+  </table></div>
+  <h3>Kosten erfassen</h3>
+  <form method="post" action="/aktion/kosten" class="reihe"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="zurueck" value="/kosten">
+    <label>Anbieter<input name="anbieter" required placeholder="z. B. Google Cloud"></label>
+    <label>Art<select name="art"><option>HOSTING</option><option>DATEN</option><option>MODELL</option><option>SONSTIGE</option><option>ZUSCHUSS</option></select></label>
+    <label>Betrag USD<input class="betrag" name="betrag" inputmode="decimal" required></label>
+    <label>Status<select name="status"><option>OFFEN</option><option>BEZAHLT</option></select></label>
+    <label>Bezahlt aus<select name="bezahlt_aus"><option value="extern">extern (eigene Rechnung)</option><option value="konto:ibkr">Handelskonto IBKR</option><option value="konto:kraken">Handelskonto Kraken</option></select></label>
+    <label style="flex:1 1 200px">Notiz<input name="notiz"></label><button>Erfassen</button></form>
+</section>
+<section class="karte"><h2>Einträge</h2><div class="tabelle"><table><tr><th>#</th><th>Zeit</th><th>Anbieter</th><th>Art</th><th>Status</th><th class="r">Betrag</th><th>Bezahlt aus</th><th>Token</th><th>Notiz</th><th></th></tr>
+  {% for k in kosten %}<tr><td>{{ k.id }}</td><td class="mono">{{ k.zeit[:16] }}</td><td>{{ k.anbieter }}</td><td>{{ k.art }}</td><td>{{ k.status }}</td><td class="r">{{ k.betrag|usd(6) }}</td><td>{{ k.bezahlt_aus }}</td><td class="leise">{{ k.tokens_ein or '' }}{% if k.tokens_aus %}/{{ k.tokens_aus }}{% endif %}</td><td class="leise">{{ k.notiz or '' }}</td>
+    <td>{% if k.status == 'OFFEN' %}<form method="post" action="/aktion/kosten_bezahlt" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ k.id }}"><input type="hidden" name="zurueck" value="/kosten"><button class="zweit">bezahlt</button></form>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="10" class="leise">Keine Einträge.</td></tr>{% endfor %}</table></div></section>
+{% endblock %}

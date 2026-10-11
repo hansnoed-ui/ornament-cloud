@@ -1,0 +1,33 @@
+{% extends "basis.jinja" %}
+{% block titel %}Entnahme planen{% endblock %}
+{% block inhalt %}
+<section class="karte">
+  <h2>ENTNAHME PLANEN</h2>
+  <p>Jederzeit möglich – auch unter dem Ziel. Eine Entnahme ist keine Zielerreichung. Verkäufe geschehen erst nach deiner Bestätigung, und es wird nur so viel verkauft wie nötig.</p>
+  <form method="get" action="/entnahme" class="reihe">
+    <label>Betrag an dich (USD)<input class="betrag" name="betrag" inputmode="decimal" value="{{ betrag or '' }}" required></label>
+    <button class="zweit">Vorschau berechnen</button>
+  </form>
+  {% if bew.handelskontowert is not none %}<p class="leise">Handelskontowert zurzeit {{ bew.handelskontowert|usd }} USD. Frei verfügbar: {% for k, v in bew.je_konto.items() %}{{ k }} {{ v.frei|usd }}{% if not loop.last %}, {% endif %}{% endfor %} USD.</p>{% endif %}
+  {% if vfehler %}<p class="fehler">{{ vfehler }}</p>{% endif %}
+</section>
+{% if vorschau %}
+<section class="karte">
+  <h2>Vorschau für {{ vorschau.betrag|usd }} USD</h2>
+  <div class="tabelle"><table>
+    <tr><th>Aus Konto</th><td>{% for k, v in vorschau.aus_konto.items() %}{{ k }}: {{ v|usd }}{% if not loop.last %} · {% endif %}{% endfor %}</td></tr>
+    <tr><th>Geschätzte Kosten (Gebühren, Slippage, Auszahlung)</th><td>{{ vorschau.kosten_geschaetzt|usd }} USD</td></tr>
+    <tr><th>Restkapital danach (geschätzt)</th><td>{{ vorschau.restkapital_geschaetzt|usd }} USD</td></tr>
+  </table></div>
+  <h3>Nötige Verkäufe</h3>
+  {% if vorschau.verkaeufe %}<div class="tabelle"><table><tr><th>Konto</th><th>Instrument</th><th class="r">Menge</th><th class="r">Erlös geschätzt</th><th class="r">Gebühr</th><th>Markt</th></tr>
+    {% for v in vorschau.verkaeufe %}<tr><td>{{ v.konto }}</td><td>{{ v.instrument }}</td><td class="r">{{ v.menge|menge }}</td><td class="r">{{ v.erloes_geschaetzt|usd }}</td><td class="r">{{ v.gebuehr|usd }}</td><td>{{ 'offen' if v.markt_offen else 'geschlossen' }}</td></tr>{% endfor %}
+  </table></div>{% else %}<p class="leise">Keine – freies Bargeld genügt.</p>{% endif %}
+  {% for h in vorschau.hinweise %}<p class="hinweis">{{ h }}</p>{% endfor %}
+  {% if vorschau.moeglich %}
+  <form method="post" action="/aktion/entnahme_planen" class="reihe"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="betrag" value="{{ vorschau.betrag }}"><input type="hidden" name="zurueck" value="/entnahme">
+    <label style="flex:1 1 220px">Begründung<input name="begruendung" required></label><button>Als Plan speichern (noch nichts verkauft)</button></form>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

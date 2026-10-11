@@ -1,0 +1,176 @@
+{% extends "basis.jinja" %}
+{% block titel %}Übersicht{% endblock %}
+{% block inhalt %}
+
+<section class="karte" aria-labelledby="h-zyklus">
+  <h2 id="h-zyklus">Zyklus {{ z.nummer }} · <span class="zustand zustand--{{ z.zustand }}">{{ z.zustand }}</span></h2>
+  <p>{{ zustand_text[z.zustand] }}{% if z.start %} · seit {{ z.start[:16].replace('T', ' ') }} UTC{% endif %}{% if z.startkapital %} · Startkapital {{ z.startkapital|usd }} USD{% endif %}</p>
+  {% if z.zustand == 'TECHNISCH_PAUSIERT' %}
+    <div class="hinweis"><b>Technische Pause – keine Verlustgrenze.</b> Neue Orders sind blockiert, bis diese Punkte geklärt sind:
+      <ul>{% for g in pause_gruende %}<li>{{ g }}</li>{% endfor %}</ul>Laufende Orders werden weiter abgeglichen.</div>
+  {% endif %}
+  {% if z.sperre_bis %}<p class="leise">Sperrfrist für eine neue Zielabwicklung bis {{ z.sperre_bis[:16].replace('T',' ') }} UTC.</p>{% endif %}
+  {% if schliessen_laeuft %}<p class="hinweis">POSITIONEN SCHLIESSEN läuft: Verkäufe werden zu Börsenzeiten gestellt.</p>{% endif %}
+  {% if bericht and bericht.hinweise %}<details><summary>Hinweise des letzten Schritts ({{ bericht.hinweise|length }})</summary>
+    <ul class="leise">{% for h in bericht.hinweise %}<li>{{ h }}</li>{% endfor %}</ul></details>{% endif %}
+
+  <div class="aktionen" style="margin-top:10px">
+    {% if z.zustand == 'SETUP' %}
+      <form method="post" action="/aktion/starten"><input type="hidden" name="csrf" value="{{ csrf }}">
+        <button>Experiment starten ({{ mandat.startkapital|usd }} USD gesamt)</button></form>
+    {% endif %}
+    {% if modus != 'LIVE' and z.zustand != 'SETUP' %}
+      <form method="post" action="/aktion/schritt" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="anzahl" value="1"><button class="zweit">1 Stunde simulieren</button></form>
+      <form method="post" action="/aktion/schritt" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="anzahl" value="24"><button class="zweit">24 Stunden simulieren</button></form>
+    {% endif %}
+    {% if z.zustand in ('SIMULATION','AKTIV','ZIEL_ABWICKLUNG','NICHT_HANDELSFAEHIG','AUSZAHLUNG_AUSSTEHEND') %}
+      <form method="post" action="/aktion/pause" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="warn">PAUSE</button></form>
+    {% endif %}
+    {% if z.zustand == 'MANUELL_PAUSIERT' %}
+      <form method="post" action="/aktion/fortsetzen" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><button>Fortsetzen</button></form>
+    {% endif %}
+    {% if z.zustand not in ('SETUP','ABGESCHLOSSEN','KAPITAL_AUFGEBRAUCHT') %}
+      <a href="/entnahme"><button type="button" class="zweit">ENTNAHME PLANEN</button></a>
+      <a href="/schliessen"><button type="button" class="zweit">POSITIONEN SCHLIESSEN …</button></a>
+    {% endif %}
+    {% if z.zustand == 'NEUSTART_BEREIT' %}
+      <form method="post" action="/aktion/neustart" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><button>Neuen Zyklus starten (ohne Nachschuss)</button></form>
+    {% endif %}
+    {% if z.zustand in ('ABGESCHLOSSEN','KAPITAL_AUFGEBRAUCHT') %}
+      <form method="post" action="/aktion/neuer_zyklus" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><button>Neuen Zyklus mit vorhandenem Kapital starten</button></form>
+    {% endif %}
+  </div>
+  {% if z.zustand in ('SIMULATION','AKTIV','MANUELL_PAUSIERT','NICHT_HANDELSFAEHIG') %}
+  <details style="margin-top:10px"><summary>Zyklus ausdrücklich abschliessen</summary>
+    <form method="post" action="/aktion/abschliessen" class="reihe"><input type="hidden" name="csrf" value="{{ csrf }}">
+      <label>Begründung<input name="begruendung" required></label><button class="zweit">Zyklus abschliessen</button></form>
+    <p class="leise">Ein Abschluss ist keine Zielerreichung. Ein neuer Zyklus startet danach nur auf deinen Klick und ohne Nachschuss.</p>
+  </details>
+  {% endif %}
+</section>
+
+<section class="karte" aria-labelledby="h-wert">
+  <h2 id="h-wert">Wert und Ziel</h2>
+  <div class="raster">
+    <div class="zahl"><span>Handelskontowert (beide Konten)</span><b>{{ bew.handelskontowert|usd }} USD</b></div>
+    <div class="zahl"><span>Geschätzter Netto-Liquidationswert</span><b>{{ bew.netto_liquidation|usd }} USD</b></div>
+    <div class="zahl"><span>Wirtschaftlicher Nettowert</span><b>{{ bew.wirtschaftlich|usd }} USD</b></div>
+    <div class="zahl"><span>Aktuelles Ziel (v{{ p.version }}, {{ p.durch }})</span><b>{{ p.zielbetrag|usd }} USD</b>
+      {% if bew.netto_liquidation is not none %}{% set q = [[(bew.netto_liquidation / p.zielbetrag * 100)|float, 100]|min, 0]|max %}
+      <div class="balken" title="Netto-Liquidationswert im Verhältnis zum Ziel"><i style="width: {{ q }}%"></i></div>{% endif %}
+      <span>Automatische Zielabwicklung: <b style="display:inline;font-size:inherit">{{ 'an' if p.auto_zielabwicklung else 'aus' }}</b></span></div>
+  </div>
+  {% if bew.fehlende_kurse %}<p class="hinweis">Bewertung unvollständig – keine Kurse für: {{ bew.fehlende_kurse|join(', ') }}</p>{% endif %}
+  <p class="leise">{{ grundlage }}</p>
+  <details><summary>Ziel und Standardaufteilung ändern (deine versionierte Entscheidung)</summary>
+    <form method="post" action="/aktion/ziel" class="reihe"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="auto_gesendet" value="1">
+      <label>Zielbetrag USD<input class="betrag" name="zielbetrag" inputmode="decimal" value="{{ p.zielbetrag }}"></label>
+      <label>Neustartkapital USD<input class="betrag" name="neustartkapital" inputmode="decimal" value="{{ p.neustartkapital }}"></label>
+      <label>Langfristige Zuführung USD<input class="betrag" name="langfrist_zufuehrung" inputmode="decimal" value="{{ p.langfrist_zufuehrung }}"></label>
+      <label>Überschuss über Ziel an<select name="ueberschuss_an">{% for o, t in [('an_mich','mich'),('neustart','Neustart'),('langfrist','langfristiges Depot')] %}<option value="{{ o }}" {% if p.ueberschuss_an == o %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></label>
+      <label>Automatische Zielabwicklung<select name="auto_zielabwicklung"><option value="1" {% if p.auto_zielabwicklung %}selected{% endif %}>an</option><option value="0" {% if not p.auto_zielabwicklung %}selected{% endif %}>aus – weiterlaufen lassen</option></select></label>
+      <label style="flex:1 1 220px">Begründung<input name="begruendung" required></label>
+      <button>Neue Version speichern</button>
+    </form>
+    <p class="leise">Während einer laufenden Zielabwicklung wird jede Änderung vor dem nächsten Orderversand geprüft. Bereits ausgeführte Verkäufe sind endgültig.</p>
+  </details>
+</section>
+
+{% if plaene %}
+<section class="karte" aria-labelledby="h-plaene">
+  <h2 id="h-plaene">Auszahlungs- und Entnahmepläne</h2>
+  {% for e in plaene %}{% set pl = e.plan %}
+    <h3><a href="/plan/{{ pl.id }}">#{{ pl.id }} · {{ 'Zielauszahlung (Vorschlag)' if pl.art == 'ZIEL' else 'Manuelle Entnahme' }}</a> · {{ pl.status }}</h3>
+    <div class="tabelle"><table>
+      <tr><th>An dich</th><th>Langfristiges Depot</th><th>Kostenerstattung</th><th>Auszahlungskosten</th><th>Bleibt (Neustart/Rest)</th><th>Erstellt</th></tr>
+      <tr><td>{{ pl.an_mich|usd }}</td><td>{{ pl.langfrist|usd }}</td><td>{{ pl.kostenerstattung|usd }}</td><td>{{ pl.auszahlungskosten|usd }}</td><td>{{ pl.neustart|usd if pl.art == 'ZIEL' else '–' }}</td><td>{{ pl.erstellt[:16].replace('T',' ') }}</td></tr>
+    </table></div>
+    {% if pl.hinweis %}<p class="leise">{{ pl.hinweis }}</p>{% endif %}
+    {% if e.ueb %}<p class="leise">Überweisungen: {% for u in e.ueb %}#{{ u.id }} {{ u.konto }} {{ u.art }} {{ u.betrag|usd }} ({{ u.status }}){% if not loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+    <p><a href="/plan/{{ pl.id }}">Plan öffnen: ändern, bestätigen, verschieben, verwerfen, Überweisungen melden →</a></p>
+  {% endfor %}
+</section>
+{% endif %}
+
+<section class="karte" aria-labelledby="h-konten">
+  <h2 id="h-konten">Konten</h2>
+  {% for konto, k in bew.je_konto.items() %}
+    <h3>{{ konten_cfg[konto].anbieter }} <span class="leise">({{ konten_cfg[konto].anlagebereich }})</span></h3>
+    <div class="raster">
+      <div class="zahl"><span>Bargeld gesamt</span><b>{{ k.bargeld|usd }}</b></div>
+      <div class="zahl"><span>Abgewickelt</span><b>{{ k.abgewickelt|usd }}</b></div>
+      <div class="zahl"><span>Reserviert (Orders / Entnahme)</span><b>{{ k.reserviert_kauf|usd }} / {{ k.reserviert_entnahme|usd }}</b></div>
+      <div class="zahl"><span>Frei für Käufe</span><b>{{ k.frei|usd }}</b></div>
+    </div>
+    {% if k.positionen %}<div class="tabelle"><table><tr><th>Position</th><th class="r">Menge</th><th class="r">Geldkurs</th><th class="r">Wert USD</th><th class="r">Einstand</th></tr>
+      {% for pos in k.positionen %}<tr><td>{{ pos.instrument }}</td><td class="r">{{ pos.menge|menge }}</td><td class="r">{{ pos.geld|usd if pos.geld else '–' }}</td><td class="r">{{ pos.wert|usd if pos.wert is not none else 'kein Kurs' }}</td><td class="r">{{ pos.einstand|usd if pos.einstand else '–' }}</td></tr>{% endfor %}
+    </table></div>{% else %}<p class="leise">Keine Positionen – Bargeld halten ist ein gültiges Ergebnis.</p>{% endif %}
+  {% endfor %}
+  <h3>Offene Orders</h3>
+  {% if offene %}<div class="tabelle"><table><tr><th>Client-ID</th><th>Seite</th><th>Instrument</th><th class="r">Menge</th><th class="r">Gefüllt</th><th class="r">Limit</th><th>Status</th><th>Zweck</th></tr>
+    {% for o in offene %}<tr><td class="mono">{{ o.client_id }}</td><td>{{ o.seite }}</td><td>{{ o.instrument }}</td><td class="r">{{ o.menge|menge }}</td><td class="r">{{ o.gefuellt|menge }}</td><td class="r">{{ o.limit_preis|usd }}</td><td>{{ o.status }}</td><td>{{ o.zweck }}</td></tr>{% endfor %}
+  </table></div>{% else %}<p class="leise">Keine.</p>{% endif %}
+</section>
+
+<section class="karte" aria-labelledby="h-entscheidung">
+  <h2 id="h-entscheidung">Letzte Entscheidung</h2>
+  {% if letzte %}{% set jv = letzte.jev|json_laden %}{% set vx = letzte.vertex|json_laden %}
+    <p><b>{{ letzte.instrument }}: {{ letzte.entscheidung }}</b> · Signal {{ letzte.signal }} · {{ letzte.zeit[:16].replace('T',' ') }} UTC</p>
+    <p>{{ letzte.begruendung }}</p>
+    {% if vx %}<p><span class="leise">Hypothese ({{ vx.quelle }}):</span> {{ vx.hypothese or '–' }}</p>{% endif %}
+    {% if letzte.gegenargument %}<p><span class="leise">Gegenargument:</span> {{ letzte.gegenargument }}</p>{% endif %}
+    {% if jv %}<p><span class="leise">JEV ({{ jv.quelle }}{% if jv.modell %}, {{ jv.modell }}{% endif %}):</span>
+      {% if jv.antworten %}belegt {{ '%.2f'|format(jv.antworten.belegt.noul) }}, Widerspruch {{ '%.2f'|format(jv.antworten.widerspruch.noul) }},
+      Passung {{ '%.1f'|format(jv.antworten.passung.score) }}/4, Aktion {{ jv.antworten.aktion.choice }} (Konfidenz {{ '%.2f'|format(jv.antworten.aktion.confidence) }})
+      {% else %}{{ jv.status }} – {{ jv.fehler }}{% endif %}</p>
+      <p class="leise">JEVs Konfidenz ist keine Gewinnwahrscheinlichkeit.</p>{% endif %}
+    <p><a href="/journal">Ganzes Journal →</a></p>
+  {% else %}<p class="leise">Noch keine Entscheidung. ABWARTEN ohne Signal wird nicht einzeln protokolliert.</p>{% endif %}
+</section>
+
+<section class="karte" aria-labelledby="h-daten">
+  <h2 id="h-daten">Daten und Integrationen</h2>
+  <div class="tabelle"><table>{% for k, v in integration.items() %}<tr><th>{{ k }}</th><td>{{ v }}</td></tr>{% endfor %}</table></div>
+  <h3>Kurse und Datenalter</h3>
+  <div class="tabelle"><table><tr><th>Instrument</th><th>Konto</th><th class="r">Geld</th><th class="r">Brief</th><th class="r">Alter</th><th>Markt</th></tr>
+    {% for d in daten %}<tr><td>{{ d.id }}{% if d.nur_sim %} <span class="leise">(nur Simulation)</span>{% endif %}</td><td>{{ d.konto }}</td>
+      <td class="r">{{ d.kurs.geld|usd if d.kurs else '–' }}</td><td class="r">{{ d.kurs.brief|usd if d.kurs else '–' }}</td>
+      <td class="r">{% if d.alter_min is none %}–{% else %}{{ d.alter_min }} min{% endif %}{% if d.zu_alt %} ⚠{% endif %}</td><td>{{ 'offen' if d.offen else 'geschlossen' }}</td></tr>{% endfor %}
+  </table></div>
+  <p class="leise">⚠ = zu alt für neue Orders (Instrument blockiert). {{ feiertage }}</p>
+</section>
+
+<section class="karte" aria-labelledby="h-kosten">
+  <h2 id="h-kosten">Kosten</h2>
+  <div class="raster">
+    <div class="zahl"><span>Handelsgebühren (dieser Zyklus)</span><b>{{ geb_zyklus|usd }} USD</b></div>
+    <div class="zahl"><span>Handelsgebühren (gesamt)</span><b>{{ kum.handelsgebuehren|usd }} USD</b></div>
+    <div class="zahl"><span>Externe Betriebskosten (Zyklus, offen)</span><b>{{ kosten_offen_zyklus|usd(4) }} USD</b></div>
+    <div class="zahl"><span>Externe Betriebskosten gesamt (bezahlt / offen)</span><b>{{ kum.betriebskosten_bezahlt|usd(4) }} / {{ kum.betriebskosten_offen|usd(4) }}</b></div>
+  </div>
+  <p class="leise">Externe Betriebskosten (Modelle, Daten, Hosting) laufen über getrennte Rechnungen und werden hier getrennt vom Handelskapital geführt.
+    Kostenbudgets: {% for a, b in budgets.items() %}{{ a }} {{ b.verbraucht|usd(4) }} von {{ b.budget|usd }} USD, {{ b.aufrufe_heute }}/{{ b.max }} Aufrufe heute{% if not loop.last %} · {% endif %}{% endfor %}.
+    Ohne freigegebenes Budget gibt es keine kostenpflichtigen Aufrufe. <a href="/kosten">Kosten verwalten →</a></p>
+</section>
+
+<section class="karte" aria-labelledby="h-kum">
+  <h2 id="h-kum">Kumulative Bilanz (alle Zyklen)</h2>
+  <div class="tabelle"><table>
+    <tr><th>Einzahlungen gesamt (externe Zuflüsse, nie Gewinn)</th><td class="r">{{ kum.einzahlungen|usd }}</td></tr>
+    <tr><th>An dich ausgezahlt (bestätigt)</th><td class="r">{{ kum.ausgezahlt_bestaetigt|usd }}</td></tr>
+    <tr><th>Kostenerstattungen an dich (bestätigt)</th><td class="r">{{ kum.kostenerstattung_bestaetigt|usd }}</td></tr>
+    <tr><th>Ins langfristige Depot übertragen (bestätigt)</th><td class="r">{{ kum.langfrist_bestaetigt|usd }}</td></tr>
+    <tr><th>In Transfer (ausgeführt, nicht bestätigt)</th><td class="r">{{ kum.in_transfer|usd }}</td></tr>
+    <tr><th>Verbleibendes aktives Kapital</th><td class="r">{{ kum.aktives_kapital|usd }}</td></tr>
+    <tr><th>Betriebskosten extern</th><td class="r">{{ kum.betriebskosten_extern|usd(4) }}</td></tr>
+    <tr><th>Zuschüsse (gebucht, mindern den Aufwand nicht)</th><td class="r">{{ kum.zuschuesse|usd }}</td></tr>
+    <tr><th>Ergebnis nach erfassten Kosten, vor persönlichen Steuern</th><td class="r"><b>{{ kum.ergebnis_nach_kosten|usd }}</b></td></tr>
+  </table></div>
+  <p class="leise">Übertragungen ins langfristige Depot werden getrennt von dessen späterer Wertentwicklung gezeigt (die hier unbekannt ist). Dieses Depot wird nie verkauft oder als Sicherheit genutzt.</p>
+</section>
+
+<section class="karte" aria-labelledby="h-wechsel">
+  <h2 id="h-wechsel">Letzte Zustandswechsel</h2>
+  <div class="tabelle"><table>{% for w in zustandswechsel %}<tr><td class="mono">{{ w.zeit[:16].replace('T',' ') }}</td><td>{{ w.von or '–' }} → {{ w.nach }}</td><td>{{ w.durch }}</td><td>{{ w.grund }}</td></tr>{% endfor %}</table></div>
+</section>
+{% endblock %}

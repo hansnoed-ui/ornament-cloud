@@ -1,0 +1,22 @@
+{% extends "basis.jinja" %}
+{% block titel %}Vergleich{% endblock %}
+{% block inhalt %}
+<section class="karte">
+  <h2>Vergleich mit virtuellen Depots</h2>
+  {% if not v.fenster %}<p class="leise">Noch keine Werte – erst starten und simulieren.</p>{% else %}
+  <p class="leise">Gemeinsames Zeitfenster {{ v.fenster[0][:16].replace('T',' ') }} bis {{ v.fenster[1][:16].replace('T',' ') }} UTC. {{ v.hinweis }}</p>
+  <div class="tabelle"><table>
+    <tr><th>Depot</th><th class="r">Endwert (inkl. abgeflossener Beträge)</th><th class="r">Nettoergebnis</th><th class="r">Handelsgebühren</th><th class="r">Spanne + Slippage (implizit)</th><th class="r">Betriebskosten</th><th class="r">Orders mit Ausführung</th><th class="r">Max. Rückgang (Messwert)</th></tr>
+    {% for d in v.depots %}<tr><td>{{ d.name }}</td><td class="r">{{ d.endwert|usd }}</td><td class="r">{{ d.nettoergebnis|usd }}</td><td class="r">{{ d.handelsgebuehren|usd }}</td><td class="r">{{ d.spanne_slippage_implizit|usd }}</td><td class="r">{{ d.betriebskosten|usd(4) }}</td><td class="r">{{ d.handelszahl }}</td><td class="r">{{ d.max_rueckgang|pct }}</td></tr>{% endfor %}
+  </table></div>
+  <h3>Kapitalverlauf</h3>
+  <svg class="verlauf" viewBox="0 0 600 140" preserveAspectRatio="none" role="img" aria-label="Kapitalverlauf der drei Depots">
+    {% for d in v.depots %}<polyline fill="none" stroke-width="1.6" stroke="{{ ['var(--ak)','var(--warn)','var(--ged)'][loop.index0] }}" points="{{ d.punkte }}"/>{% endfor %}
+  </svg>
+  <p class="leise">{% for d in v.depots %}<span style="color:{{ ['var(--ak)','var(--warn)','var(--ged)'][loop.index0] }}">■</span> {{ d.name }}{% if not loop.last %} · {% endif %}{% endfor %}. Skala {{ v.min|usd }}–{{ v.max|usd }} USD.</p>
+  {% endif %}
+  <h3>Vorab festgelegte Regeln</h3>
+  <p class="leise">Ohne JEV: {{ regel.ohne_jev_ersatzregel }}<br>Kaufen und Halten: {{ regel.kaufen_halten_hinweis }}</p>
+  <p class="leise">Keine Auswahl nur überlebender Gewinner, kein Look-ahead, keine Anpassung an Testdaten. Der maximale Rückgang ist nur ein Messwert, keine Stop-Regel.</p>
+</section>
+{% endblock %}
