@@ -1,13 +1,13 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen, leitfarbe } from "./analyse.js?v=20";
-import { mitDauer } from "./dauer.js?v=20";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=20";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=20";
-import { REGELN } from "./regeln.js?v=20";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=20";
-import { JEV } from "./jev.js?v=20";
-import { zip } from "./zip.js?v=20";
+import { analysiere, konturen, leitfarbe } from "./analyse.js?v=21";
+import { mitDauer } from "./dauer.js?v=21";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=21";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=21";
+import { REGELN } from "./regeln.js?v=21";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=21";
+import { JEV } from "./jev.js?v=21";
+import { zip } from "./zip.js?v=21";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln
@@ -227,6 +227,7 @@ function zeigeStartwert() { $("startwert").textContent = `Startwert ${S.seed}${S
 
 // ---------- 4 · Erzeugen ----------
 async function erzeugen(stumm = false) {
+  $("standbilder").textContent = "";                // die Standbilder des alten Laufs nicht mehr zeichnen
   stoppe();
   $("status-erzeugen").textContent = "Material wird aus dem Bild geschnitten …";
   await new Promise((ok) => requestAnimationFrame(() => setTimeout(ok, 0)));
@@ -235,25 +236,55 @@ async function erzeugen(stumm = false) {
   const regel = S.orna?.ableitung.regel ?? null;
   const M = erzeugeLauf(A, { seed: S.seed, regel });
   const mat = baueMaterial(S.arbeit, A, M);
-  const L = { M, mat, cache: new Map(), z: null, seed: S.seed, regel, schluessel: [], beschreibung: [], spurCache: {} };
+  const L = { M, mat, cache: new Map(), z: null, seed: S.seed, regel, schluessel: [], beschreibung: [], spurCache: {}, bereit: null };
   S.lauf = L;
   neustartZustand();
-  L.schluessel = SCHLUESSEL.map((k) => zustandsSchluessel(zustandBei(k)));
-  const keys = Object.fromEntries(STATIONEN.map((s) => [s.nr, zustandBei(SCHLUESSEL[s.nr])]));
-  L.beschreibung = beschreibungen(M, keys);
   const [bw, bh] = mass(A.seite, BUEHNE_SEITE);
   const c = $("buehne"); c.width = bw; c.height = bh;
   const d = $("daten"); d.width = bw; d.height = bh;
   $("buehne-flaeche").style.width = `min(100%, calc(76vh * ${A.seite.toFixed(4)}))`;
-  zeigeStandbilder(); zeigeMarken(); zeigeEreignisse(keys[STATIONEN.length - 1]);
-  $("ergebnis").hidden = false; $("gegen-bilder").hidden = true;
+  zeigeMarken();
+  $("ergebnis").hidden = true; $("gegen-bilder").hidden = true; $("standbilder").textContent = "";
   $("ablage").hidden = true; $("buehne-box").hidden = false;
-  $("status-erzeugen").textContent = `Erzeugt: ${M.teile.length} Teile (${M.teile.filter((e) => e.kachel >= 0).length} davon Kacheln grosser Flächen), Regel ${regel ? `${regel} (${REGELN[regel].name})` : "keine (ohne ORNA)"}, Startwert ${S.seed}.`;
+  $("status-erzeugen").textContent = "Läuft. Zeitleiste, Standbilder und Export werden nebenher gerechnet …";
   zeichneBuehne();
+  // die Animation beginnt sofort (sie rechnet ihre Schritte selbst); den ganzen Lauf rechnet ein Worker nebenher voraus
+  L.bereit = vorausrechnen(L).then(() => fertigstellen(L));
   if (!stumm) {
     $("werkbank").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) spiele();
   }
+  await L.bereit;
+}
+/** den ganzen Lauf vorausrechnen: im Worker (rechner.js), ohne Worker auf der Seite; die Momentaufnahmen gehen in den Speicher der Zeitleiste */
+function vorausrechnen(L) {
+  return new Promise((fertig) => {
+    const hier = () => { if (S.lauf === L) zustandBei(GESAMT); fertig(); };
+    let w = null;
+    try { w = new Worker(new URL("rechner.js?v=21", import.meta.url), { type: "module" }); } catch { w = null; }
+    if (!w) { setTimeout(hier, 0); return; }
+    w.onmessage = ({ data }) => {
+      w.terminate();
+      if (S.lauf === L) for (const m of data.momente) {
+        if (!L.cache.has(m.schritt)) L.cache.set(m.schritt, m);
+        else if (zustandsSchluessel(L.cache.get(m.schritt)) !== zustandsSchluessel(m)) S.abweichungen++;   // muss mit der Wiedergabe übereinstimmen
+      }
+      fertig();
+    };
+    w.onerror = (e) => { e.preventDefault?.(); w.terminate(); hier(); };
+    w.postMessage({ A: S.A, seed: L.seed, regel: L.regel, merken: MERKEN });
+  });
+}
+/** wenn der Lauf vorausgerechnet ist: Schlüsselzustände, Beschreibungen, Kontaktbogen, Ereignisse und Export */
+function fertigstellen(L) {
+  if (S.lauf !== L) return;
+  const M = L.M;
+  L.schluessel = SCHLUESSEL.map((k) => zustandsSchluessel(zustandBei(k)));
+  const keys = Object.fromEntries(STATIONEN.map((s) => [s.nr, zustandBei(SCHLUESSEL[s.nr])]));
+  L.beschreibung = beschreibungen(M, keys);
+  zeigeStandbilder(); zeigeEreignisse(keys[STATIONEN.length - 1]);
+  $("ergebnis").hidden = false;
+  $("status-erzeugen").textContent = `Erzeugt: ${M.teile.length} Teile (${M.teile.filter((e) => e.kachel >= 0).length} davon Kacheln grosser Flächen), Regel ${L.regel ? `${L.regel} (${REGELN[L.regel].name})` : "keine (ohne ORNA)"}, Startwert ${L.seed}.`;
 }
 function neustartZustand() {
   const L = S.lauf;
@@ -395,6 +426,7 @@ function spiele() {
 function stoppe() {
   S.spielt = false;
   $("spielen").textContent = "Abspielen"; $("spielen").setAttribute("aria-pressed", "false");
+  alleStandbilder();                                  // die Wiedergabe steht: jetzt die noch offenen Standbilder zeichnen
 }
 function springe(k) {
   const L = S.lauf; if (!L) return;
@@ -416,14 +448,26 @@ function zeigeMarken() {
     box.append(b);
   }
 }
+// Die Standbilder des Kontaktbogens werden erst gezeichnet, wenn man zu ihnen kommt oder die Wiedergabe steht: während die Animation läuft,
+// würde jedes einzelne sie kurz anhalten.
+let sichtbar = null;
+function standbildZeichnen(c) {
+  const L = S.lauf;
+  if (!c.dataset.offen || !L) return;
+  delete c.dataset.offen;
+  zeichne(c.getContext("2d"), c.width, c.height, zustandBei(SCHLUESSEL[Number(c.dataset.standbild)]), L.M, L.mat);
+}
+function alleStandbilder() { for (const c of document.querySelectorAll("#standbilder canvas[data-offen]")) standbildZeichnen(c); }
 function zeigeStandbilder() {
   const L = S.lauf, liste = $("standbilder"); liste.textContent = "";
   const [tw, th] = mass(L.M.seite, 640);
+  sichtbar?.disconnect();
+  sichtbar = "IntersectionObserver" in window ? new IntersectionObserver((e) => { for (const x of e) if (x.isIntersecting) standbildZeichnen(x.target); }) : null;
   for (const b of L.beschreibung) {
     const li = document.createElement("li"); li.dataset.nr = b.nr;
     const c = leinwand(tw, th);
-    c.setAttribute("role", "img"); c.setAttribute("aria-label", `Standbild ${b.nr}: ${b.titel}`); c.dataset.standbild = b.nr;
-    zeichne(c.getContext("2d"), tw, th, zustandBei(SCHLUESSEL[b.nr]), L.M, L.mat);
+    c.setAttribute("role", "img"); c.setAttribute("aria-label", `Standbild ${b.nr}: ${b.titel}`); c.dataset.standbild = b.nr; c.dataset.offen = "1";
+    sichtbar?.observe(c);
     c.addEventListener("click", () => springe(SCHLUESSEL[b.nr]));
     const h = document.createElement("h3");
     const ziffer = document.createElement("span"); ziffer.className = "ziffer"; ziffer.textContent = b.nr;
@@ -439,6 +483,7 @@ function zeigeStandbilder() {
     li.append(c, h, p, k);
     liste.append(li);
   }
+  if (!S.spielt || !sichtbar) alleStandbilder();
 }
 function zeigeEreignisse(z) {
   const ol = $("ereignis-liste"); ol.textContent = "";

@@ -17,7 +17,8 @@ function verweise(text, typ, basis) {
   if (typ === "html") { const b = text.match(/<base href="([^"]+)"/); if (b) basis = new URL(b[1], basis).href; }
   const muster = typ === "html" ? [/<(?:link|script)[^>]+(?:href|src)="([^"#]+)"/g]
     : typ === "css" ? [/url\(\s*["']?([^"')]+)["']?\s*\)/g, /@import\s+["']([^"']+)["']/g]
-    : [/(?:import|export)\s[^"']*?from\s*["']([^"']+)["']/g, /import\(\s*["']([^"']+)["']\s*\)/g];
+    : [/(?:import|export)\s[^"']*?from\s*["']([^"']+)["']/g, /import\(\s*["']([^"']+)["']\s*\)/g,
+       /new URL\(\s*["']([^"']+)["']\s*,\s*import\.meta\.url\s*\)/g];          // auch Worker (rechner.js), die ein Modul so lädt
   const out = [];
   for (const m of muster) for (const [, v] of text.matchAll(m)) {
     const u = new URL(v, basis);
