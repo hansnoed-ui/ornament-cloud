@@ -246,6 +246,11 @@ await check("App (11. Oktober 2026): Knopf «Als App installieren» mit Anleitun
   await mitBeispiel(page);
   assert.ok(await page.locator("#buehne-box").isVisible(), "Animation ohne Netz erzeugt");
   assert.equal(await page.locator("#standbilder li").count(), 6, "sechs Standbilder ohne Netz");
+  // die Seite der installierten App (werkbank/, eigene Adresse wie bei ORNA) startet ebenfalls ohne Netz und arbeitet gleich
+  await page.goto(base + "werkbank/"); await page.waitForFunction(() => window.fictoryTest?.bereit);
+  await mitBeispiel(page);
+  assert.equal(await page.locator("#standbilder li").count(), 6, "werkbank/: sechs Standbilder ohne Netz");
+  assert.equal(await page.evaluate(() => document.baseURI.replace(location.origin, "")), "/alpha/the-fictory/", "alle Verweise gelten wie auf der Website");
   await ctx.setOffline(false);
   assert.deepEqual(fehler.filter((f) => !/goatcounter|ERR_INTERNET_DISCONNECTED|Failed to load resource/.test(f)), []);
   assert.deepEqual(fremd.filter((u) => !u.includes("goatcounter")), []);

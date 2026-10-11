@@ -11,8 +11,8 @@
 //                              später und langsamer an (die Spuren bestimmen die Reihenfolge, nicht mehr das Ziel). Es bleiben feine Fugen.
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall } from "./analyse.js?v=15";
-import { REGELN } from "./regeln.js?v=15";
+import { zufall } from "./analyse.js?v=16";
+import { REGELN } from "./regeln.js?v=16";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
