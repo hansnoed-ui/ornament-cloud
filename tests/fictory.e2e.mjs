@@ -119,6 +119,35 @@ await check("Abspielen, Pause, Zeitleiste und Neustart; der Neustart löscht die
   await ctx.close();
 });
 
+await check("Ein PNG während der Wiedergabe: die Animation hält kurz an und läuft weiter, statt mehrere Schritte auf einmal zu springen (Rückmeldung vom 11. Oktober 2026)", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  await mitBeispiel(page);
+  const r = await page.evaluate(async () => {
+    const T = window.fictoryTest; T.springe(200);
+    // je gezeichnetem Bild: Abstand zum vorigen Bild und wie viele Schritte die Simulation dabei weiterging
+    const bilder = []; let alt = performance.now(), altS = T.S.lauf.z.schritt;
+    const mess = (t) => { bilder.push({ ms: t - alt, schritte: T.S.lauf.z.schritt - altS }); alt = t; altS = T.S.lauf.z.schritt; if (T.S.spielt) requestAnimationFrame(mess); };
+    document.getElementById("spielen").click(); requestAnimationFrame(mess);
+    await new Promise((ok) => setTimeout(ok, 800));
+    const t0 = performance.now();
+    // das Rechnen blockiert den Browser; zusätzlich eine sichere Blockade, falls ein schneller Rechner das PNG in einem Bild schafft
+    await T.standbildPNG(3);
+    const bis = performance.now() + 400; while (performance.now() < bis);
+    const blockiert = performance.now() - t0;
+    await new Promise((ok) => setTimeout(ok, 1200));
+    document.getElementById("spielen").click();
+    return { blockiert, bilder };
+  });
+  const lang = r.bilder.filter((b) => b.ms > 300);
+  assert.ok(r.blockiert > 300 && lang.length >= 1, `der Browser war blockiert (${Math.round(r.blockiert)} ms)`);
+  // 30 Schritte je Sekunde: auch ein langsames Bild (bis 100 ms) braucht höchstens 4; vorher holte die Wiedergabe nach einer Blockade bis zu 8 auf einmal nach
+  const sprung = Math.max(...r.bilder.map((b) => b.schritte));
+  assert.ok(sprung <= 4, `kein Sprung: höchstens ${sprung} Schritte in einem Bild (${JSON.stringify(lang)})`);
+  assert.ok(lang.every((b) => b.schritte <= 2), "nach der Blockade setzt die Animation dort fort, wo sie stand");
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
 await check("Sechs verschiedene PNG in höherer Auflösung, jedes aus demselben Schlüsselzustand wie sein Standbild", async () => {
   const { ctx, page } = await oeffne();
   await mitBeispiel(page);

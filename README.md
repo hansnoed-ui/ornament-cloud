@@ -166,7 +166,9 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   Hintergrund gedämpft (Rückmeldung vom 10. Oktober 2026: «dezenter, mehr Kontrast zum Bildmaterial»): gestempelte Spuren mit 45 % Deckkraft, Feldkontur und Höhenlinien etwa halb so hell, Punktraster und Scanlines schwächer.
   Video-Länge (Rückmeldung: «zeigt nach dem Download 3 Sekunden an»): MediaRecorder lässt die Länge im Dateikopf offen (fragmentiertes MP4: 0 bzw. Länge des ersten Stücks; WebM: keine Angabe); `dauer.js` trägt sie nach der Aufnahme nach (MP4 aus den Stücken gerechnet, WebM als Duration), das Bild bleibt unverändert.
   Die Datenebene (Fadenkreuze, Namen der Figuren, Zähler; Knopf «Daten») liegt nur über der Live-Ansicht. Seite als «Werkbank» (dunkles Band, Leitfarbe aus dem Bild, Massstab, Kontaktbogen), gestaltet mit dem Skill `frontend-design`.
-  Module mit `?v=13`; bei Änderungen die Marke in allen Importen und in `index.html` hochzählen.
+  Wiedergabe (Rückmeldung vom 11. Oktober 2026: «wackelt kurz», wenn während der Animation ein PNG gerechnet wird): war der Browser länger als 100 ms blockiert,
+  hält die Uhr der Animation an und setzt dort fort, statt bis zu acht Schritte auf einmal nachzuholen.
+  Module mit `?v=14`; bei Änderungen die Marke in allen Importen und in `index.html` hochzählen.
   Tests: `node --experimental-strip-types --no-warnings --test tests/fictory.test.mjs` und `NODE_PATH=$(npm root -g) node tests/fictory.e2e.mjs` (mit `SCHNELL=1` ohne die Videoaufnahme)
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)
