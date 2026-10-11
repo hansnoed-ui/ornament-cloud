@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Fictory – App – Ornament Cloud · Alpha</title>
+  <!-- Die App-Seite von The Fictory (Wunsch von Christian, 11. Oktober 2026: «Eigene Vorschaukachel für die App»). Eigene Adresse, damit die App beim Teilen
+       ihre eigene Vorschaukachel zeigt (og-the-fictory-app.jpg aus tools/fictory-icons.mjs); die Anwendung selbst liegt eine Ebene höher (../).
+       Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="The Fictory als App: Ein Bild zerfällt in seine Teile und geht weiter. Auf dem Startbildschirm installieren, läuft ohne Netz, dein Bild bleibt auf dem Gerät.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ornament.cloud">
+  <meta property="og:locale" content="de_CH">
+  <meta property="og:url" content="https://ornament.cloud/alpha/the-fictory/app/">
+  <meta property="og:title" content="The Fictory – die App">
+  <meta property="og:description" content="Ein Bild zerfällt in seine Teile und geht weiter – jetzt als App auf dem Startbildschirm. Läuft ohne Netz, dein Bild bleibt auf dem Gerät.">
+  <meta property="og:image" content="https://ornament.cloud/alpha/the-fictory/app/og-the-fictory-app.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fictory – die App: links der Titel und der Satz «Ein Bild zerfällt in seine Teile und geht weiter. Jetzt auf dem Startbildschirm.», rechts das App-Symbol, eine schimmernde Raute auf Nachtblau, als Kachel über einem dunklen Raster.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Fictory – die App">
+  <meta name="twitter:description" content="Ein Bild zerfällt in seine Teile und geht weiter – jetzt als App auf dem Startbildschirm. Läuft ohne Netz, dein Bild bleibt auf dem Gerät.">
+  <meta name="twitter:image" content="https://ornament.cloud/alpha/the-fictory/app/og-the-fictory-app.jpg">
+  <link rel="manifest" href="../manifest.webmanifest">
+  <link rel="icon" href="../icons/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#151412">
+  <meta name="apple-mobile-web-app-title" content="The Fictory">
+  <link rel="stylesheet" href="../../../styles.css?v=45">
+  <link rel="stylesheet" href="../../../vendor/fonts/fonts.css">
+  <style>
+    body { font-family: "Instrument Sans", var(--font); }
+    .site-header h1 { font-family: "Newsreader", var(--serif); font-weight: 400; font-size: clamp(2.6rem, 7vw, 4.4rem); letter-spacing: -0.02em; line-height: 1; }
+    .site-header .lead { font-family: "Newsreader", var(--serif); font-size: clamp(1.1rem, 2.4vw, 1.4rem); max-width: 30em; }
+    /* die App-Kachel auf dem Nachtblau des Rasters */
+    .app-buehne { display: grid; grid-template-columns: minmax(0, 240px) minmax(0, 1fr); gap: 40px; align-items: center; margin: 8px 0 48px; }
+    .app-symbol { display: block; width: 100%; height: auto; aspect-ratio: 1; border-radius: 22.5%; box-shadow: 0 0 0 1px var(--border), 0 18px 50px rgba(0, 1, 12, 0.35); }
+    .app-text p { margin: 0 0 14px; max-width: 34em; line-height: 1.6; }
+    .app-text ul { margin: 0 0 22px; padding-left: 1.1em; line-height: 1.7; color: var(--muted); }
+    .app-knoepfe { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+    .bg-knopf { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 18px 6px 8px; border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text); font: inherit; font-weight: 500; cursor: pointer; }
+    .bg-knopf:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .bg-knopf img { width: 30px; height: 30px; border-radius: 7px; display: block; }
+    .installieren[hidden], .installieren [hidden] { display: none; }
+    .installieren-hilfe { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; color: var(--muted); max-width: 36em; }
+    .installieren-hilfe span { color: var(--text); white-space: nowrap; }
+    @media (max-width: 640px) { .app-buehne { grid-template-columns: minmax(0, 1fr); gap: 24px; } .app-symbol { max-width: 200px; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="seitenweg" aria-label="Ornament Cloud">
+        <a href="../../../" aria-current="true">Ornament Cloud</a>
+        <a href="../../drittes-rad/">Das Dritte Rad</a>
+      </nav>
+      <h1>The Fictory</h1>
+      <p class="lead">Die App: Ein Bild zerfällt in seine Teile und geht weiter.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="app-buehne" aria-label="Die App">
+      <img class="app-symbol" src="../icons/icon-512.png" alt="Das App-Symbol: eine schimmernde Raute auf Nachtblau, mit Passermarken in den Ecken" width="512" height="512">
+      <div class="app-text">
+        <p>Leg ein Bild auf die Werkbank: Es zerfällt in seine Teile, ordnet sich neu, hinterlässt Spuren und setzt sich am Ende neu zusammen. Eine Animation von 30 Sekunden, sechs Standbilder und ein Video.</p>
+        <ul>
+          <li>Auf dem Startbildschirm, als eigenes Symbol</li>
+          <li>Läuft nach dem ersten Öffnen auch ohne Netz</li>
+          <li>Dein Bild bleibt auf dem Gerät</li>
+        </ul>
+        <div class="app-knoepfe">
+          <div class="installieren" id="installieren" hidden>
+            <button class="bg-knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="../icons/icon-192.png" alt="" width="30" height="30"><span>The Fictory als App installieren</span></button>
+            <p class="installieren-hilfe" id="installieren-hilfe" hidden></p>
+          </div>
+          <a class="link" href="../">Im Browser öffnen <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+    </div>
+  </footer>
+  <script type="module" src="../pwa.js?v=15"></script>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../../vendor/goatcounter/count.js"></script>
+</body>
+</html>

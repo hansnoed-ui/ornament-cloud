@@ -236,9 +236,10 @@ await check("App (11. Oktober 2026): Knopf «Als App installieren» mit Anleitun
   assert.deepEqual((await cdp.send("Page.getAppManifest")).errors, []);
   await page.reload(); await page.waitForFunction(() => window.fictoryTest?.bereit && navigator.serviceWorker.controller);
   const gespeichert = await page.evaluate(async () => (await (await caches.open("fictory-1")).keys()).map((r) => new URL(r.url).pathname + new URL(r.url).search));
-  for (const d of ["/alpha/the-fictory/", "/alpha/the-fictory/app.js?v=14", "/alpha/the-fictory/operationen.js?v=14", "/alpha/the-fictory/beispiel.jpg", "/portfolio/nebeneinander-nacheinander/js/data/constellations.js", "/vendor/fonts/newsreader-normal-latin.woff2"])
+  for (const d of ["/alpha/the-fictory/", "/alpha/the-fictory/beispiel.jpg", "/portfolio/nebeneinander-nacheinander/js/data/constellations.js", "/vendor/fonts/newsreader-normal-latin.woff2"])
     assert.ok(gespeichert.includes(d), `gespeichert: ${d}`);
   assert.ok(gespeichert.some((d) => /^\/styles\.css\?v=\d+$/.test(d)), "das Stylesheet der Website mit Versionsmarke");
+  for (const m of ["app", "operationen", "zeichnen", "orna"]) assert.ok(gespeichert.some((d) => new RegExp(`^/alpha/the-fictory/${m}\\.js\\?v=\\d+$`).test(d)), `Modul ${m}.js mit Versionsmarke`);
   // ohne Netz: die Seite kommt aus dem Speicher und tut ihre Arbeit
   await ctx.setOffline(true);
   await page.reload(); await page.waitForFunction(() => window.fictoryTest?.bereit);
@@ -248,6 +249,26 @@ await check("App (11. Oktober 2026): Knopf «Als App installieren» mit Anleitun
   await ctx.setOffline(false);
   assert.deepEqual(fehler.filter((f) => !/goatcounter|ERR_INTERNET_DISCONNECTED|Failed to load resource/.test(f)), []);
   assert.deepEqual(fremd.filter((u) => !u.includes("goatcounter")), []);
+  await ctx.close();
+});
+
+await check("App-Seite app/ (11. Oktober 2026): von «Apps» erreichbar, eigene Vorschaukachel, installierbar, «Im Browser öffnen» führt zur Anwendung", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  await page.goto(base.replace("alpha/the-fictory/", "apps/"));
+  await page.locator("main .card").filter({ has: page.getByRole("heading", { name: "The Fictory", exact: true }) }).getByRole("link", { name: "Öffnen" }).click();
+  await page.waitForURL(/\/alpha\/the-fictory\/app\/$/);
+  assert.equal(await page.locator('meta[property="og:image"]').getAttribute("content"), "https://ornament.cloud/alpha/the-fictory/app/og-the-fictory-app.jpg");
+  assert.ok(await page.locator("#installieren").isVisible(), "Knopf zum Installieren");
+  assert.ok(await page.locator("img.app-symbol").evaluate((i) => i.complete && i.naturalWidth === 512), "das App-Symbol");
+  // derselbe Service Worker wie die Anwendung (Geltungsbereich: der Ordner der Anwendung), Chrome meldet installierbar
+  assert.match(await page.evaluate(async () => (await navigator.serviceWorker.ready).scope), /\/alpha\/the-fictory\/$/);
+  const cdp = await ctx.newCDPSession(page);
+  assert.deepEqual((await cdp.send("Page.getInstallabilityErrors")).installabilityErrors, []);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await page.getByRole("link", { name: "Im Browser öffnen" }).click();
+  await page.waitForURL(/\/alpha\/the-fictory\/$/);
+  await page.waitForFunction(() => window.fictoryTest?.bereit);
+  assert.deepEqual(fehler, []);
   await ctx.close();
 });
 

@@ -140,6 +140,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   Als App (seit 11. Oktober 2026, Wunsch von Christian; Karte auf «Apps»): `manifest.webmanifest` (start_url und scope `./`, installiert öffnet sich dieselbe Seite), Knopf «The Fictory als App installieren» unter dem Ablauf (`pwa.js`, nach dem Vorbild von ORNA; nicht in der installierten App),
   Service Worker `sw.js` (Cache `fictory-1`): liest beim Einrichten die Seite und folgt ihren Verweisen (Stylesheets, Schriften, Module samt Importen, ORNA-Daten) – ohne eigene Dateiliste, darum bleibt er gültig, wenn Versionsmarken wechseln; danach läuft The Fictory ohne Netz.
   App-Symbole in `icons/` und die Vorschaukachel auf «Apps» aus `NODE_PATH=$(npm root -g) node tools/fictory-icons.mjs` (ein Teil aus Christians Raster, die schimmernde Raute, Zeile 5, Spalte 7).
+  App-Seite `alpha/the-fictory/app/` (11. Oktober 2026, Wunsch: «Eigene Vorschaukachel für die App»): eigene Adresse mit eigener Vorschaukachel zum Teilen (`app/og-the-fictory-app.jpg`, 1200 × 630, ebenfalls aus `tools/fictory-icons.mjs`), App-Symbol, Knopf zum Installieren und «Im Browser öffnen»; die Karte auf «Apps» führt dorthin. Zum Teilen der App diese Adresse nehmen.
   `alpha/the-fictory/` ist «The Fictory» (Prototyp seit 10. Oktober 2026, zuoberst in der Übersicht, Wunsch von Christian; seit 11. Oktober 2026 auch auf «Apps» und «Web»): Ein eigenes Bild laden (bleibt im Browser), seine Gliederung prüfen und korrigieren,
   dann EIN Prozess von 30 Sekunden (30 Schritte je Sekunde) mit sechs Operationen nach dem Prüfraster «Nebeneinander, Nacheinander»: Neue Nachbarschaften, Abfolge als Bild, Wirksame Spuren, Gekoppelte Beziehungen, Anders weitergehen, Neu zusammengesetzt.
   Seit Fassung 2 (10. Oktober 2026, Wunsch von Christian: «zu wenig dekonstruiert») wird das ganze Bild Material: jede Fläche ein Teil, grosse Flächen in Kacheln (`zerlege()`, höchstens 72 Teile); nach dem Eingangsbild verschwindet das Original, es bleiben die Teile auf dunklem Grund.
@@ -171,7 +172,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   Die Datenebene (Fadenkreuze, Namen der Figuren, Zähler; Knopf «Daten») liegt nur über der Live-Ansicht. Seite als «Werkbank» (dunkles Band, Leitfarbe aus dem Bild, Massstab, Kontaktbogen), gestaltet mit dem Skill `frontend-design`.
   Wiedergabe (Rückmeldung vom 11. Oktober 2026: «wackelt kurz», wenn während der Animation ein PNG gerechnet wird): war der Browser länger als 100 ms blockiert,
   hält die Uhr der Animation an und setzt dort fort, statt bis zu acht Schritte auf einmal nachzuholen.
-  Module mit `?v=14`; bei Änderungen die Marke in allen Importen und in `index.html` hochzählen.
+  Module mit `?v=15`; bei Änderungen die Marke in allen Importen und in `index.html` hochzählen.
   Tests: `node --experimental-strip-types --no-warnings --test tests/fictory.test.mjs` und `NODE_PATH=$(npm root -g) node tests/fictory.e2e.mjs` (mit `SCHNELL=1` ohne die Videoaufnahme)
 - `src/doppelspalt/` – Produktionspaket (verbindliche Quelle der 20 + 20 Personen und der Konstellationen)
 - `src/doppelspalt/REGELN.md` – geltende Regeln des Werks in Kurzform (verbindlich)

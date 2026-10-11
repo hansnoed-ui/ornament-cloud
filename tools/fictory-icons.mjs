@@ -8,6 +8,8 @@
 //   alpha/the-fictory/icons/favicon-32.png           32 × 32    Symbol im Browser-Tab
 //   assets/vorschau-the-fictory-app.jpg              640 × 800   Vorschaukachel der Karte auf «Apps»: das App-Symbol als abgerundete Kachel,
 //                                                                 schwebend über dem abgedunkelten Raster (Wunsch: «auch dafür eine schöne Vorschaukachel»)
+//   alpha/the-fictory/app/og-the-fictory-app.jpg     1200 × 630  eigene Vorschaukachel der App zum Teilen (Open Graph, X) für die Seite app/
+//                                                                 (Wunsch vom 11. Oktober 2026: «Eigene Vorschaukachel für die App»)
 //
 //   NODE_PATH=$(npm root -g) node tools/fictory-icons.mjs
 import { mkdirSync } from "node:fs";
@@ -92,6 +94,46 @@ await symbol(32, 0.92, false, "../alpha/the-fictory/icons/favicon-32.png");
   await page.waitForTimeout(400);
   const out = fileURLToPath(new URL("../assets/vorschau-the-fictory-app.jpg", import.meta.url));
   await page.screenshot({ path: out, type: "jpeg", quality: 80 });
+  console.log("geschrieben:", out);
+  await page.close();
+}
+
+// Vorschaukachel der App zum Teilen: links Titel und Satz wie auf der Karte der Fictory, rechts die App-Kachel über dem Raster
+{
+  const page = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
+  await page.goto(`${base}vendor/fonts/fonts.css`);
+  await page.setContent(`<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><base href="${base}"><link rel="stylesheet" href="vendor/fonts/fonts.css"><style>
+    html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: #00010c; }
+    .rechts { position: absolute; right: 0; top: 0; width: 660px; height: 630px; overflow: hidden; }
+    .raster { position: absolute; inset: -20px; background: url(src/the-fictory/vorschau-quelle.jpg) 50% 50% / 720px auto no-repeat #00010c; opacity: 0.42; filter: blur(1.5px) saturate(1.2); }
+    .schleier { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(0,1,12,0.86) 0, rgba(0,1,12,0.55) 200px, rgba(0,1,12,0.12) 380px); }
+    .kachel { position: absolute; left: 50%; top: 50%; width: 290px; height: 290px; margin: -145px 0 0 -145px; border-radius: 66px; overflow: hidden;
+      background: url(alpha/the-fictory/icons/icon-512.png) center / cover;
+      box-shadow: 0 0 0 1px rgba(235,230,220,0.18), 0 30px 80px rgba(0,0,0,0.75), 0 0 120px rgba(70,80,255,0.35); }
+    .kachel::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(160deg, rgba(255,255,255,0.13), rgba(255,255,255,0) 42%); }
+    .kante { position: absolute; left: 540px; top: 0; width: 60px; height: 630px; background: linear-gradient(90deg, #00010c, rgba(0,1,12,0)); }
+    .text { position: absolute; left: 64px; top: 0; bottom: 0; width: 470px; display: flex; flex-direction: column; justify-content: center; color: #ebe6dc; }
+    .marke { font: 600 15px/1 "Instrument Sans", sans-serif; letter-spacing: 0.16em; text-transform: uppercase; color: #9a9388; margin: 0 0 22px; }
+    h1 { font: 400 86px/0.95 "Newsreader", serif; letter-spacing: -0.02em; margin: 0; }
+    p { font: 400 30px/1.32 "Newsreader", serif; margin: 26px 0 0; color: #ebe6dc; }
+    .fuss { margin-top: 38px; font: 400 19px/1.45 "Instrument Sans", sans-serif; color: #9a9388; }
+    .fuss b { display: block; font-weight: 500; color: #e9c46a; }
+    .zeilen { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.14) 0 1px, transparent 1px 3px); }
+  </style></head><body>
+    <div class="rechts"><div class="raster"></div><div class="schleier"></div><div class="kachel"></div></div>
+    <div class="kante"></div>
+    <div class="text">
+      <div class="marke">App · installieren · ohne Netz</div>
+      <h1>The Fictory</h1>
+      <p>Ein Bild zerfällt in seine Teile und geht weiter. Jetzt auf dem Startbildschirm.</p>
+      <div class="fuss"><b>ornament.cloud/alpha/the-fictory/app</b>Dein Bild bleibt auf dem Gerät.</div>
+    </div>
+    <div class="zeilen"></div></body></html>`);
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(400);
+  mkdirSync(fileURLToPath(new URL("../alpha/the-fictory/app/", import.meta.url)), { recursive: true });
+  const out = fileURLToPath(new URL("../alpha/the-fictory/app/og-the-fictory-app.jpg", import.meta.url));
+  await page.screenshot({ path: out, type: "jpeg", quality: 86 });
   console.log("geschrieben:", out);
   await page.close();
 }
