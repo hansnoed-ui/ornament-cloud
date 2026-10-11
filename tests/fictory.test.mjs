@@ -282,3 +282,19 @@ test("Video-Länge: fragmentiertes MP4 und WebM ohne Länge bekommen sie nachget
   assert.deepEqual([...w.subarray(w.length - cluster.length)], cluster, "der Cluster (das Bild) bleibt gleich");
   assert.deepEqual([...mitDauer(new Uint8Array([1, 2, 3]), 5)], [1, 2, 3], "Unbekanntes bleibt unverändert");
 });
+
+test("Strömung und Tinte: die bewegten Teile treiben den Grund an und färben ihn; ohne Bewegung bleibt er leer; die Gegenprobe löscht ihn", () => {
+  const { M, zustaende } = lauf();
+  const summe = (a) => a.reduce((s, v) => s + Math.abs(v), 0);
+  assert.equal(summe(zustaende[0].tinte), 0, "im Eingangsbild steht alles still");
+  assert.ok(summe(zustaende[1].tinte) > 1 && summe(zustaende[1].stromU) + summe(zustaende[1].stromV) > 0.1, "Schritt 1 treibt an");
+  // die Tinte trägt die Farben der Teile: im synthetischen Bild ist Rot dabei
+  let rot = 0; const t = zustaende[2].tinte;
+  for (let k = 0; k < t.length; k += 3) if (t[k] > t[k + 2] * 1.3 && t[k] > 0.05) rot++;
+  assert.ok(rot > 0, "rote Fahnen von den roten Teilen");
+  // abklingend: nach dem letzten Stempel und ohne Antrieb wird sie nicht grösser
+  const b = lauf({ neutralisiere: 4 });
+  const z = O.bis(b.M, O.SCHLUESSEL[3] + 1);
+  assert.ok(summe(z.tinte) < summe(zustaende[3].tinte), "Gegenprobe: vor Schritt 4 gelöscht");
+  assert.equal(M.fw * M.fh * 3, zustaende[0].tinte.length);
+});

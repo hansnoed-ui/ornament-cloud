@@ -11,8 +11,8 @@
 //                              später und langsamer an (die Spuren bestimmen die Reihenfolge, nicht mehr das Ziel). Es bleiben feine Fugen.
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall } from "./analyse.js?v=16";
-import { REGELN } from "./regeln.js?v=16";
+import { zufall } from "./analyse.js?v=18";
+import { REGELN } from "./regeln.js?v=18";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
@@ -31,6 +31,11 @@ const FELD = 80;                        // Zellen je Bildhöhe im wuchernden Fel
 // Gray-Scott nach Karl Sims (A, B, Diffusion 1 und 0.5, Zufuhr f, Abbau k): «Koralle», ein Muster, das von Keimen aus wuchert
 const RD = Object.freeze({ dA: 1, dB: 0.5, f: 0.0545, k: 0.062, runden: 1 });
 const HOECHSTENS = 72;                  // so viele Teile höchstens
+// Strömung und Tinte (seit 11. Oktober 2026): jedes bewegte Teil schiebt den Grund an und färbt ihn mit seiner Farbe; die Tinte wird von der
+// Strömung mitgetragen, Wirbel entstehen, alles klingt langsam ab. Gleiches Raster wie das wuchernde Feld (FELD Zellen je Bildhöhe).
+const STROM = Object.freeze({ schub: 0.9, farbe: 1, zaeh: 0.965, verblassen: 0.988, druck: 10, wirbel: 0.22 });
+// in Schritt 1 bewegen sich alle Teile zugleich: dort weniger Tinte und Schub, sonst wird der Grund zu dicht (Rückmeldung vom 11. Oktober 2026)
+const STROM_JE_SCHRITT = Object.freeze({ 1: { farbe: 0.3, schub: 0.6 } });
 
 const glatt = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 const klemme = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -166,6 +171,7 @@ export function anfang(M) {
     teile: M.teile.map((e, z) => ({ x: e.hx, y: e.hy, rot: 0, s: 1, a: 1, kontur: 0, z: (e.figur ? 1000 : 0) + z, loch: 0, fest: !e.beweglich, erschoepft: false })),
     grundAlpha: 1, spurAlpha: 1, gliederung: 0, stempel: [], spuren: new Float32Array(M.gw * M.gh),
     feldA: new Float32Array(M.fw * M.fh).fill(1), feldB: new Float32Array(M.fw * M.fh), feldAlpha: 0,
+    stromU: new Float32Array(M.fw * M.fh), stromV: new Float32Array(M.fw * M.fh), tinte: new Float32Array(M.fw * M.fh * 3),
     ankunft: [], federn: [], kopplungAlpha: 0, anstoss: null, schnitt: null, schnittAlpha: 1,
     plan: null, ereignisse: [],
   };
@@ -174,6 +180,7 @@ export function anfang(M) {
 /** tiefe Kopie (für Momentaufnahmen und Zeitleiste); die Stempel wachsen nur an und werden flach kopiert */
 export function kopie(z) {
   return { ...z, teile: z.teile.map((t) => ({ ...t })), stempel: z.stempel.slice(), spuren: z.spuren.slice(), feldA: z.feldA.slice(), feldB: z.feldB.slice(), ankunft: z.ankunft.slice(),
+    stromU: z.stromU.slice(), stromV: z.stromV.slice(), tinte: z.tinte.slice(),
     federn: z.federn.map((f) => ({ ...f })), plan: z.plan ? JSON.parse(JSON.stringify(z.plan)) : null, ereignisse: z.ereignisse.slice() };
 }
 
@@ -189,8 +196,10 @@ export function schritt(M, z) {
   } else {
     const st = station(n), von = SCHLUESSEL[st - 1], bis = SCHLUESSEL[st];
     if (n === von) planen(M, z, st);
+    const vorher = lagenVorher(z);
     OPS[st].lauf(M, z, (n - von) / (bis - von), n - von);
     wuchern(M, z);
+    stroemen(M, z, vorher, st);
     z.feldAlpha = Math.min(1, z.feldAlpha + 1 / 60);
   }
   z.schritt = n + 1;
@@ -202,8 +211,8 @@ export function schritt(M, z) {
 function planen(M, z, st) {
   const r = zufall((M.seed ^ Math.imul(st + 1, 0x9e3779b1)) >>> 0);
   if (M.neutralisiere === st) {
-    z.spuren.fill(0); z.feldA.fill(1); z.feldB.fill(0);
-    z.ereignisse.push({ schritt: z.schritt, text: `Gegenprobe: Spurenfeld und wucherndes Feld vor Schritt ${st} gelöscht (gestempelte Spuren bleiben sichtbar, wirken aber nicht mehr).` });
+    z.spuren.fill(0); z.feldA.fill(1); z.feldB.fill(0); z.stromU.fill(0); z.stromV.fill(0); z.tinte.fill(0);
+    z.ereignisse.push({ schritt: z.schritt, text: `Gegenprobe: Spurenfeld, wucherndes Feld und Strömung vor Schritt ${st} gelöscht (gestempelte Spuren bleiben sichtbar, wirken aber nicht mehr).` });
   }
   z.plan = OPS[st].plan(M, z, r);
 }
@@ -243,6 +252,77 @@ function wuchern(M, z) {
     A.set(A2); B.set(B2);
     if (M.leer && z.schritt >= SCHLUESSEL[0]) for (let i = 0; i < M.leer.length; i++) if (M.leer[i]) { A[i] = 1; B[i] = 0; }
   }
+}
+/** Lagen aller Teile vor einem Schritt (wiederverwendeter Speicher), für die Geschwindigkeit, mit der sie die Strömung antreiben */
+let lagenPuffer = new Float64Array(0);
+function lagenVorher(z) {
+  if (lagenPuffer.length !== z.teile.length * 2) lagenPuffer = new Float64Array(z.teile.length * 2);
+  z.teile.forEach((t, i) => { lagenPuffer[i * 2] = t.x; lagenPuffer[i * 2 + 1] = t.y; });
+  return lagenPuffer;
+}
+/** Strömung und Tinte: antreiben (jedes Teil nach seinem Tempo, mit seiner Farbe), mittragen, Wirbel verstärken, quellenfrei machen, abklingen */
+function stroemen(M, z, vorher, st) {
+  const { fw: w, fh: h } = M, U = z.stromU, V = z.stromV, T = z.tinte, n = w * h;
+  if (!ablage.has("strom" + n)) ablage.set("strom" + n, { u: new Float32Array(n), v: new Float32Array(n), t: new Float32Array(n * 3), p: new Float32Array(n), q: new Float32Array(n), d: new Float32Array(n), c: new Float32Array(n) });
+  const B = ablage.get("strom" + n);
+  // 1 · antreiben: eine weiche Scheibe um jedes bewegte Teil, Geschwindigkeit in Zellen je Schritt
+  for (let i = 0; i < z.teile.length; i++) {
+    const t = z.teile[i], e = M.teile[i];
+    const dx = (t.x - vorher[i * 2]) * h, dy = (t.y - vorher[i * 2 + 1]) * h, tempo = Math.hypot(dx, dy);
+    if (tempo < 0.02) continue;
+    const r = Math.max(2, Math.min(10, 0.5 * Math.max(e.w, e.h) * t.s * h)), cx = t.x * h, cy = t.y * h;
+    const x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(w - 1, Math.ceil(cx + r)), y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(h - 1, Math.ceil(cy + r));
+    const menge = Math.min(1, tempo * 0.6) * STROM.farbe * (STROM_JE_SCHRITT[st]?.farbe ?? 1), schub = STROM.schub * (STROM_JE_SCHRITT[st]?.schub ?? 1);
+    // die Farbe des Teils, kräftiger gesättigt (die Fahnen sollen den Ton des Teils tragen, nicht sein Grau)
+    const mittel = (e.rgb[0] + e.rgb[1] + e.rgb[2]) / 3, [cr, cg, cb] = e.rgb.map((c) => klemme(mittel + (c - mittel) * 2.2, 0, 255));
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const d = Math.hypot(x + 0.5 - cx, y + 0.5 - cy) / r;
+      if (d >= 1) continue;
+      const g = (1 - d) * (1 - d), k = y * w + x;
+      U[k] += dx * schub * g * 0.25; V[k] += dy * schub * g * 0.25;
+      const a = menge * d * d * (1 - d) * 4 * 0.2;                       // Tinte am Rand des Teils: dünne Fahnen statt Flächen
+      T[k * 3] += (cr / 255 - T[k * 3]) * a + a * 0.15; T[k * 3 + 1] += (cg / 255 - T[k * 3 + 1]) * a + a * 0.15; T[k * 3 + 2] += (cb / 255 - T[k * 3 + 2]) * a + a * 0.15;
+    }
+  }
+  // 2 · Wirbel verstärken (Wirbelstärke einschliessen): kleine Drehungen bleiben sichtbar statt zu verschmieren
+  const C = B.c;
+  for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) { const k = y * w + x; C[k] = (V[k + 1] - V[k - 1] - U[k + w] + U[k - w]) * 0.5; }
+  for (let y = 2; y < h - 2; y++) for (let x = 2; x < w - 2; x++) {
+    const k = y * w + x, gx = (Math.abs(C[k + 1]) - Math.abs(C[k - 1])) * 0.5, gy = (Math.abs(C[k + w]) - Math.abs(C[k - w])) * 0.5, l = Math.hypot(gx, gy) + 1e-6;
+    U[k] += STROM.wirbel * (gy / l) * C[k]; V[k] -= STROM.wirbel * (gx / l) * C[k];
+  }
+  // 3 · quellenfrei machen (Druck, einige Jacobi-Runden): die Strömung weicht aus und dreht ein statt nur zu schieben
+  const D = B.d, P = B.p, Q = B.q;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const k = y * w + x;
+    D[k] = 0.5 * ((x < w - 1 ? U[k + 1] : 0) - (x > 0 ? U[k - 1] : 0) + (y < h - 1 ? V[k + w] : 0) - (y > 0 ? V[k - w] : 0));
+  }
+  P.fill(0);
+  for (let r = 0; r < STROM.druck; r++) {
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const k = y * w + x;
+      Q[k] = ((x > 0 ? P[k - 1] : P[k]) + (x < w - 1 ? P[k + 1] : P[k]) + (y > 0 ? P[k - w] : P[k]) + (y < h - 1 ? P[k + w] : P[k]) - D[k]) * 0.25;
+    }
+    P.set(Q);
+  }
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const k = y * w + x;
+    U[k] -= 0.5 * ((x < w - 1 ? P[k + 1] : P[k]) - (x > 0 ? P[k - 1] : P[k]));
+    V[k] -= 0.5 * ((y < h - 1 ? P[k + w] : P[k]) - (y > 0 ? P[k - w] : P[k]));
+  }
+  // 4 · mittragen (semi-Lagrange, bilinear) und abklingen
+  const lies = (F, kanal, stride, x, y) => {
+    x = klemme(x, 0, w - 1.001); y = klemme(y, 0, h - 1.001);
+    const x0 = Math.floor(x), y0 = Math.floor(y), tx = x - x0, ty = y - y0, k = y0 * w + x0;
+    return (F[k * stride + kanal] * (1 - tx) + F[(k + 1) * stride + kanal] * tx) * (1 - ty) + (F[(k + w) * stride + kanal] * (1 - tx) + F[(k + w + 1) * stride + kanal] * tx) * ty;
+  };
+  const NU = B.u, NV = B.v, NT = B.t;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const k = y * w + x, sx = x - U[k], sy = y - V[k];
+    NU[k] = lies(U, 0, 1, sx, sy) * STROM.zaeh; NV[k] = lies(V, 0, 1, sx, sy) * STROM.zaeh;
+    for (let c = 0; c < 3; c++) NT[k * 3 + c] = Math.min(1.2, lies(T, c, 3, sx, sy) * STROM.verblassen);
+  }
+  U.set(NU); V.set(NV); T.set(NT);
 }
 const feldAn = (M, z, x, y) => z.feldB[klemme(Math.floor(y * M.fh), 0, M.fh - 1) * M.fw + klemme(Math.floor(x * M.fh), 0, M.fw - 1)];
 function spurUnter(M, z, i, x, y, m) {
@@ -593,6 +673,8 @@ export function zustandsSchluessel(z) {
   let feld = 0; for (let k = 0; k < z.feldB.length; k++) feld += z.feldB[k] * ((k % 97) + 1);
   add(r(feld / 1000));
   for (const f of z.federn) add(f.aktiv ? 1 : 0);
+  let tinte = 0; for (let k = 0; k < z.tinte.length; k++) tinte += z.tinte[k] * ((k % 89) + 1);
+  add(r(tinte / 1000));
   return h.toString(16).padStart(8, "0");
 }
 

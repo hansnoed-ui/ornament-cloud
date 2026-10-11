@@ -2,15 +2,15 @@
 // Farbgruppen nachgeschärft).
 // Nach dem Eingangsbild steht alles auf dunklem Grund. zeichne() bildet einen Zustand in beliebiger Grösse ab; Vorschau, Video und
 // Standbild in hoher Auflösung nutzen dieselbe Funktion mit demselben Zustand. In die Bilder kommt keine Schrift.
-import { konturen, lab, leitfarbe } from "./analyse.js?v=16";
-import { zeichneFeld } from "./feld.js?v=16";
+import { konturen, lab, leitfarbe } from "./analyse.js?v=18";
+import { zeichneFeld } from "./feld.js?v=18";
 
 export const NACHT = "#151412";
 export const PAPIER = "#f4f1ea";
 export const TINTE = "#1f1d1a";
 const KLEIN = 1100;
 // Hintergrund (gestempelte Spuren, Feld, Punktraster) gedämpft, damit das Bildmaterial der Teile klar davor steht (Rückmeldung vom 10. Oktober 2026)
-const SPUR_DECKKRAFT = 0.45;          // bis zu dieser Höhe in Pixeln zeichnet die Vorschau aus verkleinertem Material
+const SPUR_DECKKRAFT = 0.3;          // seit dem Strömungsgrund schwächer: die Schlieren tragen den Grund          // bis zu dieser Höhe in Pixeln zeichnet die Vorschau aus verkleinertem Material
 
 const leinwand = (w, h) => {
   const c = document.createElement("canvas");
@@ -104,21 +104,24 @@ export function zeichne(ctx, W, H, z, M, mat, spurCache = null) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     // das Punktraster ändert sich nur mit neuen Stempeln: in der Vorschau aus einer Schicht, die nur dann neu entsteht
     let raster = spurCache?.raster;
-    // in der Vorschau höchstens alle acht Schritte neu (sonst bei jedem Stempel); zurück auf der Zeitleiste sofort
-    const veraltet = spurCache && spurCache.rasterStempel !== z.stempel.length && (Math.abs(z.schritt - (spurCache.rasterSchritt ?? -99)) >= 8 || z.schritt < spurCache.rasterSchritt);
+    // die Strömung verschiebt die Punkte: in jedem Schritt neu (1700 Punkte in sechs Sammelpfaden, wenig Arbeit)
+    const veraltet = spurCache && spurCache.rasterSchritt !== z.schritt;
     if (!raster || raster.width !== W || raster.height !== H || spurCache.rasterLauf !== M || veraltet || !spurCache) {
       // dieselbe Fläche wiederverwenden, wenn die Grösse stimmt (keine neue Zeichenfläche je Neuaufbau)
       if (!raster || raster.width !== W || raster.height !== H) raster = leinwand(W, H);
       const rx = raster.getContext("2d");
       rx.setTransform(1, 0, 0, 1, 0, 0); rx.globalAlpha = 1; rx.clearRect(0, 0, W, H);
       rx.fillStyle = PAPIER;
-      const zelle = S / M.gh, STUFEN = 6;
-      // nach Spurstärke in sechs Stufen gesammelt: wenige Füllungen statt tausender einzelner
+      const zelle = S / M.gh, STUFEN = 6, fz = S / M.fh, weit = zelle * 0.9;
+      // nach Spurstärke in sechs Stufen gesammelt: wenige Füllungen statt tausender einzelner; jeder Punkt von der Strömung an seiner Stelle verschoben
       const pfade = Array.from({ length: STUFEN }, () => new Path2D());
       for (let gy = 0; gy < M.gh; gy++) for (let gx = 0; gx < M.gw; gx++) {
         const k = Math.min(STUFEN - 1, Math.round((Math.min(1, z.spuren[gy * M.gw + gx] / 5)) * (STUFEN - 1)));
         const d = Math.max(1, S * (0.0012 + 0.0032 * (k / (STUFEN - 1))));
-        pfade[k].rect((gx + 0.5) * zelle - d / 2, (gy + 0.5) * zelle - d / 2, d, d);
+        const px = (gx + 0.5) * zelle, py = (gy + 0.5) * zelle;
+        const f = Math.min(M.fh - 1, Math.floor(py / fz)) * M.fw + Math.min(M.fw - 1, Math.floor(px / fz));
+        const ox = Math.max(-weit, Math.min(weit, (z.stromU?.[f] ?? 0) * fz * 4)), oy = Math.max(-weit, Math.min(weit, (z.stromV?.[f] ?? 0) * fz * 4));
+        pfade[k].rect(px + ox - d / 2, py + oy - d / 2, d, d);
       }
       pfade.forEach((pf, k) => { rx.globalAlpha = 0.06 + 0.3 * (k / (STUFEN - 1)); rx.fill(pf); });
       if (spurCache) Object.assign(spurCache, { raster, rasterStempel: z.stempel.length, rasterLauf: M, rasterSchritt: z.schritt });
