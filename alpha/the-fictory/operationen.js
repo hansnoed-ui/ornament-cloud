@@ -11,8 +11,8 @@
 //                              später und langsamer an (die Spuren bestimmen die Reihenfolge, nicht mehr das Ziel). Es bleiben feine Fugen.
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall } from "./analyse.js?v=17";
-import { REGELN } from "./regeln.js?v=17";
+import { zufall } from "./analyse.js?v=18";
+import { REGELN } from "./regeln.js?v=18";
 
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
@@ -34,6 +34,8 @@ const HOECHSTENS = 72;                  // so viele Teile höchstens
 // Strömung und Tinte (seit 11. Oktober 2026): jedes bewegte Teil schiebt den Grund an und färbt ihn mit seiner Farbe; die Tinte wird von der
 // Strömung mitgetragen, Wirbel entstehen, alles klingt langsam ab. Gleiches Raster wie das wuchernde Feld (FELD Zellen je Bildhöhe).
 const STROM = Object.freeze({ schub: 0.9, farbe: 1, zaeh: 0.965, verblassen: 0.988, druck: 10, wirbel: 0.22 });
+// in Schritt 1 bewegen sich alle Teile zugleich: dort weniger Tinte und Schub, sonst wird der Grund zu dicht (Rückmeldung vom 11. Oktober 2026)
+const STROM_JE_SCHRITT = Object.freeze({ 1: { farbe: 0.3, schub: 0.6 } });
 
 const glatt = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 const klemme = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -197,7 +199,7 @@ export function schritt(M, z) {
     const vorher = lagenVorher(z);
     OPS[st].lauf(M, z, (n - von) / (bis - von), n - von);
     wuchern(M, z);
-    stroemen(M, z, vorher);
+    stroemen(M, z, vorher, st);
     z.feldAlpha = Math.min(1, z.feldAlpha + 1 / 60);
   }
   z.schritt = n + 1;
@@ -259,7 +261,7 @@ function lagenVorher(z) {
   return lagenPuffer;
 }
 /** Strömung und Tinte: antreiben (jedes Teil nach seinem Tempo, mit seiner Farbe), mittragen, Wirbel verstärken, quellenfrei machen, abklingen */
-function stroemen(M, z, vorher) {
+function stroemen(M, z, vorher, st) {
   const { fw: w, fh: h } = M, U = z.stromU, V = z.stromV, T = z.tinte, n = w * h;
   if (!ablage.has("strom" + n)) ablage.set("strom" + n, { u: new Float32Array(n), v: new Float32Array(n), t: new Float32Array(n * 3), p: new Float32Array(n), q: new Float32Array(n), d: new Float32Array(n), c: new Float32Array(n) });
   const B = ablage.get("strom" + n);
@@ -270,14 +272,14 @@ function stroemen(M, z, vorher) {
     if (tempo < 0.02) continue;
     const r = Math.max(2, Math.min(10, 0.5 * Math.max(e.w, e.h) * t.s * h)), cx = t.x * h, cy = t.y * h;
     const x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(w - 1, Math.ceil(cx + r)), y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(h - 1, Math.ceil(cy + r));
-    const menge = Math.min(1, tempo * 0.6) * STROM.farbe;
+    const menge = Math.min(1, tempo * 0.6) * STROM.farbe * (STROM_JE_SCHRITT[st]?.farbe ?? 1), schub = STROM.schub * (STROM_JE_SCHRITT[st]?.schub ?? 1);
     // die Farbe des Teils, kräftiger gesättigt (die Fahnen sollen den Ton des Teils tragen, nicht sein Grau)
     const mittel = (e.rgb[0] + e.rgb[1] + e.rgb[2]) / 3, [cr, cg, cb] = e.rgb.map((c) => klemme(mittel + (c - mittel) * 2.2, 0, 255));
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
       const d = Math.hypot(x + 0.5 - cx, y + 0.5 - cy) / r;
       if (d >= 1) continue;
       const g = (1 - d) * (1 - d), k = y * w + x;
-      U[k] += dx * STROM.schub * g * 0.25; V[k] += dy * STROM.schub * g * 0.25;
+      U[k] += dx * schub * g * 0.25; V[k] += dy * schub * g * 0.25;
       const a = menge * d * d * (1 - d) * 4 * 0.2;                       // Tinte am Rand des Teils: dünne Fahnen statt Flächen
       T[k * 3] += (cr / 255 - T[k * 3]) * a + a * 0.15; T[k * 3 + 1] += (cg / 255 - T[k * 3 + 1]) * a + a * 0.15; T[k * 3 + 2] += (cb / 255 - T[k * 3 + 2]) * a + a * 0.15;
     }
