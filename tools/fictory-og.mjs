@@ -4,11 +4,14 @@
 //   assets/vorschau-the-fictory.jpg       640 × 800   Bild der Beitragskarte auf «Web»
 //   alpha/the-fictory/og-the-fictory-raster.jpg  1200 × 630  Vorschaukarte zum Teilen (Open Graph, X)
 //   Neues Motiv, neuer Dateiname: Plattformen und Messenger speichern Vorschaubilder unter ihrer Adresse zwischen und zeigen sonst das alte.
+//   alpha/the-fictory/og-the-fictory.jpg  dieselbe Datei unter der früheren Adresse (bis 10. Oktober 2026, 22 Uhr): Facebook merkt sich die Bildadresse
+//   der Seite und zeigt sonst keine Vorschau, solange es die Seite nicht neu gelesen hat (Rückmeldung vom 11. Oktober 2026).
 //
 //   NODE_PATH=$(npm root -g) node tools/fictory-og.mjs
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { copyFileSync } from "node:fs";
 
 const require = createRequire(import.meta.url);
 let playwright;
@@ -59,4 +62,6 @@ await bild(1200, 630, `
   </div>`, "../alpha/the-fictory/og-the-fictory-raster.jpg");
 
 await browser.close();
+// die frühere Adresse der Vorschaukarte trägt dasselbe Bild (siehe oben)
+copyFileSync(new URL("../alpha/the-fictory/og-the-fictory-raster.jpg", import.meta.url), new URL("../alpha/the-fictory/og-the-fictory.jpg", import.meta.url));
 server.close();
