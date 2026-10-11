@@ -200,10 +200,12 @@ test("Alpha: Seite mit Navigation, noindex, in der Übersicht zuoberst, nicht in
 /** Breite und Höhe aus dem Kopf einer PNG-Datei */
 const pngMass = (buf) => (buf.subarray(1, 4).toString() === "PNG" ? [buf.readUInt32BE(16), buf.readUInt32BE(20)] : null);
 
-test("App (11. Oktober 2026): Manifest, Symbole und Anmeldung des Service Workers; installiert öffnet sie die Seite selbst", () => {
+test("App (11. Oktober 2026): Manifest, Symbole und Anmeldung des Service Workers; die installierte App hat wie ORNA eine eigene Adresse (werkbank/)", () => {
   const m = JSON.parse(readFileSync(new URL("manifest.webmanifest", dir), "utf8"));
   assert.equal(m.name, "The Fictory"); assert.equal(m.short_name, "The Fictory");
-  assert.equal(m.start_url, "./"); assert.equal(m.scope, "./"); assert.equal(m.display, "standalone");
+  // eigene Adresse wie bei ORNA (app/): Links auf die Website (./ und app/) liegen ausserhalb und öffnen im Browser, wo der Knopf steht
+  assert.equal(m.start_url, "werkbank/"); assert.equal(m.scope, "werkbank/"); assert.equal(m.display, "standalone"); assert.equal(m.id, "the-fictory");
+  for (const seite of ["/alpha/the-fictory/", "/alpha/the-fictory/app/"]) assert.ok(!seite.startsWith(new URL(m.scope, "https://x/alpha/the-fictory/").pathname), `${seite} liegt ausserhalb der installierten App`);
   assert.ok(m.description.length > 40 && m.lang === "de-CH");
   const symbole = Object.fromEntries(m.icons.map((i) => [i.purpose, i]));
   assert.deepEqual(m.icons.map((i) => [i.src, i.sizes, i.purpose]), [["icons/icon-192.png", "192x192", "any"], ["icons/icon-512.png", "512x512", "any"], ["icons/icon-maskable-512.png", "512x512", "maskable"]]);
@@ -223,6 +225,13 @@ test("App (11. Oktober 2026): Manifest, Symbole und Anmeldung des Service Worker
   // die Symbole erzeugt tools/fictory-icons.mjs aus Christians Raster
   const werkzeug = readFileSync(new URL("tools/fictory-icons.mjs", root), "utf8");
   assert.ok(werkzeug.includes("src/the-fictory/vorschau-quelle.jpg") && werkzeug.includes("icon-maskable-512.png") && werkzeug.includes("vorschau-the-fictory-app.jpg"));
+});
+
+test("App: werkbank/ ist die aktuelle Abschrift der Anwendung mit <base href=\"../\"> (sonst: node tools/build-fictory-app.mjs)", async () => {
+  const { bauen } = await import(new URL("tools/build-fictory-app.mjs", root).href);
+  assert.equal(readFileSync(new URL("werkbank/index.html", dir), "utf8"), bauen(readFileSync(new URL("index.html", dir), "utf8")));
+  assert.match(readFileSync(new URL("werkbank/index.html", dir), "utf8"), /<meta charset="utf-8">\s*<!-- Erzeugt[\s\S]*?-->\s*<base href="\.\.\/">/);
+  assert.ok(readFileSync(new URL("sw.js", dir), "utf8").includes('"werkbank/"'), "der Service Worker speichert die Seite der App für den Start ohne Netz");
 });
 
 test("App: der Service Worker bleibt bei derselben Herkunft, im eigenen Cache und folgt den Verweisen der Seite (ohne eigene Dateiliste)", () => {

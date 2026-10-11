@@ -8,11 +8,13 @@
 
 const CACHE = "fictory-1";
 const START = new URL("./", self.registration.scope).href;
-// Dinge, die die Seite erst später holt (Beispielbild per fetch) oder die der Browser für die Installation braucht
-const DAZU = ["beispiel.jpg", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png"];
+// Dinge, die die Seite erst später holt (Beispielbild per fetch) oder die der Browser für die Installation braucht; werkbank/ ist die Seite
+// der installierten App (Abschrift mit <base href="../">, tools/build-fictory-app.mjs)
+const DAZU = ["werkbank/", "beispiel.jpg", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png"];
 
 /** Verweise in HTML, CSS und JavaScript (nur dieselbe Herkunft) */
 function verweise(text, typ, basis) {
+  if (typ === "html") { const b = text.match(/<base href="([^"]+)"/); if (b) basis = new URL(b[1], basis).href; }
   const muster = typ === "html" ? [/<(?:link|script)[^>]+(?:href|src)="([^"#]+)"/g]
     : typ === "css" ? [/url\(\s*["']?([^"')]+)["']?\s*\)/g, /@import\s+["']([^"']+)["']/g]
     : [/(?:import|export)\s[^"']*?from\s*["']([^"']+)["']/g, /import\(\s*["']([^"']+)["']\s*\)/g];

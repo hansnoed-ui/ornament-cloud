@@ -24,6 +24,8 @@ const walk = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e
 const alle = walk(root);
 const ausgenommen = (p) => AUSNAHMEN.some(([, re]) => re.test(p));
 const seiten = alle.filter((p) => !ausgenommen(p));
+/** Adresse, gegen die die Links einer Seite gelten: ihre eigene oder ihr <base> (The Fictory, Seite der installierten App, seit 11. Oktober 2026) */
+const basis = (p, html, wurzel = "http://x/") => { const b = html.match(/<base href="([^"]+)">/); return new URL(b ? b[1] : "", new URL(p, wurzel)); };
 
 test("Navigation: jede Seite trägt oben links genau «Ornament Cloud» und «Das Dritte Rad», vor dem Inhalt", () => {
   assert.ok(seiten.length >= 200, `die Seiten wurden gefunden (${seiten.length})`);
@@ -34,7 +36,7 @@ test("Navigation: jede Seite trägt oben links genau «Ornament Cloud» und «Da
     const links = [...navs[0][1].matchAll(/<a href="([^"]+)"(?: aria-current="(page|true)")?>([^<]+)<\/a>/g)];
     assert.deepEqual(links.map((l) => l[3]), ["Ornament Cloud", "Das Dritte Rad"], `${p}: zwei Links in dieser Reihenfolge`);
     assert.equal(navs[0][1].replace(/<a [^>]*>[^<]*<\/a>/g, "").trim(), "", `${p}: sonst nichts in der Navigation`);
-    const von = new URL(p, "http://x/");
+    const von = basis(p, html);
     const ziel = links.map((l) => new URL(l[1], von).pathname);
     assert.deepEqual(ziel, ["/", "/alpha/drittes-rad/"], `${p}: Startseite und Start des Rads`);
     for (const z of ziel) assert.ok(existsSync(new URL(z.slice(1) + "index.html", root)), `${p}: ${z} gibt es`);
@@ -54,7 +56,7 @@ const cssVon = (p) => {
   const css = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]);
   for (const [, href] of html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)) {
     if (/^[a-z]+:|^\//i.test(href)) continue;
-    const datei = new URL(href.replace(/[?#].*$/, ""), new URL(p, root));
+    const datei = new URL(href.replace(/[?#].*$/, ""), basis(p, html, root));
     if (existsSync(datei)) css.push(readFileSync(datei, "utf8"));
   }
   return css.join("\n");
@@ -222,8 +224,9 @@ test("Navigation: ORMA, die Werke und die Weiterleitung bleiben ohne (Ausnahmen 
 test("Navigation: keine Seite verlinkt die Alpha-Übersicht (alpha/), sie ist nur per Adresse erreichbar (Entscheid von Christian, 2. Oktober 2026)", () => {
   assert.ok(existsSync(new URL("alpha/index.html", root)), "die Übersicht selbst gibt es weiter");
   for (const p of alle) {
-    for (const [, href] of lies(p).matchAll(/<a\b[^>]*\shref="([^"]*)"/g)) {
-      const u = new URL(href, new URL(p, "https://ornament.cloud/"));
+    const html = lies(p);
+    for (const [, href] of html.matchAll(/<a\b[^>]*\shref="([^"]*)"/g)) {
+      const u = new URL(href, basis(p, html, "https://ornament.cloud/"));
       assert.ok(!(u.hostname === "ornament.cloud" && /^\/alpha\/(index\.html)?$/.test(u.pathname)), `${p}: ${href} führt zur Alpha-Übersicht`);
     }
   }

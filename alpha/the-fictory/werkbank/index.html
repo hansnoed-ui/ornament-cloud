@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <!-- Erzeugt von tools/build-fictory-app.mjs aus ../index.html. Nicht von Hand bearbeiten.
+       Die Seite der installierten App (start_url und scope des Manifests); <base> lässt alle Verweise wie auf der Website gelten. -->
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Fictory – Ornament Cloud · Alpha</title>
+  <!-- Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). Zuoberst in der Alpha-Übersicht, sonst nicht verlinkt. -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Ein Bild zerfällt in seine Teile und geht weiter: eine Animation und sechs Standbilder nach «Nebeneinander, Nacheinander».">
+  <!-- Vorschaukarte beim Teilen (tools/fictory-og.mjs, 1200 × 630) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ornament.cloud">
+  <meta property="og:locale" content="de_CH">
+  <meta property="og:url" content="https://ornament.cloud/alpha/the-fictory/">
+  <meta property="og:title" content="The Fictory">
+  <meta property="og:description" content="Leg ein Bild auf die Werkbank: Es zerfällt in seine Teile, ordnet sich neu, hinterlässt Spuren und setzt sich am Ende neu zusammen.">
+  <meta property="og:image" content="https://ornament.cloud/alpha/the-fictory/og-the-fictory-raster.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Fictory: links der Titel und der Satz «Ein Bild zerfällt in seine Teile und geht weiter.», rechts ein Raster aus 10 × 9 schimmernden Teilen in Blau, Creme, Türkis und Magenta auf nachtblauem Grund.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Fictory">
+  <meta name="twitter:description" content="Leg ein Bild auf die Werkbank: Es zerfällt in seine Teile, ordnet sich neu, hinterlässt Spuren und setzt sich am Ende neu zusammen.">
+  <meta name="twitter:image" content="https://ornament.cloud/alpha/the-fictory/og-the-fictory-raster.jpg">
+  <!-- als App installierbar (11. Oktober 2026): Manifest, Symbole aus tools/fictory-icons.mjs, Service Worker sw.js, Knopf in pwa.js -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#151412">
+  <meta name="apple-mobile-web-app-title" content="The Fictory">
+  <link rel="stylesheet" href="../../styles.css?v=45">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <style>
+    /* Gestaltung: eine Werkbank (dunkles Band, Farbe = Grund der Animation, darum schwebt das Bild ohne Rahmen) und eine ruhige Arbeitsspalte.
+       Die Leitfarbe (--leit) kommt aus dem geladenen Bild, aus seiner kräftigsten Farbgruppe; bis dahin die Akzentfarbe der Website. */
+    :root {
+      --werkbank: #151412; --kreide: #ebe6dc; --staub: #9a9388; --fuge: #34312c;
+      --leit-roh: var(--kreide);           /* neutral, bis ein Bild seine Leitfarbe mitbringt */
+      --leit: color-mix(in oklab, var(--leit-roh) 72%, var(--kreide));
+      --t-text: "Instrument Sans", var(--font);
+      --t-titel: "Newsreader", var(--serif);
+    }
+    body { font-family: var(--t-text); }
+    .site-header h1 { font-family: var(--t-titel); font-weight: 400; font-size: clamp(2.6rem, 7vw, 4.4rem); letter-spacing: -0.02em; line-height: 1; }
+    .site-header .lead { font-family: var(--t-titel); font-size: clamp(1.1rem, 2.4vw, 1.4rem); max-width: 30em; }
+    /* die fünf Schritte in Kürze, unter dem Titel */
+    /* fünf Schritte als ruhige Zeitleiste: Ziffer, feine Linie zum nächsten Schritt, Name, kurze Erklärung.
+       Optionale Schritte (2, 3) mit blasser Ziffer und gestrichelter Linie. Auf dem Handy senkrecht. */
+    .ablauf { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0 18px; margin: 30px 0 0; padding: 0; list-style: none; counter-reset: schritt; max-width: 60em; }
+    .ablauf li { counter-increment: schritt; display: grid; grid-template-rows: auto auto auto; align-content: start; gap: 2px; }
+    .ablauf li::before {
+      content: counter(schritt); display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+      font-family: var(--t-titel); font-size: 1.9rem; line-height: 1; color: var(--text);
+    }
+    .ablauf li::after { content: ""; grid-row: 1; align-self: center; margin: 0 0 8px 1.6em; border-top: 1px solid var(--text); opacity: 0.55; }
+    .ablauf li::before, .ablauf li::after { grid-column: 1; grid-row: 1; }
+    .ablauf li:last-child::after { display: none; }
+    .ablauf li.frei::before { color: var(--muted); }
+    /* «Als App installieren» unter dem Ablauf (pwa.js), nicht in der installierten App */
+    .installieren { margin: 26px 0 0; max-width: 36em; }
+    .installieren[hidden], .installieren [hidden] { display: none; }
+    .installieren .bg-knopf { gap: 10px; padding-left: 8px; }
+    .installieren .bg-knopf img { width: 30px; height: 30px; border-radius: 7px; display: block; }
+    .installieren-hilfe { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; color: var(--muted); }
+    .installieren-hilfe span { color: var(--text); white-space: nowrap; }
+    .ablauf li.frei::after { border-top-style: dashed; opacity: 0.45; }
+    .ablauf b { font-weight: 600; font-size: 0.98rem; color: var(--text); }
+    .ablauf span { font-size: 0.86rem; line-height: 1.4; color: var(--muted); }
+    @media (max-width: 640px) {
+      .ablauf { grid-template-columns: minmax(0, 1fr); gap: 0; margin-top: 24px; }
+      .ablauf li { grid-template-columns: 2.4rem minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 10px; padding-bottom: 14px; position: relative; }
+      .ablauf li::before { grid-row: 1 / span 2; grid-column: 1; margin: 0; align-items: flex-start; font-size: 1.6rem; justify-content: center; width: 2.4rem; }
+      /* ohne Rasterplatz, sonst wäre die Rasterzelle der Bezugsrahmen der absoluten Linie */
+      .ablauf li::after { grid-area: auto; align-self: auto; margin: 0; position: absolute; left: 1.2rem; top: 2.2rem; bottom: 6px; border-top: 0; border-left: 1px solid var(--text); }
+      .ablauf li.frei::after { border-left-style: dashed; }
+      .ablauf b, .ablauf span { grid-column: 2; }
+    }
+    /* Schritt 2 zum Aufklappen */
+    .bg-auf { margin: 14px 0 0; }
+    .bg-auf > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 10px 0; cursor: pointer; list-style: none; }
+    .bg-auf > summary::-webkit-details-marker { display: none; }
+    .bg-auf > summary .auf { text-decoration: underline; text-underline-offset: 3px; font-size: 0.95rem; }
+    .bg-auf > summary .auf::before { content: "+ "; }
+    .bg-auf[open] > summary .auf::before { content: "– "; }
+    .bg-auf > summary .kurz { color: var(--muted); font-size: 0.92rem; }
+    .nur-lesen { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    /* ---------- Werkbank ---------- */
+    .werkbank { background: var(--werkbank); color: var(--kreide); padding: clamp(20px, 4vw, 44px) 0 clamp(28px, 5vw, 56px); }
+    .werkbank-innen { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+    .ablage { display: grid; place-items: center; gap: 22px; min-height: clamp(320px, 52vh, 560px); padding: 28px 16px; border: 1px dashed var(--fuge); border-radius: 10px; text-align: center; transition: border-color 0.2s; }
+    .ablage.ueber { border-color: var(--leit); }
+    .ablage[hidden] { display: none; }
+    .ablage-satz { margin: 0; font-family: var(--t-titel); font-size: clamp(1.5rem, 3.6vw, 2.4rem); line-height: 1.2; max-width: 18em; }
+    .ablage img { display: block; max-width: 100%; max-height: 62vh; }
+    .ablage img[hidden] { display: none; }
+    .ablage.belegt { border-style: solid; border-color: transparent; min-height: 0; padding: 0; }
+    .ablage.belegt .ablage-satz { display: none; }
+    .werkbank .bg-status { color: var(--staub); }
+
+    .buehne[hidden] { display: none; }
+    .buehne-flaeche { position: relative; margin: 0 auto; width: 100%; }
+    .buehne-flaeche canvas { display: block; width: 100%; height: auto; background: var(--werkbank); }
+    .buehne-flaeche #daten { position: absolute; inset: 0; height: 100%; background: none; pointer-events: none; }
+    .buehne-flaeche #daten[hidden] { display: none; }
+    .stand { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin: 18px 0 6px; }
+    .stand-name { margin: 0; font-family: var(--t-titel); font-size: clamp(1.35rem, 3vw, 1.9rem); line-height: 1.15; }
+    .stand-name .ziffer { color: var(--leit); margin-right: 0.3em; }
+    .stand-zeit { margin: 0; color: var(--staub); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+
+    /* die Zeitleiste als Massstab: ein Strich je Sekunde, die Stationen beschriftet */
+    .massstab { position: relative; padding: 0 0 4px; }
+    .massstab input[type="range"] {
+      -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 34px; margin: 0; background: transparent; cursor: pointer;
+    }
+    .massstab input[type="range"]::-webkit-slider-runnable-track {
+      height: 34px;
+      background:
+        linear-gradient(var(--leit), var(--leit)) 0 50% / var(--fortschritt, 0%) 2px no-repeat,
+        linear-gradient(var(--fuge), var(--fuge)) 0 50% / 100% 2px no-repeat,
+        repeating-linear-gradient(90deg, var(--staub) 0 1px, transparent 1px calc(100% / 30)) 0 100% / 100% 8px no-repeat;
+    }
+    .massstab input[type="range"]::-moz-range-track {
+      height: 34px;
+      background:
+        linear-gradient(var(--fuge), var(--fuge)) 0 50% / 100% 2px no-repeat,
+        repeating-linear-gradient(90deg, var(--staub) 0 1px, transparent 1px calc(100% / 30)) 0 100% / 100% 8px no-repeat;
+    }
+    .massstab input[type="range"]::-moz-range-progress { height: 2px; background: var(--leit); }
+    .massstab input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 3px; height: 34px; margin-top: 0; background: var(--kreide); border: 0; border-radius: 1px; }
+    .massstab input[type="range"]::-moz-range-thumb { width: 3px; height: 34px; background: var(--kreide); border: 0; border-radius: 1px; }
+    .massstab input[type="range"]:focus-visible { outline: 2px solid var(--leit); outline-offset: 4px; }
+    .marken { position: relative; height: 40px; margin-top: 2px; }
+    .marken button {
+      position: absolute; top: 0; transform: translateX(-50%); display: grid; justify-items: center; gap: 1px; min-width: 32px; min-height: 36px; padding: 2px 4px;
+      border: 0; background: none; color: var(--staub); font: inherit; font-size: 0.78rem; line-height: 1.2; cursor: pointer;
+    }
+    .marken button::before { content: ""; width: 1px; height: 7px; background: currentColor; }
+    .marken button .ziffer { font-family: var(--t-titel); font-size: 1rem; }
+    .marken button .titel { white-space: nowrap; visibility: hidden; }
+    .marken button[aria-current="true"] .titel, .marken button:hover .titel, .marken button:focus-visible .titel { visibility: visible; }
+    .marken button:first-child { transform: none; justify-items: start; }
+    .marken button:last-child { transform: translateX(-100%); justify-items: end; }
+    .marken button[aria-current="true"], .marken button:hover { color: var(--kreide); }
+    .marken button[aria-current="true"] .ziffer { color: var(--leit); }
+    .marken button:focus-visible { outline: 2px solid var(--leit); outline-offset: 2px; }
+    .werkbank-knoepfe { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 0; }
+
+    /* Kontaktbogen: die sechs Standbilder = die sechs Schlüsselzustände */
+    .kontaktbogen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 20px; margin: 36px 0 0; padding: 28px 0 0; border-top: 1px solid var(--fuge); list-style: none; }
+    .kontaktbogen li { display: grid; gap: 8px; align-content: start; }
+    .kontaktbogen canvas { display: block; width: 100%; height: auto; cursor: pointer; outline: 1px solid transparent; outline-offset: 5px; transition: outline-color 0.25s; }
+    .kontaktbogen li[aria-current="true"] canvas { outline-color: var(--leit); }
+    .kontaktbogen h3 { margin: 4px 0 0; font-family: var(--t-titel); font-weight: 400; font-size: 1.2rem; line-height: 1.2; }
+    .kontaktbogen h3 .ziffer { color: var(--leit); margin-right: 0.3em; }
+    .kontaktbogen p { margin: 0; color: var(--staub); font-size: 0.86rem; line-height: 1.5; max-width: 40em; }
+    .kontaktbogen .bg-knoepfe { margin: 2px 0 0; }
+
+    /* Knöpfe: auf der Werkbank hell auf dunkel, in der Spalte dunkel auf hell */
+    .bg-knopf {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 8px 20px;
+      border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.95rem; font-weight: 500;
+      text-decoration: none; cursor: pointer;
+    }
+    .bg-knopf:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .bg-knopf.voll { background: var(--text); color: var(--bg); }
+    .bg-knopf.klein { min-height: 36px; padding: 4px 14px; font-size: 0.86rem; }
+    .bg-knopf.leise { border-color: var(--border); color: var(--muted); }
+    .bg-knopf:disabled { opacity: 0.45; cursor: default; }
+    .bg-knopf[hidden] { display: none; }
+    .werkbank .bg-knopf { border-color: var(--kreide); color: var(--kreide); }
+    .werkbank .bg-knopf:hover { background: color-mix(in srgb, var(--kreide) 12%, transparent); }
+    .werkbank .bg-knopf.voll { background: var(--leit); border-color: var(--leit); color: var(--werkbank); }
+    .werkbank .bg-knopf.leise { border-color: var(--fuge); color: var(--staub); }
+    .werkbank .bg-knopf[aria-pressed="true"]:not(.voll) { background: color-mix(in srgb, var(--kreide) 14%, transparent); }
+    .bg-knopf:focus-visible, .bg-seite input:focus-visible, .bg-seite select:focus-visible, .bg-seite summary:focus-visible, .bg-wahl input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .werkbank .bg-knopf:focus-visible, .werkbank label:focus-within { outline: 2px solid var(--leit); outline-offset: 3px; }
+    .bg-datei { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .bg-knoepfe { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; margin: 16px 0 0; }
+
+    /* ---------- Arbeitsspalte ---------- */
+    .bg-seite { max-width: 1000px; margin: 0 auto; padding: 0 20px 64px; }
+    .bg-schritt { margin: 0; padding: 36px 0 36px; border-top: 1px solid var(--border); }
+    .bg-schritt:first-child { border-top: 0; }
+    .bg-schritt[hidden] { display: none; }
+    .bg-schritt > h2 { display: flex; align-items: baseline; gap: 0.5em; margin: 0 0 0.4rem; font-family: var(--t-titel); font-weight: 400; font-size: clamp(1.5rem, 3vw, 1.85rem); }
+    .bg-schritt > h2 .nr { font-size: 1.15em; color: var(--muted); }
+    .bg-hinweis { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.92rem; line-height: 1.55; max-width: 40em; }
+    .bg-status { min-height: 1.4em; margin: 10px 0 0; color: var(--muted); font-size: 0.9rem; }
+    .bg-marke { display: inline-block; padding: 1px 9px; border: 1px solid var(--muted); border-radius: 999px; color: var(--muted); font-family: var(--t-text); font-size: 0.78rem; }
+
+    .bg-analyse { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 28px; align-items: start; margin-top: 20px; }
+    .bg-vorschau canvas { display: block; width: 100%; height: auto; cursor: pointer; touch-action: manipulation; background: #f4f1ea; }
+    .bg-zeile { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0 0; font-size: 0.9rem; }
+    .bg-wahl { display: inline-flex; border: 1px solid var(--text); border-radius: 999px; overflow: hidden; }
+    .bg-wahl label { position: relative; }
+    .bg-wahl input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+    .bg-wahl span { display: inline-block; min-height: 36px; padding: 7px 14px; font-size: 0.86rem; }
+    .bg-wahl input:checked + span { background: var(--text); color: var(--bg); }
+    .bg-regler { display: grid; gap: 14px; margin: 0; font-size: 0.92rem; }
+    .bg-regler label { display: grid; gap: 4px; }
+    .bg-regler output { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .bg-regler input[type="range"] { width: 100%; accent-color: var(--text); }
+    .bg-regler select { min-height: 42px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; }
+    .bg-teile { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+    .bg-teile button { min-width: 44px; min-height: 36px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.82rem; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+    .bg-teile button[aria-pressed="true"] { border-color: var(--text); font-weight: 600; }
+    .bg-teile i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.25); }
+
+    /* Befund, Lesart, Eingriff: drei Spalten derselben Zeile, damit die Trennung sichtbar bleibt */
+    .bg-befunde { margin: 28px 0 0; }
+    .bg-befunde-kopf, .bg-befund dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 20px; }
+    .bg-befunde-kopf { padding: 0 0 8px; border-bottom: 1px solid var(--text); color: var(--muted); font-size: 0.86rem; }
+    .bg-befund { padding: 14px 0 16px; border-bottom: 1px solid var(--border); }
+    .bg-befund h3 { margin: 0 0 8px; font-family: var(--t-titel); font-weight: 400; font-size: 1.15rem; }
+    .bg-befund dl { margin: 0; font-size: 0.9rem; line-height: 1.5; }
+    .bg-befund dt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .bg-befund dd { margin: 0; }
+    .bg-befund dd.lesart { color: var(--text); font-style: italic; font-family: var(--t-titel); font-size: 1rem; }
+    .bg-befund.verworfen dd.lesart, .bg-befund.verworfen dd.eingriff { text-decoration: line-through; color: var(--muted); }
+    .bg-befund label { display: inline-flex; gap: 6px; align-items: center; margin-top: 10px; font-size: 0.86rem; cursor: pointer; }
+
+    .bg-karte { margin: 18px 0 0; padding: 20px 22px; border-left: 3px solid var(--leit-roh); background: var(--surface); }
+    .bg-karte[hidden] { display: none; }
+    .bg-karte dl { display: grid; grid-template-columns: 8.5em minmax(0, 1fr); gap: 10px 16px; margin: 0; font-size: 0.92rem; }
+    .bg-karte dt { color: var(--muted); }
+    .bg-karte dd { margin: 0; }
+    .bg-karte blockquote { margin: 0; font-family: var(--t-titel); font-size: 1.15rem; line-height: 1.45; }
+    .bg-karte .titel { font-family: var(--t-titel); font-size: 1.35rem; }
+
+    .bg-export { margin: 8px 0 0; }
+    .bg-export h3, .bg-gegen h3 { margin: 0; font-family: var(--t-titel); font-weight: 400; font-size: 1.2rem; }
+    .bg-fortschritt { width: 100%; height: 6px; margin: 10px 0 0; accent-color: var(--text); }
+    .bg-fortschritt[hidden] { display: none; }
+    .bg-gegen { margin: 32px 0 0; padding: 22px 0 0; border-top: 1px solid var(--border); }
+    .bg-gegen-bilder { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 14px 0 0; }
+    .bg-gegen-bilder[hidden] { display: none; }
+    .bg-gegen-bilder figure { margin: 0; }
+    .bg-gegen-bilder canvas { display: block; width: 100%; height: auto; background: var(--werkbank); }
+    .bg-gegen-bilder figcaption { margin: 6px 0 0; font-size: 0.84rem; color: var(--muted); }
+    .bg-protokoll { margin: 22px 0 0; font-size: 0.88rem; }
+    .bg-protokoll summary { cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+    .bg-protokoll ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    .bg-protokoll li { margin: 4px 0; }
+    .bg-methode { font-size: 0.92rem; }
+    .bg-methode ul { margin: 0.6rem 0 0; padding-left: 1.2rem; max-width: 44em; line-height: 1.55; }
+    .bg-methode li { margin: 0.4rem 0; }
+
+    @media (max-width: 760px) {
+      .kontaktbogen { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 12px; }
+      .kontaktbogen p { display: none; }
+      .marken button .titel { display: none; }
+      .bg-analyse { grid-template-columns: minmax(0, 1fr); }
+      .bg-befunde-kopf { display: none; }
+      .bg-befund dl { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+      .bg-befund dt { position: static; width: auto; height: auto; clip: auto; color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+      .bg-karte dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+      .bg-karte dd { margin-bottom: 8px; }
+    }
+    @media (max-width: 420px) {
+      .werkbank-innen { padding: 0 16px; }
+      .bg-gegen-bilder { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (prefers-reduced-motion: reduce) { .ablage, .kontaktbogen canvas { transition: none; } }
+  </style>
+  <script type="module" src="app.js?v=16"></script>
+  <script type="module" src="pwa.js?v=16"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="seitenweg" aria-label="Ornament Cloud">
+        <a href="../../" aria-current="true">Ornament Cloud</a>
+        <a href="../drittes-rad/">Das Dritte Rad</a>
+      </nav>
+      <h1>The Fictory</h1>
+      <p class="lead">Ein Bild zerfällt in seine Teile und geht weiter.</p>
+      <ol class="ablauf" aria-label="So geht es">
+        <li><b>Bild laden</b><span>oder das Beispielbild</span></li>
+        <li class="frei"><b>Analyse prüfen</b><span>wenn du willst</span></li>
+        <li class="frei"><b>ORNA</b><span>eine Regel ziehen, wenn du willst</span></li>
+        <li><b>Erzeugen</b><span>30 Sekunden Animation</span></li>
+        <li><b>Ansehen und speichern</b><span>Video und Standbilder</span></li>
+      </ol>
+      <div class="installieren" id="installieren" hidden>
+        <button class="bg-knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="icons/icon-192.png" alt="" width="30" height="30"><span>The Fictory als App installieren</span></button>
+        <p class="installieren-hilfe" id="installieren-hilfe" hidden></p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Die Werkbank: zuerst Ablage, dann das Original, nach «Erzeugen» die Animation mit Massstab und Kontaktbogen -->
+  <section class="werkbank" id="werkbank" aria-label="Werkbank">
+    <div class="werkbank-innen">
+      <div class="ablage" id="ablage">
+        <p class="ablage-satz">Leg ein Bild auf die Werkbank.</p>
+        <img id="original" alt="" hidden>
+        <div class="bg-knoepfe">
+          <label class="bg-knopf voll" for="datei">Bild wählen<input class="bg-datei" type="file" id="datei" accept="image/*"></label>
+          <button type="button" class="bg-knopf" id="beispiel">Beispielbild</button>
+          <button type="button" class="bg-knopf voll" id="erzeugen-werkbank" hidden>Erzeugen</button>
+        </div>
+        <p class="bg-status" id="status-laden" role="status">Es bleibt auf deinem Gerät.</p>
+      </div>
+
+      <div class="buehne" id="buehne-box" hidden>
+        <div class="buehne-flaeche" id="buehne-flaeche">
+          <canvas id="buehne" aria-label="Die Animation"></canvas>
+          <canvas id="daten" aria-hidden="true"></canvas>
+        </div>
+        <div class="stand">
+          <p class="stand-name" id="stand-name" aria-live="polite"></p>
+          <p class="stand-zeit" id="uhr"></p>
+        </div>
+        <div class="massstab">
+          <input type="range" id="zeitleiste" min="0" max="900" step="1" value="0" aria-label="Zeitleiste">
+          <div class="marken" id="marken"></div>
+        </div>
+        <div class="werkbank-knoepfe">
+          <button type="button" class="bg-knopf voll" id="spielen" aria-pressed="false">Abspielen</button>
+          <button type="button" class="bg-knopf" id="neustart">Neustart</button>
+          <button type="button" class="bg-knopf" id="daten-knopf" aria-pressed="true" title="Blendet Namen, Lagen und Zähler ein. Nicht in Standbildern und Video.">Daten</button>
+          <button type="button" class="bg-knopf leise" id="anderes-bild">Anderes Bild</button>
+        </div>
+        <h2 class="nur-lesen">Sechs Standbilder</h2>
+        <ol class="kontaktbogen" id="standbilder"></ol>
+      </div>
+    </div>
+  </section>
+
+  <main class="bg-seite" id="app">
+    <section class="bg-schritt" id="schritt-analyse" aria-labelledby="h-analyse" hidden>
+      <h2 id="h-analyse"><span class="nr">2</span>Analyse prüfen</h2>
+      <details class="bg-auf" id="analyse-auf">
+        <summary><span class="auf">Ansehen und korrigieren</span><span class="kurz" id="analyse-kurz"></span></summary>
+      <p class="bg-hinweis">So liest die App dein Bild: Farben, Flächen, Kanten, Lagen. Sie erkennt keine Dinge. Tippe in die Vorschau, um zu korrigieren.</p>
+      <div class="bg-analyse">
+        <div>
+          <div class="bg-vorschau"><canvas id="gliederung" aria-label="Vorschau der Bildgliederung: Flächen in ihrer mittleren Farbe, Figuren mit kräftiger Kontur, Grund schraffiert"></canvas></div>
+          <div class="bg-zeile">
+            <span class="bg-wahl" role="radiogroup" aria-label="Was ein Tipp in der Vorschau tut">
+              <label><input type="radio" name="tipp" value="teil" checked><span>Figur an/aus</span></label>
+              <label><input type="radio" name="tipp" value="grund"><span>Grund ↔ Figur</span></label>
+            </span>
+            <span class="bg-wahl" role="radiogroup" aria-label="Ansicht der Vorschau">
+              <label><input type="radio" name="ansicht" value="gliederung" checked><span>Gliederung</span></label>
+              <label><input type="radio" name="ansicht" value="original"><span>Original</span></label>
+            </span>
+          </div>
+          <p class="bg-hinweis">Alles wird zu Teilen. Figuren liegen obenauf.</p>
+          <div class="bg-teile" id="teile" aria-label="Figuren"></div>
+        </div>
+        <div class="bg-regler">
+          <label>Farbgruppen <output id="farben-wert">6</output><input type="range" id="farben" min="3" max="10" step="1" value="6"></label>
+          <label>Kleinste Fläche <output id="mindest-wert">0,4 %</output><input type="range" id="mindest" min="1" max="20" step="1" value="4"></label>
+          <label>Regel für neue Nachbarschaften
+            <select id="regel">
+              <option value="">aus dem Befund</option>
+              <option value="farbe">nach Farbgruppe</option>
+              <option value="groesse">nach Fläche</option>
+              <option value="helligkeit">nach Helligkeit</option>
+            </select>
+          </label>
+          <div class="bg-knoepfe"><button type="button" class="bg-knopf klein leise" id="zuruecksetzen">Korrekturen zurücksetzen</button></div>
+        </div>
+      </div>
+      <div class="bg-befunde">
+        <div class="bg-befunde-kopf" aria-hidden="true"><span>Befund</span><span>Lesart</span><span>Eingriff</span></div>
+        <div id="befunde"></div>
+      </div>
+      </details>
+    </section>
+
+    <section class="bg-schritt" id="schritt-orna" aria-labelledby="h-orna" hidden>
+      <h2 id="h-orna"><span class="nr">3</span>ORNA <span class="bg-marke">optional</span></h2>
+      <p class="bg-hinweis">Eine gezogene Konstellation aus ORNA gibt dem Lauf eine Regel.</p>
+      <div class="bg-knoepfe">
+        <span class="bg-wahl" role="radiogroup" aria-label="ORNA einbeziehen">
+          <label><input type="radio" name="orna" value="ohne" checked><span>Ohne ORNA</span></label>
+          <label><input type="radio" name="orna" value="ziehen"><span>Konstellation ziehen</span></label>
+        </span>
+        <button type="button" class="bg-knopf klein" id="neu-ziehen" hidden>Neu ziehen</button>
+      </div>
+      <div class="bg-karte" id="orna-karte" hidden aria-live="polite"></div>
+    </section>
+
+    <section class="bg-schritt" id="schritt-erzeugen" aria-labelledby="h-erzeugen" hidden>
+      <h2 id="h-erzeugen"><span class="nr">4</span>Erzeugen</h2>
+      <p class="bg-hinweis">30 Sekunden, sechs Schritte. Jeder baut auf dem vorigen auf, zuletzt setzt sich das Bild neu zusammen. Die Standbilder sind Momente dieses Laufs.</p>
+      <div class="bg-knoepfe">
+        <button type="button" class="bg-knopf voll" id="erzeugen">Erzeugen</button>
+        <button type="button" class="bg-knopf klein leise" id="neuer-startwert">Neuer Startwert</button>
+      </div>
+      <p class="bg-status" id="startwert"></p>
+      <p class="bg-status" id="status-erzeugen" role="status"></p>
+    </section>
+
+    <section class="bg-schritt" id="ergebnis" aria-labelledby="h-ergebnis" hidden>
+      <h2 id="h-ergebnis"><span class="nr">5</span>Exportieren und prüfen</h2>
+      <div class="bg-export">
+        <div class="bg-knoepfe">
+          <button type="button" class="bg-knopf" id="alle-png">Alle sechs Standbilder (ZIP)</button>
+          <button type="button" class="bg-knopf" id="video">Animation als Video</button>
+          <button type="button" class="bg-knopf" id="protokoll">Protokoll (JSON)</button>
+          <label class="bg-knopf leise" for="protokoll-laden">Lauf aus Protokoll wiederholen<input class="bg-datei" type="file" id="protokoll-laden" accept="application/json,.json"></label>
+        </div>
+        <progress class="bg-fortschritt" id="fortschritt" max="1" value="0" hidden></progress>
+        <p class="bg-status" id="status-export" role="status"></p>
+      </div>
+
+      <div class="bg-gegen">
+        <h3>Gegenprobe</h3>
+        <p class="bg-hinweis">Derselbe Lauf, nur ohne wirksame Spuren ab Schritt 4. Was ändert sich?</p>
+        <div class="bg-knoepfe"><button type="button" class="bg-knopf klein" id="gegenprobe">Gegenprobe rechnen</button></div>
+        <div class="bg-gegen-bilder" id="gegen-bilder" hidden>
+          <figure><canvas id="gegen-mit"></canvas><figcaption id="gegen-mit-text"></figcaption></figure>
+          <figure><canvas id="gegen-ohne"></canvas><figcaption id="gegen-ohne-text"></figcaption></figure>
+        </div>
+      </div>
+
+      <details class="bg-protokoll" id="ereignisse"><summary>Ereignisse des Laufs</summary><ol id="ereignis-liste"></ol></details>
+    </section>
+
+    <section class="bg-schritt bg-methode" aria-labelledby="h-methode">
+      <h2 id="h-methode">Was hier geschieht</h2>
+      <ul>
+        <li><strong>Nebeneinander:</strong> Jedes Teil bleibt auffindbar (F1, F2 …), wo immer es hinwandert.</li>
+        <li><strong>Nacheinander:</strong> Spuren und ein wucherndes Feld bremsen und lenken die späteren Schritte. Am Ende setzt sich das Bild neu zusammen; die Spuren bestimmen, in welcher Reihenfolge.</li>
+        <li>Keine Bewertung. Keine Aussage darüber, wie das Bild entstanden ist oder wie es wirkt.</li>
+        <li id="integrationen">Integrationen werden beim Laden ermittelt.</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+    </div>
+  </footer>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+</body>
+</html>
