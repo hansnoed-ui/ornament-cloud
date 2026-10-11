@@ -22,6 +22,12 @@
   <meta name="twitter:title" content="The Fictory">
   <meta name="twitter:description" content="Leg ein Bild auf die Werkbank: Es zerfällt in seine Teile, ordnet sich neu, hinterlässt Spuren und setzt sich am Ende neu zusammen.">
   <meta name="twitter:image" content="https://ornament.cloud/alpha/the-fictory/og-the-fictory-raster.jpg">
+  <!-- als App installierbar (11. Oktober 2026): Manifest, Symbole aus tools/fictory-icons.mjs, Service Worker sw.js, Knopf in pwa.js -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#151412">
+  <meta name="apple-mobile-web-app-title" content="The Fictory">
   <link rel="stylesheet" href="../../styles.css?v=45">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
   <style>
@@ -50,6 +56,13 @@
     .ablauf li::before, .ablauf li::after { grid-column: 1; grid-row: 1; }
     .ablauf li:last-child::after { display: none; }
     .ablauf li.frei::before { color: var(--muted); }
+    /* «Als App installieren» unter dem Ablauf (pwa.js), nicht in der installierten App */
+    .installieren { margin: 26px 0 0; max-width: 36em; }
+    .installieren[hidden], .installieren [hidden] { display: none; }
+    .installieren .bg-knopf { gap: 10px; padding-left: 8px; }
+    .installieren .bg-knopf img { width: 30px; height: 30px; border-radius: 7px; display: block; }
+    .installieren-hilfe { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; color: var(--muted); }
+    .installieren-hilfe span { color: var(--text); white-space: nowrap; }
     .ablauf li.frei::after { border-top-style: dashed; opacity: 0.45; }
     .ablauf b { font-weight: 600; font-size: 0.98rem; color: var(--text); }
     .ablauf span { font-size: 0.86rem; line-height: 1.4; color: var(--muted); }
@@ -251,6 +264,7 @@
     @media (prefers-reduced-motion: reduce) { .ablage, .kontaktbogen canvas { transition: none; } }
   </style>
   <script type="module" src="app.js?v=14"></script>
+  <script type="module" src="pwa.js?v=14"></script>
 </head>
 <body>
   <header class="site-header">
@@ -268,6 +282,10 @@
         <li><b>Erzeugen</b><span>30 Sekunden Animation</span></li>
         <li><b>Ansehen und speichern</b><span>Video und Standbilder</span></li>
       </ol>
+      <div class="installieren" id="installieren" hidden>
+        <button class="bg-knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="icons/icon-192.png" alt="" width="30" height="30"><span>The Fictory als App installieren</span></button>
+        <p class="installieren-hilfe" id="installieren-hilfe" hidden></p>
+      </div>
     </div>
   </header>
 

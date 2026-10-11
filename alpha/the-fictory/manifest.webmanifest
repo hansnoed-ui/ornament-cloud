@@ -1,0 +1,17 @@
+{
+  "name": "The Fictory",
+  "short_name": "The Fictory",
+  "description": "Ein Bild zerfällt in seine Teile und geht weiter: eine Animation und sechs Standbilder nach «Nebeneinander, Nacheinander». Das Bild bleibt auf dem Gerät.",
+  "lang": "de-CH",
+  "id": "the-fictory",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#00010c",
+  "theme_color": "#151412",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

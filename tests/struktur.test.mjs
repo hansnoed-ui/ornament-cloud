@@ -210,7 +210,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 });
 
 const SEITEN = {
-  apps: { titel: "Apps", karten: [["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },
+  apps: { titel: "Apps", karten: [["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"], ["The Fictory", "../alpha/the-fictory/"]] },
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
   web: { titel: "Web", karten: [["The Fictory", "../alpha/the-fictory/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"]] },
 };
@@ -233,11 +233,15 @@ test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und 
   }
 });
 
-test("Apps: ORNA und ORMA als Beiträge, in dieser Reihenfolge, ORMA als Alpha gekennzeichnet", () => {
+test("Apps: ORNA, ORMA und (seit 11. Oktober 2026) The Fictory als Beiträge, in dieser Reihenfolge, ORMA und The Fictory als Alpha gekennzeichnet", () => {
   const k = karten(lies("apps/index.html"));
   assert.deepEqual(k.map((x) => [x.titel, x.ziel]), SEITEN.apps.karten);
-  assert.ok(k[1].tags.includes("Alpha") && !k[0].tags.includes("Alpha"));
-  assert.ok(k.every((x) => /data-icon="rad"/.test(x.html)), "beide Karten zeigen das drehende Rad");
+  assert.ok(k[1].tags.includes("Alpha") && k[2].tags.includes("Alpha") && !k[0].tags.includes("Alpha"));
+  assert.ok(k.slice(0, 2).every((x) => /data-icon="rad"/.test(x.html)), "ORNA und ORMA zeigen das drehende Rad");
+  // The Fictory: das App-Symbol im Format der Karten (tools/fictory-icons.mjs)
+  assert.match(k[2].html, /<img src="\.\.\/assets\/vorschau-the-fictory-app\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-the-fictory-app.jpg", root))), [640, 800]);
+  assert.ok(k[2].tags.includes("App") && /installieren/.test(k[2].html) && /ohne Netz/.test(k[2].html));
   assert.match(k[1].html, /class="thumb split-invert"/, "ORMA: vertikal geteilt, rechts invers (REGELN §14)");
 });
 
