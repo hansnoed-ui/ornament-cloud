@@ -1,13 +1,13 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen, leitfarbe } from "./analyse.js?v=13";
-import { mitDauer } from "./dauer.js?v=13";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=13";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=13";
-import { REGELN } from "./regeln.js?v=13";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=13";
-import { JEV } from "./jev.js?v=13";
-import { zip } from "./zip.js?v=13";
+import { analysiere, konturen, leitfarbe } from "./analyse.js?v=14";
+import { mitDauer } from "./dauer.js?v=14";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=14";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=14";
+import { REGELN } from "./regeln.js?v=14";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=14";
+import { JEV } from "./jev.js?v=14";
+import { zip } from "./zip.js?v=14";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln
@@ -16,6 +16,7 @@ const EXPORT_MIN = 1600;        // Standbilder mindestens so lang (längste Seit
 const BUEHNE_SEITE = 1080;      // Vorschau der Animation
 const VIDEO_SEITE = 1080;       // Video
 const MERKEN = 15;              // Momentaufnahme alle 15 Schritte (Zeitleiste)
+const LUECKE = 100;             // ms ohne Bild: der Browser war blockiert, die Wiedergabe hält an statt zu springen
 const VERSION = "4.0";
 
 const S = {
@@ -369,11 +370,16 @@ function spiele() {
   if (L.z.schritt >= GESAMT) { neustartZustand(); }
   S.spielt = true;
   $("spielen").textContent = "Pause"; $("spielen").setAttribute("aria-pressed", "true");
-  let start = performance.now(), basis = L.z.schritt;
+  let start = performance.now(), basis = L.z.schritt, letztes = start;
   // Die Simulation rechnet 30 Schritte je Sekunde; der Bildschirm zeigt meist 60 oder mehr Bilder. Zwischen zwei Schritten werden die Lagen
   // der Teile darum weich übergeblendet (nur in der Anzeige; die Zustände, Standbilder und das Video bleiben dieselben).
   const tick = (jetzt) => {
     if (!S.spielt || S.lauf !== L) return;
+    // War der Browser kurz blockiert (etwa beim Rechnen eines Standbilds als PNG, 11. Oktober 2026), läuft die Uhr der Animation nicht weiter:
+    // sie hält an und setzt dort fort, statt mehrere Schritte auf einmal nachzuholen (das sah wie ein Wackeln aus).
+    const luecke = jetzt - letztes;
+    letztes = jetzt;
+    if (luecke > LUECKE) start += luecke - 1000 / 60;
     const genau = basis + ((jetzt - start) / 1000) * TAKT;
     const ziel = Math.min(GESAMT, Math.floor(genau) + 1);
     let n = 0;
