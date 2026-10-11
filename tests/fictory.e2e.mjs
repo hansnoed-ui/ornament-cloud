@@ -89,7 +89,11 @@ await check("Einstieg: die fünf Schritte unter dem Titel; nach dem Laden «Erze
   assert.equal(await page.locator("#analyse-auf").getAttribute("open"), null, "zugeklappt");
   await page.click("#erzeugen-werkbank");
   await page.waitForSelector("#buehne-box:not([hidden])");
+  // die Animation läuft sofort; Zeitleiste, Standbilder und Export kommen, sobald der Worker den Lauf vorausgerechnet hat
+  assert.ok(await page.evaluate(() => window.fictoryTest.S.spielt), "spielt, ohne auf die Vorausrechnung zu warten");
+  await page.waitForSelector("#ergebnis:not([hidden])");
   assert.equal(await page.locator("#standbilder li").count(), 6);
+  assert.match(await page.locator("#status-erzeugen").textContent(), /^Erzeugt/);
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
@@ -240,7 +244,7 @@ await check("App (11. Oktober 2026): Knopf «Als App installieren» mit Anleitun
   for (const d of ["/alpha/the-fictory/", "/alpha/the-fictory/beispiel.jpg", "/portfolio/nebeneinander-nacheinander/js/data/constellations.js", "/vendor/fonts/newsreader-normal-latin.woff2"])
     assert.ok(gespeichert.includes(d), `gespeichert: ${d}`);
   assert.ok(gespeichert.some((d) => /^\/styles\.css\?v=\d+$/.test(d)), "das Stylesheet der Website mit Versionsmarke");
-  for (const m of ["app", "operationen", "zeichnen", "orna"]) assert.ok(gespeichert.some((d) => new RegExp(`^/alpha/the-fictory/${m}\\.js\\?v=\\d+$`).test(d)), `Modul ${m}.js mit Versionsmarke`);
+  for (const m of ["app", "operationen", "zeichnen", "orna", "rechner"]) assert.ok(gespeichert.some((d) => new RegExp(`^/alpha/the-fictory/${m}\\.js\\?v=\\d+$`).test(d)), `Modul ${m}.js mit Versionsmarke`);
   // ohne Netz: die Seite kommt aus dem Speicher und tut ihre Arbeit
   await ctx.setOffline(true);
   await page.reload(); await page.waitForFunction(() => window.fictoryTest?.bereit);
