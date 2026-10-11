@@ -1,5 +1,5 @@
 // The Fictory als App (Wunsch von Christian, 11. Oktober 2026: «eine herunterladbare App für die App-Seite»). Nach dem Vorbild von ORNA (js/pwa.js):
-// 1. meldet den Service Worker an (sw.js in diesem Ordner): danach läuft The Fictory auch ohne Netz;
+// 1. meldet den Service Worker an (sw.js in diesem Ordner, Geltungsbereich dieser Ordner – auch von der App-Seite app/ aus): danach läuft The Fictory auch ohne Netz;
 // 2. zeigt unter dem Ablauf den Knopf «The Fictory als App installieren», überall ausser in der installierten App:
 //    – meldet der Browser «installierbar» (Chrome, Edge, Android), öffnet der Knopf das Installationsfenster;
 //    – im eingebauten Browser von Facebook, Instagram u. a. geht es nie: auf Android öffnet der Knopf die Seite in Chrome,
@@ -8,7 +8,7 @@
 // Ohne Unterstützung bleibt es bei der Erklärung; die Seite funktioniert wie bisher.
 
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
-  addEventListener("load", () => { navigator.serviceWorker.register(new URL("sw.js", import.meta.url), { scope: "./" }).catch(() => { /* ohne Offline-Betrieb weiter */ }); });
+  addEventListener("load", () => { navigator.serviceWorker.register(new URL("sw.js", import.meta.url), { scope: new URL("./", import.meta.url).href }).catch(() => { /* ohne Offline-Betrieb weiter */ }); });
 }
 
 const box = document.getElementById("installieren");

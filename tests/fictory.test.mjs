@@ -215,10 +215,10 @@ test("App (11. Oktober 2026): Manifest, Symbole und Anmeldung des Service Worker
   assert.match(html, /<link rel="apple-touch-icon" href="icons\/apple-touch-icon\.png">/);
   assert.match(html, /<link rel="icon" href="icons\/favicon-32\.png"/);
   assert.match(html, /<meta name="theme-color" content="#151412">/);
-  assert.match(html, /<script type="module" src="pwa\.js\?v=14"><\/script>/);
+  assert.match(html, /<script type="module" src="pwa\.js\?v=\d+"><\/script>/);
   assert.match(html, /<div class="installieren" id="installieren" hidden>[\s\S]*?id="installieren-knopf"[\s\S]*?The Fictory als App installieren/);
   const pwa = readFileSync(new URL("pwa.js", dir), "utf8");
-  assert.match(pwa, /serviceWorker\.register\(new URL\("sw\.js", import\.meta\.url\), \{ scope: "\.\/" \}\)/);
+  assert.match(pwa, /serviceWorker\.register\(new URL\("sw\.js", import\.meta\.url\), \{ scope: new URL\("\.\/", import\.meta\.url\)\.href \}\)/, "Geltungsbereich: der Ordner der Anwendung, auch von app/ aus");
   assert.match(pwa, /display-mode: standalone/, "in der installierten App kein Knopf");
   // die Symbole erzeugt tools/fictory-icons.mjs aus Christians Raster
   const werkzeug = readFileSync(new URL("tools/fictory-icons.mjs", root), "utf8");
