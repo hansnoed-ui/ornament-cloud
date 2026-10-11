@@ -179,7 +179,8 @@ test("Seite: ruft keinen Dienst auf (nur das Beispielbild) und hält keine Schl�
   for (const f of readdirSync(dir).filter((f) => f.endsWith(".js") || f.endsWith(".html"))) {
     const s = readFileSync(new URL(f, dir), "utf8");
     const aufrufe = [...s.matchAll(/fetch\(([^)]*)\)/g)].map((m) => m[1]);
-    assert.ok(aufrufe.every((a) => a === '"beispiel.jpg"'), `${f}: ${aufrufe}`);
+    // der Service Worker (seit 11. Oktober 2026) holt die Dateien der Seite für den Betrieb ohne Netz, nur von derselben Herkunft (eigener Test unten)
+    if (f !== "sw.js") assert.ok(aufrufe.every((a) => a === '"beispiel.jpg"'), `${f}: ${aufrufe}`);
     assert.doesNotMatch(s, /XMLHttpRequest|sendBeacon|TYPESAFE_API_KEY|Bearer /, f);
     assert.doesNotMatch(s, /(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/, f);
   }
@@ -194,6 +195,44 @@ test("Alpha: Seite mit Navigation, noindex, in der Übersicht zuoberst, nicht in
   const eintraege = [...uebersicht.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map((m) => m[1]);
   assert.equal(eintraege[0], "the-fictory/");
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("the-fictory"));
+});
+
+/** Breite und Höhe aus dem Kopf einer PNG-Datei */
+const pngMass = (buf) => (buf.subarray(1, 4).toString() === "PNG" ? [buf.readUInt32BE(16), buf.readUInt32BE(20)] : null);
+
+test("App (11. Oktober 2026): Manifest, Symbole und Anmeldung des Service Workers; installiert öffnet sie die Seite selbst", () => {
+  const m = JSON.parse(readFileSync(new URL("manifest.webmanifest", dir), "utf8"));
+  assert.equal(m.name, "The Fictory"); assert.equal(m.short_name, "The Fictory");
+  assert.equal(m.start_url, "./"); assert.equal(m.scope, "./"); assert.equal(m.display, "standalone");
+  assert.ok(m.description.length > 40 && m.lang === "de-CH");
+  const symbole = Object.fromEntries(m.icons.map((i) => [i.purpose, i]));
+  assert.deepEqual(m.icons.map((i) => [i.src, i.sizes, i.purpose]), [["icons/icon-192.png", "192x192", "any"], ["icons/icon-512.png", "512x512", "any"], ["icons/icon-maskable-512.png", "512x512", "maskable"]]);
+  assert.ok(symbole.maskable, "maskierbares Symbol für Android");
+  for (const [datei, mass] of [["icon-192.png", 192], ["icon-512.png", 512], ["icon-maskable-512.png", 512], ["apple-touch-icon.png", 180], ["favicon-32.png", 32]])
+    assert.deepEqual(pngMass(readFileSync(new URL(`icons/${datei}`, dir))), [mass, mass], datei);
+  const html = readFileSync(new URL("index.html", dir), "utf8");
+  assert.match(html, /<link rel="manifest" href="manifest\.webmanifest">/);
+  assert.match(html, /<link rel="apple-touch-icon" href="icons\/apple-touch-icon\.png">/);
+  assert.match(html, /<link rel="icon" href="icons\/favicon-32\.png"/);
+  assert.match(html, /<meta name="theme-color" content="#151412">/);
+  assert.match(html, /<script type="module" src="pwa\.js\?v=14"><\/script>/);
+  assert.match(html, /<div class="installieren" id="installieren" hidden>[\s\S]*?id="installieren-knopf"[\s\S]*?The Fictory als App installieren/);
+  const pwa = readFileSync(new URL("pwa.js", dir), "utf8");
+  assert.match(pwa, /serviceWorker\.register\(new URL\("sw\.js", import\.meta\.url\), \{ scope: "\.\/" \}\)/);
+  assert.match(pwa, /display-mode: standalone/, "in der installierten App kein Knopf");
+  // die Symbole erzeugt tools/fictory-icons.mjs aus Christians Raster
+  const werkzeug = readFileSync(new URL("tools/fictory-icons.mjs", root), "utf8");
+  assert.ok(werkzeug.includes("src/the-fictory/vorschau-quelle.jpg") && werkzeug.includes("icon-maskable-512.png") && werkzeug.includes("vorschau-the-fictory-app.jpg"));
+});
+
+test("App: der Service Worker bleibt bei derselben Herkunft, im eigenen Cache und folgt den Verweisen der Seite (ohne eigene Dateiliste)", () => {
+  const sw = readFileSync(new URL("sw.js", dir), "utf8");
+  assert.match(sw, /if \(req\.method !== "GET" \|\| url\.origin !== self\.location\.origin\) return;/, "Fremdes (Zählung) geht unberührt ans Netz");
+  assert.match(sw, /if \(u\.origin === self\.location\.origin\) out\.push\(u\.href\);/, "beim Einrichten nur Verweise derselben Herkunft");
+  assert.match(sw, /const CACHE = "fictory-\d+";/);
+  assert.match(sw, /k\.startsWith\("fictory-"\) && k !== CACHE/, "räumt nur eigene, alte Caches auf");
+  assert.ok(!/\?v=\d/.test(sw), "keine festen Versionsmarken: der Service Worker liest sie aus der Seite");
+  for (const d of ["beispiel.jpg", "manifest.webmanifest", "icons/icon-512.png"]) assert.ok(sw.includes(`"${d}"`), d);
 });
 
 test("ZIP: Prüfsumme und Aufbau", () => {

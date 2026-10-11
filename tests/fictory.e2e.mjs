@@ -220,6 +220,37 @@ await check("Gegenprobe: ohne wirksame Spuren ein anderer Bruch (vor dem Zusamme
   await ctx.close();
 });
 
+await check("App (11. Oktober 2026): Knopf «Als App installieren» mit Anleitung; nach dem ersten Besuch läuft The Fictory ohne Netz – Beispielbild, Erzeugen, Animation", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  const box = page.locator("#installieren");
+  assert.ok(await box.isVisible(), "Knopf sichtbar (nicht in der installierten App)");
+  await page.click("#installieren-knopf");
+  assert.match(await page.locator("#installieren-hilfe").innerText(), /ohne Netz|Home-Bildschirm|installieren/);
+  assert.equal(await page.locator("#installieren-knopf").getAttribute("aria-expanded"), "true");
+  // der Service Worker richtet sich ein und übernimmt die Seite
+  const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
+  assert.match(scope, /\/alpha\/the-fictory\/$/);
+  // Chrome selbst: installierbar, Manifest ohne Fehler
+  const cdp = await ctx.newCDPSession(page);
+  assert.deepEqual((await cdp.send("Page.getInstallabilityErrors")).installabilityErrors, [], "Chrome meldet keine Hindernisse für die Installation");
+  assert.deepEqual((await cdp.send("Page.getAppManifest")).errors, []);
+  await page.reload(); await page.waitForFunction(() => window.fictoryTest?.bereit && navigator.serviceWorker.controller);
+  const gespeichert = await page.evaluate(async () => (await (await caches.open("fictory-1")).keys()).map((r) => new URL(r.url).pathname + new URL(r.url).search));
+  for (const d of ["/alpha/the-fictory/", "/alpha/the-fictory/app.js?v=14", "/alpha/the-fictory/operationen.js?v=14", "/alpha/the-fictory/beispiel.jpg", "/portfolio/nebeneinander-nacheinander/js/data/constellations.js", "/vendor/fonts/newsreader-normal-latin.woff2"])
+    assert.ok(gespeichert.includes(d), `gespeichert: ${d}`);
+  assert.ok(gespeichert.some((d) => /^\/styles\.css\?v=\d+$/.test(d)), "das Stylesheet der Website mit Versionsmarke");
+  // ohne Netz: die Seite kommt aus dem Speicher und tut ihre Arbeit
+  await ctx.setOffline(true);
+  await page.reload(); await page.waitForFunction(() => window.fictoryTest?.bereit);
+  await mitBeispiel(page);
+  assert.ok(await page.locator("#buehne-box").isVisible(), "Animation ohne Netz erzeugt");
+  assert.equal(await page.locator("#standbilder li").count(), 6, "sechs Standbilder ohne Netz");
+  await ctx.setOffline(false);
+  assert.deepEqual(fehler.filter((f) => !/goatcounter|ERR_INTERNET_DISCONNECTED|Failed to load resource/.test(f)), []);
+  assert.deepEqual(fremd.filter((u) => !u.includes("goatcounter")), []);
+  await ctx.close();
+});
+
 await check("Handy: kein seitliches Scrollen, Bedienung erreichbar", async () => {
   const { ctx, page } = await oeffne({ viewport: { width: 375, height: 760 }, isMobile: true, hasTouch: true });
   await mitBeispiel(page);
