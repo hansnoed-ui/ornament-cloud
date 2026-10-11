@@ -287,7 +287,8 @@ test("Strömung und Tinte: die bewegten Teile treiben den Grund an und färben i
   const { M, zustaende } = lauf();
   const summe = (a) => a.reduce((s, v) => s + Math.abs(v), 0);
   assert.equal(summe(zustaende[0].tinte), 0, "im Eingangsbild steht alles still");
-  assert.ok(summe(zustaende[1].tinte) > 1 && summe(zustaende[1].stromU) + summe(zustaende[1].stromV) > 0.1, "Schritt 1 treibt an");
+  assert.equal(summe(zustaende[1].tinte) + summe(zustaende[1].stromU), 0, "in Schritt 1 noch kein Strömungsgrund");
+  assert.ok(summe(zustaende[2].tinte) > 1 && summe(zustaende[2].stromU) + summe(zustaende[2].stromV) > 0.1, "ab Schritt 2 treiben die Teile an");
   // die Tinte trägt die Farben der Teile: im synthetischen Bild ist Rot dabei
   let rot = 0; const t = zustaende[2].tinte;
   for (let k = 0; k < t.length; k += 3) if (t[k] > t[k + 2] * 1.3 && t[k] > 0.05) rot++;
