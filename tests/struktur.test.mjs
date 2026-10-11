@@ -212,7 +212,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 const SEITEN = {
   apps: { titel: "Apps", karten: [["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
-  web: { titel: "Web", karten: [["The Fictory", "../alpha/the-fictory/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"], ["Mensch, Niklas!", "mensch-niklas/"]] },
+  web: { titel: "Web", karten: [["The Fictory", "../alpha/the-fictory/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"]] },
 };
 
 test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und Eintrag in der Sitemap", () => {
@@ -255,12 +255,12 @@ test("Masterprompts: die vier Prüfraster als Beiträge, in der Reihenfolge der 
   assert.ok(k.every((x) => /<svg [^>]*role="img" aria-label="[^"]{20,}"/.test(x.html)), "jede Karte trägt eine gezeichnete Vorschau mit Beschreibung");
 });
 
-test("Web: OMNA COLOR und Das Dritte Rad (Alpha), das Stellenfeld, dann zuunterst die drei Videos: das Erklärvideo zu ORNA, «Liebling …» und als letztes «Mensch, Niklas!», alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs; «Die Paradoxie der Stadt» zurzeit nur auf Alpha", () => {
+test("Web: OMNA COLOR und Das Dritte Rad (Alpha), das Stellenfeld, dann zuunterst die Videos: das Erklärvideo zu ORNA und «Liebling …» («Mensch, Niklas!» seit 11. Oktober 2026 nicht sichtbar), alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs; «Die Paradoxie der Stadt» zurzeit nur auf Alpha", () => {
   const html = lies("web/index.html");
   const alle = karten(html);
   assert.deepEqual(alle.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
   // Wunsch vom 9. Oktober 2026: die beiden Videos stehen zuunterst, «Mensch, Niklas!» als letztes
-  const [f] = alle, k = alle.slice(1, 4), [o, v, m] = alle.slice(4);
+  const [f] = alle, k = alle.slice(1, 4), [o, v] = alle.slice(4);
   // «The Fictory» (10. Oktober 2026) zuoberst, Alpha, Bild aus tools/fictory-og.mjs
   assert.ok(f.tags.includes("Alpha") && f.tags.includes("Prototyp"));
   assert.match(f.html, /<img src="\.\.\/assets\/vorschau-the-fictory\.jpg" alt="" width="640" height="800" loading="lazy">/);
@@ -280,9 +280,9 @@ test("Web: OMNA COLOR und Das Dritte Rad (Alpha), das Stellenfeld, dann zuunters
   assert.deepEqual(jpegMass(vorschauOrna), [640, 800], "Vorschaubild 640 × 800");
   assert.ok(vorschauOrna.length < 150_000, `Vorschaubild ${vorschauOrna.length} Byte, unter 150 KB`);
   // das Comic-Video (6. Oktober 2026): klickbar mit Vorschaubild, führt auf die eigene Videoseite und verlinkt die Studie als PDF
-  // «Mensch, Niklas!» (7. Oktober 2026): klickbar mit Vorschaubild, führt nur auf die eigene Videoseite
-  assert.match(m.html, /<a class="thumb" href="mensch-niklas\/" tabindex="-1" aria-hidden="true">\s*<img src="\.\.\/assets\/vorschau-mensch-niklas\.jpg" alt="" width="640" height="800" loading="lazy">/);
-  assert.deepEqual([...m.html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((x) => x[1]), ["mensch-niklas/", "mensch-niklas/"], "Bild und «Öffnen»");
+  // «Mensch, Niklas!» (Wunsch vom 11. Oktober 2026): nicht sichtbar – keine Karte und kein Link auf «Web», das Vorschaubild bleibt für später
+  assert.ok(!/href="[^"]*mensch-niklas/.test(html.replace(/<!--[\s\S]*?-->/g, "")), "keine Karte und kein Link zu «Mensch, Niklas!» auf «Web»");
+  assert.ok(!html.includes("Mensch, Niklas!\">"), "auch nicht in der Beschreibung der Seite");
   const vorschauMensch = readFileSync(new URL("assets/vorschau-mensch-niklas.jpg", root));
   assert.deepEqual(jpegMass(vorschauMensch), [640, 800], "Vorschaubild 640 × 800");
   assert.ok(vorschauMensch.length < 150_000, `Vorschaubild ${vorschauMensch.length} Byte, unter 150 KB`);
@@ -342,7 +342,9 @@ test("Videoseite web/mensch-niklas/: «Mensch, Niklas!» (3 : 4) spielt von selb
   const html = lies("web/mensch-niklas/index.html");
   assert.match(html, /<title>Mensch, Niklas! – Ornament Cloud<\/title>/);
   assert.match(html, /<link rel="canonical" href="https:\/\/ornament\.cloud\/web\/mensch-niklas\/">/);
-  assert.ok(lies("sitemap.xml").includes("<loc>https://ornament.cloud/web/mensch-niklas/</loc>"), "in der Sitemap");
+  // seit 11. Oktober 2026 nicht sichtbar: bleibt unter der Adresse, aber noindex und nicht in der Sitemap
+  assert.ok(!lies("sitemap.xml").includes("mensch-niklas"), "nicht in der Sitemap");
+  assert.match(html, /<meta name="robots" content="noindex">/);
   assert.match(html, /<figure class="erklaervideo erklaervideo--34">\s*<video controls muted playsinline preload="none" poster="\.\.\/\.\.\/assets\/mensch-niklas-3x4\.jpg" width="810" height="1080"[^>]*>\s*<source src="\.\.\/\.\.\/assets\/mensch-niklas-3x4\.mp4" type="video\/mp4">/);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/mensch-niklas-3x4.jpg", root))), [810, 1080], "Standbild 3 : 4");
   assert.ok(readFileSync(new URL("assets/mensch-niklas-3x4.mp4", root)).length < 14_000_000, "Video unter 14 MB");

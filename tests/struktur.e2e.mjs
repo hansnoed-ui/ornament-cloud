@@ -242,8 +242,8 @@ await check("Menü führt zu den Seiten: Apps, Prompts, Web und Zettel direkt in
 });
 
 // ---------- Web ----------
-await check("Videoseiten: ORNA (9 : 16, seit 9. Oktober 2026 hier statt auf der Startseite), «Mensch, Niklas!» (3 : 4) und «Liebling …» (9 : 16) spielen von selbst, sobald sie zur Hälfte im Bild sind, und halten an, wenn sie das Bild verlassen; bei «weniger Bewegung» nicht", async () => {
-  for (const [titel, adresse, format] of [["ORNA – Zufällige Begegnungen", /\/web\/orna-erklaervideo\/$/, 16 / 9], ["Mensch, Niklas!", /\/web\/mensch-niklas\/$/, 4 / 3], ["Liebling, ich habe den Poststrukturalismus strukturiert", /\/web\/poststrukturalismus\/$/, 16 / 9]]) for (const reducedMotion of ["no-preference", "reduce"]) {
+await check("Videoseiten: ORNA (9 : 16, seit 9. Oktober 2026 hier statt auf der Startseite) und «Liebling …» (9 : 16) spielen von selbst, sobald sie zur Hälfte im Bild sind, und halten an, wenn sie das Bild verlassen; bei «weniger Bewegung» nicht", async () => {
+  for (const [titel, adresse, format] of [["ORNA – Zufällige Begegnungen", /\/web\/orna-erklaervideo\/$/, 16 / 9], ["Liebling, ich habe den Poststrukturalismus strukturiert", /\/web\/poststrukturalismus\/$/, 16 / 9]]) for (const reducedMotion of ["no-preference", "reduce"]) {
     const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 }, reducedMotion });
     await ctx.addInitScript(() => {
       window.__video = { play: 0, pause: 0 };
@@ -279,7 +279,7 @@ await check("Videoseiten: ORNA (9 : 16, seit 9. Oktober 2026 hier statt auf der 
   }
 });
 
-await check("Videoseite «Mensch, Niklas!»: die englische Fassung darunter spielt von selbst, sobald sie zur Hälfte im Bild ist, die deutsche hält dann an (7. Oktober 2026)", async () => {
+await check("Videoseite «Mensch, Niklas!» (seit 11. Oktober 2026 nur über die Adresse): das 3 : 4-Video spielt von selbst; die englische Fassung darunter spielt von selbst, sobald sie zur Hälfte im Bild ist, die deutsche hält dann an (7. Oktober 2026)", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 } });
   // gezählt wird der Aufruf von play() je Sprache (der Testbrowser spielt H.264 nicht unbedingt ab)
   await ctx.addInitScript(() => {
@@ -293,6 +293,8 @@ await check("Videoseite «Mensch, Niklas!»: die englische Fassung darunter spie
   const [de, en] = [page.locator(".erklaervideo video").first(), page.locator('.erklaervideo[lang="en"] video')];
   assert.equal(await page.locator(".erklaervideo video").count(), 3, "deutsch, englisch, spanisch");
   assert.equal(await en.evaluate((e) => e.muted), true, "stumm");
+  const b = await box(de);
+  assert.ok(Math.abs(b.h / b.w - 4 / 3) < 0.02, `Format ${b.w} × ${b.h}`);
   await en.evaluate((e) => e.scrollIntoView({ block: "center", behavior: "instant" }));
   await page.waitForFunction(() => window.__gespielt.includes("en"), null, { timeout: 5000 });
   assert.equal(await de.evaluate((e) => e.paused), true, "die deutsche Fassung ist ausserhalb des Bildes angehalten");
@@ -300,20 +302,19 @@ await check("Videoseite «Mensch, Niklas!»: die englische Fassung darunter spie
   await ctx.close();
 });
 
-await check("Web: sieben Karten mit Bild (640 × 800), zuoberst The Fictory, zuunterst die drei Videos mit «Mensch, Niklas!» als letztem, drei in einer Reihe; die Karten führen zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld; die Stadt steht zurzeit nur auf Alpha (seit 10. Oktober 2026)", async () => {
+await check("Web: sechs Karten mit Bild (640 × 800), zuoberst The Fictory, zuunterst die Videos («Mensch, Niklas!» seit 11. Oktober 2026 nicht sichtbar), drei in einer Reihe; die Karten führen zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld; die Stadt steht zurzeit nur auf Alpha (seit 10. Oktober 2026)", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
   const errors = fehler(page);
   await page.goto(origin + "/web/");
   await page.locator("main img").last().scrollIntoViewIfNeeded();
   await page.waitForFunction(() => [...document.querySelectorAll("main img")].every((i) => i.complete && i.naturalWidth > 0));
-  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), Array(7).fill([640, 800]));
+  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), Array(6).fill([640, 800]));
   const ys = await page.locator("main .card").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().y)));
-  assert.deepEqual(ys.length, 7);
+  assert.deepEqual(ys.length, 6);
   assert.ok(ys[0] === ys[1] && ys[1] === ys[2], "drei in einer Reihe");
   assert.ok(ys[3] > ys[2] && ys[3] === ys[4] && ys[4] === ys[5], "drei in der zweiten Reihe");
-  assert.ok(ys[6] > ys[5], "die siebte in der dritten Reihe");
-  assert.deepEqual(await page.locator("main .card h2").allTextContents(), ["The Fictory", "OMNA COLOR", "Das Dritte Rad", "Stellenfeld", "ORNA – Zufällige Begegnungen", "Liebling, ich habe den Poststrukturalismus strukturiert", "Mensch, Niklas!"], "Reihenfolge: zuunterst die Videos, «Mensch, Niklas!» als letztes");
+  assert.deepEqual(await page.locator("main .card h2").allTextContents(), ["The Fictory", "OMNA COLOR", "Das Dritte Rad", "Stellenfeld", "ORNA – Zufällige Begegnungen", "Liebling, ich habe den Poststrukturalismus strukturiert"], "Reihenfolge: zuunterst die Videos");
   const t = await box(page.locator("main .thumb").first());
   assert.ok(Math.abs(t.h / t.w - 5 / 4) < 0.01, "Bild im Format 4 : 5");
   // die Karte nach ihrer Überschrift wählen (der Text des Dritten Rads nennt auch OMNA COLOR)
