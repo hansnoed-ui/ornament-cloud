@@ -62,6 +62,12 @@ test("Teilen: die Bilder gibt es, genau 1200 × 630, klein genug für WhatsApp (
   }
 });
 
+test("Teilen: The Fictory – die frühere Adresse der Vorschaukarte trägt dasselbe Bild (Facebook merkt sich die alte Bildadresse; Rückmeldung vom 11. Oktober 2026)", () => {
+  const jetzt = readFileSync(new URL("alpha/the-fictory/og-the-fictory-raster.jpg", root)), frueher = readFileSync(new URL("alpha/the-fictory/og-the-fictory.jpg", root));
+  assert.ok(jetzt.equals(frueher), "og-the-fictory.jpg ist eine Kopie von og-the-fictory-raster.jpg (tools/fictory-og.mjs schreibt beide)");
+  assert.ok(lies("tools/fictory-og.mjs").includes('"../alpha/the-fictory/og-the-fictory.jpg"'));
+});
+
 test("Teilen: die Startseite steht in der Sitemap, Das Dritte Rad nicht und bleibt für Suchmaschinen gesperrt (die Vorschau holen die Dienste trotzdem)", () => {
   const sitemap = lies("sitemap.xml");
   assert.ok(sitemap.includes("<loc>https://ornament.cloud/</loc>"));
