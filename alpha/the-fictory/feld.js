@@ -8,6 +8,9 @@ varying vec2 uv;
 void main() { uv = vec2(p.x * 0.5 + 0.5, 0.5 - p.y * 0.5); gl_Position = vec4(p, 0.0, 1.0); }`;
 
 const FARBE = `
+#ifdef GL_OES_standard_derivatives
+#extension GL_OES_standard_derivatives : enable
+#endif
 precision highp float;
 uniform sampler2D feld;      // wucherndes Feld (Gray-Scott, Kanal B)
 uniform sampler2D tinte;     // Tinte der Strömung (RGB, Farben der Teile)
@@ -27,6 +30,16 @@ float wert(vec2 q) {
 }
 vec2 stromAn(vec2 q) { return (texture2D(strom, q).ra - 0.5) * 2.0 * VMAX * texel; }
 float hell(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
+uniform float strich;        // Strichbreite der Linien in Bildpunkten der Zeichenfläche
+// feine Linie, wo f eine ganze Zahl erreicht: mit Ableitungen gleich breit (etwa «strich» Bildpunkte), sonst eine schmale feste Breite
+float linie(float f) {
+  float d = min(fract(f), 1.0 - fract(f));
+#ifdef GL_OES_standard_derivatives
+  return 1.0 - smoothstep(0.0, max(fwidth(f), 1e-4) * strich, d);
+#else
+  return 1.0 - smoothstep(0.0, 0.05, d);
+#endif
+}
 void main() {
   vec2 v = stromAn(uv);
   // Schlieren: die Tinte entlang der Strömung zurück abgetastet (Bewegungsunschärfe, wie Feedback mit Verschiebung)
@@ -47,13 +60,14 @@ void main() {
   // helle Kanten, wo die Tinte endet
   float dx = hell(texture2D(tinte, uv + vec2(texel.x, 0.0)).rgb) - hell(texture2D(tinte, uv - vec2(texel.x, 0.0)).rgb);
   float dy = hell(texture2D(tinte, uv + vec2(0.0, texel.y)).rgb) - hell(texture2D(tinte, uv - vec2(0.0, texel.y)).rgb);
-  float kante = smoothstep(0.02, 0.12, length(vec2(dx, dy)));
+  float kante = smoothstep(0.06, 0.2, length(vec2(dx, dy)));
   // Höhenlinien der Tintendichte: feine Bänder, die mit der Strömung wandern (statt Nebel)
-  float baender = smoothstep(0.82, 1.0, 1.0 - abs(fract(dichte * 9.0) - 0.5) * 2.0) * smoothstep(0.03, 0.12, dichte);
-  vec3 c = (t * 0.16 + mix(t, vec3(1.0), 0.15) * baender * 0.55 + mix(t, vec3(1.0), 0.5) * kante * 0.24);
+  // Höhenlinien der Tintendichte: dicht gestaffelt und haarfein (statt breiter Bänder)
+  float baender = linie(dichte * 14.0) * smoothstep(0.03, 0.12, dichte);
+  vec3 c = (t * 0.14 + mix(t, vec3(1.0), 0.25) * baender * 0.6 + mix(t, vec3(1.0), 0.5) * kante * 0.1);
   // das wuchernde Feld nur noch als feine Kontur
   float w = wert(uv);
-  float rand = 1.0 - smoothstep(0.0, 0.025, abs(w - 0.2));
+  float rand = linie(w * 5.0) * smoothstep(0.1, 0.18, w) * (1.0 - smoothstep(0.22, 0.3, w));
   c += mix(leit, vec3(1.0), 0.35) * rand * 0.16;
   gl_FragColor = vec4(c * alpha, 1.0);
 }`;
@@ -68,6 +82,7 @@ function bereit() {
     glCanvas = document.createElement("canvas");
     gl = glCanvas.getContext("webgl", { preserveDrawingBuffer: true, premultipliedAlpha: false, antialias: false });
     if (!gl) return false;
+    gl.getExtension("OES_standard_derivatives");          // für gleich breite, feine Linien (fwidth); ohne sie eine feste schmale Breite
     const sh = (typ, text) => { const s = gl.createShader(typ); gl.shaderSource(s, text); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
     programm = gl.createProgram();
     gl.attachShader(programm, sh(gl.VERTEX_SHADER, ECKEN));
@@ -115,8 +130,8 @@ export function zeichneFeld(ctx, W, H, z, M, leit, staerke, vorschau = false) {
   ctx.globalCompositeOperation = "screen";
   ctx.globalAlpha = 1;
   if (bereit()) {
-    // das Feld ist weich: der Shader rechnet in halber Auflösung, das Ergebnis wird hochskaliert
-    const w = Math.max(2, Math.round(W / 2)), h = Math.max(2, Math.round(H / 2));
+    // volle Auflösung (höchstens 2400 Bildpunkte lang), damit die feinen Linien scharf bleiben
+    const f = Math.min(1, 2400 / Math.max(W, H)), w = Math.max(2, Math.round(W * f)), h = Math.max(2, Math.round(H * f));
     if (glCanvas.width !== w || glCanvas.height !== h) { glCanvas.width = w; glCanvas.height = h; }
     gl.viewport(0, 0, w, h);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -128,6 +143,7 @@ export function zeichneFeld(ctx, W, H, z, M, leit, staerke, vorschau = false) {
     gl.uniform2f(gl.getUniformLocation(programm, "texel"), 1 / fw, 1 / fh);
     gl.uniform3f(gl.getUniformLocation(programm, "leit"), leit[0] / 255, leit[1] / 255, leit[2] / 255);
     gl.uniform1f(gl.getUniformLocation(programm, "alpha"), staerke);
+    gl.uniform1f(gl.getUniformLocation(programm, "strich"), Math.max(1, Math.min(w, h) / 900));     // gleich fein im Verhältnis zur Bildgrösse
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = vorschau ? "low" : "high";
     ctx.drawImage(glCanvas, 0, 0, W, H);
