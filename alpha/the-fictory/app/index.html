@@ -46,7 +46,14 @@
     .installieren[hidden], .installieren [hidden] { display: none; }
     .installieren-hilfe { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; color: var(--muted); max-width: 36em; }
     .installieren-hilfe span { color: var(--text); white-space: nowrap; }
-    @media (max-width: 640px) { .app-buehne { grid-template-columns: minmax(0, 1fr); gap: 24px; } .app-symbol { max-width: 200px; } }
+    /* auf dem Handy: Symbol, Knopf und Link eingemittet, mit Luft unter dem Knopf (Wunsch vom 11. Oktober 2026) */
+    @media (max-width: 640px) {
+      .app-buehne { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+      .app-symbol { max-width: 200px; margin: 0 auto; }
+      .app-knoepfe { flex-direction: column; gap: 26px; margin-top: 30px; }
+      .app-buehne { margin-bottom: 64px; }
+      .installieren { text-align: center; margin-bottom: 6px; }
+    }
   </style>
 </head>
 <body>
