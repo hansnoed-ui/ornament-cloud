@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Principesse – Ornament Cloud · Alpha</title>
+  <!-- Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). Nur aus der Alpha-Übersicht verlinkt (seit 12. Oktober 2026). -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Principesse: Ein Bild malt sich mit schwungvollen Pinselstrichen nach, der Glitzer funkelt; dazu ein Foto und ein Satz, am Schluss das Signet. Video zum Herunterladen, alles im Browser.">
+  <link rel="stylesheet" href="../../styles.css?v=45">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <style>
+    /* Satz im Video: Grotesk nah an Helvetica Now Display (Inter Display Medium, OFL, siehe vendor/fonts/LICENSE-Inter.txt) */
+    @font-face { font-family: "Inter Display"; font-style: normal; font-weight: 500; font-display: swap; src: url(../../vendor/fonts/inter-display-500-latin.woff2) format("woff2"); }
+    @font-face { font-family: "Inter Display"; font-style: normal; font-weight: 600; font-display: swap; src: url(../../vendor/fonts/inter-display-600-latin.woff2) format("woff2"); }
+    .site-header { padding-bottom: 12px; }
+    .karte { display: grid; gap: 28px; padding-bottom: 48px; }
+    @media (min-width: 900px) { .karte { grid-template-columns: minmax(300px, 420px) 1fr; align-items: start; } .buehne { position: sticky; top: 16px; } }
+
+    .buehne { display: grid; gap: 10px; }
+    .rahmen { position: relative; aspect-ratio: 3 / 4; border-radius: var(--radius); overflow: hidden; background: #f7f3ec; box-shadow: 0 1px 0 var(--border), 0 18px 40px -24px rgba(0, 0, 0, 0.6); }
+    .rahmen canvas { display: block; width: 100%; height: 100%; }
+    .leer { position: absolute; inset: 0; display: grid; place-content: center; gap: 8px; padding: 24px; text-align: center; color: #9b968d; pointer-events: none; }
+    .leer p { margin: 0; }
+    .leer .gross { font-family: "Newsreader", var(--serif); font-size: 1.5rem; color: #ece8e1; }
+    .rahmen .leer { color: #6b665e; }
+    .rahmen .leer .gross { color: #24202e; }
+    /* Grund dunkel: Nachtblau */
+    .rahmen.dunkel { background: #0e1430; }
+    .rahmen.dunkel .leer { color: #a9b0cc; }
+    .rahmen.dunkel .leer .gross { color: #f4efe6; }
+    .unter { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
+    .info { margin: 0; color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+
+    .schritte { display: grid; gap: 26px; margin: 0; padding: 0; list-style: none; counter-reset: schritt; }
+    .schritte > li { display: grid; gap: 10px; counter-increment: schritt; }
+    .schritte h2 { display: flex; gap: 12px; align-items: baseline; margin: 0; font-family: "Newsreader", var(--serif); font-weight: 400; font-size: 1.45rem; }
+    .schritte h2::before { content: counter(schritt); display: inline-grid; place-content: center; flex: none; width: 1.7rem; height: 1.7rem; border: 1px solid var(--text); border-radius: 50%;
+      font-family: "Instrument Sans", var(--font); font-size: 0.85rem; font-weight: 500; transform: translateY(-0.15em); }
+    .schritte p { margin: 0; color: var(--muted); }
+
+    .ablage { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; padding: 18px; border: 1.5px dashed var(--border); border-radius: var(--radius); background: var(--surface); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+    .ablage:hover, .ablage.drueber { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+    .ablage:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ablage input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    /* das grosse Plus; mit Bild wird es zum Vorschaubild mit kleinem Plus in der Ecke */
+    .plus { position: relative; display: grid; place-content: center; width: 84px; height: 84px; border-radius: 50%; background: var(--text); color: var(--bg); flex: none; }
+    .plus svg { width: 40px; height: 40px; }
+    .plus img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+    .hat-bild .plus { width: 66px; height: 88px; border-radius: 12px; background: #000; }
+    .hat-bild .plus svg { position: absolute; right: -10px; bottom: -10px; width: 30px; height: 30px; padding: 6px; border-radius: 50%; background: var(--text); color: var(--bg); box-shadow: 0 0 0 3px var(--surface); }
+    .ablage b { display: block; font-size: 1.15rem; font-weight: 600; }
+    .ablage-text > span { display: block; margin-top: 2px; color: var(--muted); font-size: 0.92rem; }
+
+    .satz { width: 100%; min-height: 3.2em; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text); font: inherit; font-size: 1.05rem; resize: vertical; }
+    .satz:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    .leiste { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .knopf { min-height: 44px; padding: 8px 18px; border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.95rem;
+      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .knopf:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .knopf:disabled { opacity: 0.45; cursor: default; }
+    .knopf.haupt { background: var(--text); color: var(--bg); font-weight: 600; }
+    .knopf.haupt:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 85%, var(--bg)); }
+    .knopf.klein { min-height: 36px; padding: 4px 14px; font-size: 0.88rem; }
+    .knopf:focus-visible, select:focus-visible, input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* Farbe und Strichstärke: zwei klar getrennte Einstellungen, jede mit Titel, die Wahl als durchgehende Schaltleiste */
+    .tafel { display: grid; margin-top: 4px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .einstellung { display: grid; gap: 12px; padding: 16px; }
+    .einstellung + .einstellung { border-top: 1px solid var(--border); }
+    .kopf { display: flex; justify-content: space-between; align-items: baseline; }
+    .name { font-weight: 600; }
+    .kopf output { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 1.1rem; }
+    .segment { display: grid; grid-auto-columns: 1fr; grid-auto-flow: column; padding: 3px; border: 1px solid var(--border); border-radius: 999px; }
+    .segment button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; min-height: 42px; padding: 4px 6px; border: 0; border-radius: 999px;
+      background: none; color: var(--text); font: inherit; font-size: 0.88rem; line-height: 1.15; white-space: nowrap; cursor: pointer; }
+    .segment button[aria-pressed="true"] { background: var(--text); color: var(--bg); font-weight: 600; }
+    .segment button:focus-visible, .knopf.rund:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .regler { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+    .regler input { width: 100%; min-width: 0; accent-color: var(--accent); }
+    .knopf.rund { width: 40px; min-height: 40px; padding: 0; justify-content: center; font-size: 1.25rem; line-height: 1; }
+    .muster { width: 16px; height: 16px; border-radius: 50%; flex: none; box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 35%, transparent); }
+    [data-farbe="dunkel"] .muster { background: radial-gradient(circle, #d9ad45 0 32%, #0e1430 36%); }
+    [data-farbe="hell"] .muster { background: radial-gradient(circle, #c99a2e 0 32%, #f7f3ec 36%); }
+    .beispiele { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .beispiele span { color: var(--muted); font-size: 0.9rem; }
+    .beispiele button { padding: 0; border: 2px solid transparent; border-radius: 10px; background: none; cursor: pointer; line-height: 0; }
+    .beispiele button:hover, .beispiele button:focus-visible { border-color: var(--accent); outline: none; }
+    .beispiele img { width: 48px; height: 64px; object-fit: cover; border-radius: 8px; }
+    .zweit { display: grid; gap: 10px; }
+    .einstellung .info { font-size: 0.85rem; }
+    /* schmale Handys: ohne Farbmuster, notfalls etwas kleiner, damit jede Beschriftung auf einer Zeile bleibt */
+    @media (max-width: 440px) { .muster { display: none; } }
+    @media (max-width: 370px) { .segment button { font-size: 0.8rem; padding: 4px 3px; } .einstellung { padding: 14px 12px; } }
+    details.feinheiten { border-top: 1px solid var(--border); padding-top: 10px; }
+    details.feinheiten summary { cursor: pointer; font-weight: 600; }
+    .einstellungen { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 20px; margin: 14px 0 0; }
+    .einstellungen label { display: grid; gap: 6px; }
+    .einstellungen label > span { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .einstellungen select { min-height: 40px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; }
+    .einstellungen input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .einstellungen output { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.85rem; }
+
+    .haken { display: flex !important; align-items: center; gap: 8px !important; min-height: 40px; align-self: end; }
+    .haken input { width: 18px; height: 18px; accent-color: var(--accent); }
+    progress { width: 100%; height: 6px; accent-color: var(--accent); }
+    .meldung { margin: 0; min-height: 1.5em; }
+    .meldung.fehler { color: var(--accent); }
+    .ergebnis { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .ergebnis h2::before { display: none; }
+    .ergebnis video { display: block; width: min(100%, 360px); aspect-ratio: 3 / 4; border-radius: 8px; background: #000; }
+    .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
+    .hinweise li { margin: 0.2rem 0; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="seitenweg" aria-label="Ornament Cloud">
+        <a href="../../" aria-current="true">Ornament Cloud</a>
+        <a href="../drittes-rad/">Das Dritte Rad</a>
+      </nav>
+      <h1>Principesse</h1>
+      <p class="lead">Ein Bild malt sich mit Pinselstrichen, der Glitzer funkelt, dann ein Foto und ein Satz, am Schluss das Signet.</p>
+    </div>
+  </header>
+
+  <main class="wrap karte" id="karte">
+    <section class="buehne" aria-label="Vorschau">
+      <div class="rahmen">
+        <canvas id="vorschau" width="1080" height="1440" aria-label="Vorschau des Videos: das Bild malt sich mit Pinselstrichen"></canvas>
+        <div class="leer" id="leer">
+          <p class="gross">Noch kein Bild</p>
+          <p>Lade ein Foto eines Bilds, am besten gerade von vorn.</p>
+        </div>
+      </div>
+      <div class="unter">
+        <button class="knopf klein" type="button" id="spielen" disabled>Abspielen</button>
+        <p class="info" id="dauer">Hochformat 3 : 4 · 1080 × 1440</p>
+      </div>
+      <p class="info" id="auswertung"></p>
+    </section>
+
+    <div>
+      <ol class="schritte">
+        <li>
+          <h2>Bild</h2>
+          <label class="ablage" id="ablage">
+            <span class="plus" aria-hidden="true">
+              <img id="quelle" alt="" hidden>
+              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
+            <span class="ablage-text"><b id="ablage-titel">Bild wählen</b><span>Foto des Bilds, oder hierher ziehen. Es wird mit Pinselstrichen nachgemalt; Glitzer funkelt.</span></span>
+            <input type="file" id="datei" accept="image/*" aria-label="Bild wählen">
+          </label>
+          <div class="beispiele"><span>Beispiele:</span>
+            <button type="button" data-beispiel="meerjungfrau" aria-label="Beispiel Meerjungfrau"><img src="beispiel-meerjungfrau.jpg" alt=""></button>
+            <button type="button" data-beispiel="fische" aria-label="Beispiel Fische"><img src="beispiel-fische.jpg" alt=""></button>
+            <button type="button" data-beispiel="hund" aria-label="Beispiel Hund mit Krone"><img src="beispiel-hund.jpg" alt=""></button>
+          </div>
+          <section class="tafel" aria-label="Pinsel, Glitzer und Grund">
+            <div class="einstellung">
+              <span class="name" id="pinsel-titel">Pinsel</span>
+              <div class="segment" role="group" aria-labelledby="pinsel-titel">
+                <button type="button" data-pinsel="0.7">fein</button>
+                <button type="button" data-pinsel="1">mittel</button>
+                <button type="button" data-pinsel="1.35">breit</button>
+              </div>
+            </div>
+            <div class="einstellung">
+              <span class="name" id="glitzer-titel">Glitzer</span>
+              <div class="segment" role="group" aria-labelledby="glitzer-titel">
+                <button type="button" data-glitzer="0">aus</button>
+                <button type="button" data-glitzer="1">funkelnd</button>
+                <button type="button" data-glitzer="1.7">strahlend</button>
+              </div>
+            </div>
+            <div class="einstellung">
+              <span class="name" id="farbe-titel">Grund</span>
+              <div class="segment" role="group" aria-labelledby="farbe-titel">
+                <button type="button" data-farbe="hell"><span class="muster" aria-hidden="true"></span>Hell</button>
+                <button type="button" data-farbe="dunkel"><span class="muster" aria-hidden="true"></span>Nachtblau</button>
+              </div>
+            </div>
+          </section>
+        </li>
+        <li>
+          <h2>Foto und Satz</h2>
+          <p>Beides freiwillig: Ein Foto blendet nach dem Bild ein, der Satz erscheint darauf Buchstabe um Buchstabe.</p>
+          <div class="zweit">
+            <label class="ablage" id="ablage-foto">
+              <span class="plus" aria-hidden="true">
+                <img id="foto-bild" alt="" hidden>
+                <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </span>
+              <span class="ablage-text"><b id="foto-titel">Foto wählen (freiwillig)</b><span>oder hierher ziehen</span></span>
+              <input type="file" id="foto" accept="image/*" aria-label="Foto wählen">
+            </label>
+            <div class="leiste"><button class="knopf klein" type="button" id="foto-weg" hidden>Ohne Foto</button></div>
+            <label class="name" for="satz">Satz</label>
+            <textarea class="satz" id="satz" rows="2" maxlength="160" placeholder="Ein Satz auf dem Foto (darf leer bleiben)"></textarea>
+          </div>
+          <details class="feinheiten">
+            <summary>Feinheiten</summary>
+            <div class="einstellungen">
+              <label><span>Malen</span>
+                <select id="malen">
+                  <option value="5">5 Sekunden</option>
+                  <option value="6" selected>6 Sekunden</option>
+                  <option value="8">8 Sekunden</option>
+                </select></label>
+              <label><span>Schrift</span>
+                <select id="schrift">
+                  <option value="grotesk" selected>Grotesk (Inter Display)</option>
+                  <option value="sans">Instrument Sans</option>
+                  <option value="serif">Newsreader</option>
+                </select></label>
+            </div>
+          </details>
+        </li>
+        <li>
+          <h2>Video</h2>
+          <p>Das Bild malt sich, steht, der Glitzer funkelt, es blendet aus; dann Foto und Satz; am Schluss zeichnet sich eine kleine Prinzessin, «Principesse».</p>
+          <div class="leiste">
+            <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
+            <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
+          </div>
+          <progress id="fortschritt" max="1" value="0" hidden></progress>
+          <p class="meldung" id="meldung" role="status" aria-live="polite"></p>
+          <section class="ergebnis" id="ergebnis" hidden aria-labelledby="ergebnis-titel">
+            <h2 id="ergebnis-titel">Dein Video</h2>
+            <video id="film" controls playsinline muted></video>
+            <p class="info" id="film-info"></p>
+            <div class="leiste"><a class="knopf haupt" id="laden" href="#" download>Herunterladen</a></div>
+          </section>
+        </li>
+      </ol>
+    </div>
+  </main>
+
+  <div class="wrap">
+    <ul class="hinweise">
+      <li>Alles bleibt in deinem Browser: Bild und Foto werden nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
+      <li>Am besten ein gerades Foto des ganzen Bilds bei gleichmässigem Licht. Das Bild wird im Hochformat 3 : 4 gezeigt, Ränder werden bei Bedarf beschnitten.</li>
+      <li>Glitzer erkennt die Anwendung an den vielen winzigen Lichtpunkten; findet sie zu viel oder zu wenig, hilft «Glitzer: aus» oder «strahlend».</li>
+      <li>Video: MP4 (H.264), 1080 × 1440, 30 Bilder pro Sekunde, ohne Ton.</li>
+    </ul>
+  </div>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+    </div>
+  </footer>
+  <script type="module" src="app.js?v=1"></script>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+</body>
+</html>

@@ -451,7 +451,7 @@ test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (
   assert.deepEqual(rahmen.map(([f, z]) => `${f} → ${z.replace(/^.*\/alpha\//, "alpha/")}`), ["index.html → alpha/omna-color/"], "nur die Startseite bettet OMNA COLOR ein");
   for (const [f, zs] of Object.entries(ziele)) for (const z of zs) assert.ok(gefunden.has(`${f} → ${z}`), `${f} verlinkt ${z} nicht`);
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("/alpha/"));
-  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html", "alpha/omna-color/index.html", "alpha/drittes-rad/index.html", "alpha/stadt/index.html", "alpha/the-fictory/index.html", "alpha/aufnahme/index.html", "alpha/sketchory/index.html"])
+  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html", "alpha/omna-color/index.html", "alpha/drittes-rad/index.html", "alpha/stadt/index.html", "alpha/the-fictory/index.html", "alpha/aufnahme/index.html", "alpha/sketchory/index.html", "alpha/principesse/index.html"])
     assert.match(readFileSync(new URL(p, root), "utf8"), /<meta name="robots" content="noindex/, p);
 });
 
@@ -567,7 +567,7 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
   const eintraege = [...uebersicht.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map(m => m[1]);
   // Die Prüfraster in Arbeit stehen zusammen ganz unten, danach nur die Prototypen: OMNA COLOR, Das Dritte Rad (2. Oktober 2026), «Die Paradoxie der Stadt» (9. Oktober 2026)
   // und die Aufnahme (11. Oktober 2026); «Sketchory» steht seit dem 12. Oktober 2026 zuoberst, davor seit dem 10. Oktober «The Fictory» (Wünsche von Christian)
-  assert.deepEqual(eintraege.slice(-6), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/", "drittes-rad/", "stadt/", "aufnahme/"], "zuunterst, danach OMNA COLOR, Das Dritte Rad, die Stadt und die Aufnahme");
+  assert.deepEqual(eintraege.slice(-7), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/", "drittes-rad/", "stadt/", "aufnahme/", "principesse/"], "zuunterst, danach OMNA COLOR, Das Dritte Rad, die Stadt, die Aufnahme und Principesse (12. Oktober 2026)");
   // Sketchory seit dem 12. Oktober 2026 zuoberst (Wunsch von Christian), danach The Fictory
   assert.deepEqual(eintraege.slice(0, 2), ["sketchory/", "the-fictory/"], "Sketchory zuoberst, dann The Fictory");
   const omna = readFileSync(new URL("alpha/omna-color/index.html", root), "utf8");
