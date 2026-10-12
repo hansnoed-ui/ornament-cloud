@@ -1,9 +1,9 @@
 // «Principesse» – Ablauf des Films (ohne DOM). Format wählbar (wie das Bild, 3 : 4, 1 : 1; kurze Seite 1080, lange höchstens 1920), 30 Bilder pro Sekunde.
-//   leere Leinwand → das Bild malt sich mit Pinselstrichen (vier Durchgänge von breit bis fein, jeder von oben nach unten, 5–8 s) → steht, der Glitzer funkelt (3 s) → blendet aus
+//   leere Leinwand → das Bild malt sich mit Pinselstrichen (drei Durchgänge von breit bis fein, jeder von oben nach unten, 5–8 s) → geht ins scharfe Bild über und steht, der Glitzer funkelt (5 s) → blendet aus
 //   → (wenn gewählt) ein Foto blendet ein, darauf erscheint der Satz Buchstabe um Buchstabe → blendet aus
 //   → das Signet: eine kleine Prinzessin zeichnet sich, «Principesse» → steht → blendet aus.
 import { textEin, zeichenZahl, woerter, klemm } from "../sketchory/ablauf.js?v=8";
-import { DAUER as SIGNET } from "./signet.js?v=5";
+import { DAUER as SIGNET } from "./signet.js?v=6";
 
 export { FPS, anteil, weich, ausblenden, bezier, versatz, ZEICHEN, satzbild, satzPunkt } from "../sketchory/ablauf.js?v=8";
 
@@ -23,7 +23,7 @@ export function zeitachse({ malen = 6, foto = false, text = "" } = {}) {
   const dazu = (name, d) => { teile.push([name, t, t + d]); t += d; };
   dazu("vor", 0.4);
   dazu("malen", malen);
-  dazu("stehen", 3);
+  dazu("stehen", 5);
   dazu("bildAus", 1.5);
   if (foto || z) {
     dazu("pause", 0.3);

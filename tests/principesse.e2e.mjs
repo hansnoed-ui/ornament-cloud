@@ -61,7 +61,7 @@ await check("Beispiel: wird nachgemalt, Glitzer gefunden, Vorschau läuft", asyn
   await bereit(page);
   const text = await page.textContent("#auswertung");
   const striche = Number(text.match(/^([\d’']+) Pinselstriche/)[1].replace(/\D/g, ""));
-  assert.ok(striche > 5000, text);
+  assert.ok(striche > 1500 && striche < 8000, text);   // wenige, ruhige Striche (drei Durchgänge)
   assert.match(text, /[\d’']+ Glitzerpunkte/);
   assert.equal(await page.textContent("#spielen"), "Anhalten");
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
