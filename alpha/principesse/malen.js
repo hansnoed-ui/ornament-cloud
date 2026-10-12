@@ -118,9 +118,9 @@ export function glaetten(q, w, h, { radius = 3, farbweite = 36, durchgaenge = 2 
 /**
  * auffrischen, wie man ein Foto eines Bilds von Hand bearbeiten würde:
  * 1. Weissabgleich: helle, fast unbunte Stellen (Papier, Weiss, Glanz) werden neutral (Farbstich des Lichts weg; zu drei Fünfteln, höchstens etwa ±7 %, damit gewollt cremige Farben cremig bleiben)
- * 2. Tonwerte: dunkelste und hellste 0,5 % auf Schwarz und Weiss spreizen (höchstens 1,6-fach), dann eine sanfte S-Kurve
+ * 2. Tonwerte: dunkelste und hellste 0,5 % auf Schwarz und Weiss spreizen (höchstens 1,8-fach), dann eine deutliche S-Kurve
  * 3. Klarheit: lokaler Kontrast (Helligkeit gegen ihre weiche Umgebung, Radius ~ 1/40 der Bildbreite)
- * 4. Farbkraft: matte Farben kräftiger, schon kräftige nur wenig (Lebendigkeit)
+ * 4. Farbkraft: alle Farben etwas satter, matte deutlich (Lebendigkeit)
  * Stärke 0 lässt das Bild, wie es ist; 1 ist die übliche Stärke.
  */
 export function optimieren({ r, g, b }, w, h, staerke = 1) {
@@ -142,12 +142,12 @@ export function optimieren({ r, g, b }, w, h, staerke = 1) {
   }
   // 2. Tonwerte und S-Kurve (auf alle drei Kanäle gleich, die Farbtöne bleiben)
   const hist = histo(L), lo = stelle(hist, 0.005), hi = stelle(hist, 0.995), mitte = (lo + hi) / 2;
-  const f = 1 + (Math.min(1.6, 255 / Math.max(1, hi - lo)) - 1) * staerke;
+  const f = 1 + (Math.min(1.8, 255 / Math.max(1, hi - lo)) - 1) * staerke;
   const o = Math.max(0, Math.min(255 - (hi - lo) * f, mitte - (mitte - lo) * f));
   const kurve = new Float32Array(256);
   for (let v = 0; v < 256; v++) {
     const x = Math.max(0, Math.min(1, (o + (v - lo) * f) / 255)), s = x * x * (3 - 2 * x);
-    kurve[v] = 255 * (x + (s - x) * 0.35 * staerke);
+    kurve[v] = 255 * (x + (s - x) * 0.55 * staerke);
   }
   const ton = (v) => { const c = Math.max(0, Math.min(255, v)), j = Math.min(254, c | 0), t = c - j; return kurve[j] + (kurve[j + 1] - kurve[j]) * t; };
   for (let i = 0; i < n; i++) { R[i] = ton(R[i]); G[i] = ton(G[i]); B[i] = ton(B[i]); }
@@ -156,13 +156,13 @@ export function optimieren({ r, g, b }, w, h, staerke = 1) {
   for (let i = 0; i < n; i++) hell[i] = L(i);
   const umgebung = unschaerfe(hell, w, h, Math.max(3, Math.round(w / 40)), 2);
   for (let i = 0; i < n; i++) {
-    const d = (hell[i] - umgebung[i]) * 0.35 * staerke, m = Math.max(0, Math.min(1, Math.min(hell[i], 255 - hell[i]) / 40));
+    const d = (hell[i] - umgebung[i]) * 0.45 * staerke, m = Math.max(0, Math.min(1, Math.min(hell[i], 255 - hell[i]) / 40));
     R[i] = Math.max(0, Math.min(255, R[i] + d * m)); G[i] = Math.max(0, Math.min(255, G[i] + d * m)); B[i] = Math.max(0, Math.min(255, B[i] + d * m));
   }
   // 4. Farbkraft
   for (let i = 0; i < n; i++) {
     const l = L(i), mx = Math.max(R[i], G[i], B[i]), mn = Math.min(R[i], G[i], B[i]), satt = mx > 1 ? Math.min(1, (mx - mn) / mx) : 0;
-    const plus = 1 + 0.3 * staerke * (1 - satt) ** 1.5;
+    const plus = 1 + staerke * (0.14 + 0.3 * (1 - satt) ** 1.5);
     R[i] = Math.max(0, Math.min(255, l + (R[i] - l) * plus)); G[i] = Math.max(0, Math.min(255, l + (G[i] - l) * plus)); B[i] = Math.max(0, Math.min(255, l + (B[i] - l) * plus));
   }
   return { r: R, g: G, b: B };
