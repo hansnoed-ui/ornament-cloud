@@ -165,7 +165,7 @@ test("App (12. Oktober 2026): Manifest und Symbole aus dem Signet, eigener Servi
   assert.ok(!/principesse/i.test(lies("alpha/index.html")), "nicht in der Alpha-Übersicht");
 });
 
-test("Seite: steht für sich (noindex, keine Navigation, von keiner Seite verlinkt, nicht in der Sitemap), Versionsmarken, nichts von fremden Servern, Beispiele", () => {
+test("Seite: steht für sich (noindex, keine Navigation, von keiner Seite verlinkt, nicht in der Sitemap), Versionsmarken, nichts von fremden Servern, keine Beispiele", () => {
   const html = lies("alpha/principesse/index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.ok(!html.includes('class="seitenweg"'), "ohne die Navigation oben links");
@@ -190,5 +190,7 @@ test("Seite: steht für sich (noindex, keine Navigation, von keiner Seite verlin
   const js = ["app.js", "malen.js", "glitzer.js", "szene.js", "signet.js", "ablauf.js", "rechner.js", "pwa.js", "sw.js"].map((f) => lies(`alpha/principesse/${f}`)).join("\n");
   assert.ok(!/https?:\/\//.test(js) && !/XMLHttpRequest|sendBeacon/.test(js));
   assert.ok(!/ß/.test(html + js), "Schweizer Schreibweise");
-  for (const b of ["meerjungfrau", "fische", "hund"]) assert.ok(html.includes(`data-beispiel="${b}"`) && readFileSync(new URL(`alpha/principesse/beispiel-${b}.jpg`, root)).length < 600_000, b);
+  // keine Beispielbilder mehr, weder auf der Seite noch in der App (Wunsch vom 12. Oktober 2026)
+  assert.ok(!/data-beispiel|beispiel-[a-z]+\.jpg/.test(html + js), "keine Beispiele");
+  assert.deepEqual(readdirSync(new URL("alpha/principesse/", root)).filter((f) => /\.(jpe?g|png)$/i.test(f)), [], "keine Bilder im Ordner (Symbole liegen in icons/)");
 });

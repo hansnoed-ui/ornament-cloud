@@ -96,11 +96,6 @@
     .muster { width: 16px; height: 16px; border-radius: 50%; flex: none; box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 35%, transparent); }
     [data-farbe="dunkel"] .muster { background: radial-gradient(circle, #d9ad45 0 32%, #0e1430 36%); }
     [data-farbe="hell"] .muster { background: radial-gradient(circle, #c99a2e 0 32%, #f7f3ec 36%); }
-    .beispiele { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .beispiele span { color: var(--muted); font-size: 0.9rem; }
-    .beispiele button { padding: 0; border: 2px solid transparent; border-radius: 10px; background: none; cursor: pointer; line-height: 0; }
-    .beispiele button:hover, .beispiele button:focus-visible { border-color: var(--accent); outline: none; }
-    .beispiele img { width: 48px; height: 64px; object-fit: cover; border-radius: 8px; }
     .zweit { display: grid; gap: 10px; }
     .einstellung .info { font-size: 0.85rem; }
     /* schmale Handys: ohne Farbmuster, notfalls etwas kleiner, damit jede Beschriftung auf einer Zeile bleibt */
@@ -171,11 +166,6 @@
             <span class="ablage-text"><b id="ablage-titel">Bild wählen</b><span>Foto des Bilds, oder hierher ziehen. Es wird mit Pinselstrichen nachgemalt; Glitzer funkelt.</span></span>
             <input type="file" id="datei" accept="image/*" aria-label="Bild wählen">
           </label>
-          <div class="beispiele"><span>Beispiele:</span>
-            <button type="button" data-beispiel="meerjungfrau" aria-label="Beispiel Meerjungfrau"><img src="beispiel-meerjungfrau.jpg" alt=""></button>
-            <button type="button" data-beispiel="fische" aria-label="Beispiel Fische"><img src="beispiel-fische.jpg" alt=""></button>
-            <button type="button" data-beispiel="hund" aria-label="Beispiel Hund mit Krone"><img src="beispiel-hund.jpg" alt=""></button>
-          </div>
           <section class="tafel" aria-label="Format, Pinsel, Glitzer und Grund">
             <div class="einstellung">
               <span class="name" id="format-titel">Format</span>
@@ -283,8 +273,8 @@
       <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
     </div>
   </footer>
-  <script type="module" src="app.js?v=12"></script>
-  <script type="module" src="pwa.js?v=12"></script>
+  <script type="module" src="app.js?v=13"></script>
+  <script type="module" src="pwa.js?v=13"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

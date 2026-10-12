@@ -3,7 +3,7 @@
 // Wo solche Punkte dicht liegen (Glitzerband, Krone, Pailletten), wird jeder davon ein Funke: an seiner Stelle, in seiner Farbe
 // (zum Weiss hin aufgehellt), mit eigenem Takt. Vereinzelte helle Punkte (Leinwand, Rauschen) bleiben aussen vor.
 import { unschaerfe, graustufen } from "../sketchory/strich.js?v=8";
-import { zufall } from "./malen.js?v=12";
+import { zufall } from "./malen.js?v=13";
 
 /** rgba in Filmgrösse w × h → Funken [{ x, y, farbe, groesse, phase, takt, stern }] und Anteil der Glitzerfläche */
 const DICHTE = 0.012;   // Anteil Lichtpunkte in der Umgebung, ab dem es Glitzer ist
