@@ -37,7 +37,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** Anteil heller Pixel und ob Rot-Orange vorkommt, im Bild zur Zeit t (dieselbe Zeichenfunktion wie Vorschau und Video) */
 const messeBild = (page, t) => page.evaluate(async (t) => {
-  const { bild, szene } = await import("./szene.js?v=6");
+  const { bild, szene } = await import("./szene.js?v=7");
   const S = window.__sketchory;
   const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
   const ctx = c.getContext("2d");
@@ -99,6 +99,11 @@ await check("Bilder des Films: schwarz am Anfang, Zeichnung, Satz, Signet mit de
   assert.ok(ganz.sonst < 0.02, `fast nur Schwarz und Weiss (${ganz.sonst})`);
   const satz = await messeBild(page, "textStehen");
   assert.ok(satz.hell > 0.002 && satz.hell < 0.05, `Satz ${satz.hell}`);
+  assert.ok(satz.orange > 30, `oranger Punkt am Satzende (${satz.orange})`);
+  const anfang2 = await page.evaluate(() => window.__sketchory.sz.zeit.ab.textEin[0] + 0.35);
+  const frueh = await messeBild(page, anfang2);
+  assert.ok(frueh.hell > 0 && frueh.hell < satz.hell * 0.3, `Buchstabe um Buchstabe: erst wenige (${frueh.hell} von ${satz.hell})`);
+  assert.equal(frueh.orange, 0, "der Punkt kommt zuletzt");
   const signet = await messeBild(page, "signetStehen");
   assert.ok(signet.orange > 150, `Punkt in Rot-Orange (${signet.orange})`);
   assert.ok(signet.hell > 0.001);
@@ -246,7 +251,7 @@ await check("Schwarz auf Weiss: ganzer Film umgekehrt (Grund, Zeichnung, Satz, S
   assert.equal(await page.getAttribute('[data-farbe="hell"]', "aria-pressed"), "true");
   assert.equal(await page.evaluate(() => document.querySelector(".rahmen").classList.contains("hell")), true);
   const zaehle = (t) => page.evaluate(async (t) => {
-    const { bild, szene } = await import("./szene.js?v=6");
+    const { bild, szene } = await import("./szene.js?v=7");
     const S = window.__sketchory, sz = szene(S.ergebnis, S.optionen);
     const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
     const x = c.getContext("2d"), zeit = sz.zeit.ab[t][0] + 0.05;

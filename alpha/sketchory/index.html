@@ -93,6 +93,8 @@
     .einstellungen input[type="range"] { width: 100%; accent-color: var(--accent); }
     .einstellungen output { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.85rem; }
 
+    .haken { display: flex !important; align-items: center; gap: 8px !important; min-height: 40px; align-self: end; }
+    .haken input { width: 18px; height: 18px; accent-color: var(--accent); }
     progress { width: 100%; height: 6px; accent-color: var(--accent); }
     .meldung { margin: 0; min-height: 1.5em; }
     .meldung.fehler { color: var(--accent); }
@@ -193,6 +195,15 @@
                   <option value="sans">Instrument Sans</option>
                   <option value="serif">Newsreader</option>
                 </select></label>
+              <label><span>Buchstabenhöhe</span>
+                <select id="hoehe">
+                  <option value="100">wie die Schrift</option>
+                  <option value="110">110 %</option>
+                  <option value="115" selected>115 %</option>
+                  <option value="125">125 %</option>
+                  <option value="135">135 %</option>
+                </select></label>
+              <label class="haken"><input type="checkbox" id="punkt" checked> Oranger Punkt am Satzende</label>
               <label><span>Empfindlichkeit</span>
                 <input type="range" id="empfindlichkeit" min="-50" max="50" step="10" value="0" aria-describedby="empf-hinweis">
                 <output id="empf-hinweis">mehr nach rechts: auch schwache Linien</output></label>
@@ -201,7 +212,7 @@
         </li>
         <li>
           <h2>Video</h2>
-          <p>Leerer Grund, die Karte zeichnet sich, steht drei Sekunden, blendet sanft aus; der Satz blendet Wort für Wort ein und sanft aus; am Schluss das Signet von ornament.cloud, das zuletzt ebenfalls sanft ausblendet.</p>
+          <p>Leerer Grund, die Karte zeichnet sich, steht drei Sekunden, blendet sanft aus; der Satz erscheint Buchstabe um Buchstabe, mit orangem Punkt am Ende, und blendet sanft aus; am Schluss das Signet von ornament.cloud, das zuletzt ebenfalls sanft ausblendet.</p>
           <div class="leiste">
             <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
             <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
@@ -234,7 +245,7 @@
       <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
     </div>
   </footer>
-  <script type="module" src="app.js?v=6"></script>
+  <script type="module" src="app.js?v=7"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

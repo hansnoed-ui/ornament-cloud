@@ -1,5 +1,5 @@
 // «Sketchory» – das Bild im Hintergrund lesen (Web Worker), damit die Seite dabei nicht stockt.
-import { striche } from "./strich.js?v=6";
+import { striche } from "./strich.js?v=7";
 
 self.onmessage = (e) => {
   const { nr, daten, breite, hoehe, empfindlichkeit } = e.data;

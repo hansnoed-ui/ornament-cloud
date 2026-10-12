@@ -5,7 +5,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { striche, otsu, median, analyseMass, ANALYSE } from "../alpha/sketchory/strich.js";
-import { zeitachse, umbrechen, satzbild, zeichenplan, zeichenkurve, bezier, ausblenden, textEin, dateiname, FPS, SIGNET } from "../alpha/sketchory/ablauf.js";
+import { zeitachse, umbrechen, satzbild, zeichenplan, zeichenkurve, bezier, ausblenden, textEin, versatz, zeichenZahl, satzPunkt, dateiname, FPS, SIGNET } from "../alpha/sketchory/ablauf.js";
 import { mp4, kisten } from "../alpha/sketchory/mp4.js";
 
 const root = new URL("../", import.meta.url);
@@ -96,7 +96,7 @@ test("Ablauf: Zeichnen 4,5 s, 3 s stehen, ausblenden, Satz, Signet in voller Lä
   const ohne = zeitachse({ zeichnen: 5, text: "  " });
   assert.ok(!("textEin" in ohne.ab));
   assert.ok(ohne.dauer < z.dauer);
-  assert.ok(textEin(20) <= 2.1, "auch ein langer Satz blendet zügig ein");
+  assert.ok(textEin(120) <= 2.45, "auch ein langer Satz blendet zügig ein");
 });
 
 test("Ablauf: Umbruch ausgeglichen und begrenzt, Schrift schrumpft bei langen Sätzen", () => {
@@ -108,6 +108,31 @@ test("Ablauf: Umbruch ausgeglichen und begrenzt, Schrift schrumpft bei langen S�
   const lang = satzbild("Ein ".repeat(60).trim(), (s, g) => s.length * g * 0.5);
   assert.ok(lang.groesse < 66 && lang.zeilen.length <= 5 || lang.groesse === 40);
   assert.equal(satzbild("Kurz.", (s, g) => s.length * g * 0.5).zeilen.length, 1);
+});
+
+test("Satz: Buchstabe um Buchstabe, oranger Punkt am Ende, höhere Buchstaben", () => {
+  // Buchstabe um Buchstabe: das Einblenden richtet sich nach der Zahl der Zeichen, bleibt aber auch bei langen Sätzen kurz
+  assert.equal(zeichenZahl("Wer zeichnet, denkt."), 18);
+  assert.ok(textEin(17) > textEin(5));
+  assert.ok(textEin(160) <= 2.45, `${textEin(160)}`);
+  assert.ok(versatz(17) > 0.03, "sichtbar nacheinander");
+  const z = zeitachse({ text: "Wer zeichnet, denkt mit der Hand." });
+  assert.ok(Math.abs(z.ab.textEin[1] - z.ab.textEin[0] - textEin(28)) < 1e-9);
+  // oranger Punkt
+  assert.deepEqual(satzPunkt("Wer zeichnet, denkt."), { text: "Wer zeichnet, denkt.", orange: true });
+  assert.deepEqual(satzPunkt("  Wer  zeichnet "), { text: "Wer zeichnet.", orange: true }, "fehlt er, kommt er dazu");
+  assert.deepEqual(satzPunkt("Wer zeichnet?"), { text: "Wer zeichnet?", orange: false });
+  assert.deepEqual(satzPunkt("Und dann …"), { text: "Und dann …", orange: false });
+  assert.deepEqual(satzPunkt("«So.»"), { text: "«So.»", orange: false });
+  assert.deepEqual(satzPunkt("Wer zeichnet", false), { text: "Wer zeichnet", orange: false }, "abgeschaltet");
+  // höhere Buchstaben: die Zeilen rücken entsprechend auseinander, die Breite bleibt
+  const messen = (s, g) => s.length * g * 0.5;
+  const a = satzbild("Ein Satz von mittlerer Länge für zwei Zeilen.", messen), b = satzbild("Ein Satz von mittlerer Länge für zwei Zeilen.", messen, { streckung: 1.15 });
+  assert.deepEqual(a.zeilen, b.zeilen);
+  assert.equal(b.zeilenhoehe, Math.round(a.groesse * 1.32 * 1.15));
+  const szene = lies("alpha/sketchory/szene.js");
+  assert.match(szene, /streckung = 1\.15, punkt = true/, "Standard: 115 %, mit Punkt");
+  assert.match(lies("alpha/sketchory/index.html"), /<option value="115" selected>115 %<\/option>[\s\S]*<input type="checkbox" id="punkt" checked> Oranger Punkt am Satzende/);
 });
 
 test("Ablauf: Zeichenplan nach Länge, Kurve, Bézier, Dateiname", () => {
