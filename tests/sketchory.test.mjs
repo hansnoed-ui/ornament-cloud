@@ -188,11 +188,18 @@ test("Schrift des Satzes: Grotesk nah an Helvetica Now (Inter Display Medium, mi
   assert.match(szene, /schrift = "grotesk"/);
 });
 
-test("Signet: dieselbe Zeichnung und derselbe Zeitplan wie im Outro der Videos", () => {
+test("Signet: dieselbe Zeichnung und derselbe Zeitplan wie im Outro der Videos, nur die Schlaufe kleiner; zwei Farbfassungen", () => {
   const tsx = lies("src/videos/src/vorlage/Signet.tsx"), js = lies("alpha/sketchory/signet.js");
-  for (const stueck of ["const LA = 1, LB = 0.45, LK = 1.2, LOFF = -0.84", "520 / SPANNE", "540 + (x - MX) * MASS, 820 + (y - MY) * MASS", 'const NAME = "ornament.cloud"', "SPERRUNG = 0.14 *"]) {
+  for (const stueck of ["const LA = 1, LB = 0.45, LK = 1.2, LOFF = -0.84", 'const NAME = "ornament.cloud"', "SPERRUNG = 0.14 *", "KASTEN = 52, ABSTAND = 4"]) {
     assert.ok(tsx.includes(stueck), `Vorlage: ${stueck}`);
     assert.ok(js.includes(stueck), `Sketchory: ${stueck}`);
   }
   for (const zeit of ["14, 56", "40, 48", "128, 146", "58 + i * 2", "78 + i * 3"]) assert.ok(tsx.includes(zeit) && js.includes(zeit), zeit);
+  // Wunsch vom 12. Oktober 2026: «beim Logo die Form etwas kleiner, Schriftgrösse gut»
+  assert.ok(tsx.includes("520 / SPANNE"), "die Vorlage bleibt");
+  assert.match(js, /SCHLAUFE = 420, PUNKT_R = 11/);
+  assert.match(js, /MITTE_Y = 820 \+ \(520 - SCHLAUFE\) \/ 2/, "unterer Rand der Schlaufe wie in der Vorlage, Abstand zum Schriftzug gleich");
+  assert.match(js, /GROESSE = 52/, "Schriftgrösse wie in der Vorlage");
+  assert.match(js, /dunkel: \{ grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d" \}/);
+  assert.match(js, /hell: \{ grund: "#ffffff", tinte: "#000000", punkt: "#c2410c" \}/);
 });

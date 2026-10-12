@@ -1,10 +1,10 @@
 // «Sketchory» – Seite: Bild laden, Satz eingeben, Vorschau abspielen, Video (MP4) und Standbild (PNG) herunterladen.
 // Alles bleibt im Browser. Video über WebCodecs (H.264, schneller als Echtzeit, Bild für Bild genau) und mp4.js;
 // wo das fehlt, in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { striche, analyseMass } from "./strich.js?v=3";
-import { BREITE, HOEHE, FPS, dateiname } from "./ablauf.js?v=3";
-import { szene, bild, standbild, schriftSetzen } from "./szene.js?v=3";
-import { mp4 } from "./mp4.js?v=3";
+import { striche, analyseMass } from "./strich.js?v=4";
+import { BREITE, HOEHE, FPS, dateiname } from "./ablauf.js?v=4";
+import { szene, bild, standbild, schriftSetzen } from "./szene.js?v=4";
+import { mp4 } from "./mp4.js?v=4";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
 const $ = (id) => document.getElementById(id);
@@ -15,7 +15,7 @@ const knopfSpielen = $("spielen"), knopfVideo = $("video"), knopfPng = $("png");
 const meldung = $("meldung"), fortschritt = $("fortschritt");
 
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const S = { bild: null, name: "", ergebnis: null, sz: null, start: 0, laeuft: false, film: null, rechnen: 0 };
+const S = { farbe: "dunkel", bild: null, name: "", ergebnis: null, sz: null, start: 0, laeuft: false, film: null, rechnen: 0 };
 
 const leinwand = (w, h) => {
   if (typeof OffscreenCanvas !== "undefined") return new OffscreenCanvas(w, h);
@@ -93,7 +93,7 @@ function bildElement(datei) {
 
 // das Bild in Striche verwandeln (im Worker, sonst hier)
 let worker = null;
-try { worker = new Worker(new URL("./rechner.js?v=3", import.meta.url), { type: "module" }); } catch { worker = null; }
+try { worker = new Worker(new URL("./rechner.js?v=4", import.meta.url), { type: "module" }); } catch { worker = null; }
 function rechnen(empfindlichkeit) {
   const { daten, w, h } = S.bild;
   const nr = ++S.rechnen;
@@ -138,7 +138,7 @@ async function neu({ abspielen = !ruhig } = {}) {
 function optionen() {
   return {
     stil: wahl.stil.value, staerke: Number(wahl.staerke.value) / 100, zeichnen: Number(wahl.zeichnen.value),
-    text: satzFeld.value.replace(/\s+/g, " ").trim(), schrift: wahl.schrift.value, messen, leinwand,
+    text: satzFeld.value.replace(/\s+/g, " ").trim(), schrift: wahl.schrift.value, farbe: S.farbe, messen, leinwand,
   };
 }
 
@@ -187,6 +187,22 @@ wahl.stil.addEventListener("change", strichZeigen);
 $("duenner").addEventListener("click", () => stufe(-STAERKE.schritt));
 $("dicker").addEventListener("click", () => stufe(STAERKE.schritt));
 for (const b of voreinstellungen) b.addEventListener("click", () => { wahl.staerke.value = b.dataset.staerke; strichZeigen(); });
+
+// ——— Farbe: weiss auf Schwarz (Standard) oder schwarz auf Weiss, für den ganzen Film; bleibt für die nächste Karte ———
+const farbKnoepfe = [...document.querySelectorAll("[data-farbe]")];
+if (["dunkel", "hell"].includes(erinnern("farbe"))) S.farbe = erinnern("farbe");
+function farbeZeigen() {
+  for (const b of farbKnoepfe) b.setAttribute("aria-pressed", String(b.dataset.farbe === S.farbe));
+  vorschau.parentElement.classList.toggle("hell", S.farbe === "hell");
+  if (!S.sz) { vctx.fillStyle = S.farbe === "hell" ? "#fff" : "#000"; vctx.fillRect(0, 0, BREITE, HOEHE); }
+}
+for (const b of farbKnoepfe) b.addEventListener("click", () => {
+  if (S.farbe === b.dataset.farbe) return;
+  S.farbe = b.dataset.farbe;
+  merken("farbe", S.farbe);
+  farbeZeigen();
+  strichZeigen();
+});
 staerkeZeigen();
 
 // ——— Vorschau ———
@@ -340,8 +356,8 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [knopfVideo, knopfPng, eingabe, $("beispiel"), $("duenner"), $("dicker"), ...voreinstellungen, ...Object.values(wahl)]) el.disabled = an || ((el === knopfVideo || el === knopfPng) && !S.ergebnis);
+  for (const el of [knopfVideo, knopfPng, eingabe, $("beispiel"), $("duenner"), $("dicker"), ...voreinstellungen, ...farbKnoepfe, ...Object.values(wahl)]) el.disabled = an || ((el === knopfVideo || el === knopfPng) && !S.ergebnis);
 }
 
 // leerer Grund in der Vorschau
-vctx.fillStyle = "#000"; vctx.fillRect(0, 0, BREITE, HOEHE);
+farbeZeigen();

@@ -1,11 +1,16 @@
 // «Sketchory» – das animierte Signet von ornament.cloud auf einer Leinwand (Canvas 2D).
 // Dieselbe Zeichnung und derselbe Zeitplan wie das Outro aller Videos (src/videos/src/vorlage/Signet.tsx, 180 Bilder):
 // die Re-entry-Schlaufe zeichnet sich, ein Punkt durchläuft sie, darunter werden Kästchen zu den Buchstaben von «ornament.cloud».
-// Hier hell auf Schwarz (Linie weiss, Punkt im Rot-Orange des dunklen Modus wie in der dunklen Startanimation).
-// Gezeichnet für 1080 × 1920 und, wie im Video im Format 3 : 4, um (1440 − 1920) / 2 nach oben verschoben.
-import { anteil, bezier, weich, inOut } from "./ablauf.js?v=3";
+// Zwei Fassungen wie der ganze Film: hell auf Schwarz (Linie weiss, Punkt im Rot-Orange des dunklen Modus wie in der dunklen Startanimation)
+// und schwarz auf Weiss (Punkt im Rot-Orange der Website). Gezeichnet für 1080 × 1920 und, wie im Video im Format 3 : 4, um (1440 − 1920) / 2 nach oben verschoben.
+// Abweichung von der Vorlage (Wunsch vom 12. Oktober 2026: «die Form etwas kleiner, Schriftgrösse gut»): die Schlaufe 420 statt 520 px hoch,
+// der Punkt entsprechend 11 statt 13 px; der Schriftzug bleibt, wo er ist, die Schlaufe rückt so weit nach unten, dass der Abstand zu ihm gleich bleibt.
+import { anteil, bezier, weich, inOut } from "./ablauf.js?v=4";
 
-export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d" };
+export const FARBEN = {
+  dunkel: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d" },
+  hell: { grund: "#ffffff", tinte: "#000000", punkt: "#c2410c" },
+};
 export const SCHRIFT_FAMILIE = '"Instrument Sans", system-ui, sans-serif';
 
 const zeichnen = bezier(0.45, 0, 0.25, 1);
@@ -16,8 +21,10 @@ const PUNKTE = Array.from({ length: N + 1 }, (_, i) => punkt((i / N) * Math.PI *
 const xs = PUNKTE.map((p) => p[0]), ys = PUNKTE.map((p) => p[1]);
 const MX = (Math.min(...xs) + Math.max(...xs)) / 2, MY = (Math.min(...ys) + Math.max(...ys)) / 2;
 const SPANNE = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
-const MASS = 520 / SPANNE;
-const bild = ([x, y]) => [540 + (x - MX) * MASS, 820 + (y - MY) * MASS];
+export const SCHLAUFE = 420, PUNKT_R = 11;
+const MASS = SCHLAUFE / SPANNE;
+const MITTE_Y = 820 + (520 - SCHLAUFE) / 2;   // unterer Rand der Schlaufe wie in der Vorlage
+const bild = ([x, y]) => [540 + (x - MX) * MASS, MITTE_Y + (y - MY) * MASS];
 const BAHN = PUNKTE.map(bild);
 const LAENGEN = [0];
 for (let i = 1; i < BAHN.length; i++) LAENGEN.push(LAENGEN[i - 1] + Math.hypot(BAHN[i][0] - BAHN[i - 1][0], BAHN[i][1] - BAHN[i - 1][1]));
@@ -30,7 +37,7 @@ const zwischen = (x, a, b) => a + (b - a) * x;
  * Bild f (0–179 und weiter) des Signets auf ctx zeichnen (der Grund ist schon gemalt).
  * hoehe: Bildhöhe (1440 für 3 : 4). farben: { tinte, punkt }.
  */
-export function signet(ctx, f, { hoehe = 1440, farben = FARBEN } = {}) {
+export function signet(ctx, f, { hoehe = 1440, farben = FARBEN.dunkel } = {}) {
   const { tinte, punkt: punktFarbe } = farben;
   ctx.save();
   ctx.translate(0, (hoehe - 1920) / 2);
@@ -56,7 +63,7 @@ export function signet(ctx, f, { hoehe = 1440, farben = FARBEN } = {}) {
     const [px, py] = bild(punkt(-Math.PI / 2 + lauf * Math.PI * 2));
     ctx.globalAlpha = sicht;
     ctx.fillStyle = punktFarbe;
-    ctx.beginPath(); ctx.arc(px, py, 13, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(px, py, PUNKT_R, 0, Math.PI * 2); ctx.fill();
     ctx.globalAlpha = 1;
   }
   // Schriftzug: Kästchen erscheinen, aus jedem wird ein Buchstabe, dann rücken sie zusammen
@@ -78,10 +85,9 @@ export function signet(ctx, f, { hoehe = 1440, farben = FARBEN } = {}) {
       const s = zwischen(wird, 1, 0.55), rr = zwischen(wird, 0, 18);
       ctx.save();
       ctx.translate(cx, cy); ctx.scale(s, s);
-      ctx.globalAlpha = ka;
       ctx.beginPath(); ctx.roundRect(-w / 2 + 1.5, -H / 2 + 1.5, w - 3, H - 3, Math.max(0, rr - 1.5));
-      ctx.fillStyle = "rgba(255,255,255,0.078)"; ctx.fill();
-      ctx.lineWidth = 3; ctx.strokeStyle = tinte; ctx.stroke();
+      ctx.globalAlpha = ka * 0.078; ctx.fillStyle = tinte; ctx.fill();   // die Fläche: Tinte mit 8 % (wie tinte + "14" in der Vorlage)
+      ctx.globalAlpha = ka; ctx.lineWidth = 3; ctx.strokeStyle = tinte; ctx.stroke();
       ctx.restore();
     }
     if (wird > 0) {

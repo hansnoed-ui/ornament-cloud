@@ -37,7 +37,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** Anteil heller Pixel und ob Rot-Orange vorkommt, im Bild zur Zeit t (dieselbe Zeichenfunktion wie Vorschau und Video) */
 const messeBild = (page, t) => page.evaluate(async (t) => {
-  const { bild, szene } = await import("./szene.js?v=3");
+  const { bild, szene } = await import("./szene.js?v=4");
   const S = window.__sketchory;
   const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
   const ctx = c.getContext("2d");
@@ -225,6 +225,56 @@ await check("Strichstärke: sichtbar ohne «Feinheiten», wirkt sofort auf die V
   assert.equal(await page.inputValue("#staerke"), "160");
   assert.equal(await page.inputValue("#stil"), "gleichmaessig");
   assert.equal(await page.textContent("#staerke-wert"), "160 %");
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
+await check("Schwarz auf Weiss: ganzer Film umgekehrt (Grund, Zeichnung, Satz, Signet mit Punkt im Rot-Orange der Website), Vorschau, Standbild, gemerkt", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  await page.fill("#satz", "Wer zeichnet, denkt mit der Hand.");
+  await page.click("#beispiel");
+  await bereit(page);
+  assert.equal(await page.getAttribute('[data-farbe="dunkel"]', "aria-pressed"), "true", "Standard: weiss auf Schwarz");
+  await page.click('[data-farbe="hell"]');
+  await page.waitForFunction(() => window.__sketchory.optionen.farbe === "hell");
+  assert.equal(await page.getAttribute('[data-farbe="hell"]', "aria-pressed"), "true");
+  assert.equal(await page.evaluate(() => document.querySelector(".rahmen").classList.contains("hell")), true);
+  const zaehle = (t) => page.evaluate(async (t) => {
+    const { bild, szene } = await import("./szene.js?v=4");
+    const S = window.__sketchory, sz = szene(S.ergebnis, S.optionen);
+    const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
+    const x = c.getContext("2d"), zeit = t ? sz.zeit.ab[t][0] + 0.05 : sz.zeit.dauer - 0.1;
+    for (let u = 0; u < zeit; u += 0.5) bild(x, sz, u);
+    bild(x, sz, zeit);
+    const d = x.getImageData(0, 0, 1080, 1440).data;
+    let weiss = 0, schwarz = 0, orange = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i] > 235 && d[i + 1] > 235 && d[i + 2] > 235) weiss++;
+      else if (d[i] < 40 && d[i + 1] < 40 && d[i + 2] < 40) schwarz++;
+      else if (d[i] > 160 && d[i + 1] > 40 && d[i + 1] < 100 && d[i + 2] < 60) orange++;
+    }
+    const n = d.length / 4;
+    return { weiss: weiss / n, schwarz: schwarz / n, orange };
+  }, t);
+  const zeichnung = await zaehle("stehen");
+  assert.ok(zeichnung.weiss > 0.6 && zeichnung.schwarz > 0.03 && zeichnung.schwarz < 0.4, JSON.stringify(zeichnung));
+  const satz = await zaehle("textStehen");
+  assert.ok(satz.weiss > 0.9 && satz.schwarz > 0.002, JSON.stringify(satz));
+  const signet = await zaehle(null);
+  assert.ok(signet.weiss > 0.9 && signet.orange > 150 && signet.schwarz > 0.001, JSON.stringify(signet));
+  // Vorschau zeigt die fertige Zeichnung schwarz auf Weiss
+  const ecke = await page.evaluate(() => [...document.getElementById("vorschau").getContext("2d").getImageData(5, 5, 1, 1).data].slice(0, 3));
+  assert.deepEqual(ecke, [255, 255, 255]);
+  // Standbild ebenso
+  const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#png")]);
+  const png = await page.evaluate(async (b64) => {
+    const img = await createImageBitmap(new Blob([Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))], { type: "image/png" }));
+    const c = new OffscreenCanvas(img.width, img.height), x = c.getContext("2d"); x.drawImage(img, 0, 0);
+    return [...x.getImageData(3, 3, 1, 1).data].slice(0, 3);
+  }, readFileSync(await dl.path()).toString("base64"));
+  assert.deepEqual(png, [255, 255, 255]);
+  await page.reload();
+  assert.equal(await page.getAttribute('[data-farbe="hell"]', "aria-pressed"), "true", "bleibt für die nächste Karte");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
