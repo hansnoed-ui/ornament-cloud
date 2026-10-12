@@ -6,7 +6,7 @@
 // Vorher wird das Bild aufgefrischt (Weissabgleich, Kontrast, Klarheit, Farbkraft) und geglättet (Rauschen, Leinwandstruktur und Körnung weg, Kanten bleiben).
 // Wenige, lange Striche statt vieler kleiner: drei Durchgänge (die Feinheiten bringt am Schluss das scharfe Bild), jeder Durchgang malt der Reihe nach von oben nach unten.
 // Ergebnis in Bildpunkten des fertigen Films (1080 × 1440): Striche mit Punkten, Farbe, Breite und Durchgang, in Malreihenfolge.
-import { unschaerfe } from "../sketchory/strich.js?v=8";
+import { unschaerfe } from "../sketchory/strich.js?v=9";
 
 /** kleiner, fester Zufall (gleiches Bild → gleiches Gemälde) */
 export function zufall(saat = 1) {
@@ -118,11 +118,15 @@ export function glaetten(q, w, h, { radius = 3, farbweite = 36, durchgaenge = 2 
 /**
  * auffrischen, wie man ein Foto eines Bilds von Hand bearbeiten würde:
  * 1. Weissabgleich: helle, fast unbunte Stellen (Papier, Weiss, Glanz) werden neutral (Farbstich des Lichts weg; zu drei Fünfteln, höchstens etwa ±7 %, damit gewollt cremige Farben cremig bleiben)
- * 2. Tonwerte: dunkelste und hellste 0,5 % auf Schwarz und Weiss spreizen (höchstens 1,8-fach), dann eine deutliche S-Kurve
+ *    Ziel ist ein warmes Weiss (Rot etwas mehr, Blau etwas weniger), damit das Bild nicht kühl wirkt; ohne solche Stellen nur ein Hauch Wärme
+ * 2. Tonwerte: dunkelste und hellste 0,5 % auf Schwarz und Weiss spreizen (höchstens 1,7-fach), dann eine mittlere S-Kurve
  * 3. Klarheit: lokaler Kontrast (Helligkeit gegen ihre weiche Umgebung, Radius ~ 1/40 der Bildbreite)
- * 4. Farbkraft: alle Farben etwas satter, matte deutlich (Lebendigkeit)
+ * 4. Farbkraft: alle Farben etwas satter, matte deutlich (Lebendigkeit); fast Weisses bleibt weiss
  * Stärke 0 lässt das Bild, wie es ist; 1 ist die übliche Stärke.
  */
+/** das warme Weiss, auf das der Weissabgleich zielt (Anteile von Rot, Grün, Blau gegenüber neutralem Grau) */
+const WARM = [1.045, 1.0, 0.91];
+
 export function optimieren({ r, g, b }, w, h, staerke = 1) {
   const n = w * h, L = (i) => 0.3 * R[i] + 0.59 * G[i] + 0.11 * B[i];
   let R = Float32Array.from(r), G = Float32Array.from(g), B = Float32Array.from(b);
@@ -137,17 +141,20 @@ export function optimieren({ r, g, b }, w, h, staerke = 1) {
   }
   if (k > n * 0.004) {
     const grau = (sr + sg + sb) / 3, klemm = (x) => Math.max(0.88, Math.min(1.12, x)), mix = (x) => 1 + (x - 1) * 0.6 * staerke;
-    const fr = mix(klemm(grau / sr)), fg = mix(klemm(grau / sg)), fb = mix(klemm(grau / sb));
+    const fr = mix(klemm((grau * WARM[0]) / sr)), fg = mix(klemm((grau * WARM[1]) / sg)), fb = mix(klemm((grau * WARM[2]) / sb));
     for (let i = 0; i < n; i++) { R[i] *= fr; G[i] *= fg; B[i] *= fb; }
+  } else {
+    const wr = 1 + 0.02 * staerke, wb = 1 - 0.03 * staerke;
+    for (let i = 0; i < n; i++) { R[i] *= wr; B[i] *= wb; }
   }
   // 2. Tonwerte und S-Kurve (auf alle drei Kanäle gleich, die Farbtöne bleiben)
   const hist = histo(L), lo = stelle(hist, 0.005), hi = stelle(hist, 0.995), mitte = (lo + hi) / 2;
-  const f = 1 + (Math.min(1.8, 255 / Math.max(1, hi - lo)) - 1) * staerke;
+  const f = 1 + (Math.min(1.7, 255 / Math.max(1, hi - lo)) - 1) * staerke;
   const o = Math.max(0, Math.min(255 - (hi - lo) * f, mitte - (mitte - lo) * f));
   const kurve = new Float32Array(256);
   for (let v = 0; v < 256; v++) {
     const x = Math.max(0, Math.min(1, (o + (v - lo) * f) / 255)), s = x * x * (3 - 2 * x);
-    kurve[v] = 255 * (x + (s - x) * 0.55 * staerke);
+    kurve[v] = 255 * (x + (s - x) * 0.42 * staerke);
   }
   const ton = (v) => { const c = Math.max(0, Math.min(255, v)), j = Math.min(254, c | 0), t = c - j; return kurve[j] + (kurve[j + 1] - kurve[j]) * t; };
   for (let i = 0; i < n; i++) { R[i] = ton(R[i]); G[i] = ton(G[i]); B[i] = ton(B[i]); }
@@ -156,13 +163,15 @@ export function optimieren({ r, g, b }, w, h, staerke = 1) {
   for (let i = 0; i < n; i++) hell[i] = L(i);
   const umgebung = unschaerfe(hell, w, h, Math.max(3, Math.round(w / 40)), 2);
   for (let i = 0; i < n; i++) {
-    const d = (hell[i] - umgebung[i]) * 0.45 * staerke, m = Math.max(0, Math.min(1, Math.min(hell[i], 255 - hell[i]) / 40));
+    const d = (hell[i] - umgebung[i]) * 0.38 * staerke, m = Math.max(0, Math.min(1, Math.min(hell[i], 255 - hell[i]) / 40));
     R[i] = Math.max(0, Math.min(255, R[i] + d * m)); G[i] = Math.max(0, Math.min(255, G[i] + d * m)); B[i] = Math.max(0, Math.min(255, B[i] + d * m));
   }
   // 4. Farbkraft
   for (let i = 0; i < n; i++) {
     const l = L(i), mx = Math.max(R[i], G[i], B[i]), mn = Math.min(R[i], G[i], B[i]), satt = mx > 1 ? Math.min(1, (mx - mn) / mx) : 0;
-    const plus = 1 + staerke * (0.14 + 0.3 * (1 - satt) ** 1.5);
+    // fast weisse Stellen (Papier, Glanz) nicht mitfärben, sonst wird jedes Weiss cremig
+    const weiss = Math.max(0, Math.min(1, (l - 190) / 50)) * Math.max(0, Math.min(1, (0.25 - satt) / 0.25));
+    const plus = 1 + staerke * (0.14 + 0.3 * (1 - satt) ** 1.5) * (1 - 0.85 * weiss);
     R[i] = Math.max(0, Math.min(255, l + (R[i] - l) * plus)); G[i] = Math.max(0, Math.min(255, l + (G[i] - l) * plus)); B[i] = Math.max(0, Math.min(255, l + (B[i] - l) * plus));
   }
   return { r: R, g: G, b: B };
