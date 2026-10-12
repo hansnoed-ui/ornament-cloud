@@ -2,7 +2,7 @@
 // Das Gemälde wächst auf einer eigenen Ebene Pinselzug um Pinselzug (nur vorwärts; geht die Zeit zurück, beginnt es neu).
 // Ein Pinselzug: ein Körper in der Grundfarbe und darüber Borsten, leicht versetzt und in der Farbe etwas heller oder dunkler.
 // Darüber funkelt der Glitzer. Dann Foto und Satz, am Schluss das Signet.
-import { BREITE, HOEHE, anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=1";
+import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=1";
 import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=1";
 import { SCHRIFTEN, schriftSetzen } from "../sketchory/szene.js?v=8";
 import { zufall } from "./malen.js?v=1";
@@ -13,15 +13,15 @@ export { SCHRIFTEN, FARBEN };
  * Szene. bild: { striche, stufen } aus malen.js; funken aus glitzer.js; optionen: malen (Sekunden), glitzer (0 aus, 1 sanft, 1.6 kräftig),
  * farbe ("hell" | "dunkel"), foto (ImageBitmap/Canvas oder null), text, schrift, streckung, messen, leinwand.
  */
-export function szene(bild, funken, { malen = 6, glitzer = 1, farbe = "hell", foto = null, text = "", schrift = "grotesk", streckung = 1.15, messen, leinwand } = {}) {
+export function szene(bild, funken, { breite = 1080, hoehe = 1440, malen = 6, glitzer = 1, farbe = "hell", foto = null, text = "", schrift = "grotesk", streckung = 1.15, messen, leinwand } = {}) {
   const satzText = satzPunkt(text, true);
   const zeit = zeitachse({ malen, foto: !!foto, text: satzText.text });
   const plan = malplan(bild.striche, bild.stufen, malen);
   const zuege = bild.striche.map((s, i) => pinselzug(s, plan[i]));
-  const sb = satzText.text ? satzbild(satzText.text, (s, g) => messen(s, g, schrift), { groesse: SCHRIFTEN[schrift].groesse, streckung }) : null;
+  const sb = satzText.text ? satzbild(satzText.text, (s, g) => messen(s, g, schrift), { groesse: SCHRIFTEN[schrift].groesse, streckung, breite: Math.min(breite, 1080) - 232, zeilenMax: hoehe < 1200 ? 4 : 5 }) : null;
   return {
-    zeit, zuege, funken, glitzer, farben: FARBEN[farbe] ?? FARBEN.hell, foto, satz: sb, orange: satzText.orange, schrift, streckung,
-    ebene: leinwand(BREITE, HOEHE), stand: { t: -1, naechster: 0, aktiv: [] },
+    breite, hoehe, zeit, zuege, funken, glitzer, farben: FARBEN[farbe] ?? FARBEN.hell, foto, satz: sb, orange: satzText.orange, schrift, streckung,
+    ebene: leinwand(breite, hoehe), stand: { t: -1, naechster: 0, aktiv: [] },
   };
 }
 
@@ -69,7 +69,7 @@ function zugStueck(ctx, z, l0, l1) {
 function malenBis(sz, t) {
   const ctx = sz.ebene.getContext("2d");
   if (t < sz.stand.t) {
-    ctx.clearRect(0, 0, BREITE, HOEHE);
+    ctx.clearRect(0, 0, sz.breite, sz.hoehe);
     sz.stand = { t: -1, naechster: 0, aktiv: [] };
   }
   ctx.lineCap = "round"; ctx.lineJoin = "round";
@@ -85,7 +85,7 @@ function malenBis(sz, t) {
 
 /** Bild zur Zeit t (Sekunden) */
 export function bild(ctx, sz, t) {
-  const { ab } = sz.zeit, F = sz.farben;
+  const { ab } = sz.zeit, F = sz.farben, BREITE = sz.breite, HOEHE = sz.hoehe;
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = F.grund;
@@ -105,14 +105,14 @@ export function bild(ctx, sz, t) {
   if (ab.fotoEin && t >= ab.fotoEin[0] && t < ab.zweitAus[1]) zweiterTeil(ctx, sz, t);
   // das Signet
   if (t >= ab.signet[0] && t < ab.signetAus[1]) {
-    signet(ctx, t - ab.signet[0], F);
+    signet(ctx, t - ab.signet[0], F, BREITE, HOEHE);
     const weg = ausblenden(anteil(t, ab.signetAus[0], ab.signetAus[1]));
     if (weg > 0) { ctx.globalAlpha = weg; ctx.fillStyle = F.grund; ctx.fillRect(0, 0, BREITE, HOEHE); ctx.globalAlpha = 1; }
   }
 }
 
 function zweiterTeil(ctx, sz, t) {
-  const { ab } = sz.zeit, F = sz.farben;
+  const { ab } = sz.zeit, F = sz.farben, BREITE = sz.breite, HOEHE = sz.hoehe;
   const ein = weich(anteil(t, ab.fotoEin[0], ab.fotoEin[1]));
   const aus = 1 - ausblenden(anteil(t, ab.zweitAus[0], ab.zweitAus[1]));
   if (sz.foto) {
@@ -145,7 +145,7 @@ function satz(ctx, sz, t, aus, mitte, farbe, punkt) {
     sz.zeichen = [];
     for (const zeile of zeilen) {
       const breiten = zeile.map((w) => ctx.measureText(w).width);
-      let x = (BREITE - (breiten.reduce((a, b) => a + b, 0) + leer * (zeile.length - 1))) / 2;
+      let x = (sz.breite - (breiten.reduce((a, b) => a + b, 0) + leer * (zeile.length - 1))) / 2;
       zeile.forEach((w, i) => {
         const z = [...w];
         z.forEach((c, k) => sz.zeichen.push({ c, x: x + (k ? ctx.measureText(z.slice(0, k).join("")).width : 0), y }));
@@ -172,7 +172,7 @@ function satz(ctx, sz, t, aus, mitte, farbe, punkt) {
 /** das fertige Gemälde mit leuchtendem Glitzer (Standbild) */
 export function standbild(ctx, sz) {
   ctx.fillStyle = sz.farben.grund;
-  ctx.fillRect(0, 0, BREITE, HOEHE);
+  ctx.fillRect(0, 0, sz.breite, sz.hoehe);
   malenBis(sz, 1e9);
   ctx.drawImage(sz.ebene, 0, 0);
   if (sz.glitzer > 0) funkenZeichnen(ctx, sz.funken, 0.37, sz.glitzer, "#fff", 1);

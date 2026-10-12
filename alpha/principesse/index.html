@@ -4,7 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Principesse – Ornament Cloud · Alpha</title>
-  <!-- Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). Nur aus der Alpha-Übersicht verlinkt (seit 12. Oktober 2026). -->
+  <!--
+    Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14).
+    Diese Seite steht für sich (Wunsch von Christian, 12. Oktober 2026; wie die Analyse «Metastabilität», Ausnahme in tests/navigation.test.mjs):
+    von keiner Seite verlinkt, nur per Direktlink erreichbar, und ohne die Navigation oben links.
+  -->
   <meta name="robots" content="noindex">
   <meta name="description" content="Principesse: Ein Bild malt sich mit schwungvollen Pinselstrichen nach, der Glitzer funkelt; dazu ein Foto und ein Satz, am Schluss das Signet. Video zum Herunterladen, alles im Browser.">
   <link rel="stylesheet" href="../../styles.css?v=45">
@@ -118,10 +122,6 @@
 <body>
   <header class="site-header">
     <div class="wrap">
-      <nav class="seitenweg" aria-label="Ornament Cloud">
-        <a href="../../" aria-current="true">Ornament Cloud</a>
-        <a href="../drittes-rad/">Das Dritte Rad</a>
-      </nav>
       <h1>Principesse</h1>
       <p class="lead">Ein Bild malt sich mit Pinselstrichen, der Glitzer funkelt, dann ein Foto und ein Satz, am Schluss das Signet.</p>
     </div>
@@ -138,7 +138,7 @@
       </div>
       <div class="unter">
         <button class="knopf klein" type="button" id="spielen" disabled>Abspielen</button>
-        <p class="info" id="dauer">Hochformat 3 : 4 · 1080 × 1440</p>
+        <p class="info" id="dauer">Format wie das Bild, 3 : 4 oder 1 : 1</p>
       </div>
       <p class="info" id="auswertung"></p>
     </section>
@@ -160,7 +160,15 @@
             <button type="button" data-beispiel="fische" aria-label="Beispiel Fische"><img src="beispiel-fische.jpg" alt=""></button>
             <button type="button" data-beispiel="hund" aria-label="Beispiel Hund mit Krone"><img src="beispiel-hund.jpg" alt=""></button>
           </div>
-          <section class="tafel" aria-label="Pinsel, Glitzer und Grund">
+          <section class="tafel" aria-label="Format, Pinsel, Glitzer und Grund">
+            <div class="einstellung">
+              <span class="name" id="format-titel">Format</span>
+              <div class="segment" role="group" aria-labelledby="format-titel">
+                <button type="button" data-format="bild">wie das Bild</button>
+                <button type="button" data-format="3:4">3 : 4</button>
+                <button type="button" data-format="1:1">1 : 1</button>
+              </div>
+            </div>
             <div class="einstellung">
               <span class="name" id="pinsel-titel">Pinsel</span>
               <div class="segment" role="group" aria-labelledby="pinsel-titel">
@@ -243,9 +251,9 @@
   <div class="wrap">
     <ul class="hinweise">
       <li>Alles bleibt in deinem Browser: Bild und Foto werden nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
-      <li>Am besten ein gerades Foto des ganzen Bilds bei gleichmässigem Licht. Das Bild wird im Hochformat 3 : 4 gezeigt, Ränder werden bei Bedarf beschnitten.</li>
+      <li>Am besten ein gerades Foto des ganzen Bilds bei gleichmässigem Licht. Format: wie das Bild (kurze Seite 1080, lange höchstens 1920), 3 : 4 oder 1 : 1; bei 3 : 4 und 1 : 1 werden die Ränder bei Bedarf beschnitten, ebenso bei sehr schmalen Bildern.</li>
       <li>Glitzer erkennt die Anwendung an den vielen winzigen Lichtpunkten; findet sie zu viel oder zu wenig, hilft «Glitzer: aus» oder «strahlend».</li>
-      <li>Video: MP4 (H.264), 1080 × 1440, 30 Bilder pro Sekunde, ohne Ton.</li>
+      <li>Video: MP4 (H.264), 30 Bilder pro Sekunde, ohne Ton.</li>
     </ul>
   </div>
 

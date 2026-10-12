@@ -1,7 +1,7 @@
 // «Principesse» – Seite: Bild laden (wird mit Pinselstrichen nachgemalt, der Glitzer funkelt), optional Foto und Satz,
 // Vorschau, Video (MP4) und Standbild (PNG). Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der
 // MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { BREITE, HOEHE, FPS, dateiname } from "./ablauf.js?v=1";
+import { FPS, dateiname, filmMass } from "./ablauf.js?v=1";
 import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=1";
 import { schriftSetzen } from "../sketchory/szene.js?v=8";
 import { mp4 } from "../sketchory/mp4.js?v=8";
@@ -13,7 +13,7 @@ const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const S = { bild: null, gemaelde: null, funken: [], foto: null, sz: null, laeuft: false, start: 0, film: null, rechnen: 0, optionen: null,
-  pinsel: 1, glitzer: 1, farbe: "hell" };
+  pinsel: 1, glitzer: 1, farbe: "hell", format: "bild", mass: [1080, 1440] };
 window.__principesse = S;   // für die Browser-Tests
 
 const leinwand = (w, h) => { if (typeof OffscreenCanvas !== "undefined") return new OffscreenCanvas(w, h); const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
@@ -86,9 +86,12 @@ $("foto-weg").addEventListener("click", () => {
 let worker = null;
 try { worker = new Worker(new URL("./rechner.js?v=1", import.meta.url), { type: "module" }); } catch { worker = null; }
 function rechnen() {
-  const analyse = { daten: zugeschnitten(S.bild, 720, 960), w: 720, h: 960 }, film = { daten: zugeschnitten(S.bild, BREITE, HOEHE), w: BREITE, h: HOEHE };
+  // Format: wie das Bild, 3 : 4 oder 1 : 1; gemalt wird auf zwei Dritteln der Filmgrösse, der Glitzer in voller Grösse gesucht
+  const [B, H] = (S.mass = filmMass(S.format, S.bild.width, S.bild.height));
+  const aw = Math.round(B / 1.5), ah = Math.round(H / 1.5);
+  const analyse = { daten: zugeschnitten(S.bild, aw, ah), w: aw, h: ah }, film = { daten: zugeschnitten(S.bild, B, H), w: B, h: H };
   const nr = ++S.rechnen;
-  if (!worker) return Promise.resolve({ nr, gemaelde: malen(analyse.daten, 720, 960, { massstab: 1.5, pinsel: S.pinsel }), funken: glitzer(film.daten, BREITE, HOEHE) });
+  if (!worker) return Promise.resolve({ nr, gemaelde: malen(analyse.daten, aw, ah, { massstab: B / aw, pinsel: S.pinsel }), funken: glitzer(film.daten, B, H) });
   return new Promise((ok) => {
     const antwort = (e) => { if (e.data.nr === nr) { worker.removeEventListener("message", antwort); ok(e.data); } };
     worker.addEventListener("message", antwort);
@@ -113,7 +116,7 @@ async function lesen() {
 }
 
 function optionen() {
-  return { malen: Number($("malen").value), glitzer: S.glitzer, farbe: S.farbe, foto: S.foto, text: $("satz").value.replace(/\s+/g, " ").trim(),
+  return { breite: S.mass[0], hoehe: S.mass[1], malen: Number($("malen").value), glitzer: S.glitzer, farbe: S.farbe, foto: S.foto, text: $("satz").value.replace(/\s+/g, " ").trim(),
     schrift: $("schrift").value, streckung: 1.15, messen, leinwand };
 }
 
@@ -122,7 +125,10 @@ async function neu({ abspielen = !ruhig } = {}) {
   await schriften;
   S.optionen = optionen();
   S.sz = szene(S.gemaelde, S.funken, S.optionen);
-  $("dauer").textContent = `${S.sz.zeit.dauer.toFixed(1).replace(".", ",")} s · ${BREITE} × ${HOEHE} · ${FPS} Bilder/s`;
+  // Vorschau im Format des Films
+  if (vorschau.width !== S.mass[0] || vorschau.height !== S.mass[1]) { vorschau.width = S.mass[0]; vorschau.height = S.mass[1]; }
+  vorschau.parentElement.style.aspectRatio = `${S.mass[0]} / ${S.mass[1]}`;
+  $("dauer").textContent = `${S.sz.zeit.dauer.toFixed(1).replace(".", ",")} s · ${S.mass[0]} × ${S.mass[1]} · ${FPS} Bilder/s`;
   for (const k of ["video", "png", "spielen"]) $(k).disabled = false;
   $("leer").hidden = true;
   if (abspielen) spielen(); else { anhalten(); bild(vctx, S.sz, S.sz.zeit.ab.stehen[0] + 0.5); }
@@ -145,7 +151,8 @@ function wahl(attr, schluessel, werte, wenn) {
 const pinselKnoepfe = wahl("data-pinsel", "pinsel", ["0.7", "1", "1.35"], () => lesen());
 const glitzerKnoepfe = wahl("data-glitzer", "glitzer", ["0", "1", "1.7"], () => neu({ abspielen: false }));
 const farbKnoepfe = wahl("data-farbe", "farbe", ["hell", "dunkel"], () => { rahmenFarbe(); neu(); });
-function rahmenFarbe() { vorschau.parentElement.classList.toggle("dunkel", S.farbe === "dunkel"); if (!S.sz) { vctx.fillStyle = S.farbe === "dunkel" ? "#0e1430" : "#f7f3ec"; vctx.fillRect(0, 0, BREITE, HOEHE); } }
+const formatKnoepfe = wahl("data-format", "format", ["bild", "3:4", "1:1"], () => lesen());
+function rahmenFarbe() { vorschau.parentElement.classList.toggle("dunkel", S.farbe === "dunkel"); if (!S.sz) { vctx.fillStyle = S.farbe === "dunkel" ? "#0e1430" : "#f7f3ec"; vctx.fillRect(0, 0, vorschau.width, vorschau.height); } }
 rahmenFarbe();
 let warten = 0;
 $("satz").addEventListener("input", () => { clearTimeout(warten); warten = setTimeout(() => neu(), 450); });
@@ -167,7 +174,7 @@ $("spielen").addEventListener("click", () => (S.laeuft ? anhalten() : spielen())
 // ——— Standbild ———
 $("png").addEventListener("click", async () => {
   if (!S.gemaelde) return;
-  const c = leinwand(BREITE, HOEHE);
+  const c = leinwand(S.mass[0], S.mass[1]);
   standbild(c.getContext("2d"), szene(S.gemaelde, S.funken, optionen()));
   const blob = c.convertToBlob ? await c.convertToBlob({ type: "image/png" }) : await new Promise((ok) => c.toBlob(ok, "image/png"));
   herunterladen(blob, dateiname(new Date(), "png"));
@@ -179,10 +186,10 @@ function herunterladen(blob, name) {
 
 // ——— Video ———
 const CODECS = ["avc1.640028", "avc1.4d0028", "avc1.42e028", "avc1.640032", "avc1.42e032"];
-async function webcodecs() {
+async function webcodecs([B, H]) {
   if (typeof VideoEncoder === "undefined" || typeof VideoFrame === "undefined") return null;
   for (const codec of CODECS) {
-    const cfg = { codec, width: BREITE, height: HOEHE, bitrate: 10_000_000, framerate: FPS, avc: { format: "avc" }, latencyMode: "quality" };
+    const cfg = { codec, width: B, height: H, bitrate: 10_000_000, framerate: FPS, avc: { format: "avc" }, latencyMode: "quality" };
     try { if ((await VideoEncoder.isConfigSupported(cfg)).supported) return cfg; } catch { /* nächster */ }
   }
   return null;
@@ -194,7 +201,7 @@ $("video").addEventListener("click", async () => {
   const sz = szene(S.gemaelde, S.funken, optionen());
   const t0 = performance.now();
   try {
-    const cfg = await webcodecs();
+    const cfg = await webcodecs([sz.breite, sz.hoehe]);
     const erg = cfg ? await mitWebCodecs(cfg, sz) : await mitRecorder(sz);
     zeigen(erg, sz, performance.now() - t0);
   } catch (fehler) {
@@ -204,7 +211,7 @@ $("video").addEventListener("click", async () => {
 
 async function mitWebCodecs(cfg, sz) {
   melden("Video wird gerechnet …");
-  const c = leinwand(BREITE, HOEHE), ctx = c.getContext("2d", { alpha: false });
+  const c = leinwand(sz.breite, sz.hoehe), ctx = c.getContext("2d", { alpha: false });
   const proben = [];
   let avcC = null, fehler = null;
   const enc = new VideoEncoder({
@@ -229,7 +236,7 @@ async function mitWebCodecs(cfg, sz) {
   await enc.flush(); enc.close();
   if (fehler) throw fehler;
   if (!avcC) throw new Error("der Encoder hat keine Beschreibung geliefert");
-  return { blob: new Blob([mp4({ breite: BREITE, hoehe: HOEHE, fps: FPS, avcC, proben })], { type: "video/mp4" }), endung: "mp4", art: `MP4 (H.264, ${cfg.codec})` };
+  return { blob: new Blob([mp4({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, avcC, proben })], { type: "video/mp4" }), endung: "mp4", art: `MP4 (H.264, ${cfg.codec})` };
 }
 
 async function mitRecorder(sz) {
@@ -237,7 +244,7 @@ async function mitRecorder(sz) {
   const typ = typeof MediaRecorder !== "undefined" && typen.find(([m]) => MediaRecorder.isTypeSupported(m));
   if (!typ) throw new Error("dieser Browser kann keine Videos erzeugen (weder WebCodecs noch MediaRecorder)");
   melden(`Video wird in Echtzeit aufgenommen (${sz.zeit.dauer.toFixed(0)} s). Lass diese Seite sichtbar.`);
-  const c = document.createElement("canvas"); c.width = BREITE; c.height = HOEHE;
+  const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe;
   const ctx = c.getContext("2d", { alpha: false });
   const strom = c.captureStream(0), spur = strom.getVideoTracks()[0];
   const rec = new MediaRecorder(strom, { mimeType: typ[0], videoBitsPerSecond: 10_000_000 });
@@ -261,14 +268,14 @@ function zeigen({ blob, endung, art }, sz, ms) {
   S.film = URL.createObjectURL(blob);
   $("film").src = S.film;
   $("laden").href = S.film; $("laden").download = dateiname(new Date(), endung);
-  $("film-info").textContent = `${BREITE} × ${HOEHE} · ${sz.zeit.dauer.toFixed(1).replace(".", ",")} s · ${(blob.size / 1e6).toFixed(1).replace(".", ",")} MB · ${art} · gerechnet in ${(ms / 1000).toFixed(1).replace(".", ",")} s`;
+  $("film-info").textContent = `${sz.breite} × ${sz.hoehe} · ${sz.zeit.dauer.toFixed(1).replace(".", ",")} s · ${(blob.size / 1e6).toFixed(1).replace(".", ",")} MB · ${art} · gerechnet in ${(ms / 1000).toFixed(1).replace(".", ",")} s`;
   $("ergebnis").hidden = false;
   melden("Fertig. Prüfe das Video und lade es herunter.");
   $("ergebnis").scrollIntoView({ behavior: ruhig ? "auto" : "smooth", block: "nearest" });
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), ...document.querySelectorAll("[data-beispiel]"), ...pinselKnoepfe, $("video"), $("png")])
+  for (const el of [$("datei"), ...document.querySelectorAll("[data-beispiel]"), ...pinselKnoepfe, ...formatKnoepfe, $("video"), $("png")])
     el.disabled = an || ((el.id === "video" || el.id === "png") && !S.gemaelde);
 }
 void SCHRIFTEN; void glitzerKnoepfe; void farbKnoepfe;

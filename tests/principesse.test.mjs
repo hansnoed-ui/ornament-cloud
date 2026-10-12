@@ -3,10 +3,10 @@
 // Im Browser (Beispiel, Malen, Glitzer, Foto und Satz, Signet, Video, Handy): NODE_PATH=$(npm root -g) node tests/principesse.e2e.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { malen } from "../alpha/principesse/malen.js";
 import { glitzer, funkeln } from "../alpha/principesse/glitzer.js";
-import { zeitachse, malplan, dateiname } from "../alpha/principesse/ablauf.js";
+import { zeitachse, malplan, dateiname, filmMass } from "../alpha/principesse/ablauf.js";
 import { linien, NAME, DAUER } from "../alpha/principesse/signet.js";
 
 const root = new URL("../", import.meta.url);
@@ -74,6 +74,16 @@ test("Ablauf: malen, stehen, ausblenden; Foto und Satz nur wenn gewählt; Signet
   assert.equal(dateiname(new Date(2026, 9, 12, 9, 5), "mp4"), "principesse-2026-10-12-0905.mp4");
 });
 
+test("Format: wie das Bild (kurze Seite 1080, lange höchstens 1920, gerade), 3 : 4, 1 : 1", () => {
+  assert.deepEqual(filmMass("3:4", 2000, 1000), [1080, 1440]);
+  assert.deepEqual(filmMass("1:1", 2000, 3000), [1080, 1080]);
+  assert.deepEqual(filmMass("bild", 2576, 3427), [1080, 1436], "Meerjungfrau, fast 3 : 4");
+  assert.deepEqual(filmMass("bild", 2287, 2407), [1080, 1136], "Fische, fast quadratisch");
+  assert.deepEqual(filmMass("bild", 3000, 2000), [1620, 1080], "quer");
+  assert.deepEqual(filmMass("bild", 1000, 3000), [1080, 1920], "sehr schmal: höchstens 9 : 16");
+  for (const [b, h] of [[1234, 2345], [3333, 1111]]) assert.ok(filmMass("bild", b, h).every((n) => n % 2 === 0));
+});
+
 test("Malplan: Stufe um Stufe, innerhalb der Malzeit, breite Züge langsamer als feine", () => {
   const striche = [0, 0, 0, 1, 1, 2, 2, 2, 3, 4].map((stufe) => ({ stufe }));
   const plan = malplan(striche, 5, 6);
@@ -91,10 +101,16 @@ test("Signet: die Figur nach der Vorlage (Krone mit fünf Kugeln, Gesicht, Kleid
   for (const l of L) for (let k = 0; k < l.pts.length; k += 2) assert.ok(l.pts[k] > 100 && l.pts[k] < 1450 && l.pts[k + 1] > 100 && l.pts[k + 1] < 1900, "in der Vorlage");
 });
 
-test("Seite: Alpha (noindex, Navigation, aus der Übersicht verlinkt), Versionsmarken, nichts von fremden Servern, Beispiele", () => {
+test("Seite: steht für sich (noindex, keine Navigation, von keiner Seite verlinkt, nicht in der Sitemap), Versionsmarken, nichts von fremden Servern, Beispiele", () => {
   const html = lies("alpha/principesse/index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
-  assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/" aria-current="true">Ornament Cloud<\/a>\s*<a href="\.\.\/drittes-rad\/">Das Dritte Rad<\/a>\s*<\/nav>/);
+  assert.ok(!html.includes('class="seitenweg"'), "ohne die Navigation oben links");
+  assert.ok(!lies("sitemap.xml").includes("principesse"));
+  // keine andere Seite verweist hierher (Wunsch vom 12. Oktober 2026: nur per Direktlink)
+  const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git", "principesse"]);
+  const walk = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+    ueberspringen.has(e.name) ? [] : e.isDirectory() ? walk(new URL(e.name + "/", d), vor + e.name + "/") : e.name.endsWith(".html") ? [vor + e.name] : []);
+  for (const p of walk(root)) assert.ok(!/principesse/i.test(lies(p)), `${p} verweist auf Principesse`);
   assert.ok(!/(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/.test(html));
   const marke = html.match(/<script type="module" src="app\.js\?v=(\d+)"><\/script>/)?.[1];
   assert.ok(marke);
@@ -110,5 +126,4 @@ test("Seite: Alpha (noindex, Navigation, aus der Übersicht verlinkt), Versionsm
   assert.ok(!/https?:\/\//.test(js) && !/XMLHttpRequest|sendBeacon/.test(js));
   assert.ok(!/ß/.test(html + js), "Schweizer Schreibweise");
   for (const b of ["meerjungfrau", "fische", "hund"]) assert.ok(html.includes(`data-beispiel="${b}"`) && readFileSync(new URL(`alpha/principesse/beispiel-${b}.jpg`, root)).length < 600_000, b);
-  assert.ok(lies("alpha/index.html").includes('<a href="principesse/">Principesse</a>'));
 });

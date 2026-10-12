@@ -1,11 +1,19 @@
-// «Principesse» – Ablauf des Films (ohne DOM). Hochformat 3 : 4 (1080 × 1440), 30 Bilder pro Sekunde.
+// «Principesse» – Ablauf des Films (ohne DOM). Format wählbar (wie das Bild, 3 : 4, 1 : 1; kurze Seite 1080, lange höchstens 1920), 30 Bilder pro Sekunde.
 //   leere Leinwand → das Bild malt sich mit Pinselstrichen (breit bis fein, 5–8 s) → steht, der Glitzer funkelt (3 s) → blendet aus
 //   → (wenn gewählt) ein Foto blendet ein, darauf erscheint der Satz Buchstabe um Buchstabe → blendet aus
 //   → das Signet: eine kleine Prinzessin zeichnet sich, «Principesse» → steht → blendet aus.
 import { textEin, zeichenZahl, woerter, klemm } from "../sketchory/ablauf.js?v=8";
 import { DAUER as SIGNET } from "./signet.js?v=1";
 
-export { BREITE, HOEHE, FPS, anteil, weich, ausblenden, bezier, versatz, ZEICHEN, satzbild, satzPunkt } from "../sketchory/ablauf.js?v=8";
+export { FPS, anteil, weich, ausblenden, bezier, versatz, ZEICHEN, satzbild, satzPunkt } from "../sketchory/ablauf.js?v=8";
+
+/** Bildmass des Films für ein Format: "3:4", "1:1" oder "bild" (wie das Ausgangsbild, kurze Seite 1080, lange Seite höchstens 1920, gerade Zahlen) */
+export function filmMass(format, bildBreite = 3, bildHoehe = 4) {
+  if (format === "1:1") return [1080, 1080];
+  if (format !== "bild") return [1080, 1440];
+  const gerade = (n) => Math.round(n / 2) * 2, v = bildHoehe / bildBreite;
+  return v >= 1 ? [1080, gerade(Math.min(1920, 1080 * v))] : [gerade(Math.min(1920, 1080 / v)), 1080];
+}
 
 /** Zeitachse in Sekunden: { ab: { name: [anfang, ende] }, dauer, bilder } */
 export function zeitachse({ malen = 6, foto = false, text = "" } = {}) {

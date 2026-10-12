@@ -567,7 +567,7 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
   const eintraege = [...uebersicht.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map(m => m[1]);
   // Die Prüfraster in Arbeit stehen zusammen ganz unten, danach nur die Prototypen: OMNA COLOR, Das Dritte Rad (2. Oktober 2026), «Die Paradoxie der Stadt» (9. Oktober 2026)
   // und die Aufnahme (11. Oktober 2026); «Sketchory» steht seit dem 12. Oktober 2026 zuoberst, davor seit dem 10. Oktober «The Fictory» (Wünsche von Christian)
-  assert.deepEqual(eintraege.slice(-7), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/", "drittes-rad/", "stadt/", "aufnahme/", "principesse/"], "zuunterst, danach OMNA COLOR, Das Dritte Rad, die Stadt, die Aufnahme und Principesse (12. Oktober 2026)");
+  assert.deepEqual(eintraege.slice(-6), ["gesellschaftskonzepte/", "journalistische-texte/", "omna-color/", "drittes-rad/", "stadt/", "aufnahme/"], "zuunterst, danach OMNA COLOR, Das Dritte Rad, die Stadt und die Aufnahme");
   // Sketchory seit dem 12. Oktober 2026 zuoberst (Wunsch von Christian), danach The Fictory
   assert.deepEqual(eintraege.slice(0, 2), ["sketchory/", "the-fictory/"], "Sketchory zuoberst, dann The Fictory");
   const omna = readFileSync(new URL("alpha/omna-color/index.html", root), "utf8");

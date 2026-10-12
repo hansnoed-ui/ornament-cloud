@@ -1,7 +1,7 @@
 // «Principesse» – das Signet am Schluss des Films: eine kleine Prinzessin zeichnet sich (nach der Vorlage vom 12. Oktober 2026:
 // Krone mit fünf Kugeln, Lockenkopf, rundes Gesicht mit Wangen und Lächeln, Kleid mit Streifen und Punkten, zwei Füsse),
 // dann füllt sich die Krone golden und funkelt, die Kugeln werden himbeerrot, die Wangen rosa; darunter erscheint «Principesse».
-// Alle Masse in Punkten der Vorlage (1500 × 2000), umgerechnet ins Bild (1080 × 1440).
+// Alle Masse in Punkten der Vorlage (1500 × 2000), umgerechnet ins Bild; Figur und Name stehen in jedem Format mittig und passen hinein.
 import { anteil, weich, ausblenden } from "../sketchory/ablauf.js?v=8";
 import { zufall } from "./malen.js?v=1";
 import { funkeln } from "./glitzer.js?v=1";
@@ -77,14 +77,16 @@ export function linien() {
 }
 
 // ---------- Lage im Bild ----------
-// Figur (Vorlage y 134–1845) und Name zusammen mittig im Bild
-const MASS = 0.44;                               // Vorlage → Bild
-const HOCH = (1845 - 134) * MASS + 150;          // Figur und Name
-const LINKS = 540 - 785 * MASS, OBEN = (1440 - HOCH) / 2 - 134 * MASS;
-const insBild = (x, y) => [LINKS + x * MASS, OBEN + y * MASS];
-const SCHRIFT_Y = OBEN + 1845 * MASS + 132;      // Grundlinie des Namens, unter den Füssen
+// Figur (Vorlage y 134–1845) und Name zusammen mittig im Bild; bei niedrigen Formaten (1 : 1, quer) entsprechend kleiner
+function lage(breite, hoehe) {
+  const mass = Math.min(0.44, (hoehe * 0.82 - 150) / 1711);
+  const hoch = (1845 - 134) * mass + 150;
+  const links = breite / 2 - 785 * mass, oben = (hoehe - hoch) / 2 - 134 * mass;
+  return { mass, insBild: (x, y) => [links + x * mass, oben + y * mass], schriftY: oben + 1845 * mass + 132 * Math.max(0.75, mass / 0.44), schrift: SCHRIFT.groesse * Math.max(0.75, mass / 0.44) };
+}
 
-function vorbereiten() {
+function vorbereiten(breite, hoehe) {
+  const L = lage(breite, hoehe), { insBild } = L;
   const striche = linien().map((l) => {
     const pts = [];
     for (let k = 0; k < l.pts.length; k += 2) pts.push(...insBild(l.pts[k], l.pts[k + 1]));
@@ -106,14 +108,15 @@ function vorbereiten() {
     const x = Math.min(...xs) + rnd() * (Math.max(...xs) - Math.min(...xs)), y = Math.min(...ys) + rnd() * (Math.max(...ys) - Math.min(...ys));
     if (innen(x, y)) funken.push({ x, y, groesse: 1.2 + rnd() * 1.8, phase: rnd(), takt: 0.6 + rnd() * 1.2, stern: rnd() < 0.12 });
   }
-  return { striche, krone, funken };
+  return { striche, krone, funken, L };
 }
-let FIGUR = null;
+const FIGUREN = new Map();
 
 /** Bild t (Sekunden seit Beginn des Signets) auf ctx; Grund ist gemalt. farben: FARBEN.hell oder FARBEN.dunkel */
-export function signet(ctx, t, farben) {
-  FIGUR ??= vorbereiten();
-  const { striche, krone, funken } = FIGUR;
+export function signet(ctx, t, farben, breite = 1080, hoehe = 1440) {
+  const schluessel = `${breite}x${hoehe}`;
+  if (!FIGUREN.has(schluessel)) FIGUREN.set(schluessel, vorbereiten(breite, hoehe));
+  const { striche, krone, funken, L } = FIGUREN.get(schluessel), MASS = L.mass;
   // die Linien zeichnen sich (0,1–2,4 s), gleichmässig der Länge nach
   const p = anteil(t, 0.1, 2.4);
   // Flächen: Krone golden, Kugeln, Wangen (ab 2,0 s)
@@ -129,7 +132,7 @@ export function signet(ctx, t, farben) {
     }
     ctx.restore();
   }
-  Object.assign(ctx, { strokeStyle: farben.tinte, fillStyle: farben.tinte, lineWidth: 5, lineCap: "round", lineJoin: "round" });
+  Object.assign(ctx, { strokeStyle: farben.tinte, fillStyle: farben.tinte, lineWidth: Math.max(3.4, 5 * MASS / 0.44), lineCap: "round", lineJoin: "round" });
   for (const s of striche) {
     if (p <= s.von) break;
     const bis = Math.min(1, (p - s.von) / (s.bis - s.von)) * s.lang;
@@ -149,15 +152,13 @@ export function signet(ctx, t, farben) {
   if (glanz > 0) funkenZeichnen(ctx, funken, t, glanz, farben.glanz);
   // der Name, Buchstabe um Buchstabe
   ctx.save();
-  ctx.font = `${SCHRIFT.stil} ${SCHRIFT.gewicht} ${SCHRIFT.groesse}px ${SCHRIFT.familie}`;
+  ctx.font = `${SCHRIFT.stil} ${SCHRIFT.gewicht} ${Math.round(L.schrift)}px ${SCHRIFT.familie}`;
   ctx.textBaseline = "alphabetic"; ctx.textAlign = "left"; ctx.fillStyle = farben.tinte;
-  const breite = ctx.measureText(NAME).width;
-  let x = 540 - breite / 2;
+  const weite = ctx.measureText(NAME).width;
   [...NAME].forEach((z, i) => {
     const e = weich(anteil(t, 2.7 + i * 0.075, 3.2 + i * 0.075));
-    const bx = 540 - breite / 2 + ctx.measureText(NAME.slice(0, i)).width;
-    if (e > 0) { ctx.globalAlpha = e; ctx.fillText(z, bx, SCHRIFT_Y + (1 - e) * 14); }
-    x = bx;
+    const bx = breite / 2 - weite / 2 + ctx.measureText(NAME.slice(0, i)).width;
+    if (e > 0) { ctx.globalAlpha = e; ctx.fillText(z, bx, L.schriftY + (1 - e) * 14); }
   });
   ctx.restore();
 }

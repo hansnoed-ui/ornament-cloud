@@ -38,11 +38,11 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 const messe = (page, abschnitt, plus = 0, extra = {}) => page.evaluate(async ([abschnitt, plus, extra]) => {
   const { bild, szene } = await import("./szene.js?v=1");
   const S = window.__principesse, sz = szene(S.gemaelde, S.funken, { ...S.optionen, ...extra });
-  const c = document.createElement("canvas"); c.width = 1080; c.height = 1440; const x = c.getContext("2d");
+  const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
   const ziel = abschnitt === "ende" ? sz.zeit.dauer - 0.05 : sz.zeit.ab[abschnitt][0] + plus;
   for (let t = 0; t < ziel; t += 0.5) bild(x, sz, t);
   bild(x, sz, ziel);
-  const d = x.getImageData(0, 0, 1080, 1440).data, g = [0xf7, 0xf3, 0xec];
+  const d = x.getImageData(0, 0, sz.breite, sz.hoehe).data, g = [0xf7, 0xf3, 0xec];
   let grund = 0, weiss = 0, gold = 0, dunkel = 0;
   for (let i = 0; i < d.length; i += 4) {
     if (Math.abs(d[i] - g[0]) < 3 && Math.abs(d[i + 1] - g[1]) < 3 && Math.abs(d[i + 2] - g[2]) < 3) grund++;
@@ -111,12 +111,12 @@ await check("Einstellungen: Pinsel rechnet neu, Grund Nachtblau, Foto wieder weg
   await ctx.close();
 });
 
-await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern; Standbild PNG 1080 × 1440", async () => {
+await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern im Format des Bilds; Standbild PNG", async () => {
   const ersatz = () => {
     window.VideoEncoder = class {
       static async isConfigSupported(cfg) { return { supported: cfg.codec === "avc1.640028", config: cfg }; }
       constructor({ output }) { this.output = output; this.encodeQueueSize = 0; this.n = 0; }
-      configure() {}
+      configure(cfg) { window.__cfg = cfg; }
       encode(frame, { keyFrame }) {
         const daten = new Uint8Array(16).fill(this.n & 255);
         this.output({ type: keyFrame ? "key" : "delta", timestamp: frame.timestamp, byteLength: 16, copyTo: (z) => z.set(daten) },
@@ -138,9 +138,41 @@ await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern; Stan
   const finde = (liste, ...pfad) => pfad.reduce((l, t) => (Array.isArray(l) ? l : l.kinder).find((x) => x.typ === t), liste);
   const stsz = finde(kisten(d), "moov", "trak", "mdia", "minf", "stbl", "stsz");
   assert.equal(new DataView(d.buffer).getUint32(stsz.o + 16), bilder);
+  assert.deepEqual(await page.evaluate(() => [window.__cfg.width, window.__cfg.height]), [1080, 1136]);
+  const tkhd = finde(kisten(d), "moov", "trak", "tkhd"), v = new DataView(d.buffer);
+  assert.deepEqual([v.getUint32(tkhd.o + tkhd.groesse - 8) >>> 16, v.getUint32(tkhd.o + tkhd.groesse - 4) >>> 16], [1080, 1136]);
   const [png] = await Promise.all([page.waitForEvent("download"), page.click("#png")]);
   const b = readFileSync(await png.path());
-  assert.deepEqual([b.readUInt32BE(16), b.readUInt32BE(20)], [1080, 1440]);
+  assert.deepEqual([b.readUInt32BE(16), b.readUInt32BE(20)], [1080, 1136], "Standbild im Format des Bilds (Fische, fast quadratisch)");
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
+await check("Format: wie das Bild (Standard), 3 : 4 und 1 : 1; Vorschau und Signet passen sich an, die Wahl bleibt", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  await page.click('[data-beispiel="fische"]');
+  await bereit(page);
+  assert.equal(await page.getAttribute('[data-format="bild"]', "aria-pressed"), "true");
+  assert.deepEqual(await page.evaluate(() => [window.__principesse.optionen.breite, window.__principesse.optionen.hoehe]), [1080, 1136]);
+  await page.click('[data-format="1:1"]');
+  await page.waitForFunction(() => window.__principesse.optionen?.hoehe === 1080, null, { timeout: 90_000 });
+  assert.deepEqual(await page.evaluate(() => [document.getElementById("vorschau").width, document.getElementById("vorschau").height]), [1080, 1080]);
+  const box = await page.locator("#vorschau").boundingBox();
+  assert.ok(Math.abs(box.width / box.height - 1) < 0.01, "Vorschau quadratisch");
+  // das Signet passt auch ins Quadrat: Figur und Name im Bild, mit Rand
+  const rand = await page.evaluate(async () => {
+    const { bild, szene } = await import("./szene.js?v=1");
+    const S = window.__principesse, sz = szene(S.gemaelde, S.funken, S.optionen);
+    const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
+    bild(x, sz, sz.zeit.ab.signetStehen[0] + 0.2);
+    const d = x.getImageData(0, 0, sz.breite, sz.hoehe).data;
+    let oben = sz.hoehe, unten = 0;
+    for (let i = 0; i < d.length; i += 4) if (d[i] < 120 && d[i + 1] < 120) { const y = Math.floor(i / 4 / sz.breite); oben = Math.min(oben, y); unten = Math.max(unten, y); }
+    return [oben, sz.hoehe - unten];
+  });
+  assert.ok(rand[0] > 40 && rand[1] > 40, `Signet mit Rand oben und unten (${rand})`);
+  await page.reload();
+  assert.equal(await page.getAttribute('[data-format="1:1"]', "aria-pressed"), "true", "bleibt gewählt");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
@@ -150,6 +182,8 @@ await check("Handy: nichts ragt seitlich hinaus, Vorschau 3 : 4", async () => {
   await page.click('[data-beispiel="hund"]');
   await bereit(page);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+  await page.click('[data-format="3:4"]');
+  await page.waitForFunction(() => window.__principesse.optionen?.hoehe === 1440, null, { timeout: 90_000 });
   const box = await page.locator("#vorschau").boundingBox();
   assert.ok(Math.abs(box.width / box.height - 0.75) < 0.01);
   assert.ok(await page.evaluate(() => [...document.querySelectorAll(".segment button")].every((x) => x.scrollWidth <= x.clientWidth + 1)), "Beschriftungen auf einer Zeile");
