@@ -118,6 +118,11 @@
     .ergebnis { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
     .ergebnis h2::before { display: none; }
     .ergebnis video { display: block; width: min(100%, 360px); aspect-ratio: 3 / 4; border-radius: 8px; background: #000; }
+    .beispiele { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .beispiele span { color: var(--muted); font-size: 0.9rem; }
+    .beispiele button { padding: 0; border: 2px solid transparent; border-radius: 10px; background: none; cursor: pointer; line-height: 0; }
+    .beispiele button:hover, .beispiele button:focus-visible { border-color: var(--accent); outline: none; }
+    .beispiele img { width: 44px; height: 60px; object-fit: cover; border-radius: 8px; }
     .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
     /* «Principesse als App installieren» (pwa.js): nur auf dieser Seite, nicht in der installierten App */
     .installieren { margin: 8px auto 36px; max-width: 36em; text-align: center; }
@@ -166,6 +171,15 @@
             <span class="ablage-text"><b id="ablage-titel">Bild wählen</b><span>Foto des Bilds, oder hierher ziehen. Es wird mit Pinselstrichen nachgemalt; Glitzer funkelt.</span></span>
             <input type="file" id="datei" accept="image/*" aria-label="Bild wählen">
           </label>
+          <!-- Beispiele: sechs Prinzessinnen-Bilder (neu seit dem 12. Oktober 2026, ersetzen die früheren drei) -->
+          <div class="beispiele"><span>Beispiele:</span>
+            <button type="button" data-beispiel="sterne" aria-label="Beispiel: Prinzessin mit Sternenkrone"><img src="beispiel-sterne.jpg" alt="" loading="lazy"></button>
+            <button type="button" data-beispiel="gold" aria-label="Beispiel: Prinzessin im goldenen Kleid"><img src="beispiel-gold.jpg" alt="" loading="lazy"></button>
+            <button type="button" data-beispiel="rosa" aria-label="Beispiel: Prinzessin mit orangen Locken"><img src="beispiel-rosa.jpg" alt="" loading="lazy"></button>
+            <button type="button" data-beispiel="streifen" aria-label="Beispiel: Prinz auf Streifen"><img src="beispiel-streifen.jpg" alt="" loading="lazy"></button>
+            <button type="button" data-beispiel="blumen" aria-label="Beispiel: Prinzessin im Blumenkleid"><img src="beispiel-blumen.jpg" alt="" loading="lazy"></button>
+            <button type="button" data-beispiel="krone" aria-label="Beispiel: Prinzessin mit goldener Krone"><img src="beispiel-krone.jpg" alt="" loading="lazy"></button>
+          </div>
           <section class="tafel" aria-label="Format, Pinsel, Glitzer und Grund">
             <div class="einstellung">
               <span class="name" id="format-titel">Format</span>
@@ -273,8 +287,8 @@
       <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
     </div>
   </footer>
-  <script type="module" src="app.js?v=14"></script>
-  <script type="module" src="pwa.js?v=14"></script>
+  <script type="module" src="app.js?v=16"></script>
+  <script type="module" src="pwa.js?v=16"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

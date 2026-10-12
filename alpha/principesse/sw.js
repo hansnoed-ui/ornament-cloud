@@ -6,11 +6,11 @@
 // alle anderen: zuerst das Netz, ohne Netz aus dem Speicher. Jede erfolgreiche Antwort aktualisiert den Speicher.
 // Eigener Cache «principesse-…»; fremde Caches (ORNA «nn-…», ORMA «orma-…», The Fictory «fictory-…») werden nie berührt.
 
-const CACHE = "principesse-2";   // neu: die Beispielbilder fallen aus dem Speicher
+const CACHE = "principesse-3";   // neu: die sechs neuen Beispielbilder
 const START = new URL("./", self.registration.scope).href;
-// Dinge, die der Browser für die Installation braucht (die Seite hat seit dem 12. Oktober 2026 keine Beispielbilder mehr). Die installierte App
+// Dinge, die die Seite erst später holt (die Beispielbilder per Klick) oder die der Browser für die Installation braucht. Die installierte App
 // startet auf derselben Seite (start_url ./): sie verweist auf keine andere Seite der Website, eine eigene Abschrift braucht es nicht.
-const DAZU = ["manifest.webmanifest",
+const DAZU = ["beispiel-sterne.jpg", "beispiel-gold.jpg", "beispiel-rosa.jpg", "beispiel-streifen.jpg", "beispiel-blumen.jpg", "beispiel-krone.jpg", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png"];
 
 /** Verweise in HTML, CSS und JavaScript (nur dieselbe Herkunft) */

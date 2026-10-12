@@ -32,7 +32,7 @@ async function oeffne({ vorher = null, ...opts } = {}) {
   await page.goto(base);
   return { ctx, page, fehler, fremd };
 }
-// Testbilder (seit dem 12. Oktober 2026 hat die Seite keine Beispielbilder mehr): im Browser gezeichnet, ein Bild mit Streifen, einer Figur mit
+// Testbilder: im Browser gezeichnet (unabhängig von den Beispielen der Seite), ein Bild mit Streifen, einer Figur mit
 // Krone und gestreiftem Kleid und dichtem, hellem Glitzer; in den Seitenverhältnissen der früheren Beispiele (hoch, fast quadratisch, 3 : 4)
 const BILDER = await (async () => {
   const p = await (await browser.newContext()).newPage();
@@ -88,11 +88,11 @@ const messe = (page, abschnitt, plus = 0, extra = {}) => page.evaluate(async ([a
   return { grund: grund / n, weiss, gold, dunkel: dunkel / n, dauer: sz.zeit.dauer };
 }, [abschnitt, plus, extra]);
 
-await check("Bild: wird nachgemalt, Glitzer gefunden, Vorschau läuft; keine Beispielbilder mehr", async () => {
+await check("Beispiel: sechs zur Wahl, eines wird nachgemalt, Glitzer gefunden, Vorschau läuft", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   assert.equal(await page.isVisible(".ablage .plus svg"), true, "das grosse Plus");
-  assert.equal(await page.locator("[data-beispiel], .beispiele").count(), 0, "keine Beispiele (Wunsch vom 12. Oktober 2026)");
-  await laden(page, "hoch");
+  assert.equal(await page.locator("[data-beispiel]").count(), 6, "sechs Beispiele (12. Oktober 2026)");
+  await page.click('[data-beispiel="krone"]');
   await bereit(page);
   const text = await page.textContent("#auswertung");
   const striche = Number(text.match(/^([\d’']+) Pinselstriche/)[1].replace(/\D/g, ""));
@@ -117,7 +117,7 @@ await check("Film: leere Leinwand, Gemälde deckt, Glitzer funkelt (und ist absc
   const halb = await messe(page, "malen", 1.0), voll = await messe(page, "stehen", 1.2);
   assert.ok(halb.grund < 0.6 && voll.grund < 0.01, `Gemälde deckt (${halb.grund} → ${voll.grund})`);
   const ohne = await messe(page, "stehen", 1.2, { glitzer: 0 });
-  assert.ok(voll.weiss > ohne.weiss + 500, `Glitzer leuchtet (${ohne.weiss} → ${voll.weiss})`);
+  assert.ok(voll.weiss > ohne.weiss + 200, `Glitzer leuchtet, dezent (${ohne.weiss} → ${voll.weiss})`);   // seit dem 12. Oktober 2026 zurückhaltender
   const zweit = await messe(page, "zweitStehen", 2.5);
   assert.ok(zweit.grund < 0.05, "das Foto füllt das Bild");
   const signet = await messe(page, "signetStehen", 0.3);
@@ -238,8 +238,8 @@ await check("App (12. Oktober 2026): Knopf «Principesse als App installieren»,
   const manifest = await cdp.send("Page.getAppManifest");
   assert.deepEqual(manifest.errors, []);
   await page.reload(); await page.waitForFunction(() => navigator.serviceWorker.controller);
-  const gespeichert = await page.evaluate(async () => (await (await caches.open("principesse-2")).keys()).map((r) => new URL(r.url).pathname + new URL(r.url).search));
-  for (const d of ["/alpha/principesse/", "/alpha/principesse/icons/icon-512.png", "/vendor/fonts/inter-display-500-latin.woff2"])
+  const gespeichert = await page.evaluate(async () => (await (await caches.open("principesse-3")).keys()).map((r) => new URL(r.url).pathname + new URL(r.url).search));
+  for (const d of ["/alpha/principesse/", "/alpha/principesse/beispiel-krone.jpg", "/alpha/principesse/icons/icon-512.png", "/vendor/fonts/inter-display-500-latin.woff2"])
     assert.ok(gespeichert.includes(d), `gespeichert: ${d}`);
   for (const m of ["app", "szene", "signet", "malen", "glitzer", "rechner", "pwa"]) assert.ok(gespeichert.some((d) => new RegExp(`^/alpha/principesse/${m}\\.js\\?v=\\d+$`).test(d)), `Modul ${m}.js mit Versionsmarke`);
   for (const m of ["sketchory/ablauf", "sketchory/mp4", "the-fictory/dauer"]) assert.ok(gespeichert.some((d) => d.startsWith(`/alpha/${m}.js?v=`)), `${m}.js`);

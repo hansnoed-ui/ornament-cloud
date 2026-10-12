@@ -133,11 +133,13 @@ export function glaetten(q, w, h, { radius = 3, farbweite = 36, durchgaenge = 2 
 /**
  * auffrischen, wie man ein Foto eines Bilds von Hand bearbeiten würde:
  * 1. Weissabgleich: helle, unbunte Stellen (Papier, Weiss, Glanz; ein blass gefärbter Grund wie Lila zählt nicht) werden neutral (Farbstich des Lichts weg; zu drei Fünfteln, höchstens etwa ±7 %, damit gewollt cremige Farben cremig bleiben)
- *    Ziel ist ein warmes Weiss (Rot etwas mehr, Blau etwas weniger), damit das Bild nicht kühl wirkt; ohne solche Stellen nur ein Hauch Wärme
- * 2. Tonwerte: dunkelste und hellste 0,5 % spreizen (höchstens 1,7-fach), aber nur bis knapp unter Weiss, dann eine mittlere S-Kurve und
+ *    Ziel ist ein warmes Weiss (Rot etwas mehr, Blau etwas weniger), damit das Bild nicht kühl wirkt; ohne solche Stellen kein Ausgleich
+ * 2. Tonwerte: dunkelste und hellste 0,5 % spreizen (höchstens 1,3-fach), aber nur von 16 bis 234 (matt, nicht grell), dann eine sanfte S-Kurve und
  *    Mitteltöne einen Hauch dunkler; beides auf die Helligkeit, die Farbunterschiede bleiben (sonst bleichen blasse Farben aus)
  * 3. Klarheit: lokaler Kontrast (Helligkeit gegen ihre weiche Umgebung, Radius ~ 1/40 der Bildbreite)
- * 4. Farbkraft: alle Farben etwas satter, matte deutlich (Lebendigkeit); nur fast reines Weiss bleibt weiss
+ * 4. Farbkraft: matte Farben ein wenig satter, schon kräftige etwas gedämpft; nur fast reines Weiss bleibt weiss
+ * 5. edler Filter: warme Lichter, ein Hauch Kühle in den Tiefen, sanft dunklere Ränder
+ * (Rückmeldung vom 12. Oktober 2026 zu sechs neuen Bildern: «zu hell und farblich zu grell … einen edlen Filter darüber»)
  * Stärke 0 lässt das Bild, wie es ist; 1 ist die übliche Stärke.
  */
 /** das warme Weiss, auf das der Weissabgleich zielt (Anteile von Rot, Grün, Blau gegenüber neutralem Grau) */
@@ -156,34 +158,33 @@ export function optimieren({ r, g, b }, w, h, staerke = 1) {
     if (L(i) >= hellGrenze && mx > 90 && (mx - mn) / mx < 0.1) { sr += R[i]; sg += G[i]; sb += B[i]; k++; }
   }
   if (k > n * 0.004) {
-    const grau = (sr + sg + sb) / 3, klemm = (x) => Math.max(0.88, Math.min(1.12, x)), mix = (x) => 1 + (x - 1) * 0.6 * staerke;
+    const grau = (sr + sg + sb) / 3, klemm = (x) => Math.max(0.88, Math.min(1.12, x)), mix = (x) => 1 + (x - 1) * 0.4 * staerke;
     const fr = mix(klemm((grau * WARM[0]) / sr)), fg = mix(klemm((grau * WARM[1]) / sg)), fb = mix(klemm((grau * WARM[2]) / sb));
     for (let i = 0; i < n; i++) { R[i] *= fr; G[i] *= fg; B[i] *= fb; }
-  } else {
-    const wr = 1 + 0.02 * staerke, wb = 1 - 0.03 * staerke;
-    for (let i = 0; i < n; i++) { R[i] *= wr; B[i] *= wb; }
-  }
+  }   // ohne unbunte Stellen kein pauschaler Ausgleich (die Wärme gibt der edle Filter, Schritt 5, nur fast unbunten Lichtern)
   // 2. Tonwerte und S-Kurve: auf die Helligkeit; jeder Kanal bekommt dieselbe Änderung, so bleiben die Farbunterschiede (blasses Lila bleibt Lila)
-  const UNTEN = 6, OBEN = 242;                    // nicht ganz Schwarz und nicht ganz Weiss: helle Gründe behalten ihre Farbe
+  const UNTEN = 16, OBEN = 234;                   // matte Tiefen, Lichter klar unter Weiss: edel statt grell, helle Gründe behalten ihre Farbe
   const hist = histo(L), lo = stelle(hist, 0.005), hi = stelle(hist, 0.995), mitte = (lo + hi) / 2;
-  const f = 1 + (Math.max(1, Math.min(1.7, (OBEN - UNTEN) / Math.max(1, hi - lo))) - 1) * staerke;
+  const f = 1 + (Math.max(1, Math.min(1.3, (OBEN - UNTEN) / Math.max(1, hi - lo))) - 1) * staerke;
   const o = Math.max(UNTEN, Math.min(OBEN - (hi - lo) * f, mitte - (mitte - lo) * f));
   const kurve = new Float32Array(256);
   for (let v = 0; v < 256; v++) {
-    const x = Math.max(0, Math.min(1, (o + (v - lo) * f) / 255)), s = x * x * (3 - 2 * x), y = x + (s - x) * 0.42 * staerke;
-    kurve[v] = 255 * y ** (1 + 0.08 * staerke);   // Mitteltöne einen Hauch dunkler (Gamma 1,08)
+    const x = Math.max(0, Math.min(1, (o + (v - lo) * f) / 255)), s = x * x * (3 - 2 * x), y = x + (s - x) * 0.22 * staerke;
+    kurve[v] = 255 * y ** (1 + 0.06 * staerke);   // Mitteltöne einen Hauch dunkler (Gamma 1,06)
   }
   const ton = (v) => { const c = Math.max(0, Math.min(255, v)), j = Math.min(254, c | 0), t = c - j; return kurve[j] + (kurve[j + 1] - kurve[j]) * t; };
   for (let i = 0; i < n; i++) {
-    const l = L(i), d = ton(l) - l;
-    R[i] = Math.max(0, Math.min(255, R[i] + d)); G[i] = Math.max(0, Math.min(255, G[i] + d)); B[i] = Math.max(0, Math.min(255, B[i] + d));
+    // heller: dieselbe Menge zu jedem Kanal (blasse Farben bleiben sichtbar); dunkler: alle im selben Verhältnis (kräftige Farben werden nicht grell)
+    const l = L(i), z = ton(l), d = z - l, k = l > 1 ? z / l : 1;
+    if (d >= 0) { R[i] = Math.min(255, R[i] + d); G[i] = Math.min(255, G[i] + d); B[i] = Math.min(255, B[i] + d); }
+    else { R[i] *= k; G[i] *= k; B[i] *= k; }
   }
   // 3. Klarheit
   const hell = new Float32Array(n);
   for (let i = 0; i < n; i++) hell[i] = L(i);
   const umgebung = unschaerfe(hell, w, h, Math.max(3, Math.round(w / 40)), 2);
   for (let i = 0; i < n; i++) {
-    const d = (hell[i] - umgebung[i]) * 0.38 * staerke, m = Math.max(0, Math.min(1, Math.min(hell[i], 255 - hell[i]) / 40));
+    const d = (hell[i] - umgebung[i]) * 0.22 * staerke, m = Math.max(0, Math.min(1, Math.min(hell[i], 255 - hell[i]) / 40));
     R[i] = Math.max(0, Math.min(255, R[i] + d * m)); G[i] = Math.max(0, Math.min(255, G[i] + d * m)); B[i] = Math.max(0, Math.min(255, B[i] + d * m));
   }
   // 4. Farbkraft
@@ -192,8 +193,20 @@ export function optimieren({ r, g, b }, w, h, staerke = 1) {
     // fast weisse Stellen (Papier, Glanz) nicht mitfärben, sonst wird jedes Weiss cremig
     const weiss = Math.max(0, Math.min(1, (l - 215) / 30)) * Math.max(0, Math.min(1, (0.08 - satt) / 0.08));
     const hell = Math.max(0, Math.min(1, (l - 200) / 45));   // sehr helle Stellen nur halb so viel, sonst wird Papier gelb
-    const plus = 1 + staerke * (0.14 + 0.3 * (1 - satt) ** 1.5) * (1 - 0.85 * weiss) * (1 - 0.5 * hell);
+    // matte Farben ein wenig satter, schon kräftige etwas gedämpft (nicht grell)
+    const plus = 1 + staerke * ((0.1 * (1 - satt) ** 2) * (1 - 0.85 * weiss) * (1 - 0.5 * hell) - 0.25 * Math.max(0, satt - 0.4));
     R[i] = Math.max(0, Math.min(255, l + (R[i] - l) * plus)); G[i] = Math.max(0, Math.min(255, l + (G[i] - l) * plus)); B[i] = Math.max(0, Math.min(255, l + (B[i] - l) * plus));
+  }
+  // 5. edler Filter: warme Lichter, ein Hauch Kühle in den Tiefen, sanft dunklere Ränder (wie ein gutes Foto eines Bilds an der Wand)
+  for (let y = 0, i = 0; y < h; y++) for (let x = 0; x < w; x++, i++) {
+    // Wärme nur für fast unbunte Lichter, die nicht schon warm sind (gelbliches Papier wird nicht gelber, ein blasser lila Grund bleibt lila)
+    const l = L(i), mx = Math.max(R[i], G[i], B[i]), satt = mx > 1 ? (mx - Math.min(R[i], G[i], B[i])) / mx : 0;
+    const licht = Math.max(0, Math.min(1, (l - 140) / 100)) * Math.max(0, Math.min(1, 1 - (R[i] - B[i]) / 40)) * Math.max(0, 1 - satt / 0.12);
+    const tiefe = Math.max(0, Math.min(1, (110 - l) / 110));
+    const dx = x / w - 0.5, dy = y / h - 0.5, rand = 1 - staerke * 0.12 * ((dx * dx + dy * dy) / 0.5) ** 1.5;
+    R[i] = Math.max(0, Math.min(255, (R[i] + staerke * (5 * licht - 1 * tiefe)) * rand));
+    G[i] = Math.max(0, Math.min(255, (G[i] + staerke * 2 * licht) * rand));
+    B[i] = Math.max(0, Math.min(255, (B[i] + staerke * (-6 * licht + 4 * tiefe)) * rand));
   }
   return { r: R, g: G, b: B };
 }
