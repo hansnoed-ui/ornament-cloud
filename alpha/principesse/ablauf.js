@@ -1,9 +1,9 @@
 // «Principesse» – Ablauf des Films (ohne DOM). Format wählbar (wie das Bild, 3 : 4, 1 : 1; kurze Seite 1080, lange höchstens 1920), 30 Bilder pro Sekunde.
-//   leere Leinwand → das Bild malt sich mit Pinselstrichen (breit bis fein, 5–8 s) → steht, der Glitzer funkelt (3 s) → blendet aus
+//   leere Leinwand → das Bild malt sich mit Pinselstrichen (vier Durchgänge von breit bis fein, jeder von oben nach unten, 5–8 s) → steht, der Glitzer funkelt (3 s) → blendet aus
 //   → (wenn gewählt) ein Foto blendet ein, darauf erscheint der Satz Buchstabe um Buchstabe → blendet aus
 //   → das Signet: eine kleine Prinzessin zeichnet sich, «Principesse» → steht → blendet aus.
 import { textEin, zeichenZahl, woerter, klemm } from "../sketchory/ablauf.js?v=8";
-import { DAUER as SIGNET } from "./signet.js?v=2";
+import { DAUER as SIGNET } from "./signet.js?v=3";
 
 export { FPS, anteil, weich, ausblenden, bezier, versatz, ZEICHEN, satzbild, satzPunkt } from "../sketchory/ablauf.js?v=8";
 
@@ -45,8 +45,8 @@ export function zeitachse({ malen = 6, foto = false, text = "" } = {}) {
 /** Malplan: jedem Strich Beginn und Ende (Sekunden ab Malbeginn). Breite Pinsel zuerst; jede Stufe bekommt ihren Teil der Zeit,
  *  die Striche einer Stufe beginnen nacheinander und wachsen in kurzer Zeit zu ihrer Länge (breite langsamer als feine). */
 export function malplan(striche, stufen, dauer) {
-  const ANTEIL = [0.26, 0.2, 0.18, 0.18, 0.18].slice(0, stufen);
-  const ZUG = [0.45, 0.32, 0.18, 0.1, 0.06];             // so lange wächst ein Strich je Stufe (Sekunden)
+  const ANTEIL = [0.3, 0.24, 0.24, 0.22, 0.2].slice(0, stufen);
+  const ZUG = [0.6, 0.42, 0.28, 0.18, 0.12];                 // so lange wächst ein Strich je Stufe (Sekunden)
   const summe = ANTEIL.reduce((a, b) => a + b, 0);
   const zahl = Array(stufen).fill(0);
   for (const s of striche) zahl[s.stufe]++;
