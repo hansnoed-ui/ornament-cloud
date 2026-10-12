@@ -1,11 +1,11 @@
 // «Principesse» – das Signet am Schluss des Films: eine kleine Prinzessin zeichnet sich (nach der Vorlage vom 12. Oktober 2026:
 // Krone mit fünf Kugeln, rundes Gesicht mit Wangen und Lächeln, Kleid mit Punkten, zwei Füsse; seit dem zweiten Wunsch ohne Locken),
 // dann füllt sich die Krone golden und funkelt, die Kugeln werden himbeerrot, die Wangen rosa, das Kleid farbig gestreift wie in der Vorlage
-// (die dunklen Streifen glitzern); darunter «Principesse» in der Grotesk und «by Katharina Strickler» in glitzerndem Gold.
+// (die dunklen Streifen glitzern); darunter «Principesse» in der Grotesk und «by Katharina» in glitzerndem Gold.
 // Alle Masse in Punkten der Vorlage (1500 × 2000), umgerechnet ins Bild; Figur und Name stehen in jedem Format mittig und passen hinein.
 import { anteil, weich, ausblenden } from "../sketchory/ablauf.js?v=8";
-import { zufall } from "./malen.js?v=18";
-import { funkeln } from "./glitzer.js?v=18";
+import { zufall } from "./malen.js?v=19";
+import { funkeln } from "./glitzer.js?v=19";
 
 export const FARBEN = {
   hell: { grund: "#f7f3ec", tinte: "#24202e", gold: "#c99a2e", glanz: "#fff1b0", beere: "#b3264f", wange: "#f3b9c8" },
@@ -14,7 +14,7 @@ export const FARBEN = {
 export const NAME = "Principesse";
 export const DAUER = 4.6;                       // Sekunden, bis alles steht (seit dem 12. Oktober 2026 kürzer: «by …» ist bei 4,4 s ganz da)
 export const SCHRIFT = { familie: '"Inter Display", "Helvetica Neue", Arial, sans-serif', gewicht: 500, groesse: 64, sperrung: 0.01 };
-export const VON = "by Katharina Strickler";
+export const VON = "by Katharina";             // seit dem 12. Oktober 2026 ohne Nachnamen
 export const VON_SCHRIFT = { familie: '"Inter Display", "Helvetica Neue", Arial, sans-serif', gewicht: 600, groesse: 30, sperrung: 0.06 };
 // Streifen des Kleids von oben nach unten, wie in der Vorlage (hellblau, dunkles Petrol mit Glitzer, Indigo, Türkis); die Punkte indigo
 const STREIFEN = ["#5a9fd8", "#1f5f63", "#3f4fc4", "#5a9fd8", "#1f5f63", "#3f4fc4", "#33a08b", "#5a9fd8", "#1f5f63"];
@@ -170,7 +170,7 @@ export function signet(ctx, t, farben, breite = 1080, hoehe = 1440) {
     const bx = breite / 2 - weite / 2 + ctx.measureText(NAME.slice(0, i)).width;
     if (e > 0) { ctx.globalAlpha = e; ctx.fillText(z, bx, L.schriftY + (1 - e) * 12); }
   });
-  // «by Katharina Strickler» in Gold, das glitzert: Körner in den Buchstaben, ein Glanz, der darüber zieht, ein paar Sterne
+  // «by Katharina» in Gold, das glitzert: Körner in den Buchstaben, ein Glanz, der darüber zieht, ein paar Sterne
   const vonEin = weich(anteil(t, 3.7, 4.4));
   if (vonEin > 0) {
     const klein = Math.round(L.von);
@@ -188,7 +188,7 @@ export function signet(ctx, t, farben, breite = 1080, hoehe = 1440) {
 
 const leinwandFuer = (w, h) => (typeof OffscreenCanvas !== "undefined" ? new OffscreenCanvas(w, h) : Object.assign(document.createElement("canvas"), { width: w, height: h }));
 
-/** die Zeile «by Katharina Strickler» einmal vorbereiten: Mass, Körner in den Buchstaben, Sterne an den Oberkanten */
+/** die Zeile «by Katharina» einmal vorbereiten: Mass, Körner in den Buchstaben, Sterne an den Oberkanten */
 function vonZeile(klein) {
   const font = `${VON_SCHRIFT.gewicht} ${klein}px ${VON_SCHRIFT.familie}`, sperrung = `${(VON_SCHRIFT.sperrung * klein).toFixed(1)}px`;
   const rand = Math.ceil(klein * 0.6), grund = Math.ceil(klein * 1.2);

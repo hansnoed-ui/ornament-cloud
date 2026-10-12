@@ -153,10 +153,10 @@ test("Malplan: Stufe um Stufe, innerhalb der Malzeit, breite Züge langsamer als
   assert.ok(plan[0][1] - plan[0][0] > plan.at(-1)[1] - plan.at(-1)[0]);
 });
 
-test("Signet: die Figur nach der Vorlage (Krone mit fünf Kugeln, Gesicht, Kleid, Füsse), der Name «Principesse» und «by Katharina Strickler»", () => {
+test("Signet: die Figur nach der Vorlage (Krone mit fünf Kugeln, Gesicht, Kleid, Füsse), der Name «Principesse» und «by Katharina»", () => {
   const L = linien(), teile = L.map((l) => l.teil);
   assert.equal(NAME, "Principesse");
-  assert.equal(VON, "by Katharina Strickler");
+  assert.equal(VON, "by Katharina");
   assert.equal(teile.filter((t) => t === "kugel").length, 5);
   for (const t of ["krone", "gesicht", "auge", "mund", "wange", "kleid", "punkt", "fuss"]) assert.ok(teile.includes(t), t);
   assert.ok(!teile.includes("haar"), "ohne die Wellenlinie über dem Kopf (Wunsch vom 12. Oktober 2026)");
