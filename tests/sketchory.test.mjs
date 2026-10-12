@@ -202,18 +202,27 @@ test("Seite: Alpha (noindex, Navigation, nur aus der Übersicht verlinkt), Versi
   assert.ok(uebersicht.includes('<a href="sketchory/">Sketchory</a>'));
 });
 
+const szene0 = () => lies("alpha/sketchory/szene.js");
+
 test("Schrift des Satzes: Grotesk nah an Helvetica Now (Inter Display Medium, mitgeliefert mit Lizenz), Helvetica Now nur, wenn installiert", () => {
   const html = lies("alpha/sketchory/index.html");
   assert.match(html, /@font-face \{ font-family: "Inter Display"; font-style: normal; font-weight: 500; [^}]*src: url\(\.\.\/\.\.\/vendor\/fonts\/inter-display-500-latin\.woff2\) format\("woff2"\); \}/);
   const datei = readFileSync(new URL("vendor/fonts/inter-display-500-latin.woff2", root));
   assert.equal(datei.subarray(0, 4).toString("latin1"), "wOF2");
   assert.ok(datei.length < 60_000, "schlanke Teilmenge");
+  // seit dem 12. Oktober 2026 im Video der kräftigere Schnitt (SemiBold, «etwas kontrastreicher»)
+  assert.match(html, /@font-face \{ font-family: "Inter Display"; font-style: normal; font-weight: 600; [^}]*src: url\(\.\.\/\.\.\/vendor\/fonts\/inter-display-600-latin\.woff2\) format\("woff2"\); \}/);
+  const kraeftig = readFileSync(new URL("vendor/fonts/inter-display-600-latin.woff2", root));
+  assert.equal(kraeftig.subarray(0, 4).toString("latin1"), "wOF2");
+  assert.ok(kraeftig.length < 60_000);
+  assert.match(szene0(), /serif: \{ familie: 'Newsreader, Georgia, serif', gewicht: 400,/);
+  assert.match(szene0(), /sans: \{ familie: '"Instrument Sans", system-ui, sans-serif', gewicht: 500,/);
   assert.match(lies("vendor/fonts/LICENSE-Inter.txt"), /SIL Open Font License 1\.1[\s\S]*PERMISSION & CONDITIONS/);
   assert.match(html, /<option value="grotesk" selected>Grotesk \(Inter Display\)<\/option>/, "Standard");
   assert.ok(!html.includes('value="helvetica"'), "Helvetica Now erscheint erst, wenn sie auf dem Gerät gefunden wird");
   assert.ok(!/helvetica-?now[^"]*\.(woff2?|otf|ttf)/i.test(html + lies("alpha/sketchory/app.js")), "keine Datei von Helvetica Now");
   const szene = lies("alpha/sketchory/szene.js");
-  assert.match(szene, /grotesk: \{ familie: '"Inter Display", [^']+', gewicht: 500, groesse: 68, sperrung: -0\.015/);
+  assert.match(szene, /grotesk: \{ familie: '"Inter Display", [^']+', gewicht: 600, groesse: 68, sperrung: -0\.015/);
   assert.match(szene, /schrift = "grotesk"/);
 });
 
