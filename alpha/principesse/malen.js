@@ -132,11 +132,12 @@ export function glaetten(q, w, h, { radius = 3, farbweite = 36, durchgaenge = 2 
 
 /**
  * auffrischen, wie man ein Foto eines Bilds von Hand bearbeiten würde:
- * 1. Weissabgleich: helle, fast unbunte Stellen (Papier, Weiss, Glanz) werden neutral (Farbstich des Lichts weg; zu drei Fünfteln, höchstens etwa ±7 %, damit gewollt cremige Farben cremig bleiben)
+ * 1. Weissabgleich: helle, unbunte Stellen (Papier, Weiss, Glanz; ein blass gefärbter Grund wie Lila zählt nicht) werden neutral (Farbstich des Lichts weg; zu drei Fünfteln, höchstens etwa ±7 %, damit gewollt cremige Farben cremig bleiben)
  *    Ziel ist ein warmes Weiss (Rot etwas mehr, Blau etwas weniger), damit das Bild nicht kühl wirkt; ohne solche Stellen nur ein Hauch Wärme
- * 2. Tonwerte: dunkelste und hellste 0,5 % auf Schwarz und Weiss spreizen (höchstens 1,7-fach), dann eine mittlere S-Kurve
+ * 2. Tonwerte: dunkelste und hellste 0,5 % spreizen (höchstens 1,7-fach), aber nur bis knapp unter Weiss, dann eine mittlere S-Kurve und
+ *    Mitteltöne einen Hauch dunkler; beides auf die Helligkeit, die Farbunterschiede bleiben (sonst bleichen blasse Farben aus)
  * 3. Klarheit: lokaler Kontrast (Helligkeit gegen ihre weiche Umgebung, Radius ~ 1/40 der Bildbreite)
- * 4. Farbkraft: alle Farben etwas satter, matte deutlich (Lebendigkeit); fast Weisses bleibt weiss
+ * 4. Farbkraft: alle Farben etwas satter, matte deutlich (Lebendigkeit); nur fast reines Weiss bleibt weiss
  * Stärke 0 lässt das Bild, wie es ist; 1 ist die übliche Stärke.
  */
 /** das warme Weiss, auf das der Weissabgleich zielt (Anteile von Rot, Grün, Blau gegenüber neutralem Grau) */
@@ -152,7 +153,7 @@ export function optimieren({ r, g, b }, w, h, staerke = 1) {
   let sr = 0, sg = 0, sb = 0, k = 0;
   for (let i = 0; i < n; i++) {
     const mx = Math.max(R[i], G[i], B[i]), mn = Math.min(R[i], G[i], B[i]);
-    if (L(i) >= hellGrenze && mx > 90 && (mx - mn) / mx < 0.22) { sr += R[i]; sg += G[i]; sb += B[i]; k++; }
+    if (L(i) >= hellGrenze && mx > 90 && (mx - mn) / mx < 0.1) { sr += R[i]; sg += G[i]; sb += B[i]; k++; }
   }
   if (k > n * 0.004) {
     const grau = (sr + sg + sb) / 3, klemm = (x) => Math.max(0.88, Math.min(1.12, x)), mix = (x) => 1 + (x - 1) * 0.6 * staerke;
@@ -162,17 +163,21 @@ export function optimieren({ r, g, b }, w, h, staerke = 1) {
     const wr = 1 + 0.02 * staerke, wb = 1 - 0.03 * staerke;
     for (let i = 0; i < n; i++) { R[i] *= wr; B[i] *= wb; }
   }
-  // 2. Tonwerte und S-Kurve (auf alle drei Kanäle gleich, die Farbtöne bleiben)
+  // 2. Tonwerte und S-Kurve: auf die Helligkeit; jeder Kanal bekommt dieselbe Änderung, so bleiben die Farbunterschiede (blasses Lila bleibt Lila)
+  const UNTEN = 6, OBEN = 242;                    // nicht ganz Schwarz und nicht ganz Weiss: helle Gründe behalten ihre Farbe
   const hist = histo(L), lo = stelle(hist, 0.005), hi = stelle(hist, 0.995), mitte = (lo + hi) / 2;
-  const f = 1 + (Math.min(1.7, 255 / Math.max(1, hi - lo)) - 1) * staerke;
-  const o = Math.max(0, Math.min(255 - (hi - lo) * f, mitte - (mitte - lo) * f));
+  const f = 1 + (Math.max(1, Math.min(1.7, (OBEN - UNTEN) / Math.max(1, hi - lo))) - 1) * staerke;
+  const o = Math.max(UNTEN, Math.min(OBEN - (hi - lo) * f, mitte - (mitte - lo) * f));
   const kurve = new Float32Array(256);
   for (let v = 0; v < 256; v++) {
-    const x = Math.max(0, Math.min(1, (o + (v - lo) * f) / 255)), s = x * x * (3 - 2 * x);
-    kurve[v] = 255 * (x + (s - x) * 0.42 * staerke);
+    const x = Math.max(0, Math.min(1, (o + (v - lo) * f) / 255)), s = x * x * (3 - 2 * x), y = x + (s - x) * 0.42 * staerke;
+    kurve[v] = 255 * y ** (1 + 0.08 * staerke);   // Mitteltöne einen Hauch dunkler (Gamma 1,08)
   }
   const ton = (v) => { const c = Math.max(0, Math.min(255, v)), j = Math.min(254, c | 0), t = c - j; return kurve[j] + (kurve[j + 1] - kurve[j]) * t; };
-  for (let i = 0; i < n; i++) { R[i] = ton(R[i]); G[i] = ton(G[i]); B[i] = ton(B[i]); }
+  for (let i = 0; i < n; i++) {
+    const l = L(i), d = ton(l) - l;
+    R[i] = Math.max(0, Math.min(255, R[i] + d)); G[i] = Math.max(0, Math.min(255, G[i] + d)); B[i] = Math.max(0, Math.min(255, B[i] + d));
+  }
   // 3. Klarheit
   const hell = new Float32Array(n);
   for (let i = 0; i < n; i++) hell[i] = L(i);
@@ -185,8 +190,9 @@ export function optimieren({ r, g, b }, w, h, staerke = 1) {
   for (let i = 0; i < n; i++) {
     const l = L(i), mx = Math.max(R[i], G[i], B[i]), mn = Math.min(R[i], G[i], B[i]), satt = mx > 1 ? Math.min(1, (mx - mn) / mx) : 0;
     // fast weisse Stellen (Papier, Glanz) nicht mitfärben, sonst wird jedes Weiss cremig
-    const weiss = Math.max(0, Math.min(1, (l - 190) / 50)) * Math.max(0, Math.min(1, (0.25 - satt) / 0.25));
-    const plus = 1 + staerke * (0.14 + 0.3 * (1 - satt) ** 1.5) * (1 - 0.85 * weiss);
+    const weiss = Math.max(0, Math.min(1, (l - 215) / 30)) * Math.max(0, Math.min(1, (0.08 - satt) / 0.08));
+    const hell = Math.max(0, Math.min(1, (l - 200) / 45));   // sehr helle Stellen nur halb so viel, sonst wird Papier gelb
+    const plus = 1 + staerke * (0.14 + 0.3 * (1 - satt) ** 1.5) * (1 - 0.85 * weiss) * (1 - 0.5 * hell);
     R[i] = Math.max(0, Math.min(255, l + (R[i] - l) * plus)); G[i] = Math.max(0, Math.min(255, l + (G[i] - l) * plus)); B[i] = Math.max(0, Math.min(255, l + (B[i] - l) * plus));
   }
   return { r: R, g: G, b: B };

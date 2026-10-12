@@ -1,4 +1,4 @@
-// «Principesse» (alpha/principesse/) – Browser-Tests (Playwright, Chromium): Beispiel malen lassen, Bilder des Films (leere Leinwand, Gemälde,
+// «Principesse» (alpha/principesse/) – Browser-Tests (Playwright, Chromium): ein Testbild malen lassen, Bilder des Films (leere Leinwand, Gemälde,
 // funkelnder Glitzer, Foto mit Satz, Signet, leerer Schluss), Video über WebCodecs (Ersatz-Encoder, Chromium hat hier kein H.264), Standbild,
 // Einstellungen, Handy ohne seitliches Scrollen, keine Anfragen nach aussen, als App installierbar und ohne Netz lauffähig.
 //   NODE_PATH=$(npm root -g) node tests/principesse.e2e.mjs
@@ -32,6 +32,40 @@ async function oeffne({ vorher = null, ...opts } = {}) {
   await page.goto(base);
   return { ctx, page, fehler, fremd };
 }
+// Testbilder (seit dem 12. Oktober 2026 hat die Seite keine Beispielbilder mehr): im Browser gezeichnet, ein Bild mit Streifen, einer Figur mit
+// Krone und gestreiftem Kleid und dichtem, hellem Glitzer; in den Seitenverhältnissen der früheren Beispiele (hoch, fast quadratisch, 3 : 4)
+const BILDER = await (async () => {
+  const p = await (await browser.newContext()).newPage();
+  const out = {};
+  for (const [name, w, h] of [["hoch", 1203, 1600], ["quadrat", 1520, 1600], ["dreivier", 1333, 1600]]) {
+    const url = await p.evaluate(([w, h]) => {
+      let s = 7; const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+      const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
+      for (let i = 0; i < 18; i++) {                                                     // Grund: gewellte Streifen
+        x.fillStyle = i % 2 ? "#e9f3f1" : "#2aa79f"; x.beginPath(); x.moveTo(0, (i * h) / 18);
+        for (let u = 0; u <= w; u += 40) x.lineTo(u, (i * h) / 18 + Math.sin(u / 90 + i) * 8);
+        x.lineTo(w, h); x.lineTo(0, h); x.fill();
+      }
+      const mx = w / 2, oy = h * 0.22;
+      x.fillStyle = "#1f5f9c"; x.beginPath(); x.moveTo(mx - w * 0.1, oy + h * 0.25); x.lineTo(mx + w * 0.1, oy + h * 0.25); x.lineTo(mx + w * 0.26, h * 0.9); x.lineTo(mx - w * 0.26, h * 0.9); x.fill();
+      for (let k = 0; k < 6; k++) { x.fillStyle = ["#3f4fc4", "#33a08b", "#5a9fd8"][k % 3]; x.fillRect(mx - w * 0.24, oy + h * (0.32 + k * 0.09), w * 0.48, h * 0.035); }
+      x.fillStyle = "#f6ece0"; x.strokeStyle = "#24202e"; x.lineWidth = 8; x.beginPath(); x.ellipse(mx, oy + h * 0.13, w * 0.24, h * 0.11, 0, 0, 7); x.fill(); x.stroke();
+      x.fillStyle = "#24202e"; for (const d of [-1, 1]) { x.beginPath(); x.arc(mx + d * w * 0.08, oy + h * 0.12, 14, 0, 7); x.fill(); }
+      x.strokeStyle = "#c0395f"; x.lineWidth = 6; x.beginPath(); x.arc(mx, oy + h * 0.13, w * 0.09, 0.3, 2.8); x.stroke();
+      x.fillStyle = "#c9a23a"; x.beginPath(); x.moveTo(mx - w * 0.16, oy + h * 0.03);                          // Krone
+      for (let k = 0; k <= 4; k++) { x.lineTo(mx - w * 0.16 + (k * w * 0.32) / 4, oy - h * 0.12); if (k < 4) x.lineTo(mx - w * 0.12 + (k * w * 0.32) / 4, oy - h * 0.04); }
+      x.lineTo(mx + w * 0.16, oy + h * 0.03); x.fill();
+      // Glitzer: dichte, helle Körner auf der Krone und auf einem Band im Kleid
+      for (const [x0, y0, x1, y1] of [[mx - w * 0.16, oy - h * 0.12, mx + w * 0.16, oy + h * 0.03], [mx - w * 0.22, oy + h * 0.62, mx + w * 0.22, oy + h * 0.66]])
+        for (let n = 0; n < (x1 - x0) * (y1 - y0) * 0.02; n++) { x.fillStyle = rnd() < 0.5 ? "#fffbe8" : "#ffffff"; x.fillRect(x0 + rnd() * (x1 - x0), y0 + rnd() * (y1 - y0), 3, 3); }
+      return c.toDataURL("image/jpeg", 0.92);
+    }, [w, h]);
+    out[name] = Buffer.from(url.split(",")[1], "base64");
+  }
+  await p.context().close();
+  return out;
+})();
+const laden = (page, name) => page.setInputFiles("#datei", { name: `${name}.jpg`, mimeType: "image/jpeg", buffer: BILDER[name] });
 const bereit = (page) => page.waitForFunction(() => !document.getElementById("video").disabled && window.__principesse?.sz, null, { timeout: 90_000 });
 
 /** Bild zur Zeit (Abschnitt + Versatz) messen: Anteil Grundfarbe, helle Funkenpunkte, Gold */
@@ -54,10 +88,11 @@ const messe = (page, abschnitt, plus = 0, extra = {}) => page.evaluate(async ([a
   return { grund: grund / n, weiss, gold, dunkel: dunkel / n, dauer: sz.zeit.dauer };
 }, [abschnitt, plus, extra]);
 
-await check("Beispiel: wird nachgemalt, Glitzer gefunden, Vorschau läuft", async () => {
+await check("Bild: wird nachgemalt, Glitzer gefunden, Vorschau läuft; keine Beispielbilder mehr", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   assert.equal(await page.isVisible(".ablage .plus svg"), true, "das grosse Plus");
-  await page.click('[data-beispiel="meerjungfrau"]');
+  assert.equal(await page.locator("[data-beispiel], .beispiele").count(), 0, "keine Beispiele (Wunsch vom 12. Oktober 2026)");
+  await laden(page, "hoch");
   await bereit(page);
   const text = await page.textContent("#auswertung");
   const striche = Number(text.match(/^([\d’']+) Pinselstriche/)[1].replace(/\D/g, ""));
@@ -70,10 +105,10 @@ await check("Beispiel: wird nachgemalt, Glitzer gefunden, Vorschau läuft", asyn
 
 await check("Film: leere Leinwand, Gemälde deckt, Glitzer funkelt (und ist abschaltbar), Foto mit Satz, Signet mit goldener Krone, leerer Schluss", async () => {
   const { ctx, page, fehler } = await oeffne();
-  await page.click('[data-beispiel="meerjungfrau"]');
+  await laden(page, "hoch");
   await bereit(page);
-  // Foto und Satz dazu (das Foto: ein anderes Beispiel)
-  await page.setInputFiles("#foto", { name: "foto.jpg", mimeType: "image/jpeg", buffer: readFileSync(new URL("alpha/principesse/beispiel-hund.jpg", root)) });
+  // Foto und Satz dazu (das Foto: ein anderes Testbild)
+  await page.setInputFiles("#foto", { name: "foto.jpg", mimeType: "image/jpeg", buffer: BILDER.dreivier });
   await page.waitForFunction(() => window.__principesse.optionen?.foto);
   await page.fill("#satz", "Eine Krone für jeden Tag");
   await page.waitForFunction(() => window.__principesse.optionen?.text === "Eine Krone für jeden Tag");
@@ -95,7 +130,7 @@ await check("Film: leere Leinwand, Gemälde deckt, Glitzer funkelt (und ist absc
 
 await check("Einstellungen: Pinsel rechnet neu, Grund Nachtblau, Foto wieder weg; die Wahl bleibt", async () => {
   const { ctx, page, fehler } = await oeffne();
-  await page.click('[data-beispiel="hund"]');
+  await laden(page, "dreivier");
   await bereit(page);
   const vorher = await page.evaluate(() => window.__principesse.gemaelde.striche.length);
   await page.click('[data-pinsel="0.7"]');
@@ -127,7 +162,7 @@ await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern im Fo
     };
   };
   const { ctx, page, fehler } = await oeffne({ vorher: ersatz });
-  await page.click('[data-beispiel="fische"]');
+  await laden(page, "quadrat");
   await bereit(page);
   const bilder = await page.evaluate(() => window.__principesse.sz.zeit.bilder);
   await page.click("#video");
@@ -143,14 +178,14 @@ await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern im Fo
   assert.deepEqual([v.getUint32(tkhd.o + tkhd.groesse - 8) >>> 16, v.getUint32(tkhd.o + tkhd.groesse - 4) >>> 16], [1080, 1136]);
   const [png] = await Promise.all([page.waitForEvent("download"), page.click("#png")]);
   const b = readFileSync(await png.path());
-  assert.deepEqual([b.readUInt32BE(16), b.readUInt32BE(20)], [1080, 1136], "Standbild im Format des Bilds (Fische, fast quadratisch)");
+  assert.deepEqual([b.readUInt32BE(16), b.readUInt32BE(20)], [1080, 1136], "Standbild im Format des Bilds (fast quadratisch)");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
 
 await check("Format: wie das Bild (Standard), 3 : 4 und 1 : 1; Vorschau und Signet passen sich an, die Wahl bleibt", async () => {
   const { ctx, page, fehler } = await oeffne();
-  await page.click('[data-beispiel="fische"]');
+  await laden(page, "quadrat");
   await bereit(page);
   assert.equal(await page.getAttribute('[data-format="bild"]', "aria-pressed"), "true");
   assert.deepEqual(await page.evaluate(() => [window.__principesse.optionen.breite, window.__principesse.optionen.hoehe]), [1080, 1136]);
@@ -179,7 +214,7 @@ await check("Format: wie das Bild (Standard), 3 : 4 und 1 : 1; Vorschau und Sign
 
 await check("Handy: nichts ragt seitlich hinaus, Vorschau 3 : 4", async () => {
   const { ctx, page, fehler } = await oeffne({ viewport: { width: 360, height: 760 }, isMobile: true, hasTouch: true });
-  await page.click('[data-beispiel="hund"]');
+  await laden(page, "dreivier");
   await bereit(page);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
   await page.click('[data-format="3:4"]');
@@ -203,15 +238,15 @@ await check("App (12. Oktober 2026): Knopf «Principesse als App installieren»,
   const manifest = await cdp.send("Page.getAppManifest");
   assert.deepEqual(manifest.errors, []);
   await page.reload(); await page.waitForFunction(() => navigator.serviceWorker.controller);
-  const gespeichert = await page.evaluate(async () => (await (await caches.open("principesse-1")).keys()).map((r) => new URL(r.url).pathname + new URL(r.url).search));
-  for (const d of ["/alpha/principesse/", "/alpha/principesse/beispiel-hund.jpg", "/alpha/principesse/icons/icon-512.png", "/vendor/fonts/inter-display-500-latin.woff2"])
+  const gespeichert = await page.evaluate(async () => (await (await caches.open("principesse-2")).keys()).map((r) => new URL(r.url).pathname + new URL(r.url).search));
+  for (const d of ["/alpha/principesse/", "/alpha/principesse/icons/icon-512.png", "/vendor/fonts/inter-display-500-latin.woff2"])
     assert.ok(gespeichert.includes(d), `gespeichert: ${d}`);
   for (const m of ["app", "szene", "signet", "malen", "glitzer", "rechner", "pwa"]) assert.ok(gespeichert.some((d) => new RegExp(`^/alpha/principesse/${m}\\.js\\?v=\\d+$`).test(d)), `Modul ${m}.js mit Versionsmarke`);
   for (const m of ["sketchory/ablauf", "sketchory/mp4", "the-fictory/dauer"]) assert.ok(gespeichert.some((d) => d.startsWith(`/alpha/${m}.js?v=`)), `${m}.js`);
   // ohne Netz: die Seite kommt aus dem Speicher und malt
   await ctx.setOffline(true);
   await page.reload();
-  await page.click('[data-beispiel="hund"]');
+  await laden(page, "dreivier");
   await bereit(page);
   assert.ok((await page.evaluate(() => window.__principesse.gemaelde.striche.length)) > 1000, "ohne Netz gemalt");
   await page.waitForFunction(() => window.__principesse.klar, null, { timeout: 60_000 });

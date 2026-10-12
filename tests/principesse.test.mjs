@@ -68,7 +68,7 @@ test("Glätten: Rauschen und Körnung weg, Kanten bleiben; das scharfe Schlussbi
   assert.ok(streuung(kk.r, 10, 90) < streuung(kanaele(d, w, h).r, 10, 90), "Körnung leiser als im Foto, obwohl aufgefrischt");
 });
 
-test("Auffrischen: kein stärkerer Farbstich, warmes Weiss, voller Kontrast, kräftigere Farben; nichts ausserhalb 0–255", () => {
+test("Auffrischen: kein stärkerer Farbstich, blasse Gründe behalten ihre Farbe, warmes Weiss, voller Kontrast, kräftigere Farben; nichts ausserhalb 0–255", () => {
   // ein flaues, gelbstichiges Foto: weisses Papier wirkt cremig, das Blau matt, kein echtes Schwarz
   const w = 160, h = 120, d = new Uint8ClampedArray(w * h * 4);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
@@ -78,10 +78,18 @@ test("Auffrischen: kein stärkerer Farbstich, warmes Weiss, voller Kontrast, kr�
   const o = optimieren(kanaele(d, w, h), w, h), p = (x) => [o.r[60 * w + x], o.g[60 * w + x], o.b[60 * w + x]];
   const [pr, pg, pb] = p(30), [br, bg, bb] = p(90), [sr, sg, sb] = p(140);
   // Weissabgleich auf ein warmes Weiss (Wunsch vom 12. Oktober 2026: etwas wärmer): das Papier bleibt warm, wird aber nicht gelber als im Foto
-  assert.ok((pr - pb) / pr < (212 - 170) / 212 && pr > pb, `Papier warm, aber nicht gelber (${pr | 0}, ${pg | 0}, ${pb | 0})`);
+  // ein getöntes Papier wird nicht neutralisiert (es könnte gewollt sein wie ein blasser lila Grund), aber auch nicht deutlich gelber
+  assert.ok((pr - pb) / pr < ((212 - 170) / 212) * 1.25 && pr > pb, `Papier nicht deutlich gelber (${pr | 0}, ${pg | 0}, ${pb | 0})`);
   assert.ok((pr + pg + pb) / 3 > 215 && (sr + sg + sb) / 3 < 50, "hell heller, dunkel dunkler");
   assert.ok(bb - br > 60 - 2, "Blau mindestens so kräftig");
   for (const k of ["r", "g", "b"]) assert.ok(o[k].every((v) => Number.isFinite(v) && v >= 0 && v <= 255), k);
+  // ein blasser lila Grund behält seine Farbe und wird kaum heller (Rückmeldung vom 12. Oktober 2026: «Hintergrundfarbe fast nicht sichtbar»)
+  const lila = new Uint8ClampedArray(w * h * 4);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = (y * w + x) * 4, c = x < 90 ? [200, 195, 222] : x < 120 ? [245, 235, 215] : [25, 90, 35]; lila.set([...c, 255], i); }
+  const l = optimieren(kanaele(lila, w, h), w, h), li = 60 * w + 40, hell = (r, g, b) => 0.3 * r + 0.59 * g + 0.11 * b;
+  assert.ok(l.b[li] - l.g[li] >= 222 - 195 && l.b[li] - l.r[li] >= (222 - 200) * 0.7, `Lila bleibt (${l.r[li] | 0}, ${l.g[li] | 0}, ${l.b[li] | 0})`);
+  assert.ok(hell(l.r[li], l.g[li], l.b[li]) < hell(200, 195, 222) + 15, "kaum heller");
+  assert.ok(l.r[60 * w + 100] < 255 || l.b[60 * w + 100] < 235, "Creme wird nicht zu Weiss");
   // Stärke 0 lässt das Bild unverändert
   const n = optimieren(kanaele(d, w, h), w, h, 0);
   assert.ok(Math.abs(n.r[60 * w + 30] - 212) < 1.5 && Math.abs(n.b[60 * w + 90] - 140) < 1.5);
@@ -165,7 +173,7 @@ test("App (12. Oktober 2026): Manifest und Symbole aus dem Signet, eigener Servi
   assert.ok(!/principesse/i.test(lies("alpha/index.html")), "nicht in der Alpha-Übersicht");
 });
 
-test("Seite: steht für sich (noindex, keine Navigation, von keiner Seite verlinkt, nicht in der Sitemap), Versionsmarken, nichts von fremden Servern, Beispiele", () => {
+test("Seite: steht für sich (noindex, keine Navigation, von keiner Seite verlinkt, nicht in der Sitemap), Versionsmarken, nichts von fremden Servern, keine Beispiele", () => {
   const html = lies("alpha/principesse/index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.ok(!html.includes('class="seitenweg"'), "ohne die Navigation oben links");
@@ -190,5 +198,7 @@ test("Seite: steht für sich (noindex, keine Navigation, von keiner Seite verlin
   const js = ["app.js", "malen.js", "glitzer.js", "szene.js", "signet.js", "ablauf.js", "rechner.js", "pwa.js", "sw.js"].map((f) => lies(`alpha/principesse/${f}`)).join("\n");
   assert.ok(!/https?:\/\//.test(js) && !/XMLHttpRequest|sendBeacon/.test(js));
   assert.ok(!/ß/.test(html + js), "Schweizer Schreibweise");
-  for (const b of ["meerjungfrau", "fische", "hund"]) assert.ok(html.includes(`data-beispiel="${b}"`) && readFileSync(new URL(`alpha/principesse/beispiel-${b}.jpg`, root)).length < 600_000, b);
+  // keine Beispielbilder mehr, weder auf der Seite noch in der App (Wunsch vom 12. Oktober 2026)
+  assert.ok(!/data-beispiel|beispiel-[a-z]+\.jpg/.test(html + js), "keine Beispiele");
+  assert.deepEqual(readdirSync(new URL("alpha/principesse/", root)).filter((f) => /\.(jpe?g|png)$/i.test(f)), [], "keine Bilder im Ordner (Symbole liegen in icons/)");
 });
