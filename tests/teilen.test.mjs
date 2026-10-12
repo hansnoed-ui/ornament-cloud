@@ -14,6 +14,7 @@ const SEITEN = [
   { datei: "alpha/stadt/index.html", url: "https://ornament.cloud/alpha/stadt/", titel: "Die Paradoxie der Stadt", bild: "alpha/stadt/og-stadt.jpg", art: "jpg", canonical: false },   // seit 9. Oktober 2026
   { datei: "alpha/the-fictory/index.html", url: "https://ornament.cloud/alpha/the-fictory/", titel: "The Fictory", bild: "alpha/the-fictory/og-the-fictory-raster.jpg", art: "jpg", canonical: false, erzeuger: "tools/fictory-og.mjs" },   // seit 10. Oktober 2026, eigener Erzeuger
   { datei: "alpha/the-fictory/app/index.html", url: "https://ornament.cloud/alpha/the-fictory/app/", titel: "The Fictory – die App", bild: "alpha/the-fictory/app/og-the-fictory-app.jpg", art: "jpg", canonical: false, erzeuger: "tools/fictory-icons.mjs" },   // die App mit eigener Vorschaukachel, seit 11. Oktober 2026
+  { datei: "alpha/sketchory/index.html", url: "https://ornament.cloud/alpha/sketchory/", titel: "Sketchory", bild: "alpha/sketchory/og-sketchory.jpg", art: "jpg", canonical: false, erzeuger: "tools/sketchory-og.mjs" },   // seit 12. Oktober 2026, Bild aus der Anwendung selbst
 ];
 /** alle meta-Angaben einer Seite: property oder name → content */
 const metas = (html) => new Map([...html.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)].map((m) => [m[1], m[2]]));
