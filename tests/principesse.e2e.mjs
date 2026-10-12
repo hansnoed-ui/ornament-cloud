@@ -1,6 +1,6 @@
 // «Principesse» (alpha/principesse/) – Browser-Tests (Playwright, Chromium): Beispiel malen lassen, Bilder des Films (leere Leinwand, Gemälde,
 // funkelnder Glitzer, Foto mit Satz, Signet, leerer Schluss), Video über WebCodecs (Ersatz-Encoder, Chromium hat hier kein H.264), Standbild,
-// Einstellungen, Handy ohne seitliches Scrollen, keine Anfragen nach aussen.
+// Einstellungen, Handy ohne seitliches Scrollen, keine Anfragen nach aussen, als App installierbar und ohne Netz lauffähig.
 //   NODE_PATH=$(npm root -g) node tests/principesse.e2e.mjs
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -188,6 +188,36 @@ await check("Handy: nichts ragt seitlich hinaus, Vorschau 3 : 4", async () => {
   assert.ok(Math.abs(box.width / box.height - 0.75) < 0.01);
   assert.ok(await page.evaluate(() => [...document.querySelectorAll(".segment button")].every((x) => x.scrollWidth <= x.clientWidth + 1)), "Beschriftungen auf einer Zeile");
   assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
+await check("App (12. Oktober 2026): Knopf «Principesse als App installieren», Chrome meldet keine Hindernisse; nach dem ersten Besuch malt Principesse ohne Netz", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  assert.ok(await page.locator("#installieren").isVisible(), "Knopf sichtbar (nicht in der installierten App)");
+  await page.click("#installieren-knopf");
+  assert.match(await page.locator("#installieren-hilfe").innerText(), /ohne Netz|Home-Bildschirm|installieren/);
+  const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
+  assert.match(scope, /\/alpha\/principesse\/$/);
+  const cdp = await ctx.newCDPSession(page);
+  assert.deepEqual((await cdp.send("Page.getInstallabilityErrors")).installabilityErrors, [], "Chrome meldet keine Hindernisse für die Installation");
+  const manifest = await cdp.send("Page.getAppManifest");
+  assert.deepEqual(manifest.errors, []);
+  await page.reload(); await page.waitForFunction(() => navigator.serviceWorker.controller);
+  const gespeichert = await page.evaluate(async () => (await (await caches.open("principesse-1")).keys()).map((r) => new URL(r.url).pathname + new URL(r.url).search));
+  for (const d of ["/alpha/principesse/", "/alpha/principesse/beispiel-hund.jpg", "/alpha/principesse/icons/icon-512.png", "/vendor/fonts/inter-display-500-latin.woff2"])
+    assert.ok(gespeichert.includes(d), `gespeichert: ${d}`);
+  for (const m of ["app", "szene", "signet", "malen", "glitzer", "rechner", "pwa"]) assert.ok(gespeichert.some((d) => new RegExp(`^/alpha/principesse/${m}\\.js\\?v=\\d+$`).test(d)), `Modul ${m}.js mit Versionsmarke`);
+  for (const m of ["sketchory/ablauf", "sketchory/mp4", "the-fictory/dauer"]) assert.ok(gespeichert.some((d) => d.startsWith(`/alpha/${m}.js?v=`)), `${m}.js`);
+  // ohne Netz: die Seite kommt aus dem Speicher und malt
+  await ctx.setOffline(true);
+  await page.reload();
+  await page.click('[data-beispiel="hund"]');
+  await bereit(page);
+  assert.ok((await page.evaluate(() => window.__principesse.gemaelde.striche.length)) > 1000, "ohne Netz gemalt");
+  await page.waitForFunction(() => window.__principesse.klar, null, { timeout: 60_000 });
+  await ctx.setOffline(false);
+  assert.deepEqual(fehler.filter((f) => !/goatcounter|ERR_INTERNET_DISCONNECTED|Failed to load resource/.test(f)), []);
+  assert.deepEqual(fremd, []);
   await ctx.close();
 });
 

@@ -148,6 +148,23 @@ test("Signet: die Figur nach der Vorlage (Krone mit fünf Kugeln, Gesicht, Kleid
   for (const l of L) for (let k = 0; k < l.pts.length; k += 2) assert.ok(l.pts[k] > 100 && l.pts[k] < 1450 && l.pts[k + 1] > 100 && l.pts[k + 1] < 1900, "in der Vorlage");
 });
 
+test("App (12. Oktober 2026): Manifest und Symbole aus dem Signet, eigener Service Worker, Knopf nur auf dieser Seite; keine Vorschaukarte, kein Eintrag", () => {
+  const html = lies("alpha/principesse/index.html"), m = JSON.parse(lies("alpha/principesse/manifest.webmanifest"));
+  assert.equal(m.name, "Principesse"); assert.equal(m.display, "standalone");
+  assert.equal(m.start_url, "./"); assert.equal(m.scope, "./");
+  const png = (p) => { const b = readFileSync(new URL(`alpha/principesse/${p}`, root)); assert.equal(b.toString("ascii", 1, 4), "PNG", p); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
+  for (const i of m.icons) assert.deepEqual(png(i.src), i.sizes.split("x").map(Number), i.src);
+  assert.ok(m.icons.some((i) => i.purpose === "maskable") && m.icons.some((i) => i.sizes === "512x512" && i.purpose === "any"));
+  assert.deepEqual(png("icons/apple-touch-icon.png"), [180, 180]); assert.deepEqual(png("icons/favicon-32.png"), [32, 32]);
+  for (const v of ['rel="manifest" href="manifest.webmanifest"', 'rel="apple-touch-icon" href="icons/apple-touch-icon.png"', 'id="installieren"', "Principesse als App installieren"]) assert.ok(html.includes(v), v);
+  assert.match(lies("alpha/principesse/sw.js"), /const CACHE = "principesse-\d+"/);
+  assert.match(lies("alpha/principesse/pwa.js"), /register\(new URL\("sw\.js", import\.meta\.url\)/);
+  // keine Vorschaukarte und kein Eintrag (Wunsch: nur über die eigene Seite)
+  assert.ok(!/<meta[^>]+(og:|twitter:)/.test(html), "ohne Vorschaukarte");
+  assert.ok(!/principesse/i.test(lies("apps/index.html")), "nicht auf «Apps»");
+  assert.ok(!/principesse/i.test(lies("alpha/index.html")), "nicht in der Alpha-Übersicht");
+});
+
 test("Seite: steht für sich (noindex, keine Navigation, von keiner Seite verlinkt, nicht in der Sitemap), Versionsmarken, nichts von fremden Servern, Beispiele", () => {
   const html = lies("alpha/principesse/index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
@@ -161,6 +178,7 @@ test("Seite: steht für sich (noindex, keine Navigation, von keiner Seite verlin
   assert.ok(!/(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/.test(html));
   const marke = html.match(/<script type="module" src="app\.js\?v=(\d+)"><\/script>/)?.[1];
   assert.ok(marke);
+  assert.ok(html.includes(`<script type="module" src="pwa.js?v=${marke}"></script>`), "pwa.js mit derselben Marke");
   for (const f of ["app.js", "szene.js", "signet.js", "rechner.js", "glitzer.js", "ablauf.js"]) {
     const marken = [...lies(`alpha/principesse/${f}`).matchAll(/"\.\/[a-z]+\.js\?v=(\d+)"/g)].map((m) => m[1]);
     assert.ok(marken.every((m) => m === marke), `${f}: ${marken}`);
@@ -169,7 +187,7 @@ test("Seite: steht für sich (noindex, keine Navigation, von keiner Seite verlin
   const sk = lies("alpha/sketchory/index.html").match(/app\.js\?v=(\d+)/)[1];
   for (const f of ["app.js", "szene.js", "ablauf.js", "malen.js", "glitzer.js", "signet.js"]) for (const m of lies(`alpha/principesse/${f}`).matchAll(/"\.\.\/sketchory\/[a-z0-9]+\.js\?v=(\d+)"/g)) assert.equal(m[1], sk, `${f}: Marke von Sketchory`);
   assert.equal(lies("alpha/principesse/app.js").match(/the-fictory\/dauer\.js\?v=(\d+)/)[1], lies("alpha/the-fictory/app.js").match(/dauer\.js\?v=(\d+)/)[1]);
-  const js = ["app.js", "malen.js", "glitzer.js", "szene.js", "signet.js", "ablauf.js", "rechner.js"].map((f) => lies(`alpha/principesse/${f}`)).join("\n");
+  const js = ["app.js", "malen.js", "glitzer.js", "szene.js", "signet.js", "ablauf.js", "rechner.js", "pwa.js", "sw.js"].map((f) => lies(`alpha/principesse/${f}`)).join("\n");
   assert.ok(!/https?:\/\//.test(js) && !/XMLHttpRequest|sendBeacon/.test(js));
   assert.ok(!/ß/.test(html + js), "Schweizer Schreibweise");
   for (const b of ["meerjungfrau", "fische", "hund"]) assert.ok(html.includes(`data-beispiel="${b}"`) && readFileSync(new URL(`alpha/principesse/beispiel-${b}.jpg`, root)).length < 600_000, b);

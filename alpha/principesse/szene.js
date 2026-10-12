@@ -4,10 +4,10 @@
 // (stückweise aufgemalt gäbe es an jeder Stückgrenze Rippen aus den runden Enden der Borsten).
 // Ein Pinselzug: ein Körper in der Grundfarbe und darüber Borsten, leicht versetzt und in der Farbe etwas heller oder dunkler.
 // Ist das Gemälde fertig, geht es sanft in das scharfe, aufgefrischte Bild über (klar); darüber funkelt der Glitzer. Dann Foto und Satz, am Schluss das Signet.
-import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=11";
-import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=11";
+import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=12";
+import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=12";
 import { SCHRIFTEN, schriftSetzen } from "../sketchory/szene.js?v=8";
-import { zufall } from "./malen.js?v=11";
+import { zufall } from "./malen.js?v=12";
 
 export { SCHRIFTEN, FARBEN };
 
