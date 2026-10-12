@@ -1,7 +1,7 @@
 // «Sketchory» – Ablauf des Films (ohne DOM): Zeitachse, Kurven, Umbruch des Satzes, Fortschritt des Zeichnens.
 // Film: Hochformat 3 : 4 (1080 × 1440), 30 Bilder pro Sekunde, weisser Strich auf Schwarz.
 //   leerer Grund → die Karte zeichnet sich (4–6 s) → steht (3 s) → blendet sanft aus (1,5 s) → der Satz blendet Wort für Wort ein, steht, blendet aus
-//   → das Signet von ornament.cloud (wie am Ende jedes Videos, hier hell auf Schwarz) → steht kurz.
+//   → das Signet von ornament.cloud (wie am Ende jedes Videos) → steht kurz → blendet sanft aus.
 
 export const BREITE = 1080, HOEHE = 1440, FPS = 30;
 export const RAND = 96;                 // Abstand der Zeichnung zum Bildrand (seitlich)
@@ -54,7 +54,10 @@ export function zeitachse({ zeichnen = 4.5, stehen = 3, text = "" } = {}) {
   }
   dazu("pause2", 0.4);
   dazu("signet", SIGNET);
-  dazu("nach", 1);
+  // das Signet steht kurz und blendet dann sanft aus (Wunsch vom 12. Oktober 2026), am Ende ein Augenblick leerer Grund
+  dazu("signetStehen", 0.8);
+  dazu("signetAus", 1.3);
+  dazu("schluss", 0.4);
   const ab = Object.fromEntries(teile.map(([name, a, b]) => [name, [a, b]]));
   return { ab, dauer: t, bilder: Math.round(t * FPS) };
 }

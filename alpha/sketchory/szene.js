@@ -2,8 +2,8 @@
 // Farben: weiss auf Schwarz («dunkel», Standard) oder schwarz auf Weiss («hell»), für alles im Film gleich.
 // Die Zeichnung wächst auf einer eigenen Ebene Strich für Strich (nur vorwärts; geht die Zeit zurück, beginnt sie neu),
 // darüber die Stiftspitze, dann der Satz und am Schluss das Signet.
-import { BREITE, HOEHE, FPS, RAND, anteil, weich, ausblenden, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, WORT } from "./ablauf.js?v=5";
-import { signet, FARBEN } from "./signet.js?v=5";
+import { BREITE, HOEHE, FPS, RAND, anteil, weich, ausblenden, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, WORT } from "./ablauf.js?v=6";
+import { signet, FARBEN } from "./signet.js?v=6";
 
 // Satz: standardmässig eine Grotesk nah an Helvetica Now Display (Wunsch vom 12. Oktober 2026). Helvetica Now selbst ist nicht frei;
 // darum Inter Display Medium (OFL, vendor/fonts/, mit «G» mit Sporn) und knappe Laufweite. Ist Helvetica Now auf dem Gerät installiert,
@@ -182,7 +182,12 @@ export function bild(ctx, sz, t) {
   // der Satz, Wort für Wort
   if (sz.satz && ab.textEin && t >= ab.textEin[0] && t < ab.textAus[1]) satz(ctx, sz, t);
   // das Signet
-  if (t >= ab.signet[0]) signet(ctx, (t - ab.signet[0]) * FPS, { hoehe: HOEHE, farben: sz.farben });
+  if (t >= ab.signet[0] && t < ab.signetAus[1]) {
+    signet(ctx, (t - ab.signet[0]) * FPS, { hoehe: HOEHE, farben: sz.farben });
+    // ausblenden: der Grund legt sich darüber
+    const weg = ausblenden(anteil(t, ab.signetAus[0], ab.signetAus[1]));
+    if (weg > 0) { ctx.globalAlpha = weg; ctx.fillStyle = sz.farben.grund; ctx.fillRect(0, 0, BREITE, HOEHE); ctx.globalAlpha = 1; }
+  }
 }
 
 function satz(ctx, sz, t) {

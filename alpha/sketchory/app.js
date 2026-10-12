@@ -1,10 +1,10 @@
 // «Sketchory» – Seite: Bild laden, Satz eingeben, Vorschau abspielen, Video (MP4) und Standbild (PNG) herunterladen.
 // Alles bleibt im Browser. Video über WebCodecs (H.264, schneller als Echtzeit, Bild für Bild genau) und mp4.js;
 // wo das fehlt, in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { striche, analyseMass } from "./strich.js?v=5";
-import { BREITE, HOEHE, FPS, dateiname } from "./ablauf.js?v=5";
-import { szene, bild, standbild, schriftSetzen } from "./szene.js?v=5";
-import { mp4 } from "./mp4.js?v=5";
+import { striche, analyseMass } from "./strich.js?v=6";
+import { BREITE, HOEHE, FPS, dateiname } from "./ablauf.js?v=6";
+import { szene, bild, standbild, schriftSetzen } from "./szene.js?v=6";
+import { mp4 } from "./mp4.js?v=6";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
 const $ = (id) => document.getElementById(id);
@@ -94,7 +94,7 @@ function bildElement(datei) {
 
 // das Bild in Striche verwandeln (im Worker, sonst hier)
 let worker = null;
-try { worker = new Worker(new URL("./rechner.js?v=5", import.meta.url), { type: "module" }); } catch { worker = null; }
+try { worker = new Worker(new URL("./rechner.js?v=6", import.meta.url), { type: "module" }); } catch { worker = null; }
 function rechnen(empfindlichkeit) {
   const { daten, w, h } = S.bild;
   const nr = ++S.rechnen;

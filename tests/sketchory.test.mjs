@@ -81,7 +81,8 @@ test("Hilfen: Otsu, Median, Grösse des Analysebilds", () => {
 test("Ablauf: Zeichnen 4,5 s, 3 s stehen, ausblenden, Satz, Signet in voller Länge am Schluss", () => {
   const z = zeitachse({ zeichnen: 4.5, text: "Wer zeichnet, denkt mit der Hand." });
   const { ab } = z;
-  assert.deepEqual(Object.keys(ab), ["vor", "zeichnen", "stehen", "bildAus", "pause", "textEin", "textStehen", "textAus", "pause2", "signet", "nach"]);
+  assert.deepEqual(Object.keys(ab), ["vor", "zeichnen", "stehen", "bildAus", "pause", "textEin", "textStehen", "textAus", "pause2", "signet", "signetStehen", "signetAus", "schluss"]);
+  assert.ok(ab.signetAus[1] - ab.signetAus[0] >= 1.2, "auch das Signet blendet sanft aus");
   assert.equal(ab.zeichnen[1] - ab.zeichnen[0], 4.5);
   assert.equal(ab.stehen[1] - ab.stehen[0], 3, "das fertige Bild steht 3 s");
   assert.ok(ab.bildAus[1] - ab.bildAus[0] >= 1.4 && ab.textAus[1] - ab.textAus[0] >= 1.2, "sanft ausblenden");
@@ -89,7 +90,7 @@ test("Ablauf: Zeichnen 4,5 s, 3 s stehen, ausblenden, Satz, Signet in voller Lä
   assert.ok(ab.textStehen[1] - ab.textStehen[0] >= 2);
   assert.ok(Math.abs(ab.signet[1] - ab.signet[0] - SIGNET) < 1e-9);
   assert.equal(SIGNET * FPS, 180, "wie das Outro der Videos");
-  assert.equal(ab.nach[1], z.dauer);
+  assert.equal(ab.schluss[1], z.dauer);
   assert.equal(z.bilder, Math.round(z.dauer * FPS));
   // ohne Satz kein Textteil
   const ohne = zeitachse({ zeichnen: 5, text: "  " });
