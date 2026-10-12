@@ -4,15 +4,15 @@
 // (die dunklen Streifen glitzern); darunter «Principesse» in der Grotesk und «by Katharina Strickler» in glitzerndem Gold.
 // Alle Masse in Punkten der Vorlage (1500 × 2000), umgerechnet ins Bild; Figur und Name stehen in jedem Format mittig und passen hinein.
 import { anteil, weich, ausblenden } from "../sketchory/ablauf.js?v=8";
-import { zufall } from "./malen.js?v=17";
-import { funkeln } from "./glitzer.js?v=17";
+import { zufall } from "./malen.js?v=18";
+import { funkeln } from "./glitzer.js?v=18";
 
 export const FARBEN = {
   hell: { grund: "#f7f3ec", tinte: "#24202e", gold: "#c99a2e", glanz: "#fff1b0", beere: "#b3264f", wange: "#f3b9c8" },
   dunkel: { grund: "#0e1430", tinte: "#f4efe6", gold: "#d9ad45", glanz: "#fff4c4", beere: "#d8486f", wange: "#e9a3b8" },
 };
 export const NAME = "Principesse";
-export const DAUER = 5.2;                       // Sekunden, bis alles steht
+export const DAUER = 4.6;                       // Sekunden, bis alles steht (seit dem 12. Oktober 2026 kürzer: «by …» ist bei 4,4 s ganz da)
 export const SCHRIFT = { familie: '"Inter Display", "Helvetica Neue", Arial, sans-serif', gewicht: 500, groesse: 64, sperrung: 0.01 };
 export const VON = "by Katharina Strickler";
 export const VON_SCHRIFT = { familie: '"Inter Display", "Helvetica Neue", Arial, sans-serif', gewicht: 600, groesse: 30, sperrung: 0.06 };

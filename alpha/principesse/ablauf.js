@@ -3,7 +3,7 @@
 //   → (wenn gewählt) ein Foto blendet ein, darauf erscheint der Satz Buchstabe um Buchstabe → blendet aus
 //   → das Signet: eine kleine Prinzessin zeichnet sich, «Principesse» → steht → blendet aus.
 import { textEin, zeichenZahl, woerter, klemm } from "../sketchory/ablauf.js?v=8";
-import { DAUER as SIGNET } from "./signet.js?v=17";
+import { DAUER as SIGNET } from "./signet.js?v=18";
 
 export { FPS, anteil, weich, ausblenden, bezier, versatz, ZEICHEN, satzbild, satzPunkt } from "../sketchory/ablauf.js?v=8";
 
@@ -33,11 +33,12 @@ export function zeitachse({ malen = 6, foto = false, text = "" } = {}) {
     dazu("zweitStehen", Math.max(foto ? 2.6 : 0, z ? ein + klemm(1.0 + 0.3 * n, 2, 5) : 0));
     dazu("zweitAus", 1.3);
   }
-  dazu("pause2", 0.4);
+  // der Abspann seit dem 12. Oktober 2026 um 1,5 s kürzer (Pause 0,2, Signet 4,6, Stehen 0,8, Ausblenden 0,9, Schluss 0,3)
+  dazu("pause2", 0.2);
   dazu("signet", SIGNET);
-  dazu("signetStehen", 1);
-  dazu("signetAus", 1.3);
-  dazu("schluss", 0.4);
+  dazu("signetStehen", 0.8);
+  dazu("signetAus", 0.9);
+  dazu("schluss", 0.3);
   const ab = Object.fromEntries(teile.map(([name, a, b]) => [name, [a, b]]));
   return { ab, dauer: t, bilder: Math.round(t * 30) };
 }
