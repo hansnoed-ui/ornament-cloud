@@ -31,9 +31,9 @@ async function symbol(n, anteil, ziel) {
     document.documentElement.innerHTML = `<head><style>html,body{margin:0}canvas{display:block}</style></head><body><canvas width="${n}" height="${n}"></canvas></body>`;
     const { signet, FARBEN } = await import("./signet.js");
     const F = FARBEN.hell;
-    // die Figur auf einer durchsichtigen Leinwand: fertig gezeichnet, Krone gefüllt, noch bevor der Name erscheint (2,68 s);
-    // für kleine Symbole kleiner gezeichnet, damit die Linien (mindestens 3,4 Punkte) nach dem Verkleinern kräftig bleiben
-    const G = n <= 64 ? 280 : n <= 200 ? 420 : 1600, q = document.createElement("canvas"); q.width = q.height = G;
+    // die Figur gross auf einer durchsichtigen Leinwand: fertig gezeichnet, Krone gefüllt, noch bevor der Name erscheint (2,68 s);
+    // in allen Grössen mit den feinen Linien des Signets (Wunsch vom 12. Oktober 2026: die erste Fassung, nicht kräftigere Linien für kleine Symbole)
+    const G = 1600, q = document.createElement("canvas"); q.width = q.height = G;
     const qx = q.getContext("2d");
     signet(qx, 2.68, F, G, G);
     // wo die Figur liegt (alles Gezeichnete)
