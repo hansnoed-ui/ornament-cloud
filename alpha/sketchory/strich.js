@@ -1,4 +1,4 @@
-// «Kritzelkarte» – aus dem Foto oder Scan einer Kritzelkarte (Fineliner auf Papier) saubere Striche gewinnen, ohne DOM.
+// «Sketchory» – aus dem Foto oder Scan einer Kritzelkarte (Fineliner auf Papier) saubere Striche gewinnen, ohne DOM.
 // Weg: Graustufen → Linien hell machen (helles Papier wird umgekehrt, egal wie das Bild kommt) → Papier und Schatten abziehen
 // (Hintergrund aus Minimum und Unschärfe) → Schwelle (Otsu) → Staub weg, kleine Löcher zu → Abstandsfeld (Strichbreite)
 // → Skelett (Zhang-Suen) → Pfade zwischen Enden und Kreuzungen → Ästchen weg → an Kreuzungen gerade weiterführen

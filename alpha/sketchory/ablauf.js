@@ -1,4 +1,4 @@
-// «Kritzelkarte» – Ablauf des Films (ohne DOM): Zeitachse, Kurven, Umbruch des Satzes, Fortschritt des Zeichnens.
+// «Sketchory» – Ablauf des Films (ohne DOM): Zeitachse, Kurven, Umbruch des Satzes, Fortschritt des Zeichnens.
 // Film: Hochformat 3 : 4 (1080 × 1440), 30 Bilder pro Sekunde, weisser Strich auf Schwarz.
 //   schwarz → die Karte zeichnet sich (4–6 s) → steht (2 s) → blendet aus → der Satz blendet Wort für Wort ein, steht, blendet aus
 //   → das Signet von ornament.cloud (wie am Ende jedes Videos, hier hell auf Schwarz) → steht kurz.
@@ -128,5 +128,5 @@ export const zeichenkurve = (u) => { const x = klemm(u); return 0.6 * x + 0.4 * 
 /** Dateiname mit Datum und Uhrzeit */
 export function dateiname(zeit, endung) {
   const z = (n) => String(n).padStart(2, "0");
-  return `kritzelkarte-${zeit.getFullYear()}-${z(zeit.getMonth() + 1)}-${z(zeit.getDate())}-${z(zeit.getHours())}${z(zeit.getMinutes())}.${endung}`;
+  return `sketchory-${zeit.getFullYear()}-${z(zeit.getMonth() + 1)}-${z(zeit.getDate())}-${z(zeit.getHours())}${z(zeit.getMinutes())}.${endung}`;
 }

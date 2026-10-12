@@ -1,12 +1,12 @@
-// «Kritzelkarte» (alpha/kritzelkarte/, seit 12. Oktober 2026): Striche aus dem Bild, Ablauf des Films, MP4-Schreiber, Aufbau der Seite.
-//   node --test tests/kritzelkarte.test.mjs
-// Im Browser (Beispielkarte, Vorschau, Video auf beiden Wegen, Handy): NODE_PATH=$(npm root -g) node tests/kritzelkarte.e2e.mjs
+// «Sketchory» (alpha/sketchory/, seit 12. Oktober 2026): Striche aus dem Bild, Ablauf des Films, MP4-Schreiber, Aufbau der Seite.
+//   node --test tests/sketchory.test.mjs
+// Im Browser (Beispielkarte, Vorschau, Video auf beiden Wegen, Handy): NODE_PATH=$(npm root -g) node tests/sketchory.e2e.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { striche, otsu, median, analyseMass, ANALYSE } from "../alpha/kritzelkarte/strich.js";
-import { zeitachse, umbrechen, satzbild, zeichenplan, zeichenkurve, bezier, textEin, dateiname, FPS, SIGNET } from "../alpha/kritzelkarte/ablauf.js";
-import { mp4, kisten } from "../alpha/kritzelkarte/mp4.js";
+import { striche, otsu, median, analyseMass, ANALYSE } from "../alpha/sketchory/strich.js";
+import { zeitachse, umbrechen, satzbild, zeichenplan, zeichenkurve, bezier, textEin, dateiname, FPS, SIGNET } from "../alpha/sketchory/ablauf.js";
+import { mp4, kisten } from "../alpha/sketchory/mp4.js";
 
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
@@ -118,7 +118,7 @@ test("Ablauf: Zeichenplan nach Länge, Kurve, Bézier, Dateiname", () => {
   for (let u = 0.05; u < 1; u += 0.05) assert.ok(zeichenkurve(u) > zeichenkurve(u - 0.05));
   const b = bezier(0.16, 1, 0.3, 1);
   assert.equal(b(0), 0); assert.equal(b(1), 1); assert.ok(b(0.3) > 0.8, "läuft sanft aus");
-  assert.equal(dateiname(new Date(2026, 9, 12, 9, 5), "mp4"), "kritzelkarte-2026-10-12-0905.mp4");
+  assert.equal(dateiname(new Date(2026, 9, 12, 9, 5), "mp4"), "sketchory-2026-10-12-0905.mp4");
 });
 
 test("MP4: ftyp, moov vor mdat, Bilder, Schlüsselbilder, Länge und Lage stimmen", () => {
@@ -150,7 +150,7 @@ test("MP4: ftyp, moov vor mdat, Bilder, Schlüsselbilder, Länge und Lage stimme
 });
 
 test("Seite: Alpha (noindex, Navigation, nur aus der Übersicht verlinkt), Versionsmarken, nichts von fremden Servern", () => {
-  const html = lies("alpha/kritzelkarte/index.html");
+  const html = lies("alpha/sketchory/index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/" aria-current="true">Ornament Cloud<\/a>\s*<a href="\.\.\/drittes-rad\/">Das Dritte Rad<\/a>\s*<\/nav>/);
   assert.ok(!/(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/.test(html), "lädt nichts von fremden Servern");
@@ -158,26 +158,26 @@ test("Seite: Alpha (noindex, Navigation, nur aus der Übersicht verlinkt), Versi
   assert.ok(marke0, "app.js mit Versionsmarke");
   // alle eigenen Module mit derselben Marke
   for (const f of ["app.js", "szene.js", "signet.js", "rechner.js"]) {
-    const marken = [...lies(`alpha/kritzelkarte/${f}`).matchAll(/"\.\/[a-z0-9]+\.js\?v=(\d+)"/g)].map((m) => m[1]);
+    const marken = [...lies(`alpha/sketchory/${f}`).matchAll(/"\.\/[a-z0-9]+\.js\?v=(\d+)"/g)].map((m) => m[1]);
     assert.ok(marken.length, f);
     assert.ok(marken.every((m) => m === marke0), `${f}: ${marken} (Seite: ${marke0})`);
   }
   // dauer.js von The Fictory mit derselben Marke wie dort
   const marke = (datei) => lies(datei).match(/from "\.{1,2}\/(?:the-fictory\/)?dauer\.js\?v=(\d+)"/)?.[1];
-  assert.equal(marke("alpha/kritzelkarte/app.js"), marke("alpha/the-fictory/app.js"));
-  const js = ["app.js", "strich.js", "szene.js", "signet.js", "ablauf.js", "mp4.js", "rechner.js"].map((f) => lies(`alpha/kritzelkarte/${f}`)).join("\n");
+  assert.equal(marke("alpha/sketchory/app.js"), marke("alpha/the-fictory/app.js"));
+  const js = ["app.js", "strich.js", "szene.js", "signet.js", "ablauf.js", "mp4.js", "rechner.js"].map((f) => lies(`alpha/sketchory/${f}`)).join("\n");
   assert.ok(!/https?:\/\//.test(js), "keine Adressen nach aussen");
   assert.ok(!/XMLHttpRequest|sendBeacon/.test(js));
   assert.ok(!/ß/.test(html + js), "Schweizer Schreibweise (ss)");
   const uebersicht = lies("alpha/index.html");
-  assert.ok(uebersicht.includes('<a href="kritzelkarte/">Kritzelkarte</a>'));
+  assert.ok(uebersicht.includes('<a href="sketchory/">Sketchory</a>'));
 });
 
 test("Signet: dieselbe Zeichnung und derselbe Zeitplan wie im Outro der Videos", () => {
-  const tsx = lies("src/videos/src/vorlage/Signet.tsx"), js = lies("alpha/kritzelkarte/signet.js");
+  const tsx = lies("src/videos/src/vorlage/Signet.tsx"), js = lies("alpha/sketchory/signet.js");
   for (const stueck of ["const LA = 1, LB = 0.45, LK = 1.2, LOFF = -0.84", "520 / SPANNE", "540 + (x - MX) * MASS, 820 + (y - MY) * MASS", 'const NAME = "ornament.cloud"', "SPERRUNG = 0.14 *"]) {
     assert.ok(tsx.includes(stueck), `Vorlage: ${stueck}`);
-    assert.ok(js.includes(stueck), `Kritzelkarte: ${stueck}`);
+    assert.ok(js.includes(stueck), `Sketchory: ${stueck}`);
   }
   for (const zeit of ["14, 56", "40, 48", "128, 146", "58 + i * 2", "78 + i * 3"]) assert.ok(tsx.includes(zeit) && js.includes(zeit), zeit);
 });

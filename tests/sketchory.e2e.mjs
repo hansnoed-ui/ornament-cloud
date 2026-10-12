@@ -1,8 +1,8 @@
-// «Kritzelkarte» (alpha/kritzelkarte/) – Browser-Tests (Playwright, Chromium): Beispielkarte lesen, umgekehrtes Bild (dunkle Linien auf hellem Papier)
+// «Sketchory» (alpha/sketchory/) – Browser-Tests (Playwright, Chromium): Beispielkarte lesen, umgekehrtes Bild (dunkle Linien auf hellem Papier)
 // gibt dieselbe Zeichnung, Bilder des Films (schwarz, gezeichnet, Satz, Signet), Video über WebCodecs (hier mit einem Ersatz-Encoder, weil
 // Chromium ohne H.264 kommt; geprüft wird der Weg bis zur MP4-Datei) und in Echtzeit über MediaRecorder, Standbild, Handy ohne seitliches Scrollen,
 // keine Anfragen nach aussen.
-//   NODE_PATH=$(npm root -g) node tests/kritzelkarte.e2e.mjs        (mit SCHNELL=1 ohne die Aufnahme in Echtzeit, gut 20 Sekunden)
+//   NODE_PATH=$(npm root -g) node tests/sketchory.e2e.mjs        (mit SCHNELL=1 ohne die Aufnahme in Echtzeit, gut 20 Sekunden)
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { join } from "node:path";
@@ -13,9 +13,9 @@ let playwright;
 try { playwright = require("playwright"); } catch { playwright = require(join(process.env.NODE_PATH || "", "playwright")); }
 const root = new URL("../", import.meta.url);
 const { startServer } = await import(new URL("tools/serve-orma.mjs", root).href);
-const { kisten } = await import(new URL("alpha/kritzelkarte/mp4.js", root).href);
+const { kisten } = await import(new URL("alpha/sketchory/mp4.js", root).href);
 const server = await startServer(0);
-const base = `http://localhost:${server.address().port}/alpha/kritzelkarte/`;
+const base = `http://localhost:${server.address().port}/alpha/sketchory/`;
 const browser = await playwright.chromium.launch();
 const ergebnisse = [];
 async function check(name, fn) {
@@ -33,12 +33,12 @@ async function oeffne({ vorher = null, ...opts } = {}) {
   await page.goto(base);
   return { ctx, page, fehler, fremd };
 }
-const bereit = (page) => page.waitForFunction(() => !document.getElementById("video").disabled && window.__kritzelkarte?.sz, null, { timeout: 60_000 });
+const bereit = (page) => page.waitForFunction(() => !document.getElementById("video").disabled && window.__sketchory?.sz, null, { timeout: 60_000 });
 
 /** Anteil heller Pixel und ob Rot-Orange vorkommt, im Bild zur Zeit t (dieselbe Zeichenfunktion wie Vorschau und Video) */
 const messeBild = (page, t) => page.evaluate(async (t) => {
   const { bild, szene } = await import("./szene.js?v=2");
-  const S = window.__kritzelkarte;
+  const S = window.__sketchory;
   const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
   const ctx = c.getContext("2d");
   const sz = szene(S.ergebnis, S.optionen);
@@ -155,12 +155,12 @@ await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern des F
   await page.fill("#satz", "Ein Satz.");
   await page.click("#beispiel");
   await bereit(page);
-  const bilder = await page.evaluate(() => window.__kritzelkarte.sz.zeit.bilder);
+  const bilder = await page.evaluate(() => window.__sketchory.sz.zeit.bilder);
   await page.click("#video");
   await page.waitForSelector("#ergebnis:not([hidden])", { timeout: 120_000 });
   assert.match(await page.textContent("#film-info"), /^1080 × 1440 · \d+,\d s · [\d,]+ MB · MP4 \(H\.264, avc1\.640028\)/);
   const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#laden")]);
-  assert.match(dl.suggestedFilename(), /^kritzelkarte-\d{4}-\d\d-\d\d-\d{4}\.mp4$/);
+  assert.match(dl.suggestedFilename(), /^sketchory-\d{4}-\d\d-\d\d-\d{4}\.mp4$/);
   const d = new Uint8Array(readFileSync(await dl.path()));
   const k = kisten(d);
   assert.deepEqual(k.map((x) => x.typ), ["ftyp", "moov", "mdat"]);
@@ -176,7 +176,7 @@ if (!process.env.SCHNELL) await check("Video in Echtzeit (ohne H.264-Encoder, wi
   const { ctx, page, fehler } = await oeffne();
   await page.click("#beispiel");
   await bereit(page);
-  const dauer = await page.evaluate(() => window.__kritzelkarte.sz.zeit.dauer);
+  const dauer = await page.evaluate(() => window.__sketchory.sz.zeit.dauer);
   await page.click("#video");
   await page.waitForSelector("#ergebnis:not([hidden])", { timeout: 120_000 });
   const info = await page.textContent("#film-info");
@@ -197,7 +197,7 @@ await check("Strichstärke: sichtbar ohne «Feinheiten», wirkt sofort auf die V
     let n = 0; for (let i = 0; i < d.length; i += 4) if (d[i] > 200) n++;
     return n / (d.length / 4);
   });
-  const stellen = async (v) => { await page.locator("#staerke").fill(String(v)); await page.waitForFunction((v) => window.__kritzelkarte.optionen.staerke === v / 100, v); await page.waitForTimeout(100); };
+  const stellen = async (v) => { await page.locator("#staerke").fill(String(v)); await page.waitForFunction((v) => window.__sketchory.optionen.staerke === v / 100, v); await page.waitForTimeout(100); };
   await stellen(100);
   assert.equal(await page.textContent("#spielen"), "Abspielen", "beim Einstellen steht die Vorschau");
   const normal = await hell();
@@ -215,9 +215,9 @@ await check("Strichstärke: sichtbar ohne «Feinheiten», wirkt sofort auf die V
   await page.click('[data-staerke="160"]');
   assert.equal(await page.getAttribute('[data-staerke="160"]', "aria-pressed"), "true");
   await page.selectOption("#stil", "gleichmaessig");
-  await page.waitForFunction(() => window.__kritzelkarte.optionen.stil === "gleichmaessig" && window.__kritzelkarte.optionen.staerke === 1.6);
+  await page.waitForFunction(() => window.__sketchory.optionen.stil === "gleichmaessig" && window.__sketchory.optionen.staerke === 1.6);
   // dieselbe Einstellung im Video: die Szene des Exports nimmt die Optionen der Seite
-  assert.equal(await page.evaluate(() => window.__kritzelkarte.sz.linie > 0), true);
+  assert.equal(await page.evaluate(() => window.__sketchory.sz.linie > 0), true);
   // neu laden: die Einstellung ist noch da
   await page.reload();
   assert.equal(await page.inputValue("#staerke"), "160");
@@ -232,9 +232,9 @@ await check("Standbild: PNG 1080 × 1440; ohne Satz ist der Film kürzer", async
   await page.fill("#satz", "Mit einem Satz, der ein wenig länger ist als nötig.");
   await page.click("#beispiel");
   await bereit(page);
-  const mit = await page.evaluate(() => window.__kritzelkarte.sz.zeit.dauer);
+  const mit = await page.evaluate(() => window.__sketchory.sz.zeit.dauer);
   await page.fill("#satz", "");
-  await page.waitForFunction((d) => window.__kritzelkarte.sz.zeit.dauer < d, mit);
+  await page.waitForFunction((d) => window.__sketchory.sz.zeit.dauer < d, mit);
   const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#png")]);
   const d = readFileSync(await dl.path());
   assert.deepEqual([...d.subarray(1, 4)].map((c) => String.fromCharCode(c)).join(""), "PNG");

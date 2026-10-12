@@ -1,4 +1,4 @@
-// «Kritzelkarte» – das animierte Signet von ornament.cloud auf einer Leinwand (Canvas 2D).
+// «Sketchory» – das animierte Signet von ornament.cloud auf einer Leinwand (Canvas 2D).
 // Dieselbe Zeichnung und derselbe Zeitplan wie das Outro aller Videos (src/videos/src/vorlage/Signet.tsx, 180 Bilder):
 // die Re-entry-Schlaufe zeichnet sich, ein Punkt durchläuft sie, darunter werden Kästchen zu den Buchstaben von «ornament.cloud».
 // Hier hell auf Schwarz (Linie weiss, Punkt im Rot-Orange des dunklen Modus wie in der dunklen Startanimation).

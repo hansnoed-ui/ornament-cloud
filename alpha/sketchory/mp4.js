@@ -1,4 +1,4 @@
-// «Kritzelkarte» – ein kleiner MP4-Schreiber für ein einzelnes H.264-Video (aus WebCodecs), ohne Ton, ohne Abhängigkeiten.
+// «Sketchory» – ein kleiner MP4-Schreiber für ein einzelnes H.264-Video (aus WebCodecs), ohne Ton, ohne Abhängigkeiten.
 // Aufbau: ftyp, moov (vorne, damit das Video sofort abspielt: «faststart»), mdat mit allen Bildern in einem Stück.
 // Bilder in Ausgabereihenfolge, ohne B-Bilder (so liefern sie die Encoder der Browser mit latencyMode «quality» und avc-Format).
 

@@ -1,4 +1,4 @@
-// «Kritzelkarte» – ein Bild des Films auf eine Leinwand zeichnen (Vorschau und Video verwenden dasselbe).
+// «Sketchory» – ein Bild des Films auf eine Leinwand zeichnen (Vorschau und Video verwenden dasselbe).
 // Die Zeichnung wächst auf einer eigenen Ebene Strich für Strich (nur vorwärts; geht die Zeit zurück, beginnt sie neu),
 // darüber die Stiftspitze, dann der Satz und am Schluss das Signet.
 import { BREITE, HOEHE, FPS, RAND, anteil, weich, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, WORT } from "./ablauf.js?v=2";

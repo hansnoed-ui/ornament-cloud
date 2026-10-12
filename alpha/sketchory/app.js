@@ -1,4 +1,4 @@
-// «Kritzelkarte» – Seite: Bild laden, Satz eingeben, Vorschau abspielen, Video (MP4) und Standbild (PNG) herunterladen.
+// «Sketchory» – Seite: Bild laden, Satz eingeben, Vorschau abspielen, Video (MP4) und Standbild (PNG) herunterladen.
 // Alles bleibt im Browser. Video über WebCodecs (H.264, schneller als Echtzeit, Bild für Bild genau) und mp4.js;
 // wo das fehlt, in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
 import { striche, analyseMass } from "./strich.js?v=2";
@@ -135,8 +135,8 @@ wahl.empfindlichkeit.addEventListener("change", () => lesen());
 
 // ——— Strichstärke: gut sichtbar, wirkt sofort (die Vorschau zeigt beim Einstellen die fertige Zeichnung), bleibt für die nächste Karte ———
 const STAERKE = { min: 30, max: 300, schritt: 10 };
-const merken = (k, v) => { try { localStorage.setItem(`kritzelkarte.${k}`, v); } catch { /* privates Fenster: dann eben nicht */ } };
-const erinnern = (k) => { try { return localStorage.getItem(`kritzelkarte.${k}`); } catch { return null; } };
+const merken = (k, v) => { try { localStorage.setItem(`sketchory.${k}`, v); } catch { /* privates Fenster: dann eben nicht */ } };
+const erinnern = (k) => { try { return localStorage.getItem(`sketchory.${k}`); } catch { return null; } };
 const voreinstellungen = [...document.querySelectorAll("[data-staerke]")];
 {
   const s = Number(erinnern("staerke"));
@@ -180,8 +180,8 @@ function spielen() {
   knopfSpielen.textContent = "Anhalten";
 }
 function anhalten() { S.laeuft = false; knopfSpielen.textContent = "Abspielen"; }
-// für die Browser-Tests (tests/kritzelkarte.e2e.mjs)
-window.__kritzelkarte = S;
+// für die Browser-Tests (tests/sketchory.e2e.mjs)
+window.__sketchory = S;
 function takt(jetzt) {
   if (!S.laeuft || !S.sz) return;
   const t = (jetzt - S.start) / 1000;

@@ -1,4 +1,4 @@
-// «Kritzelkarte» – das Bild im Hintergrund lesen (Web Worker), damit die Seite dabei nicht stockt.
+// «Sketchory» – das Bild im Hintergrund lesen (Web Worker), damit die Seite dabei nicht stockt.
 import { striche } from "./strich.js?v=2";
 
 self.onmessage = (e) => {
