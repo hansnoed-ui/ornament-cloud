@@ -4,10 +4,10 @@
 // (stückweise aufgemalt gäbe es an jeder Stückgrenze Rippen aus den runden Enden der Borsten).
 // Ein Pinselzug: ein Körper in der Grundfarbe und darüber Borsten, leicht versetzt und in der Farbe etwas heller oder dunkler.
 // Ist das Gemälde fertig, geht es sanft in das scharfe, aufgefrischte Bild über (klar); darüber funkelt der Glitzer. Dann Foto und Satz, am Schluss das Signet.
-import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=14";
-import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=14";
+import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=15";
+import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=15";
 import { SCHRIFTEN, schriftSetzen } from "../sketchory/szene.js?v=8";
-import { zufall } from "./malen.js?v=14";
+import { zufall } from "./malen.js?v=15";
 
 export { SCHRIFTEN, FARBEN };
 
@@ -39,6 +39,9 @@ export function szene(bild, funken, { breite = 1080, hoehe = 1440, malen = 6, gl
     ebene, leinwand, skala, vorrat: teilen, malEnde: zuege.reduce((m, z) => Math.max(m, z.bis), 0), stand,
   };
 }
+
+/** wie hell der Glitzer im Bild höchstens leuchtet (seit dem 12. Oktober 2026 zurückhaltender: «etwas too much») */
+const GLANZ = 0.7;
 
 /** so deckend liegt das scharfe Bild am Ende über dem Gemälde (ein Hauch der Pinselstriche bleibt sichtbar) */
 const KLAR = 0.9;
@@ -145,7 +148,7 @@ export function bild(ctx, sz, t) {
     ctx.globalAlpha = 1;
     // der Glitzer erwacht im letzten Drittel des Malens und funkelt, solange das Bild steht
     const wach = anteil(t, ab.malen[0] + (ab.malen[1] - ab.malen[0]) * 0.7, ab.stehen[0] + 0.6);
-    if (sz.glitzer > 0 && wach > 0 && sz.funken.length) funkenZeichnen(ctx, sz.funken, t, wach * sicht * sz.glitzer, "#fff", 1);
+    if (sz.glitzer > 0 && wach > 0 && sz.funken.length) funkenZeichnen(ctx, sz.funken, t, wach * sicht * sz.glitzer * GLANZ, "#fff", 1);
   }
   // Foto und Satz
   if (ab.fotoEin && t >= ab.fotoEin[0] && t < ab.zweitAus[1]) zweiterTeil(ctx, sz, t);
@@ -221,5 +224,5 @@ export function standbild(ctx, sz) {
   ctx.fillRect(0, 0, sz.breite, sz.hoehe);
   ctx.drawImage(gemaelde(sz, 1e9), 0, 0, sz.breite, sz.hoehe);
   if (sz.klar) { ctx.globalAlpha = KLAR; ctx.drawImage(sz.klar, 0, 0, sz.breite, sz.hoehe); ctx.globalAlpha = 1; }
-  if (sz.glitzer > 0) funkenZeichnen(ctx, sz.funken, 0.37, sz.glitzer, "#fff", 1);
+  if (sz.glitzer > 0) funkenZeichnen(ctx, sz.funken, 0.37, sz.glitzer * GLANZ, "#fff", 1);
 }

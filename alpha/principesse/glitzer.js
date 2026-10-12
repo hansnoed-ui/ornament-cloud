@@ -1,14 +1,16 @@
 // «Principesse» – Glitzer im Bild finden und zum Leuchten bringen (ohne DOM).
 // Glitzer zeigt sich im Foto als dichte Menge winziger Lichtpunkte: Bildpunkte, die heller sind als alles um sie herum.
 // Wo solche Punkte dicht liegen (Glitzerband, Krone, Pailletten), wird jeder davon ein Funke: an seiner Stelle, in seiner Farbe
-// (zum Weiss hin aufgehellt), mit eigenem Takt. Vereinzelte helle Punkte (Leinwand, Rauschen) bleiben aussen vor.
+// (nur leicht aufgehellt), mit eigenem Takt. Vereinzelte helle Punkte (Leinwand, Rauschen) bleiben aussen vor.
+// Seit dem 12. Oktober 2026 zurückhaltender («der Glitzereffekt ist etwas too much»): weniger Funken, kleiner, wenige Sterne,
+// zwischen dem Aufblitzen fast dunkel (kein heller Schleier über ganzen Glitzerflächen).
 import { unschaerfe, graustufen } from "../sketchory/strich.js?v=8";
-import { zufall } from "./malen.js?v=14";
+import { zufall } from "./malen.js?v=15";
 
 /** rgba in Filmgrösse w × h → Funken [{ x, y, farbe, groesse, phase, takt, stern }] und Anteil der Glitzerfläche */
 const DICHTE = 0.012;   // Anteil Lichtpunkte in der Umgebung, ab dem es Glitzer ist
 
-export function glitzer(rgba, w, h, { hoechstens = 3600, saat = 11 } = {}) {
+export function glitzer(rgba, w, h, { hoechstens = 1600, saat = 11 } = {}) {
   const L = graustufen(rgba, w, h);
   const umgebung = unschaerfe(L, w, h, 2, 1);
   const spitze = new Float32Array(w * h);
@@ -42,26 +44,26 @@ export function glitzer(rgba, w, h, { hoechstens = 3600, saat = 11 } = {}) {
   for (let a = funken.length - 1; a > 0; a--) { const b = Math.floor(rnd() * (a + 1)); [funken[a], funken[b]] = [funken[b], funken[a]]; }
   const auswahl = funken.slice(0, hoechstens);
   const hubs = auswahl.map((f) => f.hub).sort((a, b) => a - b);
-  const sternAb = hubs[Math.floor(hubs.length * 0.982)] ?? Infinity;
+  const sternAb = hubs[Math.floor(hubs.length * 0.992)] ?? Infinity;
   return {
     anteil: flaeche / (w * h),
     funken: auswahl.map((f) => {
-      // Farbe des Lichtpunkts, zum Weiss hin aufgehellt und etwas gesättigter
-      const m = (f.r + f.g + f.b) / 3, satt = (c) => Math.min(255, m + (c - m) * 1.35);
-      const hell = (c) => Math.round(Math.min(255, satt(c) * 0.75 + 255 * 0.25));
+      // Farbe des Lichtpunkts, wenig aufgehellt: Gold bleibt Gold, Silber bleibt Silber
+      const m = (f.r + f.g + f.b) / 3, satt = (c) => Math.min(255, m + (c - m) * 1.15);
+      const hell = (c) => Math.round(Math.min(255, satt(c) * 0.88 + 255 * 0.12));
       return {
         x: (f.i % w) + 0.5, y: ((f.i / w) | 0) + 0.5,
         farbe: [hell(f.r), hell(f.g), hell(f.b)],
-        groesse: Math.min(2.6, 0.8 + f.hub / 60),
-        phase: rnd(), takt: 0.45 + rnd() * 1.1,
+        groesse: Math.min(1.9, 0.7 + f.hub / 80),
+        phase: rnd(), takt: 0.45 + rnd() * 1.1, ruhe: 0.04,
         stern: f.hub >= sternAb,
       };
     }),
   };
 }
 
-/** Helligkeit eines Funkens zur Zeit t (0–1): meist schwach, kurz hell aufblitzend */
+/** Helligkeit eines Funkens zur Zeit t (0–1): meist schwach (ruhe; im Bild fast dunkel, im Signet 0,18), kurz hell aufblitzend */
 export function funkeln(f, t) {
-  const s = 0.5 + 0.5 * Math.sin(2 * Math.PI * (f.takt * t + f.phase));
-  return 0.18 + 0.82 * s ** 6;
+  const s = 0.5 + 0.5 * Math.sin(2 * Math.PI * (f.takt * t + f.phase)), ruhe = f.ruhe ?? 0.18;
+  return ruhe + (1 - ruhe) * s ** 6;
 }

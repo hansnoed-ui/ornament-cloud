@@ -68,7 +68,7 @@ test("Glätten: Rauschen und Körnung weg, Kanten bleiben; das scharfe Schlussbi
   assert.ok(streuung(kk.r, 10, 90) < streuung(kanaele(d, w, h).r, 10, 90), "Körnung leiser als im Foto, obwohl aufgefrischt");
 });
 
-test("Auffrischen: kein stärkerer Farbstich, blasse Gründe behalten ihre Farbe, warmes Weiss, voller Kontrast, kräftigere Farben; nichts ausserhalb 0–255", () => {
+test("Auffrischen: kein stärkerer Farbstich, blasse Gründe behalten ihre Farbe, sanft mehr Kontrast mit matten Tiefen, nicht grell; nichts ausserhalb 0–255", () => {
   // ein flaues, gelbstichiges Foto: weisses Papier wirkt cremig, das Blau matt, kein echtes Schwarz
   const w = 160, h = 120, d = new Uint8ClampedArray(w * h * 4);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
@@ -80,8 +80,15 @@ test("Auffrischen: kein stärkerer Farbstich, blasse Gründe behalten ihre Farbe
   // Weissabgleich auf ein warmes Weiss (Wunsch vom 12. Oktober 2026: etwas wärmer): das Papier bleibt warm, wird aber nicht gelber als im Foto
   // ein getöntes Papier wird nicht neutralisiert (es könnte gewollt sein wie ein blasser lila Grund), aber auch nicht deutlich gelber
   assert.ok((pr - pb) / pr < ((212 - 170) / 212) * 1.25 && pr > pb, `Papier nicht deutlich gelber (${pr | 0}, ${pg | 0}, ${pb | 0})`);
-  assert.ok((pr + pg + pb) / 3 > 215 && (sr + sg + sb) / 3 < 50, "hell heller, dunkel dunkler");
-  assert.ok(bb - br > 60 - 2, "Blau mindestens so kräftig");
+  // edel statt grell (12. Oktober 2026): hell wird heller, aber nicht weiss; dunkel wird dunkler, aber nicht schwarz (matte Tiefen)
+  assert.ok((pr + pg + pb) / 3 > (212 + 200 + 170) / 3 + 10 && Math.max(pr, pg, pb) <= 240, `hell heller, nicht weiss (${pr | 0}, ${pg | 0}, ${pb | 0})`);
+  assert.ok((sr + sg + sb) / 3 < (70 + 64 + 55) / 3 - 10 && Math.min(sr, sg, sb) > 10, `dunkel dunkler, matt (${sr | 0}, ${sg | 0}, ${sb | 0})`);
+  // eine schon kräftige Farbe wird nicht greller
+  const rot = new Uint8ClampedArray(w * h * 4);
+  for (let i = 0; i < w * h; i++) rot.set(i % w < 80 ? [215, 35, 40, 255] : [235, 230, 222, 255], i * 4);
+  const ro = optimieren(kanaele(rot, w, h), w, h), q = 60 * w + 40, satt = (r, g, b) => (Math.max(r, g, b) - Math.min(r, g, b)) / Math.max(r, g, b);
+  assert.ok(satt(ro.r[q], ro.g[q], ro.b[q]) <= satt(215, 35, 40) + 0.01, `Rot nicht greller (${ro.r[q] | 0}, ${ro.g[q] | 0}, ${ro.b[q] | 0})`);
+  assert.ok((bb - br) / bb >= (140 - 80) / 140 - 0.02, `das matte Blau bleibt mindestens so farbig (${br | 0}, ${bg | 0}, ${bb | 0})`);
   for (const k of ["r", "g", "b"]) assert.ok(o[k].every((v) => Number.isFinite(v) && v >= 0 && v <= 255), k);
   // ein blasser lila Grund behält seine Farbe und wird kaum heller (Rückmeldung vom 12. Oktober 2026: «Hintergrundfarbe fast nicht sichtbar»)
   const lila = new Uint8ClampedArray(w * h * 4);
