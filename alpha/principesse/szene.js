@@ -1,11 +1,13 @@
 // «Principesse» – ein Bild des Films auf eine Leinwand zeichnen (Vorschau, Video und Standbild verwenden dasselbe).
-// Das Gemälde wächst auf einer eigenen Ebene Pinselzug um Pinselzug (nur vorwärts; geht die Zeit zurück, beginnt es neu).
+// Das Gemälde wächst auf einer eigenen Ebene Pinselzug um Pinselzug (nur vorwärts; geht die Zeit zurück, beginnt es neu). Ein Strich, der
+// noch wächst, wird in jedem Bild in einem Zug bis zu seiner jetzigen Länge darüber gezeichnet und erst fertig auf die Ebene gemalt
+// (stückweise aufgemalt gäbe es an jeder Stückgrenze Rippen aus den runden Enden der Borsten).
 // Ein Pinselzug: ein Körper in der Grundfarbe und darüber Borsten, leicht versetzt und in der Farbe etwas heller oder dunkler.
 // Ist das Gemälde fertig, geht es sanft in das scharfe, aufgefrischte Bild über (klar); darüber funkelt der Glitzer. Dann Foto und Satz, am Schluss das Signet.
-import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=6";
-import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=6";
+import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=7";
+import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=7";
 import { SCHRIFTEN, schriftSetzen } from "../sketchory/szene.js?v=8";
-import { zufall } from "./malen.js?v=6";
+import { zufall } from "./malen.js?v=7";
 
 export { SCHRIFTEN, FARBEN };
 
@@ -41,10 +43,12 @@ function pinselzug(s, [von, bis]) {
   }
   const rnd = zufall(s.saat), R = s.r, [r, g, b] = s.farbe;
   const anzahl = Math.max(2, Math.min(8, Math.round(R / 4)));
+  // Borsten liegen im Innern des Strichs (nicht am Rand, sonst wirkt er wie eine Röhre), halb durchscheinend, und laufen vor den Enden aus
   const borsten = Array.from({ length: anzahl }, (_, j) => {
-    const o = ((j + 0.5) / anzahl - 0.5) * 1.55 * R + (rnd() - 0.5) * R * 0.18;
-    const f = 1 + (rnd() - 0.5) * 0.22;          // etwas heller oder dunkler
-    return { o, breite: Math.max(1, R * (0.28 + rnd() * 0.22)), farbe: `rgb(${Math.min(255, r * f) | 0},${Math.min(255, g * f) | 0},${Math.min(255, b * f) | 0})` };
+    const o = ((j + 0.5) / anzahl - 0.5) * 1.05 * R + (rnd() - 0.5) * R * 0.12;
+    const f = 1 + (rnd() - 0.5) * 0.14;          // etwas heller oder dunkler
+    return { o, breite: Math.max(1, R * (0.14 + rnd() * 0.16)), anf: rnd() * 0.15, ende: 1 - rnd() * 0.2,
+      farbe: `rgba(${Math.min(255, r * f) | 0},${Math.min(255, g * f) | 0},${Math.min(255, b * f) | 0},0.6)` };
   });
   return { x, y, nx, ny, lang, laenge: lang[n - 1], R, farbe: `rgb(${r},${g},${b})`, borsten, von, bis };
 }
@@ -52,20 +56,24 @@ function pinselzug(s, [von, bis]) {
 /** Stück eines Pinselzugs von Länge l0 bis l1: zuerst der Körper, dann jede Borste */
 function zugStueck(ctx, z, l0, l1) {
   const { x, y, nx, ny, lang } = z, n = x.length;
-  const spur = (versatz) => {
+  const spur = (versatz, von = l0, bis = l1) => {
     let k = 1;
-    while (k < n - 1 && lang[k] < l0) k++;
+    while (k < n - 1 && lang[k] < von) k++;
     const p = (l, i) => { const f = (l - lang[i - 1]) / (lang[i] - lang[i - 1] || 1); return [x[i - 1] + (x[i] - x[i - 1]) * f + (nx[i - 1] + (nx[i] - nx[i - 1]) * f) * versatz, y[i - 1] + (y[i] - y[i - 1]) * f + (ny[i - 1] + (ny[i] - ny[i - 1]) * f) * versatz]; };
     ctx.beginPath();
-    ctx.moveTo(...p(Math.max(0, l0), k));
+    ctx.moveTo(...p(Math.max(0, von), k));
     for (; k < n; k++) {
-      if (lang[k] >= l1) { ctx.lineTo(...p(l1, k)); break; }
+      if (lang[k] >= bis) { ctx.lineTo(...p(bis, k)); break; }
       ctx.lineTo(x[k] + nx[k] * versatz, y[k] + ny[k] * versatz);
     }
     ctx.stroke();
   };
   ctx.strokeStyle = z.farbe; ctx.lineWidth = z.R * 1.75; spur(0);
-  for (const b of z.borsten) { ctx.strokeStyle = b.farbe; ctx.lineWidth = b.breite; spur(b.o); }
+  for (const b of z.borsten) {
+    const a = Math.max(l0, b.anf * z.laenge), e = Math.min(l1, b.ende * z.laenge);
+    if (e <= a) continue;
+    ctx.strokeStyle = b.farbe; ctx.lineWidth = b.breite; spur(b.o, a, e);
+  }
 }
 
 /** die Ebene mit dem Gemälde bis zur Zeit t (Sekunden ab Malbeginn) bringen */
@@ -79,9 +87,10 @@ function malenBis(sz, t) {
   const { zuege } = sz, st = sz.stand;
   while (st.naechster < zuege.length && zuege[st.naechster].von <= t) st.aktiv.push({ z: zuege[st.naechster++], l: 0 });
   st.aktiv = st.aktiv.filter((a) => {
-    const { z } = a, q = Math.min(1, (t - z.von) / (z.bis - z.von || 1e-6)), bis = q * z.laenge;
-    if (bis > a.l || (a.l === 0 && q >= 1)) { zugStueck(ctx, z, a.l, Math.max(bis, a.l + 0.01)); a.l = bis; }
-    return q < 1;
+    const { z } = a, q = Math.min(1, (t - z.von) / (z.bis - z.von || 1e-6));
+    if (q >= 1) { zugStueck(ctx, z, 0, z.laenge + 0.01); return false; }
+    a.l = q * z.laenge;
+    return true;
   });
   st.t = t;
 }
@@ -99,6 +108,11 @@ export function bild(ctx, sz, t) {
     const sicht = 1 - ausblenden(anteil(t, ab.bildAus[0], ab.bildAus[1]));
     ctx.globalAlpha = sicht;
     ctx.drawImage(sz.ebene, 0, 0);
+    // die Striche, die gerade wachsen
+    if (sz.stand.aktiv.length) {
+      ctx.lineCap = "round"; ctx.lineJoin = "round";
+      for (const a of sz.stand.aktiv) if (a.l > 0) zugStueck(ctx, a.z, 0, a.l);
+    }
     // vom Gemälde zum scharfen Bild: beginnt mit den letzten Strichen, dauert gut anderthalb Sekunden
     const klar = sz.klar ? KLAR * weich(anteil(t, ab.malen[1] - 0.3, ab.malen[1] + 1.4)) : 0;
     if (klar > 0) { ctx.globalAlpha = sicht * klar; ctx.drawImage(sz.klar, 0, 0, BREITE, HOEHE); }
