@@ -5,7 +5,7 @@
 // Seit dem 12. Oktober 2026 zurückhaltender («der Glitzereffekt ist etwas too much»): weniger Funken, kleiner, wenige Sterne,
 // zwischen dem Aufblitzen fast dunkel (kein heller Schleier über ganzen Glitzerflächen).
 import { unschaerfe, graustufen } from "../sketchory/strich.js?v=8";
-import { zufall } from "./malen.js?v=15";
+import { zufall } from "./malen.js?v=16";
 
 /** rgba in Filmgrösse w × h → Funken [{ x, y, farbe, groesse, phase, takt, stern }] und Anteil der Glitzerfläche */
 const DICHTE = 0.012;   // Anteil Lichtpunkte in der Umgebung, ab dem es Glitzer ist

@@ -1,13 +1,13 @@
 // «Principesse» – Seite: Bild laden (wird mit Pinselstrichen nachgemalt, der Glitzer funkelt), optional Foto und Satz,
 // Vorschau, Video (MP4) und Standbild (PNG). Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der
 // MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass } from "./ablauf.js?v=15";
-import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=15";
+import { FPS, dateiname, filmMass } from "./ablauf.js?v=16";
+import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=16";
 import { schriftSetzen } from "../sketchory/szene.js?v=8";
 import { mp4 } from "../sketchory/mp4.js?v=8";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
-import { malen, klarbild } from "./malen.js?v=15";
-import { glitzer } from "./glitzer.js?v=15";
+import { malen, klarbild } from "./malen.js?v=16";
+import { glitzer } from "./glitzer.js?v=16";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
@@ -54,6 +54,10 @@ function ablage(id, eingabe, laden) {
   $(eingabe).addEventListener("change", (e) => { if (e.target.files?.[0]) laden(e.target.files[0]); });
 }
 ablage("ablage", "datei", bildLaden);
+for (const k of document.querySelectorAll("[data-beispiel]")) k.addEventListener("click", async () => {
+  const name = k.dataset.beispiel;
+  bildLaden(new File([await (await fetch(`beispiel-${name}.jpg`)).blob()], `${name}.jpg`, { type: "image/jpeg" }));
+});
 ablage("ablage-foto", "foto", fotoLaden);
 
 async function bildLaden(datei) {
@@ -81,7 +85,7 @@ $("foto-weg").addEventListener("click", () => {
 
 // ——— malen lassen (Worker, sonst hier) ———
 let worker = null, offen = [];
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=15", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=16", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   // Format: wie das Bild, 3 : 4 oder 1 : 1; gemalt wird auf der halben Filmgrösse (für die breiten Pinsel genug), der Glitzer und das
@@ -313,7 +317,7 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), ...pinselKnoepfe, ...formatKnoepfe, $("video"), $("png")])
+  for (const el of [$("datei"), ...document.querySelectorAll("[data-beispiel]"), ...pinselKnoepfe, ...formatKnoepfe, $("video"), $("png")])
     el.disabled = an || ((el.id === "video" || el.id === "png") && !S.gemaelde);
 }
 void SCHRIFTEN; void glitzerKnoepfe; void farbKnoepfe;
