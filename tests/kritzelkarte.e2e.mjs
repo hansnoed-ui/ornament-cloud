@@ -37,7 +37,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** Anteil heller Pixel und ob Rot-Orange vorkommt, im Bild zur Zeit t (dieselbe Zeichenfunktion wie Vorschau und Video) */
 const messeBild = (page, t) => page.evaluate(async (t) => {
-  const { bild, szene } = await import("./szene.js?v=1");
+  const { bild, szene } = await import("./szene.js?v=2");
   const S = window.__kritzelkarte;
   const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
   const ctx = c.getContext("2d");
@@ -183,6 +183,46 @@ if (!process.env.SCHNELL) await check("Video in Echtzeit (ohne H.264-Encoder, wi
   assert.match(info, /video\/(mp4|webm)/);
   const laenge = await page.evaluate(() => new Promise((ok) => { const v = document.getElementById("film"); if (v.readyState >= 1) ok(v.duration); else v.onloadedmetadata = () => ok(v.duration); }));
   assert.ok(Math.abs(laenge - dauer) < 1.5, `Länge ${laenge} statt ${dauer}`);
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
+await check("Strichstärke: sichtbar ohne «Feinheiten», wirkt sofort auf die Vorschau, − und + und Voreinstellungen, bleibt für die nächste Karte", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  await page.click("#beispiel");
+  await bereit(page);
+  assert.equal(await page.isVisible("#staerke"), true, "der Regler ist ohne Aufklappen sichtbar");
+  const hell = () => page.evaluate(() => {
+    const c = document.getElementById("vorschau"), d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data;
+    let n = 0; for (let i = 0; i < d.length; i += 4) if (d[i] > 200) n++;
+    return n / (d.length / 4);
+  });
+  const stellen = async (v) => { await page.locator("#staerke").fill(String(v)); await page.waitForFunction((v) => window.__kritzelkarte.optionen.staerke === v / 100, v); await page.waitForTimeout(100); };
+  await stellen(100);
+  assert.equal(await page.textContent("#spielen"), "Abspielen", "beim Einstellen steht die Vorschau");
+  const normal = await hell();
+  await stellen(250);
+  const dick = await hell();
+  await stellen(40);
+  const fein = await hell();
+  assert.ok(dick > normal * 1.6 && fein < normal * 0.7, `fein ${fein} < normal ${normal} < dick ${dick}`);
+  assert.equal(await page.textContent("#staerke-wert"), "40 %");
+  assert.match(await page.textContent("#linie"), /^Linie im Video etwa \d+,\d px breit/);
+  await page.click("#dicker");
+  assert.equal(await page.textContent("#staerke-wert"), "50 %");
+  await page.click("#duenner"); await page.click("#duenner"); await page.click("#duenner");
+  assert.equal(await page.textContent("#staerke-wert"), "30 %", "nicht unter 30 %");
+  await page.click('[data-staerke="160"]');
+  assert.equal(await page.getAttribute('[data-staerke="160"]', "aria-pressed"), "true");
+  await page.selectOption("#stil", "gleichmaessig");
+  await page.waitForFunction(() => window.__kritzelkarte.optionen.stil === "gleichmaessig" && window.__kritzelkarte.optionen.staerke === 1.6);
+  // dieselbe Einstellung im Video: die Szene des Exports nimmt die Optionen der Seite
+  assert.equal(await page.evaluate(() => window.__kritzelkarte.sz.linie > 0), true);
+  // neu laden: die Einstellung ist noch da
+  await page.reload();
+  assert.equal(await page.inputValue("#staerke"), "160");
+  assert.equal(await page.inputValue("#stil"), "gleichmaessig");
+  assert.equal(await page.textContent("#staerke-wert"), "160 %");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });

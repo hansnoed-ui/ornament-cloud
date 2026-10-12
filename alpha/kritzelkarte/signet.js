@@ -3,7 +3,7 @@
 // die Re-entry-Schlaufe zeichnet sich, ein Punkt durchläuft sie, darunter werden Kästchen zu den Buchstaben von «ornament.cloud».
 // Hier hell auf Schwarz (Linie weiss, Punkt im Rot-Orange des dunklen Modus wie in der dunklen Startanimation).
 // Gezeichnet für 1080 × 1920 und, wie im Video im Format 3 : 4, um (1440 − 1920) / 2 nach oben verschoben.
-import { anteil, bezier, weich, inOut } from "./ablauf.js?v=1";
+import { anteil, bezier, weich, inOut } from "./ablauf.js?v=2";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d" };
 export const SCHRIFT_FAMILIE = '"Instrument Sans", system-ui, sans-serif';

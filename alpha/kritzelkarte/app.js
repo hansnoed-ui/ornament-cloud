@@ -1,10 +1,10 @@
 // «Kritzelkarte» – Seite: Bild laden, Satz eingeben, Vorschau abspielen, Video (MP4) und Standbild (PNG) herunterladen.
 // Alles bleibt im Browser. Video über WebCodecs (H.264, schneller als Echtzeit, Bild für Bild genau) und mp4.js;
 // wo das fehlt, in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { striche, analyseMass } from "./strich.js?v=1";
-import { BREITE, HOEHE, FPS, dateiname } from "./ablauf.js?v=1";
-import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=1";
-import { mp4 } from "./mp4.js?v=1";
+import { striche, analyseMass } from "./strich.js?v=2";
+import { BREITE, HOEHE, FPS, dateiname } from "./ablauf.js?v=2";
+import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=2";
+import { mp4 } from "./mp4.js?v=2";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
 const $ = (id) => document.getElementById(id);
@@ -79,7 +79,7 @@ function bildElement(datei) {
 
 // das Bild in Striche verwandeln (im Worker, sonst hier)
 let worker = null;
-try { worker = new Worker(new URL("./rechner.js?v=1", import.meta.url), { type: "module" }); } catch { worker = null; }
+try { worker = new Worker(new URL("./rechner.js?v=2", import.meta.url), { type: "module" }); } catch { worker = null; }
 function rechnen(empfindlichkeit) {
   const { daten, w, h } = S.bild;
   const nr = ++S.rechnen;
@@ -105,6 +105,7 @@ async function lesen() {
   const { info } = ergebnis;
   $("auswertung").textContent = `${ergebnis.striche.length} Striche und Flächen${info.flaechen ? ` (davon ${info.flaechen} Flächen)` : ""} · ${info.umgekehrt ? "dunkle Linien auf hellem Grund, umgekehrt" : "helle Linien auf dunklem Grund"} · ${Math.round(performance.now() - t0)} ms`;
   await neu();
+  staerkeZeigen();
   melden("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4.");
 }
 
@@ -129,9 +130,47 @@ function optionen() {
 
 let warten = 0;
 satzFeld.addEventListener("input", () => { clearTimeout(warten); warten = setTimeout(() => neu(), 450); });
-for (const k of ["stil", "staerke", "zeichnen", "schrift"]) wahl[k].addEventListener("change", () => neu());
+for (const k of ["zeichnen", "schrift"]) wahl[k].addEventListener("change", () => neu());
 wahl.empfindlichkeit.addEventListener("change", () => lesen());
-wahl.staerke.addEventListener("input", () => { $("staerke-wert").textContent = `${wahl.staerke.value} %`; });
+
+// ——— Strichstärke: gut sichtbar, wirkt sofort (die Vorschau zeigt beim Einstellen die fertige Zeichnung), bleibt für die nächste Karte ———
+const STAERKE = { min: 30, max: 300, schritt: 10 };
+const merken = (k, v) => { try { localStorage.setItem(`kritzelkarte.${k}`, v); } catch { /* privates Fenster: dann eben nicht */ } };
+const erinnern = (k) => { try { return localStorage.getItem(`kritzelkarte.${k}`); } catch { return null; } };
+const voreinstellungen = [...document.querySelectorAll("[data-staerke]")];
+{
+  const s = Number(erinnern("staerke"));
+  if (s >= STAERKE.min && s <= STAERKE.max) wahl.staerke.value = s;
+  if (["gezeichnet", "gleichmaessig"].includes(erinnern("stil"))) wahl.stil.value = erinnern("stil");
+}
+function staerkeZeigen() {
+  const v = Number(wahl.staerke.value);
+  $("staerke-wert").textContent = `${v} %`;
+  for (const b of voreinstellungen) b.setAttribute("aria-pressed", String(Number(b.dataset.staerke) === v));
+  if (S.sz) $("linie").textContent = `Linie im Video etwa ${S.sz.linie.toFixed(1).replace(".", ",")} px breit (bei 1080 px Bildbreite).`;
+}
+let bildWunsch = 0;
+/** neue Stärke oder Art: Szene neu, die fertige Zeichnung zeigen (höchstens einmal je Bild der Anzeige) */
+function strichZeigen() {
+  merken("staerke", wahl.staerke.value); merken("stil", wahl.stil.value);
+  staerkeZeigen();
+  if (!S.ergebnis || bildWunsch) return;
+  bildWunsch = requestAnimationFrame(async () => {
+    bildWunsch = 0;
+    await neu({ abspielen: false });
+    staerkeZeigen();
+  });
+}
+const stufe = (d) => {
+  wahl.staerke.value = Math.min(STAERKE.max, Math.max(STAERKE.min, Math.round((Number(wahl.staerke.value) + d) / STAERKE.schritt) * STAERKE.schritt));
+  strichZeigen();
+};
+wahl.staerke.addEventListener("input", strichZeigen);
+wahl.stil.addEventListener("change", strichZeigen);
+$("duenner").addEventListener("click", () => stufe(-STAERKE.schritt));
+$("dicker").addEventListener("click", () => stufe(STAERKE.schritt));
+for (const b of voreinstellungen) b.addEventListener("click", () => { wahl.staerke.value = b.dataset.staerke; strichZeigen(); });
+staerkeZeigen();
 
 // ——— Vorschau ———
 function spielen() {
@@ -284,7 +323,7 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [knopfVideo, knopfPng, eingabe, $("beispiel"), ...Object.values(wahl)]) el.disabled = an || ((el === knopfVideo || el === knopfPng) && !S.ergebnis);
+  for (const el of [knopfVideo, knopfPng, eingabe, $("beispiel"), $("duenner"), $("dicker"), ...voreinstellungen, ...Object.values(wahl)]) el.disabled = an || ((el === knopfVideo || el === knopfPng) && !S.ergebnis);
 }
 
 // leerer Grund in der Vorschau

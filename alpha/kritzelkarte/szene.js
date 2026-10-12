@@ -1,8 +1,8 @@
 // «Kritzelkarte» – ein Bild des Films auf eine Leinwand zeichnen (Vorschau und Video verwenden dasselbe).
 // Die Zeichnung wächst auf einer eigenen Ebene Strich für Strich (nur vorwärts; geht die Zeit zurück, beginnt sie neu),
 // darüber die Stiftspitze, dann der Satz und am Schluss das Signet.
-import { BREITE, HOEHE, FPS, RAND, anteil, weich, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, WORT } from "./ablauf.js?v=1";
-import { signet, FARBEN } from "./signet.js?v=1";
+import { BREITE, HOEHE, FPS, RAND, anteil, weich, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, WORT } from "./ablauf.js?v=2";
+import { signet, FARBEN } from "./signet.js?v=2";
 
 export const SCHRIFTEN = {
   sans: { familie: '"Instrument Sans", system-ui, sans-serif', gewicht: 400, groesse: 66, name: "Instrument Sans" },

@@ -154,12 +154,13 @@ test("Seite: Alpha (noindex, Navigation, nur aus der Übersicht verlinkt), Versi
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/" aria-current="true">Ornament Cloud<\/a>\s*<a href="\.\.\/drittes-rad\/">Das Dritte Rad<\/a>\s*<\/nav>/);
   assert.ok(!/(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/.test(html), "lädt nichts von fremden Servern");
-  assert.match(html, /<script type="module" src="app\.js\?v=1"><\/script>/);
+  const marke0 = html.match(/<script type="module" src="app\.js\?v=(\d+)"><\/script>/)?.[1];
+  assert.ok(marke0, "app.js mit Versionsmarke");
   // alle eigenen Module mit derselben Marke
   for (const f of ["app.js", "szene.js", "signet.js", "rechner.js"]) {
     const marken = [...lies(`alpha/kritzelkarte/${f}`).matchAll(/"\.\/[a-z0-9]+\.js\?v=(\d+)"/g)].map((m) => m[1]);
     assert.ok(marken.length, f);
-    assert.ok(marken.every((m) => m === "1"), `${f}: ${marken}`);
+    assert.ok(marken.every((m) => m === marke0), `${f}: ${marken} (Seite: ${marke0})`);
   }
   // dauer.js von The Fictory mit derselben Marke wie dort
   const marke = (datei) => lies(datei).match(/from "\.{1,2}\/(?:the-fictory\/)?dauer\.js\?v=(\d+)"/)?.[1];
