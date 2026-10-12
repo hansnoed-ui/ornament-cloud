@@ -1,6 +1,6 @@
 // «Principesse» – das Bild im Hintergrund lesen (Web Worker): Pinselstriche, Glitzer und das scharfe, aufgefrischte Bild, damit die Seite dabei nicht stockt.
-import { malen, klarbild } from "./malen.js?v=5";
-import { glitzer } from "./glitzer.js?v=5";
+import { malen, klarbild } from "./malen.js?v=6";
+import { glitzer } from "./glitzer.js?v=6";
 
 self.onmessage = (e) => {
   const { nr, analyse, film, pinsel } = e.data;

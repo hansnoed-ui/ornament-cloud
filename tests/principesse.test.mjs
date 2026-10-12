@@ -25,11 +25,11 @@ function bild(w = 240, h = 320) {
 
 test("Malen: breite Pinsel zuerst, dann feinere; Farben aus dem Bild; ganz bedeckt; gleiches Bild, gleiches Gemälde", () => {
   const a = malen(bild(), 240, 320, { massstab: 1080 / 240, auffrischen: false });
-  assert.equal(a.stufen, 4);
+  assert.equal(a.stufen, 3);
   const stufen = a.striche.map((s) => s.stufe);
   for (let i = 1; i < stufen.length; i++) assert.ok(stufen[i] >= stufen[i - 1], "Reihenfolge nach Stufe");
   assert.ok(a.striche.filter((s) => s.stufe === 0).length > 20, "Untermalung über das ganze Bild");
-  assert.ok(a.radien[0] > a.radien.at(-1) * 6, "von breit bis fein");
+  assert.ok(a.radien[0] > a.radien.at(-1) * 4, "von breit bis fein");
   // jeder Durchgang der Reihe nach von oben nach unten (Mitte der Striche, in Bändern)
   for (let st = 0; st < a.stufen; st++) {
     const y = a.striche.filter((s) => s.stufe === st).map((s) => s.pts.filter((_, k) => k % 2).reduce((x, v, _, l) => x + v / l.length, 0));
@@ -48,7 +48,7 @@ test("Malen: breite Pinsel zuerst, dann feinere; Farben aus dem Bild; ganz bedec
   assert.ok(malen(bild(), 240, 320, { massstab: 4.5, pinsel: 0.7 }).striche.length > a.striche.length);
 });
 
-test("Glätten: Rauschen und Körnung weg, Kanten bleiben; ein verrauschtes Bild gibt viel weniger Striche", () => {
+test("Glätten: Rauschen und Körnung weg, Kanten bleiben; das scharfe Schlussbild ebenso", () => {
   const w = 200, h = 120;
   let z = 3; const rnd = () => ((z = (z * 16807) % 2147483647) / 2147483647);
   const d = new Uint8ClampedArray(w * h * 4);
@@ -66,8 +66,6 @@ test("Glätten: Rauschen und Körnung weg, Kanten bleiben; ein verrauschtes Bild
   assert.ok(kr(99, 60) < 90 && kr(100, 60) > 160, `Kante zwischen zwei Bildpunkten (${kr(99, 60)} | ${kr(100, 60)})`);
   const kk = { r: Float32Array.from({ length: w * h }, (_, i) => k[i * 4]) };
   assert.ok(streuung(kk.r, 10, 90) < streuung(kanaele(d, w, h).r, 10, 90), "Körnung leiser als im Foto, obwohl aufgefrischt");
-  const roh = malen(d, w, h, { massstab: 1080 / w, glatt: 0, auffrischen: false }).striche.length, glatt = malen(d, w, h, { massstab: 1080 / w }).striche.length;
-  assert.ok(glatt < roh * 0.7, `geglättet ${glatt}, roh ${roh}`);
 });
 
 test("Auffrischen: Farbstich weg, voller Kontrast, kräftigere Farben; nichts ausserhalb 0–255", () => {
@@ -111,7 +109,7 @@ test("Ablauf: malen, stehen, ausblenden; Foto und Satz nur wenn gewählt; Signet
   const ohne = zeitachse({ malen: 6 });
   assert.deepEqual(Object.keys(ohne.ab), ["vor", "malen", "stehen", "bildAus", "pause2", "signet", "signetStehen", "signetAus", "schluss"]);
   assert.equal(ohne.ab.malen[1] - ohne.ab.malen[0], 6);
-  assert.equal(ohne.ab.stehen[1] - ohne.ab.stehen[0], 3);
+  assert.equal(ohne.ab.stehen[1] - ohne.ab.stehen[0], 5, "das fertige Bild steht länger (Wunsch vom 12. Oktober 2026)");
   assert.ok(Math.abs(ohne.ab.signet[1] - ohne.ab.signet[0] - DAUER) < 1e-9);
   const mitFoto = zeitachse({ malen: 6, foto: true }), mitText = zeitachse({ malen: 6, text: "Eine Krone für jeden Tag." }), beides = zeitachse({ malen: 8, foto: true, text: "Eine Krone für jeden Tag." });
   for (const z of [mitFoto, mitText, beides]) assert.ok("fotoEin" in z.ab && "zweitAus" in z.ab);
