@@ -4,26 +4,39 @@
 // (stückweise aufgemalt gäbe es an jeder Stückgrenze Rippen aus den runden Enden der Borsten).
 // Ein Pinselzug: ein Körper in der Grundfarbe und darüber Borsten, leicht versetzt und in der Farbe etwas heller oder dunkler.
 // Ist das Gemälde fertig, geht es sanft in das scharfe, aufgefrischte Bild über (klar); darüber funkelt der Glitzer. Dann Foto und Satz, am Schluss das Signet.
-import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=10";
-import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=10";
+import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=11";
+import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=11";
 import { SCHRIFTEN, schriftSetzen } from "../sketchory/szene.js?v=8";
-import { zufall } from "./malen.js?v=10";
+import { zufall } from "./malen.js?v=11";
 
 export { SCHRIFTEN, FARBEN };
 
 /**
  * Szene. bild: { striche, stufen } aus malen.js; funken aus glitzer.js; optionen: malen (Sekunden), glitzer (0 aus, 1 sanft, 1.6 kräftig),
- * farbe ("hell" | "dunkel"), foto (ImageBitmap/Canvas oder null), klar (das scharfe Bild als Canvas, oder null), text, schrift, streckung, messen, leinwand.
+ * farbe ("hell" | "dunkel"), foto (ImageBitmap/Canvas oder null), klar (das scharfe Bild als Canvas, oder null), text, schrift, streckung, messen, leinwand,
+ * skala (Auflösung der Malebene gegenüber dem Film; die Vorschau rechnet mit 0,5 und zeichnet mit ctx.setTransform(0.5, …)),
+ * vorrat (ein Objekt, das mehrere Szenen desselben Gemäldes teilen: die Malebene mit ihrem Stand und, sobald eine Szene es einmal
+ * gemalt hat, das fertige Gemälde; so muss nach dem Umstellen von Glitzer, Grund, Foto oder Satz nicht alles neu gemalt werden).
  */
-export function szene(bild, funken, { breite = 1080, hoehe = 1440, malen = 6, glitzer = 1, farbe = "hell", foto = null, klar = null, text = "", schrift = "grotesk", streckung = 1.15, messen, leinwand } = {}) {
+export function szene(bild, funken, { breite = 1080, hoehe = 1440, malen = 6, glitzer = 1, farbe = "hell", foto = null, klar = null, text = "", schrift = "grotesk", streckung = 1.15, messen, leinwand, skala = 1, vorrat = null } = {}) {
   const satzText = satzPunkt(text, true);
   const zeit = zeitachse({ malen, foto: !!foto, text: satzText.text });
   const plan = malplan(bild.striche, bild.stufen, malen);
-  const zuege = bild.striche.map((s, i) => pinselzug(s, plan[i]));
+  // Malebene, Stand und Pinselzüge hängen nur vom Gemälde, der Malzeit und der Auflösung ab: aus dem Vorrat nehmen, wenn er passt
+  const teilen = vorrat && vorrat.skala === skala ? vorrat : null;
+  if (teilen && teilen.malen !== malen) Object.assign(teilen, { malen, zuege: null, ebene: null, stand: null });   // das fertige Bild bleibt gültig
+  let { zuege, ebene, stand } = teilen?.ebene ? teilen : {};
+  if (!ebene) {
+    zuege = bild.striche.map((s, i) => pinselzug(s, plan[i]));
+    ebene = leinwand(Math.round(breite * skala), Math.round(hoehe * skala));
+    ebene.getContext("2d").setTransform(skala, 0, 0, skala, 0, 0);
+    stand = { t: -1, naechster: 0, aktiv: [] };
+    if (teilen) Object.assign(teilen, { malen, zuege, ebene, stand });
+  }
   const sb = satzText.text ? satzbild(satzText.text, (s, g) => messen(s, g, schrift), { groesse: SCHRIFTEN[schrift].groesse, streckung, breite: Math.min(breite, 1080) - 232, zeilenMax: hoehe < 1200 ? 4 : 5 }) : null;
   return {
     breite, hoehe, zeit, zuege, funken, glitzer, farben: FARBEN[farbe] ?? FARBEN.hell, foto, klar, satz: sb, orange: satzText.orange, schrift, streckung,
-    ebene: leinwand(breite, hoehe), stand: { t: -1, naechster: 0, aktiv: [] },
+    ebene, leinwand, skala, vorrat: teilen, malEnde: zuege.reduce((m, z) => Math.max(m, z.bis), 0), stand,
   };
 }
 
@@ -81,7 +94,7 @@ function malenBis(sz, t) {
   const ctx = sz.ebene.getContext("2d");
   if (t < sz.stand.t) {
     ctx.clearRect(0, 0, sz.breite, sz.hoehe);
-    sz.stand = { t: -1, naechster: 0, aktiv: [] };
+    Object.assign(sz.stand, { t: -1, naechster: 0, aktiv: [] });   // (der Stand kann geteilt sein: ändern, nicht ersetzen)
   }
   ctx.lineCap = "round"; ctx.lineJoin = "round";
   const { zuege } = sz, st = sz.stand;
@@ -93,6 +106,19 @@ function malenBis(sz, t) {
     return true;
   });
   st.t = t;
+  // fertig gemalt: für spätere Szenen desselben Gemäldes aufheben (eine Kopie, diese Ebene wird beim Zurückspulen gelöscht)
+  if (sz.vorrat && !sz.vorrat.fertig && st.naechster === zuege.length && !st.aktiv.length) {
+    const kopie = sz.leinwand(sz.ebene.width, sz.ebene.height);
+    kopie.getContext("2d").drawImage(sz.ebene, 0, 0);
+    sz.vorrat.fertig = kopie;
+  }
+}
+
+/** die Malebene zur Zeit t (Sekunden ab Malbeginn): das aufgehobene fertige Gemälde, wenn es schon fertig ist, sonst die eigene Ebene */
+function gemaelde(sz, t) {
+  if (sz.vorrat?.fertig && t >= sz.malEnde) return sz.vorrat.fertig;
+  malenBis(sz, t);
+  return sz.ebene;
 }
 
 /** Bild zur Zeit t (Sekunden) */
@@ -104,12 +130,12 @@ export function bild(ctx, sz, t) {
   ctx.fillRect(0, 0, BREITE, HOEHE);
   // das Gemälde und sein Glitzer
   if (t < ab.bildAus[1]) {
-    malenBis(sz, Math.max(0, t - ab.malen[0]));
+    const tm = Math.max(0, t - ab.malen[0]), ebene = gemaelde(sz, tm);
     const sicht = 1 - ausblenden(anteil(t, ab.bildAus[0], ab.bildAus[1]));
     ctx.globalAlpha = sicht;
-    ctx.drawImage(sz.ebene, 0, 0);
+    ctx.drawImage(ebene, 0, 0, BREITE, HOEHE);
     // die Striche, die gerade wachsen
-    if (sz.stand.aktiv.length) {
+    if (ebene === sz.ebene && sz.stand.aktiv.length) {
       ctx.lineCap = "round"; ctx.lineJoin = "round";
       for (const a of sz.stand.aktiv) if (a.l > 0) zugStueck(ctx, a.z, 0, a.l);
     }
@@ -193,8 +219,7 @@ function satz(ctx, sz, t, aus, mitte, farbe, punkt) {
 export function standbild(ctx, sz) {
   ctx.fillStyle = sz.farben.grund;
   ctx.fillRect(0, 0, sz.breite, sz.hoehe);
-  malenBis(sz, 1e9);
-  ctx.drawImage(sz.ebene, 0, 0);
+  ctx.drawImage(gemaelde(sz, 1e9), 0, 0, sz.breite, sz.hoehe);
   if (sz.klar) { ctx.globalAlpha = KLAR; ctx.drawImage(sz.klar, 0, 0, sz.breite, sz.hoehe); ctx.globalAlpha = 1; }
   if (sz.glitzer > 0) funkenZeichnen(ctx, sz.funken, 0.37, sz.glitzer, "#fff", 1);
 }
