@@ -6,7 +6,7 @@
 // Vorher wird das Bild aufgefrischt (Weissabgleich, Kontrast, Klarheit, Farbkraft) und geglättet (Rauschen, Leinwandstruktur und Körnung weg, Kanten bleiben).
 // Wenige, lange Striche statt vieler kleiner: drei Durchgänge (die Feinheiten bringt am Schluss das scharfe Bild), jeder Durchgang malt der Reihe nach von oben nach unten.
 // Ergebnis in Bildpunkten des fertigen Films (1080 × 1440): Striche mit Punkten, Farbe, Breite und Durchgang, in Malreihenfolge.
-import { unschaerfe } from "../sketchory/strich.js?v=9";
+import { unschaerfe } from "../sketchory/strich.js?v=8";
 
 /** kleiner, fester Zufall (gleiches Bild → gleiches Gemälde) */
 export function zufall(saat = 1) {
@@ -30,7 +30,7 @@ export function malen(rgba, w, h, { massstab = 2, pinsel = 1, saat = 7, ...fein 
   const rnd = zufall(saat);
   let quelle = kanaele(rgba, w, h);
   if (E.auffrischen) quelle = optimieren(quelle, w, h);
-  if (E.glatt) quelle = glaetten(quelle, w, h, { radius: E.glatt, farbweite: E.farbweite });
+  if (E.glatt) quelle = glaetten(quelle, w, h, { radius: E.glatt, farbweite: E.farbweite, durchgaenge: E.glattGaenge });
   // Pinselbreiten (Radius) im Film: breit für den Grund, fein für Augen und Kanten
   const RADIEN = E.radien.map((r) => r * pinsel);
   const { laenge, schwelle } = E;               // höchstens so viele Schritte (je ein Radius) pro Strich; so weit (RGB-Abstand) darf der vorige Durchgang abweichen
@@ -81,7 +81,7 @@ export function klarbild(rgba, w, h) {
 }
 
 /** Feinheiten: Pinselbreiten (Radius in Bildpunkten des Films) der Durchgänge, Länge und Schwelle je Durchgang, Abstand der Startfelder, Glätten */
-export const EINSTELLUNG = { radien: [46, 22, 11], laenge: [7, 9, 10], schwelle: [0, 25, 30], raster: 1.3, glatt: 3, farbweite: 36, auffrischen: true };
+export const EINSTELLUNG = { radien: [46, 22, 11], laenge: [7, 9, 10], schwelle: [0, 25, 30], raster: 1.3, glatt: 2, glattGaenge: 1, farbweite: 36, auffrischen: true };
 
 /** Striche in Bänder der Höhe band ordnen (nach ihrer Mitte), von oben nach unten, abwechselnd von links und von rechts */
 function reihe(striche, band) {
@@ -92,23 +92,38 @@ function reihe(striche, band) {
 
 /** kantenerhaltend glätten (bilateral): Nachbarn zählen, je näher und je ähnlicher in der Farbe sie sind; zweimal */
 export function glaetten(q, w, h, { radius = 3, farbweite = 36, durchgaenge = 2 } = {}) {
-  const raum = [], sr = radius * 0.6, farbe = new Float32Array(442 * 4);
-  for (let dy = -radius; dy <= radius; dy++) for (let dx = -radius; dx <= radius; dx++) if (dx * dx + dy * dy <= radius * radius + 1) raum.push(dx, dy, Math.exp(-(dx * dx + dy * dy) / (2 * sr * sr)));
+  const sr = radius * 0.6, dx = [], dy = [], gew = [];
+  for (let y = -radius; y <= radius; y++) for (let x = -radius; x <= radius; x++) if (x * x + y * y <= radius * radius + 1) { dx.push(x); dy.push(y); gew.push(Math.exp(-(x * x + y * y) / (2 * sr * sr))); }
+  const n = gew.length, off = Int32Array.from(dx, (x, k) => dy[k] * w + x), raum = Float32Array.from(gew);
+  // Farbgewicht nach der Summe der drei Abstände (höchstens 3 · 255), als Tafel
+  const farbe = new Float32Array(1776);
   for (let i = 0; i < farbe.length; i++) farbe[i] = Math.exp(-((i / 4) ** 2) / (2 * farbweite * farbweite));
   let { r, g, b } = q;
   for (let d = 0; d < durchgaenge; d++) {
     const R = new Float32Array(w * h), G = new Float32Array(w * h), B = new Float32Array(w * h);
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      const i = y * w + x, r0 = r[i], g0 = g[i], b0 = b[i];
-      let sr_ = 0, sg = 0, sb = 0, sw = 0;
-      for (let k = 0; k < raum.length; k += 3) {
-        const xx = x + raum[k], yy = y + raum[k + 1];
-        if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
-        const j = yy * w + xx, ab = Math.abs(r[j] - r0) + Math.abs(g[j] - g0) + Math.abs(b[j] - b0);
-        const gw = raum[k + 2] * farbe[Math.min(farbe.length - 1, (ab * 4 * 0.58) | 0)];
-        sr_ += r[j] * gw; sg += g[j] * gw; sb += b[j] * gw; sw += gw;
+    for (let y = 0; y < h; y++) {
+      const innen = y >= radius && y < h - radius;
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x, r0 = r[i], g0 = g[i], b0 = b[i];
+        let sr_ = 0, sg = 0, sb = 0, sw = 0;
+        if (innen && x >= radius && x < w - radius) {
+          // im Innern ohne Randprüfung (der weitaus grösste Teil des Bilds)
+          for (let k = 0; k < n; k++) {
+            const j = i + off[k], rj = r[j], gj = g[j], bj = b[j];
+            const gw = raum[k] * farbe[((Math.abs(rj - r0) + Math.abs(gj - g0) + Math.abs(bj - b0)) * 2.32) | 0];
+            sr_ += rj * gw; sg += gj * gw; sb += bj * gw; sw += gw;
+          }
+        } else {
+          for (let k = 0; k < n; k++) {
+            const xx = x + dx[k], yy = y + dy[k];
+            if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
+            const j = yy * w + xx, rj = r[j], gj = g[j], bj = b[j];
+            const gw = raum[k] * farbe[((Math.abs(rj - r0) + Math.abs(gj - g0) + Math.abs(bj - b0)) * 2.32) | 0];
+            sr_ += rj * gw; sg += gj * gw; sb += bj * gw; sw += gw;
+          }
+        }
+        R[i] = sr_ / sw; G[i] = sg / sw; B[i] = sb / sw;
       }
-      R[i] = sr_ / sw; G[i] = sg / sw; B[i] = sb / sw;
     }
     r = R; g = G; b = B;
   }

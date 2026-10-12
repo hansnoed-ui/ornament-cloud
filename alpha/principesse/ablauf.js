@@ -2,10 +2,10 @@
 //   leere Leinwand → das Bild malt sich mit Pinselstrichen (drei Durchgänge von breit bis fein, jeder von oben nach unten, 5–8 s) → geht ins scharfe Bild über und steht, der Glitzer funkelt (5 s) → blendet aus
 //   → (wenn gewählt) ein Foto blendet ein, darauf erscheint der Satz Buchstabe um Buchstabe → blendet aus
 //   → das Signet: eine kleine Prinzessin zeichnet sich, «Principesse» → steht → blendet aus.
-import { textEin, zeichenZahl, woerter, klemm } from "../sketchory/ablauf.js?v=9";
-import { DAUER as SIGNET } from "./signet.js?v=9";
+import { textEin, zeichenZahl, woerter, klemm } from "../sketchory/ablauf.js?v=8";
+import { DAUER as SIGNET } from "./signet.js?v=10";
 
-export { FPS, anteil, weich, ausblenden, bezier, versatz, ZEICHEN, satzbild, satzPunkt } from "../sketchory/ablauf.js?v=9";
+export { FPS, anteil, weich, ausblenden, bezier, versatz, ZEICHEN, satzbild, satzPunkt } from "../sketchory/ablauf.js?v=8";
 
 /** Bildmass des Films für ein Format: "3:4", "1:1" oder "bild" (wie das Ausgangsbild, kurze Seite 1080, lange Seite höchstens 1920, gerade Zahlen) */
 export function filmMass(format, bildBreite = 3, bildHoehe = 4) {
