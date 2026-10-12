@@ -3,7 +3,7 @@
 // Jeder Durchgang malt gegen eine weichgezeichnete Fassung des Bilds (je feiner der Pinsel, desto schärfer), und nur dort, wo der vorige
 // Durchgang noch zu weit davon weg ist. Ein Strich beginnt an der Stelle mit dem grössten Fehler, nimmt dort die Farbe auf und folgt quer
 // zum Helligkeitsgefälle (also den Formen entlang), gekrümmt und geglättet, bis die Farbe nicht mehr passt oder die Länge erreicht ist.
-// Vorher wird das Bild geglättet (Rauschen, Leinwandstruktur und Körnung weg, Kanten bleiben) und behutsam in Kontrast und Farbe aufgefrischt.
+// Vorher wird das Bild aufgefrischt (Weissabgleich, Kontrast, Klarheit, Farbkraft) und geglättet (Rauschen, Leinwandstruktur und Körnung weg, Kanten bleiben).
 // Wenige, lange Striche statt vieler kleiner: vier Durchgänge, und jeder Durchgang malt der Reihe nach von oben nach unten.
 // Ergebnis in Bildpunkten des fertigen Films (1080 × 1440): Striche mit Punkten, Farbe, Breite und Durchgang, in Malreihenfolge.
 import { unschaerfe } from "../sketchory/strich.js?v=8";
@@ -29,8 +29,8 @@ export function malen(rgba, w, h, { massstab = 2, pinsel = 1, saat = 7, ...fein 
   const E = { ...EINSTELLUNG, ...fein };
   const rnd = zufall(saat);
   let quelle = kanaele(rgba, w, h);
-  if (E.glatt) quelle = glaetten(quelle, w, h, { radius: E.glatt, farbweite: E.farbweite });
   if (E.auffrischen) quelle = optimieren(quelle, w, h);
+  if (E.glatt) quelle = glaetten(quelle, w, h, { radius: E.glatt, farbweite: E.farbweite });
   // Pinselbreiten (Radius) im Film: breit für den Grund, fein für Augen und Kanten
   const RADIEN = E.radien.map((r) => r * pinsel);
   const { laenge, schwelle } = E;               // höchstens so viele Schritte (je ein Radius) pro Strich; so weit (RGB-Abstand) darf der vorige Durchgang abweichen
@@ -74,7 +74,7 @@ export function malen(rgba, w, h, { massstab = 2, pinsel = 1, saat = 7, ...fein 
 }
 
 /** Feinheiten: Pinselbreiten (Radius in Bildpunkten des Films) der Durchgänge, Länge und Schwelle je Durchgang, Abstand der Startfelder, Glätten */
-export const EINSTELLUNG = { radien: [46, 22, 11, 6], laenge: [14, 16, 14, 12], schwelle: [0, 22, 26, 30], raster: 1.3, glatt: 3, farbweite: 36, auffrischen: true };
+export const EINSTELLUNG = { radien: [46, 22, 11, 6], laenge: [14, 16, 14, 12], schwelle: [0, 25, 30, 34], raster: 1.3, glatt: 3, farbweite: 36, auffrischen: true };
 
 /** Striche in Bänder der Höhe band ordnen (nach ihrer Mitte), von oben nach unten, abwechselnd von links und von rechts */
 function reihe(striche, band) {
@@ -108,19 +108,55 @@ export function glaetten(q, w, h, { radius = 3, farbweite = 36, durchgaenge = 2 
   return { r, g, b };
 }
 
-/** behutsam auffrischen: Helligkeit auf den vollen Umfang spreizen (höchstens 1,25-fach), Farben etwas kräftiger */
-export function optimieren({ r, g, b }, w, h) {
-  const n = w * h, hist = new Uint32Array(256);
-  for (let i = 0; i < n; i++) hist[Math.max(0, Math.min(255, (0.3 * r[i] + 0.59 * g[i] + 0.11 * b[i]) | 0))]++;
-  const stelle = (anteil) => { let s = 0; for (let v = 0; v < 256; v++) { s += hist[v]; if (s >= anteil * n) return v; } return 255; };
-  const lo = stelle(0.005), hi = stelle(0.995), mitte = (lo + hi) / 2;
-  const f = Math.min(1.25, 255 / Math.max(1, hi - lo)), o = Math.max(0, Math.min(255 - (hi - lo) * f, mitte - (mitte - lo) * f));
-  const R = new Float32Array(n), G = new Float32Array(n), B = new Float32Array(n);
+/**
+ * auffrischen, wie man ein Foto eines Bilds von Hand bearbeiten würde:
+ * 1. Weissabgleich: helle, fast unbunte Stellen (Papier, Weiss, Glanz) werden neutral (Farbstich des Lichts weg; zu drei Fünfteln, höchstens etwa ±7 %, damit gewollt cremige Farben cremig bleiben)
+ * 2. Tonwerte: dunkelste und hellste 0,5 % auf Schwarz und Weiss spreizen (höchstens 1,6-fach), dann eine sanfte S-Kurve
+ * 3. Klarheit: lokaler Kontrast (Helligkeit gegen ihre weiche Umgebung, Radius ~ 1/40 der Bildbreite)
+ * 4. Farbkraft: matte Farben kräftiger, schon kräftige nur wenig (Lebendigkeit)
+ * Stärke 0 lässt das Bild, wie es ist; 1 ist die übliche Stärke.
+ */
+export function optimieren({ r, g, b }, w, h, staerke = 1) {
+  const n = w * h, L = (i) => 0.3 * R[i] + 0.59 * G[i] + 0.11 * B[i];
+  let R = Float32Array.from(r), G = Float32Array.from(g), B = Float32Array.from(b);
+  const histo = (f) => { const hist = new Uint32Array(256); for (let i = 0; i < n; i++) hist[Math.max(0, Math.min(255, f(i) | 0))]++; return hist; };
+  const stelle = (hist, anteil) => { let s = 0; for (let v = 0; v < 256; v++) { s += hist[v]; if (s >= anteil * n) return v; } return 255; };
+  // 1. Weissabgleich
+  const hellGrenze = stelle(histo(L), 0.9);
+  let sr = 0, sg = 0, sb = 0, k = 0;
   for (let i = 0; i < n; i++) {
-    let rr = o + (r[i] - lo) * f, gg = o + (g[i] - lo) * f, bb = o + (b[i] - lo) * f;
-    const l = 0.3 * rr + 0.59 * gg + 0.11 * bb;
-    rr = l + (rr - l) * 1.08; gg = l + (gg - l) * 1.08; bb = l + (bb - l) * 1.08;
-    R[i] = Math.max(0, Math.min(255, rr)); G[i] = Math.max(0, Math.min(255, gg)); B[i] = Math.max(0, Math.min(255, bb));
+    const mx = Math.max(R[i], G[i], B[i]), mn = Math.min(R[i], G[i], B[i]);
+    if (L(i) >= hellGrenze && mx > 90 && (mx - mn) / mx < 0.22) { sr += R[i]; sg += G[i]; sb += B[i]; k++; }
+  }
+  if (k > n * 0.004) {
+    const grau = (sr + sg + sb) / 3, klemm = (x) => Math.max(0.88, Math.min(1.12, x)), mix = (x) => 1 + (x - 1) * 0.6 * staerke;
+    const fr = mix(klemm(grau / sr)), fg = mix(klemm(grau / sg)), fb = mix(klemm(grau / sb));
+    for (let i = 0; i < n; i++) { R[i] *= fr; G[i] *= fg; B[i] *= fb; }
+  }
+  // 2. Tonwerte und S-Kurve (auf alle drei Kanäle gleich, die Farbtöne bleiben)
+  const hist = histo(L), lo = stelle(hist, 0.005), hi = stelle(hist, 0.995), mitte = (lo + hi) / 2;
+  const f = 1 + (Math.min(1.6, 255 / Math.max(1, hi - lo)) - 1) * staerke;
+  const o = Math.max(0, Math.min(255 - (hi - lo) * f, mitte - (mitte - lo) * f));
+  const kurve = new Float32Array(256);
+  for (let v = 0; v < 256; v++) {
+    const x = Math.max(0, Math.min(1, (o + (v - lo) * f) / 255)), s = x * x * (3 - 2 * x);
+    kurve[v] = 255 * (x + (s - x) * 0.35 * staerke);
+  }
+  const ton = (v) => { const c = Math.max(0, Math.min(255, v)), j = Math.min(254, c | 0), t = c - j; return kurve[j] + (kurve[j + 1] - kurve[j]) * t; };
+  for (let i = 0; i < n; i++) { R[i] = ton(R[i]); G[i] = ton(G[i]); B[i] = ton(B[i]); }
+  // 3. Klarheit
+  const hell = new Float32Array(n);
+  for (let i = 0; i < n; i++) hell[i] = L(i);
+  const umgebung = unschaerfe(hell, w, h, Math.max(3, Math.round(w / 40)), 2);
+  for (let i = 0; i < n; i++) {
+    const d = (hell[i] - umgebung[i]) * 0.35 * staerke, m = Math.max(0, Math.min(1, Math.min(hell[i], 255 - hell[i]) / 40));
+    R[i] = Math.max(0, Math.min(255, R[i] + d * m)); G[i] = Math.max(0, Math.min(255, G[i] + d * m)); B[i] = Math.max(0, Math.min(255, B[i] + d * m));
+  }
+  // 4. Farbkraft
+  for (let i = 0; i < n; i++) {
+    const l = L(i), mx = Math.max(R[i], G[i], B[i]), mn = Math.min(R[i], G[i], B[i]), satt = mx > 1 ? Math.min(1, (mx - mn) / mx) : 0;
+    const plus = 1 + 0.3 * staerke * (1 - satt) ** 1.5;
+    R[i] = Math.max(0, Math.min(255, l + (R[i] - l) * plus)); G[i] = Math.max(0, Math.min(255, l + (G[i] - l) * plus)); B[i] = Math.max(0, Math.min(255, l + (B[i] - l) * plus));
   }
   return { r: R, g: G, b: B };
 }

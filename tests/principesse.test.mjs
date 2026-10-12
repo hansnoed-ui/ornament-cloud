@@ -4,7 +4,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { malen, glaetten, kanaele } from "../alpha/principesse/malen.js";
+import { malen, glaetten, kanaele, optimieren } from "../alpha/principesse/malen.js";
 import { glitzer, funkeln } from "../alpha/principesse/glitzer.js";
 import { zeitachse, malplan, dateiname, filmMass } from "../alpha/principesse/ablauf.js";
 import { linien, NAME, VON, DAUER } from "../alpha/principesse/signet.js";
@@ -62,6 +62,24 @@ test("Glätten: Rauschen und Körnung weg, Kanten bleiben; ein verrauschtes Bild
   assert.ok(g.r[60 * w + 96] < 90 && g.r[60 * w + 104] > 160, "die Kante bleibt scharf");
   const roh = malen(d, w, h, { massstab: 1080 / w, glatt: 0, auffrischen: false }).striche.length, glatt = malen(d, w, h, { massstab: 1080 / w }).striche.length;
   assert.ok(glatt < roh * 0.7, `geglättet ${glatt}, roh ${roh}`);
+});
+
+test("Auffrischen: Farbstich weg, voller Kontrast, kräftigere Farben; nichts ausserhalb 0–255", () => {
+  // ein flaues, gelbstichiges Foto: weisses Papier wirkt cremig, das Blau matt, kein echtes Schwarz
+  const w = 160, h = 120, d = new Uint8ClampedArray(w * h * 4);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = (y * w + x) * 4, [r, g, b] = x < 60 ? [212, 200, 170] : x < 120 ? [80, 100, 140] : [70, 64, 55];
+    d[i] = r; d[i + 1] = g; d[i + 2] = b; d[i + 3] = 255;
+  }
+  const o = optimieren(kanaele(d, w, h), w, h), p = (x) => [o.r[60 * w + x], o.g[60 * w + x], o.b[60 * w + x]];
+  const [pr, pg, pb] = p(30), [br, bg, bb] = p(90), [sr, sg, sb] = p(140);
+  assert.ok(pr - pb < (212 - 170) * 0.8, `Papier neutraler (${pr | 0}, ${pg | 0}, ${pb | 0})`);
+  assert.ok((pr + pg + pb) / 3 > 215 && (sr + sg + sb) / 3 < 50, "hell heller, dunkel dunkler");
+  assert.ok(bb - br > 60 - 2, "Blau mindestens so kräftig");
+  for (const k of ["r", "g", "b"]) assert.ok(o[k].every((v) => Number.isFinite(v) && v >= 0 && v <= 255), k);
+  // Stärke 0 lässt das Bild unverändert
+  const n = optimieren(kanaele(d, w, h), w, h, 0);
+  assert.ok(Math.abs(n.r[60 * w + 30] - 212) < 1.5 && Math.abs(n.b[60 * w + 90] - 140) < 1.5);
 });
 
 test("Glitzer: dichte, helle Körner funkeln, glatte Farbe und vereinzelte Punkte nicht", () => {
