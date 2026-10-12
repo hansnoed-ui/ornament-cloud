@@ -37,7 +37,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** Anteil heller Pixel und ob Rot-Orange vorkommt, im Bild zur Zeit t (dieselbe Zeichenfunktion wie Vorschau und Video) */
 const messeBild = (page, t) => page.evaluate(async (t) => {
-  const { bild, szene } = await import("./szene.js?v=7");
+  const { bild, szene } = await import("./szene.js?v=8");
   const S = window.__sketchory;
   const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
   const ctx = c.getContext("2d");
@@ -71,7 +71,7 @@ await check("Beispielkarte: Linien gefunden, Vorschau läuft, Knöpfe frei", asy
   assert.match(text, /helle Linien auf dunklem Grund/);
   assert.match(await page.textContent("#dauer"), /^\d+,\d s · 1080 × 1440 · 30 Bilder\/s$/);
   assert.equal(await page.inputValue("#schrift"), "grotesk", "Satz standardmässig in der Grotesk");
-  assert.equal(await page.evaluate(() => document.fonts.check('500 68px "Inter Display"')), true, "Inter Display geladen");
+  assert.equal(await page.evaluate(() => document.fonts.check('600 68px "Inter Display"')), true, "Inter Display SemiBold geladen");
   assert.equal(await page.textContent("#spielen"), "Anhalten", "die Vorschau läuft");
   assert.equal(await page.isHidden("#leer"), true);
   await page.waitForTimeout(3500);
@@ -251,7 +251,7 @@ await check("Schwarz auf Weiss: ganzer Film umgekehrt (Grund, Zeichnung, Satz, S
   assert.equal(await page.getAttribute('[data-farbe="hell"]', "aria-pressed"), "true");
   assert.equal(await page.evaluate(() => document.querySelector(".rahmen").classList.contains("hell")), true);
   const zaehle = (t) => page.evaluate(async (t) => {
-    const { bild, szene } = await import("./szene.js?v=7");
+    const { bild, szene } = await import("./szene.js?v=8");
     const S = window.__sketchory, sz = szene(S.ergebnis, S.optionen);
     const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
     const x = c.getContext("2d"), zeit = sz.zeit.ab[t][0] + 0.05;

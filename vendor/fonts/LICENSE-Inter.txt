@@ -1,5 +1,5 @@
 Inter Display (Inter 4) – Copyright 2016-2023 The Inter Project Authors (https://github.com/rsms/inter)
-Datei inter-display-500-latin.woff2: Teilmenge (Latein) von InterDisplay-Medium, mit der Variante cv10 (G mit Sporn) fest eingesetzt.
+Dateien inter-display-500-latin.woff2 und inter-display-600-latin.woff2: Teilmengen (Latein) von InterDisplay-Medium und InterDisplay-SemiBold, mit der Variante cv10 (G mit Sporn) fest eingesetzt.
 Lizenz: SIL Open Font License 1.1
 
 PREAMBLE

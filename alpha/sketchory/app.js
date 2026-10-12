@@ -1,10 +1,10 @@
 // «Sketchory» – Seite: Bild laden, Satz eingeben, Vorschau abspielen, Video (MP4) und Standbild (PNG) herunterladen.
 // Alles bleibt im Browser. Video über WebCodecs (H.264, schneller als Echtzeit, Bild für Bild genau) und mp4.js;
 // wo das fehlt, in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { striche, analyseMass } from "./strich.js?v=7";
-import { BREITE, HOEHE, FPS, dateiname } from "./ablauf.js?v=7";
-import { szene, bild, standbild, schriftSetzen } from "./szene.js?v=7";
-import { mp4 } from "./mp4.js?v=7";
+import { striche, analyseMass } from "./strich.js?v=8";
+import { BREITE, HOEHE, FPS, dateiname } from "./ablauf.js?v=8";
+import { szene, bild, standbild, schriftSetzen } from "./szene.js?v=8";
+import { mp4 } from "./mp4.js?v=8";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
 const $ = (id) => document.getElementById(id);
@@ -27,8 +27,8 @@ const messen = (text, groesse, schrift) => {
   return messer.measureText(text).width;
 };
 const schriften = Promise.all([
-  document.fonts.load('500 68px "Inter Display"'), document.fonts.load('400 66px "Instrument Sans"'), document.fonts.load('400 52px "Instrument Sans"'),
-  document.fonts.load("300 74px Newsreader"),
+  document.fonts.load('600 68px "Inter Display"'), document.fonts.load('500 66px "Instrument Sans"'), document.fonts.load('400 52px "Instrument Sans"'),
+  document.fonts.load("400 74px Newsreader"),
 ]).catch(() => {});
 
 /** Ist Helvetica Now auf diesem Gerät installiert? (Breite gegenüber einer Ersatzschrift; Safari gibt installierte Schriften nicht frei) */
@@ -94,7 +94,7 @@ function bildElement(datei) {
 
 // das Bild in Striche verwandeln (im Worker, sonst hier)
 let worker = null;
-try { worker = new Worker(new URL("./rechner.js?v=7", import.meta.url), { type: "module" }); } catch { worker = null; }
+try { worker = new Worker(new URL("./rechner.js?v=8", import.meta.url), { type: "module" }); } catch { worker = null; }
 function rechnen(empfindlichkeit) {
   const { daten, w, h } = S.bild;
   const nr = ++S.rechnen;
