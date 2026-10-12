@@ -1,19 +1,31 @@
 // «Sketchory» – ein Bild des Films auf eine Leinwand zeichnen (Vorschau und Video verwenden dasselbe).
 // Die Zeichnung wächst auf einer eigenen Ebene Strich für Strich (nur vorwärts; geht die Zeit zurück, beginnt sie neu),
 // darüber die Stiftspitze, dann der Satz und am Schluss das Signet.
-import { BREITE, HOEHE, FPS, RAND, anteil, weich, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, WORT } from "./ablauf.js?v=2";
-import { signet, FARBEN } from "./signet.js?v=2";
+import { BREITE, HOEHE, FPS, RAND, anteil, weich, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, WORT } from "./ablauf.js?v=3";
+import { signet, FARBEN } from "./signet.js?v=3";
 
+// Satz: standardmässig eine Grotesk nah an Helvetica Now Display (Wunsch vom 12. Oktober 2026). Helvetica Now selbst ist nicht frei;
+// darum Inter Display Medium (OFL, vendor/fonts/, mit «G» mit Sporn) und knappe Laufweite. Ist Helvetica Now auf dem Gerät installiert,
+// bietet die Seite sie zusätzlich an («helvetica»). sperrung: Laufweite in em (über ctx.letterSpacing, wo der Browser es kann).
 export const SCHRIFTEN = {
-  sans: { familie: '"Instrument Sans", system-ui, sans-serif', gewicht: 400, groesse: 66, name: "Instrument Sans" },
-  serif: { familie: 'Newsreader, Georgia, serif', gewicht: 300, groesse: 74, name: "Newsreader" },
+  grotesk: { familie: '"Inter Display", "Helvetica Neue", Helvetica, Arial, sans-serif', gewicht: 500, groesse: 68, sperrung: -0.015, name: "Grotesk (Inter Display)" },
+  helvetica: { familie: '"Helvetica Now Display", "Helvetica Now Text", "Inter Display", sans-serif', gewicht: 500, groesse: 68, sperrung: -0.01, name: "Helvetica Now" },
+  sans: { familie: '"Instrument Sans", system-ui, sans-serif', gewicht: 400, groesse: 66, sperrung: 0, name: "Instrument Sans" },
+  serif: { familie: 'Newsreader, Georgia, serif', gewicht: 300, groesse: 74, sperrung: 0, name: "Newsreader" },
 };
+
+/** Schrift und Laufweite auf einen Kontext setzen (für Messen und Zeichnen gleich) */
+export function schriftSetzen(ctx, schrift, groesse) {
+  const s = SCHRIFTEN[schrift] ?? SCHRIFTEN.grotesk;
+  ctx.font = `${s.gewicht} ${groesse}px ${s.familie}`;
+  if ("letterSpacing" in ctx) ctx.letterSpacing = `${(s.sperrung * groesse).toFixed(2)}px`;
+}
 
 /**
  * Szene aus dem Ergebnis von strich.js. optionen: stil ("gezeichnet" | "gleichmaessig"), staerke (Faktor für die Strichbreite),
- * zeichnen (Sekunden), text, schrift ("sans" | "serif"), messen(text, groesse, schrift) → Breite.
+ * zeichnen (Sekunden), text, schrift ("grotesk" | "helvetica" | "sans" | "serif"), messen(text, groesse, schrift) → Breite.
  */
-export function szene(ergebnis, { stil = "gezeichnet", staerke = 1, zeichnen = 4.5, text = "", schrift = "sans", messen, leinwand } = {}) {
+export function szene(ergebnis, { stil = "gezeichnet", staerke = 1, zeichnen = 4.5, text = "", schrift = "grotesk", messen, leinwand } = {}) {
   const { striche, rTyp } = ergebnis;
   // Rahmen der Zeichnung (mit Strichbreite) → in das Bild einpassen, mittig, seitlich RAND, oben und unten etwas mehr
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
@@ -168,8 +180,8 @@ export function bild(ctx, sz, t) {
 }
 
 function satz(ctx, sz, t) {
-  const { ab } = sz.zeit, { groesse, zeilen, zeilenhoehe } = sz.satz, s = SCHRIFTEN[sz.schrift];
-  ctx.font = `${s.gewicht} ${groesse}px ${s.familie}`;
+  const { ab } = sz.zeit, { groesse, zeilen, zeilenhoehe } = sz.satz;
+  schriftSetzen(ctx, sz.schrift, groesse);
   ctx.textBaseline = "alphabetic"; ctx.textAlign = "left"; ctx.fillStyle = "#fff";
   const aus = 1 - weich(anteil(t, ab.textAus[0], ab.textAus[1]));
   const n = zeilen.reduce((a, z) => a + z.length, 0), vs = versatz(n);
@@ -189,6 +201,7 @@ function satz(ctx, sz, t) {
     y += zeilenhoehe;
   }
   ctx.globalAlpha = 1;
+  if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
 }
 
 /** die fertige Zeichnung allein (für das Standbild) */

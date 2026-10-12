@@ -1,10 +1,10 @@
 // «Sketchory» – Seite: Bild laden, Satz eingeben, Vorschau abspielen, Video (MP4) und Standbild (PNG) herunterladen.
 // Alles bleibt im Browser. Video über WebCodecs (H.264, schneller als Echtzeit, Bild für Bild genau) und mp4.js;
 // wo das fehlt, in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { striche, analyseMass } from "./strich.js?v=2";
-import { BREITE, HOEHE, FPS, dateiname } from "./ablauf.js?v=2";
-import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=2";
-import { mp4 } from "./mp4.js?v=2";
+import { striche, analyseMass } from "./strich.js?v=3";
+import { BREITE, HOEHE, FPS, dateiname } from "./ablauf.js?v=3";
+import { szene, bild, standbild, schriftSetzen } from "./szene.js?v=3";
+import { mp4 } from "./mp4.js?v=3";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
 const $ = (id) => document.getElementById(id);
@@ -23,13 +23,27 @@ const leinwand = (w, h) => {
 };
 const messer = leinwand(8, 8).getContext("2d");
 const messen = (text, groesse, schrift) => {
-  const s = SCHRIFTEN[schrift];
-  messer.font = `${s.gewicht} ${groesse}px ${s.familie}`;
+  schriftSetzen(messer, schrift, groesse);
   return messer.measureText(text).width;
 };
 const schriften = Promise.all([
-  document.fonts.load('400 66px "Instrument Sans"'), document.fonts.load('400 52px "Instrument Sans"'), document.fonts.load("300 74px Newsreader"),
+  document.fonts.load('500 68px "Inter Display"'), document.fonts.load('400 66px "Instrument Sans"'), document.fonts.load('400 52px "Instrument Sans"'),
+  document.fonts.load("300 74px Newsreader"),
 ]).catch(() => {});
+
+/** Ist Helvetica Now auf diesem Gerät installiert? (Breite gegenüber einer Ersatzschrift; Safari gibt installierte Schriften nicht frei) */
+function helveticaNow() {
+  const probe = "Hamburgefontsiv 0123456789", c = leinwand(8, 8).getContext("2d");
+  return ["Helvetica Now Display", "Helvetica Now Text", "Helvetica Now Var"].some((f) =>
+    ["monospace", "serif"].every((ersatz) => {
+      c.font = `500 40px ${ersatz}`; const a = c.measureText(probe).width;
+      c.font = `500 40px "${f}", ${ersatz}`; return c.measureText(probe).width !== a;
+    }));
+}
+if (helveticaNow()) {
+  wahl.schrift.add(new Option("Helvetica Now (auf diesem Gerät)", "helvetica"), 0);
+  wahl.schrift.value = "helvetica";
+}
 
 function melden(text, fehler = false) {
   meldung.textContent = text;
@@ -79,7 +93,7 @@ function bildElement(datei) {
 
 // das Bild in Striche verwandeln (im Worker, sonst hier)
 let worker = null;
-try { worker = new Worker(new URL("./rechner.js?v=2", import.meta.url), { type: "module" }); } catch { worker = null; }
+try { worker = new Worker(new URL("./rechner.js?v=3", import.meta.url), { type: "module" }); } catch { worker = null; }
 function rechnen(empfindlichkeit) {
   const { daten, w, h } = S.bild;
   const nr = ++S.rechnen;
@@ -130,7 +144,8 @@ function optionen() {
 
 let warten = 0;
 satzFeld.addEventListener("input", () => { clearTimeout(warten); warten = setTimeout(() => neu(), 450); });
-for (const k of ["zeichnen", "schrift"]) wahl[k].addEventListener("change", () => neu());
+wahl.zeichnen.addEventListener("change", () => neu());
+wahl.schrift.addEventListener("change", () => { merken("schrift", wahl.schrift.value); neu(); });
 wahl.empfindlichkeit.addEventListener("change", () => lesen());
 
 // ——— Strichstärke: gut sichtbar, wirkt sofort (die Vorschau zeigt beim Einstellen die fertige Zeichnung), bleibt für die nächste Karte ———
@@ -142,6 +157,8 @@ const voreinstellungen = [...document.querySelectorAll("[data-staerke]")];
   const s = Number(erinnern("staerke"));
   if (s >= STAERKE.min && s <= STAERKE.max) wahl.staerke.value = s;
   if (["gezeichnet", "gleichmaessig"].includes(erinnern("stil"))) wahl.stil.value = erinnern("stil");
+  const schrift = erinnern("schrift");
+  if (schrift && [...wahl.schrift.options].some((o) => o.value === schrift)) wahl.schrift.value = schrift;
 }
 function staerkeZeigen() {
   const v = Number(wahl.staerke.value);
