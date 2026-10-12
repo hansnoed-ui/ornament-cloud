@@ -8,9 +8,18 @@
     Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14).
     Diese Seite steht für sich (Wunsch von Christian, 12. Oktober 2026; wie die Analyse «Metastabilität», Ausnahme in tests/navigation.test.mjs):
     von keiner Seite verlinkt, nur per Direktlink erreichbar, und ohne die Navigation oben links.
+    Als App installierbar (Wunsch vom 12. Oktober 2026: «Signet als Logo, kein Eintrag, keine Vorschaukarte, Download nur über die eigene
+    Principesse-Seite»): Manifest, Symbole aus tools/principesse-icons.mjs (die Figur des Signets), Service Worker sw.js, Knopf in pwa.js.
+    Darum bewusst ohne Vorschaukarte (kein og:image) und ohne Eintrag auf «Apps»; die installierte App startet auf dieser Seite.
   -->
   <meta name="robots" content="noindex">
   <meta name="description" content="Principesse: Ein Bild malt sich mit schwungvollen Pinselstrichen nach, der Glitzer funkelt; dazu ein Foto und ein Satz, am Schluss das Signet. Video zum Herunterladen, alles im Browser.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-title" content="Principesse">
   <link rel="stylesheet" href="../../styles.css?v=45">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
   <style>
@@ -115,6 +124,13 @@
     .ergebnis h2::before { display: none; }
     .ergebnis video { display: block; width: min(100%, 360px); aspect-ratio: 3 / 4; border-radius: 8px; background: #000; }
     .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
+    /* «Principesse als App installieren» (pwa.js): nur auf dieser Seite, nicht in der installierten App */
+    .installieren { margin: 8px auto 36px; max-width: 36em; text-align: center; }
+    .installieren[hidden], .installieren [hidden] { display: none; }
+    .installieren .knopf { display: inline-flex; align-items: center; gap: 10px; padding-left: 8px; }
+    .installieren .knopf img { width: 30px; height: 30px; border-radius: 7px; display: block; }
+    .installieren-hilfe { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; color: var(--muted); }
+    .installieren-hilfe span { color: var(--text); white-space: nowrap; }
     .hinweise li { margin: 0.2rem 0; }
     [hidden] { display: none !important; }
   </style>
@@ -249,6 +265,10 @@
   </main>
 
   <div class="wrap">
+    <div class="installieren" id="installieren" hidden>
+      <button class="knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="icons/icon-192.png" alt="" width="30" height="30"><span>Principesse als App installieren</span></button>
+      <p class="installieren-hilfe" id="installieren-hilfe" hidden></p>
+    </div>
     <ul class="hinweise">
       <li>Alles bleibt in deinem Browser: Bild und Foto werden nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
       <li>Am besten ein gerades Foto des ganzen Bilds bei gleichmässigem Licht. Format: wie das Bild (kurze Seite 1080, lange höchstens 1920), 3 : 4 oder 1 : 1; bei 3 : 4 und 1 : 1 werden die Ränder bei Bedarf beschnitten, ebenso bei sehr schmalen Bildern.</li>
@@ -263,7 +283,8 @@
       <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
     </div>
   </footer>
-  <script type="module" src="app.js?v=11"></script>
+  <script type="module" src="app.js?v=12"></script>
+  <script type="module" src="pwa.js?v=12"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

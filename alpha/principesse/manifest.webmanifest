@@ -1,0 +1,17 @@
+{
+  "name": "Principesse",
+  "short_name": "Principesse",
+  "description": "Ein Bild malt sich mit Pinselstrichen nach, der Glitzer funkelt; dazu ein Foto und ein Satz, am Schluss das Signet. Video zum Herunterladen, alles bleibt auf dem Gerät.",
+  "lang": "de-CH",
+  "id": "principesse",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f3ec",
+  "theme_color": "#171614",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
