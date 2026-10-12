@@ -4,8 +4,8 @@
 // (die dunklen Streifen glitzern); darunter «Principesse» in der Grotesk und «by Katharina» in glitzerndem Gold.
 // Alle Masse in Punkten der Vorlage (1500 × 2000), umgerechnet ins Bild; Figur und Name stehen in jedem Format mittig und passen hinein.
 import { anteil, weich, ausblenden } from "../sketchory/ablauf.js?v=8";
-import { zufall } from "./malen.js?v=19";
-import { funkeln } from "./glitzer.js?v=19";
+import { zufall } from "./malen.js?v=20";
+import { funkeln } from "./glitzer.js?v=20";
 
 export const FARBEN = {
   hell: { grund: "#f7f3ec", tinte: "#24202e", gold: "#c99a2e", glanz: "#fff1b0", beere: "#b3264f", wange: "#f3b9c8" },
@@ -72,7 +72,8 @@ function lage(breite, hoehe) {
   const mass = Math.min(0.44, (hoehe * 0.82 - 190) / 1711);
   const hoch = (1845 - 134) * mass + 190;
   const links = breite / 2 - 785 * mass, oben = (hoehe - hoch) / 2 - 134 * mass;
-  return { mass, insBild: (x, y) => [links + x * mass, oben + y * mass], schriftY: oben + 1845 * mass + 110 * Math.max(0.75, mass / 0.44), schrift: SCHRIFT.groesse * Math.max(0.75, mass / 0.44), vonY: oben + 1845 * mass + 166 * Math.max(0.75, mass / 0.44), von: VON_SCHRIFT.groesse * Math.max(0.8, mass / 0.44) };
+  // «by …» seit dem 12. Oktober 2026 etwas weiter unter «Principesse» (180 statt 166 Punkte unter den Füssen)
+  return { mass, insBild: (x, y) => [links + x * mass, oben + y * mass], schriftY: oben + 1845 * mass + 110 * Math.max(0.75, mass / 0.44), schrift: SCHRIFT.groesse * Math.max(0.75, mass / 0.44), vonY: oben + 1845 * mass + 180 * Math.max(0.75, mass / 0.44), von: VON_SCHRIFT.groesse * Math.max(0.8, mass / 0.44) };
 }
 
 function vorbereiten(breite, hoehe) {
