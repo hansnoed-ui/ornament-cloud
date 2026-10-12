@@ -187,13 +187,13 @@ test("Seite: ruft keinen Dienst auf (nur das Beispielbild) und hält keine Schl�
   assert.doesNotMatch(readFileSync(new URL("orna.js", dir), "utf8"), /writeFile|localStorage/);
 });
 
-test("Alpha: Seite mit Navigation, noindex, in der Übersicht zuoberst, nicht in der Sitemap", () => {
+test("Alpha: Seite mit Navigation, noindex, in der Übersicht oben (seit dem 12. Oktober 2026 gleich nach Sketchory), nicht in der Sitemap", () => {
   const html = readFileSync(new URL("index.html", dir), "utf8");
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/" aria-current="true">Ornament Cloud<\/a>\s*<a href="\.\.\/drittes-rad\/">Das Dritte Rad<\/a>\s*<\/nav>/);
   const uebersicht = readFileSync(new URL("alpha/index.html", root), "utf8");
   const eintraege = [...uebersicht.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map((m) => m[1]);
-  assert.equal(eintraege[0], "the-fictory/");
+  assert.deepEqual(eintraege.slice(0, 2), ["sketchory/", "the-fictory/"]);
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("the-fictory"));
 });
 

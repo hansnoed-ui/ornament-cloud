@@ -212,7 +212,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 const SEITEN = {
   apps: { titel: "Apps", karten: [["The Fictory", "../alpha/the-fictory/app/"], ["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },   // The Fictory seit 11. Oktober 2026 zuerst
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
-  web: { titel: "Web", karten: [["The Fictory", "../alpha/the-fictory/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"]] },
+  web: { titel: "Web", karten: [["Sketchory", "../alpha/sketchory/"], ["The Fictory", "../alpha/the-fictory/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"]] },
 };
 
 test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und Eintrag in der Sitemap", () => {
@@ -259,13 +259,20 @@ test("Masterprompts: die vier Prüfraster als Beiträge, in der Reihenfolge der 
   assert.ok(k.every((x) => /<svg [^>]*role="img" aria-label="[^"]{20,}"/.test(x.html)), "jede Karte trägt eine gezeichnete Vorschau mit Beschreibung");
 });
 
-test("Web: OMNA COLOR und Das Dritte Rad (Alpha), das Stellenfeld, dann zuunterst die Videos: das Erklärvideo zu ORNA und «Liebling …» («Mensch, Niklas!» seit 11. Oktober 2026 nicht sichtbar), alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs; «Die Paradoxie der Stadt» zurzeit nur auf Alpha", () => {
+test("Web: Sketchory und The Fictory zuoberst, OMNA COLOR und Das Dritte Rad (Alpha), das Stellenfeld, dann zuunterst die Videos: das Erklärvideo zu ORNA und «Liebling …» («Mensch, Niklas!» seit 11. Oktober 2026 nicht sichtbar), alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs; «Die Paradoxie der Stadt» zurzeit nur auf Alpha", () => {
   const html = lies("web/index.html");
   const alle = karten(html);
   assert.deepEqual(alle.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
   // Wunsch vom 9. Oktober 2026: die beiden Videos stehen zuunterst, «Mensch, Niklas!» als letztes
-  const [f] = alle, k = alle.slice(1, 4), [o, v] = alle.slice(4);
-  // «The Fictory» (10. Oktober 2026) zuoberst, Alpha, Bild aus tools/fictory-og.mjs
+  const [sk, f] = alle, k = alle.slice(2, 5), [o, v] = alle.slice(5);
+  // «Sketchory» (12. Oktober 2026) zuoberst, Alpha, Bild aus tools/sketchory-og.mjs
+  assert.ok(sk.tags.includes("Alpha") && sk.tags.includes("Prototyp"));
+  assert.match(sk.html, /<img src="\.\.\/assets\/vorschau-sketchory\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  const vorschauSketchory = readFileSync(new URL("assets/vorschau-sketchory.jpg", root));
+  assert.deepEqual(jpegMass(vorschauSketchory), [640, 800]);
+  assert.ok(vorschauSketchory.length < 150_000, `Vorschaubild ${vorschauSketchory.length} Byte, unter 150 KB`);
+  assert.ok(lies("tools/sketchory-og.mjs").includes("vorschau-sketchory.jpg"));
+  // «The Fictory» (10. Oktober 2026) danach, Alpha, Bild aus tools/fictory-og.mjs
   assert.ok(f.tags.includes("Alpha") && f.tags.includes("Prototyp"));
   assert.match(f.html, /<img src="\.\.\/assets\/vorschau-the-fictory\.jpg" alt="" width="640" height="800" loading="lazy">/);
   const vorschauFictory = readFileSync(new URL("assets/vorschau-the-fictory.jpg", root));
