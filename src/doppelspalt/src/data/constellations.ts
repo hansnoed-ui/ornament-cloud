@@ -31,7 +31,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "dan-graham__wendy-hui-kyong-chun",
     artistId: "dan-graham",
     theoristId: "wendy-hui-kyong-chun",
-    text: "Dan Graham baut Situationen, in denen Menschen sich selbst und andere beim Beobachten beobachten; Spiegel, Glas und Videoverzögerung machen Gegenwart räumlich und zeitlich instabil. Wendy Hui Kyong Chun beschreibt Netzwerke, Gewohnheiten und Updates als Bedingungen digitaler Gegenwart. Bei Graham kehrt die eigene Beobachtung als Bild zurück; im Netzwerk kehrt vergangenes Verhalten als Profil, Empfehlung oder Erwartung zurück. Beide verwandeln Spuren früherer Operationen in Bedingungen der nächsten. Graham stellt diesen Vorgang jedoch als wahrnehmbare Versuchsanordnung aus, während er auf Plattformen weitgehend infrastrukturell abläuft. Was dort Profil heißt, könnte hier als zeitversetzter Spiegel erscheinen.",
+    text: "Dan Graham baut Situationen, in denen Menschen sich selbst und andere beim Beobachten beobachten; Spiegel, Glas und Videoverzögerung machen Gegenwart räumlich und zeitlich instabil. Wendy Hui Kyong Chun beschreibt Netzwerke, Gewohnheiten und Updates als Bedingungen digitaler Gegenwart. Bei Graham kehrt die eigene Beobachtung als Bild zurück; im Netzwerk kehrt vergangenes Verhalten als Profil, Empfehlung oder Erwartung zurück. Beide verwandeln Spuren früherer Operationen in Bedingungen der nächsten. Graham stellt diesen Vorgang jedoch als wahrnehmbare Versuchsanordnung aus, während er auf Plattformen weitgehend infrastrukturell abläuft. Was dort Profil heisst, könnte hier als zeitversetzter Spiegel erscheinen.",
     question: "Wie verändert sich Selbstbeobachtung, wenn der Spiegel schon vorausrechnet?",
   },
   {
@@ -40,7 +40,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "louise-bourgeois__gregory-bateson",
     artistId: "louise-bourgeois",
     theoristId: "gregory-bateson",
-    text: "Louise Bourgeois baut Räume, Körperformen und Objekte, in denen Vergangenes wieder gegenwärtig werden kann. Gregory Bateson fragt danach, wann ein Unterschied innerhalb eines Zusammenhangs einen weiteren Unterschied macht. Bourgeois' wiederkehrende Formen können deshalb als Unterschiede gelesen werden, deren Bedeutung sich mit ihrem jeweiligen Kontext verändert. Die Cells stabilisieren räumliche Anordnungen, aber das Wahrnehmungsereignis lässt sich darin nicht festhalten. Batesons Begriff des Musters erklärt, wie Beziehungen über Wiederholungen hinweg erkennbar bleiben; Bourgeois zeigt, wie körperlich verschieden eine solche Wiederkehr erfahren werden kann. Erinnerung wäre dann weder bloß gespeicherter Zustand noch reine Wiederholung, sondern eine gegenwärtige Reorganisation von Differenzen.",
+    text: "Louise Bourgeois baut Räume, Körperformen und Objekte, in denen Vergangenes wieder gegenwärtig werden kann. Gregory Bateson fragt danach, wann ein Unterschied innerhalb eines Zusammenhangs einen weiteren Unterschied macht. Bourgeois' wiederkehrende Formen können deshalb als Unterschiede gelesen werden, deren Bedeutung sich mit ihrem jeweiligen Kontext verändert. Die Cells stabilisieren räumliche Anordnungen, aber das Wahrnehmungsereignis lässt sich darin nicht festhalten. Batesons Begriff des Musters erklärt, wie Beziehungen über Wiederholungen hinweg erkennbar bleiben; Bourgeois zeigt, wie körperlich verschieden eine solche Wiederkehr erfahren werden kann. Erinnerung wäre dann weder bloss gespeicherter Zustand noch reine Wiederholung, sondern eine gegenwärtige Reorganisation von Differenzen.",
     question: "Wo befindet sich eine Erinnerung, wenn sie erst in ihrer erneuten Wahrnehmung zu einem Unterschied wird?",
   },
   {
@@ -67,7 +67,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "christian-marclay__gregory-bateson",
     artistId: "christian-marclay",
     theoristId: "gregory-bateson",
-    text: "Christian Marclays The Clock montiert Tausende filmische Darstellungen von Uhrzeiten so, dass sie mit der tatsächlichen Uhrzeit des Publikums zusammenfallen. Gregory Bateson versteht Information nicht als Ding, sondern als Unterschied, der innerhalb eines Zusammenhangs einen Unterschied macht. Eine eingeblendete Uhrzeit ist deshalb zunächst nur eine Differenz; erst ihre Beziehung zur gegenwärtigen Uhrzeit des Betrachtenden macht sie zum Ereignis. Marclay verräumlicht enorme Mengen vergangener Filmzeit in einem montierten Archiv und verzeitlicht dieses Archiv wieder durch seine Aufführung. Derselbe Ausschnitt bekommt dadurch um 14:37 Uhr eine andere operative Bedeutung als außerhalb dieser Synchronisation. Vergangenheit und Gegenwart werden nicht identisch, sondern für einen Moment aufeinander bezogen.",
+    text: "Christian Marclays The Clock montiert Tausende filmische Darstellungen von Uhrzeiten so, dass sie mit der tatsächlichen Uhrzeit des Publikums zusammenfallen. Gregory Bateson versteht Information nicht als Ding, sondern als Unterschied, der innerhalb eines Zusammenhangs einen Unterschied macht. Eine eingeblendete Uhrzeit ist deshalb zunächst nur eine Differenz; erst ihre Beziehung zur gegenwärtigen Uhrzeit des Betrachtenden macht sie zum Ereignis. Marclay verräumlicht enorme Mengen vergangener Filmzeit in einem montierten Archiv und verzeitlicht dieses Archiv wieder durch seine Aufführung. Derselbe Ausschnitt bekommt dadurch um 14:37 Uhr eine andere operative Bedeutung als ausserhalb dieser Synchronisation. Vergangenheit und Gegenwart werden nicht identisch, sondern für einen Moment aufeinander bezogen.",
     question: "Was genau nehmen wir wahr, wenn eine dargestellte Zeit plötzlich unsere eigene Zeit bezeichnet?",
   },
   {
@@ -76,7 +76,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "donald-judd__michel-serres",
     artistId: "donald-judd",
     theoristId: "michel-serres",
-    text: "Donald Judd ordnet Körper und Abstände mit großer metrischer Präzision. Michel Serres denkt Raum dagegen auch über Wege, Nachbarschaften und Übergänge. Bei Judd bleibt der Abstand zwischen zwei Objekten messbar gleich, während sich ihre Beziehung im Gehen verändert. Was nebeneinander steht, wird erst durch den Weg des Körpers zu einer Folge von Nähe und Ferne.",
+    text: "Donald Judd ordnet Körper und Abstände mit grosser metrischer Präzision. Michel Serres denkt Raum dagegen auch über Wege, Nachbarschaften und Übergänge. Bei Judd bleibt der Abstand zwischen zwei Objekten messbar gleich, während sich ihre Beziehung im Gehen verändert. Was nebeneinander steht, wird erst durch den Weg des Körpers zu einer Folge von Nähe und Ferne.",
     question: "Ist Nähe eine Frage des Abstands oder des Weges?",
   },
   {
@@ -130,7 +130,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "hanne-darboven__niklas-luhmann",
     artistId: "hanne-darboven",
     theoristId: "niklas-luhmann",
-    text: "Hanne Darboven schreibt Zeit in Zahlen, Daten, Reihen und Blätter ein. Niklas Luhmann beschreibt Zeit dagegen nicht als etwas, das irgendwo gespeichert werden könnte: Operationen geschehen und verschwinden; nur gegenwärtige Operationen können an vergangene anschließen. Darbovens gewaltige Anordnungen scheinen vergangene Zeit räumlich aufzubewahren. Doch das Archiv wird selbst nur gegenwärtig, indem jemand liest, zählt, betrachtet oder weiterblättert. Die Stelle auf dem Blatt ist wiederauffindbar; der Moment ihrer Herstellung ist es nicht. Damit geraten Speicherung und Wiederkehr auseinander.",
+    text: "Hanne Darboven schreibt Zeit in Zahlen, Daten, Reihen und Blätter ein. Niklas Luhmann beschreibt Zeit dagegen nicht als etwas, das irgendwo gespeichert werden könnte: Operationen geschehen und verschwinden; nur gegenwärtige Operationen können an vergangene anschliessen. Darbovens gewaltige Anordnungen scheinen vergangene Zeit räumlich aufzubewahren. Doch das Archiv wird selbst nur gegenwärtig, indem jemand liest, zählt, betrachtet oder weiterblättert. Die Stelle auf dem Blatt ist wiederauffindbar; der Moment ihrer Herstellung ist es nicht. Damit geraten Speicherung und Wiederkehr auseinander.",
     question: "Was bewahren wir eigentlich, wenn wir sagen, dass eine Vergangenheit gespeichert wurde?",
   },
   {
@@ -166,7 +166,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "mona-hatoum__elena-esposito",
     artistId: "mona-hatoum",
     theoristId: "elena-esposito",
-    text: "Mona Hatoum nimmt vertraute Dinge und Räume und verändert ihre Maßstäbe, Materialien oder Beziehungen so, dass aus Vertrautheit Unsicherheit wird. Elena Esposito untersucht, wie gegenwärtige Kommunikation Erwartungen über eine unbekannte Zukunft erzeugt. Beides beginnt mit etwas Bekanntem: einem Haushaltsgegenstand, einem Datenbestand, einer bisherigen Regelmäßigkeit. Hatoum verändert die Situation so, dass das Bekannte plötzlich keine zuverlässige Orientierung mehr bietet. Prognosen tun fast das Gegenteil: Sie benutzen Bekanntes, um Unsicherheit wieder handhabbar zu machen. Hier stehen zwei gegensätzliche Bewegungen nebeneinander. Hatoum erzeugt Unsicherheit aus vertrauten Formen. Esposito fragt, wie aus Ungewissheit Erwartungen entstehen.",
+    text: "Mona Hatoum nimmt vertraute Dinge und Räume und verändert ihre Massstäbe, Materialien oder Beziehungen so, dass aus Vertrautheit Unsicherheit wird. Elena Esposito untersucht, wie gegenwärtige Kommunikation Erwartungen über eine unbekannte Zukunft erzeugt. Beides beginnt mit etwas Bekanntem: einem Haushaltsgegenstand, einem Datenbestand, einer bisherigen Regelmässigkeit. Hatoum verändert die Situation so, dass das Bekannte plötzlich keine zuverlässige Orientierung mehr bietet. Prognosen tun fast das Gegenteil: Sie benutzen Bekanntes, um Unsicherheit wieder handhabbar zu machen. Hier stehen zwei gegensätzliche Bewegungen nebeneinander. Hatoum erzeugt Unsicherheit aus vertrauten Formen. Esposito fragt, wie aus Ungewissheit Erwartungen entstehen.",
     question: "Was nehmen wir wahr, wenn die Formen, mit denen wir Unsicherheit reduzieren, selbst unsicher werden?",
   },
   {
@@ -175,7 +175,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "on-kawara__michel-foucault",
     artistId: "on-kawara",
     theoristId: "michel-foucault",
-    text: "On Kawara malt ein Datum und macht einen vergangenen Tag als eindeutig bezeichnete Stelle wiederauffindbar. Michel Foucault untersucht Archive als Ordnungen, die nicht einfach alles Vergangene speichern, sondern bestimmen, was als Aussage auffindbar, unterscheidbar und zuordenbar werden kann. Kawaras Datumsbilder wirken wie elementare Archive: Ein Tag bekommt eine Adresse. Zugleich verschwindet fast alles, was an diesem Tag geschehen ist. Gerade die äußerste Präzision des Datums erzeugt eine enorme Leerstelle. Das Archiv bewahrt damit nicht Vergangenheit selbst, sondern eine Ordnung, unter der etwas Vergangenes wieder adressiert werden kann.",
+    text: "On Kawara malt ein Datum und macht einen vergangenen Tag als eindeutig bezeichnete Stelle wiederauffindbar. Michel Foucault untersucht Archive als Ordnungen, die nicht einfach alles Vergangene speichern, sondern bestimmen, was als Aussage auffindbar, unterscheidbar und zuordenbar werden kann. Kawaras Datumsbilder wirken wie elementare Archive: Ein Tag bekommt eine Adresse. Zugleich verschwindet fast alles, was an diesem Tag geschehen ist. Gerade die äusserste Präzision des Datums erzeugt eine enorme Leerstelle. Das Archiv bewahrt damit nicht Vergangenheit selbst, sondern eine Ordnung, unter der etwas Vergangenes wieder adressiert werden kann.",
     question: "Wie viel muss vergessen werden, damit ein vergangener Moment eine eindeutige Adresse bekommen kann?",
   },
   {
@@ -184,7 +184,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "donald-judd__henri-bergson",
     artistId: "donald-judd",
     theoristId: "henri-bergson",
-    text: "Donald Judd organisiert Körper, Abstände und Wiederholungen mit großer räumlicher Präzision. Henri Bergson misstraut genau jener Operation, durch die Zeit wie eine Reihe nebeneinanderliegender Punkte behandelt wird. Für ihn ist Dauer keine Folge austauschbarer Stellen, sondern qualitative Veränderung, in der frühere Momente in späteren fortwirken. Judds serielle Objekte scheinen zunächst auf der anderen Seite zu stehen: eins neben dem anderen, messbar getrennt. Doch ein Betrachter kann diese Reihe niemals gleichzeitig aus allen Positionen wahrnehmen. Er muss sich bewegen, erinnern und vorherige Ansichten in die nächste mitnehmen.",
+    text: "Donald Judd organisiert Körper, Abstände und Wiederholungen mit grosser räumlicher Präzision. Henri Bergson misstraut genau jener Operation, durch die Zeit wie eine Reihe nebeneinanderliegender Punkte behandelt wird. Für ihn ist Dauer keine Folge austauschbarer Stellen, sondern qualitative Veränderung, in der frühere Momente in späteren fortwirken. Judds serielle Objekte scheinen zunächst auf der anderen Seite zu stehen: eins neben dem anderen, messbar getrennt. Doch ein Betrachter kann diese Reihe niemals gleichzeitig aus allen Positionen wahrnehmen. Er muss sich bewegen, erinnern und vorherige Ansichten in die nächste mitnehmen.",
     question: "Entsteht aus einer vollkommen räumlichen Ordnung zwangsläufig eine Zeit, sobald jemand beginnt, sie wahrzunehmen?",
   },
   {
@@ -202,7 +202,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "agnes-martin__n-katherine-hayles",
     artistId: "agnes-martin",
     theoristId: "n-katherine-hayles",
-    text: "Agnes Martin erzeugt Bilder aus Linien, Abständen und Wiederholungen, deren Unterschiede oft erst bei genauer Wahrnehmung hervortreten. N. Katherine Hayles untersucht, was verloren geht, wenn Information unabhängig von ihrem materiellen Träger gedacht wird. Martins Raster könnte problemlos als abstraktes Muster beschrieben und als Folge von Abständen oder Koordinaten gespeichert werden. Doch damit wäre noch nicht erklärt, was geschieht, wenn Bleistift, Farbe, Leinwand, Licht und ein wahrnehmender Körper zusammentreffen. Gerade die kleinen Unregelmäßigkeiten ihrer Linien zeigen, dass eine Struktur nicht mit ihrer materiellen Verkörperung identisch ist. Hayles verschiebt damit die Frage vom Muster zu dessen Verkörperung, Martin vom Raster zu dessen Wahrnehmung.",
+    text: "Agnes Martin erzeugt Bilder aus Linien, Abständen und Wiederholungen, deren Unterschiede oft erst bei genauer Wahrnehmung hervortreten. N. Katherine Hayles untersucht, was verloren geht, wenn Information unabhängig von ihrem materiellen Träger gedacht wird. Martins Raster könnte problemlos als abstraktes Muster beschrieben und als Folge von Abständen oder Koordinaten gespeichert werden. Doch damit wäre noch nicht erklärt, was geschieht, wenn Bleistift, Farbe, Leinwand, Licht und ein wahrnehmender Körper zusammentreffen. Gerade die kleinen Unregelmässigkeiten ihrer Linien zeigen, dass eine Struktur nicht mit ihrer materiellen Verkörperung identisch ist. Hayles verschiebt damit die Frage vom Muster zu dessen Verkörperung, Martin vom Raster zu dessen Wahrnehmung.",
     question: "Was geht verloren, wenn eine wahrgenommene Form vollständig als Information beschrieben werden kann?",
   },
   {
@@ -220,7 +220,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "robert-smithson__hannah-arendt",
     artistId: "robert-smithson",
     theoristId: "hannah-arendt",
-    text: "Robert Smithson verschiebt Material zwischen Ort und Ausstellung und macht mit Site und Nonsite die Differenz zwischen einer Stelle und ihrer Repräsentation selbst zum Gegenstand; zugleich beschäftigen ihn Verschiebung und Entropie. Hannah Arendt interessiert sich dafür, wie eine gemeinsame Welt entsteht, in der Menschen und Dinge erscheinen und Beziehungen Dauer gewinnen können. Bei Smithson lässt sich eine Stelle jedoch gerade nicht vollständig in diesen gemeinsamen Raum überführen: Der Stein im Museum ist am Ort seiner Ausstellung und verweist zugleich auf einen anderen Ort. Die Welt besteht dann nicht einfach aus Dingen an ihren Stellen, sondern auch aus Beziehungen zwischen anwesenden und abwesenden Stellen. Arendts Raum des Erscheinens bekommt durch Smithson gewissermaßen eine geologische Störung.",
+    text: "Robert Smithson verschiebt Material zwischen Ort und Ausstellung und macht mit Site und Nonsite die Differenz zwischen einer Stelle und ihrer Repräsentation selbst zum Gegenstand; zugleich beschäftigen ihn Verschiebung und Entropie. Hannah Arendt interessiert sich dafür, wie eine gemeinsame Welt entsteht, in der Menschen und Dinge erscheinen und Beziehungen Dauer gewinnen können. Bei Smithson lässt sich eine Stelle jedoch gerade nicht vollständig in diesen gemeinsamen Raum überführen: Der Stein im Museum ist am Ort seiner Ausstellung und verweist zugleich auf einen anderen Ort. Die Welt besteht dann nicht einfach aus Dingen an ihren Stellen, sondern auch aus Beziehungen zwischen anwesenden und abwesenden Stellen. Arendts Raum des Erscheinens bekommt durch Smithson gewissermassen eine geologische Störung.",
     question: "Kann etwas gemeinsam gegenwärtig sein, dessen entscheidender Ort abwesend bleibt?",
   },
   {
@@ -229,7 +229,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "roman-opalka__lucy-suchman",
     artistId: "roman-opalka",
     theoristId: "lucy-suchman",
-    text: "Roman Opalkas Zahlenfolge besitzt einen denkbar einfachen Plan: Auf die nächste Zahl folgt die nächste. Lucy Suchman unterscheidet jedoch zwischen Plänen und situiertem Handeln: Eine Ordnung kann Handlung orientieren, ohne ihren konkreten Vollzug vorwegzunehmen. Bei Opalka ist die symbolische Fortsetzung exakt bestimmbar, die Ausführung aber an Hand, Aufmerksamkeit, Müdigkeit und Lebenszeit gebunden. Der Plan weiß, welche Zahl folgen soll; er weiß nicht, unter welchen körperlichen Bedingungen sie gemalt werden wird. Damit fallen die Vorhersagbarkeit der Reihe und die Offenheit des Ereignisses auseinander.",
+    text: "Roman Opalkas Zahlenfolge besitzt einen denkbar einfachen Plan: Auf die nächste Zahl folgt die nächste. Lucy Suchman unterscheidet jedoch zwischen Plänen und situiertem Handeln: Eine Ordnung kann Handlung orientieren, ohne ihren konkreten Vollzug vorwegzunehmen. Bei Opalka ist die symbolische Fortsetzung exakt bestimmbar, die Ausführung aber an Hand, Aufmerksamkeit, Müdigkeit und Lebenszeit gebunden. Der Plan weiss, welche Zahl folgen soll; er weiss nicht, unter welchen körperlichen Bedingungen sie gemalt werden wird. Damit fallen die Vorhersagbarkeit der Reihe und die Offenheit des Ereignisses auseinander.",
     question: "Wie viel Zukunft kann ein Plan enthalten, wenn seine Ausführung erst in einer Situation wirklich wird?",
   },
   {
@@ -265,7 +265,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "hanne-darboven__gilles-deleuze",
     artistId: "hanne-darboven",
     theoristId: "gilles-deleuze",
-    text: "Hanne Darboven wiederholt Zahlen, Daten und Schreiboperationen über Jahrzehnte. Gilles Deleuze würde gerade in einer solchen Wiederholung nach der Produktion von Differenz fragen. Darbovens Verfahren ist streng genug, damit Abweichungen nicht als bloße Willkür erscheinen. Jeder neue Eintrag gehört zur selben Operation und nimmt dennoch eine Stelle ein, die kein anderer Eintrag besetzen kann. Das Werk macht Differenz damit nicht durch spektakuläre Veränderung sichtbar, sondern durch beinahe zwanghafte Wiederkehr. Je ähnlicher die Operation, desto deutlicher tritt hervor, dass kein Moment zurückkehrt.",
+    text: "Hanne Darboven wiederholt Zahlen, Daten und Schreiboperationen über Jahrzehnte. Gilles Deleuze würde gerade in einer solchen Wiederholung nach der Produktion von Differenz fragen. Darbovens Verfahren ist streng genug, damit Abweichungen nicht als blosse Willkür erscheinen. Jeder neue Eintrag gehört zur selben Operation und nimmt dennoch eine Stelle ein, die kein anderer Eintrag besetzen kann. Das Werk macht Differenz damit nicht durch spektakuläre Veränderung sichtbar, sondern durch beinahe zwanghafte Wiederkehr. Je ähnlicher die Operation, desto deutlicher tritt hervor, dass kein Moment zurückkehrt.",
     question: "Braucht Wiederholung eine Regel, damit sie überhaupt Differenz erzeugen kann?",
   },
   {
@@ -328,7 +328,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "louise-bourgeois__george-spencer-brown",
     artistId: "louise-bourgeois",
     theoristId: "george-spencer-brown",
-    text: "George Spencer-Brown beginnt mit einer Grenze, die eine Form in zwei Seiten teilt. Louise Bourgeois baut mit ihren Cells Räume, deren Grenzen zugleich trennen, schützen, einschließen und den Blick hindurchlassen können. Bei Spencer-Brown ist die Grenze eine formale Voraussetzung der Unterscheidung; bei Bourgeois wird sie körperlich erfahren. Man steht vor ihr, geht um sie herum, blickt hinein und bleibt draußen. Die markierte und die unmarkierte Seite bekommen damit Position, Material und Dauer.",
+    text: "George Spencer-Brown beginnt mit einer Grenze, die eine Form in zwei Seiten teilt. Louise Bourgeois baut mit ihren Cells Räume, deren Grenzen zugleich trennen, schützen, einschliessen und den Blick hindurchlassen können. Bei Spencer-Brown ist die Grenze eine formale Voraussetzung der Unterscheidung; bei Bourgeois wird sie körperlich erfahren. Man steht vor ihr, geht um sie herum, blickt hinein und bleibt draussen. Die markierte und die unmarkierte Seite bekommen damit Position, Material und Dauer.",
     question: "Was geschieht mit einer Unterscheidung, wenn ihre Grenze selbst wahrgenommen werden muss?",
   },
   {
@@ -337,7 +337,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "louise-bourgeois__heinz-von-foerster",
     artistId: "louise-bourgeois",
     theoristId: "heinz-von-foerster",
-    text: "Louise Bourgeois kehrt über Jahrzehnte zu Formen, Erinnerungen und Konflikten zurück, ohne sie einfach zu reproduzieren. Heinz von Foerster beschreibt Rekursion als Operation, deren Resultate wieder zu Bedingungen weiterer Operationen werden können. Bourgeois' Wiederkehr ließe sich in diesem Sinne weniger als Kreislauf denn als rekursive Veränderung verstehen. Ein früheres Werk oder eine Erinnerung wird nicht zurückgeholt, sondern aus einer späteren Gegenwart erneut beobachtet. Die Wiederkehr verändert dadurch auch, was als Vergangenheit erscheint.",
+    text: "Louise Bourgeois kehrt über Jahrzehnte zu Formen, Erinnerungen und Konflikten zurück, ohne sie einfach zu reproduzieren. Heinz von Foerster beschreibt Rekursion als Operation, deren Resultate wieder zu Bedingungen weiterer Operationen werden können. Bourgeois' Wiederkehr liesse sich in diesem Sinne weniger als Kreislauf denn als rekursive Veränderung verstehen. Ein früheres Werk oder eine Erinnerung wird nicht zurückgeholt, sondern aus einer späteren Gegenwart erneut beobachtet. Die Wiederkehr verändert dadurch auch, was als Vergangenheit erscheint.",
     question: "Kann man zu etwas zurückkehren, ohne zugleich das zu verändern, zu dem man zurückkehrt?",
   },
   {
@@ -355,7 +355,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "marina-abramovic__gregory-bateson",
     artistId: "marina-abramovic",
     theoristId: "gregory-bateson",
-    text: "Marina Abramović verändert häufig wenige Bedingungen einer Situation und beobachtet, was daraus zwischen Körper, Publikum und Umgebung entsteht. Gregory Bateson versteht Information relational: Ein Unterschied wird nur dort relevant, wo er innerhalb eines Zusammenhangs einen weiteren Unterschied macht. Eine minimale Bewegung in einer Performance kann deshalb bedeutender werden als eine große Veränderung außerhalb ihrer Regeln. Die Situation entscheidet mit, welche Differenz überhaupt bemerkbar wird. Abramović fügt Batesons abstrakter Relation jedoch einen verletzlichen Körper hinzu.",
+    text: "Marina Abramović verändert häufig wenige Bedingungen einer Situation und beobachtet, was daraus zwischen Körper, Publikum und Umgebung entsteht. Gregory Bateson versteht Information relational: Ein Unterschied wird nur dort relevant, wo er innerhalb eines Zusammenhangs einen weiteren Unterschied macht. Eine minimale Bewegung in einer Performance kann deshalb bedeutender werden als eine grosse Veränderung ausserhalb ihrer Regeln. Die Situation entscheidet mit, welche Differenz überhaupt bemerkbar wird. Abramović fügt Batesons abstrakter Relation jedoch einen verletzlichen Körper hinzu.",
     question: "Wann wird eine körperliche Veränderung zu Information für einen anderen Körper?",
   },
   {
@@ -364,7 +364,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "marina-abramovic__judith-butler",
     artistId: "marina-abramovic",
     theoristId: "judith-butler",
-    text: "Marina Abramović bezeichnet ihre Arbeiten ausdrücklich als Performances. Judith Butler meint mit Performativität jedoch etwas anderes: Handlungen werden sozial lesbar, weil sie an bereits bestehende Normen anschließen. Abramović kann Regeln, Dauer und Risiko einer Situation bestimmen, aber nicht von Grund auf festlegen, wie ihr Körper darin gelesen wird. Die Performance ist singulär, ihre soziale Lesbarkeit hat eine längere Geschichte.",
+    text: "Marina Abramović bezeichnet ihre Arbeiten ausdrücklich als Performances. Judith Butler meint mit Performativität jedoch etwas anderes: Handlungen werden sozial lesbar, weil sie an bereits bestehende Normen anschliessen. Abramović kann Regeln, Dauer und Risiko einer Situation bestimmen, aber nicht von Grund auf festlegen, wie ihr Körper darin gelesen wird. Die Performance ist singulär, ihre soziale Lesbarkeit hat eine längere Geschichte.",
     question: "Was an einer Performance ist schon vorher lesbar?",
   },
   {
@@ -409,7 +409,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "rebecca-horn__heinz-von-foerster",
     artistId: "rebecca-horn",
     theoristId: "heinz-von-foerster",
-    text: "Heinz von Foerster macht den Beobachter zum Bestandteil des Beobachtens. Rebecca Horn fügt dieser abstrakten Figur einen veränderbaren Körper hinzu. Ihre Apparate greifen in die Bedingungen ein, unter denen Entfernung, Bewegung und Berührung möglich werden. Damit verändert sich nicht bloß das Beobachtete, sondern der Apparat des Beobachtens selbst. Die Beobachterin kann ihre eigene Position nicht einfach verlassen; sie kann aber deren Bedingungen umbauen.",
+    text: "Heinz von Foerster macht den Beobachter zum Bestandteil des Beobachtens. Rebecca Horn fügt dieser abstrakten Figur einen veränderbaren Körper hinzu. Ihre Apparate greifen in die Bedingungen ein, unter denen Entfernung, Bewegung und Berührung möglich werden. Damit verändert sich nicht bloss das Beobachtete, sondern der Apparat des Beobachtens selbst. Die Beobachterin kann ihre eigene Position nicht einfach verlassen; sie kann aber deren Bedingungen umbauen.",
     question: "Kann man anders beobachten, ohne dabei auch zu einer anderen Beobachterin zu werden?",
   },
   {
@@ -427,7 +427,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "mona-hatoum__n-katherine-hayles",
     artistId: "mona-hatoum",
     theoristId: "n-katherine-hayles",
-    text: "N. Katherine Hayles kritisiert die Vorstellung, Information könne von ihrer materiellen Verkörperung abgelöst werden, ohne dass dabei etwas Entscheidendes verloren geht. Mona Hatoum lässt vertraute Formen gerade durch Material, Maßstab und räumliche Anordnung ihre Selbstverständlichkeit verlieren. Ein Gegenstand kann als Form eindeutig wiedererkennbar bleiben und für einen Körper dennoch zu etwas völlig anderem werden. Seine Geometrie ließe sich speichern und übertragen; Gewicht, Temperatur, Widerstand, Nähe und mögliche Gefährdung entstehen erst in einer konkreten Verkörperung. Hatoum macht damit sichtbar, dass dieselbe beschreibbare Struktur verschiedene Wahrnehmungssituationen hervorbringen kann.",
+    text: "N. Katherine Hayles kritisiert die Vorstellung, Information könne von ihrer materiellen Verkörperung abgelöst werden, ohne dass dabei etwas Entscheidendes verloren geht. Mona Hatoum lässt vertraute Formen gerade durch Material, Massstab und räumliche Anordnung ihre Selbstverständlichkeit verlieren. Ein Gegenstand kann als Form eindeutig wiedererkennbar bleiben und für einen Körper dennoch zu etwas völlig anderem werden. Seine Geometrie liesse sich speichern und übertragen; Gewicht, Temperatur, Widerstand, Nähe und mögliche Gefährdung entstehen erst in einer konkreten Verkörperung. Hatoum macht damit sichtbar, dass dieselbe beschreibbare Struktur verschiedene Wahrnehmungssituationen hervorbringen kann.",
     question: "Was bleibt von einer Form, wenn ihr Material austauschbar wird?",
   },
   {
@@ -472,7 +472,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "doris-salcedo__henri-bergson",
     artistId: "doris-salcedo",
     theoristId: "henri-bergson",
-    text: "Henri Bergson versteht Vergangenheit nicht als Sammlung abgelegter Zeitpunkte, sondern als etwas, das in der gegenwärtigen Dauer weiterwirkt. Doris Salcedo gibt vergangenen Verlusten materielle Stellen in der Gegenwart. Ihre Arbeiten machen Vergangenheit jedoch nicht wieder gegenwärtig, als ließe sie sich zurückholen. Ein Gegenstand trägt vielmehr eine Differenz, die durch Zeit nicht aufgehoben wurde. Bergsons Dauer und Salcedos materielle Erinnerung treffen sich damit an einer schwierigen Grenze zwischen Fortwirken und Repräsentation.",
+    text: "Henri Bergson versteht Vergangenheit nicht als Sammlung abgelegter Zeitpunkte, sondern als etwas, das in der gegenwärtigen Dauer weiterwirkt. Doris Salcedo gibt vergangenen Verlusten materielle Stellen in der Gegenwart. Ihre Arbeiten machen Vergangenheit jedoch nicht wieder gegenwärtig, als liesse sie sich zurückholen. Ein Gegenstand trägt vielmehr eine Differenz, die durch Zeit nicht aufgehoben wurde. Bergsons Dauer und Salcedos materielle Erinnerung treffen sich damit an einer schwierigen Grenze zwischen Fortwirken und Repräsentation.",
     question: "Wie kann Vergangenheit gegenwärtig wirken, ohne wieder Gegenwart zu werden?",
   },
   {
@@ -490,7 +490,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "on-kawara__gilles-deleuze",
     artistId: "on-kawara",
     theoristId: "gilles-deleuze",
-    text: "On Kawara wiederholt über Jahrzehnte dieselbe elementare Operation: ein Datum malen, am bezeichneten Tag, nach strengen Regeln; wird das Bild nicht bis Mitternacht fertig, wird es zerstört. Gilles Deleuze trennt Wiederholung vom bloßen Auftreten des Gleichen. Kawara scheint diese Unterscheidung fast experimentell zu prüfen. Die Regel bleibt stabil, während jeder Vollzug einen Tag bezeichnet, der nie wieder eintreten kann. Gerade die extreme Ähnlichkeit der Bilder macht ihre zeitliche Nichtidentität sichtbar.",
+    text: "On Kawara wiederholt über Jahrzehnte dieselbe elementare Operation: ein Datum malen, am bezeichneten Tag, nach strengen Regeln; wird das Bild nicht bis Mitternacht fertig, wird es zerstört. Gilles Deleuze trennt Wiederholung vom blossen Auftreten des Gleichen. Kawara scheint diese Unterscheidung fast experimentell zu prüfen. Die Regel bleibt stabil, während jeder Vollzug einen Tag bezeichnet, der nie wieder eintreten kann. Gerade die extreme Ähnlichkeit der Bilder macht ihre zeitliche Nichtidentität sichtbar.",
     question: "Ist es die Wiederholung der Form, die uns erkennen lässt, dass sich der Moment niemals wiederholt?",
   },
   {
@@ -562,7 +562,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "donald-judd__gilbert-simondon",
     artistId: "donald-judd",
     theoristId: "gilbert-simondon",
-    text: "Donald Judds Arbeiten betonen bestimmte Formen, Materialien, Maße und Beziehungen im Raum. Gilbert Simondon interessiert sich dagegen dafür, wie Individuen aus Prozessen hervorgehen und niemals vollständig von ihrer Entstehung getrennt werden können. Judds industriell gefertigte Objekte wirken zunächst wie Gegenargumente: präzise bestimmt und abgeschlossen. Doch auch sie existieren nur durch Material, Fertigung, Architektur, Licht und jeweilige Wahrnehmungssituation. Die bestimmte Form und die Prozesse ihrer Hervorbringung lassen sich unterscheiden, aber nicht vollständig voneinander lösen.",
+    text: "Donald Judds Arbeiten betonen bestimmte Formen, Materialien, Masse und Beziehungen im Raum. Gilbert Simondon interessiert sich dagegen dafür, wie Individuen aus Prozessen hervorgehen und niemals vollständig von ihrer Entstehung getrennt werden können. Judds industriell gefertigte Objekte wirken zunächst wie Gegenargumente: präzise bestimmt und abgeschlossen. Doch auch sie existieren nur durch Material, Fertigung, Architektur, Licht und jeweilige Wahrnehmungssituation. Die bestimmte Form und die Prozesse ihrer Hervorbringung lassen sich unterscheiden, aber nicht vollständig voneinander lösen.",
     question: "Wann wird ein Prozess zu einem Ding, und was muss dabei unsichtbar werden?",
   },
   {
@@ -589,7 +589,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "sol-lewitt__gilbert-simondon",
     artistId: "sol-lewitt",
     theoristId: "gilbert-simondon",
-    text: "Sol LeWitts Instruktion bleibt wiedererkennbar, obwohl jede Ausführung an einem anderen Ort konkret werden kann. Gilbert Simondon beschreibt mit Transduktion Prozesse, in denen eine Struktur sich nicht einfach kopiert, sondern sich Schritt für Schritt unter lokalen Bedingungen fortsetzt. LeWitts Regel wandert durch Wand, Material, Maßstab und ausführende Person. Ihre Identität zeigt sich gerade darin, dass sie verschiedene Realisierungen hervorbringen kann.",
+    text: "Sol LeWitts Instruktion bleibt wiedererkennbar, obwohl jede Ausführung an einem anderen Ort konkret werden kann. Gilbert Simondon beschreibt mit Transduktion Prozesse, in denen eine Struktur sich nicht einfach kopiert, sondern sich Schritt für Schritt unter lokalen Bedingungen fortsetzt. LeWitts Regel wandert durch Wand, Material, Massstab und ausführende Person. Ihre Identität zeigt sich gerade darin, dass sie verschiedene Realisierungen hervorbringen kann.",
     question: "Wie wandert eine Regel durch verschiedene Materialien?",
   },
   {
@@ -598,7 +598,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "sol-lewitt__n-katherine-hayles",
     artistId: "sol-lewitt",
     theoristId: "n-katherine-hayles",
-    text: "Sol LeWitts Werk scheint eine radikale Trennung von Information und materiellem Träger zu ermöglichen: Eine Instruktion kann gespeichert, übertragen und an unterschiedlichen Wänden erneut ausgeführt werden. N. Katherine Hayles macht jedoch darauf aufmerksam, dass Information niemals ohne irgendeine Verkörperung erscheint. Auch LeWitts Regel muss geschrieben, gelesen, verstanden und materiell realisiert werden. Die Wand ist deshalb nicht bloß austauschbare Oberfläche; sie verändert Maßstab, Körperbezug und Wahrnehmung.",
+    text: "Sol LeWitts Werk scheint eine radikale Trennung von Information und materiellem Träger zu ermöglichen: Eine Instruktion kann gespeichert, übertragen und an unterschiedlichen Wänden erneut ausgeführt werden. N. Katherine Hayles macht jedoch darauf aufmerksam, dass Information niemals ohne irgendeine Verkörperung erscheint. Auch LeWitts Regel muss geschrieben, gelesen, verstanden und materiell realisiert werden. Die Wand ist deshalb nicht bloss austauschbare Oberfläche; sie verändert Massstab, Körperbezug und Wahrnehmung.",
     question: "Was bleibt tatsächlich invariant, wenn dieselbe Information einen anderen Körper annimmt?",
   },
   {
@@ -617,7 +617,7 @@ export const constellations: readonly Constellation[] = [
     artistId: "roman-opalka",
     theoristId: "heinz-von-foerster",
     text: "Roman Opalkas nächste Zahl entsteht aus der vorhergehenden und wird wiederum zur Voraussetzung der nächsten. Heinz von Foersters Denken der Rekursion beschreibt genau solche Operationen, deren Resultate erneut in den Prozess eingehen. Doch Opalkas Rekursion besitzt eine Besonderheit: Sie kann nicht zum Ausgangspunkt zurückkehren. Jeder Schritt erweitert die Reihe und verbraucht zugleich Lebenszeit. Rekursion wird damit irreversibel.",
-    question: "Was heißt Wiederkehr, wenn es keine Rückkehr gibt?",
+    question: "Was heisst Wiederkehr, wenn es keine Rückkehr gibt?",
   },
   {
     editorialNumber: 68,
@@ -625,7 +625,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "roman-opalka__michel-serres",
     artistId: "roman-opalka",
     theoristId: "michel-serres",
-    text: "Roman Opalka scheint eine möglichst störungsfreie Passage von einer Zahl zur nächsten zu konstruieren. Michel Serres interessiert sich gerade für das, was in einer Passage dazwischenkommt: Rauschen, Abweichung, Parasit. Bei Opalka sitzt dieses Dazwischen im Körper selbst. Müdigkeit, Stimme, Hand, Alter und schließlich Tod unterbrechen eine mathematisch unbegrenzt fortsetzbare Folge. Die Störung kommt nicht von außen zum System hinzu; sie gehört zu seiner materiellen Ausführung.",
+    text: "Roman Opalka scheint eine möglichst störungsfreie Passage von einer Zahl zur nächsten zu konstruieren. Michel Serres interessiert sich gerade für das, was in einer Passage dazwischenkommt: Rauschen, Abweichung, Parasit. Bei Opalka sitzt dieses Dazwischen im Körper selbst. Müdigkeit, Stimme, Hand, Alter und schliesslich Tod unterbrechen eine mathematisch unbegrenzt fortsetzbare Folge. Die Störung kommt nicht von aussen zum System hinzu; sie gehört zu seiner materiellen Ausführung.",
     question: "Gibt Endlichkeit einer Ordnung erst ihre Geschichte?",
   },
   {
@@ -697,7 +697,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "bruce-nauman__gilles-deleuze",
     artistId: "bruce-nauman",
     theoristId: "gilles-deleuze",
-    text: "Bruce Nauman wiederholt Bewegungen, Gesten und Sätze so lange, bis ihre scheinbare Identität instabil wird. Gilles Deleuze bestreitet, dass Wiederholung einfach das Gleiche zurückbringt. Naumans Körper liefert dafür einen schwierigen Prüfstein: Eine Anweisung kann gleich bleiben, aber Ermüdung, Aufmerksamkeit und Bewegung verändern sich. Die Wiederholung produziert ihre Differenz teilweise durch ihren eigenen Vollzug. Doch ohne wiedererkennbare Handlung ließe sich diese Veränderung nicht als Differenz derselben Wiederholung beobachten.",
+    text: "Bruce Nauman wiederholt Bewegungen, Gesten und Sätze so lange, bis ihre scheinbare Identität instabil wird. Gilles Deleuze bestreitet, dass Wiederholung einfach das Gleiche zurückbringt. Naumans Körper liefert dafür einen schwierigen Prüfstein: Eine Anweisung kann gleich bleiben, aber Ermüdung, Aufmerksamkeit und Bewegung verändern sich. Die Wiederholung produziert ihre Differenz teilweise durch ihren eigenen Vollzug. Doch ohne wiedererkennbare Handlung liesse sich diese Veränderung nicht als Differenz derselben Wiederholung beobachten.",
     question: "Entsteht Differenz trotz der Wiederholung, oder gerade dadurch, dass etwas als Wiederholung erkennbar bleibt?",
   },
   {
@@ -715,7 +715,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "robert-smithson__michel-foucault",
     artistId: "robert-smithson",
     theoristId: "michel-foucault",
-    text: "Michel Foucault untersucht Institutionen, Archive und räumliche Anordnungen danach, wie sie Dinge, Aussagen und Sichtbarkeiten auf bestimmte Stellen verteilen. Robert Smithsons Site/Non-Site-Arbeiten bringen einen entfernten Ort durch Material, Karte, Behälter und Ausstellung in eine solche Ordnung hinein. Die Galerie zeigt den Ort deshalb nicht einfach; sie zerlegt, adressiert und reorganisiert ihn unter ihren eigenen Bedingungen. Zugleich bleibt die Site außerhalb des Ausstellungsraums bestehen und entzieht sich seiner vollständigen Ordnung. Smithson macht damit sichtbar, dass Verräumlichung nicht nur bedeutet, Dingen einen Platz zu geben, sondern auch festzulegen, unter welcher Ordnung dieser Platz beobachtbar wird.",
+    text: "Michel Foucault untersucht Institutionen, Archive und räumliche Anordnungen danach, wie sie Dinge, Aussagen und Sichtbarkeiten auf bestimmte Stellen verteilen. Robert Smithsons Site/Non-Site-Arbeiten bringen einen entfernten Ort durch Material, Karte, Behälter und Ausstellung in eine solche Ordnung hinein. Die Galerie zeigt den Ort deshalb nicht einfach; sie zerlegt, adressiert und reorganisiert ihn unter ihren eigenen Bedingungen. Zugleich bleibt die Site ausserhalb des Ausstellungsraums bestehen und entzieht sich seiner vollständigen Ordnung. Smithson macht damit sichtbar, dass Verräumlichung nicht nur bedeutet, Dingen einen Platz zu geben, sondern auch festzulegen, unter welcher Ordnung dieser Platz beobachtbar wird.",
     question: "Was geschieht mit einem Ort, wenn eine Institution ihn neu ordnet?",
   },
   {
@@ -733,8 +733,8 @@ export const constellations: readonly Constellation[] = [
     pairKey: "robert-smithson__karen-barad",
     artistId: "robert-smithson",
     theoristId: "karen-barad",
-    text: "Karen Barad macht den Apparat zum Bestandteil dessen, was durch eine Beobachtung bestimmbar wird. Robert Smithsons Site/Non-Site trennt ebenfalls nicht sauber zwischen Gegenstand und Darstellung: Material, Karte, Galerie und entfernter Ort verweisen wechselseitig aufeinander. Der Ausstellungsraum zeigt den Ort nicht einfach, sondern erzeugt eine bestimmte Möglichkeit, ihn zu beobachten. Dennoch bleibt der entfernte Ort außerhalb dieser Anordnung und besitzt eine Geschichte, die das Museum nicht kontrolliert.",
-    question: "Wo endet ein Apparat, wenn das, was er beobachtbar macht, räumlich außerhalb von ihm weitergeschieht?",
+    text: "Karen Barad macht den Apparat zum Bestandteil dessen, was durch eine Beobachtung bestimmbar wird. Robert Smithsons Site/Non-Site trennt ebenfalls nicht sauber zwischen Gegenstand und Darstellung: Material, Karte, Galerie und entfernter Ort verweisen wechselseitig aufeinander. Der Ausstellungsraum zeigt den Ort nicht einfach, sondern erzeugt eine bestimmte Möglichkeit, ihn zu beobachten. Dennoch bleibt der entfernte Ort ausserhalb dieser Anordnung und besitzt eine Geschichte, die das Museum nicht kontrolliert.",
+    question: "Wo endet ein Apparat, wenn das, was er beobachtbar macht, räumlich ausserhalb von ihm weitergeschieht?",
   },
   {
     editorialNumber: 81,
@@ -760,7 +760,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "james-turrell__michel-foucault",
     artistId: "james-turrell",
     theoristId: "michel-foucault",
-    text: "Michel Foucault untersucht Anordnungen, die Sichtbarkeit organisieren: Wer kann wen, was und von welcher Position aus sehen? James Turrell reduziert diese politische Frage scheinbar auf Licht, Architektur und Wahrnehmung. Doch auch seine Räume bestimmen sehr genau, wo jemand stehen, wohin jemand blicken und was überhaupt erscheinen kann. Sichtbarkeit ist damit nicht bloß Eigenschaft eines Gegenstandes, sondern Ergebnis einer Anordnung.",
+    text: "Michel Foucault untersucht Anordnungen, die Sichtbarkeit organisieren: Wer kann wen, was und von welcher Position aus sehen? James Turrell reduziert diese politische Frage scheinbar auf Licht, Architektur und Wahrnehmung. Doch auch seine Räume bestimmen sehr genau, wo jemand stehen, wohin jemand blicken und was überhaupt erscheinen kann. Sichtbarkeit ist damit nicht bloss Eigenschaft eines Gegenstandes, sondern Ergebnis einer Anordnung.",
     question: "Wie wird Sichtbarkeit organisiert?",
   },
   {
@@ -796,7 +796,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "felix-gonzalez-torres__jacques-derrida",
     artistId: "felix-gonzalez-torres",
     theoristId: "jacques-derrida",
-    text: "Jacques Derrida macht Wiederholbarkeit zur Bedingung dafür, dass etwas über seinen ursprünglichen Kontext hinaus fortbestehen kann. Felix Gonzalez-Torres treibt diese Wiederholbarkeit bis in die materielle Identität des Kunstwerks: Papier kann mitgenommen, Süßigkeiten können gegessen und Bestände erneut hergestellt werden. Das Werk bleibt, indem sein Material nicht bleiben muss. Seine Identität liegt weder vollständig im einzelnen Gegenstand noch unabhängig von jeder materiellen Ausführung.",
+    text: "Jacques Derrida macht Wiederholbarkeit zur Bedingung dafür, dass etwas über seinen ursprünglichen Kontext hinaus fortbestehen kann. Felix Gonzalez-Torres treibt diese Wiederholbarkeit bis in die materielle Identität des Kunstwerks: Papier kann mitgenommen, Süssigkeiten können gegessen und Bestände erneut hergestellt werden. Das Werk bleibt, indem sein Material nicht bleiben muss. Seine Identität liegt weder vollständig im einzelnen Gegenstand noch unabhängig von jeder materiellen Ausführung.",
     question: "Was muss wiederholbar sein, damit etwas trotz des Verschwindens seiner Bestandteile als dasselbe wiederkehren kann?",
   },
   {
@@ -814,7 +814,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "agnes-martin__niklas-luhmann",
     artistId: "agnes-martin",
     theoristId: "niklas-luhmann",
-    text: "Agnes Martin stellt dem Sehen eine äußerst stabile Ordnung aus Linien, Abständen und Wiederholungen bereit. Niklas Luhmann unterscheidet Wahrnehmung und Kommunikation als verschiedene Operationen: Kommunikation kann Wahrnehmung voraussetzen und auf sie reagieren, sie aber nicht selbst vollziehen. Martins Bilder machen diese Grenze unmittelbar spürbar. Man kann Raster, Maße und Materialien beschreiben; damit ist nicht wiederholt, was jemand vor dem Bild gesehen hat. Zugleich kann gerade die stabile Form immer neue Wahrnehmungsereignisse auslösen.",
+    text: "Agnes Martin stellt dem Sehen eine äusserst stabile Ordnung aus Linien, Abständen und Wiederholungen bereit. Niklas Luhmann unterscheidet Wahrnehmung und Kommunikation als verschiedene Operationen: Kommunikation kann Wahrnehmung voraussetzen und auf sie reagieren, sie aber nicht selbst vollziehen. Martins Bilder machen diese Grenze unmittelbar spürbar. Man kann Raster, Masse und Materialien beschreiben; damit ist nicht wiederholt, was jemand vor dem Bild gesehen hat. Zugleich kann gerade die stabile Form immer neue Wahrnehmungsereignisse auslösen.",
     question: "Wie kann über eine Wahrnehmung kommuniziert werden, wenn die Wahrnehmung selbst nicht mitgeteilt werden kann?",
   },
   {
@@ -850,7 +850,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "felix-gonzalez-torres__niklas-luhmann",
     artistId: "felix-gonzalez-torres",
     theoristId: "niklas-luhmann",
-    text: "Felix Gonzalez-Torres lässt Werke materiell abnehmen und wieder ergänzt werden, während sie institutionell als dieselben Werke fortbestehen können. Niklas Luhmann beschreibt Identität nicht notwendig als unveränderte Substanz, sondern als etwas, das über wechselnde Operationen hinweg für weitere Anschlüsse stabilisiert wird. Das passt erstaunlich gut, und doch bleibt eine Differenz. Das Museum kann entscheiden, dass eine erneuerte Installation dasselbe Werk ist; die gegessene Süßigkeit kehrt dadurch nicht zurück. Werkidentität und materielle Geschichte folgen verschiedenen Zeiten.",
+    text: "Felix Gonzalez-Torres lässt Werke materiell abnehmen und wieder ergänzt werden, während sie institutionell als dieselben Werke fortbestehen können. Niklas Luhmann beschreibt Identität nicht notwendig als unveränderte Substanz, sondern als etwas, das über wechselnde Operationen hinweg für weitere Anschlüsse stabilisiert wird. Das passt erstaunlich gut, und doch bleibt eine Differenz. Das Museum kann entscheiden, dass eine erneuerte Installation dasselbe Werk ist; die gegessene Süssigkeit kehrt dadurch nicht zurück. Werkidentität und materielle Geschichte folgen verschiedenen Zeiten.",
     question: "Wer oder was entscheidet, welche Veränderungen eine Identität überstehen darf?",
   },
   {
@@ -859,7 +859,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "mona-hatoum__karen-barad",
     artistId: "mona-hatoum",
     theoristId: "karen-barad",
-    text: "Mona Hatoum verändert Maßstäbe, Materialien und räumliche Beziehungen so, dass vertraute Gegenstände ihre selbstverständliche Bedeutung verlieren können. Karen Barad richtet den Blick darauf, dass Eigenschaften und Grenzen nicht immer unabhängig von den materiellen Anordnungen existieren, in denen sie bestimmbar werden. Hatoums Arbeiten machen eine solche Abhängigkeit körperlich erfahrbar: Derselbe erkennbare Gegenstand kann durch Größe, Material oder Position eine vollkommen andere Beziehung zum Körper herstellen. Die Situation verändert nicht nur seine Interpretation, sondern die Möglichkeiten von Nähe, Bewegung und Berührung.",
+    text: "Mona Hatoum verändert Massstäbe, Materialien und räumliche Beziehungen so, dass vertraute Gegenstände ihre selbstverständliche Bedeutung verlieren können. Karen Barad richtet den Blick darauf, dass Eigenschaften und Grenzen nicht immer unabhängig von den materiellen Anordnungen existieren, in denen sie bestimmbar werden. Hatoums Arbeiten machen eine solche Abhängigkeit körperlich erfahrbar: Derselbe erkennbare Gegenstand kann durch Grösse, Material oder Position eine vollkommen andere Beziehung zum Körper herstellen. Die Situation verändert nicht nur seine Interpretation, sondern die Möglichkeiten von Nähe, Bewegung und Berührung.",
     question: "Welche Eigenschaften gehören einem Gegenstand, und welche entstehen erst zwischen Gegenstand, Anordnung und wahrnehmendem Körper?",
   },
   {
@@ -904,7 +904,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "james-turrell__claude-shannon",
     artistId: "james-turrell",
     theoristId: "claude-shannon",
-    text: "Claude Shannon abstrahiert Information von ihrer Bedeutung und behandelt unterscheidbare Signale innerhalb eines bestimmbaren Möglichkeitsraums. James Turrell reduziert ebenfalls, aber in die entgegengesetzte Richtung. Statt Wahrnehmung auszuschließen, reduziert er Gegenstände und Bilder so weit, dass Unterschiede von Licht, Raum und Sehen selbst auffällig werden können. Shannon gewinnt Bestimmbarkeit, indem er den wahrnehmenden Körper methodisch entfernt; Turrell gewinnt Wahrnehmbarkeit, indem er dessen Bedingungen präzise organisiert. Beide benötigen unterscheidbare Zustände, aber nur einer muss erklären können, wie sie für einen Körper erscheinen.",
+    text: "Claude Shannon abstrahiert Information von ihrer Bedeutung und behandelt unterscheidbare Signale innerhalb eines bestimmbaren Möglichkeitsraums. James Turrell reduziert ebenfalls, aber in die entgegengesetzte Richtung. Statt Wahrnehmung auszuschliessen, reduziert er Gegenstände und Bilder so weit, dass Unterschiede von Licht, Raum und Sehen selbst auffällig werden können. Shannon gewinnt Bestimmbarkeit, indem er den wahrnehmenden Körper methodisch entfernt; Turrell gewinnt Wahrnehmbarkeit, indem er dessen Bedingungen präzise organisiert. Beide benötigen unterscheidbare Zustände, aber nur einer muss erklären können, wie sie für einen Körper erscheinen.",
     question: "Wann wird aus einem Unterschied zwischen Zuständen ein Unterschied in der Wahrnehmung?",
   },
   {
@@ -913,7 +913,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "agnes-martin__karen-barad",
     artistId: "agnes-martin",
     theoristId: "karen-barad",
-    text: "Agnes Martins Raster scheint eine bereits vorhandene Fläche nur zu unterteilen. Karen Barad würde eine solche Trennung nicht als bloßes Abbild vorgegebener Unterschiede behandeln. Eine Grenze kann selbst daran mitwirken, was als Einheit, Abstand oder Abweichung erscheint. Martins Linien zeigen deshalb nicht nur Unterschiede, sie erzeugen Bedingungen, unter denen Unterschiede überhaupt sichtbar werden.",
+    text: "Agnes Martins Raster scheint eine bereits vorhandene Fläche nur zu unterteilen. Karen Barad würde eine solche Trennung nicht als blosses Abbild vorgegebener Unterschiede behandeln. Eine Grenze kann selbst daran mitwirken, was als Einheit, Abstand oder Abweichung erscheint. Martins Linien zeigen deshalb nicht nur Unterschiede, sie erzeugen Bedingungen, unter denen Unterschiede überhaupt sichtbar werden.",
     question: "Welche Unterschiede erzeugt das Raster erst?",
   },
   {
@@ -949,7 +949,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "marina-abramovic__lucy-suchman",
     artistId: "marina-abramovic",
     theoristId: "lucy-suchman",
-    text: "Marina Abramović legt häufig wenige Regeln fest und überlässt viel dem tatsächlichen Zusammentreffen von Körpern. Lucy Suchman versteht Handlung als situierte Koordination, die sich im Verlauf einer Situation bildet. Haltung, Blick, Warten und Reaktion des Publikums sind deshalb nicht bloß äußere Begleitung der Performance. Sie verändern mit, was die Handlung in diesem Moment wird.",
+    text: "Marina Abramović legt häufig wenige Regeln fest und überlässt viel dem tatsächlichen Zusammentreffen von Körpern. Lucy Suchman versteht Handlung als situierte Koordination, die sich im Verlauf einer Situation bildet. Haltung, Blick, Warten und Reaktion des Publikums sind deshalb nicht bloss äussere Begleitung der Performance. Sie verändern mit, was die Handlung in diesem Moment wird.",
     question: "Wann wird Publikum zum Teil der Handlung?",
   },
   {
@@ -1039,7 +1039,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "agnes-martin__henri-bergson",
     artistId: "agnes-martin",
     theoristId: "henri-bergson",
-    text: "Agnes Martins Raster teilen die Fläche in regelmäßige Abstände. Henri Bergson warnt davor, gelebte Zeit wie eine Reihe gleichförmiger Stellen zu behandeln. Vor Martins Bildern treffen beide Ordnungen aufeinander. Das Raster bleibt ruhig, während Sehen, Aufmerksamkeit und Erinnerung sich im Verlauf der Betrachtung verändern.",
+    text: "Agnes Martins Raster teilen die Fläche in regelmässige Abstände. Henri Bergson warnt davor, gelebte Zeit wie eine Reihe gleichförmiger Stellen zu behandeln. Vor Martins Bildern treffen beide Ordnungen aufeinander. Das Raster bleibt ruhig, während Sehen, Aufmerksamkeit und Erinnerung sich im Verlauf der Betrachtung verändern.",
     question: "Wie verändert Dauer ein scheinbar gleiches Bild?",
   },
   {
@@ -1048,7 +1048,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "hanne-darboven__claude-shannon",
     artistId: "hanne-darboven",
     theoristId: "claude-shannon",
-    text: "Hanne Darboven macht Zeit mit Zahlen, Daten und Reihen vergleichbar. Claude Shannon beschreibt Information als Auswahl aus einem bestimmbaren Raum von Möglichkeiten und lässt Bedeutung dabei bewusst außen vor. Darbovens Notationen können gezählt und geordnet werden, doch ihre tägliche Herstellung trägt mehr als Information. Zeit erscheint hier auch als Arbeit, Handschrift und verbrachter Tag.",
+    text: "Hanne Darboven macht Zeit mit Zahlen, Daten und Reihen vergleichbar. Claude Shannon beschreibt Information als Auswahl aus einem bestimmbaren Raum von Möglichkeiten und lässt Bedeutung dabei bewusst aussen vor. Darbovens Notationen können gezählt und geordnet werden, doch ihre tägliche Herstellung trägt mehr als Information. Zeit erscheint hier auch als Arbeit, Handschrift und verbrachter Tag.",
     question: "Was fehlt, wenn Zeit nur als Information erscheint?",
   },
   {
@@ -1057,7 +1057,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "eva-hesse__michel-serres",
     artistId: "eva-hesse",
     theoristId: "michel-serres",
-    text: "Eva Hesses Arbeiten verbinden klare Wiederholung mit Materialien, die sich ihr nicht vollständig fügen. Michel Serres interessiert sich für Störung, Rauschen und Veränderung auf dem Weg einer Übertragung. Bei Hesse sitzt diese Störung nicht außerhalb des Werks. Alterung, Schwerkraft und Materialspannung verändern die Form von innen heraus.",
+    text: "Eva Hesses Arbeiten verbinden klare Wiederholung mit Materialien, die sich ihr nicht vollständig fügen. Michel Serres interessiert sich für Störung, Rauschen und Veränderung auf dem Weg einer Übertragung. Bei Hesse sitzt diese Störung nicht ausserhalb des Werks. Alterung, Schwerkraft und Materialspannung verändern die Form von innen heraus.",
     question: "Wann wird Material zur Störung?",
   },
   {
@@ -1084,7 +1084,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "louise-bourgeois__n-katherine-hayles",
     artistId: "louise-bourgeois",
     theoristId: "n-katherine-hayles",
-    text: "Louise Bourgeois bindet Erinnerung an Stoffe, Möbel, Körperformen und Räume. N. Katherine Hayles kritisiert die Vorstellung, ein Muster könne unabhängig von seiner Verkörperung vollständig erhalten bleiben. Bei Bourgeois lässt sich Erinnerung deshalb nicht auf eine abstrakte Geschichte reduzieren. Material, Maßstab und räumliche Nähe bestimmen mit, wie sie gegenwärtig wird.",
+    text: "Louise Bourgeois bindet Erinnerung an Stoffe, Möbel, Körperformen und Räume. N. Katherine Hayles kritisiert die Vorstellung, ein Muster könne unabhängig von seiner Verkörperung vollständig erhalten bleiben. Bei Bourgeois lässt sich Erinnerung deshalb nicht auf eine abstrakte Geschichte reduzieren. Material, Massstab und räumliche Nähe bestimmen mit, wie sie gegenwärtig wird.",
     question: "Was trägt das Material zur Erinnerung bei?",
   },
   {
@@ -1129,7 +1129,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "hanne-darboven__karen-barad",
     artistId: "hanne-darboven",
     theoristId: "karen-barad",
-    text: "Hanne Darboven ordnet Zeit durch Kalender, Zahlen und Schrift. Karen Barad fragt, wie ein Apparat mitbestimmt, was überhaupt als Unterschied erscheinen kann. Darbovens Verfahren registriert Zeit deshalb nicht einfach. Es legt fest, welche Aspekte eines Tages als Zahl, Datum oder Zeichen wiederauffindbar werden und welche außerhalb dieser Ordnung bleiben.",
+    text: "Hanne Darboven ordnet Zeit durch Kalender, Zahlen und Schrift. Karen Barad fragt, wie ein Apparat mitbestimmt, was überhaupt als Unterschied erscheinen kann. Darbovens Verfahren registriert Zeit deshalb nicht einfach. Es legt fest, welche Aspekte eines Tages als Zahl, Datum oder Zeichen wiederauffindbar werden und welche ausserhalb dieser Ordnung bleiben.",
     question: "Was macht eine Notation sichtbar?",
   },
   {
@@ -1210,8 +1210,8 @@ export const constellations: readonly Constellation[] = [
     pairKey: "louise-bourgeois__karen-barad",
     artistId: "louise-bourgeois",
     theoristId: "karen-barad",
-    text: "Louise Bourgeois baut mit den Cells Grenzen, durch die man schaut, an denen man entlanggeht und die man nicht einfach überschreitet. Karen Barad versteht Grenzen nicht als selbstverständlich gegeben, sondern als Ergebnis konkreter Anordnungen. Bei Bourgeois wird diese Herstellung körperlich erfahrbar. Innen und außen entstehen durch Material, Blick und Position.",
-    question: "Wie entsteht bei einer Cell ein Innen und Außen?",
+    text: "Louise Bourgeois baut mit den Cells Grenzen, durch die man schaut, an denen man entlanggeht und die man nicht einfach überschreitet. Karen Barad versteht Grenzen nicht als selbstverständlich gegeben, sondern als Ergebnis konkreter Anordnungen. Bei Bourgeois wird diese Herstellung körperlich erfahrbar. Innen und aussen entstehen durch Material, Blick und Position.",
+    question: "Wie entsteht bei einer Cell ein Innen und Aussen?",
   },
   {
     editorialNumber: 134,
@@ -1229,7 +1229,7 @@ export const constellations: readonly Constellation[] = [
     artistId: "rebecca-horn",
     theoristId: "elena-esposito",
     text: "Elena Esposito betont, dass Prognosen die Zukunft nicht kennen, sondern in der Gegenwart Erwartungen erzeugen. Rebecca Horns Maschinen scheinen dagegen einen Ablauf bereits festzulegen. Doch sobald Mechanik auf Körper, Reibung und Raum trifft, wird aus dem vorgesehenen Ablauf ein tatsächliches Ereignis. Die Maschine macht Zukunft berechenbarer, ohne sie in Gegenwart zu verwandeln.",
-    question: "Was weiß eine Maschine über ihren nächsten Moment?",
+    question: "Was weiss eine Maschine über ihren nächsten Moment?",
   },
   {
     editorialNumber: 136,
@@ -1291,7 +1291,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "marina-abramovic__elena-esposito",
     artistId: "marina-abramovic",
     theoristId: "elena-esposito",
-    text: "Marina Abramović kündigt bei vielen Arbeiten Dauer und Bedingungen im Voraus an. Elena Esposito zeigt, dass Vorstellungen von Zukunft die Gegenwart schon verändern, obwohl das Kommende noch nicht eingetreten ist. Wer weiß, dass eine Performance sechs Stunden dauern wird, erlebt bereits den ersten Moment im Horizont dieses Endes. Die festgelegte Dauer erzeugt Erwartungen, ohne den Verlauf festzulegen.",
+    text: "Marina Abramović kündigt bei vielen Arbeiten Dauer und Bedingungen im Voraus an. Elena Esposito zeigt, dass Vorstellungen von Zukunft die Gegenwart schon verändern, obwohl das Kommende noch nicht eingetreten ist. Wer weiss, dass eine Performance sechs Stunden dauern wird, erlebt bereits den ersten Moment im Horizont dieses Endes. Die festgelegte Dauer erzeugt Erwartungen, ohne den Verlauf festzulegen.",
     question: "Wie verändert ein angekündigtes Ende die Gegenwart?",
   },
   {
@@ -1310,7 +1310,7 @@ export const constellations: readonly Constellation[] = [
     artistId: "doris-salcedo",
     theoristId: "n-katherine-hayles",
     text: "Doris Salcedo bindet Erinnerung an Holz, Beton, Kleidung und architektonische Eingriffe. N. Katherine Hayles warnt davor, Bedeutung von ihrer Verkörperung zu lösen. Bei Salcedo ist Material deshalb kein austauschbarer Träger einer Botschaft. Gewicht, Beschädigung, Oberfläche und räumliche Blockade tragen selbst zur Erinnerung bei.",
-    question: "Was weiß ein Material, das ein Text nicht sagt?",
+    question: "Was weiss ein Material, das ein Text nicht sagt?",
   },
   {
     editorialNumber: 145,
@@ -1328,7 +1328,7 @@ export const constellations: readonly Constellation[] = [
     artistId: "hanne-darboven",
     theoristId: "susan-leigh-star",
     text: "Hanne Darboven nutzt Kalender, Zahlen und Ordnungssysteme, die schon vor ihrem einzelnen Blatt existieren. Susan Leigh Star untersucht solche Klassifikationen als Infrastrukturen gemeinsamer Arbeit. Darboven macht aus ihnen sichtbares Material. Der Kalender erscheint nicht mehr nur als neutrale Hilfe, sondern als Ordnung, die Zeit in benennbare Stellen zerlegt.",
-    question: "Was ordnet ein Kalender, außer Tage?",
+    question: "Was ordnet ein Kalender, ausser Tage?",
   },
   {
     editorialNumber: 147,
@@ -1390,7 +1390,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "hanne-darboven__elena-esposito",
     artistId: "hanne-darboven",
     theoristId: "elena-esposito",
-    text: "Hanne Darboven kann eine Regel weit in die Zukunft fortsetzen, ohne diese Zukunft schon ausgeführt zu haben. Elena Esposito untersucht, wie gegenwärtige Ordnungen Erwartungen über Kommendes erzeugen. Die nächste Zahl mag bestimmbar sein, der nächste Arbeitstag ist es nicht. Darbovens Serien halten deshalb Regelmäßigkeit und offene Zukunft gleichzeitig zusammen.",
+    text: "Hanne Darboven kann eine Regel weit in die Zukunft fortsetzen, ohne diese Zukunft schon ausgeführt zu haben. Elena Esposito untersucht, wie gegenwärtige Ordnungen Erwartungen über Kommendes erzeugen. Die nächste Zahl mag bestimmbar sein, der nächste Arbeitstag ist es nicht. Darbovens Serien halten deshalb Regelmässigkeit und offene Zukunft gleichzeitig zusammen.",
     question: "Wie weit reicht eine Regel in die Zukunft?",
   },
   {
@@ -1525,7 +1525,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "dan-graham__michel-serres",
     artistId: "dan-graham",
     theoristId: "michel-serres",
-    text: "Dan Graham baut mit Glas und Spiegeln Grenzen, die gerade deshalb interessant sind, weil sie nicht einfach abschließen. Sie trennen Räume und lassen zugleich Licht, Blick und Spiegelbild passieren. Michel Serres interessiert sich für Passagen und dafür, dass Vermittlung niemals neutral bleibt. Grahams Glaswand ist deshalb zugleich Grenze und Kanal. Wer hindurchblickt, sieht nicht einfach die andere Seite. Spiegelung, Position und Bewegung verändern das Verhältnis zwischen hier und dort. Die Grenze vermittelt genau dadurch, dass sie trennt.",
+    text: "Dan Graham baut mit Glas und Spiegeln Grenzen, die gerade deshalb interessant sind, weil sie nicht einfach abschliessen. Sie trennen Räume und lassen zugleich Licht, Blick und Spiegelbild passieren. Michel Serres interessiert sich für Passagen und dafür, dass Vermittlung niemals neutral bleibt. Grahams Glaswand ist deshalb zugleich Grenze und Kanal. Wer hindurchblickt, sieht nicht einfach die andere Seite. Spiegelung, Position und Bewegung verändern das Verhältnis zwischen hier und dort. Die Grenze vermittelt genau dadurch, dass sie trennt.",
     question: "Wann wird eine Grenze zum Kanal?",
   },
   {
@@ -1543,7 +1543,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "robert-smithson__george-spencer-brown",
     artistId: "robert-smithson",
     theoristId: "george-spencer-brown",
-    text: "Robert Smithsons Site und Non-Site existieren nur durch eine Unterscheidung. Material befindet sich im Ausstellungsraum und verweist zugleich auf einen Ort außerhalb von ihm. George Spencer-Brown zeigt, dass eine Grenze zwei Seiten nicht nur trennt, sondern überhaupt erst als Seiten einer Form bestimmbar macht. Bei Smithson ermöglicht genau diese Trennung eine gemeinsame Adresse für etwas Abwesendes. Besucher:innen müssen die entfernte Landschaft nicht gemeinsam betreten. Sie können sich im Museum auf sie beziehen, weil Site und Non-Site unterschieden und miteinander verbunden bleiben.",
+    text: "Robert Smithsons Site und Non-Site existieren nur durch eine Unterscheidung. Material befindet sich im Ausstellungsraum und verweist zugleich auf einen Ort ausserhalb von ihm. George Spencer-Brown zeigt, dass eine Grenze zwei Seiten nicht nur trennt, sondern überhaupt erst als Seiten einer Form bestimmbar macht. Bei Smithson ermöglicht genau diese Trennung eine gemeinsame Adresse für etwas Abwesendes. Besucher:innen müssen die entfernte Landschaft nicht gemeinsam betreten. Sie können sich im Museum auf sie beziehen, weil Site und Non-Site unterschieden und miteinander verbunden bleiben.",
     question: "Kann eine Grenze einen abwesenden Ort gemeinsam zugänglich machen?",
   },
   {
@@ -1651,8 +1651,8 @@ export const constellations: readonly Constellation[] = [
     pairKey: "louise-bourgeois__michel-foucault",
     artistId: "louise-bourgeois",
     theoristId: "michel-foucault",
-    text: "Louise Bourgeois baut mit ihren Cells Räume, in denen Sehen und Zugang genau geregelt sind. Michel Foucault untersucht Anordnungen danach, wie sie Sichtbarkeit verteilen und Positionen hervorbringen. Bei Bourgeois steht man vor Gittern, Türen und Öffnungen, blickt hinein und bleibt zugleich draußen. Die Cell zeigt nicht nur Dinge. Sie organisiert, von welcher Stelle aus etwas sichtbar oder verborgen wird.",
-    question: "Wer darf in einer Cell sehen und wer bleibt draußen?",
+    text: "Louise Bourgeois baut mit ihren Cells Räume, in denen Sehen und Zugang genau geregelt sind. Michel Foucault untersucht Anordnungen danach, wie sie Sichtbarkeit verteilen und Positionen hervorbringen. Bei Bourgeois steht man vor Gittern, Türen und Öffnungen, blickt hinein und bleibt zugleich draussen. Die Cell zeigt nicht nur Dinge. Sie organisiert, von welcher Stelle aus etwas sichtbar oder verborgen wird.",
+    question: "Wer darf in einer Cell sehen und wer bleibt draussen?",
   },
   {
     editorialNumber: 183,
@@ -1714,7 +1714,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "donald-judd__george-spencer-brown",
     artistId: "donald-judd",
     theoristId: "george-spencer-brown",
-    text: "George Spencer-Brown beginnt mit einer Unterscheidung, die zwei Seiten voneinander trennt. Donald Judds Arbeiten machen deutlich, dass auch der Abstand zwischen Dingen eine solche Trennung leisten kann. Der Zwischenraum ist nicht bloß leer. Er hält Körper auseinander, bestimmt ihre Beziehung und lässt eine Folge einzelner Formen entstehen. Ohne Abstand würden die Elemente zu einer anderen Form zusammenfallen.",
+    text: "George Spencer-Brown beginnt mit einer Unterscheidung, die zwei Seiten voneinander trennt. Donald Judds Arbeiten machen deutlich, dass auch der Abstand zwischen Dingen eine solche Trennung leisten kann. Der Zwischenraum ist nicht bloss leer. Er hält Körper auseinander, bestimmt ihre Beziehung und lässt eine Folge einzelner Formen entstehen. Ohne Abstand würden die Elemente zu einer anderen Form zusammenfallen.",
     question: "Kann ein Abstand eine Form erzeugen?",
   },
   {
@@ -1750,7 +1750,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "tehching-hsieh__gilles-deleuze",
     artistId: "tehching-hsieh",
     theoristId: "gilles-deleuze",
-    text: "Gilles Deleuze trennt Wiederholung vom bloßen Auftreten des Gleichen. Tehching Hsiehs Regeln treiben diese Unterscheidung ins Extrem. In der Stechuhrperformance kehrt jede Stunde formal dieselbe Handlung zurück, während Körper, Müdigkeit und Lebenszeit unwiderruflich weitergehen. Die strenge Gleichheit der Regel macht sichtbar, wie verschieden jeder einzelne Vollzug ist.",
+    text: "Gilles Deleuze trennt Wiederholung vom blossen Auftreten des Gleichen. Tehching Hsiehs Regeln treiben diese Unterscheidung ins Extrem. In der Stechuhrperformance kehrt jede Stunde formal dieselbe Handlung zurück, während Körper, Müdigkeit und Lebenszeit unwiderruflich weitergehen. Die strenge Gleichheit der Regel macht sichtbar, wie verschieden jeder einzelne Vollzug ist.",
     question: "Wie viel Differenz erzeugt dieselbe Stunde?",
   },
   {
@@ -1795,7 +1795,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "william-kentridge__michel-serres",
     artistId: "william-kentridge",
     theoristId: "michel-serres",
-    text: "Michel Serres interessiert sich für Übersetzungen und Passagen, bei denen etwas den Weg nicht unverändert übersteht. William Kentridge lässt Zeichnung in Film, Projektion, Theater, Musik und Bewegung übergehen. Jeder Medienwechsel erhält etwas und verändert zugleich Rhythmus, Maßstab und Wahrnehmung. Das Werk besitzt deshalb keinen neutralen Kanal zwischen seinen Formen.",
+    text: "Michel Serres interessiert sich für Übersetzungen und Passagen, bei denen etwas den Weg nicht unverändert übersteht. William Kentridge lässt Zeichnung in Film, Projektion, Theater, Musik und Bewegung übergehen. Jeder Medienwechsel erhält etwas und verändert zugleich Rhythmus, Massstab und Wahrnehmung. Das Werk besitzt deshalb keinen neutralen Kanal zwischen seinen Formen.",
     question: "Was verändert sich beim Wechsel des Mediums?",
   },
   {
@@ -1894,7 +1894,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "william-kentridge__gilbert-simondon",
     artistId: "william-kentridge",
     theoristId: "gilbert-simondon",
-    text: "William Kentridge zeichnet, löscht und zeichnet auf derselben Fläche weiter. Frühere Zustände verschwinden nicht vollständig, sondern bleiben als Schatten und Verschmutzungen wirksam. Gilbert Simondon versteht Individuation als einen fortdauernden Prozess, in dem ein Individuum nie völlig abgeschlossen ist. Kentridges Bild besitzt deshalb keine Identität hinter seinen Veränderungen. Es wird gerade durch sie zu diesem Bild. Die Spur eines vergangenen Zustands ist nicht bloß Erinnerung, sondern Material der weiteren Individuation.",
+    text: "William Kentridge zeichnet, löscht und zeichnet auf derselben Fläche weiter. Frühere Zustände verschwinden nicht vollständig, sondern bleiben als Schatten und Verschmutzungen wirksam. Gilbert Simondon versteht Individuation als einen fortdauernden Prozess, in dem ein Individuum nie völlig abgeschlossen ist. Kentridges Bild besitzt deshalb keine Identität hinter seinen Veränderungen. Es wird gerade durch sie zu diesem Bild. Die Spur eines vergangenen Zustands ist nicht bloss Erinnerung, sondern Material der weiteren Individuation.",
     question: "Kann eine Spur Teil der Identität bleiben?",
   },
   {
@@ -1966,7 +1966,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "sol-lewitt__michel-serres",
     artistId: "sol-lewitt",
     theoristId: "michel-serres",
-    text: "Sol LeWitts Instruktionen wandern zwischen Sprache, ausführenden Personen, Wand, Werkzeug und Raum. Michel Serres interessiert sich für Passagen, in denen Übertragung niemals völlig verlustfrei bleibt. Auch eine präzise Regel kommt nicht unverändert am Ziel an. Maßstab, Material und lokale Entscheidungen schreiben sich in ihre Ausführung ein. Das bedeutet nicht, dass die Instruktion scheitert. Ihre Identität zeigt sich vielmehr darin, dass sie verschiedene Übersetzungen durchlaufen kann.",
+    text: "Sol LeWitts Instruktionen wandern zwischen Sprache, ausführenden Personen, Wand, Werkzeug und Raum. Michel Serres interessiert sich für Passagen, in denen Übertragung niemals völlig verlustfrei bleibt. Auch eine präzise Regel kommt nicht unverändert am Ziel an. Massstab, Material und lokale Entscheidungen schreiben sich in ihre Ausführung ein. Das bedeutet nicht, dass die Instruktion scheitert. Ihre Identität zeigt sich vielmehr darin, dass sie verschiedene Übersetzungen durchlaufen kann.",
     question: "Bleibt eine Instruktion auf ihrem Weg dieselbe?",
   },
   {
@@ -2002,7 +2002,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "tehching-hsieh__george-spencer-brown",
     artistId: "tehching-hsieh",
     theoristId: "george-spencer-brown",
-    text: "Tehching Hsiehs Performances beginnen und enden an präzise gesetzten Zeitpunkten. George Spencer-Brown beschreibt Form als Ergebnis einer Unterscheidung zwischen zwei Seiten. Hsiehs Vertrag zieht eine solche Grenze mitten durch das Leben: innerhalb und außerhalb der Performance, vorher und nachher. Doch die Grenze bleibt nicht an ihrem Anfang stehen. Sie organisiert jeden folgenden Tag. Ein einmal gesetzter Schnitt beginnt, reale Lebenszeit zu verbrauchen.",
+    text: "Tehching Hsiehs Performances beginnen und enden an präzise gesetzten Zeitpunkten. George Spencer-Brown beschreibt Form als Ergebnis einer Unterscheidung zwischen zwei Seiten. Hsiehs Vertrag zieht eine solche Grenze mitten durch das Leben: innerhalb und ausserhalb der Performance, vorher und nachher. Doch die Grenze bleibt nicht an ihrem Anfang stehen. Sie organisiert jeden folgenden Tag. Ein einmal gesetzter Schnitt beginnt, reale Lebenszeit zu verbrauchen.",
     question: "Wann beginnt eine Grenze, Zeit zu verbrauchen?",
   },
   {
@@ -2029,7 +2029,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "mona-hatoum__gilles-deleuze",
     artistId: "mona-hatoum",
     theoristId: "gilles-deleuze",
-    text: "Mona Hatoum wiederholt vertraute Formen wie Käfig, Karte, Bett oder Haushaltsgerät, verändert jedoch Maßstab, Material oder Funktion. Gilles Deleuze versteht Wiederholung nicht als Rückkehr des Identischen, sondern als Produktion von Differenz. Gerade deshalb werden Hatoums Grenzen instabil. Die wiederkehrende Form bestätigt nicht, was eine Grenze ist. Sie verschiebt ihre Bedeutung von Schutz zu Bedrohung, von Zuhause zu Ausschluss, von Ordnung zu Unsicherheit.",
+    text: "Mona Hatoum wiederholt vertraute Formen wie Käfig, Karte, Bett oder Haushaltsgerät, verändert jedoch Massstab, Material oder Funktion. Gilles Deleuze versteht Wiederholung nicht als Rückkehr des Identischen, sondern als Produktion von Differenz. Gerade deshalb werden Hatoums Grenzen instabil. Die wiederkehrende Form bestätigt nicht, was eine Grenze ist. Sie verschiebt ihre Bedeutung von Schutz zu Bedrohung, von Zuhause zu Ausschluss, von Ordnung zu Unsicherheit.",
     question: "Was verändert Wiederholung an einer Grenze?",
   },
   {
@@ -2047,7 +2047,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "sol-lewitt__gilles-deleuze",
     artistId: "sol-lewitt",
     theoristId: "gilles-deleuze",
-    text: "Sol LeWitts Regeln sind wiederholbar, doch ihre Ausführungen fallen nicht vollkommen zusammen. Gilles Deleuze interessiert sich gerade für eine Wiederholung, die Differenz hervorbringt. Bei LeWitt liegt diese Differenz nicht außerhalb der Regel. Sie entsteht durch ihre erneute Anwendung auf andere Wände, Maße, Materialien und Situationen. Dass eine Instruktion wiederholt werden kann, garantiert deshalb keine identischen Ergebnisse. Die Regel produziert eine Familie verwandter, aber nicht gleicher Ereignisse.",
+    text: "Sol LeWitts Regeln sind wiederholbar, doch ihre Ausführungen fallen nicht vollkommen zusammen. Gilles Deleuze interessiert sich gerade für eine Wiederholung, die Differenz hervorbringt. Bei LeWitt liegt diese Differenz nicht ausserhalb der Regel. Sie entsteht durch ihre erneute Anwendung auf andere Wände, Masse, Materialien und Situationen. Dass eine Instruktion wiederholt werden kann, garantiert deshalb keine identischen Ergebnisse. Die Regel produziert eine Familie verwandter, aber nicht gleicher Ereignisse.",
     question: "Wie viel Differenz verträgt dieselbe Regel?",
   },
   {
@@ -2056,7 +2056,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "sol-lewitt__heinz-von-foerster",
     artistId: "sol-lewitt",
     theoristId: "heinz-von-foerster",
-    text: "Sol LeWitt legt häufig Regeln fest, nach denen eine Folge von Entscheidungen oder Operationen ausgeführt wird. Heinz von Foerster interessiert sich für Rekursion, wenn Ergebnisse wieder in spätere Operationen eingehen. Nicht jede LeWitt-Regel ist rekursiv. Dort aber, wo eine gesetzte Linie die Bedingungen für die nächste verändert, kippt die Instruktion vom bloßen Wiederholen in einen Prozess mit Gedächtnis. Das bereits Ausgeführte wird zur Voraussetzung des weiteren Verlaufs.",
+    text: "Sol LeWitt legt häufig Regeln fest, nach denen eine Folge von Entscheidungen oder Operationen ausgeführt wird. Heinz von Foerster interessiert sich für Rekursion, wenn Ergebnisse wieder in spätere Operationen eingehen. Nicht jede LeWitt-Regel ist rekursiv. Dort aber, wo eine gesetzte Linie die Bedingungen für die nächste verändert, kippt die Instruktion vom blossen Wiederholen in einen Prozess mit Gedächtnis. Das bereits Ausgeführte wird zur Voraussetzung des weiteren Verlaufs.",
     question: "Wann bekommt eine Regel ein Gedächtnis?",
   },
   {
@@ -2101,7 +2101,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "felix-gonzalez-torres__karen-barad",
     artistId: "felix-gonzalez-torres",
     theoristId: "karen-barad",
-    text: "Felix Gonzalez-Torres' Werke entstehen in einer Anordnung aus Material, Ausstellungsraum, Regeln und Handlungen des Publikums. Karen Barad bezeichnet Relationen, in denen die beteiligten Seiten nicht schon vorher vollständig feststehen, als Intraaktionen. Ein Bonbonhaufen ist deshalb nicht einfach ein fertiges Werk, mit dem Besucher:innen anschließend etwas tun. Entnahme und Ergänzung gehören zu den Bedingungen, unter denen sein jeweiliger Zustand und seine Identität hervorgebracht werden.",
+    text: "Felix Gonzalez-Torres' Werke entstehen in einer Anordnung aus Material, Ausstellungsraum, Regeln und Handlungen des Publikums. Karen Barad bezeichnet Relationen, in denen die beteiligten Seiten nicht schon vorher vollständig feststehen, als Intraaktionen. Ein Bonbonhaufen ist deshalb nicht einfach ein fertiges Werk, mit dem Besucher:innen anschliessend etwas tun. Entnahme und Ergänzung gehören zu den Bedingungen, unter denen sein jeweiliger Zustand und seine Identität hervorgebracht werden.",
     question: "Wer oder was stellt das Werk jeweils her?",
   },
   {
@@ -2137,7 +2137,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "marina-abramovic__heinz-von-foerster",
     artistId: "marina-abramovic",
     theoristId: "heinz-von-foerster",
-    text: "Marina Abramovićs Performances können Situationen erzeugen, in denen die Beobachtenden nicht außerhalb des Geschehens bleiben. Heinz von Foersters Kybernetik zweiter Ordnung richtet den Blick auf den Beobachter als Teil dessen, was beobachtet wird. Ein Blick, eine Annäherung oder ein Rückzug des Publikums verändert die Situation, auf die anschließend wieder reagiert wird. Beobachtung erhält damit Folgen und kehrt als veränderte Bedingung in die Performance zurück.",
+    text: "Marina Abramovićs Performances können Situationen erzeugen, in denen die Beobachtenden nicht ausserhalb des Geschehens bleiben. Heinz von Foersters Kybernetik zweiter Ordnung richtet den Blick auf den Beobachter als Teil dessen, was beobachtet wird. Ein Blick, eine Annäherung oder ein Rückzug des Publikums verändert die Situation, auf die anschliessend wieder reagiert wird. Beobachtung erhält damit Folgen und kehrt als veränderte Bedingung in die Performance zurück.",
     question: "Was geschieht, wenn Beobachtung zurückwirkt?",
   },
   {
@@ -2191,7 +2191,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "marina-abramovic__michel-foucault",
     artistId: "marina-abramovic",
     theoristId: "michel-foucault",
-    text: "Marina Abramović setzt Körper häufig Bedingungen aus, die öffentlich beobachtbar sind. Michel Foucault untersucht Sichtbarkeit nicht bloß als Sehen, sondern als Bestandteil von Anordnungen, in denen Verhalten geführt und beurteilt wird. In einer Performance verändert Publikum daher nicht nur die Aufmerksamkeit. Seine Anwesenheit gehört zur Situation, in der Ausdauer, Regelbefolgung und Grenzüberschreitung Bedeutung erhalten. Der Blick ist kein unsichtbares Außen, sondern eine Bedingung des Vollzugs.",
+    text: "Marina Abramović setzt Körper häufig Bedingungen aus, die öffentlich beobachtbar sind. Michel Foucault untersucht Sichtbarkeit nicht bloss als Sehen, sondern als Bestandteil von Anordnungen, in denen Verhalten geführt und beurteilt wird. In einer Performance verändert Publikum daher nicht nur die Aufmerksamkeit. Seine Anwesenheit gehört zur Situation, in der Ausdauer, Regelbefolgung und Grenzüberschreitung Bedeutung erhalten. Der Blick ist kein unsichtbares Aussen, sondern eine Bedingung des Vollzugs.",
     question: "Wann wird Sichtbarkeit Teil der Handlung?",
   },
   {
@@ -2227,7 +2227,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "james-turrell__lucy-suchman",
     artistId: "james-turrell",
     theoristId: "lucy-suchman",
-    text: "James Turrell plant Räume, Öffnungen und Lichtverhältnisse mit großer Präzision. Lucy Suchman zeigt jedoch, dass geplante Abläufe erst in konkreten Situationen zu tatsächlichen Handlungen werden. Auch Wahrnehmung lässt sich nicht vollständig vorprogrammieren. Augen passen sich unterschiedlich schnell an, Menschen bewegen sich, warten oder übersehen etwas. Turrell kann Bedingungen des Sehens entwerfen, aber nicht das einzelne Sehen selbst. Das Werk entsteht deshalb zwischen räumlicher Planung und situiertem Vollzug.",
+    text: "James Turrell plant Räume, Öffnungen und Lichtverhältnisse mit grosser Präzision. Lucy Suchman zeigt jedoch, dass geplante Abläufe erst in konkreten Situationen zu tatsächlichen Handlungen werden. Auch Wahrnehmung lässt sich nicht vollständig vorprogrammieren. Augen passen sich unterschiedlich schnell an, Menschen bewegen sich, warten oder übersehen etwas. Turrell kann Bedingungen des Sehens entwerfen, aber nicht das einzelne Sehen selbst. Das Werk entsteht deshalb zwischen räumlicher Planung und situiertem Vollzug.",
     question: "Kann man Wahrnehmung planen?",
   },
   {
@@ -2245,7 +2245,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "roman-opalka__gilles-deleuze",
     artistId: "roman-opalka",
     theoristId: "gilles-deleuze",
-    text: "Roman Opalka wiederholt über Jahrzehnte dieselbe elementare Operation: eine Zahl folgt auf die nächste. Gilles Deleuze versteht Wiederholung nicht als Rückkehr des Gleichen, sondern als Produktion von Differenz. Opalkas Serie macht diese Spannung extrem sichtbar. Der Vorgang bleibt nahezu identisch, doch keine Zahl und kein Moment können wiederkehren. Gerade die Wiederholung erzeugt eine Folge, in der jeder neue Schritt den Abstand zum Anfang vergrößert.",
+    text: "Roman Opalka wiederholt über Jahrzehnte dieselbe elementare Operation: eine Zahl folgt auf die nächste. Gilles Deleuze versteht Wiederholung nicht als Rückkehr des Gleichen, sondern als Produktion von Differenz. Opalkas Serie macht diese Spannung extrem sichtbar. Der Vorgang bleibt nahezu identisch, doch keine Zahl und kein Moment können wiederkehren. Gerade die Wiederholung erzeugt eine Folge, in der jeder neue Schritt den Abstand zum Anfang vergrössert.",
     question: "Kann Wiederholung ohne Rückkehr bestehen?",
   },
   {
@@ -2299,7 +2299,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "donald-judd__susan-leigh-star",
     artistId: "donald-judd",
     theoristId: "susan-leigh-star",
-    text: "Donald Judds Arbeiten erscheinen oft als autonome, präzise gesetzte Körper. Susan Leigh Star richtet den Blick dagegen auf Infrastrukturen, die im Hintergrund Stabilität ermöglichen. Auch Judds Präzision hängt an weniger sichtbaren Bedingungen: Fertigung, Maße, Wand, Boden, Befestigung und wiederholbare Installationsweisen. Der Abstand zwischen zwei Elementen ist deshalb nicht einfach leerer Raum. Er muss bei jeder Präsentation technisch und institutionell erneut hergestellt werden.",
+    text: "Donald Judds Arbeiten erscheinen oft als autonome, präzise gesetzte Körper. Susan Leigh Star richtet den Blick dagegen auf Infrastrukturen, die im Hintergrund Stabilität ermöglichen. Auch Judds Präzision hängt an weniger sichtbaren Bedingungen: Fertigung, Masse, Wand, Boden, Befestigung und wiederholbare Installationsweisen. Der Abstand zwischen zwei Elementen ist deshalb nicht einfach leerer Raum. Er muss bei jeder Präsentation technisch und institutionell erneut hergestellt werden.",
     question: "Was hält einen präzisen Abstand aufrecht?",
   },
   {
@@ -2308,7 +2308,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "dan-graham__michel-foucault",
     artistId: "dan-graham",
     theoristId: "michel-foucault",
-    text: "Dan Grahams Glas, Spiegel und Kameras verteilen Sichtbarkeit zwischen Menschen, die einander beobachten und zugleich selbst sichtbar werden. Michel Foucault untersucht Anordnungen, in denen Sehen nicht neutral ist, sondern Positionen und Verhalten organisiert. Grahams Räume besitzen keinen sicheren Außenstandpunkt. Wer hineinsieht, kann selbst zum Bild für andere werden. Transparenz bedeutet deshalb nicht einfach mehr Sichtbarkeit, sondern eine bestimmte Ordnung des gegenseitigen Beobachtens.",
+    text: "Dan Grahams Glas, Spiegel und Kameras verteilen Sichtbarkeit zwischen Menschen, die einander beobachten und zugleich selbst sichtbar werden. Michel Foucault untersucht Anordnungen, in denen Sehen nicht neutral ist, sondern Positionen und Verhalten organisiert. Grahams Räume besitzen keinen sicheren Aussenstandpunkt. Wer hineinsieht, kann selbst zum Bild für andere werden. Transparenz bedeutet deshalb nicht einfach mehr Sichtbarkeit, sondern eine bestimmte Ordnung des gegenseitigen Beobachtens.",
     question: "Wer sieht wen in einem transparenten Raum?",
   },
   {
@@ -2335,7 +2335,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "william-kentridge__gregory-bateson",
     artistId: "william-kentridge",
     theoristId: "gregory-bateson",
-    text: "William Kentridge lässt frühere Bildzustände als Verschmierungen und Löschspuren stehen. Gregory Bateson versteht Information als einen Unterschied, der einen weiteren Unterschied macht. Eine Spur ist deshalb nicht schon durch ihre bloße Anwesenheit informativ. Sie wird es dort, wo der Vergleich mit dem gegenwärtigen Bild eine Veränderung erkennen lässt. Kentridges Zeichnung trägt ihre eigene Differenzgeschichte sichtbar mit.",
+    text: "William Kentridge lässt frühere Bildzustände als Verschmierungen und Löschspuren stehen. Gregory Bateson versteht Information als einen Unterschied, der einen weiteren Unterschied macht. Eine Spur ist deshalb nicht schon durch ihre blosse Anwesenheit informativ. Sie wird es dort, wo der Vergleich mit dem gegenwärtigen Bild eine Veränderung erkennen lässt. Kentridges Zeichnung trägt ihre eigene Differenzgeschichte sichtbar mit.",
     question: "Wann wird eine Spur zur Information?",
   },
   {
@@ -2344,7 +2344,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "agnes-martin__heinz-von-foerster",
     artistId: "agnes-martin",
     theoristId: "heinz-von-foerster",
-    text: "Agnes Martins Raster wirken zunächst wie eine Ordnung, die unabhängig von der betrachtenden Person vorliegt. Heinz von Foerster richtet den Blick jedoch auf den Beobachter, der Unterschiede erst bezeichnet. Bei Martin verändert sich das Bild mit Abstand, Licht und Aufmerksamkeit. Linien treten hervor oder verschwinden, Regelmäßigkeit kippt in Abweichung. Das Raster ordnet deshalb nicht nur die Fläche. Es kann sichtbar machen, wie der eigene Blick Ordnung hervorbringt.",
+    text: "Agnes Martins Raster wirken zunächst wie eine Ordnung, die unabhängig von der betrachtenden Person vorliegt. Heinz von Foerster richtet den Blick jedoch auf den Beobachter, der Unterschiede erst bezeichnet. Bei Martin verändert sich das Bild mit Abstand, Licht und Aufmerksamkeit. Linien treten hervor oder verschwinden, Regelmässigkeit kippt in Abweichung. Das Raster ordnet deshalb nicht nur die Fläche. Es kann sichtbar machen, wie der eigene Blick Ordnung hervorbringt.",
     question: "Kann ein Raster den Beobachter sichtbar machen?",
   },
   {
@@ -2362,7 +2362,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "mona-hatoum__george-spencer-brown",
     artistId: "mona-hatoum",
     theoristId: "george-spencer-brown",
-    text: "George Spencer-Brown beginnt mit dem Ziehen einer Grenze, durch die zwei Seiten entstehen. Mona Hatoum macht solche Trennungen körperlich unsicher. Ein Gitter kann Schutz oder Gefangenschaft bedeuten, eine Schwelle Zugang oder Ausschluss. Welche Seite als innen oder außen erscheint, hängt deshalb nicht nur von der Linie ab, sondern auch von der Position des Körpers zu ihr. Die Form der Grenze bleibt einfach, ihre soziale und räumliche Bedeutung nicht.",
+    text: "George Spencer-Brown beginnt mit dem Ziehen einer Grenze, durch die zwei Seiten entstehen. Mona Hatoum macht solche Trennungen körperlich unsicher. Ein Gitter kann Schutz oder Gefangenschaft bedeuten, eine Schwelle Zugang oder Ausschluss. Welche Seite als innen oder aussen erscheint, hängt deshalb nicht nur von der Linie ab, sondern auch von der Position des Körpers zu ihr. Die Form der Grenze bleibt einfach, ihre soziale und räumliche Bedeutung nicht.",
     question: "Wer steht auf welcher Seite?",
   },
   {
@@ -2407,7 +2407,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "rebecca-horn__gregory-bateson",
     artistId: "rebecca-horn",
     theoristId: "gregory-bateson",
-    text: "Rebecca Horn verbindet Körper mit mechanischen Erweiterungen, deren Bewegung wieder auf den Körper zurückwirkt. Gregory Bateson denkt Systeme über Rückkopplungen, in denen Folgen einer Handlung zu neuen Bedingungen des Handelns werden. Eine Prothese vergrößert bei Horn deshalb nicht nur Reichweite. Gewicht, Widerstand und Reaktion verändern die nächste Bewegung. Körper und Apparat bilden einen Kreislauf, in dem beide einander fortlaufend korrigieren.",
+    text: "Rebecca Horn verbindet Körper mit mechanischen Erweiterungen, deren Bewegung wieder auf den Körper zurückwirkt. Gregory Bateson denkt Systeme über Rückkopplungen, in denen Folgen einer Handlung zu neuen Bedingungen des Handelns werden. Eine Prothese vergrössert bei Horn deshalb nicht nur Reichweite. Gewicht, Widerstand und Reaktion verändern die nächste Bewegung. Körper und Apparat bilden einen Kreislauf, in dem beide einander fortlaufend korrigieren.",
     question: "Wann wird eine Prothese zur Rückkopplung?",
   },
   {
@@ -2479,7 +2479,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "louise-bourgeois__gilles-deleuze",
     artistId: "louise-bourgeois",
     theoristId: "gilles-deleuze",
-    text: "Louise Bourgeois kehrt über Jahrzehnte zu Spinnen, Häusern, Körperteilen und familiären Motiven zurück. Gilles Deleuze versteht Wiederholung als Produktion von Differenz. Bourgeois' Wiederkehr zu denselben Motiven führt deshalb nicht zu einer stabilen Erinnerung. Material, Maßstab und Stimmung verschieben sich, und mit ihnen verändert sich die Vergangenheit, die in der Form aufgerufen wird. Erinnerung wiederholt nicht nur. Sie produziert neue Gegenwarten des Vergangenen.",
+    text: "Louise Bourgeois kehrt über Jahrzehnte zu Spinnen, Häusern, Körperteilen und familiären Motiven zurück. Gilles Deleuze versteht Wiederholung als Produktion von Differenz. Bourgeois' Wiederkehr zu denselben Motiven führt deshalb nicht zu einer stabilen Erinnerung. Material, Massstab und Stimmung verschieben sich, und mit ihnen verändert sich die Vergangenheit, die in der Form aufgerufen wird. Erinnerung wiederholt nicht nur. Sie produziert neue Gegenwarten des Vergangenen.",
     question: "Warum kehrt Erinnerung verändert zurück?",
   },
   {
@@ -2497,7 +2497,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "sol-lewitt__karen-barad",
     artistId: "sol-lewitt",
     theoristId: "karen-barad",
-    text: "Sol LeWitts Instruktionen wirken auf den ersten Blick wie abstrakte Regeln, die anschließend nur noch materiell ausgeführt werden. Karen Barad würde Materie jedoch nicht als passiven Träger einer bereits fertigen Form behandeln. Wand, Werkzeug, Maßstab und körperliche Ausführung wirken daran mit, welche konkrete Form entsteht. Die Regel bleibt wichtig, aber sie steht dem Material nicht vollständig gegenüber.",
+    text: "Sol LeWitts Instruktionen wirken auf den ersten Blick wie abstrakte Regeln, die anschliessend nur noch materiell ausgeführt werden. Karen Barad würde Materie jedoch nicht als passiven Träger einer bereits fertigen Form behandeln. Wand, Werkzeug, Massstab und körperliche Ausführung wirken daran mit, welche konkrete Form entsteht. Die Regel bleibt wichtig, aber sie steht dem Material nicht vollständig gegenüber.",
     question: "Wo endet die Regel und beginnt die Wand?",
   },
   {
@@ -2542,7 +2542,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "eva-hesse__gregory-bateson",
     artistId: "eva-hesse",
     theoristId: "gregory-bateson",
-    text: "Eva Hesses Materialien verändern ihre Spannung, Farbe und Oberfläche. Gregory Bateson versteht Information als einen Unterschied, der in einem Zusammenhang einen weiteren Unterschied auslöst. Eine kleine materielle Veränderung wird deshalb erst dort bedeutsam, wo sie Form, Wahrnehmung oder Umgang mit dem Werk verändert. Alterung ist nicht bloß ein Zustand des Stoffes. Sie kann eine Rückmeldung darüber werden, wie stark Form und Material voneinander abhängen.",
+    text: "Eva Hesses Materialien verändern ihre Spannung, Farbe und Oberfläche. Gregory Bateson versteht Information als einen Unterschied, der in einem Zusammenhang einen weiteren Unterschied auslöst. Eine kleine materielle Veränderung wird deshalb erst dort bedeutsam, wo sie Form, Wahrnehmung oder Umgang mit dem Werk verändert. Alterung ist nicht bloss ein Zustand des Stoffes. Sie kann eine Rückmeldung darüber werden, wie stark Form und Material voneinander abhängen.",
     question: "Wann wird Materialveränderung zur Information?",
   },
   {
@@ -2560,7 +2560,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "dan-graham__susan-leigh-star",
     artistId: "dan-graham",
     theoristId: "susan-leigh-star",
-    text: "Dan Grahams Pavillons wirken transparent, doch sie organisieren sehr genau, wer wen sehen kann, welche Wege offen sind und wie öffentlich oder privat eine Position erscheint. Susan Leigh Star untersucht Infrastrukturen als relationale Ordnungen, die Handlung ermöglichen und begrenzen. Grahams Architektur macht eine solche Ordnung sichtbar. Glas und Spiegel sind nicht bloß Material, sondern Infrastruktur für Beziehungen zwischen Blicken.",
+    text: "Dan Grahams Pavillons wirken transparent, doch sie organisieren sehr genau, wer wen sehen kann, welche Wege offen sind und wie öffentlich oder privat eine Position erscheint. Susan Leigh Star untersucht Infrastrukturen als relationale Ordnungen, die Handlung ermöglichen und begrenzen. Grahams Architektur macht eine solche Ordnung sichtbar. Glas und Spiegel sind nicht bloss Material, sondern Infrastruktur für Beziehungen zwischen Blicken.",
     question: "Wann wird Architektur zur Infrastruktur des Blicks?",
   },
   {
@@ -2605,7 +2605,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "christian-marclay__n-katherine-hayles",
     artistId: "christian-marclay",
     theoristId: "n-katherine-hayles",
-    text: "Christian Marclay arbeitet mit gespeichertem Ton und Bild, das geschnitten, neu angeordnet und wieder abgespielt werden kann. N. Katherine Hayles kritisiert die Vorstellung, Information könne unabhängig von ihrer jeweiligen Verkörperung bestehen. Auch Marclays Fragmente ändern ihre Wirkung mit Medium, Lautsprecher, Projektionsraum und anwesendem Körper. Das Material transportiert nicht bloß Information. Es gehört dazu, wie diese Information überhaupt wahrnehmbar wird.",
+    text: "Christian Marclay arbeitet mit gespeichertem Ton und Bild, das geschnitten, neu angeordnet und wieder abgespielt werden kann. N. Katherine Hayles kritisiert die Vorstellung, Information könne unabhängig von ihrer jeweiligen Verkörperung bestehen. Auch Marclays Fragmente ändern ihre Wirkung mit Medium, Lautsprecher, Projektionsraum und anwesendem Körper. Das Material transportiert nicht bloss Information. Es gehört dazu, wie diese Information überhaupt wahrnehmbar wird.",
     question: "Wo bekommt Information einen Körper?",
   },
   {
@@ -2641,7 +2641,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "felix-gonzalez-torres__claude-shannon",
     artistId: "felix-gonzalez-torres",
     theoristId: "claude-shannon",
-    text: "Felix Gonzalez-Torres kann ein Werk durch Zertifikat, Maße und Regeln so beschreiben, dass es an verschiedenen Orten erneut installiert wird. Claude Shannon zeigt, wie Information unabhängig von ihrer Bedeutung zuverlässig übertragen werden kann. Doch eine vollständige Übermittlung der Angaben erzeugt noch nicht dieselbe materielle Situation. Gewicht, Entnahme, Publikum und Erneuerung müssen erst stattfinden. Der übertragbare Code stabilisiert das Werk, ohne seinen jeweiligen Zustand zu enthalten.",
+    text: "Felix Gonzalez-Torres kann ein Werk durch Zertifikat, Masse und Regeln so beschreiben, dass es an verschiedenen Orten erneut installiert wird. Claude Shannon zeigt, wie Information unabhängig von ihrer Bedeutung zuverlässig übertragen werden kann. Doch eine vollständige Übermittlung der Angaben erzeugt noch nicht dieselbe materielle Situation. Gewicht, Entnahme, Publikum und Erneuerung müssen erst stattfinden. Der übertragbare Code stabilisiert das Werk, ohne seinen jeweiligen Zustand zu enthalten.",
     question: "Wie viel Werk lässt sich als Information übertragen?",
   },
   {
@@ -2722,7 +2722,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "robert-smithson__donna-haraway",
     artistId: "robert-smithson",
     theoristId: "donna-haraway",
-    text: "Robert Smithsons Site und Non-Site machen deutlich, dass ein Ort nie vollständig aus einer einzigen Position erscheint. Karte, Gestein, Fotografie und Ausstellung bilden verschiedene Zugänge zu derselben Site. Donna Haraways situiertes Wissen widerspricht dem Anspruch auf einen Blick von nirgendwo. Smithsons Arbeit kann deshalb als räumliche Probe darauf gelesen werden: Jeder Zugang zeigt etwas und lässt anderes außerhalb seines Standpunkts.",
+    text: "Robert Smithsons Site und Non-Site machen deutlich, dass ein Ort nie vollständig aus einer einzigen Position erscheint. Karte, Gestein, Fotografie und Ausstellung bilden verschiedene Zugänge zu derselben Site. Donna Haraways situiertes Wissen widerspricht dem Anspruch auf einen Blick von nirgendwo. Smithsons Arbeit kann deshalb als räumliche Probe darauf gelesen werden: Jeder Zugang zeigt etwas und lässt anderes ausserhalb seines Standpunkts.",
     question: "Kann ein Ort von nirgendwo beschrieben werden?",
   },
   {
@@ -2776,7 +2776,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "rebecca-horn__gilles-deleuze",
     artistId: "rebecca-horn",
     theoristId: "gilles-deleuze",
-    text: "Rebecca Horns Maschinen wiederholen Bewegungen, doch die Wiederholung trifft auf Körper, Material und Raum. Gilles Deleuze unterscheidet Wiederholung vom bloßen Auftreten des Gleichen. Bei Horn kann eine mechanisch identische Bewegung deshalb jedes Mal eine andere Wirkung haben. Federn biegen sich, Körper reagieren und Abstände verändern sich. Die Maschine wiederholt einen Ablauf und produziert gerade dadurch Differenz.",
+    text: "Rebecca Horns Maschinen wiederholen Bewegungen, doch die Wiederholung trifft auf Körper, Material und Raum. Gilles Deleuze unterscheidet Wiederholung vom blossen Auftreten des Gleichen. Bei Horn kann eine mechanisch identische Bewegung deshalb jedes Mal eine andere Wirkung haben. Federn biegen sich, Körper reagieren und Abstände verändern sich. Die Maschine wiederholt einen Ablauf und produziert gerade dadurch Differenz.",
     question: "Was wiederholt eine Maschine wirklich?",
   },
   {
@@ -2794,7 +2794,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "felix-gonzalez-torres__lucy-suchman",
     artistId: "felix-gonzalez-torres",
     theoristId: "lucy-suchman",
-    text: "Felix Gonzalez-Torres gibt für manche Werke Maße, Gewichte oder Möglichkeiten der Erneuerung vor, ohne damit ihren tatsächlichen Verlauf festzulegen. Lucy Suchman zeigt, dass Pläne erst in konkreten Situationen zu Handlungen werden. Im Museum müssen Personal und Publikum entscheiden, wie entnommen, ergänzt, geschützt oder präsentiert wird. Werkidentität entsteht deshalb nicht allein aus der Regel, sondern aus ihrer fortgesetzten situativen Ausführung.",
+    text: "Felix Gonzalez-Torres gibt für manche Werke Masse, Gewichte oder Möglichkeiten der Erneuerung vor, ohne damit ihren tatsächlichen Verlauf festzulegen. Lucy Suchman zeigt, dass Pläne erst in konkreten Situationen zu Handlungen werden. Im Museum müssen Personal und Publikum entscheiden, wie entnommen, ergänzt, geschützt oder präsentiert wird. Werkidentität entsteht deshalb nicht allein aus der Regel, sondern aus ihrer fortgesetzten situativen Ausführung.",
     question: "Wer führt ein Werk aus, das sich verändern darf?",
   },
   {
@@ -2812,7 +2812,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "donald-judd__michel-foucault",
     artistId: "donald-judd",
     theoristId: "michel-foucault",
-    text: "Donald Judds Objekte ordnen den Ausstellungsraum durch Maße, Abstände und wiederkehrende Setzungen. Michel Foucault untersucht räumliche Ordnungen danach, wie sie Positionen und Möglichkeiten des Sehens strukturieren. Judds Arbeit schreibt keine eindeutige Blickrichtung vor, aber sie verändert, wo ein Körper stehen kann und welche Beziehungen gleichzeitig sichtbar werden. Geometrische Ordnung wird damit auch zu einer Ordnung möglicher Beobachtungen.",
+    text: "Donald Judds Objekte ordnen den Ausstellungsraum durch Masse, Abstände und wiederkehrende Setzungen. Michel Foucault untersucht räumliche Ordnungen danach, wie sie Positionen und Möglichkeiten des Sehens strukturieren. Judds Arbeit schreibt keine eindeutige Blickrichtung vor, aber sie verändert, wo ein Körper stehen kann und welche Beziehungen gleichzeitig sichtbar werden. Geometrische Ordnung wird damit auch zu einer Ordnung möglicher Beobachtungen.",
     question: "Werden Abstände zu Regeln des Sehens?",
   },
   {
@@ -2821,7 +2821,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "christian-marclay__gilbert-simondon",
     artistId: "christian-marclay",
     theoristId: "gilbert-simondon",
-    text: "Christian Marclay zerlegt vorhandenes Material und fügt Fragmente zu neuen zeitlichen Einheiten zusammen. Gilbert Simondon versteht Individuation als einen Prozess, in dem eine Einheit aus Beziehungen und Spannungen hervorgeht. Eine Montage wäre dann nicht bloß die Summe bereits fertiger Teile. Rhythmus, Schnitt und Nachbarschaft verändern, was die Fragmente sind und lassen zugleich eine neue Form entstehen, die vorher in keinem einzelnen Fragment enthalten war.",
+    text: "Christian Marclay zerlegt vorhandenes Material und fügt Fragmente zu neuen zeitlichen Einheiten zusammen. Gilbert Simondon versteht Individuation als einen Prozess, in dem eine Einheit aus Beziehungen und Spannungen hervorgeht. Eine Montage wäre dann nicht bloss die Summe bereits fertiger Teile. Rhythmus, Schnitt und Nachbarschaft verändern, was die Fragmente sind und lassen zugleich eine neue Form entstehen, die vorher in keinem einzelnen Fragment enthalten war.",
     question: "Wann werden Fragmente zu einer neuen Einheit?",
   },
   {
@@ -2875,7 +2875,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "william-kentridge__henri-bergson",
     artistId: "william-kentridge",
     theoristId: "henri-bergson",
-    text: "William Kentridge lässt frühere Zustände einer Zeichnung als Spuren im gegenwärtigen Bild weiterleben. Henri Bergson versteht Erinnerung nicht als abgelegtes Archiv neben der Gegenwart, sondern als etwas, das in gegenwärtige Wahrnehmung und Handlung hineinwirkt. Kentridges Blatt gibt diesem Gedanken eine materielle Form. Vergangenes ist nicht bloß dokumentiert. Es verändert, was jetzt gezeichnet werden kann.",
+    text: "William Kentridge lässt frühere Zustände einer Zeichnung als Spuren im gegenwärtigen Bild weiterleben. Henri Bergson versteht Erinnerung nicht als abgelegtes Archiv neben der Gegenwart, sondern als etwas, das in gegenwärtige Wahrnehmung und Handlung hineinwirkt. Kentridges Blatt gibt diesem Gedanken eine materielle Form. Vergangenes ist nicht bloss dokumentiert. Es verändert, was jetzt gezeichnet werden kann.",
     question: "Wie viel Vergangenheit trägt ein Bild?",
   },
   {
@@ -2884,7 +2884,7 @@ export const constellations: readonly Constellation[] = [
     pairKey: "roman-opalka__claude-shannon",
     artistId: "roman-opalka",
     theoristId: "claude-shannon",
-    text: "Roman Opalkas Zahlenfolge lässt sich als äußerst präzise Information lesen: Jede Zahl bezeichnet eindeutig ihre Stelle in der Serie. Claude Shannon kann beschreiben, wie solche unterscheidbaren Zeichen übertragen werden. Doch die Zahl überträgt nicht die Lebenszeit, körperliche Arbeit und Aufmerksamkeit, die ihre Herstellung gekostet hat. Opalkas Werk legt damit eine Differenz frei zwischen exakt codierbarer Reihenfolge und irreversibel verbrauchter Zeit.",
+    text: "Roman Opalkas Zahlenfolge lässt sich als äusserst präzise Information lesen: Jede Zahl bezeichnet eindeutig ihre Stelle in der Serie. Claude Shannon kann beschreiben, wie solche unterscheidbaren Zeichen übertragen werden. Doch die Zahl überträgt nicht die Lebenszeit, körperliche Arbeit und Aufmerksamkeit, die ihre Herstellung gekostet hat. Opalkas Werk legt damit eine Differenz frei zwischen exakt codierbarer Reihenfolge und irreversibel verbrauchter Zeit.",
     question: "Was sagt eine Zahl über die Zeit, die sie gekostet hat?",
   },
   {
