@@ -433,9 +433,18 @@ svg.addEventListener("keydown", e => {
 parts.share.addEventListener("click", share);
 
 parts.replay.addEventListener("click", () => {
+  // auf dem Handy liegt das Rad über dem Ergebnis: zuerst zum Rad zurück, damit man die Drehung sieht (Rückmeldung vom 12. Oktober 2026)
+  radInsBild();
   if (state === "selected") startSpin("artist", V_TAP * (0.9 + 0.5 * Math.random()), "nochmal");
   svg.focus({ preventScroll: true });
 });
+
+/** das Rad ganz ins Bild holen, falls es (teilweise) ausserhalb liegt; am Computer steht es meist schon neben dem Ergebnis */
+function radInsBild() {
+  const r = svg.getBoundingClientRect();
+  if (r.top >= 0 && r.bottom <= window.innerHeight) return;
+  svg.scrollIntoView({ behavior: reduceMotion.matches ? "auto" : "smooth", block: r.height > window.innerHeight ? "start" : "center" });
+}
 
 // ---------- Direktlink: ?pair=künstler__theoretiker ----------
 const pairParam = new URLSearchParams(location.search).get("pair");

@@ -103,6 +103,25 @@ await check("Smartphone hochkant: Daumen-Flick, Landung, Text erst nach Stillsta
   await ctx.close();
 });
 
+await check("Smartphone: «noch einmal drehen» unter dem Text holt das Rad zurück ins Bild, damit man die Drehung sieht (12. Oktober 2026)", async () => {
+  for (const reducedMotion of ["no-preference", "reduce"]) {
+    const { ctx, page, errors } = await open({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, reducedMotion });
+    await page.evaluate(() => document.querySelector(".rad-wheel").focus());
+    await page.keyboard.press("Enter");
+    await waitSelected(page);
+    await page.waitForSelector(".rad-actions.is-shown", { timeout: 15000 });
+    await page.locator(".rad-again").scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    const vorher = await page.evaluate(() => document.querySelector(".rad-wheel").getBoundingClientRect().bottom);
+    assert.ok(vorher < 844 * 0.5, `das Rad ist weggescrollt (${vorher})`);
+    await page.locator(".rad-again").tap();
+    await page.waitForFunction(() => { const r = document.querySelector(".rad-wheel").getBoundingClientRect(); return r.top >= -1 && r.bottom <= innerHeight + 1; }, null, { timeout: 3000 });
+    assert.notEqual(await page.evaluate(() => document.querySelector(".rad-wheel").__rad.state), "selected", "es dreht wieder");
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+});
+
 await check("Tablet: Flick auf dem inneren Ring, innerer Ring folgt der Geste, äusserer gegenläufig", async () => {
   const { ctx, page, errors } = await open({ ...devices["iPad (gen 7)"] });
   await touchArc(page, { ring: 0.27, stepAngle: 0.15 });
