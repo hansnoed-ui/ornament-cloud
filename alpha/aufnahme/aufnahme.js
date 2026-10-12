@@ -7,7 +7,7 @@
 // – sonst: das Video der Quelle auf eine Leinwand zeichnen (requestVideoFrameCallback oder requestAnimationFrame)
 //   und deren captureStream aufnehmen; dafür muss diese Seite sichtbar bleiben.
 // MediaRecorder lässt die Länge im Dateikopf offen; The Fictory trägt sie nach (gleiche Versionsmarke wie dort)
-import { mitDauer } from "../the-fictory/dauer.js?v=16";
+import { mitDauer } from "../the-fictory/dauer.js?v=21";
 import { FORMATE, einpassen, umformen, aufziehen, verschieben, ganz, ausgabe, bitrate, dateiname, formate, dauerText } from "./rahmen.js";
 
 const $ = (id) => document.getElementById(id);

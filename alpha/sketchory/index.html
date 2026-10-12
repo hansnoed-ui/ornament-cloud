@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sketchory – Ornament Cloud · Alpha</title>
+  <!-- Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). Nur aus der Alpha-Übersicht verlinkt (seit 12. Oktober 2026). -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Sketchory: Eine Kritzelkarte zeichnet sich von selbst: Bild laden, einen Satz schreiben und das Video (Hochformat 3 : 4, weisser Strich auf Schwarz, mit dem Signet von ornament.cloud am Schluss) herunterladen. Alles bleibt im Browser.">
+  <link rel="stylesheet" href="../../styles.css?v=45">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <style>
+    .site-header { padding-bottom: 12px; }
+    .karte { display: grid; gap: 28px; padding-bottom: 48px; }
+    @media (min-width: 900px) { .karte { grid-template-columns: minmax(300px, 420px) 1fr; align-items: start; } .buehne { position: sticky; top: 16px; } }
+
+    .buehne { display: grid; gap: 10px; }
+    .rahmen { position: relative; aspect-ratio: 3 / 4; border-radius: var(--radius); overflow: hidden; background: #000; box-shadow: 0 1px 0 var(--border), 0 18px 40px -24px rgba(0, 0, 0, 0.6); }
+    .rahmen canvas { display: block; width: 100%; height: 100%; }
+    .leer { position: absolute; inset: 0; display: grid; place-content: center; gap: 8px; padding: 24px; text-align: center; color: #9b968d; pointer-events: none; }
+    .leer p { margin: 0; }
+    .leer .gross { font-family: "Newsreader", var(--serif); font-size: 1.5rem; color: #ece8e1; }
+    .unter { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
+    .info { margin: 0; color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+
+    .schritte { display: grid; gap: 26px; margin: 0; padding: 0; list-style: none; counter-reset: schritt; }
+    .schritte > li { display: grid; gap: 10px; counter-increment: schritt; }
+    .schritte h2 { display: flex; gap: 12px; align-items: baseline; margin: 0; font-family: "Newsreader", var(--serif); font-weight: 400; font-size: 1.45rem; }
+    .schritte h2::before { content: counter(schritt); display: inline-grid; place-content: center; flex: none; width: 1.7rem; height: 1.7rem; border: 1px solid var(--text); border-radius: 50%;
+      font-family: "Instrument Sans", var(--font); font-size: 0.85rem; font-weight: 500; transform: translateY(-0.15em); }
+    .schritte p { margin: 0; color: var(--muted); }
+
+    .ablage { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; padding: 18px; border: 1.5px dashed var(--border); border-radius: var(--radius); background: var(--surface); cursor: pointer; }
+    .ablage.drueber { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+    .ablage:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ablage input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .ablage .zeichen { display: grid; place-content: center; width: 54px; height: 72px; border-radius: 8px; background: #000; color: #fff; overflow: hidden; }
+    .ablage img { width: 54px; height: 72px; object-fit: cover; }
+    .ablage b { display: block; font-weight: 600; }
+    .ablage span { color: var(--muted); font-size: 0.92rem; }
+
+    .satz { width: 100%; min-height: 3.2em; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text); font: inherit; font-size: 1.05rem; resize: vertical; }
+    .satz:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    .leiste { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .knopf { min-height: 44px; padding: 8px 18px; border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.95rem;
+      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .knopf:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .knopf:disabled { opacity: 0.45; cursor: default; }
+    .knopf.haupt { background: var(--text); color: var(--bg); font-weight: 600; }
+    .knopf.haupt:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 85%, var(--bg)); }
+    .knopf.klein { min-height: 36px; padding: 4px 14px; font-size: 0.88rem; }
+    .knopf:focus-visible, select:focus-visible, input[type="range"]:focus-visible, .art select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .strich { display: grid; gap: 12px; margin: 4px 0 0; padding: 14px 16px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .strich legend { padding: 0 6px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .regler { display: grid; grid-template-columns: auto 1fr auto 4.2em; gap: 10px; align-items: center; }
+    .regler input { width: 100%; min-width: 0; accent-color: var(--accent); }
+    .regler output { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+    .knopf.rund { width: 40px; min-height: 40px; padding: 0; justify-content: center; font-size: 1.25rem; line-height: 1; }
+    .wahl { display: flex; flex-wrap: wrap; gap: 6px; }
+    .wahl button { min-height: 36px; padding: 4px 14px; border: 1px solid var(--border); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.88rem; cursor: pointer; }
+    .wahl button[aria-pressed="true"] { border-color: var(--text); background: var(--text); color: var(--bg); }
+    .wahl button:focus-visible, .knopf.rund:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .art { display: flex; gap: 8px; align-items: center; }
+    .art span { font-size: 0.85rem; color: var(--muted); }
+    .art select { min-height: 36px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; font-size: 0.9rem; }
+    details.feinheiten { border-top: 1px solid var(--border); padding-top: 10px; }
+    details.feinheiten summary { cursor: pointer; font-weight: 600; }
+    .einstellungen { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 20px; margin: 14px 0 0; }
+    .einstellungen label { display: grid; gap: 6px; }
+    .einstellungen label > span { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .einstellungen select { min-height: 40px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; }
+    .einstellungen input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .einstellungen output { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.85rem; }
+
+    progress { width: 100%; height: 6px; accent-color: var(--accent); }
+    .meldung { margin: 0; min-height: 1.5em; }
+    .meldung.fehler { color: var(--accent); }
+    .ergebnis { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .ergebnis h2::before { display: none; }
+    .ergebnis video { display: block; width: min(100%, 360px); aspect-ratio: 3 / 4; border-radius: 8px; background: #000; }
+    .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
+    .hinweise li { margin: 0.2rem 0; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="seitenweg" aria-label="Ornament Cloud">
+        <a href="../../" aria-current="true">Ornament Cloud</a>
+        <a href="../drittes-rad/">Das Dritte Rad</a>
+      </nav>
+      <h1>Sketchory</h1>
+      <p class="lead">Eine Karte zeichnet sich von selbst, dann ein Satz, dann das Signet.</p>
+    </div>
+  </header>
+
+  <main class="wrap karte" id="karte">
+    <section class="buehne" aria-label="Vorschau">
+      <div class="rahmen">
+        <canvas id="vorschau" width="1080" height="1440" aria-label="Vorschau des Videos: die Karte zeichnet sich in weissen Strichen auf Schwarz"></canvas>
+        <div class="leer" id="leer">
+          <p class="gross">Noch keine Karte</p>
+          <p>Lade ein Foto oder einen Scan deiner Kritzelkarte.</p>
+        </div>
+      </div>
+      <div class="unter">
+        <button class="knopf klein" type="button" id="spielen" disabled>Abspielen</button>
+        <p class="info" id="dauer">Hochformat 3 : 4 · 1080 × 1440</p>
+      </div>
+      <p class="info" id="auswertung"></p>
+    </section>
+
+    <div>
+      <ol class="schritte">
+        <li>
+          <h2>Bild</h2>
+          <label class="ablage" id="ablage">
+            <span class="zeichen" id="quelle-zeichen"><span id="quelle-box" hidden><img id="quelle" alt=""></span></span>
+            <span><b>Foto oder Scan wählen</b><span>oder hierher ziehen. Dunkle Linien auf hellem Papier oder helle auf dunklem: Das Video zeigt immer weisse Striche auf Schwarz.</span></span>
+            <input type="file" id="datei" accept="image/*" aria-label="Bild der Kritzelkarte wählen">
+          </label>
+          <div class="leiste"><button class="knopf klein" type="button" id="beispiel">Mit einer Beispielkarte ausprobieren</button></div>
+          <fieldset class="strich">
+            <legend>Strich</legend>
+            <div class="regler">
+              <button class="knopf rund" type="button" id="duenner" aria-label="Strich dünner">−</button>
+              <input type="range" id="staerke" min="30" max="300" step="5" value="100" aria-label="Strichstärke in Prozent" aria-describedby="staerke-wert">
+              <button class="knopf rund" type="button" id="dicker" aria-label="Strich dicker">+</button>
+              <output id="staerke-wert" for="staerke">100 %</output>
+            </div>
+            <div class="leiste">
+              <span class="wahl" role="group" aria-label="Voreinstellungen">
+                <button type="button" data-staerke="60">fein</button>
+                <button type="button" data-staerke="100">wie gezeichnet</button>
+                <button type="button" data-staerke="160">kräftig</button>
+              </span>
+              <label class="art"><span>Breite</span>
+                <select id="stil">
+                  <option value="gezeichnet" selected>wechselnd wie im Original</option>
+                  <option value="gleichmaessig">überall gleich</option>
+                </select></label>
+            </div>
+            <p class="info" id="linie">Beim Ziehen zeigt die Vorschau die fertige Zeichnung; die Einstellung bleibt für die nächste Karte.</p>
+          </fieldset>
+        </li>
+        <li>
+          <h2><label for="satz">Satz</label></h2>
+          <textarea class="satz" id="satz" rows="2" maxlength="160" placeholder="Ein Satz, der nach der Zeichnung erscheint (darf leer bleiben)"></textarea>
+          <details class="feinheiten">
+            <summary>Feinheiten</summary>
+            <div class="einstellungen">
+              <label><span>Zeichnen</span>
+                <select id="zeichnen">
+                  <option value="4">4 Sekunden</option>
+                  <option value="4.5" selected>4,5 Sekunden</option>
+                  <option value="5">5 Sekunden</option>
+                  <option value="6">6 Sekunden</option>
+                </select></label>
+              <label><span>Schrift</span>
+                <select id="schrift">
+                  <option value="sans" selected>Instrument Sans</option>
+                  <option value="serif">Newsreader</option>
+                </select></label>
+              <label><span>Empfindlichkeit</span>
+                <input type="range" id="empfindlichkeit" min="-50" max="50" step="10" value="0" aria-describedby="empf-hinweis">
+                <output id="empf-hinweis">mehr nach rechts: auch schwache Linien</output></label>
+            </div>
+          </details>
+        </li>
+        <li>
+          <h2>Video</h2>
+          <p>Schwarz, die Karte zeichnet sich, steht zwei Sekunden, blendet aus; der Satz blendet Wort für Wort ein und aus; am Schluss das Signet von ornament.cloud.</p>
+          <div class="leiste">
+            <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
+            <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
+          </div>
+          <progress id="fortschritt" max="1" value="0" hidden></progress>
+          <p class="meldung" id="meldung" role="status" aria-live="polite"></p>
+          <section class="ergebnis" id="ergebnis" hidden aria-labelledby="ergebnis-titel">
+            <h2 id="ergebnis-titel">Dein Video</h2>
+            <video id="film" controls playsinline muted></video>
+            <p class="info" id="film-info"></p>
+            <div class="leiste"><a class="knopf haupt" id="laden" href="#" download>Herunterladen</a></div>
+          </section>
+        </li>
+      </ol>
+    </div>
+  </main>
+
+  <div class="wrap">
+    <ul class="hinweise">
+      <li>Alles bleibt in deinem Browser: Das Bild wird nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
+      <li>Am besten ein gerades, gleichmässig beleuchtetes Foto oder ein Scan, nur die Karte im Bild. Schatten und Papierfarbe werden herausgerechnet.</li>
+      <li>Die Linien werden in saubere Striche verwandelt, nah an deinen Formen; ausgefüllte Stellen (Buchstaben, Punkte) bleiben Flächen. Die Strichstärke (30 bis 300 %) gilt für Vorschau, Video und Standbild.</li>
+      <li>Video: MP4 (H.264), 1080 × 1440, 30 Bilder pro Sekunde, ohne Ton. Ältere Browser nehmen es in Echtzeit auf (dann die Seite sichtbar lassen).</li>
+    </ul>
+  </div>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+    </div>
+  </footer>
+  <script type="module" src="app.js?v=2"></script>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+</body>
+</html>
