@@ -2,8 +2,8 @@
 // Farben: weiss auf Schwarz («dunkel», Standard) oder schwarz auf Weiss («hell»), für alles im Film gleich.
 // Die Zeichnung wächst auf einer eigenen Ebene Strich für Strich (nur vorwärts; geht die Zeit zurück, beginnt sie neu),
 // darüber die Stiftspitze, dann der Satz und am Schluss das Signet.
-import { BREITE, HOEHE, FPS, RAND, anteil, weich, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, WORT } from "./ablauf.js?v=4";
-import { signet, FARBEN } from "./signet.js?v=4";
+import { BREITE, HOEHE, FPS, RAND, anteil, weich, ausblenden, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, WORT } from "./ablauf.js?v=5";
+import { signet, FARBEN } from "./signet.js?v=5";
 
 // Satz: standardmässig eine Grotesk nah an Helvetica Now Display (Wunsch vom 12. Oktober 2026). Helvetica Now selbst ist nicht frei;
 // darum Inter Display Medium (OFL, vendor/fonts/, mit «G» mit Sporn) und knappe Laufweite. Ist Helvetica Now auf dem Gerät installiert,
@@ -164,7 +164,7 @@ export function bild(ctx, sz, t) {
   if (t < ab.bildAus[1]) {
     const p = zeichenkurve(anteil(t, ab.zeichnen[0], ab.zeichnen[1]));
     const { spitze, offen } = fortschreiben(sz, p);
-    const sicht = 1 - weich(anteil(t, ab.bildAus[0], ab.bildAus[1]));
+    const sicht = 1 - ausblenden(anteil(t, ab.bildAus[0], ab.bildAus[1]));
     ctx.globalAlpha = sicht;
     ctx.drawImage(sz.ebene, 0, 0);
     if (offen) { ctx.globalAlpha = sicht * offen.a; ctx.fillStyle = sz.farben.tinte; ctx.fill(offen.t.flaeche, "evenodd"); }
@@ -189,7 +189,7 @@ function satz(ctx, sz, t) {
   const { ab } = sz.zeit, { groesse, zeilen, zeilenhoehe } = sz.satz;
   schriftSetzen(ctx, sz.schrift, groesse);
   ctx.textBaseline = "alphabetic"; ctx.textAlign = "left"; ctx.fillStyle = sz.farben.tinte;
-  const aus = 1 - weich(anteil(t, ab.textAus[0], ab.textAus[1]));
+  const aus = 1 - ausblenden(anteil(t, ab.textAus[0], ab.textAus[1]));
   const n = zeilen.reduce((a, z) => a + z.length, 0), vs = versatz(n);
   const m = ctx.measureText("Hg"), auf = m.fontBoundingBoxAscent ?? groesse * 0.9, abw = m.fontBoundingBoxDescent ?? groesse * 0.25;
   const hoch = zeilen.length * zeilenhoehe;

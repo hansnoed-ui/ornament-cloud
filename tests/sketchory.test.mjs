@@ -5,7 +5,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { striche, otsu, median, analyseMass, ANALYSE } from "../alpha/sketchory/strich.js";
-import { zeitachse, umbrechen, satzbild, zeichenplan, zeichenkurve, bezier, textEin, dateiname, FPS, SIGNET } from "../alpha/sketchory/ablauf.js";
+import { zeitachse, umbrechen, satzbild, zeichenplan, zeichenkurve, bezier, ausblenden, textEin, dateiname, FPS, SIGNET } from "../alpha/sketchory/ablauf.js";
 import { mp4, kisten } from "../alpha/sketchory/mp4.js";
 
 const root = new URL("../", import.meta.url);
@@ -78,12 +78,13 @@ test("Hilfen: Otsu, Median, Grösse des Analysebilds", () => {
   assert.deepEqual(analyseMass(800, 600), [800, 600], "kleine Bilder bleiben");
 });
 
-test("Ablauf: Zeichnen 4,5 s, 2 s stehen, ausblenden, Satz, Signet in voller Länge am Schluss", () => {
+test("Ablauf: Zeichnen 4,5 s, 3 s stehen, ausblenden, Satz, Signet in voller Länge am Schluss", () => {
   const z = zeitachse({ zeichnen: 4.5, text: "Wer zeichnet, denkt mit der Hand." });
   const { ab } = z;
   assert.deepEqual(Object.keys(ab), ["vor", "zeichnen", "stehen", "bildAus", "pause", "textEin", "textStehen", "textAus", "pause2", "signet", "nach"]);
   assert.equal(ab.zeichnen[1] - ab.zeichnen[0], 4.5);
-  assert.equal(ab.stehen[1] - ab.stehen[0], 2);
+  assert.equal(ab.stehen[1] - ab.stehen[0], 3, "das fertige Bild steht 3 s");
+  assert.ok(ab.bildAus[1] - ab.bildAus[0] >= 1.4 && ab.textAus[1] - ab.textAus[0] >= 1.2, "sanft ausblenden");
   assert.ok(ab.textEin[0] >= ab.bildAus[1], "der Satz kommt erst nach dem Bild");
   assert.ok(ab.textStehen[1] - ab.textStehen[0] >= 2);
   assert.ok(Math.abs(ab.signet[1] - ab.signet[0] - SIGNET) < 1e-9);
@@ -118,6 +119,8 @@ test("Ablauf: Zeichenplan nach Länge, Kurve, Bézier, Dateiname", () => {
   for (let u = 0.05; u < 1; u += 0.05) assert.ok(zeichenkurve(u) > zeichenkurve(u - 0.05));
   const b = bezier(0.16, 1, 0.3, 1);
   assert.equal(b(0), 0); assert.equal(b(1), 1); assert.ok(b(0.3) > 0.8, "läuft sanft aus");
+  // Ausblenden: am Anfang und am Ende flach (kein Ruck), symmetrisch
+  assert.ok(ausblenden(0.1) < 0.05 && ausblenden(0.9) > 0.95 && Math.abs(ausblenden(0.5) - 0.5) < 0.02);
   assert.equal(dateiname(new Date(2026, 9, 12, 9, 5), "mp4"), "sketchory-2026-10-12-0905.mp4");
 });
 

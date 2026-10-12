@@ -1,6 +1,6 @@
 // «Sketchory» – Ablauf des Films (ohne DOM): Zeitachse, Kurven, Umbruch des Satzes, Fortschritt des Zeichnens.
 // Film: Hochformat 3 : 4 (1080 × 1440), 30 Bilder pro Sekunde, weisser Strich auf Schwarz.
-//   schwarz → die Karte zeichnet sich (4–6 s) → steht (2 s) → blendet aus → der Satz blendet Wort für Wort ein, steht, blendet aus
+//   leerer Grund → die Karte zeichnet sich (4–6 s) → steht (3 s) → blendet sanft aus (1,5 s) → der Satz blendet Wort für Wort ein, steht, blendet aus
 //   → das Signet von ornament.cloud (wie am Ende jedes Videos, hier hell auf Schwarz) → steht kurz.
 
 export const BREITE = 1080, HOEHE = 1440, FPS = 30;
@@ -26,6 +26,8 @@ export function bezier(x1, y1, x2, y2) {
 export const weich = bezier(0.16, 1, 0.3, 1);          // sanft auslaufend
 export const sanft = bezier(0.45, 0, 0.25, 1);
 export const inOut = bezier(0.65, 0, 0.35, 1);
+/** zum Ausblenden: beginnt unmerklich und läuft weich aus (wie eine Sinuskurve) */
+export const ausblenden = bezier(0.37, 0, 0.63, 1);
 
 /** Wörter des Satzes */
 export const woerter = (text) => text.trim().split(/\s+/).filter(Boolean);
@@ -34,7 +36,7 @@ export const woerter = (text) => text.trim().split(/\s+/).filter(Boolean);
  * Zeitachse in Sekunden. zeichnen: Dauer des Zeichnens; text: der Satz (leer = ohne Textteil).
  * Gibt die Abschnitte { name: [anfang, ende] } und die Gesamtdauer.
  */
-export function zeitachse({ zeichnen = 4.5, stehen = 2, text = "" } = {}) {
+export function zeitachse({ zeichnen = 4.5, stehen = 3, text = "" } = {}) {
   const n = woerter(text).length;
   const teile = [];
   let t = 0;
@@ -42,13 +44,13 @@ export function zeitachse({ zeichnen = 4.5, stehen = 2, text = "" } = {}) {
   dazu("vor", 0.5);
   dazu("zeichnen", zeichnen);
   dazu("stehen", stehen);
-  dazu("bildAus", 0.8);
+  dazu("bildAus", 1.5);   // sanft (Wunsch vom 12. Oktober 2026: das fertige Bild 1 s länger stehen lassen, sanfter ausblenden)
   if (n) {
     dazu("pause", 0.35);
     dazu("textEin", textEin(n));
     // Lesezeit: gut 3 Wörter pro Sekunde, mindestens 2 s, höchstens 5 s
     dazu("textStehen", klemm(1.0 + 0.3 * n, 2, 5));
-    dazu("textAus", 0.8);
+    dazu("textAus", 1.3);
   }
   dazu("pause2", 0.4);
   dazu("signet", SIGNET);

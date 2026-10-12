@@ -37,7 +37,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** Anteil heller Pixel und ob Rot-Orange vorkommt, im Bild zur Zeit t (dieselbe Zeichenfunktion wie Vorschau und Video) */
 const messeBild = (page, t) => page.evaluate(async (t) => {
-  const { bild, szene } = await import("./szene.js?v=4");
+  const { bild, szene } = await import("./szene.js?v=5");
   const S = window.__sketchory;
   const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
   const ctx = c.getContext("2d");
@@ -59,6 +59,8 @@ const messeBild = (page, t) => page.evaluate(async (t) => {
 await check("Beispielkarte: Linien gefunden, Vorschau läuft, Knöpfe frei", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   assert.equal(await page.isDisabled("#video"), true, "vor dem Bild gesperrt");
+  assert.equal(await page.isVisible(".ablage .plus svg"), true, "das grosse Plus");
+  assert.ok((await page.locator(".plus").boundingBox()).width >= 80, "gross");
   await page.fill("#satz", "Wer zeichnet, denkt mit der Hand.");
   await page.click("#beispiel");
   await bereit(page);
@@ -132,6 +134,7 @@ await check("Dunkle Linien auf hellem Papier (umgekehrtes Foto mit Verlauf): die
   assert.ok(Math.abs(nachher - vorher) <= vorher * 0.15, `${vorher} → ${nachher}`);
   assert.match(text, /dunkle Linien auf hellem Grund, umgekehrt/);
   assert.equal(await page.isVisible("#quelle"), true, "das geladene Bild als kleine Vorschau");
+  assert.equal(await page.textContent("#ablage-titel"), "Anderes Bild wählen");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
@@ -216,6 +219,7 @@ await check("Strichstärke: sichtbar ohne «Feinheiten», wirkt sofort auf die V
   assert.equal(await page.textContent("#staerke-wert"), "30 %", "nicht unter 30 %");
   await page.click('[data-staerke="160"]');
   assert.equal(await page.getAttribute('[data-staerke="160"]', "aria-pressed"), "true");
+  await page.click("details.feinheiten summary");   // die Art der Breite steht in den Feinheiten
   await page.selectOption("#stil", "gleichmaessig");
   await page.waitForFunction(() => window.__sketchory.optionen.stil === "gleichmaessig" && window.__sketchory.optionen.staerke === 1.6);
   // dieselbe Einstellung im Video: die Szene des Exports nimmt die Optionen der Seite
@@ -240,7 +244,7 @@ await check("Schwarz auf Weiss: ganzer Film umgekehrt (Grund, Zeichnung, Satz, S
   assert.equal(await page.getAttribute('[data-farbe="hell"]', "aria-pressed"), "true");
   assert.equal(await page.evaluate(() => document.querySelector(".rahmen").classList.contains("hell")), true);
   const zaehle = (t) => page.evaluate(async (t) => {
-    const { bild, szene } = await import("./szene.js?v=4");
+    const { bild, szene } = await import("./szene.js?v=5");
     const S = window.__sketchory, sz = szene(S.ergebnis, S.optionen);
     const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
     const x = c.getContext("2d"), zeit = t ? sz.zeit.ab[t][0] + 0.05 : sz.zeit.dauer - 0.1;
