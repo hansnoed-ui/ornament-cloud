@@ -137,8 +137,8 @@ export function glaetten(q, w, h, { radius = 3, farbweite = 36, durchgaenge = 2 
  * 2. Tonwerte: dunkelste und hellste 0,5 % spreizen (höchstens 1,3-fach), aber nur von 16 bis 234 (matt, nicht grell), dann eine sanfte S-Kurve und
  *    Mitteltöne einen Hauch dunkler; beides auf die Helligkeit, die Farbunterschiede bleiben (sonst bleichen blasse Farben aus)
  * 3. Klarheit: lokaler Kontrast (Helligkeit gegen ihre weiche Umgebung, Radius ~ 1/40 der Bildbreite)
- * 4. Farbkraft: matte Farben ein wenig satter, schon kräftige etwas gedämpft; nur fast reines Weiss bleibt weiss
- * 5. edler Filter: warme Lichter, ein Hauch Kühle in den Tiefen, sanft dunklere Ränder
+ * 4. Farbkraft: alle Farben etwas satter, matte mehr, sehr kräftige etwas gedämpft; nur fast reines Weiss bleibt weiss
+ * 5. edler Filter: warme Lichter und Mitteltöne (wo das Bild nicht kühl ist), ein Hauch Kühle in den Tiefen, sanft dunklere Ränder
  * (Rückmeldung vom 12. Oktober 2026 zu sechs neuen Bildern: «zu hell und farblich zu grell … einen edlen Filter darüber»)
  * Stärke 0 lässt das Bild, wie es ist; 1 ist die übliche Stärke.
  */
@@ -194,7 +194,7 @@ export function optimieren({ r, g, b }, w, h, staerke = 1) {
     const weiss = Math.max(0, Math.min(1, (l - 215) / 30)) * Math.max(0, Math.min(1, (0.08 - satt) / 0.08));
     const hell = Math.max(0, Math.min(1, (l - 200) / 45));   // sehr helle Stellen nur halb so viel, sonst wird Papier gelb
     // matte Farben ein wenig satter, schon kräftige etwas gedämpft (nicht grell)
-    const plus = 1 + staerke * ((0.1 * (1 - satt) ** 2) * (1 - 0.85 * weiss) * (1 - 0.5 * hell) - 0.25 * Math.max(0, satt - 0.4));
+    const plus = 1 + staerke * ((0.07 + 0.15 * (1 - satt) ** 2) * (1 - 0.85 * weiss) * (1 - 0.5 * hell) - 0.2 * Math.max(0, satt - 0.55));
     R[i] = Math.max(0, Math.min(255, l + (R[i] - l) * plus)); G[i] = Math.max(0, Math.min(255, l + (G[i] - l) * plus)); B[i] = Math.max(0, Math.min(255, l + (B[i] - l) * plus));
   }
   // 5. edler Filter: warme Lichter, ein Hauch Kühle in den Tiefen, sanft dunklere Ränder (wie ein gutes Foto eines Bilds an der Wand)
@@ -204,9 +204,12 @@ export function optimieren({ r, g, b }, w, h, staerke = 1) {
     const licht = Math.max(0, Math.min(1, (l - 140) / 100)) * Math.max(0, Math.min(1, 1 - (R[i] - B[i]) / 40)) * Math.max(0, 1 - satt / 0.12);
     const tiefe = Math.max(0, Math.min(1, (110 - l) / 110));
     const dx = x / w - 0.5, dy = y / h - 0.5, rand = 1 - staerke * 0.12 * ((dx * dx + dy * dy) / 0.5) ** 1.5;
-    R[i] = Math.max(0, Math.min(255, (R[i] + staerke * (5 * licht - 1 * tiefe)) * rand));
-    G[i] = Math.max(0, Math.min(255, (G[i] + staerke * 2 * licht) * rand));
-    B[i] = Math.max(0, Math.min(255, (B[i] + staerke * (-6 * licht + 4 * tiefe)) * rand));
+    // dazu eine allgemeine Wärme über die Mitteltöne (Wunsch vom 12. Oktober 2026: «etwas mehr Wärme»), schwächer, wo das Bild kühl ist
+    // (ein blauer oder blasser lila Grund behält seine Farbe)
+    const warm = staerke * Math.max(0, Math.min(1, 1 - (B[i] - R[i]) / 30)) * Math.max(0, 1 - Math.abs(l - 140) / 140);
+    R[i] = Math.max(0, Math.min(255, (R[i] + staerke * (5 * licht - 1 * tiefe) + 7 * warm) * rand));
+    G[i] = Math.max(0, Math.min(255, (G[i] + staerke * 2 * licht + 2 * warm) * rand));
+    B[i] = Math.max(0, Math.min(255, (B[i] + staerke * (-6 * licht + 4 * tiefe) - 7 * warm) * rand));
   }
   return { r: R, g: G, b: B };
 }
