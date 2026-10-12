@@ -2,10 +2,10 @@
 // Das Gemälde wächst auf einer eigenen Ebene Pinselzug um Pinselzug (nur vorwärts; geht die Zeit zurück, beginnt es neu).
 // Ein Pinselzug: ein Körper in der Grundfarbe und darüber Borsten, leicht versetzt und in der Farbe etwas heller oder dunkler.
 // Darüber funkelt der Glitzer. Dann Foto und Satz, am Schluss das Signet.
-import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=2";
-import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=2";
+import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=4";
+import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=4";
 import { SCHRIFTEN, schriftSetzen } from "../sketchory/szene.js?v=8";
-import { zufall } from "./malen.js?v=2";
+import { zufall } from "./malen.js?v=4";
 
 export { SCHRIFTEN, FARBEN };
 

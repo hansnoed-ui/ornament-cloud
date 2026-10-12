@@ -4,7 +4,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { malen } from "../alpha/principesse/malen.js";
+import { malen, glaetten, kanaele, optimieren } from "../alpha/principesse/malen.js";
 import { glitzer, funkeln } from "../alpha/principesse/glitzer.js";
 import { zeitachse, malplan, dateiname, filmMass } from "../alpha/principesse/ablauf.js";
 import { linien, NAME, VON, DAUER } from "../alpha/principesse/signet.js";
@@ -24,22 +24,62 @@ function bild(w = 240, h = 320) {
 }
 
 test("Malen: breite Pinsel zuerst, dann feinere; Farben aus dem Bild; ganz bedeckt; gleiches Bild, gleiches Gemälde", () => {
-  const a = malen(bild(), 240, 320, { massstab: 1080 / 240 });
-  assert.equal(a.stufen, 5);
+  const a = malen(bild(), 240, 320, { massstab: 1080 / 240, auffrischen: false });
+  assert.equal(a.stufen, 4);
   const stufen = a.striche.map((s) => s.stufe);
   for (let i = 1; i < stufen.length; i++) assert.ok(stufen[i] >= stufen[i - 1], "Reihenfolge nach Stufe");
   assert.ok(a.striche.filter((s) => s.stufe === 0).length > 20, "Untermalung über das ganze Bild");
-  assert.ok(a.radien[0] > a.radien.at(-1) * 8, "von breit bis fein");
+  assert.ok(a.radien[0] > a.radien.at(-1) * 6, "von breit bis fein");
+  // jeder Durchgang der Reihe nach von oben nach unten (Mitte der Striche, in Bändern)
+  for (let st = 0; st < a.stufen; st++) {
+    const y = a.striche.filter((s) => s.stufe === st).map((s) => s.pts.filter((_, k) => k % 2).reduce((x, v, _, l) => x + v / l.length, 0));
+    const band = (a.radien[st] / (1080 / 240)) * 5 * (1080 / 240);
+    for (let i = 1; i < y.length; i++) assert.ok(Math.floor(y[i] / band) >= Math.floor(y[i - 1] / band), `Stufe ${st} von oben nach unten`);
+  }
   // Farben aus dem Bild; gemischt nur an Kanten, wo die feinen Pinsel nacharbeiten (dort liegen viele kleine Striche)
   const farben = [[20, 40, 140], [230, 200, 60], [200, 30, 40]];
   const nah = a.striche.filter((s) => farben.some((f) => Math.hypot(...f.map((v, k) => v - s.farbe[k])) < 40)).length;
   assert.ok(nah / a.striche.length > 0.6, `Farben aus dem Bild (${nah}/${a.striche.length})`);
   // im Film-Massstab und im Bild
   for (const s of a.striche) for (let k = 0; k < s.pts.length; k += 2) assert.ok(s.pts[k] > -80 && s.pts[k] < 1160 && s.pts[k + 1] > -80 && s.pts[k + 1] < 1520);
-  const b = malen(bild(), 240, 320, { massstab: 1080 / 240 });
+  const b = malen(bild(), 240, 320, { massstab: 1080 / 240, auffrischen: false });
   assert.deepEqual(b.striche.map((s) => s.farbe.join()), a.striche.map((s) => s.farbe.join()), "fest");
   // feinerer Pinsel → mehr Striche
   assert.ok(malen(bild(), 240, 320, { massstab: 4.5, pinsel: 0.7 }).striche.length > a.striche.length);
+});
+
+test("Glätten: Rauschen und Körnung weg, Kanten bleiben; ein verrauschtes Bild gibt viel weniger Striche", () => {
+  const w = 200, h = 120;
+  let z = 3; const rnd = () => ((z = (z * 16807) % 2147483647) / 2147483647);
+  const d = new Uint8ClampedArray(w * h * 4);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = (y * w + x) * 4, v = (x < w / 2 ? 60 : 190) + (rnd() - 0.5) * 50;
+    d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255;
+  }
+  const g = glaetten(kanaele(d, w, h), w, h);
+  const streuung = (k, x0, x1) => { let s = 0, q = 0, n = 0; for (let y = 10; y < h - 10; y++) for (let x = x0; x < x1; x++) { const v = k[y * w + x]; s += v; q += v * v; n++; } return Math.sqrt(q / n - (s / n) ** 2); };
+  assert.ok(streuung(g.r, 10, 90) < streuung(kanaele(d, w, h).r, 10, 90) / 3, "Rauschen deutlich weniger");
+  assert.ok(g.r[60 * w + 96] < 90 && g.r[60 * w + 104] > 160, "die Kante bleibt scharf");
+  const roh = malen(d, w, h, { massstab: 1080 / w, glatt: 0, auffrischen: false }).striche.length, glatt = malen(d, w, h, { massstab: 1080 / w }).striche.length;
+  assert.ok(glatt < roh * 0.7, `geglättet ${glatt}, roh ${roh}`);
+});
+
+test("Auffrischen: Farbstich weg, voller Kontrast, kräftigere Farben; nichts ausserhalb 0–255", () => {
+  // ein flaues, gelbstichiges Foto: weisses Papier wirkt cremig, das Blau matt, kein echtes Schwarz
+  const w = 160, h = 120, d = new Uint8ClampedArray(w * h * 4);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = (y * w + x) * 4, [r, g, b] = x < 60 ? [212, 200, 170] : x < 120 ? [80, 100, 140] : [70, 64, 55];
+    d[i] = r; d[i + 1] = g; d[i + 2] = b; d[i + 3] = 255;
+  }
+  const o = optimieren(kanaele(d, w, h), w, h), p = (x) => [o.r[60 * w + x], o.g[60 * w + x], o.b[60 * w + x]];
+  const [pr, pg, pb] = p(30), [br, bg, bb] = p(90), [sr, sg, sb] = p(140);
+  assert.ok(pr - pb < (212 - 170) * 0.8, `Papier neutraler (${pr | 0}, ${pg | 0}, ${pb | 0})`);
+  assert.ok((pr + pg + pb) / 3 > 215 && (sr + sg + sb) / 3 < 50, "hell heller, dunkel dunkler");
+  assert.ok(bb - br > 60 - 2, "Blau mindestens so kräftig");
+  for (const k of ["r", "g", "b"]) assert.ok(o[k].every((v) => Number.isFinite(v) && v >= 0 && v <= 255), k);
+  // Stärke 0 lässt das Bild unverändert
+  const n = optimieren(kanaele(d, w, h), w, h, 0);
+  assert.ok(Math.abs(n.r[60 * w + 30] - 212) < 1.5 && Math.abs(n.b[60 * w + 90] - 140) < 1.5);
 });
 
 test("Glitzer: dichte, helle Körner funkeln, glatte Farbe und vereinzelte Punkte nicht", () => {

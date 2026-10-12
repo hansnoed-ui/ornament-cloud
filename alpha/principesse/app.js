@@ -1,13 +1,13 @@
 // «Principesse» – Seite: Bild laden (wird mit Pinselstrichen nachgemalt, der Glitzer funkelt), optional Foto und Satz,
 // Vorschau, Video (MP4) und Standbild (PNG). Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der
 // MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass } from "./ablauf.js?v=2";
-import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=2";
+import { FPS, dateiname, filmMass } from "./ablauf.js?v=4";
+import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=4";
 import { schriftSetzen } from "../sketchory/szene.js?v=8";
 import { mp4 } from "../sketchory/mp4.js?v=8";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
-import { malen } from "./malen.js?v=2";
-import { glitzer } from "./glitzer.js?v=2";
+import { malen } from "./malen.js?v=4";
+import { glitzer } from "./glitzer.js?v=4";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
@@ -84,7 +84,7 @@ $("foto-weg").addEventListener("click", () => {
 
 // ——— malen lassen (Worker, sonst hier) ———
 let worker = null;
-try { worker = new Worker(new URL("./rechner.js?v=2", import.meta.url), { type: "module" }); } catch { worker = null; }
+try { worker = new Worker(new URL("./rechner.js?v=4", import.meta.url), { type: "module" }); } catch { worker = null; }
 function rechnen() {
   // Format: wie das Bild, 3 : 4 oder 1 : 1; gemalt wird auf zwei Dritteln der Filmgrösse, der Glitzer in voller Grösse gesucht
   const [B, H] = (S.mass = filmMass(S.format, S.bild.width, S.bild.height));
