@@ -3,7 +3,7 @@
 //   → (wenn gewählt) ein Foto blendet ein, darauf erscheint der Satz Buchstabe um Buchstabe → blendet aus
 //   → das Signet: eine kleine Prinzessin zeichnet sich, «Principesse» → steht → blendet aus.
 import { textEin, zeichenZahl, woerter, klemm } from "../sketchory/ablauf.js?v=8";
-import { DAUER as SIGNET } from "./signet.js?v=1";
+import { DAUER as SIGNET } from "./signet.js?v=2";
 
 export { FPS, anteil, weich, ausblenden, bezier, versatz, ZEICHEN, satzbild, satzPunkt } from "../sketchory/ablauf.js?v=8";
 

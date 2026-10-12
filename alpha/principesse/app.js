@@ -1,13 +1,13 @@
 // «Principesse» – Seite: Bild laden (wird mit Pinselstrichen nachgemalt, der Glitzer funkelt), optional Foto und Satz,
 // Vorschau, Video (MP4) und Standbild (PNG). Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der
 // MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass } from "./ablauf.js?v=1";
-import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=1";
+import { FPS, dateiname, filmMass } from "./ablauf.js?v=2";
+import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=2";
 import { schriftSetzen } from "../sketchory/szene.js?v=8";
 import { mp4 } from "../sketchory/mp4.js?v=8";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
-import { malen } from "./malen.js?v=1";
-import { glitzer } from "./glitzer.js?v=1";
+import { malen } from "./malen.js?v=2";
+import { glitzer } from "./glitzer.js?v=2";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
@@ -20,7 +20,7 @@ const leinwand = (w, h) => { if (typeof OffscreenCanvas !== "undefined") return 
 const messer = leinwand(8, 8).getContext("2d");
 const messen = (text, groesse, schrift) => { schriftSetzen(messer, schrift, groesse); return messer.measureText(text).width; };
 const schriften = Promise.all([
-  document.fonts.load('600 68px "Inter Display"'), document.fonts.load('500 66px "Instrument Sans"'), document.fonts.load("400 74px Newsreader"),
+  document.fonts.load('600 68px "Inter Display"'), document.fonts.load('500 64px "Inter Display"'), document.fonts.load('500 66px "Instrument Sans"'), document.fonts.load("400 74px Newsreader"),
   document.fonts.load("italic 400 92px Newsreader"),
 ]).catch(() => {});
 
@@ -84,7 +84,7 @@ $("foto-weg").addEventListener("click", () => {
 
 // ——— malen lassen (Worker, sonst hier) ———
 let worker = null;
-try { worker = new Worker(new URL("./rechner.js?v=1", import.meta.url), { type: "module" }); } catch { worker = null; }
+try { worker = new Worker(new URL("./rechner.js?v=2", import.meta.url), { type: "module" }); } catch { worker = null; }
 function rechnen() {
   // Format: wie das Bild, 3 : 4 oder 1 : 1; gemalt wird auf zwei Dritteln der Filmgrösse, der Glitzer in voller Grösse gesucht
   const [B, H] = (S.mass = filmMass(S.format, S.bild.width, S.bild.height));
