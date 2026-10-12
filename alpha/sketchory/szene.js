@@ -2,8 +2,8 @@
 // Farben: weiss auf Schwarz («dunkel», Standard) oder schwarz auf Weiss («hell»), für alles im Film gleich.
 // Die Zeichnung wächst auf einer eigenen Ebene Strich für Strich (nur vorwärts; geht die Zeit zurück, beginnt sie neu),
 // darüber die Stiftspitze, dann der Satz und am Schluss das Signet.
-import { BREITE, HOEHE, FPS, RAND, anteil, weich, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, WORT } from "./ablauf.js?v=4";
-import { signet, FARBEN } from "./signet.js?v=4";
+import { BREITE, HOEHE, FPS, RAND, anteil, weich, ausblenden, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, ZEICHEN, satzPunkt } from "./ablauf.js?v=7";
+import { signet, FARBEN } from "./signet.js?v=7";
 
 // Satz: standardmässig eine Grotesk nah an Helvetica Now Display (Wunsch vom 12. Oktober 2026). Helvetica Now selbst ist nicht frei;
 // darum Inter Display Medium (OFL, vendor/fonts/, mit «G» mit Sporn) und knappe Laufweite. Ist Helvetica Now auf dem Gerät installiert,
@@ -26,7 +26,10 @@ export function schriftSetzen(ctx, schrift, groesse) {
  * Szene aus dem Ergebnis von strich.js. optionen: stil ("gezeichnet" | "gleichmaessig"), staerke (Faktor für die Strichbreite),
  * zeichnen (Sekunden), text, schrift ("grotesk" | "helvetica" | "sans" | "serif"), messen(text, groesse, schrift) → Breite.
  */
-export function szene(ergebnis, { stil = "gezeichnet", staerke = 1, zeichnen = 4.5, text = "", schrift = "grotesk", farbe = "dunkel", messen, leinwand } = {}) {
+export function szene(ergebnis, { stil = "gezeichnet", staerke = 1, zeichnen = 4.5, text = "", schrift = "grotesk", farbe = "dunkel", streckung = 1.15, punkt = true, messen, leinwand } = {}) {
+  // der Satz: mit orangem Punkt am Ende (wenn gewünscht), Buchstaben senkrecht gestreckt (streckung, 1 = wie die Schrift)
+  const satzText = satzPunkt(text, punkt);
+  text = satzText.text;
   const { striche, rTyp } = ergebnis;
   // Rahmen der Zeichnung (mit Strichbreite) → in das Bild einpassen, mittig, seitlich RAND, oben und unten etwas mehr
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
@@ -67,9 +70,9 @@ export function szene(ergebnis, { stil = "gezeichnet", staerke = 1, zeichnen = 4
   });
   const plan = zeichenplan(teile);
   const zeit = zeitachse({ zeichnen, text });
-  const sb = text.trim() ? satzbild(text, (s, g) => messen(s, g, schrift), { groesse: SCHRIFTEN[schrift].groesse }) : null;
+  const sb = text.trim() ? satzbild(text, (s, g) => messen(s, g, schrift), { groesse: SCHRIFTEN[schrift].groesse, streckung }) : null;
   const farben = FARBEN[farbe] ?? FARBEN.dunkel;
-  return { teile, plan, zeit, satz: sb, schrift, farben, linie, text, ebene: leinwand(BREITE, HOEHE), stand: { p: -1, i: 0, l: 0 } };
+  return { teile, plan, zeit, satz: sb, schrift, farben, linie, text, streckung, orange: satzText.orange, ebene: leinwand(BREITE, HOEHE), stand: { p: -1, i: 0, l: 0 } };
 }
 
 const FUELLEN = 0.75;
@@ -164,7 +167,7 @@ export function bild(ctx, sz, t) {
   if (t < ab.bildAus[1]) {
     const p = zeichenkurve(anteil(t, ab.zeichnen[0], ab.zeichnen[1]));
     const { spitze, offen } = fortschreiben(sz, p);
-    const sicht = 1 - weich(anteil(t, ab.bildAus[0], ab.bildAus[1]));
+    const sicht = 1 - ausblenden(anteil(t, ab.bildAus[0], ab.bildAus[1]));
     ctx.globalAlpha = sicht;
     ctx.drawImage(sz.ebene, 0, 0);
     if (offen) { ctx.globalAlpha = sicht * offen.a; ctx.fillStyle = sz.farben.tinte; ctx.fill(offen.t.flaeche, "evenodd"); }
@@ -182,30 +185,49 @@ export function bild(ctx, sz, t) {
   // der Satz, Wort für Wort
   if (sz.satz && ab.textEin && t >= ab.textEin[0] && t < ab.textAus[1]) satz(ctx, sz, t);
   // das Signet
-  if (t >= ab.signet[0]) signet(ctx, (t - ab.signet[0]) * FPS, { hoehe: HOEHE, farben: sz.farben });
+  if (t >= ab.signet[0] && t < ab.signetAus[1]) {
+    signet(ctx, (t - ab.signet[0]) * FPS, { hoehe: HOEHE, farben: sz.farben });
+    // ausblenden: der Grund legt sich darüber
+    const weg = ausblenden(anteil(t, ab.signetAus[0], ab.signetAus[1]));
+    if (weg > 0) { ctx.globalAlpha = weg; ctx.fillStyle = sz.farben.grund; ctx.fillRect(0, 0, BREITE, HOEHE); ctx.globalAlpha = 1; }
+  }
 }
 
 function satz(ctx, sz, t) {
-  const { ab } = sz.zeit, { groesse, zeilen, zeilenhoehe } = sz.satz;
+  const { ab } = sz.zeit, { groesse, zeilen, zeilenhoehe } = sz.satz, st = sz.streckung;
   schriftSetzen(ctx, sz.schrift, groesse);
-  ctx.textBaseline = "alphabetic"; ctx.textAlign = "left"; ctx.fillStyle = sz.farben.tinte;
-  const aus = 1 - weich(anteil(t, ab.textAus[0], ab.textAus[1]));
-  const n = zeilen.reduce((a, z) => a + z.length, 0), vs = versatz(n);
-  const m = ctx.measureText("Hg"), auf = m.fontBoundingBoxAscent ?? groesse * 0.9, abw = m.fontBoundingBoxDescent ?? groesse * 0.25;
-  const hoch = zeilen.length * zeilenhoehe;
-  let y = HOEHE * 0.48 - hoch / 2 + (zeilenhoehe - (auf + abw)) / 2 + auf;
-  let nr = 0;
-  const leer = ctx.measureText(" ").width;
-  for (const zeile of zeilen) {
-    const breiten = zeile.map((w) => ctx.measureText(w).width);
-    let x = (BREITE - (breiten.reduce((a, b) => a + b, 0) + leer * (zeile.length - 1))) / 2;
-    zeile.forEach((w, i) => {
-      const a0 = ab.textEin[0] + nr * vs, e = weich(anteil(t, a0, a0 + WORT));
-      if (e > 0) { ctx.globalAlpha = e * aus; ctx.fillText(w, x, y + (1 - e) * 16); }
-      x += breiten[i] + leer; nr++;
-    });
-    y += zeilenhoehe;
+  ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
+  // Lage jedes Zeichens einmal ausmessen (mit Unterschneidung und Laufweite: Breite des Wortanfangs bis zu diesem Zeichen)
+  if (!sz.zeichen) {
+    const m = ctx.measureText("Hg"), auf = (m.fontBoundingBoxAscent ?? groesse * 0.9) * st, abw = (m.fontBoundingBoxDescent ?? groesse * 0.25) * st;
+    const leer = ctx.measureText(" ").width;
+    let y = HOEHE * 0.48 - (zeilen.length * zeilenhoehe) / 2 + (zeilenhoehe - (auf + abw)) / 2 + auf;
+    sz.zeichen = [];
+    for (const zeile of zeilen) {
+      const breiten = zeile.map((w) => ctx.measureText(w).width);
+      let x = (BREITE - (breiten.reduce((a, b) => a + b, 0) + leer * (zeile.length - 1))) / 2;
+      zeile.forEach((w, i) => {
+        const z = [...w];
+        z.forEach((c, k) => sz.zeichen.push({ c, x: x + (k ? ctx.measureText(z.slice(0, k).join("")).width : 0), y }));
+        x += breiten[i] + leer;
+      });
+      y += zeilenhoehe;
+    }
+    if (sz.orange && sz.zeichen.length) sz.zeichen[sz.zeichen.length - 1].orange = true;
   }
+  const aus = 1 - ausblenden(anteil(t, ab.textAus[0], ab.textAus[1]));
+  const vs = versatz(sz.zeichen.length);
+  sz.zeichen.forEach((z, nr) => {
+    const a0 = ab.textEin[0] + nr * vs, e = weich(anteil(t, a0, a0 + ZEICHEN));
+    if (e <= 0) return;
+    ctx.globalAlpha = e * aus;
+    ctx.fillStyle = z.orange ? sz.farben.punkt : sz.farben.tinte;
+    ctx.save();
+    ctx.translate(z.x, z.y + (1 - e) * 14);
+    ctx.scale(1, st);
+    ctx.fillText(z.c, 0, 0);
+    ctx.restore();
+  });
   ctx.globalAlpha = 1;
   if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
 }

@@ -37,7 +37,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** Anteil heller Pixel und ob Rot-Orange vorkommt, im Bild zur Zeit t (dieselbe Zeichenfunktion wie Vorschau und Video) */
 const messeBild = (page, t) => page.evaluate(async (t) => {
-  const { bild, szene } = await import("./szene.js?v=4");
+  const { bild, szene } = await import("./szene.js?v=7");
   const S = window.__sketchory;
   const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
   const ctx = c.getContext("2d");
@@ -59,6 +59,8 @@ const messeBild = (page, t) => page.evaluate(async (t) => {
 await check("Beispielkarte: Linien gefunden, Vorschau läuft, Knöpfe frei", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   assert.equal(await page.isDisabled("#video"), true, "vor dem Bild gesperrt");
+  assert.equal(await page.isVisible(".ablage .plus svg"), true, "das grosse Plus");
+  assert.ok((await page.locator(".plus").boundingBox()).width >= 80, "gross");
   await page.fill("#satz", "Wer zeichnet, denkt mit der Hand.");
   await page.click("#beispiel");
   await bereit(page);
@@ -97,9 +99,16 @@ await check("Bilder des Films: schwarz am Anfang, Zeichnung, Satz, Signet mit de
   assert.ok(ganz.sonst < 0.02, `fast nur Schwarz und Weiss (${ganz.sonst})`);
   const satz = await messeBild(page, "textStehen");
   assert.ok(satz.hell > 0.002 && satz.hell < 0.05, `Satz ${satz.hell}`);
-  const signet = await messeBild(page, satz.dauer - 0.1);
-  assert.ok(signet.orange > 200, `Punkt in Rot-Orange (${signet.orange})`);
+  assert.ok(satz.orange > 30, `oranger Punkt am Satzende (${satz.orange})`);
+  const anfang2 = await page.evaluate(() => window.__sketchory.sz.zeit.ab.textEin[0] + 0.35);
+  const frueh = await messeBild(page, anfang2);
+  assert.ok(frueh.hell > 0 && frueh.hell < satz.hell * 0.3, `Buchstabe um Buchstabe: erst wenige (${frueh.hell} von ${satz.hell})`);
+  assert.equal(frueh.orange, 0, "der Punkt kommt zuletzt");
+  const signet = await messeBild(page, "signetStehen");
+  assert.ok(signet.orange > 150, `Punkt in Rot-Orange (${signet.orange})`);
   assert.ok(signet.hell > 0.001);
+  const ende = await messeBild(page, satz.dauer - 0.05);
+  assert.equal(ende.hell + ende.orange + ende.sonst, 0, "am Schluss ist das Signet ausgeblendet, nur noch Grund");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
@@ -132,6 +141,7 @@ await check("Dunkle Linien auf hellem Papier (umgekehrtes Foto mit Verlauf): die
   assert.ok(Math.abs(nachher - vorher) <= vorher * 0.15, `${vorher} → ${nachher}`);
   assert.match(text, /dunkle Linien auf hellem Grund, umgekehrt/);
   assert.equal(await page.isVisible("#quelle"), true, "das geladene Bild als kleine Vorschau");
+  assert.equal(await page.textContent("#ablage-titel"), "Anderes Bild wählen");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
@@ -216,6 +226,7 @@ await check("Strichstärke: sichtbar ohne «Feinheiten», wirkt sofort auf die V
   assert.equal(await page.textContent("#staerke-wert"), "30 %", "nicht unter 30 %");
   await page.click('[data-staerke="160"]');
   assert.equal(await page.getAttribute('[data-staerke="160"]', "aria-pressed"), "true");
+  await page.click("details.feinheiten summary");   // die Art der Breite steht in den Feinheiten
   await page.selectOption("#stil", "gleichmaessig");
   await page.waitForFunction(() => window.__sketchory.optionen.stil === "gleichmaessig" && window.__sketchory.optionen.staerke === 1.6);
   // dieselbe Einstellung im Video: die Szene des Exports nimmt die Optionen der Seite
@@ -240,10 +251,10 @@ await check("Schwarz auf Weiss: ganzer Film umgekehrt (Grund, Zeichnung, Satz, S
   assert.equal(await page.getAttribute('[data-farbe="hell"]', "aria-pressed"), "true");
   assert.equal(await page.evaluate(() => document.querySelector(".rahmen").classList.contains("hell")), true);
   const zaehle = (t) => page.evaluate(async (t) => {
-    const { bild, szene } = await import("./szene.js?v=4");
+    const { bild, szene } = await import("./szene.js?v=7");
     const S = window.__sketchory, sz = szene(S.ergebnis, S.optionen);
     const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
-    const x = c.getContext("2d"), zeit = t ? sz.zeit.ab[t][0] + 0.05 : sz.zeit.dauer - 0.1;
+    const x = c.getContext("2d"), zeit = sz.zeit.ab[t][0] + 0.05;
     for (let u = 0; u < zeit; u += 0.5) bild(x, sz, u);
     bild(x, sz, zeit);
     const d = x.getImageData(0, 0, 1080, 1440).data;
@@ -260,7 +271,7 @@ await check("Schwarz auf Weiss: ganzer Film umgekehrt (Grund, Zeichnung, Satz, S
   assert.ok(zeichnung.weiss > 0.6 && zeichnung.schwarz > 0.03 && zeichnung.schwarz < 0.4, JSON.stringify(zeichnung));
   const satz = await zaehle("textStehen");
   assert.ok(satz.weiss > 0.9 && satz.schwarz > 0.002, JSON.stringify(satz));
-  const signet = await zaehle(null);
+  const signet = await zaehle("signetStehen");
   assert.ok(signet.weiss > 0.9 && signet.orange > 150 && signet.schwarz > 0.001, JSON.stringify(signet));
   // Vorschau zeigt die fertige Zeichnung schwarz auf Weiss
   const ecke = await page.evaluate(() => [...document.getElementById("vorschau").getContext("2d").getImageData(5, 5, 1, 1).data].slice(0, 3));

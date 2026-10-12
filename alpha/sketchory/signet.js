@@ -5,7 +5,7 @@
 // und schwarz auf Weiss (Punkt im Rot-Orange der Website). Gezeichnet für 1080 × 1920 und, wie im Video im Format 3 : 4, um (1440 − 1920) / 2 nach oben verschoben.
 // Abweichung von der Vorlage (Wunsch vom 12. Oktober 2026: «die Form etwas kleiner, Schriftgrösse gut»): die Schlaufe 420 statt 520 px hoch,
 // der Punkt entsprechend 11 statt 13 px; der Schriftzug bleibt, wo er ist, die Schlaufe rückt so weit nach unten, dass der Abstand zu ihm gleich bleibt.
-import { anteil, bezier, weich, inOut } from "./ablauf.js?v=4";
+import { anteil, bezier, weich, inOut } from "./ablauf.js?v=7";
 
 export const FARBEN = {
   dunkel: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d" },

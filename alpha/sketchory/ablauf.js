@@ -1,7 +1,7 @@
 // «Sketchory» – Ablauf des Films (ohne DOM): Zeitachse, Kurven, Umbruch des Satzes, Fortschritt des Zeichnens.
 // Film: Hochformat 3 : 4 (1080 × 1440), 30 Bilder pro Sekunde, weisser Strich auf Schwarz.
-//   schwarz → die Karte zeichnet sich (4–6 s) → steht (2 s) → blendet aus → der Satz blendet Wort für Wort ein, steht, blendet aus
-//   → das Signet von ornament.cloud (wie am Ende jedes Videos, hier hell auf Schwarz) → steht kurz.
+//   leerer Grund → die Karte zeichnet sich (4–6 s) → steht (3 s) → blendet sanft aus (1,5 s) → der Satz blendet Wort für Wort ein, steht, blendet aus
+//   → das Signet von ornament.cloud (wie am Ende jedes Videos) → steht kurz → blendet sanft aus.
 
 export const BREITE = 1080, HOEHE = 1440, FPS = 30;
 export const RAND = 96;                 // Abstand der Zeichnung zum Bildrand (seitlich)
@@ -26,6 +26,8 @@ export function bezier(x1, y1, x2, y2) {
 export const weich = bezier(0.16, 1, 0.3, 1);          // sanft auslaufend
 export const sanft = bezier(0.45, 0, 0.25, 1);
 export const inOut = bezier(0.65, 0, 0.35, 1);
+/** zum Ausblenden: beginnt unmerklich und läuft weich aus (wie eine Sinuskurve) */
+export const ausblenden = bezier(0.37, 0, 0.63, 1);
 
 /** Wörter des Satzes */
 export const woerter = (text) => text.trim().split(/\s+/).filter(Boolean);
@@ -34,33 +36,49 @@ export const woerter = (text) => text.trim().split(/\s+/).filter(Boolean);
  * Zeitachse in Sekunden. zeichnen: Dauer des Zeichnens; text: der Satz (leer = ohne Textteil).
  * Gibt die Abschnitte { name: [anfang, ende] } und die Gesamtdauer.
  */
-export function zeitachse({ zeichnen = 4.5, stehen = 2, text = "" } = {}) {
-  const n = woerter(text).length;
+export function zeitachse({ zeichnen = 4.5, stehen = 3, text = "" } = {}) {
+  const n = woerter(text).length, z = zeichenZahl(text);
   const teile = [];
   let t = 0;
   const dazu = (name, d) => { teile.push([name, t, t + d]); t += d; };
   dazu("vor", 0.5);
   dazu("zeichnen", zeichnen);
   dazu("stehen", stehen);
-  dazu("bildAus", 0.8);
+  dazu("bildAus", 1.5);   // sanft (Wunsch vom 12. Oktober 2026: das fertige Bild 1 s länger stehen lassen, sanfter ausblenden)
   if (n) {
     dazu("pause", 0.35);
-    dazu("textEin", textEin(n));
+    dazu("textEin", textEin(z));
     // Lesezeit: gut 3 Wörter pro Sekunde, mindestens 2 s, höchstens 5 s
     dazu("textStehen", klemm(1.0 + 0.3 * n, 2, 5));
-    dazu("textAus", 0.8);
+    dazu("textAus", 1.3);
   }
   dazu("pause2", 0.4);
   dazu("signet", SIGNET);
-  dazu("nach", 1);
+  // das Signet steht kurz und blendet dann sanft aus (Wunsch vom 12. Oktober 2026), am Ende ein Augenblick leerer Grund
+  dazu("signetStehen", 0.8);
+  dazu("signetAus", 1.3);
+  dazu("schluss", 0.4);
   const ab = Object.fromEntries(teile.map(([name, a, b]) => [name, [a, b]]));
   return { ab, dauer: t, bilder: Math.round(t * FPS) };
 }
 
 /** Versatz zwischen den Wörtern beim Einblenden und Dauer je Wort */
-export const WORT = 0.7;
-export const versatz = (n) => (n > 1 ? Math.min(0.09, 1.3 / (n - 1)) : 0);
-export const textEin = (n) => WORT + versatz(n) * Math.max(0, n - 1);
+/** Der Satz erscheint Buchstabe um Buchstabe (Wunsch vom 12. Oktober 2026): Dauer je Zeichen und Versatz zwischen den Zeichen,
+ *  bei langen Sätzen dichter, damit das Einblenden höchstens etwa 2,4 s dauert. n: Zahl der Zeichen ohne Leerzeichen */
+export const ZEICHEN = 0.5;
+export const versatz = (n) => (n > 1 ? Math.min(0.045, 1.9 / (n - 1)) : 0);
+export const textEin = (n) => ZEICHEN + versatz(n) * Math.max(0, n - 1);
+export const zeichenZahl = (text) => text.replace(/\s+/g, "").length;
+
+/** Oranger Punkt am Satzende: ein schliessender Punkt wird orange; fehlt das Satzzeichen, kommt einer dazu;
+ *  andere Schlusszeichen (? ! … : ; Anführungszeichen) bleiben, wie sie sind. Gibt den Text und ob das letzte Zeichen orange ist. */
+export function satzPunkt(text, an = true) {
+  const t = text.replace(/\s+/g, " ").trim();
+  if (!an || !t) return { text: t, orange: false };
+  if (t.endsWith(".") && !t.endsWith("..")) return { text: t, orange: true };
+  if (/[\p{L}\p{N})\]]$/u.test(t)) return { text: t + ".", orange: true };
+  return { text: t, orange: false };
+}
 
 /**
  * Umbruch: höchstens breite pro Zeile, und ausgeglichen (alle Zeilen etwa gleich lang statt einer kurzen letzten).
@@ -89,7 +107,7 @@ export function umbrechen(liste, messen, breite) {
 }
 
 /** Schriftgrösse und Zeilen für den Satz: gross, aber höchstens fünf Zeilen */
-export function satzbild(text, messenMit, { groesse = 66, breite = BREITE - 2 * RAND - 40, minimum = 40, zeilenMax = 5 } = {}) {
+export function satzbild(text, messenMit, { groesse = 66, breite = BREITE - 2 * RAND - 40, minimum = 40, zeilenMax = 5, streckung = 1 } = {}) {
   const liste = woerter(text);
   let g = groesse, zeilen = [];
   for (;;) {
@@ -99,7 +117,7 @@ export function satzbild(text, messenMit, { groesse = 66, breite = BREITE - 2 * 
     if ((zeilen.length <= zeilenMax && !zuBreit) || g <= minimum) break;
     g = Math.max(minimum, Math.round(g * 0.92));
   }
-  return { groesse: g, zeilen, zeilenhoehe: Math.round(g * 1.32) };
+  return { groesse: g, zeilen, zeilenhoehe: Math.round(g * 1.32 * streckung) };
 }
 
 /**

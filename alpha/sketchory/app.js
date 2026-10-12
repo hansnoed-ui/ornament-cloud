@@ -1,16 +1,16 @@
 // «Sketchory» – Seite: Bild laden, Satz eingeben, Vorschau abspielen, Video (MP4) und Standbild (PNG) herunterladen.
 // Alles bleibt im Browser. Video über WebCodecs (H.264, schneller als Echtzeit, Bild für Bild genau) und mp4.js;
 // wo das fehlt, in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { striche, analyseMass } from "./strich.js?v=4";
-import { BREITE, HOEHE, FPS, dateiname } from "./ablauf.js?v=4";
-import { szene, bild, standbild, schriftSetzen } from "./szene.js?v=4";
-import { mp4 } from "./mp4.js?v=4";
+import { striche, analyseMass } from "./strich.js?v=7";
+import { BREITE, HOEHE, FPS, dateiname } from "./ablauf.js?v=7";
+import { szene, bild, standbild, schriftSetzen } from "./szene.js?v=7";
+import { mp4 } from "./mp4.js?v=7";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
 const eingabe = $("datei"), ablage = $("ablage"), satzFeld = $("satz");
-const wahl = { stil: $("stil"), staerke: $("staerke"), zeichnen: $("zeichnen"), schrift: $("schrift"), empfindlichkeit: $("empfindlichkeit") };
+const wahl = { hoehe: $("hoehe"), punkt: $("punkt"), stil: $("stil"), staerke: $("staerke"), zeichnen: $("zeichnen"), schrift: $("schrift"), empfindlichkeit: $("empfindlichkeit") };
 const knopfSpielen = $("spielen"), knopfVideo = $("video"), knopfPng = $("png");
 const meldung = $("meldung"), fortschritt = $("fortschritt");
 
@@ -78,8 +78,9 @@ async function laden(datei) {
   S.bild = { daten: ctx.getImageData(0, 0, w, h).data, w, h };
   S.name = datei.name;
   $("quelle").src = URL.createObjectURL(datei);
-  $("quelle-box").hidden = false;
+  $("quelle").hidden = false;
   ablage.classList.add("hat-bild");
+  $("ablage-titel").textContent = "Anderes Bild wählen";
   await lesen();
 }
 
@@ -93,7 +94,7 @@ function bildElement(datei) {
 
 // das Bild in Striche verwandeln (im Worker, sonst hier)
 let worker = null;
-try { worker = new Worker(new URL("./rechner.js?v=4", import.meta.url), { type: "module" }); } catch { worker = null; }
+try { worker = new Worker(new URL("./rechner.js?v=7", import.meta.url), { type: "module" }); } catch { worker = null; }
 function rechnen(empfindlichkeit) {
   const { daten, w, h } = S.bild;
   const nr = ++S.rechnen;
@@ -138,7 +139,8 @@ async function neu({ abspielen = !ruhig } = {}) {
 function optionen() {
   return {
     stil: wahl.stil.value, staerke: Number(wahl.staerke.value) / 100, zeichnen: Number(wahl.zeichnen.value),
-    text: satzFeld.value.replace(/\s+/g, " ").trim(), schrift: wahl.schrift.value, farbe: S.farbe, messen, leinwand,
+    text: satzFeld.value.replace(/\s+/g, " ").trim(), schrift: wahl.schrift.value, farbe: S.farbe,
+    streckung: Number(wahl.hoehe.value) / 100, punkt: wahl.punkt.checked, messen, leinwand,
   };
 }
 
@@ -146,6 +148,8 @@ let warten = 0;
 satzFeld.addEventListener("input", () => { clearTimeout(warten); warten = setTimeout(() => neu(), 450); });
 wahl.zeichnen.addEventListener("change", () => neu());
 wahl.schrift.addEventListener("change", () => { merken("schrift", wahl.schrift.value); neu(); });
+wahl.hoehe.addEventListener("change", () => { merken("hoehe", wahl.hoehe.value); neu(); });
+wahl.punkt.addEventListener("change", () => { merken("punkt", wahl.punkt.checked ? "1" : "0"); neu(); });
 wahl.empfindlichkeit.addEventListener("change", () => lesen());
 
 // ——— Strichstärke: gut sichtbar, wirkt sofort (die Vorschau zeigt beim Einstellen die fertige Zeichnung), bleibt für die nächste Karte ———
@@ -157,6 +161,9 @@ const voreinstellungen = [...document.querySelectorAll("[data-staerke]")];
   const s = Number(erinnern("staerke"));
   if (s >= STAERKE.min && s <= STAERKE.max) wahl.staerke.value = s;
   if (["gezeichnet", "gleichmaessig"].includes(erinnern("stil"))) wahl.stil.value = erinnern("stil");
+  const hoehe = erinnern("hoehe");
+  if (hoehe && [...wahl.hoehe.options].some((o) => o.value === hoehe)) wahl.hoehe.value = hoehe;
+  if (erinnern("punkt")) wahl.punkt.checked = erinnern("punkt") === "1";
   const schrift = erinnern("schrift");
   if (schrift && [...wahl.schrift.options].some((o) => o.value === schrift)) wahl.schrift.value = schrift;
 }
@@ -164,7 +171,7 @@ function staerkeZeigen() {
   const v = Number(wahl.staerke.value);
   $("staerke-wert").textContent = `${v} %`;
   for (const b of voreinstellungen) b.setAttribute("aria-pressed", String(Number(b.dataset.staerke) === v));
-  if (S.sz) $("linie").textContent = `Linie im Video etwa ${S.sz.linie.toFixed(1).replace(".", ",")} px breit (bei 1080 px Bildbreite).`;
+  if (S.sz) $("linie").textContent = `Linie im Video etwa ${S.sz.linie.toFixed(1).replace(".", ",")} px breit (Bildbreite 1080 px). Die Einstellung bleibt für die nächste Karte.`;
 }
 let bildWunsch = 0;
 /** neue Stärke oder Art: Szene neu, die fertige Zeichnung zeigen (höchstens einmal je Bild der Anzeige) */
