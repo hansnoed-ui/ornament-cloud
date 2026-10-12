@@ -1,18 +1,19 @@
 // «Principesse» – Seite: Bild laden (wird mit Pinselstrichen nachgemalt, der Glitzer funkelt), optional Foto und Satz,
 // Vorschau, Video (MP4) und Standbild (PNG). Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der
 // MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass } from "./ablauf.js?v=10";
-import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=10";
+import { FPS, dateiname, filmMass } from "./ablauf.js?v=11";
+import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=11";
 import { schriftSetzen } from "../sketchory/szene.js?v=8";
 import { mp4 } from "../sketchory/mp4.js?v=8";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
-import { malen, klarbild } from "./malen.js?v=10";
-import { glitzer } from "./glitzer.js?v=10";
+import { malen, klarbild } from "./malen.js?v=11";
+import { glitzer } from "./glitzer.js?v=11";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const S = { bild: null, gemaelde: null, funken: [], foto: null, klar: null, klarBereit: null, sz: null, laeuft: false, start: 0, film: null, rechnen: 0, optionen: null,
+const VORSCHAU = 0.5;   // Auflösung der Vorschau gegenüber dem Film (das Video rechnet in voller Grösse)
+const S = { bild: null, gemaelde: null, funken: [], foto: null, klar: null, klarBereit: null, vorrat: null, sz: null, laeuft: false, start: 0, film: null, rechnen: 0, optionen: null,
   pinsel: 1, glitzer: 1, farbe: "hell", format: "bild", mass: [1080, 1440] };
 window.__principesse = S;   // für die Browser-Tests
 
@@ -83,8 +84,9 @@ $("foto-weg").addEventListener("click", () => {
 });
 
 // ——— malen lassen (Worker, sonst hier) ———
-let worker = null;
-try { worker = new Worker(new URL("./rechner.js?v=10", import.meta.url), { type: "module" }); } catch { worker = null; }
+let worker = null, offen = [];
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=11", import.meta.url), { type: "module" }); } catch { return null; } };
+worker = neuerWorker();
 function rechnen() {
   // Format: wie das Bild, 3 : 4 oder 1 : 1; gemalt wird auf der halben Filmgrösse (für die breiten Pinsel genug), der Glitzer und das
   // scharfe Schlussbild in voller Grösse. Gibt zwei Versprechen: zuerst Striche und Glitzer, danach das scharfe Bild.
@@ -96,8 +98,15 @@ function rechnen() {
     const erst = { nr, gemaelde: malen(analyse.daten, aw, ah, { massstab: B / aw, pinsel: S.pinsel }), funken: glitzer(film.daten, B, H) };
     return { erst: Promise.resolve(erst), klar: new Promise((ok) => setTimeout(() => ok({ nr, klar: klarbild(film.daten, B, H) }), 0)) };
   }
+  // rechnet der Worker noch an einem älteren Auftrag (schnell nacheinander umgestellt), wird er ersetzt statt abgewartet
+  if (offen.length) { worker.terminate(); worker = neuerWorker(); for (const ok of offen.splice(0)) ok({ nr: -1 }); }
+  if (!worker) return rechnen();
   const warten = (art) => new Promise((ok) => {
-    const antwort = (e) => { if (e.data.nr === nr && e.data.art === art) { worker.removeEventListener("message", antwort); ok(e.data); } };
+    offen.push(ok);
+    const antwort = (e) => {
+      if (e.data.nr !== nr || e.data.art !== art) return;
+      worker.removeEventListener("message", antwort); offen = offen.filter((f) => f !== ok); ok(e.data);
+    };
     worker.addEventListener("message", antwort);
   });
   const erst = warten("gemaelde"), klar = warten("klar");
@@ -116,6 +125,7 @@ async function lesen() {
   sperren(false);
   if (fehler || !gemaelde) { melden(`Das Bild liess sich nicht lesen: ${fehler}`, true); return; }
   S.gemaelde = gemaelde; S.funken = funken.funken;
+  S.vorrat = { skala: VORSCHAU, fertig: null };
   // das scharfe, aufgefrischte Bild, in das das Gemälde am Ende übergeht: kommt etwas später nach (die Vorschau läuft schon)
   S.klar = null;
   const [mb, mh] = S.mass;
@@ -138,17 +148,21 @@ function optionen() {
     schrift: $("schrift").value, streckung: 1.15, messen, leinwand };
 }
 
-async function neu({ abspielen = !ruhig } = {}) {
+async function neu({ abspielen = !ruhig, weiter = false } = {}) {
   if (!S.gemaelde) return;
   await schriften;
-  S.optionen = optionen();
+  S.optionen = { ...optionen(), skala: VORSCHAU, vorrat: S.vorrat };
   S.sz = szene(S.gemaelde, S.funken, S.optionen);
-  // Vorschau im Format des Films
-  if (vorschau.width !== S.mass[0] || vorschau.height !== S.mass[1]) { vorschau.width = S.mass[0]; vorschau.height = S.mass[1]; }
+  // Vorschau im Format des Films, in halber Auflösung (das Video rechnet in voller)
+  const vb = Math.round(S.mass[0] * VORSCHAU), vh = Math.round(S.mass[1] * VORSCHAU);
+  if (vorschau.width !== vb || vorschau.height !== vh) { vorschau.width = vb; vorschau.height = vh; }
+  vctx.setTransform(VORSCHAU, 0, 0, VORSCHAU, 0, 0);
   vorschau.parentElement.style.aspectRatio = `${S.mass[0]} / ${S.mass[1]}`;
   $("dauer").textContent = `${S.sz.zeit.dauer.toFixed(1).replace(".", ",")} s · ${S.mass[0]} × ${S.mass[1]} · ${FPS} Bilder/s`;
   for (const k of ["video", "png", "spielen"]) $(k).disabled = false;
   $("leer").hidden = true;
+  // weiter: läuft die Vorschau, läuft sie mit der neuen Szene an derselben Stelle weiter (Glitzer, Grund)
+  if (weiter && S.laeuft) return;
   if (abspielen) spielen(); else { anhalten(); bild(vctx, S.sz, S.sz.zeit.ab.stehen[0] + 0.5); }
 }
 
@@ -166,10 +180,13 @@ function wahl(attr, schluessel, werte, wenn) {
   });
   return knoepfe;
 }
-const pinselKnoepfe = wahl("data-pinsel", "pinsel", ["0.7", "1", "1.35"], () => lesen());
-const glitzerKnoepfe = wahl("data-glitzer", "glitzer", ["0", "1", "1.7"], () => neu({ abspielen: false }));
-const farbKnoepfe = wahl("data-farbe", "farbe", ["hell", "dunkel"], () => { rahmenFarbe(); neu(); });
-const formatKnoepfe = wahl("data-format", "format", ["bild", "3:4", "1:1"], () => lesen());
+// Pinsel und Format rechnen das Bild neu: erst, wenn nicht gleich noch einmal umgestellt wird
+let umstellen = 0;
+const spaeterLesen = () => { clearTimeout(umstellen); umstellen = setTimeout(lesen, 250); };
+const pinselKnoepfe = wahl("data-pinsel", "pinsel", ["0.7", "1", "1.35"], spaeterLesen);
+const glitzerKnoepfe = wahl("data-glitzer", "glitzer", ["0", "1", "1.7"], () => neu({ abspielen: false, weiter: true }));
+const farbKnoepfe = wahl("data-farbe", "farbe", ["hell", "dunkel"], () => { rahmenFarbe(); neu({ weiter: true }); });
+const formatKnoepfe = wahl("data-format", "format", ["bild", "3:4", "1:1"], spaeterLesen);
 function rahmenFarbe() { vorschau.parentElement.classList.toggle("dunkel", S.farbe === "dunkel"); if (!S.sz) { vctx.fillStyle = S.farbe === "dunkel" ? "#0e1430" : "#f7f3ec"; vctx.fillRect(0, 0, vorschau.width, vorschau.height); } }
 rahmenFarbe();
 let warten = 0;
@@ -178,10 +195,15 @@ for (const id of ["malen", "schrift"]) $(id).addEventListener("change", () => { 
 for (const id of ["malen", "schrift"]) { const v = erinnern(id); if (v && [...$(id).options].some((o) => o.value === v)) $(id).value = v; }
 
 // ——— Vorschau ———
-function spielen() { if (!S.sz) return; S.start = performance.now(); if (!S.laeuft) { S.laeuft = true; requestAnimationFrame(takt); } $("spielen").textContent = "Anhalten"; }
+// ausserhalb des Bildschirms (etwa beim Umstellen unten auf dem Handy) hält die Vorschau an, statt im Verborgenen weiterzurechnen
+let sichtbar = true, zuletzt = 0;
+if ("IntersectionObserver" in window) new IntersectionObserver(([e]) => { sichtbar = e.isIntersecting; }).observe(vorschau);
+function spielen() { if (!S.sz) return; S.start = performance.now(); zuletzt = 0; if (!S.laeuft) { S.laeuft = true; requestAnimationFrame(takt); } $("spielen").textContent = "Anhalten"; }
 function anhalten() { S.laeuft = false; $("spielen").textContent = "Abspielen"; }
 function takt(jetzt) {
   if (!S.laeuft || !S.sz) return;
+  if (!sichtbar) { S.start += jetzt - (zuletzt || jetzt); zuletzt = jetzt; requestAnimationFrame(takt); return; }
+  zuletzt = jetzt;
   const t = (jetzt - S.start) / 1000;
   if (t >= S.sz.zeit.dauer) { anhalten(); bild(vctx, S.sz, S.sz.zeit.ab.stehen[0] + 0.5); return; }
   bild(vctx, S.sz, t);

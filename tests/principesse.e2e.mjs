@@ -156,7 +156,7 @@ await check("Format: wie das Bild (Standard), 3 : 4 und 1 : 1; Vorschau und Sign
   assert.deepEqual(await page.evaluate(() => [window.__principesse.optionen.breite, window.__principesse.optionen.hoehe]), [1080, 1136]);
   await page.click('[data-format="1:1"]');
   await page.waitForFunction(() => window.__principesse.optionen?.hoehe === 1080, null, { timeout: 90_000 });
-  assert.deepEqual(await page.evaluate(() => [document.getElementById("vorschau").width, document.getElementById("vorschau").height]), [1080, 1080]);
+  assert.deepEqual(await page.evaluate(() => [document.getElementById("vorschau").width, document.getElementById("vorschau").height]), [540, 540]);   // Vorschau in halber Auflösung
   const box = await page.locator("#vorschau").boundingBox();
   assert.ok(Math.abs(box.width / box.height - 1) < 0.01, "Vorschau quadratisch");
   // das Signet passt auch ins Quadrat: Figur und Name im Bild, mit Rand
