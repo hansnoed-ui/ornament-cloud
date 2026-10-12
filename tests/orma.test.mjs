@@ -451,7 +451,7 @@ test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (
   assert.deepEqual(rahmen.map(([f, z]) => `${f} → ${z.replace(/^.*\/alpha\//, "alpha/")}`), ["index.html → alpha/omna-color/"], "nur die Startseite bettet OMNA COLOR ein");
   for (const [f, zs] of Object.entries(ziele)) for (const z of zs) assert.ok(gefunden.has(`${f} → ${z}`), `${f} verlinkt ${z} nicht`);
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("/alpha/"));
-  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html", "alpha/omna-color/index.html", "alpha/drittes-rad/index.html", "alpha/stadt/index.html", "alpha/the-fictory/index.html", "alpha/aufnahme/index.html", "alpha/sketchory/index.html"])
+  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html", "alpha/omna-color/index.html", "alpha/drittes-rad/index.html", "alpha/stadt/index.html", "alpha/the-fictory/index.html", "alpha/aufnahme/index.html", "alpha/sketchory/index.html", "alpha/principesse/index.html"])
     assert.match(readFileSync(new URL(p, root), "utf8"), /<meta name="robots" content="noindex/, p);
 });
 

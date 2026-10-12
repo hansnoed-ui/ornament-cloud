@@ -17,6 +17,7 @@ const AUSNAHMEN = [
   ["Werke im Vollbild", /^werke\//],
   ["Weiterleitung auf die frühere Adresse von ORNA", /^portfolio\/rad-von-zeit-und-raum\//],
   ["Analyse «Allgemeines, Konkretes und Metastabilität», steht für sich (5. Oktober 2026)", /^alpha\/metastabilitaet\//],
+  ["«Principesse», steht für sich, nur per Direktlink (12. Oktober 2026)", /^alpha\/principesse\//],
 ];
 const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git"]);
 const walk = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e) =>
