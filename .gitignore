@@ -1,2 +1,7 @@
 # Build-Ausgabe von ORMA (tools/build-orma.ts), wird nicht eingecheckt
 src/orma/dist/
+
+# Lokale Entwicklungsabhängigkeiten und Browser-Testberichte
+node_modules/
+playwright-report/
+test-results/

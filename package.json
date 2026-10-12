@@ -1,0 +1,25 @@
+{
+  "name": "ornament-cloud",
+  "private": true,
+  "description": "Statische Website ornament.cloud – Entwicklung und Prüfungen",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --no-warnings --test tests/*.test.mjs",
+    "test:e2e": "node --experimental-strip-types --no-warnings --test --test-concurrency=1 tests/*.e2e.mjs",
+    "start": "node tools/serve-orma.mjs",
+    "build:orma": "node --experimental-strip-types tools/build-orma.ts",
+    "build:orma:alpha": "node --experimental-strip-types tools/build-orma.ts --alpha",
+    "build:orna": "node --experimental-strip-types tools/sync-doppelspalt-data.ts",
+    "build:app": "node --experimental-strip-types tools/build-app.ts",
+    "build:fictory": "node tools/build-fictory-app.mjs",
+    "build:alpha": "node --experimental-strip-types tools/build-alpha-texte.ts",
+    "build:zettel": "node --experimental-strip-types tools/build-zu-seiner-zeit.ts",
+    "build:drittes-rad": "node --experimental-strip-types tools/build-drittes-rad.ts",
+    "build:feed": "node --experimental-strip-types tools/build-feed.ts"
+  },
+  "devDependencies": {
+    "playwright": "1.64.0"
+  }
+}

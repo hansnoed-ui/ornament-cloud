@@ -1,8 +1,7 @@
-// Struktur der Website (Neuordnung vom 2. Oktober 2026, Wunsch von Christian): Die Startseite trägt den Satz «Beobachtung ist Anlass …» (seit 3. Oktober 2026
-// ohne den sichtbaren Titel «Raumstellen, Zeitobjekte», etwas grösser gesetzt) und darunter seit 4. Oktober 2026 OMNA COLOR zum direkten Spielen (eingebettet, bis 9. Oktober 2026; seitdem Lead und drei Kästen; kein Beitrag; das Stellenfeld ist ein Beitrag auf «Web»). Das Menü hat vier Wörter ohne Symbole und Animationen: Zettelkasten (führt direkt in den Zettelkasten),
-// Apps (ORNA, ORMA), Masterprompts (die vier Prüfraster in der Reihenfolge der Alpha-Übersicht), Web (OMNA COLOR, Das Dritte Rad). Die Karten liegen auf den
-// Seiten apps/, masterprompts/ und web/. News, Termine und Portfolio bleiben unter ihren Adressen, tragen das Menü und sind sonst nicht verlinkt.
-//   node --experimental-strip-types --no-warnings --test tests/struktur.test.mjs
+// Struktur der Website: Startseite mit OMNA COLOR; Menü mit vier Kästchen und Symbolen
+// (Apps, Prompts, Web, Zettel); Beitragsseiten, Navigation und konsistente Versionsmarken.
+// News, Termine und Portfolio bleiben erreichbar, werden aber nicht im Menü verlinkt.
+//   npm test
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync, readdirSync } from "node:fs";
@@ -23,7 +22,7 @@ const MENUSEITEN = {
   "web/index.html": ["web/", "page"],
   "web/orna-erklaervideo/index.html": ["web/", "true"],       // die Videoseite des Erklärvideos zu ORNA (9. Oktober 2026)
   "web/poststrukturalismus/index.html": ["web/", "true"],
-  "web/mensch-niklas/index.html": ["web/", "true"],          // die Videoseite «Mensch, Niklas!» (7. Oktober 2026)   // die Videoseite gehört zu «Web» (6. Oktober 2026)
+  "web/mensch-niklas/index.html": ["web/", "true"],          // die Videoseite «Mensch, Niklas!» gehört zu «Web»
   [`${ORNA}index.html`]: ["apps/", "true"],           // ORNA gehört zu den Apps
   [`${ORNA}feld/index.html`]: ["apps/", "true"],
   [`${ORNA}app/index.html`]: ["apps/", "true"],       // die App-Seiten sind Abschriften, ihre Kopfzeile ist ausgeblendet
