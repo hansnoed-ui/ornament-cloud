@@ -173,11 +173,33 @@ test("Seite: Alpha (noindex, Navigation, nur aus der Übersicht verlinkt), Versi
   assert.ok(uebersicht.includes('<a href="sketchory/">Sketchory</a>'));
 });
 
-test("Signet: dieselbe Zeichnung und derselbe Zeitplan wie im Outro der Videos", () => {
+test("Schrift des Satzes: Grotesk nah an Helvetica Now (Inter Display Medium, mitgeliefert mit Lizenz), Helvetica Now nur, wenn installiert", () => {
+  const html = lies("alpha/sketchory/index.html");
+  assert.match(html, /@font-face \{ font-family: "Inter Display"; font-style: normal; font-weight: 500; [^}]*src: url\(\.\.\/\.\.\/vendor\/fonts\/inter-display-500-latin\.woff2\) format\("woff2"\); \}/);
+  const datei = readFileSync(new URL("vendor/fonts/inter-display-500-latin.woff2", root));
+  assert.equal(datei.subarray(0, 4).toString("latin1"), "wOF2");
+  assert.ok(datei.length < 60_000, "schlanke Teilmenge");
+  assert.match(lies("vendor/fonts/LICENSE-Inter.txt"), /SIL Open Font License 1\.1[\s\S]*PERMISSION & CONDITIONS/);
+  assert.match(html, /<option value="grotesk" selected>Grotesk \(Inter Display\)<\/option>/, "Standard");
+  assert.ok(!html.includes('value="helvetica"'), "Helvetica Now erscheint erst, wenn sie auf dem Gerät gefunden wird");
+  assert.ok(!/helvetica-?now[^"]*\.(woff2?|otf|ttf)/i.test(html + lies("alpha/sketchory/app.js")), "keine Datei von Helvetica Now");
+  const szene = lies("alpha/sketchory/szene.js");
+  assert.match(szene, /grotesk: \{ familie: '"Inter Display", [^']+', gewicht: 500, groesse: 68, sperrung: -0\.015/);
+  assert.match(szene, /schrift = "grotesk"/);
+});
+
+test("Signet: dieselbe Zeichnung und derselbe Zeitplan wie im Outro der Videos, nur die Schlaufe kleiner; zwei Farbfassungen", () => {
   const tsx = lies("src/videos/src/vorlage/Signet.tsx"), js = lies("alpha/sketchory/signet.js");
-  for (const stueck of ["const LA = 1, LB = 0.45, LK = 1.2, LOFF = -0.84", "520 / SPANNE", "540 + (x - MX) * MASS, 820 + (y - MY) * MASS", 'const NAME = "ornament.cloud"', "SPERRUNG = 0.14 *"]) {
+  for (const stueck of ["const LA = 1, LB = 0.45, LK = 1.2, LOFF = -0.84", 'const NAME = "ornament.cloud"', "SPERRUNG = 0.14 *", "KASTEN = 52, ABSTAND = 4"]) {
     assert.ok(tsx.includes(stueck), `Vorlage: ${stueck}`);
     assert.ok(js.includes(stueck), `Sketchory: ${stueck}`);
   }
   for (const zeit of ["14, 56", "40, 48", "128, 146", "58 + i * 2", "78 + i * 3"]) assert.ok(tsx.includes(zeit) && js.includes(zeit), zeit);
+  // Wunsch vom 12. Oktober 2026: «beim Logo die Form etwas kleiner, Schriftgrösse gut»
+  assert.ok(tsx.includes("520 / SPANNE"), "die Vorlage bleibt");
+  assert.match(js, /SCHLAUFE = 420, PUNKT_R = 11/);
+  assert.match(js, /MITTE_Y = 820 \+ \(520 - SCHLAUFE\) \/ 2/, "unterer Rand der Schlaufe wie in der Vorlage, Abstand zum Schriftzug gleich");
+  assert.match(js, /GROESSE = 52/, "Schriftgrösse wie in der Vorlage");
+  assert.match(js, /dunkel: \{ grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d" \}/);
+  assert.match(js, /hell: \{ grund: "#ffffff", tinte: "#000000", punkt: "#c2410c" \}/);
 });

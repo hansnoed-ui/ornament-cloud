@@ -6,10 +6,12 @@
   <title>Sketchory – Ornament Cloud · Alpha</title>
   <!-- Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). Nur aus der Alpha-Übersicht verlinkt (seit 12. Oktober 2026). -->
   <meta name="robots" content="noindex">
-  <meta name="description" content="Sketchory: Eine Kritzelkarte zeichnet sich von selbst: Bild laden, einen Satz schreiben und das Video (Hochformat 3 : 4, weisser Strich auf Schwarz, mit dem Signet von ornament.cloud am Schluss) herunterladen. Alles bleibt im Browser.">
+  <meta name="description" content="Sketchory: Eine Kritzelkarte zeichnet sich von selbst: Bild laden, einen Satz schreiben und das Video (Hochformat 3 : 4, weisser Strich auf Schwarz oder schwarzer auf Weiss, mit dem Signet von ornament.cloud am Schluss) herunterladen. Alles bleibt im Browser.">
   <link rel="stylesheet" href="../../styles.css?v=45">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
   <style>
+    /* Satz im Video: Grotesk nah an Helvetica Now Display (Inter Display Medium, OFL, siehe vendor/fonts/LICENSE-Inter.txt) */
+    @font-face { font-family: "Inter Display"; font-style: normal; font-weight: 500; font-display: swap; src: url(../../vendor/fonts/inter-display-500-latin.woff2) format("woff2"); }
     .site-header { padding-bottom: 12px; }
     .karte { display: grid; gap: 28px; padding-bottom: 48px; }
     @media (min-width: 900px) { .karte { grid-template-columns: minmax(300px, 420px) 1fr; align-items: start; } .buehne { position: sticky; top: 16px; } }
@@ -20,6 +22,10 @@
     .leer { position: absolute; inset: 0; display: grid; place-content: center; gap: 8px; padding: 24px; text-align: center; color: #9b968d; pointer-events: none; }
     .leer p { margin: 0; }
     .leer .gross { font-family: "Newsreader", var(--serif); font-size: 1.5rem; color: #ece8e1; }
+    /* schwarz auf Weiss: die Vorschau auf weissem Grund */
+    .rahmen.hell { background: #fff; box-shadow: 0 0 0 1px var(--border), 0 18px 40px -24px rgba(0, 0, 0, 0.35); }
+    .rahmen.hell .leer { color: #6b665e; }
+    .rahmen.hell .leer .gross { color: #1f1d1a; }
     .unter { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
     .info { margin: 0; color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
 
@@ -62,6 +68,10 @@
     .wahl button { min-height: 36px; padding: 4px 14px; border: 1px solid var(--border); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.88rem; cursor: pointer; }
     .wahl button[aria-pressed="true"] { border-color: var(--text); background: var(--text); color: var(--bg); }
     .wahl button:focus-visible, .knopf.rund:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .farben button { display: inline-flex; align-items: center; gap: 8px; }
+    .muster { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border); flex: none; }
+    [data-farbe="dunkel"] .muster { background: radial-gradient(circle, #fff 0 30%, #000 32%); }
+    [data-farbe="hell"] .muster { background: radial-gradient(circle, #000 0 30%, #fff 32%); }
     .art { display: flex; gap: 8px; align-items: center; }
     .art span { font-size: 0.85rem; color: var(--muted); }
     .art select { min-height: 36px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; font-size: 0.9rem; }
@@ -100,7 +110,7 @@
   <main class="wrap karte" id="karte">
     <section class="buehne" aria-label="Vorschau">
       <div class="rahmen">
-        <canvas id="vorschau" width="1080" height="1440" aria-label="Vorschau des Videos: die Karte zeichnet sich in weissen Strichen auf Schwarz"></canvas>
+        <canvas id="vorschau" width="1080" height="1440" aria-label="Vorschau des Videos: die Karte zeichnet sich Strich für Strich"></canvas>
         <div class="leer" id="leer">
           <p class="gross">Noch keine Karte</p>
           <p>Lade ein Foto oder einen Scan deiner Kritzelkarte.</p>
@@ -119,12 +129,16 @@
           <h2>Bild</h2>
           <label class="ablage" id="ablage">
             <span class="zeichen" id="quelle-zeichen"><span id="quelle-box" hidden><img id="quelle" alt=""></span></span>
-            <span><b>Foto oder Scan wählen</b><span>oder hierher ziehen. Dunkle Linien auf hellem Papier oder helle auf dunklem: Das Video zeigt immer weisse Striche auf Schwarz.</span></span>
+            <span><b>Foto oder Scan wählen</b><span>oder hierher ziehen. Dunkle Linien auf hellem Papier oder helle auf dunklem: Das Video zeigt saubere Striche, weiss auf Schwarz oder schwarz auf Weiss, wie du wählst.</span></span>
             <input type="file" id="datei" accept="image/*" aria-label="Bild der Kritzelkarte wählen">
           </label>
           <div class="leiste"><button class="knopf klein" type="button" id="beispiel">Mit einer Beispielkarte ausprobieren</button></div>
           <fieldset class="strich">
-            <legend>Strich</legend>
+            <legend>Strich und Farbe</legend>
+            <div class="wahl farben" role="group" aria-label="Farbe">
+              <button type="button" data-farbe="dunkel" aria-pressed="true"><span class="muster" aria-hidden="true"></span>Weiss auf Schwarz</button>
+              <button type="button" data-farbe="hell" aria-pressed="false"><span class="muster" aria-hidden="true"></span>Schwarz auf Weiss</button>
+            </div>
             <div class="regler">
               <button class="knopf rund" type="button" id="duenner" aria-label="Strich dünner">−</button>
               <input type="range" id="staerke" min="30" max="300" step="5" value="100" aria-label="Strichstärke in Prozent" aria-describedby="staerke-wert">
@@ -161,7 +175,8 @@
                 </select></label>
               <label><span>Schrift</span>
                 <select id="schrift">
-                  <option value="sans" selected>Instrument Sans</option>
+                  <option value="grotesk" selected>Grotesk (Inter Display)</option>
+                  <option value="sans">Instrument Sans</option>
                   <option value="serif">Newsreader</option>
                 </select></label>
               <label><span>Empfindlichkeit</span>
@@ -172,7 +187,7 @@
         </li>
         <li>
           <h2>Video</h2>
-          <p>Schwarz, die Karte zeichnet sich, steht zwei Sekunden, blendet aus; der Satz blendet Wort für Wort ein und aus; am Schluss das Signet von ornament.cloud.</p>
+          <p>Leerer Grund, die Karte zeichnet sich, steht zwei Sekunden, blendet aus; der Satz blendet Wort für Wort ein und aus; am Schluss das Signet von ornament.cloud.</p>
           <div class="leiste">
             <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
             <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
@@ -195,7 +210,7 @@
       <li>Alles bleibt in deinem Browser: Das Bild wird nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
       <li>Am besten ein gerades, gleichmässig beleuchtetes Foto oder ein Scan, nur die Karte im Bild. Schatten und Papierfarbe werden herausgerechnet.</li>
       <li>Die Linien werden in saubere Striche verwandelt, nah an deinen Formen; ausgefüllte Stellen (Buchstaben, Punkte) bleiben Flächen. Die Strichstärke (30 bis 300 %) gilt für Vorschau, Video und Standbild.</li>
-      <li>Video: MP4 (H.264), 1080 × 1440, 30 Bilder pro Sekunde, ohne Ton. Ältere Browser nehmen es in Echtzeit auf (dann die Seite sichtbar lassen).</li>
+      <li>Video: MP4 (H.264), 1080 × 1440, 30 Bilder pro Sekunde, ohne Ton, weiss auf Schwarz oder schwarz auf Weiss (dann mit dem Signet in Schwarz und dem Punkt im Rot-Orange der Website). Ältere Browser nehmen es in Echtzeit auf (dann die Seite sichtbar lassen).</li>
     </ul>
   </div>
 
@@ -205,7 +220,7 @@
       <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
     </div>
   </footer>
-  <script type="module" src="app.js?v=2"></script>
+  <script type="module" src="app.js?v=4"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

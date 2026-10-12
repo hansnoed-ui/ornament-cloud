@@ -1,19 +1,32 @@
 // «Sketchory» – ein Bild des Films auf eine Leinwand zeichnen (Vorschau und Video verwenden dasselbe).
+// Farben: weiss auf Schwarz («dunkel», Standard) oder schwarz auf Weiss («hell»), für alles im Film gleich.
 // Die Zeichnung wächst auf einer eigenen Ebene Strich für Strich (nur vorwärts; geht die Zeit zurück, beginnt sie neu),
 // darüber die Stiftspitze, dann der Satz und am Schluss das Signet.
-import { BREITE, HOEHE, FPS, RAND, anteil, weich, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, WORT } from "./ablauf.js?v=2";
-import { signet, FARBEN } from "./signet.js?v=2";
+import { BREITE, HOEHE, FPS, RAND, anteil, weich, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, WORT } from "./ablauf.js?v=4";
+import { signet, FARBEN } from "./signet.js?v=4";
 
+// Satz: standardmässig eine Grotesk nah an Helvetica Now Display (Wunsch vom 12. Oktober 2026). Helvetica Now selbst ist nicht frei;
+// darum Inter Display Medium (OFL, vendor/fonts/, mit «G» mit Sporn) und knappe Laufweite. Ist Helvetica Now auf dem Gerät installiert,
+// bietet die Seite sie zusätzlich an («helvetica»). sperrung: Laufweite in em (über ctx.letterSpacing, wo der Browser es kann).
 export const SCHRIFTEN = {
-  sans: { familie: '"Instrument Sans", system-ui, sans-serif', gewicht: 400, groesse: 66, name: "Instrument Sans" },
-  serif: { familie: 'Newsreader, Georgia, serif', gewicht: 300, groesse: 74, name: "Newsreader" },
+  grotesk: { familie: '"Inter Display", "Helvetica Neue", Helvetica, Arial, sans-serif', gewicht: 500, groesse: 68, sperrung: -0.015, name: "Grotesk (Inter Display)" },
+  helvetica: { familie: '"Helvetica Now Display", "Helvetica Now Text", "Inter Display", sans-serif', gewicht: 500, groesse: 68, sperrung: -0.01, name: "Helvetica Now" },
+  sans: { familie: '"Instrument Sans", system-ui, sans-serif', gewicht: 400, groesse: 66, sperrung: 0, name: "Instrument Sans" },
+  serif: { familie: 'Newsreader, Georgia, serif', gewicht: 300, groesse: 74, sperrung: 0, name: "Newsreader" },
 };
+
+/** Schrift und Laufweite auf einen Kontext setzen (für Messen und Zeichnen gleich) */
+export function schriftSetzen(ctx, schrift, groesse) {
+  const s = SCHRIFTEN[schrift] ?? SCHRIFTEN.grotesk;
+  ctx.font = `${s.gewicht} ${groesse}px ${s.familie}`;
+  if ("letterSpacing" in ctx) ctx.letterSpacing = `${(s.sperrung * groesse).toFixed(2)}px`;
+}
 
 /**
  * Szene aus dem Ergebnis von strich.js. optionen: stil ("gezeichnet" | "gleichmaessig"), staerke (Faktor für die Strichbreite),
- * zeichnen (Sekunden), text, schrift ("sans" | "serif"), messen(text, groesse, schrift) → Breite.
+ * zeichnen (Sekunden), text, schrift ("grotesk" | "helvetica" | "sans" | "serif"), messen(text, groesse, schrift) → Breite.
  */
-export function szene(ergebnis, { stil = "gezeichnet", staerke = 1, zeichnen = 4.5, text = "", schrift = "sans", messen, leinwand } = {}) {
+export function szene(ergebnis, { stil = "gezeichnet", staerke = 1, zeichnen = 4.5, text = "", schrift = "grotesk", farbe = "dunkel", messen, leinwand } = {}) {
   const { striche, rTyp } = ergebnis;
   // Rahmen der Zeichnung (mit Strichbreite) → in das Bild einpassen, mittig, seitlich RAND, oben und unten etwas mehr
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
@@ -55,10 +68,14 @@ export function szene(ergebnis, { stil = "gezeichnet", staerke = 1, zeichnen = 4
   const plan = zeichenplan(teile);
   const zeit = zeitachse({ zeichnen, text });
   const sb = text.trim() ? satzbild(text, (s, g) => messen(s, g, schrift), { groesse: SCHRIFTEN[schrift].groesse }) : null;
-  return { teile, plan, zeit, satz: sb, schrift, linie, text, ebene: leinwand(BREITE, HOEHE), stand: { p: -1, i: 0, l: 0 } };
+  const farben = FARBEN[farbe] ?? FARBEN.dunkel;
+  return { teile, plan, zeit, satz: sb, schrift, farben, linie, text, ebene: leinwand(BREITE, HOEHE), stand: { p: -1, i: 0, l: 0 } };
 }
 
-const FUELLEN = 0.75;   // bei Flächen: bis hier der Umriss, danach blendet die Füllung ein
+const FUELLEN = 0.75;
+
+/** #rrggbb mit Deckkraft a */
+const mitAlpha = (hex, a) => `rgba(${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)},${a})`;   // bei Flächen: bis hier der Umriss, danach blendet die Füllung ein
 
 /** Stück eines Strichs von Länge von bis bis (Breite je Abschnitt; gleiche Breiten in einem Pfad) */
 function strecke(ctx, t, von, bis) {
@@ -101,7 +118,7 @@ function fortschreiben(sz, p) {
   const { teile, plan, ebene, linie } = sz;
   const ctx = ebene.getContext("2d");
   if (p < sz.stand.p) { ctx.clearRect(0, 0, BREITE, HOEHE); sz.stand = { p: -1, i: 0, l: 0 }; }
-  Object.assign(ctx, { strokeStyle: "#fff", fillStyle: "#fff", lineCap: "round", lineJoin: "round" });
+  Object.assign(ctx, { strokeStyle: sz.farben.tinte, fillStyle: sz.farben.tinte, lineCap: "round", lineJoin: "round" });
   let { i, l } = sz.stand;
   let spitze = null, offen = null;
   while (i < teile.length) {
@@ -141,7 +158,7 @@ function stelle(t, l, w) {
 export function bild(ctx, sz, t) {
   const { ab } = sz.zeit;
   ctx.globalAlpha = 1;
-  ctx.fillStyle = FARBEN.grund;
+  ctx.fillStyle = sz.farben.grund;
   ctx.fillRect(0, 0, BREITE, HOEHE);
   // die Zeichnung
   if (t < ab.bildAus[1]) {
@@ -150,12 +167,13 @@ export function bild(ctx, sz, t) {
     const sicht = 1 - weich(anteil(t, ab.bildAus[0], ab.bildAus[1]));
     ctx.globalAlpha = sicht;
     ctx.drawImage(sz.ebene, 0, 0);
-    if (offen) { ctx.globalAlpha = sicht * offen.a; ctx.fillStyle = "#fff"; ctx.fill(offen.t.flaeche, "evenodd"); }
+    if (offen) { ctx.globalAlpha = sicht * offen.a; ctx.fillStyle = sz.farben.tinte; ctx.fill(offen.t.flaeche, "evenodd"); }
     if (spitze && p < 1) {
       // die Stiftspitze: ein kleiner, weicher Lichtpunkt
       const r = Math.max(7, spitze.w * 2.4);
       const g = ctx.createRadialGradient(spitze.x, spitze.y, 0, spitze.x, spitze.y, r);
-      g.addColorStop(0, "rgba(255,255,255,0.55)"); g.addColorStop(1, "rgba(255,255,255,0)");
+      // auf Weiss etwas schwächer, sonst wirkt der Lichtpunkt wie ein Fleck
+      g.addColorStop(0, mitAlpha(sz.farben.tinte, sz.farben.grund === "#000000" ? 0.55 : 0.3)); g.addColorStop(1, mitAlpha(sz.farben.tinte, 0));
       ctx.globalAlpha = 1; ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(spitze.x, spitze.y, r, 0, Math.PI * 2); ctx.fill();
     }
@@ -164,13 +182,13 @@ export function bild(ctx, sz, t) {
   // der Satz, Wort für Wort
   if (sz.satz && ab.textEin && t >= ab.textEin[0] && t < ab.textAus[1]) satz(ctx, sz, t);
   // das Signet
-  if (t >= ab.signet[0]) signet(ctx, (t - ab.signet[0]) * FPS, { hoehe: HOEHE });
+  if (t >= ab.signet[0]) signet(ctx, (t - ab.signet[0]) * FPS, { hoehe: HOEHE, farben: sz.farben });
 }
 
 function satz(ctx, sz, t) {
-  const { ab } = sz.zeit, { groesse, zeilen, zeilenhoehe } = sz.satz, s = SCHRIFTEN[sz.schrift];
-  ctx.font = `${s.gewicht} ${groesse}px ${s.familie}`;
-  ctx.textBaseline = "alphabetic"; ctx.textAlign = "left"; ctx.fillStyle = "#fff";
+  const { ab } = sz.zeit, { groesse, zeilen, zeilenhoehe } = sz.satz;
+  schriftSetzen(ctx, sz.schrift, groesse);
+  ctx.textBaseline = "alphabetic"; ctx.textAlign = "left"; ctx.fillStyle = sz.farben.tinte;
   const aus = 1 - weich(anteil(t, ab.textAus[0], ab.textAus[1]));
   const n = zeilen.reduce((a, z) => a + z.length, 0), vs = versatz(n);
   const m = ctx.measureText("Hg"), auf = m.fontBoundingBoxAscent ?? groesse * 0.9, abw = m.fontBoundingBoxDescent ?? groesse * 0.25;
@@ -189,11 +207,12 @@ function satz(ctx, sz, t) {
     y += zeilenhoehe;
   }
   ctx.globalAlpha = 1;
+  if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
 }
 
 /** die fertige Zeichnung allein (für das Standbild) */
 export function standbild(ctx, sz) {
-  ctx.fillStyle = FARBEN.grund;
+  ctx.fillStyle = sz.farben.grund;
   ctx.fillRect(0, 0, BREITE, HOEHE);
   fortschreiben(sz, 1);
   ctx.drawImage(sz.ebene, 0, 0);
