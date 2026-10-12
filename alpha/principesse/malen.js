@@ -81,7 +81,7 @@ export function klarbild(rgba, w, h) {
 }
 
 /** Feinheiten: Pinselbreiten (Radius in Bildpunkten des Films) der Durchgänge, Länge und Schwelle je Durchgang, Abstand der Startfelder, Glätten */
-export const EINSTELLUNG = { radien: [46, 22, 11], laenge: [14, 16, 14], schwelle: [0, 25, 30], raster: 1.3, glatt: 3, farbweite: 36, auffrischen: true };
+export const EINSTELLUNG = { radien: [46, 22, 11], laenge: [7, 9, 10], schwelle: [0, 25, 30], raster: 1.3, glatt: 3, farbweite: 36, auffrischen: true };
 
 /** Striche in Bänder der Höhe band ordnen (nach ihrer Mitte), von oben nach unten, abwechselnd von links und von rechts */
 function reihe(striche, band) {
