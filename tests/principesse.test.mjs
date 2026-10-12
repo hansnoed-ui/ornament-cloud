@@ -4,7 +4,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { malen, glaetten, kanaele, optimieren } from "../alpha/principesse/malen.js";
+import { malen, glaetten, kanaele, optimieren, klarbild } from "../alpha/principesse/malen.js";
 import { glitzer, funkeln } from "../alpha/principesse/glitzer.js";
 import { zeitachse, malplan, dateiname, filmMass } from "../alpha/principesse/ablauf.js";
 import { linien, NAME, VON, DAUER } from "../alpha/principesse/signet.js";
@@ -60,6 +60,12 @@ test("Glätten: Rauschen und Körnung weg, Kanten bleiben; ein verrauschtes Bild
   const streuung = (k, x0, x1) => { let s = 0, q = 0, n = 0; for (let y = 10; y < h - 10; y++) for (let x = x0; x < x1; x++) { const v = k[y * w + x]; s += v; q += v * v; n++; } return Math.sqrt(q / n - (s / n) ** 2); };
   assert.ok(streuung(g.r, 10, 90) < streuung(kanaele(d, w, h).r, 10, 90) / 3, "Rauschen deutlich weniger");
   assert.ok(g.r[60 * w + 96] < 90 && g.r[60 * w + 104] > 160, "die Kante bleibt scharf");
+  // das scharfe Bild für den Schluss: Körnung leiser, die Kante bleibt ganz scharf (Wunsch vom 12. Oktober 2026: das fertige Bild war zu unscharf)
+  const k = klarbild(d, w, h), kr = (x, y) => k[(y * w + x) * 4];
+  assert.equal(k.length, w * h * 4);
+  assert.ok(kr(99, 60) < 90 && kr(100, 60) > 160, `Kante zwischen zwei Bildpunkten (${kr(99, 60)} | ${kr(100, 60)})`);
+  const kk = { r: Float32Array.from({ length: w * h }, (_, i) => k[i * 4]) };
+  assert.ok(streuung(kk.r, 10, 90) < streuung(kanaele(d, w, h).r, 10, 90), "Körnung leiser als im Foto, obwohl aufgefrischt");
   const roh = malen(d, w, h, { massstab: 1080 / w, glatt: 0, auffrischen: false }).striche.length, glatt = malen(d, w, h, { massstab: 1080 / w }).striche.length;
   assert.ok(glatt < roh * 0.7, `geglättet ${glatt}, roh ${roh}`);
 });

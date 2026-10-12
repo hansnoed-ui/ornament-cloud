@@ -1,29 +1,32 @@
 // «Principesse» – ein Bild des Films auf eine Leinwand zeichnen (Vorschau, Video und Standbild verwenden dasselbe).
 // Das Gemälde wächst auf einer eigenen Ebene Pinselzug um Pinselzug (nur vorwärts; geht die Zeit zurück, beginnt es neu).
 // Ein Pinselzug: ein Körper in der Grundfarbe und darüber Borsten, leicht versetzt und in der Farbe etwas heller oder dunkler.
-// Darüber funkelt der Glitzer. Dann Foto und Satz, am Schluss das Signet.
-import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=4";
-import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=4";
+// Ist das Gemälde fertig, geht es sanft in das scharfe, aufgefrischte Bild über (klar); darüber funkelt der Glitzer. Dann Foto und Satz, am Schluss das Signet.
+import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=5";
+import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=5";
 import { SCHRIFTEN, schriftSetzen } from "../sketchory/szene.js?v=8";
-import { zufall } from "./malen.js?v=4";
+import { zufall } from "./malen.js?v=5";
 
 export { SCHRIFTEN, FARBEN };
 
 /**
  * Szene. bild: { striche, stufen } aus malen.js; funken aus glitzer.js; optionen: malen (Sekunden), glitzer (0 aus, 1 sanft, 1.6 kräftig),
- * farbe ("hell" | "dunkel"), foto (ImageBitmap/Canvas oder null), text, schrift, streckung, messen, leinwand.
+ * farbe ("hell" | "dunkel"), foto (ImageBitmap/Canvas oder null), klar (das scharfe Bild als Canvas, oder null), text, schrift, streckung, messen, leinwand.
  */
-export function szene(bild, funken, { breite = 1080, hoehe = 1440, malen = 6, glitzer = 1, farbe = "hell", foto = null, text = "", schrift = "grotesk", streckung = 1.15, messen, leinwand } = {}) {
+export function szene(bild, funken, { breite = 1080, hoehe = 1440, malen = 6, glitzer = 1, farbe = "hell", foto = null, klar = null, text = "", schrift = "grotesk", streckung = 1.15, messen, leinwand } = {}) {
   const satzText = satzPunkt(text, true);
   const zeit = zeitachse({ malen, foto: !!foto, text: satzText.text });
   const plan = malplan(bild.striche, bild.stufen, malen);
   const zuege = bild.striche.map((s, i) => pinselzug(s, plan[i]));
   const sb = satzText.text ? satzbild(satzText.text, (s, g) => messen(s, g, schrift), { groesse: SCHRIFTEN[schrift].groesse, streckung, breite: Math.min(breite, 1080) - 232, zeilenMax: hoehe < 1200 ? 4 : 5 }) : null;
   return {
-    breite, hoehe, zeit, zuege, funken, glitzer, farben: FARBEN[farbe] ?? FARBEN.hell, foto, satz: sb, orange: satzText.orange, schrift, streckung,
+    breite, hoehe, zeit, zuege, funken, glitzer, farben: FARBEN[farbe] ?? FARBEN.hell, foto, klar, satz: sb, orange: satzText.orange, schrift, streckung,
     ebene: leinwand(breite, hoehe), stand: { t: -1, naechster: 0, aktiv: [] },
   };
 }
+
+/** so deckend liegt das scharfe Bild am Ende über dem Gemälde (ein Hauch der Pinselstriche bleibt sichtbar) */
+const KLAR = 0.9;
 
 // ---------- Pinselzüge ----------
 
@@ -96,6 +99,9 @@ export function bild(ctx, sz, t) {
     const sicht = 1 - ausblenden(anteil(t, ab.bildAus[0], ab.bildAus[1]));
     ctx.globalAlpha = sicht;
     ctx.drawImage(sz.ebene, 0, 0);
+    // vom Gemälde zum scharfen Bild: beginnt mit den letzten Strichen, dauert gut anderthalb Sekunden
+    const klar = sz.klar ? KLAR * weich(anteil(t, ab.malen[1] - 0.3, ab.malen[1] + 1.4)) : 0;
+    if (klar > 0) { ctx.globalAlpha = sicht * klar; ctx.drawImage(sz.klar, 0, 0, BREITE, HOEHE); }
     ctx.globalAlpha = 1;
     // der Glitzer erwacht im letzten Drittel des Malens und funkelt, solange das Bild steht
     const wach = anteil(t, ab.malen[0] + (ab.malen[1] - ab.malen[0]) * 0.7, ab.stehen[0] + 0.6);
@@ -175,5 +181,6 @@ export function standbild(ctx, sz) {
   ctx.fillRect(0, 0, sz.breite, sz.hoehe);
   malenBis(sz, 1e9);
   ctx.drawImage(sz.ebene, 0, 0);
+  if (sz.klar) { ctx.globalAlpha = KLAR; ctx.drawImage(sz.klar, 0, 0, sz.breite, sz.hoehe); ctx.globalAlpha = 1; }
   if (sz.glitzer > 0) funkenZeichnen(ctx, sz.funken, 0.37, sz.glitzer, "#fff", 1);
 }

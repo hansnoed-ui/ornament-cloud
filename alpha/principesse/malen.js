@@ -4,7 +4,7 @@
 // Durchgang noch zu weit davon weg ist. Ein Strich beginnt an der Stelle mit dem grössten Fehler, nimmt dort die Farbe auf und folgt quer
 // zum Helligkeitsgefälle (also den Formen entlang), gekrümmt und geglättet, bis die Farbe nicht mehr passt oder die Länge erreicht ist.
 // Vorher wird das Bild aufgefrischt (Weissabgleich, Kontrast, Klarheit, Farbkraft) und geglättet (Rauschen, Leinwandstruktur und Körnung weg, Kanten bleiben).
-// Wenige, lange Striche statt vieler kleiner: vier Durchgänge, und jeder Durchgang malt der Reihe nach von oben nach unten.
+// Wenige, lange Striche statt vieler kleiner: vier Durchgänge, jeder Durchgang malt der Reihe nach von oben nach unten.
 // Ergebnis in Bildpunkten des fertigen Films (1080 × 1440): Striche mit Punkten, Farbe, Breite und Durchgang, in Malreihenfolge.
 import { unschaerfe } from "../sketchory/strich.js?v=8";
 
@@ -71,6 +71,13 @@ export function malen(rgba, w, h, { massstab = 2, pinsel = 1, saat = 7, ...fein 
     vorher = leinwand;
   });
   return { striche, stufen: RADIEN.length, radien: RADIEN };
+}
+
+/** das fertige Bild in voller Grösse: aufgefrischt wie für das Malen, aber nur leicht geglättet (Körnung weg, scharf); RGBA */
+export function klarbild(rgba, w, h) {
+  const q = glaetten(optimieren(kanaele(rgba, w, h), w, h), w, h, { radius: 2, farbweite: 36, durchgaenge: 2 }), out = new Uint8ClampedArray(w * h * 4);
+  for (let i = 0, j = 0; i < w * h; i++, j += 4) { out[j] = q.r[i]; out[j + 1] = q.g[i]; out[j + 2] = q.b[i]; out[j + 3] = 255; }
+  return out;
 }
 
 /** Feinheiten: Pinselbreiten (Radius in Bildpunkten des Films) der Durchgänge, Länge und Schwelle je Durchgang, Abstand der Startfelder, Glätten */
@@ -168,7 +175,8 @@ function strich(x, y, R, ref, vorher, gx, gy, w, h, maxSchritte, minSchritte, rn
   const pts = [x + 0.5, y + 0.5];
   let px = x + 0.5, py = y + 0.5, dx = 0, dy = 0;
   // Richtung ohne Gefälle: ein sanftes, festes Feld, damit auch flache Flächen geschwungen gemalt werden
-  const feld = (u, v) => { const a = Math.sin(u * 0.021 + v * 0.013) * 1.7 + Math.cos(v * 0.017 - u * 0.008) * 1.3; return [Math.cos(a), Math.sin(a)]; };
+  // ruhig: fast waagrecht, leicht wogend (wie ein Grund, den man in breiten Zügen anlegt)
+  const feld = (u, v) => { const a = 0.28 * Math.sin(u * 0.012 + v * 0.019) + 0.12 * Math.sin(v * 0.031); return [Math.cos(a), Math.sin(a)]; };
   for (let k = 0; k < maxSchritte; k++) {
     const ix = Math.min(w - 1, Math.max(0, px | 0)), iy = Math.min(h - 1, Math.max(0, py | 0)), i = iy * w + ix;
     const passt = Math.hypot(ref.r[i] - farbe[0], ref.g[i] - farbe[1], ref.b[i] - farbe[2]);
@@ -226,7 +234,9 @@ function richtungen(L, w, h, r) {
   for (let i = 0; i < xx.length; i++) { xx[i] = gx[i] * gx[i]; xy[i] = gx[i] * gy[i]; yy[i] = gy[i] * gy[i]; }
   xx = unschaerfe(xx, w, h, r, 2); xy = unschaerfe(xy, w, h, r, 2); yy = unschaerfe(yy, w, h, r, 2);
   for (let i = 0; i < xx.length; i++) {
-    const a = 0.5 * Math.atan2(2 * xy[i], xx[i] - yy[i]), m = Math.sqrt(Math.sqrt((xx[i] - yy[i]) ** 2 + 4 * xy[i] ** 2));
+    const d = Math.sqrt((xx[i] - yy[i]) ** 2 + 4 * xy[i] ** 2), a = 0.5 * Math.atan2(2 * xy[i], xx[i] - yy[i]);
+    // nur eine klare Richtung zählt (Kohärenz); Rauschen in Flächen gibt keine Richtung, dort malt der Pinsel ruhig weiter
+    const m = d / (xx[i] + yy[i] + 1e-6) > 0.3 ? Math.sqrt(d) : 0;
     gx[i] = Math.cos(a) * m; gy[i] = Math.sin(a) * m;
   }
   return [gx, gy];

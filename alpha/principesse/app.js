@@ -1,18 +1,18 @@
 // «Principesse» – Seite: Bild laden (wird mit Pinselstrichen nachgemalt, der Glitzer funkelt), optional Foto und Satz,
 // Vorschau, Video (MP4) und Standbild (PNG). Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der
 // MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass } from "./ablauf.js?v=4";
-import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=4";
+import { FPS, dateiname, filmMass } from "./ablauf.js?v=5";
+import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=5";
 import { schriftSetzen } from "../sketchory/szene.js?v=8";
 import { mp4 } from "../sketchory/mp4.js?v=8";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
-import { malen } from "./malen.js?v=4";
-import { glitzer } from "./glitzer.js?v=4";
+import { malen, klarbild } from "./malen.js?v=5";
+import { glitzer } from "./glitzer.js?v=5";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const S = { bild: null, gemaelde: null, funken: [], foto: null, sz: null, laeuft: false, start: 0, film: null, rechnen: 0, optionen: null,
+const S = { bild: null, gemaelde: null, funken: [], foto: null, klar: null, sz: null, laeuft: false, start: 0, film: null, rechnen: 0, optionen: null,
   pinsel: 1, glitzer: 1, farbe: "hell", format: "bild", mass: [1080, 1440] };
 window.__principesse = S;   // für die Browser-Tests
 
@@ -84,14 +84,14 @@ $("foto-weg").addEventListener("click", () => {
 
 // ——— malen lassen (Worker, sonst hier) ———
 let worker = null;
-try { worker = new Worker(new URL("./rechner.js?v=4", import.meta.url), { type: "module" }); } catch { worker = null; }
+try { worker = new Worker(new URL("./rechner.js?v=5", import.meta.url), { type: "module" }); } catch { worker = null; }
 function rechnen() {
   // Format: wie das Bild, 3 : 4 oder 1 : 1; gemalt wird auf zwei Dritteln der Filmgrösse, der Glitzer in voller Grösse gesucht
   const [B, H] = (S.mass = filmMass(S.format, S.bild.width, S.bild.height));
   const aw = Math.round(B / 1.5), ah = Math.round(H / 1.5);
   const analyse = { daten: zugeschnitten(S.bild, aw, ah), w: aw, h: ah }, film = { daten: zugeschnitten(S.bild, B, H), w: B, h: H };
   const nr = ++S.rechnen;
-  if (!worker) return Promise.resolve({ nr, gemaelde: malen(analyse.daten, aw, ah, { massstab: B / aw, pinsel: S.pinsel }), funken: glitzer(film.daten, B, H) });
+  if (!worker) return Promise.resolve({ nr, gemaelde: malen(analyse.daten, aw, ah, { massstab: B / aw, pinsel: S.pinsel }), funken: glitzer(film.daten, B, H), klar: klarbild(film.daten, B, H) });
   return new Promise((ok) => {
     const antwort = (e) => { if (e.data.nr === nr) { worker.removeEventListener("message", antwort); ok(e.data); } };
     worker.addEventListener("message", antwort);
@@ -104,11 +104,14 @@ async function lesen() {
   melden("Das Bild wird nachgemalt …");
   sperren(true);
   const t0 = performance.now();
-  const { nr, gemaelde, funken, fehler } = await rechnen();
+  const { nr, gemaelde, funken, klar, fehler } = await rechnen();
   if (nr !== S.rechnen) return;
   sperren(false);
   if (fehler || !gemaelde) { melden(`Das Bild liess sich nicht lesen: ${fehler}`, true); return; }
   S.gemaelde = gemaelde; S.funken = funken.funken;
+  // das scharfe, aufgefrischte Bild, in das das Gemälde am Ende übergeht
+  S.klar = leinwand(S.mass[0], S.mass[1]);
+  S.klar.getContext("2d").putImageData(new ImageData(klar, S.mass[0], S.mass[1]), 0, 0);
   const n = gemaelde.striche.length;
   $("auswertung").textContent = `${n.toLocaleString("de-CH")} Pinselstriche · ${funken.funken.length ? `${funken.funken.length.toLocaleString("de-CH")} Glitzerpunkte` : "kein Glitzer gefunden"} · ${Math.round(performance.now() - t0)} ms`;
   await neu();
@@ -116,7 +119,7 @@ async function lesen() {
 }
 
 function optionen() {
-  return { breite: S.mass[0], hoehe: S.mass[1], malen: Number($("malen").value), glitzer: S.glitzer, farbe: S.farbe, foto: S.foto, text: $("satz").value.replace(/\s+/g, " ").trim(),
+  return { breite: S.mass[0], hoehe: S.mass[1], malen: Number($("malen").value), glitzer: S.glitzer, farbe: S.farbe, foto: S.foto, klar: S.klar, text: $("satz").value.replace(/\s+/g, " ").trim(),
     schrift: $("schrift").value, streckung: 1.15, messen, leinwand };
 }
 
