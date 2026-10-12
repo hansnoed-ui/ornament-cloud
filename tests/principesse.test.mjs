@@ -127,6 +127,7 @@ test("Ablauf: malen, stehen, ausblenden; Foto und Satz nur wenn gewählt; Signet
   assert.equal(ohne.ab.malen[1] - ohne.ab.malen[0], 6);
   assert.equal(ohne.ab.stehen[1] - ohne.ab.stehen[0], 5, "das fertige Bild steht länger (Wunsch vom 12. Oktober 2026)");
   assert.ok(Math.abs(ohne.ab.signet[1] - ohne.ab.signet[0] - DAUER) < 1e-9);
+  assert.ok(Math.abs(ohne.dauer - ohne.ab.pause2[0] - 6.8) < 1e-9, "der Abspann dauert 6,8 s (seit dem 12. Oktober 2026 1,5 s kürzer)");
   const mitFoto = zeitachse({ malen: 6, foto: true }), mitText = zeitachse({ malen: 6, text: "Eine Krone für jeden Tag." }), beides = zeitachse({ malen: 8, foto: true, text: "Eine Krone für jeden Tag." });
   for (const z of [mitFoto, mitText, beides]) assert.ok("fotoEin" in z.ab && "zweitAus" in z.ab);
   assert.ok(beides.dauer > ohne.dauer + 4);
