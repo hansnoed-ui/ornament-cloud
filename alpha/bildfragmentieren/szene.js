@@ -10,19 +10,19 @@
 //               wachsen aus drei Richtungen; innerhalb ihres Umrisses nimmt die Schraffur die echten Farben des Fotos an, Bildpunkt für Bildpunkt,
 //               darunter erscheint das Foto halb durchscheinend; die Dreiecke springen sanft auf, jeder Körper stösst die Kamera leicht an
 //               (seit dem 15. Oktober 2026 ohne Kanaltrennung: Kanal um Kanal gab grelle Zwischenfarben, «Farbbomben»)
-//   04 Bild:    vom Schwerpunkt der Umrisse aus wächst das scharfe, feine Netz aller Dreieckskanten über das farbige Mosaik, dann setzt sich das
-//               Foto Facette um Facette zusammen wie ein Glasfenster; das Netz verschwindet, ein leiser Weissblitz, die Kamera rückt ein wenig
-//               näher und die drei Farbkanäle rasten ein (RGB-Versatz, schwingt aus), das Foto steht
+//   04 Bild:    das Mosaik tritt zurück, das Foto wird montiert: rund hundert Bauteile, vom Motiv aus Teil an Teil; vor jedem zeichnet sich sein
+//               Umriss als Bauplan mit Passkreuzen, dann gleitet es entlang einer Führungslinie an seinen Platz und rastet ein; dann verschwinden
+//               Bauplan und Passkreuze, die Farbkanäle rasten ein (RGB-Versatz, schwingt aus), das Foto steht
 // (Wünsche vom 15. Oktober 2026: «das Einfügen der Farben und das Finden des Schlussbilds dürften noch etwas dynamischer und spektakulärer erfolgen»;
 //  «auf dem ganzen Bild soll nochmals etwas passieren, mit Formen und Linien, nochmals mehr komplexe Geometrie»; «die Kreise sind nix, viel zu grob,
 //  ich möchte feine Geometrie, eher aus bzw. hinter dem Bild als einfach darüber gelegt»; «die farbigen Kreise sind too much … lieber ersetzen durch
 //  komplexe transparente geometrische Körper»)
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=16";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=17";
 import { signet as signetZeichnen } from "../sketchory/signet.js?v=8";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=16";
-import { KOERPER, abbilden } from "./koerper.js?v=16";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=17";
+import { KOERPER, abbilden } from "./koerper.js?v=17";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
@@ -113,41 +113,66 @@ export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoeh
     d.richtung = (((Math.round(w / (Math.PI / 4)) % 4) + 4) % 4);
   }
 
-  // 04 Bild: vom Schwerpunkt der Umrisse (zur Mitte hin gezogen) wächst das Netz aller Dreieckskanten, dann setzt sich das Foto Facette um Facette zusammen
+  // 04 Bild: das Foto wird montiert. Rund hundert Bauteile (ein grobes Delaunay-Mosaik); vom Teil am Schwerpunkt der Umrisse aus jeweils ein an schon
+  // gesetzte angrenzendes, erst einzeln, dann schneller; vor jedem zeichnet sich sein Umriss als Bauplan, dann gleitet es entlang einer Führungslinie
+  // an seinen Platz und rastet ein (Rückmeldung vom 15. Oktober 2026 zum Netz mit runder Einblendung: «ein bisschen Abrakadabra, wenig Konstruktion»)
   let fx = 0, fy = 0, fn = 0;
   for (const k of daten.kanten) for (let i = 0; i < k.pts.length; i += 2) { fx += k.pts[i]; fy += k.pts[i + 1]; fn++; }
   const fokus = fn ? [klemm(0.5 * mx + 0.5 * (fx / fn), breite * 0.3, breite * 0.7), klemm(0.5 * my + 0.5 * (fy / fn), hoehe * 0.3, hoehe * 0.7)] : [mx, my];
-  const fWeit = Math.max(...[[0, 0], [breite, 0], [0, hoehe], [breite, hoehe]].map(([a, b]) => Math.hypot(a - fokus[0], b - fokus[1])));
-  const gesehen = new Set(), linien = [];
-  for (let i = 0; i < n; i++) for (const [a, b] of [[0, 1], [1, 2], [2, 0]]) {
-    const x1 = D.ecken[6 * i + 2 * a], y1 = D.ecken[6 * i + 2 * a + 1], x2 = D.ecken[6 * i + 2 * b], y2 = D.ecken[6 * i + 2 * b + 1];
-    const k1 = `${Math.round(x1)},${Math.round(y1)}`, k2 = `${Math.round(x2)},${Math.round(y2)}`, k = k1 < k2 ? `${k1}|${k2}` : `${k2}|${k1}`;
-    if (gesehen.has(k)) continue;
-    gesehen.add(k);
-    // jede Kante wächst vom Ende nahe am Schwerpunkt aus
-    const d1 = Math.hypot(x1 - fokus[0], y1 - fokus[1]), d2 = Math.hypot(x2 - fokus[0], y2 - fokus[1]);
-    linien.push(d1 <= d2 ? [x1, y1, x2, y2, d1] : [x2, y2, x1, y1, d2]);
-  }
-  const netz = { pts: new Float32Array(linien.length * 4), zeit: new Float32Array(linien.length) };
-  linien.forEach(([x1, y1, x2, y2, d], i) => {
-    netz.pts.set([x1, y1, x2, y2], 4 * i);
-    netz.zeit[i] = Z0 + (0.04 + (d / fWeit) * 0.4) * Zd + rnd() * 0.06;
+  const teile = bauteile(breite, hoehe, rnd, fokus);
+  const gleiten = 0.42 * f, planen = 0.3 * f, m = teile.length;
+  teile.forEach((tl, k) => {
+    const u = m > 1 ? k / (m - 1) : 1, ab0 = Math.hypot(tl.cx - fokus[0], tl.cy - fokus[1]), w = rnd() * Math.PI * 2;
+    const rx = ab0 > 1 ? (tl.cx - fokus[0]) / ab0 : Math.cos(w), ry = ab0 > 1 ? (tl.cy - fokus[1]) / ab0 : Math.sin(w), weite = (0.22 + 0.1 * rnd()) * diag;
+    Object.assign(tl, { setzen: Z0 + (0.2 + 0.62 * u ** 0.5) * Zd, ox: rx * weite, oy: ry * weite });   // u^0,5: die ersten einzeln, dann immer schneller
+    tl.plan = tl.setzen - gleiten - planen;
   });
-  const facetten = [];
-  for (let i = 0; i < n; i++) {
-    const e = D.ecken.subarray(6 * i, 6 * i + 6), cx = (e[0] + e[2] + e[4]) / 3, cy = (e[1] + e[3] + e[5]) / 3, pts = new Float32Array(6);
-    for (let k = 0; k < 3; k++) { const dx = e[2 * k] - cx, dy = e[2 * k + 1] - cy, l = Math.hypot(dx, dy) || 1, g = (l + 0.7) / l; pts[2 * k] = cx + dx * g; pts[2 * k + 1] = cy + dy * g; }
-    facetten.push({ pts, t: Z0 + (0.22 + (Math.hypot(cx - fokus[0], cy - fokus[1]) / fWeit) * 0.5) * Zd + rnd() * 0.06 * Zd });
-  }
-  facetten.sort((a, b) => a.t - b.t);
-  const einrasten = [Z0 + 0.88 * Zd, Z1 + 0.35];
-  const geometrie = { fokus, weit: fWeit, netz, facetten, setzen: 0.35 * f };
+  const einrasten = [Z0 + 0.9 * Zd, Z1 + 0.35];
+  const geometrie = { fokus, teile, gleiten, planen };
 
   return {
     breite, hoehe, zeit, farben: FARBEN[grund] ?? FARBEN.schwarz, grund: FARBEN[grund] ? grund : "schwarz", signet, beschriftung, titel: (titel || "Bildfragmentieren").trim(),
     foto, leinwand, vorrat: vorrat ?? {}, daten, zeilen, kanten, dreiecke, flug, faerben, wellen, ersterFlug, einrasten, geometrie,
     glitches: [F0, C0, Z0, einrasten[0]], zahl: { zeilen: z.reihen, kanten: kanten.length, dreiecke: n },
   };
+}
+
+/** die Bauteile für 04: Ecken, Rand und gut drei Dutzend Punkte innen mit Mindestabstand, Delaunay; Reihenfolge: vom Teil am Schwerpunkt aus jeweils ein
+ *  Nachbar eines schon gesetzten (Breitensuche, je Schritt der nächstgelegene). Ecken je Teil um 0,7 Filmpunkte vergrössert (keine Fugen). */
+function bauteile(B, H, rnd, [fx, fy]) {
+  const px = [0, B, 0, B], py = [0, 0, H, H];
+  for (let k = 1; k < 5; k++) { px.push((k * B) / 5 + (rnd() - 0.5) * B * 0.06, (k * B) / 5 + (rnd() - 0.5) * B * 0.06); py.push(0, H); }
+  for (let k = 1; k < 6; k++) { py.push((k * H) / 6 + (rnd() - 0.5) * H * 0.05, (k * H) / 6 + (rnd() - 0.5) * H * 0.05); px.push(0, B); }
+  const zahl = 38, abstand = Math.sqrt((B * H) / zahl) * 0.72;
+  for (let v = 0, innen = 0; v < 6000 && innen < zahl; v++) {
+    const x = B * (0.05 + 0.9 * rnd()), y = H * (0.05 + 0.9 * rnd());
+    if (px.every((qx, i) => Math.hypot(qx - x, py[i] - y) >= abstand)) { px.push(x); py.push(y); innen++; }
+  }
+  const idx = delaunay(px, py), n = idx.length / 3, teile = [], kanten = new Map();
+  for (let t = 0; t < n; t++) {
+    const e = [0, 1, 2].map((j) => [px[idx[3 * t + j]], py[idx[3 * t + j]]]), cx = (e[0][0] + e[1][0] + e[2][0]) / 3, cy = (e[0][1] + e[1][1] + e[2][1]) / 3;
+    const pts = new Float32Array(6);
+    e.forEach(([x, y], j) => { const dx = x - cx, dy = y - cy, l = Math.hypot(dx, dy) || 1, g = (l + 0.7) / l; pts[2 * j] = cx + dx * g; pts[2 * j + 1] = cy + dy * g; });
+    teile.push({ pts, ecken: e, cx, cy, nachbarn: [],
+      x0: Math.max(0, Math.floor(Math.min(...e.map((q) => q[0])) - 2)), y0: Math.max(0, Math.floor(Math.min(...e.map((q) => q[1])) - 2)),
+      x1: Math.min(B, Math.ceil(Math.max(...e.map((q) => q[0])) + 2)), y1: Math.min(H, Math.ceil(Math.max(...e.map((q) => q[1])) + 2)) });
+    for (let j = 0; j < 3; j++) {
+      const a = idx[3 * t + j], b = idx[3 * t + ((j + 1) % 3)], k = a < b ? `${a},${b}` : `${b},${a}`;
+      if (kanten.has(k)) { const o = kanten.get(k); teile[o].nachbarn.push(t); teile[t].nachbarn.push(o); } else kanten.set(k, t);
+    }
+  }
+  // Reihenfolge: Breitensuche vom Teil am Schwerpunkt aus, unter den möglichen Nachbarn jeweils der dem Schwerpunkt nächste
+  const ab = (t) => Math.hypot(teile[t].cx - fx, teile[t].cy - fy);
+  let start = 0;
+  teile.forEach((_, t) => { if (ab(t) < ab(start)) start = t; });
+  const gesetzt = new Set([start]), reihe = [start], rand = new Set(teile[start].nachbarn);
+  while (rand.size) {
+    let best = -1;
+    for (const t of rand) if (best < 0 || ab(t) < ab(best)) best = t;
+    rand.delete(best); gesetzt.add(best); reihe.push(best);
+    for (const q of teile[best].nachbarn) if (!gesetzt.has(q)) rand.add(q);
+  }
+  return reihe.map((t) => teile[t]);
 }
 
 // ---------- 01 Linien ----------
@@ -420,40 +445,60 @@ function koerper(ctx, k, pts, sicht, weiss, tinte) {
   ctx.restore();
 }
 
-/** 04 Bild: das Foto setzt sich zusammen. Vom Schwerpunkt der Umrisse aus wächst das scharfe, feine Netz aller Dreieckskanten über das farbige Mosaik,
- *  dann füllt sich Facette um Facette mit dem Foto selbst (jede in gut einer Drittelsekunde), wie ein Glasfenster, das gesetzt wird; frisch gesetzte
- *  Facetten haben kurz eine feine Kante. Gegen Ende verschwindet das Netz, dann rasten die Farbkanäle ein.
- *  (Rückmeldung vom 15. Oktober 2026 zur Gravur mit Höhenlinien und zu den Splittern: «einfach nicht gut, viel zu einfach gefiltert») */
+/** 04 Bild: das Foto wird montiert. Vor jedem Bauteil zeichnet sich sein Umriss (Bauplan) mit Passkreuzen an den Ecken; dann gleitet das Teil – ein Stück
+ *  des Fotos – entlang einer gestrichelten Führungslinie geradlinig an seinen Platz, bremst ab und rastet mit einer kurzen Kante ein. Gesetzte Teile
+ *  bilden zusammen das Foto; gegen Ende verschwinden Bauplan und Passkreuze, dann rasten die Farbkanäle ein. */
 function zusammensetzen(ctx, sz, t) {
-  const G = sz.geometrie, f = sz.zeit.tempo, [Z0, Z1] = sz.zeit.ab.zusammen, [e0] = sz.einrasten;
+  const G = sz.geometrie, [Z0, Z1] = sz.zeit.ab.zusammen, [e0] = sz.einrasten, T = sz.farben.tinte;
   if (t < Z0 || t >= e0) return;
-  // Facetten: gesetzte gemeinsam (eine Maske), die gerade erscheinenden in drei Stufen der Deckkraft
-  if (sz.foto) {
-    const voll = new Path2D(), stufen = [new Path2D(), new Path2D(), new Path2D()], zahl = [0, 0, 0, 0];
-    const dreieck = (p, q) => { p.moveTo(q[0], q[1]); p.lineTo(q[2], q[3]); p.lineTo(q[4], q[5]); p.closePath(); };
-    for (const fc of G.facetten) {
-      if (t < fc.t) break;
-      const q = (t - fc.t) / G.setzen;
-      if (q >= 1) { dreieck(voll, fc.pts); zahl[3]++; } else { const k = Math.min(2, Math.floor(q * 3)); dreieck(stufen[k], fc.pts); zahl[k]++; }
+  const plan = 1 - sanft(anteil(t, Z0 + 0.84 * (Z1 - Z0), e0));   // Sichtbarkeit von Bauplan und Passkreuzen
+  const umriss = (p, q) => { p.moveTo(q[0], q[1]); p.lineTo(q[2], q[3]); p.lineTo(q[4], q[5]); p.closePath(); };
+  const gesetzt = new Path2D(), linien = new Path2D(), kreuze = new Path2D(), kanten = [], gleitend = [];
+  let zahl = 0;
+  for (const tl of G.teile) {
+    if (t < tl.plan) continue;
+    // Bauplan: der Umriss zeichnet sich Kante um Kante (dann bleibt er zart stehen), Passkreuze an den Ecken
+    const q = anteil(t, tl.plan, tl.plan + G.planen) * 3, e = tl.ecken;
+    linien.moveTo(e[0][0], e[0][1]);
+    for (let k = 0; k < 3; k++) {
+      const a = e[k], b = e[(k + 1) % 3], v = klemm(q - k);
+      if (v <= 0) break;
+      linien.lineTo(a[0] + (b[0] - a[0]) * v, a[1] + (b[1] - a[1]) * v);
     }
-    if (zahl[3]) { ctx.save(); ctx.clip(voll); ctx.drawImage(sz.foto, 0, 0, sz.breite, sz.hoehe); ctx.restore(); }
-    stufen.forEach((p, k) => {
-      if (!zahl[k]) return;
-      ctx.save(); ctx.clip(p); ctx.globalAlpha = (k + 0.5) / 3; ctx.drawImage(sz.foto, 0, 0, sz.breite, sz.hoehe); ctx.restore();
-      ctx.globalAlpha = 0.45 * (1 - k / 3); ctx.strokeStyle = sz.farben.tinte; ctx.lineWidth = 0.8; ctx.stroke(p); ctx.globalAlpha = 1;
-    });
+    if (q >= 1) for (const [x, y] of e) { kreuze.moveTo(x - 6, y); kreuze.lineTo(x + 6, y); kreuze.moveTo(x, y - 6); kreuze.lineTo(x, y + 6); }
+    if (t >= tl.setzen) { umriss(gesetzt, tl.pts); zahl++; if (t < tl.setzen + 0.4) kanten.push(tl); }
+    else if (t >= tl.setzen - G.gleiten) gleitend.push(tl);
   }
-  // das Netz: jede Kante wächst vom Ende nahe am Schwerpunkt aus, scharf und fein, in der Tinte
-  const sicht = 1 - sanft(anteil(t, Z0 + 0.62 * (Z1 - Z0), e0));
-  if (sicht <= 0) return;
-  const N = G.netz, linien = new Path2D();
-  for (let i = 0; i < N.zeit.length; i++) {
-    const a = N.zeit[i];
-    if (t < a) continue;
-    const q = anteil(t, a, a + 0.3 * f), j = 4 * i, x1 = N.pts[j], y1 = N.pts[j + 1], x2 = N.pts[j + 2], y2 = N.pts[j + 3];
-    linien.moveTo(x1, y1); linien.lineTo(x1 + (x2 - x1) * q, y1 + (y2 - y1) * q);
+  if (sz.foto && zahl) { ctx.save(); ctx.clip(gesetzt); ctx.drawImage(sz.foto, 0, 0, sz.breite, sz.hoehe); ctx.restore(); }
+  ctx.strokeStyle = T; ctx.lineCap = "round"; ctx.lineJoin = "round";
+  if (plan > 0) {
+    ctx.globalAlpha = 0.5 * plan; ctx.lineWidth = 0.9; ctx.stroke(linien);
+    ctx.globalAlpha = 0.75 * plan; ctx.lineWidth = 1.1; ctx.stroke(kreuze);
   }
-  ctx.strokeStyle = sz.farben.tinte; ctx.lineCap = "round"; ctx.globalAlpha = 0.6 * sicht; ctx.lineWidth = 0.9; ctx.stroke(linien);
+  // gleitende Teile: Führungslinie vom Ausgangspunkt zum Platz, das Teil darauf, abbremsend
+  for (const tl of gleitend) {
+    const v = weich(anteil(t, tl.setzen - G.gleiten, tl.setzen)), dx = tl.ox * (1 - v), dy = tl.oy * (1 - v);
+    ctx.save();
+    ctx.setLineDash([6, 7]); ctx.globalAlpha = 0.55; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(tl.cx + tl.ox, tl.cy + tl.oy); ctx.lineTo(tl.cx, tl.cy); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.translate(dx, dy);
+    ctx.beginPath(); umriss(ctx, tl.pts);
+    if (sz.foto) {
+      ctx.save(); ctx.clip(); ctx.globalAlpha = 1;
+      const w = tl.x1 - tl.x0, h = tl.y1 - tl.y0;
+      if (w > 0 && h > 0) ctx.drawImage(sz.foto, tl.x0, tl.y0, w, h, tl.x0, tl.y0, w, h);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 0.9; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.restore();
+  }
+  // einrastende Teile: eine kurze, klare Kante
+  for (const tl of kanten) {
+    const b = 1 - anteil(t, tl.setzen, tl.setzen + 0.4);
+    ctx.beginPath(); umriss(ctx, tl.pts);
+    ctx.globalAlpha = b; ctx.lineWidth = 1 + 1.2 * b; ctx.stroke();
+  }
   ctx.globalAlpha = 1;
 }
 
@@ -575,9 +620,9 @@ function beschriftung(ctx, sz, t, sicht) {
   PHASEN.forEach(([name], i) => { if (t >= ab[name][0] - 0.05) nr = i; });
   const [name, titel] = PHASEN[nr], [a, b] = ab[name], fort = anteil(t, a, b);
   const zahl = (n) => n.toLocaleString("de-CH");
-  const gelandet = sz.geometrie.facetten.filter((fc) => t >= fc.t + sz.geometrie.setzen).length;
+  const gelandet = sz.geometrie.teile.filter((tl) => t >= tl.setzen).length;
   const zaehler = [`zeilen ${zahl(sz.zahl.zeilen)} · kanten ${zahl(sz.zahl.kanten)}`, `dreiecke ${zahl(sz.zahl.dreiecke)}`, `farbe ${Math.round(fort * 100)} %`,
-    `fragmente ${zahl(gelandet)} / ${zahl(sz.zahl.dreiecke)}`][nr];
+    `bauteile ${zahl(gelandet)} / ${zahl(sz.geometrie.teile.length)}`][nr];
   const unten = H - rand;
   ctx.textAlign = "left";
   ctx.fillText(`0${nr + 1} ${titel.toUpperCase()}`, rand, unten - g * 1.9);
