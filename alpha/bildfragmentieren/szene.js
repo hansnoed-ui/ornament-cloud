@@ -8,8 +8,8 @@
 //               wächst; wo sein Umriss durchläuft, springen die Dreiecke kurz auf, blitzen und bekommen diesen Kanal (übersättigt, dann ruhig);
 //               jede Welle stösst die Kamera kurz an, das Gitter verschwindet
 //   04 Bild:    das Mosaik löst sich auf; dahinter kommt feine Geometrie aus dem Foto selbst zum Vorschein, vom Schwerpunkt der Umrisse aus:
-//               Höhenlinien der Helligkeit in den Farben des Fotos (Stufe um Stufe, leicht gegeneinander schimmernd) und das haarfeine Netz aller
-//               Dreieckskanten; grosse Splitter des Fotos stürzen gedreht herein und legen sich leicht durchscheinend davor, erst einzeln, dann
+//               Höhenlinien der Helligkeit und das zarte Netz aller Dreieckskanten, gefüllt mit dem leuchtenden Foto (wie eine Lichtgravur) auf dem
+//               abgedunkelten, weichen Foto, mit Zähllinien und einem schrägen Lichtstreif; grosse Splitter des Fotos stürzen gedreht herein und legen sich leicht durchscheinend davor, erst einzeln, dann
 //               immer schneller, mit Erschütterung beim Aufprall; dann ein Weissblitz, die Kamera springt näher und die drei Farbkanäle rasten ein
 //               (RGB-Versatz, schwingt aus), das Foto steht
 // (Wünsche vom 15. Oktober 2026: «das Einfügen der Farben und das Finden des Schlussbilds dürften noch etwas dynamischer und spektakulärer erfolgen»;
@@ -18,10 +18,10 @@
 //  komplexe transparente geometrische Körper»)
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=7";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=8";
 import { signet as signetZeichnen } from "../sketchory/signet.js?v=8";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=7";
-import { KOERPER, abbilden } from "./koerper.js?v=7";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=8";
+import { KOERPER, abbilden } from "./koerper.js?v=8";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
@@ -260,7 +260,12 @@ function dreieckeZeichnen(ctx, sz, t) {
   if (gitterRuhe > 0) { ctx.globalAlpha = gitterRuhe * anteil(t, F0, F0 + 0.4); ctx.lineWidth = 1.2; ctx.stroke(gitterRuhig); }
   // beim Zusammensetzen löst sich das Mosaik fast ganz auf, damit die Geometrie dahinter zum Vorschein kommt
   const zurueck = 0.88 * sanft(anteil(t, Z0, Z0 + 0.4 * (Z1 - Z0)));
-  if (zurueck > 0) { ctx.globalAlpha = zurueck; ctx.fillStyle = F.grund; ctx.fillRect(-40, -40, sz.breite + 80, sz.hoehe + 80); }
+  if (zurueck > 0) {
+    // zurück tritt es hinter das abgedunkelte, weiche Foto (ohne Foto hinter den Grund)
+    ctx.globalAlpha = zurueck / 0.88;
+    if (sz.foto) ctx.drawImage(lichtBilder(sz).tief, -40, -40, sz.breite + 80, sz.hoehe + 80);
+    else { ctx.fillStyle = F.grund; ctx.fillRect(-40, -40, sz.breite + 80, sz.hoehe + 80); }
+  }
   ctx.globalAlpha = 1;
 }
 
@@ -338,44 +343,95 @@ function splitterZeichnen(ctx, sz, t) {
   }
 }
 
-/** feine Geometrie aus dem Foto, hinter den Splittern (04 Bild): Höhenlinien der Helligkeit in den Farben des Fotos und das haarfeine Netz aller
- *  Dreieckskanten; sie kommen vom Schwerpunkt der Umrisse aus zum Vorschein (eine wachsende runde Öffnung), die Höhenlinien Stufe um Stufe und
- *  leicht gegeneinander bewegt, sodass sie schimmern. Auf Schwarz leuchtend (addiert), auf Weiss als feine dunkle Linien (multipliziert). */
+/** feine Geometrie aus dem Foto, hinter den Splittern (04 Bild): Höhenlinien der Helligkeit und das zarte Netz aller Dreieckskanten, gefüllt mit dem
+ *  aufgehellten Foto selbst, sodass jede Linie in den Farben ihres Bildteils leuchtet (wie eine Lichtgravur), auf dem abgedunkelten, weichen Foto.
+ *  Jede dritte Höhenlinie ist etwas kräftiger (wie die Zähllinien einer Karte); ein weicher Lichtstreif zieht schräg über die Linien. Sie kommen vom
+ *  Schwerpunkt der Umrisse aus zum Vorschein (eine wachsende runde Öffnung), Stufe um Stufe, leicht gegeneinander bewegt.
+ *  (Rückmeldung vom 15. Oktober 2026: weisse Konturen auf schwarzem Grund «wirken noch zu wenig wertig bzw. interessant») */
 function geometrieZeichnen(ctx, sz, t) {
   const G = sz.geometrie, [fx, fy] = G.fokus, f = sz.zeit.tempo, weiss = sz.grund === "weiss";
-  if (t < G.von || t >= sz.einrasten[0]) return;
+  if (t < G.von || t >= sz.einrasten[0] || !sz.foto) return;
   const auf = weich(anteil(t, G.von, G.von + G.auf)), sicht = anteil(t, G.von, G.von + 0.3);
-  ctx.save();
-  ctx.beginPath(); ctx.arc(fx, fy, Math.max(1, auf * G.weit * 1.02), 0, Math.PI * 2); ctx.clip();
-  ctx.globalCompositeOperation = weiss ? "multiply" : "lighter";
-  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  // die Linien in eine eigene Ebene (in der Auflösung und Lage der Leinwand), dann mit dem leuchtenden Foto füllen
+  const c = ctx.canvas;
+  if (!sz.linienEbene || sz.linienEbene.width !== c.width || sz.linienEbene.height !== c.height) sz.linienEbene = sz.leinwand(c.width, c.height);
+  const e = sz.linienEbene.getContext("2d");
+  e.setTransform(1, 0, 0, 1, 0, 0); e.globalCompositeOperation = "source-over"; e.globalAlpha = 1; e.clearRect(0, 0, c.width, c.height);
+  e.setTransform(ctx.getTransform());
+  e.save();
+  e.beginPath(); e.arc(fx, fy, Math.max(1, auf * G.weit * 1.02), 0, Math.PI * 2); e.clip();
+  e.strokeStyle = "#ffffff"; e.lineCap = "butt"; e.lineJoin = "round";
   // Höhenlinien: einmal als Pfade gebaut, Stufe um Stufe sichtbar, jede leicht in ihrer eigenen Richtung bewegt
   G.pfade ??= G.hoehen.map((stufe) => { const p = new Path2D(), q = stufe.pts; for (let k = 0; k < q.length; k += 4) { p.moveTo(q[k], q[k + 1]); p.lineTo(q[k + 2], q[k + 3]); } return p; });
   const zahl = G.pfade.length;
   G.pfade.forEach((pfad, k) => {
-    const a = anteil(t, G.von + (k / Math.max(1, zahl)) * 0.35 * G.auf, G.von + (k / Math.max(1, zahl)) * 0.35 * G.auf + 0.5 * f);
+    const von = G.von + (k / Math.max(1, zahl)) * 0.35 * G.auf, a = anteil(t, von, von + 0.5 * f);
     if (a <= 0) return;
-    const [r, g, b] = G.hoehen[k].farbe, m = weiss ? 0.75 : 0.45;
-    const farbe = weiss ? `rgb(${(r * m) | 0},${(g * m) | 0},${(b * m) | 0})` : `rgb(${(r + (255 - r) * m) | 0},${(g + (255 - g) * m) | 0},${(b + (255 - b) * m) | 0})`;
-    ctx.save();
-    ctx.translate(Math.sin(t * 1.3 + k * 0.9) * 2.4, Math.cos(t * 1.1 + k * 0.7) * 2.4);
-    // flache Enden: runde würden sich an jeder Fuge der Stücke zu hellen Perlen addieren
-    ctx.lineCap = "butt"; ctx.strokeStyle = farbe; ctx.globalAlpha = 0.85 * sicht * a; ctx.lineWidth = 1.1; ctx.stroke(pfad);
-    ctx.restore();
+    const zaehl = k % 3 === 1;
+    e.save();
+    e.translate(Math.sin(t * 1.3 + k * 0.9) * 2.4, Math.cos(t * 1.1 + k * 0.7) * 2.4);
+    e.globalAlpha = (zaehl ? 1 : 0.62) * a; e.lineWidth = zaehl ? 2 : 0.9; e.stroke(pfad);
+    e.restore();
   });
-  // das Netz: jede Kante wächst vom Ende nahe am Schwerpunkt aus, haarfein; an jedem dritten Ende ein kleiner Knoten
-  const N = G.netz, linien = new Path2D(), knoten = new Path2D();
+  // das Netz: jede Kante wächst vom Ende nahe am Schwerpunkt aus, sehr zart, ohne Knoten
+  const N = G.netz, linien = new Path2D();
   for (let i = 0; i < N.zeit.length; i++) {
     const a = N.zeit[i];
     if (t < a) continue;
     const q = anteil(t, a, a + 0.3 * f), j = 4 * i, x1 = N.pts[j], y1 = N.pts[j + 1], x2 = N.pts[j + 2], y2 = N.pts[j + 3];
     linien.moveTo(x1, y1); linien.lineTo(x1 + (x2 - x1) * q, y1 + (y2 - y1) * q);
-    if (q >= 1 && i % 3 === 0) { knoten.moveTo(x2 + 1.6, y2); knoten.arc(x2, y2, 1.6, 0, Math.PI * 2); }
   }
-  ctx.strokeStyle = sz.farben.tinte; ctx.fillStyle = sz.farben.tinte;
-  ctx.globalAlpha = 0.32 * sicht; ctx.lineWidth = 0.8; ctx.stroke(linien);
-  ctx.globalAlpha = 0.6 * sicht; ctx.fill(knoten);
+  e.globalAlpha = 0.28; e.lineWidth = 0.7; e.lineCap = "round"; e.stroke(linien);
+  e.restore();
+  // füllen: nur wo Linien sind, das leuchtende Foto
+  e.globalCompositeOperation = "source-in"; e.globalAlpha = 1;
+  e.drawImage(lichtBilder(sz).leucht, 0, 0, sz.breite, sz.hoehe);
+  e.globalCompositeOperation = "source-over";
+  // auf die Leinwand: addiert (auf Weiss multipliziert); dazu der Lichtstreif, ein schräges Band, das die Linien heller macht
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = weiss ? "multiply" : "lighter";
+  ctx.globalAlpha = 0.95 * sicht; ctx.drawImage(sz.linienEbene, 0, 0);
+  const [Z0, Z1] = sz.zeit.ab.zusammen, u = sanft(anteil(t, Z0 + 0.2 * (Z1 - Z0), Z0 + 0.95 * (Z1 - Z0)));
+  if (u > 0 && u < 1) {
+    const W = c.width, H = c.height, mitte = -0.4 * W + u * (W + 1.2 * H), schraeg = 0.55 * H;
+    for (const [breit, staerke] of [[0.22, 0.35], [0.11, 0.45], [0.04, 0.6]]) {
+      const b = breit * W;
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(mitte - b, 0); ctx.lineTo(mitte + b, 0); ctx.lineTo(mitte + b - schraeg * 2, H); ctx.lineTo(mitte - b - schraeg * 2, H); ctx.closePath(); ctx.clip();
+      ctx.globalAlpha = staerke * sicht; ctx.drawImage(sz.linienEbene, 0, 0);
+      ctx.restore();
+    }
+  }
   ctx.restore();
+}
+
+/** das Foto für die Geometrie, einmal je Foto und Grund: «tief» abgedunkelt und weich (auf Weiss: aufgehellt und weich) als Grund hinter den Linien,
+ *  «leucht» aufgehellt und satter (auf Weiss: abgedunkelt und satter) zum Füllen der Linien */
+function lichtBilder(sz) {
+  const v = sz.vorrat, schluessel = `licht-${sz.grund}`;
+  if (v[schluessel] && v.lichtFoto === sz.foto) return v[schluessel];
+  const B = sz.breite, H = sz.hoehe, weiss = sz.grund === "weiss";
+  // weich: klein und wieder gross gezeichnet
+  const klein = sz.leinwand(Math.max(8, Math.round(B / 14)), Math.max(8, Math.round(H / 14)));
+  klein.getContext("2d").drawImage(sz.foto, 0, 0, klein.width, klein.height);
+  const tief = sz.leinwand(B, H), tc = tief.getContext("2d");
+  tc.imageSmoothingQuality = "high"; tc.drawImage(klein, 0, 0, B, H);
+  tc.globalAlpha = weiss ? 0.8 : 0.78; tc.fillStyle = weiss ? "#ffffff" : "#000000"; tc.fillRect(0, 0, B, H);
+  // leuchtend: das Foto mit sich selbst «Bildschirm» (auf Weiss: «multipliziert»), dann satter
+  const quelle = sz.leinwand(B, H), qc = quelle.getContext("2d", { willReadFrequently: true });
+  qc.drawImage(sz.foto, 0, 0, B, H);
+  const bild = qc.getImageData(0, 0, B, H), d = bild.data;
+  for (let i = 0; i < d.length; i += 4) {
+    let r = d[i], g = d[i + 1], b = d[i + 2];
+    if (weiss) { r = (r * r) / 255; g = (g * g) / 255; b = (b * b) / 255; } else { r = 255 - ((255 - r) ** 2) / 255; g = 255 - ((255 - g) ** 2) / 255; b = 255 - ((255 - b) ** 2) / 255; }
+    const l = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 1.45;
+    d[i] = l + (r - l) * s; d[i + 1] = l + (g - l) * s; d[i + 2] = l + (b - l) * s;
+  }
+  qc.putImageData(bild, 0, 0);
+  if (v.lichtFoto !== sz.foto) for (const k of Object.keys(v)) if (k.startsWith("licht-")) delete v[k];
+  v.lichtFoto = sz.foto; v[schluessel] = { tief, leucht: quelle };
+  return v[schluessel];
 }
 
 /** die Kamera: Stösse bei den Farbwellen, Zittern und Erschütterung beim Aufprall der Splitter; gibt Zoom und Versatz */
@@ -409,7 +465,7 @@ function auszugsBilder(sz) {
 }
 
 /** die Farbauszüge im Voraus rechnen (sonst stockt die Vorschau einmal kurz beim Einrasten) */
-export function vorbereiten(sz) { if (sz.foto) auszugsBilder(sz); }
+export function vorbereiten(sz) { if (sz.foto) { auszugsBilder(sz); lichtBilder(sz); } }
 
 /** das Foto, zum Schluss langsam etwas näher; beim Einrasten mit auseinanderlaufenden Farbkanälen, die ausschwingen */
 function fotoZeichnen(ctx, sz, t) {
