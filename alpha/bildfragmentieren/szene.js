@@ -3,9 +3,9 @@
 //   01 Linien:  waagrechte Linien tasten das Bild ab (von oben nach unten), heben sich mit der Helligkeit zu einem Relief
 //               (jede Linie verdeckt, was hinter ihr liegt) und beruhigen sich; dann zieht eine Feder die prägnanten Umrisse nach, einen nach
 //               dem anderen, als ruhige, geglättete Kurven (nur die langen; seit dem 15. Oktober 2026, vorher viele kleine Schlaufen zugleich)
-//   02 Formen:  Dreiecke fliegen von aussen als Drahtgitter herein, drehen sich ein und füllen sich mit einer Schraffur in fünf Tonstufen (leer, weit,
-//               dicht, gekreuzt, voll; Stufen nach der Verteilung des Bilds), deren Richtung der Ausrichtung des Dreiecks folgt: ein gestochenes,
-//               grafisches Mosaik statt gemittelter Grautöne (Rückmeldung vom 15. Oktober 2026: «wirkt noch insgesamt einfach wie ein unscharfes Bild»)
+//   02 Formen:  Dreiecke fliegen von aussen als Drahtgitter herein, drehen sich ein und bringen ihr Stück eines Stichs mit: das Foto Bildpunkt für
+//               Bildpunkt als Schraffur (je dunkler, desto breiter die Linie, ab mittleren Tönen gekreuzt), die Richtung je Dreieck; so bleiben feine
+//               Linien und Details erhalten (seit dem 15. Oktober 2026; vorher ein Mittelwert je Dreieck, der z. B. Strichzeichnungen verschluckte)
 //   03 Farben:  drei transparente geometrische Körper (Geodäte, Dodekaeder, Ikosaeder, je mit einem gegenläufig drehenden Körper im Innern)
 //               wachsen aus drei Richtungen; innerhalb ihres Umrisses nimmt die Schraffur die echten Farben des Fotos an, Bildpunkt für Bildpunkt,
 //               darunter erscheint das Foto halb durchscheinend; die Dreiecke springen sanft auf, jeder Körper stösst die Kamera leicht an
@@ -19,10 +19,10 @@
 //  komplexe transparente geometrische Körper»)
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=15";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=16";
 import { signet as signetZeichnen } from "../sketchory/signet.js?v=8";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=15";
-import { KOERPER, abbilden } from "./koerper.js?v=15";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=16";
+import { KOERPER, abbilden } from "./koerper.js?v=16";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
@@ -106,17 +106,11 @@ export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoeh
       dreh: (rnd() - 0.5) * Math.PI * 2.4, wann };
   }
   const ersterFlug = dreiecke.reduce((m, d) => Math.min(m, d.land - flug), Infinity);
-  // Schraffur: fünf Tonstufen, Schwellen halb nach der Verteilung der Helligkeit im Bild, halb fest (damit Helles hell bleibt; auf Weiss umgekehrt:
-  // dunkel ist dicht), Richtung nach der längsten Seite
-  const dichte = (d) => (grund === "weiss" ? 255 - d.grau : d.grau);
-  const sortiert2 = dreiecke.map(dichte).sort((a, b) => a - b), schwelle = [0.22, 0.45, 0.68, 0.86].map((q) => 0.5 * (sortiert2[Math.floor(q * (sortiert2.length - 1))] ?? 0) + 0.5 * [50, 105, 160, 205][[0.22, 0.45, 0.68, 0.86].indexOf(q)]);
+  // Richtung der Schraffur im Stich: nach der längsten Seite des Dreiecks (vier Winkel)
   for (const d of dreiecke) {
-    const v = dichte(d);
-    d.stufe = schwelle.filter((x) => v > x).length;
     let lang = 0, w = 0;
     for (let k = 0; k < 3; k++) { const j = (k + 1) % 3, dx = d.rel[2 * j] - d.rel[2 * k], dy = d.rel[2 * j + 1] - d.rel[2 * k + 1], l = Math.hypot(dx, dy); if (l > lang) { lang = l; w = Math.atan2(dy, dx); } }
     d.richtung = (((Math.round(w / (Math.PI / 4)) % 4) + 4) % 4);
-    d.zuerst = Math.min(...d.wann);
   }
 
   // 04 Bild: vom Schwerpunkt der Umrisse (zur Mitte hin gezogen) wächst das Netz aller Dreieckskanten, dann setzt sich das Foto Facette um Facette zusammen
@@ -151,7 +145,7 @@ export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoeh
 
   return {
     breite, hoehe, zeit, farben: FARBEN[grund] ?? FARBEN.schwarz, grund: FARBEN[grund] ? grund : "schwarz", signet, beschriftung, titel: (titel || "Bildfragmentieren").trim(),
-    foto, leinwand, vorrat: vorrat ?? {}, zeilen, kanten, dreiecke, flug, faerben, wellen, ersterFlug, einrasten, geometrie,
+    foto, leinwand, vorrat: vorrat ?? {}, daten, zeilen, kanten, dreiecke, flug, faerben, wellen, ersterFlug, einrasten, geometrie,
     glitches: [F0, C0, Z0, einrasten[0]], zahl: { zeilen: z.reihen, kanten: kanten.length, dreiecke: n },
   };
 }
@@ -234,32 +228,6 @@ function ecken(d, e, gross, aus) {
 }
 const dreieckPfad = (ctx, p) => { ctx.moveTo(p[0], p[1]); ctx.lineTo(p[2], p[3]); ctx.lineTo(p[4], p[5]); ctx.closePath(); };
 
-/** Schraffur als Muster (je Leinwand einmal gebaut): Stufe 1 weite Linien, 2 dichte Linien, 3 gekreuzt, 4 volle Fläche; vier Richtungen.
- *  Das Muster liegt fest auf der Leinwand, sodass Dreiecke gleicher Richtung wie ein gestochenes Feld ineinander übergehen. */
-const MUSTER = new WeakMap();
-function schraffur(ctx, sz, stufe, richtung) {
-  let m = MUSTER.get(ctx);
-  if (!m || m.tinte !== sz.farben.tinte) {
-    const tinte = sz.farben.tinte, kachel = (s, zeichnen) => { const c = sz.leinwand(s, s), k = c.getContext("2d"); k.fillStyle = tinte; zeichnen(k, s); return c; };
-    const formen = [
-      null,
-      kachel(11, (k) => k.fillRect(0, 0, 11, 1.3)),
-      kachel(6, (k) => k.fillRect(0, 0, 6, 1.5)),
-      kachel(8, (k) => { k.fillRect(0, 0, 8, 1.3); k.fillRect(0, 0, 1.3, 8); }),
-      kachel(4, (k) => { k.globalAlpha = 0.9; k.fillRect(0, 0, 4, 4); }),
-    ];
-    const WINKEL = [22.5, 67.5, 112.5, 157.5];
-    m = { tinte, muster: formen.map((kachelBild) => WINKEL.map((w) => {
-      if (!kachelBild) return null;
-      const p = ctx.createPattern(kachelBild, "repeat");
-      if (p && typeof DOMMatrix !== "undefined" && p.setTransform) p.setTransform(new DOMMatrix().rotateSelf(w));
-      return p;
-    })) };
-    MUSTER.set(ctx, m);
-  }
-  return m.muster[stufe][richtung] ?? sz.farben.tinte;
-}
-
 /** eine Ebene in der Grösse und Lage der Leinwand (leer, mit derselben Abbildung), einmal je Szene gebaut */
 function ebene(ctx, sz, name) {
   const c = ctx.canvas;
@@ -312,30 +280,88 @@ function huelle(pts) {
   return unten.slice(0, -1).concat(oben.slice(0, -1));
 }
 
+/** der Stich: das Foto Bildpunkt für Bildpunkt als Schraffur (einmal je Foto, Grund und Mosaik). Je dunkler (auf Schwarz: je heller) ein Bildpunkt,
+ *  desto breiter die Linie, ab mittleren Tönen eine zweite, gekreuzte Lage, wie bei einem Kupferstich; die Richtung kommt vom Dreieck, in dem der
+ *  Bildpunkt liegt (vier Winkel), die Dreiecke sind also die Facetten des Stichs. Feine Linien und Details des Fotos bleiben so erhalten.
+ *  (Rückmeldung vom 15. Oktober 2026: das Mosaik aus Mittelwerten je Dreieck «geht völlig am Ausgangsbild vorbei», etwa bei Strichzeichnungen)
+ *  Gibt eine Leinwand in Filmgrösse: Tinte mit der Deckkraft der Schraffur, sonst durchsichtig. */
+const ABSTAND = 7, WINKEL = [22.5, 67.5, 112.5, 157.5].map((w) => (w * Math.PI) / 180);
+function stich(sz) {
+  const v = sz.vorrat, schluessel = `stich-${sz.grund}`;
+  if (v[schluessel] && v.stichFoto === sz.foto && v.stichDaten === sz.daten) return v[schluessel];
+  const B = sz.breite, H = sz.hoehe, weiss = sz.grund === "weiss";
+  const q = sz.leinwand(B, H), qc = q.getContext("2d", { willReadFrequently: true });
+  qc.drawImage(sz.foto, 0, 0, B, H);
+  const bild = qc.getImageData(0, 0, B, H), d = bild.data;
+  // Richtung je Bildpunkt: das Dreieck, in dem er liegt
+  const richtung = new Uint8Array(B * H);
+  for (const t of sz.dreiecke) {
+    const p = [0, 1, 2].map((k) => [t.cx + t.rel[2 * k], t.cy + t.rel[2 * k + 1]]);
+    const x0 = Math.max(0, Math.floor(Math.min(p[0][0], p[1][0], p[2][0]))), x1 = Math.min(B - 1, Math.ceil(Math.max(p[0][0], p[1][0], p[2][0])));
+    const y0 = Math.max(0, Math.floor(Math.min(p[0][1], p[1][1], p[2][1]))), y1 = Math.min(H - 1, Math.ceil(Math.max(p[0][1], p[1][1], p[2][1])));
+    const [[ax, ay], [bx, by], [cx, cy]] = p, D = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy) || 1e-9;
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const u = ((by - cy) * (x + 0.5 - cx) + (cx - bx) * (y + 0.5 - cy)) / D, w = ((cy - ay) * (x + 0.5 - cx) + (ax - cx) * (y + 0.5 - cy)) / D;
+      if (u >= -0.02 && w >= -0.02 && u + w <= 1.02) richtung[y * B + x] = t.richtung;
+    }
+  }
+  const cos = WINKEL.map(Math.cos), sin = WINKEL.map(Math.sin);
+  const [tr, tg, tb] = weiss ? [0, 0, 0] : [255, 255, 255];
+  // Deckung einer Linienlage: halbe Linienbreite b (in Abständen) an der Stelle s, mit einem Bildpunkt Kantenglättung
+  const lage = (s, b) => { const u = s / ABSTAND - Math.floor(s / ABSTAND), a = Math.abs(u - 0.5); return Math.max(0, Math.min(1, (b - a) * ABSTAND + 0.5)); };
+  for (let y = 0, i = 0; y < H; y++) for (let x = 0; x < B; x++, i++) {
+    const L = (0.2126 * d[4 * i] + 0.7152 * d[4 * i + 1] + 0.0722 * d[4 * i + 2]) / 255;
+    const ton = Math.min(1, Math.max(0, ((weiss ? 1 - L : L) - 0.05) / 0.9)) ** 0.9;
+    const r = richtung[i], s1 = x * cos[r] + y * sin[r], s2 = -x * sin[r] + y * cos[r];
+    const a1 = ton > 0.02 ? lage(s1, 0.5 * Math.min(1, ton / 0.55) * 0.5 + 0.02) : 0;
+    const a2 = ton > 0.55 ? lage(s2, 0.25 * (ton - 0.55) / 0.45 + 0.02) : 0;
+    d[4 * i] = tr; d[4 * i + 1] = tg; d[4 * i + 2] = tb; d[4 * i + 3] = 255 * (1 - (1 - a1) * (1 - a2));
+  }
+  const aus = sz.leinwand(B, H);
+  aus.getContext("2d").putImageData(bild, 0, 0);
+  if (v.stichFoto !== sz.foto || v.stichDaten !== sz.daten) for (const k of Object.keys(v)) if (k.startsWith("stich-")) delete v[k];
+  v.stichFoto = sz.foto; v.stichDaten = sz.daten; v[schluessel] = aus;
+  return aus;
+}
+
+/** der Stich als Muster für eine Leinwand (je Leinwand und Stich einmal) */
+const STICHMUSTER = new WeakMap();
+function stichMuster(ziel, bild) {
+  let m = STICHMUSTER.get(ziel);
+  if (!m || m.bild !== bild) { m = { bild, muster: ziel.createPattern(bild, "no-repeat") }; STICHMUSTER.set(ziel, m); }
+  return m.muster;
+}
+
 function dreieckeZeichnen(ctx, sz, t) {
   const F = sz.farben, { ab } = sz.zeit, flug = sz.flug, p = new Float32Array(6);
   const [F0] = ab.formen, [C0, C1] = ab.farben, [Z0, Z1] = ab.zusammen;
   const gitterFlug = new Path2D(), gitterRuhig = new Path2D();
   // das Gitter der gelandeten Dreiecke wird blasser und verschwindet, während die Farben kommen
   const gitterRuhe = 0.16 * (1 - anteil(t, C0, C0 + 0.5 * (C1 - C0)));
-  // ab den Farben zeichnet die Schraffur in eine eigene Ebene, die dann mit dem Foto getönt wird
+  // ab den Farben zeichnet der Stich in eine eigene Ebene, die dann mit dem Foto getönt wird
   const farbig = !!sz.foto && t >= C0, ziel = farbig ? ebene(ctx, sz, "mosaikEbene") : ctx;
+  const bild = sz.foto ? stich(sz) : null, muster = bild ? stichMuster(ziel, bild) : null, liegend = new Path2D();
+  let liegen = 0;
   for (const d of sz.dreiecke) {
     const start = d.land - flug;
     if (t < start) continue;
     const e = inOut(anteil(t, start, d.land));
-    // Füllung: die Schraffur seiner Tonstufe; wo eine Farbwelle durchläuft, springt das Dreieck kurz und sanft auf
+    // Füllung: sein Stück des Stichs, das mit dem Dreieck fliegt (gelandete gemeinsam, fliegende je mit ihrer Bewegung)
     const deck = anteil(t, d.land - 0.3 * flug, d.land + 0.35);
-    if (deck > 0 && d.stufe > 0) {
-      let blitz = 0;
-      for (let c = 0; c < 3; c++) blitz = Math.max(blitz, Math.sin(Math.PI * anteil(t, d.wann[c] - 0.04, d.wann[c] + 0.3)));
-      ziel.beginPath(); dreieckPfad(ziel, ecken(d, e, 1 + 0.1 * blitz, p));
-      ziel.globalAlpha = deck; ziel.fillStyle = schraffur(ziel, sz, d.stufe, d.richtung); ziel.fill();
+    if (muster && deck > 0) {
+      if (e >= 1 && deck >= 1) { dreieckPfad(liegend, ecken(d, 1, 1, p)); liegen++; }
+      else {
+        const s = 0.25 + 0.75 * e, w = d.dreh * (1 - e);
+        muster.setTransform(new DOMMatrix().translateSelf(d.cx + d.ox * (1 - e), d.cy + d.oy * (1 - e)).rotateSelf((w * 180) / Math.PI).scaleSelf(s).translateSelf(-d.cx, -d.cy));
+        ziel.beginPath(); dreieckPfad(ziel, ecken(d, e, 1, p));
+        ziel.globalAlpha = deck; ziel.fillStyle = muster; ziel.fill();
+      }
     }
     // Drahtgitter: im Flug kräftig, gelandet blass
     if (e < 1) dreieckPfad(gitterFlug, ecken(d, e, 1, p));
     else if (gitterRuhe > 0) dreieckPfad(gitterRuhig, ecken(d, 1, 1, p));
   }
+  if (liegen) { muster.setTransform(new DOMMatrix()); ziel.globalAlpha = 1; ziel.fillStyle = muster; ziel.fill(liegend); }
   ctx.globalAlpha = 1;
   if (farbig) {
     toenen(ziel, ctx, sz, t);
@@ -484,7 +510,7 @@ function auszugsBilder(sz) {
 }
 
 /** die Farbauszüge im Voraus rechnen (sonst stockt die Vorschau einmal kurz beim Einrasten) */
-export function vorbereiten(sz) { if (sz.foto) { auszugsBilder(sz); lichtBilder(sz); } }
+export function vorbereiten(sz) { if (sz.foto) { stich(sz); auszugsBilder(sz); lichtBilder(sz); } }
 
 /** das Foto, zum Schluss langsam etwas näher; beim Einrasten mit auseinanderlaufenden Farbkanälen, die ausschwingen */
 function fotoZeichnen(ctx, sz, t) {
