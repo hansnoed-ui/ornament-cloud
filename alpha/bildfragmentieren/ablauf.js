@@ -33,7 +33,7 @@ export function zeitachse({ tempo = "normal", signet = true } = {}) {
   dazu("linien", 4.4 * f);
   dazu("formen", 3.6 * f);
   dazu("farben", 3.0 * f);
-  dazu("zusammen", 3.2 * f);
+  dazu("zusammen", 4.2 * f);   // seit dem 15. Oktober 2026 1 s länger: dazu die Geometrie über dem ganzen Bild
   dazu("stehen", 3.2);
   if (signet) {
     // der ganze Abspann seit dem 15. Oktober 2026 4,75 statt 10 s
