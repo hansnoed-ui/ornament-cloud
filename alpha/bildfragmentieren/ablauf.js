@@ -1,6 +1,6 @@
 // «Bildfragmentieren» – Ablauf des Films (ohne DOM). 30 Bilder pro Sekunde, ohne Ton; Hochformat 4 : 5 (Standard, Feed), wahlweise 9 : 16 (Reels, Stories).
 //   schwarzer Grund → 01 Linien: das Bild tastet sich als Relief aus waagrechten Linien ab, dann zeichnen sich die Umrisse
-//   → 02 Formen: Dreiecke fliegen von aussen herein und setzen sich zu einem Mosaik in Grau zusammen
+//   → 02 Formen: Dreiecke fliegen von aussen herein und setzen sich zu einem schraffierten Mosaik in fünf Tonstufen zusammen
 //   → 03 Farben: drei Farbwellen (Rot, Grün, Blau) laufen durch das Mosaik
 //   → 04 Bild: dahinter feine Geometrie aus dem Foto (Höhenlinien, Netz), Splitter des Fotos stürzen herein, die Farbkanäle rasten ein → das Foto steht
 //   → (wenn gewählt) das Signet von ornament.cloud wie in Sketchory.
