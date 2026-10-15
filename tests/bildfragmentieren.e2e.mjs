@@ -1,6 +1,6 @@
 // «Bildfragmentieren» (alpha/bildfragmentieren/) – Browser-Tests (Playwright, Chromium): ein Testfoto zerlegen, Bilder des Films in den vier Phasen
 // (Linien, Formen in Grau, Farben, das Foto), Abspann, Video über WebCodecs (Ersatz-Encoder, Chromium hat hier kein H.264), Standbild,
-// Formate, Grund weiss, Handy ohne seitliches Scrollen, keine Anfragen nach aussen.
+// Formate 4 : 5 und 9 : 16, Grund weiss, Handy ohne seitliches Scrollen, keine Anfragen nach aussen.
 //   NODE_PATH=$(npm root -g) node tests/bildfragmentieren.e2e.mjs
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -51,7 +51,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit (Abschnitt + Anteil der Dauer) messen: Anteil Grund, Anteil Grau, Anteil bunt, mittlere Farbe in der Mitte */
 const messe = (page, abschnitt, anteil = 0, extra = {}) => page.evaluate(async ([abschnitt, anteil, extra]) => {
-  const { bild, szene } = await import("./szene.js?v=1");
+  const { bild, szene } = await import("./szene.js?v=2");
   const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, ...extra });
   const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
   const [a, b] = sz.zeit.ab[abschnitt], t = a + (b - a) * anteil;
@@ -72,12 +72,12 @@ const messe = (page, abschnitt, anteil = 0, extra = {}) => page.evaluate(async (
 
 await check("Testfoto: wird zerlegt, die Vorschau läuft, Zeilen, Kanten und Dreiecke stehen unter dem Bild; nichts von aussen", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
-  assert.equal(await page.getAttribute('[data-format="9:16"]', "aria-pressed"), "true", "Standard 9 : 16");
+  assert.equal(await page.getAttribute('[data-format="4:5"]', "aria-pressed"), "true", "Standard 4 : 5");
   await laden(page);
   await bereit(page);
   assert.match(await page.textContent("#auswertung"), /\d+ Zeilen · \d+ Kanten · [\d’']+ Dreiecke/);
-  assert.match(await page.textContent("#dauer"), /1080 × 1920/);
-  assert.deepEqual(await page.evaluate(() => [document.getElementById("vorschau").width, document.getElementById("vorschau").height]), [540, 960], "Vorschau in halber Auflösung");
+  assert.match(await page.textContent("#dauer"), /1080 × 1350/);
+  assert.deepEqual(await page.evaluate(() => [document.getElementById("vorschau").width, document.getElementById("vorschau").height]), [540, 675], "Vorschau in halber Auflösung");
   await page.waitForTimeout(600);
   assert.ok(await page.evaluate(() => window.__bildfragmentieren.laeuft && window.__bildfragmentieren.t > 0), "die Vorschau läuft");
   // Zeitleiste und Sprung zu einer Phase
@@ -121,7 +121,7 @@ await check("Die vier Phasen: Linien auf Schwarz, Formen in Grau, dann Farben, a
   await ctx.close();
 });
 
-await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern in 9 : 16; Standbild PNG an der Stelle der Zeitleiste", async () => {
+await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern in 4 : 5; Standbild PNG an der Stelle der Zeitleiste", async () => {
   const ersatz = () => {
     window.VideoEncoder = class {
       static async isConfigSupported(cfg) { return { supported: cfg.codec === "avc1.640028", config: cfg }; }
@@ -148,56 +148,56 @@ await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern in 9 
   const finde = (liste, ...pfad) => pfad.reduce((l, t) => (Array.isArray(l) ? l : l.kinder).find((x) => x.typ === t), liste);
   const stsz = finde(kisten(d), "moov", "trak", "mdia", "minf", "stbl", "stsz");
   assert.equal(new DataView(d.buffer).getUint32(stsz.o + 16), bilder, "alle Bilder im Video");
-  assert.deepEqual(await page.evaluate(() => [window.__cfg.width, window.__cfg.height]), [1080, 1920]);
+  assert.deepEqual(await page.evaluate(() => [window.__cfg.width, window.__cfg.height]), [1080, 1350]);
   // Standbild: an der Stelle der Zeitleiste, in voller Grösse
   await page.click("#zu-formen");
   const [png] = await Promise.all([page.waitForEvent("download"), page.click("#png")]);
   const b = readFileSync(await png.path());
-  assert.deepEqual([b.readUInt32BE(16), b.readUInt32BE(20)], [1080, 1920]);
+  assert.deepEqual([b.readUInt32BE(16), b.readUInt32BE(20)], [1080, 1350]);
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
 
-await check("Formate: 4 : 5, 1 : 1 und wie das Foto (quer); Vorschau passt sich an, die Wahl bleibt", async () => {
+await check("Formate: 9 : 16 und zurück zu 4 : 5; Vorschau und Signet passen sich an, die Wahl bleibt", async () => {
   const { ctx, page, fehler } = await oeffne();
   await laden(page);
   await bereit(page);
-  for (const [format, mass] of [["4:5", [1080, 1350]], ["1:1", [1080, 1080]], ["bild", [1620, 1080]]]) {
+  for (const [format, mass] of [["9:16", [1080, 1920]], ["4:5", [1080, 1350]]]) {
     await page.click(`[data-format="${format}"]`);
     await page.waitForFunction((m) => window.__bildfragmentieren.sz?.breite === m[0] && window.__bildfragmentieren.sz?.hoehe === m[1] && !document.getElementById("video").disabled, mass, { timeout: 90_000 });
     const box = await page.locator("#vorschau").boundingBox();
     assert.ok(Math.abs(box.width / box.height - mass[0] / mass[1]) < 0.01, `${format}: Vorschau im Seitenverhältnis`);
     const bild = await messe(page, "stehen", 0.3);
     assert.ok(bild.bunt > 0.95, `${format}: das Foto füllt das Bild`);
-    // das Signet steht auch im breiten Format in der Mitte
-    if (format === "bild") {
+    // das Signet steht in beiden Formaten in der Mitte und ganz im Bild
+    {
       const mitte = await page.evaluate(async () => {
-        const { bild, szene } = await import("./szene.js?v=1");
+        const { bild, szene } = await import("./szene.js?v=2");
         const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h) });
         const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
         bild(x, sz, sz.zeit.ab.signetStehen[0] + 0.2);
         const d = x.getImageData(0, 0, sz.breite, sz.hoehe).data;
-        let l = sz.breite, r = 0;
-        for (let i = 0; i < d.length; i += 4) if (d[i] > 128) { const xx = (i / 4) % sz.breite; l = Math.min(l, xx); r = Math.max(r, xx); }
-        return (l + r) / 2 / sz.breite;
+        let l = sz.breite, r = 0, o = sz.hoehe, u = 0;
+        for (let i = 0; i < d.length; i += 4) if (d[i] > 128) { const xx = (i / 4) % sz.breite, yy = Math.floor(i / 4 / sz.breite); l = Math.min(l, xx); r = Math.max(r, xx); o = Math.min(o, yy); u = Math.max(u, yy); }
+        return [(l + r) / 2 / sz.breite, o, sz.hoehe - u];
       });
-      assert.ok(Math.abs(mitte - 0.5) < 0.03, `Signet in der Mitte (${mitte})`);
+      assert.ok(Math.abs(mitte[0] - 0.5) < 0.03 && mitte[1] > 60 && mitte[2] > 60, `${format}: Signet in der Mitte, mit Rand oben und unten (${mitte})`);
     }
   }
-  await page.reload();
-  assert.equal(await page.getAttribute('[data-format="bild"]', "aria-pressed"), "true", "bleibt gewählt");
   await page.click('[data-format="9:16"]');
+  await page.reload();
+  assert.equal(await page.getAttribute('[data-format="9:16"]', "aria-pressed"), "true", "bleibt gewählt");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
 
-await check("Handy: nichts ragt seitlich hinaus, Beschriftungen auf einer Zeile, Vorschau 9 : 16", async () => {
+await check("Handy: nichts ragt seitlich hinaus, Beschriftungen auf einer Zeile, Vorschau 4 : 5", async () => {
   const { ctx, page, fehler } = await oeffne({ viewport: { width: 360, height: 760 }, isMobile: true, hasTouch: true });
   await laden(page);
   await bereit(page);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
   const box = await page.locator("#vorschau").boundingBox();
-  assert.ok(Math.abs(box.width / box.height - 9 / 16) < 0.01);
+  assert.ok(Math.abs(box.width / box.height - 4 / 5) < 0.01);
   assert.ok(await page.evaluate(() => [...document.querySelectorAll(".segment button, .phasen button")].every((x) => x.scrollWidth <= x.clientWidth + 1)), "Beschriftungen auf einer Zeile");
   assert.deepEqual(fehler, []);
   await ctx.close();

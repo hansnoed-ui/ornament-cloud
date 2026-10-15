@@ -8,9 +8,9 @@
 //               drei Farbkanäle ein (RGB-Versatz, schwingt aus), das Foto steht und kommt langsam etwas näher
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN } from "./ablauf.js?v=1";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN } from "./ablauf.js?v=2";
 import { signet as signetZeichnen } from "../sketchory/signet.js?v=8";
-import { zufall, farbton, auszuege } from "./fragmente.js?v=1";
+import { zufall, farbton, auszuege } from "./fragmente.js?v=2";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },

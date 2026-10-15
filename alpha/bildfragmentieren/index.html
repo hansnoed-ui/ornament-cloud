@@ -22,9 +22,9 @@
     @media (min-width: 900px) { .karte { grid-template-columns: minmax(280px, 400px) 1fr; align-items: start; } .buehne { position: sticky; top: 16px; } }
 
     .buehne { display: grid; gap: 10px; }
-    .rahmen { position: relative; aspect-ratio: 9 / 16; max-height: 78vh; margin: 0 auto; width: 100%; border-radius: var(--radius); overflow: hidden; background: #000;
+    .rahmen { position: relative; aspect-ratio: 4 / 5; max-height: 78vh; margin: 0 auto; width: 100%; border-radius: var(--radius); overflow: hidden; background: #000;
       box-shadow: 0 1px 0 var(--border), 0 18px 40px -24px rgba(0, 0, 0, 0.6); }
-    @supports (width: min(1px, 2px)) { .rahmen { width: min(100%, calc(78vh * var(--seiten, 0.5625))); } }
+    @supports (width: min(1px, 2px)) { .rahmen { width: min(100%, calc(78vh * var(--seiten, 0.8))); } }
     .rahmen canvas { display: block; width: 100%; height: 100%; }
     .leer { position: absolute; inset: 0; display: grid; place-content: center; gap: 8px; padding: 24px; text-align: center; color: #9a9a9a; pointer-events: none;
       font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.85rem; letter-spacing: 0.06em; }
@@ -101,7 +101,7 @@
     .meldung.fehler { color: var(--accent); }
     .ergebnis { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
     .ergebnis h2::before { display: none; }
-    .ergebnis video { display: block; width: min(100%, 320px); aspect-ratio: 9 / 16; border-radius: 8px; background: #000; }
+    .ergebnis video { display: block; width: min(100%, 360px); aspect-ratio: 4 / 5; border-radius: 8px; background: #000; }
     .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
     .hinweise li { margin: 0.2rem 0; }
     [hidden] { display: none !important; }
@@ -118,7 +118,7 @@
   <main class="wrap karte" id="karte">
     <section class="buehne" aria-label="Vorschau">
       <div class="rahmen">
-        <canvas id="vorschau" width="540" height="960" aria-label="Vorschau des Videos: das Foto in Linien, Formen und Farben"></canvas>
+        <canvas id="vorschau" width="540" height="675" aria-label="Vorschau des Videos: das Foto in Linien, Formen und Farben"></canvas>
         <div class="leer" id="leer">
           <p class="gross">Kein Signal</p>
           <p>Lade ein Foto.</p>
@@ -136,7 +136,7 @@
         <button type="button" id="zu-bild">04 Bild</button>
       </div>
       <div class="unter">
-        <p class="info" id="dauer">9 : 16, 4 : 5, 1 : 1 oder wie das Foto</p>
+        <p class="info" id="dauer">Hochformat 4 : 5, wahlweise 9 : 16</p>
       </div>
       <p class="info" id="auswertung"></p>
     </section>
@@ -158,10 +158,8 @@
             <div class="einstellung">
               <span class="name" id="format-titel">Format</span>
               <div class="segment" role="group" aria-labelledby="format-titel">
+                <button type="button" data-format="4:5">4 : 5 Hochformat</button>
                 <button type="button" data-format="9:16">9 : 16</button>
-                <button type="button" data-format="4:5">4 : 5</button>
-                <button type="button" data-format="1:1">1 : 1</button>
-                <button type="button" data-format="bild">wie Foto</button>
               </div>
             </div>
             <div class="einstellung">
@@ -219,7 +217,7 @@
   <div class="wrap">
     <ul class="hinweise">
       <li>Alles bleibt in deinem Browser: Das Foto wird nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
-      <li>Format 9 : 16 (1080 × 1920) für Reels und Stories, 4 : 5 (1080 × 1350) für den Feed, 1 : 1 oder wie das Foto; das Foto wird bei Bedarf mittig beschnitten.</li>
+      <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories); das Foto wird bei Bedarf mittig beschnitten.</li>
       <li>Das Standbild nimmt die Stelle der Zeitleiste, in voller Grösse; ohne Wahl das fertige farbige Mosaik.</li>
       <li>Video: MP4 (H.264), 30 Bilder pro Sekunde, ohne Ton.</li>
     </ul>
@@ -231,7 +229,7 @@
       <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
     </div>
   </footer>
-  <script type="module" src="app.js?v=1"></script>
+  <script type="module" src="app.js?v=2"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

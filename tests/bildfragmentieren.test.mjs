@@ -5,7 +5,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { zerlegen, delaunay, vereinfachen, kantenMaske, verketten, helligkeit, farbton, auszuege, zufall } from "../alpha/bildfragmentieren/fragmente.js";
-import { zeitachse, filmMass, zeitcode, dateiname, PHASEN, TEMPO } from "../alpha/bildfragmentieren/ablauf.js";
+import { zeitachse, filmMass, zeitcode, dateiname, PHASEN, TEMPO, FORMATE } from "../alpha/bildfragmentieren/ablauf.js";
 
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
@@ -127,11 +127,12 @@ test("Ablauf: vier Phasen in dieser Reihenfolge, Tempo, Abspann nach Wahl; Forma
   const phasen = (zz) => zz.ab.zusammen[1] - zz.ab.linien[0];
   assert.ok(Math.abs(phasen(zeitachse({ tempo: "ruhig" })) / phasen(z) - TEMPO.ruhig) < 1e-9);
   assert.ok(Math.abs(phasen(zeitachse({ tempo: "schnell" })) / phasen(z) - TEMPO.schnell) < 1e-9);
-  assert.deepEqual(filmMass("9:16"), [1080, 1920]);
+  // Hochformat 4 : 5 als Standard, wahlweise 9 : 16 (Wunsch vom 15. Oktober 2026); Unbekanntes (etwa eine früher gespeicherte Wahl) wird 4 : 5
+  assert.deepEqual(FORMATE, ["4:5", "9:16"]);
+  assert.deepEqual(filmMass(), [1080, 1350]);
   assert.deepEqual(filmMass("4:5"), [1080, 1350]);
-  assert.deepEqual(filmMass("1:1"), [1080, 1080]);
-  assert.deepEqual(filmMass("bild", 3000, 2000), [1620, 1080]);
-  assert.deepEqual(filmMass("bild", 1000, 3000), [1080, 1920]);
+  assert.deepEqual(filmMass("9:16"), [1080, 1920]);
+  assert.deepEqual(filmMass("1:1"), [1080, 1350]);
   assert.equal(zeitcode(61.5), "01:01:15");
   assert.equal(dateiname(new Date(2026, 9, 15, 9, 5), "mp4"), "bildfragmentieren-2026-10-15-0905.mp4");
 });
@@ -143,7 +144,7 @@ test("Seite: Alpha (noindex), steht für sich ohne Navigation oben links, nichts
   assert.ok(!/(src|href)="(https?:)?\/\//.test(html.replace(/<!--[\s\S]*?-->/g, "")), "nichts von fremden Servern");
   for (const id of ["vorschau", "datei", "testbild", "zeit", "spielen", "video", "png", "titel", "tempo", "signet", "beschriftung", "zu-linien", "zu-formen", "zu-farben", "zu-bild"])
     assert.match(html, new RegExp(`id="${id}"`), `#${id}`);
-  for (const [attr, werte] of [["format", ["9:16", "4:5", "1:1", "bild"]], ["feinheit", ["grob", "mittel", "fein"]], ["grund", ["schwarz", "weiss"]]])
+  for (const [attr, werte] of [["format", ["4:5", "9:16"]], ["feinheit", ["grob", "mittel", "fein"]], ["grund", ["schwarz", "weiss"]]])
     assert.deepEqual([...html.matchAll(new RegExp(`<button type="button" data-${attr}="([^"]+)"`, "g"))].map((m) => m[1]), werte);
   // dieselbe Marke in der Seite und in allen eigenen Modulen
   const dir = new URL("alpha/bildfragmentieren/", root);

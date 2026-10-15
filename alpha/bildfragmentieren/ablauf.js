@@ -1,4 +1,4 @@
-// «Bildfragmentieren» – Ablauf des Films (ohne DOM). 30 Bilder pro Sekunde, ohne Ton; Format 9 : 16 (Reels, Stories), 4 : 5, 1 : 1 oder wie das Foto.
+// «Bildfragmentieren» – Ablauf des Films (ohne DOM). 30 Bilder pro Sekunde, ohne Ton; Hochformat 4 : 5 (Standard, Feed), wahlweise 9 : 16 (Reels, Stories).
 //   schwarzer Grund → 01 Linien: das Bild tastet sich als Relief aus waagrechten Linien ab, dann zeichnen sich die Umrisse
 //   → 02 Formen: Dreiecke fliegen von aussen herein und setzen sich zu einem Mosaik in Grau zusammen
 //   → 03 Farben: die Farben kommen dazu, Farbton um Farbton
@@ -8,13 +8,10 @@ import { SIGNET } from "../sketchory/ablauf.js?v=8";
 
 export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=8";
 
-/** Bildmass des Films: "9:16", "4:5", "1:1" oder "bild" (wie das Foto, kurze Seite 1080, lange höchstens 1920, gerade Zahlen) */
-export function filmMass(format, bildBreite = 9, bildHoehe = 16) {
-  if (format === "4:5") return [1080, 1350];
-  if (format === "1:1") return [1080, 1080];
-  if (format !== "bild") return [1080, 1920];
-  const gerade = (n) => Math.round(n / 2) * 2, v = bildHoehe / bildBreite;
-  return v >= 1 ? [1080, gerade(Math.min(1920, 1080 * v))] : [gerade(Math.min(1920, 1080 / v)), 1080];
+/** Bildmass des Films: Hochformat 4 : 5 (Standard, 1080 × 1350) oder "9:16" (1080 × 1920); Wunsch vom 15. Oktober 2026 */
+export const FORMATE = ["4:5", "9:16"];
+export function filmMass(format = "4:5") {
+  return format === "9:16" ? [1080, 1920] : [1080, 1350];
 }
 
 /** Tempo: Faktor auf die Dauer der vier Phasen */

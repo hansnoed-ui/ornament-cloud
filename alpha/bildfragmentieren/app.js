@@ -1,9 +1,9 @@
 // «Bildfragmentieren» – Seite: Foto laden, zerlegen (Worker), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der MP4-Schreiber von Sketchory;
 // ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass, zeitcode } from "./ablauf.js?v=1";
-import { szene, bild, standbildZeit, vorbereiten } from "./szene.js?v=1";
-import { zerlegen } from "./fragmente.js?v=1";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE } from "./ablauf.js?v=2";
+import { szene, bild, standbildZeit, vorbereiten } from "./szene.js?v=2";
+import { zerlegen } from "./fragmente.js?v=2";
 import { mp4 } from "../sketchory/mp4.js?v=8";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
@@ -12,7 +12,7 @@ const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const VORSCHAU = 0.5;   // Auflösung der Vorschau gegenüber dem Film (das Video rechnet in voller Grösse)
 const S = { bild: null, daten: null, foto: null, vorrat: {}, sz: null, laeuft: false, start: 0, t: null, film: null, rechnen: 0,
-  format: "9:16", feinheit: "mittel", grund: "schwarz", mass: [1080, 1920] };
+  format: "4:5", feinheit: "mittel", grund: "schwarz", mass: [1080, 1350] };
 window.__bildfragmentieren = S;   // für die Browser-Tests
 
 const leinwand = (w, h) => { if (typeof OffscreenCanvas !== "undefined") return new OffscreenCanvas(w, h); const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
@@ -82,11 +82,11 @@ async function testbild() {
 
 // ——— zerlegen (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=1", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=2", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   // zerlegt wird auf der halben Filmgrösse (für Kanten und Mosaik genug), das Foto für den Schluss bleibt in voller Grösse
-  const [B, H] = (S.mass = filmMass(S.format, S.bild.width, S.bild.height));
+  const [B, H] = (S.mass = filmMass(S.format));
   S.foto = zugeschnitten(S.bild, B, H);
   S.vorrat = {};
   const w = Math.round(B / 2), h = Math.round(H / 2);
@@ -158,7 +158,7 @@ function wahl(attr, schluessel, werte, wenn) {
 // Format und Feinheit zerlegen das Foto neu: erst, wenn nicht gleich noch einmal umgestellt wird
 let umstellen = 0;
 const spaeterLesen = () => { clearTimeout(umstellen); umstellen = setTimeout(lesen, 250); };
-const formatKnoepfe = wahl("data-format", "format", ["9:16", "4:5", "1:1", "bild"], spaeterLesen);
+const formatKnoepfe = wahl("data-format", "format", FORMATE, spaeterLesen);
 const feinKnoepfe = wahl("data-feinheit", "feinheit", ["grob", "mittel", "fein"], spaeterLesen);
 wahl("data-grund", "grund", ["schwarz", "weiss"], () => { rahmenFarbe(); neu(); });
 function rahmenFarbe() { vorschau.parentElement.classList.toggle("weiss", S.grund === "weiss"); if (!S.sz) { vctx.fillStyle = S.grund === "weiss" ? "#fff" : "#000"; vctx.fillRect(0, 0, vorschau.width, vorschau.height); } }
