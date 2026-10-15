@@ -1,9 +1,9 @@
 // «Bildfragmentieren» – Seite: Foto laden, zerlegen (Worker), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der MP4-Schreiber von Sketchory;
 // ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE } from "./ablauf.js?v=4";
-import { szene, bild, standbildZeit, vorbereiten } from "./szene.js?v=4";
-import { zerlegen } from "./fragmente.js?v=4";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE } from "./ablauf.js?v=6";
+import { szene, bild, standbildZeit, vorbereiten } from "./szene.js?v=6";
+import { zerlegen } from "./fragmente.js?v=6";
 import { mp4 } from "../sketchory/mp4.js?v=8";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
@@ -82,7 +82,7 @@ async function testbild() {
 
 // ——— zerlegen (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=4", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=6", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   // zerlegt wird auf der halben Filmgrösse (für Kanten und Mosaik genug), das Foto für den Schluss bleibt in voller Grösse
@@ -174,14 +174,16 @@ let sichtbar = true, zuletzt = 0;
 if ("IntersectionObserver" in window) new IntersectionObserver(([e]) => { sichtbar = e.isIntersecting; }).observe(vorschau);
 function spielen() {
   if (!S.sz) return;
-  const ab = S.t !== null && S.t < S.sz.zeit.dauer - 0.1 ? S.t : 0;
+  // nach dem Ende beginnt «Abspielen» wieder von vorn, sonst an der Stelle der Zeitleiste
+  const ab = !S.ende && S.t !== null && S.t < S.sz.zeit.dauer - 0.1 ? S.t : 0;
+  S.ende = false;
   S.start = performance.now() - ab * 1000; zuletzt = 0;
   if (!S.laeuft) { S.laeuft = true; requestAnimationFrame(takt); }
   $("spielen").textContent = "Anhalten";
 }
 function anhalten() { S.laeuft = false; $("spielen").textContent = "Abspielen"; }
 function zeigeZeit(t) {
-  S.t = t; bild(vctx, S.sz, t);
+  S.t = t; S.ende = false; bild(vctx, S.sz, t);
   $("zeit").value = String(t); $("zeitcode").textContent = zeitcode(t);
 }
 function takt(jetzt) {
@@ -189,7 +191,7 @@ function takt(jetzt) {
   if (!sichtbar) { S.start += jetzt - (zuletzt || jetzt); zuletzt = jetzt; requestAnimationFrame(takt); return; }
   zuletzt = jetzt;
   const t = (jetzt - S.start) / 1000;
-  if (t >= S.sz.zeit.dauer) { anhalten(); zeigeZeit(S.sz.zeit.ab.stehen[0] + 1); return; }
+  if (t >= S.sz.zeit.dauer) { anhalten(); zeigeZeit(S.sz.zeit.ab.stehen[0] + 1); S.ende = true; return; }
   zeigeZeit(t);
   requestAnimationFrame(takt);
 }

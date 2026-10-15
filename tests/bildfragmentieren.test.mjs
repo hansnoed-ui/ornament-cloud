@@ -4,7 +4,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { zerlegen, delaunay, vereinfachen, kantenMaske, verketten, helligkeit, farbton, auszuege, zufall } from "../alpha/bildfragmentieren/fragmente.js";
+import { zerlegen, delaunay, vereinfachen, kantenMaske, verketten, helligkeit, farbton, auszuege, zufall, hoehenlinien } from "../alpha/bildfragmentieren/fragmente.js";
 import { zeitachse, filmMass, zeitcode, dateiname, PHASEN, TEMPO, FORMATE, SIGNET } from "../alpha/bildfragmentieren/ablauf.js";
 
 const root = new URL("../", import.meta.url);
@@ -100,6 +100,26 @@ test("Kanten: dünn, verkettet, vereinfacht; ruhige Flächen und Rauschen ergebe
   assert.equal(vereinfachen(zuege[0], 0.9).length, 4, "eine Gerade bleibt mit zwei Punkten");
   const flach = new Float32Array(w * h).fill(0.5);
   assert.equal(kantenMaske(flach, w, h).maske.reduce((a, b) => a + b, 0), 0, "keine Kanten in einer ruhigen Fläche");
+});
+
+test("Höhenlinien: Linien gleicher Helligkeit, um einen hellen Fleck geschlossene Kreise, mit der Farbe des Fotos; im Zerlegen in Filmkoordinaten", () => {
+  const w = 160, h = 120, d = new Uint8ClampedArray(w * h * 4), L = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x, v = Math.max(0, 1 - Math.hypot(x - 80, y - 60) / 70);
+    L[i] = v; d[4 * i] = 255 * v; d[4 * i + 1] = 40; d[4 * i + 2] = 255 * (1 - v); d[4 * i + 3] = 255;
+  }
+  const stufen = hoehenlinien(L, d, w, h, { stufen: 6 });
+  assert.equal(stufen.length, 6);
+  for (const s of stufen) {
+    assert.ok(s.pts.length > 40 && s.pts.length % 4 === 0);
+    // jeder Punkt liegt (fast) auf dem Kreis, der zu dieser Helligkeit gehört
+    const r = (1 - s.wert) * 70;
+    for (let k = 0; k < s.pts.length; k += 2) assert.ok(Math.abs(Math.hypot(s.pts[k] - 80, s.pts[k + 1] - 60) - r) < 2.5, `Stufe ${s.wert.toFixed(2)}`);
+  }
+  assert.ok(stufen.at(-1).farbe[0] > stufen[0].farbe[0] && stufen.at(-1).farbe[2] < stufen[0].farbe[2], "die hellen Stufen sind rot, die dunklen blau");
+  const a = zerlegen(foto(), 270, 480, { massstab: 4 });
+  assert.ok(a.hoehen.length >= 4, `Stufen (${a.hoehen.length}; gleiche Stufen flacher Flächen fallen zusammen)`);
+  for (const s of a.hoehen) for (let k = 0; k < s.pts.length; k += 2) assert.ok(s.pts[k] >= 0 && s.pts[k] <= 1080 && s.pts[k + 1] >= 0 && s.pts[k + 1] <= 1920);
 });
 
 test("Farbton und Farbauszüge: zusammengezählt (auf Schwarz) oder multipliziert (auf Weiss) wieder das Foto", () => {

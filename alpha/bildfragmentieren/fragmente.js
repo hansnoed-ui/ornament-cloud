@@ -3,6 +3,7 @@
 //   Kanten:   die Umrisse des Bilds als Linienzüge (Canny: Glätten, Sobel, dünne Kanten, Hysterese, dann zu Zügen verkettet)
 //   Dreiecke: das Bild als Mosaik aus Dreiecken (Delaunay), dicht an den Kanten, locker in ruhigen Flächen, jedes mit seiner
 //             mittleren Farbe und Helligkeit
+//   Höhenlinien: Linien gleicher Helligkeit (Marching Squares auf der geglätteten Helligkeit), je Stufe mit der mittleren Farbe des Fotos dort
 // Alles in Koordinaten des Films (massstab: Film / Analysebild). Gleiches Bild, gleiches Ergebnis (fester Zufall).
 
 /** fester Zufall (Park-Miller) */
@@ -264,6 +265,43 @@ function dreieckFarben(daten, w, h, px, py, idx) {
   return { farben, hell };
 }
 
+/**
+ * Höhenlinien der Helligkeit: Stufen gleichmässig nach der Verteilung des Bilds (Quantile), auf einem Gitter mit Abstand schritt, mit Marching Squares.
+ * Gibt je Stufe { wert, farbe: [r, g, b], pts: Float32Array [x1, y1, x2, y2, …] } in Koordinaten des Analysebilds.
+ */
+export function hoehenlinien(L, daten, w, h, { stufen = 24, schritt = 2, hoechstens = 45000 } = {}) {
+  const gw = Math.floor((w - 1) / schritt) + 1, gh = Math.floor((h - 1) / schritt) + 1, g = new Float32Array(gw * gh);
+  for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) g[y * gw + x] = L[y * schritt * w + x * schritt];
+  const sortiert = Float32Array.from(g).sort();
+  const werte = Array.from({ length: stufen }, (_, k) => sortiert[Math.floor(((k + 0.5) / stufen) * 0.92 * sortiert.length + 0.04 * sortiert.length)]);
+  const aus = [];
+  let summe = 0;
+  for (const wert of werte) {
+    if (aus.length && Math.abs(wert - aus[aus.length - 1].wert) < 0.008) continue;   // gleiche Stufen in flachen Bildern nur einmal
+    const seg = [];
+    for (let y = 0; y < gh - 1; y++) for (let x = 0; x < gw - 1; x++) {
+      const a = g[y * gw + x], b = g[y * gw + x + 1], c = g[(y + 1) * gw + x + 1], d = g[(y + 1) * gw + x];
+      const fall = (a > wert ? 8 : 0) | (b > wert ? 4 : 0) | (c > wert ? 2 : 0) | (d > wert ? 1 : 0);
+      if (fall === 0 || fall === 15) continue;
+      const X = x * schritt, Y = y * schritt, s = schritt, zw = (p, q) => (wert - p) / (q - p || 1e-9);
+      const oben = [X + s * zw(a, b), Y], rechts = [X + s, Y + s * zw(b, c)], unten = [X + s * zw(d, c), Y + s], links = [X, Y + s * zw(a, d)];
+      const paare = { 1: [[links, unten]], 2: [[unten, rechts]], 3: [[links, rechts]], 4: [[oben, rechts]], 5: [[links, oben], [unten, rechts]], 6: [[oben, unten]], 7: [[links, oben]],
+        8: [[links, oben]], 9: [[oben, unten]], 10: [[links, unten], [oben, rechts]], 11: [[oben, rechts]], 12: [[links, rechts]], 13: [[unten, rechts]], 14: [[links, unten]] }[fall];
+      for (const [[x1, y1], [x2, y2]] of paare) seg.push(x1, y1, x2, y2);
+    }
+    // die Farbe der Stufe: das mittlere Foto entlang der Linie
+    let r = 0, gg = 0, b = 0, n = 0;
+    for (let k = 0; k < seg.length; k += 16) {
+      const i = 4 * (Math.min(h - 1, Math.round(seg[k + 1])) * w + Math.min(w - 1, Math.round(seg[k])));
+      r += daten[i]; gg += daten[i + 1]; b += daten[i + 2]; n++;
+    }
+    summe += seg.length / 4;
+    aus.push({ wert, farbe: n ? [r / n, gg / n, b / n].map(Math.round) : [128, 128, 128], pts: Float32Array.from(seg) });
+  }
+  // zu viele Striche (sehr unruhiges Bild): jede zweite Stufe weglassen
+  return summe > hoechstens && aus.length > 4 ? aus.filter((_, k) => k % 2 === 0) : aus;
+}
+
 /** Farbton (0–1) und Sättigung (0–1) einer Farbe */
 export function farbton(r, g, b) {
   const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
@@ -333,7 +371,9 @@ export function zerlegen(daten, w, h, { massstab = 1, feinheit = "mittel" } = {}
   const { farben, hell } = dreieckFarben(daten, w, h, px, py, idx);
   const n = idx.length / 3, ecken = new Float32Array(n * 6);
   for (let t = 0; t < n; t++) for (let k = 0; k < 3; k++) { const p = idx[3 * t + k]; ecken[6 * t + 2 * k] = px[p] * massstab; ecken[6 * t + 2 * k + 1] = py[p] * massstab; }
-  return { breite: B, hoehe: H, zeilen, kanten, dreiecke: { n, ecken, farben, hell } };
+  // Höhenlinien auf der stärker geglätteten Helligkeit, damit sie ruhig und fein fliessen
+  const hoehen = hoehenlinien(gauss(L, w, h, Math.max(2, Math.round(w / 130))), daten, w, h).map((s) => ({ ...s, pts: s.pts.map((v) => v * massstab) }));
+  return { breite: B, hoehe: H, zeilen, kanten, dreiecke: { n, ecken, farben, hell }, hoehen };
 }
 
 /**
