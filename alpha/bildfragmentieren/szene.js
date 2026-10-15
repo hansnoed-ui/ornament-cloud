@@ -7,10 +7,10 @@
 //   04 Bild:    die Dreiecke klappen um wie Karten und zeigen das Foto, Reihe um Reihe von oben; zum Schluss rasten die
 //               drei Farbkanäle ein (RGB-Versatz, schwingt aus), das Foto steht und kommt langsam etwas näher
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
-// Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN } from "./ablauf.js?v=2";
+// Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=3";
 import { signet as signetZeichnen } from "../sketchory/signet.js?v=8";
-import { zufall, farbton, auszuege } from "./fragmente.js?v=2";
+import { zufall, farbton, auszuege } from "./fragmente.js?v=3";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
@@ -341,7 +341,7 @@ export function bild(ctx, sz, t) {
   // das Signet von ornament.cloud (wie in Sketchory), bei breiten Formaten in der Mitte
   if (ab.signet && t >= ab.signet[0] && t < ab.signetAus[1]) {
     ctx.save(); ctx.translate((B - 1080) / 2, 0);
-    signetZeichnen(ctx, (t - ab.signet[0]) * FPS, { hoehe: H, farben: F });
+    signetZeichnen(ctx, SIGNET_VON + (t - ab.signet[0]) * FPS * SIGNET_TEMPO, { hoehe: H, farben: F });
     ctx.restore();
     const weg = ausblenden(anteil(t, ab.signetAus[0], ab.signetAus[1]));
     if (weg > 0) { ctx.globalAlpha = weg; ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H); ctx.globalAlpha = 1; }

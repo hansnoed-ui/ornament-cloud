@@ -5,7 +5,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { zerlegen, delaunay, vereinfachen, kantenMaske, verketten, helligkeit, farbton, auszuege, zufall } from "../alpha/bildfragmentieren/fragmente.js";
-import { zeitachse, filmMass, zeitcode, dateiname, PHASEN, TEMPO, FORMATE } from "../alpha/bildfragmentieren/ablauf.js";
+import { zeitachse, filmMass, zeitcode, dateiname, PHASEN, TEMPO, FORMATE, SIGNET } from "../alpha/bildfragmentieren/ablauf.js";
 
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
@@ -119,7 +119,9 @@ test("Ablauf: vier Phasen in dieser Reihenfolge, Tempo, Abspann nach Wahl; Forma
   const reihe = ["vor", ...PHASEN.map(([n]) => n), "stehen", "bildAus", "pause", "signet", "signetStehen", "signetAus", "schluss"];
   assert.deepEqual(Object.keys(z.ab), reihe);
   for (let i = 1; i < reihe.length; i++) assert.equal(z.ab[reihe[i]][0], z.ab[reihe[i - 1]][1], `${reihe[i]} schliesst an`);
-  assert.ok(z.ab.signet[1] - z.ab.signet[0] === 6, "das Signet in voller Länge (180 Bilder)");
+  assert.ok(Math.abs(z.ab.signet[1] - z.ab.signet[0] - 2.3) < 1e-9 && Math.abs(SIGNET - 2.3) < 1e-9, "das Signet kurz: 2,3 s (Wunsch vom 15. Oktober 2026)");
+  const abspann = z.dauer - z.ab.stehen[1];
+  assert.ok(Math.abs(abspann - 4.75) < 1e-9, `Abspann 4,75 s statt 10 s (${abspann})`);
   assert.equal(z.bilder, Math.round(z.dauer * 30));
   const ohne = zeitachse({ signet: false });
   assert.ok(!ohne.ab.signet && !ohne.ab.bildAus, "ohne Abspann endet der Film auf dem Foto");
