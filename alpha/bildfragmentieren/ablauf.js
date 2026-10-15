@@ -1,8 +1,8 @@
 // «Bildfragmentieren» – Ablauf des Films (ohne DOM). 30 Bilder pro Sekunde, ohne Ton; Hochformat 4 : 5 (Standard, Feed), wahlweise 9 : 16 (Reels, Stories).
 //   schwarzer Grund → 01 Linien: das Bild tastet sich als Relief aus waagrechten Linien ab, dann zeichnen sich die Umrisse
 //   → 02 Formen: Dreiecke fliegen von aussen herein und setzen sich zu einem Mosaik in Grau zusammen
-//   → 03 Farben: die Farben kommen dazu, Farbton um Farbton
-//   → 04 Bild: Fragment um Fragment klappt das Foto selbst um, die Farbkanäle rasten ein → das Foto steht
+//   → 03 Farben: drei Farbwellen (Rot, Grün, Blau) laufen durch das Mosaik
+//   → 04 Bild: dahinter feine Geometrie aus dem Foto (Höhenlinien, Netz), Splitter des Fotos stürzen herein, die Farbkanäle rasten ein → das Foto steht
 //   → (wenn gewählt) das Signet von ornament.cloud wie in Sketchory.
 export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=8";
 
