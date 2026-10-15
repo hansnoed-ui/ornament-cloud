@@ -318,7 +318,7 @@ export const FEINHEIT = { grob: 520, mittel: 1150, fein: 2300 };
 
 /**
  * Das Bild zerlegen. daten: RGBA des Analysebilds (w × h, meist die halbe Filmgrösse); massstab: Film / Analysebild.
- * feinheit: "grob" | "mittel" | "fein". Gibt { breite, hoehe, zeilen, kanten, dreiecke } in Filmkoordinaten.
+ * feinheit: "grob" | "mittel" | "fein". Gibt { breite, hoehe, zeilen, kanten, dreiecke (fein), formen (gröber), hoehen } in Filmkoordinaten.
  */
 export function zerlegen(daten, w, h, { massstab = 1, feinheit = "mittel" } = {}) {
   const B = Math.round(w * massstab), H = Math.round(h * massstab);
@@ -365,15 +365,20 @@ export function zerlegen(daten, w, h, { massstab = 1, feinheit = "mittel" } = {}
   for (const v of kante) if (v > km) km = v;
   if (km > 0) for (let i = 0; i < w * h; i++) kante[i] = Math.sqrt(kante[i] / km);
   const zahl = Math.max(60, Math.round((FEINHEIT[feinheit] ?? FEINHEIT.mittel) * ((B * H) / (1080 * 1920)) ** 0.8));
-  const rnd = zufall(w * 7919 + h * 104729 + zahl);
-  const { px, py } = punkte(kante, w, h, zahl, rnd);
-  const idx = delaunay(px, py);
-  const { farben, hell } = dreieckFarben(daten, w, h, px, py, idx);
-  const n = idx.length / 3, ecken = new Float32Array(n * 6);
-  for (let t = 0; t < n; t++) for (let k = 0; k < 3; k++) { const p = idx[3 * t + k]; ecken[6 * t + 2 * k] = px[p] * massstab; ecken[6 * t + 2 * k + 1] = py[p] * massstab; }
+  const mosaik = (anzahl) => {
+    const { px, py } = punkte(kante, w, h, anzahl, zufall(w * 7919 + h * 104729 + anzahl));
+    const idx = delaunay(px, py);
+    const { farben, hell } = dreieckFarben(daten, w, h, px, py, idx);
+    const n = idx.length / 3, ecken = new Float32Array(n * 6);
+    for (let t = 0; t < n; t++) for (let k = 0; k < 3; k++) { const p = idx[3 * t + k]; ecken[6 * t + 2 * k] = px[p] * massstab; ecken[6 * t + 2 * k + 1] = py[p] * massstab; }
+    return { n, ecken, farben, hell };
+  };
+  // das feine Mosaik (Netz der Gravur in 04) und ein gut viermal gröberes für die Formen und Farben (02, 03): grosse, ruhige Flächen, feiner nur an
+  // den Umrissen (Rückmeldung vom 15. Oktober 2026: die Formen und Farben wirkten «zu kleinteilig, zu wenig durchdacht»)
+  const dreiecke = mosaik(zahl), formen = mosaik(Math.max(40, Math.round(zahl / 4.5)));
   // Höhenlinien auf der stärker geglätteten Helligkeit, damit sie ruhig und fein fliessen
   const hoehen = hoehenlinien(gauss(L, w, h, Math.max(2, Math.round(w / 130))), daten, w, h).map((s) => ({ ...s, pts: s.pts.map((v) => v * massstab) }));
-  return { breite: B, hoehe: H, zeilen, kanten, dreiecke: { n, ecken, farben, hell }, hoehen };
+  return { breite: B, hoehe: H, zeilen, kanten, dreiecke, formen, hoehen };
 }
 
 /**

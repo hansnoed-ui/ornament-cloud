@@ -2,9 +2,10 @@
 // Jedes Bild hängt nur von der Zeit ab (kein Gedächtnis zwischen den Bildern), darum kann die Vorschau an jeder Stelle stehen.
 //   01 Linien:  waagrechte Linien tasten das Bild ab (von oben nach unten), heben sich mit der Helligkeit zu einem Relief
 //               (jede Linie verdeckt, was hinter ihr liegt) und beruhigen sich; dann zeichnen sich die Umrisse mit leichtem Leuchten
-//   02 Formen:  Dreiecke fliegen von aussen als Drahtgitter herein, drehen sich ein und füllen sich mit einer Schraffur in fünf Tonstufen (leer, weit,
-//               dicht, gekreuzt, voll; Stufen nach der Verteilung des Bilds), deren Richtung der Ausrichtung des Dreiecks folgt: ein gestochenes,
-//               grafisches Mosaik statt gemittelter Grautöne (Rückmeldung vom 15. Oktober 2026: «wirkt noch insgesamt einfach wie ein unscharfes Bild»)
+//   02 Formen:  Dreiecke eines groben Mosaiks (gross in ruhigen Flächen, feiner an den Umrissen) fliegen von aussen als Drahtgitter herein, drehen
+//               sich ein und füllen sich mit einer Schraffur in fünf Tonstufen (leer, weit, dicht, gekreuzt, voll), alle unter 45°: gleiche Töne
+//               verschmelzen zu grossen, ruhigen Flächen wie bei einem Linolschnitt (Rückmeldungen vom 15. Oktober 2026: «wie ein unscharfes Bild»,
+//               dann «zu kleinteilig, zu wenig durchdacht»)
 //   03 Farben:  drei Wellen, je ein Farbkanal (Rot, Grün, Blau) aus einer anderen Richtung, getragen von einem transparenten geometrischen
 //               Körper (Geodäte, Dodekaeder, Ikosaeder, je mit einem gegenläufig drehenden Körper im Innern), der aus dem Ursprung der Welle
 //               wächst; innerhalb seines Umrisses nimmt die Schraffur diesen Kanal des Fotos an, Bildpunkt für Bildpunkt (statt flacher
@@ -21,10 +22,10 @@
 //  komplexe transparente geometrische Körper»)
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=12";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=13";
 import { signet as signetZeichnen } from "../sketchory/signet.js?v=8";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=12";
-import { KOERPER, abbilden } from "./koerper.js?v=12";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=13";
+import { KOERPER, abbilden } from "./koerper.js?v=13";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
@@ -60,8 +61,9 @@ export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoeh
     return { pts: k.pts, von, bis: von + dauer };
   });
 
-  // Dreiecke: Schwerpunkt, Ecken relativ dazu (um 0,8 Filmpunkte vergrössert, damit keine Fugen bleiben), Flug, Farbwellen
-  const D = daten.dreiecke, n = D.n, mx = breite / 2, my = hoehe / 2, diag = Math.hypot(breite, hoehe);
+  // Dreiecke: Schwerpunkt, Ecken relativ dazu (um 1,4 Filmpunkte vergrössert, damit keine Fugen bleiben), Flug, Farbwellen
+  // das Mosaik der Formen und Farben: das gröbere (ältere Ergebnisse ohne «formen»: das feine)
+  const D = daten.formen ?? daten.dreiecke, n = D.n, mx = breite / 2, my = hoehe / 2, diag = Math.hypot(breite, hoehe);
   const flug = 1.05 * f, faerben = 0.32 * f;
   // 03 Farben: drei Wellen, je ein Farbkanal, von unten links (Rot), oben rechts (Grün) und aus der Mitte (Blau)
   const wellen = [[0.1, 0.9], [0.9, 0.1], [0.5, 0.45]].map(([qx, qy], c) => {
@@ -74,7 +76,7 @@ export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoeh
     const cx = (e[0] + e[2] + e[4]) / 3, cy = (e[1] + e[3] + e[5]) / 3;
     const rel = new Float32Array(6);
     for (let k = 0; k < 3; k++) {
-      const dx = e[2 * k] - cx, dy = e[2 * k + 1] - cy, l = Math.hypot(dx, dy) || 1, g = (l + 0.8) / l;
+      const dx = e[2 * k] - cx, dy = e[2 * k + 1] - cy, l = Math.hypot(dx, dy) || 1, g = (l + 1.4) / l;
       rel[2 * k] = dx * g; rel[2 * k + 1] = dy * g;
     }
     const [r, g, b] = [D.farben[3 * i], D.farben[3 * i + 1], D.farben[3 * i + 2]], grau = Math.round(D.hell[i] * 255);
@@ -96,9 +98,7 @@ export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoeh
   for (const d of dreiecke) {
     const v = dichte(d);
     d.stufe = schwelle.filter((x) => v > x).length;
-    let lang = 0, w = 0;
-    for (let k = 0; k < 3; k++) { const j = (k + 1) % 3, dx = d.rel[2 * j] - d.rel[2 * k], dy = d.rel[2 * j + 1] - d.rel[2 * k + 1], l = Math.hypot(dx, dy); if (l > lang) { lang = l; w = Math.atan2(dy, dx); } }
-    d.richtung = (((Math.round(w / (Math.PI / 4)) % 4) + 4) % 4);
+    d.richtung = 0;   // eine Richtung für alle: gleiche Töne verschmelzen zu ruhigen Flächen (vorher je Dreieck eine von vier Richtungen)
     d.zuerst = Math.min(...d.wann);
   }
 
@@ -129,8 +129,9 @@ export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoeh
   const fokus = fn ? [klemm(0.5 * mx + 0.5 * (fx / fn), breite * 0.3, breite * 0.7), klemm(0.5 * my + 0.5 * (fy / fn), hoehe * 0.3, hoehe * 0.7)] : [mx, my];
   const fWeit = Math.max(...[[0, 0], [breite, 0], [0, hoehe], [breite, hoehe]].map(([a, b]) => Math.hypot(a - fokus[0], b - fokus[1])));
   const gesehen = new Set(), linien = [];
-  for (let i = 0; i < n; i++) for (const [a, b] of [[0, 1], [1, 2], [2, 0]]) {
-    const x1 = D.ecken[6 * i + 2 * a], y1 = D.ecken[6 * i + 2 * a + 1], x2 = D.ecken[6 * i + 2 * b], y2 = D.ecken[6 * i + 2 * b + 1];
+  const FN = daten.dreiecke;   // das Netz der Gravur bleibt fein
+  for (let i = 0; i < FN.n; i++) for (const [a, b] of [[0, 1], [1, 2], [2, 0]]) {
+    const x1 = FN.ecken[6 * i + 2 * a], y1 = FN.ecken[6 * i + 2 * a + 1], x2 = FN.ecken[6 * i + 2 * b], y2 = FN.ecken[6 * i + 2 * b + 1];
     const k1 = `${Math.round(x1)},${Math.round(y1)}`, k2 = `${Math.round(x2)},${Math.round(y2)}`, k = k1 < k2 ? `${k1}|${k2}` : `${k2}|${k1}`;
     if (gesehen.has(k)) continue;
     gesehen.add(k);
@@ -240,8 +241,8 @@ function ecken(d, e, gross, aus) {
 }
 const dreieckPfad = (ctx, p) => { ctx.moveTo(p[0], p[1]); ctx.lineTo(p[2], p[3]); ctx.lineTo(p[4], p[5]); ctx.closePath(); };
 
-/** Schraffur als Muster (je Leinwand einmal gebaut): Stufe 1 weite Linien, 2 dichte Linien, 3 gekreuzt, 4 volle Fläche; vier Richtungen.
- *  Das Muster liegt fest auf der Leinwand, sodass Dreiecke gleicher Richtung wie ein gestochenes Feld ineinander übergehen. */
+/** Schraffur als Muster (je Leinwand einmal gebaut): Stufe 1 weite Linien, 2 dichte Linien, 3 gekreuzt, 4 volle Fläche, alle unter 45°.
+ *  Das Muster liegt fest auf der Leinwand: Dreiecke gleicher Stufe gehen nahtlos ineinander über, wie Flächen eines Linolschnitts. */
 const MUSTER = new WeakMap();
 function schraffur(ctx, sz, stufe, richtung) {
   let m = MUSTER.get(ctx);
@@ -249,12 +250,12 @@ function schraffur(ctx, sz, stufe, richtung) {
     const tinte = sz.farben.tinte, kachel = (s, zeichnen) => { const c = sz.leinwand(s, s), k = c.getContext("2d"); k.fillStyle = tinte; zeichnen(k, s); return c; };
     const formen = [
       null,
-      kachel(11, (k) => k.fillRect(0, 0, 11, 1.3)),
-      kachel(6, (k) => k.fillRect(0, 0, 6, 1.5)),
-      kachel(8, (k) => { k.fillRect(0, 0, 8, 1.3); k.fillRect(0, 0, 1.3, 8); }),
-      kachel(4, (k) => { k.globalAlpha = 0.9; k.fillRect(0, 0, 4, 4); }),
+      kachel(16, (k) => k.fillRect(0, 0, 16, 1.6)),
+      kachel(8, (k) => k.fillRect(0, 0, 8, 1.8)),
+      kachel(10, (k) => { k.fillRect(0, 0, 10, 1.6); k.fillRect(0, 0, 1.6, 10); }),
+      kachel(4, (k) => k.fillRect(0, 0, 4, 4)),
     ];
-    const WINKEL = [22.5, 67.5, 112.5, 157.5];
+    const WINKEL = [45];
     m = { tinte, muster: formen.map((kachelBild) => WINKEL.map((w) => {
       if (!kachelBild) return null;
       const p = ctx.createPattern(kachelBild, "repeat");
@@ -331,7 +332,7 @@ function dreieckeZeichnen(ctx, sz, t) {
   const [F0] = ab.formen, [C0, C1] = ab.farben, [Z0, Z1] = ab.zusammen;
   const gitterFlug = new Path2D(), gitterRuhig = new Path2D();
   // das Gitter der gelandeten Dreiecke wird blasser und verschwindet, während die Farben kommen
-  const gitterRuhe = 0.16 * (1 - anteil(t, C0, C0 + 0.5 * (C1 - C0)));
+  const gitterRuhe = 0;   // gelandet ohne Gitter: die Flächen sprechen für sich
   // ab den Farben zeichnet die Schraffur in eine eigene Ebene, die dann mit dem Foto getönt wird
   const farbig = !!sz.foto && t >= C0, ziel = farbig ? ebene(ctx, sz, "mosaikEbene") : ctx;
   for (const d of sz.dreiecke) {
@@ -343,7 +344,7 @@ function dreieckeZeichnen(ctx, sz, t) {
     if (deck > 0 && d.stufe > 0) {
       let blitz = 0;
       for (let c = 0; c < 3; c++) blitz = Math.max(blitz, Math.sin(Math.PI * anteil(t, d.wann[c] - 0.04, d.wann[c] + 0.3)));
-      ziel.beginPath(); dreieckPfad(ziel, ecken(d, e, 1 + 0.1 * blitz, p));
+      ziel.beginPath(); dreieckPfad(ziel, ecken(d, e, 1 + 0.04 * blitz, p));
       ziel.globalAlpha = deck; ziel.fillStyle = schraffur(ziel, sz, d.stufe, d.richtung); ziel.fill();
     }
     // Drahtgitter: im Flug kräftig, gelandet blass
@@ -667,7 +668,8 @@ export function bild(ctx, sz, t) {
     if (bewegt) { ctx.save(); ctx.translate(B / 2 + kam.dx, H / 2 + kam.dy); ctx.scale(kam.z, kam.z); ctx.translate(-B / 2, -H / 2); }
     if (t >= sz.ersterFlug && t < fotoAb) dreieckeZeichnen(ctx, sz, t);
     // die Umrisse liegen über den Formen, bis die Farben kommen
-    const kSicht = (1 - 0.6 * anteil(t, F0 + 0.4 * (F1 - F0), F1)) * (1 - anteil(t, C0, C0 + 0.5 * (C1 - C0)));
+    // die Umrisse aus 01 klingen aus, während die Formen landen (sonst liegen krakelige Linien über den ruhigen Flächen)
+    const kSicht = 1 - sanft(anteil(t, F0 + 0.15 * (F1 - F0), F0 + 0.65 * (F1 - F0)));
     if (t >= L0 + 0.3 * (L1 - L0) && kSicht > 0) kantenZeichnen(ctx, sz, t, kSicht);
     if (t >= C0 && t < C1 + 0.5) koerperZeichnen(ctx, sz, t);
     if (t >= ab.zusammen[0] && t < fotoAb) geometrieZeichnen(ctx, sz, t);
