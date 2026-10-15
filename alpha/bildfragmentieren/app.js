@@ -1,9 +1,9 @@
 // «Bildfragmentieren» – Seite: Foto laden, zerlegen (Worker), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der MP4-Schreiber von Sketchory;
 // ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE } from "./ablauf.js?v=13";
-import { szene, bild, standbildZeit, vorbereiten } from "./szene.js?v=13";
-import { zerlegen } from "./fragmente.js?v=13";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE } from "./ablauf.js?v=15";
+import { szene, bild, standbildZeit, vorbereiten } from "./szene.js?v=15";
+import { zerlegen } from "./fragmente.js?v=15";
 import { mp4 } from "../sketchory/mp4.js?v=8";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
@@ -62,7 +62,7 @@ async function fotoLaden(datei) {
 
 // ——— zerlegen (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=13", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=15", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   // zerlegt wird auf der halben Filmgrösse (für Kanten und Mosaik genug), das Foto für den Schluss bleibt in voller Grösse

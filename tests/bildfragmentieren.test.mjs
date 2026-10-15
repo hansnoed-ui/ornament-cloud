@@ -51,12 +51,6 @@ test("Zerlegen: Zeilen, Kanten und Dreiecke im Massstab des Films; gleiches Foto
   const rot = [...Array(D.n).keys()].filter((t) => D.farben[3 * t] > 180 && D.farben[3 * t + 1] < 90).length;
   assert.ok(rot > 20, `die rote Scheibe ist rot (${rot} Dreiecke)`);
   assert.ok(D.hell.every((v) => v >= 0 && v <= 1));
-  // das gröbere Mosaik für Formen und Farben (15. Oktober 2026): gut viermal weniger Dreiecke, bedeckt ebenfalls das ganze Bild
-  const G = a.formen;
-  assert.ok(G.n > 60 && G.n < D.n / 3, `gröber (${G.n} gegen ${D.n})`);
-  let fG = 0;
-  for (let t = 0; t < G.n; t++) { const e = G.ecken.subarray(6 * t, 6 * t + 6); fG += Math.abs((e[2] - e[0]) * (e[5] - e[1]) - (e[4] - e[0]) * (e[3] - e[1])) / 2; }
-  assert.ok(Math.abs(fG / (1080 * 1920) - 1) < 0.002, "das grobe Mosaik bedeckt das Bild");
   const b = zerlegen(foto(), 270, 480, { massstab: 4, feinheit: "mittel" });
   assert.deepEqual([...b.dreiecke.ecken.slice(0, 60)], [...D.ecken.slice(0, 60)], "fest");
   assert.equal(b.kanten.length, a.kanten.length);
@@ -108,7 +102,7 @@ test("Kanten: dünn, verkettet, vereinfacht; ruhige Flächen und Rauschen ergebe
   assert.equal(kantenMaske(flach, w, h).maske.reduce((a, b) => a + b, 0), 0, "keine Kanten in einer ruhigen Fläche");
 });
 
-test("Höhenlinien: Linien gleicher Helligkeit, um einen hellen Fleck geschlossene Kreise, mit der Farbe des Fotos; im Zerlegen in Filmkoordinaten", () => {
+test("Höhenlinien: Linien gleicher Helligkeit, um einen hellen Fleck geschlossene Kreise, mit der Farbe des Fotos", () => {
   const w = 160, h = 120, d = new Uint8ClampedArray(w * h * 4), L = new Float32Array(w * h);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const i = y * w + x, v = Math.max(0, 1 - Math.hypot(x - 80, y - 60) / 70);
@@ -123,9 +117,6 @@ test("Höhenlinien: Linien gleicher Helligkeit, um einen hellen Fleck geschlosse
     for (let k = 0; k < s.pts.length; k += 2) assert.ok(Math.abs(Math.hypot(s.pts[k] - 80, s.pts[k + 1] - 60) - r) < 2.5, `Stufe ${s.wert.toFixed(2)}`);
   }
   assert.ok(stufen.at(-1).farbe[0] > stufen[0].farbe[0] && stufen.at(-1).farbe[2] < stufen[0].farbe[2], "die hellen Stufen sind rot, die dunklen blau");
-  const a = zerlegen(foto(), 270, 480, { massstab: 4 });
-  assert.ok(a.hoehen.length >= 4, `Stufen (${a.hoehen.length}; gleiche Stufen flacher Flächen fallen zusammen)`);
-  for (const s of a.hoehen) for (let k = 0; k < s.pts.length; k += 2) assert.ok(s.pts[k] >= 0 && s.pts[k] <= 1080 && s.pts[k + 1] >= 0 && s.pts[k + 1] <= 1920);
 });
 
 test("Farbton und Farbauszüge: zusammengezählt (auf Schwarz) oder multipliziert (auf Weiss) wieder das Foto", () => {

@@ -168,6 +168,23 @@ export function vereinfachen(pts, eps = 0.9) {
   return aus;
 }
 
+/** Linienzug weich glätten (Chaikin): jede Ecke wird zweimal abgeschnitten, Anfang und Ende bleiben */
+export function glaetten(pts, runden = 2) {
+  let p = pts;
+  for (let r = 0; r < runden; r++) {
+    const n = p.length / 2;
+    if (n < 3) return p;
+    const aus = [p[0], p[1]];
+    for (let i = 0; i < n - 1; i++) {
+      const x0 = p[2 * i], y0 = p[2 * i + 1], x1 = p[2 * i + 2], y1 = p[2 * i + 3];
+      aus.push(0.75 * x0 + 0.25 * x1, 0.75 * y0 + 0.25 * y1, 0.25 * x0 + 0.75 * x1, 0.25 * y0 + 0.75 * y1);
+    }
+    aus.push(p[2 * n - 2], p[2 * n - 1]);
+    p = aus;
+  }
+  return p;
+}
+
 /** Delaunay-Triangulierung (Bowyer-Watson, Punkte nach x sortiert, fertige Dreiecke werden beiseitegelegt). Gibt Indizes [a, b, c, …]. */
 export function delaunay(px, py) {
   const n = px.length;
@@ -318,7 +335,7 @@ export const FEINHEIT = { grob: 520, mittel: 1150, fein: 2300 };
 
 /**
  * Das Bild zerlegen. daten: RGBA des Analysebilds (w × h, meist die halbe Filmgrösse); massstab: Film / Analysebild.
- * feinheit: "grob" | "mittel" | "fein". Gibt { breite, hoehe, zeilen, kanten, dreiecke (fein), formen (gröber), hoehen } in Filmkoordinaten.
+ * feinheit: "grob" | "mittel" | "fein". Gibt { breite, hoehe, zeilen, kanten, dreiecke } in Filmkoordinaten.
  */
 export function zerlegen(daten, w, h, { massstab = 1, feinheit = "mittel" } = {}) {
   const B = Math.round(w * massstab), H = Math.round(h * massstab);
@@ -339,13 +356,16 @@ export function zerlegen(daten, w, h, { massstab = 1, feinheit = "mittel" } = {}
   for (let r = 0; r < reihen; r++) for (let s = 0; s < spalten; s++) werte[r * spalten + s] = lesen((s * schritt) / massstab, (oben + r * abstand) / massstab);
   const zeilen = { werte, reihen, spalten, abstand, schritt, oben };
 
-  // Kanten: dünne Umrisse, zu Zügen verkettet, vereinfacht; die längsten zuerst, höchstens so viele, dass der Film ruhig bleibt
+  // Kanten: nur die langen, prägnanten Umrisse (keine Kleinst-Schlaufen aus Struktur wie Steinen oder Laub), vereinfacht und weich geglättet zu
+  // ruhigen Kurven; die längsten zuerst, höchstens 90 und so viele, dass der Film ruhig bleibt
+  // (Rückmeldung vom 15. Oktober 2026: die Umrisse nach den Linien wirkten «zu kleinteilig, zu wenig durchdacht»)
   const { maske, mag } = kantenMaske(G, w, h);
-  let zuege = verketten(maske, w, h, { minLaenge: Math.max(10, Math.round(w / 36)) })
-    .map((p) => vereinfachen(p, 0.8))
+  let zuege = verketten(maske, w, h, { minLaenge: Math.max(16, Math.round(w / 14)) })
+    .map((p) => glaetten(vereinfachen(p, 1.2), 2))
     .map((p) => { let l = 0; for (let k = 2; k < p.length; k += 2) l += Math.hypot(p[k] - p[k - 2], p[k + 1] - p[k - 1]); return { p, l }; })
-    .sort((a, b) => b.l - a.l);
-  const budget = (w * h) / 10;   // Gesamtlänge der Kanten höchstens so viel (Analysepunkte)
+    .sort((a, b) => b.l - a.l)
+    .slice(0, 90);
+  const budget = (w * h) / 24;   // Gesamtlänge der Kanten höchstens so viel (Analysepunkte)
   let summe = 0;
   zuege = zuege.filter((z) => (summe += z.l) <= budget || summe - z.l === 0);
   const kanten = zuege.map(({ p, l }) => {
@@ -365,20 +385,14 @@ export function zerlegen(daten, w, h, { massstab = 1, feinheit = "mittel" } = {}
   for (const v of kante) if (v > km) km = v;
   if (km > 0) for (let i = 0; i < w * h; i++) kante[i] = Math.sqrt(kante[i] / km);
   const zahl = Math.max(60, Math.round((FEINHEIT[feinheit] ?? FEINHEIT.mittel) * ((B * H) / (1080 * 1920)) ** 0.8));
-  const mosaik = (anzahl) => {
-    const { px, py } = punkte(kante, w, h, anzahl, zufall(w * 7919 + h * 104729 + anzahl));
-    const idx = delaunay(px, py);
-    const { farben, hell } = dreieckFarben(daten, w, h, px, py, idx);
-    const n = idx.length / 3, ecken = new Float32Array(n * 6);
-    for (let t = 0; t < n; t++) for (let k = 0; k < 3; k++) { const p = idx[3 * t + k]; ecken[6 * t + 2 * k] = px[p] * massstab; ecken[6 * t + 2 * k + 1] = py[p] * massstab; }
-    return { n, ecken, farben, hell };
-  };
-  // das feine Mosaik (Netz der Gravur in 04) und ein gut viermal gröberes für die Formen und Farben (02, 03): grosse, ruhige Flächen, feiner nur an
-  // den Umrissen (Rückmeldung vom 15. Oktober 2026: die Formen und Farben wirkten «zu kleinteilig, zu wenig durchdacht»)
-  const dreiecke = mosaik(zahl), formen = mosaik(Math.max(40, Math.round(zahl / 4.5)));
-  // Höhenlinien auf der stärker geglätteten Helligkeit, damit sie ruhig und fein fliessen
-  const hoehen = hoehenlinien(gauss(L, w, h, Math.max(2, Math.round(w / 130))), daten, w, h).map((s) => ({ ...s, pts: s.pts.map((v) => v * massstab) }));
-  return { breite: B, hoehe: H, zeilen, kanten, dreiecke, formen, hoehen };
+  const rnd = zufall(w * 7919 + h * 104729 + zahl);
+  const { px, py } = punkte(kante, w, h, zahl, rnd);
+  const idx = delaunay(px, py);
+  const { farben, hell } = dreieckFarben(daten, w, h, px, py, idx);
+  const n = idx.length / 3, ecken = new Float32Array(n * 6);
+  for (let t = 0; t < n; t++) for (let k = 0; k < 3; k++) { const p = idx[3 * t + k]; ecken[6 * t + 2 * k] = px[p] * massstab; ecken[6 * t + 2 * k + 1] = py[p] * massstab; }
+  // (die Höhenlinien, hoehenlinien(), werden seit dem 15. Oktober 2026 im Film nicht mehr gebraucht und darum nicht mehr gerechnet)
+  return { breite: B, hoehe: H, zeilen, kanten, dreiecke: { n, ecken, farben, hell } };
 }
 
 /**
