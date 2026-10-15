@@ -3,8 +3,9 @@
 //   01 Linien:  waagrechte Linien tasten das Bild ab (von oben nach unten), heben sich mit der Helligkeit zu einem Relief
 //               (jede Linie verdeckt, was hinter ihr liegt) und beruhigen sich; dann zeichnen sich die Umrisse mit leichtem Leuchten
 //   02 Formen:  Dreiecke fliegen von aussen als Drahtgitter herein, drehen sich ein und füllen sich mit ihrem Grau (Mosaik)
-//   03 Farben:  drei Wellen laufen mit leuchtendem Ring durch das Mosaik, je ein Farbkanal (Rot, Grün, Blau) aus einer anderen Richtung;
-//               wo eine Welle durchläuft, springen die Dreiecke kurz auf, blitzen und bekommen diesen Kanal (übersättigt, dann ruhig);
+//   03 Farben:  drei Wellen, je ein Farbkanal (Rot, Grün, Blau) aus einer anderen Richtung, getragen von einem transparenten geometrischen
+//               Körper (Geodäte, Dodekaeder, Ikosaeder, je mit einem gegenläufig drehenden Körper im Innern), der aus dem Ursprung der Welle
+//               wächst; wo sein Umriss durchläuft, springen die Dreiecke kurz auf, blitzen und bekommen diesen Kanal (übersättigt, dann ruhig);
 //               jede Welle stösst die Kamera kurz an, das Gitter verschwindet
 //   04 Bild:    das Mosaik löst sich auf; dahinter kommt feine Geometrie aus dem Foto selbst zum Vorschein, vom Schwerpunkt der Umrisse aus:
 //               Höhenlinien der Helligkeit in den Farben des Fotos (Stufe um Stufe, leicht gegeneinander schimmernd) und das haarfeine Netz aller
@@ -13,12 +14,14 @@
 //               (RGB-Versatz, schwingt aus), das Foto steht
 // (Wünsche vom 15. Oktober 2026: «das Einfügen der Farben und das Finden des Schlussbilds dürften noch etwas dynamischer und spektakulärer erfolgen»;
 //  «auf dem ganzen Bild soll nochmals etwas passieren, mit Formen und Linien, nochmals mehr komplexe Geometrie»; «die Kreise sind nix, viel zu grob,
-//  ich möchte feine Geometrie, eher aus bzw. hinter dem Bild als einfach darüber gelegt»)
+//  ich möchte feine Geometrie, eher aus bzw. hinter dem Bild als einfach darüber gelegt»; «die farbigen Kreise sind too much … lieber ersetzen durch
+//  komplexe transparente geometrische Körper»)
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=6";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=7";
 import { signet as signetZeichnen } from "../sketchory/signet.js?v=8";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=6";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=7";
+import { KOERPER, abbilden } from "./koerper.js?v=7";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
@@ -60,7 +63,7 @@ export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoeh
   // 03 Farben: drei Wellen, je ein Farbkanal, von unten links (Rot), oben rechts (Grün) und aus der Mitte (Blau)
   const wellen = [[0.1, 0.9], [0.9, 0.1], [0.5, 0.45]].map(([qx, qy], c) => {
     const x = qx * breite, y = qy * hoehe, weit = Math.max(...[[0, 0], [breite, 0], [0, hoehe], [breite, hoehe]].map(([a, b]) => Math.hypot(a - x, b - y)));
-    return { x, y, weit, von: C0 + [0.02, 0.22, 0.42][c] * Cd, dauer: 0.38 * Cd };
+    return { x, y, weit, von: C0 + [0.02, 0.22, 0.42][c] * Cd, dauer: 0.38 * Cd, form: ["geode", "dodekaeder", "ikosaeder"][c], innen: ["dodekaeder", "ikosaeder", "geode"][c] };
   });
   const dreiecke = new Array(n);
   for (let i = 0; i < n; i++) {
@@ -240,8 +243,9 @@ function dreieckeZeichnen(ctx, sz, t) {
       const w = d.wann, f = sz.faerben;
       let blitz = 0;
       for (let c = 0; c < 3; c++) blitz = Math.max(blitz, Math.sin(Math.PI * anteil(t, w[c] - 0.04, w[c] + 0.24)));
-      gross = 1 + 0.32 * blitz;
-      const weiss = 0.5 * blitz * blitz;
+      // kurz aufspringen, kaum aufhellen (ein weisser Blitz an der Front würde wieder als Ring lesen)
+      gross = 1 + 0.16 * blitz;
+      const weiss = 0.08 * blitz * blitz;
       const kanal = (c, ziel) => { const v = klemm(farbe(d.grau, ziel, anteil(t, w[c], w[c] + f)), 0, 255); return (v + (255 - v) * weiss) | 0; };
       ctx.globalAlpha = deck; ctx.fillStyle = `rgb(${kanal(0, d.r)},${kanal(1, d.g)},${kanal(2, d.b)})`;
       ctx.beginPath(); dreieckPfad(ctx, ecken(d, e, gross, p)); ctx.fill();
@@ -260,21 +264,42 @@ function dreieckeZeichnen(ctx, sz, t) {
   ctx.globalAlpha = 1;
 }
 
-/** die Farbwellen: ein leuchtender Ring je Kanal, der durch das Mosaik läuft */
-const KANAL = ["255,52,52", "52,255,120", "70,135,255"];
-function farbWellen(ctx, sz, t) {
+/** die Farbwellen als transparente geometrische Körper: jeder wächst aus dem Ursprung seiner Welle, dreht sich langsam und trägt einen kleineren,
+ *  gegenläufig drehenden Körper in sich. Dünne Konturen ohne Farbe (vorn deutlicher als hinten), gläserne Flächen, kleine Punkte an den Ecken. */
+function koerperZeichnen(ctx, sz, t) {
+  const weiss = sz.grund === "weiss", tinte = sz.farben.tinte;
   sz.wellen.forEach((w, c) => {
     const p = (t - w.von) / w.dauer;
-    if (p <= 0 || p >= 1.1) return;
-    const r = Math.min(1, p) * w.weit, a = 1 - anteil(p, 0.75, 1.1);
-    ctx.save();
-    ctx.globalCompositeOperation = sz.grund === "weiss" ? "multiply" : "lighter";
-    ctx.beginPath(); ctx.arc(w.x, w.y, r, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(${KANAL[c]},${0.16 * a})`; ctx.lineWidth = 120; ctx.stroke();
-    ctx.strokeStyle = `rgba(${KANAL[c]},${0.35 * a})`; ctx.lineWidth = 34; ctx.stroke();
-    ctx.strokeStyle = `rgba(${KANAL[c]},${0.95 * a})`; ctx.lineWidth = 5; ctx.stroke();
-    ctx.restore();
+    if (p <= 0 || p >= 1.2) return;
+    const sicht = anteil(p, 0, 0.1) * (1 - anteil(p, 0.75, 1.2)), r = (Math.min(1.1, p) * w.weit) / 1.12;
+    const u = t - w.von, lage = (k) => [u * 0.55 + c * 1.3 + k, u * 0.42 + c * 0.7 + k * 0.6, u * 0.12 + c];
+    koerper(ctx, KOERPER[w.form], abbilden(KOERPER[w.form], w.x, w.y, r, lage(0)), sicht, weiss, tinte);
+    koerper(ctx, KOERPER[w.innen], abbilden(KOERPER[w.innen], w.x, w.y, r * 0.56, lage(2).map((x) => -1.4 * x)), sicht * 0.85, weiss, tinte);
   });
+}
+
+function koerper(ctx, k, pts, sicht, weiss, tinte) {
+  if (sicht <= 0) return;
+  ctx.save();
+  // gläserne Flächen: jede einzeln, ganz leicht, damit sich Überlagerungen verdichten
+  if (k.flaechen.length) {
+    ctx.globalCompositeOperation = weiss ? "source-over" : "lighter";
+    // je mehr Flächen, desto zarter jede (sonst wird die Geodäte milchig)
+    ctx.fillStyle = tinte; ctx.globalAlpha = (weiss ? 0.014 : 0.022) * Math.sqrt(20 / k.flaechen.length) * sicht;
+    for (const [a, b, c] of k.flaechen) {
+      ctx.beginPath(); ctx.moveTo(pts[a][0], pts[a][1]); ctx.lineTo(pts[b][0], pts[b][1]); ctx.lineTo(pts[c][0], pts[c][1]); ctx.closePath(); ctx.fill();
+    }
+  }
+  ctx.globalCompositeOperation = "source-over";
+  // Kanten: vorn deutlich, hinten zart
+  const vorn = new Path2D(), hinten = new Path2D(), ecken = new Path2D();
+  for (const [a, b] of k.kanten) { const z = pts[a][2] + pts[b][2], pfad = z >= 0 ? vorn : hinten; pfad.moveTo(pts[a][0], pts[a][1]); pfad.lineTo(pts[b][0], pts[b][1]); }
+  for (const [x, y, z] of pts) if (z > 0.15) { ecken.moveTo(x + 2.2, y); ecken.arc(x, y, 2.2, 0, Math.PI * 2); }
+  ctx.strokeStyle = tinte; ctx.fillStyle = tinte; ctx.lineJoin = "round"; ctx.lineCap = "round";
+  ctx.globalAlpha = 0.28 * sicht; ctx.lineWidth = 0.9; ctx.stroke(hinten);
+  ctx.globalAlpha = 0.8 * sicht; ctx.lineWidth = 1.2; ctx.stroke(vorn);
+  ctx.globalAlpha = 0.9 * sicht; ctx.fill(ecken);
+  ctx.restore();
 }
 
 /** die Splitter des Fotos: gelandete mit einer gemeinsamen Maske, fliegende einzeln (gedreht, grösser, als kämen sie von vorn), Blitz beim Aufprall */
@@ -482,7 +507,7 @@ export function bild(ctx, sz, t) {
     // die Umrisse liegen über den Formen, bis die Farben kommen
     const kSicht = (1 - 0.6 * anteil(t, F0 + 0.4 * (F1 - F0), F1)) * (1 - anteil(t, C0, C0 + 0.5 * (C1 - C0)));
     if (t >= L0 + 0.3 * (L1 - L0) && kSicht > 0) kantenZeichnen(ctx, sz, t, kSicht);
-    if (t >= C0 && t < C1 + 0.5) farbWellen(ctx, sz, t);
+    if (t >= C0 && t < C1 + 0.5) koerperZeichnen(ctx, sz, t);
     if (t >= ab.zusammen[0] && t < fotoAb) geometrieZeichnen(ctx, sz, t);
     if (sz.foto && t >= ab.zusammen[0] && t < fotoAb) splitterZeichnen(ctx, sz, t);
     if (bewegt) ctx.restore();
