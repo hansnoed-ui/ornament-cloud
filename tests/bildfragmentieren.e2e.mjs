@@ -1,5 +1,5 @@
 // «Bildfragmentieren» (alpha/bildfragmentieren/) – Browser-Tests (Playwright, Chromium): ein Testfoto zerlegen, Bilder des Films in den vier Phasen
-// (Linien, Formen in Grau, Farben, das Foto), Abspann, Video über WebCodecs (Ersatz-Encoder, Chromium hat hier kein H.264), Standbild,
+// (Linien, Formen als Schraffur, Farben, das Foto), Abspann, Video über WebCodecs (Ersatz-Encoder, Chromium hat hier kein H.264), Standbild,
 // Formate 4 : 5 und 9 : 16, Grund weiss, Handy ohne seitliches Scrollen, keine Anfragen nach aussen.
 //   NODE_PATH=$(npm root -g) node tests/bildfragmentieren.e2e.mjs
 import assert from "node:assert/strict";
@@ -51,7 +51,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit (Abschnitt + Anteil der Dauer) messen: Anteil Grund, Anteil Grau, Anteil bunt, mittlere Farbe in der Mitte */
 const messe = (page, abschnitt, anteil = 0, extra = {}) => page.evaluate(async ([abschnitt, anteil, extra]) => {
-  const { bild, szene } = await import("./szene.js?v=8");
+  const { bild, szene } = await import("./szene.js?v=9");
   const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, ...extra });
   const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
   const [a, b] = sz.zeit.ab[abschnitt], t = a + (b - a) * anteil;
@@ -96,13 +96,14 @@ await check("Testfoto: wird zerlegt, die Vorschau läuft, Zeilen, Kanten und Dre
   await ctx.close();
 });
 
-await check("Die vier Phasen: Linien auf Schwarz, Formen in Grau, dann Farben, am Ende das Foto; mit Abspann leerer Schluss", async () => {
+await check("Die vier Phasen: Linien auf Schwarz, Formen als Schraffur, dann Farben, am Ende das Foto; mit Abspann leerer Schluss", async () => {
   const { ctx, page, fehler } = await oeffne();
   await laden(page);
   await bereit(page);
   const linien = await messe(page, "linien", 0.8), formen = await messe(page, "formen", 0.95), farben = await messe(page, "farben", 0.98), bild = await messe(page, "stehen", 0.3);
   assert.ok(linien.grund > 0.6 && linien.bunt < 0.01, `Linien: weisse Linien auf Schwarz (${JSON.stringify(linien)})`);
-  assert.ok(formen.grund < 0.05 && formen.grau > 0.8, `Formen: ein graues Mosaik füllt das Bild (${JSON.stringify(formen)})`);
+  // Formen: ein schraffiertes Mosaik ohne Farbe; Grund (leere Stufe und Lücken der Schraffur) und Tinte (Linien, volle Flächen) gemischt (seit 15. Oktober 2026)
+  assert.ok(formen.bunt < 0.01 && formen.grund > 0.15 && formen.grund < 0.9 && formen.grau > 0.1, `Formen: schraffiertes Mosaik in Schwarz-Weiss (${JSON.stringify(formen)})`);
   assert.ok(farben.bunt > 0.85, `Farben: bunt (${JSON.stringify(farben)})`);
   const [r, g, b] = farben.sonne;
   assert.ok(r > 200 && g > 160 && b < 120, `die Sonne ist gelb (${farben.sonne})`);
@@ -180,7 +181,7 @@ await check("Formate: 9 : 16 und zurück zu 4 : 5; Vorschau und Signet passen si
     // das Signet steht in beiden Formaten in der Mitte und ganz im Bild
     {
       const mitte = await page.evaluate(async () => {
-        const { bild, szene } = await import("./szene.js?v=8");
+        const { bild, szene } = await import("./szene.js?v=9");
         const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h) });
         const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
         bild(x, sz, sz.zeit.ab.signetStehen[0] + 0.2);

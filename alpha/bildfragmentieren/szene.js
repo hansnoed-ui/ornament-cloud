@@ -2,7 +2,9 @@
 // Jedes Bild hängt nur von der Zeit ab (kein Gedächtnis zwischen den Bildern), darum kann die Vorschau an jeder Stelle stehen.
 //   01 Linien:  waagrechte Linien tasten das Bild ab (von oben nach unten), heben sich mit der Helligkeit zu einem Relief
 //               (jede Linie verdeckt, was hinter ihr liegt) und beruhigen sich; dann zeichnen sich die Umrisse mit leichtem Leuchten
-//   02 Formen:  Dreiecke fliegen von aussen als Drahtgitter herein, drehen sich ein und füllen sich mit ihrem Grau (Mosaik)
+//   02 Formen:  Dreiecke fliegen von aussen als Drahtgitter herein, drehen sich ein und füllen sich mit einer Schraffur in fünf Tonstufen (leer, weit,
+//               dicht, gekreuzt, voll; Stufen nach der Verteilung des Bilds), deren Richtung der Ausrichtung des Dreiecks folgt: ein gestochenes,
+//               grafisches Mosaik statt gemittelter Grautöne (Rückmeldung vom 15. Oktober 2026: «wirkt noch insgesamt einfach wie ein unscharfes Bild»)
 //   03 Farben:  drei Wellen, je ein Farbkanal (Rot, Grün, Blau) aus einer anderen Richtung, getragen von einem transparenten geometrischen
 //               Körper (Geodäte, Dodekaeder, Ikosaeder, je mit einem gegenläufig drehenden Körper im Innern), der aus dem Ursprung der Welle
 //               wächst; wo sein Umriss durchläuft, springen die Dreiecke kurz auf, blitzen und bekommen diesen Kanal (übersättigt, dann ruhig);
@@ -18,10 +20,10 @@
 //  komplexe transparente geometrische Körper»)
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=8";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=9";
 import { signet as signetZeichnen } from "../sketchory/signet.js?v=8";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=8";
-import { KOERPER, abbilden } from "./koerper.js?v=8";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=9";
+import { KOERPER, abbilden } from "./koerper.js?v=9";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
@@ -86,6 +88,18 @@ export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoeh
       dreh: (rnd() - 0.5) * Math.PI * 2.4, wann };
   }
   const ersterFlug = dreiecke.reduce((m, d) => Math.min(m, d.land - flug), Infinity);
+  // Schraffur: fünf Tonstufen, Schwellen halb nach der Verteilung der Helligkeit im Bild, halb fest (damit Helles hell bleibt; auf Weiss umgekehrt:
+  // dunkel ist dicht), Richtung nach der längsten Seite
+  const dichte = (d) => (grund === "weiss" ? 255 - d.grau : d.grau);
+  const sortiert2 = dreiecke.map(dichte).sort((a, b) => a - b), schwelle = [0.22, 0.45, 0.68, 0.86].map((q) => 0.5 * (sortiert2[Math.floor(q * (sortiert2.length - 1))] ?? 0) + 0.5 * [50, 105, 160, 205][[0.22, 0.45, 0.68, 0.86].indexOf(q)]);
+  for (const d of dreiecke) {
+    const v = dichte(d);
+    d.stufe = schwelle.filter((x) => v > x).length;
+    let lang = 0, w = 0;
+    for (let k = 0; k < 3; k++) { const j = (k + 1) % 3, dx = d.rel[2 * j] - d.rel[2 * k], dy = d.rel[2 * j + 1] - d.rel[2 * k + 1], l = Math.hypot(dx, dy); if (l > lang) { lang = l; w = Math.atan2(dy, dx); } }
+    d.richtung = (((Math.round(w / (Math.PI / 4)) % 4) + 4) % 4);
+    d.zuerst = Math.min(...d.wann);
+  }
 
   // 04 Bild: grosse Splitter des Fotos (ein grobes Delaunay-Mosaik); die äusseren landen zuerst, die Mitte zuletzt, im Takt immer schneller
   const splitterFlug = 0.5 * f, roh = grobeSplitter(breite, hoehe, rnd);
@@ -225,12 +239,38 @@ function ecken(d, e, gross, aus) {
 }
 const dreieckPfad = (ctx, p) => { ctx.moveTo(p[0], p[1]); ctx.lineTo(p[2], p[3]); ctx.lineTo(p[4], p[5]); ctx.closePath(); };
 
+/** Schraffur als Muster (je Leinwand einmal gebaut): Stufe 1 weite Linien, 2 dichte Linien, 3 gekreuzt, 4 volle Fläche; vier Richtungen.
+ *  Das Muster liegt fest auf der Leinwand, sodass Dreiecke gleicher Richtung wie ein gestochenes Feld ineinander übergehen. */
+const MUSTER = new WeakMap();
+function schraffur(ctx, sz, stufe, richtung) {
+  let m = MUSTER.get(ctx);
+  if (!m || m.tinte !== sz.farben.tinte) {
+    const tinte = sz.farben.tinte, kachel = (s, zeichnen) => { const c = sz.leinwand(s, s), k = c.getContext("2d"); k.fillStyle = tinte; zeichnen(k, s); return c; };
+    const formen = [
+      null,
+      kachel(11, (k) => k.fillRect(0, 0, 11, 1.3)),
+      kachel(6, (k) => k.fillRect(0, 0, 6, 1.5)),
+      kachel(8, (k) => { k.fillRect(0, 0, 8, 1.3); k.fillRect(0, 0, 1.3, 8); }),
+      kachel(4, (k) => { k.globalAlpha = 0.9; k.fillRect(0, 0, 4, 4); }),
+    ];
+    const WINKEL = [22.5, 67.5, 112.5, 157.5];
+    m = { tinte, muster: formen.map((kachelBild) => WINKEL.map((w) => {
+      if (!kachelBild) return null;
+      const p = ctx.createPattern(kachelBild, "repeat");
+      if (p && typeof DOMMatrix !== "undefined" && p.setTransform) p.setTransform(new DOMMatrix().rotateSelf(w));
+      return p;
+    })) };
+    MUSTER.set(ctx, m);
+  }
+  return m.muster[stufe][richtung] ?? sz.farben.tinte;
+}
+
 function dreieckeZeichnen(ctx, sz, t) {
   const F = sz.farben, { ab } = sz.zeit, flug = sz.flug, p = new Float32Array(6);
   const [F0] = ab.formen, [C0, C1] = ab.farben, [Z0, Z1] = ab.zusammen;
   const gitterFlug = new Path2D(), gitterRuhig = new Path2D();
   // das Gitter der gelandeten Dreiecke wird blasser und verschwindet, während die Farben kommen
-  const gitterRuhe = 0.3 * (1 - anteil(t, C0, C0 + 0.5 * (C1 - C0)));
+  const gitterRuhe = 0.16 * (1 - anteil(t, C0, C0 + 0.5 * (C1 - C0)));
   const farbe = (grau, ziel, q) => grau + (ziel - grau) * (q + 0.7 * Math.sin(Math.PI * q));
   for (const d of sz.dreiecke) {
     const start = d.land - flug;
@@ -247,8 +287,11 @@ function dreieckeZeichnen(ctx, sz, t) {
       gross = 1 + 0.16 * blitz;
       const weiss = 0.08 * blitz * blitz;
       const kanal = (c, ziel) => { const v = klemm(farbe(d.grau, ziel, anteil(t, w[c], w[c] + f)), 0, 255); return (v + (255 - v) * weiss) | 0; };
-      ctx.globalAlpha = deck; ctx.fillStyle = `rgb(${kanal(0, d.r)},${kanal(1, d.g)},${kanal(2, d.b)})`;
-      ctx.beginPath(); dreieckPfad(ctx, ecken(d, e, gross, p)); ctx.fill();
+      // bis die erste Welle kommt: die Schraffur; dann legt sich die Farbe darüber
+      const farbig = anteil(t, d.zuerst - 0.05, d.zuerst + 0.3);
+      ctx.beginPath(); dreieckPfad(ctx, ecken(d, e, gross, p));
+      if (farbig < 1 && d.stufe > 0) { ctx.globalAlpha = deck; ctx.fillStyle = schraffur(ctx, sz, d.stufe, d.richtung); ctx.fill(); }
+      if (farbig > 0) { ctx.globalAlpha = deck * farbig; ctx.fillStyle = `rgb(${kanal(0, d.r)},${kanal(1, d.g)},${kanal(2, d.b)})`; ctx.fill(); }
     }
     // Drahtgitter: im Flug kräftig, gelandet blass
     if (e < 1) dreieckPfad(gitterFlug, ecken(d, e, 1, p));
