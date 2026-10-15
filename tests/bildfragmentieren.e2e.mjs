@@ -51,7 +51,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit (Abschnitt + Anteil der Dauer) messen: Anteil Grund, Anteil Grau, Anteil bunt, mittlere Farbe in der Mitte */
 const messe = (page, abschnitt, anteil = 0, extra = {}) => page.evaluate(async ([abschnitt, anteil, extra]) => {
-  const { bild, szene } = await import("./szene.js?v=15");
+  const { bild, szene } = await import("./szene.js?v=16");
   const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, ...extra });
   const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
   const [a, b] = sz.zeit.ab[abschnitt], t = a + (b - a) * anteil;
@@ -67,7 +67,11 @@ const messe = (page, abschnitt, anteil = 0, extra = {}) => page.evaluate(async (
   }
   // die Sonne (oben in der Mitte des Fotos): Farbe im Film
   const mx = Math.round(sz.breite / 2), my = Math.round(sz.hoehe * 0.3), j = (my * sz.breite + mx) * 4;
-  return { grund: grund / n, grau: grau / n, bunt: bunt / n, sonne: [d[j], d[j + 1], d[j + 2]], t, dauer: sz.zeit.dauer };
+  // die Sonne: Mittel eines kleinen Felds (der Stich in 02/03 hat Lücken zwischen den Linien)
+  const sonne = [0, 0, 0];
+  let m = 0;
+  for (let yy = my - 12; yy <= my + 12; yy++) for (let xx = mx - 12; xx <= mx + 12; xx++) { const k = (yy * sz.breite + xx) * 4; sonne[0] += d[k]; sonne[1] += d[k + 1]; sonne[2] += d[k + 2]; m++; }
+  return { grund: grund / n, grau: grau / n, bunt: bunt / n, sonne: sonne.map((v) => Math.round(v / m)), t, dauer: sz.zeit.dauer };
 }, [abschnitt, anteil, extra]);
 
 await check("Testfoto: wird zerlegt, die Vorschau läuft, Zeilen, Kanten und Dreiecke stehen unter dem Bild; nichts von aussen", async () => {
@@ -119,7 +123,7 @@ await check("Die vier Phasen: Linien auf Schwarz, Formen als Schraffur, dann Far
   assert.ok(formen.bunt < 0.01 && formen.grund > 0.15 && formen.grund < 0.9 && formen.grau > 0.1, `Formen: schraffiertes Mosaik in Schwarz-Weiss (${JSON.stringify(formen)})`);
   assert.ok(farben.bunt > 0.85, `Farben: bunt (${JSON.stringify(farben)})`);
   const [r, g, b] = farben.sonne;
-  assert.ok(r > 200 && g > 160 && b < 120, `die Sonne ist gelb (${farben.sonne})`);
+  assert.ok(r > 110 && g > 0.7 * r && b < 0.5 * g, `die Sonne ist gelb getönt (${farben.sonne})`);
   const [r2, g2, b2] = bild.sonne;
   assert.ok(Math.abs(r2 - 255) < 20 && Math.abs(g2 - 210) < 25 && b2 < 90, `das Foto steht (${bild.sonne})`);
   assert.ok(bild.bunt > 0.95, "ganz das Foto, ohne Gitter");
@@ -139,6 +143,27 @@ await check("Die vier Phasen: Linien auf Schwarz, Formen als Schraffur, dann Far
   assert.ok(weiss.grund > 0.6 && weiss.bunt < 0.01, `weisser Grund (${JSON.stringify(weiss)})`);
   const weissBild = await messe(page, "stehen", 0.3, { grund: "weiss" });
   assert.deepEqual(weissBild.sonne.map((v) => Math.round(v / 30)), bild.sonne.map((v) => Math.round(v / 30)), "das Foto ist auf beiden Gründen dasselbe");
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
+await check("Formen als Stich folgen dem Foto Bildpunkt für Bildpunkt: dunkle Teile dicht, helle leer (auf Weiss), auf Schwarz umgekehrt", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  await laden(page);
+  await bereit(page);
+  // Testfoto: rote Fläche (dunkel) unten in der Mitte, gelbe Sonne (hell) oben; gemessen wird die Tinte in beiden Bereichen am Ende von 02
+  const tinte = (grund) => page.evaluate(async (grund) => {
+    const { bild, szene } = await import("./szene.js?v=16");
+    const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, grund });
+    const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
+    bild(x, sz, sz.zeit.ab.farben[0] - 0.05);
+    const mittel = (x0, y0, x1, y1) => { const d = x.getImageData(x0, y0, x1 - x0, y1 - y0).data; let s = 0; for (let i = 0; i < d.length; i += 4) s += d[i]; return s / (d.length / 4); };
+    const B = sz.breite, H = sz.hoehe;   // das quere Testfoto ist auf 4 : 5 beschnitten: Sonne und rote Fläche liegen in der Mitte
+    return { rot: mittel(B * 0.45, H * 0.68, B * 0.55, H * 0.78), sonne: mittel(B * 0.47, H * 0.27, B * 0.53, H * 0.33) };
+  }, grund);
+  const w = await tinte("weiss"), s = await tinte("schwarz");
+  assert.ok(w.rot < w.sonne - 60, `auf Weiss: die dunkle Fläche dicht gestochen, die helle Sonne fast leer (${JSON.stringify(w)})`);
+  assert.ok(s.sonne > s.rot + 60, `auf Schwarz: die helle Sonne dicht, die dunkle Fläche leerer (${JSON.stringify(s)})`);
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
@@ -194,7 +219,7 @@ await check("Formate: 9 : 16 und zurück zu 4 : 5; Vorschau und Signet passen si
     // das Signet steht in beiden Formaten in der Mitte und ganz im Bild
     {
       const mitte = await page.evaluate(async () => {
-        const { bild, szene } = await import("./szene.js?v=15");
+        const { bild, szene } = await import("./szene.js?v=16");
         const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h) });
         const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
         bild(x, sz, sz.zeit.ab.signetStehen[0] + 0.2);
