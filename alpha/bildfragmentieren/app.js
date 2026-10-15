@@ -1,16 +1,19 @@
 // «Bildfragmentieren» – Seite: Foto laden, zerlegen (Worker), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der MP4-Schreiber von Sketchory;
 // ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE } from "./ablauf.js?v=11";
-import { szene, bild, standbildZeit, vorbereiten } from "./szene.js?v=11";
-import { zerlegen } from "./fragmente.js?v=11";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE } from "./ablauf.js?v=13";
+import { szene, bild, standbildZeit, vorbereiten } from "./szene.js?v=13";
+import { zerlegen } from "./fragmente.js?v=13";
 import { mp4 } from "../sketchory/mp4.js?v=8";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const VORSCHAU = 0.5;   // Auflösung der Vorschau gegenüber dem Film (das Video rechnet in voller Grösse)
+// Auflösung der Vorschau gegenüber dem Film (das Video rechnet in voller Grösse): nach der Schärfe des Bildschirms, mindestens die halbe, höchstens 0,85
+// (Rückmeldung vom 15. Oktober 2026: am Handy wirkte die Vorschau in halber Auflösung grob)
+let VORSCHAU = 0.5;
+const vorschauMass = () => { const b = vorschau.parentElement.getBoundingClientRect().width || 400; return Math.round(Math.min(0.85, Math.max(0.5, (b * (window.devicePixelRatio || 1)) / S.mass[0])) * 20) / 20; };
 const S = { bild: null, daten: null, foto: null, vorrat: {}, sz: null, laeuft: false, start: 0, t: null, film: null, rechnen: 0,
   format: "4:5", feinheit: "mittel", grund: "schwarz", mass: [1080, 1350] };
 window.__bildfragmentieren = S;   // für die Browser-Tests
@@ -59,7 +62,7 @@ async function fotoLaden(datei) {
 
 // ——— zerlegen (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=11", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=13", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   // zerlegt wird auf der halben Filmgrösse (für Kanten und Mosaik genug), das Foto für den Schluss bleibt in voller Grösse
@@ -107,7 +110,8 @@ function neu({ abspielen = !ruhig } = {}) {
   S.sz = szene(S.daten, optionen());
   const sz = S.sz, spaeter = window.requestIdleCallback ?? ((f) => setTimeout(f, 200));
   spaeter(() => { if (S.sz === sz) vorbereiten(sz); });
-  // Vorschau im Format des Films, in halber Auflösung
+  // Vorschau im Format des Films, in der Auflösung des Bildschirms (höchstens 0,85 des Films)
+  VORSCHAU = vorschauMass();
   const vb = Math.round(S.mass[0] * VORSCHAU), vh = Math.round(S.mass[1] * VORSCHAU);
   if (vorschau.width !== vb || vorschau.height !== vh) { vorschau.width = vb; vorschau.height = vh; }
   vctx.setTransform(VORSCHAU, 0, 0, VORSCHAU, 0, 0);

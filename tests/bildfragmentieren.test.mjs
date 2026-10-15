@@ -51,6 +51,12 @@ test("Zerlegen: Zeilen, Kanten und Dreiecke im Massstab des Films; gleiches Foto
   const rot = [...Array(D.n).keys()].filter((t) => D.farben[3 * t] > 180 && D.farben[3 * t + 1] < 90).length;
   assert.ok(rot > 20, `die rote Scheibe ist rot (${rot} Dreiecke)`);
   assert.ok(D.hell.every((v) => v >= 0 && v <= 1));
+  // das gröbere Mosaik für Formen und Farben (15. Oktober 2026): gut viermal weniger Dreiecke, bedeckt ebenfalls das ganze Bild
+  const G = a.formen;
+  assert.ok(G.n > 60 && G.n < D.n / 3, `gröber (${G.n} gegen ${D.n})`);
+  let fG = 0;
+  for (let t = 0; t < G.n; t++) { const e = G.ecken.subarray(6 * t, 6 * t + 6); fG += Math.abs((e[2] - e[0]) * (e[5] - e[1]) - (e[4] - e[0]) * (e[3] - e[1])) / 2; }
+  assert.ok(Math.abs(fG / (1080 * 1920) - 1) < 0.002, "das grobe Mosaik bedeckt das Bild");
   const b = zerlegen(foto(), 270, 480, { massstab: 4, feinheit: "mittel" });
   assert.deepEqual([...b.dreiecke.ecken.slice(0, 60)], [...D.ecken.slice(0, 60)], "fest");
   assert.equal(b.kanten.length, a.kanten.length);
@@ -181,6 +187,9 @@ test("Seite: Alpha (noindex), steht für sich ohne Navigation oben links, nichts
     : e.isDirectory() ? seiten(new URL(e.name + "/", d), vor + e.name + "/") : e.name.endsWith(".html") ? [vor + e.name] : []);
   for (const p of seiten(root)) if (!p.startsWith("alpha/bildfragmentieren/")) assert.ok(!lies(p).includes("bildfragmentieren"), `${p} verlinkt Bildfragmentieren`);
   assert.ok(!lies("sitemap.xml").includes("bildfragmentieren"));
+  // im Abspann läuft der Punkt des Signets ruhig, obwohl sich das Signet doppelt so schnell zeichnet (15. Oktober 2026)
+  assert.match(lies("alpha/bildfragmentieren/szene.js"), /punktTempo: SIGNET_TEMPO \* 1\.25/);
+  assert.match(lies("alpha/sketchory/signet.js"), /punktTempo = 1 \}/, "für Sketchory unverändert");
 });
 
 test("Körper (Farbwellen): Ikosaeder, Dodekaeder und Geodäte mit den richtigen Zahlen, Ecken auf der Kugel, gleich lange Kanten; Abbilden um die Mitte", async () => {
