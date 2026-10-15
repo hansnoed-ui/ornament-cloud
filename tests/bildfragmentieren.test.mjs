@@ -182,3 +182,18 @@ test("Seite: Alpha (noindex), steht für sich ohne Navigation oben links, nichts
   for (const p of seiten(root)) if (!p.startsWith("alpha/bildfragmentieren/")) assert.ok(!lies(p).includes("bildfragmentieren"), `${p} verlinkt Bildfragmentieren`);
   assert.ok(!lies("sitemap.xml").includes("bildfragmentieren"));
 });
+
+test("Körper (Farbwellen): Ikosaeder, Dodekaeder und Geodäte mit den richtigen Zahlen, Ecken auf der Kugel, gleich lange Kanten; Abbilden um die Mitte", async () => {
+  const { KOERPER, abbilden } = await import("../alpha/bildfragmentieren/koerper.js");
+  const zahlen = Object.fromEntries(Object.entries(KOERPER).map(([n, k]) => [n, [k.ecken.length, k.kanten.length, k.flaechen.length]]));
+  assert.deepEqual(zahlen, { ikosaeder: [12, 30, 20], dodekaeder: [20, 30, 0], geode: [162, 480, 320] });
+  for (const k of Object.values(KOERPER)) for (const e of k.ecken) assert.ok(Math.abs(Math.hypot(...e) - 1) < 1e-9, "auf der Einheitskugel");
+  for (const n of ["ikosaeder", "dodekaeder"]) {
+    const k = KOERPER[n], l = k.kanten.map(([a, b]) => Math.hypot(...k.ecken[a].map((x, i) => x - k.ecken[b][i])));
+    assert.ok(Math.max(...l) - Math.min(...l) < 1e-9, `${n}: alle Kanten gleich lang`);
+  }
+  const p = abbilden(KOERPER.ikosaeder, 500, 400, 100, [0.3, 0.7, 0.1]);
+  const mx = p.reduce((s, q) => s + q[0], 0) / p.length, my = p.reduce((s, q) => s + q[1], 0) / p.length;
+  assert.ok(Math.abs(mx - 500) < 8 && Math.abs(my - 400) < 8, "um die Mitte");
+  assert.ok(p.every(([x, y]) => Math.hypot(x - 500, y - 400) < 100 / (1 - 0.22) + 1e-6), "im Radius (mit Perspektive)");
+});
