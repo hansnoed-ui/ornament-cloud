@@ -6,11 +6,10 @@
 //   02 Formen:  Dreiecke fliegen von aussen als Drahtgitter herein, drehen sich ein und füllen sich mit einer Schraffur in fünf Tonstufen (leer, weit,
 //               dicht, gekreuzt, voll; Stufen nach der Verteilung des Bilds), deren Richtung der Ausrichtung des Dreiecks folgt: ein gestochenes,
 //               grafisches Mosaik statt gemittelter Grautöne (Rückmeldung vom 15. Oktober 2026: «wirkt noch insgesamt einfach wie ein unscharfes Bild»)
-//   03 Farben:  drei Wellen, je ein Farbkanal (Rot, Grün, Blau) aus einer anderen Richtung, getragen von einem transparenten geometrischen
-//               Körper (Geodäte, Dodekaeder, Ikosaeder, je mit einem gegenläufig drehenden Körper im Innern), der aus dem Ursprung der Welle
-//               wächst; innerhalb seines Umrisses nimmt die Schraffur diesen Kanal des Fotos an, Bildpunkt für Bildpunkt (statt flacher
-//               Dreiecksfarben; Rückmeldung vom 15. Oktober 2026: «insgesamt immer noch etwas grob»), die Dreiecke springen sanft auf;
-//               jede Welle stösst die Kamera kurz an, das Gitter verschwindet
+//   03 Farben:  drei transparente geometrische Körper (Geodäte, Dodekaeder, Ikosaeder, je mit einem gegenläufig drehenden Körper im Innern)
+//               wachsen aus drei Richtungen; innerhalb ihres Umrisses nimmt die Schraffur die echten Farben des Fotos an, Bildpunkt für Bildpunkt,
+//               darunter erscheint das Foto halb durchscheinend; die Dreiecke springen sanft auf, jeder Körper stösst die Kamera leicht an
+//               (seit dem 15. Oktober 2026 ohne Kanaltrennung: Kanal um Kanal gab grelle Zwischenfarben, «Farbbomben»)
 //   04 Bild:    vom Schwerpunkt der Umrisse aus wächst das scharfe, feine Netz aller Dreieckskanten über das farbige Mosaik, dann setzt sich das
 //               Foto Facette um Facette zusammen wie ein Glasfenster; das Netz verschwindet, ein leiser Weissblitz, die Kamera rückt ein wenig
 //               näher und die drei Farbkanäle rasten ein (RGB-Versatz, schwingt aus), das Foto steht
@@ -20,10 +19,10 @@
 //  komplexe transparente geometrische Körper»)
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=14";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=15";
 import { signet as signetZeichnen } from "../sketchory/signet.js?v=8";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=14";
-import { KOERPER, abbilden } from "./koerper.js?v=14";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=15";
+import { KOERPER, abbilden } from "./koerper.js?v=15";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
@@ -271,26 +270,33 @@ function ebene(ctx, sz, name) {
   return e;
 }
 
-/** die Schraffur in den Farben des Fotos tönen, Bildpunkt für Bildpunkt (03 Farben): jeder Kanal (Rot, Grün, Blau) gilt dort, wo der Körper seiner
- *  Welle schon durchgezogen ist (innerhalb seines Umrisses), sonst bleibt die Schraffur neutral (weiss auf Schwarz, schwarz auf Weiss).
- *  Auf Schwarz tönt das aufgehellte, sattere Foto (damit die Linien leuchten), auf Weiss das Foto selbst. */
+/** die Schraffur in den Farben des Fotos tönen, Bildpunkt für Bildpunkt (03 Farben): jeder gläserne Körper bringt die vollständigen, echten Farben in
+ *  seinen Bereich (innerhalb seines Umrisses), ausserhalb bleibt die Schraffur neutral (weiss auf Schwarz, schwarz auf Weiss); darunter erscheint dort
+ *  das Foto selbst, halb durchscheinend, damit dunkle Flächen nicht leer bleiben. Auf Schwarz tönt das etwas aufgehellte Foto, auf Weiss das
+ *  etwas abgedunkelte (damit die Linien tragen). (Rückmeldung vom 15. Oktober 2026: Kanal um Kanal ergab grelle Zwischenfarben, «Farbbomben»; jetzt ohne
+ *  Kanaltrennung und ohne Übersättigung) */
 function toenen(mosaik, ctx, sz, t) {
-  const weiss = sz.grund === "weiss", k = ebene(ctx, sz, "tonEbene"), A = farbAuszuege(sz);
-  // darunter, wo die Farbe angekommen ist, das Foto selbst, halb durchscheinend (Kanal um Kanal wie die Schraffur), damit dunkle Flächen nicht leer bleiben
-  const u = ebene(ctx, sz, "fotoEbene"), U = auszugsBilder(sz);
+  const weiss = sz.grund === "weiss", k = ebene(ctx, sz, "tonEbene"), u = ebene(ctx, sz, "fotoEbene");
+  const farbe = lichtBilder(sz).leucht;   // auf Schwarz etwas heller, auf Weiss etwas dunkler als das Foto, damit die Linien tragen
   k.fillStyle = weiss ? "#000000" : "#ffffff"; k.fillRect(-60, -60, sz.breite + 120, sz.hoehe + 120);
   u.fillStyle = sz.farben.grund; u.fillRect(-60, -60, sz.breite + 120, sz.hoehe + 120);
+  // die Bereiche der Körper (eine Maske); ist ein Körper ganz durchgezogen, gilt das ganze Bild
+  const maske = new Path2D();
+  let ganz = false, etwas = false;
   sz.wellen.forEach((w, c) => {
     const p = (t - w.von) / w.dauer;
     if (p <= 0) return;
-    const form = p < 1.1 ? huelle(koerperLage(w, c, t).pts) : null;
-    for (const [e, bild, art] of [[k, A[c], weiss ? "lighter" : "multiply"], [u, U[c], weiss ? "multiply" : "lighter"]]) {
-      e.save();
-      if (form) { e.beginPath(); e.moveTo(form[0][0], form[0][1]); for (const [x, y] of form.slice(1)) e.lineTo(x, y); e.closePath(); e.clip(); }
-      e.globalCompositeOperation = art; e.drawImage(bild, 0, 0, sz.breite, sz.hoehe);
-      e.restore();
-    }
+    etwas = true;
+    if (p >= 1.1) { ganz = true; return; }
+    const h = huelle(koerperLage(w, c, t).pts);
+    maske.moveTo(h[0][0], h[0][1]); for (const [x, y] of h.slice(1)) maske.lineTo(x, y); maske.closePath();
   });
+  if (etwas) for (const [e, bild] of [[k, farbe], [u, sz.foto]]) {
+    e.save();
+    if (!ganz) e.clip(maske, "nonzero");
+    e.drawImage(bild, 0, 0, sz.breite, sz.hoehe);
+    e.restore();
+  }
   ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 0.42; ctx.drawImage(sz.fotoEbene, 0, 0); ctx.restore();
   // die Schraffur behält ihre Form (Deckkraft) und nimmt die Farbe der Tonebene an
   mosaik.save(); mosaik.setTransform(1, 0, 0, 1, 0, 0); mosaik.globalCompositeOperation = "source-atop"; mosaik.drawImage(sz.tonEbene, 0, 0); mosaik.restore();
@@ -304,21 +310,6 @@ function huelle(pts) {
   for (const q of p) { while (unten.length >= 2 && kreuz(unten[unten.length - 2], unten[unten.length - 1], q) <= 0) unten.pop(); unten.push(q); }
   for (const q of p.slice().reverse()) { while (oben.length >= 2 && kreuz(oben[oben.length - 2], oben[oben.length - 1], q) <= 0) oben.pop(); oben.push(q); }
   return unten.slice(0, -1).concat(oben.slice(0, -1));
-}
-
-/** die Farbauszüge zum Tönen (einmal je Foto und Grund): auf Schwarz je ein Kanal des leuchtenden Fotos auf Weiss (multipliziert), auf Weiss je ein
- *  Kanal des Fotos auf Schwarz (addiert) */
-function farbAuszuege(sz) {
-  const v = sz.vorrat, schluessel = `farb-${sz.grund}`;
-  if (v[schluessel] && v.farbFoto === sz.foto) return v[schluessel];
-  const B = sz.breite, H = sz.hoehe, weiss = sz.grund === "weiss";
-  const quelle = sz.leinwand(B, H), qc = quelle.getContext("2d", { willReadFrequently: true });
-  qc.drawImage(weiss ? sz.foto : lichtBilder(sz).leucht, 0, 0, B, H);
-  const bilder = auszuege(qc.getImageData(0, 0, B, H).data, B, H, weiss ? "schwarz" : "weiss")
-    .map((d) => { const c = sz.leinwand(B, H); c.getContext("2d").putImageData(new ImageData(d, B, H), 0, 0); return c; });
-  if (v.farbFoto !== sz.foto) for (const k of Object.keys(v)) if (k.startsWith("farb-")) delete v[k];
-  v.farbFoto = sz.foto; v[schluessel] = bilder;
-  return bilder;
 }
 
 function dreieckeZeichnen(ctx, sz, t) {
@@ -441,7 +432,7 @@ function zusammensetzen(ctx, sz, t) {
 }
 
 /** das Foto für die Geometrie, einmal je Foto und Grund: «tief» abgedunkelt und weich (auf Weiss: aufgehellt und weich) als Grund hinter den Linien,
- *  «leucht» aufgehellt und satter (auf Weiss: abgedunkelt und satter) zum Füllen der Linien */
+ *  «leucht» aufgehellt (auf Weiss: abgedunkelt), kaum satter, zum Tönen der Schraffur */
 function lichtBilder(sz) {
   const v = sz.vorrat, schluessel = `licht-${sz.grund}`;
   if (v[schluessel] && v.lichtFoto === sz.foto) return v[schluessel];
@@ -459,7 +450,7 @@ function lichtBilder(sz) {
   for (let i = 0; i < d.length; i += 4) {
     let r = d[i], g = d[i + 1], b = d[i + 2];
     if (weiss) { r = (r * r) / 255; g = (g * g) / 255; b = (b * b) / 255; } else { r = 255 - ((255 - r) ** 2) / 255; g = 255 - ((255 - g) ** 2) / 255; b = 255 - ((255 - b) ** 2) / 255; }
-    const l = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 1.45;
+    const l = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 1.05;   // kaum satter (vorher 1,45: zu grell)
     d[i] = l + (r - l) * s; d[i + 1] = l + (g - l) * s; d[i + 2] = l + (b - l) * s;
   }
   qc.putImageData(bild, 0, 0);
@@ -493,7 +484,7 @@ function auszugsBilder(sz) {
 }
 
 /** die Farbauszüge im Voraus rechnen (sonst stockt die Vorschau einmal kurz beim Einrasten) */
-export function vorbereiten(sz) { if (sz.foto) { auszugsBilder(sz); lichtBilder(sz); farbAuszuege(sz); } }
+export function vorbereiten(sz) { if (sz.foto) { auszugsBilder(sz); lichtBilder(sz); } }
 
 /** das Foto, zum Schluss langsam etwas näher; beim Einrasten mit auseinanderlaufenden Farbkanälen, die ausschwingen */
 function fotoZeichnen(ctx, sz, t) {
@@ -558,9 +549,8 @@ function beschriftung(ctx, sz, t, sicht) {
   PHASEN.forEach(([name], i) => { if (t >= ab[name][0] - 0.05) nr = i; });
   const [name, titel] = PHASEN[nr], [a, b] = ab[name], fort = anteil(t, a, b);
   const zahl = (n) => n.toLocaleString("de-CH");
-  const kanaele = ["R", "G", "B"].map((k, c) => (t >= sz.wellen[c].von ? k : "·")).join(" ");
   const gelandet = sz.geometrie.facetten.filter((fc) => t >= fc.t + sz.geometrie.setzen).length;
-  const zaehler = [`zeilen ${zahl(sz.zahl.zeilen)} · kanten ${zahl(sz.zahl.kanten)}`, `dreiecke ${zahl(sz.zahl.dreiecke)}`, `kanäle ${kanaele}`,
+  const zaehler = [`zeilen ${zahl(sz.zahl.zeilen)} · kanten ${zahl(sz.zahl.kanten)}`, `dreiecke ${zahl(sz.zahl.dreiecke)}`, `farbe ${Math.round(fort * 100)} %`,
     `fragmente ${zahl(gelandet)} / ${zahl(sz.zahl.dreiecke)}`][nr];
   const unten = H - rand;
   ctx.textAlign = "left";
