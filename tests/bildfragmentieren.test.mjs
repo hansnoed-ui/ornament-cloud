@@ -181,6 +181,9 @@ test("Seite: Alpha (noindex), steht für sich ohne Navigation oben links, nichts
     : e.isDirectory() ? seiten(new URL(e.name + "/", d), vor + e.name + "/") : e.name.endsWith(".html") ? [vor + e.name] : []);
   for (const p of seiten(root)) if (!p.startsWith("alpha/bildfragmentieren/")) assert.ok(!lies(p).includes("bildfragmentieren"), `${p} verlinkt Bildfragmentieren`);
   assert.ok(!lies("sitemap.xml").includes("bildfragmentieren"));
+  // im Abspann läuft der Punkt des Signets ruhig, obwohl sich das Signet doppelt so schnell zeichnet (15. Oktober 2026)
+  assert.match(lies("alpha/bildfragmentieren/szene.js"), /punktTempo: SIGNET_TEMPO \* 1\.25/);
+  assert.match(lies("alpha/sketchory/signet.js"), /punktTempo = 1 \}/, "für Sketchory unverändert");
 });
 
 test("Körper (Farbwellen): Ikosaeder, Dodekaeder und Geodäte mit den richtigen Zahlen, Ecken auf der Kugel, gleich lange Kanten; Abbilden um die Mitte", async () => {

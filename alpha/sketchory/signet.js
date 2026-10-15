@@ -35,9 +35,9 @@ const zwischen = (x, a, b) => a + (b - a) * x;
 
 /**
  * Bild f (0–179 und weiter) des Signets auf ctx zeichnen (der Grund ist schon gemalt).
- * hoehe: Bildhöhe (1440 für 3 : 4). farben: { tinte, punkt }.
+ * hoehe: Bildhöhe (1440 für 3 : 4). farben: { tinte, punkt }. punktTempo: Teiler für den Lauf des Punkts (Standard 1).
  */
-export function signet(ctx, f, { hoehe = 1440, farben = FARBEN.dunkel } = {}) {
+export function signet(ctx, f, { hoehe = 1440, farben = FARBEN.dunkel, punktTempo = 1 } = {}) {
   const { tinte, punkt: punktFarbe } = farben;
   ctx.save();
   ctx.translate(0, (hoehe - 1920) / 2);
@@ -56,8 +56,9 @@ export function signet(ctx, f, { hoehe = 1440, farben = FARBEN.dunkel } = {}) {
     Object.assign(ctx, { strokeStyle: tinte, lineWidth: 3, lineCap: "round", lineJoin: "round" });
     ctx.stroke();
   }
-  // der Punkt: ab Bild 40, eine Runde in 54 Bildern
-  const lauf = Math.max(0, f - 40) / 54;
+  // der Punkt: ab Bild 40, eine Runde in 54 Bildern (punktTempo: läuft f schneller als üblich, wie im Abspann von «Bildfragmentieren»,
+  // bleibt der Punkt mit diesem Teiler trotzdem ruhig; Rückmeldung vom 15. Oktober 2026: «der Punkt läuft zu schnell durchs Signet»)
+  const lauf = Math.max(0, f - 40) / 54 / punktTempo;
   const sicht = anteil(f, 40, 48);
   if (sicht > 0) {
     const [px, py] = bild(punkt(-Math.PI / 2 + lauf * Math.PI * 2));

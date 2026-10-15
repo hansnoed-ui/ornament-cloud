@@ -7,7 +7,8 @@
 //               grafisches Mosaik statt gemittelter Grautöne (Rückmeldung vom 15. Oktober 2026: «wirkt noch insgesamt einfach wie ein unscharfes Bild»)
 //   03 Farben:  drei Wellen, je ein Farbkanal (Rot, Grün, Blau) aus einer anderen Richtung, getragen von einem transparenten geometrischen
 //               Körper (Geodäte, Dodekaeder, Ikosaeder, je mit einem gegenläufig drehenden Körper im Innern), der aus dem Ursprung der Welle
-//               wächst; wo sein Umriss durchläuft, springen die Dreiecke kurz auf, blitzen und bekommen diesen Kanal (übersättigt, dann ruhig);
+//               wächst; innerhalb seines Umrisses nimmt die Schraffur diesen Kanal des Fotos an, Bildpunkt für Bildpunkt (statt flacher
+//               Dreiecksfarben; Rückmeldung vom 15. Oktober 2026: «insgesamt immer noch etwas grob»), die Dreiecke springen sanft auf;
 //               jede Welle stösst die Kamera kurz an, das Gitter verschwindet
 //   04 Bild:    das Mosaik löst sich auf; dahinter kommt feine Geometrie aus dem Foto selbst zum Vorschein, vom Schwerpunkt der Umrisse aus:
 //               Höhenlinien der Helligkeit und das zarte Netz aller Dreieckskanten, gefüllt mit dem leuchtenden Foto (wie eine Lichtgravur) auf dem
@@ -20,10 +21,10 @@
 //  komplexe transparente geometrische Körper»)
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=11";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=12";
 import { signet as signetZeichnen } from "../sketchory/signet.js?v=8";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=11";
-import { KOERPER, abbilden } from "./koerper.js?v=11";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=12";
+import { KOERPER, abbilden } from "./koerper.js?v=12";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
@@ -115,7 +116,7 @@ export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoeh
     const rx = ab0 > 1 ? (cx - mx) / ab0 : Math.cos(w), ry = ab0 > 1 ? (cy - my) / ab0 : Math.sin(w), weite = (0.55 + 0.5 * rnd()) * diag;
     const flaeche = Math.abs((e[2] - e[0]) * (e[5] - e[1]) - (e[4] - e[0]) * (e[3] - e[1])) / 2;
     return { cx, cy, rel, land: Z0 + (0.14 + 0.58 * u ** 0.72) * Zd, ox: rx * weite + (rnd() - 0.5) * 0.3 * diag, oy: ry * weite + (rnd() - 0.5) * 0.3 * diag,
-      dreh: (rnd() < 0.5 ? -1 : 1) * (0.5 + rnd() * 0.9) * Math.PI, gross: 1.5 + rnd() * 0.7, stoss: Math.min(16, 8 * Math.sqrt(flaeche / mittel)), wink: rnd() * Math.PI * 2,
+      dreh: (rnd() < 0.5 ? -1 : 1) * (0.5 + rnd() * 0.9) * Math.PI, gross: 1.5 + rnd() * 0.7, stoss: Math.min(6, 3 * Math.sqrt(flaeche / mittel)), wink: rnd() * Math.PI * 2,
       x0: Math.max(0, Math.floor(Math.min(e[0], e[2], e[4]) - 2)), y0: Math.max(0, Math.floor(Math.min(e[1], e[3], e[5]) - 2)),
       x1: Math.min(breite, Math.ceil(Math.max(e[0], e[2], e[4]) + 2)), y1: Math.min(hoehe, Math.ceil(Math.max(e[1], e[3], e[5]) + 2)) };
   });
@@ -265,39 +266,95 @@ function schraffur(ctx, sz, stufe, richtung) {
   return m.muster[stufe][richtung] ?? sz.farben.tinte;
 }
 
+/** eine Ebene in der Grösse und Lage der Leinwand (leer, mit derselben Abbildung), einmal je Szene gebaut */
+function ebene(ctx, sz, name) {
+  const c = ctx.canvas;
+  if (!sz[name] || sz[name].width !== c.width || sz[name].height !== c.height) sz[name] = sz.leinwand(c.width, c.height);
+  const e = sz[name].getContext("2d");
+  e.setTransform(1, 0, 0, 1, 0, 0); e.globalCompositeOperation = "source-over"; e.globalAlpha = 1; e.clearRect(0, 0, c.width, c.height);
+  e.setTransform(ctx.getTransform());
+  return e;
+}
+
+/** die Schraffur in den Farben des Fotos tönen, Bildpunkt für Bildpunkt (03 Farben): jeder Kanal (Rot, Grün, Blau) gilt dort, wo der Körper seiner
+ *  Welle schon durchgezogen ist (innerhalb seines Umrisses), sonst bleibt die Schraffur neutral (weiss auf Schwarz, schwarz auf Weiss).
+ *  Auf Schwarz tönt das aufgehellte, sattere Foto (damit die Linien leuchten), auf Weiss das Foto selbst. */
+function toenen(mosaik, ctx, sz, t) {
+  const weiss = sz.grund === "weiss", k = ebene(ctx, sz, "tonEbene"), A = farbAuszuege(sz);
+  // darunter, wo die Farbe angekommen ist, das Foto selbst, halb durchscheinend (Kanal um Kanal wie die Schraffur), damit dunkle Flächen nicht leer bleiben
+  const u = ebene(ctx, sz, "fotoEbene"), U = auszugsBilder(sz);
+  k.fillStyle = weiss ? "#000000" : "#ffffff"; k.fillRect(-60, -60, sz.breite + 120, sz.hoehe + 120);
+  u.fillStyle = sz.farben.grund; u.fillRect(-60, -60, sz.breite + 120, sz.hoehe + 120);
+  sz.wellen.forEach((w, c) => {
+    const p = (t - w.von) / w.dauer;
+    if (p <= 0) return;
+    const form = p < 1.1 ? huelle(koerperLage(w, c, t).pts) : null;
+    for (const [e, bild, art] of [[k, A[c], weiss ? "lighter" : "multiply"], [u, U[c], weiss ? "multiply" : "lighter"]]) {
+      e.save();
+      if (form) { e.beginPath(); e.moveTo(form[0][0], form[0][1]); for (const [x, y] of form.slice(1)) e.lineTo(x, y); e.closePath(); e.clip(); }
+      e.globalCompositeOperation = art; e.drawImage(bild, 0, 0, sz.breite, sz.hoehe);
+      e.restore();
+    }
+  });
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 0.42; ctx.drawImage(sz.fotoEbene, 0, 0); ctx.restore();
+  // die Schraffur behält ihre Form (Deckkraft) und nimmt die Farbe der Tonebene an
+  mosaik.save(); mosaik.setTransform(1, 0, 0, 1, 0, 0); mosaik.globalCompositeOperation = "source-atop"; mosaik.drawImage(sz.tonEbene, 0, 0); mosaik.restore();
+}
+
+/** konvexe Hülle (monotone Kette) einer Punktliste [[x, y, …], …] */
+function huelle(pts) {
+  const p = pts.map(([x, y]) => [x, y]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const kreuz = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const unten = [], oben = [];
+  for (const q of p) { while (unten.length >= 2 && kreuz(unten[unten.length - 2], unten[unten.length - 1], q) <= 0) unten.pop(); unten.push(q); }
+  for (const q of p.slice().reverse()) { while (oben.length >= 2 && kreuz(oben[oben.length - 2], oben[oben.length - 1], q) <= 0) oben.pop(); oben.push(q); }
+  return unten.slice(0, -1).concat(oben.slice(0, -1));
+}
+
+/** die Farbauszüge zum Tönen (einmal je Foto und Grund): auf Schwarz je ein Kanal des leuchtenden Fotos auf Weiss (multipliziert), auf Weiss je ein
+ *  Kanal des Fotos auf Schwarz (addiert) */
+function farbAuszuege(sz) {
+  const v = sz.vorrat, schluessel = `farb-${sz.grund}`;
+  if (v[schluessel] && v.farbFoto === sz.foto) return v[schluessel];
+  const B = sz.breite, H = sz.hoehe, weiss = sz.grund === "weiss";
+  const quelle = sz.leinwand(B, H), qc = quelle.getContext("2d", { willReadFrequently: true });
+  qc.drawImage(weiss ? sz.foto : lichtBilder(sz).leucht, 0, 0, B, H);
+  const bilder = auszuege(qc.getImageData(0, 0, B, H).data, B, H, weiss ? "schwarz" : "weiss")
+    .map((d) => { const c = sz.leinwand(B, H); c.getContext("2d").putImageData(new ImageData(d, B, H), 0, 0); return c; });
+  if (v.farbFoto !== sz.foto) for (const k of Object.keys(v)) if (k.startsWith("farb-")) delete v[k];
+  v.farbFoto = sz.foto; v[schluessel] = bilder;
+  return bilder;
+}
+
 function dreieckeZeichnen(ctx, sz, t) {
   const F = sz.farben, { ab } = sz.zeit, flug = sz.flug, p = new Float32Array(6);
   const [F0] = ab.formen, [C0, C1] = ab.farben, [Z0, Z1] = ab.zusammen;
   const gitterFlug = new Path2D(), gitterRuhig = new Path2D();
   // das Gitter der gelandeten Dreiecke wird blasser und verschwindet, während die Farben kommen
   const gitterRuhe = 0.16 * (1 - anteil(t, C0, C0 + 0.5 * (C1 - C0)));
-  const farbe = (grau, ziel, q) => grau + (ziel - grau) * (q + 0.7 * Math.sin(Math.PI * q));
+  // ab den Farben zeichnet die Schraffur in eine eigene Ebene, die dann mit dem Foto getönt wird
+  const farbig = !!sz.foto && t >= C0, ziel = farbig ? ebene(ctx, sz, "mosaikEbene") : ctx;
   for (const d of sz.dreiecke) {
     const start = d.land - flug;
     if (t < start) continue;
     const e = inOut(anteil(t, start, d.land));
-    // Füllung: zuerst Grau, dann Kanal um Kanal, wie die Wellen durchlaufen (je kurz übersättigt), beim Durchlaufen aufspringen und blitzen
+    // Füllung: die Schraffur seiner Tonstufe; wo eine Farbwelle durchläuft, springt das Dreieck kurz und sanft auf
     const deck = anteil(t, d.land - 0.3 * flug, d.land + 0.35);
-    let gross = 1;
-    if (deck > 0) {
-      const w = d.wann, f = sz.faerben;
+    if (deck > 0 && d.stufe > 0) {
       let blitz = 0;
-      for (let c = 0; c < 3; c++) blitz = Math.max(blitz, Math.sin(Math.PI * anteil(t, w[c] - 0.04, w[c] + 0.24)));
-      // kurz aufspringen, kaum aufhellen (ein weisser Blitz an der Front würde wieder als Ring lesen)
-      gross = 1 + 0.16 * blitz;
-      const weiss = 0.08 * blitz * blitz;
-      const kanal = (c, ziel) => { const v = klemm(farbe(d.grau, ziel, anteil(t, w[c], w[c] + f)), 0, 255); return (v + (255 - v) * weiss) | 0; };
-      // bis die erste Welle kommt: die Schraffur; dann legt sich die Farbe darüber
-      const farbig = anteil(t, d.zuerst - 0.05, d.zuerst + 0.3);
-      ctx.beginPath(); dreieckPfad(ctx, ecken(d, e, gross, p));
-      if (farbig < 1 && d.stufe > 0) { ctx.globalAlpha = deck; ctx.fillStyle = schraffur(ctx, sz, d.stufe, d.richtung); ctx.fill(); }
-      if (farbig > 0) { ctx.globalAlpha = deck * farbig; ctx.fillStyle = `rgb(${kanal(0, d.r)},${kanal(1, d.g)},${kanal(2, d.b)})`; ctx.fill(); }
+      for (let c = 0; c < 3; c++) blitz = Math.max(blitz, Math.sin(Math.PI * anteil(t, d.wann[c] - 0.04, d.wann[c] + 0.3)));
+      ziel.beginPath(); dreieckPfad(ziel, ecken(d, e, 1 + 0.1 * blitz, p));
+      ziel.globalAlpha = deck; ziel.fillStyle = schraffur(ziel, sz, d.stufe, d.richtung); ziel.fill();
     }
     // Drahtgitter: im Flug kräftig, gelandet blass
     if (e < 1) dreieckPfad(gitterFlug, ecken(d, e, 1, p));
     else if (gitterRuhe > 0) dreieckPfad(gitterRuhig, ecken(d, 1, 1, p));
   }
   ctx.globalAlpha = 1;
+  if (farbig) {
+    toenen(ziel, ctx, sz, t);
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(sz.mosaikEbene, 0, 0); ctx.restore();
+  }
   ctx.strokeStyle = F.tinte; ctx.lineJoin = "round";
   ctx.globalAlpha = 0.85; ctx.lineWidth = 1.6; ctx.stroke(gitterFlug);
   if (gitterRuhe > 0) { ctx.globalAlpha = gitterRuhe * anteil(t, F0, F0 + 0.4); ctx.lineWidth = 1.2; ctx.stroke(gitterRuhig); }
@@ -319,11 +376,17 @@ function koerperZeichnen(ctx, sz, t) {
   sz.wellen.forEach((w, c) => {
     const p = (t - w.von) / w.dauer;
     if (p <= 0 || p >= 1.2) return;
-    const sicht = anteil(p, 0, 0.1) * (1 - anteil(p, 0.75, 1.2)), r = (Math.min(1.1, p) * w.weit) / 1.12;
-    const u = t - w.von, lage = (k) => [u * 0.55 + c * 1.3 + k, u * 0.42 + c * 0.7 + k * 0.6, u * 0.12 + c];
-    koerper(ctx, KOERPER[w.form], abbilden(KOERPER[w.form], w.x, w.y, r, lage(0)), sicht, weiss, tinte);
+    const sicht = anteil(p, 0, 0.1) * (1 - anteil(p, 0.75, 1.2)), { pts, r, lage } = koerperLage(w, c, t);
+    koerper(ctx, KOERPER[w.form], pts, sicht, weiss, tinte);
     koerper(ctx, KOERPER[w.innen], abbilden(KOERPER[w.innen], w.x, w.y, r * 0.56, lage(2).map((x) => -1.4 * x)), sicht * 0.85, weiss, tinte);
   });
+}
+
+/** Lage des äusseren Körpers einer Welle zur Zeit t: abgebildete Ecken, Radius und Drehung */
+function koerperLage(w, c, t) {
+  const p = (t - w.von) / w.dauer, r = (Math.min(1.1, Math.max(0, p)) * w.weit) / 1.12, u = t - w.von;
+  const lage = (k) => [u * 0.55 + c * 1.3 + k, u * 0.42 + c * 0.7 + k * 0.6, u * 0.12 + c];
+  return { pts: abbilden(KOERPER[w.form], w.x, w.y, Math.max(0.5, r), lage(0)), r, lage };
 }
 
 function koerper(ctx, k, pts, sicht, weiss, tinte) {
@@ -367,8 +430,8 @@ function splitterZeichnen(ctx, sz, t) {
   for (const s of blitze) {
     const b = 1 - anteil(t, s.land, s.land + 0.35);
     ctx.beginPath(); pfad(ctx, s);
-    ctx.globalAlpha = 0.22 * b ** 4; ctx.fillStyle = "#ffffff"; ctx.fill();
-    ctx.globalAlpha = b * b; ctx.strokeStyle = sz.farben.tinte; ctx.lineWidth = 1.2 + 2.5 * b; ctx.lineJoin = "round"; ctx.stroke();
+    ctx.globalAlpha = 0.08 * b ** 4; ctx.fillStyle = "#ffffff"; ctx.fill();
+    ctx.globalAlpha = 0.7 * b * b; ctx.strokeStyle = sz.farben.tinte; ctx.lineWidth = 0.8 + 1.2 * b; ctx.lineJoin = "round"; ctx.stroke();
   }
   ctx.globalAlpha = 1;
   for (const s of fliegend) {
@@ -381,7 +444,7 @@ function splitterZeichnen(ctx, sz, t) {
     const bw = s.x1 - s.x0, bh = s.y1 - s.y0;
     if (bw > 0 && bh > 0) ctx.drawImage(sz.foto, s.x0, s.y0, bw, bh, s.x0, s.y0, bw, bh);
     ctx.restore();
-    ctx.strokeStyle = sz.farben.tinte; ctx.globalAlpha *= 0.7; ctx.lineWidth = 1.2 / g; ctx.stroke();
+    ctx.strokeStyle = sz.farben.tinte; ctx.globalAlpha *= 0.45; ctx.lineWidth = 0.8 / g; ctx.stroke();
     ctx.restore();
   }
 }
@@ -481,9 +544,9 @@ function lichtBilder(sz) {
 function kamera(sz, t) {
   const { ab } = sz.zeit, [Z0, Z1] = ab.zusammen;
   let z = 1, dx = 0, dy = 0;
-  for (const w of sz.wellen) { const u = t - w.von; if (u > 0 && u < 2) z += 0.04 * (1 - Math.exp(-u / 0.05)) * Math.exp(-u / 0.35); }
+  for (const w of sz.wellen) { const u = t - w.von; if (u > 0 && u < 2) z += 0.02 * (1 - Math.exp(-u / 0.06)) * Math.exp(-u / 0.4); }
   if (t > Z0 && t < Z1 + 0.5) {
-    z += 0.035 * anteil(t, Z0, Z0 + 0.3 * (Z1 - Z0));
+    z += 0.025 * sanft(anteil(t, Z0, Z0 + 0.5 * (Z1 - Z0)));
     for (const s of sz.splitter) {
       const u = t - s.land;
       if (u <= 0 || u > 0.5) continue;
@@ -508,7 +571,7 @@ function auszugsBilder(sz) {
 }
 
 /** die Farbauszüge im Voraus rechnen (sonst stockt die Vorschau einmal kurz beim Einrasten) */
-export function vorbereiten(sz) { if (sz.foto) { auszugsBilder(sz); lichtBilder(sz); } }
+export function vorbereiten(sz) { if (sz.foto) { auszugsBilder(sz); lichtBilder(sz); farbAuszuege(sz); } }
 
 /** das Foto, zum Schluss langsam etwas näher; beim Einrasten mit auseinanderlaufenden Farbkanälen, die ausschwingen */
 function fotoZeichnen(ctx, sz, t) {
@@ -516,9 +579,9 @@ function fotoZeichnen(ctx, sz, t) {
   const ende = ab.bildAus ? ab.bildAus[1] : ab.schluss[1];
   const [e0, e1] = sz.einrasten, u = anteil(t, e0, e1);
   // beim Einrasten springt die Kamera näher und federt zurück, dann kommt das Foto langsam etwas näher
-  const punch = 0.08 * (1 - weich(anteil(t, e0, e0 + 0.8)));
+  const punch = 0.035 * (1 - weich(anteil(t, e0, e0 + 0.9)));
   const z = (1 + punch) * (1 + 0.035 * sanft(anteil(t, ab.stehen[0], ende))), w = B * z, h = H * z, x = (B - w) / 2, y = (H - h) / 2;
-  const versatz = t < e1 ? 64 * (1 - u) ** 2 * Math.cos(u * 11) : 0;
+  const versatz = t < e1 ? 26 * (1 - u) ** 2 * Math.cos(u * 9) : 0;
   if (Math.abs(versatz) < 0.4) { ctx.drawImage(sz.foto, x, y, w, h); return; }
   const [rot, gruen, blau] = auszugsBilder(sz);
   ctx.save();
@@ -544,8 +607,8 @@ function bildfehler(ctx, sz, t) {
     const rnd = zufall(977 * (k + 1) + Math.floor(t * FPS));
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
     const staerke = Math.sin(Math.PI * u);
-    for (let i = 0; i < 9; i++) {
-      const y = Math.floor(rnd() * H), h = Math.max(2, Math.floor((0.006 + rnd() * 0.05) * H)), dx = Math.round((rnd() - 0.5) * 0.2 * W * staerke);
+    for (let i = 0; i < 6; i++) {
+      const y = Math.floor(rnd() * H), h = Math.max(2, Math.floor((0.006 + rnd() * 0.05) * H)), dx = Math.round((rnd() - 0.5) * 0.07 * W * staerke);
       ctx.drawImage(sz.kratzer, 0, y, W, h, dx, y, W, h);
     }
     ctx.restore();
@@ -613,8 +676,8 @@ export function bild(ctx, sz, t) {
     // das Foto rastet ein (mit einem Weissblitz) und steht
     if (t >= fotoAb) {
       fotoZeichnen(ctx, sz, t);
-      const blitz = (1 - anteil(t, fotoAb, fotoAb + 0.4)) ** 2;
-      if (blitz > 0) { ctx.globalAlpha = 0.75 * blitz; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, B, H); ctx.globalAlpha = 1; }
+      const blitz = (1 - anteil(t, fotoAb, fotoAb + 0.5)) ** 2;
+      if (blitz > 0) { ctx.globalAlpha = 0.3 * blitz; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, B, H); ctx.globalAlpha = 1; }
       // ein letzter, blasser Abtaster über das fertige Bild
       const q = anteil(t, ab.stehen[0], ab.stehen[0] + 1.6);
       if (q > 0 && q < 1) {
@@ -637,7 +700,8 @@ export function bild(ctx, sz, t) {
   // das Signet von ornament.cloud (wie in Sketchory), bei breiten Formaten in der Mitte
   if (ab.signet && t >= ab.signet[0] && t < ab.signetAus[1]) {
     ctx.save(); ctx.translate((B - 1080) / 2, 0);
-    signetZeichnen(ctx, SIGNET_VON + (t - ab.signet[0]) * FPS * SIGNET_TEMPO, { hoehe: H, farben: F });
+    // die Zeichnung doppelt so schnell, der Punkt aber ruhig (etwas langsamer als im Original)
+    signetZeichnen(ctx, SIGNET_VON + (t - ab.signet[0]) * FPS * SIGNET_TEMPO, { hoehe: H, farben: F, punktTempo: SIGNET_TEMPO * 1.25 });
     ctx.restore();
     const weg = ausblenden(anteil(t, ab.signetAus[0], ab.signetAus[1]));
     if (weg > 0) { ctx.globalAlpha = weg; ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H); ctx.globalAlpha = 1; }
