@@ -51,7 +51,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit (Abschnitt + Anteil der Dauer) messen: Anteil Grund, Anteil Grau, Anteil bunt, mittlere Farbe in der Mitte */
 const messe = (page, abschnitt, anteil = 0, extra = {}) => page.evaluate(async ([abschnitt, anteil, extra]) => {
-  const { bild, szene } = await import("./szene.js?v=3");
+  const { bild, szene } = await import("./szene.js?v=4");
   const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, ...extra });
   const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
   const [a, b] = sz.zeit.ab[abschnitt], t = a + (b - a) * anteil;
@@ -101,9 +101,9 @@ await check("Die vier Phasen: Linien auf Schwarz, Formen in Grau, dann Farben, a
   const [r2, g2, b2] = bild.sonne;
   assert.ok(Math.abs(r2 - 255) < 20 && Math.abs(g2 - 210) < 25 && b2 < 90, `das Foto steht (${bild.sonne})`);
   assert.ok(bild.bunt > 0.95, "ganz das Foto, ohne Gitter");
-  // beim Umklappen: Teile schon Foto, Teile noch Mosaik
+  // beim Zusammensetzen: Teile schon Splitter des Fotos, Teile noch Mosaik
   const um = await messe(page, "zusammen", 0.4);
-  assert.ok(um.bunt > 0.6, `beim Umklappen bunt (${JSON.stringify(um)})`);
+  assert.ok(um.bunt > 0.6, `beim Zusammensetzen bunt (${JSON.stringify(um)})`);
   const ende = await messe(page, "schluss", 0.5);
   assert.ok(ende.grund > 0.99, "am Ende leerer Grund");
   const signet = await messe(page, "signetStehen", 0.2);
@@ -172,7 +172,7 @@ await check("Formate: 9 : 16 und zurück zu 4 : 5; Vorschau und Signet passen si
     // das Signet steht in beiden Formaten in der Mitte und ganz im Bild
     {
       const mitte = await page.evaluate(async () => {
-        const { bild, szene } = await import("./szene.js?v=3");
+        const { bild, szene } = await import("./szene.js?v=4");
         const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h) });
         const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
         bild(x, sz, sz.zeit.ab.signetStehen[0] + 0.2);
