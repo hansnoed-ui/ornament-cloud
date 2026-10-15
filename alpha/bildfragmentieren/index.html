@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bildfragmentieren – Ornament Cloud · Alpha</title>
+  <!--
+    Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14).
+    Prototyp vom 15. Oktober 2026 (Wunsch: «Bildfragmentieren – im Stil von TouchDesigner soll ein Foto zuerst aus Linien, Formen,
+    zuletzt Farben animiert und am Ende zusammengesetzt werden; eine Art Videoinstallation für Social-Media-Beiträge aus meinen Fotos»).
+    Steht vorerst für sich (Ausnahme in tests/navigation.test.mjs): von keiner Seite verlinkt, nur per Direktlink, ohne die Navigation oben links.
+  -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Bildfragmentieren: Ein Foto zerfällt in Linien, Formen und Farben und setzt sich wieder zusammen – als Video im Hochformat für Social Media, alles im Browser.">
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="../../styles.css?v=45">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <style>
+    .site-header { padding-bottom: 12px; }
+    .karte { display: grid; gap: 28px; padding-bottom: 48px; }
+    @media (min-width: 900px) { .karte { grid-template-columns: minmax(280px, 400px) 1fr; align-items: start; } .buehne { position: sticky; top: 16px; } }
+
+    .buehne { display: grid; gap: 10px; }
+    .rahmen { position: relative; aspect-ratio: 4 / 5; max-height: 78vh; margin: 0 auto; width: 100%; border-radius: var(--radius); overflow: hidden; background: #000;
+      box-shadow: 0 1px 0 var(--border), 0 18px 40px -24px rgba(0, 0, 0, 0.6); }
+    @supports (width: min(1px, 2px)) { .rahmen { width: min(100%, calc(78vh * var(--seiten, 0.8))); } }
+    .rahmen canvas { display: block; width: 100%; height: 100%; }
+    .leer { position: absolute; inset: 0; display: grid; place-content: center; gap: 8px; padding: 24px; text-align: center; color: #9a9a9a; pointer-events: none;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.85rem; letter-spacing: 0.06em; }
+    .leer p { margin: 0; }
+    .leer .gross { font-size: 1rem; color: #f2f2f2; text-transform: uppercase; letter-spacing: 0.14em; }
+    .rahmen.weiss { background: #fff; }
+    .rahmen.weiss .leer { color: #666; }
+    .rahmen.weiss .leer .gross { color: #111; }
+    .unter { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
+    .info { margin: 0; color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+    .zeitleiste { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+    .zeitleiste input { width: 100%; min-width: 0; accent-color: var(--accent); }
+    .zeitleiste output { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .phasen { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .phasen button { min-height: 36px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 8px; background: none; color: var(--text); cursor: pointer;
+      font: 500 0.78rem/1.1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+    .phasen button:hover:not(:disabled) { border-color: var(--text); }
+    .phasen button:disabled { opacity: 0.45; cursor: default; }
+    .phasen button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .schritte { display: grid; gap: 26px; margin: 0; padding: 0; list-style: none; counter-reset: schritt; }
+    .schritte > li { display: grid; gap: 10px; counter-increment: schritt; }
+    .schritte h2 { display: flex; gap: 12px; align-items: baseline; margin: 0; font-family: "Newsreader", var(--serif); font-weight: 400; font-size: 1.45rem; }
+    .schritte h2::before { content: counter(schritt); display: inline-grid; place-content: center; flex: none; width: 1.7rem; height: 1.7rem; border: 1px solid var(--text); border-radius: 50%;
+      font-family: "Instrument Sans", var(--font); font-size: 0.85rem; font-weight: 500; transform: translateY(-0.15em); }
+    .schritte p { margin: 0; color: var(--muted); }
+
+    .ablage { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; padding: 18px; border: 1.5px dashed var(--border); border-radius: var(--radius); background: var(--surface); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+    .ablage:hover, .ablage.drueber { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+    .ablage:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ablage input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .plus { position: relative; display: grid; place-content: center; width: 84px; height: 84px; border-radius: 50%; background: var(--text); color: var(--bg); flex: none; }
+    .plus svg { width: 40px; height: 40px; }
+    .plus img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+    .hat-bild .plus { width: 66px; height: 88px; border-radius: 12px; background: #000; }
+    .hat-bild .plus svg { position: absolute; right: -10px; bottom: -10px; width: 30px; height: 30px; padding: 6px; border-radius: 50%; background: var(--text); color: var(--bg); box-shadow: 0 0 0 3px var(--surface); }
+    .ablage b { display: block; font-size: 1.15rem; font-weight: 600; }
+    .ablage-text > span { display: block; margin-top: 2px; color: var(--muted); font-size: 0.92rem; }
+
+    .leiste { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .knopf { min-height: 44px; padding: 8px 18px; border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.95rem;
+      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .knopf:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .knopf:disabled { opacity: 0.45; cursor: default; }
+    .knopf.haupt { background: var(--text); color: var(--bg); font-weight: 600; }
+    .knopf.haupt:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 85%, var(--bg)); }
+    .knopf.klein { min-height: 36px; padding: 4px 14px; font-size: 0.88rem; }
+    .knopf:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .tafel { display: grid; margin-top: 4px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .einstellung { display: grid; gap: 12px; padding: 16px; }
+    .einstellung + .einstellung { border-top: 1px solid var(--border); }
+    .name { font-weight: 600; }
+    .segment { display: grid; grid-auto-columns: 1fr; grid-auto-flow: column; padding: 3px; border: 1px solid var(--border); border-radius: 999px; }
+    .segment button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; min-height: 42px; padding: 4px 6px; border: 0; border-radius: 999px;
+      background: none; color: var(--text); font: inherit; font-size: 0.88rem; line-height: 1.15; white-space: nowrap; cursor: pointer; }
+    .segment button[aria-pressed="true"] { background: var(--text); color: var(--bg); font-weight: 600; }
+    .segment button:disabled { opacity: 0.5; cursor: default; }
+    .segment button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .muster { width: 16px; height: 16px; border-radius: 50%; flex: none; box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 35%, transparent); }
+    [data-grund="schwarz"] .muster { background: #000; }
+    [data-grund="weiss"] .muster { background: #fff; }
+    @media (max-width: 440px) { .muster { display: none; } }
+    @media (max-width: 370px) { .segment button { font-size: 0.8rem; padding: 4px 3px; } .einstellung { padding: 14px 12px; } }
+
+    .einstellungen { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 20px; }
+    .einstellungen label { display: grid; gap: 6px; }
+    .einstellungen label > span { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .einstellungen select, .einstellungen input[type="text"] { min-height: 40px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; }
+    .haken { display: flex !important; align-items: center; gap: 8px !important; min-height: 40px; align-self: end; }
+    .haken input { width: 18px; height: 18px; accent-color: var(--accent); }
+    progress { width: 100%; height: 6px; accent-color: var(--accent); }
+    .meldung { margin: 0; min-height: 1.5em; }
+    .meldung.fehler { color: var(--accent); }
+    .ergebnis { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .ergebnis h2::before { display: none; }
+    .ergebnis video { display: block; width: min(100%, 360px); aspect-ratio: 4 / 5; border-radius: 8px; background: #000; }
+    .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
+    .hinweise li { margin: 0.2rem 0; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>Bildfragmentieren</h1>
+      <p class="lead">Ein Foto zerfällt in Linien, dann in Formen, dann in Farben – und setzt sich am Ende wieder zusammen. Als Video für Social Media.</p>
+    </div>
+  </header>
+
+  <main class="wrap karte" id="karte">
+    <section class="buehne" aria-label="Vorschau">
+      <div class="rahmen">
+        <canvas id="vorschau" width="540" height="675" aria-label="Vorschau des Videos: das Foto in Linien, Formen und Farben"></canvas>
+        <div class="leer" id="leer">
+          <p class="gross">Kein Signal</p>
+          <p>Lade ein Foto.</p>
+        </div>
+      </div>
+      <div class="zeitleiste">
+        <button class="knopf klein" type="button" id="spielen" disabled>Abspielen</button>
+        <input type="range" id="zeit" min="0" max="20" step="0.0333" value="0" disabled aria-label="Zeit im Film">
+        <output id="zeitcode" for="zeit">00:00:00</output>
+      </div>
+      <div class="phasen" role="group" aria-label="Zu einer Phase springen">
+        <button type="button" id="zu-linien">01 Linien</button>
+        <button type="button" id="zu-formen">02 Formen</button>
+        <button type="button" id="zu-farben">03 Farben</button>
+        <button type="button" id="zu-bild">04 Bild</button>
+      </div>
+      <div class="unter">
+        <p class="info" id="dauer">Hochformat 4 : 5, wahlweise 9 : 16</p>
+      </div>
+      <p class="info" id="auswertung"></p>
+    </section>
+
+    <div>
+      <ol class="schritte">
+        <li>
+          <h2>Foto</h2>
+          <label class="ablage" id="ablage">
+            <span class="plus" aria-hidden="true">
+              <img id="quelle" alt="" hidden>
+              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
+            <span class="ablage-text"><b id="ablage-titel">Foto wählen</b><span>oder hierher ziehen. Es wird in Zeilen, Kanten und Dreiecke zerlegt – auf deinem Gerät.</span></span>
+            <input type="file" id="datei" accept="image/*" aria-label="Foto wählen">
+          </label>
+          <div class="leiste"><button class="knopf klein" type="button" id="testbild">Mit einem Testbild ausprobieren</button></div>
+          <section class="tafel" aria-label="Format, Fragmente und Grund">
+            <div class="einstellung">
+              <span class="name" id="format-titel">Format</span>
+              <div class="segment" role="group" aria-labelledby="format-titel">
+                <button type="button" data-format="4:5">4 : 5 Hochformat</button>
+                <button type="button" data-format="9:16">9 : 16</button>
+              </div>
+            </div>
+            <div class="einstellung">
+              <span class="name" id="feinheit-titel">Fragmente</span>
+              <div class="segment" role="group" aria-labelledby="feinheit-titel">
+                <button type="button" data-feinheit="grob">grob</button>
+                <button type="button" data-feinheit="mittel">mittel</button>
+                <button type="button" data-feinheit="fein">fein</button>
+              </div>
+            </div>
+            <div class="einstellung">
+              <span class="name" id="grund-titel">Grund</span>
+              <div class="segment" role="group" aria-labelledby="grund-titel">
+                <button type="button" data-grund="schwarz"><span class="muster" aria-hidden="true"></span>Schwarz</button>
+                <button type="button" data-grund="weiss"><span class="muster" aria-hidden="true"></span>Weiss</button>
+              </div>
+            </div>
+          </section>
+        </li>
+        <li>
+          <h2>Gestaltung</h2>
+          <p>Die Beschriftung zeigt wie in einem Bildwerkzeug Phase, Zähler und Zeitcode; oben links steht dein Titel.</p>
+          <div class="einstellungen">
+            <label><span>Titel</span><input type="text" id="titel" maxlength="40" placeholder="Bildfragmentieren" autocomplete="off"></label>
+            <label><span>Tempo</span>
+              <select id="tempo">
+                <option value="ruhig">ruhig (rund 22 s)</option>
+                <option value="normal" selected>normal (rund 18 s)</option>
+                <option value="schnell">schnell (rund 14 s)</option>
+              </select></label>
+            <label class="haken"><input type="checkbox" id="beschriftung" checked> Beschriftung</label>
+            <label class="haken"><input type="checkbox" id="signet" checked> Signet am Schluss</label>
+          </div>
+        </li>
+        <li>
+          <h2>Video</h2>
+          <p>01 Linien tasten das Foto ab, 02 Formen fliegen herein, 03 Farben kommen Farbton um Farbton, 04 das Foto setzt sich Fragment um Fragment zusammen.</p>
+          <div class="leiste">
+            <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
+            <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
+          </div>
+          <progress id="fortschritt" max="1" value="0" hidden></progress>
+          <p class="meldung" id="meldung" role="status" aria-live="polite"></p>
+          <section class="ergebnis" id="ergebnis" hidden aria-labelledby="ergebnis-titel">
+            <h2 id="ergebnis-titel">Dein Video</h2>
+            <video id="film" controls playsinline muted></video>
+            <p class="info" id="film-info"></p>
+            <div class="leiste"><a class="knopf haupt" id="laden" href="#" download>Herunterladen</a></div>
+          </section>
+        </li>
+      </ol>
+    </div>
+  </main>
+
+  <div class="wrap">
+    <ul class="hinweise">
+      <li>Alles bleibt in deinem Browser: Das Foto wird nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
+      <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories); das Foto wird bei Bedarf mittig beschnitten.</li>
+      <li>Das Standbild nimmt die Stelle der Zeitleiste, in voller Grösse; ohne Wahl das fertige farbige Mosaik.</li>
+      <li>Video: MP4 (H.264), 30 Bilder pro Sekunde, ohne Ton.</li>
+    </ul>
+  </div>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+    </div>
+  </footer>
+  <script type="module" src="app.js?v=3"></script>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+</body>
+</html>
