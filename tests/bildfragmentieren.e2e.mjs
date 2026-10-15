@@ -51,7 +51,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit (Abschnitt + Anteil der Dauer) messen: Anteil Grund, Anteil Grau, Anteil bunt, mittlere Farbe in der Mitte */
 const messe = (page, abschnitt, anteil = 0, extra = {}) => page.evaluate(async ([abschnitt, anteil, extra]) => {
-  const { bild, szene } = await import("./szene.js?v=9");
+  const { bild, szene } = await import("./szene.js?v=11");
   const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, ...extra });
   const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
   const [a, b] = sz.zeit.ab[abschnitt], t = a + (b - a) * anteil;
@@ -89,9 +89,22 @@ await check("Testfoto: wird zerlegt, die Vorschau läuft, Zeilen, Kanten und Dre
   await page.click("#spielen");
   await page.waitForFunction(() => !window.__bildfragmentieren.laeuft, null, { timeout: 5000 });
   assert.ok(await page.evaluate(() => window.__bildfragmentieren.ende), "am Ende angekommen");
+  assert.ok(await page.evaluate(() => { const S = window.__bildfragmentieren, z = document.getElementById("zeit"); return S.t > S.sz.zeit.dauer - 0.1 && Number(z.value) > S.sz.zeit.dauer - 0.1; }),
+    "am Ende bleibt die Vorschau auf dem letzten Bild, der Regler ganz rechts (sprang früher zurück ins stehende Bild)");
   await page.click("#spielen");
   await page.waitForTimeout(300);
   assert.ok(await page.evaluate(() => window.__bildfragmentieren.laeuft && window.__bildfragmentieren.t < 2), "beginnt wieder von vorn");
+  assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
+await check("Beispielbild: «Mit dem Beispielbild ausprobieren» lädt beispiel.jpg, zerlegt es und spielt ab", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  await page.click("#testbild");
+  await bereit(page);
+  assert.match(await page.getAttribute("#quelle", "src"), /^blob:/, "Vorschaubild gesetzt");
+  assert.deepEqual(await page.evaluate(() => [window.__bildfragmentieren.bild.width, window.__bildfragmentieren.bild.height]), [1131, 1600], "das Beispielbild in voller Grösse");
+  assert.ok(await page.evaluate(() => window.__bildfragmentieren.daten.kanten.length > 50), "viele Kanten im Beispiel");
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
@@ -181,7 +194,7 @@ await check("Formate: 9 : 16 und zurück zu 4 : 5; Vorschau und Signet passen si
     // das Signet steht in beiden Formaten in der Mitte und ganz im Bild
     {
       const mitte = await page.evaluate(async () => {
-        const { bild, szene } = await import("./szene.js?v=9");
+        const { bild, szene } = await import("./szene.js?v=11");
         const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h) });
         const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
         bild(x, sz, sz.zeit.ab.signetStehen[0] + 0.2);

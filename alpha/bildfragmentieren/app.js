@@ -1,9 +1,9 @@
 // «Bildfragmentieren» – Seite: Foto laden, zerlegen (Worker), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der MP4-Schreiber von Sketchory;
 // ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE } from "./ablauf.js?v=9";
-import { szene, bild, standbildZeit, vorbereiten } from "./szene.js?v=9";
-import { zerlegen } from "./fragmente.js?v=9";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE } from "./ablauf.js?v=11";
+import { szene, bild, standbildZeit, vorbereiten } from "./szene.js?v=11";
+import { zerlegen } from "./fragmente.js?v=11";
 import { mp4 } from "../sketchory/mp4.js?v=8";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
@@ -43,7 +43,8 @@ ablage.addEventListener("drop", (e) => {
   if (datei) fotoLaden(datei); else melden("Das ist kein Bild. Bitte ein Foto (JPG, PNG, HEIC je nach Browser) verwenden.", true);
 });
 $("datei").addEventListener("change", (e) => { if (e.target.files?.[0]) fotoLaden(e.target.files[0]); });
-$("testbild").addEventListener("click", async () => fotoLaden(new File([await testbild()], "testbild.png", { type: "image/png" })));
+// das Beispielbild (seit dem 15. Oktober 2026 ein eigenes Bild statt eines im Browser gezeichneten Testbilds)
+$("testbild").addEventListener("click", async () => fotoLaden(new File([await (await fetch("beispiel.jpg")).blob()], "beispiel.jpg", { type: "image/jpeg" })));
 
 async function fotoLaden(datei) {
   melden("Foto wird gelesen …");
@@ -56,33 +57,9 @@ async function fotoLaden(datei) {
   await lesen();
 }
 
-/** ein Testbild, im Browser gezeichnet: Abendhimmel, Sonne, Hügel, ein Baum und ein Haus */
-async function testbild() {
-  const w = 1080, h = 1620, c = document.createElement("canvas"); c.width = w; c.height = h;
-  const x = c.getContext("2d");
-  const himmel = x.createLinearGradient(0, 0, 0, h * 0.7);
-  himmel.addColorStop(0, "#1d2b64"); himmel.addColorStop(0.55, "#c0587e"); himmel.addColorStop(1, "#f8b26a");
-  x.fillStyle = himmel; x.fillRect(0, 0, w, h);
-  const sonne = x.createRadialGradient(w * 0.62, h * 0.52, 10, w * 0.62, h * 0.52, 190);
-  sonne.addColorStop(0, "#fff6d5"); sonne.addColorStop(0.45, "#ffd36b"); sonne.addColorStop(1, "rgba(255,180,90,0)");
-  x.fillStyle = sonne; x.beginPath(); x.arc(w * 0.62, h * 0.52, 190, 0, 7); x.fill();
-  for (const [y0, farbe, a] of [[0.6, "#6d3d6e", 70], [0.68, "#3f2a52", 50], [0.78, "#1f2a3d", 36]]) {
-    x.fillStyle = farbe; x.beginPath(); x.moveTo(0, h);
-    for (let u = 0; u <= w; u += 12) x.lineTo(u, h * y0 + Math.sin(u / 160 + y0 * 9) * a + Math.sin(u / 47) * a * 0.18);
-    x.lineTo(w, h); x.fill();
-  }
-  x.fillStyle = "#121822"; x.fillRect(w * 0.18, h * 0.62, 26, h * 0.16);
-  x.beginPath(); x.ellipse(w * 0.18 + 13, h * 0.6, 120, 150, 0, 0, 7); x.fill();
-  x.fillStyle = "#e8e2d8"; x.fillRect(w * 0.7, h * 0.74, 170, 120);
-  x.fillStyle = "#a0362f"; x.beginPath(); x.moveTo(w * 0.7 - 20, h * 0.74); x.lineTo(w * 0.7 + 85, h * 0.74 - 90); x.lineTo(w * 0.7 + 190, h * 0.74); x.fill();
-  x.fillStyle = "#ffcf5a"; x.fillRect(w * 0.7 + 30, h * 0.74 + 34, 40, 40); x.fillRect(w * 0.7 + 100, h * 0.74 + 34, 40, 40);
-  x.fillStyle = "#0d1119"; x.fillRect(0, h * 0.88, w, h * 0.12);
-  return await new Promise((ok) => c.toBlob(ok, "image/png"));
-}
-
 // ——— zerlegen (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=9", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=11", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   // zerlegt wird auf der halben Filmgrösse (für Kanten und Mosaik genug), das Foto für den Schluss bleibt in voller Grösse
@@ -191,7 +168,8 @@ function takt(jetzt) {
   if (!sichtbar) { S.start += jetzt - (zuletzt || jetzt); zuletzt = jetzt; requestAnimationFrame(takt); return; }
   zuletzt = jetzt;
   const t = (jetzt - S.start) / 1000;
-  if (t >= S.sz.zeit.dauer) { anhalten(); zeigeZeit(S.sz.zeit.ab.stehen[0] + 1); S.ende = true; return; }
+  // am Ende bleibt die Vorschau auf dem letzten Bild stehen, der Regler ganz rechts (Rückmeldung vom 15. Oktober 2026: sie sprang zurück ins Bild)
+  if (t >= S.sz.zeit.dauer) { anhalten(); zeigeZeit(S.sz.zeit.dauer - 1 / FPS); S.ende = true; return; }
   zeigeZeit(t);
   requestAnimationFrame(takt);
 }
