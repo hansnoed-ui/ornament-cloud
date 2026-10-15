@@ -1,9 +1,9 @@
 // «Bildfragmentieren» – Seite: Foto laden, zerlegen (Worker), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der MP4-Schreiber von Sketchory;
 // ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE } from "./ablauf.js?v=10";
-import { szene, bild, standbildZeit, vorbereiten } from "./szene.js?v=10";
-import { zerlegen } from "./fragmente.js?v=10";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE } from "./ablauf.js?v=11";
+import { szene, bild, standbildZeit, vorbereiten } from "./szene.js?v=11";
+import { zerlegen } from "./fragmente.js?v=11";
 import { mp4 } from "../sketchory/mp4.js?v=8";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
@@ -59,7 +59,7 @@ async function fotoLaden(datei) {
 
 // ——— zerlegen (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=10", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=11", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   // zerlegt wird auf der halben Filmgrösse (für Kanten und Mosaik genug), das Foto für den Schluss bleibt in voller Grösse
@@ -168,7 +168,8 @@ function takt(jetzt) {
   if (!sichtbar) { S.start += jetzt - (zuletzt || jetzt); zuletzt = jetzt; requestAnimationFrame(takt); return; }
   zuletzt = jetzt;
   const t = (jetzt - S.start) / 1000;
-  if (t >= S.sz.zeit.dauer) { anhalten(); zeigeZeit(S.sz.zeit.ab.stehen[0] + 1); S.ende = true; return; }
+  // am Ende bleibt die Vorschau auf dem letzten Bild stehen, der Regler ganz rechts (Rückmeldung vom 15. Oktober 2026: sie sprang zurück ins Bild)
+  if (t >= S.sz.zeit.dauer) { anhalten(); zeigeZeit(S.sz.zeit.dauer - 1 / FPS); S.ende = true; return; }
   zeigeZeit(t);
   requestAnimationFrame(takt);
 }
