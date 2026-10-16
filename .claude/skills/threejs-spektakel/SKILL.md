@@ -1,0 +1,171 @@
+---
+name: threejs-spektakel
+description: Spektakuläre Bewegtbilder aus einem Foto mit Three.js im Stil von TouchDesigner. Sieben geprüfte Rezepte – Partikelwolke, Relief mit Streiflicht und Höhenlinien, Splitter als Explosionszeichnung, Feedback-Schleife mit Kaleidoskop, Glaskörper mit Spektralsäumen, GPU-Physik (GPGPU) und WebGPU/TSL-Compute – dazu Filmlook (Bloom, Farbsaum, Korn) und MP4-Export in 4:5 und 9:16. Verwenden, wenn ein Foto oder Werk von ornament.cloud als Video, Reel oder Installation animiert werden soll, wenn ein 3D- oder Shader-Effekt «krasser», «wertiger», «spektakulärer» oder «weniger billig» werden soll, oder wenn Partikel, GPGPU, Raymarching, Glas, Feedback, Postprocessing, WebGPU oder TSL gefragt sind. Grundlagen (Szene, Licht, Materialien, Loader) stehen in den Skills threejs-*.
+---
+
+# Spektakel mit Three.js: Foto → Film
+
+Sieben Rezepte, jedes als lauffähiges Beispiel in `beispiele/` und mit `beispiele/pruefen.mjs` im Browser geprüft (three.js **0.185.1**).
+Alle folgen demselben Ablauf: Am Anfang steht das Foto exakt da, dann passiert das Spektakel, am Ende steht das Foto wieder exakt.
+Damit funktioniert jedes Rezept als Phase in einem Film wie Bildfragmentieren.
+
+| Rezept | Datei | Technik | Look | Zustand |
+|---|---|---|---|---|
+| 1 Partikelwolke | `partikel.js` | Points, Vertex-Shader, Curl-Rauschen | Foto zerstäubt zu Sternenstaub, Kamerafahrt durch die Wolke | zustandslos |
+| 2 Relief | `relief.js` | MeshStandardMaterial + `onBeforeCompile`, Schatten | Helligkeit wird Gebirge, Streiflicht wandert, Höhenlinien glühen unter einer Scan-Linie | zustandslos |
+| 3 Splitter | `splitter.js` | Voronoi-Scherben in einem Draw-Call, Drehung im Shader | Explosionszeichnung: Scherben in Tiefenschichten, Schnittkanten glühen | zustandslos |
+| 4 Feedback | `feedback.js` | Ping-Pong-Render-Targets, Sobel, YIQ-Farbdrehung | TouchDesigner-Feedback: Zoom-Tunnel, Spuren, Kaleidoskop | Simulation |
+| 5 Glas | `glas.js` | Fragment-Shader, analytischer Schnitt mit konvexen Polyedern | Glaskörper bricht das Foto mit Spektralsäumen, Dodekaeder → Geode → Ikosaeder | zustandslos |
+| 6 GPU-Physik | `gpgpu.js` | GPUComputationRenderer (Float-Texturen) | 262 144 Teilchen: Stosswelle, Strudel, Feder zurück ins Foto | Simulation |
+| 7 WebGPU/TSL | `tsl.js` | WebGPURenderer, `instancedArray`, Compute in TSL, RenderPipeline + Bloom | wie 6, Teilchen sammeln sich zu Bändern und Tüchern; Rückfall auf WebGL 2 | Simulation |
+
+Für Bildfragmentieren passen am besten Glas (5) und Splitter (3) als «konstruktive» Effekte, Relief (2) für Wertigkeit und Feedback (4) für den TouchDesigner-Moment.
+Partikel (1, 6, 7) eignen sich für Auflösen und Zusammensetzen.
+
+## Grundregeln (verbindlich)
+
+1. **Der Film ist eine Funktion der Zeit.** Jedes Rezept liefert `bild(t)`. Zustandslose Effekte rechnen alles aus `t`.
+   Simulationen (Feedback, GPGPU, TSL) laufen über `simulation({ zuruecksetzen, schritt })` aus `gemeinsam.js`: feste Schritte von 1/30 s, nach einem Sprung zurück von vorn.
+   So ist Bild n beim Abspielen, Spulen und im Video immer gleich. `pruefen.mjs` misst das («Sprung zurück»).
+2. **Das Foto steht am Anfang und am Ende exakt.** Dafür gibt es drei Wege:
+   - emissiv statt beleuchtet (Relief: `emissiveIntensity = 1 − licht`)
+   - Überblenden in der Anzeige, nie in der Schleife (Feedback)
+   - Einrasten auf die Ausgangslage mit `mix(sim, heim, uEinrasten)` und einer Fotofläche darunter (GPGPU, TSL)
+3. **Formate wie bei Bildfragmentieren:** 1080 × 1350 (4:5, Standard), 1080 × 1920 (9:16).
+   Der Renderer bekommt `setPixelRatio(1)` und `setSize(B, H, false)`; CSS skaliert die Leinwand nur.
+   Die Kamera steht so, dass die Fotofläche (Höhe 2, Breite 2·B/H) bei z = 0 das Bild genau füllt: `abstand = 1 / tan(fov/2)`.
+4. **three.js fest über die Import-Map:** `three@0.185.1` von cdn.jsdelivr.net, mit `three/addons/` und für WebGPU zusätzlich `three/webgpu` und `three/tsl` (siehe `tsl.html`).
+   Nie ohne Versionsnummer laden. Vor einem Versionswechsel `pruefen.mjs` laufen lassen.
+5. **Farbräume:** Die Foto-Textur bekommt `colorSpace = SRGBColorSpace`; Shader lesen dann lineare Werte.
+   Der `filmlook` (EffectComposer → OutputPass) wandelt am Schluss nach sRGB. Ein `ShaderMaterial` ohne Composer braucht `#include <colorspace_fragment>`.
+6. **Telefon:** Weniger Teilchen bei `matchMedia("(pointer: coarse)")`. Die Teilchenzahlen stehen in den Rezepten (380 k → 160 k, 262 k → 65 k).
+   `?test` halbiert die Grösse und spart Teilchen. So läuft auch die Prüfung ohne Grafikkarte.
+7. **Aufräumen:** `entsorgen()` gibt Geometrien, Materialien, Render-Targets und den Composer frei. Beim Fotowechsel ruft `starte()` das auf.
+8. **Zufall mit Startwert** (Mulberry32 oder ein linearer Kongruenzgenerator). Dann zerfällt dasselbe Foto bei jedem Laden gleich.
+
+## Gerüst
+
+```js
+import { starte, filmlook, anteil, inOut, weich, simulation, TEST, GLSL_RAUSCHEN } from "./gemeinsam.js";
+starte("name", ({ renderer, foto, B, H }) => {
+  // foto: { textur (sRGB), leinwand, pixel (ImageData), hell(u, v) → 0..1 }, schon deckend auf B × H zugeschnitten
+  const look = filmlook(renderer, szene, kamera, { staerke, radius, schwelle, saum, korn, vignette });
+  return { dauer: 12, bild(t) { /* Uniforms aus t */ look.render(t); }, entsorgen() { /* dispose */ } };
+});
+```
+
+`starte()` baut die Bühne, eine Leiste (Abspielen, Zeitleiste, «Foto …», «Video», Format 4:5/9:16) und `window.__film` für Tests und Export.
+`?bild=/pfad.jpg` lädt ein Foto, ohne Angabe kommt ein Testbild.
+Zeitkurven: `anteil(t, a, b)` gibt 0..1, dazu `weich`, `inOut`. Eine Phase sieht typisch so aus: `inOut(anteil(t, 1, 4)) * (1 − inOut(anteil(t, 8, 10)))`.
+
+## Die Rezepte
+
+### 1 Partikelwolke – zustandslos (`partikel.js`)
+- Ein Punkt je Rasterzelle (2 px, auf dem Telefon gröber). Attribute: `position` (Heimat), `aUv`, `aZufall`.
+- Im Vertex-Shader: Farbe aus der Foto-Textur, Startzeit je Teilchen. Helle Stellen lösen sich zuerst: `start = 0.6·(0.55·(1−hell^0.6) + 0.45·zufall)`.
+- Bewegung: erst Relief nach Helligkeit (z), dann **zwei Schritte durch ein Curl-Feld** und Ausdehnung. Mehr als zwei Schritte kosten auf dem Telefon zu viel.
+- Punkte im Foto quadratisch und 1,25-fach überlappend (sonst Lücken), gelöst rund und weich.
+- Die Rückkehr läuft mit weiterlaufender Zeit im Feld. Darum ist sie ein anderer Weg und kein Rückwärtsspulen.
+- Fallstrick: Helle Teilchen × Bloom ergeben weissen Brei. Aufhellen nur `1 + 1.8·los·hell`, Bloom-Stärke an `auf` koppeln.
+
+### 2 Relief – eingebautes Material erweitern (`relief.js`)
+- `PlaneGeometry` mit einer Ecke je 2,5 px. Höhe ist die geglättete Helligkeit; die Ableitung `aGrad` (dh/dx, dh/dy) wird auf der CPU gerechnet.
+- `onBeforeCompile` ersetzt drei Teile:
+  - `begin_vertex`: `transformed.z += aHoehe·uTiefe`
+  - `beginnormal_vertex`: `normalize(vec3(−aGrad·uTiefe, 1))`. Das ist die **exakte Normale bei jeder Tiefe**, ohne Neuberechnung.
+  - nach `emissivemap_fragment`: Höhenlinien mit `fwidth`, also auf jeder Grösse einen Pixel fein, verstärkt unter einer Scan-Linie.
+- Licht: ein flaches Streiflicht mit Schatten (PCF, `normalBias`), das einmal um das Relief wandert, dazu ein kupferfarbenes Gegenlicht und ein schwaches Hemisphärenlicht.
+- Die Kamera kippt bis 58° über die Fläche.
+
+### 3 Splitter – Explosionszeichnung (`splitter.js`)
+- Voronoi aus einem verwackelten Raster. Jede Zelle wird mit Sutherland–Hodgman an den Mittelsenkrechten der 5 × 5 Nachbarn beschnitten.
+- Jede Scherbe hat Vorderseite (Foto), Rückseite und Schnittkanten. Alles liegt in **einer** BufferGeometry mit `aMitte`, `aZufall` (Achse + Wert) und `aSeite`.
+- Vertex-Shader: Flug f je Scherbe (innen zuerst), Drehung um eine Zufallsachse (Rodrigues), Weg **vor allem in die Tiefe**.
+  Flach (f = 0) ist das Foto lückenlos. Das funktioniert nur, weil die Vorderseiten bei z = 0 liegen.
+- Gemessen: Seitlich weit fliegende, stark drehende Scherben lassen nichts vom Foto übrig. In Tiefenschichten mit wenig Drehung bleibt das Gesicht im Flug lesbar.
+- Fallstrick: Glühende Kanten über 1 plus Bloom legen einen orangen Nebel über alles. Kanten bei 0,2–1,1 halten, Bloom-Schwelle 0,85.
+
+### 4 Feedback – TouchDesigner (`feedback.js`)
+- Zwei `WebGLRenderTarget` (HalfFloat) im Wechsel. Ein Durchgang macht:
+  - Kaleidoskop (6 Spiegel) als Mischung
+  - Zoom > 1, Drehung, Rauschverschiebung
+  - Farbdrehung im YIQ-Raum, Zerfall 0,93
+  - Einspeisen der Sobel-Kanten des Fotos
+- **Maximum statt Summe:** `max(alt, kante·ein)`. Mit `alt + kante` schaukelt sich die Schleife auf das 1/(1 − Zerfall)-fache auf, und nach 2 s ist alles weiss (gemessen).
+- **Das Foto nie in die Schleife:** Es wird nur in der Anzeige überblendet.
+- Nur deutliche Kanten einspeisen (`smoothstep(0.25, 0.8, |∇|)`). Sonst füllt ein kantenreiches Bild (feine Muster) die Schleife sofort.
+
+### 5 Glas – exakte Brechung ohne Raymarching (`glas.js`)
+- Ein konvexes Polyeder ist der Schnitt von Platten |n·p| ≤ r: Dodekaeder 6 Normalen, Ikosaeder 10.
+  Ein- und Austritt eines Strahls sind dann exakt (Slab-Methode). Das ist billiger und schärfer als Raymarching.
+- **Formwandel über die Radien:** (1 | 1,3) Dodekaeder → (1 | 1,06) Geode, ein abgestumpftes Ikosaeder → (1,3 | 1) Ikosaeder.
+- Je Farbkanal eine Brechzahl (1,46 / 1,505 / 1,55) ergibt Spektralsäume. Beim Austritt wird erneut gebrochen, bei Totalreflexion gespiegelt.
+  Das Ergebnis wird auf die Fotoebene hinter dem Körper projiziert.
+- Kanten: Abstand der zweitnächsten Fläche ergibt feine helle Linien, vorn kräftig, hinten durch das Glas schwach.
+  Fresnel nach Schlick mit Umgebungsverlauf und zwei Glanzlichtern. 2 × 2 Abtastungen je Pixel.
+- Kurz so gross, dass man das ganze Foto durch das Glas sieht. Das ist der stärkste Moment.
+
+### 6 GPU-Physik (`gpgpu.js`)
+- `GPUComputationRenderer(S, S, renderer)`, S = 512 (Telefon 256). Variablen `textureLage` (xyz, w = Zufall) und `textureTempo`. Die Heimat liegt in einer `DataTexture`.
+- Kräfte:
+  - Stosswelle als Gauss-Puls in der Zeit
+  - Rauschfeld gemischt mit Curl
+  - Strudel 1/(0,25 + r²)
+  - Feder nach Hause, Dämpfung wächst mit der Feder
+  - **weiche Grenze**, sonst fliegen die Teilchen aus dem Bild (gemessen)
+- Zwei Teilschritte je Bild. Die Punktgrösse ist nach oben begrenzt, sonst entstehen nahe der Kamera Riesenflecken.
+- `zuruecksetzen`: `gpu.renderTexture(start, rt)` für beide Render-Targets jeder Variable.
+- **Curl oder Rauschfeld:** Curl ist divergenzfrei und verteilt gleichmässig (Rauch, Schnee). Ein normales Rauschfeld lässt Teilchen zu Bändern und Tüchern zusammenlaufen. Das wirkt viel stärker (Rezept 7).
+
+### 7 WebGPU mit TSL (`tsl.js`)
+- `instancedArray(typedArray | n, "vec3")` als Storage-Buffer. Compute mit `Fn(() => { … })().compute(N)`, ausgeführt mit `renderer.compute(knoten)`.
+- `SpriteNodeMaterial` mit `positionNode = buffer.toAttribute()` und `new THREE.Sprite(mat)` mit `count = N`.
+- Bloom: `pass(szene, kamera).getTextureNode("output")` und `bloom(…)` aus `three/addons/tsl/display/BloomNode.js` in einer **`RenderPipeline`**.
+  Bis r182 hiess sie `PostProcessing`; das gibt jetzt eine Warnung.
+- `await renderer.init()` beim Erstellen, danach `render()` und `compute()` synchron. `renderAsync()` ist veraltet.
+- **WebGL-Rückfall:** Ohne WebGPU (ältere Browser, manche Linux-Systeme, Chromium ohne Grafikkarte) läuft derselbe Code über WebGL 2. Dabei gibt es zwei gemessene Fallen:
+  1. Storage-Buffer liegen doppelt vor (Transform Feedback). Das Zeichnen liest je nach gerader oder ungerader Zahl von Compute-Aufrufen den neuen oder den vorigen Stand.
+     Abhilfe: vor dem Zeichnen ein Schritt mit `dt = 0`, dann stehen beide Hälften gleich.
+  2. Der Renderer legt seinen WebGL-Kontext ohne `preserveDrawingBuffer` an. Abhilfe: einen eigenen Kontext als `context` übergeben (siehe `webgpu()` in `tsl.js`).
+     Die Ausgabe deckend machen (`vec4(…rgb, 1)`), der Canvas hat immer Alpha.
+- Echtes WebGPU ist hier nicht geprüft (Chromium ohne Grafikkarte hat kein `navigator.gpu`). Beim ersten Einsatz auf einem echten Gerät einmal ein Video exportieren und anschauen.
+
+## Filmlook (`filmlook()` in `gemeinsam.js`)
+Die Kette ist RenderPass → UnrealBloomPass → eigener ShaderPass → OutputPass.
+- Der ShaderPass macht Farbsaum (radial, zum Rand stärker), Korn je Bild und Vignette.
+- Korn mit **Ganzzahl-Hash** (`uvec2`). Der übliche `fract(p·…)`-Hash erzeugt bei Pixelkoordinaten sichtbare Streifen (gemessen).
+- Korn vor allem in den Mitteltönen (`4·l·(1−l)`), nicht im Schwarz.
+- Bloom-Stärke in `bild(t)` an die Phase koppeln: ruhiges Foto 0,1, Spektakel 0,5–1,0.
+- Schwelle so hoch, dass nur Glanz und Funken blühen (0,5–0,9).
+
+## Video
+`video(F)` in `gemeinsam.js` rechnet jedes Bild mit `await F.bild(i / 30)`, dann `new VideoFrame(canvas)`.
+Daraus macht WebCodecs H.264, die Datei schreibt der MP4-Schreiber von Sketchory (`alpha/sketchory/mp4.js`).
+- Das Bild muss im selben Task stehen, in dem `VideoFrame` liest. Deshalb gelten zwei Regeln:
+  - WebGL immer mit `preserveDrawingBuffer: true`
+  - nie `await` zwischen Rendern und Lesen, das auf einen anderen Task wartet
+- Für Instagram umwandeln, wie im Skill ornament-video: `ffmpeg -i x.mp4 -c:v libx264 -crf 20 -preset slow -pix_fmt yuv420p -movflags +faststart y.mp4`.
+
+## Prüfen
+```bash
+# Cloud-Sitzung: das CDN ist gesperrt → three einmal in den Scratchpad installieren
+cd "$SCRATCH" && npm i three@0.185.1
+cd /home/user/ornament-cloud
+THREE="$SCRATCH/node_modules/three" NODE_PATH=$(npm root -g) node .claude/skills/threejs-spektakel/beispiele/pruefen.mjs            # alle
+THREE=… BILD=/pfad/foto.jpg AUSGABE=/tmp/x NODE_PATH=$(npm root -g) node …/pruefen.mjs glas splitter --video                       # eigenes Foto, mit Video
+```
+- Je Beispiel wird geprüft: lädt ohne Fehler, fünf Bilder (5 %, 25 %, 50 %, 75 %, 98 %) nicht leer und verschieden, derselbe Zeitpunkt nach einem Sprung zurück gleich.
+  `--video` exportiert mit einem Ersatz-Encoder, weil Chromium hier kein H.264 hat.
+- **Die Bilder in `AUSGABE` immer anschauen** (als Kontaktbogen nebeneinander). Mindestens ein flaches Grafikbild, ein Porträt und ein feines Muster nehmen.
+  Die meisten Fehler oben waren nur so zu sehen (weisser Brei, Farbnebel, leeres Bild, zerstreute Teilchen).
+- Lokal: `node tools/serve-orma.mjs` und dann `http://localhost:8766/.claude/skills/threejs-spektakel/beispiele/glas.html?bild=/alpha/bildfragmentieren/beispiel.jpg`.
+
+## In ein Werk übernehmen
+- `.claude/` wird nicht veröffentlicht (GitHub Pages lässt Punkt-Ordner weg). Ein Effekt für die Website kommt als eigene Seite nach `alpha/<name>/`.
+  Dort gelten die Konventionen der Website: `noindex`, Ausnahme in `tests/navigation.test.mjs`, `?v=`-Marken, eigene Tests nach dem Muster `tests/bildfragmentieren.*`.
+- Den Pfad zu `mp4.js` anpassen (`../sketchory/mp4.js?v=8`). three.js weiter über die Import-Map mit fester Version.
+- In Bildfragmentieren (Canvas 2D) lässt sich ein Rezept als eigene Ebene einbauen. Das WebGL-Canvas wird mit `drawImage` in die 2D-Szene gezeichnet; dabei `preserveDrawingBuffer` beachten.
+  Nur auf Wunsch, und die Stimmung der Phase beibehalten: konstruktiv, feine Linien, keine bunten Effektbomben.
+
+## Siehe auch
+threejs-fundamentals, threejs-shaders, threejs-postprocessing, threejs-geometry (Grundlagen und API); ornament-video (Signet, Umwandlung, Website).
