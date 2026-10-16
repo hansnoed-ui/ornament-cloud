@@ -6,7 +6,7 @@
 // Ist das Gemälde fertig, geht es sanft in das scharfe, aufgefrischte Bild über (klar); darüber funkelt der Glitzer. Dann Foto und Satz, am Schluss das Signet.
 import { anteil, weich, ausblenden, versatz, ZEICHEN, satzbild, satzPunkt, zeitachse, malplan } from "./ablauf.js?v=20";
 import { signet, funkenZeichnen, FARBEN } from "./signet.js?v=20";
-import { SCHRIFTEN, schriftSetzen } from "../sketchory/szene.js?v=8";
+import { SCHRIFTEN, schriftSetzen } from "../sketchory/szene.js?v=9";
 import { zufall } from "./malen.js?v=20";
 
 export { SCHRIFTEN, FARBEN };

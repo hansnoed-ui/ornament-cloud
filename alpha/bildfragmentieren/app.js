@@ -1,10 +1,10 @@
 // «Bildfragmentieren» – Seite: Foto laden, zerlegen (Worker), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der MP4-Schreiber von Sketchory;
 // ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, RAUM, kette } from "./ablauf.js?v=18";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, ABLAEUFE, ablaufName } from "./ablauf.js?v=18";
 import { szene, bild, standbildZeit, vorbereiten, FARBEN } from "./szene.js?v=18";
 import { zerlegen } from "./fragmente.js?v=18";
-import { mp4 } from "../sketchory/mp4.js?v=8";
+import { mp4 } from "../sketchory/mp4.js?v=9";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
 const $ = (id) => document.getElementById(id);
@@ -15,7 +15,7 @@ const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let VORSCHAU = 0.5;
 const vorschauMass = () => { const b = vorschau.parentElement.getBoundingClientRect().width || 400; return Math.round(Math.min(0.85, Math.max(0.5, (b * (window.devicePixelRatio || 1)) / S.mass[0])) * 20) / 20; };
 const S = { bild: null, daten: null, foto: null, vorrat: {}, sz: null, laeuft: false, start: 0, t: null, film: null, rechnen: 0,
-  format: "4:5", feinheit: "mittel", grund: "schwarz", mass: [1080, 1350], ablauf: ["fragmente"], raum: null, raumSchluessel: "" };
+  format: "4:5", feinheit: "mittel", grund: "schwarz", mass: [1080, 1350], ablauf: "fragmente", raum: null, raumSchluessel: "" };
 window.__bildfragmentieren = S;   // für die Browser-Tests
 
 const leinwand = (w, h) => { if (typeof OffscreenCanvas !== "undefined") return new OffscreenCanvas(w, h); const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
@@ -104,11 +104,11 @@ function optionen() {
     titel: $("titel").value.replace(/\s+/g, " ").trim(), foto: S.foto, leinwand, vorrat: S.vorrat, ablauf: S.ablauf, raum: S.raum };
 }
 
-// ——— räumliche Workflows (Glas, Splitter, Relief): raum.js und three.js erst laden, wenn einer gewählt ist ———
+// ——— Kristall und Echo (WebGL): raum.js und three.js erst laden, wenn einer davon gewählt ist ———
 let raumModul = null;
 async function raumBereit() {
-  const arten = S.ablauf.filter((a) => a in RAUM);
-  const schluessel = arten.length && S.foto ? `${S.rechnen}|${S.grund}|${arten.join(",")}` : "";
+  const art = ABLAEUFE[S.ablauf].raum ? S.ablauf : null;
+  const schluessel = art && S.foto ? `${S.rechnen}|${S.grund}|${art}` : "";
   if (schluessel === S.raumSchluessel) return;
   S.raumSchluessel = schluessel;
   if (S.sz) S.sz.raum = null;                              // die laufende Vorschau zeigt bis dahin das Foto
@@ -117,22 +117,22 @@ async function raumBereit() {
   try {
     raumModul ??= await import("./raum.js?v=18");
     if (S.raumSchluessel !== schluessel) return;
-    S.raum = raumModul.raum(S.foto, arten, { grund: (FARBEN[S.grund] ?? FARBEN.schwarz).grund });
+    const F = FARBEN[S.grund] ?? FARBEN.schwarz;
+    S.raum = raumModul.raum(S.foto, art, { grund: F.grund, akzent: F.punkt });
   } catch (fehler) {
-    melden(`Glas, Splitter und Relief brauchen WebGL 2; hier steht an ihrer Stelle das Foto (${fehler?.message ?? fehler}).`, true);
+    melden(`Kristall und Echo brauchen WebGL 2; hier blendet an ihrer Stelle das Foto auf (${fehler?.message ?? fehler}).`, true);
     return;
   }
   neu();
 }
 
-/** Sprungknöpfe: eine Phase je Abschnitt der Kette (die vier von «Fragmente» behalten ihre Kennungen) */
+/** Sprungknöpfe: eine je Phase des Ablaufs (die vier von «Fragmente» behalten ihre Kennungen); die letzte springt zum fertigen Foto */
 const KENNUNG = { linien: "zu-linien", formen: "zu-formen", farben: "zu-farben", zusammen: "zu-bild" };
 function sprungziel(sz, name) {
-  const { ab, phasen, ablauf } = sz.zeit, ph = phasen.find((p) => p.name === name);
+  const { ab, phasen } = sz.zeit, ph = phasen.find((p) => p.name === name);
   if (name === "linien") return ab.linien[0] + 2.4;
-  if (name === "zusammen") return ablauf.at(-1) === "fragmente" ? ab.stehen[0] + 0.8 : ab.zusammen[1] + 0.6;
-  if (name in RAUM) return ph.von + 0.55 * (ph.bis - ph.von);
-  return ph.von + (ph.bis - ph.von) * 0.75;
+  if (ph === phasen.at(-1)) return ab.stehen[0] + 0.8;
+  return ph.von + (ph.bis - ph.von) * (sz.zeit.fragmente ? 0.75 : 0.6);
 }
 function sprungknoepfe(sz) {
   const leiste = document.querySelector(".phasen"), namen = sz.zeit.phasen.map((p) => p.name).join(",");
@@ -194,22 +194,14 @@ function rahmenFarbe() { vorschau.parentElement.classList.toggle("weiss", S.grun
 rahmenFarbe();
 for (const id of ["tempo"]) { const v = erinnern(id); if (v && [...$(id).options].some((o) => o.value === v)) $(id).value = v; $(id).addEventListener("change", () => { merken(id, $(id).value); neu(); }); }
 for (const id of ["signet", "beschriftung"]) { const v = erinnern(id); if (v !== null) $(id).checked = v === "1"; $(id).addEventListener("change", () => { merken(id, $(id).checked ? "1" : "0"); neu(); }); }
-// Workflows: an- und abwählen; die Reihenfolge der Wahl ist die Reihenfolge im Film (mindestens einer bleibt)
-const workflowKnoepfe = [...document.querySelectorAll("[data-workflow]")];
-S.ablauf = kette(erinnern("ablauf") ?? "fragmente");
-function workflowsZeigen() {
-  for (const b of workflowKnoepfe) {
-    const i = S.ablauf.indexOf(b.dataset.workflow);
-    b.setAttribute("aria-pressed", String(i >= 0));
-    b.querySelector(".nr").textContent = i >= 0 && S.ablauf.length > 1 ? String(i + 1) : "";
-  }
-}
-workflowsZeigen();
-for (const b of workflowKnoepfe) b.addEventListener("click", () => {
-  const w = b.dataset.workflow, i = S.ablauf.indexOf(w);
-  if (i >= 0 && S.ablauf.length === 1) return;
-  S.ablauf = i >= 0 ? S.ablauf.filter((a) => a !== w) : [...S.ablauf, w];
-  merken("ablauf", S.ablauf.join(",")); workflowsZeigen(); neu();
+// Ablauf: Fragmente, Kristall oder Echo (Wahl gespeichert)
+const ablaufKnoepfe = [...document.querySelectorAll("[data-ablauf]")];
+S.ablauf = ablaufName(erinnern("ablauf"));
+const ablaufZeigen = () => ablaufKnoepfe.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.ablauf === S.ablauf)));
+ablaufZeigen();
+for (const b of ablaufKnoepfe) b.addEventListener("click", () => {
+  if (S.ablauf === b.dataset.ablauf) return;
+  S.ablauf = ablaufName(b.dataset.ablauf); merken("ablauf", S.ablauf); ablaufZeigen(); neu();
 });
 let tippen = 0;
 $("titel").addEventListener("input", () => { clearTimeout(tippen); tippen = setTimeout(() => neu(), 300); });
@@ -350,6 +342,6 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...feinKnoepfe, ...workflowKnoepfe, $("video"), $("png")])
+  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...feinKnoepfe, ...ablaufKnoepfe, $("video"), $("png")])
     el.disabled = an || ((el.id === "video" || el.id === "png") && !S.daten);
 }

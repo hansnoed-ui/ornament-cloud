@@ -19,10 +19,10 @@
 //  komplexe transparente geometrische Körper»)
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
-// Seit dem 16. Oktober 2026 ist das alles der Workflow «Fragmente»; dazu kommen räumliche Workflows (Glas, Splitter, Relief, raum.js), einzeln oder
-// in einer Kette. Sie beginnen und enden beim Foto; ihr Bild kommt fertig aus WebGL (sz.raum) und wird hier nur eingesetzt.
+// Seit dem 16. Oktober 2026 ist das alles der Ablauf «Fragmente»; zur Wahl stehen dazu «Kristall» und «Echo» (raum.js, WebGL). Auch sie beginnen im
+// Dunkeln und enden beim Foto; ihr Bild kommt fertig aus WebGL (sz.raum) und wird hier nur eingesetzt, ebenso ihr leuchtendes Signet.
 import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=18";
-import { signet as signetZeichnen } from "../sketchory/signet.js?v=8";
+import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=9";
 import { zufall, auszuege, delaunay } from "./fragmente.js?v=18";
 import { KOERPER, abbilden } from "./koerper.js?v=18";
 
@@ -39,7 +39,7 @@ const GLITCH = 0.24;   // so lange dauert ein Bildfehler an einem Übergang (Sek
  * Canvas), leinwand(w, h) → Canvas, vorrat (ein Objekt, das Szenen desselben Fotos teilen: die Farbauszüge).
  */
 export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoehe ?? 1920, tempo = "normal", grund = "schwarz", signet = true, beschriftung = true, titel = "",
-  foto = null, leinwand, vorrat = null, ablauf = ["fragmente"], raum = null } = {}) {
+  foto = null, leinwand, vorrat = null, ablauf = "fragmente", raum = null } = {}) {
   const zeit = zeitachse({ tempo, signet, ablauf });
   const { ab } = zeit, f = zeit.tempo;
   const rnd = zufall(daten.dreiecke.n * 31 + daten.kanten.length * 7 + 11);
@@ -135,7 +135,7 @@ export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoeh
   return {
     breite, hoehe, zeit, farben: FARBEN[grund] ?? FARBEN.schwarz, grund: FARBEN[grund] ? grund : "schwarz", signet, beschriftung, titel: (titel || "Bildfragmentieren").trim(),
     foto, leinwand, vorrat: vorrat ?? {}, daten, zeilen, kanten, dreiecke, flug, faerben, wellen, ersterFlug, einrasten, geometrie, raum,
-    glitches: [F0, C0, Z0, einrasten[0], ...zeit.abschnitte.filter((a) => a.art !== "fragmente").map((a) => a.von)].filter((g) => g >= 0),
+    glitches: zeit.fragmente ? [F0, C0, Z0, einrasten[0]] : zeit.phasen.slice(1).map((p) => p.von),
     zahl: { zeilen: z.reihen, kanten: kanten.length, dreiecke: n },
   };
 }
@@ -626,7 +626,7 @@ function beschriftung(ctx, sz, t, sicht) {
   const zahl = (n) => n.toLocaleString("de-CH");
   const gelandet = sz.geometrie.teile.filter((tl) => t >= tl.setzen).length;
   const zaehler = { linien: `zeilen ${zahl(sz.zahl.zeilen)} · kanten ${zahl(sz.zahl.kanten)}`, formen: `dreiecke ${zahl(sz.zahl.dreiecke)}`, farben: `farbe ${Math.round(fort * 100)} %`,
-    zusammen: `bauteile ${zahl(gelandet)} / ${zahl(sz.geometrie.teile.length)}` }[name] ?? sz.raum?.zaehler(name, fort) ?? "";
+    zusammen: `bauteile ${zahl(gelandet)} / ${zahl(sz.geometrie.teile.length)}` }[name] ?? sz.raum?.zaehler() ?? "";
   const unten = H - rand;
   ctx.textAlign = "left";
   ctx.fillText(`${String(nr + 1).padStart(2, "0")} ${titel.toUpperCase()}`, rand, unten - g * 1.9);
@@ -638,22 +638,21 @@ function beschriftung(ctx, sz, t, sicht) {
   ctx.restore();
 }
 
-/** ein räumlicher Workflow: WebGL rechnet in der Auflösung der Ziel-Leinwand (Vorschau kleiner, Video voll), das Bild wird eingesetzt.
- *  Ist raum.js noch nicht geladen (oder ohne WebGL 2), steht an seiner Stelle das Foto. */
-function raumZeichnen(ctx, sz, abschnitt, t) {
-  const B = sz.breite, H = sz.hoehe, m = ctx.getTransform();
-  const u = anteil(t, abschnitt.von, abschnitt.bis);
-  const c = sz.raum?.bild(abschnitt.art, u, B * Math.hypot(m.a, m.b), H * Math.hypot(m.c, m.d));
-  if (c) ctx.drawImage(c, 0, 0, B, H); else if (sz.foto) ctx.drawImage(sz.foto, 0, 0, B, H);
+/** Pixelmass der Ziel-Leinwand (Vorschau kleiner, Video voll): darin rechnet WebGL */
+const zielMass = (ctx, sz) => { const m = ctx.getTransform(); return [sz.breite * Math.hypot(m.a, m.b), sz.hoehe * Math.hypot(m.c, m.d)]; };
+
+/** Kristall oder Echo: das Bild kommt aus raum.js (k von N: das Filmbild im Abschnitt, für die Rückkopplung von Echo).
+ *  Ist raum.js noch nicht geladen (oder ohne WebGL 2), bleibt der Grund, und am Ende blendet das Foto auf. */
+function raumZeichnen(ctx, sz, t) {
+  const { von, bis } = sz.zeit.abschnitt, [w, h] = zielMass(ctx, sz);
+  const c = sz.raum?.bild(anteil(t, von, bis), Math.round((t - von) * FPS), Math.round((bis - von) * FPS), w, h);
+  if (c) { ctx.drawImage(c, 0, 0, sz.breite, sz.hoehe); return; }
+  if (sz.foto) { ctx.globalAlpha = sanft(anteil(t, bis - 1.5, bis)); ctx.drawImage(sz.foto, 0, 0, sz.breite, sz.hoehe); ctx.globalAlpha = 1; }
 }
 
-/** was über jedem Bild liegt: Aufblenden am Anfang (wenn der Film mit dem Foto beginnt), Abblenden, Beschriftung, Bildfehler */
+/** was über jedem Bild liegt: Abblenden, Beschriftung, Bildfehler */
 function rahmen(ctx, sz, t) {
   const { ab } = sz.zeit, F = sz.farben, B = sz.breite, H = sz.hoehe;
-  if (sz.zeit.abschnitte[0].art !== "fragmente") {
-    const auf = 1 - sanft(anteil(t, 0.1, ab.vor[1] + 0.6));
-    if (auf > 0) { ctx.globalAlpha = auf; ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H); ctx.globalAlpha = 1; }
-  }
   if (ab.bildAus) {
     const weg = ausblenden(anteil(t, ab.bildAus[0], ab.bildAus[1]));
     if (weg > 0) { ctx.globalAlpha = weg; ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H); ctx.globalAlpha = 1; }
@@ -672,12 +671,10 @@ export function bild(ctx, sz, t) {
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H);
   const fotoAb = sz.foto ? sz.einrasten[0] : Infinity, bildEnde = ab.bildAus ? ab.bildAus[1] : ab.schluss[1];
-  const { abschnitte } = sz.zeit, raumJetzt = abschnitte.find((a) => a.art !== "fragmente" && t >= a.von && t < a.bis);
-  const vorFragmenten = sz.zeit.fragmente && abschnitte[0].art !== "fragmente" && t < L0;
-  if (t < bildEnde && (raumJetzt || vorFragmenten)) {
-    // räumlicher Workflow (fertiges Bild aus WebGL) oder das stehende Foto vor «Fragmente»
-    if (raumJetzt) raumZeichnen(ctx, sz, raumJetzt, t);
-    else if (sz.foto) ctx.drawImage(sz.foto, 0, 0, B, H);
+  const { abschnitt } = sz.zeit, raeumlich = !sz.zeit.fragmente;
+  if (t < bildEnde && raeumlich && t < abschnitt.bis) {
+    // Kristall oder Echo (fertiges Bild aus WebGL); davor nur der Grund
+    if (t >= abschnitt.von) raumZeichnen(ctx, sz, t);
     rahmen(ctx, sz, t);
   } else if (t < bildEnde) {
     // 01 Linien (verblassen, während die Formen kommen)
@@ -693,10 +690,6 @@ export function bild(ctx, sz, t) {
     if (t >= C0 && t < C1 + 0.5) koerperZeichnen(ctx, sz, t);
     if (t >= ab.zusammen[0] && t < fotoAb) zusammensetzen(ctx, sz, t);
     if (bewegt) ctx.restore();
-    // kommt «Fragmente» nach einem anderen Workflow, löst sich das stehende Foto erst in die Linien auf
-    if (sz.foto && sz.zeit.fragmente && abschnitte[0].art !== "fragmente" && t < L0 + 1.6) {
-      ctx.globalAlpha = 1 - sanft(anteil(t, L0, L0 + 1.6)); ctx.drawImage(sz.foto, 0, 0, B, H); ctx.globalAlpha = 1;
-    }
     // das Foto rastet ein (mit einem Weissblitz) und steht
     if (t >= fotoAb) {
       fotoZeichnen(ctx, sz, t);
@@ -717,17 +710,23 @@ export function bild(ctx, sz, t) {
   if (ab.signet && t >= ab.signet[0] && t < ab.signetAus[1]) {
     ctx.save(); ctx.translate((B - 1080) / 2, 0);
     // die Zeichnung doppelt so schnell, der Punkt aber ruhig (etwas langsamer als im Original)
-    signetZeichnen(ctx, SIGNET_VON + (t - ab.signet[0]) * FPS * SIGNET_TEMPO, { hoehe: H, farben: F, punktTempo: SIGNET_TEMPO * 1.25 });
+    const f = SIGNET_VON + (t - ab.signet[0]) * FPS * SIGNET_TEMPO, opt = { hoehe: H, farben: F, punktTempo: SIGNET_TEMPO * 1.25 };
+    if (sz.raum && !sz.zeit.fragmente) {
+      // Kristall und Echo: das Signet leuchtet, der Punkt läuft als kleiner Glaskristall durch die Schlaufe
+      const [w, h] = zielMass(ctx, sz), { lage: [px, py], sicht } = punktLage(f, opt);
+      const zeichnen = (c) => { c.fillStyle = F.grund; c.fillRect(0, 0, 1080, H); signetZeichnen(c, f, opt); };
+      ctx.drawImage(sz.raum.signet(zeichnen, { lage: [px, py + (H - 1920) / 2], sicht, radius: PUNKT_RADIUS }, f, w, h), 0, 0, 1080, H);
+    } else signetZeichnen(ctx, f, opt);
     ctx.restore();
     const weg = ausblenden(anteil(t, ab.signetAus[0], ab.signetAus[1]));
     if (weg > 0) { ctx.globalAlpha = weg; ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H); ctx.globalAlpha = 1; }
   }
 }
 
-/** Zeitpunkt für das Standbild, wenn nichts anderes gewählt ist: das fertige farbige Mosaik, kurz bevor die Montage beginnt; ohne «Fragmente» die Mitte
- *  des ersten räumlichen Workflows */
+/** Zeitpunkt für das Standbild, wenn nichts anderes gewählt ist: das fertige farbige Mosaik, kurz bevor die Montage beginnt; bei Kristall und Echo
+ *  die Mitte der zweiten Phase (Bruch, Echo) */
 export const standbildZeit = (sz) => {
   if (sz.zeit.fragmente) return sz.zeit.ab.zusammen[0] - 0.05;
-  const a = sz.zeit.abschnitte[0];
-  return a.von + 0.55 * (a.bis - a.von);
+  const p = sz.zeit.phasen[1];
+  return p.von + 0.5 * (p.bis - p.von);
 };

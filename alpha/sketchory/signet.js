@@ -5,7 +5,7 @@
 // und schwarz auf Weiss (Punkt im Rot-Orange der Website). Gezeichnet für 1080 × 1920 und, wie im Video im Format 3 : 4, um (1440 − 1920) / 2 nach oben verschoben.
 // Abweichung von der Vorlage (Wunsch vom 12. Oktober 2026: «die Form etwas kleiner, Schriftgrösse gut»): die Schlaufe 420 statt 520 px hoch,
 // der Punkt entsprechend 11 statt 13 px; der Schriftzug bleibt, wo er ist, die Schlaufe rückt so weit nach unten, dass der Abstand zu ihm gleich bleibt.
-import { anteil, bezier, weich, inOut } from "./ablauf.js?v=8";
+import { anteil, bezier, weich, inOut } from "./ablauf.js?v=9";
 
 export const FARBEN = {
   dunkel: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d" },
@@ -33,6 +33,14 @@ const NAME = "ornament.cloud";
 const KASTEN = 52, ABSTAND = 4, GROESSE = 52, GEWICHT = 400, SPERRUNG = 0.14 * GROESSE;
 const zwischen = (x, a, b) => a + (b - a) * x;
 
+/** wo der Punkt bei Bild f steht (in der Zeichnung für 1080 × 1920, vor der Verschiebung um (hoehe − 1920) / 2) und wie deutlich; seit dem 16. Oktober 2026
+ *  auch für «Bildfragmentieren», das an dieser Stelle einen Glaskristall zeichnet */
+export function punktLage(f, { punktTempo = 1 } = {}) {
+  const lauf = Math.max(0, f - 40) / 54 / punktTempo;
+  return { lage: bild(punkt(-Math.PI / 2 + lauf * Math.PI * 2)), sicht: anteil(f, 40, 48) };
+}
+export const PUNKT_RADIUS = PUNKT_R;
+
 /**
  * Bild f (0–179 und weiter) des Signets auf ctx zeichnen (der Grund ist schon gemalt).
  * hoehe: Bildhöhe (1440 für 3 : 4). farben: { tinte, punkt }. punktTempo: Teiler für den Lauf des Punkts (Standard 1).
@@ -58,10 +66,8 @@ export function signet(ctx, f, { hoehe = 1440, farben = FARBEN.dunkel, punktTemp
   }
   // der Punkt: ab Bild 40, eine Runde in 54 Bildern (punktTempo: läuft f schneller als üblich, wie im Abspann von «Bildfragmentieren»,
   // bleibt der Punkt mit diesem Teiler trotzdem ruhig; Rückmeldung vom 15. Oktober 2026: «der Punkt läuft zu schnell durchs Signet»)
-  const lauf = Math.max(0, f - 40) / 54 / punktTempo;
-  const sicht = anteil(f, 40, 48);
+  const { lage: [px, py], sicht } = punktLage(f, { punktTempo });
   if (sicht > 0) {
-    const [px, py] = bild(punkt(-Math.PI / 2 + lauf * Math.PI * 2));
     ctx.globalAlpha = sicht;
     ctx.fillStyle = punktFarbe;
     ctx.beginPath(); ctx.arc(px, py, PUNKT_R, 0, Math.PI * 2); ctx.fill();

@@ -87,19 +87,17 @@
     .segment button:disabled { opacity: 0.5; cursor: default; }
     .segment button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .muster { width: 16px; height: 16px; border-radius: 50%; flex: none; box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 35%, transparent); }
-    .workflows { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 8px; }
-    @media (max-width: 440px) { .workflows { grid-template-columns: 1fr 1fr; } }
-    .workflows button { display: grid; grid-template-columns: auto 1fr; align-items: center; align-content: center; gap: 2px 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px;
-      background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
-    .workflows button b { font-size: 0.95rem; }
-    .workflows button small { grid-column: 2; color: var(--muted); font-size: 0.8rem; line-height: 1.25; }
-    .workflows .nr { grid-row: span 2; display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--border); border-radius: 50%; font-size: 0.8rem; font-weight: 600; }
-    .workflows button[aria-pressed="true"] { border-color: var(--text); background: color-mix(in srgb, var(--text) 7%, transparent); }
-    .workflows button[aria-pressed="true"] .nr { border-color: var(--text); background: var(--text); color: var(--bg); }
-    .workflows button[aria-pressed="true"] .nr:empty::before { content: "✓"; }
-    .workflows button:hover:not(:disabled) { border-color: var(--text); }
-    .workflows button:disabled { opacity: 0.45; cursor: default; }
-    .workflows button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ablaeufe { display: grid; gap: 8px; }
+    .ablaeufe button { display: grid; gap: 3px; padding: 12px 14px 12px 44px; border: 1px solid var(--border); border-radius: 12px; background: none; color: var(--text);
+      font: inherit; text-align: left; cursor: pointer; position: relative; }
+    .ablaeufe button::before { content: ""; position: absolute; left: 14px; top: 14px; width: 18px; height: 18px; border: 1px solid var(--border); border-radius: 50%; box-sizing: border-box; }
+    .ablaeufe button b { font-size: 0.98rem; }
+    .ablaeufe button small { color: var(--muted); font-size: 0.84rem; line-height: 1.3; }
+    .ablaeufe button[aria-pressed="true"] { border-color: var(--text); background: color-mix(in srgb, var(--text) 7%, transparent); }
+    .ablaeufe button[aria-pressed="true"]::before { border: 5px solid var(--text); }
+    .ablaeufe button:hover:not(:disabled) { border-color: var(--text); }
+    .ablaeufe button:disabled { opacity: 0.45; cursor: default; }
+    .ablaeufe button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     [data-grund="schwarz"] .muster { background: #000; }
     [data-grund="weiss"] .muster { background: #fff; }
     @media (max-width: 440px) { .muster { display: none; } }
@@ -126,7 +124,7 @@
   <header class="site-header">
     <div class="wrap">
       <h1>Bildfragmentieren</h1>
-      <p class="lead">Ein Foto zerfällt in Linien, dann in Formen, dann in Farben – und setzt sich am Ende wieder zusammen. Dazu räumliche Workflows: Glas, Splitter, Relief, einzeln oder hintereinander. Als Video für Social Media.</p>
+      <p class="lead">Ein Foto zerfällt in Linien, dann in Formen, dann in Farben – und setzt sich am Ende wieder zusammen. Oder als Kristall, der zerspringt, oder als Echo aus feinen Linien. Als Video für Social Media.</p>
     </div>
   </header>
 
@@ -195,13 +193,12 @@
           </section>
         </li>
         <li>
-          <h2>Workflows</h2>
-          <p>Wähle einen oder mehrere: Sie laufen in der Reihenfolge deiner Wahl nacheinander, dazwischen steht jeweils das Foto.</p>
-          <div class="workflows" role="group" aria-label="Workflows">
-            <button type="button" data-workflow="fragmente" aria-pressed="true"><span class="nr" aria-hidden="true"></span><b>Fragmente</b><small>Linien, Formen, Farben, Montage</small></button>
-            <button type="button" data-workflow="glas" aria-pressed="false"><span class="nr" aria-hidden="true"></span><b>Glas</b><small>Ein Glaskörper bricht das Foto</small></button>
-            <button type="button" data-workflow="splitter" aria-pressed="false"><span class="nr" aria-hidden="true"></span><b>Splitter</b><small>Scherben in die Tiefe und zurück</small></button>
-            <button type="button" data-workflow="relief" aria-pressed="false"><span class="nr" aria-hidden="true"></span><b>Relief</b><small>Gebirge im Streiflicht</small></button>
+          <h2>Ablauf</h2>
+          <p>Alle drei beginnen im Dunkeln und enden mit deinem Foto. Kristall und Echo sind räumlich (WebGL) und haben ein leuchtendes Signet.</p>
+          <div class="ablaeufe" role="group" aria-label="Ablauf">
+            <button type="button" data-ablauf="fragmente" aria-pressed="true"><b>Fragmente</b><small>Linien, Formen, Farben – das Foto wird Teil um Teil montiert</small></button>
+            <button type="button" data-ablauf="kristall" aria-pressed="false"><b>Kristall</b><small>Drei Kristalle verschmelzen zu einem Glaskörper, er zerspringt, die Scherben setzen das Foto zusammen</small></button>
+            <button type="button" data-ablauf="echo" aria-pressed="false"><b>Echo</b><small>Feine Höhenlinien, Rückkopplung und Kaleidoskop – das Foto baut sich Tonstufe um Tonstufe auf</small></button>
           </div>
         </li>
         <li>
@@ -221,7 +218,7 @@
         </li>
         <li>
           <h2>Video</h2>
-          <p>Fragmente: Linien tasten das Foto ab, Formen fliegen herein, Farben kommen, das Foto wird Teil um Teil montiert. Glas, Splitter und Relief sind räumlich (WebGL) und rechnen etwas länger.</p>
+          <p>Das Video rechnet Bild für Bild in voller Grösse; Kristall und Echo brauchen dafür etwas länger.</p>
           <div class="leiste">
             <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
             <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
@@ -243,7 +240,7 @@
     <ul class="hinweise">
       <li>Alles bleibt in deinem Browser: Das Foto wird nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
       <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories); das Foto wird bei Bedarf mittig beschnitten.</li>
-      <li>Das Standbild nimmt die Stelle der Zeitleiste, in voller Grösse; ohne Wahl das fertige farbige Mosaik (ohne «Fragmente» die Mitte des ersten Workflows).</li>
+      <li>Das Standbild nimmt die Stelle der Zeitleiste, in voller Grösse; ohne Wahl das fertige farbige Mosaik (bei Kristall und Echo die Mitte von Bruch bzw. Echo).</li>
       <li>Video: MP4 (H.264), 30 Bilder pro Sekunde, ohne Ton.</li>
     </ul>
   </div>

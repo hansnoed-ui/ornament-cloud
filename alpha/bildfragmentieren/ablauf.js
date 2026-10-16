@@ -1,10 +1,12 @@
 // «Bildfragmentieren» – Ablauf des Films (ohne DOM). 30 Bilder pro Sekunde, ohne Ton; Hochformat 4 : 5 (Standard, Feed), wahlweise 9 : 16 (Reels, Stories).
-// Der Film ist eine Kette von Workflows (seit 16. Oktober 2026 wählbar und kombinierbar); jeder endet beim Foto, darum lassen sie sich hintereinanderhängen:
+// Drei Abläufe zur Wahl (seit 16. Oktober 2026; Wunsch: «neben dem jetzigen Ablauf einen weiteren mit den neuen Effekten, oder zwei weitere …
+// Es soll nicht beim Foto starten, nur damit enden»). Alle beginnen im Dunkeln und enden beim Foto:
 //   Fragmente – 01 Linien (Relief aus Zeilen, Umrisse) → 02 Formen (Dreiecke mit Stich) → 03 Farben (Körper) → 04 Bild (Montage, das Foto rastet ein)
-//   Glas – ein Glaskörper (Dodekaeder → Geode → Ikosaeder) bricht das Foto · Splitter – das Foto als Scherben in die Tiefe und zurück
-//   Relief – die Helligkeit wird zum Gebirge im Streiflicht, mit Höhenlinien
-// Zwischen zwei Workflows steht das Foto kurz; am Schluss steht es länger, dann (wenn gewählt) das Signet von ornament.cloud wie in Sketchory.
-export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=8";
+//   Kristall  – 01 Körper (drei Kristalle verschmelzen zu einem Glaskörper; das Foto nur durch das Glas) → 02 Bruch (er zerspringt in Scherben)
+//               → 03 Montage (die Scherben setzen das Foto zusammen)                                                     [WebGL, raum.js]
+//   Echo      – 01 Konturen (feine Höhenlinien) → 02 Echo (Rückkopplung, Tunnel) → 03 Kaleidoskop → 04 Bild (das Foto baut sich Tonstufe um Tonstufe auf)
+// Danach steht das Foto, dann (wenn gewählt) das Signet von ornament.cloud – bei Kristall und Echo in einer leuchtenden Fassung.
+export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=9";
 
 /** Bildmass des Films: Hochformat 4 : 5 (Standard, 1080 × 1350) oder "9:16" (1080 × 1920); Wunsch vom 15. Oktober 2026 */
 export const FORMATE = ["4:5", "9:16"];
@@ -23,43 +25,33 @@ export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 /** die vier Phasen von «Fragmente» und ihre Namen in der Beschriftung */
 export const PHASEN = [["linien", "Linien"], ["formen", "Formen"], ["farben", "Farben"], ["zusammen", "Bild"]];
 
-/** die Workflows: «Fragmente» (Canvas 2D) und drei räumliche (WebGL, raum.js); Dauer der räumlichen bei Tempo «normal» */
-export const WORKFLOWS = [["fragmente", "Fragmente"], ["glas", "Glas"], ["splitter", "Splitter"], ["relief", "Relief"]];
-export const RAUM = { glas: 8.4, splitter: 8.6, relief: 9 };
-/** gültige Kette: bekannte Namen, keiner doppelt, mindestens einer */
-export function kette(ablauf) {
-  const k = [...new Set((Array.isArray(ablauf) ? ablauf : String(ablauf ?? "").split(",")).map((a) => String(a).trim()))].filter((a) => WORKFLOWS.some(([n]) => n === a));
-  return k.length ? k : ["fragmente"];
-}
+/** die Abläufe und ihre Phasen (Name, Titel, Dauer bei Tempo «normal»); Kristall und Echo rechnet raum.js (WebGL) */
+export const ABLAEUFE = {
+  fragmente: { titel: "Fragmente", phasen: [["linien", "Linien", 4.4], ["formen", "Formen", 3.6], ["farben", "Farben", 3.0], ["zusammen", "Bild", 4.2]] },
+  kristall: { titel: "Kristall", raum: true, phasen: [["koerper", "Körper", 3.6], ["bruch", "Bruch", 3.2], ["montage", "Montage", 4.2]] },
+  echo: { titel: "Echo", raum: true, phasen: [["konturen", "Konturen", 3.0], ["echo", "Echo", 3.0], ["kaleidoskop", "Kaleidoskop", 2.6], ["aufbau", "Bild", 3.4]] },
+};
+/** ein bekannter Ablauf, sonst «Fragmente» */
+export const ablaufName = (a) => (Object.hasOwn(ABLAEUFE, String(a)) ? String(a) : "fragmente");
+/** Dauer eines räumlichen Ablaufs bei Tempo «normal» (raum.js rechnet in diesen Sekunden) */
+export const raumDauer = (a) => ABLAEUFE[a].phasen.reduce((s, p) => s + p[2], 0);
 
 /**
- * Zeitachse in Sekunden: { ab: { name: [anfang, ende] }, abschnitte: [{ art, von, bis }], phasen: [{ name, titel, von, bis }], fragmente, dauer, bilder }.
- * ablauf: die Kette der Workflows (Standard nur «Fragmente», wie bis zum 16. Oktober 2026). Ohne «Fragmente» liegen dessen Phasen weit vor dem Film
- * (ab −100 s): so zeichnet szene.js von Anfang an das Foto, ohne eigenen Zweig.
+ * Zeitachse in Sekunden: { ab: { name: [anfang, ende] }, ablauf, abschnitt: { art, von, bis }, phasen: [{ name, titel, von, bis }], fragmente, dauer, bilder }.
+ * Ohne «Fragmente» liegen dessen Phasen weit vor dem Film (ab −100 s): so bleiben die Zeichnungen von «Fragmente» aus, und szene.js zeichnet nach dem
+ * Ablauf das Foto ohne eigenen Zweig.
  */
-export function zeitachse({ tempo = "normal", signet = true, ablauf = ["fragmente"] } = {}) {
+export function zeitachse({ tempo = "normal", signet = true, ablauf = "fragmente" } = {}) {
   const f = TEMPO[tempo] ?? (typeof tempo === "number" ? tempo : 1);
-  const liste = kette(ablauf), teile = [], abschnitte = [], phasen = [];
+  const art = ablaufName(ablauf), teile = [], phasen = [];
   let t = 0;
   const dazu = (name, d) => { teile.push([name, t, t + d]); t += d; };
-  const fragmente = (titel) => {
-    dazu("linien", 4.4 * f);
-    dazu("formen", 3.6 * f);
-    dazu("farben", 3.0 * f);
-    dazu("zusammen", 4.2 * f);   // seit dem 15. Oktober 2026 1 s länger: dazu die Geometrie über dem ganzen Bild
-    if (titel) for (const [name, t2] of PHASEN) { const [, a, b] = teile.find(([n]) => n === name); phasen.push({ name, titel: t2, von: a, bis: b }); }
-  };
+  const folge = (a, merken) => { for (const [name, titel, d] of ABLAEUFE[a].phasen) { if (merken) phasen.push({ name, titel, von: t, bis: t + d * f }); dazu(name, d * f); } };
   dazu("vor", 0.4);
-  liste.forEach((art, i) => {
-    // vor einem räumlichen Workflow steht das Foto (am Anfang blendet es auf; nach «Fragmente» rastet es noch ein: 1,4 s)
-    if (art !== "fragmente") dazu(`halt${i}`, i === 0 ? 0.9 : liste[i - 1] === "fragmente" ? 1.4 : 0.6);
-    else if (i > 0) dazu(`halt${i}`, 0.6);
-    const von = t;
-    if (art === "fragmente") fragmente(true);
-    else { dazu(art, RAUM[art] * f); phasen.push({ name: art, titel: WORKFLOWS.find(([n]) => n === art)[1], von, bis: t }); }
-    abschnitte.push({ art, von, bis: t });
-  });
-  dazu("stehen", liste.at(-1) === "fragmente" ? 3.2 : 2.6);
+  const von = t;
+  folge(art, true);
+  const abschnitt = { art, von, bis: t };
+  dazu("stehen", 3.2);
   if (signet) {
     // der ganze Abspann seit dem 15. Oktober 2026 4,75 statt 10 s
     dazu("bildAus", 0.9);
@@ -70,12 +62,12 @@ export function zeitachse({ tempo = "normal", signet = true, ablauf = ["fragment
     dazu("schluss", 0.2);
   } else dazu("schluss", 0.3);   // ohne Abspann endet der Film auf dem Foto
   const ab = Object.fromEntries(teile.map(([name, a, b]) => [name, [a, b]]));
-  if (!liste.includes("fragmente")) {                      // Phasen von «Fragmente» ausserhalb des Films, s. o.
-    const ende = t; t = -100; fragmente(false);
-    for (const [name, a, b] of teile.slice(-4)) ab[name] = [a, b];
+  if (art !== "fragmente") {                               // Phasen von «Fragmente» ausserhalb des Films, s. o.
+    const ende = t, n = teile.length; t = -100; folge("fragmente", false);
+    for (const [name, a, b] of teile.slice(n)) ab[name] = [a, b];
     t = ende;
   }
-  return { ab, abschnitte, phasen, ablauf: liste, fragmente: liste.includes("fragmente"), dauer: t, bilder: Math.round(t * 30), tempo: f };
+  return { ab, ablauf: art, abschnitt, phasen, fragmente: art === "fragmente", dauer: t, bilder: Math.round(t * 30), tempo: f };
 }
 
 /** Zeitcode für die Beschriftung: Minuten:Sekunden:Bilder */

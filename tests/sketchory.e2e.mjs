@@ -37,7 +37,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** Anteil heller Pixel und ob Rot-Orange vorkommt, im Bild zur Zeit t (dieselbe Zeichenfunktion wie Vorschau und Video) */
 const messeBild = (page, t) => page.evaluate(async (t) => {
-  const { bild, szene } = await import("./szene.js?v=8");
+  const { bild, szene } = await import("./szene.js?v=9");
   const S = window.__sketchory;
   const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
   const ctx = c.getContext("2d");
@@ -251,7 +251,7 @@ await check("Schwarz auf Weiss: ganzer Film umgekehrt (Grund, Zeichnung, Satz, S
   assert.equal(await page.getAttribute('[data-farbe="hell"]', "aria-pressed"), "true");
   assert.equal(await page.evaluate(() => document.querySelector(".rahmen").classList.contains("hell")), true);
   const zaehle = (t) => page.evaluate(async (t) => {
-    const { bild, szene } = await import("./szene.js?v=8");
+    const { bild, szene } = await import("./szene.js?v=9");
     const S = window.__sketchory, sz = szene(S.ergebnis, S.optionen);
     const c = document.createElement("canvas"); c.width = 1080; c.height = 1440;
     const x = c.getContext("2d"), zeit = sz.zeit.ab[t][0] + 0.05;
