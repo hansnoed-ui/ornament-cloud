@@ -6,9 +6,10 @@
 //             zerspringt in Voronoi-Scherben, die in die Tiefe fliegen · 03 Montage – die Scherben kehren eine nach der anderen zurück und rasten ein,
 //             bis das Foto steht («das Endbild setzt sich nicht zusammen, sondern erscheint einfach»). Zustandslos.
 //   Echo:     01 Konturen – feine, helle Höhenlinien des Fotos (immer einen Bildpunkt breit, einfarbig; «solche Konturen müssen feingliedriger sein»,
-//             «die Farben der Konturen gefallen mir nicht, dieses Orange»), kurz · 02 Echo – Rückkopplung wie in TouchDesigner (Zoom, Drehung, Farbdrehung, Spuren) · 03 Kaleidoskop · 04 Bild – das Kaleidoskop
-//             faltet sich auf, das Foto baut sich Tonstufe um Tonstufe auf. Die Rückkopplung hängt an den Bildern davor: sie wird in festen Schritten
-//             (ein Schritt je Filmbild) von vorn nachgerechnet, darum ist jedes Bild beim Spulen und im Video dasselbe.
+//             «die Farben der Konturen gefallen mir nicht, dieses Orange»), kurz · 02 Echo – Rückkopplung wie in TouchDesigner (Zoom, Drehung, Wirbel,
+//             Spuren) · 03 Bild – das Foto baut sich Tonstufe um Tonstufe auf (das Kaleidoskop dazwischen fiel weg: «dieser Teil geht gar nicht»).
+//             Die Rückkopplung hängt an den Bildern davor: sie wird in festen Schritten (ein Schritt je Filmbild) von vorn nachgerechnet, darum ist
+//             jedes Bild beim Spulen und im Video dasselbe.
 // Herkunft: Rezepte 3, 4 und 5 des Skills .claude/skills/threejs-spektakel (dort mit Beispielen und Prüfskript).
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -311,7 +312,7 @@ function kristall(renderer, textur, B, H, grund) {
   };
 }
 
-// ——— Echo (11,8 s: Konturen 0–1,6 · Echo 1,6–5,6 · Kaleidoskop 5,6–8,4 · Bild 8,4–11,8) ———
+// ——— Echo (10 s: Konturen 0–1,6 · Echo 1,6–6,6 · Bild 6,6–10) ———
 /** Höhenlinien: so viele Tonstufen, dass die Linien rund 7 % der Fläche decken – unruhige Bilder bekommen weniger, sonst wachsen sie zu (6 bis 18) */
 const stufenFuer = (gefaelle) => Math.round(Math.min(18, Math.max(6, 0.07 / (1.6 * Math.max(gefaelle, 1e-4)))));
 /** Helligkeit des Fotos, leicht geglättet (für feine, ruhige Höhenlinien), als einkanalige Textur in halber Grösse */
@@ -358,16 +359,14 @@ function echo(renderer, textur, B, H, grund, px) {
   // ein Schritt der Rückkopplung
   const rueck = new THREE.ShaderMaterial({
     uniforms: { ...gemeinsam, uVorher: { value: null }, uSeiten: { value: B / H }, uZeit: { value: 0 }, uZoom: { value: 1 }, uDreh: { value: 0 }, uWirbel: { value: 0 },
-      uZerfall: { value: 0.6 }, uFarbdreh: { value: 0 }, uKaleido: { value: 0 }, uEin: { value: 0 }, uZeigen: { value: 0 } },
+      uZerfall: { value: 0.6 }, uFarbdreh: { value: 0 }, uEin: { value: 0 }, uZeigen: { value: 0 } },
     vertexShader: QUAD_VERTEX, depthTest: false, depthWrite: false,
     fragmentShader: /* glsl */ `
       ${GLSL_ECHO}
-      uniform sampler2D uVorher; uniform float uSeiten, uZeit, uZoom, uDreh, uWirbel, uZerfall, uFarbdreh, uKaleido, uEin, uZeigen;
+      uniform sampler2D uVorher; uniform float uSeiten, uZeit, uZoom, uDreh, uWirbel, uZerfall, uFarbdreh, uEin, uZeigen;
       varying vec2 vUv;
       void main() {
         vec2 p = vUv - 0.5; p.x *= uSeiten;
-        float a = atan(p.y, p.x), r = length(p), seg = 6.2831853 / 6.0, ak = abs(mod(a + uZeit * 0.06, seg) - 0.5 * seg);
-        p = mix(p, r * vec2(cos(ak), sin(ak)), uKaleido);
         float c = cos(uDreh), s = sin(uDreh);
         vec2 q = mat2(c, -s, s, c) * p / uZoom;
         q += uWirbel * 0.004 * vec2(sin(q.y * 9.0 + uZeit * 1.3), cos(q.x * 8.0 - uZeit * 1.1));
@@ -404,16 +403,15 @@ function echo(renderer, textur, B, H, grund, px) {
 
   const regler = (t) => {
     const u = rueck.uniforms;
-    const echoAn = weich(anteil(t, 0.9, 2.0)) * (1 - weich(anteil(t, 8.4, 10)));   // die Bewegung setzt früh ein
+    const echoAn = weich(anteil(t, 0.9, 2.0)) * (1 - weich(anteil(t, 6.6, 8.2)));   // die Bewegung setzt früh ein
     u.uZeit.value = t;
     u.uZeigen.value = 1.08 * anteil(t, 0.05, 1.5);
-    u.uEin.value = (1 - 0.35 * weich(anteil(t, 1.6, 2.6))) * (1 - weich(anteil(t, 9, 10.2)));
+    u.uEin.value = (1 - 0.35 * weich(anteil(t, 1.6, 2.6))) * (1 - weich(anteil(t, 7.2, 8.4)));
     u.uZerfall.value = 0.5 + 0.34 * echoAn;                                                        // Konturen ohne Spur, im Echo Spuren, die abklingen, bevor sie zuwachsen
     u.uZoom.value = 1 + 0.02 * echoAn * (0.75 + 0.25 * Math.sin(t * 1.1));   // weit genug je Bild: die Spuren bleiben einzelne feine Linien
-    u.uDreh.value = 0.004 * echoAn * Math.sin(t * 0.6 + 0.4);
+    u.uDreh.value = 0.005 * echoAn * Math.sin(t * 0.55 + 0.4);                                   // die Drehung wechselt einmal die Richtung
     u.uWirbel.value = echoAn;
     u.uFarbdreh.value = 0;                                                                        // keine Farbdrehung: die Spuren bleiben einfarbig
-    u.uKaleido.value = weich(anteil(t, 5.6, 6.5)) * (1 - inOut(anteil(t, 8.4, 9.8)));
     return echoAn;
   };
   let n = -1, gross = [B, H], stand = "", aktiv = 0;
@@ -430,7 +428,7 @@ function echo(renderer, textur, B, H, grund, px) {
     [lesen, schreiben] = [schreiben, lesen];
   };
   return {
-    dauer: 11.8, looks: [look],
+    dauer: 10, looks: [look],
     groesse(w, h) {
       if (gross[0] === w && gross[1] === h) return;
       gross = [w, h]; lesen.setSize(w, h); schreiben.setSize(w, h); n = -1;                    // andere Grösse: von vorn rechnen
@@ -438,15 +436,14 @@ function echo(renderer, textur, B, H, grund, px) {
     /** t: Zeit im Ablauf; k, N: Bild k von N im Abschnitt (die Schritte der Rückkopplung zählen in Filmbildern) */
     bild(t, k, N) {
       if (k < n || n < 0) { leeren(); n = -1; }
-      while (n < k) { n++; schritt((n / Math.max(1, N)) * 11.8); }
+      while (n < k) { n++; schritt((n / Math.max(1, N)) * 10); }
       aktiv = regler(t);
-      const aufbau = inOut(anteil(t, 8.6, 11.6));
+      const aufbau = inOut(anteil(t, 6.8, 9.8));
       zeige.uniforms.uSchleife.value = lesen.texture;
-      zeige.uniforms.uAufbau.value = t >= 11.6 ? 1 : aufbau;
-      const kal = rueck.uniforms.uKaleido.value;
+      zeige.uniforms.uAufbau.value = t >= 9.8 ? 1 : aufbau;
       stand = t < 1.6 ? `höhenlinien ${Math.round(Math.min(1, rueck.uniforms.uZeigen.value) * STUFEN)} / ${STUFEN}`
-        : t < 5.6 ? `rückkopplung ${Math.round(rueck.uniforms.uZerfall.value * 100)} % · zoom ${(rueck.uniforms.uZoom.value * 100 - 100).toFixed(1)} %`
-        : t < 8.4 ? `spiegel 6 · ${Math.round(kal * 100)} %` : `tonstufen ${Math.round(Math.min(1, aufbau * 1.12) * STUFEN)} / ${STUFEN}`;
+        : t < 6.6 ? `rückkopplung ${Math.round(rueck.uniforms.uZerfall.value * 100)} % · zoom ${(rueck.uniforms.uZoom.value * 100 - 100).toFixed(1)} %`
+        : `tonstufen ${Math.round(Math.min(1, aufbau * 1.12) * STUFEN)} / ${STUFEN}`;
       look.render(Math.max(aktiv, 0.4 * (1 - aufbau)), 0.25, 0.0015);
     },
     zaehler() { return stand; },
@@ -454,33 +451,53 @@ function echo(renderer, textur, B, H, grund, px) {
   };
 }
 
-// ——— Signet in der leuchtenden Fassung: Linie und Schrift glühen, der Punkt läuft als Glaskristall durch die Schlaufe ———
+// ——— Signet in der leuchtenden Fassung: Linie und Schrift klar wie immer; nur der Punkt leuchtet – ein Glaskristall mit Halo und Bokeh, das ihm auf
+//     der Bahn folgt (Rückmeldung: «das Signet ist immer noch zu stark überblendet; vielleicht sollte einfach der laufende Punkt leuchten») ———
 function glanzSignet(renderer, B, H, akzent) {
   const leinwand = document.createElement("canvas"); leinwand.width = B; leinwand.height = H;
   const tex = new THREE.CanvasTexture(leinwand); tex.colorSpace = THREE.SRGBColorSpace;
   const glas = glasMaterial(1, tex, B, H);
-  glas.u.uAussen.value = 1; glas.u.uKante.value = 1.1;
-  glas.u.uTon.value[0].set(akzent).lerp(new THREE.Color(1, 1, 1), 0.15);
+  glas.u.uAussen.value = 1; glas.u.uKante.value = 0.75;
+  glas.u.uTon.value[0].set(akzent);
   const szene = new THREE.Scene(), quad = new THREE.PlaneGeometry(2, 2);
   szene.add(new THREE.Mesh(quad, glas.mat));
   const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const look = filmlook(renderer, szene, ortho, { radius: 0.12, schwelle: 0.6 });   // knapper Schein, kein Schleier (Rückmeldung: «das Signet ist zu milchig»)
+  const look = filmlook(renderer, szene, ortho, { radius: 0.12, schwelle: 0.6 });
   const m4 = new THREE.Matrix4(), eu = new THREE.Euler(), welt = (2 * TANH * KZ) / H;
   return {
     looks: [look], leinwand,
     groesse(w, h) { glas.groesse(w, h, w >= B * 0.95); },
-    /** zeichnen(ctx): das Signet auf die 2D-Leinwand (mit Grund); punkt: { lage: [x, y] in Filmpunkten, sicht, radius }; f: Bild des Signets */
+    /** zeichnen(ctx): das Signet auf die 2D-Leinwand (mit Grund); punkt: { lage: [x, y] in Filmpunkten, sicht, radius, spur: [[x, y], …] (frühere
+     *  Lagen, die nächste zuerst), farbe }; f: Bild des Signets */
     bild(zeichnen, punkt, f, hell) {
       const c = leinwand.getContext("2d");
       c.setTransform(1, 0, 0, 1, 0, 0);
       zeichnen(c);
+      // Halo und Bokeh: nur um den Punkt, auf Schwarz aufhellend, auf Weiss nur ein Hauch
+      if (punkt.sicht > 0) {
+        const [x, y] = punkt.lage, r = punkt.radius, farbe = new THREE.Color(punkt.farbe), rgb = (a) => `rgba(${Math.round(farbe.r * 255)}, ${Math.round(farbe.g * 255)}, ${Math.round(farbe.b * 255)}, ${a})`;
+        c.save();
+        c.globalCompositeOperation = hell ? "multiply" : "lighter";
+        const st = hell ? 0.35 : 1;
+        const halo = c.createRadialGradient(x, y, r * 0.4, x, y, r * 10);
+        halo.addColorStop(0, rgb(0.95 * st * punkt.sicht)); halo.addColorStop(0.18, rgb(0.42 * st * punkt.sicht)); halo.addColorStop(0.5, rgb(0.1 * st * punkt.sicht)); halo.addColorStop(1, rgb(0));
+        c.fillStyle = halo; c.beginPath(); c.arc(x, y, r * 10, 0, Math.PI * 2); c.fill();
+        (punkt.spur ?? []).forEach(([bx, by], i) => {                     // Bokeh: weiche Scheiben mit hellerem Rand, nach hinten grösser und blasser
+          const br = r * (2.1 + 0.8 * i), a = (0.34 - 0.06 * i) * st * punkt.sicht;
+          if (a <= 0) return;
+          const g = c.createRadialGradient(bx, by, 0, bx, by, br);
+          g.addColorStop(0, rgb(a * 0.6)); g.addColorStop(0.82, rgb(a)); g.addColorStop(0.92, rgb(a * 1.6)); g.addColorStop(1, rgb(0));
+          c.fillStyle = g; c.beginPath(); c.arc(bx, by, br, 0, Math.PI * 2); c.fill();
+        });
+        c.restore();
+      }
       tex.needsUpdate = true;
       const [x, y] = punkt.lage;
       glas.u.uMitte.value[0].set((x / B - 0.5) * 2 * TANH * KZ * (B / H), (0.5 - y / H) * 2 * TANH * KZ, 0);
       glas.u.uGroesse.value[0] = punkt.sicht * punkt.radius * 2.6 * welt;
       glas.u.uDreh.value[0].setFromMatrix4(m4.makeRotationFromEuler(eu.set(f * 0.05, f * 0.07, f * 0.02)));
       form((f / 60) % 2, glas.u.uRadien.value[0]);
-      look.render(1, hell ? 0.15 : 0.45, 0.0015);
+      look.render(1, 0, 0);                                                  // kein Bloom: Linie und Schrift bleiben klar
     },
     entsorgen() { tex.dispose(); quad.dispose(); glas.mat.dispose(); look.entsorgen(); },
   };

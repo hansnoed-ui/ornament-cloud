@@ -160,7 +160,7 @@ test("Abläufe (16. Oktober 2026): Fragmente, Kristall, Echo zur Wahl; alle begi
   assert.deepEqual(Object.keys(ABLAEUFE), ["fragmente", "kristall", "echo"]);
   assert.deepEqual(ABLAEUFE.fragmente.phasen.map(([n]) => n), PHASEN.map(([n]) => n), "Fragmente wie bisher");
   assert.deepEqual(ABLAEUFE.kristall.phasen.map(([, t]) => t), ["Körper", "Bruch", "Montage"]);
-  assert.deepEqual(ABLAEUFE.echo.phasen.map(([, t]) => t), ["Konturen", "Echo", "Kaleidoskop", "Bild"]);
+  assert.deepEqual(ABLAEUFE.echo.phasen.map(([, t]) => t), ["Konturen", "Echo", "Bild"], "ohne Kaleidoskop (Rückmeldung vom 17. Oktober 2026)");
   assert.equal(ablaufName("quatsch"), "fragmente");
   assert.equal(ablaufName(null), "fragmente");
   assert.equal(ablaufName("echo"), "echo");

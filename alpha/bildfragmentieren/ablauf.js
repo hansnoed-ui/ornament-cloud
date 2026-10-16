@@ -4,7 +4,7 @@
 //   Fragmente – 01 Linien (Relief aus Zeilen, Umrisse) → 02 Formen (Dreiecke mit Stich) → 03 Farben (Körper) → 04 Bild (Montage, das Foto rastet ein)
 //   Kristall  – 01 Körper (drei Kristalle verschmelzen zu einem Glaskörper; das Foto nur durch das Glas) → 02 Bruch (er zerspringt in Scherben)
 //               → 03 Montage (die Scherben setzen das Foto zusammen)                                                     [WebGL, raum.js]
-//   Echo      – 01 Konturen (feine Höhenlinien) → 02 Echo (Rückkopplung, Tunnel) → 03 Kaleidoskop → 04 Bild (das Foto baut sich Tonstufe um Tonstufe auf)
+//   Echo      – 01 Konturen (feine Höhenlinien) → 02 Echo (Rückkopplung, Tunnel) → 03 Bild (das Foto baut sich Tonstufe um Tonstufe auf)
 // Danach steht das Foto, dann (wenn gewählt) das Signet von ornament.cloud – bei Kristall und Echo in einer leuchtenden Fassung.
 export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=9";
 
@@ -29,7 +29,8 @@ export const PHASEN = [["linien", "Linien"], ["formen", "Formen"], ["farben", "F
 export const ABLAEUFE = {
   fragmente: { titel: "Fragmente", phasen: [["linien", "Linien", 4.4], ["formen", "Formen", 3.6], ["farben", "Farben", 3.0], ["zusammen", "Bild", 4.2]] },
   kristall: { titel: "Kristall", raum: true, phasen: [["koerper", "Körper", 3.6], ["bruch", "Bruch", 3.2], ["montage", "Montage", 4.2]] },
-  echo: { titel: "Echo", raum: true, phasen: [["konturen", "Konturen", 1.6], ["echo", "Echo", 4.0], ["kaleidoskop", "Kaleidoskop", 2.8], ["aufbau", "Bild", 3.4]] },   // Konturen kurz (Rückmeldung: «die Konturen alleine weniger»)
+  // Echo: Konturen kurz (Rückmeldung: «die Konturen alleine weniger»), ohne Kaleidoskop («dieser Teil geht gar nicht – gerne ersatzlos streichen»)
+  echo: { titel: "Echo", raum: true, phasen: [["konturen", "Konturen", 1.6], ["echo", "Echo", 5.0], ["aufbau", "Bild", 3.4]] },
 };
 /** ein bekannter Ablauf, sonst «Fragmente» */
 export const ablaufName = (a) => (Object.hasOwn(ABLAEUFE, String(a)) ? String(a) : "fragmente");

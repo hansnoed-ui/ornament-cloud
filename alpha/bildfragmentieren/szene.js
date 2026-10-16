@@ -712,10 +712,11 @@ export function bild(ctx, sz, t) {
     // die Zeichnung doppelt so schnell, der Punkt aber ruhig (etwas langsamer als im Original)
     const f = SIGNET_VON + (t - ab.signet[0]) * FPS * SIGNET_TEMPO, opt = { hoehe: H, farben: F, punktTempo: SIGNET_TEMPO * 1.25 };
     if (sz.raum && !sz.zeit.fragmente) {
-      // Kristall und Echo: das Signet leuchtet, der Punkt läuft als kleiner Glaskristall durch die Schlaufe
+      // Kristall und Echo: der Punkt läuft als kleiner Glaskristall durch die Schlaufe und leuchtet (Halo, Bokeh auf seiner Spur)
       const [w, h] = zielMass(ctx, sz), { lage: [px, py], sicht } = punktLage(f, opt);
       const zeichnen = (c) => { c.fillStyle = F.grund; c.fillRect(0, 0, 1080, H); signetZeichnen(c, f, opt); };
-      ctx.drawImage(sz.raum.signet(zeichnen, { lage: [px, py + (H - 1920) / 2], sicht, radius: PUNKT_RADIUS }, f, w, h), 0, 0, 1080, H);
+      const spur = [5, 10, 15, 20].map((d) => { const [sx, sy] = punktLage(Math.max(0, f - d * SIGNET_TEMPO), opt).lage; return [sx, sy + (H - 1920) / 2]; });
+      ctx.drawImage(sz.raum.signet(zeichnen, { lage: [px, py + (H - 1920) / 2], sicht, radius: PUNKT_RADIUS, spur, farbe: F.punkt }, f, w, h), 0, 0, 1080, H);
     } else signetZeichnen(ctx, f, opt);
     ctx.restore();
     const weg = ausblenden(anteil(t, ab.signetAus[0], ab.signetAus[1]));

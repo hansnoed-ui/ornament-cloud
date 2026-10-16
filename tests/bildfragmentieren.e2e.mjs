@@ -287,7 +287,7 @@ await check("Abläufe Kristall und Echo: beginnen im Dunkeln, enden exakt beim F
   // Echo: Rückkopplung, deterministisch beim Springen
   await page.click('[data-ablauf="echo"]');
   await page.waitForFunction(() => window.__bildfragmentieren.sz?.raum?.art === "echo", null, { timeout: 90_000 });
-  assert.deepEqual(await page.$$eval(".phasen button", (b) => b.map((x) => x.textContent)), ["01 Konturen", "02 Echo", "03 Kaleidoskop", "04 Bild"]);
+  assert.deepEqual(await page.$$eval(".phasen button", (b) => b.map((x) => x.textContent)), ["01 Konturen", "02 Echo", "03 Bild"]);
   const [e0, eMitte, eKonturen, eMitte2, eEnde] = await raumMessen(page,
     ["z.konturen.von + 0.05", "z.echo.von + 0.6 * (z.echo.bis - z.echo.von)", "z.konturen.von + 1", "z.echo.von + 0.6 * (z.echo.bis - z.echo.von)", "z.abschnitt.bis - 0.02"]);
   assert.ok(e0.dunkel > 0.9 && eKonturen.dunkel > 0.4, `beginnt im Dunkeln, feine Linien (${e0.dunkel}, ${eKonturen.dunkel})`);
