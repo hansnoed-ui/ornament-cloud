@@ -1,9 +1,9 @@
 // «Bildfragmentieren» – Seite: Foto laden, zerlegen (Worker), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der MP4-Schreiber von Sketchory;
 // ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE } from "./ablauf.js?v=17";
-import { szene, bild, standbildZeit, vorbereiten } from "./szene.js?v=17";
-import { zerlegen } from "./fragmente.js?v=17";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, RAUM, kette } from "./ablauf.js?v=18";
+import { szene, bild, standbildZeit, vorbereiten, FARBEN } from "./szene.js?v=18";
+import { zerlegen } from "./fragmente.js?v=18";
 import { mp4 } from "../sketchory/mp4.js?v=8";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 
@@ -15,7 +15,7 @@ const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let VORSCHAU = 0.5;
 const vorschauMass = () => { const b = vorschau.parentElement.getBoundingClientRect().width || 400; return Math.round(Math.min(0.85, Math.max(0.5, (b * (window.devicePixelRatio || 1)) / S.mass[0])) * 20) / 20; };
 const S = { bild: null, daten: null, foto: null, vorrat: {}, sz: null, laeuft: false, start: 0, t: null, film: null, rechnen: 0,
-  format: "4:5", feinheit: "mittel", grund: "schwarz", mass: [1080, 1350] };
+  format: "4:5", feinheit: "mittel", grund: "schwarz", mass: [1080, 1350], ablauf: ["fragmente"], raum: null, raumSchluessel: "" };
 window.__bildfragmentieren = S;   // für die Browser-Tests
 
 const leinwand = (w, h) => { if (typeof OffscreenCanvas !== "undefined") return new OffscreenCanvas(w, h); const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
@@ -62,7 +62,7 @@ async function fotoLaden(datei) {
 
 // ——— zerlegen (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=17", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=18", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   // zerlegt wird auf der halben Filmgrösse (für Kanten und Mosaik genug), das Foto für den Schluss bleibt in voller Grösse
@@ -101,13 +101,61 @@ async function lesen() {
 
 function optionen() {
   return { breite: S.mass[0], hoehe: S.mass[1], tempo: $("tempo").value, grund: S.grund, signet: $("signet").checked, beschriftung: $("beschriftung").checked,
-    titel: $("titel").value.replace(/\s+/g, " ").trim(), foto: S.foto, leinwand, vorrat: S.vorrat };
+    titel: $("titel").value.replace(/\s+/g, " ").trim(), foto: S.foto, leinwand, vorrat: S.vorrat, ablauf: S.ablauf, raum: S.raum };
 }
+
+// ——— räumliche Workflows (Glas, Splitter, Relief): raum.js und three.js erst laden, wenn einer gewählt ist ———
+let raumModul = null;
+async function raumBereit() {
+  const arten = S.ablauf.filter((a) => a in RAUM);
+  const schluessel = arten.length && S.foto ? `${S.rechnen}|${S.grund}|${arten.join(",")}` : "";
+  if (schluessel === S.raumSchluessel) return;
+  S.raumSchluessel = schluessel;
+  if (S.sz) S.sz.raum = null;                              // die laufende Vorschau zeigt bis dahin das Foto
+  S.raum?.entsorgen(); S.raum = null;
+  if (!schluessel) return;
+  try {
+    raumModul ??= await import("./raum.js?v=18");
+    if (S.raumSchluessel !== schluessel) return;
+    S.raum = raumModul.raum(S.foto, arten, { grund: (FARBEN[S.grund] ?? FARBEN.schwarz).grund });
+  } catch (fehler) {
+    melden(`Glas, Splitter und Relief brauchen WebGL 2; hier steht an ihrer Stelle das Foto (${fehler?.message ?? fehler}).`, true);
+    return;
+  }
+  neu();
+}
+
+/** Sprungknöpfe: eine Phase je Abschnitt der Kette (die vier von «Fragmente» behalten ihre Kennungen) */
+const KENNUNG = { linien: "zu-linien", formen: "zu-formen", farben: "zu-farben", zusammen: "zu-bild" };
+function sprungziel(sz, name) {
+  const { ab, phasen, ablauf } = sz.zeit, ph = phasen.find((p) => p.name === name);
+  if (name === "linien") return ab.linien[0] + 2.4;
+  if (name === "zusammen") return ablauf.at(-1) === "fragmente" ? ab.stehen[0] + 0.8 : ab.zusammen[1] + 0.6;
+  if (name in RAUM) return ph.von + 0.55 * (ph.bis - ph.von);
+  return ph.von + (ph.bis - ph.von) * 0.75;
+}
+function sprungknoepfe(sz) {
+  const leiste = document.querySelector(".phasen"), namen = sz.zeit.phasen.map((p) => p.name).join(",");
+  if (leiste.dataset.namen === namen) return;
+  leiste.dataset.namen = namen;
+  leiste.replaceChildren(...sz.zeit.phasen.map((p, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.id = KENNUNG[p.name] ?? `zu-${p.name}`; b.dataset.phase = p.name;
+    b.textContent = `${String(i + 1).padStart(2, "0")} ${p.titel}`;
+    return b;
+  }));
+}
+document.querySelector(".phasen").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b || !S.sz) return;
+  anhalten(); zeigeZeit(sprungziel(S.sz, b.dataset.phase ?? { "zu-linien": "linien", "zu-formen": "formen", "zu-farben": "farben", "zu-bild": "zusammen" }[b.id]));
+});
 
 function neu({ abspielen = !ruhig } = {}) {
   if (!S.daten) return;
+  raumBereit();
   const alt = S.sz ? S.t : null;
   S.sz = szene(S.daten, optionen());
+  sprungknoepfe(S.sz);
   const sz = S.sz, spaeter = window.requestIdleCallback ?? ((f) => setTimeout(f, 200));
   spaeter(() => { if (S.sz === sz) vorbereiten(sz); });
   // Vorschau im Format des Films, in der Auflösung des Bildschirms (höchstens 0,85 des Films)
@@ -123,7 +171,7 @@ function neu({ abspielen = !ruhig } = {}) {
   $("leer").hidden = true;
   if (S.laeuft) return;                                   // läuft die Vorschau, läuft sie mit der neuen Szene weiter
   if (abspielen && alt === null) spielen();
-  else zeigeZeit(alt ?? standbildZeit(S.sz));
+  else zeigeZeit(Math.min(alt ?? standbildZeit(S.sz), S.sz.zeit.dauer - 1 / FPS));   // die Kette kann kürzer geworden sein
 }
 
 // ——— Einstellungen ———
@@ -146,6 +194,23 @@ function rahmenFarbe() { vorschau.parentElement.classList.toggle("weiss", S.grun
 rahmenFarbe();
 for (const id of ["tempo"]) { const v = erinnern(id); if (v && [...$(id).options].some((o) => o.value === v)) $(id).value = v; $(id).addEventListener("change", () => { merken(id, $(id).value); neu(); }); }
 for (const id of ["signet", "beschriftung"]) { const v = erinnern(id); if (v !== null) $(id).checked = v === "1"; $(id).addEventListener("change", () => { merken(id, $(id).checked ? "1" : "0"); neu(); }); }
+// Workflows: an- und abwählen; die Reihenfolge der Wahl ist die Reihenfolge im Film (mindestens einer bleibt)
+const workflowKnoepfe = [...document.querySelectorAll("[data-workflow]")];
+S.ablauf = kette(erinnern("ablauf") ?? "fragmente");
+function workflowsZeigen() {
+  for (const b of workflowKnoepfe) {
+    const i = S.ablauf.indexOf(b.dataset.workflow);
+    b.setAttribute("aria-pressed", String(i >= 0));
+    b.querySelector(".nr").textContent = i >= 0 && S.ablauf.length > 1 ? String(i + 1) : "";
+  }
+}
+workflowsZeigen();
+for (const b of workflowKnoepfe) b.addEventListener("click", () => {
+  const w = b.dataset.workflow, i = S.ablauf.indexOf(w);
+  if (i >= 0 && S.ablauf.length === 1) return;
+  S.ablauf = i >= 0 ? S.ablauf.filter((a) => a !== w) : [...S.ablauf, w];
+  merken("ablauf", S.ablauf.join(",")); workflowsZeigen(); neu();
+});
 let tippen = 0;
 $("titel").addEventListener("input", () => { clearTimeout(tippen); tippen = setTimeout(() => neu(), 300); });
 
@@ -179,14 +244,12 @@ function takt(jetzt) {
 }
 $("spielen").addEventListener("click", () => (S.laeuft ? anhalten() : spielen()));
 $("zeit").addEventListener("input", () => { if (!S.sz) return; anhalten(); zeigeZeit(Number($("zeit").value)); });
-for (const [id, name] of [["zu-linien", "linien"], ["zu-formen", "formen"], ["zu-farben", "farben"], ["zu-bild", "stehen"]])
-  $(id).addEventListener("click", () => { if (!S.sz) return; anhalten(); zeigeZeit(S.sz.zeit.ab[name][0] + (name === "stehen" ? 0.8 : name === "linien" ? 2.4 : (S.sz.zeit.ab[name][1] - S.sz.zeit.ab[name][0]) * 0.75)); });
 
 // ——— Standbild: das Bild an der Stelle der Zeitleiste, in voller Grösse ———
 $("png").addEventListener("click", async () => {
   if (!S.sz) return;
   const c = leinwand(S.mass[0], S.mass[1]);
-  bild(c.getContext("2d"), szene(S.daten, optionen()), S.t ?? standbildZeit(S.sz));
+  bild(c.getContext("2d"), szene(S.daten, optionen()), Math.min(S.t ?? standbildZeit(S.sz), S.sz.zeit.dauer));
   const blob = c.convertToBlob ? await c.convertToBlob({ type: "image/png" }) : await new Promise((ok) => c.toBlob(ok, "image/png"));
   herunterladen(blob, dateiname(new Date(), "png"));
 });
@@ -287,6 +350,6 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...feinKnoepfe, $("video"), $("png")])
+  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...feinKnoepfe, ...workflowKnoepfe, $("video"), $("png")])
     el.disabled = an || ((el.id === "video" || el.id === "png") && !S.daten);
 }

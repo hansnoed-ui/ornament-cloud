@@ -164,8 +164,12 @@ THREE=… BILD=/pfad/foto.jpg AUSGABE=/tmp/x NODE_PATH=$(npm root -g) node …/p
 - `.claude/` wird nicht veröffentlicht (GitHub Pages lässt Punkt-Ordner weg). Ein Effekt für die Website kommt als eigene Seite nach `alpha/<name>/`.
   Dort gelten die Konventionen der Website: `noindex`, Ausnahme in `tests/navigation.test.mjs`, `?v=`-Marken, eigene Tests nach dem Muster `tests/bildfragmentieren.*`.
 - Den Pfad zu `mp4.js` anpassen (`../sketchory/mp4.js?v=8`). three.js weiter über die Import-Map mit fester Version.
-- In Bildfragmentieren (Canvas 2D) lässt sich ein Rezept als eigene Ebene einbauen. Das WebGL-Canvas wird mit `drawImage` in die 2D-Szene gezeichnet; dabei `preserveDrawingBuffer` beachten.
-  Nur auf Wunsch, und die Stimmung der Phase beibehalten: konstruktiv, feine Linien, keine bunten Effektbomben.
+- **Vorbild Bildfragmentieren** (seit 16. Oktober 2026): Glas, Splitter und Relief stecken als wählbare Workflows in `alpha/bildfragmentieren/raum.js`.
+  - three.js liegt lokal in `vendor/three-0.185.1/` (Import-Map, nur die nötigen Addons). `raum.js` wird erst auf Wahl mit `import()` geladen.
+  - Jedes Bild entsteht auf einer eigenen WebGL-Leinwand in der Auflösung des Ziels (`ctx.getTransform()`) und wird mit `drawImage` in die 2D-Szene gesetzt (`preserveDrawingBuffer: true`).
+  - Bloom und Farbsaum hängen an der Bewegung; in Ruhe zeigt der Workflow exakt das Foto. So schliessen die Workflows nahtlos aneinander an.
+  - Neue Workflows nach diesem Muster: Funktion in `raum.js`, Dauer in `RAUM` (`ablauf.js`), Karte in `index.html`, Tests ergänzen.
+    Simulationen (Feedback, GPGPU, TSL) brauchen dort zusätzlich `simulation()`, weil die Vorschau springt.
 
 ## Siehe auch
 threejs-fundamentals, threejs-shaders, threejs-postprocessing, threejs-geometry (Grundlagen und API); ornament-video (Signet, Umwandlung, Website).

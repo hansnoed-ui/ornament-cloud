@@ -19,10 +19,12 @@
 //  komplexe transparente geometrische Körper»)
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, PHASEN, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=17";
+// Seit dem 16. Oktober 2026 ist das alles der Workflow «Fragmente»; dazu kommen räumliche Workflows (Glas, Splitter, Relief, raum.js), einzeln oder
+// in einer Kette. Sie beginnen und enden beim Foto; ihr Bild kommt fertig aus WebGL (sz.raum) und wird hier nur eingesetzt.
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=18";
 import { signet as signetZeichnen } from "../sketchory/signet.js?v=8";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=17";
-import { KOERPER, abbilden } from "./koerper.js?v=17";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=18";
+import { KOERPER, abbilden } from "./koerper.js?v=18";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
@@ -37,8 +39,8 @@ const GLITCH = 0.24;   // so lange dauert ein Bildfehler an einem Übergang (Sek
  * Canvas), leinwand(w, h) → Canvas, vorrat (ein Objekt, das Szenen desselben Fotos teilen: die Farbauszüge).
  */
 export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoehe ?? 1920, tempo = "normal", grund = "schwarz", signet = true, beschriftung = true, titel = "",
-  foto = null, leinwand, vorrat = null } = {}) {
-  const zeit = zeitachse({ tempo, signet });
+  foto = null, leinwand, vorrat = null, ablauf = ["fragmente"], raum = null } = {}) {
+  const zeit = zeitachse({ tempo, signet, ablauf });
   const { ab } = zeit, f = zeit.tempo;
   const rnd = zufall(daten.dreiecke.n * 31 + daten.kanten.length * 7 + 11);
   const [L0, L1] = ab.linien, [F0, F1] = ab.formen, [C0, C1] = ab.farben, [Z0, Z1] = ab.zusammen;
@@ -132,8 +134,9 @@ export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoeh
 
   return {
     breite, hoehe, zeit, farben: FARBEN[grund] ?? FARBEN.schwarz, grund: FARBEN[grund] ? grund : "schwarz", signet, beschriftung, titel: (titel || "Bildfragmentieren").trim(),
-    foto, leinwand, vorrat: vorrat ?? {}, daten, zeilen, kanten, dreiecke, flug, faerben, wellen, ersterFlug, einrasten, geometrie,
-    glitches: [F0, C0, Z0, einrasten[0]], zahl: { zeilen: z.reihen, kanten: kanten.length, dreiecke: n },
+    foto, leinwand, vorrat: vorrat ?? {}, daten, zeilen, kanten, dreiecke, flug, faerben, wellen, ersterFlug, einrasten, geometrie, raum,
+    glitches: [F0, C0, Z0, einrasten[0], ...zeit.abschnitte.filter((a) => a.art !== "fragmente").map((a) => a.von)].filter((g) => g >= 0),
+    zahl: { zeilen: z.reihen, kanten: kanten.length, dreiecke: n },
   };
 }
 
@@ -615,23 +618,51 @@ function beschriftung(ctx, sz, t, sicht) {
   const oben = rand + g;
   ctx.textAlign = "left"; ctx.fillText(sz.titel.toUpperCase().slice(0, 40), rand, oben);
   ctx.textAlign = "right"; ctx.fillText(zeitcode(t), B - rand, oben);
-  // Phase: Nummer, Name, Fortschritt als feine Linie, darunter der Zähler
+  // Phase: Nummer, Name, Fortschritt als feine Linie, darunter der Zähler (über die ganze Kette der Workflows gezählt)
+  const phasen = sz.zeit.phasen;
   let nr = 0;
-  PHASEN.forEach(([name], i) => { if (t >= ab[name][0] - 0.05) nr = i; });
-  const [name, titel] = PHASEN[nr], [a, b] = ab[name], fort = anteil(t, a, b);
+  phasen.forEach((ph, i) => { if (t >= ph.von - 0.05) nr = i; });
+  const { name, titel, von: a, bis: b } = phasen[nr], fort = anteil(t, a, b);
   const zahl = (n) => n.toLocaleString("de-CH");
   const gelandet = sz.geometrie.teile.filter((tl) => t >= tl.setzen).length;
-  const zaehler = [`zeilen ${zahl(sz.zahl.zeilen)} · kanten ${zahl(sz.zahl.kanten)}`, `dreiecke ${zahl(sz.zahl.dreiecke)}`, `farbe ${Math.round(fort * 100)} %`,
-    `bauteile ${zahl(gelandet)} / ${zahl(sz.geometrie.teile.length)}`][nr];
+  const zaehler = { linien: `zeilen ${zahl(sz.zahl.zeilen)} · kanten ${zahl(sz.zahl.kanten)}`, formen: `dreiecke ${zahl(sz.zahl.dreiecke)}`, farben: `farbe ${Math.round(fort * 100)} %`,
+    zusammen: `bauteile ${zahl(gelandet)} / ${zahl(sz.geometrie.teile.length)}` }[name] ?? sz.raum?.zaehler(name, fort) ?? "";
   const unten = H - rand;
   ctx.textAlign = "left";
-  ctx.fillText(`0${nr + 1} ${titel.toUpperCase()}`, rand, unten - g * 1.9);
+  ctx.fillText(`${String(nr + 1).padStart(2, "0")} ${titel.toUpperCase()}`, rand, unten - g * 1.9);
   ctx.globalAlpha = sicht * 0.55; ctx.fillText(zaehler, rand, unten);
   const lb = Math.min(260 * s, B * 0.3), ly = unten - g * 1.9 + g * 0.55;
   ctx.globalAlpha = sicht * 0.3; ctx.fillRect(B - rand - lb, ly - 1, lb, 2 * s);
   ctx.globalAlpha = sicht * 0.85; ctx.fillRect(B - rand - lb, ly - 1, lb * fort, 2 * s);
   ctx.textAlign = "right"; ctx.globalAlpha = sicht * 0.55; ctx.fillText(`${B}×${H} · ${FPS} fps`, B - rand, unten);
   ctx.restore();
+}
+
+/** ein räumlicher Workflow: WebGL rechnet in der Auflösung der Ziel-Leinwand (Vorschau kleiner, Video voll), das Bild wird eingesetzt.
+ *  Ist raum.js noch nicht geladen (oder ohne WebGL 2), steht an seiner Stelle das Foto. */
+function raumZeichnen(ctx, sz, abschnitt, t) {
+  const B = sz.breite, H = sz.hoehe, m = ctx.getTransform();
+  const u = anteil(t, abschnitt.von, abschnitt.bis);
+  const c = sz.raum?.bild(abschnitt.art, u, B * Math.hypot(m.a, m.b), H * Math.hypot(m.c, m.d));
+  if (c) ctx.drawImage(c, 0, 0, B, H); else if (sz.foto) ctx.drawImage(sz.foto, 0, 0, B, H);
+}
+
+/** was über jedem Bild liegt: Aufblenden am Anfang (wenn der Film mit dem Foto beginnt), Abblenden, Beschriftung, Bildfehler */
+function rahmen(ctx, sz, t) {
+  const { ab } = sz.zeit, F = sz.farben, B = sz.breite, H = sz.hoehe;
+  if (sz.zeit.abschnitte[0].art !== "fragmente") {
+    const auf = 1 - sanft(anteil(t, 0.1, ab.vor[1] + 0.6));
+    if (auf > 0) { ctx.globalAlpha = auf; ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H); ctx.globalAlpha = 1; }
+  }
+  if (ab.bildAus) {
+    const weg = ausblenden(anteil(t, ab.bildAus[0], ab.bildAus[1]));
+    if (weg > 0) { ctx.globalAlpha = weg; ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H); ctx.globalAlpha = 1; }
+  }
+  if (sz.beschriftung) {
+    const sicht = anteil(t, ab.vor[0] + 0.1, ab.vor[1] + 0.3) * (1 - anteil(t, ab.stehen[0] - 0.1, ab.stehen[0] + 0.6));
+    if (sicht > 0) beschriftung(ctx, sz, t, sicht);
+  }
+  bildfehler(ctx, sz, t);
 }
 
 /** Bild zur Zeit t (Sekunden) */
@@ -641,7 +672,14 @@ export function bild(ctx, sz, t) {
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H);
   const fotoAb = sz.foto ? sz.einrasten[0] : Infinity, bildEnde = ab.bildAus ? ab.bildAus[1] : ab.schluss[1];
-  if (t < bildEnde) {
+  const { abschnitte } = sz.zeit, raumJetzt = abschnitte.find((a) => a.art !== "fragmente" && t >= a.von && t < a.bis);
+  const vorFragmenten = sz.zeit.fragmente && abschnitte[0].art !== "fragmente" && t < L0;
+  if (t < bildEnde && (raumJetzt || vorFragmenten)) {
+    // räumlicher Workflow (fertiges Bild aus WebGL) oder das stehende Foto vor «Fragmente»
+    if (raumJetzt) raumZeichnen(ctx, sz, raumJetzt, t);
+    else if (sz.foto) ctx.drawImage(sz.foto, 0, 0, B, H);
+    rahmen(ctx, sz, t);
+  } else if (t < bildEnde) {
     // 01 Linien (verblassen, während die Formen kommen)
     const zSicht = 1 - anteil(t, F0 + 0.15 * (F1 - F0), F0 + 0.65 * (F1 - F0));
     if (t >= L0 && zSicht > 0) zeilenZeichnen(ctx, sz, t, zSicht);
@@ -655,6 +693,10 @@ export function bild(ctx, sz, t) {
     if (t >= C0 && t < C1 + 0.5) koerperZeichnen(ctx, sz, t);
     if (t >= ab.zusammen[0] && t < fotoAb) zusammensetzen(ctx, sz, t);
     if (bewegt) ctx.restore();
+    // kommt «Fragmente» nach einem anderen Workflow, löst sich das stehende Foto erst in die Linien auf
+    if (sz.foto && sz.zeit.fragmente && abschnitte[0].art !== "fragmente" && t < L0 + 1.6) {
+      ctx.globalAlpha = 1 - sanft(anteil(t, L0, L0 + 1.6)); ctx.drawImage(sz.foto, 0, 0, B, H); ctx.globalAlpha = 1;
+    }
     // das Foto rastet ein (mit einem Weissblitz) und steht
     if (t >= fotoAb) {
       fotoZeichnen(ctx, sz, t);
@@ -669,15 +711,7 @@ export function bild(ctx, sz, t) {
         ctx.globalAlpha = 1;
       }
     }
-    if (ab.bildAus) {
-      const weg = ausblenden(anteil(t, ab.bildAus[0], ab.bildAus[1]));
-      if (weg > 0) { ctx.globalAlpha = weg; ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H); ctx.globalAlpha = 1; }
-    }
-    if (sz.beschriftung) {
-      const sicht = anteil(t, ab.vor[0] + 0.1, ab.vor[1] + 0.3) * (1 - anteil(t, ab.stehen[0] - 0.1, ab.stehen[0] + 0.6));
-      if (sicht > 0) beschriftung(ctx, sz, t, sicht);
-    }
-    bildfehler(ctx, sz, t);
+    rahmen(ctx, sz, t);
   }
   // das Signet von ornament.cloud (wie in Sketchory), bei breiten Formaten in der Mitte
   if (ab.signet && t >= ab.signet[0] && t < ab.signetAus[1]) {
@@ -690,5 +724,10 @@ export function bild(ctx, sz, t) {
   }
 }
 
-/** Zeitpunkt für das Standbild, wenn nichts anderes gewählt ist: das fertige farbige Mosaik, kurz bevor die Splitter kommen */
-export const standbildZeit = (sz) => sz.zeit.ab.zusammen[0] - 0.05;
+/** Zeitpunkt für das Standbild, wenn nichts anderes gewählt ist: das fertige farbige Mosaik, kurz bevor die Montage beginnt; ohne «Fragmente» die Mitte
+ *  des ersten räumlichen Workflows */
+export const standbildZeit = (sz) => {
+  if (sz.zeit.fragmente) return sz.zeit.ab.zusammen[0] - 0.05;
+  const a = sz.zeit.abschnitte[0];
+  return a.von + 0.55 * (a.bis - a.von);
+};
