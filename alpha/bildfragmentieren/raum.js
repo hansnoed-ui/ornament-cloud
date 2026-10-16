@@ -5,8 +5,8 @@
 //             das Foto ist nur durch das Glas zu sehen (Rückmeldung: «die Rolle der kleinen Körper ist unklar») · 02 Bruch – der Körper wächst und
 //             zerspringt in Voronoi-Scherben, die in die Tiefe fliegen · 03 Montage – die Scherben kehren eine nach der anderen zurück und rasten ein,
 //             bis das Foto steht («das Endbild setzt sich nicht zusammen, sondern erscheint einfach»). Zustandslos.
-//   Echo:     01 Konturen – feine Höhenlinien des Fotos (immer einen Bildpunkt breit; «solche Konturen müssen feingliedriger sein»), Tonstufe um
-//             Tonstufe · 02 Echo – Rückkopplung wie in TouchDesigner (Zoom, Drehung, Farbdrehung, Spuren) · 03 Kaleidoskop · 04 Bild – das Kaleidoskop
+//   Echo:     01 Konturen – feine, helle Höhenlinien des Fotos (immer einen Bildpunkt breit, einfarbig; «solche Konturen müssen feingliedriger sein»,
+//             «die Farben der Konturen gefallen mir nicht, dieses Orange»), kurz · 02 Echo – Rückkopplung wie in TouchDesigner (Zoom, Drehung, Farbdrehung, Spuren) · 03 Kaleidoskop · 04 Bild – das Kaleidoskop
 //             faltet sich auf, das Foto baut sich Tonstufe um Tonstufe auf. Die Rückkopplung hängt an den Bildern davor: sie wird in festen Schritten
 //             (ein Schritt je Filmbild) von vorn nachgerechnet, darum ist jedes Bild beim Spulen und im Video dasselbe.
 // Herkunft: Rezepte 3, 4 und 5 des Skills .claude/skills/threejs-spektakel (dort mit Beispielen und Prüfskript).
@@ -311,7 +311,7 @@ function kristall(renderer, textur, B, H, grund) {
   };
 }
 
-// ——— Echo (12 s: Konturen 0–3 · Echo 3–6 · Kaleidoskop 6–8,6 · Bild 8,6–12) ———
+// ——— Echo (11,8 s: Konturen 0–1,6 · Echo 1,6–5,6 · Kaleidoskop 5,6–8,4 · Bild 8,4–11,8) ———
 /** Höhenlinien: so viele Tonstufen, dass die Linien rund 7 % der Fläche decken – unruhige Bilder bekommen weniger, sonst wachsen sie zu (6 bis 18) */
 const stufenFuer = (gefaelle) => Math.round(Math.min(18, Math.max(6, 0.07 / (1.6 * Math.max(gefaelle, 1e-4)))));
 /** Helligkeit des Fotos, leicht geglättet (für feine, ruhige Höhenlinien), als einkanalige Textur in halber Grösse */
@@ -375,8 +375,7 @@ function echo(renderer, textur, B, H, grund, px) {
         vec3 alt = max(farbdreh(texture2D(uVorher, q).rgb, uFarbdreh), 0.0) * uZerfall;
         float stufe; float l = linien(vUv, stufe);
         float sicht = smoothstep(stufe / uStufen - 0.06, stufe / uStufen, uZeigen);                  // Tonstufe um Tonstufe, von dunkel nach hell
-        vec3 foto = texture2D(uFoto, vUv).rgb;
-        vec3 farbe = mix(vec3(0.85, 0.9, 1.0), foto / max(0.25, max(foto.r, max(foto.g, foto.b))), 0.75) * 0.8;   // Farbe des Fotos, gleich hell
+        vec3 farbe = vec3(0.78, 0.8, 0.84);                                                         // einfarbig hell, ein Hauch kühl
         gl_FragColor = vec4(clamp(max(alt, farbe * l * sicht * uEin), 0.0, 1.0), 1.0);              // Maximum: keine Aufschaukelung
       }`,
   });
@@ -405,16 +404,16 @@ function echo(renderer, textur, B, H, grund, px) {
 
   const regler = (t) => {
     const u = rueck.uniforms;
-    const echoAn = weich(anteil(t, 3, 4)) * (1 - weich(anteil(t, 8.6, 10.2)));
+    const echoAn = weich(anteil(t, 0.9, 2.0)) * (1 - weich(anteil(t, 8.4, 10)));   // die Bewegung setzt früh ein
     u.uZeit.value = t;
-    u.uZeigen.value = 1.08 * anteil(t, 0.2, 2.8);
-    u.uEin.value = (1 - 0.35 * weich(anteil(t, 3, 4))) * (1 - weich(anteil(t, 9.2, 10.4)));
+    u.uZeigen.value = 1.08 * anteil(t, 0.05, 1.5);
+    u.uEin.value = (1 - 0.35 * weich(anteil(t, 1.6, 2.6))) * (1 - weich(anteil(t, 9, 10.2)));
     u.uZerfall.value = 0.5 + 0.34 * echoAn;                                                        // Konturen ohne Spur, im Echo Spuren, die abklingen, bevor sie zuwachsen
     u.uZoom.value = 1 + 0.02 * echoAn * (0.75 + 0.25 * Math.sin(t * 1.1));   // weit genug je Bild: die Spuren bleiben einzelne feine Linien
     u.uDreh.value = 0.004 * echoAn * Math.sin(t * 0.6 + 0.4);
     u.uWirbel.value = echoAn;
-    u.uFarbdreh.value = 0.03 * echoAn;
-    u.uKaleido.value = weich(anteil(t, 6, 6.9)) * (1 - inOut(anteil(t, 8.6, 10)));
+    u.uFarbdreh.value = 0;                                                                        // keine Farbdrehung: die Spuren bleiben einfarbig
+    u.uKaleido.value = weich(anteil(t, 5.6, 6.5)) * (1 - inOut(anteil(t, 8.4, 9.8)));
     return echoAn;
   };
   let n = -1, gross = [B, H], stand = "", aktiv = 0;
@@ -431,7 +430,7 @@ function echo(renderer, textur, B, H, grund, px) {
     [lesen, schreiben] = [schreiben, lesen];
   };
   return {
-    dauer: 12, looks: [look],
+    dauer: 11.8, looks: [look],
     groesse(w, h) {
       if (gross[0] === w && gross[1] === h) return;
       gross = [w, h]; lesen.setSize(w, h); schreiben.setSize(w, h); n = -1;                    // andere Grösse: von vorn rechnen
@@ -439,15 +438,15 @@ function echo(renderer, textur, B, H, grund, px) {
     /** t: Zeit im Ablauf; k, N: Bild k von N im Abschnitt (die Schritte der Rückkopplung zählen in Filmbildern) */
     bild(t, k, N) {
       if (k < n || n < 0) { leeren(); n = -1; }
-      while (n < k) { n++; schritt((n / Math.max(1, N)) * 12); }
+      while (n < k) { n++; schritt((n / Math.max(1, N)) * 11.8); }
       aktiv = regler(t);
-      const aufbau = inOut(anteil(t, 8.8, 11.8));
+      const aufbau = inOut(anteil(t, 8.6, 11.6));
       zeige.uniforms.uSchleife.value = lesen.texture;
-      zeige.uniforms.uAufbau.value = t >= 11.8 ? 1 : aufbau;
+      zeige.uniforms.uAufbau.value = t >= 11.6 ? 1 : aufbau;
       const kal = rueck.uniforms.uKaleido.value;
-      stand = t < 3 ? `höhenlinien ${Math.round(Math.min(1, rueck.uniforms.uZeigen.value) * STUFEN)} / ${STUFEN}`
-        : t < 6 ? `rückkopplung ${Math.round(rueck.uniforms.uZerfall.value * 100)} % · zoom ${(rueck.uniforms.uZoom.value * 100 - 100).toFixed(1)} %`
-        : t < 8.6 ? `spiegel 6 · ${Math.round(kal * 100)} %` : `tonstufen ${Math.round(Math.min(1, aufbau * 1.12) * STUFEN)} / ${STUFEN}`;
+      stand = t < 1.6 ? `höhenlinien ${Math.round(Math.min(1, rueck.uniforms.uZeigen.value) * STUFEN)} / ${STUFEN}`
+        : t < 5.6 ? `rückkopplung ${Math.round(rueck.uniforms.uZerfall.value * 100)} % · zoom ${(rueck.uniforms.uZoom.value * 100 - 100).toFixed(1)} %`
+        : t < 8.4 ? `spiegel 6 · ${Math.round(kal * 100)} %` : `tonstufen ${Math.round(Math.min(1, aufbau * 1.12) * STUFEN)} / ${STUFEN}`;
       look.render(Math.max(aktiv, 0.4 * (1 - aufbau)), 0.25, 0.0015);
     },
     zaehler() { return stand; },
@@ -465,7 +464,7 @@ function glanzSignet(renderer, B, H, akzent) {
   const szene = new THREE.Scene(), quad = new THREE.PlaneGeometry(2, 2);
   szene.add(new THREE.Mesh(quad, glas.mat));
   const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const look = filmlook(renderer, szene, ortho, { radius: 0.55, schwelle: 0.35 });
+  const look = filmlook(renderer, szene, ortho, { radius: 0.12, schwelle: 0.6 });   // knapper Schein, kein Schleier (Rückmeldung: «das Signet ist zu milchig»)
   const m4 = new THREE.Matrix4(), eu = new THREE.Euler(), welt = (2 * TANH * KZ) / H;
   return {
     looks: [look], leinwand,
@@ -481,7 +480,7 @@ function glanzSignet(renderer, B, H, akzent) {
       glas.u.uGroesse.value[0] = punkt.sicht * punkt.radius * 2.6 * welt;
       glas.u.uDreh.value[0].setFromMatrix4(m4.makeRotationFromEuler(eu.set(f * 0.05, f * 0.07, f * 0.02)));
       form((f / 60) % 2, glas.u.uRadien.value[0]);
-      look.render(1, hell ? 0.25 : 0.8, 0.0025);
+      look.render(1, hell ? 0.15 : 0.45, 0.0015);
     },
     entsorgen() { tex.dispose(); quad.dispose(); glas.mat.dispose(); look.entsorgen(); },
   };

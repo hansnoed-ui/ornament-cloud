@@ -29,7 +29,7 @@ export const PHASEN = [["linien", "Linien"], ["formen", "Formen"], ["farben", "F
 export const ABLAEUFE = {
   fragmente: { titel: "Fragmente", phasen: [["linien", "Linien", 4.4], ["formen", "Formen", 3.6], ["farben", "Farben", 3.0], ["zusammen", "Bild", 4.2]] },
   kristall: { titel: "Kristall", raum: true, phasen: [["koerper", "Körper", 3.6], ["bruch", "Bruch", 3.2], ["montage", "Montage", 4.2]] },
-  echo: { titel: "Echo", raum: true, phasen: [["konturen", "Konturen", 3.0], ["echo", "Echo", 3.0], ["kaleidoskop", "Kaleidoskop", 2.6], ["aufbau", "Bild", 3.4]] },
+  echo: { titel: "Echo", raum: true, phasen: [["konturen", "Konturen", 1.6], ["echo", "Echo", 4.0], ["kaleidoskop", "Kaleidoskop", 2.8], ["aufbau", "Bild", 3.4]] },   // Konturen kurz (Rückmeldung: «die Konturen alleine weniger»)
 };
 /** ein bekannter Ablauf, sonst «Fragmente» */
 export const ablaufName = (a) => (Object.hasOwn(ABLAEUFE, String(a)) ? String(a) : "fragmente");
