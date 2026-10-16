@@ -3,7 +3,7 @@
 // Bloom kommt als Knoten in die RenderPipeline (vor r183 hiess sie PostProcessing). Ohne WebGPU (oder mit ?webgl) fällt der
 // WebGPURenderer selbst auf WebGL 2 zurück – derselbe Code läuft dann über Transform Feedback.
 import * as THREE from "three/webgpu";
-import { Fn, instancedArray, instanceIndex, uniform, vec3, vec4, float, texture, mx_noise_vec3, length, normalize, mix, smoothstep, uv, max, exp, dot, sqrt, pass } from "three/tsl";
+import { Fn, instancedArray, instanceIndex, uniform, vec3, vec4, float, texture, mx_noise_vec3, length, normalize, mix, smoothstep, uv, max, exp, dot, sqrt, pow, reflect, pass } from "three/tsl";
 import { bloom } from "three/addons/tsl/display/BloomNode.js";
 import { starte, PARAM, TEST, FPS, simulation, anteil, inOut, weich } from "./gemeinsam.js";
 
@@ -67,8 +67,13 @@ starte("tsl", ({ renderer, foto, B, H }) => {
   mat.positionNode = mix(lage.toAttribute(), heim.toAttribute(), uEinrasten);
   const geschw = length(tempo.toAttribute());
   const farbe = texture(foto.textur, fotoUv.toAttribute()).rgb;
-  mat.colorNode = vec4(farbe.mul(geschw.mul(0.25).add(1)).add(vec3(1, 0.45, 0.15).mul(smoothstep(1.5, 5, geschw).mul(0.25))), 1);
-  mat.opacityNode = smoothstep(0.5, 0.15, length(uv().sub(0.5))).mul(float(1).sub(uEinrasten));
+  // jedes Teilchen eine glänzende Kugel: Licht von links oben, dunkler Rand, Glanzpunkt (Rückmeldung: «zu wenig kontrastreich und glänzend»)
+  const q = uv().mul(2).sub(1), r2 = dot(q, q), n = vec3(q.x, q.y, sqrt(max(float(0), float(1).sub(r2))));
+  const licht = normalize(vec3(-0.45, 0.6, 0.66));
+  const diff = max(dot(n, licht), 0), spiegel = pow(max(dot(reflect(licht.negate(), n), vec3(0, 0, 1)), 0), 36);
+  const grund = farbe.mul(geschw.mul(0.15).add(1)).add(vec3(1, 0.45, 0.15).mul(smoothstep(1.5, 5, geschw).mul(0.2)));
+  mat.colorNode = vec4(grund.mul(diff.mul(0.95).add(0.18)).mul(n.z.mul(0.45).add(0.55)).add(vec3(1, 0.97, 0.92).mul(spiegel.mul(1.1))), 1);
+  mat.opacityNode = smoothstep(1, 0.86, r2).mul(float(1).sub(uEinrasten));
   mat.scaleNode = float((2 / S) * 1.9);
   const teilchen = new THREE.Sprite(mat);
   teilchen.count = N;

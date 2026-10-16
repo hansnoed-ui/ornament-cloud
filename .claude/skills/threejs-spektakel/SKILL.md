@@ -64,7 +64,7 @@ Zeitkurven: `anteil(t, a, b)` gibt 0..1, dazu `weich`, `inOut`. Eine Phase sieht
 - Ein Punkt je Rasterzelle (2 px, auf dem Telefon gröber). Attribute: `position` (Heimat), `aUv`, `aZufall`.
 - Im Vertex-Shader: Farbe aus der Foto-Textur, Startzeit je Teilchen. Helle Stellen lösen sich zuerst: `start = 0.6·(0.55·(1−hell^0.6) + 0.45·zufall)`.
 - Bewegung: erst Relief nach Helligkeit (z), dann **zwei Schritte durch ein Curl-Feld** und Ausdehnung. Mehr als zwei Schritte kosten auf dem Telefon zu viel.
-- Punkte im Foto quadratisch und 1,25-fach überlappend (sonst Lücken), gelöst rund und weich.
+- Punkte im Foto quadratisch und 1,25-fach überlappend (sonst Lücken), gelöst als **glänzende Kugel** (siehe «Teilchen als Kugeln»).
 - Die Rückkehr läuft mit weiterlaufender Zeit im Feld. Darum ist sie ein anderer Weg und kein Rückwärtsspulen.
 - Fallstrick: Helle Teilchen × Bloom ergeben weissen Brei. Aufhellen nur `1 + 1.8·los·hell`, Bloom-Stärke an `auf` koppeln.
 
@@ -93,7 +93,9 @@ Zeitkurven: `anteil(t, a, b)` gibt 0..1, dazu `weich`, `inOut`. Eine Phase sieht
   - Einspeisen der Sobel-Kanten des Fotos
 - **Maximum statt Summe:** `max(alt, kante·ein)`. Mit `alt + kante` schaukelt sich die Schleife auf das 1/(1 − Zerfall)-fache auf, und nach 2 s ist alles weiss (gemessen).
 - **Das Foto nie in die Schleife:** Es wird nur in der Anzeige überblendet.
-- Nur deutliche Kanten einspeisen (`smoothstep(0.25, 0.8, |∇|)`). Sonst füllt ein kantenreiches Bild (feine Muster) die Schleife sofort.
+- **Feine Höhenlinien statt Sobel einspeisen** (Rückmeldung: «solche Konturen müssen feingliedriger sein»): Helligkeit aus der Mipmap (`textureLod(…, 2.0)`), Linien über `fwidth`, also immer etwa einen Bildpunkt breit. Sobel-Kanten waren je nach Kontrast zwei bis vier Bildpunkte breit.
+- Zoom je Bild gross genug (≥ 1,5 %) und Zerfall um 0,85: Dann bleiben die Spuren einzelne Linien, statt zu einem milchigen Brei zuzuwachsen. Linien höchstens 0,8 hell, Ergebnis auf 1 begrenzen.
+- Die ausgearbeitete Fassung steht in Bildfragmentieren (Ablauf «Echo»), mit der Zahl der Höhenlinien nach der Unruhe des Fotos.
 
 ### 5 Glas – exakte Brechung ohne Raymarching (`glas.js`)
 - Ein konvexes Polyeder ist der Schnitt von Platten |n·p| ≤ r: Dodekaeder 6 Normalen, Ikosaeder 10.
@@ -115,6 +117,7 @@ Zeitkurven: `anteil(t, a, b)` gibt 0..1, dazu `weich`, `inOut`. Eine Phase sieht
   - **weiche Grenze**, sonst fliegen die Teilchen aus dem Bild (gemessen)
 - Zwei Teilschritte je Bild. Die Punktgrösse ist nach oben begrenzt, sonst entstehen nahe der Kamera Riesenflecken.
 - `zuruecksetzen`: `gpu.renderTexture(start, rt)` für beide Render-Targets jeder Variable.
+- **Teilchen als Kugeln** (Rückmeldung zu weichen Punkten: «zu wenig kontrastreich und glänzend»): im Fragment-Shader aus `gl_PointCoord` die Normale einer Kugel `vec3(p, sqrt(1 − r²))`. Daraus Licht von links oben (`0.18 + 0.95·diff`), dunkler Rand (`0.55 + 0.45·n.z`) und ein weisser Glanzpunkt (`pow(…, 36)`); der Rand ist hart mit nur schmaler Kante. In TSL dasselbe mit `uv()` (siehe `tsl.js`).
 - **Curl oder Rauschfeld:** Curl ist divergenzfrei und verteilt gleichmässig (Rauch, Schnee). Ein normales Rauschfeld lässt Teilchen zu Bändern und Tüchern zusammenlaufen. Das wirkt viel stärker (Rezept 7).
 
 ### 7 WebGPU mit TSL (`tsl.js`)

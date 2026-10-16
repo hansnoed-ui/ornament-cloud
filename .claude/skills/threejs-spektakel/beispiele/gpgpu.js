@@ -90,7 +90,16 @@ starte("gpgpu", ({ renderer, foto, B, H }) => {
       }`,
     fragmentShader: /* glsl */ `
       varying vec3 vFarbe; varying float vAlpha;
-      void main() { float d = length(gl_PointCoord - 0.5); float a = smoothstep(0.5, 0.15, d) * vAlpha; if (a < 0.01) discard; gl_FragColor = vec4(vFarbe, a); }`,
+      void main() {
+        vec2 p = gl_PointCoord * 2.0 - 1.0; p.y = -p.y;
+        float r2 = dot(p, p);
+        if (r2 > 1.0) discard;
+        vec3 n = vec3(p, sqrt(1.0 - r2)), l = normalize(vec3(-0.45, 0.6, 0.66));
+        float diff = max(dot(n, l), 0.0), glanz = pow(max(dot(reflect(-l, n), vec3(0.0, 0.0, 1.0)), 0.0), 36.0);
+        vec3 kugel = vFarbe * (0.18 + 0.95 * diff) * (0.55 + 0.45 * n.z) + vec3(1.0, 0.97, 0.92) * glanz * 1.1;   // Kugel: Licht, dunkler Rand, Glanzpunkt
+        float kante = 1.0 - smoothstep(0.86, 1.0, r2);
+        gl_FragColor = vec4(kugel, kante * vAlpha);
+      }`,
     transparent: true, depthWrite: false,
   }));
   punkte.frustumCulled = false;

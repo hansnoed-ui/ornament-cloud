@@ -53,17 +53,20 @@ starte("partikel", ({ renderer, foto, B, H }) => {
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
         gl_Position = projectionMatrix * mv;
         gl_PointSize = max(1.0, uPunkt * (1.0 - 0.55 * los) * uPixelJeEinheit / -mv.z);
-        vFarbe = farbe * (1.0 + 1.8 * los * hell);                        // gelöste helle Teilchen leuchten (→ Bloom)
+        vFarbe = farbe * (1.0 + 0.6 * los * hell);                        // geloeste helle Teilchen etwas heller; der Glanz kommt von der Kugel
         vLos = los;
       }`,
     fragmentShader: /* glsl */ `
       varying vec3 vFarbe; varying float vLos;
       void main() {
-        float d = length(gl_PointCoord - 0.5);
-        float rund = smoothstep(0.5, 0.2, d);
-        float a = mix(1.0, rund, smoothstep(0.0, 0.3, vLos));             // im Foto quadratisch und deckend, gelöst rund und weich
-        if (a < 0.01) discard;
-        gl_FragColor = vec4(vFarbe, a);
+        float geloest = smoothstep(0.0, 0.3, vLos);                         // im Foto quadratisch und flach, geloest eine glänzende Kugel
+        vec2 p = gl_PointCoord * 2.0 - 1.0; p.y = -p.y;
+        float r2 = dot(p, p);
+        if (geloest > 0.5 && r2 > 1.0) discard;
+        vec3 n = vec3(p, sqrt(max(0.0, 1.0 - r2))), l = normalize(vec3(-0.45, 0.6, 0.66));
+        float diff = max(dot(n, l), 0.0), glanz = pow(max(dot(reflect(-l, n), vec3(0.0, 0.0, 1.0)), 0.0), 36.0);
+        vec3 kugel = vFarbe * (0.18 + 0.95 * diff) * (0.55 + 0.45 * n.z) + vec3(1.0, 0.97, 0.92) * glanz * 1.1;
+        gl_FragColor = vec4(mix(vFarbe, kugel, geloest), mix(1.0, 1.0 - smoothstep(0.86, 1.0, r2), geloest));
       }`,
     transparent: true, depthWrite: false,
   });

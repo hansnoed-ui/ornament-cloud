@@ -74,7 +74,11 @@ for (const name of auswahl) {
     if (BILD) await page.route((url) => url.pathname === "/__testbild", (route) => route.fulfill({ status: 200, contentType: "image/jpeg", body: readFileSync(BILD) }));
     const bild = BILD ? "/__testbild" : "/alpha/bildfragmentieren/beispiel.jpg";
     await page.goto(`http://localhost:${port}/.claude/skills/threejs-spektakel/beispiele/${name}.html?${voll ? "" : "test&"}bild=${bild}`);
-    await page.waitForFunction(() => window.__film?.bereit || document.querySelector(".meldung.fehler"), null, { timeout: 180_000 });
+    // fertig, Fehlermeldung auf der Seite oder ein Fehler beim Laden der Module (dann gibt es keine Meldung)
+    await Promise.race([
+      page.waitForFunction(() => window.__film?.bereit || document.querySelector(".meldung.fehler"), null, { timeout: 180_000 }),
+      new Promise((_, nein) => page.once("pageerror", (e) => nein(new Error(`Fehler beim Laden: ${e.message}`)))),
+    ]);
     assert.deepEqual(fehler, [], "Fehler beim Laden");
     const dauer = await page.evaluate(() => window.__film.dauer);
     assert.ok(dauer > 3 && dauer < 60, `Dauer ${dauer}`);

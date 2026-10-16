@@ -15,7 +15,7 @@ starte("feedback", ({ renderer, foto, B, H }) => {
   const rueck = new THREE.ShaderMaterial({
     uniforms: {
       uVorher: { value: null }, uFoto: { value: foto.textur }, uTexel: { value: new THREE.Vector2(1 / B, 1 / H) }, uSeiten: { value: B / H },
-      uZeit: { value: 0 }, uZoom: { value: 1 }, uDreh: { value: 0 }, uWirbel: { value: 0 }, uZerfall: { value: 0.93 },
+      uZeit: { value: 0 }, uZoom: { value: 1 }, uDreh: { value: 0 }, uWirbel: { value: 0 }, uZerfall: { value: 0.86 },
       uFarbdreh: { value: 0 }, uKaleido: { value: 0 }, uEinspeisen: { value: 0 },
     },
     vertexShader: /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
@@ -30,7 +30,7 @@ starte("feedback", ({ renderer, foto, B, H }) => {
         y.yz = mat2(cw, -sw, sw, cw) * y.yz;
         return zuRGB * y;
       }
-      float hell(vec2 uv) { return dot(texture2D(uFoto, uv).rgb, vec3(0.2126, 0.7152, 0.0722)); }
+      float hell(vec2 uv) { return dot(textureLod(uFoto, uv, 2.0).rgb, vec3(0.2126, 0.7152, 0.0722)); }   // aus der Mipmap: ruhig
       void main() {
         vec2 p = vUv - 0.5; p.x *= uSeiten;
         float a = atan(p.y, p.x), r = length(p), seg = 6.2831853 / 6.0;
@@ -41,14 +41,13 @@ starte("feedback", ({ renderer, foto, B, H }) => {
         q += uWirbel * 0.006 * vec2(snoise(vec3(q * 3.0, uZeit * 0.25)), snoise(vec3(q * 3.0 + 7.7, uZeit * 0.25)));
         q.x /= uSeiten; q += 0.5;
         vec3 alt = farbdreh(texture2D(uVorher, q).rgb, uFarbdreh) * uZerfall;
-        // Sobel auf dem Foto: farbige Kanten speisen die Schleife
-        float tl = hell(vUv + uTexel * vec2(-1, 1)), t = hell(vUv + uTexel * vec2(0, 1)), tr = hell(vUv + uTexel * vec2(1, 1));
-        float l = hell(vUv + uTexel * vec2(-1, 0)), rr = hell(vUv + uTexel * vec2(1, 0));
-        float bl = hell(vUv + uTexel * vec2(-1, -1)), b = hell(vUv + uTexel * vec2(0, -1)), br = hell(vUv + uTexel * vec2(1, -1));
-        float gx = tr + 2.0 * rr + br - tl - 2.0 * l - bl, gy = tl + 2.0 * t + tr - bl - 2.0 * b - br;
+        // feine Höhenlinien des Fotos speisen die Schleife: über fwidth immer etwa einen Bildpunkt breit (Rückmeldung zum Sobel davor:
+        // «solche Konturen müssen feingliedriger sein»); die Kanten nach Sobel waren je nach Kontrast zwei bis vier Bildpunkte breit
+        float h = hell(vUv) * 14.0;
+        float linie = 1.0 - smoothstep(0.35, 1.1, abs(fract(h - 0.5) - 0.5) / max(fwidth(h), 1e-4));
         vec3 fotoFarbe = texture2D(uFoto, vUv).rgb;
-        vec3 kante = (0.15 + 0.85 * fotoFarbe) * smoothstep(0.25, 0.8, length(vec2(gx, gy)));   // nur deutliche Kanten, sonst füllt sich das Bild
-        vec3 neu = clamp(max(alt, kante * uEinspeisen), 0.0, 3.0);              // Maximum, nicht Summe: sonst schaukelt sich die Schleife auf (1 / (1 − Zerfall))
+        vec3 kante = mix(vec3(0.85, 0.9, 1.0), fotoFarbe / max(0.25, max(fotoFarbe.r, max(fotoFarbe.g, fotoFarbe.b))), 0.75) * 0.8 * linie;
+        vec3 neu = clamp(max(alt, kante * uEinspeisen), 0.0, 1.0);              // Maximum, nicht Summe: sonst schaukelt sich die Schleife auf (1 / (1 − Zerfall))
         gl_FragColor = vec4(neu, 1.0);                                      // das Foto selbst kommt nie in die Schleife, nur in die Anzeige
       }`,
     depthTest: false, depthWrite: false,
@@ -71,7 +70,7 @@ starte("feedback", ({ renderer, foto, B, H }) => {
     const u = rueck.uniforms;
     u.uZeit.value = t;
     u.uEinspeisen.value = voll;
-    u.uZoom.value = 1 + 0.004 + 0.014 * voll * (0.6 + 0.4 * Math.sin(t * 0.9));
+    u.uZoom.value = 1 + 0.004 + 0.016 * voll * (0.75 + 0.25 * Math.sin(t * 0.9));   // weit genug je Bild: die Spuren bleiben einzelne feine Linien
     u.uDreh.value = 0.006 * voll * (t < 6 ? 1 : -1) * (1 - Math.exp(-Math.abs(t - 6) * 2));   // dreht bei 6 s die Richtung
     u.uWirbel.value = voll;
     u.uFarbdreh.value = 0.025 * voll;
