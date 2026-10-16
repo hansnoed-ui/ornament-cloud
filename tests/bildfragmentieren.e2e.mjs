@@ -259,7 +259,7 @@ const raumMessen = (page, zeiten, mitRaum = true) => page.evaluate(async ([zeite
 }, [zeiten, mitRaum]);
 const verschieden = (a, b) => a.summe.reduce((s, v, i) => s + Math.abs(v - b.summe[i]), 0) / a.summe.length;
 
-await check("Abläufe Kristall und Echo: beginnen im Dunkeln, enden exakt beim Foto (three.js lokal, erst auf Wahl); Echo deterministisch; leuchtendes Signet", async () => {
+await check("Abläufe Kristall und Echo: beginnen im Dunkeln, enden exakt beim Foto (three.js lokal, erst auf Wahl); Echo deterministisch; im Signet leuchtet der Punkt", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await laden(page);
   await bereit(page);
@@ -276,9 +276,10 @@ await check("Abläufe Kristall und Echo: beginnen im Dunkeln, enden exakt beim F
   assert.ok(bruch.foto > 15 && montage.foto > 3, `Bruch und Montage zeigen noch nicht das Foto (${bruch.foto}, ${montage.foto})`);
   assert.ok(montage.foto < bruch.foto, "in der Montage setzt sich das Foto zusammen");
   assert.ok(ende.foto < 3 && stehen.foto < 4, `endet exakt beim Foto (${ende.foto}, ${stehen.foto})`);
-  // Signet: die leuchtende Fassung unterscheidet sich von der einfachen
+  // Signet: nur der laufende Punkt leuchtet (Glaskristall, Halo, Bokeh); Linie und Schrift bleiben wie im einfachen Signet, nichts überblendet
   const [glanz] = await raumMessen(page, ["z.ab.signetStehen[0] + 0.2"]), [einfach] = await raumMessen(page, ["z.ab.signetStehen[0] + 0.2"], false);
-  assert.ok(verschieden(glanz, einfach) > 1, `leuchtendes Signet (${verschieden(glanz, einfach)})`);
+  const unterschied = verschieden(glanz, einfach);
+  assert.ok(unterschied > 0.2 && unterschied < 3, `leuchtender Punkt, sonst wie das einfache Signet (${unterschied})`);
   // Standbild mitten im Bruch, in voller Grösse
   await page.click("#zu-bruch");
   const [png] = await Promise.all([page.waitForEvent("download"), page.click("#png")]);
