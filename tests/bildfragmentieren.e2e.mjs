@@ -259,7 +259,7 @@ const raumMessen = (page, zeiten, mitRaum = true) => page.evaluate(async ([zeite
 }, [zeiten, mitRaum]);
 const verschieden = (a, b) => a.summe.reduce((s, v, i) => s + Math.abs(v - b.summe[i]), 0) / a.summe.length;
 
-await check("Abläufe Kristall und Echo: beginnen im Dunkeln, enden exakt beim Foto (three.js lokal, erst auf Wahl); Echo deterministisch; im Signet leuchtet der Punkt", async () => {
+await check("Abläufe Kristall, Echo und Strom: beginnen im Dunkeln, enden exakt beim Foto (three.js lokal, erst auf Wahl); Echo deterministisch; im Signet leuchtet der Punkt", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await laden(page);
   await bereit(page);
@@ -294,9 +294,34 @@ await check("Abläufe Kristall und Echo: beginnen im Dunkeln, enden exakt beim F
   assert.ok(e0.dunkel > 0.9 && eKonturen.dunkel > 0.4, `beginnt im Dunkeln, feine Linien (${e0.dunkel}, ${eKonturen.dunkel})`);
   assert.ok(verschieden(eMitte, eMitte2) < 1, `nach einem Sprung zurück dasselbe Bild (${verschieden(eMitte, eMitte2)})`);
   assert.ok(eMitte.foto > 15 && eEnde.foto < 3, `endet exakt beim Foto (${eMitte.foto}, ${eEnde.foto})`);
+  // Strom: Teilchen, deterministisch beim Springen, auf Weiss nicht überstrahlt
+  await page.click('[data-ablauf="strom"]');
+  await page.waitForFunction(() => window.__bildfragmentieren.sz?.raum?.art === "strom", null, { timeout: 90_000 });
+  assert.deepEqual(await page.$$eval(".phasen button", (b) => b.map((x) => x.textContent)), ["01 Funken", "02 Strom", "03 Bild"]);
+  const [s0, sMitte, sFrueh, sMitte2, sEnde] = await raumMessen(page,
+    ["z.funken.von + 0.05", "z.strom.von + 0.5 * (z.strom.bis - z.strom.von)", "z.funken.von + 1", "z.strom.von + 0.5 * (z.strom.bis - z.strom.von)", "z.abschnitt.bis - 0.02"]);
+  assert.ok(s0.dunkel > 0.9, `beginnt im Dunkeln (${s0.dunkel})`);
+  assert.ok(verschieden(sMitte, sMitte2) < 1, `nach einem Sprung zurück dasselbe Bild (${verschieden(sMitte, sMitte2)})`);
+  assert.ok(sMitte.foto > 15 && sEnde.foto < 3, `endet exakt beim Foto (${sMitte.foto}, ${sEnde.foto})`);
   await page.reload();
-  assert.deepEqual(await page.$$eval("[data-ablauf]", (b) => b.map((x) => x.getAttribute("aria-pressed"))), ["false", "false", "true"], "die Wahl bleibt");
+  assert.deepEqual(await page.$$eval("[data-ablauf]", (b) => b.map((x) => x.getAttribute("aria-pressed"))), ["false", "false", "false", "true"], "die Wahl bleibt");
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
+await check("Weisser Grund: Kristall, Echo und Strom überstrahlen nicht (Rückmeldung vom 17. Oktober 2026: «auf weissem Grund fast alles weiss»)", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  await page.click('[data-grund="weiss"]');
+  await laden(page);
+  await bereit(page);
+  for (const art of ["kristall", "echo", "strom"]) {
+    await page.click(`[data-ablauf="${art}"]`);
+    await page.waitForFunction((a) => window.__bildfragmentieren.sz?.raum?.art === a, art, { timeout: 90_000 });
+    const [mitte] = await raumMessen(page, ["z.phasen[1].von + 0.5 * (z.phasen[1].bis - z.phasen[1].von)"]);
+    const weiss = mitte.summe.filter((v) => v > 245).length / mitte.summe.length;
+    assert.ok(weiss < 0.93 && mitte.foto > 10, `${art}: in der Mitte nicht fast alles weiss (${weiss.toFixed(2)}, ${mitte.foto.toFixed(1)})`);
+  }
+  assert.deepEqual(fehler, []);
   await ctx.close();
 });
 

@@ -17,6 +17,7 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -36,9 +37,10 @@ const SAUM = {
       gl_FragColor = vec4(texture2D(tDiffuse, vUv - s).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv + s).b, 1.0);
     }`,
 };
-function filmlook(renderer, szene, kamera, { radius = 0.4, schwelle = 0.7 } = {}) {
+/** hell: weisser Grund – dann kein Bloom (er überstrahlt sonst das ganze Bild); proben: Kantenglättung (MSAA) für Geometrie */
+function filmlook(renderer, szene, kamera, { radius = 0.4, schwelle = 0.7, hell = false, proben = 0 } = {}) {
   const g = renderer.getSize(new THREE.Vector2());
-  const composer = new EffectComposer(renderer);
+  const composer = proben ? new EffectComposer(renderer, new THREE.WebGLRenderTarget(g.x, g.y, { type: THREE.HalfFloatType, samples: proben })) : new EffectComposer(renderer);
   composer.setPixelRatio(1); composer.setSize(g.x, g.y);
   composer.addPass(new RenderPass(szene, kamera));
   const bloom = new UnrealBloomPass(g.clone(), 0, radius, schwelle);
@@ -47,7 +49,7 @@ function filmlook(renderer, szene, kamera, { radius = 0.4, schwelle = 0.7 } = {}
   return {
     groesse: g.clone(), bloom,
     render(aktiv, staerke, saumStaerke = 0.003) {
-      bloom.enabled = aktiv > 0.001 && staerke > 0; bloom.strength = staerke * aktiv;
+      bloom.enabled = !hell && aktiv > 0.001 && staerke > 0; bloom.strength = staerke * aktiv;
       saum.uniforms.uSaum.value = saumStaerke * aktiv;
       composer.render();
     },
@@ -74,13 +76,13 @@ function glasMaterial(K, textur, B, H) {
     uN: { value: NORMALEN }, uDreh: { value: Array.from({ length: K }, () => new THREE.Matrix3()) },
     uMitte: { value: Array.from({ length: K }, () => new THREE.Vector3()) }, uGroesse: { value: new Array(K).fill(0) },
     uRadien: { value: Array.from({ length: K }, () => new THREE.Vector2(1, 1.3)) }, uTon: { value: Array.from({ length: K }, () => new THREE.Color(1, 1, 1)) },
-    uAussen: { value: 0 }, uGrund: { value: new THREE.Color(0, 0, 0) }, uKante: { value: 0.8 }, uBlitz: { value: 0 },
+    uAussen: { value: 0 }, uGrund: { value: new THREE.Color(0, 0, 0) }, uKante: { value: 0.8 }, uBlitz: { value: 0 }, uKantenFarbe: { value: new THREE.Color(0.97, 0.97, 0.97) },
   };
   const mat = new THREE.ShaderMaterial({
     uniforms: u, depthTest: false, depthWrite: false, vertexShader: QUAD_VERTEX,
     fragmentShader: /* glsl */ `
       #define K ${K}
-      uniform sampler2D uFoto; uniform float uSeiten, uAussen, uKante, uBlitz; uniform vec2 uPixel; uniform int uProben; uniform vec3 uN[16], uGrund;
+      uniform sampler2D uFoto; uniform float uSeiten, uAussen, uKante, uBlitz; uniform vec2 uPixel; uniform int uProben; uniform vec3 uN[16], uGrund, uKantenFarbe;
       uniform mat3 uDreh[K]; uniform vec3 uMitte[K], uTon[K]; uniform float uGroesse[K]; uniform vec2 uRadien[K];
       varying vec2 vUv;
       const float TANH = ${TANH.toFixed(7)}, KZ = ${KZ.toFixed(1)}, EBENE = -1.0;
@@ -130,11 +132,11 @@ function glasMaterial(K, textur, B, H) {
         vec3 glanz = vec3(1.0, 0.95, 0.88) * pow(max(dot(rw, normalize(vec3(0.6, 0.8, 0.5))), 0.0), 220.0) * 5.0
                    + vec3(1.0, 0.55, 0.25) * pow(max(dot(rw, normalize(vec3(-0.7, -0.2, 0.6))), 0.0), 90.0) * 1.5;
         farbe = mix(farbe, umgebung, F) + glanz;
-        float w = 0.012 / max(g, 0.2);
-        farbe += mix(vec3(1.0, 0.97, 0.92), uTon[k], 0.35) * kante(e, rad, w) * uKante;
+        float w = 0.007 / max(g, 0.2);                                       // feine, scharfe Kanten in der Kantenfarbe (auf Weiss dunkel)
+        farbe = mix(farbe, uKantenFarbe, clamp(kante(e, rad, w) * uKante, 0.0, 1.0));
         float a2, b2; vec3 m2, m3; vec3 d1g = refract(ld, n0, 1.0 / 1.5);
         schneide(e + d1g * 1e-4, d1g, rad, a2, b2, m2, m3);
-        farbe += vec3(0.9, 0.95, 1.0) * kante(e + d1g * b2, rad, w) * 0.35 * uKante;
+        farbe = mix(farbe, uKantenFarbe, clamp(kante(e + d1g * b2, rad, w) * 0.35 * uKante, 0.0, 1.0));
         return farbe;
       }
       void main() {
@@ -198,17 +200,21 @@ function scherben(zellen, bw, dicke, zufall) {
 }
 
 // ——— Kristall (11 s bei Tempo «normal»: Körper 0–3,6 · Bruch 3,6–6,8 · Montage 6,8–11) ———
+// Glaskörper und Scherben sind dasselbe Material: klares Glas mit scharfen Spiegelkanten, schwarz-weiss (Rückmeldung: «alle Kanten schärfer, dieses
+// Rot geht gar nicht – Spiegel oder schwarz/weiss; die beiden Effekte spielen noch nicht gut zusammen»). Der Körper zerspringt an seinem Ort: die
+// Scherben liegen im Moment des Bruchs als Haufen von seiner Grösse in der Mitte und fliegen erst dann auseinander.
 const BRUCH = 4.3;   // in diesem Moment zerspringt der Körper
-function kristall(renderer, textur, B, H, grund) {
-  // Teil 1: Glaskörper vor dem Dunkeln (ein Hauptkörper, drei kleine Kristalle)
+function kristall(renderer, textur, B, H, grund, px, hell) {
+  // Teil 1: Glaskörper (ein Hauptkörper, drei kleine Kristalle, die zu ihm verschmelzen)
   const glas = glasMaterial(4, textur, B, H);
   glas.u.uGrund.value.copy(grund);
+  glas.u.uKantenFarbe.value.setScalar(hell ? 0.04 : 0.97);
   const glasSzene = new THREE.Scene(), quad = new THREE.PlaneGeometry(2, 2);
   glasSzene.add(new THREE.Mesh(quad, glas.mat));
   const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const glasLook = filmlook(renderer, glasSzene, ortho, { radius: 0.2, schwelle: 0.92 });   // kleiner Radius: kein Schleier über dem Dunkel
+  const glasLook = filmlook(renderer, glasSzene, ortho, { radius: 0.15, schwelle: 0.95, hell });
   const seiten = B / H, m4 = new THREE.Matrix4(), eu = new THREE.Euler();
-  const KLEIN = [[90, 2, [1, 0.62, 0.42]], [215, 0, [0.55, 0.8, 1]], [330, 1, [0.85, 1, 0.7]]];   // Herkunft (Grad), Form, Tönung
+  const KLEIN = [[90, 2], [215, 0], [330, 1]];   // Herkunft (Grad), Form
 
   // Teil 2: Scherben (Bruch und Montage)
   const szene = new THREE.Scene();
@@ -216,12 +222,13 @@ function kristall(renderer, textur, B, H, grund) {
   const abstand = 1 / Math.tan(THREE.MathUtils.degToRad(FOV / 2));
   const bw = (2 * B) / H, zufall = zufallAus(20261016);
   const gy = grob() ? 18 : 24, gx = Math.round((gy * B) / H), zellen = voronoi(bw, gx, gy, zufall);
-  const geo = scherben(zellen, bw, 0.05, zufall);
+  const geo = scherben(zellen, bw, 0.03, zufall);
+  const KOERPER_ENDE = 0.6;                                               // Grösse des Körpers im Moment des Bruchs
   const mat = new THREE.ShaderMaterial({
     uniforms: { uFoto: { value: textur }, uAus: { value: 0 }, uZurueck: { value: 0 }, uZeit: { value: 0 }, uLicht: { value: new THREE.Vector3() },
-      uAkzent: { value: new THREE.Color("#ff6a1f") }, uBlitz: { value: 0 } },
+      uBlitz: { value: 0 }, uHell: { value: hell ? 1 : 0 }, uKern: { value: KOERPER_ENDE * 1.1 } },
     vertexShader: /* glsl */ `
-      uniform float uAus, uZurueck, uZeit;
+      uniform float uAus, uZurueck, uZeit, uKern;
       attribute vec3 aMitte; attribute vec4 aZufall; attribute vec2 aUv; attribute float aSeite, aRang;
       varying vec2 vUv; varying vec3 vNormal, vSicht; varying float vSeite, vFlug, vRast;
       mat3 drehung(vec3 a, float w) {
@@ -231,70 +238,76 @@ function kristall(renderer, textur, B, H, grund) {
       }
       void main() {
         float r = length(aMitte.xy);
-        float aus = smoothstep(0.0, 1.0, (uAus - 0.25 * min(r / 1.3, 1.0) - 0.15 * aZufall.w) / 0.45);   // Bruch: von der Mitte aus, schnell
+        float aus = smoothstep(0.0, 1.0, (uAus - 0.2 * min(r / 1.3, 1.0) - 0.12 * aZufall.w) / 0.5);    // Bruch: von innen nach aussen
         float s2 = 0.84 * aRang;                                                                        // Montage: eine Scherbe nach der anderen
         float zur = smoothstep(s2, s2 + 0.16, uZurueck);
-        float f = aus * (1.0 - zur);
-        f = f * f * (3.0 - 2.0 * f);
+        zur = zur * zur * (3.0 - 2.0 * zur);
         vRast = step(s2 + 0.16, uZurueck) * exp(-(uZurueck - s2 - 0.16) * 45.0);                      // kurzes Aufleuchten beim Einrasten
+        // drei Lagen: der Haufen in der Mitte (so gross wie der Körper), der Flug, die Heimat im Foto
+        vec3 kern = uKern * pow(aZufall.w, 0.33) * normalize(aZufall.xyz - 0.5 + 1e-3) + vec3(0.0, 0.0, 0.15);   // eine Kugel wie der Körper
         vec3 richtung = vec3(aMitte.xy * 0.55 + (aZufall.xy - 0.5) * 0.6, 0.35 + 1.3 * aZufall.z);
-        vec3 mitte = aMitte + richtung * f * (0.7 + 1.1 * aZufall.w) + f * 0.08 * vec3(sin(uZeit * 0.9 + 6.28 * aZufall.x), cos(uZeit * 0.7 + 6.28 * aZufall.y), 0.0);
+        vec3 flug = aMitte + richtung * (0.7 + 1.1 * aZufall.w) + 0.08 * vec3(sin(uZeit * 0.9 + 6.28 * aZufall.x), cos(uZeit * 0.7 + 6.28 * aZufall.y), 0.0);
+        vec3 mitte = mix(mix(kern, flug, aus), aMitte, zur);
+        float gross = mix(mix(0.45, 1.0, aus), 1.0, zur);
+        float f = (1.0 - zur) * max(aus, 0.25);
         mat3 R = drehung(aZufall.xyz - 0.5 + 1e-3, f * (0.3 + 1.2 * aZufall.w));
-        vec4 mv = modelViewMatrix * vec4(R * (position - aMitte) + mitte, 1.0);
+        vec4 mv = modelViewMatrix * vec4(R * (position - aMitte) * gross + mitte, 1.0);
         gl_Position = projectionMatrix * mv;
-        vNormal = normalMatrix * (R * normal); vSicht = -mv.xyz; vUv = aUv; vSeite = aSeite; vFlug = f;
+        vNormal = normalMatrix * (R * normal); vSicht = -mv.xyz; vUv = aUv; vSeite = aSeite; vFlug = (1.0 - zur);
       }`,
     fragmentShader: /* glsl */ `
-      uniform sampler2D uFoto; uniform vec3 uLicht, uAkzent; uniform float uBlitz;
+      uniform sampler2D uFoto; uniform vec3 uLicht; uniform float uBlitz, uHell;
       varying vec2 vUv; varying vec3 vNormal, vSicht; varying float vSeite, vFlug, vRast;
       void main() {
         vec3 n = normalize(vNormal), v = normalize(vSicht), l = normalize(uLicht);
         if (!gl_FrontFacing) n = -n;
-        float diff = max(dot(n, l), 0.0), glanz = pow(max(dot(n, normalize(l + v)), 0.0), 70.0), fres = pow(1.0 - max(dot(n, v), 0.0), 3.0);
+        float diff = max(dot(n, l), 0.0), glanz = pow(max(dot(n, normalize(l + v)), 0.0), 90.0), fres = pow(1.0 - max(dot(n, v), 0.0), 4.0);
+        vec3 rw = reflect(-v, n);
+        vec3 spiegel = mix(vec3(0.03), vec3(0.92, 0.93, 0.95), smoothstep(-0.35, 0.75, rw.y)) + 1.4 * glanz;     // Spiegel: schwarz-weiss
         vec3 foto = texture2D(uFoto, vUv).rgb, c;
-        if (vSeite > 0.75) c = foto * mix(1.0, 0.55 + 0.75 * diff, vFlug) + vFlug * (0.5 * glanz + 0.25 * fres) + vRast * vec3(0.55, 0.42, 0.3);
-        else if (vSeite > 0.25) c = uAkzent * (0.1 + 0.55 * diff) + 0.8 * glanz;   // Schnittkanten: Glut, nicht Fläche
-        else c = foto * 0.12 + 0.4 * fres;
+        // Vorderseite: im Flug ein Spiegel wie der Glaskörper, beim Zurückkehren dreht sich das Stück Foto nach vorn
+        if (vSeite > 0.75) c = mix(foto * mix(1.0, 0.6 + 0.6 * diff, vFlug), spiegel, smoothstep(0.35, 0.9, vFlug)) + vRast * mix(vec3(0.4), vec3(-0.25), uHell);
+        else if (vSeite > 0.25) c = spiegel;                                                            // Schnittkanten: scharfer Spiegel
+        else c = mix(vec3(0.05), spiegel, 0.35 + 0.65 * fres);                                          // Rückseite: dunkles Glas
         gl_FragColor = vec4(c + uBlitz, 1.0);
       }`,
   });
   const netz = new THREE.Mesh(geo, mat);
   netz.frustumCulled = false;
   szene.add(netz);
-  const look = filmlook(renderer, szene, kamera, { radius: 0.3, schwelle: 0.8 });
+  const look = filmlook(renderer, szene, kamera, { radius: 0.15, schwelle: 0.95, hell, proben: 4 });
   let stand = "";
 
   return {
     dauer: 11, looks: [glasLook, look],
     groesse(w, h) { glas.groesse(w, h, w >= B * 0.95); },
     bild(t) {
-      const blitz = 0.45 * Math.exp(-(((t - BRUCH) / 0.08) ** 2));
+      const blitz = (hell ? 0 : 0.3) * Math.exp(-(((t - BRUCH) / 0.07) ** 2));
       if (t < BRUCH) {
         // drei kleine Kristalle fliegen auf Spiralen herein und verschmelzen bei rund 2 s zum grossen Körper
         const u = glas.u, ankunft = [1.75, 1.95, 2.15];
-        KLEIN.forEach(([grad, f, ton], j) => {
+        KLEIN.forEach(([grad, f], j) => {
           const a = anteil(t, 0.12 * j - 0.3, ankunft[j]), w = THREE.MathUtils.degToRad(grad) + 1.6 * (1 - a), r = 1.25 * (1 - inOut(a));   // am Rand schon sichtbar
           u.uMitte.value[j].set(Math.cos(w) * r * seiten, Math.sin(w) * r, -0.4 * (1 - a));
           u.uGroesse.value[j] = 0.15 * weich(anteil(t, 0, 0.5)) * (1 - weich(anteil(t, ankunft[j] - 0.05, ankunft[j] + 0.2)));
           u.uDreh.value[j].setFromMatrix4(m4.makeRotationFromEuler(eu.set(t * (1.3 + 0.4 * j), t * 0.9, j)));
-          form(f, u.uRadien.value[j]); u.uTon.value[j].setRGB(...ton);
+          form(f, u.uRadien.value[j]);
         });
-        const wachsen = weich(anteil(t, 1.7, 2.6)) * (0.45 + 0.75 * inOut(anteil(t, 3.6, BRUCH)));
-        u.uGroesse.value[3] = wachsen;
+        // der Körper wächst bis zum Bruch nur auf KOERPER_ENDE: die Scherben übernehmen genau seinen Platz
+        u.uGroesse.value[3] = weich(anteil(t, 1.7, 2.6)) * (0.45 + (KOERPER_ENDE - 0.45) * inOut(anteil(t, 3.0, BRUCH)));
         u.uMitte.value[3].set(0, 0, 0);
-        u.uDreh.value[3].setFromMatrix4(m4.makeRotationFromEuler(eu.set(t * 0.33 + 0.4, t * 0.5 + 1.2 * anteil(t, 3.6, BRUCH) ** 2, t * 0.14)));
+        u.uDreh.value[3].setFromMatrix4(m4.makeRotationFromEuler(eu.set(t * 0.33 + 0.4, t * 0.5 + 1.6 * anteil(t, 3.4, BRUCH) ** 2, t * 0.14)));
         form(Math.min(2, Math.max(0, (t - 2.2) / 1.1)), u.uRadien.value[3]);
-        const verschmelzen = Math.exp(-(((t - 2.05) / 0.25) ** 2));
-        u.uKante.value = 0.75 + 0.45 * verschmelzen;
-        u.uBlitz.value = blitz;                                              // kein Zusatzblitz beim Verschmelzen: linear addiert wird er ein grauer Schleier
+        u.uKante.value = 0.85;
+        u.uBlitz.value = blitz;
         stand = `körper ${FORMNAMEN[Math.round(Math.min(2, Math.max(0, (t - 2.2) / 1.1)))]} · kristalle ${[0, 1, 2].filter((j) => t < ankunft[j] + 0.1).length}`;
-        glasLook.render(1, 0.32 + 0.15 * verschmelzen);
+        glasLook.render(1, 0.25);
         return;
       }
       // Bruch und Montage
       const U = mat.uniforms;
       U.uZeit.value = t;
-      U.uAus.value = 0.3 + 1.3 * inOut(anteil(t, BRUCH, BRUCH + 1.2));   // im Moment des Bruchs schon auseinander: das ganze Foto zeigt erst die Montage
+      U.uAus.value = 1.4 * inOut(anteil(t, BRUCH, BRUCH + 1.4));
       U.uZurueck.value = Math.max(0, (t - 6.8) / 3.9);                    // nicht begrenzt: das Aufleuchten der letzten Scherben klingt bis 11 s aus
       U.uBlitz.value = blitz;
       const flug = Math.min(1, U.uAus.value) * (1 - anteil(t, 8.8, 10.7));
@@ -305,7 +318,7 @@ function kristall(renderer, textur, B, H, grund) {
       U.uLicht.value.set(Math.cos(t * 0.8) * 0.7, 0.6, 0.6).transformDirection(kamera.matrixWorldInverse);
       const gesetzt = Math.round(zellen.length * Math.min(1, Math.max(0, (U.uZurueck.value - 0.16) / 0.84)));
       stand = t < 6.8 ? `scherben ${zellen.length} · flug ${Math.round(flug * 100)} %` : `scherben ${gesetzt} / ${zellen.length}`;
-      look.render(Math.max(flug, blitz, U.uZurueck.value < 1 ? 0.35 : 0), 0.5);
+      look.render(Math.max(flug, U.uZurueck.value < 1 ? 0.35 : 0), 0.25);
     },
     zaehler() { return stand; },
     entsorgen() { quad.dispose(); glas.mat.dispose(); glasLook.entsorgen(); geo.dispose(); mat.dispose(); look.entsorgen(); },
@@ -350,7 +363,7 @@ const GLSL_ECHO = /* glsl */ `
     vec3 y = zuYIQ * c; float cw = cos(w), sw = sin(w); y.yz = mat2(cw, -sw, sw, cw) * y.yz; return zuRGB * y;
   }`;
 
-function echo(renderer, textur, B, H, grund, px) {
+function echo(renderer, textur, B, H, grund, px, hell) {
   const { tex: hellTex, stufen: STUFEN } = helligkeitsTextur(px, B, H);
   const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), quad = new THREE.PlaneGeometry(2, 2);
   const ziel = (w, h) => new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
@@ -394,12 +407,12 @@ function echo(renderer, textur, B, H, grund, px) {
         float stufe; float l = linien(vUv, stufe);
         float front = l * smoothstep(0.09, 0.0, abs(stufe / uStufen - grenze));                      // die Linie an der Grenze leuchtet
         vec3 foto = texture2D(uFoto, vUv).rgb;
-        vec3 c = mix(uGrund + schleife * (1.0 - uAufbau), foto, da) + front * (1.0 - uAufbau) * 1.2;
+        vec3 c = mix(uGrund + schleife * (1.0 - uAufbau), foto, da) + front * (1.0 - uAufbau) * (uHellGrund > 0.5 ? -0.9 : 1.2);   // auf Weiss dunkel
         gl_FragColor = vec4(uAufbau >= 1.0 ? foto : c, 1.0);
       }`,
   });
   const anzeige = new THREE.Scene(); anzeige.add(new THREE.Mesh(quad, zeige));
-  const look = filmlook(renderer, anzeige, ortho, { radius: 0.2, schwelle: 0.75 });
+  const look = filmlook(renderer, anzeige, ortho, { radius: 0.2, schwelle: 0.75, hell });
 
   const regler = (t) => {
     const u = rueck.uniforms;
@@ -451,18 +464,195 @@ function echo(renderer, textur, B, H, grund, px) {
   };
 }
 
+// ——— Strom (12 s: Funken 0–2,4 · Strom 2,4–8 · Bild 8–12) ———
+// Rund 25 000 Teilchen, je eine glänzende Kugel in der Farbe ihres Bildpunkts (Rückmeldung zum Showreel: «zu wenig kontrastreich und glänzend»).
+// Sie tauchen verstreut im Dunkeln auf, ziehen in einem Rauschfeld zu Bändern und Tüchern zusammen und fliegen dann an ihren Platz im Foto, das am
+// Schluss exakt steht. Lage und Tempo liegen in Float-Texturen (GPUComputationRenderer); wie bei Echo ein fester Schritt je Filmbild, von vorn.
+const GLSL_RAUSCHEN = /* glsl */ `
+vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec4 permute(vec4 x) { return mod289(((x * 34.0) + 1.0) * x); }
+vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+float snoise(vec3 v) {
+  const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0);
+  const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+  vec3 i = floor(v + dot(v, C.yyy));
+  vec3 x0 = v - i + dot(i, C.xxx);
+  vec3 g = step(x0.yzx, x0.xyz);
+  vec3 l = 1.0 - g;
+  vec3 i1 = min(g.xyz, l.zxy);
+  vec3 i2 = max(g.xyz, l.zxy);
+  vec3 x1 = x0 - i1 + C.xxx;
+  vec3 x2 = x0 - i2 + C.yyy;
+  vec3 x3 = x0 - D.yyy;
+  i = mod289(i);
+  vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+  float n_ = 0.142857142857;
+  vec3 ns = n_ * D.wyz - D.xzx;
+  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+  vec4 x_ = floor(j * ns.z);
+  vec4 y_ = floor(j - 7.0 * x_);
+  vec4 x = x_ * ns.x + ns.yyyy;
+  vec4 y = y_ * ns.x + ns.yyyy;
+  vec4 h = 1.0 - abs(x) - abs(y);
+  vec4 b0 = vec4(x.xy, y.xy);
+  vec4 b1 = vec4(x.zw, y.zw);
+  vec4 s0 = floor(b0) * 2.0 + 1.0;
+  vec4 s1 = floor(b1) * 2.0 + 1.0;
+  vec4 sh = -step(h, vec4(0.0));
+  vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
+  vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
+  vec3 p0 = vec3(a0.xy, h.x);
+  vec3 p1 = vec3(a0.zw, h.y);
+  vec3 p2 = vec3(a1.xy, h.z);
+  vec3 p3 = vec3(a1.zw, h.w);
+  vec4 norm = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
+  p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+  vec4 m = max(0.6 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0);
+  m = m * m;
+  return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
+}
+vec3 rauschFeld(vec3 p) { return vec3(snoise(p), snoise(p + vec3(31.416, -47.853, 12.793)), snoise(p + vec3(-233.145, -113.408, -185.31))); }
+vec3 curl(vec3 p) {
+  const float e = 0.1;
+  vec3 dx = vec3(e, 0.0, 0.0), dy = vec3(0.0, e, 0.0), dz = vec3(0.0, 0.0, e);
+  vec3 x0 = rauschFeld(p - dx), x1 = rauschFeld(p + dx);
+  vec3 y0 = rauschFeld(p - dy), y1 = rauschFeld(p + dy);
+  vec3 z0 = rauschFeld(p - dz), z1 = rauschFeld(p + dz);
+  return vec3((y1.z - y0.z) - (z1.y - z0.y), (z1.x - z0.x) - (x1.z - x0.z), (x1.y - x0.y) - (y1.x - y0.x)) / (2.0 * e);
+}
+`;
+function strom(renderer, textur, B, H, grund, px, hell) {
+  const S = grob() ? 128 : 160, N = S * S, SCHRITTE = 2, DAUER = 12;   // wenige, grosse Kugeln: so bilden sich sichtbare Bänder (262 144 gaben nur Staub)
+  const szene = new THREE.Scene();
+  const kamera = new THREE.PerspectiveCamera(FOV, B / H, 0.05, 50);
+  const abstand = 1 / Math.tan(THREE.MathUtils.degToRad(FOV / 2)), breite = (2 * B) / H;
+  const gpu = new GPUComputationRenderer(S, S, renderer);
+  const startLage = gpu.createTexture(), startTempo = gpu.createTexture(), heim = gpu.createTexture();
+  const ref = new Float32Array(N * 2), fotoUv = new Float32Array(N * 2), zufall = zufallAus(20261017);
+  for (let i = 0; i < N; i++) {
+    const u = ((i % S) + zufall()) / S, v = (Math.floor(i / S) + zufall()) / S;      // geschichtete Zufallspunkte auf dem Foto
+    heim.image.data.set([(u - 0.5) * breite, (v - 0.5) * 2, 0, 1], i * 4);
+    // Anfang: auf einer Fläche, aber an zufälligen Plätzen (kein Foto); das Feld faltet die Fläche zu Bändern und Tüchern. w: wann es aufleuchtet
+    startLage.image.data.set([(zufall() - 0.5) * breite * 1.1, (zufall() - 0.5) * 2.2, 0.02 * (zufall() - 0.5), zufall()], i * 4);
+    ref.set([((i % S) + 0.5) / S, (Math.floor(i / S) + 0.5) / S], i * 2);
+    fotoUv.set([u, v], i * 2);
+  }
+  heim.needsUpdate = true;
+  const tempo = gpu.addVariable("textureTempo", /* glsl */ `
+    ${GLSL_RAUSCHEN}
+    uniform sampler2D uHeim; uniform float uZeit, uDt, uChaos, uFeder;
+    void main() {
+      vec2 uv = gl_FragCoord.xy / resolution.xy;
+      vec4 L = texture2D(textureLage, uv); vec3 p = L.xyz, v = texture2D(textureTempo, uv).xyz, h = texture2D(uHeim, uv).xyz;
+      // mit der Strömung treiben statt beschleunigen: die Fläche bleibt eine Fläche und faltet sich zu Bändern und Tüchern (mit Schwung mischten
+      // sich die Bahnen nach wenigen Sekunden zu einer gleichmässigen Wolke)
+      vec3 ziel = rauschFeld(p * 1.1 + vec3(0.0, 0.0, uZeit * 0.16)) * uChaos * 0.42;
+      v = mix(v, ziel, 1.0 - exp(-uDt * 3.0));
+      v += ((h - p) * uFeder - p * 6.0 * max(0.0, length(p * vec3(0.8, 1.0, 1.4)) - 1.2)) * uDt;     // Feder nach Hause, weiche Grenze
+      v *= exp(-uDt * 2.2 * sqrt(uFeder));
+      gl_FragColor = vec4(v, 1.0);
+    }`, startTempo);
+  const lage = gpu.addVariable("textureLage", /* glsl */ `
+    uniform float uDt;
+    void main() { vec2 uv = gl_FragCoord.xy / resolution.xy; vec4 L = texture2D(textureLage, uv); gl_FragColor = vec4(L.xyz + texture2D(textureTempo, uv).xyz * uDt, L.w); }`, startLage);
+  gpu.setVariableDependencies(tempo, [lage, tempo]);
+  gpu.setVariableDependencies(lage, [lage, tempo]);
+  Object.assign(tempo.material.uniforms, { uHeim: { value: heim }, uZeit: { value: 0 }, uDt: { value: 0 }, uChaos: { value: 0 }, uFeder: { value: 0 } });
+  lage.material.uniforms.uDt = { value: 0 };
+  const fehler = gpu.init();
+  if (fehler) throw new Error(fehler);
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+  geo.setAttribute("aRef", new THREE.BufferAttribute(ref, 2));
+  geo.setAttribute("aUv", new THREE.BufferAttribute(fotoUv, 2));
+  const punktMat = new THREE.ShaderMaterial({
+    uniforms: { uLage: { value: null }, uTempo: { value: null }, uHeim: { value: heim }, uFoto: { value: textur }, uEinrasten: { value: 0 }, uZeit: { value: 0 },
+      uPunkt: { value: (2 / S) * 1.7 }, uPixelJeEinheit: { value: H / 2 / Math.tan(THREE.MathUtils.degToRad(FOV / 2)) } },
+    vertexShader: /* glsl */ `
+      uniform sampler2D uLage, uTempo, uHeim, uFoto; uniform float uEinrasten, uZeit, uPunkt, uPixelJeEinheit;
+      attribute vec2 aRef, aUv; varying vec3 vFarbe; varying float vAlpha;
+      void main() {
+        vec4 L = texture2D(uLage, aRef);
+        vec3 p = mix(L.xyz, texture2D(uHeim, aRef).xyz, uEinrasten);
+        float geschw = length(texture2D(uTempo, aRef).xyz), auf = smoothstep(L.w * 1.8, L.w * 1.8 + 0.5, uZeit);   // Funken leuchten nacheinander auf
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        gl_Position = projectionMatrix * mv;
+        gl_PointSize = clamp(uPunkt * uPixelJeEinheit / -mv.z * (0.35 + 0.65 * auf), 1.0, uPunkt * uPixelJeEinheit * 0.6);
+        vFarbe = texture2D(uFoto, aUv).rgb * (1.0 + 0.15 * smoothstep(0.3, 3.0, geschw));
+        vAlpha = auf * (1.0 - uEinrasten);
+      }`,
+    fragmentShader: /* glsl */ `
+      varying vec3 vFarbe; varying float vAlpha;
+      void main() {
+        vec2 p = gl_PointCoord * 2.0 - 1.0; p.y = -p.y;
+        float r2 = dot(p, p);
+        if (r2 > 1.0 || vAlpha < 0.01) discard;
+        vec3 n = vec3(p, sqrt(1.0 - r2)), l = normalize(vec3(-0.45, 0.6, 0.66));
+        float diff = max(dot(n, l), 0.0), glanz = pow(max(dot(reflect(-l, n), vec3(0.0, 0.0, 1.0)), 0.0), 36.0);
+        vec3 kugel = vFarbe * (0.18 + 0.95 * diff) * (0.55 + 0.45 * n.z) + vec3(1.0, 0.97, 0.92) * glanz * 1.1;   // Kugel: Licht, dunkler Rand, Glanzpunkt
+        gl_FragColor = vec4(kugel, (1.0 - smoothstep(0.86, 1.0, r2)) * vAlpha);
+      }`,
+    transparent: true, depthWrite: false,
+  });
+  const punkte = new THREE.Points(geo, punktMat);
+  punkte.frustumCulled = false;
+  const flaeche = new THREE.Mesh(new THREE.PlaneGeometry(breite, 2), new THREE.MeshBasicMaterial({ map: textur, transparent: true, opacity: 0 }));
+  szene.add(flaeche, punkte);
+  const look = filmlook(renderer, szene, kamera, { radius: 0.3, schwelle: 0.8, hell });
+
+  const regler = (t) => {
+    const U = tempo.material.uniforms;
+    U.uZeit.value = t;
+    U.uChaos.value = (1.6 + 1.8 * weich(anteil(t, 1.6, 3.0))) * (1 - weich(anteil(t, 7.4, 9.4)));   // von Anfang an Strömung: die Bänder bilden sich früh
+    U.uFeder.value = 22 * inOut(anteil(t, 7.8, 10.4));
+  };
+  let n = -1, stand = "";
+  const zuruecksetzen = () => { for (const [v, st] of [[lage, startLage], [tempo, startTempo]]) for (const z of v.renderTargets) gpu.renderTexture(st, z); };
+  return {
+    dauer: DAUER, looks: [look],
+    groesse(w, h) { punktMat.uniforms.uPixelJeEinheit.value = h / 2 / Math.tan(THREE.MathUtils.degToRad(FOV / 2)); },
+    bild(t, k, Nb) {
+      const dt = DAUER / Math.max(1, Nb) / SCHRITTE;
+      if (k < n || n < 0) { zuruecksetzen(); n = 0; }
+      while (n < k) {
+        n++; regler((n / Math.max(1, Nb)) * DAUER);
+        tempo.material.uniforms.uDt.value = dt; lage.material.uniforms.uDt.value = dt;
+        for (let i = 0; i < SCHRITTE; i++) gpu.compute();
+      }
+      regler(t);
+      const einrasten = inOut(anteil(t, 10.4, 11.6));
+      const m = punktMat.uniforms;
+      m.uLage.value = gpu.getCurrentRenderTarget(lage).texture;
+      m.uTempo.value = gpu.getCurrentRenderTarget(tempo).texture;
+      m.uEinrasten.value = t >= 11.6 ? 1 : einrasten; m.uZeit.value = t;
+      flaeche.material.opacity = t >= 11.6 ? 1 : einrasten;
+      const frei = 1 - einrasten, w = 0.55 * Math.sin(Math.PI * anteil(t, 1.5, 10.4));
+      kamera.position.set(Math.sin(w) * abstand, 0.2 * w, Math.cos(w) * abstand * (1 + 0.25 * frei));
+      kamera.lookAt(0, 0, 0);
+      const ch = tempo.material.uniforms.uChaos.value, fe = tempo.material.uniforms.uFeder.value;
+      stand = t < 2.4 ? `teilchen ${N.toLocaleString("de-CH")} · auf ${Math.round(anteil(t, 0, 2.3) * 100)} %` : t < 8 ? `strom ${Math.round((ch / 3.4) * 100)} %` : `feder ${Math.round((fe / 22) * 100)} %`;
+      look.render(frei, 0.3, 0);
+    },
+    zaehler() { return stand; },
+    entsorgen() { gpu.dispose(); geo.dispose(); punktMat.dispose(); flaeche.geometry.dispose(); flaeche.material.dispose(); heim.dispose(); look.entsorgen(); },
+  };
+}
+
 // ——— Signet in der leuchtenden Fassung: Linie und Schrift klar wie immer; nur der Punkt leuchtet – ein Glaskristall mit Halo und Bokeh, das ihm auf
 //     der Bahn folgt (Rückmeldung: «das Signet ist immer noch zu stark überblendet; vielleicht sollte einfach der laufende Punkt leuchten») ———
-function glanzSignet(renderer, B, H, akzent) {
+function glanzSignet(renderer, B, H, akzent, hell) {
   const leinwand = document.createElement("canvas"); leinwand.width = B; leinwand.height = H;
   const tex = new THREE.CanvasTexture(leinwand); tex.colorSpace = THREE.SRGBColorSpace;
   const glas = glasMaterial(1, tex, B, H);
   glas.u.uAussen.value = 1; glas.u.uKante.value = 0.75;
   glas.u.uTon.value[0].set(akzent);
+  glas.u.uKantenFarbe.value.set(akzent).lerp(new THREE.Color(hell ? 0 : 1, hell ? 0 : 1, hell ? 0 : 1), 0.5);
   const szene = new THREE.Scene(), quad = new THREE.PlaneGeometry(2, 2);
   szene.add(new THREE.Mesh(quad, glas.mat));
   const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const look = filmlook(renderer, szene, ortho, { radius: 0.12, schwelle: 0.6 });
+  const look = filmlook(renderer, szene, ortho, { radius: 0.12, schwelle: 0.6, hell });
   const m4 = new THREE.Matrix4(), eu = new THREE.Euler(), welt = (2 * TANH * KZ) / H;
   return {
     looks: [look], leinwand,
@@ -503,10 +693,10 @@ function glanzSignet(renderer, B, H, akzent) {
   };
 }
 
-const BAUEN = { kristall, echo };
+const BAUEN = { kristall, echo, strom };
 
 /**
- * Ein räumlicher Ablauf für ein Foto (Canvas in Filmgrösse). art: "kristall" | "echo"; grund: Farbe des Grunds; akzent: Farbe des Punkts im Signet.
+ * Ein räumlicher Ablauf für ein Foto (Canvas in Filmgrösse). art: "kristall" | "echo" | "strom"; grund: Farbe des Grunds; akzent: Farbe des Punkts im Signet.
  * bild(u, k, N, w, h): das Bild bei u (0 … 1 im Abschnitt; k von N Filmbildern) in w × h Bildpunkten; gibt die Leinwand zurück (gleich danach lesen).
  * signet(zeichnen, punkt, f, w, h): das Signet in der leuchtenden Fassung.
  */
@@ -522,9 +712,9 @@ export function raum(foto, art, { grund = "#000000", akzent = "#f08a5d" } = {}) 
   const textur = new THREE.CanvasTexture(foto);
   textur.colorSpace = THREE.SRGBColorSpace; textur.minFilter = THREE.LinearMipmapLinearFilter; textur.anisotropy = 4;
   const px = foto.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, B, H).data;
-  const W = BAUEN[art](renderer, textur, B, H, g, px);
-  const S = glanzSignet(renderer, B, H, akzent);
   const hell = g.getHSL({}).l > 0.5;
+  const W = BAUEN[art](renderer, textur, B, H, g, px, hell);
+  const S = glanzSignet(renderer, B, H, akzent, hell);
   const passen = (teil, w, h) => {
     w = Math.max(2, Math.round(w)); h = Math.max(2, Math.round(h));
     const jetzt = renderer.getSize(new THREE.Vector2());

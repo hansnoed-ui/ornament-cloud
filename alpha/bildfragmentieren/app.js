@@ -104,7 +104,7 @@ function optionen() {
     titel: $("titel").value.replace(/\s+/g, " ").trim(), foto: S.foto, leinwand, vorrat: S.vorrat, ablauf: S.ablauf, raum: S.raum };
 }
 
-// ——— Kristall und Echo (WebGL): raum.js und three.js erst laden, wenn einer davon gewählt ist ———
+// ——— Kristall, Echo und Strom (WebGL): raum.js und three.js erst laden, wenn einer davon gewählt ist ———
 let raumModul = null;
 async function raumBereit() {
   const art = ABLAEUFE[S.ablauf].raum ? S.ablauf : null;
@@ -120,7 +120,7 @@ async function raumBereit() {
     const F = FARBEN[S.grund] ?? FARBEN.schwarz;
     S.raum = raumModul.raum(S.foto, art, { grund: F.grund, akzent: F.punkt });
   } catch (fehler) {
-    melden(`Kristall und Echo brauchen WebGL 2; hier blendet an ihrer Stelle das Foto auf (${fehler?.message ?? fehler}).`, true);
+    melden(`Kristall, Echo und Strom brauchen WebGL 2; hier blendet an ihrer Stelle das Foto auf (${fehler?.message ?? fehler}).`, true);
     return;
   }
   neu();
