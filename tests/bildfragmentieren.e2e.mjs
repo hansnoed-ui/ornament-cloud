@@ -51,7 +51,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit (Abschnitt + Anteil der Dauer) messen: Anteil Grund, Anteil Grau, Anteil bunt, mittlere Farbe in der Mitte */
 const messe = (page, abschnitt, anteil = 0, extra = {}) => page.evaluate(async ([abschnitt, anteil, extra]) => {
-  const { bild, szene } = await import("./szene.js?v=32");
+  const { bild, szene } = await import("./szene.js?v=33");
   const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, ...extra });
   const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
   const [a, b] = sz.zeit.ab[abschnitt], t = a + (b - a) * anteil;
@@ -153,7 +153,7 @@ await check("Formen als Stich folgen dem Foto Bildpunkt für Bildpunkt: dunkle T
   await bereit(page);
   // Testfoto: rote Fläche (dunkel) unten in der Mitte, gelbe Sonne (hell) oben; gemessen wird die Tinte in beiden Bereichen am Ende von 02
   const tinte = (grund) => page.evaluate(async (grund) => {
-    const { bild, szene } = await import("./szene.js?v=32");
+    const { bild, szene } = await import("./szene.js?v=33");
     const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, grund });
     const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
     bild(x, sz, sz.zeit.ab.farben[0] - 0.05);
@@ -190,7 +190,7 @@ await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern in 4 
   await page.click("#video");
   await page.waitForSelector("#ergebnis:not([hidden])", { timeout: 300_000 });
   const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#laden")]);
-  assert.match(dl.suggestedFilename(), /^bildfragmentieren-\d{4}-\d\d-\d\d-\d{4}\.mp4$/);
+  assert.match(dl.suggestedFilename(), /^phorma-i-\d{4}-\d\d-\d\d-\d{4}\.mp4$/);
   const d = new Uint8Array(readFileSync(await dl.path()));
   const finde = (liste, ...pfad) => pfad.reduce((l, t) => (Array.isArray(l) ? l : l.kinder).find((x) => x.typ === t), liste);
   const stsz = finde(kisten(d), "moov", "trak", "mdia", "minf", "stbl", "stsz");
@@ -219,7 +219,7 @@ await check("Formate: 9 : 16 und zurück zu 4 : 5; Vorschau und Signet passen si
     // das Signet steht in beiden Formaten in der Mitte und ganz im Bild
     {
       const mitte = await page.evaluate(async () => {
-        const { bild, szene } = await import("./szene.js?v=32");
+        const { bild, szene } = await import("./szene.js?v=33");
         const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h) });
         const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
         bild(x, sz, sz.zeit.ab.signetStehen[0] + 0.2);
@@ -240,7 +240,7 @@ await check("Formate: 9 : 16 und zurück zu 4 : 5; Vorschau und Signet passen si
 
 /** im Browser: Bilder eines Ablaufs messen (halbe Grösse, ohne Beschriftung): Abstand zum Foto, Anteil Grund; mit oder ohne raum.js */
 const raumMessen = (page, zeiten, mitRaum = true) => page.evaluate(async ([zeiten, mitRaum]) => {
-  const { bild, szene } = await import("./szene.js?v=32");
+  const { bild, szene } = await import("./szene.js?v=33");
   const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false,
     ablauf: S.ablauf, raum: mitRaum ? S.raum : null });
   const w = sz.breite / 2, h = sz.hoehe / 2, c = document.createElement("canvas"); c.width = w; c.height = h;
@@ -415,6 +415,44 @@ await check("Weisser Grund: die Effekte und die Verwandlung überstrahlen nicht 
     }
   }
   assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
+await check("PHORMA I als App (17. Oktober 2026): Knopf zum Installieren, Chrome meldet keine Hindernisse; nach dem ersten Besuch läuft auch die Verwandlung (three.js) ohne Netz, ebenso die App-Seite", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  assert.equal(await page.locator("h1").innerText(), "PHORMA I");
+  assert.ok(await page.locator("#installieren").isVisible(), "Knopf sichtbar (nicht in der installierten App)");
+  await page.click("#installieren-knopf");
+  assert.match(await page.locator("#installieren-hilfe").innerText(), /ohne Netz|Home-Bildschirm|installieren/);
+  const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
+  assert.match(scope, /\/alpha\/bildfragmentieren\/$/);
+  const cdp = await ctx.newCDPSession(page);
+  assert.deepEqual((await cdp.send("Page.getInstallabilityErrors")).installabilityErrors, [], "Chrome meldet keine Hindernisse für die Installation");
+  assert.deepEqual((await cdp.send("Page.getAppManifest")).errors, []);
+  await page.reload(); await page.waitForFunction(() => navigator.serviceWorker.controller);
+  const cache = readFileSync(new URL("alpha/bildfragmentieren/sw.js", root), "utf8").match(/const CACHE = "([^"]+)"/)[1];
+  const gespeichert = await page.evaluate(async (c) => (await (await caches.open(c)).keys()).map((r) => new URL(r.url).pathname + new URL(r.url).search), cache);
+  for (const d of ["/alpha/bildfragmentieren/", "/alpha/bildfragmentieren/app/", "/alpha/bildfragmentieren/beispiel.jpg", "/alpha/bildfragmentieren/icons/icon-512.png",
+    "/vendor/three-0.185.1/three.module.min.js", "/vendor/three-0.185.1/three.core.min.js", "/vendor/three-0.185.1/addons/postprocessing/UnrealBloomPass.js", "/vendor/three-0.185.1/addons/misc/GPUComputationRenderer.js"])
+    assert.ok(gespeichert.includes(d), `gespeichert: ${d}`);
+  for (const m of ["app", "ablauf", "szene", "fragmente", "koerper", "raum", "rechner", "pwa"]) assert.ok(gespeichert.some((d) => new RegExp(`^/alpha/bildfragmentieren/${m}\\.js\\?v=\\d+$`).test(d)), `Modul ${m}.js mit Versionsmarke`);
+  for (const m of ["sketchory/signet", "sketchory/mp4", "the-fictory/dauer"]) assert.ok(gespeichert.some((d) => d.startsWith(`/alpha/${m}.js?v=`)), `${m}.js`);
+  // ohne Netz: die Seite kommt aus dem Speicher, zerlegt das Foto und rechnet einen räumlichen Effekt mit three.js
+  await ctx.setOffline(true);
+  await page.reload();
+  await page.click('[data-ablauf="fragmente"]');
+  await page.click('[data-effekt="relief"]');
+  await laden(page);
+  await bereit(page);
+  await page.waitForFunction(() => window.__bildfragmentieren.sz?.raum?.art === "relief", null, { timeout: 90_000 });
+  const app = await ctx.newPage();
+  await app.goto(base + "app/");
+  assert.equal(await app.locator("h1").innerText(), "PHORMA I");
+  assert.match(await app.locator(".lead").innerText(), /Als erste Anwendung in einer langen Reihe: PHORMA I\./);
+  assert.ok(await app.evaluate(() => document.querySelector(".app-symbol").naturalWidth === 512), "App-Symbol aus dem Speicher");
+  await ctx.setOffline(false);
+  assert.deepEqual(fehler.filter((f) => !/goatcounter|ERR_INTERNET_DISCONNECTED|Failed to load resource/.test(f)), []);
+  assert.deepEqual(fremd, []);
   await ctx.close();
 });
 

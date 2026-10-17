@@ -149,5 +149,5 @@ export function zeitcode(t, fps = 30) {
 
 export function dateiname(zeit, endung) {
   const z = (n) => String(n).padStart(2, "0");
-  return `bildfragmentieren-${zeit.getFullYear()}-${z(zeit.getMonth() + 1)}-${z(zeit.getDate())}-${z(zeit.getHours())}${z(zeit.getMinutes())}.${endung}`;
+  return `phorma-i-${zeit.getFullYear()}-${z(zeit.getMonth() + 1)}-${z(zeit.getDate())}-${z(zeit.getHours())}${z(zeit.getMinutes())}.${endung}`;
 }

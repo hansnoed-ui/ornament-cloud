@@ -153,7 +153,7 @@ test("Ablauf: vier Phasen in dieser Reihenfolge, Tempo, Abspann nach Wahl; Forma
   assert.deepEqual(filmMass("9:16"), [1080, 1920]);
   assert.deepEqual(filmMass("1:1"), [1080, 1350]);
   assert.equal(zeitcode(61.5), "01:01:15");
-  assert.equal(dateiname(new Date(2026, 9, 15, 9, 5), "mp4"), "bildfragmentieren-2026-10-15-0905.mp4");
+  assert.equal(dateiname(new Date(2026, 9, 15, 9, 5), "mp4"), "phorma-i-2026-10-15-0905.mp4");
 });
 
 test("Abläufe (16./17. Oktober 2026): Fragmente oder die Verwandlung aus Strom, Körper, Scherben, Echo und Relief, einzeln oder kombiniert; alle beginnen im Dunkeln und enden beim Foto, dann Signet", () => {
@@ -231,10 +231,14 @@ test("Seite: Alpha (noindex), steht für sich ohne Navigation oben links, nichts
   // die Module von Sketchory und The Fictory mit deren Marken
   const sketchory = lies("alpha/sketchory/index.html").match(/app\.js\?v=(\d+)/)[1];
   for (const t of texte) for (const m of t.matchAll(/\.\.\/sketchory\/[a-z0-9]+\.js\?v=(\d+)/g)) assert.equal(m[1], sketchory);
-  // von keiner Seite verlinkt (nur per Direktlink)
+  // verlinkt nur von «Apps», und dort nur die App-Seite app/ (seit 17. Oktober 2026, als «PHORMA I»)
   const seiten = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e) => ["node_modules", ".git", "vendor", "src"].includes(e.name) ? []
     : e.isDirectory() ? seiten(new URL(e.name + "/", d), vor + e.name + "/") : e.name.endsWith(".html") ? [vor + e.name] : []);
-  for (const p of seiten(root)) if (!p.startsWith("alpha/bildfragmentieren/")) assert.ok(!lies(p).includes("bildfragmentieren"), `${p} verlinkt Bildfragmentieren`);
+  for (const p of seiten(root)) if (!p.startsWith("alpha/bildfragmentieren/")) {
+    const ziele = [...lies(p).matchAll(/bildfragmentieren[^"]*/g)].map((m) => m[0]);
+    assert.deepEqual(ziele.filter((z) => z !== "bildfragmentieren/app/"), [], `${p} verlinkt Bildfragmentieren (erlaubt: die App-Seite auf «Apps»)`);
+    if (ziele.length) assert.equal(p, "apps/index.html", `${p} verlinkt PHORMA I`);
+  }
   assert.ok(!lies("sitemap.xml").includes("bildfragmentieren"));
   // im Abspann läuft der Punkt des Signets ruhig, obwohl sich das Signet doppelt so schnell zeichnet (15. Oktober 2026)
   assert.match(lies("alpha/bildfragmentieren/szene.js"), /punktTempo: SIGNET_TEMPO \* 1\.25/);
@@ -252,6 +256,49 @@ test("Seite: Alpha (noindex), steht für sich ohne Navigation oben links, nichts
   }
   assert.ok(!lies("alpha/bildfragmentieren/app.js").includes('from "three'), "app.js lädt three.js nicht selbst (erst raum.js, auf Wahl)");
   assert.match(lies("alpha/bildfragmentieren/app.js"), /import\("\.\/raum\.js\?v=\d+"\)/);
+});
+
+test("PHORMA I: der Name, als App installierbar (Manifest, Symbole, Service Worker samt three.js), App-Seite app/ mit Vorschaukachel", () => {
+  const html = lies("alpha/bildfragmentieren/index.html"), app = lies("alpha/bildfragmentieren/app/index.html");
+  assert.match(html, /<title>PHORMA I – Ornament Cloud · Alpha<\/title>/);
+  assert.match(html, /<h1>PHORMA I<\/h1>/);
+  assert.match(html, /placeholder="PHORMA I"/);
+  assert.match(lies("alpha/bildfragmentieren/szene.js"), /titel \|\| "PHORMA I"/, "Titel im Film, wenn keiner eingegeben ist");
+  // Manifest und Symbole (tools/phorma-bilder.mjs)
+  const m = JSON.parse(lies("alpha/bildfragmentieren/manifest.webmanifest"));
+  assert.equal(m.name, "PHORMA I");
+  assert.equal(m.start_url, "./"); assert.equal(m.scope, "./"); assert.equal(m.display, "standalone");
+  const png = (p) => { const b = readFileSync(new URL(`alpha/bildfragmentieren/${p}`, root)); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
+  for (const i of m.icons) assert.deepEqual(png(i.src).map(String), i.sizes.split("x"), i.src);
+  assert.deepEqual(png("icons/apple-touch-icon.png"), [180, 180]);
+  assert.deepEqual(png("icons/favicon-32.png"), [32, 32]);
+  assert.ok(m.icons.some((i) => i.purpose === "maskable"));
+  for (const h of [html, app]) {
+    assert.match(h, /<link rel="manifest" href="(\.\.\/)?manifest\.webmanifest">/);
+    assert.match(h, /<link rel="apple-touch-icon" href="(\.\.\/)?icons\/apple-touch-icon\.png">/);
+    assert.match(h, /id="installieren-knopf"[^>]*>.*PHORMA I als App installieren/);
+    assert.match(h, /src="(\.\.\/)?pwa\.js\?v=\d+"/);
+  }
+  assert.equal(app.match(/pwa\.js\?v=(\d+)/)[1], html.match(/app\.js\?v=(\d+)/)[1], "App-Seite: pwa.js mit der Marke der Anwendung");
+  // Service Worker: eigener Cache; three.js über die Import-Map kann er nicht auflösen, darum stehen alle Dateien, die raum.js braucht, in seiner Liste
+  const sw = lies("alpha/bildfragmentieren/sw.js");
+  assert.match(sw, /const CACHE = "phorma-\d+"/);
+  assert.match(sw, /k\.startsWith\("phorma-"\)/, "räumt nur die eigenen Caches auf");
+  assert.match(lies("alpha/bildfragmentieren/pwa.js"), /new URL\("sw\.js", import\.meta\.url\)/);
+  const dazu = new Function(`${sw.match(/const THREE = [^\n]+/)[0]}\n${sw.match(/const DAZU = [\s\S]*?\];/)[0]}\nreturn DAZU;`)();
+  const dir = new URL("alpha/bildfragmentieren/", root);
+  for (const d of dazu) assert.ok(existsSync(new URL(d.endsWith("/") ? d + "index.html" : d, dir)), `${d} gibt es`);
+  const geladen = new Set(["addons/postprocessing/Pass.js", "addons/postprocessing/MaskPass.js", "addons/shaders/CopyShader.js", "addons/shaders/LuminosityHighPassShader.js", "addons/shaders/OutputShader.js", "three.module.min.js", "three.core.min.js"]);
+  for (const [, z] of lies("alpha/bildfragmentieren/raum.js").matchAll(/from "(three[^"]*)"/g)) geladen.add(z === "three" ? "three.module.min.js" : z.replace("three/addons/", "addons/"));
+  for (const z of geladen) assert.ok(dazu.includes(`../../vendor/three-0.185.1/${z}`), `sw.js speichert ${z}`);
+  // App-Seite: Navigation oben links, Vorschaukachel zum Teilen, der Satz vom 17. Oktober 2026
+  assert.match(app, /<nav class="seitenweg" aria-label="Ornament Cloud">/);
+  assert.match(app, /<p class="lead">Als erste Anwendung in einer langen Reihe: PHORMA I\.<\/p>/);
+  assert.match(app, /<meta property="og:image" content="https:\/\/ornament\.cloud\/alpha\/bildfragmentieren\/app\/og-phorma-i\.jpg">/);
+  assert.match(app, /<a class="link" href="\.\.\/">Im Browser öffnen/);
+  assert.match(app, /<meta name="robots" content="noindex">/);
+  const erzeuger = lies("tools/phorma-bilder.mjs");
+  for (const b of ["vorschau-phorma-i.jpg", "og-phorma-i.jpg", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "favicon-32.png", "Als erste Anwendung in einer langen Reihe"]) assert.ok(erzeuger.includes(b), `tools/phorma-bilder.mjs: ${b}`);
 });
 
 test("Körper (Farbwellen): Ikosaeder, Dodekaeder und Geodäte mit den richtigen Zahlen, Ecken auf der Kugel, gleich lange Kanten; Abbilden um die Mitte", async () => {

@@ -3,17 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bildfragmentieren – Ornament Cloud · Alpha</title>
+  <title>PHORMA I – Ornament Cloud · Alpha</title>
   <!--
     Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14).
     Prototyp vom 15. Oktober 2026 (Wunsch: «Bildfragmentieren – im Stil von TouchDesigner soll ein Foto zuerst aus Linien, Formen,
     zuletzt Farben animiert und am Ende zusammengesetzt werden; eine Art Videoinstallation für Social-Media-Beiträge aus meinen Fotos»).
-    Steht vorerst für sich (Ausnahme in tests/navigation.test.mjs): von keiner Seite verlinkt, nur per Direktlink, ohne die Navigation oben links.
+    Steht für sich (Ausnahme in tests/navigation.test.mjs): ohne die Navigation oben links.
+    Seit 17. Oktober 2026 heisst die Anwendung «PHORMA I» (Wunsch: «Jetzt daraus eine App bauen ("PHORMA I")»), als erste in einer langen Reihe; der Ordner bleibt.
+    Als App installierbar (manifest.webmanifest, icons/ und sw.js, Knopf aus pwa.js); die App-Seite app/ ist die erste Karte auf «Apps».
   -->
   <meta name="robots" content="noindex">
-  <meta name="description" content="Bildfragmentieren: Ein Foto zerfällt in Linien, Formen und Farben und setzt sich wieder zusammen – als Video im Hochformat für Social Media, alles im Browser.">
+  <meta name="description" content="PHORMA I: Ein Foto zerfällt in Linien, Formen und Farben und setzt sich wieder zusammen – als Video im Hochformat für Social Media, alles im Browser.">
   <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-title" content="PHORMA I">
   <link rel="stylesheet" href="../../styles.css?v=45">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
   <style>
@@ -120,13 +126,20 @@
     .ergebnis video { display: block; width: min(100%, 360px); aspect-ratio: 4 / 5; border-radius: 8px; background: #000; }
     .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
     .hinweise li { margin: 0.2rem 0; }
+    /* «PHORMA I als App installieren» (pwa.js): nicht in der installierten App */
+    .installieren { margin: 8px auto 36px; max-width: 36em; text-align: center; }
+    .installieren[hidden], .installieren [hidden] { display: none; }
+    .installieren .knopf { display: inline-flex; align-items: center; gap: 10px; padding-left: 8px; }
+    .installieren .knopf img { width: 30px; height: 30px; border-radius: 7px; display: block; }
+    .installieren-hilfe { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; color: var(--muted); }
+    .installieren-hilfe span { color: var(--text); white-space: nowrap; }
     [hidden] { display: none !important; }
   </style>
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <h1>Bildfragmentieren</h1>
+      <h1>PHORMA I</h1>
       <p class="lead">Ein Foto zerfällt in Linien, dann in Formen, dann in Farben – und setzt sich am Ende wieder zusammen. Oder als Verwandlung: Funken, Glaskörper, Scherben, Echo und Gebirge, einzeln oder kombiniert. Oder als Flug über die Formen des Fotos. Als Video für Social Media.</p>
     </div>
   </header>
@@ -217,7 +230,7 @@
           <h2>Gestaltung</h2>
           <p>Die Beschriftung zeigt wie in einem Bildwerkzeug Phase, Zähler und Zeitcode; oben links steht dein Titel.</p>
           <div class="einstellungen">
-            <label><span>Titel</span><input type="text" id="titel" maxlength="40" placeholder="Bildfragmentieren" autocomplete="off"></label>
+            <label><span>Titel</span><input type="text" id="titel" maxlength="40" placeholder="PHORMA I" autocomplete="off"></label>
             <label><span>Tempo</span>
               <select id="tempo">
                 <option value="ruhig">ruhig</option>
@@ -249,6 +262,10 @@
   </main>
 
   <div class="wrap">
+    <div class="installieren" id="installieren" hidden>
+      <button class="knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="icons/icon-192.png" alt="" width="30" height="30"><span>PHORMA I als App installieren</span></button>
+      <p class="installieren-hilfe" id="installieren-hilfe" hidden></p>
+    </div>
     <ul class="hinweise">
       <li>Alles bleibt in deinem Browser: Das Foto wird nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
       <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories); das Foto wird bei Bedarf mittig beschnitten.</li>
@@ -267,7 +284,8 @@
   <script type="importmap">
   { "imports": { "three": "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" } }
   </script>
-  <script type="module" src="app.js?v=32"></script>
+  <script type="module" src="app.js?v=33"></script>
+  <script type="module" src="pwa.js?v=33"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>
