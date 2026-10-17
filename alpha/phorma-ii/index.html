@@ -132,6 +132,7 @@
     </div>
   </header>
 
+  <p class="wrap meldung fehler" id="startfehler" role="alert" hidden></p>
   <main class="wrap karte" id="karte">
     <section class="buehne" aria-label="Vorschau">
       <div class="rahmen">
@@ -265,7 +266,20 @@
   <script type="importmap">
   { "imports": { "three": "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" } }
   </script>
-  <script type="module" src="app.js?v=3"></script>
+  <!-- Fehler sichtbar machen (Rückmeldung vom 17. Oktober 2026: «die App stürzt sofort ab, ich kann auch nichts anwählen»): was schiefgeht, steht in der
+       Meldung unter «Video» und oben auf der Seite, auch wenn das Programm selbst nicht startet -->
+  <script>
+    (function () {
+      function zeigen(text) {
+        var m = document.getElementById("meldung"); if (m) { m.textContent = "Fehler: " + text; m.className = "meldung fehler"; }
+        var k = document.getElementById("startfehler"); if (k) { k.textContent = "PHORMA II: " + text; k.hidden = false; }
+      }
+      window.addEventListener("error", function (e) { zeigen((e.message || "unbekannt") + (e.filename ? " (" + e.filename.split("/").pop() + ":" + e.lineno + ")" : "")); });
+      window.addEventListener("unhandledrejection", function (e) { zeigen(String((e.reason && e.reason.message) || e.reason)); });
+      setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
+    })();
+  </script>
+  <script type="module" src="app.js?v=4"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

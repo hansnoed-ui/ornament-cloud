@@ -6,9 +6,9 @@
 // Die Simulation läuft in festen Teilschritten (60 je Sekunde eigener Zeit) von vorn; alle 2 s ein Wiedereinstiegspunkt, damit Spulen nicht von vorn
 // rechnen muss. Bild n ist beim Abspielen, Spulen und im Video dasselbe.
 import * as THREE from "three";
-import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=2";
-import { phase } from "./ablauf.js?v=2";
-import { zufall } from "./analyse.js?v=2";
+import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=3";
+import { phase } from "./ablauf.js?v=3";
+import { zufall } from "./analyse.js?v=3";
 
 export const SCHRITTE = 60;
 const SICHERN = 120;
@@ -58,7 +58,7 @@ const ZEIGEN = /* glsl */ `
 
 export function physarum(g, teil) {
   const { renderer, A: an } = g;
-  const S = g.test ? 96 : g.grob ? 288 : 512, N = S * S, sw = an.w, sh = an.h;
+  const S = g.test ? 96 : g.grob ? 256 : 512, N = S * S, sw = an.w, sh = an.h;
   const K = phase(teil, "keime"), Nz = phase(teil, "netz"), Bp = phase(teil, "bild");
 
   // Ausgangslage: jeder Agent bei einem Keim, in einer kleinen Scheibe, nach aussen gerichtet

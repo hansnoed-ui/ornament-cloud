@@ -9,12 +9,12 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=2";
-import { FPS, kette, laufend } from "./ablauf.js?v=2";
-import { physarum } from "./physarum.js?v=2";
-import { stich } from "./stich.js?v=2";
-import { tiefe } from "./tiefe.js?v=2";
-import { tuch } from "./tuch.js?v=2";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=3";
+import { FPS, kette, laufend } from "./ablauf.js?v=3";
+import { physarum } from "./physarum.js?v=3";
+import { stich } from "./stich.js?v=3";
+import { tiefe } from "./tiefe.js?v=3";
+import { tuch } from "./tuch.js?v=3";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -54,11 +54,14 @@ const FABRIK = { physarum, stich, tiefe, tuch };
  * Die Bühne für ein Foto (Canvas in Filmgrösse B × H), seine Analyse und eine Kette. optionen: tiefeQuelle ("bild" | "ki"), grob (Telefon), test (klein).
  * bild(zeit, t, w, h, { proben, verschluss }) → Leinwand; zaehler(zeit, t) → Text für die Beschriftung; entsorgen().
  */
-export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuelle = "bild" } = {}) {
+export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuelle = "bild", onVerloren = null } = {}) {
   const B = foto.width, H = foto.height;
   const canvas = typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(B, H);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
   if (!renderer.capabilities.isWebGL2) throw new Error("WebGL 2 fehlt");
+  // verliert der Browser die Grafik (meist: Speicher des Telefons voll), meldet die Seite das, statt still stehen zu bleiben
+  let verloren = false;
+  canvas.addEventListener?.("webglcontextlost", (e) => { e.preventDefault(); verloren = true; onVerloren?.(); });
   renderer.setPixelRatio(1); renderer.autoClear = false;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
   const fotoTex = new THREE.CanvasTexture(foto);
@@ -81,7 +84,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     w = nw; h = nh;
     renderer.setSize(w, h, false);
     for (const r of [rtA, rtB, rtMix, rtSumme]) r?.dispose();
-    rtA = ziel(w, h); rtB = ziel(w, h); rtMix = ziel(w, h); rtSumme = ziel(w, h, { type: THREE.FloatType });
+    rtA = ziel(w, h); rtB = ziel(w, h); rtMix = ziel(w, h); rtSumme = ziel(w, h);   // HalfFloat: Mischen in Float32 braucht EXT_float_blend, das viele Telefone nicht haben
     bloom?.dispose();
     bloom = new UnrealBloomPass(new THREE.Vector2(w, h), 0, 0.55, 0.72);
     bloom.highPassUniforms.smoothWidth.value = 0.15;
@@ -111,6 +114,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   const fortschritt = () => Math.min(1, ...effekte.map((e) => e.fortschritt?.() ?? 1));
   return {
     canvas, B, H, effekte, ende: 0, bereit, fortschritt,                                     // ende: wie weit das letzte Bild schon das Foto war (1: exakt)
+    get verloren() { return verloren; },
     bild(zeit, t, nw = B, nh = H, { proben = 1, verschluss = 0.5 } = {}) {
       groesse(Math.max(2, Math.round(nw)), Math.max(2, Math.round(nh)));
       g.loeschen(rtSumme);
