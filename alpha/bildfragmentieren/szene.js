@@ -19,12 +19,13 @@
 //  komplexe transparente geometrische Körper»)
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
-// Seit dem 16. Oktober 2026 ist das alles der Ablauf «Fragmente»; zur Wahl stehen dazu «Kristall» und «Echo» (raum.js, WebGL). Auch sie beginnen im
-// Dunkeln und enden beim Foto; ihr Bild kommt fertig aus WebGL (sz.raum) und wird hier nur eingesetzt, ebenso ihr leuchtendes Signet.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=20";
+// Seit dem 16. Oktober 2026 ist das alles der Ablauf «Fragmente»; zur Wahl steht dazu die «Verwandlung» (Strom, Kristall, Echo, Relief, einzeln oder
+// kombiniert; raum.js, WebGL). Auch sie beginnt im Dunkeln und endet beim Foto; ihr Bild kommt fertig aus WebGL (sz.raum) und wird hier nur
+// eingesetzt, ebenso ihr leuchtendes Signet.
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=21";
 import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=9";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=20";
-import { KOERPER, abbilden } from "./koerper.js?v=20";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=21";
+import { KOERPER, abbilden } from "./koerper.js?v=21";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
@@ -641,7 +642,7 @@ function beschriftung(ctx, sz, t, sicht) {
 /** Pixelmass der Ziel-Leinwand (Vorschau kleiner, Video voll): darin rechnet WebGL */
 const zielMass = (ctx, sz) => { const m = ctx.getTransform(); return [sz.breite * Math.hypot(m.a, m.b), sz.hoehe * Math.hypot(m.c, m.d)]; };
 
-/** Kristall oder Echo: das Bild kommt aus raum.js (k von N: das Filmbild im Abschnitt, für die Rückkopplung von Echo).
+/** Verwandlung: das Bild kommt aus raum.js (k von N: das Filmbild im Abschnitt, für Strom und die Rückkopplung von Echo).
  *  Ist raum.js noch nicht geladen (oder ohne WebGL 2), bleibt der Grund, und am Ende blendet das Foto auf. */
 function raumZeichnen(ctx, sz, t) {
   const { von, bis } = sz.zeit.abschnitt, [w, h] = zielMass(ctx, sz);
@@ -673,7 +674,7 @@ export function bild(ctx, sz, t) {
   const fotoAb = sz.foto ? sz.einrasten[0] : Infinity, bildEnde = ab.bildAus ? ab.bildAus[1] : ab.schluss[1];
   const { abschnitt } = sz.zeit, raeumlich = !sz.zeit.fragmente;
   if (t < bildEnde && raeumlich && t < abschnitt.bis) {
-    // Kristall oder Echo (fertiges Bild aus WebGL); davor nur der Grund
+    // Verwandlung (fertiges Bild aus WebGL); davor nur der Grund
     if (t >= abschnitt.von) raumZeichnen(ctx, sz, t);
     rahmen(ctx, sz, t);
   } else if (t < bildEnde) {
@@ -712,7 +713,7 @@ export function bild(ctx, sz, t) {
     // die Zeichnung doppelt so schnell, der Punkt aber ruhig (etwas langsamer als im Original)
     const f = SIGNET_VON + (t - ab.signet[0]) * FPS * SIGNET_TEMPO, opt = { hoehe: H, farben: F, punktTempo: SIGNET_TEMPO * 1.25 };
     if (sz.raum && !sz.zeit.fragmente) {
-      // Kristall, Echo, Strom und Relief: der Punkt läuft als kleiner Glaskristall durch die Schlaufe und leuchtet (Halo, Bokeh auf seiner Spur)
+      // Verwandlung: der Punkt läuft als kleiner Glaskristall durch die Schlaufe und leuchtet (Halo, Bokeh auf seiner Spur)
       const [w, h] = zielMass(ctx, sz), { lage: [px, py], sicht } = punktLage(f, opt);
       const zeichnen = (c) => { c.fillStyle = F.grund; c.fillRect(0, 0, 1080, H); signetZeichnen(c, f, opt); };
       const spur = [5, 10, 15, 20].map((d) => { const [sx, sy] = punktLage(Math.max(0, f - d * SIGNET_TEMPO), opt).lage; return [sx, sy + (H - 1920) / 2]; });
@@ -724,8 +725,8 @@ export function bild(ctx, sz, t) {
   }
 }
 
-/** Zeitpunkt für das Standbild, wenn nichts anderes gewählt ist: das fertige farbige Mosaik, kurz bevor die Montage beginnt; bei Kristall und Echo
- *  die Mitte der zweiten Phase (Bruch, Echo) */
+/** Zeitpunkt für das Standbild, wenn nichts anderes gewählt ist: das fertige farbige Mosaik, kurz bevor die Montage beginnt; bei der Verwandlung
+ *  die Mitte der zweiten Phase */
 export const standbildZeit = (sz) => {
   if (sz.zeit.fragmente) return sz.zeit.ab.zusammen[0] - 0.05;
   const p = sz.zeit.phasen[1];
