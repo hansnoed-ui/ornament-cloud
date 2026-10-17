@@ -17,7 +17,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
-import { kette, ablaufName } from "./ablauf.js?v=25";
+import { kette, ablaufName } from "./ablauf.js?v=26";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -426,7 +426,10 @@ function echo(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = tr
         float gx = tr + 2.0 * rr + br - tl - 2.0 * l - bl, gy = tl + 2.0 * t + tr - bl - 2.0 * b - br;
         neu = max(neu, vec3(0.9, 0.91, 0.94) * smoothstep(uKanteVon, uKanteBis, length(vec2(gx, gy))) * uEin);      // Kanten, einfarbig hell; Maximum: keine Aufschaukelung
         neu = max(neu, negativ(texture2D(uFoto, vUv).rgb) * uFotoEin);                                 // Bild-Teil: das Foto strömt herein
-        if (uQuelleEin > 0.0) neu = max(neu, negativ(linear(texture2D(uQuelle, vUv).rgb)) * uQuelleEin);   // der vorige Effekt (fertiges Bild)
+        if (uQuelleEin > 0.0) {                                                                        // der vorige Effekt (fertiges Bild): nur seine
+          vec3 q = negativ(linear(texture2D(uQuelle, vUv).rgb));                                      // hellen Kanten und Glanzlichter ziehen Spuren – die ganze
+          neu = max(neu, q * smoothstep(0.5, 0.95, dot(q, vec3(0.2126, 0.7152, 0.0722))) * 0.7 * uQuelleEin);   // Fläche verschmierte zu einer weissen Wolke
+        }
         gl_FragColor = vec4(clamp(neu, 0.0, 3.0), 1.0);
       }`,
   });
@@ -664,19 +667,23 @@ function strom(renderer, textur, B, H, grund, px, hell, { letzt = true } = {}) {
   geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(N * 3), 3));
   geo.setAttribute("aRef", new THREE.BufferAttribute(ref, 2));
   geo.setAttribute("aUv", new THREE.BufferAttribute(fotoUv, 2));
+  // verschiedene Grössen, nicht übertrieben (Wunsch vom 17. Oktober 2026): die meisten 0,7 bis 1,15, jede zwölfte grösser bis 1,8
+  const groessen = new Float32Array(N), zg = zufallAus(20261018);
+  for (let i = 0; i < N; i++) { const a = zg(), b = zg(); groessen[i] = b < 1 / 12 ? 1.35 + 0.45 * a : 0.7 + 0.45 * a * a; }
+  geo.setAttribute("aGroesse", new THREE.BufferAttribute(groessen, 1));
   const punktMat = new THREE.ShaderMaterial({
     uniforms: { uLage: { value: null }, uTempo: { value: null }, uHeim: { value: heim }, uFoto: { value: textur }, uEinrasten: { value: 0 }, uZeit: { value: 0 },
       uPunkt: { value: (2 / S) * 1.25 }, uPixelJeEinheit: { value: H / 2 / Math.tan(THREE.MathUtils.degToRad(FOV / 2)) } },
     vertexShader: /* glsl */ `
       uniform sampler2D uLage, uTempo, uHeim, uFoto; uniform float uEinrasten, uZeit, uPunkt, uPixelJeEinheit;
-      attribute vec2 aRef, aUv; varying vec3 vFarbe; varying float vAlpha;
+      attribute vec2 aRef, aUv; attribute float aGroesse; varying vec3 vFarbe; varying float vAlpha;
       void main() {
         vec4 L = texture2D(uLage, aRef);
         vec3 p = mix(L.xyz, texture2D(uHeim, aRef).xyz, uEinrasten);
         float geschw = length(texture2D(uTempo, aRef).xyz), auf = smoothstep(L.w * 1.1, L.w * 1.1 + 0.4, uZeit);   // Funken leuchten nacheinander auf
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
         gl_Position = projectionMatrix * mv;
-        gl_PointSize = clamp(uPunkt * uPixelJeEinheit / -mv.z * (0.35 + 0.65 * auf), 1.0, uPunkt * uPixelJeEinheit * 0.6);
+        gl_PointSize = clamp(uPunkt * aGroesse * uPixelJeEinheit / -mv.z * (0.35 + 0.65 * auf), 1.0, uPunkt * aGroesse * uPixelJeEinheit * 0.6);
         vFarbe = texture2D(uFoto, aUv).rgb * (1.0 + 0.35 * smoothstep(0.4, 2.0, geschw));   // schnelle Teilchen glänzen heller
         vAlpha = auf * (1.0 - uEinrasten);
       }`,
@@ -889,7 +896,7 @@ const BAUEN = { koerper, scherben, echo, strom, relief };
  * bild(u, k, N, w, h): das Bild bei u (0 … 1 im Abschnitt; k von N Filmbildern) in w × h Bildpunkten; gibt die Leinwand zurück (gleich danach lesen).
  * signet(zeichnen, punkt, f, w, h): das Signet in der leuchtenden Fassung.
  * In der Kette überblenden zwei Effekte: beide zeichnen nacheinander auf die Leinwand, die Bilder werden in Texturen kopiert und gemischt – die hellen
- * Teile des neuen zuerst. Echo mischt nicht, es nimmt das Bild des vorigen in seine Rückkopplung auf (seine Scherben oder Teilchen ziehen Spuren).
+ * Teile des neuen zuerst. Echo nimmt dabei die hellen Kanten des vorigen in seine Rückkopplung auf (seine Scherben oder Teilchen ziehen Spuren).
  */
 export function raum(foto, art, { grund = "#000000", akzent = "#f08a5d" } = {}) {
   const plan = kette(art);
@@ -940,7 +947,7 @@ export function raum(foto, art, { grund = "#000000", akzent = "#f08a5d" } = {}) 
     teil.groesse(w, h);
   };
   // Filmbilder und Zeiten: Bild k des Abschnitts liegt bei k · proBild Sekunden (Tempo «normal»); ein Teil zählt seine Bilder ab k0
-  let proBild = 1 / 30, zuletzt = teile[0];
+  let proBild = 1 / 30, zuletzt = teile[0], vorBild = null;                // vorBild: { k, textur } – das Bild des vorigen Teils zu diesem Filmbild
   const k0 = (p) => Math.ceil(p.von / proBild - 1e-6);
   const lokal = (p, k) => Math.min(p.aus, Math.max(p.ein, p.ein + k * proBild - p.von));
   const zeichnen = (i, k, T) => {
@@ -949,8 +956,10 @@ export function raum(foto, art, { grund = "#000000", akzent = "#f08a5d" } = {}) 
     const quelle = vor && ((m) => {                                          // das fertige Bild des vorigen Teils zu Bild m dieses Teils
       const kk = a + m;
       if (kk * proBild > vor.bis + 1e-9) return null;
+      const ein = 1 - weich(anteil(kk * proBild, p.von + 0.35 * (vor.bis - p.von), vor.bis));
+      if (vorBild?.k === kk) return { textur: vorBild.textur, ein };          // eben schon gezeichnet (Überblenden)
       zeichnen(i - 1, kk);
-      return { textur: kopie("q"), ein: 1 - weich(anteil(kk * proBild, p.von + 0.55 * (vor.bis - p.von), vor.bis)) };
+      return { textur: kopie("q"), ein };
     });
     p.W.bild(t, Math.max(0, k - a), (m) => lokal(p, a + m), quelle);
   };
@@ -964,9 +973,9 @@ export function raum(foto, art, { grund = "#000000", akzent = "#f08a5d" } = {}) 
       const T = Math.min(1, Math.max(0, u)) * plan.dauer;
       const aktiv = teile.map((_, i) => i).filter((i) => T >= teile[i].von - 1e-9 && T <= teile[i].bis + 1e-9);
       const i = aktiv.length ? aktiv[aktiv.length - 1] : teile.length - 1;
-      if (aktiv.length > 1 && teile[i].art !== "echo") {
-        zeichnen(i - 1, k, T); misch.uniforms.uA.value = kopie("a");
-        zeichnen(i, k, T); misch.uniforms.uB.value = kopie("b");
+      if (aktiv.length > 1) {                                               // überblenden; Echo nimmt das Bild des vorigen zudem in seine Rückkopplung auf
+        zeichnen(i - 1, k); vorBild = { k, textur: misch.uniforms.uA.value = kopie("a") };
+        zeichnen(i, k, T); vorBild = null; misch.uniforms.uB.value = kopie("b");
         misch.uniforms.uS.value = anteil(T, teile[i].von, teile[i - 1].bis);
         renderer.setRenderTarget(null); renderer.render(mischSzene, ortho);
       } else zeichnen(i, k, T);

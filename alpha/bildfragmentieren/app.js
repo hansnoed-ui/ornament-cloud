@@ -1,11 +1,11 @@
 // «Bildfragmentieren» – Seite: Foto laden, zerlegen (Worker), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der MP4-Schreiber von Sketchory;
 // ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, ABLAEUFE, ablaufName, effekte, VERWANDLUNG } from "./ablauf.js?v=25";
-import { szene, bild, standbildZeit, vorbereiten, FARBEN } from "./szene.js?v=25";
-import { zerlegen } from "./fragmente.js?v=25";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, ABLAEUFE, ablaufName, effekte, VERWANDLUNG } from "./ablauf.js?v=26";
+import { szene, bild, standbildZeit, vorbereiten, FARBEN } from "./szene.js?v=26";
+import { zerlegen } from "./fragmente.js?v=26";
 import { mp4 } from "../sketchory/mp4.js?v=10";
-import { mitDauer } from "../the-fictory/dauer.js?v=25";
+import { mitDauer } from "../the-fictory/dauer.js?v=26";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
@@ -62,7 +62,7 @@ async function fotoLaden(datei) {
 
 // ——— zerlegen (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=25", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=26", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   // zerlegt wird auf der halben Filmgrösse (für Kanten und Mosaik genug), das Foto für den Schluss bleibt in voller Grösse
@@ -115,7 +115,7 @@ async function raumBereit() {
   S.raum?.entsorgen(); S.raum = null;
   if (!schluessel) return;
   try {
-    raumModul ??= await import("./raum.js?v=25");
+    raumModul ??= await import("./raum.js?v=26");
     if (S.raumSchluessel !== schluessel) return;
     const F = FARBEN[S.grund] ?? FARBEN.schwarz;
     S.raum = raumModul.raum(S.foto, art, { grund: F.grund, akzent: F.punkt });
