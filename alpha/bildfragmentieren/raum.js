@@ -17,7 +17,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
-import { kette, ablaufName } from "./ablauf.js?v=27";
+import { kette, ablaufName } from "./ablauf.js?v=28";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -863,9 +863,9 @@ function flug(renderer, textur, B, H, grund, px, hell) {
   }
   geo.setAttribute("aHoehe", new THREE.BufferAttribute(hoehe, 1));
   geo.setAttribute("aGrad", new THREE.BufferAttribute(grad, 2));
-  // die Höhenkurven auf einem stärker geglätteten Feld: auf flachen, einfarbigen Flächen pendelte das JPEG-Rauschen sonst um eine Stufe und zeichnete
-  // dort lauter Pünktchen; die Geometrie bleibt scharfkantig
-  geo.setAttribute("aKurve", new THREE.BufferAttribute(hoehenfeld(helligkeit, nx, ny, Math.max(2, Math.round(nx / 60))), 1));
+  // die Höhenkurven auf einem etwas stärker geglätteten Feld: genau an den Formen, aber ruhig auf einfarbigen Flächen (JPEG-Rauschen); die Geometrie
+  // bleibt scharfkantig
+  geo.setAttribute("aKurve", new THREE.BufferAttribute(hoehenfeld(helligkeit, nx, ny, Math.max(2, Math.round(nx / 120))), 1));
 
   // Gelände grob: das Dach (Maximum je Zelle und Nachbarn – die Kamera bleibt darüber) und die geglätteten Formen (für die Gipfel der Route)
   const cx = 48, cy = Math.round((48 * H) / B), dach = new Float32Array(cx * cy), roh = new Float32Array(cx * cy);
@@ -897,7 +897,7 @@ function flug(renderer, textur, B, H, grund, px, hell) {
   const [P1, P2, P3] = gipfel;
 
   const u = { uTiefe: { value: FLUG_TIEFE }, uLinien: { value: 1 }, uFlaeche: { value: 0 }, uWelle: { value: 0 }, uZentrum: { value: new THREE.Vector2(...P1) },
-    uGrund: { value: grund.clone() }, uHell: { value: hell ? 1 : 0 }, uDichte: { value: 22 } };
+    uGrund: { value: grund.clone() }, uHell: { value: hell ? 1 : 0 }, uDichte: { value: 34 }, uZeit: { value: 0 } };
   const mat = new THREE.MeshStandardMaterial({ map: textur, emissive: 0xffffff, emissiveMap: textur, emissiveIntensity: 0, roughness: 0.6, metalness: 0.05 });
   mat.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, u);
@@ -906,19 +906,26 @@ function flug(renderer, textur, B, H, grund, px, hell) {
       .replace("#include <begin_vertex>", "vec3 transformed = vec3(position); transformed.z += aHoehe * uTiefe; vHoehe = aKurve; vWelt = (modelMatrix * vec4(transformed, 1.0)).xyz;")
       .replace("#include <beginnormal_vertex>", "vec3 objectNormal = normalize(vec3(-aGrad * uTiefe, 1.0));");
     shader.fragmentShader = shader.fragmentShader
-      .replace("#include <common>", "#include <common>\nuniform float uLinien, uFlaeche, uWelle, uHell, uDichte; uniform vec2 uZentrum; uniform vec3 uGrund; varying float vHoehe; varying vec3 vWelt;")
+      .replace("#include <common>", "#include <common>\nuniform float uLinien, uFlaeche, uWelle, uHell, uDichte, uZeit; uniform vec2 uZentrum; uniform vec3 uGrund; varying float vHoehe; varying vec3 vWelt;")
       .replace("#include <map_fragment>", "#include <map_fragment>\n  diffuseColor.rgb *= uFlaeche;")
       .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>
-        // Höhenkurven in den Farben des Fotos (auf Weiss dunkel), über fwidth immer gleich fein; sie öffnen sich als Welle vom ersten Gipfel aus
+        // Höhenkurven in den Farben des Fotos (auf Weiss dunkel): fein und präzise – unter einem Bildpunkt breit, jede fünfte eine etwas kräftigere
+        // Leitlinie wie auf einer Karte – und neuronal: Lichtimpulse laufen die Kurven entlang wie Signale, jede Kurve mit eigener Richtung und Phase
+        // (Wunsch vom 17. Oktober 2026: «Höhenlinien fein, präzise, neuronal»). Sie öffnen sich als Welle vom ersten Gipfel aus.
         vec3 fotoF = texture2D(map, vMapUv).rgb;
         float hl = vHoehe * uDichte + 0.5;                                  // die Kurven zwischen den Stufen: reines Weiss oder Schwarz liegt auf keiner
+        float stufe = floor(hl), leit = 1.0 - step(0.5, mod(stufe, 5.0));
         // smoothstep nie mit gleichen oder vertauschten Grenzen (undefiniert: auf flachen Flächen ist fwidth 0 – das gab flimmernde Pünktchen)
-        float linie = (1.0 - smoothstep(0.0, max(1.3 * fwidth(hl), 1e-4), abs(fract(hl - 0.5) - 0.5)))
+        float linie = (1.0 - smoothstep(0.0, max(mix(0.75, 1.3, leit) * fwidth(hl), 1e-4), abs(fract(hl - 0.5) - 0.5)))
                     * smoothstep(0.02, 0.06, vHoehe) * (1.0 - smoothstep(0.91, 0.95, vHoehe));   // nicht in fast weissen oder schwarzen Flächen
+        float k = stufe * 1.618;
+        float puls = pow(0.5 + 0.5 * sin(dot(vWelt.xy, vec2(cos(k * 2.3), sin(k * 2.3))) * 9.0 - uZeit * 2.6 + k * 3.1), 18.0);
         float d = length(vWelt.xy - uZentrum), offen = 1.0 - smoothstep(uWelle - 0.1, uWelle, d), front = exp(-pow((d - uWelle) / 0.05, 2.0));
         vec3 linF = uHell > 0.5 ? fotoF * 0.5 : min(fotoF * 1.3 + 0.08, vec3(1.0));
         float l = linie * offen * uLinien;
-        totalEmissiveRadiance += mix(uGrund, linF, clamp(l + 1.5 * front * linie * uLinien, 0.0, 1.0)) * (1.0 - uFlaeche) + linF * l * 0.4 * uFlaeche;`);
+        vec3 basis = mix(uGrund, linF, clamp(l * (0.6 + 0.4 * leit) + 1.5 * front * linie * uLinien, 0.0, 1.0));
+        vec3 signal = (uHell > 0.5 ? -0.5 * basis : vec3(1.0, 0.97, 0.92) * 1.4) * l * puls;
+        totalEmissiveRadiance += (basis + signal) * (1.0 - uFlaeche) + (linF * 0.4 * l + 0.5 * signal) * uFlaeche;`);
   };
   const flaeche = new THREE.Mesh(geo, mat);
   flaeche.castShadow = flaeche.receiveShadow = true;
@@ -980,6 +987,7 @@ function flug(renderer, textur, B, H, grund, px, hell) {
       u.uFlaeche.value = flaech;
       u.uWelle.value = 0.05 + 3.2 * inOut(anteil(t, 0.3, 5.6));
       u.uLinien.value = 1 - inOut(anteil(t, 13.5, 17.0));
+      u.uZeit.value = t;
       mat.emissiveIntensity = foto;
       const a = -0.8 + 3.4 * inOut(anteil(t, 6.0, 16.0));                  // das Licht wandert einmal halb herum
       streif.position.set(Math.cos(a) * 3, Math.sin(a) * 3, 1.0 + 0.4 * Math.sin(t * 0.7)); streif.intensity = 2.3 * licht;
