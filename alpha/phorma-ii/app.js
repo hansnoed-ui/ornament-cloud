@@ -309,28 +309,62 @@ async function textLaden() {
   await bildSetzen(await textBild(S.text, ...filmMass(S.format)));
 }
 if (S.quelle === "text" && S.text.trim()) textLaden();
-// Ton: eine Audiodatei steuert das Gewebe und klingt in der Vorschau und im Video mit (tonspur.js); ohne Ton bleibt das Video stumm
+// Ton: eine Audiodatei steuert das Gewebe und klingt in der Vorschau und im Video mit (tonspur.js); ohne Ton bleibt das Video stumm. Auf Wunsch wird
+// sie verfrickelt (frickeln.js: aus Schnipseln ein neues Stück, wiederholbar je Wurf); dann steuert und klingt das neue Stück.
+S.frickeln = erinnern("frickeln") === "1"; $("frickeln").checked = S.frickeln;
+S.wurf = Number(erinnern("wurf")) || 1;
 $("tondatei").addEventListener("change", async (e) => {
   const datei = e.target.files?.[0]; if (!datei) return;
   melden("Der Ton wird gelesen …");
   try {
     const { tonLesen } = await import("./tonspur.js?v=10");
-    const { buffer, pcm, rate } = await tonLesen(datei), analyse = tonAnalysieren(pcm, rate);
-    if (S.ton?.url) URL.revokeObjectURL(S.ton.url);
-    S.ton = { buffer, analyse, name: datei.name, url: URL.createObjectURL(datei) };
-    $("tonspur").src = S.ton.url;
-    $("ton-info").textContent = `${datei.name} · ${analyse.dauer.toFixed(1).replace(".", ",")} s · ${analyse.einsaetze.length} Einsätze · ${analyse.schnitte.length} Schnitte`;
-    $("ton-weg").hidden = false;
-    notiz(`Ton gelesen: ${analyse.dauer.toFixed(1)} s, ${analyse.einsaetze.length} Einsätze`);
-    melden(S.ablauf === "gewebe" ? "Ton bereit: das Gewebe folgt ihm." : "Ton bereit: er klingt mit; bewegen lässt er das Gewebe.");
-    neu();
+    const { buffer } = await tonLesen(datei);
+    if (S.tonQuelle?.url) URL.revokeObjectURL(S.tonQuelle.url);
+    S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei) };
+    await tonSetzen();
   } catch (fehler) { melden(`Diese Audiodatei kann der Browser nicht lesen (${fehler?.message ?? fehler}).`, true); }
 });
+/** S.ton aus der gelesenen Datei: so wie sie ist oder verfrickelt */
+async function tonSetzen() {
+  const q = S.tonQuelle; if (!q) return;
+  if (S.ton?.url && S.ton.url !== q.url) URL.revokeObjectURL(S.ton.url);
+  const kanaele = Array.from({ length: Math.min(2, q.buffer.numberOfChannels) }, (_, k) => q.buffer.getChannelData(k)), rate = q.buffer.sampleRate;
+  let buffer = q.buffer, url = q.url, name = q.name, mehr = "";
+  if (S.frickeln) {
+    melden("Der Ton wird verfrickelt …");
+    await new Promise((ok) => setTimeout(ok, 30));
+    const { frickeln, wav } = await import("./frickeln.js?v=10");
+    const f = frickeln(kanaele, rate, { samen: S.wurf });
+    buffer = new AudioBuffer({ length: f.kanaele[0].length, numberOfChannels: 2, sampleRate: rate });
+    f.kanaele.forEach((c, k) => buffer.copyToChannel(c, k));
+    url = URL.createObjectURL(new Blob([wav(f.kanaele, rate)], { type: "audio/wav" }));
+    name = `${q.name} · verfrickelt, Wurf ${S.wurf}`; mehr = ` · ${f.bpm} BPM, ${f.takte} Takte aus ${f.scheiben} Schnipseln`;
+    notiz(`Ton verfrickelt: Wurf ${S.wurf}, ${f.bpm} BPM, ${f.dauer.toFixed(1)} s`);
+  }
+  const pcm = new Float32Array(buffer.length);
+  for (let k = 0; k < buffer.numberOfChannels; k++) { const c = buffer.getChannelData(k); for (let i = 0; i < c.length; i++) pcm[i] += c[i] / buffer.numberOfChannels; }
+  const analyse = tonAnalysieren(pcm, rate);
+  S.ton = { buffer, analyse, name, url };
+  $("tonspur").src = url;
+  $("ton-info").textContent = `${name}${mehr} · ${analyse.dauer.toFixed(1).replace(".", ",")} s · ${analyse.einsaetze.length} Einsätze · ${analyse.schnitte.length} Schnitte`;
+  $("ton-weg").hidden = false; $("wuerfeln").hidden = !S.frickeln;
+  notiz(`Ton gelesen: ${analyse.dauer.toFixed(1)} s, ${analyse.einsaetze.length} Einsätze`);
+  melden(S.ablauf === "gewebe" ? "Ton bereit: das Gewebe folgt ihm." : "Ton bereit: er klingt mit; bewegen lässt er das Gewebe.");
+  neu();
+}
+$("frickeln").addEventListener("change", () => { S.frickeln = $("frickeln").checked; merken("frickeln", S.frickeln ? "1" : "0"); $("wuerfeln").hidden = !(S.frickeln && S.tonQuelle); tonSetzen(); });
+$("wuerfeln").addEventListener("click", () => { S.wurf = (S.wurf % 9999) + 1; merken("wurf", String(S.wurf)); tonSetzen(); });
 $("ton-weg").addEventListener("click", () => {
   if (S.ton?.url) URL.revokeObjectURL(S.ton.url);
-  S.ton = null; $("tonspur").removeAttribute("src"); $("tondatei").value = ""; $("ton-info").textContent = ""; $("ton-weg").hidden = true;
+  if (S.tonQuelle?.url && S.tonQuelle.url !== S.ton?.url) URL.revokeObjectURL(S.tonQuelle.url);
+  S.ton = null; S.tonQuelle = null; $("tonspur").removeAttribute("src"); $("tondatei").value = ""; $("ton-info").textContent = ""; $("ton-weg").hidden = true; $("wuerfeln").hidden = true;
   neu();
 });
+// ausschaltbar: ohne Haken bleiben Vorschau und Video stumm
+const tonStumm = () => { $("tonspur").muted = !$("ton-im-video").checked; };
+{ const v = erinnern("ton-im-video"); if (v !== null) $("ton-im-video").checked = v === "1"; }
+tonStumm();
+$("ton-im-video").addEventListener("change", () => { merken("ton-im-video", $("ton-im-video").checked ? "1" : "0"); tonStumm(); });
 // auf dem Telefon keine KI-Tiefe (Rückmeldung vom 17. Oktober 2026, Samsung Galaxy S23: «er stürzt ab, wenn mit KI gewählt ist, sonst nicht» – mit
 // WebGPU und auch mit WebAssembly)
 if (grob) { S.tiefe = "bild"; merken("tiefe", "bild"); }
@@ -525,6 +559,6 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...tiefeKnoepfe, ...wahlKnoepfe, ...effektKnoepfe, ...quelleKnoepfe, $("text"), $("tondatei"), $("ton-weg"), $("video"), $("png")])
+  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...tiefeKnoepfe, ...wahlKnoepfe, ...effektKnoepfe, ...quelleKnoepfe, $("text"), $("tondatei"), $("ton-weg"), $("frickeln"), $("wuerfeln"), $("video"), $("png")])
     el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A) || (grob && el.dataset?.tiefe === "ki");
 }

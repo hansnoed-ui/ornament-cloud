@@ -228,7 +228,7 @@ const WAV = (() => {
   return b;
 })();
 
-await check("Gewebe aus Text mit Ton: Zeichen, Bänder aus Linien, Fragmente bei den Einsätzen, am Ende exakt der Text; Video mit Tonspur", async () => {
+await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zeichen, Bänder aus Linien, Fragmente bei den Einsätzen, am Ende exakt der Text; Video mit Tonspur", async () => {
   const { ctx, page, fehler, fremd } = await oeffne({ vorher: ERSATZ_ENCODER });
   await page.click('[data-wahl="gewebe"]');
   await page.click('[data-quelle="text"]');
@@ -239,6 +239,23 @@ await check("Gewebe aus Text mit Ton: Zeichen, Bänder aus Linien, Fragmente bei
   await page.waitForFunction(() => window.__phorma.ton && window.__phorma.buehneFertig && window.__phorma.sz.fragmente.length, null, { timeout: 120_000 });
   await bereit(page);
   assert.match(await page.textContent("#ton-info"), /schlaege\.wav · 12,0 s · \d+ Einsätze/);
+  // Verfrickeln: ein neues Stück, ein neuer Wurf ein anderes, das Gewebe folgt ihm; zurück zur Datei, wie sie ist
+  await page.check("#frickeln");
+  await page.waitForFunction(() => window.__phorma.ton?.name.includes("verfrickelt"), null, { timeout: 60_000 });
+  assert.match(await page.textContent("#ton-info"), /schlaege\.wav · verfrickelt, Wurf \d+ · \d+ BPM, \d+ Takte aus \d+ Schnipseln · \d+,\d s/);
+  assert.ok(await page.isVisible("#wuerfeln"));
+  const erst = await page.evaluate(() => [window.__phorma.ton.name, window.__phorma.ton.analyse.einsaetze.length, window.__phorma.ton.buffer.numberOfChannels]);
+  assert.equal(erst[2], 2, "verfrickelt in Stereo");
+  await page.click("#wuerfeln");
+  await page.waitForFunction((n) => window.__phorma.ton.name !== n, erst[0], { timeout: 60_000 });
+  await page.uncheck("#frickeln");
+  await page.waitForFunction(() => !window.__phorma.ton.name.includes("verfrickelt"), null, { timeout: 60_000 });
+  assert.ok(await page.isHidden("#wuerfeln"));
+  // Ton an/aus: ohne Haken ist die Vorschau stumm
+  await page.uncheck("#ton-im-video"); assert.equal(await page.evaluate(() => document.getElementById("tonspur").muted), true);
+  await page.check("#ton-im-video"); assert.equal(await page.evaluate(() => document.getElementById("tonspur").muted), false);
+  await page.waitForFunction(() => window.__phorma.buehneFertig && window.__phorma.sz.fragmente.length, null, { timeout: 120_000 });
+  await bereit(page);
   const s = await page.evaluate(() => { const S = window.__phorma; return { ablauf: S.ablauf, phasen: S.sz.zeit.phasen.map((p) => [p.name, p.von, p.bis]), abschnitt: S.sz.zeit.abschnitt, einsaetze: S.ton.analyse.einsaetze.length, fragmente: S.sz.fragmente.length, schnitte: S.sz.schnitte }; });
   assert.equal(s.ablauf, "gewebe");
   assert.deepEqual(s.phasen.map((p) => p[0]), ["zeichen", "gewebe", "bild"]);

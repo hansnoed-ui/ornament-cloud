@@ -1,5 +1,5 @@
 // PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, Ton und
-// Höhenlinien fürs Gewebe, Seite.
+// Höhenlinien fürs Gewebe, Verfrickeln, Seite.
 //   node --test tests/phorma-ii.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -11,6 +11,7 @@ const A = await import(new URL("ablauf.js", P).href);
 const { analysieren, tiefeNormieren } = await import(new URL("analyse.js", P).href);
 const T = await import(new URL("ton.js", P).href);
 const Kv = await import(new URL("kurven.js", P).href);
+const Fr = await import(new URL("frickeln.js", P).href);
 const lies = (p) => readFileSync(new URL(p, P), "utf8");
 
 test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette", () => {
@@ -154,6 +155,30 @@ test("Höhenlinien: ein Kreis ergibt eine geschlossene Linie auf seinem Rand; da
   assert.deepEqual(Kv.gewebeKurven(new Float32Array(w * h), w, h), [], "ein leeres Feld hat keine Linien");
 });
 
+test("Verfrickeln: aus einem kurzen Sample ein neues Stück im Raster, wiederholbar je Wurf, ohne Übersteuern; auch Stille und Winziges", () => {
+  const rate = 22050, n = Math.round(rate * 2.4), pcm = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const t = i / rate, s = t % 0.6; pcm[i] = Math.exp(-s / 0.08) * (Math.sin(i * (0.03 + 0.01 * Math.floor(t / 0.6))) + 0.4 * Math.sin(i * 0.9)) * 0.7; }
+  const f = Fr.frickeln([pcm], rate, { samen: 3 });
+  const schritt = Math.round((60 / f.bpm / 4) * rate);
+  assert.ok(f.bpm >= 80 && f.bpm <= 160, `Tempo ${f.bpm}`);
+  assert.equal(f.kanaele[0].length, f.takte * 16 * schritt + Math.round(3 * rate), "Takte im Raster und ein Nachhall von 3 s");
+  assert.ok(f.dauer > 20 && f.dauer < 45 && f.scheiben >= 3 && f.anschlaege > f.takte * 4, JSON.stringify({ dauer: f.dauer, scheiben: f.scheiben, anschlaege: f.anschlaege }));
+  let max = 0, nan = false, unterschied = 0;
+  for (let i = 0; i < f.kanaele[0].length; i++) { const l = f.kanaele[0][i], r = f.kanaele[1][i]; if (Number.isNaN(l + r)) nan = true; max = Math.max(max, Math.abs(l), Math.abs(r)); unterschied += Math.abs(l - r); }
+  assert.ok(!nan && max <= 0.95 && max > 0.9, `Spitze ${max}`);
+  assert.ok(unterschied > 0, "stereo: Panorama und Ping-Pong-Echo");
+  const mono = f.kanaele[0].map((v, i) => (v + f.kanaele[1][i]) / 2), t = T.tonAnalysieren(mono, rate);
+  assert.ok(t.einsaetze.length > 2 * f.takte, `ein Stück mit vielen Einsätzen (${t.einsaetze.length})`);
+  assert.deepEqual(Fr.frickeln([pcm], rate, { samen: 3 }).kanaele[0].slice(0, 50000), f.kanaele[0].slice(0, 50000), "derselbe Wurf, dasselbe Stück");
+  assert.notDeepEqual(Fr.frickeln([pcm], rate, { samen: 4 }).kanaele[0].slice(0, 50000), f.kanaele[0].slice(0, 50000), "ein neuer Wurf klingt anders");
+  for (const q of [new Float32Array(rate), Float32Array.from({ length: 300 }, (_, i) => Math.sin(i))]) {
+    const s = Fr.frickeln([q, q], rate, { samen: 1, takte: 2 });
+    assert.ok(s.kanaele.every((c) => c.every((v) => Number.isFinite(v) && Math.abs(v) <= 0.95)));
+  }
+  const w = Fr.wav(f.kanaele, rate);
+  assert.equal(String.fromCharCode(...w.subarray(0, 4)), "RIFF"); assert.equal(w.length, 44 + f.kanaele[0].length * 4);
+});
+
 test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Marken, nichts von aussen ausser der KI auf Wunsch", () => {
   const html = lies("index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
@@ -165,6 +190,8 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /data-wahl="gewebe"/, "das Gewebe als eigene Karte");
   assert.match(html, /data-quelle="foto"[\s\S]*data-quelle="text"/, "Foto oder Text als Quelle");
   assert.match(html, /id="tondatei"[^>]*accept="audio\/\*/, "eine Audiodatei");
+  assert.match(html, /id="ton-im-video" checked> Ton an/, "Ton ausschaltbar");
+  assert.match(html, /id="frickeln"> Verfrickeln[\s\S]*id="wuerfeln"/, "Verfrickeln als Option, mit neuem Wurf");
   assert.ok(!/data-(wahl|effekt)="(stich|muster)"|data-(strich|muster)=/.test(html), "weder Stich noch Morphogenese");
   const dateien = readdirSync(P).filter((f) => f.endsWith(".js")), marken = new Set();
   for (const f of dateien) {
