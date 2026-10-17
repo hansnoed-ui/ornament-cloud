@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PHORMA II – Ornament Cloud · Alpha</title>
+  <!--
+    Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14).
+    Prototyp vom 17. Oktober 2026, die zweite Anwendung der Reihe nach PHORMA I (Wunsch: «Starte mit der Empfehlung»: Physarum findet die Formen →
+    Stich zeichnet sie → das Foto bekommt Tiefe und wird Raum → es fällt als Tuch und legt sich glatt zum Schlussbild; dazu Bewegungsunschärfe im
+    Export und Übergänge als Zeitfront). Steht für sich wie PHORMA I (Ausnahme in tests/navigation.test.mjs): ohne die Navigation oben links.
+  -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="PHORMA II: Ein Schleimpilz findet die Formen deines Fotos, ein Kupferstich zeichnet sie, das Foto wird Raum und fällt als Seidentuch – als Video im Hochformat für Social Media, alles im Browser.">
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="../../styles.css?v=45">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <style>
+    .site-header { padding-bottom: 12px; }
+    .karte { display: grid; gap: 28px; padding-bottom: 48px; }
+    @media (min-width: 900px) { .karte { grid-template-columns: minmax(280px, 400px) 1fr; align-items: start; } .buehne { position: sticky; top: 16px; } }
+
+    .buehne { display: grid; gap: 10px; }
+    .rahmen { position: relative; aspect-ratio: 4 / 5; max-height: 78vh; margin: 0 auto; width: 100%; border-radius: var(--radius); overflow: hidden; background: #000;
+      box-shadow: 0 1px 0 var(--border), 0 18px 40px -24px rgba(0, 0, 0, 0.6); }
+    @supports (width: min(1px, 2px)) { .rahmen { width: min(100%, calc(78vh * var(--seiten, 0.8))); } }
+    .rahmen canvas { display: block; width: 100%; height: 100%; }
+    .leer { position: absolute; inset: 0; display: grid; place-content: center; gap: 8px; padding: 24px; text-align: center; color: #9a9a9a; pointer-events: none;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.85rem; letter-spacing: 0.06em; }
+    .leer p { margin: 0; }
+    .leer .gross { font-size: 1rem; color: #f2f2f2; text-transform: uppercase; letter-spacing: 0.14em; }
+    .rahmen.weiss { background: #fff; }
+    .rahmen.weiss .leer { color: #666; }
+    .rahmen.weiss .leer .gross { color: #111; }
+    .unter { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
+    .info { margin: 0; color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+    .zeitleiste { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+    .zeitleiste input { width: 100%; min-width: 0; accent-color: var(--accent); }
+    .zeitleiste output { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .phasen { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 6px; }
+    .phasen button { min-height: 36px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 8px; background: none; color: var(--text); cursor: pointer;
+      font: 500 0.78rem/1.1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+    .phasen button:hover:not(:disabled) { border-color: var(--text); }
+    .phasen button:disabled { opacity: 0.45; cursor: default; }
+    .phasen button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .schritte { display: grid; gap: 26px; margin: 0; padding: 0; list-style: none; counter-reset: schritt; }
+    .schritte > li { display: grid; gap: 10px; counter-increment: schritt; }
+    .schritte h2 { display: flex; gap: 12px; align-items: baseline; margin: 0; font-family: "Newsreader", var(--serif); font-weight: 400; font-size: 1.45rem; }
+    .schritte h2::before { content: counter(schritt); display: inline-grid; place-content: center; flex: none; width: 1.7rem; height: 1.7rem; border: 1px solid var(--text); border-radius: 50%;
+      font-family: "Instrument Sans", var(--font); font-size: 0.85rem; font-weight: 500; transform: translateY(-0.15em); }
+    .schritte p { margin: 0; color: var(--muted); }
+
+    .ablage { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; padding: 18px; border: 1.5px dashed var(--border); border-radius: var(--radius); background: var(--surface); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+    .ablage:hover, .ablage.drueber { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+    .ablage:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ablage input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .plus { position: relative; display: grid; place-content: center; width: 84px; height: 84px; border-radius: 50%; background: var(--text); color: var(--bg); flex: none; }
+    .plus svg { width: 40px; height: 40px; }
+    .plus img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+    .hat-bild .plus { width: 66px; height: 88px; border-radius: 12px; background: #000; }
+    .hat-bild .plus svg { position: absolute; right: -10px; bottom: -10px; width: 30px; height: 30px; padding: 6px; border-radius: 50%; background: var(--text); color: var(--bg); box-shadow: 0 0 0 3px var(--surface); }
+    .ablage b { display: block; font-size: 1.15rem; font-weight: 600; }
+    .ablage-text > span { display: block; margin-top: 2px; color: var(--muted); font-size: 0.92rem; }
+
+    .leiste { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .knopf { min-height: 44px; padding: 8px 18px; border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.95rem;
+      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .knopf:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .knopf:disabled { opacity: 0.45; cursor: default; }
+    .knopf.haupt { background: var(--text); color: var(--bg); font-weight: 600; }
+    .knopf.haupt:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 85%, var(--bg)); }
+    .knopf.klein { min-height: 36px; padding: 4px 14px; font-size: 0.88rem; }
+    .knopf.beispiel { padding: 4px 18px 4px 16px; gap: 10px; }
+    .knopf.beispiel img { width: 22px; height: 31px; object-fit: cover; border-radius: 5px; display: block; }
+    .knopf:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .tafel { display: grid; margin-top: 4px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .einstellung { display: grid; gap: 12px; padding: 16px; }
+    .einstellung + .einstellung { border-top: 1px solid var(--border); }
+    .name { font-weight: 600; }
+    .segment { display: grid; grid-auto-columns: 1fr; grid-auto-flow: column; padding: 3px; border: 1px solid var(--border); border-radius: 999px; }
+    .segment button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; min-height: 42px; padding: 4px 6px; border: 0; border-radius: 999px;
+      background: none; color: var(--text); font: inherit; font-size: 0.88rem; line-height: 1.15; white-space: nowrap; cursor: pointer; }
+    .segment button[aria-pressed="true"] { background: var(--text); color: var(--bg); font-weight: 600; }
+    .segment button:disabled { opacity: 0.5; cursor: default; }
+    .segment button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .muster { width: 16px; height: 16px; border-radius: 50%; flex: none; box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 35%, transparent); }
+    .ablaeufe { display: grid; gap: 8px; }
+    .ablaeufe button { display: grid; gap: 3px; padding: 12px 14px 12px 44px; border: 1px solid var(--border); border-radius: 12px; background: none; color: var(--text);
+      font: inherit; text-align: left; cursor: pointer; position: relative; }
+    .ablaeufe button::before { content: ""; position: absolute; left: 14px; top: 14px; width: 18px; height: 18px; border: 1px solid var(--border); border-radius: 50%; box-sizing: border-box; }
+    .ablaeufe button b { font-size: 0.98rem; }
+    .ablaeufe button small { color: var(--muted); font-size: 0.84rem; line-height: 1.3; }
+    .ablaeufe button[aria-pressed="true"] { border-color: var(--text); background: color-mix(in srgb, var(--text) 7%, transparent); }
+    .ablaeufe button[aria-pressed="true"]::before { border: 5px solid var(--text); }
+    .ablaeufe button:hover:not(:disabled) { border-color: var(--text); }
+    .ablaeufe button:disabled { opacity: 0.45; cursor: default; }
+    .ablaeufe button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .effekte-hinweis { margin: 14px 0 6px; }
+    .effekte button { padding: 4px 2px; font-size: 0.92rem; }
+    .kette { margin: 6px 0 0; min-height: 1.3em; color: var(--muted); font-size: 0.84rem; }
+    [data-grund="schwarz"] .muster { background: #000; }
+    [data-grund="weiss"] .muster { background: #fff; }
+    @media (max-width: 440px) { .muster { display: none; } }
+    @media (max-width: 370px) { .segment button { font-size: 0.8rem; padding: 4px 3px; } .einstellung { padding: 14px 12px; } }
+
+    .einstellungen { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 20px; }
+    .einstellungen label { display: grid; gap: 6px; }
+    .einstellungen label > span { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .einstellungen select, .einstellungen input[type="text"] { min-height: 40px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; }
+    .haken { display: flex !important; align-items: center; gap: 8px !important; min-height: 40px; align-self: end; }
+    .haken input { width: 18px; height: 18px; accent-color: var(--accent); }
+    progress { width: 100%; height: 6px; accent-color: var(--accent); }
+    .meldung { margin: 0; min-height: 1.5em; }
+    .meldung.fehler { color: var(--accent); }
+    .ergebnis { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .ergebnis h2::before { display: none; }
+    .ergebnis video { display: block; width: min(100%, 360px); aspect-ratio: 4 / 5; border-radius: 8px; background: #000; }
+    .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
+    .hinweise li { margin: 0.2rem 0; }
+    /* Effekte: mehrere wählbar, darum Kästchen statt Kreis */
+    .ablaeufe [data-effekt]::before { border-radius: 5px; }
+    .ablaeufe [data-effekt][aria-pressed="true"]::before { border: 1px solid var(--text); background: var(--text); box-shadow: inset 0 0 0 3px var(--bg); }
+    .effekte-kopf { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .ki-hinweis { margin: 0; font-size: 0.86rem; color: var(--muted); }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>PHORMA II</h1>
+      <p class="lead">Ein Schleimpilz aus hunderttausend Agenten findet die Formen deines Fotos, ein Kupferstich zeichnet sie Strich für Strich, das Foto bekommt Tiefe und wird Raum – dann weht es als Seidentuch und legt sich glatt. Jeder Effekt einzeln oder als Kette. Als Video für Social Media.</p>
+    </div>
+  </header>
+
+  <main class="wrap karte" id="karte">
+    <section class="buehne" aria-label="Vorschau">
+      <div class="rahmen">
+        <canvas id="vorschau" width="540" height="675" aria-label="Vorschau des Videos"></canvas>
+        <div class="leer" id="leer">
+          <p class="gross">Kein Signal</p>
+          <p>Lade ein Foto.</p>
+        </div>
+      </div>
+      <div class="zeitleiste">
+        <button class="knopf klein" type="button" id="spielen" disabled>Abspielen</button>
+        <input type="range" id="zeit" min="0" max="30" step="0.0333" value="0" disabled aria-label="Zeit im Film">
+        <output id="zeitcode" for="zeit">00:00:00</output>
+      </div>
+      <div class="phasen" role="group" aria-label="Zu einer Phase springen"></div>
+      <div class="unter">
+        <p class="info" id="dauer">Hochformat 4 : 5, wahlweise 9 : 16</p>
+      </div>
+      <p class="info" id="auswertung"></p>
+    </section>
+
+    <div>
+      <ol class="schritte">
+        <li>
+          <h2>Foto</h2>
+          <label class="ablage" id="ablage">
+            <span class="plus" aria-hidden="true">
+              <img id="quelle" alt="" hidden>
+              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
+            <span class="ablage-text"><b id="ablage-titel">Foto wählen</b><span>oder hierher ziehen. Es wird auf deinem Gerät analysiert: Richtung, Kanten und Tiefe.</span></span>
+            <input type="file" id="datei" accept="image/*" aria-label="Foto wählen">
+          </label>
+          <div class="leiste"><button class="knopf klein beispiel" type="button" id="testbild"><img src="beispiel.jpg" alt="" width="26" height="37" loading="lazy">Mit dem Beispielbild ausprobieren</button></div>
+          <section class="tafel" aria-label="Format, Strich und Tiefe">
+            <div class="einstellung">
+              <span class="name" id="format-titel">Format</span>
+              <div class="segment" role="group" aria-labelledby="format-titel">
+                <button type="button" data-format="4:5">4 : 5 Hochformat</button>
+                <button type="button" data-format="9:16">9 : 16</button>
+              </div>
+            </div>
+            <div class="einstellung">
+              <span class="name" id="strich-titel">Strich</span>
+              <div class="segment" role="group" aria-labelledby="strich-titel">
+                <button type="button" data-strich="fein">fein</button>
+                <button type="button" data-strich="mittel">mittel</button>
+                <button type="button" data-strich="grob">grob</button>
+              </div>
+            </div>
+            <div class="einstellung">
+              <span class="name" id="tiefe-titel">Tiefe</span>
+              <div class="segment" role="group" aria-labelledby="tiefe-titel">
+                <button type="button" data-tiefe="bild">aus dem Bild</button>
+                <button type="button" data-tiefe="ki">mit KI</button>
+              </div>
+              <p class="ki-hinweis" id="ki-hinweis" hidden>Die KI (Depth Anything V2) läuft auf deinem Gerät; beim ersten Mal lädt sie das Modell (rund 25–50 MB) von Hugging Face. Dein Foto wird nicht hochgeladen.</p>
+            </div>
+          </section>
+        </li>
+        <li>
+          <h2>Effekte</h2>
+          <p>Alle beginnen im Dunkeln und enden mit deinem Foto; gewählt in dieser Reihenfolge, geht jeder in den nächsten über.</p>
+          <div class="effekte-kopf"><span class="name">Einzeln oder kombiniert</span><button class="knopf klein" type="button" id="alle">Alle vier</button></div>
+          <div class="ablaeufe" role="group" aria-label="Effekte">
+            <button type="button" data-effekt="physarum" aria-pressed="true"><b>Physarum</b><small>Hunderttausende Agenten strömen aus Keimen und bilden ein leuchtendes Netz, das die Formen deines Fotos findet</small></button>
+            <button type="button" data-effekt="stich" aria-pressed="true"><b>Stich</b><small>Ein Kupferstich, der fliesst: Strich für Strich entlang der Richtung des Bilds, dann werden die Striche breiter, bis sie das Foto ergeben</small></button>
+            <button type="button" data-effekt="tiefe" aria-pressed="true"><b>Tiefe</b><small>Eine Lichtebene tastet das Bild ab, dann wird es Raum: Parallaxe, Tiefenschichten, wandernde Schärfe</small></button>
+            <button type="button" data-effekt="tuch" aria-pressed="true"><b>Tuch</b><small>Das Foto als Seidentuch im Wind – eine Stoffsimulation –, das sich zuletzt glatt zum Bild legt</small></button>
+          </div>
+          <p class="kette" id="kette" aria-live="polite"></p>
+        </li>
+        <li>
+          <h2>Gestaltung</h2>
+          <p>Die Beschriftung zeigt wie in einem Bildwerkzeug Phase, Zähler und Zeitcode; oben links steht dein Titel.</p>
+          <div class="einstellungen">
+            <label><span>Titel</span><input type="text" id="titel" maxlength="40" placeholder="PHORMA II" autocomplete="off"></label>
+            <label><span>Tempo</span>
+              <select id="tempo">
+                <option value="ruhig">ruhig</option>
+                <option value="normal" selected>normal</option>
+                <option value="schnell">schnell</option>
+              </select></label>
+            <label class="haken"><input type="checkbox" id="beschriftung" checked> Beschriftung</label>
+            <label class="haken"><input type="checkbox" id="signet" checked> Signet am Schluss</label>
+            <label class="haken"><input type="checkbox" id="unschaerfe" checked> Bewegungsunschärfe</label>
+          </div>
+        </li>
+        <li>
+          <h2>Video</h2>
+          <p>Das Video rechnet Bild für Bild in voller Grösse; mit Bewegungsunschärfe acht Proben je Bild – das dauert einige Minuten.</p>
+          <div class="leiste">
+            <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
+            <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
+          </div>
+          <progress id="fortschritt" max="1" value="0" hidden></progress>
+          <p class="meldung" id="meldung" role="status" aria-live="polite"></p>
+          <section class="ergebnis" id="ergebnis" hidden aria-labelledby="ergebnis-titel">
+            <h2 id="ergebnis-titel">Dein Video</h2>
+            <video id="film" controls playsinline muted></video>
+            <p class="info" id="film-info"></p>
+            <div class="leiste"><a class="knopf haupt" id="laden" href="#" download>Herunterladen</a></div>
+          </section>
+        </li>
+      </ol>
+    </div>
+  </main>
+
+  <div class="wrap">
+    <ul class="hinweise">
+      <li>Alles bleibt in deinem Browser: Das Foto wird nicht hochgeladen, das Video entsteht auf deinem Gerät. Nur «Tiefe mit KI» lädt einmal ein Modell aus dem Netz.</li>
+      <li>Ohne KI wird die Tiefe aus dem Bild geschätzt – aus Schärfe, Lage, Farbe und Himmel – und an die Kanten des Fotos gelegt.</li>
+      <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories); das Foto wird bei Bedarf mittig beschnitten.</li>
+      <li>Video: MP4 (H.264), 30 Bilder pro Sekunde, ohne Ton. PHORMA II braucht WebGL 2.</li>
+    </ul>
+  </div>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+    </div>
+  </footer>
+  <script type="importmap">
+  { "imports": { "three": "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" } }
+  </script>
+  <script type="module" src="app.js?v=1"></script>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+</body>
+</html>
