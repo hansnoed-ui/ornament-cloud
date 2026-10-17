@@ -17,7 +17,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
-import { kette, ablaufName } from "./ablauf.js?v=29";
+import { kette, ablaufName } from "./ablauf.js?v=30";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -948,7 +948,7 @@ function flug(renderer, textur, B, H, grund, px, hell) {
   const auf = (x, y, ueber) => V(x, y, dachBei(x, y) + ueber);
   const um = (p, winkel, r) => [p[0] + Math.cos(winkel) * r, p[1] + Math.sin(winkel) * r];
   const w0 = Math.atan2(-r23[1], -r23[0]);                                 // von dort kommt die Kamera am dritten Gipfel an
-  const o1 = um(P3, w0, 0.6), o2 = um(P3, w0 + 1.8, 0.42);
+  const o1 = um(P3, w0, 0.6), o2 = um(P3, w0 + 1.0, 0.52);                  // die Umrundung ruhig: kleiner Winkel, etwas weiter weg
   const m12 = [P1[0] + (P2[0] - P1[0]) * 0.4 + quer12[0] * 0.35, P1[1] + (P2[1] - P1[1]) * 0.4 + quer12[1] * 0.35];
   const v2 = [P2[0] - r12[0] * 0.45, P2[1] - r12[1] * 0.45], n2 = [P2[0] + r12[0] * 0.6, P2[1] + r12[1] * 0.6];
   const m23 = [P2[0] + (P3[0] - P2[0]) * 0.5 + quer23[0] * 0.2, P2[1] + (P3[1] - P2[1]) * 0.5 + quer23[1] * 0.2];
@@ -956,11 +956,11 @@ function flug(renderer, textur, B, H, grund, px, hell) {
     [0.0, V(P1[0] + 0.03, P1[1] - 0.05, hz(P1) + 0.3), V(P1[0], P1[1], hz(P1)), 52, 0],
     [2.8, V(P1[0], P1[1] - 0.2, hz(P1) + 0.85), V(P1[0], P1[1], hz(P1)), 42, 80],
     [5.3, auf(m12[0], m12[1], 0.5), V(P2[0], P2[1], hz(P2)), 46, 22],
-    [7.7, auf(v2[0], v2[1], 0.16), V(n2[0], n2[1], hoeheBei(n2[0], n2[1])), 58, -14],
-    [10.0, auf(m23[0], m23[1], 0.14), V(P3[0], P3[1], hz(P3)), 62, 16],
+    [7.7, auf(v2[0], v2[1], 0.26), V(n2[0], n2[1], hoeheBei(n2[0], n2[1])), 58, -14],
+    [10.0, auf(m23[0], m23[1], 0.24), V(P3[0], P3[1], hz(P3)), 62, 16],
     [11.9, V(o1[0], o1[1], hz(P3) + 0.3), V(P3[0], P3[1], hz(P3)), 28, -6],   // Dolly-Zoom: näher heran, der Bildwinkel enger
     [13.7, V(o2[0], o2[1], hz(P3) + 0.24), V(P3[0], P3[1], hz(P3)), 44, 10],
-    [16.0, V(0.15, -2.3, 1.9), V(0, 0.05, 0.1), 38, 0],
+    [16.0, V(0.1, -1.6, 1.6), V(0, 0.05, 0.1), 40, 0],
     [18.8, V(0, 0, abstand), V(0, 0, 0), FOV, 0],
     [19.5, V(0, 0, abstand), V(0, 0, 0), FOV, 0],
   ];
@@ -993,7 +993,7 @@ function flug(renderer, textur, B, H, grund, px, hell) {
   for (let i = 0; i < n; i++) {
     const t = i / RATE, lage = hermite(t, (k) => SCHLUESSEL[k][1]), ziel = hermite(t, (k) => SCHLUESSEL[k][2]);
     roh.lage.set([lage.x, lage.y, lage.z], i * 3); roh.ziel.set([ziel.x, ziel.y, ziel.z], i * 3);
-    ueberGelaende(roh.lage, i, 0.09);
+    ueberGelaende(roh.lage, i, 0.13);
     roh.fov[i] = hermite(t, (k) => SCHLUESSEL[k][3]);
     blick.set(ziel.x - roh.lage[i * 3], ziel.y - roh.lage[i * 3 + 1], ziel.z - roh.lage[i * 3 + 2]).normalize();
     const senkrecht = THREE.MathUtils.smoothstep(-blick.z, 0.75, 0.97);   // oben: zur Seite der Welt, senkrecht von oben das Bild aufrecht
@@ -1010,8 +1010,44 @@ function flug(renderer, textur, B, H, grund, px, hell) {
     return aus;
   };
   const bahn = { lage: glaetten(roh.lage, 3, 0.35 * RATE), ziel: glaetten(roh.ziel, 3, 0.35 * RATE), oben: glaetten(roh.oben, 3, 0.45 * RATE), fov: glaetten(roh.fov, 1, 0.35 * RATE) };
-  for (let i = 0; i < n; i++) ueberGelaende(bahn.lage, i, 0.07);           // das Glätten darf nicht unter das Gelände führen …
+  for (let i = 0; i < n; i++) ueberGelaende(bahn.lage, i, 0.11);           // das Glätten darf nicht unter das Gelände führen …
   bahn.lage = glaetten(bahn.lage, 3, 0.12 * RATE);                         // … und die Korrektur bleibt weich
+  // Zeit umverteilen: wo der Boden schnell durchs Bild zieht (Tempo durch Höhe über Grund) oder der Blick dreht, langsamer, sonst etwas schneller –
+  // bis zum Überblick (16 s), Gesamtdauer und Landung bleiben. Im Tiefflug zog der Boden sonst mit über 100°/s durchs Bild (Rückmeldung mit Video)
+  {
+    const BIS = Math.round(16 * RATE), fluss = new Float64Array(BIS + 1), q = new THREE.Vector3(), r = new THREE.Vector3();
+    const richtung = (i, v) => v.set(bahn.ziel[i * 3] - bahn.lage[i * 3], bahn.ziel[i * 3 + 1] - bahn.lage[i * 3 + 1], bahn.ziel[i * 3 + 2] - bahn.lage[i * 3 + 2]).normalize();
+    for (let i = 0; i < BIS; i++) {
+      const x = bahn.lage[i * 3], y = bahn.lage[i * 3 + 1], z = bahn.lage[i * 3 + 2];
+      const tempo = Math.hypot(bahn.lage[i * 3 + 3] - x, bahn.lage[i * 3 + 4] - y, bahn.lage[i * 3 + 5] - z) * RATE;
+      const ueber = Math.max(0.05, z - hoeheBei(x, y) * tiefeBei(i / RATE));
+      fluss[i + 1] = fluss[i] + tempo / ueber + richtung(i, q).angleTo(richtung(i + 1, r)) * RATE + 0.5;   // + Grundtempo (rad/s)
+    }
+    const alt = {}, roh2 = (name, k, f, c) => { const i0 = Math.floor(f), i1 = Math.min(n - 1, i0 + 1), a2 = f - i0; return alt[name][i0 * k + c] * (1 - a2) + alt[name][i1 * k + c] * a2; };
+    for (const name of ["lage", "ziel", "oben", "fov"]) alt[name] = bahn[name].slice();
+    let j = 0;
+    for (let i = 1; i < BIS; i++) {                                        // neue Zeit i / RATE ↔ alte Probe f mit gleichem Anteil am Bildfluss
+      const soll = (i / BIS) * fluss[BIS];
+      while (j < BIS - 1 && fluss[j + 1] < soll) j++;
+      const f = j + (soll - fluss[j]) / Math.max(1e-9, fluss[j + 1] - fluss[j]);
+      for (const [name, k] of [["lage", 3], ["ziel", 3], ["oben", 3], ["fov", 1]]) for (let c = 0; c < k; c++) bahn[name][i * k + c] = roh2(name, k, f, c);
+    }
+  }
+  // Schwenks begrenzt: die Blickrichtung dreht höchstens 35°, die Bildausrichtung 32° je Sekunde (bei Tempo «normal»). Sonst schwenkte die Kamera
+  // stellenweise mit fast 100°/s – bei 30 Bildern je Sekunde ruckelt das (Rückmeldung mit Video: «noch Ruckler bei Sekunde 10–12»)
+  const begrenzen = (wert, grad, setzen) => {
+    const max = THREE.MathUtils.degToRad(grad) / RATE, vor = new THREE.Vector3(), d = new THREE.Vector3(), neu = new THREE.Vector3();
+    for (let i = 0; i < n; i++) {
+      wert(i, d);
+      if (i > 0) { const w = vor.angleTo(d); if (w > max) { d.copy(neu.copy(vor).lerp(d, max / w).normalize()); setzen(i, d); } }
+      vor.copy(d);
+    }
+  };
+  begrenzen((i, d) => d.set(bahn.ziel[i * 3] - bahn.lage[i * 3], bahn.ziel[i * 3 + 1] - bahn.lage[i * 3 + 1], bahn.ziel[i * 3 + 2] - bahn.lage[i * 3 + 2]).normalize(), 35,
+    (i, d) => { const l = Math.hypot(bahn.ziel[i * 3] - bahn.lage[i * 3], bahn.ziel[i * 3 + 1] - bahn.lage[i * 3 + 1], bahn.ziel[i * 3 + 2] - bahn.lage[i * 3 + 2]);
+      for (let c = 0; c < 3; c++) bahn.ziel[i * 3 + c] = bahn.lage[i * 3 + c] + d.getComponent(c) * l; });
+  begrenzen((i, d) => d.set(bahn.oben[i * 3], bahn.oben[i * 3 + 1], bahn.oben[i * 3 + 2]).normalize(), 32, (i, d) => bahn.oben.set([d.x, d.y, d.z], i * 3));
+  bahn.ziel = glaetten(bahn.ziel, 3, 0.2 * RATE); bahn.oben = glaetten(bahn.oben, 3, 0.2 * RATE);
   for (let i = 0; i < n; i++) {                                            // gegen Ende ins exakte Schlussbild (dort steht die Kamera still)
     const w = weich(anteil(i / RATE, ENDE - 0.8, ENDE));
     if (w <= 0) continue;
