@@ -9,12 +9,12 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=6";
-import { FPS, kette, laufend } from "./ablauf.js?v=6";
-import { physarum } from "./physarum.js?v=6";
-import { muster } from "./muster.js?v=6";
-import { tiefe } from "./tiefe.js?v=6";
-import { tuch } from "./tuch.js?v=6";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=7";
+import { FPS, kette, laufend } from "./ablauf.js?v=7";
+import { physarum } from "./physarum.js?v=7";
+import { muster } from "./muster.js?v=7";
+import { tiefe } from "./tiefe.js?v=7";
+import { tuch } from "./tuch.js?v=7";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -54,7 +54,7 @@ const FABRIK = { physarum, muster, tiefe, tuch };
  * Die Bühne für ein Foto (Canvas in Filmgrösse B × H), seine Analyse und eine Kette. optionen: tiefeQuelle ("bild" | "ki"), grob (Telefon), test (klein).
  * bild(zeit, t, w, h, { proben, verschluss }) → Leinwand; zaehler(zeit, t) → Text für die Beschriftung; entsorgen().
  */
-export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuelle = "bild", muster: feinheit = "mittel", onVerloren = null } = {}) {
+export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuelle = "bild", muster: feinheit = "mittel", onVerloren = null, spur = () => {} } = {}) {
   const B = foto.width, H = foto.height;
   const canvas = typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(B, H);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
@@ -72,7 +72,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     pass(material, rt) { renderer.setRenderTarget(rt); quad.material = material; quad.render(renderer); },
     loeschen(rt, farbe = 0x000000) { renderer.setRenderTarget(rt); renderer.setClearColor(farbe, 1); renderer.clear(true, true, true); } };
   const K = kette(ablauf);
-  const effekte = K.teile.map((teil) => FABRIK[teil.art](g, teil));
+  const effekte = K.teile.map((teil) => { spur(`Effekt wird aufgebaut: ${teil.art}`); return FABRIK[teil.art](g, teil); });
   const art = (teil) => effekte[K.teile.findIndex((x) => x.art === teil.art)];
 
   let w = 0, h = 0, rtA, rtB, rtMix, rtSumme, bloom, glanz = null;
@@ -115,16 +115,18 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   const pause = () => new Promise((weiter) => setTimeout(weiter, 0));
   async function vorbereiten() {
     const klein = ziel(4, 4, { depthBuffer: true }), ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), flaeche = new THREE.PlaneGeometry(2, 2);
-    const szenen = effekte.flatMap((e) => e.vorab?.szenen ?? []);
+    // [Name für die Spur, Szene, Kamera, Ziel]
+    const szenen = effekte.flatMap((e, i) => (e.vorab?.szenen ?? []).map(([s, k], j) => [`${K.teile[i].art} Szene ${j + 1}`, s, k]));
     groesse(Math.round(B * (grob ? 0.6 : 0.85)), Math.round(H * (grob ? 0.6 : 0.85)));
-    const materialien = [...effekte.flatMap((e) => e.vorab?.materialien ?? []), front, summe,
-      ...Object.values(bloom).flat().filter((m) => m?.isShaderMaterial)];
-    for (const m of materialien) { const s = new THREE.Scene(); s.add(new THREE.Mesh(flaeche, m)); szenen.push([s, ortho]); }
+    const materialien = [...effekte.flatMap((e, i) => (e.vorab?.materialien ?? []).map((m, j) => [`${K.teile[i].art} Programm ${j + 1}`, m])),
+      ["Zeitfront", front], ["Belichtung", summe], ...Object.values(bloom).flat().filter((m) => m?.isShaderMaterial).map((m, j) => [`Bloom ${j + 1}`, m])];
+    for (const [name, m] of materialien) { const s = new THREE.Scene(); s.add(new THREE.Mesh(flaeche, m)); szenen.push([name, s, ortho]); }
     const aus = new THREE.Scene(); aus.add(new THREE.Mesh(flaeche, ausgabe));
     // compile() stösst das Übersetzen an (mit KHR_parallel_shader_compile im Hintergrund), das Bild ins winzige Ziel wartet es ab; nicht compileAsync:
     // dessen Nachfragen liefen weiter, wenn die Bühne inzwischen freigegeben war (Fehler «reading 'isReady'», von den Browser-Tests gefunden)
-    for (const [s, k, rt = klein] of [...szenen, [aus, ortho, null]]) {
+    for (const [name, s, k, rt = klein] of [...szenen, ["Ausgabe", aus, ortho, null]]) {
       if (verloren || entsorgt) break;
+      spur(`übersetzt: ${name}`);
       renderer.setRenderTarget(rt); renderer.compile(s, k);
       await pause();
       if (verloren || entsorgt) break;

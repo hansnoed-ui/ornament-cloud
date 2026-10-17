@@ -1,9 +1,9 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=6";
-import { szene, bild, standbildZeit } from "./film.js?v=6";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=6";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=7";
+import { szene, bild, standbildZeit } from "./film.js?v=7";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=7";
 import { mp4 } from "../sketchory/mp4.js?v=10";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
@@ -20,7 +20,19 @@ window.__phorma = S;   // für die Browser-Tests
 // nachzustellen) – Zeitpunkte der Schritte, Dauer je Vorschaubild, längste Blockade, Grafikchip und Erweiterungen; als Bildschirmfoto zurückschicken
 const DIAGNOSE = new URLSearchParams(location.search).has("diagnose");
 const D = { t0: performance.now(), notizen: [], bild: [], lang: 0 };
+// Spur, die einen Absturz überlebt (Rückmeldung vom 17. Oktober 2026: Chrome bricht den Tab gleich nach dem Laden eines Fotos ab, «Oh nein!»): jeder
+// Schritt sofort in localStorage; index.html zeigt beim nächsten Öffnen, nach welchem Schritt der letzte Lauf endete. «✓» heisst: ging gut.
+const SPUR = "phorma-ii.spur";
+function spur(text, neu = false) {
+  try {
+    const liste = neu ? [] : JSON.parse(localStorage.getItem(SPUR) || "[]");
+    liste.push([Date.now(), text]);
+    localStorage.setItem(SPUR, JSON.stringify(liste.slice(-40)));
+  } catch { /* ohne Speicher keine Spur */ }
+}
+spur(`Seite geöffnet · ${navigator.userAgent.replace(/^Mozilla\/5\.0 /, "").slice(0, 80)} · Speicher ${navigator.deviceMemory ?? "?"} GB · Pixel ${devicePixelRatio}`, true);
 function notiz(text) {
+  spur(text);
   if (!DIAGNOSE) return;
   D.notizen.push(`${((performance.now() - D.t0) / 1000).toFixed(1)} s  ${text}`);
   diagnoseZeigen();
@@ -92,6 +104,7 @@ async function fotoLaden(datei) {
   melden("Foto wird gelesen …");
   let q;
   try { q = await bitmap(datei); } catch { melden("Dieses Foto kann der Browser nicht öffnen. Versuche es als JPG oder PNG.", true); return; }
+  notiz(`Foto gelesen und verkleinert auf ${q.width} × ${q.height}`);
   // das alte Foto und seine Bühne sofort freigeben, nicht erst, wenn das neue analysiert ist
   anhalten(); S.sz = null; S.t = null;
   S.buehne?.entsorgen(); S.buehne = null; S.buehneSchluessel = ""; S.buehneWarm = false; S.buehneFertig = false;
@@ -104,7 +117,7 @@ async function fotoLaden(datei) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=6", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=7", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -145,7 +158,7 @@ async function kiAnwenden() {
   if (!S.ki) {
     const nr = S.rechnen;
     try {
-      kiModul ??= await import("./tiefe-ki.js?v=6");
+      kiModul ??= await import("./tiefe-ki.js?v=7");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m));
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
@@ -163,14 +176,15 @@ let buehneModul = null;
 async function buehneBereit() {
   const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.A.tiefe === S.A.geschaetzt ? "bild" : "ki"}|${S.muster}` : "";
   if (schluessel === S.buehneSchluessel) return;
-  S.buehneSchluessel = schluessel; S.buehneFertig = false; S.buehneWarm = false;
+  S.buehneSchluessel = schluessel; S.buehneFertig = false; S.buehneWarm = false; S.spurBilder = 0;
   if (S.sz) S.sz.buehne = null;
   S.buehne?.entsorgen(); S.buehne = null;
   if (!schluessel) return;
   try {
-    buehneModul ??= await import("./buehne.js?v=6");
+    buehneModul ??= await import("./buehne.js?v=7");
     if (S.buehneSchluessel !== schluessel) return;
-    S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, muster: S.muster, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki",
+    notiz(`Bühne wird gebaut: ${S.ablauf}`);
+    S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, muster: S.muster, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz,
       onVerloren: () => {
         if (S.buehneSchluessel !== schluessel) return;
         anhalten();
@@ -185,8 +199,9 @@ async function buehneBereit() {
   }
   // erst wenn die Programme übersetzt sind, zeichnet die Vorschau mit der Bühne (bis dahin der Grund)
   const b = S.buehne;
-  if (DIAGNOSE) { try { b.infoGemerkt = b.info(); } catch { /* egal */ } }   // einmal, nicht bei jeder Anzeige
-  notiz(`Bühne gebaut: ${S.ablauf}`);
+  try { b.infoGemerkt = b.info(); } catch { /* egal */ }                    // einmal, nicht bei jeder Anzeige
+  const i = b.infoGemerkt;
+  notiz(`Bühne gebaut · Grafik ${i?.grafik ?? "?"} · Float-Ziel ${i?.floatZiel} · Float mischen ${i?.floatMischen} · Float linear ${i?.floatLinear} · parallel ${i?.parallel}`);
   melden("Die Effekte werden vorbereitet …");
   await b.warm;
   notiz("Programme übersetzt");
@@ -312,7 +327,11 @@ function spielen() {
 function anhalten() { S.laeuft = false; $("spielen").textContent = "Abspielen"; }
 function zeigeZeit(t) {
   const t0 = performance.now();
-  S.t = t; S.ende = false; bild(vctx, S.sz, t, { vorschau: true });
+  S.t = t; S.ende = false;
+  const mitBuehne = !!S.sz?.buehne;
+  if (mitBuehne && S.spurBilder < 30 && [0, 1, 29].includes(S.spurBilder)) notiz(S.spurBilder === 29 ? "Vorschaubild 30 wird gezeichnet" : `Vorschaubild ${S.spurBilder + 1} wird gezeichnet (t ${t.toFixed(2)} s)`);
+  bild(vctx, S.sz, t, { vorschau: true });
+  if (mitBuehne && S.spurBilder < 30 && ++S.spurBilder === 30) notiz("✓ Vorschau läuft (30 Bilder)");
   if (DIAGNOSE) { D.bild.push(performance.now() - t0); if (D.bild.length > 60) D.bild.shift(); }
   $("zeit").value = String(t); $("zeitcode").textContent = zeitcode(t);
 }
