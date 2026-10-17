@@ -46,7 +46,8 @@ export const ABLAEUFE = {
   // Körper und Scherben: die beiden Hälften des früheren «Kristall»; die Scherben setzen genau im Bruch des Körpers ein (ihre Zeit 0,7 s)
   // Körper seit dem 17. Oktober 2026 länger (Wunsch: «dürfte noch etwas länger dauern»): Formwandel 3,4 statt 1,9 s, das Klarwerden 3 statt 2,5 s
   koerper: { titel: "Körper", phasen: [["koerper", "Körper", 5.8], ["klar", "Bild", 3.0]], ein: 1.7, aus: 5.8 },
-  scherben: { titel: "Scherben", phasen: [["bruch", "Bruch", 3.2], ["montage", "Montage", 4.2]], ein: 0.4, aus: 3.0, ueber: 0.3 },
+  // vor einem weiteren Effekt: Bruch, dann Sammeln (zum Ball oder, vor dem Relief, ins Foto) – seit 17. Oktober 2026 langsamer, darum länger
+  scherben: { titel: "Scherben", phasen: [["bruch", "Bruch", 3.2], ["montage", "Montage", 4.2]], ein: 0.4, aus: 4.1, ueber: 0.3, weiter: ["sammeln", "Sammeln", 2.3] },
   // Echo: ohne Kaleidoskop und ohne stehende Konturen; das Schlussbild strömt durch den Tunnel herein (Rückmeldung: «die Zusammensetzung des
   // Schlussbildes wenig nachvollziehbar»)
   // allein oder zuerst beginnt Echo bei 1,5 s, mitten in der Bewegung (Wunsch: «die ersten 1–2 Sekunden überspringen: einblenden und schon mitten in

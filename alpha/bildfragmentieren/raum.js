@@ -17,7 +17,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
-import { kette, ablaufName } from "./ablauf.js?v=31";
+import { kette, ablaufName } from "./ablauf.js?v=32";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -341,12 +341,14 @@ function scherben(renderer, textur, B, H, grund, px, hell, { erst = true, letzt 
       const t = tl + SCHERBEN_AB, U = mat.uniforms;                         // in der Zeit des Kristalls
       U.uZeit.value = t;
       U.uEin.value = erst ? weich(anteil(t, SCHERBEN_AB, SCHERBEN_AB + 0.55)) : 1;
-      U.uZusammen.value = letzt || insBild ? 0 : inOut(anteil(t, 5.0, 6.5));
-      U.uAus.value = 1.4 * inOut(anteil(t, BRUCH, BRUCH + 1.4));
+      // ruhiger (Wunsch vom 17. Oktober 2026: «die Scherben etwas langsamer in den beiden grossen Bewegungen»): auseinander in 2 statt 1,4 s,
+      // zusammen in 1,7 statt 1,5 s, die schnelle Montage vor dem Relief in 1,9 statt 1,6 s
+      U.uZusammen.value = letzt || insBild ? 0 : inOut(anteil(t, 5.9, 7.6));
+      U.uAus.value = 1.4 * inOut(anteil(t, BRUCH, BRUCH + 2.0));
       // nicht begrenzt: das Aufleuchten der letzten Scherben klingt bis 11 s aus; vor dem Relief eine schnelle Montage bis 6,5 s
-      U.uZurueck.value = insBild ? 1.05 * anteil(t, 4.9, 6.5) : Math.max(0, (t - 6.8) / 3.9);
+      U.uZurueck.value = insBild ? 1.05 * anteil(t, 5.6, 7.5) : Math.max(0, (t - 6.8) / 3.9);
       U.uBlitz.value = (hell ? 0 : 0.3) * Math.exp(-(((t - BRUCH) / 0.07) ** 2));
-      const gerade = insBild ? 1 - inOut(anteil(t, 4.9, 6.4)) : 1;        // vor dem Relief: die Kamera dreht gerade, senkrecht aufs Foto
+      const gerade = insBild ? 1 - inOut(anteil(t, 5.6, 7.4)) : 1;        // vor dem Relief: die Kamera dreht gerade, senkrecht aufs Foto
       const flug = Math.min(1, U.uAus.value) * (1 - anteil(t, 8.8, 10.7)) * gerade;
       const w = 0.4 * Math.sin(Math.PI * anteil(t, BRUCH, 10.6)) * (1 - anteil(t, 9.6, 10.6)) * gerade;
       kamera.position.set(Math.sin(w) * abstand, 0.12 * w, Math.cos(w) * abstand * (1 + 0.3 * flug));
@@ -354,8 +356,8 @@ function scherben(renderer, textur, B, H, grund, px, hell, { erst = true, letzt 
       kamera.updateMatrixWorld();                                          // sonst gilt unten noch die Kamera des letzten Bildes
       U.uLicht.value.set(Math.cos(t * 0.8) * 0.7, 0.6, 0.6).transformDirection(kamera.matrixWorldInverse);
       const gesetzt = Math.round(zellen.length * Math.min(1, Math.max(0, (U.uZurueck.value - 0.16) / 0.84)));
-      stand = insBild && t > 4.9 ? `scherben ${Math.round(zellen.length * Math.min(1, Math.max(0, (U.uZurueck.value - 0.16) / 0.84)))} / ${zellen.length}`
-        : !letzt && t > 5 ? `scherben ${zellen.length} · zusammen ${Math.round(U.uZusammen.value * 100)} %`
+      stand = insBild && t > 5.6 ? `scherben ${Math.round(zellen.length * Math.min(1, Math.max(0, (U.uZurueck.value - 0.16) / 0.84)))} / ${zellen.length}`
+        : !letzt && t > 5.9 ? `scherben ${zellen.length} · zusammen ${Math.round(U.uZusammen.value * 100)} %`
         : t < 6.8 ? `scherben ${zellen.length} · flug ${Math.round(flug * 100)} %` : `scherben ${gesetzt} / ${zellen.length}`;
       look.render(Math.max(flug, U.uZurueck.value < 1 ? 0.35 : 0), 0.25);
     },
@@ -622,6 +624,11 @@ function strom(renderer, textur, B, H, grund, px, hell, { letzt = true } = {}) {
   // Anfang: S / 2 kurze, gebogene Fäden zu je 2 S Teilchen, verstreut im Bild (kein Foto). Die Strömung ist quellenfrei – zufällig verteilte Teilchen
   // blieben darin gleichmässig verteilt (Staub); Fäden dagegen zieht sie zu langen, feinen Linien aus. w: wann das Teilchen aufleuchtet – die
   // Funken laufen einen Faden entlang. Jeder Faden fliegt am Schluss in eine Zeile des Fotos.
+  // deutlich verschiedene Grössen (Wünsche vom 17. Oktober 2026: «verschiedene Grössen der Kügelchen», dann «noch mehr Differenz … damit es nicht
+  // einfach nach Fäden aussieht»): die meisten klein (0,4–0,85), etwa jede siebte mittel (1–1,6), jede dreissigste gross (2–3); die grossen
+  // folgen der Strömung träger, lösen sich so von den Fäden und schweben frei
+  const groessen = new Float32Array(N), zg = zufallAus(20261018);
+  for (let i = 0; i < N; i++) { const a = zg(), b = zg(); groessen[i] = b < 0.033 ? 2.0 + a : b < 0.15 ? 1.0 + 0.6 * a : 0.4 + 0.45 * a; }
   const F = 2 * S;                                                        // Teilchen je Faden (S / 2 Fäden): dicht genug, dass sie Linien bleiben
   let x = 0, y = 0, z = 0, winkel = 0, kruemmung = 0, schritt = 0, start = 0;
   for (let i = 0; i < N; i++) {
@@ -631,9 +638,10 @@ function strom(renderer, textur, B, H, grund, px, hell, { letzt = true } = {}) {
       winkel = zufall() * Math.PI * 2; kruemmung = (zufall() - 0.5) * 5; schritt = (0.35 + 0.4 * zufall()) / F; start = 0.8 * zufall();
     }
     winkel += kruemmung * schritt; x += Math.cos(winkel) * schritt; y += Math.sin(winkel) * schritt;
-    startLage.image.data.set([x + (zufall() - 0.5) * 0.003, y + (zufall() - 0.5) * 0.003, z, start + (0.25 * k) / F], i * 4);
+    const streu = 0.003 + 0.05 * Math.max(0, groessen[i] - 1);           // grosse Kugeln liegen lose neben dem Faden
+    startLage.image.data.set([x + (zufall() - 0.5) * streu, y + (zufall() - 0.5) * streu, z + (zufall() - 0.5) * streu, start + (0.25 * k) / F], i * 4);
     const u = ((i % S) + zufall()) / S, v = (Math.floor(i / S) + zufall()) / S;      // geschichtete Zufallspunkte auf dem Foto
-    heim.image.data.set([(u - 0.5) * breite, (v - 0.5) * 2, 0, 1], i * 4);
+    heim.image.data.set([(u - 0.5) * breite, (v - 0.5) * 2, 0, groessen[i]], i * 4);    // w: die Grösse (grosse Kugeln sind träger)
     ref.set([((i % S) + 0.5) / S, (Math.floor(i / S) + 0.5) / S], i * 2);
     fotoUv.set([u, v], i * 2);
   }
@@ -654,9 +662,10 @@ function strom(renderer, textur, B, H, grund, px, hell, { letzt = true } = {}) {
       }
       // mit der Strömung treiben statt beschleunigen (mit Schwung mischten sich die Bahnen zu einer gleichmässigen Wolke): grosse Wirbel und feine
       // darin, beide wandern; nicht zu schnell, sonst reisst das Feld die Fäden in Staub
-      vec3 ziel = (wirbel(p * 1.2 + vec3(0.0, 0.0, uZeit * 0.25)) * 0.7 + wirbel(p * 2.8 + vec3(uZeit * 0.4, 0.0, 0.0)) * 0.1) * uChaos * 0.075;
+      vec3 ziel = (wirbel(p * 1.1 + vec3(0.0, 0.0, uZeit * 0.2)) * 0.7 + wirbel(p * 2.6 + vec3(uZeit * 0.32, 0.0, 0.0)) * 0.08) * uChaos * 0.065;
       ziel.z *= 0.4;                                                                                 // eher flach: die Fäden bleiben lesbar
-      v = mix(v, ziel, 1.0 - exp(-uDt * 5.0));
+      float g = texture2D(uHeim, uv).w;                                                             // Grösse: grosse Kugeln sind träger
+      v = mix(v, ziel, 1.0 - exp(-uDt * 5.0 / (0.6 + 0.45 * g * g)));
       v += ((h - p) * uFeder - p * 6.0 * max(0.0, length(p * vec3(0.8, 1.0, 1.4)) - 1.2)) * uDt;     // Feder nach Hause, weiche Grenze
       v *= exp(-uDt * 2.2 * sqrt(uFeder));
       gl_FragColor = vec4(v, 1.0);
@@ -676,9 +685,6 @@ function strom(renderer, textur, B, H, grund, px, hell, { letzt = true } = {}) {
   geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(N * 3), 3));
   geo.setAttribute("aRef", new THREE.BufferAttribute(ref, 2));
   geo.setAttribute("aUv", new THREE.BufferAttribute(fotoUv, 2));
-  // verschiedene Grössen, nicht übertrieben (Wunsch vom 17. Oktober 2026): die meisten 0,7 bis 1,15, jede zwölfte grösser bis 1,8
-  const groessen = new Float32Array(N), zg = zufallAus(20261018);
-  for (let i = 0; i < N; i++) { const a = zg(), b = zg(); groessen[i] = b < 1 / 12 ? 1.35 + 0.45 * a : 0.7 + 0.45 * a * a; }
   geo.setAttribute("aGroesse", new THREE.BufferAttribute(groessen, 1));
   const punktMat = new THREE.ShaderMaterial({
     uniforms: { uLage: { value: null }, uTempo: { value: null }, uHeim: { value: heim }, uFoto: { value: textur }, uEinrasten: { value: 0 }, uZeit: { value: 0 },

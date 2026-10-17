@@ -187,12 +187,12 @@ test("Abläufe (16./17. Oktober 2026): Fragmente oder die Verwandlung aus Strom,
   assert.ok(Math.abs(alt.dauer - 23.55) < 1e-9, `Standard unverändert 23,55 s (${alt.dauer})`);
   // die ganze Verwandlung: neun Phasen, Strom verdichtet sich, nur das Relief endet beim Foto; die Teile überblenden
   const K = kette(VERWANDLUNG);
-  assert.deepEqual(K.phasen.map((p) => p.titel), ["Funken", "Strom", "Verdichten", "Körper", "Bruch", "Echo", "Höhenlinien", "Gebirge", "Bild"]);
+  assert.deepEqual(K.phasen.map((p) => p.titel), ["Funken", "Strom", "Verdichten", "Körper", "Bruch", "Sammeln", "Echo", "Höhenlinien", "Gebirge", "Bild"]);
   assert.deepEqual(K.teile.map((t) => [t.art, t.erst, t.letzt]), [["strom", true, false], ["koerper", false, false], ["scherben", false, false], ["echo", false, false], ["relief", false, true]]);
   const [, kb, sb] = K.teile;
   assert.ok(Math.abs(kb.bis - (sb.von + 4.3 - 3.6 - sb.ein)) < 1e-9, "die Scherben zerspringen genau am Ende des Körpers");
   for (let i = 1; i < K.teile.length; i++) assert.ok(K.teile[i].von < K.teile[i - 1].bis && K.teile[i].von > K.teile[i - 1].von, "überblenden");
-  assert.ok(K.dauer > 20 && K.dauer < 26, `Verwandlung ${K.dauer} s`);
+  assert.ok(K.dauer > 20 && K.dauer < 28, `Verwandlung ${K.dauer} s`);
   // einzeln: alle Phasen des Effekts, er endet beim Foto
   for (const art of EFFEKTE) assert.deepEqual(kette(art).phasen.map((p) => p.name), ABLAEUFE[art].phasen.map(([n]) => n), `${art} einzeln`);
   const auswahl = ["flug", "strom", "koerper", "scherben", "echo", "relief", VERWANDLUNG, "koerper+scherben", "koerper+echo", "scherben+echo", "strom+relief", "strom+koerper", "strom+scherben", "echo+relief"];
@@ -209,7 +209,7 @@ test("Abläufe (16./17. Oktober 2026): Fragmente oder die Verwandlung aus Strom,
       for (let i = 1; i < z.phasen.length; i++) assert.ok(Math.abs(z.phasen[i].von - z.phasen[i - 1].bis) < 1e-9 && z.phasen[i].bis > z.phasen[i].von, "Phasen schliessen an");
       assert.ok(z.ab.zusammen[1] + 0.35 < 0 && z.ab.linien[0] < 0, `${art}: die Phasen von «Fragmente» liegen ausserhalb des Films`);
       assert.ok(Math.abs(z.dauer - z.ab.stehen[1] - (alt.dauer - alt.ab.stehen[1])) < 1e-9, "derselbe Abspann");
-      assert.ok(z.dauer > 10 && z.dauer < 41, `${art}: rund 10 bis 40 s (${z.dauer})`);
+      assert.ok(z.dauer > 10 && z.dauer < 45, `${art}: rund 10 bis 45 s (${z.dauer})`);
     }
   }
 });

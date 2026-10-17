@@ -51,7 +51,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit (Abschnitt + Anteil der Dauer) messen: Anteil Grund, Anteil Grau, Anteil bunt, mittlere Farbe in der Mitte */
 const messe = (page, abschnitt, anteil = 0, extra = {}) => page.evaluate(async ([abschnitt, anteil, extra]) => {
-  const { bild, szene } = await import("./szene.js?v=31");
+  const { bild, szene } = await import("./szene.js?v=32");
   const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, ...extra });
   const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
   const [a, b] = sz.zeit.ab[abschnitt], t = a + (b - a) * anteil;
@@ -153,7 +153,7 @@ await check("Formen als Stich folgen dem Foto Bildpunkt für Bildpunkt: dunkle T
   await bereit(page);
   // Testfoto: rote Fläche (dunkel) unten in der Mitte, gelbe Sonne (hell) oben; gemessen wird die Tinte in beiden Bereichen am Ende von 02
   const tinte = (grund) => page.evaluate(async (grund) => {
-    const { bild, szene } = await import("./szene.js?v=31");
+    const { bild, szene } = await import("./szene.js?v=32");
     const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, grund });
     const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
     bild(x, sz, sz.zeit.ab.farben[0] - 0.05);
@@ -219,7 +219,7 @@ await check("Formate: 9 : 16 und zurück zu 4 : 5; Vorschau und Signet passen si
     // das Signet steht in beiden Formaten in der Mitte und ganz im Bild
     {
       const mitte = await page.evaluate(async () => {
-        const { bild, szene } = await import("./szene.js?v=31");
+        const { bild, szene } = await import("./szene.js?v=32");
         const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h) });
         const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
         bild(x, sz, sz.zeit.ab.signetStehen[0] + 0.2);
@@ -240,7 +240,7 @@ await check("Formate: 9 : 16 und zurück zu 4 : 5; Vorschau und Signet passen si
 
 /** im Browser: Bilder eines Ablaufs messen (halbe Grösse, ohne Beschriftung): Abstand zum Foto, Anteil Grund; mit oder ohne raum.js */
 const raumMessen = (page, zeiten, mitRaum = true) => page.evaluate(async ([zeiten, mitRaum]) => {
-  const { bild, szene } = await import("./szene.js?v=31");
+  const { bild, szene } = await import("./szene.js?v=32");
   const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false,
     ablauf: S.ablauf, raum: mitRaum ? S.raum : null });
   const w = sz.breite / 2, h = sz.hoehe / 2, c = document.createElement("canvas"); c.width = w; c.height = h;
@@ -337,7 +337,7 @@ await check("Verwandlung: Strom verdichtet sich, der Körper wächst daraus und 
   await bereit(page);
   await page.click('[data-ablauf="verwandlung"]');
   await page.waitForFunction(() => window.__bildfragmentieren.sz?.raum?.art === "strom+koerper+scherben+echo+relief", null, { timeout: 90_000 });
-  assert.deepEqual(await knoepfe(page), ["01 Funken", "02 Strom", "03 Verdichten", "04 Körper", "05 Bruch", "06 Echo", "07 Höhenlinien", "08 Gebirge", "09 Bild"]);
+  assert.deepEqual(await knoepfe(page), ["01 Funken", "02 Strom", "03 Verdichten", "04 Körper", "05 Bruch", "06 Sammeln", "07 Echo", "08 Höhenlinien", "09 Gebirge", "10 Bild"]);
   assert.deepEqual(await page.$$eval("[data-effekt]", (b) => b.map((x) => x.getAttribute("aria-pressed"))), ["true", "true", "true", "true", "true"]);
   assert.equal(await page.textContent("#kette"), "Strom → Körper → Scherben → Echo → Relief");
   // Echo zweimal, dazwischen ein Sprung an seinen Anfang (die Rückkopplung samt den Bildern der Scherben wird von vorn nachgerechnet)
@@ -354,10 +354,10 @@ await check("Verwandlung: Strom verdichtet sich, der Körper wächst daraus und 
   await page.click('[data-effekt="strom"]');
   await page.waitForFunction(() => window.__bildfragmentieren.sz?.raum?.art === "koerper+scherben+echo+relief", null, { timeout: 90_000 });
   assert.equal(await page.textContent("#kette"), "Körper → Scherben → Echo → Relief");
-  assert.deepEqual(await knoepfe(page), ["01 Körper", "02 Bruch", "03 Echo", "04 Höhenlinien", "05 Gebirge", "06 Bild"]);
+  assert.deepEqual(await knoepfe(page), ["01 Körper", "02 Bruch", "03 Sammeln", "04 Echo", "05 Höhenlinien", "06 Gebirge", "07 Bild"]);
   await page.click('[data-effekt="relief"]');
   await page.waitForFunction(() => window.__bildfragmentieren.sz?.raum?.art === "koerper+scherben+echo", null, { timeout: 90_000 });
-  assert.deepEqual(await knoepfe(page), ["01 Körper", "02 Bruch", "03 Echo", "04 Bild"]);
+  assert.deepEqual(await knoepfe(page), ["01 Körper", "02 Bruch", "03 Sammeln", "04 Echo", "05 Bild"]);
   const [k0, kEnde] = await raumMessen(page, ["z.koerper.von + 0.05", "z.abschnitt.bis - 0.02"]);
   assert.ok(k0.dunkel > 0.9 && kEnde.foto < 3, `Körper, Scherben und Echo: dunkel, endet beim Foto (${k0.dunkel}, ${kEnde.foto})`);
   for (const e of ["echo", "koerper", "scherben"]) await page.click(`[data-effekt="${e}"]`);
