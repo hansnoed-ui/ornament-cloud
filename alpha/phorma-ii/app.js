@@ -288,14 +288,23 @@ const spaeterLesen = () => { clearTimeout(umstellen); umstellen = setTimeout(les
 const formatKnoepfe = wahl("data-format", "format", FORMATE, () => { S.ki = null; spaeterLesen(); });
 // Muster: die Feinheit der Morphogenese (nur die Bühne wird neu gebaut, das Foto nicht neu analysiert)
 const musterKnoepfe = wahl("data-muster", "muster", ["fein", "mittel", "grob"], () => neu());
-const tiefeKnoepfe = wahl("data-tiefe", "tiefe", ["bild", "ki"], async () => {
+// auf dem Telefon keine KI-Tiefe (Rückmeldung vom 17. Oktober 2026, Samsung Galaxy S23: «er stürzt ab, wenn mit KI gewählt ist, sonst nicht» – mit
+// WebGPU und auch mit WebAssembly)
+if (grob) { S.tiefe = "bild"; merken("tiefe", "bild"); }
+const tiefeKnoepfe = wahl("data-tiefe", "tiefe", grob ? ["bild"] : ["bild", "ki"], async () => {
   if (!S.A) return;
   if (S.tiefe === "ki") { melden("Die KI-Tiefe wird vorbereitet …"); await kiAnwenden(); } else { S.A.tiefe = S.A.geschaetzt; melden("Tiefe aus dem Bild geschätzt."); }
   neu();
 });
 $("ki-hinweis").hidden = S.tiefe !== "ki";
+if (grob) {
+  const ki = document.querySelector('[data-tiefe="ki"]');
+  ki.disabled = true; ki.title = "Auf dem Handy nicht verfügbar";
+  $("ki-hinweis").textContent = "«Mit KI» gibt es nur am Computer: auf Handys brachte die KI-Tiefe den Browser zum Absturz.";
+  $("ki-hinweis").hidden = false;
+}
 if (kiAbsturz) melden("Die KI-Tiefe hat beim letzten Mal den Browser zum Absturz gebracht; sie ist darum ausgeschaltet (Tiefe aus dem Bild).", true);
-for (const b of tiefeKnoepfe) b.addEventListener("click", () => { $("ki-hinweis").hidden = S.tiefe !== "ki"; });
+for (const b of tiefeKnoepfe) b.addEventListener("click", () => { if (!grob) $("ki-hinweis").hidden = S.tiefe !== "ki"; });
 for (const id of ["tempo"]) { const v = erinnern(id); if (v && [...$(id).options].some((o) => o.value === v)) $(id).value = v; $(id).addEventListener("change", () => { merken(id, $(id).value); neu(); }); }
 for (const id of ["signet", "beschriftung", "unschaerfe"]) { const v = erinnern(id); if (v !== null) $(id).checked = v === "1"; $(id).addEventListener("change", () => { merken(id, $(id).checked ? "1" : "0"); if (id !== "unschaerfe") neu(); }); }
 // Effekte (Wunsch vom 17. Oktober 2026: «die Effekte einzeln anwählen»): die Karten wählen die ganze Kette oder genau einen Effekt; die Schalter
@@ -464,5 +473,5 @@ function zeigen({ blob, endung, art }, sz, ms) {
 
 function sperren(an) {
   for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...musterKnoepfe, ...tiefeKnoepfe, ...wahlKnoepfe, ...effektKnoepfe, $("video"), $("png")])
-    el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A);
+    el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A) || (grob && el.dataset?.tiefe === "ki");
 }
