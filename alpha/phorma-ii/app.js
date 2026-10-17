@@ -1,9 +1,11 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=9";
-import { szene, bild, standbildZeit } from "./film.js?v=9";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=9";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=10";
+import { szene, bild, standbildZeit } from "./film.js?v=10";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=10";
+import { tonAnalysieren } from "./ton.js?v=10";
+import { textBild } from "./textbild.js?v=10";
 import { mp4 } from "../sketchory/mp4.js?v=10";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
@@ -14,7 +16,7 @@ const grob = matchMedia("(pointer: coarse)").matches, test = new URLSearchParams
 const PROBEN = 8;
 let VORSCHAU = 0.5;
 const S = { bild: null, A: null, foto: null, sz: null, laeuft: false, start: 0, t: null, film: null, rechnen: 0, buehne: null, buehneSchluessel: "",
-  format: "4:5", tiefe: "bild", mass: [1080, 1350], ablauf: KETTE, ki: null };
+  format: "4:5", tiefe: "bild", quelle: "foto", text: "", fotoBild: null, ton: null, mass: [1080, 1350], ablauf: KETTE, ki: null };
 window.__phorma = S;   // für die Browser-Tests
 // ?diagnose: Messwerte zum Gerät sichtbar unter der Vorschau (Rückmeldung vom 17. Oktober 2026: auf einem Telefon «reagiert nicht», hier nicht
 // nachzustellen) – Zeitpunkte der Schritte, Dauer je Vorschaubild, längste Blockade, Grafikchip und Erweiterungen; als Bildschirmfoto zurückschicken
@@ -108,19 +110,24 @@ async function fotoLaden(datei) {
   let q;
   try { q = await bitmap(datei); } catch { melden("Dieses Foto kann der Browser nicht öffnen. Versuche es als JPG oder PNG.", true); return; }
   notiz(`Foto gelesen und verkleinert auf ${q.width} × ${q.height}`);
-  // das alte Foto und seine Bühne sofort freigeben, nicht erst, wenn das neue analysiert ist
+  S.fotoBild = q;
+  if (S.quelle !== "foto") { S.quelle = "foto"; merken("quelle", "foto"); quelleZeigen(); }
+  ablage.classList.add("hat-bild"); $("ablage-titel").textContent = "Anderes Foto wählen";
+  await bildSetzen(q);
+}
+/** ein Bild (Foto oder Text) als Quelle: das alte und seine Bühne sofort freigeben, nicht erst, wenn das neue analysiert ist */
+async function bildSetzen(q) {
   anhalten(); S.sz = null; S.t = null;
   S.buehne?.entsorgen(); S.buehne = null; S.buehneSchluessel = ""; S.buehneWarm = false; S.buehneFertig = false;
   S.foto = null; S.A = null;
   S.bild = q; S.ki = null;
-  $("quelle").src = bildchen(q); $("quelle").hidden = false;
-  ablage.classList.add("hat-bild"); $("ablage-titel").textContent = "Anderes Foto wählen";
+  if (S.quelle === "foto") { $("quelle").src = bildchen(q); $("quelle").hidden = false; }
   await lesen();
 }
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=9", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=10", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -162,7 +169,7 @@ async function kiAnwenden() {
     const nr = S.rechnen;
     try {
       notiz("Tiefe mit KI wird vorbereitet");
-      kiModul ??= await import("./tiefe-ki.js?v=9");
+      kiModul ??= await import("./tiefe-ki.js?v=10");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m), { telefon: grob, notiz });
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
@@ -178,7 +185,7 @@ async function kiAnwenden() {
 // ——— Bühne (WebGL 2): erst laden, wenn ein Foto da ist ———
 let buehneModul = null;
 async function buehneBereit() {
-  const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.A.tiefe === S.A.geschaetzt ? "bild" : "ki"}` : "";
+  const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.A.tiefe === S.A.geschaetzt ? "bild" : "ki"}|${S.quelle}|${S.ton?.name ?? ""}|${laenge()}` : "";
   if (schluessel === S.buehneSchluessel) return;
   S.buehneSchluessel = schluessel; S.buehneFertig = false; S.buehneWarm = false; S.spurBilder = 0;
   if (S.sz) S.sz.buehne = null;
@@ -186,10 +193,10 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=9");
+    buehneModul ??= await import("./buehne.js?v=10");
     if (S.buehneSchluessel !== schluessel) return;
     notiz(`Bühne wird gebaut: ${S.ablauf}`);
-    S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz,
+    S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, quelle: S.quelle, ton: S.ton?.analyse ?? null, laenge: laenge(), tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz,
       onVerloren: () => {
         if (S.buehneSchluessel !== schluessel) return;
         anhalten();
@@ -230,9 +237,12 @@ async function buehneBereit() {
 /** Video und Standbild warten, bis die Bühne ganz fertig ist */
 async function buehneFertig() { await buehneBereit(); await S.buehne?.bereit; }
 
+/** mit Tonspur dauert das Gewebe so lange wie sie (ohne Vorlauf und Stehen), 10 bis 110 s */
+const laenge = () => (S.ton && S.ablauf === "gewebe" ? Math.min(110, Math.max(10, S.ton.analyse.dauer - 0.4 - 3.2)) : null);
 function optionen() {
   return { breite: S.mass[0], hoehe: S.mass[1], tempo: $("tempo").value, signet: $("signet").checked, beschriftung: $("beschriftung").checked,
-    titel: $("titel").value.replace(/\s+/g, " ").trim(), foto: S.foto, ablauf: S.ablauf, buehne: S.buehneWarm ? S.buehne : null };
+    titel: $("titel").value.replace(/\s+/g, " ").trim(), foto: S.foto, ablauf: S.ablauf, buehne: S.buehneWarm ? S.buehne : null,
+    text: S.quelle === "text" ? S.text : "", ton: S.ton?.analyse ?? null, laenge: laenge() };
 }
 
 function sprungknoepfe(sz) {
@@ -285,7 +295,42 @@ function wahl(attr, schluessel, werte, wenn) {
 }
 let umstellen = 0;
 const spaeterLesen = () => { clearTimeout(umstellen); umstellen = setTimeout(lesen, 250); };
-const formatKnoepfe = wahl("data-format", "format", FORMATE, () => { S.ki = null; spaeterLesen(); });
+const formatKnoepfe = wahl("data-format", "format", FORMATE, () => { S.ki = null; if (S.quelle === "text") { clearTimeout(umstellen); umstellen = setTimeout(textLaden, 250); } else spaeterLesen(); });
+// Quelle: ein Foto oder ein Text (Wunsch vom 17. Oktober 2026: Effekte «für Texte und Audiofiles»); der Text wird zu einem Bild (textbild.js)
+const quelleKnoepfe = wahl("data-quelle", "quelle", ["foto", "text"], () => { quelleZeigen(); if (S.quelle === "text") textLaden(); else if (S.fotoBild) bildSetzen(S.fotoBild); });
+function quelleZeigen() { $("foto-teil").hidden = S.quelle !== "foto"; $("text-teil").hidden = S.quelle !== "text"; }
+S.text = erinnern("text") ?? ""; $("text").value = S.text;
+quelleZeigen();
+let textTippen = 0;
+$("text").addEventListener("input", () => { S.text = $("text").value; merken("text", S.text); clearTimeout(textTippen); textTippen = setTimeout(textLaden, 600); });
+async function textLaden() {
+  if (S.quelle !== "text" || !S.text.trim()) return;
+  notiz(`Text gewählt (${S.text.length} Zeichen)`);
+  await bildSetzen(await textBild(S.text, ...filmMass(S.format)));
+}
+if (S.quelle === "text" && S.text.trim()) textLaden();
+// Ton: eine Audiodatei steuert das Gewebe und klingt in der Vorschau und im Video mit (tonspur.js); ohne Ton bleibt das Video stumm
+$("tondatei").addEventListener("change", async (e) => {
+  const datei = e.target.files?.[0]; if (!datei) return;
+  melden("Der Ton wird gelesen …");
+  try {
+    const { tonLesen } = await import("./tonspur.js?v=10");
+    const { buffer, pcm, rate } = await tonLesen(datei), analyse = tonAnalysieren(pcm, rate);
+    if (S.ton?.url) URL.revokeObjectURL(S.ton.url);
+    S.ton = { buffer, analyse, name: datei.name, url: URL.createObjectURL(datei) };
+    $("tonspur").src = S.ton.url;
+    $("ton-info").textContent = `${datei.name} · ${analyse.dauer.toFixed(1).replace(".", ",")} s · ${analyse.einsaetze.length} Einsätze · ${analyse.schnitte.length} Schnitte`;
+    $("ton-weg").hidden = false;
+    notiz(`Ton gelesen: ${analyse.dauer.toFixed(1)} s, ${analyse.einsaetze.length} Einsätze`);
+    melden(S.ablauf === "gewebe" ? "Ton bereit: das Gewebe folgt ihm." : "Ton bereit: er klingt mit; bewegen lässt er das Gewebe.");
+    neu();
+  } catch (fehler) { melden(`Diese Audiodatei kann der Browser nicht lesen (${fehler?.message ?? fehler}).`, true); }
+});
+$("ton-weg").addEventListener("click", () => {
+  if (S.ton?.url) URL.revokeObjectURL(S.ton.url);
+  S.ton = null; $("tonspur").removeAttribute("src"); $("tondatei").value = ""; $("ton-info").textContent = ""; $("ton-weg").hidden = true;
+  neu();
+});
 // auf dem Telefon keine KI-Tiefe (Rückmeldung vom 17. Oktober 2026, Samsung Galaxy S23: «er stürzt ab, wenn mit KI gewählt ist, sonst nicht» – mit
 // WebGPU und auch mit WebAssembly)
 if (grob) { S.tiefe = "bild"; merken("tiefe", "bild"); }
@@ -334,10 +379,11 @@ function spielen() {
   const ab = !S.ende && S.t !== null && S.t < S.sz.zeit.dauer - 0.1 ? S.t : 0;
   S.ende = false;
   S.start = performance.now() - ab * 1000; zuletzt = 0;
+  if (S.ton) { const a = $("tonspur"); a.currentTime = Math.min(ab, a.duration || ab); a.play().catch(() => {}); }
   if (!S.laeuft) { S.laeuft = true; requestAnimationFrame(takt); }
   $("spielen").textContent = "Anhalten";
 }
-function anhalten() { S.laeuft = false; $("spielen").textContent = "Abspielen"; }
+function anhalten() { S.laeuft = false; $("spielen").textContent = "Abspielen"; $("tonspur").pause(); }
 function zeigeZeit(t) {
   const t0 = performance.now();
   S.t = t; S.ende = false;
@@ -431,7 +477,16 @@ async function mitWebCodecs(cfg, sz) {
   await enc.flush(); enc.close();
   if (fehler) throw fehler;
   if (!avcC) throw new Error("der Encoder hat keine Beschreibung geliefert");
-  return { blob: new Blob([mp4({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, avcC, proben: stuecke })], { type: "video/mp4" }), endung: "mp4", art: `MP4 (H.264, ${cfg.codec})${p > 1 ? ` · Bewegungsunschärfe ${p} Proben` : ""}` };
+  const art = `MP4 (H.264, ${cfg.codec})${p > 1 ? ` · Bewegungsunschärfe ${p} Proben` : ""}`;
+  // mit Ton: die Tonspur kodieren und beides mit mp4-muxer zusammen schreiben
+  if (S.ton && $("ton-im-video").checked) {
+    melden("Der Ton wird kodiert …");
+    const { tonKodieren, mp4MitTon } = await import("./tonspur.js?v=10");
+    const ton = await tonKodieren(S.ton.buffer, sz.zeit.dauer);
+    if (ton) return { blob: new Blob([mp4MitTon({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, codec: cfg.codec, avcC, bilder: stuecke, ton })], { type: "video/mp4" }), endung: "mp4", art: `${art} · Ton ${ton.codec === "aac" ? "AAC" : "Opus"}` };
+    melden("Dieser Browser kann den Ton nicht kodieren; das Video ist ohne Ton.", true);
+  }
+  return { blob: new Blob([mp4({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, avcC, proben: stuecke })], { type: "video/mp4" }), endung: "mp4", art };
 }
 
 async function mitRecorder(sz) {
@@ -470,6 +525,6 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...tiefeKnoepfe, ...wahlKnoepfe, ...effektKnoepfe, $("video"), $("png")])
+  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...tiefeKnoepfe, ...wahlKnoepfe, ...effektKnoepfe, ...quelleKnoepfe, $("text"), $("tondatei"), $("ton-weg"), $("video"), $("png")])
     el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A) || (grob && el.dataset?.tiefe === "ki");
 }

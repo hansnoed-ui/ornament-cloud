@@ -1,7 +1,7 @@
 // PHORMA II (alpha/phorma-ii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): ein Testfoto analysieren (Physarum, Tiefe, Tuch), jede Phase der Kette
 // zeigt etwas und etwas anderes, jeder Effekt beginnt im Dunkeln und endet exakt beim Foto, dasselbe Bild nach einem Sprung zurück (Simulationen
 // mit Wiedereinstiegspunkten), Bewegungsunschärfe, Video über WebCodecs (Ersatz-Encoder), Standbild, KI-Tiefe ohne Netz fällt auf die geschätzte
-// zurück, keine Anfragen nach aussen, Handy ohne seitliches Scrollen. Mit ?test (weniger Agenten, gröbere Netze).
+// zurück, Gewebe aus Text mit Ton (und Video mit Tonspur), keine Anfragen nach aussen, Handy ohne seitliches Scrollen. Mit ?test (weniger Agenten, gröbere Netze).
 //   NODE_PATH=$(npm root -g) node tests/phorma-ii.e2e.mjs
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -56,7 +56,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit, Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild, szene } = await import("./film.js?v=9");
+  const { bild, szene } = await import("./film.js?v=10");
   const S = window.__phorma; S.laeuft = false;
   const sz = szene({ breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, ablauf: S.ablauf, buehne: S.buehne, beschriftung: false, signet: true });
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -73,6 +73,22 @@ const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]
   }
   return { hell: hell / n, schwarz: schwarz / n, abw, mittelAbw: mittelAbw / n, abdruck, dauer: sz.zeit.dauer, zeit: { teile: sz.zeit.teile.map((tl) => [tl.art, tl.von, tl.bis]), phasen: sz.zeit.phasen.map((p) => [p.art, p.name, p.von, p.bis]), abschnitt: sz.zeit.abschnitt, stehen: sz.zeit.ab.stehen } };
 }, [t, proben]);
+
+// Ersatz für den H.264-Encoder (SwiftShader hat keinen): liefert kleine Stücke und eine Beschreibung
+const ERSATZ_ENCODER = () => {
+  window.VideoEncoder = class {
+    static async isConfigSupported(cfg) { return { supported: cfg.codec === "avc1.640028", config: cfg }; }
+    constructor({ output }) { this.output = output; this.encodeQueueSize = 0; this.n = 0; }
+    configure(cfg) { window.__cfg = cfg; }
+    encode(frame, { keyFrame }) {
+      const daten = new Uint8Array(16).fill(this.n & 255);
+      this.output({ type: keyFrame ? "key" : "delta", timestamp: frame.timestamp, byteLength: 16, copyTo: (z) => z.set(daten) },
+        this.n++ ? {} : { decoderConfig: { description: new Uint8Array([1, 0x64, 0, 0x28, 0xff, 0xe1, 0, 1, 0x67, 1, 0, 1, 0x68]).buffer } });
+    }
+    async flush() {}
+    close() {}
+  };
+};
 
 await check("Testfoto: wird analysiert, die Bühne steht, die Kette aller drei Effekte als Sprungknöpfe; nichts von aussen", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
@@ -176,21 +192,7 @@ await check("Bewegungsunschärfe: acht Proben mitteln ein bewegtes Bild, das ste
 });
 
 await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern in 4 : 5; Standbild PNG in voller Grösse", async () => {
-  const ersatz = () => {
-    window.VideoEncoder = class {
-      static async isConfigSupported(cfg) { return { supported: cfg.codec === "avc1.640028", config: cfg }; }
-      constructor({ output }) { this.output = output; this.encodeQueueSize = 0; this.n = 0; }
-      configure(cfg) { window.__cfg = cfg; }
-      encode(frame, { keyFrame }) {
-        const daten = new Uint8Array(16).fill(this.n & 255);
-        this.output({ type: keyFrame ? "key" : "delta", timestamp: frame.timestamp, byteLength: 16, copyTo: (z) => z.set(daten) },
-          this.n++ ? {} : { decoderConfig: { description: new Uint8Array([1, 0x64, 0, 0x28, 0xff, 0xe1, 0, 1, 0x67, 1, 0, 1, 0x68]).buffer } });
-      }
-      async flush() {}
-      close() {}
-    };
-  };
-  const { ctx, page, fehler } = await oeffne({ vorher: ersatz, ablauf: "physarum" });
+  const { ctx, page, fehler } = await oeffne({ vorher: ERSATZ_ENCODER, ablauf: "physarum" });
   await laden(page); await bereit(page);
   await page.uncheck("#unschaerfe"); await page.uncheck("#signet");
   await page.waitForFunction(() => !window.__phorma.sz.zeit.ab.signet);
@@ -211,6 +213,57 @@ await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern in 4 
   const b = readFileSync(await png.path());
   assert.deepEqual([b.readUInt32BE(16), b.readUInt32BE(20)], [1080, 1350]);
   assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
+// eine kurze Tonspur (WAV, mono, 22,05 kHz): leises Summen und Schläge alle 1,5 s
+const WAV = (() => {
+  const rate = 22050, n = rate * 12, b = Buffer.alloc(44 + n * 2);
+  b.write("RIFF", 0); b.writeUInt32LE(36 + n * 2, 4); b.write("WAVEfmt ", 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22);
+  b.writeUInt32LE(rate, 24); b.writeUInt32LE(rate * 2, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34); b.write("data", 36); b.writeUInt32LE(n * 2, 40);
+  for (let i = 0; i < n; i++) {
+    const t = i / rate, s = t % 1.5, schlag = t > 0.9 ? Math.exp(-s / 0.06) * (Math.sin(i * 0.03) + 0.5 * Math.sin(i * 1.1)) * 0.6 : 0;
+    b.writeInt16LE(Math.round(Math.max(-1, Math.min(1, 0.03 * Math.sin(i * 0.05) + schlag)) * 32000), 44 + i * 2);
+  }
+  return b;
+})();
+
+await check("Gewebe aus Text mit Ton: Zeichen, Bänder aus Linien, Fragmente bei den Einsätzen, am Ende exakt der Text; Video mit Tonspur", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne({ vorher: ERSATZ_ENCODER });
+  await page.click('[data-wahl="gewebe"]');
+  await page.click('[data-quelle="text"]');
+  assert.ok(await page.isVisible("#text") && !(await page.isVisible("#ablage")), "Textfeld statt Ablage");
+  await page.fill("#text", "ki me");
+  await bereit(page);
+  await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
+  await page.waitForFunction(() => window.__phorma.ton && window.__phorma.buehneFertig && window.__phorma.sz.fragmente.length, null, { timeout: 120_000 });
+  await bereit(page);
+  assert.match(await page.textContent("#ton-info"), /schlaege\.wav · 12,0 s · \d+ Einsätze/);
+  const s = await page.evaluate(() => { const S = window.__phorma; return { ablauf: S.ablauf, phasen: S.sz.zeit.phasen.map((p) => [p.name, p.von, p.bis]), abschnitt: S.sz.zeit.abschnitt, einsaetze: S.ton.analyse.einsaetze.length, fragmente: S.sz.fragmente.length, schnitte: S.sz.schnitte }; });
+  assert.equal(s.ablauf, "gewebe");
+  assert.deepEqual(s.phasen.map((p) => p[0]), ["zeichen", "gewebe", "bild"]);
+  assert.ok(Math.abs(s.abschnitt.bis - s.abschnitt.von - 10) < 1e-6, "mit Ton: so lang wie die Musik, mindestens 10 s");
+  assert.ok(s.einsaetze >= 6 && s.fragmente >= 2, `Einsätze ${s.einsaetze}, Fragmente ${s.fragmente}`);
+  const G = s.phasen[1], zeichen = await messe(page, s.phasen[0][1] + 0.9), mitte = await messe(page, (G[1] + G[2]) / 2), mitte2 = await messe(page, (G[1] + G[2]) / 2 + 0.5);
+  const ende = await messe(page, s.abschnitt.bis + 1);
+  assert.ok(zeichen.mittelAbw < 10 && mitte.mittelAbw > zeichen.mittelAbw, `zuerst steht der Text (${zeichen.mittelAbw.toFixed(2)}, später ${mitte.mittelAbw.toFixed(2)})`);
+  assert.ok(mitte.hell > 150, `Papier mit Linien (${mitte.hell.toFixed(0)}, ${mitte.mittelAbw.toFixed(2)})`);
+  assert.notEqual(mitte.abdruck, mitte2.abdruck, "die Bänder bewegen sich");
+  assert.ok(ende.abw <= 2, `am Ende exakt der Text (${ende.abw})`);
+  // Video mit Ton (Bild aus dem Ersatz-Encoder, Ton vom Browser)
+  await page.uncheck("#unschaerfe"); await page.uncheck("#signet");
+  await page.waitForFunction(() => !window.__phorma.sz.zeit.ab.signet);
+  await page.click("#video");
+  await page.waitForSelector("#ergebnis:not([hidden])", { timeout: 600_000 });
+  await page.evaluate(() => { const gl = window.__phorma.buehne.canvas.getContext("webgl2"); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4)); });
+  const info = await page.textContent("#film-info");
+  const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#laden")]);
+  const d = new Uint8Array(readFileSync(await dl.path())), moov = kisten(d).find((k) => k.typ === "moov");
+  const spuren = moov.kinder.filter((k) => k.typ === "trak");
+  const art = (t) => { const h = t.kinder.find((k) => k.typ === "mdia").kinder.find((k) => k.typ === "hdlr"); return String.fromCharCode(...d.subarray(h.o + 16, h.o + 20)); };
+  assert.deepEqual(spuren.map(art).sort(), ["soun", "vide"], `Bild und Ton im MP4 (${info})`);
+  assert.match(info, /Ton (AAC|Opus)/);
+  assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
 

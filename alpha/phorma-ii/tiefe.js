@@ -6,9 +6,9 @@
 //   Vor dem Tuch endet der Raum frontal mit einem flachen Relief: daraus wird das Tuch (TIEFE_UEBERGABE).
 // Gestreckte Maschen an Tiefensprüngen werden dunkel statt verschmiert. Zustandslos.
 import * as THREE from "three";
-import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=9";
-import { phase } from "./ablauf.js?v=9";
-import { TIEFE_UEBERGABE } from "./tuchsim.js?v=9";   // dasselbe Relief, aus dem das Tuch beginnt
+import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=10";
+import { phase } from "./ablauf.js?v=10";
+import { TIEFE_UEBERGABE } from "./tuchsim.js?v=10";   // dasselbe Relief, aus dem das Tuch beginnt
 
 export { TIEFE_UEBERGABE };
 const SCHICHTEN = 7;

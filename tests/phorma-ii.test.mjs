@@ -1,4 +1,5 @@
-// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, Seite.
+// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, Ton und
+// Höhenlinien fürs Gewebe, Seite.
 //   node --test tests/phorma-ii.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -8,6 +9,8 @@ const root = new URL("../", import.meta.url);
 const P = new URL("alpha/phorma-ii/", root);
 const A = await import(new URL("ablauf.js", P).href);
 const { analysieren, tiefeNormieren } = await import(new URL("analyse.js", P).href);
+const T = await import(new URL("ton.js", P).href);
+const Kv = await import(new URL("kurven.js", P).href);
 const lies = (p) => readFileSync(new URL(p, P), "utf8");
 
 test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette", () => {
@@ -102,6 +105,55 @@ test("KI-Tiefe: wird an die Kanten gelegt und auf 0..1 gebracht", () => {
   assert.ok(d[(h - 2) * w + 5] > d[w + 5] + 0.5, "unten nah bleibt nah");
 });
 
+test("Gewebe: für sich, nicht in der Kette; mit Tonspur so lang wie die Musik und ohne Tempo", () => {
+  assert.equal(A.ablaufName("gewebe"), "gewebe");
+  assert.equal(A.ablaufName("gewebe+tuch"), "tuch", "das Gewebe lässt sich nicht verketten");
+  const ohne = A.zeitachse({ ablauf: "gewebe", tempo: "ruhig" });
+  assert.deepEqual(ohne.phasen.map((p) => p.name), ["zeichen", "gewebe", "bild"]);
+  assert.equal(ohne.tempo, 1.3);
+  const mit = A.zeitachse({ ablauf: "gewebe", tempo: "ruhig", laenge: 40 });
+  assert.equal(mit.tempo, 1, "mit Tonspur gibt die Musik das Tempo");
+  assert.ok(Math.abs(mit.abschnitt.bis - mit.abschnitt.von - 40) < 1e-9, "der Effekt dauert so lange wie verlangt");
+  assert.ok(A.zeitachse({ ablauf: "gewebe", laenge: 2 }).phasen[1].bis - A.zeitachse({ ablauf: "gewebe", laenge: 2 }).phasen[1].von >= 5, "mindestens 5 s Gewebe");
+  assert.equal(A.zeitachse({ ablauf: A.KETTE, laenge: 40 }).dauer, A.zeitachse({ ablauf: A.KETTE }).dauer, "die Kette kümmert sich nicht um die Länge");
+});
+
+test("Ton: Lautstärke, Bänder und Einsätze aus einer Tonspur; Schnitte an den stärksten, die Zeit der Musik steigt", () => {
+  const rate = 22050, dauer = 12, pcm = new Float32Array(rate * dauer), schlaege = [1, 2.5, 4, 5.5, 7, 8.5, 10];
+  for (let i = 0; i < pcm.length; i++) pcm[i] = 0.02 * Math.sin(i * 0.05);
+  for (const [j, s] of schlaege.entries()) for (let i = 0; i < rate * 0.25; i++) {
+    const k = Math.round(s * rate) + i, a = (j % 3 === 0 ? 0.9 : 0.4) * Math.exp(-i / (rate * 0.06));
+    pcm[k] += a * (Math.sin(i * 0.03) + 0.5 * Math.sin(i * 1.1));
+  }
+  const t = T.tonAnalysieren(pcm, rate);
+  assert.ok(Math.abs(t.dauer - dauer) < 1e-9 && t.n === dauer * T.FPS && t.echt);
+  for (const k of ["laut", "tief", "mitte", "hoch", "fluss"]) assert.ok(t[k].every((v) => v >= 0 && v <= 1), `${k} in 0..1`);
+  for (const s of schlaege) assert.ok(t.einsaetze.some((e) => Math.abs(e.t - s) < 0.1), `Einsatz bei ${s} s`);
+  assert.ok(t.einsaetze.length <= schlaege.length + 2, `nicht zu viele Einsätze (${t.einsaetze.length})`);
+  assert.ok(t.schnitte.length >= 1 && t.schnitte.every((s, i) => s >= 0.8 && (i === 0 || s - t.schnitte[i - 1] >= 2)), "Schnitte: mindestens 2 s auseinander");
+  assert.ok(t.energie.every((v, i) => i === 0 || v > t.energie[i - 1]), "die Zeit der Musik steigt");
+  assert.ok(T.wert(t.laut, 1.1) > T.wert(t.laut, 0.5), "laut beim Schlag");
+  assert.deepEqual(T.tonAnalysieren(pcm, rate).einsaetze, t.einsaetze, "gleiche Tonspur, gleiches Ergebnis");
+  const e = T.ersatz(20);
+  assert.ok(!e.echt && e.einsaetze.length > 5 && e.energie.length === e.n);
+  assert.deepEqual(T.ersatz(20).einsaetze, e.einsaetze, "der Ersatz ist wiederholbar");
+});
+
+test("Höhenlinien: ein Kreis ergibt eine geschlossene Linie auf seinem Rand; das Gewebe nimmt die längsten, gleichmässig abgetastet", () => {
+  const w = 64, h = 48, feld = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) feld[y * w + x] = Math.hypot(x - 24, y - 24) < 12 ? 1 : 0;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (Math.hypot(x - 52, y - 10) < 4) feld[y * w + x] = 1;
+  const linien = Kv.hoehenlinien(feld, w, h, 0.5);
+  assert.equal(linien.length, 2);
+  const gross = linien.reduce((a, b) => (a.length > b.length ? a : b));
+  for (let i = 0; i < gross.length; i += 2) assert.ok(Math.abs(Math.hypot(gross[i] - 24, gross[i + 1] - 24) - 12) < 1.2, "auf dem Rand");
+  const k = Kv.gewebeKurven(feld, w, h, { anzahl: 5, punkte: 30, maxLaenge: 1 });
+  assert.ok(k.length >= 1 && k.every((c) => c.length === 60));
+  const abst = []; for (let u = 1; u < 30; u++) abst.push(Math.hypot(k[0][2 * u] - k[0][2 * u - 2], k[0][2 * u + 1] - k[0][2 * u - 1]));
+  assert.ok(Math.max(...abst) < 2.5 * Math.min(...abst), "gleichmässig abgetastet");
+  assert.deepEqual(Kv.gewebeKurven(new Float32Array(w * h), w, h), [], "ein leeres Feld hat keine Linien");
+});
+
 test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Marken, nichts von aussen ausser der KI auf Wunsch", () => {
   const html = lies("index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
@@ -110,6 +162,9 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.ok(!/<script[^>]+src="https?:/.test(html), "keine Skripte von aussen");
   for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
   assert.match(html, /data-wahl="physarum\+tiefe\+tuch"/, "die ganze Kette als Karte");
+  assert.match(html, /data-wahl="gewebe"/, "das Gewebe als eigene Karte");
+  assert.match(html, /data-quelle="foto"[\s\S]*data-quelle="text"/, "Foto oder Text als Quelle");
+  assert.match(html, /id="tondatei"[^>]*accept="audio\/\*/, "eine Audiodatei");
   assert.ok(!/data-(wahl|effekt)="(stich|muster)"|data-(strich|muster)=/.test(html), "weder Stich noch Morphogenese");
   const dateien = readdirSync(P).filter((f) => f.endsWith(".js")), marken = new Set();
   for (const f of dateien) {
