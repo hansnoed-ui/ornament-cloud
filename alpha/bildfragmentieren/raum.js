@@ -17,7 +17,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
-import { kette, ablaufName } from "./ablauf.js?v=22";
+import { kette, ablaufName } from "./ablauf.js?v=23";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -352,7 +352,31 @@ function scherben(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
 // bewegt. Im Bild-Teil strömt das Foto selbst durch den Tunnel herein, der Zoom kommt zur Ruhe, und die Spuren ziehen sich zum Foto zusammen
 // (Rückmeldung: «die Zusammensetzung des Schlussbildes wenig nachvollziehbar» – vorher wuchs es Tonstufe um Tonstufe). Nach einem anderen Effekt
 // (erst = false) speist zuerst dessen Bild die Schleife (quelle): seine Scherben oder Teilchen ziehen Spuren, dann übernehmen die Kanten.
+/** Schwelle der Kanten für Echo, nach dem Foto: nur die stärksten rund 6 % speisen die Rückkopplung (Rückmeldung vom 17. Oktober 2026 zu einem
+ *  bunten, unruhigen Foto: «das Echo viel zu weiss» – mit fester Schwelle war fast jeder Bildpunkt eine Kante). Sobel wie im Shader: Helligkeit
+ *  linear, auf dem Foto in halber Grösse (Mipmap-Stufe 1, in Vorschau und Export dieselbe), Nachbarn im Abstand eines Bildpunkts dort; an jedem
+ *  zweiten Bildpunkt; ruhige Fotos behalten die alte Schwelle 0,25 … 0,8 */
+function kantenSchwelle(px, B0, H0) {
+  const lin = new Float32Array(256).map((_, i) => (i / 255) ** 2.2), B = B0 >> 1, H = H0 >> 1, halb = new Float32Array(B * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < B; x++) {
+    let s = 0;
+    for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) { const i = ((2 * y + dy) * B0 + 2 * x + dx) * 4; s += 0.2126 * lin[px[i]] + 0.7152 * lin[px[i + 1]] + 0.0722 * lin[px[i + 2]]; }
+    halb[y * B + x] = s / 4;
+  }
+  const L = (x, y) => halb[y * B + x];
+  const werte = [];
+  for (let y = 1; y < H - 1; y += 2) for (let x = 1; x < B - 1; x += 2) {
+    const tl = L(x - 1, y - 1), t = L(x, y - 1), tr = L(x + 1, y - 1), l = L(x - 1, y), r = L(x + 1, y), bl = L(x - 1, y + 1), b = L(x, y + 1), br = L(x + 1, y + 1);
+    werte.push(Math.hypot(tr + 2 * r + br - tl - 2 * l - bl, tl + 2 * t + tr - bl - 2 * b - br));
+  }
+  werte.sort((a, b) => a - b);
+  const q = (a) => werte[Math.min(werte.length - 1, Math.floor(a * werte.length))] ?? 0;
+  const von = Math.max(0.25, q(0.94));
+  return [von, Math.max(von + 0.35, q(0.99), 0.8)];
+}
+
 function echo(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = true, ein = 0 } = {}) {
+  const [kanteVon, kanteBis] = kantenSchwelle(px, B, H);
   const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), quad = new THREE.PlaneGeometry(2, 2);
   const ziel = (w, h) => new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
   // je Auflösung ein eigener Zustand (Vorschau und Export rechnen in verschiedener Grösse; sonst begänne die Schleife bei jedem Wechsel von vorn)
@@ -369,15 +393,15 @@ function echo(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = tr
   Z = zustand(B, H);
   // ein Schritt der Rückkopplung; auf weissem Grund rechnet die Schleife im Negativ (die Anzeige kehrt es um: dunkle Spuren auf Weiss)
   const rueck = new THREE.ShaderMaterial({
-    uniforms: { uFoto: { value: textur }, uTexel: { value: new THREE.Vector2(1 / B, 1 / H) }, uVorher: { value: null }, uSeiten: { value: B / H }, uZeit: { value: 0 },
+    uniforms: { uFoto: { value: textur }, uTexel: { value: new THREE.Vector2(2 / B, 2 / H) }, uVorher: { value: null }, uSeiten: { value: B / H }, uZeit: { value: 0 },
       uZoom: { value: 1 }, uDreh: { value: 0 }, uWirbel: { value: 0 }, uZerfall: { value: 0.93 }, uEin: { value: 0 }, uFotoEin: { value: 0 },
-      uQuelle: { value: null }, uQuelleEin: { value: 0 }, uHell: { value: hell ? 1 : 0 } },
+      uQuelle: { value: null }, uQuelleEin: { value: 0 }, uHell: { value: hell ? 1 : 0 }, uKanteVon: { value: kanteVon }, uKanteBis: { value: kanteBis } },
     vertexShader: QUAD_VERTEX, depthTest: false, depthWrite: false,
     fragmentShader: /* glsl */ `
       ${GLSL_RAUSCHEN}
-      uniform sampler2D uVorher, uFoto, uQuelle; uniform vec2 uTexel; uniform float uSeiten, uZeit, uZoom, uDreh, uWirbel, uZerfall, uEin, uFotoEin, uQuelleEin, uHell;
+      uniform sampler2D uVorher, uFoto, uQuelle; uniform vec2 uTexel; uniform float uSeiten, uZeit, uZoom, uDreh, uWirbel, uZerfall, uEin, uFotoEin, uQuelleEin, uHell, uKanteVon, uKanteBis;
       varying vec2 vUv;
-      float hellP(vec2 uv) { return dot(texture2D(uFoto, uv).rgb, vec3(0.2126, 0.7152, 0.0722)); }
+      float hellP(vec2 uv) { return dot(textureLod(uFoto, uv, 1.0).rgb, vec3(0.2126, 0.7152, 0.0722)); }   // Stufe 1: gleich in jeder Grösse
       vec3 linear(vec3 c) { return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }
       vec3 negativ(vec3 c) { return mix(c, 1.0 - c, uHell); }
       void main() {
@@ -391,7 +415,7 @@ function echo(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = tr
         float l = hellP(vUv + uTexel * vec2(-1, 0)), rr = hellP(vUv + uTexel * vec2(1, 0));
         float bl = hellP(vUv + uTexel * vec2(-1, -1)), b = hellP(vUv + uTexel * vec2(0, -1)), br = hellP(vUv + uTexel * vec2(1, -1));
         float gx = tr + 2.0 * rr + br - tl - 2.0 * l - bl, gy = tl + 2.0 * t + tr - bl - 2.0 * b - br;
-        neu = max(neu, vec3(0.9, 0.91, 0.94) * smoothstep(0.25, 0.8, length(vec2(gx, gy))) * uEin);      // Kanten, einfarbig hell; Maximum: keine Aufschaukelung
+        neu = max(neu, vec3(0.9, 0.91, 0.94) * smoothstep(uKanteVon, uKanteBis, length(vec2(gx, gy))) * uEin);      // Kanten, einfarbig hell; Maximum: keine Aufschaukelung
         neu = max(neu, negativ(texture2D(uFoto, vUv).rgb) * uFotoEin);                                 // Bild-Teil: das Foto strömt herein
         if (uQuelleEin > 0.0) neu = max(neu, negativ(linear(texture2D(uQuelle, vUv).rgb)) * uQuelleEin);   // der vorige Effekt (fertiges Bild)
         gl_FragColor = vec4(clamp(neu, 0.0, 3.0), 1.0);
