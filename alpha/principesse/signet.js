@@ -3,9 +3,9 @@
 // dann füllt sich die Krone golden und funkelt, die Kugeln werden himbeerrot, die Wangen rosa, das Kleid farbig gestreift wie in der Vorlage
 // (die dunklen Streifen glitzern); darunter «Principesse» in der Grotesk und «by Katharina» in glitzerndem Gold.
 // Alle Masse in Punkten der Vorlage (1500 × 2000), umgerechnet ins Bild; Figur und Name stehen in jedem Format mittig und passen hinein.
-import { anteil, weich, ausblenden } from "../sketchory/ablauf.js?v=9";
-import { zufall } from "./malen.js?v=20";
-import { funkeln } from "./glitzer.js?v=20";
+import { anteil, weich, ausblenden } from "../sketchory/ablauf.js?v=10";
+import { zufall } from "./malen.js?v=21";
+import { funkeln } from "./glitzer.js?v=21";
 
 export const FARBEN = {
   hell: { grund: "#f7f3ec", tinte: "#24202e", gold: "#c99a2e", glanz: "#fff1b0", beere: "#b3264f", wange: "#f3b9c8" },

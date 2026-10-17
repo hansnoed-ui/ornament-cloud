@@ -1,13 +1,13 @@
 // «Principesse» – Seite: Bild laden (wird mit Pinselstrichen nachgemalt, der Glitzer funkelt), optional Foto und Satz,
 // Vorschau, Video (MP4) und Standbild (PNG). Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der
 // MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass } from "./ablauf.js?v=20";
-import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=20";
-import { schriftSetzen } from "../sketchory/szene.js?v=9";
-import { mp4 } from "../sketchory/mp4.js?v=9";
+import { FPS, dateiname, filmMass } from "./ablauf.js?v=21";
+import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=21";
+import { schriftSetzen } from "../sketchory/szene.js?v=10";
+import { mp4 } from "../sketchory/mp4.js?v=10";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
-import { malen, klarbild } from "./malen.js?v=20";
-import { glitzer } from "./glitzer.js?v=20";
+import { malen, klarbild } from "./malen.js?v=21";
+import { glitzer } from "./glitzer.js?v=21";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
@@ -85,7 +85,7 @@ $("foto-weg").addEventListener("click", () => {
 
 // ——— malen lassen (Worker, sonst hier) ———
 let worker = null, offen = [];
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=20", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=21", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   // Format: wie das Bild, 3 : 4 oder 1 : 1; gemalt wird auf der halben Filmgrösse (für die breiten Pinsel genug), der Glitzer und das

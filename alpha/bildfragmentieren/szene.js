@@ -22,10 +22,10 @@
 // Seit dem 16. Oktober 2026 ist das alles der Ablauf «Fragmente»; zur Wahl steht dazu die «Verwandlung» (Strom, Körper, Scherben, Echo, Relief, einzeln oder
 // kombiniert; raum.js, WebGL). Auch sie beginnt im Dunkeln und endet beim Foto; ihr Bild kommt fertig aus WebGL (sz.raum) und wird hier nur
 // eingesetzt, ebenso ihr leuchtendes Signet.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=22";
-import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=9";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=22";
-import { KOERPER, abbilden } from "./koerper.js?v=22";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=25";
+import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=25";
+import { KOERPER, abbilden } from "./koerper.js?v=25";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
@@ -711,7 +711,9 @@ export function bild(ctx, sz, t) {
   if (ab.signet && t >= ab.signet[0] && t < ab.signetAus[1]) {
     ctx.save(); ctx.translate((B - 1080) / 2, 0);
     // die Zeichnung doppelt so schnell, der Punkt aber ruhig (etwas langsamer als im Original)
-    const f = SIGNET_VON + (t - ab.signet[0]) * FPS * SIGNET_TEMPO, opt = { hoehe: H, farben: F, punktTempo: SIGNET_TEMPO * 1.25 };
+    // die Buchstaben rücken langsamer und weicher zusammen als in der Vorlage (dort 18 Bilder, hier doppelt so schnell gespielt: kaum 0,3 s; Wunsch
+    // vom 17. Oktober 2026: «das Zusammenziehen des Textes im Signet noch etwas smoother») – über 0,9 s bis ins Stehen hinein
+    const f = SIGNET_VON + (t - ab.signet[0]) * FPS * SIGNET_TEMPO, opt = { hoehe: H, farben: F, punktTempo: SIGNET_TEMPO * 1.25, zusammen: [118, 172, (x) => (1 - Math.cos(Math.PI * x)) / 2] };   // Sinus: ohne Ruck
     if (sz.raum && !sz.zeit.fragmente) {
       // Verwandlung: der Punkt läuft als kleiner Glaskristall durch die Schlaufe und leuchtet (Halo, Bokeh auf seiner Spur)
       const [w, h] = zielMass(ctx, sz), { lage: [px, py], sicht } = punktLage(f, opt);

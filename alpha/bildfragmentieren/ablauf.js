@@ -14,7 +14,7 @@
 //     Relief   – 01 Höhenlinien (leuchten im Dunkeln auf) → 02 Gebirge (Streiflicht, Kamerafahrt) → 03 Bild (es wird flach und steht als Foto)
 //   Nur der letzte Effekt endet beim Foto; die anderen gehen in den nächsten über (Kette, s. kette()).
 // Danach steht das Foto, dann (wenn gewählt) das Signet von ornament.cloud – bei der Verwandlung in einer leuchtenden Fassung.
-export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=9";
+export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=10";
 
 /** Bildmass des Films: Hochformat 4 : 5 (Standard, 1080 × 1350) oder "9:16" (1080 × 1920); Wunsch vom 15. Oktober 2026 */
 export const FORMATE = ["4:5", "9:16"];
@@ -41,7 +41,8 @@ export const ABLAEUFE = {
   // Strom: Teilchen als glänzende Kugeln; seit 17. Oktober 2026 kürzer (Rückmeldung: «Strom ist ok, zu lang»: 12 statt 8,4 s)
   strom: { titel: "Strom", phasen: [["funken", "Funken", 1.6], ["strom", "Strom", 3.6], ["sammeln", "Bild", 3.2]], aus: 6.4, weiter: ["verdichten", "Verdichten", 4.4] },
   // Körper und Scherben: die beiden Hälften des früheren «Kristall»; die Scherben setzen genau im Bruch des Körpers ein (ihre Zeit 0,7 s)
-  koerper: { titel: "Körper", phasen: [["koerper", "Körper", 4.3], ["klar", "Bild", 2.5]], ein: 1.7, aus: 4.3 },
+  // Körper seit dem 17. Oktober 2026 länger (Wunsch: «dürfte noch etwas länger dauern»): Formwandel 3,4 statt 1,9 s, das Klarwerden 3 statt 2,5 s
+  koerper: { titel: "Körper", phasen: [["koerper", "Körper", 5.8], ["klar", "Bild", 3.0]], ein: 1.7, aus: 5.8 },
   scherben: { titel: "Scherben", phasen: [["bruch", "Bruch", 3.2], ["montage", "Montage", 4.2]], ein: 0.4, aus: 3.0, ueber: 0.3 },
   // Echo: ohne Kaleidoskop und ohne stehende Konturen; das Schlussbild strömt durch den Tunnel herein (Rückmeldung: «die Zusammensetzung des
   // Schlussbildes wenig nachvollziehbar»)

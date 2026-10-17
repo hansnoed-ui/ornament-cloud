@@ -17,7 +17,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
-import { kette, ablaufName } from "./ablauf.js?v=22";
+import { kette, ablaufName } from "./ablauf.js?v=25";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -208,10 +208,13 @@ function scherbenGeometrie(zellen, bw, dicke, zufall) {
 const BRUCH = 4.3, SCHERBEN_AB = 3.6, KOERPER_ENDE = 0.6;   // Bruch; Beginn der Scherben; Grösse des Körpers im Moment des Bruchs
 const KLEIN = [[90, 2], [215, 0], [330, 1]];                  // die drei kleinen Kristalle: Herkunft (Grad), Form
 
-// Körper (6,8 s: Körper 0–4,3 · Bild 4,3–6,8). Drei kleine Kristalle verschmelzen zu einem Glaskörper (Dodekaeder → Geode → Ikosaeder), das Foto
+// Körper (8,8 s: Körper 0–5,8 · Bild 5,8–8,8; seit 17. Oktober 2026 länger: Formwandel und Klarwerden gedehnt, s. dehnen). Drei kleine Kristalle verschmelzen zu einem Glaskörper (Dodekaeder → Geode → Ikosaeder), das Foto
 // nur durch das Glas. Allein oder am Ende wächst er, das Foto erscheint um ihn, und das Glas wird klar (ohne Brechung, Kanten und Glanz) – exakt das
 // Foto. Vor den Scherben (letzt = false) dreht er sich schneller bis zum Bruch. Nach einem anderen Effekt (erst = false) setzt er bei 1,7 s ein,
 // ohne die kleinen Kristalle: er wächst aus der Kugel von Strom. Zustandslos.
+/** Zeit des Körpers → Zeit des alten Kristalls: das Hereinfliegen (bis 2,4 s) wie zuvor, Formwandel bis zum Bruch (2,4–5,8 → 2,4–4,3) und
+ *  Klarwerden (5,8–8,8 → 4,3–6,8) langsamer */
+const dehnen = (t) => (t < 2.4 ? t : t < 5.8 ? 2.4 + ((t - 2.4) * 1.9) / 3.4 : 4.3 + ((t - 5.8) * 2.5) / 3.0);
 function koerper(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = true } = {}) {
   const glas = glasMaterial(4, textur, B, H);
   glas.u.uGrund.value.copy(grund);
@@ -225,7 +228,8 @@ function koerper(renderer, textur, B, H, grund, px, hell, { erst = true, letzt =
   return {
     looks: [look],
     groesse(b, h) { w = b; glas.groesse(b, h, b >= B * 0.95); },
-    bild(t) {
+    bild(T) {
+      const t = dehnen(T);                                                 // Ablauf in der Zeit des alten Kristalls; die Drehungen laufen in T gleichmässig
       // drei kleine Kristalle fliegen auf Spiralen herein und verschmelzen bei rund 2 s zum grossen Körper
       const u = glas.u, ankunft = [1.75, 1.95, 2.15];
       KLEIN.forEach(([grad, f], j) => {
@@ -239,7 +243,7 @@ function koerper(renderer, textur, B, H, grund, px, hell, { erst = true, letzt =
       const klar = letzt ? inOut(anteil(t, 5.0, 6.6)) : 0;
       u.uGroesse.value[3] = weich(anteil(t, 1.7, 2.6)) * (0.45 + (KOERPER_ENDE - 0.45) * inOut(anteil(t, 3.0, BRUCH)) + (letzt ? 0.9 * inOut(anteil(t, BRUCH, 6.6)) : 0));
       u.uMitte.value[3].set(0, 0, 0);
-      u.uDreh.value[3].setFromMatrix4(m4.makeRotationFromEuler(eu.set(t * 0.33 + 0.4, t * 0.5 + (letzt ? 0 : 1.6 * anteil(t, 3.4, BRUCH) ** 2), t * 0.14)));
+      u.uDreh.value[3].setFromMatrix4(m4.makeRotationFromEuler(eu.set(T * 0.33 + 0.4, T * 0.5 + (letzt ? 0 : 1.6 * anteil(t, 3.4, BRUCH) ** 2), T * 0.14)));
       const fo = Math.min(2, Math.max(0, (t - 2.2) / 1.1));
       form(fo, u.uRadien.value[3]);
       u.uKante.value = 0.85 * (1 - klar);
@@ -258,8 +262,9 @@ function koerper(renderer, textur, B, H, grund, px, hell, { erst = true, letzt =
 // Scherben (7,4 s: Bruch 0–3,2 · Montage 3,2–7,4; in der Zeit des Kristalls 3,6–11). Ein Ball aus Voronoi-Scherben in der Mitte zerspringt bei
 // 0,7 s, die Scherben fliegen in die Tiefe und kehren eine nach der anderen zurück, bis das Foto steht («das Endbild setzt sich nicht zusammen,
 // sondern erscheint einfach»). Allein tauchen die Scherben zuerst als Ball aus dem Dunkel auf; nach dem Körper ist der Ball sein Platz. Vor einem
-// weiteren Effekt (letzt = false) enden sie im Flug. Zustandslos.
-function scherben(renderer, textur, B, H, grund, px, hell, { erst = true } = {}) {
+// weiteren Effekt (letzt = false) ziehen sie sich am Ende wieder zum sich drehenden Ball zusammen, aus dem der nächste hervorgeht (Rückmeldung:
+// «die Scherben müssten sich am Ende wieder etwas zusammenziehen, damit der Übergang z. B. zum Relief passt»). Zustandslos.
+function scherben(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = true } = {}) {
   const szene = new THREE.Scene();
   const kamera = new THREE.PerspectiveCamera(FOV, B / H, 0.05, 50);
   const abstand = 1 / Math.tan(THREE.MathUtils.degToRad(FOV / 2));
@@ -268,9 +273,9 @@ function scherben(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
   const geo = scherbenGeometrie(zellen, bw, 0.03, zufall);
   const mat = new THREE.ShaderMaterial({
     uniforms: { uFoto: { value: textur }, uAus: { value: 0 }, uZurueck: { value: 0 }, uZeit: { value: 0 }, uLicht: { value: new THREE.Vector3() },
-      uBlitz: { value: 0 }, uHell: { value: hell ? 1 : 0 }, uKern: { value: KOERPER_ENDE * 1.1 }, uEin: { value: 1 } },
+      uBlitz: { value: 0 }, uHell: { value: hell ? 1 : 0 }, uKern: { value: KOERPER_ENDE * 1.1 }, uEin: { value: 1 }, uZusammen: { value: 0 } },
     vertexShader: /* glsl */ `
-      uniform float uAus, uZurueck, uZeit, uKern, uEin;
+      uniform float uAus, uZurueck, uZeit, uKern, uEin, uZusammen;
       attribute vec3 aMitte; attribute vec4 aZufall; attribute vec2 aUv; attribute float aSeite, aRang;
       varying vec2 vUv; varying vec3 vNormal, vSicht; varying float vSeite, vFlug, vRast;
       mat3 drehung(vec3 a, float w) {
@@ -292,6 +297,8 @@ function scherben(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
         vec3 mitte = mix(mix(kern, flug, aus), aMitte, zur);
         float ein = clamp(uEin * 1.6 - 0.6 * aZufall.w, 0.0, 1.0);                                     // allein: der Ball taucht Scherbe um Scherbe auf
         float gross = mix(mix(0.45, 1.0, aus), 1.0, zur) * ein;
+        float zus = smoothstep(0.0, 1.0, uZusammen * 1.5 - 0.5 * aZufall.w);                           // vor dem nächsten Effekt: zurück zum Ball, gestaffelt
+        mitte = mix(mitte, kern * 0.85, zus); gross = mix(gross, 0.45, zus);
         float f = (1.0 - zur) * max(aus, 0.25);
         mat3 R = drehung(aZufall.xyz - 0.5 + 1e-3, f * (0.3 + 1.2 * aZufall.w));
         vec4 mv = modelViewMatrix * vec4(R * (position - aMitte) * gross + mitte, 1.0);
@@ -328,6 +335,7 @@ function scherben(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
       const t = tl + SCHERBEN_AB, U = mat.uniforms;                         // in der Zeit des Kristalls
       U.uZeit.value = t;
       U.uEin.value = erst ? weich(anteil(t, SCHERBEN_AB, SCHERBEN_AB + 0.55)) : 1;
+      U.uZusammen.value = letzt ? 0 : inOut(anteil(t, 5.0, 6.5));
       U.uAus.value = 1.4 * inOut(anteil(t, BRUCH, BRUCH + 1.4));
       U.uZurueck.value = Math.max(0, (t - 6.8) / 3.9);                    // nicht begrenzt: das Aufleuchten der letzten Scherben klingt bis 11 s aus
       U.uBlitz.value = (hell ? 0 : 0.3) * Math.exp(-(((t - BRUCH) / 0.07) ** 2));
@@ -338,7 +346,8 @@ function scherben(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
       kamera.updateMatrixWorld();                                          // sonst gilt unten noch die Kamera des letzten Bildes
       U.uLicht.value.set(Math.cos(t * 0.8) * 0.7, 0.6, 0.6).transformDirection(kamera.matrixWorldInverse);
       const gesetzt = Math.round(zellen.length * Math.min(1, Math.max(0, (U.uZurueck.value - 0.16) / 0.84)));
-      stand = t < 6.8 ? `scherben ${zellen.length} · flug ${Math.round(flug * 100)} %` : `scherben ${gesetzt} / ${zellen.length}`;
+      stand = !letzt && t > 5 ? `scherben ${zellen.length} · zusammen ${Math.round(U.uZusammen.value * 100)} %`
+        : t < 6.8 ? `scherben ${zellen.length} · flug ${Math.round(flug * 100)} %` : `scherben ${gesetzt} / ${zellen.length}`;
       look.render(Math.max(flug, U.uZurueck.value < 1 ? 0.35 : 0), 0.25);
     },
     zaehler() { return stand; },
@@ -352,7 +361,31 @@ function scherben(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
 // bewegt. Im Bild-Teil strömt das Foto selbst durch den Tunnel herein, der Zoom kommt zur Ruhe, und die Spuren ziehen sich zum Foto zusammen
 // (Rückmeldung: «die Zusammensetzung des Schlussbildes wenig nachvollziehbar» – vorher wuchs es Tonstufe um Tonstufe). Nach einem anderen Effekt
 // (erst = false) speist zuerst dessen Bild die Schleife (quelle): seine Scherben oder Teilchen ziehen Spuren, dann übernehmen die Kanten.
+/** Schwelle der Kanten für Echo, nach dem Foto: nur die stärksten rund 6 % speisen die Rückkopplung (Rückmeldung vom 17. Oktober 2026 zu einem
+ *  bunten, unruhigen Foto: «das Echo viel zu weiss» – mit fester Schwelle war fast jeder Bildpunkt eine Kante). Sobel wie im Shader: Helligkeit
+ *  linear, auf dem Foto in halber Grösse (Mipmap-Stufe 1, in Vorschau und Export dieselbe), Nachbarn im Abstand eines Bildpunkts dort; an jedem
+ *  zweiten Bildpunkt; ruhige Fotos behalten die alte Schwelle 0,25 … 0,8 */
+function kantenSchwelle(px, B0, H0) {
+  const lin = new Float32Array(256).map((_, i) => (i / 255) ** 2.2), B = B0 >> 1, H = H0 >> 1, halb = new Float32Array(B * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < B; x++) {
+    let s = 0;
+    for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) { const i = ((2 * y + dy) * B0 + 2 * x + dx) * 4; s += 0.2126 * lin[px[i]] + 0.7152 * lin[px[i + 1]] + 0.0722 * lin[px[i + 2]]; }
+    halb[y * B + x] = s / 4;
+  }
+  const L = (x, y) => halb[y * B + x];
+  const werte = [];
+  for (let y = 1; y < H - 1; y += 2) for (let x = 1; x < B - 1; x += 2) {
+    const tl = L(x - 1, y - 1), t = L(x, y - 1), tr = L(x + 1, y - 1), l = L(x - 1, y), r = L(x + 1, y), bl = L(x - 1, y + 1), b = L(x, y + 1), br = L(x + 1, y + 1);
+    werte.push(Math.hypot(tr + 2 * r + br - tl - 2 * l - bl, tl + 2 * t + tr - bl - 2 * b - br));
+  }
+  werte.sort((a, b) => a - b);
+  const q = (a) => werte[Math.min(werte.length - 1, Math.floor(a * werte.length))] ?? 0;
+  const von = Math.max(0.25, q(0.94));
+  return [von, Math.max(von + 0.35, q(0.99), 0.8)];
+}
+
 function echo(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = true, ein = 0 } = {}) {
+  const [kanteVon, kanteBis] = kantenSchwelle(px, B, H);
   const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), quad = new THREE.PlaneGeometry(2, 2);
   const ziel = (w, h) => new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
   // je Auflösung ein eigener Zustand (Vorschau und Export rechnen in verschiedener Grösse; sonst begänne die Schleife bei jedem Wechsel von vorn)
@@ -369,15 +402,15 @@ function echo(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = tr
   Z = zustand(B, H);
   // ein Schritt der Rückkopplung; auf weissem Grund rechnet die Schleife im Negativ (die Anzeige kehrt es um: dunkle Spuren auf Weiss)
   const rueck = new THREE.ShaderMaterial({
-    uniforms: { uFoto: { value: textur }, uTexel: { value: new THREE.Vector2(1 / B, 1 / H) }, uVorher: { value: null }, uSeiten: { value: B / H }, uZeit: { value: 0 },
+    uniforms: { uFoto: { value: textur }, uTexel: { value: new THREE.Vector2(2 / B, 2 / H) }, uVorher: { value: null }, uSeiten: { value: B / H }, uZeit: { value: 0 },
       uZoom: { value: 1 }, uDreh: { value: 0 }, uWirbel: { value: 0 }, uZerfall: { value: 0.93 }, uEin: { value: 0 }, uFotoEin: { value: 0 },
-      uQuelle: { value: null }, uQuelleEin: { value: 0 }, uHell: { value: hell ? 1 : 0 } },
+      uQuelle: { value: null }, uQuelleEin: { value: 0 }, uHell: { value: hell ? 1 : 0 }, uKanteVon: { value: kanteVon }, uKanteBis: { value: kanteBis } },
     vertexShader: QUAD_VERTEX, depthTest: false, depthWrite: false,
     fragmentShader: /* glsl */ `
       ${GLSL_RAUSCHEN}
-      uniform sampler2D uVorher, uFoto, uQuelle; uniform vec2 uTexel; uniform float uSeiten, uZeit, uZoom, uDreh, uWirbel, uZerfall, uEin, uFotoEin, uQuelleEin, uHell;
+      uniform sampler2D uVorher, uFoto, uQuelle; uniform vec2 uTexel; uniform float uSeiten, uZeit, uZoom, uDreh, uWirbel, uZerfall, uEin, uFotoEin, uQuelleEin, uHell, uKanteVon, uKanteBis;
       varying vec2 vUv;
-      float hellP(vec2 uv) { return dot(texture2D(uFoto, uv).rgb, vec3(0.2126, 0.7152, 0.0722)); }
+      float hellP(vec2 uv) { return dot(textureLod(uFoto, uv, 1.0).rgb, vec3(0.2126, 0.7152, 0.0722)); }   // Stufe 1: gleich in jeder Grösse
       vec3 linear(vec3 c) { return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }
       vec3 negativ(vec3 c) { return mix(c, 1.0 - c, uHell); }
       void main() {
@@ -391,7 +424,7 @@ function echo(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = tr
         float l = hellP(vUv + uTexel * vec2(-1, 0)), rr = hellP(vUv + uTexel * vec2(1, 0));
         float bl = hellP(vUv + uTexel * vec2(-1, -1)), b = hellP(vUv + uTexel * vec2(0, -1)), br = hellP(vUv + uTexel * vec2(1, -1));
         float gx = tr + 2.0 * rr + br - tl - 2.0 * l - bl, gy = tl + 2.0 * t + tr - bl - 2.0 * b - br;
-        neu = max(neu, vec3(0.9, 0.91, 0.94) * smoothstep(0.25, 0.8, length(vec2(gx, gy))) * uEin);      // Kanten, einfarbig hell; Maximum: keine Aufschaukelung
+        neu = max(neu, vec3(0.9, 0.91, 0.94) * smoothstep(uKanteVon, uKanteBis, length(vec2(gx, gy))) * uEin);      // Kanten, einfarbig hell; Maximum: keine Aufschaukelung
         neu = max(neu, negativ(texture2D(uFoto, vUv).rgb) * uFotoEin);                                 // Bild-Teil: das Foto strömt herein
         if (uQuelleEin > 0.0) neu = max(neu, negativ(linear(texture2D(uQuelle, vUv).rgb)) * uQuelleEin);   // der vorige Effekt (fertiges Bild)
         gl_FragColor = vec4(clamp(neu, 0.0, 3.0), 1.0);
