@@ -4,9 +4,9 @@
 //              die KI-Tiefe (tiefe-ki.js) ersetzt sie auf Wunsch und läuft durch denselben Filter (tiefeNormieren)
 //   nahrung  – was die Agenten von Physarum riechen: Kanten, etwas Helligkeit
 //   keime    – die Stellen, an denen Physarum beginnt (die markantesten, mit Mindestabstand)
-//   ton      – Tonumfang und mittlere Helligkeit für die Morphogenese
-// (Bis zum 17. Oktober 2026 auch Strömungslinien für den Stich; er ist durch die Morphogenese ersetzt – Rückmeldung: «diese Stich-Optiken mag ich
-// nicht besonders»; das Rezept steht weiter im Skill threejs-spektakel.)
+//   ton      – Tonumfang und mittlere Helligkeit
+// (Bis zum 17. Oktober 2026 auch Strömungslinien für den Stich; er und danach die Morphogenese sind nicht mehr in PHORMA II – Rückmeldungen:
+// «diese Stich-Optiken mag ich nicht besonders», «die Morphogenese gefällt mir nicht»; die Rezepte stehen im Skill threejs-spektakel.)
 // Zufall mit Startwert: dasselbe Foto ergibt immer dasselbe.
 
 /** Mulberry32 */
@@ -96,7 +96,7 @@ export function tiefeNormieren(roh, w, h, hell) {
   return normieren(d, 0.01, 0.99);
 }
 
-/** Kantenstärke 0..1 (Sobel auf der leicht geglätteten Helligkeit) – für die Nahrung von Physarum und die Keime der Morphogenese */
+/** Kantenstärke 0..1 (Sobel auf der leicht geglätteten Helligkeit) – für die Nahrung von Physarum */
 export function kanten(hell, w, h) {
   const [gx, gy] = sobel(weichzeichnen(hell, w, h, 1), w, h), k = new Float32Array(w * h);
   for (let i = 0; i < k.length; i++) k[i] = Math.sqrt(gx[i] * gx[i] + gy[i] * gy[i]);
@@ -127,7 +127,7 @@ export function analysieren(daten, w, h, { massstab = 2 } = {}) {
   const keime = keimeFinden(nahrung, w, h);
   return {
     w, h, massstab, B: w * massstab, H: h * massstab, hell, tiefe, nahrung, keime,
-    // Tonumfang (3 und 97 %) und mittlere Helligkeit: die Morphogenese bildet den Ton des Fotos auf ihre Muster ab
+    // Tonumfang (3 und 97 %) und mittlere Helligkeit
     ton: [perzentil(hell, 0.03), perzentil(hell, 0.97)], mittel: hell.reduce((s, v) => s + v, 0) / n,
     ms: Date.now() - t0,
   };

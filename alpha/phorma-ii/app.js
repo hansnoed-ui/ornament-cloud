@@ -1,9 +1,9 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=8";
-import { szene, bild, standbildZeit } from "./film.js?v=8";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=8";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=9";
+import { szene, bild, standbildZeit } from "./film.js?v=9";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=9";
 import { mp4 } from "../sketchory/mp4.js?v=10";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
@@ -14,7 +14,7 @@ const grob = matchMedia("(pointer: coarse)").matches, test = new URLSearchParams
 const PROBEN = 8;
 let VORSCHAU = 0.5;
 const S = { bild: null, A: null, foto: null, sz: null, laeuft: false, start: 0, t: null, film: null, rechnen: 0, buehne: null, buehneSchluessel: "",
-  format: "4:5", muster: "mittel", tiefe: "bild", mass: [1080, 1350], ablauf: KETTE, ki: null };
+  format: "4:5", tiefe: "bild", mass: [1080, 1350], ablauf: KETTE, ki: null };
 window.__phorma = S;   // für die Browser-Tests
 // ?diagnose: Messwerte zum Gerät sichtbar unter der Vorschau (Rückmeldung vom 17. Oktober 2026: auf einem Telefon «reagiert nicht», hier nicht
 // nachzustellen) – Zeitpunkte der Schritte, Dauer je Vorschaubild, längste Blockade, Grafikchip und Erweiterungen; als Bildschirmfoto zurückschicken
@@ -120,7 +120,7 @@ async function fotoLaden(datei) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=8", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=9", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -162,7 +162,7 @@ async function kiAnwenden() {
     const nr = S.rechnen;
     try {
       notiz("Tiefe mit KI wird vorbereitet");
-      kiModul ??= await import("./tiefe-ki.js?v=8");
+      kiModul ??= await import("./tiefe-ki.js?v=9");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m), { telefon: grob, notiz });
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
@@ -178,7 +178,7 @@ async function kiAnwenden() {
 // ——— Bühne (WebGL 2): erst laden, wenn ein Foto da ist ———
 let buehneModul = null;
 async function buehneBereit() {
-  const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.A.tiefe === S.A.geschaetzt ? "bild" : "ki"}|${S.muster}` : "";
+  const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.A.tiefe === S.A.geschaetzt ? "bild" : "ki"}` : "";
   if (schluessel === S.buehneSchluessel) return;
   S.buehneSchluessel = schluessel; S.buehneFertig = false; S.buehneWarm = false; S.spurBilder = 0;
   if (S.sz) S.sz.buehne = null;
@@ -186,10 +186,10 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=8");
+    buehneModul ??= await import("./buehne.js?v=9");
     if (S.buehneSchluessel !== schluessel) return;
     notiz(`Bühne wird gebaut: ${S.ablauf}`);
-    S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, muster: S.muster, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz,
+    S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz,
       onVerloren: () => {
         if (S.buehneSchluessel !== schluessel) return;
         anhalten();
@@ -286,16 +286,23 @@ function wahl(attr, schluessel, werte, wenn) {
 let umstellen = 0;
 const spaeterLesen = () => { clearTimeout(umstellen); umstellen = setTimeout(lesen, 250); };
 const formatKnoepfe = wahl("data-format", "format", FORMATE, () => { S.ki = null; spaeterLesen(); });
-// Muster: die Feinheit der Morphogenese (nur die Bühne wird neu gebaut, das Foto nicht neu analysiert)
-const musterKnoepfe = wahl("data-muster", "muster", ["fein", "mittel", "grob"], () => neu());
-const tiefeKnoepfe = wahl("data-tiefe", "tiefe", ["bild", "ki"], async () => {
+// auf dem Telefon keine KI-Tiefe (Rückmeldung vom 17. Oktober 2026, Samsung Galaxy S23: «er stürzt ab, wenn mit KI gewählt ist, sonst nicht» – mit
+// WebGPU und auch mit WebAssembly)
+if (grob) { S.tiefe = "bild"; merken("tiefe", "bild"); }
+const tiefeKnoepfe = wahl("data-tiefe", "tiefe", grob ? ["bild"] : ["bild", "ki"], async () => {
   if (!S.A) return;
   if (S.tiefe === "ki") { melden("Die KI-Tiefe wird vorbereitet …"); await kiAnwenden(); } else { S.A.tiefe = S.A.geschaetzt; melden("Tiefe aus dem Bild geschätzt."); }
   neu();
 });
 $("ki-hinweis").hidden = S.tiefe !== "ki";
+if (grob) {
+  const ki = document.querySelector('[data-tiefe="ki"]');
+  ki.disabled = true; ki.title = "Auf dem Handy nicht verfügbar";
+  $("ki-hinweis").textContent = "«Mit KI» gibt es nur am Computer: auf Handys brachte die KI-Tiefe den Browser zum Absturz.";
+  $("ki-hinweis").hidden = false;
+}
 if (kiAbsturz) melden("Die KI-Tiefe hat beim letzten Mal den Browser zum Absturz gebracht; sie ist darum ausgeschaltet (Tiefe aus dem Bild).", true);
-for (const b of tiefeKnoepfe) b.addEventListener("click", () => { $("ki-hinweis").hidden = S.tiefe !== "ki"; });
+for (const b of tiefeKnoepfe) b.addEventListener("click", () => { if (!grob) $("ki-hinweis").hidden = S.tiefe !== "ki"; });
 for (const id of ["tempo"]) { const v = erinnern(id); if (v && [...$(id).options].some((o) => o.value === v)) $(id).value = v; $(id).addEventListener("change", () => { merken(id, $(id).value); neu(); }); }
 for (const id of ["signet", "beschriftung", "unschaerfe"]) { const v = erinnern(id); if (v !== null) $(id).checked = v === "1"; $(id).addEventListener("change", () => { merken(id, $(id).checked ? "1" : "0"); if (id !== "unschaerfe") neu(); }); }
 // Effekte (Wunsch vom 17. Oktober 2026: «die Effekte einzeln anwählen»): die Karten wählen die ganze Kette oder genau einen Effekt; die Schalter
@@ -463,6 +470,6 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...musterKnoepfe, ...tiefeKnoepfe, ...wahlKnoepfe, ...effektKnoepfe, $("video"), $("png")])
-    el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A);
+  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...tiefeKnoepfe, ...wahlKnoepfe, ...effektKnoepfe, $("video"), $("png")])
+    el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A) || (grob && el.dataset?.tiefe === "ki");
 }
