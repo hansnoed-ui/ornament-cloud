@@ -51,7 +51,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit (Abschnitt + Anteil der Dauer) messen: Anteil Grund, Anteil Grau, Anteil bunt, mittlere Farbe in der Mitte */
 const messe = (page, abschnitt, anteil = 0, extra = {}) => page.evaluate(async ([abschnitt, anteil, extra]) => {
-  const { bild, szene } = await import("./szene.js?v=26");
+  const { bild, szene } = await import("./szene.js?v=28");
   const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, ...extra });
   const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
   const [a, b] = sz.zeit.ab[abschnitt], t = a + (b - a) * anteil;
@@ -153,7 +153,7 @@ await check("Formen als Stich folgen dem Foto Bildpunkt für Bildpunkt: dunkle T
   await bereit(page);
   // Testfoto: rote Fläche (dunkel) unten in der Mitte, gelbe Sonne (hell) oben; gemessen wird die Tinte in beiden Bereichen am Ende von 02
   const tinte = (grund) => page.evaluate(async (grund) => {
-    const { bild, szene } = await import("./szene.js?v=26");
+    const { bild, szene } = await import("./szene.js?v=28");
     const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, grund });
     const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
     bild(x, sz, sz.zeit.ab.farben[0] - 0.05);
@@ -219,7 +219,7 @@ await check("Formate: 9 : 16 und zurück zu 4 : 5; Vorschau und Signet passen si
     // das Signet steht in beiden Formaten in der Mitte und ganz im Bild
     {
       const mitte = await page.evaluate(async () => {
-        const { bild, szene } = await import("./szene.js?v=26");
+        const { bild, szene } = await import("./szene.js?v=28");
         const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h) });
         const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
         bild(x, sz, sz.zeit.ab.signetStehen[0] + 0.2);
@@ -240,7 +240,7 @@ await check("Formate: 9 : 16 und zurück zu 4 : 5; Vorschau und Signet passen si
 
 /** im Browser: Bilder eines Ablaufs messen (halbe Grösse, ohne Beschriftung): Abstand zum Foto, Anteil Grund; mit oder ohne raum.js */
 const raumMessen = (page, zeiten, mitRaum = true) => page.evaluate(async ([zeiten, mitRaum]) => {
-  const { bild, szene } = await import("./szene.js?v=26");
+  const { bild, szene } = await import("./szene.js?v=28");
   const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false,
     ablauf: S.ablauf, raum: mitRaum ? S.raum : null });
   const w = sz.breite / 2, h = sz.hoehe / 2, c = document.createElement("canvas"); c.width = w; c.height = h;
@@ -363,7 +363,34 @@ await check("Verwandlung: Strom verdichtet sich, der Körper wächst daraus und 
   for (const e of ["echo", "koerper", "scherben"]) await page.click(`[data-effekt="${e}"]`);
   assert.deepEqual(await page.$$eval("[data-effekt]", (b) => b.map((x) => x.getAttribute("aria-pressed"))), ["false", "false", "true", "false", "false"], "einer bleibt immer");
   await page.reload();
-  assert.deepEqual(await page.$$eval("[data-ablauf]", (b) => b.map((x) => x.getAttribute("aria-pressed"))), ["false", "true"], "die Wahl bleibt");
+  assert.deepEqual(await page.$$eval("[data-ablauf]", (b) => b.map((x) => x.getAttribute("aria-pressed"))), ["false", "true", "false"], "die Wahl bleibt");
+  assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
+await check("Relief-Flug: beginnt leer, Höhenkurven, dann das Gebirge im Flug, endet exakt beim Foto; deterministisch; die Effekte der Verwandlung sind dabei nicht gewählt", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  await laden(page);
+  await bereit(page);
+  await page.click('[data-ablauf="flug"]');
+  await page.waitForFunction(() => window.__bildfragmentieren.sz?.raum?.art === "flug", null, { timeout: 90_000 });
+  assert.deepEqual(await knoepfe(page), ["01 Höhenkurven", "02 Flug", "03 Bild"]);
+  assert.deepEqual(await page.$$eval("[data-ablauf]", (b) => b.map((x) => x.getAttribute("aria-pressed"))), ["false", "false", "true"]);
+  assert.deepEqual(await page.$$eval("[data-effekt]", (b) => b.map((x) => x.getAttribute("aria-pressed"))), ["false", "false", "false", "false", "false"]);
+  assert.equal(await page.textContent("#kette"), "");
+  const [leer, kurven, flug, flug2, ende] = await raumMessen(page,
+    ["z.kurven.von + 0.05", "z.kurven.von + 0.6 * (z.kurven.bis - z.kurven.von)", "z.flug.von + 0.5 * (z.flug.bis - z.flug.von)", "z.flug.von + 0.5 * (z.flug.bis - z.flug.von)", "z.abschnitt.bis - 0.02"]);
+  assert.ok(leer.dunkel > 0.9, `beginnt (fast) leer (${leer.dunkel})`);
+  assert.ok(kurven.dunkel > 0.3 && kurven.dunkel < 0.995, `Höhenkurven auf Dunkel (${kurven.dunkel})`);
+  assert.ok(flug.foto > 15, `im Flug nicht das Foto (${flug.foto})`);
+  assert.ok(verschieden(flug, flug2) < 1, `dieselbe Zeit, dasselbe Bild (${verschieden(flug, flug2)})`);
+  assert.ok(ende.foto < 3, `endet exakt beim Foto (${ende.foto})`);
+  // ein Effekt-Schalter wählt danach nur seinen Effekt
+  await page.click('[data-effekt="relief"]');
+  await page.waitForFunction(() => window.__bildfragmentieren.sz?.raum?.art === "relief", null, { timeout: 90_000 });
+  await page.click('[data-ablauf="flug"]');
+  await page.reload();
+  assert.deepEqual(await page.$$eval("[data-ablauf]", (b) => b.map((x) => x.getAttribute("aria-pressed"))), ["false", "false", "true"], "die Wahl bleibt");
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
@@ -373,13 +400,14 @@ await check("Weisser Grund: die Effekte und die Verwandlung überstrahlen nicht 
   await page.click('[data-grund="weiss"]');
   await laden(page);
   await bereit(page);
-  for (const art of ["koerper", "scherben", "echo", "strom", "relief", "verwandlung"]) {
-    if (art === "verwandlung") {
-      await page.click('[data-ablauf="verwandlung"]');
-      await page.waitForFunction(() => window.__bildfragmentieren.sz?.raum?.art === "strom+koerper+scherben+echo+relief", null, { timeout: 90_000 });
+  for (const art of ["koerper", "scherben", "echo", "strom", "relief", "verwandlung", "flug"]) {
+    if (art === "verwandlung" || art === "flug") {
+      await page.click(`[data-ablauf="${art}"]`);
+      await page.waitForFunction((a) => window.__bildfragmentieren.sz?.raum?.art === a, art === "flug" ? "flug" : "strom+koerper+scherben+echo+relief", { timeout: 90_000 });
     } else await einzeln(page, art);
     // mitten im Effekt (bei Echo in der Rückkopplung: im Bild-Teil steht das Foto schon fast)
     const zeiten = art === "verwandlung" ? ["z.bruch.von + 0.5 * (z.bruch.bis - z.bruch.von)", "z.echo.von + 0.5 * (z.echo.bis - z.echo.von)"]
+      : art === "flug" ? ["z.flug.von + 0.5 * (z.flug.bis - z.flug.von)"]   // in den Höhenkurven ist das Bild gewollt fast leer (dünne Kurven auf Weiss)
       : [art === "echo" ? "z.echo.von + 0.6 * (z.echo.bis - z.echo.von)" : "z.phasen[1].von + 0.5 * (z.phasen[1].bis - z.phasen[1].von)"];
     for (const mitte of await raumMessen(page, zeiten)) {
       const weiss = mitte.summe.filter((v) => v > 245).length / mitte.summe.length;
