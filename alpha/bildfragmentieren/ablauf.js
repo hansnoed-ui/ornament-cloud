@@ -41,7 +41,8 @@ export const ABLAEUFE = {
   // Strom: Teilchen als glänzende Kugeln; seit 17. Oktober 2026 kürzer (Rückmeldung: «Strom ist ok, zu lang»: 12 statt 8,4 s)
   strom: { titel: "Strom", phasen: [["funken", "Funken", 1.6], ["strom", "Strom", 3.6], ["sammeln", "Bild", 3.2]], aus: 6.4, weiter: ["verdichten", "Verdichten", 4.4] },
   // Körper und Scherben: die beiden Hälften des früheren «Kristall»; die Scherben setzen genau im Bruch des Körpers ein (ihre Zeit 0,7 s)
-  koerper: { titel: "Körper", phasen: [["koerper", "Körper", 4.3], ["klar", "Bild", 2.5]], ein: 1.7, aus: 4.3 },
+  // Körper seit dem 17. Oktober 2026 länger (Wunsch: «dürfte noch etwas länger dauern»): Formwandel 3,4 statt 1,9 s, das Klarwerden 3 statt 2,5 s
+  koerper: { titel: "Körper", phasen: [["koerper", "Körper", 5.8], ["klar", "Bild", 3.0]], ein: 1.7, aus: 5.8 },
   scherben: { titel: "Scherben", phasen: [["bruch", "Bruch", 3.2], ["montage", "Montage", 4.2]], ein: 0.4, aus: 3.0, ueber: 0.3 },
   // Echo: ohne Kaleidoskop und ohne stehende Konturen; das Schlussbild strömt durch den Tunnel herein (Rückmeldung: «die Zusammensetzung des
   // Schlussbildes wenig nachvollziehbar»)

@@ -17,7 +17,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
-import { kette, ablaufName } from "./ablauf.js?v=24";
+import { kette, ablaufName } from "./ablauf.js?v=25";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -208,10 +208,13 @@ function scherbenGeometrie(zellen, bw, dicke, zufall) {
 const BRUCH = 4.3, SCHERBEN_AB = 3.6, KOERPER_ENDE = 0.6;   // Bruch; Beginn der Scherben; Grösse des Körpers im Moment des Bruchs
 const KLEIN = [[90, 2], [215, 0], [330, 1]];                  // die drei kleinen Kristalle: Herkunft (Grad), Form
 
-// Körper (6,8 s: Körper 0–4,3 · Bild 4,3–6,8). Drei kleine Kristalle verschmelzen zu einem Glaskörper (Dodekaeder → Geode → Ikosaeder), das Foto
+// Körper (8,8 s: Körper 0–5,8 · Bild 5,8–8,8; seit 17. Oktober 2026 länger: Formwandel und Klarwerden gedehnt, s. dehnen). Drei kleine Kristalle verschmelzen zu einem Glaskörper (Dodekaeder → Geode → Ikosaeder), das Foto
 // nur durch das Glas. Allein oder am Ende wächst er, das Foto erscheint um ihn, und das Glas wird klar (ohne Brechung, Kanten und Glanz) – exakt das
 // Foto. Vor den Scherben (letzt = false) dreht er sich schneller bis zum Bruch. Nach einem anderen Effekt (erst = false) setzt er bei 1,7 s ein,
 // ohne die kleinen Kristalle: er wächst aus der Kugel von Strom. Zustandslos.
+/** Zeit des Körpers → Zeit des alten Kristalls: das Hereinfliegen (bis 2,4 s) wie zuvor, Formwandel bis zum Bruch (2,4–5,8 → 2,4–4,3) und
+ *  Klarwerden (5,8–8,8 → 4,3–6,8) langsamer */
+const dehnen = (t) => (t < 2.4 ? t : t < 5.8 ? 2.4 + ((t - 2.4) * 1.9) / 3.4 : 4.3 + ((t - 5.8) * 2.5) / 3.0);
 function koerper(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = true } = {}) {
   const glas = glasMaterial(4, textur, B, H);
   glas.u.uGrund.value.copy(grund);
@@ -225,7 +228,8 @@ function koerper(renderer, textur, B, H, grund, px, hell, { erst = true, letzt =
   return {
     looks: [look],
     groesse(b, h) { w = b; glas.groesse(b, h, b >= B * 0.95); },
-    bild(t) {
+    bild(T) {
+      const t = dehnen(T);                                                 // Ablauf in der Zeit des alten Kristalls; die Drehungen laufen in T gleichmässig
       // drei kleine Kristalle fliegen auf Spiralen herein und verschmelzen bei rund 2 s zum grossen Körper
       const u = glas.u, ankunft = [1.75, 1.95, 2.15];
       KLEIN.forEach(([grad, f], j) => {
@@ -239,7 +243,7 @@ function koerper(renderer, textur, B, H, grund, px, hell, { erst = true, letzt =
       const klar = letzt ? inOut(anteil(t, 5.0, 6.6)) : 0;
       u.uGroesse.value[3] = weich(anteil(t, 1.7, 2.6)) * (0.45 + (KOERPER_ENDE - 0.45) * inOut(anteil(t, 3.0, BRUCH)) + (letzt ? 0.9 * inOut(anteil(t, BRUCH, 6.6)) : 0));
       u.uMitte.value[3].set(0, 0, 0);
-      u.uDreh.value[3].setFromMatrix4(m4.makeRotationFromEuler(eu.set(t * 0.33 + 0.4, t * 0.5 + (letzt ? 0 : 1.6 * anteil(t, 3.4, BRUCH) ** 2), t * 0.14)));
+      u.uDreh.value[3].setFromMatrix4(m4.makeRotationFromEuler(eu.set(T * 0.33 + 0.4, T * 0.5 + (letzt ? 0 : 1.6 * anteil(t, 3.4, BRUCH) ** 2), T * 0.14)));
       const fo = Math.min(2, Math.max(0, (t - 2.2) / 1.1));
       form(fo, u.uRadien.value[3]);
       u.uKante.value = 0.85 * (1 - klar);
