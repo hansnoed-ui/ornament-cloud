@@ -17,7 +17,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
-import { kette, ablaufName } from "./ablauf.js?v=30";
+import { kette, ablaufName } from "./ablauf.js?v=31";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -266,8 +266,11 @@ function koerper(renderer, textur, B, H, grund, px, hell, { erst = true, letzt =
 // 0,7 s, die Scherben fliegen in die Tiefe und kehren eine nach der anderen zurück, bis das Foto steht («das Endbild setzt sich nicht zusammen,
 // sondern erscheint einfach»). Allein tauchen die Scherben zuerst als Ball aus dem Dunkel auf; nach dem Körper ist der Ball sein Platz. Vor einem
 // weiteren Effekt (letzt = false) ziehen sie sich am Ende wieder zum sich drehenden Ball zusammen, aus dem der nächste hervorgeht (Rückmeldung:
-// «die Scherben müssten sich am Ende wieder etwas zusammenziehen, damit der Übergang z. B. zum Relief passt»). Zustandslos.
-function scherben(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = true } = {}) {
+// «die Scherben müssten sich am Ende wieder etwas zusammenziehen, damit der Übergang z. B. zum Relief passt»). Vor dem Relief kehren sie
+// stattdessen zügig an ihren Platz zurück, die Kamera dreht gerade, und das Relief hebt sich aus dem so zusammengesetzten Foto (Rückmeldung: «der
+// Übergang von Scherben zu Relief scheint unmotiviert» – der Ball verschwand, und ein anderes Bild tauchte auf). Zustandslos.
+function scherben(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = true, naechstes = null } = {}) {
+  const insBild = !letzt && naechstes === "relief";
   const szene = new THREE.Scene();
   const kamera = new THREE.PerspectiveCamera(FOV, B / H, 0.05, 50);
   const abstand = 1 / Math.tan(THREE.MathUtils.degToRad(FOV / 2));
@@ -338,18 +341,21 @@ function scherben(renderer, textur, B, H, grund, px, hell, { erst = true, letzt 
       const t = tl + SCHERBEN_AB, U = mat.uniforms;                         // in der Zeit des Kristalls
       U.uZeit.value = t;
       U.uEin.value = erst ? weich(anteil(t, SCHERBEN_AB, SCHERBEN_AB + 0.55)) : 1;
-      U.uZusammen.value = letzt ? 0 : inOut(anteil(t, 5.0, 6.5));
+      U.uZusammen.value = letzt || insBild ? 0 : inOut(anteil(t, 5.0, 6.5));
       U.uAus.value = 1.4 * inOut(anteil(t, BRUCH, BRUCH + 1.4));
-      U.uZurueck.value = Math.max(0, (t - 6.8) / 3.9);                    // nicht begrenzt: das Aufleuchten der letzten Scherben klingt bis 11 s aus
+      // nicht begrenzt: das Aufleuchten der letzten Scherben klingt bis 11 s aus; vor dem Relief eine schnelle Montage bis 6,5 s
+      U.uZurueck.value = insBild ? 1.05 * anteil(t, 4.9, 6.5) : Math.max(0, (t - 6.8) / 3.9);
       U.uBlitz.value = (hell ? 0 : 0.3) * Math.exp(-(((t - BRUCH) / 0.07) ** 2));
-      const flug = Math.min(1, U.uAus.value) * (1 - anteil(t, 8.8, 10.7));
-      const w = 0.4 * Math.sin(Math.PI * anteil(t, BRUCH, 10.6)) * (1 - anteil(t, 9.6, 10.6));
+      const gerade = insBild ? 1 - inOut(anteil(t, 4.9, 6.4)) : 1;        // vor dem Relief: die Kamera dreht gerade, senkrecht aufs Foto
+      const flug = Math.min(1, U.uAus.value) * (1 - anteil(t, 8.8, 10.7)) * gerade;
+      const w = 0.4 * Math.sin(Math.PI * anteil(t, BRUCH, 10.6)) * (1 - anteil(t, 9.6, 10.6)) * gerade;
       kamera.position.set(Math.sin(w) * abstand, 0.12 * w, Math.cos(w) * abstand * (1 + 0.3 * flug));
       kamera.lookAt(0, 0, 0.3 * flug);
       kamera.updateMatrixWorld();                                          // sonst gilt unten noch die Kamera des letzten Bildes
       U.uLicht.value.set(Math.cos(t * 0.8) * 0.7, 0.6, 0.6).transformDirection(kamera.matrixWorldInverse);
       const gesetzt = Math.round(zellen.length * Math.min(1, Math.max(0, (U.uZurueck.value - 0.16) / 0.84)));
-      stand = !letzt && t > 5 ? `scherben ${zellen.length} · zusammen ${Math.round(U.uZusammen.value * 100)} %`
+      stand = insBild && t > 4.9 ? `scherben ${Math.round(zellen.length * Math.min(1, Math.max(0, (U.uZurueck.value - 0.16) / 0.84)))} / ${zellen.length}`
+        : !letzt && t > 5 ? `scherben ${zellen.length} · zusammen ${Math.round(U.uZusammen.value * 100)} %`
         : t < 6.8 ? `scherben ${zellen.length} · flug ${Math.round(flug * 100)} %` : `scherben ${gesetzt} / ${zellen.length}`;
       look.render(Math.max(flug, U.uZurueck.value < 1 ? 0.35 : 0), 0.25);
     },
@@ -765,7 +771,9 @@ function hoehenfeld(hell, nx, ny, radius) {
   }
   return f;
 }
-function relief(renderer, textur, B, H, grund, px, hell) {
+function relief(renderer, textur, B, H, grund, px, hell, { erst = true, vorher = null } = {}) {
+  // nach den Scherben: das Relief beginnt als das flache Foto, das sie eben zusammengesetzt haben, und hebt sich daraus (die Kamera kippt, das Licht kommt)
+  const ausBild = !erst && vorher === "scherben";
   const helligkeit = (u, v) => { const i = (Math.min(H - 1, Math.round(v * (H - 1))) * B + Math.min(B - 1, Math.round(u * (B - 1)))) * 4; return (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255; };
   const szene = new THREE.Scene();
   const kamera = new THREE.PerspectiveCamera(FOV, B / H, 0.05, 50);
@@ -814,15 +822,16 @@ function relief(renderer, textur, B, H, grund, px, hell) {
     looks: [look], schatten: true,
     groesse() {},
     bild(t) {
+      const flach = ausBild ? 1 - inOut(anteil(t, 1.5, 3.5)) : 0;
       const licht = inOut(anteil(t, 1.8, 3.6)) * (1 - inOut(anteil(t, 8.0, 10.0)));
-      tiefe = 1 - inOut(anteil(t, 7.6, 9.8));                              // von Anfang an Gebirge
-      const kipp = 1 - inOut(anteil(t, 7.4, 10.2));
+      tiefe = (1 - inOut(anteil(t, 7.6, 9.8))) * (1 - flach);              // von Anfang an Gebirge
+      const kipp = (1 - inOut(anteil(t, 7.4, 10.2))) * (1 - flach);
       u.uTiefe.value = 0.42 * tiefe;
-      u.uLinien.value = 1 - weich(anteil(t, 7.4, 8.6));
+      u.uLinien.value = (1 - weich(anteil(t, 7.4, 8.6))) * (1 - flach);
       // zwei Scan-Linien von hinten nach vorn: die erste legt die Höhenlinien frei, die zweite lässt sie aufglühen
       u.uScan.value = t < 3.2 ? 1.5 - (anteil(t, 0.15, 2.6) * 3.2) : 1.5 - anteil(t, 4.2, 6.8) * 3.2;
       u.uOffen.value = t < 2.6 ? 0 : 1;
-      mat.emissiveIntensity = weich(anteil(t, 8.2, 10.4));                 // am Ende steht das Foto exakt (ohne Licht)
+      mat.emissiveIntensity = Math.max(weich(anteil(t, 8.2, 10.4)), flach); // am Ende steht das Foto exakt (ohne Licht)
       a = -0.6 + 2.6 * inOut(anteil(t, 1.8, 9.4));
       streif.position.set(Math.cos(a) * 3, Math.sin(a) * 3, 1.1 + 1.5 * (1 - kipp)); streif.intensity = 3.2 * licht;
       kante.position.set(-Math.cos(a) * 1.6, -Math.sin(a) * 1.6, 0.6); kante.intensity = 3.5 * licht;
@@ -831,7 +840,7 @@ function relief(renderer, textur, B, H, grund, px, hell) {
       kamera.position.set(Math.sin(sw) * d, -Math.sin(k) * d, Math.cos(k) * Math.cos(sw) * d);
       kamera.lookAt(0, 0.12 * kipp, 0);
       stand = t < 2.6 ? `höhenlinien ${Math.round(anteil(t, 0.15, 2.6) * 100)} %` : `höhe ${Math.round(tiefe * 100)} % · licht ${Math.round(((a * 180) / Math.PI + 360) % 360)}°`;
-      look.render(Math.max(licht, 0.5 * u.uLinien.value), 0.6, 0.002);
+      look.render(Math.max(licht, 0.5 * u.uLinien.value) * (1 - flach), 0.6, 0.002);
     },
     zaehler() { return stand; },
     entsorgen() { geo.dispose(); mat.dispose(); look.entsorgen(); },

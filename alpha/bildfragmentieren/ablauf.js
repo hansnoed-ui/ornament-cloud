@@ -73,7 +73,7 @@ export function ablaufName(a) {
 export const effekte = (a) => (ablaufName(a) === "fragmente" ? [] : ablaufName(a).split("+"));
 
 /**
- * Die Kette der Effekte in Sekunden bei Tempo «normal»: { teile: [{ art, von, bis, ein, aus, erst, letzt }], phasen: [{ name, titel, von, bis }], dauer }.
+ * Die Kette der Effekte in Sekunden bei Tempo «normal»: { teile: [{ art, von, bis, ein, aus, erst, letzt, vorher, naechstes }], phasen: [{ name, titel, von, bis }], dauer }.
  * Ein Teil läuft im Film von «von» bis «bis» und zeigt dabei seine eigene Zeit «ein» bis «aus»; der nächste setzt «ueber» Sekunden vor dem Ende ein.
  */
 export function kette(a) {
@@ -84,7 +84,7 @@ export function kette(a) {
     const ende = E.phasen.reduce((s, p) => s + p[2], 0);
     const ein = (erst ? E.start : E.ein) ?? 0, aus = letzt ? ende : E.aus ?? ende;
     const von = erst ? 0 : t - (E.ueber ?? UEBER), bis = von + aus - ein;
-    teile.push({ art, von, bis, ein, aus, erst, letzt });
+    teile.push({ art, von, bis, ein, aus, erst, letzt, vorher: liste[i - 1] ?? null, naechstes: liste[i + 1] ?? null });
     if (phasen.length) phasen[phasen.length - 1].bis = von;                // die Beschriftung wechselt, sobald der nächste einsetzt
     const grenze = !letzt && E.weiter ? E.weiter[2] : aus;
     let p0 = 0;
