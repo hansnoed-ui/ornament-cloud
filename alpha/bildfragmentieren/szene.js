@@ -21,10 +21,10 @@
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
 // Seit dem 16. Oktober 2026 ist das alles der Ablauf «Fragmente»; zur Wahl stehen dazu «Kristall» und «Echo» (raum.js, WebGL). Auch sie beginnen im
 // Dunkeln und enden beim Foto; ihr Bild kommt fertig aus WebGL (sz.raum) und wird hier nur eingesetzt, ebenso ihr leuchtendes Signet.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=18";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=19";
 import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=9";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=18";
-import { KOERPER, abbilden } from "./koerper.js?v=18";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=19";
+import { KOERPER, abbilden } from "./koerper.js?v=19";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
