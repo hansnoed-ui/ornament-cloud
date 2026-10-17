@@ -267,7 +267,9 @@ test("PHORMA I: der Name, als App installierbar (Manifest, Symbole, Service Work
   // Manifest und Symbole (tools/phorma-bilder.mjs)
   const m = JSON.parse(lies("alpha/bildfragmentieren/manifest.webmanifest"));
   assert.equal(m.name, "PHORMA I");
-  assert.equal(m.start_url, "./"); assert.equal(m.scope, "./"); assert.equal(m.display, "standalone");
+  // eigene Adresse wie bei The Fictory (werkbank/): die Website (./ und app/) liegt ausserhalb und bleibt im Browser (Rückmeldung vom 17. Oktober 2026)
+  assert.equal(m.start_url, "studio/"); assert.equal(m.scope, "studio/"); assert.equal(m.display, "standalone"); assert.equal(m.id, "phorma-i");
+  for (const seite of ["/alpha/bildfragmentieren/", "/alpha/bildfragmentieren/app/"]) assert.ok(!seite.startsWith(new URL(m.scope, "https://x/alpha/bildfragmentieren/").pathname), `${seite} liegt ausserhalb der installierten App`);
   const png = (p) => { const b = readFileSync(new URL(`alpha/bildfragmentieren/${p}`, root)); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
   for (const i of m.icons) assert.deepEqual(png(i.src).map(String), i.sizes.split("x"), i.src);
   assert.deepEqual(png("icons/apple-touch-icon.png"), [180, 180]);
@@ -299,6 +301,14 @@ test("PHORMA I: der Name, als App installierbar (Manifest, Symbole, Service Work
   assert.match(app, /<meta name="robots" content="noindex">/);
   const erzeuger = lies("tools/phorma-bilder.mjs");
   for (const b of ["vorschau-phorma-i.jpg", "og-phorma-i.jpg", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "favicon-32.png", "Als erste Anwendung in einer langen Reihe"]) assert.ok(erzeuger.includes(b), `tools/phorma-bilder.mjs: ${b}`);
+});
+
+test("PHORMA I: studio/ ist die aktuelle Abschrift der Anwendung mit <base href=\"../\"> (sonst: node tools/build-phorma-app.mjs)", async () => {
+  const { bauen } = await import(new URL("tools/build-phorma-app.mjs", root).href);
+  const dir = new URL("alpha/bildfragmentieren/", root);
+  assert.equal(readFileSync(new URL("studio/index.html", dir), "utf8"), bauen(readFileSync(new URL("index.html", dir), "utf8")));
+  assert.match(readFileSync(new URL("studio/index.html", dir), "utf8"), /<meta charset="utf-8">\s*<!-- Erzeugt[\s\S]*?-->\s*<base href="\.\.\/">/);
+  assert.ok(readFileSync(new URL("sw.js", dir), "utf8").includes('"studio/"'), "der Service Worker speichert die Seite der App für den Start ohne Netz");
 });
 
 test("Körper (Farbwellen): Ikosaeder, Dodekaeder und Geodäte mit den richtigen Zahlen, Ecken auf der Kugel, gleich lange Kanten; Abbilden um die Mitte", async () => {

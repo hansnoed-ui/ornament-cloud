@@ -1,6 +1,7 @@
 // PHORMA I als App (Wunsch vom 17. Oktober 2026: «Jetzt daraus eine App bauen ("PHORMA I")»). Nach dem Vorbild von Principesse (alpha/principesse/pwa.js):
 // 1. meldet den Service Worker an (sw.js in diesem Ordner, Geltungsbereich dieser Ordner): danach läuft PHORMA I auch ohne Netz;
-// 2. zeigt den Knopf «PHORMA I als App installieren» (auf der Anwendung und auf der App-Seite app/), nicht in der installierten App:
+// 2. zeigt den Knopf «PHORMA I als App installieren» (auf der Anwendung und auf der App-Seite app/), nicht in der installierten App. Diese hat
+//    wie The Fictory eine eigene Adresse (studio/, Manifest: start_url und scope), damit die Website im Browser bleibt (Rückmeldung vom 17. Oktober 2026):
 //    – meldet der Browser «installierbar» (Chrome, Edge, Android), öffnet der Knopf das Installationsfenster;
 //    – im eingebauten Browser von Facebook, Instagram u. a. geht es nie: auf Android öffnet der Knopf die Seite in Chrome,
 //      auf dem iPhone erklärt er den Weg nach Safari;

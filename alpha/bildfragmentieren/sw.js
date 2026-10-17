@@ -6,13 +6,14 @@
 // alle anderen: zuerst das Netz, ohne Netz aus dem Speicher. Jede erfolgreiche Antwort aktualisiert den Speicher.
 // Eigener Cache «phorma-…»; fremde Caches (ORNA «nn-…», ORMA «orma-…», The Fictory «fictory-…», Principesse «principesse-…») werden nie berührt.
 
-const CACHE = "phorma-1";
+const CACHE = "phorma-2";   // neu: die Seite der installierten App studio/
 const START = new URL("./", self.registration.scope).href;
 // Dinge, die die Seite erst später holt (das Beispielbild per Klick, three.js erst mit einem räumlichen Ablauf) oder die der Browser für die Installation braucht.
 // three.js lädt die Seite über die Import-Map («three», «three/addons/…»): diesen Namen kann das Folgen der Verweise nicht auflösen, darum stehen die Dateien hier,
-// mit den Hilfsdateien der Zusätze (ihre relativen Importe findet er selbst, die verdichtete Hauptdatei nicht). Die App-Seite app/ für die Installation ebenso.
+// mit den Hilfsdateien der Zusätze (ihre relativen Importe findet er selbst, die verdichtete Hauptdatei nicht). Die App-Seite app/ für die Installation ebenso,
+// und studio/, die Seite der installierten App (Abschrift mit <base href="../">, tools/build-phorma-app.mjs).
 const THREE = "../../vendor/three-0.185.1/";
-const DAZU = ["beispiel.jpg", "manifest.webmanifest", "app/", "pwa.js",
+const DAZU = ["studio/", "beispiel.jpg", "manifest.webmanifest", "app/", "pwa.js",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png",
   ...["three.module.min.js", "three.core.min.js",
     ...["EffectComposer", "RenderPass", "UnrealBloomPass", "ShaderPass", "OutputPass", "Pass", "MaskPass"].map((d) => `addons/postprocessing/${d}.js`),

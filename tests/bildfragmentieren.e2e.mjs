@@ -418,7 +418,7 @@ await check("Weisser Grund: die Effekte und die Verwandlung überstrahlen nicht 
   await ctx.close();
 });
 
-await check("PHORMA I als App (17. Oktober 2026): Knopf zum Installieren, Chrome meldet keine Hindernisse; nach dem ersten Besuch läuft auch die Verwandlung (three.js) ohne Netz, ebenso die App-Seite", async () => {
+await check("PHORMA I als App (17. Oktober 2026): Knopf zum Installieren, Chrome meldet keine Hindernisse; nach dem ersten Besuch läuft auch die Verwandlung (three.js) ohne Netz, ebenso die Seite der installierten App (studio/) und die App-Seite", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   assert.equal(await page.locator("h1").innerText(), "PHORMA I");
   assert.ok(await page.locator("#installieren").isVisible(), "Knopf sichtbar (nicht in der installierten App)");
@@ -432,7 +432,7 @@ await check("PHORMA I als App (17. Oktober 2026): Knopf zum Installieren, Chrome
   await page.reload(); await page.waitForFunction(() => navigator.serviceWorker.controller);
   const cache = readFileSync(new URL("alpha/bildfragmentieren/sw.js", root), "utf8").match(/const CACHE = "([^"]+)"/)[1];
   const gespeichert = await page.evaluate(async (c) => (await (await caches.open(c)).keys()).map((r) => new URL(r.url).pathname + new URL(r.url).search), cache);
-  for (const d of ["/alpha/bildfragmentieren/", "/alpha/bildfragmentieren/app/", "/alpha/bildfragmentieren/beispiel.jpg", "/alpha/bildfragmentieren/icons/icon-512.png",
+  for (const d of ["/alpha/bildfragmentieren/", "/alpha/bildfragmentieren/studio/", "/alpha/bildfragmentieren/app/", "/alpha/bildfragmentieren/beispiel.jpg", "/alpha/bildfragmentieren/icons/icon-512.png",
     "/vendor/three-0.185.1/three.module.min.js", "/vendor/three-0.185.1/three.core.min.js", "/vendor/three-0.185.1/addons/postprocessing/UnrealBloomPass.js", "/vendor/three-0.185.1/addons/misc/GPUComputationRenderer.js"])
     assert.ok(gespeichert.includes(d), `gespeichert: ${d}`);
   for (const m of ["app", "ablauf", "szene", "fragmente", "koerper", "raum", "rechner", "pwa"]) assert.ok(gespeichert.some((d) => new RegExp(`^/alpha/bildfragmentieren/${m}\\.js\\?v=\\d+$`).test(d)), `Modul ${m}.js mit Versionsmarke`);
@@ -445,6 +445,16 @@ await check("PHORMA I als App (17. Oktober 2026): Knopf zum Installieren, Chrome
   await laden(page);
   await bereit(page);
   await page.waitForFunction(() => window.__bildfragmentieren.sz?.raum?.art === "relief", null, { timeout: 90_000 });
+  // die Seite der installierten App (studio/, eigene Adresse wie bei The Fictory) startet ebenfalls ohne Netz und rechnet gleich
+  const studio = await ctx.newPage();
+  studio.on("pageerror", (e) => fehler.push(e.message));
+  await studio.goto(base + "studio/");
+  assert.equal(await studio.locator("h1").innerText(), "PHORMA I");
+  await studio.click('[data-ablauf="fragmente"]');
+  await studio.click('[data-effekt="relief"]');
+  await laden(studio);
+  await bereit(studio);
+  await studio.waitForFunction(() => window.__bildfragmentieren.sz?.raum?.art === "relief", null, { timeout: 90_000 });
   const app = await ctx.newPage();
   await app.goto(base + "app/");
   assert.equal(await app.locator("h1").innerText(), "PHORMA I");
