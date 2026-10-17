@@ -156,12 +156,13 @@ test("Ablauf: vier Phasen in dieser Reihenfolge, Tempo, Abspann nach Wahl; Forma
   assert.equal(dateiname(new Date(2026, 9, 15, 9, 5), "mp4"), "bildfragmentieren-2026-10-15-0905.mp4");
 });
 
-test("Abläufe (16./17. Oktober 2026): Fragmente oder die Verwandlung aus Strom, Kristall, Echo und Relief, einzeln oder kombiniert; alle beginnen im Dunkeln und enden beim Foto, dann Signet", () => {
-  assert.deepEqual(Object.keys(ABLAEUFE), ["fragmente", "strom", "kristall", "echo", "relief"]);
-  assert.deepEqual(EFFEKTE, ["strom", "kristall", "echo", "relief"]);
-  assert.equal(VERWANDLUNG, "strom+kristall+echo+relief");
+test("Abläufe (16./17. Oktober 2026): Fragmente oder die Verwandlung aus Strom, Körper, Scherben, Echo und Relief, einzeln oder kombiniert; alle beginnen im Dunkeln und enden beim Foto, dann Signet", () => {
+  assert.deepEqual(Object.keys(ABLAEUFE), ["fragmente", "strom", "koerper", "scherben", "echo", "relief"]);
+  assert.deepEqual(EFFEKTE, ["strom", "koerper", "scherben", "echo", "relief"], "Körper und Scherben einzeln (früher «Kristall»)");
+  assert.equal(VERWANDLUNG, "strom+koerper+scherben+echo+relief");
   assert.deepEqual(ABLAEUFE.fragmente.phasen.map(([n]) => n), PHASEN.map(([n]) => n), "Fragmente wie bisher");
-  assert.deepEqual(ABLAEUFE.kristall.phasen.map(([, t]) => t), ["Körper", "Bruch", "Montage"]);
+  assert.deepEqual(ABLAEUFE.koerper.phasen.map(([, t]) => t), ["Körper", "Bild"]);
+  assert.deepEqual(ABLAEUFE.scherben.phasen.map(([, t]) => t), ["Bruch", "Montage"]);
   assert.deepEqual(ABLAEUFE.echo.phasen.map(([, t]) => t), ["Echo", "Bild"], "ohne stehende Konturen und ohne Kaleidoskop (Rückmeldungen vom 17. Oktober 2026)");
   assert.deepEqual(ABLAEUFE.relief.phasen.map(([, t]) => t), ["Höhenlinien", "Gebirge", "Bild"]);
   assert.deepEqual(ABLAEUFE.strom.phasen.map(([, t]) => t), ["Funken", "Strom", "Bild"]);
@@ -172,7 +173,9 @@ test("Abläufe (16./17. Oktober 2026): Fragmente oder die Verwandlung aus Strom,
   assert.equal(ablaufName("echo"), "echo");
   assert.equal(ablaufName("relief+strom+quatsch+strom"), "strom+relief");
   assert.deepEqual(effekte("fragmente"), []);
-  assert.deepEqual(effekte("echo+kristall"), ["kristall", "echo"]);
+  assert.deepEqual(effekte("echo+scherben"), ["scherben", "echo"]);
+  assert.equal(ablaufName("kristall"), "koerper+scherben", "eine gespeicherte Wahl «Kristall» bleibt gültig");
+  assert.equal(ablaufName("strom+kristall+echo+relief"), VERWANDLUNG);
   // ohne Wahl wie bisher: dieselbe Zeitachse
   const alt = zeitachse(), auch = zeitachse({ ablauf: "fragmente" });
   assert.deepEqual(auch.ab, alt.ab);
@@ -180,17 +183,19 @@ test("Abläufe (16./17. Oktober 2026): Fragmente oder die Verwandlung aus Strom,
   // die ganze Verwandlung: neun Phasen, Strom verdichtet sich, nur das Relief endet beim Foto; die Teile überblenden
   const K = kette(VERWANDLUNG);
   assert.deepEqual(K.phasen.map((p) => p.titel), ["Funken", "Strom", "Verdichten", "Körper", "Bruch", "Echo", "Höhenlinien", "Gebirge", "Bild"]);
-  assert.deepEqual(K.teile.map((t) => [t.art, t.erst, t.letzt]), [["strom", true, false], ["kristall", false, false], ["echo", false, false], ["relief", false, true]]);
+  assert.deepEqual(K.teile.map((t) => [t.art, t.erst, t.letzt]), [["strom", true, false], ["koerper", false, false], ["scherben", false, false], ["echo", false, false], ["relief", false, true]]);
+  const [, kb, sb] = K.teile;
+  assert.ok(Math.abs(kb.bis - (sb.von + 4.3 - 3.6 - sb.ein)) < 1e-9, "die Scherben zerspringen genau am Ende des Körpers");
   for (let i = 1; i < K.teile.length; i++) assert.ok(K.teile[i].von < K.teile[i - 1].bis && K.teile[i].von > K.teile[i - 1].von, "überblenden");
   assert.ok(K.dauer > 20 && K.dauer < 26, `Verwandlung ${K.dauer} s`);
   // einzeln: alle Phasen des Effekts, er endet beim Foto
   for (const art of EFFEKTE) assert.deepEqual(kette(art).phasen.map((p) => p.name), ABLAEUFE[art].phasen.map(([n]) => n), `${art} einzeln`);
-  const auswahl = ["strom", "kristall", "echo", "relief", VERWANDLUNG, "kristall+echo", "strom+relief", "strom+kristall", "echo+relief"];
+  const auswahl = ["strom", "koerper", "scherben", "echo", "relief", VERWANDLUNG, "koerper+scherben", "koerper+echo", "scherben+echo", "strom+relief", "strom+koerper", "strom+scherben", "echo+relief"];
   for (const art of auswahl) {
     for (const tempo of ["ruhig", "normal", "schnell"]) {
       const z = zeitachse({ ablauf: art, tempo });
       assert.equal(z.ablauf, art); assert.equal(z.fragmente, false);
-      assert.equal(z.phasen.at(-1).titel, art.endsWith("kristall") ? "Montage" : "Bild", `${art}: endet beim Foto`);
+      assert.equal(z.phasen.at(-1).titel, art.endsWith("scherben") ? "Montage" : "Bild", `${art}: endet beim Foto`);
       assert.equal(new Set(z.phasen.map((p) => p.name)).size, z.phasen.length, `${art}: Namen eindeutig`);
       assert.equal(z.abschnitt.von, z.ab.vor[1], `${art}: beginnt nach dem kurzen Dunkel`);
       assert.equal(z.ab.stehen[0], z.abschnitt.bis, `${art}: danach steht das Foto`);
@@ -199,7 +204,7 @@ test("Abläufe (16./17. Oktober 2026): Fragmente oder die Verwandlung aus Strom,
       for (let i = 1; i < z.phasen.length; i++) assert.ok(Math.abs(z.phasen[i].von - z.phasen[i - 1].bis) < 1e-9 && z.phasen[i].bis > z.phasen[i].von, "Phasen schliessen an");
       assert.ok(z.ab.zusammen[1] + 0.35 < 0 && z.ab.linien[0] < 0, `${art}: die Phasen von «Fragmente» liegen ausserhalb des Films`);
       assert.ok(Math.abs(z.dauer - z.ab.stehen[1] - (alt.dauer - alt.ab.stehen[1])) < 1e-9, "derselbe Abspann");
-      assert.ok(z.dauer > 12 && z.dauer < 41, `${art}: rund 12 bis 40 s (${z.dauer})`);
+      assert.ok(z.dauer > 10 && z.dauer < 41, `${art}: rund 10 bis 40 s (${z.dauer})`);
     }
   }
 });

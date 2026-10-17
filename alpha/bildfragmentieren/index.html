@@ -99,6 +99,7 @@
     .ablaeufe button:disabled { opacity: 0.45; cursor: default; }
     .ablaeufe button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .effekte-hinweis { margin: 14px 0 6px; }
+    .effekte button { padding: 4px 2px; font-size: 0.92rem; }
     .kette { margin: 6px 0 0; min-height: 1.3em; color: var(--muted); font-size: 0.84rem; }
     [data-grund="schwarz"] .muster { background: #000; }
     [data-grund="weiss"] .muster { background: #fff; }
@@ -126,7 +127,7 @@
   <header class="site-header">
     <div class="wrap">
       <h1>Bildfragmentieren</h1>
-      <p class="lead">Ein Foto zerfällt in Linien, dann in Formen, dann in Farben – und setzt sich am Ende wieder zusammen. Oder als Verwandlung: Funken, Kristall, Echo und Gebirge, einzeln oder kombiniert. Als Video für Social Media.</p>
+      <p class="lead">Ein Foto zerfällt in Linien, dann in Formen, dann in Farben – und setzt sich am Ende wieder zusammen. Oder als Verwandlung: Funken, Glaskörper, Scherben, Echo und Gebirge, einzeln oder kombiniert. Als Video für Social Media.</p>
     </div>
   </header>
 
@@ -204,7 +205,8 @@
           <p class="effekte-hinweis">Die Effekte der Verwandlung – einzeln oder beliebig kombiniert:</p>
           <div class="segment effekte" role="group" aria-label="Effekte der Verwandlung">
             <button type="button" data-effekt="strom" aria-pressed="false" title="Glänzende Teilchen leuchten auf und ziehen in Bändern durchs Bild">Strom</button>
-            <button type="button" data-effekt="kristall" aria-pressed="false" title="Ein Glaskörper zerspringt in Scherben, die das Foto tragen">Kristall</button>
+            <button type="button" data-effekt="koerper" aria-pressed="false" title="Kristalle verschmelzen zu einem Glaskörper, durch den das Foto scheint">Körper</button>
+            <button type="button" data-effekt="scherben" aria-pressed="false" title="Ein Ball aus Scherben zerspringt, die Scherben setzen das Foto zusammen">Scherben</button>
             <button type="button" data-effekt="echo" aria-pressed="false" title="Die Kanten des Fotos ziehen Spuren in einen Tunnel wie in TouchDesigner">Echo</button>
             <button type="button" data-effekt="relief" aria-pressed="false" title="Das Foto als Gebirge im Streiflicht, mit leuchtenden Höhenlinien">Relief</button>
           </div>
@@ -264,7 +266,7 @@
   <script type="importmap">
   { "imports": { "three": "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" } }
   </script>
-  <script type="module" src="app.js?v=21"></script>
+  <script type="module" src="app.js?v=22"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

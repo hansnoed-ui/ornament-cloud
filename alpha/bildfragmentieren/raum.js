@@ -1,9 +1,10 @@
-// «Bildfragmentieren» – die Verwandlung: die Effekte Strom, Kristall, Echo und Relief, einzeln oder als Kette, und ihr leuchtendes Signet (seit
+// «Bildfragmentieren» – die Verwandlung: die Effekte Strom, Körper, Scherben, Echo und Relief, einzeln oder als Kette, und ihr leuchtendes Signet (seit
 // 16. Oktober 2026), mit three.js (WebGL 2, lokal in vendor/three-0.185.1). Erst geladen, wenn die Verwandlung gewählt ist. Alles zeichnet auf eine
 // eigene WebGL-Leinwand in der Auflösung des Ziels, szene.js setzt das Bild ein – Vorschau, Standbild und Video bleiben, wie sie sind. Jede Kette
 // beginnt im Dunkeln und endet exakt beim Foto; nur der letzte Effekt zeigt es, die anderen gehen in den nächsten über (Zeiten: kette() in ablauf.js).
 //   Strom:    Teilchen leuchten auf, ziehen zu Bändern, fliegen an ihren Platz – oder verdichten sich zur Kugel, aus der der nächste Effekt wächst.
-//   Kristall: drei Kristalle verschmelzen zu einem Glaskörper (oder er wächst aus der Kugel), er zerspringt, die Scherben setzen das Foto zusammen.
+//   Körper:   drei Kristalle verschmelzen zu einem Glaskörper (oder er wächst aus der Kugel); allein wird das Glas am Ende klar.
+//   Scherben: ein Ball aus Scherben (oder der Körper) zerspringt, die Scherben setzen das Foto zusammen.
 //   Echo:     Rückkopplung wie in TouchDesigner; das Foto strömt am Ende durch den Tunnel herein. Nach einem anderen Effekt ziehen dessen Bilder Spuren.
 //   Relief:   die Helligkeit als Gebirge im Streiflicht, das sich flach legt.
 // Strom und Echo hängen an den Bildern davor: sie werden in festen Schritten (ein Schritt je Filmbild) von vorn nachgerechnet, darum ist jedes Bild
@@ -16,7 +17,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
-import { kette, ablaufName } from "./ablauf.js?v=21";
+import { kette, ablaufName } from "./ablauf.js?v=22";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -76,12 +77,13 @@ function glasMaterial(K, textur, B, H) {
     uMitte: { value: Array.from({ length: K }, () => new THREE.Vector3()) }, uGroesse: { value: new Array(K).fill(0) },
     uRadien: { value: Array.from({ length: K }, () => new THREE.Vector2(1, 1.3)) }, uTon: { value: Array.from({ length: K }, () => new THREE.Color(1, 1, 1)) },
     uAussen: { value: 0 }, uGrund: { value: new THREE.Color(0, 0, 0) }, uKante: { value: 0.8 }, uBlitz: { value: 0 }, uKantenFarbe: { value: new THREE.Color(0.97, 0.97, 0.97) },
+    uKlar: { value: 0 },
   };
   const mat = new THREE.ShaderMaterial({
     uniforms: u, depthTest: false, depthWrite: false, vertexShader: QUAD_VERTEX,
     fragmentShader: /* glsl */ `
       #define K ${K}
-      uniform sampler2D uFoto; uniform float uSeiten, uAussen, uKante, uBlitz; uniform vec2 uPixel; uniform int uProben; uniform vec3 uN[16], uGrund, uKantenFarbe;
+      uniform sampler2D uFoto; uniform float uSeiten, uAussen, uKante, uBlitz, uKlar; uniform vec2 uPixel; uniform int uProben; uniform vec3 uN[16], uGrund, uKantenFarbe;
       uniform mat3 uDreh[K]; uniform vec3 uMitte[K], uTon[K]; uniform float uGroesse[K]; uniform vec2 uRadien[K];
       varying vec2 vUv;
       const float TANH = ${TANH.toFixed(7)}, KZ = ${KZ.toFixed(1)}, EBENE = -1.0;
@@ -117,20 +119,20 @@ function glasMaterial(K, textur, B, H) {
         mat3 R = uDreh[k]; vec2 rad = uRadien[k]; float g = uGroesse[k]; vec3 M = uMitte[k];
         vec3 e = lo + ld * s0, farbe; float dicke = 0.0;
         for (int c = 0; c < 3; c++) {
-          float ior = 1.46 + 0.045 * float(c); vec3 d1 = refract(ld, n0, 1.0 / ior); float a, b; vec3 m0, m1;
+          float ior = mix(1.46 + 0.045 * float(c), 1.0, uKlar); vec3 d1 = refract(ld, n0, 1.0 / ior); float a, b; vec3 m0, m1;   // klar: ohne Brechung
           schneide(e + d1 * 1e-4, d1, rad, a, b, m0, m1);
           vec3 x = e + d1 * b, d2 = refract(d1, -m1, ior);
           if (dot(d2, d2) < 1e-6) d2 = reflect(d1, -m1);
           farbe[c] = texture2D(uFoto, aufFoto(R * x * g + M, R * d2))[c];
           if (c == 1) dicke = b;
         }
-        farbe *= mix(vec3(1.0), vec3(0.86, 0.92, 1.0), clamp(dicke * 0.35, 0.0, 1.0)) * uTon[k];
+        farbe *= mix(mix(vec3(1.0), vec3(0.86, 0.92, 1.0), clamp(dicke * 0.35, 0.0, 1.0)) * uTon[k], vec3(1.0), uKlar);
         vec3 rw = R * reflect(ld, n0);
-        float F = 0.04 + 0.96 * pow(1.0 - max(dot(-ld, n0), 0.0), 5.0);
+        float F = (0.04 + 0.96 * pow(1.0 - max(dot(-ld, n0), 0.0), 5.0)) * (1.0 - uKlar);
         vec3 umgebung = mix(vec3(0.015, 0.012, 0.02), vec3(0.55, 0.6, 0.72), smoothstep(-0.3, 0.9, rw.y));
         vec3 glanz = vec3(1.0, 0.95, 0.88) * pow(max(dot(rw, normalize(vec3(0.6, 0.8, 0.5))), 0.0), 220.0) * 5.0
                    + vec3(1.0, 0.55, 0.25) * pow(max(dot(rw, normalize(vec3(-0.7, -0.2, 0.6))), 0.0), 90.0) * 1.5;
-        farbe = mix(farbe, umgebung, F) + glanz;
+        farbe = mix(farbe, umgebung, F) + glanz * (1.0 - uKlar);
         float w = 0.007 / max(g, 0.2);                                       // feine, scharfe Kanten in der Kantenfarbe (auf Weiss dunkel)
         farbe = mix(farbe, uKantenFarbe, clamp(kante(e, rad, w) * uKante, 0.0, 1.0));
         float a2, b2; vec3 m2, m3; vec3 d1g = refract(ld, n0, 1.0 / 1.5);
@@ -174,7 +176,7 @@ function voronoi(bw, gx, gy, zufall) {
   return zellen;
 }
 /** Geometrie aller Scherben; aRang: Reihenfolge der Montage (0 zuerst … 1 zuletzt), von der Mitte nach aussen, etwas gestreut */
-function scherben(zellen, bw, dicke, zufall) {
+function scherbenGeometrie(zellen, bw, dicke, zufall) {
   const mitten = zellen.map((p) => [p.reduce((s, q) => s + q[0], 0) / p.length, p.reduce((s, q) => s + q[1], 0) / p.length]);
   const schluessel = mitten.map(([x, y]) => Math.hypot(x, y) + 0.45 * zufall());
   const reihe = schluessel.map((s, i) => [s, i]).sort((a, b) => a[0] - b[0]), rang = new Float32Array(zellen.length);
@@ -198,37 +200,77 @@ function scherben(zellen, bw, dicke, zufall) {
   return geo;
 }
 
-// ——— Kristall (11 s bei Tempo «normal»: Körper 0–3,6 · Bruch 3,6–6,8 · Montage 6,8–11) ———
+// ——— Körper und Scherben: die beiden Hälften des früheren «Kristall» (bis 17. Oktober 2026 ein Effekt; Wunsch: «diese einzeln anwählbar») ———
+// Beide rechnen in der Zeit des alten Kristalls (11 s: Körper 0–4,3 · Bruch 4,3 · Montage 6,8–11); die Scherben beginnen bei 3,6 s (SCHERBEN_AB).
 // Glaskörper mit scharfen Spiegelkanten; die Scherben tragen das Foto, nur ihre Schnittkanten sind Spiegel statt Glut (Rückmeldungen: «alle Kanten
 // schärfer, dieses Rot geht gar nicht», dann: «ich wollte nur das Orange der Kanten weg, nicht die ganzen Stücke schwarz/weiss»). Der Körper
-// zerspringt an seinem Ort: die Scherben liegen im Moment des Bruchs als Haufen von seiner Grösse in der Mitte und fliegen erst dann auseinander.
-// Nach einem anderen Effekt (erst = false) setzt er bei 1,7 s ein, ohne die drei kleinen Kristalle: der Körper wächst aus der Kugel von Strom.
-const BRUCH = 4.3;   // in diesem Moment zerspringt der Körper
-function kristall(renderer, textur, B, H, grund, px, hell, { erst = true } = {}) {
-  // Teil 1: Glaskörper (ein Hauptkörper, drei kleine Kristalle, die zu ihm verschmelzen)
+// zerspringt an seinem Ort: die Scherben liegen im Moment des Bruchs als Ball von seiner Grösse in der Mitte und fliegen erst dann auseinander.
+const BRUCH = 4.3, SCHERBEN_AB = 3.6, KOERPER_ENDE = 0.6;   // Bruch; Beginn der Scherben; Grösse des Körpers im Moment des Bruchs
+const KLEIN = [[90, 2], [215, 0], [330, 1]];                  // die drei kleinen Kristalle: Herkunft (Grad), Form
+
+// Körper (6,8 s: Körper 0–4,3 · Bild 4,3–6,8). Drei kleine Kristalle verschmelzen zu einem Glaskörper (Dodekaeder → Geode → Ikosaeder), das Foto
+// nur durch das Glas. Allein oder am Ende wächst er, das Foto erscheint um ihn, und das Glas wird klar (ohne Brechung, Kanten und Glanz) – exakt das
+// Foto. Vor den Scherben (letzt = false) dreht er sich schneller bis zum Bruch. Nach einem anderen Effekt (erst = false) setzt er bei 1,7 s ein,
+// ohne die kleinen Kristalle: er wächst aus der Kugel von Strom. Zustandslos.
+function koerper(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = true } = {}) {
   const glas = glasMaterial(4, textur, B, H);
   glas.u.uGrund.value.copy(grund);
   glas.u.uKantenFarbe.value.setScalar(hell ? 0.04 : 0.97);
-  const glasSzene = new THREE.Scene(), quad = new THREE.PlaneGeometry(2, 2);
-  glasSzene.add(new THREE.Mesh(quad, glas.mat));
+  const szene = new THREE.Scene(), quad = new THREE.PlaneGeometry(2, 2);
+  szene.add(new THREE.Mesh(quad, glas.mat));
   const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const glasLook = filmlook(renderer, glasSzene, ortho, { radius: 0.15, schwelle: 0.95, hell });
+  const look = filmlook(renderer, szene, ortho, { radius: 0.15, schwelle: 0.95, hell });
   const seiten = B / H, m4 = new THREE.Matrix4(), eu = new THREE.Euler();
-  const KLEIN = [[90, 2], [215, 0], [330, 1]];   // Herkunft (Grad), Form
+  let stand = "", w = B;
+  return {
+    looks: [look],
+    groesse(b, h) { w = b; glas.groesse(b, h, b >= B * 0.95); },
+    bild(t) {
+      // drei kleine Kristalle fliegen auf Spiralen herein und verschmelzen bei rund 2 s zum grossen Körper
+      const u = glas.u, ankunft = [1.75, 1.95, 2.15];
+      KLEIN.forEach(([grad, f], j) => {
+        const a = anteil(t, 0.12 * j - 0.3, ankunft[j]), wi = THREE.MathUtils.degToRad(grad) + 1.6 * (1 - a), r = 1.25 * (1 - inOut(a));   // am Rand schon sichtbar
+        u.uMitte.value[j].set(Math.cos(wi) * r * seiten, Math.sin(wi) * r, -0.4 * (1 - a));
+        u.uGroesse.value[j] = erst ? 0.15 * weich(anteil(t, 0, 0.5)) * (1 - weich(anteil(t, ankunft[j] - 0.05, ankunft[j] + 0.2))) : 0;
+        u.uDreh.value[j].setFromMatrix4(m4.makeRotationFromEuler(eu.set(t * (1.3 + 0.4 * j), t * 0.9, j)));
+        form(f, u.uRadien.value[j]);
+      });
+      // der Körper wächst bis zum Bruch auf KOERPER_ENDE (die Scherben übernehmen genau seinen Platz); am Ende weiter, während das Glas klar wird
+      const klar = letzt ? inOut(anteil(t, 5.0, 6.6)) : 0;
+      u.uGroesse.value[3] = weich(anteil(t, 1.7, 2.6)) * (0.45 + (KOERPER_ENDE - 0.45) * inOut(anteil(t, 3.0, BRUCH)) + (letzt ? 0.9 * inOut(anteil(t, BRUCH, 6.6)) : 0));
+      u.uMitte.value[3].set(0, 0, 0);
+      u.uDreh.value[3].setFromMatrix4(m4.makeRotationFromEuler(eu.set(t * 0.33 + 0.4, t * 0.5 + (letzt ? 0 : 1.6 * anteil(t, 3.4, BRUCH) ** 2), t * 0.14)));
+      const fo = Math.min(2, Math.max(0, (t - 2.2) / 1.1));
+      form(fo, u.uRadien.value[3]);
+      u.uKante.value = 0.85 * (1 - klar);
+      u.uKlar.value = klar;
+      u.uAussen.value = letzt ? inOut(anteil(t, 4.3, 5.8)) : 0;
+      u.uProben.value = klar < 1 && w >= B * 0.95 ? 4 : 1;                 // am Ende exakt das Foto, ohne Mittelung
+      stand = t < BRUCH ? `körper ${FORMNAMEN[Math.round(fo)]}` + (erst ? ` · kristalle ${[0, 1, 2].filter((j) => t < ankunft[j] + 0.1).length}` : "")
+        : `glas klar ${Math.round(klar * 100)} %`;
+      look.render(1 - klar, 0.25);
+    },
+    zaehler() { return stand; },
+    entsorgen() { quad.dispose(); glas.mat.dispose(); look.entsorgen(); },
+  };
+}
 
-  // Teil 2: Scherben (Bruch und Montage)
+// Scherben (7,4 s: Bruch 0–3,2 · Montage 3,2–7,4; in der Zeit des Kristalls 3,6–11). Ein Ball aus Voronoi-Scherben in der Mitte zerspringt bei
+// 0,7 s, die Scherben fliegen in die Tiefe und kehren eine nach der anderen zurück, bis das Foto steht («das Endbild setzt sich nicht zusammen,
+// sondern erscheint einfach»). Allein tauchen die Scherben zuerst als Ball aus dem Dunkel auf; nach dem Körper ist der Ball sein Platz. Vor einem
+// weiteren Effekt (letzt = false) enden sie im Flug. Zustandslos.
+function scherben(renderer, textur, B, H, grund, px, hell, { erst = true } = {}) {
   const szene = new THREE.Scene();
   const kamera = new THREE.PerspectiveCamera(FOV, B / H, 0.05, 50);
   const abstand = 1 / Math.tan(THREE.MathUtils.degToRad(FOV / 2));
   const bw = (2 * B) / H, zufall = zufallAus(20261016);
   const gy = grob() ? 18 : 24, gx = Math.round((gy * B) / H), zellen = voronoi(bw, gx, gy, zufall);
-  const geo = scherben(zellen, bw, 0.03, zufall);
-  const KOERPER_ENDE = 0.6;                                               // Grösse des Körpers im Moment des Bruchs
+  const geo = scherbenGeometrie(zellen, bw, 0.03, zufall);
   const mat = new THREE.ShaderMaterial({
     uniforms: { uFoto: { value: textur }, uAus: { value: 0 }, uZurueck: { value: 0 }, uZeit: { value: 0 }, uLicht: { value: new THREE.Vector3() },
-      uBlitz: { value: 0 }, uHell: { value: hell ? 1 : 0 }, uKern: { value: KOERPER_ENDE * 1.1 } },
+      uBlitz: { value: 0 }, uHell: { value: hell ? 1 : 0 }, uKern: { value: KOERPER_ENDE * 1.1 }, uEin: { value: 1 } },
     vertexShader: /* glsl */ `
-      uniform float uAus, uZurueck, uZeit, uKern;
+      uniform float uAus, uZurueck, uZeit, uKern, uEin;
       attribute vec3 aMitte; attribute vec4 aZufall; attribute vec2 aUv; attribute float aSeite, aRang;
       varying vec2 vUv; varying vec3 vNormal, vSicht; varying float vSeite, vFlug, vRast;
       mat3 drehung(vec3 a, float w) {
@@ -243,12 +285,13 @@ function kristall(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
         float zur = smoothstep(s2, s2 + 0.16, uZurueck);
         zur = zur * zur * (3.0 - 2.0 * zur);
         vRast = step(s2 + 0.16, uZurueck) * exp(-(uZurueck - s2 - 0.16) * 45.0);                      // kurzes Aufleuchten beim Einrasten
-        // drei Lagen: der Haufen in der Mitte (so gross wie der Körper), der Flug, die Heimat im Foto
-        vec3 kern = uKern * pow(aZufall.w, 0.33) * normalize(aZufall.xyz - 0.5 + 1e-3) + vec3(0.0, 0.0, 0.15);   // eine Kugel wie der Körper
+        // drei Lagen: der Ball in der Mitte (so gross wie der Körper, dreht sich), der Flug, die Heimat im Foto
+        vec3 kern = drehung(vec3(0.2, 1.0, 0.1), uZeit * 0.9) * (uKern * pow(aZufall.w, 0.33) * normalize(aZufall.xyz - 0.5 + 1e-3)) + vec3(0.0, 0.0, 0.15);
         vec3 richtung = vec3(aMitte.xy * 0.55 + (aZufall.xy - 0.5) * 0.6, 0.35 + 1.3 * aZufall.z);
         vec3 flug = aMitte + richtung * (0.7 + 1.1 * aZufall.w) + 0.08 * vec3(sin(uZeit * 0.9 + 6.28 * aZufall.x), cos(uZeit * 0.7 + 6.28 * aZufall.y), 0.0);
         vec3 mitte = mix(mix(kern, flug, aus), aMitte, zur);
-        float gross = mix(mix(0.45, 1.0, aus), 1.0, zur);
+        float ein = clamp(uEin * 1.6 - 0.6 * aZufall.w, 0.0, 1.0);                                     // allein: der Ball taucht Scherbe um Scherbe auf
+        float gross = mix(mix(0.45, 1.0, aus), 1.0, zur) * ein;
         float f = (1.0 - zur) * max(aus, 0.25);
         mat3 R = drehung(aZufall.xyz - 0.5 + 1e-3, f * (0.3 + 1.2 * aZufall.w));
         vec4 mv = modelViewMatrix * vec4(R * (position - aMitte) * gross + mitte, 1.0);
@@ -279,37 +322,15 @@ function kristall(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
   let stand = "";
 
   return {
-    looks: [glasLook, look],
-    groesse(w, h) { glas.groesse(w, h, w >= B * 0.95); },
-    bild(t) {
-      const blitz = (hell ? 0 : 0.3) * Math.exp(-(((t - BRUCH) / 0.07) ** 2));
-      if (t < BRUCH) {
-        // drei kleine Kristalle fliegen auf Spiralen herein und verschmelzen bei rund 2 s zum grossen Körper
-        const u = glas.u, ankunft = [1.75, 1.95, 2.15];
-        KLEIN.forEach(([grad, f], j) => {
-          const a = anteil(t, 0.12 * j - 0.3, ankunft[j]), w = THREE.MathUtils.degToRad(grad) + 1.6 * (1 - a), r = 1.25 * (1 - inOut(a));   // am Rand schon sichtbar
-          u.uMitte.value[j].set(Math.cos(w) * r * seiten, Math.sin(w) * r, -0.4 * (1 - a));
-          u.uGroesse.value[j] = erst ? 0.15 * weich(anteil(t, 0, 0.5)) * (1 - weich(anteil(t, ankunft[j] - 0.05, ankunft[j] + 0.2))) : 0;
-          u.uDreh.value[j].setFromMatrix4(m4.makeRotationFromEuler(eu.set(t * (1.3 + 0.4 * j), t * 0.9, j)));
-          form(f, u.uRadien.value[j]);
-        });
-        // der Körper wächst bis zum Bruch nur auf KOERPER_ENDE: die Scherben übernehmen genau seinen Platz
-        u.uGroesse.value[3] = weich(anteil(t, 1.7, 2.6)) * (0.45 + (KOERPER_ENDE - 0.45) * inOut(anteil(t, 3.0, BRUCH)));
-        u.uMitte.value[3].set(0, 0, 0);
-        u.uDreh.value[3].setFromMatrix4(m4.makeRotationFromEuler(eu.set(t * 0.33 + 0.4, t * 0.5 + 1.6 * anteil(t, 3.4, BRUCH) ** 2, t * 0.14)));
-        form(Math.min(2, Math.max(0, (t - 2.2) / 1.1)), u.uRadien.value[3]);
-        u.uKante.value = 0.85;
-        u.uBlitz.value = blitz;
-        stand = `körper ${FORMNAMEN[Math.round(Math.min(2, Math.max(0, (t - 2.2) / 1.1)))]}` + (erst ? ` · kristalle ${[0, 1, 2].filter((j) => t < ankunft[j] + 0.1).length}` : "");
-        glasLook.render(1, 0.25);
-        return;
-      }
-      // Bruch und Montage
-      const U = mat.uniforms;
+    looks: [look],
+    groesse() {},
+    bild(tl) {
+      const t = tl + SCHERBEN_AB, U = mat.uniforms;                         // in der Zeit des Kristalls
       U.uZeit.value = t;
+      U.uEin.value = erst ? weich(anteil(t, SCHERBEN_AB, SCHERBEN_AB + 0.55)) : 1;
       U.uAus.value = 1.4 * inOut(anteil(t, BRUCH, BRUCH + 1.4));
       U.uZurueck.value = Math.max(0, (t - 6.8) / 3.9);                    // nicht begrenzt: das Aufleuchten der letzten Scherben klingt bis 11 s aus
-      U.uBlitz.value = blitz;
+      U.uBlitz.value = (hell ? 0 : 0.3) * Math.exp(-(((t - BRUCH) / 0.07) ** 2));
       const flug = Math.min(1, U.uAus.value) * (1 - anteil(t, 8.8, 10.7));
       const w = 0.4 * Math.sin(Math.PI * anteil(t, BRUCH, 10.6)) * (1 - anteil(t, 9.6, 10.6));
       kamera.position.set(Math.sin(w) * abstand, 0.12 * w, Math.cos(w) * abstand * (1 + 0.3 * flug));
@@ -321,7 +342,7 @@ function kristall(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
       look.render(Math.max(flug, U.uZurueck.value < 1 ? 0.35 : 0), 0.25);
     },
     zaehler() { return stand; },
-    entsorgen() { quad.dispose(); glas.mat.dispose(); glasLook.entsorgen(); geo.dispose(); mat.dispose(); look.entsorgen(); },
+    entsorgen() { geo.dispose(); mat.dispose(); look.entsorgen(); },
   };
 }
 
@@ -331,7 +352,7 @@ function kristall(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
 // bewegt. Im Bild-Teil strömt das Foto selbst durch den Tunnel herein, der Zoom kommt zur Ruhe, und die Spuren ziehen sich zum Foto zusammen
 // (Rückmeldung: «die Zusammensetzung des Schlussbildes wenig nachvollziehbar» – vorher wuchs es Tonstufe um Tonstufe). Nach einem anderen Effekt
 // (erst = false) speist zuerst dessen Bild die Schleife (quelle): seine Scherben oder Teilchen ziehen Spuren, dann übernehmen die Kanten.
-function echo(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = true } = {}) {
+function echo(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = true, ein = 0 } = {}) {
   const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), quad = new THREE.PlaneGeometry(2, 2);
   const ziel = (w, h) => new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
   // je Auflösung ein eigener Zustand (Vorschau und Export rechnen in verschiedener Grösse; sonst begänne die Schleife bei jedem Wechsel von vorn)
@@ -379,12 +400,12 @@ function echo(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = tr
   const rueckSzene = new THREE.Scene(); rueckSzene.add(new THREE.Mesh(quad, rueck));
   // Anzeige: Grund und Schleife; ganz am Ende exakt das Foto
   const zeige = new THREE.ShaderMaterial({
-    uniforms: { uSchleife: { value: null }, uFoto: { value: textur }, uExakt: { value: 0 }, uGrund: { value: grund.clone() }, uHell: { value: hell ? 1 : 0 } },
+    uniforms: { uSchleife: { value: null }, uFoto: { value: textur }, uExakt: { value: 0 }, uSicht: { value: 1 }, uGrund: { value: grund.clone() }, uHell: { value: hell ? 1 : 0 } },
     vertexShader: QUAD_VERTEX, depthTest: false, depthWrite: false,
     fragmentShader: /* glsl */ `
-      uniform sampler2D uSchleife, uFoto; uniform float uExakt, uHell; uniform vec3 uGrund; varying vec2 vUv;
+      uniform sampler2D uSchleife, uFoto; uniform float uExakt, uSicht, uHell; uniform vec3 uGrund; varying vec2 vUv;
       void main() {
-        vec3 s = min(texture2D(uSchleife, vUv).rgb, 1.0);
+        vec3 s = min(texture2D(uSchleife, vUv).rgb, 1.0) * uSicht;                                   // uSicht: Einblenden
         gl_FragColor = vec4(mix(uHell > 0.5 ? uGrund - s : uGrund + s, texture2D(uFoto, vUv).rgb, uExakt), 1.0);
       }`,
   });
@@ -424,11 +445,17 @@ function echo(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = tr
     /** t: Zeit im Effekt; j: Filmbild im Effekt, zeit(i): die Zeit von Bild i (die Schritte der Rückkopplung zählen in Filmbildern);
      *  quelle(i): das fertige Bild des vorigen Effekts zu Bild i ({ textur, ein }) oder null */
     bild(t, j, zeit, quelle) {
-      if (j < Z.n || Z.n < 0) { leeren(); Z.n = -1; }
+      if (j < Z.n || Z.n < 0) {
+        leeren(); Z.n = -1;
+        // Vorlauf: beginnt Echo nicht bei 0 (allein oder zuerst: bei 1,5 s), läuft die Rückkopplung vorher schon – das Bild setzt mitten in der Bewegung ein
+        const dt = zeit(1) - zeit(0), vor = erst && ein > 0 ? Math.round(ein / dt) : 0;
+        for (let m = vor; m >= 1; m--) schritt(ein - m * dt, null);
+      }
       while (Z.n < j) { const i = Z.n + 1; schritt(zeit(i), quelle?.(i)); Z.n = i; }
       const aktiv = regler(t);
       zeige.uniforms.uSchleife.value = Z.lesen.texture;
       zeige.uniforms.uExakt.value = letzt ? (t >= 9.2 ? 1 : weich(anteil(t, 8.6, 9.2))) : 0;
+      zeige.uniforms.uSicht.value = erst && ein > 0 ? weich(anteil(t, ein, ein + 0.6)) : 1;
       const zoom = `zoom ${(rueck.uniforms.uZoom.value * 100 - 100).toFixed(1)} %`;
       stand = !letzt || t < 6 ? `rückkopplung ${Math.round(rueck.uniforms.uZerfall.value * 100)} % · ${zoom}` : `foto ${Math.round(rueck.uniforms.uFotoEin.value * 100)} % · ${zoom}`;
       look.render(aktiv, 0.35, 0.003);
@@ -439,9 +466,10 @@ function echo(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = tr
 }
 
 // ——— Strom (8,4 s: Funken 0–1,6 · Strom 1,6–5,2 · Bild 5,2–8,4; vorher 12 s, Rückmeldung: «Strom ist ok, zu lang») ———
-// Rund 25 000 Teilchen, je eine glänzende Kugel in der Farbe ihres Bildpunkts (Rückmeldung zum Showreel: «zu wenig kontrastreich und glänzend»).
-// Sie tauchen verstreut im Dunkeln auf, ziehen in einem Rauschfeld zu Bändern und Tüchern zusammen und fliegen dann an ihren Platz im Foto, das am
-// Schluss exakt steht. Vor einem weiteren Effekt (letzt = false) ballen sie sich stattdessen ab 4,4 s zu einer leuchtenden, sich drehenden Kugel
+// Rund 40 000 Teilchen, je eine kleine glänzende Kugel in der Farbe ihres Bildpunkts (Rückmeldung zum Showreel: «zu wenig kontrastreich und
+// glänzend»), auf 100 kurzen Fäden. Funken laufen die Fäden entlang, ein Wirbelfeld aus zwei Oktaven (Curl-Rauschen, quellenfrei) zieht sie zu
+// langen, feinen Linien und Wirbeln aus, und die Teilchen fliegen dann an ihren Platz im Foto, das am Schluss exakt steht (Rückmeldung vom 17. Oktober 2026: «die
+// Formen und Bewegungen könnten feiner und dynamischer sein» – vorher ein weiches Rauschfeld, grössere Kugeln, Bänder und Tücher). Vor einem weiteren Effekt (letzt = false) ballen sie sich stattdessen ab 4,4 s zu einer leuchtenden, sich drehenden Kugel
 // (Verdichten), aus der der nächste hervorgeht. Lage und Tempo liegen in Float-Texturen (GPUComputationRenderer); wie bei Echo ein fester Schritt je
 // Filmbild, von vorn.
 const GLSL_RAUSCHEN = /* glsl */ `
@@ -488,29 +516,79 @@ float snoise(vec3 v) {
   m = m * m;
   return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
 }
-vec3 rauschFeld(vec3 p) { return vec3(snoise(p), snoise(p + vec3(31.416, -47.853, 12.793)), snoise(p + vec3(-233.145, -113.408, -185.31))); }
-vec3 curl(vec3 p) {
-  const float e = 0.1;
-  vec3 dx = vec3(e, 0.0, 0.0), dy = vec3(0.0, e, 0.0), dz = vec3(0.0, 0.0, e);
-  vec3 x0 = rauschFeld(p - dx), x1 = rauschFeld(p + dx);
-  vec3 y0 = rauschFeld(p - dy), y1 = rauschFeld(p + dy);
-  vec3 z0 = rauschFeld(p - dz), z1 = rauschFeld(p + dz);
-  return vec3((y1.z - y0.z) - (z1.y - z0.y), (z1.x - z0.x) - (x1.z - x0.z), (x1.y - x0.y) - (y1.x - y0.x)) / (2.0 * e);
+// Simplex-Rauschen mit Gradient (analytisch, wie snoise): für Wirbelfelder ohne Differenzen – drei Aufrufe statt achtzehn
+float snoiseG(vec3 v, out vec3 gradient) {
+  const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0);
+  const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+  vec3 i = floor(v + dot(v, C.yyy));
+  vec3 x0 = v - i + dot(i, C.xxx);
+  vec3 g = step(x0.yzx, x0.xyz);
+  vec3 l = 1.0 - g;
+  vec3 i1 = min(g.xyz, l.zxy);
+  vec3 i2 = max(g.xyz, l.zxy);
+  vec3 x1 = x0 - i1 + C.xxx;
+  vec3 x2 = x0 - i2 + C.yyy;
+  vec3 x3 = x0 - D.yyy;
+  i = mod289(i);
+  vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+  float n_ = 0.142857142857;
+  vec3 ns = n_ * D.wyz - D.xzx;
+  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+  vec4 x_ = floor(j * ns.z);
+  vec4 y_ = floor(j - 7.0 * x_);
+  vec4 x = x_ * ns.x + ns.yyyy;
+  vec4 y = y_ * ns.x + ns.yyyy;
+  vec4 h = 1.0 - abs(x) - abs(y);
+  vec4 b0 = vec4(x.xy, y.xy);
+  vec4 b1 = vec4(x.zw, y.zw);
+  vec4 s0 = floor(b0) * 2.0 + 1.0;
+  vec4 s1 = floor(b1) * 2.0 + 1.0;
+  vec4 sh = -step(h, vec4(0.0));
+  vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
+  vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
+  vec3 p0 = vec3(a0.xy, h.x);
+  vec3 p1 = vec3(a0.zw, h.y);
+  vec3 p2 = vec3(a1.xy, h.z);
+  vec3 p3 = vec3(a1.zw, h.w);
+  vec4 norm = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
+  p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+  vec4 m = max(0.6 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0);
+  vec4 m2 = m * m, m4 = m2 * m2;
+  vec4 pdotx = vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3));
+  vec4 temp = m2 * m * pdotx;
+  gradient = 42.0 * (-8.0 * (temp.x * x0 + temp.y * x1 + temp.z * x2 + temp.w * x3) + m4.x * p0 + m4.y * p1 + m4.z * p2 + m4.w * p3);
+  return 42.0 * dot(m4, pdotx);
+}
+/** Wirbelfeld (Curl-Rauschen): quellenfrei, darum ziehen Teilchen darin zu feinen Fäden und Wirbeln statt zu verklumpen */
+vec3 wirbel(vec3 p) {
+  vec3 g1, g2, g3;
+  snoiseG(p, g1); snoiseG(p + vec3(31.416, -47.853, 12.793), g2); snoiseG(p + vec3(-233.145, -113.408, -185.31), g3);
+  return vec3(g3.y - g2.z, g1.z - g3.x, g2.x - g1.y);
 }
 `;
 function strom(renderer, textur, B, H, grund, px, hell, { letzt = true } = {}) {
-  const S = grob() ? 128 : 160, N = S * S, SCHRITTE = 2;   // wenige, grosse Kugeln: so bilden sich sichtbare Bänder (262 144 gaben nur Staub)
+  const S = grob() ? 140 : 200, N = S * S, SCHRITTE = 2;   // genug für feine Fäden, nicht so viele, dass es Staub wird (262 144 gaben nur Staub)
   const szene = new THREE.Scene();
   const kamera = new THREE.PerspectiveCamera(FOV, B / H, 0.05, 50);
   const abstand = 1 / Math.tan(THREE.MathUtils.degToRad(FOV / 2)), breite = (2 * B) / H;
   const gpu = new GPUComputationRenderer(S, S, renderer);
   const startLage = gpu.createTexture(), startTempo = gpu.createTexture(), heim = gpu.createTexture(), kugel = gpu.createTexture();
   const ref = new Float32Array(N * 2), fotoUv = new Float32Array(N * 2), zufall = zufallAus(20261017);
+  // Anfang: S / 2 kurze, gebogene Fäden zu je 2 S Teilchen, verstreut im Bild (kein Foto). Die Strömung ist quellenfrei – zufällig verteilte Teilchen
+  // blieben darin gleichmässig verteilt (Staub); Fäden dagegen zieht sie zu langen, feinen Linien aus. w: wann das Teilchen aufleuchtet – die
+  // Funken laufen einen Faden entlang. Jeder Faden fliegt am Schluss in eine Zeile des Fotos.
+  const F = 2 * S;                                                        // Teilchen je Faden (S / 2 Fäden): dicht genug, dass sie Linien bleiben
+  let x = 0, y = 0, z = 0, winkel = 0, kruemmung = 0, schritt = 0, start = 0;
   for (let i = 0; i < N; i++) {
+    const k = i % F;
+    if (k === 0) {
+      x = (zufall() - 0.5) * breite * 1.1; y = (zufall() - 0.5) * 2.1; z = (zufall() - 0.5) * 0.3;
+      winkel = zufall() * Math.PI * 2; kruemmung = (zufall() - 0.5) * 5; schritt = (0.35 + 0.4 * zufall()) / F; start = 0.8 * zufall();
+    }
+    winkel += kruemmung * schritt; x += Math.cos(winkel) * schritt; y += Math.sin(winkel) * schritt;
+    startLage.image.data.set([x + (zufall() - 0.5) * 0.003, y + (zufall() - 0.5) * 0.003, z, start + (0.25 * k) / F], i * 4);
     const u = ((i % S) + zufall()) / S, v = (Math.floor(i / S) + zufall()) / S;      // geschichtete Zufallspunkte auf dem Foto
     heim.image.data.set([(u - 0.5) * breite, (v - 0.5) * 2, 0, 1], i * 4);
-    // Anfang: auf einer Fläche, aber an zufälligen Plätzen (kein Foto); das Feld faltet die Fläche zu Bändern und Tüchern. w: wann es aufleuchtet
-    startLage.image.data.set([(zufall() - 0.5) * breite * 1.1, (zufall() - 0.5) * 2.2, 0.02 * (zufall() - 0.5), zufall()], i * 4);
     ref.set([((i % S) + 0.5) / S, (Math.floor(i / S) + 0.5) / S], i * 2);
     fotoUv.set([u, v], i * 2);
   }
@@ -529,10 +607,11 @@ function strom(renderer, textur, B, H, grund, px, hell, { letzt = true } = {}) {
         vec3 k = texture2D(uKugel, uv).xyz; float w = uZeit * 0.9, c = cos(w), s = sin(w);
         h = mix(h, vec3(c * k.x + s * k.z, k.y, -s * k.x + c * k.z), uKugelAnteil);
       }
-      // mit der Strömung treiben statt beschleunigen: die Fläche bleibt eine Fläche und faltet sich zu Bändern und Tüchern (mit Schwung mischten
-      // sich die Bahnen nach wenigen Sekunden zu einer gleichmässigen Wolke)
-      vec3 ziel = rauschFeld(p * 1.1 + vec3(0.0, 0.0, uZeit * 0.16)) * uChaos * 0.42;
-      v = mix(v, ziel, 1.0 - exp(-uDt * 3.0));
+      // mit der Strömung treiben statt beschleunigen (mit Schwung mischten sich die Bahnen zu einer gleichmässigen Wolke): grosse Wirbel und feine
+      // darin, beide wandern; nicht zu schnell, sonst reisst das Feld die Fäden in Staub
+      vec3 ziel = (wirbel(p * 1.2 + vec3(0.0, 0.0, uZeit * 0.25)) * 0.7 + wirbel(p * 2.8 + vec3(uZeit * 0.4, 0.0, 0.0)) * 0.1) * uChaos * 0.075;
+      ziel.z *= 0.4;                                                                                 // eher flach: die Fäden bleiben lesbar
+      v = mix(v, ziel, 1.0 - exp(-uDt * 5.0));
       v += ((h - p) * uFeder - p * 6.0 * max(0.0, length(p * vec3(0.8, 1.0, 1.4)) - 1.2)) * uDt;     // Feder nach Hause, weiche Grenze
       v *= exp(-uDt * 2.2 * sqrt(uFeder));
       gl_FragColor = vec4(v, 1.0);
@@ -554,7 +633,7 @@ function strom(renderer, textur, B, H, grund, px, hell, { letzt = true } = {}) {
   geo.setAttribute("aUv", new THREE.BufferAttribute(fotoUv, 2));
   const punktMat = new THREE.ShaderMaterial({
     uniforms: { uLage: { value: null }, uTempo: { value: null }, uHeim: { value: heim }, uFoto: { value: textur }, uEinrasten: { value: 0 }, uZeit: { value: 0 },
-      uPunkt: { value: (2 / S) * 1.7 }, uPixelJeEinheit: { value: H / 2 / Math.tan(THREE.MathUtils.degToRad(FOV / 2)) } },
+      uPunkt: { value: (2 / S) * 1.25 }, uPixelJeEinheit: { value: H / 2 / Math.tan(THREE.MathUtils.degToRad(FOV / 2)) } },
     vertexShader: /* glsl */ `
       uniform sampler2D uLage, uTempo, uHeim, uFoto; uniform float uEinrasten, uZeit, uPunkt, uPixelJeEinheit;
       attribute vec2 aRef, aUv; varying vec3 vFarbe; varying float vAlpha;
@@ -565,7 +644,7 @@ function strom(renderer, textur, B, H, grund, px, hell, { letzt = true } = {}) {
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
         gl_Position = projectionMatrix * mv;
         gl_PointSize = clamp(uPunkt * uPixelJeEinheit / -mv.z * (0.35 + 0.65 * auf), 1.0, uPunkt * uPixelJeEinheit * 0.6);
-        vFarbe = texture2D(uFoto, aUv).rgb * (1.0 + 0.15 * smoothstep(0.3, 3.0, geschw));
+        vFarbe = texture2D(uFoto, aUv).rgb * (1.0 + 0.35 * smoothstep(0.4, 2.0, geschw));   // schnelle Teilchen glänzen heller
         vAlpha = auf * (1.0 - uEinrasten);
       }`,
     fragmentShader: /* glsl */ `
@@ -591,7 +670,7 @@ function strom(renderer, textur, B, H, grund, px, hell, { letzt = true } = {}) {
     const U = tempo.material.uniforms;
     U.uZeit.value = t;
     const ende = letzt ? weich(anteil(t, 4.6, 6.2)) : weich(anteil(t, 4.0, 5.4));
-    U.uChaos.value = (1.6 + 1.8 * weich(anteil(t, 1.0, 2.0))) * (1 - ende);                     // von Anfang an Strömung: die Bänder bilden sich früh
+    U.uChaos.value = (1.6 + 0.8 * weich(anteil(t, 1.0, 2.0))) * (1 - ende);                     // von Anfang an Strömung; nicht stärker, sonst reissen die Fäden
     U.uFeder.value = letzt ? 22 * inOut(anteil(t, 4.9, 6.9)) : 18 * inOut(anteil(t, 4.2, 5.6));
   };
   let n = -1, stand = "";
@@ -620,7 +699,7 @@ function strom(renderer, textur, B, H, grund, px, hell, { letzt = true } = {}) {
       kamera.position.set(Math.sin(w) * abstand, 0.2 * w, Math.cos(w) * abstand * (1 + 0.25 * frei));
       kamera.lookAt(0, 0, 0);
       const ch = tempo.material.uniforms.uChaos.value, fe = tempo.material.uniforms.uFeder.value;
-      stand = t < 1.6 ? `teilchen ${N.toLocaleString("de-CH")} · auf ${Math.round(anteil(t, 0, 1.5) * 100)} %` : t < (letzt ? 5.2 : 4.4) ? `strom ${Math.round((ch / 3.4) * 100)} %`
+      stand = t < 1.6 ? `teilchen ${N.toLocaleString("de-CH")} · auf ${Math.round(anteil(t, 0, 1.5) * 100)} %` : t < (letzt ? 5.2 : 4.4) ? `strom ${Math.round((ch / 2.4) * 100)} %`
         : letzt ? `feder ${Math.round((fe / 22) * 100)} %` : `kugel ${Math.round(anteil(t, 4.4, 5.8) * 100)} %`;
       look.render(frei, letzt ? 0.3 : 0.3 + 0.35 * anteil(t, 4.4, 6.0), 0);
     },
@@ -769,7 +848,7 @@ function glanzSignet(renderer, B, H, akzent, hell) {
   };
 }
 
-const BAUEN = { kristall, echo, strom, relief };
+const BAUEN = { koerper, scherben, echo, strom, relief };
 
 /**
  * Ein räumlicher Ablauf für ein Foto (Canvas in Filmgrösse). art: ein Effekt oder mehrere mit «+» (z. B. "strom+kristall+echo+relief", s. kette() in

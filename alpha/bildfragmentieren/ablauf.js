@@ -3,11 +3,12 @@
 // Effekte, plus die Möglichkeit, alle einzeln nutzen zu können»; «Bildfragmentieren soll in dieser Zusammenstellung bleiben»). Alle beginnen im Dunkeln
 // und enden beim Foto:
 //   Fragmente   – 01 Linien (Relief aus Zeilen, Umrisse) → 02 Formen (Dreiecke mit Stich) → 03 Farben (Körper) → 04 Bild (Montage, das Foto rastet ein)
-//   Verwandlung – Strom → Kristall → Echo → Relief, jeder Effekt einzeln oder beliebig kombiniert (in dieser Reihenfolge)          [WebGL, raum.js]
-//     Strom    – 01 Funken (Teilchen leuchten verstreut im Dunkeln auf) → 02 Strom (sie ziehen zu Bändern zusammen) → 03 Bild (sie fliegen an ihren Platz)
+//   Verwandlung – Strom → Körper → Scherben → Echo → Relief, jeder Effekt einzeln oder beliebig kombiniert (in dieser Reihenfolge)   [WebGL, raum.js]
+//     Strom    – 01 Funken (Teilchen leuchten verstreut im Dunkeln auf) → 02 Strom (sie ziehen in feinen Fäden und Wirbeln) → 03 Bild (an ihren Platz)
 //                vor einem weiteren Effekt statt 03: Verdichten (sie ballen sich zu einer leuchtenden Kugel)
-//     Kristall – 01 Körper (drei Kristalle verschmelzen zu einem Glaskörper; nach Strom wächst er aus der Kugel) → 02 Bruch (er zerspringt in Scherben)
-//                → 03 Montage (die Scherben setzen das Foto zusammen)
+//     Körper   – 01 Körper (drei Kristalle verschmelzen zu einem Glaskörper; nach Strom wächst er aus der Kugel) → 02 Bild (das Glas wird klar)
+//     Scherben – 01 Bruch (ein Ball aus Scherben zerspringt; nach dem Körper: er selbst) → 02 Montage (die Scherben setzen das Foto zusammen)
+//                (Körper und Scherben waren bis zum 17. Oktober 2026 ein Effekt «Kristall»; Wunsch: «diese einzeln anwählbar»)
 //     Echo     – 01 Echo (die Kanten des Fotos ziehen Spuren in einen Tunnel; nach einem anderen Effekt zieht zuerst dessen Bild Spuren)
 //                → 02 Bild (das Foto strömt durch den Tunnel herein und kommt zur Ruhe)
 //     Relief   – 01 Höhenlinien (leuchten im Dunkeln auf) → 02 Gebirge (Streiflicht, Kamerafahrt) → 03 Bild (es wird flach und steht als Foto)
@@ -33,26 +34,31 @@ export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 export const PHASEN = [["linien", "Linien"], ["formen", "Formen"], ["farben", "Farben"], ["zusammen", "Bild"]];
 
 /** «Fragmente» und die Effekte der Verwandlung mit ihren Phasen (Name, Titel, Dauer bei Tempo «normal»; raum.js rechnet in diesen Sekunden).
- *  In einer Kette: ein – wo der Effekt nach einem anderen einsetzt, aus – wo er vor einem weiteren endet, weiter – die Phase, mit der er dann
+ *  start – wo der Effekt beginnt, wenn er der erste ist; in einer Kette: ein – wo er nach einem anderen einsetzt, aus – wo er vor einem weiteren endet, weiter – die Phase, mit der er dann
  *  in den nächsten übergeht (Name, Titel, Beginn), ueber – wie lange er mit dem vorigen überblendet */
 export const ABLAEUFE = {
   fragmente: { titel: "Fragmente", phasen: [["linien", "Linien", 4.4], ["formen", "Formen", 3.6], ["farben", "Farben", 3.0], ["zusammen", "Bild", 4.2]] },
   // Strom: Teilchen als glänzende Kugeln; seit 17. Oktober 2026 kürzer (Rückmeldung: «Strom ist ok, zu lang»: 12 statt 8,4 s)
   strom: { titel: "Strom", phasen: [["funken", "Funken", 1.6], ["strom", "Strom", 3.6], ["sammeln", "Bild", 3.2]], aus: 6.4, weiter: ["verdichten", "Verdichten", 4.4] },
-  kristall: { titel: "Kristall", phasen: [["koerper", "Körper", 3.6], ["bruch", "Bruch", 3.2], ["montage", "Montage", 4.2]], ein: 1.7, aus: 6.6 },
+  // Körper und Scherben: die beiden Hälften des früheren «Kristall»; die Scherben setzen genau im Bruch des Körpers ein (ihre Zeit 0,7 s)
+  koerper: { titel: "Körper", phasen: [["koerper", "Körper", 4.3], ["klar", "Bild", 2.5]], ein: 1.7, aus: 4.3 },
+  scherben: { titel: "Scherben", phasen: [["bruch", "Bruch", 3.2], ["montage", "Montage", 4.2]], ein: 0.4, aus: 3.0, ueber: 0.3 },
   // Echo: ohne Kaleidoskop und ohne stehende Konturen; das Schlussbild strömt durch den Tunnel herein (Rückmeldung: «die Zusammensetzung des
   // Schlussbildes wenig nachvollziehbar»)
-  echo: { titel: "Echo", phasen: [["echo", "Echo", 6.0], ["aufbau", "Bild", 3.4]], aus: 5.0, ueber: 1.2 },
+  // allein oder zuerst beginnt Echo bei 1,5 s, mitten in der Bewegung (Wunsch: «die ersten 1–2 Sekunden überspringen: einblenden und schon mitten in
+  // der Bewegung beginnen»); die Rückkopplung läuft vorher schon (Vorlauf in raum.js)
+  echo: { titel: "Echo", phasen: [["echo", "Echo", 6.0], ["aufbau", "Bild", 3.4]], start: 1.5, aus: 5.0, ueber: 1.2 },
   // Relief: das Gebirge aus dem Showreel (Rückmeldung: «es war mit Abstand der Beste»)
   relief: { titel: "Relief", phasen: [["hoehenlinien", "Höhenlinien", 2.6], ["gebirge", "Gebirge", 5.0], ["flach", "Bild", 3.4]], ein: 1.0 },
 };
 /** die Effekte der Verwandlung in ihrer festen Reihenfolge: Energie → Materie → Echo → Landschaft → Bild */
-export const EFFEKTE = ["strom", "kristall", "echo", "relief"];
+export const EFFEKTE = ["strom", "koerper", "scherben", "echo", "relief"];
 export const VERWANDLUNG = EFFEKTE.join("+");
 const UEBER = 0.8;
-/** «fragmente» oder die gewählten Effekte in fester Reihenfolge, mit «+» verbunden (z. B. "strom+echo"); Unbekanntes ergibt «Fragmente» */
+/** «fragmente» oder die gewählten Effekte in fester Reihenfolge, mit «+» verbunden (z. B. "strom+echo"); Unbekanntes ergibt «Fragmente»;
+ *  das frühere «kristall» wird zu Körper und Scherben */
 export function ablaufName(a) {
-  const teile = String(a ?? "").split("+");
+  const teile = String(a ?? "").split("+").flatMap((e) => (e === "kristall" ? ["koerper", "scherben"] : [e]));
   const effekte = EFFEKTE.filter((e) => teile.includes(e));
   return effekte.length ? effekte.join("+") : "fragmente";
 }
@@ -69,7 +75,7 @@ export function kette(a) {
   liste.forEach((art, i) => {
     const E = ABLAEUFE[art], erst = i === 0, letzt = i === liste.length - 1;
     const ende = E.phasen.reduce((s, p) => s + p[2], 0);
-    const ein = erst ? 0 : E.ein ?? 0, aus = letzt ? ende : E.aus ?? ende;
+    const ein = (erst ? E.start : E.ein) ?? 0, aus = letzt ? ende : E.aus ?? ende;
     const von = erst ? 0 : t - (E.ueber ?? UEBER), bis = von + aus - ein;
     teile.push({ art, von, bis, ein, aus, erst, letzt });
     if (phasen.length) phasen[phasen.length - 1].bis = von;                // die Beschriftung wechselt, sobald der nächste einsetzt

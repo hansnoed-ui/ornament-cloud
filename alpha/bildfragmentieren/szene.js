@@ -19,13 +19,13 @@
 //  komplexe transparente geometrische Körper»)
 // An den Übergängen ein kurzer Bildfehler (verschobene Streifen), dazu auf Wunsch eine feine Beschriftung wie in einem
 // Werkzeug für Bildverarbeitung (Phase, Zähler, Zeitcode, Eckmarken). Am Schluss auf Wunsch das Signet von ornament.cloud, kurz und doppelt so schnell.
-// Seit dem 16. Oktober 2026 ist das alles der Ablauf «Fragmente»; zur Wahl steht dazu die «Verwandlung» (Strom, Kristall, Echo, Relief, einzeln oder
+// Seit dem 16. Oktober 2026 ist das alles der Ablauf «Fragmente»; zur Wahl steht dazu die «Verwandlung» (Strom, Körper, Scherben, Echo, Relief, einzeln oder
 // kombiniert; raum.js, WebGL). Auch sie beginnt im Dunkeln und endet beim Foto; ihr Bild kommt fertig aus WebGL (sz.raum) und wird hier nur
 // eingesetzt, ebenso ihr leuchtendes Signet.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=21";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=22";
 import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=9";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=21";
-import { KOERPER, abbilden } from "./koerper.js?v=21";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=22";
+import { KOERPER, abbilden } from "./koerper.js?v=22";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
