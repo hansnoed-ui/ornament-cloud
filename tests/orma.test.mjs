@@ -422,7 +422,7 @@ test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (
   const papiere = ["/alpha/orma/", "/alpha/pruefraster/", "/alpha/verteilapparat/"];
   const ziele = {
     "news/index.html": papiere,
-    "apps/index.html": ["/alpha/orma/", "/alpha/the-fictory/app/"],   // The Fictory als App seit 11. Oktober 2026 (Freigabe von Christian)
+    "apps/index.html": ["/alpha/orma/", "/alpha/the-fictory/app/", "/alpha/bildfragmentieren/app/"],   // The Fictory als App seit 11. Oktober 2026 (Freigabe von Christian), PHORMA I seit 17. Oktober 2026
     "masterprompts/index.html": ["/alpha/pruefraster/", "/alpha/verteilapparat/", "/alpha/gesellschaftskonzepte/", "/alpha/journalistische-texte/"],
     "web/index.html": ["/alpha/sketchory/", "/alpha/the-fictory/", "/alpha/omna-color/", "/alpha/drittes-rad/", "/alpha/poststrukturalismus-doppelpruefung.pdf"],   // das PDF zum Comic-Video seit 6. Oktober 2026; die Stadt war vom 9. bis 10. Oktober 2026 hier
     "web/poststrukturalismus/index.html": ["/alpha/poststrukturalismus-doppelpruefung.pdf"],   // die Videoseite, ebenso
@@ -451,7 +451,7 @@ test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (
   assert.deepEqual(rahmen.map(([f, z]) => `${f} → ${z.replace(/^.*\/alpha\//, "alpha/")}`), ["index.html → alpha/omna-color/"], "nur die Startseite bettet OMNA COLOR ein");
   for (const [f, zs] of Object.entries(ziele)) for (const z of zs) assert.ok(gefunden.has(`${f} → ${z}`), `${f} verlinkt ${z} nicht`);
   assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("/alpha/"));
-  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html", "alpha/omna-color/index.html", "alpha/drittes-rad/index.html", "alpha/stadt/index.html", "alpha/the-fictory/index.html", "alpha/aufnahme/index.html", "alpha/sketchory/index.html", "alpha/principesse/index.html", "alpha/bildfragmentieren/index.html"])
+  for (const p of ["alpha/index.html", "alpha/orma/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html", "alpha/omna-color/index.html", "alpha/drittes-rad/index.html", "alpha/stadt/index.html", "alpha/the-fictory/index.html", "alpha/aufnahme/index.html", "alpha/sketchory/index.html", "alpha/principesse/index.html", "alpha/bildfragmentieren/index.html", "alpha/bildfragmentieren/app/index.html"])
     assert.match(readFileSync(new URL(p, root), "utf8"), /<meta name="robots" content="noindex/, p);
 });
 

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Apps – Ornament Cloud</title>
-  <meta name="description" content="The Fictory: Ein Bild zerfällt in seine Teile und geht weiter. Dazu ORNA und ORMA: zwei Apps, in denen der Zufall Künstler:innen und Theoretiker:innen zusammenbringt.">
+  <meta name="description" content="PHORMA I: Aus einem Foto wird ein Film, als erste Anwendung in einer langen Reihe. The Fictory: Ein Bild zerfällt in seine Teile und geht weiter. Dazu ORNA und ORMA, in denen der Zufall Künstler:innen und Theoretiker:innen zusammenbringt.">
   <link rel="canonical" href="https://ornament.cloud/apps/">
   <link rel="stylesheet" href="../styles.css?v=45">
 </head>
@@ -25,7 +25,7 @@
         </nav>
       </div>
       <h1>Apps</h1>
-      <p class="lead">The Fictory: Ein Bild zerfällt in seine Teile und geht weiter. Dazu ORNA und ORMA, in denen der Zufall Künstler:innen und Theoretiker:innen zusammenbringt.</p>
+      <p class="lead">PHORMA I: Aus einem Foto wird ein Film. The Fictory: Ein Bild zerfällt in seine Teile und geht weiter. Dazu ORNA und ORMA, in denen der Zufall Künstler:innen und Theoretiker:innen zusammenbringt.</p>
     </div>
   </header>
 
@@ -33,10 +33,26 @@
     <!--
       Neue App: einen <article class="card">-Block kopieren (wie hier). Die Vorschau ist eine Animation aus icons.js (data-icon).
       Alpha-Seiten nur mit Freigabe verlinken (REGELN §14, ein Test prüft das); ORMA ist seit dem 27. September 2026 freigegeben.
+      Seit dem 17. Oktober 2026 vier Karten, darum zwei mal zwei (.grid--paare, wie auf «Masterprompts»).
     -->
-    <section class="grid grid--stapel" aria-label="Apps">
+    <section class="grid grid--stapel grid--paare" aria-label="Apps">
 
-      <!-- The Fictory: Alpha-Version, als App installierbar (Wunsch und Freigabe von Christian, 11. Oktober 2026, REGELN §14). Führt auf die App-Seite app/ (eigene Vorschaukachel beim Teilen). Seit dem 11. Oktober 2026 als erste Karte (Wunsch von Christian).
+      <!-- PHORMA I: Alpha-Version, als App installierbar, seit 17. Oktober 2026 als erste Karte (Wunsch: «Jetzt daraus eine App bauen ("PHORMA I"). Und bei den Apps
+           als Beitrag präsentieren (als erster Eintrag)», REGELN §14). Führt auf die App-Seite app/ (eigene Vorschaukachel beim Teilen).
+           Bild: eine Kristallansicht aus der Anwendung selbst (assets/vorschau-phorma-i.jpg aus tools/phorma-bilder.mjs) -->
+      <article class="card">
+        <a class="thumb" href="../alpha/bildfragmentieren/app/" tabindex="-1" aria-hidden="true">
+          <img src="../assets/vorschau-phorma-i.jpg" alt="" width="640" height="800" loading="lazy">
+        </a>
+        <div class="body">
+          <h2>PHORMA I</h2>
+          <p>Als erste Anwendung in einer langen Reihe: PHORMA I. Aus einem Foto wird ein Film: Es zerfällt in Linien, Formen und Farben, verwandelt sich in Funken, Glas, Scherben, Echo und Gebirge oder wird im Flug erkundet. Ein Video im Hochformat für Social Media. Lässt sich auf dem Startbildschirm installieren und läuft auch ohne Netz; dein Foto bleibt auf dem Gerät.</p>
+          <ul class="tags"><li>App</li><li>Video</li><li>Alpha</li></ul>
+          <a class="link" href="../alpha/bildfragmentieren/app/">Öffnen <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+
+      <!-- The Fictory: Alpha-Version, als App installierbar (Wunsch und Freigabe von Christian, 11. Oktober 2026, REGELN §14). Führt auf die App-Seite app/ (eigene Vorschaukachel beim Teilen). Vom 11. bis 17. Oktober 2026 als erste Karte (Wunsch von Christian), seither nach PHORMA I.
            Bild: das App-Symbol im Format der Karten (assets/vorschau-the-fictory-app.jpg aus tools/fictory-icons.mjs) -->
       <article class="card">
         <a class="thumb" href="../alpha/the-fictory/app/" tabindex="-1" aria-hidden="true">

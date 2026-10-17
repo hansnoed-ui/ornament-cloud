@@ -22,10 +22,10 @@
 // Seit dem 16. Oktober 2026 ist das alles der Ablauf «Fragmente»; zur Wahl steht dazu die «Verwandlung» (Strom, Körper, Scherben, Echo, Relief, einzeln oder
 // kombiniert; raum.js, WebGL). Auch sie beginnt im Dunkeln und endet beim Foto; ihr Bild kommt fertig aus WebGL (sz.raum) und wird hier nur
 // eingesetzt, ebenso ihr leuchtendes Signet.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=32";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=33";
 import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=32";
-import { KOERPER, abbilden } from "./koerper.js?v=32";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=33";
+import { KOERPER, abbilden } from "./koerper.js?v=33";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
@@ -134,7 +134,7 @@ export function szene(daten, { breite = daten.breite ?? 1080, hoehe = daten.hoeh
   const geometrie = { fokus, teile, gleiten, planen };
 
   return {
-    breite, hoehe, zeit, farben: FARBEN[grund] ?? FARBEN.schwarz, grund: FARBEN[grund] ? grund : "schwarz", signet, beschriftung, titel: (titel || "Bildfragmentieren").trim(),
+    breite, hoehe, zeit, farben: FARBEN[grund] ?? FARBEN.schwarz, grund: FARBEN[grund] ? grund : "schwarz", signet, beschriftung, titel: (titel || "PHORMA I").trim(),
     foto, leinwand, vorrat: vorrat ?? {}, daten, zeilen, kanten, dreiecke, flug, faerben, wellen, ersterFlug, einrasten, geometrie, raum,
     glitches: zeit.fragmente ? [F0, C0, Z0, einrasten[0]] : zeit.phasen.slice(1).map((p) => p.von),
     zahl: { zeilen: z.reihen, kanten: kanten.length, dreiecke: n },

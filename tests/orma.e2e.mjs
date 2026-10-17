@@ -700,7 +700,7 @@ await check("Aktualisieren: neue Fassung sofort beim nächsten Öffnen, auch wen
 });
 
 // ---------- Apps, Masterprompts, Portfolio, Startseite (Neuordnung vom 2. Oktober 2026: die Karten liegen nicht mehr auf der Startseite, die Rückmeldungen sind entfernt) ----------
-await check("Apps und Masterprompts (Handy): Karten untereinander, ORNA vor ORMA (seit 11. Oktober 2026 The Fictory zuerst), die vier Prüfraster in der Reihenfolge der Alpha-Übersicht; Artefakte stehen unten im Portfolio", async () => {
+await check("Apps und Masterprompts (Handy): Karten untereinander, ORNA vor ORMA (seit 11. Oktober 2026 The Fictory zuerst, seit 17. Oktober 2026 PHORMA I davor), die vier Prüfraster in der Reihenfolge der Alpha-Übersicht; Artefakte stehen unten im Portfolio", async () => {
   const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
   const page = await ctx.newPage();
   const errors = [];
@@ -714,9 +714,9 @@ await check("Apps und Masterprompts (Handy): Karten untereinander, ORNA vor ORMA
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   };
   await page.goto(`${origin}/apps/`);
-  assert.deepEqual(await page.locator("main .card h2").allTextContents(), ["The Fictory", "ORNA", "ORMA"]);
-  await untereinander(3);
-  assert.ok(await page.locator(".card", { hasText: "ORMA" }).locator(".tags li", { hasText: "Alpha" }).isVisible());
+  assert.deepEqual(await page.locator("main .card h2").allTextContents(), ["PHORMA I", "The Fictory", "ORNA", "ORMA"]);
+  await untereinander(4);
+  assert.ok(await page.locator(".card").filter({ has: page.getByRole("heading", { name: "ORMA", exact: true }) }).locator(".tags li", { hasText: "Alpha" }).isVisible());
   await page.goto(`${origin}/masterprompts/`);
   assert.deepEqual(await page.locator("main .card h2").allTextContents(),
     ["Nebeneinander und Nacheinander", "Der Verteilapparat des Körpers", "Prüfraster für Gesellschaftskonzepte", "Prüfraster journalistischer Texte"]);
@@ -755,14 +755,15 @@ await check("Apps und Masterprompts (Handy): Karten untereinander, ORNA vor ORMA
   await ctx.close();
 });
 
-await check("Apps und Masterprompts (Desktop): The Fictory, ORNA und ORMA nebeneinander, die vier Prüfraster zwei mal zwei", async () => {
+await check("Apps und Masterprompts (Desktop): PHORMA I, The Fictory, ORNA und ORMA zwei mal zwei (seit 17. Oktober 2026), die vier Prüfraster ebenso", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
   const lage = () => page.locator("main .card").evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y)]; }));
   await page.goto(`${origin}/apps/`);
   let l = await lage();
-  assert.equal(l.length, 3);
-  assert.ok(l[0][1] === l[1][1] && l[1][1] === l[2][1], "The Fictory, ORNA und ORMA nebeneinander");
+  assert.equal(l.length, 4);
+  assert.ok(l[0][1] === l[1][1] && l[2][1] === l[3][1] && l[2][1] > l[0][1], "PHORMA I und The Fictory, darunter ORNA und ORMA");
+  assert.ok(l[0][0] === l[2][0] && l[1][0] === l[3][0], "in zwei Spalten");
   await page.goto(`${origin}/masterprompts/`);
   l = await lage();
   assert.equal(l.length, 4);

@@ -210,7 +210,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 });
 
 const SEITEN = {
-  apps: { titel: "Apps", karten: [["The Fictory", "../alpha/the-fictory/app/"], ["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },   // The Fictory seit 11. Oktober 2026 zuerst
+  apps: { titel: "Apps", karten: [["PHORMA I", "../alpha/bildfragmentieren/app/"], ["The Fictory", "../alpha/the-fictory/app/"], ["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },   // The Fictory vom 11. Oktober 2026 an zuerst, seit 17. Oktober 2026 PHORMA I
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
   web: { titel: "Web", karten: [["Sketchory", "../alpha/sketchory/"], ["The Fictory", "../alpha/the-fictory/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"]] },
 };
@@ -233,16 +233,22 @@ test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und 
   }
 });
 
-test("Apps: The Fictory (seit 11. Oktober 2026, zuerst), ORNA und ORMA als Beiträge, in dieser Reihenfolge, ORMA und The Fictory als Alpha gekennzeichnet", () => {
+test("Apps: PHORMA I (seit 17. Oktober 2026, zuerst), The Fictory, ORNA und ORMA als Beiträge, in dieser Reihenfolge, PHORMA I, The Fictory und ORMA als Alpha gekennzeichnet", () => {
   const k = karten(lies("apps/index.html"));
   assert.deepEqual(k.map((x) => [x.titel, x.ziel]), SEITEN.apps.karten);
-  assert.ok(k[0].tags.includes("Alpha") && k[2].tags.includes("Alpha") && !k[1].tags.includes("Alpha"));
-  assert.ok(k.slice(1).every((x) => /data-icon="rad"/.test(x.html)), "ORNA und ORMA zeigen das drehende Rad");
+  assert.ok(k[0].tags.includes("Alpha") && k[1].tags.includes("Alpha") && k[3].tags.includes("Alpha") && !k[2].tags.includes("Alpha"));
+  assert.ok(k.slice(2).every((x) => /data-icon="rad"/.test(x.html)), "ORNA und ORMA zeigen das drehende Rad");
+  // PHORMA I: eine Kristallansicht aus der Anwendung als Beitragsbild (tools/phorma-bilder.mjs), dazu der Satz vom 17. Oktober 2026
+  assert.match(k[0].html, /<img src="\.\.\/assets\/vorschau-phorma-i\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-i.jpg", root))), [640, 800]);
+  assert.ok(k[0].html.includes("Als erste Anwendung in einer langen Reihe: PHORMA I."), "PHORMA I: der Satz der Erklärung");
+  assert.ok(k[0].tags.includes("App") && k[0].tags.includes("Video") && /installieren/.test(k[0].html) && /ohne Netz/.test(k[0].html));
   // The Fictory: das App-Symbol im Format der Karten (tools/fictory-icons.mjs)
-  assert.match(k[0].html, /<img src="\.\.\/assets\/vorschau-the-fictory-app\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  assert.match(k[1].html, /<img src="\.\.\/assets\/vorschau-the-fictory-app\.jpg" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-the-fictory-app.jpg", root))), [640, 800]);
-  assert.ok(k[0].tags.includes("App") && /installieren/.test(k[0].html) && /ohne Netz/.test(k[0].html));
-  assert.match(k[2].html, /class="thumb split-invert"/, "ORMA: vertikal geteilt, rechts invers (REGELN §14)");
+  assert.ok(k[1].tags.includes("App") && /installieren/.test(k[1].html) && /ohne Netz/.test(k[1].html));
+  assert.match(k[3].html, /class="thumb split-invert"/, "ORMA: vertikal geteilt, rechts invers (REGELN §14)");
+  assert.match(lies("apps/index.html"), /<section class="grid grid--stapel grid--paare" aria-label="Apps">/, "vier Karten zwei mal zwei");
 });
 
 test("Masterprompts: die vier Prüfraster als Beiträge, in der Reihenfolge der Alpha-Übersicht, alle als Alpha gekennzeichnet", () => {
