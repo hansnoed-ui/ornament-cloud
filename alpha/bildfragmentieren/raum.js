@@ -17,7 +17,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
-import { kette, ablaufName } from "./ablauf.js?v=28";
+import { kette, ablaufName } from "./ablauf.js?v=29";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -44,6 +44,9 @@ function filmlook(renderer, szene, kamera, { radius = 0.4, schwelle = 0.7, hell 
   composer.setPixelRatio(1); composer.setSize(g.x, g.y);
   composer.addPass(new RenderPass(szene, kamera));
   const bloom = new UnrealBloomPass(g.clone(), 0, radius, schwelle);
+  // weiche Schwelle (Standard 0,01): sonst springt eine grosse, gleichmässige Fläche schlagartig über die Schwelle und das ganze Bild leuchtet von
+  // einem Bild zum nächsten auf – so beim Relief-Flug, als das Foto am Ende aufleuchtete (Rückmeldung: «die Bewegungen sind teilweise ruckartig»)
+  bloom.highPassUniforms.smoothWidth.value = 0.15;
   const saum = new ShaderPass(SAUM);
   composer.addPass(bloom); composer.addPass(saum); composer.addPass(new OutputPass());
   return {
@@ -868,7 +871,7 @@ function flug(renderer, textur, B, H, grund, px, hell) {
   geo.setAttribute("aKurve", new THREE.BufferAttribute(hoehenfeld(helligkeit, nx, ny, Math.max(2, Math.round(nx / 120))), 1));
 
   // Gelände grob: das Dach (Maximum je Zelle und Nachbarn – die Kamera bleibt darüber) und die geglätteten Formen (für die Gipfel der Route)
-  const cx = 48, cy = Math.round((48 * H) / B), dach = new Float32Array(cx * cy), roh = new Float32Array(cx * cy);
+  const cx = 48, cy = Math.round((48 * H) / B), dach = new Float32Array(cx * cy);
   for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) {
     const c = Math.min(cy - 1, Math.floor((j / (ny + 1)) * cy)) * cx + Math.min(cx - 1, Math.floor((i / (nx + 1)) * cx));
     dach[c] = Math.max(dach[c], feld[j * w + i]);
@@ -919,7 +922,8 @@ function flug(renderer, textur, B, H, grund, px, hell) {
         float linie = (1.0 - smoothstep(0.0, max(mix(0.75, 1.3, leit) * fwidth(hl), 1e-4), abs(fract(hl - 0.5) - 0.5)))
                     * smoothstep(0.02, 0.06, vHoehe) * (1.0 - smoothstep(0.91, 0.95, vHoehe));   // nicht in fast weissen oder schwarzen Flächen
         float k = stufe * 1.618;
-        float puls = pow(0.5 + 0.5 * sin(dot(vWelt.xy, vec2(cos(k * 2.3), sin(k * 2.3))) * 9.0 - uZeit * 2.6 + k * 3.1), 18.0);
+        // pow nie mit negativer Basis (durch Rundung möglich: undefiniert)
+        float puls = pow(max(0.5 + 0.5 * sin(dot(vWelt.xy, vec2(cos(k * 2.3), sin(k * 2.3))) * 9.0 - uZeit * 2.6 + k * 3.1), 0.0), 18.0);
         float d = length(vWelt.xy - uZentrum), offen = 1.0 - smoothstep(uWelle - 0.1, uWelle, d), front = exp(-pow((d - uWelle) / 0.05, 2.0));
         vec3 linF = uHell > 0.5 ? fotoF * 0.5 : min(fotoF * 1.3 + 0.08, vec3(1.0));
         float l = linie * offen * uLinien;
@@ -975,13 +979,56 @@ function flug(renderer, textur, B, H, grund, px, hell) {
     if (typeof p0 === "number") return h00 * p0 + h10 * f0 * (m0[1] - m0[0]) + h01 * p1 + h11 * f1 * (m1[1] - m1[0]);
     return p0.clone().multiplyScalar(h00).addScaledVector(m0[1].clone().sub(m0[0]), h10 * f0).addScaledVector(p1, h01).addScaledVector(m1[1].clone().sub(m1[0]), h11 * f1);
   };
+  // die ganze Bahn einmal vorab, 60 Proben je Sekunde, dann zeitlich geglättet (Gauss): sonst ruckte die Kamera, wo sie dem groben Dach des
+  // Geländes folgte, wo die Ausrichtung beim Übergang vom senkrechten Blick zur Schrägsicht kippte und wo das Tempo zwischen Schlüsselbildern
+  // sprang (Rückmeldung vom 17. Oktober 2026: «die Bewegungen sind teilweise noch ruckartig»). Gegen Ende geht die Bahn ins exakte Schlussbild über.
+  const tiefeBei = (t) => 1 - inOut(anteil(t, 16.2, 18.6));
+  const RATE = 60, ENDE = SCHLUESSEL[SCHLUESSEL.length - 2][0], n = Math.round(SCHLUESSEL[SCHLUESSEL.length - 1][0] * RATE) + 1;
+  const roh = { lage: new Float32Array(n * 3), ziel: new Float32Array(n * 3), oben: new Float32Array(n * 3), fov: new Float32Array(n) };
   const blick = new THREE.Vector3(), oben = new THREE.Vector3();
+  const ueberGelaende = (L, i, abstandBoden) => {
+    const x = L[i * 3], y = L[i * 3 + 1];
+    if (Math.abs(x) < breite / 2 && Math.abs(y) < 1) L[i * 3 + 2] = Math.max(L[i * 3 + 2], dachBei(x, y) * tiefeBei(i / RATE) + abstandBoden);
+  };
+  for (let i = 0; i < n; i++) {
+    const t = i / RATE, lage = hermite(t, (k) => SCHLUESSEL[k][1]), ziel = hermite(t, (k) => SCHLUESSEL[k][2]);
+    roh.lage.set([lage.x, lage.y, lage.z], i * 3); roh.ziel.set([ziel.x, ziel.y, ziel.z], i * 3);
+    ueberGelaende(roh.lage, i, 0.09);
+    roh.fov[i] = hermite(t, (k) => SCHLUESSEL[k][3]);
+    blick.set(ziel.x - roh.lage[i * 3], ziel.y - roh.lage[i * 3 + 1], ziel.z - roh.lage[i * 3 + 2]).normalize();
+    const senkrecht = THREE.MathUtils.smoothstep(-blick.z, 0.75, 0.97);   // oben: zur Seite der Welt, senkrecht von oben das Bild aufrecht
+    oben.set(0, senkrecht, 1 - senkrecht).normalize().applyAxisAngle(blick, THREE.MathUtils.degToRad(hermite(t, (k) => SCHLUESSEL[k][4])));
+    roh.oben.set([oben.x, oben.y, oben.z], i * 3);
+  }
+  const glaetten = (q, k, sigma) => {                                      // Gauss über die Zeit, k Werte je Probe, am Rand gehalten
+    const r = Math.ceil(sigma * 3), g = Array.from({ length: 2 * r + 1 }, (_, j) => Math.exp(-(((j - r) / sigma) ** 2) / 2)), aus = new Float32Array(q.length);
+    for (let i = 0; i < n; i++) for (let c = 0; c < k; c++) {
+      let s = 0, w = 0;
+      for (let j = -r; j <= r; j++) { const ii = Math.min(n - 1, Math.max(0, i + j)); s += q[ii * k + c] * g[j + r]; w += g[j + r]; }
+      aus[i * k + c] = s / w;
+    }
+    return aus;
+  };
+  const bahn = { lage: glaetten(roh.lage, 3, 0.35 * RATE), ziel: glaetten(roh.ziel, 3, 0.35 * RATE), oben: glaetten(roh.oben, 3, 0.45 * RATE), fov: glaetten(roh.fov, 1, 0.35 * RATE) };
+  for (let i = 0; i < n; i++) ueberGelaende(bahn.lage, i, 0.07);           // das Glätten darf nicht unter das Gelände führen …
+  bahn.lage = glaetten(bahn.lage, 3, 0.12 * RATE);                         // … und die Korrektur bleibt weich
+  for (let i = 0; i < n; i++) {                                            // gegen Ende ins exakte Schlussbild (dort steht die Kamera still)
+    const w = weich(anteil(i / RATE, ENDE - 0.8, ENDE));
+    if (w <= 0) continue;
+    for (const [name, k] of [["lage", 3], ["ziel", 3], ["oben", 3], ["fov", 1]]) for (let c = 0; c < k; c++) bahn[name][i * k + c] += (roh[name][i * k + c] - bahn[name][i * k + c]) * w;
+  }
+  const ausBahn = (name, k, t, ziel) => {                                  // linear zwischen den Proben
+    const f = Math.min(n - 1, Math.max(0, t * RATE)), i0 = Math.floor(f), i1 = Math.min(n - 1, i0 + 1), a = f - i0, q = bahn[name];
+    if (k === 1) return q[i0] * (1 - a) + q[i1] * a;
+    return ziel.set(q[i0 * 3] * (1 - a) + q[i1 * 3] * a, q[i0 * 3 + 1] * (1 - a) + q[i1 * 3 + 1] * a, q[i0 * 3 + 2] * (1 - a) + q[i1 * 3 + 2] * a);
+  };
+  const lage = new THREE.Vector3(), ziel = new THREE.Vector3();
   let stand = "";
   return {
     looks: [look], schatten: true,
     groesse() {},
     bild(t) {
-      const tiefe = 1 - inOut(anteil(t, 16.2, 18.6)), flaech = inOut(anteil(t, 6.0, 8.2)), foto = t >= 18.8 ? 1 : inOut(anteil(t, 16.8, 18.8));
+      const tiefe = tiefeBei(t), flaech = inOut(anteil(t, 6.0, 8.2)), foto = t >= 18.8 ? 1 : inOut(anteil(t, 16.8, 18.8));
       const licht = flaech * (1 - inOut(anteil(t, 16.4, 18.4)));
       u.uTiefe.value = FLUG_TIEFE * tiefe;
       u.uFlaeche.value = flaech;
@@ -994,20 +1041,15 @@ function flug(renderer, textur, B, H, grund, px, hell) {
       kante.position.set(-Math.cos(a) * 1.6, -Math.sin(a) * 1.6, 0.7); kante.intensity = 2.0 * licht;
       himmel.intensity = 0.35 * licht;
       szene.fog.near = 1.3 + 60 * (1 - flaech) + 60 * anteil(t, 15.5, 17.5); szene.fog.far = szene.fog.near + 3.2;
-      // Kamera: Lage, Ziel, Bildwinkel, Neigung; über dem Gelände bleiben; oben: zur Seite der Welt, senkrecht von oben das Bild aufrecht
-      const lage = hermite(t, (i) => SCHLUESSEL[i][1]), ziel = hermite(t, (i) => SCHLUESSEL[i][2]);
-      const boden = Math.abs(lage.x) < breite / 2 && Math.abs(lage.y) < 1 ? dachBei(lage.x, lage.y) * tiefe + 0.09 : -1;
-      if (lage.z < boden) lage.z = boden;
-      kamera.fov = hermite(t, (i) => SCHLUESSEL[i][3]);
+      // Kamera aus der geglätteten Bahn
+      ausBahn("lage", 3, t, lage); ausBahn("ziel", 3, t, ziel); ausBahn("oben", 3, t, oben).normalize();
+      kamera.fov = ausBahn("fov", 1, t);
       kamera.updateProjectionMatrix();
-      blick.subVectors(ziel, lage).normalize();
-      const senkrecht = THREE.MathUtils.smoothstep(-blick.z, 0.75, 0.97);
-      oben.set(0, senkrecht, 1 - senkrecht).normalize().applyAxisAngle(blick, THREE.MathUtils.degToRad(hermite(t, (i) => SCHLUESSEL[i][4])));
       kamera.position.copy(lage); kamera.up.copy(oben); kamera.lookAt(ziel);
       kamera.updateMatrixWorld();
       stand = t < 6.8 ? `höhenkurven ${Math.round(Math.min(1, u.uWelle.value / 3) * 100)} % · bildwinkel ${Math.round(kamera.fov)}°`
         : t < 16 ? `flughöhe ${Math.max(0, lage.z - hoeheBei(lage.x, lage.y)).toFixed(2)} · bildwinkel ${Math.round(kamera.fov)}°` : `flach ${Math.round((1 - tiefe) * 100)} %`;
-      look.render(1 - foto, 0.35, 0.002);
+      look.render(1 - inOut(anteil(t, 15.0, 16.8)), 0.35, 0.002);         // das Leuchten klingt aus, bevor das Foto aufleuchtet
     },
     zaehler() { return stand; },
     entsorgen() { geo.dispose(); mat.dispose(); look.entsorgen(); },

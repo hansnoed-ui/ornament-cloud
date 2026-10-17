@@ -1,5 +1,5 @@
 // «Bildfragmentieren» – das Foto im Hintergrund zerlegen (Web Worker): Zeilen, Kanten und Dreiecke, damit die Seite dabei nicht stockt.
-import { zerlegen } from "./fragmente.js?v=28";
+import { zerlegen } from "./fragmente.js?v=29";
 
 self.onmessage = (e) => {
   const { nr, daten, w, h, massstab, feinheit } = e.data;
