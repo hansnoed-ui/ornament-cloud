@@ -194,12 +194,13 @@
         </li>
         <li>
           <h2>Ablauf</h2>
-          <p>Alle beginnen im Dunkeln und enden mit deinem Foto. Kristall, Echo und Strom sind räumlich (WebGL); im Signet leuchtet ihr Punkt.</p>
+          <p>Alle beginnen im Dunkeln und enden mit deinem Foto. Kristall, Echo, Strom und Relief sind räumlich (WebGL); im Signet leuchtet ihr Punkt.</p>
           <div class="ablaeufe" role="group" aria-label="Ablauf">
             <button type="button" data-ablauf="fragmente" aria-pressed="true"><b>Fragmente</b><small>Linien, Formen, Farben – das Foto wird Teil um Teil montiert</small></button>
             <button type="button" data-ablauf="kristall" aria-pressed="false"><b>Kristall</b><small>Drei Kristalle verschmelzen zu einem Glaskörper, er zerspringt, die Scherben setzen das Foto zusammen</small></button>
-            <button type="button" data-ablauf="echo" aria-pressed="false"><b>Echo</b><small>Feine Höhenlinien und ihr Echo wie in TouchDesigner – das Foto baut sich Tonstufe um Tonstufe auf</small></button>
+            <button type="button" data-ablauf="echo" aria-pressed="false"><b>Echo</b><small>Die Kanten des Fotos ziehen Spuren in einen Tunnel wie in TouchDesigner – das Foto baut sich Tonstufe um Tonstufe auf</small></button>
             <button type="button" data-ablauf="strom" aria-pressed="false"><b>Strom</b><small>Glänzende Teilchen leuchten im Dunkeln auf, ziehen in Bändern durchs Bild und sammeln sich zum Foto</small></button>
+            <button type="button" data-ablauf="relief" aria-pressed="false"><b>Relief</b><small>Höhenlinien leuchten im Dunkeln, das Foto wird zum Gebirge im Streiflicht und legt sich flach</small></button>
           </div>
         </li>
         <li>
@@ -219,7 +220,7 @@
         </li>
         <li>
           <h2>Video</h2>
-          <p>Das Video rechnet Bild für Bild in voller Grösse; Kristall, Echo und Strom brauchen dafür etwas länger.</p>
+          <p>Das Video rechnet Bild für Bild in voller Grösse; die räumlichen Abläufe brauchen dafür etwas länger.</p>
           <div class="leiste">
             <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
             <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
@@ -256,7 +257,7 @@
   <script type="importmap">
   { "imports": { "three": "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" } }
   </script>
-  <script type="module" src="app.js?v=19"></script>
+  <script type="module" src="app.js?v=20"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

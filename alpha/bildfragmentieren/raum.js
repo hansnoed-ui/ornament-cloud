@@ -5,11 +5,12 @@
 //             das Foto ist nur durch das Glas zu sehen (Rückmeldung: «die Rolle der kleinen Körper ist unklar») · 02 Bruch – der Körper wächst und
 //             zerspringt in Voronoi-Scherben, die in die Tiefe fliegen · 03 Montage – die Scherben kehren eine nach der anderen zurück und rasten ein,
 //             bis das Foto steht («das Endbild setzt sich nicht zusammen, sondern erscheint einfach»). Zustandslos.
-//   Echo:     01 Konturen – feine, helle Höhenlinien des Fotos (immer einen Bildpunkt breit, einfarbig; «solche Konturen müssen feingliedriger sein»,
-//             «die Farben der Konturen gefallen mir nicht, dieses Orange»), kurz · 02 Echo – Rückkopplung wie in TouchDesigner (Zoom, Drehung, Wirbel,
-//             Spuren) · 03 Bild – das Foto baut sich Tonstufe um Tonstufe auf (das Kaleidoskop dazwischen fiel weg: «dieser Teil geht gar nicht»).
+//   Echo:     01 Echo – Rückkopplung wie in TouchDesigner: die Kanten des Fotos, einfarbig hell, ziehen lange weiche Spuren in einen Zoom-Tunnel,
+//             vom ersten Bild an in Bewegung (Rückmeldungen: «die Echoes am Anfang waren viel besser, nur die bewegungslosen Konturen waren nicht
+//             schön», «Farben der Konturen … dieses Orange», «das Kaleidoskop geht gar nicht») · 02 Bild – das Foto baut sich Tonstufe um Tonstufe auf.
 //             Die Rückkopplung hängt an den Bildern davor: sie wird in festen Schritten (ein Schritt je Filmbild) von vorn nachgerechnet, darum ist
 //             jedes Bild beim Spulen und im Video dasselbe.
+//   Strom, Relief: siehe dort.
 // Herkunft: Rezepte 3, 4 und 5 des Skills .claude/skills/threejs-spektakel (dort mit Beispielen und Prüfskript).
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -325,9 +326,10 @@ function kristall(renderer, textur, B, H, grund, px, hell) {
   };
 }
 
-// ——— Echo (10 s: Konturen 0–1,6 · Echo 1,6–6,6 · Bild 6,6–10) ———
-/** Höhenlinien: so viele Tonstufen, dass die Linien rund 7 % der Fläche decken – unruhige Bilder bekommen weniger, sonst wachsen sie zu (6 bis 18) */
-const stufenFuer = (gefaelle) => Math.round(Math.min(18, Math.max(6, 0.07 / (1.6 * Math.max(gefaelle, 1e-4)))));
+// ——— Echo (9,4 s: Echo 0–6 · Bild 6–9,4) ———
+/** Höhenlinien: so viele Tonstufen, dass die Linien rund 3 % der Fläche decken – unruhige Bilder bekommen weniger (4 bis 8; Rückmeldung vom
+ *  17. Oktober 2026: «echt zu viele Linien … weniger Linien, mehr Bewegung») */
+const stufenFuer = (gefaelle) => Math.round(Math.min(8, Math.max(4, 0.03 / (1.6 * Math.max(gefaelle, 1e-4)))));
 /** Helligkeit des Fotos, leicht geglättet (für feine, ruhige Höhenlinien), als einkanalige Textur in halber Grösse */
 function helligkeitsTextur(px, B, H) {
   const w = Math.round(B / 2), h = Math.round(H / 2), f = new Float32Array(w * h), tmp = new Float32Array(w * h);
@@ -352,7 +354,7 @@ function helligkeitsTextur(px, B, H) {
 const GLSL_ECHO = /* glsl */ `
   uniform sampler2D uHell, uFoto; uniform float uStufen;
   float hell(vec2 uv) { return texture2D(uHell, uv).r; }
-  // feine Höhenlinien: je Tonstufe eine Linie, über fwidth immer etwa einen Bildpunkt breit; stufe: die Nummer der Linie
+  // feine Höhenlinien (für den Aufbau des Fotos): je Tonstufe eine Linie, über fwidth immer etwa einen Bildpunkt breit; stufe: die Nummer der Linie
   float linien(vec2 uv, out float stufe) {
     float h = hell(uv) * uStufen; stufe = floor(h + 0.5);
     return 1.0 - smoothstep(0.35, 1.1, abs(fract(h - 0.5) - 0.5) / max(fwidth(h), 1e-4));
@@ -367,28 +369,44 @@ function echo(renderer, textur, B, H, grund, px, hell) {
   const { tex: hellTex, stufen: STUFEN } = helligkeitsTextur(px, B, H);
   const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), quad = new THREE.PlaneGeometry(2, 2);
   const ziel = (w, h) => new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
-  let lesen = ziel(B, H), schreiben = ziel(B, H);
+  // je Auflösung ein eigener Zustand (Vorschau und Export rechnen in verschiedener Grösse; sonst begänne die Schleife bei jedem Wechsel von vorn)
+  const zustaende = new Map();
+  let Z = null;
+  const zustand = (w, h) => {
+    const schluessel = `${w}x${h}`;
+    if (!zustaende.has(schluessel)) {
+      if (zustaende.size >= 2) { const [alt, z] = zustaende.entries().next().value; z.lesen.dispose(); z.schreiben.dispose(); zustaende.delete(alt); }
+      zustaende.set(schluessel, { lesen: ziel(w, h), schreiben: ziel(w, h), n: -1 });
+    }
+    return zustaende.get(schluessel);
+  };
+  Z = zustand(B, H);
   const gemeinsam = { uHell: { value: hellTex }, uFoto: { value: textur }, uStufen: { value: STUFEN } };
-  // ein Schritt der Rückkopplung
+  // ein Schritt der Rückkopplung: wie die erste Fassung im Showreel (Rückmeldung vom 17. Oktober 2026: «die Echoes am Anfang waren viel besser, nur
+  // die bewegungslosen Konturen waren nicht schön») – die Kanten des Fotos (Sobel), einfarbig hell, lange weiche Spuren; die Bewegung läuft vom
+  // ersten Bild an, die Kanten tauchen schon bewegt auf
   const rueck = new THREE.ShaderMaterial({
-    uniforms: { ...gemeinsam, uVorher: { value: null }, uSeiten: { value: B / H }, uZeit: { value: 0 }, uZoom: { value: 1 }, uDreh: { value: 0 }, uWirbel: { value: 0 },
-      uZerfall: { value: 0.6 }, uFarbdreh: { value: 0 }, uEin: { value: 0 }, uZeigen: { value: 0 } },
+    uniforms: { uFoto: { value: textur }, uTexel: { value: new THREE.Vector2(1 / B, 1 / H) }, uVorher: { value: null }, uSeiten: { value: B / H }, uZeit: { value: 0 },
+      uZoom: { value: 1 }, uDreh: { value: 0 }, uWirbel: { value: 0 }, uZerfall: { value: 0.93 }, uEin: { value: 0 } },
     vertexShader: QUAD_VERTEX, depthTest: false, depthWrite: false,
     fragmentShader: /* glsl */ `
-      ${GLSL_ECHO}
-      uniform sampler2D uVorher; uniform float uSeiten, uZeit, uZoom, uDreh, uWirbel, uZerfall, uFarbdreh, uEin, uZeigen;
+      ${GLSL_RAUSCHEN}
+      uniform sampler2D uVorher, uFoto; uniform vec2 uTexel; uniform float uSeiten, uZeit, uZoom, uDreh, uWirbel, uZerfall, uEin;
       varying vec2 vUv;
+      float hellP(vec2 uv) { return dot(texture2D(uFoto, uv).rgb, vec3(0.2126, 0.7152, 0.0722)); }
       void main() {
         vec2 p = vUv - 0.5; p.x *= uSeiten;
         float c = cos(uDreh), s = sin(uDreh);
-        vec2 q = mat2(c, -s, s, c) * p / uZoom;
-        q += uWirbel * 0.004 * vec2(sin(q.y * 9.0 + uZeit * 1.3), cos(q.x * 8.0 - uZeit * 1.1));
+        vec2 q = mat2(c, -s, s, c) * p / uZoom;                                                      // hineinzoomen und drehen
+        q += uWirbel * 0.006 * vec2(snoise(vec3(q * 3.0, uZeit * 0.25)), snoise(vec3(q * 3.0 + 7.7, uZeit * 0.25)));
         q.x /= uSeiten; q += 0.5;
-        vec3 alt = max(farbdreh(texture2D(uVorher, q).rgb, uFarbdreh), 0.0) * uZerfall;
-        float stufe; float l = linien(vUv, stufe);
-        float sicht = smoothstep(stufe / uStufen - 0.06, stufe / uStufen, uZeigen);                  // Tonstufe um Tonstufe, von dunkel nach hell
-        vec3 farbe = vec3(0.78, 0.8, 0.84);                                                         // einfarbig hell, ein Hauch kühl
-        gl_FragColor = vec4(clamp(max(alt, farbe * l * sicht * uEin), 0.0, 1.0), 1.0);              // Maximum: keine Aufschaukelung
+        vec3 alt = texture2D(uVorher, q).rgb * uZerfall;
+        float tl = hellP(vUv + uTexel * vec2(-1, 1)), t = hellP(vUv + uTexel * vec2(0, 1)), tr = hellP(vUv + uTexel * vec2(1, 1));
+        float l = hellP(vUv + uTexel * vec2(-1, 0)), rr = hellP(vUv + uTexel * vec2(1, 0));
+        float bl = hellP(vUv + uTexel * vec2(-1, -1)), b = hellP(vUv + uTexel * vec2(0, -1)), br = hellP(vUv + uTexel * vec2(1, -1));
+        float gx = tr + 2.0 * rr + br - tl - 2.0 * l - bl, gy = tl + 2.0 * t + tr - bl - 2.0 * b - br;
+        vec3 kante = vec3(0.9, 0.91, 0.94) * smoothstep(0.25, 0.8, length(vec2(gx, gy)));            // deutliche Kanten, einfarbig hell
+        gl_FragColor = vec4(clamp(max(alt, kante * uEin), 0.0, 3.0), 1.0);                            // Maximum: keine Aufschaukelung
       }`,
   });
   const rueckSzene = new THREE.Scene(); rueckSzene.add(new THREE.Mesh(quad, rueck));
@@ -401,7 +419,8 @@ function echo(renderer, textur, B, H, grund, px, hell) {
       uniform sampler2D uSchleife; uniform float uAufbau, uHellGrund; uniform vec3 uGrund; varying vec2 vUv;
       void main() {
         vec3 schleife = texture2D(uSchleife, vUv).rgb;
-        if (uHellGrund > 0.5) schleife = -min(schleife, 1.0);                                       // auf Weiss: dunkle Linien
+        schleife = min(schleife, 1.0);
+        if (uHellGrund > 0.5) schleife = -schleife;                                                 // auf Weiss: dunkle Linien
         float h = hell(vUv), grenze = uAufbau * 1.12 - 0.06;
         float da = smoothstep(grenze, grenze - 0.06, h);                                            // dunkle Stufen zuerst
         float stufe; float l = linien(vUv, stufe);
@@ -412,55 +431,48 @@ function echo(renderer, textur, B, H, grund, px, hell) {
       }`,
   });
   const anzeige = new THREE.Scene(); anzeige.add(new THREE.Mesh(quad, zeige));
-  const look = filmlook(renderer, anzeige, ortho, { radius: 0.2, schwelle: 0.75, hell });
+  const look = filmlook(renderer, anzeige, ortho, { radius: 0.4, schwelle: 0.85, hell });
 
   const regler = (t) => {
     const u = rueck.uniforms;
-    const echoAn = weich(anteil(t, 0.9, 2.0)) * (1 - weich(anteil(t, 6.6, 8.2)));   // die Bewegung setzt früh ein
+    const voll = weich(anteil(t, 0, 1.2));                                           // Bewegung vom ersten Bild an, bis das Foto darüber steht
     u.uZeit.value = t;
-    u.uZeigen.value = 1.08 * anteil(t, 0.05, 1.5);
-    u.uEin.value = (1 - 0.35 * weich(anteil(t, 1.6, 2.6))) * (1 - weich(anteil(t, 7.2, 8.4)));
-    u.uZerfall.value = 0.5 + 0.34 * echoAn;                                                        // Konturen ohne Spur, im Echo Spuren, die abklingen, bevor sie zuwachsen
-    u.uZoom.value = 1 + 0.02 * echoAn * (0.75 + 0.25 * Math.sin(t * 1.1));   // weit genug je Bild: die Spuren bleiben einzelne feine Linien
-    u.uDreh.value = 0.005 * echoAn * Math.sin(t * 0.55 + 0.4);                                   // die Drehung wechselt einmal die Richtung
-    u.uWirbel.value = echoAn;
-    u.uFarbdreh.value = 0;                                                                        // keine Farbdrehung: die Spuren bleiben einfarbig
-    return echoAn;
+    u.uEin.value = weich(anteil(t, 0.1, 1.0)) * (1 - weich(anteil(t, 7.4, 8.8)));
+    u.uZoom.value = 1 + 0.004 + 0.014 * voll * (0.6 + 0.4 * Math.sin(t * 0.9));
+    u.uDreh.value = 0.006 * voll * (t < 3.2 ? 1 : -1) * (1 - Math.exp(-Math.abs(t - 3.2) * 2));   // dreht bei 3,2 s die Richtung
+    u.uWirbel.value = voll;
+    return voll;
   };
-  let n = -1, gross = [B, H], stand = "", aktiv = 0;
+  let stand = "", aktiv = 0;
   const leeren = () => {                                                                         // die Schleife beginnt schwarz, auch auf weissem Grund
     const alt = renderer.getClearColor(new THREE.Color()), altA = renderer.getClearAlpha();
     renderer.setClearColor(0x000000, 1);
-    for (const z of [lesen, schreiben]) { renderer.setRenderTarget(z); renderer.clear(); }
+    for (const z of [Z.lesen, Z.schreiben]) { renderer.setRenderTarget(z); renderer.clear(); }
     renderer.setRenderTarget(null); renderer.setClearColor(alt, altA);
   };
   const schritt = (t) => {
     regler(t);
-    rueck.uniforms.uVorher.value = lesen.texture;
-    renderer.setRenderTarget(schreiben); renderer.render(rueckSzene, ortho); renderer.setRenderTarget(null);
-    [lesen, schreiben] = [schreiben, lesen];
+    rueck.uniforms.uVorher.value = Z.lesen.texture;
+    renderer.setRenderTarget(Z.schreiben); renderer.render(rueckSzene, ortho); renderer.setRenderTarget(null);
+    [Z.lesen, Z.schreiben] = [Z.schreiben, Z.lesen];
   };
   return {
-    dauer: 10, looks: [look],
-    groesse(w, h) {
-      if (gross[0] === w && gross[1] === h) return;
-      gross = [w, h]; lesen.setSize(w, h); schreiben.setSize(w, h); n = -1;                    // andere Grösse: von vorn rechnen
-    },
+    dauer: 9.4, looks: [look],
+    groesse(w, h) { Z = zustand(w, h); },
     /** t: Zeit im Ablauf; k, N: Bild k von N im Abschnitt (die Schritte der Rückkopplung zählen in Filmbildern) */
     bild(t, k, N) {
-      if (k < n || n < 0) { leeren(); n = -1; }
-      while (n < k) { n++; schritt((n / Math.max(1, N)) * 10); }
+      if (k < Z.n || Z.n < 0) { leeren(); Z.n = -1; }
+      while (Z.n < k) { Z.n++; schritt((Z.n / Math.max(1, N)) * 9.4); }
       aktiv = regler(t);
-      const aufbau = inOut(anteil(t, 6.8, 9.8));
-      zeige.uniforms.uSchleife.value = lesen.texture;
-      zeige.uniforms.uAufbau.value = t >= 9.8 ? 1 : aufbau;
-      stand = t < 1.6 ? `höhenlinien ${Math.round(Math.min(1, rueck.uniforms.uZeigen.value) * STUFEN)} / ${STUFEN}`
-        : t < 6.6 ? `rückkopplung ${Math.round(rueck.uniforms.uZerfall.value * 100)} % · zoom ${(rueck.uniforms.uZoom.value * 100 - 100).toFixed(1)} %`
+      const aufbau = inOut(anteil(t, 6.2, 9.2));
+      zeige.uniforms.uSchleife.value = Z.lesen.texture;
+      zeige.uniforms.uAufbau.value = t >= 9.2 ? 1 : aufbau;
+      stand = t < 6 ? `rückkopplung ${Math.round(rueck.uniforms.uZerfall.value * 100)} % · zoom ${(rueck.uniforms.uZoom.value * 100 - 100).toFixed(1)} %`
         : `tonstufen ${Math.round(Math.min(1, aufbau * 1.12) * STUFEN)} / ${STUFEN}`;
-      look.render(Math.max(aktiv, 0.4 * (1 - aufbau)), 0.25, 0.0015);
+      look.render(Math.max(aktiv, 0.4 * (1 - aufbau)), 0.35, 0.003);
     },
     zaehler() { return stand; },
-    entsorgen() { lesen.dispose(); schreiben.dispose(); quad.dispose(); rueck.dispose(); zeige.dispose(); hellTex.dispose(); look.entsorgen(); },
+    entsorgen() { for (const z of zustaende.values()) { z.lesen.dispose(); z.schreiben.dispose(); } quad.dispose(); rueck.dispose(); zeige.dispose(); hellTex.dispose(); look.entsorgen(); },
   };
 }
 
@@ -640,6 +652,93 @@ function strom(renderer, textur, B, H, grund, px, hell) {
   };
 }
 
+// ——— Relief (11 s: Höhenlinien 0–2,6 · Gebirge 2,6–7,6 · Bild 7,6–11) ———
+// Die Helligkeit des Fotos als Gebirge (Rückmeldung zum Showreel: «es war mit Abstand der Beste»): im Dunkeln leuchten die Höhenlinien auf, eine
+// Scan-Linie legt sie frei; dann hebt ein Streiflicht das Gebirge aus dem Dunkel, die Kamera fliegt darüber, das Licht wandert einmal herum;
+// zuletzt kippt die Kamera zurück, das Gebirge wird flach und steht als Foto. MeshStandardMaterial mit onBeforeCompile (Höhe, exakte Normalen,
+// Höhenlinien), Schatten. Zustandslos.
+function hoehenfeld(hell, nx, ny, radius) {
+  const w = nx + 1, h = ny + 1, f = new Float32Array(w * h), tmp = new Float32Array(w * h);
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) f[j * w + i] = hell(i / nx, j / ny) ** 0.9;
+  for (let durchgang = 0; durchgang < 2; durchgang++) {
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { let s = 0, n = 0; for (let k = -radius; k <= radius; k++) { const x = i + k; if (x >= 0 && x < w) { s += f[j * w + x]; n++; } } tmp[j * w + i] = s / n; }
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { let s = 0, n = 0; for (let k = -radius; k <= radius; k++) { const y = j + k; if (y >= 0 && y < h) { s += tmp[y * w + i]; n++; } } f[j * w + i] = s / n; }
+  }
+  return f;
+}
+function relief(renderer, textur, B, H, grund, px, hell) {
+  const helligkeit = (u, v) => { const i = (Math.min(H - 1, Math.round(v * (H - 1))) * B + Math.min(B - 1, Math.round(u * (B - 1)))) * 4; return (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255; };
+  const szene = new THREE.Scene();
+  const kamera = new THREE.PerspectiveCamera(FOV, B / H, 0.05, 50);
+  const abstand = 1 / Math.tan(THREE.MathUtils.degToRad(FOV / 2));
+  const breite = (2 * B) / H, schritt = grob() ? 4 : 2.5;
+  const nx = Math.round(B / schritt), ny = Math.round(H / schritt);
+  const geo = new THREE.PlaneGeometry(breite, 2, nx, ny);                  // Ecken Zeile für Zeile von oben
+  const feld = hoehenfeld(helligkeit, nx, ny, Math.max(1, Math.round(nx / 180)));
+  const hoehe = new Float32Array((nx + 1) * (ny + 1)), grad = new Float32Array(hoehe.length * 2), dx = breite / nx, dy = 2 / ny, w = nx + 1;
+  for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) {
+    const k = j * w + i, f = (ii, jj) => feld[Math.min(ny, Math.max(0, jj)) * w + Math.min(nx, Math.max(0, ii))];
+    hoehe[k] = feld[k];
+    grad[k * 2] = (f(i + 1, j) - f(i - 1, j)) / (2 * dx);
+    grad[k * 2 + 1] = -(f(i, j + 1) - f(i, j - 1)) / (2 * dy);
+  }
+  geo.setAttribute("aHoehe", new THREE.BufferAttribute(hoehe, 1));
+  geo.setAttribute("aGrad", new THREE.BufferAttribute(grad, 2));
+  const u = { uTiefe: { value: 0 }, uScan: { value: -9 }, uOffen: { value: 0 }, uLinien: { value: 0 }, uAkzent: { value: new THREE.Color("#ff7a2e") } };
+  const mat = new THREE.MeshStandardMaterial({ map: textur, emissive: 0xffffff, emissiveMap: textur, roughness: 0.62, metalness: 0.05 });
+  mat.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, u);
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", "#include <common>\nattribute float aHoehe; attribute vec2 aGrad; uniform float uTiefe; varying float vHoehe; varying vec3 vWelt;")
+      .replace("#include <begin_vertex>", "vec3 transformed = vec3(position); transformed.z += aHoehe * uTiefe; vHoehe = aHoehe; vWelt = (modelMatrix * vec4(transformed, 1.0)).xyz;")
+      .replace("#include <beginnormal_vertex>", "vec3 objectNormal = normalize(vec3(-aGrad * uTiefe, 1.0));");
+    shader.fragmentShader = shader.fragmentShader
+      .replace("#include <common>", "#include <common>\nuniform float uScan, uOffen, uLinien; uniform vec3 uAkzent; varying float vHoehe; varying vec3 vWelt;")
+      .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>
+        float hl = vHoehe * 16.0;
+        float linie = 1.0 - smoothstep(0.0, 1.4 * fwidth(hl), abs(fract(hl - 0.5) - 0.5));
+        float band = exp(-pow((vWelt.y - uScan) / 0.09, 2.0));
+        float frei = max(uOffen, smoothstep(uScan - 0.03, uScan + 0.03, vWelt.y));                 // was die Scan-Linie schon überstrichen hat
+        totalEmissiveRadiance += uAkzent * uLinien * (linie * frei * (0.3 + 3.0 * band) + 0.12 * band);`);
+  };
+  const flaeche = new THREE.Mesh(geo, mat);
+  flaeche.castShadow = flaeche.receiveShadow = true;
+  szene.add(flaeche);
+  const streif = new THREE.DirectionalLight(0xfff1e0, 0);
+  Object.assign(streif.shadow.camera, { left: -breite * 0.7, right: breite * 0.7, top: 1.3, bottom: -1.3, near: 0.1, far: 12 });
+  streif.shadow.mapSize.set(2048, 2048); streif.shadow.bias = -0.0004; streif.shadow.normalBias = 0.01; streif.castShadow = true;
+  const kante = new THREE.PointLight(0xff8a3d, 0, 8, 1.5), himmel = new THREE.HemisphereLight(0x9fb4ff, 0x120a06, 0);
+  szene.add(streif, streif.target, kante, himmel);
+  const look = filmlook(renderer, szene, kamera, { radius: 0.4, schwelle: 0.6, hell });
+  let tiefe = 0, a = 0, stand = "";
+  return {
+    dauer: 11, looks: [look], schatten: true,
+    groesse() {},
+    bild(t) {
+      const licht = inOut(anteil(t, 1.8, 3.6)) * (1 - inOut(anteil(t, 8.0, 10.0)));
+      tiefe = 1 - inOut(anteil(t, 7.6, 9.8));                              // von Anfang an Gebirge
+      const kipp = 1 - inOut(anteil(t, 7.4, 10.2));
+      u.uTiefe.value = 0.42 * tiefe;
+      u.uLinien.value = 1 - weich(anteil(t, 7.4, 8.6));
+      // zwei Scan-Linien von hinten nach vorn: die erste legt die Höhenlinien frei, die zweite lässt sie aufglühen
+      u.uScan.value = t < 3.2 ? 1.5 - (anteil(t, 0.15, 2.6) * 3.2) : 1.5 - anteil(t, 4.2, 6.8) * 3.2;
+      u.uOffen.value = t < 2.6 ? 0 : 1;
+      mat.emissiveIntensity = weich(anteil(t, 8.2, 10.4));                 // am Ende steht das Foto exakt (ohne Licht)
+      a = -0.6 + 2.6 * inOut(anteil(t, 1.8, 9.4));
+      streif.position.set(Math.cos(a) * 3, Math.sin(a) * 3, 1.1 + 1.5 * (1 - kipp)); streif.intensity = 3.2 * licht;
+      kante.position.set(-Math.cos(a) * 1.6, -Math.sin(a) * 1.6, 0.6); kante.intensity = 3.5 * licht;
+      himmel.intensity = 0.35 * licht;
+      const k = THREE.MathUtils.degToRad(58) * kipp, sw = Math.sin(t * 0.35) * 0.25 * kipp, d = abstand * (1 - 0.18 * kipp);
+      kamera.position.set(Math.sin(sw) * d, -Math.sin(k) * d, Math.cos(k) * Math.cos(sw) * d);
+      kamera.lookAt(0, 0.12 * kipp, 0);
+      stand = t < 2.6 ? `höhenlinien ${Math.round(anteil(t, 0.15, 2.6) * 100)} %` : `höhe ${Math.round(tiefe * 100)} % · licht ${Math.round(((a * 180) / Math.PI + 360) % 360)}°`;
+      look.render(Math.max(licht, 0.5 * u.uLinien.value), 0.6, 0.002);
+    },
+    zaehler() { return stand; },
+    entsorgen() { geo.dispose(); mat.dispose(); look.entsorgen(); },
+  };
+}
+
 // ——— Signet in der leuchtenden Fassung: Linie und Schrift klar wie immer; nur der Punkt leuchtet – ein Glaskristall mit Halo und Bokeh, das ihm auf
 //     der Bahn folgt (Rückmeldung: «das Signet ist immer noch zu stark überblendet; vielleicht sollte einfach der laufende Punkt leuchten») ———
 function glanzSignet(renderer, B, H, akzent, hell) {
@@ -693,10 +792,10 @@ function glanzSignet(renderer, B, H, akzent, hell) {
   };
 }
 
-const BAUEN = { kristall, echo, strom };
+const BAUEN = { kristall, echo, strom, relief };
 
 /**
- * Ein räumlicher Ablauf für ein Foto (Canvas in Filmgrösse). art: "kristall" | "echo" | "strom"; grund: Farbe des Grunds; akzent: Farbe des Punkts im Signet.
+ * Ein räumlicher Ablauf für ein Foto (Canvas in Filmgrösse). art: "kristall" | "echo" | "strom" | "relief"; grund: Farbe des Grunds; akzent: Farbe des Punkts im Signet.
  * bild(u, k, N, w, h): das Bild bei u (0 … 1 im Abschnitt; k von N Filmbildern) in w × h Bildpunkten; gibt die Leinwand zurück (gleich danach lesen).
  * signet(zeichnen, punkt, f, w, h): das Signet in der leuchtenden Fassung.
  */
@@ -721,6 +820,7 @@ export function raum(foto, art, { grund = "#000000", akzent = "#f08a5d" } = {}) 
     if (jetzt.x !== w || jetzt.y !== h) renderer.setSize(w, h, false);
     for (const l of teil.looks) if (l.groesse.x !== w || l.groesse.y !== h) l.setSize(w, h);
     teil.groesse(w, h);
+    renderer.shadowMap.enabled = !!teil.schatten;                          // Schatten nur beim Relief
   };
   return {
     art, dauer: W.dauer,
@@ -735,6 +835,6 @@ export function raum(foto, art, { grund = "#000000", akzent = "#f08a5d" } = {}) 
       return leinwand;
     },
     zaehler() { return W.zaehler(); },
-    entsorgen() { W.entsorgen(); S.entsorgen(); textur.dispose(); renderer.dispose(); },
+    entsorgen() { W.entsorgen(); S.entsorgen(); textur.dispose(); renderer.dispose(); renderer.forceContextLoss(); },
   };
 }

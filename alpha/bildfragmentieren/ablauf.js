@@ -4,8 +4,9 @@
 //   Fragmente – 01 Linien (Relief aus Zeilen, Umrisse) → 02 Formen (Dreiecke mit Stich) → 03 Farben (Körper) → 04 Bild (Montage, das Foto rastet ein)
 //   Kristall  – 01 Körper (drei Kristalle verschmelzen zu einem Glaskörper; das Foto nur durch das Glas) → 02 Bruch (er zerspringt in Scherben)
 //               → 03 Montage (die Scherben setzen das Foto zusammen)                                                     [WebGL, raum.js]
-//   Echo      – 01 Konturen (feine Höhenlinien) → 02 Echo (Rückkopplung, Tunnel) → 03 Bild (das Foto baut sich Tonstufe um Tonstufe auf)
+//   Echo      – 01 Echo (die Kanten des Fotos ziehen Spuren in einen Tunnel, von Anfang an bewegt) → 02 Bild (das Foto baut sich Tonstufe um Tonstufe auf)
 //   Strom     – 01 Funken (Teilchen leuchten verstreut im Dunkeln auf) → 02 Strom (sie ziehen zu Bändern zusammen) → 03 Bild (sie fliegen an ihren Platz)
+//   Relief    – 01 Höhenlinien (leuchten im Dunkeln auf) → 02 Gebirge (Streiflicht, Kamerafahrt) → 03 Bild (es wird flach und steht als Foto)
 // Danach steht das Foto, dann (wenn gewählt) das Signet von ornament.cloud – bei Kristall und Echo in einer leuchtenden Fassung.
 export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=9";
 
@@ -31,9 +32,11 @@ export const ABLAEUFE = {
   fragmente: { titel: "Fragmente", phasen: [["linien", "Linien", 4.4], ["formen", "Formen", 3.6], ["farben", "Farben", 3.0], ["zusammen", "Bild", 4.2]] },
   kristall: { titel: "Kristall", raum: true, phasen: [["koerper", "Körper", 3.6], ["bruch", "Bruch", 3.2], ["montage", "Montage", 4.2]] },
   // Echo: Konturen kurz (Rückmeldung: «die Konturen alleine weniger»), ohne Kaleidoskop («dieser Teil geht gar nicht – gerne ersatzlos streichen»)
-  echo: { titel: "Echo", raum: true, phasen: [["konturen", "Konturen", 1.6], ["echo", "Echo", 5.0], ["aufbau", "Bild", 3.4]] },
+  echo: { titel: "Echo", raum: true, phasen: [["echo", "Echo", 6.0], ["aufbau", "Bild", 3.4]] },   // ohne stehende Konturen: Bewegung vom ersten Bild an
   // Strom: Teilchen als glänzende Kugeln (Rückmeldung: «sind das wirklich bloss drei Effekte? Wo ist dieser, verbessert?»)
   strom: { titel: "Strom", raum: true, phasen: [["funken", "Funken", 2.4], ["strom", "Strom", 5.6], ["sammeln", "Bild", 4.0]] },
+  // Relief: das Gebirge aus dem Showreel (Rückmeldung: «es war mit Abstand der Beste»)
+  relief: { titel: "Relief", raum: true, phasen: [["hoehenlinien", "Höhenlinien", 2.6], ["gebirge", "Gebirge", 5.0], ["flach", "Bild", 3.4]] },
 };
 /** ein bekannter Ablauf, sonst «Fragmente» */
 export const ablaufName = (a) => (Object.hasOwn(ABLAEUFE, String(a)) ? String(a) : "fragmente");

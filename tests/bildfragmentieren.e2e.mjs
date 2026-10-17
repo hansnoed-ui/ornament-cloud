@@ -51,7 +51,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit (Abschnitt + Anteil der Dauer) messen: Anteil Grund, Anteil Grau, Anteil bunt, mittlere Farbe in der Mitte */
 const messe = (page, abschnitt, anteil = 0, extra = {}) => page.evaluate(async ([abschnitt, anteil, extra]) => {
-  const { bild, szene } = await import("./szene.js?v=19");
+  const { bild, szene } = await import("./szene.js?v=20");
   const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, ...extra });
   const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
   const [a, b] = sz.zeit.ab[abschnitt], t = a + (b - a) * anteil;
@@ -153,7 +153,7 @@ await check("Formen als Stich folgen dem Foto Bildpunkt für Bildpunkt: dunkle T
   await bereit(page);
   // Testfoto: rote Fläche (dunkel) unten in der Mitte, gelbe Sonne (hell) oben; gemessen wird die Tinte in beiden Bereichen am Ende von 02
   const tinte = (grund) => page.evaluate(async (grund) => {
-    const { bild, szene } = await import("./szene.js?v=19");
+    const { bild, szene } = await import("./szene.js?v=20");
     const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, grund });
     const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
     bild(x, sz, sz.zeit.ab.farben[0] - 0.05);
@@ -219,7 +219,7 @@ await check("Formate: 9 : 16 und zurück zu 4 : 5; Vorschau und Signet passen si
     // das Signet steht in beiden Formaten in der Mitte und ganz im Bild
     {
       const mitte = await page.evaluate(async () => {
-        const { bild, szene } = await import("./szene.js?v=19");
+        const { bild, szene } = await import("./szene.js?v=20");
         const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h) });
         const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; const x = c.getContext("2d");
         bild(x, sz, sz.zeit.ab.signetStehen[0] + 0.2);
@@ -240,7 +240,7 @@ await check("Formate: 9 : 16 und zurück zu 4 : 5; Vorschau und Signet passen si
 
 /** im Browser: Bilder eines Ablaufs messen (halbe Grösse, ohne Beschriftung): Abstand zum Foto, Anteil Grund; mit oder ohne raum.js */
 const raumMessen = (page, zeiten, mitRaum = true) => page.evaluate(async ([zeiten, mitRaum]) => {
-  const { bild, szene } = await import("./szene.js?v=19");
+  const { bild, szene } = await import("./szene.js?v=20");
   const S = window.__bildfragmentieren, sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false,
     ablauf: S.ablauf, raum: mitRaum ? S.raum : null });
   const w = sz.breite / 2, h = sz.hoehe / 2, c = document.createElement("canvas"); c.width = w; c.height = h;
@@ -259,7 +259,7 @@ const raumMessen = (page, zeiten, mitRaum = true) => page.evaluate(async ([zeite
 }, [zeiten, mitRaum]);
 const verschieden = (a, b) => a.summe.reduce((s, v, i) => s + Math.abs(v - b.summe[i]), 0) / a.summe.length;
 
-await check("Abläufe Kristall, Echo und Strom: beginnen im Dunkeln, enden exakt beim Foto (three.js lokal, erst auf Wahl); Echo deterministisch; im Signet leuchtet der Punkt", async () => {
+await check("Abläufe Kristall, Echo, Strom und Relief: beginnen im Dunkeln, enden exakt beim Foto (three.js lokal, erst auf Wahl); Echo deterministisch; im Signet leuchtet der Punkt", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await laden(page);
   await bereit(page);
@@ -288,10 +288,10 @@ await check("Abläufe Kristall, Echo und Strom: beginnen im Dunkeln, enden exakt
   // Echo: Rückkopplung, deterministisch beim Springen
   await page.click('[data-ablauf="echo"]');
   await page.waitForFunction(() => window.__bildfragmentieren.sz?.raum?.art === "echo", null, { timeout: 90_000 });
-  assert.deepEqual(await page.$$eval(".phasen button", (b) => b.map((x) => x.textContent)), ["01 Konturen", "02 Echo", "03 Bild"]);
+  assert.deepEqual(await page.$$eval(".phasen button", (b) => b.map((x) => x.textContent)), ["01 Echo", "02 Bild"]);
   const [e0, eMitte, eKonturen, eMitte2, eEnde] = await raumMessen(page,
-    ["z.konturen.von + 0.05", "z.echo.von + 0.6 * (z.echo.bis - z.echo.von)", "z.konturen.von + 1", "z.echo.von + 0.6 * (z.echo.bis - z.echo.von)", "z.abschnitt.bis - 0.02"]);
-  assert.ok(e0.dunkel > 0.9 && eKonturen.dunkel > 0.4, `beginnt im Dunkeln, feine Linien (${e0.dunkel}, ${eKonturen.dunkel})`);
+    ["z.echo.von + 0.02", "z.echo.von + 0.6 * (z.echo.bis - z.echo.von)", "z.echo.von + 1", "z.echo.von + 0.6 * (z.echo.bis - z.echo.von)", "z.abschnitt.bis - 0.02"]);
+  assert.ok(e0.dunkel > 0.9 && eKonturen.dunkel > 0.2, `beginnt im Dunkeln, Kanten mit Spuren (${e0.dunkel}, ${eKonturen.dunkel})`);
   assert.ok(verschieden(eMitte, eMitte2) < 1, `nach einem Sprung zurück dasselbe Bild (${verschieden(eMitte, eMitte2)})`);
   assert.ok(eMitte.foto > 15 && eEnde.foto < 3, `endet exakt beim Foto (${eMitte.foto}, ${eEnde.foto})`);
   // Strom: Teilchen, deterministisch beim Springen, auf Weiss nicht überstrahlt
@@ -303,18 +303,24 @@ await check("Abläufe Kristall, Echo und Strom: beginnen im Dunkeln, enden exakt
   assert.ok(s0.dunkel > 0.9, `beginnt im Dunkeln (${s0.dunkel})`);
   assert.ok(verschieden(sMitte, sMitte2) < 1, `nach einem Sprung zurück dasselbe Bild (${verschieden(sMitte, sMitte2)})`);
   assert.ok(sMitte.foto > 15 && sEnde.foto < 3, `endet exakt beim Foto (${sMitte.foto}, ${sEnde.foto})`);
+  // Relief: im Dunkeln die Höhenlinien, am Ende exakt das Foto
+  await page.click('[data-ablauf="relief"]');
+  await page.waitForFunction(() => window.__bildfragmentieren.sz?.raum?.art === "relief", null, { timeout: 90_000 });
+  assert.deepEqual(await page.$$eval(".phasen button", (b) => b.map((x) => x.textContent)), ["01 Höhenlinien", "02 Gebirge", "03 Bild"]);
+  const [r0, rMitte, rEnde] = await raumMessen(page, ["z.hoehenlinien.von + 0.05", "z.gebirge.von + 0.5 * (z.gebirge.bis - z.gebirge.von)", "z.abschnitt.bis - 0.02"]);
+  assert.ok(r0.dunkel > 0.9 && rMitte.foto > 15 && rEnde.foto < 3, `Relief: dunkel, Gebirge, Foto (${r0.dunkel}, ${rMitte.foto}, ${rEnde.foto})`);
   await page.reload();
-  assert.deepEqual(await page.$$eval("[data-ablauf]", (b) => b.map((x) => x.getAttribute("aria-pressed"))), ["false", "false", "false", "true"], "die Wahl bleibt");
+  assert.deepEqual(await page.$$eval("[data-ablauf]", (b) => b.map((x) => x.getAttribute("aria-pressed"))), ["false", "false", "false", "false", "true"], "die Wahl bleibt");
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
 
-await check("Weisser Grund: Kristall, Echo und Strom überstrahlen nicht (Rückmeldung vom 17. Oktober 2026: «auf weissem Grund fast alles weiss»)", async () => {
+await check("Weisser Grund: Kristall, Echo, Strom und Relief überstrahlen nicht (Rückmeldung vom 17. Oktober 2026: «auf weissem Grund fast alles weiss»)", async () => {
   const { ctx, page, fehler } = await oeffne();
   await page.click('[data-grund="weiss"]');
   await laden(page);
   await bereit(page);
-  for (const art of ["kristall", "echo", "strom"]) {
+  for (const art of ["kristall", "echo", "strom", "relief"]) {
     await page.click(`[data-ablauf="${art}"]`);
     await page.waitForFunction((a) => window.__bildfragmentieren.sz?.raum?.art === a, art, { timeout: 90_000 });
     const [mitte] = await raumMessen(page, ["z.phasen[1].von + 0.5 * (z.phasen[1].bis - z.phasen[1].von)"]);

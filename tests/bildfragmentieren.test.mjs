@@ -156,11 +156,12 @@ test("Ablauf: vier Phasen in dieser Reihenfolge, Tempo, Abspann nach Wahl; Forma
   assert.equal(dateiname(new Date(2026, 9, 15, 9, 5), "mp4"), "bildfragmentieren-2026-10-15-0905.mp4");
 });
 
-test("Abläufe (16./17. Oktober 2026): Fragmente, Kristall, Echo, Strom zur Wahl; alle beginnen im Dunkeln und enden beim Foto, dann Signet", () => {
-  assert.deepEqual(Object.keys(ABLAEUFE), ["fragmente", "kristall", "echo", "strom"]);
+test("Abläufe (16./17. Oktober 2026): Fragmente, Kristall, Echo, Strom, Relief zur Wahl; alle beginnen im Dunkeln und enden beim Foto, dann Signet", () => {
+  assert.deepEqual(Object.keys(ABLAEUFE), ["fragmente", "kristall", "echo", "strom", "relief"]);
   assert.deepEqual(ABLAEUFE.fragmente.phasen.map(([n]) => n), PHASEN.map(([n]) => n), "Fragmente wie bisher");
   assert.deepEqual(ABLAEUFE.kristall.phasen.map(([, t]) => t), ["Körper", "Bruch", "Montage"]);
-  assert.deepEqual(ABLAEUFE.echo.phasen.map(([, t]) => t), ["Konturen", "Echo", "Bild"], "ohne Kaleidoskop (Rückmeldung vom 17. Oktober 2026)");
+  assert.deepEqual(ABLAEUFE.echo.phasen.map(([, t]) => t), ["Echo", "Bild"], "ohne stehende Konturen und ohne Kaleidoskop (Rückmeldungen vom 17. Oktober 2026)");
+  assert.deepEqual(ABLAEUFE.relief.phasen.map(([, t]) => t), ["Höhenlinien", "Gebirge", "Bild"]);
   assert.equal(ablaufName("quatsch"), "fragmente");
   assert.equal(ablaufName(null), "fragmente");
   assert.equal(ablaufName("echo"), "echo");
@@ -169,7 +170,7 @@ test("Abläufe (16./17. Oktober 2026): Fragmente, Kristall, Echo, Strom zur Wahl
   assert.deepEqual(auch.ab, alt.ab);
   assert.ok(Math.abs(alt.dauer - 23.55) < 1e-9, `Standard unverändert 23,55 s (${alt.dauer})`);
   assert.deepEqual(ABLAEUFE.strom.phasen.map(([, t]) => t), ["Funken", "Strom", "Bild"]);
-  for (const art of ["kristall", "echo", "strom"]) {
+  for (const art of ["kristall", "echo", "strom", "relief"]) {
     for (const tempo of ["ruhig", "normal", "schnell"]) {
       const z = zeitachse({ ablauf: art, tempo });
       assert.equal(z.ablauf, art); assert.equal(z.fragmente, false);
@@ -211,7 +212,7 @@ test("Seite: Alpha (noindex), steht für sich ohne Navigation oben links, nichts
   assert.match(lies("alpha/bildfragmentieren/szene.js"), /punktTempo: SIGNET_TEMPO \* 1\.25/);
   assert.match(lies("alpha/sketchory/signet.js"), /punktTempo = 1 \}/, "für Sketchory unverändert");
   // Abläufe zur Wahl; three.js lokal (vendor/three-0.185.1) über eine Import-Map, geladen nur von raum.js
-  assert.deepEqual([...html.matchAll(/data-ablauf="([^"]+)"/g)].map((m) => m[1]), ["fragmente", "kristall", "echo", "strom"]);
+  assert.deepEqual([...html.matchAll(/data-ablauf="([^"]+)"/g)].map((m) => m[1]), ["fragmente", "kristall", "echo", "strom", "relief"]);
   const karte = JSON.parse(html.match(/<script type="importmap">([\s\S]*?)<\/script>/)[1]).imports;
   assert.deepEqual(karte, { three: "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" });
   assert.match(lies("vendor/three-0.185.1/three.core.min.js"), /"185"/, "three.js r185");
