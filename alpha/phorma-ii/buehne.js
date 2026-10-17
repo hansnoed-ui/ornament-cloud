@@ -9,12 +9,12 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=4";
-import { FPS, kette, laufend } from "./ablauf.js?v=4";
-import { physarum } from "./physarum.js?v=4";
-import { stich } from "./stich.js?v=4";
-import { tiefe } from "./tiefe.js?v=4";
-import { tuch } from "./tuch.js?v=4";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=5";
+import { FPS, kette, laufend } from "./ablauf.js?v=5";
+import { physarum } from "./physarum.js?v=5";
+import { stich } from "./stich.js?v=5";
+import { tiefe } from "./tiefe.js?v=5";
+import { tuch } from "./tuch.js?v=5";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -111,7 +111,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
 
   // Vorab übersetzen (Rückmeldung vom 17. Oktober 2026 vom Telefon: Seite «reagiert nicht», jeder Klick ein Absturz): beim ersten Bild übersetzte
   // der Browser sonst rund zwanzig Programme am Stück, auf Grafikchips von Telefonen viele Sekunden. Hier eins nach dem anderen, jedes in einer
-  // eigenen Aufgabe (mit KHR_parallel_shader_compile ohne zu warten), und jedes einmal in ein winziges Ziel gezeichnet, damit es wirklich fertig ist.
+  // eigenen Aufgabe, und jedes einmal in ein winziges Ziel gezeichnet, damit es wirklich fertig ist.
   const pause = () => new Promise((weiter) => setTimeout(weiter, 0));
   async function vorbereiten() {
     const klein = ziel(4, 4, { depthBuffer: true }), ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), flaeche = new THREE.PlaneGeometry(2, 2);
@@ -121,10 +121,13 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
       ...Object.values(bloom).flat().filter((m) => m?.isShaderMaterial)];
     for (const m of materialien) { const s = new THREE.Scene(); s.add(new THREE.Mesh(flaeche, m)); szenen.push([s, ortho]); }
     const aus = new THREE.Scene(); aus.add(new THREE.Mesh(flaeche, ausgabe));
+    // compile() stösst das Übersetzen an (mit KHR_parallel_shader_compile im Hintergrund), das Bild ins winzige Ziel wartet es ab; nicht compileAsync:
+    // dessen Nachfragen liefen weiter, wenn die Bühne inzwischen freigegeben war (Fehler «reading 'isReady'», von den Browser-Tests gefunden)
     for (const [s, k, rt = klein] of [...szenen, [aus, ortho, null]]) {
-      if (verloren) break;
-      renderer.setRenderTarget(rt);
-      await renderer.compileAsync(s, k);
+      if (verloren || entsorgt) break;
+      renderer.setRenderTarget(rt); renderer.compile(s, k);
+      await pause();
+      if (verloren || entsorgt) break;
       renderer.setRenderTarget(rt); renderer.render(s, k);
       await pause();
     }

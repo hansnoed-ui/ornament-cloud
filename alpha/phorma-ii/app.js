@@ -1,9 +1,9 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=4";
-import { szene, bild, standbildZeit } from "./film.js?v=4";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=4";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=5";
+import { szene, bild, standbildZeit } from "./film.js?v=5";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=5";
 import { mp4 } from "../sketchory/mp4.js?v=10";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
@@ -30,7 +30,7 @@ function diagnoseZeigen() {
   let box = document.getElementById("diagnose");
   if (!box) { box = document.createElement("pre"); box.id = "diagnose"; box.className = "info diagnose"; document.querySelector(".buehne").append(box); }
   const mittel = D.bild.length ? D.bild.reduce((s, x) => s + x, 0) / D.bild.length : 0;
-  const i = S.buehne?.info?.();
+  const i = S.buehne?.infoGemerkt;
   box.textContent = [`PHORMA II · Diagnose · ${navigator.userAgent.replace(/^Mozilla\/5\.0 /, "").slice(0, 90)}`,
     `Pixel ${devicePixelRatio} · Telefon ${grob ? "ja" : "nein"} · Speicher ${navigator.deviceMemory ?? "?"} GB · Kerne ${navigator.hardwareConcurrency ?? "?"}`,
     i ? `Grafik ${i.grafik} · Float-Ziel ${i.floatZiel} · Float mischen ${i.floatMischen} · Float linear ${i.floatLinear} · parallel übersetzen ${i.parallel}` : "Grafik: noch keine Bühne",
@@ -50,9 +50,24 @@ const erinnern = (k) => { try { return localStorage.getItem(`phorma-ii.${k}`); }
 function melden(text, fehler = false) { const m = $("meldung"); m.textContent = text; m.classList.toggle("fehler", fehler); }
 
 // ——— Foto laden ———
+// Fotos aus Telefonkameras haben 12 bis 50 Megapixel (bis 200 MB als Bitmap): gleich beim Laden auf höchstens 2400 Punkte verkleinern und die volle
+// Bitmap sofort freigeben; das Vorschaubildchen ist eine kleine Kopie, nicht das Original (Rückmeldung vom 17. Oktober 2026: «neues Bild laden,
+// danach: Absturz»)
+const GROESST = 2400;
 async function bitmap(datei) {
-  try { return await createImageBitmap(datei, { imageOrientation: "from-image" }); }
-  catch { return await new Promise((ok, nein) => { const i = new Image(); i.onload = () => ok(i); i.onerror = nein; i.src = URL.createObjectURL(datei); }); }
+  let q;
+  try { q = await createImageBitmap(datei, { imageOrientation: "from-image" }); }
+  catch { q = await new Promise((ok, nein) => { const i = new Image(); i.onload = () => ok(i); i.onerror = nein; i.src = URL.createObjectURL(datei); }); }
+  const s = Math.min(1, GROESST / Math.max(q.width, q.height));
+  const c = leinwand(Math.max(1, Math.round(q.width * s)), Math.max(1, Math.round(q.height * s))), x = c.getContext("2d");
+  x.imageSmoothingQuality = "high"; x.drawImage(q, 0, 0, c.width, c.height);
+  if (q.close) q.close(); else if (q.src?.startsWith("blob:")) URL.revokeObjectURL(q.src);
+  return c;
+}
+function bildchen(quelle) {
+  const s = 240 / Math.max(quelle.width, quelle.height), c = leinwand(Math.round(quelle.width * s), Math.round(quelle.height * s));
+  c.getContext("2d").drawImage(quelle, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", 0.85);
 }
 function zugeschnitten(quelle, w, h) {
   const c = leinwand(w, h), ctx = c.getContext("2d", { willReadFrequently: true });
@@ -77,16 +92,19 @@ async function fotoLaden(datei) {
   melden("Foto wird gelesen …");
   let q;
   try { q = await bitmap(datei); } catch { melden("Dieses Foto kann der Browser nicht öffnen. Versuche es als JPG oder PNG.", true); return; }
-  S.bild = q; S.ki = null;
+  // das alte Foto und seine Bühne sofort freigeben, nicht erst, wenn das neue analysiert ist
   anhalten(); S.sz = null; S.t = null;
-  $("quelle").src = URL.createObjectURL(datei); $("quelle").hidden = false;
+  S.buehne?.entsorgen(); S.buehne = null; S.buehneSchluessel = ""; S.buehneWarm = false; S.buehneFertig = false;
+  S.foto = null; S.A = null;
+  S.bild = q; S.ki = null;
+  $("quelle").src = bildchen(q); $("quelle").hidden = false;
   ablage.classList.add("hat-bild"); $("ablage-titel").textContent = "Anderes Foto wählen";
   await lesen();
 }
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=4", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=5", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -127,7 +145,7 @@ async function kiAnwenden() {
   if (!S.ki) {
     const nr = S.rechnen;
     try {
-      kiModul ??= await import("./tiefe-ki.js?v=4");
+      kiModul ??= await import("./tiefe-ki.js?v=5");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m));
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
@@ -150,7 +168,7 @@ async function buehneBereit() {
   S.buehne?.entsorgen(); S.buehne = null;
   if (!schluessel) return;
   try {
-    buehneModul ??= await import("./buehne.js?v=4");
+    buehneModul ??= await import("./buehne.js?v=5");
     if (S.buehneSchluessel !== schluessel) return;
     S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki",
       onVerloren: () => {
@@ -167,6 +185,7 @@ async function buehneBereit() {
   }
   // erst wenn die Programme übersetzt sind, zeichnet die Vorschau mit der Bühne (bis dahin der Grund)
   const b = S.buehne;
+  if (DIAGNOSE) { try { b.infoGemerkt = b.info(); } catch { /* egal */ } }   // einmal, nicht bei jeder Anzeige
   notiz(`Bühne gebaut: ${S.ablauf}`);
   melden("Die Effekte werden vorbereitet …");
   await b.warm;

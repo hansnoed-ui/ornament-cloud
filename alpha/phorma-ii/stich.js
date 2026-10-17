@@ -8,8 +8,8 @@
 //   bis sie sich schliessen, darunter erscheint das Foto: am Ende steht es exakt da.
 // Alle Striche liegen in einer Geometrie (ein Zeichenaufruf); zustandslos, jedes Bild hängt nur von der Zeit ab.
 import * as THREE from "three";
-import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=4";
-import { phase } from "./ablauf.js?v=4";
+import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=5";
+import { phase } from "./ablauf.js?v=5";
 
 const UNTERLAGE = /* glsl */ `uniform sampler2D tFoto; uniform float uGrund; uniform vec3 uFarbe; varying vec2 vUv;
   void main() { gl_FragColor = vec4(mix(uFarbe, texture2D(tFoto, vUv).rgb, uGrund), 1.0); }`;
