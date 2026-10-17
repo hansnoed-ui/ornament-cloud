@@ -3,9 +3,9 @@
 // Im Browser (Testbild, die vier Phasen, Video, Standbild, Formate, Handy): NODE_PATH=$(npm root -g) node tests/bildfragmentieren.e2e.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { zerlegen, delaunay, vereinfachen, kantenMaske, verketten, helligkeit, farbton, auszuege, zufall, hoehenlinien } from "../alpha/bildfragmentieren/fragmente.js";
-import { zeitachse, filmMass, zeitcode, dateiname, PHASEN, TEMPO, FORMATE, SIGNET } from "../alpha/bildfragmentieren/ablauf.js";
+import { zeitachse, filmMass, zeitcode, dateiname, PHASEN, TEMPO, FORMATE, SIGNET, ABLAEUFE, ablaufName, raumDauer } from "../alpha/bildfragmentieren/ablauf.js";
 
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
@@ -156,6 +156,34 @@ test("Ablauf: vier Phasen in dieser Reihenfolge, Tempo, Abspann nach Wahl; Forma
   assert.equal(dateiname(new Date(2026, 9, 15, 9, 5), "mp4"), "bildfragmentieren-2026-10-15-0905.mp4");
 });
 
+test("Abläufe (16. Oktober 2026): Fragmente, Kristall, Echo zur Wahl; alle beginnen im Dunkeln und enden beim Foto, dann Signet", () => {
+  assert.deepEqual(Object.keys(ABLAEUFE), ["fragmente", "kristall", "echo"]);
+  assert.deepEqual(ABLAEUFE.fragmente.phasen.map(([n]) => n), PHASEN.map(([n]) => n), "Fragmente wie bisher");
+  assert.deepEqual(ABLAEUFE.kristall.phasen.map(([, t]) => t), ["Körper", "Bruch", "Montage"]);
+  assert.deepEqual(ABLAEUFE.echo.phasen.map(([, t]) => t), ["Konturen", "Echo", "Bild"], "ohne Kaleidoskop (Rückmeldung vom 17. Oktober 2026)");
+  assert.equal(ablaufName("quatsch"), "fragmente");
+  assert.equal(ablaufName(null), "fragmente");
+  assert.equal(ablaufName("echo"), "echo");
+  // ohne Wahl wie bisher: dieselbe Zeitachse
+  const alt = zeitachse(), auch = zeitachse({ ablauf: "fragmente" });
+  assert.deepEqual(auch.ab, alt.ab);
+  assert.ok(Math.abs(alt.dauer - 23.55) < 1e-9, `Standard unverändert 23,55 s (${alt.dauer})`);
+  for (const art of ["kristall", "echo"]) {
+    for (const tempo of ["ruhig", "normal", "schnell"]) {
+      const z = zeitachse({ ablauf: art, tempo });
+      assert.equal(z.ablauf, art); assert.equal(z.fragmente, false);
+      assert.deepEqual(z.phasen.map((p) => p.name), ABLAEUFE[art].phasen.map(([n]) => n));
+      assert.equal(z.abschnitt.von, z.ab.vor[1], `${art}: beginnt nach dem kurzen Dunkel`);
+      assert.equal(z.ab.stehen[0], z.abschnitt.bis, `${art}: danach steht das Foto`);
+      assert.ok(Math.abs(z.abschnitt.bis - z.abschnitt.von - raumDauer(art) * TEMPO[tempo]) < 1e-9, `${art}: Tempo ${tempo}`);
+      for (let i = 1; i < z.phasen.length; i++) assert.ok(Math.abs(z.phasen[i].von - z.phasen[i - 1].bis) < 1e-9, "Phasen schliessen an");
+      assert.ok(z.ab.zusammen[1] + 0.35 < 0 && z.ab.linien[0] < 0, `${art}: die Phasen von «Fragmente» liegen ausserhalb des Films`);
+      assert.ok(Math.abs(z.dauer - z.ab.stehen[1] - (alt.dauer - alt.ab.stehen[1])) < 1e-9, "derselbe Abspann");
+      assert.ok(z.dauer > 14 && z.dauer < 26, `${art}: rund 15 bis 25 s (${z.dauer})`);
+    }
+  }
+});
+
 test("Seite: Alpha (noindex), steht für sich ohne Navigation oben links, nichts von aussen, Versionsmarken überall gleich", () => {
   const html = lies("alpha/bildfragmentieren/index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
@@ -181,6 +209,18 @@ test("Seite: Alpha (noindex), steht für sich ohne Navigation oben links, nichts
   // im Abspann läuft der Punkt des Signets ruhig, obwohl sich das Signet doppelt so schnell zeichnet (15. Oktober 2026)
   assert.match(lies("alpha/bildfragmentieren/szene.js"), /punktTempo: SIGNET_TEMPO \* 1\.25/);
   assert.match(lies("alpha/sketchory/signet.js"), /punktTempo = 1 \}/, "für Sketchory unverändert");
+  // Abläufe zur Wahl; three.js lokal (vendor/three-0.185.1) über eine Import-Map, geladen nur von raum.js
+  assert.deepEqual([...html.matchAll(/data-ablauf="([^"]+)"/g)].map((m) => m[1]), ["fragmente", "kristall", "echo"]);
+  const karte = JSON.parse(html.match(/<script type="importmap">([\s\S]*?)<\/script>/)[1]).imports;
+  assert.deepEqual(karte, { three: "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" });
+  assert.match(lies("vendor/three-0.185.1/three.core.min.js"), /"185"/, "three.js r185");
+  const raum = lies("alpha/bildfragmentieren/raum.js");
+  for (const m of raum.matchAll(/from "(three[^"]*)"/g)) {
+    const pfad = m[1] === "three" ? "three.module.min.js" : m[1].replace("three/addons/", "addons/");
+    assert.ok(existsSync(new URL(`vendor/three-0.185.1/${pfad}`, root)), `${m[1]} liegt in vendor/three-0.185.1`);
+  }
+  assert.ok(!lies("alpha/bildfragmentieren/app.js").includes('from "three'), "app.js lädt three.js nicht selbst (erst raum.js, auf Wahl)");
+  assert.match(lies("alpha/bildfragmentieren/app.js"), /import\("\.\/raum\.js\?v=\d+"\)/);
 });
 
 test("Körper (Farbwellen): Ikosaeder, Dodekaeder und Geodäte mit den richtigen Zahlen, Ecken auf der Kugel, gleich lange Kanten; Abbilden um die Mitte", async () => {

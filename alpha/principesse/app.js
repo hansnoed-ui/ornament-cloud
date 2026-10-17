@@ -3,8 +3,8 @@
 // MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
 import { FPS, dateiname, filmMass } from "./ablauf.js?v=20";
 import { szene, bild, standbild, SCHRIFTEN } from "./szene.js?v=20";
-import { schriftSetzen } from "../sketchory/szene.js?v=8";
-import { mp4 } from "../sketchory/mp4.js?v=8";
+import { schriftSetzen } from "../sketchory/szene.js?v=9";
+import { mp4 } from "../sketchory/mp4.js?v=9";
 import { mitDauer } from "../the-fictory/dauer.js?v=21";
 import { malen, klarbild } from "./malen.js?v=20";
 import { glitzer } from "./glitzer.js?v=20";

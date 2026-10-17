@@ -20,6 +20,7 @@ const AUSNAHMEN = [
   ["Analyse «Allgemeines, Konkretes und Metastabilität», steht für sich (5. Oktober 2026)", /^alpha\/metastabilitaet\//],
   ["«Principesse», steht für sich, nur per Direktlink (12. Oktober 2026)", /^alpha\/principesse\//],
   ["«Bildfragmentieren», steht für sich, nur per Direktlink (15. Oktober 2026)", /^alpha\/bildfragmentieren\//],
+  ["Beispiele der Skills für Claude (.claude/skills/), keine Seiten der Website (16. Oktober 2026)", /^\.claude\//],
 ];
 const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git"]);
 const walk = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e) =>
