@@ -98,6 +98,8 @@
     .ablaeufe button:hover:not(:disabled) { border-color: var(--text); }
     .ablaeufe button:disabled { opacity: 0.45; cursor: default; }
     .ablaeufe button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .effekte-hinweis { margin: 14px 0 6px; }
+    .kette { margin: 6px 0 0; min-height: 1.3em; color: var(--muted); font-size: 0.84rem; }
     [data-grund="schwarz"] .muster { background: #000; }
     [data-grund="weiss"] .muster { background: #fff; }
     @media (max-width: 440px) { .muster { display: none; } }
@@ -124,7 +126,7 @@
   <header class="site-header">
     <div class="wrap">
       <h1>Bildfragmentieren</h1>
-      <p class="lead">Ein Foto zerfällt in Linien, dann in Formen, dann in Farben – und setzt sich am Ende wieder zusammen. Oder als Kristall, der zerspringt, oder als Echo aus feinen Linien. Als Video für Social Media.</p>
+      <p class="lead">Ein Foto zerfällt in Linien, dann in Formen, dann in Farben – und setzt sich am Ende wieder zusammen. Oder als Verwandlung: Funken, Kristall, Echo und Gebirge, einzeln oder kombiniert. Als Video für Social Media.</p>
     </div>
   </header>
 
@@ -194,12 +196,19 @@
         </li>
         <li>
           <h2>Ablauf</h2>
-          <p>Alle drei beginnen im Dunkeln und enden mit deinem Foto. Kristall und Echo sind räumlich (WebGL) und haben ein leuchtendes Signet.</p>
+          <p>Beide beginnen im Dunkeln und enden mit deinem Foto. Die Verwandlung ist räumlich (WebGL); im Signet leuchtet ihr Punkt.</p>
           <div class="ablaeufe" role="group" aria-label="Ablauf">
             <button type="button" data-ablauf="fragmente" aria-pressed="true"><b>Fragmente</b><small>Linien, Formen, Farben – das Foto wird Teil um Teil montiert</small></button>
-            <button type="button" data-ablauf="kristall" aria-pressed="false"><b>Kristall</b><small>Drei Kristalle verschmelzen zu einem Glaskörper, er zerspringt, die Scherben setzen das Foto zusammen</small></button>
-            <button type="button" data-ablauf="echo" aria-pressed="false"><b>Echo</b><small>Feine Höhenlinien und ihr Echo wie in TouchDesigner – das Foto baut sich Tonstufe um Tonstufe auf</small></button>
+            <button type="button" data-ablauf="verwandlung" aria-pressed="false"><b>Verwandlung</b><small>Funken verdichten sich zu einem Glaskörper, er zerspringt, die Scherben ziehen Spuren durch einen Tunnel, daraus wird ein Gebirge – und es legt sich flach zum Foto</small></button>
           </div>
+          <p class="effekte-hinweis">Die Effekte der Verwandlung – einzeln oder beliebig kombiniert:</p>
+          <div class="segment effekte" role="group" aria-label="Effekte der Verwandlung">
+            <button type="button" data-effekt="strom" aria-pressed="false" title="Glänzende Teilchen leuchten auf und ziehen in Bändern durchs Bild">Strom</button>
+            <button type="button" data-effekt="kristall" aria-pressed="false" title="Ein Glaskörper zerspringt in Scherben, die das Foto tragen">Kristall</button>
+            <button type="button" data-effekt="echo" aria-pressed="false" title="Die Kanten des Fotos ziehen Spuren in einen Tunnel wie in TouchDesigner">Echo</button>
+            <button type="button" data-effekt="relief" aria-pressed="false" title="Das Foto als Gebirge im Streiflicht, mit leuchtenden Höhenlinien">Relief</button>
+          </div>
+          <p class="kette" id="kette" aria-live="polite"></p>
         </li>
         <li>
           <h2>Gestaltung</h2>
@@ -218,7 +227,7 @@
         </li>
         <li>
           <h2>Video</h2>
-          <p>Das Video rechnet Bild für Bild in voller Grösse; Kristall und Echo brauchen dafür etwas länger.</p>
+          <p>Das Video rechnet Bild für Bild in voller Grösse; die räumlichen Abläufe brauchen dafür etwas länger.</p>
           <div class="leiste">
             <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
             <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
@@ -240,7 +249,7 @@
     <ul class="hinweise">
       <li>Alles bleibt in deinem Browser: Das Foto wird nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
       <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories); das Foto wird bei Bedarf mittig beschnitten.</li>
-      <li>Das Standbild nimmt die Stelle der Zeitleiste, in voller Grösse; ohne Wahl das fertige farbige Mosaik (bei Kristall und Echo die Mitte von Bruch bzw. Echo).</li>
+      <li>Das Standbild nimmt die Stelle der Zeitleiste, in voller Grösse; ohne Wahl das fertige farbige Mosaik (sonst die Mitte der zweiten Phase).</li>
       <li>Video: MP4 (H.264), 30 Bilder pro Sekunde, ohne Ton.</li>
     </ul>
   </div>
@@ -255,7 +264,7 @@
   <script type="importmap">
   { "imports": { "three": "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" } }
   </script>
-  <script type="module" src="app.js?v=18"></script>
+  <script type="module" src="app.js?v=21"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

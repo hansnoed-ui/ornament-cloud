@@ -5,7 +5,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { zerlegen, delaunay, vereinfachen, kantenMaske, verketten, helligkeit, farbton, auszuege, zufall, hoehenlinien } from "../alpha/bildfragmentieren/fragmente.js";
-import { zeitachse, filmMass, zeitcode, dateiname, PHASEN, TEMPO, FORMATE, SIGNET, ABLAEUFE, ablaufName, raumDauer } from "../alpha/bildfragmentieren/ablauf.js";
+import { zeitachse, filmMass, zeitcode, dateiname, PHASEN, TEMPO, FORMATE, SIGNET, ABLAEUFE, ablaufName, raumDauer, kette, effekte, EFFEKTE, VERWANDLUNG } from "../alpha/bildfragmentieren/ablauf.js";
 
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
@@ -156,30 +156,50 @@ test("Ablauf: vier Phasen in dieser Reihenfolge, Tempo, Abspann nach Wahl; Forma
   assert.equal(dateiname(new Date(2026, 9, 15, 9, 5), "mp4"), "bildfragmentieren-2026-10-15-0905.mp4");
 });
 
-test("Abläufe (16. Oktober 2026): Fragmente, Kristall, Echo zur Wahl; alle beginnen im Dunkeln und enden beim Foto, dann Signet", () => {
-  assert.deepEqual(Object.keys(ABLAEUFE), ["fragmente", "kristall", "echo"]);
+test("Abläufe (16./17. Oktober 2026): Fragmente oder die Verwandlung aus Strom, Kristall, Echo und Relief, einzeln oder kombiniert; alle beginnen im Dunkeln und enden beim Foto, dann Signet", () => {
+  assert.deepEqual(Object.keys(ABLAEUFE), ["fragmente", "strom", "kristall", "echo", "relief"]);
+  assert.deepEqual(EFFEKTE, ["strom", "kristall", "echo", "relief"]);
+  assert.equal(VERWANDLUNG, "strom+kristall+echo+relief");
   assert.deepEqual(ABLAEUFE.fragmente.phasen.map(([n]) => n), PHASEN.map(([n]) => n), "Fragmente wie bisher");
   assert.deepEqual(ABLAEUFE.kristall.phasen.map(([, t]) => t), ["Körper", "Bruch", "Montage"]);
-  assert.deepEqual(ABLAEUFE.echo.phasen.map(([, t]) => t), ["Konturen", "Echo", "Bild"], "ohne Kaleidoskop (Rückmeldung vom 17. Oktober 2026)");
+  assert.deepEqual(ABLAEUFE.echo.phasen.map(([, t]) => t), ["Echo", "Bild"], "ohne stehende Konturen und ohne Kaleidoskop (Rückmeldungen vom 17. Oktober 2026)");
+  assert.deepEqual(ABLAEUFE.relief.phasen.map(([, t]) => t), ["Höhenlinien", "Gebirge", "Bild"]);
+  assert.deepEqual(ABLAEUFE.strom.phasen.map(([, t]) => t), ["Funken", "Strom", "Bild"]);
+  assert.ok(raumDauer("strom") < 9, `Strom kürzer («zu lang»): ${raumDauer("strom")} s`);
+  // Namen: die Effekte in fester Reihenfolge, mit «+»
   assert.equal(ablaufName("quatsch"), "fragmente");
   assert.equal(ablaufName(null), "fragmente");
   assert.equal(ablaufName("echo"), "echo");
+  assert.equal(ablaufName("relief+strom+quatsch+strom"), "strom+relief");
+  assert.deepEqual(effekte("fragmente"), []);
+  assert.deepEqual(effekte("echo+kristall"), ["kristall", "echo"]);
   // ohne Wahl wie bisher: dieselbe Zeitachse
   const alt = zeitachse(), auch = zeitachse({ ablauf: "fragmente" });
   assert.deepEqual(auch.ab, alt.ab);
   assert.ok(Math.abs(alt.dauer - 23.55) < 1e-9, `Standard unverändert 23,55 s (${alt.dauer})`);
-  for (const art of ["kristall", "echo"]) {
+  // die ganze Verwandlung: neun Phasen, Strom verdichtet sich, nur das Relief endet beim Foto; die Teile überblenden
+  const K = kette(VERWANDLUNG);
+  assert.deepEqual(K.phasen.map((p) => p.titel), ["Funken", "Strom", "Verdichten", "Körper", "Bruch", "Echo", "Höhenlinien", "Gebirge", "Bild"]);
+  assert.deepEqual(K.teile.map((t) => [t.art, t.erst, t.letzt]), [["strom", true, false], ["kristall", false, false], ["echo", false, false], ["relief", false, true]]);
+  for (let i = 1; i < K.teile.length; i++) assert.ok(K.teile[i].von < K.teile[i - 1].bis && K.teile[i].von > K.teile[i - 1].von, "überblenden");
+  assert.ok(K.dauer > 20 && K.dauer < 26, `Verwandlung ${K.dauer} s`);
+  // einzeln: alle Phasen des Effekts, er endet beim Foto
+  for (const art of EFFEKTE) assert.deepEqual(kette(art).phasen.map((p) => p.name), ABLAEUFE[art].phasen.map(([n]) => n), `${art} einzeln`);
+  const auswahl = ["strom", "kristall", "echo", "relief", VERWANDLUNG, "kristall+echo", "strom+relief", "strom+kristall", "echo+relief"];
+  for (const art of auswahl) {
     for (const tempo of ["ruhig", "normal", "schnell"]) {
       const z = zeitachse({ ablauf: art, tempo });
       assert.equal(z.ablauf, art); assert.equal(z.fragmente, false);
-      assert.deepEqual(z.phasen.map((p) => p.name), ABLAEUFE[art].phasen.map(([n]) => n));
+      assert.equal(z.phasen.at(-1).titel, art.endsWith("kristall") ? "Montage" : "Bild", `${art}: endet beim Foto`);
+      assert.equal(new Set(z.phasen.map((p) => p.name)).size, z.phasen.length, `${art}: Namen eindeutig`);
       assert.equal(z.abschnitt.von, z.ab.vor[1], `${art}: beginnt nach dem kurzen Dunkel`);
       assert.equal(z.ab.stehen[0], z.abschnitt.bis, `${art}: danach steht das Foto`);
       assert.ok(Math.abs(z.abschnitt.bis - z.abschnitt.von - raumDauer(art) * TEMPO[tempo]) < 1e-9, `${art}: Tempo ${tempo}`);
-      for (let i = 1; i < z.phasen.length; i++) assert.ok(Math.abs(z.phasen[i].von - z.phasen[i - 1].bis) < 1e-9, "Phasen schliessen an");
+      assert.ok(Math.abs(z.phasen[0].von - z.abschnitt.von) < 1e-9 && Math.abs(z.phasen.at(-1).bis - z.abschnitt.bis) < 1e-9, `${art}: Phasen füllen den Abschnitt`);
+      for (let i = 1; i < z.phasen.length; i++) assert.ok(Math.abs(z.phasen[i].von - z.phasen[i - 1].bis) < 1e-9 && z.phasen[i].bis > z.phasen[i].von, "Phasen schliessen an");
       assert.ok(z.ab.zusammen[1] + 0.35 < 0 && z.ab.linien[0] < 0, `${art}: die Phasen von «Fragmente» liegen ausserhalb des Films`);
       assert.ok(Math.abs(z.dauer - z.ab.stehen[1] - (alt.dauer - alt.ab.stehen[1])) < 1e-9, "derselbe Abspann");
-      assert.ok(z.dauer > 14 && z.dauer < 26, `${art}: rund 15 bis 25 s (${z.dauer})`);
+      assert.ok(z.dauer > 12 && z.dauer < 41, `${art}: rund 12 bis 40 s (${z.dauer})`);
     }
   }
 });
@@ -210,7 +230,8 @@ test("Seite: Alpha (noindex), steht für sich ohne Navigation oben links, nichts
   assert.match(lies("alpha/bildfragmentieren/szene.js"), /punktTempo: SIGNET_TEMPO \* 1\.25/);
   assert.match(lies("alpha/sketchory/signet.js"), /punktTempo = 1 \}/, "für Sketchory unverändert");
   // Abläufe zur Wahl; three.js lokal (vendor/three-0.185.1) über eine Import-Map, geladen nur von raum.js
-  assert.deepEqual([...html.matchAll(/data-ablauf="([^"]+)"/g)].map((m) => m[1]), ["fragmente", "kristall", "echo"]);
+  assert.deepEqual([...html.matchAll(/data-ablauf="([^"]+)"/g)].map((m) => m[1]), ["fragmente", "verwandlung"]);
+  assert.deepEqual([...html.matchAll(/data-effekt="([^"]+)"/g)].map((m) => m[1]), EFFEKTE, "die Effekte einzeln oder kombiniert");
   const karte = JSON.parse(html.match(/<script type="importmap">([\s\S]*?)<\/script>/)[1]).imports;
   assert.deepEqual(karte, { three: "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" });
   assert.match(lies("vendor/three-0.185.1/three.core.min.js"), /"185"/, "three.js r185");

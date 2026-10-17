@@ -1,15 +1,13 @@
-// «Bildfragmentieren» – die Abläufe «Kristall» und «Echo» und ihr leuchtendes Signet (seit 16. Oktober 2026), mit three.js (WebGL 2, lokal in
-// vendor/three-0.185.1). Erst geladen, wenn einer der beiden gewählt ist. Jeder zeichnet auf eine eigene WebGL-Leinwand in der Auflösung des Ziels,
-// szene.js setzt das Bild ein – Vorschau, Standbild und Video bleiben, wie sie sind. Beide beginnen im Dunkeln und enden exakt beim Foto.
-//   Kristall: 01 Körper – drei kleine Kristalle fliegen aus dem Dunkeln herein und verschmelzen zu einem Glaskörper (Dodekaeder → Geode → Ikosaeder);
-//             das Foto ist nur durch das Glas zu sehen (Rückmeldung: «die Rolle der kleinen Körper ist unklar») · 02 Bruch – der Körper wächst und
-//             zerspringt in Voronoi-Scherben, die in die Tiefe fliegen · 03 Montage – die Scherben kehren eine nach der anderen zurück und rasten ein,
-//             bis das Foto steht («das Endbild setzt sich nicht zusammen, sondern erscheint einfach»). Zustandslos.
-//   Echo:     01 Konturen – feine, helle Höhenlinien des Fotos (immer einen Bildpunkt breit, einfarbig; «solche Konturen müssen feingliedriger sein»,
-//             «die Farben der Konturen gefallen mir nicht, dieses Orange»), kurz · 02 Echo – Rückkopplung wie in TouchDesigner (Zoom, Drehung, Wirbel,
-//             Spuren) · 03 Bild – das Foto baut sich Tonstufe um Tonstufe auf (das Kaleidoskop dazwischen fiel weg: «dieser Teil geht gar nicht»).
-//             Die Rückkopplung hängt an den Bildern davor: sie wird in festen Schritten (ein Schritt je Filmbild) von vorn nachgerechnet, darum ist
-//             jedes Bild beim Spulen und im Video dasselbe.
+// «Bildfragmentieren» – die Verwandlung: die Effekte Strom, Kristall, Echo und Relief, einzeln oder als Kette, und ihr leuchtendes Signet (seit
+// 16. Oktober 2026), mit three.js (WebGL 2, lokal in vendor/three-0.185.1). Erst geladen, wenn die Verwandlung gewählt ist. Alles zeichnet auf eine
+// eigene WebGL-Leinwand in der Auflösung des Ziels, szene.js setzt das Bild ein – Vorschau, Standbild und Video bleiben, wie sie sind. Jede Kette
+// beginnt im Dunkeln und endet exakt beim Foto; nur der letzte Effekt zeigt es, die anderen gehen in den nächsten über (Zeiten: kette() in ablauf.js).
+//   Strom:    Teilchen leuchten auf, ziehen zu Bändern, fliegen an ihren Platz – oder verdichten sich zur Kugel, aus der der nächste Effekt wächst.
+//   Kristall: drei Kristalle verschmelzen zu einem Glaskörper (oder er wächst aus der Kugel), er zerspringt, die Scherben setzen das Foto zusammen.
+//   Echo:     Rückkopplung wie in TouchDesigner; das Foto strömt am Ende durch den Tunnel herein. Nach einem anderen Effekt ziehen dessen Bilder Spuren.
+//   Relief:   die Helligkeit als Gebirge im Streiflicht, das sich flach legt.
+// Strom und Echo hängen an den Bildern davor: sie werden in festen Schritten (ein Schritt je Filmbild) von vorn nachgerechnet, darum ist jedes Bild
+// beim Spulen und im Video dasselbe.
 // Herkunft: Rezepte 3, 4 und 5 des Skills .claude/skills/threejs-spektakel (dort mit Beispielen und Prüfskript).
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -17,6 +15,8 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
+import { kette, ablaufName } from "./ablauf.js?v=21";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -36,9 +36,10 @@ const SAUM = {
       gl_FragColor = vec4(texture2D(tDiffuse, vUv - s).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv + s).b, 1.0);
     }`,
 };
-function filmlook(renderer, szene, kamera, { radius = 0.4, schwelle = 0.7 } = {}) {
+/** hell: weisser Grund – dann kein Bloom (er überstrahlt sonst das ganze Bild); proben: Kantenglättung (MSAA) für Geometrie */
+function filmlook(renderer, szene, kamera, { radius = 0.4, schwelle = 0.7, hell = false, proben = 0 } = {}) {
   const g = renderer.getSize(new THREE.Vector2());
-  const composer = new EffectComposer(renderer);
+  const composer = proben ? new EffectComposer(renderer, new THREE.WebGLRenderTarget(g.x, g.y, { type: THREE.HalfFloatType, samples: proben })) : new EffectComposer(renderer);
   composer.setPixelRatio(1); composer.setSize(g.x, g.y);
   composer.addPass(new RenderPass(szene, kamera));
   const bloom = new UnrealBloomPass(g.clone(), 0, radius, schwelle);
@@ -47,7 +48,7 @@ function filmlook(renderer, szene, kamera, { radius = 0.4, schwelle = 0.7 } = {}
   return {
     groesse: g.clone(), bloom,
     render(aktiv, staerke, saumStaerke = 0.003) {
-      bloom.enabled = aktiv > 0.001 && staerke > 0; bloom.strength = staerke * aktiv;
+      bloom.enabled = !hell && aktiv > 0.001 && staerke > 0; bloom.strength = staerke * aktiv;
       saum.uniforms.uSaum.value = saumStaerke * aktiv;
       composer.render();
     },
@@ -74,13 +75,13 @@ function glasMaterial(K, textur, B, H) {
     uN: { value: NORMALEN }, uDreh: { value: Array.from({ length: K }, () => new THREE.Matrix3()) },
     uMitte: { value: Array.from({ length: K }, () => new THREE.Vector3()) }, uGroesse: { value: new Array(K).fill(0) },
     uRadien: { value: Array.from({ length: K }, () => new THREE.Vector2(1, 1.3)) }, uTon: { value: Array.from({ length: K }, () => new THREE.Color(1, 1, 1)) },
-    uAussen: { value: 0 }, uGrund: { value: new THREE.Color(0, 0, 0) }, uKante: { value: 0.8 }, uBlitz: { value: 0 },
+    uAussen: { value: 0 }, uGrund: { value: new THREE.Color(0, 0, 0) }, uKante: { value: 0.8 }, uBlitz: { value: 0 }, uKantenFarbe: { value: new THREE.Color(0.97, 0.97, 0.97) },
   };
   const mat = new THREE.ShaderMaterial({
     uniforms: u, depthTest: false, depthWrite: false, vertexShader: QUAD_VERTEX,
     fragmentShader: /* glsl */ `
       #define K ${K}
-      uniform sampler2D uFoto; uniform float uSeiten, uAussen, uKante, uBlitz; uniform vec2 uPixel; uniform int uProben; uniform vec3 uN[16], uGrund;
+      uniform sampler2D uFoto; uniform float uSeiten, uAussen, uKante, uBlitz; uniform vec2 uPixel; uniform int uProben; uniform vec3 uN[16], uGrund, uKantenFarbe;
       uniform mat3 uDreh[K]; uniform vec3 uMitte[K], uTon[K]; uniform float uGroesse[K]; uniform vec2 uRadien[K];
       varying vec2 vUv;
       const float TANH = ${TANH.toFixed(7)}, KZ = ${KZ.toFixed(1)}, EBENE = -1.0;
@@ -130,11 +131,11 @@ function glasMaterial(K, textur, B, H) {
         vec3 glanz = vec3(1.0, 0.95, 0.88) * pow(max(dot(rw, normalize(vec3(0.6, 0.8, 0.5))), 0.0), 220.0) * 5.0
                    + vec3(1.0, 0.55, 0.25) * pow(max(dot(rw, normalize(vec3(-0.7, -0.2, 0.6))), 0.0), 90.0) * 1.5;
         farbe = mix(farbe, umgebung, F) + glanz;
-        float w = 0.012 / max(g, 0.2);
-        farbe += mix(vec3(1.0, 0.97, 0.92), uTon[k], 0.35) * kante(e, rad, w) * uKante;
+        float w = 0.007 / max(g, 0.2);                                       // feine, scharfe Kanten in der Kantenfarbe (auf Weiss dunkel)
+        farbe = mix(farbe, uKantenFarbe, clamp(kante(e, rad, w) * uKante, 0.0, 1.0));
         float a2, b2; vec3 m2, m3; vec3 d1g = refract(ld, n0, 1.0 / 1.5);
         schneide(e + d1g * 1e-4, d1g, rad, a2, b2, m2, m3);
-        farbe += vec3(0.9, 0.95, 1.0) * kante(e + d1g * b2, rad, w) * 0.35 * uKante;
+        farbe = mix(farbe, uKantenFarbe, clamp(kante(e + d1g * b2, rad, w) * 0.35 * uKante, 0.0, 1.0));
         return farbe;
       }
       void main() {
@@ -198,17 +199,22 @@ function scherben(zellen, bw, dicke, zufall) {
 }
 
 // ——— Kristall (11 s bei Tempo «normal»: Körper 0–3,6 · Bruch 3,6–6,8 · Montage 6,8–11) ———
+// Glaskörper mit scharfen Spiegelkanten; die Scherben tragen das Foto, nur ihre Schnittkanten sind Spiegel statt Glut (Rückmeldungen: «alle Kanten
+// schärfer, dieses Rot geht gar nicht», dann: «ich wollte nur das Orange der Kanten weg, nicht die ganzen Stücke schwarz/weiss»). Der Körper
+// zerspringt an seinem Ort: die Scherben liegen im Moment des Bruchs als Haufen von seiner Grösse in der Mitte und fliegen erst dann auseinander.
+// Nach einem anderen Effekt (erst = false) setzt er bei 1,7 s ein, ohne die drei kleinen Kristalle: der Körper wächst aus der Kugel von Strom.
 const BRUCH = 4.3;   // in diesem Moment zerspringt der Körper
-function kristall(renderer, textur, B, H, grund) {
-  // Teil 1: Glaskörper vor dem Dunkeln (ein Hauptkörper, drei kleine Kristalle)
+function kristall(renderer, textur, B, H, grund, px, hell, { erst = true } = {}) {
+  // Teil 1: Glaskörper (ein Hauptkörper, drei kleine Kristalle, die zu ihm verschmelzen)
   const glas = glasMaterial(4, textur, B, H);
   glas.u.uGrund.value.copy(grund);
+  glas.u.uKantenFarbe.value.setScalar(hell ? 0.04 : 0.97);
   const glasSzene = new THREE.Scene(), quad = new THREE.PlaneGeometry(2, 2);
   glasSzene.add(new THREE.Mesh(quad, glas.mat));
   const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const glasLook = filmlook(renderer, glasSzene, ortho, { radius: 0.2, schwelle: 0.92 });   // kleiner Radius: kein Schleier über dem Dunkel
+  const glasLook = filmlook(renderer, glasSzene, ortho, { radius: 0.15, schwelle: 0.95, hell });
   const seiten = B / H, m4 = new THREE.Matrix4(), eu = new THREE.Euler();
-  const KLEIN = [[90, 2, [1, 0.62, 0.42]], [215, 0, [0.55, 0.8, 1]], [330, 1, [0.85, 1, 0.7]]];   // Herkunft (Grad), Form, Tönung
+  const KLEIN = [[90, 2], [215, 0], [330, 1]];   // Herkunft (Grad), Form
 
   // Teil 2: Scherben (Bruch und Montage)
   const szene = new THREE.Scene();
@@ -216,12 +222,13 @@ function kristall(renderer, textur, B, H, grund) {
   const abstand = 1 / Math.tan(THREE.MathUtils.degToRad(FOV / 2));
   const bw = (2 * B) / H, zufall = zufallAus(20261016);
   const gy = grob() ? 18 : 24, gx = Math.round((gy * B) / H), zellen = voronoi(bw, gx, gy, zufall);
-  const geo = scherben(zellen, bw, 0.05, zufall);
+  const geo = scherben(zellen, bw, 0.03, zufall);
+  const KOERPER_ENDE = 0.6;                                               // Grösse des Körpers im Moment des Bruchs
   const mat = new THREE.ShaderMaterial({
     uniforms: { uFoto: { value: textur }, uAus: { value: 0 }, uZurueck: { value: 0 }, uZeit: { value: 0 }, uLicht: { value: new THREE.Vector3() },
-      uAkzent: { value: new THREE.Color("#ff6a1f") }, uBlitz: { value: 0 } },
+      uBlitz: { value: 0 }, uHell: { value: hell ? 1 : 0 }, uKern: { value: KOERPER_ENDE * 1.1 } },
     vertexShader: /* glsl */ `
-      uniform float uAus, uZurueck, uZeit;
+      uniform float uAus, uZurueck, uZeit, uKern;
       attribute vec3 aMitte; attribute vec4 aZufall; attribute vec2 aUv; attribute float aSeite, aRang;
       varying vec2 vUv; varying vec3 vNormal, vSicht; varying float vSeite, vFlug, vRast;
       mat3 drehung(vec3 a, float w) {
@@ -231,70 +238,76 @@ function kristall(renderer, textur, B, H, grund) {
       }
       void main() {
         float r = length(aMitte.xy);
-        float aus = smoothstep(0.0, 1.0, (uAus - 0.25 * min(r / 1.3, 1.0) - 0.15 * aZufall.w) / 0.45);   // Bruch: von der Mitte aus, schnell
+        float aus = smoothstep(0.0, 1.0, (uAus - 0.2 * min(r / 1.3, 1.0) - 0.12 * aZufall.w) / 0.5);    // Bruch: von innen nach aussen
         float s2 = 0.84 * aRang;                                                                        // Montage: eine Scherbe nach der anderen
         float zur = smoothstep(s2, s2 + 0.16, uZurueck);
-        float f = aus * (1.0 - zur);
-        f = f * f * (3.0 - 2.0 * f);
+        zur = zur * zur * (3.0 - 2.0 * zur);
         vRast = step(s2 + 0.16, uZurueck) * exp(-(uZurueck - s2 - 0.16) * 45.0);                      // kurzes Aufleuchten beim Einrasten
+        // drei Lagen: der Haufen in der Mitte (so gross wie der Körper), der Flug, die Heimat im Foto
+        vec3 kern = uKern * pow(aZufall.w, 0.33) * normalize(aZufall.xyz - 0.5 + 1e-3) + vec3(0.0, 0.0, 0.15);   // eine Kugel wie der Körper
         vec3 richtung = vec3(aMitte.xy * 0.55 + (aZufall.xy - 0.5) * 0.6, 0.35 + 1.3 * aZufall.z);
-        vec3 mitte = aMitte + richtung * f * (0.7 + 1.1 * aZufall.w) + f * 0.08 * vec3(sin(uZeit * 0.9 + 6.28 * aZufall.x), cos(uZeit * 0.7 + 6.28 * aZufall.y), 0.0);
+        vec3 flug = aMitte + richtung * (0.7 + 1.1 * aZufall.w) + 0.08 * vec3(sin(uZeit * 0.9 + 6.28 * aZufall.x), cos(uZeit * 0.7 + 6.28 * aZufall.y), 0.0);
+        vec3 mitte = mix(mix(kern, flug, aus), aMitte, zur);
+        float gross = mix(mix(0.45, 1.0, aus), 1.0, zur);
+        float f = (1.0 - zur) * max(aus, 0.25);
         mat3 R = drehung(aZufall.xyz - 0.5 + 1e-3, f * (0.3 + 1.2 * aZufall.w));
-        vec4 mv = modelViewMatrix * vec4(R * (position - aMitte) + mitte, 1.0);
+        vec4 mv = modelViewMatrix * vec4(R * (position - aMitte) * gross + mitte, 1.0);
         gl_Position = projectionMatrix * mv;
-        vNormal = normalMatrix * (R * normal); vSicht = -mv.xyz; vUv = aUv; vSeite = aSeite; vFlug = f;
+        vNormal = normalMatrix * (R * normal); vSicht = -mv.xyz; vUv = aUv; vSeite = aSeite; vFlug = (1.0 - zur);
       }`,
     fragmentShader: /* glsl */ `
-      uniform sampler2D uFoto; uniform vec3 uLicht, uAkzent; uniform float uBlitz;
+      uniform sampler2D uFoto; uniform vec3 uLicht; uniform float uBlitz, uHell;
       varying vec2 vUv; varying vec3 vNormal, vSicht; varying float vSeite, vFlug, vRast;
       void main() {
         vec3 n = normalize(vNormal), v = normalize(vSicht), l = normalize(uLicht);
         if (!gl_FrontFacing) n = -n;
-        float diff = max(dot(n, l), 0.0), glanz = pow(max(dot(n, normalize(l + v)), 0.0), 70.0), fres = pow(1.0 - max(dot(n, v), 0.0), 3.0);
+        float diff = max(dot(n, l), 0.0), glanz = pow(max(dot(n, normalize(l + v)), 0.0), 90.0), fres = pow(1.0 - max(dot(n, v), 0.0), 4.0);
+        vec3 rw = reflect(-v, n);
+        vec3 spiegel = mix(vec3(0.03), vec3(0.92, 0.93, 0.95), smoothstep(-0.35, 0.75, rw.y)) + 1.4 * glanz;     // Spiegel: schwarz-weiss
         vec3 foto = texture2D(uFoto, vUv).rgb, c;
-        if (vSeite > 0.75) c = foto * mix(1.0, 0.55 + 0.75 * diff, vFlug) + vFlug * (0.5 * glanz + 0.25 * fres) + vRast * vec3(0.55, 0.42, 0.3);
-        else if (vSeite > 0.25) c = uAkzent * (0.1 + 0.55 * diff) + 0.8 * glanz;   // Schnittkanten: Glut, nicht Fläche
-        else c = foto * 0.12 + 0.4 * fres;
+        // Vorderseite: das Stück Foto, im Flug beleuchtet und mit Glanz
+        if (vSeite > 0.75) c = foto * mix(1.0, 0.55 + 0.75 * diff, vFlug) + vFlug * (0.55 * glanz + 0.25 * fres) + vRast * mix(vec3(0.4), vec3(-0.25), uHell);
+        else if (vSeite > 0.25) c = spiegel;                                                            // Schnittkanten: scharfer Spiegel
+        else c = mix(vec3(0.05), spiegel, 0.35 + 0.65 * fres);                                          // Rückseite: dunkles Glas
         gl_FragColor = vec4(c + uBlitz, 1.0);
       }`,
   });
   const netz = new THREE.Mesh(geo, mat);
   netz.frustumCulled = false;
   szene.add(netz);
-  const look = filmlook(renderer, szene, kamera, { radius: 0.3, schwelle: 0.8 });
+  const look = filmlook(renderer, szene, kamera, { radius: 0.15, schwelle: 0.95, hell, proben: 4 });
   let stand = "";
 
   return {
-    dauer: 11, looks: [glasLook, look],
+    looks: [glasLook, look],
     groesse(w, h) { glas.groesse(w, h, w >= B * 0.95); },
     bild(t) {
-      const blitz = 0.45 * Math.exp(-(((t - BRUCH) / 0.08) ** 2));
+      const blitz = (hell ? 0 : 0.3) * Math.exp(-(((t - BRUCH) / 0.07) ** 2));
       if (t < BRUCH) {
         // drei kleine Kristalle fliegen auf Spiralen herein und verschmelzen bei rund 2 s zum grossen Körper
         const u = glas.u, ankunft = [1.75, 1.95, 2.15];
-        KLEIN.forEach(([grad, f, ton], j) => {
+        KLEIN.forEach(([grad, f], j) => {
           const a = anteil(t, 0.12 * j - 0.3, ankunft[j]), w = THREE.MathUtils.degToRad(grad) + 1.6 * (1 - a), r = 1.25 * (1 - inOut(a));   // am Rand schon sichtbar
           u.uMitte.value[j].set(Math.cos(w) * r * seiten, Math.sin(w) * r, -0.4 * (1 - a));
-          u.uGroesse.value[j] = 0.15 * weich(anteil(t, 0, 0.5)) * (1 - weich(anteil(t, ankunft[j] - 0.05, ankunft[j] + 0.2)));
+          u.uGroesse.value[j] = erst ? 0.15 * weich(anteil(t, 0, 0.5)) * (1 - weich(anteil(t, ankunft[j] - 0.05, ankunft[j] + 0.2))) : 0;
           u.uDreh.value[j].setFromMatrix4(m4.makeRotationFromEuler(eu.set(t * (1.3 + 0.4 * j), t * 0.9, j)));
-          form(f, u.uRadien.value[j]); u.uTon.value[j].setRGB(...ton);
+          form(f, u.uRadien.value[j]);
         });
-        const wachsen = weich(anteil(t, 1.7, 2.6)) * (0.45 + 0.75 * inOut(anteil(t, 3.6, BRUCH)));
-        u.uGroesse.value[3] = wachsen;
+        // der Körper wächst bis zum Bruch nur auf KOERPER_ENDE: die Scherben übernehmen genau seinen Platz
+        u.uGroesse.value[3] = weich(anteil(t, 1.7, 2.6)) * (0.45 + (KOERPER_ENDE - 0.45) * inOut(anteil(t, 3.0, BRUCH)));
         u.uMitte.value[3].set(0, 0, 0);
-        u.uDreh.value[3].setFromMatrix4(m4.makeRotationFromEuler(eu.set(t * 0.33 + 0.4, t * 0.5 + 1.2 * anteil(t, 3.6, BRUCH) ** 2, t * 0.14)));
+        u.uDreh.value[3].setFromMatrix4(m4.makeRotationFromEuler(eu.set(t * 0.33 + 0.4, t * 0.5 + 1.6 * anteil(t, 3.4, BRUCH) ** 2, t * 0.14)));
         form(Math.min(2, Math.max(0, (t - 2.2) / 1.1)), u.uRadien.value[3]);
-        const verschmelzen = Math.exp(-(((t - 2.05) / 0.25) ** 2));
-        u.uKante.value = 0.75 + 0.45 * verschmelzen;
-        u.uBlitz.value = blitz;                                              // kein Zusatzblitz beim Verschmelzen: linear addiert wird er ein grauer Schleier
-        stand = `körper ${FORMNAMEN[Math.round(Math.min(2, Math.max(0, (t - 2.2) / 1.1)))]} · kristalle ${[0, 1, 2].filter((j) => t < ankunft[j] + 0.1).length}`;
-        glasLook.render(1, 0.32 + 0.15 * verschmelzen);
+        u.uKante.value = 0.85;
+        u.uBlitz.value = blitz;
+        stand = `körper ${FORMNAMEN[Math.round(Math.min(2, Math.max(0, (t - 2.2) / 1.1)))]}` + (erst ? ` · kristalle ${[0, 1, 2].filter((j) => t < ankunft[j] + 0.1).length}` : "");
+        glasLook.render(1, 0.25);
         return;
       }
       // Bruch und Montage
       const U = mat.uniforms;
       U.uZeit.value = t;
-      U.uAus.value = 0.3 + 1.3 * inOut(anteil(t, BRUCH, BRUCH + 1.2));   // im Moment des Bruchs schon auseinander: das ganze Foto zeigt erst die Montage
+      U.uAus.value = 1.4 * inOut(anteil(t, BRUCH, BRUCH + 1.4));
       U.uZurueck.value = Math.max(0, (t - 6.8) / 3.9);                    // nicht begrenzt: das Aufleuchten der letzten Scherben klingt bis 11 s aus
       U.uBlitz.value = blitz;
       const flug = Math.min(1, U.uAus.value) * (1 - anteil(t, 8.8, 10.7));
@@ -305,164 +318,417 @@ function kristall(renderer, textur, B, H, grund) {
       U.uLicht.value.set(Math.cos(t * 0.8) * 0.7, 0.6, 0.6).transformDirection(kamera.matrixWorldInverse);
       const gesetzt = Math.round(zellen.length * Math.min(1, Math.max(0, (U.uZurueck.value - 0.16) / 0.84)));
       stand = t < 6.8 ? `scherben ${zellen.length} · flug ${Math.round(flug * 100)} %` : `scherben ${gesetzt} / ${zellen.length}`;
-      look.render(Math.max(flug, blitz, U.uZurueck.value < 1 ? 0.35 : 0), 0.5);
+      look.render(Math.max(flug, U.uZurueck.value < 1 ? 0.35 : 0), 0.25);
     },
     zaehler() { return stand; },
     entsorgen() { quad.dispose(); glas.mat.dispose(); glasLook.entsorgen(); geo.dispose(); mat.dispose(); look.entsorgen(); },
   };
 }
 
-// ——— Echo (10 s: Konturen 0–1,6 · Echo 1,6–6,6 · Bild 6,6–10) ———
-/** Höhenlinien: so viele Tonstufen, dass die Linien rund 7 % der Fläche decken – unruhige Bilder bekommen weniger, sonst wachsen sie zu (6 bis 18) */
-const stufenFuer = (gefaelle) => Math.round(Math.min(18, Math.max(6, 0.07 / (1.6 * Math.max(gefaelle, 1e-4)))));
-/** Helligkeit des Fotos, leicht geglättet (für feine, ruhige Höhenlinien), als einkanalige Textur in halber Grösse */
-function helligkeitsTextur(px, B, H) {
-  const w = Math.round(B / 2), h = Math.round(H / 2), f = new Float32Array(w * h), tmp = new Float32Array(w * h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const i = (Math.min(H - 1, y * 2) * B + Math.min(B - 1, x * 2)) * 4;
-    f[y * w + x] = (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255;
-  }
-  const r = 3;
-  for (let d = 0; d < 2; d++) {
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let s = 0, n = 0; for (let k = -r; k <= r; k++) { const xx = x + k; if (xx >= 0 && xx < w) { s += f[y * w + xx]; n++; } } tmp[y * w + x] = s / n; }
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let s = 0, n = 0; for (let k = -r; k <= r; k++) { const yy = y + k; if (yy >= 0 && yy < h) { s += tmp[yy * w + x]; n++; } } f[y * w + x] = s / n; }
-  }
-  let g = 0;
-  for (let y = 1; y < h; y++) for (let x = 1; x < w; x++) g += Math.hypot(f[y * w + x] - f[y * w + x - 1], f[y * w + x] - f[(y - 1) * w + x]);
-  const daten = new Uint8Array(w * h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) daten[(h - 1 - y) * w + x] = Math.round(f[y * w + x] * 255);   // Zeile 0 unten (wie uv)
-  const tex = new THREE.DataTexture(daten, w, h, THREE.RedFormat, THREE.UnsignedByteType);
-  tex.minFilter = tex.magFilter = THREE.LinearFilter; tex.needsUpdate = true;
-  return { tex, stufen: stufenFuer(g / ((w - 1) * (h - 1)) / 2) };   // Gefälle je Filmbildpunkt (die Textur hat die halbe Grösse)
-}
-
-const GLSL_ECHO = /* glsl */ `
-  uniform sampler2D uHell, uFoto; uniform float uStufen;
-  float hell(vec2 uv) { return texture2D(uHell, uv).r; }
-  // feine Höhenlinien: je Tonstufe eine Linie, über fwidth immer etwa einen Bildpunkt breit; stufe: die Nummer der Linie
-  float linien(vec2 uv, out float stufe) {
-    float h = hell(uv) * uStufen; stufe = floor(h + 0.5);
-    return 1.0 - smoothstep(0.35, 1.1, abs(fract(h - 0.5) - 0.5) / max(fwidth(h), 1e-4));
-  }
-  vec3 farbdreh(vec3 c, float w) {
-    const mat3 zuYIQ = mat3(0.299, 0.596, 0.211, 0.587, -0.274, -0.523, 0.114, -0.322, 0.312);
-    const mat3 zuRGB = mat3(1.0, 1.0, 1.0, 0.956, -0.272, -1.106, 0.621, -0.647, 1.703);
-    vec3 y = zuYIQ * c; float cw = cos(w), sw = sin(w); y.yz = mat2(cw, -sw, sw, cw) * y.yz; return zuRGB * y;
-  }`;
-
-function echo(renderer, textur, B, H, grund, px) {
-  const { tex: hellTex, stufen: STUFEN } = helligkeitsTextur(px, B, H);
+// ——— Echo (9,4 s: Echo 0–6 · Bild 6–9,4) ———
+// Rückkopplung wie die erste Fassung im Showreel (Rückmeldung vom 17. Oktober 2026: «die Echoes am Anfang waren viel besser, nur die bewegungslosen
+// Konturen waren nicht schön»): die Kanten des Fotos (Sobel), einfarbig hell, ziehen lange weiche Spuren in einen Zoom-Tunnel, vom ersten Bild an
+// bewegt. Im Bild-Teil strömt das Foto selbst durch den Tunnel herein, der Zoom kommt zur Ruhe, und die Spuren ziehen sich zum Foto zusammen
+// (Rückmeldung: «die Zusammensetzung des Schlussbildes wenig nachvollziehbar» – vorher wuchs es Tonstufe um Tonstufe). Nach einem anderen Effekt
+// (erst = false) speist zuerst dessen Bild die Schleife (quelle): seine Scherben oder Teilchen ziehen Spuren, dann übernehmen die Kanten.
+function echo(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = true } = {}) {
   const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), quad = new THREE.PlaneGeometry(2, 2);
   const ziel = (w, h) => new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
-  let lesen = ziel(B, H), schreiben = ziel(B, H);
-  const gemeinsam = { uHell: { value: hellTex }, uFoto: { value: textur }, uStufen: { value: STUFEN } };
-  // ein Schritt der Rückkopplung
+  // je Auflösung ein eigener Zustand (Vorschau und Export rechnen in verschiedener Grösse; sonst begänne die Schleife bei jedem Wechsel von vorn)
+  const zustaende = new Map();
+  let Z = null;
+  const zustand = (w, h) => {
+    const schluessel = `${w}x${h}`;
+    if (!zustaende.has(schluessel)) {
+      if (zustaende.size >= 2) { const [alt, z] = zustaende.entries().next().value; z.lesen.dispose(); z.schreiben.dispose(); zustaende.delete(alt); }
+      zustaende.set(schluessel, { lesen: ziel(w, h), schreiben: ziel(w, h), n: -1 });
+    }
+    return zustaende.get(schluessel);
+  };
+  Z = zustand(B, H);
+  // ein Schritt der Rückkopplung; auf weissem Grund rechnet die Schleife im Negativ (die Anzeige kehrt es um: dunkle Spuren auf Weiss)
   const rueck = new THREE.ShaderMaterial({
-    uniforms: { ...gemeinsam, uVorher: { value: null }, uSeiten: { value: B / H }, uZeit: { value: 0 }, uZoom: { value: 1 }, uDreh: { value: 0 }, uWirbel: { value: 0 },
-      uZerfall: { value: 0.6 }, uFarbdreh: { value: 0 }, uEin: { value: 0 }, uZeigen: { value: 0 } },
+    uniforms: { uFoto: { value: textur }, uTexel: { value: new THREE.Vector2(1 / B, 1 / H) }, uVorher: { value: null }, uSeiten: { value: B / H }, uZeit: { value: 0 },
+      uZoom: { value: 1 }, uDreh: { value: 0 }, uWirbel: { value: 0 }, uZerfall: { value: 0.93 }, uEin: { value: 0 }, uFotoEin: { value: 0 },
+      uQuelle: { value: null }, uQuelleEin: { value: 0 }, uHell: { value: hell ? 1 : 0 } },
     vertexShader: QUAD_VERTEX, depthTest: false, depthWrite: false,
     fragmentShader: /* glsl */ `
-      ${GLSL_ECHO}
-      uniform sampler2D uVorher; uniform float uSeiten, uZeit, uZoom, uDreh, uWirbel, uZerfall, uFarbdreh, uEin, uZeigen;
+      ${GLSL_RAUSCHEN}
+      uniform sampler2D uVorher, uFoto, uQuelle; uniform vec2 uTexel; uniform float uSeiten, uZeit, uZoom, uDreh, uWirbel, uZerfall, uEin, uFotoEin, uQuelleEin, uHell;
       varying vec2 vUv;
+      float hellP(vec2 uv) { return dot(texture2D(uFoto, uv).rgb, vec3(0.2126, 0.7152, 0.0722)); }
+      vec3 linear(vec3 c) { return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }
+      vec3 negativ(vec3 c) { return mix(c, 1.0 - c, uHell); }
       void main() {
         vec2 p = vUv - 0.5; p.x *= uSeiten;
         float c = cos(uDreh), s = sin(uDreh);
-        vec2 q = mat2(c, -s, s, c) * p / uZoom;
-        q += uWirbel * 0.004 * vec2(sin(q.y * 9.0 + uZeit * 1.3), cos(q.x * 8.0 - uZeit * 1.1));
+        vec2 q = mat2(c, -s, s, c) * p / uZoom;                                                      // hineinzoomen und drehen
+        q += uWirbel * 0.006 * vec2(snoise(vec3(q * 3.0, uZeit * 0.25)), snoise(vec3(q * 3.0 + 7.7, uZeit * 0.25)));
         q.x /= uSeiten; q += 0.5;
-        vec3 alt = max(farbdreh(texture2D(uVorher, q).rgb, uFarbdreh), 0.0) * uZerfall;
-        float stufe; float l = linien(vUv, stufe);
-        float sicht = smoothstep(stufe / uStufen - 0.06, stufe / uStufen, uZeigen);                  // Tonstufe um Tonstufe, von dunkel nach hell
-        vec3 farbe = vec3(0.78, 0.8, 0.84);                                                         // einfarbig hell, ein Hauch kühl
-        gl_FragColor = vec4(clamp(max(alt, farbe * l * sicht * uEin), 0.0, 1.0), 1.0);              // Maximum: keine Aufschaukelung
+        vec3 neu = texture2D(uVorher, q).rgb * uZerfall;
+        float tl = hellP(vUv + uTexel * vec2(-1, 1)), t = hellP(vUv + uTexel * vec2(0, 1)), tr = hellP(vUv + uTexel * vec2(1, 1));
+        float l = hellP(vUv + uTexel * vec2(-1, 0)), rr = hellP(vUv + uTexel * vec2(1, 0));
+        float bl = hellP(vUv + uTexel * vec2(-1, -1)), b = hellP(vUv + uTexel * vec2(0, -1)), br = hellP(vUv + uTexel * vec2(1, -1));
+        float gx = tr + 2.0 * rr + br - tl - 2.0 * l - bl, gy = tl + 2.0 * t + tr - bl - 2.0 * b - br;
+        neu = max(neu, vec3(0.9, 0.91, 0.94) * smoothstep(0.25, 0.8, length(vec2(gx, gy))) * uEin);      // Kanten, einfarbig hell; Maximum: keine Aufschaukelung
+        neu = max(neu, negativ(texture2D(uFoto, vUv).rgb) * uFotoEin);                                 // Bild-Teil: das Foto strömt herein
+        if (uQuelleEin > 0.0) neu = max(neu, negativ(linear(texture2D(uQuelle, vUv).rgb)) * uQuelleEin);   // der vorige Effekt (fertiges Bild)
+        gl_FragColor = vec4(clamp(neu, 0.0, 3.0), 1.0);
       }`,
   });
   const rueckSzene = new THREE.Scene(); rueckSzene.add(new THREE.Mesh(quad, rueck));
-  // Anzeige: Rückkopplung, im Bild-Teil wächst das Foto Tonstufe um Tonstufe darunter hervor; am Ende exakt das Foto
+  // Anzeige: Grund und Schleife; ganz am Ende exakt das Foto
   const zeige = new THREE.ShaderMaterial({
-    uniforms: { ...gemeinsam, uSchleife: { value: null }, uAufbau: { value: 0 }, uGrund: { value: grund.clone() }, uHellGrund: { value: grund.getHSL({}).l > 0.5 ? 1 : 0 } },
+    uniforms: { uSchleife: { value: null }, uFoto: { value: textur }, uExakt: { value: 0 }, uGrund: { value: grund.clone() }, uHell: { value: hell ? 1 : 0 } },
     vertexShader: QUAD_VERTEX, depthTest: false, depthWrite: false,
     fragmentShader: /* glsl */ `
-      ${GLSL_ECHO}
-      uniform sampler2D uSchleife; uniform float uAufbau, uHellGrund; uniform vec3 uGrund; varying vec2 vUv;
+      uniform sampler2D uSchleife, uFoto; uniform float uExakt, uHell; uniform vec3 uGrund; varying vec2 vUv;
       void main() {
-        vec3 schleife = texture2D(uSchleife, vUv).rgb;
-        if (uHellGrund > 0.5) schleife = -min(schleife, 1.0);                                       // auf Weiss: dunkle Linien
-        float h = hell(vUv), grenze = uAufbau * 1.12 - 0.06;
-        float da = smoothstep(grenze, grenze - 0.06, h);                                            // dunkle Stufen zuerst
-        float stufe; float l = linien(vUv, stufe);
-        float front = l * smoothstep(0.09, 0.0, abs(stufe / uStufen - grenze));                      // die Linie an der Grenze leuchtet
-        vec3 foto = texture2D(uFoto, vUv).rgb;
-        vec3 c = mix(uGrund + schleife * (1.0 - uAufbau), foto, da) + front * (1.0 - uAufbau) * 1.2;
-        gl_FragColor = vec4(uAufbau >= 1.0 ? foto : c, 1.0);
+        vec3 s = min(texture2D(uSchleife, vUv).rgb, 1.0);
+        gl_FragColor = vec4(mix(uHell > 0.5 ? uGrund - s : uGrund + s, texture2D(uFoto, vUv).rgb, uExakt), 1.0);
       }`,
   });
   const anzeige = new THREE.Scene(); anzeige.add(new THREE.Mesh(quad, zeige));
-  const look = filmlook(renderer, anzeige, ortho, { radius: 0.2, schwelle: 0.75 });
+  const look = filmlook(renderer, anzeige, ortho, { radius: 0.4, schwelle: 0.85, hell });
 
   const regler = (t) => {
     const u = rueck.uniforms;
-    const echoAn = weich(anteil(t, 0.9, 2.0)) * (1 - weich(anteil(t, 6.6, 8.2)));   // die Bewegung setzt früh ein
+    // Bewegung vom ersten Bild an (nach einem anderen Effekt gleich mit Schwung); im Bild-Teil kommt der Tunnel zur Ruhe
+    const voll = erst ? weich(anteil(t, 0, 1.2)) : 0.6 + 0.4 * weich(anteil(t, 0, 1.2)), ruhe = letzt ? 1 - inOut(anteil(t, 6.4, 8.6)) : 1;
     u.uZeit.value = t;
-    u.uZeigen.value = 1.08 * anteil(t, 0.05, 1.5);
-    u.uEin.value = (1 - 0.35 * weich(anteil(t, 1.6, 2.6))) * (1 - weich(anteil(t, 7.2, 8.4)));
-    u.uZerfall.value = 0.5 + 0.34 * echoAn;                                                        // Konturen ohne Spur, im Echo Spuren, die abklingen, bevor sie zuwachsen
-    u.uZoom.value = 1 + 0.02 * echoAn * (0.75 + 0.25 * Math.sin(t * 1.1));   // weit genug je Bild: die Spuren bleiben einzelne feine Linien
-    u.uDreh.value = 0.005 * echoAn * Math.sin(t * 0.55 + 0.4);                                   // die Drehung wechselt einmal die Richtung
-    u.uWirbel.value = echoAn;
-    u.uFarbdreh.value = 0;                                                                        // keine Farbdrehung: die Spuren bleiben einfarbig
-    return echoAn;
+    u.uEin.value = (erst ? weich(anteil(t, 0.1, 1.0)) : weich(anteil(t, 0.6, 1.8))) * (letzt ? 1 - weich(anteil(t, 6.0, 7.2)) : 1);
+    u.uFotoEin.value = letzt ? inOut(anteil(t, 5.8, 7.0)) : 0;
+    u.uZerfall.value = letzt ? 0.93 - 0.08 * anteil(t, 7.6, 8.8) : 0.93;
+    u.uZoom.value = 1 + (0.004 + 0.014 * voll * (0.6 + 0.4 * Math.sin(t * 0.9))) * ruhe;
+    u.uDreh.value = 0.006 * voll * ruhe * (t < 3.2 ? 1 : -1) * (1 - Math.exp(-Math.abs(t - 3.2) * 2));   // dreht bei 3,2 s die Richtung
+    u.uWirbel.value = voll * ruhe;
+    return voll * ruhe;
   };
-  let n = -1, gross = [B, H], stand = "", aktiv = 0;
+  let stand = "";
   const leeren = () => {                                                                         // die Schleife beginnt schwarz, auch auf weissem Grund
     const alt = renderer.getClearColor(new THREE.Color()), altA = renderer.getClearAlpha();
     renderer.setClearColor(0x000000, 1);
-    for (const z of [lesen, schreiben]) { renderer.setRenderTarget(z); renderer.clear(); }
+    for (const z of [Z.lesen, Z.schreiben]) { renderer.setRenderTarget(z); renderer.clear(); }
     renderer.setRenderTarget(null); renderer.setClearColor(alt, altA);
   };
-  const schritt = (t) => {
+  const schritt = (t, q) => {
+    rueck.uniforms.uQuelle.value = q?.textur ?? null; rueck.uniforms.uQuelleEin.value = q?.textur ? q.ein : 0;
     regler(t);
-    rueck.uniforms.uVorher.value = lesen.texture;
-    renderer.setRenderTarget(schreiben); renderer.render(rueckSzene, ortho); renderer.setRenderTarget(null);
-    [lesen, schreiben] = [schreiben, lesen];
+    rueck.uniforms.uVorher.value = Z.lesen.texture;
+    renderer.setRenderTarget(Z.schreiben); renderer.render(rueckSzene, ortho); renderer.setRenderTarget(null);
+    [Z.lesen, Z.schreiben] = [Z.schreiben, Z.lesen];
   };
   return {
-    dauer: 10, looks: [look],
-    groesse(w, h) {
-      if (gross[0] === w && gross[1] === h) return;
-      gross = [w, h]; lesen.setSize(w, h); schreiben.setSize(w, h); n = -1;                    // andere Grösse: von vorn rechnen
-    },
-    /** t: Zeit im Ablauf; k, N: Bild k von N im Abschnitt (die Schritte der Rückkopplung zählen in Filmbildern) */
-    bild(t, k, N) {
-      if (k < n || n < 0) { leeren(); n = -1; }
-      while (n < k) { n++; schritt((n / Math.max(1, N)) * 10); }
-      aktiv = regler(t);
-      const aufbau = inOut(anteil(t, 6.8, 9.8));
-      zeige.uniforms.uSchleife.value = lesen.texture;
-      zeige.uniforms.uAufbau.value = t >= 9.8 ? 1 : aufbau;
-      stand = t < 1.6 ? `höhenlinien ${Math.round(Math.min(1, rueck.uniforms.uZeigen.value) * STUFEN)} / ${STUFEN}`
-        : t < 6.6 ? `rückkopplung ${Math.round(rueck.uniforms.uZerfall.value * 100)} % · zoom ${(rueck.uniforms.uZoom.value * 100 - 100).toFixed(1)} %`
-        : `tonstufen ${Math.round(Math.min(1, aufbau * 1.12) * STUFEN)} / ${STUFEN}`;
-      look.render(Math.max(aktiv, 0.4 * (1 - aufbau)), 0.25, 0.0015);
+    looks: [look],
+    groesse(w, h) { Z = zustand(w, h); },
+    /** t: Zeit im Effekt; j: Filmbild im Effekt, zeit(i): die Zeit von Bild i (die Schritte der Rückkopplung zählen in Filmbildern);
+     *  quelle(i): das fertige Bild des vorigen Effekts zu Bild i ({ textur, ein }) oder null */
+    bild(t, j, zeit, quelle) {
+      if (j < Z.n || Z.n < 0) { leeren(); Z.n = -1; }
+      while (Z.n < j) { const i = Z.n + 1; schritt(zeit(i), quelle?.(i)); Z.n = i; }
+      const aktiv = regler(t);
+      zeige.uniforms.uSchleife.value = Z.lesen.texture;
+      zeige.uniforms.uExakt.value = letzt ? (t >= 9.2 ? 1 : weich(anteil(t, 8.6, 9.2))) : 0;
+      const zoom = `zoom ${(rueck.uniforms.uZoom.value * 100 - 100).toFixed(1)} %`;
+      stand = !letzt || t < 6 ? `rückkopplung ${Math.round(rueck.uniforms.uZerfall.value * 100)} % · ${zoom}` : `foto ${Math.round(rueck.uniforms.uFotoEin.value * 100)} % · ${zoom}`;
+      look.render(aktiv, 0.35, 0.003);
     },
     zaehler() { return stand; },
-    entsorgen() { lesen.dispose(); schreiben.dispose(); quad.dispose(); rueck.dispose(); zeige.dispose(); hellTex.dispose(); look.entsorgen(); },
+    entsorgen() { for (const z of zustaende.values()) { z.lesen.dispose(); z.schreiben.dispose(); } quad.dispose(); rueck.dispose(); zeige.dispose(); look.entsorgen(); },
+  };
+}
+
+// ——— Strom (8,4 s: Funken 0–1,6 · Strom 1,6–5,2 · Bild 5,2–8,4; vorher 12 s, Rückmeldung: «Strom ist ok, zu lang») ———
+// Rund 25 000 Teilchen, je eine glänzende Kugel in der Farbe ihres Bildpunkts (Rückmeldung zum Showreel: «zu wenig kontrastreich und glänzend»).
+// Sie tauchen verstreut im Dunkeln auf, ziehen in einem Rauschfeld zu Bändern und Tüchern zusammen und fliegen dann an ihren Platz im Foto, das am
+// Schluss exakt steht. Vor einem weiteren Effekt (letzt = false) ballen sie sich stattdessen ab 4,4 s zu einer leuchtenden, sich drehenden Kugel
+// (Verdichten), aus der der nächste hervorgeht. Lage und Tempo liegen in Float-Texturen (GPUComputationRenderer); wie bei Echo ein fester Schritt je
+// Filmbild, von vorn.
+const GLSL_RAUSCHEN = /* glsl */ `
+vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec4 permute(vec4 x) { return mod289(((x * 34.0) + 1.0) * x); }
+vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+float snoise(vec3 v) {
+  const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0);
+  const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+  vec3 i = floor(v + dot(v, C.yyy));
+  vec3 x0 = v - i + dot(i, C.xxx);
+  vec3 g = step(x0.yzx, x0.xyz);
+  vec3 l = 1.0 - g;
+  vec3 i1 = min(g.xyz, l.zxy);
+  vec3 i2 = max(g.xyz, l.zxy);
+  vec3 x1 = x0 - i1 + C.xxx;
+  vec3 x2 = x0 - i2 + C.yyy;
+  vec3 x3 = x0 - D.yyy;
+  i = mod289(i);
+  vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+  float n_ = 0.142857142857;
+  vec3 ns = n_ * D.wyz - D.xzx;
+  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+  vec4 x_ = floor(j * ns.z);
+  vec4 y_ = floor(j - 7.0 * x_);
+  vec4 x = x_ * ns.x + ns.yyyy;
+  vec4 y = y_ * ns.x + ns.yyyy;
+  vec4 h = 1.0 - abs(x) - abs(y);
+  vec4 b0 = vec4(x.xy, y.xy);
+  vec4 b1 = vec4(x.zw, y.zw);
+  vec4 s0 = floor(b0) * 2.0 + 1.0;
+  vec4 s1 = floor(b1) * 2.0 + 1.0;
+  vec4 sh = -step(h, vec4(0.0));
+  vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
+  vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
+  vec3 p0 = vec3(a0.xy, h.x);
+  vec3 p1 = vec3(a0.zw, h.y);
+  vec3 p2 = vec3(a1.xy, h.z);
+  vec3 p3 = vec3(a1.zw, h.w);
+  vec4 norm = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
+  p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+  vec4 m = max(0.6 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0);
+  m = m * m;
+  return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
+}
+vec3 rauschFeld(vec3 p) { return vec3(snoise(p), snoise(p + vec3(31.416, -47.853, 12.793)), snoise(p + vec3(-233.145, -113.408, -185.31))); }
+vec3 curl(vec3 p) {
+  const float e = 0.1;
+  vec3 dx = vec3(e, 0.0, 0.0), dy = vec3(0.0, e, 0.0), dz = vec3(0.0, 0.0, e);
+  vec3 x0 = rauschFeld(p - dx), x1 = rauschFeld(p + dx);
+  vec3 y0 = rauschFeld(p - dy), y1 = rauschFeld(p + dy);
+  vec3 z0 = rauschFeld(p - dz), z1 = rauschFeld(p + dz);
+  return vec3((y1.z - y0.z) - (z1.y - z0.y), (z1.x - z0.x) - (x1.z - x0.z), (x1.y - x0.y) - (y1.x - y0.x)) / (2.0 * e);
+}
+`;
+function strom(renderer, textur, B, H, grund, px, hell, { letzt = true } = {}) {
+  const S = grob() ? 128 : 160, N = S * S, SCHRITTE = 2;   // wenige, grosse Kugeln: so bilden sich sichtbare Bänder (262 144 gaben nur Staub)
+  const szene = new THREE.Scene();
+  const kamera = new THREE.PerspectiveCamera(FOV, B / H, 0.05, 50);
+  const abstand = 1 / Math.tan(THREE.MathUtils.degToRad(FOV / 2)), breite = (2 * B) / H;
+  const gpu = new GPUComputationRenderer(S, S, renderer);
+  const startLage = gpu.createTexture(), startTempo = gpu.createTexture(), heim = gpu.createTexture(), kugel = gpu.createTexture();
+  const ref = new Float32Array(N * 2), fotoUv = new Float32Array(N * 2), zufall = zufallAus(20261017);
+  for (let i = 0; i < N; i++) {
+    const u = ((i % S) + zufall()) / S, v = (Math.floor(i / S) + zufall()) / S;      // geschichtete Zufallspunkte auf dem Foto
+    heim.image.data.set([(u - 0.5) * breite, (v - 0.5) * 2, 0, 1], i * 4);
+    // Anfang: auf einer Fläche, aber an zufälligen Plätzen (kein Foto); das Feld faltet die Fläche zu Bändern und Tüchern. w: wann es aufleuchtet
+    startLage.image.data.set([(zufall() - 0.5) * breite * 1.1, (zufall() - 0.5) * 2.2, 0.02 * (zufall() - 0.5), zufall()], i * 4);
+    ref.set([((i % S) + 0.5) / S, (Math.floor(i / S) + 0.5) / S], i * 2);
+    fotoUv.set([u, v], i * 2);
+  }
+  for (let i = 0; i < N; i++) {                                           // die Kugel beim Verdichten: gleichmässig verteilt (Fibonacci), leicht gestreut
+    const y = 1 - (2 * (i + 0.5)) / N, r = Math.sqrt(1 - y * y), w = i * 2.399963, R = 0.46 * (0.93 + 0.07 * zufall());
+    kugel.image.data.set([Math.cos(w) * r * R, y * R, Math.sin(w) * r * R, 1], i * 4);
+  }
+  heim.needsUpdate = kugel.needsUpdate = true;
+  const tempo = gpu.addVariable("textureTempo", /* glsl */ `
+    ${GLSL_RAUSCHEN}
+    uniform sampler2D uHeim, uKugel; uniform float uZeit, uDt, uChaos, uFeder, uKugelAnteil;
+    void main() {
+      vec2 uv = gl_FragCoord.xy / resolution.xy;
+      vec4 L = texture2D(textureLage, uv); vec3 p = L.xyz, v = texture2D(textureTempo, uv).xyz, h = texture2D(uHeim, uv).xyz;
+      if (uKugelAnteil > 0.0) {                                                                     // Ziel: die Kugel, die sich dreht
+        vec3 k = texture2D(uKugel, uv).xyz; float w = uZeit * 0.9, c = cos(w), s = sin(w);
+        h = mix(h, vec3(c * k.x + s * k.z, k.y, -s * k.x + c * k.z), uKugelAnteil);
+      }
+      // mit der Strömung treiben statt beschleunigen: die Fläche bleibt eine Fläche und faltet sich zu Bändern und Tüchern (mit Schwung mischten
+      // sich die Bahnen nach wenigen Sekunden zu einer gleichmässigen Wolke)
+      vec3 ziel = rauschFeld(p * 1.1 + vec3(0.0, 0.0, uZeit * 0.16)) * uChaos * 0.42;
+      v = mix(v, ziel, 1.0 - exp(-uDt * 3.0));
+      v += ((h - p) * uFeder - p * 6.0 * max(0.0, length(p * vec3(0.8, 1.0, 1.4)) - 1.2)) * uDt;     // Feder nach Hause, weiche Grenze
+      v *= exp(-uDt * 2.2 * sqrt(uFeder));
+      gl_FragColor = vec4(v, 1.0);
+    }`, startTempo);
+  const lage = gpu.addVariable("textureLage", /* glsl */ `
+    uniform float uDt;
+    void main() { vec2 uv = gl_FragCoord.xy / resolution.xy; vec4 L = texture2D(textureLage, uv); gl_FragColor = vec4(L.xyz + texture2D(textureTempo, uv).xyz * uDt, L.w); }`, startLage);
+  gpu.setVariableDependencies(tempo, [lage, tempo]);
+  gpu.setVariableDependencies(lage, [lage, tempo]);
+  Object.assign(tempo.material.uniforms, { uHeim: { value: heim }, uKugel: { value: kugel }, uKugelAnteil: { value: letzt ? 0 : 1 }, uZeit: { value: 0 }, uDt: { value: 0 },
+    uChaos: { value: 0 }, uFeder: { value: 0 } });
+  lage.material.uniforms.uDt = { value: 0 };
+  const fehler = gpu.init();
+  if (fehler) throw new Error(fehler);
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+  geo.setAttribute("aRef", new THREE.BufferAttribute(ref, 2));
+  geo.setAttribute("aUv", new THREE.BufferAttribute(fotoUv, 2));
+  const punktMat = new THREE.ShaderMaterial({
+    uniforms: { uLage: { value: null }, uTempo: { value: null }, uHeim: { value: heim }, uFoto: { value: textur }, uEinrasten: { value: 0 }, uZeit: { value: 0 },
+      uPunkt: { value: (2 / S) * 1.7 }, uPixelJeEinheit: { value: H / 2 / Math.tan(THREE.MathUtils.degToRad(FOV / 2)) } },
+    vertexShader: /* glsl */ `
+      uniform sampler2D uLage, uTempo, uHeim, uFoto; uniform float uEinrasten, uZeit, uPunkt, uPixelJeEinheit;
+      attribute vec2 aRef, aUv; varying vec3 vFarbe; varying float vAlpha;
+      void main() {
+        vec4 L = texture2D(uLage, aRef);
+        vec3 p = mix(L.xyz, texture2D(uHeim, aRef).xyz, uEinrasten);
+        float geschw = length(texture2D(uTempo, aRef).xyz), auf = smoothstep(L.w * 1.1, L.w * 1.1 + 0.4, uZeit);   // Funken leuchten nacheinander auf
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        gl_Position = projectionMatrix * mv;
+        gl_PointSize = clamp(uPunkt * uPixelJeEinheit / -mv.z * (0.35 + 0.65 * auf), 1.0, uPunkt * uPixelJeEinheit * 0.6);
+        vFarbe = texture2D(uFoto, aUv).rgb * (1.0 + 0.15 * smoothstep(0.3, 3.0, geschw));
+        vAlpha = auf * (1.0 - uEinrasten);
+      }`,
+    fragmentShader: /* glsl */ `
+      varying vec3 vFarbe; varying float vAlpha;
+      void main() {
+        vec2 p = gl_PointCoord * 2.0 - 1.0; p.y = -p.y;
+        float r2 = dot(p, p);
+        if (r2 > 1.0 || vAlpha < 0.01) discard;
+        vec3 n = vec3(p, sqrt(1.0 - r2)), l = normalize(vec3(-0.45, 0.6, 0.66));
+        float diff = max(dot(n, l), 0.0), glanz = pow(max(dot(reflect(-l, n), vec3(0.0, 0.0, 1.0)), 0.0), 36.0);
+        vec3 kugel = vFarbe * (0.18 + 0.95 * diff) * (0.55 + 0.45 * n.z) + vec3(1.0, 0.97, 0.92) * glanz * 1.1;   // Kugel: Licht, dunkler Rand, Glanzpunkt
+        gl_FragColor = vec4(kugel, (1.0 - smoothstep(0.86, 1.0, r2)) * vAlpha);
+      }`,
+    transparent: true, depthWrite: false,
+  });
+  const punkte = new THREE.Points(geo, punktMat);
+  punkte.frustumCulled = false;
+  const flaeche = new THREE.Mesh(new THREE.PlaneGeometry(breite, 2), new THREE.MeshBasicMaterial({ map: textur, transparent: true, opacity: 0 }));
+  szene.add(flaeche, punkte);
+  const look = filmlook(renderer, szene, kamera, { radius: 0.3, schwelle: 0.8, hell });
+
+  const regler = (t) => {
+    const U = tempo.material.uniforms;
+    U.uZeit.value = t;
+    const ende = letzt ? weich(anteil(t, 4.6, 6.2)) : weich(anteil(t, 4.0, 5.4));
+    U.uChaos.value = (1.6 + 1.8 * weich(anteil(t, 1.0, 2.0))) * (1 - ende);                     // von Anfang an Strömung: die Bänder bilden sich früh
+    U.uFeder.value = letzt ? 22 * inOut(anteil(t, 4.9, 6.9)) : 18 * inOut(anteil(t, 4.2, 5.6));
+  };
+  let n = -1, stand = "";
+  const zuruecksetzen = () => { for (const [v, st] of [[lage, startLage], [tempo, startTempo]]) for (const z of v.renderTargets) gpu.renderTexture(st, z); };
+  return {
+    looks: [look],
+    groesse(w, h) { punktMat.uniforms.uPixelJeEinheit.value = h / 2 / Math.tan(THREE.MathUtils.degToRad(FOV / 2)); },
+    /** t: Zeit im Effekt; j: Filmbild im Effekt, zeit(i): die Zeit von Bild i (ein Schritt je Filmbild, von vorn) */
+    bild(t, j, zeit) {
+      if (j < n || n < 0) { zuruecksetzen(); n = 0; }
+      while (n < j) {
+        n++;
+        const t1 = zeit(n), dt = (t1 - zeit(n - 1)) / SCHRITTE;
+        regler(t1);
+        tempo.material.uniforms.uDt.value = dt; lage.material.uniforms.uDt.value = dt;
+        for (let i = 0; i < SCHRITTE; i++) gpu.compute();
+      }
+      regler(t);
+      const einrasten = letzt ? (t >= 7.9 ? 1 : inOut(anteil(t, 6.9, 7.9))) : 0;
+      const m = punktMat.uniforms;
+      m.uLage.value = gpu.getCurrentRenderTarget(lage).texture;
+      m.uTempo.value = gpu.getCurrentRenderTarget(tempo).texture;
+      m.uEinrasten.value = einrasten; m.uZeit.value = t;
+      flaeche.material.opacity = einrasten;
+      const frei = 1 - einrasten, w = 0.55 * Math.sin(Math.PI * anteil(t, 1.0, letzt ? 6.9 : 6.4));
+      kamera.position.set(Math.sin(w) * abstand, 0.2 * w, Math.cos(w) * abstand * (1 + 0.25 * frei));
+      kamera.lookAt(0, 0, 0);
+      const ch = tempo.material.uniforms.uChaos.value, fe = tempo.material.uniforms.uFeder.value;
+      stand = t < 1.6 ? `teilchen ${N.toLocaleString("de-CH")} · auf ${Math.round(anteil(t, 0, 1.5) * 100)} %` : t < (letzt ? 5.2 : 4.4) ? `strom ${Math.round((ch / 3.4) * 100)} %`
+        : letzt ? `feder ${Math.round((fe / 22) * 100)} %` : `kugel ${Math.round(anteil(t, 4.4, 5.8) * 100)} %`;
+      look.render(frei, letzt ? 0.3 : 0.3 + 0.35 * anteil(t, 4.4, 6.0), 0);
+    },
+    zaehler() { return stand; },
+    entsorgen() { gpu.dispose(); geo.dispose(); punktMat.dispose(); flaeche.geometry.dispose(); flaeche.material.dispose(); heim.dispose(); kugel.dispose(); look.entsorgen(); },
+  };
+}
+
+// ——— Relief (11 s: Höhenlinien 0–2,6 · Gebirge 2,6–7,6 · Bild 7,6–11) ———
+// Die Helligkeit des Fotos als Gebirge (Rückmeldung zum Showreel: «es war mit Abstand der Beste»): im Dunkeln leuchten die Höhenlinien auf, eine
+// Scan-Linie legt sie frei; dann hebt ein Streiflicht das Gebirge aus dem Dunkel, die Kamera fliegt darüber, das Licht wandert einmal herum;
+// zuletzt kippt die Kamera zurück, das Gebirge wird flach und steht als Foto. MeshStandardMaterial mit onBeforeCompile (Höhe, exakte Normalen,
+// Höhenlinien), Schatten. Zustandslos.
+function hoehenfeld(hell, nx, ny, radius) {
+  const w = nx + 1, h = ny + 1, f = new Float32Array(w * h), tmp = new Float32Array(w * h);
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) f[j * w + i] = hell(i / nx, j / ny) ** 0.9;
+  for (let durchgang = 0; durchgang < 2; durchgang++) {
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { let s = 0, n = 0; for (let k = -radius; k <= radius; k++) { const x = i + k; if (x >= 0 && x < w) { s += f[j * w + x]; n++; } } tmp[j * w + i] = s / n; }
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { let s = 0, n = 0; for (let k = -radius; k <= radius; k++) { const y = j + k; if (y >= 0 && y < h) { s += tmp[y * w + i]; n++; } } f[j * w + i] = s / n; }
+  }
+  return f;
+}
+function relief(renderer, textur, B, H, grund, px, hell) {
+  const helligkeit = (u, v) => { const i = (Math.min(H - 1, Math.round(v * (H - 1))) * B + Math.min(B - 1, Math.round(u * (B - 1)))) * 4; return (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255; };
+  const szene = new THREE.Scene();
+  const kamera = new THREE.PerspectiveCamera(FOV, B / H, 0.05, 50);
+  const abstand = 1 / Math.tan(THREE.MathUtils.degToRad(FOV / 2));
+  const breite = (2 * B) / H, schritt = grob() ? 4 : 2.5;
+  const nx = Math.round(B / schritt), ny = Math.round(H / schritt);
+  const geo = new THREE.PlaneGeometry(breite, 2, nx, ny);                  // Ecken Zeile für Zeile von oben
+  const feld = hoehenfeld(helligkeit, nx, ny, Math.max(1, Math.round(nx / 180)));
+  const hoehe = new Float32Array((nx + 1) * (ny + 1)), grad = new Float32Array(hoehe.length * 2), dx = breite / nx, dy = 2 / ny, w = nx + 1;
+  for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) {
+    const k = j * w + i, f = (ii, jj) => feld[Math.min(ny, Math.max(0, jj)) * w + Math.min(nx, Math.max(0, ii))];
+    hoehe[k] = feld[k];
+    grad[k * 2] = (f(i + 1, j) - f(i - 1, j)) / (2 * dx);
+    grad[k * 2 + 1] = -(f(i, j + 1) - f(i, j - 1)) / (2 * dy);
+  }
+  geo.setAttribute("aHoehe", new THREE.BufferAttribute(hoehe, 1));
+  geo.setAttribute("aGrad", new THREE.BufferAttribute(grad, 2));
+  const u = { uTiefe: { value: 0 }, uScan: { value: -9 }, uOffen: { value: 0 }, uLinien: { value: 0 }, uAkzent: { value: new THREE.Color("#ff7a2e") } };
+  const mat = new THREE.MeshStandardMaterial({ map: textur, emissive: 0xffffff, emissiveMap: textur, roughness: 0.62, metalness: 0.05 });
+  mat.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, u);
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", "#include <common>\nattribute float aHoehe; attribute vec2 aGrad; uniform float uTiefe; varying float vHoehe; varying vec3 vWelt;")
+      .replace("#include <begin_vertex>", "vec3 transformed = vec3(position); transformed.z += aHoehe * uTiefe; vHoehe = aHoehe; vWelt = (modelMatrix * vec4(transformed, 1.0)).xyz;")
+      .replace("#include <beginnormal_vertex>", "vec3 objectNormal = normalize(vec3(-aGrad * uTiefe, 1.0));");
+    shader.fragmentShader = shader.fragmentShader
+      .replace("#include <common>", "#include <common>\nuniform float uScan, uOffen, uLinien; uniform vec3 uAkzent; varying float vHoehe; varying vec3 vWelt;")
+      .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>
+        float hl = vHoehe * 16.0;
+        float linie = 1.0 - smoothstep(0.0, 1.4 * fwidth(hl), abs(fract(hl - 0.5) - 0.5));
+        float band = exp(-pow((vWelt.y - uScan) / 0.09, 2.0));
+        float frei = max(uOffen, smoothstep(uScan - 0.03, uScan + 0.03, vWelt.y));                 // was die Scan-Linie schon überstrichen hat
+        totalEmissiveRadiance += uAkzent * uLinien * (linie * frei * (0.3 + 3.0 * band) + 0.12 * band);`);
+  };
+  const flaeche = new THREE.Mesh(geo, mat);
+  flaeche.castShadow = flaeche.receiveShadow = true;
+  szene.add(flaeche);
+  const streif = new THREE.DirectionalLight(0xfff1e0, 0);
+  Object.assign(streif.shadow.camera, { left: -breite * 0.7, right: breite * 0.7, top: 1.3, bottom: -1.3, near: 0.1, far: 12 });
+  streif.shadow.mapSize.set(2048, 2048); streif.shadow.bias = -0.0004; streif.shadow.normalBias = 0.01; streif.castShadow = true;
+  const kante = new THREE.PointLight(0xff8a3d, 0, 8, 1.5), himmel = new THREE.HemisphereLight(0x9fb4ff, 0x120a06, 0);
+  szene.add(streif, streif.target, kante, himmel);
+  const look = filmlook(renderer, szene, kamera, { radius: 0.4, schwelle: 0.6, hell });
+  let tiefe = 0, a = 0, stand = "";
+  return {
+    looks: [look], schatten: true,
+    groesse() {},
+    bild(t) {
+      const licht = inOut(anteil(t, 1.8, 3.6)) * (1 - inOut(anteil(t, 8.0, 10.0)));
+      tiefe = 1 - inOut(anteil(t, 7.6, 9.8));                              // von Anfang an Gebirge
+      const kipp = 1 - inOut(anteil(t, 7.4, 10.2));
+      u.uTiefe.value = 0.42 * tiefe;
+      u.uLinien.value = 1 - weich(anteil(t, 7.4, 8.6));
+      // zwei Scan-Linien von hinten nach vorn: die erste legt die Höhenlinien frei, die zweite lässt sie aufglühen
+      u.uScan.value = t < 3.2 ? 1.5 - (anteil(t, 0.15, 2.6) * 3.2) : 1.5 - anteil(t, 4.2, 6.8) * 3.2;
+      u.uOffen.value = t < 2.6 ? 0 : 1;
+      mat.emissiveIntensity = weich(anteil(t, 8.2, 10.4));                 // am Ende steht das Foto exakt (ohne Licht)
+      a = -0.6 + 2.6 * inOut(anteil(t, 1.8, 9.4));
+      streif.position.set(Math.cos(a) * 3, Math.sin(a) * 3, 1.1 + 1.5 * (1 - kipp)); streif.intensity = 3.2 * licht;
+      kante.position.set(-Math.cos(a) * 1.6, -Math.sin(a) * 1.6, 0.6); kante.intensity = 3.5 * licht;
+      himmel.intensity = 0.35 * licht;
+      const k = THREE.MathUtils.degToRad(58) * kipp, sw = Math.sin(t * 0.35) * 0.25 * kipp, d = abstand * (1 - 0.18 * kipp);
+      kamera.position.set(Math.sin(sw) * d, -Math.sin(k) * d, Math.cos(k) * Math.cos(sw) * d);
+      kamera.lookAt(0, 0.12 * kipp, 0);
+      stand = t < 2.6 ? `höhenlinien ${Math.round(anteil(t, 0.15, 2.6) * 100)} %` : `höhe ${Math.round(tiefe * 100)} % · licht ${Math.round(((a * 180) / Math.PI + 360) % 360)}°`;
+      look.render(Math.max(licht, 0.5 * u.uLinien.value), 0.6, 0.002);
+    },
+    zaehler() { return stand; },
+    entsorgen() { geo.dispose(); mat.dispose(); look.entsorgen(); },
   };
 }
 
 // ——— Signet in der leuchtenden Fassung: Linie und Schrift klar wie immer; nur der Punkt leuchtet – ein Glaskristall mit Halo und Bokeh, das ihm auf
 //     der Bahn folgt (Rückmeldung: «das Signet ist immer noch zu stark überblendet; vielleicht sollte einfach der laufende Punkt leuchten») ———
-function glanzSignet(renderer, B, H, akzent) {
+function glanzSignet(renderer, B, H, akzent, hell) {
   const leinwand = document.createElement("canvas"); leinwand.width = B; leinwand.height = H;
   const tex = new THREE.CanvasTexture(leinwand); tex.colorSpace = THREE.SRGBColorSpace;
   const glas = glasMaterial(1, tex, B, H);
   glas.u.uAussen.value = 1; glas.u.uKante.value = 0.75;
   glas.u.uTon.value[0].set(akzent);
+  glas.u.uKantenFarbe.value.set(akzent).lerp(new THREE.Color(hell ? 0 : 1, hell ? 0 : 1, hell ? 0 : 1), 0.5);
   const szene = new THREE.Scene(), quad = new THREE.PlaneGeometry(2, 2);
   szene.add(new THREE.Mesh(quad, glas.mat));
   const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const look = filmlook(renderer, szene, ortho, { radius: 0.12, schwelle: 0.6 });
+  const look = filmlook(renderer, szene, ortho, { radius: 0.12, schwelle: 0.6, hell });
   const m4 = new THREE.Matrix4(), eu = new THREE.Euler(), welt = (2 * TANH * KZ) / H;
   return {
     looks: [look], leinwand,
@@ -503,18 +769,23 @@ function glanzSignet(renderer, B, H, akzent) {
   };
 }
 
-const BAUEN = { kristall, echo };
+const BAUEN = { kristall, echo, strom, relief };
 
 /**
- * Ein räumlicher Ablauf für ein Foto (Canvas in Filmgrösse). art: "kristall" | "echo"; grund: Farbe des Grunds; akzent: Farbe des Punkts im Signet.
+ * Ein räumlicher Ablauf für ein Foto (Canvas in Filmgrösse). art: ein Effekt oder mehrere mit «+» (z. B. "strom+kristall+echo+relief", s. kette() in
+ * ablauf.js); grund: Farbe des Grunds; akzent: Farbe des Punkts im Signet.
  * bild(u, k, N, w, h): das Bild bei u (0 … 1 im Abschnitt; k von N Filmbildern) in w × h Bildpunkten; gibt die Leinwand zurück (gleich danach lesen).
  * signet(zeichnen, punkt, f, w, h): das Signet in der leuchtenden Fassung.
+ * In der Kette überblenden zwei Effekte: beide zeichnen nacheinander auf die Leinwand, die Bilder werden in Texturen kopiert und gemischt – die hellen
+ * Teile des neuen zuerst. Echo mischt nicht, es nimmt das Bild des vorigen in seine Rückkopplung auf (seine Scherben oder Teilchen ziehen Spuren).
  */
 export function raum(foto, art, { grund = "#000000", akzent = "#f08a5d" } = {}) {
-  if (!BAUEN[art]) throw new Error(`unbekannter Ablauf: ${art}`);
+  const plan = kette(art);
+  if (!plan.teile.length) throw new Error(`unbekannter Ablauf: ${art}`);
   const B = foto.width, H = foto.height;
   const leinwand = document.createElement("canvas");
-  const renderer = new THREE.WebGLRenderer({ canvas: leinwand, antialias: true, preserveDrawingBuffer: true, powerPreference: "high-performance" });
+  // ohne Kantenglättung der Leinwand: die Effekte glätten selbst (Kristall mit MSAA), und aus der Leinwand lässt sich so in Texturen kopieren
+  const renderer = new THREE.WebGLRenderer({ canvas: leinwand, antialias: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
   if (!renderer.capabilities.isWebGL2) throw new Error("dieser Browser kann kein WebGL 2");
   const g = new THREE.Color(grund);
   renderer.setPixelRatio(1); renderer.setSize(B, H, false);
@@ -522,29 +793,85 @@ export function raum(foto, art, { grund = "#000000", akzent = "#f08a5d" } = {}) 
   const textur = new THREE.CanvasTexture(foto);
   textur.colorSpace = THREE.SRGBColorSpace; textur.minFilter = THREE.LinearMipmapLinearFilter; textur.anisotropy = 4;
   const px = foto.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, B, H).data;
-  const W = BAUEN[art](renderer, textur, B, H, g, px);
-  const S = glanzSignet(renderer, B, H, akzent);
   const hell = g.getHSL({}).l > 0.5;
+  const teile = plan.teile.map((p) => ({ ...p, W: BAUEN[p.art](renderer, textur, B, H, g, px, hell, p) }));
+  const S = glanzSignet(renderer, B, H, akzent, hell);
+  renderer.shadowMap.enabled = teile.some((p) => p.W.schatten);              // Schatten nur beim Relief
+
+  // Überblenden: die hellen Teile des neuen Bilds zuerst
+  const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), quad = new THREE.PlaneGeometry(2, 2);
+  const misch = new THREE.ShaderMaterial({
+    uniforms: { uA: { value: null }, uB: { value: null }, uS: { value: 0 } }, vertexShader: QUAD_VERTEX, depthTest: false, depthWrite: false,
+    fragmentShader: /* glsl */ `uniform sampler2D uA, uB; uniform float uS; varying vec2 vUv;
+      void main() {
+        vec3 a = texture2D(uA, vUv).rgb, b = texture2D(uB, vUv).rgb;
+        gl_FragColor = vec4(mix(a, b, smoothstep(0.0, 1.0, uS * 1.4 - 0.4 + 0.4 * dot(b, vec3(0.3333)))), 1.0);
+      }`,
+  });
+  const mischSzene = new THREE.Scene(); mischSzene.add(new THREE.Mesh(quad, misch));
+  let kopien = null;
+  const kopie = (name) => {                                                 // das Bild auf der Leinwand in eine Textur
+    const gr = renderer.getSize(new THREE.Vector2());
+    if (!kopien || kopien.w !== gr.x || kopien.h !== gr.y) {
+      for (const n of ["a", "b", "q"]) kopien?.[n].dispose();
+      kopien = { w: gr.x, h: gr.y, a: new THREE.FramebufferTexture(gr.x, gr.y), b: new THREE.FramebufferTexture(gr.x, gr.y), q: new THREE.FramebufferTexture(gr.x, gr.y) };
+    }
+    renderer.setRenderTarget(null);
+    renderer.copyFramebufferToTexture(kopien[name]);
+    return kopien[name];
+  };
+
   const passen = (teil, w, h) => {
-    w = Math.max(2, Math.round(w)); h = Math.max(2, Math.round(h));
     const jetzt = renderer.getSize(new THREE.Vector2());
     if (jetzt.x !== w || jetzt.y !== h) renderer.setSize(w, h, false);
     for (const l of teil.looks) if (l.groesse.x !== w || l.groesse.y !== h) l.setSize(w, h);
     teil.groesse(w, h);
   };
+  // Filmbilder und Zeiten: Bild k des Abschnitts liegt bei k · proBild Sekunden (Tempo «normal»); ein Teil zählt seine Bilder ab k0
+  let proBild = 1 / 30, zuletzt = teile[0];
+  const k0 = (p) => Math.ceil(p.von / proBild - 1e-6);
+  const lokal = (p, k) => Math.min(p.aus, Math.max(p.ein, p.ein + k * proBild - p.von));
+  const zeichnen = (i, k, T) => {
+    const p = teile[i], a = k0(p), vor = teile[i - 1];
+    const t = T === undefined ? lokal(p, k) : Math.min(p.aus, Math.max(p.ein, p.ein + T - p.von));
+    const quelle = vor && ((m) => {                                          // das fertige Bild des vorigen Teils zu Bild m dieses Teils
+      const kk = a + m;
+      if (kk * proBild > vor.bis + 1e-9) return null;
+      zeichnen(i - 1, kk);
+      return { textur: kopie("q"), ein: 1 - weich(anteil(kk * proBild, p.von + 0.55 * (vor.bis - p.von), vor.bis)) };
+    });
+    p.W.bild(t, Math.max(0, k - a), (m) => lokal(p, a + m), quelle);
+  };
+
   return {
-    art, dauer: W.dauer,
+    art: ablaufName(art), dauer: plan.dauer,
     bild(u, k, N, w = B, h = H) {
-      passen(W, w, h);
-      W.bild(Math.min(1, Math.max(0, u)) * W.dauer, k, N);
+      w = Math.max(2, Math.round(w)); h = Math.max(2, Math.round(h));
+      for (const p of teile) passen(p.W, w, h);
+      proBild = plan.dauer / Math.max(1, N);
+      const T = Math.min(1, Math.max(0, u)) * plan.dauer;
+      const aktiv = teile.map((_, i) => i).filter((i) => T >= teile[i].von - 1e-9 && T <= teile[i].bis + 1e-9);
+      const i = aktiv.length ? aktiv[aktiv.length - 1] : teile.length - 1;
+      if (aktiv.length > 1 && teile[i].art !== "echo") {
+        zeichnen(i - 1, k, T); misch.uniforms.uA.value = kopie("a");
+        zeichnen(i, k, T); misch.uniforms.uB.value = kopie("b");
+        misch.uniforms.uS.value = anteil(T, teile[i].von, teile[i - 1].bis);
+        renderer.setRenderTarget(null); renderer.render(mischSzene, ortho);
+      } else zeichnen(i, k, T);
+      zuletzt = teile[i];
       return leinwand;
     },
     signet(zeichnen, punkt, f, w = B, h = H) {
-      passen(S, w, h);
+      passen(S, Math.max(2, Math.round(w)), Math.max(2, Math.round(h)));
       S.bild(zeichnen, punkt, f, hell);
       return leinwand;
     },
-    zaehler() { return W.zaehler(); },
-    entsorgen() { W.entsorgen(); S.entsorgen(); textur.dispose(); renderer.dispose(); },
+    zaehler() { return zuletzt.W.zaehler(); },
+    entsorgen() {
+      for (const p of teile) p.W.entsorgen();
+      S.entsorgen(); textur.dispose(); quad.dispose(); misch.dispose();
+      for (const n of ["a", "b", "q"]) kopien?.[n].dispose();
+      renderer.dispose(); renderer.forceContextLoss();
+    },
   };
 }

@@ -1,11 +1,18 @@
 // «Bildfragmentieren» – Ablauf des Films (ohne DOM). 30 Bilder pro Sekunde, ohne Ton; Hochformat 4 : 5 (Standard, Feed), wahlweise 9 : 16 (Reels, Stories).
-// Drei Abläufe zur Wahl (seit 16. Oktober 2026; Wunsch: «neben dem jetzigen Ablauf einen weiteren mit den neuen Effekten, oder zwei weitere …
-// Es soll nicht beim Foto starten, nur damit enden»). Alle beginnen im Dunkeln und enden beim Foto:
-//   Fragmente – 01 Linien (Relief aus Zeilen, Umrisse) → 02 Formen (Dreiecke mit Stich) → 03 Farben (Körper) → 04 Bild (Montage, das Foto rastet ein)
-//   Kristall  – 01 Körper (drei Kristalle verschmelzen zu einem Glaskörper; das Foto nur durch das Glas) → 02 Bruch (er zerspringt in Scherben)
-//               → 03 Montage (die Scherben setzen das Foto zusammen)                                                     [WebGL, raum.js]
-//   Echo      – 01 Konturen (feine Höhenlinien) → 02 Echo (Rückkopplung, Tunnel) → 03 Bild (das Foto baut sich Tonstufe um Tonstufe auf)
-// Danach steht das Foto, dann (wenn gewählt) das Signet von ornament.cloud – bei Kristall und Echo in einer leuchtenden Fassung.
+// Zwei Gesamtabläufe (Wunsch vom 17. Oktober 2026: «einen zweiten Gesamtablauf neben dem Bildfragmentieren mit einer genialen Orchestrierung der neuen
+// Effekte, plus die Möglichkeit, alle einzeln nutzen zu können»; «Bildfragmentieren soll in dieser Zusammenstellung bleiben»). Alle beginnen im Dunkeln
+// und enden beim Foto:
+//   Fragmente   – 01 Linien (Relief aus Zeilen, Umrisse) → 02 Formen (Dreiecke mit Stich) → 03 Farben (Körper) → 04 Bild (Montage, das Foto rastet ein)
+//   Verwandlung – Strom → Kristall → Echo → Relief, jeder Effekt einzeln oder beliebig kombiniert (in dieser Reihenfolge)          [WebGL, raum.js]
+//     Strom    – 01 Funken (Teilchen leuchten verstreut im Dunkeln auf) → 02 Strom (sie ziehen zu Bändern zusammen) → 03 Bild (sie fliegen an ihren Platz)
+//                vor einem weiteren Effekt statt 03: Verdichten (sie ballen sich zu einer leuchtenden Kugel)
+//     Kristall – 01 Körper (drei Kristalle verschmelzen zu einem Glaskörper; nach Strom wächst er aus der Kugel) → 02 Bruch (er zerspringt in Scherben)
+//                → 03 Montage (die Scherben setzen das Foto zusammen)
+//     Echo     – 01 Echo (die Kanten des Fotos ziehen Spuren in einen Tunnel; nach einem anderen Effekt zieht zuerst dessen Bild Spuren)
+//                → 02 Bild (das Foto strömt durch den Tunnel herein und kommt zur Ruhe)
+//     Relief   – 01 Höhenlinien (leuchten im Dunkeln auf) → 02 Gebirge (Streiflicht, Kamerafahrt) → 03 Bild (es wird flach und steht als Foto)
+//   Nur der letzte Effekt endet beim Foto; die anderen gehen in den nächsten über (Kette, s. kette()).
+// Danach steht das Foto, dann (wenn gewählt) das Signet von ornament.cloud – bei der Verwandlung in einer leuchtenden Fassung.
 export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=9";
 
 /** Bildmass des Films: Hochformat 4 : 5 (Standard, 1080 × 1350) oder "9:16" (1080 × 1920); Wunsch vom 15. Oktober 2026 */
@@ -19,23 +26,67 @@ export function filmMass(format = "4:5") {
 export const SIGNET_VON = 12, SIGNET_BIS = 150, SIGNET_TEMPO = 2;
 export const SIGNET = (SIGNET_BIS - SIGNET_VON) / 30 / SIGNET_TEMPO;
 
-/** Tempo: Faktor auf die Dauer der vier Phasen */
+/** Tempo: Faktor auf die Dauer der Phasen */
 export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 
 /** die vier Phasen von «Fragmente» und ihre Namen in der Beschriftung */
 export const PHASEN = [["linien", "Linien"], ["formen", "Formen"], ["farben", "Farben"], ["zusammen", "Bild"]];
 
-/** die Abläufe und ihre Phasen (Name, Titel, Dauer bei Tempo «normal»); Kristall und Echo rechnet raum.js (WebGL) */
+/** «Fragmente» und die Effekte der Verwandlung mit ihren Phasen (Name, Titel, Dauer bei Tempo «normal»; raum.js rechnet in diesen Sekunden).
+ *  In einer Kette: ein – wo der Effekt nach einem anderen einsetzt, aus – wo er vor einem weiteren endet, weiter – die Phase, mit der er dann
+ *  in den nächsten übergeht (Name, Titel, Beginn), ueber – wie lange er mit dem vorigen überblendet */
 export const ABLAEUFE = {
   fragmente: { titel: "Fragmente", phasen: [["linien", "Linien", 4.4], ["formen", "Formen", 3.6], ["farben", "Farben", 3.0], ["zusammen", "Bild", 4.2]] },
-  kristall: { titel: "Kristall", raum: true, phasen: [["koerper", "Körper", 3.6], ["bruch", "Bruch", 3.2], ["montage", "Montage", 4.2]] },
-  // Echo: Konturen kurz (Rückmeldung: «die Konturen alleine weniger»), ohne Kaleidoskop («dieser Teil geht gar nicht – gerne ersatzlos streichen»)
-  echo: { titel: "Echo", raum: true, phasen: [["konturen", "Konturen", 1.6], ["echo", "Echo", 5.0], ["aufbau", "Bild", 3.4]] },
+  // Strom: Teilchen als glänzende Kugeln; seit 17. Oktober 2026 kürzer (Rückmeldung: «Strom ist ok, zu lang»: 12 statt 8,4 s)
+  strom: { titel: "Strom", phasen: [["funken", "Funken", 1.6], ["strom", "Strom", 3.6], ["sammeln", "Bild", 3.2]], aus: 6.4, weiter: ["verdichten", "Verdichten", 4.4] },
+  kristall: { titel: "Kristall", phasen: [["koerper", "Körper", 3.6], ["bruch", "Bruch", 3.2], ["montage", "Montage", 4.2]], ein: 1.7, aus: 6.6 },
+  // Echo: ohne Kaleidoskop und ohne stehende Konturen; das Schlussbild strömt durch den Tunnel herein (Rückmeldung: «die Zusammensetzung des
+  // Schlussbildes wenig nachvollziehbar»)
+  echo: { titel: "Echo", phasen: [["echo", "Echo", 6.0], ["aufbau", "Bild", 3.4]], aus: 5.0, ueber: 1.2 },
+  // Relief: das Gebirge aus dem Showreel (Rückmeldung: «es war mit Abstand der Beste»)
+  relief: { titel: "Relief", phasen: [["hoehenlinien", "Höhenlinien", 2.6], ["gebirge", "Gebirge", 5.0], ["flach", "Bild", 3.4]], ein: 1.0 },
 };
-/** ein bekannter Ablauf, sonst «Fragmente» */
-export const ablaufName = (a) => (Object.hasOwn(ABLAEUFE, String(a)) ? String(a) : "fragmente");
-/** Dauer eines räumlichen Ablaufs bei Tempo «normal» (raum.js rechnet in diesen Sekunden) */
-export const raumDauer = (a) => ABLAEUFE[a].phasen.reduce((s, p) => s + p[2], 0);
+/** die Effekte der Verwandlung in ihrer festen Reihenfolge: Energie → Materie → Echo → Landschaft → Bild */
+export const EFFEKTE = ["strom", "kristall", "echo", "relief"];
+export const VERWANDLUNG = EFFEKTE.join("+");
+const UEBER = 0.8;
+/** «fragmente» oder die gewählten Effekte in fester Reihenfolge, mit «+» verbunden (z. B. "strom+echo"); Unbekanntes ergibt «Fragmente» */
+export function ablaufName(a) {
+  const teile = String(a ?? "").split("+");
+  const effekte = EFFEKTE.filter((e) => teile.includes(e));
+  return effekte.length ? effekte.join("+") : "fragmente";
+}
+/** die Effekte eines Ablaufs (bei «Fragmente» keine) */
+export const effekte = (a) => (ablaufName(a) === "fragmente" ? [] : ablaufName(a).split("+"));
+
+/**
+ * Die Kette der Effekte in Sekunden bei Tempo «normal»: { teile: [{ art, von, bis, ein, aus, erst, letzt }], phasen: [{ name, titel, von, bis }], dauer }.
+ * Ein Teil läuft im Film von «von» bis «bis» und zeigt dabei seine eigene Zeit «ein» bis «aus»; der nächste setzt «ueber» Sekunden vor dem Ende ein.
+ */
+export function kette(a) {
+  const liste = effekte(a), teile = [], phasen = [];
+  let t = 0;
+  liste.forEach((art, i) => {
+    const E = ABLAEUFE[art], erst = i === 0, letzt = i === liste.length - 1;
+    const ende = E.phasen.reduce((s, p) => s + p[2], 0);
+    const ein = erst ? 0 : E.ein ?? 0, aus = letzt ? ende : E.aus ?? ende;
+    const von = erst ? 0 : t - (E.ueber ?? UEBER), bis = von + aus - ein;
+    teile.push({ art, von, bis, ein, aus, erst, letzt });
+    if (phasen.length) phasen[phasen.length - 1].bis = von;                // die Beschriftung wechselt, sobald der nächste einsetzt
+    const grenze = !letzt && E.weiter ? E.weiter[2] : aus;
+    let p0 = 0;
+    for (const [name, titel, d] of E.phasen) {
+      const a0 = Math.max(p0, ein), a1 = Math.min(p0 + d, grenze);
+      p0 += d;
+      if (a1 - a0 >= 0.05) phasen.push({ name, titel, von: von + a0 - ein, bis: von + a1 - ein });
+    }
+    if (grenze < aus) phasen.push({ name: E.weiter[0], titel: E.weiter[1], von: von + grenze - ein, bis: von + aus - ein });
+    t = bis;
+  });
+  return { teile, phasen, dauer: t };
+}
+/** Dauer eines räumlichen Ablaufs bei Tempo «normal» */
+export const raumDauer = (a) => kette(a).dauer;
 
 /**
  * Zeitachse in Sekunden: { ab: { name: [anfang, ende] }, ablauf, abschnitt: { art, von, bis }, phasen: [{ name, titel, von, bis }], fragmente, dauer, bilder }.
@@ -50,7 +101,12 @@ export function zeitachse({ tempo = "normal", signet = true, ablauf = "fragmente
   const folge = (a, merken) => { for (const [name, titel, d] of ABLAEUFE[a].phasen) { if (merken) phasen.push({ name, titel, von: t, bis: t + d * f }); dazu(name, d * f); } };
   dazu("vor", 0.4);
   const von = t;
-  folge(art, true);
+  if (art === "fragmente") folge(art, true);
+  else {
+    const K = kette(art);
+    for (const p of K.phasen) { phasen.push({ name: p.name, titel: p.titel, von: von + p.von * f, bis: von + p.bis * f }); teile.push([p.name, von + p.von * f, von + p.bis * f]); }
+    t = von + K.dauer * f;
+  }
   const abschnitt = { art, von, bis: t };
   dazu("stehen", 3.2);
   if (signet) {
