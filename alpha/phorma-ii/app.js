@@ -1,9 +1,9 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=1";
-import { szene, bild, standbildZeit } from "./film.js?v=1";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=1";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=2";
+import { szene, bild, standbildZeit } from "./film.js?v=2";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=2";
 import { mp4 } from "../sketchory/mp4.js?v=10";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
@@ -59,7 +59,7 @@ async function fotoLaden(datei) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=1", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=2", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -99,7 +99,7 @@ async function kiAnwenden() {
   if (!S.ki) {
     const nr = S.rechnen;
     try {
-      kiModul ??= await import("./tiefe-ki.js?v=1");
+      kiModul ??= await import("./tiefe-ki.js?v=2");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m));
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
@@ -117,12 +117,12 @@ let buehneModul = null;
 async function buehneBereit() {
   const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.A.tiefe === S.A.geschaetzt ? "bild" : "ki"}` : "";
   if (schluessel === S.buehneSchluessel) return;
-  S.buehneSchluessel = schluessel;
+  S.buehneSchluessel = schluessel; S.buehneFertig = false;
   if (S.sz) S.sz.buehne = null;
   S.buehne?.entsorgen(); S.buehne = null;
   if (!schluessel) return;
   try {
-    buehneModul ??= await import("./buehne.js?v=1");
+    buehneModul ??= await import("./buehne.js?v=2");
     if (S.buehneSchluessel !== schluessel) return;
     S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki" });
   } catch (fehler) {
@@ -130,7 +130,21 @@ async function buehneBereit() {
     return;
   }
   if (S.sz) { S.sz.buehne = S.buehne; if (!S.laeuft) zeigeZeit(S.t ?? 0); }
+  // was im Hintergrund rechnet (die Bahn des Tuchs): Fortschritt melden, danach die Vorschau neu zeichnen
+  const b = S.buehne;
+  if (b.fortschritt() < 1) {
+    const zeigen = () => { if (S.buehne === b && b.fortschritt() < 1) { melden(`Das Tuch wird berechnet … ${Math.round(b.fortschritt() * 100)} %`); setTimeout(zeigen, 250); } };
+    zeigen();
+  }
+  b.bereit.then(() => {
+    if (S.buehne !== b) return;
+    S.buehneFertig = true;
+    if (/Tuch wird berechnet/.test($("meldung").textContent)) melden("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4.");
+    if (!S.laeuft && S.sz && S.t !== null) zeigeZeit(S.t);
+  });
 }
+/** Video und Standbild warten, bis die Bühne ganz fertig ist */
+async function buehneFertig() { await buehneBereit(); await S.buehne?.bereit; }
 
 function optionen() {
   return { breite: S.mass[0], hoehe: S.mass[1], tempo: $("tempo").value, signet: $("signet").checked, beschriftung: $("beschriftung").checked,
@@ -252,6 +266,7 @@ const proben = () => ($("unschaerfe").checked ? PROBEN : 1);
 // ——— Standbild ———
 $("png").addEventListener("click", async () => {
   if (!S.sz) return;
+  await buehneFertig();
   const c = leinwand(S.mass[0], S.mass[1]);
   bild(c.getContext("2d"), szene(optionen()), Math.min(S.t ?? standbildZeit(S.sz), S.sz.zeit.dauer), { proben: proben() });
   const blob = await new Promise((ok) => c.toBlob(ok, "image/png"));
@@ -277,6 +292,7 @@ $("video").addEventListener("click", async () => {
   if (!S.sz) return;
   anhalten(); sperren(true);
   const fort = $("fortschritt"); fort.hidden = false; fort.value = 0;
+  await buehneFertig();
   const sz = szene(optionen());
   const t0 = performance.now();
   try {

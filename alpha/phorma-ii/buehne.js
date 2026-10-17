@@ -9,12 +9,15 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=1";
-import { FPS, kette, laufend } from "./ablauf.js?v=1";
-import { physarum } from "./physarum.js?v=1";
-import { stich } from "./stich.js?v=1";
-import { tiefe } from "./tiefe.js?v=1";
-import { tuch } from "./tuch.js?v=1";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=2";
+import { FPS, kette, laufend } from "./ablauf.js?v=2";
+import { physarum } from "./physarum.js?v=2";
+import { stich } from "./stich.js?v=2";
+import { tiefe } from "./tiefe.js?v=2";
+import { tuch } from "./tuch.js?v=2";
+// das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
+// das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
+import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
 
 const FRONT = /* glsl */ `
   uniform sampler2D tA, tB, tKarte; uniform float uP, uBreite; uniform vec3 uSaum; varying vec2 vUv;
@@ -69,7 +72,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   const effekte = K.teile.map((teil) => FABRIK[teil.art](g, teil));
   const art = (teil) => effekte[K.teile.findIndex((x) => x.art === teil.art)];
 
-  let w = 0, h = 0, rtA, rtB, rtMix, rtSumme, bloom;
+  let w = 0, h = 0, rtA, rtB, rtMix, rtSumme, bloom, glanz = null;
   const front = quadMaterial(FRONT, { tA: { value: null }, tB: { value: null }, tKarte: { value: tiefeTex }, uP: { value: 0 }, uBreite: { value: 0.18 }, uSaum: { value: KUPFER.clone() } });
   const summe = quadMaterial(SUMME, { tQuelle: { value: null }, uGewicht: { value: 1 } }, { blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation, transparent: true });
   const ausgabe = quadMaterial(AUSGABE, { tSumme: { value: null }, tFoto: { value: fotoTex }, uEnde: { value: 0 }, uAktiv: { value: 0 }, uSaumStaerke: { value: 0 }, uKorn: { value: 0.05 }, uBild: { value: 0 } });
@@ -103,8 +106,11 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     return info;
   }
 
+  // was erst im Hintergrund fertig wird (die Bahn des Tuchs): Video und Standbild warten darauf, die Vorschau zeichnet danach neu
+  const bereit = Promise.all(effekte.map((e) => e.bereit ?? null));
+  const fortschritt = () => Math.min(1, ...effekte.map((e) => e.fortschritt?.() ?? 1));
   return {
-    canvas, B, H, effekte, ende: 0,                                     // ende: wie weit das letzte Bild schon das Foto war (1: exakt)
+    canvas, B, H, effekte, ende: 0, bereit, fortschritt,                                     // ende: wie weit das letzte Bild schon das Foto war (1: exakt)
     bild(zeit, t, nw = B, nh = H, { proben = 1, verschluss = 0.5 } = {}) {
       groesse(Math.max(2, Math.round(nw)), Math.max(2, Math.round(nh)));
       g.loeschen(rtSumme);
@@ -122,9 +128,20 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
       this.ende = info.ende ?? 0;
       return canvas;
     },
+    /** das Signet in der leuchtenden Fassung (zeichnen: das Signet auf eine 2D-Leinwand, punkt: Lage, Sicht, Radius, Spur, Farbe; f: Bild des Signets) */
+    signet(zeichnen, punkt, f, nw = B, nh = H) {
+      groesse(Math.max(2, Math.round(nw)), Math.max(2, Math.round(nh)));
+      glanz ??= glanzSignet(renderer, B, H, punkt.farbe, false);
+      for (const l of glanz.looks) if (l.groesse.x !== w || l.groesse.y !== h) l.setSize(w, h);
+      glanz.groesse(w, h);
+      glanz.bild(zeichnen, punkt, f, false);
+      this.ende = 0;
+      return canvas;
+    },
     zaehler(zeit, t) { const L = laufend(zeit, t); return art(L.at(-1).teil).zaehler?.(L.at(-1).lokal) ?? ""; },
     entsorgen() {
       for (const e of effekte) e.entsorgen();
+      glanz?.entsorgen();
       for (const r of [rtA, rtB, rtMix, rtSumme]) r?.dispose();
       bloom?.dispose(); front.dispose(); summe.dispose(); ausgabe.dispose(); quad.dispose();
       fotoTex.dispose(); tiefeTex.dispose(); nahrungTex.dispose();

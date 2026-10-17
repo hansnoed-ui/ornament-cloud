@@ -218,6 +218,8 @@ export function analysieren(daten, w, h, { massstab = 2, strich = "mittel" } = {
   const querLinien = stromlinien(feld, w, h, massstab, { abstand, quer: true });
   return {
     w, h, massstab, B: w * massstab, H: h * massstab, hell, tiefe, nahrung, keime, abstand,
+    // Tonumfang (3 und 97 %) und mittlere Helligkeit: der Stich richtet sich danach (auf Papier oder auf Schwarz)
+    ton: [perzentil(hell, 0.03), perzentil(hell, 0.97)], mittel: hell.reduce((s, v) => s + v, 0) / n,
     linien: { haupt, quer: querLinien },
     zahl: { linien: haupt.linien.length, querlinien: querLinien.linien.length, punkte: (haupt.punkte.length + querLinien.punkte.length) / 2 },
     ms: Date.now() - t0,

@@ -52,11 +52,11 @@ const FOTO = await (async () => {
   return Buffer.from(url.split(",")[1], "base64");
 })();
 const laden = (page) => page.setInputFiles("#datei", { name: "foto.jpg", mimeType: "image/jpeg", buffer: FOTO });
-const bereit = (page) => page.waitForFunction(() => !document.getElementById("video").disabled && window.__phorma?.sz && window.__phorma?.buehne, null, { timeout: 120_000 });
+const bereit = (page) => page.waitForFunction(() => !document.getElementById("video").disabled && window.__phorma?.sz && window.__phorma?.buehne && window.__phorma.buehneFertig, null, { timeout: 180_000 });
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit, Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild, szene } = await import("./film.js?v=1");
+  const { bild, szene } = await import("./film.js?v=2");
   const S = window.__phorma; S.laeuft = false;
   const sz = szene({ breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, ablauf: S.ablauf, buehne: S.buehne, beschriftung: false, signet: true });
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");

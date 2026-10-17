@@ -150,6 +150,7 @@ Aufbau: `analyse.js` (ohne DOM, im Worker) versteht das Foto, `buehne.js` mischt
 - Gleichmässig verteilte Linien nach Jobard & Lefer: Abstand d (7 px bei 1080), Abbruch bei d/2 zu anderen Linien, neue Keime bei ±d neben jeder Linie, danach ein Raster für Inseln. Ein Gitter mit Zellen der Grösse d macht es schnell (≈ 1 s für 1080 × 1350 auf der halben Grösse).
 - Alle Linien als Bänder in einer Geometrie; die **Breite rechnet der Fragment-Shader Bildpunkt für Bildpunkt** aus der Helligkeit (Kante mit `fwidth`). Hauptlage höchstens 0,8 der Bahn, sonst wird es eine Fläche.
 - Die kreuzende Lage nur, wo die mittlere Kantenstärke der Linie > 0,12 ist: in ruhigen hellen Flächen (Himmel) gab sie ein technisches Gitter.
+- **Helle Fotos auf Papier:** Auf Schwarz bedeutet hell = breit; ein helles Foto läuft dann weiss zu (Rückmeldung: «sieht wie meistens nicht gut aus»). Wie ein Stecher nach dem Bild entscheiden: mittlere Helligkeit > 0,45 → dunkle Tinte auf Papier (je dunkler, desto breiter), sonst Licht auf Schwarz. Den Ton immer auf den Umfang des Bilds strecken (3–97 %), Breite `pow(t, 1,25)` (Mitteltöne schmaler), höchstens 0,75 der Bahn. Bloom auf Papier aus, auf Schwarz 0,12.
 - Zeichnen nach Wichtigkeit (Kantenstärke entlang der Linie), Start ∝ Rang^0,6, Stiftspitze `exp(−Abstand/16 px)`. Am Ende werden die Striche breiter, darunter blendet das Foto auf.
 
 ### 10 Tiefe – das Foto wird Raum (`analyse.js`, `tiefe.js`, `tiefe-ki.js`)
@@ -159,8 +160,10 @@ Aufbau: `analyse.js` (ohne DOM, im Worker) versteht das Foto, `buehne.js` mischt
 - Gestreckte Maschen an Tiefensprüngen nicht schwarz machen (sah aus wie dicke schwarze Kurven), sondern als feine kupferne Schnittkanten zeigen.
 - Scan: eine Ebene gleicher Tiefe wandert von nah nach fern, dahinter Linien gleicher Tiefe über `fwidth`. Tiefenschärfe als eigener Durchgang: Unschärfekreis im Alpha, Sammeln auf einer Goldwinkel-Spirale.
 
-### 11 Tuch – Stoffsimulation (`tuch.js`)
-- PBD auf dem Prozessor (exakt wiederholbar): 72 × 90 Punkte, Abstände längs/quer (1), diagonal (0,7), über zwei Maschen (0,12), 6 Iterationen, 120 Teilschritte je Sekunde; Verlet mit Dämpfung 0,992.
+### 11 Tuch – Stoffsimulation (`tuchsim.js`, `tuchrechner.js`, `tuch.js`)
+- PBD auf dem Prozessor (exakt wiederholbar): 72 × 90 Punkte, Abstände längs/quer (1), diagonal (0,7), über zwei Maschen (0,12), 4 Iterationen, 120 Teilschritte je Sekunde; Verlet mit Dämpfung 0,992.
+- **Nie im Zeichnen simulieren** (gemessen: ein Sprung ans Ende = 1000 Teilschritte am Stück, 18 s Stillstand; auf dem Telefon stürzte die Seite ab). Ein Worker rechnet die ganze Bahn einmal voraus und speichert sie je Filmbild (≈ 20 MB Float32); gezeichnet wird nachgeschlagen und zwischen zwei Filmbildern linear gemischt (auch für die Proben der Bewegungsunschärfe). Video und Standbild warten auf `bereit`.
+- Tempo der inneren Schleife: `Math.hypot` ist in V8 langsam (Faktor 2,3 gemessen), Indizes als `Int32Array`, Lagen als `Float64Array`, «festgehalten» als `Uint8Array` statt `includes`; das Rauschen der Böen nur einmal je Filmbild. 72 × 90 Punkte: 4,2 s in Node, 52 × 65 (Telefon): 2,4 s.
 - Wind wirkt **entlang der Normalen** mit der Relativgeschwindigkeit (`dot(n, w − v)·n`), Böen aus Rauschen plus eine Welle, die durch das Tuch läuft. Oben fünf Haken: die Kante wirft Bögen wie ein Vorhang.
 - **Riffeln** (Knicken über eine Masche beim Stauchen, gemessen beim Glattziehen): die Tiefe mit den Nachbarn mitteln, 0,04 immer, im Bild bis 0,44.
 - Gezeichnet doppelt so fein (Catmull-Rom zwischen den Punkten), `MeshPhysicalMaterial` mit `sheen`, Selbstschatten, Streiflicht von links oben und kupfernes Gegenlicht. Die Kamera tritt zurück, solange es weht.
@@ -170,6 +173,7 @@ Aufbau: `analyse.js` (ohne DOM, im Worker) versteht das Foto, `buehne.js` mischt
 - **Zeitfront** statt Überblenden: die Pixel wechseln nach der Tiefe (nah zuerst), an der Front ein Spalt, der das alte Bild verzieht (Slit-Scan-Anmutung), Kupfer nur schwach (0,18), sonst ein Schleier.
 - **Bewegungsunschärfe:** Weil jedes Bild nur von der Zeit abhängt, rechnet der Export 8 Proben in der halben Bilddauer davor und mittelt sie linear (Float-Ziel, Blending Eins + Eins). Simulationen laufen dabei nur vorwärts.
 - **Ende exakt:** Jeder Effekt meldet `ende` (0..1), die Ausgabe mischt zuletzt das Foto. Ist es 1, zeichnet `film.js` das Foto selbst: verkleinert unterscheiden sich Mipmap-Textur und 2D-Verkleinerung um bis zu 40 Stufen (gemessen auf einem fein gezeichneten Bild).
+- Abspann: das leuchtende Signet aus PHORMA I (`glanzSignet`, exportiert aus `alpha/bildfragmentieren/raum.js`) läuft auf derselben Bühne.
 - Prüfen: `node --test tests/phorma-ii.test.mjs`, `NODE_PATH=$(npm root -g) node tests/phorma-ii.e2e.mjs` (Chromium mit `--use-angle=swiftshader`).
   Falle: Der Ersatz-Encoder liest die Bilder nie; dann hängt SwiftShader Minuten hinterher und Klicks warten. Einmal `gl.readPixels` wartet es ab.
 

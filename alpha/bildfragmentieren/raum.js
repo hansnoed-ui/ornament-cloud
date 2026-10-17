@@ -1109,7 +1109,7 @@ function flug(renderer, textur, B, H, grund, px, hell) {
 
 // ——— Signet in der leuchtenden Fassung: Linie und Schrift klar wie immer; nur der Punkt leuchtet – ein Glaskristall mit Halo und Bokeh, das ihm auf
 //     der Bahn folgt (Rückmeldung: «das Signet ist immer noch zu stark überblendet; vielleicht sollte einfach der laufende Punkt leuchten») ———
-function glanzSignet(renderer, B, H, akzent, hell) {
+export function glanzSignet(renderer, B, H, akzent, hell) {
   const leinwand = document.createElement("canvas"); leinwand.width = B; leinwand.height = H;
   const tex = new THREE.CanvasTexture(leinwand); tex.colorSpace = THREE.SRGBColorSpace;
   const glas = glasMaterial(1, tex, B, H);
