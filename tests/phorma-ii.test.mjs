@@ -69,6 +69,7 @@ test("Analyse: Tiefe 0..1 (die Wiese vorn näher als der Himmel), gleichmässige
   const mittel = (y0, y1) => { let s = 0, n = 0; for (let y = Math.round(y0 * h); y < Math.round(y1 * h); y++) for (let x = 0; x < w; x++) { s += E.tiefe[y * w + x]; n++; } return s / n; };
   assert.ok(mittel(0.85, 1) > mittel(0, 0.15) + 0.2, `unten näher als oben (${mittel(0.85, 1).toFixed(2)} / ${mittel(0, 0.15).toFixed(2)})`);
   assert.ok(E.linien.haupt.linien.length > 20 && E.linien.quer.linien.length > 10);
+  assert.ok(E.ton[0] < E.ton[1] && E.mittel > 0 && E.mittel < 1, "Tonumfang und mittlere Helligkeit für den Stich");
   assert.ok(E.keime.length >= 5 && E.keime.length <= 22 && E.keime.every(([u, v]) => u >= 0 && u <= 1 && v >= 0 && v <= 1));
   const F = analysieren(d, w, h, { massstab: 2 });
   assert.deepEqual([...F.tiefe.slice(0, 50)], [...E.tiefe.slice(0, 50)]);
@@ -93,6 +94,21 @@ test("Strömungslinien: keine zwei Linien näher als der halbe Abstand (Jobard�
   for (const [s, n] of L.linien) for (let i = 1; i < n; i++) assert.ok(Math.hypot(L.punkte[2 * (s + i)] - L.punkte[2 * (s + i - 1)], L.punkte[2 * (s + i) + 1] - L.punkte[2 * (s + i - 1) + 1]) < 2.01);
 });
 
+test("Tuch: die Bahn wird ganz vorausgerechnet, ist wiederholbar und endet genau an ihrem Platz", async () => {
+  const { tuchBahn } = await import(new URL("tuchsim.js", P).href);
+  for (const kette of ["tuch", "tiefe+tuch"]) {
+    const teil = A.kette(kette).teile.at(-1), tiefe = new Float32Array(64).fill(0.7);
+    const a = tuchBahn({ teil, a: 0.8, nx: 24, tiefe, tw: 8, th: 8 }), b = tuchBahn({ teil, a: 0.8, nx: 24, tiefe, tw: 8, th: 8 });
+    assert.equal(a.bilder, Math.ceil(teil.dauer * 30) + 1);
+    assert.deepEqual(a.lagen.slice(0, 3000), b.lagen.slice(0, 3000), `${kette}: wiederholbar`);
+    const ende = a.lagen.subarray((a.bilder - 1) * a.N * 3);
+    assert.ok(ende.every((v, i) => Math.abs(v - a.heim[i]) < 1e-6), `${kette}: am Ende glatt an ihrem Platz`);
+    const mitte = a.lagen.subarray(Math.round(a.bilder * 0.4) * a.N * 3, (Math.round(a.bilder * 0.4) + 1) * a.N * 3);
+    assert.ok(Math.max(...mitte.map((v, i) => Math.abs(v - a.heim[i]))) > 0.2, `${kette}: dazwischen weht es`);
+    if (kette === "tiefe+tuch") assert.ok(Math.abs(a.lagen[2 + 3 * 30] - 0.2 * 0.3) < 1e-6, "nach der Tiefe beginnt es als Relief");
+  }
+});
+
 test("KI-Tiefe: wird an die Kanten gelegt und auf 0..1 gebracht", () => {
   const w = 60, h = 80, roh = new Float32Array(w * h), hell = new Float32Array(w * h);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { roh[y * w + x] = 3 + 7 * (y / h); hell[y * w + x] = x < w / 2 ? 0.2 : 0.8; }
@@ -107,13 +123,15 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /<title>PHORMA II – Ornament Cloud · Alpha<\/title>/);
   assert.match(html, /"three": "\.\.\/\.\.\/vendor\/three-0\.185\.1\/three\.module\.min\.js"/);
   assert.ok(!/<script[^>]+src="https?:/.test(html), "keine Skripte von aussen");
-  for (const e of A.EFFEKTE) assert.match(html, new RegExp(`data-effekt="${e}"`));
-  const dateien = readdirSync(P).filter((f) => f.endsWith(".js"));
+  for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
+  assert.match(html, /data-wahl="physarum\+stich\+tiefe\+tuch"/, "die ganze Kette als Karte");
+  const dateien = readdirSync(P).filter((f) => f.endsWith(".js")), marken = new Set();
   for (const f of dateien) {
     const js = lies(f);
-    for (const m of js.matchAll(/from "\.\/([a-z-]+\.js)(\?v=\d+)?"/g)) assert.equal(m[2], "?v=1", `${f}: ${m[1]} mit ?v=1`);
+    for (const m of js.matchAll(/"\.\/([a-z-]+\.js)(\?v=\d+)?"/g)) { assert.ok(m[2], `${f}: ${m[1]} mit Marke`); marken.add(m[2]); }
     if (f !== "tiefe-ki.js") assert.ok(!/https?:\/\//.test(js.replace(/\/\/.*$/gm, "")), `${f}: keine Adressen von aussen`);
   }
   assert.match(lies("tiefe-ki.js"), /const VERSION = "3\.8\.1";[\s\S]*@huggingface\/transformers@\$\{VERSION\}\/dist\//, "transformers.js mit fester Version");
-  assert.match(lies("app.js"), /import\("\.\/tiefe-ki\.js\?v=1"\)/, "die KI erst auf Wunsch geladen");
+  assert.equal(marken.size, 1, `eine Marke für alle eigenen Module (${[...marken]})`);
+  assert.match(lies("app.js"), /import\("\.\/tiefe-ki\.js\?v=\d+"\)/, "die KI erst auf Wunsch geladen");
 });

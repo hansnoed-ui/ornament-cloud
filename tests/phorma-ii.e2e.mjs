@@ -52,11 +52,11 @@ const FOTO = await (async () => {
   return Buffer.from(url.split(",")[1], "base64");
 })();
 const laden = (page) => page.setInputFiles("#datei", { name: "foto.jpg", mimeType: "image/jpeg", buffer: FOTO });
-const bereit = (page) => page.waitForFunction(() => !document.getElementById("video").disabled && window.__phorma?.sz && window.__phorma?.buehne, null, { timeout: 120_000 });
+const bereit = (page) => page.waitForFunction(() => !document.getElementById("video").disabled && window.__phorma?.sz && window.__phorma?.buehne && window.__phorma.buehneFertig, null, { timeout: 180_000 });
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit, Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild, szene } = await import("./film.js?v=1");
+  const { bild, szene } = await import("./film.js?v=2");
   const S = window.__phorma; S.laeuft = false;
   const sz = szene({ breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, ablauf: S.ablauf, buehne: S.buehne, beschriftung: false, signet: true });
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -85,6 +85,33 @@ await check("Testfoto: wird analysiert, die Bühne steht, die Kette aller vier E
   const knoepfe = await page.$$eval(".phasen button", (b) => b.map((x) => x.textContent));
   assert.deepEqual(knoepfe, ["01 Keime", "02 Netz", "03 Linien", "04 Farbe", "05 Dichte", "06 Scan", "07 Raum", "08 Tuch", "09 Bild"]);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
+await check("Effekte einzeln anwählen: eine Karte wählt genau einen Effekt, die Schalter stellen eine eigene Kette zusammen, die Wahl bleibt", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  await laden(page); await bereit(page);
+  const gedrueckt = () => page.$$eval("[data-wahl], [data-effekt]", (b) => b.filter((x) => x.getAttribute("aria-pressed") === "true").map((x) => x.dataset.wahl ?? `+${x.dataset.effekt}`));
+  assert.deepEqual(await gedrueckt(), ["physarum+stich+tiefe+tuch", "+physarum", "+stich", "+tiefe", "+tuch"], "am Anfang die ganze Kette");
+  for (const e of ["tiefe", "physarum"]) {
+    await page.click(`[data-wahl="${e}"]`);
+    await page.waitForFunction((e) => window.__phorma.ablauf === e && window.__phorma.buehne && window.__phorma.sz.zeit.teile.length === 1, e, { timeout: 60_000 });
+    assert.deepEqual(await gedrueckt(), [e, `+${e}`], `${e} allein`);
+  }
+  assert.equal(await page.textContent("#kette"), "Physarum");
+  await page.click('[data-effekt="tuch"]');
+  await page.waitForFunction(() => window.__phorma.ablauf === "physarum+tuch");
+  assert.deepEqual(await gedrueckt(), ["+physarum", "+tuch"], "eigene Kette: keine Karte");
+  assert.equal(await page.textContent("#kette"), "Physarum → Tuch");
+  await page.click('[data-effekt="physarum"]'); await page.click('[data-effekt="tuch"]');
+  assert.equal(await page.evaluate(() => window.__phorma.ablauf), "tuch", "einer bleibt immer");
+  assert.deepEqual(await gedrueckt(), ["tuch", "+tuch"]);
+  await page.reload(); await laden(page); await bereit(page);
+  assert.equal(await page.evaluate(() => window.__phorma.ablauf), "tuch", "die Wahl bleibt nach dem Neuladen");
+  await page.click('[data-wahl="physarum+stich+tiefe+tuch"]');
+  await page.waitForFunction(() => window.__phorma.sz.zeit.teile.length === 4);
+  assert.equal(await page.textContent("#kette"), "Physarum → Stich → Tiefe → Tuch");
+  assert.deepEqual(fehler, []);
   await ctx.close();
 });
 
@@ -225,7 +252,7 @@ await check("Handy: nichts ragt seitlich hinaus, Beschriftungen auf einer Zeile"
   await laden(page); await bereit(page);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
   assert.ok(await page.evaluate(() => [...document.querySelectorAll(".segment button")].every((x) => x.scrollWidth <= x.clientWidth + 1)), "Beschriftungen auf einer Zeile");
-  assert.ok(await page.evaluate(() => [...document.querySelectorAll("[data-effekt], .phasen button")].every((x) => x.getBoundingClientRect().right <= window.innerWidth)), "Effekte und Phasen passen");
+  assert.ok(await page.evaluate(() => [...document.querySelectorAll("[data-wahl], [data-effekt], .phasen button")].every((x) => x.getBoundingClientRect().right <= window.innerWidth)), "Effekte und Phasen passen");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });

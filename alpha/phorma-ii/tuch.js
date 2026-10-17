@@ -1,150 +1,42 @@
-// PHORMA II – Tuch: das Foto als Seidentuch. Eine Stoffsimulation mit Positionsbedingungen (PBD, Müller et al. 2007) auf dem Prozessor: Gitter aus
-// rund 6500 Massepunkten, Abstände längs, quer, diagonal und über zwei Maschen (Biegung), Schwerkraft, Wind von hinten mit Böen und Luftwiderstand
-// nach der Fläche (die Kraft wirkt entlang der Normalen). Gezeichnet doppelt so fein (Catmull-Rom zwischen den Punkten) mit Seidenglanz (Sheen)
-// und Selbstschatten.
+// PHORMA II – Tuch: das Foto als Seidentuch. Die Stoffsimulation (tuchsim.js, rund 6500 Massepunkte) rechnet ein Worker einmal ganz voraus
+// (tuchrechner.js); hier wird nur nachgeschlagen, zwischen den Filmbildern linear. Gezeichnet doppelt so fein (Catmull-Rom zwischen den Punkten)
+// mit Seidenglanz (Sheen) und Selbstschatten.
 //   01 Tuch – als erster Effekt schwebt es an zwei Ecken gehalten von oben herein; nach der Tiefe ist es zuerst das Relief und fällt; sonst das
 //   flache Foto, das der Wind erfasst; 02 Bild – der Wind legt sich, die unteren Ecken werden an ihren Platz gezogen, dann alle Punkte: es liegt
 //   glatt da, das Licht wird zum Foto.
-// Feste Teilschritte (120 je Sekunde eigener Zeit); alle 1 s ein Wiedereinstiegspunkt.
+// Bis die Bahn da ist, liegt das Tuch flach; bereit (Promise) sagt, wann sie da ist – Video und Standbild warten darauf.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, ABSTAND } from "./gemeinsam.js?v=1";
-import { phase } from "./ablauf.js?v=1";
-import { TIEFE_UEBERGABE } from "./tiefe.js?v=1";
-
-export const TEILSCHRITTE = 120;
-const ITERATIONEN = 6;
-
-/** glattes Rauschen (Werte −1..1) für die Böen, mit Startwert */
-function rauschen(x, y, z) {
-  const h = (i, j, k) => { let n = (i * 374761393 + j * 668265263 + k * 1274126177) | 0; n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 2147483648 - 1; };
-  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z), fx = x - xi, fy = y - yi, fz = z - zi;
-  const s = (t) => t * t * (3 - 2 * t), u = s(fx), v = s(fy), w = s(fz);
-  const l = (a, b, t) => a + (b - a) * t;
-  return l(l(l(h(xi, yi, zi), h(xi + 1, yi, zi), u), l(h(xi, yi + 1, zi), h(xi + 1, yi + 1, zi), u), v),
-    l(l(h(xi, yi, zi + 1), h(xi + 1, yi, zi + 1), u), l(h(xi, yi + 1, zi + 1), h(xi + 1, yi + 1, zi + 1), u), v), w);
-}
+import { anteil, weich, inOut, kamera, ABSTAND } from "./gemeinsam.js?v=2";
+import { phase } from "./ablauf.js?v=2";
+import { tuchBahn, gitter, BILDER_JE_S, TEILSCHRITTE } from "./tuchsim.js?v=2";
 
 export function tuch(g, teil) {
   const { renderer, A, B, H } = g, a = B / H;
-  const T = phase(teil, "tuch"), Bp = phase(teil, "bild");
-  const nx = g.test ? 24 : g.grob ? 52 : 72, ny = Math.round((nx - 1) / a) + 1, N = nx * ny;
-  const dx = (2 * a) / (nx - 1), dy = 2 / (ny - 1);
-  const heim = new Float32Array(N * 3);
-  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const k = (j * nx + i) * 3; heim[k] = -a + i * dx; heim[k + 1] = 1 - j * dy; heim[k + 2] = 0; }
-  // Bedingungen: [i, j, Ruhelänge, Nachgiebigkeit]
-  const bed = [];
-  const dazu = (i, j, steif) => { const l = Math.hypot(heim[i * 3] - heim[j * 3], heim[i * 3 + 1] - heim[j * 3 + 1]); bed.push(i, j, l, steif); };
-  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
-    const k = j * nx + i;
-    if (i + 1 < nx) dazu(k, k + 1, 1);
-    if (j + 1 < ny) dazu(k, k + nx, 1);
-    if (i + 1 < nx && j + 1 < ny) { dazu(k, k + nx + 1, 0.7); dazu(k + 1, k + nx, 0.7); }
-    if (i + 2 < nx) dazu(k, k + 2, 0.12);
-    if (j + 2 < ny) dazu(k, k + 2 * nx, 0.12);
-  }
-  const C = new Float32Array(bed), nc = bed.length / 4;
-  const ecken = [0, nx - 1, (ny - 1) * nx, N - 1];
-  // gehalten: oben fünf Punkte wie an Haken (die Kante wirft dazwischen Bögen), im Bild auch die unteren Ecken
-  const oben = [0, Math.round((nx - 1) / 4), Math.round((nx - 1) / 2), Math.round((3 * (nx - 1)) / 4), nx - 1];
-  const haken = [...oben, ecken[2], ecken[3]];
-  const relief = (k) => {
-    const u = (k % nx) / (nx - 1), v = Math.floor(k / nx) / (ny - 1);
-    const d = A.tiefe[Math.min(A.h - 1, Math.round(v * (A.h - 1))) * A.w + Math.min(A.w - 1, Math.round(u * (A.w - 1)))];
-    return (d - 0.5) * TIEFE_UEBERGABE;
-  };
-  // Ausgangslage: als erster Effekt hoch über dem Bild, leicht nach hinten gekippt; nach der Tiefe das Relief; sonst flach
-  const startLage = () => {
-    const p = Float32Array.from(heim);
-    for (let k = 0; k < N; k++) {
-      if (teil.erst) { const v = Math.floor(k / nx) / (ny - 1); p[k * 3 + 1] += 2.5; p[k * 3 + 2] = -0.35 - 0.5 * v; }
-      else if (teil.vorher === "tiefe") p[k * 3 + 2] = relief(k);
-    }
-    return p;
-  };
-  let pos = startLage(), alt = Float32Array.from(pos), n = 0;
-  const normale = new Float32Array(N * 3), griff = new Float32Array(12);
-  let gegriffen = false;
-  const sicherungen = [];
-
-  // Halter: die oberen Ecken immer (als erster Effekt fahren sie von oben herein), im Bild auch die unteren (von dort, wo sie gerade sind)
-  const halter = (tau, k, ziel) => {
-    const e = k === ecken[2] ? 2 : k === ecken[3] ? 3 : 0;
-    if (e < 2) {
-      ziel[0] = heim[k * 3]; ziel[1] = heim[k * 3 + 1] + (teil.erst ? 2.5 * (1 - inOut(anteil(tau, 0.1, T[0] + 2.6))) : 0); ziel[2] = teil.erst ? -0.35 * (1 - inOut(anteil(tau, 0.1, T[0] + 2.6))) : (teil.vorher === "tiefe" ? relief(k) * (1 - inOut(anteil(tau, Bp[0], Bp[0] + 1.6))) : 0);
-      return true;
-    }
-    if (!Bp || tau < Bp[0] + 0.3) return false;
-    const f = inOut(anteil(tau, Bp[0] + 0.3, Bp[0] + 1.9)), o = (e - 2) * 3;
-    for (let c = 0; c < 3; c++) ziel[c] = griff[6 + o + c] + (heim[k * 3 + c] - griff[6 + o + c]) * f;
-    return true;
-  };
-  const z3 = [0, 0, 0];
-  function normalen() {
-    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
-      const k = j * nx + i, l = j * nx + Math.max(0, i - 1), r = j * nx + Math.min(nx - 1, i + 1), o = Math.max(0, j - 1) * nx + i, u = Math.min(ny - 1, j + 1) * nx + i;
-      const ax = pos[r * 3] - pos[l * 3], ay = pos[r * 3 + 1] - pos[l * 3 + 1], az = pos[r * 3 + 2] - pos[l * 3 + 2];
-      const bx = pos[o * 3] - pos[u * 3], by = pos[o * 3 + 1] - pos[u * 3 + 1], bz = pos[o * 3 + 2] - pos[u * 3 + 2];
-      let cx = ay * bz - az * by, cy = az * bx - ax * bz, cz = ax * by - ay * bx;
-      const m = Math.hypot(cx, cy, cz) || 1; cx /= m; cy /= m; cz /= m;
-      normale[k * 3] = cx; normale[k * 3 + 1] = cy; normale[k * 3 + 2] = cz;
-    }
-  }
-  function schritt() {
-    const dt = 1 / TEILSCHRITTE, tau = n * dt;
-    // Wind von hinten (zur Kamera hin), Böen über Ort und Zeit; im Bild legt er sich
-    const still = Bp ? 1 - weich(anteil(tau, Bp[0] - 0.2, Bp[0] + 1.0)) : 1;
-    const wind = 5.2 * weich(anteil(tau, teil.erst ? 0.6 : 0.15, teil.erst ? 2.2 : 1.4)) * still;
-    const schwere = 2.4 * (teil.erst ? 1 : weich(anteil(tau, 0, 0.6))) * still;
-    if (Bp && !gegriffen && tau >= Bp[0] + 0.3) { for (let e = 2; e < 4; e++) for (let c = 0; c < 3; c++) griff[e * 3 + c] = pos[ecken[e] * 3 + c]; gegriffen = true; }
-    normalen();
-    const zt = tau * 0.55;
-    for (let k = 0; k < N; k++) {
-      const x = pos[k * 3], y = pos[k * 3 + 1], z = pos[k * 3 + 2];
-      const vx = x - alt[k * 3], vy = y - alt[k * 3 + 1], vz = z - alt[k * 3 + 2];
-      // Böen: Rauschen über Ort und Zeit und eine Welle, die von unten nach oben durch das Tuch läuft
-      const boe = 0.55 + 0.5 * rauschen(heim[k * 3] * 0.9 + 3.1, heim[k * 3 + 1] * 0.9, zt * 2.2) + 0.35 * Math.sin(4.2 * heim[k * 3 + 1] - 6.5 * tau + 1.3 * heim[k * 3]);
-      const wx = wind * 0.35 * rauschen(heim[k * 3] * 0.6, heim[k * 3 + 1] * 0.6 + 7.3, zt * 1.7), wy = wind * 0.2 * rauschen(heim[k * 3 + 1] * 0.7 + 1.9, zt * 1.3, 4.4), wz = wind * boe;
-      const nx_ = normale[k * 3], ny_ = normale[k * 3 + 1], nz_ = normale[k * 3 + 2];
-      const rel = (wx - vx / dt) * nx_ + (wy - vy / dt) * ny_ + (wz - vz / dt) * nz_;
-      const fx = 1.1 * rel * nx_, fy = 1.1 * rel * ny_ - schwere, fz = 1.1 * rel * nz_;
-      const daempf = 0.992;
-      alt[k * 3] = x; alt[k * 3 + 1] = y; alt[k * 3 + 2] = z;
-      pos[k * 3] = x + vx * daempf + fx * dt * dt; pos[k * 3 + 1] = y + vy * daempf + fy * dt * dt; pos[k * 3 + 2] = z + vz * daempf + fz * dt * dt;
-    }
-    const gehalten = [];
-    for (const k of haken) if (halter(tau, k, z3)) { pos[k * 3] = z3[0]; pos[k * 3 + 1] = z3[1]; pos[k * 3 + 2] = z3[2]; gehalten.push(k); }
-    for (let it = 0; it < ITERATIONEN; it++) {
-      for (let c = 0; c < nc; c++) {
-        const i = C[c * 4], j = C[c * 4 + 1], l = C[c * 4 + 2], s = C[c * 4 + 3];
-        const ax = pos[j * 3] - pos[i * 3], ay = pos[j * 3 + 1] - pos[i * 3 + 1], az = pos[j * 3 + 2] - pos[i * 3 + 2];
-        const d = Math.hypot(ax, ay, az) || 1e-9, wi = gehalten.includes(i) ? 0 : 1, wj = gehalten.includes(j) ? 0 : 1;
-        if (wi + wj === 0) continue;
-        const f = (s * (d - l)) / d / (wi + wj);
-        pos[i * 3] += ax * f * wi; pos[i * 3 + 1] += ay * f * wi; pos[i * 3 + 2] += az * f * wi;
-        pos[j * 3] -= ax * f * wj; pos[j * 3 + 1] -= ay * f * wj; pos[j * 3 + 2] -= az * f * wj;
-      }
-    }
-    // gegen das Riffeln (Knicken über eine Masche, wenn der Stoff gestaucht wird): die Tiefe ein wenig mit den Nachbarn mitteln, im Bild stärker
-    const glaetten = 0.04 + (Bp ? 0.4 * weich(anteil(tau, Bp[0], Bp[0] + 1.2)) : 0);
-    for (let j = 1; j < ny - 1; j++) for (let i = 1; i < nx - 1; i++) {
-      const k = j * nx + i, m = (pos[(k - 1) * 3 + 2] + pos[(k + 1) * 3 + 2] + pos[(k - nx) * 3 + 2] + pos[(k + nx) * 3 + 2]) / 4;
-      pos[k * 3 + 2] += (m - pos[k * 3 + 2]) * glaetten;
-    }
-    // im Bild: alle Punkte zieht es an ihren Platz, zuletzt ganz
-    if (Bp) {
-      const h = inOut(anteil(tau, Bp[0] + 0.9, Bp[1] - 0.5)), k1 = h >= 1 ? 1 : 0.02 + 0.2 * h * h;
-      if (h > 0) for (let k = 0; k < N * 3; k++) pos[k] += (heim[k] - pos[k]) * k1;
-    }
-    n++;
-    if (n % TEILSCHRITTE === 0 && !sicherungen.some((s) => s.n === n)) sicherungen.push({ n, pos: Float32Array.from(pos), alt: Float32Array.from(alt), gegriffen, griff: Float32Array.from(griff) });
-  }
-  function bis(m) {
-    if (m < n) {
-      const s = sicherungen.filter((x) => x.n <= m).at(-1);
-      if (s) { pos.set(s.pos); alt.set(s.alt); griff.set(s.griff); gegriffen = s.gegriffen; n = s.n; }
-      else { pos = startLage(); alt = Float32Array.from(pos); gegriffen = false; n = 0; }
-    }
-    while (n < m) schritt();
+  const Bp = phase(teil, "bild");
+  const nx = gitter(g), ny = Math.round((nx - 1) / a) + 1, N = nx * ny;
+  // die Bahn rechnet ein Worker einmal ganz voraus (tuchsim.js); bis dahin liegt das Tuch flach da
+  let bahn = null, fortschritt = 0;
+  const pos = new Float32Array(N * 3);
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const k = (j * nx + i) * 3; pos[k] = -a + (i * 2 * a) / (nx - 1); pos[k + 1] = 1 - (j * 2) / (ny - 1); }
+  const auftrag = { teil: { erst: teil.erst, vorher: teil.vorher, phasen: teil.phasen }, a, nx, tiefe: Float32Array.from(A.tiefe), tw: A.w, th: A.h };
+  let rechner = null;
+  const bereit = new Promise((fertig) => {
+    try { rechner = new Worker(new URL("./tuchrechner.js?v=2", import.meta.url), { type: "module" }); } catch { rechner = null; }
+    if (!rechner) { setTimeout(() => { bahn = tuchBahn(auftrag); fortschritt = 1; fertig(); }, 0); return; }   // ohne Worker einmal hier
+    rechner.onmessage = (e) => {
+      if (e.data.fortschritt !== undefined) { fortschritt = e.data.fortschritt; return; }
+      if (e.data.bahn) bahn = e.data.bahn;
+      fortschritt = 1; rechner.terminate(); rechner = null; fertig();
+    };
+    rechner.onerror = () => { rechner.terminate(); rechner = null; bahn = tuchBahn(auftrag); fortschritt = 1; fertig(); };
+    rechner.postMessage({ nr: 1, ...auftrag }, [auftrag.tiefe.buffer]);
+  });
+  /** Lage zur eigenen Zeit tau: zwischen den gespeicherten Filmbildern linear (für die Proben der Bewegungsunschärfe) */
+  function lage(tau) {
+    if (!bahn) return;
+    const f = Math.min(bahn.bilder - 1, Math.max(0, tau * BILDER_JE_S)), f0 = Math.floor(f), f1 = Math.min(bahn.bilder - 1, f0 + 1), u = f - f0, L = bahn.lagen;
+    const o0 = f0 * N * 3, o1 = f1 * N * 3;
+    for (let k = 0; k < N * 3; k++) pos[k] = L[o0 + k] + (L[o1 + k] - L[o0 + k]) * u;
   }
 
   // Zeichnen: doppelt so fein, Catmull-Rom zwischen den Punkten
@@ -180,7 +72,7 @@ export function tuch(g, teil) {
 
   return {
     render(rt, tau) {
-      bis(Math.floor(tau * TEILSCHRITTE + 1e-6));
+      lage(tau);
       verfeinern();
       // Licht: als erster Effekt aus dem Dunkeln, sonst vom Foto her; im Bild wird es zum Foto (emissiv)
       const ein = teil.erst ? weich(anteil(tau, 0.2, 1.8)) : 1, foto = Bp ? inOut(anteil(tau, Bp[0] + 0.8, Bp[1] - 0.4)) : 0;
@@ -198,7 +90,8 @@ export function tuch(g, teil) {
       const aktiv = (teil.erst ? weich(anteil(tau, 0, 0.8)) : 1) * (Bp ? 1 - weich(anteil(tau, Bp[0] + 0.6, Bp[1])) : 1);
       return { aktiv, bloom: 0.3, saum: 0.0022, ende };
     },
-    zaehler() { const z = (x) => x.toLocaleString("de-CH"); return `punkte ${z(N)} · bedingungen ${z(nc)} · schritt ${z(n)}`; },
-    entsorgen() { geo.dispose(); mat.dispose(); sonne.shadow.map?.dispose(); },
+    bereit, fortschritt: () => fortschritt,
+    zaehler(tau) { const z = (x) => x.toLocaleString("de-CH"); return `punkte ${z(N)} · teilschritte ${z(Math.round(tau * TEILSCHRITTE))}${bahn ? "" : ` · rechnet ${Math.round(fortschritt * 100)} %`}`; },
+    entsorgen() { rechner?.terminate(); geo.dispose(); mat.dispose(); sonne.shadow.map?.dispose(); },
   };
 }
