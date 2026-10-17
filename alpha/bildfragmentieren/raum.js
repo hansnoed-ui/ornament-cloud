@@ -17,7 +17,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
-import { kette, ablaufName } from "./ablauf.js?v=23";
+import { kette, ablaufName } from "./ablauf.js?v=24";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -258,8 +258,9 @@ function koerper(renderer, textur, B, H, grund, px, hell, { erst = true, letzt =
 // Scherben (7,4 s: Bruch 0–3,2 · Montage 3,2–7,4; in der Zeit des Kristalls 3,6–11). Ein Ball aus Voronoi-Scherben in der Mitte zerspringt bei
 // 0,7 s, die Scherben fliegen in die Tiefe und kehren eine nach der anderen zurück, bis das Foto steht («das Endbild setzt sich nicht zusammen,
 // sondern erscheint einfach»). Allein tauchen die Scherben zuerst als Ball aus dem Dunkel auf; nach dem Körper ist der Ball sein Platz. Vor einem
-// weiteren Effekt (letzt = false) enden sie im Flug. Zustandslos.
-function scherben(renderer, textur, B, H, grund, px, hell, { erst = true } = {}) {
+// weiteren Effekt (letzt = false) ziehen sie sich am Ende wieder zum sich drehenden Ball zusammen, aus dem der nächste hervorgeht (Rückmeldung:
+// «die Scherben müssten sich am Ende wieder etwas zusammenziehen, damit der Übergang z. B. zum Relief passt»). Zustandslos.
+function scherben(renderer, textur, B, H, grund, px, hell, { erst = true, letzt = true } = {}) {
   const szene = new THREE.Scene();
   const kamera = new THREE.PerspectiveCamera(FOV, B / H, 0.05, 50);
   const abstand = 1 / Math.tan(THREE.MathUtils.degToRad(FOV / 2));
@@ -268,9 +269,9 @@ function scherben(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
   const geo = scherbenGeometrie(zellen, bw, 0.03, zufall);
   const mat = new THREE.ShaderMaterial({
     uniforms: { uFoto: { value: textur }, uAus: { value: 0 }, uZurueck: { value: 0 }, uZeit: { value: 0 }, uLicht: { value: new THREE.Vector3() },
-      uBlitz: { value: 0 }, uHell: { value: hell ? 1 : 0 }, uKern: { value: KOERPER_ENDE * 1.1 }, uEin: { value: 1 } },
+      uBlitz: { value: 0 }, uHell: { value: hell ? 1 : 0 }, uKern: { value: KOERPER_ENDE * 1.1 }, uEin: { value: 1 }, uZusammen: { value: 0 } },
     vertexShader: /* glsl */ `
-      uniform float uAus, uZurueck, uZeit, uKern, uEin;
+      uniform float uAus, uZurueck, uZeit, uKern, uEin, uZusammen;
       attribute vec3 aMitte; attribute vec4 aZufall; attribute vec2 aUv; attribute float aSeite, aRang;
       varying vec2 vUv; varying vec3 vNormal, vSicht; varying float vSeite, vFlug, vRast;
       mat3 drehung(vec3 a, float w) {
@@ -292,6 +293,8 @@ function scherben(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
         vec3 mitte = mix(mix(kern, flug, aus), aMitte, zur);
         float ein = clamp(uEin * 1.6 - 0.6 * aZufall.w, 0.0, 1.0);                                     // allein: der Ball taucht Scherbe um Scherbe auf
         float gross = mix(mix(0.45, 1.0, aus), 1.0, zur) * ein;
+        float zus = smoothstep(0.0, 1.0, uZusammen * 1.5 - 0.5 * aZufall.w);                           // vor dem nächsten Effekt: zurück zum Ball, gestaffelt
+        mitte = mix(mitte, kern * 0.85, zus); gross = mix(gross, 0.45, zus);
         float f = (1.0 - zur) * max(aus, 0.25);
         mat3 R = drehung(aZufall.xyz - 0.5 + 1e-3, f * (0.3 + 1.2 * aZufall.w));
         vec4 mv = modelViewMatrix * vec4(R * (position - aMitte) * gross + mitte, 1.0);
@@ -328,6 +331,7 @@ function scherben(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
       const t = tl + SCHERBEN_AB, U = mat.uniforms;                         // in der Zeit des Kristalls
       U.uZeit.value = t;
       U.uEin.value = erst ? weich(anteil(t, SCHERBEN_AB, SCHERBEN_AB + 0.55)) : 1;
+      U.uZusammen.value = letzt ? 0 : inOut(anteil(t, 5.0, 6.5));
       U.uAus.value = 1.4 * inOut(anteil(t, BRUCH, BRUCH + 1.4));
       U.uZurueck.value = Math.max(0, (t - 6.8) / 3.9);                    // nicht begrenzt: das Aufleuchten der letzten Scherben klingt bis 11 s aus
       U.uBlitz.value = (hell ? 0 : 0.3) * Math.exp(-(((t - BRUCH) / 0.07) ** 2));
@@ -338,7 +342,8 @@ function scherben(renderer, textur, B, H, grund, px, hell, { erst = true } = {})
       kamera.updateMatrixWorld();                                          // sonst gilt unten noch die Kamera des letzten Bildes
       U.uLicht.value.set(Math.cos(t * 0.8) * 0.7, 0.6, 0.6).transformDirection(kamera.matrixWorldInverse);
       const gesetzt = Math.round(zellen.length * Math.min(1, Math.max(0, (U.uZurueck.value - 0.16) / 0.84)));
-      stand = t < 6.8 ? `scherben ${zellen.length} · flug ${Math.round(flug * 100)} %` : `scherben ${gesetzt} / ${zellen.length}`;
+      stand = !letzt && t > 5 ? `scherben ${zellen.length} · zusammen ${Math.round(U.uZusammen.value * 100)} %`
+        : t < 6.8 ? `scherben ${zellen.length} · flug ${Math.round(flug * 100)} %` : `scherben ${gesetzt} / ${zellen.length}`;
       look.render(Math.max(flug, U.uZurueck.value < 1 ? 0.35 : 0), 0.25);
     },
     zaehler() { return stand; },

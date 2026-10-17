@@ -5,7 +5,7 @@
 // und schwarz auf Weiss (Punkt im Rot-Orange der Website). Gezeichnet für 1080 × 1920 und, wie im Video im Format 3 : 4, um (1440 − 1920) / 2 nach oben verschoben.
 // Abweichung von der Vorlage (Wunsch vom 12. Oktober 2026: «die Form etwas kleiner, Schriftgrösse gut»): die Schlaufe 420 statt 520 px hoch,
 // der Punkt entsprechend 11 statt 13 px; der Schriftzug bleibt, wo er ist, die Schlaufe rückt so weit nach unten, dass der Abstand zu ihm gleich bleibt.
-import { anteil, bezier, weich, inOut } from "./ablauf.js?v=9";
+import { anteil, bezier, weich, inOut } from "./ablauf.js?v=10";
 
 export const FARBEN = {
   dunkel: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d" },
@@ -44,8 +44,9 @@ export const PUNKT_RADIUS = PUNKT_R;
 /**
  * Bild f (0–179 und weiter) des Signets auf ctx zeichnen (der Grund ist schon gemalt).
  * hoehe: Bildhöhe (1440 für 3 : 4). farben: { tinte, punkt }. punktTempo: Teiler für den Lauf des Punkts (Standard 1).
+ * zusammen: [von, bis, kurve] – wann und wie die Buchstaben zusammenrücken (Standard wie in der Vorlage: Bild 128–146, inOut).
  */
-export function signet(ctx, f, { hoehe = 1440, farben = FARBEN.dunkel, punktTempo = 1 } = {}) {
+export function signet(ctx, f, { hoehe = 1440, farben = FARBEN.dunkel, punktTempo = 1, zusammen: [zVon, zBis, zKurve] = [128, 146, inOut] } = {}) {
   const { tinte, punkt: punktFarbe } = farben;
   ctx.save();
   ctx.translate(0, (hoehe - 1920) / 2);
@@ -75,7 +76,7 @@ export function signet(ctx, f, { hoehe = 1440, farben = FARBEN.dunkel, punktTemp
   }
   // Schriftzug: Kästchen erscheinen, aus jedem wird ein Buchstabe, dann rücken sie zusammen
   ctx.font = `${GEWICHT} ${GROESSE}px ${SCHRIFT_FAMILIE}`;
-  const zusammen = inOut(anteil(f, 128, 146));
+  const zusammen = zKurve(anteil(f, zVon, zBis));
   const breiten = NAME.split("").map((z) => zwischen(zusammen, KASTEN, ctx.measureText(z).width));
   const abstand = zwischen(zusammen, ABSTAND, SPERRUNG);
   const gesamt = breiten.reduce((a, b) => a + b, 0) + (NAME.length - 1) * abstand;

@@ -14,7 +14,7 @@
 //     Relief   – 01 Höhenlinien (leuchten im Dunkeln auf) → 02 Gebirge (Streiflicht, Kamerafahrt) → 03 Bild (es wird flach und steht als Foto)
 //   Nur der letzte Effekt endet beim Foto; die anderen gehen in den nächsten über (Kette, s. kette()).
 // Danach steht das Foto, dann (wenn gewählt) das Signet von ornament.cloud – bei der Verwandlung in einer leuchtenden Fassung.
-export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=9";
+export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=10";
 
 /** Bildmass des Films: Hochformat 4 : 5 (Standard, 1080 × 1350) oder "9:16" (1080 × 1920); Wunsch vom 15. Oktober 2026 */
 export const FORMATE = ["4:5", "9:16"];

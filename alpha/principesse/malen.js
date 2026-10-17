@@ -6,7 +6,7 @@
 // Vorher wird das Bild aufgefrischt (Weissabgleich, Kontrast, Klarheit, Farbkraft) und geglättet (Rauschen, Leinwandstruktur und Körnung weg, Kanten bleiben).
 // Wenige, lange Striche statt vieler kleiner: drei Durchgänge (die Feinheiten bringt am Schluss das scharfe Bild), jeder Durchgang malt der Reihe nach von oben nach unten.
 // Ergebnis in Bildpunkten des fertigen Films (1080 × 1440): Striche mit Punkten, Farbe, Breite und Durchgang, in Malreihenfolge.
-import { unschaerfe } from "../sketchory/strich.js?v=9";
+import { unschaerfe } from "../sketchory/strich.js?v=10";
 
 /** kleiner, fester Zufall (gleiches Bild → gleiches Gemälde) */
 export function zufall(saat = 1) {

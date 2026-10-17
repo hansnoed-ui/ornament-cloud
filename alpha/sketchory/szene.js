@@ -2,8 +2,8 @@
 // Farben: weiss auf Schwarz («dunkel», Standard) oder schwarz auf Weiss («hell»), für alles im Film gleich.
 // Die Zeichnung wächst auf einer eigenen Ebene Strich für Strich (nur vorwärts; geht die Zeit zurück, beginnt sie neu),
 // darüber die Stiftspitze, dann der Satz und am Schluss das Signet.
-import { BREITE, HOEHE, FPS, RAND, anteil, weich, ausblenden, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, ZEICHEN, satzPunkt } from "./ablauf.js?v=9";
-import { signet, FARBEN } from "./signet.js?v=9";
+import { BREITE, HOEHE, FPS, RAND, anteil, weich, ausblenden, zeitachse, zeichenplan, zeichenkurve, satzbild, versatz, ZEICHEN, satzPunkt } from "./ablauf.js?v=10";
+import { signet, FARBEN } from "./signet.js?v=10";
 
 // Satz: standardmässig eine Grotesk nah an Helvetica Now Display (Wunsch vom 12. Oktober 2026). Helvetica Now selbst ist nicht frei;
 // darum Inter Display Medium (OFL, vendor/fonts/, mit «G» mit Sporn) und knappe Laufweite. Ist Helvetica Now auf dem Gerät installiert,
