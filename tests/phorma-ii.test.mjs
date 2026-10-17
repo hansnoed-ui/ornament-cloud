@@ -107,7 +107,8 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /<title>PHORMA II – Ornament Cloud · Alpha<\/title>/);
   assert.match(html, /"three": "\.\.\/\.\.\/vendor\/three-0\.185\.1\/three\.module\.min\.js"/);
   assert.ok(!/<script[^>]+src="https?:/.test(html), "keine Skripte von aussen");
-  for (const e of A.EFFEKTE) assert.match(html, new RegExp(`data-effekt="${e}"`));
+  for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
+  assert.match(html, /data-wahl="physarum\+stich\+tiefe\+tuch"/, "die ganze Kette als Karte");
   const dateien = readdirSync(P).filter((f) => f.endsWith(".js"));
   for (const f of dateien) {
     const js = lies(f);

@@ -1,7 +1,7 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, ablaufName, effekte, KETTE } from "./ablauf.js?v=1";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, ablaufName, effekte } from "./ablauf.js?v=1";
 import { szene, bild, standbildZeit } from "./film.js?v=1";
 import { analysieren, tiefeNormieren } from "./analyse.js?v=1";
 import { mp4 } from "../sketchory/mp4.js?v=10";
@@ -198,22 +198,24 @@ $("ki-hinweis").hidden = S.tiefe !== "ki";
 for (const b of tiefeKnoepfe) b.addEventListener("click", () => { $("ki-hinweis").hidden = S.tiefe !== "ki"; });
 for (const id of ["tempo"]) { const v = erinnern(id); if (v && [...$(id).options].some((o) => o.value === v)) $(id).value = v; $(id).addEventListener("change", () => { merken(id, $(id).value); neu(); }); }
 for (const id of ["signet", "beschriftung", "unschaerfe"]) { const v = erinnern(id); if (v !== null) $(id).checked = v === "1"; $(id).addEventListener("change", () => { merken(id, $(id).checked ? "1" : "0"); if (id !== "unschaerfe") neu(); }); }
-// Effekte: einzeln oder kombiniert, in fester Reihenfolge; einer bleibt immer
-const effektKnoepfe = [...document.querySelectorAll("[data-effekt]")];
+// Effekte (Wunsch vom 17. Oktober 2026: «die Effekte einzeln anwählen»): die Karten wählen die ganze Kette oder genau einen Effekt; die Schalter
+// darunter stellen eine eigene Kette zusammen (in fester Reihenfolge, einer bleibt immer). Die Wahl bleibt gespeichert.
+const wahlKnoepfe = [...document.querySelectorAll("[data-wahl]")], effektKnoepfe = [...document.querySelectorAll("[data-effekt]")];
 S.ablauf = ablaufName(erinnern("ablauf"));
 const ablaufZeigen = () => {
   const gewaehlt = effekte(S.ablauf);
+  wahlKnoepfe.forEach((b) => b.setAttribute("aria-pressed", String(ablaufName(b.dataset.wahl) === S.ablauf)));
   effektKnoepfe.forEach((b) => b.setAttribute("aria-pressed", String(gewaehlt.includes(b.dataset.effekt))));
   $("kette").textContent = gewaehlt.map((e) => TITEL[e]).join(" → ");
 };
 ablaufZeigen();
+const ablaufSetzen = (a) => { a = ablaufName(a); if (a === S.ablauf) return; S.ablauf = a; merken("ablauf", a); ablaufZeigen(); neu(); };
+for (const b of wahlKnoepfe) b.addEventListener("click", () => ablaufSetzen(b.dataset.wahl));
 for (const b of effektKnoepfe) b.addEventListener("click", () => {
   const e = b.dataset.effekt, gewaehlt = effekte(S.ablauf);
   const liste = gewaehlt.includes(e) ? gewaehlt.filter((x) => x !== e) : [...gewaehlt, e];
-  if (!liste.length) return;
-  S.ablauf = ablaufName(liste.join("+")); merken("ablauf", S.ablauf); ablaufZeigen(); neu();
+  if (liste.length) ablaufSetzen(liste.join("+"));
 });
-$("alle").addEventListener("click", () => { if (S.ablauf === KETTE) return; S.ablauf = KETTE; merken("ablauf", S.ablauf); ablaufZeigen(); neu(); });
 let tippen = 0;
 $("titel").addEventListener("input", () => { clearTimeout(tippen); tippen = setTimeout(() => neu(), 300); });
 
@@ -353,6 +355,6 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...strichKnoepfe, ...tiefeKnoepfe, ...effektKnoepfe, $("alle"), $("video"), $("png")])
+  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...strichKnoepfe, ...tiefeKnoepfe, ...wahlKnoepfe, ...effektKnoepfe, $("video"), $("png")])
     el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A);
 }

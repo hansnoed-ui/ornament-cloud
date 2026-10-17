@@ -120,10 +120,6 @@
     .ergebnis video { display: block; width: min(100%, 360px); aspect-ratio: 4 / 5; border-radius: 8px; background: #000; }
     .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
     .hinweise li { margin: 0.2rem 0; }
-    /* Effekte: mehrere wählbar, darum Kästchen statt Kreis */
-    .ablaeufe [data-effekt]::before { border-radius: 5px; }
-    .ablaeufe [data-effekt][aria-pressed="true"]::before { border: 1px solid var(--text); background: var(--text); box-shadow: inset 0 0 0 3px var(--bg); }
-    .effekte-kopf { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
     .ki-hinweis { margin: 0; font-size: 0.86rem; color: var(--muted); }
     [hidden] { display: none !important; }
   </style>
@@ -198,13 +194,20 @@
         </li>
         <li>
           <h2>Effekte</h2>
-          <p>Alle beginnen im Dunkeln und enden mit deinem Foto; gewählt in dieser Reihenfolge, geht jeder in den nächsten über.</p>
-          <div class="effekte-kopf"><span class="name">Einzeln oder kombiniert</span><button class="knopf klein" type="button" id="alle">Alle vier</button></div>
-          <div class="ablaeufe" role="group" aria-label="Effekte">
-            <button type="button" data-effekt="physarum" aria-pressed="true"><b>Physarum</b><small>Hunderttausende Agenten strömen aus Keimen und bilden ein leuchtendes Netz, das die Formen deines Fotos findet</small></button>
-            <button type="button" data-effekt="stich" aria-pressed="true"><b>Stich</b><small>Ein Kupferstich, der fliesst: Strich für Strich entlang der Richtung des Bilds, dann werden die Striche breiter, bis sie das Foto ergeben</small></button>
-            <button type="button" data-effekt="tiefe" aria-pressed="true"><b>Tiefe</b><small>Eine Lichtebene tastet das Bild ab, dann wird es Raum: Parallaxe, Tiefenschichten, wandernde Schärfe</small></button>
-            <button type="button" data-effekt="tuch" aria-pressed="true"><b>Tuch</b><small>Das Foto als Seidentuch im Wind – eine Stoffsimulation –, das sich zuletzt glatt zum Bild legt</small></button>
+          <p>Ein Effekt allein oder mehrere als Kette. Alle beginnen im Dunkeln und enden mit deinem Foto; in einer Kette geht jeder in den nächsten über, immer in dieser Reihenfolge.</p>
+          <div class="ablaeufe" role="group" aria-label="Effekt wählen">
+            <button type="button" data-wahl="physarum+stich+tiefe+tuch" aria-pressed="true"><b>Alle vier als Kette</b><small>Das Netz findet die Formen, der Stich zeichnet sie, das Foto wird Raum und weht als Tuch – bis es glatt daliegt</small></button>
+            <button type="button" data-wahl="physarum" aria-pressed="false"><b>Physarum</b><small>Hunderttausende Agenten strömen aus Keimen und bilden ein leuchtendes Netz, das die Formen deines Fotos findet</small></button>
+            <button type="button" data-wahl="stich" aria-pressed="false"><b>Stich</b><small>Ein Kupferstich, der fliesst: Strich für Strich entlang der Richtung des Bilds, dann werden die Striche breiter, bis sie das Foto ergeben</small></button>
+            <button type="button" data-wahl="tiefe" aria-pressed="false"><b>Tiefe</b><small>Eine Lichtebene tastet das Bild ab, dann wird es Raum: Parallaxe, Tiefenschichten, wandernde Schärfe</small></button>
+            <button type="button" data-wahl="tuch" aria-pressed="false"><b>Tuch</b><small>Das Foto als Seidentuch im Wind – eine Stoffsimulation –, das sich zuletzt glatt zum Bild legt</small></button>
+          </div>
+          <p class="effekte-hinweis">Oder eine eigene Kette zusammenstellen:</p>
+          <div class="segment effekte" role="group" aria-label="Eigene Kette">
+            <button type="button" data-effekt="physarum" aria-pressed="true">Physarum</button>
+            <button type="button" data-effekt="stich" aria-pressed="true">Stich</button>
+            <button type="button" data-effekt="tiefe" aria-pressed="true">Tiefe</button>
+            <button type="button" data-effekt="tuch" aria-pressed="true">Tuch</button>
           </div>
           <p class="kette" id="kette" aria-live="polite"></p>
         </li>
@@ -262,7 +265,7 @@
   <script type="importmap">
   { "imports": { "three": "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" } }
   </script>
-  <script type="module" src="app.js?v=1"></script>
+  <script type="module" src="app.js?v=2"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>
