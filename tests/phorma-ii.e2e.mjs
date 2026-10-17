@@ -80,7 +80,7 @@ await check("Testfoto: wird analysiert, die Bühne steht, die Kette aller vier E
   for (const e of ["physarum", "muster", "tiefe", "tuch"]) assert.equal(await page.getAttribute(`[data-effekt="${e}"]`, "aria-pressed"), "true", `${e} gewählt`);
   await laden(page);
   await bereit(page);
-  assert.match(await page.textContent("#auswertung"), /Striche · \d+ Keime/);
+  assert.match(await page.textContent("#auswertung"), /^\d+ Keime · Kanten · Tiefe/);
   assert.equal(await page.textContent("#kette"), "Physarum → Morphogenese → Tiefe → Tuch");
   const knoepfe = await page.$$eval(".phasen button", (b) => b.map((x) => x.textContent));
   assert.deepEqual(knoepfe, ["01 Keime", "02 Netz", "03 Keimen", "04 Muster", "05 Dichte", "06 Scan", "07 Raum", "08 Tuch", "09 Bild"]);
