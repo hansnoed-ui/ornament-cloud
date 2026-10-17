@@ -1,9 +1,9 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=3";
-import { szene, bild, standbildZeit } from "./film.js?v=3";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=3";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=4";
+import { szene, bild, standbildZeit } from "./film.js?v=4";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=4";
 import { mp4 } from "../sketchory/mp4.js?v=10";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
@@ -16,6 +16,30 @@ let VORSCHAU = 0.5;
 const S = { bild: null, A: null, foto: null, sz: null, laeuft: false, start: 0, t: null, film: null, rechnen: 0, buehne: null, buehneSchluessel: "",
   format: "4:5", strich: "mittel", tiefe: "bild", mass: [1080, 1350], ablauf: KETTE, ki: null };
 window.__phorma = S;   // für die Browser-Tests
+// ?diagnose: Messwerte zum Gerät sichtbar unter der Vorschau (Rückmeldung vom 17. Oktober 2026: auf einem Telefon «reagiert nicht», hier nicht
+// nachzustellen) – Zeitpunkte der Schritte, Dauer je Vorschaubild, längste Blockade, Grafikchip und Erweiterungen; als Bildschirmfoto zurückschicken
+const DIAGNOSE = new URLSearchParams(location.search).has("diagnose");
+const D = { t0: performance.now(), notizen: [], bild: [], lang: 0 };
+function notiz(text) {
+  if (!DIAGNOSE) return;
+  D.notizen.push(`${((performance.now() - D.t0) / 1000).toFixed(1)} s  ${text}`);
+  diagnoseZeigen();
+}
+function diagnoseZeigen() {
+  if (!DIAGNOSE) return;
+  let box = document.getElementById("diagnose");
+  if (!box) { box = document.createElement("pre"); box.id = "diagnose"; box.className = "info diagnose"; document.querySelector(".buehne").append(box); }
+  const mittel = D.bild.length ? D.bild.reduce((s, x) => s + x, 0) / D.bild.length : 0;
+  const i = S.buehne?.info?.();
+  box.textContent = [`PHORMA II · Diagnose · ${navigator.userAgent.replace(/^Mozilla\/5\.0 /, "").slice(0, 90)}`,
+    `Pixel ${devicePixelRatio} · Telefon ${grob ? "ja" : "nein"} · Speicher ${navigator.deviceMemory ?? "?"} GB · Kerne ${navigator.hardwareConcurrency ?? "?"}`,
+    i ? `Grafik ${i.grafik} · Float-Ziel ${i.floatZiel} · Float mischen ${i.floatMischen} · Float linear ${i.floatLinear} · parallel übersetzen ${i.parallel}` : "Grafik: noch keine Bühne",
+    `Vorschaubild ${mittel.toFixed(0)} ms im Mittel (letzte ${D.bild.length}) · längste Blockade ${Math.round(D.lang)} ms`, ...D.notizen.slice(-12)].join("\n");
+}
+if (DIAGNOSE && "PerformanceObserver" in window) {
+  try { new PerformanceObserver((l) => { for (const e of l.getEntries()) D.lang = Math.max(D.lang, e.duration); }).observe({ type: "longtask", buffered: true }); } catch { /* egal */ }
+  setInterval(diagnoseZeigen, 1000);
+}
 // auf dem Telefon höchstens 0,6 der Filmgrösse: die Ziele der Bühne brauchen sonst sehr viel Grafikspeicher (Rückmeldung vom 17. Oktober 2026: «die App
 // stürzt sofort ab»)
 const vorschauMass = () => { const b = vorschau.parentElement.getBoundingClientRect().width || 400; return Math.round(Math.min(grob ? 0.6 : 0.85, Math.max(0.5, (b * (window.devicePixelRatio || 1)) / S.mass[0])) * 20) / 20; };
@@ -49,6 +73,7 @@ $("datei").addEventListener("change", (e) => { if (e.target.files?.[0]) fotoLade
 $("testbild").addEventListener("click", async () => fotoLaden(new File([await (await fetch("beispiel.jpg")).blob()], "beispiel.jpg", { type: "image/jpeg" })));
 
 async function fotoLaden(datei) {
+  notiz(`Foto gewählt (${Math.round((datei.size ?? 0) / 1024)} kB)`);
   melden("Foto wird gelesen …");
   let q;
   try { q = await bitmap(datei); } catch { melden("Dieses Foto kann der Browser nicht öffnen. Versuche es als JPG oder PNG.", true); return; }
@@ -61,7 +86,7 @@ async function fotoLaden(datei) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=3", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=4", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -87,6 +112,7 @@ async function lesen() {
   sperren(false);
   if (fehler || !ergebnis) { melden(`Das Foto liess sich nicht analysieren: ${fehler}`, true); return; }
   S.A = ergebnis; S.A.geschaetzt = ergebnis.tiefe;
+  notiz(`Analyse fertig (${ergebnis.ms} ms im Worker)`);
   const z = (n) => n.toLocaleString("de-CH");
   $("auswertung").textContent = `${z(ergebnis.zahl.linien)} + ${z(ergebnis.zahl.querlinien)} Striche · ${ergebnis.keime.length} Keime · Tiefe · ${ergebnis.ms} ms`;
   if (S.tiefe === "ki") await kiAnwenden();
@@ -101,7 +127,7 @@ async function kiAnwenden() {
   if (!S.ki) {
     const nr = S.rechnen;
     try {
-      kiModul ??= await import("./tiefe-ki.js?v=3");
+      kiModul ??= await import("./tiefe-ki.js?v=4");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m));
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
@@ -119,16 +145,18 @@ let buehneModul = null;
 async function buehneBereit() {
   const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.A.tiefe === S.A.geschaetzt ? "bild" : "ki"}` : "";
   if (schluessel === S.buehneSchluessel) return;
-  S.buehneSchluessel = schluessel; S.buehneFertig = false;
+  S.buehneSchluessel = schluessel; S.buehneFertig = false; S.buehneWarm = false;
   if (S.sz) S.sz.buehne = null;
   S.buehne?.entsorgen(); S.buehne = null;
   if (!schluessel) return;
   try {
-    buehneModul ??= await import("./buehne.js?v=3");
+    buehneModul ??= await import("./buehne.js?v=4");
     if (S.buehneSchluessel !== schluessel) return;
     S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki",
       onVerloren: () => {
+        if (S.buehneSchluessel !== schluessel) return;
         anhalten();
+        notiz("Grafik ausgestiegen (webglcontextlost)");
         melden("Die Grafik dieses Geräts ist ausgestiegen (meist: zu wenig Grafikspeicher). Wähle einen einzelnen Effekt oder lade die Seite neu.", true);
         if (S.sz) { S.sz.buehne = null; zeigeZeit(S.t ?? 0); }
         S.buehneSchluessel = ""; S.buehne = null;
@@ -137,9 +165,17 @@ async function buehneBereit() {
     melden(`PHORMA II braucht WebGL 2; hier blendet an seiner Stelle das Foto auf (${fehler?.message ?? fehler}).`, true);
     return;
   }
-  if (S.sz) { S.sz.buehne = S.buehne; if (!S.laeuft) zeigeZeit(S.t ?? 0); }
-  // was im Hintergrund rechnet (die Bahn des Tuchs): Fortschritt melden, danach die Vorschau neu zeichnen
+  // erst wenn die Programme übersetzt sind, zeichnet die Vorschau mit der Bühne (bis dahin der Grund)
   const b = S.buehne;
+  notiz(`Bühne gebaut: ${S.ablauf}`);
+  melden("Die Effekte werden vorbereitet …");
+  await b.warm;
+  notiz("Programme übersetzt");
+  if (S.buehne !== b) return;
+  S.buehneWarm = true;
+  melden("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4.");
+  if (S.sz) { S.sz.buehne = b; if (S.laeuft) { S.start = performance.now(); } else zeigeZeit(S.t ?? 0); }
+  // was im Hintergrund rechnet (die Bahn des Tuchs): Fortschritt melden, danach die Vorschau neu zeichnen
   if (b.fortschritt() < 1) {
     const zeigen = () => { if (S.buehne === b && b.fortschritt() < 1) { melden(`Das Tuch wird berechnet … ${Math.round(b.fortschritt() * 100)} %`); setTimeout(zeigen, 250); } };
     zeigen();
@@ -147,6 +183,7 @@ async function buehneBereit() {
   b.bereit.then(() => {
     if (S.buehne !== b) return;
     S.buehneFertig = true;
+    notiz("alles bereit (auch das Tuch)");
     if (/Tuch wird berechnet/.test($("meldung").textContent)) melden("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4.");
     if (!S.laeuft && S.sz && S.t !== null) zeigeZeit(S.t);
   });
@@ -156,7 +193,7 @@ async function buehneFertig() { await buehneBereit(); await S.buehne?.bereit; }
 
 function optionen() {
   return { breite: S.mass[0], hoehe: S.mass[1], tempo: $("tempo").value, signet: $("signet").checked, beschriftung: $("beschriftung").checked,
-    titel: $("titel").value.replace(/\s+/g, " ").trim(), foto: S.foto, ablauf: S.ablauf, buehne: S.buehne };
+    titel: $("titel").value.replace(/\s+/g, " ").trim(), foto: S.foto, ablauf: S.ablauf, buehne: S.buehneWarm ? S.buehne : null };
 }
 
 function sprungknoepfe(sz) {
@@ -254,7 +291,9 @@ function spielen() {
 }
 function anhalten() { S.laeuft = false; $("spielen").textContent = "Abspielen"; }
 function zeigeZeit(t) {
+  const t0 = performance.now();
   S.t = t; S.ende = false; bild(vctx, S.sz, t);
+  if (DIAGNOSE) { D.bild.push(performance.now() - t0); if (D.bild.length > 60) D.bild.shift(); }
   $("zeit").value = String(t); $("zeitcode").textContent = zeitcode(t);
 }
 function takt(jetzt) {

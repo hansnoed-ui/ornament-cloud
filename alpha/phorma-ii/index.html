@@ -121,6 +121,7 @@
     .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
     .hinweise li { margin: 0.2rem 0; }
     .ki-hinweis { margin: 0; font-size: 0.86rem; color: var(--muted); }
+    .diagnose { margin: 0; padding: 10px; border: 1px solid var(--border); border-radius: 10px; white-space: pre-wrap; font: 0.72rem/1.4 ui-monospace, Menlo, Consolas, monospace; }
     [hidden] { display: none !important; }
   </style>
 </head>
@@ -271,6 +272,7 @@
   <script>
     (function () {
       function zeigen(text) {
+        var d = document.getElementById("diagnose"); if (d) d.textContent += "\nFehler: " + text;
         var m = document.getElementById("meldung"); if (m) { m.textContent = "Fehler: " + text; m.className = "meldung fehler"; }
         var k = document.getElementById("startfehler"); if (k) { k.textContent = "PHORMA II: " + text; k.hidden = false; }
       }
@@ -279,7 +281,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=4"></script>
+  <script type="module" src="app.js?v=5"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

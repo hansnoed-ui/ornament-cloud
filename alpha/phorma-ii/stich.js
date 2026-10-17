@@ -8,8 +8,8 @@
 //   bis sie sich schliessen, darunter erscheint das Foto: am Ende steht es exakt da.
 // Alle Striche liegen in einer Geometrie (ein Zeichenaufruf); zustandslos, jedes Bild hängt nur von der Zeit ab.
 import * as THREE from "three";
-import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=3";
-import { phase } from "./ablauf.js?v=3";
+import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=4";
+import { phase } from "./ablauf.js?v=4";
 
 const UNTERLAGE = /* glsl */ `uniform sampler2D tFoto; uniform float uGrund; uniform vec3 uFarbe; varying vec2 vUv;
   void main() { gl_FragColor = vec4(mix(uFarbe, texture2D(tFoto, vUv).rgb, uGrund), 1.0); }`;
@@ -131,6 +131,7 @@ export function stich(g, teil) {
       // Bloom nur auf Schwarz (auf Papier überstrahlt er alles), schwach und eng, sonst Dunst über den Strichen
       return { aktiv: 1 - weich(anteil(tau, D[0], D[1])), bloom: papier ? 0 : 0.12, radius: 0.2, saum: 0.002, ende };
     },
+    vorab: { szenen: [[szene, kam]], materialien: [unterlage] },
     zaehler(tau) {
       let a = 0, b = starts.length;
       while (a < b) { const m = (a + b) >> 1; if (starts[m] <= tau) a = m + 1; else b = m; }

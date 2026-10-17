@@ -6,9 +6,9 @@
 // Die Simulation läuft in festen Teilschritten (60 je Sekunde eigener Zeit) von vorn; alle 2 s ein Wiedereinstiegspunkt, damit Spulen nicht von vorn
 // rechnen muss. Bild n ist beim Abspielen, Spulen und im Video dasselbe.
 import * as THREE from "three";
-import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=3";
-import { phase } from "./ablauf.js?v=3";
-import { zufall } from "./analyse.js?v=3";
+import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=4";
+import { phase } from "./ablauf.js?v=4";
+import { zufall } from "./analyse.js?v=4";
 
 export const SCHRITTE = 60;
 const SICHERN = 120;
@@ -148,6 +148,7 @@ export function physarum(g, teil) {
       g.pass(zeigen, rt);
       return { aktiv, bloom: 0.28, radius: 0.15, saum: 0.003, ende };
     },
+    vorab: { szenen: [[szene, kam]], materialien: [bewegen, verlaufen, kopie, zeigen] },
     /** für Tests und zum Abstimmen: Perzentile der Spur (10, 50, 90, 99, 99,9 %) beim aktuellen Schritt */
     messen() {
       const d = new Uint16Array(sw * sh * 4); renderer.readRenderTargetPixels(spur[si], 0, 0, sw, sh, d);
