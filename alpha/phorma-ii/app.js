@@ -1,9 +1,9 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=7";
-import { szene, bild, standbildZeit } from "./film.js?v=7";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=7";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=8";
+import { szene, bild, standbildZeit } from "./film.js?v=8";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=8";
 import { mp4 } from "../sketchory/mp4.js?v=10";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
@@ -30,6 +30,9 @@ function spur(text, neu = false) {
     localStorage.setItem(SPUR, JSON.stringify(liste.slice(-40)));
   } catch { /* ohne Speicher keine Spur */ }
 }
+// brach der letzte Lauf in der KI-Tiefe ab, bleibt sie diesmal aus (sonst stürzt die Seite bei jedem Foto wieder ab)
+let kiAbsturz = false;
+try { const alt = JSON.parse(localStorage.getItem(SPUR) || "[]"), letzt = alt.at(-1)?.[1] ?? ""; kiAbsturz = /^(KI|Tiefe mit KI)/.test(letzt); if (kiAbsturz) localStorage.setItem("phorma-ii.tiefe", "bild"); } catch { /* egal */ }
 spur(`Seite geöffnet · ${navigator.userAgent.replace(/^Mozilla\/5\.0 /, "").slice(0, 80)} · Speicher ${navigator.deviceMemory ?? "?"} GB · Pixel ${devicePixelRatio}`, true);
 function notiz(text) {
   spur(text);
@@ -117,7 +120,7 @@ async function fotoLaden(datei) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=7", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=8", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -158,8 +161,9 @@ async function kiAnwenden() {
   if (!S.ki) {
     const nr = S.rechnen;
     try {
-      kiModul ??= await import("./tiefe-ki.js?v=7");
-      const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m));
+      notiz("Tiefe mit KI wird vorbereitet");
+      kiModul ??= await import("./tiefe-ki.js?v=8");
+      const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m), { telefon: grob, notiz });
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
       melden(`Bereit. Tiefe von der KI (${name.split("/")[1]}, ${device === "webgpu" ? "WebGPU" : "WebAssembly"}).`);
@@ -181,7 +185,8 @@ async function buehneBereit() {
   S.buehne?.entsorgen(); S.buehne = null;
   if (!schluessel) return;
   try {
-    buehneModul ??= await import("./buehne.js?v=7");
+    if (!buehneModul) notiz("three.js und die Bühne werden geladen");
+    buehneModul ??= await import("./buehne.js?v=8");
     if (S.buehneSchluessel !== schluessel) return;
     notiz(`Bühne wird gebaut: ${S.ablauf}`);
     S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, muster: S.muster, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz,
@@ -289,6 +294,7 @@ const tiefeKnoepfe = wahl("data-tiefe", "tiefe", ["bild", "ki"], async () => {
   neu();
 });
 $("ki-hinweis").hidden = S.tiefe !== "ki";
+if (kiAbsturz) melden("Die KI-Tiefe hat beim letzten Mal den Browser zum Absturz gebracht; sie ist darum ausgeschaltet (Tiefe aus dem Bild).", true);
 for (const b of tiefeKnoepfe) b.addEventListener("click", () => { $("ki-hinweis").hidden = S.tiefe !== "ki"; });
 for (const id of ["tempo"]) { const v = erinnern(id); if (v && [...$(id).options].some((o) => o.value === v)) $(id).value = v; $(id).addEventListener("change", () => { merken(id, $(id).value); neu(); }); }
 for (const id of ["signet", "beschriftung", "unschaerfe"]) { const v = erinnern(id); if (v !== null) $(id).checked = v === "1"; $(id).addEventListener("change", () => { merken(id, $(id).checked ? "1" : "0"); if (id !== "unschaerfe") neu(); }); }

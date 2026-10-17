@@ -6,13 +6,17 @@ const VERSION = "3.8.1";
 const MODELLE = ["onnx-community/depth-anything-v2-small", "Xenova/depth-anything-small-hf"];
 let geladen = null;
 
-async function modell(melden) {
+// Telefon: nur WebAssembly und das kleinste Modell (q8) – WebGPU auf Android brachte Chrome zum Absturz (Spur vom 17. Oktober 2026: der Tab brach
+// nach der Analyse ab, genau dort, wo die KI-Tiefe rechnet)
+async function modell(melden, telefon, notiz) {
+  notiz?.("KI: Bibliothek wird geladen");
   const T = await import(`https://cdn.jsdelivr.net/npm/@huggingface/transformers@${VERSION}/dist/transformers.min.js`);
   T.env.allowLocalModels = false;
-  const geraete = typeof navigator !== "undefined" && navigator.gpu ? ["webgpu", "wasm"] : ["wasm"];
+  const geraete = !telefon && typeof navigator !== "undefined" && navigator.gpu ? ["webgpu", "wasm"] : ["wasm"];
   let fehler = null;
   for (const name of MODELLE) for (const device of geraete) {
     try {
+      notiz?.(`KI: Modell ${name} wird geladen (${device})`);
       const pipe = await T.pipeline("depth-estimation", name, {
         device, dtype: device === "webgpu" ? "fp16" : "q8",
         progress_callback: (p) => { if (p?.status === "progress" && p.total) melden?.(`Das Tiefenmodell wird geladen … ${Math.round((p.loaded / p.total) * 100)} %`); },
@@ -24,11 +28,17 @@ async function modell(melden) {
 }
 
 /** Tiefe für das Foto (Canvas in Filmgrösse) auf w × h (Zeile 0 oben, 1 nah); melden(text) für den Fortschritt */
-export async function kiTiefe(foto, w, h, melden) {
-  geladen ??= modell(melden).catch((e) => { geladen = null; throw e; });
+export async function kiTiefe(foto, w, h, melden, { telefon = false, notiz = null } = {}) {
+  geladen ??= modell(melden, telefon, notiz).catch((e) => { geladen = null; throw e; });
   const { T, pipe, name, device } = await geladen;
   melden?.("Die KI schätzt die Tiefe …");
-  const { predicted_depth: d } = await pipe(T.RawImage.fromCanvas(foto));
+  // das Modell rechnet ohnehin auf 518 Punkten: ein kleines Bild spart Speicher
+  const s = Math.min(1, 518 / Math.max(foto.width, foto.height)), klein = document.createElement("canvas");
+  klein.width = Math.round(foto.width * s); klein.height = Math.round(foto.height * s);
+  klein.getContext("2d").drawImage(foto, 0, 0, klein.width, klein.height);
+  notiz?.(`KI: rechnet (${name}, ${device}, ${klein.width} × ${klein.height})`);
+  const { predicted_depth: d } = await pipe(T.RawImage.fromCanvas(klein));
+  notiz?.("KI: fertig");
   const [H0, W0] = d.dims.slice(-2), q = d.data, aus = new Float32Array(w * h);
   let mn = Infinity, mx = -Infinity;
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {

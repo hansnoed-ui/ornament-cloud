@@ -9,12 +9,12 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=7";
-import { FPS, kette, laufend } from "./ablauf.js?v=7";
-import { physarum } from "./physarum.js?v=7";
-import { muster } from "./muster.js?v=7";
-import { tiefe } from "./tiefe.js?v=7";
-import { tuch } from "./tuch.js?v=7";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=8";
+import { FPS, kette, laufend } from "./ablauf.js?v=8";
+import { physarum } from "./physarum.js?v=8";
+import { muster } from "./muster.js?v=8";
+import { tiefe } from "./tiefe.js?v=8";
+import { tuch } from "./tuch.js?v=8";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";

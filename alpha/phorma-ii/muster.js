@@ -7,9 +7,9 @@
 // Glänzend gezeichnet (Normale aus dem Gefälle von V, Glanzlicht), Kanten kupfern. Der Zustand liegt in Float-Zielen und wird nur mit texelFetch
 // gelesen (Telefone können Float-Texturen oft nicht glätten). Feste Teilschritte (600 je Sekunde eigener Zeit), Wiedereinstiegspunkte alle 2 s.
 import * as THREE from "three";
-import { anteil, weich, glocke, quadMaterial } from "./gemeinsam.js?v=7";
-import { phase } from "./ablauf.js?v=7";
-import { zufall } from "./analyse.js?v=7";
+import { anteil, weich, glocke, quadMaterial } from "./gemeinsam.js?v=8";
+import { phase } from "./ablauf.js?v=8";
+import { zufall } from "./analyse.js?v=8";
 
 export const SCHRITTE = 600;
 const SICHERN = 1200;
