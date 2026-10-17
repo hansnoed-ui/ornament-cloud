@@ -1,11 +1,11 @@
 // «Bildfragmentieren» – Seite: Foto laden, zerlegen (Worker), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der MP4-Schreiber von Sketchory;
 // ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, ABLAEUFE, ablaufName, effekte, VERWANDLUNG } from "./ablauf.js?v=26";
-import { szene, bild, standbildZeit, vorbereiten, FARBEN } from "./szene.js?v=26";
-import { zerlegen } from "./fragmente.js?v=26";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, ABLAEUFE, ablaufName, effekte, VERWANDLUNG } from "./ablauf.js?v=27";
+import { szene, bild, standbildZeit, vorbereiten, FARBEN } from "./szene.js?v=27";
+import { zerlegen } from "./fragmente.js?v=27";
 import { mp4 } from "../sketchory/mp4.js?v=10";
-import { mitDauer } from "../the-fictory/dauer.js?v=26";
+import { mitDauer } from "../the-fictory/dauer.js?v=27";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
@@ -62,7 +62,7 @@ async function fotoLaden(datei) {
 
 // ——— zerlegen (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=26", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=27", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   // zerlegt wird auf der halben Filmgrösse (für Kanten und Mosaik genug), das Foto für den Schluss bleibt in voller Grösse
@@ -104,7 +104,7 @@ function optionen() {
     titel: $("titel").value.replace(/\s+/g, " ").trim(), foto: S.foto, leinwand, vorrat: S.vorrat, ablauf: S.ablauf, raum: S.raum };
 }
 
-// ——— Die Verwandlung (WebGL): raum.js und three.js erst laden, wenn sie gewählt ist ———
+// ——— Verwandlung und Relief-Flug (WebGL): raum.js und three.js erst laden, wenn einer davon gewählt ist ———
 let raumModul = null;
 async function raumBereit() {
   const art = S.ablauf !== "fragmente" ? S.ablauf : null;
@@ -115,12 +115,12 @@ async function raumBereit() {
   S.raum?.entsorgen(); S.raum = null;
   if (!schluessel) return;
   try {
-    raumModul ??= await import("./raum.js?v=26");
+    raumModul ??= await import("./raum.js?v=27");
     if (S.raumSchluessel !== schluessel) return;
     const F = FARBEN[S.grund] ?? FARBEN.schwarz;
     S.raum = raumModul.raum(S.foto, art, { grund: F.grund, akzent: F.punkt });
   } catch (fehler) {
-    melden(`Die Verwandlung braucht WebGL 2; hier blendet an ihrer Stelle das Foto auf (${fehler?.message ?? fehler}).`, true);
+    melden(`Verwandlung und Relief-Flug brauchen WebGL 2; hier blendet an ihrer Stelle das Foto auf (${fehler?.message ?? fehler}).`, true);
     return;
   }
   neu();
@@ -194,22 +194,23 @@ function rahmenFarbe() { vorschau.parentElement.classList.toggle("weiss", S.grun
 rahmenFarbe();
 for (const id of ["tempo"]) { const v = erinnern(id); if (v && [...$(id).options].some((o) => o.value === v)) $(id).value = v; $(id).addEventListener("change", () => { merken(id, $(id).value); neu(); }); }
 for (const id of ["signet", "beschriftung"]) { const v = erinnern(id); if (v !== null) $(id).checked = v === "1"; $(id).addEventListener("change", () => { merken(id, $(id).checked ? "1" : "0"); neu(); }); }
-// Ablauf: «Fragmente» oder die Verwandlung – die Karte wählt alle vier Effekte, die Schalter einzelne oder eine eigene Kombination (Wunsch vom
-// 17. Oktober 2026); in fester Reihenfolge, Wahl gespeichert
+// Ablauf: «Fragmente», die Verwandlung oder der Relief-Flug – bei der Verwandlung wählt die Karte alle Effekte, die Schalter einzelne oder eine
+// eigene Kombination (Wunsch vom 17. Oktober 2026); in fester Reihenfolge, Wahl gespeichert
 const ablaufKnoepfe = [...document.querySelectorAll("[data-ablauf]")], effektKnoepfe = [...document.querySelectorAll("[data-effekt]")];
 S.ablauf = ablaufName(erinnern("ablauf"));
 const ablaufZeigen = () => {
   const gewaehlt = effekte(S.ablauf);
-  ablaufKnoepfe.forEach((b) => b.setAttribute("aria-pressed", String((b.dataset.ablauf === "fragmente") === !gewaehlt.length)));
-  effektKnoepfe.forEach((b) => b.setAttribute("aria-pressed", String(gewaehlt.includes(b.dataset.effekt))));
-  $("kette").textContent = gewaehlt.length ? gewaehlt.map((e) => ABLAEUFE[e].titel).join(" → ") : "";
+  const karte = S.ablauf === "fragmente" || S.ablauf === "flug" ? S.ablauf : "verwandlung";
+  ablaufKnoepfe.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.ablauf === karte)));
+  effektKnoepfe.forEach((b) => b.setAttribute("aria-pressed", String(karte === "verwandlung" && gewaehlt.includes(b.dataset.effekt))));
+  $("kette").textContent = karte === "verwandlung" ? gewaehlt.map((e) => ABLAEUFE[e].titel).join(" → ") : "";
 };
 ablaufZeigen();
 const ablaufSetzen = (a) => { a = ablaufName(a); if (a === S.ablauf) return; S.ablauf = a; merken("ablauf", a); ablaufZeigen(); neu(); };
-for (const b of ablaufKnoepfe) b.addEventListener("click", () => ablaufSetzen(b.dataset.ablauf === "fragmente" ? "fragmente" : VERWANDLUNG));
+for (const b of ablaufKnoepfe) b.addEventListener("click", () => ablaufSetzen(b.dataset.ablauf === "verwandlung" ? VERWANDLUNG : b.dataset.ablauf));
 for (const b of effektKnoepfe) b.addEventListener("click", () => {
-  const e = b.dataset.effekt, gewaehlt = effekte(S.ablauf);
-  if (!gewaehlt.length) return ablaufSetzen(e);                          // nach «Fragmente»: dieser Effekt allein
+  const e = b.dataset.effekt, gewaehlt = S.ablauf === "flug" ? [] : effekte(S.ablauf);
+  if (!gewaehlt.length) return ablaufSetzen(e);                          // nach «Fragmente» oder dem Relief-Flug: dieser Effekt allein
   const liste = gewaehlt.includes(e) ? gewaehlt.filter((x) => x !== e) : [...gewaehlt, e];
   if (liste.length) ablaufSetzen(liste.join("+"));                        // einer bleibt immer
 });

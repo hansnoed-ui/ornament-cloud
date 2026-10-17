@@ -55,7 +55,7 @@ starte("relief", ({ renderer, foto, B, H }) => {
       .replace("#include <common>", "#include <common>\nuniform float uScan, uLinien; uniform vec3 uAkzent; varying float vHoehe; varying vec3 vWelt;")
       .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>
         float hl = vHoehe * 16.0;
-        float linie = 1.0 - smoothstep(0.0, 1.4 * fwidth(hl), abs(fract(hl - 0.5) - 0.5));   // Höhenlinien, auf jeder Grösse ein Pixel fein
+        float linie = 1.0 - smoothstep(0.0, max(1.4 * fwidth(hl), 1e-4), abs(fract(hl - 0.5) - 0.5));   // Höhenlinien, auf jeder Grösse ein Pixel fein (max: auf flachen Flächen ist fwidth 0, smoothstep mit gleichen Grenzen ist undefiniert)
         float band = exp(-pow((vWelt.y - uScan) / 0.09, 2.0));
         totalEmissiveRadiance += uAkzent * uLinien * (linie * (0.25 + 3.0 * band) + 0.12 * band);`);
   };

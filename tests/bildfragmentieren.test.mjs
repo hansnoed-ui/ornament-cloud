@@ -157,7 +157,7 @@ test("Ablauf: vier Phasen in dieser Reihenfolge, Tempo, Abspann nach Wahl; Forma
 });
 
 test("Abläufe (16./17. Oktober 2026): Fragmente oder die Verwandlung aus Strom, Körper, Scherben, Echo und Relief, einzeln oder kombiniert; alle beginnen im Dunkeln und enden beim Foto, dann Signet", () => {
-  assert.deepEqual(Object.keys(ABLAEUFE), ["fragmente", "strom", "koerper", "scherben", "echo", "relief"]);
+  assert.deepEqual(Object.keys(ABLAEUFE), ["fragmente", "strom", "koerper", "scherben", "echo", "relief", "flug"]);
   assert.deepEqual(EFFEKTE, ["strom", "koerper", "scherben", "echo", "relief"], "Körper und Scherben einzeln (früher «Kristall»)");
   assert.equal(VERWANDLUNG, "strom+koerper+scherben+echo+relief");
   assert.deepEqual(ABLAEUFE.fragmente.phasen.map(([n]) => n), PHASEN.map(([n]) => n), "Fragmente wie bisher");
@@ -175,6 +175,11 @@ test("Abläufe (16./17. Oktober 2026): Fragmente oder die Verwandlung aus Strom,
   assert.deepEqual(effekte("fragmente"), []);
   assert.deepEqual(effekte("echo+scherben"), ["scherben", "echo"]);
   assert.equal(ablaufName("kristall"), "koerper+scherben", "eine gespeicherte Wahl «Kristall» bleibt gültig");
+  // der Relief-Flug (17. Oktober 2026): ein Ablauf für sich, nicht Teil der Verwandlung
+  assert.equal(ablaufName("flug"), "flug");
+  assert.ok(!EFFEKTE.includes("flug"));
+  assert.deepEqual(ABLAEUFE.flug.phasen.map(([, t]) => t), ["Höhenkurven", "Flug", "Bild"]);
+  assert.deepEqual(kette("flug").teile.map((t) => [t.art, t.erst, t.letzt]), [["flug", true, true]]);
   assert.equal(ablaufName("strom+kristall+echo+relief"), VERWANDLUNG);
   // ohne Wahl wie bisher: dieselbe Zeitachse
   const alt = zeitachse(), auch = zeitachse({ ablauf: "fragmente" });
@@ -190,7 +195,7 @@ test("Abläufe (16./17. Oktober 2026): Fragmente oder die Verwandlung aus Strom,
   assert.ok(K.dauer > 20 && K.dauer < 26, `Verwandlung ${K.dauer} s`);
   // einzeln: alle Phasen des Effekts, er endet beim Foto
   for (const art of EFFEKTE) assert.deepEqual(kette(art).phasen.map((p) => p.name), ABLAEUFE[art].phasen.map(([n]) => n), `${art} einzeln`);
-  const auswahl = ["strom", "koerper", "scherben", "echo", "relief", VERWANDLUNG, "koerper+scherben", "koerper+echo", "scherben+echo", "strom+relief", "strom+koerper", "strom+scherben", "echo+relief"];
+  const auswahl = ["flug", "strom", "koerper", "scherben", "echo", "relief", VERWANDLUNG, "koerper+scherben", "koerper+echo", "scherben+echo", "strom+relief", "strom+koerper", "strom+scherben", "echo+relief"];
   for (const art of auswahl) {
     for (const tempo of ["ruhig", "normal", "schnell"]) {
       const z = zeitachse({ ablauf: art, tempo });
@@ -235,7 +240,7 @@ test("Seite: Alpha (noindex), steht für sich ohne Navigation oben links, nichts
   assert.match(lies("alpha/bildfragmentieren/szene.js"), /punktTempo: SIGNET_TEMPO \* 1\.25/);
   assert.match(lies("alpha/sketchory/signet.js"), /punktTempo = 1 \}/, "für Sketchory unverändert");
   // Abläufe zur Wahl; three.js lokal (vendor/three-0.185.1) über eine Import-Map, geladen nur von raum.js
-  assert.deepEqual([...html.matchAll(/data-ablauf="([^"]+)"/g)].map((m) => m[1]), ["fragmente", "verwandlung"]);
+  assert.deepEqual([...html.matchAll(/data-ablauf="([^"]+)"/g)].map((m) => m[1]), ["fragmente", "verwandlung", "flug"]);
   assert.deepEqual([...html.matchAll(/data-effekt="([^"]+)"/g)].map((m) => m[1]), EFFEKTE, "die Effekte einzeln oder kombiniert");
   const karte = JSON.parse(html.match(/<script type="importmap">([\s\S]*?)<\/script>/)[1]).imports;
   assert.deepEqual(karte, { three: "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" });

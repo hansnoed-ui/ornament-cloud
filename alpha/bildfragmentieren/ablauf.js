@@ -13,6 +13,9 @@
 //                → 02 Bild (das Foto strömt durch den Tunnel herein und kommt zur Ruhe)
 //     Relief   – 01 Höhenlinien (leuchten im Dunkeln auf) → 02 Gebirge (Streiflicht, Kamerafahrt) → 03 Bild (es wird flach und steht als Foto)
 //   Nur der letzte Effekt endet beim Foto; die anderen gehen in den nächsten über (Kette, s. kette()).
+//   Relief-Flug – 01 Höhenkurven (leuchten im leeren Bild auf, die Kamera dicht über dem höchsten Gipfel) → 02 Flug (das Gebirge wird flächig, eine
+//                Kamerafahrt mit Zoom und Drehungen über die markantesten Formen) → 03 Bild (es legt sich flach)                  [WebGL, raum.js]
+//                (seit 17. Oktober 2026; Wunsch: «so, dass die Formen des Ausgangsbildes intensiv erfahren werden – in beiden Bedeutungen»)
 // Danach steht das Foto, dann (wenn gewählt) das Signet von ornament.cloud – bei der Verwandlung in einer leuchtenden Fassung.
 export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=10";
 
@@ -51,19 +54,22 @@ export const ABLAEUFE = {
   echo: { titel: "Echo", phasen: [["echo", "Echo", 6.0], ["aufbau", "Bild", 3.4]], start: 1.5, aus: 5.0, ueber: 1.2 },
   // Relief: das Gebirge aus dem Showreel (Rückmeldung: «es war mit Abstand der Beste»)
   relief: { titel: "Relief", phasen: [["hoehenlinien", "Höhenlinien", 2.6], ["gebirge", "Gebirge", 5.0], ["flach", "Bild", 3.4]], ein: 1.0 },
+  // der dritte Gesamtablauf, für sich (nicht Teil der Verwandlung)
+  flug: { titel: "Relief-Flug", phasen: [["kurven", "Höhenkurven", 6.8], ["flug", "Flug", 9.2], ["landung", "Bild", 3.5]] },
 };
 /** die Effekte der Verwandlung in ihrer festen Reihenfolge: Energie → Materie → Echo → Landschaft → Bild */
 export const EFFEKTE = ["strom", "koerper", "scherben", "echo", "relief"];
 export const VERWANDLUNG = EFFEKTE.join("+");
 const UEBER = 0.8;
-/** «fragmente» oder die gewählten Effekte in fester Reihenfolge, mit «+» verbunden (z. B. "strom+echo"); Unbekanntes ergibt «Fragmente»;
+/** «fragmente», «flug» oder die gewählten Effekte in fester Reihenfolge, mit «+» verbunden (z. B. "strom+echo"); Unbekanntes ergibt «Fragmente»;
  *  das frühere «kristall» wird zu Körper und Scherben */
 export function ablaufName(a) {
+  if (String(a ?? "") === "flug") return "flug";                          // der Relief-Flug steht für sich
   const teile = String(a ?? "").split("+").flatMap((e) => (e === "kristall" ? ["koerper", "scherben"] : [e]));
   const effekte = EFFEKTE.filter((e) => teile.includes(e));
   return effekte.length ? effekte.join("+") : "fragmente";
 }
-/** die Effekte eines Ablaufs (bei «Fragmente» keine) */
+/** die Effekte eines Ablaufs (bei «Fragmente» keine; der Relief-Flug ist ein Effekt für sich) */
 export const effekte = (a) => (ablaufName(a) === "fragmente" ? [] : ablaufName(a).split("+"));
 
 /**

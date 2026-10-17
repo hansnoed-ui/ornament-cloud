@@ -17,7 +17,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
-import { kette, ablaufName } from "./ablauf.js?v=26";
+import { kette, ablaufName } from "./ablauf.js?v=27";
 
 const FOV = 35;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -792,7 +792,7 @@ function relief(renderer, textur, B, H, grund, px, hell) {
       .replace("#include <common>", "#include <common>\nuniform float uScan, uOffen, uLinien; uniform vec3 uAkzent; varying float vHoehe; varying vec3 vWelt;")
       .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>
         float hl = vHoehe * 16.0;
-        float linie = 1.0 - smoothstep(0.0, 1.4 * fwidth(hl), abs(fract(hl - 0.5) - 0.5));
+        float linie = 1.0 - smoothstep(0.0, max(1.4 * fwidth(hl), 1e-4), abs(fract(hl - 0.5) - 0.5));
         float band = exp(-pow((vWelt.y - uScan) / 0.09, 2.0));
         float frei = max(uOffen, smoothstep(uScan - 0.03, uScan + 0.03, vWelt.y));                 // was die Scan-Linie schon überstrichen hat
         totalEmissiveRadiance += uAkzent * uLinien * (linie * frei * (0.3 + 3.0 * band) + 0.12 * band);`);
@@ -829,6 +829,177 @@ function relief(renderer, textur, B, H, grund, px, hell) {
       kamera.lookAt(0, 0.12 * kipp, 0);
       stand = t < 2.6 ? `höhenlinien ${Math.round(anteil(t, 0.15, 2.6) * 100)} %` : `höhe ${Math.round(tiefe * 100)} % · licht ${Math.round(((a * 180) / Math.PI + 360) % 360)}°`;
       look.render(Math.max(licht, 0.5 * u.uLinien.value), 0.6, 0.002);
+    },
+    zaehler() { return stand; },
+    entsorgen() { geo.dispose(); mat.dispose(); look.entsorgen(); },
+  };
+}
+
+// ——— Relief-Flug (19,5 s: Höhenkurven 0–6,8 · Flug 6,8–16 · Bild 16–19,5; seit 17. Oktober 2026) ———
+// Der dritte Gesamtablauf (Wunsch: «der Relief-Effekt zuerst mit Höhenkurven und dann flächig, startend mit einem leeren Bildschirm, spektakuläre
+// Kamerafahrten, Zoom und Drehungen: so, dass die Formen des Ausgangsbildes intensiv erfahren werden – in beiden Bedeutungen des Wortes»).
+// Die Helligkeit als Gebirge wie beim Relief, aber höher. Im leeren Bild leuchten zuerst nur Höhenkurven in den Farben des Fotos auf – als Welle
+// vom höchsten Gipfel aus, die Kamera dicht darüber und sich drehend; dann wird das Gebirge flächig (Streiflicht, Schatten, Dunst in der Tiefe), und
+// die Kamera fliegt die markantesten Erhebungen an: tief über die Kämme, in Kurven geneigt, ein Dolly-Zoom am dritten Gipfel, dann der Überblick;
+// zuletzt legt sich alles flach, die Kamera steht senkrecht darüber, und das Foto steht exakt. Die Route kommt aus dem Foto (drei Gipfel des
+// geglätteten Höhenfelds, weit genug auseinander), die Kamera bleibt über dem Gelände. Zustandslos (die Kamera hängt nur an t).
+const FLUG_TIEFE = 0.55;
+function flug(renderer, textur, B, H, grund, px, hell) {
+  const helligkeit = (u, v) => { const i = (Math.min(H - 1, Math.round(v * (H - 1))) * B + Math.min(B - 1, Math.round(u * (B - 1)))) * 4; return (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255; };
+  const szene = new THREE.Scene();
+  szene.fog = new THREE.Fog(grund.clone(), 50, 60);
+  const kamera = new THREE.PerspectiveCamera(FOV, B / H, 0.01, 50);
+  const abstand = 1 / Math.tan(THREE.MathUtils.degToRad(FOV / 2));
+  const breite = (2 * B) / H, schritt = grob() ? 4 : 2.5;
+  const nx = Math.round(B / schritt), ny = Math.round(H / schritt), w = nx + 1;
+  const geo = new THREE.PlaneGeometry(breite, 2, nx, ny);                  // Ecken Zeile für Zeile von oben
+  const feld = hoehenfeld(helligkeit, nx, ny, Math.max(1, Math.round(nx / 180)));
+  const hoehe = new Float32Array(w * (ny + 1)), grad = new Float32Array(hoehe.length * 2), dx = breite / nx, dy = 2 / ny;
+  for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) {
+    const k = j * w + i, f = (ii, jj) => feld[Math.min(ny, Math.max(0, jj)) * w + Math.min(nx, Math.max(0, ii))];
+    hoehe[k] = feld[k];
+    grad[k * 2] = (f(i + 1, j) - f(i - 1, j)) / (2 * dx);
+    grad[k * 2 + 1] = -(f(i, j + 1) - f(i, j - 1)) / (2 * dy);
+  }
+  geo.setAttribute("aHoehe", new THREE.BufferAttribute(hoehe, 1));
+  geo.setAttribute("aGrad", new THREE.BufferAttribute(grad, 2));
+  // die Höhenkurven auf einem stärker geglätteten Feld: auf flachen, einfarbigen Flächen pendelte das JPEG-Rauschen sonst um eine Stufe und zeichnete
+  // dort lauter Pünktchen; die Geometrie bleibt scharfkantig
+  geo.setAttribute("aKurve", new THREE.BufferAttribute(hoehenfeld(helligkeit, nx, ny, Math.max(2, Math.round(nx / 60))), 1));
+
+  // Gelände grob: das Dach (Maximum je Zelle und Nachbarn – die Kamera bleibt darüber) und die geglätteten Formen (für die Gipfel der Route)
+  const cx = 48, cy = Math.round((48 * H) / B), dach = new Float32Array(cx * cy), roh = new Float32Array(cx * cy);
+  for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) {
+    const c = Math.min(cy - 1, Math.floor((j / (ny + 1)) * cy)) * cx + Math.min(cx - 1, Math.floor((i / (nx + 1)) * cx));
+    dach[c] = Math.max(dach[c], feld[j * w + i]);
+  }
+  const dachWeit = dach.map((_, c) => { const ci = c % cx, cj = Math.floor(c / cx); let m = 0; for (let b = -1; b <= 1; b++) for (let a2 = -1; a2 <= 1; a2++) { const ii = ci + a2, jj = cj + b; if (ii >= 0 && ii < cx && jj >= 0 && jj < cy) m = Math.max(m, dach[jj * cx + ii]); } return m; });
+  const formen = hoehenfeld(helligkeit, cx - 1, cy - 1, 2), umgebung = hoehenfeld(helligkeit, cx - 1, cy - 1, 9);
+  const zuWelt = (ci, cj, nX, nY) => [(-0.5 + ci / nX) * breite, 1 - (2 * cj) / nY];
+  const bilinear = (gitter, gw, gh, x, y) => {
+    const fi = Math.min(gw - 1.001, Math.max(0, ((x / breite) + 0.5) * (gw - 1))), fj = Math.min(gh - 1.001, Math.max(0, ((1 - y) / 2) * (gh - 1)));
+    const i0 = Math.floor(fi), j0 = Math.floor(fj), a2 = fi - i0, b = fj - j0, g = (i, j) => gitter[j * gw + i];
+    return (g(i0, j0) * (1 - a2) + g(i0 + 1, j0) * a2) * (1 - b) + (g(i0, j0 + 1) * (1 - a2) + g(i0 + 1, j0 + 1) * a2) * b;
+  };
+  const dachBei = (x, y) => bilinear(dachWeit, cx, cy, x, y) * FLUG_TIEFE;
+  const hoeheBei = (x, y) => bilinear(feld, w, ny + 1, x, y) * FLUG_TIEFE;
+  // drei Gipfel: die markantesten – was am meisten über seine Umgebung ragt (nicht einfach das Hellste: eine weisse Fläche ist eine flache
+  // Hochebene), weit genug voneinander und nicht am Rand
+  const gipfel = [];
+  for (let n = 0; n < 3; n++) {
+    let best = -Infinity, bp = [0, 0];
+    for (let cj = 3; cj < cy - 3; cj++) for (let ci = 3; ci < cx - 3; ci++) {
+      const p = zuWelt(ci, cj, cx - 1, cy - 1), v = formen[cj * cx + ci] - umgebung[cj * cx + ci] + 0.15 * formen[cj * cx + ci];
+      if (gipfel.every((q) => Math.hypot(p[0] - q[0], p[1] - q[1]) > 0.75) && v > best) { best = v; bp = p; }
+    }
+    gipfel.push(bp);
+  }
+  const [P1, P2, P3] = gipfel;
+
+  const u = { uTiefe: { value: FLUG_TIEFE }, uLinien: { value: 1 }, uFlaeche: { value: 0 }, uWelle: { value: 0 }, uZentrum: { value: new THREE.Vector2(...P1) },
+    uGrund: { value: grund.clone() }, uHell: { value: hell ? 1 : 0 }, uDichte: { value: 22 } };
+  const mat = new THREE.MeshStandardMaterial({ map: textur, emissive: 0xffffff, emissiveMap: textur, emissiveIntensity: 0, roughness: 0.6, metalness: 0.05 });
+  mat.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, u);
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", "#include <common>\nattribute float aHoehe, aKurve; attribute vec2 aGrad; uniform float uTiefe; varying float vHoehe; varying vec3 vWelt;")
+      .replace("#include <begin_vertex>", "vec3 transformed = vec3(position); transformed.z += aHoehe * uTiefe; vHoehe = aKurve; vWelt = (modelMatrix * vec4(transformed, 1.0)).xyz;")
+      .replace("#include <beginnormal_vertex>", "vec3 objectNormal = normalize(vec3(-aGrad * uTiefe, 1.0));");
+    shader.fragmentShader = shader.fragmentShader
+      .replace("#include <common>", "#include <common>\nuniform float uLinien, uFlaeche, uWelle, uHell, uDichte; uniform vec2 uZentrum; uniform vec3 uGrund; varying float vHoehe; varying vec3 vWelt;")
+      .replace("#include <map_fragment>", "#include <map_fragment>\n  diffuseColor.rgb *= uFlaeche;")
+      .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>
+        // Höhenkurven in den Farben des Fotos (auf Weiss dunkel), über fwidth immer gleich fein; sie öffnen sich als Welle vom ersten Gipfel aus
+        vec3 fotoF = texture2D(map, vMapUv).rgb;
+        float hl = vHoehe * uDichte + 0.5;                                  // die Kurven zwischen den Stufen: reines Weiss oder Schwarz liegt auf keiner
+        // smoothstep nie mit gleichen oder vertauschten Grenzen (undefiniert: auf flachen Flächen ist fwidth 0 – das gab flimmernde Pünktchen)
+        float linie = (1.0 - smoothstep(0.0, max(1.3 * fwidth(hl), 1e-4), abs(fract(hl - 0.5) - 0.5)))
+                    * smoothstep(0.02, 0.06, vHoehe) * (1.0 - smoothstep(0.91, 0.95, vHoehe));   // nicht in fast weissen oder schwarzen Flächen
+        float d = length(vWelt.xy - uZentrum), offen = 1.0 - smoothstep(uWelle - 0.1, uWelle, d), front = exp(-pow((d - uWelle) / 0.05, 2.0));
+        vec3 linF = uHell > 0.5 ? fotoF * 0.5 : min(fotoF * 1.3 + 0.08, vec3(1.0));
+        float l = linie * offen * uLinien;
+        totalEmissiveRadiance += mix(uGrund, linF, clamp(l + 1.5 * front * linie * uLinien, 0.0, 1.0)) * (1.0 - uFlaeche) + linF * l * 0.4 * uFlaeche;`);
+  };
+  const flaeche = new THREE.Mesh(geo, mat);
+  flaeche.castShadow = flaeche.receiveShadow = true;
+  szene.add(flaeche);
+  const streif = new THREE.DirectionalLight(0xfff1e0, 0);
+  Object.assign(streif.shadow.camera, { left: -breite * 0.7, right: breite * 0.7, top: 1.3, bottom: -1.3, near: 0.1, far: 12 });
+  streif.shadow.mapSize.set(2048, 2048); streif.shadow.bias = -0.0004; streif.shadow.normalBias = 0.01; streif.castShadow = true;
+  const kante = new THREE.PointLight(0xff8a3d, 0, 8, 1.5), himmel = new THREE.HemisphereLight(0x9fb4ff, 0x120a06, 0);
+  szene.add(streif, streif.target, kante, himmel);
+  const look = filmlook(renderer, szene, kamera, { radius: 0.4, schwelle: 0.6, hell, proben: 4 });
+
+  // die Route: Schlüsselbilder (Zeit, Lage, Ziel, Brennweite als Bildwinkel, Neigung um die Blickachse in Grad), dazwischen weich (Catmull-Rom über die Zeit)
+  const V = (x, y, z) => new THREE.Vector3(x, y, z), hz = (p) => hoeheBei(p[0], p[1]);
+  const richtung = (a2, b) => { const l = Math.hypot(b[0] - a2[0], b[1] - a2[1]) || 1; return [(b[0] - a2[0]) / l, (b[1] - a2[1]) / l]; };
+  const r12 = richtung(P1, P2), r23 = richtung(P2, P3), quer12 = [-r12[1], r12[0]], quer23 = [-r23[1], r23[0]];
+  const auf = (x, y, ueber) => V(x, y, dachBei(x, y) + ueber);
+  const um = (p, winkel, r) => [p[0] + Math.cos(winkel) * r, p[1] + Math.sin(winkel) * r];
+  const w0 = Math.atan2(-r23[1], -r23[0]);                                 // von dort kommt die Kamera am dritten Gipfel an
+  const o1 = um(P3, w0, 0.6), o2 = um(P3, w0 + 1.8, 0.42);
+  const m12 = [P1[0] + (P2[0] - P1[0]) * 0.4 + quer12[0] * 0.35, P1[1] + (P2[1] - P1[1]) * 0.4 + quer12[1] * 0.35];
+  const v2 = [P2[0] - r12[0] * 0.45, P2[1] - r12[1] * 0.45], n2 = [P2[0] + r12[0] * 0.6, P2[1] + r12[1] * 0.6];
+  const m23 = [P2[0] + (P3[0] - P2[0]) * 0.5 + quer23[0] * 0.2, P2[1] + (P3[1] - P2[1]) * 0.5 + quer23[1] * 0.2];
+  const SCHLUESSEL = [
+    [0.0, V(P1[0] + 0.03, P1[1] - 0.05, hz(P1) + 0.3), V(P1[0], P1[1], hz(P1)), 52, 0],
+    [2.8, V(P1[0], P1[1] - 0.2, hz(P1) + 0.85), V(P1[0], P1[1], hz(P1)), 42, 80],
+    [5.3, auf(m12[0], m12[1], 0.5), V(P2[0], P2[1], hz(P2)), 46, 22],
+    [7.7, auf(v2[0], v2[1], 0.16), V(n2[0], n2[1], hoeheBei(n2[0], n2[1])), 58, -14],
+    [10.0, auf(m23[0], m23[1], 0.14), V(P3[0], P3[1], hz(P3)), 62, 16],
+    [11.9, V(o1[0], o1[1], hz(P3) + 0.3), V(P3[0], P3[1], hz(P3)), 28, -6],   // Dolly-Zoom: näher heran, der Bildwinkel enger
+    [13.7, V(o2[0], o2[1], hz(P3) + 0.24), V(P3[0], P3[1], hz(P3)), 44, 10],
+    [16.0, V(0.15, -2.3, 1.9), V(0, 0.05, 0.1), 38, 0],
+    [18.8, V(0, 0, abstand), V(0, 0, 0), FOV, 0],
+    [19.5, V(0, 0, abstand), V(0, 0, 0), FOV, 0],
+  ];
+  const hermite = (t, wert) => {                                           // wert(i): Zahl oder Vector3 des Schlüssels i
+    if (t >= SCHLUESSEL[SCHLUESSEL.length - 2][0]) { const v = wert(SCHLUESSEL.length - 1); return typeof v === "number" ? v : v.clone(); }
+    let i = 0;
+    while (i < SCHLUESSEL.length - 2 && t > SCHLUESSEL[i + 1][0]) i++;
+    const t0 = SCHLUESSEL[i][0], t1 = SCHLUESSEL[i + 1][0], s = Math.min(1, Math.max(0, (t - t0) / (t1 - t0))), h = t1 - t0;
+    const steigung = (k) => {                                              // am Ende steht die Kamera still (sonst schwänge sie übers Ziel hinaus)
+      const a2 = Math.max(0, k - 1), b = Math.min(SCHLUESSEL.length - 1, k + 1);
+      return [a2, b, k >= SCHLUESSEL.length - 2 ? 0 : h / (SCHLUESSEL[b][0] - SCHLUESSEL[a2][0])];
+    };
+    const [a0, b0, f0] = steigung(i), [a1, b1, f1] = steigung(i + 1);
+    const s2 = s * s, s3 = s2 * s, h00 = 2 * s3 - 3 * s2 + 1, h10 = s3 - 2 * s2 + s, h01 = -2 * s3 + 3 * s2, h11 = s3 - s2;
+    const p0 = wert(i), p1 = wert(i + 1), m0 = [wert(a0), wert(b0)], m1 = [wert(a1), wert(b1)];
+    if (typeof p0 === "number") return h00 * p0 + h10 * f0 * (m0[1] - m0[0]) + h01 * p1 + h11 * f1 * (m1[1] - m1[0]);
+    return p0.clone().multiplyScalar(h00).addScaledVector(m0[1].clone().sub(m0[0]), h10 * f0).addScaledVector(p1, h01).addScaledVector(m1[1].clone().sub(m1[0]), h11 * f1);
+  };
+  const blick = new THREE.Vector3(), oben = new THREE.Vector3();
+  let stand = "";
+  return {
+    looks: [look], schatten: true,
+    groesse() {},
+    bild(t) {
+      const tiefe = 1 - inOut(anteil(t, 16.2, 18.6)), flaech = inOut(anteil(t, 6.0, 8.2)), foto = t >= 18.8 ? 1 : inOut(anteil(t, 16.8, 18.8));
+      const licht = flaech * (1 - inOut(anteil(t, 16.4, 18.4)));
+      u.uTiefe.value = FLUG_TIEFE * tiefe;
+      u.uFlaeche.value = flaech;
+      u.uWelle.value = 0.05 + 3.2 * inOut(anteil(t, 0.3, 5.6));
+      u.uLinien.value = 1 - inOut(anteil(t, 13.5, 17.0));
+      mat.emissiveIntensity = foto;
+      const a = -0.8 + 3.4 * inOut(anteil(t, 6.0, 16.0));                  // das Licht wandert einmal halb herum
+      streif.position.set(Math.cos(a) * 3, Math.sin(a) * 3, 1.0 + 0.4 * Math.sin(t * 0.7)); streif.intensity = 2.3 * licht;
+      kante.position.set(-Math.cos(a) * 1.6, -Math.sin(a) * 1.6, 0.7); kante.intensity = 2.0 * licht;
+      himmel.intensity = 0.35 * licht;
+      szene.fog.near = 1.3 + 60 * (1 - flaech) + 60 * anteil(t, 15.5, 17.5); szene.fog.far = szene.fog.near + 3.2;
+      // Kamera: Lage, Ziel, Bildwinkel, Neigung; über dem Gelände bleiben; oben: zur Seite der Welt, senkrecht von oben das Bild aufrecht
+      const lage = hermite(t, (i) => SCHLUESSEL[i][1]), ziel = hermite(t, (i) => SCHLUESSEL[i][2]);
+      const boden = Math.abs(lage.x) < breite / 2 && Math.abs(lage.y) < 1 ? dachBei(lage.x, lage.y) * tiefe + 0.09 : -1;
+      if (lage.z < boden) lage.z = boden;
+      kamera.fov = hermite(t, (i) => SCHLUESSEL[i][3]);
+      kamera.updateProjectionMatrix();
+      blick.subVectors(ziel, lage).normalize();
+      const senkrecht = THREE.MathUtils.smoothstep(-blick.z, 0.75, 0.97);
+      oben.set(0, senkrecht, 1 - senkrecht).normalize().applyAxisAngle(blick, THREE.MathUtils.degToRad(hermite(t, (i) => SCHLUESSEL[i][4])));
+      kamera.position.copy(lage); kamera.up.copy(oben); kamera.lookAt(ziel);
+      kamera.updateMatrixWorld();
+      stand = t < 6.8 ? `höhenkurven ${Math.round(Math.min(1, u.uWelle.value / 3) * 100)} % · bildwinkel ${Math.round(kamera.fov)}°`
+        : t < 16 ? `flughöhe ${Math.max(0, lage.z - hoeheBei(lage.x, lage.y)).toFixed(2)} · bildwinkel ${Math.round(kamera.fov)}°` : `flach ${Math.round((1 - tiefe) * 100)} %`;
+      look.render(1 - foto, 0.35, 0.002);
     },
     zaehler() { return stand; },
     entsorgen() { geo.dispose(); mat.dispose(); look.entsorgen(); },
@@ -888,7 +1059,7 @@ function glanzSignet(renderer, B, H, akzent, hell) {
   };
 }
 
-const BAUEN = { koerper, scherben, echo, strom, relief };
+const BAUEN = { koerper, scherben, echo, strom, relief, flug };
 
 /**
  * Ein räumlicher Ablauf für ein Foto (Canvas in Filmgrösse). art: ein Effekt oder mehrere mit «+» (z. B. "strom+kristall+echo+relief", s. kette() in
