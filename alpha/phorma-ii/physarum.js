@@ -6,9 +6,9 @@
 // Die Simulation läuft in festen Teilschritten (60 je Sekunde eigener Zeit) von vorn; alle 2 s ein Wiedereinstiegspunkt, damit Spulen nicht von vorn
 // rechnen muss. Bild n ist beim Abspielen, Spulen und im Video dasselbe.
 import * as THREE from "three";
-import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=5";
-import { phase } from "./ablauf.js?v=5";
-import { zufall } from "./analyse.js?v=5";
+import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=6";
+import { phase } from "./ablauf.js?v=6";
+import { zufall } from "./analyse.js?v=6";
 
 export const SCHRITTE = 60;
 const SICHERN = 120;
@@ -122,18 +122,19 @@ export function physarum(g, teil) {
       sicherungen.push(s);
     }
   }
-  function bis(m) {
+  /** bis zu Schritt m; budget: in der Vorschau höchstens so viele Schritte je Bild (sie holt dann auf), im Video ohne Grenze */
+  function bis(m, budget = Infinity) {
     if (n < 0 || m < n) {
       const s = sicherungen.filter((x) => x.n <= m).at(-1);
       if (s) { kopieren(s.agent, agenten[0]); kopieren(s.spur, spur[0]); ai = 0; si = 0; n = s.n; }
       else zuruecksetzen();
     }
-    while (n < m) schritt();
+    while (n < m && budget-- > 0) schritt();
   }
 
   return {
-    render(rt, tau) {
-      bis(Math.floor(tau * SCHRITTE + 1e-6));
+    render(rt, tau, { vorschau = false } = {}) {
+      bis(Math.floor(tau * SCHRITTE + 1e-6), vorschau ? 60 : Infinity);
       const u = zeigen.uniforms;
       u.tSpur.value = spur[si].texture;
       u.uSicht.value = weich(anteil(tau, 0, 0.7));

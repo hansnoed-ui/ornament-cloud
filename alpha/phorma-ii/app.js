@@ -1,9 +1,9 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=5";
-import { szene, bild, standbildZeit } from "./film.js?v=5";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=5";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=6";
+import { szene, bild, standbildZeit } from "./film.js?v=6";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=6";
 import { mp4 } from "../sketchory/mp4.js?v=10";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
@@ -14,7 +14,7 @@ const grob = matchMedia("(pointer: coarse)").matches, test = new URLSearchParams
 const PROBEN = 8;
 let VORSCHAU = 0.5;
 const S = { bild: null, A: null, foto: null, sz: null, laeuft: false, start: 0, t: null, film: null, rechnen: 0, buehne: null, buehneSchluessel: "",
-  format: "4:5", strich: "mittel", tiefe: "bild", mass: [1080, 1350], ablauf: KETTE, ki: null };
+  format: "4:5", muster: "mittel", tiefe: "bild", mass: [1080, 1350], ablauf: KETTE, ki: null };
 window.__phorma = S;   // für die Browser-Tests
 // ?diagnose: Messwerte zum Gerät sichtbar unter der Vorschau (Rückmeldung vom 17. Oktober 2026: auf einem Telefon «reagiert nicht», hier nicht
 // nachzustellen) – Zeitpunkte der Schritte, Dauer je Vorschaubild, längste Blockade, Grafikchip und Erweiterungen; als Bildschirmfoto zurückschicken
@@ -104,14 +104,14 @@ async function fotoLaden(datei) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=5", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=6", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
   S.foto = zugeschnitten(S.bild, B, H);
   const w = Math.round(B / 2), h = Math.round(H / 2);
   const daten = zugeschnitten(S.bild, w, h).getContext("2d").getImageData(0, 0, w, h).data;
-  const nr = ++S.rechnen, auftrag = { nr, daten, w, h, massstab: B / w, strich: S.strich };
+  const nr = ++S.rechnen, auftrag = { nr, daten, w, h, massstab: B / w };
   if (!worker) return new Promise((ok) => setTimeout(() => ok({ nr, ergebnis: analysieren(daten, w, h, auftrag) }), 0));
   if (offen) { worker.terminate(); worker = neuerWorker(); offen({ nr: -1 }); offen = null; if (!worker) return rechnen(); }
   return new Promise((ok) => {
@@ -132,7 +132,7 @@ async function lesen() {
   S.A = ergebnis; S.A.geschaetzt = ergebnis.tiefe;
   notiz(`Analyse fertig (${ergebnis.ms} ms im Worker)`);
   const z = (n) => n.toLocaleString("de-CH");
-  $("auswertung").textContent = `${z(ergebnis.zahl.linien)} + ${z(ergebnis.zahl.querlinien)} Striche · ${ergebnis.keime.length} Keime · Tiefe · ${ergebnis.ms} ms`;
+  $("auswertung").textContent = `${ergebnis.keime.length} Keime · Kanten · Tiefe · Tonumfang · ${ergebnis.ms} ms`;
   if (S.tiefe === "ki") await kiAnwenden();
   neu();
   if (S.tiefe !== "ki" || S.ki) melden("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4.");
@@ -145,7 +145,7 @@ async function kiAnwenden() {
   if (!S.ki) {
     const nr = S.rechnen;
     try {
-      kiModul ??= await import("./tiefe-ki.js?v=5");
+      kiModul ??= await import("./tiefe-ki.js?v=6");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m));
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
@@ -161,16 +161,16 @@ async function kiAnwenden() {
 // ——— Bühne (WebGL 2): erst laden, wenn ein Foto da ist ———
 let buehneModul = null;
 async function buehneBereit() {
-  const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.A.tiefe === S.A.geschaetzt ? "bild" : "ki"}` : "";
+  const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.A.tiefe === S.A.geschaetzt ? "bild" : "ki"}|${S.muster}` : "";
   if (schluessel === S.buehneSchluessel) return;
   S.buehneSchluessel = schluessel; S.buehneFertig = false; S.buehneWarm = false;
   if (S.sz) S.sz.buehne = null;
   S.buehne?.entsorgen(); S.buehne = null;
   if (!schluessel) return;
   try {
-    buehneModul ??= await import("./buehne.js?v=5");
+    buehneModul ??= await import("./buehne.js?v=6");
     if (S.buehneSchluessel !== schluessel) return;
-    S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki",
+    S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, muster: S.muster, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki",
       onVerloren: () => {
         if (S.buehneSchluessel !== schluessel) return;
         anhalten();
@@ -266,7 +266,8 @@ function wahl(attr, schluessel, werte, wenn) {
 let umstellen = 0;
 const spaeterLesen = () => { clearTimeout(umstellen); umstellen = setTimeout(lesen, 250); };
 const formatKnoepfe = wahl("data-format", "format", FORMATE, () => { S.ki = null; spaeterLesen(); });
-const strichKnoepfe = wahl("data-strich", "strich", ["fein", "mittel", "grob"], spaeterLesen);
+// Muster: die Feinheit der Morphogenese (nur die Bühne wird neu gebaut, das Foto nicht neu analysiert)
+const musterKnoepfe = wahl("data-muster", "muster", ["fein", "mittel", "grob"], () => neu());
 const tiefeKnoepfe = wahl("data-tiefe", "tiefe", ["bild", "ki"], async () => {
   if (!S.A) return;
   if (S.tiefe === "ki") { melden("Die KI-Tiefe wird vorbereitet …"); await kiAnwenden(); } else { S.A.tiefe = S.A.geschaetzt; melden("Tiefe aus dem Bild geschätzt."); }
@@ -311,7 +312,7 @@ function spielen() {
 function anhalten() { S.laeuft = false; $("spielen").textContent = "Abspielen"; }
 function zeigeZeit(t) {
   const t0 = performance.now();
-  S.t = t; S.ende = false; bild(vctx, S.sz, t);
+  S.t = t; S.ende = false; bild(vctx, S.sz, t, { vorschau: true });
   if (DIAGNOSE) { D.bild.push(performance.now() - t0); if (D.bild.length > 60) D.bild.shift(); }
   $("zeit").value = String(t); $("zeitcode").textContent = zeitcode(t);
 }
@@ -437,6 +438,6 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...strichKnoepfe, ...tiefeKnoepfe, ...wahlKnoepfe, ...effektKnoepfe, $("video"), $("png")])
+  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...musterKnoepfe, ...tiefeKnoepfe, ...wahlKnoepfe, ...effektKnoepfe, $("video"), $("png")])
     el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A);
 }

@@ -4,8 +4,9 @@
 //              die KI-Tiefe (tiefe-ki.js) ersetzt sie auf Wunsch und läuft durch denselben Filter (tiefeNormieren)
 //   nahrung  – was die Agenten von Physarum riechen: Kanten, etwas Helligkeit
 //   keime    – die Stellen, an denen Physarum beginnt (die markantesten, mit Mindestabstand)
-//   linien   – der Stich: gleichmässig verteilte Strömungslinien (Jobard–Lefer) entlang der Richtung des Bilds (Strukturtensor), in Filmpunkten;
-//              «haupt» folgt den Kanten, «quer» kreuzt sie (die zweite Lage in hellen Tönen)
+//   ton      – Tonumfang und mittlere Helligkeit für die Morphogenese
+// (Bis zum 17. Oktober 2026 auch Strömungslinien für den Stich; er ist durch die Morphogenese ersetzt – Rückmeldung: «diese Stich-Optiken mag ich
+// nicht besonders»; das Rezept steht weiter im Skill threejs-spektakel.)
 // Zufall mit Startwert: dasselbe Foto ergibt immer dasselbe.
 
 /** Mulberry32 */
@@ -95,97 +96,11 @@ export function tiefeNormieren(roh, w, h, hell) {
   return normieren(d, 0.01, 0.99);
 }
 
-/** Richtungsfeld aus dem Strukturtensor: doppelter Winkel der Tangente (cos 2θ, sin 2θ) und die Kantenstärke */
-export function richtung(hell, w, h) {
-  const L = weichzeichnen(hell, w, h, 1), [gx, gy] = sobel(L, w, h), n = w * h;
-  const xx = new Float32Array(n), xy = new Float32Array(n), yy = new Float32Array(n), staerke = new Float32Array(n);
-  for (let i = 0; i < n; i++) { xx[i] = gx[i] * gx[i]; xy[i] = gx[i] * gy[i]; yy[i] = gy[i] * gy[i]; staerke[i] = Math.hypot(gx[i], gy[i]); }
-  const s1 = Math.max(1.5, w / 220), s2 = Math.max(6, w / 45);
-  const f = [xx, xy, yy].map((q) => weichzeichnen(q, w, h, s1)), g = [xx, xy, yy].map((q) => weichzeichnen(q, w, h, s2));
-  const c2 = new Float32Array(n), s2a = new Float32Array(n), eps = 2e-5;
-  for (let i = 0; i < n; i++) {
-    // fein + grob, dazu ein schwacher Grundzug (waagrechte Linien) für ruhige Flächen
-    const a = f[0][i] + 0.4 * g[0][i], b = f[1][i] + 0.4 * g[1][i], c = f[2][i] + 0.4 * g[2][i] + eps;
-    const th = 0.5 * Math.atan2(2 * b, a - c) + Math.PI / 2;           // Gradient → Tangente
-    c2[i] = Math.cos(2 * th); s2a[i] = Math.sin(2 * th);
-  }
-  return { c2, s2: s2a, staerke: normieren(weichzeichnen(staerke, w, h, 1.5), 0.02, 0.98) };
-}
-
-/**
- * Gleichmässig verteilte Strömungslinien (Jobard & Lefer 1997) im Feld (B × H Filmpunkte, Feld auf w × h, Massstab m).
- * quer: senkrecht zum Feld. Ergebnis: { punkte: Float32Array (x, y), linien: [[anfang, anzahl, wichtigkeit, laenge]] }
- */
-export function stromlinien(feld, w, h, m, { abstand = 7, quer = false, schritt = 2, maxLaenge = 1600 } = {}) {
-  const B = w * m, H = h * m, dsep = abstand, dtest = abstand * 0.5, zelle = dsep;
-  const gw = Math.ceil(B / zelle), gh = Math.ceil(H / zelle), kopf = new Int32Array(gw * gh).fill(-1);
-  let kap = 1 << 16, px = new Float32Array(kap), py = new Float32Array(kap), nach = new Int32Array(kap), np = 0;
-  const merke = (x, y) => {
-    if (np >= kap) { kap *= 2; const a = new Float32Array(kap), b = new Float32Array(kap), c = new Int32Array(kap); a.set(px); b.set(py); c.set(nach); px = a; py = b; nach = c; }
-    const z = Math.min(gh - 1, Math.floor(y / zelle)) * gw + Math.min(gw - 1, Math.floor(x / zelle));
-    px[np] = x; py[np] = y; nach[np] = kopf[z]; kopf[z] = np++;
-  };
-  const frei = (x, y, d) => {
-    if (x < 0 || y < 0 || x >= B || y >= H) return false;
-    const cx = Math.floor(x / zelle), cy = Math.floor(y / zelle), d2 = d * d;
-    for (let j = Math.max(0, cy - 1); j <= Math.min(gh - 1, cy + 1); j++) for (let i = Math.max(0, cx - 1); i <= Math.min(gw - 1, cx + 1); i++)
-      for (let k = kopf[j * gw + i]; k >= 0; k = nach[k]) { const dx = px[k] - x, dy = py[k] - y; if (dx * dx + dy * dy < d2) return false; }
-    return true;
-  };
-  // Feld bilinear im doppelten Winkel, dann die Richtung, die zur bisherigen passt
-  const dir = (x, y, vx, vy) => {
-    const fx = klemm(x / m - 0.5, 0, w - 1.001), fy = klemm(y / m - 0.5, 0, h - 1.001), x0 = fx | 0, y0 = fy | 0, ax = fx - x0, ay = fy - y0, i = y0 * w + x0;
-    const mix = (q) => (q[i] * (1 - ax) + q[i + 1] * ax) * (1 - ay) + (q[i + w] * (1 - ax) + q[i + w + 1] * ax) * ay;
-    let th = 0.5 * Math.atan2(mix(feld.s2), mix(feld.c2));
-    if (quer) th += Math.PI / 2;
-    let dx = Math.cos(th), dy = Math.sin(th);
-    if (dx * vx + dy * vy < 0) { dx = -dx; dy = -dy; }
-    return [dx, dy];
-  };
-  const kraft = (x, y) => feld.staerke[klemm(Math.floor(y / m), 0, h - 1) * w + klemm(Math.floor(x / m), 0, w - 1)];
-  const eigeneFrei = (x, y, eigene, bis) => { for (let k = 0; k < bis; k += 2) { const dx = eigene[k] - x, dy = eigene[k + 1] - y; if (dx * dx + dy * dy < dtest * dtest) return false; } return true; };
-  const halb = (x, y, vx, vy) => {
-    const pts = [];
-    let lx = x, ly = y, l = 0;
-    while (l < maxLaenge / 2) {
-      let [dx, dy] = dir(lx, ly, vx, vy);
-      const [ex, ey] = dir(lx + dx * schritt * 0.5, ly + dy * schritt * 0.5, dx, dy);   // Mittelpunktregel
-      const nx = lx + ex * schritt, ny = ly + ey * schritt;
-      if (ex * vx + ey * vy < 0.55 && pts.length) break;                    // scharfer Knick
-      if (!frei(nx, ny, dtest)) break;
-      const alt = pts.length - 2 * Math.ceil((2 * dtest) / schritt + 2);    // nicht in sich selbst zurück
-      if (alt > 0 && !eigeneFrei(nx, ny, pts, alt)) break;
-      pts.push(nx, ny); lx = nx; ly = ny; vx = ex; vy = ey; l += schritt;
-    }
-    return pts;
-  };
-  const punkte = [], linien = [], queue = [];
-  const linie = (x, y) => {
-    if (!frei(x, y, dsep)) return;
-    const [vx, vy] = dir(x, y, 1, 0.001);
-    const vor = halb(x, y, vx, vy), rueck = halb(x, y, -vx, -vy);
-    const n = (vor.length + rueck.length) / 2 + 1;
-    if (n * schritt < Math.max(3 * dsep, 18)) return;
-    const pts = new Float32Array(n * 2);
-    let k = 0;
-    for (let i = rueck.length - 2; i >= 0; i -= 2) { pts[k++] = rueck[i]; pts[k++] = rueck[i + 1]; }
-    pts[k++] = x; pts[k++] = y;
-    for (let i = 0; i < vor.length; i += 2) { pts[k++] = vor[i]; pts[k++] = vor[i + 1]; }
-    let wicht = 0;
-    for (let i = 0; i < n; i++) { merke(pts[2 * i], pts[2 * i + 1]); wicht += kraft(pts[2 * i], pts[2 * i + 1]); }
-    linien.push([punkte.length / 2, n, wicht * schritt, n * schritt]);
-    for (let i = 0; i < pts.length; i++) punkte.push(pts[i]);
-    // neue Keime im Abstand dsep beidseits
-    for (let i = 1; i < n - 1; i += 2) {
-      const ax = pts[2 * i + 2] - pts[2 * i - 2], ay = pts[2 * i + 3] - pts[2 * i - 1], l = Math.hypot(ax, ay) || 1;
-      queue.push(pts[2 * i] - (ay / l) * dsep, pts[2 * i + 1] + (ax / l) * dsep, pts[2 * i] + (ay / l) * dsep, pts[2 * i + 1] - (ax / l) * dsep);
-    }
-  };
-  const abarbeiten = () => { for (let q = 0; q < queue.length; q += 2) linie(queue[q], queue[q + 1]); queue.length = 0; };
-  linie(B / 2, H / 2); abarbeiten();
-  // was die Keime nicht erreicht haben (Inseln), von einem Raster aus füllen
-  for (let y = dsep / 2; y < H; y += dsep) for (let x = dsep / 2; x < B; x += dsep) { linie(x, y); abarbeiten(); }
-  return { punkte: Float32Array.from(punkte), linien };
+/** Kantenstärke 0..1 (Sobel auf der leicht geglätteten Helligkeit) – für die Nahrung von Physarum und die Keime der Morphogenese */
+export function kanten(hell, w, h) {
+  const [gx, gy] = sobel(weichzeichnen(hell, w, h, 1), w, h), k = new Float32Array(w * h);
+  for (let i = 0; i < k.length; i++) k[i] = Math.sqrt(gx[i] * gx[i] + gy[i] * gy[i]);
+  return normieren(weichzeichnen(k, w, h, 1.5), 0.02, 0.98);
 }
 
 /** Keime für Physarum: Maxima der weichgezeichneten Nahrung mit Mindestabstand (in uv, oben 0) */
@@ -202,26 +117,18 @@ function keimeFinden(nahrung, w, h, n = 22) {
   return keime.map(([x, y]) => [x / w, y / h]);
 }
 
-export const ABSTAND = { fein: 5.5, mittel: 7, grob: 9 };
-
 /** alles zusammen; daten: RGBA (w × h, halbe Filmgrösse), massstab: Filmpunkte je Punkt der Analyse */
-export function analysieren(daten, w, h, { massstab = 2, strich = "mittel" } = {}) {
+export function analysieren(daten, w, h, { massstab = 2 } = {}) {
   const t0 = Date.now(), n = w * h, hell = new Float32Array(n);
   for (let i = 0; i < n; i++) hell[i] = (0.2126 * daten[i * 4] + 0.7152 * daten[i * 4 + 1] + 0.0722 * daten[i * 4 + 2]) / 255;
   const tiefe = tiefeSchaetzen(daten, hell, w, h);
-  const feld = richtung(hell, w, h);
-  const nahrung = new Float32Array(n);
-  for (let i = 0; i < n; i++) nahrung[i] = klemm(0.75 * feld.staerke[i] + 0.25 * hell[i]);
+  const staerke = kanten(hell, w, h), nahrung = new Float32Array(n);
+  for (let i = 0; i < n; i++) nahrung[i] = klemm(0.75 * staerke[i] + 0.25 * hell[i]);
   const keime = keimeFinden(nahrung, w, h);
-  const abstand = (ABSTAND[strich] ?? ABSTAND.mittel) * (w * massstab) / 1080;
-  const haupt = stromlinien(feld, w, h, massstab, { abstand });
-  const querLinien = stromlinien(feld, w, h, massstab, { abstand, quer: true });
   return {
-    w, h, massstab, B: w * massstab, H: h * massstab, hell, tiefe, nahrung, keime, abstand,
-    // Tonumfang (3 und 97 %) und mittlere Helligkeit: der Stich richtet sich danach (auf Papier oder auf Schwarz)
+    w, h, massstab, B: w * massstab, H: h * massstab, hell, tiefe, nahrung, keime,
+    // Tonumfang (3 und 97 %) und mittlere Helligkeit: die Morphogenese bildet den Ton des Fotos auf ihre Muster ab
     ton: [perzentil(hell, 0.03), perzentil(hell, 0.97)], mittel: hell.reduce((s, v) => s + v, 0) / n,
-    linien: { haupt, quer: querLinien },
-    zahl: { linien: haupt.linien.length, querlinien: querLinien.linien.length, punkte: (haupt.punkte.length + querLinien.punkte.length) / 2 },
     ms: Date.now() - t0,
   };
 }

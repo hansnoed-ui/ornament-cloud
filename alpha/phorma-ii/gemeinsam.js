@@ -11,11 +11,12 @@ export const weich = (x) => x * x * (3 - 2 * x);
 export const inOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2);
 export const glocke = (t, a, b) => Math.sin(Math.PI * anteil(t, a, b));
 
-/** Karte (Zeile 0 oben) als Textur mit v = 0 unten wie das Foto */
+/** Karte (Zeile 0 oben) als Textur mit v = 0 unten wie das Foto; HalfFloat, weil viele Telefone Float32-Texturen nicht glätten können
+ *  (OES_texture_float_linear fehlt, dann liefern sie Schwarz) */
 export function datenTextur(q, w, h, kanaele = 1) {
-  const d = new Float32Array(w * h * kanaele);
-  for (let y = 0; y < h; y++) d.set(q.subarray((h - 1 - y) * w * kanaele, (h - y) * w * kanaele), y * w * kanaele);
-  const t = new THREE.DataTexture(d, w, h, kanaele === 1 ? THREE.RedFormat : THREE.RGBAFormat, THREE.FloatType);
+  const d = new Uint16Array(w * h * kanaele);
+  for (let y = 0; y < h; y++) { const o = (h - 1 - y) * w * kanaele, z = y * w * kanaele; for (let i = 0; i < w * kanaele; i++) d[z + i] = THREE.DataUtils.toHalfFloat(q[o + i]); }
+  const t = new THREE.DataTexture(d, w, h, kanaele === 1 ? THREE.RedFormat : THREE.RGBAFormat, THREE.HalfFloatType);
   t.minFilter = t.magFilter = THREE.LinearFilter; t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; t.needsUpdate = true;
   return t;
 }

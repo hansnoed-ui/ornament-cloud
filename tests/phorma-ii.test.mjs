@@ -1,4 +1,4 @@
-// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Bildanalyse (Tiefe, Strömungslinien, Keime), Seite.
+// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, Seite.
 //   node --test tests/phorma-ii.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -7,21 +7,22 @@ import { readFileSync, readdirSync } from "node:fs";
 const root = new URL("../", import.meta.url);
 const P = new URL("alpha/phorma-ii/", root);
 const A = await import(new URL("ablauf.js", P).href);
-const { analysieren, stromlinien, richtung, tiefeNormieren } = await import(new URL("analyse.js", P).href);
+const { analysieren, tiefeNormieren } = await import(new URL("analyse.js", P).href);
 const lies = (p) => readFileSync(new URL(p, P), "utf8");
 
 test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette", () => {
   assert.equal(A.ablaufName("tuch+physarum"), "physarum+tuch");
   assert.equal(A.ablaufName("quatsch"), A.KETTE);
-  assert.equal(A.ablaufName(null), "physarum+stich+tiefe+tuch");
-  assert.deepEqual(A.effekte("tiefe+stich"), ["stich", "tiefe"]);
+  assert.equal(A.ablaufName(null), "physarum+muster+tiefe+tuch");
+  assert.deepEqual(A.effekte("tiefe+muster"), ["muster", "tiefe"]);
+  assert.equal(A.ablaufName("stich"), A.KETTE, "der frühere Stich ergibt die ganze Kette");
 });
 
-test("Kette: Physarum geht über eine Zeitfront über, die anderen dort, wo beide das Foto zeigen; Tiefe vor dem Tuch über eine kurze Front", () => {
+test("Kette: Physarum geht über eine Zeitfront über, die Morphogenese dort, wo beide das Foto zeigen; Tiefe vor dem Tuch über eine kurze Front", () => {
   const K = A.kette(A.KETTE);
   assert.deepEqual(K.teile.map((t) => t.art), A.EFFEKTE);
   const [p, s, t, u] = K.teile;
-  assert.equal(p.uebergang, "front"); assert.ok(Math.abs(s.von - (p.bis - 1.8)) < 1e-9, "Stich setzt 1,8 s vor dem Ende des Netzes ein");
+  assert.equal(p.uebergang, "front"); assert.ok(Math.abs(s.von - (p.bis - 1.8)) < 1e-9, "die Morphogenese setzt 1,8 s vor dem Ende des Netzes ein");
   assert.equal(s.uebergang, "schnitt"); assert.equal(t.von, s.bis); assert.ok(t.vonFoto, "die Tiefe beginnt beim Foto");
   assert.equal(t.uebergang, "front"); assert.ok(u.von < t.bis && !u.vonFoto);
   assert.ok(!p.phasen.some(([n]) => n === "bild"), "nur der letzte Effekt hat eine Phase «Bild»");
@@ -40,7 +41,7 @@ test("Zeitachse: Vorlauf, Kette im Tempo, Stehen und Signet; laufend gibt beim �
   assert.ok(Math.abs((ruhig.abschnitt.bis - ruhig.abschnitt.von) / (z.abschnitt.bis - z.abschnitt.von) - 1.3) < 1e-9);
   assert.equal(ruhig.ab.signet, undefined);
   const [p, s] = z.teile, mitte = (s.von + p.bis) / 2, L = A.laufend(z, mitte);
-  assert.deepEqual(L.map((x) => x.teil.art), ["physarum", "stich"]);
+  assert.deepEqual(L.map((x) => x.teil.art), ["physarum", "muster"]);
   assert.ok(Math.abs(L[1].lokal - (mitte - s.von)) < 1e-9, "eigene Zeit des Effekts");
   assert.equal(A.laufend(z, 0)[0].lokal, 0);
   assert.match(A.dateiname(new Date(2026, 9, 17, 9, 5), "mp4"), /^phorma-ii-2026-10-17-0905\.mp4$/);
@@ -62,36 +63,18 @@ function testbild(w, h) {
   return d;
 }
 
-test("Analyse: Tiefe 0..1 (die Wiese vorn näher als der Himmel), gleichmässige Striche, Keime; gleiches Foto, gleiches Ergebnis", () => {
+test("Analyse: Tiefe 0..1 (die Wiese vorn näher als der Himmel), Nahrung, Keime, Tonumfang; gleiches Foto, gleiches Ergebnis", () => {
   const w = 135, h = 169, d = testbild(w, h), E = analysieren(d, w, h, { massstab: 2 });
   assert.equal(E.tiefe.length, w * h);
   assert.ok(E.tiefe.every((v) => v >= 0 && v <= 1));
   const mittel = (y0, y1) => { let s = 0, n = 0; for (let y = Math.round(y0 * h); y < Math.round(y1 * h); y++) for (let x = 0; x < w; x++) { s += E.tiefe[y * w + x]; n++; } return s / n; };
   assert.ok(mittel(0.85, 1) > mittel(0, 0.15) + 0.2, `unten näher als oben (${mittel(0.85, 1).toFixed(2)} / ${mittel(0, 0.15).toFixed(2)})`);
-  assert.ok(E.linien.haupt.linien.length > 20 && E.linien.quer.linien.length > 10);
-  assert.ok(E.ton[0] < E.ton[1] && E.mittel > 0 && E.mittel < 1, "Tonumfang und mittlere Helligkeit für den Stich");
+  assert.ok(E.nahrung.length === w * h && E.nahrung.every((v) => v >= 0 && v <= 1));
+  assert.ok(E.ton[0] < E.ton[1] && E.mittel > 0 && E.mittel < 1, "Tonumfang und mittlere Helligkeit für die Morphogenese");
   assert.ok(E.keime.length >= 5 && E.keime.length <= 22 && E.keime.every(([u, v]) => u >= 0 && u <= 1 && v >= 0 && v <= 1));
   const F = analysieren(d, w, h, { massstab: 2 });
   assert.deepEqual([...F.tiefe.slice(0, 50)], [...E.tiefe.slice(0, 50)]);
-  assert.deepEqual(F.linien.haupt.linien.length, E.linien.haupt.linien.length);
-  // feinerer Strich: mehr Linien
-  assert.ok(analysieren(d, w, h, { massstab: 2, strich: "fein" }).zahl.linien > analysieren(d, w, h, { massstab: 2, strich: "grob" }).zahl.linien);
-});
-
-test("Strömungslinien: keine zwei Linien näher als der halbe Abstand (Jobard–Lefer), jede in sich ohne Sprünge", () => {
-  const w = 120, h = 150, d = testbild(w, h), hell = new Float32Array(w * h);
-  for (let i = 0; i < w * h; i++) hell[i] = (0.2126 * d[i * 4] + 0.7152 * d[i * 4 + 1] + 0.0722 * d[i * 4 + 2]) / 255;
-  const abstand = 8, L = stromlinien(richtung(hell, w, h), w, h, 2, { abstand });
-  const welche = new Int32Array(L.punkte.length / 2);
-  L.linien.forEach(([s, n], k) => { for (let i = 0; i < n; i++) welche[s + i] = k; });
-  let naechst = Infinity;
-  for (let a = 0; a < welche.length; a += 7) for (let b = 0; b < welche.length; b++) {
-    if (welche[a] === welche[b]) continue;
-    const dd = Math.hypot(L.punkte[2 * a] - L.punkte[2 * b], L.punkte[2 * a + 1] - L.punkte[2 * b + 1]);
-    if (dd < naechst) naechst = dd;
-  }
-  assert.ok(naechst >= abstand * 0.5 - 1e-3, `kleinster Abstand ${naechst.toFixed(2)}`);
-  for (const [s, n] of L.linien) for (let i = 1; i < n; i++) assert.ok(Math.hypot(L.punkte[2 * (s + i)] - L.punkte[2 * (s + i - 1)], L.punkte[2 * (s + i) + 1] - L.punkte[2 * (s + i - 1) + 1]) < 2.01);
+  assert.deepEqual(F.keime, E.keime);
 });
 
 test("Tuch: die Bahn wird ganz vorausgerechnet, ist wiederholbar und endet genau an ihrem Platz", async () => {
@@ -124,7 +107,8 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /"three": "\.\.\/\.\.\/vendor\/three-0\.185\.1\/three\.module\.min\.js"/);
   assert.ok(!/<script[^>]+src="https?:/.test(html), "keine Skripte von aussen");
   for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
-  assert.match(html, /data-wahl="physarum\+stich\+tiefe\+tuch"/, "die ganze Kette als Karte");
+  assert.match(html, /data-wahl="physarum\+muster\+tiefe\+tuch"/, "die ganze Kette als Karte");
+  assert.ok(!/data-(wahl|effekt)="stich"|data-strich/.test(html), "kein Stich mehr");
   const dateien = readdirSync(P).filter((f) => f.endsWith(".js")), marken = new Set();
   for (const f of dateien) {
     const js = lies(f);
