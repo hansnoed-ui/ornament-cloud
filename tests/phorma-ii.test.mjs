@@ -13,22 +13,24 @@ const lies = (p) => readFileSync(new URL(p, P), "utf8");
 test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette", () => {
   assert.equal(A.ablaufName("tuch+physarum"), "physarum+tuch");
   assert.equal(A.ablaufName("quatsch"), A.KETTE);
-  assert.equal(A.ablaufName(null), "physarum+muster+tiefe+tuch");
-  assert.deepEqual(A.effekte("tiefe+muster"), ["muster", "tiefe"]);
+  assert.equal(A.ablaufName(null), "physarum+tiefe+tuch");
+  assert.deepEqual(A.effekte("tuch+tiefe"), ["tiefe", "tuch"]);
   assert.equal(A.ablaufName("stich"), A.KETTE, "der frühere Stich ergibt die ganze Kette");
+  assert.equal(A.ablaufName("physarum+muster+tuch"), "physarum+tuch", "die frühere Morphogenese fällt weg");
 });
 
-test("Kette: Physarum geht über eine Zeitfront über, die Morphogenese dort, wo beide das Foto zeigen; Tiefe vor dem Tuch über eine kurze Front", () => {
+test("Kette: Physarum geht über eine Zeitfront in die Tiefe über, die Tiefe über eine kurze Front ins Tuch", () => {
   const K = A.kette(A.KETTE);
   assert.deepEqual(K.teile.map((t) => t.art), A.EFFEKTE);
-  const [p, s, t, u] = K.teile;
-  assert.equal(p.uebergang, "front"); assert.ok(Math.abs(s.von - (p.bis - 1.8)) < 1e-9, "die Morphogenese setzt 1,8 s vor dem Ende des Netzes ein");
-  assert.equal(s.uebergang, "schnitt"); assert.equal(t.von, s.bis); assert.ok(t.vonFoto, "die Tiefe beginnt beim Foto");
+  const [p, t, u] = K.teile;
+  assert.equal(p.uebergang, "front"); assert.ok(Math.abs(t.von - (p.bis - 1.8)) < 1e-9, "die Tiefe setzt 1,8 s vor dem Ende des Netzes ein");
+  assert.ok(!t.vonFoto, "die Tiefe beginnt unter der Zeitfront, nicht beim Foto");
   assert.equal(t.uebergang, "front"); assert.ok(u.von < t.bis && !u.vonFoto);
   assert.ok(!p.phasen.some(([n]) => n === "bild"), "nur der letzte Effekt hat eine Phase «Bild»");
   assert.equal(u.phasen.at(-1)[0], "bild");
   for (let i = 1; i < K.phasen.length; i++) assert.ok(K.phasen[i].von >= K.phasen[i - 1].von && K.phasen[i - 1].bis <= K.phasen[i].von + 1e-9, "Phasen hintereinander");
   for (const e of A.EFFEKTE) { const k = A.kette(e); assert.equal(k.teile.length, 1); assert.equal(k.teile[0].phasen.at(-1)[1], "Bild", `${e} allein endet beim Bild`); }
+  assert.ok(K.dauer < 21, `kürzer als mit vier Effekten (${K.dauer.toFixed(1)} s)`);
 });
 
 test("Zeitachse: Vorlauf, Kette im Tempo, Stehen und Signet; laufend gibt beim Übergang beide", () => {
@@ -41,7 +43,7 @@ test("Zeitachse: Vorlauf, Kette im Tempo, Stehen und Signet; laufend gibt beim �
   assert.ok(Math.abs((ruhig.abschnitt.bis - ruhig.abschnitt.von) / (z.abschnitt.bis - z.abschnitt.von) - 1.3) < 1e-9);
   assert.equal(ruhig.ab.signet, undefined);
   const [p, s] = z.teile, mitte = (s.von + p.bis) / 2, L = A.laufend(z, mitte);
-  assert.deepEqual(L.map((x) => x.teil.art), ["physarum", "muster"]);
+  assert.deepEqual(L.map((x) => x.teil.art), ["physarum", "tiefe"]);
   assert.ok(Math.abs(L[1].lokal - (mitte - s.von)) < 1e-9, "eigene Zeit des Effekts");
   assert.equal(A.laufend(z, 0)[0].lokal, 0);
   assert.match(A.dateiname(new Date(2026, 9, 17, 9, 5), "mp4"), /^phorma-ii-2026-10-17-0905\.mp4$/);
@@ -70,7 +72,7 @@ test("Analyse: Tiefe 0..1 (die Wiese vorn näher als der Himmel), Nahrung, Keime
   const mittel = (y0, y1) => { let s = 0, n = 0; for (let y = Math.round(y0 * h); y < Math.round(y1 * h); y++) for (let x = 0; x < w; x++) { s += E.tiefe[y * w + x]; n++; } return s / n; };
   assert.ok(mittel(0.85, 1) > mittel(0, 0.15) + 0.2, `unten näher als oben (${mittel(0.85, 1).toFixed(2)} / ${mittel(0, 0.15).toFixed(2)})`);
   assert.ok(E.nahrung.length === w * h && E.nahrung.every((v) => v >= 0 && v <= 1));
-  assert.ok(E.ton[0] < E.ton[1] && E.mittel > 0 && E.mittel < 1, "Tonumfang und mittlere Helligkeit für die Morphogenese");
+  assert.ok(E.ton[0] < E.ton[1] && E.mittel > 0 && E.mittel < 1, "Tonumfang und mittlere Helligkeit");
   assert.ok(E.keime.length >= 5 && E.keime.length <= 22 && E.keime.every(([u, v]) => u >= 0 && u <= 1 && v >= 0 && v <= 1));
   const F = analysieren(d, w, h, { massstab: 2 });
   assert.deepEqual([...F.tiefe.slice(0, 50)], [...E.tiefe.slice(0, 50)]);
@@ -107,8 +109,8 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /"three": "\.\.\/\.\.\/vendor\/three-0\.185\.1\/three\.module\.min\.js"/);
   assert.ok(!/<script[^>]+src="https?:/.test(html), "keine Skripte von aussen");
   for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
-  assert.match(html, /data-wahl="physarum\+muster\+tiefe\+tuch"/, "die ganze Kette als Karte");
-  assert.ok(!/data-(wahl|effekt)="stich"|data-strich/.test(html), "kein Stich mehr");
+  assert.match(html, /data-wahl="physarum\+tiefe\+tuch"/, "die ganze Kette als Karte");
+  assert.ok(!/data-(wahl|effekt)="(stich|muster)"|data-(strich|muster)=/.test(html), "weder Stich noch Morphogenese");
   const dateien = readdirSync(P).filter((f) => f.endsWith(".js")), marken = new Set();
   for (const f of dateien) {
     const js = lies(f);

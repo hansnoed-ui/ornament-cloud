@@ -1,11 +1,10 @@
 // PHORMA II – Ablauf des Films (ohne DOM). 30 Bilder pro Sekunde, ohne Ton; Hochformat 4 : 5 (Feed), wahlweise 9 : 16 (Reels, Stories).
-// Vier Effekte, einzeln oder als Kette in fester Reihenfolge (Wunsch vom 17. Oktober 2026: «Physarum findet die Formen → Stich zeichnet sie →
+// Drei Effekte, einzeln oder als Kette in fester Reihenfolge (Wunsch vom 17. Oktober 2026: «Physarum findet die Formen → Stich zeichnet sie →
 // das Foto bekommt Tiefe und wird Raum → es fällt als Tuch und legt sich glatt zum Schlussbild»; am selben Tag den Stich durch die Morphogenese
-// ersetzt – «diese Stich-Optiken mag ich nicht besonders»). Jede Kette beginnt im Dunkeln und endet exakt beim Foto.
+// ersetzt – «diese Stich-Optiken mag ich nicht besonders» –, und auch sie gefiel nicht: seither ohne zweiten Effekt, die Kette ist kürzer, für
+// Reels besser). Jede Kette beginnt im Dunkeln und endet exakt beim Foto.
 //   Physarum – 01 Keime (Sporen leuchten an den markantesten Stellen auf) → 02 Netz (hunderttausende Agenten bilden ein Netz, das die Formen findet)
 //              → 03 Bild (das Foto erscheint durch das Netz); vor einem weiteren Effekt geht das Netz über eine Zeitfront in ihn über
-//   Morphogenese – 01 Keimen (an den Kanten des Fotos keimen Turing-Muster und breiten sich aus) → 02 Muster (ihre Dichte folgt dem Ton
-//              des Fotos, sie nehmen seine Farben an) → 03 Bild (das Foto erscheint, wo die Muster dicht sind, zuletzt überall)
 //   Tiefe    – 01 Scan (eine Lichtebene tastet das Bild von vorn nach hinten ab) → 02 Raum (Kamerafahrt mit Parallaxe, Tiefenschichten,
 //              Schärfeverlagerung) → 03 Bild (es legt sich flach); vor dem Tuch: das Relief wird zum Tuch
 //   Tuch     – 01 Tuch (das Foto als Seidentuch im Wind) → 02 Bild (es wird glattgezogen und liegt als Foto da)
@@ -21,8 +20,8 @@ export const SIGNET = (SIGNET_BIS - SIGNET_VON) / 30 / SIGNET_TEMPO;
 
 export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 
-export const EFFEKTE = ["physarum", "muster", "tiefe", "tuch"];
-export const TITEL = { physarum: "Physarum", muster: "Morphogenese", tiefe: "Tiefe", tuch: "Tuch" };
+export const EFFEKTE = ["physarum", "tiefe", "tuch"];
+export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch" };
 export const KETTE = EFFEKTE.join("+");
 
 /** die gewählten Effekte in fester Reihenfolge, mit «+» verbunden; Unbekanntes oder nichts ergibt die ganze Kette */
@@ -44,8 +43,6 @@ export function rolle(art, liste, i) {
     phasen = [["keime", "Keime", 1.6], ["netz", "Netz", 5.2]];
     if (letzt) phasen.push(["bild", "Bild", 3.4]);
     else { ueber = 1.8; uebergang = "front"; }
-  } else if (art === "muster") {
-    phasen = [["keimen", "Keimen", 2.0], ["muster", "Muster", 5.0], letzt ? ["bild", "Bild", 2.8] : ["dichte", "Dichte", 2.4]];
   } else if (art === "tiefe") {
     phasen = [["scan", "Scan", erst ? 2.6 : 2.2], ["raum", "Raum", 5.4]];
     if (letzt) phasen.push(["bild", "Bild", 2.8]);

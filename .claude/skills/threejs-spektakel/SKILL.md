@@ -170,7 +170,8 @@ Aufbau: `analyse.js` (ohne DOM, im Worker) versteht das Foto, `buehne.js` mischt
 - Gezeichnet doppelt so fein (Catmull-Rom zwischen den Punkten), `MeshPhysicalMaterial` mit `sheen`, Selbstschatten, Streiflicht von links oben und kupfernes Gegenlicht. Die Kamera tritt zurück, solange es weht.
 - Ende exakt: alle Punkte an ihren Platz, Farbe 0 und Emission = Foto (wie beim Relief).
 
-### 12 Morphogenese – Reaktion-Diffusion (`muster.js`)
+### 12 Morphogenese – Reaktion-Diffusion (bis 17. Oktober 2026 in PHORMA II, im Verlauf von Git: `alpha/phorma-ii/muster.js`)
+- Technisch gelungen, gefiel aber nicht («die Morphogenese gefällt mir nicht») und ist wieder entfernt. Lehre wie beim Stich: grafische Flächenmuster kommen bei diesem Auftraggeber nicht an; räumliche, physische, konstruierte Effekte schon (Relief, Glas, Tuch).
 - Gray-Scott mit Du = 1, Dv = 0,5, dt = 1, Laplace 3 × 3 (0,2 Kanten, 0,05 Ecken), 600 Schritte je Sekunde eigener Zeit; Zustand (U, V) in Float-Zielen, **nur mit `texelFetch` gelesen**, auch die Anzeige (bilinear von Hand): Telefone ohne `OES_texture_float_linear` liefern sonst Schwarz.
 - **Keime mindestens 7 × 7 Punkte** (U 0,5, V 0,25): gemessen sterben einzelne Punkte, 3 × 3 und 5 × 5 im Labyrinth-Bereich ab. Dicht an Kanten (Wahrscheinlichkeit 0,004 · Kantenstärke), vereinzelt sonst (0,0003), dazu die Keime von Physarum.
 - Erst überall f 0,055 / k 0,062 (Labyrinth, füllt das Bild), dann f, k nach dem Ton: dunkel (0,018 / 0,060) leer, Mitte Flecken, hell (0,056 / 0,062) Labyrinth – ein lebendes Druckraster.
