@@ -6,9 +6,9 @@
 // Die Simulation läuft in festen Teilschritten (60 je Sekunde eigener Zeit) von vorn; alle 2 s ein Wiedereinstiegspunkt, damit Spulen nicht von vorn
 // rechnen muss. Bild n ist beim Abspielen, Spulen und im Video dasselbe.
 import * as THREE from "three";
-import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=2";
-import { phase } from "./ablauf.js?v=2";
-import { zufall } from "./analyse.js?v=2";
+import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=6";
+import { phase } from "./ablauf.js?v=6";
+import { zufall } from "./analyse.js?v=6";
 
 export const SCHRITTE = 60;
 const SICHERN = 120;
@@ -58,7 +58,7 @@ const ZEIGEN = /* glsl */ `
 
 export function physarum(g, teil) {
   const { renderer, A: an } = g;
-  const S = g.test ? 96 : g.grob ? 288 : 512, N = S * S, sw = an.w, sh = an.h;
+  const S = g.test ? 96 : g.grob ? 256 : 512, N = S * S, sw = an.w, sh = an.h;
   const K = phase(teil, "keime"), Nz = phase(teil, "netz"), Bp = phase(teil, "bild");
 
   // Ausgangslage: jeder Agent bei einem Keim, in einer kleinen Scheibe, nach aussen gerichtet
@@ -122,18 +122,19 @@ export function physarum(g, teil) {
       sicherungen.push(s);
     }
   }
-  function bis(m) {
+  /** bis zu Schritt m; budget: in der Vorschau höchstens so viele Schritte je Bild (sie holt dann auf), im Video ohne Grenze */
+  function bis(m, budget = Infinity) {
     if (n < 0 || m < n) {
       const s = sicherungen.filter((x) => x.n <= m).at(-1);
       if (s) { kopieren(s.agent, agenten[0]); kopieren(s.spur, spur[0]); ai = 0; si = 0; n = s.n; }
       else zuruecksetzen();
     }
-    while (n < m) schritt();
+    while (n < m && budget-- > 0) schritt();
   }
 
   return {
-    render(rt, tau) {
-      bis(Math.floor(tau * SCHRITTE + 1e-6));
+    render(rt, tau, { vorschau = false } = {}) {
+      bis(Math.floor(tau * SCHRITTE + 1e-6), vorschau ? 60 : Infinity);
       const u = zeigen.uniforms;
       u.tSpur.value = spur[si].texture;
       u.uSicht.value = weich(anteil(tau, 0, 0.7));
@@ -148,6 +149,7 @@ export function physarum(g, teil) {
       g.pass(zeigen, rt);
       return { aktiv, bloom: 0.28, radius: 0.15, saum: 0.003, ende };
     },
+    vorab: { szenen: [[szene, kam]], materialien: [bewegen, verlaufen, kopie, zeigen] },
     /** für Tests und zum Abstimmen: Perzentile der Spur (10, 50, 90, 99, 99,9 %) beim aktuellen Schritt */
     messen() {
       const d = new Uint16Array(sw * sh * 4); renderer.readRenderTargetPixels(spur[si], 0, 0, sw, sh, d);

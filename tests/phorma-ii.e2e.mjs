@@ -1,4 +1,4 @@
-// PHORMA II (alpha/phorma-ii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): ein Testfoto analysieren, jede Phase der Kette
+// PHORMA II (alpha/phorma-ii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): ein Testfoto analysieren (Physarum, Morphogenese, Tiefe, Tuch), jede Phase der Kette
 // zeigt etwas und etwas anderes, jeder Effekt beginnt im Dunkeln und endet exakt beim Foto, dasselbe Bild nach einem Sprung zurück (Simulationen
 // mit Wiedereinstiegspunkten), Bewegungsunschärfe, Video über WebCodecs (Ersatz-Encoder), Standbild, KI-Tiefe ohne Netz fällt auf die geschätzte
 // zurück, keine Anfragen nach aussen, Handy ohne seitliches Scrollen. Mit ?test (weniger Agenten, gröbere Netze).
@@ -56,7 +56,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit, Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild, szene } = await import("./film.js?v=2");
+  const { bild, szene } = await import("./film.js?v=6");
   const S = window.__phorma; S.laeuft = false;
   const sz = szene({ breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, ablauf: S.ablauf, buehne: S.buehne, beschriftung: false, signet: true });
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -77,13 +77,13 @@ const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]
 await check("Testfoto: wird analysiert, die Bühne steht, die Kette aller vier Effekte als Sprungknöpfe; nichts von aussen", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   assert.equal(await page.getAttribute('[data-format="4:5"]', "aria-pressed"), "true");
-  for (const e of ["physarum", "stich", "tiefe", "tuch"]) assert.equal(await page.getAttribute(`[data-effekt="${e}"]`, "aria-pressed"), "true", `${e} gewählt`);
+  for (const e of ["physarum", "muster", "tiefe", "tuch"]) assert.equal(await page.getAttribute(`[data-effekt="${e}"]`, "aria-pressed"), "true", `${e} gewählt`);
   await laden(page);
   await bereit(page);
-  assert.match(await page.textContent("#auswertung"), /Striche · \d+ Keime/);
-  assert.equal(await page.textContent("#kette"), "Physarum → Stich → Tiefe → Tuch");
+  assert.match(await page.textContent("#auswertung"), /^\d+ Keime · Kanten · Tiefe/);
+  assert.equal(await page.textContent("#kette"), "Physarum → Morphogenese → Tiefe → Tuch");
   const knoepfe = await page.$$eval(".phasen button", (b) => b.map((x) => x.textContent));
-  assert.deepEqual(knoepfe, ["01 Keime", "02 Netz", "03 Linien", "04 Farbe", "05 Dichte", "06 Scan", "07 Raum", "08 Tuch", "09 Bild"]);
+  assert.deepEqual(knoepfe, ["01 Keime", "02 Netz", "03 Keimen", "04 Muster", "05 Dichte", "06 Scan", "07 Raum", "08 Tuch", "09 Bild"]);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
@@ -92,7 +92,7 @@ await check("Effekte einzeln anwählen: eine Karte wählt genau einen Effekt, di
   const { ctx, page, fehler } = await oeffne();
   await laden(page); await bereit(page);
   const gedrueckt = () => page.$$eval("[data-wahl], [data-effekt]", (b) => b.filter((x) => x.getAttribute("aria-pressed") === "true").map((x) => x.dataset.wahl ?? `+${x.dataset.effekt}`));
-  assert.deepEqual(await gedrueckt(), ["physarum+stich+tiefe+tuch", "+physarum", "+stich", "+tiefe", "+tuch"], "am Anfang die ganze Kette");
+  assert.deepEqual(await gedrueckt(), ["physarum+muster+tiefe+tuch", "+physarum", "+muster", "+tiefe", "+tuch"], "am Anfang die ganze Kette");
   for (const e of ["tiefe", "physarum"]) {
     await page.click(`[data-wahl="${e}"]`);
     await page.waitForFunction((e) => window.__phorma.ablauf === e && window.__phorma.buehne && window.__phorma.sz.zeit.teile.length === 1, e, { timeout: 60_000 });
@@ -108,9 +108,9 @@ await check("Effekte einzeln anwählen: eine Karte wählt genau einen Effekt, di
   assert.deepEqual(await gedrueckt(), ["tuch", "+tuch"]);
   await page.reload(); await laden(page); await bereit(page);
   assert.equal(await page.evaluate(() => window.__phorma.ablauf), "tuch", "die Wahl bleibt nach dem Neuladen");
-  await page.click('[data-wahl="physarum+stich+tiefe+tuch"]');
+  await page.click('[data-wahl="physarum+muster+tiefe+tuch"]');
   await page.waitForFunction(() => window.__phorma.sz.zeit.teile.length === 4);
-  assert.equal(await page.textContent("#kette"), "Physarum → Stich → Tiefe → Tuch");
+  assert.equal(await page.textContent("#kette"), "Physarum → Morphogenese → Tiefe → Tuch");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
@@ -129,8 +129,8 @@ await check("Kette: jede Phase zeigt etwas, jede etwas anderes; am Anfang dunkel
   }
   const abdruecke = new Set(bilder.map(([, m]) => m.abdruck));
   assert.equal(abdruecke.size, bilder.length, "jede Phase anders");
-  // Physarum und Stich sind keine Fotos, Tiefe und Tuch im Raum weichen deutlich ab
-  for (const [n, m] of bilder.filter(([n]) => /netz|linien|raum|tuch\/tuch/.test(n))) assert.ok(m.mittelAbw > 6, `${n} weicht vom Foto ab (${m.mittelAbw.toFixed(1)})`);
+  // Physarum und Morphogenese sind keine Fotos, Tiefe und Tuch im Raum weichen deutlich ab
+  for (const [n, m] of bilder.filter(([n]) => /netz|muster\/muster|raum|tuch\/tuch/.test(n))) assert.ok(m.mittelAbw > 6, `${n} weicht vom Foto ab (${m.mittelAbw.toFixed(1)})`);
   const ende = await messe(page, zeit.stehen[0] + 0.5), letzt = await messe(page, zeit.abschnitt.bis - 1 / 30);
   assert.ok(ende.abw <= 3, `das Foto steht exakt (${ende.abw})`);
   assert.ok(letzt.abw <= 3, `das letzte Bild der Kette ist das Foto (${letzt.abw})`);
@@ -146,10 +146,10 @@ await check("Kette: jede Phase zeigt etwas, jede etwas anderes; am Anfang dunkel
 });
 
 await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto", async () => {
-  for (const e of ["physarum", "stich", "tiefe", "tuch"]) {
+  for (const e of ["physarum", "muster", "tiefe", "tuch"]) {
     const { ctx, page, fehler } = await oeffne({ ablauf: e });
     await laden(page); await bereit(page);
-    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", stich: "Stich", tiefe: "Tiefe", tuch: "Tuch" }[e]);
+    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", muster: "Morphogenese", tiefe: "Tiefe", tuch: "Tuch" }[e]);
     const { zeit } = await messe(page, 0);
     assert.equal(zeit.teile.length, 1);
     const anfang = await messe(page, zeit.abschnitt.von + 0.15), mitte = await messe(page, (zeit.abschnitt.von + zeit.abschnitt.bis) / 2);
@@ -190,7 +190,7 @@ await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern in 4 
       close() {}
     };
   };
-  const { ctx, page, fehler } = await oeffne({ vorher: ersatz, ablauf: "stich" });
+  const { ctx, page, fehler } = await oeffne({ vorher: ersatz, ablauf: "muster" });
   await laden(page); await bereit(page);
   await page.uncheck("#unschaerfe"); await page.uncheck("#signet");
   await page.waitForFunction(() => !window.__phorma.sz.zeit.ab.signet);
@@ -214,12 +214,13 @@ await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern in 4 
   await ctx.close();
 });
 
-await check("Format 9 : 16 und zurück; Strich fein analysiert neu (mehr Striche)", async () => {
-  const { ctx, page, fehler } = await oeffne({ ablauf: "stich" });
+await check("Format 9 : 16 und zurück; Muster fein baut die Bühne neu, ohne das Foto neu zu analysieren", async () => {
+  const { ctx, page, fehler } = await oeffne({ ablauf: "muster" });
   await laden(page); await bereit(page);
-  const vorher = await page.evaluate(() => window.__phorma.A.zahl.linien);
-  await page.click('[data-strich="fein"]');
-  await page.waitForFunction((n) => window.__phorma.A?.zahl.linien > n && !document.getElementById("video").disabled, vorher, { timeout: 120_000 });
+  const nr = await page.evaluate(() => window.__phorma.rechnen);
+  await page.click('[data-muster="fein"]');
+  await page.waitForFunction(() => window.__phorma.buehneSchluessel.endsWith("|fein") && window.__phorma.buehneFertig, null, { timeout: 120_000 });
+  assert.equal(await page.evaluate(() => window.__phorma.rechnen), nr, "nicht neu analysiert");
   for (const [format, mass] of [["9:16", [1080, 1920]], ["4:5", [1080, 1350]]]) {
     await page.click(`[data-format="${format}"]`);
     await page.waitForFunction((m) => window.__phorma.sz?.breite === m[0] && window.__phorma.sz?.hoehe === m[1] && window.__phorma.buehne?.H === m[1] && !document.getElementById("video").disabled, mass, { timeout: 120_000 });

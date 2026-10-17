@@ -6,9 +6,9 @@
 //   Vor dem Tuch endet der Raum frontal mit einem flachen Relief: daraus wird das Tuch (TIEFE_UEBERGABE).
 // Gestreckte Maschen an Tiefensprüngen werden dunkel statt verschmiert. Zustandslos.
 import * as THREE from "three";
-import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=2";
-import { phase } from "./ablauf.js?v=2";
-import { TIEFE_UEBERGABE } from "./tuchsim.js?v=2";   // dasselbe Relief, aus dem das Tuch beginnt
+import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=6";
+import { phase } from "./ablauf.js?v=6";
+import { TIEFE_UEBERGABE } from "./tuchsim.js?v=6";   // dasselbe Relief, aus dem das Tuch beginnt
 
 export { TIEFE_UEBERGABE };
 const SCHICHTEN = 7;
@@ -132,6 +132,7 @@ export function tiefe(g, teil) {
       if (Bp) { ende = Math.max(ende, weich(anteil(tau, Bp[1] - 0.7, Bp[1] - 0.1))); aktiv *= 1 - weich(anteil(tau, Bp[0], Bp[1])); }
       return { aktiv, bloom: 0.55 * u.uScanAn.value + 0.25, saum: 0.0025, ende };
     },
+    vorab: { szenen: [[szene, kam]], materialien: [schaerfe] },
     zaehler() { return `tiefe ${g.tiefeQuelle === "ki" ? "ki (depth anything)" : "aus dem bild"} · schichten ${SCHICHTEN} · maschen ${geo.index.count / 6 | 0}`; },
     entsorgen() { geo.dispose(); mat.dispose(); schaerfe.dispose(); rtSzene?.dispose(); },
   };

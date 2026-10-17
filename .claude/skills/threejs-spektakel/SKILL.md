@@ -1,6 +1,6 @@
 ---
 name: threejs-spektakel
-description: Spektakuläre Bewegtbilder aus einem Foto mit Three.js im Stil von TouchDesigner. Sieben geprüfte Rezepte – Partikelwolke, Relief mit Streiflicht und Höhenlinien, Splitter als Explosionszeichnung, Feedback-Schleife mit Kaleidoskop, Glaskörper mit Spektralsäumen, GPU-Physik (GPGPU) und WebGPU/TSL-Compute – und vier aus PHORMA II: Physarum (Schleimpilz-Agenten), fliessender Kupferstich aus Strömungslinien (Strukturtensor, Jobard–Lefer), Tiefe als Raum (geschätzt oder KI, Parallaxe, Tiefenschärfe) und Foto als Seidentuch (Stoffsimulation) –, dazu Zeitfront-Übergänge, Bewegungsunschärfe im Export, Filmlook (Bloom, Farbsaum, Korn) und MP4-Export in 4:5 und 9:16. Verwenden, wenn ein Foto oder Werk von ornament.cloud als Video, Reel oder Installation animiert werden soll, wenn ein 3D- oder Shader-Effekt «krasser», «wertiger», «spektakulärer» oder «weniger billig» werden soll, oder wenn Partikel, GPGPU, Physarum, Strömungslinien, Tiefenschätzung, Stoff/Tuch, Bewegungsunschärfe, Raymarching, Glas, Feedback, Postprocessing, WebGPU oder TSL gefragt sind. Grundlagen (Szene, Licht, Materialien, Loader) stehen in den Skills threejs-*.
+description: Spektakuläre Bewegtbilder aus einem Foto mit Three.js im Stil von TouchDesigner. Sieben geprüfte Rezepte – Partikelwolke, Relief mit Streiflicht und Höhenlinien, Splitter als Explosionszeichnung, Feedback-Schleife mit Kaleidoskop, Glaskörper mit Spektralsäumen, GPU-Physik (GPGPU) und WebGPU/TSL-Compute – und fünf aus PHORMA II: Physarum (Schleimpilz-Agenten), Morphogenese (Reaktion-Diffusion, Turing-Muster), fliessender Kupferstich aus Strömungslinien (Strukturtensor, Jobard–Lefer), Tiefe als Raum (geschätzt oder KI, Parallaxe, Tiefenschärfe) und Foto als Seidentuch (Stoffsimulation) –, dazu Zeitfront-Übergänge, Bewegungsunschärfe im Export, Filmlook (Bloom, Farbsaum, Korn) und MP4-Export in 4:5 und 9:16. Verwenden, wenn ein Foto oder Werk von ornament.cloud als Video, Reel oder Installation animiert werden soll, wenn ein 3D- oder Shader-Effekt «krasser», «wertiger», «spektakulärer» oder «weniger billig» werden soll, oder wenn Partikel, GPGPU, Physarum, Reaction-Diffusion, Turing-Muster, Strömungslinien, Tiefenschätzung, Stoff/Tuch, Bewegungsunschärfe, Raymarching, Glas, Feedback, Postprocessing, WebGPU oder TSL gefragt sind. Grundlagen (Szene, Licht, Materialien, Loader) stehen in den Skills threejs-*.
 ---
 
 # Spektakel mit Three.js: Foto → Film
@@ -145,7 +145,8 @@ Aufbau: `analyse.js` (ohne DOM, im Worker) versteht das Foto, `buehne.js` mischt
 - **Bloom macht hier grauen Dunst** über das ganze Bild (gemessen: ohne Bloom ist der Grund schwarz). Stärke 0,28, Radius 0,15.
 - Wiedereinstiegspunkte alle 120 Schritte (Kopien der Agenten- und Spurziele); Sprung zurück lädt den letzten davor statt von vorn zu rechnen.
 
-### 9 Stich – Kupferstich aus Strömungslinien (`analyse.js`, `stich.js`)
+### 9 Stich – Kupferstich aus Strömungslinien (bis 17. Oktober 2026 in PHORMA II, im Verlauf von Git: `alpha/phorma-ii/stich.js`)
+- In PHORMA II durch die Morphogenese (12) ersetzt (Rückmeldung nach drei Fassungen: «diese Stich-Optiken mag ich nicht besonders»). Lehre: Linienbilder wirken schnell technisch/topografisch; organische, flächige Strukturen kamen besser an.
 - Richtung aus dem Strukturtensor (Sobel → Jxx, Jxy, Jyy, zweimal geglättet: fein + 0,4 · grob, dazu ein winziger waagrechter Grundzug für ruhige Flächen). Bilinear **im doppelten Winkel** (cos 2θ, sin 2θ) abtasten, sonst kippt die Richtung.
 - Gleichmässig verteilte Linien nach Jobard & Lefer: Abstand d (7 px bei 1080), Abbruch bei d/2 zu anderen Linien, neue Keime bei ±d neben jeder Linie, danach ein Raster für Inseln. Ein Gitter mit Zellen der Grösse d macht es schnell (≈ 1 s für 1080 × 1350 auf der halben Grösse).
 - Alle Linien als Bänder in einer Geometrie; die **Breite rechnet der Fragment-Shader Bildpunkt für Bildpunkt** aus der Helligkeit (Kante mit `fwidth`). Hauptlage höchstens 0,8 der Bahn, sonst wird es eine Fläche.
@@ -169,10 +170,19 @@ Aufbau: `analyse.js` (ohne DOM, im Worker) versteht das Foto, `buehne.js` mischt
 - Gezeichnet doppelt so fein (Catmull-Rom zwischen den Punkten), `MeshPhysicalMaterial` mit `sheen`, Selbstschatten, Streiflicht von links oben und kupfernes Gegenlicht. Die Kamera tritt zurück, solange es weht.
 - Ende exakt: alle Punkte an ihren Platz, Farbe 0 und Emission = Foto (wie beim Relief).
 
+### 12 Morphogenese – Reaktion-Diffusion (`muster.js`)
+- Gray-Scott mit Du = 1, Dv = 0,5, dt = 1, Laplace 3 × 3 (0,2 Kanten, 0,05 Ecken), 600 Schritte je Sekunde eigener Zeit; Zustand (U, V) in Float-Zielen, **nur mit `texelFetch` gelesen**, auch die Anzeige (bilinear von Hand): Telefone ohne `OES_texture_float_linear` liefern sonst Schwarz.
+- **Keime mindestens 7 × 7 Punkte** (U 0,5, V 0,25): gemessen sterben einzelne Punkte, 3 × 3 und 5 × 5 im Labyrinth-Bereich ab. Dicht an Kanten (Wahrscheinlichkeit 0,004 · Kantenstärke), vereinzelt sonst (0,0003), dazu die Keime von Physarum.
+- Erst überall f 0,055 / k 0,062 (Labyrinth, füllt das Bild), dann f, k nach dem Ton: dunkel (0,018 / 0,060) leer, Mitte Flecken, hell (0,056 / 0,062) Labyrinth – ein lebendes Druckraster.
+- Anzeige: Maske `smoothstep(0,17, 0,27, V)`, Normale aus dem Gefälle von V, Glanzlicht `pow(…, 36)`, kupferne Kanten; Bloom schwach (0,12, Radius 0,15), sonst Dunst.
+- Ende weich: zuerst füllt das Foto die Lücken (`foto · hinter · (1 − Maske)`), dann löst es die Muster ab, wo sie dicht sind; mit einer Schwelle allein erschien es fast auf einen Schlag.
+- Vorschau: höchstens 400 Schritte je Bild aufholen (Video exakt), Wiedereinstiegspunkte alle 2 s.
+
 ### Bühne: Zeitfront, Bewegungsunschärfe, Einrasten (`buehne.js`)
 - **Zeitfront** statt Überblenden: die Pixel wechseln nach der Tiefe (nah zuerst), an der Front ein Spalt, der das alte Bild verzieht (Slit-Scan-Anmutung), Kupfer nur schwach (0,18), sonst ein Schleier.
 - **Bewegungsunschärfe:** Weil jedes Bild nur von der Zeit abhängt, rechnet der Export 8 Proben in der halben Bilddauer davor und mittelt sie linear (Float-Ziel, Blending Eins + Eins). Simulationen laufen dabei nur vorwärts.
 - **Ende exakt:** Jeder Effekt meldet `ende` (0..1), die Ausgabe mischt zuletzt das Foto. Ist es 1, zeichnet `film.js` das Foto selbst: verkleinert unterscheiden sich Mipmap-Textur und 2D-Verkleinerung um bis zu 40 Stufen (gemessen auf einem fein gezeichneten Bild).
+- **Telefon** (Rückmeldungen: «reagiert nicht», «neues Bild laden, danach: Absturz»): Fotos beim Laden auf ≤ 2400 Punkte verkleinern und die volle Bitmap schliessen; beim Fotowechsel die alte Bühne sofort freigeben; Programme vorab einzeln übersetzen (`compile` + ein Bild in ein 4 × 4-Ziel je Programm, mit Pausen; nicht `compileAsync`, dessen Nachfragen nach dem Freigeben weiterlaufen); Karten in HalfFloat; Mischen in Float32 vermeiden (`EXT_float_blend`); `webglcontextlost` abfangen, aber nicht beim eigenen `forceContextLoss`; `?diagnose` zeigt Grafikchip, Erweiterungen und Blockaden.
 - Abspann: das leuchtende Signet aus PHORMA I (`glanzSignet`, exportiert aus `alpha/bildfragmentieren/raum.js`) läuft auf derselben Bühne.
 - Prüfen: `node --test tests/phorma-ii.test.mjs`, `NODE_PATH=$(npm root -g) node tests/phorma-ii.e2e.mjs` (Chromium mit `--use-angle=swiftshader`).
   Falle: Der Ersatz-Encoder liest die Bilder nie; dann hängt SwiftShader Minuten hinterher und Klicks warten. Einmal `gl.readPixels` wartet es ab.

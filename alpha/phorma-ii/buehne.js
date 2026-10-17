@@ -9,12 +9,12 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=2";
-import { FPS, kette, laufend } from "./ablauf.js?v=2";
-import { physarum } from "./physarum.js?v=2";
-import { stich } from "./stich.js?v=2";
-import { tiefe } from "./tiefe.js?v=2";
-import { tuch } from "./tuch.js?v=2";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=6";
+import { FPS, kette, laufend } from "./ablauf.js?v=6";
+import { physarum } from "./physarum.js?v=6";
+import { muster } from "./muster.js?v=6";
+import { tiefe } from "./tiefe.js?v=6";
+import { tuch } from "./tuch.js?v=6";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -48,24 +48,27 @@ const AUSGABE = /* glsl */ `
     gl_FragColor = vec4(o, 1.0);
   }`;
 
-const FABRIK = { physarum, stich, tiefe, tuch };
+const FABRIK = { physarum, muster, tiefe, tuch };
 
 /**
  * Die Bühne für ein Foto (Canvas in Filmgrösse B × H), seine Analyse und eine Kette. optionen: tiefeQuelle ("bild" | "ki"), grob (Telefon), test (klein).
  * bild(zeit, t, w, h, { proben, verschluss }) → Leinwand; zaehler(zeit, t) → Text für die Beschriftung; entsorgen().
  */
-export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuelle = "bild" } = {}) {
+export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuelle = "bild", muster: feinheit = "mittel", onVerloren = null } = {}) {
   const B = foto.width, H = foto.height;
   const canvas = typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(B, H);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
   if (!renderer.capabilities.isWebGL2) throw new Error("WebGL 2 fehlt");
+  // verliert der Browser die Grafik (meist: Speicher des Telefons voll), meldet die Seite das, statt still stehen zu bleiben
+  let verloren = false, entsorgt = false;
+  canvas.addEventListener?.("webglcontextlost", (e) => { e.preventDefault(); verloren = true; if (!entsorgt) onVerloren?.(); });   // nicht beim eigenen Freigeben
   renderer.setPixelRatio(1); renderer.autoClear = false;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
   const fotoTex = new THREE.CanvasTexture(foto);
   fotoTex.colorSpace = THREE.SRGBColorSpace; fotoTex.anisotropy = 4;
   const tiefeTex = datenTextur(A.tiefe, A.w, A.h), nahrungTex = datenTextur(A.nahrung, A.w, A.h);
   const quad = new FullScreenQuad();
-  const g = { THREE, renderer, quad, foto, fotoTex, tiefeTex, nahrungTex, A, B, H, grob, test, tiefeQuelle,
+  const g = { THREE, renderer, quad, foto, fotoTex, tiefeTex, nahrungTex, A, B, H, grob, test, tiefeQuelle, muster: feinheit,
     pass(material, rt) { renderer.setRenderTarget(rt); quad.material = material; quad.render(renderer); },
     loeschen(rt, farbe = 0x000000) { renderer.setRenderTarget(rt); renderer.setClearColor(farbe, 1); renderer.clear(true, true, true); } };
   const K = kette(ablauf);
@@ -81,7 +84,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     w = nw; h = nh;
     renderer.setSize(w, h, false);
     for (const r of [rtA, rtB, rtMix, rtSumme]) r?.dispose();
-    rtA = ziel(w, h); rtB = ziel(w, h); rtMix = ziel(w, h); rtSumme = ziel(w, h, { type: THREE.FloatType });
+    rtA = ziel(w, h); rtB = ziel(w, h); rtMix = ziel(w, h); rtSumme = ziel(w, h);   // HalfFloat: Mischen in Float32 braucht EXT_float_blend, das viele Telefone nicht haben
     bloom?.dispose();
     bloom = new UnrealBloomPass(new THREE.Vector2(w, h), 0, 0.55, 0.72);
     bloom.highPassUniforms.smoothWidth.value = 0.15;
@@ -89,12 +92,12 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   }
 
   /** eine Probe zur Zeit ts nach rtMix; gibt { aktiv, bloom, saum, ende } */
-  function probe(zeit, ts) {
+  function probe(zeit, ts, opt) {
     const L = laufend(zeit, ts);
     let info;
-    if (L.length === 1) info = art(L[0].teil).render(rtMix, L[0].lokal, ts);
+    if (L.length === 1) info = art(L[0].teil).render(rtMix, L[0].lokal, opt);
     else {
-      const [a, b] = L, ia = art(a.teil).render(rtA, a.lokal, ts), ib = art(b.teil).render(rtB, b.lokal, ts);
+      const [a, b] = L, ia = art(a.teil).render(rtA, a.lokal, opt), ib = art(b.teil).render(rtB, b.lokal, opt);
       const p = anteil(ts, b.teil.von, a.teil.bis);
       front.uniforms.tA.value = rtA.texture; front.uniforms.tB.value = rtB.texture; front.uniforms.uP.value = inOut(p);
       g.pass(front, rtMix);
@@ -106,18 +109,52 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     return info;
   }
 
-  // was erst im Hintergrund fertig wird (die Bahn des Tuchs): Video und Standbild warten darauf, die Vorschau zeichnet danach neu
-  const bereit = Promise.all(effekte.map((e) => e.bereit ?? null));
+  // Vorab übersetzen (Rückmeldung vom 17. Oktober 2026 vom Telefon: Seite «reagiert nicht», jeder Klick ein Absturz): beim ersten Bild übersetzte
+  // der Browser sonst rund zwanzig Programme am Stück, auf Grafikchips von Telefonen viele Sekunden. Hier eins nach dem anderen, jedes in einer
+  // eigenen Aufgabe, und jedes einmal in ein winziges Ziel gezeichnet, damit es wirklich fertig ist.
+  const pause = () => new Promise((weiter) => setTimeout(weiter, 0));
+  async function vorbereiten() {
+    const klein = ziel(4, 4, { depthBuffer: true }), ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), flaeche = new THREE.PlaneGeometry(2, 2);
+    const szenen = effekte.flatMap((e) => e.vorab?.szenen ?? []);
+    groesse(Math.round(B * (grob ? 0.6 : 0.85)), Math.round(H * (grob ? 0.6 : 0.85)));
+    const materialien = [...effekte.flatMap((e) => e.vorab?.materialien ?? []), front, summe,
+      ...Object.values(bloom).flat().filter((m) => m?.isShaderMaterial)];
+    for (const m of materialien) { const s = new THREE.Scene(); s.add(new THREE.Mesh(flaeche, m)); szenen.push([s, ortho]); }
+    const aus = new THREE.Scene(); aus.add(new THREE.Mesh(flaeche, ausgabe));
+    // compile() stösst das Übersetzen an (mit KHR_parallel_shader_compile im Hintergrund), das Bild ins winzige Ziel wartet es ab; nicht compileAsync:
+    // dessen Nachfragen liefen weiter, wenn die Bühne inzwischen freigegeben war (Fehler «reading 'isReady'», von den Browser-Tests gefunden)
+    for (const [s, k, rt = klein] of [...szenen, [aus, ortho, null]]) {
+      if (verloren || entsorgt) break;
+      renderer.setRenderTarget(rt); renderer.compile(s, k);
+      await pause();
+      if (verloren || entsorgt) break;
+      renderer.setRenderTarget(rt); renderer.render(s, k);
+      await pause();
+    }
+    klein.dispose(); flaeche.dispose();
+  }
+  const warm = vorbereiten();
+  // was erst im Hintergrund fertig wird (die Programme, die Bahn des Tuchs): die Vorschau beginnt danach, Video und Standbild warten darauf
+  const bereit = Promise.all([warm, ...effekte.map((e) => e.bereit ?? null)]);
   const fortschritt = () => Math.min(1, ...effekte.map((e) => e.fortschritt?.() ?? 1));
   return {
-    canvas, B, H, effekte, ende: 0, bereit, fortschritt,                                     // ende: wie weit das letzte Bild schon das Foto war (1: exakt)
-    bild(zeit, t, nw = B, nh = H, { proben = 1, verschluss = 0.5 } = {}) {
+    canvas, B, H, effekte, ende: 0, warm, bereit, fortschritt,                                     // ende: wie weit das letzte Bild schon das Foto war (1: exakt)
+    get verloren() { return verloren; },
+    /** für ?diagnose: Grafikchip und die Erweiterungen, auf die es ankommt */
+    info() {
+      const gl = renderer.getContext(), d = gl.getExtension("WEBGL_debug_renderer_info");
+      const hat = (n) => (gl.getExtension(n) ? "ja" : "nein");
+      return { grafik: d ? gl.getParameter(d.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER), maxTextur: gl.getParameter(gl.MAX_TEXTURE_SIZE),
+        floatZiel: hat("EXT_color_buffer_float"), floatMischen: hat("EXT_float_blend"), floatLinear: hat("OES_texture_float_linear"), parallel: hat("KHR_parallel_shader_compile") };
+    },
+    /** vorschau: Simulationen holen je Bild nur begrenzt auf (die Seite bleibt bedienbar); Video und Standbild ohne */
+    bild(zeit, t, nw = B, nh = H, { proben = 1, verschluss = 0.5, vorschau = false } = {}) {
       groesse(Math.max(2, Math.round(nw)), Math.max(2, Math.round(nh)));
       g.loeschen(rtSumme);
       let info = null;
       for (let k = 0; k < proben; k++) {
         const ts = proben > 1 ? Math.max(0, t - (verschluss / FPS) * (1 - k / (proben - 1))) : t;
-        info = probe(zeit, ts);
+        info = probe(zeit, ts, { vorschau });
         summe.uniforms.tQuelle.value = rtMix.texture; summe.uniforms.uGewicht.value = 1 / proben;
         g.pass(summe, rtSumme);
       }
@@ -140,6 +177,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     },
     zaehler(zeit, t) { const L = laufend(zeit, t); return art(L.at(-1).teil).zaehler?.(L.at(-1).lokal) ?? ""; },
     entsorgen() {
+      entsorgt = true;
       for (const e of effekte) e.entsorgen();
       glanz?.entsorgen();
       for (const r of [rtA, rtB, rtMix, rtSumme]) r?.dispose();
