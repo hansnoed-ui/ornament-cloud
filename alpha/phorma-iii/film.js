@@ -1,10 +1,10 @@
 // PHORMA III – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann das Gewebe aus der Bühne (WebGL,
 // buehne.js) mit den Textfragmenten, danach das Bild, darüber die Beschriftung; mit Signet am Schluss das Logo, das aus dem Gewebe entsteht, mit
 // getipptem Schriftzug und verfrickelt im Takt.
-import { FPS, anteil, zeitachse, zeitcode } from "./ablauf.js?v=7";
+import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=8";
 import { punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=7";
-import { zufall } from "./analyse.js?v=7";
+import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=8";
+import { zufall } from "./analyse.js?v=8";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
@@ -13,9 +13,9 @@ const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo,
  *  einer Tonspur, laenge: Dauer des Gewebes nach ihr */
 export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = true, beschriftung = true, titel = "", foto = null, buehne = null,
   ablauf = "gewebe", text = "", ton = null, laenge = null } = {}) {
-  const zeit = zeitachse({ tempo, signet, laenge, ablauf }), irr = zeit.ablauf === "irrfahrt";
-  // halten: die Irrfahrt hat kein Stehen auf dem Bild – nach dem Effekt hält ihr letztes Bild
-  const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA III").trim(), fragmente: [], schnitte: [], nacht: [], logo: null, halten: irr };
+  const zeit = zeitachse({ tempo, signet, laenge, ablauf }), irr = zeit.ablauf === "irrfahrt", vid = zeit.ablauf === "video";
+  // halten: die Irrfahrt und das Video haben kein Stehen auf dem Bild – nach dem Effekt hält ihr letztes Bild
+  const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA III").trim(), fragmente: [], schnitte: [], nacht: [], logo: null, halten: irr || vid };
   const T = tonOderErsatz(ton), G = zeit.phasen.find((p) => p.name === zeit.ablauf);
   // die Schnitte zählen wie im Gewebe in der Zeit des Effekts (Vorlauf 0,4 s, ohne Tonspur im Tempo gestreckt)
   const f = zeit.tempo, film = (s) => 0.4 + (s - 0.4) * f, effekt = (s) => 0.4 + (s - 0.4) / f;
@@ -23,14 +23,14 @@ export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = 
   // die Zustände des Gewebes wie in gewebe.js (in der Zeit des Effekts): wo Weiss auf Schwarz steht, stehen auch die Fragmente umgekehrt
   const Z = gewebeZustaende(T, effekt(G.von), effekt(G.bis));
   sz.nacht = Z.map((z, i) => [film(z.t), film(Z[i + 1]?.t ?? effekt(G.bis)), z.nacht]).filter((z) => z[2]).map(([a, b]) => [a, b]);
-  if (text && !irr) sz.fragmente = fragmentPlan(text, T, G, breite, hoehe);
+  if (text && !irr && !vid) sz.fragmente = fragmentPlan(text, T, G, breite, hoehe);
   if (irr) sz.stoer = stoerPlan(T, G.von, G.bis);
   const L = zeit.phasen.find((p) => p.name === "logo");
   if (L) {
     // das Logo am Ende des Gewebes: Farbgebung des letzten Zustands (wie in gewebe.js; die Irrfahrt ist immer Weiss auf Schwarz), Störungen im Takt,
     // der Schriftzug auf den Einsätzen getippt
-    const nacht = irr || zustandBei(Z, effekt(L.von) - 1e-3, effekt(G.von)).nacht, tipp = L.von + 2.6;
-    sz.logo = { von: L.von, bis: L.bis, nacht, T, plan: logoPlan(T, L.von, L.bis - 1.0, L.bis - 0.35, irr ? L.von + 2.8 : 0),
+    const nacht = irr || vid || zustandBei(Z, effekt(L.von) - 1e-3, effekt(G.von)).nacht, tipp = L.von + 2.6;
+    sz.logo = { von: L.von, bis: L.bis, nacht, T, schlaufe: vid, plan: logoPlan(T, L.von, L.bis - 1.0, L.bis - 0.35, irr ? L.von + 2.8 : 0),
       tasten: T.einsaetze.filter((e) => e.t >= L.von + 0.1 && e.t < tipp).map((e) => e.t), tipp };
   }
   return sz;
@@ -146,6 +146,25 @@ export function logoZeichen(L, t) {
   const gleich = Math.floor(NAME.length * anteil(t, L.von + 0.15, L.tipp)), schlaege = L.tasten.filter((s) => s <= t).length;
   return Math.min(NAME.length, Math.max(gleich, gleich ? Math.min(gleich + 4, 2 * schlaege) : 0));
 }
+// die Schlaufe des Signets (dieselbe Kurve wie in sketchory/signet.js und im Gewebe, für 1080 × 1920, mittig auf B × H)
+const SCHLAUFE_BAHN = (() => {
+  const pk = (t) => { const r = 0.45 + Math.cos(t); return [1.2 * r * Math.cos(t) - 0.84, 1.2 * r * Math.sin(t)]; };
+  const roh = Array.from({ length: 361 }, (_, i) => pk((i / 360) * Math.PI * 2)), xs = roh.map((q) => q[0]), ys = roh.map((q) => q[1]);
+  const mx = (Math.min(...xs) + Math.max(...xs)) / 2, my = (Math.min(...ys) + Math.max(...ys)) / 2, sp = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+  return roh.map(([x, y]) => [540 + (x - mx) * (420 / sp), 870 + (y - my) * (420 / sp)]);
+})();
+/** beim Video: die Schlaufe zieht sich in einer Sekunde aus dem Schwarz, leuchtend (das Gewebe und die Irrfahrt zeichnen sie selbst) */
+function schlaufe(ctx, sz, t) {
+  const L = sz.logo, f = inOut(anteil(t, L.von + 0.5, L.von + 1.6)), m = Math.max(2, Math.round(f * (SCHLAUFE_BAHN.length - 1)));
+  if (f <= 0) return;
+  ctx.save();
+  ctx.translate((sz.breite - 1080) / 2, (sz.hoehe - 1920) / 2);
+  ctx.beginPath(); ctx.moveTo(...SCHLAUFE_BAHN[0]);
+  for (let i = 1; i <= m; i++) ctx.lineTo(...SCHLAUFE_BAHN[i]);
+  Object.assign(ctx, { strokeStyle: "#f2f2f0", lineWidth: 4, lineCap: "round", lineJoin: "round", shadowColor: "rgba(255,255,255,0.7)", shadowBlur: 18 });
+  ctx.stroke();
+  ctx.restore();
+}
 /**
  * der Schriftzug wie im Signet (Instrument Sans 52 px, gesperrt, unter der Schlaufe), getippt mit einem Blockcursor wie die Fragmente im Gewebe;
  * steht er, läuft der Punkt durch die Schlaufe und pocht mit dem Schlag. Gezeichnet für 1080 × 1920, mittig auf B × H.
@@ -182,6 +201,7 @@ function logoBild(ctx, sz, t, { proben, vorschau }) {
   }
   if (sz.buehne) ziel.drawImage(sz.buehne.bild(sz.zeit, Math.min(ts, L.bis - 1e-3), w, h, { proben, vorschau }), 0, 0, B, H);
   else { ziel.fillStyle = L.nacht ? "#030304" : "#f3f1ec"; ziel.fillRect(0, 0, B, H); }
+  if (L.schlaufe) schlaufe(ziel, sz, Math.min(ts, L.bis));
   schriftzug(ziel, sz, Math.min(ts, L.bis));
   if (ziel !== ctx) { ctx.fillStyle = L.nacht ? "#030304" : "#f3f1ec"; ctx.fillRect(0, 0, B, H); logoGestoert(ctx, logoLeinwand, B, H, st); }   // seitlich verschoben: Papier dahinter
 }
@@ -223,7 +243,9 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H);
   if (sz.logo && t >= sz.logo.von) { ctx.save(); logoBild(ctx, sz, t, { proben, vorschau }); ctx.restore(); return; }   // bis ans Ende, ohne leeres Bild
-  const st = sz.stoer && sz.buehne && typeof document !== "undefined" ? logoStoerung(sz.stoer, t) : null;
+  let st = sz.stoer && sz.buehne && typeof document !== "undefined" ? logoStoerung(sz.stoer, t) : null;
+  // das Zurückstottern bleibt in der Lage des Bilds: fiele es vor einen Sprung, zeigte es kurz den Würfel in der alten Lage (er schien sich zu verziehen)
+  if (st && sz.buehne.lage?.(sz.zeit, t - (st.rueck / FPS) * 0.4) !== sz.buehne.lage?.(sz.zeit, t)) st = null;
   if (st) {
     // gestört: das Bild ein Stück früher auf eine eigene Leinwand, dann in Streifen versetzt (wie das Logo)
     const [w, h] = zielMass(ctx, sz), pw = Math.max(2, Math.round(w)), ph = Math.max(2, Math.round(h));

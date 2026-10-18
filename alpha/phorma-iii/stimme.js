@@ -8,7 +8,7 @@
 //   stimmAblauf – aus der gesäuberten Stimme: Scratching auf dem ersten Wort (Hin und Her wie eine Platte unter der Hand, mit Fader), die klare
 //                 Stimme mit zwei, drei Hüpfern (Stottern, Rücksprung, rückwärts), am Ende Gefrickel (frickeln.js, zwei Takte); gegen das Gefrickel hin
 //                 unterlegt mit Drum and Bass (Rückmeldung: «am Ende gegen das Gefrickel hin gerne mit ein wenig Drum and Bass unterlegt»); wiederholbar je Wurf
-import { frickeln, hallFilter, meistern } from "./frickeln.js?v=7";
+import { frickeln, hallFilter, meistern } from "./frickeln.js?v=8";
 
 /** wiederholbarer Zufall (mulberry32) */
 function zufall(samen) {

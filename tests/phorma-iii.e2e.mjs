@@ -55,11 +55,12 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=7");
+  const { bild } = await import("./film.js?v=8");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
   x.setTransform(0.5, 0, 0, 0.5, 0, 0);
+  if (S.sz.zeit.ablauf === "video") await S.filmAnbieter?.vorbereiten(proben > 1 ? [t - 0.5 / 30, t] : [t], { vorschau: false });   // wie der Export
   bild(x, sz, t, { proben });
   const d = x.getImageData(0, 0, w, h).data;
   const f = document.createElement("canvas"); f.width = w; f.height = h; const fx = f.getContext("2d"); fx.drawImage(S.foto, 0, 0, w, h);
@@ -145,7 +146,7 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
   // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Logo; mitten in einer anders als ohne; der
   // Schriftzug wird getippt und steht nach 2,6 s
   const logo = await page.evaluate(async () => {
-    const { bild, logoZeichen } = await import("./film.js?v=7");
+    const { bild, logoZeichen } = await import("./film.js?v=8");
     const S = window.__phorma, sz = { ...S.sz, buehne: null, beschriftung: false }, L = sz.logo, e = L.plan.find((x) => x.art >= 0.2 && x.t < L.bis - 1);
     const zeichne = (z, t) => { const c = document.createElement("canvas"); c.width = 270; c.height = 338; const x = c.getContext("2d"); x.setTransform(0.25, 0, 0, 0.25, 0, 0); bild(x, z, t); return c.toDataURL(); };
     const t = e.t + e.dauer * 0.3;
@@ -373,6 +374,118 @@ await check("Stimme: säubern und der Ablauf Scratch → Stimme mit Hüpfern →
   await page.reload();
   assert.deepEqual(await page.evaluate(() => [window.__phorma.tonart, document.getElementById("saeubern").checked, document.getElementById("stimm-ablauf").checked]), ["stimme", false, false]);
   assert.ok(await page.isVisible("#stimme-teil"));
+  assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
+/** ein MP4 (VP9, 160 × 128, 30 Bilder/s, ohne Ton) im Browser gebaut: jedes Bild trägt seine Nummer als 3 × 3 Felder (weiss = 1) in der Mitte,
+ *  links ein rotes, rechts ein blaues Feld; drehung: die Matrix der Spur (wie vom Telefon) */
+const zaehlvideo = (page, { sekunden = 12, drehung = 0 } = {}) => page.evaluate(async ([sekunden, drehung]) => {
+  const { Muxer, ArrayBufferTarget } = await import("/vendor/mp4-muxer-5.2.2/mp4-muxer.js");
+  const w = 160, h = 128, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
+  const muxer = new Muxer({ target: new ArrayBufferTarget(), video: { codec: "vp9", width: w, height: h, rotation: drehung }, fastStart: "in-memory" });
+  let fehler = null;
+  const enc = new VideoEncoder({ output: (ch, meta) => muxer.addVideoChunk(ch, meta), error: (e) => { fehler = e; } });
+  enc.configure({ codec: "vp09.00.10.08", width: w, height: h, bitrate: 1_500_000, framerate: 30 });
+  for (let i = 0; i < sekunden * 30; i++) {
+    x.fillStyle = "#808080"; x.fillRect(0, 0, w, h);
+    x.fillStyle = "#e01010"; x.fillRect(0, 0, 40, h); x.fillStyle = "#1030e0"; x.fillRect(w - 40, 0, 40, h);
+    for (let b = 0; b < 9; b++) { x.fillStyle = (i >> b) & 1 ? "#ffffff" : "#000000"; x.fillRect(56 + (b % 3) * 16, 40 + Math.floor(b / 3) * 16, 16, 16); }
+    const f = new VideoFrame(c, { timestamp: Math.round((i * 1e6) / 30), duration: Math.round(1e6 / 30) });
+    enc.encode(f, { keyFrame: i % 30 === 0 }); f.close();
+    while (enc.encodeQueueSize > 4) await new Promise((ok) => setTimeout(ok, 2));
+  }
+  await enc.flush(); if (fehler) throw fehler; muxer.finalize();
+  const a = new Uint8Array(muxer.target.buffer); let s = ""; for (let i = 0; i < a.length; i += 32768) s += String.fromCharCode(...a.subarray(i, i + 32768));
+  return btoa(s);
+}, [sekunden, drehung]).then((b) => Buffer.from(b, "base64"));
+/** das Bild des Films zur Zeit t (halbe Grösse, ohne Beschriftung): die Nummer aus den 3 × 3 Feldern und die Farben links und rechts der Mitte */
+const zaehlerLesen = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
+  const { bild } = await import("./film.js?v=8");
+  const S = window.__phorma; S.laeuft = false;
+  const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };
+  const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
+  x.setTransform(0.5, 0, 0, 0.5, 0, 0);
+  if (S.sz.zeit.ablauf === "video") await S.filmAnbieter?.vorbereiten(proben > 1 ? [t - 0.5 / 30, t] : [t], { vorschau: false });   // wie der Export
+  bild(x, sz, t, { proben });
+  const s = Math.max(w / 160, h / 128), px = (sx, sy) => { const d = x.getImageData(Math.round(w / 2 + (sx - 80) * s), Math.round(h / 2 + (sy - 64) * s), 1, 1).data; return [d[0], d[1], d[2]]; };
+  let nr = 0;
+  for (let b = 0; b < 9; b++) { const [r, g, bl] = px(64 + (b % 3) * 16, 48 + Math.floor(b / 3) * 16); if ((r + g + bl) / 3 > 128) nr |= 1 << b; }
+  return { nr, links: px(34, 64), rechts: px(126, 64), oben: x.getImageData(w / 2, Math.round(h * 0.08), 1, 1).data.slice(0, 3), unten: x.getImageData(w / 2, Math.round(h * 0.92), 1, 1).data.slice(0, 3) };
+}, [t, proben]);
+
+await check("Video: als Effekt das Video selbst, bildgenau (WebCodecs), synchron; mit eigener Audiodatei der Ausschnitt des Videos; gedreht wie vom Telefon", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  await page.click('[data-wahl="video"]');
+  assert.equal(await page.getAttribute('[data-wahl="video"]', "aria-pressed"), "true");
+  assert.ok(await page.isVisible("#video-teil"), "mit dem Effekt Video ist die Quelle das Video");
+  assert.match(await page.textContent("#meldung"), /Videodatei/);
+  await page.setInputFiles("#videodatei", { name: "zaehler.mp4", mimeType: "video/mp4", buffer: await zaehlvideo(page, { sekunden: 16 }) });
+  await page.waitForFunction(() => window.__phorma.filmspur && window.__phorma.buehneFertig && window.__phorma.sz?.zeit.ablauf === "video", null, { timeout: 180_000 });
+  await bereit(page);
+  const s = await page.evaluate(() => ({ weg: window.__phorma.filmspur.spur.weg, n: window.__phorma.filmspur.spur.n, phasen: window.__phorma.sz.zeit.phasen.map((p) => p.name), knoepfe: [...document.querySelectorAll(".phasen button")].map((b) => b.textContent) }));
+  assert.equal(s.weg, "webcodecs", "MP4: bildgenau über WebCodecs");
+  assert.deepEqual(s.phasen, ["video", "logo"]); assert.deepEqual(s.knoepfe, ["01 Video", "02 Logo"]);
+  assert.ok(s.n >= 300, `die Bilder des Videos (${s.n})`);
+  assert.ok(await page.isVisible("#video-ausschnitt"), "ohne Ton aus dem Video: der Ausschnitt des Videos");
+  // bildgenau: Filmbild t zeigt Quellbild round(t · 30) (ab 0), höchstens eines daneben; die Farben bleiben links und rechts
+  for (const t of [0.9, 2.5, 4.03, 6.6]) {
+    const z = await zaehlerLesen(page, t);
+    assert.ok(Math.abs(z.nr - Math.floor(t * 30)) <= 1, `t ${t}: Bild ${z.nr} statt ${Math.floor(t * 30)}`);
+    assert.ok(z.links[0] > 150 && z.links[2] < 90 && z.rechts[2] > 150 && z.rechts[0] < 90, `rot links, blau rechts (${z.links} / ${z.rechts})`);
+  }
+  assert.ok(Math.abs((await zaehlerLesen(page, 2.5, { proben: 8 })).nr - 75) <= 1, "auch mit Bewegungsunschärfe");
+  // eine eigene Audiodatei: der Film so lang wie der Ton, der Ausschnitt des Videos ab 1,5 s
+  await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
+  await page.waitForFunction(() => window.__phorma.ton?.name === "schlaege.wav", null, { timeout: 60_000 });
+  assert.ok(await page.isVisible("#video-ausschnitt") && !(await page.isVisible("#ausschnitt-film")), "Video-Ausschnitt, kein Filmstreifen beim Ton");
+  await page.evaluate(() => { const r = document.getElementById("video-von"); r.value = "1.5"; for (const t of ["input", "change"]) r.dispatchEvent(new Event(t)); });
+  await page.waitForFunction(() => window.__phorma.filmspur?.schl.includes("|1.500|") && window.__phorma.buehneFertig, null, { timeout: 180_000 });
+  await bereit(page);
+  assert.match(await page.textContent("#video-ausschnitt-info"), /^0:01,5 – 0:1\d,\d · \d+,\d s$/);
+  const z = await zaehlerLesen(page, 2.0);
+  assert.ok(Math.abs(z.nr - 105) <= 1, `ab 1,5 s: Bild ${z.nr} statt 105`);
+  // gedreht (Matrix 90°): hochkant wie im Telefon, das rote Feld oben, das blaue unten
+  await page.click("#ton-weg");
+  await page.setInputFiles("#videodatei", { name: "hochkant.mp4", mimeType: "video/mp4", buffer: await zaehlvideo(page, { sekunden: 3, drehung: 90 }) });
+  await page.waitForFunction(() => window.__phorma.filmspur?.schl.includes("blob:") && window.__phorma.video?.name === "hochkant.mp4" && window.__phorma.buehneFertig && window.__phorma.filmspur.spur.n === 90, null, { timeout: 180_000 });
+  await bereit(page);
+  const d = await zaehlerLesen(page, 1.0);
+  assert.ok(d.oben[0] > 150 && d.oben[2] < 90 && d.unten[2] > 150 && d.unten[0] < 90, `rot oben, blau unten (${d.oben} / ${d.unten})`);
+  assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
+await check("Video: ein WebM mit Ton – die Bilder über das Spulen, der Ausschnitt schneidet Bild und Ton zusammen (Filmstreifen über der Wellenform)", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  await page.click('[data-wahl="video"]');
+  const webm = await page.evaluate(async () => {
+    const c = document.createElement("canvas"); c.width = 320; c.height = 240; const x = c.getContext("2d");
+    const ac = new AudioContext(), ziel = ac.createMediaStreamDestination(), o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.value = 110; o.connect(g); g.connect(ziel); g.gain.value = 0; o.start();
+    for (let k = 1; k < 6; k++) { g.gain.setValueAtTime(0.9, ac.currentTime + k); g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + k + 0.3); }
+    const strom = new MediaStream([...c.captureStream(30).getVideoTracks(), ...ziel.stream.getAudioTracks()]);
+    const rec = new MediaRecorder(strom, { mimeType: "video/webm" }), teile = [];
+    rec.ondataavailable = (e) => teile.push(e.data);
+    const t0 = performance.now();
+    const malen = () => { const s = (performance.now() - t0) / 1000; x.fillStyle = `hsl(${(s * 60) % 360} 70% 50%)`; x.fillRect(0, 0, 320, 240); if (s < 6) requestAnimationFrame(malen); };
+    malen(); rec.start(); await new Promise((ok) => setTimeout(ok, 6000)); rec.stop(); await new Promise((ok) => { rec.onstop = ok; });
+    const a = new Uint8Array(await new Blob(teile).arrayBuffer()); let s = ""; for (let i = 0; i < a.length; i += 32768) s += String.fromCharCode(...a.subarray(i, i + 32768));
+    return btoa(s);
+  });
+  await page.setInputFiles("#videodatei", { name: "farben.webm", mimeType: "video/webm", buffer: Buffer.from(webm, "base64") });
+  await page.waitForFunction(() => window.__phorma.filmspur && window.__phorma.ton && window.__phorma.buehneFertig && window.__phorma.video?.streifen.length === 16, null, { timeout: 180_000 });
+  await bereit(page);
+  assert.equal(await page.evaluate(() => window.__phorma.filmspur.spur.weg), "spulen", "WebM: über das Video-Element");
+  assert.equal(await page.evaluate(() => window.__phorma.tonQuelle.ausVideo), true);
+  assert.ok(await page.isVisible("#ausschnitt-film") && await page.isHidden("#video-ausschnitt"), "Filmstreifen über der Wellenform, kein eigener Video-Ausschnitt");
+  // im Filmstreifen tippen: der Ausschnitt rückt, Ton und Bilder neu
+  const vorher = await page.evaluate(() => window.__phorma.filmspur.schl);
+  await page.evaluate(() => { const v = document.getElementById("ausschnitt-von"), l = document.getElementById("ausschnitt-laenge"); v.value = "1"; l.value = "3"; for (const t of ["input", "change"]) l.dispatchEvent(new Event(t)); });
+  await page.waitForFunction((v) => window.__phorma.filmspur?.schl !== v && window.__phorma.ton?.name.includes("Ausschnitt 0:01,0–0:04,0") && window.__phorma.buehneFertig, vorher, { timeout: 180_000 });
+  assert.ok(await page.evaluate(() => window.__phorma.filmspur.schl.includes("|1.000|")), "die Bilder ab 1 s");
+  const a = await messe(page, 1.2), b = await messe(page, 2.6);
+  assert.ok(a.abdruck !== b.abdruck && a.hell > 20, "das Video läuft");
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
