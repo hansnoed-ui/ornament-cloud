@@ -11,7 +11,8 @@
 //   spektrum                 – je Filmbild 32 Bänder (FFT 2048, logarithmisch 40 Hz – 12 kHz), je Band normiert, herauf in 2, herunter in 6 Bildern
 //   stoss, stossTief, stossHoch – Hüllkurven der Einsätze (alle; die mit vor allem Bass, 0,3 s; die mit vor allem Höhen, 0,12 s)
 //   dreh                     – ein Winkel, der bei jedem kräftigen Einsatz in 0,3 s um ± Stärke schwingt (die Bänder schwingen im Takt)
-//   tor                      – die Tinte: bei jedem Einsatz auf, 0,25 s halten, 0,4 s abklingen (Rückmeldung: «die Dynamik näher beim Video»)
+//   tor                      – die Tinte: bei jedem Einsatz auf, 0,35 s halten, 0,7 s abklingen, nie unter 0,35 · laut (Rückmeldungen: «die Dynamik
+//                              näher beim Video», dann «etwas viel Weiss»)
 // (Rückmeldung vom 18. Oktober 2026: «nicht gesehen, dass die Animation sich auf die Musik bezog, sie scheint einfach ein wenig rumzuwabern»)
 // Ohne Tonspur: ruhige, wiederholbare Ersatzkurven (ersatz).
 export const FPS = 30;
@@ -147,13 +148,13 @@ function mitEinsaetzen(T) {
   // (wie im Video von Pauric Freeman: jedes Bild erscheint mit einem Ton und verschwindet mit ihm)
   const tor = new Float32Array(n);
   for (const e of einsaetze) {
-    const b0 = Math.round(e.t * FPS), h = 0.45 + 0.55 * Math.min(1, e.staerke * 1.4);
-    for (let b = b0; b < Math.min(n, b0 + FPS * 2.5); b++) {
-      const dt = (b - b0) / FPS, v = h * Math.min(1, (b - b0 + 1) / 2) * (dt < 0.25 ? 1 : Math.exp(-(dt - 0.25) / 0.4));
+    const b0 = Math.round(e.t * FPS), h = 0.55 + 0.45 * Math.min(1, e.staerke * 1.4);
+    for (let b = b0; b < Math.min(n, b0 + FPS * 3); b++) {
+      const dt = (b - b0) / FPS, v = h * Math.min(1, (b - b0 + 1) / 2) * (dt < 0.35 ? 1 : Math.exp(-(dt - 0.35) / 0.7));
       if (v > tor[b]) tor[b] = v;
     }
   }
-  for (let b = 0; b < n; b++) tor[b] = Math.max(tor[b], 0.12 * laut[b]);
+  for (let b = 0; b < n; b++) tor[b] = Math.max(tor[b], 0.35 * laut[b]);   // seit «etwas viel Weiss»: länger offen, nie ganz zu, solange es klingt
   return { ...T, einsaetze, schnitte, energie, stoss, stossTief, stossHoch, dreh, tor };
 }
 

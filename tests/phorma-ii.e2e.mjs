@@ -56,7 +56,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit, Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild, szene } = await import("./film.js?v=13");
+  const { bild, szene } = await import("./film.js?v=14");
   const S = window.__phorma; S.laeuft = false;
   const sz = szene({ breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, ablauf: S.ablauf, buehne: S.buehne, beschriftung: false, signet: true });
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -366,6 +366,12 @@ await check("Nur Musik geladen, kein Bild: «Nur Ton» wird gewählt und die Vor
   const s = await page.evaluate(() => ({ quelle: window.__phorma.quelle, ablauf: window.__phorma.ablauf, ton: window.__phorma.ton?.name }));
   assert.deepEqual(s, { quelle: "ton", ablauf: "gewebe", ton: "schlaege.wav" });
   assert.equal(await page.getAttribute('[data-quelle="ton"]', "aria-pressed"), "true");
+  // der Ton läuft mit der Vorschau (Rückmeldung: «der Ton wird nicht abgespielt während der Animation» – die Vorschau lief schon, als die Musik kam)
+  await page.mouse.click(5, 5);                                                   // einmal getippt: der Browser darf Ton spielen
+  await page.waitForTimeout(1500);
+  const lauf = await page.evaluate(() => { const a = document.getElementById("tonspur"), S = window.__phorma; return { laeuft: S.laeuft, pausiert: a.paused, ton: a.currentTime, bild: S.t }; });
+  assert.ok(lauf.laeuft && !lauf.pausiert, `Vorschau und Ton laufen (${JSON.stringify(lauf)})`);
+  assert.ok(Math.abs(lauf.ton - lauf.bild) < 0.6, `Ton und Bild zusammen (${lauf.ton.toFixed(2)} / ${lauf.bild.toFixed(2)} s)`);
   // die Seite neu öffnen (Rückmeldung vom 18. Oktober 2026: «Cannot access 'tiefeKnoepfe' before initialization» – «Nur Ton» war gemerkt und
   // lud das Papier, bevor alle Knöpfe standen): sie startet mit «Nur Ton», ohne Fehler
   await page.reload();
