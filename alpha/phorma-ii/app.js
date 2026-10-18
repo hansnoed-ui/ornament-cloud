@@ -1,12 +1,11 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte, zeitachse } from "./ablauf.js?v=10";
-import { szene, bild, standbildZeit } from "./film.js?v=10";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=10";
-import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=10";
-import { textBild } from "./textbild.js?v=10";
-import { mp4 } from "../sketchory/mp4.js?v=10";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte, zeitachse } from "./ablauf.js?v=11";
+import { szene, bild, standbildZeit } from "./film.js?v=11";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=11";
+import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=11";
+import { textBild } from "./textbild.js?v=11";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
 const $ = (id) => document.getElementById(id);
@@ -149,7 +148,7 @@ async function videoLaden(datei) {
   // der Ton des Videos wird die Tonspur, ausser eine andere Audiodatei ist gewählt
   if (!S.tonQuelle || S.tonQuelle.ausVideo) {
     try {
-      const { tonLesen } = await import("./tonspur.js?v=10");
+      const { tonLesen } = await import("./tonspur.js?v=11");
       const { buffer } = await tonLesen(datei);
       S.tonQuelle = { buffer, name: `Ton von ${datei.name}`, url, ausVideo: true };
       await tonSetzen({ auffrischen: false });
@@ -189,7 +188,7 @@ async function bildSetzen(q) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=10", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=11", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -231,7 +230,7 @@ async function kiAnwenden() {
     const nr = S.rechnen;
     try {
       notiz("Tiefe mit KI wird vorbereitet");
-      kiModul ??= await import("./tiefe-ki.js?v=10");
+      kiModul ??= await import("./tiefe-ki.js?v=11");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m), { telefon: grob, notiz });
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
@@ -255,7 +254,7 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=10");
+    buehneModul ??= await import("./buehne.js?v=11");
     if (S.buehneSchluessel !== schluessel) return;
     const saetze = S.quelle === "video" && S.video && S.ablauf === "gewebe" ? await videoSaetze() : null;
     if (S.buehneSchluessel !== schluessel) return;
@@ -371,15 +370,24 @@ function gewebeWaehlen(grund) {
   melden(`${grund}: dafür ist jetzt das Gewebe gewählt. Physarum, Tiefe und Tuch lassen sich weiter wählen – dort klingt der Ton nur mit.`);
   return true;
 }
-const quelleKnoepfe = wahl("data-quelle", "quelle", ["foto", "text", "video"], () => {
+const quelleKnoepfe = wahl("data-quelle", "quelle", ["foto", "text", "video", "ton"], () => {
   quelleZeigen();
-  const gewechselt = S.quelle !== "foto" && gewebeWaehlen(S.quelle === "text" ? "Text als Quelle" : "Video als Quelle");
-  if (S.quelle === "text" && S.text.trim()) textLaden();
+  const gewechselt = S.quelle !== "foto" && gewebeWaehlen({ text: "Text als Quelle", video: "Video als Quelle", ton: "Nur Ton" }[S.quelle]);
+  if (S.quelle === "ton") papierLaden();
+  else if (S.quelle === "text" && S.text.trim()) textLaden();
   else if (S.quelle === "video" && S.video) bildSetzen(S.video.bild);
   else if (S.quelle === "foto" && S.fotoBild) bildSetzen(S.fotoBild);
   else if (gewechselt) neu();                                              // noch nichts zu laden: wenigstens die Wahl zeigen
 });
-function quelleZeigen() { for (const q of ["foto", "text", "video"]) $(`${q}-teil`).hidden = S.quelle !== q; }
+function quelleZeigen() { for (const q of ["foto", "text", "video", "ton"]) $(`${q}-teil`).hidden = S.quelle !== q; }
+/** nur Ton: leeres Papier als Bild – die Linien macht das Gewebe aus der Musik (Wunsch vom 18. Oktober 2026: «ohne Text oder Bild, sodass sich
+ * die Bewegungen eben auf die Töne, Sounds, Rhythmen und Volumes der Musik beziehen») */
+function papierLaden() {
+  const [B, H] = filmMass(S.format), c = leinwand(B, H), x = c.getContext("2d");
+  x.fillStyle = "#f3f1ec"; x.fillRect(0, 0, B, H);
+  notiz("Nur Ton gewählt");
+  return bildSetzen(c);
+}
 S.text = erinnern("text") ?? ""; $("text").value = S.text;
 quelleZeigen();
 let textTippen = 0;
@@ -390,6 +398,7 @@ async function textLaden() {
   await bildSetzen(await textBild(S.text, ...filmMass(S.format)));
 }
 if (S.quelle === "text" && S.text.trim()) textLaden();
+if (S.quelle === "ton") papierLaden();
 // Ton: eine Audiodatei steuert das Gewebe und klingt in der Vorschau und im Video mit (tonspur.js); ohne Ton bleibt das Video stumm. Auf Wunsch wird
 // sie verfrickelt (frickeln.js: aus Schnipseln ein neues Stück, wiederholbar je Wurf); dann steuert und klingt das neue Stück.
 S.frickeln = erinnern("frickeln") === "1"; $("frickeln").checked = S.frickeln;
@@ -398,7 +407,7 @@ $("tondatei").addEventListener("change", async (e) => {
   const datei = e.target.files?.[0]; if (!datei) return;
   melden("Der Ton wird gelesen …");
   try {
-    const { tonLesen } = await import("./tonspur.js?v=10");
+    const { tonLesen } = await import("./tonspur.js?v=11");
     const { buffer } = await tonLesen(datei);
     if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
     S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei), ausVideo: false };
@@ -416,7 +425,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
   if (S.frickeln) {
     melden("Der Ton wird verfrickelt …");
     await new Promise((ok) => setTimeout(ok, 30));
-    const { frickeln, wav } = await import("./frickeln.js?v=10");
+    const { frickeln, wav } = await import("./frickeln.js?v=11");
     const f = frickeln(kanaele, rate, { samen: S.wurf });
     buffer = new AudioBuffer({ length: f.kanaele[0].length, numberOfChannels: 2, sampleRate: rate });
     f.kanaele.forEach((c, k) => buffer.copyToChannel(c, k));
@@ -546,7 +555,8 @@ const CODECS = ["avc1.640028", "avc1.4d0028", "avc1.42e028", "avc1.640032", "avc
 async function webcodecs([B, H]) {
   if (typeof VideoEncoder === "undefined" || typeof VideoFrame === "undefined") return null;
   for (const codec of CODECS) {
-    const cfg = { codec, width: B, height: H, bitrate: 14_000_000, framerate: FPS, avc: { format: "avc" }, latencyMode: "quality" };
+    const cfg = { codec, width: B, height: H, bitrate: grob ? 8_000_000 : 14_000_000, framerate: FPS,     // Telefon: kleinere Datei (Instagram kodiert ohnehin neu)
+      avc: { format: "avc" }, latencyMode: "quality" };
     try { if ((await VideoEncoder.isConfigSupported(cfg)).supported) return cfg; } catch { /* nächster */ }
   }
   return null;
@@ -568,21 +578,30 @@ $("video").addEventListener("click", async () => {
 });
 
 async function mitWebCodecs(cfg, sz) {
-  const p = proben();
+  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=11");
+  // mit Ton: die Tonspur zuerst kodieren (klein), dann gehen die Bilder gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
+  let ton = null;
+  if (S.ton && $("ton-im-video").checked) {
+    melden("Der Ton wird kodiert …");
+    ton = await tonKodieren(S.ton.buffer, sz.zeit.dauer);
+    if (!ton) melden("Dieser Browser kann den Ton nicht kodieren; das Video ist ohne Ton.", true);
+  }
   melden(p > 1 ? `Video wird gerechnet, mit Bewegungsunschärfe (${p} Proben je Bild) …` : "Video wird gerechnet …");
   const c = leinwand(sz.breite, sz.hoehe), ctx = c.getContext("2d", { alpha: false });
-  const stuecke = [];
+  const n = sz.zeit.bilder, datei = mp4Schreiber({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, codec: cfg.codec, bilder: n, ton });
   let avcC = null, fehler = null;
   const enc = new VideoEncoder({
     output: (chunk, meta) => {
-      if (meta?.decoderConfig?.description && !avcC) { const d = meta.decoderConfig.description; avcC = new Uint8Array(d.buffer ? d.buffer.slice(d.byteOffset, d.byteOffset + d.byteLength) : d); }
-      const daten = new Uint8Array(chunk.byteLength); chunk.copyTo(daten);
-      stuecke.push({ daten, key: chunk.type === "key", zeit: chunk.timestamp });
+      try {
+        if (meta?.decoderConfig?.description && !avcC) { const d = meta.decoderConfig.description; avcC = new Uint8Array(d.buffer ? d.buffer.slice(d.byteOffset, d.byteOffset + d.byteLength) : d); }
+        if (!avcC) throw new Error("der Encoder hat keine Beschreibung geliefert");
+        const daten = new Uint8Array(chunk.byteLength); chunk.copyTo(daten);
+        datei.bild(daten, chunk.type === "key", chunk.timestamp, avcC);
+      } catch (e) { fehler ??= e; }
     },
-    error: (e) => { fehler = e; },
+    error: (e) => { fehler ??= e; },
   });
   enc.configure(cfg);
-  const n = sz.zeit.bilder;
   for (let i = 0; i < n; i++) {
     if (fehler) throw fehler;
     bild(ctx, sz, i / FPS, { proben: p });
@@ -594,17 +613,8 @@ async function mitWebCodecs(cfg, sz) {
   }
   await enc.flush(); enc.close();
   if (fehler) throw fehler;
-  if (!avcC) throw new Error("der Encoder hat keine Beschreibung geliefert");
-  const art = `MP4 (H.264, ${cfg.codec})${p > 1 ? ` · Bewegungsunschärfe ${p} Proben` : ""}`;
-  // mit Ton: die Tonspur kodieren und beides mit mp4-muxer zusammen schreiben
-  if (S.ton && $("ton-im-video").checked) {
-    melden("Der Ton wird kodiert …");
-    const { tonKodieren, mp4MitTon } = await import("./tonspur.js?v=10");
-    const ton = await tonKodieren(S.ton.buffer, sz.zeit.dauer);
-    if (ton) return { blob: new Blob([mp4MitTon({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, codec: cfg.codec, avcC, bilder: stuecke, ton })], { type: "video/mp4" }), endung: "mp4", art: `${art} · Ton ${ton.codec === "aac" ? "AAC" : "Opus"}` };
-    melden("Dieser Browser kann den Ton nicht kodieren; das Video ist ohne Ton.", true);
-  }
-  return { blob: new Blob([mp4({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, avcC, proben: stuecke })], { type: "video/mp4" }), endung: "mp4", art };
+  const art = `MP4 (H.264, ${cfg.codec}, ${Math.round(cfg.bitrate / 1e6)} Mbit/s)${p > 1 ? ` · Bewegungsunschärfe ${p} Proben` : ""}${ton ? ` · Ton ${ton.codec === "aac" ? "AAC" : "Opus"}` : ""}`;
+  return { blob: datei.fertig(), endung: "mp4", art };
 }
 
 async function mitRecorder(sz) {

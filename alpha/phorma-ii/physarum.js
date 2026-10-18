@@ -6,9 +6,9 @@
 // Die Simulation läuft in festen Teilschritten (60 je Sekunde eigener Zeit) von vorn; alle 2 s ein Wiedereinstiegspunkt, damit Spulen nicht von vorn
 // rechnen muss. Bild n ist beim Abspielen, Spulen und im Video dasselbe.
 import * as THREE from "three";
-import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=10";
-import { phase } from "./ablauf.js?v=10";
-import { zufall } from "./analyse.js?v=10";
+import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=11";
+import { phase } from "./ablauf.js?v=11";
+import { zufall } from "./analyse.js?v=11";
 
 export const SCHRITTE = 60;
 const SICHERN = 120;
