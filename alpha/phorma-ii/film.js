@@ -1,22 +1,26 @@
 // PHORMA II – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann die Kette aus der Bühne (WebGL,
 // buehne.js), danach das Foto, darüber Abblenden und die Beschriftung, am Schluss auf Wunsch das leuchtende Signet von ornament.cloud wie in PHORMA I.
-import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO, MIT_TON } from "./ablauf.js?v=12";
+import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO, MIT_TON } from "./ablauf.js?v=13";
 import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { tonOderErsatz } from "./ton.js?v=12";
-import { zufall } from "./analyse.js?v=12";
+import { tonOderErsatz, gewebeZustaende } from "./ton.js?v=13";
+import { zufall } from "./analyse.js?v=13";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
 
-/** Szene: { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel, fragmente, schnitte }; text, ton, laenge nur fürs Gewebe */
+/** Szene: { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel, fragmente, schnitte, nacht }; text, ton, laenge nur fürs Gewebe */
 export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = true, beschriftung = true, titel = "", foto = null, ablauf, buehne = null,
   text = "", ton = null, laenge = null } = {}) {
   const zeit = zeitachse({ tempo, signet, ablauf, laenge });
-  const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA II").trim(), fragmente: [], schnitte: [] };
+  const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA II").trim(), fragmente: [], schnitte: [], nacht: [] };
   if (MIT_TON.includes(zeit.ablauf)) {
     const T = tonOderErsatz(ton), G = zeit.phasen.find((p) => p.name === zeit.ablauf);
     // die Schnitte zählen wie im Gewebe in der Zeit des Effekts (Vorlauf 0,4 s, ohne Tonspur im Tempo gestreckt)
-    sz.schnitte = T.schnitte.map((s) => 0.4 + (s - 0.4) * zeit.tempo).filter((s) => s > G.von && s < G.bis);
+    const f = zeit.tempo, film = (s) => 0.4 + (s - 0.4) * f, effekt = (s) => 0.4 + (s - 0.4) / f;
+    sz.schnitte = T.schnitte.map(film).filter((s) => s > G.von && s < G.bis);
+    // die Zustände des Gewebes wie in gewebe.js (in der Zeit des Effekts): wo Weiss auf Schwarz steht, stehen auch die Fragmente umgekehrt
+    const Z = gewebeZustaende(T, effekt(G.von), effekt(G.bis));
+    sz.nacht = Z.map((z, i) => [film(z.t), film(Z[i + 1]?.t ?? effekt(G.bis)), z.nacht]).filter((z) => z[2]).map(([a, b]) => [a, b]);
     if (text) sz.fragmente = fragmentPlan(text, T, G, breite, hoehe);
   }
   return sz;
@@ -43,7 +47,7 @@ function fragmentPlan(text, T, G, B, H) {
 }
 
 function fragmenteZeichnen(ctx, sz, t) {
-  const H = sz.hoehe, g = Math.round(H * 0.075), invers = sz.schnitte.some((s) => t >= s && t < s + 4 / FPS);
+  const H = sz.hoehe, g = Math.round(H * 0.075), invers = sz.nacht.some(([a, b]) => t >= a && t < b);
   ctx.save();
   ctx.font = `300 ${g}px "Instrument Sans", system-ui, sans-serif`; ctx.textBaseline = "middle"; ctx.textAlign = "left";
   for (const f of sz.fragmente) {
