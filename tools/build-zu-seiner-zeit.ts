@@ -16,6 +16,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { welleUndMenu } from "./kopfleiste.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const SRC = join(ROOT, "src/data/zu-seiner-zeit.json");
@@ -247,15 +248,21 @@ ${LANGS.map(l => `  <link rel="alternate" hreflang="${l}" href="${url(l)}">`).jo
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="${site}kopfleiste.css?v=1">
   <link rel="stylesheet" href="${wurzel}zsz.css?v=${o.v}">
   <script type="module" src="${wurzel}zsz.js?v=${o.v}"></script>
 </head>
 <body data-seite="${o.seite}" data-basis="${p || "./"}">
   <a class="zsz-skip" href="#inhalt">${u.skip}</a>
-  <nav class="seitenweg" aria-label="Ornament Cloud">
-    <a href="${site}" aria-current="true">Ornament Cloud</a>
-    <a href="${site}alpha/drittes-rad/">Das Dritte Rad</a>
-  </nav>
+  <div class="zsz-oben">
+    <div class="topbar">
+      <nav class="seitenweg" aria-label="Ornament Cloud">
+        <a href="${site}" aria-current="true">Ornament Cloud</a>
+        <a href="${site}alpha/drittes-rad/">Das Dritte Rad</a>
+      </nav>
+${welleUndMenu(site, { aktiv: "Zettel", aktuell: m.lang === "de" && o.path === "" ? "page" : "true", einzug: "      " })}
+    </div>
+  </div>
   <header class="zsz-kopf">
     <a class="zsz-werk" href="${p || "./"}">${esc(m.meta.title)}</a>
     <nav class="zsz-sprachen" aria-label="${u.sprache}">
@@ -274,6 +281,7 @@ ${o.body}
     <p>${esc(m.meta.title)} · ${esc(m.meta.version)} · ${esc(DATUM(m.meta.date, m.lang))}</p>
     <p>${u.kontakt}: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
   </footer>
+  <script src="${site}icons.js?v=14" defer></script>
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="${site}vendor/goatcounter/count.js"></script>
 </body>
 </html>
@@ -466,6 +474,9 @@ export function files(m?: M) {
   return out;
 }
 
+/** die Strophen (deutsch) für die Startseite: «/* ZETTEL:START *\/[…]/* ZETTEL:END *\/» */
+export function zettelListe(m = model()) { return `/* ZETTEL:START */${JSON.stringify(m.stanzas.map(s => s.slug))}/* ZETTEL:END */`; }
+
 /** Sitemap-Block zwischen den Marken (alle Sprachen) */
 export function sitemapBlock(m = model(), f = files()) {
   return [...f.keys()].filter(k => k.endsWith("index.html") && !f.get(k)!.includes('<meta name="robots" content="noindex">'))
@@ -482,6 +493,9 @@ export function build() {
   const block = `${START}\n${sitemapBlock(m, f)}\n  ${END}`;
   const next = xml.includes(START) ? xml.replace(new RegExp(`${START}[\\s\\S]*?${END}`), block) : xml.replace("</urlset>", `  ${block}\n</urlset>`);
   writeFileSync(sm, next);
+  // die Startseite beginnt mit einem zufälligen Zettel (seit 18. Oktober 2026): die Liste der Strophen zwischen ihren Marken
+  const start = join(ROOT, "index.html");
+  writeFileSync(start, readFileSync(start, "utf8").replace(/\/\* ZETTEL:START \*\/[\s\S]*?\/\* ZETTEL:END \*\//, zettelListe(m)));
   return { stanzas: m.stanzas.length, persons: m.persons.length, begriffe: m.begriffe.length, files: f.size };
 }
 

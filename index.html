@@ -64,8 +64,6 @@
     .start-weiter:hover, .start-weiter:focus-visible, .start-ton:hover, .start-ton:focus-visible { color: #000; background: #f08a5d; }
     .start-weiter:focus-visible, .start-ton:focus-visible { outline: 2px solid #f08a5d; outline-offset: 3px; }
     @media (prefers-reduced-motion: reduce) { .start { transition: none; } }
-    /* OMNA COLOR direkt unter dem Kopf (seit 10. Oktober 2026): der Rahmen aus styles.css, hier nur der Abstand */
-    main > .omna { margin: 0 0 48px; }
   </style>
   <script>
     // Entscheidet vor dem ersten Anstrich, ob die Startanimation läuft (die Klasse start-an deckt die Seite sofort ab, es gibt kein Aufblitzen)
@@ -76,6 +74,17 @@
       var spar = navigator.connection && navigator.connection.saveData;
       if (!ruhig && !spar && (!gesehen || /[?&]start(=|&|#|$)/.test(location.search))) document.documentElement.classList.add("start-an");
     })();
+    // Die Startseite beginnt mit einem Zettel aus «Zu seiner Zeit», jedes Mal einem anderen (seit 18. Oktober 2026; Wunsch: «nach diesem coolen Intro
+    // passt für mich die Startseite mit dem OMNA-COLOR-Rad nicht mehr. Deshalb möchte ich die Seite mit dem Zettelkasten starten»; Entscheid: ein
+    // zufälliger Zettel). Ohne Intro sofort, vor dem ersten Anstrich; mit Intro an dessen Ende. Die Liste der Zettel schreibt tools/build-zu-seiner-zeit.ts.
+    window.zumZettel = function () {
+      var Z = /* ZETTEL:START */["1-die-bruecke","2-das-ereignis","3-der-anschluss","4-der-beobachter","5-der-blinde-fleck","6-die-verspaetung","7-die-zeit","8-der-speicher","9-das-gedaechtnis","10-die-erinnerung","11-die-spur","12-das-vergessen","13-das-archiv","14-die-geschichte","15-die-adresse","16-der-name","17-die-person","18-die-rolle","19-die-erwartung","20-die-verantwortung","21-die-anerkennung","22-die-grenze","23-die-beruehrung","24-die-irritation","25-der-koerper","26-die-wahrnehmung","27-die-uebersetzung","28-die-koppelung","29-das-material","30-die-form","31-das-werk","32-der-stil","33-das-publikum","34-die-ausstellung","35-die-kunst","36-das-profil","37-die-information","38-die-wahrscheinlichkeit","39-der-algorithmus","40-die-empfehlung","41-der-feed","42-die-plattform","43-die-identitaet","44-die-moeglichkeit","45-die-kontingenz","46-die-unterbrechung","47-das-neue","48-die-freiheit","49-die-zukunft"]/* ZETTEL:END */;
+      var a = new Uint32Array(1), i = 0;
+      try { crypto.getRandomValues(a); i = a[0] % Z.length; } catch (e) { i = Math.floor(Math.random() * Z.length); }
+      location.replace("zu-seiner-zeit/strophe/" + Z[i] + "/");
+    };
+    window.zettelDa = function () { return /\[\s*"/.test(String(zumZettel)); };
+    if (!document.documentElement.classList.contains("start-an") && zettelDa()) zumZettel();
   </script>
 </head>
 <body>
@@ -107,15 +116,10 @@
 
   <main class="wrap">
     <!--
-      Aufbau: im Kopf die Navigation, die Welle und die vier Kästchen des Menüs; darunter OMNA COLOR zum direkten Spielen (der Lead «Dreh- und Wendepunkte für Theorie und Praxis», 9. bis 10. Oktober 2026, ist weg) (seit 10. Oktober 2026 wieder, Wunsch von Christian; eingebettet aus alpha/omna-color/,
-      freigegebene Ausnahme von REGELN §14, wie schon vom 4. bis 9. Oktober 2026). «Drehen» muss beim Laden nicht im Fenster stehen; nach dem Drehen blättert
-      die Seite zur gezogenen Übung. Die drei Kästen Apps, Prompts und Web (9. bis 10. Oktober 2026 hier) sind mit «Zettel» das Menü oben auf allen Seiten.
-      OMNA COLOR bleibt zugleich ein Beitrag auf «Web». Das Erklärvideo zu ORNA, das von 5. bis 9. Oktober 2026 hier stand, ist auf «Web» (web/orna-erklaervideo/).
+      Aufbau (seit 18. Oktober 2026): die Startseite führt gleich weiter zu einem zufälligen Zettel aus «Zu seiner Zeit» (siehe oben im Kopf); was hier steht,
+      sehen nur Besuche ohne Skript. OMNA COLOR stand vom 10. bis 18. Oktober 2026 hier zum Spielen und ist ein Beitrag auf «Web» (alpha/omna-color/).
     -->
-    <figure class="omna">
-      <iframe src="alpha/omna-color/" title="OMNA COLOR: zwei Farbräder drehen gegeneinander und wählen eine von 180 Gestaltungsübungen. Drehen mit dem Knopf oder durch Ziehen am Rad."></iframe>
-      <figcaption>OMNA COLOR: Zwei Farbräder drehen gegeneinander. Zeigen sie zwei Farben, verbindet die Übung beide Themen, zeigen sie dieselbe Farbe, bleibt es beim reinen Thema. Drehen mit dem Knopf oder durch Ziehen am Rad. Mehr dazu unter <a href="web/">Web</a>.</figcaption>
-    </figure>
+    <p>Ein Zettel aus dem Zettelkasten «Zu seiner Zeit»: <a href="zu-seiner-zeit/zufall/">einer per Zufall</a> oder <a href="zu-seiner-zeit/">alle 49</a>.</p>
   </main>
 
   <!--
@@ -155,6 +159,8 @@
         if (fertig) return;
         fertig = true;
         clearTimeout(haengt);
+        // weiter zu einem Zettel (seit 18. Oktober 2026); die schwarze Fläche bleibt, bis er da ist – nur ohne Liste gibt sie die Seite frei
+        if (window.zumZettel && zettelDa()) { v.pause(); zumZettel(); return; }
         dahinter.forEach(function (k) { k.inert = false; });
         d.style.overflow = "";
         el.classList.add("start-weg");
@@ -179,27 +185,6 @@
       v.src = matchMedia("(min-aspect-ratio: 1/1)").matches ? "assets/start-intro-quer.mp4?v=1" : "assets/start-intro.mp4?v=2";
       var p = v.play();
       if (p && p.catch) p.catch(weg);
-    })();
-    // OMNA COLOR eingebettet: der Rahmen ist so hoch wie das Spiel (Rad, Übung, Hinweise) und hat keinen eigenen Bildlauf.
-    // Nach dem Drehen meldet das Spiel «uebung»; dann blättert die Seite zur gezogenen Übung (wenn sie nicht schon ganz zu sehen ist).
-    (function () {
-      var f = document.querySelector(".omna iframe");
-      if (!f) return;
-      function passe() { try { f.style.height = Math.ceil(f.contentDocument.body.getBoundingClientRect().height) + "px"; } catch (e) {} }
-      function an() { passe(); try { new ResizeObserver(passe).observe(f.contentDocument.body); } catch (e) {} }
-      f.addEventListener("load", an);
-      try { if (f.contentDocument && f.contentDocument.readyState === "complete" && f.contentDocument.body.childElementCount) an(); } catch (e) {}
-      addEventListener("message", function (e) {
-        if (e.origin !== location.origin || e.source !== f.contentWindow || !e.data || e.data.omna !== "uebung") return;
-        passe();
-        try {
-          var karte = f.contentDocument.getElementById("card"), rahmen = f.getBoundingClientRect(), r = karte.getBoundingClientRect();
-          var oben = rahmen.top + r.top, unten = rahmen.top + r.bottom;
-          if (oben >= 0 && unten <= innerHeight) return;
-          var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-          scrollTo({ top: Math.max(0, scrollY + oben - 16), behavior: still ? "auto" : "smooth" });
-        } catch (e) {}
-      });
     })();
   </script>
   <script src="icons.js?v=14" defer></script>

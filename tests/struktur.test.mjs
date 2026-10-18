@@ -28,7 +28,13 @@ const MENUSEITEN = {
   [`${ORNA}feld/index.html`]: ["apps/", "true"],
   [`${ORNA}app/index.html`]: ["apps/", "true"],       // die App-Seiten sind Abschriften, ihre Kopfzeile ist ausgeblendet
   [`${ORNA}app/feld/index.html`]: ["apps/", "true"],
+  "alpha/omna-color/index.html": ["web/", "true"],          // OMNA COLOR ist ein Beitrag auf «Web»
+  "zu-seiner-zeit/index.html": ["zu-seiner-zeit/", "page"],
 };
+// seit 18. Oktober 2026 steht das Menü auf allen Seiten mit Kopf (Wunsch: «das Menü müsste überall auf der Seite sichtbar sein, auch wenn man in den
+// Beiträgen, Anwendungen etc. ist»): auch im Zettelkasten (jede Seite darin unter «Zettel»), auf den Alpha-Seiten und in OMNA COLOR – nur das Dritte Rad
+// bleibt ohne (Entscheid: «Zettelkasten mit Menü, das Dritte Rad ohne»)
+const aktivVon = (p) => (p in MENUSEITEN ? MENUSEITEN[p] : p.startsWith("zu-seiner-zeit/") ? ["zu-seiner-zeit/", "true"] : null);
 
 function htmlSeiten(dir = root, skip = new Set(["node_modules", "dist", ".git", "src", "tests", "tools", "vendor"])) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) => skip.has(e.name) || e.name.startsWith(".") ? []
@@ -51,18 +57,20 @@ const jpegMass = (buf) => {            // Breite und Höhe aus dem ersten Rahmen
 };
 
 test("Menü: vier Kästchen mit Symbol und Namen (Apps, Prompts, Web, Zettel) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
-  for (const [datei, aktiv] of Object.entries(MENUSEITEN)) {
-    const html = lies(datei);
+  const mitKopf = htmlSeiten().filter((p) => lies(p).includes('<nav class="seitenweg"') && !p.startsWith("alpha/drittes-rad/")).sort();
+  assert.ok(mitKopf.length > 580, `alle Seiten mit Kopf (${mitKopf.length})`);
+  for (const datei of mitKopf) {
+    const html = lies(datei), aktiv = aktivVon(datei);
     const nav = html.match(/<nav class="menu" aria-label="Hauptmenü">([\s\S]*?)<\/nav>/);
     assert.ok(nav, `${datei}: Menü fehlt`);
     // seit 10. Oktober 2026: die Welle direkt unter den beiden Hauptlinks, darunter das Menü
-    assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">[\s\S]*?<\/nav>\s*<svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"><\/svg>\s*<nav class="menu"/, `${datei}: Hauptlinks, Welle, Menü`);
+    assert.match(html, /<div class="topbar">\s*<nav class="seitenweg" aria-label="Ornament Cloud">[\s\S]*?<\/nav>\s*<svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"><\/svg>\s*<nav class="menu"/, `${datei}: Hauptlinks, Welle, Menü`);
     assert.ok(!/data-icon|menu-sub|menu-title/.test(nav[1]), `${datei}: keine animierten Symbole, keine Untertitel`);
     const eintraege = [...nav[1].matchAll(/<a class="menu-item" href="([^"]+)"(?: aria-current="(page|true)")?>(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>([^<]+)<\/span><\/a>/g)];
     assert.equal(eintraege.length, 4, `${datei}: vier Kästchen mit verborgenem Symbol und Namen`);
     assert.deepEqual(eintraege.map((e) => e[4]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Apps, Prompts, Web, Zettel (Zettel zuletzt seit 10. Oktober 2026)`);
     for (const [i, e] of eintraege.entries()) {
-      const ziel = new URL(e[1], new URL(datei, root));
+      const basis = html.match(/<base href="([^"]+)"/)?.[1], ziel = new URL(e[1], new URL(basis ?? "", new URL(datei, root)));   // die Werkbank steht mit <base href="../">
       assert.equal(ziel.pathname, new URL(MENU[i][1], root).pathname, `${datei}: ${MENU[i][0]} führt nach ${MENU[i][1]}`);
       assert.ok(existsSync(new URL(MENU[i][1] + "index.html", root)), `${datei}: ${MENU[i][1]} gibt es`);
     }
@@ -71,9 +79,15 @@ test("Menü: vier Kästchen mit Symbol und Namen (Apps, Prompts, Web, Zettel) in
     // genau der Eintrag der Seite ist aktiv (page: man ist auf der Seite, true: auf einer Seite darunter), sonst keiner
     assert.deepEqual(eintraege.map((e) => e[2] ?? null), MENU.map((m) => (aktiv && m[1] === aktiv[0] ? aktiv[1] : null)), `${datei}: aktiver Eintrag`);
   }
-  // das Menü gibt es nur auf diesen Seiten (nicht auf Zettelkasten, Alpha, ORMA, Werken)
+  // das Menü gibt es genau auf den Seiten mit Kopf (nicht im Dritten Rad, in ORMA, den Werken und den Anwendungen im Vollbild)
+  assert.ok(!lies("alpha/drittes-rad/index.html").includes('<nav class="menu"'), "das Dritte Rad bleibt ohne Menü");
   const mitMenu = htmlSeiten().filter((p) => lies(p).includes('<nav class="menu"')).sort();
-  assert.deepEqual(mitMenu, Object.keys(MENUSEITEN).sort(), "Seiten mit Menü");
+  assert.deepEqual(mitMenu, mitKopf, "Seiten mit Menü");
+  for (const p of Object.keys(MENUSEITEN)) assert.ok(mitMenu.includes(p), `${p}: Menü`);
+  // die Erzeuger und tools/kopfleiste-einsetzen.mjs holen das Menü aus tools/kopfleiste.mjs; kopfleiste.css hat dieselben Regeln wie styles.css
+  const regel = (css, sel) => css.match(new RegExp(`\\n${sel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} \\{([^}]*)\\}`))?.[1].trim();
+  for (const sel of [".topbar", ".divider", ".divider .wave", ".menu", ".menu-item span", ".menu-item svg", ".menu-item svg *"])
+    assert.equal(regel(lies("kopfleiste.css"), sel), regel(lies("styles.css"), sel), `kopfleiste.css: ${sel} wie in styles.css`);
 });
 
 test("Menü: Kästchen in der serifenlosen Schrift der Seite, vier in einer Reihe (auch auf dem Handy), der aktive mit kräftigerem Rand", () => {
@@ -92,7 +106,7 @@ test("Menü: Kästchen in der serifenlosen Schrift der Seite, vier in einer Reih
   assert.ok(!/@media[^{]*\{\s*\.menu\s*\{[^}]*repeat\(2/.test(css), "auf dem Handy nicht mehr zwei mal zwei");
 });
 
-test("Startseite: kein sichtbarer Titel und kein Lead, unter dem Kopf OMNA COLOR zum Spielen; kein Video, keine Karten und keine Rückmeldungen", () => {
+test("Startseite: kein sichtbarer Titel und kein Lead; sie führt zu einem zufälligen Zettel aus «Zu seiner Zeit» (seit 18. Oktober 2026, vorher OMNA COLOR zum Spielen); kein Video, keine Karten", async () => {
   const html = lies("index.html").replace(/<!--[\s\S]*?-->/g, "");        // geprüft wird, was die Seite zeigt, nicht die Kommentare
   // Wunsch vom 3. Oktober 2026: Titel «Raumstellen, Zeitobjekte» gestrichen; für Vorlesegeräte bleibt eine unsichtbare Überschrift
   assert.ok(!html.includes("Raumstellen, Zeitobjekte"), "der frühere Titel ist weg");
@@ -105,9 +119,21 @@ test("Startseite: kein sichtbarer Titel und kein Lead, unter dem Kopf OMNA COLOR
   // Die drei Kästen Apps, Prompts und Web standen vom 9. bis 10. Oktober 2026 unter dem Lead; seit dem 10. Oktober 2026 sind sie mit «Zettel» das Menü oben
   assert.ok(!/class="kaesten|class="kasten|\.kaesten \{/.test(html), "keine Kästen mehr unter dem Lead (sie sind jetzt das Menü)");
   const stelle = (s) => { const i = html.indexOf(s); assert.ok(i > 0, s); return i; };
-  assert.ok(stelle('<nav class="menu"') < stelle("<h1") && stelle("<h1") < stelle('<figure class="omna">') && stelle('<figure class="omna">') < stelle("</main>"),
-    "Reihenfolge: das Menü mit den Kästchen, (unsichtbarer) Titel, darunter OMNA COLOR (seit 10. Oktober 2026), dann nur noch Rückkanal und Fuss");
-  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div|iframe|video|nav)\b/g)].map((m) => m[1]), ["figure", "iframe"], "in main steht nur OMNA COLOR");
+  assert.ok(stelle('<nav class="menu"') < stelle("<h1") && stelle("<h1") < stelle("<main") && stelle("<main") < stelle("</main>"), "Reihenfolge: das Menü mit den Kästchen, (unsichtbarer) Titel, main");
+  assert.deepEqual([...html.slice(stelle("<main"), stelle("</main>")).matchAll(/<(figure|section|article|div|iframe|video|nav)\b/g)].map((m) => m[1]), [], "in main nur der Hinweis für Besuche ohne Skript");
+  // Wunsch vom 18. Oktober 2026: «nach diesem coolen Intro passt für mich die Startseite mit dem OMNA-COLOR-Rad nicht mehr. Deshalb möchte ich die Seite mit
+  // dem Zettelkasten starten» – Entscheid: ein zufälliger Zettel; ohne Intro gleich (vor dem ersten Anstrich), mit Intro an dessen Ende
+  const kopf = html.slice(html.indexOf("<head>"), html.indexOf("</head>"));
+  assert.match(kopf, /window\.zumZettel = function \(\)/);
+  assert.match(kopf, /if \(!document\.documentElement\.classList\.contains\("start-an"\) && zettelDa\(\)\) zumZettel\(\);/, "ohne Intro sofort");
+  assert.match(kopf, /location\.replace\("zu-seiner-zeit\/strophe\/" \+ Z\[i\] \+ "\/"\)/, "ersetzt die Adresse (zurück führt nicht in eine Schleife)");
+  assert.match(html, /function weg\(\) \{[\s\S]*?if \(window\.zumZettel && zettelDa\(\)\) \{ v\.pause\(\); zumZettel\(\); return; \}/, "das Ende des Intros führt zum Zettel");
+  const { zettelListe } = await import(new URL("tools/build-zu-seiner-zeit.ts", root).href);
+  const liste = kopf.match(/\/\* ZETTEL:START \*\/[\s\S]*?\/\* ZETTEL:END \*\//)[0];
+  assert.equal(liste, zettelListe(), "die Liste ist die aktuelle (node --experimental-strip-types tools/build-zu-seiner-zeit.ts)");
+  const slugs = JSON.parse(liste.replace(/\/\*[^*]*\*\//g, ""));
+  assert.equal(slugs.length, 49);
+  for (const z of slugs) assert.ok(existsSync(new URL(`zu-seiner-zeit/strophe/${z}/index.html`, root)), z);
   // Wunsch vom 9. Oktober 2026: das Erklärvideo zu ORNA (5. bis 9. Oktober 2026 auf der Startseite) ist von der Startseite weg und steht auf «Web» (web/orna-erklaervideo/);
   // die Startanimation (ausserhalb von main) hat ihr eigenes Video
   const inMain = html.slice(stelle("<main"), stelle("</main>"));
@@ -119,12 +145,7 @@ test("Startseite: kein sichtbarer Titel und kein Lead, unter dem Kopf OMNA COLOR
   assert.ok(!html.includes("bisherige-projekte"), "kein Link mehr auf «bisherige-projekte»");
   // Wunsch vom 5. Oktober 2026: im Fuss die Adresse für Fragen und Anmerkungen zur Website
   assert.match(html, /<footer class="site-footer">[\s\S]*<p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail\.com">hansnoed@gmail\.com<\/a><\/p>[\s\S]*<\/footer>/, "Kontakt im Fuss");
-  // Wunsch vom 10. Oktober 2026: OMNA COLOR wieder zum Spielen eingebettet (wie 4. bis 9. Oktober 2026), jetzt unter dem Lead; «Drehen» muss beim Laden
-  // nicht im Fenster stehen (kein --rad-max mehr), nach dem Drehen blättert die Seite zur gezogenen Übung (Nachricht «uebung» aus dem Rahmen)
-  assert.equal([...html.matchAll(/<iframe [^>]*src="([^"]+)"/g)].map((m) => m[1]).join(), "alpha/omna-color/", "genau ein Rahmen: OMNA COLOR");
-  assert.ok(!html.includes("--rad-max") && html.includes("ResizeObserver"), "der Rahmen wächst mit dem Spiel, das Rad wird nicht verkleinert");
-  assert.match(html, /e\.origin !== location\.origin \|\| e\.source !== f\.contentWindow/, "nur Nachrichten aus dem eigenen Rahmen");
-  assert.match(lies("alpha/omna-color/index.html"), /parent\.postMessage\(\{ omna: "uebung" \}, location\.origin\)/, "OMNA COLOR meldet eingebettet die gezogene Übung");
+  assert.deepEqual([...html.matchAll(/<iframe [^>]*src="([^"]+)"/g)], [], "kein Rahmen mehr (OMNA COLOR stand vom 10. bis 18. Oktober 2026 hier)");
   assert.ok(!html.includes("stellenfeld"), "das Stellenfeld ist nicht auf der Startseite");
   assert.ok(existsSync(new URL("alpha/omna-color/index.html", root)) && lies("web/index.html").includes('<h2>OMNA COLOR</h2>'), "OMNA COLOR bleibt unter seiner Adresse und als Beitrag auf «Web»");
   assert.ok(!/<article|class="card|class="grid/.test(html), "keine Beiträge und keine Karten auf der Startseite");
@@ -134,7 +155,7 @@ test("Startseite: kein sichtbarer Titel und kein Lead, unter dem Kopf OMNA COLOR
   assert.deepEqual([...ohneRueckkanal.matchAll(/<h2[^>]*>([^<]+)<\/h2>/g)].map((m) => m[1]), [], "ausser dem Rückkanal keine Überschriften");
   assert.equal([...html.matchAll(/<section class="rueckkanal/g)].length, 1, "der Rückkanal steht genau einmal");
   assert.ok(html.indexOf("</main>") < html.indexOf('<section class="rueckkanal'), "der Rückkanal steht nach dem Inhalt, vor dem Fuss");
-  assert.ok(!/href="(zu-seiner-zeit|alpha|portfolio)\//.test(html.replace(/<nav class="(seitenweg|menu)"[\s\S]*?<\/nav>/g, "")), "die Wege führen über Menü und Navigation, nicht über Karten");
+  assert.deepEqual([...html.replace(/<nav class="(seitenweg|menu)"[\s\S]*?<\/nav>/g, "").matchAll(/href="((?:zu-seiner-zeit|alpha|portfolio)\/[^"]*)"/g)].map((m) => m[1]), ["zu-seiner-zeit/zufall/", "zu-seiner-zeit/"], "ausser Menü und Navigation nur der Hinweis ohne Skript");
   assert.deepEqual([...html.matchAll(/data-icon="([a-z]+)"/g)].map((m) => m[1]), ["wave"], "nur die Welle unter dem Kopf ist animiert");
 });
 

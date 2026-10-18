@@ -1,0 +1,94 @@
+/* Die Kopfleiste (Hauptlinks, Menü, Welle) für Seiten mit eigener Gestaltung ohne styles.css: der Zettelkasten «Zu seiner Zeit», Das Dritte Rad,
+   OMNA COLOR (seit 18. Oktober 2026; Wunsch: «das Menü müsste überall auf der Seite sichtbar sein»). Dieselben Regeln wie in styles.css (.topbar,
+   .divider, .menu) – wer dort etwas ändert, ändert es auch hier (tests/struktur.test.mjs vergleicht sie). Die Farben setzt jede Seite selbst:
+   --menu-text, --menu-flaeche, --menu-rand, --menu-schrift, --menu-akzent (ohne sie die der Website), dazu --hauptlink für die Welle. */
+.topbar {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: start;
+  column-gap: 32px;
+  margin-bottom: 30px;
+}
+.topbar > .seitenweg { grid-column: 1; grid-row: 1; }
+.topbar > .menu { grid-column: 2; grid-row: 1; justify-self: end; }
+.topbar > .divider { grid-column: 1 / -1; grid-row: 2; margin: 20px 0 0; }
+
+.divider {
+  display: block;
+  width: 100%;
+  height: 32px;
+  margin: 0 0 30px;
+  color: var(--hauptlink);
+}
+
+.divider .wave {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.menu {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: 368px;
+  margin-top: 4px;
+}
+
+.menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 4px 8px;
+  color: var(--menu-text, #1f1d1a);
+  background: var(--menu-flaeche, #ffffff);
+  border: 1px solid var(--menu-rand, #e4e0d8);
+  border-radius: 12px;
+  font-family: var(--menu-schrift, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: border-color 0.2s ease;
+}
+
+.menu-item span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.menu-item svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.menu-item svg * { vector-effect: non-scaling-stroke; }
+
+.menu-item:hover { border-color: var(--menu-text, #1f1d1a); }
+.menu-item:hover svg { color: var(--menu-akzent, #c2410c); }
+.menu-item[aria-current] { border-color: var(--menu-text, #1f1d1a); box-shadow: inset 0 0 0 1px var(--menu-text, #1f1d1a); }
+
+.menu-item:focus-visible {
+  outline: 2px solid var(--menu-text, #1f1d1a);
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .topbar { display: flex; flex-direction: column; align-items: stretch; margin-bottom: 24px; }
+  .topbar > .divider { margin: 10px 0 18px; }
+  .menu { width: 100%; max-width: 420px; margin-top: 0; }
+}
+
+@media (max-width: 360px) {
+  .menu { gap: 6px; }
+  .menu-item { padding: 8px 2px 6px; font-size: 0.8rem; }
+  .menu-item svg { width: 24px; height: 24px; }
+}

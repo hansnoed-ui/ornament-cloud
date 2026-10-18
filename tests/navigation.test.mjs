@@ -83,7 +83,9 @@ test("Navigation: auf der Website stehen beide Links in derselben Farbe (hell An
       assert.match(erster[1], /--weg:\s*var\(--weg-start\)/, `${p}: «Ornament Cloud» im Rad in Orange (die Farbe des Buttons steht in --weg)`);
       assert.match(css, /\.seitenweg a \+ a \{[^}]*--weg:\s*var\(--weg-rad\)/, `${p}: «Das Dritte Rad» im Rad in Violett, davon getrennt`);
       assert.match(css, /--weg-rad:\s*#[0-9a-f]{6}/i, `${p}: das Violett ist festgelegt`);
-      assert.doesNotMatch(css, /--hauptlink/, `${p}: das Rad kennt die Farbe der Website nicht`);
+      // die Kopfleiste (kopfleiste.css, seit 18. Oktober 2026 mit dem Menü) teilt sich das Rad mit der Website; seine Hauptlinks bleiben in seinen Farben
+      const kopf = readFileSync(new URL("kopfleiste.css", root), "utf8");
+      assert.doesNotMatch(css.replace(kopf, ""), /--hauptlink/, `${p}: das Rad kennt die Farbe der Website nicht`);
     } else {
       assert.match(erster[1], /--weg:\s*var\(--hauptlink\)/, `${p}: beide Links in der Farbe der Hauptlinks (die Farbe des Buttons steht in --weg)`);
       assert.doesNotMatch(css, /\.seitenweg a \+ a\s*\{/, `${p}: kein zweiter Farbton für «Das Dritte Rad»`);
@@ -182,8 +184,8 @@ test("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen (1 px, bl
   assert.deepEqual([...gruende].sort(), ["--bg", "--night", "--papier"], "die vier Gestaltungen (Website, Zettelkasten, Rad, OMNA COLOR) nehmen je ihren Grund");
 });
 
-test("Navigation: unter der Kopfzeile steht eine feine Linie in der Farbe der Hauptlinks, auf den Seiten mit Menü die Welle, sonst eine gerade Linie von 1 px; das Dritte Rad hat keine; im Zettelkasten ist der Abstand bis zum Titel grösser (Wunsch von Christian, 2. Oktober 2026, 19:00 UTC)", () => {
-  let wellen = 0, gerade = 0;
+test("Navigation: unter der Kopfzeile steht die Welle in der Farbe der Hauptlinks, auf allen Seiten mit Kopf (seit 18. Oktober 2026 mit dem Menü überall; bis dahin auf Seiten ohne Menü eine gerade Linie); das Dritte Rad hat keine (Wunsch von Christian, 2. Oktober 2026, 19:00 UTC)", () => {
+  let wellen = 0;
   for (const p of seiten) {
     const html = lies(p), css = cssVon(p), r = regeln(ausMedia(css, "forced-colors:\\s*active").rest), w = (sel, name) => r.get(sel)?.get(name) ?? [];
     const was = (t) => `${p}: ${t}`;
@@ -194,29 +196,19 @@ test("Navigation: unter der Kopfzeile steht eine feine Linie in der Farbe der Ha
       assert.ok(!html.includes('class="divider"'), was("das Rad hat keine Welle"));
       continue;
     }
-    if (html.includes('class="divider"')) {
-      // Seiten mit Menü: die Welle der Website, in der Farbe der Hauptlinks
-      assert.deepEqual(w(".divider", "color"), ["var(--hauptlink)"], was("die Welle steht in der Farbe der Hauptlinks"));
-      assert.deepEqual(w(".divider .wave", "stroke"), ["currentColor"], was("die Welle zeichnet in dieser Farbe"));
-      assert.deepEqual(w(".divider .wave", "opacity"), [], was("die Welle ist voll deckend, nicht blasser als die Links"));
-      assert.deepEqual(w(".divider .wave", "stroke-width"), ["0.8"], was("die Welle bleibt fein"));
-      assert.deepEqual(nachLinks.filter((k) => k !== ".wrap > .seitenweg::after"), [], was("auf Seiten mit Menü keine zweite, gerade Linie"));
-      wellen += 1;
-    } else {
-      // Zettelkasten, Alpha-Texte, OMNA COLOR: eine gerade Linie von 1 px am unteren Rand der Navigation
-      assert.equal(nachLinks.length, 1, was(`genau eine Linie unter den Links (${nachLinks.join(", ")})`));
-      const sel = nachLinks[0];
-      assert.deepEqual(w(sel, "border-top"), ["1px solid var(--hauptlink)"], was("feine Linie, 1 px, in der Farbe der Hauptlinks"));
-      assert.deepEqual(w(sel, "position"), ["absolute"], was("die Linie schiebt nichts"));
-      assert.deepEqual(w(sel, "bottom"), ["0"], was("am unteren Rand der Navigation"));
-      assert.deepEqual(w(sel, "content"), ['""'], was("leeres Element"));
-      assert.deepEqual(w(sel.replace(/::after$/, ""), "position"), ["relative"], was("die Navigation ist der Bezug der Linie"));
-      gerade += 1;
-    }
-    // Zettelkasten: mehr Raum zwischen den Hauptlinks (samt Linie) und dem Titel «Zu seiner Zeit»: 28 px statt 12 px
-    if (/zsz\.css/.test(html)) assert.deepEqual(w(".seitenweg + .zsz-kopf", "padding-top"), ["28px"], was("Zettelkasten: 28 px bis zum Titel «Zu seiner Zeit»"));
+    // die Welle der Website, in der Farbe der Hauptlinks, unter Hauptlinks und Menü
+    assert.ok(html.includes('<svg class="divider" data-icon="wave"'), was("die Welle unter der Kopfzeile"));
+    assert.match(html, /icons\.js\?v=\d+/, was("icons.js zeichnet die Welle"));
+    assert.deepEqual(w(".divider", "color"), ["var(--hauptlink)"], was("die Welle steht in der Farbe der Hauptlinks"));
+    assert.deepEqual(w(".divider .wave", "stroke"), ["currentColor"], was("die Welle zeichnet in dieser Farbe"));
+    assert.deepEqual(w(".divider .wave", "opacity"), [], was("die Welle ist voll deckend, nicht blasser als die Links"));
+    assert.deepEqual(w(".divider .wave", "stroke-width"), ["0.8"], was("die Welle bleibt fein"));
+    assert.deepEqual(nachLinks.filter((k) => k !== ".wrap > .seitenweg::after"), [], was("keine zweite, gerade Linie"));
+    wellen += 1;
+    // Zettelkasten: die Kopfleiste steht über dem Kopf des Werks, der Titel «Zu seiner Zeit» unter der Welle
+    if (/zsz\.css/.test(html)) assert.ok(html.includes('<div class="zsz-oben">\n    <div class="topbar">') && w(".zsz-oben + .zsz-kopf", "padding-top").length === 1, was("Zettelkasten: die Kopfleiste über dem Kopf"));
   }
-  assert.ok(wellen >= 10 && gerade >= 150, `alle Seiten geprüft (Wellen ${wellen}, gerade Linien ${gerade})`);
+  assert.ok(wellen >= 580, `alle Seiten geprüft (Wellen ${wellen})`);
 });
 
 test("Navigation: ORMA, die Werke und die Weiterleitung bleiben ohne (Ausnahmen sind benannt und vorhanden)", () => {

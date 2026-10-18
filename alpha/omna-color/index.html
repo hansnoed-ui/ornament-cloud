@@ -47,8 +47,8 @@
 [hidden] { display: none !important; }
 html:not(:has(:fullscreen)) { scrollbar-gutter: stable; }   /* Platz für den Bildlaufbalken immer da: die Navigation oben links bleibt auf jeder Seite an derselben Stelle */
 body { margin: 0; }
-body { background: var(--bg); color: var(--fg); font: 16px/1.5 var(--body); padding-inline: 20px; padding-block: 55px 40px; }
-main { max-width: 1040px; margin-inline: auto; margin-top: calc(clamp(28px, 9vh, 104px) - 16px); display: grid; gap: 28px; }   /* 16 px weniger: so viel Platz braucht die Linie unter den Hauptlinks, der Inhalt bleibt, wo er war */
+body { background: var(--bg); color: var(--fg); font: 16px/1.5 var(--body); padding-inline: 20px; padding-block: 40px 40px; }
+main { max-width: 1040px; margin-inline: auto; margin-top: clamp(0px, 4vh, 48px); display: grid; gap: 28px; }   /* unter der Kopfleiste (Welle 30 px darüber) */
 header p { margin: 0; color: var(--muted); max-width: 52ch; }
 .stage { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); align-items: start; }
 .wheelbox { display: grid; gap: 16px; justify-items: center; }
@@ -88,19 +88,19 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--c4); outlin
    der aktive (aria-current) invers: Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite. Darunter steht eine feine Linie in derselben Farbe.
    Die Stelle ist auf jeder Seite dieselbe (Wunsch vom 2. Oktober 2026, 18:08 UTC): die der Website, also bündig mit einer Spalte von 1040 px, die in der Mitte steht (bis 1080 px Fensterbreite 20 px vom Rand),
    oben 55 px, bis 760 px Fensterbreite 40 px. Ein Browsertest misst sie auf allen Seiten (REGELN §14). */
-.seitenweg { position: relative; max-width: 1040px; margin: 0 auto 8px; padding-bottom: 16px; display: grid; grid-template-columns: max-content; justify-content: start; gap: 8px; }
-.seitenweg::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; border-top: 1px solid var(--hauptlink); }   /* die feine Linie unter den Hauptlinks */
+.topbar { max-width: 1040px; margin: 0 auto 8px; --menu-text: var(--fg); --menu-flaeche: var(--surface); --menu-rand: var(--line); --menu-akzent: #c2410c; }   /* seit 18. Oktober 2026 mit dem Menü der Website und der Welle (kopfleiste.css) */
+.seitenweg { display: grid; grid-template-columns: max-content; justify-content: start; gap: 8px; margin-top: 15px; }
+@media (max-width: 760px) { .seitenweg { margin-top: 0; } }
 .seitenweg a { --weg: var(--hauptlink); padding: 3px 14px; border: 1px solid var(--weg); border: 1px solid color-mix(in srgb, var(--weg) 40%, transparent); border-radius: 999px; font: 600 .8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .12em; text-align: center; text-transform: uppercase; text-decoration: none; color: var(--weg); }   /* genau so gesetzt wie auf der Website (styles.css) */
 .seitenweg a:hover { border-color: var(--weg); }
 .seitenweg a[aria-current] { border-color: var(--weg); background: var(--weg); color: var(--bg); }
 @media (forced-colors: active) { .seitenweg a[aria-current] { outline: 1px solid currentColor; outline-offset: 2px; } }
 .seitenweg a:focus-visible { outline: 2px solid var(--weg); outline-offset: 2px; }
-@media (max-width: 760px) { body { padding-block-start: 40px; } }
 /* Eingebettet auf der Startseite: nur das Spiel, ohne Hauptlinks, ohne eigenen Rand und Bildlauf; der Rahmen wächst mit (Höhe setzt die Startseite).
    Kein vh: im Rahmen hinge es an dessen Höhe. Der Grund bleibt durchsichtig, damit das Spiel auf der Seite steht und nicht in einem Kasten. */
 html.eingebettet { scrollbar-gutter: auto; overflow: hidden; }
 html.eingebettet body { padding: 4px 4px 8px; background: transparent; }
-.eingebettet .seitenweg { display: none; }
+.eingebettet .topbar { display: none; }
 .eingebettet main { margin-top: 0; }
 /* Kontakt unten (seit 5. Oktober 2026 auf allen Seiten der Website); auf der Startseite eingebettet nicht, dort steht er im Fuss der Startseite */
 .kontakt { max-width: 1040px; margin: 56px auto 0; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
@@ -120,12 +120,22 @@ html.eingebettet body { padding: 4px 4px 8px; background: transparent; }
   .card { grid-area: karte; align-self: center; margin-top: 16px; }
 }
 </style>
+<link rel="stylesheet" href="../../kopfleiste.css?v=1">
 </head>
 <body>
-<nav class="seitenweg" aria-label="Ornament Cloud">
-  <a href="../../" aria-current="true">Ornament Cloud</a>
-  <a href="../drittes-rad/">Das Dritte Rad</a>
-</nav>
+<div class="topbar">
+  <nav class="seitenweg" aria-label="Ornament Cloud">
+    <a href="../../" aria-current="true">Ornament Cloud</a>
+    <a href="../drittes-rad/">Das Dritte Rad</a>
+  </nav>
+  <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
+  <nav class="menu" aria-label="Hauptmenü">
+    <a class="menu-item" href="../../apps/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg><span>Apps</span></a>
+    <a class="menu-item" href="../../masterprompts/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-7.5L7 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M7.5 8.5l3 2.25-3 2.25"/><path d="M12.5 13h4"/></svg><span>Prompts</span></a>
+    <a class="menu-item" href="../../web/" aria-current="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5S9.6 5.8 12 3.5z"/></svg><span>Web</span></a>
+    <a class="menu-item" href="../../zu-seiner-zeit/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h11.5A1.5 1.5 0 0 1 20 5v11"/><rect x="4" y="6.5" width="13" height="14" rx="1.5"/><path d="M7 10.5h7"/><path d="M7 13.5h7"/><path d="M7 16.5h4"/></svg><span>Zettel</span></a>
+  </nav>
+</div>
 <main>
   <div class="stage">
     <section class="wheelbox" aria-label="Farbkreis">
@@ -332,6 +342,7 @@ wheel.addEventListener("pointercancel", release);
 if (/[?&]rad=/.test(location.search)) import("../drittes-rad/weiter.js");   // «Das Dritte Rad»: Auswahl nur mit ?rad=
 </script>
 
+  <script src="../../icons.js?v=14" defer></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>
