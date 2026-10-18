@@ -1,5 +1,6 @@
 // PHORMA III (alpha/phorma-iii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): Gewebe aus Text mit Ton (verfrickelt, das Logo
-// aus dem Gewebe, Video mit Tonspur), Video als Quelle, nur Ton, nur Musik geladen, die Irrfahrt, Foto in beiden Formaten exakt, keine Anfragen nach aussen,
+// aus dem Gewebe, Video mit Tonspur), Video als Quelle, nur Ton, nur Musik geladen, die Stimme (säubern, Scratch → Stimme → Gefrickel), die
+// Irrfahrt, Foto in beiden Formaten exakt, keine Anfragen nach aussen,
 // Handy ohne seitliches Scrollen. Mit ?test (gröbere Netze). Bis zum 18. Oktober 2026 Teil von tests/phorma-ii.e2e.mjs.
 //   NODE_PATH=$(npm root -g) node tests/phorma-iii.e2e.mjs
 import assert from "node:assert/strict";
@@ -54,7 +55,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=3");
+  const { bild } = await import("./film.js?v=5");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -144,7 +145,7 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
   // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Logo; mitten in einer anders als ohne; der
   // Schriftzug wird getippt und steht nach 2,6 s
   const logo = await page.evaluate(async () => {
-    const { bild, logoZeichen } = await import("./film.js?v=3");
+    const { bild, logoZeichen } = await import("./film.js?v=5");
     const S = window.__phorma, sz = { ...S.sz, buehne: null, beschriftung: false }, L = sz.logo, e = L.plan.find((x) => x.art >= 0.2 && x.t < L.bis - 1);
     const zeichne = (z, t) => { const c = document.createElement("canvas"); c.width = 270; c.height = 338; const x = c.getContext("2d"); x.setTransform(0.25, 0, 0, 0.25, 0, 0); bild(x, z, t); return c.toDataURL(); };
     const t = e.t + e.dauer * 0.3;
@@ -282,6 +283,64 @@ await check("Nur Musik geladen, kein Bild: «Nur Ton» wird gewählt und die Vor
   await ctx.close();
 });
 
+
+// eine künstliche Stimme (WAV, mono, 22,05 kHz): Silben mit Formanten, Pausen, dazu Rauschen und Brummen – wie eine Handyaufnahme
+const STIMME = (() => {
+  const rate = 22050, dauer = 13, n = rate * dauer, b = Buffer.alloc(44 + n * 2), x = new Float32Array(n);
+  b.write("RIFF", 0); b.writeUInt32LE(36 + n * 2, 4); b.write("WAVEfmt ", 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22);
+  b.writeUInt32LE(rate, 24); b.writeUInt32LE(rate * 2, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34); b.write("data", 36); b.writeUInt32LE(n * 2, 40);
+  let z = 5; const rnd = () => { z = (z * 1103515245 + 12345) & 0x7fffffff; return z / 0x7fffffff; };
+  for (let t = 0.5; t < dauer - 0.8;) {
+    const d = 0.12 + 0.25 * rnd(), f = 120 + 60 * rnd();
+    for (let i = Math.round(t * rate); i < Math.round((t + d) * rate); i++) {
+      const u = (i / rate - t) / d, h = Math.max(0, Math.sin(Math.PI * u)) ** 0.6, ph = 2 * Math.PI * f * (i / rate);
+      let v = 0; for (let k = 1; k < 20; k++) v += (Math.exp(-(((f * k - 700) / 300) ** 2)) + 0.6 * Math.exp(-(((f * k - 1800) / 400) ** 2))) * Math.sin(ph * k);
+      x[i] += 0.2 * h * v;
+    }
+    t += d + (rnd() < 0.2 ? 0.45 : 0.06);
+  }
+  for (let i = 0; i < n; i++) b.writeInt16LE(Math.round(Math.max(-1, Math.min(1, x[i] + 0.02 * (rnd() - 0.5) + 0.01 * Math.sin((2 * Math.PI * 50 * i) / rate))) * 32000), 44 + i * 2);
+  return b;
+})();
+
+await check("Stimme: säubern und der Ablauf Scratch → Stimme mit Hüpfern → Gefrickel; neu würfeln, abschalten, gemerkt; mit Gewebe und Irrfahrt", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  assert.ok(await page.isVisible("#musik-teil") && !(await page.isVisible("#stimme-teil")), "zuerst Musik");
+  await page.click('[data-tonart="stimme"]');
+  assert.ok(!(await page.isVisible("#musik-teil")) && await page.isVisible("#stimme-teil") && await page.isChecked("#saeubern") && await page.isChecked("#stimm-ablauf"));
+  await page.setInputFiles("#tondatei", { name: "stimme.wav", mimeType: "audio/wav", buffer: STIMME });
+  await page.waitForFunction(() => window.__phorma.ton?.name.includes("Gefrickel"), null, { timeout: 120_000 });
+  await bereit(page);
+  const info = await page.textContent("#ton-info");
+  assert.match(info, /stimme\.wav · gesäubert \(Rauschen -?\d+ → -?\d+ dB\) · Scratch, Stimme mit [23] Hüpfern, Gefrickel, Wurf \d+ · 1\d,\d s/, info);
+  const s = await page.evaluate(() => ({ quelle: window.__phorma.quelle, dauer: window.__phorma.sz.zeit.dauer, ton: window.__phorma.ton.analyse.dauer, kanaele: window.__phorma.ton.buffer.numberOfChannels }));
+  assert.equal(s.quelle, "ton", "ohne Bild: Nur Ton");
+  assert.ok(Math.abs(s.dauer - s.ton) < 0.05 && s.ton > 16 && s.ton < 19, `der Film so lang wie der Ablauf (${s.dauer.toFixed(2)} / ${s.ton.toFixed(2)})`);
+  assert.equal(s.kanaele, 2, "in Stereo (der Raum)");
+  // neu würfeln: ein anderer Ablauf
+  assert.ok(await page.isVisible("#wuerfeln"));
+  const name = await page.evaluate(() => window.__phorma.ton.name);
+  await page.click("#wuerfeln");
+  await page.waitForFunction((n) => window.__phorma.ton.name !== n && window.__phorma.ton.name.includes("Gefrickel"), name, { timeout: 120_000 });
+  // auch mit der Irrfahrt
+  await page.click('[data-wahl="irrfahrt"]');
+  await bereit(page);
+  assert.equal(await page.evaluate(() => window.__phorma.sz.zeit.phasen.map((p) => p.name).join()), "wuerfel,irrfahrt,logo");
+  // nur säubern: die Stimme so lang wie die Aufnahme, kein Würfeln
+  await page.uncheck("#stimm-ablauf");
+  await page.waitForFunction(() => window.__phorma.ton && !window.__phorma.ton.name.includes("Gefrickel") && window.__phorma.ton.name.includes("gesäubert"), null, { timeout: 120_000 });
+  assert.ok(await page.isHidden("#wuerfeln"));
+  assert.ok(Math.abs((await page.evaluate(() => window.__phorma.ton.analyse.dauer)) - 13) < 0.05);
+  // gar nichts: das Original
+  await page.uncheck("#saeubern");
+  await page.waitForFunction(() => window.__phorma.ton?.name === "stimme.wav", null, { timeout: 60_000 });
+  // gemerkt
+  await page.reload();
+  assert.deepEqual(await page.evaluate(() => [window.__phorma.tonart, document.getElementById("saeubern").checked, document.getElementById("stimm-ablauf").checked]), ["stimme", false, false]);
+  assert.ok(await page.isVisible("#stimme-teil"));
+  assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
 
 await check("Irrfahrt: als Effekt wählbar und gemerkt; schwarz, beim Schlag heller und anders, am Ende das Logo; ohne Signet die Stille, dann hält das letzte Bild", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();

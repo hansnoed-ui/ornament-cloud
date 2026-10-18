@@ -3,11 +3,11 @@
 // und mp4Schreiber (tonspur.js); ohne WebCodecs in Echtzeit über MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild acht Proben.
 // Bis zum 18. Oktober 2026 ein Effekt in PHORMA II (Wunsch: «Es sind ja zwei ganz verschiedene Ansätze … all das soll aus PHORMA II ausgelagert
 // werden und in ein neues PHORMA III integriert werden»).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, EFFEKTE, ablaufName, zeitachse, NACH } from "./ablauf.js?v=3";
-import { szene, bild, standbildZeit } from "./film.js?v=3";
-import { analysieren } from "./analyse.js?v=3";
-import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=3";
-import { textBild } from "./textbild.js?v=3";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, EFFEKTE, ablaufName, zeitachse, NACH } from "./ablauf.js?v=5";
+import { szene, bild, standbildZeit } from "./film.js?v=5";
+import { analysieren } from "./analyse.js?v=5";
+import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=5";
+import { textBild } from "./textbild.js?v=5";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
 const $ = (id) => document.getElementById(id);
@@ -146,7 +146,7 @@ async function videoLaden(datei) {
   // der Ton des Videos wird die Tonspur, ausser eine andere Audiodatei ist gewählt
   if (!S.tonQuelle || S.tonQuelle.ausVideo) {
     try {
-      const { tonLesen } = await import("./tonspur.js?v=3");
+      const { tonLesen } = await import("./tonspur.js?v=5");
       const { buffer } = await tonLesen(datei);
       S.tonQuelle = { buffer, name: `Ton von ${datei.name}`, url, ausVideo: true };
       await tonSetzen({ auffrischen: false });
@@ -186,7 +186,7 @@ async function bildSetzen(q) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=3", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=5", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -229,7 +229,7 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=3");
+    buehneModul ??= await import("./buehne.js?v=5");
     if (S.buehneSchluessel !== schluessel) return;
     const saetze = S.quelle === "video" && S.video && S.ablauf === "gewebe" ? await videoSaetze() : null;   // nur das Gewebe holt Bilder aus dem Video
     if (S.buehneSchluessel !== schluessel) return;
@@ -365,11 +365,20 @@ setTimeout(() => { if (S.quelle === "text" && S.text.trim()) textLaden(); else i
 // sie verfrickelt (frickeln.js: aus Schnipseln ein neues Stück, wiederholbar je Wurf); dann steuert und klingt das neue Stück.
 S.frickeln = erinnern("frickeln") === "1"; $("frickeln").checked = S.frickeln;
 S.wurf = Number(erinnern("wurf")) || 1;
+// Stimme (seit 18. Oktober 2026, ein eigener Weg für Sprachaufnahmen, stimme.js): säubern und klären, auf Wunsch der Ablauf Scratch → klare Stimme mit
+// Hüpfern → Gefrickel; die Musik behält das Verfrickeln
+S.tonart = erinnern("tonart") === "stimme" ? "stimme" : "musik";
+S.saeubern = erinnern("saeubern") !== "0"; $("saeubern").checked = S.saeubern;
+S.stimmAblauf = erinnern("stimm-ablauf") !== "0"; $("stimm-ablauf").checked = S.stimmAblauf;
+const wuerfelbar = () => (S.tonart === "stimme" ? S.stimmAblauf : S.frickeln);
+const tonartZeigen = () => { $("musik-teil").hidden = S.tonart !== "musik"; $("stimme-teil").hidden = S.tonart !== "stimme"; $("wuerfeln").hidden = !(wuerfelbar() && S.tonQuelle); };
+const tonartKnoepfe = wahl("data-tonart", "tonart", ["musik", "stimme"], () => { tonartZeigen(); tonSetzen(); });
+tonartZeigen();
 $("tondatei").addEventListener("change", async (e) => {
   const datei = e.target.files?.[0]; if (!datei) return;
   melden("Der Ton wird gelesen …");
   try {
-    const { tonLesen } = await import("./tonspur.js?v=3");
+    const { tonLesen } = await import("./tonspur.js?v=5");
     const { buffer } = await tonLesen(datei);
     if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
     S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei), ausVideo: false };
@@ -389,10 +398,33 @@ async function tonSetzen({ auffrischen = true } = {}) {
   const nr = (S.tonNr = (S.tonNr ?? 0) + 1);
   const kanaele = Array.from({ length: Math.min(2, q.buffer.numberOfChannels) }, (_, k) => q.buffer.getChannelData(k)), rate = q.buffer.sampleRate;
   let buffer = q.buffer, url = q.url, name = q.name, mehr = "";
-  if (S.frickeln) {
+  const pause = () => new Promise((ok) => setTimeout(ok, 30));
+  if (S.tonart === "stimme" && (S.saeubern || S.stimmAblauf)) {
+    melden(S.saeubern ? "Die Stimme wird gesäubert …" : "Scratch, Stimme und Gefrickel werden gebaut …");
+    await pause();
+    const [{ saeubern, stimmAblauf }, { wav }] = await Promise.all([import("./stimme.js?v=5"), import("./frickeln.js?v=5")]);
+    if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
+    let kan = kanaele;
+    const teile = [];
+    if (S.saeubern) {
+      const s = saeubern(kan, rate); kan = s.kanaele;
+      teile.push(`gesäubert (Rauschen ${Math.round(s.rauschenVorher)} → ${Math.round(s.rauschenNachher)} dB)`);
+      notiz(`Stimme gesäubert: Rauschen ${s.rauschenVorher.toFixed(1)} → ${s.rauschenNachher.toFixed(1)} dB`);
+    }
+    if (S.stimmAblauf) {
+      if (S.saeubern) { melden("Scratch, Stimme und Gefrickel werden gebaut …"); await pause(); if (nr !== S.tonNr) return; }
+      const a = stimmAblauf(kan, rate, { samen: S.wurf }); kan = a.kanaele;
+      teile.push(`Scratch, Stimme mit ${a.huepfer.length} Hüpfern, Gefrickel, Wurf ${S.wurf}`);
+      notiz(`Stimmen-Ablauf: Wurf ${S.wurf}, ${a.dauer.toFixed(1)} s, ${a.huepfer.map((h) => h.art).join(", ")}`);
+    }
+    buffer = new AudioBuffer({ length: kan[0].length, numberOfChannels: 2, sampleRate: rate });
+    kan.forEach((c, k) => buffer.copyToChannel(c, k));
+    url = URL.createObjectURL(new Blob([wav(kan, rate)], { type: "audio/wav" }));
+    name = `${q.name} · ${teile.join(" · ")}`;
+  } else if (S.tonart === "musik" && S.frickeln) {
     melden("Der Ton wird verfrickelt …");
-    await new Promise((ok) => setTimeout(ok, 30));
-    const { frickeln, wav } = await import("./frickeln.js?v=3");
+    await pause();
+    const { frickeln, wav } = await import("./frickeln.js?v=5");
     if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
     const f = frickeln(kanaele, rate, { samen: S.wurf });
     buffer = new AudioBuffer({ length: f.kanaele[0].length, numberOfChannels: 2, sampleRate: rate });
@@ -408,13 +440,14 @@ async function tonSetzen({ auffrischen = true } = {}) {
   S.ton = { buffer, analyse, name, url, wav: url !== q.url };
   $("tonspur").src = url;
   $("ton-info").textContent = `${name}${mehr} · ${analyse.dauer.toFixed(1).replace(".", ",")} s · ${analyse.einsaetze.length} Einsätze · ${analyse.schnitte.length} Schnitte`;
-  $("ton-weg").hidden = false; $("wuerfeln").hidden = !S.frickeln;
+  $("ton-weg").hidden = false; $("wuerfeln").hidden = !wuerfelbar();
   notiz(`Ton gelesen: ${analyse.dauer.toFixed(1)} s, ${analyse.einsaetze.length} Einsätze`);
   if (!auffrischen) return;
   melden("Ton bereit: das Gewebe folgt ihm.");
   neu();
 }
-$("frickeln").addEventListener("change", () => { S.frickeln = $("frickeln").checked; merken("frickeln", S.frickeln ? "1" : "0"); $("wuerfeln").hidden = !(S.frickeln && S.tonQuelle); tonSetzen(); });
+$("frickeln").addEventListener("change", () => { S.frickeln = $("frickeln").checked; merken("frickeln", S.frickeln ? "1" : "0"); tonartZeigen(); tonSetzen(); });
+for (const [id, k] of [["saeubern", "saeubern"], ["stimm-ablauf", "stimmAblauf"]]) $(id).addEventListener("change", () => { S[k] = $(id).checked; merken(id, S[k] ? "1" : "0"); tonartZeigen(); tonSetzen(); });
 $("wuerfeln").addEventListener("click", () => { S.wurf = (S.wurf % 9999) + 1; merken("wurf", String(S.wurf)); tonSetzen(); });
 $("ton-weg").addEventListener("click", () => { tonEntfernen(); neu(); });
 function tonEntfernen() {
@@ -524,7 +557,7 @@ $("video").addEventListener("click", async () => {
 });
 
 async function mitWebCodecs(cfg, sz) {
-  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=3");
+  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=5");
   // mit Ton: die Tonspur zuerst kodieren (klein), dann gehen die Bilder gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
   let ton = null;
   if (S.ton && $("ton-im-video").checked) {
@@ -599,6 +632,6 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...ablaufKnoepfe, ...quelleKnoepfe, $("text"), $("videodatei"), $("tondatei"), $("ton-weg"), $("frickeln"), $("wuerfeln"), $("video"), $("png")])
+  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...ablaufKnoepfe, ...quelleKnoepfe, $("text"), $("videodatei"), $("tondatei"), $("ton-weg"), $("frickeln"), $("saeubern"), $("stimm-ablauf"), ...tonartKnoepfe, $("wuerfeln"), $("video"), $("png")])
     el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A);
 }

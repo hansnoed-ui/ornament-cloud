@@ -10,7 +10,7 @@
 //               punktierten Achtel, Hall (wie Freeverb)
 //   Mastering – Gleichanteil weg, sanft verdichtet, auf −14 LUFS, Begrenzer mit Vorausschau auf −1 dBFS (seit 18. Oktober 2026, Wunsch: «den Sound
 //               qualitativ optimieren»; vorher tanh-Sättigung auf −0,5 dB, je nach Material −9 bis −16 LUFS und Klicks aus dem Bitcrush)
-import { tonAnalysieren } from "./ton.js?v=3";
+import { tonAnalysieren } from "./ton.js?v=5";
 
 /** wiederholbarer Zufall (mulberry32) */
 function zufall(samen) {
@@ -147,38 +147,49 @@ export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}
   }
   // Hall wie Freeverb (je Seite acht Kammfilter mit Dämpfung, vier Allpässe, rechts gespreizt), 15 ms Vorverzögerung – der frühere mit vier
   // Kammfiltern klang metallisch
-  const m = rate / 44100, vor = Math.round(0.015 * rate), hall = (spreiz) => {
-    const kamm = [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617].map((l) => ({ b: new Float32Array(Math.round((l + spreiz) * m)), i: 0, z: 0 }));
-    const all = [556, 441, 341, 225].map((l) => ({ b: new Float32Array(Math.round((l + spreiz) * m)), i: 0 }));
-    return (x) => {
-      let y = 0;
-      for (const c of kamm) { const o = c.b[c.i]; c.z = o * 0.6 + c.z * 0.4; c.b[c.i] = x + c.z * 0.82; if (++c.i === c.b.length) c.i = 0; y += o; }
-      for (const a of all) { const o = a.b[a.i]; a.b[a.i] = y + o * 0.5; if (++a.i === a.b.length) a.i = 0; y = o - y; }
-      return y;
-    };
-  };
-  const hl = hall(0), hr = hall(23);
+  const vor = Math.round(0.015 * rate), hl = hallFilter(rate, 0), hr = hallFilter(rate, 23);
   { const qL = new Float32Array(N), qR = new Float32Array(N);
     for (let i = vor; i < N; i++) { const x = (L[i - vor] + R[i - vor]) * 0.015; qL[i] = hl(x); qR[i] = hr(x); }
     for (let i = 0; i < N; i++) { L[i] += 0.55 * qL[i]; R[i] += 0.55 * qR[i]; } }
 
-  // Mastering: Gleichanteil weg (Hochpass 25 Hz), sanft verdichten (2:1 ab −20 dB, 10 / 150 ms), auf −14 LUFS (BS.1770, üblich für soziale Medien),
-  // dann ein Begrenzer mit 3 ms Vorausschau auf −1 dBFS statt der früheren tanh-Sättigung (sie verzerrte je nach Material verschieden stark)
-  const hp = Math.exp((-2 * Math.PI * 25) / rate);
+  meistern(L, R, rate);
+  return { kanaele: [L, R], rate, dauer: N / rate, bpm, takte, scheiben: ns, anschlaege };
+}
+
+/** der Hall wie Freeverb (acht Kammfilter mit Dämpfung, vier Allpässe; spreiz: Versatz der Längen für die rechte Seite) – auch für die Stimme */
+export function hallFilter(rate, spreiz = 0, { rueck = 0.82, daempfung = 0.4 } = {}) {
+  const m = rate / 44100;
+  const kamm = [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617].map((l) => ({ b: new Float32Array(Math.round((l + spreiz) * m)), i: 0, z: 0 }));
+  const all = [556, 441, 341, 225].map((l) => ({ b: new Float32Array(Math.round((l + spreiz) * m)), i: 0 }));
+  return (x) => {
+    let y = 0;
+    for (const c of kamm) { const o = c.b[c.i]; c.z = o * (1 - daempfung) + c.z * daempfung; c.b[c.i] = x + c.z * rueck; if (++c.i === c.b.length) c.i = 0; y += o; }
+    for (const a of all) { const o = a.b[a.i]; a.b[a.i] = y + o * 0.5; if (++a.i === a.b.length) a.i = 0; y = o - y; }
+    return y;
+  };
+}
+
+/**
+ * Mastering (an Ort und Stelle): Gleichanteil weg (Hochpass), sanft verdichten (Effektivwert über 30 ms, 10 / 150 ms), auf eine Lautheit (BS.1770;
+ * −14 LUFS ist üblich für soziale Medien), dann ein Begrenzer mit 3 ms Vorausschau auf −1 dBFS statt der früheren tanh-Sättigung (sie verzerrte je
+ * nach Material verschieden stark); am Ende ausgeblendet. Auch für die Stimme (stimme.js).
+ */
+export function meistern(L, R, rate, { lufs = -14, schwelleDb = -20, verhaeltnis = 2, hochpass = 25, ausblenden = 1.5 } = {}) {
+  const hp = Math.exp((-2 * Math.PI * hochpass) / rate), N = L.length;
   for (const K of [L, R]) { let x1 = 0, y1 = 0; for (let i = 0; i < N; i++) { const y = hp * (y1 + K[i] - x1); x1 = K[i]; y1 = y; K[i] = y; } }
-  { const mittel = Math.exp(-1 / (0.03 * rate)), an = Math.exp(-1 / (0.01 * rate)), ab = Math.exp(-1 / (0.15 * rate)), schwelle = Math.pow(10, -20 / 20);
+  { const mittel = Math.exp(-1 / (0.03 * rate)), an = Math.exp(-1 / (0.01 * rate)), ab = Math.exp(-1 / (0.15 * rate)), schwelle = Math.pow(10, schwelleDb / 20);
     let quadrat = 0, g = 1;   // Effektivwert über 30 ms (eine Spitzenerkennung zuckte bei jeder Bitcrush-Stufe und klickte), Verstärkung geglättet
     for (let i = 0; i < N; i++) {
       quadrat = mittel * quadrat + (1 - mittel) * 0.5 * (L[i] * L[i] + R[i] * R[i]);
-      const pegel = Math.sqrt(quadrat), ziel = pegel > schwelle ? Math.pow(pegel / schwelle, 1 / 2 - 1) : 1;
+      const pegel = Math.sqrt(quadrat), ziel = pegel > schwelle ? Math.pow(pegel / schwelle, 1 / verhaeltnis - 1) : 1;
       g = ziel < g ? an * g + (1 - an) * ziel : ab * g + (1 - ab) * ziel;
       L[i] *= g; R[i] *= g;
     } }
-  const lauf = lautheit(L, R, rate), auf = Number.isFinite(lauf) ? Math.pow(10, (-14 - lauf) / 20) : 1;
+  const lauf = lautheit(L, R, rate), auf = Number.isFinite(lauf) ? Math.pow(10, (lufs - lauf) / 20) : 1;
   { const decke = Math.pow(10, -1 / 20), voraus = Math.round(0.003 * rate), frei = Math.exp(-1 / (0.08 * rate)), angriff = 1 - Math.exp(-1 / (0.001 * rate)), spitze = new Float32Array(N);
     for (let i = 0; i < N; i++) spitze[i] = Math.max(Math.abs(L[i]), Math.abs(R[i])) * auf;
     let g = 1;
-    const aus = Math.round(1.5 * rate);
+    const aus = Math.max(1, Math.round(ausblenden * rate));
     for (let i = 0; i < N; i++) {
       let p = 0; for (let k = i; k < Math.min(N, i + voraus); k += 4) p = Math.max(p, spitze[k]);
       const ziel = p > decke ? decke / p : 1;
@@ -186,7 +197,6 @@ export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}
       const h = Math.min(1, (N - i) / aus);
       L[i] = Math.max(-decke, Math.min(decke, L[i] * auf * g)) * h; R[i] = Math.max(-decke, Math.min(decke, R[i] * auf * g)) * h;
     } }
-  return { kanaele: [L, R], rate, dauer: N / rate, bpm, takte, scheiben: ns, anschlaege };
 }
 
 /** Lautheit nach BS.1770 (K-Filter, Blöcke von 400 ms, absolutes und relatives Gate) in LUFS */

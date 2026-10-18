@@ -218,17 +218,28 @@
         </li>
         <li>
           <h2>Ton</h2>
-          <p>Eine Audiodatei (MP3, WAV, M4A – auch ein kurzes Sample) bewegt das Gewebe und klingt in der Vorschau und im Video mit; der Film dauert dann so lange wie der Ton. Ohne Haken bei «Ton an» oder ohne Datei bleibt es stumm, und das Gewebe folgt einem ruhigen eigenen Takt.</p>
+          <p>Eine Audiodatei (Musik oder eine Stimme; MP3, WAV, M4A – auch ein kurzes Sample) bewegt das Gewebe und klingt in der Vorschau und im Video mit; der Film dauert dann so lange wie der Ton. Ohne Haken bei «Ton an» oder ohne Datei bleibt es stumm, und das Gewebe folgt einem ruhigen eigenen Takt.</p>
           <div class="leiste">
             <label class="knopf klein dateiknopf">Audiodatei wählen<input type="file" id="tondatei" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,video/mp4"></label>
             <button class="knopf klein" type="button" id="ton-weg" hidden>Ton entfernen</button>
             <label class="haken"><input type="checkbox" id="ton-im-video" checked> Ton an</label>
           </div>
-          <div class="leiste">
-            <label class="haken"><input type="checkbox" id="frickeln"> Verfrickeln</label>
-            <button class="knopf klein" type="button" id="wuerfeln" hidden>Neu würfeln</button>
+          <div class="segment" role="group" aria-label="Art der Audiodatei">
+            <button type="button" data-tonart="musik">Musik</button>
+            <button type="button" data-tonart="stimme">Stimme</button>
           </div>
-          <p class="ki-hinweis">Verfrickeln zerschneidet die Musik an ihren Einsätzen und baut daraus ein neues Stück wie ein Modularsynthesizer: Schnipsel im Raster, rückwärts, höher und tiefer, zerhackt, Wirbel, Filter, Echo und Hall. Jeder Wurf klingt anders und bleibt wiederholbar.</p>
+          <div class="teil" id="musik-teil">
+            <div class="leiste"><label class="haken"><input type="checkbox" id="frickeln"> Verfrickeln</label></div>
+            <p class="ki-hinweis">Verfrickeln zerschneidet die Musik an ihren Einsätzen und baut daraus ein neues Stück wie ein Modularsynthesizer: Schnipsel im Raster, rückwärts, höher und tiefer, zerhackt, Wirbel, Filter, Echo und Hall. Jeder Wurf klingt anders und bleibt wiederholbar.</p>
+          </div>
+          <div class="teil" id="stimme-teil" hidden>
+            <div class="leiste">
+              <label class="haken"><input type="checkbox" id="saeubern" checked> Säubern und klären</label>
+              <label class="haken"><input type="checkbox" id="stimm-ablauf" checked> Scratch → Stimme → Gefrickel</label>
+            </div>
+            <p class="ki-hinweis">Für Sprachaufnahmen: Säubern nimmt Rauschen, Brummen und Rumpeln weg, klärt die Stimme (Präsenz, Luft, weniger Zischlaute), gleicht sie aus und gibt ihr einen leichten Raum. Der Ablauf macht daraus ein Stück, das verständlich und zugleich dekonstruiert ist: zuerst 3–4 Sekunden Scratching auf dem ersten Wort, dann rund 10 Sekunden die klare Stimme mit zwei, drei Hüpfern, am Ende 3–4 Sekunden Gefrickel.</p>
+          </div>
+          <div class="leiste"><button class="knopf klein" type="button" id="wuerfeln" hidden>Neu würfeln</button></div>
           <p class="info" id="ton-info"></p>
           <audio id="tonspur" preload="auto" hidden></audio>
         </li>
@@ -312,7 +323,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=3"></script>
+  <script type="module" src="app.js?v=5"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

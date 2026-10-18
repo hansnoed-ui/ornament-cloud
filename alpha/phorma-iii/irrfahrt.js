@@ -11,13 +11,13 @@
 //   Schriftzug) oder 03 Stille (der Faden zieht sich in seinen Kopf zusammen).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich, kamera } from "./gemeinsam.js?v=3";
-import { phase } from "./ablauf.js?v=3";
-import { gewebeKurven } from "./kurven.js?v=3";
-import { weichzeichnen } from "./analyse.js?v=3";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=3";
-import { RAUSCHEN } from "./gewebe.js?v=3";
-import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=3";
+import { anteil, weich } from "./gemeinsam.js?v=5";
+import { phase } from "./ablauf.js?v=5";
+import { gewebeKurven } from "./kurven.js?v=5";
+import { weichzeichnen } from "./analyse.js?v=5";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=5";
+import { RAUSCHEN } from "./gewebe.js?v=5";
+import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=5";
 
 const VOR = 0.4;
 
@@ -142,7 +142,12 @@ export function irrfahrt(g, teil) {
     uniforms: { uDreh: U.uDreh, uLage: U.uLage, uZeit: U.uZeit, uZeichnen: { value: 0 }, uEcho: { value: 0 }, uWuerfel: { value: 1 }, uZittern: { value: 0 } } });
   const szene = new THREE.Scene();
   for (const o of [new THREE.LineSegments(wGeo, wMat), new THREE.LineSegments(fGeo, fMat), new THREE.Points(pGeo, pMat)]) { o.frustumCulled = false; szene.add(o); }
-  const ein = T.einsaetze.map((e) => e.t), groesse = new THREE.Vector2(), kam = kamera(B, H), drehM = new THREE.Matrix4(), e3 = new THREE.Euler(), q0 = new THREE.Quaternion(), q1 = new THREE.Quaternion();
+  // ein langes Objektiv (15° statt 35°, die Kamera entsprechend weiter weg): die Bildebene z = 0 füllt das Bild wie im Gewebe, aber nahe Ecken
+  // werden kaum grösser als ferne – mit 35° wirkte ein Würfel, dessen Ecke zur Kamera zeigt, verzerrt (Rückmeldung: «das erste Mal, wenn drei
+  // Würfel zu sehen sind, ist der mittlere davon noch verzogen»)
+  const kam = new THREE.PerspectiveCamera(15, B / H, 0.1, 100);
+  kam.position.set(0, 0, 1 / Math.tan(THREE.MathUtils.degToRad(7.5)));
+  const ein = T.einsaetze.map((e) => e.t), groesse = new THREE.Vector2(), drehM = new THREE.Matrix4(), e3 = new THREE.Euler(), q0 = new THREE.Quaternion(), q1 = new THREE.Quaternion();
   const helle = 3.4 / S;                                                     // aufeinander ein heller Strich, aufgequollen rauchig
 
   return {
