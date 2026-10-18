@@ -105,7 +105,8 @@
     .ausschnitt { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
     .ausschnitt-kopf { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; font-size: 0.92rem; }
     .ausschnitt-kopf output { color: var(--muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
-    #ausschnitt-bild { display: block; width: 100%; height: 64px; border-radius: 6px; cursor: ew-resize; touch-action: none; }
+    #ausschnitt-bild, #ausschnitt-film, #video-streifen { display: block; width: 100%; height: 64px; border-radius: 6px; cursor: ew-resize; touch-action: none; }
+    #ausschnitt-film, #video-streifen { height: 56px; background: #000; }
     .ausschnitt-regler { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; font-size: 0.88rem; color: var(--muted); }
     .ausschnitt-regler input { width: 100%; min-width: 0; accent-color: var(--accent); }
     .textfeld { display: grid; gap: 6px; }
@@ -199,7 +200,15 @@
               <img id="video-bild" class="video-bild" alt="" hidden>
             </div>
             <p class="info" id="video-info"></p>
-            <p class="ki-hinweis">Ein Standbild des Videos ist Anfang und Schluss, sein Ton wird die Tonspur (ausser du wählst unten eine andere Audiodatei). Im Gewebe holt jeder Schnitt die Linien eines neuen Bildes aus dem Video.</p>
+            <div class="ausschnitt" id="video-ausschnitt" hidden>
+              <div class="ausschnitt-kopf"><span>Ausschnitt des Videos</span><output id="video-ausschnitt-info"></output></div>
+              <canvas id="video-streifen" aria-hidden="true"></canvas>
+              <p class="ki-hinweis">Mit einer eigenen Audiodatei wählst du hier, welcher Teil des Videos läuft: im Filmstreifen ziehen oder tippen, oder der Regler «ab». Die Länge folgt dem Ton (kommt der Ton aus dem Video, schneidet unten «Ausschnitt schneiden» Bild und Ton zusammen).</p>
+              <div class="ausschnitt-regler">
+                <label for="video-von">ab</label><input type="range" id="video-von" min="0" max="1" step="0.1" value="0">
+              </div>
+            </div>
+            <p class="ki-hinweis">Ein Standbild des Videos ist Anfang und Schluss, sein Ton wird die Tonspur (ausser du wählst unten eine andere Audiodatei). Im Gewebe holt jeder Schnitt die Linien eines neuen Bildes aus dem Video; mit dem Effekt «Video» ist das Video selbst das Bild.</p>
           </div>
           <div class="teil" id="ton-teil" hidden>
             <p class="ki-hinweis">Ohne Bild: die Musik allein macht das Bild – aus Ringen und Linien wachsen bei jedem Schlag Flächen wie zerknitterte Seide. Wähle unten unter «Ton» eine Audiodatei.</p>
@@ -220,6 +229,7 @@
           <div class="ablaeufe" role="group" aria-label="Effekt wählen">
             <button type="button" data-wahl="gewebe" aria-pressed="true"><b>Gewebe</b><small>Die Umrisse werden zu Flächen aus feinen Linien wie zerknitterte Seide, schwarz auf Papier; jeder kräftige Schlag schneidet auf ein neues Bild</small></button>
             <button type="button" data-wahl="irrfahrt" aria-pressed="false"><b>Irrfahrt</b><small>Ein leuchtender Faden irrt durch einen Würfel aus Licht und quillt mit der Musik zu Rauch auf; der Bass sprengt ihn, die Höhen werfen Funken, jeder Schlag wirft den Würfel herum</small></button>
+            <button type="button" data-wahl="video" aria-pressed="false"><b>Video</b><small>Das Video selbst ist das Bild, bildgenau und synchron zum Ton – oben unter «Video» wählen; Scratching, Cracks und Gefrickel im Bild folgen</small></button>
           </div>
         </li>
         <li>
@@ -232,6 +242,7 @@
           </div>
           <div class="ausschnitt" id="ausschnitt" hidden>
             <div class="ausschnitt-kopf"><span>Ausschnitt schneiden</span><output id="ausschnitt-info"></output></div>
+            <canvas id="ausschnitt-film" aria-hidden="true" hidden></canvas>
             <canvas id="ausschnitt-bild" aria-hidden="true"></canvas>
             <p class="ki-hinweis">Zum Schneiden in der Wellenform ziehen oder tippen, oder die Regler «ab» und «Länge». Ohne Wahl gilt die ganze Datei (bei Stimme mit Ablauf rund 10 Sekunden ab dem ersten Wort).</p>
             <div class="ausschnitt-regler">
@@ -343,7 +354,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=7"></script>
+  <script type="module" src="app.js?v=8"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

@@ -11,13 +11,13 @@
 //   Schriftzug) oder 03 Stille (der Faden zieht sich in seinen Kopf zusammen).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich } from "./gemeinsam.js?v=7";
-import { phase } from "./ablauf.js?v=7";
-import { gewebeKurven } from "./kurven.js?v=7";
-import { weichzeichnen } from "./analyse.js?v=7";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=7";
-import { RAUSCHEN } from "./gewebe.js?v=7";
-import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=7";
+import { anteil, weich } from "./gemeinsam.js?v=8";
+import { phase } from "./ablauf.js?v=8";
+import { gewebeKurven } from "./kurven.js?v=8";
+import { weichzeichnen } from "./analyse.js?v=8";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=8";
+import { RAUSCHEN } from "./gewebe.js?v=8";
+import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=8";
 
 const VOR = 0.4;
 
@@ -72,9 +72,12 @@ const WUERFEL_VERTEX = /* glsl */ `
     // ohne Echos: auch genau konzentrische, grössere Kopien sahen in der Perspektive wie ein zweiter, schiefer Würfel aus (Rückmeldung: «die Würfel
     // sind immer noch verzogen»)
     vec3 p = mix(aA, aB, aT.x * uZeichnen);
-    vec4 c = projectionMatrix * modelViewMatrix * vec4(uDreh * p + uLage.xyz, 1.0); c.xy *= uLage.w;
+    vec3 r = uDreh * p;
+    vec4 c = projectionMatrix * modelViewMatrix * vec4(r + uLage.xyz, 1.0); c.xy *= uLage.w;
     gl_Position = c;
-    vA = uWuerfel * 0.85;
+    // vorn hell, hinten dunkel (Licht im Nebel): ohne Tiefe ist ein Drahtwürfel eine Necker-Täuschung – beim Drehen kippt für das Auge, welche
+    // Seite vorn ist, und er scheint sich zu verbiegen (Rückmeldung: «die Würfel ein für alle Mal stabil … sie verziehen sich immer noch ständig»)
+    vA = uWuerfel * 0.9 * mix(0.05, 1.0, pow(clamp(r.z / 0.866 * 0.5 + 0.5, 0.0, 1.0), 1.3));
   }`;
 const FRAGMENT = /* glsl */ `varying float vA; void main() { gl_FragColor = vec4(vec3(vA), 1.0); }`;
 const FUNKE = /* glsl */ `varying float vA; void main() { vec2 d = gl_PointCoord - 0.5; float m = smoothstep(0.5, 0.0, length(d)); gl_FragColor = vec4(vec3(vA * m), 1.0); }`;
@@ -212,7 +215,7 @@ export function irrfahrt(g, teil) {
       // Negativ: bei jedem Schnitt der Musik und bei Zuständen, die Weiss auf Schwarz gewürfelt haben (im Gewebe die Nacht), zwei bis drei Bilder lang
       const umkehr = !logo && j && ((zs.nacht && film - zs.t0 < 0.1) || T.schnitte.some((x) => film >= x && film < x + 0.07)) ? 1 : 0;
       // Belichtung und Bloom wie in der ersten Fassung (ohne die weiche Stauchung 1 − e^(−k·x), die mit «noch wilder» kam)
-      return { aktiv: 0.7 * (1 - ruhig) + 0.15, bloom: (0.3 + 0.6 * stoss) * (1 - 0.7 * ruhig), radius: 0.35, saum: 0.0006 + 0.0015 * stoss * (1 - ruhig), ende: 0, umkehr, danach };
+      return { aktiv: 0.7 * (1 - ruhig) + 0.15, bloom: (0.3 + 0.6 * stoss) * (1 - 0.7 * ruhig), radius: 0.35, saum: 0, ende: 0, umkehr, danach };
     },
     vorab: { szenen: [[szene, kam], [wSzene, kam]], materialien: [] },
     zaehler(tau) {

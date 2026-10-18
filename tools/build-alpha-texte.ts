@@ -15,6 +15,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { welleUndMenu } from "./kopfleiste.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 
@@ -242,10 +243,13 @@ export function seite(r: Raster, md: string, prompt?: string, vorschlag?: string
 <body>
   <header class="site-header">
     <div class="wrap">
-      <nav class="seitenweg" aria-label="Ornament Cloud">
-        <a href="../../" aria-current="true">Ornament Cloud</a>
-        <a href="../drittes-rad/">Das Dritte Rad</a>
-      </nav>
+      <div class="topbar">
+        <nav class="seitenweg" aria-label="Ornament Cloud">
+          <a href="../../" aria-current="true">Ornament Cloud</a>
+          <a href="../drittes-rad/">Das Dritte Rad</a>
+        </nav>
+${welleUndMenu("../../", { einzug: "        " })}
+      </div>
       <h1>${esc(r.titel)}</h1>
       <p class="lead">${esc(r.untertitel)}</p>
       <p class="at-arbeit">Zurzeit in Arbeit</p>
@@ -267,6 +271,7 @@ ${vorschlag === undefined ? "" : vorschlagBlock(vorschlag)}  </main>
     </div>
   </footer>
 ${prompt === undefined ? "" : PROMPT_SKRIPT}  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script src="../../icons.js?v=14" defer></script>
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>
 </html>

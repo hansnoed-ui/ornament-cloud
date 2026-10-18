@@ -8,12 +8,13 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { ziel, quadMaterial } from "./gemeinsam.js?v=7";
-import { FPS, kette, laufend } from "./ablauf.js?v=7";
-import { gewebe } from "./gewebe.js?v=7";
-import { irrfahrt } from "./irrfahrt.js?v=7";
+import { ziel, quadMaterial } from "./gemeinsam.js?v=8";
+import { FPS, kette, laufend } from "./ablauf.js?v=8";
+import { gewebe } from "./gewebe.js?v=8";
+import { irrfahrt } from "./irrfahrt.js?v=8";
+import { video } from "./video.js?v=8";
 
-const FABRIK = { gewebe, irrfahrt };
+const FABRIK = { gewebe, irrfahrt, video };
 
 const SUMME = /* glsl */ `uniform sampler2D tQuelle; uniform float uGewicht; varying vec2 vUv; void main() { gl_FragColor = vec4(texture2D(tQuelle, vUv).rgb * uGewicht, 1.0); }`;
 const AUSGABE = /* glsl */ `
@@ -36,11 +37,11 @@ const AUSGABE = /* glsl */ `
   }`;
 
 /**
- * Die Bühne für ein Bild (Canvas in Filmgrösse B × H) und seine Analyse; ablauf: "gewebe" | "irrfahrt". optionen: grob (Telefon), test (klein), quelle ("foto" | "text" | "video" |
+ * Die Bühne für ein Bild (Canvas in Filmgrösse B × H) und seine Analyse; ablauf: "gewebe" | "irrfahrt" | "video". optionen: grob (Telefon), test (klein), quelle ("foto" | "text" | "video" |
  * "ton"), ton (Analyse einer Tonspur, ton.js, oder null), laenge (Dauer des Gewebes nach der Tonspur), signet (mit Logo am Schluss), saetze (Bilder
- * aus dem Video). bild(zeit, t, w, h, { proben, verschluss }) → Leinwand; zaehler(zeit, t) → Text für die Beschriftung; entsorgen().
+ * aus dem Video), film (die Filmspur für den Effekt Video: { bild(t, { vorschau }), karte(t), index(t), n }). bild(zeit, t, w, h, { proben, verschluss, vorschau }) → Leinwand; zaehler(zeit, t) → Text für die Beschriftung; entsorgen().
  */
-export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "foto", ton = null, laenge = null, signet = false, saetze = null, onVerloren = null, spur = () => {} } = {}) {
+export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "foto", ton = null, laenge = null, signet = false, saetze = null, film = null, onVerloren = null, spur = () => {} } = {}) {
   const B = foto.width, H = foto.height;
   const canvas = typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(B, H);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
@@ -52,7 +53,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
   const fotoTex = new THREE.CanvasTexture(foto);
   fotoTex.colorSpace = THREE.SRGBColorSpace; fotoTex.anisotropy = 4;
   const quad = new FullScreenQuad();
-  const g = { THREE, renderer, quad, foto, fotoTex, A, B, H, grob, test, quelle, ton, saetze, signet,
+  const g = { THREE, renderer, quad, foto, fotoTex, A, B, H, grob, test, quelle, ton, saetze, signet, film,
     pass(material, rt) { renderer.setRenderTarget(rt); quad.material = material; quad.render(renderer); },
     loeschen(rt, farbe = 0x000000) { renderer.setRenderTarget(rt); renderer.setClearColor(farbe, 1); renderer.clear(true, true, true); } };
   const K = kette({ art: ablauf, laenge, signet }), art = K.teile[0].art;
@@ -117,7 +118,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
         floatZiel: hat("EXT_color_buffer_float"), floatMischen: hat("EXT_float_blend"), floatLinear: hat("OES_texture_float_linear"), parallel: hat("KHR_parallel_shader_compile") };
     },
     /** vorschau: ohne Bedeutung im Gewebe (keine Simulation, die aufholen müsste) */
-    bild(zeit, t, nw = B, nh = H, { proben = 1, verschluss = 0.5 } = {}) {
+    bild(zeit, t, nw = B, nh = H, { proben = 1, verschluss = 0.5, vorschau = false } = {}) {
       groesse(Math.max(2, Math.round(nw)), Math.max(2, Math.round(nh)));
       g.loeschen(rtSumme);
       // die Proben über den Verschluss; nur die derselben Lage wie das Bild selbst (springt der Effekt mitten im Verschluss, lägen sonst zwei Bilder
@@ -126,7 +127,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
       if (effekt.lage && proben > 1) { const lage = (ts) => effekt.lage(laufend(zeit, ts)[0].lokal), jetzt = lage(t); zeiten = zeiten.filter((ts) => lage(ts) === jetzt); }
       let info = null;
       for (let k = 0; k < zeiten.length; k++) {
-        info = probe(zeit, zeiten[k], { scharf: k === zeiten.length - 1, gewicht: zeiten.length });
+        info = probe(zeit, zeiten[k], { scharf: k === zeiten.length - 1, gewicht: zeiten.length, vorschau });
         summe.uniforms.tQuelle.value = rtMix.texture; summe.uniforms.uGewicht.value = 1 / zeiten.length;
         g.pass(summe, rtSumme);
       }
@@ -139,6 +140,8 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
       return canvas;
     },
     zaehler(zeit, t) { const [L] = laufend(zeit, t); return effekt.zaehler?.(L.lokal) ?? ""; },
+    /** die Lage des Effekts zur Filmzeit t (wechselt sie, springt das Bild); ohne Lagen null */
+    lage(zeit, t) { const [L] = laufend(zeit, t); return effekt.lage ? effekt.lage(L.lokal) : null; },
     entsorgen() {
       entsorgt = true;
       effekt.entsorgen();

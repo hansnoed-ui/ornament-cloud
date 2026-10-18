@@ -48,49 +48,39 @@ async function startseite(opts = {}, url = "/") {
 const box = (loc) => loc.evaluate((e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height, r: r.right, b: r.bottom }; });
 const sich = (a, b) => a.x < b.r - 0.5 && b.x < a.r - 0.5 && a.y < b.b - 0.5 && b.y < a.b - 0.5;     // Rechtecke überlappen
 
-// ---------- Startseite: Lead und drei Kästen ----------
-// Seit 10. Oktober 2026 (Wunsch von Christian): die Welle direkt unter den beiden Hauptlinks (Handy: Hauptlinks, Welle, die vier Kästchen; Computer: Kästchen rechts daneben, Welle unter beiden); dann OMNA COLOR.
-// Der Lead «Dreh- und Wendepunkte für Theorie und Praxis» (9. bis 10. Oktober 2026) ist weg.
-await check("Startseite (Computer): kein sichtbarer Titel und kein Lead; Hauptlinks und Menü nebeneinander, darunter die Welle, dann OMNA COLOR; kein Video, keine Karte", async () => {
-  const { ctx, page, errors } = await startseite({ viewport: { width: 1200, height: 900 }, reducedMotion: "reduce" });
-  assert.equal(await page.locator("h1").textContent(), "Ornament Cloud");
-  assert.equal(await page.locator("h1").evaluate((e) => e.getBoundingClientRect().width), 1, "der Titel ist nur für Vorlesegeräte da");
-  assert.equal(await page.locator(".lead").count(), 0, "kein Lead");
-  assert.equal(await page.getByText("Dreh- und Wendepunkte").count(), 0);
-  assert.equal(await page.locator("main .card, main article").count(), 0, "kein Beitrag, keine Karte");
-  assert.equal(await page.locator("video:not(#start video), .erklaervideo, .kaesten").count(), 0, "kein Video, keine Kästen");
-  assert.deepEqual(await page.locator("main > *").evaluateAll((els) => els.map((e) => e.className)), ["omna"], "main enthält OMNA COLOR");
-  const links = await box(page.locator(".site-header .seitenweg")), welle = await box(page.locator(".site-header .divider")), menu = await box(page.locator(".site-header .menu")), rahmen = await box(page.locator(".omna iframe"));
-  assert.ok(links.b <= welle.y + 1 && menu.b <= welle.y + 1 && welle.b <= rahmen.y + 1, "Computer: Hauptlinks und Menü nebeneinander, darunter die Welle, dann OMNA COLOR");
-  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+// ---------- Startseite: ein zufälliger Zettel ----------
+// Seit 18. Oktober 2026 (Wunsch: «nach diesem coolen Intro passt für mich die Startseite mit dem OMNA-COLOR-Rad nicht mehr. Deshalb möchte ich die Seite mit
+// dem Zettelkasten starten»; Entscheid: ein zufälliger Zettel): ohne Intro geht es sofort weiter, mit Intro an dessen Ende. OMNA COLOR (10. bis 18. Oktober
+// 2026 hier) ist ein Beitrag auf «Web».
+await check("Startseite: führt sofort zu einem zufälligen Zettel aus «Zu seiner Zeit» (jedes Mal ein anderer), dort das Menü mit «Zettel»; zurück führt nicht auf die Startseite", async () => {
+  const ziele = new Set();
+  for (let i = 0; i < 6; i++) {
+    const { ctx, page, errors } = await startseite({ viewport: { width: 1200, height: 900 }, reducedMotion: "reduce" });
+    await page.waitForURL(/\/zu-seiner-zeit\/strophe\/[^/]+\/$/);
+    ziele.add(new URL(page.url()).pathname);
+    assert.ok(await page.locator(".zsz-kopf").isVisible() && await page.locator(".menu").isVisible(), "der Zettel mit Kopf und Menü");
+    assert.equal(await page.getByRole("navigation", { name: "Hauptmenü" }).getByRole("link", { name: "Zettel" }).getAttribute("aria-current"), "true");
+    if (i === 0) { await page.goBack(); assert.equal(page.url(), "about:blank", "location.replace: zurück führt nicht auf die Startseite (sie leitete gleich wieder weiter)"); }
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+  assert.ok(ziele.size >= 2, `verschiedene Zettel (${[...ziele].join(", ")})`);
+});
+
+await check("Startseite ohne Skript: kein Zettel von selbst, ein Hinweis mit den Wegen in den Zettelkasten, Menü und Rückkanal", async () => {
+  const { ctx, page, errors } = await startseite({ viewport: { width: 1200, height: 900 }, javaScriptEnabled: false });
+  assert.equal(new URL(page.url()).pathname, "/");
+  assert.deepEqual(await page.locator("main a").evaluateAll((as) => as.map((a) => a.getAttribute("href"))), ["zu-seiner-zeit/zufall/", "zu-seiner-zeit/"]);
+  assert.ok(await page.locator(".menu").isVisible() && await page.locator(".rueckkanal").isVisible());
+  assert.equal(await page.locator("iframe").count(), 0, "kein OMNA COLOR mehr");
   assert.deepEqual(errors, []);
   await ctx.close();
 });
 
-await check("Startseite: OMNA COLOR unter dem Menü spielbar; der Rahmen wächst ohne eigenen Bildlauf, und nach dem Drehen blättert die Seite zur gezogenen Übung (Computer, Handy)", async () => {
-  for (const opts of [{ viewport: { width: 1200, height: 800 } }, { ...devices["Pixel 7"] }]) {
-    const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
-    await page.waitForFunction(() => { const f = document.querySelector(".omna iframe"), d = f?.contentDocument; return d?.querySelectorAll("#outer path.seg").length > 0 && f.style.height; }, null, { timeout: 15000 });
-    const frame = page.frames().find((f) => f.url().endsWith("/alpha/omna-color/"));
-    assert.ok(await frame.evaluate(() => document.documentElement.classList.contains("eingebettet")), "OMNA COLOR erkennt die Einbettung");
-    const innen = () => frame.evaluate(() => document.body.getBoundingClientRect().height - innerHeight);
-    assert.ok(Math.abs(await innen()) <= 2, "der Rahmen ist so hoch wie das Spiel");
-    await frame.locator("#go").scrollIntoViewIfNeeded();
-    await frame.locator("#go").click();
-    await frame.locator("#card").waitFor({ state: "visible", timeout: 8000 });
-    await page.waitForFunction(() => { const f = document.querySelector(".omna iframe"), k = f.contentDocument.getElementById("card"); const oben = f.getBoundingClientRect().top + k.getBoundingClientRect().top; return oben >= -1 && oben < innerHeight - 80; }, null, { timeout: 5000 });
-    const titel = await frame.locator("#card h2").evaluate((e) => { const f = parent.document.querySelector(".omna iframe"); return [e.textContent.trim(), f.getBoundingClientRect().top + e.getBoundingClientRect().top]; });
-    assert.ok(titel[0].length > 0 && titel[1] >= 0 && titel[1] < page.viewportSize().height, `die gezogene Übung steht im Fenster (${Math.round(titel[1])})`);
-    assert.ok(Math.abs(await innen()) <= 2, "auch mit der Übung kein eigener Bildlauf");
-    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "kein seitliches Wischen");
-    assert.deepEqual(errors, []);
-    await ctx.close();
-  }
-});
-
-await check("Startseite (Handy): Hauptlinks, darunter die Welle, darunter die vier Kästchen des Menüs in einer Reihe; kein seitliches Wischen", async () => {
+await check("Startseite (Handy): der Zettel mit Hauptlinks, darunter die Welle, darunter die vier Kästchen des Menüs in einer Reihe; kein seitliches Wischen", async () => {
   for (const opts of [{ ...devices["Pixel 7"] }, { ...devices["iPhone 13"] }, { viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true }]) {
     const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
+    await page.waitForURL(/\/zu-seiner-zeit\/strophe\//);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     const m = await page.locator(".menu-item").evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y)]; }));
     assert.equal(new Set(m.map((p) => p[1])).size, 1, "eine Reihe");
@@ -102,9 +92,9 @@ await check("Startseite (Handy): Hauptlinks, darunter die Welle, darunter die vi
   }
 });
 
-await check("Startseite: Rückkanal in der Spalte der Seite, bündig mit dem Fuss, nie am Fensterrand (seit 5. Oktober 2026)", async () => {
+await check("Rückkanal in der Spalte der Seite, bündig mit dem Fuss, nie am Fensterrand (seit 5. Oktober 2026; seit 18. Oktober 2026 hier auf «Apps» geprüft, die Startseite führt weiter)", async () => {
   for (const opts of [{ viewport: { width: 1366, height: 657 } }, { ...devices["iPhone 13"] }, { viewport: { width: 1920, height: 1080 } }]) {
-    const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
+    const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" }, "/apps/");
     const kasten = await box(page.locator(".rueckkanal")), fuss = await box(page.locator(".site-footer p").first());
     const breite = page.viewportSize().width;
     assert.ok(kasten.x >= 19.5 && kasten.r <= breite - 19.5, `Rückkanal mit Rand (${kasten.x}–${kasten.r} von ${breite})`);
@@ -117,7 +107,7 @@ await check("Startseite: Rückkanal in der Spalte der Seite, bündig mit dem Fus
 // ---------- Menü ----------
 await check("Menü: vier Kästchen (Apps, Prompts, Web, Zettel) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
   const ctx = await browser.newContext();
-  for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/"]) {
+  for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/zu-seiner-zeit/", "/zu-seiner-zeit/en/strophe/17-die-person/", "/alpha/sketchory/", "/alpha/omna-color/"]) {
     for (const w of [320, 360, 390, 412, 600, 768, 1024, 1280]) {
       const page = await ctx.newPage();
       await page.addInitScript(() => { try { sessionStorage.setItem("start-animation", "1"); } catch {} });
@@ -140,14 +130,15 @@ await check("Menü: vier Kästchen (Apps, Prompts, Web, Zettel) mit Symbol auf a
       const nav = await box(page.locator(".seitenweg"));
       for (const [i, b] of bs.entries()) assert.ok(!sich(nav, b), `${pfad} ${w}: Navigation und Kästchen ${i + 1} überlappen`);
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${pfad} ${w}: seitliches Wischen`);
-      const wrap = await box(page.locator(".site-header .wrap"));
-      for (const [i, b] of bs.entries()) assert.ok(b.x >= wrap.x - 1 && b.r <= wrap.r + 1, `${pfad} ${w}: Kästchen ${i + 1} liegt innerhalb der Seite`);
-      const welle = await box(page.locator(".site-header .divider"));
+      const leiste = await box(page.locator(".topbar"));
+      for (const [i, b] of bs.entries()) assert.ok(b.x >= leiste.x - 1 && b.r <= leiste.r + 1 && b.r <= w, `${pfad} ${w}: Kästchen ${i + 1} liegt innerhalb der Seite`);
+      // das Dritte Rad ohne Welle (es bleibt ohne Linie unter den Hauptlinks); sonst die Welle unter den Hauptlinks
+      const welle = pfad.includes("drittes-rad") ? { y: nav.b + 10, b: nav.b + 10 } : await box(page.locator(".topbar .divider"));
       assert.ok(nav.b <= welle.y + 1, `${pfad} ${w}: die Welle steht unter den Hauptlinks`);
       if (w <= 760) {
-        assert.ok(welle.b <= bs[0].y + 1 && Math.abs(bs[0].x - nav.x) <= 1, `${pfad} ${w}: Handy: unter der Welle, linksbündig mit der Navigation`);
+        assert.ok(nav.b <= bs[0].y + 1 && Math.abs(bs[0].x - nav.x) <= 1 && (pfad.includes("drittes-rad") || welle.b <= bs[0].y + 1), `${pfad} ${w}: Handy: unter der Welle, linksbündig mit der Navigation`);
       } else {
-        assert.ok(bs[0].b <= welle.y + 1 && Math.abs(bs[3].r - wrap.r + 20) <= 2, `${pfad} ${w}: Computer: rechts oben neben den Hauptlinks, die Welle unter beiden (${bs[3].r} gegen ${wrap.r - 20})`);
+        assert.ok(bs[0].b <= welle.y + 1 && Math.abs(bs[3].r - leiste.r) <= 2, `${pfad} ${w}: Computer: rechts oben neben den Hauptlinks, die Welle unter beiden (${bs[3].r} gegen ${leiste.r})`);
       }
       await page.close();
     }
@@ -162,7 +153,7 @@ await check("Menü: das Kästchen der Seite hat einen kräftigeren Rand (aria-cu
     const c = getComputedStyle(e);
     return { rand: c.borderTopColor, schatten: c.boxShadow, schrift: c.color, aktiv: e.getAttribute("aria-current") };
   });
-  for (const [pfad, aktiv, art] of [["/apps/", "Apps", "page"], ["/masterprompts/", "Prompts", "page"], ["/web/", "Web", "page"], ["/portfolio/nebeneinander-nacheinander/", "Apps", "true"], ["/", null, null], ["/news/", null, null]]) {
+  for (const [pfad, aktiv, art] of [["/apps/", "Apps", "page"], ["/masterprompts/", "Prompts", "page"], ["/web/", "Web", "page"], ["/portfolio/nebeneinander-nacheinander/", "Apps", "true"], ["/zu-seiner-zeit/", "Zettel", "page"], ["/zu-seiner-zeit/strophe/17-die-person/", "Zettel", "true"], ["/alpha/omna-color/", "Web", "true"], ["/alpha/sketchory/", null, null], ["/news/", null, null]]) {
     await page.goto(origin + pfad);
     for (const name of ["Apps", "Prompts", "Web", "Zettel"]) {
       const s = await rand(name);
@@ -198,7 +189,7 @@ await check("Menü: das Kästchen der Seite hat einen kräftigeren Rand (aria-cu
 await check("Menü: serifenlose Schrift der Seite in mittlerem Gewicht (Wunsch vom 2. Oktober 2026: moderner als die frühere Serife); die Überschriften bleiben in der Serife", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 } });
   const page = await ctx.newPage();
-  for (const pfad of ["/", "/apps/", "/masterprompts/", "/web/", "/news/", "/portfolio/nebeneinander-nacheinander/"]) {
+  for (const pfad of ["/alpha/sketchory/", "/apps/", "/masterprompts/", "/web/", "/news/", "/portfolio/nebeneinander-nacheinander/"]) {
     await page.goto(origin + pfad);
     const s = await page.evaluate(() => {
       const st = (e) => getComputedStyle(e);
@@ -221,7 +212,7 @@ await check("Menü führt zu den Seiten: Apps, Prompts, Web und Zettel direkt in
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 } });
   const page = await ctx.newPage();
   for (const [name, url, h1] of [["Zettel", /\/zu-seiner-zeit\/$/, "Zu seiner Zeit"], ["Apps", /\/apps\/$/, "Apps"], ["Prompts", /\/masterprompts\/$/, "Masterprompts"], ["Web", /\/web\/$/, "Web"]]) {
-    for (const von of ["/", "/news/", "/portfolio/nebeneinander-nacheinander/feld/"]) {
+    for (const von of ["/zu-seiner-zeit/strophe/17-die-person/", "/alpha/sketchory/", "/news/", "/portfolio/nebeneinander-nacheinander/feld/"]) {
       await page.goto(origin + von);
       await page.getByRole("navigation", { name: "Hauptmenü" }).getByRole("link", { name }).click();
       await page.waitForURL(url);
@@ -381,7 +372,7 @@ async function startKontext(opts = {}, { stub = true, url = "/" } = {}) {
 const startAn = (page) => page.evaluate(() => document.documentElement.classList.contains("start-an"));
 const startFrei = (page) => page.waitForFunction(() => !document.documentElement.classList.contains("start-an"), null, { timeout: 5000 });
 
-await check("Startanimation: neue Sitzung deckt die Seite schwarz ab, spielt das Intro stumm, sperrt die Seite dahinter; «Ton an» schaltet den Ton, ohne zu beenden; «Skip intro» gibt sie frei, danach läuft sie nicht wieder", async () => {
+await check("Startanimation: neue Sitzung deckt die Seite schwarz ab, spielt das Intro stumm, sperrt die Seite dahinter; «Ton an» schaltet den Ton, ohne zu beenden; «Skip intro» führt zu einem Zettel, danach läuft sie nicht wieder", async () => {
   const { ctx, page, errors } = await startKontext();
   assert.equal(await startAn(page), true);
   const flaeche = await page.locator("#start").evaluate((e) => { const r = e.getBoundingClientRect(), c = getComputedStyle(e); return { w: r.width, h: r.height, pos: c.position, z: +c.zIndex, bg: c.backgroundColor, frei: document.documentElement.clientWidth }; });
@@ -414,13 +405,13 @@ await check("Startanimation: neue Sitzung deckt die Seite schwarz ab, spielt das
   await page.getByRole("button", { name: "Ton aus" }).focus(); await page.keyboard.press("Enter");
   assert.deepEqual(await page.evaluate(() => [document.querySelector("#start video").muted, document.querySelector(".start-ton").textContent]), [true, "Ton an"], "mit der Tastatur wieder stumm");
   assert.equal(await startAn(page), true, "auch die Taste auf «Ton aus» beendet nichts");
+  // seit 18. Oktober 2026: das Ende des Intros führt zu einem zufälligen Zettel (die schwarze Fläche bleibt bis dahin)
   await page.getByRole("button", { name: "Skip intro" }).click();
-  await startFrei(page);
-  assert.equal(await page.evaluate(() => document.querySelector("main").inert || document.querySelector("header").inert), false, "die Seite ist wieder frei");
-  assert.equal(await page.evaluate(() => document.documentElement.style.overflow), "", "Blättern wieder möglich");
-  assert.equal(await page.locator("#start").evaluate((e) => getComputedStyle(e).display), "none");
-  await page.reload();
-  assert.equal(await startAn(page), false, "in derselben Sitzung läuft sie nicht noch einmal");
+  await page.waitForURL(/\/zu-seiner-zeit\/strophe\/[^/]+\/$/);
+  assert.equal(await page.evaluate(() => document.documentElement.style.overflow), "", "Blättern möglich");
+  await page.goto(origin + "/");
+  await page.waitForURL(/\/zu-seiner-zeit\/strophe\//);
+  assert.equal(await startAn(page), false, "in derselben Sitzung läuft sie nicht noch einmal: gleich ein Zettel");
   assert.equal(await page.evaluate(() => window.__start.play), 0);
   await page.goto(origin + "/?start");
   assert.equal(await startAn(page), true, "?start zeigt sie wieder (Vorschau)");
@@ -453,16 +444,19 @@ await check("Startanimation: bei «weniger Bewegung», bei «Daten sparen» und 
     if (init) await ctx.addInitScript(init);
     const page = await ctx.newPage();
     await page.goto(origin + "/");
+    if (opts.javaScriptEnabled === false) assert.equal(await page.locator("#start").evaluate((e) => getComputedStyle(e).display), "none", `${name}: nichts verdeckt die Seite`);
+    else {
+      await page.waitForURL(/\/zu-seiner-zeit\/strophe\//);                 // ohne Intro gleich ein Zettel
+      assert.equal(await page.evaluate(() => window.__start.play), 0, `${name}: nichts wird geladen`);
+    }
     assert.equal(await startAn(page), false, name);
-    assert.equal(await page.locator("#start").evaluate((e) => getComputedStyle(e).display), "none", `${name}: nichts verdeckt die Seite`);
-    if (opts.javaScriptEnabled !== false) assert.equal(await page.evaluate(() => window.__start.play), 0, `${name}: nichts wird geladen`);
     await page.goto(origin + "/?start");
     if (opts.reducedMotion) assert.equal(await startAn(page), false, "auch ?start hält sich an «weniger Bewegung»");
     await ctx.close();
   }
 });
 
-await check("Startanimation: Ende des Videos, Fehler, Tippen, Taste und abgelehntes play() geben die Seite frei", async () => {
+await check("Startanimation: Ende des Videos, Fehler, Tippen, Taste und abgelehntes play() führen zum Zettel", async () => {
   for (const [name, aktion] of [
     ["Ende", (page) => page.evaluate(() => document.querySelector("#start video").dispatchEvent(new Event("ended")))],
     ["Fehler", (page) => page.evaluate(() => document.querySelector("#start video").dispatchEvent(new Event("error")))],
@@ -472,7 +466,7 @@ await check("Startanimation: Ende des Videos, Fehler, Tippen, Taste und abgelehn
     const { ctx, page, errors } = await startKontext();
     assert.equal(await startAn(page), true, name);
     await aktion(page);
-    await startFrei(page);
+    await page.waitForURL(/\/zu-seiner-zeit\/strophe\//, { timeout: 5000 });
     assert.deepEqual(errors, [], name);
     await ctx.close();
   }

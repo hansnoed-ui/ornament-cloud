@@ -43,8 +43,38 @@ test("Ablauf: Zeichen, Gewebe, dann mit Signet das Logo (danach nur der Schluss)
   assert.match(A.dateiname(new Date(2026, 9, 18, 9, 5), "mp4"), /^phorma-iii-2026-10-18-0905\.mp4$/);
 });
 
+test("Video: das Video, dann Logo oder Ende; so lang wie der Ton, danach nur der Schluss", () => {
+  const mit = A.zeitachse({ ablauf: "video", laenge: 16 }), ohne = A.zeitachse({ ablauf: "video", laenge: 16, signet: false });
+  assert.equal(A.ablaufName("video"), "video"); assert.equal(A.TITEL.video, "Video");
+  assert.deepEqual(mit.phasen.map((p) => p.name), ["video", "logo"]);
+  assert.deepEqual(ohne.phasen.map((p) => p.name), ["video", "ende"]);
+  for (const z of [mit, ohne]) {
+    assert.ok(Math.abs(z.abschnitt.bis - z.abschnitt.von - 16) < 1e-9, "so lang wie verlangt");
+    assert.equal(z.ab.stehen, undefined); assert.ok(Math.abs(z.dauer - z.abschnitt.bis - 0.3) < 1e-9, "danach nur der Schluss");
+  }
+  assert.equal(A.NACH(false, "video"), 0.3);
+});
+
+test("Filmspur: Drehung aus der Matrix der Spur, Zuordnung der dekodierten Bilder zu den Filmbildern", async () => {
+  const F = await import(new URL("alpha/phorma-iii/filmspur.js", root).href);
+  const E = 65536;
+  assert.equal(F.drehungAusMatrix([E, 0, 0, 0, E, 0, 0, 0, 1 << 30]), 0);
+  assert.equal(F.drehungAusMatrix([0, E, 0, -E, 0, 0, 1080, 0, 1 << 30]), 90, "hochkant vom Telefon");
+  assert.equal(F.drehungAusMatrix([-E, 0, 0, 0, -E, 0, 1920, 1080, 1 << 30]), 180);
+  assert.equal(F.drehungAusMatrix([0, -E, 0, E, 0, 0, 0, 1920, 1 << 30]), 270);
+  assert.equal(F.drehungAusMatrix(null), 0);
+  // ein Video mit 25 Bildern je Sekunde ab 2 s: Filmbild k (30 je Sekunde) zeigt das Bild, das zuletzt begonnen hat
+  const zeiten = Array.from({ length: 60 }, (_, i) => 1.96 + i / 25), k = F.zuordnen(zeiten, 2, 45);
+  for (let i = 0; i < 45; i++) {
+    const t = 2 + i / 30, j = k[i];
+    assert.ok(zeiten[j] <= t + 1e-4 && (j + 1 >= zeiten.length || zeiten[j + 1] > t + 1e-4), `Filmbild ${i}`);
+  }
+  assert.equal(F.zuordnen([5, 6], 0, 3)[0], 0, "vor dem ersten Bild: das erste");
+  assert.equal(F.HOECHSTENS, 30);
+});
+
 test("Irrfahrt: Würfel, Irrfahrt, Logo oder Stille; kein Stehen, nach dem Effekt nur der Schluss; Unbekanntes ergibt das Gewebe", () => {
-  assert.deepEqual(A.EFFEKTE, ["gewebe", "irrfahrt"]);
+  assert.deepEqual(A.EFFEKTE, ["gewebe", "irrfahrt", "video"]);
   assert.equal(A.ablaufName("irrfahrt"), "irrfahrt"); assert.equal(A.ablaufName("physarum"), "gewebe"); assert.equal(A.ablaufName(null), "gewebe");
   const mit = A.zeitachse({ ablauf: "irrfahrt", laenge: 30 }), ohne = A.zeitachse({ ablauf: "irrfahrt", laenge: 30, signet: false });
   assert.equal(mit.ablauf, "irrfahrt");
@@ -310,7 +340,9 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /data-tonart="musik">Musik[\s\S]*data-tonart="stimme">Stimme/, "Musik oder Stimme");
   assert.match(html, /id="saeubern" checked> Säubern und klären[\s\S]*id="stimm-ablauf" checked> Scratch → Stimme → Gefrickel[\s\S]*id="stimm-dnb" checked> mit Drum and Bass/, "die Stimme: säubern, der Ablauf, Drum and Bass");
   assert.match(html, /id="signet" checked> Logo am Schluss/);
-  assert.match(html, /data-wahl="gewebe" aria-pressed="true"[\s\S]*data-wahl="irrfahrt"/, "zwei Effekte: Gewebe und Irrfahrt");
+  assert.match(html, /data-wahl="gewebe" aria-pressed="true"[\s\S]*data-wahl="irrfahrt"[\s\S]*data-wahl="video"/, "drei Effekte: Gewebe, Irrfahrt und Video");
+  assert.match(html, /id="ausschnitt-film"[\s\S]*id="ausschnitt-bild"/, "beim Ton aus dem Video: Filmstreifen über der Wellenform");
+  assert.match(html, /id="video-ausschnitt"[\s\S]*id="video-streifen"[\s\S]*id="video-von"/, "mit eigener Audiodatei: der Ausschnitt des Videos");
   assert.ok(!/data-(effekt|tiefe)=|data-wahl="(physarum|tiefe|tuch)/.test(html), "keine Kette und keine Tiefe: das ist PHORMA II");
   assert.match(html, /href="\.\.\/phorma-ii\/"/, "Hinweis auf PHORMA II");
   const dateien = readdirSync(P).filter((f) => f.endsWith(".js")), marken = new Set();

@@ -13,6 +13,8 @@
   --spalte: 720px;
   --rand: 20px;   /* seitlicher Rand, wie auf der Website (die Hauptlinks oben links stehen auf jeder Seite an derselben Stelle) */
   --hauptlink: #353b40;   /* die Hauptlinks oben links und die feine Linie darunter: im hellen Modus Anthrazit, wie auf der Website (Wunsch vom 2. Oktober 2026, 19:00 UTC) */
+  /* das Menü der Website oben rechts (kopfleiste.css, seit 18. Oktober 2026) in den Farben des Zettelkastens */
+  --menu-text: var(--tinte); --menu-flaeche: var(--papier); --menu-rand: var(--linie); --menu-schrift: var(--sans); --menu-akzent: #c2410c;
   color-scheme: light dark;
 }
 
@@ -24,6 +26,7 @@
     --linie: #333333;
     --leicht: #1b1b1b;
     --hauptlink: #ffd84d;   /* im dunklen Modus ein helles Sonnengelb */
+    --menu-akzent: #f08a5d;
   }
 }
 
@@ -73,25 +76,24 @@ main:focus { outline: none; }
    Sie steht über dem Kopf, bündig mit dessen Inhalt, und ist genau so gesetzt wie auf der Website (styles.css). Darunter steht eine feine Linie in derselben Farbe, und bis zum Titel
    «Zu seiner Zeit» bleibt mehr Raum als früher (28 px statt 12 px).
    Die Stelle ist auf jeder Seite dieselbe (Wunsch vom 2. Oktober 2026, 18:08 UTC): die der Website, also bündig mit einer Spalte von 1040 px, die in der Mitte
-   steht (bis 1080 px Fensterbreite 20 px vom Rand), oben 55 px, bis 760 px Fensterbreite 40 px. Ein Browsertest misst sie auf allen Seiten (REGELN §14). */
+   steht (bis 1080 px Fensterbreite 20 px vom Rand), oben 55 px, bis 760 px Fensterbreite 40 px. Ein Browsertest misst sie auf allen Seiten (REGELN §14).
+   Seit 18. Oktober 2026 in der Kopfleiste der Website (kopfleiste.css): rechts das Menü, darunter die Welle statt der geraden Linie (Wunsch: «oben rechts
+   noch das allgemeine Menü, damit man nicht ganz verloren ist»). */
+.zsz-oben { max-width: 1080px; margin: 0 auto; padding: 40px var(--rand) 0; }
 .seitenweg {
   display: grid;
   grid-template-columns: max-content;
   justify-content: start;
   gap: 8px;
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 55px var(--rand) 16px;
-  position: relative;
+  margin: 15px 0 0;
 }
-@media (max-width: 760px) { .seitenweg { padding-top: 40px; } }
-.seitenweg::after { content: ""; position: absolute; left: var(--rand); right: var(--rand); bottom: 0; border-top: 1px solid var(--hauptlink); }   /* die feine Linie unter den Hauptlinks, so breit wie die Spalte */
+@media (max-width: 760px) { .seitenweg { margin-top: 0; } }
 .seitenweg a { --weg: var(--hauptlink); padding: 3px 14px; border: 1px solid var(--weg); border: 1px solid color-mix(in srgb, var(--weg) 40%, transparent); border-radius: 999px; font: 600 0.8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: 0.12em; text-align: center; text-transform: uppercase; color: var(--weg); text-decoration: none; }
 .seitenweg a:hover { border-color: var(--weg); }
 .seitenweg a[aria-current] { border-color: var(--weg); background: var(--weg); color: var(--papier); }
 @media (forced-colors: active) { .seitenweg a[aria-current] { outline: 1px solid currentColor; outline-offset: 2px; } }
 .seitenweg a:focus-visible { outline: 2px solid var(--weg); outline-offset: 2px; }
-.seitenweg + .zsz-kopf { padding-top: 28px; }
+.zsz-oben + .zsz-kopf { padding-top: 0; }
 /* Sprachwechsel (seit 3. Oktober 2026: Deutsch, English, Español): drei gut sichtbare Knöpfe im Kopf, zwischen Titel und Menü;
    die aktuelle Sprache gefüllt. Jeder Knopf führt auf dieselbe Seite in der anderen Sprache.
    Der Titel «Zu seiner Zeit» bleibt an seiner Stelle (Abstand unter den Hauptlinks, siehe oben). */

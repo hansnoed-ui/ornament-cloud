@@ -826,7 +826,8 @@ await check("Navigation: die beiden Hauptlinks stehen auf jeder Seite an genau d
 });
 
 await check("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen, der aktive ist invers gesetzt (Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite); auf der Website beide in einer Farbe (hell Anthrazit, dunkel helles Sonnengelb), im Rad Orange und Violett, je mit Kontrast ab 4,5, und auf jeder Seite genau so gross gesetzt wie auf der Website, hell und dunkel, Computer und Handy", async () => {
-  const seiten = ["", "news/", "portfolio/", "portfolio/nebeneinander-nacheinander/", "zu-seiner-zeit/", "zu-seiner-zeit/strophe/13-das-archiv/", "alpha/", "alpha/pruefraster/", "alpha/gesellschaftskonzepte/", "alpha/omna-color/", "alpha/drittes-rad/"];
+  // die Startseite («») führt seit 18. Oktober 2026 gleich zu einem Zettel: als erste Seite der Website gilt hier «Apps»
+  const seiten = ["apps/", "news/", "portfolio/", "portfolio/nebeneinander-nacheinander/", "zu-seiner-zeit/", "zu-seiner-zeit/strophe/13-das-archiv/", "alpha/", "alpha/pruefraster/", "alpha/gesellschaftskonzepte/", "alpha/omna-color/", "alpha/drittes-rad/"];
   const FARBEN = { hell: ["rgb(53, 59, 64)", "rgb(53, 59, 64)"], dunkel: ["rgb(255, 216, 77)", "rgb(255, 216, 77)"] };               // auf der Website beide Links in einer Farbe: hell Anthrazit #353b40, dunkel helles Sonnengelb #ffd84d (Wunsch vom 2. Oktober 2026, 19:00 UTC)
   const FARBEN_RAD = ["rgb(240, 138, 93)", "rgb(167, 148, 255)"];                                                                  // im Rad bleibt «Ornament Cloud» orange, «Das Dritte Rad» violett (die Seite ist immer dunkel)
   const rgb = (c) => c.match(/[\d.]+/g).slice(0, 3).map(Number);
@@ -887,7 +888,8 @@ await check("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen, d
 
 await check("Kopfzeile: unter den Hauptlinks steht eine feine Linie in deren Farbe, auf den Seiten mit Menü die Welle, sonst eine gerade Linie über die Spaltenbreite, im Rad keine; im Zettelkasten bleibt mehr Raum bis zum Titel «Zu seiner Zeit» (Wunsch vom 2. Oktober 2026, 19:00 UTC); hell und dunkel, Computer und Handy", async () => {
   const seiten = [["", "Welle"], ["apps/", "Welle"], ["news/", "Welle"], ["portfolio/nebeneinander-nacheinander/", "Welle"], ["portfolio/nebeneinander-nacheinander/feld/", "Welle"],
-    ["alpha/", "gerade"], ["alpha/pruefraster/", "gerade"], ["alpha/omna-color/", "gerade"], ["zu-seiner-zeit/", "gerade"], ["zu-seiner-zeit/strophe/13-das-archiv/", "gerade"], ["zu-seiner-zeit/verweis/", "gerade"],
+    // seit 18. Oktober 2026 mit dem Menü überall die Welle (vorher auf Alpha-Seiten, OMNA COLOR und im Zettelkasten eine gerade Linie); «» führt zu einem Zettel
+    ["alpha/", "Welle"], ["alpha/pruefraster/", "Welle"], ["alpha/omna-color/", "Welle"], ["zu-seiner-zeit/", "Welle"], ["zu-seiner-zeit/strophe/13-das-archiv/", "Welle"], ["zu-seiner-zeit/verweis/", "Welle"],
     ["alpha/drittes-rad/", "keine"]];
   const LINK = { hell: "rgb(53, 59, 64)", dunkel: "rgb(255, 216, 77)" };                           // Anthrazit, helles Sonnengelb
   /** Farben der Bildpunkte eines Ausschnitts, wie sie auf dem Bildschirm stehen (der Ausschnitt wird in einer Zeichenfläche der Seite gelesen) */
@@ -971,10 +973,10 @@ await check("Navigation: in erzwungenen Farben (Windows, hoher Kontrast) fällt 
   }
 });
 
-await check("Navigation: «Ornament Cloud» führt zur Startseite, «Das Dritte Rad» zum Start des Rads; im Rad bleibt man auf der Seite, der Verlauf stimmt", async () => {
+await check("Navigation: «Ornament Cloud» führt zur Startseite (seit 18. Oktober 2026 von dort gleich zu einem Zettel), «Das Dritte Rad» zum Start des Rads; im Rad bleibt man auf der Seite, der Verlauf stimmt", async () => {
   const gehe = async (page, von, link, ziel) => {
     await page.goto(base + von);
-    await Promise.all([page.waitForURL((u) => u.pathname === ziel), page.locator("nav.seitenweg a", { hasText: link }).click()]);
+    await Promise.all([page.waitForURL((u) => (ziel === "/" ? /^\/zu-seiner-zeit\/strophe\/[^/]+\/$/.test(u.pathname) : u.pathname === ziel)), page.locator("nav.seitenweg a", { hasText: link }).click()]);
   };
   const { ctx, page, errors } = await open("");
   await gehe(page, "", "Das Dritte Rad", "/alpha/drittes-rad/");
@@ -982,7 +984,7 @@ await check("Navigation: «Ornament Cloud» führt zur Startseite, «Das Dritte 
   assert.equal(await page.locator("#result").isHidden(), true, "der Start des Rads: noch keine Karten");
   assert.equal(await page.locator("nav.seitenweg a[aria-current='page']").textContent(), "Das Dritte Rad");
   await gehe(page, "alpha/drittes-rad/", "Ornament Cloud", "/");
-  assert.ok(await page.locator(".site-header .menu").count(), "die Startseite der Website");
+  assert.ok(await page.locator(".zsz-kopf").count() && await page.locator(".menu").count(), "die Startseite der Website: ein Zettel mit dem Menü");
   for (const [von, link, ziel] of [["zu-seiner-zeit/strophe/13-das-archiv/", "Ornament Cloud", "/"], ["zu-seiner-zeit/strophe/13-das-archiv/", "Das Dritte Rad", "/alpha/drittes-rad/"],
     ["portfolio/nebeneinander-nacheinander/", "Das Dritte Rad", "/alpha/drittes-rad/"], ["alpha/pruefraster/", "Ornament Cloud", "/"], ["alpha/omna-color/", "Das Dritte Rad", "/alpha/drittes-rad/"]]) await gehe(page, von, link, ziel);
   // im Rad: «Das Dritte Rad» setzt auf den Start zurück, ohne Neuladen; Zurück bringt den Stand wieder

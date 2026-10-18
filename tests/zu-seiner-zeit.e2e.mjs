@@ -190,16 +190,18 @@ await check("Verweise: deutlicher Abstand über jeder Disziplin; sortiert nach N
   await ctx.close();
 });
 
-await check("Portfolio (Handy): Beiträge untereinander statt Wisch-Galerie; das Menü der Startseite führt direkt zum Zettelkasten", async () => {
+await check("Portfolio (Handy): Beiträge untereinander statt Wisch-Galerie; das Menü führt direkt zum Zettelkasten", async () => {
   const { ctx, page } = await open("", { ...devices["Pixel 7"] });
   await page.goto(base.replace("zu-seiner-zeit/", "portfolio/"));
   const karten = await page.locator(".grid--stapel .card").evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y), Math.round(r.bottom)]; }));
   assert.ok(karten.length >= 2);
   for (let i = 1; i < karten.length; i++) assert.ok(karten[i][0] === karten[0][0] && karten[i][1] >= karten[i - 1][2], `untereinander: ${JSON.stringify(karten)}`);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-  // Startseite: «Zettelkasten» im Menü führt direkt in den Zettelkasten (seit 2. Oktober 2026, keine Karte mehr)
+  // Startseite: «Zettel» im Menü (seit 10. Oktober 2026 ein Kästchen) führt direkt in den Zettelkasten; seit 18. Oktober 2026 führt die Startseite selbst
+  // gleich zu einem Zettel, dort steht das Menü ebenso
   await page.goto(base.replace("zu-seiner-zeit/", ""));
-  await page.getByRole("navigation", { name: "Hauptmenü" }).getByRole("link", { name: "Zettelkasten" }).click();
+  await page.waitForURL(/\/zu-seiner-zeit\/strophe\//);
+  await page.getByRole("navigation", { name: "Hauptmenü" }).getByRole("link", { name: "Zettel" }).click();
   await page.waitForURL(/\/zu-seiner-zeit\/$/);
   await ctx.close();
 });
