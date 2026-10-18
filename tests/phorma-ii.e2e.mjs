@@ -366,6 +366,12 @@ await check("Nur Musik geladen, kein Bild: «Nur Ton» wird gewählt und die Vor
   const s = await page.evaluate(() => ({ quelle: window.__phorma.quelle, ablauf: window.__phorma.ablauf, ton: window.__phorma.ton?.name }));
   assert.deepEqual(s, { quelle: "ton", ablauf: "gewebe", ton: "schlaege.wav" });
   assert.equal(await page.getAttribute('[data-quelle="ton"]', "aria-pressed"), "true");
+  // die Seite neu öffnen (Rückmeldung vom 18. Oktober 2026: «Cannot access 'tiefeKnoepfe' before initialization» – «Nur Ton» war gemerkt und
+  // lud das Papier, bevor alle Knöpfe standen): sie startet mit «Nur Ton», ohne Fehler
+  await page.reload();
+  await bereit(page);
+  assert.equal(await page.evaluate(() => window.__phorma.quelle), "ton");
+  assert.ok(!/before initialization|is not defined/.test(await page.textContent("#startfehler")), "kein Fehler beim Start");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });

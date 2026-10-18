@@ -397,8 +397,9 @@ async function textLaden() {
   notiz(`Text gewählt (${S.text.length} Zeichen)`);
   await bildSetzen(await textBild(S.text, ...filmMass(S.format)));
 }
-if (S.quelle === "text" && S.text.trim()) textLaden();
-if (S.quelle === "ton") papierLaden();
+// die gemerkte Quelle erst laden, wenn das ganze Modul steht (Rückmeldung vom 18. Oktober 2026: «Cannot access 'tiefeKnoepfe' before
+// initialization» – «Nur Ton» lud das Papier sofort, und sperren() griff auf Knöpfe zu, die weiter unten erst entstehen)
+setTimeout(() => { if (S.quelle === "text" && S.text.trim()) textLaden(); else if (S.quelle === "ton") papierLaden(); }, 0);
 // Ton: eine Audiodatei steuert das Gewebe und klingt in der Vorschau und im Video mit (tonspur.js); ohne Ton bleibt das Video stumm. Auf Wunsch wird
 // sie verfrickelt (frickeln.js: aus Schnipseln ein neues Stück, wiederholbar je Wurf); dann steuert und klingt das neue Stück.
 S.frickeln = erinnern("frickeln") === "1"; $("frickeln").checked = S.frickeln;
