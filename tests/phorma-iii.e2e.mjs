@@ -360,6 +360,15 @@ await check("Stimme: säubern und der Ablauf Scratch → Stimme mit Hüpfern →
   // gar nichts: das Original
   await page.uncheck("#saeubern");
   await page.waitForFunction(() => window.__phorma.ton?.name === "stimme.wav", null, { timeout: 60_000 });
+  // auch bei Musik: der Ausschnitt steht gleich unter der Audiodatei und schneidet
+  await page.click('[data-tonart="musik"]');
+  assert.ok(await page.isVisible("#ausschnitt"), "Ausschnitt auch bei Musik");
+  await regler(1, 4);
+  await page.waitForFunction(() => window.__phorma.ton?.name === "stimme.wav · Ausschnitt 0:01,0–0:05,0", null, { timeout: 60_000 });
+  assert.ok(Math.abs((await page.evaluate(() => window.__phorma.ton.analyse.dauer)) - 4) < 0.05, "genau der Ausschnitt");
+  await page.click("#ausschnitt-auto");
+  await page.waitForFunction(() => window.__phorma.ton?.name === "stimme.wav", null, { timeout: 60_000 });
+  await page.click('[data-tonart="stimme"]');
   // gemerkt
   await page.reload();
   assert.deepEqual(await page.evaluate(() => [window.__phorma.tonart, document.getElementById("saeubern").checked, document.getElementById("stimm-ablauf").checked]), ["stimme", false, false]);

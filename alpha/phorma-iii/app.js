@@ -374,9 +374,10 @@ S.stimmDnb = erinnern("stimm-dnb") !== "0"; $("stimm-dnb").checked = S.stimmDnb;
 const wuerfelbar = () => (S.tonart === "stimme" ? S.stimmAblauf : S.frickeln);
 const tonartZeigen = () => {
   $("musik-teil").hidden = S.tonart !== "musik"; $("stimme-teil").hidden = S.tonart !== "stimme"; $("wuerfeln").hidden = !(wuerfelbar() && S.tonQuelle); $("stimm-dnb").disabled = !S.stimmAblauf;
-  $("ausschnitt").hidden = !(S.tonart === "stimme" && S.tonQuelle); ausschnittZeigen();
+  $("ausschnitt").hidden = !S.tonQuelle; ausschnittZeigen();
 };
-// der Ausschnitt der Stimme (Wunsch vom 18. Oktober 2026: «Ich möchte den Ausschnitt des Voice-Clips in der Anwendung wählen können»): in der
+// der Ausschnitt der Audiodatei (Wunsch vom 18. Oktober 2026: «Ich möchte den Ausschnitt des Voice-Clips in der Anwendung wählen können»; seit der
+// Rückmeldung «ich bekomme hier keine Funktion, um das Voice-File zu cutten» gleich unter der Audiodatei, für Musik und Stimme – vorher erst unter «Stimme»): in der
 // Wellenform ziehen oder tippen, oder mit den Reglern «ab» und «Länge». Ohne eigene Wahl (S.ausschnitt null) wie bisher: der Ablauf nimmt rund 10 s
 // ab dem ersten Wort, sonst gilt die ganze Aufnahme. Mit eigener Wahl wird zuerst geschnitten, dann gesäubert; im Ablauf ist der Ausschnitt die klare Stimme.
 S.ausschnitt = null;
@@ -386,7 +387,7 @@ function ausschnittJetzt() {
   const q = S.tonQuelle; if (!q) return null;
   const dauer = q.buffer.duration;
   if (S.ausschnitt) { const von = Math.min(S.ausschnitt.von, Math.max(0, dauer - 0.5)); return { von, bis: Math.min(dauer, von + S.ausschnitt.laenge), eigen: true }; }
-  if (S.stimmAblauf && q.uebersicht) { const von = q.uebersicht.beginn; return { von, bis: Math.min(dauer, von + 10), eigen: false }; }
+  if (S.tonart === "stimme" && S.stimmAblauf && q.uebersicht) { const von = q.uebersicht.beginn; return { von, bis: Math.min(dauer, von + 10), eigen: false }; }
   return { von: 0, bis: dauer, eigen: false };
 }
 /** Wellenform (Spitzen je Spalte) und der Sprachbeginn, einmal je Aufnahme */
@@ -485,11 +486,9 @@ async function tonSetzen({ auffrischen = true } = {}) {
   let kanaele = Array.from({ length: Math.min(2, q.buffer.numberOfChannels) }, (_, k) => q.buffer.getChannelData(k));
   let buffer = q.buffer, url = q.url, name = q.name, mehr = "";
   const pause = () => new Promise((ok) => setTimeout(ok, 30));
-  if (S.tonart === "stimme") {
-    await ausschnittVorbereiten(q); if (nr !== S.tonNr) return;
-    tonartZeigen();
-  }
-  const aus = S.tonart === "stimme" ? ausschnittJetzt() : null;
+  await ausschnittVorbereiten(q); if (nr !== S.tonNr) return;
+  tonartZeigen();
+  const aus = ausschnittJetzt(), schnitt = aus?.eigen ? `Ausschnitt ${zeitText(aus.von)}–${zeitText(aus.bis)}` : "";
   if (aus?.eigen) kanaele = kanaele.map((c) => c.subarray(Math.round(aus.von * rate), Math.round(aus.bis * rate)));
   if (S.tonart === "stimme" && (S.saeubern || S.stimmAblauf || aus?.eigen)) {
     melden(S.saeubern ? "Die Stimme wird gesäubert …" : "Scratch, Stimme und Gefrickel werden gebaut …");
@@ -497,7 +496,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
     const [{ saeubern, stimmAblauf }, { wav }] = await Promise.all([import("./stimme.js?v=7"), import("./frickeln.js?v=7")]);
     if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
     let kan = kanaele;
-    const teile = aus?.eigen ? [`Ausschnitt ${zeitText(aus.von)}–${zeitText(aus.bis)}`] : [];
+    const teile = schnitt ? [schnitt] : [];
     if (S.saeubern) {
       const s = saeubern(kan, rate); kan = s.kanaele;
       teile.push(`gesäubert (Rauschen ${Math.round(s.rauschenVorher)} → ${Math.round(s.rauschenNachher)} dB)`);
@@ -522,8 +521,15 @@ async function tonSetzen({ auffrischen = true } = {}) {
     buffer = new AudioBuffer({ length: f.kanaele[0].length, numberOfChannels: 2, sampleRate: rate });
     f.kanaele.forEach((c, k) => buffer.copyToChannel(c, k));
     url = URL.createObjectURL(new Blob([wav(f.kanaele, rate)], { type: "audio/wav" }));
-    name = `${q.name} · verfrickelt, Wurf ${S.wurf}`; mehr = ` · ${f.bpm} BPM, ${f.takte} Takte aus ${f.scheiben} Schnipseln`;
+    name = `${q.name}${schnitt ? ` · ${schnitt}` : ""} · verfrickelt, Wurf ${S.wurf}`; mehr = ` · ${f.bpm} BPM, ${f.takte} Takte aus ${f.scheiben} Schnipseln`;
     notiz(`Ton verfrickelt: Wurf ${S.wurf}, ${f.bpm} BPM, ${f.dauer.toFixed(1)} s`);
+  } else if (aus?.eigen) {                                                   // nur geschnitten
+    const { wav } = await import("./frickeln.js?v=7");
+    if (nr !== S.tonNr) return;
+    buffer = new AudioBuffer({ length: kanaele[0].length, numberOfChannels: kanaele.length, sampleRate: rate });
+    kanaele.forEach((c, k) => buffer.copyToChannel(c, k));
+    url = URL.createObjectURL(new Blob([wav(kanaele, rate)], { type: "audio/wav" }));
+    name = `${q.name} · ${schnitt}`;
   }
   const pcm = new Float32Array(buffer.length);
   for (let k = 0; k < buffer.numberOfChannels; k++) { const c = buffer.getChannelData(k); for (let i = 0; i < c.length; i++) pcm[i] += c[i] / buffer.numberOfChannels; }
