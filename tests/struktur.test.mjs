@@ -144,11 +144,11 @@ test("Startseite: Startanimation (9. Oktober 2026; seit 18. Oktober 2026 die Irr
   // Markup: gleich nach <body>, vor Kopf und Inhalt, ausserhalb von <main>; das Video hat keine Quelle im Markup (das Skript setzt sie, sonst lädt es ohne Skript)
   assert.match(html, /<body>\s*<div class="start" id="start">\s*<video muted playsinline preload="auto" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback><\/video>\s*<div class="start-knoepfe">\s*<button class="start-ton" type="button" aria-pressed="false">Ton an<\/button>\s*<button class="start-weiter" type="button" lang="en">Skip intro<\/button>\s*<\/div>\s*<\/div>\s*<header class="site-header">/);
   assert.ok(html.indexOf('id="start"') < html.indexOf("<main"), "die Startanimation liegt vor dem Inhalt");
-  // Datei: ein Video (4 : 5, mit Ton), in beiden Modi dasselbe; die früheren hellen und dunklen sind weg
+  // Dateien: quer 16 : 9 (Laptop, Bildschirm) und hoch 4 : 5 (Telefon), mit Ton, in beiden Modi dasselbe; die früheren hellen und dunklen sind weg
   for (const d of ["assets/start-animation.mp4", "assets/start-animation-dunkel.mp4"]) assert.ok(!existsSync(new URL(d, root)), `${d} ist ersetzt`);
-  for (const d of ["assets/start-intro.mp4"]) {
+  for (const [d, mb] of [["assets/start-intro.mp4", 5], ["assets/start-intro-quer.mp4", 10]]) {
     assert.ok(existsSync(new URL(d, root)), d);
-    assert.ok(readFileSync(new URL(d, root)).length < 5_000_000, `${d} bleibt unter 5 MB (es lädt vor der Seite)`);
+    assert.ok(readFileSync(new URL(d, root)).length < mb * 1e6, `${d} bleibt unter ${mb} MB (es lädt vor der Seite)`);
     assert.match(html, new RegExp(d.replace(/[.-]/g, "\\$&") + "\\?v=\\d+"), `${d} trägt eine Marke ?v=`);
   }
   // Kopf: die Klasse start-an kommt vor dem ersten Anstrich; Bedingungen: einmal pro Sitzung (sessionStorage), nicht bei «weniger Bewegung», nicht bei «Daten sparen», Vorschau mit ?start
@@ -172,7 +172,7 @@ test("Startseite: Startanimation (9. Oktober 2026; seit 18. Oktober 2026 die Irr
   assert.ok(!lies("styles.css").includes(".start-weiter"), "die Gestaltung steht in der Startseite, styles.css (?v=) bleibt unberührt");
   // Skript: Ende, Fehler, Hängen, Tippen (nicht auf «Ton an»), Taste, Knopf; der Ton schaltet stumm/laut; die Seite darunter ist währenddessen inert
   const skript = html.slice(html.indexOf('var d = document.documentElement, el = document.getElementById("start")'));
-  assert.match(skript, /v\.src = "assets\/start-intro\.mp4\?v=\d+"/);
+  assert.match(skript, /v\.src = matchMedia\("\(min-aspect-ratio: 1\/1\)"\)\.matches \? "assets\/start-intro-quer\.mp4\?v=\d+" : "assets\/start-intro\.mp4\?v=\d+"/, "quer die Fassung 16 : 9, hoch 4 : 5");
   for (const ereignis of ['v.addEventListener("ended", weg)', 'v.addEventListener("error", weg)', 'el.addEventListener("pointerdown", function (e) { if (!amTon(e)) weg(); })', 'knopf.addEventListener("click", weg)', 'removeEventListener("keydown", taste); weg();']) assert.ok(skript.includes(ereignis), ereignis);
   assert.match(skript, /v\.muted = !v\.muted;/, "Ton an und aus");
   assert.match(skript, /p\.catch\(weg\)/, "lässt der Browser das Video nicht von selbst spielen, kommt die Seite sofort");

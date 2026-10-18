@@ -8,10 +8,10 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { ziel, quadMaterial } from "./gemeinsam.js?v=6";
-import { FPS, kette, laufend } from "./ablauf.js?v=6";
-import { gewebe } from "./gewebe.js?v=6";
-import { irrfahrt } from "./irrfahrt.js?v=6";
+import { ziel, quadMaterial } from "./gemeinsam.js?v=7";
+import { FPS, kette, laufend } from "./ablauf.js?v=7";
+import { gewebe } from "./gewebe.js?v=7";
+import { irrfahrt } from "./irrfahrt.js?v=7";
 
 const FABRIK = { gewebe, irrfahrt };
 
@@ -74,9 +74,10 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
     bloom.highPassUniforms.smoothWidth.value = 0.2;
   }
   /** eine Probe zur Zeit ts nach rtMix (mit Bloom, wenn der Effekt ihn will); gibt { aktiv, bloom, saum, ende, umkehr } */
-  function probe(zeit, ts) {
-    const [L] = laufend(zeit, ts), info = effekt.render(rtMix, L.lokal);
+  function probe(zeit, ts, opt) {
+    const [L] = laufend(zeit, ts), info = effekt.render(rtMix, L.lokal, opt);
     if ((info.bloom ?? 0) > 0.002) { bloom.strength = info.bloom; bloom.radius = info.radius ?? 0.5; bloom.render(renderer, null, rtMix); }
+    info.danach?.();                                                         // was scharf und ohne Bloom dazukommt (der Würfel der Irrfahrt)
     return info;
   }
 
@@ -105,6 +106,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
   }
   const warm = vorbereiten();
   return {
+    korn: 0.05,                                                              // Filmkorn; das Intro der Website rechnet ohne (es matschte in der Kompression)
     canvas, B, H, ende: 0, warm, bereit: warm, fortschritt: () => 1,                     // ende: wie weit das letzte Bild schon das Bild war (1: exakt)
     get verloren() { return verloren; },
     /** für ?diagnose: Grafikchip und die Erweiterungen, auf die es ankommt */
@@ -118,16 +120,20 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
     bild(zeit, t, nw = B, nh = H, { proben = 1, verschluss = 0.5 } = {}) {
       groesse(Math.max(2, Math.round(nw)), Math.max(2, Math.round(nh)));
       g.loeschen(rtSumme);
-      let info = null, umkehr = 0;
-      for (let k = 0; k < proben; k++) {
-        const ts = proben > 1 ? Math.max(0, t - (verschluss / FPS) * (1 - k / (proben - 1))) : t;
-        info = probe(zeit, ts); umkehr += (info.umkehr ?? 0) / proben;
-        summe.uniforms.tQuelle.value = rtMix.texture; summe.uniforms.uGewicht.value = 1 / proben;
+      // die Proben über den Verschluss; nur die derselben Lage wie das Bild selbst (springt der Effekt mitten im Verschluss, lägen sonst zwei Bilder
+      // übereinander – Rückmeldung: «die Würfel sind immer noch verzogen, die Animation überblendet teilweise stark»)
+      let zeiten = Array.from({ length: proben }, (_, k) => (proben > 1 ? Math.max(0, t - (verschluss / FPS) * (1 - k / (proben - 1))) : t));
+      if (effekt.lage && proben > 1) { const lage = (ts) => effekt.lage(laufend(zeit, ts)[0].lokal), jetzt = lage(t); zeiten = zeiten.filter((ts) => lage(ts) === jetzt); }
+      let info = null;
+      for (let k = 0; k < zeiten.length; k++) {
+        info = probe(zeit, zeiten[k], { scharf: k === zeiten.length - 1, gewicht: zeiten.length });
+        summe.uniforms.tQuelle.value = rtMix.texture; summe.uniforms.uGewicht.value = 1 / zeiten.length;
         g.pass(summe, rtSumme);
       }
+      const umkehr = info.umkehr ?? 0;                                        // das Negativ ganz oder gar nicht: gemittelt gab es graue, ausgewaschene Bilder
       const u = ausgabe.uniforms;
       u.tSumme.value = rtSumme.texture; u.uEnde.value = info.ende ?? 0; u.uAktiv.value = info.aktiv;
-      u.uSaumStaerke.value = info.saum ?? 0.0025; u.uUmkehr.value = umkehr; u.uBelichtung.value = info.belichtung ?? 0; u.uBild.value = Math.round(t * FPS);
+      u.uKorn.value = this.korn ?? 0.05; u.uSaumStaerke.value = info.saum ?? 0.0025; u.uUmkehr.value = umkehr; u.uBelichtung.value = info.belichtung ?? 0; u.uBild.value = Math.round(t * FPS);
       g.pass(ausgabe, null);
       this.ende = info.ende ?? 0;
       return canvas;

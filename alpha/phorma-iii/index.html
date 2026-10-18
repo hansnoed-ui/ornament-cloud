@@ -143,7 +143,6 @@
   <header class="site-header">
     <div class="wrap">
       <h1>PHORMA III</h1>
-      <p class="lead">Musik wird Bild: die Umrisse deines Texts, Fotos oder Videos werden zu Flächen aus feinen Linien wie zerknitterte Seide – oder ein leuchtender Faden irrt durch einen Würfel aus Licht und quillt mit jedem Schlag zu Rauch auf. Oder die Musik allein macht das Bild. Am Schluss entsteht das Logo. Als Video mit Ton für Social Media.</p>
     </div>
   </header>
 
@@ -164,7 +163,7 @@
       </div>
       <div class="phasen" role="group" aria-label="Zu einer Phase springen"></div>
       <div class="unter">
-        <p class="info" id="dauer">Hochformat 4 : 5, wahlweise 9 : 16</p>
+        <p class="info" id="dauer">Hochformat 4 : 5, wahlweise 9 : 16 oder quer 16 : 9</p>
       </div>
       <p class="info" id="auswertung"></p>
     </section>
@@ -209,8 +208,9 @@
             <div class="einstellung">
               <span class="name" id="format-titel">Format</span>
               <div class="segment" role="group" aria-labelledby="format-titel">
-                <button type="button" data-format="4:5">4 : 5 Hochformat</button>
+                <button type="button" data-format="4:5">4 : 5 hoch</button>
                 <button type="button" data-format="9:16">9 : 16</button>
+                <button type="button" data-format="16:9">16 : 9 quer</button>
               </div>
             </div>
           </section>
@@ -230,6 +230,19 @@
             <button class="knopf klein" type="button" id="ton-weg" hidden>Ton entfernen</button>
             <label class="haken"><input type="checkbox" id="ton-im-video" checked> Ton an</label>
           </div>
+          <div class="ausschnitt" id="ausschnitt" hidden>
+            <div class="ausschnitt-kopf"><span>Ausschnitt schneiden</span><output id="ausschnitt-info"></output></div>
+            <canvas id="ausschnitt-bild" aria-hidden="true"></canvas>
+            <p class="ki-hinweis">Zum Schneiden in der Wellenform ziehen oder tippen, oder die Regler «ab» und «Länge». Ohne Wahl gilt die ganze Datei (bei Stimme mit Ablauf rund 10 Sekunden ab dem ersten Wort).</p>
+            <div class="ausschnitt-regler">
+              <label for="ausschnitt-von">ab</label><input type="range" id="ausschnitt-von" min="0" max="1" step="0.1" value="0">
+              <label for="ausschnitt-laenge">Länge</label><input type="range" id="ausschnitt-laenge" min="1" max="30" step="0.5" value="10">
+            </div>
+            <div class="leiste">
+              <button class="knopf klein" type="button" id="ausschnitt-hoeren">Anhören</button>
+              <button class="knopf klein" type="button" id="ausschnitt-auto" disabled>Automatisch</button>
+            </div>
+          </div>
           <div class="segment" role="group" aria-label="Art der Audiodatei">
             <button type="button" data-tonart="musik">Musik</button>
             <button type="button" data-tonart="stimme">Stimme</button>
@@ -244,19 +257,7 @@
               <label class="haken"><input type="checkbox" id="stimm-ablauf" checked> Scratch → Stimme → Gefrickel</label>
               <label class="haken"><input type="checkbox" id="stimm-dnb" checked> mit Drum and Bass</label>
             </div>
-            <div class="ausschnitt" id="ausschnitt" hidden>
-              <div class="ausschnitt-kopf"><span>Ausschnitt</span><output id="ausschnitt-info"></output></div>
-              <canvas id="ausschnitt-bild" aria-hidden="true"></canvas>
-              <div class="ausschnitt-regler">
-                <label for="ausschnitt-von">ab</label><input type="range" id="ausschnitt-von" min="0" max="1" step="0.1" value="0">
-                <label for="ausschnitt-laenge">Länge</label><input type="range" id="ausschnitt-laenge" min="1" max="30" step="0.5" value="10">
-              </div>
-              <div class="leiste">
-                <button class="knopf klein" type="button" id="ausschnitt-hoeren">Anhören</button>
-                <button class="knopf klein" type="button" id="ausschnitt-auto" disabled>Automatisch</button>
-              </div>
-            </div>
-            <p class="ki-hinweis">Den Ausschnitt wählst du in der Wellenform (ziehen oder tippen) oder mit den Reglern; ohne Wahl nimmt der Ablauf rund 10 Sekunden ab dem ersten Wort, sonst gilt die ganze Aufnahme. Für Sprachaufnahmen: Säubern nimmt Rauschen, Brummen und Rumpeln weg, klärt die Stimme (Präsenz, Luft, weniger Zischlaute), gleicht sie aus und gibt ihr einen leichten Raum. Der Ablauf macht daraus ein Stück, das verständlich und zugleich dekonstruiert ist: zuerst 3–4 Sekunden Scratching auf dem ersten Wort, dann rund 10 Sekunden die klare Stimme mit zwei, drei Hüpfern, am Ende 3–4 Sekunden Gefrickel; gegen das Gefrickel hin auf Wunsch unterlegt mit ein wenig Drum and Bass.</p>
+            <p class="ki-hinweis">Für Sprachaufnahmen: Säubern nimmt Rauschen, Brummen und Rumpeln weg, klärt die Stimme (Präsenz, Luft, weniger Zischlaute), gleicht sie aus und gibt ihr einen leichten Raum. Der Ablauf macht daraus ein Stück, das verständlich und zugleich dekonstruiert ist: zuerst 3–4 Sekunden Scratching auf dem ersten Wort, dann rund 10 Sekunden die klare Stimme mit zwei, drei Hüpfern, am Ende 3–4 Sekunden Gefrickel; gegen das Gefrickel hin auf Wunsch unterlegt mit ein wenig Drum and Bass.</p>
           </div>
           <div class="leiste"><button class="knopf klein" type="button" id="wuerfeln" hidden>Neu würfeln</button></div>
           <p class="info" id="ton-info"></p>
@@ -301,7 +302,7 @@
   <div class="wrap">
     <ul class="hinweise">
       <li>Alles bleibt in deinem Browser: Foto, Video und Musik werden nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
-      <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories); Foto und Video werden bei Bedarf mittig beschnitten.</li>
+      <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories) oder quer 16 : 9 (1920 × 1080, für Bildschirme und Websites); Foto und Video werden bei Bedarf mittig beschnitten.</li>
       <li>Video: MP4 (H.264), 30 Bilder pro Sekunde, mit Ton (AAC) wenn eine Audiodatei gewählt ist. PHORMA III braucht WebGL 2.</li>
       <li>Für Fotos gibt es <a href="../phorma-ii/">PHORMA II</a>: ein Schleimpilz findet die Formen, das Foto wird Raum und weht als Seidentuch.</li>
     </ul>
@@ -342,7 +343,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=6"></script>
+  <script type="module" src="app.js?v=7"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

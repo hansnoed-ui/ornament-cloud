@@ -3,11 +3,11 @@
 // und mp4Schreiber (tonspur.js); ohne WebCodecs in Echtzeit über MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild acht Proben.
 // Bis zum 18. Oktober 2026 ein Effekt in PHORMA II (Wunsch: «Es sind ja zwei ganz verschiedene Ansätze … all das soll aus PHORMA II ausgelagert
 // werden und in ein neues PHORMA III integriert werden»).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, EFFEKTE, ablaufName, zeitachse, NACH } from "./ablauf.js?v=6";
-import { szene, bild, standbildZeit } from "./film.js?v=6";
-import { analysieren } from "./analyse.js?v=6";
-import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=6";
-import { textBild } from "./textbild.js?v=6";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, EFFEKTE, ablaufName, zeitachse, NACH } from "./ablauf.js?v=7";
+import { szene, bild, standbildZeit } from "./film.js?v=7";
+import { analysieren } from "./analyse.js?v=7";
+import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=7";
+import { textBild } from "./textbild.js?v=7";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
 const $ = (id) => document.getElementById(id);
@@ -146,7 +146,7 @@ async function videoLaden(datei) {
   // der Ton des Videos wird die Tonspur, ausser eine andere Audiodatei ist gewählt
   if (!S.tonQuelle || S.tonQuelle.ausVideo) {
     try {
-      const { tonLesen } = await import("./tonspur.js?v=6");
+      const { tonLesen } = await import("./tonspur.js?v=7");
       const { buffer } = await tonLesen(datei);
       S.tonQuelle = { buffer, name: `Ton von ${datei.name}`, url, ausVideo: true }; S.ausschnitt = null;
       await tonSetzen({ auffrischen: false });
@@ -186,7 +186,7 @@ async function bildSetzen(q) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=6", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=7", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -229,7 +229,7 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=6");
+    buehneModul ??= await import("./buehne.js?v=7");
     if (S.buehneSchluessel !== schluessel) return;
     const saetze = S.quelle === "video" && S.video && S.ablauf === "gewebe" ? await videoSaetze() : null;   // nur das Gewebe holt Bilder aus dem Video
     if (S.buehneSchluessel !== schluessel) return;
@@ -374,9 +374,10 @@ S.stimmDnb = erinnern("stimm-dnb") !== "0"; $("stimm-dnb").checked = S.stimmDnb;
 const wuerfelbar = () => (S.tonart === "stimme" ? S.stimmAblauf : S.frickeln);
 const tonartZeigen = () => {
   $("musik-teil").hidden = S.tonart !== "musik"; $("stimme-teil").hidden = S.tonart !== "stimme"; $("wuerfeln").hidden = !(wuerfelbar() && S.tonQuelle); $("stimm-dnb").disabled = !S.stimmAblauf;
-  $("ausschnitt").hidden = !(S.tonart === "stimme" && S.tonQuelle); ausschnittZeigen();
+  $("ausschnitt").hidden = !S.tonQuelle; ausschnittZeigen();
 };
-// der Ausschnitt der Stimme (Wunsch vom 18. Oktober 2026: «Ich möchte den Ausschnitt des Voice-Clips in der Anwendung wählen können»): in der
+// der Ausschnitt der Audiodatei (Wunsch vom 18. Oktober 2026: «Ich möchte den Ausschnitt des Voice-Clips in der Anwendung wählen können»; seit der
+// Rückmeldung «ich bekomme hier keine Funktion, um das Voice-File zu cutten» gleich unter der Audiodatei, für Musik und Stimme – vorher erst unter «Stimme»): in der
 // Wellenform ziehen oder tippen, oder mit den Reglern «ab» und «Länge». Ohne eigene Wahl (S.ausschnitt null) wie bisher: der Ablauf nimmt rund 10 s
 // ab dem ersten Wort, sonst gilt die ganze Aufnahme. Mit eigener Wahl wird zuerst geschnitten, dann gesäubert; im Ablauf ist der Ausschnitt die klare Stimme.
 S.ausschnitt = null;
@@ -386,13 +387,17 @@ function ausschnittJetzt() {
   const q = S.tonQuelle; if (!q) return null;
   const dauer = q.buffer.duration;
   if (S.ausschnitt) { const von = Math.min(S.ausschnitt.von, Math.max(0, dauer - 0.5)); return { von, bis: Math.min(dauer, von + S.ausschnitt.laenge), eigen: true }; }
-  if (S.stimmAblauf && q.uebersicht) { const von = q.uebersicht.beginn; return { von, bis: Math.min(dauer, von + 10), eigen: false }; }
-  return { von: 0, bis: dauer, eigen: false };
+  // automatisch: mit dem Ablauf rund 10 s ab dem ersten Wort, sonst die ganze Datei – lange Aufnahmen gekürzt auf 60 s (Stimme) oder 5 Minuten (Musik),
+  // nur dieser Teil wird gesäubert und gebaut (Rückmeldung: «das Audio-Interface lässt sich zurzeit noch nicht bedienen, Website blockiert» – eine
+  // Aufnahme von 9 Minuten wurde ganz gesäubert, die Seite stand dabei 50 Sekunden still)
+  if (S.tonart === "stimme" && S.stimmAblauf && q.uebersicht) { const von = Math.max(0, q.uebersicht.beginn - 0.2); return { von, bis: Math.min(dauer, von + 10.4), eigen: false, schneiden: true }; }
+  const grenze = S.tonart === "stimme" ? 60 : 300;
+  return { von: 0, bis: Math.min(dauer, grenze), eigen: false, schneiden: dauer > grenze };
 }
 /** Wellenform (Spitzen je Spalte) und der Sprachbeginn, einmal je Aufnahme */
 async function ausschnittVorbereiten(q) {
   if (q.uebersicht) return;
-  const { sprachbeginn } = await import("./stimme.js?v=6");
+  const { sprachbeginn } = await import("./stimme.js?v=7");
   const b = q.buffer, n = b.length, mono = new Float32Array(n);
   for (let k = 0; k < b.numberOfChannels; k++) { const c = b.getChannelData(k); for (let i = 0; i < n; i++) mono[i] += c[i] / b.numberOfChannels; }
   const spalten = 800, spitzen = new Float32Array(spalten), schritt = n / spalten;
@@ -462,7 +467,7 @@ $("tondatei").addEventListener("change", async (e) => {
   const datei = e.target.files?.[0]; if (!datei) return;
   melden("Der Ton wird gelesen …");
   try {
-    const { tonLesen } = await import("./tonspur.js?v=6");
+    const { tonLesen } = await import("./tonspur.js?v=7");
     const { buffer } = await tonLesen(datei);
     if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
     S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei), ausVideo: false };
@@ -485,19 +490,17 @@ async function tonSetzen({ auffrischen = true } = {}) {
   let kanaele = Array.from({ length: Math.min(2, q.buffer.numberOfChannels) }, (_, k) => q.buffer.getChannelData(k));
   let buffer = q.buffer, url = q.url, name = q.name, mehr = "";
   const pause = () => new Promise((ok) => setTimeout(ok, 30));
-  if (S.tonart === "stimme") {
-    await ausschnittVorbereiten(q); if (nr !== S.tonNr) return;
-    tonartZeigen();
-  }
-  const aus = S.tonart === "stimme" ? ausschnittJetzt() : null;
-  if (aus?.eigen) kanaele = kanaele.map((c) => c.subarray(Math.round(aus.von * rate), Math.round(aus.bis * rate)));
+  await ausschnittVorbereiten(q); if (nr !== S.tonNr) return;
+  tonartZeigen();
+  const aus = ausschnittJetzt(), schnitt = aus?.eigen ? `Ausschnitt ${zeitText(aus.von)}–${zeitText(aus.bis)}` : "";
+  if (aus?.eigen || aus?.schneiden) kanaele = kanaele.map((c) => c.subarray(Math.round(aus.von * rate), Math.round(aus.bis * rate)));
   if (S.tonart === "stimme" && (S.saeubern || S.stimmAblauf || aus?.eigen)) {
     melden(S.saeubern ? "Die Stimme wird gesäubert …" : "Scratch, Stimme und Gefrickel werden gebaut …");
     await pause();
-    const [{ saeubern, stimmAblauf }, { wav }] = await Promise.all([import("./stimme.js?v=6"), import("./frickeln.js?v=6")]);
+    const [{ saeubern, stimmAblauf }, { wav }] = await Promise.all([import("./stimme.js?v=7"), import("./frickeln.js?v=7")]);
     if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
     let kan = kanaele;
-    const teile = aus?.eigen ? [`Ausschnitt ${zeitText(aus.von)}–${zeitText(aus.bis)}`] : [];
+    const teile = schnitt ? [schnitt] : [];
     if (S.saeubern) {
       const s = saeubern(kan, rate); kan = s.kanaele;
       teile.push(`gesäubert (Rauschen ${Math.round(s.rauschenVorher)} → ${Math.round(s.rauschenNachher)} dB)`);
@@ -516,14 +519,21 @@ async function tonSetzen({ auffrischen = true } = {}) {
   } else if (S.tonart === "musik" && S.frickeln) {
     melden("Der Ton wird verfrickelt …");
     await pause();
-    const { frickeln, wav } = await import("./frickeln.js?v=6");
+    const { frickeln, wav } = await import("./frickeln.js?v=7");
     if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
     const f = frickeln(kanaele, rate, { samen: S.wurf });
     buffer = new AudioBuffer({ length: f.kanaele[0].length, numberOfChannels: 2, sampleRate: rate });
     f.kanaele.forEach((c, k) => buffer.copyToChannel(c, k));
     url = URL.createObjectURL(new Blob([wav(f.kanaele, rate)], { type: "audio/wav" }));
-    name = `${q.name} · verfrickelt, Wurf ${S.wurf}`; mehr = ` · ${f.bpm} BPM, ${f.takte} Takte aus ${f.scheiben} Schnipseln`;
+    name = `${q.name}${schnitt ? ` · ${schnitt}` : ""} · verfrickelt, Wurf ${S.wurf}`; mehr = ` · ${f.bpm} BPM, ${f.takte} Takte aus ${f.scheiben} Schnipseln`;
     notiz(`Ton verfrickelt: Wurf ${S.wurf}, ${f.bpm} BPM, ${f.dauer.toFixed(1)} s`);
+  } else if (aus?.eigen || aus?.schneiden) {                                 // nur geschnitten
+    const { wav } = await import("./frickeln.js?v=7");
+    if (nr !== S.tonNr) return;
+    buffer = new AudioBuffer({ length: kanaele[0].length, numberOfChannels: kanaele.length, sampleRate: rate });
+    kanaele.forEach((c, k) => buffer.copyToChannel(c, k));
+    url = URL.createObjectURL(new Blob([wav(kanaele, rate)], { type: "audio/wav" }));
+    name = schnitt ? `${q.name} · ${schnitt}` : `${q.name} · die ersten ${Math.round(aus.bis)} s`;
   }
   const pcm = new Float32Array(buffer.length);
   for (let k = 0; k < buffer.numberOfChannels; k++) { const c = buffer.getChannelData(k); for (let i = 0; i < c.length; i++) pcm[i] += c[i] / buffer.numberOfChannels; }
@@ -649,7 +659,7 @@ $("video").addEventListener("click", async () => {
 });
 
 async function mitWebCodecs(cfg, sz) {
-  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=6");
+  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=7");
   // mit Ton: die Tonspur zuerst kodieren (klein), dann gehen die Bilder gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
   let ton = null;
   if (S.ton && $("ton-im-video").checked) {

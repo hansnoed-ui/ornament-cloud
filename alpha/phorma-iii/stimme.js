@@ -8,7 +8,7 @@
 //   stimmAblauf – aus der gesäuberten Stimme: Scratching auf dem ersten Wort (Hin und Her wie eine Platte unter der Hand, mit Fader), die klare
 //                 Stimme mit zwei, drei Hüpfern (Stottern, Rücksprung, rückwärts), am Ende Gefrickel (frickeln.js, zwei Takte); gegen das Gefrickel hin
 //                 unterlegt mit Drum and Bass (Rückmeldung: «am Ende gegen das Gefrickel hin gerne mit ein wenig Drum and Bass unterlegt»); wiederholbar je Wurf
-import { frickeln, hallFilter, meistern } from "./frickeln.js?v=6";
+import { frickeln, hallFilter, meistern } from "./frickeln.js?v=7";
 
 /** wiederholbarer Zufall (mulberry32) */
 function zufall(samen) {
@@ -152,7 +152,8 @@ export function saeubern(kanaele, rate, { hall = 0.1, lufs = -16 } = {}) {
 export function sprachbeginn(x, rate) {
   const blk = Math.round(0.02 * rate), e = [];
   for (let s = 0; s + blk <= x.length; s += blk) { let q = 0; for (let i = s; i < s + blk; i++) q += x[i] * x[i]; e.push(Math.sqrt(q / blk)); }
-  const max = Math.max(1e-9, ...e), k = e.findIndex((v) => v >= 0.1 * max);
+  let max = 1e-9; for (const v of e) if (v > max) max = v;                   // ohne Spreizen: bei langen Aufnahmen sprengte ...e den Stapel
+  const k = e.findIndex((v) => v >= 0.1 * max);
   return Math.max(0, (k < 0 ? 0 : k) * blk - blk);
 }
 

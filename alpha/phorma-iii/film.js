@@ -1,10 +1,10 @@
 // PHORMA III – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann das Gewebe aus der Bühne (WebGL,
 // buehne.js) mit den Textfragmenten, danach das Bild, darüber die Beschriftung; mit Signet am Schluss das Logo, das aus dem Gewebe entsteht, mit
 // getipptem Schriftzug und verfrickelt im Takt.
-import { FPS, anteil, zeitachse, zeitcode } from "./ablauf.js?v=6";
+import { FPS, anteil, zeitachse, zeitcode } from "./ablauf.js?v=7";
 import { punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=6";
-import { zufall } from "./analyse.js?v=6";
+import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=7";
+import { zufall } from "./analyse.js?v=7";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
@@ -30,7 +30,7 @@ export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = 
     // das Logo am Ende des Gewebes: Farbgebung des letzten Zustands (wie in gewebe.js; die Irrfahrt ist immer Weiss auf Schwarz), Störungen im Takt,
     // der Schriftzug auf den Einsätzen getippt
     const nacht = irr || zustandBei(Z, effekt(L.von) - 1e-3, effekt(G.von)).nacht, tipp = L.von + 2.6;
-    sz.logo = { von: L.von, bis: L.bis, nacht, T, plan: logoPlan(T, L.von, L.bis - 1.0, L.bis - 0.35),
+    sz.logo = { von: L.von, bis: L.bis, nacht, T, plan: logoPlan(T, L.von, L.bis - 1.0, L.bis - 0.35, irr ? L.von + 2.8 : 0),
       tasten: T.einsaetze.filter((e) => e.t >= L.von + 0.1 && e.t < tipp).map((e) => e.t), tipp };
   }
   return sz;
@@ -78,14 +78,16 @@ function fragmenteZeichnen(ctx, sz, t) {
  * zurück, bei starken Schlägen kurz umgekehrt oder ein Ruck in Grösse und Lage. Zuerst heftig, zum Stehen hin ruhig (das Logo steht sauber da), ab aus
  * zerfällt es noch einmal. Ohne Einsätze ein eigener, rascher Takt. Wiederholbar: [{ t, dauer, s, art, rueck, nr }]
  */
-function logoPlan(T, a, b, aus) {
+// wuerfelBis: in der Irrfahrt steht der Würfel noch bis 2,8 s ins Logo – bis dahin nur Stottern, keine seitlich versetzten Streifen (sie
+// zerschnitten ihn; Rückmeldung: «die Würfel sind immer noch verzogen»)
+function logoPlan(T, a, b, aus, wuerfelBis = 0) {
   let ein = T.einsaetze.filter((e) => e.t >= a && e.t < b - 0.1).map((e) => ({ t: e.t, s: Math.min(1, 0.45 + e.staerke) }));
   if (ein.length < 4) { ein = []; for (let t = a + 0.05, k = 0; t < b - 0.25; t += [0.16, 0.24, 0.12][k++ % 3]) ein.push({ t, s: 0.85 }); }
   ein.push({ t: aus + 0.04, s: 1 }, { t: aus + 0.26, s: 0.9 });
   return ein.map((e, nr) => {
     const h = (k) => { const x = Math.sin((nr + 1) * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
     const ruhe = e.t < b ? 1 - 0.8 * anteil(e.t, a + 0.3, b) : 1;
-    return { t: e.t, dauer: 0.08 + 0.14 * h(1), s: e.s * ruhe, art: h(2), rueck: Math.round(5 + 16 * h(3)), nr };
+    return { t: e.t, dauer: 0.08 + 0.14 * h(1), s: e.s * ruhe, art: e.t < wuerfelBis ? 0.19 * h(2) : h(2), rueck: Math.round(5 + 16 * h(3)), nr };
   }).filter((e) => e.s > 0.12);
 }
 /** Störungen in der Irrfahrt («noch wilder»): jeder sehr starke Einsatz (ab 0,75; mit 0,55 flackerte der Würfel bei einer Stimme dauernd) lässt das Bild ein Stück zurückstottern, ohne Beruhigung; Format wie logoPlan.

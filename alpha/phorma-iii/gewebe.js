@@ -9,11 +9,11 @@
 //   sich glatt zum Strich (darüber tippt film.js den Schriftzug).
 // Zustandslos: alles wird aus der Zeit gerechnet (im Vertex-Shader), die Tonkurven liegen als Textur vor und werden nur mit texelFetch gelesen.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=6";
-import { phase } from "./ablauf.js?v=6";
-import { gewebeKurven, abtasten } from "./kurven.js?v=6";
-import { weichzeichnen } from "./analyse.js?v=6";
-import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=6";
+import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=7";
+import { phase } from "./ablauf.js?v=7";
+import { gewebeKurven, abtasten } from "./kurven.js?v=7";
+import { weichzeichnen } from "./analyse.js?v=7";
+import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=7";
 
 // Simplex-Rauschen in 3D (Ashima Arts / Stefan Gustavson, MIT); auch für die Irrfahrt (irrfahrt.js)
 export const RAUSCHEN = /* glsl */ `
@@ -148,7 +148,7 @@ export function gewebe(g, teil) {
     const roh = Array.from({ length: 361 }, (_, i) => pk((i / 360) * Math.PI * 2)), xs = roh.map((q) => q[0]), ys = roh.map((q) => q[1]);
     const mx = (Math.min(...xs) + Math.max(...xs)) / 2, my = (Math.min(...ys) + Math.max(...ys)) / 2, sp = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
     const fl = new Float32Array(roh.length * 2);
-    roh.forEach(([x, y], i) => { fl[2 * i] = ((540 + (x - mx) * (420 / sp)) / B) * A.w - 0.5; fl[2 * i + 1] = ((870 + (y - my) * (420 / sp) + (H - 1920) / 2) / H) * A.h - 0.5; });
+    roh.forEach(([x, y], i) => { fl[2 * i] = ((B / 2 + (x - mx) * (420 / sp)) / B) * A.w - 0.5; fl[2 * i + 1] = ((870 + (y - my) * (420 / sp) + (H - 1920) / 2) / H) * A.h - 0.5; });
     return [abtasten(fl, P)];
   };
   const videoSaetze = (g.saetze ?? []).slice(0, Lg ? 22 : 23);

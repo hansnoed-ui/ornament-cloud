@@ -55,7 +55,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=6");
+  const { bild } = await import("./film.js?v=7");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -145,7 +145,7 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
   // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Logo; mitten in einer anders als ohne; der
   // Schriftzug wird getippt und steht nach 2,6 s
   const logo = await page.evaluate(async () => {
-    const { bild, logoZeichen } = await import("./film.js?v=6");
+    const { bild, logoZeichen } = await import("./film.js?v=7");
     const S = window.__phorma, sz = { ...S.sz, buehne: null, beschriftung: false }, L = sz.logo, e = L.plan.find((x) => x.art >= 0.2 && x.t < L.bis - 1);
     const zeichne = (z, t) => { const c = document.createElement("canvas"); c.width = 270; c.height = 338; const x = c.getContext("2d"); x.setTransform(0.25, 0, 0, 0.25, 0, 0); bild(x, z, t); return c.toDataURL(); };
     const t = e.t + e.dauer * 0.3;
@@ -319,7 +319,7 @@ await check("Stimme: säubern und der Ablauf Scratch → Stimme mit Hüpfern →
   assert.equal(s.kanaele, 2, "in Stereo (der Raum)");
   // der Ausschnitt: zuerst automatisch (10 s ab dem ersten Wort), dann mit den Reglern, in der Wellenform, zurück auf automatisch
   assert.ok(await page.isVisible("#ausschnitt") && await page.isDisabled("#ausschnitt-auto"));
-  assert.match(await page.textContent("#ausschnitt-info"), /0:00,\d – 0:10,\d · 10,0 s \(automatisch\)/);
+  assert.match(await page.textContent("#ausschnitt-info"), /0:00,\d – 0:1\d,\d · 10,4 s \(automatisch\)/);
   const regler = (von, laenge) => page.evaluate(([von, laenge]) => {
     const v = document.getElementById("ausschnitt-von"), l = document.getElementById("ausschnitt-laenge");
     v.value = String(von); l.value = String(laenge); for (const t of ["input", "change"]) l.dispatchEvent(new Event(t));
@@ -360,6 +360,15 @@ await check("Stimme: säubern und der Ablauf Scratch → Stimme mit Hüpfern →
   // gar nichts: das Original
   await page.uncheck("#saeubern");
   await page.waitForFunction(() => window.__phorma.ton?.name === "stimme.wav", null, { timeout: 60_000 });
+  // auch bei Musik: der Ausschnitt steht gleich unter der Audiodatei und schneidet
+  await page.click('[data-tonart="musik"]');
+  assert.ok(await page.isVisible("#ausschnitt"), "Ausschnitt auch bei Musik");
+  await regler(1, 4);
+  await page.waitForFunction(() => window.__phorma.ton?.name === "stimme.wav · Ausschnitt 0:01,0–0:05,0", null, { timeout: 60_000 });
+  assert.ok(Math.abs((await page.evaluate(() => window.__phorma.ton.analyse.dauer)) - 4) < 0.05, "genau der Ausschnitt");
+  await page.click("#ausschnitt-auto");
+  await page.waitForFunction(() => window.__phorma.ton?.name === "stimme.wav", null, { timeout: 60_000 });
+  await page.click('[data-tonart="stimme"]');
   // gemerkt
   await page.reload();
   assert.deepEqual(await page.evaluate(() => [window.__phorma.tonart, document.getElementById("saeubern").checked, document.getElementById("stimm-ablauf").checked]), ["stimme", false, false]);
@@ -403,13 +412,13 @@ await check("Irrfahrt: als Effekt wählbar und gemerkt; schwarz, beim Schlag hel
   await ctx.close();
 });
 
-await check("Foto als Quelle, Format 9 : 16 und zurück: ohne Logo steht am Ende das Foto exakt; mit Logo am Ende das Logo", async () => {
+await check("Foto als Quelle, Format 9 : 16, 16 : 9 und zurück: ohne Logo steht am Ende das Foto exakt; mit Logo am Ende das Logo", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await laden(page); await bereit(page);
   assert.equal(await page.evaluate(() => window.__phorma.sz.zeit.phasen.at(-1).name), "logo");
   await page.uncheck("#signet");
   await page.waitForFunction(() => window.__phorma.sz.zeit.phasen.at(-1).name === "bild");
-  for (const [format, mass] of [["9:16", [1080, 1920]], ["4:5", [1080, 1350]]]) {
+  for (const [format, mass] of [["9:16", [1080, 1920]], ["16:9", [1920, 1080]], ["4:5", [1080, 1350]]]) {
     await page.click(`[data-format="${format}"]`);
     await page.waitForFunction((m) => window.__phorma.sz?.breite === m[0] && window.__phorma.sz?.hoehe === m[1] && window.__phorma.buehne?.H === m[1] && !document.getElementById("video").disabled, mass, { timeout: 120_000 });
     await bereit(page);
