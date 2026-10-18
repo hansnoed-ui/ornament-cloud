@@ -1,5 +1,5 @@
 // PHORMA II – Web Worker: rechnet die ganze Bahn des Tuchs (tuchsim.js), ohne die Seite aufzuhalten, und meldet den Fortschritt.
-import { tuchBahn } from "./tuchsim.js?v=10";
+import { tuchBahn } from "./tuchsim.js?v=11";
 
 self.onmessage = (e) => {
   const { nr, ...auftrag } = e.data;
