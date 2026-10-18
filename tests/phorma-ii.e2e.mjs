@@ -56,7 +56,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit, Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild, szene } = await import("./film.js?v=15");
+  const { bild, szene } = await import("./film.js?v=16");
   const S = window.__phorma; S.laeuft = false;
   const sz = szene({ breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, ablauf: S.ablauf, buehne: S.buehne, beschriftung: false, signet: true });
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -267,6 +267,16 @@ await check("Gewebe aus Text mit Ton: Text wählt das Gewebe, verfrickeln und ne
   assert.deepEqual(s.phasen.map((p) => p[0]), ["zeichen", "gewebe", "bild"]);
   assert.ok(Math.abs(s.abschnitt.bis - s.abschnitt.von - 10) < 1e-6, "mit Ton: so lang wie die Musik, mindestens 10 s");
   assert.ok(s.einsaetze >= 6 && s.fragmente >= 2, `Einsätze ${s.einsaetze}, Fragmente ${s.fragmente}`);
+  // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Abspann; mitten in einer anders als ohne
+  const logo = await page.evaluate(async () => {
+    const { bild, szene } = await import("./film.js?v=16");
+    const S = window.__phorma, o = { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, ablauf: S.ablauf, buehne: null, beschriftung: false, signet: true, text: S.text, ton: S.ton.analyse, laenge: 10 };
+    const sz = szene(o), e = sz.logo.find((x) => x.art >= 0.2 && x.t > sz.zeit.ab.signet[0]);
+    const zeichne = (z, t) => { const c = document.createElement("canvas"); c.width = 270; c.height = 338; const x = c.getContext("2d"); x.setTransform(0.25, 0, 0, 0.25, 0, 0); bild(x, z, t); return c.toDataURL(); };
+    const ohne = szene({ ...o, ablauf: "physarum" }), t = e.t + e.dauer * 0.3;
+    return { n: sz.logo.length, gleich: zeichne(sz, t) === zeichne({ ...ohne, zeit: sz.zeit }, t) };
+  });
+  assert.ok(logo.n >= 3 && !logo.gleich, `Logo verfrickelt (${JSON.stringify(logo)})`);
   const G = s.phasen[1], zeichen = await messe(page, s.phasen[0][1] + 0.9), mitte = await messe(page, (G[1] + G[2]) / 2), mitte2 = await messe(page, (G[1] + G[2]) / 2 + 0.5);
   const ende = await messe(page, s.abschnitt.bis + 1);
   assert.ok(zeichen.mittelAbw < 10 && mitte.mittelAbw > zeichen.mittelAbw, `zuerst steht der Text (${zeichen.mittelAbw.toFixed(2)}, später ${mitte.mittelAbw.toFixed(2)})`);

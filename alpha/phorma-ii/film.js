@@ -1,9 +1,9 @@
 // PHORMA II – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann die Kette aus der Bühne (WebGL,
 // buehne.js), danach das Foto, darüber Abblenden und die Beschriftung, am Schluss auf Wunsch das leuchtende Signet von ornament.cloud wie in PHORMA I.
-import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO, MIT_TON } from "./ablauf.js?v=15";
+import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO, MIT_TON } from "./ablauf.js?v=16";
 import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { tonOderErsatz, gewebeZustaende } from "./ton.js?v=15";
-import { zufall } from "./analyse.js?v=15";
+import { tonOderErsatz, gewebeZustaende } from "./ton.js?v=16";
+import { zufall } from "./analyse.js?v=16";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
@@ -12,7 +12,7 @@ const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo,
 export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = true, beschriftung = true, titel = "", foto = null, ablauf, buehne = null,
   text = "", ton = null, laenge = null } = {}) {
   const zeit = zeitachse({ tempo, signet, ablauf, laenge });
-  const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA II").trim(), fragmente: [], schnitte: [], nacht: [] };
+  const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA II").trim(), fragmente: [], schnitte: [], nacht: [], logo: null };
   if (MIT_TON.includes(zeit.ablauf)) {
     const T = tonOderErsatz(ton), G = zeit.phasen.find((p) => p.name === zeit.ablauf);
     // die Schnitte zählen wie im Gewebe in der Zeit des Effekts (Vorlauf 0,4 s, ohne Tonspur im Tempo gestreckt)
@@ -22,6 +22,7 @@ export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = 
     const Z = gewebeZustaende(T, effekt(G.von), effekt(G.bis));
     sz.nacht = Z.map((z, i) => [film(z.t), film(Z[i + 1]?.t ?? effekt(G.bis)), z.nacht]).filter((z) => z[2]).map(([a, b]) => [a, b]);
     if (text) sz.fragmente = fragmentPlan(text, T, G, breite, hoehe);
+    if (signet && zeit.ab.signet) sz.logo = logoPlan(T, zeit.ab);
   }
   return sz;
 }
@@ -61,6 +62,65 @@ function fragmenteZeichnen(ctx, sz, t) {
   }
   ctx.restore();
 }
+
+/**
+ * Das Logo verfrickelt (Wunsch vom 18. Oktober 2026: «jetzt brauchts natürlich auch noch eine verfrickelte Animation des Logos»): im Gewebe klingt
+ * die Musik bis ans Ende, und jeder Einsatz zerhackt das Signet – Streifen springen seitlich, die Zeichnung stottert ein Stück zurück, bei starken
+ * Schlägen kurz Schwarz auf Weiss oder ein Ruck in Grösse und Lage. Zuerst heftig, zum Stehen hin ruhig (das Logo steht sauber da), beim Ausblenden
+ * zerfällt es noch einmal. Ohne Einsätze im Abspann ein eigener, rascher Takt. Wiederholbar: [{ t, dauer, s, art, rueck, nr }]
+ */
+function logoPlan(T, ab) {
+  const a = ab.signet[0] - 0.15, b = ab.signetStehen[0], aus = ab.signetAus[0];
+  let ein = T.einsaetze.filter((e) => e.t >= a && e.t < b - 0.1).map((e) => ({ t: e.t, s: Math.min(1, 0.45 + e.staerke) }));
+  if (ein.length < 4) { ein = []; for (let t = a + 0.05, k = 0; t < b - 0.25; t += [0.16, 0.24, 0.12][k++ % 3]) ein.push({ t, s: 0.85 }); }
+  ein.push({ t: aus + 0.04, s: 1 }, { t: aus + 0.26, s: 0.9 });
+  return ein.map((e, nr) => {
+    const h = (k) => { const x = Math.sin((nr + 1) * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
+    const ruhe = e.t < b ? 1 - 0.8 * anteil(e.t, a + 0.3, b) : 1;
+    return { t: e.t, dauer: 0.08 + 0.14 * h(1), s: e.s * ruhe, art: h(2), rueck: Math.round(5 + 16 * h(3)), nr };
+  }).filter((e) => e.s > 0.12);
+}
+const zufallLogo = (nr, k) => { const x = Math.sin(nr * 91.17 + k * 17.31) * 43758.5453; return x - Math.floor(x); };
+/** die laufenden Störungen zur Zeit t: um wie viele Bilder die Zeichnung zurückspringt, welche Streifen, Umkehr, Ruck */
+function logoStoerung(plan, t) {
+  const an = plan.filter((e) => t >= e.t && t < e.t + e.dauer);
+  if (!an.length) return null;
+  let rueck = 0, umkehr = false, ruck = null;
+  const streifen = [];
+  for (const e of an) {
+    const x = 1 - (t - e.t) / e.dauer;                                   // klingt innerhalb des Ereignisses ab
+    if (e.art < 0.35) rueck += e.rueck * SIGNET_TEMPO;
+    if (e.art >= 0.2) streifen.push({ e, x });
+    if (e.art > 0.86 && e.s > 0.55 && t < e.t + 0.1) umkehr = true;
+    if (e.art > 0.7 && e.art <= 0.86) ruck = { e, x };
+  }
+  return { rueck, streifen, umkehr, ruck };
+}
+/** das Signet (Quelle, in Filmpunkten 1080 × H) gestört auf ctx zeichnen */
+function logoGestoert(ctx, quelle, H, st) {
+  const sx = quelle.width / 1080, sy = quelle.height / H;
+  ctx.save();
+  if (st.ruck) {
+    const { e, x } = st.ruck, z = 1 + 0.12 * e.s * x * (zufallLogo(e.nr, 1) > 0.5 ? 1 : -0.6);
+    ctx.translate(540 + (zufallLogo(e.nr, 2) - 0.5) * 90 * e.s * x, H / 2 + (zufallLogo(e.nr, 3) - 0.5) * 60 * e.s * x); ctx.scale(z, z); ctx.translate(-540, -H / 2);
+  }
+  if (!st.streifen.length) ctx.drawImage(quelle, 0, 0, 1080, H);
+  else {
+    // Streifen: Höhe, Versatz und manchmal eine andere Stelle der Quelle je Ereignis gewürfelt
+    const { e, x } = st.streifen[st.streifen.length - 1], n = 6 + Math.floor(zufallLogo(e.nr, 4) * 16);
+    let y = 0;
+    for (let k = 0; k < n && y < H; k++) {
+      const hb = k === n - 1 ? H - y : Math.max(6, H * (0.3 + zufallLogo(e.nr, 10 + k) * 1.4) / n), r = zufallLogo(e.nr, 40 + k);
+      const dx = r < 0.35 ? 0 : (zufallLogo(e.nr, 70 + k) - 0.5) * 2 * 150 * e.s * x;
+      const quellY = zufallLogo(e.nr, 100 + k) < 0.2 ? Math.min(H - hb, Math.max(0, y + (zufallLogo(e.nr, 130 + k) - 0.5) * 0.25 * H)) : y;
+      ctx.drawImage(quelle, 0, quellY * sy, quelle.width, hb * sy, dx, y, 1080, hb);
+      y += hb;
+    }
+  }
+  ctx.restore();
+  if (st.umkehr) { ctx.save(); ctx.globalCompositeOperation = "difference"; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, 1080, H); ctx.restore(); }
+}
+let logoLeinwand = null;
 
 /** Pixelmass der Ziel-Leinwand (Vorschau kleiner, Video voll): darin rechnet WebGL */
 const zielMass = (ctx, sz) => { const m = ctx.getTransform(); return [sz.breite * Math.hypot(m.a, m.b), sz.hoehe * Math.hypot(m.c, m.d)]; };
@@ -120,14 +180,23 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
   }
   if (ab.signet && t >= ab.signet[0] && t < ab.signetAus[1]) {
     ctx.save(); ctx.translate((B - 1080) / 2, 0);
-    const f = SIGNET_VON + (t - ab.signet[0]) * FPS * SIGNET_TEMPO;
+    const st = sz.logo ? logoStoerung(sz.logo, t) : null;                   // im Gewebe: das Logo verfrickelt
+    const f = Math.max(SIGNET_VON, SIGNET_VON + (t - ab.signet[0]) * FPS * SIGNET_TEMPO - (st?.rueck ?? 0));
     const opt = { hoehe: H, farben: F, punktTempo: SIGNET_TEMPO * 1.25, zusammen: [118, 172, (x) => (1 - Math.cos(Math.PI * x)) / 2] };
     if (sz.buehne) {
       // leuchtend wie in PHORMA I: der Punkt läuft als kleiner Glaskristall durch die Schlaufe, mit Halo und Bokeh auf seiner Spur
       const [w, h] = zielMass(ctx, sz), { lage: [px, py], sicht } = punktLage(f, opt);
       const zeichnen = (c) => { c.fillStyle = F.grund; c.fillRect(0, 0, 1080, H); signetZeichnen(c, f, opt); };
       const spur = [5, 10, 15, 20].map((d) => { const [sx, sy] = punktLage(Math.max(0, f - d * SIGNET_TEMPO), opt).lage; return [sx, sy + (H - 1920) / 2]; });
-      ctx.drawImage(sz.buehne.signet(zeichnen, { lage: [px, py + (H - 1920) / 2], sicht, radius: PUNKT_RADIUS, spur, farbe: F.punkt }, f, w, h), 0, 0, 1080, H);
+      const c = sz.buehne.signet(zeichnen, { lage: [px, py + (H - 1920) / 2], sicht, radius: PUNKT_RADIUS, spur, farbe: F.punkt }, f, w, h);
+      if (st) logoGestoert(ctx, c, H, st); else ctx.drawImage(c, 0, 0, 1080, H);
+    } else if (st) {
+      logoLeinwand ??= typeof document !== "undefined" ? document.createElement("canvas") : null;
+      if (logoLeinwand) {
+        if (logoLeinwand.width !== 1080 || logoLeinwand.height !== H) { logoLeinwand.width = 1080; logoLeinwand.height = H; }
+        const lc = logoLeinwand.getContext("2d"); lc.fillStyle = F.grund; lc.fillRect(0, 0, 1080, H); signetZeichnen(lc, f, opt);
+        logoGestoert(ctx, logoLeinwand, H, st);
+      } else signetZeichnen(ctx, f, opt);
     } else signetZeichnen(ctx, f, opt);
     ctx.restore();
     const weg = ausblenden(anteil(t, ab.signetAus[0], ab.signetAus[1]));
