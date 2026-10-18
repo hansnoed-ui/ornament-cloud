@@ -1,4 +1,4 @@
-// PHORMA II – Gewebe: Flächen aus feinen Linien wie in einem Video von Pauric Freeman (Wunsch vom 17. Oktober 2026: «vor allem Video 2»). Aus den
+// PHORMA III – Gewebe: Flächen aus feinen Linien wie in einem Video von Pauric Freeman (Wunsch vom 17. Oktober 2026: «vor allem Video 2»). Aus den
 // Umrissen des Texts (Linien gleicher Helligkeit des Fotos oder Videos, kurven.js; mit «Nur Ton» kleinen Schlaufen) wächst je Kurve eine zerknitterte
 // Fläche wie Seide: jede ihrer Lagen ist eine feine, halb durchsichtige Linie, ein Stück weiter in der Fläche – so ist sie dicht, auch wenn sie stillsteht.
 //   Die Dynamik wie im Vorbild (Rückmeldung vom 18. Oktober 2026: «die Dynamik der Animation näher beim Video»): bei jedem kräftigen Einsatz ein
@@ -9,11 +9,11 @@
 //   sich glatt zum Strich (darüber tippt film.js den Schriftzug).
 // Zustandslos: alles wird aus der Zeit gerechnet (im Vertex-Shader), die Tonkurven liegen als Textur vor und werden nur mit texelFetch gelesen.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=17";
-import { phase } from "./ablauf.js?v=17";
-import { gewebeKurven, abtasten } from "./kurven.js?v=17";
-import { weichzeichnen } from "./analyse.js?v=17";
-import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=17";
+import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=1";
+import { phase } from "./ablauf.js?v=1";
+import { gewebeKurven, abtasten } from "./kurven.js?v=1";
+import { weichzeichnen } from "./analyse.js?v=1";
+import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=1";
 
 // Simplex-Rauschen in 3D (Ashima Arts / Stefan Gustavson, MIT)
 const RAUSCHEN = /* glsl */ `

@@ -1,4 +1,4 @@
-// PHORMA II – Text als Quelle (Wunsch vom 17. Oktober 2026: Effekte «für Texte und Audiofiles»): der Text wird zu einem Bild in Filmgrösse – dunkle
+// PHORMA III – Text als Quelle (Wunsch vom 17. Oktober 2026: Effekte «für Texte und Audiofiles»): der Text wird zu einem Bild in Filmgrösse – dunkle
 // Schrift auf hellem Papier, so gross es geht, mittig. Seit 18. Oktober 2026 in einer modernen Grotesk (Wunsch: «als Schrift eine moderne
 // serifenlose»): Inter Display Semibold mit knapper Laufweite, wie auf ornament.cloud; vorher Newsreader kursiv.
 // Dieses Bild geht dann durch dieselbe Analyse wie ein Foto; das Gewebe nimmt die Umrisse der Buchstaben.

@@ -1,9 +1,11 @@
 # PHORMA – Ideen für später (Stand 17. Oktober 2026)
 
 Wunsch vom 17. Oktober 2026: «Zuerst ausprobieren. Behalte die Ideen aber und frag mich später nochmals danach.»
-Zuerst wird PHORMA II mit echten Fotos ausprobiert; danach nachfragen, ob PHORMA III so beginnen soll.
+Zuerst wird PHORMA II mit echten Fotos ausprobiert; danach nachfragen, ob die nächste Anwendung so beginnen soll.
+Seit dem 18. Oktober 2026 heisst das Gewebe (Text, Video, Ton) «PHORMA III» (alpha/phorma-iii/, Wunsch: «All das soll aus PHORMA II
+ausgelagert werden und in ein neues PHORMA III integriert werden»); der Vorschlag unten wäre also PHORMA IV.
 
-## Vorschlag PHORMA III
+## Vorschlag PHORMA IV (bis 18. Oktober 2026 «PHORMA III» genannt)
 Fundament: ein Operator-Graph wie in TouchDesigner (Bildbausteine, Geometriebausteine, Kurvenbausteine: Verzögern, Feder, Rauschen,
 Auslöser) und eine Partitur als lesbare, änderbare Datei. Abläufe werden zu Daten statt zu Code.
 Darauf: **NN-Bildlabor + mehrere Gedächtnisse + Beobachter**, danach der **Konstellations-Komponist**.
@@ -30,7 +32,7 @@ Beobachter: der Film analysiert jedes eigene Bild und ändert danach die nächst
 | 8 Evolutionäres Atelier | mittel | braucht parametrische Effekte; Varianten als Kacheln, Abstammung gespeichert |
 | 7 Konstellations-Komponist | mittel | 20 + 20 Personen aus src/doppelspalt/, Sprachmodell; Quelle und eigene Übersetzung getrennt |
 | 1 Begriffe → Operationen | mittel | wie 7, mit einem Begriff statt einer Paarung |
-| 6 Bild-Klang | aufwendig | Videos bisher ohne Ton |
+| 6 Bild-Klang | aufwendig | seit dem Gewebe (PHORMA III) gibt es Videos mit Ton |
 | 9 Dramaturg für lange Laufzeiten | anderes Format | Installation über Stunden |
 | 10 Werkstattmeister | nicht hier | setzt eine laufende TouchDesigner-Instanz voraus |
 

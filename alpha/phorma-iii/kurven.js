@@ -1,4 +1,4 @@
-// PHORMA II – Kurven für das Gewebe (ohne DOM): Linien gleicher Höhe (Marching Squares) einer Karte, zu Zügen verkettet, die längsten zuerst,
+// PHORMA III – Kurven für das Gewebe (ohne DOM): Linien gleicher Höhe (Marching Squares) einer Karte, zu Zügen verkettet, die längsten zuerst,
 // gleichmässig neu abgetastet. Beim Text sind es die Umrisse der Buchstaben, beim Foto Linien gleicher Helligkeit.
 
 /** Linien der Höhe stufe in feld (w × h, Zeile 0 oben) als Züge [[x, y, x, y, …], …] in Punkten des Felds */

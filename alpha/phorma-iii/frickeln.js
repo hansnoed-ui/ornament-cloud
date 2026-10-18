@@ -1,4 +1,4 @@
-// PHORMA II – Verfrickeln (ohne DOM, auch in Node für die Tests): aus einer hochgeladenen Musik oder einem Sample wird ein neues Stück, wie es ein
+// PHORMA III – Verfrickeln (ohne DOM, auch in Node für die Tests): aus einer hochgeladenen Musik oder einem Sample wird ein neues Stück, wie es ein
 // Modularsynthesizer aus Schnipseln baut (Wunsch vom 17. Oktober 2026: «Musik hochladen können, z. B. ein Sample, die dann verfrickelt wird – als
 // Option»). Wiederholbar: derselbe Wurf (samen) ergibt dasselbe Stück.
 //   Scheiben  – das Material wird an seinen Einsätzen zerschnitten (ton.js), lange Stücke in halbe Sekunden
@@ -10,7 +10,7 @@
 //               punktierten Achtel, Hall (wie Freeverb)
 //   Mastering – Gleichanteil weg, sanft verdichtet, auf −14 LUFS, Begrenzer mit Vorausschau auf −1 dBFS (seit 18. Oktober 2026, Wunsch: «den Sound
 //               qualitativ optimieren»; vorher tanh-Sättigung auf −0,5 dB, je nach Material −9 bis −16 LUFS und Klicks aus dem Bitcrush)
-import { tonAnalysieren } from "./ton.js?v=17";
+import { tonAnalysieren } from "./ton.js?v=1";
 
 /** wiederholbarer Zufall (mulberry32) */
 function zufall(samen) {

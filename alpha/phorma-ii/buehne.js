@@ -9,12 +9,11 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=17";
-import { FPS, kette, laufend } from "./ablauf.js?v=17";
-import { physarum } from "./physarum.js?v=17";
-import { tiefe } from "./tiefe.js?v=17";
-import { tuch } from "./tuch.js?v=17";
-import { gewebe } from "./gewebe.js?v=17";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=18";
+import { FPS, kette, laufend } from "./ablauf.js?v=18";
+import { physarum } from "./physarum.js?v=18";
+import { tiefe } from "./tiefe.js?v=18";
+import { tuch } from "./tuch.js?v=18";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -48,14 +47,13 @@ const AUSGABE = /* glsl */ `
     gl_FragColor = vec4(o, 1.0);
   }`;
 
-const FABRIK = { physarum, tiefe, tuch, gewebe };
+const FABRIK = { physarum, tiefe, tuch };
 
 /**
  * Die Bühne für ein Foto (Canvas in Filmgrösse B × H), seine Analyse und eine Kette. optionen: tiefeQuelle ("bild" | "ki"), grob (Telefon), test (klein).
  * bild(zeit, t, w, h, { proben, verschluss }) → Leinwand; zaehler(zeit, t) → Text für die Beschriftung; entsorgen().
  */
-/** quelle: "foto" | "text"; ton: Analyse einer Tonspur (ton.js) oder null; laenge: Dauer des Gewebes nach der Tonspur */
-export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuelle = "bild", quelle = "foto", ton = null, laenge = null, signet = false, saetze = null, onVerloren = null, spur = () => {} } = {}) {
+export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuelle = "bild", onVerloren = null, spur = () => {} } = {}) {
   const B = foto.width, H = foto.height;
   const canvas = typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(B, H);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
@@ -69,10 +67,10 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   fotoTex.colorSpace = THREE.SRGBColorSpace; fotoTex.anisotropy = 4;
   const tiefeTex = datenTextur(A.tiefe, A.w, A.h), nahrungTex = datenTextur(A.nahrung, A.w, A.h);
   const quad = new FullScreenQuad();
-  const g = { THREE, renderer, quad, foto, fotoTex, tiefeTex, nahrungTex, A, B, H, grob, test, tiefeQuelle, quelle, ton, saetze, signet,
+  const g = { THREE, renderer, quad, foto, fotoTex, tiefeTex, nahrungTex, A, B, H, grob, test, tiefeQuelle,
     pass(material, rt) { renderer.setRenderTarget(rt); quad.material = material; quad.render(renderer); },
     loeschen(rt, farbe = 0x000000) { renderer.setRenderTarget(rt); renderer.setClearColor(farbe, 1); renderer.clear(true, true, true); } };
-  const K = kette(ablauf, { laenge, signet });
+  const K = kette(ablauf);
   g.ablaufDauer = K.dauer;
   const effekte = K.teile.map((teil) => { spur(`Effekt wird aufgebaut: ${teil.art}`); return FABRIK[teil.art](g, teil); });
   const art = (teil) => effekte[K.teile.findIndex((x) => x.art === teil.art)];

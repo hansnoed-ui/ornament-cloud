@@ -1,0 +1,84 @@
+// PHORMA III – Ablauf des Films (ohne DOM). 30 Bilder pro Sekunde; Hochformat 4 : 5 (Feed), wahlweise 9 : 16 (Reels, Stories).
+// Das Gewebe aus PHORMA II, seit dem 18. Oktober 2026 eine eigene Anwendung (Wunsch: «Es sind ja zwei ganz verschiedene Ansätze: die Bildanimation
+// mit Physarum, Tiefe und Tuch und die Gewebe-Animation mit Audio, Video, Text etc. All das soll aus PHORMA II ausgelagert werden»):
+//   01 Zeichen (der Text, das Foto oder das Standbild des Videos steht) → 02 Gewebe (seine Umrisse werden zu Flächen aus feinen Linien, die der
+//   Ton bewegt; neue Bilder bei kräftigen Einsätzen) → 03 Logo (aus der Schlaufe des Signets wächst die Fläche und legt sich glatt; mit Signet)
+//   oder 03 Bild (die Flächen legen sich zurück, das Zeichen steht wieder exakt da; ohne Signet). Mit einer Tonspur so lang wie sie.
+// Der Aufbau (Kette aus Teilen, Phasen, laufend) ist derselbe wie in PHORMA II, mit einem einzigen Teil.
+export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=10";
+
+export const FORMATE = ["4:5", "9:16"];
+export const filmMass = (format = "4:5") => (format === "9:16" ? [1080, 1920] : [1080, 1350]);
+
+/** das Logo am Ende (mit Signet): es entsteht aus dem Gewebe, legt sich glatt, der Schriftzug wird getippt */
+export const LOGO = 4.6;
+/** was nach dem Effekt noch kommt (für die Länge nach der Tonspur): mit Logo nur der Schluss, sonst Stehen und Schluss */
+export const NACH = (signet) => (signet ? 0.3 : 3.2 + 0.3);
+
+export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
+export const TITEL = { gewebe: "Gewebe" };
+export const KETTE = "gewebe";
+
+/**
+ * Die Rolle des Gewebes: seine Phasen ([name, titel, dauer] bei Tempo «normal»). Mit Tonspur dauert es, so lange der Ton läuft (laenge: die ganze
+ * Dauer des Effekts). Mit Signet endet es nicht beim Bild, sondern geht gleich ins Logo über (Rückmeldung vom 18. Oktober 2026: «der Weissraum
+ * einige Sekunden vor dem Logo ist unnötig. Bitte direkt vom Gewebe zum Logo»).
+ */
+export function rolle({ laenge = null, signet = false } = {}) {
+  const phasen = signet
+    ? [["zeichen", "Zeichen", 2.2], ["gewebe", "Gewebe", laenge ? Math.max(3.2, laenge - 2.2 - LOGO) : 14], ["logo", "Logo", LOGO]]
+    : [["zeichen", "Zeichen", 2.2], ["gewebe", "Gewebe", laenge ? Math.max(5, laenge - 4.8) : 14], ["bild", "Bild", 2.6]];
+  return { art: "gewebe", erst: true, letzt: true, vorher: null, naechstes: null, phasen, dauer: phasen.reduce((s, p) => s + p[2], 0), ueber: 0, uebergang: "schnitt" };
+}
+
+/** in Sekunden bei Tempo «normal»: { teile: [{ ...rolle, von, bis }], phasen: [{ name, titel, von, bis, art }], dauer } */
+export function kette(opt = {}) {
+  const R = rolle(opt), phasen = [];
+  let p0 = 0;
+  for (const [name, titel, d] of R.phasen) { phasen.push({ name, titel, von: p0, bis: p0 + d, art: R.art }); p0 += d; }
+  return { teile: [{ ...R, von: 0, bis: R.dauer, vonFoto: false }], phasen, dauer: R.dauer };
+}
+
+/**
+ * Zeitachse in Sekunden: { ab: { name: [anfang, ende] }, ablauf, abschnitt: { von, bis }, teile (Filmzeiten), phasen, dauer, bilder, tempo }.
+ * Der Effekt rechnet in seiner eigenen Zeit bei Tempo «normal»: lokal(teil, t) = (t − teil.von) / tempo. laenge: die Dauer des Effekts nach einer
+ * Tonspur (dann ohne Tempo).
+ */
+export function zeitachse({ tempo = "normal", signet = true, laenge = null } = {}) {
+  const f = laenge ? 1 : TEMPO[tempo] ?? (typeof tempo === "number" ? tempo : 1);
+  const K = kette({ laenge, signet }), ab = {};
+  let t = 0;
+  const dazu = (name, d) => { ab[name] = [t, t + d]; t += d; };
+  dazu("vor", 0.4);
+  const von = t;
+  const teile = K.teile.map((tl) => ({ ...tl, von: von + tl.von * f, bis: von + tl.bis * f }));
+  const phasen = K.phasen.map((p) => ({ ...p, von: von + p.von * f, bis: von + p.bis * f }));
+  t = von + K.dauer * f;
+  const abschnitt = { von, bis: t };
+  if (signet) dazu("schluss", 0.3);                                         // das Logo gehört zum Effekt: danach nur noch der Schluss
+  else { dazu("stehen", 3.2); dazu("schluss", 0.3); }
+  return { ab, ablauf: KETTE, abschnitt, teile, phasen, dauer: t, bilder: Math.round(t * 30), tempo: f };
+}
+
+/** der Effekt zur Zeit t mit seiner eigenen Zeit (wie in PHORMA II, wo beim Übergang zwei laufen) */
+export function laufend(zeit, t) {
+  const { teile: [teil], tempo } = zeit;
+  return [{ teil, lokal: Math.min(teil.bis - teil.von, Math.max(0, t - teil.von)) / tempo }];
+}
+
+/** Anfang und Ende einer Phase eines Teils in seiner eigenen Zeit */
+export function phase(teil, name) {
+  let p0 = 0;
+  for (const [n, , d] of teil.phasen) { if (n === name) return [p0, p0 + d]; p0 += d; }
+  return null;
+}
+
+export function zeitcode(t, fps = 30) {
+  const b = Math.max(0, Math.floor(t * fps + 1e-6)), z = (n) => String(n).padStart(2, "0");
+  return `${z(Math.floor(b / fps / 60))}:${z(Math.floor(b / fps) % 60)}:${z(b % fps)}`;
+}
+
+export function dateiname(zeit, endung) {
+  const z = (n) => String(n).padStart(2, "0");
+  return `phorma-iii-${zeit.getFullYear()}-${z(zeit.getMonth() + 1)}-${z(zeit.getDate())}-${z(zeit.getHours())}${z(zeit.getMinutes())}.${endung}`;
+}

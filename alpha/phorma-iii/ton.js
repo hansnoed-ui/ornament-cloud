@@ -1,4 +1,4 @@
-// PHORMA II – Ton (ohne DOM, auch in Node für die Tests): eine Tonspur wird vorab in Kurven je Filmbild zerlegt, die die Effekte steuern
+// PHORMA III – Ton (ohne DOM, auch in Node für die Tests): eine Tonspur wird vorab in Kurven je Filmbild zerlegt, die die Effekte steuern
 // (Wunsch vom 17. Oktober 2026 nach einem Video von Pauric Freeman – Modularsynthesizer, auf dem Bildschirm Bänder aus feinen Linien und Buchstaben –:
 // «überlegen wir uns, wie wir solche Effekte hinbekommen, für Texte und Audiofiles»). Alles wird vorab gerechnet, der Film bleibt eine Funktion
 // der Zeit.
