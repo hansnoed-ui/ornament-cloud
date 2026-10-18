@@ -1,10 +1,10 @@
 // PHORMA III – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann das Gewebe aus der Bühne (WebGL,
 // buehne.js) mit den Textfragmenten, danach das Bild, darüber die Beschriftung; mit Signet am Schluss das Logo, das aus dem Gewebe entsteht, mit
 // getipptem Schriftzug und verfrickelt im Takt.
-import { FPS, anteil, zeitachse, zeitcode } from "./ablauf.js?v=1";
+import { FPS, anteil, zeitachse, zeitcode } from "./ablauf.js?v=2";
 import { punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=1";
-import { zufall } from "./analyse.js?v=1";
+import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=2";
+import { zufall } from "./analyse.js?v=2";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
@@ -12,21 +12,23 @@ const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo,
 /** Szene: { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel, fragmente, schnitte, nacht, logo }; text: für die Fragmente, ton: Analyse
  *  einer Tonspur, laenge: Dauer des Gewebes nach ihr */
 export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = true, beschriftung = true, titel = "", foto = null, buehne = null,
-  text = "", ton = null, laenge = null } = {}) {
-  const zeit = zeitachse({ tempo, signet, laenge });
-  const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA III").trim(), fragmente: [], schnitte: [], nacht: [], logo: null };
-  const T = tonOderErsatz(ton), G = zeit.phasen.find((p) => p.name === "gewebe");
+  ablauf = "gewebe", text = "", ton = null, laenge = null } = {}) {
+  const zeit = zeitachse({ tempo, signet, laenge, ablauf }), irr = zeit.ablauf === "irrfahrt";
+  // halten: die Irrfahrt hat kein Stehen auf dem Bild – nach dem Effekt hält ihr letztes Bild
+  const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA III").trim(), fragmente: [], schnitte: [], nacht: [], logo: null, halten: irr };
+  const T = tonOderErsatz(ton), G = zeit.phasen.find((p) => p.name === zeit.ablauf);
   // die Schnitte zählen wie im Gewebe in der Zeit des Effekts (Vorlauf 0,4 s, ohne Tonspur im Tempo gestreckt)
   const f = zeit.tempo, film = (s) => 0.4 + (s - 0.4) * f, effekt = (s) => 0.4 + (s - 0.4) / f;
   sz.schnitte = T.schnitte.map(film).filter((s) => s > G.von && s < G.bis);
   // die Zustände des Gewebes wie in gewebe.js (in der Zeit des Effekts): wo Weiss auf Schwarz steht, stehen auch die Fragmente umgekehrt
   const Z = gewebeZustaende(T, effekt(G.von), effekt(G.bis));
   sz.nacht = Z.map((z, i) => [film(z.t), film(Z[i + 1]?.t ?? effekt(G.bis)), z.nacht]).filter((z) => z[2]).map(([a, b]) => [a, b]);
-  if (text) sz.fragmente = fragmentPlan(text, T, G, breite, hoehe);
+  if (text && !irr) sz.fragmente = fragmentPlan(text, T, G, breite, hoehe);
   const L = zeit.phasen.find((p) => p.name === "logo");
   if (L) {
-    // das Logo am Ende des Gewebes: Farbgebung des letzten Zustands (wie in gewebe.js), Störungen im Takt, der Schriftzug auf den Einsätzen getippt
-    const nacht = zustandBei(Z, effekt(L.von) - 1e-3, effekt(G.von)).nacht, tipp = L.von + 2.6;
+    // das Logo am Ende des Gewebes: Farbgebung des letzten Zustands (wie in gewebe.js; die Irrfahrt ist immer Weiss auf Schwarz), Störungen im Takt,
+    // der Schriftzug auf den Einsätzen getippt
+    const nacht = irr || zustandBei(Z, effekt(L.von) - 1e-3, effekt(G.von)).nacht, tipp = L.von + 2.6;
     sz.logo = { von: L.von, bis: L.bis, nacht, T, plan: logoPlan(T, L.von, L.bis - 1.0, L.bis - 0.35),
       tasten: T.einsaetze.filter((e) => e.t >= L.von + 0.1 && e.t < tipp).map((e) => e.t), tipp };
   }
@@ -210,9 +212,9 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H);
   if (sz.logo && t >= sz.logo.von) { ctx.save(); logoBild(ctx, sz, t, { proben, vorschau }); ctx.restore(); return; }   // bis ans Ende, ohne leeres Bild
-  if (t >= abschnitt.von && t < abschnitt.bis) {
+  if (t >= abschnitt.von && (t < abschnitt.bis || sz.halten)) {
     if (sz.buehne) {
-      const [w, h] = zielMass(ctx, sz), c = sz.buehne.bild(sz.zeit, t, w, h, { proben, vorschau });
+      const [w, h] = zielMass(ctx, sz), c = sz.buehne.bild(sz.zeit, Math.min(t, abschnitt.bis - 1e-3), w, h, { proben, vorschau });
       // ist es ganz das Bild, dann das Bild selbst: in jeder Grösse gleich wie danach, ohne den Unterschied der Filter beim Verkleinern
       ctx.drawImage(sz.buehne.ende >= 1 && sz.foto ? sz.foto : c, 0, 0, B, H);
       if (sz.fragmente.length) fragmenteZeichnen(ctx, sz, t);
@@ -220,7 +222,7 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
     else if (sz.foto) { ctx.globalAlpha = anteil(t, abschnitt.bis - 1.5, abschnitt.bis); ctx.drawImage(sz.foto, 0, 0, B, H); ctx.globalAlpha = 1; }   // ohne WebGL 2
   } else if (t >= abschnitt.bis && sz.foto) ctx.drawImage(sz.foto, 0, 0, B, H);
   if (sz.beschriftung) {
-    const aus = sz.logo ? sz.logo.von - 0.7 : ab.stehen[0], sicht = anteil(t, ab.vor[0] + 0.1, ab.vor[1] + 0.3) * (1 - anteil(t, aus - 0.1, aus + 0.6));
+    const aus = sz.logo ? sz.logo.von - 0.7 : ab.stehen?.[0] ?? abschnitt.bis - 1, sicht = anteil(t, ab.vor[0] + 0.1, ab.vor[1] + 0.3) * (1 - anteil(t, aus - 0.1, aus + 0.6));
     if (sicht > 0) beschriftung(ctx, sz, t, sicht);
   }
 }

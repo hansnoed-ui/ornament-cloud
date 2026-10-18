@@ -1,5 +1,5 @@
 // PHORMA III (alpha/phorma-iii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): Gewebe aus Text mit Ton (verfrickelt, das Logo
-// aus dem Gewebe, Video mit Tonspur), Video als Quelle, nur Ton, nur Musik geladen, Foto in beiden Formaten exakt, keine Anfragen nach aussen,
+// aus dem Gewebe, Video mit Tonspur), Video als Quelle, nur Ton, nur Musik geladen, die Irrfahrt, Foto in beiden Formaten exakt, keine Anfragen nach aussen,
 // Handy ohne seitliches Scrollen. Mit ?test (gröbere Netze). Bis zum 18. Oktober 2026 Teil von tests/phorma-ii.e2e.mjs.
 //   NODE_PATH=$(npm root -g) node tests/phorma-iii.e2e.mjs
 import assert from "node:assert/strict";
@@ -54,7 +54,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=17");
+  const { bild } = await import("./film.js?v=2");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -144,7 +144,7 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
   // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Logo; mitten in einer anders als ohne; der
   // Schriftzug wird getippt und steht nach 2,6 s
   const logo = await page.evaluate(async () => {
-    const { bild, logoZeichen } = await import("./film.js?v=17");
+    const { bild, logoZeichen } = await import("./film.js?v=2");
     const S = window.__phorma, sz = { ...S.sz, buehne: null, beschriftung: false }, L = sz.logo, e = L.plan.find((x) => x.art >= 0.2 && x.t < L.bis - 1);
     const zeichne = (z, t) => { const c = document.createElement("canvas"); c.width = 270; c.height = 338; const x = c.getContext("2d"); x.setTransform(0.25, 0, 0, 0.25, 0, 0); bild(x, z, t); return c.toDataURL(); };
     const t = e.t + e.dauer * 0.3;
@@ -283,6 +283,41 @@ await check("Nur Musik geladen, kein Bild: «Nur Ton» wird gewählt und die Vor
 });
 
 
+await check("Irrfahrt: als Effekt wählbar und gemerkt; schwarz, beim Schlag heller und anders, am Ende das Logo; ohne Signet die Stille, dann hält das letzte Bild", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  await page.click('[data-wahl="irrfahrt"]');
+  assert.equal(await page.getAttribute('[data-wahl="irrfahrt"]', "aria-pressed"), "true");
+  await page.click('[data-quelle="ton"]');
+  await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
+  await page.waitForFunction(() => window.__phorma.ton && window.__phorma.A, null, { timeout: 60_000 });
+  await bereit(page);
+  const s = await page.evaluate(() => { const S = window.__phorma; return { ablauf: S.ablauf, phasen: S.sz.zeit.phasen.map((p) => [p.name, p.von, p.bis]), dauer: S.sz.zeit.dauer, bis: S.sz.zeit.abschnitt.bis, ein: S.ton.analyse.einsaetze.map((e) => e.t), knoepfe: [...document.querySelectorAll(".phasen button")].map((b) => b.textContent) }; });
+  assert.equal(s.ablauf, "irrfahrt");
+  assert.deepEqual(s.phasen.map((p) => p[0]), ["wuerfel", "irrfahrt", "logo"]);
+  assert.deepEqual(s.knoepfe, ["01 Würfel", "02 Irrfahrt", "03 Logo"]);
+  assert.ok(Math.abs(s.dauer - s.bis - 0.3) < 1e-6, "nach dem Logo nur der Schluss");
+  const G = s.phasen[1], e = s.ein.find((t) => t > G[1] + 1.5 && t < G[2] - 1.5);
+  const vor = await messe(page, e - 0.25), schlag = await messe(page, e + 0.06);
+  assert.ok(vor.hell < 60 && vor.schwarz > 0.3, `schwarz (${vor.hell.toFixed(1)}, ${vor.schwarz.toFixed(2)})`);
+  assert.ok(vor.tinte > 0.0005, `der Faden ist zu sehen (${vor.tinte.toFixed(4)})`);
+  assert.ok(schlag.hell > vor.hell && schlag.abdruck !== vor.abdruck, `beim Schlag heller (${vor.hell.toFixed(1)} → ${schlag.hell.toFixed(1)})`);
+  const logo = await messe(page, s.phasen[2][2] - 0.3);
+  assert.ok(logo.tinte > 0.001, `am Ende das Logo (${logo.tinte.toFixed(4)})`);
+  // ohne Signet: die Stille, danach hält das letzte Bild (kein Stehen auf dem Papier)
+  await page.uncheck("#signet");
+  await page.waitForFunction(() => window.__phorma.sz.zeit.phasen.at(-1).name === "stille" && window.__phorma.buehneSchluessel.endsWith("|false|"));
+  await bereit(page);
+  const z = (await messe(page, 0)).zeit, a = await messe(page, z.abschnitt.bis + 0.05), b = await messe(page, z.abschnitt.bis + 0.25);
+  assert.equal(z.stehen, undefined);
+  assert.equal(a.abdruck, b.abdruck, "das letzte Bild hält");
+  assert.ok(a.hell < 60, `auch am Schluss schwarz (${a.hell.toFixed(1)})`);
+  // die Wahl bleibt
+  await page.reload(); await bereit(page);
+  assert.equal(await page.evaluate(() => window.__phorma.ablauf), "irrfahrt");
+  assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
 await check("Foto als Quelle, Format 9 : 16 und zurück: ohne Logo steht am Ende das Foto exakt; mit Logo am Ende das Logo", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await laden(page); await bereit(page);
@@ -308,7 +343,7 @@ await check("Handy: nichts ragt seitlich hinaus, Beschriftungen auf einer Zeile"
   await laden(page); await bereit(page);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
   assert.ok(await page.evaluate(() => [...document.querySelectorAll(".segment button")].every((x) => x.scrollWidth <= x.clientWidth + 1)), "Beschriftungen auf einer Zeile");
-  assert.ok(await page.evaluate(() => [...document.querySelectorAll(".phasen button")].every((x) => x.getBoundingClientRect().right <= window.innerWidth)), "Phasen passen");
+  assert.ok(await page.evaluate(() => [...document.querySelectorAll("[data-wahl], .phasen button")].every((x) => x.getBoundingClientRect().right <= window.innerWidth)), "Effekte und Phasen passen");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });

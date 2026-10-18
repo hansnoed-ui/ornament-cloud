@@ -90,6 +90,17 @@
     .segment button:disabled { opacity: 0.5; cursor: default; }
     .segment button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .muster { width: 16px; height: 16px; border-radius: 50%; flex: none; box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 35%, transparent); }
+    .ablaeufe { display: grid; gap: 8px; }
+    .ablaeufe button { display: grid; gap: 3px; padding: 12px 14px 12px 44px; border: 1px solid var(--border); border-radius: 12px; background: none; color: var(--text);
+      font: inherit; text-align: left; cursor: pointer; position: relative; }
+    .ablaeufe button::before { content: ""; position: absolute; left: 14px; top: 14px; width: 18px; height: 18px; border: 1px solid var(--border); border-radius: 50%; box-sizing: border-box; }
+    .ablaeufe button b { font-size: 0.98rem; }
+    .ablaeufe button small { color: var(--muted); font-size: 0.84rem; line-height: 1.3; }
+    .ablaeufe button[aria-pressed="true"] { border-color: var(--text); background: color-mix(in srgb, var(--text) 7%, transparent); }
+    .ablaeufe button[aria-pressed="true"]::before { border: 5px solid var(--text); }
+    .ablaeufe button:hover:not(:disabled) { border-color: var(--text); }
+    .ablaeufe button:disabled { opacity: 0.45; cursor: default; }
+    .ablaeufe button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .teil { display: grid; gap: 10px; }
     .textfeld { display: grid; gap: 6px; }
     .textfeld span { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
@@ -126,7 +137,7 @@
   <header class="site-header">
     <div class="wrap">
       <h1>PHORMA III</h1>
-      <p class="lead">Die Umrisse deines Texts, Fotos oder Videos werden zu Flächen aus feinen Linien, wie zerknitterte Seide – die Musik bewegt sie, jeder kräftige Schlag schneidet auf ein neues Bild. Oder die Musik allein macht das Bild. Am Schluss entsteht das Logo aus dem Gewebe. Als Video mit Ton für Social Media.</p>
+      <p class="lead">Musik wird Bild: die Umrisse deines Texts, Fotos oder Videos werden zu Flächen aus feinen Linien wie zerknitterte Seide – oder ein leuchtender Faden irrt durch einen Würfel aus Licht und quillt mit jedem Schlag zu Rauch auf. Oder die Musik allein macht das Bild. Am Schluss entsteht das Logo. Als Video mit Ton für Social Media.</p>
     </div>
   </header>
 
@@ -197,6 +208,13 @@
               </div>
             </div>
           </section>
+        </li>
+        <li>
+          <h2>Effekt</h2>
+          <div class="ablaeufe" role="group" aria-label="Effekt wählen">
+            <button type="button" data-wahl="gewebe" aria-pressed="true"><b>Gewebe</b><small>Die Umrisse werden zu Flächen aus feinen Linien wie zerknitterte Seide, schwarz auf Papier; jeder kräftige Schlag schneidet auf ein neues Bild</small></button>
+            <button type="button" data-wahl="irrfahrt" aria-pressed="false"><b>Irrfahrt</b><small>Ein leuchtender Faden irrt durch einen Würfel aus Licht und quillt mit der Musik zu Rauch auf; der Bass sprengt ihn, die Höhen werfen Funken, jeder Schlag wirft den Würfel herum</small></button>
+          </div>
         </li>
         <li>
           <h2>Ton</h2>
@@ -294,7 +312,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=1"></script>
+  <script type="module" src="app.js?v=2"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

@@ -9,14 +9,14 @@
 //   sich glatt zum Strich (darüber tippt film.js den Schriftzug).
 // Zustandslos: alles wird aus der Zeit gerechnet (im Vertex-Shader), die Tonkurven liegen als Textur vor und werden nur mit texelFetch gelesen.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=1";
-import { phase } from "./ablauf.js?v=1";
-import { gewebeKurven, abtasten } from "./kurven.js?v=1";
-import { weichzeichnen } from "./analyse.js?v=1";
-import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=1";
+import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=2";
+import { phase } from "./ablauf.js?v=2";
+import { gewebeKurven, abtasten } from "./kurven.js?v=2";
+import { weichzeichnen } from "./analyse.js?v=2";
+import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=2";
 
-// Simplex-Rauschen in 3D (Ashima Arts / Stefan Gustavson, MIT)
-const RAUSCHEN = /* glsl */ `
+// Simplex-Rauschen in 3D (Ashima Arts / Stefan Gustavson, MIT); auch für die Irrfahrt (irrfahrt.js)
+export const RAUSCHEN = /* glsl */ `
   vec4 _p(vec4 x) { return mod(((x * 34.0) + 1.0) * x, 289.0); }
   float snoise(vec3 v) {
     const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0); const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
@@ -92,7 +92,7 @@ const GRUND = /* glsl */ `
   void main() { gl_FragColor = vec4(mix(uPapier, texture2D(tFoto, vUv).rgb, uFoto) * uSicht, 1.0); }`;
 
 /** die Tonkurven als Texturen: je Filmbild (Zeit der Musik, laut, tief, Schnitt), (Stoss, Bass-Stoss, Höhen-Stoss, Dreh) und das Spektrum */
-function tonTextur(T) {
+export function tonTextur(T) {
   const n = Math.min(T.n, 4000), d = new Float32Array(n * 4), d2 = new Float32Array(n * 4), sp = new Float32Array(n * BAENDER);
   const schnitt = new Uint8Array(n);
   for (const s of T.schnitte) for (let b = Math.round(s * FPS); b < Math.min(n, Math.round(s * FPS) + 4); b++) schnitt[b] = 1;
