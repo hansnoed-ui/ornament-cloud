@@ -134,7 +134,7 @@ Zeitkurven: `anteil(t, a, b)` gibt 0..1, dazu `weich`, `inOut`. Eine Phase sieht
 - Echtes WebGPU ist hier nicht geprüft (Chromium ohne Grafikkarte hat kein `navigator.gpu`). Beim ersten Einsatz auf einem echten Gerät einmal ein Video exportieren und anschauen.
 
 ## PHORMA II: weitere Rezepte (seit 17. Oktober 2026)
-Ausgearbeitet und geprüft in `alpha/phorma-ii/` (keine eigenen Beispiele hier; dort lesen). Dieselben Grundregeln: Funktion der Zeit, Simulationen in festen Schritten, Anfang dunkel, Ende exakt beim Foto.
+Ausgearbeitet und geprüft in `alpha/phorma-ii/` – das Gewebe (13) seit dem 18. Oktober 2026 in `alpha/phorma-iii/`, einer eigenen Anwendung (keine eigenen Beispiele hier; dort lesen). Dieselben Grundregeln: Funktion der Zeit, Simulationen in festen Schritten, Anfang dunkel, Ende exakt beim Foto.
 Aufbau: `analyse.js` (ohne DOM, im Worker) versteht das Foto, `buehne.js` mischt die Effekte, `physarum.js`, `stich.js`, `tiefe.js`, `tuch.js` sind die Rezepte.
 
 ### 8 Physarum – Agenten auf der GPU (`physarum.js`)
@@ -179,7 +179,7 @@ Aufbau: `analyse.js` (ohne DOM, im Worker) versteht das Foto, `buehne.js` mischt
 - Ende weich: zuerst füllt das Foto die Lücken (`foto · hinter · (1 − Maske)`), dann löst es die Muster ab, wo sie dicht sind; mit einer Schwelle allein erschien es fast auf einen Schlag.
 - Vorschau: höchstens 400 Schritte je Bild aufholen (Video exakt), Wiedereinstiegspunkte alle 2 s.
 
-### 13 Gewebe – Bänder aus feinen Linien, vom Ton gesteuert (seit 17. Oktober 2026, `gewebe.js`, `kurven.js`, `ton.js`, `tonspur.js`)
+### 13 Gewebe – Bänder aus feinen Linien, vom Ton gesteuert (seit 17. Oktober 2026; seit 18. Oktober 2026 PHORMA III, `alpha/phorma-iii/`: `gewebe.js`, `kurven.js`, `ton.js`, `tonspur.js`)
 - Vorbild: ein Video von Pauric Freeman (Modularsynthesizer, auf dem Bildschirm schwarze, durchscheinende Bänder aus feinen Linien auf Weiss, grosse kalligrafische Zeichen, kurze Textfragmente mit dunklem Blockcursor, Schnitte ins Schwarz). Wunsch: «wie wir solche Effekte hinbekommen, für Texte und Audiofiles», «vor allem Video 2».
 - **Ton vorab zerlegen** (`ton.js`, ohne DOM): je Filmbild RMS und drei Bänder (Einpol-Filter 200 Hz / 3 kHz), auf das 95. Perzentil normiert, schnell herauf, langsam herunter. Fluss = Anstieg der Bänder (log1p(50x)) **gegen das Maximum der beiden Bilder davor, minus 0,06** – ohne das erzeugt schon ein stehender Ton von Bild zu Bild Einsätze (gemessen). Einsätze über einer gleitenden Schwelle; Schnitte = die stärksten, ≥ 2 s auseinander; «Zeit der Musik» = ∫(0,15 + laut), springt bei Schnitten. Ohne Tonspur ein wiederholbarer Ersatz.
 - **Linien aus dem Bild:** Marching Squares (`kurven.js`) auf dem Text (Stufe 0,5) oder dem geglätteten Foto (Stufen 0,32 / 0,5 / 0,68), die längsten Kurven gleichmässig abgetastet, **dann viermal [¼ ½ ¼] geglättet** – Serifen und Pixelstufen werden sonst zu Splittern.
@@ -201,7 +201,7 @@ Aufbau: `analyse.js` (ohne DOM, im Worker) versteht das Foto, `buehne.js` mischt
 - **Ende exakt:** Jeder Effekt meldet `ende` (0..1), die Ausgabe mischt zuletzt das Foto. Ist es 1, zeichnet `film.js` das Foto selbst: verkleinert unterscheiden sich Mipmap-Textur und 2D-Verkleinerung um bis zu 40 Stufen (gemessen auf einem fein gezeichneten Bild).
 - **Telefon** (Rückmeldungen: «reagiert nicht», «neues Bild laden, danach: Absturz»): Fotos beim Laden auf ≤ 2400 Punkte verkleinern und die volle Bitmap schliessen; beim Fotowechsel die alte Bühne sofort freigeben; Programme vorab einzeln übersetzen (`compile` + ein Bild in ein 4 × 4-Ziel je Programm, mit Pausen; nicht `compileAsync`, dessen Nachfragen nach dem Freigeben weiterlaufen); Karten in HalfFloat; Mischen in Float32 vermeiden (`EXT_float_blend`); `webglcontextlost` abfangen, aber nicht beim eigenen `forceContextLoss`; `?diagnose` zeigt Grafikchip, Erweiterungen und Blockaden.
 - Abspann: das leuchtende Signet aus PHORMA I (`glanzSignet`, exportiert aus `alpha/bildfragmentieren/raum.js`) läuft auf derselben Bühne.
-- Prüfen: `node --test tests/phorma-ii.test.mjs`, `NODE_PATH=$(npm root -g) node tests/phorma-ii.e2e.mjs` (Chromium mit `--use-angle=swiftshader`).
+- Prüfen: `node --test tests/phorma-ii.test.mjs tests/phorma-iii.test.mjs`, `NODE_PATH=$(npm root -g) node tests/phorma-ii.e2e.mjs` und `… tests/phorma-iii.e2e.mjs` (Chromium mit `--use-angle=swiftshader`).
   Falle: Der Ersatz-Encoder liest die Bilder nie; dann hängt SwiftShader Minuten hinterher und Klicks warten. Einmal `gl.readPixels` wartet es ab.
 
 ## Filmlook (`filmlook()` in `gemeinsam.js`)

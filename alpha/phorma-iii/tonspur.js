@@ -1,4 +1,4 @@
-// PHORMA II – das MP4 und seine Tonspur: die Audiodatei als AAC (WebCodecs AudioEncoder; ohne AAC Opus), auf die Länge des Films gekürzt, am Ende
+// PHORMA III – das MP4 und seine Tonspur: die Audiodatei als AAC (WebCodecs AudioEncoder; ohne AAC Opus), auf die Länge des Films gekürzt, am Ende
 // ausgeblendet; Bild und Ton schreibt mp4-muxer 5.2.2 (MIT, lokal in vendor/) in Teilen (mp4Schreiber). tonKodieren und tonLesen nur im Browser.
 import { Muxer, StreamTarget } from "../../vendor/mp4-muxer-5.2.2/mp4-muxer.js";
 
