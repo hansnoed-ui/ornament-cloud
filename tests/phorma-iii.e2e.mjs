@@ -55,7 +55,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=9");
+  const { bild } = await import("./film.js?v=10");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -146,7 +146,7 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
   // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Logo; mitten in einer anders als ohne; der
   // Schriftzug wird getippt und steht nach 2,6 s
   const logo = await page.evaluate(async () => {
-    const { bild, logoZeichen } = await import("./film.js?v=9");
+    const { bild, logoZeichen } = await import("./film.js?v=10");
     const S = window.__phorma, sz = { ...S.sz, buehne: null, beschriftung: false }, L = sz.logo, e = L.plan.find((x) => x.art >= 0.2 && x.t < L.bis - 1);
     const zeichne = (z, t) => { const c = document.createElement("canvas"); c.width = 270; c.height = 338; const x = c.getContext("2d"); x.setTransform(0.25, 0, 0, 0.25, 0, 0); bild(x, z, t); return c.toDataURL(); };
     const t = e.t + e.dauer * 0.3;
@@ -401,7 +401,7 @@ const zaehlvideo = (page, { sekunden = 12, drehung = 0 } = {}) => page.evaluate(
 }, [sekunden, drehung]).then((b) => Buffer.from(b, "base64"));
 /** das Bild des Films zur Zeit t (halbe Grösse, ohne Beschriftung): die Nummer aus den 3 × 3 Feldern und die Farben links und rechts der Mitte */
 const zaehlerLesen = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=9");
+  const { bild } = await import("./film.js?v=10");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -421,7 +421,7 @@ await check("Irrfahrt: das Stottern zeigt nie Reste des Logos (beide teilen eine
   await page.waitForFunction(() => window.__phorma.ton && window.__phorma.A, null, { timeout: 60_000 });
   await bereit(page);
   const r = await page.evaluate(async () => {
-    const { bild } = await import("./film.js?v=9");
+    const { bild } = await import("./film.js?v=10");
     const S = window.__phorma; S.laeuft = false;
     // die Bühne mit einer einzigen Lage: so stottert jedes Ereignis (sonst fällt es vor einem Sprung aus), und die Leinwand wird gebraucht
     const b = S.buehne, buehne = { bild: (...x) => b.bild(...x), lage: () => 0, get ende() { return b.ende; } };
@@ -486,7 +486,7 @@ await check("Video: als Effekt das Video selbst, bildgenau (WebCodecs), synchron
   await ctx.close();
 });
 
-await check("Video: Scratching – mit dem Ablauf folgt das Bild dem Fahrplan des Tons: vor und zurück beim Scratch, die Hüpfer, das Gefrickel; der Fader blitzt", async () => {
+await check("Video: Scratching und Cracks – mit dem Ablauf folgt das Bild dem Fahrplan des Tons (vor und zurück beim Scratch, die Hüpfer, das Gefrickel; der Fader blitzt); an jedem Hüpfer bricht es auf (Datamosh, Makroblöcke, Slit-Scan, Pixel-Sortierung)", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await page.click('[data-wahl="video"]');
   assert.ok(await page.isChecked("#video-ablauf"), "der Ablauf ist beim Video an");
@@ -495,16 +495,18 @@ await check("Video: Scratching – mit dem Ablauf folgt das Bild dem Fahrplan de
   await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
   await page.waitForFunction(() => window.__phorma.ton?.karte && window.__phorma.ton.name.includes("Gefrickel") && window.__phorma.buehneFertig, null, { timeout: 180_000 });
   await bereit(page);
-  const k = await page.evaluate(() => { const S = window.__phorma, k = S.ton.karte, b = S.filmspur.spur; return { teile: k.teile, von: S.videoVon, n: b.n, spurVon: b.von, pos: [...k.pos], hell: [...k.hell] }; });
+  const k = await page.evaluate(() => { const S = window.__phorma, k = S.ton.karte, b = S.filmspur.spur; return { teile: k.teile, huepfer: k.huepfer, risse: S.filmAnbieter.risse, von: S.videoVon, n: b.n, spurVon: b.von, pos: [...k.pos], hell: [...k.hell] }; });
+  const imRiss = (t) => k.risse.some((r) => t >= r.von - 0.05 && t < r.bis + 0.05);
   assert.deepEqual(k.teile.map((t) => t.name), ["scratch", "stimme", "frickel"]);
   // das Logo kommt nach dem Gefrickel (es überlappt nur dessen letzte Sekunde)
   const L = await page.evaluate(() => window.__phorma.sz.zeit.phasen.find((p) => p.name === "logo"));
   assert.ok(L.von >= k.teile[2].bis - 1.05, `das Logo nach dem Gefrickel (${L.von.toFixed(2)} gegen ${k.teile[2].bis.toFixed(2)})`);
   // je Filmzeit zeigt das Bild die Stelle des Fahrplans (Quellbild = Sekunde · 30), höchstens eines daneben
   const erwartet = (t) => Math.floor((k.von + k.pos[Math.round(t * 240)]) * 30);
-  const zeiten = [0.9, 1.6, 2.3, 3.1, k.teile[1].von + 1.5, k.teile[1].von + 5, k.teile[2].von + 0.6, k.teile[2].von + 1.9];
+  const zeiten = [0.9, 1.6, 2.3, 3.1, k.teile[1].von + 1.5, k.teile[1].von + 3.3, k.teile[1].von + 5, k.teile[1].von + 7, k.teile[2].von + 0.6, k.teile[2].von + 1.9];
   const gelesen = [];
   for (const t of zeiten) {
+    if (imRiss(t)) continue;                                               // im Crack ist das Bild absichtlich kaputt (unten)
     const z = await zaehlerLesen(page, t);
     if (k.hell[Math.round(t * 240)] < 0.5) continue;                       // Fader zu: dunkel, die Felder sind nicht zu lesen
     gelesen.push([t, z.nr, erwartet(t)]);
@@ -519,6 +521,30 @@ await check("Video: Scratching – mit dem Ablauf folgt das Bild dem Fahrplan de
   // der Fader: zu ist das Bild fast dunkel
   const zu = k.hell.findIndex((h, i) => i < sc.length && h === 0);
   if (zu >= 0) { const m = await messe(page, zu / 240); assert.ok(m.hell < 40, `Fader zu: dunkel (${m.hell.toFixed(0)})`); }
+  // die Cracks (risse.js): je Hüpfer einer, alle verschieden, ab dem Hüpfer, nie ins Gefrickel
+  assert.ok(k.huepfer.length >= 1 && k.risse.length === k.huepfer.length, JSON.stringify({ huepfer: k.huepfer, risse: k.risse }));
+  assert.equal(new Set(k.risse.map((r) => r.art)).size, k.risse.length, "jeder Crack eine andere Art");
+  for (const [i, r] of k.risse.entries()) {
+    assert.ok(Math.abs(r.von - k.huepfer[i].t) < 1e-9 && r.bis > r.von + 0.2 && r.bis <= k.teile[2].von, JSON.stringify(r));
+    assert.ok(["mosh", "bloecke", "schlitz", "sortieren"].includes(r.art), r.art);
+  }
+  // im Crack sieht das Bild anders aus als ohne ihn, davor und danach gleich; alle vier Arten zeichnen ohne Fehler
+  const ohne = async (t) => {
+    await page.evaluate(() => { const S = window.__phorma; S.__risse = S.filmAnbieter.risse.splice(0); });
+    const m = await messe(page, t);
+    await page.evaluate(() => { const S = window.__phorma; S.filmAnbieter.risse.push(...S.__risse); });
+    return m;
+  };
+  const r0 = k.risse[0], mitte = (r0.von + r0.bis) / 2;
+  for (const art of ["mosh", "bloecke", "schlitz", "sortieren"]) {
+    await page.evaluate(([art]) => { window.__phorma.filmAnbieter.risse[0].art = art; }, [art]);
+    const t = art === "mosh" ? r0.von + 0.4 : mitte, mit = await messe(page, t), sauber = await ohne(t);
+    // (das Sortieren verschiebt nur Punkte: Helligkeit und Streuung bleiben fast gleich, der Fingerabdruck nicht)
+    assert.ok(mit.abdruck !== sauber.abdruck && (art === "sortieren" || Math.abs(mit.hell - sauber.hell) + Math.abs(mit.streu - sauber.streu) > 0.5), `${art}: das Bild bricht auf (${mit.hell.toFixed(1)}/${mit.streu.toFixed(1)} gegen ${sauber.hell.toFixed(1)}/${sauber.streu.toFixed(1)})`);
+    assert.match(await page.evaluate((t) => window.__phorma.buehne.zaehler(window.__phorma.sz.zeit, t), t), { mosh: /datamosh/, bloecke: /makroblöcke/, schlitz: /slit-scan/, sortieren: /pixel-sortierung/ }[art]);
+  }
+  await page.evaluate(([art]) => { window.__phorma.filmAnbieter.risse[0].art = art; }, [r0.art]);
+  for (const t of [r0.von - 0.1, r0.bis + 0.1]) { const a = await messe(page, t), b = await ohne(t); assert.equal(a.abdruck, b.abdruck, `ausserhalb des Cracks unverändert (${t.toFixed(2)})`); }
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
