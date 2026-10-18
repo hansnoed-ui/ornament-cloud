@@ -14,6 +14,7 @@ const T = await import(new URL("ton.js", P).href);
 const Kv = await import(new URL("kurven.js", P).href);
 const Fr = await import(new URL("frickeln.js", P).href);
 const St = await import(new URL("stimme.js", P).href);
+const Ri = await import(new URL("risse.js", P).href);
 const lies = (p) => readFileSync(new URL(p, P), "utf8");
 
 test("Ablauf: Zeichen, Gewebe, dann mit Signet das Logo (danach nur der Schluss), ohne Signet das Bild und Stehen; mit Tonspur so lang wie die Musik", () => {
@@ -309,6 +310,37 @@ test("Stimm-Ablauf: 3,5 s Scratching, dann rund 10 s Stimme mit zwei, drei Hüpf
   // eine kurze Aufnahme (4 s): weniger Stimme, höchstens ein Hüpfer, kein Fehler
   const kurz = St.stimmAblauf(St.saeubern([kunststimme(rate, 4).x], rate).kanaele, rate, { samen: 1 });
   assert.ok(kurz.huepfer.length <= 1 && kurz.dauer > 7 && kurz.kanaele[0].every(Number.isFinite), `kurz: ${kurz.dauer.toFixed(1)} s, ${kurz.huepfer.length} Hüpfer`);
+});
+
+test("Cracks des Videos (risse.js): je Hüpfer einer, alle verschieden, wiederholbar je Wurf; der Datamosh beim Sprung; nie ins Gefrickel; was sie brauchen", () => {
+  const hs = [{ t: 5.1, art: "stotter" }, { t: 8.0, art: "sprung" }, { t: 11.2, art: "rueck" }];
+  const arten = new Set();
+  for (let samen = 1; samen <= 40; samen++) {
+    const r = Ri.rissePlanen(hs, { samen, grenze: 12 });
+    assert.equal(r.length, 3); assert.equal(new Set(r.map((x) => x.art)).size, 3, "alle verschieden");
+    assert.deepEqual(r.map((x) => x.von), [5.1, 8.0, 11.2]);
+    assert.ok(r.every((x, i) => x.bis - x.von <= Ri.DAUER[x.art] + 1e-9 && x.bis <= (hs[i + 1]?.t ?? Infinity) - 0.15 + 1e-9 && x.bis <= 11.95 + 1e-9), JSON.stringify(r));
+    if (r.some((x) => x.art === "mosh")) assert.equal(r[1].art, "mosh", "den Datamosh bekommt der Sprung");
+    for (const x of r) arten.add(x.art);
+    assert.deepEqual(Ri.rissePlanen(hs, { samen, grenze: 12 }), r, "wiederholbar");
+  }
+  assert.deepEqual([...arten].sort(), [...Ri.ARTEN].sort(), "über die Würfe kommen alle vier vor");
+  assert.notDeepEqual(Ri.rissePlanen(hs, { samen: 1 }).map((x) => x.art), Ri.rissePlanen(hs, { samen: 4 }).map((x) => x.art), "ein anderer Wurf, andere Cracks");
+  assert.deepEqual(Ri.rissePlanen([], { samen: 1 }), []);
+  // rissBei: der Crack zur Zeit, wie weit, welcher Schritt
+  const r = Ri.rissePlanen(hs, { samen: 1, grenze: 14 });
+  assert.equal(Ri.rissBei(r, 5.0), null); assert.equal(Ri.rissBei(r, 5.1).i, 0); assert.equal(Ri.rissBei(r, 8.2).schritt, 6);
+  assert.ok(Math.abs(Ri.rissBei(r, (r[0].von + r[0].bis) / 2).u - 0.5) < 1e-9);
+  // der Datamosh: das stehende Bild vor dem Hüpfer, dann je Schritt ein Paar; nach einem Schnitt das Bild davor in der Quelle
+  const m = { art: "mosh", von: 8.0, bis: 9.3 }, karte = (t) => (t < 8.0 ? t + 2 : t - 0.5);
+  const { q0, paare } = Ri.moshQuellen(m, 3, karte);
+  assert.ok(Math.abs(q0 - karte(8.0 - 1 / 30)) < 1e-9);
+  assert.equal(paare.length, 3);
+  assert.ok(Math.abs(paare[0][0] - (paare[0][1] - 1 / 30)) < 1e-9, "über den Sprung: das Bild davor in der Quelle");
+  assert.ok(Math.abs(paare[1][0] - paare[0][1]) < 1e-9, "sonst das Bild davor im Lauf");
+  assert.equal(Ri.bedarf([m], 8.1, karte).length, 1 + 2 * 3);
+  assert.equal(Ri.bedarf([{ art: "schlitz", von: 1, bis: 2 }], 1.5, karte).length, Ri.SCHICHTEN);
+  assert.equal(Ri.bedarf([m], 7.9, karte).length, 0);
 });
 
 test("Verfrickeln nach dem Herauslösen von Hall und Mastering (frickeln.js, auch für die Stimme): Klang wie vorher", () => {
