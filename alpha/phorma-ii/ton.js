@@ -11,8 +11,8 @@
 //   spektrum                 – je Filmbild 32 Bänder (FFT 2048, logarithmisch 40 Hz – 12 kHz), je Band normiert, herauf in 2, herunter in 6 Bildern
 //   stoss, stossTief, stossHoch – Hüllkurven der Einsätze (alle; die mit vor allem Bass, 0,3 s; die mit vor allem Höhen, 0,12 s)
 //   dreh                     – ein Winkel, der bei jedem kräftigen Einsatz in 0,3 s um ± Stärke schwingt (die Bänder schwingen im Takt)
-//   tor                      – die Tinte: bei jedem Einsatz auf, 0,35 s halten, 0,7 s abklingen, nie unter 0,35 · laut (Rückmeldungen: «die Dynamik
-//                              näher beim Video», dann «etwas viel Weiss»)
+//   tor                      – die Tinte: bei jedem Einsatz auf, 0,35 s halten, 0,7 s abklingen, solange es klingt nie unter 0,3 + 0,35 · laut
+//                              (Rückmeldungen: «die Dynamik näher beim Video», «etwas viel Weiss», «maximal kurz einen leeren Bildschirm»)
 // (Rückmeldung vom 18. Oktober 2026: «nicht gesehen, dass die Animation sich auf die Musik bezog, sie scheint einfach ein wenig rumzuwabern»)
 // Ohne Tonspur: ruhige, wiederholbare Ersatzkurven (ersatz).
 export const FPS = 30;
@@ -154,7 +154,7 @@ function mitEinsaetzen(T) {
       if (v > tor[b]) tor[b] = v;
     }
   }
-  for (let b = 0; b < n; b++) tor[b] = Math.max(tor[b], 0.35 * laut[b]);   // seit «etwas viel Weiss»: länger offen, nie ganz zu, solange es klingt
+  for (let b = 0; b < n; b++) tor[b] = Math.max(tor[b], laut[b] > 0.02 ? 0.3 + 0.35 * laut[b] : 0);   // seit «etwas viel Weiss»: länger offen, nie ganz zu, solange es klingt
   return { ...T, einsaetze, schnitte, energie, stoss, stossTief, stossHoch, dreh, tor };
 }
 
@@ -185,8 +185,8 @@ export const tonOderErsatz = (ton) => ton ?? (vorrat ??= ersatz(130));
 export const wechselZeiten = (T, G, max = 23) => T.schnitte.filter((s) => s > G.von + 0.3 && s < G.bis - 1).slice(0, max);
 
 /**
- * Gewebe: die Zustände – bei jedem kräftigen Einsatz (Stärke ≥ 0,45, mindestens 0,7 s nach dem letzten) ein neues Bild: andere Fläche, andere
- * Einstellung; Lücken über 4 s alle 3 s gefüllt. Je Zustand wiederholbar gewürfelt: nacht (Weiss auf Schwarz, etwa jeder dritte, nur ab einem
+ * Gewebe: die Zustände – bei jedem kräftigen Einsatz (Stärke ≥ 0,35, mindestens 0,45 s nach dem letzten) ein neues Bild: andere Fläche, andere
+ * Einstellung; Lücken über 3 s alle 2 s gefüllt («gib nochmals Gas»). Je Zustand wiederholbar gewürfelt: nacht (Weiss auf Schwarz, etwa jeder dritte, nur ab einem
  * Schnitt) und zeichen (das Zeichen selbst statt der Fläche, etwa jeder fünfte; nur mit Text, Foto oder Video). [{ t, nr, nacht, zeichen }] in Filmzeit.
  */
 export function gewebeZustaende(T, von, bis) {
@@ -196,10 +196,10 @@ export function gewebeZustaende(T, von, bis) {
     z.push({ t, nr, nacht: T.schnitte.some((s) => Math.abs(s - t) < 0.05) ? h(1) < 0.5 : h(1) < 0.15, zeichen: h(2) < 0.2 }); letzt = t; };
   for (const e of T.einsaetze) {
     if (e.t <= von + 0.4 || e.t >= bis - 0.8) continue;
-    while (e.t - letzt > 4) dazu(letzt + 3);
-    if (e.staerke >= 0.45 && e.t - letzt >= 0.7) dazu(e.t);
+    while (e.t - letzt > 3) dazu(letzt + 2);
+    if (e.staerke >= 0.35 && e.t - letzt >= 0.45) dazu(e.t);
   }
-  while (bis - 0.8 - letzt > 4) dazu(letzt + 3);
+  while (bis - 0.8 - letzt > 3) dazu(letzt + 2);
   return z;
 }
 

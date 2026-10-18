@@ -5,14 +5,15 @@
 //   neues Bild – andere Fläche, andere Einstellung der Kamera, andere Auswahl der Kurven, manchmal Weiss auf Schwarz, manchmal das Zeichen selbst –,
 //   die Fläche klappt aus der Linie auf und steht dann fast still; die Tinte folgt dem Tor (auf beim Schlag, abklingend), dazwischen leeres Papier.
 //   01 Zeichen – aus dem Dunkeln erscheint der Text, dann bleiben nur seine Umrisse; 02 Gewebe; 03 Bild – die Flächen legen sich zurück auf die
-//   Umrisse, der Text (das Foto) steht wieder exakt da.
+//   Umrisse, der Text (das Foto) steht wieder exakt da. Mit Signet statt dessen 03 Logo – aus der Schlaufe des Signets wächst die Fläche und legt
+//   sich glatt zum Strich (darüber tippt film.js den Schriftzug).
 // Zustandslos: alles wird aus der Zeit gerechnet (im Vertex-Shader), die Tonkurven liegen als Textur vor und werden nur mit texelFetch gelesen.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=16";
-import { phase } from "./ablauf.js?v=16";
-import { gewebeKurven } from "./kurven.js?v=16";
-import { weichzeichnen } from "./analyse.js?v=16";
-import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=16";
+import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=17";
+import { phase } from "./ablauf.js?v=17";
+import { gewebeKurven, abtasten } from "./kurven.js?v=17";
+import { weichzeichnen } from "./analyse.js?v=17";
+import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=17";
 
 // Simplex-Rauschen in 3D (Ashima Arts / Stefan Gustavson, MIT)
 const RAUSCHEN = /* glsl */ `
@@ -37,7 +38,7 @@ const RAUSCHEN = /* glsl */ `
   }`;
 const VERTEX = /* glsl */ `
   uniform sampler2D tKurven, tTon, tStoss, tSpek; uniform int uP, uH, uN, uNK, uSaetze;
-  uniform float uZeit, uVon, uB1, uDichte, uWechsel[23], uAuf, uAktiv, uSeit, uAnteil, uTor, uZeichen, uNurTon; uniform vec4 uZustand;
+  uniform float uZeit, uVon, uB1, uDichte, uWechsel[23], uAuf, uAktiv, uSeit, uAnteil, uTor, uZeichen, uNurTon, uLogo, uDicke, uPflicht; uniform vec4 uZustand;
   uniform mat3 uKamDreh; uniform vec3 uKam;
   attribute vec3 aRef;
   varying float vA;
@@ -63,25 +64,26 @@ const VERTEX = /* glsl */ `
     // 1 das Spektrum: die Linie zittert leicht quer zu sich
     float band = (0.5 + 0.5 * sin(6.2832 * (s * (1.0 + floor(h.x * 2.0)) + h.y))) * ${BAENDER - 1}.0;
     float sp = mix(spek(ft, floor(band)), spek(ft, floor(band) + 1.0), fract(band));
-    vec3 q = p0 + uAktiv * sp * (0.012 + 0.03 * T.y) * vec3(nrm, 0.0);
+    vec3 q = p0 + uAktiv * sp * (0.02 + 0.05 * T.y) * vec3(nrm, 0.0) + uDicke * (lage - 0.5) * vec3(nrm, 0.0);   // uDicke: das Logo als Strich von ~3 px
     // 2 die Fläche: aus jeder Kurve wächst eine zerknitterte Fläche wie Seide – Lage k liegt ein Stück weiter in ihr; nach jedem neuen Zustand
     //   klappt sie in 0,35 s auf, dann bewegt sie sich kaum (Video von Pauric Freeman); jeder Schlag lässt sie aufblähen
-    float auf = smoothstep(0.0, 0.35, uSeit), sk = lage * auf;
-    vec3 keim = vec3(uZustand.xy, 0.0) + h * 3.0, ph = vec3(0.0, 0.0, uSeit * 0.1 + T.x * 0.04);
+    float auf = smoothstep(0.0, 0.25, uSeit), sk = lage * auf;
+    vec3 keim = vec3(uZustand.xy, 0.0) + h * 3.0, ph = vec3(0.0, 0.0, uSeit * 0.16 + T.x * 0.08);
     vec3 w1 = vec3(snoise(vec3(p0.xy * 1.0, sk * 2.0) + keim + ph), snoise(vec3(p0.xy * 1.0, sk * 2.0) + keim + vec3(17.0, 3.0, 0.0) + ph), snoise(vec3(p0.xy * 1.0, sk * 2.0) + keim + vec3(31.0, 7.0, 0.0) + ph));
     vec3 w2 = vec3(snoise(vec3(p0.xy * 2.2, sk * 4.5) + keim * 1.3 + ph * 1.5), snoise(vec3(p0.xy * 2.2, sk * 4.5) + keim * 1.3 + vec3(5.0, 11.0, 0.0) + ph * 1.5), snoise(vec3(p0.xy * 2.2, sk * 4.5) + keim * 1.3 + vec3(9.0, 2.0, 0.0) + ph * 1.5));
-    float breite = uZustand.z * (0.75 + 0.35 * T.y + 0.5 * St.x);
+    float breite = uZustand.z * (0.75 + 0.4 * T.y + 0.9 * St.x);
     q += uAktiv * sk * breite * (w1 + 0.35 * w2);
     q = drehung(normalize(vec3(h.x - 0.5, h.y - 0.5, 0.7)), uAktiv * sk * uZustand.w) * (q - m) + m;   // Drall um die Mitte der Kurve
     // 3 Kamera: je Zustand eine Einstellung (nah oder weit, geneigt, gerollt), darin langsam näher, mit dem Schlag ein kleiner Ruck
     q = uKamDreh * q; q.xy = q.xy * uKam.x + uKam.yz;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(q, 1.0);
     float sicht = smoothstep(uAuf - 0.6, uAuf, uZeit) * (1.0 - smoothstep(uB1 - 1.2, uB1 - 0.5, uZeit));   // erst wenn sich das Zeichen löst; am Schluss weg
-    float gewaehlt = mix(1.0, step(fract(sin(float(c) * 7.31 + uZustand.x) * 4375.85), uAnteil), uAktiv);   // je Zustand nur ein Teil der Kurven
+    // je Zustand nur ein Teil der Kurven, immer mindestens eine (uPflicht) – sonst bleibt bei wenigen Kurven das Papier manchmal sekundenlang leer
+    float gewaehlt = mix(1.0, max(step(fract(sin(float(c) * 7.31 + uZustand.x) * 4375.85), uAnteil), float(c) == uPflicht ? 1.0 : 0.0), uAktiv);
     float dichte = mix(1.0 / 6.0, 0.5 + 0.5 * (1.0 - lage), uAktiv);  // zusammengelegt (Zeichen, Bild) liegen alle Lagen aufeinander
     // nur Ton: es gibt kein Bild, auf das sich die Linien zurücklegen – sie gehen mit dem Gewebe (Rückmeldung: «einzig die Form, die am Schluss
     // gezeigt wird, stört»: das ruhende Knäuel der Schlaufen)
-    sicht *= mix(1.0, uAktiv * uAktiv, uNurTon);
+    sicht *= mix(1.0, uAktiv * uAktiv, uNurTon * (1.0 - uLogo));
     vA = k0.w * uDichte * dichte * sicht * gewaehlt * uTor * (1.0 - uZeichen) * (k <= float(uH - 1) * auf + 0.5 ? 1.0 : 0.0);
   }`;
 const FRAGMENT = /* glsl */ `uniform vec3 uTinte; varying float vA; void main() { gl_FragColor = vec4(uTinte * vA, vA); }`;
@@ -113,7 +115,7 @@ function gestreckt(f) {
 
 export function gewebe(g, teil) {
   const { renderer, A, B, H } = g, a = B / H;
-  const Z = phase(teil, "zeichen"), G = phase(teil, "gewebe"), Bp = phase(teil, "bild");
+  const Z = phase(teil, "zeichen"), G = phase(teil, "gewebe"), Bp = phase(teil, "bild"), Lg = phase(teil, "logo");   // mit Signet: Logo statt Bild
   const NK = g.test ? 10 : g.grob ? 20 : 28, P = g.test ? 40 : g.grob ? 64 : 80, NH = g.test ? 24 : g.grob ? 56 : 90;
   // Kurven: beim Text die Umrisse der Buchstaben, beim Foto Linien gleicher Helligkeit (geglättet, auf drei Stufen); beim Video je Satz die eines
   // Bildes aus dem Video – der erste Satz aus dem Standbild, die weiteren ab den Schnitten (g.saetze: [{ t (Filmzeit), hell }])
@@ -139,8 +141,19 @@ export function gewebe(g, teil) {
     }
     return k;
   });
-  const saetze = [g.quelle === "ton" ? tonLinien() : linienAus(A.hell, g.quelle === "text"), ...(g.saetze ?? []).slice(0, 23).map((z) => linienAus(z.hell, false))];
-  const wechsel = (g.saetze ?? []).slice(0, 23).map((z) => z.t);
+  // das Logo: die Schlaufe des Signets (dieselbe Kurve wie in sketchory/signet.js, gezeichnet für 1080 × 1920, mittig auf H) – aus ihr wächst am
+  // Schluss eine Fläche, die sich glatt zum Strich legt
+  const logoKurve = () => {
+    const pk = (t) => { const r = 0.45 + Math.cos(t); return [1.2 * r * Math.cos(t) - 0.84, 1.2 * r * Math.sin(t)]; };
+    const roh = Array.from({ length: 361 }, (_, i) => pk((i / 360) * Math.PI * 2)), xs = roh.map((q) => q[0]), ys = roh.map((q) => q[1]);
+    const mx = (Math.min(...xs) + Math.max(...xs)) / 2, my = (Math.min(...ys) + Math.max(...ys)) / 2, sp = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+    const fl = new Float32Array(roh.length * 2);
+    roh.forEach(([x, y], i) => { fl[2 * i] = ((540 + (x - mx) * (420 / sp)) / B) * A.w - 0.5; fl[2 * i + 1] = ((870 + (y - my) * (420 / sp) + (H - 1920) / 2) / H) * A.h - 0.5; });
+    return [abtasten(fl, P)];
+  };
+  const videoSaetze = (g.saetze ?? []).slice(0, Lg ? 22 : 23);
+  const saetze = [g.quelle === "ton" ? tonLinien() : linienAus(A.hell, g.quelle === "text"), ...videoSaetze.map((z) => linienAus(z.hell, false)), ...(Lg ? [logoKurve()] : [])];
+  const wechsel = [...videoSaetze.map((z) => z.t), ...(Lg ? [Lg[0] + VOR] : [])];
   const nk = Math.max(...saetze.map((k) => k.length)), kd = new Float32Array((P + 1) * nk * saetze.length * 4);
   saetze.forEach((kurven, j) => kurven.forEach((k, c) => {
     const zeile = j * nk + c;
@@ -167,8 +180,8 @@ export function gewebe(g, teil) {
     blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendEquation: THREE.AddEquation,
     uniforms: { tKurven: { value: kurvenTex }, tTon: { value: TT.t }, tStoss: { value: TT.t2 }, tSpek: { value: TT.sp }, uKamDreh: { value: new THREE.Matrix3() }, uKam: { value: new THREE.Vector3(1, 0, 0) },
       uAuf: { value: g.quelle === "ton" ? 0.9 : Z[1] - 0.5 }, uP: { value: P }, uNK: { value: nk }, uSaetze: { value: saetze.length }, uWechsel: { value: Array.from({ length: 23 }, (_, j) => wechsel[j] ?? 1e9) },
-      uH: { value: NH }, uN: { value: TT.n }, uZeit: { value: 0 }, uVon: { value: VOR }, uB1: { value: Bp[1] }, uDichte: { value: 0.4 },
-      uNurTon: { value: g.quelle === "ton" ? 1 : 0 }, uAktiv: { value: 0 }, uSeit: { value: 0 }, uAnteil: { value: 1 }, uTor: { value: 1 }, uZeichen: { value: 0 }, uZustand: { value: new THREE.Vector4(0, 0, 0.4, 0) },
+      uH: { value: NH }, uN: { value: TT.n }, uZeit: { value: 0 }, uVon: { value: VOR }, uB1: { value: Bp ? Bp[1] : 1e9 }, uDichte: { value: 0.4 },
+      uNurTon: { value: g.quelle === "ton" ? 1 : 0 }, uLogo: { value: 0 }, uDicke: { value: 0 }, uPflicht: { value: 0 }, uAktiv: { value: 0 }, uSeit: { value: 0 }, uAnteil: { value: 1 }, uTor: { value: 1 }, uZeichen: { value: 0 }, uZustand: { value: new THREE.Vector4(0, 0, 0.4, 0) },
       uTinte: { value: new THREE.Color(0.02, 0.02, 0.025) } },
   });
   const linien = new THREE.LineSegments(geo, mat); linien.frustumCulled = false;
@@ -187,28 +200,43 @@ export function gewebe(g, teil) {
   return {
     render(rt, tau) {
       // die Tonspur beginnt mit dem Film, der Effekt nach dem Vorlauf (zeitachse: 0,4 s; mit Tonspur ohne Tempo)
-      const u = mat.uniforms, film = tau + VOR, zs = zustandBei(ZS, film, G[0] + VOR), j = zs.nr;
-      const aktiv = weich(anteil(tau, Z[1] - 0.4, Z[1] + 0.5)) * (1 - weich(anteil(tau, Bp[0] - 0.2, Bp[0] + 0.8)));
-      const seit = j ? film - zs.t0 : Math.max(0, tau - (Z[1] - 0.4));
-      const tor = wert(T.tor, film), nacht = zs.nacht && aktiv > 0.5, zeichen = zs.zeichen && mitBild && aktiv > 0.5;
+      const u = mat.uniforms, film = tau + VOR, logo = Lg && tau >= Lg[0];
+      const zs = zustandBei(ZS, logo ? Lg[0] + VOR - 1e-3 : film, G[0] + VOR), j = zs.nr;
+      // nur Ton: gleich von Anfang an (sonst zwei Sekunden leeres Papier)
+      const auf = g.quelle === "ton" ? weich(anteil(tau, 0.1, 0.6)) : weich(anteil(tau, Z[1] - 0.4, Z[1] + 0.5));
+      let aktiv = auf * (Bp ? 1 - weich(anteil(tau, Bp[0] - 0.2, Bp[0] + 0.8)) : 1), seit = j ? film - zs.t0 : Math.max(0, tau - (g.quelle === "ton" ? 0.1 : Z[1] - 0.4));
+      let tor = wert(T.tor, film), nacht = zs.nacht && aktiv > 0.5, zeichen = zs.zeichen && mitBild && aktiv > 0.5, ruhig = 0;
+      if (logo) {
+        // das Logo (Wunsch vom 18. Oktober 2026: «direkt vom Gewebe zum Logo. Mach davon eine völlig neue Version für diese Anwendung»): harter
+        // Schnitt auf die Schlaufe, sie wächst zur Fläche, bläht sich mit jedem Schlag auf und legt sich nach 1,6–2,8 s glatt zum Strich; die
+        // Farbgebung des letzten Bilds bleibt (schwarz auf Weiss oder Weiss auf Schwarz)
+        const ls = tau - Lg[0];
+        ruhig = weich(anteil(ls, 1.6, 2.8));
+        aktiv = (1 - ruhig) * (0.7 + 0.3 * wert(T.stoss, film)); seit = ls; tor = 1; nacht = zs.nacht; zeichen = false;
+      }
       u.uZeit.value = tau; u.uAktiv.value = aktiv; u.uSeit.value = seit; u.uTor.value = 1 + aktiv * (tor - 1); u.uZeichen.value = zeichen ? 1 : 0;
-      u.uZustand.value.set(zufall(j, 1) * 50, zufall(j, 2) * 50, 0.42 + 0.38 * zufall(j, 3), (zufall(j, 4) - 0.5) * 3);
-      u.uAnteil.value = j ? (g.quelle === "ton" ? 0.12 + 0.3 * zufall(j, 5) : g.quelle === "text" ? 0.5 + 0.4 * zufall(j, 5) : 0.25 + 0.4 * zufall(j, 5)) : g.quelle === "ton" ? 0.3 : 1;
-      // Kamera je Zustand; zum Zeichen und zum Bild hin gerade
-      const nah = j ? [1.25, 1.5, 1.9, 2.4, 1.05, 1.7][Math.floor(zufall(j, 6) * 6)] : 1;
-      const zoom = 1 + aktiv * (nah * (1 + 0.03 * Math.min(6, seit)) * (1 + 0.08 * wert(T.stoss, film)) - 1);
-      e3.set(aktiv * (zufall(j, 7) - 0.5) * (j ? 1.1 : 0.2), aktiv * (zufall(j, 8) - 0.5) * (j ? 1.1 : 0.2), aktiv * (zufall(j, 9) - 0.5) * (j ? 1.4 : 0.1));
+      u.uLogo.value = logo ? 1 : 0; u.uDicke.value = logo ? 0.0045 * ruhig : 0;
+      const jz = logo ? j + 97 : j;
+      u.uZustand.value.set(zufall(jz, 1) * 50, zufall(jz, 2) * 50, logo ? 0.55 : 0.42 + 0.38 * zufall(j, 3), (zufall(jz, 4) - 0.5) * 3);
+      const satz = Math.min(saetze.length - 1, wechsel.filter((w) => w <= film).length);
+      u.uPflicht.value = Math.floor(zufall(j, 12) * saetze[satz].length);
+      u.uAnteil.value = logo ? 1 : j ? (g.quelle === "ton" ? 0.25 + 0.35 * zufall(j, 5) : g.quelle === "text" ? 0.5 + 0.4 * zufall(j, 5) : 0.25 + 0.4 * zufall(j, 5)) : g.quelle === "ton" ? 0.3 : 1;
+      // Kamera je Zustand; zum Zeichen und zum Bild hin gerade; beim Logo zuerst nah, dann zurück auf die Schlaufe
+      const nah = logo ? 1 + 0.45 * (1 - ruhig) : j ? [1.25, 1.5, 1.9, 2.4, 1.05, 1.7][Math.floor(zufall(j, 6) * 6)] : 1;
+      const zoom = logo ? nah * (1 + 0.1 * wert(T.stoss, film) * (1 - ruhig)) : 1 + aktiv * (nah * (1 + 0.03 * Math.min(6, seit)) * (1 + 0.14 * wert(T.stoss, film)) - 1);
+      const neig = logo ? 0 : aktiv;
+      e3.set(neig * (zufall(j, 7) - 0.5) * (j ? 1.1 : 0.2), neig * (zufall(j, 8) - 0.5) * (j ? 1.1 : 0.2), neig * (zufall(j, 9) - 0.5) * (j ? 1.4 : 0.1));
       m3.setFromMatrix4(drehM.makeRotationFromEuler(e3)); u.uKamDreh.value.copy(m3);
-      u.uKam.value.set(zoom, aktiv * (zufall(j, 10) - 0.5) * 0.6 * (nah - 0.5), aktiv * (zufall(j, 11) - 0.5) * 0.6 * (nah - 0.5));
+      u.uKam.value.set(zoom, neig * (zufall(j, 10) - 0.5) * 0.6 * (nah - 0.5), neig * (zufall(j, 11) - 0.5) * 0.6 * (nah - 0.5));
       u.uTinte.value.setRGB(...(nacht ? [0.95, 0.95, 0.93] : [0.02, 0.02, 0.025]));
-      u.uDichte.value = (g.test ? 1.5 : g.grob ? 1.2 : 1) * (nacht ? 0.16 : 0.4);
+      u.uDichte.value = (g.test ? 1.5 : g.grob ? 1.2 : 1) * (nacht ? 0.16 : 0.4 * (1 + 1.2 * ruhig));   // das ruhige Logo schwarz wie das Signet
       grund.uniforms.uPapier.value.copy(nacht ? NACHT : PAPIER);
       grund.uniforms.uSicht.value = teil.erst ? weich(anteil(tau, 0, 0.7)) : 1;
-      grund.uniforms.uFoto.value = (zeichen ? tor : 0) + 1 - inOut(anteil(tau, Z[1] - 1.0, Z[1] + 0.4)) + inOut(anteil(tau, Bp[1] - 1.3, Bp[1] - 0.3));
+      grund.uniforms.uFoto.value = logo ? 0 : (zeichen ? tor : 0) + 1 - inOut(anteil(tau, Z[1] - 1.0, Z[1] + 0.4)) + (Bp ? inOut(anteil(tau, Bp[1] - 1.3, Bp[1] - 0.3)) : 0);
       g.pass(grund, rt);
       renderer.setRenderTarget(rt); renderer.render(szene, kam);
-      const ende = weich(anteil(tau, Bp[1] - 0.6, Bp[1] - 0.1));
-      return { aktiv: 0.35 * (1 - weich(anteil(tau, Bp[0], Bp[1]))), bloom: 0, saum: nacht ? 0 : 0.0008, ende };
+      const ende = Bp ? weich(anteil(tau, Bp[1] - 0.6, Bp[1] - 0.1)) : 0;
+      return { aktiv: logo ? 0.3 * (1 - ruhig) : 0.35 * (Bp ? 1 - weich(anteil(tau, Bp[0], Bp[1])) : 1), bloom: 0, saum: nacht ? 0 : 0.0008, ende };
     },
     vorab: { szenen: [[szene, kam]], materialien: [grund] },
     zaehler(tau) {

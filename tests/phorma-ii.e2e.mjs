@@ -54,24 +54,27 @@ const FOTO = await (async () => {
 const laden = (page) => page.setInputFiles("#datei", { name: "foto.jpg", mimeType: "image/jpeg", buffer: FOTO });
 const bereit = (page) => page.waitForFunction(() => !document.getElementById("video").disabled && window.__phorma?.sz && window.__phorma?.buehne && window.__phorma.buehneFertig, null, { timeout: 180_000 });
 
-/** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit, Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
+/** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild, szene } = await import("./film.js?v=16");
+  const { bild } = await import("./film.js?v=17");
   const S = window.__phorma; S.laeuft = false;
-  const sz = szene({ breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, ablauf: S.ablauf, buehne: S.buehne, beschriftung: false, signet: true });
+  const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
   x.setTransform(0.5, 0, 0, 0.5, 0, 0);
   bild(x, sz, t, { proben });
   const d = x.getImageData(0, 0, w, h).data;
   const f = document.createElement("canvas"); f.width = w; f.height = h; const fx = f.getContext("2d"); fx.drawImage(S.foto, 0, 0, w, h);
   const q = fx.getImageData(0, 0, w, h).data;
-  let hell = 0, schwarz = 0, abw = 0, mittelAbw = 0, n = 0, abdruck = 0;
+  let hell = 0, hell2 = 0, schwarz = 0, abw = 0, mittelAbw = 0, n = 0, abdruck = 0, tinte = 0;
+  const L = new Float32Array(d.length / 4); for (let i = 0; i < d.length; i += 4) L[i / 4] = (d[i] + d[i + 1] + d[i + 2]) / 3;
+  const median = Float32Array.from(L).sort()[L.length >> 1];
+  for (const l of L) if (Math.abs(l - median) > 30) tinte++;
   for (let i = 0; i < d.length; i += 4) {
-    const l = (d[i] + d[i + 1] + d[i + 2]) / 3; hell += l; n++; if (l < 8) schwarz++;
+    const l = (d[i] + d[i + 1] + d[i + 2]) / 3; hell += l; hell2 += l * l; n++; if (l < 8) schwarz++;
     const a = Math.max(Math.abs(d[i] - q[i]), Math.abs(d[i + 1] - q[i + 1]), Math.abs(d[i + 2] - q[i + 2])); if (a > abw) abw = a; mittelAbw += a;
     abdruck = (abdruck * 31 + d[i] * 7 + d[i + 1] * 3 + d[i + 2]) >>> 0;
   }
-  return { hell: hell / n, schwarz: schwarz / n, abw, mittelAbw: mittelAbw / n, abdruck, dauer: sz.zeit.dauer, zeit: { teile: sz.zeit.teile.map((tl) => [tl.art, tl.von, tl.bis]), phasen: sz.zeit.phasen.map((p) => [p.art, p.name, p.von, p.bis]), abschnitt: sz.zeit.abschnitt, stehen: sz.zeit.ab.stehen } };
+  return { hell: hell / n, streu: Math.sqrt(Math.max(0, hell2 / n - (hell / n) ** 2)), tinte: tinte / n, schwarz: schwarz / n, abw, mittelAbw: mittelAbw / n, abdruck, dauer: sz.zeit.dauer, zeit: { teile: sz.zeit.teile.map((tl) => [tl.art, tl.von, tl.bis]), phasen: sz.zeit.phasen.map((p) => [p.art, p.name, p.von, p.bis]), abschnitt: sz.zeit.abschnitt, stehen: sz.zeit.ab.stehen } };
 }, [t, proben]);
 
 // Ersatz für den H.264-Encoder (SwiftShader hat keinen): liefert kleine Stücke und eine Beschreibung
@@ -262,30 +265,38 @@ await check("Gewebe aus Text mit Ton: Text wählt das Gewebe, verfrickeln und ne
   await page.check("#ton-im-video"); assert.equal(await page.evaluate(() => document.getElementById("tonspur").muted), false);
   await page.waitForFunction(() => window.__phorma.buehneFertig && window.__phorma.sz.fragmente.length, null, { timeout: 120_000 });
   await bereit(page);
-  const s = await page.evaluate(() => { const S = window.__phorma; return { ablauf: S.ablauf, phasen: S.sz.zeit.phasen.map((p) => [p.name, p.von, p.bis]), abschnitt: S.sz.zeit.abschnitt, einsaetze: S.ton.analyse.einsaetze.length, fragmente: S.sz.fragmente.length, schnitte: S.sz.schnitte }; });
+  const s = await page.evaluate(() => { const S = window.__phorma; return { ablauf: S.ablauf, phasen: S.sz.zeit.phasen.map((p) => [p.name, p.von, p.bis]), abschnitt: S.sz.zeit.abschnitt, dauer: S.sz.zeit.dauer, tonDauer: S.ton.analyse.dauer, einsaetze: S.ton.analyse.einsaetze.length, fragmente: S.sz.fragmente.length, schnitte: S.sz.schnitte }; });
   assert.equal(s.ablauf, "gewebe");
-  assert.deepEqual(s.phasen.map((p) => p[0]), ["zeichen", "gewebe", "bild"]);
-  assert.ok(Math.abs(s.abschnitt.bis - s.abschnitt.von - 10) < 1e-6, "mit Ton: so lang wie die Musik, mindestens 10 s");
+  // mit Signet direkt vom Gewebe ins Logo (Rückmeldung: «der Weissraum einige Sekunden vor dem Logo ist unnötig»), danach nur 0,3 s Schluss
+  assert.deepEqual(s.phasen.map((p) => p[0]), ["zeichen", "gewebe", "logo"]);
+  assert.ok(Math.abs(s.dauer - s.abschnitt.bis - 0.3) < 1e-6, `nach dem Logo nur der Schluss (${s.dauer}, ${s.abschnitt.bis})`);
+  assert.ok(Math.abs(s.dauer - Math.max(s.tonDauer, 10.7)) < 1e-6, `mit Ton: so lang wie die Musik, der Effekt mindestens 10 s (${s.dauer}, Ton ${s.tonDauer})`);
   assert.ok(s.einsaetze >= 6 && s.fragmente >= 2, `Einsätze ${s.einsaetze}, Fragmente ${s.fragmente}`);
-  // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Abspann; mitten in einer anders als ohne
+  // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Logo; mitten in einer anders als ohne; der
+  // Schriftzug wird getippt und steht nach 2,6 s
   const logo = await page.evaluate(async () => {
-    const { bild, szene } = await import("./film.js?v=16");
-    const S = window.__phorma, o = { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, ablauf: S.ablauf, buehne: null, beschriftung: false, signet: true, text: S.text, ton: S.ton.analyse, laenge: 10 };
-    const sz = szene(o), e = sz.logo.find((x) => x.art >= 0.2 && x.t > sz.zeit.ab.signet[0]);
+    const { bild, logoZeichen } = await import("./film.js?v=17");
+    const S = window.__phorma, sz = { ...S.sz, buehne: null, beschriftung: false }, L = sz.logo, e = L.plan.find((x) => x.art >= 0.2 && x.t < L.bis - 1);
     const zeichne = (z, t) => { const c = document.createElement("canvas"); c.width = 270; c.height = 338; const x = c.getContext("2d"); x.setTransform(0.25, 0, 0, 0.25, 0, 0); bild(x, z, t); return c.toDataURL(); };
-    const ohne = szene({ ...o, ablauf: "physarum" }), t = e.t + e.dauer * 0.3;
-    return { n: sz.logo.length, gleich: zeichne(sz, t) === zeichne({ ...ohne, zeit: sz.zeit }, t) };
+    const t = e.t + e.dauer * 0.3;
+    return { n: L.plan.length, gleich: zeichne(sz, t) === zeichne({ ...sz, logo: { ...L, plan: [] } }, t), nacht: typeof L.nacht, zeichen: [logoZeichen(L, L.von), logoZeichen(L, L.von + 1.2), logoZeichen(L, L.tipp)] };
   });
   assert.ok(logo.n >= 3 && !logo.gleich, `Logo verfrickelt (${JSON.stringify(logo)})`);
+  assert.ok(logo.nacht === "boolean" && logo.zeichen[0] === 0 && logo.zeichen[1] > 0 && logo.zeichen[1] < 14 && logo.zeichen[2] === 14, `getippt (${logo.zeichen})`);
+  // kaum leeres Papier: im Logo und im Schluss überall Linien und Schrift (Wunsch: «maximal kurz einen leeren Bildschirm zeigen»)
+  const L = s.phasen[2];
+  for (const t of [L[1] + 0.1, L[1] + 1.2, L[2] - 0.6, s.dauer - 0.05]) { const m = await messe(page, t); assert.ok(m.tinte > 0.001, `bei ${t.toFixed(2)} s nicht leer (Tinte ${m.tinte.toFixed(4)})`); }
   const G = s.phasen[1], zeichen = await messe(page, s.phasen[0][1] + 0.9), mitte = await messe(page, (G[1] + G[2]) / 2), mitte2 = await messe(page, (G[1] + G[2]) / 2 + 0.5);
-  const ende = await messe(page, s.abschnitt.bis + 1);
+  // ohne Signet wie bisher: am Ende das Bild, hier exakt der Text
+  await page.uncheck("#unschaerfe"); await page.uncheck("#signet");
+  await page.waitForFunction(() => window.__phorma.sz.zeit.phasen.at(-1).name === "bild" && window.__phorma.buehneSchluessel.endsWith("|false|"));
+  await bereit(page);
+  const ende = await messe(page, (await messe(page, 0)).zeit.abschnitt.bis + 1);
   assert.ok(zeichen.mittelAbw < 10 && mitte.mittelAbw > zeichen.mittelAbw, `zuerst steht der Text (${zeichen.mittelAbw.toFixed(2)}, später ${mitte.mittelAbw.toFixed(2)})`);
   assert.ok(mitte.hell > 150, `Papier mit Linien (${mitte.hell.toFixed(0)}, ${mitte.mittelAbw.toFixed(2)})`);
   assert.notEqual(mitte.abdruck, mitte2.abdruck, "die Bänder bewegen sich");
   assert.ok(ende.abw <= 2, `am Ende exakt der Text (${ende.abw})`);
   // Video mit Ton (Bild aus dem Ersatz-Encoder, Ton vom Browser)
-  await page.uncheck("#unschaerfe"); await page.uncheck("#signet");
-  await page.waitForFunction(() => !window.__phorma.sz.zeit.ab.signet);
   await page.click("#video");
   await page.waitForSelector("#ergebnis:not([hidden])", { timeout: 600_000 });
   await page.evaluate(() => { const gl = window.__phorma.buehne.canvas.getContext("webgl2"); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4)); });
@@ -323,6 +334,7 @@ await check("Video als Quelle: Standbild, sein Ton als Tonspur, im Gewebe neue L
     rec.stop(); await new Promise((ok) => { rec.onstop = ok; }); ac.close();
     return Array.from(new Uint8Array(await new Blob(teile).arrayBuffer()));
   });
+  await page.uncheck("#signet");                                         // ohne Logo: am Ende das Standbild
   await page.click('[data-quelle="video"]');
   assert.ok(await page.isVisible("#video-teil") && !(await page.isVisible("#ablage")), "Videoteil statt Ablage");
   await page.setInputFiles("#videodatei", { name: "probe.webm", mimeType: "video/webm", buffer: Buffer.from(webm) });
@@ -343,7 +355,7 @@ await check("Video als Quelle: Standbild, sein Ton als Tonspur, im Gewebe neue L
   await ctx.close();
 });
 
-await check("Nur Ton: ohne Bild wählt das Gewebe – aus Schlaufen wachsen Flächen, bei kräftigen Einsätzen neue Bilder; am Ende leeres Papier", async () => {
+await check("Nur Ton: ohne Bild wählt das Gewebe – gleich Flächen aus Schlaufen, bei kräftigen Einsätzen neue Bilder; am Ende das Logo, ohne Signet leeres Papier", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await page.click('[data-quelle="ton"]');
   assert.equal(await page.getAttribute('[data-wahl="gewebe"]', "aria-pressed"), "true", "nur Ton wählt das Gewebe");
@@ -354,7 +366,7 @@ await check("Nur Ton: ohne Bild wählt das Gewebe – aus Schlaufen wachsen Flä
   const s = await page.evaluate(() => { const S = window.__phorma; return { quelle: S.quelle, phasen: S.sz.zeit.phasen.map((p) => [p.name, p.von, p.bis]), bis: S.sz.zeit.abschnitt.bis, ein: S.ton.analyse.einsaetze.map((e) => e.t) }; });
   assert.equal(s.quelle, "ton");
   const G = s.phasen[1], start = await messe(page, 1.4);
-  assert.ok(start.mittelAbw < 12, `zuerst Papier und die ruhenden Ringe (${start.mittelAbw.toFixed(2)})`);
+
   // ein Schlag mitten im Gewebe: kurz davor und kurz danach verschieden, das Bild dunkler (mehr Tinte beim Stoss)
   const e = s.ein.find((t) => t > G[1] + 1.5 && t < G[2] - 1.5);
   const vor = await messe(page, e - 0.1), nach = await messe(page, e + 0.12);
@@ -363,10 +375,18 @@ await check("Nur Ton: ohne Bild wählt das Gewebe – aus Schlaufen wachsen Flä
   // die Zustände wechseln: zu drei Zeiten im Abschnitt mindestens zwei verschiedene
   const zust = await page.evaluate(([a, b]) => [a + 1, (a + b) / 2, b - 1].map((t) => window.__phorma.buehne.zaehler(window.__phorma.sz.zeit, t).split(" · ")[0]), [G[1], G[2]]);
   assert.ok(new Set(zust).size >= 2, `neue Bilder (${zust})`);
-  const ende = await messe(page, s.bis + 1);
+  // mit Signet am Ende das Logo, das aus dem Gewebe entsteht
+  assert.equal(s.phasen[2][0], "logo");
+  const logo = await messe(page, s.phasen[2][2] - 0.3);
+  assert.ok(logo.tinte > 0.001, `am Ende das Logo (Tinte ${logo.tinte.toFixed(4)})`);
+  // ohne Signet: am Ende leeres Papier, schon im «Bild» kein Knäuel der ruhenden Schlaufen (Rückmeldung: «einzig die Form, die am Schluss gezeigt wird, stört»)
+  await page.uncheck("#signet");
+  await page.waitForFunction(() => window.__phorma.sz.zeit.phasen.at(-1).name === "bild" && window.__phorma.buehneSchluessel.endsWith("|false|"));
+  await bereit(page);
+  const z = (await messe(page, 0)).zeit, ende = await messe(page, z.abschnitt.bis + 1);
   assert.ok(ende.abw <= 2, `am Ende leeres Papier (${ende.abw})`);
-  // schon im «Bild» kein Knäuel der ruhenden Schlaufen (Rückmeldung: «einzig die Form, die am Schluss gezeigt wird, stört»)
-  const B = s.phasen[2], bild = await messe(page, (B[1] + B[2]) / 2);
+  assert.ok(start.tinte > 0.001 && ende.tinte < 0.0005, `gleich von Anfang an Flächen, kein leeres Papier (Tinte ${start.tinte.toFixed(4)}, leer ${ende.tinte.toFixed(4)})`);
+  const B = z.phasen[2].slice(2), bild = await messe(page, (B[0] + B[1]) / 2);
   assert.ok(bild.abw < 40, `im Bild leeres Papier, nur Korn und Vignette (grösste Abweichung ${bild.abw})`);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
