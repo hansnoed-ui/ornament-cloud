@@ -17,13 +17,15 @@ const FABRIK = { gewebe, irrfahrt };
 
 const SUMME = /* glsl */ `uniform sampler2D tQuelle; uniform float uGewicht; varying vec2 vUv; void main() { gl_FragColor = vec4(texture2D(tQuelle, vUv).rgb * uGewicht, 1.0); }`;
 const AUSGABE = /* glsl */ `
-  uniform sampler2D tSumme, tFoto; uniform float uEnde, uAktiv, uSaumStaerke, uKorn, uUmkehr; uniform uint uBild; varying vec2 vUv;
+  uniform sampler2D tSumme, tFoto; uniform float uEnde, uAktiv, uSaumStaerke, uKorn, uUmkehr, uBelichtung; uniform uint uBild; varying vec2 vUv;
   float hash(uvec3 v) { v = v * 1664525u + 1013904223u; v.x += v.y * v.z; v.y += v.z * v.x; v.z += v.x * v.y; v ^= v >> 16u; v.x += v.y * v.z; return float(v.x) / 4294967295.0; }
   vec3 schulter(vec3 c) { vec3 k = 0.8 + 0.2 * (1.0 - exp(-(c - 0.8) / 0.2)); return mix(c, k, step(0.8, c)); }
   vec3 srgb(vec3 c) { c = clamp(c, 0.0, 1.0); return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
   void main() {
     vec2 d = vUv - 0.5, s = d * uSaumStaerke * (1.0 + 4.0 * dot(d, d));
     vec3 c = vec3(texture2D(tSumme, vUv - s).r, texture2D(tSumme, vUv).g, texture2D(tSumme, vUv + s).b);
+    // weich gestaucht wie ein Film (Irrfahrt): 1 → 0,7, 2 → 0,91, 4 → 0,99; die schwächsten Fäden versinken im Schwarz (sonst ein grauer Schleier)
+    if (uBelichtung > 0.0) c = 1.0 - exp(-max(c - 0.025, 0.0) * uBelichtung);
     c = mix(c, schulter(c), uAktiv);
     c *= mix(1.0, 1.0 - 0.7 * dot(d, d), uAktiv);
     c = mix(c, texture2D(tFoto, vUv).rgb, uEnde);
@@ -60,7 +62,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
 
   let w = 0, h = 0, rtMix, rtSumme, bloom;
   const summe = quadMaterial(SUMME, { tQuelle: { value: null }, uGewicht: { value: 1 } }, { blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation, transparent: true });
-  const ausgabe = quadMaterial(AUSGABE, { tSumme: { value: null }, tFoto: { value: fotoTex }, uEnde: { value: 0 }, uAktiv: { value: 0 }, uSaumStaerke: { value: 0 }, uKorn: { value: 0.05 }, uUmkehr: { value: 0 }, uBild: { value: 0 } });
+  const ausgabe = quadMaterial(AUSGABE, { tSumme: { value: null }, tFoto: { value: fotoTex }, uEnde: { value: 0 }, uAktiv: { value: 0 }, uSaumStaerke: { value: 0 }, uKorn: { value: 0.05 }, uUmkehr: { value: 0 }, uBelichtung: { value: 0 }, uBild: { value: 0 } });
   function groesse(nw, nh) {
     if (nw === w && nh === h) return;
     w = nw; h = nh;
@@ -125,7 +127,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
       }
       const u = ausgabe.uniforms;
       u.tSumme.value = rtSumme.texture; u.uEnde.value = info.ende ?? 0; u.uAktiv.value = info.aktiv;
-      u.uSaumStaerke.value = info.saum ?? 0.0025; u.uUmkehr.value = umkehr; u.uBild.value = Math.round(t * FPS);
+      u.uSaumStaerke.value = info.saum ?? 0.0025; u.uUmkehr.value = umkehr; u.uBelichtung.value = info.belichtung ?? 0; u.uBild.value = Math.round(t * FPS);
       g.pass(ausgabe, null);
       this.ende = info.ende ?? 0;
       return canvas;

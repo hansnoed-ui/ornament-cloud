@@ -22,7 +22,7 @@ import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=2";
 const VOR = 0.4;
 
 const PFAD = /* glsl */ `
-  uniform sampler2D tPfad; uniform int uZeile; uniform float uKopf, uSchritt, uL, uAmp, uKnall, uDicke, uZeit, uMusik, uHell;
+  uniform sampler2D tPfad; uniform int uZeile; uniform float uKopf, uSchritt, uL, uAmp, uKnall, uDicke, uZeit, uMusik, uHell, uSchwanz;
   uniform mat3 uDreh; uniform vec4 uLage;
   ${RAUSCHEN}
   vec3 hash3(float n) { return fract(sin(vec3(n * 12.9898, n * 78.233, n * 37.719)) * 43758.5453); }
@@ -34,7 +34,7 @@ const PFAD = /* glsl */ `
   vec3 faden(float k, float i, out float sicht) {
     vec3 hk = hash3(k + 1.0);
     float r = i / uL, f = uKopf - (uL - i) * uSchritt - hk.x * uAmp * 90.0 * max(uSchritt, 1.0);
-    sicht = step(0.0, f) * smoothstep(0.0, 0.25, r);
+    sicht = step(0.0, f) * smoothstep(0.0, uSchwanz, r);                     // das Ende blendet aus (nicht bei Umriss und Logo)
     // Rauch: zwei Oktaven Rauschen je Faden – die grobe hält das Bündel als Wolke beisammen, die feine macht die Haare
     // uMusik: die Zeit der Musik – zwischen den Schlägen zieht der Rauch langsam, beim Schlag wirbelt er
     vec3 p = pfad(f), q = p * 6.0 + hk * 40.0 + vec3(0.0, 0.0, uMusik), q2 = p * 17.0 + hk * 23.0 + vec3(uMusik * 1.6, 0.0, 0.0);
@@ -112,7 +112,7 @@ export function irrfahrt(g, teil) {
   pfadTex.minFilter = pfadTex.magFilter = THREE.NearestFilter; pfadTex.needsUpdate = true;
 
   const U = { tPfad: { value: pfadTex }, uZeile: { value: 0 }, uKopf: { value: 0 }, uSchritt: { value: 1 }, uL: { value: L }, uAmp: { value: 0 }, uKnall: { value: 0 },
-    uDicke: { value: 0 }, uZeit: { value: 0 }, uMusik: { value: 0 }, uHell: { value: 1 }, uDreh: { value: new THREE.Matrix3() }, uLage: { value: new THREE.Vector4(0, 0, 0, 1) } };
+    uDicke: { value: 0 }, uZeit: { value: 0 }, uMusik: { value: 0 }, uSchwanz: { value: 0.25 }, uHell: { value: 1 }, uDreh: { value: new THREE.Matrix3() }, uLage: { value: new THREE.Vector4(0, 0, 0, 1) } };
   const plus = { depthTest: false, depthWrite: false, transparent: true, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation };
   // die Fäden: S × (L − 1) Stücke
   const ref = new Float32Array(S * (L - 1) * 4);
@@ -138,7 +138,7 @@ export function irrfahrt(g, teil) {
     uniforms: { uDreh: U.uDreh, uLage: U.uLage, uZeit: U.uZeit, uZeichnen: { value: 0 }, uEcho: { value: 0 }, uWuerfel: { value: 1 }, uZittern: { value: 0 } } });
   const szene = new THREE.Scene();
   for (const o of [new THREE.LineSegments(wGeo, wMat), new THREE.LineSegments(fGeo, fMat), new THREE.Points(pGeo, pMat)]) { o.frustumCulled = false; szene.add(o); }
-  const groesse = new THREE.Vector2(), kam = kamera(B, H), drehM = new THREE.Matrix4(), e3 = new THREE.Euler(), q0 = new THREE.Quaternion(), q1 = new THREE.Quaternion();
+  const ein = T.einsaetze.map((e) => e.t), groesse = new THREE.Vector2(), kam = kamera(B, H), drehM = new THREE.Matrix4(), e3 = new THREE.Euler(), q0 = new THREE.Quaternion(), q1 = new THREE.Quaternion();
   const helle = 3.4 / S;                                                     // aufeinander ein heller Strich, aufgequollen rauchig
 
   return {
@@ -154,30 +154,38 @@ export function irrfahrt(g, teil) {
       if (logo || zeichen) {
         zeile = logo ? logoZeile : textZeile;
         kopf = (PN - 1) * weich(Math.min(1, seit / (logo ? 1.0 : 0.6))); schritt = Math.max(0.02, kopf / L);
-      } else kopf = Math.min(PN - 1, 30 + seit * (260 + 520 * laut));
+      } else kopf = Math.min(PN - 1, 30 + seit * (280 + 900 * laut));            // laut rast er
       schritt *= 1 - 0.97 * still;                                             // in der Stille zieht sich der Faden in seinen Kopf zusammen
       const auf = weich(anteil(tau, 0, W[1]));
-      let amp = (0.0006 + 0.16 * laut ** 1.3 + 0.2 * stoss + 0.12 * tief) * auf * (1 - still) * (zeichen ? 0.35 : 1);
+      // laut quillt die Wolke weit auf (breiter, nicht nur heller – sonst brennt sie zu Klumpen aus)
+      let amp = (0.0006 + 0.24 * laut ** 1.2 + 0.28 * stoss + 0.16 * tief) * auf * (1 - still) * (zeichen ? 0.35 : 1);
       if (logo) amp = (1 - ruhig) * (0.03 + 0.14 * stoss);
-      // die Lage des Würfels: je Zustand gewürfelt (auch mitten in ihm), darin langsam drehend, der Schlag ruckt; zum Logo gerade und von vorn
-      const nah = j ? [0.95, 1.1, 1.3, 1.65, 2.6, 1.0][Math.floor(zufall(j, 6) * 6)] : 1.15;
-      const w = 0.35 + 0.5 * zufall(j, 9);
-      e3.set(zufall(j, 1) * 6.283 + seit * w * 0.6 + dreh * 0.25, zufall(j, 2) * 6.283 + seit * w + dreh * 0.4, zufall(j, 3) * 6.283 + seit * w * 0.3);
-      if (!j) e3.set(0.45 + tau * 0.25, 0.6 + tau * 0.4, 0.1);
-      q0.setFromEuler(e3); q1.identity(); q0.slerp(q1, ruhig);
-      drehM.makeRotationFromQuaternion(q0); U.uDreh.value.setFromMatrix4(drehM);
-      const mass = (logo ? 1 + (nah - 1) * (1 - ruhig) : nah) * (1 + 0.12 * stoss * (1 - ruhig));
-      U.uLage.value.set((zufall(j, 4) - 0.5) * 0.25 * (1 - ruhig), (zufall(j, 5) - 0.5) * 0.25 * (1 - ruhig), 0, mass);
-      U.uZeile.value = zeile; U.uKopf.value = kopf; U.uSchritt.value = schritt; U.uAmp.value = amp; U.uKnall.value = 1.5 * tief * (1 - ruhig);
-      U.uDicke.value = logo ? 0.0035 * ruhig : 0; U.uZeit.value = tau; U.uMusik.value = 0.3 * tau + 0.3 * wert(T.energie, film); U.uHell.value = helle * (logo ? 1 + 0.2 * ruhig : (0.7 + 1.5 * laut + 1.5 * stoss) * (1 - 0.6 * still));   // laut quillt die Wolke hell auf
-      pMat.uniforms.uFunken.value = (0.15 + 1.6 * hoch + 0.6 * stoss) * auf * (1 - still) * (1 - ruhig); pMat.uniforms.uPunkt.value = Math.max(1, (g.test ? 1 : 2) * (renderer.getSize(groesse).y / 1350));
+      // die Lage des Würfels: je Zustand gewürfelt (auch mitten in ihm), und jeder weitere Einsatz wirft ihn in eine neue Lage («noch wilder»);
+      // darin dreht er sich, der Schlag ruckt; zum Logo gerade und von vorn. Manche Zustände zeigen drei Würfel nebeneinander.
+      const nr = logo ? 0 : ein.filter((t) => t > zs.t0 + 0.02 && t <= film).length, jl = j * 37 + nr, seitL = nr ? film - ein.filter((t) => t <= film).at(-1) : seit;
+      const nah = jl ? [0.95, 1.1, 1.3, 1.65, 2.6, 1.0, 0.8][Math.floor(zufall(jl, 6) * 7)] : 1.15;
+      const w = 0.35 + 0.8 * zufall(jl, 9), drei = !logo && !zeichen && j > 0 && zufall(j, 13) < 0.28;
+      const lage = (k) => {
+        e3.set(zufall(jl, 1) * 6.283 + seitL * w * 0.6 + dreh * 0.35 + k * 2.1, zufall(jl, 2) * 6.283 + seitL * w + dreh * 0.5 + k * 1.3, zufall(jl, 3) * 6.283 + seitL * w * 0.3);
+        if (!j) e3.set(0.45 + tau * 0.25, 0.6 + tau * 0.4, 0.1);
+        q0.setFromEuler(e3); q1.identity(); q0.slerp(q1, ruhig);
+        drehM.makeRotationFromQuaternion(q0); U.uDreh.value.setFromMatrix4(drehM);
+        const mass = (logo ? 1 + (nah - 1) * (1 - ruhig) : drei ? 0.55 : nah) * (1 + 0.28 * stoss * (1 - ruhig));
+        const dx = drei ? (k - 1) * 0.62 * a : (zufall(jl, 4) - 0.5) * 0.3 * (1 - ruhig);
+        U.uLage.value.set(dx, drei ? (k - 1) * -0.12 : (zufall(jl, 5) - 0.5) * 0.3 * (1 - ruhig), 0, mass);
+      };
+      U.uSchwanz.value = logo || zeichen ? 1e-4 : 0.25; U.uZeile.value = zeile; U.uKopf.value = kopf; U.uSchritt.value = schritt; U.uAmp.value = amp; U.uKnall.value = 1.5 * tief * (1 - ruhig);
+      U.uDicke.value = logo ? 0.0035 * ruhig : 0; U.uZeit.value = tau; U.uMusik.value = 0.3 * tau + 0.3 * wert(T.energie, film); U.uHell.value = helle * (logo ? 1 + 1.2 * ruhig : (0.8 + 1.1 * laut + 1.0 * stoss) * (1 - 0.6 * still));
+      pMat.uniforms.uFunken.value = (0.25 + 2.6 * hoch + 1.2 * stoss) * auf * (1 - still) * (1 - ruhig); pMat.uniforms.uPunkt.value = Math.max(1, (g.test ? 1.5 : 3) * (renderer.getSize(groesse).y / 1350));
       wMat.uniforms.uZeichnen.value = weich(anteil(tau, 0.05, W[1] * 0.9)); wMat.uniforms.uEcho.value = stoss * (1 - ruhig); wMat.uniforms.uZittern.value = 0.03 * hoch;
       wMat.uniforms.uWuerfel.value = (0.55 + 0.45 * Math.min(1, laut * 2)) * (1 - ruhig) * (1 - 0.6 * still);
       g.loeschen(rt, 0x000000);
-      renderer.setRenderTarget(rt); renderer.render(szene, kam);
-      // Negativ: bei einem Schnitt, der Weiss auf Schwarz gewürfelt hat (im Gewebe die Nacht), drei Bilder lang
-      const umkehr = !logo && j && zs.nacht && film - zs.t0 < 0.1 ? 1 : 0;
-      return { aktiv: 0.7 * (1 - ruhig) + 0.15, bloom: (0.3 + 0.6 * stoss) * (1 - 0.7 * ruhig), radius: 0.35, saum: 0.0005 + 0.012 * stoss * (1 - ruhig), ende: 0, umkehr };
+      renderer.setRenderTarget(rt);
+      for (let k = 0; k < (drei ? 3 : 1); k++) { lage(drei ? k : 0); renderer.render(szene, kam); }
+      // Negativ: bei jedem Schnitt der Musik und bei Zuständen, die Weiss auf Schwarz gewürfelt haben (im Gewebe die Nacht), zwei bis drei Bilder lang
+      const umkehr = !logo && j && ((zs.nacht && film - zs.t0 < 0.1) || T.schnitte.some((x) => film >= x && film < x + 0.07)) ? 1 : 0;
+      // belichtung: die Summe der Fäden weich gestaucht (1 − e^(−k·x)) statt hart abgeschnitten – im Hellen bleiben die Fäden zu sehen
+      return { aktiv: 0.7 * (1 - ruhig) + 0.15, bloom: (0.12 + 0.3 * stoss) * (1 - 0.7 * ruhig), radius: 0.2, saum: 0.0008 + 0.02 * stoss * (1 - ruhig), ende: 0, umkehr, belichtung: 1.2 };
     },
     vorab: { szenen: [[szene, kam]], materialien: [] },
     zaehler(tau) {
