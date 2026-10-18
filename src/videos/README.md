@@ -160,6 +160,8 @@ fester Startwert), wie das Punktziel des Rings verlangt. Die Zeichen sind halb s
 
 ### Startanimation der Website (9. Oktober 2026)
 
+Seit dem 18. Oktober 2026 nicht mehr auf der Website: das Intro ist die Irrfahrt aus PHORMA III (`assets/start-intro.mp4`, `tools/phorma-intro.mjs`); die Dateien `assets/start-animation*.mp4` sind im Verlauf von Git.
+
 Wunsch von Christian nach dem Video «wachstum»: nur die Zeichen (Sekunden 13–30 davon), ohne Wolke, ohne Intro und ohne das Signet am Ende; erst 1,4-mal so schnell, dann auf 11 Sekunden gekürzt (17 s → 11 s, gut 1,5-mal so schnell).
 Compositions `StartAnimation` (hell, Farben der Website) und `StartAnimationDunkel` (dunkel: Grund `#171614`, Linie `#ece8e1`, Punkt `#f08a5d`, wie `styles.css` im dunklen Modus), beide 1080 × 1080, 330 Bilder.
 Dieselben Rechenschritte wie im Video, nur dichter (`TEMPO_START` = 510 / 330 Schritte je Bild gegenüber dem Video «wachstum»); das fertige Wort steht von etwa 8,7 s bis 10,3 s, dann blenden die Zeichen in 20 Bildern aus (`AUS_START`, Wunsch vom 9. Oktober 2026),

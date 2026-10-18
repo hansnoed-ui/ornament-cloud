@@ -10,6 +10,10 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `tests/orma.test.mjs` lässt nur diese eine Einbettung zu). Der Rahmen wächst mit dem Spiel; «Drehen» muss beim Laden nicht im Fenster stehen. Nach dem Drehen meldet das Spiel
   `postMessage({ omna: "uebung" })`, und die Startseite blättert zur gezogenen Übung. Der Beitrag zu OMNA COLOR steht weiter auf «Web». Die drei Kästen Apps, Prompts und Web, die vom 9. bis
   10. Oktober 2026 unter dem Lead standen, sind seit dem 10. Oktober 2026 mit «Zettel» das Menü oben auf allen Seiten.
+  **Intro** (seit 18. Oktober 2026, Wunsch: «das Video des Tests, welches im Ornament.cloud-Logo endet, als neue Intro-Sequenz der Website, mit Option Ton an/aus und Skip intro»):
+  vor der Startseite die Irrfahrt aus PHORMA III (`assets/start-intro.mp4`, 1080 × 1350, 16 s, mit Ton; gerechnet mit `NODE_PATH=$(npm root -g) node tools/phorma-intro.mjs <audiodatei>`), auf Schwarz
+  in beiden Modi; es beginnt stumm, «Ton an» / «Ton aus» schaltet die Musik (beendet das Intro nicht), «Skip intro», Tippen oder eine Taste beenden es. Einmal pro Sitzung, `?start` zeigt es wieder,
+  nie bei «weniger Bewegung» oder «Daten sparen». Bis dahin wuchsen die Zeichen von «ornament.cloud» (hell und dunkel, `src/videos/`, im Verlauf von Git).
 - Menü (`<nav class="menu">`, seit 10. Oktober 2026, Wunsch von Christian): **vier Kästchen mit gezeichnetem Symbol und Namen**, immer in dieser Reihenfolge: **Apps** (vier Felder, `apps/`), **Prompts** (Sprechblase mit Eingabezeichen, `masterprompts/`),
   **Web** (Globus, `web/`), **Zettel** (Karteikarte, führt direkt zu `zu-seiner-zeit/`; seit 10. Oktober 2026 zuletzt); vorher, vom 2. bis 10. Oktober 2026, vier Wörter (Zettelkasten, Apps, Masterprompts, Web).
   Die Symbole sind nicht animiert und für Vorlesegeräte verborgen; Schrift der Seite (`--font`, Gewicht 500). Vier gleich breite Spalten, auch auf dem Handy (dort unter der Welle, bis 320 px Breite nebeneinander); am Computer rechts oben neben den Hauptlinks, die Welle darunter.
@@ -239,6 +243,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `node --experimental-strip-types tools/sync-doppelspalt-data.ts`
 - `tools/og-image.mjs` – erzeugt das Vorschaubild für Facebook/X (`assets/og-nebeneinander-nacheinander.png`) aus dem Rad:
   `NODE_PATH=$(npm root -g) node tools/og-image.mjs`
+- `tools/phorma-intro.mjs` – rechnet das Intro der Startseite (`assets/start-intro.mp4`) mit PHORMA III aus einer Audiodatei (Irrfahrt, Nur Ton, Logo; voller Grösse, Bewegungsunschärfe, ffmpeg)
 - `tools/start-og.mjs` – erzeugt die Vorschaukarten (1200 × 630) für das Teilen auf Social Media (Wunsch vom 2. Oktober 2026): für die Startseite `assets/og-ornament-cloud.png`
   (eine Wolke aus den 40 Zeichen von ORNA neben dem Satz der Startseite) und für das Dritte Rad `alpha/drittes-rad/og-drittes-rad.jpg` (das Rad aus der Seite; JPEG, damit die Datei unter 300 KB bleibt):
   `NODE_PATH=$(npm root -g) node tools/start-og.mjs` (mit `start` oder `rad` nur ein Bild). Die Angaben für Facebook, X, LinkedIn und WhatsApp (`og:*`, `twitter:*`) stehen im Kopf der beiden Seiten,
