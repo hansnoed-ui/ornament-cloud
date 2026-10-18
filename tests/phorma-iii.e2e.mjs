@@ -319,7 +319,7 @@ await check("Stimme: säubern und der Ablauf Scratch → Stimme mit Hüpfern →
   assert.equal(s.kanaele, 2, "in Stereo (der Raum)");
   // der Ausschnitt: zuerst automatisch (10 s ab dem ersten Wort), dann mit den Reglern, in der Wellenform, zurück auf automatisch
   assert.ok(await page.isVisible("#ausschnitt") && await page.isDisabled("#ausschnitt-auto"));
-  assert.match(await page.textContent("#ausschnitt-info"), /0:00,\d – 0:10,\d · 10,0 s \(automatisch\)/);
+  assert.match(await page.textContent("#ausschnitt-info"), /0:00,\d – 0:1\d,\d · 10,4 s \(automatisch\)/);
   const regler = (von, laenge) => page.evaluate(([von, laenge]) => {
     const v = document.getElementById("ausschnitt-von"), l = document.getElementById("ausschnitt-laenge");
     v.value = String(von); l.value = String(laenge); for (const t of ["input", "change"]) l.dispatchEvent(new Event(t));

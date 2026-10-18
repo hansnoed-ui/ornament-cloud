@@ -176,11 +176,12 @@ export function irrfahrt(g, teil) {
       if (logo || zeichen) {
         zeile = logo ? logoZeile : textZeile;
         kopf = (PN - 1) * weich(Math.min(1, seit / (logo ? 1.0 : 0.6))); schritt = Math.max(0.02, kopf / L);
-      } else kopf = Math.min(PN - 1, 30 + seit * (280 + 900 * laut));            // laut rast er
+      } else kopf = Math.min(PN - 1, 30 + seit * (260 + 520 * laut));
       schritt *= 1 - 0.97 * still;                                             // in der Stille zieht sich der Faden in seinen Kopf zusammen
       const auf = weich(anteil(tau, 0, W[1]));
-      // laut quillt die Wolke weit auf (breiter, nicht nur heller – sonst brennt sie zu Klumpen aus)
-      let amp = (0.0006 + 0.24 * laut ** 1.2 + 0.28 * stoss + 0.16 * tief) * auf * (1 - still) * (zeichen ? 0.35 : 1);
+      // die Animation im Würfel – Faden, Rauch, Funken, Belichtung – wieder wie in der ersten Fassung (Rückmeldung: «am Anfang war sie besser, bevor
+      // wir sie wilder gemacht haben … es geht nur um die Belichtung und Wildheit der Animation in den Würfeln drin»; die Effekte bleiben)
+      let amp = (0.0006 + 0.16 * laut ** 1.3 + 0.2 * stoss + 0.12 * tief) * auf * (1 - still) * (zeichen ? 0.35 : 1);
       if (logo) amp = (1 - ruhig) * (0.03 + 0.14 * stoss);
       // die Lage des Würfels: je Zustand gewürfelt (auch mitten in ihm), und jeder weitere kräftige Einsatz wirft ihn in eine neue Lage («noch wilder»);
       // darin dreht er sich, der Schlag ruckt; zum Logo gerade und von vorn. Manche Zustände zeigen drei Würfel nebeneinander.
@@ -198,8 +199,8 @@ export function irrfahrt(g, teil) {
         U.uLage.value.set(dx, drei ? (k - 1) * -0.22 : (zufall(jl, 5) - 0.5) * 0.3 * (1 - ruhig), 0, mass);
       };
       U.uSchwanz.value = logo || zeichen ? 1e-4 : 0.25; U.uZeile.value = zeile; U.uKopf.value = kopf; U.uSchritt.value = schritt; U.uAmp.value = amp; U.uKnall.value = 1.5 * tief * (1 - ruhig);
-      U.uDicke.value = logo ? 0.0035 * ruhig : 0; U.uZeit.value = tau; U.uMusik.value = 0.3 * tau + 0.3 * wert(T.energie, film); U.uHell.value = helle * (logo ? 1 + 1.2 * ruhig : (0.8 + 1.1 * laut + 1.0 * stoss) * (1 - 0.6 * still));
-      pMat.uniforms.uFunken.value = (0.25 + 2.6 * hoch + 1.2 * stoss) * auf * (1 - still) * (1 - ruhig); pMat.uniforms.uPunkt.value = Math.max(1, (g.test ? 1.5 : 3) * (renderer.getSize(groesse).y / 1350));
+      U.uDicke.value = logo ? 0.0035 * ruhig : 0; U.uZeit.value = tau; U.uMusik.value = 0.3 * tau + 0.3 * wert(T.energie, film); U.uHell.value = helle * (logo ? 1 + 0.2 * ruhig : (0.7 + 1.5 * laut + 1.5 * stoss) * (1 - 0.6 * still));   // laut quillt die Wolke hell auf
+      pMat.uniforms.uFunken.value = (0.15 + 1.6 * hoch + 0.6 * stoss) * auf * (1 - still) * (1 - ruhig); pMat.uniforms.uPunkt.value = Math.max(1, (g.test ? 1 : 2) * (renderer.getSize(groesse).y / 1350));
       wMat.uniforms.uZeichnen.value = weich(anteil(tau, 0.05, W[1] * 0.9));
       wMat.uniforms.uWuerfel.value = (0.55 + 0.45 * Math.min(1, laut * 2)) * (1 - ruhig) * (1 - 0.6 * still) * gewicht;
       g.loeschen(rt, 0x000000);
@@ -210,8 +211,8 @@ export function irrfahrt(g, teil) {
       const danach = scharf ? () => { renderer.setRenderTarget(rt); for (let k = 0; k < (drei ? 3 : 1); k++) { lage(drei ? k : 0); renderer.render(wSzene, kam); } } : null;
       // Negativ: bei jedem Schnitt der Musik und bei Zuständen, die Weiss auf Schwarz gewürfelt haben (im Gewebe die Nacht), zwei bis drei Bilder lang
       const umkehr = !logo && j && ((zs.nacht && film - zs.t0 < 0.1) || T.schnitte.some((x) => film >= x && film < x + 0.07)) ? 1 : 0;
-      // belichtung: die Summe der Fäden weich gestaucht (1 − e^(−k·x)) statt hart abgeschnitten – im Hellen bleiben die Fäden zu sehen
-      return { aktiv: 0.7 * (1 - ruhig) + 0.15, bloom: (0.12 + 0.3 * stoss) * (1 - 0.7 * ruhig), radius: 0.2, saum: 0.0006 + 0.0015 * stoss * (1 - ruhig), ende: 0, umkehr, belichtung: 1.2, danach };
+      // Belichtung und Bloom wie in der ersten Fassung (ohne die weiche Stauchung 1 − e^(−k·x), die mit «noch wilder» kam)
+      return { aktiv: 0.7 * (1 - ruhig) + 0.15, bloom: (0.3 + 0.6 * stoss) * (1 - 0.7 * ruhig), radius: 0.35, saum: 0.0006 + 0.0015 * stoss * (1 - ruhig), ende: 0, umkehr, danach };
     },
     vorab: { szenen: [[szene, kam], [wSzene, kam]], materialien: [] },
     zaehler(tau) {

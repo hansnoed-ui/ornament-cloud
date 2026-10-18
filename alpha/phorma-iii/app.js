@@ -387,8 +387,12 @@ function ausschnittJetzt() {
   const q = S.tonQuelle; if (!q) return null;
   const dauer = q.buffer.duration;
   if (S.ausschnitt) { const von = Math.min(S.ausschnitt.von, Math.max(0, dauer - 0.5)); return { von, bis: Math.min(dauer, von + S.ausschnitt.laenge), eigen: true }; }
-  if (S.tonart === "stimme" && S.stimmAblauf && q.uebersicht) { const von = q.uebersicht.beginn; return { von, bis: Math.min(dauer, von + 10), eigen: false }; }
-  return { von: 0, bis: dauer, eigen: false };
+  // automatisch: mit dem Ablauf rund 10 s ab dem ersten Wort, sonst die ganze Datei – lange Aufnahmen gekürzt auf 60 s (Stimme) oder 5 Minuten (Musik),
+  // nur dieser Teil wird gesäubert und gebaut (Rückmeldung: «das Audio-Interface lässt sich zurzeit noch nicht bedienen, Website blockiert» – eine
+  // Aufnahme von 9 Minuten wurde ganz gesäubert, die Seite stand dabei 50 Sekunden still)
+  if (S.tonart === "stimme" && S.stimmAblauf && q.uebersicht) { const von = Math.max(0, q.uebersicht.beginn - 0.2); return { von, bis: Math.min(dauer, von + 10.4), eigen: false, schneiden: true }; }
+  const grenze = S.tonart === "stimme" ? 60 : 300;
+  return { von: 0, bis: Math.min(dauer, grenze), eigen: false, schneiden: dauer > grenze };
 }
 /** Wellenform (Spitzen je Spalte) und der Sprachbeginn, einmal je Aufnahme */
 async function ausschnittVorbereiten(q) {
@@ -489,7 +493,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
   await ausschnittVorbereiten(q); if (nr !== S.tonNr) return;
   tonartZeigen();
   const aus = ausschnittJetzt(), schnitt = aus?.eigen ? `Ausschnitt ${zeitText(aus.von)}–${zeitText(aus.bis)}` : "";
-  if (aus?.eigen) kanaele = kanaele.map((c) => c.subarray(Math.round(aus.von * rate), Math.round(aus.bis * rate)));
+  if (aus?.eigen || aus?.schneiden) kanaele = kanaele.map((c) => c.subarray(Math.round(aus.von * rate), Math.round(aus.bis * rate)));
   if (S.tonart === "stimme" && (S.saeubern || S.stimmAblauf || aus?.eigen)) {
     melden(S.saeubern ? "Die Stimme wird gesäubert …" : "Scratch, Stimme und Gefrickel werden gebaut …");
     await pause();
@@ -523,13 +527,13 @@ async function tonSetzen({ auffrischen = true } = {}) {
     url = URL.createObjectURL(new Blob([wav(f.kanaele, rate)], { type: "audio/wav" }));
     name = `${q.name}${schnitt ? ` · ${schnitt}` : ""} · verfrickelt, Wurf ${S.wurf}`; mehr = ` · ${f.bpm} BPM, ${f.takte} Takte aus ${f.scheiben} Schnipseln`;
     notiz(`Ton verfrickelt: Wurf ${S.wurf}, ${f.bpm} BPM, ${f.dauer.toFixed(1)} s`);
-  } else if (aus?.eigen) {                                                   // nur geschnitten
+  } else if (aus?.eigen || aus?.schneiden) {                                 // nur geschnitten
     const { wav } = await import("./frickeln.js?v=7");
     if (nr !== S.tonNr) return;
     buffer = new AudioBuffer({ length: kanaele[0].length, numberOfChannels: kanaele.length, sampleRate: rate });
     kanaele.forEach((c, k) => buffer.copyToChannel(c, k));
     url = URL.createObjectURL(new Blob([wav(kanaele, rate)], { type: "audio/wav" }));
-    name = `${q.name} · ${schnitt}`;
+    name = schnitt ? `${q.name} · ${schnitt}` : `${q.name} · die ersten ${Math.round(aus.bis)} s`;
   }
   const pcm = new Float32Array(buffer.length);
   for (let k = 0; k < buffer.numberOfChannels; k++) { const c = buffer.getChannelData(k); for (let i = 0; i < c.length; i++) pcm[i] += c[i] / buffer.numberOfChannels; }
