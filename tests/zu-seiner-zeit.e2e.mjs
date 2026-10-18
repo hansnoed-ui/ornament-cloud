@@ -213,7 +213,7 @@ await check("Startseite und Portfolio: 49 Strophen mit Bottom-Line; Portfolio ve
   await page.goto(base.replace("zu-seiner-zeit/", "portfolio/"));
   await page.getByRole("link", { name: "Lesen" }).click();
   await page.waitForURL(/\/zu-seiner-zeit\/$/);
-  assert.equal(await page.locator("h1").textContent(), "Zu seiner Zeit");
+  assert.equal(await page.locator("h1").textContent(), "Zettelkasten");
   await ctx.close();
 });
 

@@ -1,7 +1,7 @@
 // Erzeugt das Vorschaubild von «Zu seiner Zeit» (Open Graph / X-Karte, 1200 × 630) für das Teilen auf Facebook & Co.
 // Ruhig wie die Seiten: weisser Grund, Titel in Serif, Untertitel grau, rechts das Raster der 49 Strophen
 // (sieben Zyklen × sieben), eine Strophe hervorgehoben – wie der Portfolio-Beitrag. Texte aus den JSON-Dateien,
-// je Sprache eine Karte (Untertitel aus der Übersetzung, der Titel bleibt in allen Sprachen «Zu seiner Zeit»).
+// je Sprache eine Karte (Untertitel aus der Übersetzung, der Titel bleibt in allen Sprachen derselbe: «Zettelkasten», aus zu-seiner-zeit.extra.json).
 //
 //   NODE_PATH=$(npm root -g) node tools/zsz-og.mjs      → zu-seiner-zeit/og-zu-seiner-zeit.png (de),
 //                                                          og-zu-seiner-zeit-en.png, og-zu-seiner-zeit-es.png
@@ -16,7 +16,7 @@ let playwright;
 try { playwright = require("playwright"); } catch { playwright = require(join(process.env.NODE_PATH || "", "playwright")); }
 
 const lies = name => JSON.parse(readFileSync(new URL(`../src/data/${name}`, import.meta.url), "utf8"));
-const data = lies("zu-seiner-zeit.json");
+const data = lies("zu-seiner-zeit.json"), titel = lies("zu-seiner-zeit.extra.json").titel ?? data.title;
 // Je Sprache: Dateiname (wie OG_BILD im Build), Untertitel, Fusszeile, Adresse
 const SPRACHEN = [
   { lang: "de", datei: "og-zu-seiner-zeit.png", unter: data.subtitle, zyklen: "Zyklen", strophen: "Strophen", pfad: "" },
@@ -44,7 +44,7 @@ const karte = sp => `<!DOCTYPE html><html lang="${sp.lang}"><head><meta charset=
   svg { position: absolute; right: 118px; top: 96px; width: 300px; height: 300px; overflow: visible; }
   svg text { font: 500 13px system-ui, "Helvetica Neue", Arial, sans-serif; letter-spacing: 0.12em; fill: #9a9a97; }
 </style></head><body><div class="karte">
-  <h1>${esc(data.title)}</h1>
+  <h1>${esc(titel)}</h1>
   <p class="unter">${esc(sp.unter)}</p>
   <svg viewBox="-60 -20 320 300" fill="#141414">${roman}${dots.join("")}</svg>
   <p class="fuss"><span>${data.cycles.length} ${sp.zyklen} · ${data.stanzas.length} ${sp.strophen}</span><span>ornament.cloud/zu-seiner-zeit${sp.pfad}</span></p>

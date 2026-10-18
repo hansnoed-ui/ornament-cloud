@@ -211,7 +211,7 @@ await check("Menü: serifenlose Schrift der Seite in mittlerem Gewicht (Wunsch v
 await check("Menü führt zu den Seiten: Apps, Prompts, Web und Zettel direkt in den Zettelkasten; auch von ORNA aus", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 } });
   const page = await ctx.newPage();
-  for (const [name, url, h1] of [["Zettel", /\/zu-seiner-zeit\/$/, "Zu seiner Zeit"], ["Apps", /\/apps\/$/, "Apps"], ["Prompts", /\/masterprompts\/$/, "Masterprompts"], ["Web", /\/web\/$/, "Web"]]) {
+  for (const [name, url, h1] of [["Zettel", /\/zu-seiner-zeit\/$/, "Zettelkasten"], ["Apps", /\/apps\/$/, "Apps"], ["Prompts", /\/masterprompts\/$/, "Masterprompts"], ["Web", /\/web\/$/, "Web"]]) {
     for (const von of ["/zu-seiner-zeit/strophe/17-die-person/", "/alpha/sketchory/", "/news/", "/portfolio/nebeneinander-nacheinander/feld/"]) {
       await page.goto(origin + von);
       await page.getByRole("navigation", { name: "Hauptmenü" }).getByRole("link", { name }).click();

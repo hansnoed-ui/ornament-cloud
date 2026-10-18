@@ -3,7 +3,8 @@
 //
 // Quellen:
 //   src/data/zu-seiner-zeit.json        – 49 Strophen (Single Source of Truth, wird nie verändert)
-//   src/data/zu-seiner-zeit.extra.json  – Ergänzungen: Links, Tags, begriffliche Verwandtschaften, Begriffe
+//   src/data/zu-seiner-zeit.extra.json  – Ergänzungen: Links, Tags, begriffliche Verwandtschaften, Begriffe; dazu der Titel der Seiten
+//     (seit 18. Oktober 2026 «Zettelkasten» statt «Zu seiner Zeit», in allen Sprachen)
 //   src/data/zu-seiner-zeit.en.json, .es.json – Übersetzungen (Englisch, Spanisch; seit 3. Oktober 2026): Strophen, Leitsätze,
 //     Notizen zu den Verweisen, Zyklen; Namen und Werktitel bleiben wie im Original. Erzeugt unter zu-seiner-zeit/en/ und /es/
 //     mit denselben Adressen wie die deutsche Fassung, dazu der Sprachwechsel oben auf jeder Seite.
@@ -207,7 +208,7 @@ export function model(raw = JSON.parse(readFileSync(SRC, "utf8")), extra = JSON.
     for (const n of b.stanzas ?? []) if (!(n >= 1 && n <= 49)) throw new Error(`extra.begriffe.${b.slug}: Strophe ${n}`);
     return { slug: b.slug, name: b.name, stanzas: b.stanzas ?? [] };
   });
-  return { lang, meta: { title: raw.title as string, subtitle: raw.subtitle as string, version: raw.version as string, date: raw.date as string, structure: raw.structure as string },
+  return { lang, meta: { title: (extra.titel ?? raw.title) as string, subtitle: raw.subtitle as string, version: raw.version as string, date: raw.date as string, structure: raw.structure as string },
     cycles, stanzas, persons: [...persons.values()], begriffe };
 }
 
