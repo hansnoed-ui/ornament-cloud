@@ -228,10 +228,12 @@ const WAV = (() => {
   return b;
 })();
 
-await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zeichen, Bänder aus Linien, Fragmente bei den Einsätzen, am Ende exakt der Text; Video mit Tonspur", async () => {
+await check("Gewebe aus Text mit Ton: Text wählt das Gewebe, verfrickeln und neu würfeln, Ton aus; Zeichen, Bänder aus Linien, Fragmente bei den Einsätzen, am Ende exakt der Text; Video mit Tonspur", async () => {
   const { ctx, page, fehler, fremd } = await oeffne({ vorher: ERSATZ_ENCODER });
-  await page.click('[data-wahl="gewebe"]');
+  assert.equal(await page.getAttribute('[data-wahl="physarum+tiefe+tuch"]', "aria-pressed"), "true");
   await page.click('[data-quelle="text"]');
+  assert.equal(await page.getAttribute('[data-wahl="gewebe"]', "aria-pressed"), "true", "Text als Quelle wählt das Gewebe");
+  assert.match(await page.textContent("#meldung"), /dafür ist jetzt das Gewebe gewählt/);
   assert.ok(await page.isVisible("#text") && !(await page.isVisible("#ablage")), "Textfeld statt Ablage");
   await page.fill("#text", "ki me");
   await bereit(page);
@@ -285,7 +287,7 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
 });
 
 await check("Video als Quelle: Standbild, sein Ton als Tonspur, im Gewebe neue Linien aus dem Video ab den Schnitten", async () => {
-  const { ctx, page, fehler, fremd } = await oeffne({ ablauf: "gewebe" });
+  const { ctx, page, fehler, fremd } = await oeffne({ ablauf: "physarum" });
   // ein kurzes WebM (6 s) im Browser aufnehmen: Formen, die jede Sekunde wechseln, dazu Schläge
   const webm = await page.evaluate(async () => {
     const c = document.createElement("canvas"); c.width = 320; c.height = 240; const x = c.getContext("2d");
@@ -311,6 +313,7 @@ await check("Video als Quelle: Standbild, sein Ton als Tonspur, im Gewebe neue L
   assert.ok(await page.isVisible("#video-teil") && !(await page.isVisible("#ablage")), "Videoteil statt Ablage");
   await page.setInputFiles("#videodatei", { name: "probe.webm", mimeType: "video/webm", buffer: Buffer.from(webm) });
   await page.waitForFunction(() => window.__phorma.video && window.__phorma.A, null, { timeout: 60_000 });
+  assert.equal(await page.evaluate(() => window.__phorma.ablauf), "gewebe", "ein Video wählt das Gewebe");
   assert.match(await page.textContent("#video-info"), /probe\.webm · \d+,\d s · 320 × 240/);
   const ton = await page.evaluate(() => window.__phorma.ton?.name);
   assert.equal(ton, "Ton von probe.webm", "der Ton des Videos ist die Tonspur");

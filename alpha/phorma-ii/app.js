@@ -145,6 +145,7 @@ async function videoLaden(datei) {
   $("video-info").textContent = `${datei.name} · ${v.duration.toFixed(1).replace(".", ",")} s · ${v.videoWidth} × ${v.videoHeight}`;
   $("video-bild").src = bildchen(c); $("video-bild").hidden = false;
   if (S.quelle !== "video") { S.quelle = "video"; merken("quelle", "video"); quelleZeigen(); }
+  gewebeWaehlen("Video als Quelle");
   // der Ton des Videos wird die Tonspur, ausser eine andere Audiodatei ist gewählt
   if (!S.tonQuelle || S.tonQuelle.ausVideo) {
     try {
@@ -360,9 +361,23 @@ let umstellen = 0;
 const spaeterLesen = () => { clearTimeout(umstellen); umstellen = setTimeout(lesen, 250); };
 const formatKnoepfe = wahl("data-format", "format", FORMATE, () => { S.ki = null; if (S.quelle === "text") { clearTimeout(umstellen); umstellen = setTimeout(textLaden, 250); } else spaeterLesen(); });
 // Quelle: ein Foto oder ein Text (Wunsch vom 17. Oktober 2026: Effekte «für Texte und Audiofiles»); der Text wird zu einem Bild (textbild.js)
+/**
+ * Text, Video oder eine Audiodatei gewählt: dafür ist das Gewebe da – es wird gewählt (Rückmeldung vom 18. Oktober 2026: «sie wird verfrickelt, ABER
+ * einfach über die Effekte Physarum, Tiefe, Tuch gelegt»). Danach lässt sich wieder jeder Effekt wählen; dort klingt der Ton nur mit.
+ */
+function gewebeWaehlen(grund) {
+  if (S.ablauf === "gewebe") return false;
+  S.ablauf = "gewebe"; merken("ablauf", "gewebe"); ablaufZeigen();
+  melden(`${grund}: dafür ist jetzt das Gewebe gewählt. Physarum, Tiefe und Tuch lassen sich weiter wählen – dort klingt der Ton nur mit.`);
+  return true;
+}
 const quelleKnoepfe = wahl("data-quelle", "quelle", ["foto", "text", "video"], () => {
   quelleZeigen();
-  if (S.quelle === "text") textLaden(); else if (S.quelle === "video") { if (S.video) bildSetzen(S.video.bild); } else if (S.fotoBild) bildSetzen(S.fotoBild);
+  const gewechselt = S.quelle !== "foto" && gewebeWaehlen(S.quelle === "text" ? "Text als Quelle" : "Video als Quelle");
+  if (S.quelle === "text" && S.text.trim()) textLaden();
+  else if (S.quelle === "video" && S.video) bildSetzen(S.video.bild);
+  else if (S.quelle === "foto" && S.fotoBild) bildSetzen(S.fotoBild);
+  else if (gewechselt) neu();                                              // noch nichts zu laden: wenigstens die Wahl zeigen
 });
 function quelleZeigen() { for (const q of ["foto", "text", "video"]) $(`${q}-teil`).hidden = S.quelle !== q; }
 S.text = erinnern("text") ?? ""; $("text").value = S.text;
@@ -387,7 +402,9 @@ $("tondatei").addEventListener("change", async (e) => {
     const { buffer } = await tonLesen(datei);
     if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
     S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei), ausVideo: false };
+    const gewechselt = gewebeWaehlen("Musik geladen");
     await tonSetzen();
+    if (gewechselt) melden("Musik geladen: dafür ist jetzt das Gewebe gewählt – es folgt dem Ton. Physarum, Tiefe und Tuch lassen sich weiter wählen; dort klingt der Ton nur mit.");
   } catch (fehler) { melden(`Diese Audiodatei kann der Browser nicht lesen (${fehler?.message ?? fehler}).`, true); }
 });
 /** S.ton aus der gelesenen Datei: so wie sie ist oder verfrickelt */
