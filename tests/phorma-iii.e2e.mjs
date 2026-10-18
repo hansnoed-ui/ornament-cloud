@@ -414,6 +414,35 @@ const zaehlerLesen = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, 
   return { nr, links: px(34, 64), rechts: px(126, 64), oben: x.getImageData(w / 2, Math.round(h * 0.08), 1, 1).data.slice(0, 3), unten: x.getImageData(w / 2, Math.round(h * 0.92), 1, 1).data.slice(0, 3) };
 }, [t, proben]);
 
+await check("Irrfahrt: das Stottern zeigt nie Reste des Logos (beide teilen eine Leinwand; Rückmeldung «zeigt ständig das Logo während der Animation»)", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  await page.click('[data-wahl="irrfahrt"]');
+  await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
+  await page.waitForFunction(() => window.__phorma.ton && window.__phorma.A, null, { timeout: 60_000 });
+  await bereit(page);
+  const r = await page.evaluate(async () => {
+    const { bild } = await import("./film.js?v=8");
+    const S = window.__phorma; S.laeuft = false;
+    // die Bühne mit einer einzigen Lage: so stottert jedes Ereignis (sonst fällt es vor einem Sprung aus), und die Leinwand wird gebraucht
+    const b = S.buehne, buehne = { bild: (...x) => b.bild(...x), lage: () => 0, get ende() { return b.ende; } };
+    const sz = { ...S.sz, buehne, beschriftung: false }, w = S.mass[0] / 2, h = S.mass[1] / 2, L = sz.logo;
+    const male = (t) => { const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d"); x.setTransform(0.5, 0, 0, 0.5, 0, 0); bild(x, sz, t, { vorschau: true }); return x.getImageData(0, 0, w, h).data; };
+    // ein Stottern und eine Störung im Logo, die die Leinwand braucht
+    const st = sz.stoer[0];
+    const le = L.plan.find((e) => e.art >= 0.2);
+    if (!st || !le) return { fehlt: true, stoer: sz.stoer.length };
+    const t = st.t + st.dauer * 0.3, vorher = male(t);
+    male(le.t + le.dauer * 0.3);
+    const nachher = male(t);
+    let anders = 0; for (let i = 0; i < vorher.length; i += 4) if (Math.abs(vorher[i] - nachher[i]) > 40) anders++;
+    return { anders: anders / (w * h) };
+  });
+  assert.ok(!r.fehlt, `ein Stottern und eine Störung im Logo (${JSON.stringify(r)})`);
+  assert.ok(r.anders < 0.001, `nach dem Logo dasselbe Bild beim Stottern (${(r.anders * 100).toFixed(1)} % anders)`);
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
 await check("Video: als Effekt das Video selbst, bildgenau (WebCodecs), synchron; mit eigener Audiodatei der Ausschnitt des Videos; gedreht wie vom Telefon", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await page.click('[data-wahl="video"]');

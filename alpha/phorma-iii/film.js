@@ -251,7 +251,11 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
     const [w, h] = zielMass(ctx, sz), pw = Math.max(2, Math.round(w)), ph = Math.max(2, Math.round(h));
     logoLeinwand ??= document.createElement("canvas");
     if (logoLeinwand.width !== pw || logoLeinwand.height !== ph) { logoLeinwand.width = pw; logoLeinwand.height = ph; }
-    logoLeinwand.getContext("2d").drawImage(sz.buehne.bild(sz.zeit, t - st.rueck / FPS * 0.4, w, h, { proben, vorschau }), 0, 0, pw, ph);
+    // die Leinwand teilt das Stottern mit der Störung im Logo: dort bleibt eine Verkleinerung gesetzt – ohne Zurücksetzen deckte das Bild sie nur zum
+    // Teil, und in der Ecke stand bei jedem Stottern wieder das Logo (Rückmeldung: «bei der Irrfahrt zeigt es ständig das Logo während der Animation», am Laptop)
+    const lx = logoLeinwand.getContext("2d");
+    lx.setTransform(1, 0, 0, 1, 0, 0); lx.clearRect(0, 0, pw, ph);
+    lx.drawImage(sz.buehne.bild(sz.zeit, t - st.rueck / FPS * 0.4, w, h, { proben, vorschau }), 0, 0, pw, ph);
     logoGestoert(ctx, logoLeinwand, B, H, st);
   } else if (t >= abschnitt.von && (t < abschnitt.bis || sz.halten)) {
     if (sz.buehne) {
