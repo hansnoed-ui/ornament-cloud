@@ -42,14 +42,17 @@ const PFAD = /* glsl */ `
            + 0.4 * vec3(snoise(q2), snoise(q2 + vec3(5.0, 11.0, 0.0)), snoise(q2 + vec3(9.0, 2.0, 0.0)));
     float w = uAmp * (0.15 + 1.2 * hk.y * hk.y) * mix(0.4, 1.0, r) * (1.0 + uKnall * 1.5 * hk.z);
     p += w * n + uDicke * (hk - 0.5);
-    return uDreh * p * uLage.w + uLage.xyz;
-  }`;
+    return uDreh * p + uLage.xyz;
+  }
+  // uLage.w: der Zoom – im Bild, nicht durch Heranrücken (sonst verzerrt die Perspektive den nahen Würfel; Rückmeldung: «nach 2–3 Sekunden ist die
+  // Box kurz verzogen»)
+  vec4 abbild(vec3 p) { vec4 c = projectionMatrix * modelViewMatrix * vec4(p, 1.0); c.xy *= uLage.w; return c; }`;
 const FADEN_VERTEX = /* glsl */ `
   ${PFAD}
   attribute vec2 aRef; varying float vA;
   void main() {
     float sicht; vec3 p = faden(aRef.x, aRef.y, sicht);
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+    gl_Position = abbild(p);
     vA = uHell * sicht * (1.0 + 0.5 * smoothstep(0.92, 1.0, aRef.y / uL));          // der Kopf leuchtet etwas heller
   }`;
 const FUNKEN_VERTEX = /* glsl */ `
@@ -57,7 +60,7 @@ const FUNKEN_VERTEX = /* glsl */ `
   uniform float uFunken, uPunkt; attribute vec2 aRef; varying float vA;
   void main() {
     float sicht; vec3 p = faden(aRef.x, aRef.y, sicht);
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+    gl_Position = abbild(p);
     float an = step(0.55, fract(sin(aRef.x * 91.7 + aRef.y * 3.1 + floor(uZeit * 30.0) * 13.3) * 4375.85));   // flackern, jedes Bild andere
     gl_PointSize = uPunkt * (1.0 + 3.0 * hash3(aRef.x + aRef.y).x);
     vA = uFunken * sicht * an;
@@ -70,7 +73,8 @@ const WUERFEL_VERTEX = /* glsl */ `
     float e = aT.y;
     vec3 p = mix(aA, aB, aT.x * uZeichnen) * (1.0 + e * 0.07 * (1.0 + 3.0 * uEcho));
     p += (hash3(e * 7.0 + floor(uZeit * 30.0)) - 0.5) * uZittern * e;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(uDreh * p * uLage.w + uLage.xyz, 1.0);
+    vec4 c = projectionMatrix * modelViewMatrix * vec4(uDreh * p + uLage.xyz, 1.0); c.xy *= uLage.w;
+    gl_Position = c;
     vA = uWuerfel * (e < 0.5 ? 0.85 : uEcho * 0.7 / e);
   }`;
 const FRAGMENT = /* glsl */ `varying float vA; void main() { gl_FragColor = vec4(vec3(vA), 1.0); }`;
@@ -171,8 +175,8 @@ export function irrfahrt(g, teil) {
         q0.setFromEuler(e3); q1.identity(); q0.slerp(q1, ruhig);
         drehM.makeRotationFromQuaternion(q0); U.uDreh.value.setFromMatrix4(drehM);
         const mass = (logo ? 1 + (nah - 1) * (1 - ruhig) : drei ? 0.55 : nah) * (1 + 0.28 * stoss * (1 - ruhig));
-        const dx = drei ? (k - 1) * 0.62 * a : (zufall(jl, 4) - 0.5) * 0.3 * (1 - ruhig);
-        U.uLage.value.set(dx, drei ? (k - 1) * -0.12 : (zufall(jl, 5) - 0.5) * 0.3 * (1 - ruhig), 0, mass);
+        const dx = drei ? (k - 1) * 1.13 * a : (zufall(jl, 4) - 0.5) * 0.3 * (1 - ruhig);   // der Zoom im Bild verkleinert auch den Abstand
+        U.uLage.value.set(dx, drei ? (k - 1) * -0.22 : (zufall(jl, 5) - 0.5) * 0.3 * (1 - ruhig), 0, mass);
       };
       U.uSchwanz.value = logo || zeichen ? 1e-4 : 0.25; U.uZeile.value = zeile; U.uKopf.value = kopf; U.uSchritt.value = schritt; U.uAmp.value = amp; U.uKnall.value = 1.5 * tief * (1 - ruhig);
       U.uDicke.value = logo ? 0.0035 * ruhig : 0; U.uZeit.value = tau; U.uMusik.value = 0.3 * tau + 0.3 * wert(T.energie, film); U.uHell.value = helle * (logo ? 1 + 1.2 * ruhig : (0.8 + 1.1 * laut + 1.0 * stoss) * (1 - 0.6 * still));
