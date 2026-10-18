@@ -148,7 +148,7 @@ export function gewebe(g, teil) {
     const roh = Array.from({ length: 361 }, (_, i) => pk((i / 360) * Math.PI * 2)), xs = roh.map((q) => q[0]), ys = roh.map((q) => q[1]);
     const mx = (Math.min(...xs) + Math.max(...xs)) / 2, my = (Math.min(...ys) + Math.max(...ys)) / 2, sp = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
     const fl = new Float32Array(roh.length * 2);
-    roh.forEach(([x, y], i) => { fl[2 * i] = ((540 + (x - mx) * (420 / sp)) / B) * A.w - 0.5; fl[2 * i + 1] = ((870 + (y - my) * (420 / sp) + (H - 1920) / 2) / H) * A.h - 0.5; });
+    roh.forEach(([x, y], i) => { fl[2 * i] = ((B / 2 + (x - mx) * (420 / sp)) / B) * A.w - 0.5; fl[2 * i + 1] = ((870 + (y - my) * (420 / sp) + (H - 1920) / 2) / H) * A.h - 0.5; });
     return [abtasten(fl, P)];
   };
   const videoSaetze = (g.saetze ?? []).slice(0, Lg ? 22 : 23);

@@ -1,4 +1,4 @@
-// PHORMA III – Ablauf des Films (ohne DOM). 30 Bilder pro Sekunde; Hochformat 4 : 5 (Feed), wahlweise 9 : 16 (Reels, Stories).
+// PHORMA III – Ablauf des Films (ohne DOM). 30 Bilder pro Sekunde; Hochformat 4 : 5 (Feed), wahlweise 9 : 16 (Reels, Stories) oder quer 16 : 9 (Bildschirm, Website).
 // Das Gewebe aus PHORMA II, seit dem 18. Oktober 2026 eine eigene Anwendung (Wunsch: «Es sind ja zwei ganz verschiedene Ansätze: die Bildanimation
 // mit Physarum, Tiefe und Tuch und die Gewebe-Animation mit Audio, Video, Text etc. All das soll aus PHORMA II ausgelagert werden»):
 //   01 Zeichen (der Text, das Foto oder das Standbild des Videos steht) → 02 Gewebe (seine Umrisse werden zu Flächen aus feinen Linien, die der
@@ -10,8 +10,10 @@
 // Der Aufbau (Kette aus Teilen, Phasen, laufend) ist derselbe wie in PHORMA II, mit einem einzigen Teil.
 export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=10";
 
-export const FORMATE = ["4:5", "9:16"];
-export const filmMass = (format = "4:5") => (format === "9:16" ? [1080, 1920] : [1080, 1350]);
+// 16 : 9 quer (seit 18. Oktober 2026, für Bildschirme am Laptop: das Intro der Website, Rückmeldung «sieht im Browser am Laptop nicht gut aus,
+// qualitativ und vom Bildschirmformat»)
+export const FORMATE = ["4:5", "9:16", "16:9"];
+export const filmMass = (format = "4:5") => (format === "9:16" ? [1080, 1920] : format === "16:9" ? [1920, 1080] : [1080, 1350]);
 
 /** das Logo am Ende (mit Signet): es entsteht aus dem Gewebe, legt sich glatt, der Schriftzug wird getippt */
 export const LOGO = 4.6;

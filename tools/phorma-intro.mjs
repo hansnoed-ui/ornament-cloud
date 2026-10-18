@@ -1,10 +1,12 @@
 // Intro der Website (assets/start-intro.mp4): die Irrfahrt aus PHORMA III (Wunsch vom 18. Oktober 2026: «das Video des Tests, welches im
 // Ornament.cloud-Logo endet, als neue Intro-Sequenz der Website, mit Option Ton an/aus und Skip intro»). Gerechnet von der Anwendung selbst
-// (alpha/phorma-iii/, Effekt Irrfahrt, Quelle «Nur Ton», Logo am Schluss, 4 : 5) mit einer Audiodatei, Bild für Bild in voller Grösse mit
-// Bewegungsunschärfe, dann mit ffmpeg zu H.264 (Bereich tv, BT.709, schneller Start) und AAC zusammengesetzt – leicht entrauscht und auf 864 × 1080
-// verkleinert (das Korn und die Haarlinien ergaben in voller Grösse 27 MB; so rund 4 MB, kaum ein Unterschied, das Intro lädt vor der Seite; der Test verlangt unter 5 MB).
+// (alpha/phorma-iii/, Effekt Irrfahrt, Quelle «Nur Ton», Logo am Schluss) mit einer Audiodatei, Bild für Bild in voller Grösse mit
+// Bewegungsunschärfe, dann mit ffmpeg zu H.264 (Bereich tv, BT.709, schneller Start) und AAC zusammengesetzt. Zwei Fassungen: 16 : 9 quer
+// (1920 × 1080, assets/start-intro-quer.mp4, für Laptop und Bildschirm) und 4 : 5 hoch (1080 × 1350, assets/start-intro.mp4, fürs Telefon).
+// Ohne Filmkorn und ohne Entrauschen, in voller Grösse (Rückmeldung: «das Intro sieht im Browser am Laptop nicht gut aus, qualitativ und vom
+// Bildschirmformat» – das Korn ergab in voller Grösse 27 MB, entrauscht und auf 864 px verkleinert wurden die Haarlinien weich und matschig).
 //
-//   NODE_PATH=$(npm root -g) node tools/phorma-intro.mjs <audiodatei> [--proben 2] [--aus assets/start-intro.mp4]
+//   NODE_PATH=$(npm root -g) node tools/phorma-intro.mjs <audiodatei> [--format 16:9|4:5] [--proben 4] [--crf 24] [--aus …]
 // Braucht ffmpeg. Die Musik des Intros vom 18. Oktober 2026 ist der Ton des Testvideos «Claude_444.mp4» (nicht im Repository).
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -20,22 +22,23 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const arg = (name, std) => { const i = process.argv.indexOf(`--${name}`); return i > 0 ? process.argv[i + 1] : std; };
 const ton = process.argv[2] && !process.argv[2].startsWith("--") ? resolve(process.argv[2]) : null;
 if (!ton) { console.error("Audiodatei fehlt: node tools/phorma-intro.mjs <audiodatei>"); process.exit(1); }
-const proben = Number(arg("proben", 2)), aus = resolve(root, arg("aus", "assets/start-intro.mp4"));
+const format = arg("format", "16:9"), proben = Number(arg("proben", 4)), crf = arg("crf", format === "16:9" ? "24" : "25");
+const aus = resolve(root, arg("aus", format === "16:9" ? "assets/start-intro-quer.mp4" : "assets/start-intro.mp4"));
 
 const { startServer } = await import(new URL("tools/serve-orma.mjs", `file://${root}`).href);
 const server = await startServer(0);
 const browser = await playwright.chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
 const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
 page.on("pageerror", (e) => console.error("Fehler:", e.message));
-await page.addInitScript(() => {
-  for (const [k, v] of [["ablauf", "irrfahrt"], ["quelle", "ton"], ["format", "4:5"], ["signet", "1"], ["frickeln", "0"]]) localStorage.setItem(`phorma-iii.${k}`, v);
-});
+await page.addInitScript((format) => {
+  for (const [k, v] of [["ablauf", "irrfahrt"], ["quelle", "ton"], ["format", format], ["signet", "1"], ["frickeln", "0"], ["tonart", "musik"]]) localStorage.setItem(`phorma-iii.${k}`, v);
+}, format);
 await page.goto(`http://localhost:${server.address().port}/alpha/phorma-iii/`);
 await page.setInputFiles("#tondatei", ton);
 await page.waitForFunction(() => window.__phorma?.ton && window.__phorma?.buehneFertig && window.__phorma?.sz?.buehne, null, { timeout: 300_000 });
 await page.waitForTimeout(1500);
 await page.waitForFunction(() => window.__phorma?.buehneFertig && window.__phorma?.sz?.buehne, null, { timeout: 300_000 });
-const dauer = await page.evaluate(() => { const S = window.__phorma; S.laeuft = false; return S.sz.zeit.dauer; });
+const dauer = await page.evaluate(() => { const S = window.__phorma; S.laeuft = false; S.buehne.korn = 0; return S.sz.zeit.dauer; });   // ohne Korn
 const n = Math.round(dauer * 30), ordner = mkdtempSync(join(tmpdir(), "phorma-intro-"));
 console.log(`${n} Bilder (${dauer.toFixed(1)} s), ${proben} Proben je Bild …`);
 for (let i = 0; i < n; i++) {
@@ -44,14 +47,14 @@ for (let i = 0; i < n; i++) {
     const S = window.__phorma, sz = { ...S.sz, buehne: S.buehne, beschriftung: false };
     const c = document.createElement("canvas"); c.width = S.mass[0]; c.height = S.mass[1];
     bild(c.getContext("2d"), sz, t, { proben });
-    return c.toDataURL("image/jpeg", 0.95);
+    return c.toDataURL("image/png");
   }, [i / 30, proben]);
-  writeFileSync(join(ordner, `b${String(i).padStart(4, "0")}.jpg`), Buffer.from(url.split(",")[1], "base64"));
+  writeFileSync(join(ordner, `b${String(i).padStart(4, "0")}.png`), Buffer.from(url.split(",")[1], "base64"));
   if (i % 30 === 0) console.log(`${i} / ${n}`);
 }
 await browser.close(); server.close();
-execFileSync("ffmpeg", ["-v", "error", "-y", "-framerate", "30", "-i", join(ordner, "b%04d.jpg"), "-i", ton, "-map", "0:v", "-map", "1:a", "-t", String(n / 30),
-  "-vf", "scale=in_range=full:out_range=tv,hqdn3d=8:8:14:14,scale=864:-2:flags=lanczos,format=yuv420p", "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv",
-  "-c:v", "libx264", "-preset", "slow", "-tune", "film", "-crf", "32", "-c:a", "aac", "-b:a", "128k", "-af", "afade=t=out:st=" + (n / 30 - 1).toFixed(2) + ":d=1", "-movflags", "+faststart", aus], { stdio: "inherit" });
+execFileSync("ffmpeg", ["-v", "error", "-y", "-framerate", "30", "-i", join(ordner, "b%04d.png"), "-i", ton, "-map", "0:v", "-map", "1:a", "-t", String(n / 30),
+  "-vf", "scale=in_range=full:out_range=tv,format=yuv420p", "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv",
+  "-c:v", "libx264", "-preset", "slow", "-tune", "film", "-crf", crf, "-c:a", "aac", "-b:a", "128k", "-af", "afade=t=out:st=" + (n / 30 - 1).toFixed(2) + ":d=1", "-movflags", "+faststart", aus], { stdio: "inherit" });
 rmSync(ordner, { recursive: true, force: true });
 console.log(`fertig: ${aus}`);

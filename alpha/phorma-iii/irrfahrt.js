@@ -102,12 +102,12 @@ export function irrfahrt(g, teil) {
   }
   let logoZeile = -1;
   if (Lg) {
-    // dieselbe Kurve wie in sketchory/signet.js, gezeichnet für 1080 × 1920, mittig auf H (wie die Schlaufe im Gewebe)
+    // dieselbe Kurve wie in sketchory/signet.js, gezeichnet für 1080 × 1920, mittig auf B × H (wie die Schlaufe im Gewebe; auch quer)
     const pk = (t) => { const r = 0.45 + Math.cos(t); return [1.2 * r * Math.cos(t) - 0.84, 1.2 * r * Math.sin(t)]; };
     const roh = Array.from({ length: 721 }, (_, i) => pk((i / 720) * Math.PI * 2)), xs = roh.map((q) => q[0]), ys = roh.map((q) => q[1]);
     const mx = (Math.min(...xs) + Math.max(...xs)) / 2, my = (Math.min(...ys) + Math.max(...ys)) / 2, sp = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
     logoZeile = zeilen.length;
-    zeilen.push(verbinden([roh.flatMap(([x, y]) => { const px = 540 + (x - mx) * (420 / sp), py = 870 + (y - my) * (420 / sp) + (H - 1920) / 2; return [(px / B * 2 - 1) * a, 1 - (py / H) * 2, 0]; })]));
+    zeilen.push(verbinden([roh.flatMap(([x, y]) => { const px = B / 2 + (x - mx) * (420 / sp), py = 870 + (y - my) * (420 / sp) + (H - 1920) / 2; return [(px / B * 2 - 1) * a, 1 - (py / H) * 2, 0]; })]));
   }
   const pd = new Float32Array(PN * 4 * zeilen.length);
   zeilen.forEach((z, i) => pd.set(z, i * PN * 4));

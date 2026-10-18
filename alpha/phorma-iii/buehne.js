@@ -106,6 +106,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
   }
   const warm = vorbereiten();
   return {
+    korn: 0.05,                                                              // Filmkorn; das Intro der Website rechnet ohne (es matschte in der Kompression)
     canvas, B, H, ende: 0, warm, bereit: warm, fortschritt: () => 1,                     // ende: wie weit das letzte Bild schon das Bild war (1: exakt)
     get verloren() { return verloren; },
     /** für ?diagnose: Grafikchip und die Erweiterungen, auf die es ankommt */
@@ -132,7 +133,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
       const umkehr = info.umkehr ?? 0;                                        // das Negativ ganz oder gar nicht: gemittelt gab es graue, ausgewaschene Bilder
       const u = ausgabe.uniforms;
       u.tSumme.value = rtSumme.texture; u.uEnde.value = info.ende ?? 0; u.uAktiv.value = info.aktiv;
-      u.uSaumStaerke.value = info.saum ?? 0.0025; u.uUmkehr.value = umkehr; u.uBelichtung.value = info.belichtung ?? 0; u.uBild.value = Math.round(t * FPS);
+      u.uKorn.value = this.korn ?? 0.05; u.uSaumStaerke.value = info.saum ?? 0.0025; u.uUmkehr.value = umkehr; u.uBelichtung.value = info.belichtung ?? 0; u.uBild.value = Math.round(t * FPS);
       g.pass(ausgabe, null);
       this.ende = info.ende ?? 0;
       return canvas;

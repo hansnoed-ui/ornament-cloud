@@ -403,13 +403,13 @@ await check("Irrfahrt: als Effekt wählbar und gemerkt; schwarz, beim Schlag hel
   await ctx.close();
 });
 
-await check("Foto als Quelle, Format 9 : 16 und zurück: ohne Logo steht am Ende das Foto exakt; mit Logo am Ende das Logo", async () => {
+await check("Foto als Quelle, Format 9 : 16, 16 : 9 und zurück: ohne Logo steht am Ende das Foto exakt; mit Logo am Ende das Logo", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await laden(page); await bereit(page);
   assert.equal(await page.evaluate(() => window.__phorma.sz.zeit.phasen.at(-1).name), "logo");
   await page.uncheck("#signet");
   await page.waitForFunction(() => window.__phorma.sz.zeit.phasen.at(-1).name === "bild");
-  for (const [format, mass] of [["9:16", [1080, 1920]], ["4:5", [1080, 1350]]]) {
+  for (const [format, mass] of [["9:16", [1080, 1920]], ["16:9", [1920, 1080]], ["4:5", [1080, 1350]]]) {
     await page.click(`[data-format="${format}"]`);
     await page.waitForFunction((m) => window.__phorma.sz?.breite === m[0] && window.__phorma.sz?.hoehe === m[1] && window.__phorma.buehne?.H === m[1] && !document.getElementById("video").disabled, mass, { timeout: 120_000 });
     await bereit(page);
