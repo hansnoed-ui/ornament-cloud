@@ -15,13 +15,15 @@ Veröffentlicht unter `https://ornament.cloud/zu-seiner-zeit/`, im Portfolio ver
 
   ```json
   {
+    "titel": "Zettelkasten",
     "strophen": { "37": { "related": [36, 41], "tags": ["kontingenz"] } },
     "personen": { "hito-steyerl": { "url": "https://…", "tags": [] } },
     "begriffe": [ { "slug": "kontingenz", "name": "Kontingenz", "stanzas": [38, 45] } ]
   }
   ```
 
-  `related` = begrifflich verwandte Strophen (Art B), `url` = externer Link einer Person (nur https),
+  `titel` = Titel der Seiten (Kopf, Überschrift, Fenstertitel, Vorschaubild; seit 18. Oktober 2026 «Zettelkasten» statt «Zu seiner Zeit»,
+  in allen Sprachen; ohne Eintrag der Titel der Hauptdatei), `related` = begrifflich verwandte Strophen (Art B), `url` = externer Link einer Person (nur https),
   `begriffe` = Begriffsseiten unter `begriff/<slug>/`. Ohne Eintrag bleibt alles leer; auf der Website erscheint
   dann nichts (keine Platzhalter). Der Build bricht bei unbekannten Nummern, Personen oder unsicheren Links ab.
 
