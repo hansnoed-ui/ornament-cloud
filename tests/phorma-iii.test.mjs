@@ -13,6 +13,7 @@ const { analysieren } = await import(new URL("analyse.js", P).href);
 const T = await import(new URL("ton.js", P).href);
 const Kv = await import(new URL("kurven.js", P).href);
 const Fr = await import(new URL("frickeln.js", P).href);
+const St = await import(new URL("stimme.js", P).href);
 const lies = (p) => readFileSync(new URL(p, P), "utf8");
 
 test("Ablauf: Zeichen, Gewebe, dann mit Signet das Logo (danach nur der Schluss), ohne Signet das Bild und Stehen; mit Tonspur so lang wie die Musik", () => {
@@ -184,6 +185,81 @@ test("Verfrickeln: aus einem kurzen Sample ein neues Stück im Raster, wiederhol
   assert.equal(String.fromCharCode(...w.subarray(0, 4)), "RIFF"); assert.equal(w.length, 44 + f.kanaele[0].length * 4);
 });
 
+/** eine künstliche Stimme: Silben (Grundton 120–180 Hz, drei Formanten), kurze und lange Pausen, dazu Rauschen und Brummen (50 Hz) */
+function kunststimme(rate, dauer, { rauschen = 0.01 } = {}) {
+  const n = Math.round(rate * dauer), x = new Float32Array(n), stimmhaft = new Uint8Array(n);
+  let z = 9; const rnd = () => { z = (z * 1103515245 + 12345) & 0x7fffffff; return z / 0x7fffffff; };
+  for (let t = 0.6; t < dauer - 0.8;) {
+    const d = 0.12 + 0.25 * rnd(), f = 120 + 60 * rnd();
+    for (let i = Math.round(t * rate); i < Math.round((t + d) * rate); i++) {
+      const u = (i / rate - t) / d, huelle = Math.max(0, Math.sin(Math.PI * u)) ** 0.6, ph = 2 * Math.PI * f * (i / rate);
+      let v = 0;
+      for (let h = 1; h < 30; h++) { const fh = f * h; v += (Math.exp(-(((fh - 700) / 300) ** 2)) + 0.6 * Math.exp(-(((fh - 1800) / 400) ** 2)) + 0.3 * Math.exp(-(((fh - 2800) / 500) ** 2))) * Math.sin(ph * h) / h ** 0.3; }
+      x[i] += 0.12 * huelle * v; stimmhaft[i] = 1;
+    }
+    t += d + (rnd() < 0.2 ? 0.45 : 0.06);
+  }
+  for (let i = 0; i < n; i++) x[i] += rauschen * (rnd() - 0.5) * 2 + 0.006 * Math.sin((2 * Math.PI * 50 * i) / rate);
+  return { x, stimmhaft };
+}
+
+test("Stimme säubern: Rauschen und Brummen weg (Abstand zur Stimme über 40 dB statt gut 20), die Stimme bleibt, −16 LUFS, nie über −1 dBFS", () => {
+  const rate = 44100, { x, stimmhaft } = kunststimme(rate, 8);
+  const vorher = Fr.lautheit(x, x, rate) - St.grundrauschen(x, rate);
+  const s = St.saeubern([x], rate), [L, R] = s.kanaele, m = L.map((v, i) => (v + R[i]) / 2);
+  const nachher = Fr.lautheit(L, R, rate) - St.grundrauschen(m, rate);
+  assert.ok(vorher < 30 && nachher > 40, `Abstand Stimme – Rauschen: ${vorher.toFixed(1)} → ${nachher.toFixed(1)} dB`);
+  assert.ok(s.rauschenNachher < s.rauschenVorher - 10, `Grundrauschen ${s.rauschenVorher.toFixed(1)} → ${s.rauschenNachher.toFixed(1)} dBFS`);
+  assert.ok(Math.abs(Fr.lautheit(L, R, rate) + 16) < 0.8, `−16 LUFS (${Fr.lautheit(L, R, rate).toFixed(1)})`);
+  // Stille in den langen Pausen: mindestens 0,15 s von jeder Silbe entfernt (in kurzen Lücken klingt der Raum nach)
+  const summe = new Int32Array(L.length + 1), rand = Math.round(0.15 * rate);
+  for (let i = 0; i < L.length; i++) summe[i + 1] = summe[i] + stimmhaft[i];
+  let max = 0, ein = 0, aus = 0, ne = 0, na = 0;
+  for (let i = 0; i < L.length; i++) {
+    max = Math.max(max, Math.abs(L[i]), Math.abs(R[i]));
+    if (stimmhaft[i]) { ein += m[i] * m[i]; ne++; }
+    else if (summe[Math.min(L.length, i + rand)] - summe[Math.max(0, i - rand)] === 0) { aus += m[i] * m[i]; na++; }
+  }
+  assert.ok(max <= 0.892 && L.every(Number.isFinite), `Spitze ${max.toFixed(3)}`);
+  assert.ok(na > rate * 0.3 && 10 * Math.log10(ein / ne / (aus / na)) > 35, `in den Silben die Stimme, in den Pausen Stille (${(10 * Math.log10(ein / ne / (aus / na))).toFixed(1)} dB)`);
+  // 50 Hz weg: das Brummen in einer langen Pause
+  const brumm = (y) => { let c = 0, s2 = 0; for (let i = 0; i < y.length; i++) { c += y[i] * Math.cos((2 * Math.PI * 50 * i) / rate); s2 += y[i] * Math.sin((2 * Math.PI * 50 * i) / rate); } return Math.hypot(c, s2) / y.length; };
+  assert.ok(brumm(m) < brumm(x) / 10, "das Brummen ist weg");
+  assert.deepEqual(St.saeubern([x], rate).kanaele[0].slice(0, 5000), L.slice(0, 5000), "wiederholbar");
+});
+
+test("Stimm-Ablauf: 3,5 s Scratching, dann rund 10 s Stimme mit zwei, drei Hüpfern, am Ende 3,5 s Gefrickel; wiederholbar je Wurf, gemastert", () => {
+  const rate = 22050, { x } = kunststimme(rate, 14, { rauschen: 0.002 });
+  const s = St.saeubern([x], rate), a = St.stimmAblauf(s.kanaele, rate, { samen: 2 });
+  assert.deepEqual(a.teile.map((t) => t.name), ["scratch", "stimme", "frickel"]);
+  const [sc, st, fr] = a.teile, d = (t) => t.bis - t.von;
+  assert.ok(Math.abs(d(sc) - 3.5) < 1e-6 && sc.von === 0, `Scratch ${d(sc)}`);
+  assert.ok(d(st) > 9 && d(st) < 12, `Stimme ${d(st).toFixed(2)} s`);
+  assert.ok(Math.abs(d(fr) - 3.5) < 0.05 && Math.abs(fr.bis - a.dauer) < 1e-6 && Math.abs(fr.von - st.bis) < 1e-6, `Gefrickel ${d(fr).toFixed(2)} s am Ende`);
+  assert.ok(a.huepfer.length >= 2 && a.huepfer.length <= 3, `${a.huepfer.length} Hüpfer`);
+  assert.ok(a.huepfer.every((h) => h.t > st.von + 1 && h.t < st.bis - 0.5 && ["stotter", "sprung", "rueck"].includes(h.art)), JSON.stringify(a.huepfer));
+  assert.ok(a.zuege.length >= 8 && new Set(a.zuege.map((z) => z.art)).size >= 3, `Scratch-Züge: ${a.zuege.map((z) => z.art)}`);
+  const [L, R] = a.kanaele;
+  let max = 0; for (let i = 0; i < L.length; i++) max = Math.max(max, Math.abs(L[i]), Math.abs(R[i]));
+  assert.ok(max <= 0.892 && L.every(Number.isFinite) && Math.abs(Fr.lautheit(L, R, rate) + 14) < 1.5, `Spitze ${max.toFixed(3)}, ${Fr.lautheit(L, R, rate).toFixed(1)} LUFS`);
+  // Scratching: die Tonhöhe springt (Züge vor und zurück) – in der klaren Stimme nicht; jeder Wurf anders, derselbe gleich
+  const nulldurch = (a0, b0) => { let z = 0; for (let i = Math.round(a0 * rate) + 1; i < Math.round(b0 * rate); i++) if ((L[i - 1] < 0) !== (L[i] < 0)) z++; return z / (b0 - a0); };
+  assert.ok(nulldurch(0, 3.5) > 0, "im Scratching ist etwas zu hören");
+  assert.deepEqual(St.stimmAblauf(s.kanaele, rate, { samen: 2 }).kanaele[0].slice(0, 30000), L.slice(0, 30000), "derselbe Wurf, dasselbe Stück");
+  assert.notDeepEqual(St.stimmAblauf(s.kanaele, rate, { samen: 3 }).kanaele[0].slice(0, 30000), L.slice(0, 30000), "ein neuer Wurf scratcht anders");
+  // eine kurze Aufnahme (4 s): weniger Stimme, höchstens ein Hüpfer, kein Fehler
+  const k = St.stimmAblauf(St.saeubern([kunststimme(rate, 4).x], rate).kanaele, rate, { samen: 1 });
+  assert.ok(k.huepfer.length <= 1 && k.dauer > 7 && k.kanaele[0].every(Number.isFinite), `kurz: ${k.dauer.toFixed(1)} s, ${k.huepfer.length} Hüpfer`);
+});
+
+test("Verfrickeln nach dem Herauslösen von Hall und Mastering (frickeln.js, auch für die Stimme): Klang wie vorher", () => {
+  const rate = 22050, n = Math.round(rate * 2.4), pcm = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const t = i / rate, s = t % 0.6; pcm[i] = Math.exp(-s / 0.08) * (Math.sin(i * (0.03 + 0.01 * Math.floor(t / 0.6))) + 0.4 * Math.sin(i * 0.9)) * 0.7; }
+  const f = Fr.frickeln([pcm], rate, { samen: 3 });
+  let h = 0; for (const c of f.kanaele) for (let i = 0; i < c.length; i++) h = (h * 31 + Math.round(c[i] * 1e6)) | 0;
+  assert.equal(h, 634774473, "dieselben Proben wie vor dem Umbau");
+});
+
 test("MP4 in Teilen: dieselben Bytes wie mp4-muxer am Stück, moov vorn; nie die ganze Datei in einem Block", async () => {
   const { mp4Schreiber } = await import(new URL("tonspur.js", P).href);
   const { Muxer, ArrayBufferTarget } = await import(new URL("vendor/mp4-muxer-5.2.2/mp4-muxer.js", root).href);
@@ -218,12 +294,14 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /id="tondatei"[^>]*accept="audio\/\*/, "eine Audiodatei");
   assert.match(html, /id="ton-im-video" checked> Ton an/, "Ton ausschaltbar");
   assert.match(html, /id="frickeln"> Verfrickeln[\s\S]*id="wuerfeln"/, "Verfrickeln als Option, mit neuem Wurf");
+  assert.match(html, /data-tonart="musik">Musik[\s\S]*data-tonart="stimme">Stimme/, "Musik oder Stimme");
+  assert.match(html, /id="saeubern" checked> Säubern und klären[\s\S]*id="stimm-ablauf" checked> Scratch → Stimme → Gefrickel/, "die Stimme: säubern und der Ablauf");
   assert.match(html, /id="signet" checked> Logo am Schluss/);
   assert.match(html, /data-wahl="gewebe" aria-pressed="true"[\s\S]*data-wahl="irrfahrt"/, "zwei Effekte: Gewebe und Irrfahrt");
   assert.ok(!/data-(effekt|tiefe)=|data-wahl="(physarum|tiefe|tuch)/.test(html), "keine Kette und keine Tiefe: das ist PHORMA II");
   assert.match(html, /href="\.\.\/phorma-ii\/"/, "Hinweis auf PHORMA II");
   const dateien = readdirSync(P).filter((f) => f.endsWith(".js")), marken = new Set();
-  for (const f of ["ablauf.js", "analyse.js", "app.js", "buehne.js", "film.js", "frickeln.js", "gemeinsam.js", "gewebe.js", "irrfahrt.js", "irrweg.js", "kurven.js", "rechner.js", "textbild.js", "ton.js", "tonspur.js"]) assert.ok(dateien.includes(f), f);
+  for (const f of ["ablauf.js", "analyse.js", "app.js", "buehne.js", "film.js", "frickeln.js", "gemeinsam.js", "gewebe.js", "irrfahrt.js", "irrweg.js", "kurven.js", "stimme.js", "rechner.js", "textbild.js", "ton.js", "tonspur.js"]) assert.ok(dateien.includes(f), f);
   for (const f of ["physarum.js", "tiefe.js", "tuch.js", "tuchsim.js", "tiefe-ki.js"]) assert.ok(!dateien.includes(f), `ohne ${f}`);
   for (const f of dateien) {
     const js = lies(f);
