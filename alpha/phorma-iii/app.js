@@ -3,13 +3,13 @@
 // und mp4Schreiber (tonspur.js); ohne WebCodecs in Echtzeit über MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild acht Proben.
 // Bis zum 18. Oktober 2026 ein Effekt in PHORMA II (Wunsch: «Es sind ja zwei ganz verschiedene Ansätze … all das soll aus PHORMA II ausgelagert
 // werden und in ein neues PHORMA III integriert werden»).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, EFFEKTE, ablaufName, zeitachse, NACH } from "./ablauf.js?v=8";
-import { szene, bild, standbildZeit } from "./film.js?v=8";
-import { analysieren } from "./analyse.js?v=8";
-import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=8";
-import { textBild } from "./textbild.js?v=8";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, EFFEKTE, ablaufName, zeitachse, NACH, LOGO } from "./ablauf.js?v=9";
+import { szene, bild, standbildZeit } from "./film.js?v=9";
+import { analysieren } from "./analyse.js?v=9";
+import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=9";
+import { textBild } from "./textbild.js?v=9";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
-import { HOECHSTENS } from "./filmspur.js?v=8";
+import { HOECHSTENS } from "./filmspur.js?v=9";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
@@ -149,7 +149,7 @@ async function videoLaden(datei) {
   // der Ton des Videos wird die Tonspur, ausser eine andere Audiodatei ist gewählt
   if (!S.tonQuelle || S.tonQuelle.ausVideo) {
     try {
-      const { tonLesen } = await import("./tonspur.js?v=8");
+      const { tonLesen } = await import("./tonspur.js?v=9");
       const { buffer } = await tonLesen(datei);
       S.tonQuelle = { buffer, name: `Ton von ${datei.name}`, url, ausVideo: true }; S.ausschnitt = null;
       await tonSetzen({ auffrischen: false });
@@ -211,7 +211,13 @@ S.videoVon = 0;
 const filmDauer = () => zeitachse({ tempo: $("tempo").value, signet: $("signet").checked, laenge: laenge(), ablauf: S.ablauf }).dauer;
 /** welcher Teil des Videos läuft: { von, bis } in Sekunden der Quelle (höchstens HOECHSTENS) */
 function filmBereich() {
-  const V = S.video, l = Math.min(HOECHSTENS, filmDauer());
+  const V = S.video, l = Math.min(HOECHSTENS, filmDauer()), k = S.ablauf === "video" ? S.ton?.karte : null;
+  // mit Fahrplan: die Stellen, die er erreicht (ab der Sekunde des Ausschnitts, beim Ton aus dem Video; sonst ab dem Anfang des Video-Ausschnitts)
+  if (k) {
+    let a = Infinity, b = -Infinity; for (const p of k.pos) { if (p < a) a = p; if (p > b) b = p; }
+    const basis = S.tonQuelle?.ausVideo ? k.von : Math.max(0, Math.min(S.videoVon, V.dauer - (b - a))), von = Math.max(0, basis + a - 0.05);
+    return { von, bis: Math.min(V.dauer, von + Math.min(HOECHSTENS, b - a + 0.1)), basis };
+  }
   if (S.tonQuelle?.ausVideo) { const a = ausschnittJetzt(); return { von: a.von, bis: Math.min(V.dauer, a.von + l) }; }
   const von = Math.max(0, Math.min(S.videoVon, V.dauer - Math.min(l, V.dauer)));
   return { von, bis: Math.min(V.dauer, von + l) };
@@ -251,7 +257,7 @@ let filmspurModul = null;
 async function filmspurBereit(bereich, abbruch) {
   const V = S.video, [B, H] = S.mass, schl = `${V.url}|${bereich.von.toFixed(3)}|${bereich.bis.toFixed(3)}|${B}x${H}`;
   if (S.filmspur?.schl !== schl) {
-    filmspurModul ??= await import("./filmspur.js?v=8");
+    filmspurModul ??= await import("./filmspur.js?v=9");
     const n = Math.round((bereich.bis - bereich.von) * 30);
     melden(`Die Bilder des Videos werden gelesen … 0 / ${n}`);
     const t0 = performance.now();
@@ -262,13 +268,27 @@ async function filmspurBereit(bereich, abbruch) {
     S.filmspur = { schl, spur };
     notiz(`Filmspur gelesen: ${spur.n} Bilder ab ${bereich.von.toFixed(2)} s, ${spur.weg}${spur.grund ? ` (${spur.grund})` : ""}, ${Math.round(performance.now() - t0)} ms`);
   }
-  const spur = S.filmspur.spur, karte = (t) => bereich.von + Math.max(0, t);   // Etappe 1: der Fahrplan läuft gerade durch, synchron zum Ton
-  return { n: spur.n, weg: spur.weg, karte, index: (t) => spur.index(karte(t)), bild: (t, o) => spur.bild(karte(t), o), vorbereiten: (ts, o) => spur.vorbereiten(ts.map(karte), o) };
+  const spur = S.filmspur.spur, k = S.ablauf === "video" ? S.ton?.karte : null;
+  // der Fahrplan: mit dem Ablauf die Stelle des Tons (Scratch, Hüpfer, Gefrickel), sonst gerade durch; je 1/240 s, Sprünge über 0,1 s sind Schnitte
+  const i = (t) => Math.max(0, Math.min(k.pos.length - 1, Math.round(t * k.rate)));
+  const karte = k ? (t) => bereich.basis + k.pos[i(t)] : (t) => bereich.von + Math.max(0, t);
+  let schnitte = null;
+  if (k) { schnitte = new Int32Array(k.pos.length); for (let j = 1; j < k.pos.length; j++) schnitte[j] = schnitte[j - 1] + (Math.abs(k.pos[j] - k.pos[j - 1]) > 0.1 ? 1 : 0); }
+  // das Tempo nur innerhalb eines Abschnitts (ein Sprung zur nächsten Scheibe ist kein Tempo – sonst verschmierte das Bild an jedem Schnitt)
+  const tempo = k ? (t) => {
+    const j = i(t); let a = j, b = j;
+    while (a > Math.max(0, j - 2) && schnitte[a - 1] === schnitte[j]) a--;
+    while (b < Math.min(k.pos.length - 1, j + 2) && schnitte[b + 1] === schnitte[j]) b++;
+    return b > a ? ((k.pos[b] - k.pos[a]) * k.rate) / (b - a) : 1;
+  } : () => 1;
+  const hell = k ? (t) => k.hell[i(t)] : () => 1;
+  return { n: spur.n, weg: spur.weg, karte, tempo, hell, abschnitt: (t) => (schnitte ? schnitte[i(t)] : 0), index: (t) => spur.index(karte(t)),
+    bild: (t, o) => spur.bild(karte(t), o), vorbereiten: (ts, o) => spur.vorbereiten(ts.map(karte), o) };
 }
 /** vor dem Zeichnen eines Exportbilds: die Bilder der Filmspur in voller Grösse entpacken (auch für die Proben der Bewegungsunschärfe) */
 async function filmVorbereiten(sz, t, p = 1) {
   if (sz.zeit.ablauf !== "video" || !S.filmAnbieter) return;
-  await S.filmAnbieter.vorbereiten(p > 1 ? [t - 0.5 / FPS, t] : [t], { vorschau: false });
+  await S.filmAnbieter.vorbereiten(Array.from({ length: p }, (_, k) => (p > 1 ? t - (0.5 / FPS) * (1 - k / (p - 1)) : t)), { vorschau: false });   // jede Probe des Verschlusses (beim Scratchen andere Bilder)
 }
 /** ein Bild (Foto, Text oder Standbild eines Videos) als Quelle: das alte und seine Bühne sofort freigeben, nicht erst, wenn das neue analysiert ist */
 async function bildSetzen(q) {
@@ -282,7 +302,7 @@ async function bildSetzen(q) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=8", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=9", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -326,7 +346,7 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=8");
+    buehneModul ??= await import("./buehne.js?v=9");
     if (S.buehneSchluessel !== schluessel) return;
     const saetze = S.quelle === "video" && S.video && S.ablauf === "gewebe" ? await videoSaetze() : null;   // nur das Gewebe holt Bilder aus dem Video
     if (S.buehneSchluessel !== schluessel) return;
@@ -371,7 +391,10 @@ async function buehneFertig() { await buehneBereit(); await S.buehne?.bereit; }
 
 /** mit Tonspur dauert das Gewebe so lange wie sie (ohne Vorlauf und Schluss), 10 bis 110 s */
 // die Musik klingt bis ans Ende; mit Signet gehört das Logo zum Gewebe und entsteht in ihrem Takt (Wünsche vom 18. Oktober 2026)
-const laenge = () => (S.ton ? Math.min(110, Math.max(10, S.ton.analyse.dauer - 0.4 - NACH($("signet").checked, S.ablauf)))
+// Video mit dem Ablauf: das Gefrickel ist der Höhepunkt, das Logo kommt danach (es überlappt nur seine letzte Sekunde, wo es ausklingt) – sonst lag es
+// unter dem Logo, das die letzten 4,6 s des Films einnimmt
+const nachAblauf = () => (S.ablauf === "video" && S.ton?.karte && $("signet").checked ? LOGO - 1 + NACH(true, "video") : 0);   // Logo ab 1 s vor dem Ende des Tons
+const laenge = () => (S.ton ? Math.min(110, Math.max(10, S.ton.analyse.dauer - 0.4 - NACH($("signet").checked, S.ablauf) + nachAblauf()))
   : S.ablauf === "video" && S.quelle === "video" && S.video ? Math.max(2, Math.min(HOECHSTENS, S.video.dauer) - 0.4 - NACH($("signet").checked, "video")) : null);   // Video ohne Ton: so lang wie es
 function optionen() {
   return { breite: S.mass[0], hoehe: S.mass[1], tempo: $("tempo").value, signet: $("signet").checked, beschriftung: $("beschriftung").checked,
@@ -487,9 +510,15 @@ S.tonart = erinnern("tonart") === "stimme" ? "stimme" : "musik";
 S.saeubern = erinnern("saeubern") !== "0"; $("saeubern").checked = S.saeubern;
 S.stimmAblauf = erinnern("stimm-ablauf") !== "0"; $("stimm-ablauf").checked = S.stimmAblauf;
 S.stimmDnb = erinnern("stimm-dnb") !== "0"; $("stimm-dnb").checked = S.stimmDnb;
-const wuerfelbar = () => (S.tonart === "stimme" ? S.stimmAblauf : S.frickeln);
+// Effekt Video (seit 18. Oktober 2026, Etappe 2): der Ablauf Scratch → Video mit Hüpfern → Gefrickel für Bild und Ton, mit Musik wie mit Stimme; das Bild
+// folgt dem Fahrplan des Tons (stimme.js: karte)
+S.videoAblauf = erinnern("video-ablauf") !== "0"; $("video-ablauf").checked = S.videoAblauf;
+/** läuft der Ablauf (Scratch → … → Gefrickel)? beim Effekt Video nach seinem eigenen Haken, sonst nur bei der Stimme */
+const ablaufAn = () => (S.ablauf === "video" ? S.videoAblauf : S.tonart === "stimme" && S.stimmAblauf);
+const wuerfelbar = () => ablaufAn() || (S.tonart === "musik" && S.frickeln);
 const tonartZeigen = () => {
-  $("musik-teil").hidden = S.tonart !== "musik"; $("stimme-teil").hidden = S.tonart !== "stimme"; $("wuerfeln").hidden = !(wuerfelbar() && S.tonQuelle); $("stimm-dnb").disabled = !S.stimmAblauf;
+  $("musik-teil").hidden = S.tonart !== "musik"; $("stimme-teil").hidden = S.tonart !== "stimme"; $("wuerfeln").hidden = !(wuerfelbar() && S.tonQuelle); $("stimm-dnb").disabled = !ablaufAn();
+  $("frickeln").disabled = S.ablauf === "video" && S.videoAblauf;            // beim Video verfrickelt der Ablauf
   $("ausschnitt").hidden = !S.tonQuelle; ausschnittZeigen();
 };
 // der Ausschnitt der Audiodatei (Wunsch vom 18. Oktober 2026: «Ich möchte den Ausschnitt des Voice-Clips in der Anwendung wählen können»; seit der
@@ -507,14 +536,14 @@ function ausschnittJetzt() {
   // automatisch: mit dem Ablauf rund 10 s ab dem ersten Wort, sonst die ganze Datei – lange Aufnahmen gekürzt auf 60 s (Stimme) oder 5 Minuten (Musik),
   // nur dieser Teil wird gesäubert und gebaut (Rückmeldung: «das Audio-Interface lässt sich zurzeit noch nicht bedienen, Website blockiert» – eine
   // Aufnahme von 9 Minuten wurde ganz gesäubert, die Seite stand dabei 50 Sekunden still)
-  if (S.tonart === "stimme" && S.stimmAblauf && q.uebersicht) { const von = Math.max(0, q.uebersicht.beginn - 0.2); return { von, bis: Math.min(dauer, von + 10.4), eigen: false, schneiden: true }; }
+  if (ablaufAn() && q.uebersicht) { const von = Math.max(0, q.uebersicht.beginn - 0.2); return { von, bis: Math.min(dauer, von + 10.4), eigen: false, schneiden: true }; }
   const grenze = Math.min(kappe, S.tonart === "stimme" ? 60 : 300);
   return { von: 0, bis: Math.min(dauer, grenze), eigen: false, schneiden: dauer > grenze };
 }
 /** Wellenform (Spitzen je Spalte) und der Sprachbeginn, einmal je Aufnahme */
 async function ausschnittVorbereiten(q) {
   if (q.uebersicht) return;
-  const { sprachbeginn } = await import("./stimme.js?v=8");
+  const { sprachbeginn } = await import("./stimme.js?v=9");
   const b = q.buffer, n = b.length, mono = new Float32Array(n);
   for (let k = 0; k < b.numberOfChannels; k++) { const c = b.getChannelData(k); for (let i = 0; i < n; i++) mono[i] += c[i] / b.numberOfChannels; }
   const spalten = 800, spitzen = new Float32Array(spalten), schritt = n / spalten;
@@ -590,7 +619,7 @@ $("tondatei").addEventListener("change", async (e) => {
   const datei = e.target.files?.[0]; if (!datei) return;
   melden("Der Ton wird gelesen …");
   try {
-    const { tonLesen } = await import("./tonspur.js?v=8");
+    const { tonLesen } = await import("./tonspur.js?v=9");
     const { buffer } = await tonLesen(datei);
     if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
     S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei), ausVideo: false };
@@ -617,22 +646,25 @@ async function tonSetzen({ auffrischen = true } = {}) {
   tonartZeigen();
   const aus = ausschnittJetzt(), schnitt = aus?.eigen ? `Ausschnitt ${zeitText(aus.von)}–${zeitText(aus.bis)}` : "";
   if (aus?.eigen || aus?.schneiden) kanaele = kanaele.map((c) => c.subarray(Math.round(aus.von * rate), Math.round(aus.bis * rate)));
-  if (S.tonart === "stimme" && (S.saeubern || S.stimmAblauf || aus?.eigen)) {
-    melden(S.saeubern ? "Die Stimme wird gesäubert …" : "Scratch, Stimme und Gefrickel werden gebaut …");
+  let karte = null;                                                          // der Fahrplan des Ablaufs (für das Bild beim Effekt Video)
+  const stimme = S.tonart === "stimme", mitAblauf = ablaufAn();
+  if ((stimme && (S.saeubern || aus?.eigen)) || mitAblauf) {
+    melden(stimme && S.saeubern ? "Die Stimme wird gesäubert …" : "Scratch, Stimme und Gefrickel werden gebaut …");
     await pause();
-    const [{ saeubern, stimmAblauf }, { wav }] = await Promise.all([import("./stimme.js?v=8"), import("./frickeln.js?v=8")]);
+    const [{ saeubern, stimmAblauf }, { wav }] = await Promise.all([import("./stimme.js?v=9"), import("./frickeln.js?v=9")]);
     if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
     let kan = kanaele;
     const teile = schnitt ? [schnitt] : [];
-    if (S.saeubern) {
+    if (stimme && S.saeubern) {
       const s = saeubern(kan, rate); kan = s.kanaele;
       teile.push(`gesäubert (Rauschen ${Math.round(s.rauschenVorher)} → ${Math.round(s.rauschenNachher)} dB)`);
       notiz(`Stimme gesäubert: Rauschen ${s.rauschenVorher.toFixed(1)} → ${s.rauschenNachher.toFixed(1)} dB`);
     }
-    if (S.stimmAblauf) {
-      if (S.saeubern) { melden("Scratch, Stimme und Gefrickel werden gebaut …"); await pause(); if (nr !== S.tonNr) return; }
-      const a = stimmAblauf(kan, rate, { samen: S.wurf, dnb: S.stimmDnb, ...(aus?.eigen ? { stimme: aus.bis - aus.von } : {}) }); kan = a.kanaele;
-      teile.push(`Scratch, Stimme mit ${a.huepfer.length} Hüpfern, ${a.unterlegt ? "Drum and Bass, " : ""}Gefrickel, Wurf ${S.wurf}`);
+    if (mitAblauf) {
+      if (stimme && S.saeubern) { melden("Scratch, Stimme und Gefrickel werden gebaut …"); await pause(); if (nr !== S.tonNr) return; }
+      const a = stimmAblauf(kan, rate, { samen: S.wurf, dnb: stimme && S.stimmDnb, ...(aus?.eigen ? { stimme: aus.bis - aus.von } : {}) }); kan = a.kanaele;
+      karte = { ...a.karte, von: aus?.eigen || aus?.schneiden ? aus.von : 0, teile: a.teile, huepfer: a.huepfer };   // von: Sekunde der Aufnahme, an der die Stellen beginnen
+      teile.push(`Scratch, ${stimme ? "Stimme" : "Musik"} mit ${a.huepfer.length} Hüpfern, ${a.unterlegt ? "Drum and Bass, " : ""}Gefrickel, Wurf ${S.wurf}`);
       notiz(`Stimmen-Ablauf: Wurf ${S.wurf}, ${a.dauer.toFixed(1)} s, ${a.huepfer.map((h) => h.art).join(", ")}`);
     }
     buffer = new AudioBuffer({ length: kan[0].length, numberOfChannels: 2, sampleRate: rate });
@@ -642,7 +674,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
   } else if (S.tonart === "musik" && S.frickeln) {
     melden("Der Ton wird verfrickelt …");
     await pause();
-    const { frickeln, wav } = await import("./frickeln.js?v=8");
+    const { frickeln, wav } = await import("./frickeln.js?v=9");
     if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
     const f = frickeln(kanaele, rate, { samen: S.wurf });
     buffer = new AudioBuffer({ length: f.kanaele[0].length, numberOfChannels: 2, sampleRate: rate });
@@ -651,7 +683,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
     name = `${q.name}${schnitt ? ` · ${schnitt}` : ""} · verfrickelt, Wurf ${S.wurf}`; mehr = ` · ${f.bpm} BPM, ${f.takte} Takte aus ${f.scheiben} Schnipseln`;
     notiz(`Ton verfrickelt: Wurf ${S.wurf}, ${f.bpm} BPM, ${f.dauer.toFixed(1)} s`);
   } else if (aus?.eigen || aus?.schneiden) {                                 // nur geschnitten
-    const { wav } = await import("./frickeln.js?v=8");
+    const { wav } = await import("./frickeln.js?v=9");
     if (nr !== S.tonNr) return;
     buffer = new AudioBuffer({ length: kanaele[0].length, numberOfChannels: kanaele.length, sampleRate: rate });
     kanaele.forEach((c, k) => buffer.copyToChannel(c, k));
@@ -662,7 +694,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
   for (let k = 0; k < buffer.numberOfChannels; k++) { const c = buffer.getChannelData(k); for (let i = 0; i < c.length; i++) pcm[i] += c[i] / buffer.numberOfChannels; }
   const analyse = tonAnalysieren(pcm, rate);
   if (S.ton?.wav) URL.revokeObjectURL(S.ton.url);                          // nur die eigene WAV des verfrickelten Stücks
-  S.ton = { buffer, analyse, name, url, wav: url !== q.url };
+  S.ton = { buffer, analyse, name, url, wav: url !== q.url, karte };
   $("tonspur").src = url;
   $("ton-info").textContent = `${name}${mehr} · ${analyse.dauer.toFixed(1).replace(".", ",")} s · ${analyse.einsaetze.length} Einsätze · ${analyse.schnitte.length} Schnitte`;
   $("ton-weg").hidden = false; $("wuerfeln").hidden = !wuerfelbar(); videoAusschnittZeigen();
@@ -672,7 +704,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
   neu();
 }
 $("frickeln").addEventListener("change", () => { S.frickeln = $("frickeln").checked; merken("frickeln", S.frickeln ? "1" : "0"); tonartZeigen(); tonSetzen(); });
-for (const [id, k] of [["saeubern", "saeubern"], ["stimm-ablauf", "stimmAblauf"], ["stimm-dnb", "stimmDnb"]]) $(id).addEventListener("change", () => { S[k] = $(id).checked; merken(id, S[k] ? "1" : "0"); tonartZeigen(); tonSetzen(); });
+for (const [id, k] of [["saeubern", "saeubern"], ["stimm-ablauf", "stimmAblauf"], ["stimm-dnb", "stimmDnb"], ["video-ablauf", "videoAblauf"]]) $(id).addEventListener("change", () => { S[k] = $(id).checked; merken(id, S[k] ? "1" : "0"); tonartZeigen(); tonSetzen(); });
 $("wuerfeln").addEventListener("click", () => { S.wurf = (S.wurf % 9999) + 1; merken("wurf", String(S.wurf)); tonSetzen(); });
 $("ton-weg").addEventListener("click", () => { tonEntfernen(); neu(); });
 function tonEntfernen() {
@@ -784,7 +816,7 @@ $("video").addEventListener("click", async () => {
 });
 
 async function mitWebCodecs(cfg, sz) {
-  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=8");
+  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=9");
   // mit Ton: die Tonspur zuerst kodieren (klein), dann gehen die Bilder gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
   let ton = null;
   if (S.ton && $("ton-im-video").checked) {
@@ -861,6 +893,6 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...ablaufKnoepfe, ...quelleKnoepfe, $("text"), $("videodatei"), $("tondatei"), $("ton-weg"), $("frickeln"), $("saeubern"), $("stimm-ablauf"), $("stimm-dnb"), $("ausschnitt-von"), $("ausschnitt-laenge"), $("ausschnitt-auto"), $("video-von"), ...tonartKnoepfe, $("wuerfeln"), $("video"), $("png")])
-    el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A) || (el.id === "stimm-dnb" && !S.stimmAblauf) || (el.id === "ausschnitt-auto" && !S.ausschnitt);
+  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...ablaufKnoepfe, ...quelleKnoepfe, $("text"), $("videodatei"), $("tondatei"), $("ton-weg"), $("frickeln"), $("saeubern"), $("stimm-ablauf"), $("stimm-dnb"), $("ausschnitt-von"), $("ausschnitt-laenge"), $("ausschnitt-auto"), $("video-von"), $("video-ablauf"), ...tonartKnoepfe, $("wuerfeln"), $("video"), $("png")])
+    el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A) || (el.id === "stimm-dnb" && !ablaufAn()) || (el.id === "frickeln" && S.ablauf === "video" && S.videoAblauf) || (el.id === "ausschnitt-auto" && !S.ausschnitt);
 }

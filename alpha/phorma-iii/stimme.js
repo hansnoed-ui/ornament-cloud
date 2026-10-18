@@ -8,7 +8,7 @@
 //   stimmAblauf – aus der gesäuberten Stimme: Scratching auf dem ersten Wort (Hin und Her wie eine Platte unter der Hand, mit Fader), die klare
 //                 Stimme mit zwei, drei Hüpfern (Stottern, Rücksprung, rückwärts), am Ende Gefrickel (frickeln.js, zwei Takte); gegen das Gefrickel hin
 //                 unterlegt mit Drum and Bass (Rückmeldung: «am Ende gegen das Gefrickel hin gerne mit ein wenig Drum and Bass unterlegt»); wiederholbar je Wurf
-import { frickeln, hallFilter, meistern } from "./frickeln.js?v=8";
+import { frickeln, hallFilter, meistern } from "./frickeln.js?v=9";
 
 /** wiederholbarer Zufall (mulberry32) */
 function zufall(samen) {
@@ -173,6 +173,7 @@ function lies(x, p) {
  */
 function scratching(L0, R0, rate, start, dauer, r) {
   const S = Math.round(dauer * rate), L = new Float32Array(S), R = new Float32Array(S), stoff = Math.round(0.9 * rate), zuege = [];
+  const P = new Float32Array(S), F = new Float32Array(S);                    // für den Fahrplan des Bilds: Stelle (Proben) und Fader je Probe
   let t = 0, zl = 0, zr = 0;
   while (t < S) {
     const d = Math.min(S - t, Math.round((0.11 + 0.25 * r()) * rate)), w = r(), art = w < 0.42 ? "baby" : w < 0.68 ? "chirp" : w < 0.88 ? "transform" : "zurueck";
@@ -191,10 +192,11 @@ function scratching(L0, R0, rate, start, dauer, r) {
       const a = Math.min(1, 0.3 + Math.abs(v)), fc = 700 + 9000 * Math.min(1, Math.abs(v)), k = 1 - Math.exp((-2 * Math.PI * fc) / rate);
       zl += (lies(L0, p) - zl) * k; zr += (lies(R0, p) - zr) * k;
       L[t + i] = zl * a * fader; R[t + i] = zr * a * fader;
+      P[t + i] = p; F[t + i] = fader;
     }
     t += d;
   }
-  return { L, R, zuege };
+  return { L, R, zuege, P, F };
 }
 
 /**
@@ -262,12 +264,12 @@ export function stimmAblauf(kanaele, rate, { samen = 1, scratch = 3.5, stimme = 
   const L0 = kanaele[0], R0 = kanaele[1] ?? kanaele[0], n = L0.length, r = zufall(samen);
   const mono = new Float32Array(n); for (let i = 0; i < n; i++) mono[i] = (L0[i] + R0[i]) / 2;
   const start = sprachbeginn(mono, rate);
-  const teileL = [], teileR = [], teile = [];
+  const teileL = [], teileR = [], teile = [], stellen = [], faders = [];   // stellen/faders: der Fahrplan des Bilds je Teil (Proben der Quelle, Fader)
   let laenge = 0;
   const dazu = (l, rr, name) => { teileL.push(l); teileR.push(rr); if (name) teile.push({ name, von: laenge / rate, bis: (laenge + l.length) / rate }); laenge += l.length; };
   // 1 Scratching
   const sc = scratching(L0, R0, rate, start, scratch, r);
-  dazu(sc.L, sc.R, "scratch");
+  dazu(sc.L, sc.R, "scratch"); stellen.push(sc.P); faders.push(sc.F);
   // 2 die klare Stimme mit Hüpfern: Stücke der Quelle, je an den Rändern 4 ms weich
   const ende = Math.min(n, start + Math.round(stimme * rate)), lang = (ende - start) / rate, huepfer = [];
   const anzahl = lang > 6 ? 2 + (r() < 0.5 ? 1 : 0) : lang > 3 ? 1 : 0, orte = [];
@@ -289,14 +291,16 @@ export function stimmAblauf(kanaele, rate, { samen = 1, scratch = 3.5, stimme = 
   stuecke.push([zeiger, ende, false]);
   { const m = stuecke.reduce((s, [a, b]) => s + Math.max(0, b - a), 0), L = new Float32Array(m), R = new Float32Array(m), rand = Math.round(0.004 * rate);
     let o = 0;
+    const P = new Float32Array(m);
     for (const [a, b, rueck] of stuecke) {
       const k = Math.max(0, b - a);
       for (let i = 0; i < k; i++) {
         const q = rueck ? b - 1 - i : a + i, h = Math.min(1, i / rand, (k - i) / rand);
-        L[o + i] = L0[q] * h; R[o + i] = R0[q] * h;
+        L[o + i] = L0[q] * h; R[o + i] = R0[q] * h; P[o + i] = q;
       }
       o += k;
     }
+    stellen.push(P); faders.push(null);
     // die Zeit jedes Hüpfers im Ergebnis: dort, wo sein erstes Stück endet
     let t = 0, j = 0;
     for (const [a, b] of stuecke) { t += Math.max(0, b - a); if (j < huepfer.length && b === start + Math.round(huepfer[j].quelle * rate)) { huepfer[j].t = (laenge + t) / rate; j++; } }
@@ -312,6 +316,13 @@ export function stimmAblauf(kanaele, rate, { samen = 1, scratch = 3.5, stimme = 
     const v0 = laenge;
     teile.at(-1).bis = (v0 - x) / rate;
     dazu(L.subarray(x), R.subarray(x), null);
+    // die Stellen im Gefrickel: je Probe die zuletzt begonnene Scheibe (die Körnerwolken, leise darunter, zählen nicht)
+    const P = new Float32Array(m), stets = stellen.at(-1), letzt = stets.length ? stets[stets.length - 1] : start;
+    P.fill(letzt);
+    for (const e of [...f.plan].filter((e) => e.gain > 0.35).sort((a, b) => a.start - b.start))
+      for (let i = 0; i < e.m && e.start + i < m; i++) P[e.start + i] = e.rueck ? e.b - 3 - e.versatz - i * e.tempo : e.a + 1 + e.versatz + i * e.tempo;
+    stellen.at(-1).fill(P[0], stellen.at(-1).length - x);                   // in der Überblendung schon die erste Scheibe
+    stellen.push(P.subarray(x)); faders.push(null);
     teile.push({ name: "frickel", von: (v0 - x) / rate, bis: laenge / rate });
   }
   const L = new Float32Array(laenge), R = new Float32Array(laenge);
@@ -335,5 +346,28 @@ export function stimmAblauf(kanaele, rate, { samen = 1, scratch = 3.5, stimme = 
     unterlegt = { von, bis: laenge / rate, bpm };
   }
   meistern(L, R, rate, { lufs: -14, schwelleDb: -16, verhaeltnis: 1.6, hochpass: 40, ausblenden: 0.4 });
-  return { kanaele: [L, R], rate, dauer: laenge / rate, teile, huepfer: huepfer.map(({ t, art }) => ({ t, art })), zuege: sc.zuege, unterlegt };
+  return { kanaele: [L, R], rate, dauer: laenge / rate, teile, huepfer: huepfer.map(({ t, art }) => ({ t, art })), zuege: sc.zuege, unterlegt, karte: fahrplan(stellen, faders, rate) };
+}
+
+/** Takt des Fahrplans: so viele Stellen je Sekunde */
+export const FAHRPLAN = 240;
+/**
+ * Der Fahrplan des Ablaufs für das Bild (PHORMA III, Effekt Video, seit 18. Oktober 2026: «nicht nur auf der Tonebene, sondern auch auf der Bild- bzw.
+ * Video-Ebene»): je 1/240 s die Stelle der Quelle (Sekunden ab ihrem Anfang) und die Helligkeit (der Fader beim Scratchen, sonst 1). Aus den Teilen
+ * in Proben (stellen) und ihren Fadern (oder null). → { rate: 240, pos, hell } – das Bild folgt so genau dem Ton: vor, zurück, gestottert, verfrickelt.
+ */
+export function fahrplan(stellen, faders, rate) {
+  const n = stellen.reduce((s, p) => s + p.length, 0), k = Math.max(1, Math.ceil((n / rate) * FAHRPLAN)), pos = new Float32Array(k), hell = new Float32Array(k);
+  let o = 0, j = 0;
+  for (let t = 0; t < stellen.length; t++) {
+    const P = stellen[t], F = faders[t];
+    for (; j < k; j++) {
+      const i = Math.round((j * rate) / FAHRPLAN) - o;
+      if (i >= P.length) break;
+      pos[j] = P[i] / rate; hell[j] = F ? F[i] : 1;
+    }
+    o += P.length;
+  }
+  for (; j < k; j++) { pos[j] = pos[j - 1] ?? 0; hell[j] = hell[j - 1] ?? 1; }
+  return { rate: FAHRPLAN, pos, hell };
 }

@@ -277,6 +277,22 @@ test("Stimm-Ablauf: 3,5 s Scratching, dann rund 10 s Stimme mit zwei, drei Hüpf
   assert.ok(nulldurch(0, 3.5) > 0, "im Scratching ist etwas zu hören");
   assert.deepEqual(St.stimmAblauf(s.kanaele, rate, { samen: 2 }).kanaele[0].slice(0, 30000), L.slice(0, 30000), "derselbe Wurf, dasselbe Stück");
   assert.notDeepEqual(St.stimmAblauf(s.kanaele, rate, { samen: 3 }).kanaele[0].slice(0, 30000), L.slice(0, 30000), "ein neuer Wurf scratcht anders");
+  // der Fahrplan für das Bild (Effekt Video, seit 18. Oktober 2026): je 1/240 s die Stelle der Quelle und der Fader, so lang wie der Ton
+  const k = a.karte, n = s.kanaele[0].length / rate, bei = (t) => k.pos[Math.round(t * k.rate)];
+  assert.equal(k.rate, St.FAHRPLAN); assert.equal(k.pos.length, Math.ceil(a.dauer * k.rate));
+  assert.ok(k.pos.every((p) => p >= 0 && p <= n), "alle Stellen in der Quelle");
+  const [tSc, tSt, tFr] = a.teile;
+  const imScratch = k.pos.slice(0, Math.round(tSc.bis * k.rate));
+  assert.ok(Math.max(...imScratch) - Math.min(...imScratch) < 1.3, "beim Scratchen um das erste Wort");
+  let vor = 0, zurueck = 0; for (let i = 1; i < imScratch.length; i++) { if (imScratch[i] > imScratch[i - 1]) vor++; else if (imScratch[i] < imScratch[i - 1]) zurueck++; }
+  assert.ok(vor > 50 && zurueck > 50, `vor und zurück (${vor} / ${zurueck})`);
+  assert.ok(k.hell.slice(0, imScratch.length).some((h) => h < 0.1) && k.hell.slice(Math.round(tSt.von * k.rate)).every((h) => h === 1), "der Fader nur beim Scratchen");
+  // die klare Stimme läuft (bis auf die Hüpfer) im Tempo 1 durch
+  let gerade = 0, alle = 0; for (let t = tSt.von + 0.2; t < tSt.bis - 0.2; t += 0.1) { alle++; if (Math.abs(bei(t + 0.1) - bei(t) - 0.1) < 0.01) gerade++; }
+  assert.ok(gerade / alle > 0.8, `die Stimme läuft durch (${gerade} / ${alle})`);
+  // das Gefrickel springt (viele Schnitte über 0,1 s)
+  let spruenge = 0; for (let i = Math.round(tFr.von * k.rate) + 1; i < k.pos.length; i++) if (Math.abs(k.pos[i] - k.pos[i - 1]) > 0.1) spruenge++;
+  assert.ok(spruenge >= 4, `im Gefrickel springt das Bild mit (${spruenge} Schnitte)`);
   // Drum and Bass gegen das Gefrickel hin: einen Takt (174 BPM) vorher herein («etwas später, kurz vor gefrickel»), bis zum Schluss; abschaltbar
   assert.ok(a.unterlegt && a.unterlegt.bpm === 174 && Math.abs(fr.von - a.unterlegt.von - 240 / 174) < 1e-6 && Math.abs(a.unterlegt.bis - a.dauer) < 1e-6, JSON.stringify(a.unterlegt));
   const ohne = St.stimmAblauf(s.kanaele, rate, { samen: 2, dnb: false });
@@ -291,8 +307,8 @@ test("Stimm-Ablauf: 3,5 s Scratching, dann rund 10 s Stimme mit zwei, drei Hüpf
   const tief = (t) => { let e = 0; for (let i = Math.round(t * rate); i < Math.round((t + 0.05) * rate); i++) e += d1[0][i] ** 2; return e; };
   assert.ok(tief(240 / 174) > 4 * tief(240 / 174 - 0.12), "die Kick auf der Eins");
   // eine kurze Aufnahme (4 s): weniger Stimme, höchstens ein Hüpfer, kein Fehler
-  const k = St.stimmAblauf(St.saeubern([kunststimme(rate, 4).x], rate).kanaele, rate, { samen: 1 });
-  assert.ok(k.huepfer.length <= 1 && k.dauer > 7 && k.kanaele[0].every(Number.isFinite), `kurz: ${k.dauer.toFixed(1)} s, ${k.huepfer.length} Hüpfer`);
+  const kurz = St.stimmAblauf(St.saeubern([kunststimme(rate, 4).x], rate).kanaele, rate, { samen: 1 });
+  assert.ok(kurz.huepfer.length <= 1 && kurz.dauer > 7 && kurz.kanaele[0].every(Number.isFinite), `kurz: ${kurz.dauer.toFixed(1)} s, ${kurz.huepfer.length} Hüpfer`);
 });
 
 test("Verfrickeln nach dem Herauslösen von Hall und Mastering (frickeln.js, auch für die Stimme): Klang wie vorher", () => {

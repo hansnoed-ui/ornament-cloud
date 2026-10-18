@@ -207,7 +207,7 @@ export function filmspur(blobs, { von, B, H, weg = "", grund = "" }) {
     index,
     bild(qt, { vorschau = true } = {}) {
       const k = index(qt), a = art(vorschau), L = lager[a];
-      if (vorschau) for (let j = k; j < Math.min(n, k + 18); j++) if (!L.has(j)) laden(j, a);
+      if (vorschau) for (let j = Math.max(0, k - 8); j < Math.min(n, k + 18); j++) if (!L.has(j)) laden(j, a);   // auch zurück: der Scratch läuft rückwärts
       else if (!L.has(k)) laden(k, a);
       if (L.has(k)) return L.get(k);
       for (let d = 1; d < 30; d++) { if (L.has(k - d)) return L.get(k - d); if (L.has(k + d)) return L.get(k + d); }

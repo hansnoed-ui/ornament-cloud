@@ -55,12 +55,12 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=8");
+  const { bild } = await import("./film.js?v=9");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
   x.setTransform(0.5, 0, 0, 0.5, 0, 0);
-  if (S.sz.zeit.ablauf === "video") await S.filmAnbieter?.vorbereiten(proben > 1 ? [t - 0.5 / 30, t] : [t], { vorschau: false });   // wie der Export
+  if (S.sz.zeit.ablauf === "video") await S.filmAnbieter?.vorbereiten(Array.from({ length: proben }, (_, k) => (proben > 1 ? t - (0.5 / 30) * (1 - k / (proben - 1)) : t)), { vorschau: false });   // wie der Export
   bild(x, sz, t, { proben });
   const d = x.getImageData(0, 0, w, h).data;
   const f = document.createElement("canvas"); f.width = w; f.height = h; const fx = f.getContext("2d"); fx.drawImage(S.foto, 0, 0, w, h);
@@ -146,7 +146,7 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
   // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Logo; mitten in einer anders als ohne; der
   // Schriftzug wird getippt und steht nach 2,6 s
   const logo = await page.evaluate(async () => {
-    const { bild, logoZeichen } = await import("./film.js?v=8");
+    const { bild, logoZeichen } = await import("./film.js?v=9");
     const S = window.__phorma, sz = { ...S.sz, buehne: null, beschriftung: false }, L = sz.logo, e = L.plan.find((x) => x.art >= 0.2 && x.t < L.bis - 1);
     const zeichne = (z, t) => { const c = document.createElement("canvas"); c.width = 270; c.height = 338; const x = c.getContext("2d"); x.setTransform(0.25, 0, 0, 0.25, 0, 0); bild(x, z, t); return c.toDataURL(); };
     const t = e.t + e.dauer * 0.3;
@@ -401,12 +401,12 @@ const zaehlvideo = (page, { sekunden = 12, drehung = 0 } = {}) => page.evaluate(
 }, [sekunden, drehung]).then((b) => Buffer.from(b, "base64"));
 /** das Bild des Films zur Zeit t (halbe Grösse, ohne Beschriftung): die Nummer aus den 3 × 3 Feldern und die Farben links und rechts der Mitte */
 const zaehlerLesen = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=8");
+  const { bild } = await import("./film.js?v=9");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
   x.setTransform(0.5, 0, 0, 0.5, 0, 0);
-  if (S.sz.zeit.ablauf === "video") await S.filmAnbieter?.vorbereiten(proben > 1 ? [t - 0.5 / 30, t] : [t], { vorschau: false });   // wie der Export
+  if (S.sz.zeit.ablauf === "video") await S.filmAnbieter?.vorbereiten(Array.from({ length: proben }, (_, k) => (proben > 1 ? t - (0.5 / 30) * (1 - k / (proben - 1)) : t)), { vorschau: false });   // wie der Export
   bild(x, sz, t, { proben });
   const s = Math.max(w / 160, h / 128), px = (sx, sy) => { const d = x.getImageData(Math.round(w / 2 + (sx - 80) * s), Math.round(h / 2 + (sy - 64) * s), 1, 1).data; return [d[0], d[1], d[2]]; };
   let nr = 0;
@@ -421,7 +421,7 @@ await check("Irrfahrt: das Stottern zeigt nie Reste des Logos (beide teilen eine
   await page.waitForFunction(() => window.__phorma.ton && window.__phorma.A, null, { timeout: 60_000 });
   await bereit(page);
   const r = await page.evaluate(async () => {
-    const { bild } = await import("./film.js?v=8");
+    const { bild } = await import("./film.js?v=9");
     const S = window.__phorma; S.laeuft = false;
     // die Bühne mit einer einzigen Lage: so stottert jedes Ereignis (sonst fällt es vor einem Sprung aus), und die Leinwand wird gebraucht
     const b = S.buehne, buehne = { bild: (...x) => b.bild(...x), lage: () => 0, get ende() { return b.ende; } };
@@ -464,7 +464,8 @@ await check("Video: als Effekt das Video selbst, bildgenau (WebCodecs), synchron
     assert.ok(z.links[0] > 150 && z.links[2] < 90 && z.rechts[2] > 150 && z.rechts[0] < 90, `rot links, blau rechts (${z.links} / ${z.rechts})`);
   }
   assert.ok(Math.abs((await zaehlerLesen(page, 2.5, { proben: 8 })).nr - 75) <= 1, "auch mit Bewegungsunschärfe");
-  // eine eigene Audiodatei: der Film so lang wie der Ton, der Ausschnitt des Videos ab 1,5 s
+  // eine eigene Audiodatei (ohne den Ablauf: das Video läuft gerade durch): der Film so lang wie der Ton, der Ausschnitt des Videos ab 1,5 s
+  await page.uncheck("#video-ablauf");
   await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
   await page.waitForFunction(() => window.__phorma.ton?.name === "schlaege.wav", null, { timeout: 60_000 });
   assert.ok(await page.isVisible("#video-ausschnitt") && !(await page.isVisible("#ausschnitt-film")), "Video-Ausschnitt, kein Filmstreifen beim Ton");
@@ -485,9 +486,47 @@ await check("Video: als Effekt das Video selbst, bildgenau (WebCodecs), synchron
   await ctx.close();
 });
 
+await check("Video: Scratching – mit dem Ablauf folgt das Bild dem Fahrplan des Tons: vor und zurück beim Scratch, die Hüpfer, das Gefrickel; der Fader blitzt", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  await page.click('[data-wahl="video"]');
+  assert.ok(await page.isChecked("#video-ablauf"), "der Ablauf ist beim Video an");
+  await page.setInputFiles("#videodatei", { name: "zaehler.mp4", mimeType: "video/mp4", buffer: await zaehlvideo(page, { sekunden: 16 }) });
+  await page.waitForFunction(() => window.__phorma.filmspur && window.__phorma.buehneFertig, null, { timeout: 180_000 });
+  await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
+  await page.waitForFunction(() => window.__phorma.ton?.karte && window.__phorma.ton.name.includes("Gefrickel") && window.__phorma.buehneFertig, null, { timeout: 180_000 });
+  await bereit(page);
+  const k = await page.evaluate(() => { const S = window.__phorma, k = S.ton.karte, b = S.filmspur.spur; return { teile: k.teile, von: S.videoVon, n: b.n, spurVon: b.von, pos: [...k.pos], hell: [...k.hell] }; });
+  assert.deepEqual(k.teile.map((t) => t.name), ["scratch", "stimme", "frickel"]);
+  // das Logo kommt nach dem Gefrickel (es überlappt nur dessen letzte Sekunde)
+  const L = await page.evaluate(() => window.__phorma.sz.zeit.phasen.find((p) => p.name === "logo"));
+  assert.ok(L.von >= k.teile[2].bis - 1.05, `das Logo nach dem Gefrickel (${L.von.toFixed(2)} gegen ${k.teile[2].bis.toFixed(2)})`);
+  // je Filmzeit zeigt das Bild die Stelle des Fahrplans (Quellbild = Sekunde · 30), höchstens eines daneben
+  const erwartet = (t) => Math.floor((k.von + k.pos[Math.round(t * 240)]) * 30);
+  const zeiten = [0.9, 1.6, 2.3, 3.1, k.teile[1].von + 1.5, k.teile[1].von + 5, k.teile[2].von + 0.6, k.teile[2].von + 1.9];
+  const gelesen = [];
+  for (const t of zeiten) {
+    const z = await zaehlerLesen(page, t);
+    if (k.hell[Math.round(t * 240)] < 0.5) continue;                       // Fader zu: dunkel, die Felder sind nicht zu lesen
+    gelesen.push([t, z.nr, erwartet(t)]);
+    assert.ok(Math.abs(z.nr - erwartet(t)) <= 1, `t ${t.toFixed(2)}: Bild ${z.nr} statt ${erwartet(t)}`);
+  }
+  assert.ok(gelesen.length >= 5, `genug Stellen gelesen (${JSON.stringify(gelesen)})`);
+  // der Scratch läuft auch rückwärts, und das Bild mit: zwischen zwei Filmbildern ein kleineres Quellbild
+  const sc = k.pos.slice(0, Math.round(k.teile[0].bis * 240)), rueck = sc.findIndex((p, i) => i > 0.8 * 240 && sc[i - 8] - p > 0.05 && k.hell[i] > 0.5 && k.hell[i - 8] > 0.5);   // nach dem Einblenden, Fader offen
+  assert.ok(rueck > 0, "im Scratch geht der Fahrplan zurück");
+  const [a, b] = [await zaehlerLesen(page, (rueck - 8) / 240), await zaehlerLesen(page, rueck / 240)];
+  assert.ok(b.nr < a.nr || k.hell[rueck] < 0.5 || k.hell[rueck - 8] < 0.5, `das Bild läuft mit zurück (${a.nr} → ${b.nr})`);
+  // der Fader: zu ist das Bild fast dunkel
+  const zu = k.hell.findIndex((h, i) => i < sc.length && h === 0);
+  if (zu >= 0) { const m = await messe(page, zu / 240); assert.ok(m.hell < 40, `Fader zu: dunkel (${m.hell.toFixed(0)})`); }
+  assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
 await check("Video: ein WebM mit Ton – die Bilder über das Spulen, der Ausschnitt schneidet Bild und Ton zusammen (Filmstreifen über der Wellenform)", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await page.click('[data-wahl="video"]');
+  await page.uncheck("#video-ablauf");                                       // hier ohne den Ablauf: der Ausschnitt läuft gerade durch
   const webm = await page.evaluate(async () => {
     const c = document.createElement("canvas"); c.width = 320; c.height = 240; const x = c.getContext("2d");
     const ac = new AudioContext(), ziel = ac.createMediaStreamDestination(), o = ac.createOscillator(), g = ac.createGain();

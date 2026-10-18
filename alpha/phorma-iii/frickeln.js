@@ -10,7 +10,7 @@
 //               punktierten Achtel, Hall (wie Freeverb)
 //   Mastering – Gleichanteil weg, sanft verdichtet, auf −14 LUFS, Begrenzer mit Vorausschau auf −1 dBFS (seit 18. Oktober 2026, Wunsch: «den Sound
 //               qualitativ optimieren»; vorher tanh-Sättigung auf −0,5 dB, je nach Material −9 bis −16 LUFS und Klicks aus dem Bitcrush)
-import { tonAnalysieren } from "./ton.js?v=8";
+import { tonAnalysieren } from "./ton.js?v=9";
 
 /** wiederholbarer Zufall (mulberry32) */
 function zufall(samen) {
@@ -28,7 +28,8 @@ export function bogen(x) {
 }
 
 /**
- * kanaele: [Float32Array] (ein oder zwei), rate: Abtastrate. Ergebnis: { kanaele: [L, R], rate, dauer, bpm, takte, scheiben, anschlaege }
+ * kanaele: [Float32Array] (ein oder zwei), rate: Abtastrate. Ergebnis: { kanaele: [L, R], rate, dauer, bpm, takte, scheiben, anschlaege, plan }
+ * (plan: die gesetzten Scheiben { start, m, a, b, tempo, rueck, versatz, gain, crush } in Proben – daraus liest der Effekt Video, welche Stelle läuft)
  */
 export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}) {
   const L0 = kanaele[0], R0 = kanaele[1] ?? kanaele[0], n = L0.length, r = zufall(samen);
@@ -68,6 +69,7 @@ export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}
   function setzen(start, laenge, [a, b], { tempo = 1, rueck = false, pan = 0, gain = 1, crush = 0, senden = 0, versatz = 0 } = {}) {
     const m = Math.min(laenge, Math.floor((b - a - versatz - 3) / tempo));
     if (m < 32) return 0;
+    plan.push({ start, m, a, b, tempo, rueck, versatz, gain, crush });       // der Fahrplan für das Bild (PHORMA III, Effekt Video): wo welche Stelle läuft
     const ein = Math.min(m / 4, 0.005 * rate), aus = Math.min(m / 2, 0.015 * rate);
     const w = ((klemm(pan, -1, 1) + 1) * Math.PI) / 4, gl = gain * g0 * Math.cos(w) * Math.SQRT2, gr = gain * g0 * Math.sin(w) * Math.SQRT2;
     // Bitcrush (Rückmeldung «den Sound qualitativ optimieren»): grobe Stufen und gehaltene Proben wie bisher, aber geglättet und nur zum Teil
@@ -91,6 +93,7 @@ export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}
   }
 
   let zeiger = 0, anschlaege = 0;
+  const plan = [];
   for (let t = 0; t < takte; t++) {
     const I = bogen((t + 0.5) / takte), zerhackt = t >= takte * 0.4 && r() < 0.35, wirbel = r() < 0.25 + 0.45 * I;
     for (let s = 0; s < 16;) {
@@ -153,7 +156,7 @@ export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}
     for (let i = 0; i < N; i++) { L[i] += 0.55 * qL[i]; R[i] += 0.55 * qR[i]; } }
 
   meistern(L, R, rate);
-  return { kanaele: [L, R], rate, dauer: N / rate, bpm, takte, scheiben: ns, anschlaege };
+  return { kanaele: [L, R], rate, dauer: N / rate, bpm, takte, scheiben: ns, anschlaege, plan };
 }
 
 /** der Hall wie Freeverb (acht Kammfilter mit Dämpfung, vier Allpässe; spreiz: Versatz der Längen für die rechte Seite) – auch für die Stimme */
