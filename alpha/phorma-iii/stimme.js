@@ -6,8 +6,9 @@
 //                 Band geglättet), die Pausen sanft geschlossen (Expander), Klang (weniger Dumpfes um 300 Hz, Präsenz um 4 kHz, Luft ab 10 kHz), De-Esser, gleichmässig verdichtet, ein
 //                 kleiner, leiser Raum, gemastert auf −16 LUFS (Sprache) und −1 dBFS
 //   stimmAblauf – aus der gesäuberten Stimme: Scratching auf dem ersten Wort (Hin und Her wie eine Platte unter der Hand, mit Fader), die klare
-//                 Stimme mit zwei, drei Hüpfern (Stottern, Rücksprung, rückwärts), am Ende Gefrickel (frickeln.js, zwei Takte); wiederholbar je Wurf
-import { frickeln, hallFilter, meistern } from "./frickeln.js?v=5";
+//                 Stimme mit zwei, drei Hüpfern (Stottern, Rücksprung, rückwärts), am Ende Gefrickel (frickeln.js, zwei Takte); gegen das Gefrickel hin
+//                 unterlegt mit Drum and Bass (Rückmeldung: «am Ende gegen das Gefrickel hin gerne mit ein wenig Drum and Bass unterlegt»); wiederholbar je Wurf
+import { frickeln, hallFilter, meistern } from "./frickeln.js?v=6";
 
 /** wiederholbarer Zufall (mulberry32) */
 function zufall(samen) {
@@ -196,10 +197,67 @@ function scratching(L0, R0, rate, start, dauer, r) {
 }
 
 /**
+ * Drum and Bass (174 BPM): Kick und Snare im Two-Step (Kick auf 1 und auf der Drei-und, Snare auf 2 und 4, leise Geister-Snares), Hi-Hats in Achteln
+ * mit Sechzehntel-Wirbeln, dazu ein Reese-Bass (zwei leicht verstimmte Sägezähne, Tiefpass, im Takt der Kick geduckt). Ergebnis: [L, R], dauer s,
+ * der erste Schlag bei 0; ein Takt dauert 240 / bpm Sekunden. Wiederholbar je samen.
+ */
+export function drumAndBass(rate, dauer, { samen = 1, bpm = 174, grundton = 43.65 } = {}) {
+  const n = Math.round(dauer * rate), L = new Float32Array(n), R = new Float32Array(n), bass = new Float32Array(n), r = zufall(samen * 31 + 7);
+  const schritt = (60 / bpm / 4) * rate, takte = Math.ceil(n / (16 * schritt));
+  let z = (samen * 7919) | 1; const rausch = () => { z ^= z << 13; z ^= z >>> 17; z ^= z << 5; return ((z >>> 0) / 4294967296) * 2 - 1; };
+  const kick = (o, g) => {                                                    // Sinus, der in 60 ms von 150 auf 45 Hz fällt, mit kurzem Klick
+    let ph = 0;
+    for (let i = 0; i < 0.35 * rate && o + i < n; i++) {
+      const t = i / rate, f = 45 + 105 * Math.exp(-t / 0.025), e = Math.exp(-t / 0.16) * Math.min(1, i / 16);
+      ph += (2 * Math.PI * f) / rate; const v = g * (Math.sin(ph) * e + (t < 0.004 ? 0.3 * rausch() : 0));
+      L[o + i] += v; R[o + i] += v;
+    }
+  };
+  const snare = (o, g) => {                                                   // Rauschen (hochpassig) und ein Ton um 190 Hz
+    let a = 0, ph = 0;
+    for (let i = 0; i < 0.2 * rate && o + i < n; i++) {
+      const t = i / rate, x = rausch(); a += (x - a) * 0.25; ph += (2 * Math.PI * 190) / rate;
+      const v = g * ((x - a) * Math.exp(-t / 0.07) * 0.8 + Math.sin(ph) * Math.exp(-t / 0.04) * 0.5);
+      L[o + i] += v * 0.95; R[o + i] += v;
+    }
+  };
+  const hat = (o, g, offen, pan) => {                                        // Rauschen über etwa 7 kHz
+    let a = 0, b = 0;
+    for (let i = 0; i < (offen ? 0.16 : 0.035) * rate && o + i < n; i++) {
+      const t = i / rate, x = rausch(); a += (x - a) * 0.5; b += (a - b) * 0.5;
+      const v = g * (x - b) * Math.exp(-t / (offen ? 0.06 : 0.012));
+      L[o + i] += v * (1 - pan); R[o + i] += v * (1 + pan);
+    }
+  };
+  const lauf = [[0, 0, 0, 0], [0, 0, 3, 5], [0, -2, 0, 3], [0, 5, 3, -2]][Math.floor(r() * 4)];   // Grundtöne je Takt (Halbtöne)
+  for (let t = 0; t < takte; t++) for (let s = 0; s < 16; s++) {
+    const o = Math.round((t * 16 + s) * schritt);
+    if (o >= n) break;
+    if (s === 0 || s === 10 || (s === 13 && r() < 0.3)) kick(o, 0.9);
+    if (s === 4 || s === 12) snare(o, 0.6);
+    else if ((s === 7 || s === 15) && r() < 0.5) snare(o, 0.15);
+    if (s % 2 === 0) hat(o, s % 4 === 2 ? 0.28 : 0.18, s === 14 && r() < 0.5, 0.3);
+    else if (r() < 0.3 + 0.3 * (t % 2)) hat(o, 0.1, false, -0.3);
+  }
+  // der Reese-Bass, je Takt ein Grundton, eine Oktave Raum für den Tiefpass, der langsam atmet
+  { let p1 = 0, p2 = 0, a = 0, c = 0, d = 0;
+    for (let i = 0; i < n; i++) {
+      const takt = Math.floor(i / (16 * schritt)), f = grundton * 2 ** (lauf[takt % 4] / 12);
+      p1 = (p1 + (f * 1.004) / rate) % 1; p2 = (p2 + (f * 0.996) / rate) % 1;
+      const roh = (2 * p1 - 1) + (2 * p2 - 1), fc = 180 + 260 * (0.5 + 0.5 * Math.sin((2 * Math.PI * i) / (8 * 16 * schritt))), k = 1 - Math.exp((-2 * Math.PI * fc) / rate);
+      a += (roh - a) * k; c += (a - c) * k; d += (c - d) * k;
+      const s = (i % (8 * schritt)) / rate, duck = 1 - 0.7 * Math.exp(-s / 0.09) * (Math.floor(i / (8 * schritt)) % 2 === 0 || i % (16 * schritt) > 10 * schritt ? 1 : 0);
+      bass[i] = d * 0.32 * duck;
+    }
+    for (let i = 0; i < n; i++) { L[i] += bass[i]; R[i] += bass[i]; } }
+  return [L, R];
+}
+
+/**
  * Der Ablauf aus der gesäuberten Stimme: Scratching (scratch s) → klare Stimme (stimme s) mit zwei, drei Hüpfern → Gefrickel (frickel s).
  * Ergebnis: { kanaele: [L, R], rate, dauer, teile: [{ name, von, bis }], huepfer: [{ t, art }], zuege } – derselbe Wurf (samen) gibt dasselbe.
  */
-export function stimmAblauf(kanaele, rate, { samen = 1, scratch = 3.5, stimme = 10, frickel = 3.5 } = {}) {
+export function stimmAblauf(kanaele, rate, { samen = 1, scratch = 3.5, stimme = 10, frickel = 3.5, dnb = true } = {}) {
   const L0 = kanaele[0], R0 = kanaele[1] ?? kanaele[0], n = L0.length, r = zufall(samen);
   const mono = new Float32Array(n); for (let i = 0; i < n; i++) mono[i] = (L0[i] + R0[i]) / 2;
   const start = sprachbeginn(mono, rate);
@@ -258,6 +316,22 @@ export function stimmAblauf(kanaele, rate, { samen = 1, scratch = 3.5, stimme = 
   const L = new Float32Array(laenge), R = new Float32Array(laenge);
   let o = 0;
   for (let i = 0; i < teileL.length; i++) { L.set(teileL[i], o); R.set(teileR[i], o); o += teileL[i].length; }
+  // 4 Drum and Bass: drei Takte vor dem Gefrickel herein (der erste Takt blendet und öffnet sich), ein Taktanfang genau beim Gefrickel; unter der
+  // Stimme um bis zu 8 dB geduckt, damit sie verständlich bleibt
+  let unterlegt = null;
+  if (dnb) {
+    const bpm = 174, takt = 240 / bpm, fr = teile.at(-1), von = Math.max(teile[1].von + 1, fr.von - 3 * takt), a = Math.round(von * rate);
+    const [dL, dR] = drumAndBass(rate, laenge / rate - von, { samen, bpm }), vorlauf = (fr.von - von) % takt;   // so fällt ein Taktanfang auf das Gefrickel
+    const versatz = Math.round(((takt - vorlauf) % takt) * rate), stimmHuelle = huelle(L.map((v, i) => (v + R[i]) / 2), rate, 0.05);
+    let spitze = 1e-6; for (let i = a; i < Math.min(laenge, a + Math.round(takt * 3 * rate)); i++) spitze = Math.max(spitze, stimmHuelle[i]);
+    const ein = takt * rate, fb = fr.von * rate;
+    for (let i = a; i < laenge; i++) {
+      const j = i - a + versatz; if (j >= dL.length) break;
+      const h = Math.min(1, (i - a) / ein) ** 2, duck = i < fb ? 1 - 0.6 * Math.min(1, stimmHuelle[i] / spitze) : 1;
+      L[i] += 0.32 * h * duck * dL[j]; R[i] += 0.32 * h * duck * dR[j];
+    }
+    unterlegt = { von, bis: laenge / rate, bpm };
+  }
   meistern(L, R, rate, { lufs: -14, schwelleDb: -16, verhaeltnis: 1.6, hochpass: 40, ausblenden: 0.4 });
-  return { kanaele: [L, R], rate, dauer: laenge / rate, teile, huepfer: huepfer.map(({ t, art }) => ({ t, art })), zuege: sc.zuege };
+  return { kanaele: [L, R], rate, dauer: laenge / rate, teile, huepfer: huepfer.map(({ t, art }) => ({ t, art })), zuege: sc.zuege, unterlegt };
 }
