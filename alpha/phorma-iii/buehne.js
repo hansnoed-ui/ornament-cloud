@@ -8,10 +8,10 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { ziel, quadMaterial } from "./gemeinsam.js?v=2";
-import { FPS, kette, laufend } from "./ablauf.js?v=2";
-import { gewebe } from "./gewebe.js?v=2";
-import { irrfahrt } from "./irrfahrt.js?v=2";
+import { ziel, quadMaterial } from "./gemeinsam.js?v=3";
+import { FPS, kette, laufend } from "./ablauf.js?v=3";
+import { gewebe } from "./gewebe.js?v=3";
+import { irrfahrt } from "./irrfahrt.js?v=3";
 
 const FABRIK = { gewebe, irrfahrt };
 

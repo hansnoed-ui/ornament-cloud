@@ -10,7 +10,7 @@
 //               punktierten Achtel, Hall (wie Freeverb)
 //   Mastering – Gleichanteil weg, sanft verdichtet, auf −14 LUFS, Begrenzer mit Vorausschau auf −1 dBFS (seit 18. Oktober 2026, Wunsch: «den Sound
 //               qualitativ optimieren»; vorher tanh-Sättigung auf −0,5 dB, je nach Material −9 bis −16 LUFS und Klicks aus dem Bitcrush)
-import { tonAnalysieren } from "./ton.js?v=2";
+import { tonAnalysieren } from "./ton.js?v=3";
 
 /** wiederholbarer Zufall (mulberry32) */
 function zufall(samen) {

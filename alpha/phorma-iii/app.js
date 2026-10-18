@@ -3,11 +3,11 @@
 // und mp4Schreiber (tonspur.js); ohne WebCodecs in Echtzeit über MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild acht Proben.
 // Bis zum 18. Oktober 2026 ein Effekt in PHORMA II (Wunsch: «Es sind ja zwei ganz verschiedene Ansätze … all das soll aus PHORMA II ausgelagert
 // werden und in ein neues PHORMA III integriert werden»).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, EFFEKTE, ablaufName, zeitachse, NACH } from "./ablauf.js?v=2";
-import { szene, bild, standbildZeit } from "./film.js?v=2";
-import { analysieren } from "./analyse.js?v=2";
-import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=2";
-import { textBild } from "./textbild.js?v=2";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, EFFEKTE, ablaufName, zeitachse, NACH } from "./ablauf.js?v=3";
+import { szene, bild, standbildZeit } from "./film.js?v=3";
+import { analysieren } from "./analyse.js?v=3";
+import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=3";
+import { textBild } from "./textbild.js?v=3";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
 const $ = (id) => document.getElementById(id);
@@ -146,7 +146,7 @@ async function videoLaden(datei) {
   // der Ton des Videos wird die Tonspur, ausser eine andere Audiodatei ist gewählt
   if (!S.tonQuelle || S.tonQuelle.ausVideo) {
     try {
-      const { tonLesen } = await import("./tonspur.js?v=2");
+      const { tonLesen } = await import("./tonspur.js?v=3");
       const { buffer } = await tonLesen(datei);
       S.tonQuelle = { buffer, name: `Ton von ${datei.name}`, url, ausVideo: true };
       await tonSetzen({ auffrischen: false });
@@ -186,7 +186,7 @@ async function bildSetzen(q) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=2", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=3", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -229,7 +229,7 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=2");
+    buehneModul ??= await import("./buehne.js?v=3");
     if (S.buehneSchluessel !== schluessel) return;
     const saetze = S.quelle === "video" && S.video && S.ablauf === "gewebe" ? await videoSaetze() : null;   // nur das Gewebe holt Bilder aus dem Video
     if (S.buehneSchluessel !== schluessel) return;
@@ -369,7 +369,7 @@ $("tondatei").addEventListener("change", async (e) => {
   const datei = e.target.files?.[0]; if (!datei) return;
   melden("Der Ton wird gelesen …");
   try {
-    const { tonLesen } = await import("./tonspur.js?v=2");
+    const { tonLesen } = await import("./tonspur.js?v=3");
     const { buffer } = await tonLesen(datei);
     if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
     S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei), ausVideo: false };
@@ -392,7 +392,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
   if (S.frickeln) {
     melden("Der Ton wird verfrickelt …");
     await new Promise((ok) => setTimeout(ok, 30));
-    const { frickeln, wav } = await import("./frickeln.js?v=2");
+    const { frickeln, wav } = await import("./frickeln.js?v=3");
     if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
     const f = frickeln(kanaele, rate, { samen: S.wurf });
     buffer = new AudioBuffer({ length: f.kanaele[0].length, numberOfChannels: 2, sampleRate: rate });
@@ -524,7 +524,7 @@ $("video").addEventListener("click", async () => {
 });
 
 async function mitWebCodecs(cfg, sz) {
-  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=2");
+  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=3");
   // mit Ton: die Tonspur zuerst kodieren (klein), dann gehen die Bilder gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
   let ton = null;
   if (S.ton && $("ton-im-video").checked) {

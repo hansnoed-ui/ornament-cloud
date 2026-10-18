@@ -1,10 +1,10 @@
 // PHORMA III – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann das Gewebe aus der Bühne (WebGL,
 // buehne.js) mit den Textfragmenten, danach das Bild, darüber die Beschriftung; mit Signet am Schluss das Logo, das aus dem Gewebe entsteht, mit
 // getipptem Schriftzug und verfrickelt im Takt.
-import { FPS, anteil, zeitachse, zeitcode } from "./ablauf.js?v=2";
+import { FPS, anteil, zeitachse, zeitcode } from "./ablauf.js?v=3";
 import { punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=2";
-import { zufall } from "./analyse.js?v=2";
+import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=3";
+import { zufall } from "./analyse.js?v=3";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
@@ -88,11 +88,12 @@ function logoPlan(T, a, b, aus) {
     return { t: e.t, dauer: 0.08 + 0.14 * h(1), s: e.s * ruhe, art: h(2), rueck: Math.round(5 + 16 * h(3)), nr };
   }).filter((e) => e.s > 0.12);
 }
-/** Störungen in der Irrfahrt («noch wilder»): jeder starke Einsatz zerhackt das Bild wie das Logo, ohne Beruhigung; Format wie logoPlan */
+/** Störungen in der Irrfahrt («noch wilder»): jeder starke Einsatz lässt das Bild ein Stück zurückstottern, ohne Beruhigung; Format wie logoPlan.
+ *  Ohne die seitlich versetzten Streifen des Logos (art < 0,2): sie zerschnitten den Würfel (Rückmeldung: «schauen, dass die Box nicht verzogen ist nach Sekunde 2,3») */
 function stoerPlan(T, a, b) {
   return T.einsaetze.filter((e) => e.t >= a + 0.3 && e.t < b - 0.2 && e.staerke >= 0.55).map((e, i) => {
     const nr = i + 500, h = (k) => { const x = Math.sin(nr * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
-    return { t: e.t, dauer: 0.06 + 0.12 * h(1), s: Math.min(1, 0.4 + e.staerke), art: 0.2 + 0.8 * h(2), rueck: Math.round(4 + 12 * h(3)), nr };
+    return { t: e.t, dauer: 0.06 + 0.12 * h(1), s: Math.min(1, 0.4 + e.staerke), art: 0.19 * h(2), rueck: Math.round(4 + 12 * h(3)), nr };
   });
 }
 const zufallLogo = (nr, k) => { const x = Math.sin(nr * 91.17 + k * 17.31) * 43758.5453; return x - Math.floor(x); };
