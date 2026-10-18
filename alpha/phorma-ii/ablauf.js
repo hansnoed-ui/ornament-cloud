@@ -22,6 +22,10 @@ export const SIGNET_VON = 12, SIGNET_BIS = 150, SIGNET_TEMPO = 2;
 export const SIGNET = (SIGNET_BIS - SIGNET_VON) / 30 / SIGNET_TEMPO;
 /** der Abspann nach dem Stehen: Bild aus, Pause, Signet, stehen, aus, Schluss (so lange klingt die Musik im Gewebe noch weiter) */
 export const ABSPANN = 0.9 + 0.15 + SIGNET + 0.6 + 0.6 + 0.2;
+/** das Logo am Ende des Gewebes (mit Signet): es entsteht aus dem Gewebe, legt sich glatt, der Schriftzug wird getippt */
+export const LOGO = 4.6;
+/** was nach dem Effekt noch kommt (für die Länge nach der Tonspur): mit Logo im Gewebe nur der Schluss */
+export const NACH = (art, signet) => (art === "gewebe" && signet ? 0.3 : 3.2 + (signet ? ABSPANN : 0.3));
 
 export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 
@@ -47,7 +51,7 @@ export const effekte = (a) => ablaufName(a).split("+");
  * Rolle eines Effekts in der Kette: seine Phasen ([name, titel, dauer] bei Tempo «normal»), wie lange der nächste schon vor seinem Ende einsetzt
  * (ueber) und womit er übergeht (uebergang: "front" – Zeitfront nach der Tiefe, "schnitt" – beide zeigen dort dasselbe Bild).
  */
-export function rolle(art, liste, i, { laenge = null } = {}) {
+export function rolle(art, liste, i, { laenge = null, signet = false } = {}) {
   const erst = i === 0, letzt = i === liste.length - 1, vorher = liste[i - 1] ?? null, naechstes = liste[i + 1] ?? null;
   let phasen, ueber = 0, uebergang = "schnitt";
   if (art === "physarum") {
@@ -59,8 +63,12 @@ export function rolle(art, liste, i, { laenge = null } = {}) {
     if (letzt) phasen.push(["bild", "Bild", 2.8]);
     else { ueber = 0.7; uebergang = "front"; }
   } else if (art === "gewebe") {
-    // mit Tonspur: das Gewebe dauert, so lange der Ton läuft (laenge: die ganze Dauer des Effekts)
-    phasen = [["zeichen", "Zeichen", 2.2], [art, TITEL[art], laenge ? Math.max(5, laenge - 4.8) : 14], ["bild", "Bild", 2.6]];
+    // mit Tonspur: das Gewebe dauert, so lange der Ton läuft (laenge: die ganze Dauer des Effekts). Mit Signet endet es nicht beim Bild, sondern
+    // geht gleich ins Logo über, das aus dem Gewebe entsteht (Rückmeldung vom 18. Oktober 2026: «der Weissraum einige Sekunden vor dem Logo ist
+    // unnötig. Bitte direkt vom Gewebe zum Logo»)
+    phasen = signet
+      ? [["zeichen", "Zeichen", 2.2], [art, TITEL[art], laenge ? Math.max(3.2, laenge - 2.2 - LOGO) : 14], ["logo", "Logo", LOGO]]
+      : [["zeichen", "Zeichen", 2.2], [art, TITEL[art], laenge ? Math.max(5, laenge - 4.8) : 14], ["bild", "Bild", 2.6]];
   } else {
     phasen = [["tuch", "Tuch", vorher === "tiefe" ? 4.6 : 5.0], ["bild", "Bild", 3.4]];
   }
@@ -91,7 +99,7 @@ export function kette(a, opt = {}) {
 export function zeitachse({ tempo = "normal", signet = true, ablauf = KETTE, laenge = null } = {}) {
   const art = ablaufName(ablauf), mitTon = MIT_TON.includes(art) && laenge;
   const f = mitTon ? 1 : TEMPO[tempo] ?? (typeof tempo === "number" ? tempo : 1);
-  const K = kette(art, { laenge: mitTon ? laenge : null }), ab = {};
+  const K = kette(art, { laenge: mitTon ? laenge : null, signet }), ab = {};
   let t = 0;
   const dazu = (name, d) => { ab[name] = [t, t + d]; t += d; };
   dazu("vor", 0.4);
@@ -100,10 +108,12 @@ export function zeitachse({ tempo = "normal", signet = true, ablauf = KETTE, lae
   const phasen = K.phasen.map((p) => ({ ...p, von: von + p.von * f, bis: von + p.bis * f }));
   t = von + K.dauer * f;
   const abschnitt = { von, bis: t };
-  dazu("stehen", 3.2);
-  if (signet) {
-    dazu("bildAus", 0.9); dazu("pause", 0.15); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2);   // zusammen ABSPANN
-  } else dazu("schluss", 0.3);
+  if (art === "gewebe" && signet) dazu("schluss", 0.3);                    // das Logo gehört dann zum Effekt: danach nur noch der Schluss
+  else {
+    dazu("stehen", 3.2);
+    if (signet) { dazu("bildAus", 0.9); dazu("pause", 0.15); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }   // zusammen ABSPANN
+    else dazu("schluss", 0.3);
+  }
   return { ab, ablauf: art, abschnitt, teile, phasen, dauer: t, bilder: Math.round(t * 30), tempo: f };
 }
 

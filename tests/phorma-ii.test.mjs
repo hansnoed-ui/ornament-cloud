@@ -109,13 +109,22 @@ test("KI-Tiefe: wird an die Kanten gelegt und auf 0..1 gebracht", () => {
 test("Gewebe: für sich, nicht in der Kette; mit Tonspur so lang wie die Musik und ohne Tempo", () => {
   assert.equal(A.ablaufName("gewebe"), "gewebe");
   assert.equal(A.ablaufName("gewebe+tuch"), "tuch", "das Gewebe lässt sich nicht verketten");
-  const ohne = A.zeitachse({ ablauf: "gewebe", tempo: "ruhig" });
+  const ohne = A.zeitachse({ ablauf: "gewebe", tempo: "ruhig", signet: false });
   assert.deepEqual(ohne.phasen.map((p) => p.name), ["zeichen", "gewebe", "bild"]);
+  // mit Signet geht das Gewebe direkt ins Logo über (kein Bild, kein Stehen, kein leerer Abspann): danach nur noch 0,3 s Schluss
+  const logo = A.zeitachse({ ablauf: "gewebe", laenge: 40 });
+  assert.deepEqual(logo.phasen.map((p) => p.name), ["zeichen", "gewebe", "logo"]);
+  assert.equal(logo.ab.signet, undefined); assert.equal(logo.ab.stehen, undefined);
+  assert.ok(Math.abs(logo.phasen[2].bis - logo.abschnitt.bis) < 1e-9 && Math.abs(logo.phasen[2].bis - logo.phasen[2].von - A.LOGO) < 1e-9);
+  assert.ok(Math.abs(logo.dauer - logo.abschnitt.bis - A.NACH("gewebe", true)) < 1e-9, "nach dem Logo nur der Schluss");
+  assert.ok(Math.abs(A.zeitachse({ ablauf: "gewebe", laenge: 40, signet: false }).dauer - 40 - 0.4 - A.NACH("gewebe", false)) < 1e-9);
   assert.equal(ohne.tempo, 1.3);
   const mit = A.zeitachse({ ablauf: "gewebe", tempo: "ruhig", laenge: 40 });
   assert.equal(mit.tempo, 1, "mit Tonspur gibt die Musik das Tempo");
   assert.ok(Math.abs(mit.abschnitt.bis - mit.abschnitt.von - 40) < 1e-9, "der Effekt dauert so lange wie verlangt");
-  assert.ok(A.zeitachse({ ablauf: "gewebe", laenge: 2 }).phasen[1].bis - A.zeitachse({ ablauf: "gewebe", laenge: 2 }).phasen[1].von >= 5, "mindestens 5 s Gewebe");
+  const kurz = (signet) => A.zeitachse({ ablauf: "gewebe", laenge: 2, signet }).phasen[1];
+  assert.ok(kurz(false).bis - kurz(false).von >= 5 && kurz(true).bis - kurz(true).von >= 3.2, "mindestens 5 s Gewebe (mit Logo 3,2 s)");
+  assert.ok(Math.abs(A.zeitachse({ ablauf: "gewebe", laenge: 10 }).abschnitt.bis - 10.4) < 1e-9, "auch mit Logo so lang wie die Musik ab 10 s");
   assert.equal(A.zeitachse({ ablauf: A.KETTE, laenge: 40 }).dauer, A.zeitachse({ ablauf: A.KETTE }).dauer, "die Kette kümmert sich nicht um die Länge");
 });
 
@@ -125,7 +134,7 @@ test("Gewebe: Zustände bei kräftigen Einsätzen, Lücken gefüllt; das Tor öf
   const ein = [1, 1.3, 2, 2.4, 9, 9.5, 16].map((t, i) => ({ t, staerke: i % 2 ? 0.3 : 0.8 }));
   const Tk = { einsaetze: ein, schnitte: [9] };
   const z = T.gewebeZustaende(Tk, 0.5, 20);
-  assert.deepEqual(z.map((x) => x.t), [2, 5, 9, 12, 16], "kräftige Einsätze ≥ 0,7 s auseinander (auch vom Anfang), Lücken über 4 s alle 3 s gefüllt");
+  assert.deepEqual(z.map((x) => x.t), [1, 2, 4, 6, 9, 11, 13, 16, 18], "kräftige Einsätze ≥ 0,45 s auseinander (auch vom Anfang), Lücken über 3 s alle 2 s gefüllt");
   assert.deepEqual(T.gewebeZustaende(Tk, 0.5, 20), z, "wiederholbar");
   assert.ok(z.every((x) => typeof x.nacht === "boolean" && typeof x.zeichen === "boolean"));
   assert.equal(T.zustandBei(z, 0.8, 0.5).nr, 0); assert.equal(T.zustandBei(z, 9.2, 0.5).t0, 9);
