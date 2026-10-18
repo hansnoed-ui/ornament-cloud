@@ -193,15 +193,30 @@ test("Verfrickeln: aus einem kurzen Sample ein neues Stück im Raster, wiederhol
   assert.ok(f.dauer > 20 && f.dauer < 45 && f.scheiben >= 3 && f.anschlaege > f.takte * 4, JSON.stringify({ dauer: f.dauer, scheiben: f.scheiben, anschlaege: f.anschlaege }));
   let max = 0, nan = false, unterschied = 0;
   for (let i = 0; i < f.kanaele[0].length; i++) { const l = f.kanaele[0][i], r = f.kanaele[1][i]; if (Number.isNaN(l + r)) nan = true; max = Math.max(max, Math.abs(l), Math.abs(r)); unterschied += Math.abs(l - r); }
-  assert.ok(!nan && max <= 0.95 && max > 0.9, `Spitze ${max}`);
+  assert.ok(!nan && max <= 0.892 && max > 0.85, `Spitze bei −1 dBFS (${max})`);
+  const lufs = Fr.lautheit(f.kanaele[0], f.kanaele[1], rate);
+  assert.ok(Math.abs(lufs + 14) < 0.8, `auf −14 LUFS gemastert (${lufs.toFixed(1)})`);
   assert.ok(unterschied > 0, "stereo: Panorama und Ping-Pong-Echo");
   const mono = f.kanaele[0].map((v, i) => (v + f.kanaele[1][i]) / 2), t = T.tonAnalysieren(mono, rate);
   assert.ok(t.einsaetze.length > 2 * f.takte, `ein Stück mit vielen Einsätzen (${t.einsaetze.length})`);
   assert.deepEqual(Fr.frickeln([pcm], rate, { samen: 3 }).kanaele[0].slice(0, 50000), f.kanaele[0].slice(0, 50000), "derselbe Wurf, dasselbe Stück");
   assert.notDeepEqual(Fr.frickeln([pcm], rate, { samen: 4 }).kanaele[0].slice(0, 50000), f.kanaele[0].slice(0, 50000), "ein neuer Wurf klingt anders");
+  // ein weiches Signal (Töne mit sanften Einsätzen, ohne einen einzigen Sprung) gibt verfrickelt kaum Klicks (vorher 73–255 je Wurf: der Bitcrush)
+  const r44 = 44100, weich = new Float32Array(r44 * 8);
+  for (let i = 0; i < weich.length; i++) {
+    const t = i / r44; let e = 0;
+    for (let k = 0.2; k < t && k < 8; k += 0.5) e += (0.5 - 0.5 * Math.cos(Math.PI * Math.min(1, (t - k) / 0.03))) * Math.exp(-(t - k) / 0.25);   // weiche Einsätze, die ineinander abklingen
+    weich[i] = 0.3 * e * (Math.sin(2 * Math.PI * 110 * t) + 0.6 * Math.sin(2 * Math.PI * 165 * t + 1) + 0.4 * Math.sin(2 * Math.PI * 440 * t + 2));
+  }
+  for (const samen of [1, 2]) {
+    const [l, r] = Fr.frickeln([weich], r44, { samen }).kanaele;
+    let klicks = 0, mittel = 1e-4;
+    for (let i = 2; i < l.length; i++) { const d = Math.abs(l[i] - 2 * l[i - 1] + l[i - 2]) + Math.abs(r[i] - 2 * r[i - 1] + r[i - 2]); mittel += (d - mittel) * 0.002; if (d > 12 * mittel + 0.02) { klicks++; i += 200; } }
+    assert.ok(klicks <= 30, `Wurf ${samen}: ${klicks} Klicks`);
+  }
   for (const q of [new Float32Array(rate), Float32Array.from({ length: 300 }, (_, i) => Math.sin(i))]) {
     const s = Fr.frickeln([q, q], rate, { samen: 1, takte: 2 });
-    assert.ok(s.kanaele.every((c) => c.every((v) => Number.isFinite(v) && Math.abs(v) <= 0.95)));
+    assert.ok(s.kanaele.every((c) => c.every((v) => Number.isFinite(v) && Math.abs(v) <= 0.892)));
   }
   const w = Fr.wav(f.kanaele, rate);
   assert.equal(String.fromCharCode(...w.subarray(0, 4)), "RIFF"); assert.equal(w.length, 44 + f.kanaele[0].length * 4);
