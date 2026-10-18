@@ -108,6 +108,7 @@
       font: italic 400 1.25rem/1.3 "Newsreader", Georgia, serif; resize: vertical; }
     .dateiknopf { position: relative; overflow: hidden; }
     .dateiknopf input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .video-bild { height: 44px; width: auto; border-radius: 6px; border: 1px solid var(--border); }
     .fuer-sich { font-style: normal; font-weight: 500; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-left: 6px; }
     .effekte button { padding: 4px 2px; font-size: 0.92rem; }
     .kette { margin: 6px 0 0; min-height: 1.3em; color: var(--muted); font-size: 0.84rem; }
@@ -168,10 +169,11 @@
     <div>
       <ol class="schritte">
         <li>
-          <h2>Foto oder Text</h2>
+          <h2>Foto, Text oder Video</h2>
           <div class="segment" role="group" aria-label="Quelle">
             <button type="button" data-quelle="foto">Foto</button>
             <button type="button" data-quelle="text">Text</button>
+            <button type="button" data-quelle="video">Video</button>
           </div>
           <div class="teil" id="foto-teil">
           <label class="ablage" id="ablage">
@@ -187,6 +189,14 @@
           <div class="teil" id="text-teil" hidden>
             <label class="textfeld"><span>Dein Text</span><textarea id="text" rows="2" maxlength="120" placeholder="Ein Wort oder ein kurzer Satz" autocomplete="off"></textarea></label>
             <p class="ki-hinweis">Der Text wird in Newsreader kursiv gesetzt, so gross es geht; seine Umrisse werden im Gewebe zu Bändern aus feinen Linien.</p>
+          </div>
+          <div class="teil" id="video-teil" hidden>
+            <div class="leiste">
+              <label class="knopf klein dateiknopf">Videodatei wählen<input type="file" id="videodatei" accept="video/*,.mp4,.mov,.webm,.m4v"></label>
+              <img id="video-bild" class="video-bild" alt="" hidden>
+            </div>
+            <p class="info" id="video-info"></p>
+            <p class="ki-hinweis">Ein Standbild des Videos ist Anfang und Schluss, sein Ton wird die Tonspur (ausser du wählst unten eine andere Audiodatei). Im Gewebe holt jeder Schnitt die Linien eines neuen Bildes aus dem Video.</p>
           </div>
           <section class="tafel" aria-label="Format und Tiefe">
             <div class="einstellung">
@@ -211,9 +221,9 @@
           <p>Ein Effekt allein oder mehrere als Kette. Alle beginnen im Dunkeln und enden mit deinem Foto; in einer Kette geht jeder in den nächsten über, immer in dieser Reihenfolge.</p>
           <div class="ablaeufe" role="group" aria-label="Effekt wählen">
             <button type="button" data-wahl="physarum+tiefe+tuch" aria-pressed="true"><b>Alle drei als Kette</b><small>Das Netz findet die Formen, das Foto wird Raum und weht als Tuch – bis es glatt daliegt</small></button>
+            <button type="button" data-wahl="gewebe" aria-pressed="false"><b>Gewebe <em class="fuer-sich">für Text, Ton und Video</em></b><small>Die Umrisse deines Texts, Fotos oder Videos werden zu Bändern aus feinen Linien, wie Rauch oder Seide; die Musik bewegt sie, bei starken Einsätzen ein Schnitt. Läuft für sich, nicht in der Kette</small></button>
             <button type="button" data-wahl="physarum" aria-pressed="false"><b>Physarum</b><small>Hunderttausende Agenten strömen aus Keimen und bilden ein leuchtendes Netz, das die Formen deines Fotos findet</small></button>
             <button type="button" data-wahl="tiefe" aria-pressed="false"><b>Tiefe</b><small>Eine Lichtebene tastet das Bild ab, dann wird es Raum: Parallaxe, Tiefenschichten, wandernde Schärfe</small></button>
-            <button type="button" data-wahl="gewebe" aria-pressed="false"><b>Gewebe <em class="fuer-sich">für sich</em></b><small>Die Umrisse deines Texts oder Fotos werden zu Bändern aus feinen Linien, wie Rauch oder Seide – mit Ton bewegt die Musik sie, bei starken Einsätzen ein Schnitt</small></button>
             <button type="button" data-wahl="tuch" aria-pressed="false"><b>Tuch</b><small>Das Foto als Seidentuch im Wind – eine Stoffsimulation –, das sich zuletzt glatt zum Bild legt</small></button>
           </div>
           <p class="effekte-hinweis">Oder eine eigene Kette zusammenstellen:</p>
@@ -320,7 +330,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=14"></script>
+  <script type="module" src="app.js?v=16"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

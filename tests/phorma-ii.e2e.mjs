@@ -1,7 +1,7 @@
 // PHORMA II (alpha/phorma-ii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): ein Testfoto analysieren (Physarum, Tiefe, Tuch), jede Phase der Kette
 // zeigt etwas und etwas anderes, jeder Effekt beginnt im Dunkeln und endet exakt beim Foto, dasselbe Bild nach einem Sprung zurück (Simulationen
 // mit Wiedereinstiegspunkten), Bewegungsunschärfe, Video über WebCodecs (Ersatz-Encoder), Standbild, KI-Tiefe ohne Netz fällt auf die geschätzte
-// zurück, Gewebe aus Text mit Ton (und Video mit Tonspur), keine Anfragen nach aussen, Handy ohne seitliches Scrollen. Mit ?test (weniger Agenten, gröbere Netze).
+// zurück, Gewebe aus Text mit Ton (verfrickelt, Video mit Tonspur), Video als Quelle, keine Anfragen nach aussen, Handy ohne seitliches Scrollen. Mit ?test (weniger Agenten, gröbere Netze).
 //   NODE_PATH=$(npm root -g) node tests/phorma-ii.e2e.mjs
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -228,10 +228,12 @@ const WAV = (() => {
   return b;
 })();
 
-await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zeichen, Bänder aus Linien, Fragmente bei den Einsätzen, am Ende exakt der Text; Video mit Tonspur", async () => {
+await check("Gewebe aus Text mit Ton: Text wählt das Gewebe, verfrickeln und neu würfeln, Ton aus; Zeichen, Bänder aus Linien, Fragmente bei den Einsätzen, am Ende exakt der Text; Video mit Tonspur", async () => {
   const { ctx, page, fehler, fremd } = await oeffne({ vorher: ERSATZ_ENCODER });
-  await page.click('[data-wahl="gewebe"]');
+  assert.equal(await page.getAttribute('[data-wahl="physarum+tiefe+tuch"]', "aria-pressed"), "true");
   await page.click('[data-quelle="text"]');
+  assert.equal(await page.getAttribute('[data-wahl="gewebe"]', "aria-pressed"), "true", "Text als Quelle wählt das Gewebe");
+  assert.match(await page.textContent("#meldung"), /dafür ist jetzt das Gewebe gewählt/);
   assert.ok(await page.isVisible("#text") && !(await page.isVisible("#ablage")), "Textfeld statt Ablage");
   await page.fill("#text", "ki me");
   await bereit(page);
@@ -280,6 +282,49 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
   const art = (t) => { const h = t.kinder.find((k) => k.typ === "mdia").kinder.find((k) => k.typ === "hdlr"); return String.fromCharCode(...d.subarray(h.o + 16, h.o + 20)); };
   assert.deepEqual(spuren.map(art).sort(), ["soun", "vide"], `Bild und Ton im MP4 (${info})`);
   assert.match(info, /Ton (AAC|Opus)/);
+  assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
+await check("Video als Quelle: Standbild, sein Ton als Tonspur, im Gewebe neue Linien aus dem Video ab den Schnitten", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne({ ablauf: "physarum" });
+  // ein kurzes WebM (6 s) im Browser aufnehmen: Formen, die jede Sekunde wechseln, dazu Schläge
+  const webm = await page.evaluate(async () => {
+    const c = document.createElement("canvas"); c.width = 320; c.height = 240; const x = c.getContext("2d");
+    const ac = new AudioContext(), ziel = ac.createMediaStreamDestination(), o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.value = 110; o.connect(g); g.connect(ziel); g.gain.value = 0; o.start();
+    for (let k = 1; k < 6; k++) { g.gain.setValueAtTime(0.9, ac.currentTime + k); g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + k + 0.3); }
+    const strom = new MediaStream([...c.captureStream(30).getVideoTracks(), ...ziel.stream.getAudioTracks()]);
+    const rec = new MediaRecorder(strom, { mimeType: "video/webm" }), teile = [];
+    rec.ondataavailable = (e) => teile.push(e.data);
+    const t0 = performance.now();
+    const malen = () => {
+      const s = Math.floor((performance.now() - t0) / 1000);
+      x.fillStyle = "#eee"; x.fillRect(0, 0, 320, 240); x.fillStyle = "#222";
+      x.beginPath(); if (s % 2) x.arc(160, 120, 40 + 12 * s, 0, 7); else x.rect(60 + 10 * s, 50, 200 - 20 * s, 140); x.fill();
+      if (performance.now() - t0 < 6000) requestAnimationFrame(malen);
+    };
+    malen(); rec.start(500);
+    await new Promise((ok) => setTimeout(ok, 6000));
+    rec.stop(); await new Promise((ok) => { rec.onstop = ok; }); ac.close();
+    return Array.from(new Uint8Array(await new Blob(teile).arrayBuffer()));
+  });
+  await page.click('[data-quelle="video"]');
+  assert.ok(await page.isVisible("#video-teil") && !(await page.isVisible("#ablage")), "Videoteil statt Ablage");
+  await page.setInputFiles("#videodatei", { name: "probe.webm", mimeType: "video/webm", buffer: Buffer.from(webm) });
+  await page.waitForFunction(() => window.__phorma.video && window.__phorma.A, null, { timeout: 60_000 });
+  assert.equal(await page.evaluate(() => window.__phorma.ablauf), "gewebe", "ein Video wählt das Gewebe");
+  assert.match(await page.textContent("#video-info"), /probe\.webm · \d+,\d s · 320 × 240/);
+  const ton = await page.evaluate(() => window.__phorma.ton?.name);
+  assert.equal(ton, "Ton von probe.webm", "der Ton des Videos ist die Tonspur");
+  await bereit(page);
+  const s = await page.evaluate(() => { const S = window.__phorma; return { saetze: S.video.saetze?.liste.length ?? 0, schnitte: S.sz.schnitte, zaehler: S.buehne.zaehler ? null : null, quelle: S.quelle }; });
+  assert.equal(s.quelle, "video");
+  assert.ok(s.saetze >= 1, `Bilder aus dem Video (${s.saetze}), Schnitte ${s.schnitte}`);
+  const vorher = await messe(page, s.schnitte[0] - 0.2), nachher = await messe(page, s.schnitte[0] + 0.6);
+  assert.notEqual(vorher.abdruck, nachher.abdruck);
+  const ende = await messe(page, (await page.evaluate(() => window.__phorma.sz.zeit.abschnitt.bis)) + 1);
+  assert.ok(ende.abw <= 2, `am Ende exakt das Standbild (${ende.abw})`);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
