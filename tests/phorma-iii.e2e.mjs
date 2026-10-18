@@ -55,7 +55,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=5");
+  const { bild } = await import("./film.js?v=6");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -145,7 +145,7 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
   // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Logo; mitten in einer anders als ohne; der
   // Schriftzug wird getippt und steht nach 2,6 s
   const logo = await page.evaluate(async () => {
-    const { bild, logoZeichen } = await import("./film.js?v=5");
+    const { bild, logoZeichen } = await import("./film.js?v=6");
     const S = window.__phorma, sz = { ...S.sz, buehne: null, beschriftung: false }, L = sz.logo, e = L.plan.find((x) => x.art >= 0.2 && x.t < L.bis - 1);
     const zeichne = (z, t) => { const c = document.createElement("canvas"); c.width = 270; c.height = 338; const x = c.getContext("2d"); x.setTransform(0.25, 0, 0, 0.25, 0, 0); bild(x, z, t); return c.toDataURL(); };
     const t = e.t + e.dauer * 0.3;
@@ -312,16 +312,40 @@ await check("Stimme: säubern und der Ablauf Scratch → Stimme mit Hüpfern →
   await page.waitForFunction(() => window.__phorma.ton?.name.includes("Gefrickel"), null, { timeout: 120_000 });
   await bereit(page);
   const info = await page.textContent("#ton-info");
-  assert.match(info, /stimme\.wav · gesäubert \(Rauschen -?\d+ → -?\d+ dB\) · Scratch, Stimme mit [23] Hüpfern, Gefrickel, Wurf \d+ · 1\d,\d s/, info);
+  assert.match(info, /stimme\.wav · gesäubert \(Rauschen -?\d+ → -?\d+ dB\) · Scratch, Stimme mit [23] Hüpfern, Drum and Bass, Gefrickel, Wurf \d+ · 1\d,\d s/, info);
   const s = await page.evaluate(() => ({ quelle: window.__phorma.quelle, dauer: window.__phorma.sz.zeit.dauer, ton: window.__phorma.ton.analyse.dauer, kanaele: window.__phorma.ton.buffer.numberOfChannels }));
   assert.equal(s.quelle, "ton", "ohne Bild: Nur Ton");
   assert.ok(Math.abs(s.dauer - s.ton) < 0.05 && s.ton > 16 && s.ton < 19, `der Film so lang wie der Ablauf (${s.dauer.toFixed(2)} / ${s.ton.toFixed(2)})`);
   assert.equal(s.kanaele, 2, "in Stereo (der Raum)");
+  // der Ausschnitt: zuerst automatisch (10 s ab dem ersten Wort), dann mit den Reglern, in der Wellenform, zurück auf automatisch
+  assert.ok(await page.isVisible("#ausschnitt") && await page.isDisabled("#ausschnitt-auto"));
+  assert.match(await page.textContent("#ausschnitt-info"), /0:00,\d – 0:10,\d · 10,0 s \(automatisch\)/);
+  const regler = (von, laenge) => page.evaluate(([von, laenge]) => {
+    const v = document.getElementById("ausschnitt-von"), l = document.getElementById("ausschnitt-laenge");
+    v.value = String(von); l.value = String(laenge); for (const t of ["input", "change"]) l.dispatchEvent(new Event(t));
+  }, [von, laenge]);
+  await regler(2, 6);
+  await page.waitForFunction(() => window.__phorma.ton?.name.includes("Ausschnitt 0:02,0–0:08,0") && window.__phorma.ton.name.includes("Gefrickel"), null, { timeout: 120_000 });
+  const d6 = await page.evaluate(() => window.__phorma.ton.analyse.dauer);
+  assert.ok(d6 > 11 && d6 < 13.6, `Scratch + 6 s Stimme + Gefrickel (${d6.toFixed(2)})`);
+  assert.equal(await page.textContent("#ausschnitt-info"), "0:02,0 – 0:08,0 · 6,0 s");
+  assert.ok(await page.isEnabled("#ausschnitt-auto"));
+  const bild = await page.locator("#ausschnitt-bild").boundingBox();
+  await page.mouse.click(bild.x + bild.width * 0.75, bild.y + bild.height / 2);
+  await page.waitForFunction(() => /Ausschnitt 0:0[67],\d–0:1[23],\d/.test(window.__phorma.ton?.name ?? "") && window.__phorma.ton.name.includes("Gefrickel"), null, { timeout: 120_000 });
+  await page.click("#ausschnitt-auto");
+  await page.waitForFunction(() => window.__phorma.ton?.name.includes("Gefrickel") && !window.__phorma.ton.name.includes("Ausschnitt"), null, { timeout: 120_000 });
+  assert.match(await page.textContent("#ausschnitt-info"), /\(automatisch\)/);
   // neu würfeln: ein anderer Ablauf
   assert.ok(await page.isVisible("#wuerfeln"));
   const name = await page.evaluate(() => window.__phorma.ton.name);
   await page.click("#wuerfeln");
   await page.waitForFunction((n) => window.__phorma.ton.name !== n && window.__phorma.ton.name.includes("Gefrickel"), name, { timeout: 120_000 });
+  // ohne Drum and Bass
+  await page.uncheck("#stimm-dnb");
+  await page.waitForFunction(() => window.__phorma.ton?.name.includes("Gefrickel") && !window.__phorma.ton.name.includes("Drum and Bass"), null, { timeout: 120_000 });
+  await page.check("#stimm-dnb");
+  await page.waitForFunction(() => window.__phorma.ton?.name.includes("Drum and Bass"), null, { timeout: 120_000 });
   // auch mit der Irrfahrt
   await page.click('[data-wahl="irrfahrt"]');
   await bereit(page);
@@ -330,7 +354,9 @@ await check("Stimme: säubern und der Ablauf Scratch → Stimme mit Hüpfern →
   await page.uncheck("#stimm-ablauf");
   await page.waitForFunction(() => window.__phorma.ton && !window.__phorma.ton.name.includes("Gefrickel") && window.__phorma.ton.name.includes("gesäubert"), null, { timeout: 120_000 });
   assert.ok(await page.isHidden("#wuerfeln"));
+  assert.ok(await page.isDisabled("#stimm-dnb"), "Drum and Bass nur mit dem Ablauf");
   assert.ok(Math.abs((await page.evaluate(() => window.__phorma.ton.analyse.dauer)) - 13) < 0.05);
+  assert.equal(await page.textContent("#ausschnitt-info"), "0:00,0 – 0:13,0 · 13,0 s (automatisch)", "ohne Ablauf: die ganze Aufnahme");
   // gar nichts: das Original
   await page.uncheck("#saeubern");
   await page.waitForFunction(() => window.__phorma.ton?.name === "stimme.wav", null, { timeout: 60_000 });

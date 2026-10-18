@@ -247,6 +247,19 @@ test("Stimm-Ablauf: 3,5 s Scratching, dann rund 10 s Stimme mit zwei, drei Hüpf
   assert.ok(nulldurch(0, 3.5) > 0, "im Scratching ist etwas zu hören");
   assert.deepEqual(St.stimmAblauf(s.kanaele, rate, { samen: 2 }).kanaele[0].slice(0, 30000), L.slice(0, 30000), "derselbe Wurf, dasselbe Stück");
   assert.notDeepEqual(St.stimmAblauf(s.kanaele, rate, { samen: 3 }).kanaele[0].slice(0, 30000), L.slice(0, 30000), "ein neuer Wurf scratcht anders");
+  // Drum and Bass gegen das Gefrickel hin: einen Takt (174 BPM) vorher herein («etwas später, kurz vor gefrickel»), bis zum Schluss; abschaltbar
+  assert.ok(a.unterlegt && a.unterlegt.bpm === 174 && Math.abs(fr.von - a.unterlegt.von - 240 / 174) < 1e-6 && Math.abs(a.unterlegt.bis - a.dauer) < 1e-6, JSON.stringify(a.unterlegt));
+  const ohne = St.stimmAblauf(s.kanaele, rate, { samen: 2, dnb: false });
+  assert.equal(ohne.unterlegt, null);
+  assert.deepEqual(ohne.teile, a.teile, "dieselben Teile");
+  let dazu = 0; for (let i = Math.round(fr.von * rate); i < L.length; i += 7) dazu = Math.max(dazu, Math.abs(ohne.kanaele[0][i] - L[i]));
+  assert.ok(dazu > 0.05, `im Gefrickel ist das Drum and Bass zu hören (${dazu.toFixed(3)})`);
+  const d1 = St.drumAndBass(rate, 3, { samen: 4 }), d2 = St.drumAndBass(rate, 3, { samen: 4 });
+  assert.deepEqual(d1[0].slice(0, 20000), d2[0].slice(0, 20000), "wiederholbar");
+  assert.ok(d1.every((k) => k.every(Number.isFinite)));
+  // die Kick auf jeder Eins: im ersten Takt bei 0, im zweiten bei 240 / 174 s viel Tiefe
+  const tief = (t) => { let e = 0; for (let i = Math.round(t * rate); i < Math.round((t + 0.05) * rate); i++) e += d1[0][i] ** 2; return e; };
+  assert.ok(tief(240 / 174) > 4 * tief(240 / 174 - 0.12), "die Kick auf der Eins");
   // eine kurze Aufnahme (4 s): weniger Stimme, höchstens ein Hüpfer, kein Fehler
   const k = St.stimmAblauf(St.saeubern([kunststimme(rate, 4).x], rate).kanaele, rate, { samen: 1 });
   assert.ok(k.huepfer.length <= 1 && k.dauer > 7 && k.kanaele[0].every(Number.isFinite), `kurz: ${k.dauer.toFixed(1)} s, ${k.huepfer.length} Hüpfer`);
@@ -295,7 +308,7 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /id="ton-im-video" checked> Ton an/, "Ton ausschaltbar");
   assert.match(html, /id="frickeln"> Verfrickeln[\s\S]*id="wuerfeln"/, "Verfrickeln als Option, mit neuem Wurf");
   assert.match(html, /data-tonart="musik">Musik[\s\S]*data-tonart="stimme">Stimme/, "Musik oder Stimme");
-  assert.match(html, /id="saeubern" checked> Säubern und klären[\s\S]*id="stimm-ablauf" checked> Scratch → Stimme → Gefrickel/, "die Stimme: säubern und der Ablauf");
+  assert.match(html, /id="saeubern" checked> Säubern und klären[\s\S]*id="stimm-ablauf" checked> Scratch → Stimme → Gefrickel[\s\S]*id="stimm-dnb" checked> mit Drum and Bass/, "die Stimme: säubern, der Ablauf, Drum and Bass");
   assert.match(html, /id="signet" checked> Logo am Schluss/);
   assert.match(html, /data-wahl="gewebe" aria-pressed="true"[\s\S]*data-wahl="irrfahrt"/, "zwei Effekte: Gewebe und Irrfahrt");
   assert.ok(!/data-(effekt|tiefe)=|data-wahl="(physarum|tiefe|tuch)/.test(html), "keine Kette und keine Tiefe: das ist PHORMA II");
