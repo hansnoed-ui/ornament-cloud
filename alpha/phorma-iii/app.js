@@ -260,10 +260,10 @@ async function filmspurBereit(bereich, abbruch) {
   if (S.filmspur?.schl !== schl) {
     filmspurModul ??= await import("./filmspur.js?v=10");
     const n = Math.round((bereich.bis - bereich.von) * 30);
-    melden(`Die Bilder des Videos werden gelesen … 0 / ${n}`);
+    melden(`Die Bilder des Videos werden gelesen … 0 / ${n}`); S.filmLesen = [0, n];
     const t0 = performance.now();
     const spur = await filmspurModul.filmspurLesen(V.datei, V.el, { ...bereich, breite: B, hoehe: H, abbruch,
-      fortschritt: (i, m) => melden(`Die Bilder des Videos werden gelesen … ${i} / ${m}`) });
+      fortschritt: (i, m) => { melden(`Die Bilder des Videos werden gelesen … ${i} / ${m}`); S.filmLesen = [i, m]; if (!S.laeuft && S.sz) zeigeZeit(S.t ?? 0); } });
     if (!spur) return null;
     S.filmspur?.spur.entsorgen();
     S.filmspur = { schl, spur };
@@ -349,7 +349,7 @@ async function buehneBereit() {
   const mitFilm = S.ablauf === "video" && S.quelle === "video" && !!S.video, bereich = mitFilm ? filmBereich() : null;
   const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.quelle}|${S.ton?.name ?? ""}|${bereich ? `${bereich.von.toFixed(3)}-${bereich.bis.toFixed(3)}` : ""}|${laenge()}|${$("signet").checked}|${S.quelle === "video" ? S.video?.url : ""}` : "";
   if (schluessel === S.buehneSchluessel) return;
-  S.buehneSchluessel = schluessel; S.buehneFertig = false; S.buehneWarm = false; S.spurBilder = 0;
+  S.buehneSchluessel = schluessel; S.buehneFertig = false; S.buehneWarm = false; S.buehneFehler = false; S.spurBilder = 0; S.filmLesen = null;
   if (S.sz) S.sz.buehne = null;
   S.buehne?.entsorgen(); S.buehne = null;
   if (!schluessel) return;
@@ -373,6 +373,7 @@ async function buehneBereit() {
         S.buehneSchluessel = ""; S.buehne = null;
       } });
   } catch (fehler) {
+    S.buehneFehler = true;                                                   // die Vorschau wartet dann nicht mehr auf die Bilder des Videos
     melden(`PHORMA III braucht WebGL 2; hier blendet an seiner Stelle das Bild auf (${fehler?.message ?? fehler}).`, true);
     return;
   }
@@ -745,8 +746,25 @@ function spielen() {
   $("spielen").textContent = "Anhalten";
 }
 function anhalten() { S.laeuft = false; $("spielen").textContent = "Abspielen"; $("tonspur").pause(); }
+// Der Effekt Video wartet auf seine Bilder (Rückmeldung vom 18. Oktober 2026: «das Video wird noch nicht angezeigt im Vorschaufenster, der Videoton
+// scheint gut zu klappen» – die Uhr lief mit dem Ton schon, während die Bilder noch gelesen wurden, das Bild blieb schwarz, und als sie da waren, stand
+// die Vorschau am Ende): bis sie gelesen sind, steht die Uhr bei 0 und der Ton schweigt; die Vorschau zeigt das erste Bild abgedunkelt und den Fortschritt
+const wartetAufFilm = () => S.ablauf === "video" && S.quelle === "video" && !!S.video && !S.buehneWarm && !S.buehneFehler && !!S.sz;
+function warteBild() {
+  const sz = S.sz, B = sz.breite, H = sz.hoehe, [i, n] = S.filmLesen ?? [0, 0], st = getComputedStyle(document.documentElement);
+  vctx.fillStyle = "#000"; vctx.fillRect(0, 0, B, H);
+  if (sz.foto) { vctx.globalAlpha = 0.35; vctx.drawImage(sz.foto, 0, 0, B, H); vctx.globalAlpha = 1; }
+  const g = Math.round(B * 0.034), y = H * 0.5, breit = B * 0.56, x = (B - breit) / 2;
+  vctx.font = `500 ${g}px system-ui, sans-serif`; vctx.textAlign = "center"; vctx.fillStyle = "#fff";
+  vctx.fillText(n ? "Die Bilder des Videos werden gelesen" : "Das Video wird vorbereitet", B / 2, y - g * 1.1);
+  vctx.fillStyle = "rgba(255,255,255,0.25)"; vctx.fillRect(x, y, breit, g * 0.28);
+  vctx.fillStyle = st.getPropertyValue("--accent").trim() || "#c33"; vctx.fillRect(x, y, n ? (breit * i) / n : 0, g * 0.28);
+  vctx.fillStyle = "#fff"; vctx.font = `400 ${Math.round(g * 0.8)}px system-ui, sans-serif`;
+  vctx.fillText(n ? `${i} / ${n} · dann läuft es mit Ton von vorn` : "einen Moment", B / 2, y + g * 1.5);
+}
 function zeigeZeit(t) {
   const t0 = performance.now();
+  if (wartetAufFilm()) { S.t = 0; warteBild(); $("zeit").value = "0"; $("zeitcode").textContent = zeitcode(0); return; }
   S.t = t; S.ende = false;
   const mitBuehne = !!S.sz?.buehne;
   if (mitBuehne && S.spurBilder < 30 && [0, 1, 29].includes(S.spurBilder)) notiz(S.spurBilder === 29 ? "Vorschaubild 30 wird gezeichnet" : `Vorschaubild ${S.spurBilder + 1} wird gezeichnet (t ${t.toFixed(2)} s)`);
@@ -770,6 +788,7 @@ function takt(jetzt) {
   if (!S.laeuft || !S.sz) return;
   if (!sichtbar) { S.start += jetzt - (zuletzt || jetzt); zuletzt = jetzt; requestAnimationFrame(takt); return; }
   zuletzt = jetzt;
+  if (wartetAufFilm()) { S.start = jetzt; const a = $("tonspur"); if (!a.paused) a.pause(); zeigeZeit(0); requestAnimationFrame(takt); return; }
   const t = (jetzt - S.start) / 1000;
   if (t >= S.sz.zeit.dauer) { anhalten(); zeigeZeit(S.sz.zeit.dauer - 1 / FPS); S.ende = true; return; }
   tonFolgen(t);
