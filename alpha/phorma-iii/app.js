@@ -3,11 +3,11 @@
 // und mp4Schreiber (tonspur.js); ohne WebCodecs in Echtzeit über MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild acht Proben.
 // Bis zum 18. Oktober 2026 ein Effekt in PHORMA II (Wunsch: «Es sind ja zwei ganz verschiedene Ansätze … all das soll aus PHORMA II ausgelagert
 // werden und in ein neues PHORMA III integriert werden»).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, zeitachse, NACH } from "./ablauf.js?v=1";
-import { szene, bild, standbildZeit } from "./film.js?v=1";
-import { analysieren } from "./analyse.js?v=1";
-import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=1";
-import { textBild } from "./textbild.js?v=1";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, EFFEKTE, ablaufName, zeitachse, NACH } from "./ablauf.js?v=3";
+import { szene, bild, standbildZeit } from "./film.js?v=3";
+import { analysieren } from "./analyse.js?v=3";
+import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=3";
+import { textBild } from "./textbild.js?v=3";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
 const $ = (id) => document.getElementById(id);
@@ -17,7 +17,7 @@ const grob = matchMedia("(pointer: coarse)").matches, test = new URLSearchParams
 const PROBEN = 8;
 let VORSCHAU = 0.5;
 const S = { bild: null, A: null, foto: null, sz: null, laeuft: false, start: 0, t: null, film: null, rechnen: 0, buehne: null, buehneSchluessel: "",
-  format: "4:5", quelle: "foto", text: "", fotoBild: null, video: null, ton: null, mass: [1080, 1350] };
+  format: "4:5", quelle: "foto", text: "", fotoBild: null, video: null, ton: null, mass: [1080, 1350], ablauf: "gewebe" };
 window.__phorma = S;   // für die Browser-Tests
 // ?diagnose: Messwerte zum Gerät sichtbar unter der Vorschau (Rückmeldung vom 17. Oktober 2026: auf einem Telefon «reagiert nicht», hier nicht
 // nachzustellen) – Zeitpunkte der Schritte, Dauer je Vorschaubild, längste Blockade, Grafikchip und Erweiterungen; als Bildschirmfoto zurückschicken
@@ -146,7 +146,7 @@ async function videoLaden(datei) {
   // der Ton des Videos wird die Tonspur, ausser eine andere Audiodatei ist gewählt
   if (!S.tonQuelle || S.tonQuelle.ausVideo) {
     try {
-      const { tonLesen } = await import("./tonspur.js?v=1");
+      const { tonLesen } = await import("./tonspur.js?v=3");
       const { buffer } = await tonLesen(datei);
       S.tonQuelle = { buffer, name: `Ton von ${datei.name}`, url, ausVideo: true };
       await tonSetzen({ auffrischen: false });
@@ -159,7 +159,7 @@ async function videoLaden(datei) {
 }
 /** die Bilder aus dem Video, deren Linien das Gewebe ab den Schnitten zeigt: [{ t (Zeit des Effekts), hell }]; gemerkt, solange Format und Schnitte gleich bleiben */
 async function videoSaetze() {
-  const V = S.video, G = zeitachse({ tempo: "normal", laenge: laenge(), signet: $("signet").checked }).phasen.find((p) => p.name === "gewebe");
+  const V = S.video, G = zeitachse({ tempo: "normal", laenge: laenge(), signet: $("signet").checked, ablauf: "gewebe" }).phasen.find((p) => p.name === "gewebe");
   const zeiten = wechselZeiten(tonOderErsatz(S.ton?.analyse ?? null), G), w = S.A.w, h = S.A.h, schl = `${w}x${h}|${zeiten.join(",")}`;
   if (V.saetze?.schl === schl) return V.saetze.liste;
   melden(`${zeiten.length} Bilder werden aus dem Video gelesen …`);
@@ -186,7 +186,7 @@ async function bildSetzen(q) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=1", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=3", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -221,7 +221,7 @@ async function lesen() {
 // ——— Bühne (WebGL 2): erst laden, wenn ein Bild da ist ———
 let buehneModul = null;
 async function buehneBereit() {
-  const schluessel = S.A ? `${S.rechnen}|${S.quelle}|${S.ton?.name ?? ""}|${laenge()}|${$("signet").checked}|${S.quelle === "video" ? S.video?.url : ""}` : "";
+  const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.quelle}|${S.ton?.name ?? ""}|${laenge()}|${$("signet").checked}|${S.quelle === "video" ? S.video?.url : ""}` : "";
   if (schluessel === S.buehneSchluessel) return;
   S.buehneSchluessel = schluessel; S.buehneFertig = false; S.buehneWarm = false; S.spurBilder = 0;
   if (S.sz) S.sz.buehne = null;
@@ -229,12 +229,12 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=1");
+    buehneModul ??= await import("./buehne.js?v=3");
     if (S.buehneSchluessel !== schluessel) return;
-    const saetze = S.quelle === "video" && S.video ? await videoSaetze() : null;
+    const saetze = S.quelle === "video" && S.video && S.ablauf === "gewebe" ? await videoSaetze() : null;   // nur das Gewebe holt Bilder aus dem Video
     if (S.buehneSchluessel !== schluessel) return;
     notiz("Bühne wird gebaut");
-    S.buehne = buehneModul.buehne(S.foto, S.A, { grob, test, quelle: S.quelle, ton: S.ton?.analyse ?? null, laenge: laenge(), signet: $("signet").checked, saetze, spur: notiz,
+    S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, quelle: S.quelle, ton: S.ton?.analyse ?? null, laenge: laenge(), signet: $("signet").checked, saetze, spur: notiz,
       onVerloren: () => {
         if (S.buehneSchluessel !== schluessel) return;
         anhalten();
@@ -271,10 +271,10 @@ async function buehneFertig() { await buehneBereit(); await S.buehne?.bereit; }
 
 /** mit Tonspur dauert das Gewebe so lange wie sie (ohne Vorlauf und Schluss), 10 bis 110 s */
 // die Musik klingt bis ans Ende; mit Signet gehört das Logo zum Gewebe und entsteht in ihrem Takt (Wünsche vom 18. Oktober 2026)
-const laenge = () => (S.ton ? Math.min(110, Math.max(10, S.ton.analyse.dauer - 0.4 - NACH($("signet").checked))) : null);
+const laenge = () => (S.ton ? Math.min(110, Math.max(10, S.ton.analyse.dauer - 0.4 - NACH($("signet").checked, S.ablauf))) : null);
 function optionen() {
   return { breite: S.mass[0], hoehe: S.mass[1], tempo: $("tempo").value, signet: $("signet").checked, beschriftung: $("beschriftung").checked,
-    titel: $("titel").value.replace(/\s+/g, " ").trim(), foto: S.foto, buehne: S.buehneWarm ? S.buehne : null,
+    titel: $("titel").value.replace(/\s+/g, " ").trim(), foto: S.foto, ablauf: S.ablauf, buehne: S.buehneWarm ? S.buehne : null,
     text: S.quelle === "text" ? S.text : "", ton: S.ton?.analyse ?? null, laenge: laenge() };
 }
 
@@ -329,6 +329,8 @@ function wahl(attr, schluessel, werte, wenn) {
 let umstellen = 0;
 const spaeterLesen = () => { clearTimeout(umstellen); umstellen = setTimeout(lesen, 250); };
 const formatKnoepfe = wahl("data-format", "format", FORMATE, () => { if (S.quelle === "ton") { clearTimeout(umstellen); umstellen = setTimeout(papierLaden, 250); } else if (S.quelle === "text") { clearTimeout(umstellen); umstellen = setTimeout(textLaden, 250); } else spaeterLesen(); });
+// Effekt (seit 18. Oktober 2026 zwei: «Ich möchte nun bei PHORMA III weitere Möglichkeiten, neben Gewebe»): Gewebe oder Irrfahrt; die Wahl bleibt
+const ablaufKnoepfe = wahl("data-wahl", "ablauf", EFFEKTE, () => { S.ablauf = ablaufName(S.ablauf); neu(); });
 // Quelle: ein Foto, ein Text (wird zu einem Bild, textbild.js), ein Video oder nur Ton (Wünsche vom 17. und 18. Oktober 2026: Effekte «für Texte
 // und Audiofiles», «cool wäre es auch mit Videodateien», die Animation «müsste auch ablaufen ohne Text oder Bild»)
 const quelleKnoepfe = wahl("data-quelle", "quelle", ["foto", "text", "video", "ton"], () => {
@@ -367,7 +369,7 @@ $("tondatei").addEventListener("change", async (e) => {
   const datei = e.target.files?.[0]; if (!datei) return;
   melden("Der Ton wird gelesen …");
   try {
-    const { tonLesen } = await import("./tonspur.js?v=1");
+    const { tonLesen } = await import("./tonspur.js?v=3");
     const { buffer } = await tonLesen(datei);
     if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
     S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei), ausVideo: false };
@@ -390,7 +392,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
   if (S.frickeln) {
     melden("Der Ton wird verfrickelt …");
     await new Promise((ok) => setTimeout(ok, 30));
-    const { frickeln, wav } = await import("./frickeln.js?v=1");
+    const { frickeln, wav } = await import("./frickeln.js?v=3");
     if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
     const f = frickeln(kanaele, rate, { samen: S.wurf });
     buffer = new AudioBuffer({ length: f.kanaele[0].length, numberOfChannels: 2, sampleRate: rate });
@@ -522,7 +524,7 @@ $("video").addEventListener("click", async () => {
 });
 
 async function mitWebCodecs(cfg, sz) {
-  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=1");
+  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=3");
   // mit Ton: die Tonspur zuerst kodieren (klein), dann gehen die Bilder gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
   let ton = null;
   if (S.ton && $("ton-im-video").checked) {
@@ -597,6 +599,6 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...quelleKnoepfe, $("text"), $("videodatei"), $("tondatei"), $("ton-weg"), $("frickeln"), $("wuerfeln"), $("video"), $("png")])
+  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...ablaufKnoepfe, ...quelleKnoepfe, $("text"), $("videodatei"), $("tondatei"), $("ton-weg"), $("frickeln"), $("wuerfeln"), $("video"), $("png")])
     el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A);
 }

@@ -25,9 +25,13 @@
   <link rel="alternate" type="application/rss+xml" title="Ornament Cloud – News" href="feed.xml">
   <link rel="stylesheet" href="styles.css?v=45">
   <!--
-    Startanimation (Wunsch vom 9. Oktober 2026): bevor die Startseite erscheint, wachsen die Zeichen von «ornament.cloud» als Linienwachstum, das fertige Wort blendet aus, dann blendet die Seite über
-    (Video, ohne Ton, 11 Sekunden; Quellcode src/videos/src/wachstum/, Composition StartAnimation und StartAnimationDunkel). Sie läuft nur auf dieser Seite, einmal pro Sitzung
-    (Vorschau jederzeit mit ?start), nicht bei «weniger Bewegung» und nicht bei «Daten sparen». Tippen, eine Taste oder der Knopf «Skip intro» (unten rechts, orange) beendet sie; läuft das Video nicht an, kommt die Seite sofort.
+    Startanimation (Wunsch vom 9. Oktober 2026; seit 18. Oktober 2026 die Irrfahrt aus PHORMA III – «das Video des Tests, welches im Ornament.cloud-Logo endet, als neue
+    Intro-Sequenz der Website, mit Option Ton an/aus und Skip intro»): ein leuchtender Faden irrt durch einen Würfel aus Licht, quillt mit der Musik zu Rauch auf und legt sich
+    zum Logo, dann blendet die Seite über (Video 4 : 5 auf Schwarz, in beiden Modi dasselbe, 16 Sekunden, assets/start-intro.mp4; gerechnet mit alpha/phorma-iii/, Effekt
+    Irrfahrt, Quelle «Nur Ton»). Es beginnt stumm (Browser spielen Ton erst nach einem Tippen), «Ton an» schaltet die Musik dazu, «Ton aus» wieder ab. Bis dahin wuchsen die
+    Zeichen von «ornament.cloud» als Linienwachstum (src/videos/src/wachstum/, im Verlauf von Git). Sie läuft nur auf dieser Seite, einmal pro Sitzung (Vorschau jederzeit
+    mit ?start), nicht bei «weniger Bewegung» und nicht bei «Daten sparen». Tippen, eine Taste oder der Knopf «Skip intro» (unten rechts, orange) beendet sie – Tippen auf
+    «Ton an» nicht; läuft das Video nicht an, kommt die Seite sofort.
     Die Gestaltung steht hier in der Seite (nur die Startseite braucht sie), damit styles.css (?v=) unverändert bleibt. Ohne Skript erscheint sie nie.
   -->
   <style>
@@ -35,23 +39,26 @@
     html.start-an .start {
       display: flex; align-items: center; justify-content: center;
       position: fixed; inset: 0; z-index: 1000;
-      background: var(--bg);
+      background: #000;                                      /* das Intro ist schwarz, in beiden Modi */
       touch-action: none; overscroll-behavior: contain;
       transition: opacity 0.7s ease;
       animation: start-notaus 0s linear 45s forwards;      /* fällt das Skript unten aus, gibt die Seite sich nach 45 Sekunden selbst frei */
     }
     html.start-an .start.start-weg { opacity: 0; pointer-events: none; }
     @keyframes start-notaus { to { visibility: hidden; pointer-events: none; } }
-    .start video { display: block; width: min(100vw, 100vh, 1080px); width: min(100vw, 100dvh, 1080px); height: auto; aspect-ratio: 1 / 1; }
-    .start-weiter {
+    .start video { display: block; width: min(100vw, 80vh, 1080px); width: min(100vw, 80dvh, 1080px); height: auto; aspect-ratio: 4 / 5; }
+    .start-knoepfe {
       position: absolute; right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom));
+      display: flex; gap: 10px;
+    }
+    .start-weiter, .start-ton {
       min-height: 44px; padding: 0 20px;
       font: 600 0.8rem/1 var(--font); letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--accent); background: transparent; border: 1.5px solid var(--accent); border-radius: 6px;
+      color: #f08a5d; background: transparent; border: 1.5px solid #f08a5d; border-radius: 6px;   /* das Orange der dunklen Seite: auf Schwarz gut lesbar */
       cursor: pointer;
     }
-    .start-weiter:hover, .start-weiter:focus-visible { color: var(--bg); background: var(--accent); }
-    .start-weiter:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .start-weiter:hover, .start-weiter:focus-visible, .start-ton:hover, .start-ton:focus-visible { color: #000; background: #f08a5d; }
+    .start-weiter:focus-visible, .start-ton:focus-visible { outline: 2px solid #f08a5d; outline-offset: 3px; }
     @media (prefers-reduced-motion: reduce) { .start { transition: none; } }
     /* OMNA COLOR direkt unter dem Kopf (seit 10. Oktober 2026): der Rahmen aus styles.css, hier nur der Abstand */
     main > .omna { margin: 0 0 48px; }
@@ -70,7 +77,10 @@
 <body>
   <div class="start" id="start">
     <video muted playsinline preload="auto" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback></video>
-    <button class="start-weiter" type="button" lang="en">Skip intro</button>
+    <div class="start-knoepfe">
+      <button class="start-ton" type="button" aria-pressed="false">Ton an</button>
+      <button class="start-weiter" type="button" lang="en">Skip intro</button>
+    </div>
   </div>
   <header class="site-header">
     <div class="wrap">
@@ -126,12 +136,13 @@
     </div>
   </footer>
   <script>
-    // Startanimation (siehe Kommentar im Kopf): Video je nach hellem oder dunklem Modus; die Seite darunter ist währenddessen nicht erreichbar (inert).
+    // Startanimation (siehe Kommentar im Kopf): die Irrfahrt, stumm bis «Ton an»; die Seite darunter ist währenddessen nicht erreichbar (inert).
     // Endet das Video, bei Fehler, wenn es nicht von selbst anläuft (nach 6 Sekunden) oder stehen bleibt, bei Tippen, Taste oder «Skip intro»: ausblenden und freigeben.
+    // «Ton an» / «Ton aus» beendet nichts.
     (function () {
       var d = document.documentElement, el = document.getElementById("start");
       if (!el || !d.classList.contains("start-an")) return;
-      var v = el.querySelector("video"), knopf = el.querySelector(".start-weiter"), fertig = false, haengt;
+      var v = el.querySelector("video"), knopf = el.querySelector(".start-weiter"), ton = el.querySelector(".start-ton"), fertig = false, haengt;
       try { sessionStorage.setItem("start-animation", "1"); } catch (e) {}
       var dahinter = [].filter.call(document.body.children, function (k) { return k !== el && k.tagName !== "SCRIPT"; });
       dahinter.forEach(function (k) { k.inert = true; });
@@ -150,12 +161,18 @@
       v.addEventListener("error", weg);
       v.addEventListener("waiting", warte);
       v.addEventListener("playing", function () { clearTimeout(haengt); });
-      el.addEventListener("pointerdown", weg);
+      var amTon = function (e) { return e.target && e.target.closest && e.target.closest(".start-ton"); };
+      el.addEventListener("pointerdown", function (e) { if (!amTon(e)) weg(); });
       knopf.addEventListener("click", weg);
-      addEventListener("keydown", weg, { once: true });
+      ton.addEventListener("click", function () {
+        v.muted = !v.muted;                                                   // im Klick: so darf der Browser den Ton spielen
+        ton.textContent = v.muted ? "Ton an" : "Ton aus";
+        ton.setAttribute("aria-pressed", String(!v.muted));
+        if (v.paused && !fertig) { var q = v.play(); if (q && q.catch) q.catch(function () {}); }
+      });
+      addEventListener("keydown", function taste(e) { if (amTon(e)) return; removeEventListener("keydown", taste); weg(); });
       warte();
-      var dunkel = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
-      v.src = dunkel ? "assets/start-animation-dunkel.mp4?v=3" : "assets/start-animation.mp4?v=3";
+      v.src = "assets/start-intro.mp4?v=1";
       var p = v.play();
       if (p && p.catch) p.catch(weg);
     })();

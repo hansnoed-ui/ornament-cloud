@@ -4,6 +4,9 @@
 //   01 Zeichen (der Text, das Foto oder das Standbild des Videos steht) → 02 Gewebe (seine Umrisse werden zu Flächen aus feinen Linien, die der
 //   Ton bewegt; neue Bilder bei kräftigen Einsätzen) → 03 Logo (aus der Schlaufe des Signets wächst die Fläche und legt sich glatt; mit Signet)
 //   oder 03 Bild (die Flächen legen sich zurück, das Zeichen steht wieder exakt da; ohne Signet). Mit einer Tonspur so lang wie sie.
+// Irrfahrt (seit 18. Oktober 2026, Wunsch nach einem Video: ein Faden irrt durch einen Würfel aus Licht – «gerne viiiiiel krasser»):
+//   01 Würfel (er zeichnet sich, der Faden beginnt) → 02 Irrfahrt (der Faden quillt mit der Musik zu Rauch auf, bei Schlägen springt alles) →
+//   03 Logo (mit Signet) oder 03 Stille (der Faden zieht sich zusammen). Schwarz; danach kein Stehen, das letzte Bild hält.
 // Der Aufbau (Kette aus Teilen, Phasen, laufend) ist derselbe wie in PHORMA II, mit einem einzigen Teil.
 export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=10";
 
@@ -12,26 +15,35 @@ export const filmMass = (format = "4:5") => (format === "9:16" ? [1080, 1920] : 
 
 /** das Logo am Ende (mit Signet): es entsteht aus dem Gewebe, legt sich glatt, der Schriftzug wird getippt */
 export const LOGO = 4.6;
-/** was nach dem Effekt noch kommt (für die Länge nach der Tonspur): mit Logo nur der Schluss, sonst Stehen und Schluss */
-export const NACH = (signet) => (signet ? 0.3 : 3.2 + 0.3);
+/** was nach dem Effekt noch kommt (für die Länge nach der Tonspur): mit Logo (und immer bei der Irrfahrt) nur der Schluss, sonst Stehen und Schluss */
+export const NACH = (signet, art = "gewebe") => (signet || art === "irrfahrt" ? 0.3 : 3.2 + 0.3);
 
 export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
-export const TITEL = { gewebe: "Gewebe" };
+export const EFFEKTE = ["gewebe", "irrfahrt"];
+export const TITEL = { gewebe: "Gewebe", irrfahrt: "Irrfahrt" };
 export const KETTE = "gewebe";
+/** ein gemerkter oder unbekannter Name ergibt das Gewebe */
+export const ablaufName = (a) => (EFFEKTE.includes(String(a ?? "")) ? String(a) : KETTE);
 
 /**
  * Die Rolle des Gewebes: seine Phasen ([name, titel, dauer] bei Tempo «normal»). Mit Tonspur dauert es, so lange der Ton läuft (laenge: die ganze
  * Dauer des Effekts). Mit Signet endet es nicht beim Bild, sondern geht gleich ins Logo über (Rückmeldung vom 18. Oktober 2026: «der Weissraum
  * einige Sekunden vor dem Logo ist unnötig. Bitte direkt vom Gewebe zum Logo»).
  */
-export function rolle({ laenge = null, signet = false } = {}) {
+export function rolle({ art = KETTE, laenge = null, signet = false } = {}) {
+  art = ablaufName(art);
+  if (art === "irrfahrt") {
+    const ende = signet ? ["logo", "Logo", LOGO] : ["stille", "Stille", 2.4];
+    const phasen = [["wuerfel", "Würfel", 1.0], ["irrfahrt", "Irrfahrt", laenge ? Math.max(3.2, laenge - 1.0 - ende[2]) : 14], ende];
+    return { art, erst: true, letzt: true, vorher: null, naechstes: null, phasen, dauer: phasen.reduce((s, p) => s + p[2], 0), ueber: 0, uebergang: "schnitt" };
+  }
   const phasen = signet
     ? [["zeichen", "Zeichen", 2.2], ["gewebe", "Gewebe", laenge ? Math.max(3.2, laenge - 2.2 - LOGO) : 14], ["logo", "Logo", LOGO]]
     : [["zeichen", "Zeichen", 2.2], ["gewebe", "Gewebe", laenge ? Math.max(5, laenge - 4.8) : 14], ["bild", "Bild", 2.6]];
   return { art: "gewebe", erst: true, letzt: true, vorher: null, naechstes: null, phasen, dauer: phasen.reduce((s, p) => s + p[2], 0), ueber: 0, uebergang: "schnitt" };
 }
 
-/** in Sekunden bei Tempo «normal»: { teile: [{ ...rolle, von, bis }], phasen: [{ name, titel, von, bis, art }], dauer } */
+/** in Sekunden bei Tempo «normal»: { teile: [{ ...rolle, von, bis }], phasen: [{ name, titel, von, bis, art }], dauer }; opt: { art, laenge, signet } */
 export function kette(opt = {}) {
   const R = rolle(opt), phasen = [];
   let p0 = 0;
@@ -44,9 +56,9 @@ export function kette(opt = {}) {
  * Der Effekt rechnet in seiner eigenen Zeit bei Tempo «normal»: lokal(teil, t) = (t − teil.von) / tempo. laenge: die Dauer des Effekts nach einer
  * Tonspur (dann ohne Tempo).
  */
-export function zeitachse({ tempo = "normal", signet = true, laenge = null } = {}) {
-  const f = laenge ? 1 : TEMPO[tempo] ?? (typeof tempo === "number" ? tempo : 1);
-  const K = kette({ laenge, signet }), ab = {};
+export function zeitachse({ tempo = "normal", signet = true, laenge = null, ablauf = KETTE } = {}) {
+  const art = ablaufName(ablauf), f = laenge ? 1 : TEMPO[tempo] ?? (typeof tempo === "number" ? tempo : 1);
+  const K = kette({ art, laenge, signet }), ab = {};
   let t = 0;
   const dazu = (name, d) => { ab[name] = [t, t + d]; t += d; };
   dazu("vor", 0.4);
@@ -55,9 +67,9 @@ export function zeitachse({ tempo = "normal", signet = true, laenge = null } = {
   const phasen = K.phasen.map((p) => ({ ...p, von: von + p.von * f, bis: von + p.bis * f }));
   t = von + K.dauer * f;
   const abschnitt = { von, bis: t };
-  if (signet) dazu("schluss", 0.3);                                         // das Logo gehört zum Effekt: danach nur noch der Schluss
+  if (signet || art === "irrfahrt") dazu("schluss", 0.3);                  // das Logo (die Stille) gehört zum Effekt: danach nur noch der Schluss
   else { dazu("stehen", 3.2); dazu("schluss", 0.3); }
-  return { ab, ablauf: KETTE, abschnitt, teile, phasen, dauer: t, bilder: Math.round(t * 30), tempo: f };
+  return { ab, ablauf: art, abschnitt, teile, phasen, dauer: t, bilder: Math.round(t * 30), tempo: f };
 }
 
 /** der Effekt zur Zeit t mit seiner eigenen Zeit (wie in PHORMA II, wo beim Übergang zwei laufen) */

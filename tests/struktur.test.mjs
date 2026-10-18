@@ -138,14 +138,15 @@ test("Startseite: kein sichtbarer Titel und kein Lead, unter dem Kopf OMNA COLOR
   assert.deepEqual([...html.matchAll(/data-icon="([a-z]+)"/g)].map((m) => m[1]), ["wave"], "nur die Welle unter dem Kopf ist animiert");
 });
 
-test("Startseite: Startanimation (9. Oktober 2026) – Video hell und dunkel, nur auf dieser Seite, einmal pro Sitzung, nicht bei «weniger Bewegung», Überspringen, Notausgang", () => {
+test("Startseite: Startanimation (9. Oktober 2026; seit 18. Oktober 2026 die Irrfahrt aus PHORMA III) – ein Video auf Schwarz, Ton an/aus, nur auf dieser Seite, einmal pro Sitzung, nicht bei «weniger Bewegung», Überspringen, Notausgang", () => {
   const roh = lies("index.html");
   const html = roh.replace(/<!--[\s\S]*?-->/g, "");
-  // Markup: gleich nach <body>, vor Kopf und Inhalt, ausserhalb von <main>; das Video hat keine Quelle im Markup (das Skript wählt hell oder dunkel)
-  assert.match(html, /<body>\s*<div class="start" id="start">\s*<video muted playsinline preload="auto" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback><\/video>\s*<button class="start-weiter" type="button" lang="en">Skip intro<\/button>\s*<\/div>\s*<header class="site-header">/);
+  // Markup: gleich nach <body>, vor Kopf und Inhalt, ausserhalb von <main>; das Video hat keine Quelle im Markup (das Skript setzt sie, sonst lädt es ohne Skript)
+  assert.match(html, /<body>\s*<div class="start" id="start">\s*<video muted playsinline preload="auto" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback><\/video>\s*<div class="start-knoepfe">\s*<button class="start-ton" type="button" aria-pressed="false">Ton an<\/button>\s*<button class="start-weiter" type="button" lang="en">Skip intro<\/button>\s*<\/div>\s*<\/div>\s*<header class="site-header">/);
   assert.ok(html.indexOf('id="start"') < html.indexOf("<main"), "die Startanimation liegt vor dem Inhalt");
-  // Dateien: hell und dunkel, quadratisch, ohne Ton
-  for (const d of ["assets/start-animation.mp4", "assets/start-animation-dunkel.mp4"]) {
+  // Datei: ein Video (4 : 5, mit Ton), in beiden Modi dasselbe; die früheren hellen und dunklen sind weg
+  for (const d of ["assets/start-animation.mp4", "assets/start-animation-dunkel.mp4"]) assert.ok(!existsSync(new URL(d, root)), `${d} ist ersetzt`);
+  for (const d of ["assets/start-intro.mp4"]) {
     assert.ok(existsSync(new URL(d, root)), d);
     assert.ok(readFileSync(new URL(d, root)).length < 5_000_000, `${d} bleibt unter 5 MB (es lädt vor der Seite)`);
     assert.match(html, new RegExp(d.replace(/[.-]/g, "\\$&") + "\\?v=\\d+"), `${d} trägt eine Marke ?v=`);
@@ -159,21 +160,21 @@ test("Startseite: Startanimation (9. Oktober 2026) – Video hell und dunkel, nu
   assert.match(kopf, /classList\.add\("start-an"\)/);
   // Gestaltung: ohne Skript nie sichtbar; deckt die ganze Seite; blendet aus; fällt das Skript aus, gibt die Seite sich nach 45 Sekunden selbst frei
   assert.match(kopf, /\.start \{ display: none; \}/);
-  assert.match(kopf, /html\.start-an \.start \{[^}]*position: fixed; inset: 0;[^}]*background: var\(--bg\);/);
+  assert.match(kopf, /html\.start-an \.start \{[^}]*position: fixed; inset: 0;[^}]*background: #000;/, "schwarz wie das Video, in beiden Modi");
   assert.match(kopf, /html\.start-an \.start\.start-weg \{ opacity: 0; pointer-events: none; \}/);
   assert.match(kopf, /animation: start-notaus 0s linear 45s forwards/);
   assert.match(kopf, /@keyframes start-notaus \{ to \{ visibility: hidden; pointer-events: none; \} \}/);
-  assert.match(kopf, /\.start video \{[^}]*aspect-ratio: 1 \/ 1;/, "das Video ist quadratisch");
-  // der Knopf «Skip intro» (Wunsch vom 9. Oktober 2026; englische Beschriftung, darum lang="en"): unten rechts, orange wie die Seite (--accent), nur leicht gerundet, mindestens 44 px hoch
-  assert.match(kopf, /\.start-weiter \{[^}]*right: max\(24px, env\(safe-area-inset-right\)\); bottom: max\(24px, env\(safe-area-inset-bottom\)\);/, "unten rechts");
-  assert.match(kopf, /\.start-weiter \{[^}]*min-height: 44px;/, "Tippfläche");
-  assert.match(kopf, /\.start-weiter \{[^}]*color: var\(--accent\);[^}]*border: 1\.5px solid var\(--accent\); border-radius: 6px;/, "orange, nur leicht gerundet (keine Pille)");
+  assert.match(kopf, /\.start video \{[^}]*aspect-ratio: 4 \/ 5;/, "das Video ist 4 : 5");
+  // die Knöpfe «Ton an» und «Skip intro» (englische Beschriftung, darum lang="en"): unten rechts, orange wie die dunkle Seite (#f08a5d, auf Schwarz lesbar), nur leicht gerundet, mindestens 44 px hoch
+  assert.match(kopf, /\.start-knoepfe \{[^}]*right: max\(24px, env\(safe-area-inset-right\)\); bottom: max\(24px, env\(safe-area-inset-bottom\)\);/, "unten rechts");
+  assert.match(kopf, /\.start-weiter, \.start-ton \{[^}]*min-height: 44px;/, "Tippfläche");
+  assert.match(kopf, /\.start-weiter, \.start-ton \{[^}]*color: #f08a5d;[^}]*border: 1\.5px solid #f08a5d; border-radius: 6px;/, "orange, nur leicht gerundet (keine Pille)");
   assert.ok(!lies("styles.css").includes(".start-weiter"), "die Gestaltung steht in der Startseite, styles.css (?v=) bleibt unberührt");
-  // Skript: Video nach Farbschema, Ende, Fehler, Hängen, Tippen, Taste, Knopf; die Seite darunter ist währenddessen inert
+  // Skript: Ende, Fehler, Hängen, Tippen (nicht auf «Ton an»), Taste, Knopf; der Ton schaltet stumm/laut; die Seite darunter ist währenddessen inert
   const skript = html.slice(html.indexOf('var d = document.documentElement, el = document.getElementById("start")'));
-  assert.match(skript, /matchMedia\("\(prefers-color-scheme: dark\)"\)\.matches/);
-  assert.match(skript, /v\.src = dunkel \? "assets\/start-animation-dunkel\.mp4\?v=\d+" : "assets\/start-animation\.mp4\?v=\d+"/);
-  for (const ereignis of ['v.addEventListener("ended", weg)', 'v.addEventListener("error", weg)', 'el.addEventListener("pointerdown", weg)', 'knopf.addEventListener("click", weg)', 'addEventListener("keydown", weg, { once: true })']) assert.ok(skript.includes(ereignis), ereignis);
+  assert.match(skript, /v\.src = "assets\/start-intro\.mp4\?v=\d+"/);
+  for (const ereignis of ['v.addEventListener("ended", weg)', 'v.addEventListener("error", weg)', 'el.addEventListener("pointerdown", function (e) { if (!amTon(e)) weg(); })', 'knopf.addEventListener("click", weg)', 'removeEventListener("keydown", taste); weg();']) assert.ok(skript.includes(ereignis), ereignis);
+  assert.match(skript, /v\.muted = !v\.muted;/, "Ton an und aus");
   assert.match(skript, /p\.catch\(weg\)/, "lässt der Browser das Video nicht von selbst spielen, kommt die Seite sofort");
   assert.match(skript, /setTimeout\(weg, 6000\)/, "bleibt das Video hängen, kommt die Seite nach sechs Sekunden");
   assert.match(skript, /k\.inert = true/);

@@ -1,4 +1,5 @@
-// PHORMA III (alpha/phorma-iii/) – Tests ohne Browser: Ablauf mit Logo oder Bild, Analyse, Ton, Zustände und Höhenlinien fürs Gewebe,
+// PHORMA III (alpha/phorma-iii/) – Tests ohne Browser: Ablauf mit Logo oder Bild (Gewebe) und Stille (Irrfahrt), Analyse, Ton, Zustände und
+// Höhenlinien fürs Gewebe, der Zufallsweg der Irrfahrt,
 // Verfrickeln, MP4 mit Tonspur, Seite. Bis zum 18. Oktober 2026 waren sie Teil von tests/phorma-ii.test.mjs.
 //   node --test tests/phorma-iii.test.mjs
 import test from "node:test";
@@ -39,6 +40,37 @@ test("Ablauf: Zeichen, Gewebe, dann mit Signet das Logo (danach nur der Schluss)
   assert.ok(Math.abs(A.laufend(z, z.dauer)[0].lokal - (teil.bis - teil.von)) < 1e-9);
   assert.deepEqual(A.phase(teil, "gewebe"), [2.2, 16.2]); assert.equal(A.phase(teil, "logo"), null);
   assert.match(A.dateiname(new Date(2026, 9, 18, 9, 5), "mp4"), /^phorma-iii-2026-10-18-0905\.mp4$/);
+});
+
+test("Irrfahrt: Würfel, Irrfahrt, Logo oder Stille; kein Stehen, nach dem Effekt nur der Schluss; Unbekanntes ergibt das Gewebe", () => {
+  assert.deepEqual(A.EFFEKTE, ["gewebe", "irrfahrt"]);
+  assert.equal(A.ablaufName("irrfahrt"), "irrfahrt"); assert.equal(A.ablaufName("physarum"), "gewebe"); assert.equal(A.ablaufName(null), "gewebe");
+  const mit = A.zeitachse({ ablauf: "irrfahrt", laenge: 30 }), ohne = A.zeitachse({ ablauf: "irrfahrt", laenge: 30, signet: false });
+  assert.equal(mit.ablauf, "irrfahrt");
+  assert.deepEqual(mit.phasen.map((p) => p.name), ["wuerfel", "irrfahrt", "logo"]);
+  assert.deepEqual(ohne.phasen.map((p) => p.name), ["wuerfel", "irrfahrt", "stille"]);
+  for (const z of [mit, ohne]) {
+    assert.ok(Math.abs(z.abschnitt.bis - z.abschnitt.von - 30) < 1e-9, "so lang wie verlangt");
+    assert.equal(z.ab.stehen, undefined); assert.ok(Math.abs(z.dauer - z.abschnitt.bis - 0.3) < 1e-9, "danach nur der Schluss");
+  }
+  assert.equal(A.NACH(false, "irrfahrt"), 0.3); assert.equal(A.NACH(false, "gewebe"), 3.5);
+  assert.ok(A.zeitachse({ ablauf: "irrfahrt", laenge: 2 }).phasen[1].bis - A.zeitachse({ ablauf: "irrfahrt", laenge: 2 }).phasen[1].von >= 3.2);
+  assert.equal(A.zeitachse({ ablauf: "irrfahrt", tempo: "ruhig", signet: false }).tempo, 1.3, "ohne Ton im Tempo");
+});
+
+test("Irrfahrt: der Zufallsweg bleibt im Würfel, kommt herum, ist wiederholbar und je Zustand ein anderer; Züge werden gleichmässig verbunden", async () => {
+  const { irrweg, verbinden, PN } = await import(new URL("irrweg.js", P).href);
+  const w = irrweg(3), n = w.length / 4;
+  assert.equal(n, PN);
+  let max = 0, min = [9, 9, 9], hoch = [-9, -9, -9];
+  for (let i = 0; i < n; i++) for (let c = 0; c < 3; c++) { const v = w[i * 4 + c]; max = Math.max(max, Math.abs(v)); min[c] = Math.min(min[c], v); hoch[c] = Math.max(hoch[c], v); }
+  assert.ok(max < 0.49, `im Würfel (${max.toFixed(3)})`);
+  assert.ok(hoch.every((h, c) => h - min[c] > 0.35), `kommt herum (${hoch.map((h, c) => (h - min[c]).toFixed(2))})`);
+  assert.deepEqual(irrweg(3), w, "wiederholbar"); assert.notDeepEqual(irrweg(4), w, "ein anderer Zustand, ein anderer Weg");
+  const v = verbinden([[0, 0, 0, 1, 0, 0], [1, 1, 0, 1, 2, 0]], 31);
+  assert.deepEqual([v[0], v[1], v[30 * 4], v[30 * 4 + 1]], [0, 0, 1, 2], "vom Anfang bis zum Ende");
+  const abst = []; for (let k = 1; k < 31; k++) abst.push(Math.hypot(v[k * 4] - v[k * 4 - 4], v[k * 4 + 1] - v[k * 4 - 3]));
+  assert.ok(Math.max(...abst) - Math.min(...abst) < 1e-6, "gleichmässig nach der Länge");
 });
 
 test("Analyse: Helligkeit und Tonumfang; gleiches Bild, gleiches Ergebnis", () => {
@@ -187,10 +219,11 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /id="ton-im-video" checked> Ton an/, "Ton ausschaltbar");
   assert.match(html, /id="frickeln"> Verfrickeln[\s\S]*id="wuerfeln"/, "Verfrickeln als Option, mit neuem Wurf");
   assert.match(html, /id="signet" checked> Logo am Schluss/);
-  assert.ok(!/data-(wahl|effekt|tiefe)=/.test(html), "keine Wahl der Effekte und keine Tiefe: das ist PHORMA II");
+  assert.match(html, /data-wahl="gewebe" aria-pressed="true"[\s\S]*data-wahl="irrfahrt"/, "zwei Effekte: Gewebe und Irrfahrt");
+  assert.ok(!/data-(effekt|tiefe)=|data-wahl="(physarum|tiefe|tuch)/.test(html), "keine Kette und keine Tiefe: das ist PHORMA II");
   assert.match(html, /href="\.\.\/phorma-ii\/"/, "Hinweis auf PHORMA II");
   const dateien = readdirSync(P).filter((f) => f.endsWith(".js")), marken = new Set();
-  for (const f of ["ablauf.js", "analyse.js", "app.js", "buehne.js", "film.js", "frickeln.js", "gemeinsam.js", "gewebe.js", "kurven.js", "rechner.js", "textbild.js", "ton.js", "tonspur.js"]) assert.ok(dateien.includes(f), f);
+  for (const f of ["ablauf.js", "analyse.js", "app.js", "buehne.js", "film.js", "frickeln.js", "gemeinsam.js", "gewebe.js", "irrfahrt.js", "irrweg.js", "kurven.js", "rechner.js", "textbild.js", "ton.js", "tonspur.js"]) assert.ok(dateien.includes(f), f);
   for (const f of ["physarum.js", "tiefe.js", "tuch.js", "tuchsim.js", "tiefe-ki.js"]) assert.ok(!dateien.includes(f), `ohne ${f}`);
   for (const f of dateien) {
     const js = lies(f);
