@@ -1,7 +1,7 @@
 // PHORMA II (alpha/phorma-ii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): ein Testfoto analysieren (Physarum, Tiefe, Tuch), jede Phase der Kette
 // zeigt etwas und etwas anderes, jeder Effekt beginnt im Dunkeln und endet exakt beim Foto, dasselbe Bild nach einem Sprung zurück (Simulationen
 // mit Wiedereinstiegspunkten), Bewegungsunschärfe, Video über WebCodecs (Ersatz-Encoder), Standbild, KI-Tiefe ohne Netz fällt auf die geschätzte
-// zurück, Gewebe aus Text mit Ton (verfrickelt, Video mit Tonspur), Video als Quelle, keine Anfragen nach aussen, Handy ohne seitliches Scrollen. Mit ?test (weniger Agenten, gröbere Netze).
+// zurück, Gewebe aus Text mit Ton (verfrickelt, Video mit Tonspur), Video als Quelle, nur Ton, keine Anfragen nach aussen, Handy ohne seitliches Scrollen. Mit ?test (weniger Agenten, gröbere Netze).
 //   NODE_PATH=$(npm root -g) node tests/phorma-ii.e2e.mjs
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -325,6 +325,29 @@ await check("Video als Quelle: Standbild, sein Ton als Tonspur, im Gewebe neue L
   assert.notEqual(vorher.abdruck, nachher.abdruck);
   const ende = await messe(page, (await page.evaluate(() => window.__phorma.sz.zeit.abschnitt.bis)) + 1);
   assert.ok(ende.abw <= 2, `am Ende exakt das Standbild (${ende.abw})`);
+  assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
+await check("Nur Ton: ohne Bild, das Gewebe aus Ringen und Linien, die die Musik bewegt; am Ende leeres Papier", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  await page.click('[data-quelle="ton"]');
+  assert.equal(await page.getAttribute('[data-wahl="gewebe"]', "aria-pressed"), "true", "nur Ton wählt das Gewebe");
+  assert.ok(await page.isVisible("#ton-teil") && !(await page.isVisible("#ablage")));
+  await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
+  await page.waitForFunction(() => window.__phorma.ton && window.__phorma.A, null, { timeout: 60_000 });
+  await bereit(page);
+  const s = await page.evaluate(() => { const S = window.__phorma; return { quelle: S.quelle, phasen: S.sz.zeit.phasen.map((p) => [p.name, p.von, p.bis]), bis: S.sz.zeit.abschnitt.bis, ein: S.ton.analyse.einsaetze.map((e) => e.t) }; });
+  assert.equal(s.quelle, "ton");
+  const G = s.phasen[1], start = await messe(page, 1.4);
+  assert.ok(start.mittelAbw < 12, `zuerst Papier und die ruhenden Ringe (${start.mittelAbw.toFixed(2)})`);
+  // ein Schlag mitten im Gewebe: kurz davor und kurz danach verschieden, das Bild dunkler (mehr Tinte beim Stoss)
+  const e = s.ein.find((t) => t > G[1] + 1.5 && t < G[2] - 1.5);
+  const vor = await messe(page, e - 0.1), nach = await messe(page, e + 0.12);
+  assert.notEqual(vor.abdruck, nach.abdruck, "der Schlag bewegt die Linien");
+  assert.ok(nach.mittelAbw > 1, `Linien zu sehen (${nach.mittelAbw.toFixed(2)})`);
+  const ende = await messe(page, s.bis + 1);
+  assert.ok(ende.abw <= 2, `am Ende leeres Papier (${ende.abw})`);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });

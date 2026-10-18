@@ -370,15 +370,24 @@ function gewebeWaehlen(grund) {
   melden(`${grund}: dafür ist jetzt das Gewebe gewählt. Physarum, Tiefe und Tuch lassen sich weiter wählen – dort klingt der Ton nur mit.`);
   return true;
 }
-const quelleKnoepfe = wahl("data-quelle", "quelle", ["foto", "text", "video"], () => {
+const quelleKnoepfe = wahl("data-quelle", "quelle", ["foto", "text", "video", "ton"], () => {
   quelleZeigen();
-  const gewechselt = S.quelle !== "foto" && gewebeWaehlen(S.quelle === "text" ? "Text als Quelle" : "Video als Quelle");
-  if (S.quelle === "text" && S.text.trim()) textLaden();
+  const gewechselt = S.quelle !== "foto" && gewebeWaehlen({ text: "Text als Quelle", video: "Video als Quelle", ton: "Nur Ton" }[S.quelle]);
+  if (S.quelle === "ton") papierLaden();
+  else if (S.quelle === "text" && S.text.trim()) textLaden();
   else if (S.quelle === "video" && S.video) bildSetzen(S.video.bild);
   else if (S.quelle === "foto" && S.fotoBild) bildSetzen(S.fotoBild);
   else if (gewechselt) neu();                                              // noch nichts zu laden: wenigstens die Wahl zeigen
 });
-function quelleZeigen() { for (const q of ["foto", "text", "video"]) $(`${q}-teil`).hidden = S.quelle !== q; }
+function quelleZeigen() { for (const q of ["foto", "text", "video", "ton"]) $(`${q}-teil`).hidden = S.quelle !== q; }
+/** nur Ton: leeres Papier als Bild – die Linien macht das Gewebe aus der Musik (Wunsch vom 18. Oktober 2026: «ohne Text oder Bild, sodass sich
+ * die Bewegungen eben auf die Töne, Sounds, Rhythmen und Volumes der Musik beziehen») */
+function papierLaden() {
+  const [B, H] = filmMass(S.format), c = leinwand(B, H), x = c.getContext("2d");
+  x.fillStyle = "#f3f1ec"; x.fillRect(0, 0, B, H);
+  notiz("Nur Ton gewählt");
+  return bildSetzen(c);
+}
 S.text = erinnern("text") ?? ""; $("text").value = S.text;
 quelleZeigen();
 let textTippen = 0;
@@ -389,6 +398,7 @@ async function textLaden() {
   await bildSetzen(await textBild(S.text, ...filmMass(S.format)));
 }
 if (S.quelle === "text" && S.text.trim()) textLaden();
+if (S.quelle === "ton") papierLaden();
 // Ton: eine Audiodatei steuert das Gewebe und klingt in der Vorschau und im Video mit (tonspur.js); ohne Ton bleibt das Video stumm. Auf Wunsch wird
 // sie verfrickelt (frickeln.js: aus Schnipseln ein neues Stück, wiederholbar je Wurf); dann steuert und klingt das neue Stück.
 S.frickeln = erinnern("frickeln") === "1"; $("frickeln").checked = S.frickeln;

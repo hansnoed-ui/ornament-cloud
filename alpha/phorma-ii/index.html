@@ -169,11 +169,12 @@
     <div>
       <ol class="schritte">
         <li>
-          <h2>Foto, Text oder Video</h2>
+          <h2>Foto, Text, Video – oder nur Ton</h2>
           <div class="segment" role="group" aria-label="Quelle">
             <button type="button" data-quelle="foto">Foto</button>
             <button type="button" data-quelle="text">Text</button>
             <button type="button" data-quelle="video">Video</button>
+            <button type="button" data-quelle="ton">Nur Ton</button>
           </div>
           <div class="teil" id="foto-teil">
           <label class="ablage" id="ablage">
@@ -197,6 +198,9 @@
             </div>
             <p class="info" id="video-info"></p>
             <p class="ki-hinweis">Ein Standbild des Videos ist Anfang und Schluss, sein Ton wird die Tonspur (ausser du wählst unten eine andere Audiodatei). Im Gewebe holt jeder Schnitt die Linien eines neuen Bildes aus dem Video.</p>
+          </div>
+          <div class="teil" id="ton-teil" hidden>
+            <p class="ki-hinweis">Ohne Bild: die Linien entstehen aus der Musik – Ringe und Linien, die ihr Spektrum zum Schwingen bringt, die Bässe aufreissen und jeder Einsatz herumwirft. Wähle unten unter «Ton» eine Audiodatei.</p>
           </div>
           <section class="tafel" aria-label="Format und Tiefe">
             <div class="einstellung">
@@ -330,7 +334,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=16"></script>
+  <script type="module" src="app.js?v=17"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

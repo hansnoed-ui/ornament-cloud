@@ -12,7 +12,7 @@ import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=10"
 import { phase } from "./ablauf.js?v=10";
 import { gewebeKurven } from "./kurven.js?v=10";
 import { weichzeichnen } from "./analyse.js?v=10";
-import { FPS, tonOderErsatz } from "./ton.js?v=10";
+import { FPS, BAENDER, tonOderErsatz, wert } from "./ton.js?v=10";
 
 // Simplex-Rauschen in 3D (Ashima Arts / Stefan Gustavson, MIT)
 const RAUSCHEN = /* glsl */ `
@@ -36,48 +36,74 @@ const RAUSCHEN = /* glsl */ `
     return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
   }`;
 const VERTEX = /* glsl */ `
-  uniform sampler2D tKurven, tTon; uniform int uP, uH, uN, uNK, uSaetze; uniform float uZeit, uAbstand, uVon, uZ1, uB0, uB1, uDichte, uWechsel[23];
+  uniform sampler2D tKurven, tTon, tStoss, tSpek; uniform int uP, uH, uN, uNK, uSaetze;
+  uniform float uZeit, uAbstand, uVon, uZ1, uB0, uB1, uDichte, uWechsel[23], uAuf, uNurTon, uDrehNull; uniform mat3 uKamDreh; uniform vec3 uKam;
   attribute vec3 aRef;
   varying float vA;
   ${RAUSCHEN}
-  vec4 ton(float t) { float f = clamp(t * ${FPS}.0, 0.0, float(uN - 1)); int i = int(floor(f)); vec4 a = texelFetch(tTon, ivec2(i, 0), 0), b = texelFetch(tTon, ivec2(min(i + 1, uN - 1), 0), 0); return mix(a, b, fract(f)); }
+  vec4 lesen(sampler2D t, float zeit) { float f = clamp(zeit * ${FPS}.0, 0.0, float(uN - 1)); int i = int(floor(f)); return mix(texelFetch(t, ivec2(i, 0), 0), texelFetch(t, ivec2(min(i + 1, uN - 1), 0), 0), fract(f)); }
+  float spek(float zeit, float band) {
+    float f = clamp(zeit * ${FPS}.0, 0.0, float(uN - 1)); int i = int(floor(f)), k = int(clamp(band, 0.0, ${BAENDER - 1}.0));
+    return mix(texelFetch(tSpek, ivec2(i, k), 0).r, texelFetch(tSpek, ivec2(min(i + 1, uN - 1), k), 0).r, fract(f));
+  }
   vec3 hash3(float n) { return fract(sin(vec3(n * 12.9898, n * 78.233, n * 37.719)) * 43758.5453); }
   mat3 drehung(vec3 a, float w) { float c = cos(w), s = sin(w), t = 1.0 - c; return mat3(t*a.x*a.x + c, t*a.x*a.y + s*a.z, t*a.x*a.z - s*a.y, t*a.x*a.y - s*a.z, t*a.y*a.y + c, t*a.y*a.z + s*a.x, t*a.x*a.z + s*a.y, t*a.y*a.z - s*a.x, t*a.z*a.z + c); }
   void main() {
     int c = int(aRef.x), u = int(aRef.y); float k = aRef.z;
-    float tk = max(0.0, uZeit - k * uAbstand);
-    vec4 T = ton(tk + uVon);                                              // x: Zeit der Musik, y: laut, z: tief
-    float huelle = smoothstep(uZ1 - 1.0, uZ1 + 1.2, tk) * (1.0 - smoothstep(uB0 - 0.2, uB1 - 0.7, tk));
-    float A = huelle * (0.55 + 0.45 * T.y + 0.4 * T.z), E = T.x;
+    float tk = max(0.0, uZeit - k * uAbstand), ft = tk + uVon;              // die Zeit dieser Lage (Effekt) und im Film (Ton)
+    vec4 T = lesen(tTon, ft), St = lesen(tStoss, ft);                      // T: Zeit der Musik, laut, tief · St: Stoss, Bass-Stoss, Höhen-Stoss, Dreh
+    float huelle = smoothstep(uZ1 - 1.0, uZ1 + 0.6, tk) * (1.0 - smoothstep(uB0 - 0.2, uB1 - 0.7, tk));
+    float E = T.x, laut = T.y, tief = T.z, A = huelle * (0.2 + 0.8 * laut + 0.35 * tief);
     int satz = 0;                                                         // Video: ab jedem Wechsel die Linien eines neuen Bildes
-    for (int j = 0; j < 23; j++) if (j < uSaetze - 1 && tk + uVon >= uWechsel[j]) satz = j + 1;
-    vec4 k0 = texelFetch(tKurven, ivec2(u, c + satz * uNK), 0);
-    vec3 p0 = k0.xyz, m = texelFetch(tKurven, ivec2(uP, c + satz * uNK), 0).xyz, h = hash3(float(c) + 1.0);
+    for (int j = 0; j < 23; j++) if (j < uSaetze - 1 && ft >= uWechsel[j]) satz = j + 1;
+    int zeile = c + satz * uNK;
+    vec4 k0 = texelFetch(tKurven, ivec2(u, zeile), 0);
+    vec3 p0 = k0.xyz, m = texelFetch(tKurven, ivec2(uP, zeile), 0).xyz, h = hash3(float(c) + 1.0);
+    // 1 Spektrum: die Linie schwingt quer zu sich wie auf einem Oszilloskop; jedes Stück hört auf sein Band (über die Kurve gespiegelt verteilt)
+    vec3 pa = texelFetch(tKurven, ivec2(max(u - 1, 0), zeile), 0).xyz, pb = texelFetch(tKurven, ivec2(min(u + 1, uP - 1), zeile), 0).xyz;
+    vec2 tg = pb.xy - pa.xy; vec2 nrm = length(tg) > 1e-6 ? normalize(vec2(-tg.y, tg.x)) : vec2(0.0, 1.0);
+    // nur Ton: die Linien zeigen das Spektrum wie ein Equalizer (links Bass, rechts Höhen), die Ringe rundum; ihre Spuren werden zu Flächen, die den
+    // Verlauf des Klangs zeigen. Sonst über die Kurve gespiegelt verteilt, mit einer langsamen Welle
+    float s = float(u) / float(uP - 1), ring = float(c - 2 * (c / 2));
+    float band = uNurTon > 0.5 ? (ring > 0.5 ? s : 1.0 - abs(2.0 * s - 1.0)) * ${BAENDER - 1}.0 : (0.5 + 0.5 * sin(6.2832 * (s * (1.0 + floor(h.x * 2.0)) + h.y))) * ${BAENDER - 1}.0;
+    float sp = mix(spek(ft, floor(band)), spek(ft, floor(band) + 1.0), fract(band));
+    float welle = uNurTon > 0.5 ? 1.0 : sin(s * 6.2832 * (2.0 + floor(4.0 * h.z)) + E * 0.8 + h.x * 6.2832);
+    vec3 q = p0 + huelle * sp * (uNurTon > 0.5 ? 0.06 + 0.22 * laut : 0.04 + 0.12 * laut) * vec3(nrm * welle, (1.0 - uNurTon) * 1.2 * cos(s * 12.566 + E * 0.6));
+    // 2 Bass-Stoss: jede Kurve zuckt um ihre Mitte und springt auf; dazu ihre eigene, langsame Drehung
+    float w = A * (0.5 + 0.9 * h.x) * sin(E * (0.45 + 0.6 * h.y) + h.z * 6.2832) + huelle * St.y * (h.y - 0.5) * 2.2;
     vec3 achse = normalize(vec3(h.x - 0.5, h.y - 0.5, (h.z - 0.5) * 0.7) + vec3(0.0, 0.0, 0.001));
-    // jede Kurve dreht sich ein wenig für sich, das Ganze aber als eine Wolke: eine gemeinsame Drehung und ein gemeinsames Rauschfeld
-    float w = A * (0.5 + 0.9 * h.x) * sin(E * (0.45 + 0.6 * h.y) + h.z * 6.2832);
-    vec3 q = drehung(achse, w) * (p0 - m) * (1.0 + 0.3 * A * sin(E * 0.7 + h.x * 9.0)) + m;
+    q = drehung(achse, w) * (q - m) * (1.0 + 0.25 * A * sin(E * 0.7 + h.x * 9.0) + 0.45 * huelle * St.y) + m;
+    // 3 das Ganze: schwingt bei jedem kräftigen Einsatz (Dreh), dreht und atmet mit der Zeit der Musik, öffnet sich bei jedem Stoss
+    q = drehung(normalize(vec3(0.25, 0.35, 1.0)), huelle * (St.w - uDrehNull)) * q;   // ganze Umdrehungen abgezogen: am Schluss dreht nur der Rest zurück
     vec3 ga = normalize(vec3(sin(E * 0.13), cos(E * 0.17), 0.6 * sin(E * 0.11 + 1.0)) + vec3(0.0, 0.0, 0.001));
-    q = drehung(ga, A * 1.1 * sin(E * 0.29)) * q;
-    q += A * 0.34 * vec3(snoise(q * 1.2 + vec3(0.0, 0.0, E * 0.33)), snoise(q * 1.2 + vec3(31.0, 0.0, E * 0.33)), 1.6 * snoise(q * 1.0 + vec3(0.0, 17.0, E * 0.28)));
+    q = drehung(ga, A * 1.1 * sin(E * 0.29)) * q * (1.0 + 0.35 * huelle * St.x);
+    q += A * 0.26 * vec3(snoise(q * 1.2 + vec3(0.0, 0.0, E * 0.33)), snoise(q * 1.2 + vec3(31.0, 0.0, E * 0.33)), 1.6 * snoise(q * 1.0 + vec3(0.0, 17.0, E * 0.28)));
     q.xy += A * 0.12 * vec2(sin(E * 0.23 + h.y * 6.2832), cos(E * 0.19 + h.z * 6.2832));
+    // 4 Höhen: ein feines Flirren
+    q += huelle * St.z * 0.045 * vec3(snoise(q * 7.0 + vec3(ft * 6.0)), snoise(q * 7.0 + vec3(5.0, 1.0, ft * 6.0)), 0.0);
+    // 5 Kamera: springt bei jedem Schnitt in eine neue Einstellung (Nähe, Neigung, Rollen), stösst mit dem Bass nach
+    q = uKamDreh * q; q.xy = q.xy * uKam.x + uKam.yz;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(q, 1.0);
-    vA = k0.w * uDichte * pow(1.0 - k / float(uH), 1.3) * smoothstep(uZ1 - 1.1, uZ1 - 0.5, uZeit);   // erst wenn sich das Zeichen löst
+    float sicht = smoothstep(uAuf - 0.6, uAuf, uZeit) * (1.0 - smoothstep(uB1 - 1.2, uB1 - 0.5, uZeit));   // erst wenn sich das Zeichen löst; am Schluss weg
+    vA = k0.w * uDichte * pow(1.0 - k / float(uH), 1.3) * sicht * (0.6 + 0.3 * laut + 0.9 * St.x);
   }`;
 const FRAGMENT = /* glsl */ `uniform vec3 uTinte; varying float vA; void main() { gl_FragColor = vec4(uTinte * vA, vA); }`;
 const GRUND = /* glsl */ `
   uniform sampler2D tFoto; uniform vec3 uPapier; uniform float uFoto, uSicht; varying vec2 vUv;
   void main() { gl_FragColor = vec4(mix(uPapier, texture2D(tFoto, vUv).rgb, uFoto) * uSicht, 1.0); }`;
 
-/** die Tonkurven als Textur (je Filmbild: Zeit der Musik, laut, tief, Schnitt) */
+/** die Tonkurven als Texturen: je Filmbild (Zeit der Musik, laut, tief, Schnitt), (Stoss, Bass-Stoss, Höhen-Stoss, Dreh) und das Spektrum */
 function tonTextur(T) {
-  const n = Math.min(T.n, 4000), d = new Float32Array(n * 4);
+  const n = Math.min(T.n, 4000), d = new Float32Array(n * 4), d2 = new Float32Array(n * 4), sp = new Float32Array(n * BAENDER);
   const schnitt = new Uint8Array(n);
   for (const s of T.schnitte) for (let b = Math.round(s * FPS); b < Math.min(n, Math.round(s * FPS) + 4); b++) schnitt[b] = 1;
-  for (let b = 0; b < n; b++) { d[b * 4] = T.energie[b]; d[b * 4 + 1] = T.laut[b]; d[b * 4 + 2] = T.tief[b]; d[b * 4 + 3] = schnitt[b]; }
-  const t = new THREE.DataTexture(d, n, 1, THREE.RGBAFormat, THREE.FloatType);
-  t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true;
-  return { t, n, schnitt };
+  for (let b = 0; b < n; b++) {
+    d[b * 4] = T.energie[b]; d[b * 4 + 1] = T.laut[b]; d[b * 4 + 2] = T.tief[b]; d[b * 4 + 3] = schnitt[b];
+    d2[b * 4] = T.stoss[b]; d2[b * 4 + 1] = T.stossTief[b]; d2[b * 4 + 2] = T.stossHoch[b]; d2[b * 4 + 3] = T.dreh[b];
+    for (let k = 0; k < BAENDER; k++) sp[k * n + b] = T.spektrum ? T.spektrum[b * BAENDER + k] : 0;
+  }
+  const tex = (daten, w, h, format) => { const t = new THREE.DataTexture(daten, w, h, format, THREE.FloatType); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; };
+  return { t: tex(d, n, 1, THREE.RGBAFormat), t2: tex(d2, n, 1, THREE.RGBAFormat), sp: tex(sp, n, BAENDER, THREE.RedFormat), n, schnitt };
 }
 
 const VOR = 0.4;
@@ -105,7 +131,18 @@ export function gewebe(g, teil) {
     }
     return k;
   };
-  const saetze = [linienAus(A.hell, g.quelle === "text"), ...(g.saetze ?? []).slice(0, 23).map((z) => linienAus(z.hell, false))];
+  // nur Ton: Ringe und Linien, die erst die Musik formt
+  const tonLinien = () => Array.from({ length: Math.min(NK, 6) }, (_, c) => {
+    const k = new Float32Array(P * 2), i = c >> 1, n = 3;
+    for (let u = 0; u < P; u++) {
+      let x, y;
+      if (c % 2 === 0) { const r = 0.16 + 0.15 * i, w = -Math.PI / 2 + (u / (P - 1)) * 2 * Math.PI; x = r * Math.cos(w); y = r * Math.sin(w); }   // Ringe, Bass unten
+      else { x = (u / (P - 1) * 2 - 1) * 0.6; y = (i - 1) * 0.32; }                                                                  // Linien, Bass links
+      k[2 * u] = ((x / a + 1) / 2) * A.w - 0.5; k[2 * u + 1] = ((1 - y) / 2) * A.h - 0.5;
+    }
+    return k;
+  });
+  const saetze = [g.quelle === "ton" ? tonLinien() : linienAus(A.hell, g.quelle === "text"), ...(g.saetze ?? []).slice(0, 23).map((z) => linienAus(z.hell, false))];
   const wechsel = (g.saetze ?? []).slice(0, 23).map((z) => z.t);
   const nk = Math.max(...saetze.map((k) => k.length)), kd = new Float32Array((P + 1) * nk * saetze.length * 4);
   saetze.forEach((kurven, j) => kurven.forEach((k, c) => {
@@ -131,14 +168,28 @@ export function gewebe(g, teil) {
   const mat = new THREE.ShaderMaterial({
     vertexShader: VERTEX, fragmentShader: FRAGMENT, depthTest: false, depthWrite: false, transparent: true,
     blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendEquation: THREE.AddEquation,
-    uniforms: { tKurven: { value: kurvenTex }, tTon: { value: TT.t }, uP: { value: P }, uNK: { value: nk }, uSaetze: { value: saetze.length }, uWechsel: { value: Array.from({ length: 23 }, (_, j) => wechsel[j] ?? 1e9) }, uH: { value: NH }, uN: { value: TT.n }, uZeit: { value: 0 }, uAbstand: { value: 1 / 45 },
-      uVon: { value: 0 }, uZ1: { value: Z[1] }, uB0: { value: Bp[0] }, uB1: { value: Bp[1] }, uDichte: { value: g.test ? 0.4 : g.grob ? 0.26 : 0.2 }, uTinte: { value: new THREE.Color(0.02, 0.02, 0.025) } },
+    uniforms: { tKurven: { value: kurvenTex }, tTon: { value: TT.t }, tStoss: { value: TT.t2 }, tSpek: { value: TT.sp }, uKamDreh: { value: new THREE.Matrix3() }, uKam: { value: new THREE.Vector3(1, 0, 0) }, uAuf: { value: g.quelle === "ton" ? 0.9 : Z[1] - 0.5 }, uNurTon: { value: g.quelle === "ton" ? 1 : 0 }, uDrehNull: { value: 2 * Math.PI * Math.round(wert(T.dreh, Bp[0] + VOR) / (2 * Math.PI)) }, uP: { value: P }, uNK: { value: nk }, uSaetze: { value: saetze.length }, uWechsel: { value: Array.from({ length: 23 }, (_, j) => wechsel[j] ?? 1e9) }, uH: { value: NH }, uN: { value: TT.n }, uZeit: { value: 0 }, uAbstand: { value: 1 / 90 },
+      uVon: { value: 0 }, uZ1: { value: Z[1] }, uB0: { value: Bp[0] }, uB1: { value: Bp[1] }, uDichte: { value: (g.test ? 0.4 : g.grob ? 0.26 : 0.2) * (g.quelle === "ton" ? 1.5 : 1) }, uTinte: { value: new THREE.Color(0.02, 0.02, 0.025) } },
   });
   const linien = new THREE.LineSegments(geo, mat); linien.frustumCulled = false;
   const szene = new THREE.Scene(); szene.add(linien);
   const kam = kamera(B, H);
   const PAPIER = new THREE.Color("#f3f1ec"), NACHT = new THREE.Color(0.012, 0.012, 0.014);
   const grund = quadMaterial(GRUND, { tFoto: { value: g.fotoTex }, uPapier: { value: PAPIER.clone() }, uFoto: { value: 1 }, uSicht: { value: 0 } });
+
+  // Kamera: bei jedem Schnitt eine neue Einstellung (wie die harten Schnitte im Video von Pauric Freeman) – nah oder weit, geneigt, gerollt,
+  // verschoben –, darin langsam näher, mit jedem Stoss ein kleiner Ruck; zum Zeichen und zum Bild hin wieder gerade
+  const zufall = (j, n) => { const x = Math.sin(j * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
+  const drehM = new THREE.Matrix4(), e3 = new THREE.Euler(), m3 = new THREE.Matrix3();
+  function einstellung(u, tau, film) {
+    const schnitte = T.schnitte.filter((s) => s <= film), j = schnitte.length, seit = j ? film - schnitte[j - 1] : Math.max(0, film - G[0] - VOR);
+    const auf = weich(anteil(tau, Z[1] - 0.6, Z[1] + 0.8)) * (1 - weich(anteil(tau, Bp[0] - 0.3, Bp[0] + 0.9)));
+    const nah = j ? [1.0, 1.3, 1.6, 1.9, 0.85, 1.45][Math.floor(zufall(j, 1) * 6)] : 1.1;
+    const zoom = 1 + auf * (nah * (1 + 0.04 * Math.min(8, seit)) * (1 + 0.25 * wert(T.stoss, film)) - 1);
+    e3.set(auf * (zufall(j, 2) - 0.5) * (j ? 1.2 : 0.3), auf * (zufall(j, 3) - 0.5) * (j ? 1.2 : 0.3), auf * (zufall(j, 4) - 0.5) * (j ? 0.9 : 0.2));
+    m3.setFromMatrix4(drehM.makeRotationFromEuler(e3)); u.uKamDreh.value.copy(m3);
+    u.uKam.value.set(zoom, auf * (zufall(j, 5) - 0.5) * 0.5 * (nah - 0.6), auf * (zufall(j, 6) - 0.5) * 0.5 * (nah - 0.6));
+  }
 
   return {
     render(rt, tau) {
@@ -151,6 +202,7 @@ export function gewebe(g, teil) {
       grund.uniforms.uPapier.value.copy(schnitt ? NACHT : PAPIER);
       grund.uniforms.uSicht.value = teil.erst ? weich(anteil(tau, 0, 0.7)) : 1;
       grund.uniforms.uFoto.value = schnitt ? 0 : 1 - inOut(anteil(tau, Z[1] - 1.0, Z[1] + 0.4)) + inOut(anteil(tau, Bp[1] - 1.3, Bp[1] - 0.3));
+      einstellung(u, tau, film);
       g.pass(grund, rt);
       renderer.setRenderTarget(rt); renderer.render(szene, kam);
       const ende = weich(anteil(tau, Bp[1] - 0.6, Bp[1] - 0.1));
@@ -161,6 +213,6 @@ export function gewebe(g, teil) {
       const film = tau + VOR, n = T.einsaetze.filter((e) => e.t <= film).length;
       return `bänder ${nk} · lagen ${NH} · ${saetze.length > 1 ? `bild ${1 + wechsel.filter((w) => w <= film).length} / ${saetze.length} · ` : ""}${T.echt ? `einsatz ${n} / ${T.einsaetze.length}` : "ohne ton"}`;
     },
-    entsorgen() { geo.dispose(); mat.dispose(); grund.dispose(); kurvenTex.dispose(); TT.t.dispose(); },
+    entsorgen() { geo.dispose(); mat.dispose(); grund.dispose(); kurvenTex.dispose(); TT.t.dispose(); TT.t2.dispose(); TT.sp.dispose(); },
   };
 }

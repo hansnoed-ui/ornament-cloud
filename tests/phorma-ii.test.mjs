@@ -135,6 +135,17 @@ test("Ton: Lautstärke, Bänder und Einsätze aus einer Tonspur; Schnitte an den
   assert.ok(t.energie.every((v, i) => i === 0 || v > t.energie[i - 1]), "die Zeit der Musik steigt");
   assert.ok(T.wert(t.laut, 1.1) > T.wert(t.laut, 0.5), "laut beim Schlag");
   assert.deepEqual(T.tonAnalysieren(pcm, rate).einsaetze, t.einsaetze, "gleiche Tonspur, gleiches Ergebnis");
+  // die Musik sichtbar machen: Spektrum je Filmbild, Hüllkurven der Einsätze, ein Winkel, der bei Einsätzen schwingt, eine Zeit, die bei Schlägen springt
+  assert.equal(t.spektrum.length, t.n * T.BAENDER);
+  assert.ok(t.spektrum.every((v) => v >= 0 && v <= 1) && Math.max(...t.spektrum) > 0.9, "Spektrum 0..1");
+  for (const k of ["stoss", "stossTief", "stossHoch"]) assert.ok(t[k].length === t.n && t[k].every((v) => v >= 0 && v <= 1.0001), k);
+  const b1 = Math.round(schlaege[0] * T.FPS);
+  assert.ok(t.stoss[b1 + 2] > 0.3 && t.stoss[b1 - 3] < 0.05, "der Stoss setzt mit dem Schlag ein");
+  assert.ok(t.einsaetze.every((e) => [0, 1, 2].includes(e.band)), "jeder Einsatz einem Band zugeordnet");
+  const lauf = (a, b) => t.energie[b] - t.energie[a];
+  assert.ok(lauf(b1, b1 + 6) > 2 * lauf(b1 + 20, b1 + 26), "die Zeit der Musik läuft beim Schlag schneller als dazwischen");
+  assert.ok(Math.abs(t.dreh[b1 + 12] - t.dreh[b1 - 2]) > 0.2, "bei einem kräftigen Einsatz schwingt der Winkel");
+  assert.equal(T.tonAnalysieren(pcm, rate, { spektrum: false }).spektrum, null, "ohne Spektrum (fürs Verfrickeln)");
   assert.equal(T.tonOderErsatz(null), T.tonOderErsatz(null), "ohne Ton überall derselbe Ersatz");
   assert.equal(T.tonOderErsatz(t), t);
   const w = T.wechselZeiten(t, { von: 2, bis: 11 });
@@ -214,7 +225,7 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
   assert.match(html, /data-wahl="physarum\+tiefe\+tuch"/, "die ganze Kette als Karte");
   assert.match(html, /data-wahl="gewebe"/, "das Gewebe als eigene Karte");
-  assert.match(html, /data-quelle="foto"[\s\S]*data-quelle="text"[\s\S]*data-quelle="video"/, "Foto, Text oder Video als Quelle");
+  assert.match(html, /data-quelle="foto"[\s\S]*data-quelle="text"[\s\S]*data-quelle="video"[\s\S]*data-quelle="ton">Nur Ton/, "Foto, Text, Video oder nur Ton als Quelle");
   assert.match(html, /id="videodatei"[^>]*accept="video\/\*/, "eine Videodatei");
   assert.match(html, /id="tondatei"[^>]*accept="audio\/\*/, "eine Audiodatei");
   assert.match(html, /id="ton-im-video" checked> Ton an/, "Ton ausschaltbar");

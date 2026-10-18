@@ -33,7 +33,7 @@ export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}
   const mono = new Float32Array(n);
   let spitze = 1e-6;
   for (let i = 0; i < n; i++) { mono[i] = (L0[i] + R0[i]) / 2; spitze = Math.max(spitze, Math.abs(L0[i]), Math.abs(R0[i])); }
-  const g0 = 0.8 / spitze, A = tonAnalysieren(mono, rate);
+  const g0 = 0.8 / spitze, A = tonAnalysieren(mono, rate, { spektrum: false });
 
   // Scheiben an den Einsätzen; zu kurze an die vorige, lange in halbe Sekunden
   const schnitte = [0, ...A.einsaetze.map((e) => Math.round(Math.max(0, e.t - 0.01) * rate)), n].filter((v, i, a) => i === 0 || v > a[i - 1]);
