@@ -9,9 +9,9 @@
 //   Fraktal – ein Baum, der von der Mitte nach aussen verzweigt; mit der Zeit mehr Ebenen, die Winkel nach den Mitten
 // Alles ist eine Funktion der Zeit (wie das Gewebe): die Tonkurven aus ton.js, kein Zustand.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=11";
-import { phase } from "./ablauf.js?v=11";
-import { FPS, BAENDER, tonOderErsatz, wert, motivWechsel } from "./ton.js?v=11";
+import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=12";
+import { phase } from "./ablauf.js?v=12";
+import { FPS, BAENDER, tonOderErsatz, wert, motivWechsel } from "./ton.js?v=12";
 
 const VOR = 0.4;
 export const MOTIVE = ["punkte", "netz", "knoten", "muster", "fraktal"];
