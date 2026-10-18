@@ -412,7 +412,12 @@ $("tondatei").addEventListener("change", async (e) => {
     if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
     S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei), ausVideo: false };
     const gewechselt = gewebeWaehlen("Musik geladen");
-    await tonSetzen();
+    // noch kein Bild (kein Foto, Text oder Video): dann «Nur Ton» – sonst bliebe die Vorschau leer (Rückmeldung vom 18. Oktober 2026: «es passiert
+    // nichts im Animationsfenster, wenn ich eine Audiodatei hochlade»)
+    const ohneBild = !S.bild || (S.quelle === "text" && !S.text.trim()) || (S.quelle === "video" && !S.video);
+    if (ohneBild) { S.quelle = "ton"; merken("quelle", "ton"); quelleZeigen(); quelleKnoepfe.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.quelle === "ton"))); }
+    await tonSetzen({ auffrischen: !ohneBild });
+    if (ohneBild) { await papierLaden(); melden("Musik geladen: noch kein Bild gewählt – das Gewebe entsteht aus der Musik allein («Nur Ton»). Foto, Text oder Video lassen sich oben jederzeit wählen."); }
     if (gewechselt) melden("Musik geladen: dafür ist jetzt das Gewebe gewählt – es folgt dem Ton. Die anderen Effekte lassen sich weiter wählen; Physarum, Tiefe und Tuch hören die Musik nicht.");
   } catch (fehler) { melden(`Diese Audiodatei kann der Browser nicht lesen (${fehler?.message ?? fehler}).`, true); }
 });

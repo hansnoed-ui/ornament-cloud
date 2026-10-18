@@ -359,6 +359,17 @@ await check("Nur Ton: ohne Bild wählt das Gewebe – aus Schlaufen wachsen Flä
   await ctx.close();
 });
 
+await check("Nur Musik geladen, kein Bild: «Nur Ton» wird gewählt und die Vorschau läuft", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
+  await bereit(page);
+  const s = await page.evaluate(() => ({ quelle: window.__phorma.quelle, ablauf: window.__phorma.ablauf, ton: window.__phorma.ton?.name }));
+  assert.deepEqual(s, { quelle: "ton", ablauf: "gewebe", ton: "schlaege.wav" });
+  assert.equal(await page.getAttribute('[data-quelle="ton"]', "aria-pressed"), "true");
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
 await check("Format 9 : 16 und zurück; das Foto steht in beiden exakt", async () => {
   const { ctx, page, fehler } = await oeffne({ ablauf: "tiefe" });
   await laden(page); await bereit(page);
