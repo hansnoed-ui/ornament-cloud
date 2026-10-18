@@ -93,6 +93,33 @@ const ERSATZ_ENCODER = () => {
   };
 };
 
+// wie ERSATZ_ENCODER für H.264, aber VP9 (das Zählvideo der Tests) kodiert der echte Encoder; von jedem Bild des Exports liest er die Nummer aus
+// den 3 × 3 Feldern des Zählvideos (wie zaehlerLesen) und einen Fingerabdruck – so lässt sich der Export Bild für Bild prüfen
+const LESENDER_ENCODER = () => {
+  const Echt = window.VideoEncoder;
+  window.__export = [];
+  window.VideoEncoder = class {
+    static async isConfigSupported(cfg) { return cfg.codec.startsWith("avc1") ? { supported: cfg.codec === "avc1.640028", config: cfg } : Echt.isConfigSupported(cfg); }
+    constructor(init) { this.init = init; this.n = 0; }
+    get encodeQueueSize() { return this.echt?.encodeQueueSize ?? 0; }
+    configure(cfg) { if (cfg.codec.startsWith("avc1")) { window.__cfg = cfg; this.c = new OffscreenCanvas(cfg.width / 4, cfg.height / 4); } else { this.echt = new Echt(this.init); this.echt.configure(cfg); } }
+    encode(frame, o) {
+      if (this.echt) return this.echt.encode(frame, o);
+      const c = this.c, x = c.getContext("2d", { willReadFrequently: true }), w = c.width, h = c.height;
+      x.drawImage(frame, 0, 0, w, h);
+      const s = Math.max(w / 160, h / 128), px = (sx, sy) => x.getImageData(Math.round(w / 2 + (sx - 80) * s), Math.round(h / 2 + (sy - 64) * s), 1, 1).data;
+      let nr = 0; for (let b = 0; b < 9; b++) { const d = px(64 + (b % 3) * 16, 48 + Math.floor(b / 3) * 16); if ((d[0] + d[1] + d[2]) / 3 > 128) nr |= 1 << b; }
+      const d = x.getImageData(0, 0, w, h).data; let abdruck = 0; for (let i = 0; i < d.length; i += 16) abdruck = (abdruck * 31 + d[i] + d[i + 1] * 3) >>> 0;
+      window.__export.push({ t: frame.timestamp / 1e6, nr, abdruck });
+      const daten = new Uint8Array(16).fill(this.n & 255);
+      this.init.output({ type: o?.keyFrame ? "key" : "delta", timestamp: frame.timestamp, byteLength: 16, copyTo: (z) => z.set(daten) },
+        this.n++ ? {} : { decoderConfig: { description: new Uint8Array([1, 0x64, 0, 0x28, 0xff, 0xe1, 0, 1, 0x67, 1, 0, 1, 0x68]).buffer } });
+    }
+    async flush() { if (this.echt) await this.echt.flush(); }
+    close() { this.echt?.close(); }
+  };
+};
+
 // eine kurze Tonspur (WAV, mono, 22,05 kHz): leises Summen und Schläge alle 1,5 s
 const WAV = (() => {
   const rate = 22050, n = rate * 12, b = Buffer.alloc(44 + n * 2);
@@ -570,6 +597,54 @@ await check("Video: Scratching und Cracks – mit dem Ablauf folgt das Bild dem 
   }
   await page.evaluate(() => { const S = window.__phorma, F = S.filmAnbieter.frickel; F.splice(0); F.push(...S.__frickel); });
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
+await check("Video: Export mit dem Ablauf nach der Vorschau – Bild für Bild die Stelle des Fahrplans (kein stehendes Bild), in den Cracks und im Gefrickel anders; auch quer 16 : 9", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne({ vorher: LESENDER_ENCODER });
+  await page.click('[data-wahl="video"]');
+  await page.uncheck("#unschaerfe"); await page.uncheck("#beschriftung");
+  await page.setInputFiles("#videodatei", { name: "zaehler.mp4", mimeType: "video/mp4", buffer: await zaehlvideo(page, { sekunden: 16 }) });
+  await page.waitForFunction(() => window.__phorma.filmspur && window.__phorma.buehneFertig, null, { timeout: 180_000 });
+  await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
+  await page.waitForFunction(() => window.__phorma.ton?.karte && window.__phorma.ton.name.includes("Gefrickel") && window.__phorma.buehneFertig, null, { timeout: 180_000 });
+  const pruefen = async (format) => {
+    // erst die Vorschau laufen lassen (sie lädt die Bilder halb so gross), dann exportieren
+    await page.evaluate(() => { const S = window.__phorma; if (!S.laeuft) document.getElementById("spielen").click(); });
+    await page.waitForTimeout(1500);
+    await page.evaluate(() => { window.__export.length = 0; });
+    await page.click("#video");
+    await page.waitForFunction(() => !document.getElementById("ergebnis").hidden && !document.getElementById("video").disabled && window.__export.length > 0, null, { timeout: 900_000 });
+    const r = await page.evaluate(async () => {
+      const S = window.__phorma, k = S.ton.karte, sz = S.sz, zeilen = [];
+      for (const e of window.__export) zeilen.push({ ...e, z: S.buehne.zaehler(sz.zeit, e.t) });
+      return { frames: zeilen, bilder: sz.zeit.bilder, cfg: window.__cfg, von: S.filmAnbieter.ort(0), pos: [...k.pos], hell: [...k.hell], risse: S.filmAnbieter.risse, teile: k.teile,
+        logo: sz.zeit.phasen.find((p) => p.name === "logo")?.von ?? Infinity, info: document.getElementById("film-info").textContent };
+    });
+    assert.equal(r.frames.length, r.bilder, `${format}: jedes Bild kodiert`);
+    const erwartet = (t) => Math.floor((r.von + r.pos[Math.min(r.pos.length - 1, Math.round(t * 240))]) * 30);
+    let gleich = 0, alle = 0;
+    const nummern = new Set();
+    for (const f of r.frames) {
+      const t = f.t;
+      if (t < 0.7 || t > r.logo - 0.2 || r.hell[Math.round(t * 240)] < 0.5 || r.risse.some((x) => t > x.von - 0.05 && t < x.bis + 0.05) || /datamosh|wirbel|zerhackt|flecken|raster/.test(f.z)) continue;
+      alle++; nummern.add(f.nr); if (Math.abs(f.nr - erwartet(t)) <= 1) gleich++;
+    }
+    assert.ok(alle > 150 && gleich / alle > 0.9, `${format}: ${gleich} von ${alle} Bildern zeigen die Stelle des Fahrplans ${JSON.stringify(r.frames.filter((_, i) => i % 40 === 20).map((f) => [+f.t.toFixed(2), f.nr, erwartet(f.t)]))}`);
+    assert.ok(nummern.size > 100, `${format}: das Bild läuft (${nummern.size} verschiedene Bilder), es steht nicht`);
+    // im Crack anders als die Stelle des Fahrplans
+    const imCrack = r.frames.filter((f) => r.risse.some((x) => f.t > x.von + 0.15 && f.t < x.bis - 0.05));
+    assert.ok(imCrack.length > 5 && imCrack.some((f) => f.nr !== erwartet(f.t)), `${format}: in den Cracks bricht das Bild auf`);
+    return r;
+  };
+  const hoch = await pruefen("4 : 5");
+  assert.deepEqual([hoch.cfg.width, hoch.cfg.height], [1080, 1350]);
+  await page.click('[data-format="16:9"]');
+  await page.waitForFunction(() => window.__phorma.mass[0] === 1920 && window.__phorma.filmspur?.schl.includes("1920x1080") && window.__phorma.buehneFertig, null, { timeout: 300_000 });
+  const quer = await pruefen("16 : 9");
+  assert.deepEqual([quer.cfg.width, quer.cfg.height], [1920, 1080]);
+  assert.match(quer.info, /1920 × 1080/);
+  assert.deepEqual(fehler.filter((f) => !/willReadFrequently/.test(f)), []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
 
