@@ -15,6 +15,7 @@ import { physarum } from "./physarum.js?v=11";
 import { tiefe } from "./tiefe.js?v=11";
 import { tuch } from "./tuch.js?v=11";
 import { gewebe } from "./gewebe.js?v=11";
+import { struktur } from "./struktur.js?v=11";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -48,7 +49,7 @@ const AUSGABE = /* glsl */ `
     gl_FragColor = vec4(o, 1.0);
   }`;
 
-const FABRIK = { physarum, tiefe, tuch, gewebe };
+const FABRIK = { physarum, tiefe, tuch, gewebe, struktur };
 
 /**
  * Die Bühne für ein Foto (Canvas in Filmgrösse B × H), seine Analyse und eine Kette. optionen: tiefeQuelle ("bild" | "ki"), grob (Telefon), test (klein).

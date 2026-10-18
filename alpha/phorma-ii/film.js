@@ -1,6 +1,6 @@
 // PHORMA II – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann die Kette aus der Bühne (WebGL,
 // buehne.js), danach das Foto, darüber Abblenden und die Beschriftung, am Schluss auf Wunsch das leuchtende Signet von ornament.cloud wie in PHORMA I.
-import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=11";
+import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO, MIT_TON } from "./ablauf.js?v=11";
 import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
 import { tonOderErsatz } from "./ton.js?v=11";
 import { zufall } from "./analyse.js?v=11";
@@ -13,8 +13,8 @@ export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = 
   text = "", ton = null, laenge = null } = {}) {
   const zeit = zeitachse({ tempo, signet, ablauf, laenge });
   const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA II").trim(), fragmente: [], schnitte: [] };
-  if (zeit.ablauf === "gewebe") {
-    const T = tonOderErsatz(ton), G = zeit.phasen.find((p) => p.name === "gewebe");
+  if (MIT_TON.includes(zeit.ablauf)) {
+    const T = tonOderErsatz(ton), G = zeit.phasen.find((p) => p.name === zeit.ablauf);
     // die Schnitte zählen wie im Gewebe in der Zeit des Effekts (Vorlauf 0,4 s, ohne Tonspur im Tempo gestreckt)
     sz.schnitte = T.schnitte.map((s) => 0.4 + (s - 0.4) * zeit.tempo).filter((s) => s > G.von && s < G.bis);
     if (text) sz.fragmente = fragmentPlan(text, T, G, breite, hoehe);
