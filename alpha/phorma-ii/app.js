@@ -1,11 +1,11 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte, zeitachse, MIT_TON } from "./ablauf.js?v=13";
-import { szene, bild, standbildZeit } from "./film.js?v=13";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=13";
-import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=13";
-import { textBild } from "./textbild.js?v=13";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte, zeitachse, MIT_TON } from "./ablauf.js?v=14";
+import { szene, bild, standbildZeit } from "./film.js?v=14";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=14";
+import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=14";
+import { textBild } from "./textbild.js?v=14";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
 const $ = (id) => document.getElementById(id);
@@ -148,7 +148,7 @@ async function videoLaden(datei) {
   // der Ton des Videos wird die Tonspur, ausser eine andere Audiodatei ist gewählt
   if (!S.tonQuelle || S.tonQuelle.ausVideo) {
     try {
-      const { tonLesen } = await import("./tonspur.js?v=13");
+      const { tonLesen } = await import("./tonspur.js?v=14");
       const { buffer } = await tonLesen(datei);
       S.tonQuelle = { buffer, name: `Ton von ${datei.name}`, url, ausVideo: true };
       await tonSetzen({ auffrischen: false });
@@ -188,7 +188,7 @@ async function bildSetzen(q) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=13", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=14", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -230,7 +230,7 @@ async function kiAnwenden() {
     const nr = S.rechnen;
     try {
       notiz("Tiefe mit KI wird vorbereitet");
-      kiModul ??= await import("./tiefe-ki.js?v=13");
+      kiModul ??= await import("./tiefe-ki.js?v=14");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m), { telefon: grob, notiz });
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
@@ -254,7 +254,7 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=13");
+    buehneModul ??= await import("./buehne.js?v=14");
     if (S.buehneSchluessel !== schluessel) return;
     const saetze = S.quelle === "video" && S.video && S.ablauf === "gewebe" ? await videoSaetze() : null;
     if (S.buehneSchluessel !== schluessel) return;
@@ -408,7 +408,7 @@ $("tondatei").addEventListener("change", async (e) => {
   const datei = e.target.files?.[0]; if (!datei) return;
   melden("Der Ton wird gelesen …");
   try {
-    const { tonLesen } = await import("./tonspur.js?v=13");
+    const { tonLesen } = await import("./tonspur.js?v=14");
     const { buffer } = await tonLesen(datei);
     if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
     S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei), ausVideo: false };
@@ -433,7 +433,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
   if (S.frickeln) {
     melden("Der Ton wird verfrickelt …");
     await new Promise((ok) => setTimeout(ok, 30));
-    const { frickeln, wav } = await import("./frickeln.js?v=13");
+    const { frickeln, wav } = await import("./frickeln.js?v=14");
     if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
     const f = frickeln(kanaele, rate, { samen: S.wurf });
     buffer = new AudioBuffer({ length: f.kanaele[0].length, numberOfChannels: 2, sampleRate: rate });
@@ -516,7 +516,7 @@ function spielen() {
   const ab = !S.ende && S.t !== null && S.t < S.sz.zeit.dauer - 0.1 ? S.t : 0;
   S.ende = false;
   S.start = performance.now() - ab * 1000; zuletzt = 0;
-  if (S.ton) { const a = $("tonspur"); a.currentTime = Math.min(ab, a.duration || ab); a.play().catch(() => {}); }
+  if (S.ton) { const a = $("tonspur"); a.currentTime = Math.min(ab, a.duration || ab); tonGesperrt = false; a.play().catch(() => {}); }   // im Klick: so darf er
   if (!S.laeuft) { S.laeuft = true; requestAnimationFrame(takt); }
   $("spielen").textContent = "Anhalten";
 }
@@ -531,12 +531,24 @@ function zeigeZeit(t) {
   if (DIAGNOSE) { D.bild.push(performance.now() - t0); if (D.bild.length > 60) D.bild.shift(); }
   $("zeit").value = String(t); $("zeitcode").textContent = zeitcode(t);
 }
+// Der Ton folgt der Uhr der Vorschau (Rückmeldung vom 18. Oktober 2026: «der Ton wird nicht abgespielt während der Animation» – lief die Vorschau
+// schon, als die Musik kam oder verfrickelt wurde, bekam die Tonspur eine neue Datei, startete aber nie): je Bild nachsehen, ob er läuft und wo
+let tonGesperrt = false;
+function tonFolgen(t) {
+  const a = $("tonspur");
+  if (!S.ton || !a.getAttribute("src")) return;
+  if (a.duration && t >= a.duration - 0.05) { if (!a.paused) a.pause(); return; }
+  if (Math.abs(a.currentTime - t) > 0.25 && a.readyState >= 1) a.currentTime = t;
+  if (a.paused && !tonGesperrt) a.play().catch(() => { tonGesperrt = true; if (!a.muted) melden("Der Browser spielt den Ton erst nach einem Tippen: tippe auf «Anhalten» und wieder auf «Abspielen».", true); });
+}
+document.addEventListener("pointerdown", () => { tonGesperrt = false; }, { capture: true });
 function takt(jetzt) {
   if (!S.laeuft || !S.sz) return;
   if (!sichtbar) { S.start += jetzt - (zuletzt || jetzt); zuletzt = jetzt; requestAnimationFrame(takt); return; }
   zuletzt = jetzt;
   const t = (jetzt - S.start) / 1000;
   if (t >= S.sz.zeit.dauer) { anhalten(); zeigeZeit(S.sz.zeit.dauer - 1 / FPS); S.ende = true; return; }
+  tonFolgen(t);
   zeigeZeit(t);
   requestAnimationFrame(takt);
 }
@@ -588,7 +600,7 @@ $("video").addEventListener("click", async () => {
 });
 
 async function mitWebCodecs(cfg, sz) {
-  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=13");
+  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=14");
   // mit Ton: die Tonspur zuerst kodieren (klein), dann gehen die Bilder gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
   let ton = null;
   if (S.ton && $("ton-im-video").checked) {

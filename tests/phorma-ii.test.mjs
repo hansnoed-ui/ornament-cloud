@@ -158,7 +158,7 @@ test("Ton: Lautstärke, Bänder und Einsätze aus einer Tonspur; Schnitte an den
   assert.ok(lauf(b1, b1 + 6) > 2 * lauf(b1 + 20, b1 + 26), "die Zeit der Musik läuft beim Schlag schneller als dazwischen");
   assert.ok(Math.abs(t.dreh[b1 + 12] - t.dreh[b1 - 2]) > 0.2, "bei einem kräftigen Einsatz schwingt der Winkel");
   assert.equal(T.tonAnalysieren(pcm, rate, { spektrum: false }).spektrum, null, "ohne Spektrum (fürs Verfrickeln)");
-  assert.ok(t.tor[b1 + 3] > 0.4 && t.tor[b1 + 3] > 3 * t.tor[b1 + 35], "das Tor: auf beim Schlag, zu dazwischen");
+  assert.ok(t.tor[b1 + 3] > 0.5 && t.tor[b1 + 3] > 2.5 * t.tor[b1 + 43], "das Tor: auf beim Schlag, zu (fast) bis zum nächsten");
   assert.equal(T.tonOderErsatz(null), T.tonOderErsatz(null), "ohne Ton überall derselbe Ersatz");
   assert.equal(T.tonOderErsatz(t), t);
   const w = T.wechselZeiten(t, { von: 2, bis: 11 });

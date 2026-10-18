@@ -8,11 +8,11 @@
 //   Umrisse, der Text (das Foto) steht wieder exakt da.
 // Zustandslos: alles wird aus der Zeit gerechnet (im Vertex-Shader), die Tonkurven liegen als Textur vor und werden nur mit texelFetch gelesen.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=13";
-import { phase } from "./ablauf.js?v=13";
-import { gewebeKurven } from "./kurven.js?v=13";
-import { weichzeichnen } from "./analyse.js?v=13";
-import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=13";
+import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=14";
+import { phase } from "./ablauf.js?v=14";
+import { gewebeKurven } from "./kurven.js?v=14";
+import { weichzeichnen } from "./analyse.js?v=14";
+import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=14";
 
 // Simplex-Rauschen in 3D (Ashima Arts / Stefan Gustavson, MIT)
 const RAUSCHEN = /* glsl */ `
@@ -189,7 +189,7 @@ export function gewebe(g, teil) {
       const seit = j ? film - zs.t0 : Math.max(0, tau - (Z[1] - 0.4));
       const tor = wert(T.tor, film), nacht = zs.nacht && aktiv > 0.5, zeichen = zs.zeichen && mitBild && aktiv > 0.5;
       u.uZeit.value = tau; u.uAktiv.value = aktiv; u.uSeit.value = seit; u.uTor.value = 1 + aktiv * (tor - 1); u.uZeichen.value = zeichen ? 1 : 0;
-      u.uZustand.value.set(zufall(j, 1) * 50, zufall(j, 2) * 50, 0.35 + 0.35 * zufall(j, 3), (zufall(j, 4) - 0.5) * 3);
+      u.uZustand.value.set(zufall(j, 1) * 50, zufall(j, 2) * 50, 0.42 + 0.38 * zufall(j, 3), (zufall(j, 4) - 0.5) * 3);
       u.uAnteil.value = j ? (g.quelle === "ton" ? 0.12 + 0.3 * zufall(j, 5) : g.quelle === "text" ? 0.5 + 0.4 * zufall(j, 5) : 0.25 + 0.4 * zufall(j, 5)) : g.quelle === "ton" ? 0.3 : 1;
       // Kamera je Zustand; zum Zeichen und zum Bild hin gerade
       const nah = j ? [1.25, 1.5, 1.9, 2.4, 1.05, 1.7][Math.floor(zufall(j, 6) * 6)] : 1;
@@ -198,7 +198,7 @@ export function gewebe(g, teil) {
       m3.setFromMatrix4(drehM.makeRotationFromEuler(e3)); u.uKamDreh.value.copy(m3);
       u.uKam.value.set(zoom, aktiv * (zufall(j, 10) - 0.5) * 0.6 * (nah - 0.5), aktiv * (zufall(j, 11) - 0.5) * 0.6 * (nah - 0.5));
       u.uTinte.value.setRGB(...(nacht ? [0.95, 0.95, 0.93] : [0.02, 0.02, 0.025]));
-      u.uDichte.value = (g.test ? 1.5 : g.grob ? 1.2 : 1) * (nacht ? 0.16 : 0.34);
+      u.uDichte.value = (g.test ? 1.5 : g.grob ? 1.2 : 1) * (nacht ? 0.16 : 0.4);
       grund.uniforms.uPapier.value.copy(nacht ? NACHT : PAPIER);
       grund.uniforms.uSicht.value = teil.erst ? weich(anteil(tau, 0, 0.7)) : 1;
       grund.uniforms.uFoto.value = (zeichen ? tor : 0) + 1 - inOut(anteil(tau, Z[1] - 1.0, Z[1] + 0.4)) + inOut(anteil(tau, Bp[1] - 1.3, Bp[1] - 0.3));
