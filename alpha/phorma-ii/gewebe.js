@@ -8,11 +8,11 @@
 //   Umrisse, der Text (das Foto) steht wieder exakt da.
 // Zustandslos: alles wird aus der Zeit gerechnet (im Vertex-Shader), die Tonkurven liegen als Textur vor und werden nur mit texelFetch gelesen.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=15";
-import { phase } from "./ablauf.js?v=15";
-import { gewebeKurven } from "./kurven.js?v=15";
-import { weichzeichnen } from "./analyse.js?v=15";
-import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=15";
+import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=16";
+import { phase } from "./ablauf.js?v=16";
+import { gewebeKurven } from "./kurven.js?v=16";
+import { weichzeichnen } from "./analyse.js?v=16";
+import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=16";
 
 // Simplex-Rauschen in 3D (Ashima Arts / Stefan Gustavson, MIT)
 const RAUSCHEN = /* glsl */ `

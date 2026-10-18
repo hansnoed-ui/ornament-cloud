@@ -20,6 +20,8 @@ export const filmMass = (format = "4:5") => (format === "9:16" ? [1080, 1920] : 
 /** das Signet wie in PHORMA I: ohne den leeren Anfang, doppelt so schnell */
 export const SIGNET_VON = 12, SIGNET_BIS = 150, SIGNET_TEMPO = 2;
 export const SIGNET = (SIGNET_BIS - SIGNET_VON) / 30 / SIGNET_TEMPO;
+/** der Abspann nach dem Stehen: Bild aus, Pause, Signet, stehen, aus, Schluss (so lange klingt die Musik im Gewebe noch weiter) */
+export const ABSPANN = 0.9 + 0.15 + SIGNET + 0.6 + 0.6 + 0.2;
 
 export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 
@@ -100,7 +102,7 @@ export function zeitachse({ tempo = "normal", signet = true, ablauf = KETTE, lae
   const abschnitt = { von, bis: t };
   dazu("stehen", 3.2);
   if (signet) {
-    dazu("bildAus", 0.9); dazu("pause", 0.15); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2);
+    dazu("bildAus", 0.9); dazu("pause", 0.15); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2);   // zusammen ABSPANN
   } else dazu("schluss", 0.3);
   return { ab, ablauf: art, abschnitt, teile, phasen, dauer: t, bilder: Math.round(t * 30), tempo: f };
 }
