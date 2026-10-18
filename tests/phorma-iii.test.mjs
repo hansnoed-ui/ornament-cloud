@@ -15,6 +15,7 @@ const Kv = await import(new URL("kurven.js", P).href);
 const Fr = await import(new URL("frickeln.js", P).href);
 const St = await import(new URL("stimme.js", P).href);
 const Ri = await import(new URL("risse.js", P).href);
+const Bf = await import(new URL("bildfrickel.js", P).href);
 const lies = (p) => readFileSync(new URL(p, P), "utf8");
 
 test("Ablauf: Zeichen, Gewebe, dann mit Signet das Logo (danach nur der Schluss), ohne Signet das Bild und Stehen; mit Tonspur so lang wie die Musik", () => {
@@ -341,6 +342,57 @@ test("Cracks des Videos (risse.js): je Hüpfer einer, alle verschieden, wiederho
   assert.equal(Ri.bedarf([m], 8.1, karte).length, 1 + 2 * 3);
   assert.equal(Ri.bedarf([{ art: "schlitz", von: 1, bis: 2 }], 1.5, karte).length, Ri.SCHICHTEN);
   assert.equal(Ri.bedarf([m], 7.9, karte).length, 0);
+});
+
+test("Video-Gefrickel (bildfrickel.js): Wirbel als Kacheln, Bitcrush verpixelt, Körner als Flecken, Step-Sequencer, Datamosh an harten Schnitten; der Plan kommt aus dem Ton", () => {
+  // der Plan aus dem Stimm-Ablauf: jede Scheibe mit Zeit, Stelle, Art; im Gefrickel, Körner mit kleiner Lautstärke
+  const rate = 22050, n = rate * 14, x = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const t = i / rate; x[i] = Math.sin(t * 900) * (0.5 + 0.5 * Math.sin(t * 7)) * 0.4 * (t % 0.5 < 0.3 ? 1 : 0.1); }
+  let wirbel = 0, koerner = 0, crush = 0;
+  for (let samen = 1; samen <= 12; samen++) {
+    const a = St.stimmAblauf([x], rate, { samen }), F = a.karte.frickel, fr = a.teile[2];
+    assert.ok(F.length > 3 && F.every((e, i) => i === 0 || e.t >= F[i - 1].t), "nach der Zeit");
+    assert.ok(F.every((e) => e.t >= fr.von - 0.05 && e.t < fr.bis + 1e-6 && ["scheibe", "wirbel", "korn"].includes(e.art) && e.dauer > 0), JSON.stringify(F.slice(0, 3)));
+    assert.ok(F.filter((e) => e.art === "korn").every((e) => e.gain < 0.35), "Körner leise");
+    wirbel += F.filter((e) => e.art === "wirbel").length; koerner += F.filter((e) => e.art === "korn").length; crush += F.filter((e) => e.crush).length;
+    // zwischen den Scheiben steht das Bild der letzten (kein Sprung ans Ende der Stimme)
+    const k = a.karte, i0 = Math.round((fr.von + 0.1) * k.rate);
+    for (let i = i0 + 1; i < k.pos.length; i++) {
+      const t = i / k.rate, laeuft = F.some((e) => e.art !== "korn" && e.gain > 0.35 && t >= e.t - 0.01 && t < e.t + e.dauer + 0.01);
+      if (!laeuft) assert.ok(Math.abs(k.pos[i] - k.pos[i - 1]) < 0.02, `t ${t.toFixed(2)}: steht (${k.pos[i - 1].toFixed(2)} → ${k.pos[i].toFixed(2)})`);
+    }
+  }
+  assert.ok(wirbel > 0 && koerner > 0 && crush > 0, `über die Würfe Wirbel ${wirbel}, Körner ${koerner}, Bitcrush ${crush}`);
+  // die Regeln an einem gebauten Plan
+  const S = (t, q, o = {}) => ({ t, dauer: 0.25, q, tempo: 1, gain: 1, crush: 0, art: "scheibe", teil: 1, k: 0, ...o });
+  const E = [S(10, 1), S(10.25, 1.25, { gain: 0.78 }), S(10.5, 1.5), S(10.75, 1.75, { crush: 9 }), S(11.0, 4, { gain: 0.78 }),
+    S(11.25, 4.25, { art: "wirbel", teil: 4, gain: 0.85, dauer: 0.06 }), S(11.3, 6, { art: "korn", gain: 0.3, dauer: 0.05 })];
+  assert.equal(Bf.frickelBild(E, 9.9), null, "vor dem Gefrickel nichts");
+  assert.deepEqual(Bf.frickelBild(E, 10.1).kacheln, [1, 1]);
+  assert.ok(Bf.frickelBild(E, 10.01).blitz > 1.2 && Bf.frickelBild(E, 10.3).blitz === 1, "der volle Schlag blitzt, der halbe nicht");
+  assert.ok(Math.abs(Bf.frickelBild(E, 10.8).pixel - 1 / 22) < 1e-9, "Bitcrush 9: grobe Pixel");
+  assert.deepEqual(Bf.frickelBild(E, 11.27, { hoch: true }).kacheln, [2, 2]);
+  assert.deepEqual(Bf.kacheln(8, true), [2, 4]); assert.deepEqual(Bf.kacheln(8, false), [4, 2]); assert.deepEqual(Bf.kacheln(2, true), [1, 2]);
+  const korn = Bf.frickelBild(E, 11.32);
+  assert.equal(korn.flecken.length, 1); const [x0, y0, x1, y1] = korn.flecken[0].rect;
+  assert.ok(x0 >= 0 && y0 >= 0 && x1 <= 1 && y1 <= 1 && x1 > x0 + 0.1 && Math.abs(korn.flecken[0].q - 6.02) < 1e-9, JSON.stringify(korn.flecken));
+  assert.equal(Bf.frickelBild(E, 11.4).flecken.length, 0, "das Korn ist verklungen");
+  // ein harter Schnitt (1,75 + 0,25 → 4): bei manchen ein kurzer Datamosh, nur am Anfang; sonst nie
+  const schnitt = [];
+  for (let off = 0; off < 40; off++) {
+    const E2 = E.map((e) => ({ ...e, t: e.t + off * 10 })), b = Bf.frickelBild(E2, 11.0 + off * 10 + 0.05), spaet = Bf.frickelBild(E2, 11.0 + off * 10 + 0.2);
+    assert.equal(spaet.mosh, null); schnitt.push(!!b.mosh);
+    if (b.mosh) assert.ok(Math.abs(b.mosh.bis - b.mosh.von - Bf.SCHNITT_MOSH) < 1e-9);
+  }
+  assert.equal(Bf.frickelBild(E, 10.3).mosh, null, "ohne Sprung kein Datamosh");
+  // der Step-Sequencer: auf einem vollen Schlag mit drei Scheiben davor drei Streifen, je ein Viertel breit
+  let raster = null;
+  for (let off = 0; off < 60 && !raster; off++) {
+    const E3 = [S(0, 1), S(0.25, 2), S(0.5, 3), S(0.75, 3.25)].map((e) => ({ ...e, t: e.t + off }));
+    const b = Bf.frickelBild(E3, off + 0.8); if (b.art === "raster") raster = b;
+  }
+  assert.ok(raster && raster.flecken.length === 3 && raster.flecken.every((f, m) => Math.abs(f.rect[0] - m / 4) < 1e-9 && f.rect[3] === 1), JSON.stringify(raster));
+  assert.deepEqual(Bf.frickelBedarf(E, 11.32).quellen.length, 1);
 });
 
 test("Verfrickeln nach dem Herauslösen von Hall und Mastering (frickeln.js, auch für die Stimme): Klang wie vorher", () => {
