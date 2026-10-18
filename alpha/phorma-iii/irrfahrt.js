@@ -147,7 +147,11 @@ export function irrfahrt(g, teil) {
   // Würfel zu sehen sind, ist der mittlere davon noch verzogen»)
   const kam = new THREE.PerspectiveCamera(15, B / H, 0.1, 100);
   kam.position.set(0, 0, 1 / Math.tan(THREE.MathUtils.degToRad(7.5)));
-  const ein = T.einsaetze.map((e) => e.t), groesse = new THREE.Vector2(), drehM = new THREE.Matrix4(), e3 = new THREE.Euler(), q0 = new THREE.Quaternion(), q1 = new THREE.Quaternion();
+  // nur kräftige Einsätze, frühestens alle 0,4 s, werfen den Würfel herum: eine Stimme hat fast bei jeder Silbe einen Einsatz, und die vielen
+  // Sprünge liessen ihn verzogen wirken (Rückmeldung: «würfel noch immer verzogen»)
+  const ein = [];
+  for (const e of T.einsaetze) if (e.staerke >= 0.6 && (!ein.length || e.t - ein.at(-1) >= 0.4)) ein.push(e.t);
+  const groesse = new THREE.Vector2(), drehM = new THREE.Matrix4(), e3 = new THREE.Euler(), q0 = new THREE.Quaternion(), q1 = new THREE.Quaternion();
   const helle = 3.4 / S;                                                     // aufeinander ein heller Strich, aufgequollen rauchig
 
   return {
@@ -169,7 +173,7 @@ export function irrfahrt(g, teil) {
       // laut quillt die Wolke weit auf (breiter, nicht nur heller – sonst brennt sie zu Klumpen aus)
       let amp = (0.0006 + 0.24 * laut ** 1.2 + 0.28 * stoss + 0.16 * tief) * auf * (1 - still) * (zeichen ? 0.35 : 1);
       if (logo) amp = (1 - ruhig) * (0.03 + 0.14 * stoss);
-      // die Lage des Würfels: je Zustand gewürfelt (auch mitten in ihm), und jeder weitere Einsatz wirft ihn in eine neue Lage («noch wilder»);
+      // die Lage des Würfels: je Zustand gewürfelt (auch mitten in ihm), und jeder weitere kräftige Einsatz wirft ihn in eine neue Lage («noch wilder»);
       // darin dreht er sich, der Schlag ruckt; zum Logo gerade und von vorn. Manche Zustände zeigen drei Würfel nebeneinander.
       const nr = logo ? 0 : ein.filter((t) => t > zs.t0 + 0.02 && t <= film).length, jl = j * 37 + nr, seitL = nr ? film - ein.filter((t) => t <= film).at(-1) : seit;
       const nah = jl ? [0.95, 1.1, 1.3, 1.65, 2.6, 1.0, 0.8][Math.floor(zufall(jl, 6) * 7)] : 1.15;

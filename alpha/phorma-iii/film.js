@@ -88,10 +88,10 @@ function logoPlan(T, a, b, aus) {
     return { t: e.t, dauer: 0.08 + 0.14 * h(1), s: e.s * ruhe, art: h(2), rueck: Math.round(5 + 16 * h(3)), nr };
   }).filter((e) => e.s > 0.12);
 }
-/** Störungen in der Irrfahrt («noch wilder»): jeder starke Einsatz lässt das Bild ein Stück zurückstottern, ohne Beruhigung; Format wie logoPlan.
+/** Störungen in der Irrfahrt («noch wilder»): jeder sehr starke Einsatz (ab 0,75; mit 0,55 flackerte der Würfel bei einer Stimme dauernd) lässt das Bild ein Stück zurückstottern, ohne Beruhigung; Format wie logoPlan.
  *  Ohne die seitlich versetzten Streifen des Logos (art < 0,2): sie zerschnitten den Würfel (Rückmeldung: «schauen, dass die Box nicht verzogen ist nach Sekunde 2,3») */
 function stoerPlan(T, a, b) {
-  return T.einsaetze.filter((e) => e.t >= a + 0.3 && e.t < b - 0.2 && e.staerke >= 0.55).map((e, i) => {
+  return T.einsaetze.filter((e) => e.t >= a + 0.3 && e.t < b - 0.2 && e.staerke >= 0.75).map((e, i) => {
     const nr = i + 500, h = (k) => { const x = Math.sin(nr * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
     return { t: e.t, dauer: 0.06 + 0.12 * h(1), s: Math.min(1, 0.4 + e.staerke), art: 0.19 * h(2), rueck: Math.round(4 + 12 * h(3)), nr };
   });

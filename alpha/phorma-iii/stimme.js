@@ -316,15 +316,16 @@ export function stimmAblauf(kanaele, rate, { samen = 1, scratch = 3.5, stimme = 
   const L = new Float32Array(laenge), R = new Float32Array(laenge);
   let o = 0;
   for (let i = 0; i < teileL.length; i++) { L.set(teileL[i], o); R.set(teileR[i], o); o += teileL[i].length; }
-  // 4 Drum and Bass: drei Takte vor dem Gefrickel herein (der erste Takt blendet und öffnet sich), ein Taktanfang genau beim Gefrickel; unter der
+  // 4 Drum and Bass: einen Takt vor dem Gefrickel herein, in einem halben Takt eingeblendet (Rückmeldung: «drum n bass etwas später, kurz vor
+  // gefrickel»; vorher drei Takte), ein Taktanfang genau beim Gefrickel; unter der
   // Stimme um bis zu 8 dB geduckt, damit sie verständlich bleibt
   let unterlegt = null;
   if (dnb) {
-    const bpm = 174, takt = 240 / bpm, fr = teile.at(-1), von = Math.max(teile[1].von + 1, fr.von - 3 * takt), a = Math.round(von * rate);
+    const bpm = 174, takt = 240 / bpm, fr = teile.at(-1), von = Math.max(teile[1].von + 1, fr.von - takt), a = Math.round(von * rate);
     const [dL, dR] = drumAndBass(rate, laenge / rate - von, { samen, bpm }), vorlauf = (fr.von - von) % takt;   // so fällt ein Taktanfang auf das Gefrickel
     const versatz = Math.round(((takt - vorlauf) % takt) * rate), stimmHuelle = huelle(L.map((v, i) => (v + R[i]) / 2), rate, 0.05);
     let spitze = 1e-6; for (let i = a; i < Math.min(laenge, a + Math.round(takt * 3 * rate)); i++) spitze = Math.max(spitze, stimmHuelle[i]);
-    const ein = takt * rate, fb = fr.von * rate;
+    const ein = 0.5 * takt * rate, fb = fr.von * rate;
     for (let i = a; i < laenge; i++) {
       const j = i - a + versatz; if (j >= dL.length) break;
       const h = Math.min(1, (i - a) / ein) ** 2, duck = i < fb ? 1 - 0.6 * Math.min(1, stimmHuelle[i] / spitze) : 1;

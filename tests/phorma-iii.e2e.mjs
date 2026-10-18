@@ -317,6 +317,25 @@ await check("Stimme: säubern und der Ablauf Scratch → Stimme mit Hüpfern →
   assert.equal(s.quelle, "ton", "ohne Bild: Nur Ton");
   assert.ok(Math.abs(s.dauer - s.ton) < 0.05 && s.ton > 16 && s.ton < 19, `der Film so lang wie der Ablauf (${s.dauer.toFixed(2)} / ${s.ton.toFixed(2)})`);
   assert.equal(s.kanaele, 2, "in Stereo (der Raum)");
+  // der Ausschnitt: zuerst automatisch (10 s ab dem ersten Wort), dann mit den Reglern, in der Wellenform, zurück auf automatisch
+  assert.ok(await page.isVisible("#ausschnitt") && await page.isDisabled("#ausschnitt-auto"));
+  assert.match(await page.textContent("#ausschnitt-info"), /0:00,\d – 0:10,\d · 10,0 s \(automatisch\)/);
+  const regler = (von, laenge) => page.evaluate(([von, laenge]) => {
+    const v = document.getElementById("ausschnitt-von"), l = document.getElementById("ausschnitt-laenge");
+    v.value = String(von); l.value = String(laenge); for (const t of ["input", "change"]) l.dispatchEvent(new Event(t));
+  }, [von, laenge]);
+  await regler(2, 6);
+  await page.waitForFunction(() => window.__phorma.ton?.name.includes("Ausschnitt 0:02,0–0:08,0") && window.__phorma.ton.name.includes("Gefrickel"), null, { timeout: 120_000 });
+  const d6 = await page.evaluate(() => window.__phorma.ton.analyse.dauer);
+  assert.ok(d6 > 11 && d6 < 13.6, `Scratch + 6 s Stimme + Gefrickel (${d6.toFixed(2)})`);
+  assert.equal(await page.textContent("#ausschnitt-info"), "0:02,0 – 0:08,0 · 6,0 s");
+  assert.ok(await page.isEnabled("#ausschnitt-auto"));
+  const bild = await page.locator("#ausschnitt-bild").boundingBox();
+  await page.mouse.click(bild.x + bild.width * 0.75, bild.y + bild.height / 2);
+  await page.waitForFunction(() => /Ausschnitt 0:0[67],\d–0:1[23],\d/.test(window.__phorma.ton?.name ?? "") && window.__phorma.ton.name.includes("Gefrickel"), null, { timeout: 120_000 });
+  await page.click("#ausschnitt-auto");
+  await page.waitForFunction(() => window.__phorma.ton?.name.includes("Gefrickel") && !window.__phorma.ton.name.includes("Ausschnitt"), null, { timeout: 120_000 });
+  assert.match(await page.textContent("#ausschnitt-info"), /\(automatisch\)/);
   // neu würfeln: ein anderer Ablauf
   assert.ok(await page.isVisible("#wuerfeln"));
   const name = await page.evaluate(() => window.__phorma.ton.name);
@@ -337,6 +356,7 @@ await check("Stimme: säubern und der Ablauf Scratch → Stimme mit Hüpfern →
   assert.ok(await page.isHidden("#wuerfeln"));
   assert.ok(await page.isDisabled("#stimm-dnb"), "Drum and Bass nur mit dem Ablauf");
   assert.ok(Math.abs((await page.evaluate(() => window.__phorma.ton.analyse.dauer)) - 13) < 0.05);
+  assert.equal(await page.textContent("#ausschnitt-info"), "0:00,0 – 0:13,0 · 13,0 s (automatisch)", "ohne Ablauf: die ganze Aufnahme");
   // gar nichts: das Original
   await page.uncheck("#saeubern");
   await page.waitForFunction(() => window.__phorma.ton?.name === "stimme.wav", null, { timeout: 60_000 });

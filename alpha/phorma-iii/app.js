@@ -148,7 +148,7 @@ async function videoLaden(datei) {
     try {
       const { tonLesen } = await import("./tonspur.js?v=6");
       const { buffer } = await tonLesen(datei);
-      S.tonQuelle = { buffer, name: `Ton von ${datei.name}`, url, ausVideo: true };
+      S.tonQuelle = { buffer, name: `Ton von ${datei.name}`, url, ausVideo: true }; S.ausschnitt = null;
       await tonSetzen({ auffrischen: false });
     } catch {
       notiz("Video ohne lesbaren Ton");
@@ -372,7 +372,90 @@ S.saeubern = erinnern("saeubern") !== "0"; $("saeubern").checked = S.saeubern;
 S.stimmAblauf = erinnern("stimm-ablauf") !== "0"; $("stimm-ablauf").checked = S.stimmAblauf;
 S.stimmDnb = erinnern("stimm-dnb") !== "0"; $("stimm-dnb").checked = S.stimmDnb;
 const wuerfelbar = () => (S.tonart === "stimme" ? S.stimmAblauf : S.frickeln);
-const tonartZeigen = () => { $("musik-teil").hidden = S.tonart !== "musik"; $("stimme-teil").hidden = S.tonart !== "stimme"; $("wuerfeln").hidden = !(wuerfelbar() && S.tonQuelle); $("stimm-dnb").disabled = !S.stimmAblauf; };
+const tonartZeigen = () => {
+  $("musik-teil").hidden = S.tonart !== "musik"; $("stimme-teil").hidden = S.tonart !== "stimme"; $("wuerfeln").hidden = !(wuerfelbar() && S.tonQuelle); $("stimm-dnb").disabled = !S.stimmAblauf;
+  $("ausschnitt").hidden = !(S.tonart === "stimme" && S.tonQuelle); ausschnittZeigen();
+};
+// der Ausschnitt der Stimme (Wunsch vom 18. Oktober 2026: «Ich möchte den Ausschnitt des Voice-Clips in der Anwendung wählen können»): in der
+// Wellenform ziehen oder tippen, oder mit den Reglern «ab» und «Länge». Ohne eigene Wahl (S.ausschnitt null) wie bisher: der Ablauf nimmt rund 10 s
+// ab dem ersten Wort, sonst gilt die ganze Aufnahme. Mit eigener Wahl wird zuerst geschnitten, dann gesäubert; im Ablauf ist der Ausschnitt die klare Stimme.
+S.ausschnitt = null;
+const zeitText = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, "0").replace(".", ",")}`;
+/** der Ausschnitt in Sekunden der Aufnahme: { von, bis, eigen } */
+function ausschnittJetzt() {
+  const q = S.tonQuelle; if (!q) return null;
+  const dauer = q.buffer.duration;
+  if (S.ausschnitt) { const von = Math.min(S.ausschnitt.von, Math.max(0, dauer - 0.5)); return { von, bis: Math.min(dauer, von + S.ausschnitt.laenge), eigen: true }; }
+  if (S.stimmAblauf && q.uebersicht) { const von = q.uebersicht.beginn; return { von, bis: Math.min(dauer, von + 10), eigen: false }; }
+  return { von: 0, bis: dauer, eigen: false };
+}
+/** Wellenform (Spitzen je Spalte) und der Sprachbeginn, einmal je Aufnahme */
+async function ausschnittVorbereiten(q) {
+  if (q.uebersicht) return;
+  const { sprachbeginn } = await import("./stimme.js?v=6");
+  const b = q.buffer, n = b.length, mono = new Float32Array(n);
+  for (let k = 0; k < b.numberOfChannels; k++) { const c = b.getChannelData(k); for (let i = 0; i < n; i++) mono[i] += c[i] / b.numberOfChannels; }
+  const spalten = 800, spitzen = new Float32Array(spalten), schritt = n / spalten;
+  for (let s = 0; s < spalten; s++) { let m = 0; for (let i = Math.floor(s * schritt), e = Math.min(n, Math.floor((s + 1) * schritt)); i < e; i++) m = Math.max(m, Math.abs(mono[i])); spitzen[s] = m; }
+  const max = Math.max(1e-6, ...spitzen);
+  q.uebersicht = { spitzen: spitzen.map((v) => v / max), beginn: sprachbeginn(mono, b.sampleRate) / b.sampleRate };
+}
+function ausschnittZeigen() {
+  const q = S.tonQuelle, a = ausschnittJetzt(); if (!q || !a || $("ausschnitt").hidden) return;
+  const dauer = q.buffer.duration, von = $("ausschnitt-von"), laenge = $("ausschnitt-laenge");
+  von.max = String(Math.max(0, dauer - 0.5).toFixed(1)); laenge.max = String(Math.max(1, dauer).toFixed(1));
+  von.value = String(a.von); laenge.value = String(a.bis - a.von);
+  $("ausschnitt-info").value = `${zeitText(a.von)} – ${zeitText(a.bis)} · ${(a.bis - a.von).toFixed(1).replace(".", ",")} s${a.eigen ? "" : " (automatisch)"}`;
+  $("ausschnitt-auto").disabled = !a.eigen || $("ausschnitt-von").disabled;
+  const c = $("ausschnitt-bild"), dpr = Math.min(2, window.devicePixelRatio || 1), w = Math.max(1, Math.round(c.clientWidth * dpr)), h = Math.round(64 * dpr);
+  if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+  const g = c.getContext("2d"), st = getComputedStyle(document.documentElement), farbe = (v, std) => st.getPropertyValue(v).trim() || std;
+  g.clearRect(0, 0, w, h);
+  const x0 = (a.von / dauer) * w, x1 = (a.bis / dauer) * w;
+  g.fillStyle = farbe("--border", "#ccc"); g.globalAlpha = 0.45; g.fillRect(0, 0, w, h); g.globalAlpha = 1;
+  const sp = q.uebersicht?.spitzen;
+  if (sp) for (let x = 0; x < w; x++) {
+    const v = sp[Math.min(sp.length - 1, Math.floor((x / w) * sp.length))], y = Math.max(dpr, v * h * 0.45);
+    g.fillStyle = x >= x0 && x <= x1 ? farbe("--text", "#111") : farbe("--muted", "#888");
+    g.fillRect(x, h / 2 - y, 1, 2 * y);
+  }
+  g.strokeStyle = farbe("--accent", "#c33"); g.lineWidth = 2 * dpr; g.strokeRect(x0 + dpr, dpr, Math.max(2 * dpr, x1 - x0 - 2 * dpr), h - 2 * dpr);
+}
+function ausschnittSetzen(von, laenge, fertig) {
+  const q = S.tonQuelle; if (!q) return;
+  const dauer = q.buffer.duration; laenge = Math.max(1, Math.min(dauer, laenge)); von = Math.max(0, Math.min(dauer - Math.min(laenge, 0.5), von));
+  S.ausschnitt = { von: Math.round(von * 10) / 10, laenge: Math.round(laenge * 10) / 10 };
+  ausschnittZeigen();
+  if (fertig) tonSetzen();
+}
+{
+  const c = $("ausschnitt-bild"); let zieht = false;
+  const hin = (e, fertig) => {
+    const q = S.tonQuelle, a = ausschnittJetzt(); if (!q || !a) return;
+    const r = c.getBoundingClientRect(), t = ((e.clientX - r.left) / Math.max(1, r.width)) * q.buffer.duration, l = a.bis - a.von;
+    ausschnittSetzen(t - l / 2, l, fertig);                                   // der Ausschnitt mittig unter dem Finger
+  };
+  c.addEventListener("pointerdown", (e) => { if ($("ausschnitt-von").disabled) return; zieht = true; c.setPointerCapture(e.pointerId); hin(e, false); });
+  c.addEventListener("pointermove", (e) => { if (zieht) hin(e, false); });
+  const los = (e) => { if (!zieht) return; zieht = false; hin(e, true); };
+  c.addEventListener("pointerup", los); c.addEventListener("pointercancel", los);
+  for (const id of ["ausschnitt-von", "ausschnitt-laenge"]) {
+    $(id).addEventListener("input", () => ausschnittSetzen(Number($("ausschnitt-von").value), Number($("ausschnitt-laenge").value), false));
+    $(id).addEventListener("change", () => ausschnittSetzen(Number($("ausschnitt-von").value), Number($("ausschnitt-laenge").value), true));
+  }
+  $("ausschnitt-auto").addEventListener("click", () => { S.ausschnitt = null; ausschnittZeigen(); tonSetzen(); });
+  // Anhören: der rohe Ausschnitt der Aufnahme, noch ohne Säubern und Ablauf
+  let hoeren = null;
+  const stopp = () => { try { hoeren?.quelle.stop(); } catch {} hoeren?.ctx.close(); hoeren = null; $("ausschnitt-hoeren").textContent = "Anhören"; };
+  $("ausschnitt-hoeren").addEventListener("click", () => {
+    if (hoeren) return stopp();
+    const q = S.tonQuelle, a = ausschnittJetzt(); if (!q || !a) return;
+    const ctx = new AudioContext(), quelle = ctx.createBufferSource();
+    quelle.buffer = q.buffer; quelle.connect(ctx.destination); quelle.onended = () => { if (hoeren?.quelle === quelle) stopp(); };
+    quelle.start(0, a.von, a.bis - a.von); hoeren = { ctx, quelle }; $("ausschnitt-hoeren").textContent = "Stopp";
+  });
+  window.addEventListener("resize", () => ausschnittZeigen());
+}
 const tonartKnoepfe = wahl("data-tonart", "tonart", ["musik", "stimme"], () => { tonartZeigen(); tonSetzen(); });
 tonartZeigen();
 $("tondatei").addEventListener("change", async (e) => {
@@ -383,6 +466,7 @@ $("tondatei").addEventListener("change", async (e) => {
     const { buffer } = await tonLesen(datei);
     if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
     S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei), ausVideo: false };
+    S.ausschnitt = null;
     // noch kein Bild (kein Foto, Text oder Video): dann «Nur Ton» – sonst bliebe die Vorschau leer (Rückmeldung vom 18. Oktober 2026: «es passiert
     // nichts im Animationsfenster, wenn ich eine Audiodatei hochlade»)
     const ohneBild = !S.bild || (S.quelle === "text" && !S.text.trim()) || (S.quelle === "video" && !S.video);
@@ -397,16 +481,23 @@ $("tondatei").addEventListener("change", async (e) => {
 async function tonSetzen({ auffrischen = true } = {}) {
   const q = S.tonQuelle; if (!q) return;
   const nr = (S.tonNr = (S.tonNr ?? 0) + 1);
-  const kanaele = Array.from({ length: Math.min(2, q.buffer.numberOfChannels) }, (_, k) => q.buffer.getChannelData(k)), rate = q.buffer.sampleRate;
+  const rate = q.buffer.sampleRate;
+  let kanaele = Array.from({ length: Math.min(2, q.buffer.numberOfChannels) }, (_, k) => q.buffer.getChannelData(k));
   let buffer = q.buffer, url = q.url, name = q.name, mehr = "";
   const pause = () => new Promise((ok) => setTimeout(ok, 30));
-  if (S.tonart === "stimme" && (S.saeubern || S.stimmAblauf)) {
+  if (S.tonart === "stimme") {
+    await ausschnittVorbereiten(q); if (nr !== S.tonNr) return;
+    tonartZeigen();
+  }
+  const aus = S.tonart === "stimme" ? ausschnittJetzt() : null;
+  if (aus?.eigen) kanaele = kanaele.map((c) => c.subarray(Math.round(aus.von * rate), Math.round(aus.bis * rate)));
+  if (S.tonart === "stimme" && (S.saeubern || S.stimmAblauf || aus?.eigen)) {
     melden(S.saeubern ? "Die Stimme wird gesäubert …" : "Scratch, Stimme und Gefrickel werden gebaut …");
     await pause();
     const [{ saeubern, stimmAblauf }, { wav }] = await Promise.all([import("./stimme.js?v=6"), import("./frickeln.js?v=6")]);
     if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
     let kan = kanaele;
-    const teile = [];
+    const teile = aus?.eigen ? [`Ausschnitt ${zeitText(aus.von)}–${zeitText(aus.bis)}`] : [];
     if (S.saeubern) {
       const s = saeubern(kan, rate); kan = s.kanaele;
       teile.push(`gesäubert (Rauschen ${Math.round(s.rauschenVorher)} → ${Math.round(s.rauschenNachher)} dB)`);
@@ -414,7 +505,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
     }
     if (S.stimmAblauf) {
       if (S.saeubern) { melden("Scratch, Stimme und Gefrickel werden gebaut …"); await pause(); if (nr !== S.tonNr) return; }
-      const a = stimmAblauf(kan, rate, { samen: S.wurf, dnb: S.stimmDnb }); kan = a.kanaele;
+      const a = stimmAblauf(kan, rate, { samen: S.wurf, dnb: S.stimmDnb, ...(aus?.eigen ? { stimme: aus.bis - aus.von } : {}) }); kan = a.kanaele;
       teile.push(`Scratch, Stimme mit ${a.huepfer.length} Hüpfern, ${a.unterlegt ? "Drum and Bass, " : ""}Gefrickel, Wurf ${S.wurf}`);
       notiz(`Stimmen-Ablauf: Wurf ${S.wurf}, ${a.dauer.toFixed(1)} s, ${a.huepfer.map((h) => h.art).join(", ")}`);
     }
@@ -454,7 +545,7 @@ $("ton-weg").addEventListener("click", () => { tonEntfernen(); neu(); });
 function tonEntfernen() {
   if (S.ton?.wav) URL.revokeObjectURL(S.ton.url);
   if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
-  S.ton = null; S.tonQuelle = null; $("tonspur").removeAttribute("src"); $("tondatei").value = ""; $("ton-info").textContent = ""; $("ton-weg").hidden = true; $("wuerfeln").hidden = true;
+  S.ton = null; S.tonQuelle = null; S.ausschnitt = null; $("ausschnitt").hidden = true; $("tonspur").removeAttribute("src"); $("tondatei").value = ""; $("ton-info").textContent = ""; $("ton-weg").hidden = true; $("wuerfeln").hidden = true;
 }
 // ausschaltbar: ohne Haken bleiben Vorschau und Video stumm
 const tonStumm = () => { $("tonspur").muted = !$("ton-im-video").checked; };
@@ -633,6 +724,6 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...ablaufKnoepfe, ...quelleKnoepfe, $("text"), $("videodatei"), $("tondatei"), $("ton-weg"), $("frickeln"), $("saeubern"), $("stimm-ablauf"), $("stimm-dnb"), ...tonartKnoepfe, $("wuerfeln"), $("video"), $("png")])
-    el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A) || (el.id === "stimm-dnb" && !S.stimmAblauf);
+  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...ablaufKnoepfe, ...quelleKnoepfe, $("text"), $("videodatei"), $("tondatei"), $("ton-weg"), $("frickeln"), $("saeubern"), $("stimm-ablauf"), $("stimm-dnb"), $("ausschnitt-von"), $("ausschnitt-laenge"), $("ausschnitt-auto"), ...tonartKnoepfe, $("wuerfeln"), $("video"), $("png")])
+    el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A) || (el.id === "stimm-dnb" && !S.stimmAblauf) || (el.id === "ausschnitt-auto" && !S.ausschnitt);
 }

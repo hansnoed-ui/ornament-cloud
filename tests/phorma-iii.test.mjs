@@ -247,8 +247,8 @@ test("Stimm-Ablauf: 3,5 s Scratching, dann rund 10 s Stimme mit zwei, drei Hüpf
   assert.ok(nulldurch(0, 3.5) > 0, "im Scratching ist etwas zu hören");
   assert.deepEqual(St.stimmAblauf(s.kanaele, rate, { samen: 2 }).kanaele[0].slice(0, 30000), L.slice(0, 30000), "derselbe Wurf, dasselbe Stück");
   assert.notDeepEqual(St.stimmAblauf(s.kanaele, rate, { samen: 3 }).kanaele[0].slice(0, 30000), L.slice(0, 30000), "ein neuer Wurf scratcht anders");
-  // Drum and Bass gegen das Gefrickel hin: drei Takte (174 BPM) vorher herein, bis zum Schluss; abschaltbar
-  assert.ok(a.unterlegt && a.unterlegt.bpm === 174 && Math.abs(fr.von - a.unterlegt.von - (3 * 240) / 174) < 1e-6 && Math.abs(a.unterlegt.bis - a.dauer) < 1e-6, JSON.stringify(a.unterlegt));
+  // Drum and Bass gegen das Gefrickel hin: einen Takt (174 BPM) vorher herein («etwas später, kurz vor gefrickel»), bis zum Schluss; abschaltbar
+  assert.ok(a.unterlegt && a.unterlegt.bpm === 174 && Math.abs(fr.von - a.unterlegt.von - 240 / 174) < 1e-6 && Math.abs(a.unterlegt.bis - a.dauer) < 1e-6, JSON.stringify(a.unterlegt));
   const ohne = St.stimmAblauf(s.kanaele, rate, { samen: 2, dnb: false });
   assert.equal(ohne.unterlegt, null);
   assert.deepEqual(ohne.teile, a.teile, "dieselben Teile");
