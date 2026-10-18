@@ -11,7 +11,7 @@ Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CD
   `postMessage({ omna: "uebung" })`, und die Startseite blättert zur gezogenen Übung. Der Beitrag zu OMNA COLOR steht weiter auf «Web». Die drei Kästen Apps, Prompts und Web, die vom 9. bis
   10. Oktober 2026 unter dem Lead standen, sind seit dem 10. Oktober 2026 mit «Zettel» das Menü oben auf allen Seiten.
   **Intro** (seit 18. Oktober 2026, Wunsch: «das Video des Tests, welches im Ornament.cloud-Logo endet, als neue Intro-Sequenz der Website, mit Option Ton an/aus und Skip intro»):
-  vor der Startseite die Irrfahrt aus PHORMA III (`assets/start-intro.mp4`, 1080 × 1350, 16 s, mit Ton; gerechnet mit `NODE_PATH=$(npm root -g) node tools/phorma-intro.mjs <audiodatei>`), auf Schwarz
+  vor der Startseite die Irrfahrt aus PHORMA III (`assets/start-intro.mp4`, 864 × 1080, 16 s, mit Ton, 4 MB; gerechnet mit `NODE_PATH=$(npm root -g) node tools/phorma-intro.mjs <audiodatei>`), auf Schwarz
   in beiden Modi; es beginnt stumm, «Ton an» / «Ton aus» schaltet die Musik (beendet das Intro nicht), «Skip intro», Tippen oder eine Taste beenden es. Einmal pro Sitzung, `?start` zeigt es wieder,
   nie bei «weniger Bewegung» oder «Daten sparen». Bis dahin wuchsen die Zeichen von «ornament.cloud» (hell und dunkel, `src/videos/`, im Verlauf von Git).
 - Menü (`<nav class="menu">`, seit 10. Oktober 2026, Wunsch von Christian): **vier Kästchen mit gezeichnetem Symbol und Namen**, immer in dieser Reihenfolge: **Apps** (vier Felder, `apps/`), **Prompts** (Sprechblase mit Eingabezeichen, `masterprompts/`),
