@@ -8,7 +8,7 @@
 //               (Stotter-Rolls), selten eine Wolke aus Körnern
 //   Bogen     – leise und gefiltert hinein, dichter und offener zur Mitte, am Ende verebbt es; Tiefpass mit Resonanz, Ping-Pong-Echo im
 //               punktierten Achtel, Hall, sanfte Sättigung, auf −0,5 dB gebracht
-import { tonAnalysieren } from "./ton.js?v=14";
+import { tonAnalysieren } from "./ton.js?v=15";
 
 /** wiederholbarer Zufall (mulberry32) */
 function zufall(samen) {
