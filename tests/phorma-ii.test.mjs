@@ -135,6 +135,10 @@ test("Ton: Lautstärke, Bänder und Einsätze aus einer Tonspur; Schnitte an den
   assert.ok(t.energie.every((v, i) => i === 0 || v > t.energie[i - 1]), "die Zeit der Musik steigt");
   assert.ok(T.wert(t.laut, 1.1) > T.wert(t.laut, 0.5), "laut beim Schlag");
   assert.deepEqual(T.tonAnalysieren(pcm, rate).einsaetze, t.einsaetze, "gleiche Tonspur, gleiches Ergebnis");
+  assert.equal(T.tonOderErsatz(null), T.tonOderErsatz(null), "ohne Ton überall derselbe Ersatz");
+  assert.equal(T.tonOderErsatz(t), t);
+  const w = T.wechselZeiten(t, { von: 2, bis: 11 });
+  assert.ok(w.every((s) => s > 2.3 && s < 10) && w.length === t.schnitte.filter((s) => s > 2.3 && s < 10).length, "Wechsel der Videobilder an den Schnitten im Gewebe");
   const e = T.ersatz(20);
   assert.ok(!e.echt && e.einsaetze.length > 5 && e.energie.length === e.n);
   assert.deepEqual(T.ersatz(20).einsaetze, e.einsaetze, "der Ersatz ist wiederholbar");
@@ -188,7 +192,8 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
   assert.match(html, /data-wahl="physarum\+tiefe\+tuch"/, "die ganze Kette als Karte");
   assert.match(html, /data-wahl="gewebe"/, "das Gewebe als eigene Karte");
-  assert.match(html, /data-quelle="foto"[\s\S]*data-quelle="text"/, "Foto oder Text als Quelle");
+  assert.match(html, /data-quelle="foto"[\s\S]*data-quelle="text"[\s\S]*data-quelle="video"/, "Foto, Text oder Video als Quelle");
+  assert.match(html, /id="videodatei"[^>]*accept="video\/\*/, "eine Videodatei");
   assert.match(html, /id="tondatei"[^>]*accept="audio\/\*/, "eine Audiodatei");
   assert.match(html, /id="ton-im-video" checked> Ton an/, "Ton ausschaltbar");
   assert.match(html, /id="frickeln"> Verfrickeln[\s\S]*id="wuerfeln"/, "Verfrickeln als Option, mit neuem Wurf");

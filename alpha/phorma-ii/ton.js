@@ -90,6 +90,13 @@ export function ersatz(dauer) {
   return mitEinsaetzen({ dauer, n, laut, tief, mitte, hoch, fluss, echt: false });
 }
 
+let vorrat = null;
+/** die echte Tonspur oder ohne sie überall (Gewebe, Fragmente, Video-Linien) derselbe Ersatz – gleiche Einsätze, gleiche Schnitte */
+export const tonOderErsatz = (ton) => ton ?? (vorrat ??= ersatz(130));
+
+/** Filmzeiten, zu denen das Gewebe eines Videos neue Linien bekommt: die Schnitte im Gewebe (G: { von, bis } in Filmzeit), höchstens max */
+export const wechselZeiten = (T, G, max = 23) => T.schnitte.filter((s) => s > G.von + 0.3 && s < G.bis - 1).slice(0, max);
+
 /** Wert einer Kurve zur Zeit t (Sekunden), linear zwischen den Filmbildern */
 export function wert(kurve, t) {
   const f = klemm(t * FPS, 0, kurve.length - 1), i = Math.floor(f), u = f - i;

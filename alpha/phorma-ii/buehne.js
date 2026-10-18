@@ -55,7 +55,7 @@ const FABRIK = { physarum, tiefe, tuch, gewebe };
  * bild(zeit, t, w, h, { proben, verschluss }) → Leinwand; zaehler(zeit, t) → Text für die Beschriftung; entsorgen().
  */
 /** quelle: "foto" | "text"; ton: Analyse einer Tonspur (ton.js) oder null; laenge: Dauer des Gewebes nach der Tonspur */
-export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuelle = "bild", quelle = "foto", ton = null, laenge = null, onVerloren = null, spur = () => {} } = {}) {
+export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuelle = "bild", quelle = "foto", ton = null, laenge = null, saetze = null, onVerloren = null, spur = () => {} } = {}) {
   const B = foto.width, H = foto.height;
   const canvas = typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(B, H);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
@@ -69,7 +69,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   fotoTex.colorSpace = THREE.SRGBColorSpace; fotoTex.anisotropy = 4;
   const tiefeTex = datenTextur(A.tiefe, A.w, A.h), nahrungTex = datenTextur(A.nahrung, A.w, A.h);
   const quad = new FullScreenQuad();
-  const g = { THREE, renderer, quad, foto, fotoTex, tiefeTex, nahrungTex, A, B, H, grob, test, tiefeQuelle, quelle, ton,
+  const g = { THREE, renderer, quad, foto, fotoTex, tiefeTex, nahrungTex, A, B, H, grob, test, tiefeQuelle, quelle, ton, saetze,
     pass(material, rt) { renderer.setRenderTarget(rt); quad.material = material; quad.render(renderer); },
     loeschen(rt, farbe = 0x000000) { renderer.setRenderTarget(rt); renderer.setClearColor(farbe, 1); renderer.clear(true, true, true); } };
   const K = kette(ablauf, { laenge });

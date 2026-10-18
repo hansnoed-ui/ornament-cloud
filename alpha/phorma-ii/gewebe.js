@@ -12,7 +12,7 @@ import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=10"
 import { phase } from "./ablauf.js?v=10";
 import { gewebeKurven } from "./kurven.js?v=10";
 import { weichzeichnen } from "./analyse.js?v=10";
-import { FPS, ersatz } from "./ton.js?v=10";
+import { FPS, tonOderErsatz } from "./ton.js?v=10";
 
 // Simplex-Rauschen in 3D (Ashima Arts / Stefan Gustavson, MIT)
 const RAUSCHEN = /* glsl */ `
@@ -36,7 +36,7 @@ const RAUSCHEN = /* glsl */ `
     return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
   }`;
 const VERTEX = /* glsl */ `
-  uniform sampler2D tKurven, tTon; uniform int uP, uH, uN; uniform float uZeit, uAbstand, uVon, uZ1, uB0, uB1, uDichte;
+  uniform sampler2D tKurven, tTon; uniform int uP, uH, uN, uNK, uSaetze; uniform float uZeit, uAbstand, uVon, uZ1, uB0, uB1, uDichte, uWechsel[23];
   attribute vec3 aRef;
   varying float vA;
   ${RAUSCHEN}
@@ -49,7 +49,10 @@ const VERTEX = /* glsl */ `
     vec4 T = ton(tk + uVon);                                              // x: Zeit der Musik, y: laut, z: tief
     float huelle = smoothstep(uZ1 - 1.0, uZ1 + 1.2, tk) * (1.0 - smoothstep(uB0 - 0.2, uB1 - 0.7, tk));
     float A = huelle * (0.55 + 0.45 * T.y + 0.4 * T.z), E = T.x;
-    vec3 p0 = texelFetch(tKurven, ivec2(u, c), 0).xyz, m = texelFetch(tKurven, ivec2(uP, c), 0).xyz, h = hash3(float(c) + 1.0);
+    int satz = 0;                                                         // Video: ab jedem Wechsel die Linien eines neuen Bildes
+    for (int j = 0; j < 23; j++) if (j < uSaetze - 1 && tk + uVon >= uWechsel[j]) satz = j + 1;
+    vec4 k0 = texelFetch(tKurven, ivec2(u, c + satz * uNK), 0);
+    vec3 p0 = k0.xyz, m = texelFetch(tKurven, ivec2(uP, c + satz * uNK), 0).xyz, h = hash3(float(c) + 1.0);
     vec3 achse = normalize(vec3(h.x - 0.5, h.y - 0.5, (h.z - 0.5) * 0.7) + vec3(0.0, 0.0, 0.001));
     // jede Kurve dreht sich ein wenig für sich, das Ganze aber als eine Wolke: eine gemeinsame Drehung und ein gemeinsames Rauschfeld
     float w = A * (0.5 + 0.9 * h.x) * sin(E * (0.45 + 0.6 * h.y) + h.z * 6.2832);
@@ -59,7 +62,7 @@ const VERTEX = /* glsl */ `
     q += A * 0.34 * vec3(snoise(q * 1.2 + vec3(0.0, 0.0, E * 0.33)), snoise(q * 1.2 + vec3(31.0, 0.0, E * 0.33)), 1.6 * snoise(q * 1.0 + vec3(0.0, 17.0, E * 0.28)));
     q.xy += A * 0.12 * vec2(sin(E * 0.23 + h.y * 6.2832), cos(E * 0.19 + h.z * 6.2832));
     gl_Position = projectionMatrix * modelViewMatrix * vec4(q, 1.0);
-    vA = uDichte * pow(1.0 - k / float(uH), 1.3) * smoothstep(uZ1 - 1.1, uZ1 - 0.5, uZeit);   // erst wenn sich das Zeichen löst
+    vA = k0.w * uDichte * pow(1.0 - k / float(uH), 1.3) * smoothstep(uZ1 - 1.1, uZ1 - 0.5, uZeit);   // erst wenn sich das Zeichen löst
   }`;
 const FRAGMENT = /* glsl */ `uniform vec3 uTinte; varying float vA; void main() { gl_FragColor = vec4(uTinte * vA, vA); }`;
 const GRUND = /* glsl */ `
@@ -79,31 +82,44 @@ function tonTextur(T) {
 
 const VOR = 0.4;
 
+/** Tonumfang auf 0..1 strecken (2 % – 98 %): in dunklen Bildern mit feinen hellen Linien (ein Video auf Schwarz) lägen sonst kaum Höhenlinien */
+function gestreckt(f) {
+  const s = Float32Array.from(f).sort(), lo = s[Math.floor(s.length * 0.02)], hi = s[Math.floor(s.length * 0.98)], d = Math.max(0.05, hi - lo);
+  return f.map((v) => Math.min(1, Math.max(0, (v - lo) / d)));
+}
+
 export function gewebe(g, teil) {
   const { renderer, A, B, H } = g, a = B / H;
   const Z = phase(teil, "zeichen"), G = phase(teil, "gewebe"), Bp = phase(teil, "bild");
   const NK = g.test ? 10 : g.grob ? 20 : 28, P = g.test ? 40 : g.grob ? 64 : 80, NH = g.test ? 24 : g.grob ? 56 : 90;
-  // Kurven: beim Text die Umrisse der Buchstaben, beim Foto Linien gleicher Helligkeit (geglättet, auf drei Stufen)
-  const feld = g.quelle === "text" ? A.hell.map((v) => 1 - v) : weichzeichnen(A.hell, A.w, A.h, 2.5);
-  let kurven = gewebeKurven(feld, A.w, A.h, { stufen: g.quelle === "text" ? [0.5] : [0.32, 0.5, 0.68], anzahl: NK, punkte: P, maxLaenge: g.quelle === "text" ? 0.32 : 0.4 });
-  if (!kurven.length) kurven = [Float32Array.from({ length: P * 2 }, (_, i) => (i % 2 ? A.h / 2 : (A.w * (i / 2)) / P))];   // ein leeres Bild: eine Linie
-  // geglättet: die Ecken der Serifen und Pixelstufen würden sonst zu Splittern; die Bänder sollen weich fliessen
-  for (const k of kurven) for (let d = 0; d < 4; d++) {
-    const v = k.slice();
-    for (let u = 1; u < P - 1; u++) for (let j = 0; j < 2; j++) k[2 * u + j] = 0.25 * v[2 * (u - 1) + j] + 0.5 * v[2 * u + j] + 0.25 * v[2 * (u + 1) + j];
-  }
-  const nk = kurven.length, kd = new Float32Array((P + 1) * nk * 4);
-  kurven.forEach((k, c) => {
+  // Kurven: beim Text die Umrisse der Buchstaben, beim Foto Linien gleicher Helligkeit (geglättet, auf drei Stufen); beim Video je Satz die eines
+  // Bildes aus dem Video – der erste Satz aus dem Standbild, die weiteren ab den Schnitten (g.saetze: [{ t (Filmzeit), hell }])
+  const linienAus = (hell, text) => {
+    const feld = text ? hell.map((v) => 1 - v) : gestreckt(weichzeichnen(hell, A.w, A.h, 2.5));
+    let k = gewebeKurven(feld, A.w, A.h, { stufen: text ? [0.5] : [0.32, 0.5, 0.68], anzahl: NK, punkte: P, maxLaenge: text ? 0.32 : 0.4 });
+    if (!k.length) k = [Float32Array.from({ length: P * 2 }, (_, i) => (i % 2 ? A.h / 2 : (A.w * (i / 2)) / P))];   // ein leeres Bild: eine Linie
+    // geglättet: die Ecken der Serifen und Pixelstufen würden sonst zu Splittern; die Bänder sollen weich fliessen
+    for (const c of k) for (let d = 0; d < 4; d++) {
+      const v = c.slice();
+      for (let u = 1; u < P - 1; u++) for (let j = 0; j < 2; j++) c[2 * u + j] = 0.25 * v[2 * (u - 1) + j] + 0.5 * v[2 * u + j] + 0.25 * v[2 * (u + 1) + j];
+    }
+    return k;
+  };
+  const saetze = [linienAus(A.hell, g.quelle === "text"), ...(g.saetze ?? []).slice(0, 23).map((z) => linienAus(z.hell, false))];
+  const wechsel = (g.saetze ?? []).slice(0, 23).map((z) => z.t);
+  const nk = Math.max(...saetze.map((k) => k.length)), kd = new Float32Array((P + 1) * nk * saetze.length * 4);
+  saetze.forEach((kurven, j) => kurven.forEach((k, c) => {
+    const zeile = j * nk + c;
     let mx = 0, my = 0;
     for (let u = 0; u < P; u++) {
-      const x = ((k[2 * u] + 0.5) / A.w * 2 - 1) * a, y = 1 - ((k[2 * u + 1] + 0.5) / A.h) * 2, i = (c * (P + 1) + u) * 4;
+      const x = ((k[2 * u] + 0.5) / A.w * 2 - 1) * a, y = 1 - ((k[2 * u + 1] + 0.5) / A.h) * 2, i = (zeile * (P + 1) + u) * 4;
       kd[i] = x; kd[i + 1] = y; kd[i + 3] = 1; mx += x / P; my += y / P;
     }
-    const i = (c * (P + 1) + P) * 4; kd[i] = mx; kd[i + 1] = my; kd[i + 3] = 1;
-  });
-  const kurvenTex = new THREE.DataTexture(kd, P + 1, nk, THREE.RGBAFormat, THREE.FloatType);
+    const i = (zeile * (P + 1) + P) * 4; kd[i] = mx; kd[i + 1] = my; kd[i + 3] = 1;      // w = 0: in diesem Satz keine Kurve
+  }));
+  const kurvenTex = new THREE.DataTexture(kd, P + 1, nk * saetze.length, THREE.RGBAFormat, THREE.FloatType);
   kurvenTex.minFilter = kurvenTex.magFilter = THREE.NearestFilter; kurvenTex.needsUpdate = true;
-  const T = g.ton ?? ersatz((g.ablaufDauer ?? 20) + 1), TT = tonTextur(T);
+  const T = tonOderErsatz(g.ton), TT = tonTextur(T);
 
   // Linien: je Kurve NH Lagen, je Lage P − 1 Stücke
   const ref = new Float32Array(nk * NH * (P - 1) * 2 * 3);
@@ -115,7 +131,7 @@ export function gewebe(g, teil) {
   const mat = new THREE.ShaderMaterial({
     vertexShader: VERTEX, fragmentShader: FRAGMENT, depthTest: false, depthWrite: false, transparent: true,
     blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendEquation: THREE.AddEquation,
-    uniforms: { tKurven: { value: kurvenTex }, tTon: { value: TT.t }, uP: { value: P }, uH: { value: NH }, uN: { value: TT.n }, uZeit: { value: 0 }, uAbstand: { value: 1 / 45 },
+    uniforms: { tKurven: { value: kurvenTex }, tTon: { value: TT.t }, uP: { value: P }, uNK: { value: nk }, uSaetze: { value: saetze.length }, uWechsel: { value: Array.from({ length: 23 }, (_, j) => wechsel[j] ?? 1e9) }, uH: { value: NH }, uN: { value: TT.n }, uZeit: { value: 0 }, uAbstand: { value: 1 / 45 },
       uVon: { value: 0 }, uZ1: { value: Z[1] }, uB0: { value: Bp[0] }, uB1: { value: Bp[1] }, uDichte: { value: g.test ? 0.4 : g.grob ? 0.26 : 0.2 }, uTinte: { value: new THREE.Color(0.02, 0.02, 0.025) } },
   });
   const linien = new THREE.LineSegments(geo, mat); linien.frustumCulled = false;
@@ -143,7 +159,7 @@ export function gewebe(g, teil) {
     vorab: { szenen: [[szene, kam]], materialien: [grund] },
     zaehler(tau) {
       const film = tau + VOR, n = T.einsaetze.filter((e) => e.t <= film).length;
-      return `bänder ${nk} · lagen ${NH} · ${T.echt ? `einsatz ${n} / ${T.einsaetze.length}` : "ohne ton"}`;
+      return `bänder ${nk} · lagen ${NH} · ${saetze.length > 1 ? `bild ${1 + wechsel.filter((w) => w <= film).length} / ${saetze.length} · ` : ""}${T.echt ? `einsatz ${n} / ${T.einsaetze.length}` : "ohne ton"}`;
     },
     entsorgen() { geo.dispose(); mat.dispose(); grund.dispose(); kurvenTex.dispose(); TT.t.dispose(); },
   };

@@ -1,10 +1,10 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=10";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte, zeitachse } from "./ablauf.js?v=10";
 import { szene, bild, standbildZeit } from "./film.js?v=10";
 import { analysieren, tiefeNormieren } from "./analyse.js?v=10";
-import { tonAnalysieren } from "./ton.js?v=10";
+import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=10";
 import { textBild } from "./textbild.js?v=10";
 import { mp4 } from "../sketchory/mp4.js?v=10";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
@@ -16,7 +16,7 @@ const grob = matchMedia("(pointer: coarse)").matches, test = new URLSearchParams
 const PROBEN = 8;
 let VORSCHAU = 0.5;
 const S = { bild: null, A: null, foto: null, sz: null, laeuft: false, start: 0, t: null, film: null, rechnen: 0, buehne: null, buehneSchluessel: "",
-  format: "4:5", tiefe: "bild", quelle: "foto", text: "", fotoBild: null, ton: null, mass: [1080, 1350], ablauf: KETTE, ki: null };
+  format: "4:5", tiefe: "bild", quelle: "foto", text: "", fotoBild: null, video: null, ton: null, mass: [1080, 1350], ablauf: KETTE, ki: null };
 window.__phorma = S;   // für die Browser-Tests
 // ?diagnose: Messwerte zum Gerät sichtbar unter der Vorschau (Rückmeldung vom 17. Oktober 2026: auf einem Telefon «reagiert nicht», hier nicht
 // nachzustellen) – Zeitpunkte der Schritte, Dauer je Vorschaubild, längste Blockade, Grafikchip und Erweiterungen; als Bildschirmfoto zurückschicken
@@ -88,7 +88,8 @@ function bildchen(quelle) {
 }
 function zugeschnitten(quelle, w, h) {
   const c = leinwand(w, h), ctx = c.getContext("2d", { willReadFrequently: true });
-  const s = Math.max(w / quelle.width, h / quelle.height), dw = quelle.width * s, dh = quelle.height * s;
+  const qw = quelle.videoWidth || quelle.width, qh = quelle.videoHeight || quelle.height;           // auch ein Bild aus einem Video
+  const s = Math.max(w / qw, h / qh), dw = qw * s, dh = qh * s;
   ctx.imageSmoothingQuality = "high";
   ctx.drawImage(quelle, (w - dw) / 2, (h - dh) / 2, dw, dh);
   return c;
@@ -115,7 +116,67 @@ async function fotoLaden(datei) {
   ablage.classList.add("hat-bild"); $("ablage-titel").textContent = "Anderes Foto wählen";
   await bildSetzen(q);
 }
-/** ein Bild (Foto oder Text) als Quelle: das alte und seine Bühne sofort freigeben, nicht erst, wenn das neue analysiert ist */
+// ——— Video als Quelle: ein Standbild ist das Foto, sein Ton (falls lesbar und keine andere Audiodatei gewählt) die Tonspur; im Gewebe holen die
+// Schnitte die Linien neuer Bilder aus dem Video (Wunsch vom 18. Oktober 2026: «cool wäre es auch mit Videodateien») ———
+const videoSuchen = (v, t) => new Promise((ok, nein) => {
+  const fertig = () => { clearTimeout(z); v.removeEventListener("seeked", fertig); ok(); };
+  const z = setTimeout(() => { v.removeEventListener("seeked", fertig); nein(new Error("das Video lässt sich nicht spulen")); }, 10_000);
+  v.addEventListener("seeked", fertig);
+  v.currentTime = Math.abs(v.currentTime - t) < 1e-3 ? t + 0.001 : t;
+});
+$("videodatei").addEventListener("change", (e) => { if (e.target.files?.[0]) videoLaden(e.target.files[0]); });
+async function videoLaden(datei) {
+  notiz(`Video gewählt (${Math.round((datei.size ?? 0) / 1024)} kB)`);
+  melden("Das Video wird gelesen …");
+  const url = URL.createObjectURL(datei), v = document.createElement("video");
+  v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = url;
+  try {
+    await new Promise((ok, nein) => { v.onloadeddata = ok; v.onerror = () => nein(new Error("kein lesbares Video")); });
+    // WebM aus einem Rekorder nennt oft keine Dauer (Infinity): einmal weit hinter das Ende spulen, dann kennt der Browser sie
+    if (v.duration === Infinity) await videoSuchen(v, 1e7).catch(() => {});
+    if (!(v.duration > 0) || !Number.isFinite(v.duration) || !v.videoWidth) throw new Error("ohne Bild oder Dauer");
+    await videoSuchen(v, Math.min(0.5, v.duration / 3));
+  } catch (fehler) { URL.revokeObjectURL(url); melden(`Dieses Video kann der Browser nicht öffnen (${fehler?.message ?? fehler}). Versuche MP4 (H.264) oder WebM.`, true); return; }
+  const s = Math.min(1, GROESST / Math.max(v.videoWidth, v.videoHeight)), c = leinwand(Math.round(v.videoWidth * s), Math.round(v.videoHeight * s));
+  c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+  // die Adresse des alten Videos bleibt (eine Datei, kein Speicher): seine Tonspur kann noch daran hängen
+  S.video = { el: v, url, name: datei.name, dauer: v.duration, bild: c, saetze: null };
+  notiz(`Video gelesen: ${v.duration.toFixed(1)} s, ${v.videoWidth} × ${v.videoHeight}`);
+  $("video-info").textContent = `${datei.name} · ${v.duration.toFixed(1).replace(".", ",")} s · ${v.videoWidth} × ${v.videoHeight}`;
+  $("video-bild").src = bildchen(c); $("video-bild").hidden = false;
+  if (S.quelle !== "video") { S.quelle = "video"; merken("quelle", "video"); quelleZeigen(); }
+  // der Ton des Videos wird die Tonspur, ausser eine andere Audiodatei ist gewählt
+  if (!S.tonQuelle || S.tonQuelle.ausVideo) {
+    try {
+      const { tonLesen } = await import("./tonspur.js?v=10");
+      const { buffer } = await tonLesen(datei);
+      S.tonQuelle = { buffer, name: `Ton von ${datei.name}`, url, ausVideo: true };
+      await tonSetzen({ auffrischen: false });
+    } catch {
+      notiz("Video ohne lesbaren Ton");
+      if (S.tonQuelle?.ausVideo) tonEntfernen();                         // nicht den Ton des vorigen Videos behalten
+    }
+  }
+  await bildSetzen(c);
+}
+/** die Bilder aus dem Video, deren Linien das Gewebe ab den Schnitten zeigt: [{ t (Zeit des Effekts), hell }]; gemerkt, solange Format und Schnitte gleich bleiben */
+async function videoSaetze() {
+  const V = S.video, G = zeitachse({ tempo: "normal", ablauf: "gewebe", laenge: laenge() }).phasen.find((p) => p.name === "gewebe");
+  const zeiten = wechselZeiten(tonOderErsatz(S.ton?.analyse ?? null), G), w = S.A.w, h = S.A.h, schl = `${w}x${h}|${zeiten.join(",")}`;
+  if (V.saetze?.schl === schl) return V.saetze.liste;
+  melden(`${zeiten.length} Bilder werden aus dem Video gelesen …`);
+  const liste = [];
+  for (const t of zeiten) {
+    await videoSuchen(V.el, Math.min(V.dauer - 0.04, (t + 0.04) % V.dauer));
+    const d = zugeschnitten(V.el, w, h).getContext("2d").getImageData(0, 0, w, h).data, hell = new Float32Array(w * h);
+    for (let i = 0; i < w * h; i++) hell[i] = (0.2126 * d[i * 4] + 0.7152 * d[i * 4 + 1] + 0.0722 * d[i * 4 + 2]) / 255;
+    liste.push({ t, hell });
+  }
+  notiz(`${liste.length} Bilder aus dem Video gelesen`);
+  V.saetze = { schl, liste };
+  return liste;
+}
+/** ein Bild (Foto, Text oder Standbild eines Videos) als Quelle: das alte und seine Bühne sofort freigeben, nicht erst, wenn das neue analysiert ist */
 async function bildSetzen(q) {
   anhalten(); S.sz = null; S.t = null;
   S.buehne?.entsorgen(); S.buehne = null; S.buehneSchluessel = ""; S.buehneWarm = false; S.buehneFertig = false;
@@ -185,7 +246,7 @@ async function kiAnwenden() {
 // ——— Bühne (WebGL 2): erst laden, wenn ein Foto da ist ———
 let buehneModul = null;
 async function buehneBereit() {
-  const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.A.tiefe === S.A.geschaetzt ? "bild" : "ki"}|${S.quelle}|${S.ton?.name ?? ""}|${laenge()}` : "";
+  const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.A.tiefe === S.A.geschaetzt ? "bild" : "ki"}|${S.quelle}|${S.ton?.name ?? ""}|${laenge()}|${S.quelle === "video" ? S.video?.url : ""}` : "";
   if (schluessel === S.buehneSchluessel) return;
   S.buehneSchluessel = schluessel; S.buehneFertig = false; S.buehneWarm = false; S.spurBilder = 0;
   if (S.sz) S.sz.buehne = null;
@@ -195,8 +256,10 @@ async function buehneBereit() {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
     buehneModul ??= await import("./buehne.js?v=10");
     if (S.buehneSchluessel !== schluessel) return;
+    const saetze = S.quelle === "video" && S.video && S.ablauf === "gewebe" ? await videoSaetze() : null;
+    if (S.buehneSchluessel !== schluessel) return;
     notiz(`Bühne wird gebaut: ${S.ablauf}`);
-    S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, quelle: S.quelle, ton: S.ton?.analyse ?? null, laenge: laenge(), tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz,
+    S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, quelle: S.quelle, ton: S.ton?.analyse ?? null, laenge: laenge(), saetze, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz,
       onVerloren: () => {
         if (S.buehneSchluessel !== schluessel) return;
         anhalten();
@@ -297,8 +360,11 @@ let umstellen = 0;
 const spaeterLesen = () => { clearTimeout(umstellen); umstellen = setTimeout(lesen, 250); };
 const formatKnoepfe = wahl("data-format", "format", FORMATE, () => { S.ki = null; if (S.quelle === "text") { clearTimeout(umstellen); umstellen = setTimeout(textLaden, 250); } else spaeterLesen(); });
 // Quelle: ein Foto oder ein Text (Wunsch vom 17. Oktober 2026: Effekte «für Texte und Audiofiles»); der Text wird zu einem Bild (textbild.js)
-const quelleKnoepfe = wahl("data-quelle", "quelle", ["foto", "text"], () => { quelleZeigen(); if (S.quelle === "text") textLaden(); else if (S.fotoBild) bildSetzen(S.fotoBild); });
-function quelleZeigen() { $("foto-teil").hidden = S.quelle !== "foto"; $("text-teil").hidden = S.quelle !== "text"; }
+const quelleKnoepfe = wahl("data-quelle", "quelle", ["foto", "text", "video"], () => {
+  quelleZeigen();
+  if (S.quelle === "text") textLaden(); else if (S.quelle === "video") { if (S.video) bildSetzen(S.video.bild); } else if (S.fotoBild) bildSetzen(S.fotoBild);
+});
+function quelleZeigen() { for (const q of ["foto", "text", "video"]) $(`${q}-teil`).hidden = S.quelle !== q; }
 S.text = erinnern("text") ?? ""; $("text").value = S.text;
 quelleZeigen();
 let textTippen = 0;
@@ -319,15 +385,15 @@ $("tondatei").addEventListener("change", async (e) => {
   try {
     const { tonLesen } = await import("./tonspur.js?v=10");
     const { buffer } = await tonLesen(datei);
-    if (S.tonQuelle?.url) URL.revokeObjectURL(S.tonQuelle.url);
-    S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei) };
+    if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
+    S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei), ausVideo: false };
     await tonSetzen();
   } catch (fehler) { melden(`Diese Audiodatei kann der Browser nicht lesen (${fehler?.message ?? fehler}).`, true); }
 });
 /** S.ton aus der gelesenen Datei: so wie sie ist oder verfrickelt */
-async function tonSetzen() {
+async function tonSetzen({ auffrischen = true } = {}) {
   const q = S.tonQuelle; if (!q) return;
-  if (S.ton?.url && S.ton.url !== q.url) URL.revokeObjectURL(S.ton.url);
+  if (S.ton?.wav) URL.revokeObjectURL(S.ton.url);                          // nur die eigene WAV des verfrickelten Stücks
   const kanaele = Array.from({ length: Math.min(2, q.buffer.numberOfChannels) }, (_, k) => q.buffer.getChannelData(k)), rate = q.buffer.sampleRate;
   let buffer = q.buffer, url = q.url, name = q.name, mehr = "";
   if (S.frickeln) {
@@ -344,22 +410,23 @@ async function tonSetzen() {
   const pcm = new Float32Array(buffer.length);
   for (let k = 0; k < buffer.numberOfChannels; k++) { const c = buffer.getChannelData(k); for (let i = 0; i < c.length; i++) pcm[i] += c[i] / buffer.numberOfChannels; }
   const analyse = tonAnalysieren(pcm, rate);
-  S.ton = { buffer, analyse, name, url };
+  S.ton = { buffer, analyse, name, url, wav: url !== q.url };
   $("tonspur").src = url;
   $("ton-info").textContent = `${name}${mehr} · ${analyse.dauer.toFixed(1).replace(".", ",")} s · ${analyse.einsaetze.length} Einsätze · ${analyse.schnitte.length} Schnitte`;
   $("ton-weg").hidden = false; $("wuerfeln").hidden = !S.frickeln;
   notiz(`Ton gelesen: ${analyse.dauer.toFixed(1)} s, ${analyse.einsaetze.length} Einsätze`);
+  if (!auffrischen) return;
   melden(S.ablauf === "gewebe" ? "Ton bereit: das Gewebe folgt ihm." : "Ton bereit: er klingt mit; bewegen lässt er das Gewebe.");
   neu();
 }
 $("frickeln").addEventListener("change", () => { S.frickeln = $("frickeln").checked; merken("frickeln", S.frickeln ? "1" : "0"); $("wuerfeln").hidden = !(S.frickeln && S.tonQuelle); tonSetzen(); });
 $("wuerfeln").addEventListener("click", () => { S.wurf = (S.wurf % 9999) + 1; merken("wurf", String(S.wurf)); tonSetzen(); });
-$("ton-weg").addEventListener("click", () => {
-  if (S.ton?.url) URL.revokeObjectURL(S.ton.url);
-  if (S.tonQuelle?.url && S.tonQuelle.url !== S.ton?.url) URL.revokeObjectURL(S.tonQuelle.url);
+$("ton-weg").addEventListener("click", () => { tonEntfernen(); neu(); });
+function tonEntfernen() {
+  if (S.ton?.wav) URL.revokeObjectURL(S.ton.url);
+  if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
   S.ton = null; S.tonQuelle = null; $("tonspur").removeAttribute("src"); $("tondatei").value = ""; $("ton-info").textContent = ""; $("ton-weg").hidden = true; $("wuerfeln").hidden = true;
-  neu();
-});
+}
 // ausschaltbar: ohne Haken bleiben Vorschau und Video stumm
 const tonStumm = () => { $("tonspur").muted = !$("ton-im-video").checked; };
 { const v = erinnern("ton-im-video"); if (v !== null) $("ton-im-video").checked = v === "1"; }
@@ -559,6 +626,6 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...tiefeKnoepfe, ...wahlKnoepfe, ...effektKnoepfe, ...quelleKnoepfe, $("text"), $("tondatei"), $("ton-weg"), $("frickeln"), $("wuerfeln"), $("video"), $("png")])
+  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...tiefeKnoepfe, ...wahlKnoepfe, ...effektKnoepfe, ...quelleKnoepfe, $("text"), $("videodatei"), $("tondatei"), $("ton-weg"), $("frickeln"), $("wuerfeln"), $("video"), $("png")])
     el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A) || (grob && el.dataset?.tiefe === "ki");
 }
