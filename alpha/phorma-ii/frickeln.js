@@ -7,8 +7,10 @@
 //               wiederholt sich oder springt; rückwärts, eine Oktave oder Quinte höher oder tiefer, zerhackt (Bitcrush), Wirbel am Taktende
 //               (Stotter-Rolls), selten eine Wolke aus Körnern
 //   Bogen     – leise und gefiltert hinein, dichter und offener zur Mitte, am Ende verebbt es; Tiefpass mit Resonanz, Ping-Pong-Echo im
-//               punktierten Achtel, Hall, sanfte Sättigung, auf −0,5 dB gebracht
-import { tonAnalysieren } from "./ton.js?v=14";
+//               punktierten Achtel, Hall (wie Freeverb)
+//   Mastering – Gleichanteil weg, sanft verdichtet, auf −14 LUFS, Begrenzer mit Vorausschau auf −1 dBFS (seit 18. Oktober 2026, Wunsch: «den Sound
+//               qualitativ optimieren»; vorher tanh-Sättigung auf −0,5 dB, je nach Material −9 bis −16 LUFS und Klicks aus dem Bitcrush)
+import { tonAnalysieren } from "./ton.js?v=15";
 
 /** wiederholbarer Zufall (mulberry32) */
 function zufall(samen) {
@@ -56,19 +58,32 @@ export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}
   const N = takte * 16 * schritt + Math.round(3 * rate);
   const L = new Float32Array(N), R = new Float32Array(N), sL = new Float32Array(N), sR = new Float32Array(N);
 
-  // eine Scheibe ab «start» spielen: tempo (Tonhöhe), rückwärts, Panorama, Bitcrush, Anteil ins Echo
+  // eine Scheibe ab «start» spielen: tempo (Tonhöhe), rückwärts, Panorama, Bitcrush, Anteil ins Echo. Gelesen mit 4-Punkt-Hermite (lineares Lesen
+  // raut transponierte Schnipsel auf), weich ein- und ausgeblendet (Kosinus, 5 / 15 ms)
+  const hermite = (x, j, f) => {
+    const xm = x[j > 0 ? j - 1 : 0], x0 = x[j], x1 = x[j + 1], x2 = x[j + 2 < n ? j + 2 : j + 1];
+    const c1 = 0.5 * (x1 - xm), c2 = xm - 2.5 * x0 + 2 * x1 - 0.5 * x2, c3 = 0.5 * (x2 - xm) + 1.5 * (x0 - x1);
+    return ((c3 * f + c2) * f + c1) * f + x0;
+  };
   function setzen(start, laenge, [a, b], { tempo = 1, rueck = false, pan = 0, gain = 1, crush = 0, senden = 0, versatz = 0 } = {}) {
-    const m = Math.min(laenge, Math.floor((b - a - versatz - 2) / tempo));
+    const m = Math.min(laenge, Math.floor((b - a - versatz - 3) / tempo));
     if (m < 32) return 0;
-    const ein = Math.min(m / 4, 0.003 * rate), aus = Math.min(m / 2, 0.012 * rate);
+    const ein = Math.min(m / 4, 0.005 * rate), aus = Math.min(m / 2, 0.015 * rate);
     const w = ((klemm(pan, -1, 1) + 1) * Math.PI) / 4, gl = gain * g0 * Math.cos(w) * Math.SQRT2, gr = gain * g0 * Math.sin(w) * Math.SQRT2;
-    let hl = 0, hr = 0;
+    // Bitcrush (Rückmeldung «den Sound qualitativ optimieren»): grobe Stufen und gehaltene Proben wie bisher, aber geglättet und nur zum Teil
+    // beigemischt – vorher klickte jede Stufe (gemessen: alle Klicks im Ergebnis kamen von hier)
+    const glatt = crush ? 1 - Math.exp(-2 * Math.PI * (3500 / rate)) : 0;     // Tiefpass um 3,5 kHz über den Stufen
+    let hl = 0, hr = 0, zl = 0, zr = 0;
     for (let i = 0; i < m; i++) {
       const o = start + i; if (o >= N) break;
-      const p = rueck ? b - 2 - versatz - i * tempo : a + versatz + i * tempo, j = p | 0, f = p - j;
-      let l = L0[j] + (L0[j + 1] - L0[j]) * f, q = R0[j] + (R0[j + 1] - R0[j]) * f;
-      if (crush) { if (i % crush === 0) { hl = Math.round(l * g0 * 6) / (6 * g0); hr = Math.round(q * g0 * 6) / (6 * g0); } l = hl; q = hr; }
-      const h = Math.min(1, i / ein, (m - i) / aus);
+      const p = rueck ? b - 3 - versatz - i * tempo : a + 1 + versatz + i * tempo, j = p | 0, f = p - j;
+      let l = hermite(L0, j, f), q = R0 === L0 ? l : hermite(R0, j, f);
+      if (crush) {
+        if (i % crush === 0) { hl = Math.round(l * g0 * 12) / (12 * g0); hr = Math.round(q * g0 * 12) / (12 * g0); }
+        zl += (hl - zl) * glatt; zr += (hr - zr) * glatt;
+        l = 0.5 * l + 0.5 * zl; q = 0.5 * q + 0.5 * zr;
+      }
+      const e = i < ein ? 0.5 - 0.5 * Math.cos((Math.PI * i) / ein) : 1, x = m - i < aus ? 0.5 - 0.5 * Math.cos((Math.PI * (m - i)) / aus) : 1, h = e * x;
       L[o] += l * h * gl; R[o] += q * h * gr;
       if (senden) { sL[o] += l * h * gl * senden; sR[o] += q * h * gr * senden; }
     }
@@ -130,39 +145,76 @@ export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}
     eL[j] = sL[i] + 0.45 * tr; eR[j] = sR[i] + 0.45 * tl;
     L[i] += 0.55 * yl; R[i] += 0.55 * yr;
   }
-  // Hall (Schroeder: vier Kammfilter mit Dämpfung, zwei Allpässe), rechts mit leicht anderen Längen
-  const m = rate / 44100, hall = (versatz) => {
-    const kamm = [1557, 1617, 1491, 1422].map((l) => ({ b: new Float32Array(Math.round((l + versatz) * m)), i: 0, z: 0 }));
-    const all = [556, 225].map((l) => ({ b: new Float32Array(Math.round((l + versatz) * m)), i: 0 }));
+  // Hall wie Freeverb (je Seite acht Kammfilter mit Dämpfung, vier Allpässe, rechts gespreizt), 15 ms Vorverzögerung – der frühere mit vier
+  // Kammfiltern klang metallisch
+  const m = rate / 44100, vor = Math.round(0.015 * rate), hall = (spreiz) => {
+    const kamm = [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617].map((l) => ({ b: new Float32Array(Math.round((l + spreiz) * m)), i: 0, z: 0 }));
+    const all = [556, 441, 341, 225].map((l) => ({ b: new Float32Array(Math.round((l + spreiz) * m)), i: 0 }));
     return (x) => {
       let y = 0;
-      for (const c of kamm) { const o = c.b[c.i]; c.z = o * 0.7 + c.z * 0.3; c.b[c.i] = x + c.z * 0.8; c.i = (c.i + 1) % c.b.length; y += o; }
-      for (const a of all) { const o = a.b[a.i]; a.b[a.i] = y + o * 0.5; a.i = (a.i + 1) % a.b.length; y = o - y; }
+      for (const c of kamm) { const o = c.b[c.i]; c.z = o * 0.6 + c.z * 0.4; c.b[c.i] = x + c.z * 0.82; if (++c.i === c.b.length) c.i = 0; y += o; }
+      for (const a of all) { const o = a.b[a.i]; a.b[a.i] = y + o * 0.5; if (++a.i === a.b.length) a.i = 0; y = o - y; }
       return y;
     };
   };
   const hl = hall(0), hr = hall(23);
-  for (let i = 0; i < N; i++) { const x = (L[i] + R[i]) * 0.06; L[i] += 0.5 * hl(x); R[i] += 0.5 * hr(x); }
-  // Sättigung, am Ende ausblenden, auf −0,5 dB
-  let max = 1e-6;
-  const aus = Math.round(1.5 * rate);
-  for (let i = 0; i < N; i++) {
-    const h = Math.min(1, (N - i) / aus);
-    L[i] = Math.tanh(L[i] * 1.2) * h; R[i] = Math.tanh(R[i] * 1.2) * h;
-    max = Math.max(max, Math.abs(L[i]), Math.abs(R[i]));
-  }
-  const g = 0.944 / max;
-  for (let i = 0; i < N; i++) { L[i] *= g; R[i] *= g; }
+  { const qL = new Float32Array(N), qR = new Float32Array(N);
+    for (let i = vor; i < N; i++) { const x = (L[i - vor] + R[i - vor]) * 0.015; qL[i] = hl(x); qR[i] = hr(x); }
+    for (let i = 0; i < N; i++) { L[i] += 0.55 * qL[i]; R[i] += 0.55 * qR[i]; } }
+
+  // Mastering: Gleichanteil weg (Hochpass 25 Hz), sanft verdichten (2:1 ab −20 dB, 10 / 150 ms), auf −14 LUFS (BS.1770, üblich für soziale Medien),
+  // dann ein Begrenzer mit 3 ms Vorausschau auf −1 dBFS statt der früheren tanh-Sättigung (sie verzerrte je nach Material verschieden stark)
+  const hp = Math.exp((-2 * Math.PI * 25) / rate);
+  for (const K of [L, R]) { let x1 = 0, y1 = 0; for (let i = 0; i < N; i++) { const y = hp * (y1 + K[i] - x1); x1 = K[i]; y1 = y; K[i] = y; } }
+  { const mittel = Math.exp(-1 / (0.03 * rate)), an = Math.exp(-1 / (0.01 * rate)), ab = Math.exp(-1 / (0.15 * rate)), schwelle = Math.pow(10, -20 / 20);
+    let quadrat = 0, g = 1;   // Effektivwert über 30 ms (eine Spitzenerkennung zuckte bei jeder Bitcrush-Stufe und klickte), Verstärkung geglättet
+    for (let i = 0; i < N; i++) {
+      quadrat = mittel * quadrat + (1 - mittel) * 0.5 * (L[i] * L[i] + R[i] * R[i]);
+      const pegel = Math.sqrt(quadrat), ziel = pegel > schwelle ? Math.pow(pegel / schwelle, 1 / 2 - 1) : 1;
+      g = ziel < g ? an * g + (1 - an) * ziel : ab * g + (1 - ab) * ziel;
+      L[i] *= g; R[i] *= g;
+    } }
+  const lauf = lautheit(L, R, rate), auf = Number.isFinite(lauf) ? Math.pow(10, (-14 - lauf) / 20) : 1;
+  { const decke = Math.pow(10, -1 / 20), voraus = Math.round(0.003 * rate), frei = Math.exp(-1 / (0.08 * rate)), angriff = 1 - Math.exp(-1 / (0.001 * rate)), spitze = new Float32Array(N);
+    for (let i = 0; i < N; i++) spitze[i] = Math.max(Math.abs(L[i]), Math.abs(R[i])) * auf;
+    let g = 1;
+    const aus = Math.round(1.5 * rate);
+    for (let i = 0; i < N; i++) {
+      let p = 0; for (let k = i; k < Math.min(N, i + voraus); k += 4) p = Math.max(p, spitze[k]);
+      const ziel = p > decke ? decke / p : 1;
+      g = ziel < g ? g + (ziel - g) * angriff : frei * g + (1 - frei) * ziel;   // in 1 ms herunter (sofort klickte es), langsam wieder herauf
+      const h = Math.min(1, (N - i) / aus);
+      L[i] = Math.max(-decke, Math.min(decke, L[i] * auf * g)) * h; R[i] = Math.max(-decke, Math.min(decke, R[i] * auf * g)) * h;
+    } }
   return { kanaele: [L, R], rate, dauer: N / rate, bpm, takte, scheiben: ns, anschlaege };
 }
 
-/** Stereo-WAV (16 Bit) für die Vorschau */
+/** Lautheit nach BS.1770 (K-Filter, Blöcke von 400 ms, absolutes und relatives Gate) in LUFS */
+export function lautheit(L, R, rate) {
+  // die Koeffizienten der Norm gelten für 48 kHz; für andere Raten aus den analogen Grössen neu berechnet
+  const regal = (() => { const f0 = 1681.974450955533, G = 3.999843853973347, Q = 0.7071752369554196, K = Math.tan((Math.PI * f0) / rate), Vh = 10 ** (G / 20), Vb = Vh ** 0.4996667741545416, a0 = 1 + K / Q + K * K;
+    return [(Vh + (Vb * K) / Q + K * K) / a0, (2 * (K * K - Vh)) / a0, (Vh - (Vb * K) / Q + K * K) / a0, (2 * (K * K - 1)) / a0, (1 - K / Q + K * K) / a0]; })();
+  const hoch = (() => { const f0 = 38.13547087602444, Q = 0.5003270373238773, K = Math.tan((Math.PI * f0) / rate), a0 = 1 + K / Q + K * K;
+    return [1, -2, 1, (2 * (K * K - 1)) / a0, (1 - K / Q + K * K) / a0]; })();
+  const filter = (x, [b0, b1, b2, a1, a2]) => { const y = new Float32Array(x.length); let x1 = 0, x2 = 0, y1 = 0, y2 = 0; for (let i = 0; i < x.length; i++) { const v = b0 * x[i] + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2; x2 = x1; x1 = x[i]; y2 = y1; y1 = v; y[i] = v; } return y; };
+  const k = (x) => filter(filter(x, regal), hoch), kL = k(L), kR = k(R), blk = Math.round(0.4 * rate), hop = Math.round(0.1 * rate), bl = [];
+  for (let s = 0; s + blk <= L.length; s += hop) { let e = 0; for (let i = s; i < s + blk; i++) e += kL[i] * kL[i] + kR[i] * kR[i]; bl.push(e / blk); }
+  const lk = (z) => -0.691 + 10 * Math.log10(z), mittel = (a) => a.reduce((x, y) => x + y, 0) / a.length;
+  const abs = bl.filter((z) => z > 0 && lk(z) > -70);
+  if (!abs.length) return -Infinity;
+  const rel = lk(mittel(abs)) - 10, g = abs.filter((z) => lk(z) > rel);
+  return lk(mittel(g.length ? g : abs));
+}
+
+/** Stereo-WAV (16 Bit, mit dreieckigem Dither) für die Vorschau */
 export function wav(kanaele, rate) {
   const k = kanaele.length, n = kanaele[0].length, b = new DataView(new ArrayBuffer(44 + n * k * 2));
   const text = (o, s) => { for (let i = 0; i < s.length; i++) b.setUint8(o + i, s.charCodeAt(i)); };
   text(0, "RIFF"); b.setUint32(4, 36 + n * k * 2, true); text(8, "WAVEfmt "); b.setUint32(16, 16, true); b.setUint16(20, 1, true); b.setUint16(22, k, true);
   b.setUint32(24, rate, true); b.setUint32(28, rate * k * 2, true); b.setUint16(32, k * 2, true); b.setUint16(34, 16, true); text(36, "data"); b.setUint32(40, n * k * 2, true);
   let o = 44;
-  for (let i = 0; i < n; i++) for (let c = 0; c < k; c++) { b.setInt16(o, Math.round(klemm(kanaele[c][i], -1, 1) * 32767), true); o += 2; }
+  let z = 12345;
+  const zufall = () => { z = (z * 1103515245 + 12345) & 0x7fffffff; return z / 0x7fffffff; };
+  for (let i = 0; i < n; i++) for (let c = 0; c < k; c++) { b.setInt16(o, Math.round(klemm(kanaele[c][i] * 32767 + zufall() - zufall(), -32768, 32767)), true); o += 2; }
   return new Uint8Array(b.buffer);
 }

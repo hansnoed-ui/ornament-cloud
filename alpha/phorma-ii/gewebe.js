@@ -8,11 +8,11 @@
 //   Umrisse, der Text (das Foto) steht wieder exakt da.
 // Zustandslos: alles wird aus der Zeit gerechnet (im Vertex-Shader), die Tonkurven liegen als Textur vor und werden nur mit texelFetch gelesen.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=14";
-import { phase } from "./ablauf.js?v=14";
-import { gewebeKurven } from "./kurven.js?v=14";
-import { weichzeichnen } from "./analyse.js?v=14";
-import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=14";
+import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=15";
+import { phase } from "./ablauf.js?v=15";
+import { gewebeKurven } from "./kurven.js?v=15";
+import { weichzeichnen } from "./analyse.js?v=15";
+import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=15";
 
 // Simplex-Rauschen in 3D (Ashima Arts / Stefan Gustavson, MIT)
 const RAUSCHEN = /* glsl */ `
@@ -37,7 +37,7 @@ const RAUSCHEN = /* glsl */ `
   }`;
 const VERTEX = /* glsl */ `
   uniform sampler2D tKurven, tTon, tStoss, tSpek; uniform int uP, uH, uN, uNK, uSaetze;
-  uniform float uZeit, uVon, uB1, uDichte, uWechsel[23], uAuf, uAktiv, uSeit, uAnteil, uTor, uZeichen; uniform vec4 uZustand;
+  uniform float uZeit, uVon, uB1, uDichte, uWechsel[23], uAuf, uAktiv, uSeit, uAnteil, uTor, uZeichen, uNurTon; uniform vec4 uZustand;
   uniform mat3 uKamDreh; uniform vec3 uKam;
   attribute vec3 aRef;
   varying float vA;
@@ -79,6 +79,9 @@ const VERTEX = /* glsl */ `
     float sicht = smoothstep(uAuf - 0.6, uAuf, uZeit) * (1.0 - smoothstep(uB1 - 1.2, uB1 - 0.5, uZeit));   // erst wenn sich das Zeichen löst; am Schluss weg
     float gewaehlt = mix(1.0, step(fract(sin(float(c) * 7.31 + uZustand.x) * 4375.85), uAnteil), uAktiv);   // je Zustand nur ein Teil der Kurven
     float dichte = mix(1.0 / 6.0, 0.5 + 0.5 * (1.0 - lage), uAktiv);  // zusammengelegt (Zeichen, Bild) liegen alle Lagen aufeinander
+    // nur Ton: es gibt kein Bild, auf das sich die Linien zurücklegen – sie gehen mit dem Gewebe (Rückmeldung: «einzig die Form, die am Schluss
+    // gezeigt wird, stört»: das ruhende Knäuel der Schlaufen)
+    sicht *= mix(1.0, uAktiv * uAktiv, uNurTon);
     vA = k0.w * uDichte * dichte * sicht * gewaehlt * uTor * (1.0 - uZeichen) * (k <= float(uH - 1) * auf + 0.5 ? 1.0 : 0.0);
   }`;
 const FRAGMENT = /* glsl */ `uniform vec3 uTinte; varying float vA; void main() { gl_FragColor = vec4(uTinte * vA, vA); }`;
@@ -165,7 +168,7 @@ export function gewebe(g, teil) {
     uniforms: { tKurven: { value: kurvenTex }, tTon: { value: TT.t }, tStoss: { value: TT.t2 }, tSpek: { value: TT.sp }, uKamDreh: { value: new THREE.Matrix3() }, uKam: { value: new THREE.Vector3(1, 0, 0) },
       uAuf: { value: g.quelle === "ton" ? 0.9 : Z[1] - 0.5 }, uP: { value: P }, uNK: { value: nk }, uSaetze: { value: saetze.length }, uWechsel: { value: Array.from({ length: 23 }, (_, j) => wechsel[j] ?? 1e9) },
       uH: { value: NH }, uN: { value: TT.n }, uZeit: { value: 0 }, uVon: { value: VOR }, uB1: { value: Bp[1] }, uDichte: { value: 0.4 },
-      uAktiv: { value: 0 }, uSeit: { value: 0 }, uAnteil: { value: 1 }, uTor: { value: 1 }, uZeichen: { value: 0 }, uZustand: { value: new THREE.Vector4(0, 0, 0.4, 0) },
+      uNurTon: { value: g.quelle === "ton" ? 1 : 0 }, uAktiv: { value: 0 }, uSeit: { value: 0 }, uAnteil: { value: 1 }, uTor: { value: 1 }, uZeichen: { value: 0 }, uZustand: { value: new THREE.Vector4(0, 0, 0.4, 0) },
       uTinte: { value: new THREE.Color(0.02, 0.02, 0.025) } },
   });
   const linien = new THREE.LineSegments(geo, mat); linien.frustumCulled = false;

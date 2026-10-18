@@ -8,7 +8,7 @@ export async function tonKodieren(buffer, dauer, { ausblenden = 1.2 } = {}) {
   const rate = buffer.sampleRate, kanaele = Math.min(2, buffer.numberOfChannels);
   let cfg = null;
   for (const [codec, art] of [["mp4a.40.2", "aac"], ["opus", "opus"]]) {
-    const c = { codec, sampleRate: rate, numberOfChannels: kanaele, bitrate: 192_000 };
+    const c = { codec, sampleRate: rate, numberOfChannels: kanaele, bitrate: 256_000 };   // AAC mit 256 kbit/s (Wunsch «den Sound qualitativ optimieren»; vorher 192)
     try { if ((await AudioEncoder.isConfigSupported(c)).supported) { cfg = { ...c, art }; break; } } catch { /* nächster */ }
   }
   if (!cfg) return null;

@@ -56,7 +56,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit, Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild, szene } = await import("./film.js?v=14");
+  const { bild, szene } = await import("./film.js?v=15");
   const S = window.__phorma; S.laeuft = false;
   const sz = szene({ breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, ablauf: S.ablauf, buehne: S.buehne, beschriftung: false, signet: true });
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -355,6 +355,9 @@ await check("Nur Ton: ohne Bild wählt das Gewebe – aus Schlaufen wachsen Flä
   assert.ok(new Set(zust).size >= 2, `neue Bilder (${zust})`);
   const ende = await messe(page, s.bis + 1);
   assert.ok(ende.abw <= 2, `am Ende leeres Papier (${ende.abw})`);
+  // schon im «Bild» kein Knäuel der ruhenden Schlaufen (Rückmeldung: «einzig die Form, die am Schluss gezeigt wird, stört»)
+  const B = s.phasen[2], bild = await messe(page, (B[1] + B[2]) / 2);
+  assert.ok(bild.abw < 40, `im Bild leeres Papier, nur Korn und Vignette (grösste Abweichung ${bild.abw})`);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
