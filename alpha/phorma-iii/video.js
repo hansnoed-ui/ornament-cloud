@@ -12,9 +12,9 @@
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Export Bild für Bild); der Datamosh merkt sich nur seine letzten zwei
 // Schritte, damit er nicht jedes Mal von vorn rechnet (rückwärts oder in einem anderen Crack beginnt er neu, das Ergebnis ist dasselbe).
 import * as THREE from "three";
-import { anteil, weich, quadMaterial, ziel } from "./gemeinsam.js?v=10";
-import { phase } from "./ablauf.js?v=10";
-import { rissBei, moshQuellen, moshZeit, NAMEN, SCHICHTEN, ABSTAND, TAKT } from "./risse.js?v=10";
+import { anteil, weich, quadMaterial, ziel } from "./gemeinsam.js?v=11";
+import { phase } from "./ablauf.js?v=11";
+import { rissBei, moshQuellen, moshZeit, NAMEN, SCHICHTEN, ABSTAND, TAKT } from "./risse.js?v=11";
 
 const VOR = 0.4;
 const LUMA = /* glsl */ `float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }`;
@@ -211,7 +211,12 @@ export function video(g, teil) {
       // im Logo taucht das Bild in 0,8 s ins Schwarz (es läuft dabei weiter)
       const aus = logo ? 1 - weich(anteil(tau - Lg[0], 0, 0.8)) : 1;
       const b = film && aus > 0 ? film.bild(t, { vorschau }) : null;
-      if (b && b !== zuletzt) { tex.image = b; tex.needsUpdate = true; zuletzt = b; }
+      if (b && b !== zuletzt) {
+        // eine andere Grösse (Vorschau halb, Export ganz): die Grafik legt den Speicher einer Textur fest an – ohne neue Textur schlug jedes
+        // Hochladen fehl (GL_INVALID_VALUE), und nach der Vorschau zeigte der Export ein stehendes Bild
+        if (zuletzt && (zuletzt.width !== b.width || zuletzt.height !== b.height)) tex.dispose();
+        tex.image = b; tex.needsUpdate = true; zuletzt = b;
+      }
       g.loeschen(rt, 0x000000);
       // der Fader des Scratchs: zu ist das Bild dunkel, nicht ganz schwarz (das Auge hält die Platte)
       const fader = film?.hell ? 0.08 + 0.92 * film.hell(t) : 1;
