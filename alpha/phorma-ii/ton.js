@@ -171,6 +171,19 @@ export const tonOderErsatz = (ton) => ton ?? (vorrat ??= ersatz(130));
 /** Filmzeiten, zu denen das Gewebe eines Videos neue Linien bekommt: die Schnitte im Gewebe (G: { von, bis } in Filmzeit), höchstens max */
 export const wechselZeiten = (T, G, max = 23) => T.schnitte.filter((s) => s > G.von + 0.3 && s < G.bis - 1).slice(0, max);
 
+/** Struktur: Zeiten, zu denen das Motiv wechselt – die Schnitte im Abschnitt [von, bis], Lücken über 8 s gleichmässig gefüllt (echt: false, ohne Umkehr) */
+export function motivWechsel(schnitte, von, bis) {
+  const echt = schnitte.filter((s) => s > von + 0.3 && s < bis - 0.8), alle = [];
+  let a = von;
+  for (const s of [...echt, bis]) {
+    const n = Math.floor((s - a) / 8);
+    for (let k = 1; k <= n; k++) alle.push({ t: a + ((s - a) * k) / (n + 1), echt: false });
+    if (s < bis) alle.push({ t: s, echt: true });
+    a = s;
+  }
+  return alle;
+}
+
 /** Wert einer Kurve zur Zeit t (Sekunden), linear zwischen den Filmbildern */
 export function wert(kurve, t) {
   const f = klemm(t * FPS, 0, kurve.length - 1), i = Math.floor(f), u = f - i;

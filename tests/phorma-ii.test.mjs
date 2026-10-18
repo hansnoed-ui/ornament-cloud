@@ -119,6 +119,17 @@ test("Gewebe: für sich, nicht in der Kette; mit Tonspur so lang wie die Musik u
   assert.equal(A.zeitachse({ ablauf: A.KETTE, laenge: 40 }).dauer, A.zeitachse({ ablauf: A.KETTE }).dauer, "die Kette kümmert sich nicht um die Länge");
 });
 
+test("Struktur: für sich wie das Gewebe, mit Tonspur so lang wie die Musik; Motive wechseln an den Schnitten, lange Lücken gefüllt", async () => {
+  assert.equal(A.ablaufName("struktur"), "struktur");
+  assert.deepEqual(A.MIT_TON, ["gewebe", "struktur"]);
+  const z = A.zeitachse({ ablauf: "struktur", tempo: "schnell", laenge: 30 });
+  assert.deepEqual(z.phasen.map((p) => p.name), ["zeichen", "struktur", "bild"]);
+  assert.ok(z.tempo === 1 && Math.abs(z.abschnitt.bis - z.abschnitt.von - 30) < 1e-9);
+  const w = T.motivWechsel([1, 5, 6, 30], 2, 40);
+  assert.equal(w.filter((x) => x.echt).map((x) => x.t).join(), "5,6,30", "echte Schnitte im Abschnitt");
+  assert.ok(w.every((x, i) => i === 0 || x.t - w[i - 1].t <= 8.01) && 40 - w.at(-1).t <= 8.01 && w[0].t - 2 <= 8.01, "keine Lücke über 8 s");
+});
+
 test("Ton: Lautstärke, Bänder und Einsätze aus einer Tonspur; Schnitte an den stärksten, die Zeit der Musik steigt", () => {
   const rate = 22050, dauer = 12, pcm = new Float32Array(rate * dauer), schlaege = [1, 2.5, 4, 5.5, 7, 8.5, 10];
   for (let i = 0; i < pcm.length; i++) pcm[i] = 0.02 * Math.sin(i * 0.05);
@@ -201,7 +212,8 @@ test("MP4 in Teilen: dieselben Bytes wie mp4-muxer am Stück, moov vorn; nie die
   const ton = { codec: "opus", kanaele: 2, rate: 48000, meta: { decoderConfig: { codec: "opus", sampleRate: 48000, numberOfChannels: 2 } },
     proben: Array.from({ length: 700 }, (_, i) => ({ daten: new Uint8Array(90 + (i % 13)).fill(i & 255), key: true, zeit: i * 20000, dauer: 20000 })) };
   const bild = (i) => new Uint8Array(3000 + ((i * 37) % 900)).map((_, j) => (i * 7 + j) & 255);
-  for (const t of [null, ton]) {
+  const uhr = Date.now; Date.now = () => 1.7e12;   // mp4-muxer schreibt die Entstehungszeit in Sekunden: beide gleich
+  try { for (const t of [null, ton]) {
     const w = mp4Schreiber({ breite: 1080, hoehe: 1350, fps: 30, codec: "avc1.640028", bilder: N, ton: t });
     for (let i = 0; i < N; i++) w.bild(bild(i), i % 60 === 0, Math.round((i * 1e6) / 30), avcC);
     const blob = w.fertig(), a = new Uint8Array(await blob.arrayBuffer());
@@ -213,7 +225,7 @@ test("MP4 in Teilen: dieselben Bytes wie mp4-muxer am Stück, moov vorn; nie die
     assert.deepEqual(a, new Uint8Array(m.target.buffer), t ? "mit Ton" : "ohne Ton");
     const f = new DataView(a.buffer).getUint32(0);
     assert.equal(String.fromCharCode(...a.subarray(f + 4, f + 8)), "moov", "moov gleich nach ftyp (schnelles Abspielen)");
-  }
+  } } finally { Date.now = uhr; }
 });
 
 test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Marken, nichts von aussen ausser der KI auf Wunsch", () => {
@@ -225,6 +237,7 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
   assert.match(html, /data-wahl="physarum\+tiefe\+tuch"/, "die ganze Kette als Karte");
   assert.match(html, /data-wahl="gewebe"/, "das Gewebe als eigene Karte");
+  assert.match(html, /data-wahl="struktur"/, "die Struktur als eigene Karte");
   assert.match(html, /data-quelle="foto"[\s\S]*data-quelle="text"[\s\S]*data-quelle="video"[\s\S]*data-quelle="ton">Nur Ton/, "Foto, Text, Video oder nur Ton als Quelle");
   assert.match(html, /id="videodatei"[^>]*accept="video\/\*/, "eine Videodatei");
   assert.match(html, /id="tondatei"[^>]*accept="audio\/\*/, "eine Audiodatei");

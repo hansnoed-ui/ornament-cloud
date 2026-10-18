@@ -24,9 +24,11 @@ export const SIGNET = (SIGNET_BIS - SIGNET_VON) / 30 / SIGNET_TEMPO;
 export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 
 export const EFFEKTE = ["physarum", "tiefe", "tuch"];
-export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", gewebe: "Gewebe" };
+export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", gewebe: "Gewebe", struktur: "Struktur" };
 /** Abläufe für sich (nicht kombinierbar) */
-export const FUER_SICH = ["gewebe"];
+export const FUER_SICH = ["gewebe", "struktur"];
+/** die Abläufe, die eine Tonspur führt (Länge nach der Musik, ohne Tempo) */
+export const MIT_TON = FUER_SICH;
 export const KETTE = EFFEKTE.join("+");
 
 /** die gewählten Effekte in fester Reihenfolge, mit «+» verbunden; Unbekanntes oder nichts ergibt die ganze Kette */
@@ -53,9 +55,9 @@ export function rolle(art, liste, i, { laenge = null } = {}) {
     phasen = [["scan", "Scan", erst ? 2.6 : 2.2], ["raum", "Raum", 5.4]];
     if (letzt) phasen.push(["bild", "Bild", 2.8]);
     else { ueber = 0.7; uebergang = "front"; }
-  } else if (art === "gewebe") {
-    // mit Tonspur: das Gewebe dauert, so lange der Ton läuft (laenge: die ganze Dauer des Effekts)
-    phasen = [["zeichen", "Zeichen", 2.2], ["gewebe", "Gewebe", laenge ? Math.max(5, laenge - 4.8) : 14], ["bild", "Bild", 2.6]];
+  } else if (art === "gewebe" || art === "struktur") {
+    // mit Tonspur: das Gewebe (die Struktur) dauert, so lange der Ton läuft (laenge: die ganze Dauer des Effekts)
+    phasen = [["zeichen", "Zeichen", 2.2], [art, TITEL[art], laenge ? Math.max(5, laenge - 4.8) : 14], ["bild", "Bild", 2.6]];
   } else {
     phasen = [["tuch", "Tuch", vorher === "tiefe" ? 4.6 : 5.0], ["bild", "Bild", 3.4]];
   }
@@ -84,7 +86,7 @@ export function kette(a, opt = {}) {
  */
 /** laenge: die Dauer des Effekts nach einer Tonspur (nur beim Gewebe; dann ohne Tempo) */
 export function zeitachse({ tempo = "normal", signet = true, ablauf = KETTE, laenge = null } = {}) {
-  const art = ablaufName(ablauf), mitTon = art === "gewebe" && laenge;
+  const art = ablaufName(ablauf), mitTon = MIT_TON.includes(art) && laenge;
   const f = mitTon ? 1 : TEMPO[tempo] ?? (typeof tempo === "number" ? tempo : 1);
   const K = kette(art, { laenge: mitTon ? laenge : null }), ab = {};
   let t = 0;
