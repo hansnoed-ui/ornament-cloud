@@ -10,7 +10,8 @@ import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=11";
 import { textBild } from "./textbild.js?v=11";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 import { HOECHSTENS } from "./filmspur.js?v=11";
-import { rissePlanen, bedarf } from "./risse.js?v=11";
+import { rissePlanen, bedarf, rissBei, moshQuellen } from "./risse.js?v=11";
+import { frickelBedarf } from "./bildfrickel.js?v=11";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
@@ -216,6 +217,7 @@ function filmBereich() {
   // mit Fahrplan: die Stellen, die er erreicht (ab der Sekunde des Ausschnitts, beim Ton aus dem Video; sonst ab dem Anfang des Video-Ausschnitts)
   if (k) {
     let a = Infinity, b = -Infinity; for (const p of k.pos) { if (p < a) a = p; if (p > b) b = p; }
+    for (const e of k.frickel ?? []) for (const p of [e.q, e.q + e.dauer * e.tempo]) { if (p < a) a = p; if (p > b) b = p; }   // auch die Körner des Gefrickels
     const basis = S.tonQuelle?.ausVideo ? k.von : Math.max(0, Math.min(S.videoVon, V.dauer - (b - a))), von = Math.max(0, basis + a - 0.05);
     return { von, bis: Math.min(V.dauer, von + Math.min(HOECHSTENS, b - a + 0.1)), basis };
   }
@@ -286,11 +288,16 @@ async function filmspurBereit(bereich, abbruch) {
   // die Cracks an den Hüpfern (Etappe 3, risse.js): je Hüpfer einer, gemischt nach dem Wurf, nie ins Gefrickel; sie brauchen kleine Bilder dazu
   const risse = k ? rissePlanen(k.huepfer, { samen: S.wurf, grenze: k.teile?.[2]?.von ?? Infinity }) : [];
   if (risse.length) notiz(`Cracks: ${risse.map((r) => `${r.art} ${r.von.toFixed(2)}–${r.bis.toFixed(2)} s`).join(", ")}`);
-  return { n: spur.n, weg: spur.weg, karte, tempo, hell, risse, abschnitt: (t) => (schnitte ? schnitte[i(t)] : 0), index: (t) => spur.index(karte(t)),
+  // das Gefrickel des Bilds (Etappe 4, bildfrickel.js): was der Ton im Gefrickel spielt; ort: Stelle des Fahrplans → Sekunde der Quelle
+  const frickel = k?.frickel ?? [], ort = (q) => (k ? bereich.basis : bereich.von) + q, hoch = S.mass[1] >= S.mass[0];
+  return { n: spur.n, weg: spur.weg, karte, tempo, hell, risse, frickel, ort, abschnitt: (t) => (schnitte ? schnitte[i(t)] : 0), index: (t) => spur.index(karte(t)),
     bild: (t, o) => spur.bild(karte(t), o), quelle: (q, o) => spur.bild(q, o),
     vorbereiten: async (ts, o) => {
       await spur.vorbereiten(ts.map(karte), o);
-      const dazu = ts.flatMap((t) => bedarf(risse, t, karte));
+      const dazu = ts.flatMap((t) => {
+        const f = frickelBedarf(frickel, t, { hoch }), m = f.mosh ? rissBei([f.mosh], t) : null;
+        return [...bedarf(risse, t, karte), ...f.quellen.map(ort), ...(m ? (({ q0, paare }) => [q0, ...paare.flat()])(moshQuellen(f.mosh, m.schritt, karte)) : [])];
+      });
       if (dazu.length) await spur.vorbereiten(dazu, { vorschau: true });
     } };
 }

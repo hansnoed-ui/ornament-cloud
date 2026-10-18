@@ -29,9 +29,10 @@ export function bogen(x) {
 
 /**
  * kanaele: [Float32Array] (ein oder zwei), rate: Abtastrate. Ergebnis: { kanaele: [L, R], rate, dauer, bpm, takte, scheiben, anschlaege, plan }
- * (plan: die gesetzten Scheiben { start, m, a, b, tempo, rueck, versatz, gain, crush } in Proben – daraus liest der Effekt Video, welche Stelle läuft)
+ * (plan: die gesetzten Scheiben { start, m, a, b, tempo, rueck, versatz, gain, crush, art, teil, k } in Proben – daraus liest der Effekt Video, welche
+ * Stelle läuft und was es ist: art "scheibe", "wirbel" (teil-mal wiederholt, die k-te) oder "korn"). koerner: wie oft eine Wolke aus Körnern kommt
  */
-export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}) {
+export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null, koerner = 0.05 } = {}) {
   const L0 = kanaele[0], R0 = kanaele[1] ?? kanaele[0], n = L0.length, r = zufall(samen);
   const mono = new Float32Array(n);
   let spitze = 1e-6;
@@ -66,10 +67,11 @@ export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}
     const c1 = 0.5 * (x1 - xm), c2 = xm - 2.5 * x0 + 2 * x1 - 0.5 * x2, c3 = 0.5 * (x2 - xm) + 1.5 * (x0 - x1);
     return ((c3 * f + c2) * f + c1) * f + x0;
   };
-  function setzen(start, laenge, [a, b], { tempo = 1, rueck = false, pan = 0, gain = 1, crush = 0, senden = 0, versatz = 0 } = {}) {
+  function setzen(start, laenge, [a, b], { tempo = 1, rueck = false, pan = 0, gain = 1, crush = 0, senden = 0, versatz = 0, art = "scheibe", teil = 1, k = 0 } = {}) {
     const m = Math.min(laenge, Math.floor((b - a - versatz - 3) / tempo));
     if (m < 32) return 0;
-    plan.push({ start, m, a, b, tempo, rueck, versatz, gain, crush });       // der Fahrplan für das Bild (PHORMA III, Effekt Video): wo welche Stelle läuft
+    // der Fahrplan für das Bild (PHORMA III, Effekt Video): wo welche Stelle läuft, und was es ist – Scheibe, Wirbel (teil-mal, der k-te) oder Korn
+    plan.push({ start, m, a, b, tempo, rueck, versatz, gain, crush, art, teil, k });
     const ein = Math.min(m / 4, 0.005 * rate), aus = Math.min(m / 2, 0.015 * rate);
     const w = ((klemm(pan, -1, 1) + 1) * Math.PI) / 4, gl = gain * g0 * Math.cos(w) * Math.SQRT2, gr = gain * g0 * Math.sin(w) * Math.SQRT2;
     // Bitcrush (Rückmeldung «den Sound qualitativ optimieren»): grobe Stufen und gehaltene Proben wie bisher, aber geglättet und nur zum Teil
@@ -101,7 +103,7 @@ export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}
       if (wirbel && s >= 12) {
         // Wirbel am Taktende: dieselbe Scheibe immer kürzer wiederholt, lauter werdend
         const sc = scheiben[zeiger], teil = [1, 2, 4, 8][s - 12], g = schritt / teil;
-        for (let k = 0; k < teil; k++) setzen(Math.round(start + k * g), Math.round(g), sc, { gain: 0.55 + 0.15 * (s - 12), pan: (s % 2 ? 0.3 : -0.3) * I, senden: s === 15 ? 0.7 : 0 });
+        for (let k = 0; k < teil; k++) setzen(Math.round(start + k * g), Math.round(g), sc, { gain: 0.55 + 0.15 * (s - 12), pan: (s % 2 ? 0.3 : -0.3) * I, senden: s === 15 ? 0.7 : 0, art: "wirbel", teil, k });
         anschlaege++; s++; continue;
       }
       const druck = s % 4 === 0 ? 0.92 : s % 2 === 0 ? 0.3 + 0.45 * I : 0.12 + 0.45 * I;
@@ -116,9 +118,9 @@ export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}
       });
       anschlaege++;
       // selten eine Wolke aus Körnern über zwei Sechzehntel
-      if (r() < 0.05 * I) for (let k = 0; k < 24; k++) {
+      if (r() < koerner * I) for (let k = 0; k < 24; k++) {
         const lang = Math.round((0.025 + 0.045 * r()) * rate), von = Math.floor(r() * Math.max(1, n - lang * 2));
-        setzen(start + Math.floor(r() * 2 * schritt), lang, [von, Math.min(n, von + lang * 2 + 2)], { tempo: [1, 2, 0.5, 1.5][Math.floor(r() * 4)], pan: r() * 1.8 - 0.9, gain: 0.3, senden: 0.8 });
+        setzen(start + Math.floor(r() * 2 * schritt), lang, [von, Math.min(n, von + lang * 2 + 2)], { tempo: [1, 2, 0.5, 1.5][Math.floor(r() * 4)], pan: r() * 1.8 - 0.9, gain: 0.3, senden: 0.8, art: "korn" });
       }
       s += dauer;
     }

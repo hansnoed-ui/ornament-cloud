@@ -307,7 +307,9 @@ export function stimmAblauf(kanaele, rate, { samen = 1, scratch = 3.5, stimme = 
     dazu(L, R, "stimme");
   }
   // 3 Gefrickel: zwei Takte aus der ganzen Stimme, frickel s davon, ausgeblendet
-  { const f = frickeln([L0, R0], rate, { samen, takte: 2 }), m = Math.min(f.kanaele[0].length, Math.round(frickel * rate)), aus = Math.round(0.6 * rate);
+  // (Körnerwolken häufiger als beim Verfrickeln von Musik: im Bild werden sie zum Granular-Video, seit 18. Oktober 2026)
+  let bildFrickel = [];
+  { const f = frickeln([L0, R0], rate, { samen, takte: 2, koerner: 0.15 }), m = Math.min(f.kanaele[0].length, Math.round(frickel * rate)), aus = Math.round(0.6 * rate);
     const L = f.kanaele[0].slice(0, m), R = f.kanaele[1].slice(0, m);
     for (let i = 0; i < m; i++) { const h = Math.min(1, (m - i) / aus); L[i] *= h; R[i] *= h; }
     // 40 ms in die Stimme hinein überblendet
@@ -317,13 +319,20 @@ export function stimmAblauf(kanaele, rate, { samen = 1, scratch = 3.5, stimme = 
     teile.at(-1).bis = (v0 - x) / rate;
     dazu(L.subarray(x), R.subarray(x), null);
     // die Stellen im Gefrickel: je Probe die zuletzt begonnene Scheibe (die Körnerwolken, leise darunter, zählen nicht)
-    const P = new Float32Array(m), stets = stellen.at(-1), letzt = stets.length ? stets[stets.length - 1] : start;
-    P.fill(letzt);
+    // (zwischen zwei Scheiben steht das Bild der letzten – vorher sprang es dort auf das Ende der klaren Stimme)
+    const P = new Float32Array(m).fill(NaN), stets = stellen.at(-1), letzt = stets.length ? stets[stets.length - 1] : start;
     for (const e of [...f.plan].filter((e) => e.gain > 0.35).sort((a, b) => a.start - b.start))
       for (let i = 0; i < e.m && e.start + i < m; i++) P[e.start + i] = e.rueck ? e.b - 3 - e.versatz - i * e.tempo : e.a + 1 + e.versatz + i * e.tempo;
+    for (let i = 0; i < m; i++) if (Number.isNaN(P[i])) P[i] = i ? P[i - 1] : letzt;
     stellen.at(-1).fill(P[0], stellen.at(-1).length - x);                   // in der Überblendung schon die erste Scheibe
     stellen.push(P.subarray(x)); faders.push(null);
     teile.push({ name: "frickel", von: (v0 - x) / rate, bis: laenge / rate });
+    // was im Gefrickel geschieht, für das Bild (Etappe 4): je gesetzte Scheibe Zeit und Dauer im Ergebnis, Anfang in der Quelle (Sekunden), Tempo
+    // (negativ: rückwärts), Lautstärke, Bitcrush und Art (Scheibe, Wirbel mit teil und k, Korn)
+    bildFrickel = f.plan.filter((e) => e.start < m).map((e) => ({
+      t: (v0 - x + e.start) / rate, dauer: e.m / rate, q: (e.rueck ? e.b - 3 - e.versatz : e.a + 1 + e.versatz) / rate, tempo: e.rueck ? -e.tempo : e.tempo,
+      gain: e.gain, crush: e.crush, art: e.art, teil: e.teil, k: e.k,
+    })).sort((a, b) => a.t - b.t);
   }
   const L = new Float32Array(laenge), R = new Float32Array(laenge);
   let o = 0;
@@ -346,7 +355,7 @@ export function stimmAblauf(kanaele, rate, { samen = 1, scratch = 3.5, stimme = 
     unterlegt = { von, bis: laenge / rate, bpm };
   }
   meistern(L, R, rate, { lufs: -14, schwelleDb: -16, verhaeltnis: 1.6, hochpass: 40, ausblenden: 0.4 });
-  return { kanaele: [L, R], rate, dauer: laenge / rate, teile, huepfer: huepfer.map(({ t, art }) => ({ t, art })), zuege: sc.zuege, unterlegt, karte: fahrplan(stellen, faders, rate) };
+  return { kanaele: [L, R], rate, dauer: laenge / rate, teile, huepfer: huepfer.map(({ t, art }) => ({ t, art })), zuege: sc.zuege, unterlegt, karte: { ...fahrplan(stellen, faders, rate), frickel: bildFrickel } };
 }
 
 /** Takt des Fahrplans: so viele Stellen je Sekunde */

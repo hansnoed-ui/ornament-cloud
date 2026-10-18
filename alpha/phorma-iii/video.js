@@ -7,7 +7,9 @@
 //   steht es scharf, und der Fader (Transform, Chirp) lässt es aufblitzen und wegklappen; die Hüpfer und das Gefrickel springen mit dem Ton.
 //   Etappe 3 (Cracks, risse.js): an jedem Hüpfer bricht das Bild auf – Datamosh (Bewegungsvektoren und Restbild der neuen Bilder auf dem alten,
 //   wie ein Decoder ohne Schlüsselbild), Makroblöcke (verlorene Slices), Slit-Scan (jede Zeile aus einer anderen Zeit), Pixel-Sortierung (die
-//   hellen Strecken schmelzen nach oben). Die Cracks rechnen in halber Grösse (die kleinen Bilder der Filmspur). 01 Video → 02 Logo (das Video
+//   hellen Strecken schmelzen nach oben). Die Cracks rechnen in halber Grösse (die kleinen Bilder der Filmspur). Etappe 4 (Video-Gefrickel,
+//   bildfrickel.js): im Gefrickel zerlegt sich das Bild nach dem, was der Ton spielt – Wirbel als Kacheln, Bitcrush verpixelt, auf manchen Schlägen
+//   Streifen wie ein Step-Sequencer, Körner als Flecken aus anderen Zeiten, an harten Schnitten ein kurzer Datamosh. 01 Video → 02 Logo (das Video
 //   taucht ins Schwarz, film.js zeichnet die Schlaufe und tippt den Schriftzug) oder 02 Ende (das letzte Bild hält).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Export Bild für Bild); der Datamosh merkt sich nur seine letzten zwei
 // Schritte, damit er nicht jedes Mal von vorn rechnet (rückwärts oder in einem anderen Crack beginnt er neu, das Ergebnis ist dasselbe).
@@ -15,16 +17,21 @@ import * as THREE from "three";
 import { anteil, weich, quadMaterial, ziel } from "./gemeinsam.js?v=11";
 import { phase } from "./ablauf.js?v=11";
 import { rissBei, moshQuellen, moshZeit, NAMEN, SCHICHTEN, ABSTAND, TAKT } from "./risse.js?v=11";
+import { frickelBild } from "./bildfrickel.js?v=11";
 
 const VOR = 0.4;
 const LUMA = /* glsl */ `float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }`;
 // das Bild der Filmspur (sRGB, die Grafik entschlüsselt es linear; die Ausgabe der Bühne verschlüsselt wieder); ImageBitmap steht kopf: v gespiegelt
 // uTempo: Geschwindigkeit der Quelle (1 = normal, negativ = rückwärts); je schneller, desto länger der Schmier und weiter der Farbsaum
 // tRiss: das Bild eines Cracks (halbe Grösse, gleich ausgerichtet wie die Bitmaps); uMaske > 0: nur wo das Original heller ist (die sortierten Strecken)
-const BILD = /* glsl */ `uniform sampler2D tBild, tRiss, tMaske; uniform float uHell, uTempo, uRiss, uMaske; varying vec2 vUv;
+// uKacheln: das Bild so oft nebeneinander und übereinander (Wirbel); uPixel > 0: verpixelt, Pixel so breit (Anteil der Breite), uSeite = H / B
+const BILD = /* glsl */ `uniform sampler2D tBild, tRiss, tMaske; uniform float uHell, uTempo, uRiss, uMaske, uPixel, uSeite; uniform vec2 uKacheln; varying vec2 vUv;
   ${LUMA}
   void main() {
-    vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
+    vec2 uv = fract(vec2(vUv.x, 1.0 - vUv.y) * uKacheln);
+    float r = uKacheln.y / uKacheln.x;                                       // die Kachel im Verhältnis zum Bild: das Bild darin mittig beschnitten, nie gestaucht
+    if (r > 1.0) uv.y = 0.5 + (uv.y - 0.5) / r; else uv.x = 0.5 + (uv.x - 0.5) * r;
+    if (uPixel > 0.0) { vec2 n = vec2(1.0, uSeite) / uPixel; uv = (floor(uv * n) + 0.5) / n; }
     float v = clamp(abs(uTempo) - 1.0, 0.0, 6.0) / 6.0;                     // was über das normale Tempo hinausgeht
     vec2 d = vec2(0.03 * v * sign(uTempo), 0.0);
     vec3 c = vec3(0.0);
@@ -36,7 +43,16 @@ const BILD = /* glsl */ `uniform sampler2D tBild, tRiss, tMaske; uniform float u
       float m = uMaske > 0.0 ? smoothstep(uMaske - 0.015, uMaske + 0.015, luma(texture2D(tMaske, uv).rgb)) : 1.0;
       c = mix(c, texture2D(tRiss, uv).rgb, uRiss * m);
     }
+    if (uPixel > 0.0) c = mix(c, floor(c * 5.0 + 0.5) / 5.0, 0.6);           // zerhackt: auch die Farben in Stufen
     gl_FragColor = vec4(c * uHell, 1.0);
+  }`;
+// ein Fleck aus einer anderen Zeit (Korn, Streifen des Step-Sequencers): nur im Rechteck uRect (x0, y0, x1, y1, y nach unten), mit heller Kante
+const FLECK = /* glsl */ `uniform sampler2D tBild; uniform vec4 uRect; uniform float uHell; varying vec2 vUv;
+  void main() {
+    vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
+    if (uv.x < uRect.x || uv.x > uRect.z || uv.y < uRect.y || uv.y > uRect.w) discard;
+    vec2 r = min(uv - uRect.xy, uRect.zw - uv);
+    gl_FragColor = vec4(mix(texture2D(tBild, uv).rgb, vec3(1.0), 0.6 * step(min(r.x, r.y), 0.0025)) * uHell, 1.0);
   }`;
 // eine Bitmap in ein Ziel derselben Ausrichtung (Zeile 0 = oben im Bild)
 const KOPIE = /* glsl */ `uniform sampler2D tQuelle; uniform vec2 uGroesse; void main() { gl_FragColor = vec4(texture2D(tQuelle, gl_FragCoord.xy / uGroesse).rgb, 1.0); }`;
@@ -138,7 +154,10 @@ export function video(g, teil) {
     return t;
   };
   const tex = neueTextur();
-  const mat = quadMaterial(BILD, { tBild: { value: tex }, tRiss: { value: null }, tMaske: { value: null }, uHell: { value: 0 }, uTempo: { value: 1 }, uRiss: { value: 0 }, uMaske: { value: 0 } });
+  const mat = quadMaterial(BILD, { tBild: { value: tex }, tRiss: { value: null }, tMaske: { value: null }, uHell: { value: 0 }, uTempo: { value: 1 }, uRiss: { value: 0 }, uMaske: { value: 0 },
+    uPixel: { value: 0 }, uSeite: { value: g.H / g.B }, uKacheln: { value: new THREE.Vector2(1, 1) } });
+  const fleck = quadMaterial(FLECK, { tBild: { value: null }, uRect: { value: new THREE.Vector4() }, uHell: { value: 1 } });
+  const frickel = film?.ort ? film.frickel ?? [] : [], hoch = g.H >= g.B;
   const kopie = quadMaterial(KOPIE, { tQuelle: { value: null }, uGroesse: { value: new THREE.Vector2() } });
   const bewegung = quadMaterial(BEWEGUNG, { tA: { value: null }, tB: { value: null }, uGroesse: { value: new THREE.Vector2() }, uBlock: { value: 8 } });
   const mosh = quadMaterial(MOSH, { tAlt: { value: null }, tMv: { value: null }, tA: { value: null }, tB: { value: null }, uGroesse: { value: new THREE.Vector2() }, uBloecke: { value: new THREE.Vector2() }, uBlock: { value: 8 }, uVerst: { value: 1 } });
@@ -223,8 +242,9 @@ export function video(g, teil) {
       const hell = zuletzt ? aus * fader * weich(anteil(tau, 0, Math.min(0.25, V[1]))) : 0;
       const leer = { aktiv: 0, bloom: 0, radius: 0.3, saum: 0, ende: 0, umkehr: 0 };
       if (hell <= 0) return leer;
-      const c = !logo ? rissBei(risse, t) : null, u = mat.uniforms;
-      u.uHell.value = hell; u.uTempo.value = film?.tempo ? film.tempo(t) : 1; u.uRiss.value = 0; u.uMaske.value = 0;
+      const c = !logo ? rissBei(risse, t) : null, u = mat.uniforms, fb = !logo && !c ? frickelBild(frickel, t, { hoch }) : null;
+      u.uHell.value = hell * (fb?.blitz ?? 1); u.uTempo.value = film?.tempo ? film.tempo(t) : 1; u.uRiss.value = 0; u.uMaske.value = 0;
+      u.uKacheln.value.set(...(fb?.kacheln ?? [1, 1])); u.uPixel.value = fb?.pixel ?? 0;
       if (c?.riss.art === "bloecke") {
         const bu = bloecke.uniforms, ein = Math.min(1, c.u / 0.06) * (1 - weich(anteil(c.u, 0.62, 1))), tick = Math.floor(t * 15);
         bu.tAlt.value = klein(film.karte(moshZeit(c.riss, 0))) ?? tex; bu.uTick.value = tick; bu.uHell.value = hell;
@@ -238,7 +258,15 @@ export function video(g, teil) {
       } else {
         if (c?.riss.art === "mosh") { const m = moshen(c, vorschau); if (m) { u.tRiss.value = m; u.uRiss.value = 1; } }
         if (c?.riss.art === "sortieren") { const s = sortiert(t, c.u); if (s) { u.tRiss.value = s.textur; u.tMaske.value = s.maske; u.uMaske.value = s.schwelle; u.uRiss.value = 1; } }
+        if (fb?.mosh) { const m = moshen({ riss: fb.mosh, i: fb.mosh.i, schritt: Math.floor((t - fb.mosh.von) * TAKT + 1e-6) }, vorschau); if (m) { u.tRiss.value = m; u.uRiss.value = 1; } }
         g.pass(mat, rt);
+        // die Flecken des Gefrickels darüber: Körner und die Streifen des Step-Sequencers, je aus ihrer Zeit
+        for (const f of fb?.flecken ?? []) {
+          const ft = klein(film.ort(f.q));
+          if (!ft) continue;
+          fleck.uniforms.tBild.value = ft; fleck.uniforms.uRect.value.set(...f.rect); fleck.uniforms.uHell.value = hell * (fb.art === "raster" ? 1 : 1.12);   // die Körner etwas heller
+          g.pass(fleck, rt);
+        }
       }
       return leer;
     },
@@ -248,14 +276,15 @@ export function video(g, teil) {
       const c = rissBei(risse, tau + VOR);
       return c ? -1 - c.i : film?.abschnitt ? film.abschnitt(tau + VOR) : 0;
     },
-    vorab: { szenen: [], materialien: [mat, ...(risse.length ? [kopie, bewegung, mosh, sortieren, bloecke, schlitz] : [])] },
+    vorab: { szenen: [], materialien: [mat, ...(risse.length || frickel.length ? [kopie, bewegung, mosh, sortieren, bloecke, schlitz, fleck] : [])] },
     zaehler(tau) {
       if (!film) return "video · noch keins gewählt";
       const q = film.karte(tau + VOR), m = Math.floor(q / 60), s = (q % 60).toFixed(2).padStart(5, "0"), c = rissBei(risse, tau + VOR);
-      return `video · bild ${Math.min(film.n, (film.index?.(tau + VOR) ?? 0) + 1)} / ${film.n} · quelle ${m}:${s}${c ? ` · ${NAMEN[c.riss.art].toLowerCase()}` : ""}`;
+      const fb = !c ? frickelBild(frickel, tau + VOR, { hoch }) : null, fr = fb ? ` · gefrickel ${fb.mosh ? "datamosh" : fb.art}${fb.art === "wirbel" ? ` ${fb.kacheln[0] * fb.kacheln[1]}` : ""}${fb.pixel ? " zerhackt" : ""}${fb.flecken.length ? ` · ${fb.flecken.length} flecken` : ""}` : "";
+      return `video · bild ${Math.min(film.n, (film.index?.(tau + VOR) ?? 0) + 1)} / ${film.n} · quelle ${m}:${s}${c ? ` · ${NAMEN[c.riss.art].toLowerCase()}` : ""}${fr}`;
     },
     entsorgen() {
-      for (const m of [mat, kopie, bewegung, mosh, sortieren, bloecke, schlitz]) m.dispose();
+      for (const m of [mat, kopie, bewegung, mosh, sortieren, bloecke, schlitz, fleck]) m.dispose();
       tex.dispose();
       for (const t of texturen.values()) t.dispose();
       for (const r of Object.values(ziele)) r.dispose();

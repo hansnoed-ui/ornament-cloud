@@ -486,7 +486,7 @@ await check("Video: als Effekt das Video selbst, bildgenau (WebCodecs), synchron
   await ctx.close();
 });
 
-await check("Video: Scratching und Cracks – mit dem Ablauf folgt das Bild dem Fahrplan des Tons (vor und zurück beim Scratch, die Hüpfer, das Gefrickel; der Fader blitzt); an jedem Hüpfer bricht es auf (Datamosh, Makroblöcke, Slit-Scan, Pixel-Sortierung)", async () => {
+await check("Video: Scratching und Cracks – mit dem Ablauf folgt das Bild dem Fahrplan des Tons (vor und zurück beim Scratch, die Hüpfer, das Gefrickel; der Fader blitzt); an jedem Hüpfer bricht es auf (Datamosh, Makroblöcke, Slit-Scan, Pixel-Sortierung); im Gefrickel Kacheln, Pixel und Flecken", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await page.click('[data-wahl="video"]');
   assert.ok(await page.isChecked("#video-ablauf"), "der Ablauf ist beim Video an");
@@ -509,6 +509,8 @@ await check("Video: Scratching und Cracks – mit dem Ablauf folgt das Bild dem 
   const gelesen = [];
   for (const t of zeiten) {
     if (imRiss(t)) continue;                                               // im Crack ist das Bild absichtlich kaputt (unten)
+    const zt = await page.evaluate((t) => window.__phorma.buehne.zaehler(window.__phorma.sz.zeit, t), t);
+    if (/datamosh|wirbel|zerhackt|flecken|raster/.test(zt)) continue;     // ebenso im Gefrickel (unten)
     const z = await zaehlerLesen(page, t);
     if (k.hell[Math.round(t * 240)] < 0.5) continue;                       // Fader zu: dunkel, die Felder sind nicht zu lesen
     gelesen.push([t, z.nr, erwartet(t)]);
@@ -547,6 +549,26 @@ await check("Video: Scratching und Cracks – mit dem Ablauf folgt das Bild dem 
   }
   await page.evaluate(([art]) => { window.__phorma.filmAnbieter.risse[0].art = art; }, [r0.art]);
   for (const t of [r0.von - 0.1, r0.bis + 0.1]) { const a = await messe(page, t), b = await ohne(t); assert.equal(a.abdruck, b.abdruck, `ausserhalb des Cracks unverändert (${t.toFixed(2)})`); }
+  // das Video-Gefrickel (bildfrickel.js): mit einem gebauten Plan im Gefrickel – ein Wirbel aus acht Kacheln, eine zerhackte Scheibe, ein Korn – sieht
+  // das Bild jeweils anders aus als ohne; die Beschriftung sagt, was läuft
+  const v = k.teile[2].von + 0.5;
+  await page.evaluate((v) => {
+    const S = window.__phorma, F = S.filmAnbieter.frickel; S.__frickel = F.splice(0);
+    const e = (o) => ({ dauer: 0.3, tempo: 1, crush: 0, teil: 1, k: 0, ...o });
+    F.push(e({ t: v, q: 1, gain: 0.85, art: "wirbel", teil: 8 }), e({ t: v + 0.3, q: 2, gain: 0.78, crush: 9, art: "scheibe" }), e({ t: v + 0.6, q: 3, gain: 0.3, art: "korn" }));
+  }, v);
+  const frickelOhne = async (t) => {
+    await page.evaluate(() => { const S = window.__phorma; S.__plan = S.filmAnbieter.frickel.splice(0); });
+    const m = await messe(page, t);
+    await page.evaluate(() => { const S = window.__phorma; S.filmAnbieter.frickel.push(...S.__plan); });
+    return m;
+  };
+  for (const [t, text] of [[v + 0.1, /gefrickel wirbel 8/], [v + 0.4, /zerhackt/], [v + 0.7, /1 flecken/]]) {
+    const mit = await messe(page, t), ohneF = await frickelOhne(t);
+    assert.ok(mit.abdruck !== ohneF.abdruck, `Gefrickel bei ${t.toFixed(2)}: das Bild ändert sich`);
+    assert.match(await page.evaluate((t) => window.__phorma.buehne.zaehler(window.__phorma.sz.zeit, t), t), text);
+  }
+  await page.evaluate(() => { const S = window.__phorma, F = S.filmAnbieter.frickel; F.splice(0); F.push(...S.__frickel); });
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
