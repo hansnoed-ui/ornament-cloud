@@ -6,9 +6,10 @@
 // Ohne Filmkorn und ohne Entrauschen, in voller Grösse (Rückmeldung: «das Intro sieht im Browser am Laptop nicht gut aus, qualitativ und vom
 // Bildschirmformat» – das Korn ergab in voller Grösse 27 MB, entrauscht und auf 864 px verkleinert wurden die Haarlinien weich und matschig).
 //
-//   NODE_PATH=$(npm root -g) node tools/phorma-intro.mjs <audiodatei> [--format 16:9|4:5] [--proben 4] [--crf 24] [--aus …]
+//   NODE_PATH=$(npm root -g) node tools/phorma-intro.mjs <audiodatei> [--format 16:9|4:5] [--proben 4] [--crf 27] [--aus …] [--ordner <bilder>]
+// --ordner: ein Ordner mit schon gerechneten Bildern (nach einem Abbruch); sie werden weiterverwendet, nur das letzte wird neu gerechnet.
 // Braucht ffmpeg. Die Musik des Intros vom 18. Oktober 2026 ist der Ton des Testvideos «Claude_444.mp4» (nicht im Repository).
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -22,7 +23,7 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const arg = (name, std) => { const i = process.argv.indexOf(`--${name}`); return i > 0 ? process.argv[i + 1] : std; };
 const ton = process.argv[2] && !process.argv[2].startsWith("--") ? resolve(process.argv[2]) : null;
 if (!ton) { console.error("Audiodatei fehlt: node tools/phorma-intro.mjs <audiodatei>"); process.exit(1); }
-const format = arg("format", "16:9"), proben = Number(arg("proben", 4)), crf = arg("crf", format === "16:9" ? "24" : "25");
+const format = arg("format", "16:9"), proben = Number(arg("proben", 4)), crf = arg("crf", format === "16:9" ? "27" : "25");
 const aus = resolve(root, arg("aus", format === "16:9" ? "assets/start-intro-quer.mp4" : "assets/start-intro.mp4"));
 
 const { startServer } = await import(new URL("tools/serve-orma.mjs", `file://${root}`).href);
@@ -39,9 +40,14 @@ await page.waitForFunction(() => window.__phorma?.ton && window.__phorma?.buehne
 await page.waitForTimeout(1500);
 await page.waitForFunction(() => window.__phorma?.buehneFertig && window.__phorma?.sz?.buehne, null, { timeout: 300_000 });
 const dauer = await page.evaluate(() => { const S = window.__phorma; S.laeuft = false; S.buehne.korn = 0; return S.sz.zeit.dauer; });   // ohne Korn
-const n = Math.round(dauer * 30), ordner = mkdtempSync(join(tmpdir(), "phorma-intro-"));
+const n = Math.round(dauer * 30), ordner = arg("ordner") ? resolve(arg("ordner")) : mkdtempSync(join(tmpdir(), "phorma-intro-"));
+mkdirSync(ordner, { recursive: true });
+const datei = (i) => join(ordner, `b${String(i).padStart(4, "0")}.png`);
+let ab = 0; while (ab < n && existsSync(datei(ab))) ab++;
+ab = Math.max(0, ab - 1);                                                  // das letzte vielleicht nur halb geschrieben
+console.log(`Bilder in ${ordner}${ab ? `, weiter ab ${ab}` : ""}`);
 console.log(`${n} Bilder (${dauer.toFixed(1)} s), ${proben} Proben je Bild …`);
-for (let i = 0; i < n; i++) {
+for (let i = ab; i < n; i++) {
   const url = await page.evaluate(async ([t, proben]) => {
     const { bild } = await import(document.querySelector('script[src^="app.js"]').src.replace(/app\.js\?v=(\d+)/, "film.js?v=$1"));
     const S = window.__phorma, sz = { ...S.sz, buehne: S.buehne, beschriftung: false };
@@ -49,7 +55,7 @@ for (let i = 0; i < n; i++) {
     bild(c.getContext("2d"), sz, t, { proben });
     return c.toDataURL("image/png");
   }, [i / 30, proben]);
-  writeFileSync(join(ordner, `b${String(i).padStart(4, "0")}.png`), Buffer.from(url.split(",")[1], "base64"));
+  writeFileSync(datei(i), Buffer.from(url.split(",")[1], "base64"));
   if (i % 30 === 0) console.log(`${i} / ${n}`);
 }
 await browser.close(); server.close();

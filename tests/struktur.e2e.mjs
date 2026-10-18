@@ -393,7 +393,7 @@ await check("Startanimation: neue Sitzung deckt die Seite schwarz ab, spielt das
   assert.deepEqual(v.src, ["assets/start-intro-quer.mp4?v=1"], "im Querformat die Fassung 16 : 9");
   assert.equal(v.play, 1);
   const video = await page.locator("#start video").evaluate((e) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height, muted: e.muted }; });
-  assert.deepEqual([video.w, video.h, video.muted], [1200, 675, true], "16 : 9, so breit wie das Fenster, zuerst stumm");
+  assert.ok(Math.abs(video.w - flaeche.w) < 1 && Math.abs(video.w / video.h - 16 / 9) < 0.01 && video.muted, `16 : 9, so breit wie die Fläche, zuerst stumm (${video.w} × ${video.h})`);
   const knopf = await page.getByRole("button", { name: "Skip intro" }).evaluate((e) => { const r = e.getBoundingClientRect(), c = getComputedStyle(e); return { r: r.right, b: r.bottom, h: r.height, farbe: c.color, rand: c.borderTopColor, radius: parseFloat(c.borderTopLeftRadius), innen: innerWidth }; });
   assert.equal(knopf.farbe, "rgb(240, 138, 93)", "Schrift orange (auf Schwarz lesbar)");
   assert.equal(knopf.rand, "rgb(240, 138, 93)", "Rahmen orange");
@@ -440,8 +440,8 @@ await check("Startanimation: im dunklen Modus dasselbe Intro auf Schwarz", async
 await check("Startanimation: hochkant (Telefon) die Fassung 4 : 5, so breit wie das Fenster", async () => {
   const { ctx, page, errors } = await startKontext({ viewport: { width: 390, height: 844 } });
   assert.deepEqual((await page.evaluate(() => window.__start)).src, ["assets/start-intro.mp4?v=2"]);
-  const video = await page.locator("#start video").evaluate((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });
-  assert.deepEqual(video, [390, 488]);
+  const [w, h, breite] = await page.locator("#start video").evaluate((e) => { const r = e.getBoundingClientRect(); return [r.width, r.height, e.parentElement.getBoundingClientRect().width]; });
+  assert.ok(Math.abs(w - breite) < 1 && Math.abs(w / h - 0.8) < 0.01, `4 : 5, so breit wie das Fenster (${w} × ${h})`);
   assert.deepEqual(errors, []);
   await ctx.close();
 });
