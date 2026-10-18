@@ -2,7 +2,7 @@
 // Ornament.cloud-Logo endet, als neue Intro-Sequenz der Website, mit Option Ton an/aus und Skip intro»). Gerechnet von der Anwendung selbst
 // (alpha/phorma-iii/, Effekt Irrfahrt, Quelle «Nur Ton», Logo am Schluss, 4 : 5) mit einer Audiodatei, Bild für Bild in voller Grösse mit
 // Bewegungsunschärfe, dann mit ffmpeg zu H.264 (Bereich tv, BT.709, schneller Start) und AAC zusammengesetzt – leicht entrauscht und auf 864 × 1080
-// verkleinert (das Korn und die Haarlinien ergaben in voller Grösse 27 MB; so rund 4 MB, kaum ein Unterschied, das Intro lädt vor der Seite).
+// verkleinert (das Korn und die Haarlinien ergaben in voller Grösse 27 MB; so rund 4 MB, kaum ein Unterschied, das Intro lädt vor der Seite; der Test verlangt unter 5 MB).
 //
 //   NODE_PATH=$(npm root -g) node tools/phorma-intro.mjs <audiodatei> [--proben 2] [--aus assets/start-intro.mp4]
 // Braucht ffmpeg. Die Musik des Intros vom 18. Oktober 2026 ist der Ton des Testvideos «Claude_444.mp4» (nicht im Repository).
@@ -52,6 +52,6 @@ for (let i = 0; i < n; i++) {
 await browser.close(); server.close();
 execFileSync("ffmpeg", ["-v", "error", "-y", "-framerate", "30", "-i", join(ordner, "b%04d.jpg"), "-i", ton, "-map", "0:v", "-map", "1:a", "-t", String(n / 30),
   "-vf", "scale=in_range=full:out_range=tv,hqdn3d=8:8:14:14,scale=864:-2:flags=lanczos,format=yuv420p", "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv",
-  "-c:v", "libx264", "-preset", "slow", "-tune", "film", "-crf", "31", "-c:a", "aac", "-b:a", "128k", "-af", "afade=t=out:st=" + (n / 30 - 1).toFixed(2) + ":d=1", "-movflags", "+faststart", aus], { stdio: "inherit" });
+  "-c:v", "libx264", "-preset", "slow", "-tune", "film", "-crf", "32", "-c:a", "aac", "-b:a", "128k", "-af", "afade=t=out:st=" + (n / 30 - 1).toFixed(2) + ":d=1", "-movflags", "+faststart", aus], { stdio: "inherit" });
 rmSync(ordner, { recursive: true, force: true });
 console.log(`fertig: ${aus}`);
