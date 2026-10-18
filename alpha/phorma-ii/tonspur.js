@@ -1,7 +1,6 @@
-// PHORMA II – die Tonspur im Video (nur im Browser): die Audiodatei als AAC (WebCodecs AudioEncoder; ohne AAC Opus), mit dem Bild zusammen in ein
-// MP4 geschrieben – mit mp4-muxer 5.2.2 (MIT, lokal in vendor/), weil der MP4-Schreiber von Sketchory nur Bild kennt. Auf die Länge des Films
-// gekürzt, am Ende ausgeblendet.
-import { Muxer, ArrayBufferTarget } from "../../vendor/mp4-muxer-5.2.2/mp4-muxer.js";
+// PHORMA II – das MP4 und seine Tonspur: die Audiodatei als AAC (WebCodecs AudioEncoder; ohne AAC Opus), auf die Länge des Films gekürzt, am Ende
+// ausgeblendet; Bild und Ton schreibt mp4-muxer 5.2.2 (MIT, lokal in vendor/) in Teilen (mp4Schreiber). tonKodieren und tonLesen nur im Browser.
+import { Muxer, StreamTarget } from "../../vendor/mp4-muxer-5.2.2/mp4-muxer.js";
 
 /** die Tonspur (AudioBuffer) kodieren: { proben: [{ daten, key, zeit, dauer }], meta, codec, rate, kanaele } oder null, wenn der Browser es nicht kann */
 export async function tonKodieren(buffer, dauer, { ausblenden = 1.2 } = {}) {
@@ -34,15 +33,42 @@ export async function tonKodieren(buffer, dauer, { ausblenden = 1.2 } = {}) {
   return { proben, meta, codec: cfg.art, rate, kanaele };
 }
 
-/** Bild (H.264, avcC und Proben wie für Sketchory) und Ton zusammen als MP4 */
-export function mp4MitTon({ breite, hoehe, fps, codec, avcC, bilder, ton }) {
-  const muxer = new Muxer({ target: new ArrayBufferTarget(), fastStart: "in-memory", firstTimestampBehavior: "offset",
-    video: { codec: "avc", width: breite, height: hoehe, frameRate: fps }, audio: { codec: ton.codec, numberOfChannels: ton.kanaele, sampleRate: ton.rate } });
-  bilder.forEach((p, i) => muxer.addVideoChunkRaw(p.daten, p.key ? "key" : "delta", p.zeit, Math.round(1e6 / fps),
-    i ? undefined : { decoderConfig: { codec, codedWidth: breite, codedHeight: hoehe, description: avcC } }));
-  ton.proben.forEach((p, i) => muxer.addAudioChunkRaw(p.daten, p.key ? "key" : "delta", p.zeit, p.dauer, i ? undefined : ton.meta));
-  muxer.finalize();
-  return new Uint8Array(muxer.target.buffer);
+/**
+ * MP4 schreiben, während die Bilder kodiert werden – ohne die Datei je am Stück im Speicher zu halten (Rückmeldung vom 18. Oktober 2026 von einem
+ * Telefon: «Array buffer allocation failed»; ein Gewebe so lang wie die Musik ergab bei 14 Mbit/s weit über 100 MB in einem Block, dazu alle Bilder
+ * noch einmal einzeln). mp4-muxer schreibt in Teilen (StreamTarget), der Platz für «moov» wird vorn reserviert (fastStart mit der Zahl der Stücke)
+ * und am Schluss hineingeschrieben; das Ergebnis ist ein Blob aus den Teilen. Ton (aus tonKodieren) wird vorab übergeben.
+ */
+export function mp4Schreiber({ breite, hoehe, fps, codec, bilder, ton = null }) {
+  const teile = [];
+  let ende = 0;
+  const target = new StreamTarget({
+    onData: (daten, lage) => {
+      if (lage > ende) { teile.push({ lage: ende, daten: new Uint8Array(lage - ende) }); ende = lage; }   // der vorn reservierte Platz für moov
+      if (lage === ende) { teile.push({ lage, daten }); ende += daten.length; return; }
+      // in schon Geschriebenes (moov am Schluss in den reservierten Platz): die betroffenen Teile überschreiben
+      let rest = daten, p = lage;
+      for (const t of teile) {
+        if (!rest.length) break;
+        if (p >= t.lage + t.daten.length || p < t.lage) continue;
+        const o = p - t.lage, n = Math.min(rest.length, t.daten.length - o);
+        t.daten.set(rest.subarray(0, n), o); rest = rest.subarray(n); p += n;
+      }
+      if (rest.length) { teile.push({ lage: p, daten: rest.slice() }); ende += rest.length; }
+    },
+  });
+  const muxer = new Muxer({ target, firstTimestampBehavior: "offset", fastStart: { expectedVideoChunks: bilder, expectedAudioChunks: ton ? ton.proben.length : 0 },
+    video: { codec: "avc", width: breite, height: hoehe, frameRate: fps }, ...(ton ? { audio: { codec: ton.codec, numberOfChannels: ton.kanaele, sampleRate: ton.rate } } : {}) });
+  ton?.proben.forEach((p, i) => muxer.addAudioChunkRaw(p.daten, p.key ? "key" : "delta", p.zeit, p.dauer, i ? undefined : ton.meta));
+  let n = 0;
+  return {
+    /** ein kodiertes Bild (daten: Uint8Array); beim ersten die Beschreibung des Encoders (avcC) */
+    bild(daten, key, zeit, avcC) {
+      muxer.addVideoChunkRaw(daten, key ? "key" : "delta", zeit, Math.round(1e6 / fps), n++ ? undefined : { decoderConfig: { codec, codedWidth: breite, codedHeight: hoehe, description: avcC } });
+    },
+    fertig() { muxer.finalize(); return new Blob(teile.map((t) => t.daten), { type: "video/mp4" }); },
+    get groesse() { return ende; },
+  };
 }
 
 /** Datei → { buffer (AudioBuffer), pcm (mono, Float32Array), rate } */

@@ -6,7 +6,6 @@ import { szene, bild, standbildZeit } from "./film.js?v=10";
 import { analysieren, tiefeNormieren } from "./analyse.js?v=10";
 import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=10";
 import { textBild } from "./textbild.js?v=10";
-import { mp4 } from "../sketchory/mp4.js?v=10";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
 const $ = (id) => document.getElementById(id);
@@ -546,7 +545,8 @@ const CODECS = ["avc1.640028", "avc1.4d0028", "avc1.42e028", "avc1.640032", "avc
 async function webcodecs([B, H]) {
   if (typeof VideoEncoder === "undefined" || typeof VideoFrame === "undefined") return null;
   for (const codec of CODECS) {
-    const cfg = { codec, width: B, height: H, bitrate: 14_000_000, framerate: FPS, avc: { format: "avc" }, latencyMode: "quality" };
+    const cfg = { codec, width: B, height: H, bitrate: grob ? 8_000_000 : 14_000_000, framerate: FPS,     // Telefon: kleinere Datei (Instagram kodiert ohnehin neu)
+      avc: { format: "avc" }, latencyMode: "quality" };
     try { if ((await VideoEncoder.isConfigSupported(cfg)).supported) return cfg; } catch { /* nächster */ }
   }
   return null;
@@ -568,21 +568,30 @@ $("video").addEventListener("click", async () => {
 });
 
 async function mitWebCodecs(cfg, sz) {
-  const p = proben();
+  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=10");
+  // mit Ton: die Tonspur zuerst kodieren (klein), dann gehen die Bilder gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
+  let ton = null;
+  if (S.ton && $("ton-im-video").checked) {
+    melden("Der Ton wird kodiert …");
+    ton = await tonKodieren(S.ton.buffer, sz.zeit.dauer);
+    if (!ton) melden("Dieser Browser kann den Ton nicht kodieren; das Video ist ohne Ton.", true);
+  }
   melden(p > 1 ? `Video wird gerechnet, mit Bewegungsunschärfe (${p} Proben je Bild) …` : "Video wird gerechnet …");
   const c = leinwand(sz.breite, sz.hoehe), ctx = c.getContext("2d", { alpha: false });
-  const stuecke = [];
+  const n = sz.zeit.bilder, datei = mp4Schreiber({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, codec: cfg.codec, bilder: n, ton });
   let avcC = null, fehler = null;
   const enc = new VideoEncoder({
     output: (chunk, meta) => {
-      if (meta?.decoderConfig?.description && !avcC) { const d = meta.decoderConfig.description; avcC = new Uint8Array(d.buffer ? d.buffer.slice(d.byteOffset, d.byteOffset + d.byteLength) : d); }
-      const daten = new Uint8Array(chunk.byteLength); chunk.copyTo(daten);
-      stuecke.push({ daten, key: chunk.type === "key", zeit: chunk.timestamp });
+      try {
+        if (meta?.decoderConfig?.description && !avcC) { const d = meta.decoderConfig.description; avcC = new Uint8Array(d.buffer ? d.buffer.slice(d.byteOffset, d.byteOffset + d.byteLength) : d); }
+        if (!avcC) throw new Error("der Encoder hat keine Beschreibung geliefert");
+        const daten = new Uint8Array(chunk.byteLength); chunk.copyTo(daten);
+        datei.bild(daten, chunk.type === "key", chunk.timestamp, avcC);
+      } catch (e) { fehler ??= e; }
     },
-    error: (e) => { fehler = e; },
+    error: (e) => { fehler ??= e; },
   });
   enc.configure(cfg);
-  const n = sz.zeit.bilder;
   for (let i = 0; i < n; i++) {
     if (fehler) throw fehler;
     bild(ctx, sz, i / FPS, { proben: p });
@@ -594,17 +603,8 @@ async function mitWebCodecs(cfg, sz) {
   }
   await enc.flush(); enc.close();
   if (fehler) throw fehler;
-  if (!avcC) throw new Error("der Encoder hat keine Beschreibung geliefert");
-  const art = `MP4 (H.264, ${cfg.codec})${p > 1 ? ` · Bewegungsunschärfe ${p} Proben` : ""}`;
-  // mit Ton: die Tonspur kodieren und beides mit mp4-muxer zusammen schreiben
-  if (S.ton && $("ton-im-video").checked) {
-    melden("Der Ton wird kodiert …");
-    const { tonKodieren, mp4MitTon } = await import("./tonspur.js?v=10");
-    const ton = await tonKodieren(S.ton.buffer, sz.zeit.dauer);
-    if (ton) return { blob: new Blob([mp4MitTon({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, codec: cfg.codec, avcC, bilder: stuecke, ton })], { type: "video/mp4" }), endung: "mp4", art: `${art} · Ton ${ton.codec === "aac" ? "AAC" : "Opus"}` };
-    melden("Dieser Browser kann den Ton nicht kodieren; das Video ist ohne Ton.", true);
-  }
-  return { blob: new Blob([mp4({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, avcC, proben: stuecke })], { type: "video/mp4" }), endung: "mp4", art };
+  const art = `MP4 (H.264, ${cfg.codec}, ${Math.round(cfg.bitrate / 1e6)} Mbit/s)${p > 1 ? ` · Bewegungsunschärfe ${p} Proben` : ""}${ton ? ` · Ton ${ton.codec === "aac" ? "AAC" : "Opus"}` : ""}`;
+  return { blob: datei.fertig(), endung: "mp4", art };
 }
 
 async function mitRecorder(sz) {

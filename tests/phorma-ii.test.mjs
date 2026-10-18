@@ -183,6 +183,28 @@ test("Verfrickeln: aus einem kurzen Sample ein neues Stück im Raster, wiederhol
   assert.equal(String.fromCharCode(...w.subarray(0, 4)), "RIFF"); assert.equal(w.length, 44 + f.kanaele[0].length * 4);
 });
 
+test("MP4 in Teilen: dieselben Bytes wie mp4-muxer am Stück, moov vorn; nie die ganze Datei in einem Block", async () => {
+  const { mp4Schreiber } = await import(new URL("tonspur.js", P).href);
+  const { Muxer, ArrayBufferTarget } = await import(new URL("vendor/mp4-muxer-5.2.2/mp4-muxer.js", root).href);
+  const avcC = new Uint8Array([1, 0x64, 0, 0x28, 0xff, 0xe1, 0, 1, 0x67, 1, 0, 1, 0x68]), N = 400;
+  const ton = { codec: "opus", kanaele: 2, rate: 48000, meta: { decoderConfig: { codec: "opus", sampleRate: 48000, numberOfChannels: 2 } },
+    proben: Array.from({ length: 700 }, (_, i) => ({ daten: new Uint8Array(90 + (i % 13)).fill(i & 255), key: true, zeit: i * 20000, dauer: 20000 })) };
+  const bild = (i) => new Uint8Array(3000 + ((i * 37) % 900)).map((_, j) => (i * 7 + j) & 255);
+  for (const t of [null, ton]) {
+    const w = mp4Schreiber({ breite: 1080, hoehe: 1350, fps: 30, codec: "avc1.640028", bilder: N, ton: t });
+    for (let i = 0; i < N; i++) w.bild(bild(i), i % 60 === 0, Math.round((i * 1e6) / 30), avcC);
+    const blob = w.fertig(), a = new Uint8Array(await blob.arrayBuffer());
+    const m = new Muxer({ target: new ArrayBufferTarget(), firstTimestampBehavior: "offset", fastStart: { expectedVideoChunks: N, expectedAudioChunks: t ? t.proben.length : 0 },
+      video: { codec: "avc", width: 1080, height: 1350, frameRate: 30 }, ...(t ? { audio: { codec: "opus", numberOfChannels: 2, sampleRate: 48000 } } : {}) });
+    t?.proben.forEach((p, i) => m.addAudioChunkRaw(p.daten, "key", p.zeit, p.dauer, i ? undefined : t.meta));
+    for (let i = 0; i < N; i++) m.addVideoChunkRaw(bild(i), i % 60 === 0 ? "key" : "delta", Math.round((i * 1e6) / 30), Math.round(1e6 / 30), i ? undefined : { decoderConfig: { codec: "avc1.640028", codedWidth: 1080, codedHeight: 1350, description: avcC } });
+    m.finalize();
+    assert.deepEqual(a, new Uint8Array(m.target.buffer), t ? "mit Ton" : "ohne Ton");
+    const f = new DataView(a.buffer).getUint32(0);
+    assert.equal(String.fromCharCode(...a.subarray(f + 4, f + 8)), "moov", "moov gleich nach ftyp (schnelles Abspielen)");
+  }
+});
+
 test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Marken, nichts von aussen ausser der KI auf Wunsch", () => {
   const html = lies("index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
