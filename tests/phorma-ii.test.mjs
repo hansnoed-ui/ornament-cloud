@@ -119,15 +119,16 @@ test("Gewebe: für sich, nicht in der Kette; mit Tonspur so lang wie die Musik u
   assert.equal(A.zeitachse({ ablauf: A.KETTE, laenge: 40 }).dauer, A.zeitachse({ ablauf: A.KETTE }).dauer, "die Kette kümmert sich nicht um die Länge");
 });
 
-test("Struktur: für sich wie das Gewebe, mit Tonspur so lang wie die Musik; Motive wechseln an den Schnitten, lange Lücken gefüllt", async () => {
-  assert.equal(A.ablaufName("struktur"), "struktur");
-  assert.deepEqual(A.MIT_TON, ["gewebe", "struktur"]);
-  const z = A.zeitachse({ ablauf: "struktur", tempo: "schnell", laenge: 30 });
-  assert.deepEqual(z.phasen.map((p) => p.name), ["zeichen", "struktur", "bild"]);
-  assert.ok(z.tempo === 1 && Math.abs(z.abschnitt.bis - z.abschnitt.von - 30) < 1e-9);
-  const w = T.motivWechsel([1, 5, 6, 30], 2, 40);
-  assert.equal(w.filter((x) => x.echt).map((x) => x.t).join(), "5,6,30", "echte Schnitte im Abschnitt");
-  assert.ok(w.every((x, i) => i === 0 || x.t - w[i - 1].t <= 8.01) && 40 - w.at(-1).t <= 8.01 && w[0].t - 2 <= 8.01, "keine Lücke über 8 s");
+test("Gewebe: Zustände bei kräftigen Einsätzen, Lücken gefüllt; das Tor öffnet beim Schlag und schliesst dazwischen; die Struktur gibt es nicht mehr", () => {
+  assert.equal(A.ablaufName("struktur"), "gewebe", "eine gespeicherte Struktur wird zum Gewebe");
+  assert.deepEqual(A.MIT_TON, ["gewebe"]);
+  const ein = [1, 1.3, 2, 2.4, 9, 9.5, 16].map((t, i) => ({ t, staerke: i % 2 ? 0.3 : 0.8 }));
+  const Tk = { einsaetze: ein, schnitte: [9] };
+  const z = T.gewebeZustaende(Tk, 0.5, 20);
+  assert.deepEqual(z.map((x) => x.t), [2, 5, 9, 12, 16], "kräftige Einsätze ≥ 0,7 s auseinander (auch vom Anfang), Lücken über 4 s alle 3 s gefüllt");
+  assert.deepEqual(T.gewebeZustaende(Tk, 0.5, 20), z, "wiederholbar");
+  assert.ok(z.every((x) => typeof x.nacht === "boolean" && typeof x.zeichen === "boolean"));
+  assert.equal(T.zustandBei(z, 0.8, 0.5).nr, 0); assert.equal(T.zustandBei(z, 9.2, 0.5).t0, 9);
 });
 
 test("Ton: Lautstärke, Bänder und Einsätze aus einer Tonspur; Schnitte an den stärksten, die Zeit der Musik steigt", () => {
@@ -157,6 +158,7 @@ test("Ton: Lautstärke, Bänder und Einsätze aus einer Tonspur; Schnitte an den
   assert.ok(lauf(b1, b1 + 6) > 2 * lauf(b1 + 20, b1 + 26), "die Zeit der Musik läuft beim Schlag schneller als dazwischen");
   assert.ok(Math.abs(t.dreh[b1 + 12] - t.dreh[b1 - 2]) > 0.2, "bei einem kräftigen Einsatz schwingt der Winkel");
   assert.equal(T.tonAnalysieren(pcm, rate, { spektrum: false }).spektrum, null, "ohne Spektrum (fürs Verfrickeln)");
+  assert.ok(t.tor[b1 + 3] > 0.4 && t.tor[b1 + 3] > 3 * t.tor[b1 + 35], "das Tor: auf beim Schlag, zu dazwischen");
   assert.equal(T.tonOderErsatz(null), T.tonOderErsatz(null), "ohne Ton überall derselbe Ersatz");
   assert.equal(T.tonOderErsatz(t), t);
   const w = T.wechselZeiten(t, { von: 2, bis: 11 });
@@ -237,7 +239,7 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
   assert.match(html, /data-wahl="physarum\+tiefe\+tuch"/, "die ganze Kette als Karte");
   assert.match(html, /data-wahl="gewebe"/, "das Gewebe als eigene Karte");
-  assert.match(html, /data-wahl="struktur"/, "die Struktur als eigene Karte");
+  assert.ok(!/data-wahl="struktur"/.test(html), "keine Struktur mehr");
   assert.match(html, /data-quelle="foto"[\s\S]*data-quelle="text"[\s\S]*data-quelle="video"[\s\S]*data-quelle="ton">Nur Ton/, "Foto, Text, Video oder nur Ton als Quelle");
   assert.match(html, /id="videodatei"[^>]*accept="video\/\*/, "eine Videodatei");
   assert.match(html, /id="tondatei"[^>]*accept="audio\/\*/, "eine Audiodatei");

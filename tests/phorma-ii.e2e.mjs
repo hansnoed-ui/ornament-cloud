@@ -56,7 +56,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit, Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild, szene } = await import("./film.js?v=12");
+  const { bild, szene } = await import("./film.js?v=13");
   const S = window.__phorma; S.laeuft = false;
   const sz = szene({ breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, ablauf: S.ablauf, buehne: S.buehne, beschriftung: false, signet: true });
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -333,10 +333,10 @@ await check("Video als Quelle: Standbild, sein Ton als Tonspur, im Gewebe neue L
   await ctx.close();
 });
 
-await check("Nur Ton: ohne Bild wählt die Struktur – Punkte, Netz, Knoten, Muster, Fraktal von der Musik bewegt, je Schnitt ein neues Motiv; am Ende leeres Papier", async () => {
+await check("Nur Ton: ohne Bild wählt das Gewebe – aus Schlaufen wachsen Flächen, bei kräftigen Einsätzen neue Bilder; am Ende leeres Papier", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await page.click('[data-quelle="ton"]');
-  assert.equal(await page.getAttribute('[data-wahl="struktur"]', "aria-pressed"), "true", "nur Ton wählt die Struktur");
+  assert.equal(await page.getAttribute('[data-wahl="gewebe"]', "aria-pressed"), "true", "nur Ton wählt das Gewebe");
   assert.ok(await page.isVisible("#ton-teil") && !(await page.isVisible("#ablage")));
   await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
   await page.waitForFunction(() => window.__phorma.ton && window.__phorma.A, null, { timeout: 60_000 });
@@ -348,14 +348,25 @@ await check("Nur Ton: ohne Bild wählt die Struktur – Punkte, Netz, Knoten, Mu
   // ein Schlag mitten im Gewebe: kurz davor und kurz danach verschieden, das Bild dunkler (mehr Tinte beim Stoss)
   const e = s.ein.find((t) => t > G[1] + 1.5 && t < G[2] - 1.5);
   const vor = await messe(page, e - 0.1), nach = await messe(page, e + 0.12);
-  assert.notEqual(vor.abdruck, nach.abdruck, "der Schlag bewegt die Struktur");
+  assert.notEqual(vor.abdruck, nach.abdruck, "der Schlag bewegt das Gewebe");
   assert.ok(nach.mittelAbw > 0.3, `Punkte und Linien zu sehen (${nach.mittelAbw.toFixed(2)})`);
-  // die Motive wechseln: zu drei Zeiten im Abschnitt drei verschiedene
-  const motive = await page.evaluate(([a, b]) => [a + 1, (a + b) / 2, b - 1].map((t) => window.__phorma.buehne.zaehler(window.__phorma.sz.zeit, t).split(" · ")[0]), [G[1], G[2]]);
-  assert.ok(new Set(motive).size >= 2, `Motive wechseln (${motive})`);
+  // die Zustände wechseln: zu drei Zeiten im Abschnitt mindestens zwei verschiedene
+  const zust = await page.evaluate(([a, b]) => [a + 1, (a + b) / 2, b - 1].map((t) => window.__phorma.buehne.zaehler(window.__phorma.sz.zeit, t).split(" · ")[0]), [G[1], G[2]]);
+  assert.ok(new Set(zust).size >= 2, `neue Bilder (${zust})`);
   const ende = await messe(page, s.bis + 1);
   assert.ok(ende.abw <= 2, `am Ende leeres Papier (${ende.abw})`);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
+await check("Nur Musik geladen, kein Bild: «Nur Ton» wird gewählt und die Vorschau läuft", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
+  await bereit(page);
+  const s = await page.evaluate(() => ({ quelle: window.__phorma.quelle, ablauf: window.__phorma.ablauf, ton: window.__phorma.ton?.name }));
+  assert.deepEqual(s, { quelle: "ton", ablauf: "gewebe", ton: "schlaege.wav" });
+  assert.equal(await page.getAttribute('[data-quelle="ton"]', "aria-pressed"), "true");
+  assert.deepEqual(fehler, []);
   await ctx.close();
 });
 

@@ -9,13 +9,12 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=12";
-import { FPS, kette, laufend } from "./ablauf.js?v=12";
-import { physarum } from "./physarum.js?v=12";
-import { tiefe } from "./tiefe.js?v=12";
-import { tuch } from "./tuch.js?v=12";
-import { gewebe } from "./gewebe.js?v=12";
-import { struktur } from "./struktur.js?v=12";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=13";
+import { FPS, kette, laufend } from "./ablauf.js?v=13";
+import { physarum } from "./physarum.js?v=13";
+import { tiefe } from "./tiefe.js?v=13";
+import { tuch } from "./tuch.js?v=13";
+import { gewebe } from "./gewebe.js?v=13";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -49,7 +48,7 @@ const AUSGABE = /* glsl */ `
     gl_FragColor = vec4(o, 1.0);
   }`;
 
-const FABRIK = { physarum, tiefe, tuch, gewebe, struktur };
+const FABRIK = { physarum, tiefe, tuch, gewebe };
 
 /**
  * Die Bühne für ein Foto (Canvas in Filmgrösse B × H), seine Analyse und eine Kette. optionen: tiefeQuelle ("bild" | "ki"), grob (Telefon), test (klein).

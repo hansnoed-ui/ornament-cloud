@@ -11,6 +11,7 @@
 //   spektrum                 – je Filmbild 32 Bänder (FFT 2048, logarithmisch 40 Hz – 12 kHz), je Band normiert, herauf in 2, herunter in 6 Bildern
 //   stoss, stossTief, stossHoch – Hüllkurven der Einsätze (alle; die mit vor allem Bass, 0,3 s; die mit vor allem Höhen, 0,12 s)
 //   dreh                     – ein Winkel, der bei jedem kräftigen Einsatz in 0,3 s um ± Stärke schwingt (die Bänder schwingen im Takt)
+//   tor                      – die Tinte: bei jedem Einsatz auf, 0,25 s halten, 0,4 s abklingen (Rückmeldung: «die Dynamik näher beim Video»)
 // (Rückmeldung vom 18. Oktober 2026: «nicht gesehen, dass die Animation sich auf die Musik bezog, sie scheint einfach ein wenig rumzuwabern»)
 // Ohne Tonspur: ruhige, wiederholbare Ersatzkurven (ersatz).
 export const FPS = 30;
@@ -142,7 +143,18 @@ function mitEinsaetzen(T) {
     while (si < schnitte.length && schnitte[si] <= b / FPS) { E += 0.8; si++; }
     E += (0.05 + 0.5 * laut[b] ** 2 + 8 * stoss[b]) / FPS; energie[b] = E;
   }
-  return { ...T, einsaetze, schnitte, energie, stoss, stossTief, stossHoch, dreh };
+  // das Tor: bei jedem Einsatz geht die Tinte auf (in zwei Bildern), hält 0,25 s und klingt in 0,4 s ab – zwischen den Schlägen leeres Papier
+  // (wie im Video von Pauric Freeman: jedes Bild erscheint mit einem Ton und verschwindet mit ihm)
+  const tor = new Float32Array(n);
+  for (const e of einsaetze) {
+    const b0 = Math.round(e.t * FPS), h = 0.45 + 0.55 * Math.min(1, e.staerke * 1.4);
+    for (let b = b0; b < Math.min(n, b0 + FPS * 2.5); b++) {
+      const dt = (b - b0) / FPS, v = h * Math.min(1, (b - b0 + 1) / 2) * (dt < 0.25 ? 1 : Math.exp(-(dt - 0.25) / 0.4));
+      if (v > tor[b]) tor[b] = v;
+    }
+  }
+  for (let b = 0; b < n; b++) tor[b] = Math.max(tor[b], 0.12 * laut[b]);
+  return { ...T, einsaetze, schnitte, energie, stoss, stossTief, stossHoch, dreh, tor };
 }
 
 /** Ersatz ohne Tonspur: ein ruhiges Atmen und Einsätze in einem wiederholbaren, etwas unregelmässigen Takt */
@@ -171,17 +183,30 @@ export const tonOderErsatz = (ton) => ton ?? (vorrat ??= ersatz(130));
 /** Filmzeiten, zu denen das Gewebe eines Videos neue Linien bekommt: die Schnitte im Gewebe (G: { von, bis } in Filmzeit), höchstens max */
 export const wechselZeiten = (T, G, max = 23) => T.schnitte.filter((s) => s > G.von + 0.3 && s < G.bis - 1).slice(0, max);
 
-/** Struktur: Zeiten, zu denen das Motiv wechselt – die Schnitte im Abschnitt [von, bis], Lücken über 8 s gleichmässig gefüllt (echt: false, ohne Umkehr) */
-export function motivWechsel(schnitte, von, bis) {
-  const echt = schnitte.filter((s) => s > von + 0.3 && s < bis - 0.8), alle = [];
-  let a = von;
-  for (const s of [...echt, bis]) {
-    const n = Math.floor((s - a) / 8);
-    for (let k = 1; k <= n; k++) alle.push({ t: a + ((s - a) * k) / (n + 1), echt: false });
-    if (s < bis) alle.push({ t: s, echt: true });
-    a = s;
+/**
+ * Gewebe: die Zustände – bei jedem kräftigen Einsatz (Stärke ≥ 0,45, mindestens 0,7 s nach dem letzten) ein neues Bild: andere Fläche, andere
+ * Einstellung; Lücken über 4 s alle 3 s gefüllt. Je Zustand wiederholbar gewürfelt: nacht (Weiss auf Schwarz, etwa jeder dritte, nur ab einem
+ * Schnitt) und zeichen (das Zeichen selbst statt der Fläche, etwa jeder fünfte; nur mit Text, Foto oder Video). [{ t, nr, nacht, zeichen }] in Filmzeit.
+ */
+export function gewebeZustaende(T, von, bis) {
+  const z = [];
+  let letzt = von;
+  const dazu = (t) => { const nr = z.length + 1, h = (k) => { const x = Math.sin(nr * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
+    z.push({ t, nr, nacht: T.schnitte.some((s) => Math.abs(s - t) < 0.05) ? h(1) < 0.5 : h(1) < 0.15, zeichen: h(2) < 0.2 }); letzt = t; };
+  for (const e of T.einsaetze) {
+    if (e.t <= von + 0.4 || e.t >= bis - 0.8) continue;
+    while (e.t - letzt > 4) dazu(letzt + 3);
+    if (e.staerke >= 0.45 && e.t - letzt >= 0.7) dazu(e.t);
   }
-  return alle;
+  while (bis - 0.8 - letzt > 4) dazu(letzt + 3);
+  return z;
+}
+
+/** der Zustand zur Filmzeit t: { nr (0 = der erste), t0, nacht, zeichen } */
+export function zustandBei(Z, t, von) {
+  let i = -1;
+  for (let k = 0; k < Z.length && Z[k].t <= t; k++) i = k;
+  return i < 0 ? { nr: 0, t0: von, nacht: false, zeichen: false } : { ...Z[i], t0: Z[i].t };
 }
 
 /** Wert einer Kurve zur Zeit t (Sekunden), linear zwischen den Filmbildern */
