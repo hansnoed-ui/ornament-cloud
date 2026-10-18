@@ -5,19 +5,19 @@
 //   Textur abgelegt; sichtbar ist ein Stück hinter seinem Kopf, der mit der Musik schneller läuft.
 //   Das Bündel: S Fäden auf demselben Weg, je Faden ein eigenes Rauschen und eine eigene Verzögerung; leise liegen sie aufeinander (ein heller Faden),
 //   laut quellen sie zu Rauch auf, der Bass reisst sie auseinander, die Höhen werfen Funken. Additiv, darüber Bloom.
-//   Krasser als das Vorbild: bei jedem kräftigen Einsatz ein harter Schnitt – neuer Weg, neue Lage des Würfels, manchmal mitten in ihm –, Echos
-//   des Würfels und Farbsaum beim Schlag, bei Schnitten kurz Negativ; mit Text, Foto oder Video schreibt der Faden manchmal deren Umrisse in den Raum.
+//   Krasser als das Vorbild: bei jedem kräftigen Einsatz ein harter Schnitt – neuer Weg, neue Lage des Würfels, manchmal mitten in ihm –,
+//   Zoomstoss beim Schlag, bei Schnitten kurz Negativ; der Würfel immer scharf und ohne Echos; mit Text, Foto oder Video schreibt der Faden manchmal deren Umrisse in den Raum.
 //   01 Würfel (er zeichnet sich, der Faden beginnt) → 02 Irrfahrt → 03 Logo (der Faden legt sich zur Schlaufe des Signets, film.js tippt den
 //   Schriftzug) oder 03 Stille (der Faden zieht sich in seinen Kopf zusammen).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich } from "./gemeinsam.js?v=6";
-import { phase } from "./ablauf.js?v=6";
-import { gewebeKurven } from "./kurven.js?v=6";
-import { weichzeichnen } from "./analyse.js?v=6";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=6";
-import { RAUSCHEN } from "./gewebe.js?v=6";
-import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=6";
+import { anteil, weich } from "./gemeinsam.js?v=7";
+import { phase } from "./ablauf.js?v=7";
+import { gewebeKurven } from "./kurven.js?v=7";
+import { weichzeichnen } from "./analyse.js?v=7";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=7";
+import { RAUSCHEN } from "./gewebe.js?v=7";
+import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=7";
 
 const VOR = 0.4;
 
@@ -66,16 +66,15 @@ const FUNKEN_VERTEX = /* glsl */ `
     vA = uFunken * sicht * an;
   }`;
 const WUERFEL_VERTEX = /* glsl */ `
-  uniform mat3 uDreh; uniform vec4 uLage; uniform float uZeichnen, uEcho, uWuerfel, uZeit;
-  attribute vec3 aA, aB; attribute vec2 aT; varying float vA;   // aT: (0 Anfang / 1 Ende der Kante, Nummer des Echos)
+  uniform mat3 uDreh; uniform vec4 uLage; uniform float uZeichnen, uWuerfel, uZeit;
+  attribute vec3 aA, aB; attribute vec2 aT; varying float vA;   // aT.x: 0 Anfang / 1 Ende der Kante
   void main() {
-    float e = aT.y;
-    // die Echos genau um denselben Mittelpunkt, nur grösser – verrutschte und zitternde Kopien liessen den Würfel verzogen wirken (Rückmeldung:
-    // «Würfel wieder oft verzogen»)
-    vec3 p = mix(aA, aB, aT.x * uZeichnen) * (1.0 + e * 0.045 * (1.0 + 1.5 * uEcho));
+    // ohne Echos: auch genau konzentrische, grössere Kopien sahen in der Perspektive wie ein zweiter, schiefer Würfel aus (Rückmeldung: «die Würfel
+    // sind immer noch verzogen»)
+    vec3 p = mix(aA, aB, aT.x * uZeichnen);
     vec4 c = projectionMatrix * modelViewMatrix * vec4(uDreh * p + uLage.xyz, 1.0); c.xy *= uLage.w;
     gl_Position = c;
-    vA = uWuerfel * (e < 0.5 ? 0.85 : e > 2.5 ? 0.0 : uEcho * 0.5 / e);   // zwei Echos
+    vA = uWuerfel * 0.85;
   }`;
 const FRAGMENT = /* glsl */ `varying float vA; void main() { gl_FragColor = vec4(vec3(vA), 1.0); }`;
 const FUNKE = /* glsl */ `varying float vA; void main() { vec2 d = gl_PointCoord - 0.5; float m = smoothstep(0.5, 0.0, length(d)); gl_FragColor = vec4(vec3(vA * m), 1.0); }`;
@@ -130,18 +129,20 @@ export function irrfahrt(g, teil) {
   const pGeo = new THREE.BufferGeometry();
   pGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(NF * 3), 3)); pGeo.setAttribute("aRef", new THREE.BufferAttribute(fref, 2));
   const pMat = new THREE.ShaderMaterial({ vertexShader: FUNKEN_VERTEX, fragmentShader: FUNKE, uniforms: { ...U, uFunken: { value: 0 }, uPunkt: { value: 2 } }, ...plus });
-  // der Würfel: zwölf Kanten, dazu zwei Echos (das dritte bleibt unsichtbar)
+  // der Würfel: zwölf Kanten
   const ecken = [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]].map((e) => e.map((v) => v * 0.5));
   const kanten = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
   const wa = [], wb = [], wt = [];
-  for (let e = 0; e < 4; e++) for (const [i, j] of kanten) for (const t of [0, 1]) { wa.push(...ecken[i]); wb.push(...ecken[j]); wt.push(t, e); }
+  for (const [i, j] of kanten) for (const t of [0, 1]) { wa.push(...ecken[i]); wb.push(...ecken[j]); wt.push(t, 0); }
   const wGeo = new THREE.BufferGeometry();
   wGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(wa.length), 3));
   wGeo.setAttribute("aA", new THREE.BufferAttribute(new Float32Array(wa), 3)); wGeo.setAttribute("aB", new THREE.BufferAttribute(new Float32Array(wb), 3)); wGeo.setAttribute("aT", new THREE.BufferAttribute(new Float32Array(wt), 2));
   const wMat = new THREE.ShaderMaterial({ vertexShader: WUERFEL_VERTEX, fragmentShader: FRAGMENT, ...plus,
-    uniforms: { uDreh: U.uDreh, uLage: U.uLage, uZeit: U.uZeit, uZeichnen: { value: 0 }, uEcho: { value: 0 }, uWuerfel: { value: 1 } } });
-  const szene = new THREE.Scene();
-  for (const o of [new THREE.LineSegments(wGeo, wMat), new THREE.LineSegments(fGeo, fMat), new THREE.Points(pGeo, pMat)]) { o.frustumCulled = false; szene.add(o); }
+    uniforms: { uDreh: U.uDreh, uLage: U.uLage, uZeit: U.uZeit, uZeichnen: { value: 0 }, uWuerfel: { value: 1 } } });
+  // der Würfel in einer eigenen Szene: er wird scharf gezeichnet (nur in der letzten Probe des Bilds, nach dem Bloom), der Faden mit Bewegungsunschärfe
+  const szene = new THREE.Scene(), wSzene = new THREE.Scene();
+  for (const o of [new THREE.LineSegments(fGeo, fMat), new THREE.Points(pGeo, pMat)]) { o.frustumCulled = false; szene.add(o); }
+  { const o = new THREE.LineSegments(wGeo, wMat); o.frustumCulled = false; wSzene.add(o); }
   // ein langes Objektiv (15° statt 35°, die Kamera entsprechend weiter weg): die Bildebene z = 0 füllt das Bild wie im Gewebe, aber nahe Ecken
   // werden kaum grösser als ferne – mit 35° wirkte ein Würfel, dessen Ecke zur Kamera zeigt, verzerrt (Rückmeldung: «das erste Mal, wenn drei
   // Würfel zu sehen sind, ist der mittlere davon noch verzogen»)
@@ -154,10 +155,18 @@ export function irrfahrt(g, teil) {
   const groesse = new THREE.Vector2(), drehM = new THREE.Matrix4(), e3 = new THREE.Euler(), q0 = new THREE.Quaternion(), q1 = new THREE.Quaternion();
   const helle = 3.4 / S;                                                     // aufeinander ein heller Strich, aufgequollen rauchig
 
+  /** der Stand zur Zeit tau: Zustand und die Zahl der kräftigen Einsätze darin – wechselt eins, springt das Bild (Lage, Weg) */
+  const stand = (tau) => {
+    const film = tau + VOR, logo = !!Lg && tau >= Lg[0], zs = zustandBei(ZS, logo ? Lg[0] + VOR - 1e-3 : film, G[0] + VOR);
+    return { film, logo, zs, nr: logo ? 0 : ein.filter((t) => t > zs.t0 + 0.02 && t <= film).length };
+  };
+
   return {
-    render(rt, tau) {
-      const film = tau + VOR, logo = !!Lg && tau >= Lg[0], still = St ? weich(anteil(tau, St[0], St[1] - 0.5)) : 0;
-      const zs = zustandBei(ZS, logo ? Lg[0] + VOR - 1e-3 : film, G[0] + VOR), j = zs.nr;
+    /** Schlüssel der Lage: die Bewegungsunschärfe mischt nur Proben derselben Lage (sonst lagen bei einem Sprung zwei Würfel übereinander) */
+    lage(tau) { const s = stand(tau); return s.logo ? "logo" : `${s.zs.nr}:${s.nr}`; },
+    /** scharf: die letzte Probe des Bilds zeichnet den Würfel, mit gewicht (der Zahl der Proben), damit er nach dem Mitteln so hell ist wie ohne Unschärfe */
+    render(rt, tau, { scharf = true, gewicht = 1 } = {}) {
+      const { film, logo, zs, nr } = stand(tau), still = St ? weich(anteil(tau, St[0], St[1] - 0.5)) : 0, j = zs.nr;
       const laut = wert(T.laut, film), stoss = wert(T.stoss, film), tief = wert(T.stossTief, film), hoch = wert(T.stossHoch, film), dreh = wert(T.dreh, film);
       const seit = logo ? tau - Lg[0] : j ? film - zs.t0 : Math.max(0, tau);
       const zeichen = zs.zeichen && textZeile >= 0 && !logo && tau >= G[0];
@@ -175,8 +184,9 @@ export function irrfahrt(g, teil) {
       if (logo) amp = (1 - ruhig) * (0.03 + 0.14 * stoss);
       // die Lage des Würfels: je Zustand gewürfelt (auch mitten in ihm), und jeder weitere kräftige Einsatz wirft ihn in eine neue Lage («noch wilder»);
       // darin dreht er sich, der Schlag ruckt; zum Logo gerade und von vorn. Manche Zustände zeigen drei Würfel nebeneinander.
-      const nr = logo ? 0 : ein.filter((t) => t > zs.t0 + 0.02 && t <= film).length, jl = j * 37 + nr, seitL = nr ? film - ein.filter((t) => t <= film).at(-1) : seit;
-      const nah = jl ? [0.95, 1.1, 1.3, 1.65, 2.6, 1.0, 0.8][Math.floor(zufall(jl, 6) * 7)] : 1.15;
+      const jl = j * 37 + nr, seitL = nr ? film - ein.filter((t) => t <= film).at(-1) : seit;
+      // ganz nah höchstens 1,9 (statt 2,6): so nah füllte die aufgequollene Wolke das ganze Bild grau («die Animation überblendet teilweise stark»)
+      const nah = jl ? [0.95, 1.1, 1.3, 1.65, 1.9, 1.0, 0.8][Math.floor(zufall(jl, 6) * 7)] : 1.15;
       const w = 0.35 + 0.8 * zufall(jl, 9), drei = !logo && !zeichen && j > 0 && zufall(j, 13) < 0.28;
       const lage = (k) => {
         e3.set(zufall(jl, 1) * 6.283 + seitL * w * 0.6 + dreh * 0.35 + k * 2.1, zufall(jl, 2) * 6.283 + seitL * w + dreh * 0.5 + k * 1.3, zufall(jl, 3) * 6.283 + seitL * w * 0.3);
@@ -190,17 +200,20 @@ export function irrfahrt(g, teil) {
       U.uSchwanz.value = logo || zeichen ? 1e-4 : 0.25; U.uZeile.value = zeile; U.uKopf.value = kopf; U.uSchritt.value = schritt; U.uAmp.value = amp; U.uKnall.value = 1.5 * tief * (1 - ruhig);
       U.uDicke.value = logo ? 0.0035 * ruhig : 0; U.uZeit.value = tau; U.uMusik.value = 0.3 * tau + 0.3 * wert(T.energie, film); U.uHell.value = helle * (logo ? 1 + 1.2 * ruhig : (0.8 + 1.1 * laut + 1.0 * stoss) * (1 - 0.6 * still));
       pMat.uniforms.uFunken.value = (0.25 + 2.6 * hoch + 1.2 * stoss) * auf * (1 - still) * (1 - ruhig); pMat.uniforms.uPunkt.value = Math.max(1, (g.test ? 1.5 : 3) * (renderer.getSize(groesse).y / 1350));
-      wMat.uniforms.uZeichnen.value = weich(anteil(tau, 0.05, W[1] * 0.9)); wMat.uniforms.uEcho.value = drei ? 0 : stoss * (1 - ruhig);
-      wMat.uniforms.uWuerfel.value = (0.55 + 0.45 * Math.min(1, laut * 2)) * (1 - ruhig) * (1 - 0.6 * still);
+      wMat.uniforms.uZeichnen.value = weich(anteil(tau, 0.05, W[1] * 0.9));
+      wMat.uniforms.uWuerfel.value = (0.55 + 0.45 * Math.min(1, laut * 2)) * (1 - ruhig) * (1 - 0.6 * still) * gewicht;
       g.loeschen(rt, 0x000000);
       renderer.setRenderTarget(rt);
       for (let k = 0; k < (drei ? 3 : 1); k++) { lage(drei ? k : 0); renderer.render(szene, kam); }
+      // der Würfel scharf, nach dem Bloom: mit Bewegungsunschärfe wurden seine Haarlinien beim Zoomstoss zu einem Stapel aus acht Kopien (Rückmeldung:
+      // «die Würfel sind immer noch verzogen»)
+      const danach = scharf ? () => { renderer.setRenderTarget(rt); for (let k = 0; k < (drei ? 3 : 1); k++) { lage(drei ? k : 0); renderer.render(wSzene, kam); } } : null;
       // Negativ: bei jedem Schnitt der Musik und bei Zuständen, die Weiss auf Schwarz gewürfelt haben (im Gewebe die Nacht), zwei bis drei Bilder lang
       const umkehr = !logo && j && ((zs.nacht && film - zs.t0 < 0.1) || T.schnitte.some((x) => film >= x && film < x + 0.07)) ? 1 : 0;
       // belichtung: die Summe der Fäden weich gestaucht (1 − e^(−k·x)) statt hart abgeschnitten – im Hellen bleiben die Fäden zu sehen
-      return { aktiv: 0.7 * (1 - ruhig) + 0.15, bloom: (0.12 + 0.3 * stoss) * (1 - 0.7 * ruhig), radius: 0.2, saum: 0.0006 + 0.006 * stoss * (1 - ruhig), ende: 0, umkehr, belichtung: 1.2 };
+      return { aktiv: 0.7 * (1 - ruhig) + 0.15, bloom: (0.12 + 0.3 * stoss) * (1 - 0.7 * ruhig), radius: 0.2, saum: 0.0006 + 0.0015 * stoss * (1 - ruhig), ende: 0, umkehr, belichtung: 1.2, danach };
     },
-    vorab: { szenen: [[szene, kam]], materialien: [] },
+    vorab: { szenen: [[szene, kam], [wSzene, kam]], materialien: [] },
     zaehler(tau) {
       const film = tau + VOR, n = T.einsaetze.filter((e) => e.t <= film).length;
       return `zustand ${zustandBei(ZS, film, G[0] + VOR).nr} / ${ZS.length} · fäden ${S} · ${T.echt ? `einsatz ${n} / ${T.einsaetze.length}` : "ohne ton"}`;
