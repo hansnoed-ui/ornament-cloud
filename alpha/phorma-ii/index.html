@@ -101,6 +101,14 @@
     .ablaeufe button:disabled { opacity: 0.45; cursor: default; }
     .ablaeufe button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .effekte-hinweis { margin: 14px 0 6px; }
+    .teil { display: grid; gap: 10px; }
+    .textfeld { display: grid; gap: 6px; }
+    .textfeld span { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .textfeld textarea { min-height: 64px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text);
+      font: italic 400 1.25rem/1.3 "Newsreader", Georgia, serif; resize: vertical; }
+    .dateiknopf { position: relative; overflow: hidden; }
+    .dateiknopf input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .fuer-sich { font-style: normal; font-weight: 500; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-left: 6px; }
     .effekte button { padding: 4px 2px; font-size: 0.92rem; }
     .kette { margin: 6px 0 0; min-height: 1.3em; color: var(--muted); font-size: 0.84rem; }
     [data-grund="schwarz"] .muster { background: #000; }
@@ -160,7 +168,12 @@
     <div>
       <ol class="schritte">
         <li>
-          <h2>Foto</h2>
+          <h2>Foto oder Text</h2>
+          <div class="segment" role="group" aria-label="Quelle">
+            <button type="button" data-quelle="foto">Foto</button>
+            <button type="button" data-quelle="text">Text</button>
+          </div>
+          <div class="teil" id="foto-teil">
           <label class="ablage" id="ablage">
             <span class="plus" aria-hidden="true">
               <img id="quelle" alt="" hidden>
@@ -170,6 +183,11 @@
             <input type="file" id="datei" accept="image/*" aria-label="Foto wählen">
           </label>
           <div class="leiste"><button class="knopf klein beispiel" type="button" id="testbild"><img src="beispiel.jpg" alt="" width="26" height="37" loading="lazy">Mit dem Beispielbild ausprobieren</button></div>
+          </div>
+          <div class="teil" id="text-teil" hidden>
+            <label class="textfeld"><span>Dein Text</span><textarea id="text" rows="2" maxlength="120" placeholder="Ein Wort oder ein kurzer Satz" autocomplete="off"></textarea></label>
+            <p class="ki-hinweis">Der Text wird in Newsreader kursiv gesetzt, so gross es geht; seine Umrisse werden im Gewebe zu Bändern aus feinen Linien.</p>
+          </div>
           <section class="tafel" aria-label="Format und Tiefe">
             <div class="einstellung">
               <span class="name" id="format-titel">Format</span>
@@ -195,6 +213,7 @@
             <button type="button" data-wahl="physarum+tiefe+tuch" aria-pressed="true"><b>Alle drei als Kette</b><small>Das Netz findet die Formen, das Foto wird Raum und weht als Tuch – bis es glatt daliegt</small></button>
             <button type="button" data-wahl="physarum" aria-pressed="false"><b>Physarum</b><small>Hunderttausende Agenten strömen aus Keimen und bilden ein leuchtendes Netz, das die Formen deines Fotos findet</small></button>
             <button type="button" data-wahl="tiefe" aria-pressed="false"><b>Tiefe</b><small>Eine Lichtebene tastet das Bild ab, dann wird es Raum: Parallaxe, Tiefenschichten, wandernde Schärfe</small></button>
+            <button type="button" data-wahl="gewebe" aria-pressed="false"><b>Gewebe <em class="fuer-sich">für sich</em></b><small>Die Umrisse deines Texts oder Fotos werden zu Bändern aus feinen Linien, wie Rauch oder Seide – mit Ton bewegt die Musik sie, bei starken Einsätzen ein Schnitt</small></button>
             <button type="button" data-wahl="tuch" aria-pressed="false"><b>Tuch</b><small>Das Foto als Seidentuch im Wind – eine Stoffsimulation –, das sich zuletzt glatt zum Bild legt</small></button>
           </div>
           <p class="effekte-hinweis">Oder eine eigene Kette zusammenstellen:</p>
@@ -204,6 +223,22 @@
             <button type="button" data-effekt="tuch" aria-pressed="true">Tuch</button>
           </div>
           <p class="kette" id="kette" aria-live="polite"></p>
+        </li>
+        <li>
+          <h2>Ton</h2>
+          <p>Eine Audiodatei (MP3, WAV, M4A – auch ein kurzes Sample) bewegt das Gewebe und klingt in der Vorschau und im Video mit; das Gewebe dauert dann so lange wie der Ton. Ohne Haken bei «Ton an» oder ohne Datei bleibt es stumm.</p>
+          <div class="leiste">
+            <label class="knopf klein dateiknopf">Audiodatei wählen<input type="file" id="tondatei" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,video/mp4"></label>
+            <button class="knopf klein" type="button" id="ton-weg" hidden>Ton entfernen</button>
+            <label class="haken"><input type="checkbox" id="ton-im-video" checked> Ton an</label>
+          </div>
+          <div class="leiste">
+            <label class="haken"><input type="checkbox" id="frickeln"> Verfrickeln</label>
+            <button class="knopf klein" type="button" id="wuerfeln" hidden>Neu würfeln</button>
+          </div>
+          <p class="ki-hinweis">Verfrickeln zerschneidet die Musik an ihren Einsätzen und baut daraus ein neues Stück wie ein Modularsynthesizer: Schnipsel im Raster, rückwärts, höher und tiefer, zerhackt, Wirbel, Filter, Echo und Hall. Jeder Wurf klingt anders und bleibt wiederholbar.</p>
+          <p class="info" id="ton-info"></p>
+          <audio id="tonspur" preload="auto" hidden></audio>
         </li>
         <li>
           <h2>Gestaltung</h2>
@@ -285,7 +320,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=11"></script>
+  <script type="module" src="app.js?v=14"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

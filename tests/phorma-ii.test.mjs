@@ -1,4 +1,5 @@
-// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, Seite.
+// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, Ton und
+// Höhenlinien fürs Gewebe, Verfrickeln, Seite.
 //   node --test tests/phorma-ii.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -8,6 +9,9 @@ const root = new URL("../", import.meta.url);
 const P = new URL("alpha/phorma-ii/", root);
 const A = await import(new URL("ablauf.js", P).href);
 const { analysieren, tiefeNormieren } = await import(new URL("analyse.js", P).href);
+const T = await import(new URL("ton.js", P).href);
+const Kv = await import(new URL("kurven.js", P).href);
+const Fr = await import(new URL("frickeln.js", P).href);
 const lies = (p) => readFileSync(new URL(p, P), "utf8");
 
 test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette", () => {
@@ -102,6 +106,79 @@ test("KI-Tiefe: wird an die Kanten gelegt und auf 0..1 gebracht", () => {
   assert.ok(d[(h - 2) * w + 5] > d[w + 5] + 0.5, "unten nah bleibt nah");
 });
 
+test("Gewebe: für sich, nicht in der Kette; mit Tonspur so lang wie die Musik und ohne Tempo", () => {
+  assert.equal(A.ablaufName("gewebe"), "gewebe");
+  assert.equal(A.ablaufName("gewebe+tuch"), "tuch", "das Gewebe lässt sich nicht verketten");
+  const ohne = A.zeitachse({ ablauf: "gewebe", tempo: "ruhig" });
+  assert.deepEqual(ohne.phasen.map((p) => p.name), ["zeichen", "gewebe", "bild"]);
+  assert.equal(ohne.tempo, 1.3);
+  const mit = A.zeitachse({ ablauf: "gewebe", tempo: "ruhig", laenge: 40 });
+  assert.equal(mit.tempo, 1, "mit Tonspur gibt die Musik das Tempo");
+  assert.ok(Math.abs(mit.abschnitt.bis - mit.abschnitt.von - 40) < 1e-9, "der Effekt dauert so lange wie verlangt");
+  assert.ok(A.zeitachse({ ablauf: "gewebe", laenge: 2 }).phasen[1].bis - A.zeitachse({ ablauf: "gewebe", laenge: 2 }).phasen[1].von >= 5, "mindestens 5 s Gewebe");
+  assert.equal(A.zeitachse({ ablauf: A.KETTE, laenge: 40 }).dauer, A.zeitachse({ ablauf: A.KETTE }).dauer, "die Kette kümmert sich nicht um die Länge");
+});
+
+test("Ton: Lautstärke, Bänder und Einsätze aus einer Tonspur; Schnitte an den stärksten, die Zeit der Musik steigt", () => {
+  const rate = 22050, dauer = 12, pcm = new Float32Array(rate * dauer), schlaege = [1, 2.5, 4, 5.5, 7, 8.5, 10];
+  for (let i = 0; i < pcm.length; i++) pcm[i] = 0.02 * Math.sin(i * 0.05);
+  for (const [j, s] of schlaege.entries()) for (let i = 0; i < rate * 0.25; i++) {
+    const k = Math.round(s * rate) + i, a = (j % 3 === 0 ? 0.9 : 0.4) * Math.exp(-i / (rate * 0.06));
+    pcm[k] += a * (Math.sin(i * 0.03) + 0.5 * Math.sin(i * 1.1));
+  }
+  const t = T.tonAnalysieren(pcm, rate);
+  assert.ok(Math.abs(t.dauer - dauer) < 1e-9 && t.n === dauer * T.FPS && t.echt);
+  for (const k of ["laut", "tief", "mitte", "hoch", "fluss"]) assert.ok(t[k].every((v) => v >= 0 && v <= 1), `${k} in 0..1`);
+  for (const s of schlaege) assert.ok(t.einsaetze.some((e) => Math.abs(e.t - s) < 0.1), `Einsatz bei ${s} s`);
+  assert.ok(t.einsaetze.length <= schlaege.length + 2, `nicht zu viele Einsätze (${t.einsaetze.length})`);
+  assert.ok(t.schnitte.length >= 1 && t.schnitte.every((s, i) => s >= 0.8 && (i === 0 || s - t.schnitte[i - 1] >= 2)), "Schnitte: mindestens 2 s auseinander");
+  assert.ok(t.energie.every((v, i) => i === 0 || v > t.energie[i - 1]), "die Zeit der Musik steigt");
+  assert.ok(T.wert(t.laut, 1.1) > T.wert(t.laut, 0.5), "laut beim Schlag");
+  assert.deepEqual(T.tonAnalysieren(pcm, rate).einsaetze, t.einsaetze, "gleiche Tonspur, gleiches Ergebnis");
+  const e = T.ersatz(20);
+  assert.ok(!e.echt && e.einsaetze.length > 5 && e.energie.length === e.n);
+  assert.deepEqual(T.ersatz(20).einsaetze, e.einsaetze, "der Ersatz ist wiederholbar");
+});
+
+test("Höhenlinien: ein Kreis ergibt eine geschlossene Linie auf seinem Rand; das Gewebe nimmt die längsten, gleichmässig abgetastet", () => {
+  const w = 64, h = 48, feld = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) feld[y * w + x] = Math.hypot(x - 24, y - 24) < 12 ? 1 : 0;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (Math.hypot(x - 52, y - 10) < 4) feld[y * w + x] = 1;
+  const linien = Kv.hoehenlinien(feld, w, h, 0.5);
+  assert.equal(linien.length, 2);
+  const gross = linien.reduce((a, b) => (a.length > b.length ? a : b));
+  for (let i = 0; i < gross.length; i += 2) assert.ok(Math.abs(Math.hypot(gross[i] - 24, gross[i + 1] - 24) - 12) < 1.2, "auf dem Rand");
+  const k = Kv.gewebeKurven(feld, w, h, { anzahl: 5, punkte: 30, maxLaenge: 1 });
+  assert.ok(k.length >= 1 && k.every((c) => c.length === 60));
+  const abst = []; for (let u = 1; u < 30; u++) abst.push(Math.hypot(k[0][2 * u] - k[0][2 * u - 2], k[0][2 * u + 1] - k[0][2 * u - 1]));
+  assert.ok(Math.max(...abst) < 2.5 * Math.min(...abst), "gleichmässig abgetastet");
+  assert.deepEqual(Kv.gewebeKurven(new Float32Array(w * h), w, h), [], "ein leeres Feld hat keine Linien");
+});
+
+test("Verfrickeln: aus einem kurzen Sample ein neues Stück im Raster, wiederholbar je Wurf, ohne Übersteuern; auch Stille und Winziges", () => {
+  const rate = 22050, n = Math.round(rate * 2.4), pcm = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const t = i / rate, s = t % 0.6; pcm[i] = Math.exp(-s / 0.08) * (Math.sin(i * (0.03 + 0.01 * Math.floor(t / 0.6))) + 0.4 * Math.sin(i * 0.9)) * 0.7; }
+  const f = Fr.frickeln([pcm], rate, { samen: 3 });
+  const schritt = Math.round((60 / f.bpm / 4) * rate);
+  assert.ok(f.bpm >= 80 && f.bpm <= 160, `Tempo ${f.bpm}`);
+  assert.equal(f.kanaele[0].length, f.takte * 16 * schritt + Math.round(3 * rate), "Takte im Raster und ein Nachhall von 3 s");
+  assert.ok(f.dauer > 20 && f.dauer < 45 && f.scheiben >= 3 && f.anschlaege > f.takte * 4, JSON.stringify({ dauer: f.dauer, scheiben: f.scheiben, anschlaege: f.anschlaege }));
+  let max = 0, nan = false, unterschied = 0;
+  for (let i = 0; i < f.kanaele[0].length; i++) { const l = f.kanaele[0][i], r = f.kanaele[1][i]; if (Number.isNaN(l + r)) nan = true; max = Math.max(max, Math.abs(l), Math.abs(r)); unterschied += Math.abs(l - r); }
+  assert.ok(!nan && max <= 0.95 && max > 0.9, `Spitze ${max}`);
+  assert.ok(unterschied > 0, "stereo: Panorama und Ping-Pong-Echo");
+  const mono = f.kanaele[0].map((v, i) => (v + f.kanaele[1][i]) / 2), t = T.tonAnalysieren(mono, rate);
+  assert.ok(t.einsaetze.length > 2 * f.takte, `ein Stück mit vielen Einsätzen (${t.einsaetze.length})`);
+  assert.deepEqual(Fr.frickeln([pcm], rate, { samen: 3 }).kanaele[0].slice(0, 50000), f.kanaele[0].slice(0, 50000), "derselbe Wurf, dasselbe Stück");
+  assert.notDeepEqual(Fr.frickeln([pcm], rate, { samen: 4 }).kanaele[0].slice(0, 50000), f.kanaele[0].slice(0, 50000), "ein neuer Wurf klingt anders");
+  for (const q of [new Float32Array(rate), Float32Array.from({ length: 300 }, (_, i) => Math.sin(i))]) {
+    const s = Fr.frickeln([q, q], rate, { samen: 1, takte: 2 });
+    assert.ok(s.kanaele.every((c) => c.every((v) => Number.isFinite(v) && Math.abs(v) <= 0.95)));
+  }
+  const w = Fr.wav(f.kanaele, rate);
+  assert.equal(String.fromCharCode(...w.subarray(0, 4)), "RIFF"); assert.equal(w.length, 44 + f.kanaele[0].length * 4);
+});
+
 test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Marken, nichts von aussen ausser der KI auf Wunsch", () => {
   const html = lies("index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
@@ -110,6 +187,11 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.ok(!/<script[^>]+src="https?:/.test(html), "keine Skripte von aussen");
   for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
   assert.match(html, /data-wahl="physarum\+tiefe\+tuch"/, "die ganze Kette als Karte");
+  assert.match(html, /data-wahl="gewebe"/, "das Gewebe als eigene Karte");
+  assert.match(html, /data-quelle="foto"[\s\S]*data-quelle="text"/, "Foto oder Text als Quelle");
+  assert.match(html, /id="tondatei"[^>]*accept="audio\/\*/, "eine Audiodatei");
+  assert.match(html, /id="ton-im-video" checked> Ton an/, "Ton ausschaltbar");
+  assert.match(html, /id="frickeln"> Verfrickeln[\s\S]*id="wuerfeln"/, "Verfrickeln als Option, mit neuem Wurf");
   assert.ok(!/data-(wahl|effekt)="(stich|muster)"|data-(strich|muster)=/.test(html), "weder Stich noch Morphogenese");
   const dateien = readdirSync(P).filter((f) => f.endsWith(".js")), marken = new Set();
   for (const f of dateien) {

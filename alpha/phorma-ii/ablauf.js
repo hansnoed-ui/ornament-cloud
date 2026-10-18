@@ -8,6 +8,9 @@
 //   Tiefe    – 01 Scan (eine Lichtebene tastet das Bild von vorn nach hinten ab) → 02 Raum (Kamerafahrt mit Parallaxe, Tiefenschichten,
 //              Schärfeverlagerung) → 03 Bild (es legt sich flach); vor dem Tuch: das Relief wird zum Tuch
 //   Tuch     – 01 Tuch (das Foto als Seidentuch im Wind) → 02 Bild (es wird glattgezogen und liegt als Foto da)
+//   Gewebe   – für sich (nicht in der Kette; Wunsch vom 17. Oktober 2026 nach einem Video von Pauric Freeman): 01 Zeichen (der Text oder das Foto steht)
+//              → 02 Gewebe (seine Umrisse werden zu Bändern aus feinen Linien, die der Ton bewegt; Schnitte bei starken Einsätzen) → 03 Bild;
+//              mit einer Tonspur so lang wie sie
 // Danach steht das Foto, dann (wenn gewählt) das Signet von ornament.cloud.
 export { FPS, anteil, weich, sanft, inOut, ausblenden, bezier, klemm } from "../sketchory/ablauf.js?v=10";
 
@@ -21,11 +24,14 @@ export const SIGNET = (SIGNET_BIS - SIGNET_VON) / 30 / SIGNET_TEMPO;
 export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 
 export const EFFEKTE = ["physarum", "tiefe", "tuch"];
-export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch" };
+export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", gewebe: "Gewebe" };
+/** Abläufe für sich (nicht kombinierbar) */
+export const FUER_SICH = ["gewebe"];
 export const KETTE = EFFEKTE.join("+");
 
 /** die gewählten Effekte in fester Reihenfolge, mit «+» verbunden; Unbekanntes oder nichts ergibt die ganze Kette */
 export function ablaufName(a) {
+  if (FUER_SICH.includes(String(a ?? ""))) return String(a);
   const teile = String(a ?? "").split("+");
   const liste = EFFEKTE.filter((e) => teile.includes(e));
   return liste.length ? liste.join("+") : KETTE;
@@ -36,7 +42,7 @@ export const effekte = (a) => ablaufName(a).split("+");
  * Rolle eines Effekts in der Kette: seine Phasen ([name, titel, dauer] bei Tempo «normal»), wie lange der nächste schon vor seinem Ende einsetzt
  * (ueber) und womit er übergeht (uebergang: "front" – Zeitfront nach der Tiefe, "schnitt" – beide zeigen dort dasselbe Bild).
  */
-export function rolle(art, liste, i) {
+export function rolle(art, liste, i, { laenge = null } = {}) {
   const erst = i === 0, letzt = i === liste.length - 1, vorher = liste[i - 1] ?? null, naechstes = liste[i + 1] ?? null;
   let phasen, ueber = 0, uebergang = "schnitt";
   if (art === "physarum") {
@@ -47,6 +53,9 @@ export function rolle(art, liste, i) {
     phasen = [["scan", "Scan", erst ? 2.6 : 2.2], ["raum", "Raum", 5.4]];
     if (letzt) phasen.push(["bild", "Bild", 2.8]);
     else { ueber = 0.7; uebergang = "front"; }
+  } else if (art === "gewebe") {
+    // mit Tonspur: das Gewebe dauert, so lange der Ton läuft (laenge: die ganze Dauer des Effekts)
+    phasen = [["zeichen", "Zeichen", 2.2], ["gewebe", "Gewebe", laenge ? Math.max(5, laenge - 4.8) : 14], ["bild", "Bild", 2.6]];
   } else {
     phasen = [["tuch", "Tuch", vorher === "tiefe" ? 4.6 : 5.0], ["bild", "Bild", 3.4]];
   }
@@ -55,11 +64,11 @@ export function rolle(art, liste, i) {
 }
 
 /** die Kette in Sekunden bei Tempo «normal»: { teile: [{ ...rolle, von, bis, vonFoto }], phasen: [{ name, titel, von, bis, art }], dauer } */
-export function kette(a) {
+export function kette(a, opt = {}) {
   const liste = effekte(a), teile = [], phasen = [];
   let t = 0, ueber = 0;
   liste.forEach((art, i) => {
-    const R = rolle(art, liste, i), von = Math.max(0, t - ueber), bis = von + R.dauer;
+    const R = rolle(art, liste, i, opt), von = Math.max(0, t - ueber), bis = von + R.dauer;
     if (phasen.length) phasen[phasen.length - 1].bis = Math.min(phasen[phasen.length - 1].bis, von);   // die Beschriftung wechselt, sobald der nächste einsetzt
     let p0 = von;
     for (const [name, titel, d] of R.phasen) { phasen.push({ name, titel, von: p0, bis: p0 + d, art }); p0 += d; }
@@ -73,9 +82,11 @@ export function kette(a) {
  * Zeitachse in Sekunden: { ab: { name: [anfang, ende] }, ablauf, abschnitt: { von, bis }, teile (Filmzeiten), phasen, dauer, bilder, tempo }.
  * Die Effekte rechnen in ihrer eigenen Zeit bei Tempo «normal»: lokal(teil, t) = (t − teil.von) / tempo.
  */
-export function zeitachse({ tempo = "normal", signet = true, ablauf = KETTE } = {}) {
-  const f = TEMPO[tempo] ?? (typeof tempo === "number" ? tempo : 1);
-  const art = ablaufName(ablauf), K = kette(art), ab = {};
+/** laenge: die Dauer des Effekts nach einer Tonspur (nur beim Gewebe; dann ohne Tempo) */
+export function zeitachse({ tempo = "normal", signet = true, ablauf = KETTE, laenge = null } = {}) {
+  const art = ablaufName(ablauf), mitTon = art === "gewebe" && laenge;
+  const f = mitTon ? 1 : TEMPO[tempo] ?? (typeof tempo === "number" ? tempo : 1);
+  const K = kette(art, { laenge: mitTon ? laenge : null }), ab = {};
   let t = 0;
   const dazu = (name, d) => { ab[name] = [t, t + d]; t += d; };
   dazu("vor", 0.4);

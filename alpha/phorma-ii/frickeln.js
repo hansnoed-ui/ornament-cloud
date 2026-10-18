@@ -1,0 +1,168 @@
+// PHORMA II – Verfrickeln (ohne DOM, auch in Node für die Tests): aus einer hochgeladenen Musik oder einem Sample wird ein neues Stück, wie es ein
+// Modularsynthesizer aus Schnipseln baut (Wunsch vom 17. Oktober 2026: «Musik hochladen können, z. B. ein Sample, die dann verfrickelt wird – als
+// Option»). Wiederholbar: derselbe Wurf (samen) ergibt dasselbe Stück.
+//   Scheiben  – das Material wird an seinen Einsätzen zerschnitten (ton.js), lange Stücke in halbe Sekunden
+//   Tempo     – aus dem mittleren Abstand der Einsätze, gefaltet auf 80–160 BPM; ein Raster aus Sechzehnteln, 12 oder 16 Takte
+//   Muster    – je Sechzehntel ein Anschlag (auf den Schlägen fast immer, dazwischen je nach Stärke des Abschnitts); die Scheibe läuft meist weiter,
+//               wiederholt sich oder springt; rückwärts, eine Oktave oder Quinte höher oder tiefer, zerhackt (Bitcrush), Wirbel am Taktende
+//               (Stotter-Rolls), selten eine Wolke aus Körnern
+//   Bogen     – leise und gefiltert hinein, dichter und offener zur Mitte, am Ende verebbt es; Tiefpass mit Resonanz, Ping-Pong-Echo im
+//               punktierten Achtel, Hall, sanfte Sättigung, auf −0,5 dB gebracht
+import { tonAnalysieren } from "./ton.js?v=10";
+
+/** wiederholbarer Zufall (mulberry32) */
+function zufall(samen) {
+  let a = (samen * 2654435761) >>> 0 || 1;
+  return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+const klemm = (x, a, b) => Math.min(b, Math.max(a, x));
+
+/** Stärke des Abschnitts 0..1 über das Stück (x = 0..1): hinein, steigern, Höhepunkt, verebben */
+export function bogen(x) {
+  if (x < 0.25) return 0.3 + x;
+  if (x < 0.75) return 0.55 + (x - 0.25) * 0.9;
+  if (x < 0.875) return 1;
+  return klemm(1 - (x - 0.875) * 6, 0.25, 1);
+}
+
+/**
+ * kanaele: [Float32Array] (ein oder zwei), rate: Abtastrate. Ergebnis: { kanaele: [L, R], rate, dauer, bpm, takte, scheiben, anschlaege }
+ */
+export function frickeln(kanaele, rate, { samen = 1, takte: wunsch = null } = {}) {
+  const L0 = kanaele[0], R0 = kanaele[1] ?? kanaele[0], n = L0.length, r = zufall(samen);
+  const mono = new Float32Array(n);
+  let spitze = 1e-6;
+  for (let i = 0; i < n; i++) { mono[i] = (L0[i] + R0[i]) / 2; spitze = Math.max(spitze, Math.abs(L0[i]), Math.abs(R0[i])); }
+  const g0 = 0.8 / spitze, A = tonAnalysieren(mono, rate);
+
+  // Scheiben an den Einsätzen; zu kurze an die vorige, lange in halbe Sekunden
+  const schnitte = [0, ...A.einsaetze.map((e) => Math.round(Math.max(0, e.t - 0.01) * rate)), n].filter((v, i, a) => i === 0 || v > a[i - 1]);
+  const scheiben = [], kurz = Math.round(0.06 * rate), halb = Math.round(0.5 * rate);
+  for (let i = 0; i < schnitte.length - 1; i++) {
+    let a = schnitte[i]; const b = schnitte[i + 1];
+    if (b - a < kurz && scheiben.length) { scheiben.at(-1)[1] = b; continue; }
+    while (b - a > 2 * halb) { scheiben.push([a, a + halb]); a += halb; }
+    scheiben.push([a, b]);
+  }
+  if (!scheiben.length) scheiben.push([0, n]);
+  const ns = scheiben.length;
+
+  // Tempo aus dem mittleren Abstand der Einsätze, gefaltet auf 80–160 BPM (eine Oktave); langsam 12 Takte, sonst 16 – rund 25–36 s
+  const abst = A.einsaetze.slice(1).map((e, i) => e.t - A.einsaetze[i].t).sort((x, y) => x - y);
+  let schlag = abst.length >= 3 ? abst[abst.length >> 1] : 60 / 112;
+  while (schlag < 60 / 160) schlag *= 2;
+  while (schlag > 60 / 80) schlag /= 2;
+  const bpm = Math.round(60 / schlag), takte = wunsch ?? (bpm < 110 ? 12 : 16), schritt = Math.round(((60 / bpm) / 4) * rate);
+  const N = takte * 16 * schritt + Math.round(3 * rate);
+  const L = new Float32Array(N), R = new Float32Array(N), sL = new Float32Array(N), sR = new Float32Array(N);
+
+  // eine Scheibe ab «start» spielen: tempo (Tonhöhe), rückwärts, Panorama, Bitcrush, Anteil ins Echo
+  function setzen(start, laenge, [a, b], { tempo = 1, rueck = false, pan = 0, gain = 1, crush = 0, senden = 0, versatz = 0 } = {}) {
+    const m = Math.min(laenge, Math.floor((b - a - versatz - 2) / tempo));
+    if (m < 32) return 0;
+    const ein = Math.min(m / 4, 0.003 * rate), aus = Math.min(m / 2, 0.012 * rate);
+    const w = ((klemm(pan, -1, 1) + 1) * Math.PI) / 4, gl = gain * g0 * Math.cos(w) * Math.SQRT2, gr = gain * g0 * Math.sin(w) * Math.SQRT2;
+    let hl = 0, hr = 0;
+    for (let i = 0; i < m; i++) {
+      const o = start + i; if (o >= N) break;
+      const p = rueck ? b - 2 - versatz - i * tempo : a + versatz + i * tempo, j = p | 0, f = p - j;
+      let l = L0[j] + (L0[j + 1] - L0[j]) * f, q = R0[j] + (R0[j + 1] - R0[j]) * f;
+      if (crush) { if (i % crush === 0) { hl = Math.round(l * g0 * 6) / (6 * g0); hr = Math.round(q * g0 * 6) / (6 * g0); } l = hl; q = hr; }
+      const h = Math.min(1, i / ein, (m - i) / aus);
+      L[o] += l * h * gl; R[o] += q * h * gr;
+      if (senden) { sL[o] += l * h * gl * senden; sR[o] += q * h * gr * senden; }
+    }
+    return m;
+  }
+
+  let zeiger = 0, anschlaege = 0;
+  for (let t = 0; t < takte; t++) {
+    const I = bogen((t + 0.5) / takte), zerhackt = t >= takte * 0.4 && r() < 0.35, wirbel = r() < 0.25 + 0.45 * I;
+    for (let s = 0; s < 16;) {
+      const start = (t * 16 + s) * schritt;
+      if (wirbel && s >= 12) {
+        // Wirbel am Taktende: dieselbe Scheibe immer kürzer wiederholt, lauter werdend
+        const sc = scheiben[zeiger], teil = [1, 2, 4, 8][s - 12], g = schritt / teil;
+        for (let k = 0; k < teil; k++) setzen(Math.round(start + k * g), Math.round(g), sc, { gain: 0.55 + 0.15 * (s - 12), pan: (s % 2 ? 0.3 : -0.3) * I, senden: s === 15 ? 0.7 : 0 });
+        anschlaege++; s++; continue;
+      }
+      const druck = s % 4 === 0 ? 0.92 : s % 2 === 0 ? 0.3 + 0.45 * I : 0.12 + 0.45 * I;
+      if (r() > druck) { s++; continue; }
+      const w = r();
+      if (w < 0.55) zeiger = (zeiger + 1) % ns; else if (w >= 0.8) zeiger = Math.floor(r() * ns);
+      const dauer = Math.min(16 - s, [1, 1, 2, 2, 3, 4][Math.floor(r() * 6)]);
+      const tempo = r() < 0.05 + 0.25 * I ? [0.5, 0.75, 1.5, 2, 0.5][Math.floor(r() * 5)] : 1;
+      setzen(start, dauer * schritt, scheiben[zeiger], {
+        tempo, rueck: r() < 0.08 + 0.12 * I, pan: (r() * 2 - 1) * 0.55 * I, gain: s % 4 === 0 ? 1 : 0.78,
+        crush: zerhackt && r() < 0.6 ? [3, 5, 9][Math.floor(r() * 3)] : 0, senden: r() < 0.35 ? 0.6 : 0,
+      });
+      anschlaege++;
+      // selten eine Wolke aus Körnern über zwei Sechzehntel
+      if (r() < 0.05 * I) for (let k = 0; k < 24; k++) {
+        const lang = Math.round((0.025 + 0.045 * r()) * rate), von = Math.floor(r() * Math.max(1, n - lang * 2));
+        setzen(start + Math.floor(r() * 2 * schritt), lang, [von, Math.min(n, von + lang * 2 + 2)], { tempo: [1, 2, 0.5, 1.5][Math.floor(r() * 4)], pan: r() * 1.8 - 0.9, gain: 0.3, senden: 0.8 });
+      }
+      s += dauer;
+    }
+  }
+
+  // Tiefpass mit Resonanz (TPT-SVF) über das Ganze: zu Beginn zu, zur Mitte offen, im Höhepunkt ein Wobbeln im Takt
+  const ende = takte * 16 * schritt, takt = 16 * schritt;
+  for (const [K, st] of [[L, { a: 0, b: 0 }], [R, { a: 0, b: 0 }]]) {
+    let a1 = 1, a2 = 0, a3 = 0;
+    for (let i = 0; i < N; i++) {
+      if ((i & 31) === 0) {
+        const x = Math.min(1, i / ende), I = bogen(x);
+        const fc = klemm(500 * Math.pow(30, Math.min(1, x / 0.45)) * Math.pow(2, I > 0.9 ? 1.3 * Math.sin((2 * Math.PI * i) / (2 * takt)) : 0) * (x > 0.9 ? 1 - (x - 0.9) * 6 : 1), 200, rate * 0.45);
+        const g = Math.tan((Math.PI * fc) / rate), k = 1 / (0.75 + 1.6 * I);
+        a1 = 1 / (1 + g * (g + k)); a2 = g * a1; a3 = g * a2;
+      }
+      const v3 = K[i] - st.b, v1 = a1 * st.a + a2 * v3, v2 = st.b + a2 * st.a + a3 * v3;
+      st.a = 2 * v1 - st.a; st.b = 2 * v2 - st.b; K[i] = v2;
+    }
+  }
+  // Ping-Pong-Echo im punktierten Achtel auf dem Anteil, der dahin geschickt wurde
+  const d = 3 * schritt, eL = new Float32Array(d), eR = new Float32Array(d);
+  let tl = 0, tr = 0;
+  for (let i = 0; i < N; i++) {
+    const j = i % d, yl = eL[j], yr = eR[j];
+    tl += 0.35 * (yr - tl); tr += 0.35 * (yl - tr);                      // die Wiederholungen werden dumpfer
+    eL[j] = sL[i] + 0.45 * tr; eR[j] = sR[i] + 0.45 * tl;
+    L[i] += 0.55 * yl; R[i] += 0.55 * yr;
+  }
+  // Hall (Schroeder: vier Kammfilter mit Dämpfung, zwei Allpässe), rechts mit leicht anderen Längen
+  const m = rate / 44100, hall = (versatz) => {
+    const kamm = [1557, 1617, 1491, 1422].map((l) => ({ b: new Float32Array(Math.round((l + versatz) * m)), i: 0, z: 0 }));
+    const all = [556, 225].map((l) => ({ b: new Float32Array(Math.round((l + versatz) * m)), i: 0 }));
+    return (x) => {
+      let y = 0;
+      for (const c of kamm) { const o = c.b[c.i]; c.z = o * 0.7 + c.z * 0.3; c.b[c.i] = x + c.z * 0.8; c.i = (c.i + 1) % c.b.length; y += o; }
+      for (const a of all) { const o = a.b[a.i]; a.b[a.i] = y + o * 0.5; a.i = (a.i + 1) % a.b.length; y = o - y; }
+      return y;
+    };
+  };
+  const hl = hall(0), hr = hall(23);
+  for (let i = 0; i < N; i++) { const x = (L[i] + R[i]) * 0.06; L[i] += 0.5 * hl(x); R[i] += 0.5 * hr(x); }
+  // Sättigung, am Ende ausblenden, auf −0,5 dB
+  let max = 1e-6;
+  const aus = Math.round(1.5 * rate);
+  for (let i = 0; i < N; i++) {
+    const h = Math.min(1, (N - i) / aus);
+    L[i] = Math.tanh(L[i] * 1.2) * h; R[i] = Math.tanh(R[i] * 1.2) * h;
+    max = Math.max(max, Math.abs(L[i]), Math.abs(R[i]));
+  }
+  const g = 0.944 / max;
+  for (let i = 0; i < N; i++) { L[i] *= g; R[i] *= g; }
+  return { kanaele: [L, R], rate, dauer: N / rate, bpm, takte, scheiben: ns, anschlaege };
+}
+
+/** Stereo-WAV (16 Bit) für die Vorschau */
+export function wav(kanaele, rate) {
+  const k = kanaele.length, n = kanaele[0].length, b = new DataView(new ArrayBuffer(44 + n * k * 2));
+  const text = (o, s) => { for (let i = 0; i < s.length; i++) b.setUint8(o + i, s.charCodeAt(i)); };
+  text(0, "RIFF"); b.setUint32(4, 36 + n * k * 2, true); text(8, "WAVEfmt "); b.setUint32(16, 16, true); b.setUint16(20, 1, true); b.setUint16(22, k, true);
+  b.setUint32(24, rate, true); b.setUint32(28, rate * k * 2, true); b.setUint16(32, k * 2, true); b.setUint16(34, 16, true); text(36, "data"); b.setUint32(40, n * k * 2, true);
+  let o = 44;
+  for (let i = 0; i < n; i++) for (let c = 0; c < k; c++) { b.setInt16(o, Math.round(klemm(kanaele[c][i], -1, 1) * 32767), true); o += 2; }
+  return new Uint8Array(b.buffer);
+}

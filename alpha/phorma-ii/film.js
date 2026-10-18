@@ -1,14 +1,60 @@
 // PHORMA II – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann die Kette aus der Bühne (WebGL,
 // buehne.js), danach das Foto, darüber Abblenden und die Beschriftung, am Schluss auf Wunsch das leuchtende Signet von ornament.cloud wie in PHORMA I.
-import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=9";
+import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=10";
 import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
+import { ersatz } from "./ton.js?v=10";
+import { zufall } from "./analyse.js?v=10";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
 
-/** Szene: { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel } */
-export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = true, beschriftung = true, titel = "", foto = null, ablauf, buehne = null } = {}) {
-  return { breite, hoehe, zeit: zeitachse({ tempo, signet, ablauf }), foto, buehne, signet, beschriftung, titel: (titel || "PHORMA II").trim() };
+/** Szene: { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel, fragmente, schnitte }; text, ton, laenge nur fürs Gewebe */
+export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = true, beschriftung = true, titel = "", foto = null, ablauf, buehne = null,
+  text = "", ton = null, laenge = null } = {}) {
+  const zeit = zeitachse({ tempo, signet, ablauf, laenge });
+  const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA II").trim(), fragmente: [], schnitte: [] };
+  if (zeit.ablauf === "gewebe") {
+    const T = ton ?? ersatz(zeit.dauer + 1), G = zeit.phasen.find((p) => p.name === "gewebe");
+    sz.schnitte = T.schnitte.filter((s) => s > G.von && s < G.bis);
+    if (text) sz.fragmente = fragmentPlan(text, T, G, breite, hoehe);
+  }
+  return sz;
+}
+
+/**
+ * Textfragmente wie im Video von Pauric Freeman: bei Einsätzen zwei Zeichen des Texts in einer dünnen Grotesk, getippt, mit einem dunklen Blockcursor
+ * daneben; manchmal nur der Cursor. Wiederholbar (Zufall mit Startwert aus dem Text).
+ */
+function fragmentPlan(text, T, G, B, H) {
+  const zeichen = [...String(text).replace(/\s+/g, "")];
+  if (!zeichen.length) return [];
+  let saat = 7;
+  for (const z of zeichen) saat = (saat * 31 + z.codePointAt(0)) | 0;
+  const rnd = zufall(saat), plan = [];
+  let zuletzt = -1;
+  for (const e of T.einsaetze) {
+    if (e.t < G.von + 0.3 || e.t > G.bis - 0.5 || e.t - zuletzt < 0.55) continue;
+    zuletzt = e.t;
+    const i = Math.floor(rnd() * zeichen.length), nur = rnd() < 0.22;
+    plan.push({ t: e.t, dauer: 0.35 + 0.6 * e.staerke, text: nur ? "" : zeichen[i] + (zeichen[i + 1] ?? ""), x: B * (0.22 + 0.56 * rnd()), y: H * (0.36 + 0.28 * rnd()), vor: rnd() < 0.5 });
+  }
+  return plan;
+}
+
+function fragmenteZeichnen(ctx, sz, t) {
+  const H = sz.hoehe, g = Math.round(H * 0.075), invers = sz.schnitte.some((s) => t >= s && t < s + 4 / FPS);
+  ctx.save();
+  ctx.font = `300 ${g}px "Instrument Sans", system-ui, sans-serif`; ctx.textBaseline = "middle"; ctx.textAlign = "left";
+  for (const f of sz.fragmente) {
+    if (t < f.t || t > f.t + f.dauer) continue;
+    const text = f.text.slice(0, Math.min(f.text.length, Math.floor((t - f.t) * 20) + 1)), b = ctx.measureText(text).width;
+    const cw = g * 0.5, ch = g * 1.45, luft = text ? g * 0.18 : 0;
+    const cx = f.vor ? f.x - cw - luft : f.x + b + luft;
+    ctx.globalAlpha = 0.85 * (1 - anteil(t, f.t + f.dauer - 0.12, f.t + f.dauer));
+    ctx.fillStyle = invers ? "#d8d8d4" : "#6b6b68"; ctx.fillText(text, f.x, f.y);
+    ctx.fillStyle = invers ? "#f2f2f0" : "#0d1020"; ctx.fillRect(cx, f.y - ch / 2, cw, ch);
+  }
+  ctx.restore();
 }
 
 /** Pixelmass der Ziel-Leinwand (Vorschau kleiner, Video voll): darin rechnet WebGL */
@@ -54,6 +100,7 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
         const [w, h] = zielMass(ctx, sz), c = sz.buehne.bild(sz.zeit, t, w, h, { proben, vorschau });
         // ist es ganz das Foto, dann das Foto selbst: in jeder Grösse gleich wie danach, ohne den Unterschied der Filter beim Verkleinern
         ctx.drawImage(sz.buehne.ende >= 1 && sz.foto ? sz.foto : c, 0, 0, B, H);
+        if (sz.fragmente.length) fragmenteZeichnen(ctx, sz, t);
       }
       else if (sz.foto) { ctx.globalAlpha = anteil(t, abschnitt.bis - 1.5, abschnitt.bis); ctx.drawImage(sz.foto, 0, 0, B, H); ctx.globalAlpha = 1; }   // ohne WebGL 2
     } else if (t >= abschnitt.bis && sz.foto) ctx.drawImage(sz.foto, 0, 0, B, H);
