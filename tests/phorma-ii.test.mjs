@@ -188,6 +188,11 @@ test("Wachstum: die Linie wächst aus dem Keim ins Motiv (nicht in den Grund), d
   for (let i = 0; i < n; i++) { const x = b.lagen[o + i * 2] / W.ACHTEL, y = b.lagen[o + i * 2 + 1] / W.ACHTEL; if (Math.hypot(x - 40, y - 48) < 30) drin++; }
   assert.ok(drin / n > 0.9, `die Linie bleibt im Motiv (${(100 * drin / n).toFixed(0)} %)`);
   assert.deepEqual(b.lagen, b2.lagen, "wiederholbar");
+  // in Päckchen (für die Vorschau, während der Rest rechnet): dieselben Bilder
+  const einzeln = [], jeBild = (f, l) => { einzeln[f] = l; };
+  W.wachstumBahn({ ...auftrag, jeBild });
+  assert.equal(jeBild.bilder, b.bilder);
+  assert.deepEqual(Array.from(einzeln.at(-1)), Array.from(b.lagen.subarray(b.ab.at(-2) * 2)), "das letzte Bild gleich");
 });
 
 test("KI-Tiefe: wird an die Kanten gelegt und auf 0..1 gebracht", () => {

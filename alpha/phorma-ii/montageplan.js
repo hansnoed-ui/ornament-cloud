@@ -10,8 +10,8 @@
 //            02 Montage – Schnitte nach zwei, drei, vier Schlägen, dicht und licht im Wechsel
 //            03 Bild – die letzte Aufteilung bleibt, die Felder rasten nacheinander an ihrem Platz ein, das Foto steht
 // Lage in Bildkoordinaten: x 0..1 über die Breite, y 0..1 von oben nach unten. Alles wiederholbar: dasselbe Foto ergibt denselben Film.
-import { zufall } from "./analyse.js?v=21";
-import { anteil, weich, phase } from "./ablauf.js?v=21";
+import { zufall } from "./analyse.js?v=22";
+import { anteil, weich, phase } from "./ablauf.js?v=22";
 
 /** ein Schlag (Sekunden bei Tempo «normal»); fürs Signet am Schluss doppelt so schnell */
 export const TAKT = 0.5, SIGNET_TAKT = 0.25;
