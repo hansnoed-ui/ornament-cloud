@@ -1,14 +1,15 @@
-// PHORMA II – Tiefe: das Foto wird Raum. Ein feines Netz (ein Punkt je 4 Filmpunkte) wird nach der Tiefenkarte verschoben – aus dem Bild geschätzt
-// oder von der KI (tiefe-ki.js) –, die Kamera fährt mit Parallaxe hindurch, die Schärfe wandert von vorn nach hinten und zurück.
+// PHORMA II – Tiefe: das Foto bekommt Tiefe. Ein feines Netz (ein Punkt je 4 Filmpunkte) wird nach der Tiefenkarte verschoben – aus dem Bild
+// geschätzt oder von der KI (tiefe-ki.js) –, Streiflicht macht das Relief sichtbar.
 //   01 Scan – eine kupferne Lichtebene tastet das Bild von vorn nach hinten ab, hinter ihr glühen kurz die Linien gleicher Tiefe auf (als erster
-//   Effekt: aus dem Dunkeln; sonst über dem Foto); 02 Raum – Streiflicht, Tiefennebel, die Kamera schwenkt und fährt näher, das Bild teilt sich
-//   kurz in sieben Tiefenschichten wie eine Explosionszeichnung, die Schärfe verlagert sich; 03 Bild – alles legt sich flach, das Foto steht.
-//   Vor dem Tuch endet der Raum frontal mit einem flachen Relief: daraus wird das Tuch (TIEFE_UEBERGABE).
+//   Effekt: aus dem Dunkeln; sonst über dem Foto); 02 Bild – alles legt sich flach, das Foto steht.
+//   Vor dem Tuch endet der Scan mit einem flachen Relief: daraus wird das Tuch (TIEFE_UEBERGABE).
+//   Bis zum 19. Oktober 2026 folgte dem Scan die Phase «Raum» (Kamerafahrt mit Parallaxe, Tiefennebel, sieben Tiefenschichten, wandernde Schärfe,
+//   glühende Schnittkanten) – Rückmeldung: «"Raum", das gefällt mir gar nicht, kann ersatzlos raus, "Scan" bitte behalten». Die Shader können es noch.
 // Gestreckte Maschen an Tiefensprüngen werden dunkel statt verschmiert. Zustandslos.
 import * as THREE from "three";
-import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=24";
-import { phase } from "./ablauf.js?v=24";
-import { TIEFE_UEBERGABE } from "./tuchsim.js?v=24";   // dasselbe Relief, aus dem das Tuch beginnt
+import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=25";
+import { phase } from "./ablauf.js?v=25";
+import { TIEFE_UEBERGABE } from "./tuchsim.js?v=25";   // dasselbe Relief, aus dem das Tuch beginnt
 
 export { TIEFE_UEBERGABE };
 const SCHICHTEN = 7;
@@ -66,7 +67,7 @@ const SCHAERFE = /* glsl */ `
 
 export function tiefe(g, teil) {
   const { renderer, A, B, H } = g, a = B / H;
-  const S = phase(teil, "scan"), R = phase(teil, "raum"), Bp = phase(teil, "bild");
+  const S = phase(teil, "scan"), Bp = phase(teil, "bild");
   const masche = g.test ? 10 : g.grob ? 6 : 4;
   // 16 % grösser als das Bild: schwenkt die Kamera, sieht sie über den Rand hinaus (dort die gestreckten Randpunkte statt Schwarz); flach bleibt
   // der Überstand ausserhalb des Bilds
@@ -83,49 +84,31 @@ export function tiefe(g, teil) {
   const netz = new THREE.Mesh(geo, mat); netz.frustumCulled = false;
   const szene = new THREE.Scene(); szene.add(netz);
   const kam = kamera(B, H);
-  // wohin die Kamera schaut: zum Nahen (Schwerpunkt der nächsten Stellen)
-  let sx = 0, sy = 0, sw = 0;
-  for (let y = 0; y < A.h; y += 2) for (let x = 0; x < A.w; x += 2) { const d = A.tiefe[y * A.w + x] ** 6; sx += d * x; sy += d * y; sw += d; }
-  const motiv = new THREE.Vector3(((sx / sw / A.w) * 2 - 1) * a, 1 - (sy / sw / A.h) * 2, 0);
-  let nahFokus = 0;
-  { const d = []; for (let i = 0; i < A.tiefe.length; i += 7) d.push(A.tiefe[i]); d.sort((p, q) => p - q); nahFokus = d[Math.floor(d.length * 0.9)]; }
   let rtSzene = null, w = 0, h = 0;
   const schaerfe = quadMaterial(SCHAERFE, { tSzene: { value: null }, uPixel: { value: new THREE.Vector2() }, uMax: { value: 0 } });
-  const ziel3 = new THREE.Vector3(), blick = new THREE.Vector3();
 
   return {
     groesse(nw, nh) { w = nw; h = nh; rtSzene?.dispose(); rtSzene = ziel(w, h, { depthBuffer: true }); schaerfe.uniforms.uPixel.value.set(1 / w, 1 / h); },
     render(rt, tau) {
-      const u = mat.uniforms, q = anteil(tau, R[0], R[1]), schwenk = Math.sin(Math.PI * q);
+      const u = mat.uniforms;
       const flach = Bp ? inOut(anteil(tau, Bp[0], Bp[1] - 0.6)) : 0;
-      const uebergabe = !Bp && teil.naechstes ? inOut(anteil(tau, R[1] - 1.4, R[1])) : 0;
-      // Tiefe: im Scan aufbauen, im Raum halten (Mitte etwas stärker), im Bild flach; vor dem Tuch ein flaches Relief
-      let t = 0.55 * (teil.erst ? 0.4 + 0.6 * weich(anteil(tau, S[0], R[0] + 0.8)) : weich(anteil(tau, S[0] + 0.2, R[0] + 0.8))) + 0.12 * schwenk;
+      const uebergabe = !Bp && teil.naechstes ? inOut(anteil(tau, S[1] - 1.2, S[1])) : 0;
+      // Tiefe: im Scan aufbauen, im Bild flach; vor dem Tuch ein flaches Relief
+      let t = 0.55 * (teil.erst ? 0.4 + 0.6 * weich(anteil(tau, S[0], S[1] - 0.4)) : weich(anteil(tau, S[0] + 0.2, S[1] - 0.4)));
       t = t * (1 - flach);
       t = t + (TIEFE_UEBERGABE - t) * uebergabe;
       u.uTiefe.value = t;
-      u.uSchicht.value = 0.12 * glocke(q, 0.22, 0.72) ** 2;
-      u.uScan.value = 1.04 - 1.1 * inOut(anteil(tau, S[0] + 0.15, S[1] + 0.35));
+      u.uScan.value = 1.04 - 1.1 * inOut(anteil(tau, S[0] + 0.15, S[1] - 0.2));
       // über dem Foto schwächer: sonst leuchtet eine flache, gleich tiefe Stelle ganz auf, wenn die Ebene durch sie geht
-      u.uScanAn.value = teil.erst ? 1 - weich(anteil(tau, S[1] + 0.2, R[0] + 1.0)) : 0.55 * glocke(tau, S[0], S[1] + 0.9) ** 0.5;
+      u.uScanAn.value = teil.erst ? 1 - weich(anteil(tau, S[1] - 0.4, S[1] + 0.4)) : 0.55 * glocke(tau, S[0], S[1] + 0.3) ** 0.5;
       const licht = teil.erst ? 0.75 : 0.75 * weich(anteil(tau, S[0], S[1]));
       u.uLicht.value = licht * (1 - flach) * (1 - 0.35 * uebergabe);
-      u.uNebel.value = 0.55 * weich(anteil(tau, S[1] - 0.6, R[0] + 0.8)) * (1 - flach) * (1 - uebergabe);
-      u.uRissAn.value = weich(anteil(tau, S[1], R[0] + 0.5)) * (1 - flach);
-      // Kamera: schwenkt nach links, dann nach rechts, schaut von oben, fährt näher und zurück, immer zum Motiv hin
-      const gier = THREE.MathUtils.degToRad(11) * Math.sin(2 * Math.PI * q) * (0.6 + 0.4 * schwenk), nick = THREE.MathUtils.degToRad(7) * schwenk;
-      const r = ABSTAND * (1 - 0.15 * schwenk), drehpunkt = 0;   // die mittlere Tiefe liegt bei z = 0
-      ziel3.set(0, 0, drehpunkt).lerp(motiv, 0.3 * schwenk);
-      kam.position.set(ziel3.x + r * Math.sin(gier) * Math.cos(nick), ziel3.y + r * Math.sin(nick), drehpunkt + r * Math.cos(gier) * Math.cos(nick));
-      blick.copy(ziel3); kam.lookAt(blick);
-      if (schwenk < 1e-6) { kam.position.set(0, 0, ABSTAND); kam.lookAt(0, 0, 0); }
-      // Schärfe: vorn, dann weit hinten, dann wieder vorn
-      u.uFokus.value = nahFokus + (0.18 - nahFokus) * glocke(q, 0.2, 0.85);
-      u.uUnschaerfe.value = 1.6 * schwenk;
+      // die Kamera steht frontal (ohne Raum keine Fahrt)
+      kam.position.set(0, 0, ABSTAND); kam.lookAt(0, 0, 0);
       renderer.setRenderTarget(rtSzene); renderer.setClearColor(0x000000, 0); renderer.clear(true, true, true);
       renderer.render(szene, kam);
       schaerfe.uniforms.tSzene.value = rtSzene.texture;
-      schaerfe.uniforms.uMax.value = 9 * schwenk * (w / B);
+      schaerfe.uniforms.uMax.value = 0;
       g.pass(schaerfe, rt);
       let ende = 0, aktiv = teil.erst ? weich(anteil(tau, 0, 0.6)) : weich(anteil(tau, 0, 0.5));
       if (teil.vonFoto) ende = 1 - weich(anteil(tau, 0, 0.35));

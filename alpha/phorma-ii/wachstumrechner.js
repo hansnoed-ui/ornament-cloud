@@ -1,6 +1,6 @@
 // PHORMA II – Web Worker: rechnet die Bahn des Wachstums (wachstumsim.js), ohne die Seite aufzuhalten. Die Bilder gehen gleich nach dem Rechnen in
 // Päckchen an die Seite (Rückmeldung vom 19. Oktober 2026 vom Telefon: «der Keim bleibt stehen» – die Vorschau wartete auf die ganze Bahn).
-import { wachstumBahn } from "./wachstumsim.js?v=24";
+import { wachstumBahn } from "./wachstumsim.js?v=25";
 
 self.onmessage = (e) => {
   const { nr, ...auftrag } = e.data;
