@@ -7,9 +7,9 @@
 // Die Bilder der Bahn kommen in Päckchen, die Vorschau zeigt jeweils das letzte schon gerechnete; bereit (Promise) sagt, wann sie ganz da ist –
 // Video und Standbild warten darauf.
 import * as THREE from "three";
-import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=29";
-import { phase } from "./ablauf.js?v=29";
-import { wachstumBahn, ACHTEL, BILDER_JE_S } from "./wachstumsim.js?v=29";
+import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=30";
+import { phase } from "./ablauf.js?v=30";
+import { wachstumBahn, ACHTEL, BILDER_JE_S } from "./wachstumsim.js?v=30";
 
 const VERTEX = /* glsl */ `
   attribute vec4 aStrecke;                 // x0, y0, x1, y1 in Punkten der Analyse (y nach unten)
@@ -71,7 +71,7 @@ export function wachstum(g, teil) {
   const bereit = (async () => { auftrag.film = await filmBilder(); })().then(() => new Promise((fertig) => {
     if (weg) { fertig(); return; }
     const hier = () => { const jeBild = (f, l) => { bilder[f] = l; }; const b = wachstumBahn({ ...auftrag, jeBild }); gesamt = b.bilder; fertigGerechnet = true; fertig(); };
-    try { rechner = new Worker(new URL("./wachstumrechner.js?v=29", import.meta.url), { type: "module" }); } catch { rechner = null; }
+    try { rechner = new Worker(new URL("./wachstumrechner.js?v=30", import.meta.url), { type: "module" }); } catch { rechner = null; }
     if (!rechner) { setTimeout(hier, 0); return; }   // ohne Worker einmal hier
     rechner.onmessage = (e) => {
       const d = e.data;
@@ -147,6 +147,8 @@ export function wachstum(g, teil) {
       return { aktiv, bloom: glut * (1 - u.uFarbe.value * 0.4), radius: 0.4, saum: 0.0018, ende };
     },
     bereit, fortschritt,
+    /** bis wohin (eigene Zeit, Sekunden) die Bahn schon gerechnet ist – die Vorschau wartet dort (app.js) */
+    gerechnetBis: () => (fertigGerechnet ? Infinity : Math.max(0, (bilder.length - 1) / BILDER_JE_S)),
     vorab: { szenen: [[szene, kam]], materialien: [unter] },
     zaehler() { const z = (x) => x.toLocaleString("de-CH"); return `wachstum · punkte ${z(anzahl)}${fertigGerechnet ? "" : ` · rechnet ${Math.round(fortschritt() * 100)} %`}`; },
     entsorgen() { weg = true; rechner?.terminate(); geo.dispose(); mat.dispose(); unter.dispose(); },
