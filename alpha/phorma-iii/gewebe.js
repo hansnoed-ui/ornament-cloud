@@ -9,11 +9,11 @@
 //   sich glatt zum Strich (darüber tippt film.js den Schriftzug).
 // Zustandslos: alles wird aus der Zeit gerechnet (im Vertex-Shader), die Tonkurven liegen als Textur vor und werden nur mit texelFetch gelesen.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=12";
-import { phase } from "./ablauf.js?v=12";
-import { gewebeKurven, abtasten } from "./kurven.js?v=12";
-import { weichzeichnen } from "./analyse.js?v=12";
-import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=12";
+import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=13";
+import { phase } from "./ablauf.js?v=13";
+import { gewebeKurven, abtasten } from "./kurven.js?v=13";
+import { weichzeichnen } from "./analyse.js?v=13";
+import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=13";
 
 // Simplex-Rauschen in 3D (Ashima Arts / Stefan Gustavson, MIT); auch für die Irrfahrt (irrfahrt.js)
 export const RAUSCHEN = /* glsl */ `
@@ -236,8 +236,10 @@ export function gewebe(g, teil) {
       g.pass(grund, rt);
       renderer.setRenderTarget(rt); renderer.render(szene, kam);
       const ende = Bp ? weich(anteil(tau, Bp[1] - 0.6, Bp[1] - 0.1)) : 0;
-      // mehr Kontrast (Tonwertkorrektur in der Ausgabe der Bühne), nicht ganz Schwarz-Weiss; zum Bild am Ende hin wieder ohne
-      return { aktiv: logo ? 0.3 * (1 - ruhig) : 0.35 * (Bp ? 1 - weich(anteil(tau, Bp[0], Bp[1])) : 1), bloom: 0, saum: nacht ? 0 : 0.0008, ende, kontrast: 1 - ende };
+      // mehr Kontrast (Tonwertkorrektur in der Ausgabe der Bühne), nicht ganz Schwarz-Weiss; wo das Bild selbst steht (Zeichen am Anfang, das Bild
+      // am Ende, ein Zeichen-Zustand), bleibt es unverändert
+      const kontrast = (1 - ende) * (1 - Math.min(1, grund.uniforms.uFoto.value));
+      return { aktiv: logo ? 0.3 * (1 - ruhig) : 0.35 * (Bp ? 1 - weich(anteil(tau, Bp[0], Bp[1])) : 1), bloom: 0, saum: nacht ? 0 : 0.0008, ende, kontrast };
     },
     vorab: { szenen: [[szene, kam]], materialien: [grund] },
     zaehler(tau) {
