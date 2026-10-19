@@ -57,7 +57,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=19");
+  const { bild } = await import("./film.js?v=20");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -196,6 +196,9 @@ await check("Montage nach dem Tuch: beginnt beim Foto, zerfällt in Felder mit R
   // das Signet am Schluss im Stil der Montage: geschnitten, während es sich zeichnet, dann steht es unverändert
   const ab = await page.evaluate(() => ({ montage: window.__phorma.buehne.montageSchluss, signet: window.__phorma.sz.zeit.ab.signet, stehen: window.__phorma.sz.zeit.ab.signetStehen }));
   assert.equal(ab.montage, true, "Signet im Stil der Montage");
+  assert.ok(Math.abs(ab.signet[0] - bis - 1.0) < 1e-6, "nahtlos: das Signet kommt eine Sekunde nach dem Schlussbild");
+  const uebergang = await messe(page, ab.signet[0] + 0.05);
+  assert.ok(uebergang.mittelAbw < 4, `am Anfang des Signets noch das Foto, nur der Anfang der Schlaufe darüber (${uebergang.mittelAbw.toFixed(1)})`);
   const geschnitten = await messe(page, ab.signet[0] + 1.5), endeGeschnitten = await page.evaluate(() => window.__phorma.buehne.ende);
   assert.ok(endeGeschnitten < 1 && geschnitten.hell > 0.5, `während des Signets geschnitten (ende ${endeGeschnitten}, hell ${geschnitten.hell.toFixed(2)})`);
   await messe(page, (ab.stehen[0] + ab.stehen[1]) / 2);

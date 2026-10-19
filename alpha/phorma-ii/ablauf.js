@@ -94,10 +94,16 @@ export function zeitachse({ tempo = "normal", signet = true, ablauf = KETTE } = 
   const phasen = K.phasen.map((p) => ({ ...p, von: von + p.von * f, bis: von + p.bis * f }));
   t = von + K.dauer * f;
   const abschnitt = { von, bis: t };
-  dazu("stehen", 3.2);
-  if (signet) { dazu("bildAus", 0.9); dazu("pause", 0.15); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }   // zusammen ABSPANN
-  else dazu("schluss", 0.3);
-  return { ab, ablauf: art, abschnitt, teile, phasen, dauer: t, bilder: Math.round(t * 30), tempo: f };
+  // endet die Kette mit der Montage, geht das Foto nahtlos ins Signet über (Rückmeldung vom 19. Oktober 2026: «Das Schlussbild bleibt relativ lange
+  // stehen, bevor das Logo kommt. Das kann nahtloser passieren»): kurz stehen, dann schneiden die Felder das Foto weg und das Signet herein
+  const nahtlos = signet && effekte(art).at(-1) === "montage";
+  if (nahtlos) { dazu("stehen", 1.0); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }
+  else {
+    dazu("stehen", 3.2);
+    if (signet) { dazu("bildAus", 0.9); dazu("pause", 0.15); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }   // zusammen ABSPANN
+    else dazu("schluss", 0.3);
+  }
+  return { ab, ablauf: art, abschnitt, teile, phasen, dauer: t, bilder: Math.round(t * 30), tempo: f, nahtlos };
 }
 
 /** die Effekte, die zur Zeit t laufen (beim Übergang zwei), mit ihrer eigenen Zeit */
