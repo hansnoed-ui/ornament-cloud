@@ -234,6 +234,7 @@ async function filmVorbereiten(sz, t, p) {
   for (let k = 0; k < p; k++) {
     const s = videoStelleBei(sz.zeit, plan, t - (p > 1 ? (0.5 / FPS) * (1 - k / (p - 1)) : 0));
     for (const d of [0, 0.35, 0.9]) qts.push(F.von + Math.max(0, s - d));   // auch die früheren Stellen der Montage (ZEITVERSATZ in montage.js)
+    qts.push(F.von + s + 1 / FPS);   // und das nächste Bild: langsamer blendet die Bühne zwischen beiden über
   }
   await F.spur.vorbereiten(qts, { vorschau: false });
 }

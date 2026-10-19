@@ -229,13 +229,15 @@ const zaehlvideo = (page, { sekunden = 16 } = {}) => page.evaluate(async (sekund
   const a = new Uint8Array(muxer.target.buffer); let s = ""; for (let i = 0; i < a.length; i += 32768) s += String.fromCharCode(...a.subarray(i, i + 32768));
   return btoa(s);
 }, sekunden).then((b) => Buffer.from(b, "base64"));
-/** die Nummer des Zählvideos in einem Bild (quelle: "film" – das Bild des Films zur Zeit t, wie der Export; "foto" – das Standbild) */
+/** die Nummer des Zählvideos in einem Bild (quelle: "film" – das Bild des Films zur Zeit t, wie der Export; "foto" – das Standbild; "jetzt" – das
+ *  laufende Bild, das die Bühne zur Zeit t allen Effekten gibt) */
 const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) => {
   const { bild } = await import("./film.js?v=26");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false }, w = S.mass[0] / 2, h = S.mass[1] / 2;
   const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
   if (quelle === "foto") x.drawImage(S.foto, 0, 0, w, h);
+  else if (quelle === "jetzt") { await S.filmVorbereiten(sz, t, 1); bild(document.createElement("canvas").getContext("2d"), sz, t, { proben: 1 }); x.drawImage(S.buehne.jetzt, 0, 0, w, h); }
   else { x.setTransform(0.5, 0, 0, 0.5, 0, 0); await S.filmVorbereiten(sz, t, 1); bild(x, sz, t, { proben: 1 }); x.setTransform(1, 0, 0, 1, 0, 0); }
   const s = Math.max(w / 160, h / 128);
   let nr = 0;
@@ -273,6 +275,18 @@ await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am End
   const z3 = (await messe(page, 0)).zeit, d3 = z3.abschnitt.bis - z3.abschnitt.von;
   assert.equal(await nummer(page, 0, "foto"), Math.round(d3 * 30), "Standbild am Ende der Kette");
   assert.ok((await messe(page, z3.abschnitt.bis - 1 / 30)).abw <= 3, "die Kette endet exakt beim Standbild");
+  // ein kurzes Video (4 s) unter dem Tuch (8,4 s): es läuft langsamer, aber von Anfang an (Rückmeldung: «beim Tuch erst in der zweiten Hälfte»)
+  await page.click('[data-wahl="tuch"]');
+  await page.waitForFunction(() => window.__phorma.ablauf === "tuch" && window.__phorma.buehneFertig, null, { timeout: 240_000 });
+  await page.setInputFiles("#datei", { name: "kurz.mp4", mimeType: "video/mp4", buffer: await zaehlvideo(page, { sekunden: 4 }) });
+  await page.waitForFunction(() => window.__phorma.film?.dauer < 5 && window.__phorma.film?.spur && window.__phorma.buehneFertig && document.getElementById("ladeanzeige").hidden, null, { timeout: 240_000 });
+  const z4 = (await messe(page, 0)).zeit, d4 = z4.abschnitt.bis - z4.abschnitt.von;
+  for (const q of [0.25, 0.5]) {
+    const n = await nummer(page, z4.abschnitt.von + q * d4, "jetzt");
+    assert.ok(Math.abs(n - q * 120) <= 2, `nach ${Math.round(q * 100)} % des Tuchs ${Math.round(q * 100)} % des Videos (Bild ${n})`);
+  }
+  assert.equal(await nummer(page, 0, "foto"), 119, "das Standbild ist sein letztes Bild");
+  assert.ok((await messe(page, z4.abschnitt.bis - 1 / 30)).abw <= 3, "das Tuch endet exakt beim Standbild");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
