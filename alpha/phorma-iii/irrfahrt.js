@@ -199,8 +199,8 @@ export function irrfahrt(g, teil, { fest = false } = {}) {
       // die Lage des Würfels: je Zustand gewürfelt (auch mitten in ihm), und jeder weitere kräftige Einsatz wirft ihn in eine neue Lage («noch wilder»);
       // darin dreht er sich, der Schlag ruckt; zum Logo gerade und von vorn. Manche Zustände zeigen drei Würfel nebeneinander.
       const jl = fest ? 0 : j * 37 + nr, seitL = nr ? film - ein.filter((t) => t <= film).at(-1) : seit;
-      // ganz nah höchstens 1,9 (statt 2,6): so nah füllte die aufgequollene Wolke das ganze Bild grau («die Animation überblendet teilweise stark»)
-      const nah = fest ? 0.74 : jl ? [0.95, 1.1, 1.3, 1.65, 1.9, 1.0, 0.8][Math.floor(zufall(jl, 6) * 7)] : 1.15;
+      // mit der Perspektive des Vorbilds höchstens 1,4: näher flogen die vorderen Ecken weit aus dem Bild, und es blieben einzelne Kanten
+      const nah = fest ? 0.74 : jl ? [0.95, 1.1, 1.25, 1.4, 1.3, 1.0, 0.8][Math.floor(zufall(jl, 6) * 7)] : 1.0;
       const w = 0.35 + 0.8 * zufall(jl, 9), drei = !fest && !logo && !zeichen && j > 0 && zufall(j, 13) < 0.28, stossL = fest ? 0 : stoss;
       const lage = (k) => {
         e3.set(zufall(jl, 1) * 6.283 + seitL * w * 0.6 + dreh * 0.35 + k * 2.1, zufall(jl, 2) * 6.283 + seitL * w + dreh * 0.5 + k * 1.3, zufall(jl, 3) * 6.283 + seitL * w * 0.3);
