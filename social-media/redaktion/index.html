@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Redaktion – Social Media – Ornament Cloud</title>
+  <meta name="description" content="Redaktion des Zettelkastens «Social Media»: Bildschirmfotos, Bilder und Videos zu Zetteln machen.">
+  <meta name="robots" content="noindex">
+  <!-- Die Redaktion hält zwei Schlüssel im Browser: Skripte nur von dieser Website, Verbindungen nur zu GitHub und Anthropic. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://api.github.com https://api.anthropic.com; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <link rel="stylesheet" href="../../styles.css?v=46">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="../social.css?v=1">
+  <link rel="stylesheet" href="redaktion.css?v=1">
+</head>
+<body class="sm rd">
+  <!--
+    Redaktion von «Social Media» (seit 19. Oktober 2026; Wunsch: «ein Backend: Hier möchte ich Screenshots, Bilder und Video hochladen können
+    (inklusive Profillinks der Verfasser und Zeitangabe meiner Erfassung). Diese sollen dann in auf der Seite lesbare Einträge verwandelt werden»).
+    Von keiner Seite verlinkt, nicht in der Sitemap, noindex. Ohne Schlüssel kann hier niemand etwas ändern: Veröffentlicht wird mit einem
+    GitHub-Schlüssel, gelesen mit einem Anthropic-Schlüssel; beide bleiben im Browser. Verhalten: social-media/js/redaktion/.
+  -->
+  <header class="site-header">
+    <div class="wrap">
+      <div class="topbar">
+        <nav class="seitenweg" aria-label="Ornament Cloud">
+          <a href="../../" aria-current="true">Ornament Cloud</a>
+          <a href="../../alpha/drittes-rad/">Das Dritte Rad</a>
+        </nav>
+        <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
+        <nav class="menu" aria-label="Hauptmenü">
+          <a class="menu-item" href="../../apps/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg><span>Apps</span></a>
+          <a class="menu-item" href="../../masterprompts/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-7.5L7 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M7.5 8.5l3 2.25-3 2.25"/><path d="M12.5 13h4"/></svg><span>Prompts</span></a>
+          <a class="menu-item" href="../../web/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5S9.6 5.8 12 3.5z"/></svg><span>Web</span></a>
+          <a class="menu-item" href="../../zu-seiner-zeit/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h11.5A1.5 1.5 0 0 1 20 5v11"/><rect x="4" y="6.5" width="13" height="14" rx="1.5"/><path d="M7 10.5h7"/><path d="M7 13.5h7"/><path d="M7 16.5h4"/></svg><span>Zettel</span></a>
+          <a class="menu-item" href="../../social-media/" aria-current="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10 4.5 8 19.5"/><path d="M16 4.5l-2 15"/><path d="M5 9.25h14.5"/><path d="M4.5 14.75H19"/></svg><span>Social</span></a>
+        </nav>
+      </div>
+      <p class="sm-zurueck"><a href="../">Social Media</a></p>
+      <h1>Redaktion</h1>
+      <p class="lead">Bildschirmfoto hineinlegen, Claude liest es, du prüfst, kommentierst und verschlagwortest. Veröffentlichen ist ein Commit; etwa eine Minute später steht der Zettel online.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <noscript><p class="rd-hinweis">Die Redaktion braucht JavaScript.</p></noscript>
+
+    <details class="rd-einstellungen" id="einstellungen">
+      <summary>Einstellungen <span class="rd-zustand" id="zustand">Schlüssel fehlen</span></summary>
+      <div class="rd-einstellungen-inhalt">
+        <div class="rd-feld">
+          <label for="gh-schluessel">GitHub-Schlüssel</label>
+          <input id="gh-schluessel" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…">
+          <p class="rd-hilfe">Ein <a href="https://github.com/settings/personal-access-tokens/new" rel="noopener" target="_blank">fine-grained personal access token</a>: nur das Repository <code id="repo-name">hansnoed-ui/ornament-cloud</code>, Berechtigung <em>Contents: Read and write</em>, mit Ablaufdatum.</p>
+        </div>
+        <div class="rd-feld rd-feld--zwei">
+          <div><label for="gh-repo">Repository</label><input id="gh-repo" value="hansnoed-ui/ornament-cloud" spellcheck="false"></div>
+          <div><label for="gh-zweig">Zweig</label><input id="gh-zweig" value="main" spellcheck="false"></div>
+        </div>
+        <div class="rd-feld">
+          <label for="an-schluessel">Anthropic-Schlüssel (für Claude)</label>
+          <input id="an-schluessel" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
+          <p class="rd-hilfe">Aus der <a href="https://platform.claude.com/settings/keys" rel="noopener" target="_blank">Claude Console</a>. Ohne ihn füllst du die Felder von Hand. Ein Bildschirmfoto zu lesen kostet je nach Grösse wenige Rappen.</p>
+        </div>
+        <label class="rd-wahl"><input type="checkbox" id="merken"> Schlüssel auf diesem Gerät merken (sonst nur bis das Fenster zugeht)</label>
+        <p class="rd-knoepfe"><button type="button" class="rd-knopf" id="pruefen">Verbindung prüfen</button> <button type="button" class="knopf-leise" id="vergessen">Schlüssel vergessen</button></p>
+        <p class="rd-meldung" id="einstellungen-meldung" role="status" aria-live="polite"></p>
+      </div>
+    </details>
+
+    <div class="rd-reiter" role="tablist" aria-label="Redaktion">
+      <button type="button" role="tab" id="reiter-neu" aria-controls="ansicht-neu" aria-selected="true">Neuer Zettel</button>
+      <button type="button" role="tab" id="reiter-alle" aria-controls="ansicht-alle" aria-selected="false" tabindex="-1">Alle Zettel</button>
+    </div>
+
+    <section id="ansicht-neu" role="tabpanel" aria-labelledby="reiter-neu" class="rd-ansicht">
+      <div class="rd-raster">
+        <form class="rd-formular" id="formular" autocomplete="off" novalidate>
+          <p class="rd-bearbeiten" id="bearbeiten-hinweis" hidden></p>
+
+          <fieldset class="rd-schritt">
+            <legend><span class="rd-nr">1</span> Material</legend>
+            <div class="rd-ablage" id="ablage" tabindex="0">
+              <p><strong>Bildschirmfoto hierher ziehen</strong>, mit <kbd>Strg</kbd>/<kbd>⌘</kbd>+<kbd>V</kbd> einfügen oder <label class="rd-datei">wählen<input type="file" id="dateien" accept="image/*,video/mp4,video/webm,video/quicktime" multiple></label>.</p>
+              <p class="rd-hilfe">Dazu, wenn du sie hast: die Bilder und Videos des Beitrags in voller Qualität. Das erste Bild gilt als Beleg (Bildschirmfoto).</p>
+            </div>
+            <ul class="rd-dateien" id="dateiliste"></ul>
+            <div class="rd-feld">
+              <label for="f-quelle">Adresse des Beitrags</label>
+              <input id="f-quelle" type="url" inputmode="url" placeholder="https://x.com/…/status/…" spellcheck="false">
+              <p class="rd-hilfe" id="quelle-info">Aus der Adresse liest die Redaktion Plattform, Handle und – bei X und Instagram – die genaue Zeit der Veröffentlichung.</p>
+            </div>
+            <p class="rd-knoepfe"><button type="button" class="rd-knopf rd-knopf--haupt" id="lesen" disabled>Mit Claude lesen</button> <button type="button" class="knopf-leise" id="lesen-abbrechen" hidden>Abbrechen</button></p>
+            <p class="rd-meldung" id="lesen-meldung" role="status" aria-live="polite"></p>
+          </fieldset>
+
+          <fieldset class="rd-schritt" id="schritt-beleg" hidden>
+            <legend><span class="rd-nr">2</span> Bereiche im Bildschirmfoto</legend>
+            <p class="rd-hilfe">Ziehe ein Rechteck auf: als <strong>Bild</strong> wird es ein Medium des Beitrags, als <strong>Profilbild</strong> der Avatar, <strong>Schwärzen</strong> deckt Namen und Gesichter Dritter ab (auch im veröffentlichten Beleg). Rechtecke lassen sich verschieben, an der Ecke grösser ziehen und mit × entfernen.</p>
+            <div class="rd-werkzeug" role="radiogroup" aria-label="Rechteck zeichnen als">
+              <label><input type="radio" name="werkzeug" value="bild" checked> Bild</label>
+              <label><input type="radio" name="werkzeug" value="avatar"> Profilbild</label>
+              <label><input type="radio" name="werkzeug" value="dritte"> Schwärzen</label>
+            </div>
+            <div class="rd-leinwand" id="leinwand"><img id="beleg-bild" alt="Das Bildschirmfoto mit den markierten Bereichen"><div class="rd-bereiche" id="bereiche"></div></div>
+            <label class="rd-wahl"><input type="checkbox" id="beleg-zeigen" checked> Bildschirmfoto als Beleg mit veröffentlichen</label>
+          </fieldset>
+
+          <fieldset class="rd-schritt">
+            <legend><span class="rd-nr">3</span> Beitrag</legend>
+            <div class="rd-feld">
+              <span class="rd-label" id="plattform-label">Plattform</span>
+              <div class="rd-segment" role="radiogroup" aria-labelledby="plattform-label">
+                <label><input type="radio" name="plattform" value="x"> X</label>
+                <label><input type="radio" name="plattform" value="facebook"> Facebook</label>
+                <label><input type="radio" name="plattform" value="instagram"> Instagram</label>
+              </div>
+            </div>
+            <div class="rd-feld rd-feld--zwei">
+              <div><label for="f-name">Name</label><input id="f-name" list="liste-namen"></div>
+              <div><label for="f-handle">Handle</label><input id="f-handle" placeholder="ohne @" spellcheck="false"></div>
+            </div>
+            <div class="rd-feld rd-feld--zwei">
+              <div><label for="f-profil">Profil</label><input id="f-profil" type="url" spellcheck="false" placeholder="wird aus dem Handle gebildet"></div>
+              <div class="rd-unten"><label class="rd-wahl"><input type="checkbox" id="f-verifiziert"> verifiziert</label></div>
+            </div>
+            <div class="rd-feld"><label for="f-kontext">Kontextzeile</label><input id="f-kontext" placeholder="z. B. Antwort an @…"></div>
+            <div class="rd-feld"><label for="f-text">Text (genau abgeschrieben)</label><textarea id="f-text" rows="7"></textarea></div>
+            <div class="rd-feld rd-feld--zwei">
+              <div><label for="f-sprache">Sprache</label><input id="f-sprache" maxlength="2" placeholder="de" spellcheck="false"></div>
+              <div></div>
+            </div>
+            <div class="rd-feld" id="feld-uebersetzung"><label for="f-uebersetzung">Übersetzung ins Deutsche</label><textarea id="f-uebersetzung" rows="4"></textarea></div>
+            <details class="rd-mehr">
+              <summary>Zitierter oder geteilter Beitrag</summary>
+              <div class="rd-feld rd-feld--zwei">
+                <div><label for="f-zname">Name</label><input id="f-zname"></div>
+                <div><label for="f-zhandle">Handle</label><input id="f-zhandle" spellcheck="false"></div>
+              </div>
+              <div class="rd-feld"><label for="f-ztext">Text</label><textarea id="f-ztext" rows="3"></textarea></div>
+            </details>
+            <div class="rd-feld">
+              <span class="rd-label">Kennzahlen bei der Erfassung</span>
+              <div class="rd-zahlen" id="kennzahlen"></div>
+            </div>
+            <div class="rd-feld" id="medien-feld" hidden>
+              <span class="rd-label">Medien und Bildbeschreibungen</span>
+              <ul class="rd-medien" id="medienliste"></ul>
+            </div>
+          </fieldset>
+
+          <fieldset class="rd-schritt">
+            <legend><span class="rd-nr">4</span> Zeit</legend>
+            <div class="rd-feld rd-feld--zwei">
+              <div><label for="f-veroeffentlicht">Veröffentlicht</label><input id="f-veroeffentlicht" placeholder="JJJJ-MM-TT oder JJJJ-MM-TT hh:mm" spellcheck="false"><p class="rd-hilfe" id="veroeffentlicht-info">Zürcher Zeit.</p></div>
+              <div><label for="f-erfasst">Gesichert (deine Erfassung)</label><input id="f-erfasst" type="datetime-local"><p class="rd-hilfe">Steht von selbst auf jetzt.</p></div>
+            </div>
+            <div class="rd-feld rd-feld--zwei">
+              <div><label for="f-status">Original</label><select id="f-status"><option value="unbekannt">nicht geprüft</option><option value="online">noch online</option><option value="geloescht">nicht mehr online</option></select></div>
+              <div><label for="f-geprueft">geprüft am</label><input id="f-geprueft" type="date"></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="rd-schritt">
+            <legend><span class="rd-nr">5</span> Zettel</legend>
+            <div class="rd-feld"><label for="f-titel">Titel</label><input id="f-titel"></div>
+            <div class="rd-feld"><label for="f-kommentar">Einleitender Kommentar</label><textarea id="f-kommentar" class="rd-kommentar" rows="5" placeholder="Was zeigt dieser Beitrag? Warum steht er hier?"></textarea><p class="rd-hilfe">Absätze mit einer Leerzeile; *kursiv*, **fett**, [Text](https://…).</p></div>
+            <div class="rd-feld">
+              <label for="f-schlagwort">Schlagworte</label>
+              <div class="rd-marken" id="schlagworte"></div>
+              <input id="f-schlagwort" list="liste-schlagworte" placeholder="Schlagwort und Enter">
+              <p class="rd-vorschlaege" id="vorschlaege" hidden></p>
+            </div>
+            <div class="rd-feld">
+              <span class="rd-label">Verweise auf andere Zettel</span>
+              <ul class="rd-verweise" id="verweise"></ul>
+              <div class="rd-feld--zwei rd-verweis-neu">
+                <select id="f-verweis-ziel" aria-label="Zettel"><option value="">Zettel wählen …</option></select>
+                <select id="f-verweis-art" aria-label="Art des Verweises"><option value="kontext">Kontext</option><option value="antwort">Antwort auf</option><option value="widerspruch">Widerspruch zu</option><option value="ergaenzung">Ergänzung zu</option><option value="fortsetzung">Fortsetzung von</option></select>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="rd-abschluss">
+            <p class="rd-fehler" id="fehler" role="alert" hidden></p>
+            <p class="rd-knoepfe"><button type="button" class="rd-knopf rd-knopf--haupt" id="veroeffentlichen" disabled>Veröffentlichen</button> <button type="button" class="knopf-leise" id="verwerfen">Entwurf verwerfen</button></p>
+            <ol class="rd-fortschritt" id="fortschritt" aria-live="polite"></ol>
+          </div>
+        </form>
+
+        <aside class="rd-vorschau" aria-label="Vorschau">
+          <p class="rd-label">So steht der Zettel in der Zeitleiste</p>
+          <ol class="zeitleiste rd-zeitleiste" id="vorschau"></ol>
+          <p class="rd-hilfe" id="entwurf-stand"></p>
+        </aside>
+      </div>
+    </section>
+
+    <section id="ansicht-alle" role="tabpanel" aria-labelledby="reiter-alle" class="rd-ansicht" hidden>
+      <p class="rd-meldung" id="alle-meldung" role="status" aria-live="polite"></p>
+      <ol class="rd-alle" id="alle"></ol>
+    </section>
+
+    <datalist id="liste-schlagworte"></datalist>
+    <datalist id="liste-namen"></datalist>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+    </div>
+  </footer>
+  <script type="module" src="../js/redaktion/app.js?v=1"></script>
+  <script src="../../icons.js?v=14" defer></script>
+</body>
+</html>

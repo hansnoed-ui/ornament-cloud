@@ -249,7 +249,7 @@ ${LANGS.map(l => `  <link rel="alternate" hreflang="${l}" href="${url(l)}">`).jo
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
-  <link rel="stylesheet" href="${site}kopfleiste.css?v=1">
+  <link rel="stylesheet" href="${site}kopfleiste.css?v=2">
   <link rel="stylesheet" href="${wurzel}zsz.css?v=${o.v}">
   <script type="module" src="${wurzel}zsz.js?v=${o.v}"></script>
 </head>

@@ -195,7 +195,7 @@ danach wieder, beginnt eine neue. Quelle, Build und Dokumentation: `src/orma/` (
 - **Menü und Seiten** (Neuordnung vom 2. Oktober 2026, Wunsch von Christian): Die Startseite trägt den Titel
   «Raumstellen, Zeitobjekte», darunter das Stellenfeld (`werke/stellenfeld/`), in die Seite eingebettet und
   kein Beitrag; sonst nichts (die Rückmeldungen über giscus sind auf Wunsch vom 2. Oktober 2026 entfernt).
-  Das Menü in der Kopfzeile hat vier Einträge, seit dem 10. Oktober 2026 als Kästchen mit gezeichnetem Symbol
+  Das Menü in der Kopfzeile hat vier Einträge (seit dem 19. Oktober 2026 fünf: dazu zuletzt «Social», `social-media/`), seit dem 10. Oktober 2026 als Kästchen mit gezeichnetem Symbol
   und kurzem Namen (Wunsch von Christian; vorher nur Text), auf dem Handy alle vier nebeneinander, in der
   Reihenfolge Apps, Prompts, Web, Zettel: «Apps» (`apps/`: ORNA, ORMA; seit 11. Oktober 2026 auch The Fictory als installierbare App, Freigabe von Christian; seit 17. Oktober 2026 zuerst PHORMA I, die App-Seite `alpha/bildfragmentieren/app/`, Wunsch vom 17. Oktober 2026), «Prompts» (`masterprompts/`: die vier
   Prüfraster in der bisherigen Reihenfolge), «Zettel» (führt direkt in den Zettelkasten, `zu-seiner-zeit/`) und
