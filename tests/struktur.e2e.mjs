@@ -383,8 +383,10 @@ await check("Startanimation: neue Sitzung deckt die Seite schwarz ab, spielt das
   const v = await page.evaluate(() => window.__start);
   assert.deepEqual(v.src, ["assets/start-intro-quer.mp4?v=1"], "im Querformat die Fassung 16 : 9");
   assert.equal(v.play, 1);
-  const video = await page.locator("#start video").evaluate((e) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height, muted: e.muted }; });
-  assert.ok(Math.abs(video.w - flaeche.w) < 1 && Math.abs(video.w / video.h - 16 / 9) < 0.01 && video.muted, `16 : 9, so breit wie die Fläche, zuerst stumm (${video.w} × ${video.h})`);
+  const video = await page.locator("#start video").evaluate((e) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height, x: r.left + r.width / 2, y: r.top + r.height / 2, muted: e.muted }; });
+  const [vw, vh] = await page.evaluate(() => [innerWidth, innerHeight]), voll = Math.min(vw, (vh * 16) / 9);   // wie 100vw / 100vh (mit dem Streifen des Bildlaufbalkens)
+  assert.ok(Math.abs(video.w - 0.67 * voll) < 2 && Math.abs(video.w / video.h - 16 / 9) < 0.01 && video.muted, `16 : 9, zwei Drittel so gross wie das Fenster («ein Drittel kleiner»), zuerst stumm (${video.w} × ${video.h})`);
+  assert.ok(Math.abs(video.x - flaeche.w / 2) < 2 && Math.abs(video.y - flaeche.h / 2) < 2, `mittig im Schwarz (${video.x} / ${video.y})`);
   const knopf = await page.getByRole("button", { name: "Skip intro" }).evaluate((e) => { const r = e.getBoundingClientRect(), c = getComputedStyle(e); return { r: r.right, b: r.bottom, h: r.height, farbe: c.color, rand: c.borderTopColor, radius: parseFloat(c.borderTopLeftRadius), innen: innerWidth }; });
   assert.equal(knopf.farbe, "rgb(240, 138, 93)", "Schrift orange (auf Schwarz lesbar)");
   assert.equal(knopf.rand, "rgb(240, 138, 93)", "Rahmen orange");
