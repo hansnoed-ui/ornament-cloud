@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hochrendern – Ornament Cloud · Alpha</title>
+  <!--
+    Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14).
+    Prototyp vom 19. Oktober 2026 (Wunsch: «Ich möchte allgemein Video hochrendern können … Upscaler-Webseite»): ein fertiges Video Bild für Bild
+    mit Real-ESRGAN (kompakte Fassung, BSD-3) auf der Grafikkarte des eigenen Geräts hochrechnen, ×2 oder ×4, als MP4 mit Ton. Dieselben Netze wie
+    im Werkzeug tools/hochrendern/ (dort auf dem Prozessor); hier in WebGPU (netz.js). Steht für sich wie PHORMA I–III (Ausnahme in
+    tests/navigation.test.mjs): ohne die Navigation oben links.
+  -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Hochrendern: ein Video mit KI (Real-ESRGAN) auf doppelte oder vierfache Auflösung hochrechnen und Schrift darüberlegen, auf der Grafikkarte deines Geräts, als MP4 mit Ton – alles im Browser.">
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="../../styles.css?v=46">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="../../vendor/schriften/schriften.css">
+  <style>@font-face { font-family: "Inter Display"; font-style: normal; font-weight: 600; font-display: swap; src: url(../../vendor/fonts/inter-display-600-latin.woff2) format("woff2"); }</style>
+  <style>
+    .site-header { padding-bottom: 12px; }
+    .karte { display: grid; gap: 28px; padding-bottom: 48px; }
+    @media (min-width: 900px) { .karte { grid-template-columns: minmax(300px, 1fr) minmax(320px, 440px); align-items: start; } .buehne { position: sticky; top: 16px; } }
+
+    .buehne { display: grid; gap: 10px; min-width: 0; }
+    .rahmen { position: relative; display: grid; place-items: center; min-height: 240px; max-height: 78vh; border-radius: var(--radius); overflow: hidden; background: #000;
+      box-shadow: 0 1px 0 var(--border), 0 18px 40px -24px rgba(0, 0, 0, 0.6); }
+    .rahmen video, .rahmen canvas { display: block; max-width: 100%; max-height: 78vh; }
+    .rahmen.eins { place-items: start; overflow: auto; }
+    .rahmen.eins canvas { max-width: none; max-height: none; }
+    .leer { position: absolute; inset: 0; display: grid; place-content: center; gap: 8px; padding: 24px; text-align: center; color: #9a9a9a; pointer-events: none;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.85rem; letter-spacing: 0.06em; }
+    .leer p { margin: 0; }
+    .leer .gross { font-size: 1rem; color: #f2f2f2; text-transform: uppercase; letter-spacing: 0.14em; }
+    .marken { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; pointer-events: none;
+      font: 500 0.72rem/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
+    .marken span { padding: 5px 7px; border-radius: 6px; background: rgba(0, 0, 0, 0.55); }
+    .rahmen.eins .marken { position: sticky; }
+    .zeitleiste, .teiler { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+    .zeitleiste input, .teiler input { width: 100%; min-width: 0; accent-color: var(--accent); }
+    .zeitleiste output, .teiler output { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .info { margin: 0; color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+
+    .schritte { display: grid; gap: 26px; margin: 0; padding: 0; list-style: none; counter-reset: schritt; }
+    .schritte > li { display: grid; gap: 10px; counter-increment: schritt; }
+    .schritte h2 { display: flex; gap: 12px; align-items: baseline; margin: 0; font-family: "Newsreader", var(--serif); font-weight: 400; font-size: 1.45rem; }
+    .schritte h2::before { content: counter(schritt); display: inline-grid; place-content: center; flex: none; width: 1.7rem; height: 1.7rem; border: 1px solid var(--text); border-radius: 50%;
+      font-family: "Instrument Sans", var(--font); font-size: 0.85rem; font-weight: 500; transform: translateY(-0.15em); }
+    .schritte p { margin: 0; color: var(--muted); }
+
+    .ablage { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; padding: 18px; border: 1.5px dashed var(--border); border-radius: var(--radius); background: var(--surface); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+    .ablage:hover, .ablage.drueber { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+    .ablage:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ablage input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .plus { display: grid; place-content: center; width: 72px; height: 72px; border-radius: 50%; background: var(--text); color: var(--bg); flex: none; }
+    .plus svg { width: 34px; height: 34px; }
+    .ablage b { display: block; font-size: 1.15rem; font-weight: 600; }
+    .ablage-text > span { display: block; margin-top: 2px; color: var(--muted); font-size: 0.92rem; overflow-wrap: anywhere; }
+
+    .leiste { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .knopf { min-height: 44px; padding: 8px 18px; border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.95rem;
+      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .knopf:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .knopf:disabled { opacity: 0.45; cursor: default; }
+    .knopf.haupt { background: var(--text); color: var(--bg); font-weight: 600; }
+    .knopf.haupt:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 85%, var(--bg)); }
+    .knopf.klein { min-height: 36px; padding: 4px 14px; font-size: 0.88rem; }
+    .knopf:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .tafel { display: grid; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .einstellung { display: grid; gap: 10px; padding: 16px; }
+    .einstellung + .einstellung { border-top: 1px solid var(--border); }
+    .name { font-weight: 600; }
+    .einstellung small { color: var(--muted); font-size: 0.86rem; }
+    .segment { display: grid; grid-auto-columns: 1fr; grid-auto-flow: column; padding: 3px; border: 1px solid var(--border); border-radius: 999px; }
+    .segment button { display: inline-flex; align-items: center; justify-content: center; min-width: 0; min-height: 42px; padding: 4px 6px; border: 0; border-radius: 999px;
+      background: none; color: var(--text); font: inherit; font-size: 0.88rem; line-height: 1.15; white-space: nowrap; cursor: pointer; }
+    .segment button[aria-pressed="true"] { background: var(--text); color: var(--bg); font-weight: 600; }
+    .segment button:disabled { opacity: 0.4; cursor: default; }
+    .segment button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    progress { width: 100%; height: 6px; accent-color: var(--accent); }
+    .meldung { margin: 0; min-height: 1.5em; }
+    .meldung.fehler { color: var(--accent); }
+    .ergebnis { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .ergebnis h2::before { display: none; }
+    .ergebnis video { display: block; width: 100%; max-height: 60vh; border-radius: 8px; background: #000; }
+    .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
+    .hinweise li { margin: 0.2rem 0; }
+    .schrift-ebene { position: absolute; left: 0; top: 0; touch-action: none; cursor: default; }
+    .schrift-ebene.greifbar { cursor: grab; }
+    .schrift-ebene.zieht { cursor: grabbing; }
+    .ebenen { display: flex; flex-wrap: wrap; gap: 8px; }
+    .ebenen button { max-width: 100%; min-height: 36px; padding: 4px 14px; border: 1px solid var(--border); border-radius: 999px; background: none; color: var(--text); font: inherit;
+      font-size: 0.9rem; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ebenen button[aria-pressed="true"] { border-color: var(--text); background: color-mix(in srgb, var(--text) 8%, transparent); font-weight: 600; }
+    .feld { display: grid; gap: 6px; }
+    .feld > span, .raster label > span { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .feld textarea { min-height: 60px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font: 600 1.1rem/1.3 var(--font); resize: vertical; }
+    .schriften { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; max-height: 260px; overflow: auto; padding: 2px; }
+    .schriften button { min-height: 52px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); cursor: pointer;
+      font-size: 1.05rem; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .schriften button[aria-pressed="true"] { border-color: var(--text); box-shadow: inset 0 0 0 1px var(--text); }
+    .schriften button:focus-visible, .ebenen button:focus-visible, .lagen button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .raster { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px 16px; align-items: end; }
+    .raster label { display: grid; gap: 6px; }
+    .raster select, .raster input[type="number"] { min-height: 40px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); font: inherit; min-width: 0; }
+    .raster input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .raster input[type="color"] { width: 100%; height: 40px; padding: 2px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }
+    .haken { display: flex !important; align-items: center; gap: 8px !important; min-height: 40px; }
+    .haken input { width: 18px; height: 18px; accent-color: var(--accent); }
+    .lagen { display: grid; grid-template-columns: repeat(3, 40px); gap: 4px; }
+    .lagen button { width: 40px; height: 30px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); cursor: pointer; position: relative; }
+    .lagen button::after { content: ""; position: absolute; inset: 11px 16px; border-radius: 2px; background: var(--muted); }
+    .lage-zeile { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>Hochrendern</h1>
+      <p class="lead">Ein Video mit KI auf doppelte oder vierfache Auflösung hochrechnen und Schrift darüberlegen – auf der Grafikkarte deines Geräts.</p>
+    </div>
+  </header>
+
+  <p class="wrap meldung fehler" id="startfehler" role="alert" hidden></p>
+  <main class="wrap karte" id="karte">
+    <section class="buehne" aria-label="Vorschau">
+      <div class="rahmen" id="rahmen">
+        <video id="quelle" muted playsinline preload="auto" hidden></video>
+        <canvas id="vergleich" hidden aria-label="Vergleich vorher und nachher"></canvas>
+        <canvas id="schrift" class="schrift-ebene" hidden aria-label="Schrift über dem Video, zum Verschieben ziehen"></canvas>
+        <div class="marken" id="marken" hidden><span>Vorher</span><span>KI</span></div>
+        <div class="leer" id="leer">
+          <p class="gross">Kein Signal</p>
+          <p>Wähle ein Video.</p>
+        </div>
+      </div>
+      <div class="zeitleiste">
+        <button class="knopf klein" type="button" id="spielen" disabled>Abspielen</button>
+        <input type="range" id="zeit" min="0" max="1" step="0.001" value="0" disabled aria-label="Stelle im Video">
+        <output id="zeitcode" for="zeit">0,0 s</output>
+      </div>
+      <div class="teiler" id="teiler-leiste" hidden>
+        <button class="knopf klein" type="button" id="lupe" aria-pressed="false">1 : 1</button>
+        <input type="range" id="teiler" min="0" max="1" step="0.001" value="0.5" aria-label="Grenze zwischen vorher und nachher">
+        <button class="knopf klein" type="button" id="zurueck">Video</button>
+      </div>
+      <p class="info" id="info">MP4, MOV oder WebM</p>
+      <p class="info" id="schaetzung"></p>
+    </section>
+
+    <div>
+      <ol class="schritte">
+        <li>
+          <h2>Video wählen</h2>
+          <label class="ablage" id="ablage">
+            <span class="plus" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+            <span class="ablage-text"><b id="ablage-titel">Video wählen</b><span id="ablage-name">oder hierher ziehen. Es bleibt auf deinem Gerät.</span></span>
+            <input type="file" id="datei" accept="video/*,.mp4,.mov,.m4v,.webm" aria-label="Video wählen">
+          </label>
+        </li>
+        <li>
+          <h2>Einstellen</h2>
+          <section class="tafel" aria-label="Einstellungen">
+            <div class="einstellung">
+              <span class="name" id="modell-titel">Art des Videos</span>
+              <div class="segment" role="group" aria-labelledby="modell-titel">
+                <button type="button" data-modell="grafik">Grafik, Animation</button>
+                <button type="button" data-modell="foto">Film, Foto</button>
+              </div>
+              <small>Grafik: Schrift, Linien, Renderings, Comics – glatte Flächen, schneller. Film: gefilmtes Material mit Körnung. Im Zweifel beide als Probe vergleichen.</small>
+            </div>
+            <div class="einstellung">
+              <span class="name" id="faktor-titel">Vergrösserung</span>
+              <div class="segment" role="group" aria-labelledby="faktor-titel">
+                <button type="button" data-faktor="1">× 1</button>
+                <button type="button" data-faktor="2">× 2</button>
+                <button type="button" data-faktor="4">× 4</button>
+              </div>
+              <small id="faktor-info">Höchstens 4K (rund 8,3 Millionen Pixel je Bild). × 1: ohne KI, nur Schrift.</small>
+            </div>
+          </section>
+        </li>
+        <li>
+          <h2>Schrift</h2>
+          <p>Text über das Video legen, in der Vorschau an seinen Platz ziehen. Gezeichnet wird in der vollen Auflösung des Ergebnisses.</p>
+          <div class="ebenen" id="ebenen" role="group" aria-label="Schriften im Video"></div>
+          <div class="leiste"><button class="knopf klein" type="button" id="ebene-neu">+ Schrift</button></div>
+          <section class="tafel" id="editor" hidden aria-label="Schrift bearbeiten">
+            <div class="einstellung"><label class="feld"><span>Text</span><textarea id="s-text" rows="2" maxlength="300" autocomplete="off"></textarea></label></div>
+            <div class="einstellung">
+              <span class="name" id="s-schriften-titel">Schrift</span>
+              <div class="schriften" id="s-schriften" role="group" aria-labelledby="s-schriften-titel"></div>
+            </div>
+            <div class="einstellung raster">
+              <label><span>Grösse</span><input type="range" id="s-groesse" min="0.02" max="0.3" step="0.005"></label>
+              <label><span>Laufweite</span><input type="range" id="s-laufweite" min="-0.06" max="0.4" step="0.01"></label>
+              <label class="haken"><input type="checkbox" id="s-versalien"> Versalien</label>
+              <label><span>Farbe</span><input type="color" id="s-farbe"></label>
+              <label><span>Stil</span><select id="s-stil"></select></label>
+              <label><span>Zweite Farbe</span><input type="color" id="s-zweite"></label>
+            </div>
+            <div class="einstellung">
+              <span class="name">Ausrichtung und Lage</span>
+              <div class="lage-zeile">
+                <div class="segment" role="group" aria-label="Ausrichtung">
+                  <button type="button" data-ausrichtung="left">links</button>
+                  <button type="button" data-ausrichtung="center">Mitte</button>
+                  <button type="button" data-ausrichtung="right">rechts</button>
+                </div>
+                <div class="lagen" id="lagen" role="group" aria-label="Lage im Bild"></div>
+              </div>
+              <small>Oder in der Vorschau ziehen.</small>
+            </div>
+            <div class="einstellung raster">
+              <label><span>Ab Sekunde</span><input type="number" id="s-von" min="0" step="0.1"></label>
+              <label><span>Bis Sekunde</span><input type="number" id="s-bis" min="0" step="0.1" placeholder="Schluss"></label>
+              <label><span>Auftritt</span><select id="s-auftritt"></select></label>
+            </div>
+            <div class="einstellung"><div class="leiste"><button class="knopf klein" type="button" id="ebene-weg">Diese Schrift entfernen</button></div></div>
+          </section>
+        </li>
+        <li>
+          <h2>Probe ansehen</h2>
+          <p>Rechnet das Bild an der gewählten Stelle und zeigt vorher und nachher; mit «1 : 1» in voller Grösse.</p>
+          <div class="leiste"><button class="knopf" type="button" id="probe" disabled>Probe rechnen</button></div>
+        </li>
+        <li>
+          <h2>Hochrendern</h2>
+          <p>Bild für Bild auf der Grafikkarte, dann als MP4 mit Ton. Lass die Seite sichtbar, bis es fertig ist.</p>
+          <div class="leiste">
+            <button class="knopf haupt" type="button" id="los" disabled>Video hochrendern</button>
+            <button class="knopf" type="button" id="abbrechen" hidden>Abbrechen</button>
+          </div>
+          <progress id="fortschritt" max="1" value="0" hidden></progress>
+          <p class="meldung" id="meldung" role="status" aria-live="polite"></p>
+          <section class="ergebnis" id="ergebnis" hidden aria-labelledby="ergebnis-titel">
+            <h2 id="ergebnis-titel">Dein Video</h2>
+            <video id="film" controls playsinline></video>
+            <p class="info" id="film-info"></p>
+            <div class="leiste"><a class="knopf haupt" id="laden" href="#" download>Herunterladen</a></div>
+          </section>
+        </li>
+      </ol>
+    </div>
+  </main>
+
+  <div class="wrap">
+    <ul class="hinweise">
+      <li>Alles bleibt in deinem Browser: das Video wird nicht hochgeladen, gerechnet wird auf der Grafikkarte deines Geräts (WebGPU: Chrome und Edge, Safari ab 26, Firefox unter Windows).</li>
+      <li>Das Netz ist Real-ESRGAN in der kompakten Fassung von Xintao Wang und anderen (BSD-3-Lizenz), dasselbe wie im Werkzeug des Repositorys auf dem Prozessor.</li>
+      <li>Eigene Animationen werden schärfer, wenn sie gleich in höherer Auflösung gerechnet werden: <a href="../phorma-iii/">PHORMA III</a> kann das am Computer selbst («Auflösung: doppelt»).</li>
+      <li>Ausgabe: MP4 (H.264, wo der Browser es kann, sonst VP9), Bildrate und Länge wie das Original, der Ton neu kodiert (AAC).</li>
+      <li>Schriften: 24 freie Schriften (SIL Open Font License, Permanent Marker Apache 2.0; über Fontsource), lokal auf dieser Website – beim Zeichnen wird nichts von aussen geholt.</li>
+    </ul>
+  </div>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+      <p><a href="../../impressum/">Impressum</a></p>
+    </div>
+  </footer>
+  <script>
+    // Fehler sichtbar statt einer stummen Seite (wie in PHORMA III)
+    (function () {
+      function zeigen(text) { var k = document.getElementById("startfehler"); if (k) { k.textContent = "Hochrendern: " + text; k.hidden = false; } }
+      window.addEventListener("error", function (e) { zeigen((e.message || "unbekannt") + (e.filename ? " (" + e.filename.split("/").pop() + ":" + e.lineno + ")" : "")); });
+      window.addEventListener("unhandledrejection", function (e) { zeigen(String((e.reason && e.reason.message) || e.reason)); });
+    })();
+  </script>
+  <script type="module" src="app.js?v=1"></script>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+</body>
+</html>

@@ -8,12 +8,12 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { ziel, quadMaterial } from "./gemeinsam.js?v=18";
-import { FPS, kette, laufend } from "./ablauf.js?v=18";
-import { gewebe } from "./gewebe.js?v=18";
-import { irrfahrt } from "./irrfahrt.js?v=18";
-import { traube } from "./traube.js?v=18";
-import { video } from "./video.js?v=18";
+import { ziel, quadMaterial } from "./gemeinsam.js?v=19";
+import { FPS, kette, laufend } from "./ablauf.js?v=19";
+import { gewebe } from "./gewebe.js?v=19";
+import { irrfahrt } from "./irrfahrt.js?v=19";
+import { traube } from "./traube.js?v=19";
+import { video } from "./video.js?v=19";
 
 const FABRIK = { gewebe, irrfahrt, lichtwuerfel: (g, teil) => irrfahrt(g, teil, { fest: true }), traube, video };
 
@@ -44,9 +44,10 @@ const AUSGABE = /* glsl */ `
 /**
  * Die Bühne für ein Bild (Canvas in Filmgrösse B × H) und seine Analyse; ablauf: "gewebe" | "irrfahrt" | "lichtwuerfel" | "traube" | "video". optionen: grob (Telefon), test (klein), quelle ("foto" | "text" | "video" |
  * "ton"), ton (Analyse einer Tonspur, ton.js, oder null), laenge (Dauer des Gewebes nach der Tonspur), signet (mit Logo am Schluss), saetze (Bilder
- * aus dem Video), film (die Filmspur für den Effekt Video: { bild(t, { vorschau }), karte(t), index(t), n }). bild(zeit, t, w, h, { proben, verschluss, vorschau }) → Leinwand; zaehler(zeit, t) → Text für die Beschriftung; entsorgen().
+ * aus dem Video), film (die Filmspur für den Effekt Video: { bild(t, { vorschau }), karte(t), index(t), n }), gross (dasselbe Bild in der Auflösung
+ * des Exports, wenn sie grösser ist als B × H: nur als Textur). bild(zeit, t, w, h, { proben, verschluss, vorschau }) → Leinwand; zaehler(zeit, t) → Text für die Beschriftung; entsorgen().
  */
-export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "foto", ton = null, laenge = null, signet = false, saetze = null, film = null, onVerloren = null, spur = () => {} } = {}) {
+export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "foto", ton = null, laenge = null, signet = false, saetze = null, film = null, gross = null, onVerloren = null, spur = () => {} } = {}) {
   const B = foto.width, H = foto.height;
   const canvas = typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(B, H);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
@@ -55,11 +56,31 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
   let verloren = false, entsorgt = false;
   canvas.addEventListener?.("webglcontextlost", (e) => { e.preventDefault(); verloren = true; if (!entsorgt) onVerloren?.(); });   // nicht beim eigenen Freigeben
   renderer.setPixelRatio(1); renderer.autoClear = false;
-  const fotoTex = new THREE.CanvasTexture(foto);
+  const fotoTex = new THREE.CanvasTexture(gross ?? foto);
   fotoTex.colorSpace = THREE.SRGBColorSpace; fotoTex.anisotropy = 4;
   const quad = new FullScreenQuad();
-  const g = { THREE, renderer, quad, foto, fotoTex, A, B, H, grob, test, quelle, ton, saetze, signet, film,
+  const pixel = new THREE.Vector2();
+  const g = { THREE, renderer, quad, foto, fotoTex, A, B, H, grob, test, quelle, ton, saetze, signet, film, strich: 1,
     pass(material, rt) { renderer.setRenderTarget(rt); quad.material = material; quad.render(renderer); },
+    // Linien zeichnet WebGL immer 1 px breit. Ist das Ziel k-mal so gross wie der Film (strich, Export in doppelter Auflösung), zeichnet fein() die
+    // linien k × k Mal, je um einen Pixel versetzt, mit 1/k der Tinte (uStrich): so sind sie k px breit und das Bild gleicht dem einfachen, nur
+    // schärfer. Nur mehr Tinte je Linie genügte nicht: beim Farbsaum liefen die Kanäle der dünnen Linien grün und violett auseinander.
+    fein(szene, kam, linien) {
+      const k = g.strich, mats = linien.map((l) => l.material);
+      for (const m of mats) m.uniforms.uStrich.value = 1 / k;
+      renderer.render(szene, kam);
+      if (k === 1) return;
+      const sichtbar = szene.children.map((o) => o.visible);
+      szene.children.forEach((o) => { o.visible = linien.includes(o); });
+      renderer.getSize(pixel);
+      for (let i = 0; i < k; i++) for (let j = 0; j < k; j++) {
+        if (!i && !j) continue;
+        for (const m of mats) m.uniforms.uVersatz.value.set((2 * i) / pixel.x, (2 * j) / pixel.y);
+        renderer.render(szene, kam);
+      }
+      szene.children.forEach((o, n) => { o.visible = sichtbar[n]; });
+      for (const m of mats) m.uniforms.uVersatz.value.set(0, 0);
+    },
     loeschen(rt, farbe = 0x000000) { renderer.setRenderTarget(rt); renderer.setClearColor(farbe, 1); renderer.clear(true, true, true); } };
   const K = kette({ art: ablauf, laenge, signet }), art = K.teile[0].art;
   g.ablaufDauer = K.dauer;
@@ -71,7 +92,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
   const ausgabe = quadMaterial(AUSGABE, { tSumme: { value: null }, tFoto: { value: fotoTex }, uEnde: { value: 0 }, uAktiv: { value: 0 }, uSaumStaerke: { value: 0 }, uKorn: { value: 0.05 }, uUmkehr: { value: 0 }, uBelichtung: { value: 0 }, uKontrast: { value: 0 }, uBild: { value: 0 } });
   function groesse(nw, nh) {
     if (nw === w && nh === h) return;
-    w = nw; h = nh;
+    w = nw; h = nh; g.strich = Math.max(1, Math.round(w / B));
     renderer.setSize(w, h, false);
     for (const r of [rtMix, rtSumme]) r?.dispose();
     // HalfFloat: Mischen in Float32 braucht EXT_float_blend, das viele Telefone nicht haben; mit Tiefe, wenn der Effekt sie braucht (die Traube)

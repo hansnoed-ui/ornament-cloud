@@ -250,6 +250,13 @@
                 <button type="button" data-format="16:9">16 : 9 quer</button>
               </div>
             </div>
+            <div class="einstellung" id="aufloesung">
+              <span class="name" id="aufloesung-titel">Auflösung</span>
+              <div class="segment" role="group" aria-labelledby="aufloesung-titel">
+                <button type="button" data-aufloesung="1">einfach</button>
+                <button type="button" data-aufloesung="2">doppelt (4K)</button>
+              </div>
+            </div>
           </section>
         </li>
         <li>
@@ -322,7 +329,7 @@
         </li>
         <li>
           <h2>Video</h2>
-          <p>Das Video rechnet Bild für Bild in voller Grösse; mit Bewegungsunschärfe acht Proben je Bild – das dauert einige Minuten.</p>
+          <p>Das Video rechnet Bild für Bild in voller Grösse; mit Bewegungsunschärfe acht Proben je Bild – das dauert einige Minuten, in doppelter Auflösung etwa viermal so lange.</p>
           <div class="leiste">
             <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
             <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
@@ -347,7 +354,7 @@
     </div>
     <ul class="hinweise">
       <li>Alles bleibt in deinem Browser: Foto, Video und Musik werden nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
-      <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories) oder quer 16 : 9 (1920 × 1080, für Bildschirme und Websites); Foto und Video werden bei Bedarf mittig beschnitten.</li>
+      <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories) oder quer 16 : 9 (1920 × 1080, für Bildschirme und Websites); Foto und Video werden bei Bedarf mittig beschnitten. Am Computer auf Wunsch in doppelter Auflösung (2160 × 2700, 2160 × 3840 oder 3840 × 2160): neu gerechnet, nicht hochskaliert.</li>
       <li>Video: MP4 (H.264), 30 Bilder pro Sekunde, mit Ton (AAC) wenn eine Audiodatei gewählt ist. PHORMA III braucht WebGL 2.</li>
       <li>Für Fotos gibt es <a href="../phorma-ii/">PHORMA II</a>: ein Schleimpilz findet die Formen, das Foto wird Raum und weht als Seidentuch.</li>
     </ul>
@@ -379,8 +386,8 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=18"></script>
-  <script type="module" src="pwa.js?v=18"></script>
+  <script type="module" src="app.js?v=19"></script>
+  <script type="module" src="pwa.js?v=19"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

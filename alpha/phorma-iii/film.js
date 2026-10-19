@@ -1,22 +1,22 @@
 // PHORMA III – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann das Gewebe aus der Bühne (WebGL,
 // buehne.js) mit den Textfragmenten, danach das Bild, darüber die Beschriftung; mit Signet am Schluss das Logo, das aus dem Gewebe entsteht, mit
 // getipptem Schriftzug und verfrickelt im Takt.
-import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=18";
+import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=19";
 import { punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=18";
-import { zufall } from "./analyse.js?v=18";
+import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=19";
+import { zufall } from "./analyse.js?v=19";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
 
-/** Szene: { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel, fragmente, schnitte, nacht, logo }; text: für die Fragmente, ton: Analyse
- *  einer Tonspur, laenge: Dauer des Gewebes nach ihr */
+/** Szene: { breite, hoehe, faktor, zeit, foto, buehne, signet, beschriftung, titel, fragmente, schnitte, nacht, logo }; text: für die Fragmente, ton: Analyse
+ *  einer Tonspur, laenge: Dauer des Gewebes nach ihr; faktor: Export in breite × hoehe mal so viel (gezeichnet wird immer in breite × hoehe) */
 export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = true, beschriftung = true, titel = "", foto = null, buehne = null,
-  ablauf = "gewebe", text = "", ton = null, laenge = null } = {}) {
+  ablauf = "gewebe", text = "", ton = null, laenge = null, faktor = 1 } = {}) {
   const zeit = zeitachse({ tempo, signet, laenge, ablauf }), irr = zeit.ablauf === "irrfahrt" || zeit.ablauf === "lichtwuerfel", vid = zeit.ablauf === "video";
   const trb = zeit.ablauf === "traube";
   // halten: die Irrfahrt, die Traube und das Video haben kein Stehen auf dem Bild – nach dem Effekt hält ihr letztes Bild
-  const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA III").trim(), fragmente: [], schnitte: [], nacht: [], logo: null, halten: irr || trb || vid };
+  const sz = { breite, hoehe, faktor, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA III").trim(), fragmente: [], schnitte: [], nacht: [], logo: null, halten: irr || trb || vid };
   const T = tonOderErsatz(ton), G = zeit.phasen.find((p) => p.name === (irr ? "irrfahrt" : zeit.ablauf));   // der Lichtwürfel hat die Phasen der Irrfahrt
   // die Schnitte zählen wie im Gewebe in der Zeit des Effekts (Vorlauf 0,4 s, ohne Tonspur im Tempo gestreckt)
   const f = zeit.tempo, film = (s) => 0.4 + (s - 0.4) * f, effekt = (s) => 0.4 + (s - 0.4) / f;
@@ -249,7 +249,7 @@ function beschriftung(ctx, sz, t, sicht) {
   const lb = Math.min(260 * s, B * 0.3), ly = unten - g * 1.9 + g * 0.55;
   ctx.globalAlpha = sicht * 0.3; ctx.fillRect(B - rand - lb, ly - 1, lb, 2 * s);
   ctx.globalAlpha = sicht * 0.85; ctx.fillRect(B - rand - lb, ly - 1, lb * fort, 2 * s);
-  ctx.textAlign = "right"; ctx.globalAlpha = sicht * 0.55; ctx.fillText(`${B}×${H} · ${FPS} fps`, B - rand, unten);
+  ctx.textAlign = "right"; ctx.globalAlpha = sicht * 0.55; ctx.fillText(`${B * (sz.faktor ?? 1)}×${H * (sz.faktor ?? 1)} · ${FPS} fps`, B - rand, unten);
   ctx.restore();
 }
 
