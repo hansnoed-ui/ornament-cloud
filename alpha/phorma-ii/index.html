@@ -15,6 +15,7 @@
     Seit 19. Oktober 2026 die Montage (Wunsch nach dem Clip «UVA»: «eine neue Animation für Bilder … in diesem Stil»): verschachtelte Rechtecke mit
     versetzten Ausschnitten, feinen Rändern und Zahlentafeln, harte Schnitte im Takt; einzeln oder am Schluss einer eigenen Kette. Dann auch das
     Signet am Schluss in diesem Stil.
+    Seit 19. Oktober 2026 das Wachstum (Wunsch nach dem Clip «algorigraph»): eine leuchtende Linie wächst aus einem Keim und zeichnet das Foto.
   -->
   <meta name="robots" content="noindex">
   <meta name="description" content="PHORMA II: Ein Schleimpilz findet die Formen deines Fotos, dann wird das Foto Raum und fällt als Seidentuch – als Video im Hochformat für Social Media, alles im Browser.">
@@ -106,6 +107,8 @@
     .ablaeufe button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .effekte-hinweis { margin: 14px 0 6px; }
     .effekte button { padding: 4px 2px; font-size: 0.92rem; }
+    /* fünf Schalter (seit dem Wachstum) passen auf dem Telefon nicht in eine Reihe: dort drei und zwei */
+    @media (max-width: 560px) { .segment.effekte { grid-auto-flow: row; grid-template-columns: repeat(3, 1fr); border-radius: 22px; } }
     .kette { margin: 6px 0 0; min-height: 1.3em; color: var(--muted); font-size: 0.84rem; }
     [data-grund="schwarz"] .muster { background: #000; }
     [data-grund="weiss"] .muster { background: #fff; }
@@ -135,7 +138,7 @@
   <header class="site-header">
     <div class="wrap">
       <h1>PHORMA II</h1>
-      <p class="lead">Ein Schleimpilz aus hunderttausend Agenten findet die Formen deines Fotos, dann bekommt das Foto Tiefe und wird Raum – dann weht es als Seidentuch und legt sich glatt. Oder es zerfällt im Takt in verschachtelte Rechtecke, bis alles einrastet. Jeder Effekt einzeln oder als Kette. Als Video für Social Media.</p>
+      <p class="lead">Ein Schleimpilz aus hunderttausend Agenten findet die Formen deines Fotos, dann bekommt das Foto Tiefe und wird Raum – dann weht es als Seidentuch und legt sich glatt. Oder eine leuchtende Linie wächst aus einem Keim und zeichnet es, oder es zerfällt im Takt in verschachtelte Rechtecke, bis alles einrastet. Jeder Effekt einzeln oder als Kette. Als Video für Social Media.</p>
     </div>
   </header>
 
@@ -200,6 +203,7 @@
             <button type="button" data-wahl="physarum" aria-pressed="false"><b>Physarum</b><small>Hunderttausende Agenten strömen aus Keimen und bilden ein leuchtendes Netz, das die Formen deines Fotos findet</small></button>
             <button type="button" data-wahl="tiefe" aria-pressed="false"><b>Tiefe</b><small>Eine Lichtebene tastet das Bild ab, dann wird es Raum: Parallaxe, Tiefenschichten, wandernde Schärfe</small></button>
             <button type="button" data-wahl="tuch" aria-pressed="false"><b>Tuch</b><small>Das Foto als Seidentuch im Wind – eine Stoffsimulation –, das sich zuletzt glatt zum Bild legt</small></button>
+            <button type="button" data-wahl="wachstum" aria-pressed="false"><b>Wachstum</b><small>Eine einzige leuchtende Linie wächst aus einem Keim, faltet sich und zeichnet dein Foto – dicht im Hellen, weit im Dunkeln –, nimmt seine Farben an und wird zum Bild</small></button>
             <button type="button" data-wahl="montage" aria-pressed="false"><b>Montage</b><small>Das Foto zerfällt im Takt in verschachtelte Rechtecke – vergrössert, versetzt, zu Streifen gezogen, mit feinen Rändern und Zahlentafeln –, bis alles einrastet</small></button>
           </div>
           <p class="effekte-hinweis">Oder eine eigene Kette zusammenstellen:</p>
@@ -207,6 +211,7 @@
             <button type="button" data-effekt="physarum" aria-pressed="true">Physarum</button>
             <button type="button" data-effekt="tiefe" aria-pressed="true">Tiefe</button>
             <button type="button" data-effekt="tuch" aria-pressed="true">Tuch</button>
+            <button type="button" data-effekt="wachstum" aria-pressed="false">Wachstum</button>
             <button type="button" data-effekt="montage" aria-pressed="false">Montage</button>
           </div>
           <p class="kette" id="kette" aria-live="polite"></p>
@@ -293,7 +298,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=30"></script>
+  <script type="module" src="app.js?v=31"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

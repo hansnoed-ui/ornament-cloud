@@ -1,4 +1,4 @@
-// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Plan der Montage, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, MP4,
+// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Plan der Montage, Bahn des Wachstums, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, MP4,
 // Seite. Die Tests fürs Gewebe (Ton, Höhenlinien, Verfrickeln) stehen seit dem 18. Oktober 2026 in tests/phorma-iii.test.mjs.
 //   node --test tests/phorma-ii.test.mjs
 import test from "node:test";
@@ -163,6 +163,31 @@ test("Tuch: die Bahn wird ganz vorausgerechnet, ist wiederholbar und endet genau
     assert.ok(Math.max(...mitte.map((v, i) => Math.abs(v - a.heim[i]))) > 0.2, `${kette}: dazwischen weht es`);
     if (kette === "tiefe+tuch") assert.ok(Math.abs(a.lagen[2 + 3 * 30] - 0.2 * 0.3) < 1e-6, "nach der Tiefe beginnt es als Relief");
   }
+});
+
+test("Wachstum: die Linie wächst aus dem Keim ins Motiv (nicht in den Grund), dicht im Hellen, wiederholbar", async () => {
+  const W = await import(new URL("wachstumsim.js", P).href);
+  // ein heller Kreis (Motiv) vor einer ruhigen grünen Wand
+  const w = 80, h = 100, rgb = new Uint8ClampedArray(w * h * 4), hell = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x, drin = Math.hypot(x - 40, y - 48) < 26, c = drin ? [200 + (x % 7) * 5, 150, 120] : [150, 205, 185];
+    rgb.set([...c, 255], i * 4); hell[i] = (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255 * (drin && x > 40 ? 1 : 0.6);
+  }
+  const maske = W.wachsfeld({ w, h, rgb });
+  assert.ok(maske && maske[48 * w + 40] > 0.9 && maske[5 * w + 5] < 0.1, "der Grund ist aus der Farbe des Rands erkannt");
+  assert.equal(W.wachsfeld({ w, h, rgb: new Uint8ClampedArray(w * h * 4).fill(128) }), null, "ein einfarbiges Bild: überall");
+  const { abstand } = W.abstandsfeld({ w, h, hell, maske });
+  assert.ok(abstand[48 * w + 60] < abstand[48 * w + 20], "im Hellen enger");
+  const teil = A.kette("wachstum").teile[0], auftrag = { teil, w, h, hell, rgb, dichte: 1.2 };
+  assert.deepEqual(teil.phasen.map((p) => p[0]), ["keim", "wachstum", "farbe", "bild"]);
+  const b = W.wachstumBahn(auftrag), b2 = W.wachstumBahn(auftrag);
+  assert.equal(b.bilder, Math.round((1.2 + 6.6 + 2.4) * 30) + 1);
+  assert.ok(b.anzahl[0] < 40 && b.anzahl.at(-1) > 300, `wächst (${b.anzahl[0]} → ${b.anzahl.at(-1)} Punkte)`);
+  let drin = 0;
+  const n = b.anzahl.at(-1), o = b.ab.at(-2) * 2;
+  for (let i = 0; i < n; i++) { const x = b.lagen[o + i * 2] / W.ACHTEL, y = b.lagen[o + i * 2 + 1] / W.ACHTEL; if (Math.hypot(x - 40, y - 48) < 30) drin++; }
+  assert.ok(drin / n > 0.9, `die Linie bleibt im Motiv (${(100 * drin / n).toFixed(0)} %)`);
+  assert.deepEqual(b.lagen, b2.lagen, "wiederholbar");
 });
 
 test("KI-Tiefe: wird an die Kanten gelegt und auf 0..1 gebracht", () => {
