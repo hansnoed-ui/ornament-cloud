@@ -582,7 +582,7 @@ await check("Alpha: alpha/ listet ORMA; alpha/orma/ läuft unter dem Website-Pfa
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
   await page.goto(`${origin}/alpha/`);
-  await page.getByRole("link", { name: "ORMA" }).click();
+  await page.getByRole("link", { name: "ORMA", exact: true }).click();   // exakt: «PHORMA III» (seit 19. Oktober 2026 auf der Alpha-Seite) enthält «ORMA»
   await page.waitForSelector("html[data-ready]");
   assert.equal(new URL(page.url()).pathname, "/alpha/orma/");
   await tap(page, "Zu zweit beginnen"); await tap(page, "Beginnen"); await tap(page, "Drehen");
