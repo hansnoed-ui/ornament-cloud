@@ -1,0 +1,140 @@
+[
+ {
+  "name": "Space Grotesk",
+  "schnitt": 700,
+  "stil": "normal",
+  "gruppe": "Grotesk"
+ },
+ {
+  "name": "Syne",
+  "schnitt": 800,
+  "stil": "normal",
+  "gruppe": "Grotesk"
+ },
+ {
+  "name": "Unbounded",
+  "schnitt": 700,
+  "stil": "normal",
+  "gruppe": "Grotesk"
+ },
+ {
+  "name": "Bricolage Grotesque",
+  "schnitt": 800,
+  "stil": "normal",
+  "gruppe": "Grotesk"
+ },
+ {
+  "name": "Archivo Black",
+  "schnitt": 400,
+  "stil": "normal",
+  "gruppe": "Grotesk"
+ },
+ {
+  "name": "Manrope",
+  "schnitt": 800,
+  "stil": "normal",
+  "gruppe": "Grotesk"
+ },
+ {
+  "name": "Anton",
+  "schnitt": 400,
+  "stil": "normal",
+  "gruppe": "Plakat"
+ },
+ {
+  "name": "Bebas Neue",
+  "schnitt": 400,
+  "stil": "normal",
+  "gruppe": "Plakat"
+ },
+ {
+  "name": "Big Shoulders Display",
+  "schnitt": 900,
+  "stil": "normal",
+  "gruppe": "Plakat"
+ },
+ {
+  "name": "Oswald",
+  "schnitt": 600,
+  "stil": "normal",
+  "gruppe": "Plakat"
+ },
+ {
+  "name": "Fraunces",
+  "schnitt": 600,
+  "stil": "normal",
+  "gruppe": "Serif"
+ },
+ {
+  "name": "Instrument Serif",
+  "schnitt": 400,
+  "stil": "italic",
+  "gruppe": "Serif"
+ },
+ {
+  "name": "Playfair Display",
+  "schnitt": 800,
+  "stil": "normal",
+  "gruppe": "Serif"
+ },
+ {
+  "name": "DM Serif Display",
+  "schnitt": 400,
+  "stil": "normal",
+  "gruppe": "Serif"
+ },
+ {
+  "name": "Space Mono",
+  "schnitt": 700,
+  "stil": "normal",
+  "gruppe": "Mono"
+ },
+ {
+  "name": "JetBrains Mono",
+  "schnitt": 500,
+  "stil": "normal",
+  "gruppe": "Mono"
+ },
+ {
+  "name": "Major Mono Display",
+  "schnitt": 400,
+  "stil": "normal",
+  "gruppe": "Mono"
+ },
+ {
+  "name": "Monoton",
+  "schnitt": 400,
+  "stil": "normal",
+  "gruppe": "Effekt"
+ },
+ {
+  "name": "Bungee",
+  "schnitt": 400,
+  "stil": "normal",
+  "gruppe": "Effekt"
+ },
+ {
+  "name": "Rubik Glitch",
+  "schnitt": 400,
+  "stil": "normal",
+  "gruppe": "Effekt"
+ },
+ {
+  "name": "Silkscreen",
+  "schnitt": 400,
+  "stil": "normal",
+  "gruppe": "Effekt"
+ },
+ {
+  "name": "Permanent Marker",
+  "schnitt": 400,
+  "stil": "normal",
+  "gruppe": "Hand"
+ },
+ {
+  "name": "Caveat",
+  "schnitt": 700,
+  "stil": "normal",
+  "gruppe": "Hand"
+ }
+]

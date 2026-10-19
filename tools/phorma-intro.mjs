@@ -8,7 +8,8 @@
 // Bildschirmformat» – das Korn ergab in voller Grösse 27 MB, entrauscht und auf 864 px verkleinert wurden die Haarlinien weich und matschig).
 //
 //   NODE_PATH=$(npm root -g) node tools/phorma-intro.mjs <audiodatei> [--ablauf lichtwuerfel|irrfahrt] [--format 16:9|4:5] [--proben 4] [--crf 27]
-//                                                         [--aus …] [--ordner <bilder>]
+//                                                         [--aus …] [--ordner <bilder>] [--faktor 2]
+// --faktor 2: in doppelter Auflösung (3840 × 2160, 2160 × 2700), neu gerechnet wie der Export der Anwendung, nicht hochskaliert; dauert etwa viermal so lange.
 // --ordner: ein Ordner mit schon gerechneten Bildern (nach einem Abbruch); sie werden weiterverwendet, nur das letzte wird neu gerechnet; er bleibt.
 // Braucht ffmpeg. Die Musik des Intros vom 18. Oktober 2026 ist der Ton des Testvideos «Claude_444.mp4» (nicht im Repository); sie steckt auch im
 // Intro selbst: ffmpeg -i assets/start-intro-quer.mp4 -vn ton.wav
@@ -29,6 +30,7 @@ if (!ton) { console.error("Audiodatei fehlt: node tools/phorma-intro.mjs <audiod
 // crf 20 / 27 (hoch fürs Telefon unter 5 MB) und aq-mode 3 (mehr Bits für dunkle, flache Flächen): mit 27 / 30 zerfiel der feine Schein um die Linien auf Schwarz in Blöcke
 // (Rückmeldung zum Lichtwürfel-Intro: «ganz zum Schluss scheint das Logo relativ stark verpixelt»); fast alles ist schwarz, die Dateien bleiben klein
 const ablauf = arg("ablauf", "lichtwuerfel"), format = arg("format", "16:9"), proben = Number(arg("proben", 4)), crf = arg("crf", format === "16:9" ? "20" : "27");
+const faktor = Number(arg("faktor", 1));
 const aus = resolve(root, arg("aus", format === "16:9" ? "assets/start-intro-quer.mp4" : "assets/start-intro.mp4"));
 
 const { startServer } = await import(new URL("tools/serve-orma.mjs", `file://${root}`).href);
@@ -36,9 +38,9 @@ const server = await startServer(0);
 const browser = await playwright.chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
 const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
 page.on("pageerror", (e) => console.error("Fehler:", e.message));
-await page.addInitScript(([ablauf, format]) => {
-  for (const [k, v] of [["ablauf", ablauf], ["quelle", "ton"], ["format", format], ["signet", "1"], ["frickeln", "0"], ["tonart", "musik"]]) localStorage.setItem(`phorma-iii.${k}`, v);
-}, [ablauf, format]);
+await page.addInitScript(([ablauf, format, faktor]) => {
+  for (const [k, v] of [["ablauf", ablauf], ["quelle", "ton"], ["format", format], ["signet", "1"], ["frickeln", "0"], ["tonart", "musik"], ["faktor", faktor]]) localStorage.setItem(`phorma-iii.${k}`, v);
+}, [ablauf, format, String(faktor)]);
 await page.goto(`http://localhost:${server.address().port}/alpha/phorma-iii/`);
 await page.setInputFiles("#tondatei", ton);
 await page.waitForFunction(() => window.__phorma?.ton && window.__phorma?.buehneFertig && window.__phorma?.sz?.buehne, null, { timeout: 300_000 });
@@ -56,8 +58,9 @@ for (let i = ab; i < n; i++) {
   const url = await page.evaluate(async ([t, proben]) => {
     const { bild } = await import(document.querySelector('script[src^="app.js"]').src.replace(/app\.js\?v=(\d+)/, "film.js?v=$1"));
     const S = window.__phorma, sz = { ...S.sz, buehne: S.buehne, beschriftung: false };
-    const c = document.createElement("canvas"); c.width = S.mass[0]; c.height = S.mass[1];
-    bild(c.getContext("2d"), sz, t, { proben });
+    const k = sz.faktor ?? 1, c = document.createElement("canvas"); c.width = S.mass[0] * k; c.height = S.mass[1] * k;
+    const ctx = c.getContext("2d"); ctx.setTransform(k, 0, 0, k, 0, 0);
+    bild(ctx, sz, t, { proben });
     return c.toDataURL("image/png");
   }, [i / 30, proben]);
   writeFileSync(datei(i), Buffer.from(url.split(",")[1], "base64"));

@@ -1,2 +1,6 @@
 # Build-Ausgabe von ORMA (tools/build-orma.ts), wird nicht eingecheckt
 src/orma/dist/
+
+# Python-Umgebung von tools/hochrendern (wird beim ersten Aufruf angelegt)
+tools/hochrendern/.venv/
+tools/hochrendern/__pycache__/
