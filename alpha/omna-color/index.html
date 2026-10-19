@@ -10,6 +10,12 @@
        Seit 2. Oktober 2026: 33 Abschlussfragen offener formuliert (Blatt «Abschlussfragen offen» der Masterbibliothek). -->
   <meta name="robots" content="noindex">
   <meta name="description" content="OMNA COLOR: Zwei Farbräder drehen gegeneinander und wählen eine Gestaltungsübung.">
+  <!-- Als App installierbar (seit 19. Oktober 2026): Manifest, Symbole aus tools/omna-icons.mjs, Service Worker und Knopf in pwa.js; die installierte App startet in rad/ -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#12141b">
+  <meta name="apple-mobile-web-app-title" content="OMNA COLOR">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
   <script>
     // Eingebettet (Startseite der Website, seit 4. Oktober 2026): ohne Hauptlinks und Rand; GoatCounter zählt Rahmen ohnehin nicht
@@ -83,6 +89,14 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--c4); outlin
 .end small { display: block; color: var(--muted); font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2px; }
 .idline { color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
 .empty { color: var(--muted); margin: 0; }
+/* Knopf «OMNA COLOR als App installieren» (seit 19. Oktober 2026, pwa.js), unter «Die Übungen nutzen»; nicht in der installierten App, nicht eingebettet */
+.installieren { margin: 18px 0 0; }
+.app-knopf { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 18px 6px 8px; border: 1px solid var(--fg); border-radius: 999px; background: none; color: var(--fg); font: 500 .95rem var(--body); cursor: pointer; }
+.app-knopf:hover { background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.app-knopf img { width: 30px; height: 30px; border-radius: 7px; display: block; }
+.installieren-hilfe { margin: 10px 0 0; font-size: .9rem; line-height: 1.5; max-width: 36em; }
+.installieren-hilfe span { color: var(--fg); white-space: nowrap; }
+.eingebettet .installieren { display: none; }
 .again { justify-self: start; font: 500 .9rem var(--body); background: none; color: var(--fg); border: 1px solid var(--line); border-radius: 5px; padding: 6px 16px; cursor: pointer; }
 /* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» und darunter «Das Dritte Rad», beide in derselben Farbe (--hauptlink: hell Anthrazit, dunkel ein helles Sonnengelb) und beide als Buttons mit ganz feinem Rahmen,
    der aktive (aria-current) invers: Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite. Darunter steht eine feine Linie in derselben Farbe.
@@ -130,11 +144,11 @@ html.eingebettet body { padding: 4px 4px 8px; background: transparent; }
   </nav>
   <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
   <nav class="menu" aria-label="Hauptmenü">
-    <a class="menu-item" href="../../apps/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg><span>Apps</span></a>
+    <a class="menu-item" href="../../apps/" aria-current="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg><span>Apps</span></a>
     <a class="menu-item" href="../../masterprompts/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-7.5L7 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M7.5 8.5l3 2.25-3 2.25"/><path d="M12.5 13h4"/></svg><span>Prompts</span></a>
-    <a class="menu-item" href="../../web/" aria-current="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5S9.6 5.8 12 3.5z"/></svg><span>Web</span></a>
     <a class="menu-item" href="../../zu-seiner-zeit/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h11.5A1.5 1.5 0 0 1 20 5v11"/><rect x="4" y="6.5" width="13" height="14" rx="1.5"/><path d="M7 10.5h7"/><path d="M7 13.5h7"/><path d="M7 16.5h4"/></svg><span>Zettel</span></a>
     <a class="menu-item" href="../../social-media/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10 4.5 8 19.5"/><path d="M16 4.5l-2 15"/><path d="M5 9.25h14.5"/><path d="M4.5 14.75H19"/></svg><span>Social</span></a>
+    <a class="menu-item" href="../../art/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><rect x="6.5" y="6.5" width="11" height="11" rx="0.5"/><circle cx="10" cy="10" r="1.3"/><path d="M6.5 16c2-2.4 4.2-3.2 6.4-2.3 1.6.6 2.9.4 4.6-.9"/></svg><span>Art</span></a>
   </nav>
 </div>
 <main>
@@ -160,6 +174,10 @@ html.eingebettet body { padding: 4px 4px 8px; background: transparent; }
     <p>Wähle eine Übung und lege das genannte Material bereit. Folge den Schritten und betrachte zum Schluss dein Ergebnis. Du brauchst keine Vorkenntnisse.</p>
     <p>Die Zeitangaben sind ungefähre Richtwerte. Trocknungszeiten kommen bei nasser Farbe hinzu. Bei Übungen mit einer eigenen Arbeit kannst du eine fertige Zeichnung, ein Bild oder eine andere passende Gestaltung verwenden.</p>
     <p>Die Abschlussfragen helfen beim Hinschauen. Auch wenn du keinen deutlichen Unterschied oder keine neue Beobachtung findest, ist die Übung abgeschlossen.</p>
+    <div class="installieren" id="installieren" hidden>
+      <button class="app-knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="icons/icon-192.png" alt="" width="30" height="30"><span>OMNA COLOR als App installieren</span></button>
+      <p class="installieren-hilfe" id="installieren-hilfe" hidden></p>
+    </div>
   </section>
 </main>
 <footer class="kontakt">
@@ -342,6 +360,7 @@ wheel.addEventListener("pointercancel", release);
 })();
 if (/[?&]rad=/.test(location.search)) import("../drittes-rad/weiter.js");   // «Das Dritte Rad»: Auswahl nur mit ?rad=
 </script>
+<script type="module" src="pwa.js?v=1"></script>
 
   <script src="../../icons.js?v=14" defer></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->

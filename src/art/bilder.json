@@ -1,0 +1,50 @@
+{
+ "linienbuendel-1-800": [
+  566,
+  800
+ ],
+ "linienbuendel-1-1600": [
+  1131,
+  1600
+ ],
+ "linienbuendel-edition-1-800": [
+  566,
+  800
+ ],
+ "linienbuendel-edition-1-1600": [
+  1131,
+  1600
+ ],
+ "raster-1-800": [
+  800,
+  796
+ ],
+ "raster-1-1600": [
+  1600,
+  1592
+ ],
+ "omna-color-karten-1-800": [
+  640,
+  800
+ ],
+ "omna-color-karten-1-1600": [
+  640,
+  800
+ ],
+ "phorma-i-1-800": [
+  640,
+  800
+ ],
+ "phorma-i-1-1600": [
+  640,
+  800
+ ],
+ "fictory-1-800": [
+  640,
+  800
+ ],
+ "fictory-1-1600": [
+  640,
+  800
+ ]
+}

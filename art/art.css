@@ -1,0 +1,155 @@
+/* «Art» (seit 19. Oktober 2026): Werke, Editionen, Apps und Gestaltung. Ergänzt styles.css; Seiten erzeugt von tools/build-art.mjs.
+   Haltung: eine ruhige Werkschau mit Preisen, kein Shop. Das Werk wird nie beschnitten (4 : 5 ist der Rahmen, nicht der Ausschnitt), es liegt auf einem
+   Papierton wie in einem Passepartout; Bedienung nur als Text und feine Linie, keine Badges; Zahlen in Tabellenziffern; Bewegung nur als Überblendung. */
+
+:root {
+  --papier: #efebe4;          /* Grund unter den Werken: neutral, leicht warm, im dunklen Modus ein Mittelton (Bilder werden nie umgefärbt) */
+  --papier-schatten: rgba(31, 29, 26, 0.16);
+  --frei: #3f7d4e;            /* Punkt «verfügbar» */
+  --knapp: #b8862b;           /* Punkt «reserviert», «noch wenige» */
+  --vergeben: #b3304d;        /* der rote Punkt der Galerien: verkauft */
+}
+@media (prefers-color-scheme: dark) {
+  :root { --papier: #2a2824; --papier-schatten: rgba(0, 0, 0, 0.45); --frei: #6fbf83; --knapp: #e4b83c; --vergeben: #e5677f; }
+}
+
+.art-titel { font-size: clamp(2.6rem, 7vw, 4.4rem); letter-spacing: -0.01em; line-height: 1; }
+.art-fakten { margin: 18px 0 0; color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+
+/* Hinweis, solange Muster auf der Seite stehen */
+.art-hinweis { margin: 0 0 28px; padding: 12px 16px; border: 1px dashed var(--border); border-radius: 10px; color: var(--muted); font-size: 0.9rem; max-width: 60ch; }
+.art-hinweis strong { color: var(--text); font-weight: 600; }
+
+/* Filter: eine Textleiste, keine Knöpfe mit Fläche */
+.art-filter { display: flex; flex-wrap: wrap; gap: 4px 22px; margin: 0 0 40px; padding: 0 0 14px; border-bottom: 1px solid var(--border); }
+.art-filter button { padding: 4px 0; border: 0; border-bottom: 1px solid transparent; background: none; color: var(--muted); font: inherit; font-size: 0.95rem; cursor: pointer; }
+.art-filter button:hover { color: var(--text); }
+.art-filter button[aria-pressed="true"] { color: var(--text); border-bottom-color: var(--text); }
+.art-filter button:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+.art-filter sup { margin-left: 3px; font-size: 0.7rem; font-variant-numeric: tabular-nums; }
+
+/* Serien */
+.art-serie { margin: 0 0 64px; }
+.art-serie[hidden] { display: none; }
+.art-serie > h2 { margin: 0 0 4px; font-family: var(--serif); font-weight: 400; font-size: 1.6rem; }
+.art-serie > p { margin: 0 0 24px; color: var(--muted); max-width: 60ch; }
+.art-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 40px 28px; }
+
+/* Werk im Raster: Bild im Passepartout, darunter drei Zeilen */
+.werk { position: relative; margin: 0; }
+.werk[hidden] { display: none; }
+.werk a { color: inherit; text-decoration: none; }
+.werk a::after { content: ""; position: absolute; inset: 0; }                    /* die ganze Karte ist der Link */
+.werk a:focus-visible { outline: none; }
+.werk:has(a:focus-visible) .passepartout { outline: 2px solid var(--text); outline-offset: 4px; }
+.passepartout { position: relative; aspect-ratio: 4 / 5; display: grid; place-items: center; padding: 13%; background: var(--papier); border-radius: 3px; overflow: hidden; }
+.passepartout img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; box-shadow: 0 1px 2px var(--papier-schatten), 0 10px 24px -8px var(--papier-schatten); transition: transform 0.35s ease, box-shadow 0.35s ease; }
+.passepartout--voll { padding: 0; }                                               /* Apps: das Vorschaubild ist schon gestaltet */
+.passepartout--voll img { width: 100%; height: 100%; object-fit: cover; box-shadow: none; }
+.werk:hover .passepartout img { transform: translateY(-3px); box-shadow: 0 2px 4px var(--papier-schatten), 0 18px 32px -10px var(--papier-schatten); }
+.passepartout--voll img, .werk:hover .passepartout--voll img { transform: none; }
+@media (prefers-reduced-motion: reduce) { .passepartout img { transition: none; } .werk:hover .passepartout img { transform: none; } }
+.werk figcaption { padding-top: 14px; }
+.werk h3 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 1.2rem; line-height: 1.25; }
+.werk .meta { margin: 3px 0 0; color: var(--muted); font-size: 0.85rem; }
+.werk .preis { margin: 6px 0 0; display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+
+/* Stand: Punkt und Wort, nie nur Farbe */
+.stand { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); }
+.stand::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--frei); flex: none; }
+.stand--knapp::before { background: var(--knapp); }
+.stand--vergeben::before { background: var(--vergeben); }
+
+/* Gestaltung: Pakete statt Bilder */
+.pakete { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+.paket { display: flex; flex-direction: column; padding: 26px 24px 24px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.paket h3 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 1.4rem; }
+.paket .paket-preis { margin: 6px 0 14px; font-variant-numeric: tabular-nums; }
+.paket .paket-preis span { color: var(--muted); }
+.paket > p { margin: 0 0 14px; color: var(--muted); }
+.paket ul { margin: 0 0 14px; padding-left: 1.1em; line-height: 1.6; }
+.paket .ohne { color: var(--muted); font-size: 0.85rem; }
+.paket .knopf-text { margin-top: auto; padding-top: 12px; }
+
+/* Vertrauen und Ablauf */
+.art-zusagen { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 22px; margin: 8px 0 56px; padding: 26px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); list-style: none; padding-left: 0; }
+.art-zusagen li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; font-size: 0.9rem; color: var(--muted); }
+.art-zusagen strong { display: block; color: var(--text); font-weight: 600; }
+.art-zusagen svg, .schritte svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; color: var(--text); }
+.art-ablauf h2, .art-fragen h2 { margin: 0 0 20px; font-family: var(--serif); font-weight: 400; font-size: 1.6rem; }
+.schritte { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 28px; margin: 0 0 64px; padding: 0; list-style: none; counter-reset: schritt; }
+.schritte li { counter-increment: schritt; font-size: 0.92rem; color: var(--muted); }
+.schritte li::before { content: counter(schritt, decimal-leading-zero); display: block; margin-bottom: 8px; font-size: 0.75rem; letter-spacing: 0.12em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.schritte strong { display: block; margin: 6px 0 4px; color: var(--text); font-weight: 600; }
+.art-fragen { margin: 0 0 64px; max-width: 70ch; }
+.art-fragen details { border-top: 1px solid var(--border); }
+.art-fragen details:last-child { border-bottom: 1px solid var(--border); }
+.art-fragen summary { padding: 14px 0; cursor: pointer; font-weight: 500; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+.art-fragen summary::-webkit-details-marker { display: none; }
+.art-fragen summary::after { content: "+"; color: var(--muted); font-weight: 400; }
+.art-fragen details[open] summary::after { content: "–"; }
+.art-fragen details p { margin: 0 0 16px; color: var(--muted); }
+
+/* Knöpfe: eine Hauptaktion, höchstens eine zweite */
+.kaufen { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 26px; border: 1px solid var(--text); border-radius: 4px; background: var(--text); color: var(--bg); font-weight: 500; text-decoration: none; transition: opacity 0.2s; }
+.kaufen:hover { opacity: 0.86; }
+.kaufen:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+.kaufen--leise { background: none; color: var(--text); }
+.kaufen[aria-disabled="true"] { opacity: 0.4; pointer-events: none; }
+.knopf-text { color: var(--text); font-weight: 600; text-decoration: none; }
+.knopf-text:hover { text-decoration: underline; }
+
+/* Werkseite */
+.pfad { display: flex; gap: 8px; margin: 0 0 22px; font-size: 0.85rem; color: var(--muted); }
+.pfad a { color: inherit; }
+.werkseite { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 56px; align-items: start; margin: 0 0 72px; }
+.galerie { display: grid; gap: 12px; }
+.galerie-haupt { display: grid; place-items: center; padding: 9%; background: var(--papier); border-radius: 3px; cursor: zoom-in; border: 0; width: 100%; }
+.galerie-haupt img { max-width: 100%; max-height: 72vh; width: auto; height: auto; display: block; box-shadow: 0 1px 2px var(--papier-schatten), 0 18px 40px -12px var(--papier-schatten); }
+.galerie-haupt--voll { padding: 0; }
+.galerie-haupt--voll img { max-height: none; width: 100%; box-shadow: none; }
+.galerie-haupt:focus-visible { outline: 2px solid var(--text); outline-offset: 4px; }
+.galerie-hinweis { margin: 0; font-size: 0.8rem; color: var(--muted); }
+.angaben { position: sticky; top: 24px; display: grid; gap: 18px; }
+.angaben h1 { margin: 0; font-size: clamp(2rem, 4.4vw, 2.8rem); }
+.angaben .unter { margin: -10px 0 0; color: var(--muted); }
+.angaben .betrag { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.angaben .betrag .stand { font-size: 0.95rem; }
+.angaben .handeln { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+.angaben .klein { margin: 0; font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+.daten { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0; padding: 16px 0 0; border-top: 1px solid var(--border); font-size: 0.9rem; }
+.daten dt { color: var(--muted); }
+.daten dd { margin: 0; font-variant-numeric: tabular-nums; }
+.werktext { max-width: 62ch; font-size: 1.05rem; }
+.massstab { margin: 0; color: var(--muted); }
+.massstab svg { display: block; width: 100%; max-width: 360px; height: auto; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+.massstab .werkflaeche { fill: var(--papier); stroke: var(--text); }
+.massstab text { fill: currentColor; stroke: none; font: 11px var(--font); font-variant-numeric: tabular-nums; }
+.massstab figcaption { margin-top: 6px; font-size: 0.8rem; }
+.weitere { margin: 0 0 64px; }
+.weitere > h2 { margin: 0 0 22px; font-family: var(--serif); font-weight: 400; font-size: 1.4rem; }
+
+/* Lupe */
+.lupe { width: 100vw; height: 100vh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgba(12, 11, 10, 0.94); }
+.lupe::backdrop { background: rgba(12, 11, 10, 0.94); }
+.lupe-bild { width: 100%; height: 100%; overflow: auto; display: grid; place-items: center; cursor: zoom-in; }
+.lupe-bild img { max-width: 94vw; max-height: 92vh; display: block; }
+.lupe.nah .lupe-bild { place-items: start; cursor: zoom-out; }
+.lupe.nah .lupe-bild img { max-width: none; max-height: none; }
+.lupe-zu { position: fixed; top: 14px; right: 14px; width: 44px; height: 44px; border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 50%; background: none; color: #fff; font-size: 1.4rem; cursor: pointer; }
+
+/* Telefon: Kaufleiste unten, sobald die Angaben aus dem Bild sind */
+.leiste { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: none; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 20px calc(10px + env(safe-area-inset-bottom)); background: var(--surface); border-top: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+.leiste .kaufen { min-height: 42px; padding: 8px 20px; }
+@media (max-width: 760px) {
+  .werkseite { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .galerie { display: contents; }                                                    /* Bild, Angaben, dann erst der Massstab */
+  .galerie-hinweis { order: 1; margin-bottom: 16px; }
+  .angaben { order: 2; position: static; }
+  .massstab { order: 3; margin-top: 24px; }
+  .massstab svg { max-width: 280px; }
+  .leiste.zeigen { display: flex; }
+  .art-raster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 16px; }
+  .werk h3 { font-size: 1.05rem; }
+}
+@media (max-width: 380px) { .art-raster { grid-template-columns: minmax(0, 1fr); } }

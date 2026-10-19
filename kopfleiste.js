@@ -4,13 +4,16 @@
 // von Hand auf der Startseite; die Erzeuger (tools/build-zu-seiner-zeit.ts, tools/build-alpha-texte.ts) und tools/kopfleiste-einsetzen.mjs
 // (für die Seiten, die von Hand gepflegt werden) holen es von hier. tests/struktur.test.mjs prüft, dass es überall gleich ist.
 
-/** die fünf Kästchen: [Name, Pfad ab der Wurzel der Website, Symbol]; «Social» seit dem 19. Oktober 2026 (der Zettelkasten der Beiträge aus X, Facebook und Instagram, social-media/) */
+/** die fünf Kästchen: [Name, Pfad ab der Wurzel der Website, Symbol]; «Social» seit dem 19. Oktober 2026 (der Zettelkasten der Beiträge aus X, Facebook und Instagram, social-media/);
+ *  seit dem 19. Oktober 2026 (abends) ohne «Web» (die Seite web/ bleibt unter ihrer Adresse, nur nicht mehr im Menü) und dahinter als fünftes «Art» (Bilder, Prints, Apps und
+ *  Gestaltung zum Kaufen, art/; Symbol: ein gerahmtes Bild, Sonne und Hügel im Passepartout). Wunsch: «Die Seite "Web" soll aus dem Menu verschwinden (nicht löschen, nur aus dem Menu)
+ *  … Neu soll als 5. Menupunkt (nach: "Social") ein "Art"-Seite entstehen» */
 export const MENU = [
   ["Apps", "apps/", '<rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/>'],
   ["Prompts", "masterprompts/", '<path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-7.5L7 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M7.5 8.5l3 2.25-3 2.25"/><path d="M12.5 13h4"/>'],
-  ["Web", "web/", '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5S9.6 5.8 12 3.5z"/>'],
   ["Zettel", "zu-seiner-zeit/", '<path d="M7 3.5h11.5A1.5 1.5 0 0 1 20 5v11"/><rect x="4" y="6.5" width="13" height="14" rx="1.5"/><path d="M7 10.5h7"/><path d="M7 13.5h7"/><path d="M7 16.5h4"/>'],
   ["Social", "social-media/", '<path d="M10 4.5 8 19.5"/><path d="M16 4.5l-2 15"/><path d="M5 9.25h14.5"/><path d="M4.5 14.75H19"/>'],
+  ["Art", "art/", '<rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><rect x="6.5" y="6.5" width="11" height="11" rx="0.5"/><circle cx="10" cy="10" r="1.3"/><path d="M6.5 16c2-2.4 4.2-3.2 6.4-2.3 1.6.6 2.9.4 4.6-.9"/>'],
 ];
 
 /**

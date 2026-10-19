@@ -422,9 +422,9 @@ test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (
   const papiere = ["/alpha/orma/", "/alpha/pruefraster/", "/alpha/verteilapparat/"];
   const ziele = {
     "news/index.html": papiere,
-    "apps/index.html": ["/alpha/orma/", "/alpha/the-fictory/app/", "/alpha/bildfragmentieren/app/"],   // The Fictory als App seit 11. Oktober 2026 (Freigabe von Christian), PHORMA I seit 17. Oktober 2026
+    "apps/index.html": ["/alpha/orma/", "/alpha/the-fictory/app/", "/alpha/bildfragmentieren/app/", "/alpha/omna-color/app/", "/alpha/omna-color/"],   // The Fictory als App seit 11. Oktober 2026 (Freigabe von Christian), PHORMA I seit 17. Oktober 2026, OMNA COLOR (App und Web-Anwendung) seit 19. Oktober 2026
     "masterprompts/index.html": ["/alpha/pruefraster/", "/alpha/verteilapparat/", "/alpha/gesellschaftskonzepte/", "/alpha/journalistische-texte/"],
-    "web/index.html": ["/alpha/sketchory/", "/alpha/the-fictory/", "/alpha/omna-color/", "/alpha/drittes-rad/", "/alpha/poststrukturalismus-doppelpruefung.pdf"],   // das PDF zum Comic-Video seit 6. Oktober 2026; die Stadt war vom 9. bis 10. Oktober 2026 hier
+    "web/index.html": ["/alpha/sketchory/", "/alpha/the-fictory/", "/alpha/drittes-rad/", "/alpha/poststrukturalismus-doppelpruefung.pdf"],   // das PDF zum Comic-Video seit 6. Oktober 2026; die Stadt war vom 9. bis 10. Oktober 2026 hier
     "web/poststrukturalismus/index.html": ["/alpha/poststrukturalismus-doppelpruefung.pdf"],   // die Videoseite, ebenso
   };
   const allowed = new Set(Object.keys(ziele));

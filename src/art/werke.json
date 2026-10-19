@@ -1,0 +1,146 @@
+{
+  "_hinweis": "Die Werke der Seite «Art» (art/). Nach jeder Änderung: node tools/build-art.mjs (Seiten) und, wenn Bilder dazukommen, NODE_PATH=$(npm root -g) node tools/art-bilder.mjs. Felder: README, Abschnitt «art/». Solange ein Werk \"muster\": true trägt, sind Angaben und Preis Platzhalter: Die Seite sagt es oben, die Werkseite ist für Suchmaschinen gesperrt, und statt «Bestellen» steht «Interesse melden». Mit \"zahlungslink\" (etwa ein Zahlungslink von Stripe oder Payrexx) wird «Bestellen» zu «Kaufen», die Rechnung per Mail bleibt als zweiter Weg.",
+  "kontakt": "hansnoed@gmail.com",
+  "stand": "2026-10-19",
+  "werke": [
+    {
+      "slug": "linienbuendel",
+      "titel": "Linienbündel",
+      "art": "original",
+      "serie": "Nachtblau",
+      "jahr": 2026,
+      "technik": "Mischtechnik auf Papier",
+      "masse": { "b": 50, "h": 70 },
+      "preis": 1400,
+      "status": "verfuegbar",
+      "bilder": [
+        { "quelle": "src/the-fictory/beispiel-quelle.jpg", "alt": "Hochformat in Nachtblau, darauf weisse und kupferne Linienbündel, die sich in weiten Bögen kreuzen" }
+      ],
+      "text": "Weisse und kupferne Linien laufen in Bündeln über das Nachtblau, kreuzen sich, fächern auf und sammeln sich wieder. Aus diesem Blatt ist das Beispielbild von The Fictory geworden.",
+      "details": [["Signatur", "Rückseite, Bleistift"], ["Zertifikat", "signiert, mit Foto"], ["Rahmen", "ungerahmt, auf Wunsch gerahmt"]],
+      "muster": true
+    },
+    {
+      "slug": "linienbuendel-edition",
+      "titel": "Linienbündel, Edition",
+      "art": "edition",
+      "serie": "Nachtblau",
+      "jahr": 2026,
+      "technik": "Giclée auf Hahnemühle Photo Rag 308 g",
+      "masse": { "b": 29.7, "h": 42 },
+      "auflage": { "gesamt": 25, "verfuegbar": 18 },
+      "preis": 240,
+      "status": "verfuegbar",
+      "bilder": [
+        { "quelle": "src/the-fictory/beispiel-quelle.jpg", "alt": "Das Blatt «Linienbündel» als Druck: Nachtblau mit weissen und kupfernen Linienbündeln" }
+      ],
+      "text": "Das Blatt als Druck in A3, farbtreu auf mattem Baumwollpapier. Jedes Exemplar ist von Hand signiert und nummeriert.",
+      "details": [["Signatur", "Vorderseite unten rechts, nummeriert"], ["Zertifikat", "signiert, mit Nummer"], ["Druck", "Fine-Art-Labor in der Schweiz"]],
+      "muster": true
+    },
+    {
+      "slug": "raster",
+      "titel": "Raster",
+      "art": "original",
+      "serie": "Nachtblau",
+      "jahr": 2026,
+      "technik": "Mischtechnik auf Karton",
+      "masse": { "b": 60, "h": 60 },
+      "preis": 1800,
+      "status": "verkauft",
+      "bilder": [
+        { "quelle": "src/the-fictory/vorschau-quelle.jpg", "alt": "Ein Raster aus vielen kleinen Feldern auf Nachtblau, jedes mit eigener Form, darunter eine schimmernde Raute" }
+      ],
+      "text": "Viele kleine Felder, jedes für sich, zusammen eine Fläche. Aus diesem Raster stammen die Teile, mit denen The Fictory arbeitet, und das App-Symbol.",
+      "details": [["Signatur", "Rückseite, Bleistift"], ["Zertifikat", "signiert, mit Foto"]],
+      "muster": true
+    },
+    {
+      "slug": "omna-color-karten",
+      "titel": "OMNA COLOR, Kartenset",
+      "art": "edition",
+      "serie": "OMNA COLOR",
+      "jahr": 2026,
+      "technik": "180 Karten, Digitaldruck, in einer Schachtel",
+      "masse": { "b": 7, "h": 10.5 },
+      "auflage": { "gesamt": 100, "verfuegbar": 100 },
+      "preis": 48,
+      "status": "verfuegbar",
+      "bilder": [
+        { "quelle": "assets/vorschau-omna-color-app.jpg", "alt": "Das Farbrad von OMNA COLOR mit sieben Feldern aussen und innen, als Kachel über einem leisen Rad" }
+      ],
+      "text": "Die 180 Gestaltungsübungen von OMNA COLOR als Karten zum Ziehen: sieben Farben, sieben Themen, auf jeder Karte Material, Schritte und eine Frage zum Schluss. Für den Tisch, das Atelier oder den Unterricht.",
+      "details": [["Inhalt", "180 Übungskarten, 7 Themenkarten, Anleitung"], ["Zertifikat", "keins, nummerierte Schachtel"]],
+      "muster": true
+    },
+    {
+      "slug": "phorma-i",
+      "titel": "PHORMA I",
+      "art": "digital",
+      "serie": "Apps",
+      "jahr": 2026,
+      "technik": "Web-App für Telefon und Computer",
+      "preis": 0,
+      "status": "verfuegbar",
+      "link": "apps/",
+      "bilder": [
+        { "quelle": "assets/vorschau-phorma-i.jpg", "alt": "Eine Kristallansicht aus PHORMA I: ein Foto, zerlegt in leuchtende Facetten" }
+      ],
+      "text": "Aus einem Foto wird ein Film: Es zerfällt in Linien, Formen und Farben, verwandelt sich in Funken, Glas, Scherben oder Gebirge. Frei zu benutzen; wer ein Video in voller Auflösung ohne Signet oder eine eigene Fassung möchte, fragt an.",
+      "details": [["Lizenz", "privat frei, Auftragsfassung auf Anfrage"], ["Lieferung", "läuft im Browser, als App installierbar"]]
+    },
+    {
+      "slug": "fictory",
+      "titel": "The Fictory",
+      "art": "digital",
+      "serie": "Apps",
+      "jahr": 2026,
+      "technik": "Web-App für Telefon und Computer",
+      "preis": 0,
+      "status": "verfuegbar",
+      "link": "apps/",
+      "bilder": [
+        { "quelle": "assets/vorschau-the-fictory-app.jpg", "alt": "Das App-Symbol von The Fictory, eine schimmernde Raute auf Nachtblau, als Kachel über dem Raster" }
+      ],
+      "text": "Ein Bild zerfällt in seine Teile, ordnet sich neu und setzt sich wieder zusammen. Frei zu benutzen; Werkstätten und Auftragsfassungen auf Anfrage.",
+      "details": [["Lizenz", "privat frei, Auftragsfassung auf Anfrage"], ["Lieferung", "läuft im Browser, als App installierbar"]]
+    },
+    {
+      "slug": "signet",
+      "titel": "Signet",
+      "art": "gestaltung",
+      "serie": "Gestaltung",
+      "preis": 1200,
+      "status": "verfuegbar",
+      "dauer": "rund drei Wochen",
+      "leistungen": ["Gespräch und Briefing", "drei Skizzen", "Ausarbeitung des gewählten Entwurfs", "zwei Korrekturrunden", "Dateien für Druck und Bildschirm (SVG, PDF, PNG)"],
+      "ohne": ["Schriftlizenzen", "Markenrecherche"],
+      "text": "Ein Zeichen für eine Person, ein Projekt oder einen Ort. Gezeichnet, nicht zusammengesetzt.",
+      "muster": true
+    },
+    {
+      "slug": "erscheinungsbild",
+      "titel": "Kleines Erscheinungsbild",
+      "art": "gestaltung",
+      "serie": "Gestaltung",
+      "preis": 3800,
+      "status": "verfuegbar",
+      "dauer": "rund sechs Wochen",
+      "leistungen": ["alles vom Signet", "Farben und Schriften", "Briefpapier, Karte, Vorlage für Social Media", "eine Seite mit den Regeln"],
+      "ohne": ["Website", "Druckkosten"],
+      "text": "Signet, Farben, Schriften und die ersten Anwendungen, aufeinander abgestimmt.",
+      "muster": true
+    },
+    {
+      "slug": "auftrag",
+      "titel": "Auftrag nach Mass",
+      "art": "gestaltung",
+      "serie": "Gestaltung",
+      "status": "verfuegbar",
+      "dauer": "nach Absprache",
+      "leistungen": ["Plakat, Edition, Installation, eine eigene App", "Offerte nach dem ersten Gespräch"],
+      "text": "Wenn es keins der beiden Pakete ist: erzähl, worum es geht.",
+      "muster": true
+    }
+  ]
+}
