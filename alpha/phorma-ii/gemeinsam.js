@@ -24,3 +24,25 @@ export const ziel = (w, h, opt = {}) => new THREE.WebGLRenderTarget(w, h, { type
 export function kamera(B, H) { const k = new THREE.PerspectiveCamera(FOV, B / H, 0.05, 60); k.position.set(0, 0, ABSTAND); return k; }
 export const quadMaterial = (fragmentShader, uniforms, extra = {}) => new THREE.ShaderMaterial({ vertexShader: QUAD_VERTEX, fragmentShader, uniforms, depthTest: false, depthWrite: false, ...extra });
 
+
+/**
+ * Das laufende Video als Textur (Etappe 2 von Montage und Wachstum): jedes Bild (ImageBitmap) wird auf eine Leinwand gezeichnet – so steht es wie
+ * das Foto (CanvasTexture, y nach oben) –, nur wenn ein anderes kommt; ändert sich die Grösse (Vorschau halb, Video voll), eine neue Leinwand.
+ */
+export function filmTextur() {
+  let c = null, tex = null, zuletzt = null;
+  return {
+    setzen(bild) {
+      if (!bild) return tex;
+      if (bild === zuletzt) return tex;
+      if (!c || c.width !== bild.width || c.height !== bild.height) {
+        c = typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(bild.width, bild.height);
+        c.width = bild.width; c.height = bild.height;
+        tex?.dispose(); tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+      }
+      c.getContext("2d").drawImage(bild, 0, 0); tex.needsUpdate = true; zuletzt = bild;
+      return tex;
+    },
+    entsorgen() { tex?.dispose(); tex = null; c = null; zuletzt = null; },
+  };
+}

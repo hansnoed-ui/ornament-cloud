@@ -44,7 +44,9 @@ export const effekte = (a) => ablaufName(a).split("+");
 
 /**
  * Rolle eines Effekts in der Kette: seine Phasen ([name, titel, dauer] bei Tempo «normal»), wie lange der nächste schon vor seinem Ende einsetzt
- * (ueber) und womit er übergeht (uebergang: "front" – Zeitfront nach der Tiefe, "schnitt" – beide zeigen dort dasselbe Bild).
+ * (ueber) und womit er übergeht (uebergang: "front" – Zeitfront nach der Tiefe, "schnitt" – beide zeigen dort dasselbe Bild, "felder" – vor der
+ * Montage: Rechtecke schneiden ihn weg, darunter liegt schon die Montage; dann zeigt er das fertige Foto nicht – Wunsch vom 19. Oktober 2026: «Montage
+ * sollte grundsätzlich nicht mit dem fertigen Bild starten»).
  */
 export function rolle(art, liste, i) {
   const erst = i === 0, letzt = i === liste.length - 1, vorher = liste[i - 1] ?? null, naechstes = liste[i + 1] ?? null;
@@ -52,18 +54,19 @@ export function rolle(art, liste, i) {
   if (art === "physarum") {
     phasen = [["keime", "Keime", 1.6], ["netz", "Netz", 5.2]];
     if (letzt) phasen.push(["bild", "Bild", 3.4]);
-    else { ueber = 1.8; uebergang = "front"; }
+    else { ueber = 1.8; uebergang = naechstes === "montage" ? "felder" : "front"; }
   } else if (art === "tiefe") {
     phasen = [["scan", "Scan", erst ? 2.6 : 2.2], ["raum", "Raum", 5.4]];
     if (letzt) phasen.push(["bild", "Bild", 2.8]);
-    else { ueber = 0.7; uebergang = "front"; }
+    else { ueber = 0.7; uebergang = naechstes === "montage" ? "felder" : "front"; }
   } else if (art === "tuch") {
-    phasen = [["tuch", "Tuch", vorher === "tiefe" ? 4.6 : 5.0], ["bild", "Bild", 3.4]];
+    phasen = [["tuch", "Tuch", vorher === "tiefe" ? 4.6 : 5.0]];
+    if (naechstes === "montage") { ueber = 0.8; uebergang = "felder"; } else phasen.push(["bild", "Bild", 3.4]);
   } else if (art === "wachstum") {
-    // endet immer beim Foto: danach kann die Montage beim Foto beginnen
-    phasen = [["keim", "Keim", 1.2], ["wachstum", "Wachstum", 6.6], ["farbe", "Farbe", 2.4], ["bild", "Bild", 2.6]];
+    phasen = [["keim", "Keim", 1.2], ["wachstum", "Wachstum", 6.6], ["farbe", "Farbe", 2.4]];
+    if (naechstes === "montage") { ueber = 0.8; uebergang = "felder"; } else phasen.push(["bild", "Bild", 2.6]);
   } else {
-    // die Montage steht immer am Schluss: nach dem Tuch beginnt sie beim Foto, nach Physarum oder Tiefe unter deren Zeitfront
+    // die Montage steht immer am Schluss; nach einem anderen Effekt schneiden Rechtecke ihn weg, sie beginnt schon zerschnitten
     phasen = [["schnitte", "Schnitte", erst ? 2.5 : 2.0], ["montage", "Montage", 7.0], ["bild", "Bild", 2.6]];
   }
   const dauer = phasen.reduce((s, p) => s + p[2], 0);

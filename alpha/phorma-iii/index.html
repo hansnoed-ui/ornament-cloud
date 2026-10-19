@@ -343,18 +343,8 @@
       }
       window.addEventListener("error", function (e) { zeigen((e.message || "unbekannt") + (e.filename ? " (" + e.filename.split("/").pop() + ":" + e.lineno + ")" : "")); });
       window.addEventListener("unhandledrejection", function (e) { zeigen(String((e.reason && e.reason.message) || e.reason)); });
-      // die Spur des letzten Laufs (app.js): endete er nicht mit «✓», steht oben, nach welchem Schritt er abbrach
-      try {
-        var liste = JSON.parse(localStorage.getItem("phorma-iii.spur") || "[]"), letzt = liste[liste.length - 1];
-        if (liste.length > 1 && letzt && String(letzt[1]).charAt(0) !== "✓") {
-          var k = document.getElementById("startfehler"), t0 = liste[0][0];
-          if (k) {
-            k.textContent = "PHORMA III ist beim letzten Mal abgebrochen. Bitte ein Bildschirmfoto davon schicken – die letzten Schritte:\n" +
-              liste.slice(-14).map(function (e) { return ((e[0] - t0) / 1000).toFixed(1) + " s  " + e[1]; }).join("\n");
-            k.hidden = false; k.style.whiteSpace = "pre-wrap"; k.style.fontSize = "0.78rem";
-          }
-        }
-      } catch (e) { /* ohne Speicher keine Spur */ }
+      // (die Spur des letzten Laufs zeigt die Seite seit dem 19. Oktober 2026 nicht mehr: «das ist zurzeit nicht mehr nötig»; app.js schreibt sie
+      // weiter mit, für ?diagnose und die Sperre der KI-Tiefe nach einem Absturz)
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>

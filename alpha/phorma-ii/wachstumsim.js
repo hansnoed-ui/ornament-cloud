@@ -5,7 +5,7 @@
 // ist Licht), dunkel weit, an Kanten enger – so zeichnet sie das Bild.
 //   Einheit: ein Punkt der Analyse (halbe Filmgrösse). Einmal ganz von vorn bis zum Ende gerechnet, je Filmbild gespeichert (Int16, 1/8 Punkt);
 //   danach steht die Linie. Wiederholbar: derselbe Auftrag ergibt dieselbe Bahn.
-import { phase } from "./ablauf.js?v=22";
+import { phase } from "./ablauf.js?v=23";
 
 export const BILDER_JE_S = 30, ACHTEL = 8;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -57,17 +57,20 @@ export function wachsfeld({ w, h, tiefe = null, rgb = null }) {
   const m = new Float32Array(w * h);
   let gut = false;
   if (rgb) {
-    // die Farbe des Rands (Mittel und Streuung eines Streifens rundum, ohne den unteren Rand: dort steht oft das Motiv)
-    let n = 0, sr = 0, sg = 0, sb = 0, qq = 0;
-    const b = Math.max(2, Math.round(w * 0.04));
+    // die Farbe des Rands: der Median eines Streifens rundum (ohne den unteren Rand: dort steht oft das Motiv); ruhig ist er, wenn drei Viertel
+    // seiner Punkte ihm gleichen – so stören einzelne Schriften oder Gegenstände am Rand nicht (vorher die Streuung: ein Video mit Text am Rand
+    // galt als unruhig, und die Linie füllte den hellen Grund ganz)
+    const r = [], g = [], bl = [], b = Math.max(2, Math.round(w * 0.04));
     for (let y = 0; y < h * 0.8; y++) for (let x = 0; x < w; x++) {
       if (y >= b && x >= b && x < w - b) continue;
-      const i = (y * w + x) * 4; sr += rgb[i]; sg += rgb[i + 1]; sb += rgb[i + 2]; qq += rgb[i] ** 2 + rgb[i + 1] ** 2 + rgb[i + 2] ** 2; n++;
+      const i = (y * w + x) * 4; r.push(rgb[i]); g.push(rgb[i + 1]); bl.push(rgb[i + 2]);
     }
-    const mr = sr / n, mg = sg / n, mb = sb / n, streu = Math.sqrt(Math.max(0, qq / n - mr * mr - mg * mg - mb * mb)) / 255;
-    if (streu < 0.12) {
+    const median = (a) => a.sort((p, q) => p - q)[a.length >> 1], mr = median([...r]), mg = median([...g]), mb = median([...bl]);
+    let gleich = 0;
+    for (let k = 0; k < r.length; k++) if (Math.hypot(r[k] - mr, g[k] - mg, bl[k] - mb) / 255 < 0.1) gleich++;
+    if (gleich > 0.75 * r.length) {
       for (let i = 0; i < w * h; i++) {
-        const d = Math.hypot(rgb[i * 4] - mr, rgb[i * 4 + 1] - mg, rgb[i * 4 + 2] - mb) / 255, t = Math.min(1, Math.max(0, (d - 0.05 - streu) / 0.1));
+        const d = Math.hypot(rgb[i * 4] - mr, rgb[i * 4 + 1] - mg, rgb[i * 4 + 2] - mb) / 255, t = Math.min(1, Math.max(0, (d - 0.07) / 0.1));
         m[i] = t * t * (3 - 2 * t);
       }
       gut = true;
@@ -95,9 +98,9 @@ export function wachstumBahn({ teil, w, h, hell, nahrung = null, tiefe = null, r
   const start = abstandsfeld({ w, h, hell, nahrung, ton, dichte, maske }), { abstand, max } = start;
   // die Felder, nach denen die Linie gerade wächst: vom Foto (Standbild) oder, mit Video, je film.je Filmbilder aus dem Bild des Videos (kleiner,
   // fw × fh; dann folgt die Linie dem bewegten Bild)
-  let fA = abstand, fM = maske, fw = w, fh = h, sx0 = 1, sy0 = 1, key = -1;
+  let fA = abstand, fw = w, fh = h, sx0 = 1, sy0 = 1, key = -1;
   const feld = (x, y) => fA[Math.min(fh - 1, Math.max(0, (y * sy0) | 0)) * fw + Math.min(fw - 1, Math.max(0, (x * sx0) | 0))];
-  const drin = (x, y) => (fM ? fM[Math.min(fh - 1, Math.max(0, (y * sy0) | 0)) * fw + Math.min(fw - 1, Math.max(0, (x * sx0) | 0))] : 1);
+  const drin = (x, y) => (maske ? maske[Math.min(h - 1, Math.max(0, y | 0)) * w + Math.min(w - 1, Math.max(0, x | 0))] : 1);
   function filmFelder(f) {
     if (!film?.rgba?.length) return;
     const k = Math.min(film.rgba.length - 1, Math.floor(f / film.je));
@@ -109,9 +112,9 @@ export function wachstumBahn({ teil, w, h, hell, nahrung = null, tiefe = null, r
       const i = yy * W2 + xx, gx = hl[i + 1] - hl[i - 1], gy = hl[i + W2] - hl[i - W2];
       na[i] = Math.min(1, 0.25 * hl[i] + 2.2 * Math.hypot(gx, gy));
     }
-    const m = maske ? wachsfeld({ w: W2, h: H2, rgb: q }) ?? fM : null;
-    fA = abstandsfeld({ w: W2, h: H2, hell: hl, nahrung: na, ton: start.ton, dichte, maske: m, tonFest: true }).abstand;
-    fM = m; fw = W2; fh = H2; sx0 = W2 / w; sy0 = H2 / h;
+    // die Maske bleibt die des Standbilds: wechselte sie mit jedem Bild, schöbe sie die Punkte auf engem Raum zusammen (die Rechnung stand dann fast)
+    fA = abstandsfeld({ w: W2, h: H2, hell: hl, nahrung: na, ton: start.ton, dichte, tonFest: true }).abstand;
+    fw = W2; fh = H2; sx0 = W2 / w; sy0 = H2 / h;
   }
   const r = zufall(samen * 9973 + 17);
   // der Keim: ein kleiner Kreis, ohne Angabe im Schwerpunkt des Motivs (wo es ganz drin ist)
@@ -134,7 +137,7 @@ export function wachstumBahn({ teil, w, h, hell, nahrung = null, tiefe = null, r
   // so viele Punkte füllen das Bild etwa (Linienlänge Fläche / Abstand, ein Punkt je halbem Abstand): darüber wächst sie nur noch durch Dehnung
   let genug = 0;
   for (let i = 0; i < w * h; i++) genug += (2 / (abstand[i] * abstand[i])) * (maske ? maske[i] : 1);
-  genug *= 2.6;   // die Linie liegt nie ganz gleichmässig: lieber zu viele Punkte als Lücken
+  genug = Math.min(genug * 2.6, 75000 / (dichte * dichte));   // lieber zu viele Punkte als Lücken; aber nie mehr, als sich in einer Minute rechnet
   // Umlaufsinn der Linie (bleibt, weil sie sich nie kreuzt): die Normale nach aussen ist die Tangente um 90° gedreht
   let sinn = 0;
   for (let i = 0; i < n; i++) { const q = (i + 1) % n; sinn += x[i] * y[q] - x[q] * y[i]; }
