@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 import { kopfleiste } from "./kopfleiste.mjs";
 
 const ROOT = new URL("../", import.meta.url);
-const CSS = "styles.css?v=46", ART_CSS = "art/art.css?v=5", ART_JS = "art/art.js?v=1";
+const CSS = "styles.css?v=46", ART_CSS = "art/art.css?v=6", ART_JS = "art/art.js?v=1";
 
 export const ARTEN = { original: ["Original", "Originale"], print: ["Print", "Prints"], dienstleistung: ["Dienstleistung", "Dienstleistungen"] };
 const SERIEN_TEXT = {
@@ -50,7 +50,8 @@ export function mail(daten, w) {
       ? [`Ich interessiere mich für «${was}».`, "Bitte melde dich, wenn es verfügbar ist.", "", "Name:"]
       : [`Ich bestelle: ${was}`, [w.technik, format(w.masse)].filter(Boolean).join(", "), w.auflage ? `Auflage ${w.auflage.gesamt} Exemplare` : "", `Preis: ${chf(w.preis)}`, "",
          "Name:", "Lieferadresse:", "Land:", "Telefon für den Versand (freiwillig):", "",
-         "Ich bekomme eine Bestätigung mit Rechnung (QR-Rechnung, zahlbar mit E-Banking oder TWINT). Bis die Zahlung da ist, ist die Arbeit fünf Tage für mich reserviert."].filter((z, i, a) => z !== "" || a[i - 1] !== "");
+         "Ich bekomme eine Bestätigung mit Rechnung (QR-Rechnung, zahlbar mit E-Banking oder TWINT). Bis die Zahlung da ist, ist die Arbeit fünf Tage für mich reserviert.",
+         "Es gelten die AGB: https://ornament.cloud/impressum/#agb"].filter((z, i, a) => z !== "" || a[i - 1] !== "");
   return `mailto:${daten.kontakt}?subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(zeilen.join("\n"))}`;
 }
 
@@ -286,7 +287,7 @@ ${massstab(w.masse)}
           ${haupt}
           ${zweit}
         </div>
-        <p class="klein">${esc(klein)}</p>
+        <p class="klein">${esc(klein)} Es gelten die <a href="${site}impressum/#agb">AGB</a>.</p>
         <dl class="daten">
 ${daten2.map(([k, v]) => `          <dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("\n")}
         </dl>

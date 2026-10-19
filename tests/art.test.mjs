@@ -49,7 +49,7 @@ test("Art: Bestellen ohne Shop – eine fertige Mail mit Werk, Preis und den nö
   const w = { slug: "x", titel: "Probe", art: "print", serie: "Probe", jahr: 2026, technik: "Giclée", masse: { b: 30, h: 40 }, auflage: { gesamt: 10, verfuegbar: 4 }, preis: 240, status: "verfuegbar" };
   const m = decodeURIComponent(mail(daten, w));
   assert.ok(m.startsWith(`mailto:${daten.kontakt}?subject=Bestellung: Probe – CHF 240.–`));
-  for (const z of ["Ich bestelle: Probe (2026)", "Preis: CHF 240.–", "Auflage 10 Exemplare", "Lieferadresse:", "QR-Rechnung", "fünf Tage für mich reserviert"]) assert.ok(m.includes(z), z);
+  for (const z of ["Ich bestelle: Probe (2026)", "Preis: CHF 240.–", "Auflage 10 Exemplare", "Lieferadresse:", "QR-Rechnung", "fünf Tage für mich reserviert", "Es gelten die AGB: https://ornament.cloud/impressum/#agb"]) assert.ok(m.includes(z), z);
   assert.ok(decodeURIComponent(mail(daten, { ...w, muster: true })).includes("subject=Interesse: Probe"));
   const seiten = bauen({ ...daten, ankuendigung: undefined, werke: [{ ...w, bilder: [{ alt: "eine Probe für den Test der Bestellung" }], zahlungslink: "https://buy.stripe.com/test_123" }] }, {});
   assert.match(seiten["art/x/index.html"], /<a class="kaufen" href="https:\/\/buy\.stripe\.com\/test_123">Kaufen<\/a>\s*<a class="knopf-text" href="mailto:[^"]+">Lieber per Rechnung<\/a>/);
