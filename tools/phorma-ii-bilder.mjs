@@ -1,8 +1,9 @@
 // «PHORMA II» – Bilder für die Karte auf «Apps» und die Vorschaukachel zum Teilen (Wunsch vom 19. Oktober 2026: «Ich brauche dann auch noch ein
 // qualitativ besseres Bild für die Beitragskarte von PHORMA II»), wie bei PHORMA I und III (tools/phorma-bilder.mjs, tools/phorma-iii-bilder.mjs) von
-// der Anwendung selbst gerechnet (alpha/phorma-ii/, Effekt «Wachstum», das Beispielbild), in voller Grösse (1080 × 1350, vier Proben je Bild) und erst
+// der Anwendung selbst gerechnet (alpha/phorma-ii/, Effekt «Montage», das Beispielbild), in voller Grösse (1080 × 1350, vier Proben je Bild) und erst
 // dann verkleinert, ohne Beschriftung und ohne Schriftzug.
-//   Motiv: die leuchtende Linie, mitten in der Phase «Farbe» (sie hat das Motiv gefüllt und nimmt seine Farben an)
+//   Motiv: die Montage gegen Ende ihrer Phase «Montage» (dicht geschnitten, Raster, Zahlentafeln; Wunsch: «Ich hätte eher die Montage-Version
+//   genommen fürs Beitragsbild» – zuerst war es die leuchtende Linie des Wachstums)
 //   assets/vorschau-phorma-ii.jpg            640 × 800   Beitragsbild der Karte auf «Apps»
 //   assets/vorschau-phorma-ii-2x.jpg        1280 × 1600  dasselbe doppelt so gross, für Bildschirme mit hoher Dichte (srcset)
 //   alpha/phorma-ii/og-phorma-ii.jpg        1200 × 630   Vorschaukachel zum Teilen (Open Graph, X)
@@ -21,16 +22,16 @@ const base = `http://localhost:${server.address().port}/`;
 const browser = await playwright.chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
-// 1. das Wachstum mit dem Beispielbild, Format 4 : 5; ein Bild der Bühne (WebGL, ohne die Schrift aus film.js)
+// 1. die Montage mit dem Beispielbild, Format 4 : 5; ein Bild der Bühne (WebGL, ohne die Schrift aus film.js)
 const page = await browser.newPage({ viewport: { width: 1280, height: 950 } });
-await page.addInitScript(() => { try { localStorage.setItem("phorma-ii.ablauf", "wachstum"); localStorage.setItem("phorma-ii.format", "4:5"); } catch { /* egal */ } });
+await page.addInitScript(() => { try { localStorage.setItem("phorma-ii.ablauf", "montage"); localStorage.setItem("phorma-ii.format", "4:5"); } catch { /* egal */ } });
 await page.goto(`${base}alpha/phorma-ii/`);
 await page.click("#testbild");
-await page.waitForFunction(() => window.__phorma?.ablauf === "wachstum" && window.__phorma.buehneFertig && !document.getElementById("video").disabled, null, { timeout: 600_000 });
-const linie = await page.evaluate(() => {
-  const S = window.__phorma, Z = S.sz.zeit, p = Z.phasen.find((x) => x.name === "farbe");
+await page.waitForFunction(() => window.__phorma?.ablauf === "montage" && window.__phorma.buehneFertig && !document.getElementById("video").disabled, null, { timeout: 600_000 });
+const bild = await page.evaluate(() => {
+  const S = window.__phorma, Z = S.sz.zeit, p = Z.phasen.find((x) => x.name === "montage");
   S.laeuft = false;
-  const c = S.buehne.bild(Z, p.von + 0.5 * (p.bis - p.von), S.mass[0], S.mass[1], { proben: 4 }), k = document.createElement("canvas");
+  const c = S.buehne.bild(Z, p.von + 0.85 * (p.bis - p.von), S.mass[0], S.mass[1], { proben: 4 }), k = document.createElement("canvas");
   k.width = c.width; k.height = c.height; k.getContext("2d").drawImage(c, 0, 0);
   return k.toDataURL("image/png");
 });
@@ -46,14 +47,14 @@ for (const [b, datei, qualitaet] of [[640, "vorschau-phorma-ii.jpg", 90], [1080,
     const zb = Math.round((bild.width + b) / 2), zh = Math.round((bild.height + h) / 2);
     const z = new OffscreenCanvas(zb, zh), zx = z.getContext("2d"); zx.imageSmoothingQuality = "high"; zx.drawImage(bild, 0, 0, zb, zh);
     const x = document.querySelector("canvas").getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(z, 0, 0, b, h);
-  }, [linie, b, h]);
+  }, [bild, b, h]);
   const out = pfad(`../assets/${datei}`);
   await p.locator("canvas").screenshot({ path: out, type: "jpeg", quality: qualitaet });
   console.log("geschrieben:", out);
   await p.close();
 }
 
-// 3. Vorschaukachel zum Teilen: links Titel und Satz, rechts die leuchtende Linie
+// 3. Vorschaukachel zum Teilen: links Titel und Satz, rechts die Montage
 {
   const p = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
   await p.setContent(`<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><base href="${base}"><link rel="stylesheet" href="vendor/fonts/fonts.css"><style>
@@ -67,7 +68,7 @@ for (const [b, datei, qualitaet] of [[640, "vorschau-phorma-ii.jpg", 90], [1080,
     .fuss { margin-top: 38px; font: 400 19px/1.45 "Instrument Sans", sans-serif; color: #9a9388; }
     .fuss b { display: block; font-weight: 500; color: #f08a5d; }
   </style></head><body>
-    <img src="${linie}"><div class="schatten"></div>
+    <img src="${bild}"><div class="schatten"></div>
     <div class="text">
       <div class="marke">Alpha · Video im Hochformat</div>
       <h1>PHORMA II</h1>

@@ -273,7 +273,7 @@ test("Apps: drei Gruppen (seit 19. Oktober 2026) – Bild und Video: PHORMA III,
   assert.match(k[0].html, /<img src="\.\.\/assets\/vorschau-phorma-iii\.jpg" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-iii.jpg", root))), [640, 800]);
   assert.ok(k[0].tags.includes("App") && k[0].tags.includes("Video") && /installieren/.test(k[0].html) && /ohne Netz/.test(k[0].html) && /Aus Klang wird Bild/.test(k[0].html));
-  // PHORMA II (seit 19. Oktober 2026): die leuchtende Linie des Wachstums als Beitragsbild (tools/phorma-ii-bilder.mjs), im Browser, keine App
+  // PHORMA II (seit 19. Oktober 2026): die Montage als Beitragsbild (tools/phorma-ii-bilder.mjs), im Browser, keine App
   assert.match(k[1].html, /<img src="\.\.\/assets\/vorschau-phorma-ii\.jpg" srcset="\.\.\/assets\/vorschau-phorma-ii\.jpg 1x, \.\.\/assets\/vorschau-phorma-ii-2x\.jpg 1\.6875x" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-ii-2x.jpg", root))), [1080, 1350]);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-ii.jpg", root))), [640, 800]);
