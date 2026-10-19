@@ -1,5 +1,5 @@
 {
-  "_hinweis": "Die Werke der Seite «Art» (art/). Nach jeder Änderung: node tools/build-art.mjs (Seiten) und, wenn Bilder dazukommen, NODE_PATH=$(npm root -g) node tools/art-bilder.mjs. Felder: README, Abschnitt «art/». Solange \"ankuendigung\" gesetzt ist, zeigt die Übersicht nur diesen Text und die Werke darunter (ohne Filter, Zusagen, Ablauf und Fragen). Solange ein Werk \"muster\": true trägt, sind Angaben und Preis Platzhalter: Die Seite sagt es, die Werkseite ist für Suchmaschinen gesperrt, und statt «Bestellen» steht «Interesse melden». Mit \"zahlungslink\" (etwa ein Zahlungslink von Stripe oder Payrexx) wird «Bestellen» zu «Kaufen», die Rechnung per Mail bleibt als zweiter Weg.",
+  "_hinweis": "Die Werke der Seite «Art» (art/). Nach jeder Änderung: node tools/build-art.mjs (Seiten) und, wenn Bilder dazukommen, NODE_PATH=$(npm root -g) node tools/art-bilder.mjs. Felder: README, Abschnitt «art/». Nie eine Bildbeschreibung im Text (Wunsch vom 19. Oktober 2026): nur sachliche Angaben wie «Signiert und nummeriert.». Solange \"ankuendigung\" gesetzt ist, zeigt die Übersicht nur diesen Text und die Werke darunter (ohne Filter, Zusagen, Ablauf und Fragen). Solange ein Werk \"muster\": true trägt, sind Angaben und Preis Platzhalter: Die Seite sagt es, die Werkseite ist für Suchmaschinen gesperrt, und statt «Bestellen» steht «Interesse melden». Mit \"zahlungslink\" (etwa ein Zahlungslink von Stripe oder Payrexx) wird «Bestellen» zu «Kaufen», die Rechnung per Mail bleibt als zweiter Weg.",
   "kontakt": "hansnoed@gmail.com",
   "stand": "2026-10-19",
   "ankuendigung": {
@@ -27,10 +27,10 @@
       "bilder": [
         {
           "quelle": "src/art/harbouring.jpg",
-          "alt": "Ein Hafen aus Farbflächen: oben ein grauer Himmel mit grosser orangefarbener Sonne über blauem Meer, in der Mitte eine blaue Form mit maskenhaften Gesichtern, unten warme Braun- und Orangetöne und schwarze Silhouetten"
+          "alt": "Harbouring, Print von Christian Strickler"
         }
       ],
-      "text": "Ein Hafen aus Flächen: die Sonne über dem Meer, Häuser, Stege und Masken, die sich ineinander schieben, unten schwarze Gestalten am Ufer. Als Print farbtreu auf mattem Baumwollpapier; jedes Exemplar ist von Hand signiert und nummeriert.",
+      "text": "Signiert und nummeriert.",
       "details": [
         [
           "Signatur",

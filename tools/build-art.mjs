@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 import { kopfleiste } from "./kopfleiste.mjs";
 
 const ROOT = new URL("../", import.meta.url);
-const CSS = "styles.css?v=46", ART_CSS = "art/art.css?v=3", ART_JS = "art/art.js?v=1";
+const CSS = "styles.css?v=46", ART_CSS = "art/art.css?v=5", ART_JS = "art/art.js?v=1";
 
 export const ARTEN = { original: ["Original", "Originale"], print: ["Print", "Prints"], dienstleistung: ["Dienstleistung", "Dienstleistungen"] };
 const SERIEN_TEXT = {
@@ -302,7 +302,7 @@ ${weitere.map((x) => karte(x, site, masse, true)).join("\n")}
 
 ` : ""}    <p class="back"><a href="../">← Zu Art</a></p>`;
   const nachher = `
-  <div class="leiste" aria-hidden="true"><span>${esc(w.titel)} · ${esc(preisText(w))}</span>${haupt.replace("<a ", '<a tabindex="-1" ')}</div>
+  <div class="leiste" aria-hidden="true"><span>${esc(preisText(w))}</span>${haupt.replace("<a ", '<a tabindex="-1" ')}</div>
   <dialog class="lupe" aria-label="${esc(w.titel)}, gross"><div class="lupe-bild"><img data-src="${site}${bild(w, 0, 1600)}" alt="${esc(w.bilder[0].alt)}"></div><button class="lupe-zu" type="button" aria-label="Schliessen">×</button></dialog>
 `;
   return seite({ site, titel: `${w.titel}${w.jahr ? `, ${w.jahr}` : ""} – Art – Ornament Cloud`, beschreibung: `${w.titel}: ${[w.technik, format(w.masse)].filter(Boolean).join(", ")}. ${preisText(w)}.`,
