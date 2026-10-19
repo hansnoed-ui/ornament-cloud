@@ -44,7 +44,7 @@ function htmlSeiten(dir = root, skip = new Set(["node_modules", "dist", ".git", 
     : e.isDirectory() ? htmlSeiten(new URL(e.name + "/", dir), skip) : e.name.endsWith(".html") ? [new URL(e.name, dir).pathname.slice(root.pathname.length)] : []);
 }
 const karten = (html) => [...html.matchAll(/<article class="card[^"]*">([\s\S]*?)<\/article>/g)].map((m) => ({
-  titel: m[1].match(/<h2>([^<]+)<\/h2>/)[1],
+  titel: m[1].match(/<h[23]>([^<]+)<\/h[23]>/)[1],                  // auf «Apps» seit dem 19. Oktober 2026 h3 (unter den Titeln der Gruppen)
   ziel: m[1].match(/<a class="link" href="([^"]+)"/)[1],
   tags: [...m[1].matchAll(/<li>([^<]+)<\/li>/g)].map((t) => t[1]),
   html: m[1],
@@ -150,7 +150,7 @@ test("Startseite: kein sichtbarer Titel und kein Lead; sie führt zu einem zufä
   assert.match(html, /<footer class="site-footer">[\s\S]*<p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail\.com">hansnoed@gmail\.com<\/a><\/p>[\s\S]*<\/footer>/, "Kontakt im Fuss");
   assert.deepEqual([...html.matchAll(/<iframe [^>]*src="([^"]+)"/g)], [], "kein Rahmen mehr (OMNA COLOR stand vom 10. bis 18. Oktober 2026 hier)");
   assert.ok(!html.includes("stellenfeld"), "das Stellenfeld ist nicht auf der Startseite");
-  assert.ok(existsSync(new URL("alpha/omna-color/index.html", root)) && lies("apps/index.html").includes('<h2>OMNA COLOR</h2>'), "OMNA COLOR bleibt unter seiner Adresse, seit 19. Oktober 2026 als App auf «Apps»");
+  assert.ok(existsSync(new URL("alpha/omna-color/index.html", root)) && /<h[23]>OMNA COLOR<\/h[23]>/.test(lies("apps/index.html")), "OMNA COLOR bleibt unter seiner Adresse, seit 19. Oktober 2026 als App auf «Apps»");
   assert.ok(!/<article|class="card|class="grid/.test(html), "keine Beiträge und keine Karten auf der Startseite");
   // Seit dem 5. Oktober 2026 steht unter dem Fuss der Rückkanal (Anmeldung für die Mail); er ist das Einzige
   // ausserhalb von <main> und bringt die einzige Überschrift mit. Sonst bleibt die Seite ohne Überschriften.
@@ -237,7 +237,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 });
 
 const SEITEN = {
-  apps: { titel: "Apps", karten: [["PHORMA I", "../alpha/bildfragmentieren/app/"], ["The Fictory", "../alpha/the-fictory/app/"], ["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"], ["OMNA COLOR", "../alpha/omna-color/app/"]] },   // OMNA COLOR seit 19. Oktober 2026 als letzte   // The Fictory vom 11. Oktober 2026 an zuerst, seit 17. Oktober 2026 PHORMA I
+  apps: { titel: "Apps", karten: [["PHORMA III", "../alpha/phorma-iii/app/"], ["PHORMA I", "../alpha/bildfragmentieren/app/"], ["The Fictory", "../alpha/the-fictory/app/"], ["ORMA", "../alpha/orma/"], ["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["OMNA COLOR", "../alpha/omna-color/app/"]] },   // seit 19. Oktober 2026 in drei Gruppen   // OMNA COLOR seit 19. Oktober 2026 als letzte   // The Fictory vom 11. Oktober 2026 an zuerst, seit 17. Oktober 2026 PHORMA I
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
   web: { titel: "Web", karten: [["Sketchory", "../alpha/sketchory/"], ["The Fictory", "../alpha/the-fictory/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"]] },
 };
@@ -260,26 +260,33 @@ test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und 
   }
 });
 
-test("Apps: PHORMA I (seit 17. Oktober 2026, zuerst), The Fictory, ORNA, ORMA und OMNA COLOR (seit 19. Oktober 2026, zuletzt) als Beiträge, in dieser Reihenfolge, alle ausser ORNA als Alpha gekennzeichnet", () => {
-  const k = karten(lies("apps/index.html"));
+test("Apps: drei Gruppen (seit 19. Oktober 2026) – Bild und Video: PHORMA III, PHORMA I, The Fictory; Text und Theorie: ORMA, ORNA; Gestaltung: OMNA COLOR – alle ausser ORNA als Alpha gekennzeichnet", () => {
+  const html = lies("apps/index.html"), k = karten(html);
   assert.deepEqual(k.map((x) => [x.titel, x.ziel]), SEITEN.apps.karten);
-  assert.ok(k[0].tags.includes("Alpha") && k[1].tags.includes("Alpha") && k[3].tags.includes("Alpha") && k[4].tags.includes("Alpha") && !k[2].tags.includes("Alpha"));
-  assert.ok(k.slice(2, 4).every((x) => /data-icon="rad"/.test(x.html)), "ORNA und ORMA zeigen das drehende Rad");
-  // OMNA COLOR (Wunsch vom 19. Oktober 2026: «sowohl als APP wie als Web-Anwendung … bei den APPs (als letzte)»): die App-Seite und die Web-Anwendung
-  assert.match(k[4].html, /<img src="\.\.\/assets\/vorschau-omna-color-app\.jpg" alt="" width="640" height="800" loading="lazy">/);
-  assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-omna-color-app.jpg", root))), [640, 800]);
-  assert.deepEqual([...k[4].html.matchAll(/<a class="link[^"]*" href="([^"]+)"/g)].map((m) => m[1]), ["../alpha/omna-color/app/", "../alpha/omna-color/"], "Als App, im Browser spielen");
+  // die Gruppen (Wunsch: «Unterscheide dort: bild/video: PHORMA III, PHORMA I, THE FICTORY – text/theorie: ORMA, ORNA – gestaltung: OMNA COLOR»)
+  const gruppen = [...html.matchAll(/<section class="apps-gruppe" aria-labelledby="([^"]+)">\s*<h2 id="\1">([^<]+)<\/h2>\s*<div class="grid grid--stapel grid--paare">([\s\S]*?)<\/div>\s*<\/section>/g)]
+    .map((m) => [m[2], karten(m[3]).map((x) => x.titel)]);
+  assert.deepEqual(gruppen, [["Bild und Video", ["PHORMA III", "PHORMA I", "The Fictory"]], ["Text und Theorie", ["ORMA", "ORNA"]], ["Gestaltung", ["OMNA COLOR"]]]);
+  assert.ok(k.every((x) => x.titel === "ORNA" ? !x.tags.includes("Alpha") : x.tags.includes("Alpha")), "alle ausser ORNA als Alpha");
+  assert.ok(k.slice(3, 5).every((x) => /data-icon="rad"/.test(x.html)), "ORMA und ORNA zeigen das drehende Rad");
+  // PHORMA III: dasselbe Motiv wie die Vorschaukachel (die Kugel aus Fäden mit der Traube) als Beitragsbild (tools/phorma-iii-bilder.mjs)
+  assert.match(k[0].html, /<img src="\.\.\/assets\/vorschau-phorma-iii\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-iii.jpg", root))), [640, 800]);
+  assert.ok(k[0].tags.includes("App") && k[0].tags.includes("Video") && /installieren/.test(k[0].html) && /ohne Netz/.test(k[0].html) && /Aus Klang wird Bild/.test(k[0].html));
   // PHORMA I: eine Kristallansicht aus der Anwendung als Beitragsbild (tools/phorma-bilder.mjs), dazu der Satz vom 17. Oktober 2026
-  assert.match(k[0].html, /<img src="\.\.\/assets\/vorschau-phorma-i\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  assert.match(k[1].html, /<img src="\.\.\/assets\/vorschau-phorma-i\.jpg" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-i.jpg", root))), [640, 800]);
-  assert.ok(k[0].html.includes("Als erste Anwendung in einer langen Reihe: PHORMA I."), "PHORMA I: der Satz der Erklärung");
-  assert.ok(k[0].tags.includes("App") && k[0].tags.includes("Video") && /installieren/.test(k[0].html) && /ohne Netz/.test(k[0].html));
+  assert.ok(k[1].html.includes("Als erste Anwendung in einer langen Reihe: PHORMA I."), "PHORMA I: der Satz der Erklärung");
+  assert.ok(k[1].tags.includes("App") && k[1].tags.includes("Video") && /installieren/.test(k[1].html) && /ohne Netz/.test(k[1].html));
   // The Fictory: das App-Symbol im Format der Karten (tools/fictory-icons.mjs)
-  assert.match(k[1].html, /<img src="\.\.\/assets\/vorschau-the-fictory-app\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  assert.match(k[2].html, /<img src="\.\.\/assets\/vorschau-the-fictory-app\.jpg" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-the-fictory-app.jpg", root))), [640, 800]);
-  assert.ok(k[1].tags.includes("App") && /installieren/.test(k[1].html) && /ohne Netz/.test(k[1].html));
+  assert.ok(k[2].tags.includes("App") && /installieren/.test(k[2].html) && /ohne Netz/.test(k[2].html));
   assert.match(k[3].html, /class="thumb split-invert"/, "ORMA: vertikal geteilt, rechts invers (REGELN §14)");
-  assert.match(lies("apps/index.html"), /<section class="grid grid--stapel grid--paare" aria-label="Apps">/, "zwei Karten je Reihe");
+  // OMNA COLOR (Wunsch vom 19. Oktober 2026: «sowohl als APP wie als Web-Anwendung … bei den APPs (als letzte)»): die App-Seite und die Web-Anwendung
+  assert.match(k[5].html, /<img src="\.\.\/assets\/vorschau-omna-color-app\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-omna-color-app.jpg", root))), [640, 800]);
+  assert.deepEqual([...k[5].html.matchAll(/<a class="link[^"]*" href="([^"]+)"/g)].map((m) => m[1]), ["../alpha/omna-color/app/", "../alpha/omna-color/"], "Als App, im Browser spielen");
 });
 
 test("Masterprompts: die vier Prüfraster als Beiträge, in der Reihenfolge der Alpha-Übersicht, alle als Alpha gekennzeichnet", () => {

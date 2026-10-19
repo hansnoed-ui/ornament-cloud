@@ -582,7 +582,7 @@ await check("Alpha: alpha/ listet ORMA; alpha/orma/ läuft unter dem Website-Pfa
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
   await page.goto(`${origin}/alpha/`);
-  await page.getByRole("link", { name: "ORMA" }).click();
+  await page.getByRole("link", { name: "ORMA", exact: true }).click();   // exakt: «PHORMA III» (seit 19. Oktober 2026 auf der Alpha-Seite) enthält «ORMA»
   await page.waitForSelector("html[data-ready]");
   assert.equal(new URL(page.url()).pathname, "/alpha/orma/");
   await tap(page, "Zu zweit beginnen"); await tap(page, "Beginnen"); await tap(page, "Drehen");
@@ -714,8 +714,10 @@ await check("Apps und Masterprompts (Handy): Karten untereinander, ORNA vor ORMA
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   };
   await page.goto(`${origin}/apps/`);
-  assert.deepEqual(await page.locator("main .card h2").allTextContents(), ["PHORMA I", "The Fictory", "ORNA", "ORMA"]);
-  await untereinander(4);
+  // seit dem 19. Oktober 2026 in drei Gruppen: Bild und Video, Text und Theorie, Gestaltung (die Titel der Karten als h3)
+  assert.deepEqual(await page.locator("main .card h3").allTextContents(), ["PHORMA III", "PHORMA I", "The Fictory", "ORMA", "ORNA", "OMNA COLOR"]);
+  assert.deepEqual(await page.locator("main .apps-gruppe > h2").allTextContents(), ["Bild und Video", "Text und Theorie", "Gestaltung"]);
+  await untereinander(6);
   assert.ok(await page.locator(".card").filter({ has: page.getByRole("heading", { name: "ORMA", exact: true }) }).locator(".tags li", { hasText: "Alpha" }).isVisible());
   await page.goto(`${origin}/masterprompts/`);
   assert.deepEqual(await page.locator("main .card h2").allTextContents(),
@@ -755,15 +757,17 @@ await check("Apps und Masterprompts (Handy): Karten untereinander, ORNA vor ORMA
   await ctx.close();
 });
 
-await check("Apps und Masterprompts (Desktop): PHORMA I, The Fictory, ORNA und ORMA zwei mal zwei (seit 17. Oktober 2026), die vier Prüfraster ebenso", async () => {
+await check("Apps und Masterprompts (Desktop): je Gruppe zwei Karten nebeneinander (seit 19. Oktober 2026 drei Gruppen), die vier Prüfraster zwei mal zwei", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
   const lage = () => page.locator("main .card").evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y)]; }));
   await page.goto(`${origin}/apps/`);
   let l = await lage();
-  assert.equal(l.length, 4);
-  assert.ok(l[0][1] === l[1][1] && l[2][1] === l[3][1] && l[2][1] > l[0][1], "PHORMA I und The Fictory, darunter ORNA und ORMA");
-  assert.ok(l[0][0] === l[2][0] && l[1][0] === l[3][0], "in zwei Spalten");
+  assert.equal(l.length, 6);
+  assert.ok(l[0][1] === l[1][1] && l[2][1] > l[0][1], "Bild und Video: PHORMA III und PHORMA I, darunter The Fictory");
+  assert.ok(l[3][1] === l[4][1] && l[3][1] > l[2][1], "Text und Theorie: ORMA und ORNA nebeneinander, unter Bild und Video");
+  assert.ok(l[5][1] > l[3][1], "Gestaltung: OMNA COLOR darunter");
+  assert.ok([2, 3, 5].every((i) => l[i][0] === l[0][0]) && l[4][0] === l[1][0] && l[1][0] > l[0][0], "in zwei Spalten");
   await page.goto(`${origin}/masterprompts/`);
   l = await lage();
   assert.equal(l.length, 4);

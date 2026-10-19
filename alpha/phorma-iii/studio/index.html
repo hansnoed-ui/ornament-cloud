@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <!-- Erzeugt von tools/build-phorma-iii-app.mjs aus ../index.html. Nicht von Hand bearbeiten.
+       Die Seite der installierten App (start_url und scope des Manifests); <base> lässt alle Verweise wie auf der Website gelten. -->
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PHORMA III – Ornament Cloud · Alpha</title>
+  <!--
+    Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14).
+    Prototyp vom 18. Oktober 2026, die dritte Anwendung der Reihe: das Gewebe aus PHORMA II, dort seit dem 17. Oktober 2026 nach einem Video von
+    Pauric Freeman («überlegen wir uns, wie wir solche Effekte hinbekommen, für Texte und Audiofiles»), nun für sich (Wunsch: «Es sind ja zwei ganz
+    verschiedene Ansätze: die Bildanimation mit Physarum, Tiefe und Tuch und die Gewebe-Animation mit Audio, Video, Text etc. All das soll aus
+    PHORMA II ausgelagert werden und in ein neues PHORMA III integriert werden»). Steht für sich wie PHORMA I und II (Ausnahme in
+    tests/navigation.test.mjs): ohne die Navigation oben links.
+    Seit dem 19. Oktober 2026 als App installierbar (manifest.webmanifest, icons/ und sw.js, Knopf aus pwa.js; Wunsch: «Dann bau mir jetzt die App
+    PHORMA III und leg sie auf die Alpha Seite»); die App-Seite app/ steht auf der Alpha-Seite. Die installierte App startet auf studio/, einer
+    Abschrift dieser Seite (tools/build-phorma-iii-app.mjs).
+  -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="PHORMA III: Text, Foto, Video oder nur Musik werden zu Flächen aus feinen Linien, die der Ton bewegt – auf Wunsch verfrickelt, mit dem Logo am Schluss, als Video mit Ton für Social Media, alles im Browser.">
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ornament.cloud">
+  <meta property="og:locale" content="de_CH">
+  <meta property="og:url" content="https://ornament.cloud/alpha/phorma-iii/">
+  <meta property="og:title" content="PHORMA III">
+  <meta property="og:description" content="Aus Klang wird Bild: Musik oder Stimme, dazu Text, Foto oder Video – als Film mit Ton für Social Media. Läuft ohne Netz, alles bleibt auf dem Gerät.">
+  <meta property="og:image" content="https://ornament.cloud/alpha/phorma-iii/app/og-phorma-iii.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="PHORMA III: links der Titel und der Satz «Aus Klang wird Bild – mit Musik oder Stimme, Text, Foto oder Video.», rechts eine Kugel aus feinen weissen Fäden mit glänzenden roten Perlen auf Schwarz.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://ornament.cloud/alpha/phorma-iii/app/og-phorma-iii.jpg">
+  <meta name="apple-mobile-web-app-title" content="PHORMA III">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="../../styles.css?v=46">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <style>@font-face { font-family: "Inter Display"; font-style: normal; font-weight: 600; font-display: swap; src: url(../../vendor/fonts/inter-display-600-latin.woff2) format("woff2"); }</style>
+  <style>
+    .site-header { padding-bottom: 12px; }
+    .karte { display: grid; gap: 28px; padding-bottom: 48px; }
+    @media (min-width: 900px) { .karte { grid-template-columns: minmax(280px, 400px) 1fr; align-items: start; } .buehne { position: sticky; top: 16px; } }
+
+    .buehne { display: grid; gap: 10px; }
+    .rahmen { position: relative; aspect-ratio: 4 / 5; max-height: 78vh; margin: 0 auto; width: 100%; border-radius: var(--radius); overflow: hidden; background: #000;
+      box-shadow: 0 1px 0 var(--border), 0 18px 40px -24px rgba(0, 0, 0, 0.6); }
+    @supports (width: min(1px, 2px)) { .rahmen { width: min(100%, calc(78vh * var(--seiten, 0.8))); } }
+    .rahmen canvas { display: block; width: 100%; height: 100%; }
+    .leer { position: absolute; inset: 0; display: grid; place-content: center; gap: 8px; padding: 24px; text-align: center; color: #9a9a9a; pointer-events: none;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.85rem; letter-spacing: 0.06em; }
+    .leer p { margin: 0; }
+    .leer .gross { font-size: 1rem; color: #f2f2f2; text-transform: uppercase; letter-spacing: 0.14em; }
+    .rahmen.weiss { background: #fff; }
+    .rahmen.weiss .leer { color: #666; }
+    .rahmen.weiss .leer .gross { color: #111; }
+    .unter { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
+    .info { margin: 0; color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+    .zeitleiste { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+    .zeitleiste input { width: 100%; min-width: 0; accent-color: var(--accent); }
+    .zeitleiste output { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .phasen { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 6px; }
+    .phasen button { min-height: 36px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 8px; background: none; color: var(--text); cursor: pointer;
+      font: 500 0.78rem/1.1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+    .phasen button:hover:not(:disabled) { border-color: var(--text); }
+    .phasen button:disabled { opacity: 0.45; cursor: default; }
+    .phasen button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .schritte { display: grid; gap: 26px; margin: 0; padding: 0; list-style: none; counter-reset: schritt; }
+    .schritte > li { display: grid; gap: 10px; counter-increment: schritt; }
+    .schritte h2 { display: flex; gap: 12px; align-items: baseline; margin: 0; font-family: "Newsreader", var(--serif); font-weight: 400; font-size: 1.45rem; }
+    .schritte h2::before { content: counter(schritt); display: inline-grid; place-content: center; flex: none; width: 1.7rem; height: 1.7rem; border: 1px solid var(--text); border-radius: 50%;
+      font-family: "Instrument Sans", var(--font); font-size: 0.85rem; font-weight: 500; transform: translateY(-0.15em); }
+    .schritte p { margin: 0; color: var(--muted); }
+
+    .ablage { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; padding: 18px; border: 1.5px dashed var(--border); border-radius: var(--radius); background: var(--surface); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+    .ablage:hover, .ablage.drueber { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+    .ablage:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ablage input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .plus { position: relative; display: grid; place-content: center; width: 84px; height: 84px; border-radius: 50%; background: var(--text); color: var(--bg); flex: none; }
+    .plus svg { width: 40px; height: 40px; }
+    .plus img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+    .hat-bild .plus { width: 66px; height: 88px; border-radius: 12px; background: #000; }
+    .hat-bild .plus svg { position: absolute; right: -10px; bottom: -10px; width: 30px; height: 30px; padding: 6px; border-radius: 50%; background: var(--text); color: var(--bg); box-shadow: 0 0 0 3px var(--surface); }
+    .ablage b { display: block; font-size: 1.15rem; font-weight: 600; }
+    .ablage-text > span { display: block; margin-top: 2px; color: var(--muted); font-size: 0.92rem; }
+
+    .leiste { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .knopf { min-height: 44px; padding: 8px 18px; border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.95rem;
+      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .knopf:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .knopf:disabled { opacity: 0.45; cursor: default; }
+    .knopf.haupt { background: var(--text); color: var(--bg); font-weight: 600; }
+    .knopf.haupt:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 85%, var(--bg)); }
+    .knopf.klein { min-height: 36px; padding: 4px 14px; font-size: 0.88rem; }
+    .knopf.beispiel { padding: 4px 18px 4px 16px; gap: 10px; }
+    .knopf.beispiel img { width: 22px; height: 31px; object-fit: cover; border-radius: 5px; display: block; }
+    .knopf:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .tafel { display: grid; margin-top: 4px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .einstellung { display: grid; gap: 12px; padding: 16px; }
+    .einstellung + .einstellung { border-top: 1px solid var(--border); }
+    .name { font-weight: 600; }
+    .segment { display: grid; grid-auto-columns: 1fr; grid-auto-flow: column; padding: 3px; border: 1px solid var(--border); border-radius: 999px; }
+    .segment button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; min-height: 42px; padding: 4px 6px; border: 0; border-radius: 999px;
+      background: none; color: var(--text); font: inherit; font-size: 0.88rem; line-height: 1.15; white-space: nowrap; cursor: pointer; }
+    .segment button[aria-pressed="true"] { background: var(--text); color: var(--bg); font-weight: 600; }
+    .segment button:disabled { opacity: 0.5; cursor: default; }
+    .segment button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .muster { width: 16px; height: 16px; border-radius: 50%; flex: none; box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 35%, transparent); }
+    .ablaeufe { display: grid; gap: 8px; }
+    .ablaeufe button { display: grid; gap: 3px; padding: 12px 14px 12px 44px; border: 1px solid var(--border); border-radius: 12px; background: none; color: var(--text);
+      font: inherit; text-align: left; cursor: pointer; position: relative; }
+    .ablaeufe button::before { content: ""; position: absolute; left: 14px; top: 14px; width: 18px; height: 18px; border: 1px solid var(--border); border-radius: 50%; box-sizing: border-box; }
+    .ablaeufe button b { font-size: 0.98rem; }
+    .ablaeufe button small { color: var(--muted); font-size: 0.84rem; line-height: 1.3; }
+    .ablaeufe button[aria-pressed="true"] { border-color: var(--text); background: color-mix(in srgb, var(--text) 7%, transparent); }
+    .ablaeufe button[aria-pressed="true"]::before { border: 5px solid var(--text); }
+    .ablaeufe button:hover:not(:disabled) { border-color: var(--text); }
+    .ablaeufe button:disabled { opacity: 0.45; cursor: default; }
+    .ablaeufe button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .teil { display: grid; gap: 10px; }
+    .ausschnitt { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .ausschnitt-kopf { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; font-size: 0.92rem; }
+    .ausschnitt-kopf output { color: var(--muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+    #ausschnitt-bild, #ausschnitt-film, #video-streifen { display: block; width: 100%; height: 64px; border-radius: 6px; cursor: ew-resize; touch-action: none; }
+    #ausschnitt-film, #video-streifen { height: 56px; background: #000; }
+    .ausschnitt-regler { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; font-size: 0.88rem; color: var(--muted); }
+    .ausschnitt-regler input { width: 100%; min-width: 0; accent-color: var(--accent); }
+    .textfeld { display: grid; gap: 6px; }
+    .textfeld span { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .textfeld textarea { min-height: 64px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text);
+      font: 600 1.25rem/1.3 "Inter Display", "Helvetica Neue", Arial, sans-serif; letter-spacing: -0.015em; resize: vertical; }
+    .dateiknopf { position: relative; overflow: hidden; }
+    .dateiknopf input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .video-bild { height: 44px; width: auto; border-radius: 6px; border: 1px solid var(--border); }
+    [data-grund="schwarz"] .muster { background: #000; }
+    [data-grund="weiss"] .muster { background: #fff; }
+    @media (max-width: 440px) { .muster { display: none; } }
+    @media (max-width: 370px) { .segment button { font-size: 0.8rem; padding: 4px 3px; } .einstellung { padding: 14px 12px; } }
+
+    .einstellungen { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 20px; }
+    .einstellungen label { display: grid; gap: 6px; }
+    .einstellungen label > span { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .einstellungen select, .einstellungen input[type="text"] { min-height: 40px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; }
+    .haken { display: flex !important; align-items: center; gap: 8px !important; min-height: 40px; align-self: end; }
+    .haken input { width: 18px; height: 18px; accent-color: var(--accent); }
+    progress { width: 100%; height: 6px; accent-color: var(--accent); }
+    .meldung { margin: 0; min-height: 1.5em; }
+    .meldung.fehler { color: var(--accent); }
+    .ergebnis { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+    .ergebnis h2::before { display: none; }
+    .ergebnis video { display: block; width: min(100%, 360px); aspect-ratio: 4 / 5; border-radius: 8px; background: #000; }
+    .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
+    .hinweise li { margin: 0.2rem 0; }
+    .ki-hinweis { margin: 0; font-size: 0.86rem; color: var(--muted); }
+    /* «PHORMA III als App installieren» (pwa.js): nicht in der installierten App */
+    .installieren { margin: 8px auto 36px; max-width: 36em; text-align: center; }
+    .installieren[hidden], .installieren [hidden] { display: none; }
+    .installieren .knopf { display: inline-flex; align-items: center; gap: 10px; padding-left: 8px; }
+    .installieren .knopf img { width: 30px; height: 30px; border-radius: 7px; display: block; }
+    .installieren-hilfe { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; color: var(--muted); }
+    .installieren-hilfe span { color: var(--text); white-space: nowrap; }
+    .diagnose { margin: 0; padding: 10px; border: 1px solid var(--border); border-radius: 10px; white-space: pre-wrap; font: 0.72rem/1.4 ui-monospace, Menlo, Consolas, monospace; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>PHORMA III</h1>
+    </div>
+  </header>
+
+  <p class="wrap meldung fehler" id="startfehler" role="alert" hidden></p>
+  <main class="wrap karte" id="karte">
+    <section class="buehne" aria-label="Vorschau">
+      <div class="rahmen">
+        <canvas id="vorschau" width="540" height="675" aria-label="Vorschau des Videos"></canvas>
+        <div class="leer" id="leer">
+          <p class="gross">Kein Signal</p>
+          <p>Wähle ein Foto, einen Text, ein Video oder eine Musik.</p>
+        </div>
+      </div>
+      <div class="zeitleiste">
+        <button class="knopf klein" type="button" id="spielen" disabled>Abspielen</button>
+        <input type="range" id="zeit" min="0" max="30" step="0.0333" value="0" disabled aria-label="Zeit im Film">
+        <output id="zeitcode" for="zeit">00:00:00</output>
+      </div>
+      <div class="phasen" role="group" aria-label="Zu einer Phase springen"></div>
+      <div class="unter">
+        <p class="info" id="dauer">Hochformat 4 : 5, wahlweise 9 : 16 oder quer 16 : 9</p>
+      </div>
+      <p class="info" id="auswertung"></p>
+    </section>
+
+    <div>
+      <ol class="schritte">
+        <li>
+          <h2>Foto, Text, Video – oder nur Ton</h2>
+          <div class="segment" role="group" aria-label="Quelle">
+            <button type="button" data-quelle="foto">Foto</button>
+            <button type="button" data-quelle="text">Text</button>
+            <button type="button" data-quelle="video">Video</button>
+            <button type="button" data-quelle="ton">Nur Ton</button>
+          </div>
+          <div class="teil" id="foto-teil">
+          <label class="ablage" id="ablage">
+            <span class="plus" aria-hidden="true">
+              <img id="quelle" alt="" hidden>
+              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
+            <span class="ablage-text"><b id="ablage-titel">Foto wählen</b><span>oder hierher ziehen. Seine Linien gleicher Helligkeit werden zum Gewebe; alles bleibt auf deinem Gerät.</span></span>
+            <input type="file" id="datei" accept="image/*" aria-label="Foto wählen">
+          </label>
+          <div class="leiste"><button class="knopf klein beispiel" type="button" id="testbild"><img src="beispiel.jpg" alt="" width="26" height="37" loading="lazy">Mit dem Beispielbild ausprobieren</button></div>
+          </div>
+          <div class="teil" id="text-teil" hidden>
+            <label class="textfeld"><span>Dein Text</span><textarea id="text" rows="2" maxlength="120" placeholder="Ein Wort oder ein kurzer Satz" autocomplete="off"></textarea></label>
+            <p class="ki-hinweis">Der Text wird in Inter Display gesetzt, einer modernen Grotesk, so gross es geht; seine Umrisse werden im Gewebe zu Bändern aus feinen Linien.</p>
+          </div>
+          <div class="teil" id="video-teil" hidden>
+            <div class="leiste">
+              <label class="knopf klein dateiknopf">Videodatei wählen<input type="file" id="videodatei" accept="video/*,.mp4,.mov,.webm,.m4v"></label>
+              <img id="video-bild" class="video-bild" alt="" hidden>
+            </div>
+            <p class="info" id="video-info"></p>
+            <div class="leiste"><label class="haken"><input type="checkbox" id="video-ablauf" checked> Scratch → Video mit Hüpfern → Gefrickel</label></div>
+            <p class="ki-hinweis">Mit dem Effekt «Video» läuft der Ablauf in Bild und Ton zugleich: zuerst wird der Anfang wie eine Platte vor und zurück gerieben (das Bild verschmiert mit dem Tempo und blitzt mit dem Fader), dann läuft das Video klar mit zwei, drei Hüpfern – an jedem bricht das Bild auf: Datamosh, Makroblöcke, Slit-Scan oder Pixel-Sortierung, je Wurf andere –, am Schluss das Gefrickel – das Bild springt mit jeder Scheibe des Tons, ein Wirbel legt es in Kacheln, Bitcrush verpixelt es, Körner werden zu Flecken aus anderen Zeiten. Mit Musik wie mit einer Stimme.</p>
+            <div class="ausschnitt" id="video-ausschnitt" hidden>
+              <div class="ausschnitt-kopf"><span>Ausschnitt des Videos</span><output id="video-ausschnitt-info"></output></div>
+              <canvas id="video-streifen" aria-hidden="true"></canvas>
+              <p class="ki-hinweis">Mit einer eigenen Audiodatei wählst du hier, welcher Teil des Videos läuft: im Filmstreifen ziehen oder tippen, oder der Regler «ab». Die Länge folgt dem Ton (kommt der Ton aus dem Video, schneidet unten «Ausschnitt schneiden» Bild und Ton zusammen).</p>
+              <div class="ausschnitt-regler">
+                <label for="video-von">ab</label><input type="range" id="video-von" min="0" max="1" step="0.1" value="0">
+              </div>
+            </div>
+            <p class="ki-hinweis">Ein Standbild des Videos ist Anfang und Schluss, sein Ton wird die Tonspur (ausser du wählst unten eine andere Audiodatei). Im Gewebe holt jeder Schnitt die Linien eines neuen Bildes aus dem Video; mit dem Effekt «Video» ist das Video selbst das Bild.</p>
+          </div>
+          <div class="teil" id="ton-teil" hidden>
+            <p class="ki-hinweis">Ohne Bild: die Musik allein macht das Bild – aus Ringen und Linien wachsen bei jedem Schlag Flächen wie zerknitterte Seide. Wähle unten unter «Ton» eine Audiodatei.</p>
+          </div>
+          <section class="tafel" aria-label="Format">
+            <div class="einstellung">
+              <span class="name" id="format-titel">Format</span>
+              <div class="segment" role="group" aria-labelledby="format-titel">
+                <button type="button" data-format="4:5">4 : 5 hoch</button>
+                <button type="button" data-format="9:16">9 : 16</button>
+                <button type="button" data-format="16:9">16 : 9 quer</button>
+              </div>
+            </div>
+            <div class="einstellung" id="aufloesung">
+              <span class="name" id="aufloesung-titel">Auflösung</span>
+              <div class="segment" role="group" aria-labelledby="aufloesung-titel">
+                <button type="button" data-aufloesung="1">einfach</button>
+                <button type="button" data-aufloesung="2">doppelt (4K)</button>
+              </div>
+            </div>
+          </section>
+        </li>
+        <li>
+          <h2>Effekt</h2>
+          <div class="ablaeufe" role="group" aria-label="Effekt wählen">
+            <button type="button" data-wahl="gewebe" aria-pressed="true"><b>Gewebe</b><small>Die Umrisse werden zu Flächen aus feinen Linien wie zerknitterte Seide, schwarz auf Papier; jeder kräftige Schlag schneidet auf ein neues Bild</small></button>
+            <button type="button" data-wahl="irrfahrt" aria-pressed="false"><b>Irrfahrt</b><small>Ein leuchtender Faden irrt durch einen Würfel aus Licht und quillt mit der Musik zu Rauch auf; der Bass sprengt ihn, die Höhen werfen Funken, jeder Schlag wirft den Würfel herum</small></button>
+            <button type="button" data-wahl="lichtwuerfel" aria-pressed="false"><b>Lichtwürfel</b><small>Wie die Irrfahrt, aber ruhig: der Würfel bleibt in der Mitte stehen und dreht sich gleichmässig, der Faden irrt darin, feiner und weniger überblendet</small></button>
+            <button type="button" data-wahl="traube" aria-pressed="false"><b>Traube</b><small>Glänzende rote Perlen in einem Knäuel aus feinen Fäden, mit Tiefenschärfe und Rauch; der Schlag lässt sie schwellen, der Bass glühen, jeder kräftige Einsatz schneidet in eine neue Einstellung – am Schluss fädeln sie sich auf die Schlaufe des Logos</small></button>
+            <button type="button" data-wahl="video" aria-pressed="false"><b>Video</b><small>Das Video selbst ist das Bild, bildgenau und synchron zum Ton – oben unter «Video» wählen; Scratching, Cracks und Gefrickel im Bild folgen</small></button>
+          </div>
+        </li>
+        <li>
+          <h2>Ton</h2>
+          <p>Eine Audiodatei (Musik oder eine Stimme; MP3, WAV, M4A – auch ein kurzes Sample) bewegt das Gewebe und klingt in der Vorschau und im Video mit; der Film dauert dann so lange wie der Ton. Ohne Haken bei «Ton an» oder ohne Datei bleibt es stumm, und das Gewebe folgt einem ruhigen eigenen Takt.</p>
+          <div class="leiste">
+            <label class="knopf klein dateiknopf">Audiodatei wählen<input type="file" id="tondatei" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,video/mp4"></label>
+            <button class="knopf klein" type="button" id="ton-weg" hidden>Ton entfernen</button>
+            <label class="haken"><input type="checkbox" id="ton-im-video" checked> Ton an</label>
+          </div>
+          <div class="ausschnitt" id="ausschnitt" hidden>
+            <div class="ausschnitt-kopf"><span>Ausschnitt schneiden</span><output id="ausschnitt-info"></output></div>
+            <canvas id="ausschnitt-film" aria-hidden="true" hidden></canvas>
+            <canvas id="ausschnitt-bild" aria-hidden="true"></canvas>
+            <p class="ki-hinweis">Zum Schneiden in der Wellenform ziehen oder tippen, oder die Regler «ab» und «Länge». Ohne Wahl gilt die ganze Datei (bei Stimme mit Ablauf rund 10 Sekunden ab dem ersten Wort).</p>
+            <div class="ausschnitt-regler">
+              <label for="ausschnitt-von">ab</label><input type="range" id="ausschnitt-von" min="0" max="1" step="0.1" value="0">
+              <label for="ausschnitt-laenge">Länge</label><input type="range" id="ausschnitt-laenge" min="1" max="30" step="0.5" value="10">
+            </div>
+            <div class="leiste">
+              <button class="knopf klein" type="button" id="ausschnitt-hoeren">Anhören</button>
+              <button class="knopf klein" type="button" id="ausschnitt-auto" disabled>Automatisch</button>
+            </div>
+          </div>
+          <div class="segment" role="group" aria-label="Art der Audiodatei">
+            <button type="button" data-tonart="musik">Musik</button>
+            <button type="button" data-tonart="stimme">Stimme</button>
+          </div>
+          <div class="teil" id="musik-teil">
+            <div class="leiste"><label class="haken"><input type="checkbox" id="frickeln"> Verfrickeln</label></div>
+            <p class="ki-hinweis">Verfrickeln zerschneidet die Musik an ihren Einsätzen und baut daraus ein neues Stück wie ein Modularsynthesizer: Schnipsel im Raster, rückwärts, höher und tiefer, zerhackt, Wirbel, Filter, Echo und Hall. Jeder Wurf klingt anders und bleibt wiederholbar.</p>
+          </div>
+          <div class="teil" id="stimme-teil" hidden>
+            <div class="leiste">
+              <label class="haken"><input type="checkbox" id="saeubern" checked> Säubern und klären</label>
+              <label class="haken"><input type="checkbox" id="stimm-ablauf" checked> Scratch → Stimme → Gefrickel</label>
+              <label class="haken"><input type="checkbox" id="stimm-dnb" checked> mit Drum and Bass</label>
+            </div>
+            <p class="ki-hinweis">Für Sprachaufnahmen: Säubern nimmt Rauschen, Brummen und Rumpeln weg, klärt die Stimme (Präsenz, Luft, weniger Zischlaute), gleicht sie aus und gibt ihr einen leichten Raum. Der Ablauf macht daraus ein Stück, das verständlich und zugleich dekonstruiert ist: zuerst 3–4 Sekunden Scratching auf dem ersten Wort, dann rund 10 Sekunden die klare Stimme mit zwei, drei Hüpfern, am Ende 3–4 Sekunden Gefrickel; gegen das Gefrickel hin auf Wunsch unterlegt mit ein wenig Drum and Bass.</p>
+          </div>
+          <div class="leiste"><button class="knopf klein" type="button" id="wuerfeln" hidden>Neu würfeln</button></div>
+          <p class="info" id="ton-info"></p>
+          <audio id="tonspur" preload="auto" hidden></audio>
+        </li>
+        <li>
+          <h2>Gestaltung</h2>
+          <p>Die Beschriftung zeigt wie in einem Bildwerkzeug Phase, Zähler und Zeitcode; oben links steht dein Titel.</p>
+          <div class="einstellungen">
+            <label><span>Titel</span><input type="text" id="titel" maxlength="40" placeholder="PHORMA III" autocomplete="off"></label>
+            <label><span>Tempo</span>
+              <select id="tempo">
+                <option value="ruhig">ruhig</option>
+                <option value="normal" selected>normal</option>
+                <option value="schnell">schnell</option>
+              </select></label>
+            <label class="haken"><input type="checkbox" id="beschriftung" checked> Beschriftung</label>
+            <label class="haken"><input type="checkbox" id="signet" checked> Logo am Schluss</label>
+            <label class="haken"><input type="checkbox" id="unschaerfe" checked> Bewegungsunschärfe</label>
+          </div>
+        </li>
+        <li>
+          <h2>Video</h2>
+          <p>Das Video rechnet Bild für Bild in voller Grösse; mit Bewegungsunschärfe acht Proben je Bild – das dauert einige Minuten, in doppelter Auflösung etwa viermal so lange.</p>
+          <div class="leiste">
+            <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
+            <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
+          </div>
+          <progress id="fortschritt" max="1" value="0" hidden></progress>
+          <p class="meldung" id="meldung" role="status" aria-live="polite"></p>
+          <section class="ergebnis" id="ergebnis" hidden aria-labelledby="ergebnis-titel">
+            <h2 id="ergebnis-titel">Dein Video</h2>
+            <video id="film" controls playsinline muted></video>
+            <p class="info" id="film-info"></p>
+            <div class="leiste"><a class="knopf haupt" id="laden" href="#" download>Herunterladen</a></div>
+          </section>
+        </li>
+      </ol>
+    </div>
+  </main>
+
+  <div class="wrap">
+    <div class="installieren" id="installieren" hidden>
+      <button class="knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="icons/icon-192.png" alt="" width="30" height="30"><span>PHORMA III als App installieren</span></button>
+      <p class="installieren-hilfe" id="installieren-hilfe" hidden></p>
+    </div>
+    <ul class="hinweise">
+      <li>Alles bleibt in deinem Browser: Foto, Video und Musik werden nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
+      <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories) oder quer 16 : 9 (1920 × 1080, für Bildschirme und Websites); Foto und Video werden bei Bedarf mittig beschnitten. Am Computer auf Wunsch in doppelter Auflösung (2160 × 2700, 2160 × 3840 oder 3840 × 2160): neu gerechnet, nicht hochskaliert.</li>
+      <li>Video: MP4 (H.264), 30 Bilder pro Sekunde, mit Ton (AAC) wenn eine Audiodatei gewählt ist. PHORMA III braucht WebGL 2.</li>
+      <li>Für Fotos gibt es <a href="../phorma-ii/">PHORMA II</a>: ein Schleimpilz findet die Formen, das Foto wird Raum und weht als Seidentuch.</li>
+    </ul>
+  </div>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+      <p><a href="../../impressum/">Impressum</a></p>
+    </div>
+  </footer>
+  <script type="importmap">
+  { "imports": { "three": "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" } }
+  </script>
+  <!-- Fehler sichtbar machen (Rückmeldung vom 17. Oktober 2026: «die App stürzt sofort ab, ich kann auch nichts anwählen»): was schiefgeht, steht in der
+       Meldung unter «Video» und oben auf der Seite, auch wenn das Programm selbst nicht startet -->
+  <script>
+    (function () {
+      function zeigen(text) {
+        var d = document.getElementById("diagnose"); if (d) d.textContent += "\nFehler: " + text;
+        var m = document.getElementById("meldung"); if (m) { m.textContent = "Fehler: " + text; m.className = "meldung fehler"; }
+        var k = document.getElementById("startfehler"); if (k) { k.textContent = "PHORMA III: " + text; k.hidden = false; }
+      }
+      window.addEventListener("error", function (e) { zeigen((e.message || "unbekannt") + (e.filename ? " (" + e.filename.split("/").pop() + ":" + e.lineno + ")" : "")); });
+      window.addEventListener("unhandledrejection", function (e) { zeigen(String((e.reason && e.reason.message) || e.reason)); });
+      // (die Spur des letzten Laufs zeigt die Seite seit dem 19. Oktober 2026 nicht mehr: «das ist zurzeit nicht mehr nötig»; app.js schreibt sie
+      // weiter mit, für ?diagnose und die Sperre der KI-Tiefe nach einem Absturz)
+      setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
+    })();
+  </script>
+  <script type="module" src="app.js?v=19"></script>
+  <script type="module" src="pwa.js?v=19"></script>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+</body>
+</html>

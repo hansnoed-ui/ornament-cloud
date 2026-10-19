@@ -4,9 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Apps – Ornament Cloud</title>
-  <meta name="description" content="Einige kleine Apps zum Ausprobieren: direkt hier auf der Seite oder als Download. PHORMA I, The Fictory, ORNA, ORMA und OMNA COLOR.">
+  <meta name="description" content="Einige kleine Apps zum Ausprobieren: direkt hier auf der Seite oder als Download. Bild und Video: PHORMA III, PHORMA I, The Fictory; Text und Theorie: ORMA, ORNA; Gestaltung: OMNA COLOR.">
   <link rel="canonical" href="https://ornament.cloud/apps/">
   <link rel="stylesheet" href="../styles.css?v=46">
+  <style>
+    /* die drei Gruppen (19. Oktober 2026): Titel wie ein Kapitel, die Karten darunter mit ihren Titeln als h3 (wie .body h2) */
+    .apps-gruppe + .apps-gruppe { margin-top: 8px; }
+    .apps-gruppe > h2 { margin: 0 0 18px; font-family: var(--serif); font-weight: 400; font-size: clamp(1.5rem, 3vw, 1.9rem); }
+    .apps-gruppe .body h3 { margin: 0 0 6px; font-size: 1.15rem; }
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -34,9 +40,27 @@
     <!--
       Neue App: einen <article class="card">-Block kopieren (wie hier). Die Vorschau ist eine Animation aus icons.js (data-icon).
       Alpha-Seiten nur mit Freigabe verlinken (REGELN §14, ein Test prüft das); ORMA ist seit dem 27. September 2026 freigegeben.
-      Seit dem 17. Oktober 2026 vier Karten, darum zwei mal zwei (.grid--paare, wie auf «Masterprompts»); seit dem 19. Oktober 2026 fünf, OMNA COLOR steht allein in der letzten Reihe.
+      Seit dem 17. Oktober 2026 vier Karten, darum zwei mal zwei (.grid--paare, wie auf «Masterprompts»); seit dem 19. Oktober 2026 sechs Karten in drei Gruppen.
     -->
-    <section class="grid grid--stapel grid--paare" aria-label="Apps">
+    <!-- Seit dem 19. Oktober 2026 in drei Gruppen (Wunsch: «Leg es zu den Apps. Unterscheide dort: bild/video: PHORMA III, PHORMA I, THE FICTORY –
+         text/theorie: ORMA, ORNA – gestaltung: OMNA COLOR»); in jeder Gruppe zwei Karten je Reihe (.grid--paare), die Titel der Karten als h3 -->
+    <section class="apps-gruppe" aria-labelledby="gruppe-bild">
+      <h2 id="gruppe-bild">Bild und Video</h2>
+      <div class="grid grid--stapel grid--paare">
+      <!-- PHORMA III: Alpha-Version, als App installierbar, seit 19. Oktober 2026 als erste Karte unter «Bild und Video» (Wunsch: «Leg es zu den Apps»,
+           REGELN §14). Führt auf die App-Seite app/ (eigene Vorschaukachel beim Teilen). Bild: dasselbe Motiv wie die Kachel, die Kugel aus Fäden mit
+           der Traube (assets/vorschau-phorma-iii.jpg aus tools/phorma-iii-bilder.mjs; Wunsch: «Kannst du das Bild auch im Beitrag bringen?») -->
+      <article class="card">
+        <a class="thumb" href="../alpha/phorma-iii/app/" tabindex="-1" aria-hidden="true">
+          <img src="../assets/vorschau-phorma-iii.jpg" alt="" width="640" height="800" loading="lazy">
+        </a>
+        <div class="body">
+          <h3>PHORMA III</h3>
+          <p>Aus Klang wird Bild. Zu Musik oder einer Stimme entstehen Gewebe aus feinen Linien, ein Faden im Würfel aus Licht oder glänzende Perlen in einer Kugel aus Fäden; ein Video wird gescratcht und verfrickelt. Am Schluss entsteht das Logo aus dem Effekt. Ein Video mit Ton für Social Media. Lässt sich auf dem Startbildschirm installieren und läuft auch ohne Netz; alles bleibt auf dem Gerät.</p>
+          <ul class="tags"><li>App</li><li>Video</li><li>Ton</li><li>Alpha</li></ul>
+          <a class="link" href="../alpha/phorma-iii/app/">Öffnen <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
 
       <!-- PHORMA I: Alpha-Version, als App installierbar, seit 17. Oktober 2026 als erste Karte (Wunsch: «Jetzt daraus eine App bauen ("PHORMA I"). Und bei den Apps
            als Beitrag präsentieren (als erster Eintrag)», REGELN §14). Führt auf die App-Seite app/ (eigene Vorschaukachel beim Teilen).
@@ -46,7 +70,7 @@
           <img src="../assets/vorschau-phorma-i.jpg" alt="" width="640" height="800" loading="lazy">
         </a>
         <div class="body">
-          <h2>PHORMA I</h2>
+          <h3>PHORMA I</h3>
           <p>Als erste Anwendung in einer langen Reihe: PHORMA I. Aus einem Foto wird ein Film: Es zerfällt in Linien, Formen und Farben, verwandelt sich in Funken, Glas, Scherben, Echo und Gebirge oder wird im Flug erkundet. Ein Video im Hochformat für Social Media. Lässt sich auf dem Startbildschirm installieren und läuft auch ohne Netz; dein Foto bleibt auf dem Gerät.</p>
           <ul class="tags"><li>App</li><li>Video</li><li>Alpha</li></ul>
           <a class="link" href="../alpha/bildfragmentieren/app/">Öffnen <span aria-hidden="true">→</span></a>
@@ -60,10 +84,28 @@
           <img src="../assets/vorschau-the-fictory-app.jpg" alt="" width="640" height="800" loading="lazy">
         </a>
         <div class="body">
-          <h2>The Fictory</h2>
+          <h3>The Fictory</h3>
           <p>Leg ein Bild auf die Werkbank: Es zerfällt in seine Teile, ordnet sich neu, hinterlässt Spuren und setzt sich am Ende neu zusammen. Eine Animation, sechs Standbilder und ein Video. Lässt sich auf dem Startbildschirm installieren und läuft auch ohne Netz; dein Bild bleibt auf dem Gerät.</p>
           <ul class="tags"><li>App</li><li>Bild</li><li>Alpha</li></ul>
           <a class="link" href="../alpha/the-fictory/app/">Öffnen <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+      </div>
+    </section>
+
+    <section class="apps-gruppe" aria-labelledby="gruppe-text">
+      <h2 id="gruppe-text">Text und Theorie</h2>
+      <div class="grid grid--stapel grid--paare">
+      <!-- ORMA: Alpha-Version, verlinkt von hier und aus den News (REGELN §14) -->
+      <article class="card card--svg">
+        <a class="thumb split-invert" href="../alpha/orma/" tabindex="-1" aria-hidden="true">
+          <svg class="post-anim" data-icon="rad" viewBox="0 0 200 200"></svg>
+        </a>
+        <div class="body">
+          <h3>ORMA</h3>
+          <p>Ein Kunst- und Denkspiel mit dem Zufall: Das Rad bringt eine Künstlerin oder einen Künstler mit einer Theoretikerin oder einem Theoretiker zusammen. Zu zweit antwortet ihr getrennt, deckt auf und denkt gemeinsam weiter. Allein spielst du «Re-Entry» und antwortest später noch einmal, als spätere Version deiner selbst. Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke.</p>
+          <ul class="tags"><li>App</li><li>Spiel</li><li>Alpha</li></ul>
+          <a class="link" href="../alpha/orma/">Spielen <span aria-hidden="true">→</span></a>
         </div>
       </article>
 
@@ -72,26 +114,18 @@
           <svg class="post-anim" data-icon="rad" viewBox="0 0 200 200"></svg>
         </a>
         <div class="body">
-          <h2>ORNA</h2>
+          <h3>ORNA</h3>
           <p>Die App zu «Nebeneinander, Nacheinander»: Auf zwei gegenläufigen Ringen begegnen sich Künstler:innen und Theoretiker:innen. Eine Drehung, eine Begegnung, ein kurzer Text und eine offene Frage. Lässt sich auf dem Startbildschirm installieren und läuft auch ohne Netz.</p>
           <ul class="tags"><li>App</li><li>Interaktiv</li><li>Offline</li></ul>
           <a class="link" href="../portfolio/nebeneinander-nacheinander/">Öffnen <span aria-hidden="true">→</span></a>
         </div>
       </article>
+      </div>
+    </section>
 
-      <!-- ORMA: Alpha-Version, verlinkt von hier und aus den News (REGELN §14) -->
-      <article class="card card--svg">
-        <a class="thumb split-invert" href="../alpha/orma/" tabindex="-1" aria-hidden="true">
-          <svg class="post-anim" data-icon="rad" viewBox="0 0 200 200"></svg>
-        </a>
-        <div class="body">
-          <h2>ORMA</h2>
-          <p>Ein Kunst- und Denkspiel mit dem Zufall: Das Rad bringt eine Künstlerin oder einen Künstler mit einer Theoretikerin oder einem Theoretiker zusammen. Zu zweit antwortet ihr getrennt, deckt auf und denkt gemeinsam weiter. Allein spielst du «Re-Entry» und antwortest später noch einmal, als spätere Version deiner selbst. Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke.</p>
-          <ul class="tags"><li>App</li><li>Spiel</li><li>Alpha</li></ul>
-          <a class="link" href="../alpha/orma/">Spielen <span aria-hidden="true">→</span></a>
-        </div>
-      </article>
-
+    <section class="apps-gruppe" aria-labelledby="gruppe-gestaltung">
+      <h2 id="gruppe-gestaltung">Gestaltung</h2>
+      <div class="grid grid--stapel grid--paare">
       <!-- OMNA COLOR: seit dem 19. Oktober 2026 hier, als letzte Karte (Wunsch: «"ORMA COLOR" [gemeint: OMNA COLOR] herausnehmen, sowohl als APP wie als Web-Anwendung bauen
            und bei den APPs (als letzte) unterbringen»); vorher ein Beitrag auf «Web». Zwei Wege: die App-Seite app/ (installieren, eigene Vorschaukachel) und die Web-Anwendung
            im Browser. Bild: das App-Symbol als Kachel über einem leisen Rad (assets/vorschau-omna-color-app.jpg aus tools/omna-icons.mjs) -->
@@ -100,14 +134,14 @@
           <img src="../assets/vorschau-omna-color-app.jpg" alt="" width="640" height="800" loading="lazy">
         </a>
         <div class="body">
-          <h2>OMNA COLOR</h2>
+          <h3>OMNA COLOR</h3>
           <p>Zwei Farbräder drehen gegeneinander. Zeigen sie zwei Farben, verbindet die Übung beide Themen, zeigen sie dieselbe Farbe, bleibt es beim reinen Thema. Gezogen wird aus 180 Gestaltungsübungen, mit dem Daumen oder per Knopf. Im Browser oder als App auf dem Startbildschirm, auch ohne Netz.</p>
           <ul class="tags"><li>App</li><li>Farbe</li><li>Alpha</li></ul>
           <a class="link" href="../alpha/omna-color/app/">Als App <span aria-hidden="true">→</span></a>
           <a class="link link--next" href="../alpha/omna-color/">Im Browser spielen <span aria-hidden="true">→</span></a>
         </div>
       </article>
-
+      </div>
     </section>
 
     <p class="back"><a href="../">← Zur Startseite</a></p>
