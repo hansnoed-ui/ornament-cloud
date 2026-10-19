@@ -8,13 +8,14 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { ziel, quadMaterial } from "./gemeinsam.js?v=14";
-import { FPS, kette, laufend } from "./ablauf.js?v=14";
-import { gewebe } from "./gewebe.js?v=14";
-import { irrfahrt } from "./irrfahrt.js?v=14";
-import { video } from "./video.js?v=14";
+import { ziel, quadMaterial } from "./gemeinsam.js?v=15";
+import { FPS, kette, laufend } from "./ablauf.js?v=15";
+import { gewebe } from "./gewebe.js?v=15";
+import { irrfahrt } from "./irrfahrt.js?v=15";
+import { traube } from "./traube.js?v=15";
+import { video } from "./video.js?v=15";
 
-const FABRIK = { gewebe, irrfahrt, lichtwuerfel: (g, teil) => irrfahrt(g, teil, { fest: true }), video };
+const FABRIK = { gewebe, irrfahrt, lichtwuerfel: (g, teil) => irrfahrt(g, teil, { fest: true }), traube, video };
 
 const SUMME = /* glsl */ `uniform sampler2D tQuelle; uniform float uGewicht; varying vec2 vUv; void main() { gl_FragColor = vec4(texture2D(tQuelle, vUv).rgb * uGewicht, 1.0); }`;
 const AUSGABE = /* glsl */ `
@@ -41,7 +42,7 @@ const AUSGABE = /* glsl */ `
   }`;
 
 /**
- * Die Bühne für ein Bild (Canvas in Filmgrösse B × H) und seine Analyse; ablauf: "gewebe" | "irrfahrt" | "lichtwuerfel" | "video". optionen: grob (Telefon), test (klein), quelle ("foto" | "text" | "video" |
+ * Die Bühne für ein Bild (Canvas in Filmgrösse B × H) und seine Analyse; ablauf: "gewebe" | "irrfahrt" | "lichtwuerfel" | "traube" | "video". optionen: grob (Telefon), test (klein), quelle ("foto" | "text" | "video" |
  * "ton"), ton (Analyse einer Tonspur, ton.js, oder null), laenge (Dauer des Gewebes nach der Tonspur), signet (mit Logo am Schluss), saetze (Bilder
  * aus dem Video), film (die Filmspur für den Effekt Video: { bild(t, { vorschau }), karte(t), index(t), n }). bild(zeit, t, w, h, { proben, verschluss, vorschau }) → Leinwand; zaehler(zeit, t) → Text für die Beschriftung; entsorgen().
  */
@@ -73,7 +74,8 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
     w = nw; h = nh;
     renderer.setSize(w, h, false);
     for (const r of [rtMix, rtSumme]) r?.dispose();
-    rtMix = ziel(w, h); rtSumme = ziel(w, h);   // HalfFloat: Mischen in Float32 braucht EXT_float_blend, das viele Telefone nicht haben
+    // HalfFloat: Mischen in Float32 braucht EXT_float_blend, das viele Telefone nicht haben; mit Tiefe, wenn der Effekt sie braucht (die Traube)
+    rtMix = ziel(w, h, { depthBuffer: !!effekt.tiefe }); rtSumme = ziel(w, h);
     bloom?.dispose();
     bloom = new UnrealBloomPass(new THREE.Vector2(w, h), 0, 0.5, 0.8);   // nur das Hellste leuchtet nach
     bloom.highPassUniforms.smoothWidth.value = 0.2;
@@ -94,7 +96,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, quelle = "
     const szenen = (effekt.vorab?.szenen ?? []).map(([s, k], j) => [`${art} Szene ${j + 1}`, s, k]);
     groesse(Math.round(B * (grob ? 0.6 : 0.85)), Math.round(H * (grob ? 0.6 : 0.85)));
     const bloomProgramme = Object.values(bloom).flat().filter((m) => m?.isShaderMaterial).map((m, j) => [`Bloom ${j + 1}`, m]);
-    for (const [name, m] of [...(effekt.vorab?.materialien ?? []).map((m, j) => [`${art} Programm ${j + 1}`, m]), ["Belichtung", summe], ...(art === "irrfahrt" || art === "lichtwuerfel" ? bloomProgramme : [])]) {
+    for (const [name, m] of [...(effekt.vorab?.materialien ?? []).map((m, j) => [`${art} Programm ${j + 1}`, m]), ["Belichtung", summe], ...(["irrfahrt", "lichtwuerfel", "traube"].includes(art) ? bloomProgramme : [])]) {
       const s = new THREE.Scene(); s.add(new THREE.Mesh(flaeche, m)); szenen.push([name, s, ortho]);
     }
     const aus = new THREE.Scene(); aus.add(new THREE.Mesh(flaeche, ausgabe));

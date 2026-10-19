@@ -7,6 +7,8 @@
 // Irrfahrt (seit 18. Oktober 2026, Wunsch nach einem Video: ein Faden irrt durch einen Würfel aus Licht – «gerne viiiiiel krasser»):
 //   01 Würfel (er zeichnet sich, der Faden beginnt) → 02 Irrfahrt (der Faden quillt mit der Musik zu Rauch auf, bei Schlägen springt alles) →
 //   03 Logo (mit Signet) oder 03 Stille (der Faden zieht sich zusammen). Schwarz; danach kein Stehen, das letzte Bild hält.
+// Traube (seit 19. Oktober 2026, Wunsch nach einem Video «UVA»: glänzende rote Perlen in einer Kugel aus Fäden): 01 Keim (aus dem Dunkeln wächst
+//   die Traube) → 02 Traube (Schnitte im Takt, der Bass lässt sie glühen) → 03 Logo (die Perlen fädeln sich auf die Schlaufe) oder 03 Stille.
 // Video (seit 18. Oktober 2026, das Video selbst ist das Bild, video.js): 01 Video (so lang wie der Ton) → 02 Logo (das Video taucht ins Schwarz)
 //   oder 02 Ende (das letzte Bild hält).
 // Der Aufbau (Kette aus Teilen, Phasen, laufend) ist derselbe wie in PHORMA II, mit einem einzigen Teil.
@@ -20,12 +22,15 @@ export const filmMass = (format = "4:5") => (format === "9:16" ? [1080, 1920] : 
 /** das Logo am Ende (mit Signet): es entsteht aus dem Gewebe, legt sich glatt, der Schriftzug wird getippt */
 export const LOGO = 4.6;
 /** was nach dem Effekt noch kommt (für die Länge nach der Tonspur): mit Logo (und immer bei der Irrfahrt) nur der Schluss, sonst Stehen und Schluss */
-export const NACH = (signet, art = "gewebe") => (signet || art === "irrfahrt" || art === "lichtwuerfel" || art === "video" ? 0.3 : 3.2 + 0.3);
+/** die Effekte auf Schwarz ohne Stehen auf dem Bild: nach ihnen hält das letzte Bild */
+const OHNE_STEHEN = ["irrfahrt", "lichtwuerfel", "traube", "video"];
+export const NACH = (signet, art = "gewebe") => (signet || OHNE_STEHEN.includes(art) ? 0.3 : 3.2 + 0.3);
 
 export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 // der Lichtwürfel (seit 19. Oktober 2026): die Irrfahrt mit einem stehen bleibenden, ruhig drehenden Würfel (irrfahrt.js, fest)
-export const EFFEKTE = ["gewebe", "irrfahrt", "lichtwuerfel", "video"];
-export const TITEL = { gewebe: "Gewebe", irrfahrt: "Irrfahrt", lichtwuerfel: "Lichtwürfel", video: "Video" };
+// die Traube (seit 19. Oktober 2026): Perlen und Fäden, traube.js
+export const EFFEKTE = ["gewebe", "irrfahrt", "lichtwuerfel", "traube", "video"];
+export const TITEL = { gewebe: "Gewebe", irrfahrt: "Irrfahrt", lichtwuerfel: "Lichtwürfel", traube: "Traube", video: "Video" };
 export const KETTE = "gewebe";
 /** ein gemerkter oder unbekannter Name ergibt das Gewebe */
 export const ablaufName = (a) => (EFFEKTE.includes(String(a ?? "")) ? String(a) : KETTE);
@@ -45,6 +50,11 @@ export function rolle({ art = KETTE, laenge = null, signet = false } = {}) {
   if (art === "irrfahrt" || art === "lichtwuerfel") {
     const ende = signet ? ["logo", "Logo", LOGO] : ["stille", "Stille", 2.4];
     const phasen = [["wuerfel", "Würfel", 1.0], ["irrfahrt", "Irrfahrt", laenge ? Math.max(3.2, laenge - 1.0 - ende[2]) : 14], ende];
+    return { art, erst: true, letzt: true, vorher: null, naechstes: null, phasen, dauer: phasen.reduce((s, p) => s + p[2], 0), ueber: 0, uebergang: "schnitt" };
+  }
+  if (art === "traube") {
+    const ende = signet ? ["logo", "Logo", LOGO] : ["stille", "Stille", 2.4];
+    const phasen = [["keim", "Keim", 1.2], ["traube", "Traube", laenge ? Math.max(3.2, laenge - 1.2 - ende[2]) : 14], ende];
     return { art, erst: true, letzt: true, vorher: null, naechstes: null, phasen, dauer: phasen.reduce((s, p) => s + p[2], 0), ueber: 0, uebergang: "schnitt" };
   }
   const phasen = signet
@@ -77,7 +87,7 @@ export function zeitachse({ tempo = "normal", signet = true, laenge = null, abla
   const phasen = K.phasen.map((p) => ({ ...p, von: von + p.von * f, bis: von + p.bis * f }));
   t = von + K.dauer * f;
   const abschnitt = { von, bis: t };
-  if (signet || art === "irrfahrt" || art === "lichtwuerfel" || art === "video") dazu("schluss", 0.3);                  // das Logo (die Stille) gehört zum Effekt: danach nur noch der Schluss
+  if (signet || OHNE_STEHEN.includes(art)) dazu("schluss", 0.3);                  // das Logo (die Stille) gehört zum Effekt: danach nur noch der Schluss
   else { dazu("stehen", 3.2); dazu("schluss", 0.3); }
   return { ab, ablauf: art, abschnitt, teile, phasen, dauer: t, bilder: Math.round(t * 30), tempo: f };
 }

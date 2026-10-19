@@ -55,7 +55,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=14");
+  const { bild } = await import("./film.js?v=15");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -174,7 +174,7 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
   // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Logo; mitten in einer anders als ohne; der
   // Schriftzug wird getippt und steht nach 2,6 s
   const logo = await page.evaluate(async () => {
-    const { bild, logoZeichen } = await import("./film.js?v=14");
+    const { bild, logoZeichen } = await import("./film.js?v=15");
     const S = window.__phorma, sz = { ...S.sz, buehne: null, beschriftung: false }, L = sz.logo, e = L.plan.find((x) => x.art >= 0.2 && x.t < L.bis - 1);
     const zeichne = (z, t) => { const c = document.createElement("canvas"); c.width = 270; c.height = 338; const x = c.getContext("2d"); x.setTransform(0.25, 0, 0, 0.25, 0, 0); bild(x, z, t); return c.toDataURL(); };
     const t = e.t + e.dauer * 0.3;
@@ -429,7 +429,7 @@ const zaehlvideo = (page, { sekunden = 12, drehung = 0 } = {}) => page.evaluate(
 }, [sekunden, drehung]).then((b) => Buffer.from(b, "base64"));
 /** das Bild des Films zur Zeit t (halbe Grösse, ohne Beschriftung): die Nummer aus den 3 × 3 Feldern und die Farben links und rechts der Mitte */
 const zaehlerLesen = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=14");
+  const { bild } = await import("./film.js?v=15");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -449,7 +449,7 @@ await check("Irrfahrt: das Stottern zeigt nie Reste des Logos (beide teilen eine
   await page.waitForFunction(() => window.__phorma.ton && window.__phorma.A, null, { timeout: 60_000 });
   await bereit(page);
   const r = await page.evaluate(async () => {
-    const { bild } = await import("./film.js?v=14");
+    const { bild } = await import("./film.js?v=15");
     const S = window.__phorma; S.laeuft = false;
     // die Bühne mit einer einzigen Lage: so stottert jedes Ereignis (sonst fällt es vor einem Sprung aus), und die Leinwand wird gebraucht
     const b = S.buehne, buehne = { bild: (...x) => b.bild(...x), lage: () => 0, get ende() { return b.ende; } };
@@ -708,6 +708,53 @@ await check("Lichtwürfel: die Irrfahrt mit einem stehen bleibenden, ruhig drehe
   assert.ok((await messe(page, lw.phasen[2][2] - 0.3)).tinte > 0.001, "am Ende das Logo");
   await page.reload(); await bereit(page);
   assert.equal(await page.evaluate(() => window.__phorma.ablauf), "lichtwuerfel", "die Wahl bleibt");
+  assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
+await check("Traube: wählbar und gemerkt; schwarz mit roten Perlen, neue Einstellungen im Takt; am Ende die Schlaufe aus Perlen mit Schriftzug; ohne Signet die Stille", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  await page.click('[data-quelle="ton"]');
+  await page.waitForSelector("#tondatei:not([disabled])", { timeout: 120_000 });
+  await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
+  await page.waitForFunction(() => window.__phorma.ton && window.__phorma.A, null, { timeout: 60_000 });
+  await page.click('[data-wahl="traube"]');
+  assert.equal(await page.getAttribute('[data-wahl="traube"]', "aria-pressed"), "true");
+  await page.waitForFunction(() => window.__phorma.ablauf === "traube" && window.__phorma.buehneSchluessel.includes("|traube|"));
+  await bereit(page);
+  const ph = await page.evaluate(() => window.__phorma.sz.zeit.phasen.map((p) => [p.name, p.von, p.bis]));
+  assert.deepEqual(ph.map((p) => p[0]), ["keim", "traube", "logo"]);
+  // mehrere Einstellungen (Lagen) in der Traube, aber nicht bei jedem Bild eine neue
+  const lagen = await page.evaluate(([a, b]) => { const S = window.__phorma, l = []; for (let t = a + 0.05; t < b; t += 1 / 30) l.push(S.buehne.lage(S.sz.zeit, t)); return { n: new Set(l).size, wechsel: l.filter((x, i) => i && x !== l[i - 1]).length, bilder: l.length }; }, [ph[1][1], ph[1][2]]);
+  assert.ok(lagen.n >= 3 && lagen.wechsel < lagen.bilder / 20, `Schnitte im Takt (${lagen.n} Einstellungen, ${lagen.wechsel} Wechsel)`);
+  // rot auf Schwarz: der Anteil deutlich roter Punkte (die Fäden sind weiss)
+  const rot = (t) => page.evaluate(async (t) => {
+    const { bild } = await import("./film.js?v=15");
+    const S = window.__phorma, w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
+    x.setTransform(0.5, 0, 0, 0.5, 0, 0); bild(x, { ...S.sz, buehne: S.buehne, beschriftung: false }, t);
+    const d = x.getImageData(0, 0, w, h).data; let n = 0;
+    for (let i = 0; i < d.length; i += 4) if (d[i] > 70 && d[i] > 1.8 * d[i + 1]) n++;
+    return n / (w * h);
+  }, t);
+  const mitte = [];
+  for (let t = ph[1][1] + 0.3; t < ph[1][2]; t += 0.6) mitte.push(await messe(page, t));
+  // dunkel; ein Blitz oder eine nahe, unscharfe Perle darf heller sein (wie im Vorbild), aber nie ein Negativ
+  assert.ok(mitte.every((m) => m.hell < 140) && mitte.filter((m) => m.hell < 60).length >= mitte.length * 0.7, `dunkel, nie Negativ (${mitte.map((m) => m.hell.toFixed(0)).join(" ")})`);
+  assert.ok(mitte.filter((m) => m.tinte > 0.01).length >= mitte.length * 0.7, "Perlen und Fäden zu sehen");
+  assert.ok(new Set(mitte.map((m) => m.abdruck)).size === mitte.length, "es bewegt sich");
+  const rote = []; for (let t = ph[1][1] + 0.3; t < ph[1][2]; t += 1.2) rote.push(await rot(t));
+  assert.ok(rote.filter((r) => r > 0.01).length >= rote.length * 0.6, `rote Perlen (${rote.map((r) => r.toFixed(3)).join(" ")})`);
+  const ende = await messe(page, ph[2][2] - 0.2);
+  assert.ok(ende.tinte > 0.002 && ende.hell < 40, `am Ende die Schlaufe aus Perlen auf Schwarz (${ende.tinte.toFixed(4)})`);
+  assert.ok((await rot(ph[2][2] - 0.2)) > 0.001, "die Perlen der Schlaufe rot");
+  // ohne Signet: die Stille, danach hält das letzte Bild (fast schwarz)
+  await page.uncheck("#signet");
+  await page.waitForFunction(() => window.__phorma.sz.zeit.phasen.at(-1).name === "stille" && window.__phorma.buehneSchluessel.includes("|false"));
+  await bereit(page);
+  const d = await page.evaluate(() => window.__phorma.sz.zeit.dauer), still = await messe(page, d - 0.05);
+  assert.ok(still.hell < 12, `am Ende dunkel (${still.hell.toFixed(1)})`);
+  await page.reload(); await bereit(page);
+  assert.equal(await page.evaluate(() => window.__phorma.ablauf), "traube", "die Wahl bleibt");
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });

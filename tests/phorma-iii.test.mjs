@@ -76,7 +76,7 @@ test("Filmspur: Drehung aus der Matrix der Spur, Zuordnung der dekodierten Bilde
 });
 
 test("Irrfahrt und Lichtwürfel: Würfel, Irrfahrt, Logo oder Stille; kein Stehen, nach dem Effekt nur der Schluss; Unbekanntes ergibt das Gewebe", () => {
-  assert.deepEqual(A.EFFEKTE, ["gewebe", "irrfahrt", "lichtwuerfel", "video"]);
+  assert.deepEqual(A.EFFEKTE, ["gewebe", "irrfahrt", "lichtwuerfel", "traube", "video"]);
   assert.equal(A.TITEL.lichtwuerfel, "Lichtwürfel");
   // der Lichtwürfel hat dieselbe Rolle wie die Irrfahrt
   const lw = A.zeitachse({ ablauf: "lichtwuerfel", laenge: 30 });
@@ -94,6 +94,62 @@ test("Irrfahrt und Lichtwürfel: Würfel, Irrfahrt, Logo oder Stille; kein Stehe
   assert.equal(A.NACH(false, "irrfahrt"), 0.3); assert.equal(A.NACH(false, "gewebe"), 3.5);
   assert.ok(A.zeitachse({ ablauf: "irrfahrt", laenge: 2 }).phasen[1].bis - A.zeitachse({ ablauf: "irrfahrt", laenge: 2 }).phasen[1].von >= 3.2);
   assert.equal(A.zeitachse({ ablauf: "irrfahrt", tempo: "ruhig", signet: false }).tempo, 1.3, "ohne Ton im Tempo");
+});
+
+test("Traube: Keim, Traube, Logo oder Stille; kein Stehen, nach dem Effekt nur der Schluss; so lang wie der Ton", () => {
+  assert.equal(A.TITEL.traube, "Traube"); assert.equal(A.ablaufName("traube"), "traube"); assert.equal(A.NACH(false, "traube"), 0.3);
+  const mit = A.zeitachse({ ablauf: "traube", laenge: 30 }), ohne = A.zeitachse({ ablauf: "traube", laenge: 30, signet: false });
+  assert.deepEqual(mit.phasen.map((p) => p.name), ["keim", "traube", "logo"]);
+  assert.deepEqual(ohne.phasen.map((p) => p.name), ["keim", "traube", "stille"]);
+  for (const z of [mit, ohne]) {
+    assert.ok(Math.abs(z.abschnitt.bis - z.abschnitt.von - 30) < 1e-9, "so lang wie verlangt");
+    assert.equal(z.ab.stehen, undefined); assert.ok(Math.abs(z.dauer - z.abschnitt.bis - 0.3) < 1e-9, "danach nur der Schluss");
+  }
+  assert.ok(Math.abs(mit.phasen[2].bis - mit.phasen[2].von - A.LOGO) < 1e-9);
+  assert.ok(A.zeitachse({ ablauf: "traube", laenge: 2 }).phasen[1].bis - A.zeitachse({ ablauf: "traube", laenge: 2 }).phasen[1].von >= 3.2);
+});
+
+test("Traube: Perlen wiederholbar, in der Kugel, Ketten nach hinten kleiner; jede Art je vier Zustände einmal; die Schlaufe als Perlenschnur", async () => {
+  const Tp = await import(new URL("traubenplan.js", P).href);
+  const bau = Tp.traubenBau(560), a = new Float32Array(560 * 5), b = new Float32Array(560 * 5);
+  Tp.perlenLegen(bau, { art: "kugel", saat: 10 }, 3.2, a); Tp.perlenLegen(bau, { art: "kugel", saat: 10 }, 3.2, b);
+  assert.deepEqual(a, b, "dieselbe Zeit, dasselbe Bild");
+  Tp.perlenLegen(bau, { art: "kugel", saat: 10 }, 3.4, b);
+  assert.notDeepEqual(a, b, "mit der Zeit der Musik bewegt");
+  let sichtbar = 0;
+  for (let i = 0; i < 560; i++) {
+    const r = a[i * 5 + 3], l = Math.hypot(a[i * 5], a[i * 5 + 1], a[i * 5 + 2]);
+    assert.ok(Number.isFinite(l) && r >= 0 && r < 0.06, `Perle ${i}`);
+    if (r > 0 && a[i * 5 + 4] < 0.5) { sichtbar++; assert.ok(l < 0.8, `in der Kugel der Fäden (${l.toFixed(2)})`); }
+  }
+  assert.ok(sichtbar > 300, `die meisten Perlen zu sehen (${sichtbar})`);
+  // der Bass sprengt auf, der Schlag lässt schwellen
+  const k = new Float32Array(560 * 5); Tp.perlenLegen(bau, { art: "kugel", saat: 10 }, 3.2, k, { knall: 1, puls: 1 });
+  const weite = (q) => q.reduce((s, _, i) => (i % 5 === 0 ? s + Math.hypot(q[i], q[i + 1], q[i + 2]) : s), 0), groesse = (q) => q.reduce((s, v, i) => (i % 5 === 3 ? s + v : s), 0);
+  assert.ok(weite(k) > weite(a) * 1.3 && groesse(k) > groesse(a) * 1.2);
+  // nah: deutlich weniger Perlen, die Kette im Blick dabei
+  const n = new Float32Array(560 * 5); Tp.perlenLegen(bau, { art: "nah", saat: 10 }, 3.2, n);
+  const zahl = (q) => q.filter((v, i) => i % 5 === 3 && v > 0).length;
+  assert.ok(zahl(n) < zahl(a) * 0.65, `nah weniger Perlen (${zahl(n)} gegen ${zahl(a)})`);
+  // die Arten: in jedem Block zu vier jede einmal, nie dieselbe zweimal hintereinander
+  const arten = Array.from({ length: 40 }, (_, i) => Tp.artBei(i + 1));
+  assert.equal(Tp.artBei(0), "kugel");
+  for (let i = 0; i < 40; i += 4) assert.deepEqual([...arten.slice(i, i + 4)].sort(), [...Tp.ARTEN].sort());
+  for (let i = 1; i < 40; i++) assert.notEqual(arten[i], arten[i - 1], `Zustand ${i + 1}`);
+  // die Kamera: Ziel und Schärfe endlich, die Schärfe in der Nähe zieht nach
+  for (const art of Tp.ARTEN) { const e = Tp.einstellung({ art, saat: 17 }, 1); assert.ok([...e.pos, ...e.ziel, e.fokus, e.apertur].every(Number.isFinite) && e.fokus > 0); }
+  assert.ok(Tp.einstellung({ art: "nah", saat: 17 }, 0).fokus < Tp.einstellung({ art: "nah", saat: 17 }, 2.5).fokus);
+  // die Schlaufe: mittig, wie im Signet 420 von 1920 Punkten hoch; Perlen gleichmässig, ohne sich zu überdecken, mit Beeren daneben
+  const sw = Tp.schlaufeWelt(1080, 1350), xs = sw.filter((_, i) => i % 3 === 0), ys = sw.filter((_, i) => i % 3 === 1);
+  assert.ok(Math.abs((Math.min(...xs) + Math.max(...xs)) / 2) < 1e-6, "mittig");
+  assert.ok(Math.abs(Math.max(...xs) - Math.min(...xs) - (420 / 1350) * 2) < 0.01 || Math.abs(Math.max(...ys) - Math.min(...ys) - (420 / 1350) * 2) < 0.01, "so gross wie im Signet");
+  const { lage, anzahl } = Tp.perlenAufZuegen([sw], 150, { r: 0.017, abstand: 1.9, beeren: 30, saat: 9 });
+  assert.ok(anzahl > 100 && anzahl <= 150, `${anzahl} Perlen`);
+  for (let i = 1; i < anzahl - 30; i++) {
+    const d = Math.hypot(lage[i * 4] - lage[i * 4 - 4], lage[i * 4 + 1] - lage[i * 4 - 3]);
+    assert.ok(d > 0.9 * Math.max(lage[i * 4 + 3], lage[i * 4 - 1]) * 1.6, `Perle ${i} zu nah`);
+  }
+  assert.ok(lage[(anzahl - 1) * 4 + 3] > 0 && lage[anzahl * 4 + 3] === 0, "die übrigen leer");
 });
 
 test("Irrfahrt: der Zufallsweg bleibt im Würfel, kommt herum, ist wiederholbar und je Zustand ein anderer; Züge werden gleichmässig verbunden", async () => {
@@ -445,13 +501,13 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /data-tonart="musik">Musik[\s\S]*data-tonart="stimme">Stimme/, "Musik oder Stimme");
   assert.match(html, /id="saeubern" checked> Säubern und klären[\s\S]*id="stimm-ablauf" checked> Scratch → Stimme → Gefrickel[\s\S]*id="stimm-dnb" checked> mit Drum and Bass/, "die Stimme: säubern, der Ablauf, Drum and Bass");
   assert.match(html, /id="signet" checked> Logo am Schluss/);
-  assert.match(html, /data-wahl="gewebe" aria-pressed="true"[\s\S]*data-wahl="irrfahrt"[\s\S]*data-wahl="video"/, "drei Effekte: Gewebe, Irrfahrt und Video");
+  assert.match(html, /data-wahl="gewebe" aria-pressed="true"[\s\S]*data-wahl="irrfahrt"[\s\S]*data-wahl="lichtwuerfel"[\s\S]*data-wahl="traube"[\s\S]*data-wahl="video"/, "fünf Effekte: Gewebe, Irrfahrt, Lichtwürfel, Traube und Video");
   assert.match(html, /id="ausschnitt-film"[\s\S]*id="ausschnitt-bild"/, "beim Ton aus dem Video: Filmstreifen über der Wellenform");
   assert.match(html, /id="video-ausschnitt"[\s\S]*id="video-streifen"[\s\S]*id="video-von"/, "mit eigener Audiodatei: der Ausschnitt des Videos");
   assert.ok(!/data-(effekt|tiefe)=|data-wahl="(physarum|tiefe|tuch)/.test(html), "keine Kette und keine Tiefe: das ist PHORMA II");
   assert.match(html, /href="\.\.\/phorma-ii\/"/, "Hinweis auf PHORMA II");
   const dateien = readdirSync(P).filter((f) => f.endsWith(".js")), marken = new Set();
-  for (const f of ["ablauf.js", "analyse.js", "app.js", "buehne.js", "film.js", "frickeln.js", "gemeinsam.js", "gewebe.js", "irrfahrt.js", "irrweg.js", "kurven.js", "stimme.js", "rechner.js", "textbild.js", "ton.js", "tonspur.js"]) assert.ok(dateien.includes(f), f);
+  for (const f of ["ablauf.js", "analyse.js", "app.js", "buehne.js", "film.js", "frickeln.js", "gemeinsam.js", "gewebe.js", "irrfahrt.js", "irrweg.js", "kurven.js", "stimme.js", "rechner.js", "textbild.js", "ton.js", "tonspur.js", "traube.js", "traubenplan.js"]) assert.ok(dateien.includes(f), f);
   for (const f of ["physarum.js", "tiefe.js", "tuch.js", "tuchsim.js", "tiefe-ki.js"]) assert.ok(!dateien.includes(f), `ohne ${f}`);
   for (const f of dateien) {
     const js = lies(f);
