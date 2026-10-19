@@ -7,9 +7,9 @@
 // Die Bilder der Bahn kommen in Päckchen, die Vorschau zeigt jeweils das letzte schon gerechnete; bereit (Promise) sagt, wann sie ganz da ist –
 // Video und Standbild warten darauf.
 import * as THREE from "three";
-import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=22";
-import { phase } from "./ablauf.js?v=22";
-import { wachstumBahn, ACHTEL, BILDER_JE_S } from "./wachstumsim.js?v=22";
+import { anteil, weich, inOut, quadMaterial, filmTextur } from "./gemeinsam.js?v=23";
+import { phase } from "./ablauf.js?v=23";
+import { wachstumBahn, ACHTEL, BILDER_JE_S } from "./wachstumsim.js?v=23";
 
 const VERTEX = /* glsl */ `
   attribute vec4 aStrecke;                 // x0, y0, x1, y1 in Punkten der Analyse (y nach unten)
@@ -59,9 +59,19 @@ export function wachstum(g, teil) {
   const bilder = [];
   let gesamt = 0, fertigGerechnet = false, rechner = null;
   const fortschritt = () => (fertigGerechnet ? 1 : gesamt ? Math.min(0.99, bilder.length / gesamt) : 0);
-  const bereit = new Promise((fertig) => {
+  // mit Video folgt die Linie dem bewegten Bild: je je Filmbilder ein kleines Bild des Videos (Etappe 2), vorher gesammelt
+  const je = g.grob ? 3 : 2;
+  async function filmBilder() {
+    if (!g.film?.klein) return null;
+    const ende = (F ?? W)[1], fw = Math.max(40, Math.round(A.w / 3)), fh = Math.max(50, Math.round(A.h / 3)), stellen = [];
+    for (let f = 0; f <= Math.round(ende * BILDER_JE_S); f += je) stellen.push(g.film.stelle(teil, f / BILDER_JE_S));
+    try { return { w: fw, h: fh, je, rgba: await g.film.klein(stellen, fw, fh) }; } catch { return null; }
+  }
+  let weg = false;   // entsorgt, während die Bilder des Videos noch gesammelt wurden: dann nicht mehr rechnen
+  const bereit = (async () => { auftrag.film = await filmBilder(); })().then(() => new Promise((fertig) => {
+    if (weg) { fertig(); return; }
     const hier = () => { const jeBild = (f, l) => { bilder[f] = l; }; const b = wachstumBahn({ ...auftrag, jeBild }); gesamt = b.bilder; fertigGerechnet = true; fertig(); };
-    try { rechner = new Worker(new URL("./wachstumrechner.js?v=22", import.meta.url), { type: "module" }); } catch { rechner = null; }
+    try { rechner = new Worker(new URL("./wachstumrechner.js?v=23", import.meta.url), { type: "module" }); } catch { rechner = null; }
     if (!rechner) { setTimeout(hier, 0); return; }   // ohne Worker einmal hier
     rechner.onmessage = (e) => {
       const d = e.data;
@@ -71,7 +81,7 @@ export function wachstum(g, teil) {
     };
     rechner.onerror = () => { rechner?.terminate(); rechner = null; bilder.length = 0; setTimeout(hier, 0); };
     rechner.postMessage({ nr: 1, ...auftrag });
-  });
+  }));
 
   // die Striche: höchstens so viele wie Punkte im letzten Bild (wächst bei Bedarf)
   const geo = new THREE.InstancedBufferGeometry();
@@ -111,9 +121,12 @@ export function wachstum(g, teil) {
     geo.instanceCount = anzahl = n;
   }
 
+  // mit Video: das laufende Bild für die Farben der Linie und darunter
+  const film = g.film ? filmTextur() : null;
   return {
     groesse(nw, nh) { w = nw; h = nh; },
-    render(rt, tau) {
+    render(rt, tau, opt = {}) {
+      if (film) { const tex = film.setzen(g.film.bild(teil, tau, opt.vorschau)) ?? g.fotoTex; mat.uniforms.tFoto.value = tex; unter.uniforms.tFoto.value = tex; }
       // das Bild der Bahn zu tau; ist es noch nicht gerechnet, das letzte, das schon da ist
       const f = Math.min(bilder.length - 1, Math.max(0, Math.floor(tau * BILDER_JE_S + 1e-6)));
       fuellen(f);
@@ -138,6 +151,6 @@ export function wachstum(g, teil) {
     bereit, fortschritt,
     vorab: { szenen: [[szene, kam]], materialien: [unter] },
     zaehler() { const z = (x) => x.toLocaleString("de-CH"); return `wachstum · punkte ${z(anzahl)}${fertigGerechnet ? "" : ` · rechnet ${Math.round(fortschritt() * 100)} %`}`; },
-    entsorgen() { rechner?.terminate(); geo.dispose(); mat.dispose(); unter.dispose(); },
+    entsorgen() { weg = true; rechner?.terminate(); geo.dispose(); mat.dispose(); unter.dispose(); film?.entsorgen(); },
   };
 }

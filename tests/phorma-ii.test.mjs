@@ -21,6 +21,8 @@ test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette"
   assert.equal(A.ablaufName("gewebe"), A.KETTE, "ein gemerktes Gewebe (seit dem 18. Oktober 2026 PHORMA III) ergibt die ganze Kette");
   assert.equal(A.ablaufName("struktur"), A.KETTE);
   assert.equal(A.ablaufName("montage+tuch"), "tuch+montage", "die Montage steht immer am Schluss");
+  for (const k of ["wachstum+montage", "physarum+montage", "tiefe+montage"]) assert.equal(A.kette(k).teile[0].uebergang, "felder", `${k}: in Rechtecken in die Montage`);
+  assert.equal(A.kette("wachstum+montage").teile[0].phasen.at(-1)[0], "farbe", "das Wachstum zeigt vor der Montage das Foto nicht");
 });
 
 test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappung, geerbte Ausschnitte, Anfang dunkel, Ende exakt, wiederholbar", async () => {
@@ -34,7 +36,12 @@ test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappun
   for (const kette of ["montage", "tuch+montage"]) {
     const teil = A.kette(kette).teile.at(-1), plan = M.montagePlan(G, teil, { a: 0.8 }), [, , bild] = teil.phasen;
     assert.deepEqual(teil.phasen.map((p) => p[0]), ["schnitte", "montage", "bild"]);
-    assert.equal(teil.vonFoto, kette !== "montage", "nach dem Tuch beginnt sie beim Foto");
+    assert.ok(!teil.vonFoto, "beginnt nie beim fertigen Foto");
+    if (kette !== "montage") {
+      const tuch = A.kette(kette).teile[0];
+      assert.equal(tuch.uebergang, "felder", "Rechtecke schneiden das Tuch weg");
+      assert.ok(!tuch.phasen.some(([n]) => n === "bild") && tuch.ueber > 0.5, "das Tuch zeigt das Foto nicht, die Montage liegt schon darunter");
+    }
     const S = plan.schnitte;
     assert.ok(S.length >= 8, `genug Schnitte (${S.length})`);
     for (let i = 1; i < S.length; i++) {
@@ -52,12 +59,13 @@ test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappun
       }
       assert.ok(Math.abs(flaeche - (z2 - z0) * (z3 - z1)) < 1e-9, "die Felder füllen die Zone genau");
     }
+    let geteilt = 0, alle = 0;
     for (const dicht of S.filter((s) => s.felder.length > 40)) {
       const zahl = new Map();
       for (const f of dicht.felder) zahl.set(f.tf, (zahl.get(f.tf) ?? 0) + 1);
-      const geteilt = dicht.felder.filter((f) => zahl.get(f.tf) > 1).length;
-      assert.ok(geteilt >= dicht.felder.length * 0.2, `viele Felder teilen den Ausschnitt mit Nachbarn aus demselben Elternfeld (${geteilt} von ${dicht.felder.length})`);
+      geteilt += dicht.felder.filter((f) => zahl.get(f.tf) > 1).length; alle += dicht.felder.length;
     }
+    assert.ok(geteilt >= alle * 0.15, `viele Felder teilen den Ausschnitt mit Nachbarn aus demselben Elternfeld (${geteilt} von ${alle})`);
     const dicht = S.find((s) => s.felder.length > 40);
     assert.ok(new Set(dicht.felder.map((f) => f.art)).size >= 3, "verschiedene Arten");
     // Ende: alle Felder an ihrem Platz

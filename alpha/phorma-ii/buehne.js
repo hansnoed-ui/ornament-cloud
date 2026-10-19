@@ -9,13 +9,14 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=22";
-import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=22";
-import { physarum } from "./physarum.js?v=22";
-import { tiefe } from "./tiefe.js?v=22";
-import { tuch } from "./tuch.js?v=22";
-import { montage, montageSignet } from "./montage.js?v=22";
-import { wachstum } from "./wachstum.js?v=22";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=23";
+import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=23";
+import { videoPlan, videoStelle } from "./filmquelle.js?v=23";
+import { physarum } from "./physarum.js?v=23";
+import { tiefe } from "./tiefe.js?v=23";
+import { tuch } from "./tuch.js?v=23";
+import { montage, montageSignet } from "./montage.js?v=23";
+import { wachstum } from "./wachstum.js?v=23";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -30,6 +31,20 @@ const FRONT = /* glsl */ `
     vec2 zug = vec2(0.0, band * 0.02 * sign(lokal - front + 1e-4));       // Spalt: das alte Bild wird an der Front verzogen
     vec3 a = texture2D(tA, vUv + zug).rgb, b = texture2D(tB, vUv - zug * 0.4).rgb;
     gl_FragColor = vec4(mix(a, b, m) + uSaum * band * 0.18, 1.0);
+  }`;
+// vor der Montage: Rechtecke in drei Grössen schneiden das alte Bild weg, darunter liegt schon die Montage
+const FELDER = /* glsl */ `
+  uniform sampler2D tA, tB; uniform float uP, uSeite; varying vec2 vUv;
+  float h(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+  void main() {
+    vec2 q = vec2(vUv.x * uSeite, vUv.y);
+    float m = 0.0;
+    for (int s = 0; s < 3; s++) {
+      float n = 3.0 * pow(2.7, float(s));
+      vec2 r = floor(q * vec2(n, n * (1.0 + 0.6 * float(s))));
+      m = max(m, step(h(r + float(s) * 17.0), uP * 1.2 - 0.1 * float(s)));
+    }
+    gl_FragColor = vec4(mix(texture2D(tA, vUv).rgb, texture2D(tB, vUv).rgb, m), 1.0);
   }`;
 const SUMME = /* glsl */ `uniform sampler2D tQuelle; uniform float uGewicht; varying vec2 vUv; void main() { gl_FragColor = vec4(texture2D(tQuelle, vUv).rgb * uGewicht, 1.0); }`;
 const AUSGABE = /* glsl */ `
@@ -52,10 +67,11 @@ const AUSGABE = /* glsl */ `
 const FABRIK = { physarum, tiefe, tuch, wachstum, montage };
 
 /**
- * Die Bühne für ein Foto (Canvas in Filmgrösse B × H), seine Analyse und eine Kette. optionen: tiefeQuelle ("bild" | "ki"), grob (Telefon), test (klein).
+ * Die Bühne für ein Foto (Canvas in Filmgrösse B × H), seine Analyse und eine Kette. optionen: tiefeQuelle ("bild" | "ki"), grob (Telefon), test (klein),
+ * film (ein Video: das Foto ist dann sein Standbild am Ende).
  * bild(zeit, t, w, h, { proben, verschluss }) → Leinwand; zaehler(zeit, t) → Text für die Beschriftung; entsorgen().
  */
-export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuelle = "bild", onVerloren = null, spur = () => {} } = {}) {
+export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuelle = "bild", film = null, onVerloren = null, spur = () => {} } = {}) {
   const B = foto.width, H = foto.height;
   const canvas = typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(B, H);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
@@ -74,11 +90,18 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     loeschen(rt, farbe = 0x000000) { renderer.setRenderTarget(rt); renderer.setClearColor(farbe, 1); renderer.clear(true, true, true); } };
   const K = kette(ablauf);
   g.ablaufDauer = K.dauer;
+  // mit Video (film: { von, bild(sekunde, { vorschau }), klein(stellen, w, h) }): Montage und Wachstum zeigen das laufende Bild (filmquelle.js)
+  if (film) {
+    const plan = videoPlan(ablauf);
+    g.film = { plan, stelle: (teil, tau) => videoStelle(plan, teil.von + tau), klein: film.klein,
+      bild: (teil, tau, vorschau) => film.bild(film.von + videoStelle(plan, teil.von + tau), { vorschau }) };
+  }
   const effekte = K.teile.map((teil) => { spur(`Effekt wird aufgebaut: ${teil.art}`); return FABRIK[teil.art](g, teil); });
   const art = (teil) => effekte[K.teile.findIndex((x) => x.art === teil.art)];
 
   let w = 0, h = 0, rtA, rtB, rtMix, rtSumme, bloom, glanz = null, logo = null;
   const front = quadMaterial(FRONT, { tA: { value: null }, tB: { value: null }, tKarte: { value: tiefeTex }, uP: { value: 0 }, uBreite: { value: 0.18 }, uSaum: { value: KUPFER.clone() } });
+  const felder = quadMaterial(FELDER, { tA: { value: null }, tB: { value: null }, uP: { value: 0 }, uSeite: { value: B / H } });
   const summe = quadMaterial(SUMME, { tQuelle: { value: null }, uGewicht: { value: 1 } }, { blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation, transparent: true });
   const ausgabe = quadMaterial(AUSGABE, { tSumme: { value: null }, tFoto: { value: fotoTex }, uEnde: { value: 0 }, uAktiv: { value: 0 }, uSaumStaerke: { value: 0 }, uKorn: { value: 0.05 }, uBild: { value: 0 } });
   function groesse(nw, nh) {
@@ -101,8 +124,9 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     else {
       const [a, b] = L, ia = art(a.teil).render(rtA, a.lokal, opt), ib = art(b.teil).render(rtB, b.lokal, opt);
       const p = anteil(ts, b.teil.von, a.teil.bis);
-      front.uniforms.tA.value = rtA.texture; front.uniforms.tB.value = rtB.texture; front.uniforms.uP.value = inOut(p);
-      g.pass(front, rtMix);
+      const mat = a.teil.uebergang === "felder" ? felder : front;
+      mat.uniforms.tA.value = rtA.texture; mat.uniforms.tB.value = rtB.texture; mat.uniforms.uP.value = a.teil.uebergang === "felder" ? p : inOut(p);
+      g.pass(mat, rtMix);
       const m = weich(p);
       info = { aktiv: Math.max(ia.aktiv, ib.aktiv), bloom: ia.bloom * (1 - m) + ib.bloom * m, radius: (ia.radius ?? 0.45) * (1 - m) + (ib.radius ?? 0.45) * m, saum: Math.max(ia.saum ?? 0, ib.saum ?? 0) + 0.004 * Math.sin(Math.PI * p), ende: ib.ende ?? 0 };
     }
@@ -121,7 +145,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     const szenen = effekte.flatMap((e, i) => (e.vorab?.szenen ?? []).map(([s, k], j) => [`${K.teile[i].art} Szene ${j + 1}`, s, k]));
     groesse(Math.round(B * (grob ? 0.6 : 0.85)), Math.round(H * (grob ? 0.6 : 0.85)));
     const materialien = [...effekte.flatMap((e, i) => (e.vorab?.materialien ?? []).map((m, j) => [`${K.teile[i].art} Programm ${j + 1}`, m])),
-      ["Zeitfront", front], ["Belichtung", summe], ...Object.values(bloom).flat().filter((m) => m?.isShaderMaterial).map((m, j) => [`Bloom ${j + 1}`, m])];
+      ["Zeitfront", front], ["Felder", felder], ["Belichtung", summe], ...Object.values(bloom).flat().filter((m) => m?.isShaderMaterial).map((m, j) => [`Bloom ${j + 1}`, m])];
     for (const [name, m] of materialien) { const s = new THREE.Scene(); s.add(new THREE.Mesh(flaeche, m)); szenen.push([name, s, ortho]); }
     const aus = new THREE.Scene(); aus.add(new THREE.Mesh(flaeche, ausgabe));
     // compile() stösst das Übersetzen an (mit KHR_parallel_shader_compile im Hintergrund), das Bild ins winzige Ziel wartet es ab; nicht compileAsync:
@@ -202,7 +226,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
       for (const e of effekte) e.entsorgen();
       glanz?.entsorgen(); logo?.entsorgen();
       for (const r of [rtA, rtB, rtMix, rtSumme]) r?.dispose();
-      bloom?.dispose(); front.dispose(); summe.dispose(); ausgabe.dispose(); quad.dispose();
+      bloom?.dispose(); front.dispose(); felder.dispose(); summe.dispose(); ausgabe.dispose(); quad.dispose();
       fotoTex.dispose(); tiefeTex.dispose(); nahrungTex.dispose();
       renderer.dispose(); renderer.forceContextLoss?.();
     },

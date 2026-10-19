@@ -106,6 +106,9 @@
     .ablaeufe button:disabled { opacity: 0.45; cursor: default; }
     .ablaeufe button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .effekte-hinweis { margin: 14px 0 6px; }
+    .film-start { margin-top: 12px; }
+    .film-start label { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; font-size: 0.92rem; }
+    .film-start output { font-variant-numeric: tabular-nums; color: var(--muted); }
     .effekte button { padding: 4px 2px; font-size: 0.92rem; }
     /* fünf Schalter (seit dem Wachstum) passen auf dem Telefon nicht in eine Reihe: dort drei und zwei */
     @media (max-width: 560px) { .segment.effekte { grid-auto-flow: row; grid-template-columns: repeat(3, 1fr); border-radius: 22px; } }
@@ -167,15 +170,20 @@
     <div>
       <ol class="schritte">
         <li>
-          <h2>Foto</h2>
+          <h2>Foto oder Video</h2>
           <label class="ablage" id="ablage">
             <span class="plus" aria-hidden="true">
               <img id="quelle" alt="" hidden>
               <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             </span>
-            <span class="ablage-text"><b id="ablage-titel">Foto wählen</b><span>oder hierher ziehen. Es wird auf deinem Gerät analysiert: Kanten, Tonumfang und Tiefe.</span></span>
-            <input type="file" id="datei" accept="image/*" aria-label="Foto wählen">
+            <span class="ablage-text"><b id="ablage-titel">Foto oder Video wählen</b><span>oder hierher ziehen. Es wird auf deinem Gerät analysiert: Kanten, Tonumfang und Tiefe.</span></span>
+            <input type="file" id="datei" accept="image/*,video/*" aria-label="Foto oder Video wählen">
           </label>
+          <div class="film-start" id="film-start-box" hidden>
+            <label><span>Video ab</span><input type="range" id="film-start" min="0" max="0" step="0.1" value="0"><output id="film-start-wert">0,0 s</output></label>
+            <p class="ki-hinweis">Montage und Wachstum zeigen das laufende Video, bis zu 30 s ab hier; Physarum, Tiefe und Tuch das Standbild, bei dem es am Ende ankommt. Ohne Ton.</p>
+          </div>
+          <video id="film" muted playsinline preload="auto" hidden></video>
           <div class="leiste"><button class="knopf klein beispiel" type="button" id="testbild"><img src="beispiel.jpg" alt="" width="26" height="37" loading="lazy">Mit dem Beispielbild ausprobieren</button></div>
           <section class="tafel" aria-label="Format und Tiefe">
             <div class="einstellung">
@@ -283,22 +291,12 @@
       }
       window.addEventListener("error", function (e) { zeigen((e.message || "unbekannt") + (e.filename ? " (" + e.filename.split("/").pop() + ":" + e.lineno + ")" : "")); });
       window.addEventListener("unhandledrejection", function (e) { zeigen(String((e.reason && e.reason.message) || e.reason)); });
-      // die Spur des letzten Laufs (app.js): endete er nicht mit «✓», steht oben, nach welchem Schritt er abbrach
-      try {
-        var liste = JSON.parse(localStorage.getItem("phorma-ii.spur") || "[]"), letzt = liste[liste.length - 1];
-        if (liste.length > 1 && letzt && String(letzt[1]).charAt(0) !== "✓") {
-          var k = document.getElementById("startfehler"), t0 = liste[0][0];
-          if (k) {
-            k.textContent = "PHORMA II ist beim letzten Mal abgebrochen. Bitte ein Bildschirmfoto davon schicken – die letzten Schritte:\n" +
-              liste.slice(-14).map(function (e) { return ((e[0] - t0) / 1000).toFixed(1) + " s  " + e[1]; }).join("\n");
-            k.hidden = false; k.style.whiteSpace = "pre-wrap"; k.style.fontSize = "0.78rem";
-          }
-        }
-      } catch (e) { /* ohne Speicher keine Spur */ }
+      // (die Spur des letzten Laufs zeigt die Seite seit dem 19. Oktober 2026 nicht mehr: «das ist zurzeit nicht mehr nötig»; app.js schreibt sie
+      // weiter mit, für ?diagnose und die Sperre der KI-Tiefe nach einem Absturz)
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=32"></script>
+  <script type="module" src="app.js?v=33"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>
