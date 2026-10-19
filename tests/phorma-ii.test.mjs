@@ -207,16 +207,21 @@ test("Wachstum: die Linie wächst aus dem Keim ins Motiv (nicht in den Grund), d
   assert.deepEqual(Array.from(einzeln.at(-1)), Array.from(b.lagen.subarray(b.ab.at(-2) * 2)), "das letzte Bild gleich");
 });
 
-test("Video als Quelle: es läuft durch die ganze Kette, vom ersten bis zum letzten Bild; ist es kürzer, langsamer", async () => {
+test("Video als Quelle: es läuft durch die ganze Kette, vom ersten bis zum letzten Bild; ist es kürzer, mehrmals", async () => {
   const F = await import(new URL("filmquelle.js", P).href);
   const K = A.kette("physarum+tiefe+tuch"), p = F.videoPlan("physarum+tiefe+tuch");
   assert.ok(p.lebendig && p.faktor === 1 && Math.abs(p.dauer - K.dauer) < 1e-9, "genug Video: in Echtzeit, auch ohne Montage und Wachstum");
   assert.equal(F.videoStelle(p, 0), 0); assert.ok(Math.abs(F.videoStelle(p, 2) - 2) < 1e-9);
-  const kurz = F.videoPlan("physarum+tiefe+tuch", 6);
-  assert.ok(Math.abs(kurz.dauer - 6) < 1e-9 && Math.abs(kurz.faktor - 6 / K.dauer) < 1e-9, "ein kurzes Video läuft langsamer");
+  const kurz = F.videoPlan("physarum+tiefe+tuch", 6), runden = Math.floor(K.dauer / 6);
+  assert.ok(runden >= 2 && kurz.runden === runden && Math.abs(kurz.faktor - (runden * 6) / K.dauer) < 1e-9, "ein kurzes Video läuft mehrmals (Wunsch: «wiederholen statt Zeitlupe»)");
+  assert.ok(kurz.faktor > 0.5 && kurz.faktor <= 1, "nie langsamer als halb so schnell");
   assert.ok(F.videoStelle(kurz, 1) > 0, "es läuft von Anfang an (Rückmeldung: «beim Tuch erst in der zweiten Hälfte»)");
-  assert.ok(Math.abs(F.videoStelle(kurz, K.dauer / 2) - 3) < 1e-9, "zur Hälfte der Kette die Hälfte des Videos");
+  const runde = K.dauer / runden;
+  assert.ok(Math.abs(F.videoStelle(kurz, runde * 0.5) - 3) < 1e-9, "zur Hälfte der ersten Runde die Hälfte des Videos");
+  assert.ok(Math.abs(F.videoStelle(kurz, runde * 1.5) - 3) < 1e-9, "in der zweiten Runde wieder");
+  assert.ok(F.videoStelle(kurz, runde * 1.01) < 0.2, "nach einer Runde wieder am Anfang");
   assert.equal(F.videoStelle(kurz, K.dauer), 6, "am Ende sein letztes Bild"); assert.equal(F.videoStelle(kurz, 999), 6);
+  assert.equal(F.videoPlan("physarum+tiefe+tuch", K.dauer * 0.6).runden, 1, "passt es nur einmal hinein: einmal, etwas langsamer");
   const lang = A.kette("physarum+tiefe+tuch+wachstum+montage"), pl = F.videoPlan("physarum+tiefe+tuch+wachstum+montage", 120);
   assert.equal(pl.dauer, Math.min(F.HOECHSTENS, lang.dauer), "höchstens 30 s");
   assert.ok(Math.abs(F.videoStelle(pl, lang.dauer) - pl.dauer) < 1e-9);

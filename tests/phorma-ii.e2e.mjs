@@ -57,7 +57,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=27");
+  const { bild } = await import("./film.js?v=28");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -232,7 +232,7 @@ const zaehlvideo = (page, { sekunden = 16 } = {}) => page.evaluate(async (sekund
 /** die Nummer des Zählvideos in einem Bild (quelle: "film" – das Bild des Films zur Zeit t, wie der Export; "foto" – das Standbild; "jetzt" – das
  *  laufende Bild, das die Bühne zur Zeit t allen Effekten gibt) */
 const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) => {
-  const { bild } = await import("./film.js?v=27");
+  const { bild } = await import("./film.js?v=28");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false }, w = S.mass[0] / 2, h = S.mass[1] / 2;
   const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -275,15 +275,16 @@ await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am End
   const z3 = (await messe(page, 0)).zeit, d3 = z3.abschnitt.bis - z3.abschnitt.von;
   assert.equal(await nummer(page, 0, "foto"), Math.round(d3 * 30), "Standbild am Ende der Kette");
   assert.ok((await messe(page, z3.abschnitt.bis - 1 / 30)).abw <= 3, "die Kette endet exakt beim Standbild");
-  // ein kurzes Video (4 s) unter dem Tuch (8,4 s): es läuft langsamer, aber von Anfang an (Rückmeldung: «beim Tuch erst in der zweiten Hälfte»)
+  // ein kurzes Video (4 s) unter dem Tuch (8,4 s): es läuft von Anfang an (Rückmeldung: «beim Tuch erst in der zweiten Hälfte») und zweimal
+  // hintereinander, je Runde 4,2 s (Wunsch: «Video wiederholen statt Zeitlupe bei sehr kurzen Videos»)
   await page.click('[data-wahl="tuch"]');
   await page.waitForFunction(() => window.__phorma.ablauf === "tuch" && window.__phorma.buehneFertig, null, { timeout: 240_000 });
   await page.setInputFiles("#datei", { name: "kurz.mp4", mimeType: "video/mp4", buffer: await zaehlvideo(page, { sekunden: 4 }) });
   await page.waitForFunction(() => window.__phorma.film?.dauer < 5 && window.__phorma.film?.spur && window.__phorma.buehneFertig && document.getElementById("ladeanzeige").hidden, null, { timeout: 240_000 });
   const z4 = (await messe(page, 0)).zeit, d4 = z4.abschnitt.bis - z4.abschnitt.von;
-  for (const q of [0.25, 0.5]) {
+  for (const [q, soll] of [[0.3, 72], [0.6, 24], [0.8, 72]]) {
     const n = await nummer(page, z4.abschnitt.von + q * d4, "jetzt");
-    assert.ok(Math.abs(n - q * 120) <= 2, `nach ${Math.round(q * 100)} % des Tuchs ${Math.round(q * 100)} % des Videos (Bild ${n})`);
+    assert.ok(Math.abs(n - soll) <= 2, `nach ${Math.round(q * 100)} % des Tuchs das Bild ${soll} des Videos (gelesen ${n})`);
   }
   assert.equal(await nummer(page, 0, "foto"), 119, "das Standbild ist sein letztes Bild");
   assert.ok((await messe(page, z4.abschnitt.bis - 1 / 30)).abw <= 3, "das Tuch endet exakt beim Standbild");
