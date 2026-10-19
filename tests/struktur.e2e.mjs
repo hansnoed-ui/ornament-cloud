@@ -107,7 +107,7 @@ await check("Rückkanal in der Spalte der Seite, bündig mit dem Fuss, nie am Fe
 // ---------- Menü ----------
 await check("Menü: fünf Kästchen (Apps, Prompts, Zettel, Social, Art) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
   const ctx = await browser.newContext();
-  for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/social-media/", "/zu-seiner-zeit/", "/zu-seiner-zeit/en/strophe/17-die-person/", "/alpha/sketchory/", "/alpha/omna-color/", "/art/", "/art/linienbuendel/"]) {
+  for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/social-media/", "/zu-seiner-zeit/", "/zu-seiner-zeit/en/strophe/17-die-person/", "/alpha/sketchory/", "/alpha/omna-color/", "/art/", "/art/harbouring/"]) {
     for (const w of [320, 360, 390, 412, 600, 768, 1024, 1280]) {
       const page = await ctx.newPage();
       await page.addInitScript(() => { try { sessionStorage.setItem("start-animation", "1"); } catch {} });
@@ -155,7 +155,7 @@ await check("Menü: das Kästchen der Seite hat einen kräftigeren Rand (aria-cu
     const c = getComputedStyle(e);
     return { rand: c.borderTopColor, schatten: c.boxShadow, schrift: c.color, aktiv: e.getAttribute("aria-current") };
   });
-  for (const [pfad, aktiv, art] of [["/apps/", "Apps", "page"], ["/masterprompts/", "Prompts", "page"], ["/art/", "Art", "page"], ["/art/linienbuendel/", "Art", "true"], ["/web/", null, null], ["/portfolio/nebeneinander-nacheinander/", "Apps", "true"], ["/zu-seiner-zeit/", "Zettel", "page"], ["/zu-seiner-zeit/strophe/17-die-person/", "Zettel", "true"], ["/alpha/omna-color/", "Apps", "true"], ["/alpha/sketchory/", null, null], ["/news/", null, null]]) {
+  for (const [pfad, aktiv, art] of [["/apps/", "Apps", "page"], ["/masterprompts/", "Prompts", "page"], ["/art/", "Art", "page"], ["/art/harbouring/", "Art", "true"], ["/web/", null, null], ["/portfolio/nebeneinander-nacheinander/", "Apps", "true"], ["/zu-seiner-zeit/", "Zettel", "page"], ["/zu-seiner-zeit/strophe/17-die-person/", "Zettel", "true"], ["/alpha/omna-color/", "Apps", "true"], ["/alpha/sketchory/", null, null], ["/news/", null, null]]) {
     await page.goto(origin + pfad);
     for (const name of ["Apps", "Prompts", "Zettel", "Social", "Art"]) {
       const s = await rand(name);
