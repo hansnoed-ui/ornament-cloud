@@ -207,15 +207,19 @@ test("Wachstum: die Linie wächst aus dem Keim ins Motiv (nicht in den Grund), d
   assert.deepEqual(Array.from(einzeln.at(-1)), Array.from(b.lagen.subarray(b.ab.at(-2) * 2)), "das letzte Bild gleich");
 });
 
-test("Video als Quelle: es läuft durch die ganze Kette und kommt an ihrem Ende an; ist es kürzer, steht zuerst sein erstes Bild", async () => {
+test("Video als Quelle: es läuft durch die ganze Kette, vom ersten bis zum letzten Bild; ist es kürzer, langsamer", async () => {
   const F = await import(new URL("filmquelle.js", P).href);
   const K = A.kette("physarum+tiefe+tuch"), p = F.videoPlan("physarum+tiefe+tuch");
-  assert.ok(p.lebendig && p.von === 0 && Math.abs(p.dauer - K.dauer) < 1e-9, "von Anfang an, auch ohne Montage und Wachstum");
+  assert.ok(p.lebendig && p.faktor === 1 && Math.abs(p.dauer - K.dauer) < 1e-9, "genug Video: in Echtzeit, auch ohne Montage und Wachstum");
+  assert.equal(F.videoStelle(p, 0), 0); assert.ok(Math.abs(F.videoStelle(p, 2) - 2) < 1e-9);
   const kurz = F.videoPlan("physarum+tiefe+tuch", 6);
-  assert.ok(Math.abs(kurz.dauer - 6) < 1e-9 && Math.abs(kurz.von + kurz.dauer - K.dauer) < 1e-9, "ein kurzes Video endet mit der Kette");
-  assert.equal(F.videoStelle(kurz, 0), 0, "davor sein erstes Bild"); assert.equal(F.videoStelle(kurz, kurz.von + 2), 2); assert.equal(F.videoStelle(kurz, 999), 6);
+  assert.ok(Math.abs(kurz.dauer - 6) < 1e-9 && Math.abs(kurz.faktor - 6 / K.dauer) < 1e-9, "ein kurzes Video läuft langsamer");
+  assert.ok(F.videoStelle(kurz, 1) > 0, "es läuft von Anfang an (Rückmeldung: «beim Tuch erst in der zweiten Hälfte»)");
+  assert.ok(Math.abs(F.videoStelle(kurz, K.dauer / 2) - 3) < 1e-9, "zur Hälfte der Kette die Hälfte des Videos");
+  assert.equal(F.videoStelle(kurz, K.dauer), 6, "am Ende sein letztes Bild"); assert.equal(F.videoStelle(kurz, 999), 6);
   const lang = A.kette("physarum+tiefe+tuch+wachstum+montage"), pl = F.videoPlan("physarum+tiefe+tuch+wachstum+montage", 120);
-  assert.equal(pl.dauer, Math.min(F.HOECHSTENS, lang.dauer), "höchstens 30 s"); assert.ok(Math.abs(pl.von + pl.dauer - lang.dauer) < 1e-9);
+  assert.equal(pl.dauer, Math.min(F.HOECHSTENS, lang.dauer), "höchstens 30 s");
+  assert.ok(Math.abs(F.videoStelle(pl, lang.dauer) - pl.dauer) < 1e-9);
   const z = A.zeitachse({ ablauf: "montage", tempo: "ruhig" }), pm = F.videoPlan("montage");
   assert.ok(Math.abs(F.videoStelleBei(z, pm, z.abschnitt.von + 1.3) - 1) < 1e-9, "ruhig: das Video läuft langsamer");
   assert.ok(Math.abs(F.videoStelleBei(z, pm, z.dauer) - pm.dauer) < 1e-9, "nach der Kette das Standbild");

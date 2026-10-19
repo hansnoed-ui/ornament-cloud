@@ -9,14 +9,14 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=26";
-import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=26";
-import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=26";
-import { physarum } from "./physarum.js?v=26";
-import { tiefe } from "./tiefe.js?v=26";
-import { tuch } from "./tuch.js?v=26";
-import { montage, montageSignet } from "./montage.js?v=26";
-import { wachstum } from "./wachstum.js?v=26";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=27";
+import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=27";
+import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=27";
+import { physarum } from "./physarum.js?v=27";
+import { tiefe } from "./tiefe.js?v=27";
+import { tuch } from "./tuch.js?v=27";
+import { montage, montageSignet } from "./montage.js?v=27";
+import { wachstum } from "./wachstum.js?v=27";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -97,7 +97,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   g.ablaufDauer = K.dauer;
   // mit Video (film: { von, dauer, bild(sekunde, { vorschau }), klein(stellen, w, h) }): Montage und Wachstum holen das laufende Bild selbst
   // (dazu frühere Stellen), die anderen nehmen fotoTex (filmquelle.js)
-  let zuletzt = null;
+  let zuletzt = "";
   if (film) {
     const plan = videoPlan(ablauf, film.dauer);
     g.film = { plan, stelle: (teil, tau) => videoStelle(plan, teil.von + tau), klein: film.klein,
@@ -126,8 +126,16 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   /** eine Probe zur Zeit ts nach rtMix; gibt { aktiv, bloom, saum, ende } */
   function probe(zeit, ts, opt) {
     if (g.film) {
-      const b = film.bild(film.von + videoStelleBei(zeit, g.film.plan, ts), { vorschau: !!opt?.vorschau });
-      if (b && b !== zuletzt) { jetzt.getContext("2d").drawImage(b, 0, 0, B, H); fotoTex.needsUpdate = true; zuletzt = b; }
+      // läuft das Video langsamer (kürzer als die Kette, Tempo «ruhig»), zwischen zwei Bildern überblenden, sonst ruckelt es
+      const p = videoStelleBei(zeit, g.film.plan, ts) * FPS, k = Math.floor(p + 1e-3), f = p - k > 0.02 ? p - k : 0, o = { vorschau: !!opt?.vorschau };
+      const b0 = film.bild(film.von + k / FPS, o), b1 = f ? film.bild(film.von + (k + 1) / FPS, o) : null;
+      const zeichen = b0 ? `${k}|${f.toFixed(2)}|${o.vorschau}|${b0.width}|${b1?.width ?? 0}` : "";
+      if (b0 && zeichen !== zuletzt) {
+        const x = jetzt.getContext("2d");
+        x.globalAlpha = 1; x.drawImage(b0, 0, 0, B, H);
+        if (b1 && b1 !== b0) { x.globalAlpha = f; x.drawImage(b1, 0, 0, B, H); x.globalAlpha = 1; }
+        fotoTex.needsUpdate = true; zuletzt = zeichen;
+      }
     }
     const L = laufend(zeit, ts);
     let info;
