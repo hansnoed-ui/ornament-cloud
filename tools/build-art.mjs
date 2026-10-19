@@ -91,6 +91,7 @@ ${nachher}
   <footer class="site-footer">
     <div class="wrap">
       <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+      <p><a href="${site}impressum/">Impressum</a></p>
     </div>
   </footer>
   <script type="module" src="${site}${ART_JS}"></script>

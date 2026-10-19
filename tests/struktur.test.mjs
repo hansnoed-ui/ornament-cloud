@@ -494,3 +494,19 @@ test("OMNA COLOR: Rad im Entwurf A (6. Oktober 2026) – ohne Papierring und Kö
   assert.match(html, /button\.go \{[^}]*border-radius: 5px;/, "«Drehen» eckig mit leicht gerundeten Ecken");
   assert.match(html, /\.again \{[^}]*border-radius: 5px;/, "«Noch einmal» ebenso");
 });
+
+test("Impressum (19. Oktober 2026, Pflicht für den Verkauf auf «Art»): eigene Seite mit Name, Postadresse und Mail, verlinkt im Fuss aller Seiten mit dem Kontakt (ausser der Analyse «Metastabilität», die für sich steht)", () => {
+  const html = lies("impressum/index.html");
+  assert.match(html, /<address class="impressum">\s*Christian Strickler<br>\s*Rheingasse 8b<br>\s*CH-5466 Kaiserstuhl<br>\s*<a href="mailto:hansnoed@gmail\.com">hansnoed@gmail\.com<\/a>\s*<\/address>/);
+  assert.ok(lies("sitemap.xml").includes("<loc>https://ornament.cloud/impressum/</loc>"));
+  const kontakt = /(Fragen und Anmerkungen zur Website|Questions and comments about the website|Preguntas y comentarios sobre el sitio web): <a href="mailto:hansnoed@gmail\.com">/;
+  for (const p of htmlSeiten()) {
+    if (p === "impressum/index.html" || p === "alpha/metastabilitaet/index.html") continue;
+    const s = lies(p);
+    if (!kontakt.test(s)) continue;
+    const m = s.match(/<a href="([^"]*)impressum\/"(?: hreflang="de")?>(Impressum|Legal notice|Aviso legal)<\/a>/);
+    assert.ok(m, `${p}: Impressum im Fuss`);
+    const basis = s.match(/<base href="([^"]+)"/)?.[1] ?? "";
+    assert.equal(new URL(basis + m[1] + "impressum/", new URL(p, root)).pathname, new URL("impressum/", root).pathname, `${p}: der Link führt zum Impressum`);
+  }
+});
