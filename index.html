@@ -29,7 +29,7 @@
     Intro-Sequenz der Website, mit Option Ton an/aus und Skip intro»): ein leuchtender Faden irrt durch einen Würfel aus Licht, quillt mit der Musik zu Rauch auf und legt sich
     zum Logo, dann blendet die Seite über (Video auf Schwarz, in beiden Modi dasselbe, 16 Sekunden; gerechnet mit alpha/phorma-iii/, Effekt Irrfahrt, Quelle
     «Nur Ton», tools/phorma-intro.mjs). Zwei Fassungen nach dem Fenster (Rückmeldung: «das Intro sieht im Browser am Laptop nicht gut aus, qualitativ und vom
-    Bildschirmformat»): quer 16 : 9 in 1920 × 1080 (assets/start-intro-quer.mp4, Laptop und Bildschirm), hoch 4 : 5 in 1080 × 1350 (assets/start-intro.mp4, Telefon). Es beginnt stumm (Browser spielen Ton erst nach einem Tippen), «Ton an» schaltet die Musik dazu, «Ton aus» wieder ab. Bis dahin wuchsen die
+    Bildschirmformat»): quer 16 : 9 in 1920 × 1080 (assets/start-intro-quer.mp4, Laptop und Bildschirm; zwei Drittel so gross wie das Fenster), hoch 4 : 5 in 1080 × 1350 (assets/start-intro.mp4, Telefon). Es beginnt stumm (Browser spielen Ton erst nach einem Tippen), «Ton an» schaltet die Musik dazu, «Ton aus» wieder ab. Bis dahin wuchsen die
     Zeichen von «ornament.cloud» als Linienwachstum (src/videos/src/wachstum/, im Verlauf von Git). Sie läuft nur auf dieser Seite, einmal pro Sitzung (Vorschau jederzeit
     mit ?start), nicht bei «weniger Bewegung» und nicht bei «Daten sparen». Tippen, eine Taste oder der Knopf «Skip intro» (unten rechts, orange) beendet sie – Tippen auf
     «Ton an» nicht; läuft das Video nicht an, kommt die Seite sofort.
@@ -48,8 +48,9 @@
     html.start-an .start.start-weg { opacity: 0; pointer-events: none; }
     @keyframes start-notaus { to { visibility: hidden; pointer-events: none; } }
     .start video { display: block; width: min(100vw, 80vh, 1080px); width: min(100vw, 80dvh, 1080px); height: auto; aspect-ratio: 4 / 5; }
-    @media (min-aspect-ratio: 1 / 1) {                    /* quer: das Video 16 : 9 so gross wie das Fenster */
-      .start video { width: min(100vw, calc(100vh * 16 / 9)); width: min(100vw, calc(100dvh * 16 / 9)); aspect-ratio: 16 / 9; }
+    @media (min-aspect-ratio: 1 / 1) {                    /* quer (Laptop, Bildschirm): das Video 16 : 9 zwei Drittel so gross wie das Fenster, mittig im Schwarz
+                                                             (Wunsch vom 19. Oktober 2026: «nicht so bildschirmfüllend, ca. ein Drittel kleiner») */
+      .start video { width: min(67vw, calc(67vh * 16 / 9)); width: min(67vw, calc(67dvh * 16 / 9)); aspect-ratio: 16 / 9; }
     }
     .start-knoepfe {
       position: absolute; right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom));
