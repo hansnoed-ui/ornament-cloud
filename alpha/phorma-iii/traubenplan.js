@@ -4,7 +4,7 @@
 //   ein Wurm aus Beeren) oder eine Traube (ein Büschel um einen Mittelpunkt). Der Weg hängt nur von s ab, der Zeit der Musik: zwischen den
 //   Schlägen steht er fast, beim Schlag macht er einen Satz. Je Zustand eine Art (Kugel, Nah, Säule, Schwarm) und ein eigener Wurf.
 //   Welt: die Bildebene z = 0 füllt das Bild (Höhe 2, Breite 2 · B / H) wie im Gewebe und in der Irrfahrt; die Traube liegt um den Ursprung.
-import { zufallsfolge } from "./irrweg.js?v=15";
+import { zufallsfolge } from "./irrweg.js?v=16";
 
 export const ARTEN = ["kugel", "nah", "saeule", "schwarm"];
 /** wiederholbarer Zufall aus zwei Zahlen (0..1) */
@@ -18,17 +18,27 @@ export function traubenBau(n, M = 14) {
   return { n, M, z, ketten: Math.ceil(n / M) };
 }
 
-/** die Art des Zustands nr (0: die Kugel): je vier Zustände jede Art einmal in gewürfelter Folge, nie zweimal dieselbe hintereinander */
+/**
+ * Die Art des Zustands nr (0: die Kugel): je acht Zustände die Säule nur einmal – halb so oft wie vorher (Wunsch vom 19. Oktober 2026: «den
+ * Strang find ich auch gut: aber nicht zu oft bringen … bitte nur halb so viel») –, die Kugel dreimal, Nah und Schwarm je zweimal; in gewürfelter
+ * Folge, nie zweimal dieselbe hintereinander.
+ */
+export const FOLGE = ["kugel", "kugel", "kugel", "nah", "nah", "schwarm", "schwarm", "saeule"];
+const bloecke = [];
+function block(b) {
+  while (bloecke.length <= b) {
+    const k = bloecke.length, davor = k ? bloecke[k - 1].at(-1) : "kugel";
+    for (let versuch = 0; ; versuch++) {
+      const a = [...FOLGE];
+      for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(h1(k + 1, i + 40 + versuch * 13) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+      if (a.every((x, i) => x !== (i ? a[i - 1] : davor))) { bloecke.push(a); break; }
+    }
+  }
+  return bloecke[b];
+}
 export function artBei(nr) {
   if (nr <= 0) return "kugel";
-  const block = (b) => {
-    const a = [...ARTEN];
-    for (let i = 3; i > 0; i--) { const j = Math.floor(h1(b + 1, i + 40) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-    return a;
-  };
-  const b = Math.floor((nr - 1) / 4), a = block(b), davor = b ? block(b - 1)[3] : "kugel";
-  if (a[0] === davor) [a[0], a[1]] = [a[1], a[0]];
-  return a[(nr - 1) % 4];
+  return block(Math.floor((nr - 1) / FOLGE.length))[(nr - 1) % FOLGE.length];
 }
 
 /** gleichmässig auf der Kugel (u, v ∈ 0..1) */

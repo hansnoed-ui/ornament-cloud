@@ -14,13 +14,13 @@
 //   die Fäden winden sich als Strang um sie; film.js tippt den Schriftzug, der Punkt ist eine Perle) oder 03 Stille (alles sinkt ins Dunkel).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich, kamera, ABSTAND, FOV } from "./gemeinsam.js?v=15";
-import { phase } from "./ablauf.js?v=15";
-import { gewebeKurven } from "./kurven.js?v=15";
-import { weichzeichnen } from "./analyse.js?v=15";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=15";
-import { RAUSCHEN } from "./gewebe.js?v=15";
-import { traubenBau, perlenLegen, einstellung, artBei, schlaufeWelt, perlenAufZuegen, h1 } from "./traubenplan.js?v=15";
+import { anteil, weich, kamera, ABSTAND, FOV } from "./gemeinsam.js?v=16";
+import { phase } from "./ablauf.js?v=16";
+import { gewebeKurven } from "./kurven.js?v=16";
+import { weichzeichnen } from "./analyse.js?v=16";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=16";
+import { RAUSCHEN } from "./gewebe.js?v=16";
+import { traubenBau, perlenLegen, einstellung, artBei, schlaufeWelt, perlenAufZuegen, h1 } from "./traubenplan.js?v=16";
 
 const VOR = 0.4, LN = 512;                                                  // Vorlauf des Films; Punkte der Schlaufe in der Textur
 
@@ -52,19 +52,28 @@ const PERLE_FRAGMENT = /* glsl */ `
     if (l2 > 1.0) { q *= inversesqrt(l2); l2 = 1.0; }
     vec3 n = vec3(q, sqrt(max(0.0, 1.0 - l2))), L = normalize(vec3(-0.5, 0.72, 0.55));
     float dif = clamp((dot(n, L) + 0.12) / 1.12, 0.0, 1.0);
-    // Farbe: fast schwarzes Karmin im Schatten, Rot, Lachs im Licht; vTon.x: blasser (rosa) bis satter; Funken weiss
-    vec3 tief = vec3(0.03, 0.0012, 0.002), mitte = mix(vec3(0.56, 0.035, 0.025), vec3(0.68, 0.13, 0.1), vTon.x), licht = mix(vec3(1.0, 0.36, 0.25), vec3(1.0, 0.58, 0.47), vTon.x);
-    if (vTon.w > 0.5) { tief = vec3(0.06); mitte = vec3(0.5, 0.48, 0.47); licht = vec3(1.3); }
-    vec3 c = mix(tief, mitte, smoothstep(0.0, 0.5, dif));
+    // Farbe: fast schwarzes Karmin im Schatten, Rot, im Licht ein perliges Rosa; vTon.x: blasser (Perlmutt) bis satter; Funken weiss
+    // (Wunsch vom 19. Oktober 2026: «farblich noch ein wenig mehr in Richtung Perlmutt-Schimmer»)
+    vec3 tief = vec3(0.025, 0.0012, 0.003), mitte = mix(vec3(0.5, 0.035, 0.035), vec3(0.64, 0.15, 0.15), vTon.x), licht = mix(vec3(1.0, 0.44, 0.37), vec3(1.0, 0.7, 0.66), vTon.x);
+    float perl = 1.0;
+    if (vTon.w > 0.5) { tief = vec3(0.06); mitte = vec3(0.5, 0.48, 0.47); licht = vec3(1.3); perl = 0.0; }
+    vec3 c = mix(tief, mitte, smoothstep(0.0, 0.55, dif));
     c = mix(c, licht, pow(smoothstep(0.5, 1.0, dif), 1.4));
     c += mitte * 0.45 * pow(1.0 - n.z, 2.5) * (0.35 + 0.65 * (1.0 - dif));  // Licht durch den Rand (wie Gelee), vor allem auf der Schattenseite
+    // Perlmutt: Farben dünner Schichten (Interferenz) – der Ton wandert mit dem Blickwinkel zum Rand hin und über die Perle, je Perle verschoben;
+    // am stärksten am Rand und im Licht, im Schatten nur ein Hauch
+    float schicht = vTon.x * 0.7 + vTon.y * 0.4 + 1.1 * (1.0 - n.z) + 0.38 * dot(q, vec2(0.8, -0.6)) + 0.12 * sin(7.0 * q.x + 5.0 * q.y + vTon.x * 6.0);
+    vec3 iri = 0.5 + 0.5 * cos(6.2832 * (schicht + vec3(0.0, 0.33, 0.67)));
+    float fres = 0.18 + 0.82 * pow(1.0 - n.z, 1.6);
+    c += perl * (iri - 0.35) * vec3(0.95, 0.88, 1.0) * 0.5 * fres * (0.15 + 0.85 * dif);
+    c += perl * vec3(1.0, 0.86, 0.84) * 0.1 * pow(max(dot(n, L), 0.0), 3.0);   // der weiche Lüster des Perlmutts
     float rz = max(reflect(-L, n).z, 0.0);
-    c += vec3(1.0, 0.9, 0.86) * (0.22 * pow(rz, 10.0) + 1.4 * pow(rz, 80.0));
-    c += vec3(1.0, 0.75, 0.7) * 0.12 * pow(1.0 - n.z, 4.0) * smoothstep(0.3, 0.9, dif);   // ein feuchter Glanz am Rand im Licht
+    c += mix(vec3(1.0, 0.92, 0.9), 0.6 + 0.6 * iri, 0.35 * perl) * (0.22 * pow(rz, 10.0) + 1.4 * pow(rz, 80.0));
+    c += vec3(1.0, 0.78, 0.76) * 0.12 * pow(1.0 - n.z, 4.0) * smoothstep(0.3, 0.9, dif);   // ein feuchter Glanz am Rand im Licht
     vec3 glut = vec3(1.0, 0.12, 0.05) * uGlut * vTon.y;
     c += glut * (0.35 + 0.8 * n.z) * 1.15;                                   // von innen glühend
-    // unscharf: zur mittleren Farbe der Perle (der Glanzpunkt verläuft)
-    vec3 mittel = mitte * 0.65 + licht * 0.22 + glut * 0.9;
+    // unscharf: zur mittleren Farbe der Perle (der Glanzpunkt verläuft, vom Schimmer bleibt ein heller Hauch)
+    vec3 mittel = mitte * 0.62 + licht * 0.24 + perl * vec3(0.06, 0.05, 0.07) + glut * 0.9;
     c = mix(c, mittel, smoothstep(0.0, 1.0, vB / (vR + vB)));
     c *= uHell * vTon.z;
     gl_FragColor = vec4(c * al, al);

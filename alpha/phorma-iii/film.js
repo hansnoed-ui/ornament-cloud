@@ -1,10 +1,10 @@
 // PHORMA III – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann das Gewebe aus der Bühne (WebGL,
 // buehne.js) mit den Textfragmenten, danach das Bild, darüber die Beschriftung; mit Signet am Schluss das Logo, das aus dem Gewebe entsteht, mit
 // getipptem Schriftzug und verfrickelt im Takt.
-import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=15";
+import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=16";
 import { punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=15";
-import { zufall } from "./analyse.js?v=15";
+import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=16";
+import { zufall } from "./analyse.js?v=16";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
@@ -192,13 +192,17 @@ function schriftzug(ctx, sz, t) {
   }
   ctx.restore();
 }
-/** der Punkt als glänzende Perle wie in der Traube: Licht von links oben, Glanzpunkt, Karmin am Rand, ein roter Schein */
+/** der Punkt als glänzende Perle wie in der Traube: Licht von links oben, Glanzpunkt, Karmin am Rand, ein roter Schein, ein Perlmuttschimmer am Rand */
 function perle(ctx, x, y, r) {
   ctx.save();
-  Object.assign(ctx, { shadowColor: "rgba(255, 70, 40, 0.75)", shadowBlur: r * 2.2 });
+  Object.assign(ctx, { shadowColor: "rgba(255, 90, 70, 0.7)", shadowBlur: r * 2.2 });
   const g = ctx.createRadialGradient(x - r * 0.38, y - r * 0.45, r * 0.04, x - r * 0.1, y - r * 0.12, r * 1.08);
-  for (const [o, c] of [[0, "#fff4ee"], [0.12, "#ffc2b2"], [0.38, "#f2705a"], [0.72, "#c22a22"], [1, "#4e070b"]]) g.addColorStop(o, c);
+  for (const [o, c] of [[0, "#fff6f4"], [0.14, "#ffd3cb"], [0.4, "#f27b6a"], [0.74, "#c22d29"], [1, "#4e070d"]]) g.addColorStop(o, c);
   ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  Object.assign(ctx, { shadowBlur: 0, globalCompositeOperation: "lighter" });
+  const s = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
+  for (const [o, c] of [[0, "rgba(190, 170, 255, 0)"], [0.45, "rgba(170, 255, 225, 0.16)"], [0.7, "rgba(255, 210, 150, 0.2)"], [1, "rgba(220, 160, 255, 0.24)"]]) s.addColorStop(o, c);
+  ctx.fillStyle = s; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 }
 /** das Logo-Bild zur Zeit t (bis zum Ende des Films): das Gewebe aus der Bühne, darüber der Schriftzug, beides zusammen verfrickelt */

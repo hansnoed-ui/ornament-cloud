@@ -131,11 +131,12 @@ test("Traube: Perlen wiederholbar, in der Kugel, Ketten nach hinten kleiner; jed
   const n = new Float32Array(560 * 5); Tp.perlenLegen(bau, { art: "nah", saat: 10 }, 3.2, n);
   const zahl = (q) => q.filter((v, i) => i % 5 === 3 && v > 0).length;
   assert.ok(zahl(n) < zahl(a) * 0.65, `nah weniger Perlen (${zahl(n)} gegen ${zahl(a)})`);
-  // die Arten: in jedem Block zu vier jede einmal, nie dieselbe zweimal hintereinander
-  const arten = Array.from({ length: 40 }, (_, i) => Tp.artBei(i + 1));
+  // die Arten: in jedem Block zu acht die Säule nur einmal (halb so oft wie in Blöcken zu vier), alle Arten dabei, nie dieselbe zweimal hintereinander
+  const arten = Array.from({ length: 80 }, (_, i) => Tp.artBei(i + 1));
   assert.equal(Tp.artBei(0), "kugel");
-  for (let i = 0; i < 40; i += 4) assert.deepEqual([...arten.slice(i, i + 4)].sort(), [...Tp.ARTEN].sort());
-  for (let i = 1; i < 40; i++) assert.notEqual(arten[i], arten[i - 1], `Zustand ${i + 1}`);
+  for (let i = 0; i < 80; i += 8) { const b = arten.slice(i, i + 8); assert.deepEqual([...b].sort(), [...Tp.FOLGE].sort()); assert.equal(b.filter((a) => a === "saeule").length, 1); }
+  for (let i = 1; i < 80; i++) assert.notEqual(arten[i], arten[i - 1], `Zustand ${i + 1}`);
+  assert.deepEqual(Array.from({ length: 80 }, (_, i) => Tp.artBei(i + 1)), arten, "wiederholbar");
   // die Kamera: Ziel und Schärfe endlich, die Schärfe in der Nähe zieht nach
   for (const art of Tp.ARTEN) { const e = Tp.einstellung({ art, saat: 17 }, 1); assert.ok([...e.pos, ...e.ziel, e.fokus, e.apertur].every(Number.isFinite) && e.fokus > 0); }
   assert.ok(Tp.einstellung({ art: "nah", saat: 17 }, 0).fokus < Tp.einstellung({ art: "nah", saat: 17 }, 2.5).fokus);
