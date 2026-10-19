@@ -136,6 +136,13 @@ test("Traube: Perlen wiederholbar, in der Kugel, Ketten nach hinten kleiner; jed
   const n = new Float32Array(560 * 5); Tp.perlenLegen(bau, { art: "nah", saat: 10 }, 3.2, n);
   const zahl = (q) => q.filter((v, i) => i % 5 === 3 && v > 0).length;
   assert.ok(zahl(n) < zahl(a) * 0.65, `nah weniger Perlen (${zahl(n)} gegen ${zahl(a)})`);
+  // die Zeit der Traube: gleichmässig, ohne Sätze bei Schlägen und Sprünge bei Schnitten (Rückmeldung: «ruckelt stark, also verlangsamt und
+  // verschnellert kontra-intuitiv»); laut nur sanft schneller
+  const Tn = T.tonAnalysieren(Float32Array.from({ length: 22050 * 8 }, (_, i) => { const t = i / 22050, sc = t % 0.5; return (t > 4 ? 0.8 : 0.15) * Math.exp(-sc / 0.05) * Math.sin(i * 0.07); }), 22050);
+  const zt = Tp.traubenZeit(Tn.laut), v = Array.from(zt.slice(1), (x, i) => (x - zt[i]) * 30);
+  assert.ok(v.every((x) => x >= 0.359 && x <= 0.561), `Tempo zwischen 0,36 und 0,56 je Sekunde (${Math.min(...v).toFixed(3)} … ${Math.max(...v).toFixed(3)})`);
+  assert.ok(v.slice(1).every((x, i) => Math.abs(x - v[i]) < 0.01), "kein Ruck von Bild zu Bild");
+  assert.ok(v.at(-1) > v[30] + 0.05, "laut schneller als leise");
   // die Arten: in jedem Block zu acht die Säule nur einmal (halb so oft wie in Blöcken zu vier), alle Arten dabei, nie dieselbe zweimal hintereinander
   const arten = Array.from({ length: 80 }, (_, i) => Tp.artBei(i + 1));
   assert.equal(Tp.artBei(0), "kugel");
