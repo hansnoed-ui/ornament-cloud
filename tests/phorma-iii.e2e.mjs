@@ -815,6 +815,54 @@ await check("Foto als Quelle, Format 9 : 16, 16 : 9 und zurück: ohne Logo steht
   await ctx.close();
 });
 
+await check("PHORMA III als App (19. Oktober 2026): Knopf zum Installieren, Chrome meldet keine Hindernisse; nach dem ersten Besuch läuft die Traube ohne Netz, ebenso die Seite der installierten App (studio/) und die App-Seite", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  const wurzel = base.replace(/\?test$/, "");
+  assert.equal(await page.locator("h1").innerText(), "PHORMA III");
+  assert.ok(await page.locator("#installieren").isVisible(), "Knopf sichtbar (nicht in der installierten App)");
+  await page.click("#installieren-knopf");
+  assert.match(await page.locator("#installieren-hilfe").innerText(), /ohne Netz|Home-Bildschirm|installieren/);
+  const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
+  assert.match(scope, /\/alpha\/phorma-iii\/$/);
+  const cdp = await ctx.newCDPSession(page);
+  assert.deepEqual((await cdp.send("Page.getInstallabilityErrors")).installabilityErrors, [], "Chrome meldet keine Hindernisse für die Installation");
+  assert.deepEqual((await cdp.send("Page.getAppManifest")).errors, []);
+  await page.reload(); await page.waitForFunction(() => navigator.serviceWorker.controller);
+  const cache = readFileSync(new URL("alpha/phorma-iii/sw.js", new URL("../", import.meta.url)), "utf8").match(/const CACHE = "([^"]+)"/)[1];
+  const gespeichert = await page.evaluate(async (c) => (await (await caches.open(c)).keys()).map((r) => new URL(r.url).pathname + new URL(r.url).search), cache);
+  for (const d of ["/alpha/phorma-iii/", "/alpha/phorma-iii/studio/", "/alpha/phorma-iii/app/", "/alpha/phorma-iii/beispiel.jpg", "/alpha/phorma-iii/icons/icon-512.png",
+    "/vendor/three-0.185.1/three.module.min.js", "/vendor/three-0.185.1/addons/postprocessing/UnrealBloomPass.js", "/vendor/mp4-muxer-5.2.2/mp4-muxer.js", "/vendor/mp4box-2.4.1/mp4box.js"])
+    assert.ok(gespeichert.some((x) => x.split("?")[0] === d), `gespeichert: ${d}`);   // die Seite selbst mit ?test (so öffnet sie der Test)
+  for (const m of ["app", "ablauf", "buehne", "film", "traube", "traubenplan", "gewebe", "irrfahrt", "video", "filmspur", "ton", "tonspur", "frickeln", "stimme", "rechner", "pwa"])
+    assert.ok(gespeichert.some((d) => new RegExp(`^/alpha/phorma-iii/${m}\\.js\\?v=\\d+$`).test(d)), `Modul ${m}.js mit Versionsmarke`);
+  // ohne Netz: die Seite kommt aus dem Speicher und rechnet die Traube zu einer Audiodatei
+  await ctx.setOffline(true);
+  await page.reload();
+  await page.click('[data-quelle="ton"]');
+  await page.click('[data-wahl="traube"]');
+  await page.waitForSelector("#tondatei:not([disabled])", { timeout: 120_000 });
+  await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
+  await page.waitForFunction(() => window.__phorma.ton && window.__phorma.buehneSchluessel?.includes("|traube|"), null, { timeout: 120_000 });
+  await bereit(page);
+  const z = await page.evaluate(() => window.__phorma.sz.zeit.phasen.map((p) => p.name));
+  assert.deepEqual(z, ["traube", "logo"]);
+  assert.ok((await messe(page, 2)).tinte > 0.003, "ohne Netz: die Traube ist zu sehen");
+  // die Seite der installierten App (studio/) startet ebenfalls ohne Netz
+  const studio = await ctx.newPage();
+  studio.on("pageerror", (e) => fehler.push(e.message));
+  await studio.goto(wurzel + "studio/?test");
+  assert.equal(await studio.locator("h1").innerText(), "PHORMA III");
+  await studio.waitForFunction(() => window.__phorma, null, { timeout: 60_000 });
+  const app = await ctx.newPage();
+  await app.goto(wurzel + "app/");
+  assert.equal(await app.locator("h1").innerText(), "PHORMA III");
+  assert.ok(await app.evaluate(() => document.querySelector(".app-symbol").naturalWidth === 512), "App-Symbol aus dem Speicher");
+  await ctx.setOffline(false);
+  assert.deepEqual(fehler.filter((f) => !/goatcounter|ERR_INTERNET_DISCONNECTED|Failed to load resource/.test(f)), []);
+  assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
 await check("Auflösung doppelt (Wunsch vom 19. Oktober 2026: Videos aus PHORMA III «neu rendern»): Standbild 2160 × 2700, die Fäden so dunkel wie einfach, gemerkt; ohne H.264 ein klarer Hinweis", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await laden(page); await bereit(page);

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PHORMA III – App – Ornament Cloud · Alpha</title>
+  <!-- Die App-Seite von PHORMA III (Wunsch vom 19. Oktober 2026: «Dann bau mir jetzt die App PHORMA III und leg sie auf die Alpha Seite»), wie bei
+       PHORMA I. Eigene Adresse, damit die App beim Teilen ihre eigene Vorschaukachel zeigt (og-phorma-iii.jpg aus tools/phorma-iii-bilder.mjs);
+       die Anwendung selbst liegt eine Ebene höher (../, Ordner alpha/phorma-iii/). Verlinkt von der Alpha-Seite (alpha/).
+       Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="PHORMA III als App: Aus Klang wird Bild – Musik oder Stimme, dazu Text, Foto oder Video, als Film mit Ton für Social Media. Läuft ohne Netz, alles bleibt auf dem Gerät.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ornament.cloud">
+  <meta property="og:locale" content="de_CH">
+  <meta property="og:url" content="https://ornament.cloud/alpha/phorma-iii/app/">
+  <meta property="og:title" content="PHORMA III – die App">
+  <meta property="og:description" content="PHORMA III: Aus Klang wird Bild – Musik oder Stimme, dazu Text, Foto oder Video. Gewebe, Irrfahrt, Lichtwürfel, Traube und Video. Als Film mit Ton für Social Media, läuft ohne Netz.">
+  <meta property="og:image" content="https://ornament.cloud/alpha/phorma-iii/app/og-phorma-iii.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="PHORMA III – die App: links der Titel und der Satz «Aus Klang wird Bild – mit Musik oder Stimme, Text, Foto oder Video.», rechts eine Kugel aus feinen weissen Fäden mit glänzenden roten Perlen auf Schwarz.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PHORMA III – die App">
+  <meta name="twitter:description" content="PHORMA III: Aus Klang wird Bild – Musik oder Stimme, dazu Text, Foto oder Video. Gewebe, Irrfahrt, Lichtwürfel, Traube und Video. Als Film mit Ton für Social Media, läuft ohne Netz.">
+  <meta name="twitter:image" content="https://ornament.cloud/alpha/phorma-iii/app/og-phorma-iii.jpg">
+  <link rel="manifest" href="../manifest.webmanifest">
+  <link rel="icon" href="../icons/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#171614">
+  <meta name="apple-mobile-web-app-title" content="PHORMA III">
+  <link rel="stylesheet" href="../../../styles.css?v=46">
+  <link rel="stylesheet" href="../../../vendor/fonts/fonts.css">
+  <style>
+    body { font-family: "Instrument Sans", var(--font); }
+    .site-header h1 { font-family: "Newsreader", var(--serif); font-weight: 400; font-size: clamp(2.6rem, 7vw, 4.4rem); letter-spacing: -0.02em; line-height: 1; }
+    .site-header .lead { font-family: "Newsreader", var(--serif); font-size: clamp(1.1rem, 2.4vw, 1.4rem); max-width: 30em; }
+    /* das App-Symbol: die Schlaufe des Signets als Perlenschnur auf Schwarz */
+    .app-buehne { display: grid; grid-template-columns: minmax(0, 240px) minmax(0, 1fr); gap: 40px; align-items: center; margin: 8px 0 48px; }
+    .app-symbol { display: block; width: 100%; height: auto; aspect-ratio: 1; border-radius: 22.5%; box-shadow: 0 0 0 1px var(--border), 0 18px 50px rgba(0, 0, 0, 0.4); }
+    .app-text p { margin: 0 0 14px; max-width: 34em; line-height: 1.6; }
+    .app-text ul { margin: 0 0 22px; padding-left: 1.1em; line-height: 1.7; color: var(--muted); }
+    .app-knoepfe { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+    .bg-knopf { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 18px 6px 8px; border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text); font: inherit; font-weight: 500; cursor: pointer; }
+    .bg-knopf:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .bg-knopf img { width: 30px; height: 30px; border-radius: 7px; display: block; }
+    .installieren[hidden], .installieren [hidden] { display: none; }
+    .installieren-hilfe { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; color: var(--muted); max-width: 36em; }
+    .installieren-hilfe span { color: var(--text); white-space: nowrap; }
+    /* auf dem Handy: Symbol, Knopf und Link eingemittet, mit Luft unter dem Knopf (Wunsch vom 11. Oktober 2026) */
+    @media (max-width: 640px) {
+      .app-buehne { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+      .app-symbol { max-width: 200px; margin: 0 auto; }
+      .app-knoepfe { flex-direction: column; gap: 26px; margin-top: 30px; }
+      .app-buehne { margin-bottom: 64px; }
+      .installieren { text-align: center; margin-bottom: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <div class="topbar">
+        <nav class="seitenweg" aria-label="Ornament Cloud">
+          <a href="../../../" aria-current="true">Ornament Cloud</a>
+          <a href="../../drittes-rad/">Das Dritte Rad</a>
+        </nav>
+        <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
+        <nav class="menu" aria-label="Hauptmenü">
+          <a class="menu-item" href="../../../apps/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg><span>Apps</span></a>
+          <a class="menu-item" href="../../../masterprompts/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-7.5L7 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M7.5 8.5l3 2.25-3 2.25"/><path d="M12.5 13h4"/></svg><span>Prompts</span></a>
+          <a class="menu-item" href="../../../zu-seiner-zeit/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h11.5A1.5 1.5 0 0 1 20 5v11"/><rect x="4" y="6.5" width="13" height="14" rx="1.5"/><path d="M7 10.5h7"/><path d="M7 13.5h7"/><path d="M7 16.5h4"/></svg><span>Zettel</span></a>
+          <a class="menu-item" href="../../../social-media/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10 4.5 8 19.5"/><path d="M16 4.5l-2 15"/><path d="M5 9.25h14.5"/><path d="M4.5 14.75H19"/></svg><span>Social</span></a>
+          <a class="menu-item" href="../../../art/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><rect x="6.5" y="6.5" width="11" height="11" rx="0.5"/><circle cx="10" cy="10" r="1.3"/><path d="M6.5 16c2-2.4 4.2-3.2 6.4-2.3 1.6.6 2.9.4 4.6-.9"/></svg><span>Art</span></a>
+        </nav>
+      </div>
+      <h1>PHORMA III</h1>
+      <p class="lead">Die dritte Anwendung der Reihe: Aus Klang wird Bild.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="app-buehne" aria-label="Die App">
+      <img class="app-symbol" src="../icons/icon-512.png" alt="Das App-Symbol: die Schlaufe des Signets von ornament.cloud als Schnur aus glänzenden roten Perlen auf Schwarz" width="512" height="512">
+      <div class="app-text">
+        <p>Aus Musik oder einer Stimme wird ein Film. Text, Foto oder Video werden zu Flächen aus feinen Linien, ein leuchtender Faden irrt durch einen Würfel aus Licht, glänzende Perlen schweben in einer Kugel aus Fäden – und alles bewegt sich mit dem Ton: Schläge schneiden, der Bass sprengt auf, die Höhen werfen Funken. Am Schluss entsteht das Logo aus dem Effekt.</p>
+        <p>Die Musik lässt sich verfrickeln, eine Stimme säubern und scratchen; mit einem Video folgt das Bild dem Ton. Heraus kommt ein Video mit Ton für Social Media.</p>
+        <ul>
+          <li>Fünf Effekte: Gewebe, Irrfahrt, Lichtwürfel, Traube und Video</li>
+          <li>Quelle: Text, Foto, Video oder nur Ton; dazu Musik oder eine Stimme</li>
+          <li>Video (MP4 mit Ton) in 4 : 5, 9 : 16 oder 16 : 9, dazu Standbilder</li>
+          <li>Auf dem Startbildschirm, als eigenes Symbol; läuft nach dem ersten Öffnen auch ohne Netz</li>
+          <li>Foto, Video und Musik bleiben auf dem Gerät</li>
+        </ul>
+        <div class="app-knoepfe">
+          <div class="installieren" id="installieren" hidden>
+            <button class="bg-knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="../icons/icon-192.png" alt="" width="30" height="30"><span>PHORMA III als App installieren</span></button>
+            <p class="installieren-hilfe" id="installieren-hilfe" hidden></p>
+          </div>
+          <a class="link" href="../">Im Browser öffnen <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+      <p><a href="../../../impressum/">Impressum</a></p>
+    </div>
+  </footer>
+  <script type="module" src="../pwa.js?v=19"></script>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script src="../../../icons.js?v=14" defer></script>
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../../vendor/goatcounter/count.js"></script>
+</body>
+</html>
