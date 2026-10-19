@@ -5,8 +5,8 @@
 // Reels besser). Jede Kette beginnt im Dunkeln und endet exakt beim Foto.
 //   Physarum – 01 Keime (Sporen leuchten an den markantesten Stellen auf) → 02 Netz (hunderttausende Agenten bilden ein Netz, das die Formen findet)
 //              → 03 Bild (das Foto erscheint durch das Netz); vor einem weiteren Effekt geht das Netz über eine Zeitfront in ihn über
-//   Tiefe    – 01 Scan (eine Lichtebene tastet das Bild von vorn nach hinten ab) → 02 Raum (Kamerafahrt mit Parallaxe, Tiefenschichten,
-//              Schärfeverlagerung) → 03 Bild (es legt sich flach); vor dem Tuch: das Relief wird zum Tuch
+//   Tiefe    – 01 Scan (eine Lichtebene tastet das Bild von vorn nach hinten ab) → 02 Bild (es legt sich flach); vor dem Tuch: das Relief wird
+//              zum Tuch. Die Phase «Raum» (Kamerafahrt mit Parallaxe) ist seit dem 19. Oktober 2026 weg: «gefällt mir gar nicht, kann ersatzlos raus»
 //   Tuch     – 01 Tuch (das Foto als Seidentuch im Wind) → 02 Bild (es wird glattgezogen und liegt als Foto da)
 //   Montage  – 01 Schnitte (das Foto zerfällt im Takt in immer mehr Rechtecke) → 02 Montage (jedes zeigt einen eigenen Ausschnitt, harte Schnitte
 //              zu neuen Aufteilungen) → 03 Bild (die Felder rasten ein); seit dem 19. Oktober 2026, nach dem Clip «UVA» (montageplan.js)
@@ -56,7 +56,7 @@ export function rolle(art, liste, i) {
     if (letzt) phasen.push(["bild", "Bild", 3.4]);
     else { ueber = 1.8; uebergang = naechstes === "montage" ? "felder" : "front"; }
   } else if (art === "tiefe") {
-    phasen = [["scan", "Scan", erst ? 2.6 : 2.2], ["raum", "Raum", 5.4]];
+    phasen = [["scan", "Scan", erst ? 3.4 : 3.0]];   // ohne «Raum» (seit 19. Oktober 2026): der Scan etwas länger, er baut das Relief auf
     if (letzt) phasen.push(["bild", "Bild", 2.8]);
     else { ueber = 0.7; uebergang = naechstes === "montage" ? "felder" : "front"; }
   } else if (art === "tuch") {

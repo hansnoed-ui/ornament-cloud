@@ -57,7 +57,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=24");
+  const { bild } = await import("./film.js?v=25");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -103,7 +103,7 @@ await check("Testfoto: wird analysiert, die Bühne steht, die Kette aller drei E
   assert.match(await page.textContent("#auswertung"), /^\d+ Keime · Kanten · Tiefe/);
   assert.equal(await page.textContent("#kette"), "Physarum → Tiefe → Tuch");
   const knoepfe = await page.$$eval(".phasen button", (b) => b.map((x) => x.textContent));
-  assert.deepEqual(knoepfe, ["01 Keime", "02 Netz", "03 Scan", "04 Raum", "05 Tuch", "06 Bild"]);
+  assert.deepEqual(knoepfe, ["01 Keime", "02 Netz", "03 Scan", "04 Tuch", "05 Bild"]);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
@@ -149,13 +149,13 @@ await check("Kette: jede Phase zeigt etwas, jede etwas anderes; am Anfang dunkel
   }
   const abdruecke = new Set(bilder.map(([, m]) => m.abdruck));
   assert.equal(abdruecke.size, bilder.length, "jede Phase anders");
-  // Physarum ist kein Foto, Tiefe und Tuch im Raum weichen deutlich ab
-  for (const [n, m] of bilder.filter(([n]) => /netz|raum|tuch\/tuch/.test(n))) assert.ok(m.mittelAbw > 6, `${n} weicht vom Foto ab (${m.mittelAbw.toFixed(1)})`);
+  // Physarum ist kein Foto, das Tuch weicht deutlich ab
+  for (const [n, m] of bilder.filter(([n]) => /netz|tuch\/tuch/.test(n))) assert.ok(m.mittelAbw > 6, `${n} weicht vom Foto ab (${m.mittelAbw.toFixed(1)})`);
   const ende = await messe(page, zeit.stehen[0] + 0.5), letzt = await messe(page, zeit.abschnitt.bis - 1 / 30);
   assert.ok(ende.abw <= 3, `das Foto steht exakt (${ende.abw})`);
   assert.ok(letzt.abw <= 3, `das letzte Bild der Kette ist das Foto (${letzt.abw})`);
   // Sprung zurück: Physarum (Simulation) und das Tuch (Simulation) zeigen dasselbe Bild
-  const tNetz = zeit.phasen[1][2] + 1.2, tTuch = zeit.phasen[4][2] + 1.5;
+  const tNetz = zeit.phasen[1][2] + 1.2, tTuch = zeit.phasen[3][2] + 1.5;
   const a = await messe(page, tNetz), b = await messe(page, tTuch);
   await messe(page, zeit.phasen[0][2] + 0.3);
   assert.equal((await messe(page, tNetz)).abdruck, a.abdruck, "Netz nach dem Sprung zurück gleich");
@@ -231,7 +231,7 @@ const zaehlvideo = (page, { sekunden = 16 } = {}) => page.evaluate(async (sekund
 }, sekunden).then((b) => Buffer.from(b, "base64"));
 /** die Nummer des Zählvideos in einem Bild (quelle: "film" – das Bild des Films zur Zeit t, wie der Export; "foto" – das Standbild) */
 const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) => {
-  const { bild } = await import("./film.js?v=24");
+  const { bild } = await import("./film.js?v=25");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false }, w = S.mass[0] / 2, h = S.mass[1] / 2;
   const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");

@@ -160,6 +160,7 @@ Aufbau: `analyse.js` (ohne DOM, im Worker) versteht das Foto, `buehne.js` mischt
 - Netz 16 % grösser als das Bild (uv über 0..1 hinaus, Textur am Rand gestreckt): sonst blitzt beim Schwenk Schwarz an den Rändern.
 - Gestreckte Maschen an Tiefensprüngen nicht schwarz machen (sah aus wie dicke schwarze Kurven), sondern als feine kupferne Schnittkanten zeigen.
 - Scan: eine Ebene gleicher Tiefe wandert von nah nach fern, dahinter Linien gleicher Tiefe über `fwidth`. Tiefenschärfe als eigener Durchgang: Unschärfekreis im Alpha, Sammeln auf einer Goldwinkel-Spirale.
+- In PHORMA II nur noch der Scan (seit 19. Oktober 2026): die Phase «Raum» – Kamerafahrt mit Parallaxe, Tiefenschärfe, Schichten, Schnittkanten – gefiel nicht («kann ersatzlos raus»), sie sah verschwommen und billig aus. Die Shader in `tiefe.js` können es noch (Uniforms auf 0).
 
 ### 11 Tuch – Stoffsimulation (`tuchsim.js`, `tuchrechner.js`, `tuch.js`)
 - PBD auf dem Prozessor (exakt wiederholbar): 72 × 90 Punkte, Abstände längs/quer (1), diagonal (0,7), über zwei Maschen (0,12), 4 Iterationen, 120 Teilschritte je Sekunde; Verlet mit Dämpfung 0,992.
