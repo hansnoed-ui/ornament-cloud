@@ -6,7 +6,7 @@ import { zettelInZeitleiste, pruefen, neueId, schlagwortListe, autorListe, titel
 import { ausAdresse, profilUrl, PLATTFORM_NAME } from "../quelle.js";
 import { GitHub, GitHubFehler } from "./github.js";
 import { zusammenstellen, DATEN } from "./zusammenstellen.js";
-import { erkennen, ErkennenFehler } from "./erkennen.js";
+import { erkennen, ErkennenFehler, anweisungFuerChat, antwortLesen } from "./erkennen.js";
 import * as B from "./bilder.js";
 import * as A from "./ablage.js";
 
@@ -338,13 +338,7 @@ async function lesen() {
   try {
     m.textContent = "Bildschirmfoto vorbereiten …";
     const teile = await B.teileFuerClaude(geschwaerzt());
-    const alle = sammlung?.eintraege ?? [];
-    const erfasst = lokalNachIso(e.felder.erfasst);
-    const { ergebnis: r, nutzung } = await erkennen({
-      schluessel: einst.anthropic, teile, signal: lesenAbbruch.signal, melden: (t) => { m.textContent = t; },
-      kontext: { erfasst, erfasstText: datum(erfasst), adresse: e.felder.quelle || null, ausAdresse: ausAdresse(e.felder.quelle, Date.now()),
-        schlagworte: schlagwortListe(alle).map((s) => s.wort), autoren: autorListe(alle).slice(0, 60).map((a) => `${a.autor.name}${a.autor.handle ? ` (@${String(a.autor.handle).replace(/^@/, "")}, ${PLATTFORM_NAME[a.plattform]})` : ""}`) },
-    });
+    const { ergebnis: r, nutzung } = await erkennen({ schluessel: einst.anthropic, teile, signal: lesenAbbruch.signal, melden: (t) => { m.textContent = t; }, kontext: kontextJetzt() });
     await uebernehmen(r);
     const kosten = nutzung ? ((nutzung.input_tokens ?? 0) * 4 + (nutzung.output_tokens ?? 0) * 20) / 1e6 : 0;
     m.textContent = `Gelesen. Bitte alles prüfen${r.text_abgeschnitten ? " – der Text ist im Bild abgeschnitten" : ""}.${r.hinweise ? ` Hinweis von Claude: ${r.hinweise}` : ""}${nutzung ? ` (${nutzung.input_tokens + nutzung.output_tokens} Token, etwa ${kosten.toFixed(3).replace(".", ",")} $)` : ""}`;
@@ -356,6 +350,44 @@ async function lesen() {
     dateienZeigen();
   }
 }
+/** was Claude zum Bild wissen soll (Erfassung, Adresse, bestehende Schlagworte und Autor:innen) */
+function kontextJetzt() {
+  const alle = sammlung?.eintraege ?? [];
+  const erfasst = lokalNachIso(e.felder.erfasst) || new Date().toISOString();
+  return { erfasst, erfasstText: datum(erfasst), adresse: e.felder.quelle || null, ausAdresse: ausAdresse(e.felder.quelle, Date.now()),
+    schlagworte: schlagwortListe(alle).map((s) => s.wort), autoren: autorListe(alle).slice(0, 60).map((a) => `${a.autor.name}${a.autor.handle ? ` (@${String(a.autor.handle).replace(/^@/, "")}, ${PLATTFORM_NAME[a.plattform]})` : ""}`) };
+}
+
+// ---------- ohne Schlüssel: Anweisung für claude.ai, Antwort einfügen ----------
+
+async function anweisungKopieren() {
+  const text = anweisungFuerChat(kontextJetzt());
+  const m = $("anweisung-meldung"), feld = $("anweisung-text");
+  try {
+    await navigator.clipboard.writeText(text);
+    feld.hidden = true;
+    m.textContent = "Kopiert.";
+  } catch {
+    feld.value = text;                         // ohne Zugriff auf die Zwischenablage: zum Markieren zeigen
+    feld.hidden = false;
+    feld.focus(); feld.select();
+    m.textContent = "Kopieren ging nicht – bitte im Feld markieren und kopieren.";
+  }
+}
+async function antwortUebernehmen() {
+  const m = $("antwort-meldung");
+  try {
+    const r = antwortLesen($("chat-antwort").value);
+    await uebernehmen(r);
+    $("chat-antwort").value = "";
+    $("antwort-uebernehmen").disabled = true;
+    const ohneBild = !belegBild && r.bereiche.length ? " Die Bereiche erscheinen, sobald das Bildschirmfoto auch hier liegt." : "";
+    m.textContent = `Übernommen. Bitte alles prüfen${r.text_abgeschnitten ? " – der Text ist im Bild abgeschnitten" : ""}.${r.hinweise ? ` Hinweis von Claude: ${r.hinweise}` : ""}${ohneBild}`;
+  } catch (err) {
+    m.textContent = err instanceof ErkennenFehler ? err.message : `Die Antwort liess sich nicht übernehmen: ${err.message}`;
+  }
+}
+
 /** Claudes Ergebnis ins Formular (nur, was nicht von Hand steht) */
 async function uebernehmen(r) {
   const setzen = (k, v) => { if (!e.vonHand.includes(k) && v !== null && v !== undefined) e.felder[k] = v; };
@@ -733,6 +765,9 @@ function verbinden() {
     await belegLaden(); dateienZeigen(); medienZeigen(); geaendert();
   });
   $("lesen").addEventListener("click", lesen);
+  $("anweisung-kopieren").addEventListener("click", anweisungKopieren);
+  $("chat-antwort").addEventListener("input", (ev) => { $("antwort-uebernehmen").disabled = !ev.target.value.trim(); });
+  $("antwort-uebernehmen").addEventListener("click", antwortUebernehmen);
   $("lesen-abbrechen").addEventListener("click", () => lesenAbbruch?.abort());
   $("beleg-zeigen").addEventListener("change", (ev) => { e.belegZeigen = ev.target.checked; geaendert(); });
   leinwandBedienen();
@@ -789,7 +824,8 @@ function verbinden() {
 e = leer();
 verbinden();
 einstellungenZeigen();
-$("einstellungen").open = !einst.github;   // nur beim Öffnen der Seite: ohne GitHub-Schlüssel offen; danach klappt nur, wer darauf klickt (Rückmeldung vom 19. Oktober 2026: «klappt sofort wieder ein»)
+$("einstellungen").open = !einst.github;
+$("chat").open = !einst.anthropic;          // ohne Anthropic-Schlüssel ist claude.ai der Weg   // nur beim Öffnen der Seite: ohne GitHub-Schlüssel offen; danach klappt nur, wer darauf klickt (Rückmeldung vom 19. Oktober 2026: «klappt sofort wieder ein»)
 formularFuellen();
 await entwurfLaden();
 await sammlungLaden();

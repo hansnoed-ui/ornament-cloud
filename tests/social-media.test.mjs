@@ -268,3 +268,46 @@ test("Claude: die Rückfallstufen – ohne Fallback-Parameter, dann ohne Schema;
   m = machen([new AuthenticationError("401")]);
   await assert.rejects(ER.erkennen({ schluessel: "k", teile, kontext, Klient: m.Klient }), /Schlüssel nicht/);
 });
+
+// ---------- ohne Schlüssel: über claude.ai (seit 19. Oktober 2026) ----------
+
+test("claude.ai: die Anweisung trägt dieselben Regeln, den Zusammenhang und eine Vorlage, die selbst gültiges JSON ist", () => {
+  const a = ER.anweisungFuerChat({ erfasst: "2026-10-19T08:00:00Z", erfasstText: "19. Oktober 2026, 10:00", adresse: "https://x.com/a/status/1", ausAdresse: { plattform: "x", handle: "a", veroeffentlicht: null }, schlagworte: ["Stadt", "Archiv"], autoren: [] });
+  assert.ok(a.includes(ER.SYSTEM), "dieselben Regeln wie mit Schlüssel");
+  assert.match(a, /Erfasst: 19\. Oktober 2026, 10:00/);
+  assert.match(a, /Aus der Adresse gelesen .*Handle a/);
+  assert.match(a, /Bestehende Schlagworte: Stadt, Archiv/);
+  assert.match(a, /Das Bildschirmfoto kommt in einem Teil/);
+  const vorlage = a.match(/```json\n([\s\S]*?)\n```/)[1];
+  assert.deepEqual(JSON.parse(vorlage), ER.VORLAGE);
+  assert.deepEqual(Object.keys(ER.VORLAGE).sort(), Object.keys(ER.SCHEMA.properties).sort(), "die Vorlage hat genau die Felder des Schemas");
+});
+
+test("claude.ai: Zahlen wie auf den Plattformen", () => {
+  assert.deepEqual(["1,2K", "1.2K", "1,2 Tsd.", "3,4 Mio.", "12.345", "12’345", "987", 45000, "", null, "viele", -3].map(ER.zahlAusText),
+    [1200, 1200, 1200, 3400000, 12345, 12345, 987, 45000, null, null, null, null]);
+});
+
+test("claude.ai: die eingefügte Antwort wird nachsichtig gelesen (Codeblock mit Text drumherum, Prozent, fehlende Felder) – und ohne Beitrag abgelehnt", () => {
+  const antwort = 'Hier ist das Ergebnis:\n```json\n' + JSON.stringify({
+    plattform: "X", autor: { name: "Mira", handle: "@mira", verifiziert: "true" }, text: "Hallo\nWelt",
+    veroeffentlicht: "2026-10-18", kennzahlen: { likes: "1,2K", antworten: 3 },
+    bereiche: [{ art: "bild", x: 5, y: 40, b: 90, h: 30, beschreibung: "Foto" }, { art: "unsinn", x: 0, y: 0, b: 1, h: 1 }],
+    zitiert: { autor: { name: "Jon", handle: "jon" }, text: "zitiert" }, schlagworte: ["Stadt", " ", "Archiv"],
+  }) + '\n```\nSag Bescheid, wenn …';
+  const r = ER.antwortLesen(antwort);
+  assert.equal(r.plattform, "x");
+  assert.deepEqual(r.autor, { name: "Mira", handle: "mira", verifiziert: true });
+  assert.equal(r.text, "Hallo\nWelt");
+  assert.deepEqual(r.veroeffentlicht, { angezeigt: null, iso: "2026-10-18", genauigkeit: "unbekannt" });
+  assert.equal(r.kennzahlen.likes, 1200);
+  assert.equal(r.kennzahlen.reposts, null);
+  assert.equal(r.bereiche.length, 1);
+  assert.ok(Math.abs(r.bereiche[0].x - 0.05) < 1e-9 && Math.abs(r.bereiche[0].h - 0.3) < 1e-9, "Prozent werden zu Anteilen");
+  assert.deepEqual(r.zitiert, { name: "Jon", handle: "jon", text: "zitiert" });
+  assert.deepEqual(r.schlagworte, ["Stadt", "Archiv"]);
+  assert.equal(r.sprache, "de");
+  assert.throws(() => ER.antwortLesen("Ich kann das Bild leider nicht sehen."), /kein JSON/);
+  assert.throws(() => ER.antwortLesen('{"titel": "nur ein Titel"}'), /weder Text noch Name/);
+  assert.throws(() => ER.antwortLesen("[1,2]"), ER.ErkennenFehler);
+});

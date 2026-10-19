@@ -93,6 +93,18 @@
             </div>
             <p class="rd-knoepfe"><button type="button" class="rd-knopf rd-knopf--haupt" id="lesen" disabled>Mit Claude lesen</button> <button type="button" class="knopf-leise" id="lesen-abbrechen" hidden>Abbrechen</button></p>
             <p class="rd-meldung" id="lesen-meldung" role="status" aria-live="polite"></p>
+            <details class="rd-mehr rd-chat" id="chat">
+              <summary>Mit claude.ai lesen, ohne Schlüssel</summary>
+              <ol class="rd-anleitung">
+                <li><button type="button" class="rd-knopf" id="anweisung-kopieren">Anweisung kopieren</button> <span class="rd-hilfe" id="anweisung-meldung" role="status" aria-live="polite"></span></li>
+                <li>In <a href="https://claude.ai/new" rel="noopener" target="_blank">claude.ai</a> einen neuen Chat öffnen, das Bildschirmfoto hineinlegen, die Anweisung einfügen und senden.</li>
+                <li>Claudes ganze Antwort kopieren und hier einfügen:</li>
+              </ol>
+              <textarea id="anweisung-text" rows="6" readonly hidden aria-label="Anweisung zum Markieren und Kopieren"></textarea>
+              <textarea id="chat-antwort" rows="5" spellcheck="false" placeholder="Antwort von Claude einfügen" aria-label="Antwort von Claude"></textarea>
+              <p class="rd-knoepfe"><button type="button" class="rd-knopf rd-knopf--haupt" id="antwort-uebernehmen" disabled>Übernehmen</button></p>
+              <p class="rd-meldung" id="antwort-meldung" role="status" aria-live="polite"></p>
+            </details>
           </fieldset>
 
           <fieldset class="rd-schritt" id="schritt-beleg" hidden>
@@ -211,7 +223,7 @@
       <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
     </div>
   </footer>
-  <script type="module" src="../js/redaktion/app.js?v=2"></script>
+  <script type="module" src="../js/redaktion/app.js?v=3"></script>
   <script src="../../icons.js?v=14" defer></script>
 </body>
 </html>

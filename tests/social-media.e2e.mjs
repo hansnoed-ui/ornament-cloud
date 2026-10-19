@@ -341,6 +341,7 @@ await check("Redaktion: Bildschirmfoto einfügen, Claude liest, Bereiche, Kommen
   assert.deepEqual(await page.locator(".rd-marke").allInnerTexts().then((t) => t.map((x) => x.replace("×", "").trim())), ["Archiv", "Test"]);
   // ein Bereich von Hand dazu: ziehen
   await page.locator('input[name="werkzeug"][value="dritte"]').check();
+  await page.locator("#leinwand").evaluate((x) => x.scrollIntoView({ block: "start" }));
   const box = await page.locator("#leinwand").boundingBox();
   await page.mouse.move(box.x + box.width * 0.6, box.y + box.height * 0.2);
   await page.mouse.down();
@@ -442,6 +443,49 @@ await check("Redaktion: Zettel bearbeiten (Kommentar, Schlagwort, Status) und l�
   assert.equal([...gh.aktuell().keys()].filter((p) => p.startsWith("social-media/medien/1/")).length, 0);
   assert.ok(gh.aktuell().has("social-media/medien/LIESMICH.md"));
   assert.ok(!gh.text("sitemap.xml").includes("1-ein-test"));
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
+await check("Redaktion ohne Anthropic-Schlüssel: Anweisung für claude.ai kopieren, Antwort einfügen, übernehmen – Felder und Bereiche wie mit Schlüssel", async () => {
+  const gh = githubNachbau(anfangsdateien()), claude = claudeNachbau([{ ergebnis: ERGEBNIS }]);
+  const s = await seite(null);
+  await s.ctx.addInitScript(() => { sessionStorage.setItem("sm-redaktion:einstellungen", JSON.stringify({ github: "github_pat_test", anthropic: "", repo: "hansnoed-ui/ornament-cloud", zweig: "main" })); });
+  await s.ctx.route("https://api.github.com/**", (r) => gh.route(r));
+  await s.ctx.route("https://api.anthropic.com/**", (r) => claude.route(r));
+  await s.ctx.grantPermissions(["clipboard-read", "clipboard-write"]);
+  const { ctx, page, fehler } = s;
+  await page.goto(`${REPO}/social-media/redaktion/`);
+  await page.waitForSelector("body.rd-bereit");
+  assert.equal(await page.locator("#chat").evaluate((d) => d.open), true, "ohne Schlüssel ist der Weg über claude.ai offen");
+  assert.equal(await page.locator("#lesen").isDisabled(), true);
+  await page.locator("#f-quelle").fill("https://x.com/test_person/status/1979512345678901248");
+  await page.locator("#dateien").setInputFiles({ name: "bildschirmfoto.png", mimeType: "image/png", buffer: await bildschirmfoto() });
+  await page.waitForSelector("#schritt-beleg:not([hidden])");
+  await page.locator("#anweisung-kopieren").click();
+  await page.waitForFunction(() => document.querySelector("#anweisung-meldung").textContent === "Kopiert.");
+  const anweisung = await page.evaluate(() => navigator.clipboard.readText());
+  assert.match(anweisung, /^Im Anhang ist ein Bildschirmfoto/);
+  assert.match(anweisung, /Adresse des Beitrags: https:\/\/x\.com\/test_person\/status\/1979512345678901248/);
+  assert.match(anweisung, /```json\n\{/);
+  // was Claude im Chat antworten könnte: ein Codeblock mit Text drumherum, Zahlen als «45K», Bereiche in Prozent
+  const chat = { ...ERGEBNIS, kennzahlen: { ...ERGEBNIS.kennzahlen, likes: "45K" }, bereiche: ERGEBNIS.bereiche.map((b) => ({ ...b, x: b.x * 100, y: b.y * 100, b: b.b * 100, h: b.h * 100 })) };
+  assert.equal(await page.locator("#antwort-uebernehmen").isDisabled(), true);
+  await page.locator("#chat-antwort").fill("Gern, hier:\n```json\n" + JSON.stringify(chat, null, 2) + "\n```");
+  await page.locator("#antwort-uebernehmen").click();
+  await page.waitForFunction(() => /Übernommen/.test(document.querySelector("#antwort-meldung").textContent));
+  assert.equal(await page.locator("#f-name").inputValue(), "Test Person");
+  assert.equal(await page.locator('input[name="plattform"][value="x"]').isChecked(), true);
+  assert.match(await page.locator("#f-veroeffentlicht").inputValue(), /^2025-10-18 /, "die Zeit aus der Adresse geht weiter vor");
+  assert.equal(await page.locator('[data-zahl="likes"]').inputValue(), "45000");
+  assert.equal(await page.locator(".rd-bereich").count(), 3);
+  assert.equal(await page.locator("#chat-antwort").inputValue(), "", "das Feld ist danach leer");
+  assert.equal(claude.anfragen.length, 0, "keine Anfrage an die API");
+  // eine Antwort ohne JSON wird klar abgelehnt
+  await page.locator("#chat-antwort").fill("Ich sehe leider kein Bild.");
+  await page.locator("#antwort-uebernehmen").click();
+  await page.waitForFunction(() => /kein JSON/.test(document.querySelector("#antwort-meldung").textContent));
+  assert.equal(await page.locator("#f-name").inputValue(), "Test Person", "das Formular bleibt, wie es war");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });

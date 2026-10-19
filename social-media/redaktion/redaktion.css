@@ -133,3 +133,12 @@ kbd { font: inherit; font-size: 0.85em; padding: 0 4px; border: 1px solid var(--
 .rd-alle-titel .leise { font-size: 0.85rem; }
 .rd-alle-tun { white-space: nowrap; }
 @media (max-width: 520px) { .rd-alle li { grid-template-columns: 2.4em minmax(0, 1fr); } .rd-alle-tun { grid-column: 2; } }
+
+/* Mit claude.ai lesen, ohne Schlüssel (seit 19. Oktober 2026) */
+.rd-chat { margin-top: 4px; padding: 12px 14px; border: 1px dashed var(--border); border-radius: 10px; }
+.rd-chat summary { margin-bottom: 0; }
+.rd-chat[open] summary { margin-bottom: 10px; }
+.rd-anleitung { margin: 0 0 10px; padding-left: 1.3em; font-size: 0.92rem; }
+.rd-anleitung li { margin: 6px 0; }
+.rd-anleitung a { color: var(--text); }
+.rd-chat textarea { font-size: 0.85rem; margin-bottom: 8px; }
