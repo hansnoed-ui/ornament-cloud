@@ -9,7 +9,7 @@
 //
 //   NODE_PATH=$(npm root -g) node tools/phorma-intro.mjs <audiodatei> [--ablauf lichtwuerfel|irrfahrt] [--format 16:9|4:5] [--proben 4] [--crf 27]
 //                                                         [--aus …] [--ordner <bilder>]
-// --ordner: ein Ordner mit schon gerechneten Bildern (nach einem Abbruch); sie werden weiterverwendet, nur das letzte wird neu gerechnet.
+// --ordner: ein Ordner mit schon gerechneten Bildern (nach einem Abbruch); sie werden weiterverwendet, nur das letzte wird neu gerechnet; er bleibt.
 // Braucht ffmpeg. Die Musik des Intros vom 18. Oktober 2026 ist der Ton des Testvideos «Claude_444.mp4» (nicht im Repository); sie steckt auch im
 // Intro selbst: ffmpeg -i assets/start-intro-quer.mp4 -vn ton.wav
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -26,7 +26,9 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const arg = (name, std) => { const i = process.argv.indexOf(`--${name}`); return i > 0 ? process.argv[i + 1] : std; };
 const ton = process.argv[2] && !process.argv[2].startsWith("--") ? resolve(process.argv[2]) : null;
 if (!ton) { console.error("Audiodatei fehlt: node tools/phorma-intro.mjs <audiodatei>"); process.exit(1); }
-const ablauf = arg("ablauf", "lichtwuerfel"), format = arg("format", "16:9"), proben = Number(arg("proben", 4)), crf = arg("crf", format === "16:9" ? "27" : "30");   // hoch fürs Telefon unter 5 MB
+// crf 20 / 23 und aq-mode 3 (mehr Bits für dunkle, flache Flächen): mit 27 / 30 zerfiel der feine Schein um die Linien auf Schwarz in Blöcke
+// (Rückmeldung zum Lichtwürfel-Intro: «ganz zum Schluss scheint das Logo relativ stark verpixelt»); fast alles ist schwarz, die Dateien bleiben klein
+const ablauf = arg("ablauf", "lichtwuerfel"), format = arg("format", "16:9"), proben = Number(arg("proben", 4)), crf = arg("crf", format === "16:9" ? "20" : "23");
 const aus = resolve(root, arg("aus", format === "16:9" ? "assets/start-intro-quer.mp4" : "assets/start-intro.mp4"));
 
 const { startServer } = await import(new URL("tools/serve-orma.mjs", `file://${root}`).href);
@@ -64,6 +66,6 @@ for (let i = ab; i < n; i++) {
 await browser.close(); server.close();
 execFileSync("ffmpeg", ["-v", "error", "-y", "-framerate", "30", "-i", join(ordner, "b%04d.png"), "-i", ton, "-map", "0:v", "-map", "1:a", "-t", String(n / 30),
   "-vf", "scale=in_range=full:out_range=tv,format=yuv420p", "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv",
-  "-c:v", "libx264", "-preset", "veryslow", "-tune", "film", "-crf", crf, "-c:a", "aac", "-b:a", "128k", "-af", "afade=t=out:st=" + (n / 30 - 1).toFixed(2) + ":d=1", "-movflags", "+faststart", aus], { stdio: "inherit" });
-rmSync(ordner, { recursive: true, force: true });
+  "-c:v", "libx264", "-preset", "veryslow", "-tune", "film", "-crf", crf, "-x264-params", "aq-mode=3:aq-strength=1.0", "-c:a", "aac", "-b:a", "128k", "-af", "afade=t=out:st=" + (n / 30 - 1).toFixed(2) + ":d=1", "-movflags", "+faststart", aus], { stdio: "inherit" });
+if (!arg("ordner")) rmSync(ordner, { recursive: true, force: true });       // ein eigener Ordner bleibt (neu kodieren ohne neu zu rechnen)
 console.log(`fertig: ${aus}`);
