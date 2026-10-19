@@ -68,19 +68,119 @@ Vorschläge
  * kontext: { erfasst (ISO), erfasstText, adresse, ausAdresse: { plattform, handle, veroeffentlicht }, schlagworte: [..], autoren: [..] }
  */
 export function frage(teile, kontext) {
+  return [
+    ...teile.map((t) => ({ type: "image", source: { type: "base64", media_type: t.typ, data: t.daten } })),
+    { type: "text", text: kontextZeilen(kontext, teile.length).join("\n") },
+  ];
+}
+
+/** was Claude zum Bild wissen soll: Erfassung, Adresse, was aus ihr folgt, Teile, bestehende Schlagworte und Autor:innen */
+function kontextZeilen(kontext, anzahl) {
   const zeilen = [
     `Erfasst: ${kontext.erfasstText} (${kontext.erfasst}).`,
     kontext.adresse ? `Adresse des Beitrags: ${kontext.adresse}` : "Die Adresse des Beitrags ist nicht bekannt.",
   ];
   const a = kontext.ausAdresse ?? {};
   if (a.plattform) zeilen.push(`Aus der Adresse gelesen (verlässlicher als das Bild): Plattform ${a.plattform}${a.handle ? `, Handle ${a.handle}` : ""}${a.veroeffentlicht ? `, veröffentlicht ${a.veroeffentlicht} (aus der Beitrags-ID errechnet)` : ""}.`);
-  zeilen.push(teile.length > 1 ? `Das Bildschirmfoto ist hoch und kommt in ${teile.length} überlappenden Teilen, von oben nach unten (teil 0 bis ${teile.length - 1}). Gib jeden Bereich nur einmal an.` : "Das Bildschirmfoto kommt in einem Teil (teil 0).");
+  zeilen.push(anzahl > 1 ? `Das Bildschirmfoto ist hoch und kommt in ${anzahl} überlappenden Teilen, von oben nach unten (teil 0 bis ${anzahl - 1}). Gib jeden Bereich nur einmal an.` : "Das Bildschirmfoto kommt in einem Teil (teil 0).");
   if (kontext.schlagworte?.length) zeilen.push(`Bestehende Schlagworte: ${kontext.schlagworte.join(", ")}`);
   if (kontext.autoren?.length) zeilen.push(`Bekannte Autor:innen (Schreibweise übernehmen, wenn es dieselben sind): ${kontext.autoren.join("; ")}`);
-  return [
-    ...teile.map((t) => ({ type: "image", source: { type: "base64", media_type: t.typ, data: t.daten } })),
-    { type: "text", text: zeilen.join("\n") },
-  ];
+  return zeilen;
+}
+
+// ---------- ohne Schlüssel: über claude.ai (seit 19. Oktober 2026) ----------
+// Wer keinen API-Schlüssel hat, aber ein Abo bei claude.ai: Die Redaktion gibt eine Anweisung zum Kopieren, man legt das Bildschirmfoto in einen neuen
+// Chat, fügt die Anweisung ein und kopiert Claudes Antwort zurück. Dieselben Regeln wie mit Schlüssel; die Antwort wird nachsichtig gelesen
+// (Codeblock, Text drumherum, Zahlen als «1,2K», Bereiche in Prozent), weil ein Chat kein Schema erzwingt.
+
+/** die Form der Antwort, als Beispiel für den Chat (alle Felder, Platzhalter) */
+export const VORLAGE = {
+  plattform: "x | facebook | instagram | unklar",
+  autor: { name: "Name wie angezeigt oder null", handle: "ohne @ oder null", verifiziert: false },
+  kontext: null,
+  text: "der Text des Hauptbeitrags, Zeichen für Zeichen",
+  text_abgeschnitten: false,
+  sprache: "de",
+  uebersetzung: null,
+  veroeffentlicht: { angezeigt: "wie angezeigt oder null", iso: "JJJJ-MM-TT oder JJJJ-MM-TTThh:mm:00Z oder null", genauigkeit: "minute | tag | monat | unbekannt" },
+  zitiert: null,
+  kennzahlen: { antworten: null, reposts: null, likes: null, ansichten: null, lesezeichen: null, reaktionen: null, kommentare: null, teilungen: null },
+  bereiche: [{ art: "bild | video | avatar | dritte", teil: 0, x: 0.05, y: 0.4, b: 0.9, h: 0.3, beschreibung: "Bildbeschreibung auf Deutsch" }],
+  titel: "kurzer Titel",
+  schlagworte: ["Schlagwort"],
+  hinweise: null,
+};
+
+/** die Anweisung zum Kopieren für einen Chat bei claude.ai (das Bildschirmfoto legt man dort selbst dazu) */
+export function anweisungFuerChat(kontext) {
+  return `Im Anhang ist ein Bildschirmfoto eines Beitrags auf X, Facebook oder Instagram. Lies es nach diesen Regeln:
+
+${SYSTEM}
+
+${kontextZeilen(kontext, 1).join("\n")}
+zitiert ist entweder null oder { "name": …, "handle": …, "text": … }.
+
+Antworte ausschliesslich mit einem einzigen JSON-Codeblock in genau dieser Form, mit allen Feldern (was nicht zu sehen ist: null; Zahlen als ganze Zahlen; Bereiche relativ zum ganzen Bild, 0 bis 1, teil immer 0), ohne Text davor oder danach:
+
+\`\`\`json
+${JSON.stringify(VORLAGE, null, 2)}
+\`\`\``;
+}
+
+/** «1,2K», «1.2K», «1,2 Tsd.», «3,4 Mio.», «12.345», «12’345» → ganze Zahl; sonst null */
+export function zahlAusText(v) {
+  if (v === null || v === undefined || v === "") return null;
+  if (typeof v === "number") return Number.isFinite(v) && v >= 0 ? Math.round(v) : null;
+  const t = String(v).trim().toLowerCase().replace(/\s+/g, "");
+  const m = t.match(/^(\d+(?:[.,’']\d+)*)(k|tsd\.?|tausend|m|mio\.?|mill?\.?|millionen)?$/);
+  if (!m) return null;
+  let zahl = m[1];
+  if (m[2]) zahl = zahl.replace(/[’']/g, "").replace(",", ".");                         // 1,2K → 1.2
+  else zahl = /^\d{1,3}([.,’']\d{3})+$/.test(zahl) ? zahl.replace(/[.,’']/g, "") : zahl.replace(",", ".");
+  const f = !m[2] ? 1 : /^(k|tsd|tausend)/.test(m[2]) ? 1e3 : 1e6;
+  const n = parseFloat(zahl) * f;
+  return Number.isFinite(n) ? Math.round(n) : null;
+}
+
+const KENNZAHL_SCHLUESSEL = ["antworten", "reposts", "likes", "ansichten", "lesezeichen", "reaktionen", "kommentare", "teilungen"];
+const textOder = (v) => (v === null || v === undefined || v === "" ? null : String(v));
+
+/**
+ * eine eingefügte Antwort aus dem Chat lesen und in die Form von SCHEMA bringen (fehlende Felder null, Zahlen und Bereiche bereinigt).
+ * Wirft ErkennenFehler, wenn darin kein Beitrag steckt.
+ */
+export function antwortLesen(text) {
+  let r;
+  try { r = jsonAusText(text); } catch { throw new ErkennenFehler("In der eingefügten Antwort steht kein JSON. Bitte die ganze Antwort von Claude kopieren, mit dem Codeblock."); }
+  if (!r || typeof r !== "object" || Array.isArray(r)) throw new ErkennenFehler("Die eingefügte Antwort hat nicht die erwartete Form.");
+  const autor = r.autor && typeof r.autor === "object" ? r.autor : {};
+  const v = r.veroeffentlicht;
+  const veroeffentlicht = v && typeof v === "object" ? { angezeigt: textOder(v.angezeigt), iso: textOder(v.iso), genauigkeit: ["minute", "tag", "monat"].includes(v.genauigkeit) ? v.genauigkeit : "unbekannt" }
+    : { angezeigt: null, iso: textOder(v), genauigkeit: "unbekannt" };
+  const z = r.zitiert && typeof r.zitiert === "object" ? r.zitiert : null;
+  const prozent = (bereiche) => bereiche.some((b) => [b.x, b.y, b.b, b.h].some((w) => +w > 1.5));     // in Prozent geantwortet?
+  const roh = Array.isArray(r.bereiche) ? r.bereiche.filter((b) => b && typeof b === "object") : [];
+  const teiler = prozent(roh) ? 100 : 1;
+  const ergebnis = {
+    plattform: ["x", "facebook", "instagram"].includes(String(r.plattform).toLowerCase()) ? String(r.plattform).toLowerCase() : "unklar",
+    autor: { name: textOder(autor.name), handle: textOder(autor.handle)?.replace(/^@/, "") ?? null, verifiziert: autor.verifiziert === true || autor.verifiziert === "true" },
+    kontext: textOder(r.kontext),
+    text: String(r.text ?? ""),
+    text_abgeschnitten: r.text_abgeschnitten === true,
+    sprache: /^[a-z]{2}$/i.test(String(r.sprache ?? "")) ? String(r.sprache).toLowerCase() : "de",
+    uebersetzung: textOder(r.uebersetzung),
+    veroeffentlicht,
+    zitiert: z ? { name: textOder(z.name ?? z.autor?.name), handle: textOder(z.handle ?? z.autor?.handle)?.replace(/^@/, "") ?? null, text: textOder(z.text) } : null,
+    kennzahlen: Object.fromEntries(KENNZAHL_SCHLUESSEL.map((k) => [k, zahlAusText(r.kennzahlen?.[k])])),
+    bereiche: roh.filter((b) => ["bild", "video", "avatar", "dritte"].includes(b.art))
+      .map((b) => ({ art: b.art, teil: 0, x: +b.x / teiler || 0, y: +b.y / teiler || 0, b: +b.b / teiler || 0, h: +b.h / teiler || 0, beschreibung: String(b.beschreibung ?? "") })),
+    titel: String(r.titel ?? ""),
+    schlagworte: Array.isArray(r.schlagworte) ? r.schlagworte.map(String).map((w) => w.trim()).filter(Boolean).slice(0, 8) : [],
+    hinweise: textOder(r.hinweise),
+  };
+  if (!ergebnis.text.trim() && !ergebnis.autor.name) throw new ErkennenFehler("In der eingefügten Antwort stehen weder Text noch Name. Ist es die Antwort auf die Anweisung?");
+  ergebnis.bereiche = bereicheImGanzen(ergebnis.bereiche, [{ oben: 0, hoehe: 1 }]);
+  return ergebnis;
 }
 
 /** die Bereiche auf das ganze Bild umrechnen und doppelte (aus den Überlappungen) zusammenlegen */

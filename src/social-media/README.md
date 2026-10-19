@@ -48,6 +48,10 @@ Verbindungen und keine fremden Skripte, und sie hat keine Besuchsstatistik.
    vorgeschlagen) und schlägt Titel und Schlagworte vor – bevorzugt aus den bestehenden. Den Kommentar schreibt Claude nicht. Hohe Bildschirmfotos gehen in
    überlappenden Teilen hin, damit die Schrift lesbar bleibt. Kosten: je nach Grösse wenige Rappen; die Redaktion zeigt Token und Betrag.
    Was von Hand eingetragen ist, überschreibt Claude nicht.
+   **Ohne Anthropic-Schlüssel**, mit einem Abo bei claude.ai: *Mit claude.ai lesen, ohne Schlüssel* aufklappen (ohne Schlüssel ist es schon offen) →
+   *Anweisung kopieren* → in claude.ai einen neuen Chat öffnen, das Bildschirmfoto hineinlegen, die Anweisung einfügen, senden → Claudes ganze Antwort kopieren,
+   ins Feld einfügen → *Übernehmen*. Die Anweisung enthält dieselben Regeln wie mit Schlüssel, dazu Erfassungszeit, Adresse und die bestehenden Schlagworte;
+   die Antwort darf Text um den Codeblock haben, Zahlen wie «1,2K» und Bereiche in Prozent. Es entstehen keine API-Kosten.
 3. **Bereiche** im Bildschirmfoto prüfen: Rechtecke für *Bild*, *Profilbild*, *Schwärzen* ziehen, verschieben, an der Ecke grösser ziehen, mit × entfernen.
    Geschwärzt wird mit voller Fläche (nicht weichgezeichnet), vor dem Ausschneiden – auch im veröffentlichten Beleg.
 4. **Prüfen und ergänzen**: Text, Zeit, Zahlen, Bildbeschreibungen; dann Titel, **einleitender Kommentar** (Absätze, `*kursiv*`, `**fett**`, `[Text](https://…)`),

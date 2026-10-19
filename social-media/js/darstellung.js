@@ -507,7 +507,7 @@ export function zeitleisteSeite(alle) {
   }
   const zaehler = `${alle.length} Zettel, ${a.length} ${a.length === 1 ? "Autor:in" : "Autor:innen"}, ${s.length} ${s.length === 1 ? "Schlagwort" : "Schlagworte"}`;
   const kopf = `      <h1>Social Media</h1>
-      <p class="lead">Beiträge aus X, Facebook und Instagram: gesichert, abgeschrieben, verschlagwortet und kommentiert. Ein Zettelkasten über das, was gesagt wurde, und darüber, wann es jemand bemerkt hat.</p>`;
+      <p class="lead">Ausgewählte Beiträge aus X, Facebook und Instagram.</p>`;   // Wunsch vom 19. Oktober 2026: «keine langfädige Einleitung»
   const plattformKnoepfe = [["", "Alle"], ...PLATTFORMEN.map((p) => [p, PLATTFORM_NAME[p]])].map(([p, n]) => {
     const anzahl = p ? alle.filter((e) => e.plattform === p).length : alle.length;
     return `<button type="button" class="wahl" data-plattform="${p}" aria-pressed="${p ? "false" : "true"}"${p && !anzahl ? " disabled" : ""}>${n} <span class="anzahl">${anzahl}</span></button>`;
@@ -541,7 +541,7 @@ ${zeilen.join("\n")}
       <h2>Noch keine Zettel</h2>
       <p>Hier entsteht eine Sammlung kommentierter Beiträge. Der erste Zettel ist in Arbeit.</p>
     </section>`;
-  return seite({ pfad: BEREICH, titel: "Social Media", beschreibung: "Beiträge aus X, Facebook und Instagram: gesichert, abgeschrieben, verschlagwortet und kommentiert.", kopf, inhalt, skripte: alle.length ? ["zeitleiste.js"] : [], aktuell: "page" });
+  return seite({ pfad: BEREICH, titel: "Social Media", beschreibung: "Ausgewählte Beiträge aus X, Facebook und Instagram.", kopf, inhalt, skripte: alle.length ? ["zeitleiste.js"] : [], aktuell: "page" });
 }
 
 // ---------- Zettel (eigene Seite) ----------
