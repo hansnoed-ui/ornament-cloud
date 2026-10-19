@@ -75,8 +75,13 @@ test("Filmspur: Drehung aus der Matrix der Spur, Zuordnung der dekodierten Bilde
   assert.equal(F.HOECHSTENS, 30);
 });
 
-test("Irrfahrt: Würfel, Irrfahrt, Logo oder Stille; kein Stehen, nach dem Effekt nur der Schluss; Unbekanntes ergibt das Gewebe", () => {
-  assert.deepEqual(A.EFFEKTE, ["gewebe", "irrfahrt", "video"]);
+test("Irrfahrt und Lichtwürfel: Würfel, Irrfahrt, Logo oder Stille; kein Stehen, nach dem Effekt nur der Schluss; Unbekanntes ergibt das Gewebe", () => {
+  assert.deepEqual(A.EFFEKTE, ["gewebe", "irrfahrt", "lichtwuerfel", "video"]);
+  assert.equal(A.TITEL.lichtwuerfel, "Lichtwürfel");
+  // der Lichtwürfel hat dieselbe Rolle wie die Irrfahrt
+  const lw = A.zeitachse({ ablauf: "lichtwuerfel", laenge: 30 });
+  assert.equal(lw.ablauf, "lichtwuerfel"); assert.deepEqual(lw.phasen.map((p) => p.name), ["wuerfel", "irrfahrt", "logo"]);
+  assert.ok(Math.abs(lw.dauer - A.zeitachse({ ablauf: "irrfahrt", laenge: 30 }).dauer) < 1e-9); assert.equal(A.NACH(false, "lichtwuerfel"), 0.3);
   assert.equal(A.ablaufName("irrfahrt"), "irrfahrt"); assert.equal(A.ablaufName("physarum"), "gewebe"); assert.equal(A.ablaufName(null), "gewebe");
   const mit = A.zeitachse({ ablauf: "irrfahrt", laenge: 30 }), ohne = A.zeitachse({ ablauf: "irrfahrt", laenge: 30, signet: false });
   assert.equal(mit.ablauf, "irrfahrt");

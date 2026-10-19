@@ -1,10 +1,10 @@
 // PHORMA III – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann das Gewebe aus der Bühne (WebGL,
 // buehne.js) mit den Textfragmenten, danach das Bild, darüber die Beschriftung; mit Signet am Schluss das Logo, das aus dem Gewebe entsteht, mit
 // getipptem Schriftzug und verfrickelt im Takt.
-import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=11";
+import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=12";
 import { punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=11";
-import { zufall } from "./analyse.js?v=11";
+import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=12";
+import { zufall } from "./analyse.js?v=12";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
@@ -13,10 +13,10 @@ const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo,
  *  einer Tonspur, laenge: Dauer des Gewebes nach ihr */
 export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = true, beschriftung = true, titel = "", foto = null, buehne = null,
   ablauf = "gewebe", text = "", ton = null, laenge = null } = {}) {
-  const zeit = zeitachse({ tempo, signet, laenge, ablauf }), irr = zeit.ablauf === "irrfahrt", vid = zeit.ablauf === "video";
+  const zeit = zeitachse({ tempo, signet, laenge, ablauf }), irr = zeit.ablauf === "irrfahrt" || zeit.ablauf === "lichtwuerfel", vid = zeit.ablauf === "video";
   // halten: die Irrfahrt und das Video haben kein Stehen auf dem Bild – nach dem Effekt hält ihr letztes Bild
   const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA III").trim(), fragmente: [], schnitte: [], nacht: [], logo: null, halten: irr || vid };
-  const T = tonOderErsatz(ton), G = zeit.phasen.find((p) => p.name === zeit.ablauf);
+  const T = tonOderErsatz(ton), G = zeit.phasen.find((p) => p.name === (irr ? "irrfahrt" : zeit.ablauf));   // der Lichtwürfel hat die Phasen der Irrfahrt
   // die Schnitte zählen wie im Gewebe in der Zeit des Effekts (Vorlauf 0,4 s, ohne Tonspur im Tempo gestreckt)
   const f = zeit.tempo, film = (s) => 0.4 + (s - 0.4) * f, effekt = (s) => 0.4 + (s - 0.4) / f;
   sz.schnitte = T.schnitte.map(film).filter((s) => s > G.von && s < G.bis);
@@ -24,7 +24,7 @@ export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = 
   const Z = gewebeZustaende(T, effekt(G.von), effekt(G.bis));
   sz.nacht = Z.map((z, i) => [film(z.t), film(Z[i + 1]?.t ?? effekt(G.bis)), z.nacht]).filter((z) => z[2]).map(([a, b]) => [a, b]);
   if (text && !irr && !vid) sz.fragmente = fragmentPlan(text, T, G, breite, hoehe);
-  if (irr) sz.stoer = stoerPlan(T, G.von, G.bis);
+  if (zeit.ablauf === "irrfahrt") sz.stoer = stoerPlan(T, G.von, G.bis);         // der Lichtwürfel ohne Stottern und Streifen: er steht ruhig
   const L = zeit.phasen.find((p) => p.name === "logo");
   if (L) {
     // das Logo am Ende des Gewebes: Farbgebung des letzten Zustands (wie in gewebe.js; die Irrfahrt ist immer Weiss auf Schwarz), Störungen im Takt,
