@@ -274,13 +274,15 @@ test("Apps: drei Gruppen (seit 19. Oktober 2026) – Bild und Video: PHORMA III,
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-iii.jpg", root))), [640, 800]);
   assert.ok(k[0].tags.includes("App") && k[0].tags.includes("Video") && /installieren/.test(k[0].html) && /ohne Netz/.test(k[0].html) && /Aus Klang wird Bild/.test(k[0].html));
   // PHORMA II (seit 19. Oktober 2026): die leuchtende Linie des Wachstums als Beitragsbild (tools/phorma-ii-bilder.mjs), im Browser, keine App
-  assert.match(k[1].html, /<img src="\.\.\/assets\/vorschau-phorma-ii\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  assert.match(k[1].html, /<img src="\.\.\/assets\/vorschau-phorma-ii\.jpg" srcset="\.\.\/assets\/vorschau-phorma-ii\.jpg 1x, \.\.\/assets\/vorschau-phorma-ii-2x\.jpg 1\.6875x" alt="" width="640" height="800" loading="lazy">/);
+  assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-ii-2x.jpg", root))), [1080, 1350]);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-ii.jpg", root))), [640, 800]);
   assert.ok(k[1].tags.includes("Video") && !k[1].tags.includes("App"));
   assert.deepEqual(jpegMass(readFileSync(new URL("alpha/phorma-ii/og-phorma-ii.jpg", root))), [1200, 630], "Vorschaukachel zum Teilen");
   assert.match(lies("alpha/phorma-ii/index.html"), /<meta property="og:image" content="https:\/\/ornament\.cloud\/alpha\/phorma-ii\/og-phorma-ii\.jpg">/);
   // PHORMA I: eine Kristallansicht aus der Anwendung als Beitragsbild (tools/phorma-bilder.mjs), dazu der Satz vom 17. Oktober 2026
-  assert.match(k[2].html, /<img src="\.\.\/assets\/vorschau-phorma-i\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  assert.match(k[2].html, /<img src="\.\.\/assets\/vorschau-phorma-i\.jpg" srcset="\.\.\/assets\/vorschau-phorma-i\.jpg 1x, \.\.\/assets\/vorschau-phorma-i-2x\.jpg 2x" alt="" width="640" height="800" loading="lazy">/);
+  assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-i-2x.jpg", root))), [1280, 1600], "doppelt so gross für Bildschirme mit hoher Dichte (Wunsch: «ein besseres Beitragsbild für PHORMA I»)");
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-i.jpg", root))), [640, 800]);
   assert.ok(k[2].html.includes("Als erste Anwendung in einer langen Reihe: PHORMA I."), "PHORMA I: der Satz der Erklärung");
   assert.ok(k[2].tags.includes("App") && k[2].tags.includes("Video") && /installieren/.test(k[2].html) && /ohne Netz/.test(k[2].html));

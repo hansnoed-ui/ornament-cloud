@@ -4,6 +4,7 @@
 // dann verkleinert, ohne Beschriftung und ohne Schriftzug.
 //   Motiv: die leuchtende Linie, mitten in der Phase «Farbe» (sie hat das Motiv gefüllt und nimmt seine Farben an)
 //   assets/vorschau-phorma-ii.jpg            640 × 800   Beitragsbild der Karte auf «Apps»
+//   assets/vorschau-phorma-ii-2x.jpg        1280 × 1600  dasselbe doppelt so gross, für Bildschirme mit hoher Dichte (srcset)
 //   alpha/phorma-ii/og-phorma-ii.jpg        1200 × 630   Vorschaukachel zum Teilen (Open Graph, X)
 //
 //   NODE_PATH=$(npm root -g) node tools/phorma-ii-bilder.mjs
@@ -35,18 +36,19 @@ const linie = await page.evaluate(() => {
 });
 await page.close();
 
-// 2. Beitragsbild für «Apps»: das ganze Bild, sorgfältig verkleinert (das Hochformat der Karten ist das des Films)
-{
-  const p = await browser.newPage({ viewport: { width: 640, height: 800 }, deviceScaleFactor: 1 });
-  await p.setContent(`<!DOCTYPE html><html><head><style>html,body{margin:0;background:#000}canvas{display:block}</style></head><body><canvas width="640" height="800"></canvas></body></html>`);
-  await p.evaluate(async (src) => {
-    const b = new Image(); b.src = src; await b.decode();
+// 2. Beitragsbild für «Apps»: das ganze Bild, sorgfältig verkleinert (das Hochformat der Karten ist das des Films), einfach und doppelt so gross
+for (const [b, datei, qualitaet] of [[640, "vorschau-phorma-ii.jpg", 90], [1080, "vorschau-phorma-ii-2x.jpg", 86]]) {
+  const h = Math.round((b * 5) / 4), p = await browser.newPage({ viewport: { width: b, height: h }, deviceScaleFactor: 1 });
+  await p.setContent(`<!DOCTYPE html><html><head><style>html,body{margin:0;background:#000}canvas{display:block}</style></head><body><canvas width="${b}" height="${h}"></canvas></body></html>`);
+  await p.evaluate(async ([src, b, h]) => {
+    const bild = new Image(); bild.src = src; await bild.decode();
     // in zwei Schritten verkleinern (1080 → 860 → 640): die feinen Linien bleiben scharf und flimmern nicht
-    const z = new OffscreenCanvas(860, 1075), zx = z.getContext("2d"); zx.imageSmoothingQuality = "high"; zx.drawImage(b, 0, 0, 860, 1075);
-    const x = document.querySelector("canvas").getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(z, 0, 0, 640, 800);
-  }, linie);
-  const out = pfad("../assets/vorschau-phorma-ii.jpg");
-  await p.locator("canvas").screenshot({ path: out, type: "jpeg", quality: 90 });
+    const zb = Math.round((bild.width + b) / 2), zh = Math.round((bild.height + h) / 2);
+    const z = new OffscreenCanvas(zb, zh), zx = z.getContext("2d"); zx.imageSmoothingQuality = "high"; zx.drawImage(bild, 0, 0, zb, zh);
+    const x = document.querySelector("canvas").getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(z, 0, 0, b, h);
+  }, [linie, b, h]);
+  const out = pfad(`../assets/${datei}`);
+  await p.locator("canvas").screenshot({ path: out, type: "jpeg", quality: qualitaet });
   console.log("geschrieben:", out);
   await p.close();
 }

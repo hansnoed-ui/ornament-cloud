@@ -717,7 +717,7 @@ await check("Apps und Masterprompts (Handy): Karten untereinander, ORNA vor ORMA
   // seit dem 19. Oktober 2026 in drei Gruppen: Bild und Video, Text und Theorie, Gestaltung (die Titel der Karten als h3)
   assert.deepEqual(await page.locator("main .card h3").allTextContents(), ["PHORMA III", "PHORMA II", "PHORMA I", "The Fictory", "ORMA", "ORNA", "OMNA COLOR"]);
   assert.deepEqual(await page.locator("main .apps-gruppe > h2").allTextContents(), ["Bild und Video", "Text und Theorie", "Gestaltung"]);
-  await untereinander(6);
+  await untereinander(7);
   assert.ok(await page.locator(".card").filter({ has: page.getByRole("heading", { name: "ORMA", exact: true }) }).locator(".tags li", { hasText: "Alpha" }).isVisible());
   await page.goto(`${origin}/masterprompts/`);
   assert.deepEqual(await page.locator("main .card h2").allTextContents(),
@@ -763,11 +763,11 @@ await check("Apps und Masterprompts (Desktop): je Gruppe zwei Karten nebeneinand
   const lage = () => page.locator("main .card").evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y)]; }));
   await page.goto(`${origin}/apps/`);
   let l = await lage();
-  assert.equal(l.length, 6);
-  assert.ok(l[0][1] === l[1][1] && l[2][1] > l[0][1], "Bild und Video: PHORMA III und PHORMA I, darunter The Fictory");
-  assert.ok(l[3][1] === l[4][1] && l[3][1] > l[2][1], "Text und Theorie: ORMA und ORNA nebeneinander, unter Bild und Video");
-  assert.ok(l[5][1] > l[3][1], "Gestaltung: OMNA COLOR darunter");
-  assert.ok([2, 3, 5].every((i) => l[i][0] === l[0][0]) && l[4][0] === l[1][0] && l[1][0] > l[0][0], "in zwei Spalten");
+  assert.equal(l.length, 7);
+  assert.ok(l[0][1] === l[1][1] && l[2][1] === l[3][1] && l[2][1] > l[0][1], "Bild und Video: PHORMA III und PHORMA II, darunter PHORMA I und The Fictory (seit 19. Oktober 2026)");
+  assert.ok(l[4][1] === l[5][1] && l[4][1] > l[2][1], "Text und Theorie: ORMA und ORNA nebeneinander, unter Bild und Video");
+  assert.ok(l[6][1] > l[4][1], "Gestaltung: OMNA COLOR darunter");
+  assert.ok([2, 4, 6].every((i) => l[i][0] === l[0][0]) && [3, 5].every((i) => l[i][0] === l[1][0]) && l[1][0] > l[0][0], "in zwei Spalten");
   await page.goto(`${origin}/masterprompts/`);
   l = await lage();
   assert.equal(l.length, 4);
