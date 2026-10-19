@@ -55,7 +55,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=11");
+  const { bild } = await import("./film.js?v=12");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -65,16 +65,17 @@ const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]
   const d = x.getImageData(0, 0, w, h).data;
   const f = document.createElement("canvas"); f.width = w; f.height = h; const fx = f.getContext("2d"); fx.drawImage(S.foto, 0, 0, w, h);
   const q = fx.getImageData(0, 0, w, h).data;
-  let hell = 0, hell2 = 0, schwarz = 0, abw = 0, mittelAbw = 0, n = 0, abdruck = 0, tinte = 0;
+  let hell = 0, hell2 = 0, schwarz = 0, abw = 0, mittelAbw = 0, n = 0, abdruck = 0, tinte = 0, sx = 0, sy = 0, sn = 0;
   const L = new Float32Array(d.length / 4); for (let i = 0; i < d.length; i += 4) L[i / 4] = (d[i] + d[i + 1] + d[i + 2]) / 3;
   const median = Float32Array.from(L).sort()[L.length >> 1];
   for (const l of L) if (Math.abs(l - median) > 30) tinte++;
   for (let i = 0; i < d.length; i += 4) {
     const l = (d[i] + d[i + 1] + d[i + 2]) / 3; hell += l; hell2 += l * l; n++; if (l < 8) schwarz++;
+    if (l > 60) { const j = i / 4; sx += j % w; sy += Math.floor(j / w); sn++; }   // der Schwerpunkt des Hellen
     const a = Math.max(Math.abs(d[i] - q[i]), Math.abs(d[i + 1] - q[i + 1]), Math.abs(d[i + 2] - q[i + 2])); if (a > abw) abw = a; mittelAbw += a;
     abdruck = (abdruck * 31 + d[i] * 7 + d[i + 1] * 3 + d[i + 2]) >>> 0;
   }
-  return { hell: hell / n, streu: Math.sqrt(Math.max(0, hell2 / n - (hell / n) ** 2)), tinte: tinte / n, schwarz: schwarz / n, abw, mittelAbw: mittelAbw / n, abdruck, dauer: sz.zeit.dauer, zeit: { teile: sz.zeit.teile.map((tl) => [tl.art, tl.von, tl.bis]), phasen: sz.zeit.phasen.map((p) => [p.art, p.name, p.von, p.bis]), abschnitt: sz.zeit.abschnitt, stehen: sz.zeit.ab.stehen } };
+  return { schwer: sn ? [sx / sn / w, sy / sn / h] : null, hell: hell / n, streu: Math.sqrt(Math.max(0, hell2 / n - (hell / n) ** 2)), tinte: tinte / n, schwarz: schwarz / n, abw, mittelAbw: mittelAbw / n, abdruck, dauer: sz.zeit.dauer, zeit: { teile: sz.zeit.teile.map((tl) => [tl.art, tl.von, tl.bis]), phasen: sz.zeit.phasen.map((p) => [p.art, p.name, p.von, p.bis]), abschnitt: sz.zeit.abschnitt, stehen: sz.zeit.ab.stehen } };
 }, [t, proben]);
 
 // Ersatz für den H.264-Encoder (SwiftShader hat keinen): liefert kleine Stücke und eine Beschreibung
@@ -173,7 +174,7 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
   // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Logo; mitten in einer anders als ohne; der
   // Schriftzug wird getippt und steht nach 2,6 s
   const logo = await page.evaluate(async () => {
-    const { bild, logoZeichen } = await import("./film.js?v=11");
+    const { bild, logoZeichen } = await import("./film.js?v=12");
     const S = window.__phorma, sz = { ...S.sz, buehne: null, beschriftung: false }, L = sz.logo, e = L.plan.find((x) => x.art >= 0.2 && x.t < L.bis - 1);
     const zeichne = (z, t) => { const c = document.createElement("canvas"); c.width = 270; c.height = 338; const x = c.getContext("2d"); x.setTransform(0.25, 0, 0, 0.25, 0, 0); bild(x, z, t); return c.toDataURL(); };
     const t = e.t + e.dauer * 0.3;
@@ -428,7 +429,7 @@ const zaehlvideo = (page, { sekunden = 12, drehung = 0 } = {}) => page.evaluate(
 }, [sekunden, drehung]).then((b) => Buffer.from(b, "base64"));
 /** das Bild des Films zur Zeit t (halbe Grösse, ohne Beschriftung): die Nummer aus den 3 × 3 Feldern und die Farben links und rechts der Mitte */
 const zaehlerLesen = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=11");
+  const { bild } = await import("./film.js?v=12");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -448,7 +449,7 @@ await check("Irrfahrt: das Stottern zeigt nie Reste des Logos (beide teilen eine
   await page.waitForFunction(() => window.__phorma.ton && window.__phorma.A, null, { timeout: 60_000 });
   await bereit(page);
   const r = await page.evaluate(async () => {
-    const { bild } = await import("./film.js?v=11");
+    const { bild } = await import("./film.js?v=12");
     const S = window.__phorma; S.laeuft = false;
     // die Bühne mit einer einzigen Lage: so stottert jedes Ereignis (sonst fällt es vor einem Sprung aus), und die Leinwand wird gebraucht
     const b = S.buehne, buehne = { bild: (...x) => b.bild(...x), lage: () => 0, get ende() { return b.ende; } };
@@ -679,6 +680,34 @@ await check("Video: ein WebM mit Ton – die Bilder über das Spulen, der Aussch
   assert.ok(await page.evaluate(() => window.__phorma.filmspur.schl.includes("|1.000|")), "die Bilder ab 1 s");
   const a = await messe(page, 1.2), b = await messe(page, 2.6);
   assert.ok(a.abdruck !== b.abdruck && a.hell > 20, "das Video läuft");
+  assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
+await check("Lichtwürfel: die Irrfahrt mit einem stehen bleibenden, ruhig drehenden Würfel – dieselben Phasen, springt nur mit dem Weg, nie Negativ, am Ende das Logo; gemerkt", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  await page.click('[data-quelle="ton"]');
+  await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
+  await page.waitForFunction(() => window.__phorma.ton && window.__phorma.A, null, { timeout: 60_000 });
+  const lagen = async (art) => {
+    await page.click(`[data-wahl="${art}"]`);
+    await page.waitForFunction((art) => window.__phorma.ablauf === art && window.__phorma.buehneSchluessel.includes(`|${art}|`), art);
+    await bereit(page);
+    return page.evaluate(() => { const S = window.__phorma, G = S.sz.zeit.phasen[1], l = new Set(); for (let t = G.von + 0.1; t < G.bis; t += 0.05) l.add(S.buehne.lage(S.sz.zeit, t)); return { n: l.size, phasen: S.sz.zeit.phasen.map((p) => [p.name, p.von, p.bis]) }; });
+  };
+  // der Schwerpunkt des Hellen (Würfel und Faden) über die ganze Irrfahrt: beim Lichtwürfel immer nah der Mitte, bei der Irrfahrt springt er mit
+  const mitten = async () => { const G = (await page.evaluate(() => window.__phorma.sz.zeit.phasen[1])), r = []; for (let t = G.von + 0.3; t < G.bis; t += 0.35) r.push(await messe(page, t)); return r; };
+  const abstand = (m) => (m.schwer ? Math.hypot(m.schwer[0] - 0.5, m.schwer[1] - 0.5) : 0);
+  const irr = await lagen("irrfahrt"), irrM = await mitten(), lw = await lagen("lichtwuerfel"), lwM = await mitten();
+  assert.equal(await page.getAttribute('[data-wahl="lichtwuerfel"]', "aria-pressed"), "true");
+  assert.deepEqual(lw.phasen, irr.phasen, "dieselben Phasen wie die Irrfahrt");
+  const weitLw = Math.max(...lwM.map(abstand)), weitIrr = Math.max(...irrM.map(abstand));
+  assert.ok(weitLw < 0.12 && weitLw < weitIrr, `der Würfel bleibt in der Mitte (höchstens ${weitLw.toFixed(3)} daneben, die Irrfahrt ${weitIrr.toFixed(3)})`);
+  assert.ok(lwM.every((m) => m.hell < 60), `immer schwarz, nie Negativ (${lwM.map((m) => m.hell.toFixed(0)).join(" ")})`);
+  assert.ok(lwM[5].tinte > 0.0005, "Würfel und Faden zu sehen");
+  assert.ok((await messe(page, lw.phasen[2][2] - 0.3)).tinte > 0.001, "am Ende das Logo");
+  await page.reload(); await bereit(page);
+  assert.equal(await page.evaluate(() => window.__phorma.ablauf), "lichtwuerfel", "die Wahl bleibt");
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });

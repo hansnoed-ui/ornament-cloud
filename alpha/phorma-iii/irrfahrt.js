@@ -11,16 +11,20 @@
 //   Schriftzug) oder 03 Stille (der Faden zieht sich in seinen Kopf zusammen).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich } from "./gemeinsam.js?v=11";
-import { phase } from "./ablauf.js?v=11";
-import { gewebeKurven } from "./kurven.js?v=11";
-import { weichzeichnen } from "./analyse.js?v=11";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=11";
-import { RAUSCHEN } from "./gewebe.js?v=11";
-import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=11";
+import { anteil, weich } from "./gemeinsam.js?v=12";
+import { phase } from "./ablauf.js?v=12";
+import { gewebeKurven } from "./kurven.js?v=12";
+import { weichzeichnen } from "./analyse.js?v=12";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=12";
+import { RAUSCHEN } from "./gewebe.js?v=12";
+import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=12";
 
 const VOR = 0.4;
 
+// das Abbild: der Würfel steht immer in der Mitte vor der Kamera und wird erst im Bild verschoben (uLage.xy) und gezoomt (uLage.w) – so sieht jeder
+// Würfel, auch jeder der drei nebeneinander, von vorn auf seine Achse und wird nie schief (vorher lag der Versatz im Raum: seitliche Würfel wurden
+// schräg angeschnitten; Rückmeldung: «die Würfel bei der Irrfahrt: bitte nicht verzogen»)
+const ABBILD = /* glsl */ `vec4 abbild(vec3 p) { vec4 c = projectionMatrix * modelViewMatrix * vec4(p, 1.0); c.xy = (c.xy + uLage.xy * c.w) * uLage.w; return c; }`;
 const PFAD = /* glsl */ `
   uniform sampler2D tPfad; uniform int uZeile; uniform float uKopf, uSchritt, uL, uAmp, uKnall, uDicke, uZeit, uMusik, uHell, uSchwanz;
   uniform mat3 uDreh; uniform vec4 uLage;
@@ -42,11 +46,9 @@ const PFAD = /* glsl */ `
            + 0.4 * vec3(snoise(q2), snoise(q2 + vec3(5.0, 11.0, 0.0)), snoise(q2 + vec3(9.0, 2.0, 0.0)));
     float w = uAmp * (0.15 + 1.2 * hk.y * hk.y) * mix(0.4, 1.0, r) * (1.0 + uKnall * 1.5 * hk.z);
     p += w * n + uDicke * (hk - 0.5);
-    return uDreh * p + uLage.xyz;
+    return uDreh * p;
   }
-  // uLage.w: der Zoom – im Bild, nicht durch Heranrücken (sonst verzerrt die Perspektive den nahen Würfel; Rückmeldung: «nach 2–3 Sekunden ist die
-  // Box kurz verzogen»)
-  vec4 abbild(vec3 p) { vec4 c = projectionMatrix * modelViewMatrix * vec4(p, 1.0); c.xy *= uLage.w; return c; }`;
+  ${ABBILD}`;
 const FADEN_VERTEX = /* glsl */ `
   ${PFAD}
   attribute vec2 aRef; varying float vA;
@@ -65,24 +67,32 @@ const FUNKEN_VERTEX = /* glsl */ `
     gl_PointSize = uPunkt * (1.0 + 3.0 * hash3(aRef.x + aRef.y).x);
     vA = uFunken * sicht * an;
   }`;
+// der Würfel: dicke Kanten wie im Vorbild (je Kante ein Band aus zwei Dreiecken, quer zur Kante im Bild verbreitert, uDicke Punkte halb), statt
+// Haarlinien; uTiefe: wie hell die hinteren Kanten bleiben (ein wenig dunkler gibt dem Auge die Tiefe, ganz dunkel wirkte er unvollständig)
 const WUERFEL_VERTEX = /* glsl */ `
-  uniform mat3 uDreh; uniform vec4 uLage; uniform float uZeichnen, uWuerfel, uZeit;
-  attribute vec3 aA, aB; attribute vec2 aT; varying float vA;   // aT.x: 0 Anfang / 1 Ende der Kante
+  uniform mat3 uDreh; uniform vec4 uLage; uniform float uZeichnen, uWuerfel, uZeit, uDicke, uTiefe; uniform vec2 uSeiten;
+  attribute vec3 aA, aB; attribute vec2 aT; varying float vA, vS;   // aT.x: 0 Anfang / 1 Ende der Kante, aT.y: −1 / 1 die Seite des Bands
+  ${ABBILD}
   void main() {
-    // ohne Echos: auch genau konzentrische, grössere Kopien sahen in der Perspektive wie ein zweiter, schiefer Würfel aus (Rückmeldung: «die Würfel
-    // sind immer noch verzogen»)
-    vec3 p = mix(aA, aB, aT.x * uZeichnen);
-    vec3 r = uDreh * p;
-    vec4 c = projectionMatrix * modelViewMatrix * vec4(r + uLage.xyz, 1.0); c.xy *= uLage.w;
+    vec3 ra = uDreh * aA, rb = uDreh * mix(aA, aB, uZeichnen);
+    vec4 ca = abbild(ra), cb = abbild(rb);
+    vec2 d = (cb.xy / cb.w - ca.xy / ca.w) * uSeiten; float l = length(d); d = l > 1e-4 ? d / l : vec2(1.0, 0.0);
+    vec4 c = aT.x < 0.5 ? ca : cb; vec3 r = aT.x < 0.5 ? ra : rb;
+    c.xy += (vec2(-d.y, d.x) * aT.y + d * (aT.x * 2.0 - 1.0)) * uDicke / uSeiten * c.w;   // quer und ein wenig über die Ecken hinaus
     gl_Position = c;
-    // vorn hell, hinten dunkel (Licht im Nebel): ohne Tiefe ist ein Drahtwürfel eine Necker-Täuschung – beim Drehen kippt für das Auge, welche
-    // Seite vorn ist, und er scheint sich zu verbiegen (Rückmeldung: «die Würfel ein für alle Mal stabil … sie verziehen sich immer noch ständig»)
-    vA = uWuerfel * 0.9 * mix(0.05, 1.0, pow(clamp(r.z / 0.866 * 0.5 + 0.5, 0.0, 1.0), 1.3));
+    vS = aT.y;
+    vA = uWuerfel * 0.9 * mix(uTiefe, 1.0, pow(clamp(r.z / 0.866 * 0.5 + 0.5, 0.0, 1.0), 1.3));
   }`;
+const KANTE = /* glsl */ `varying float vA, vS; void main() { gl_FragColor = vec4(vec3(vA * (1.0 - smoothstep(0.35, 1.0, abs(vS)))), 1.0); }`;
 const FRAGMENT = /* glsl */ `varying float vA; void main() { gl_FragColor = vec4(vec3(vA), 1.0); }`;
 const FUNKE = /* glsl */ `varying float vA; void main() { vec2 d = gl_PointCoord - 0.5; float m = smoothstep(0.5, 0.0, length(d)); gl_FragColor = vec4(vec3(vA * m), 1.0); }`;
 
-export function irrfahrt(g, teil) {
+/**
+ * fest (die Variante «Lichtwürfel», seit 19. Oktober 2026; Wunsch: «eine weitere Variante der Irrfahrt, aber mit einem stehen bleibenden und einfach
+ * rotierenden Würfel und weniger verblendeten Spuren, wie zu Anfang»): ein Würfel in der Mitte, er dreht sich gleichmässig und springt nie – keine
+ * neue Lage beim Schlag, kein Zoomstoss, keine drei Würfel, kein Negativ; der Faden quillt weniger auf und leuchtet weniger, wenig Bloom.
+ */
+export function irrfahrt(g, teil, { fest = false } = {}) {
   const { renderer, A, B, H } = g, a = B / H;
   const W = phase(teil, "wuerfel"), G = phase(teil, "irrfahrt"), Lg = phase(teil, "logo"), St = phase(teil, "stille");
   const S = g.test ? 10 : g.grob ? 56 : 120, L = g.test ? 160 : g.grob ? 520 : 900, NF = g.test ? 300 : g.grob ? 2500 : 6000;
@@ -136,21 +146,21 @@ export function irrfahrt(g, teil) {
   const ecken = [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]].map((e) => e.map((v) => v * 0.5));
   const kanten = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
   const wa = [], wb = [], wt = [];
-  for (const [i, j] of kanten) for (const t of [0, 1]) { wa.push(...ecken[i]); wb.push(...ecken[j]); wt.push(t, 0); }
+  for (const [i, j] of kanten) for (const [t, seite] of [[0, -1], [1, -1], [1, 1], [0, -1], [1, 1], [0, 1]]) { wa.push(...ecken[i]); wb.push(...ecken[j]); wt.push(t, seite); }
   const wGeo = new THREE.BufferGeometry();
   wGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(wa.length), 3));
   wGeo.setAttribute("aA", new THREE.BufferAttribute(new Float32Array(wa), 3)); wGeo.setAttribute("aB", new THREE.BufferAttribute(new Float32Array(wb), 3)); wGeo.setAttribute("aT", new THREE.BufferAttribute(new Float32Array(wt), 2));
-  const wMat = new THREE.ShaderMaterial({ vertexShader: WUERFEL_VERTEX, fragmentShader: FRAGMENT, ...plus,
-    uniforms: { uDreh: U.uDreh, uLage: U.uLage, uZeit: U.uZeit, uZeichnen: { value: 0 }, uWuerfel: { value: 1 } } });
+  const wMat = new THREE.ShaderMaterial({ vertexShader: WUERFEL_VERTEX, fragmentShader: KANTE, ...plus,
+    uniforms: { uDreh: U.uDreh, uLage: U.uLage, uZeit: U.uZeit, uZeichnen: { value: 0 }, uWuerfel: { value: 1 }, uDicke: { value: 1.5 }, uTiefe: { value: fest ? 0.6 : 0.5 }, uSeiten: { value: new THREE.Vector2(1, 1) } } });
   // der Würfel in einer eigenen Szene: er wird scharf gezeichnet (nur in der letzten Probe des Bilds, nach dem Bloom), der Faden mit Bewegungsunschärfe
   const szene = new THREE.Scene(), wSzene = new THREE.Scene();
   for (const o of [new THREE.LineSegments(fGeo, fMat), new THREE.Points(pGeo, pMat)]) { o.frustumCulled = false; szene.add(o); }
-  { const o = new THREE.LineSegments(wGeo, wMat); o.frustumCulled = false; wSzene.add(o); }
-  // ein langes Objektiv (15° statt 35°, die Kamera entsprechend weiter weg): die Bildebene z = 0 füllt das Bild wie im Gewebe, aber nahe Ecken
-  // werden kaum grösser als ferne – mit 35° wirkte ein Würfel, dessen Ecke zur Kamera zeigt, verzerrt (Rückmeldung: «das erste Mal, wenn drei
-  // Würfel zu sehen sind, ist der mittlere davon noch verzogen»)
-  const kam = new THREE.PerspectiveCamera(15, B / H, 0.1, 100);
-  kam.position.set(0, 0, 1 / Math.tan(THREE.MathUtils.degToRad(7.5)));
+  { const o = new THREE.Mesh(wGeo, wMat); o.frustumCulled = false; wSzene.add(o); }
+  // das Objektiv wie im Vorbild (35°, die vordere Kante gut anderthalbmal so lang wie die hintere): mit dem langen Objektiv (15°) fehlte die Perspektive
+  // fast ganz, und ein drehender Drahtwürfel kippt dann für das Auge – er schien sich zu verziehen (Rückmeldung: «die Würfel bei der Irrfahrt: bitte
+  // nicht verzogen»). Die Bildebene z = 0 füllt das Bild wie im Gewebe; der Zoom und der Versatz geschehen im Bild (ABBILD), nicht im Raum.
+  const kam = new THREE.PerspectiveCamera(35, B / H, 0.1, 100);
+  kam.position.set(0, 0, 1 / Math.tan(THREE.MathUtils.degToRad(17.5)));
   // nur kräftige Einsätze, frühestens alle 0,4 s, werfen den Würfel herum: eine Stimme hat fast bei jeder Silbe einen Einsatz, und die vielen
   // Sprünge liessen ihn verzogen wirken (Rückmeldung: «würfel noch immer verzogen»)
   const ein = [];
@@ -166,7 +176,7 @@ export function irrfahrt(g, teil) {
 
   return {
     /** Schlüssel der Lage: die Bewegungsunschärfe mischt nur Proben derselben Lage (sonst lagen bei einem Sprung zwei Würfel übereinander) */
-    lage(tau) { const s = stand(tau); return s.logo ? "logo" : `${s.zs.nr}:${s.nr}`; },
+    lage(tau) { const s = stand(tau); return s.logo ? "logo" : fest ? `${s.zs.nr}` : `${s.zs.nr}:${s.nr}`; },   // der Lichtwürfel springt nur mit dem Weg
     /** scharf: die letzte Probe des Bilds zeichnet den Würfel, mit gewicht (der Zahl der Proben), damit er nach dem Mitteln so hell ist wie ohne Unschärfe */
     render(rt, tau, { scharf = true, gewicht = 1 } = {}) {
       const { film, logo, zs, nr } = stand(tau), still = St ? weich(anteil(tau, St[0], St[1] - 0.5)) : 0, j = zs.nr;
@@ -184,28 +194,32 @@ export function irrfahrt(g, teil) {
       const auf = weich(anteil(tau, 0, W[1]));
       // die Animation im Würfel – Faden, Rauch, Funken, Belichtung – wieder wie in der ersten Fassung (Rückmeldung: «am Anfang war sie besser, bevor
       // wir sie wilder gemacht haben … es geht nur um die Belichtung und Wildheit der Animation in den Würfeln drin»; die Effekte bleiben)
-      let amp = (0.0006 + 0.16 * laut ** 1.3 + 0.2 * stoss + 0.12 * tief) * auf * (1 - still) * (zeichen ? 0.35 : 1);
+      let amp = (0.0006 + 0.16 * laut ** 1.3 + 0.2 * stoss + 0.12 * tief) * auf * (1 - still) * (zeichen ? 0.35 : 1) * (fest ? 0.6 : 1);
       if (logo) amp = (1 - ruhig) * (0.03 + 0.14 * stoss);
       // die Lage des Würfels: je Zustand gewürfelt (auch mitten in ihm), und jeder weitere kräftige Einsatz wirft ihn in eine neue Lage («noch wilder»);
       // darin dreht er sich, der Schlag ruckt; zum Logo gerade und von vorn. Manche Zustände zeigen drei Würfel nebeneinander.
-      const jl = j * 37 + nr, seitL = nr ? film - ein.filter((t) => t <= film).at(-1) : seit;
+      const jl = fest ? 0 : j * 37 + nr, seitL = nr ? film - ein.filter((t) => t <= film).at(-1) : seit;
       // ganz nah höchstens 1,9 (statt 2,6): so nah füllte die aufgequollene Wolke das ganze Bild grau («die Animation überblendet teilweise stark»)
-      const nah = jl ? [0.95, 1.1, 1.3, 1.65, 1.9, 1.0, 0.8][Math.floor(zufall(jl, 6) * 7)] : 1.15;
-      const w = 0.35 + 0.8 * zufall(jl, 9), drei = !logo && !zeichen && j > 0 && zufall(j, 13) < 0.28;
+      const nah = fest ? 0.74 : jl ? [0.95, 1.1, 1.3, 1.65, 1.9, 1.0, 0.8][Math.floor(zufall(jl, 6) * 7)] : 1.15;
+      const w = 0.35 + 0.8 * zufall(jl, 9), drei = !fest && !logo && !zeichen && j > 0 && zufall(j, 13) < 0.28, stossL = fest ? 0 : stoss;
       const lage = (k) => {
         e3.set(zufall(jl, 1) * 6.283 + seitL * w * 0.6 + dreh * 0.35 + k * 2.1, zufall(jl, 2) * 6.283 + seitL * w + dreh * 0.5 + k * 1.3, zufall(jl, 3) * 6.283 + seitL * w * 0.3);
-        if (!j) e3.set(0.45 + tau * 0.25, 0.6 + tau * 0.4, 0.1);
+        if (!j && !fest) e3.set(0.45 + tau * 0.25, 0.6 + tau * 0.4, 0.1);
+        if (fest) e3.set(0.45 + tau * 0.16, 0.6 + tau * 0.27, 0.1 + tau * 0.05);   // einfach gleichmässig weiter
         q0.setFromEuler(e3); q1.identity(); q0.slerp(q1, ruhig);
         drehM.makeRotationFromQuaternion(q0); U.uDreh.value.setFromMatrix4(drehM);
-        const mass = (logo ? 1 + (nah - 1) * (1 - ruhig) : drei ? 0.55 : nah) * (1 + 0.28 * stoss * (1 - ruhig));
-        const dx = drei ? (k - 1) * 1.13 * a : (zufall(jl, 4) - 0.5) * 0.3 * (1 - ruhig);   // der Zoom im Bild verkleinert auch den Abstand
-        U.uLage.value.set(dx, drei ? (k - 1) * -0.22 : (zufall(jl, 5) - 0.5) * 0.3 * (1 - ruhig), 0, mass);
+        const mass = (logo ? 1 + (nah - 1) * (1 - ruhig) : drei ? 0.55 : nah) * (1 + 0.28 * stossL * (1 - ruhig));
+        // der Versatz im Bild (Anteil der halben Breite und Höhe, vor dem Zoom: der Zoom verkleinert auch den Abstand)
+        const dx = drei ? (k - 1) * 1.13 : fest ? 0 : ((zufall(jl, 4) - 0.5) * 0.3 * (1 - ruhig)) / a;
+        U.uLage.value.set(dx, drei ? (k - 1) * -0.22 : fest ? 0 : (zufall(jl, 5) - 0.5) * 0.3 * (1 - ruhig), 0, mass);
       };
-      U.uSchwanz.value = logo || zeichen ? 1e-4 : 0.25; U.uZeile.value = zeile; U.uKopf.value = kopf; U.uSchritt.value = schritt; U.uAmp.value = amp; U.uKnall.value = 1.5 * tief * (1 - ruhig);
-      U.uDicke.value = logo ? 0.0035 * ruhig : 0; U.uZeit.value = tau; U.uMusik.value = 0.3 * tau + 0.3 * wert(T.energie, film); U.uHell.value = helle * (logo ? 1 + 0.2 * ruhig : (0.7 + 1.5 * laut + 1.5 * stoss) * (1 - 0.6 * still));   // laut quillt die Wolke hell auf
-      pMat.uniforms.uFunken.value = (0.15 + 1.6 * hoch + 0.6 * stoss) * auf * (1 - still) * (1 - ruhig); pMat.uniforms.uPunkt.value = Math.max(1, (g.test ? 1 : 2) * (renderer.getSize(groesse).y / 1350));
+      U.uSchwanz.value = logo || zeichen ? 1e-4 : 0.25; U.uZeile.value = zeile; U.uKopf.value = kopf; U.uSchritt.value = schritt; U.uAmp.value = amp; U.uKnall.value = (fest ? 0.7 : 1.5) * tief * (1 - ruhig);
+      U.uDicke.value = logo ? 0.0035 * ruhig : 0; U.uZeit.value = tau; U.uMusik.value = 0.3 * tau + 0.3 * wert(T.energie, film); U.uHell.value = helle * (logo ? 1 + 0.2 * ruhig : (fest ? 0.6 + 0.7 * laut + 0.5 * stoss : 0.7 + 1.5 * laut + 1.5 * stoss) * (1 - 0.6 * still));   // laut quillt die Wolke hell auf (beim Lichtwürfel weniger)
+      pMat.uniforms.uFunken.value = (0.15 + 1.6 * hoch + 0.6 * stoss) * auf * (1 - still) * (1 - ruhig) * (fest ? 0.4 : 1); pMat.uniforms.uPunkt.value = Math.max(1, (g.test ? 1 : 2) * (renderer.getSize(groesse).y / 1350));
       wMat.uniforms.uZeichnen.value = weich(anteil(tau, 0.05, W[1] * 0.9));
-      wMat.uniforms.uWuerfel.value = (0.55 + 0.45 * Math.min(1, laut * 2)) * (1 - ruhig) * (1 - 0.6 * still) * gewicht;
+      wMat.uniforms.uWuerfel.value = (fest ? 0.8 : 0.55 + 0.45 * Math.min(1, laut * 2)) * (1 - ruhig) * (1 - 0.6 * still) * gewicht;
+      // die Kanten gut 7 Punkte breit bei 1350 Punkten Höhe (0,55 % der Höhe) wie im Vorbild (in jeder Grösse gleich dick im Bild)
+      renderer.getSize(groesse); wMat.uniforms.uSeiten.value.set(groesse.x / 2, groesse.y / 2); wMat.uniforms.uDicke.value = Math.max(1, 3.6 * (groesse.y / 1350));
       g.loeschen(rt, 0x000000);
       renderer.setRenderTarget(rt);
       for (let k = 0; k < (drei ? 3 : 1); k++) { lage(drei ? k : 0); renderer.render(szene, kam); }
@@ -213,9 +227,9 @@ export function irrfahrt(g, teil) {
       // «die Würfel sind immer noch verzogen»)
       const danach = scharf ? () => { renderer.setRenderTarget(rt); for (let k = 0; k < (drei ? 3 : 1); k++) { lage(drei ? k : 0); renderer.render(wSzene, kam); } } : null;
       // Negativ: bei jedem Schnitt der Musik und bei Zuständen, die Weiss auf Schwarz gewürfelt haben (im Gewebe die Nacht), zwei bis drei Bilder lang
-      const umkehr = !logo && j && ((zs.nacht && film - zs.t0 < 0.1) || T.schnitte.some((x) => film >= x && film < x + 0.07)) ? 1 : 0;
-      // Belichtung und Bloom wie in der ersten Fassung (ohne die weiche Stauchung 1 − e^(−k·x), die mit «noch wilder» kam)
-      return { aktiv: 0.7 * (1 - ruhig) + 0.15, bloom: (0.3 + 0.6 * stoss) * (1 - 0.7 * ruhig), radius: 0.35, saum: 0, ende: 0, umkehr, danach };
+      const umkehr = !fest && !logo && j && ((zs.nacht && film - zs.t0 < 0.1) || T.schnitte.some((x) => film >= x && film < x + 0.07)) ? 1 : 0;
+      // Belichtung und Bloom wie in der ersten Fassung (ohne die weiche Stauchung 1 − e^(−k·x), die mit «noch wilder» kam); der Lichtwürfel mit wenig Bloom
+      return { aktiv: 0.7 * (1 - ruhig) + 0.15, bloom: (fest ? 0.15 + 0.25 * stoss : 0.3 + 0.6 * stoss) * (1 - 0.7 * ruhig), radius: 0.35, saum: 0, ende: 0, umkehr, danach };
     },
     vorab: { szenen: [[szene, kam], [wSzene, kam]], materialien: [] },
     zaehler(tau) {
