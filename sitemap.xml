@@ -571,4 +571,9 @@
   <url><loc>https://ornament.cloud/zu-seiner-zeit/verweis/yoko-ono/</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://ornament.cloud/zu-seiner-zeit/verweis/yuk-hui/</loc><lastmod>2026-09-29</lastmod></url>
   <!-- ZSZ:END -->
+  <!-- SOCIAL:START (erzeugt aus social-media/daten/eintraege.json) -->
+  <url><loc>https://ornament.cloud/social-media/</loc><lastmod>2026-10-19</lastmod></url>
+  <url><loc>https://ornament.cloud/social-media/schlagworte/</loc><lastmod>2026-10-19</lastmod></url>
+  <url><loc>https://ornament.cloud/social-media/autorinnen/</loc><lastmod>2026-10-19</lastmod></url>
+  <!-- SOCIAL:END -->
 </urlset>

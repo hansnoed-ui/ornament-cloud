@@ -1,4 +1,4 @@
-// Struktur der Website – Browser-Tests (Playwright, Chromium), Neuordnung vom 2. Oktober 2026: das Menü (seit 10. Oktober 2026 vier Kästchen: Apps, Prompts, Web, Zettel) auf allen Breiten,
+// Struktur der Website – Browser-Tests (Playwright, Chromium), Neuordnung vom 2. Oktober 2026: das Menü (seit 10. Oktober 2026 vier Kästchen: Apps, Prompts, Web, Zettel; seit 19. Oktober 2026 fünf, dazu Social) auf allen Breiten,
 // die Startseite (seit 9. Oktober 2026 Lead und drei Kästen; OMNA COLOR war vom 4. bis 9. Oktober 2026 eingebettet), die Seiten Apps, Masterprompts und Web (mit dem Stellenfeld).
 //   NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs [Teil eines Prüfungsnamens]
 // Das Stellenfeld braucht WebGL (Chromium bringt SwiftShader mit).
@@ -77,14 +77,14 @@ await check("Startseite ohne Skript: kein Zettel von selbst, ein Hinweis mit den
   await ctx.close();
 });
 
-await check("Startseite (Handy): der Zettel mit Hauptlinks, darunter die Welle, darunter die vier Kästchen des Menüs in einer Reihe; kein seitliches Wischen", async () => {
+await check("Startseite (Handy): der Zettel mit Hauptlinks, darunter die Welle, darunter die fünf Kästchen des Menüs in einer Reihe; kein seitliches Wischen", async () => {
   for (const opts of [{ ...devices["Pixel 7"] }, { ...devices["iPhone 13"] }, { viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true }]) {
     const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
     await page.waitForURL(/\/zu-seiner-zeit\/strophe\//);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     const m = await page.locator(".menu-item").evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y)]; }));
     assert.equal(new Set(m.map((p) => p[1])).size, 1, "eine Reihe");
-    assert.equal(new Set(m.map((p) => p[0])).size, 4, "vier Spalten");
+    assert.equal(new Set(m.map((p) => p[0])).size, 5, "fünf Spalten (seit 19. Oktober 2026 mit «Social»)");
     const links = await box(page.locator(".seitenweg")), welle = await box(page.locator(".divider")), menu = await box(page.locator(".menu"));
     assert.ok(links.b <= welle.y + 1 && welle.b <= menu.y + 1 && menu.b <= page.viewportSize().height, "Hauptlinks, Welle, Menü, alles beim Laden im Fenster");
     assert.deepEqual(errors, []);
@@ -105,23 +105,25 @@ await check("Rückkanal in der Spalte der Seite, bündig mit dem Fuss, nie am Fe
 });
 
 // ---------- Menü ----------
-await check("Menü: vier Kästchen (Apps, Prompts, Web, Zettel) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
+await check("Menü: fünf Kästchen (Apps, Prompts, Web, Zettel, Social) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
   const ctx = await browser.newContext();
-  for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/zu-seiner-zeit/", "/zu-seiner-zeit/en/strophe/17-die-person/", "/alpha/sketchory/", "/alpha/omna-color/"]) {
+  for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/social-media/", "/zu-seiner-zeit/", "/zu-seiner-zeit/en/strophe/17-die-person/", "/alpha/sketchory/", "/alpha/omna-color/"]) {
     for (const w of [320, 360, 390, 412, 600, 768, 1024, 1280]) {
       const page = await ctx.newPage();
       await page.addInitScript(() => { try { sessionStorage.setItem("start-animation", "1"); } catch {} });
       await page.setViewportSize({ width: w, height: 800 });
       await page.goto(origin + pfad);
       const items = page.locator(".menu-item");
-      assert.equal(await items.count(), 4);
-      assert.deepEqual(await items.locator("span").allTextContents(), ["Apps", "Prompts", "Web", "Zettel"], `${pfad} ${w}: Namen`);
+      assert.equal(await items.count(), 5);
+      assert.deepEqual(await items.locator("span").allTextContents(), ["Apps", "Prompts", "Web", "Zettel", "Social"], `${pfad} ${w}: Namen`);
       const bs = [];
-      for (let i = 0; i < 4; i++) { assert.ok(await items.nth(i).isVisible(), `${pfad} ${w}: Kästchen ${i + 1} sichtbar`); bs.push(await box(items.nth(i))); }
-      for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) assert.ok(!sich(bs[i], bs[j]), `${pfad} ${w}: Kästchen ${i + 1} und ${j + 1} überlappen`);
+      for (let i = 0; i < 5; i++) { assert.ok(await items.nth(i).isVisible(), `${pfad} ${w}: Kästchen ${i + 1} sichtbar`); bs.push(await box(items.nth(i))); }
+      for (let i = 0; i < 5; i++) for (let j = i + 1; j < 5; j++) assert.ok(!sich(bs[i], bs[j]), `${pfad} ${w}: Kästchen ${i + 1} und ${j + 1} überlappen`);
       assert.equal(new Set(bs.map((b) => Math.round(b.y))).size, 1, `${pfad} ${w}: eine Reihe`);
-      assert.ok(bs.every((b) => Math.abs(b.w - bs[0].w) < 1 && b.w >= 60 && b.h >= 56), `${pfad} ${w}: gleich gross, mindestens 60 × 56 px (${Math.round(bs[0].w)} × ${Math.round(bs[0].h)})`);
-      for (let i = 0; i < 4; i++) {
+      // seit 19. Oktober 2026 fünf Kästchen: auf den schmalsten Handys (bis 400 px) mindestens 48 px breit, sonst wie vorher 60 px
+      const minB = w <= 400 ? 48 : 60;
+      assert.ok(bs.every((b) => Math.abs(b.w - bs[0].w) < 1 && b.w >= minB && b.h >= 56), `${pfad} ${w}: gleich gross, mindestens ${minB} × 56 px (${Math.round(bs[0].w)} × ${Math.round(bs[0].h)})`);
+      for (let i = 0; i < 5; i++) {
         const svg = await box(items.nth(i).locator("svg"));
         assert.ok(svg.w >= 22 && svg.h >= 22, `${pfad} ${w}: Symbol ${i + 1} sichtbar`);
         const t = await items.nth(i).locator("span").evaluate((e) => e.scrollWidth <= e.clientWidth + 0.5);
@@ -138,7 +140,7 @@ await check("Menü: vier Kästchen (Apps, Prompts, Web, Zettel) mit Symbol auf a
       if (w <= 760) {
         assert.ok(nav.b <= bs[0].y + 1 && Math.abs(bs[0].x - nav.x) <= 1 && (pfad.includes("drittes-rad") || welle.b <= bs[0].y + 1), `${pfad} ${w}: Handy: unter der Welle, linksbündig mit der Navigation`);
       } else {
-        assert.ok(bs[0].b <= welle.y + 1 && Math.abs(bs[3].r - leiste.r) <= 2, `${pfad} ${w}: Computer: rechts oben neben den Hauptlinks, die Welle unter beiden (${bs[3].r} gegen ${leiste.r})`);
+        assert.ok(bs[0].b <= welle.y + 1 && Math.abs(bs.at(-1).r - leiste.r) <= 2, `${pfad} ${w}: Computer: rechts oben neben den Hauptlinks, die Welle unter beiden (${bs.at(-1).r} gegen ${leiste.r})`);
       }
       await page.close();
     }
@@ -196,7 +198,7 @@ await check("Menü: serifenlose Schrift der Seite in mittlerem Gewicht (Wunsch v
       return { menu: [...document.querySelectorAll(".menu-item")].map((e) => ({ familie: st(e).fontFamily, gewicht: st(e).fontWeight, px: parseFloat(st(e).fontSize), aktiv: e.hasAttribute("aria-current") })),
         text: st(document.body).fontFamily, h1: st(document.querySelector("h1")).fontFamily };
     });
-    assert.equal(s.menu.length, 4, pfad);
+    assert.equal(s.menu.length, 5, pfad);   // seit 19. Oktober 2026 fünf Kästchen
     for (const [i, m] of s.menu.entries()) {
       assert.equal(m.familie, s.text, `${pfad}: Eintrag ${i + 1} in der Schrift der Seite`);
       assert.ok(/^system-ui/.test(m.familie) && /sans-serif$/.test(m.familie) && !/Georgia|Times/.test(m.familie), `${pfad}: Eintrag ${i + 1} serifenlos (${m.familie})`);

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Erzeugt aus social-media/daten/eintraege.json (social-media/js/darstellung.js). Nicht von Hand ändern. -->
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Ornament Cloud – Social Media</title>
+    <link>https://ornament.cloud/social-media/</link>
+    <atom:link href="https://ornament.cloud/social-media/feed.xml" rel="self" type="application/rss+xml"/>
+    <description>Beiträge aus X, Facebook und Instagram: gesichert, abgeschrieben, verschlagwortet und kommentiert.</description>
+    <language>de-ch</language>
+    <lastBuildDate>Mon, 19 Oct 2026 00:00:00 +0000</lastBuildDate>
+
+  </channel>
+</rss>

@@ -393,15 +393,15 @@ h1 {
   outline-offset: 2px;
 }
 
-/* Hauptmenü (seit 10. Oktober 2026, Wunsch von Christian): vier Kästchen mit gezeichnetem Symbol und Namen – Zettel, Apps, Prompts, Web –
-   an der Stelle des früheren Wortmenüs (2. bis 10. Oktober 2026); auf dem Handy alle vier nebeneinander. Die Symbole sind schlichte Zeichnungen in der
+/* Hauptmenü (seit 10. Oktober 2026, Wunsch von Christian): vier Kästchen mit gezeichnetem Symbol und Namen – Zettel, Apps, Prompts, Web –, seit 19. Oktober 2026 fünf (dazu «Social», ein Rautezeichen) –
+   an der Stelle des früheren Wortmenüs (2. bis 10. Oktober 2026); auf dem Handy alle nebeneinander. Die Symbole sind schlichte Zeichnungen in der
    Schriftfarbe, nicht animiert und für Vorlesegeräte verborgen (der Name im Kästchen sagt alles). Die Seite, auf der man ist, trägt aria-current
    und hat einen kräftigeren Rand; auf den Seiten darunter (z. B. ORNA unter «Apps») ebenfalls. */
 .menu {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));   /* seit 19. Oktober 2026 fünf Kästchen (dazu «Social») */
   gap: 8px;
-  width: 368px;
+  width: 462px;
   margin-top: 4px;
 }
 
@@ -463,15 +463,23 @@ h1 {
 @media (max-width: 760px) {
   .topbar { display: flex; flex-direction: column; align-items: stretch; margin-bottom: 24px; }
   .topbar > .divider { margin: 10px 0 18px; }
-  .menu { width: 100%; max-width: 420px; margin-top: 0; }
+  .menu { width: 100%; max-width: 520px; margin-top: 0; }
   .brand { margin-top: 0; }
   .seitenweg { margin-top: 0; }
 }
 
-@media (max-width: 360px) {
+/* seit 19. Oktober 2026 fünf Kästchen: schon ab 440 px Breite enger gesetzt, damit jeder Name ganz ins Kästchen passt (vorher ab 360 px) */
+@media (max-width: 440px) {
   .menu { gap: 6px; }
-  .menu-item { padding: 8px 2px 6px; font-size: 0.8rem; }
+  .menu-item { padding: 8px 1px 6px; font-size: 0.8rem; letter-spacing: 0; }
   .menu-item svg { width: 24px; height: 24px; }
+}
+@media (max-width: 370px) {
+  .menu { gap: 4px; }
+  .menu-item { font-size: 0.75rem; }
+}
+@media (max-width: 335px) {
+  .menu-item { font-size: 0.7rem; }
 }
 
 /* News-Einträge */

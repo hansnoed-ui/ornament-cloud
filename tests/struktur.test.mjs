@@ -10,7 +10,7 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
 
-const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Web", "web/"], ["Zettel", "zu-seiner-zeit/"]];   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
+const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Web", "web/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"]];   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
 const ORNA = "portfolio/nebeneinander-nacheinander/";
 // Seiten mit dem Menü → Eintrag, der aktiv ist ([Ordner, aria-current]); null: keiner (die Seite hängt an keinem Menüpunkt)
 const MENUSEITEN = {
@@ -30,11 +30,12 @@ const MENUSEITEN = {
   [`${ORNA}app/feld/index.html`]: ["apps/", "true"],
   "alpha/omna-color/index.html": ["web/", "true"],          // OMNA COLOR ist ein Beitrag auf «Web»
   "zu-seiner-zeit/index.html": ["zu-seiner-zeit/", "page"],
+  "social-media/index.html": ["social-media/", "page"],      // Social Media (19. Oktober 2026): die Zeitleiste; alle Seiten darunter (Zettel, Register, Redaktion) unter «Social»
 };
 // seit 18. Oktober 2026 steht das Menü auf allen Seiten mit Kopf (Wunsch: «das Menü müsste überall auf der Seite sichtbar sein, auch wenn man in den
 // Beiträgen, Anwendungen etc. ist»): auch im Zettelkasten (jede Seite darin unter «Zettel»), auf den Alpha-Seiten und in OMNA COLOR – nur das Dritte Rad
 // bleibt ohne (Entscheid: «Zettelkasten mit Menü, das Dritte Rad ohne»)
-const aktivVon = (p) => (p in MENUSEITEN ? MENUSEITEN[p] : p.startsWith("zu-seiner-zeit/") ? ["zu-seiner-zeit/", "true"] : null);
+const aktivVon = (p) => (p in MENUSEITEN ? MENUSEITEN[p] : p.startsWith("zu-seiner-zeit/") ? ["zu-seiner-zeit/", "true"] : p.startsWith("social-media/") ? ["social-media/", "true"] : null);
 
 function htmlSeiten(dir = root, skip = new Set(["node_modules", "dist", ".git", "src", "tests", "tools", "vendor"])) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) => skip.has(e.name) || e.name.startsWith(".") ? []
@@ -56,7 +57,7 @@ const jpegMass = (buf) => {            // Breite und Höhe aus dem ersten Rahmen
   throw new Error("kein JPEG");
 };
 
-test("Menü: vier Kästchen mit Symbol und Namen (Apps, Prompts, Web, Zettel) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
+test("Menü: fünf Kästchen mit Symbol und Namen (Apps, Prompts, Web, Zettel, seit 19. Oktober 2026 Social) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
   const mitKopf = htmlSeiten().filter((p) => lies(p).includes('<nav class="seitenweg"') && !p.startsWith("alpha/drittes-rad/")).sort();
   assert.ok(mitKopf.length > 580, `alle Seiten mit Kopf (${mitKopf.length})`);
   for (const datei of mitKopf) {
@@ -67,8 +68,8 @@ test("Menü: vier Kästchen mit Symbol und Namen (Apps, Prompts, Web, Zettel) in
     assert.match(html, /<div class="topbar">\s*<nav class="seitenweg" aria-label="Ornament Cloud">[\s\S]*?<\/nav>\s*<svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"><\/svg>\s*<nav class="menu"/, `${datei}: Hauptlinks, Welle, Menü`);
     assert.ok(!/data-icon|menu-sub|menu-title/.test(nav[1]), `${datei}: keine animierten Symbole, keine Untertitel`);
     const eintraege = [...nav[1].matchAll(/<a class="menu-item" href="([^"]+)"(?: aria-current="(page|true)")?>(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>([^<]+)<\/span><\/a>/g)];
-    assert.equal(eintraege.length, 4, `${datei}: vier Kästchen mit verborgenem Symbol und Namen`);
-    assert.deepEqual(eintraege.map((e) => e[4]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Apps, Prompts, Web, Zettel (Zettel zuletzt seit 10. Oktober 2026)`);
+    assert.equal(eintraege.length, MENU.length, `${datei}: fünf Kästchen mit verborgenem Symbol und Namen`);
+    assert.deepEqual(eintraege.map((e) => e[4]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Apps, Prompts, Web, Zettel, Social (Zettel zuletzt seit 10. Oktober 2026, Social dahinter seit 19. Oktober 2026)`);
     for (const [i, e] of eintraege.entries()) {
       const basis = html.match(/<base href="([^"]+)"/)?.[1], ziel = new URL(e[1], new URL(basis ?? "", new URL(datei, root)));   // die Werkbank steht mit <base href="../">
       assert.equal(ziel.pathname, new URL(MENU[i][1], root).pathname, `${datei}: ${MENU[i][0]} führt nach ${MENU[i][1]}`);
@@ -90,12 +91,12 @@ test("Menü: vier Kästchen mit Symbol und Namen (Apps, Prompts, Web, Zettel) in
     assert.equal(regel(lies("kopfleiste.css"), sel), regel(lies("styles.css"), sel), `kopfleiste.css: ${sel} wie in styles.css`);
 });
 
-test("Menü: Kästchen in der serifenlosen Schrift der Seite, vier in einer Reihe (auch auf dem Handy), der aktive mit kräftigerem Rand", () => {
+test("Menü: Kästchen in der serifenlosen Schrift der Seite, fünf in einer Reihe (auch auf dem Handy), der aktive mit kräftigerem Rand", () => {
   const css = lies("styles.css");
   assert.ok(!/menu-icon|menu-sub|menu-text|menu-title/.test(css), "keine Regeln für das Menü vor dem 2. Oktober 2026");
   const regel = (sel) => css.match(new RegExp(`(?:^|\\n)${sel.replace(/[.[\]()*+?^$|\\]/g, "\\$&")}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
   assert.match(regel(".menu"), /display:\s*grid/);
-  assert.match(regel(".menu"), /grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/, "vier gleich breite Spalten, auf allen Breiten");
+  assert.match(regel(".menu"), /grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/, "fünf gleich breite Spalten, auf allen Breiten (seit 19. Oktober 2026)");
   assert.match(regel(".menu-item"), /font-family:\s*var\(--font\)/, "Schrift der Seite");
   assert.doesNotMatch(regel(".menu-item"), /var\(--serif\)|Georgia|Times/, "keine Serife");
   assert.match(css, /--font:\s*system-ui[^;]*,\s*sans-serif;/, "die Schrift der Seite ist serifenlos (system-ui … sans-serif)");
