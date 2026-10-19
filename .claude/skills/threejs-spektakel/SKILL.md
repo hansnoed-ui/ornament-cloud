@@ -231,6 +231,7 @@ Aufbau: `analyse.js` (ohne DOM, im Worker) versteht das Foto, `buehne.js` mischt
 - Logo: Perlen nach der Länge auf die Schlaufe (`perlenAufZuegen`, Halbmesser schwankt wie bei Beeren, Büschel daneben); die Fäden des Strangs je mit 0,16 der Helligkeit – voll überstrahlte der Strang mit Bloom das ganze Bild grau.
 
 ### Bühne: Zeitfront, Bewegungsunschärfe, Einrasten (`buehne.js`)
+- **Helle Fotos** (weisses Papier): Bloom-Stärke und Lichter an die mittlere Helligkeit koppeln (ab 0,5 abschwächen, Schwelle anheben) – sonst brennt die ganze Fläche aus. **NaN** vom Grafikchip (Telefon) vor dem Bloom abfangen (`isnan` im High-Pass, `fragmentShader.replace`), sonst verteilt der Bloom ihn über das ganze Bild: schwarze Bilder.
 - **Zeitfront** statt Überblenden: die Pixel wechseln nach der Tiefe (nah zuerst), an der Front ein Spalt, der das alte Bild verzieht (Slit-Scan-Anmutung), Kupfer nur schwach (0,18), sonst ein Schleier.
 - **Bewegungsunschärfe:** Weil jedes Bild nur von der Zeit abhängt, rechnet der Export 8 Proben in der halben Bilddauer davor und mittelt sie linear (Float-Ziel, Blending Eins + Eins). Simulationen laufen dabei nur vorwärts.
 - **Ende exakt:** Jeder Effekt meldet `ende` (0..1), die Ausgabe mischt zuletzt das Foto. Ist es 1, zeichnet `film.js` das Foto selbst: verkleinert unterscheiden sich Mipmap-Textur und 2D-Verkleinerung um bis zu 40 Stufen (gemessen auf einem fein gezeichneten Bild).

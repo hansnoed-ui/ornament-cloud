@@ -20,6 +20,20 @@
   -->
   <meta name="robots" content="noindex">
   <meta name="description" content="PHORMA II: Ein Schleimpilz findet die Formen deines Fotos, dann bekommt das Foto Tiefe und fällt als Seidentuch – als Video im Hochformat für Social Media, alles im Browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ornament.cloud">
+  <meta property="og:locale" content="de_CH">
+  <meta property="og:url" content="https://ornament.cloud/alpha/phorma-ii/">
+  <meta property="og:title" content="PHORMA II">
+  <meta property="og:description" content="PHORMA II: Aus Foto oder Video wird ein Film – Wachstum, Netz, Scan, Tuch und Montage. Als Video im Hochformat für Social Media, alles im Browser.">
+  <meta property="og:image" content="https://ornament.cloud/alpha/phorma-ii/og-phorma-ii.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="PHORMA II: links der Titel und der Satz «Aus Foto oder Video wird ein Film – Wachstum, Netz, Scan, Tuch und Montage.», rechts das Bild, in verschachtelte Rechtecke zerschnitten, mit feinen hellen Rändern und kleinen Zahlentafeln.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PHORMA II">
+  <meta name="twitter:description" content="PHORMA II: Aus Foto oder Video wird ein Film – Wachstum, Netz, Scan, Tuch und Montage. Als Video im Hochformat für Social Media, alles im Browser.">
+  <meta name="twitter:image" content="https://ornament.cloud/alpha/phorma-ii/og-phorma-ii.jpg">
   <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
   <link rel="stylesheet" href="../../styles.css?v=46">
@@ -195,7 +209,7 @@
             <label><span>Video ab</span><input type="range" id="film-start" min="0" max="0" step="0.1" value="0"><output id="film-start-wert">0,0 s</output></label>
             <p class="ki-hinweis">Alle Effekte zeigen das laufende Video, bis zu 30 s ab hier, vom Anfang bis zum Ende des Films (ist das Video kürzer, läuft es mehrmals hintereinander). Ohne Ton.</p>
           </div>
-          <video id="film" muted playsinline preload="auto" hidden></video>
+          <video id="quellfilm" muted playsinline preload="auto" hidden></video>
           <div class="leiste"><button class="knopf klein beispiel" type="button" id="testbild"><img src="beispiel.jpg" alt="" width="26" height="37" loading="lazy">Mit dem Beispielbild ausprobieren</button></div>
           <section class="tafel" aria-label="Format und Tiefe">
             <div class="einstellung">
@@ -220,6 +234,7 @@
           <p>Ein Effekt allein oder mehrere als Kette. Alle beginnen im Dunkeln und enden mit deinem Foto; in einer Kette geht jeder in den nächsten über, immer in dieser Reihenfolge.</p>
           <div class="ablaeufe" role="group" aria-label="Effekt wählen">
             <button type="button" data-wahl="physarum+tiefe+tuch" aria-pressed="true"><b>Alle drei als Kette</b><small>Das Netz findet die Formen, eine Lichtebene tastet die Tiefe ab, das Foto weht als Tuch – bis es glatt daliegt</small></button>
+            <button type="button" data-wahl="wachstum+physarum+tiefe+tuch+montage" aria-pressed="false"><b>Alle fünf als Kette</b><small>Eine leuchtende Linie wächst, das Netz findet die Formen, eine Lichtebene tastet die Tiefe ab, das Foto weht als Tuch und zerfällt zuletzt in Rechtecke</small></button>
             <button type="button" data-wahl="physarum" aria-pressed="false"><b>Physarum</b><small>Hunderttausende Agenten strömen aus Keimen und bilden ein leuchtendes Netz, das die Formen deines Fotos findet</small></button>
             <button type="button" data-wahl="tiefe" aria-pressed="false"><b>Tiefe</b><small>Eine Lichtebene tastet das Bild von vorn nach hinten ab, im Streiflicht steht es als Relief</small></button>
             <button type="button" data-wahl="tuch" aria-pressed="false"><b>Tuch</b><small>Das Foto als Seidentuch im Wind – eine Stoffsimulation –, das sich zuletzt glatt zum Bild legt</small></button>
@@ -228,10 +243,10 @@
           </div>
           <p class="effekte-hinweis">Oder eine eigene Kette zusammenstellen:</p>
           <div class="segment effekte" role="group" aria-label="Eigene Kette">
+            <button type="button" data-effekt="wachstum" aria-pressed="false">Wachstum</button>
             <button type="button" data-effekt="physarum" aria-pressed="true">Physarum</button>
             <button type="button" data-effekt="tiefe" aria-pressed="true">Tiefe</button>
             <button type="button" data-effekt="tuch" aria-pressed="true">Tuch</button>
-            <button type="button" data-effekt="wachstum" aria-pressed="false">Wachstum</button>
             <button type="button" data-effekt="montage" aria-pressed="false">Montage</button>
           </div>
           <p class="kette" id="kette" aria-live="polite"></p>
@@ -308,7 +323,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=38"></script>
+  <script type="module" src="app.js?v=39"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

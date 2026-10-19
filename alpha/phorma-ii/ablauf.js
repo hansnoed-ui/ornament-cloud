@@ -29,7 +29,9 @@ export const ABSPANN = 0.9 + 0.15 + SIGNET + 0.6 + 0.6 + 0.2;
 
 export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 
-export const EFFEKTE = ["physarum", "tiefe", "tuch", "wachstum", "montage"];
+// die Reihenfolge in einer Kette; seit 19. Oktober 2026 das Wachstum zuerst (Wunsch: «Ich möchte einen anderen Ablauf: Wachstum, Physarum, Tiefe (Scan),
+// Tuch, Montage»), davor stand es nach dem Tuch
+export const EFFEKTE = ["wachstum", "physarum", "tiefe", "tuch", "montage"];
 export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", wachstum: "Wachstum", montage: "Montage" };
 /** die Kette der Karte «Alle drei» (Montage und Wachstum kamen am 19. Oktober 2026 dazu und sind nur einzeln oder in einer eigenen Kette dabei) */
 export const KETTE = "physarum+tiefe+tuch";
@@ -64,7 +66,8 @@ export function rolle(art, liste, i) {
     if (naechstes === "montage") { ueber = 0.8; uebergang = "felder"; } else phasen.push(["bild", "Bild", 3.4]);
   } else if (art === "wachstum") {
     phasen = [["keim", "Keim", 1.2], ["wachstum", "Wachstum", 6.6], ["farbe", "Farbe", 2.4]];
-    if (naechstes === "montage") { ueber = 0.8; uebergang = "felder"; } else phasen.push(["bild", "Bild", 2.6]);
+    // vor einem anderen Effekt ohne Foto dazwischen: vor der Montage Rechtecke, sonst die Zeitfront (die leuchtende Linie geht ins Netz über)
+    if (naechstes === "montage") { ueber = 0.8; uebergang = "felder"; } else if (naechstes) { ueber = 1.2; uebergang = "front"; } else phasen.push(["bild", "Bild", 2.6]);
   } else {
     // die Montage steht immer am Schluss; nach einem anderen Effekt schneiden Rechtecke ihn weg, sie beginnt schon zerschnitten
     phasen = [["schnitte", "Schnitte", erst ? 2.5 : 2.0], ["montage", "Montage", 7.0], ["bild", "Bild", 2.6]];

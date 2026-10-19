@@ -7,9 +7,9 @@
 //   glühende Schnittkanten) – Rückmeldung: «"Raum", das gefällt mir gar nicht, kann ersatzlos raus, "Scan" bitte behalten». Die Shader können es noch.
 // Gestreckte Maschen an Tiefensprüngen werden dunkel statt verschmiert. Zustandslos.
 import * as THREE from "three";
-import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=28";
-import { phase } from "./ablauf.js?v=28";
-import { TIEFE_UEBERGABE } from "./tuchsim.js?v=28";   // dasselbe Relief, aus dem das Tuch beginnt
+import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=29";
+import { phase } from "./ablauf.js?v=29";
+import { TIEFE_UEBERGABE } from "./tuchsim.js?v=29";   // dasselbe Relief, aus dem das Tuch beginnt
 
 export { TIEFE_UEBERGABE };
 const SCHICHTEN = 7;
@@ -102,7 +102,7 @@ export function tiefe(g, teil) {
       // über dem Foto schwächer: sonst leuchtet eine flache, gleich tiefe Stelle ganz auf, wenn die Ebene durch sie geht
       u.uScanAn.value = teil.erst ? 1 - weich(anteil(tau, S[1] - 0.4, S[1] + 0.4)) : 0.55 * glocke(tau, S[0], S[1] + 0.3) ** 0.5;
       const licht = teil.erst ? 0.75 : 0.75 * weich(anteil(tau, S[0], S[1]));
-      u.uLicht.value = licht * (1 - flach) * (1 - 0.35 * uebergabe);
+      u.uLicht.value = licht * (1 - flach) * (1 - 0.35 * uebergabe) * g.belichtung;   // helle Fotos: weniger Streiflicht (buehne.js)
       // die Kamera steht frontal (ohne Raum keine Fahrt)
       kam.position.set(0, 0, ABSTAND); kam.lookAt(0, 0, 0);
       renderer.setRenderTarget(rtSzene); renderer.setClearColor(0x000000, 0); renderer.clear(true, true, true);
