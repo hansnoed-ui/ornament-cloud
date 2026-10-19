@@ -9,14 +9,14 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=25";
-import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=25";
-import { videoPlan, videoStelle } from "./filmquelle.js?v=25";
-import { physarum } from "./physarum.js?v=25";
-import { tiefe } from "./tiefe.js?v=25";
-import { tuch } from "./tuch.js?v=25";
-import { montage, montageSignet } from "./montage.js?v=25";
-import { wachstum } from "./wachstum.js?v=25";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=26";
+import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=26";
+import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=26";
+import { physarum } from "./physarum.js?v=26";
+import { tiefe } from "./tiefe.js?v=26";
+import { tuch } from "./tuch.js?v=26";
+import { montage, montageSignet } from "./montage.js?v=26";
+import { wachstum } from "./wachstum.js?v=26";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -65,10 +65,11 @@ const AUSGABE = /* glsl */ `
   }`;
 
 const FABRIK = { physarum, tiefe, tuch, wachstum, montage };
+const leinwandWie = (q) => Object.assign(typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(q.width, q.height), { width: q.width, height: q.height });
 
 /**
  * Die Bühne für ein Foto (Canvas in Filmgrösse B × H), seine Analyse und eine Kette. optionen: tiefeQuelle ("bild" | "ki"), grob (Telefon), test (klein),
- * film (ein Video: das Foto ist dann sein Standbild am Ende).
+ * film (ein Video: das Foto ist dann sein Standbild am Ende; alle Effekte zeigen das laufende Bild).
  * bild(zeit, t, w, h, { proben, verschluss }) → Leinwand; zaehler(zeit, t) → Text für die Beschriftung; entsorgen().
  */
 export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuelle = "bild", film = null, nahtlos = false, onVerloren = null, spur = () => {} } = {}) {
@@ -81,7 +82,11 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   canvas.addEventListener?.("webglcontextlost", (e) => { e.preventDefault(); verloren = true; if (!entsorgt) onVerloren?.(); });   // nicht beim eigenen Freigeben
   renderer.setPixelRatio(1); renderer.autoClear = false;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
-  const fotoTex = new THREE.CanvasTexture(foto);
+  // mit Video zeigt das Foto aller Effekte das laufende Bild (seit 19. Oktober 2026 durch die ganze Kette, Rückmeldung: «bleibt ständig ein "altes"
+  // Video in den ersten drei Schritten hängen»): eine eigene Leinwand, je Probe neu gezeichnet; am Ende ist sie das Standbild
+  const jetzt = film ? leinwandWie(foto) : null;
+  if (jetzt) jetzt.getContext("2d").drawImage(foto, 0, 0);
+  const fotoTex = new THREE.CanvasTexture(jetzt ?? foto);
   fotoTex.colorSpace = THREE.SRGBColorSpace; fotoTex.anisotropy = 4;
   const tiefeTex = datenTextur(A.tiefe, A.w, A.h), nahrungTex = datenTextur(A.nahrung, A.w, A.h);
   const quad = new FullScreenQuad();
@@ -90,9 +95,11 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     loeschen(rt, farbe = 0x000000) { renderer.setRenderTarget(rt); renderer.setClearColor(farbe, 1); renderer.clear(true, true, true); } };
   const K = kette(ablauf);
   g.ablaufDauer = K.dauer;
-  // mit Video (film: { von, bild(sekunde, { vorschau }), klein(stellen, w, h) }): Montage und Wachstum zeigen das laufende Bild (filmquelle.js)
+  // mit Video (film: { von, dauer, bild(sekunde, { vorschau }), klein(stellen, w, h) }): Montage und Wachstum holen das laufende Bild selbst
+  // (dazu frühere Stellen), die anderen nehmen fotoTex (filmquelle.js)
+  let zuletzt = null;
   if (film) {
-    const plan = videoPlan(ablauf);
+    const plan = videoPlan(ablauf, film.dauer);
     g.film = { plan, stelle: (teil, tau) => videoStelle(plan, teil.von + tau), klein: film.klein,
       bild: (teil, tau, vorschau) => film.bild(film.von + videoStelle(plan, teil.von + tau), { vorschau }) };
   }
@@ -118,6 +125,10 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
 
   /** eine Probe zur Zeit ts nach rtMix; gibt { aktiv, bloom, saum, ende } */
   function probe(zeit, ts, opt) {
+    if (g.film) {
+      const b = film.bild(film.von + videoStelleBei(zeit, g.film.plan, ts), { vorschau: !!opt?.vorschau });
+      if (b && b !== zuletzt) { jetzt.getContext("2d").drawImage(b, 0, 0, B, H); fotoTex.needsUpdate = true; zuletzt = b; }
+    }
     const L = laufend(zeit, ts);
     let info;
     if (L.length === 1) info = art(L[0].teil).render(rtMix, L[0].lokal, opt);
@@ -168,7 +179,9 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   /** die Effekte, deren Bahn noch rechnet (für die Meldung: «Das Tuch …», «Das Wachstum …») */
   const rechnend = () => K.teile.filter((_, i) => (effekte[i].fortschritt?.() ?? 1) < 1).map((t) => TITEL[t.art]);
   return {
-    canvas, B, H, effekte, ende: 0, warm, bereit, fortschritt, rechnend,                                     // ende: wie weit das letzte Bild schon das Foto war (1: exakt)
+    canvas, B, H, effekte, ende: 0, warm, bereit, fortschritt, rechnend,
+    /** mit Video: das laufende Bild der letzten Probe (ist ende = 1, zeichnet film.js es statt des Standbilds) */
+    jetzt,                                     // ende: wie weit das letzte Bild schon das Foto war (1: exakt)
     /** ist die Montage der letzte Effekt, kommt auch das Signet im Stil der Montage (signetMontage statt signet) */
     montageSchluss: K.teile.at(-1).art === "montage",
     get verloren() { return verloren; },

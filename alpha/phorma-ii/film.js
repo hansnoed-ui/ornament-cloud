@@ -1,6 +1,6 @@
 // PHORMA II – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann die Kette aus der Bühne (WebGL,
 // buehne.js), danach das Foto, darüber Abblenden und die Beschriftung, am Schluss auf Wunsch das leuchtende Signet von ornament.cloud wie in PHORMA I.
-import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_BIS, SIGNET_TEMPO } from "./ablauf.js?v=25";
+import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_BIS, SIGNET_TEMPO } from "./ablauf.js?v=26";
 import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
@@ -53,8 +53,9 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
     if (t >= abschnitt.von && t < abschnitt.bis) {
       if (sz.buehne) {
         const [w, h] = zielMass(ctx, sz), c = sz.buehne.bild(sz.zeit, t, w, h, { proben, vorschau });
-        // ist es ganz das Foto, dann das Foto selbst: in jeder Grösse gleich wie danach, ohne den Unterschied der Filter beim Verkleinern
-        ctx.drawImage(sz.buehne.ende >= 1 && sz.foto ? sz.foto : c, 0, 0, B, H);
+        // ist es ganz das Foto, dann das Foto selbst: in jeder Grösse gleich wie danach, ohne den Unterschied der Filter beim Verkleinern (mit Video
+        // das laufende Bild – am Ende der Kette ist es das Standbild)
+        ctx.drawImage(sz.buehne.ende >= 1 && sz.foto ? sz.buehne.jetzt ?? sz.foto : c, 0, 0, B, H);
       }
       else if (sz.foto) { ctx.globalAlpha = anteil(t, abschnitt.bis - 1.5, abschnitt.bis); ctx.drawImage(sz.foto, 0, 0, B, H); ctx.globalAlpha = 1; }   // ohne WebGL 2
     } else if (t >= abschnitt.bis && sz.foto) ctx.drawImage(sz.foto, 0, 0, B, H);

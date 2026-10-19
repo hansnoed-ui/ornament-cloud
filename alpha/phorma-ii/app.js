@@ -1,10 +1,10 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=25";
-import { szene, bild, standbildZeit } from "./film.js?v=25";
-import { videoPlan, videoStelleBei, HOECHSTENS } from "./filmquelle.js?v=25";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=25";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=26";
+import { szene, bild, standbildZeit } from "./film.js?v=26";
+import { videoPlan, videoStelleBei, HOECHSTENS } from "./filmquelle.js?v=26";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=26";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
 const $ = (id) => document.getElementById(id);
@@ -125,8 +125,8 @@ async function bildSetzen(q) {
 }
 
 // ——— Video als Quelle (Etappe 2 von Montage und Wachstum, seit 19. Oktober 2026; filmquelle.js) ———
-// Die Bilder liest die Filmspur von PHORMA III bildgenau, auf das Filmformat zugeschnitten (bis 30 s ab «Video ab»). Das Standbild am Ende des
-// laufenden Videos ist das Foto (Analyse, Physarum, Tiefe, Tuch, Schluss); es hängt an der Kette, nicht am Tempo.
+// Die Bilder liest die Filmspur von PHORMA III bildgenau, auf das Filmformat zugeschnitten (bis 30 s ab «Video ab»). Es läuft durch alle Effekte und
+// kommt am Ende der Kette an; das Standbild dort ist das Foto (Analyse, Schluss); es hängt an der Kette, nicht am Tempo.
 let filmspurModul = null;
 // Der Ladebalken über der Vorschau (Rückmeldung vom 19. Oktober 2026: «es lädt schon, bleibt aber lange bei der vorhergehenden Animation stehen und man
 // weiss nicht, ob das Video noch lädt oder ob etwas schiefgegangen ist … einen Balken zeigen, aber so, dass es dann auch wirklich läuft, wenn er ganz
@@ -175,8 +175,8 @@ async function videoLaden(datei) {
 /** die Bilder lesen (nur wenn nötig: anderer Anfang, anderes Format oder zu kurz) und das Standbild setzen */
 async function filmLesen() {
   const F = S.film; if (!F) return;
-  const nr = ++F.nr, [B, H] = (S.mass = filmMass(S.format)), plan = videoPlan(S.ablauf);
-  const noetig = Math.min(HOECHSTENS, plan.dauer + 0.2, Math.max(0.1, F.dauer - F.von)), schluessel = `${F.von}|${B}x${H}`;
+  const nr = ++F.nr, [B, H] = (S.mass = filmMass(S.format)), voll = videoPlan(S.ablauf);
+  const noetig = Math.min(HOECHSTENS, voll.dauer + 0.2, Math.max(0.1, F.dauer - F.von)), schluessel = `${F.von}|${B}x${H}`;
   if (!F.spur || F.gelesen !== schluessel || F.spur.dauer < noetig - 0.05) {
     vorschauLeeren(); sperren(true);
     ladenZeigen("Video wird gelesen …", 0, "Schritt 1 von 3 · bis 30 s, Bild für Bild");
@@ -191,7 +191,7 @@ async function filmLesen() {
     finally { if (nr === F.nr) sperren(false); }
   }
   // das Standbild: das Bild, bei dem das laufende Video am Ende ankommt
-  const qt = F.von + Math.min(plan.dauer, F.spur.dauer - 1 / FPS);
+  const plan = videoPlan(S.ablauf, F.spur.dauer), qt = F.von + Math.min(plan.dauer, F.spur.dauer - 1 / FPS);
   await F.spur.vorbereiten([qt], { vorschau: false });
   if (nr !== F.nr) return;
   const c = leinwand(B, H); c.getContext("2d").drawImage(F.spur.bild(qt, { vorschau: false }), 0, 0, B, H);
@@ -210,7 +210,7 @@ function filmFuerBuehne() {
   const F = S.film; if (!F?.spur) return null;
   const spur = F.spur;
   return {
-    von: F.von,
+    von: F.von, dauer: spur.dauer,
     bild: (qt, o) => spur.bild(qt, o),
     async klein(stellen, w, h) {
       const c = leinwand(w, h), x = c.getContext("2d", { willReadFrequently: true }), raus = [];
@@ -229,7 +229,7 @@ function filmFuerBuehne() {
 S.filmVorbereiten = filmVorbereiten;
 async function filmVorbereiten(sz, t, p) {
   const F = S.film; if (!F?.spur) return;
-  const plan = videoPlan(sz.zeit.ablauf); if (!plan.lebendig) return;
+  const plan = videoPlan(sz.zeit.ablauf, F.spur.dauer); if (!plan.lebendig) return;
   const qts = [];
   for (let k = 0; k < p; k++) {
     const s = videoStelleBei(sz.zeit, plan, t - (p > 1 ? (0.5 / FPS) * (1 - k / (p - 1)) : 0));
@@ -240,7 +240,7 @@ async function filmVorbereiten(sz, t, p) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=25", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=26", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -282,7 +282,7 @@ async function kiAnwenden() {
     const nr = S.rechnen;
     try {
       notiz("Tiefe mit KI wird vorbereitet");
-      kiModul ??= await import("./tiefe-ki.js?v=25");
+      kiModul ??= await import("./tiefe-ki.js?v=26");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m), { telefon: grob, notiz });
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
@@ -308,7 +308,7 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=25");
+    buehneModul ??= await import("./buehne.js?v=26");
     if (S.buehneSchluessel !== schluessel) return;
     notiz(`Bühne wird gebaut: ${S.ablauf}`);
     S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz, film: filmFuerBuehne(), nahtlos,
@@ -543,7 +543,7 @@ $("video").addEventListener("click", async () => {
 
 async function mitWebCodecs(cfg, sz) {
   // die Bilder gehen gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
-  const p = proben(), { mp4Schreiber } = await import("./mp4.js?v=25");
+  const p = proben(), { mp4Schreiber } = await import("./mp4.js?v=26");
   melden(p > 1 ? `Video wird gerechnet, mit Bewegungsunschärfe (${p} Proben je Bild) …` : "Video wird gerechnet …");
   const c = leinwand(sz.breite, sz.hoehe), ctx = c.getContext("2d", { alpha: false });
   const n = sz.zeit.bilder, datei = mp4Schreiber({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, codec: cfg.codec, bilder: n });

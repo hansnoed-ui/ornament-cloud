@@ -16,7 +16,7 @@
     versetzten Ausschnitten, feinen Rändern und Zahlentafeln, harte Schnitte im Takt; einzeln oder am Schluss einer eigenen Kette. Dann auch das
     Signet am Schluss in diesem Stil.
     Seit 19. Oktober 2026 das Wachstum (Wunsch nach dem Clip «algorigraph»): eine leuchtende Linie wächst aus einem Keim und zeichnet das Foto.
-    Seit 19. Oktober 2026 auch Videos (Etappe 2): Montage und Wachstum zeigen das laufende Video, das Standbild am Ende ist das Foto.
+    Seit 19. Oktober 2026 auch Videos (Etappe 2): alle Effekte zeigen das laufende Video, es kommt am Ende der Kette an; das Standbild dort ist das Foto.
   -->
   <meta name="robots" content="noindex">
   <meta name="description" content="PHORMA II: Ein Schleimpilz findet die Formen deines Fotos, dann bekommt das Foto Tiefe und fällt als Seidentuch – als Video im Hochformat für Social Media, alles im Browser.">
@@ -193,7 +193,7 @@
           </label>
           <div class="film-start" id="film-start-box" hidden>
             <label><span>Video ab</span><input type="range" id="film-start" min="0" max="0" step="0.1" value="0"><output id="film-start-wert">0,0 s</output></label>
-            <p class="ki-hinweis">Montage und Wachstum zeigen das laufende Video, bis zu 30 s ab hier; Physarum, Tiefe und Tuch das Standbild, bei dem es am Ende ankommt. Ohne Ton.</p>
+            <p class="ki-hinweis">Alle Effekte zeigen das laufende Video, bis zu 30 s ab hier; es kommt am Ende des Films an (ist er länger, steht zuerst das erste Bild). Ohne Ton.</p>
           </div>
           <video id="film" muted playsinline preload="auto" hidden></video>
           <div class="leiste"><button class="knopf klein beispiel" type="button" id="testbild"><img src="beispiel.jpg" alt="" width="26" height="37" loading="lazy">Mit dem Beispielbild ausprobieren</button></div>
@@ -308,7 +308,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=35"></script>
+  <script type="module" src="app.js?v=36"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

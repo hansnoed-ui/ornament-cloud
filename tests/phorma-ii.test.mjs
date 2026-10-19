@@ -207,13 +207,15 @@ test("Wachstum: die Linie wächst aus dem Keim ins Motiv (nicht in den Grund), d
   assert.deepEqual(Array.from(einzeln.at(-1)), Array.from(b.lagen.subarray(b.ab.at(-2) * 2)), "das letzte Bild gleich");
 });
 
-test("Video als Quelle: es läuft ab dem ersten von Montage und Wachstum bis zum Ende; das Standbild ist sein letztes Bild", async () => {
+test("Video als Quelle: es läuft durch die ganze Kette und kommt an ihrem Ende an; ist es kürzer, steht zuerst sein erstes Bild", async () => {
   const F = await import(new URL("filmquelle.js", P).href);
-  const ohne = F.videoPlan("physarum+tiefe+tuch");
-  assert.equal(ohne.lebendig, false); assert.equal(ohne.dauer, 0, "ohne Montage und Wachstum steht das Video: das Standbild ist sein erstes Bild");
-  const K = A.kette("tuch+wachstum+montage"), p = F.videoPlan("tuch+wachstum+montage");
-  assert.ok(p.lebendig && Math.abs(p.von - K.teile[1].von) < 1e-9 && Math.abs(p.von + p.dauer - K.dauer) < 1e-9, "vom Wachstum bis zum Schluss");
-  assert.equal(F.videoStelle(p, 0), 0); assert.equal(F.videoStelle(p, p.von + 2), 2); assert.equal(F.videoStelle(p, 999), p.dauer);
+  const K = A.kette("physarum+tiefe+tuch"), p = F.videoPlan("physarum+tiefe+tuch");
+  assert.ok(p.lebendig && p.von === 0 && Math.abs(p.dauer - K.dauer) < 1e-9, "von Anfang an, auch ohne Montage und Wachstum");
+  const kurz = F.videoPlan("physarum+tiefe+tuch", 6);
+  assert.ok(Math.abs(kurz.dauer - 6) < 1e-9 && Math.abs(kurz.von + kurz.dauer - K.dauer) < 1e-9, "ein kurzes Video endet mit der Kette");
+  assert.equal(F.videoStelle(kurz, 0), 0, "davor sein erstes Bild"); assert.equal(F.videoStelle(kurz, kurz.von + 2), 2); assert.equal(F.videoStelle(kurz, 999), 6);
+  const lang = A.kette("physarum+tiefe+tuch+wachstum+montage"), pl = F.videoPlan("physarum+tiefe+tuch+wachstum+montage", 120);
+  assert.equal(pl.dauer, Math.min(F.HOECHSTENS, lang.dauer), "höchstens 30 s"); assert.ok(Math.abs(pl.von + pl.dauer - lang.dauer) < 1e-9);
   const z = A.zeitachse({ ablauf: "montage", tempo: "ruhig" }), pm = F.videoPlan("montage");
   assert.ok(Math.abs(F.videoStelleBei(z, pm, z.abschnitt.von + 1.3) - 1) < 1e-9, "ruhig: das Video läuft langsamer");
   assert.ok(Math.abs(F.videoStelleBei(z, pm, z.dauer) - pm.dauer) < 1e-9, "nach der Kette das Standbild");
