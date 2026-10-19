@@ -104,9 +104,10 @@ export function zeitachse({ tempo = "normal", signet = true, ablauf = KETTE } = 
   t = von + K.dauer * f;
   const abschnitt = { von, bis: t };
   // endet die Kette mit der Montage, geht das Foto nahtlos ins Signet über (Rückmeldung vom 19. Oktober 2026: «Das Schlussbild bleibt relativ lange
-  // stehen, bevor das Logo kommt. Das kann nahtloser passieren»): kurz stehen, dann schneiden die Felder das Foto weg und das Signet herein
+  // stehen, bevor das Logo kommt. Das kann nahtloser passieren»); seither ohne Stehen (Rückmeldung: «sie endet, es kommt das Schlussbild und startet
+  // nochmals vor dem Logo»): die Montage rastet nicht ins Foto ein, sie schneidet geradewegs ins Signet
   const nahtlos = signet && effekte(art).at(-1) === "montage";
-  if (nahtlos) { dazu("stehen", 1.0); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }
+  if (nahtlos) { dazu("stehen", 0); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }
   else {
     dazu("stehen", 3.2);
     if (signet) { dazu("bildAus", 0.9); dazu("pause", 0.15); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }   // zusammen ABSPANN

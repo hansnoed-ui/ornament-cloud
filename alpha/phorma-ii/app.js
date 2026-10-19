@@ -1,10 +1,10 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=23";
-import { szene, bild, standbildZeit } from "./film.js?v=23";
-import { videoPlan, videoStelleBei, HOECHSTENS } from "./filmquelle.js?v=23";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=23";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=24";
+import { szene, bild, standbildZeit } from "./film.js?v=24";
+import { videoPlan, videoStelleBei, HOECHSTENS } from "./filmquelle.js?v=24";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=24";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
 const $ = (id) => document.getElementById(id);
@@ -105,7 +105,7 @@ const quelleLaden = (datei) => (istVideo(datei) ? videoLaden(datei) : fotoLaden(
 $("testbild").addEventListener("click", async () => fotoLaden(new File([await (await fetch("beispiel.jpg")).blob()], "beispiel.jpg", { type: "image/jpeg" })));
 
 async function fotoLaden(datei) {
-  filmWeg();
+  filmWeg(); ladenEnde();
   notiz(`Foto gewählt (${Math.round((datei.size ?? 0) / 1024)} kB)`);
   melden("Foto wird gelesen …");
   let q;
@@ -128,6 +128,23 @@ async function bildSetzen(q) {
 // Die Bilder liest die Filmspur von PHORMA III bildgenau, auf das Filmformat zugeschnitten (bis 30 s ab «Video ab»). Das Standbild am Ende des
 // laufenden Videos ist das Foto (Analyse, Physarum, Tiefe, Tuch, Schluss); es hängt an der Kette, nicht am Tempo.
 let filmspurModul = null;
+// Der Ladebalken über der Vorschau (Rückmeldung vom 19. Oktober 2026: «es lädt schon, bleibt aber lange bei der vorhergehenden Animation stehen und man
+// weiss nicht, ob das Video noch lädt oder ob etwas schiefgegangen ist … einen Balken zeigen, aber so, dass es dann auch wirklich läuft, wenn er ganz
+// durch ist»): solange ein Video gelesen, analysiert und vorbereitet wird, steht die Vorschau still und schwarz; erst wenn alles fertig ist (auch die
+// Bahn des Wachstums), verschwindet er und die Vorschau läuft von vorn.
+function ladenZeigen(text, anteil = null, schritt = "") {
+  S.laden = true;
+  $("ladeanzeige").hidden = false; $("laden-text").textContent = text; $("laden-schritt").textContent = schritt;
+  const b = $("laden-balken");
+  if (anteil === null) b.removeAttribute("value"); else b.value = Math.max(0, Math.min(1, anteil));
+}
+function ladenEnde() { S.laden = false; $("ladeanzeige").hidden = true; }
+/** die Vorschau anhalten und leeren, die alte Bühne freigeben (ein neues Video kommt) */
+function vorschauLeeren() {
+  anhalten(); S.sz = null; S.t = null;
+  S.buehne?.entsorgen(); S.buehne = null; S.buehneSchluessel = ""; S.buehneWarm = false; S.buehneFertig = false;
+  vctx.save(); vctx.setTransform(1, 0, 0, 1, 0, 0); vctx.fillStyle = "#000"; vctx.fillRect(0, 0, vorschau.width, vorschau.height); vctx.restore();
+}
 const sekunden = (s) => `${s.toFixed(1).replace(".", ",")} s`;
 function filmWeg() {
   if (!S.film) return;
@@ -137,6 +154,8 @@ function filmWeg() {
 }
 async function videoLaden(datei) {
   filmWeg();
+  vorschauLeeren();
+  ladenZeigen("Video wird geöffnet …", 0, "Schritt 1 von 3");
   notiz(`Video gewählt (${Math.round((datei.size ?? 0) / 1024)} kB)`);
   melden("Video wird geöffnet …");
   const el = $("film");
@@ -145,7 +164,7 @@ async function videoLaden(datei) {
     await new Promise((ok, nein) => { el.onloadedmetadata = ok; el.onerror = () => nein(new Error("der Browser kann dieses Video nicht öffnen")); setTimeout(() => nein(new Error("das Video lädt nicht")), 20_000); });
     // WebM aus Rekordern ohne Dauer: einmal hinter das Ende spulen (wie in PHORMA III)
     if (!Number.isFinite(el.duration)) await new Promise((ok) => { el.ondurationchange = () => { if (Number.isFinite(el.duration)) ok(); }; el.currentTime = 1e7; setTimeout(ok, 4000); });
-  } catch (fehler) { melden(`Das Video liess sich nicht öffnen: ${fehler.message}. Versuche es als MP4.`, true); return; }
+  } catch (fehler) { ladenEnde(); melden(`Das Video liess sich nicht öffnen: ${fehler.message}. Versuche es als MP4.`, true); return; }
   const dauer = Number.isFinite(el.duration) ? el.duration : 0;
   S.film = { datei, el, dauer, von: 0, spur: null, nr: 0, gelesen: "" };
   const r = $("film-start"); r.max = String(Math.max(0, dauer - 1).toFixed(1)); r.value = "0"; $("film-start-wert").textContent = sekunden(0);
@@ -159,15 +178,16 @@ async function filmLesen() {
   const nr = ++F.nr, [B, H] = (S.mass = filmMass(S.format)), plan = videoPlan(S.ablauf);
   const noetig = Math.min(HOECHSTENS, plan.dauer + 0.2, Math.max(0.1, F.dauer - F.von)), schluessel = `${F.von}|${B}x${H}`;
   if (!F.spur || F.gelesen !== schluessel || F.spur.dauer < noetig - 0.05) {
-    anhalten(); sperren(true);
+    vorschauLeeren(); sperren(true);
+    ladenZeigen("Video wird gelesen …", 0, "Schritt 1 von 3 · bis 30 s, Bild für Bild");
     try {
       filmspurModul ??= await import("../phorma-iii/filmspur.js?v=14");   // dieselbe Filmspur wie in PHORMA III, mit deren Marke
       const spur = await filmspurModul.filmspurLesen(F.datei, F.el, { von: F.von, bis: Math.min(F.dauer || F.von + noetig, F.von + noetig), breite: B, hoehe: H,
-        fortschritt: (i, n) => { if (nr === F.nr) melden(`Video wird gelesen … ${Math.round((100 * i) / n)} %`); }, abbruch: () => nr !== F.nr || S.film !== F });
+        fortschritt: (i, n) => { if (nr === F.nr) { melden(`Video wird gelesen … ${Math.round((100 * i) / n)} %`); ladenZeigen(`Video wird gelesen … ${Math.round((100 * i) / n)} %`, i / n, "Schritt 1 von 3 · bis 30 s, Bild für Bild"); } }, abbruch: () => nr !== F.nr || S.film !== F });
       if (!spur || nr !== F.nr || S.film !== F) return;
       F.spur?.entsorgen(); F.spur = spur; F.gelesen = schluessel;
       notiz(`Video gelesen (${spur.n} Bilder, ${spur.weg}${spur.grund ? `: ${spur.grund}` : ""})`);
-    } catch (fehler) { if (nr === F.nr) melden(`Die Bilder des Videos liessen sich nicht lesen (${fehler?.message ?? fehler}).`, true); return; }
+    } catch (fehler) { if (nr === F.nr) { ladenEnde(); melden(`Die Bilder des Videos liessen sich nicht lesen (${fehler?.message ?? fehler}).`, true); } return; }
     finally { if (nr === F.nr) sperren(false); }
   }
   // das Standbild: das Bild, bei dem das laufende Video am Ende ankommt
@@ -175,6 +195,8 @@ async function filmLesen() {
   await F.spur.vorbereiten([qt], { vorschau: false });
   if (nr !== F.nr) return;
   const c = leinwand(B, H); c.getContext("2d").drawImage(F.spur.bild(qt, { vorschau: false }), 0, 0, B, H);
+  if (!S.laden) vorschauLeeren();
+  ladenZeigen("Das Standbild wird analysiert …", null, "Schritt 2 von 3");
   await bildSetzen(c);
 }
 let filmUmstellen = 0;
@@ -208,13 +230,17 @@ S.filmVorbereiten = filmVorbereiten;
 async function filmVorbereiten(sz, t, p) {
   const F = S.film; if (!F?.spur) return;
   const plan = videoPlan(sz.zeit.ablauf); if (!plan.lebendig) return;
-  const qts = []; for (let k = 0; k < p; k++) qts.push(F.von + videoStelleBei(sz.zeit, plan, t - (p > 1 ? (0.5 / FPS) * (1 - k / (p - 1)) : 0)));
+  const qts = [];
+  for (let k = 0; k < p; k++) {
+    const s = videoStelleBei(sz.zeit, plan, t - (p > 1 ? (0.5 / FPS) * (1 - k / (p - 1)) : 0));
+    for (const d of [0, 0.35, 0.9]) qts.push(F.von + Math.max(0, s - d));   // auch die früheren Stellen der Montage (ZEITVERSATZ in montage.js)
+  }
   await F.spur.vorbereiten(qts, { vorschau: false });
 }
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=23", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=24", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -256,7 +282,7 @@ async function kiAnwenden() {
     const nr = S.rechnen;
     try {
       notiz("Tiefe mit KI wird vorbereitet");
-      kiModul ??= await import("./tiefe-ki.js?v=23");
+      kiModul ??= await import("./tiefe-ki.js?v=24");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m), { telefon: grob, notiz });
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
@@ -272,7 +298,9 @@ async function kiAnwenden() {
 // ——— Bühne (WebGL 2): erst laden, wenn ein Foto da ist ———
 let buehneModul = null;
 async function buehneBereit() {
-  const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.A.tiefe === S.A.geschaetzt ? "bild" : "ki"}` : "";
+  // nahtlos: endet die Kette mit der Montage und kommt das Signet, rastet sie nicht ein (schneidet geradewegs ins Signet) – eine andere Bühne
+  const nahtlos = $("signet").checked && effekte(S.ablauf).at(-1) === "montage";
+  const schluessel = S.A ? `${S.rechnen}|${S.ablauf}|${S.A.tiefe === S.A.geschaetzt ? "bild" : "ki"}|${nahtlos}` : "";
   if (schluessel === S.buehneSchluessel) return;
   S.buehneSchluessel = schluessel; S.buehneFertig = false; S.buehneWarm = false; S.spurBilder = 0;
   if (S.sz) S.sz.buehne = null;
@@ -280,19 +308,21 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=23");
+    buehneModul ??= await import("./buehne.js?v=24");
     if (S.buehneSchluessel !== schluessel) return;
     notiz(`Bühne wird gebaut: ${S.ablauf}`);
-    S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz, film: filmFuerBuehne(),
+    S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz, film: filmFuerBuehne(), nahtlos,
       onVerloren: () => {
         if (S.buehneSchluessel !== schluessel) return;
         anhalten();
         notiz("Grafik ausgestiegen (webglcontextlost)");
+        ladenEnde();
         melden("Die Grafik dieses Geräts ist ausgestiegen (meist: zu wenig Grafikspeicher). Wähle einen einzelnen Effekt oder lade die Seite neu.", true);
         if (S.sz) { S.sz.buehne = null; zeigeZeit(S.t ?? 0); }
         S.buehneSchluessel = ""; S.buehne = null;
       } });
   } catch (fehler) {
+    ladenEnde();
     melden(`PHORMA II braucht WebGL 2; hier blendet an seiner Stelle das Foto auf (${fehler?.message ?? fehler}).`, true);
     return;
   }
@@ -302,6 +332,7 @@ async function buehneBereit() {
   const i = b.infoGemerkt;
   notiz(`Bühne gebaut · Grafik ${i?.grafik ?? "?"} · Float-Ziel ${i?.floatZiel} · Float mischen ${i?.floatMischen} · Float linear ${i?.floatLinear} · parallel ${i?.parallel}`);
   melden("Die Effekte werden vorbereitet …");
+  if (S.laden) ladenZeigen("Die Effekte werden vorbereitet …", null, "Schritt 3 von 3");
   await b.warm;
   notiz("Programme übersetzt");
   if (S.buehne !== b) return;
@@ -314,6 +345,7 @@ async function buehneBereit() {
       if (S.buehne !== b || b.fortschritt() >= 1) return;
       const namen = b.rechnend?.() ?? ["Tuch"];
       melden(`${namen.join(" und ")} ${namen.length > 1 ? "werden" : "wird"} berechnet … ${Math.round(b.fortschritt() * 100)} %`);
+      if (S.laden) ladenZeigen(`${namen.join(" und ")} ${namen.length > 1 ? "werden" : "wird"} berechnet … ${Math.round(b.fortschritt() * 100)} %`, b.fortschritt(), "Schritt 3 von 3");
       if (!S.laeuft && S.sz && S.t !== null) zeigeZeit(S.t);   // steht die Vorschau, zeigt sie, was inzwischen gerechnet ist (das Wachstum kommt in Päckchen)
       setTimeout(zeigen, 500);
     };
@@ -321,6 +353,8 @@ async function buehneBereit() {
   }
   b.bereit.then(() => {
     if (S.buehne !== b) return;
+    // mit Video: erst jetzt (alles gerechnet) verschwindet der Balken und die Vorschau läuft von vorn
+    if (S.laden) { ladenEnde(); S.buehneFertig = true; if (S.sz) { S.t = 0; zeigeZeit(0); if (!ruhig) spielen(); } }
     S.buehneFertig = true;
     notiz("alles bereit (auch Tuch und Wachstum)");
     if (/berechnet …/.test($("meldung").textContent)) melden("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4.");
@@ -369,6 +403,7 @@ function neu({ abspielen = !ruhig } = {}) {
   for (const k of ["video", "png", "spielen"]) $(k).disabled = false;
   $("leer").hidden = true;
   if (S.laeuft) return;
+  if (S.laden) { zeigeZeit(0); return; }   // ein Video wird noch vorbereitet: der Balken steht davor, die Vorschau läuft erst danach
   if (abspielen && alt === null) spielen();
   else zeigeZeit(Math.min(alt ?? standbildZeit(S.sz), S.sz.zeit.dauer - 1 / FPS));
 }
@@ -508,7 +543,7 @@ $("video").addEventListener("click", async () => {
 
 async function mitWebCodecs(cfg, sz) {
   // die Bilder gehen gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
-  const p = proben(), { mp4Schreiber } = await import("./mp4.js?v=23");
+  const p = proben(), { mp4Schreiber } = await import("./mp4.js?v=24");
   melden(p > 1 ? `Video wird gerechnet, mit Bewegungsunschärfe (${p} Proben je Bild) …` : "Video wird gerechnet …");
   const c = leinwand(sz.breite, sz.hoehe), ctx = c.getContext("2d", { alpha: false });
   const n = sz.zeit.bilder, datei = mp4Schreiber({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, codec: cfg.codec, bilder: n });

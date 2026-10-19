@@ -37,6 +37,16 @@
     .leer { position: absolute; inset: 0; display: grid; place-content: center; gap: 8px; padding: 24px; text-align: center; color: #9a9a9a; pointer-events: none;
       font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.85rem; letter-spacing: 0.06em; }
     .leer p { margin: 0; }
+    /* der Ladebalken über der Vorschau, solange ein Video gelesen und vorbereitet wird (Rückmeldung vom 19. Oktober 2026: «man weiss nicht, ob das
+       Video noch lädt oder ob etwas schiefgegangen ist») */
+    .laden { position: absolute; inset: 0; z-index: 2; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 24px; text-align: center;
+      background: rgba(0, 0, 0, 0.82); color: #f2f2f2; }
+    .laden p { margin: 0; font-size: 0.95rem; letter-spacing: 0.04em; }
+    .laden .klein { color: #9a9a9a; font-size: 0.8rem; }
+    .laden progress { width: min(260px, 70%); height: 6px; appearance: none; border: 0; border-radius: 3px; background: #333; overflow: hidden; }
+    .laden progress::-webkit-progress-bar { background: #333; border-radius: 3px; }
+    .laden progress::-webkit-progress-value { background: var(--accent); border-radius: 3px; transition: width 0.2s; }
+    .laden progress::-moz-progress-bar { background: var(--accent); border-radius: 3px; }
     .leer .gross { font-size: 1rem; color: #f2f2f2; text-transform: uppercase; letter-spacing: 0.14em; }
     .rahmen.weiss { background: #fff; }
     .rahmen.weiss .leer { color: #666; }
@@ -151,6 +161,7 @@
     <section class="buehne" aria-label="Vorschau">
       <div class="rahmen">
         <canvas id="vorschau" width="540" height="675" aria-label="Vorschau des Videos"></canvas>
+        <div class="laden" id="ladeanzeige" hidden role="status" aria-live="polite"><p id="laden-text">Video wird gelesen …</p><progress id="laden-balken" max="1" value="0"></progress><p class="klein" id="laden-schritt"></p></div>
         <div class="leer" id="leer">
           <p class="gross">Kein Signal</p>
           <p>Lade ein Foto.</p>
@@ -297,7 +308,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=33"></script>
+  <script type="module" src="app.js?v=34"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

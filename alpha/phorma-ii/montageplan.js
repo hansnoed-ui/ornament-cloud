@@ -7,11 +7,11 @@
 //   Arten    still (der Ausschnitt an seinem Ort), zoom, versatz, fern (eine andere Stelle des Motivs), zug (die Punkte ab einer Linie zu Streifen
 //            gezogen); dazu Ausreisser: schmale Streifen, die seitlich aus dem Motiv geschoben sind
 //   Ablauf   01 Schnitte – auf jedem Schlag ein Schnitt, immer mehr Felder (als erster Effekt erscheinen sie einzeln aus dem Dunkeln)
-//            02 Montage – Schnitte nach zwei, drei, vier Schlägen, dicht und licht im Wechsel
+//            02 Montage – Schnitte nach einem bis drei Schlägen, dicht und licht im Wechsel, manchmal doppelt (Stottern); Raster und Streifen
 //            03 Bild – die letzte Aufteilung bleibt, die Felder rasten nacheinander an ihrem Platz ein, das Foto steht
 // Lage in Bildkoordinaten: x 0..1 über die Breite, y 0..1 von oben nach unten. Alles wiederholbar: dasselbe Foto ergibt denselben Film.
-import { zufall } from "./analyse.js?v=23";
-import { anteil, phase } from "./ablauf.js?v=23";
+import { zufall } from "./analyse.js?v=24";
+import { anteil, phase } from "./ablauf.js?v=24";
 // die S-Kurve wie in gemeinsam.js (das «weich» von ablauf.js läuft stark aus: damit setzte das Einrasten ins Foto viel zu früh ein)
 const weich = (x) => x * x * (3 - 2 * x);
 
@@ -50,16 +50,19 @@ export function mittel(G, [x0, y0, x1, y1]) {
 }
 
 /** die Schnitte in der eigenen Zeit des Effekts: [{ t, n (Felder), wucht (0..1), dicht }] */
-export function schnitte(teil, { takt = TAKT, n0 = 3, licht = true } = {}) {
-  const S = phase(teil, "schnitte"), M = phase(teil, "montage"), r = zufall(1709), liste = [];
+export function schnitte(teil, { takt = TAKT, n0 = 3, licht = true, durch = false } = {}) {
+  const S = phase(teil, "schnitte"), M = phase(teil, "montage"), Bp = phase(teil, "bild"), r = zufall(1709), liste = [];
+  const bis = durch && Bp ? Bp[1] : M[1];   // durch: auch in der letzten Phase weiter schneiden (vor dem Signet, ohne Einrasten)
   const nS = Math.max(2, Math.round((S[1] - S[0]) / takt));
   const w0 = n0 > 3 ? 0.8 : 0.35;   // nach einem anderen Effekt gleich kräftig: sonst sieht der Anfang aus wie das fertige Foto
   for (let i = 0; i < nS; i++) { const f = i / (nS - 1); liste.push({ t: S[0] + i * takt, n: Math.round(n0 * (30 / n0) ** f), wucht: w0 + (0.75 - w0) * f, dicht: false }); }
   let t = M[0], k = 0;
-  while (t < M[1] - takt * 0.9) {
-    const locker = licht && k % 3 === 2;
+  while (t < bis - takt * 0.9) {
+    const locker = licht && k % 3 === 2, schritt = [1, 1, 2, 2, 3][Math.floor(r() * 5)];   // öfter geschnitten (seit 19. Oktober 2026)
     liste.push({ t, n: locker ? 10 + Math.floor(r() * 12) : 40 + Math.floor(r() * 90), wucht: 0.7 + 0.3 * r(), dicht: !locker });
-    t += [1, 2, 2, 3, 4][Math.floor(r() * 5)] * takt; k++;
+    // Doppelschnitt (Wunsch vom 19. Oktober 2026: «abwechslungsreicher»): kurz nach dem Schlag gleich noch einmal, wie ein Stottern
+    if (!locker && schritt > 1 && r() < 0.6) liste.push({ t: t + 0.3 * takt, n: 30 + Math.floor(r() * 80), wucht: 0.8 + 0.2 * r(), dicht: true, stotter: true });
+    t += schritt * takt; k++;
   }
   // die letzte Aufteilung bleibt fürs Einrasten stehen: dicht
   const letzt = liste.at(-1);
@@ -74,11 +77,11 @@ const gleiten = (r) => ({ dz: 0.07 * r(), dx: (r() - 0.5) * 0.012, dy: (r() - 0.
 /** ein neuer Ausschnitt für ein Feld, aus dem des Elternfelds: näher heran (selten weiter weg), verschoben oder zurück an seinen Ort */
 function neuerAusschnitt(tf, rect, r) {
   const cx = (rect[0] + rect[2]) / 2, cy = (rect[1] + rect[3]) / 2, z = r();
-  if (z < 0.45) {
-    const f = r() < 0.12 ? 0.72 + 0.15 * r() : 1.2 + 0.9 * r();
-    return { z: Math.min(3.2, tf.z * f), ax: cx, ay: cy, ox: tf.ox + (r() - 0.5) * 0.04, oy: tf.oy + (r() - 0.5) * 0.04, ...gleiten(r) };
+  if (z < 0.55) {
+    const f = r() < 0.12 ? 0.72 + 0.15 * r() : 1.15 + 0.6 * r();   // nicht zu nah: sonst wird das Foto weich (Wunsch: «etwas schärfer»)
+    return { z: Math.min(2.3, tf.z * f), ax: cx, ay: cy, ox: tf.ox + (r() - 0.5) * 0.04, oy: tf.oy + (r() - 0.5) * 0.04, ...gleiten(r) };
   }
-  if (z < 0.75) return { ...tf, ox: tf.ox + (r() - 0.5) * 0.16, oy: tf.oy + (r() - 0.5) * 0.1, ...gleiten(r) };
+  if (z < 0.9) return { ...tf, ox: tf.ox + (r() - 0.5) * 0.16, oy: tf.oy + (r() - 0.5) * 0.1, ...gleiten(r) };   // seltener zurück an den Ort (abwechslungsreicher)
   return { ...GLEICH };
 }
 
@@ -133,6 +136,39 @@ export function ausschnitt(f, seit = 0) {
   return [(cx - t.ax) / z + t.ax + t.ox + t.dx * seit, (cy - t.ay) / z + t.ay + t.oy + t.dy * seit, w / z, h / z];
 }
 
+/** die Arten des Bilds in einem Feld (montage.js zeichnet sie): 0 normal */
+export const STIL = { spiegel: 1, pixel: 2, kanal: 3, negativ: 4, hart: 5 };
+
+/** Grenzen mit zufälligen Breiten: k Teile von 0 bis 1 */
+function teilung(k, r) {
+  const g = Array.from({ length: k }, () => 0.6 + r()), s = g.reduce((x, y) => x + y, 0), raus = [0];
+  for (let i = 0, p = 0; i < k; i++) { p += g[i] / s; raus.push(i === k - 1 ? 1 : p); }
+  return raus;
+}
+/** ein Raster über die Zone, ungleich breite Spalten, je Zeile verschoben und manche Zellen näher heran (wie ein gesprungener Spiegel) */
+function raster(zone, n, r, a) {
+  const [x0, y0, x1, y1] = zone, seite = ((x1 - x0) * a) / (y1 - y0), sp = Math.max(2, Math.round(Math.sqrt(n * seite) * 0.8)), ze = Math.max(2, Math.round(n / sp * 0.8));
+  const xs = teilung(sp, r), ys = teilung(ze, r), raus = [];
+  for (let j = 0; j < ze; j++) {
+    const zeile = { ...GLEICH, ox: (r() - 0.5) * 0.08, oy: (r() - 0.5) * 0.02, ...gleiten(r) };
+    for (let i = 0; i < sp; i++) {
+      const rect = [x0 + (x1 - x0) * xs[i], y0 + (y1 - y0) * ys[j], x0 + (x1 - x0) * xs[i + 1], y0 + (y1 - y0) * ys[j + 1]];
+      raus.push({ rect, stufe: 1 + (j % 3), tf: r() < 0.3 ? neuerAusschnitt(zeile, rect, r) : zeile });
+    }
+  }
+  return raus;
+}
+/** durchgehende Streifen über die Zone (quer oder hoch), jeder längs verschoben, manche näher heran */
+function streifen(zone, n, r, a) {
+  const [x0, y0, x1, y1] = zone, quer = r() < 0.6, k = 8 + Math.floor(r() * Math.min(18, n / 3)), ts = teilung(k, r), raus = [];
+  for (let i = 0; i < k; i++) {
+    const rect = quer ? [x0, y0 + (y1 - y0) * ts[i], x1, y0 + (y1 - y0) * ts[i + 1]] : [x0 + (x1 - x0) * ts[i], y0, x0 + (x1 - x0) * ts[i + 1], y1];
+    const d = (r() - 0.5) * 0.14, f = r() < 0.2 ? 1.2 + 0.4 * r() : 1, cx = (rect[0] + rect[2]) / 2, cy = (rect[1] + rect[3]) / 2;
+    raus.push({ rect, stufe: 1 + (i % 4), tf: { z: f, ax: cx, ay: cy, ox: quer ? d : 0, oy: quer ? 0 : d, ...gleiten(r) } });
+  }
+  return raus;
+}
+
 /** eine Stelle des Motivs, nach Wichtigkeit gezogen → [x, y] */
 function stelle(G, r) {
   let summe = 0;
@@ -154,7 +190,10 @@ export function aufteilung(G, schnitt, samen, a, raender = true) {
   if (raender && bisRand) { if (links) zone[0] = 0; else zone[2] = 1; }   // bis an den linken oder rechten Rand, wie die Streifen im Clip
   if (raender && unten) zone[3] = 1;
   for (let i = 0; i < 4; i++) zone[i] = Math.min(1, Math.max(0, zone[i]));
-  const roh = zerlegen(G, zone, schnitt.n, r, a), felder = [];
+  // das Muster der Aufteilung (seit 19. Oktober 2026 abwechslungsreicher): meist geteilt nach Wichtigkeit, manchmal ein Raster oder durchgehende
+  // Streifen (für das Signet immer geteilt)
+  const wahl = r(), muster = !raender || schnitt.n < 12 ? "baum" : wahl < 0.16 ? "raster" : wahl < 0.32 ? "streifen" : "baum";
+  const roh = muster === "raster" ? raster(zone, schnitt.n, r, a) : muster === "streifen" ? streifen(zone, schnitt.n, r, a) : zerlegen(G, zone, schnitt.n, r, a), felder = [];
   for (const { rect, stufe, tf } of roh) {
     const [x0, y0, x1, y1] = rect, w = x1 - x0, h = y1 - y0, schmal = Math.max((w * a) / h, h / (w * a)) > 3.5, z = r();
     const f = { rect, stufe, tf, ziel: null, zug: [0, 0, 0], art: tf.z === 1 && !tf.ox && !tf.oy ? "still" : tf.z !== 1 ? "zoom" : "versatz" };
@@ -164,7 +203,12 @@ export function aufteilung(G, schnitt, samen, a, raender = true) {
       const quer = (w * a) / h > 1.2 ? r() < 0.8 : r() < 0.3;
       Object.assign(f, { art: "zug", zug: [quer ? 1 : 2, 0.08 + 0.4 * r(), r() < 0.5 ? 1 : -1] });
     }
-    Object.assign(f, { an: r(), verzug: Math.min(0.3, stufe * 0.03 + r() * 0.05), schnapp: r(), rand: f.art === "still" && r() < 0.4 ? 0.3 : 0.45 + 0.4 * r() });
+    // die groben Felder sofort, die feinen wachsen nach (sonst blitzte bei jedem Schnitt kurz das ganze Foto auf)
+    Object.assign(f, { an: r(), verzug: stufe <= 2 ? 0 : Math.min(0.12, (stufe - 2) * 0.02 + r() * 0.03), schnapp: r(), rand: f.art === "still" && r() < 0.4 ? 0.3 : 0.45 + 0.4 * r() });
+    // die Art des Bilds im Feld: gespiegelt, verpixelt, Farbkanäle versetzt, hart schwarzweiss; mit Video zeigt manches Feld eine frühere Stelle
+    const s2 = r();
+    f.stil = s2 < 0.06 ? STIL.spiegel : s2 < 0.12 ? STIL.pixel : s2 < 0.2 ? STIL.kanal : s2 < 0.25 ? STIL.hart : 0;
+    f.zeit = r() < 0.3 ? (r() < 0.5 ? 1 : 2) : 0;
     felder.push(f);
   }
   // Ausreisser: schmale Streifen, seitlich aus dem Motiv geschoben (sie zeigen weiter, was an ihrem Ort war), ihre Punkte nach aussen gezogen
@@ -174,7 +218,7 @@ export function aufteilung(G, schnitt, samen, a, raender = true) {
     for (let k = 0, m = Math.min(quer.length, 2 + Math.floor(r() * 5)); k < m; k++) {
       const f = quer[Math.floor(r() * quer.length)], [x0, y0, x1, y1] = f.rect, d = (r() < 0.5 ? -1 : 1) * (0.06 + 0.22 * r());
       ausreisser.push({ rect: [x0 + d, y0, x1 + d, y1], stufe: 6, art: "zug", tf: { ...GLEICH }, ziel: ausschnitt(f), zug: [1, d < 0 ? 0.5 + 0.3 * r() : 0.2 - 0.15 * r(), d < 0 ? -1 : 1],
-        an: r(), verzug: 0.2 + r() * 0.1, schnapp: r() * 0.5, rand: 0.6 + 0.3 * r() });
+        an: r(), verzug: 0.2 + r() * 0.1, schnapp: r() * 0.5, rand: 0.6 + 0.3 * r(), stil: 0, zeit: 0 });
     }
   }
   // Zahlentafeln: in ruhigen Stellen (wenig Wichtigkeit) nahe der Zone, nicht unter der Beschriftung oben und unten; je ein Kopf und Zeilen mit
@@ -189,17 +233,18 @@ export function aufteilung(G, schnitt, samen, a, raender = true) {
     if (r() < 0.3) zeilen.push(`>> proc[${i}] area[${Math.round((f.rect[2] - f.rect[0]) * (f.rect[3] - f.rect[1]) * 1e4)}]`);
     tafeln.push({ x, y, zeilen, rahmen: r() < 0.4 });
   }
-  return { zone, felder, ausreisser, tafeln };
+  return { zone, felder, ausreisser, tafeln, muster };
 }
 
 /**
  * Der ganze Plan zu einem Teil der Kette (G: wichtigkeit(A), a = B / H, samen: je Foto, takt: Sekunden je Schlag, n0: Felder beim ersten Schnitt,
- * raender: die Zone darf bis an den Rand reichen, licht: auch lockere Aufteilungen)
+ * raender: die Zone darf bis an den Rand reichen, licht: auch lockere Aufteilungen, durch: nicht einrasten, bis zum Ende schneiden – vor dem Signet;
+ * sofort: der erste Schnitt ohne Aufbau – nahtlos nach einer anderen Montage)
  */
-export function montagePlan(G, teil, { a = 0.8, samen = 1, takt = TAKT, n0 = 3, raender = true, licht = true } = {}) {
+export function montagePlan(G, teil, { a = 0.8, samen = 1, takt = TAKT, n0 = 3, raender = true, licht = true, durch = false, sofort = false } = {}) {
   const S = phase(teil, "schnitte"), Bp = phase(teil, "bild");
-  const liste = schnitte(teil, { takt, n0, licht }).map((s, k) => ({ ...s, ...aufteilung(G, s, samen * 7919 + k * 104729 + 13, a, raender) }));
-  return { teil, S, Bp, schnitte: liste, erst: teil.erst, vonFoto: teil.vonFoto, a, takt };
+  const liste = schnitte(teil, { takt, n0, licht, durch }).map((s, k) => ({ ...s, ...aufteilung(G, s, samen * 7919 + k * 104729 + 13, a, raender) }));
+  return { teil, S, Bp: durch ? null : Bp, schnitte: liste, erst: teil.erst, vonFoto: teil.vonFoto, a, takt, sofort };
 }
 
 /** welcher Schnitt zur eigenen Zeit tau gilt (vor dem ersten: der erste) */
@@ -219,7 +264,7 @@ export function montageBei(plan, tau) {
   const k = schnittBei(plan, tau), s = plan.schnitte[k], seit = Math.max(0, tau - s.t), { S, Bp, erst } = plan;
   // erst: der Grund kommt nach den ersten Feldern aus dem Dunkeln
   const grundLicht = erst ? weich(anteil(tau, 0.9, 2.0)) : 1;
-  const raus = []; raus.push({ rect: [0, 0, 1, 1], quelle: [0.5, 0.5, 1, 1], zug: [0, 0, 0], licht: grundLicht, rand: 0 });
+  const raus = []; raus.push({ rect: [0, 0, 1, 1], quelle: [0.5, 0.5, 1, 1], zug: [0, 0, 0], licht: grundLicht, rand: 0, stil: 0, zeit: 0 });
   const schlag = Math.floor(seit / plan.takt), streu = Bp ? Math.max(0.3, Bp[1] - Bp[0] - 1.1) : 0;
   const einrasten = (f) => (Bp ? weich(anteil(tau, Bp[0] + 0.1 + f.schnapp * streu, Bp[0] + 0.45 + f.schnapp * streu)) : 0);
   // vom Foto her (nach dem Tuch) bauen sich die Felder auf; nach einem anderen Effekt sind sie gleich da (er wird weggeschnitten)
@@ -227,7 +272,7 @@ export function montageBei(plan, tau) {
   const eins = (f, i, ausreisser) => {
     const [x0, y0, x1, y1] = f.rect, w = x1 - x0, h = y1 - y0, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
     // nach einem Schnitt wächst die neue Aufteilung in wenigen Bildern: zuerst die groben Teilungen, dann die feinen (wie im Clip)
-    const auf = k > 0 || !erst ? weich(anteil(seit, f.verzug, f.verzug + 0.05)) : 1;
+    const auf = (k > 0 || !erst) && !(k === 0 && plan.sofort) ? weich(anteil(seit, f.verzug - 0.05, f.verzug)) : 1;
     const e = einrasten(f), m = wucht * (1 - e) * auf;
     // der Ausschnitt mit leisem Gleiten, dazu auf manchen Schlägen ein Zucken
     let [zx, zy, sx, sy] = ausschnitt(f, seit);
@@ -235,7 +280,11 @@ export function montageBei(plan, tau) {
     const quelle = [cx + (zx - cx) * m, cy + (zy - cy) * m, w + (sx - w) * m, h + (sy - h) * m];
     const licht = erst ? weich(anteil(tau, 0.2 + f.an * 1.1, 0.35 + f.an * 1.1)) : 1;
     if (licht <= 0 || (ausreisser && e >= 1)) return;   // noch dunkle Felder lassen den Grund durch
-    raus.push({ rect: f.rect, quelle, zug: f.zug[0] && m > 0.02 ? [f.zug[0], f.zug[1], f.zug[2]] : [0, 0, 0], licht: ausreisser ? licht * (1 - e) : licht, rand: f.rand * (1 - e) * Math.min(1, wucht / 0.35) * auf });
+    // auf manchen Schlägen blitzt ein Feld kurz im Negativ auf
+    const blitz = schlag > 0 && seit - schlag * plan.takt < 0.1 && hash(i * 53 + schlag * 131 + k * 7) < 0.05;
+    const stil = m > 0.02 ? (blitz ? STIL.negativ : f.stil ?? 0) : 0;
+    raus.push({ rect: f.rect, quelle, zug: f.zug[0] && m > 0.02 ? [f.zug[0], f.zug[1], f.zug[2]] : [0, 0, 0], licht: ausreisser ? licht * (1 - e) : licht, rand: f.rand * (1 - e) * Math.min(1, wucht / 0.35) * auf,
+      stil, zeit: m > 0.5 ? f.zeit ?? 0 : 0 });
   };
   s.felder.forEach((f, i) => eins(f, i, false));
   s.ausreisser.forEach((f, i) => eins(f, 1000 + i, true));

@@ -5,9 +5,9 @@
 // Dasselbe Zeichnen schneidet am Schluss das Signet (montageSignet), wenn die Montage der letzte Effekt ist.
 // Zustandslos: jedes Bild hängt nur von der Zeit ab.
 import * as THREE from "three";
-import { anteil, weich, quadMaterial, filmTextur } from "./gemeinsam.js?v=23";
-import { wichtigkeit, montagePlan, montageBei, signetTeil, HOECHSTENS, SIGNET_TAKT } from "./montageplan.js?v=23";
-import { weichzeichnen } from "./analyse.js?v=23";
+import { anteil, weich, quadMaterial, filmTextur } from "./gemeinsam.js?v=24";
+import { wichtigkeit, montagePlan, montageBei, signetTeil, HOECHSTENS, SIGNET_TAKT } from "./montageplan.js?v=24";
+import { weichzeichnen } from "./analyse.js?v=24";
 
 const VERTEX = /* glsl */ `
   attribute vec4 aRect, aQuelle, aZug, aStil;
@@ -20,21 +20,31 @@ const VERTEX = /* glsl */ `
     vQuelle = aQuelle; vZug = aZug; vStil = aStil;
     gl_Position = vec4(p.x * 2.0 - 1.0, 1.0 - p.y * 2.0, 0.0, 1.0);
   }`;
+// die Arten im Feld (STIL in montageplan.js, vStil.z): 1 gespiegelt, 2 verpixelt, 3 Farbkanäle versetzt, 4 Negativ, 5 hart schwarzweiss;
+// vStil.w: welches Bild (0 das Foto oder das laufende Video, 1 und 2 mit Video eine frühere Stelle)
 const FRAGMENT = /* glsl */ `
-  uniform sampler2D tFoto; uniform float uLinie;
+  uniform sampler2D tFoto, tZeit1, tZeit2; uniform float uLinie;
   varying vec2 vL, vPx; varying vec4 vQuelle, vZug, vStil;
+  vec3 bild(vec2 uv, float k) { return k < 0.5 ? texture2D(tFoto, uv).rgb : k < 1.5 ? texture2D(tZeit1, uv).rgb : texture2D(tZeit2, uv).rgb; }
   void main() {
     vec2 l = vL;
+    float stil = floor(vStil.z + 0.5), k = floor(vStil.w + 0.5);
+    if (stil == 1.0) l.x = 1.0 - l.x;
+    if (stil == 2.0) { vec2 n = max(vec2(2.0), floor(vPx / (11.0 * uLinie))); l = (floor(l * n) + 0.5) / n; }
     // gezogen: ab der Linie bleibt die letzte Spalte (Zeile) stehen und wird zu Streifen
     if (vZug.x > 0.5 && vZug.x < 1.5) l.x = vZug.z > 0.0 ? min(l.x, vZug.y) : max(l.x, 1.0 - vZug.y);
     else if (vZug.x > 1.5) l.y = vZug.z > 0.0 ? min(l.y, vZug.y) : max(l.y, 1.0 - vZug.y);
     vec2 q = vQuelle.xy + (l - 0.5) * vQuelle.zw;
     vec2 uv = clamp(vec2(q.x, 1.0 - q.y), vec2(0.0005), vec2(0.9995));
-    vec3 c = texture2D(tFoto, uv).rgb * vStil.x;
+    vec3 c = bild(uv, k);
+    if (stil == 3.0) { vec2 d = vec2(0.012 * vQuelle.z, 0.0); c = vec3(bild(uv + d, k).r, c.g, bild(uv - d, k).b); }
+    if (stil == 4.0) c = vec3(0.9) - c;
+    if (stil == 5.0) { float y = smoothstep(0.06, 0.5, dot(c, vec3(0.2126, 0.7152, 0.0722))); c = vec3(y); }
+    c *= vStil.x;
     vec2 px = vL * vPx;
     float d = min(min(px.x, vPx.x - px.x), min(px.y, vPx.y - px.y));
     float rand = (1.0 - smoothstep(uLinie - 0.5, uLinie + 0.5, d)) * vStil.y;
-    c = mix(c, vec3(0.86) * vStil.x, rand * 0.8);
+    c = mix(c, vec3(0.95) * vStil.x, rand * 0.85);
     gl_FragColor = vec4(c, 1.0);
   }`;
 const TAFELN = /* glsl */ `uniform sampler2D tTafel; uniform float uSicht; varying vec2 vUv;
@@ -53,7 +63,7 @@ function zeichner(g, plan, quelle, hell) {
   for (const n of ["aRect", "aQuelle", "aZug", "aStil"]) { attr[n] = new THREE.InstancedBufferAttribute(new Float32Array(N * 4), 4); attr[n].setUsage(THREE.DynamicDrawUsage); geo.setAttribute(n, attr[n]); }
   geo.instanceCount = 0;
   const mat = new THREE.ShaderMaterial({ vertexShader: VERTEX, fragmentShader: FRAGMENT, depthTest: false, depthWrite: false,
-    uniforms: { tFoto: { value: quelle }, uZiel: { value: new THREE.Vector2(B, H) }, uLinie: { value: 1 } } });
+    uniforms: { tFoto: { value: quelle }, tZeit1: { value: quelle }, tZeit2: { value: quelle }, uZiel: { value: new THREE.Vector2(B, H) }, uLinie: { value: 1 } } });
   const schar = new THREE.Mesh(geo, mat); schar.frustumCulled = false;
   const szene = new THREE.Scene(); szene.add(schar);
   const kam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -93,7 +103,7 @@ function zeichner(g, plan, quelle, hell) {
       for (let i = 0; i < n; i++) {
         const f = M.felder[i];
         attr.aRect.array.set(f.rect, i * 4); attr.aQuelle.array.set(f.quelle, i * 4);
-        attr.aZug.array.set([f.zug[0], f.zug[1], f.zug[2], 0], i * 4); attr.aStil.array.set([f.licht, f.rand, 0, 0], i * 4);
+        attr.aZug.array.set([f.zug[0], f.zug[1], f.zug[2], 0], i * 4); attr.aStil.array.set([f.licht, f.rand, f.stil ?? 0, f.zeit ?? 0], i * 4);
       }
       for (const n0 of Object.values(attr)) { n0.clearUpdateRanges?.(); n0.needsUpdate = true; }
       geo.instanceCount = n;
@@ -106,32 +116,38 @@ function zeichner(g, plan, quelle, hell) {
         g.pass(tafelMat, rt);
       }
     },
-    /** woraus die Felder schöpfen (das Foto, mit Video das laufende Bild) */
-    quelle(tex) { mat.uniforms.tFoto.value = tex; },
+    /** woraus die Felder schöpfen (das Foto, mit Video das laufende Bild und zwei frühere Stellen) */
+    quelle(tex, z1 = tex, z2 = tex) { mat.uniforms.tFoto.value = tex; mat.uniforms.tZeit1.value = z1; mat.uniforms.tZeit2.value = z2; },
     vorab: { szenen: [[szene, kam]], materialien: [tafelMat] },
     entsorgen() { geo.dispose(); mat.dispose(); tafelMat.dispose(); for (const l of leinwaende) l.tex.dispose(); },
   };
 }
 
+/** mit Video: so viele Sekunden hinken die Felder mit frühere Stelle nach (STIL-Zeit 1 und 2) */
+export const ZEITVERSATZ = [0, 0.35, 0.9];
+
 export function montage(g, teil) {
   const { A, B, H } = g;
   // als erster Effekt beginnt sie mit wenigen Feldern, nach einem anderen gleich dicht (Wunsch: «Montage sollte grundsätzlich nicht mit dem fertigen
   // Bild starten»)
-  const plan = montagePlan(wichtigkeit(A), teil, { a: B / H, samen: Math.round(A.mittel * 1e4) + A.w, n0: teil.erst || teil.vonFoto ? 3 : 16 });
+  // vor dem Signet (g.nahtlos) rastet sie nicht ein, sie schneidet bis zum Ende und geradewegs ins Signet
+  const plan = montagePlan(wichtigkeit(A), teil, { a: B / H, samen: Math.round(A.mittel * 1e4) + A.w, n0: teil.erst || teil.vonFoto ? 3 : 16, durch: !!g.nahtlos && teil.letzt });
   const Z = zeichner(g, plan, g.fotoTex, (x, y) => A.hell[Math.min(A.h - 1, Math.floor(y * A.h)) * A.w + Math.min(A.w - 1, Math.floor(x * A.w))]);
   // mit Video zeigen die Felder das laufende Bild (Etappe 2); es kommt am Ende beim Standbild an, dem Foto
-  const film = g.film ? filmTextur() : null;
+  const film = g.film ? [filmTextur(), filmTextur(), filmTextur()] : null;
   let w = B, h = H;
   return {
     groesse(nw, nh) { w = nw; h = nh; },
     render(rt, tau, opt = {}) {
       const M = montageBei(plan, tau);
-      if (film) Z.quelle(film.setzen(g.film.bild(teil, tau, opt.vorschau)) ?? g.fotoTex);
+      // mit Video: das laufende Bild und zwei frühere Stellen (manche Felder hinken nach – wie im Vorbild, wo der Kopf in den Feldern verschieden steht)
+      if (film) Z.quelle(...ZEITVERSATZ.map((d, j) => film[j].setzen(g.film.bild(teil, Math.max(0, tau - d), opt.vorschau)) ?? g.fotoTex));
       Z.zeichnen(rt, M, w, h);
       let ende = M.ende, aktiv = plan.erst ? weich(anteil(tau, 0, 0.8)) : weich(anteil(tau, 0, 0.4));
       if (plan.vonFoto) ende = Math.max(ende, 1 - weich(anteil(tau, 0, 0.35)));
       if (plan.Bp) aktiv *= 1 - weich(anteil(tau, plan.Bp[0] + 0.6, plan.Bp[1]));
-      return { aktiv, bloom: 0.08, radius: 0.3, saum: 0.0012 + 0.006 * M.ruck, ende };
+      // schärfer (Wunsch vom 19. Oktober 2026): ohne Bloom, weniger Vignette und Korn, der Farbsaum nur beim Schnitt
+      return { aktiv: aktiv * 0.5, bloom: 0, radius: 0.3, saum: 0.0004 + 0.005 * M.ruck, ende };
     },
     vorab: Z.vorab,
     zaehler(tau) {
@@ -139,7 +155,7 @@ export function montage(g, teil) {
       return `montage · felder ${M.felder.length - 1} · schnitt ${M.k + 1}/${plan.schnitte.length}`;
     },
     plan,
-    entsorgen() { Z.entsorgen(); film?.entsorgen(); },
+    entsorgen() { Z.entsorgen(); film?.forEach((f) => f.entsorgen()); },
   };
 }
 
@@ -165,7 +181,7 @@ export function montageSignet(g, zeichnenBei, fertig, { nahtlos = false } = {}) 
   for (let i = 0; i < w * h; i++) hell[i] = (0.2126 * d[i * 4] + 0.7152 * d[i * 4 + 1] + 0.0722 * d[i * 4 + 2]) / 255;
   const weich2 = weichzeichnen(hell, w, h, 1.2), gipfel = Math.max(1e-6, ...weich2), nah = weich2.map((v) => v / gipfel);
   const A = { w, h, hell, tiefe: nah, nahrung: nah };
-  const plan = montagePlan(wichtigkeit(A, 36), signetTeil({ nahtlos }), { a: B / H, samen: 4242, takt: SIGNET_TAKT, n0: 12, raender: false, licht: false });
+  const plan = montagePlan(wichtigkeit(A, 36), signetTeil({ nahtlos }), { a: B / H, samen: 4242, takt: SIGNET_TAKT, n0: nahtlos ? 24 : 12, raender: false, licht: false, sofort: nahtlos });
   const Z = zeichner(g, plan, tex, (x, y) => hell[Math.min(h - 1, Math.floor(y * h)) * w + Math.min(w - 1, Math.floor(x * w))]);
   return {
     plan, nahtlos,
