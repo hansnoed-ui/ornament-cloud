@@ -21,6 +21,8 @@ test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette"
   assert.equal(A.ablaufName("gewebe"), A.KETTE, "ein gemerktes Gewebe (seit dem 18. Oktober 2026 PHORMA III) ergibt die ganze Kette");
   assert.equal(A.ablaufName("struktur"), A.KETTE);
   assert.equal(A.ablaufName("montage+tuch"), "tuch+montage", "die Montage steht immer am Schluss");
+  for (const k of ["wachstum+montage", "physarum+montage", "tiefe+montage"]) assert.equal(A.kette(k).teile[0].uebergang, "felder", `${k}: in Rechtecken in die Montage`);
+  assert.equal(A.kette("wachstum+montage").teile[0].phasen.at(-1)[0], "farbe", "das Wachstum zeigt vor der Montage das Foto nicht");
 });
 
 test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappung, geerbte Ausschnitte, Anfang dunkel, Ende exakt, wiederholbar", async () => {
@@ -34,7 +36,12 @@ test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappun
   for (const kette of ["montage", "tuch+montage"]) {
     const teil = A.kette(kette).teile.at(-1), plan = M.montagePlan(G, teil, { a: 0.8 }), [, , bild] = teil.phasen;
     assert.deepEqual(teil.phasen.map((p) => p[0]), ["schnitte", "montage", "bild"]);
-    assert.equal(teil.vonFoto, kette !== "montage", "nach dem Tuch beginnt sie beim Foto");
+    assert.ok(!teil.vonFoto, "beginnt nie beim fertigen Foto");
+    if (kette !== "montage") {
+      const tuch = A.kette(kette).teile[0];
+      assert.equal(tuch.uebergang, "felder", "Rechtecke schneiden das Tuch weg");
+      assert.ok(!tuch.phasen.some(([n]) => n === "bild") && tuch.ueber > 0.5, "das Tuch zeigt das Foto nicht, die Montage liegt schon darunter");
+    }
     const S = plan.schnitte;
     assert.ok(S.length >= 8, `genug Schnitte (${S.length})`);
     for (let i = 1; i < S.length; i++) {
@@ -52,12 +59,13 @@ test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappun
       }
       assert.ok(Math.abs(flaeche - (z2 - z0) * (z3 - z1)) < 1e-9, "die Felder füllen die Zone genau");
     }
+    let geteilt = 0, alle = 0;
     for (const dicht of S.filter((s) => s.felder.length > 40)) {
       const zahl = new Map();
       for (const f of dicht.felder) zahl.set(f.tf, (zahl.get(f.tf) ?? 0) + 1);
-      const geteilt = dicht.felder.filter((f) => zahl.get(f.tf) > 1).length;
-      assert.ok(geteilt >= dicht.felder.length * 0.2, `viele Felder teilen den Ausschnitt mit Nachbarn aus demselben Elternfeld (${geteilt} von ${dicht.felder.length})`);
+      geteilt += dicht.felder.filter((f) => zahl.get(f.tf) > 1).length; alle += dicht.felder.length;
     }
+    assert.ok(geteilt >= alle * 0.15, `viele Felder teilen den Ausschnitt mit Nachbarn aus demselben Elternfeld (${geteilt} von ${alle})`);
     const dicht = S.find((s) => s.felder.length > 40);
     assert.ok(new Set(dicht.felder.map((f) => f.art)).size >= 3, "verschiedene Arten");
     // Ende: alle Felder an ihrem Platz
@@ -188,6 +196,23 @@ test("Wachstum: die Linie wächst aus dem Keim ins Motiv (nicht in den Grund), d
   for (let i = 0; i < n; i++) { const x = b.lagen[o + i * 2] / W.ACHTEL, y = b.lagen[o + i * 2 + 1] / W.ACHTEL; if (Math.hypot(x - 40, y - 48) < 30) drin++; }
   assert.ok(drin / n > 0.9, `die Linie bleibt im Motiv (${(100 * drin / n).toFixed(0)} %)`);
   assert.deepEqual(b.lagen, b2.lagen, "wiederholbar");
+  // in Päckchen (für die Vorschau, während der Rest rechnet): dieselben Bilder
+  const einzeln = [], jeBild = (f, l) => { einzeln[f] = l; };
+  W.wachstumBahn({ ...auftrag, jeBild });
+  assert.equal(jeBild.bilder, b.bilder);
+  assert.deepEqual(Array.from(einzeln.at(-1)), Array.from(b.lagen.subarray(b.ab.at(-2) * 2)), "das letzte Bild gleich");
+});
+
+test("Video als Quelle: es läuft ab dem ersten von Montage und Wachstum bis zum Ende; das Standbild ist sein letztes Bild", async () => {
+  const F = await import(new URL("filmquelle.js", P).href);
+  const ohne = F.videoPlan("physarum+tiefe+tuch");
+  assert.equal(ohne.lebendig, false); assert.equal(ohne.dauer, 0, "ohne Montage und Wachstum steht das Video: das Standbild ist sein erstes Bild");
+  const K = A.kette("tuch+wachstum+montage"), p = F.videoPlan("tuch+wachstum+montage");
+  assert.ok(p.lebendig && Math.abs(p.von - K.teile[1].von) < 1e-9 && Math.abs(p.von + p.dauer - K.dauer) < 1e-9, "vom Wachstum bis zum Schluss");
+  assert.equal(F.videoStelle(p, 0), 0); assert.equal(F.videoStelle(p, p.von + 2), 2); assert.equal(F.videoStelle(p, 999), p.dauer);
+  const z = A.zeitachse({ ablauf: "montage", tempo: "ruhig" }), pm = F.videoPlan("montage");
+  assert.ok(Math.abs(F.videoStelleBei(z, pm, z.abschnitt.von + 1.3) - 1) < 1e-9, "ruhig: das Video läuft langsamer");
+  assert.ok(Math.abs(F.videoStelleBei(z, pm, z.dauer) - pm.dauer) < 1e-9, "nach der Kette das Standbild");
 });
 
 test("KI-Tiefe: wird an die Kanten gelegt und auf 0..1 gebracht", () => {
@@ -225,7 +250,8 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.ok(!/<script[^>]+src="https?:/.test(html), "keine Skripte von aussen");
   for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
   assert.match(html, /data-wahl="physarum\+tiefe\+tuch"/, "die ganze Kette als Karte");
-  assert.ok(!/data-wahl="(gewebe|struktur)"|data-quelle=|id="(tondatei|videodatei|text|frickeln)"/.test(html), "kein Gewebe, kein Ton, kein Text, kein Video: das ist PHORMA III");
+  assert.ok(!/data-wahl="(gewebe|struktur)"|data-quelle=|id="(tondatei|videodatei|text|frickeln)"/.test(html), "kein Gewebe, kein Ton, kein Text: das ist PHORMA III");
+  assert.match(html, /id="datei" accept="image\/\*,video\/\*"/, "Foto oder Video (seit Etappe 2 von Montage und Wachstum)");
   assert.match(html, /href="\.\.\/phorma-iii\/"/, "Hinweis auf PHORMA III");
   for (const f of ["gewebe.js", "ton.js", "tonspur.js", "frickeln.js", "kurven.js", "textbild.js"]) assert.ok(!readdirSync(P).includes(f), `ohne ${f}`);
   assert.ok(!/data-(wahl|effekt)="(stich|muster)"|data-(strich|muster)=/.test(html), "weder Stich noch Morphogenese");

@@ -10,8 +10,10 @@
 //            02 Montage – Schnitte nach zwei, drei, vier Schlägen, dicht und licht im Wechsel
 //            03 Bild – die letzte Aufteilung bleibt, die Felder rasten nacheinander an ihrem Platz ein, das Foto steht
 // Lage in Bildkoordinaten: x 0..1 über die Breite, y 0..1 von oben nach unten. Alles wiederholbar: dasselbe Foto ergibt denselben Film.
-import { zufall } from "./analyse.js?v=21";
-import { anteil, weich, phase } from "./ablauf.js?v=21";
+import { zufall } from "./analyse.js?v=23";
+import { anteil, phase } from "./ablauf.js?v=23";
+// die S-Kurve wie in gemeinsam.js (das «weich» von ablauf.js läuft stark aus: damit setzte das Einrasten ins Foto viel zu früh ein)
+const weich = (x) => x * x * (3 - 2 * x);
 
 /** ein Schlag (Sekunden bei Tempo «normal»); fürs Signet am Schluss doppelt so schnell */
 export const TAKT = 0.5, SIGNET_TAKT = 0.25;
@@ -51,7 +53,8 @@ export function mittel(G, [x0, y0, x1, y1]) {
 export function schnitte(teil, { takt = TAKT, n0 = 3, licht = true } = {}) {
   const S = phase(teil, "schnitte"), M = phase(teil, "montage"), r = zufall(1709), liste = [];
   const nS = Math.max(2, Math.round((S[1] - S[0]) / takt));
-  for (let i = 0; i < nS; i++) { const f = i / (nS - 1); liste.push({ t: S[0] + i * takt, n: Math.round(n0 * (30 / n0) ** f), wucht: 0.35 + 0.4 * f, dicht: false }); }
+  const w0 = n0 > 3 ? 0.8 : 0.35;   // nach einem anderen Effekt gleich kräftig: sonst sieht der Anfang aus wie das fertige Foto
+  for (let i = 0; i < nS; i++) { const f = i / (nS - 1); liste.push({ t: S[0] + i * takt, n: Math.round(n0 * (30 / n0) ** f), wucht: w0 + (0.75 - w0) * f, dicht: false }); }
   let t = M[0], k = 0;
   while (t < M[1] - takt * 0.9) {
     const locker = licht && k % 3 === 2;
@@ -115,7 +118,7 @@ export function zerlegen(G, zone, n, r, a) {
     } else {
       const s = r() < 0.18 ? (r() < 0.5 ? 0.12 : 0.88) : 0.3 + 0.4 * r();
       for (const rect of [quer ? [x0, y0, x0 + (x1 - x0) * s, y1] : [x0, y0, x1, y0 + (y1 - y0) * s], quer ? [x0 + (x1 - x0) * s, y0, x1, y1] : [x0, y0 + (y1 - y0) * s, x1, y1]])
-        neu.push({ rect, stufe: f.stufe + 1, tf: r() < 0.55 ? f.tf : neuerAusschnitt(f.tf, rect, r) });
+        neu.push({ rect, stufe: f.stufe + 1, tf: f.stufe > 0 && r() < 0.55 ? f.tf : neuerAusschnitt(f.tf, rect, r) });   // die erste Teilung nie unverändert
     }
     felder.splice(beste, 1, ...neu);
   }
@@ -219,7 +222,8 @@ export function montageBei(plan, tau) {
   const raus = []; raus.push({ rect: [0, 0, 1, 1], quelle: [0.5, 0.5, 1, 1], zug: [0, 0, 0], licht: grundLicht, rand: 0 });
   const schlag = Math.floor(seit / plan.takt), streu = Bp ? Math.max(0.3, Bp[1] - Bp[0] - 1.1) : 0;
   const einrasten = (f) => (Bp ? weich(anteil(tau, Bp[0] + 0.1 + f.schnapp * streu, Bp[0] + 0.45 + f.schnapp * streu)) : 0);
-  const wucht = s.wucht * (k === 0 && !erst ? weich(anteil(tau, S[0], S[0] + 0.4)) : 1);
+  // vom Foto her (nach dem Tuch) bauen sich die Felder auf; nach einem anderen Effekt sind sie gleich da (er wird weggeschnitten)
+  const wucht = s.wucht * (k === 0 && plan.vonFoto ? weich(anteil(tau, S[0], S[0] + 0.4)) : 1);
   const eins = (f, i, ausreisser) => {
     const [x0, y0, x1, y1] = f.rect, w = x1 - x0, h = y1 - y0, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
     // nach einem Schnitt wächst die neue Aufteilung in wenigen Bildern: zuerst die groben Teilungen, dann die feinen (wie im Clip)

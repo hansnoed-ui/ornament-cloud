@@ -5,9 +5,9 @@
 // Dasselbe Zeichnen schneidet am Schluss das Signet (montageSignet), wenn die Montage der letzte Effekt ist.
 // Zustandslos: jedes Bild hängt nur von der Zeit ab.
 import * as THREE from "three";
-import { anteil, weich, quadMaterial } from "./gemeinsam.js?v=21";
-import { wichtigkeit, montagePlan, montageBei, signetTeil, HOECHSTENS, SIGNET_TAKT } from "./montageplan.js?v=21";
-import { weichzeichnen } from "./analyse.js?v=21";
+import { anteil, weich, quadMaterial, filmTextur } from "./gemeinsam.js?v=23";
+import { wichtigkeit, montagePlan, montageBei, signetTeil, HOECHSTENS, SIGNET_TAKT } from "./montageplan.js?v=23";
+import { weichzeichnen } from "./analyse.js?v=23";
 
 const VERTEX = /* glsl */ `
   attribute vec4 aRect, aQuelle, aZug, aStil;
@@ -106,6 +106,8 @@ function zeichner(g, plan, quelle, hell) {
         g.pass(tafelMat, rt);
       }
     },
+    /** woraus die Felder schöpfen (das Foto, mit Video das laufende Bild) */
+    quelle(tex) { mat.uniforms.tFoto.value = tex; },
     vorab: { szenen: [[szene, kam]], materialien: [tafelMat] },
     entsorgen() { geo.dispose(); mat.dispose(); tafelMat.dispose(); for (const l of leinwaende) l.tex.dispose(); },
   };
@@ -113,13 +115,18 @@ function zeichner(g, plan, quelle, hell) {
 
 export function montage(g, teil) {
   const { A, B, H } = g;
-  const plan = montagePlan(wichtigkeit(A), teil, { a: B / H, samen: Math.round(A.mittel * 1e4) + A.w });
+  // als erster Effekt beginnt sie mit wenigen Feldern, nach einem anderen gleich dicht (Wunsch: «Montage sollte grundsätzlich nicht mit dem fertigen
+  // Bild starten»)
+  const plan = montagePlan(wichtigkeit(A), teil, { a: B / H, samen: Math.round(A.mittel * 1e4) + A.w, n0: teil.erst || teil.vonFoto ? 3 : 16 });
   const Z = zeichner(g, plan, g.fotoTex, (x, y) => A.hell[Math.min(A.h - 1, Math.floor(y * A.h)) * A.w + Math.min(A.w - 1, Math.floor(x * A.w))]);
+  // mit Video zeigen die Felder das laufende Bild (Etappe 2); es kommt am Ende beim Standbild an, dem Foto
+  const film = g.film ? filmTextur() : null;
   let w = B, h = H;
   return {
     groesse(nw, nh) { w = nw; h = nh; },
-    render(rt, tau) {
+    render(rt, tau, opt = {}) {
       const M = montageBei(plan, tau);
+      if (film) Z.quelle(film.setzen(g.film.bild(teil, tau, opt.vorschau)) ?? g.fotoTex);
       Z.zeichnen(rt, M, w, h);
       let ende = M.ende, aktiv = plan.erst ? weich(anteil(tau, 0, 0.8)) : weich(anteil(tau, 0, 0.4));
       if (plan.vonFoto) ende = Math.max(ende, 1 - weich(anteil(tau, 0, 0.35)));
@@ -132,7 +139,7 @@ export function montage(g, teil) {
       return `montage · felder ${M.felder.length - 1} · schnitt ${M.k + 1}/${plan.schnitte.length}`;
     },
     plan,
-    entsorgen() { Z.entsorgen(); },
+    entsorgen() { Z.entsorgen(); film?.entsorgen(); },
   };
 }
 

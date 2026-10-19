@@ -4,7 +4,7 @@
 // Abstürzen» – ein Sprung ans Ende rechnete zuvor bis zu 1000 Teilschritte am Stück und hielt die Seite rund 20 s an).
 //   Gitter nx × ny, Abstände längs, quer, diagonal und über zwei Maschen (Biegung), Schwerkraft, Wind von hinten mit Böen, Luftwiderstand nach der
 //   Fläche (die Kraft wirkt entlang der Normalen), oben fünf Haken, im Bild auch die unteren Ecken; 120 Teilschritte je Sekunde, 4 Iterationen.
-import { phase } from "./ablauf.js?v=21";
+import { phase } from "./ablauf.js?v=23";
 
 export const TEILSCHRITTE = 120, BILDER_JE_S = 30, ITERATIONEN = 4, TIEFE_UEBERGABE = 0.3;
 const JE_BILD = TEILSCHRITTE / BILDER_JE_S;
@@ -79,7 +79,7 @@ export function tuchBahn({ teil, a, nx, tiefe = null, tw = 1, th = 1, fortschrit
   const halter = (tau, k, ziel) => {
     const e = k === ecken[2] ? 2 : k === ecken[3] ? 3 : 0;
     if (e < 2) {
-      ziel[0] = heim[k * 3]; ziel[1] = heim[k * 3 + 1] + (teil.erst ? 2.5 * (1 - inOut(anteil(tau, 0.1, T[0] + 2.6))) : 0); ziel[2] = teil.erst ? -0.35 * (1 - inOut(anteil(tau, 0.1, T[0] + 2.6))) : (teil.vorher === "tiefe" ? relief(k) * (1 - inOut(anteil(tau, Bp[0], Bp[0] + 1.6))) : 0);
+      ziel[0] = heim[k * 3]; ziel[1] = heim[k * 3 + 1] + (teil.erst ? 2.5 * (1 - inOut(anteil(tau, 0.1, T[0] + 2.6))) : 0); ziel[2] = teil.erst ? -0.35 * (1 - inOut(anteil(tau, 0.1, T[0] + 2.6))) : (teil.vorher === "tiefe" ? relief(k) * (1 - inOut(anteil(tau, Bp ? Bp[0] : T[1] - 1.6, Bp ? Bp[0] + 1.6 : T[1]))) : 0);
       return true;
     }
     if (!Bp || tau < Bp[0] + 0.3) return false;
