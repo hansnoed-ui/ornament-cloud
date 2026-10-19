@@ -37,6 +37,8 @@
     Die Gestaltung steht hier in der Seite (nur die Startseite braucht sie), damit styles.css (?v=) unverändert bleibt. Ohne Skript erscheint sie nie.
   -->
   <style>
+    /* unter den Menükästchen eine feine gerade Linie in der Farbe der Hauptlinks, wo das Menü unter der Welle steht (19. Oktober 2026, wie im Zettelkasten) */
+    @media (max-width: 760px) { .site-header .topbar::after { content: ""; display: block; margin-top: 18px; border-top: 1px solid var(--hauptlink); } }
     .start { display: none; }
     html.start-an .start {
       display: flex; align-items: center; justify-content: center;

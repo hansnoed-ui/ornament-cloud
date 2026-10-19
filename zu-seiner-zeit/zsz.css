@@ -94,6 +94,11 @@ main:focus { outline: none; }
 @media (forced-colors: active) { .seitenweg a[aria-current] { outline: 1px solid currentColor; outline-offset: 2px; } }
 .seitenweg a:focus-visible { outline: 2px solid var(--weg); outline-offset: 2px; }
 .zsz-oben + .zsz-kopf { padding-top: 0; }
+/* Unter den Menükästchen eine feine gerade Linie in der Farbe der Hauptlinks (dunkel Sonnengelb, hell Anthrazit), seit 19. Oktober 2026 (Wunsch: «unter den
+   Menukästchen noch eine feine gelbe Linie, gerade»). Nur wo das Menü unter der Welle steht (bis 760 px); am Computer steht es über der Welle. */
+@media (max-width: 760px) {
+  .zsz-oben .topbar::after { content: ""; display: block; margin-top: 18px; border-top: 1px solid var(--hauptlink); }
+}
 /* Sprachwechsel (seit 3. Oktober 2026: Deutsch, English, Español): drei gut sichtbare Knöpfe im Kopf, zwischen Titel und Menü;
    die aktuelle Sprache gefüllt. Jeder Knopf führt auf dieselbe Seite in der anderen Sprache.
    Der Titel «Zu seiner Zeit» bleibt an seiner Stelle (Abstand unter den Hauptlinks, siehe oben). */
