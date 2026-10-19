@@ -10,17 +10,18 @@
 //   Musik: die Zeit der Musik treibt die Schnüre; der Schlag lässt die Perlen schwellen und die Kamera rucken, der Bass sprengt die Traube auf und
 //   lässt sie von innen rot glühen, die Höhen lassen die Funken blitzen; das Tor dunkelt zwischen den Schlägen ab. Bei jedem kräftigen Einsatz ein
 //   harter Schnitt in eine neue Einstellung (Kugel, Nah mit Schärfenzug, Säule, Schwarm; mit Text, Foto oder Video manchmal das Bild aus Perlen).
-//   01 Keim (aus dem Dunkeln wächst die Traube, die Fäden zeichnen sich) → 02 Traube → 03 Logo (die Perlen fädeln sich auf die Schlaufe des Signets,
-//   die Fäden winden sich als Strang um sie; film.js tippt den Schriftzug, der Punkt ist eine Perle) oder 03 Stille (alles sinkt ins Dunkel).
+//   01 Traube (in den ersten 0,9 s wächst sie aus dem Dunkeln, die Fäden zeichnen sich; bis zum 19. Oktober 2026 eine eigene Phase «Keim», die
+//   gehörte nicht hin) → 02 Logo (die Perlen fädeln sich auf die Schlaufe des Signets, die Fäden winden sich als Strang um sie; film.js tippt den
+//   Schriftzug, der Punkt ist eine Perle) oder 02 Stille (alles sinkt ins Dunkel).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich, kamera, ABSTAND, FOV } from "./gemeinsam.js?v=16";
-import { phase } from "./ablauf.js?v=16";
-import { gewebeKurven } from "./kurven.js?v=16";
-import { weichzeichnen } from "./analyse.js?v=16";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=16";
-import { RAUSCHEN } from "./gewebe.js?v=16";
-import { traubenBau, perlenLegen, einstellung, artBei, schlaufeWelt, perlenAufZuegen, h1 } from "./traubenplan.js?v=16";
+import { anteil, weich, kamera, ABSTAND, FOV } from "./gemeinsam.js?v=17";
+import { phase } from "./ablauf.js?v=17";
+import { gewebeKurven } from "./kurven.js?v=17";
+import { weichzeichnen } from "./analyse.js?v=17";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=17";
+import { RAUSCHEN } from "./gewebe.js?v=17";
+import { traubenBau, perlenLegen, einstellung, artBei, schlaufeWelt, perlenAufZuegen, h1 } from "./traubenplan.js?v=17";
 
 const VOR = 0.4, LN = 512;                                                  // Vorlauf des Films; Punkte der Schlaufe in der Textur
 
@@ -38,16 +39,18 @@ const PERLE_VERTEX = /* glsl */ `
     vR = aR * k; vB = b * k; s *= k; vTon = aTon; vTon.z *= smoothstep(0.06, 0.2, d) * step(1e-5, aR) * smoothstep(0.35, 0.9, k);
     vQ = position.xy * s;
     mv.xy += vQ;
-    gl_Position = d < 0.04 ? vec4(2.0, 2.0, 2.0, 1.0) : projectionMatrix * mv;
+    gl_Position = d < 0.04 || aR <= 0.0 ? vec4(2.0, 2.0, 2.0, 1.0) : projectionMatrix * mv;   // ausgeblendete Perlen (r = 0) gar nicht
   }`;
 const DECKUNG = /* glsl */ `
-  float deckung(float rho) { float a0 = vB > vR ? (vR * vR) / (vB * vB) : 1.0; return a0 * (1.0 - smoothstep(abs(vR - vB), vR + vB, rho)); }`;
+  // smoothstep mit gleichen Grenzen (r = 0) ist nicht festgelegt: auf Telefonen NaN, das der Bloom über das ganze Bild schmiert (Rückmeldung:
+  // «das Video bleibt dunkel»); darum r > 0 und die obere Grenze immer etwas grösser
+  float deckung(float rho) { if (vR <= 0.0) return 0.0; float a0 = vB > vR ? (vR * vR) / (vB * vB) : 1.0; return a0 * (1.0 - smoothstep(abs(vR - vB), max(vR + vB, abs(vR - vB) + 1e-5), rho)); }`;
 const PERLE_FRAGMENT = /* glsl */ `
   uniform float uHell, uGlut; varying vec2 vQ; varying float vR, vB; varying vec4 vTon;
   ${DECKUNG}
   void main() {
     float rho = length(vQ), al = deckung(rho) * step(0.001, vTon.z);
-    if (al < 0.002) discard;
+    if (!(al >= 0.002)) discard;                                           // so fällt auch ein NaN weg
     vec2 q = vQ / max(vR, 1e-6); float l2 = dot(q, q);
     if (l2 > 1.0) { q *= inversesqrt(l2); l2 = 1.0; }
     vec3 n = vec3(q, sqrt(max(0.0, 1.0 - l2))), L = normalize(vec3(-0.5, 0.72, 0.55));
@@ -59,23 +62,25 @@ const PERLE_FRAGMENT = /* glsl */ `
     if (vTon.w > 0.5) { tief = vec3(0.06); mitte = vec3(0.5, 0.48, 0.47); licht = vec3(1.3); perl = 0.0; }
     vec3 c = mix(tief, mitte, smoothstep(0.0, 0.55, dif));
     c = mix(c, licht, pow(smoothstep(0.5, 1.0, dif), 1.4));
-    c += mitte * 0.45 * pow(1.0 - n.z, 2.5) * (0.35 + 0.65 * (1.0 - dif));  // Licht durch den Rand (wie Gelee), vor allem auf der Schattenseite
+    float rand = max(1.0 - n.z, 0.0);
+    c += mitte * 0.45 * pow(rand, 2.5) * (0.35 + 0.65 * (1.0 - dif));  // Licht durch den Rand (wie Gelee), vor allem auf der Schattenseite
     // Perlmutt: Farben dünner Schichten (Interferenz) – der Ton wandert mit dem Blickwinkel zum Rand hin und über die Perle, je Perle verschoben;
     // am stärksten am Rand und im Licht, im Schatten nur ein Hauch
     float schicht = vTon.x * 0.7 + vTon.y * 0.4 + 1.1 * (1.0 - n.z) + 0.38 * dot(q, vec2(0.8, -0.6)) + 0.12 * sin(7.0 * q.x + 5.0 * q.y + vTon.x * 6.0);
     vec3 iri = 0.5 + 0.5 * cos(6.2832 * (schicht + vec3(0.0, 0.33, 0.67)));
-    float fres = 0.18 + 0.82 * pow(1.0 - n.z, 1.6);
+    float fres = 0.18 + 0.82 * pow(rand, 1.6);
     c += perl * (iri - 0.35) * vec3(0.95, 0.88, 1.0) * 0.5 * fres * (0.15 + 0.85 * dif);
     c += perl * vec3(1.0, 0.86, 0.84) * 0.1 * pow(max(dot(n, L), 0.0), 3.0);   // der weiche Lüster des Perlmutts
     float rz = max(reflect(-L, n).z, 0.0);
     c += mix(vec3(1.0, 0.92, 0.9), 0.6 + 0.6 * iri, 0.35 * perl) * (0.22 * pow(rz, 10.0) + 1.4 * pow(rz, 80.0));
-    c += vec3(1.0, 0.78, 0.76) * 0.12 * pow(1.0 - n.z, 4.0) * smoothstep(0.3, 0.9, dif);   // ein feuchter Glanz am Rand im Licht
+    c += vec3(1.0, 0.78, 0.76) * 0.12 * pow(rand, 4.0) * smoothstep(0.3, 0.9, dif);   // ein feuchter Glanz am Rand im Licht
     vec3 glut = vec3(1.0, 0.12, 0.05) * uGlut * vTon.y;
     c += glut * (0.35 + 0.8 * n.z) * 1.15;                                   // von innen glühend
     // unscharf: zur mittleren Farbe der Perle (der Glanzpunkt verläuft, vom Schimmer bleibt ein heller Hauch)
     vec3 mittel = mitte * 0.62 + licht * 0.24 + perl * vec3(0.06, 0.05, 0.07) + glut * 0.9;
     c = mix(c, mittel, smoothstep(0.0, 1.0, vB / (vR + vB)));
     c *= uHell * vTon.z;
+    if (!(c.r + c.g + c.b >= 0.0)) discard;
     gl_FragColor = vec4(c * al, al);
   }`;
 // nur die Tiefe, wo die Perle deckt (die Fäden dahinter fallen weg, die vorn bleiben)
@@ -146,10 +151,12 @@ const FADEN_VERTEX = /* glsl */ `
     float sicht = step(u, uWachs * (1.0 + h.x) ) * smoothstep(0.03, 0.15, d);
     // im Logo: der Strang hell und dünn (viele Fäden übereinander – sonst überstrahlt er alles), die Hülle schwach
     float imLogo = mix(1.0, huelle ? 0.38 : 0.16, zu);
-    vA = uHell * imLogo * (0.45 + 0.9 * h2.z) * pow(sin(3.1416 * u), 0.5 * (1.0 - zu * (huelle ? 0.0 : 1.0))) * sicht / (1.0 + 0.4 * unscharf);
+    // die Enden blenden aus; sin(π · u) ist bei u = 1 knapp negativ, und pow einer negativen Zahl (wie pow(0, 0)) ist auf Telefonen NaN
+    float enden = mix(sqrt(max(sin(3.14159 * u), 0.0)), 1.0, zu * (huelle ? 0.0 : 1.0));
+    vA = uHell * imLogo * (0.45 + 0.9 * h2.z) * enden * sicht / (1.0 + 0.4 * unscharf);
     vFarbe = mix(vec3(0.95, 0.94, 0.93), vec3(1.0, 0.42, 0.34), clamp(step(0.86, h2.x) * 0.7 + uGlut * 0.6 * h.x, 0.0, 1.0) * (1.0 - zu));
   }`;
-const FADEN_FRAGMENT = /* glsl */ `varying float vA; varying vec3 vFarbe; void main() { gl_FragColor = vec4(vFarbe * vA, 1.0); }`;
+const FADEN_FRAGMENT = /* glsl */ `varying float vA; varying vec3 vFarbe; void main() { if (!(vA >= 0.0)) discard; gl_FragColor = vec4(vFarbe * vA, 1.0); }`;
 
 // der Rauch: fleckiges Rauschen über das Bild (nur Flecken, sonst ein grauer Schleier), mit der Glut rötlich
 const RAUCH_VERTEX = /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
@@ -167,11 +174,12 @@ const RAUCH_FRAGMENT = /* glsl */ `
 
 export function traube(g, teil) {
   const { renderer, A, B, H } = g, a = B / H;
-  const K = phase(teil, "keim"), G = phase(teil, "traube"), Lg = phase(teil, "logo"), St = phase(teil, "stille");
+  const G = phase(teil, "traube"), Lg = phase(teil, "logo"), St = phase(teil, "stille");
   const N = g.test ? 240 : g.grob ? 560 : 1120, F = g.test ? 70 : g.grob ? 160 : 300, P = g.test ? 70 : g.grob ? 110 : 160;
   const T = tonOderErsatz(g.ton);
-  // die Zustände des Gewebes, aber höchstens etwa jede Sekunde ein Schnitt (bei einer Stimme gab es sonst fast bei jeder Silbe eine neue Einstellung)
-  const ZS = gewebeZustaende(T, G[0] + VOR, G[1] + VOR).reduce((a, z) => (!a.length || z.t - a.at(-1).t >= 1.0 ? [...a, z] : a), []).map((z, i) => ({ ...z, nr: i + 1 }));
+  // die Zustände des Gewebes, aber höchstens etwa jede Sekunde ein Schnitt (bei einer Stimme gab es sonst fast bei jeder Silbe eine neue Einstellung),
+  // der erste frühestens 1,4 s nach Beginn (die Traube wächst erst aus dem Dunkeln)
+  const ZS = gewebeZustaende(T, G[0] + VOR, G[1] + VOR).reduce((a, z) => ((a.length ? z.t - a.at(-1).t : z.t - G[0] - VOR - 0.4) >= 1.0 ? [...a, z] : a), []).map((z, i) => ({ ...z, nr: i + 1 }));
   const mitBild = g.quelle !== "ton";
   const bau = traubenBau(N), z = bau.z;
 
@@ -241,7 +249,7 @@ export function traube(g, teil) {
       const laut = wert(T.laut, film), stoss = wert(T.stoss, film), tief = wert(T.stossTief, film), hoch = wert(T.stossHoch, film), tor = wert(T.tor, film), dreh = wert(T.dreh, film);
       const s = 0.12 * tau + 0.45 * wert(T.energie, film);
       const seit = istLogo ? tau - Lg[0] : zs.nr ? film - zs.t0 : Math.max(0, tau);
-      const wachs = weich(anteil(tau, 0, K[1] + 0.6)), still = St ? weich(anteil(tau, St[0], St[1] - 0.3)) : 0;
+      const wachs = weich(anteil(tau, 0, 0.9)), still = St ? weich(anteil(tau, St[0], St[1] - 0.3)) : 0;
       const zuLogo = istLogo ? weich(anteil(seit, 0, 1.5)) : 0, ruhig = istLogo ? weich(anteil(seit, 1.3, 2.8)) : 0;
       const blitz = blitze.reduce((m, x) => (film >= x ? Math.max(m, Math.exp(-(film - x) / 0.18)) : m), 0) * (1 - zuLogo);
       const glut = (0.18 * laut + 0.95 * tief + 0.45 * stoss * stoss + 0.8 * blitz) * (1 - 0.75 * ruhig) * (1 - still);
@@ -277,7 +285,7 @@ export function traube(g, teil) {
           } else if (lage[o + 4] < 0.5) lage[o + 3] = 0;
         }
         // der Keim: aus der Mitte wachsend, die Perlen erscheinen nacheinander
-        if (wachs < 1) { const w = 0.35 + 0.65 * wachs; lage[o] *= w; lage[o + 1] *= w; lage[o + 2] *= w; lage[o + 3] *= weich(anteil(tau, 0.05 + 0.75 * z[zi + 6], 0.45 + 0.75 * z[zi + 6])); }
+        if (wachs < 1) { const w = 0.35 + 0.65 * wachs; lage[o] *= w; lage[o + 1] *= w; lage[o + 2] *= w; lage[o + 3] *= weich(anteil(tau, 0.02 + 0.45 * z[zi + 6], 0.3 + 0.45 * z[zi + 6])); }
         if (still > 0) { lage[o + 1] -= still * (0.25 + 0.5 * z[zi + 6]); lage[o + 3] *= 1 - weich(anteil(still, 0.2 + 0.5 * z[zi + 6], 0.6 + 0.4 * z[zi + 6])); }
         if (zuLogo > 0) {
           // aufgefädelt auf die Schlaufe – nacheinander; wer keinen Platz hat, treibt hinaus und vergeht (Funken bleiben noch einen Moment)

@@ -7,8 +7,9 @@
 // Irrfahrt (seit 18. Oktober 2026, Wunsch nach einem Video: ein Faden irrt durch einen Würfel aus Licht – «gerne viiiiiel krasser»):
 //   01 Würfel (er zeichnet sich, der Faden beginnt) → 02 Irrfahrt (der Faden quillt mit der Musik zu Rauch auf, bei Schlägen springt alles) →
 //   03 Logo (mit Signet) oder 03 Stille (der Faden zieht sich zusammen). Schwarz; danach kein Stehen, das letzte Bild hält.
-// Traube (seit 19. Oktober 2026, Wunsch nach einem Video «UVA»: glänzende rote Perlen in einer Kugel aus Fäden): 01 Keim (aus dem Dunkeln wächst
-//   die Traube) → 02 Traube (Schnitte im Takt, der Bass lässt sie glühen) → 03 Logo (die Perlen fädeln sich auf die Schlaufe) oder 03 Stille.
+// Traube (seit 19. Oktober 2026, Wunsch nach einem Video «UVA»: glänzende rote Perlen in einer Kugel aus Fäden): 01 Traube (wächst gleich aus dem
+//   Dunkeln; Schnitte im Takt, der Bass lässt sie glühen) → 02 Logo (die Perlen fädeln sich auf die Schlaufe) oder 02 Stille. Ohne eigene Phase
+//   «Keim» (Rückmeldung: «der Keim … gehört da nicht hin»).
 // Video (seit 18. Oktober 2026, das Video selbst ist das Bild, video.js): 01 Video (so lang wie der Ton) → 02 Logo (das Video taucht ins Schwarz)
 //   oder 02 Ende (das letzte Bild hält).
 // Der Aufbau (Kette aus Teilen, Phasen, laufend) ist derselbe wie in PHORMA II, mit einem einzigen Teil.
@@ -54,7 +55,7 @@ export function rolle({ art = KETTE, laenge = null, signet = false } = {}) {
   }
   if (art === "traube") {
     const ende = signet ? ["logo", "Logo", LOGO] : ["stille", "Stille", 2.4];
-    const phasen = [["keim", "Keim", 1.2], ["traube", "Traube", laenge ? Math.max(3.2, laenge - 1.2 - ende[2]) : 14], ende];
+    const phasen = [["traube", "Traube", laenge ? Math.max(3.2, laenge - ende[2]) : 15.2], ende];
     return { art, erst: true, letzt: true, vorher: null, naechstes: null, phasen, dauer: phasen.reduce((s, p) => s + p[2], 0), ueber: 0, uebergang: "schnitt" };
   }
   const phasen = signet
