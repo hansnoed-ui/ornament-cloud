@@ -140,7 +140,8 @@
 
 /* Telefon: Kaufleiste unten, sobald die Angaben aus dem Bild sind */
 .leiste { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: none; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 20px calc(10px + env(safe-area-inset-bottom)); background: var(--surface); border-top: 1px solid var(--border); font-variant-numeric: tabular-nums; }
-.leiste .kaufen { min-height: 42px; padding: 8px 20px; }
+.leiste span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.leiste .kaufen { flex: none; min-height: 42px; padding: 8px 20px; white-space: nowrap; }   /* der Knopf bricht nie um (Rückmeldung vom 19. Oktober 2026) */
 @media (max-width: 760px) {
   .werkseite { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .galerie { display: contents; }                                                    /* Bild, Angaben, dann erst der Massstab */
@@ -149,6 +150,7 @@
   .massstab { order: 3; margin-top: 24px; }
   .massstab svg { max-width: 280px; }
   .leiste.zeigen { display: flex; }
+  body:has(.leiste.zeigen) { padding-bottom: 72px; }                               /* die Leiste deckt den Fuss (Impressum) nie zu */
   .art-raster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 16px; }
   .werk h3 { font-size: 1.05rem; }
 }

@@ -138,6 +138,7 @@ Eine Checkliste, bitte mit einer Treuhänderin oder einem Treuhänder prüfen.
 7. Der Dunkelmodus färbt Bilder nie um; sie liegen auf einem neutralen Mittelton.
 8. Jede Zusage der Seite wird im Paket eingelöst (Zertifikat, versicherter Versand).
 9. Tonfall: per du, sachlich, keine Wörter wie «einzigartig» oder «exklusiv».
+10. Nie eine Bildbeschreibung: Zu einem Werk stehen nur sachliche Angaben, etwa «Signiert und nummeriert.» (Wunsch vom 19. Oktober 2026).
 
 ## 9. Offene Entscheide für dich
 
