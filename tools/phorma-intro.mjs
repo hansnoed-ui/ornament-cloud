@@ -1,14 +1,17 @@
-// Intro der Website (assets/start-intro.mp4): die Irrfahrt aus PHORMA III (Wunsch vom 18. Oktober 2026: «das Video des Tests, welches im
-// Ornament.cloud-Logo endet, als neue Intro-Sequenz der Website, mit Option Ton an/aus und Skip intro»). Gerechnet von der Anwendung selbst
-// (alpha/phorma-iii/, Effekt Irrfahrt, Quelle «Nur Ton», Logo am Schluss) mit einer Audiodatei, Bild für Bild in voller Grösse mit
+// Intro der Website (assets/start-intro.mp4): seit 19. Oktober 2026 der Lichtwürfel aus PHORMA III (Wunsch: «diese Animation auch als Website
+// Intro … gerne mit dem jetzigen Sound»), vorher die Irrfahrt (Wunsch vom 18. Oktober 2026: «das Video des Tests, welches im Ornament.cloud-Logo
+// endet, als neue Intro-Sequenz der Website, mit Option Ton an/aus und Skip intro»). Gerechnet von der Anwendung selbst (alpha/phorma-iii/,
+// Effekt --ablauf, Vorgabe lichtwuerfel, Quelle «Nur Ton», Logo am Schluss) mit einer Audiodatei, Bild für Bild in voller Grösse mit
 // Bewegungsunschärfe, dann mit ffmpeg zu H.264 (Bereich tv, BT.709, schneller Start) und AAC zusammengesetzt. Zwei Fassungen: 16 : 9 quer
 // (1920 × 1080, assets/start-intro-quer.mp4, für Laptop und Bildschirm) und 4 : 5 hoch (1080 × 1350, assets/start-intro.mp4, fürs Telefon).
 // Ohne Filmkorn und ohne Entrauschen, in voller Grösse (Rückmeldung: «das Intro sieht im Browser am Laptop nicht gut aus, qualitativ und vom
 // Bildschirmformat» – das Korn ergab in voller Grösse 27 MB, entrauscht und auf 864 px verkleinert wurden die Haarlinien weich und matschig).
 //
-//   NODE_PATH=$(npm root -g) node tools/phorma-intro.mjs <audiodatei> [--format 16:9|4:5] [--proben 4] [--crf 27] [--aus …] [--ordner <bilder>]
-// --ordner: ein Ordner mit schon gerechneten Bildern (nach einem Abbruch); sie werden weiterverwendet, nur das letzte wird neu gerechnet.
-// Braucht ffmpeg. Die Musik des Intros vom 18. Oktober 2026 ist der Ton des Testvideos «Claude_444.mp4» (nicht im Repository).
+//   NODE_PATH=$(npm root -g) node tools/phorma-intro.mjs <audiodatei> [--ablauf lichtwuerfel|irrfahrt] [--format 16:9|4:5] [--proben 4] [--crf 27]
+//                                                         [--aus …] [--ordner <bilder>]
+// --ordner: ein Ordner mit schon gerechneten Bildern (nach einem Abbruch); sie werden weiterverwendet, nur das letzte wird neu gerechnet; er bleibt.
+// Braucht ffmpeg. Die Musik des Intros vom 18. Oktober 2026 ist der Ton des Testvideos «Claude_444.mp4» (nicht im Repository); sie steckt auch im
+// Intro selbst: ffmpeg -i assets/start-intro-quer.mp4 -vn ton.wav
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
@@ -23,7 +26,9 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const arg = (name, std) => { const i = process.argv.indexOf(`--${name}`); return i > 0 ? process.argv[i + 1] : std; };
 const ton = process.argv[2] && !process.argv[2].startsWith("--") ? resolve(process.argv[2]) : null;
 if (!ton) { console.error("Audiodatei fehlt: node tools/phorma-intro.mjs <audiodatei>"); process.exit(1); }
-const format = arg("format", "16:9"), proben = Number(arg("proben", 4)), crf = arg("crf", format === "16:9" ? "27" : "30");   // hoch fürs Telefon unter 5 MB
+// crf 20 / 27 (hoch fürs Telefon unter 5 MB) und aq-mode 3 (mehr Bits für dunkle, flache Flächen): mit 27 / 30 zerfiel der feine Schein um die Linien auf Schwarz in Blöcke
+// (Rückmeldung zum Lichtwürfel-Intro: «ganz zum Schluss scheint das Logo relativ stark verpixelt»); fast alles ist schwarz, die Dateien bleiben klein
+const ablauf = arg("ablauf", "lichtwuerfel"), format = arg("format", "16:9"), proben = Number(arg("proben", 4)), crf = arg("crf", format === "16:9" ? "20" : "27");
 const aus = resolve(root, arg("aus", format === "16:9" ? "assets/start-intro-quer.mp4" : "assets/start-intro.mp4"));
 
 const { startServer } = await import(new URL("tools/serve-orma.mjs", `file://${root}`).href);
@@ -31,9 +36,9 @@ const server = await startServer(0);
 const browser = await playwright.chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
 const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
 page.on("pageerror", (e) => console.error("Fehler:", e.message));
-await page.addInitScript((format) => {
-  for (const [k, v] of [["ablauf", "irrfahrt"], ["quelle", "ton"], ["format", format], ["signet", "1"], ["frickeln", "0"], ["tonart", "musik"]]) localStorage.setItem(`phorma-iii.${k}`, v);
-}, format);
+await page.addInitScript(([ablauf, format]) => {
+  for (const [k, v] of [["ablauf", ablauf], ["quelle", "ton"], ["format", format], ["signet", "1"], ["frickeln", "0"], ["tonart", "musik"]]) localStorage.setItem(`phorma-iii.${k}`, v);
+}, [ablauf, format]);
 await page.goto(`http://localhost:${server.address().port}/alpha/phorma-iii/`);
 await page.setInputFiles("#tondatei", ton);
 await page.waitForFunction(() => window.__phorma?.ton && window.__phorma?.buehneFertig && window.__phorma?.sz?.buehne, null, { timeout: 300_000 });
@@ -61,6 +66,6 @@ for (let i = ab; i < n; i++) {
 await browser.close(); server.close();
 execFileSync("ffmpeg", ["-v", "error", "-y", "-framerate", "30", "-i", join(ordner, "b%04d.png"), "-i", ton, "-map", "0:v", "-map", "1:a", "-t", String(n / 30),
   "-vf", "scale=in_range=full:out_range=tv,format=yuv420p", "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv",
-  "-c:v", "libx264", "-preset", "veryslow", "-tune", "film", "-crf", crf, "-c:a", "aac", "-b:a", "128k", "-af", "afade=t=out:st=" + (n / 30 - 1).toFixed(2) + ":d=1", "-movflags", "+faststart", aus], { stdio: "inherit" });
-rmSync(ordner, { recursive: true, force: true });
+  "-c:v", "libx264", "-preset", "veryslow", "-tune", "film", "-crf", crf, "-x264-params", "aq-mode=3:aq-strength=1.0", "-c:a", "aac", "-b:a", "128k", "-af", "afade=t=out:st=" + (n / 30 - 1).toFixed(2) + ":d=1", "-movflags", "+faststart", aus], { stdio: "inherit" });
+if (!arg("ordner")) rmSync(ordner, { recursive: true, force: true });       // ein eigener Ordner bleibt (neu kodieren ohne neu zu rechnen)
 console.log(`fertig: ${aus}`);

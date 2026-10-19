@@ -383,7 +383,7 @@ await check("Startanimation: neue Sitzung deckt die Seite schwarz ab, spielt das
   assert.ok(flaeche.z >= 1000);
   assert.equal(flaeche.bg, "rgb(0, 0, 0)", "schwarz wie das Video");
   const v = await page.evaluate(() => window.__start);
-  assert.deepEqual(v.src, ["assets/start-intro-quer.mp4?v=1"], "im Querformat die Fassung 16 : 9");
+  assert.deepEqual(v.src, ["assets/start-intro-quer.mp4?v=2"], "im Querformat die Fassung 16 : 9");
   assert.equal(v.play, 1);
   const video = await page.locator("#start video").evaluate((e) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height, x: r.left + r.width / 2, y: r.top + r.height / 2, muted: e.muted }; });
   const [vw, vh] = await page.evaluate(() => [innerWidth, innerHeight]), voll = Math.min(vw, (vh * 16) / 9);   // wie 100vw / 100vh (mit dem Streifen des Bildlaufbalkens)
@@ -425,7 +425,7 @@ await check("Startanimation: neue Sitzung deckt die Seite schwarz ab, spielt das
 
 await check("Startanimation: im dunklen Modus dasselbe Intro auf Schwarz", async () => {
   const { ctx, page, errors } = await startKontext({ colorScheme: "dark" });
-  assert.deepEqual((await page.evaluate(() => window.__start)).src, ["assets/start-intro-quer.mp4?v=1"]);
+  assert.deepEqual((await page.evaluate(() => window.__start)).src, ["assets/start-intro-quer.mp4?v=2"]);
   assert.equal(await page.locator("#start").evaluate((e) => getComputedStyle(e).backgroundColor), "rgb(0, 0, 0)");
   assert.equal(await page.locator(".start-weiter").evaluate((e) => getComputedStyle(e).color), "rgb(240, 138, 93)");
   assert.deepEqual(errors, []);
@@ -434,7 +434,7 @@ await check("Startanimation: im dunklen Modus dasselbe Intro auf Schwarz", async
 
 await check("Startanimation: hochkant (Telefon) die Fassung 4 : 5, so breit wie das Fenster", async () => {
   const { ctx, page, errors } = await startKontext({ viewport: { width: 390, height: 844 } });
-  assert.deepEqual((await page.evaluate(() => window.__start)).src, ["assets/start-intro.mp4?v=2"]);
+  assert.deepEqual((await page.evaluate(() => window.__start)).src, ["assets/start-intro.mp4?v=3"]);
   const [w, h, breite] = await page.locator("#start video").evaluate((e) => { const r = e.getBoundingClientRect(); return [r.width, r.height, e.parentElement.getBoundingClientRect().width]; });
   assert.ok(Math.abs(w - breite) < 1 && Math.abs(w / h - 0.8) < 0.01, `4 : 5, so breit wie das Fenster (${w} × ${h})`);
   assert.deepEqual(errors, []);

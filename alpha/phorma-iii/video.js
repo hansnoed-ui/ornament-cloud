@@ -14,10 +14,10 @@
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Export Bild für Bild); der Datamosh merkt sich nur seine letzten zwei
 // Schritte, damit er nicht jedes Mal von vorn rechnet (rückwärts oder in einem anderen Crack beginnt er neu, das Ergebnis ist dasselbe).
 import * as THREE from "three";
-import { anteil, weich, quadMaterial, ziel } from "./gemeinsam.js?v=13";
-import { phase } from "./ablauf.js?v=13";
-import { rissBei, moshQuellen, moshZeit, NAMEN, SCHICHTEN, ABSTAND, TAKT } from "./risse.js?v=13";
-import { frickelBild } from "./bildfrickel.js?v=13";
+import { anteil, weich, quadMaterial, ziel } from "./gemeinsam.js?v=14";
+import { phase } from "./ablauf.js?v=14";
+import { rissBei, moshQuellen, moshZeit, NAMEN, SCHICHTEN, ABSTAND, TAKT } from "./risse.js?v=14";
+import { frickelBild } from "./bildfrickel.js?v=14";
 
 const VOR = 0.4;
 const LUMA = /* glsl */ `float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }`;
