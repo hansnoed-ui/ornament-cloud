@@ -203,6 +203,18 @@ test("Wachstum: die Linie wächst aus dem Keim ins Motiv (nicht in den Grund), d
   assert.deepEqual(Array.from(einzeln.at(-1)), Array.from(b.lagen.subarray(b.ab.at(-2) * 2)), "das letzte Bild gleich");
 });
 
+test("Video als Quelle: es läuft ab dem ersten von Montage und Wachstum bis zum Ende; das Standbild ist sein letztes Bild", async () => {
+  const F = await import(new URL("filmquelle.js", P).href);
+  const ohne = F.videoPlan("physarum+tiefe+tuch");
+  assert.equal(ohne.lebendig, false); assert.equal(ohne.dauer, 0, "ohne Montage und Wachstum steht das Video: das Standbild ist sein erstes Bild");
+  const K = A.kette("tuch+wachstum+montage"), p = F.videoPlan("tuch+wachstum+montage");
+  assert.ok(p.lebendig && Math.abs(p.von - K.teile[1].von) < 1e-9 && Math.abs(p.von + p.dauer - K.dauer) < 1e-9, "vom Wachstum bis zum Schluss");
+  assert.equal(F.videoStelle(p, 0), 0); assert.equal(F.videoStelle(p, p.von + 2), 2); assert.equal(F.videoStelle(p, 999), p.dauer);
+  const z = A.zeitachse({ ablauf: "montage", tempo: "ruhig" }), pm = F.videoPlan("montage");
+  assert.ok(Math.abs(F.videoStelleBei(z, pm, z.abschnitt.von + 1.3) - 1) < 1e-9, "ruhig: das Video läuft langsamer");
+  assert.ok(Math.abs(F.videoStelleBei(z, pm, z.dauer) - pm.dauer) < 1e-9, "nach der Kette das Standbild");
+});
+
 test("KI-Tiefe: wird an die Kanten gelegt und auf 0..1 gebracht", () => {
   const w = 60, h = 80, roh = new Float32Array(w * h), hell = new Float32Array(w * h);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { roh[y * w + x] = 3 + 7 * (y / h); hell[y * w + x] = x < w / 2 ? 0.2 : 0.8; }
@@ -238,7 +250,8 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.ok(!/<script[^>]+src="https?:/.test(html), "keine Skripte von aussen");
   for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
   assert.match(html, /data-wahl="physarum\+tiefe\+tuch"/, "die ganze Kette als Karte");
-  assert.ok(!/data-wahl="(gewebe|struktur)"|data-quelle=|id="(tondatei|videodatei|text|frickeln)"/.test(html), "kein Gewebe, kein Ton, kein Text, kein Video: das ist PHORMA III");
+  assert.ok(!/data-wahl="(gewebe|struktur)"|data-quelle=|id="(tondatei|videodatei|text|frickeln)"/.test(html), "kein Gewebe, kein Ton, kein Text: das ist PHORMA III");
+  assert.match(html, /id="datei" accept="image\/\*,video\/\*"/, "Foto oder Video (seit Etappe 2 von Montage und Wachstum)");
   assert.match(html, /href="\.\.\/phorma-iii\/"/, "Hinweis auf PHORMA III");
   for (const f of ["gewebe.js", "ton.js", "tonspur.js", "frickeln.js", "kurven.js", "textbild.js"]) assert.ok(!readdirSync(P).includes(f), `ohne ${f}`);
   assert.ok(!/data-(wahl|effekt)="(stich|muster)"|data-(strich|muster)=/.test(html), "weder Stich noch Morphogenese");

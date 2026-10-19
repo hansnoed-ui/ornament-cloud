@@ -212,6 +212,7 @@ Aufbau: `analyse.js` (ohne DOM, im Worker) versteht das Foto, `buehne.js` mischt
 - Stabil nur mit Schritt ≤ 0,2 · R: mit festem Höchstschritt (1 Punkt) schaukelte sich die Linie in dichten Stellen auf und teilte sich lawinenartig (20 000 → 160 000 Punkte).
 - Wo sie wächst: Farbabstand zum ruhigen Bildrand (Porträt vor Wand), sonst Tiefe; der Abstand aus der Helligkeit im Tonumfang des Motivs. Die Tonwerte zusätzlich beim Zeichnen (heller und breiter im Hellen) – die Dichte allein liest sich zu schwach.
 - Zeichnen: instanzierte Vierecke je Strecke, Abstand zur Strecke im Fragment-Shader, `side: DoubleSide` (die y-Spiegelung dreht die Windung), Mischen mit `MaxEquation`; wächst der Puffer, `geometry._maxInstanceCount = undefined` setzen – three.js zeichnet sonst nie mehr Instanzen als beim ersten Puffer.
+- Mit Video: die Abstände je zwei Filmbilder aus einem kleinen Bild des Videos, die Maske aber fest vom Standbild – wechselt sie mit, schiebt sie die Punkte zusammen und die Nachbarsuche explodiert; die Nachbarsuche nicht nach einer Zahl abbrechen (zählt nur die oberen Zeilen, die Linie verzieht sich).
 
 ### Bühne: Zeitfront, Bewegungsunschärfe, Einrasten (`buehne.js`)
 - **Zeitfront** statt Überblenden: die Pixel wechseln nach der Tiefe (nah zuerst), an der Front ein Spalt, der das alte Bild verzieht (Slit-Scan-Anmutung), Kupfer nur schwach (0,18), sonst ein Schleier.
