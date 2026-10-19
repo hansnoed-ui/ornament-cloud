@@ -26,9 +26,9 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const arg = (name, std) => { const i = process.argv.indexOf(`--${name}`); return i > 0 ? process.argv[i + 1] : std; };
 const ton = process.argv[2] && !process.argv[2].startsWith("--") ? resolve(process.argv[2]) : null;
 if (!ton) { console.error("Audiodatei fehlt: node tools/phorma-intro.mjs <audiodatei>"); process.exit(1); }
-// crf 20 / 23 und aq-mode 3 (mehr Bits für dunkle, flache Flächen): mit 27 / 30 zerfiel der feine Schein um die Linien auf Schwarz in Blöcke
+// crf 20 / 27 (hoch fürs Telefon unter 5 MB) und aq-mode 3 (mehr Bits für dunkle, flache Flächen): mit 27 / 30 zerfiel der feine Schein um die Linien auf Schwarz in Blöcke
 // (Rückmeldung zum Lichtwürfel-Intro: «ganz zum Schluss scheint das Logo relativ stark verpixelt»); fast alles ist schwarz, die Dateien bleiben klein
-const ablauf = arg("ablauf", "lichtwuerfel"), format = arg("format", "16:9"), proben = Number(arg("proben", 4)), crf = arg("crf", format === "16:9" ? "20" : "23");
+const ablauf = arg("ablauf", "lichtwuerfel"), format = arg("format", "16:9"), proben = Number(arg("proben", 4)), crf = arg("crf", format === "16:9" ? "20" : "27");
 const aus = resolve(root, arg("aus", format === "16:9" ? "assets/start-intro-quer.mp4" : "assets/start-intro.mp4"));
 
 const { startServer } = await import(new URL("tools/serve-orma.mjs", `file://${root}`).href);
