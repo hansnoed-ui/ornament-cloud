@@ -79,15 +79,7 @@
       "sprache": "de",
       "uebersetzung": null,
       "text": "Die Kunst benutzt unser Nervensystem und unseren Geist, um sich selbst zu verwirklichen.\n\n#GutenMorgen",
-      "medien": [
-        {
-          "typ": "bild",
-          "datei": "medien/2/bild-1.webp",
-          "breite": 359,
-          "hoehe": 414,
-          "alt": "Standbild eines Videos: abstraktes, gemaltes Bild mit blauen, roten und orangefarbenen Flächen, im Zentrum ein stilisiertes Gesicht mit geöffnetem Mund, oben eine orange Sonne."
-        }
-      ],
+      "medien": [],
       "zitiert": null,
       "kennzahlen": {
         "reaktionen": null,
@@ -116,7 +108,7 @@
       "verweise": [],
       "status": "unbekannt",
       "geprueft": null,
-      "geaendert": "2026-10-19T08:36:31Z"
+      "geaendert": "2026-10-19T08:59:16Z"
     }
   ]
 }
