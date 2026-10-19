@@ -117,6 +117,7 @@
 .angaben .betrag .stand { font-size: 0.95rem; }
 .angaben .handeln { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
 .angaben .klein { margin: 0; font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+.angaben .klein a { color: inherit; }
 .daten { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0; padding: 16px 0 0; border-top: 1px solid var(--border); font-size: 0.9rem; }
 .daten dt { color: var(--muted); }
 .daten dd { margin: 0; font-variant-numeric: tabular-nums; }
