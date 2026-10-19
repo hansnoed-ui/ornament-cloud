@@ -79,11 +79,9 @@ def baue_onnx(gewichte, ziel):
     onnx.save(modell, ziel)
 
 
-def modell_pfad(art):
+def gewichte(art):
+    """Die Gewichte als Wörterbuch; beim ersten Mal von GitHub geladen und geprüft."""
     name, sha = MODELLE[art]
-    onnx_pfad = CACHE / f"{name}.onnx"
-    if onnx_pfad.exists():
-        return onnx_pfad
     CACHE.mkdir(parents=True, exist_ok=True)
     pth = CACHE / f"{name}.pth"
     if not pth.exists():
@@ -92,7 +90,13 @@ def modell_pfad(art):
     if hashlib.sha256(pth.read_bytes()).hexdigest() != sha:
         pth.unlink()
         sys.exit(f"Prüfsumme von {name}.pth stimmt nicht, Datei gelöscht.")
-    baue_onnx(lade_pth(pth), onnx_pfad)
+    return lade_pth(pth)
+
+
+def modell_pfad(art):
+    onnx_pfad = CACHE / f"{MODELLE[art][0]}.onnx"
+    if not onnx_pfad.exists():
+        baue_onnx(gewichte(art), onnx_pfad)
     return onnx_pfad
 
 

@@ -3,3 +3,4 @@ src/orma/dist/
 
 # Python-Umgebung von tools/hochrendern (wird beim ersten Aufruf angelegt)
 tools/hochrendern/.venv/
+tools/hochrendern/__pycache__/

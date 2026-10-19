@@ -1,6 +1,6 @@
 ---
 name: video-hochrendern
-description: Fertige Videos in höherer Auflösung ausgeben (hochrendern, upscalen, 4K, schärfer, Super-Resolution) – eigene Remotion-Videos neu rendern, alle anderen lokal mit Real-ESRGAN über tools/hochrendern/ (CPU, ohne API, ohne Kosten). Verwenden, wenn ein Video grösser, schärfer oder in 4K gewünscht ist, auch für Videos, die nicht aus diesem Repo stammen.
+description: Fertige Videos in höherer Auflösung ausgeben (hochrendern, upscalen, 4K, schärfer, Super-Resolution) – eigene Remotion- und PHORMA-III-Videos neu rendern, alle anderen mit Real-ESRGAN, im Container über tools/hochrendern/ (CPU) oder im Browser auf der eigenen Grafikkarte über alpha/hochrendern/ (WebGPU), ohne API und ohne Kosten. Verwenden, wenn ein Video grösser, schärfer oder in 4K gewünscht ist, auch für Videos, die nicht aus diesem Repo stammen.
 ---
 
 # Videos hochrendern
@@ -12,7 +12,10 @@ Ein Upscaler errät Details, ein neuer Render zeichnet sie: Schrift und Linien b
 - **Remotion** (`src/videos/`, alle Videos aus `assets/`, deren Quelle in `src/videos/README.md` steht): dieselbe Zeile wie dort, dazu `--scale=2`, zum Beispiel
   `cd src/videos && npx remotion render OrnaVideo out/orna-2160x3840.mp4 --codec=h264 --crf=20 --scale=2`
   (danach wie im README nach `yuv420p` umwandeln). Die Web-Fassungen in `assets/` sind oft kleiner als die Composition (z. B. 810 × 1080 statt 1080 × 1440); `--scale` rechnet von der Composition aus.
-- **Three.js-Exporte** (Skill `threejs-spektakel`, `tools/phorma-intro.mjs` u. Ä.): in höherer Auflösung neu exportieren.
+- **PHORMA III** (`alpha/phorma-iii/`): am Computer unter «Format» die **Auflösung «doppelt (4K)»** wählen (2160 × 2700, 2160 × 3840, 3840 × 2160). Gezeichnet wird
+  mit doppeltem Massstab, die 1-px-Fäden zeichnet die Bühne zweimal zwei Mal versetzt (`fein()` in `buehne.js`), damit das Bild dem einfachen gleicht.
+  Ohne Browser hier im Container: `NODE_PATH=$(npm root -g) node tools/phorma-intro.mjs <ton> --ablauf … --format … --faktor 2` (rund viermal so lange).
+- **Andere Three.js-Exporte** (Skill `threejs-spektakel` u. Ä.): in höherer Auflösung neu exportieren.
 
 ## 2. Sonst: `tools/hochrendern/hochrendern`
 
@@ -49,6 +52,14 @@ Das Modell `foto` braucht etwa 40 % länger. Das Skript zeigt die Restzeit laufe
 
 Bekannt: Das Netz entfernt Kompressionsrauschen und macht sehr feine leuchtende Linien etwas dünner; Flächen werden um ein, zwei Helligkeitsstufen sauberer.
 
-## 3. Bezahlte Alternative: Topaz
+## 3. Für den Nutzer selbst: die Seite `alpha/hochrendern/`
+
+ornament.cloud/alpha/hochrendern/ rechnet dasselbe Netz im Browser auf der Grafikkarte des eigenen Geräts (WebGPU, `netz.js`; Gewichte als float16 in
+`modelle/`, erzeugt mit `tools/hochrendern/.venv/bin/python tools/hochrendern/web-gewichte.py`). Video hineinziehen, Probe vorher/nachher (1 : 1),
+×2 oder ×4 bis 4K, MP4 mit Ton (H.264, sonst VP9). Auf einer Grafikkarte viel schneller als hier im Container – für lange oder grosse Videos dorthin
+verweisen. Gegen onnxruntime geprüft: 64 dB, höchstens 1/255 Abweichung; Kacheln bitgleich zum ganzen Bild.
+Tests: `node --test tests/hochrendern.test.mjs`, `NODE_PATH=$(npm root -g) node tests/hochrendern.e2e.mjs` (WebGPU über SwiftShader).
+
+## 4. Bezahlte Alternative: Topaz
 
 Der Skill `topaz-upscale-video` (each::labs-API) liefert auf einer GPU in Minuten, braucht aber `EACHLABS_API_KEY`, freigeschalteten Host `api.eachlabs.ai` in der Netzwerk-Einstellung der Umgebung und eine öffentliche URL des Videos. Kostet pro Video; nur auf Wunsch.

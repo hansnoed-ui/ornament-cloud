@@ -22,6 +22,7 @@ const AUSNAHMEN = [
   ["«Bildfragmentieren» (seit 17. Oktober 2026 «PHORMA I»), steht für sich (15. Oktober 2026); ihre App-Seite app/ trägt die Navigation", /^alpha\/bildfragmentieren\/(?!app\/)/],
   ["«PHORMA II», steht für sich wie PHORMA I (17. Oktober 2026)", /^alpha\/phorma-ii\//],
   ["«PHORMA III», das Gewebe aus PHORMA II, steht für sich wie PHORMA I und II (18. Oktober 2026)", /^alpha\/phorma-iii\//],
+  ["«Hochrendern», Videos auf der eigenen Grafikkarte hochrechnen, steht für sich wie PHORMA (19. Oktober 2026)", /^alpha\/hochrendern\//],
   ["Beispiele der Skills für Claude (.claude/skills/), keine Seiten der Website (16. Oktober 2026)", /^\.claude\//],
 ];
 const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git"]);
