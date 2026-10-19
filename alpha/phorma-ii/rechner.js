@@ -1,5 +1,5 @@
 // PHORMA II – Web Worker: analysiert das Foto (analyse.js), ohne die Seite aufzuhalten. Die Karten gehen als übertragbare Puffer zurück.
-import { analysieren } from "./analyse.js?v=21";
+import { analysieren } from "./analyse.js?v=22";
 
 self.onmessage = (e) => {
   const { nr, daten, w, h, massstab } = e.data;

@@ -4,11 +4,12 @@
 // leuchten. Wo das Foto hell ist, leuchtet die Linie heller und etwas breiter (die Tonwerte zusätzlich zur Dichte der Windungen).
 //   01 Keim – ein kleiner Kreis glimmt auf (als erster Effekt aus dem Dunkeln, sonst vergeht das Foto darunter); 02 Wachstum – sie faltet sich und
 //   füllt das Motiv; 03 Farbe – sie nimmt die Farben des Fotos an; 04 Bild – das Foto erscheint unter ihr, sie vergeht, das Foto steht.
-// Bis die Bahn da ist, glimmt nur der Keim; bereit (Promise) sagt, wann sie da ist – Video und Standbild warten darauf.
+// Die Bilder der Bahn kommen in Päckchen, die Vorschau zeigt jeweils das letzte schon gerechnete; bereit (Promise) sagt, wann sie ganz da ist –
+// Video und Standbild warten darauf.
 import * as THREE from "three";
-import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=21";
-import { phase } from "./ablauf.js?v=21";
-import { wachstumBahn, ACHTEL, BILDER_JE_S } from "./wachstumsim.js?v=21";
+import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=22";
+import { phase } from "./ablauf.js?v=22";
+import { wachstumBahn, ACHTEL, BILDER_JE_S } from "./wachstumsim.js?v=22";
 
 const VERTEX = /* glsl */ `
   attribute vec4 aStrecke;                 // x0, y0, x1, y1 in Punkten der Analyse (y nach unten)
@@ -52,17 +53,23 @@ export function wachstum(g, teil) {
     rgb = x.getImageData(0, 0, A.w, A.h).data;
   } catch { rgb = null; }
   const auftrag = { teil: { phasen: teil.phasen }, w: A.w, h: A.h, hell: Float32Array.from(A.hell), nahrung: Float32Array.from(A.nahrung), tiefe: Float32Array.from(A.tiefe),
-    rgb: rgb ? Uint8ClampedArray.from(rgb) : null, ton: A.ton, dichte: g.test ? 2.2 : g.grob ? 1.4 : 1 };
-  let bahn = null, fortschritt = 0, rechner = null;
+    rgb: rgb ? Uint8ClampedArray.from(rgb) : null, ton: A.ton, dichte: g.test ? 2.2 : g.grob ? 1.6 : 1, schritte: g.grob ? 9 : 12 };
+  // die Bilder der Bahn, so wie sie kommen (je Filmbild die Lagen): die Vorschau zeigt das Wachstum schon, während der Rest noch rechnet
+  // (Rückmeldung vom 19. Oktober 2026 vom Telefon: «der Keim bleibt stehen» – vorher wartete sie auf die ganze Bahn)
+  const bilder = [];
+  let gesamt = 0, fertigGerechnet = false, rechner = null;
+  const fortschritt = () => (fertigGerechnet ? 1 : gesamt ? Math.min(0.99, bilder.length / gesamt) : 0);
   const bereit = new Promise((fertig) => {
-    try { rechner = new Worker(new URL("./wachstumrechner.js?v=21", import.meta.url), { type: "module" }); } catch { rechner = null; }
-    if (!rechner) { setTimeout(() => { bahn = wachstumBahn(auftrag); fortschritt = 1; fertig(); }, 0); return; }   // ohne Worker einmal hier
+    const hier = () => { const jeBild = (f, l) => { bilder[f] = l; }; const b = wachstumBahn({ ...auftrag, jeBild }); gesamt = b.bilder; fertigGerechnet = true; fertig(); };
+    try { rechner = new Worker(new URL("./wachstumrechner.js?v=22", import.meta.url), { type: "module" }); } catch { rechner = null; }
+    if (!rechner) { setTimeout(hier, 0); return; }   // ohne Worker einmal hier
     rechner.onmessage = (e) => {
-      if (e.data.fortschritt !== undefined) { fortschritt = e.data.fortschritt; return; }
-      if (e.data.bahn) bahn = e.data.bahn;
-      fortschritt = 1; rechner.terminate(); rechner = null; fertig();
+      const d = e.data;
+      if (d.bilder?.length && d.ab !== undefined) { d.bilder.forEach((l, i) => { bilder[d.ab + i] = l; }); gesamt = d.gesamt; return; }
+      if (d.fertig) { gesamt = d.bilder; fertigGerechnet = true; rechner.terminate(); rechner = null; fertig(); return; }
+      if (d.fehler) { rechner.terminate(); rechner = null; bilder.length = 0; setTimeout(hier, 0); }
     };
-    rechner.onerror = () => { rechner?.terminate(); rechner = null; bahn = wachstumBahn(auftrag); fortschritt = 1; fertig(); };
+    rechner.onerror = () => { rechner?.terminate(); rechner = null; bilder.length = 0; setTimeout(hier, 0); };
     rechner.postMessage({ nr: 1, ...auftrag });
   });
 
@@ -88,13 +95,12 @@ export function wachstum(g, teil) {
   const unter = quadMaterial(FOTO, { tFoto: { value: g.fotoTex }, uSicht: { value: 0 } });
   // der Keim, solange die Bahn rechnet: ein kleiner Kreis um die Mitte
   const keimKreis = (() => { const n = 28, k = new Int16Array(n * 2); for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2; k[i * 2] = (A.w * 0.5 + 3.2 * Math.cos(a)) * ACHTEL; k[i * 2 + 1] = (A.h * 0.45 + 3.2 * Math.sin(a)) * ACHTEL; } return { n, k }; })();
-  let gefuellt = -1, anzahl = 0, w = B, h = H;
+  let gefuellt = null, anzahl = 0, w = B, h = H;
 
   function fuellen(f) {
-    if (f === gefuellt) return;
-    gefuellt = f;
-    let n, L, o;
-    if (bahn) { n = bahn.anzahl[f]; L = bahn.lagen; o = bahn.ab[f] * 2; } else { n = keimKreis.n; L = keimKreis.k; o = 0; }
+    const L = bilder[f] ?? keimKreis.k, n = L.length / 2, o = 0;
+    if (L === gefuellt) return;
+    gefuellt = L;
     platz(n);
     const s = strecke.array, k = 1 / ACHTEL;
     for (let i = 0; i < n; i++) {
@@ -108,7 +114,8 @@ export function wachstum(g, teil) {
   return {
     groesse(nw, nh) { w = nw; h = nh; },
     render(rt, tau) {
-      const f = bahn ? Math.min(bahn.bilder - 1, Math.max(0, Math.floor(tau * BILDER_JE_S + 1e-6))) : 0;
+      // das Bild der Bahn zu tau; ist es noch nicht gerechnet, das letzte, das schon da ist
+      const f = Math.min(bilder.length - 1, Math.max(0, Math.floor(tau * BILDER_JE_S + 1e-6)));
       fuellen(f);
       // das Foto darunter: am Anfang (nach einem anderen Effekt) vergeht es, im Bild kommt es
       const fotoAus = teil.erst ? 0 : 1 - weich(anteil(tau, 0, K[1] * 0.8));
@@ -128,9 +135,9 @@ export function wachstum(g, teil) {
       const glut = 0.55 + 0.35 * Math.sin(Math.PI * anteil(tau, W[0], W[1]));
       return { aktiv, bloom: glut * (1 - u.uFarbe.value * 0.4), radius: 0.4, saum: 0.0018, ende };
     },
-    bereit, fortschritt: () => fortschritt,
+    bereit, fortschritt,
     vorab: { szenen: [[szene, kam]], materialien: [unter] },
-    zaehler() { const z = (x) => x.toLocaleString("de-CH"); return `wachstum · punkte ${z(anzahl)}${bahn ? "" : ` · rechnet ${Math.round(fortschritt * 100)} %`}`; },
+    zaehler() { const z = (x) => x.toLocaleString("de-CH"); return `wachstum · punkte ${z(anzahl)}${fertigGerechnet ? "" : ` · rechnet ${Math.round(fortschritt() * 100)} %`}`; },
     entsorgen() { rechner?.terminate(); geo.dispose(); mat.dispose(); unter.dispose(); },
   };
 }
