@@ -11,13 +11,13 @@
 //   Schriftzug) oder 03 Stille (der Faden zieht sich in seinen Kopf zusammen).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich } from "./gemeinsam.js?v=13";
-import { phase } from "./ablauf.js?v=13";
-import { gewebeKurven } from "./kurven.js?v=13";
-import { weichzeichnen } from "./analyse.js?v=13";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=13";
-import { RAUSCHEN } from "./gewebe.js?v=13";
-import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=13";
+import { anteil, weich } from "./gemeinsam.js?v=14";
+import { phase } from "./ablauf.js?v=14";
+import { gewebeKurven } from "./kurven.js?v=14";
+import { weichzeichnen } from "./analyse.js?v=14";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=14";
+import { RAUSCHEN } from "./gewebe.js?v=14";
+import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=14";
 
 const VOR = 0.4;
 
@@ -165,6 +165,20 @@ export function irrfahrt(g, teil, { fest = false } = {}) {
   // Sprünge liessen ihn verzogen wirken (Rückmeldung: «würfel noch immer verzogen»)
   const ein = [];
   for (const e of T.einsaetze) if (e.staerke >= 0.6 && (!ein.length || e.t - ein.at(-1) >= 0.4)) ein.push(e.t);
+  // die Ausbrüche des Lichtwürfels (Wunsch vom 19. Oktober 2026: «an einigen Stellen noch etwas raumgreifender verfrickelt, damit es mehr Dynamik
+  // hat»): an etwa jedem zweiten kräftigen Einsatz schiesst der Faden ein Stück weiter, seine Spur wird lang und zieht quer durch den Würfel, die
+  // Fäden spreizen sich – in gut einer Sekunde legt es sich wieder; der Würfel bleibt stehen
+  const ausbrueche = fest ? ein.filter((t, i) => zufall(i + 1, 21) < 0.5) : [];
+  const ausbruchBei = (film) => {
+    let b = 0, weiter = 0;
+    for (const tb of ausbrueche) {
+      if (tb > film) break;
+      const d = film - tb;
+      b = Math.max(b, Math.exp(-d / 0.55) * Math.min(1, d / 0.06));
+      weiter += 900 * (1 - Math.exp(-d / 0.35));                              // so weit ist der Kopf dabei vorausgeschossen (Punkte des Wegs)
+    }
+    return { b, weiter };
+  };
   const groesse = new THREE.Vector2(), drehM = new THREE.Matrix4(), e3 = new THREE.Euler(), q0 = new THREE.Quaternion(), q1 = new THREE.Quaternion();
   const helle = 3.4 / S;                                                     // aufeinander ein heller Strich, aufgequollen rauchig
 
@@ -189,12 +203,18 @@ export function irrfahrt(g, teil, { fest = false } = {}) {
       if (logo || zeichen) {
         zeile = logo ? logoZeile : textZeile;
         kopf = (PN - 1) * weich(Math.min(1, seit / (logo ? 1.0 : 0.6))); schritt = Math.max(0.02, kopf / L);
-      } else kopf = Math.min(PN - 1, 30 + seit * (260 + 520 * laut));
+      } else kopf = 30 + seit * (260 + 520 * laut);
+      const aus = fest && !logo && !zeichen ? ausbruchBei(film) : { b: 0, weiter: 0 };
+      if (!logo && !zeichen) {
+        // beim Ausbruch: der Kopf schiesst voraus (nur was seit dem Beginn des Zustands geschah) und die Spur wird bis fünfmal so lang
+        if (aus.weiter) kopf += aus.weiter - (j ? ausbruchBei(zs.t0).weiter : 0);
+        kopf = Math.min(PN - 1, kopf); schritt *= 1 + 4 * aus.b;
+      }
       schritt *= 1 - 0.97 * still;                                             // in der Stille zieht sich der Faden in seinen Kopf zusammen
       const auf = weich(anteil(tau, 0, W[1]));
       // die Animation im Würfel – Faden, Rauch, Funken, Belichtung – wieder wie in der ersten Fassung (Rückmeldung: «am Anfang war sie besser, bevor
       // wir sie wilder gemacht haben … es geht nur um die Belichtung und Wildheit der Animation in den Würfeln drin»; die Effekte bleiben)
-      let amp = (0.0006 + 0.16 * laut ** 1.3 + 0.2 * stoss + 0.12 * tief) * auf * (1 - still) * (zeichen ? 0.35 : 1) * (fest ? 0.6 : 1);
+      let amp = ((0.0006 + 0.16 * laut ** 1.3 + 0.2 * stoss + 0.12 * tief) * (fest ? 0.6 : 1) + 0.08 * aus.b) * auf * (1 - still) * (zeichen ? 0.35 : 1);
       if (logo) amp = (1 - ruhig) * (0.03 + 0.14 * stoss);
       // die Lage des Würfels: je Zustand gewürfelt (auch mitten in ihm), und jeder weitere kräftige Einsatz wirft ihn in eine neue Lage («noch wilder»);
       // darin dreht er sich, der Schlag ruckt; zum Logo gerade und von vorn. Manche Zustände zeigen drei Würfel nebeneinander.
@@ -214,9 +234,9 @@ export function irrfahrt(g, teil, { fest = false } = {}) {
         const dx = drei ? (k - 1) * 1.13 : fest ? 0 : ((zufall(jl, 4) - 0.5) * 0.3 * (1 - ruhig)) / a;
         U.uLage.value.set(dx, drei ? (k - 1) * -0.22 : fest ? 0 : (zufall(jl, 5) - 0.5) * 0.3 * (1 - ruhig), 0, mass);
       };
-      U.uSchwanz.value = logo || zeichen ? 1e-4 : 0.25; U.uZeile.value = zeile; U.uKopf.value = kopf; U.uSchritt.value = schritt; U.uAmp.value = amp; U.uKnall.value = (fest ? 0.7 : 1.5) * tief * (1 - ruhig);
-      U.uDicke.value = logo ? 0.0035 * ruhig : 0; U.uZeit.value = tau; U.uMusik.value = 0.3 * tau + 0.3 * wert(T.energie, film); U.uHell.value = helle * (logo ? 1 + 0.2 * ruhig : (fest ? 0.6 + 0.7 * laut + 0.5 * stoss : 0.7 + 1.5 * laut + 1.5 * stoss) * (1 - 0.6 * still));   // laut quillt die Wolke hell auf (beim Lichtwürfel weniger)
-      pMat.uniforms.uFunken.value = (0.15 + 1.6 * hoch + 0.6 * stoss) * auf * (1 - still) * (1 - ruhig) * (fest ? 0.4 : 1); pMat.uniforms.uPunkt.value = Math.max(1, (g.test ? 1 : 2) * (renderer.getSize(groesse).y / 1350));
+      U.uSchwanz.value = logo || zeichen ? 1e-4 : 0.25; U.uZeile.value = zeile; U.uKopf.value = kopf; U.uSchritt.value = schritt; U.uAmp.value = amp; U.uKnall.value = ((fest ? 0.7 : 1.5) * tief + 0.6 * aus.b) * (1 - ruhig);
+      U.uDicke.value = logo ? 0.0035 * ruhig : 0; U.uZeit.value = tau; U.uMusik.value = 0.3 * tau + 0.3 * wert(T.energie, film); U.uHell.value = helle * (logo ? 1 + 0.2 * ruhig : (fest ? 0.6 + 0.7 * laut + 0.5 * stoss + 0.15 * aus.b : 0.7 + 1.5 * laut + 1.5 * stoss) * (1 - 0.6 * still));   // laut quillt die Wolke hell auf (beim Lichtwürfel weniger)
+      pMat.uniforms.uFunken.value = (0.15 + 1.6 * hoch + 0.6 * stoss) * auf * (1 - still) * (1 - ruhig) * (fest ? 0.4 + 1.2 * aus.b : 1); pMat.uniforms.uPunkt.value = Math.max(1, (g.test ? 1 : 2) * (renderer.getSize(groesse).y / 1350));
       wMat.uniforms.uZeichnen.value = weich(anteil(tau, 0.05, W[1] * 0.9));
       wMat.uniforms.uWuerfel.value = (fest ? 0.8 : 0.55 + 0.45 * Math.min(1, laut * 2)) * (1 - ruhig) * (1 - 0.6 * still) * gewicht;
       // die Kanten gut 7 Punkte breit bei 1350 Punkten Höhe (0,55 % der Höhe) wie im Vorbild (in jeder Grösse gleich dick im Bild)

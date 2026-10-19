@@ -25,10 +25,11 @@
   <link rel="alternate" type="application/rss+xml" title="Ornament Cloud – News" href="feed.xml">
   <link rel="stylesheet" href="styles.css?v=45">
   <!--
-    Startanimation (Wunsch vom 9. Oktober 2026; seit 18. Oktober 2026 die Irrfahrt aus PHORMA III – «das Video des Tests, welches im Ornament.cloud-Logo endet, als neue
-    Intro-Sequenz der Website, mit Option Ton an/aus und Skip intro»): ein leuchtender Faden irrt durch einen Würfel aus Licht, quillt mit der Musik zu Rauch auf und legt sich
-    zum Logo, dann blendet die Seite über (Video auf Schwarz, in beiden Modi dasselbe, 16 Sekunden; gerechnet mit alpha/phorma-iii/, Effekt Irrfahrt, Quelle
-    «Nur Ton», tools/phorma-intro.mjs). Zwei Fassungen nach dem Fenster (Rückmeldung: «das Intro sieht im Browser am Laptop nicht gut aus, qualitativ und vom
+    Startanimation (Wunsch vom 9. Oktober 2026; seit 18. Oktober 2026 aus PHORMA III – «das Video des Tests, welches im Ornament.cloud-Logo endet, als neue
+    Intro-Sequenz der Website, mit Option Ton an/aus und Skip intro»; seit 19. Oktober 2026 der Lichtwürfel statt der Irrfahrt, mit derselben Musik – «diese Animation
+    auch als Website Intro … gerne mit dem jetzigen Sound»): ein Würfel aus Licht steht und dreht sich, ein leuchtender Faden irrt darin, an manchen Schlägen schiesst er
+    quer durch den Raum, am Ende legt er sich zum Logo, dann blendet die Seite über (Video auf Schwarz, in beiden Modi dasselbe, 16 Sekunden; gerechnet mit
+    alpha/phorma-iii/, Effekt Lichtwürfel, Quelle «Nur Ton», tools/phorma-intro.mjs). Zwei Fassungen nach dem Fenster (Rückmeldung: «das Intro sieht im Browser am Laptop nicht gut aus, qualitativ und vom
     Bildschirmformat»): quer 16 : 9 in 1920 × 1080 (assets/start-intro-quer.mp4, Laptop und Bildschirm; zwei Drittel so gross wie das Fenster), hoch 4 : 5 in 1080 × 1350 (assets/start-intro.mp4, Telefon). Es beginnt stumm (Browser spielen Ton erst nach einem Tippen), «Ton an» schaltet die Musik dazu, «Ton aus» wieder ab. Bis dahin wuchsen die
     Zeichen von «ornament.cloud» als Linienwachstum (src/videos/src/wachstum/, im Verlauf von Git). Sie läuft nur auf dieser Seite, einmal pro Sitzung (Vorschau jederzeit
     mit ?start), nicht bei «weniger Bewegung» und nicht bei «Daten sparen». Tippen, eine Taste oder der Knopf «Skip intro» (unten rechts, orange) beendet sie – Tippen auf
@@ -183,7 +184,7 @@
       });
       addEventListener("keydown", function taste(e) { if (amTon(e)) return; removeEventListener("keydown", taste); weg(); });
       warte();
-      v.src = matchMedia("(min-aspect-ratio: 1/1)").matches ? "assets/start-intro-quer.mp4?v=1" : "assets/start-intro.mp4?v=2";
+      v.src = matchMedia("(min-aspect-ratio: 1/1)").matches ? "assets/start-intro-quer.mp4?v=2" : "assets/start-intro.mp4?v=3";
       var p = v.play();
       if (p && p.catch) p.catch(weg);
     })();

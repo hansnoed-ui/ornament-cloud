@@ -8,11 +8,11 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { ziel, quadMaterial } from "./gemeinsam.js?v=13";
-import { FPS, kette, laufend } from "./ablauf.js?v=13";
-import { gewebe } from "./gewebe.js?v=13";
-import { irrfahrt } from "./irrfahrt.js?v=13";
-import { video } from "./video.js?v=13";
+import { ziel, quadMaterial } from "./gemeinsam.js?v=14";
+import { FPS, kette, laufend } from "./ablauf.js?v=14";
+import { gewebe } from "./gewebe.js?v=14";
+import { irrfahrt } from "./irrfahrt.js?v=14";
+import { video } from "./video.js?v=14";
 
 const FABRIK = { gewebe, irrfahrt, lichtwuerfel: (g, teil) => irrfahrt(g, teil, { fest: true }), video };
 
