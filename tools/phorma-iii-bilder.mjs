@@ -3,6 +3,8 @@
 // in voller Grösse, ohne Beschriftung und ohne Schriftzug, auf Schwarz.
 //   Symbol: die Schlaufe des Signets als Perlenschnur (das Ende der Traube mit Logo)
 //   Vorschau: die Kugel aus feinen Fäden mit der Traube darin (der erste Zustand)
+//   assets/vorschau-phorma-iii.jpg                   640 × 800   Beitragsbild der Karte auf «Apps»: dasselbe Motiv wie die Kachel, im Hochformat
+//                                                                (Wunsch: «Die Kachel ist toll. Kannst du das Bild auch im Beitrag bringen?»)
 //   alpha/phorma-iii/app/og-phorma-iii.jpg          1200 × 630  Vorschaukachel zum Teilen (Open Graph, X) für die Seite app/ und die Anwendung
 //   alpha/phorma-iii/icons/icon-512.png             512 × 512   Android, Installation («any»)
 //   alpha/phorma-iii/icons/icon-192.png             192 × 192   Android, Browser
@@ -100,7 +102,22 @@ await symbol(512, 0.6, "../alpha/phorma-iii/icons/icon-maskable-512.png");   // 
 await symbol(180, 0.8, "../alpha/phorma-iii/icons/apple-touch-icon.png");
 await symbol(32, 0.94, "../alpha/phorma-iii/icons/favicon-32.png");
 
-// 3. Vorschaukachel zum Teilen: links Titel und Satz, rechts die Kugel aus Fäden mit der Traube
+// 3. Beitragsbild für «Apps»: die Kugel im Hochformat der Karten (4 : 5 wie der Film), die Traube in der Mitte, etwas näher als im ganzen Bild
+{
+  const p = await browser.newPage({ viewport: { width: 640, height: 800 }, deviceScaleFactor: 1 });
+  const s = (800 / rK.h) * 1.12;
+  await p.setContent(`<!DOCTYPE html><html><head><style>
+    html, body { margin: 0; width: 640px; height: 800px; overflow: hidden; background: #000; }
+    img { position: absolute; left: ${320 - rK.mitte[0] * s}px; top: ${400 - rK.mitte[1] * s}px; width: ${rK.b * s}px; height: ${rK.h * s}px; }
+  </style></head><body><img src="${kugel}"></body></html>`);
+  await p.waitForTimeout(300);
+  const out = pfad("../assets/vorschau-phorma-iii.jpg");
+  await p.screenshot({ path: out, type: "jpeg", quality: 84 });
+  console.log("geschrieben:", out);
+  await p.close();
+}
+
+// 4. Vorschaukachel zum Teilen: links Titel und Satz, rechts die Kugel aus Fäden mit der Traube
 {
   const p = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
   const s = 780 / rK.h;                                                      // die Kugel gross rechts, die Traube in ihrer Mitte
@@ -119,7 +136,7 @@ await symbol(32, 0.94, "../alpha/phorma-iii/icons/favicon-32.png");
     <div class="text">
       <div class="marke">App · Video mit Ton · ohne Netz</div>
       <h1>PHORMA III</h1>
-      <p>Musik, Stimme, Text, Foto oder Video werden zu Bildern, die der Ton bewegt.</p>
+      <p>Aus Klang wird Bild – mit Musik oder Stimme, Text, Foto oder Video.</p>
       <div class="fuss"><b>ornament.cloud/alpha/phorma-iii/app</b>Alles bleibt auf dem Gerät.</div>
     </div></body></html>`);
   await p.evaluate(() => document.fonts.ready);
