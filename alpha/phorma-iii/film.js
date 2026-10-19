@@ -1,30 +1,29 @@
 // PHORMA III – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann das Gewebe aus der Bühne (WebGL,
-// buehne.js) mit den Textfragmenten, danach das Bild, darüber die Beschriftung; mit Signet am Schluss das Logo, das aus dem Gewebe entsteht, mit
+// buehne.js), danach das Bild, darüber die Beschriftung; mit Signet am Schluss das Logo, das aus dem Gewebe entsteht, mit
 // getipptem Schriftzug und verfrickelt im Takt.
-import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=19";
+import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=20";
 import { punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=19";
-import { zufall } from "./analyse.js?v=19";
+import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=20";
+import { zufall } from "./analyse.js?v=20";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
 
-/** Szene: { breite, hoehe, faktor, zeit, foto, buehne, signet, beschriftung, titel, fragmente, schnitte, nacht, logo }; text: für die Fragmente, ton: Analyse
+/** Szene: { breite, hoehe, faktor, zeit, foto, buehne, signet, beschriftung, titel, schnitte, nacht, logo }; ton: Analyse
  *  einer Tonspur, laenge: Dauer des Gewebes nach ihr; faktor: Export in breite × hoehe mal so viel (gezeichnet wird immer in breite × hoehe) */
 export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = true, beschriftung = true, titel = "", foto = null, buehne = null,
-  ablauf = "gewebe", text = "", ton = null, laenge = null, faktor = 1 } = {}) {
+  ablauf = "gewebe", ton = null, laenge = null, faktor = 1 } = {}) {
   const zeit = zeitachse({ tempo, signet, laenge, ablauf }), irr = zeit.ablauf === "irrfahrt" || zeit.ablauf === "lichtwuerfel", vid = zeit.ablauf === "video";
   const trb = zeit.ablauf === "traube";
   // halten: die Irrfahrt, die Traube und das Video haben kein Stehen auf dem Bild – nach dem Effekt hält ihr letztes Bild
-  const sz = { breite, hoehe, faktor, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA III").trim(), fragmente: [], schnitte: [], nacht: [], logo: null, halten: irr || trb || vid };
+  const sz = { breite, hoehe, faktor, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA III").trim(), schnitte: [], nacht: [], logo: null, halten: irr || trb || vid };
   const T = tonOderErsatz(ton), G = zeit.phasen.find((p) => p.name === (irr ? "irrfahrt" : zeit.ablauf));   // der Lichtwürfel hat die Phasen der Irrfahrt
   // die Schnitte zählen wie im Gewebe in der Zeit des Effekts (Vorlauf 0,4 s, ohne Tonspur im Tempo gestreckt)
   const f = zeit.tempo, film = (s) => 0.4 + (s - 0.4) * f, effekt = (s) => 0.4 + (s - 0.4) / f;
   sz.schnitte = T.schnitte.map(film).filter((s) => s > G.von && s < G.bis);
-  // die Zustände des Gewebes wie in gewebe.js (in der Zeit des Effekts): wo Weiss auf Schwarz steht, stehen auch die Fragmente umgekehrt
+  // die Zustände des Gewebes wie in gewebe.js (in der Zeit des Effekts): daraus die Farbgebung des Logos (weiter unten)
   const Z = gewebeZustaende(T, effekt(G.von), effekt(G.bis));
   sz.nacht = Z.map((z, i) => [film(z.t), film(Z[i + 1]?.t ?? effekt(G.bis)), z.nacht]).filter((z) => z[2]).map(([a, b]) => [a, b]);
-  if (text && !irr && !trb && !vid) sz.fragmente = fragmentPlan(text, T, G, breite, hoehe);
   if (zeit.ablauf === "irrfahrt") sz.stoer = stoerPlan(T, G.von, G.bis);         // der Lichtwürfel ohne Stottern und Streifen: er steht ruhig
   const L = zeit.phasen.find((p) => p.name === "logo");
   if (L) {
@@ -35,42 +34,6 @@ export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = 
       tasten: T.einsaetze.filter((e) => e.t >= L.von + 0.1 && e.t < tipp).map((e) => e.t), tipp };
   }
   return sz;
-}
-
-/**
- * Textfragmente wie im Video von Pauric Freeman: bei Einsätzen zwei Zeichen des Texts in einer dünnen Grotesk, getippt, mit einem dunklen Blockcursor
- * daneben; manchmal nur der Cursor. Wiederholbar (Zufall mit Startwert aus dem Text).
- */
-function fragmentPlan(text, T, G, B, H) {
-  const zeichen = [...String(text).replace(/\s+/g, "")];
-  if (!zeichen.length) return [];
-  let saat = 7;
-  for (const z of zeichen) saat = (saat * 31 + z.codePointAt(0)) | 0;
-  const rnd = zufall(saat), plan = [];
-  let zuletzt = -1;
-  for (const e of T.einsaetze) {
-    if (e.t < G.von + 0.3 || e.t > G.bis - 0.5 || e.t - zuletzt < 0.55) continue;
-    zuletzt = e.t;
-    const i = Math.floor(rnd() * zeichen.length), nur = rnd() < 0.22;
-    plan.push({ t: e.t, dauer: 0.35 + 0.6 * e.staerke, text: nur ? "" : zeichen[i] + (zeichen[i + 1] ?? ""), x: B * (0.22 + 0.56 * rnd()), y: H * (0.36 + 0.28 * rnd()), vor: rnd() < 0.5 });
-  }
-  return plan;
-}
-
-function fragmenteZeichnen(ctx, sz, t) {
-  const H = sz.hoehe, g = Math.round(H * 0.075), invers = sz.nacht.some(([a, b]) => t >= a && t < b);
-  ctx.save();
-  ctx.font = `300 ${g}px "Instrument Sans", system-ui, sans-serif`; ctx.textBaseline = "middle"; ctx.textAlign = "left";
-  for (const f of sz.fragmente) {
-    if (t < f.t || t > f.t + f.dauer) continue;
-    const text = f.text.slice(0, Math.min(f.text.length, Math.floor((t - f.t) * 20) + 1)), b = ctx.measureText(text).width;
-    const cw = g * 0.5, ch = g * 1.45, luft = text ? g * 0.18 : 0;
-    const cx = f.vor ? f.x - cw - luft : f.x + b + luft;
-    ctx.globalAlpha = 0.85 * (1 - anteil(t, f.t + f.dauer - 0.12, f.t + f.dauer));
-    ctx.fillStyle = invers ? "#d8d8d4" : "#6b6b68"; ctx.fillText(text, f.x, f.y);
-    ctx.fillStyle = invers ? "#f2f2f0" : "#0d1020"; ctx.fillRect(cx, f.y - ch / 2, cw, ch);
-  }
-  ctx.restore();
 }
 
 /**
@@ -167,7 +130,7 @@ function schlaufe(ctx, sz, t) {
   ctx.restore();
 }
 /**
- * der Schriftzug wie im Signet (Instrument Sans 52 px, gesperrt, unter der Schlaufe), getippt mit einem Blockcursor wie die Fragmente im Gewebe;
+ * der Schriftzug wie im Signet (Instrument Sans 52 px, gesperrt, unter der Schlaufe), getippt mit einem Blockcursor;
  * steht er, läuft der Punkt durch die Schlaufe und pocht mit dem Schlag. Gezeichnet für 1080 × 1920, mittig auf B × H.
  */
 function schriftzug(ctx, sz, t) {
@@ -278,7 +241,6 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
       const [w, h] = zielMass(ctx, sz), c = sz.buehne.bild(sz.zeit, Math.min(t, abschnitt.bis - 1e-3), w, h, { proben, vorschau });
       // ist es ganz das Bild, dann das Bild selbst: in jeder Grösse gleich wie danach, ohne den Unterschied der Filter beim Verkleinern
       ctx.drawImage(sz.buehne.ende >= 1 && sz.foto ? sz.foto : c, 0, 0, B, H);
-      if (sz.fragmente.length) fragmenteZeichnen(ctx, sz, t);
     }
     else if (sz.foto) { ctx.globalAlpha = anteil(t, abschnitt.bis - 1.5, abschnitt.bis); ctx.drawImage(sz.foto, 0, 0, B, H); ctx.globalAlpha = 1; }   // ohne WebGL 2
   } else if (t >= abschnitt.bis && sz.foto) ctx.drawImage(sz.foto, 0, 0, B, H);

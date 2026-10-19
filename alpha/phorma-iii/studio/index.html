@@ -19,7 +19,7 @@
     Abschrift dieser Seite (tools/build-phorma-iii-app.mjs).
   -->
   <meta name="robots" content="noindex">
-  <meta name="description" content="PHORMA III: Text, Foto, Video oder nur Musik werden zu Flächen aus feinen Linien, die der Ton bewegt – auf Wunsch verfrickelt, mit dem Logo am Schluss, als Video mit Ton für Social Media, alles im Browser.">
+  <meta name="description" content="PHORMA III: Aus Klang wird Bild – Musik, eine Stimme oder ein Video werden zu Flächen aus feinen Linien, Fäden im Licht oder glänzenden Perlen – auf Wunsch verfrickelt, mit dem Logo am Schluss, als Video mit Ton für Social Media, alles im Browser.">
   <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
   <meta property="og:type" content="website">
@@ -27,11 +27,11 @@
   <meta property="og:locale" content="de_CH">
   <meta property="og:url" content="https://ornament.cloud/alpha/phorma-iii/">
   <meta property="og:title" content="PHORMA III">
-  <meta property="og:description" content="Aus Klang wird Bild: Musik oder Stimme, dazu Text, Foto oder Video – als Film mit Ton für Social Media. Läuft ohne Netz, alles bleibt auf dem Gerät.">
+  <meta property="og:description" content="Aus Klang wird Bild: Musik, Stimme oder Video – als Film mit Ton für Social Media. Läuft ohne Netz, alles bleibt auf dem Gerät.">
   <meta property="og:image" content="https://ornament.cloud/alpha/phorma-iii/app/og-phorma-iii.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="PHORMA III: links der Titel und der Satz «Aus Klang wird Bild – mit Musik oder Stimme, Text, Foto oder Video.», rechts eine Kugel aus feinen weissen Fäden mit glänzenden roten Perlen auf Schwarz.">
+  <meta property="og:image:alt" content="PHORMA III: links der Titel und der Satz «Aus Klang wird Bild – mit Musik, Stimme oder Video.», rechts eine Kugel aus feinen weissen Fäden mit glänzenden roten Perlen auf Schwarz.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://ornament.cloud/alpha/phorma-iii/app/og-phorma-iii.jpg">
   <meta name="apple-mobile-web-app-title" content="PHORMA III">
@@ -40,7 +40,6 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="stylesheet" href="../../styles.css?v=46">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
-  <style>@font-face { font-family: "Inter Display"; font-style: normal; font-weight: 600; font-display: swap; src: url(../../vendor/fonts/inter-display-600-latin.woff2) format("woff2"); }</style>
   <style>
     .site-header { padding-bottom: 12px; }
     .karte { display: grid; gap: 28px; padding-bottom: 48px; }
@@ -77,17 +76,6 @@
       font-family: "Instrument Sans", var(--font); font-size: 0.85rem; font-weight: 500; transform: translateY(-0.15em); }
     .schritte p { margin: 0; color: var(--muted); }
 
-    .ablage { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; padding: 18px; border: 1.5px dashed var(--border); border-radius: var(--radius); background: var(--surface); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
-    .ablage:hover, .ablage.drueber { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
-    .ablage:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .ablage input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-    .plus { position: relative; display: grid; place-content: center; width: 84px; height: 84px; border-radius: 50%; background: var(--text); color: var(--bg); flex: none; }
-    .plus svg { width: 40px; height: 40px; }
-    .plus img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
-    .hat-bild .plus { width: 66px; height: 88px; border-radius: 12px; background: #000; }
-    .hat-bild .plus svg { position: absolute; right: -10px; bottom: -10px; width: 30px; height: 30px; padding: 6px; border-radius: 50%; background: var(--text); color: var(--bg); box-shadow: 0 0 0 3px var(--surface); }
-    .ablage b { display: block; font-size: 1.15rem; font-weight: 600; }
-    .ablage-text > span { display: block; margin-top: 2px; color: var(--muted); font-size: 0.92rem; }
 
     .leiste { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .knopf { min-height: 44px; padding: 8px 18px; border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 0.95rem;
@@ -97,8 +85,6 @@
     .knopf.haupt { background: var(--text); color: var(--bg); font-weight: 600; }
     .knopf.haupt:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 85%, var(--bg)); }
     .knopf.klein { min-height: 36px; padding: 4px 14px; font-size: 0.88rem; }
-    .knopf.beispiel { padding: 4px 18px 4px 16px; gap: 10px; }
-    .knopf.beispiel img { width: 22px; height: 31px; object-fit: cover; border-radius: 5px; display: block; }
     .knopf:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     .tafel { display: grid; margin-top: 4px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
@@ -131,10 +117,6 @@
     #ausschnitt-film, #video-streifen { height: 56px; background: #000; }
     .ausschnitt-regler { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; font-size: 0.88rem; color: var(--muted); }
     .ausschnitt-regler input { width: 100%; min-width: 0; accent-color: var(--accent); }
-    .textfeld { display: grid; gap: 6px; }
-    .textfeld span { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-    .textfeld textarea { min-height: 64px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text);
-      font: 600 1.25rem/1.3 "Inter Display", "Helvetica Neue", Arial, sans-serif; letter-spacing: -0.015em; resize: vertical; }
     .dateiknopf { position: relative; overflow: hidden; }
     .dateiknopf input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
     .video-bild { height: 44px; width: auto; border-radius: 6px; border: 1px solid var(--border); }
@@ -183,7 +165,7 @@
         <canvas id="vorschau" width="540" height="675" aria-label="Vorschau des Videos"></canvas>
         <div class="leer" id="leer">
           <p class="gross">Kein Signal</p>
-          <p>Wähle ein Foto, einen Text, ein Video oder eine Musik.</p>
+          <p>Wähle eine Musik, eine Stimme oder ein Video.</p>
         </div>
       </div>
       <div class="zeitleiste">
@@ -201,27 +183,10 @@
     <div>
       <ol class="schritte">
         <li>
-          <h2>Foto, Text, Video – oder nur Ton</h2>
+          <h2>Nur Ton – oder ein Video</h2>
           <div class="segment" role="group" aria-label="Quelle">
-            <button type="button" data-quelle="foto">Foto</button>
-            <button type="button" data-quelle="text">Text</button>
-            <button type="button" data-quelle="video">Video</button>
             <button type="button" data-quelle="ton">Nur Ton</button>
-          </div>
-          <div class="teil" id="foto-teil">
-          <label class="ablage" id="ablage">
-            <span class="plus" aria-hidden="true">
-              <img id="quelle" alt="" hidden>
-              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            </span>
-            <span class="ablage-text"><b id="ablage-titel">Foto wählen</b><span>oder hierher ziehen. Seine Linien gleicher Helligkeit werden zum Gewebe; alles bleibt auf deinem Gerät.</span></span>
-            <input type="file" id="datei" accept="image/*" aria-label="Foto wählen">
-          </label>
-          <div class="leiste"><button class="knopf klein beispiel" type="button" id="testbild"><img src="beispiel.jpg" alt="" width="26" height="37" loading="lazy">Mit dem Beispielbild ausprobieren</button></div>
-          </div>
-          <div class="teil" id="text-teil" hidden>
-            <label class="textfeld"><span>Dein Text</span><textarea id="text" rows="2" maxlength="120" placeholder="Ein Wort oder ein kurzer Satz" autocomplete="off"></textarea></label>
-            <p class="ki-hinweis">Der Text wird in Inter Display gesetzt, einer modernen Grotesk, so gross es geht; seine Umrisse werden im Gewebe zu Bändern aus feinen Linien.</p>
+            <button type="button" data-quelle="video">Video</button>
           </div>
           <div class="teil" id="video-teil" hidden>
             <div class="leiste">
@@ -241,8 +206,8 @@
             </div>
             <p class="ki-hinweis">Ein Standbild des Videos ist Anfang und Schluss, sein Ton wird die Tonspur (ausser du wählst unten eine andere Audiodatei). Im Gewebe holt jeder Schnitt die Linien eines neuen Bildes aus dem Video; mit dem Effekt «Video» ist das Video selbst das Bild.</p>
           </div>
-          <div class="teil" id="ton-teil" hidden>
-            <p class="ki-hinweis">Ohne Bild: die Musik allein macht das Bild – aus Ringen und Linien wachsen bei jedem Schlag Flächen wie zerknitterte Seide. Wähle unten unter «Ton» eine Audiodatei.</p>
+          <div class="teil" id="ton-teil">
+            <p class="ki-hinweis">Die Musik oder eine Stimme allein macht das Bild. Wähle unten unter «Ton» eine Audiodatei.</p>
           </div>
           <section class="tafel" aria-label="Format">
             <div class="einstellung">
@@ -265,7 +230,7 @@
         <li>
           <h2>Effekt</h2>
           <div class="ablaeufe" role="group" aria-label="Effekt wählen">
-            <button type="button" data-wahl="gewebe" aria-pressed="true"><b>Gewebe</b><small>Die Umrisse werden zu Flächen aus feinen Linien wie zerknitterte Seide, schwarz auf Papier; jeder kräftige Schlag schneidet auf ein neues Bild</small></button>
+            <button type="button" data-wahl="gewebe" aria-pressed="true"><b>Gewebe</b><small>Aus Ringen und Linien (mit einem Video: aus seinen Umrissen) wachsen Flächen aus feinen Linien wie zerknitterte Seide, schwarz auf Papier; jeder kräftige Schlag schneidet auf ein neues Bild</small></button>
             <button type="button" data-wahl="irrfahrt" aria-pressed="false"><b>Irrfahrt</b><small>Ein leuchtender Faden irrt durch einen Würfel aus Licht und quillt mit der Musik zu Rauch auf; der Bass sprengt ihn, die Höhen werfen Funken, jeder Schlag wirft den Würfel herum</small></button>
             <button type="button" data-wahl="lichtwuerfel" aria-pressed="false"><b>Lichtwürfel</b><small>Wie die Irrfahrt, aber ruhig: der Würfel bleibt in der Mitte stehen und dreht sich gleichmässig, der Faden irrt darin, feiner und weniger überblendet</small></button>
             <button type="button" data-wahl="traube" aria-pressed="false"><b>Traube</b><small>Glänzende rote Perlen in einem Knäuel aus feinen Fäden, mit Tiefenschärfe und Rauch; der Schlag lässt sie schwellen, der Bass glühen, jeder kräftige Einsatz schneidet in eine neue Einstellung – am Schluss fädeln sie sich auf die Schlaufe des Logos</small></button>
@@ -356,8 +321,8 @@
       <p class="installieren-hilfe" id="installieren-hilfe" hidden></p>
     </div>
     <ul class="hinweise">
-      <li>Alles bleibt in deinem Browser: Foto, Video und Musik werden nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
-      <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories) oder quer 16 : 9 (1920 × 1080, für Bildschirme und Websites); Foto und Video werden bei Bedarf mittig beschnitten. Am Computer auf Wunsch in doppelter Auflösung (2160 × 2700, 2160 × 3840 oder 3840 × 2160): neu gerechnet, nicht hochskaliert.</li>
+      <li>Alles bleibt in deinem Browser: Video und Musik werden nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
+      <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories) oder quer 16 : 9 (1920 × 1080, für Bildschirme und Websites); ein Video wird bei Bedarf mittig beschnitten. Am Computer auf Wunsch in doppelter Auflösung (2160 × 2700, 2160 × 3840 oder 3840 × 2160): neu gerechnet, nicht hochskaliert.</li>
       <li>Video: MP4 (H.264), 30 Bilder pro Sekunde, mit Ton (AAC) wenn eine Audiodatei gewählt ist. PHORMA III braucht WebGL 2.</li>
       <li>Für Fotos gibt es <a href="../phorma-ii/">PHORMA II</a>: ein Schleimpilz findet die Formen, das Foto wird Raum und weht als Seidentuch.</li>
     </ul>
@@ -389,8 +354,8 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=19"></script>
-  <script type="module" src="pwa.js?v=19"></script>
+  <script type="module" src="app.js?v=20"></script>
+  <script type="module" src="pwa.js?v=20"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

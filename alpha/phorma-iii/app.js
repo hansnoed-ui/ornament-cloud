@@ -1,17 +1,16 @@
-// PHORMA III – Seite: Foto, Text, Video oder nur Ton als Quelle, dazu eine Audiodatei (auf Wunsch verfrickelt); analysieren (Worker), Bühne
+// PHORMA III – Seite: nur Ton oder ein Video als Quelle (Foto und Text seit dem 19. Oktober 2026 nicht mehr), dazu eine Audiodatei (auf Wunsch verfrickelt); analysieren (Worker), Bühne
 // (WebGL), Vorschau mit Zeitleiste und Ton, Video (MP4 mit Tonspur) und Standbild (PNG). Alles bleibt im Browser. Video über WebCodecs (H.264, AAC)
 // und mp4Schreiber (tonspur.js); ohne WebCodecs in Echtzeit über MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild acht Proben.
 // Bis zum 18. Oktober 2026 ein Effekt in PHORMA II (Wunsch: «Es sind ja zwei ganz verschiedene Ansätze … all das soll aus PHORMA II ausgelagert
 // werden und in ein neues PHORMA III integriert werden»).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, EFFEKTE, ablaufName, zeitachse, NACH, LOGO } from "./ablauf.js?v=19";
-import { szene, bild, standbildZeit } from "./film.js?v=19";
-import { analysieren } from "./analyse.js?v=19";
-import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=19";
-import { textBild } from "./textbild.js?v=19";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, EFFEKTE, ablaufName, zeitachse, NACH, LOGO } from "./ablauf.js?v=20";
+import { szene, bild, standbildZeit } from "./film.js?v=20";
+import { analysieren } from "./analyse.js?v=20";
+import { tonAnalysieren, tonOderErsatz, wechselZeiten } from "./ton.js?v=20";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
-import { HOECHSTENS } from "./filmspur.js?v=19";
-import { rissePlanen, bedarf, rissBei, moshQuellen } from "./risse.js?v=19";
-import { frickelBedarf } from "./bildfrickel.js?v=19";
+import { HOECHSTENS } from "./filmspur.js?v=20";
+import { rissePlanen, bedarf, rissBei, moshQuellen } from "./risse.js?v=20";
+import { frickelBedarf } from "./bildfrickel.js?v=20";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
@@ -20,7 +19,7 @@ const grob = matchMedia("(pointer: coarse)").matches, test = new URLSearchParams
 const PROBEN = 8;
 let VORSCHAU = 0.5;
 const S = { bild: null, A: null, foto: null, fotoGross: null, faktor: "1", sz: null, laeuft: false, start: 0, t: null, film: null, rechnen: 0, buehne: null, buehneSchluessel: "",
-  format: "4:5", quelle: "foto", text: "", fotoBild: null, video: null, ton: null, mass: [1080, 1350], ablauf: "gewebe" };
+  format: "4:5", quelle: "ton", video: null, ton: null, mass: [1080, 1350], ablauf: "gewebe" };
 window.__phorma = S;   // für die Browser-Tests
 // ?diagnose: Messwerte zum Gerät sichtbar unter der Vorschau (Rückmeldung vom 17. Oktober 2026: auf einem Telefon «reagiert nicht», hier nicht
 // nachzustellen) – Zeitpunkte der Schritte, Dauer je Vorschaubild, längste Blockade, Grafikchip und Erweiterungen; als Bildschirmfoto zurückschicken
@@ -70,21 +69,10 @@ const merken = (k, v) => { try { localStorage.setItem(`phorma-iii.${k}`, v); } c
 const erinnern = (k) => { try { return localStorage.getItem(`phorma-iii.${k}`); } catch { return null; } };
 function melden(text, fehler = false) { const m = $("meldung"); m.textContent = text; m.classList.toggle("fehler", fehler); }
 
-// ——— Foto laden ———
-// Fotos aus Telefonkameras haben 12 bis 50 Megapixel (bis 200 MB als Bitmap): gleich beim Laden auf höchstens 2400 Punkte verkleinern und die volle
-// Bitmap sofort freigeben; das Vorschaubildchen ist eine kleine Kopie, nicht das Original (Rückmeldung vom 17. Oktober 2026: «neues Bild laden,
-// danach: Absturz»); am Computer bis 3840, damit das Foto auch im Export in doppelter Auflösung (bis 2160 × 3840) scharf bleibt
+// ——— Bilder ———
+// das Standbild eines Videos höchstens so gross: am Telefon 2400 Punkte, am Computer 3840, damit es auch im Export in doppelter Auflösung (bis
+// 2160 × 3840) scharf bleibt
 const GROESST = grob ? 2400 : 3840;
-async function bitmap(datei) {
-  let q;
-  try { q = await createImageBitmap(datei, { imageOrientation: "from-image" }); }
-  catch { q = await new Promise((ok, nein) => { const i = new Image(); i.onload = () => ok(i); i.onerror = nein; i.src = URL.createObjectURL(datei); }); }
-  const s = Math.min(1, GROESST / Math.max(q.width, q.height));
-  const c = leinwand(Math.max(1, Math.round(q.width * s)), Math.max(1, Math.round(q.height * s))), x = c.getContext("2d");
-  x.imageSmoothingQuality = "high"; x.drawImage(q, 0, 0, c.width, c.height);
-  if (q.close) q.close(); else if (q.src?.startsWith("blob:")) URL.revokeObjectURL(q.src);
-  return c;
-}
 function bildchen(quelle) {
   const s = 240 / Math.max(quelle.width, quelle.height), c = leinwand(Math.round(quelle.width * s), Math.round(quelle.height * s));
   c.getContext("2d").drawImage(quelle, 0, 0, c.width, c.height);
@@ -97,28 +85,6 @@ function zugeschnitten(quelle, w, h) {
   ctx.imageSmoothingQuality = "high";
   ctx.drawImage(quelle, (w - dw) / 2, (h - dh) / 2, dw, dh);
   return c;
-}
-const ablage = $("ablage");
-for (const art of ["dragenter", "dragover"]) ablage.addEventListener(art, (e) => { e.preventDefault(); ablage.classList.add("drueber"); });
-for (const art of ["dragleave", "drop"]) ablage.addEventListener(art, () => ablage.classList.remove("drueber"));
-ablage.addEventListener("drop", (e) => {
-  e.preventDefault();
-  const datei = [...(e.dataTransfer?.files ?? [])].find((f) => f.type.startsWith("image/"));
-  if (datei) fotoLaden(datei); else melden("Das ist kein Bild. Bitte ein Foto (JPG, PNG, HEIC je nach Browser) verwenden.", true);
-});
-$("datei").addEventListener("change", (e) => { if (e.target.files?.[0]) fotoLaden(e.target.files[0]); });
-$("testbild").addEventListener("click", async () => fotoLaden(new File([await (await fetch("beispiel.jpg")).blob()], "beispiel.jpg", { type: "image/jpeg" })));
-
-async function fotoLaden(datei) {
-  notiz(`Foto gewählt (${Math.round((datei.size ?? 0) / 1024)} kB)`);
-  melden("Foto wird gelesen …");
-  let q;
-  try { q = await bitmap(datei); } catch { melden("Dieses Foto kann der Browser nicht öffnen. Versuche es als JPG oder PNG.", true); return; }
-  notiz(`Foto gelesen und verkleinert auf ${q.width} × ${q.height}`);
-  S.fotoBild = q;
-  if (S.quelle !== "foto") { S.quelle = "foto"; merken("quelle", "foto"); quelleZeigen(); }
-  ablage.classList.add("hat-bild"); $("ablage-titel").textContent = "Anderes Foto wählen";
-  await bildSetzen(q);
 }
 // ——— Video als Quelle: ein Standbild ist das Bild, sein Ton (falls lesbar und keine andere Audiodatei gewählt) die Tonspur; im Gewebe holen die
 // Schnitte die Linien neuer Bilder aus dem Video (Wunsch vom 18. Oktober 2026: «cool wäre es auch mit Videodateien») ———
@@ -155,7 +121,7 @@ async function videoLaden(datei) {
   // der Ton des Videos wird die Tonspur, ausser eine andere Audiodatei ist gewählt
   if (!S.tonQuelle || S.tonQuelle.ausVideo) {
     try {
-      const { tonLesen } = await import("./tonspur.js?v=19");
+      const { tonLesen } = await import("./tonspur.js?v=20");
       const { buffer } = await tonLesen(datei);
       S.tonQuelle = { buffer, name: `Ton von ${datei.name}`, url, ausVideo: true }; S.ausschnitt = null;
       await tonSetzen({ auffrischen: false });
@@ -264,7 +230,7 @@ let filmspurModul = null;
 async function filmspurBereit(bereich, abbruch) {
   const V = S.video, [B, H] = S.mass, schl = `${V.url}|${bereich.von.toFixed(3)}|${bereich.bis.toFixed(3)}|${B}x${H}`;
   if (S.filmspur?.schl !== schl) {
-    filmspurModul ??= await import("./filmspur.js?v=19");
+    filmspurModul ??= await import("./filmspur.js?v=20");
     const n = Math.round((bereich.bis - bereich.von) * 30);
     melden(`Die Bilder des Videos werden gelesen … 0 / ${n}`); S.filmLesen = [0, n];
     const t0 = performance.now();
@@ -310,19 +276,18 @@ async function filmVorbereiten(sz, t, p = 1) {
   if (sz.zeit.ablauf !== "video" || !S.filmAnbieter) return;
   await S.filmAnbieter.vorbereiten(Array.from({ length: p }, (_, k) => (p > 1 ? t - (0.5 / FPS) * (1 - k / (p - 1)) : t)), { vorschau: false });   // jede Probe des Verschlusses (beim Scratchen andere Bilder)
 }
-/** ein Bild (Foto, Text oder Standbild eines Videos) als Quelle: das alte und seine Bühne sofort freigeben, nicht erst, wenn das neue analysiert ist */
+/** ein Bild (das Standbild eines Videos oder bei «Nur Ton» das Papier) als Quelle: das alte und seine Bühne sofort freigeben, nicht erst, wenn das neue analysiert ist */
 async function bildSetzen(q) {
   anhalten(); S.sz = null; S.t = null;
   S.buehne?.entsorgen(); S.buehne = null; S.buehneSchluessel = ""; S.buehneWarm = false; S.buehneFertig = false;
   S.foto = null; S.fotoGross = null; S.A = null;
   S.bild = q;
-  if (S.quelle === "foto") { $("quelle").src = bildchen(q); $("quelle").hidden = false; }
   await lesen();
 }
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=19", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=20", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -368,7 +333,7 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=19");
+    buehneModul ??= await import("./buehne.js?v=20");
     if (S.buehneSchluessel !== schluessel) return;
     const saetze = S.quelle === "video" && S.video && S.ablauf === "gewebe" ? await videoSaetze() : null;   // nur das Gewebe holt Bilder aus dem Video
     if (S.buehneSchluessel !== schluessel) return;
@@ -435,7 +400,7 @@ const laenge = () => (S.ton ? Math.min(110, Math.max(10, S.ton.analyse.dauer - 0
 function optionen() {
   return { breite: S.mass[0], hoehe: S.mass[1], tempo: $("tempo").value, signet: $("signet").checked, beschriftung: $("beschriftung").checked,
     titel: $("titel").value.replace(/\s+/g, " ").trim(), foto: S.fotoGross ?? S.foto, faktor: faktor(), ablauf: S.ablauf, buehne: S.buehneWarm ? S.buehne : null,
-    text: S.quelle === "text" ? S.text : "", ton: S.ton?.analyse ?? null, laenge: laenge() };
+    ton: S.ton?.analyse ?? null, laenge: laenge() };
 }
 
 function sprungknoepfe(sz) {
@@ -489,9 +454,9 @@ function wahl(attr, schluessel, werte, wenn) {
 }
 let umstellen = 0;
 const spaeterLesen = () => { clearTimeout(umstellen); umstellen = setTimeout(lesen, 250); };
-const neuLesen = () => { if (S.quelle === "ton") { clearTimeout(umstellen); umstellen = setTimeout(papierLaden, 250); } else if (S.quelle === "text") { clearTimeout(umstellen); umstellen = setTimeout(textLaden, 250); } else spaeterLesen(); };
+const neuLesen = () => { if (S.quelle === "ton") { clearTimeout(umstellen); umstellen = setTimeout(papierLaden, 250); } else spaeterLesen(); };
 const formatKnoepfe = wahl("data-format", "format", FORMATE, neuLesen);
-// die Auflösung braucht das Bild in Exportgrösse (Foto, Text): neu lesen wie beim Format
+// die Auflösung braucht das Bild in Exportgrösse: neu lesen wie beim Format
 const aufloesungKnoepfe = wahl("data-aufloesung", "faktor", ["1", "2"], neuLesen);
 if (grob) $("aufloesung").hidden = true;
 // Effekt (seit 18. Oktober 2026 zwei: «Ich möchte nun bei PHORMA III weitere Möglichkeiten, neben Gewebe»): Gewebe oder Irrfahrt; die Wahl bleibt
@@ -510,16 +475,15 @@ const ablaufKnoepfe = wahl("data-wahl", "ablauf", EFFEKTE, () => {
   if (S.tonQuelle && !S.ausschnitt && (vorher === "video") !== (S.ablauf === "video")) tonSetzen();
 });
 ablaufVorher = S.ablauf;
-// Quelle: ein Foto, ein Text (wird zu einem Bild, textbild.js), ein Video oder nur Ton (Wünsche vom 17. und 18. Oktober 2026: Effekte «für Texte
-// und Audiofiles», «cool wäre es auch mit Videodateien», die Animation «müsste auch ablaufen ohne Text oder Bild»)
-const quelleKnoepfe = wahl("data-quelle", "quelle", ["foto", "text", "video", "ton"], () => {
+// Quelle: ein Video oder nur Ton (Wünsche vom 18. Oktober 2026: «cool wäre es auch mit Videodateien», die Animation «müsste auch ablaufen ohne Text
+// oder Bild»). Foto und Text gibt es seit dem 19. Oktober 2026 nicht mehr (Rückmeldung: «es läuft einfach der gewählte Effekt, aber weder das Bild
+// noch der Text werden angezeigt. Ich find, das kann raus»); eine gemerkte Wahl «foto» oder «text» ergibt «Nur Ton».
+const quelleKnoepfe = wahl("data-quelle", "quelle", ["video", "ton"], () => {
   quelleZeigen();
   if (S.quelle === "ton") papierLaden();
-  else if (S.quelle === "text" && S.text.trim()) textLaden();
   else if (S.quelle === "video" && S.video) bildSetzen(S.video.bild);
-  else if (S.quelle === "foto" && S.fotoBild) bildSetzen(S.fotoBild);
 });
-function quelleZeigen() { for (const q of ["foto", "text", "video", "ton"]) $(`${q}-teil`).hidden = S.quelle !== q; videoAusschnittZeigen(); }
+function quelleZeigen() { for (const q of ["video", "ton"]) $(`${q}-teil`).hidden = S.quelle !== q; videoAusschnittZeigen(); }
 /** nur Ton: leeres Papier als Bild – die Linien macht das Gewebe aus der Musik (Wunsch vom 18. Oktober 2026: «ohne Text oder Bild, sodass sich
  * die Bewegungen eben auf die Töne, Sounds, Rhythmen und Volumes der Musik beziehen») */
 function papierLaden() {
@@ -528,18 +492,10 @@ function papierLaden() {
   notiz("Nur Ton gewählt");
   return bildSetzen(c);
 }
-S.text = erinnern("text") ?? ""; $("text").value = S.text;
 quelleZeigen();
-let textTippen = 0;
-$("text").addEventListener("input", () => { S.text = $("text").value; merken("text", S.text); clearTimeout(textTippen); textTippen = setTimeout(textLaden, 600); });
-async function textLaden() {
-  if (S.quelle !== "text" || !S.text.trim()) return;
-  notiz(`Text gewählt (${S.text.length} Zeichen)`);
-  await bildSetzen(await textBild(S.text, ...filmMass(S.format).map((m) => m * faktor())));
-}
 // die gemerkte Quelle erst laden, wenn das ganze Modul steht (Rückmeldung vom 18. Oktober 2026: «Cannot access 'tiefeKnoepfe' before
 // initialization» – «Nur Ton» lud das Papier sofort, und sperren() griff auf Knöpfe zu, die weiter unten erst entstehen)
-setTimeout(() => { if (S.quelle === "text" && S.text.trim()) textLaden(); else if (S.quelle === "ton") papierLaden(); }, 0);
+setTimeout(() => { if (S.quelle === "ton") papierLaden(); }, 0);
 // Ton: eine Audiodatei steuert das Gewebe und klingt in der Vorschau und im Video mit (tonspur.js); ohne Ton bleibt das Video stumm. Auf Wunsch wird
 // sie verfrickelt (frickeln.js: aus Schnipseln ein neues Stück, wiederholbar je Wurf); dann steuert und klingt das neue Stück.
 S.frickeln = erinnern("frickeln") === "1"; $("frickeln").checked = S.frickeln;
@@ -583,7 +539,7 @@ function ausschnittJetzt() {
 /** Wellenform (Spitzen je Spalte) und der Sprachbeginn, einmal je Aufnahme */
 async function ausschnittVorbereiten(q) {
   if (q.uebersicht) return;
-  const { sprachbeginn } = await import("./stimme.js?v=19");
+  const { sprachbeginn } = await import("./stimme.js?v=20");
   const b = q.buffer, n = b.length, mono = new Float32Array(n);
   for (let k = 0; k < b.numberOfChannels; k++) { const c = b.getChannelData(k); for (let i = 0; i < n; i++) mono[i] += c[i] / b.numberOfChannels; }
   const spalten = 800, spitzen = new Float32Array(spalten), schritt = n / spalten;
@@ -659,17 +615,17 @@ $("tondatei").addEventListener("change", async (e) => {
   const datei = e.target.files?.[0]; if (!datei) return;
   melden("Der Ton wird gelesen …");
   try {
-    const { tonLesen } = await import("./tonspur.js?v=19");
+    const { tonLesen } = await import("./tonspur.js?v=20");
     const { buffer } = await tonLesen(datei);
     if (S.tonQuelle?.url && !S.tonQuelle.ausVideo) URL.revokeObjectURL(S.tonQuelle.url);
     S.tonQuelle = { buffer, name: datei.name, url: URL.createObjectURL(datei), ausVideo: false };
     S.ausschnitt = null;
-    // noch kein Bild (kein Foto, Text oder Video): dann «Nur Ton» – sonst bliebe die Vorschau leer (Rückmeldung vom 18. Oktober 2026: «es passiert
+    // noch kein Bild (kein Video): dann «Nur Ton» – sonst bliebe die Vorschau leer (Rückmeldung vom 18. Oktober 2026: «es passiert
     // nichts im Animationsfenster, wenn ich eine Audiodatei hochlade»)
-    const ohneBild = !S.bild || (S.quelle === "text" && !S.text.trim()) || (S.quelle === "video" && !S.video);
+    const ohneBild = !S.bild || (S.quelle === "video" && !S.video);
     if (ohneBild) { S.quelle = "ton"; merken("quelle", "ton"); quelleZeigen(); quelleKnoepfe.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.quelle === "ton"))); }
     await tonSetzen({ auffrischen: !ohneBild });
-    if (ohneBild) { await papierLaden(); melden("Musik geladen: noch kein Bild gewählt – das Gewebe entsteht aus der Musik allein («Nur Ton»). Foto, Text oder Video lassen sich oben jederzeit wählen."); }
+    if (ohneBild) { await papierLaden(); melden("Musik geladen: noch kein Bild gewählt – das Gewebe entsteht aus der Musik allein («Nur Ton»). Ein Video lässt sich oben jederzeit wählen."); }
   } catch (fehler) { melden(`Diese Audiodatei kann der Browser nicht lesen (${fehler?.message ?? fehler}).`, true); }
 });
 /** S.ton aus der gelesenen Datei: so wie sie ist oder verfrickelt */
@@ -691,7 +647,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
   if ((stimme && (S.saeubern || aus?.eigen)) || mitAblauf) {
     melden(stimme && S.saeubern ? "Die Stimme wird gesäubert …" : "Scratch, Stimme und Gefrickel werden gebaut …");
     await pause();
-    const [{ saeubern, stimmAblauf }, { wav }] = await Promise.all([import("./stimme.js?v=19"), import("./frickeln.js?v=19")]);
+    const [{ saeubern, stimmAblauf }, { wav }] = await Promise.all([import("./stimme.js?v=20"), import("./frickeln.js?v=20")]);
     if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
     let kan = kanaele;
     const teile = schnitt ? [schnitt] : [];
@@ -714,7 +670,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
   } else if (S.tonart === "musik" && S.frickeln) {
     melden("Der Ton wird verfrickelt …");
     await pause();
-    const { frickeln, wav } = await import("./frickeln.js?v=19");
+    const { frickeln, wav } = await import("./frickeln.js?v=20");
     if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
     const f = frickeln(kanaele, rate, { samen: S.wurf });
     buffer = new AudioBuffer({ length: f.kanaele[0].length, numberOfChannels: 2, sampleRate: rate });
@@ -723,7 +679,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
     name = `${q.name}${schnitt ? ` · ${schnitt}` : ""} · verfrickelt, Wurf ${S.wurf}`; mehr = ` · ${f.bpm} BPM, ${f.takte} Takte aus ${f.scheiben} Schnipseln`;
     notiz(`Ton verfrickelt: Wurf ${S.wurf}, ${f.bpm} BPM, ${f.dauer.toFixed(1)} s`);
   } else if (aus?.eigen || aus?.schneiden) {                                 // nur geschnitten
-    const { wav } = await import("./frickeln.js?v=19");
+    const { wav } = await import("./frickeln.js?v=20");
     if (nr !== S.tonNr) return;
     buffer = new AudioBuffer({ length: kanaele[0].length, numberOfChannels: kanaele.length, sampleRate: rate });
     kanaele.forEach((c, k) => buffer.copyToChannel(c, k));
@@ -883,7 +839,7 @@ $("video").addEventListener("click", async () => {
 });
 
 async function mitWebCodecs(cfg, sz) {
-  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=19");
+  const p = proben(), { tonKodieren, mp4Schreiber } = await import("./tonspur.js?v=20");
   // mit Ton: die Tonspur zuerst kodieren (klein), dann gehen die Bilder gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
   let ton = null;
   if (S.ton && $("ton-im-video").checked) {
@@ -962,6 +918,6 @@ function zeigen({ blob, endung, art }, sz, ms) {
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...aufloesungKnoepfe, ...ablaufKnoepfe, ...quelleKnoepfe, $("text"), $("videodatei"), $("tondatei"), $("ton-weg"), $("frickeln"), $("saeubern"), $("stimm-ablauf"), $("stimm-dnb"), $("ausschnitt-von"), $("ausschnitt-laenge"), $("ausschnitt-auto"), $("video-von"), $("video-ablauf"), ...tonartKnoepfe, $("wuerfeln"), $("video"), $("png")])
+  for (const el of [...formatKnoepfe, ...aufloesungKnoepfe, ...ablaufKnoepfe, ...quelleKnoepfe, $("videodatei"), $("tondatei"), $("ton-weg"), $("frickeln"), $("saeubern"), $("stimm-ablauf"), $("stimm-dnb"), $("ausschnitt-von"), $("ausschnitt-laenge"), $("ausschnitt-auto"), $("video-von"), $("video-ablauf"), ...tonartKnoepfe, $("wuerfeln"), $("video"), $("png")])
     el.disabled = an || ((el.id === "video" || el.id === "png") && !S.A) || (el.id === "stimm-dnb" && !ablaufAn()) || (el.id === "frickeln" && S.ablauf === "video" && S.videoAblauf) || (el.id === "ausschnitt-auto" && !S.ausschnitt);
 }

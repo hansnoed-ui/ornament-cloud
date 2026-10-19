@@ -9,12 +9,12 @@
 
 const CACHE = "phormaiii-1";
 const START = new URL("./", self.registration.scope).href;
-// Dinge, die die Seite erst später holt (das Beispielbild per Klick) oder die der Browser für die Installation braucht. three.js lädt die Seite über
+// Dinge, die die Seite erst später holt oder die der Browser für die Installation braucht. three.js lädt die Seite über
 // die Import-Map («three», «three/addons/…»): diesen Namen kann das Folgen der Verweise nicht auflösen, darum stehen die Dateien hier (die relativen
 // Importe der Zusätze findet er selbst). Die App-Seite app/ für die Installation ebenso, und studio/, die Seite der installierten App (Abschrift mit
 // <base href="../">, tools/build-phorma-iii-app.mjs).
 const THREE = "../../vendor/three-0.185.1/";
-const DAZU = ["studio/", "beispiel.jpg", "manifest.webmanifest", "app/", "pwa.js",
+const DAZU = ["studio/", "manifest.webmanifest", "app/", "pwa.js",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png",
   ...["three.module.min.js", "three.core.min.js", "addons/postprocessing/UnrealBloomPass.js", "addons/postprocessing/Pass.js",
     "addons/shaders/CopyShader.js", "addons/shaders/LuminosityHighPassShader.js"].map((d) => THREE + d)];

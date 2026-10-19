@@ -4,7 +4,7 @@
 //   ein Wurm aus Beeren) oder eine Traube (ein Büschel um einen Mittelpunkt). Der Weg hängt nur von s ab, der Zeit der Musik: zwischen den
 //   Schlägen steht er fast, beim Schlag macht er einen Satz. Je Zustand eine Art (Kugel, Nah, Säule, Schwarm) und ein eigener Wurf.
 //   Welt: die Bildebene z = 0 füllt das Bild (Höhe 2, Breite 2 · B / H) wie im Gewebe und in der Irrfahrt; die Traube liegt um den Ursprung.
-import { zufallsfolge } from "./irrweg.js?v=19";
+import { zufallsfolge } from "./irrweg.js?v=20";
 
 export const ARTEN = ["kugel", "nah", "saeule", "schwarm"];
 /** wiederholbarer Zufall aus zwei Zahlen (0..1) */

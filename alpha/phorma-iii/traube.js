@@ -9,19 +9,19 @@
 //   Rauch: fleckiges Rauschen im Bild, dunkelgrau, mit der Glut rötlich.
 //   Musik: die Zeit der Musik treibt die Schnüre; der Schlag lässt die Perlen schwellen und die Kamera rucken, der Bass sprengt die Traube auf und
 //   lässt sie von innen rot glühen, die Höhen lassen die Funken blitzen; das Tor dunkelt zwischen den Schlägen ab. Bei jedem kräftigen Einsatz ein
-//   harter Schnitt in eine neue Einstellung (Kugel, Nah mit Schärfenzug, Säule, Schwarm; mit Text, Foto oder Video manchmal das Bild aus Perlen).
+//   harter Schnitt in eine neue Einstellung (Kugel, Nah mit Schärfenzug, Säule, Schwarm; mit einem Video manchmal sein Standbild aus Perlen).
 //   01 Traube (in den ersten 0,9 s wächst sie aus dem Dunkeln, die Fäden zeichnen sich; bis zum 19. Oktober 2026 eine eigene Phase «Keim», die
 //   gehörte nicht hin) → 02 Logo (die Perlen fädeln sich auf die Schlaufe des Signets, die Fäden winden sich als Strang um sie; film.js tippt den
 //   Schriftzug, der Punkt ist eine Perle) oder 02 Stille (alles sinkt ins Dunkel).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich, kamera, ABSTAND, FOV } from "./gemeinsam.js?v=19";
-import { phase } from "./ablauf.js?v=19";
-import { gewebeKurven } from "./kurven.js?v=19";
-import { weichzeichnen } from "./analyse.js?v=19";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=19";
-import { RAUSCHEN } from "./gewebe.js?v=19";
-import { traubenBau, perlenLegen, einstellung, artBei, schlaufeWelt, perlenAufZuegen, traubenZeit, h1 } from "./traubenplan.js?v=19";
+import { anteil, weich, kamera, ABSTAND, FOV } from "./gemeinsam.js?v=20";
+import { phase } from "./ablauf.js?v=20";
+import { gewebeKurven } from "./kurven.js?v=20";
+import { weichzeichnen } from "./analyse.js?v=20";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=20";
+import { RAUSCHEN } from "./gewebe.js?v=20";
+import { traubenBau, perlenLegen, einstellung, artBei, schlaufeWelt, perlenAufZuegen, traubenZeit, h1 } from "./traubenplan.js?v=20";
 
 const VOR = 0.4, LN = 512;                                                  // Vorlauf des Films; Punkte der Schlaufe in der Textur
 
@@ -192,7 +192,7 @@ export function traube(g, teil) {
   const mitBild = g.quelle !== "ton";
   const bau = traubenBau(N), z = bau.z, zeitDerTraube = traubenZeit(T.laut);
 
-  // das Bild aus Perlen (mit Text, Foto oder Video): die Umrisse wie in der Irrfahrt, auf 62 % verkleinert in der Bildebene
+  // das Bild aus Perlen (mit einem Video, sein Standbild): die Umrisse wie in der Irrfahrt, auf 62 % verkleinert in der Bildebene
   let zeichen = null;
   if (mitBild) {
     const text = g.quelle === "text", feld = text ? A.hell.map((v) => 1 - v) : weichzeichnen(A.hell, A.w, A.h, 2.5);
@@ -242,7 +242,7 @@ export function traube(g, teil) {
   const kam = kamera(B, H);
 
   // Zustände: Art und Wurf; der Schnitt (Lage) wechselt mit dem Zustand
-  // mit Text, Foto oder Video: der zweite Zustand und dann etwa jeder sechste zeigt das Bild aus Perlen
+  // mit einem Video: der zweite Zustand und dann etwa jeder sechste zeigt das Bild aus Perlen
   const zustand = (zs) => ({ art: zeichen && zs.nr && (zs.nr === 2 || h1(zs.nr, 9) < 0.16) ? "zeichen" : artBei(zs.nr), saat: zs.nr * 7 + 3 });
   const stand = (tau) => {
     const film = tau + VOR, istLogo = !!Lg && tau >= Lg[0], zs = zustandBei(ZS, istLogo ? Lg[0] + VOR - 1e-3 : film, G[0] + VOR);
