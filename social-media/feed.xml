@@ -7,7 +7,22 @@
     <atom:link href="https://ornament.cloud/social-media/feed.xml" rel="self" type="application/rss+xml"/>
     <description>Beiträge aus X, Facebook und Instagram: gesichert, abgeschrieben, verschlagwortet und kommentiert.</description>
     <language>de-ch</language>
-    <lastBuildDate>Mon, 19 Oct 2026 00:00:00 +0000</lastBuildDate>
-
+    <lastBuildDate>Mon, 19 Oct 2026 08:00:40 +0000</lastBuildDate>
+    <item>
+      <title>Zettel 1: Geräteintelligenz, Stochastik und Ordnungsfähigkeit von Kontexten</title>
+      <link>https://ornament.cloud/social-media/1-geraeteintelligenz-stochastik-und-ordnungsfaehig/</link>
+      <guid isPermaLink="true">https://ornament.cloud/social-media/1-geraeteintelligenz-stochastik-und-ordnungsfaehig/</guid>
+      <pubDate>Mon, 19 Oct 2026 07:36:00 +0000</pubDate>
+      <category>Geräteintelligenz</category>
+      <category>Stochastik</category>
+      <category>Kontext</category>
+      <category>Ordnungsfähigkeit</category>
+      <category>LLM</category>
+      <category>KI</category>
+      <category>Intelligenz</category>
+      <category>Bewusstsein</category>
+      <category>Ordnung</category>
+      <description><![CDATA[<blockquote><p><strong>Klaus Kusanowsky</strong> @QuirinPoulsen auf X, 17. Oktober 2026</p><p>Wer die Stochastik der Geräteintelligenz ernst nimmt, will nicht wissen, ob das Ding denken kann, sondern wird bemerken, wie sich Kontexte ordnen lassen. Ordnungsfähigkeit ist die intelligente Leistung, nicht die Durchschlagskraft von Stimmigkeit.</p></blockquote>]]></description>
+    </item>
   </channel>
 </rss>

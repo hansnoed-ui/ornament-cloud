@@ -36,10 +36,52 @@
   </header>
 
   <main class="wrap">
-    <section class="sm-leer">
-      <h2>Noch keine Zettel</h2>
-      <p>Hier entsteht eine Sammlung kommentierter Beiträge. Der erste Zettel ist in Arbeit.</p>
-    </section>
+    <div class="sm-raster">
+    <aside class="sm-filter" aria-label="Filtern">
+      <p class="sm-zaehler">1 Zettel, 1 Autor:in, 9 Schlagworte</p>
+      <figure class="zeitband" aria-label="Zettel je Woche">
+        <svg viewBox="0 0 1000 48" preserveAspectRatio="none" role="img" aria-label="Gesicherte Zettel je Woche, 19. Oktober 2026 bis 25. Oktober 2026, höchstens 1 in einer Woche"><g class="woche" data-von="1792368000000" data-bis="1792972800000"><title>Woche ab 19. Okt. 2026: 1 Zettel</title><rect class="woche-ziel" x="0.0" y="0" width="1000.0" height="48"/><rect class="woche-alle" x="493.0" y="4.0" width="14.0" height="44.0" rx="2.0"/><rect class="woche-treffer" x="493.0" y="4.0" width="14.0" height="44.0" rx="2.0" data-max="1" data-h="48"/></g><line class="grundlinie" x1="0" x2="1000" y1="47.5" y2="47.5"/></svg>
+        <figcaption><span>19. Okt. 2026</span><span>25. Okt. 2026</span></figcaption>
+      </figure>
+      <div class="filter" hidden>
+        <label class="suche"><span class="nur-lesen">Suchen</span><input type="search" name="q" placeholder="Suchen in Text, Kommentar, Namen" autocomplete="off"></label>
+        <div class="filter-gruppe" role="group" aria-label="Plattform"><button type="button" class="wahl" data-plattform="" aria-pressed="true">Alle <span class="anzahl">1</span></button><button type="button" class="wahl" data-plattform="x" aria-pressed="false">X <span class="anzahl">1</span></button><button type="button" class="wahl" data-plattform="facebook" aria-pressed="false" disabled>Facebook <span class="anzahl">0</span></button><button type="button" class="wahl" data-plattform="instagram" aria-pressed="false" disabled>Instagram <span class="anzahl">0</span></button></div>
+        <div class="filter-gruppe filter-gruppe--ordnung" role="group" aria-label="Ordnung">
+          <span class="filter-titel">Ordnen nach</span>
+          <button type="button" class="wahl" data-ordnung="erfasst" aria-pressed="true">gesichert</button><button type="button" class="wahl" data-ordnung="veroeffentlicht" aria-pressed="false">veröffentlicht</button>
+        </div>
+        <details class="filter-block" open><summary>Schlagworte</summary><div class="marken"><button type="button" class="marke" data-schlagwort="bewusstsein" aria-pressed="false">Bewusstsein <span class="anzahl">1</span></button><button type="button" class="marke" data-schlagwort="geraeteintelligenz" aria-pressed="false">Geräteintelligenz <span class="anzahl">1</span></button><button type="button" class="marke" data-schlagwort="intelligenz" aria-pressed="false">Intelligenz <span class="anzahl">1</span></button><button type="button" class="marke" data-schlagwort="ki" aria-pressed="false">KI <span class="anzahl">1</span></button><button type="button" class="marke" data-schlagwort="kontext" aria-pressed="false">Kontext <span class="anzahl">1</span></button><button type="button" class="marke" data-schlagwort="llm" aria-pressed="false">LLM <span class="anzahl">1</span></button><button type="button" class="marke" data-schlagwort="ordnung" aria-pressed="false">Ordnung <span class="anzahl">1</span></button><button type="button" class="marke" data-schlagwort="ordnungsfaehigkeit" aria-pressed="false">Ordnungsfähigkeit <span class="anzahl">1</span></button><button type="button" class="marke" data-schlagwort="stochastik" aria-pressed="false">Stochastik <span class="anzahl">1</span></button></div></details>
+        <details class="filter-block"><summary>Autor:innen</summary><div class="marken"><button type="button" class="marke marke--person" data-autor="x-quirinpoulsen" aria-pressed="false"><span class="avatar avatar--x"><img src="medien/1/avatar.webp" alt="" width="40" height="40" loading="lazy" decoding="async"></span><span class="marke-name">Klaus Kusanowsky</span> <span class="anzahl">1</span></button></div></details>
+        <p class="filter-stand" role="status" aria-live="polite"></p>
+        <button type="button" class="filter-zurueck" hidden>Alle Filter lösen</button>
+      </div>
+      <p class="register"><a href="schlagworte/">Alle Schlagworte</a> <a href="autorinnen/">Alle Autor:innen</a> <a href="feed.xml">Feed</a></p>
+    </aside>
+    <ol class="zeitleiste" aria-label="Zettel, zuletzt gesicherte zuerst">
+      <li class="monat" data-monat="2026-10"><h2>Oktober 2026</h2></li>
+      <li class="zettel" id="zettel-1" data-nr="1" data-plattform="x" data-autor="x-quirinpoulsen" data-schlagworte="|geraeteintelligenz|stochastik|kontext|ordnungsfaehigkeit|llm|ki|intelligenz|bewusstsein|ordnung|" data-erfasst="1792395360000" data-veroeffentlicht="1792238400000">
+        <p class="zettel-zeit"><time datetime="2026-10-19T07:36:00Z"><span class="zettel-tag">19.</span> <span class="zettel-monat">Okt. 2026</span></time><span class="zettel-zeit-anders" hidden><time datetime="2026-10-17"><span class="zettel-tag">17.</span> <span class="zettel-monat">Okt. 2026</span></time></span></p>
+        <article class="zettel-karte zettel-karte--x">
+          <header class="zettel-kopf">
+            <p class="zettel-nr"><a href="1-geraeteintelligenz-stochastik-und-ordnungsfaehig/">Zettel 1</a></p>
+            <h2 class="zettel-titel"><a href="1-geraeteintelligenz-stochastik-und-ordnungsfaehig/">Geräteintelligenz, Stochastik und Ordnungsfähigkeit von Kontexten</a></h2>
+          </header>
+          <div class="zettel-beitrag">
+<article class="beitrag beitrag--x" lang="de">
+<header class="beitrag-kopf"><span class="avatar avatar--x"><img src="medien/1/avatar.webp" alt="" width="40" height="40" loading="lazy" decoding="async"></span><span class="beitrag-wer"><span class="beitrag-name">Klaus Kusanowsky</span><span class="beitrag-handle">@QuirinPoulsen</span></span><span class="beitrag-marke" aria-label="Beitrag auf X">X</span></header>
+<p class="beitrag-text">Wer die Stochastik der Geräteintelligenz ernst nimmt, will nicht wissen, ob das Ding denken kann, sondern wird bemerken, wie sich Kontexte ordnen lassen. Ordnungsfähigkeit ist die intelligente Leistung, nicht die Durchschlagskraft von Stimmigkeit.</p>
+<p class="beitrag-zeit"><time datetime="2026-10-17">17. Okt. 2026</time></p><ul class="beitrag-zahlen" aria-label="Kennzahlen bei der Erfassung"><li class="zahl zahl--reposts" title="1 Repost"><svg class="sym" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 6.5 4.5 9 7 11.5"/><path d="M4.5 9H16a3 3 0 0 1 3 3v1"/><path d="M17 17.5l2.5-2.5-2.5-2.5"/><path d="M19.5 15H8a3 3 0 0 1-3-3v-1"/></svg><span>1</span><span class="nur-lesen"> Repost</span></li><li class="zahl zahl--likes" title="3 Likes"><svg class="sym" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 19.5s-7-4.3-7-9.3A3.7 3.7 0 0 1 8.8 6.5c1.4 0 2.5.7 3.2 1.8.7-1.1 1.8-1.8 3.2-1.8A3.7 3.7 0 0 1 19 10.2c0 5-7 9.3-7 9.3z"/></svg><span>3</span><span class="nur-lesen"> Likes</span></li><li class="zahl zahl--ansichten" title="94 Ansichten"><svg class="sym" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 19.5v-6"/><path d="M10 19.5V9"/><path d="M15 19.5V4.5"/><path d="M20 19.5v-9"/></svg><span>94</span><span class="nur-lesen"> Ansichten</span></li></ul>
+</article>
+          </div>
+          <footer class="zettel-fuss">
+            <ul class="schlagworte"><li><a href="?schlagwort=geraeteintelligenz" data-schlagwort="geraeteintelligenz">Geräteintelligenz</a></li><li><a href="?schlagwort=stochastik" data-schlagwort="stochastik">Stochastik</a></li><li><a href="?schlagwort=kontext" data-schlagwort="kontext">Kontext</a></li><li><a href="?schlagwort=ordnungsfaehigkeit" data-schlagwort="ordnungsfaehigkeit">Ordnungsfähigkeit</a></li><li><a href="?schlagwort=llm" data-schlagwort="llm">LLM</a></li><li><a href="?schlagwort=ki" data-schlagwort="ki">KI</a></li><li><a href="?schlagwort=intelligenz" data-schlagwort="intelligenz">Intelligenz</a></li><li><a href="?schlagwort=bewusstsein" data-schlagwort="bewusstsein">Bewusstsein</a></li><li><a href="?schlagwort=ordnung" data-schlagwort="ordnung">Ordnung</a></li></ul>
+            <a class="zettel-mehr" href="1-geraeteintelligenz-stochastik-und-ordnungsfaehig/">Zettel öffnen</a>
+          </footer>
+        </article>
+      </li>
+    </ol>
+    </div>
+    <p class="sm-leer-gefiltert" hidden>Kein Zettel passt zu diesen Filtern. <button type="button" class="filter-zurueck">Alle Filter lösen</button></p>
   </main>
 
   <footer class="site-footer">
@@ -48,7 +90,7 @@
       <p>Die Beiträge sind Zitate: gesichert, abgeschrieben und kommentiert, zur Erläuterung und Veranschaulichung. Wer hier zitiert ist und das nicht möchte, schreibt mir; der Zettel verschwindet.</p>
     </div>
   </footer>
-
+  <script type="module" src="js/zeitleiste.js?v=1"></script>
   <script src="../icons.js?v=14" defer></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../vendor/goatcounter/count.js"></script>

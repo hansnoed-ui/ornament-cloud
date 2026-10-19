@@ -1,4 +1,63 @@
 {
   "version": 1,
-  "eintraege": []
+  "eintraege": [
+    {
+      "nr": 1,
+      "id": "1-geraeteintelligenz-stochastik-und-ordnungsfaehig",
+      "plattform": "x",
+      "kontext": null,
+      "titel": "Geräteintelligenz, Stochastik und Ordnungsfähigkeit von Kontexten",
+      "autor": {
+        "name": "Klaus Kusanowsky",
+        "handle": "QuirinPoulsen",
+        "profil": "https://x.com/QuirinPoulsen",
+        "verifiziert": false,
+        "avatar": "medien/1/avatar.webp"
+      },
+      "quelle": null,
+      "veroeffentlicht": "2026-10-17",
+      "veroeffentlichtQuelle": "bild",
+      "erfasst": "2026-10-19T07:36:00Z",
+      "sprache": "de",
+      "uebersetzung": null,
+      "text": "Wer die Stochastik der Geräteintelligenz ernst nimmt, will nicht wissen, ob das Ding denken kann, sondern wird bemerken, wie sich Kontexte ordnen lassen. Ordnungsfähigkeit ist die intelligente Leistung, nicht die Durchschlagskraft von Stimmigkeit.",
+      "medien": [],
+      "zitiert": null,
+      "kennzahlen": {
+        "antworten": null,
+        "reposts": 1,
+        "likes": 3,
+        "lesezeichen": null,
+        "ansichten": 94
+      },
+      "beleg": {
+        "datei": "medien/1/beleg.webp",
+        "breite": 544,
+        "hoehe": 154,
+        "sha256": "f861ecd44e2139734074a03666ebc0e9c52db076abf54b93dc0e34b84642eed1",
+        "geschwaerzt": false
+      },
+      "karte": {
+        "datei": "medien/1/karte.jpg",
+        "breite": 1200,
+        "hoehe": 630
+      },
+      "kommentar": "",
+      "schlagworte": [
+        "Geräteintelligenz",
+        "Stochastik",
+        "Kontext",
+        "Ordnungsfähigkeit",
+        "LLM",
+        "KI",
+        "Intelligenz",
+        "Bewusstsein",
+        "Ordnung"
+      ],
+      "verweise": [],
+      "status": "unbekannt",
+      "geprueft": null,
+      "geaendert": "2026-10-19T08:00:40Z"
+    }
+  ]
 }
