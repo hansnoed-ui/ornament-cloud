@@ -374,7 +374,23 @@ async function startKontext(opts = {}, { stub = true, url = "/" } = {}) {
 const startAn = (page) => page.evaluate(() => document.documentElement.classList.contains("start-an"));
 const startFrei = (page) => page.waitForFunction(() => !document.documentElement.classList.contains("start-an"), null, { timeout: 5000 });
 
-await check("Startanimation: neue Sitzung deckt die Seite schwarz ab, spielt das Intro stumm, sperrt die Seite dahinter; «Ton an» schaltet den Ton, ohne zu beenden; «Skip intro» führt zu einem Zettel, danach läuft sie nicht wieder", async () => {
+await check("Startanimation: verweigert der Browser den Ton (noch nicht getippt), läuft das Intro stumm mit «Ton an»", async () => {
+  const ctx = await neuerKontext({ viewport: { width: 1200, height: 800 } });
+  await ctx.addInitScript(stubVideo);
+  await ctx.addInitScript(() => {
+    const stumm = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () { if (!this.muted) { window.__start.play += 1; return Promise.reject(new DOMException("noch nicht getippt", "NotAllowedError")); } return stumm.call(this); };
+  });
+  const page = await ctx.newPage(), errors = fehler(page);
+  await page.goto(origin + "/");
+  await page.waitForFunction(() => window.__start.play >= 2);
+  assert.equal(await startAn(page), true, "die Animation läuft weiter");
+  assert.deepEqual(await page.evaluate(() => [document.querySelector("#start video").muted, document.querySelector(".start-ton").textContent, document.querySelector(".start-ton").getAttribute("aria-pressed")]), [true, "Ton an", "false"]);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await check("Startanimation: neue Sitzung deckt die Seite schwarz ab, spielt das Intro mit Ton, sperrt die Seite dahinter; «Ton aus» / «Ton an» schaltet den Ton, ohne zu beenden; «Skip intro» führt zu einem Zettel, danach läuft sie nicht wieder", async () => {
   const { ctx, page, errors } = await startKontext();
   assert.equal(await startAn(page), true);
   const flaeche = await page.locator("#start").evaluate((e) => { const r = e.getBoundingClientRect(), c = getComputedStyle(e); return { w: r.width, h: r.height, pos: c.position, z: +c.zIndex, bg: c.backgroundColor, frei: document.documentElement.clientWidth }; });
@@ -384,10 +400,10 @@ await check("Startanimation: neue Sitzung deckt die Seite schwarz ab, spielt das
   assert.equal(flaeche.bg, "rgb(0, 0, 0)", "schwarz wie das Video");
   const v = await page.evaluate(() => window.__start);
   assert.deepEqual(v.src, ["assets/start-intro-quer.mp4?v=2"], "im Querformat die Fassung 16 : 9");
-  assert.equal(v.play, 1);
+  assert.equal(v.play, 1, "einmal, mit Ton (der Browser lässt es hier zu)");
   const video = await page.locator("#start video").evaluate((e) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height, x: r.left + r.width / 2, y: r.top + r.height / 2, muted: e.muted }; });
   const [vw, vh] = await page.evaluate(() => [innerWidth, innerHeight]), voll = Math.min(vw, (vh * 16) / 9);   // wie 100vw / 100vh (mit dem Streifen des Bildlaufbalkens)
-  assert.ok(Math.abs(video.w - 0.67 * voll) < 2 && Math.abs(video.w / video.h - 16 / 9) < 0.01 && video.muted, `16 : 9, zwei Drittel so gross wie das Fenster («ein Drittel kleiner»), zuerst stumm (${video.w} × ${video.h})`);
+  assert.ok(Math.abs(video.w - 0.67 * voll) < 2 && Math.abs(video.w / video.h - 16 / 9) < 0.01 && !video.muted, `16 : 9, zwei Drittel so gross wie das Fenster («ein Drittel kleiner»), mit Ton (${video.w} × ${video.h})`);
   assert.ok(Math.abs(video.x - flaeche.w / 2) < 2 && Math.abs(video.y - flaeche.h / 2) < 2, `mittig im Schwarz (${video.x} / ${video.y})`);
   const knopf = await page.getByRole("button", { name: "Skip intro" }).evaluate((e) => { const r = e.getBoundingClientRect(), c = getComputedStyle(e); return { r: r.right, b: r.bottom, h: r.height, farbe: c.color, rand: c.borderTopColor, radius: parseFloat(c.borderTopLeftRadius), innen: innerWidth }; });
   assert.equal(knopf.farbe, "rgb(240, 138, 93)", "Schrift orange (auf Schwarz lesbar)");
@@ -399,16 +415,18 @@ await check("Startanimation: neue Sitzung deckt die Seite schwarz ab, spielt das
   assert.equal(await page.evaluate(() => sessionStorage.getItem("start-animation")), "1", "gemerkt, sobald sie läuft");
   assert.equal(await page.evaluate(() => document.querySelector("main").inert && document.querySelector("header").inert && document.querySelector("footer").inert && !document.getElementById("start").inert), true, "Kopf, Inhalt und Fuss sind gesperrt, die Animation nicht");
   assert.equal(await page.evaluate(() => document.documentElement.style.overflow), "hidden", "kein Blättern dahinter");
-  // Ton an und wieder aus: die Animation läuft weiter
-  const ton = page.getByRole("button", { name: "Ton an" });
+  // Ton aus und wieder an (seit 20. Oktober 2026 zuerst mit Ton, Wunsch: «defaultmässig auf Ton an»): die Animation läuft weiter
+  const tonZustand = () => page.evaluate(() => [document.querySelector("#start video").muted, document.querySelector(".start-ton").textContent, document.querySelector(".start-ton").getAttribute("aria-pressed")]);
+  assert.deepEqual(await tonZustand(), [false, "Ton aus", "true"], "zuerst mit Ton");
+  const ton = page.getByRole("button", { name: "Ton aus" });
   const tk = await ton.evaluate((e) => { const r = e.getBoundingClientRect(); return { b: r.bottom, h: r.height, r: r.right }; });
-  assert.ok(tk.h >= 44 && Math.round(800 - tk.b) === 24 && tk.r < knopf.r, "«Ton an» links neben «Skip intro»");
+  assert.ok(tk.h >= 44 && Math.round(800 - tk.b) === 24 && tk.r < knopf.r, "«Ton aus» links neben «Skip intro»");
   await ton.click();
-  assert.deepEqual(await page.evaluate(() => [document.querySelector("#start video").muted, document.querySelector(".start-ton").textContent, document.querySelector(".start-ton").getAttribute("aria-pressed")]), [false, "Ton aus", "true"]);
-  assert.equal(await startAn(page), true, "«Ton an» beendet die Animation nicht");
-  await page.getByRole("button", { name: "Ton aus" }).focus(); await page.keyboard.press("Enter");
-  assert.deepEqual(await page.evaluate(() => [document.querySelector("#start video").muted, document.querySelector(".start-ton").textContent]), [true, "Ton an"], "mit der Tastatur wieder stumm");
-  assert.equal(await startAn(page), true, "auch die Taste auf «Ton aus» beendet nichts");
+  assert.deepEqual(await tonZustand(), [true, "Ton an", "false"], "stumm");
+  assert.equal(await startAn(page), true, "«Ton aus» beendet die Animation nicht");
+  await page.getByRole("button", { name: "Ton an" }).focus(); await page.keyboard.press("Enter");
+  assert.deepEqual(await tonZustand(), [false, "Ton aus", "true"], "mit der Tastatur wieder mit Ton");
+  assert.equal(await startAn(page), true, "auch die Taste auf «Ton an» beendet nichts");
   // seit 18. Oktober 2026: das Ende des Intros führt zu einem zufälligen Zettel (die schwarze Fläche bleibt bis dahin)
   await page.getByRole("button", { name: "Skip intro" }).click();
   await page.waitForURL(/\/zu-seiner-zeit\/strophe\/[^/]+\/$/);

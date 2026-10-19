@@ -30,7 +30,7 @@
     auch als Website Intro … gerne mit dem jetzigen Sound»): ein Würfel aus Licht steht und dreht sich, ein leuchtender Faden irrt darin, an manchen Schlägen schiesst er
     quer durch den Raum, am Ende legt er sich zum Logo, dann blendet die Seite über (Video auf Schwarz, in beiden Modi dasselbe, 16 Sekunden; gerechnet mit
     alpha/phorma-iii/, Effekt Lichtwürfel, Quelle «Nur Ton», tools/phorma-intro.mjs). Zwei Fassungen nach dem Fenster (Rückmeldung: «das Intro sieht im Browser am Laptop nicht gut aus, qualitativ und vom
-    Bildschirmformat»): quer 16 : 9 in 1920 × 1080 (assets/start-intro-quer.mp4, Laptop und Bildschirm; zwei Drittel so gross wie das Fenster), hoch 4 : 5 in 1080 × 1350 (assets/start-intro.mp4, Telefon). Es beginnt stumm (Browser spielen Ton erst nach einem Tippen), «Ton an» schaltet die Musik dazu, «Ton aus» wieder ab. Bis dahin wuchsen die
+    Bildschirmformat»): quer 16 : 9 in 1920 × 1080 (assets/start-intro-quer.mp4, Laptop und Bildschirm; zwei Drittel so gross wie das Fenster), hoch 4 : 5 in 1080 × 1350 (assets/start-intro.mp4, Telefon). Es beginnt mit Ton (seit 20. Oktober 2026, Wunsch: «das Intro der Website defaultmässig auf Ton an»), «Ton aus» schaltet die Musik ab, «Ton an» wieder dazu; lässt der Browser Ton ohne Tippen nicht zu (die meisten beim ersten Besuch), läuft es stumm mit «Ton an». Bis dahin wuchsen die
     Zeichen von «ornament.cloud» als Linienwachstum (src/videos/src/wachstum/, im Verlauf von Git). Sie läuft nur auf dieser Seite, einmal pro Sitzung (Vorschau jederzeit
     mit ?start), nicht bei «weniger Bewegung» und nicht bei «Daten sparen». Tippen, eine Taste oder der Knopf «Skip intro» (unten rechts, orange) beendet sie – Tippen auf
     «Ton an» nicht; läuft das Video nicht an, kommt die Seite sofort.
@@ -150,7 +150,8 @@
     </div>
   </footer>
   <script>
-    // Startanimation (siehe Kommentar im Kopf): die Irrfahrt, stumm bis «Ton an»; die Seite darunter ist währenddessen nicht erreichbar (inert).
+    // Startanimation (siehe Kommentar im Kopf): der Lichtwürfel, mit Ton, wenn der Browser es zulässt, sonst stumm bis «Ton an»; die Seite darunter ist
+    // währenddessen nicht erreichbar (inert).
     // Endet das Video, bei Fehler, wenn es nicht von selbst anläuft (nach 6 Sekunden) oder stehen bleibt, bei Tippen, Taste oder «Skip intro»: ausblenden und freigeben.
     // «Ton an» / «Ton aus» beendet nichts.
     (function () {
@@ -180,17 +181,23 @@
       var amTon = function (e) { return e.target && e.target.closest && e.target.closest(".start-ton"); };
       el.addEventListener("pointerdown", function (e) { if (!amTon(e)) weg(); });
       knopf.addEventListener("click", weg);
+      function tonZeigen() { ton.textContent = v.muted ? "Ton an" : "Ton aus"; ton.setAttribute("aria-pressed", String(!v.muted)); }
       ton.addEventListener("click", function () {
         v.muted = !v.muted;                                                   // im Klick: so darf der Browser den Ton spielen
-        ton.textContent = v.muted ? "Ton an" : "Ton aus";
-        ton.setAttribute("aria-pressed", String(!v.muted));
+        tonZeigen();
         if (v.paused && !fertig) { var q = v.play(); if (q && q.catch) q.catch(function () {}); }
       });
       addEventListener("keydown", function taste(e) { if (amTon(e)) return; removeEventListener("keydown", taste); weg(); });
       warte();
       v.src = matchMedia("(min-aspect-ratio: 1/1)").matches ? "assets/start-intro-quer.mp4?v=2" : "assets/start-intro.mp4?v=3";
+      // zuerst mit Ton; verweigert der Browser das (NotAllowedError: noch nicht getippt), stumm – dann bleibt «Ton an»
+      v.muted = false; tonZeigen();
       var p = v.play();
-      if (p && p.catch) p.catch(weg);
+      if (p && p.catch) p.catch(function (e) {
+        if (fertig || !e || e.name !== "NotAllowedError") { weg(); return; }
+        v.muted = true; tonZeigen();
+        var q = v.play(); if (q && q.catch) q.catch(weg);
+      });
     })();
   </script>
   <script src="icons.js?v=14" defer></script>

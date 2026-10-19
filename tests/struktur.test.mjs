@@ -199,7 +199,9 @@ test("Startseite: Startanimation (9. Oktober 2026; seit 18. Oktober 2026 die Irr
   assert.match(skript, /v\.src = matchMedia\("\(min-aspect-ratio: 1\/1\)"\)\.matches \? "assets\/start-intro-quer\.mp4\?v=\d+" : "assets\/start-intro\.mp4\?v=\d+"/, "quer die Fassung 16 : 9, hoch 4 : 5");
   for (const ereignis of ['v.addEventListener("ended", weg)', 'v.addEventListener("error", weg)', 'el.addEventListener("pointerdown", function (e) { if (!amTon(e)) weg(); })', 'knopf.addEventListener("click", weg)', 'removeEventListener("keydown", taste); weg();']) assert.ok(skript.includes(ereignis), ereignis);
   assert.match(skript, /v\.muted = !v\.muted;/, "Ton an und aus");
-  assert.match(skript, /p\.catch\(weg\)/, "lässt der Browser das Video nicht von selbst spielen, kommt die Seite sofort");
+  assert.match(skript, /v\.muted = false; tonZeigen\(\);\s*var p = v\.play\(\);/, "zuerst mit Ton (Wunsch vom 20. Oktober 2026: «defaultmässig auf Ton an»)");
+  assert.match(skript, /e\.name !== "NotAllowedError"\) \{ weg\(\); return; \}\s*v\.muted = true; tonZeigen\(\);/, "verweigert der Browser den Ton, stumm mit «Ton an»");
+  assert.match(skript, /q\.catch\(weg\)/, "lässt der Browser das Video auch stumm nicht spielen, kommt die Seite sofort");
   assert.match(skript, /setTimeout\(weg, 6000\)/, "bleibt das Video hängen, kommt die Seite nach sechs Sekunden");
   assert.match(skript, /k\.inert = true/);
   assert.match(skript, /k\.inert = false/);
