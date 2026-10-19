@@ -1,4 +1,4 @@
-// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, MP4,
+// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Plan der Montage, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, MP4,
 // Seite. Die Tests fürs Gewebe (Ton, Höhenlinien, Verfrickeln) stehen seit dem 18. Oktober 2026 in tests/phorma-iii.test.mjs.
 //   node --test tests/phorma-ii.test.mjs
 import test from "node:test";
@@ -20,11 +20,74 @@ test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette"
   assert.equal(A.ablaufName("physarum+muster+tuch"), "physarum+tuch", "die frühere Morphogenese fällt weg");
   assert.equal(A.ablaufName("gewebe"), A.KETTE, "ein gemerktes Gewebe (seit dem 18. Oktober 2026 PHORMA III) ergibt die ganze Kette");
   assert.equal(A.ablaufName("struktur"), A.KETTE);
+  assert.equal(A.ablaufName("montage+tuch"), "tuch+montage", "die Montage steht immer am Schluss");
+});
+
+test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappung, geerbte Ausschnitte, Anfang dunkel, Ende exakt, wiederholbar", async () => {
+  const M = await import(new URL("montageplan.js", P).href);
+  // ein Kopf in der Mitte (nah, mit Kanten), der Grund fern
+  const w = 60, h = 75, n = w * h, tiefe = new Float32Array(n), nahrung = new Float32Array(n), hell = new Float32Array(n).fill(0.7);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const d = Math.hypot((x - 30) / 14, (y - 35) / 22); tiefe[y * w + x] = d < 1 ? 0.9 : 0.2; nahrung[y * w + x] = Math.abs(d - 1) < 0.1 ? 1 : 0.05; }
+  const G = M.wichtigkeit({ w, h, tiefe, nahrung, hell });
+  const [m0, m1, m2, m3] = G.motiv;
+  assert.ok(m0 > 0.15 && m2 < 0.85 && m1 > 0.05 && m3 < 0.95, `die Zone liegt um den Kopf (${G.motiv.map((v) => v.toFixed(2))})`);
+  for (const kette of ["montage", "tuch+montage"]) {
+    const teil = A.kette(kette).teile.at(-1), plan = M.montagePlan(G, teil, { a: 0.8 }), [, , bild] = teil.phasen;
+    assert.deepEqual(teil.phasen.map((p) => p[0]), ["schnitte", "montage", "bild"]);
+    assert.equal(teil.vonFoto, kette !== "montage", "nach dem Tuch beginnt sie beim Foto");
+    const S = plan.schnitte;
+    assert.ok(S.length >= 8, `genug Schnitte (${S.length})`);
+    for (let i = 1; i < S.length; i++) {
+      assert.ok(S[i].t > S[i - 1].t && Math.abs(S[i].t / M.TAKT - Math.round(S[i].t / M.TAKT)) < 1e-9, "auf dem Schlag, aufsteigend");
+      assert.ok(S[i].t < plan.Bp[0], "im Bild kein Schnitt mehr");
+    }
+    assert.ok(S.at(-1).dicht && S.at(-1).felder.length >= 30, "die letzte Aufteilung ist dicht");
+    for (const s of S) {
+      const [z0, z1, z2, z3] = s.zone;
+      let flaeche = 0;
+      for (const f of s.felder) {
+        const [x0, y0, x1, y1] = f.rect;
+        assert.ok(x0 >= z0 - 1e-9 && y0 >= z1 - 1e-9 && x1 <= z2 + 1e-9 && y1 <= z3 + 1e-9 && x1 > x0 && y1 > y0, "Feld in der Zone");
+        flaeche += (x1 - x0) * (y1 - y0);
+      }
+      assert.ok(Math.abs(flaeche - (z2 - z0) * (z3 - z1)) < 1e-9, "die Felder füllen die Zone genau");
+    }
+    for (const dicht of S.filter((s) => s.felder.length > 40)) {
+      const zahl = new Map();
+      for (const f of dicht.felder) zahl.set(f.tf, (zahl.get(f.tf) ?? 0) + 1);
+      const geteilt = dicht.felder.filter((f) => zahl.get(f.tf) > 1).length;
+      assert.ok(geteilt >= dicht.felder.length * 0.2, `viele Felder teilen den Ausschnitt mit Nachbarn aus demselben Elternfeld (${geteilt} von ${dicht.felder.length})`);
+    }
+    const dicht = S.find((s) => s.felder.length > 40);
+    assert.ok(new Set(dicht.felder.map((f) => f.art)).size >= 3, "verschiedene Arten");
+    // Ende: alle Felder an ihrem Platz
+    const ende = M.montageBei(plan, teil.dauer - 1 / 30);
+    assert.equal(ende.ende, 1);
+    for (const f of ende.felder) {
+      const [x0, y0, x1, y1] = f.rect, q = f.quelle;
+      assert.ok(Math.abs(q[0] - (x0 + x1) / 2) < 1e-9 && Math.abs(q[2] - (x1 - x0)) < 1e-9 && f.rand < 1e-9, "eingerastet");
+    }
+    // Mitte: versetzt
+    const mitte = M.montageBei(plan, (teil.phasen[0][2] + teil.phasen[1][2] / 2));
+    assert.ok(mitte.felder.filter((f) => Math.abs(f.quelle[2] - (f.rect[2] - f.rect[0])) > 1e-6 || Math.abs(f.quelle[0] - (f.rect[0] + f.rect[2]) / 2) > 1e-6).length > 5, "in der Mitte zeigen viele Felder anderes");
+    assert.deepEqual(M.montageBei(M.montagePlan(G, teil, { a: 0.8 }), 4.2), M.montageBei(plan, 4.2), "wiederholbar");
+    assert.ok(bild[2] > 2);
+  }
+  const erst = M.montagePlan(G, A.kette("montage").teile[0], { a: 0.8 });
+  assert.ok(M.montageBei(erst, 0.15).felder.every((f) => f.licht === 0), "als erster Effekt beginnt sie im Dunkeln");
+  // das Signet am Schluss: bis in die Mitte seines Stehens, nur dichte Schnitte im schnellen Takt, die Zone nicht bis an den Rand, zuletzt exakt
+  const teilS = M.signetTeil(), logo = M.montagePlan(G, teilS, { a: 0.8, takt: M.SIGNET_TAKT, n0: 12, raender: false, licht: false });
+  assert.ok(Math.abs(teilS.dauer - (A.SIGNET + 0.3)) < 0.01, "so lang wie das Signet und die erste Hälfte seines Stehens");
+  assert.ok(logo.schnitte.every((s, i) => i < 3 || s.dicht) && logo.schnitte.length >= 5, "nur dichte Schnitte");
+  for (const s of logo.schnitte) assert.ok(s.zone[0] > 0 && s.zone[2] < 1 && s.zone[3] < 1, "die Zone bleibt um das Signet");
+  assert.equal(M.montageBei(logo, teilS.dauer - 0.05).ende, 1);
+  const t = M.aufteilung(G, { n: 60, dicht: true }, 5, 0.8).tafeln;
+  assert.ok(t.length >= 1 && t.every((x) => x.y >= 0.08 && x.y <= 0.82 && /^index/.test(x.zeilen[0])), "Zahlentafeln mit Kopf, nicht unter der Beschriftung");
 });
 
 test("Kette: Physarum geht über eine Zeitfront in die Tiefe über, die Tiefe über eine kurze Front ins Tuch", () => {
   const K = A.kette(A.KETTE);
-  assert.deepEqual(K.teile.map((t) => t.art), A.EFFEKTE);
+  assert.deepEqual(K.teile.map((t) => t.art), ["physarum", "tiefe", "tuch"], "die Karte «Alle drei» ohne die Montage");
   const [p, t, u] = K.teile;
   assert.equal(p.uebergang, "front"); assert.ok(Math.abs(t.von - (p.bis - 1.8)) < 1e-9, "die Tiefe setzt 1,8 s vor dem Ende des Netzes ein");
   assert.ok(!t.vonFoto, "die Tiefe beginnt unter der Zeitfront, nicht beim Foto");

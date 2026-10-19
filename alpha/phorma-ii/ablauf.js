@@ -8,6 +8,8 @@
 //   Tiefe    – 01 Scan (eine Lichtebene tastet das Bild von vorn nach hinten ab) → 02 Raum (Kamerafahrt mit Parallaxe, Tiefenschichten,
 //              Schärfeverlagerung) → 03 Bild (es legt sich flach); vor dem Tuch: das Relief wird zum Tuch
 //   Tuch     – 01 Tuch (das Foto als Seidentuch im Wind) → 02 Bild (es wird glattgezogen und liegt als Foto da)
+//   Montage  – 01 Schnitte (das Foto zerfällt im Takt in immer mehr Rechtecke) → 02 Montage (jedes zeigt einen eigenen Ausschnitt, harte Schnitte
+//              zu neuen Aufteilungen) → 03 Bild (die Felder rasten ein); seit dem 19. Oktober 2026, nach dem Clip «UVA» (montageplan.js)
 // Das Gewebe (für Text, Foto, Video und Ton) war vom 17. bis 18. Oktober 2026 ein vierter Effekt, für sich; seither ist es PHORMA III
 // (alpha/phorma-iii/; Wunsch: «Es sind ja zwei ganz verschiedene Ansätze … all das soll aus PHORMA II ausgelagert werden»).
 // Danach steht das Foto, dann (wenn gewählt) das Signet von ornament.cloud.
@@ -24,9 +26,10 @@ export const ABSPANN = 0.9 + 0.15 + SIGNET + 0.6 + 0.6 + 0.2;
 
 export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 
-export const EFFEKTE = ["physarum", "tiefe", "tuch"];
-export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch" };
-export const KETTE = EFFEKTE.join("+");
+export const EFFEKTE = ["physarum", "tiefe", "tuch", "montage"];
+export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", montage: "Montage" };
+/** die Kette der Karte «Alle drei» (die Montage kam am 19. Oktober 2026 dazu und ist nur einzeln oder in einer eigenen Kette dabei) */
+export const KETTE = "physarum+tiefe+tuch";
 
 /** die gewählten Effekte in fester Reihenfolge, mit «+» verbunden; Unbekanntes oder nichts (auch ein gemerktes «gewebe») ergibt die ganze Kette */
 export function ablaufName(a) {
@@ -51,8 +54,11 @@ export function rolle(art, liste, i) {
     phasen = [["scan", "Scan", erst ? 2.6 : 2.2], ["raum", "Raum", 5.4]];
     if (letzt) phasen.push(["bild", "Bild", 2.8]);
     else { ueber = 0.7; uebergang = "front"; }
-  } else {
+  } else if (art === "tuch") {
     phasen = [["tuch", "Tuch", vorher === "tiefe" ? 4.6 : 5.0], ["bild", "Bild", 3.4]];
+  } else {
+    // die Montage steht immer am Schluss: nach dem Tuch beginnt sie beim Foto, nach Physarum oder Tiefe unter deren Zeitfront
+    phasen = [["schnitte", "Schnitte", erst ? 2.5 : 2.0], ["montage", "Montage", 7.0], ["bild", "Bild", 2.6]];
   }
   const dauer = phasen.reduce((s, p) => s + p[2], 0);
   return { art, erst, letzt, vorher, naechstes, phasen, dauer, ueber, uebergang };
