@@ -216,16 +216,21 @@ async function buehneBereit() {
   S.buehneWarm = true;
   melden("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4.");
   if (S.sz) { S.sz.buehne = b; if (S.laeuft) { S.start = performance.now(); } else zeigeZeit(S.t ?? 0); }
-  // was im Hintergrund rechnet (die Bahn des Tuchs): Fortschritt melden, danach die Vorschau neu zeichnen
+  // was im Hintergrund rechnet (die Bahn des Tuchs, des Wachstums): Fortschritt melden, danach die Vorschau neu zeichnen
   if (b.fortschritt() < 1) {
-    const zeigen = () => { if (S.buehne === b && b.fortschritt() < 1) { melden(`Das Tuch wird berechnet … ${Math.round(b.fortschritt() * 100)} %`); setTimeout(zeigen, 250); } };
+    const zeigen = () => {
+      if (S.buehne !== b || b.fortschritt() >= 1) return;
+      const namen = b.rechnend?.() ?? ["Tuch"];
+      melden(`${namen.join(" und ")} ${namen.length > 1 ? "werden" : "wird"} berechnet … ${Math.round(b.fortschritt() * 100)} %`);
+      setTimeout(zeigen, 250);
+    };
     zeigen();
   }
   b.bereit.then(() => {
     if (S.buehne !== b) return;
     S.buehneFertig = true;
-    notiz("alles bereit (auch das Tuch)");
-    if (/Tuch wird berechnet/.test($("meldung").textContent)) melden("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4.");
+    notiz("alles bereit (auch Tuch und Wachstum)");
+    if (/berechnet …/.test($("meldung").textContent)) melden("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4.");
     if (!S.laeuft && S.sz && S.t !== null) zeigeZeit(S.t);
   });
 }

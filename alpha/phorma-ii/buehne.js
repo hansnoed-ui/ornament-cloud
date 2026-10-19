@@ -10,11 +10,12 @@ import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
 import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=20";
-import { FPS, kette, laufend } from "./ablauf.js?v=20";
+import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=20";
 import { physarum } from "./physarum.js?v=20";
 import { tiefe } from "./tiefe.js?v=20";
 import { tuch } from "./tuch.js?v=20";
 import { montage, montageSignet } from "./montage.js?v=20";
+import { wachstum } from "./wachstum.js?v=20";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -48,7 +49,7 @@ const AUSGABE = /* glsl */ `
     gl_FragColor = vec4(o, 1.0);
   }`;
 
-const FABRIK = { physarum, tiefe, tuch, montage };
+const FABRIK = { physarum, tiefe, tuch, wachstum, montage };
 
 /**
  * Die Bühne für ein Foto (Canvas in Filmgrösse B × H), seine Analyse und eine Kette. optionen: tiefeQuelle ("bild" | "ki"), grob (Telefon), test (klein).
@@ -140,8 +141,10 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   // was erst im Hintergrund fertig wird (die Programme, die Bahn des Tuchs): die Vorschau beginnt danach, Video und Standbild warten darauf
   const bereit = Promise.all([warm, ...effekte.map((e) => e.bereit ?? null)]);
   const fortschritt = () => Math.min(1, ...effekte.map((e) => e.fortschritt?.() ?? 1));
+  /** die Effekte, deren Bahn noch rechnet (für die Meldung: «Das Tuch …», «Das Wachstum …») */
+  const rechnend = () => K.teile.filter((_, i) => (effekte[i].fortschritt?.() ?? 1) < 1).map((t) => TITEL[t.art]);
   return {
-    canvas, B, H, effekte, ende: 0, warm, bereit, fortschritt,                                     // ende: wie weit das letzte Bild schon das Foto war (1: exakt)
+    canvas, B, H, effekte, ende: 0, warm, bereit, fortschritt, rechnend,                                     // ende: wie weit das letzte Bild schon das Foto war (1: exakt)
     /** ist die Montage der letzte Effekt, kommt auch das Signet im Stil der Montage (signetMontage statt signet) */
     montageSchluss: K.teile.at(-1).art === "montage",
     get verloren() { return verloren; },
