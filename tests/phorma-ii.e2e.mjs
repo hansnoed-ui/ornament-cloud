@@ -182,7 +182,7 @@ await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto",
   }
 });
 
-await check("Montage nach dem Tuch: beginnt beim Foto, zerfällt in Felder mit Rändern, rastet exakt ein", async () => {
+await check("Montage nach dem Tuch: beginnt beim Foto, zerfällt in Felder mit Rändern, rastet exakt ein; das Signet im selben Stil", async () => {
   const { ctx, page, fehler } = await oeffne({ ablauf: "tuch+montage" });
   await laden(page); await bereit(page);
   assert.equal(await page.textContent("#kette"), "Tuch → Montage");
@@ -193,6 +193,13 @@ await check("Montage nach dem Tuch: beginnt beim Foto, zerfällt in Felder mit R
   assert.ok(mitte.mittelAbw > 5, `in der Mitte zerfallen (${mitte.mittelAbw.toFixed(1)})`);
   assert.ok(ende.abw <= 3, `endet exakt (${ende.abw})`);
   assert.match(await page.evaluate((t) => window.__phorma.buehne.zaehler(window.__phorma.sz.zeit, t), von + 5.5), /^montage · felder \d+ · schnitt \d+\/\d+$/);
+  // das Signet am Schluss im Stil der Montage: geschnitten, während es sich zeichnet, dann steht es unverändert
+  const ab = await page.evaluate(() => ({ montage: window.__phorma.buehne.montageSchluss, signet: window.__phorma.sz.zeit.ab.signet, stehen: window.__phorma.sz.zeit.ab.signetStehen }));
+  assert.equal(ab.montage, true, "Signet im Stil der Montage");
+  const geschnitten = await messe(page, ab.signet[0] + 1.5), endeGeschnitten = await page.evaluate(() => window.__phorma.buehne.ende);
+  assert.ok(endeGeschnitten < 1 && geschnitten.hell > 0.5, `während des Signets geschnitten (ende ${endeGeschnitten}, hell ${geschnitten.hell.toFixed(2)})`);
+  await messe(page, (ab.stehen[0] + ab.stehen[1]) / 2);
+  assert.equal(await page.evaluate(() => window.__phorma.buehne.ende), 1, "das Signet steht zuletzt unverändert");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });

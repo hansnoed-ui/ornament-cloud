@@ -13,8 +13,8 @@
 import { zufall } from "./analyse.js?v=19";
 import { anteil, weich, phase } from "./ablauf.js?v=19";
 
-/** ein Schlag (Sekunden bei Tempo «normal») */
-export const TAKT = 0.5;
+/** ein Schlag (Sekunden bei Tempo «normal»); fürs Signet am Schluss doppelt so schnell */
+export const TAKT = 0.5, SIGNET_TAKT = 0.25;
 /** höchstens so viele Felder (mit Grund und Ausreissern) */
 export const HOECHSTENS = 400;
 const KLEINST = 0.014;   // kleinste Seite eines Felds (Anteil der Breite)
@@ -48,15 +48,15 @@ export function mittel(G, [x0, y0, x1, y1]) {
 }
 
 /** die Schnitte in der eigenen Zeit des Effekts: [{ t, n (Felder), wucht (0..1), dicht }] */
-export function schnitte(teil) {
+export function schnitte(teil, { takt = TAKT, n0 = 3, licht = true } = {}) {
   const S = phase(teil, "schnitte"), M = phase(teil, "montage"), r = zufall(1709), liste = [];
-  const nS = Math.max(2, Math.round((S[1] - S[0]) / TAKT));
-  for (let i = 0; i < nS; i++) { const f = i / (nS - 1); liste.push({ t: S[0] + i * TAKT, n: Math.round(3 * 10 ** f), wucht: 0.35 + 0.4 * f, dicht: false }); }
+  const nS = Math.max(2, Math.round((S[1] - S[0]) / takt));
+  for (let i = 0; i < nS; i++) { const f = i / (nS - 1); liste.push({ t: S[0] + i * takt, n: Math.round(n0 * (30 / n0) ** f), wucht: 0.35 + 0.4 * f, dicht: false }); }
   let t = M[0], k = 0;
-  while (t < M[1] - TAKT * 0.9) {
-    const licht = k % 3 === 2;
-    liste.push({ t, n: licht ? 10 + Math.floor(r() * 12) : 40 + Math.floor(r() * 90), wucht: 0.7 + 0.3 * r(), dicht: !licht });
-    t += [1, 2, 2, 3, 4][Math.floor(r() * 5)] * TAKT; k++;
+  while (t < M[1] - takt * 0.9) {
+    const locker = licht && k % 3 === 2;
+    liste.push({ t, n: locker ? 10 + Math.floor(r() * 12) : 40 + Math.floor(r() * 90), wucht: 0.7 + 0.3 * r(), dicht: !locker });
+    t += [1, 2, 2, 3, 4][Math.floor(r() * 5)] * takt; k++;
   }
   // die letzte Aufteilung bleibt fürs Einrasten stehen: dicht
   const letzt = liste.at(-1);
@@ -144,11 +144,12 @@ function stelle(G, r) {
  * Ausschnitt; dazu Ausreisser und die Zahlentafeln. → { zone, felder: [{ rect, stufe, art, tf, ziel (nur fern), zug, an, verzug, schnapp, rand }],
  * ausreisser, tafeln }
  */
-export function aufteilung(G, schnitt, samen, a) {
+export function aufteilung(G, schnitt, samen, a, raender = true) {
   const r = zufall(samen), [m0, m1, m2, m3] = G.motiv, mw = m2 - m0, mh = m3 - m1;
   const zone = [m0 - mw * (0.02 + 0.12 * r()), m1 - mh * (0.04 + 0.08 * r()), m2 + mw * (0.02 + 0.12 * r()), m3 + mh * (0.02 + 0.1 * r())];
-  if (r() < 0.25) { if (r() < 0.5) zone[0] = 0; else zone[2] = 1; }   // bis an den linken oder rechten Rand, wie die Streifen im Clip
-  if (r() < 0.3) zone[3] = 1;
+  const bisRand = r() < 0.25, links = r() < 0.5, unten = r() < 0.3;
+  if (raender && bisRand) { if (links) zone[0] = 0; else zone[2] = 1; }   // bis an den linken oder rechten Rand, wie die Streifen im Clip
+  if (raender && unten) zone[3] = 1;
   for (let i = 0; i < 4; i++) zone[i] = Math.min(1, Math.max(0, zone[i]));
   const roh = zerlegen(G, zone, schnitt.n, r, a), felder = [];
   for (const { rect, stufe, tf } of roh) {
@@ -188,11 +189,14 @@ export function aufteilung(G, schnitt, samen, a) {
   return { zone, felder, ausreisser, tafeln };
 }
 
-/** der ganze Plan zu einem Teil der Kette (G: wichtigkeit(A), a = B / H, samen: je Foto) */
-export function montagePlan(G, teil, { a = 0.8, samen = 1 } = {}) {
+/**
+ * Der ganze Plan zu einem Teil der Kette (G: wichtigkeit(A), a = B / H, samen: je Foto, takt: Sekunden je Schlag, n0: Felder beim ersten Schnitt,
+ * raender: die Zone darf bis an den Rand reichen, licht: auch lockere Aufteilungen)
+ */
+export function montagePlan(G, teil, { a = 0.8, samen = 1, takt = TAKT, n0 = 3, raender = true, licht = true } = {}) {
   const S = phase(teil, "schnitte"), Bp = phase(teil, "bild");
-  const liste = schnitte(teil).map((s, k) => ({ ...s, ...aufteilung(G, s, samen * 7919 + k * 104729 + 13, a) }));
-  return { teil, S, Bp, schnitte: liste, erst: teil.erst, vonFoto: teil.vonFoto, a };
+  const liste = schnitte(teil, { takt, n0, licht }).map((s, k) => ({ ...s, ...aufteilung(G, s, samen * 7919 + k * 104729 + 13, a, raender) }));
+  return { teil, S, Bp, schnitte: liste, erst: teil.erst, vonFoto: teil.vonFoto, a, takt };
 }
 
 /** welcher Schnitt zur eigenen Zeit tau gilt (vor dem ersten: der erste) */
@@ -213,8 +217,8 @@ export function montageBei(plan, tau) {
   // erst: der Grund kommt nach den ersten Feldern aus dem Dunkeln
   const grundLicht = erst ? weich(anteil(tau, 0.9, 2.0)) : 1;
   const raus = []; raus.push({ rect: [0, 0, 1, 1], quelle: [0.5, 0.5, 1, 1], zug: [0, 0, 0], licht: grundLicht, rand: 0 });
-  const schlag = Math.floor(seit / TAKT);
-  const einrasten = (f) => (Bp ? weich(anteil(tau, Bp[0] + 0.1 + f.schnapp * 1.5, Bp[0] + 0.45 + f.schnapp * 1.5)) : 0);
+  const schlag = Math.floor(seit / plan.takt), streu = Bp ? Math.max(0.3, Bp[1] - Bp[0] - 1.1) : 0;
+  const einrasten = (f) => (Bp ? weich(anteil(tau, Bp[0] + 0.1 + f.schnapp * streu, Bp[0] + 0.45 + f.schnapp * streu)) : 0);
   const wucht = s.wucht * (k === 0 && !erst ? weich(anteil(tau, S[0], S[0] + 0.4)) : 1);
   const eins = (f, i, ausreisser) => {
     const [x0, y0, x1, y1] = f.rect, w = x1 - x0, h = y1 - y0, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
@@ -235,3 +239,9 @@ export function montageBei(plan, tau) {
   const tafelSicht = (erst ? weich(anteil(tau, 0.8, 1.6)) : 1) * (Bp ? 1 - weich(anteil(tau, Bp[0], Bp[0] + 1.0)) : 1) * (k > 0 ? 1 - 0.6 * Math.exp(-seit / 0.12) : 1);
   return { k, schnitt: s, felder: raus.slice(0, HOECHSTENS), tafelSicht, ende, ruck: k > 0 || !erst ? Math.exp(-seit / 0.09) : 0 };
 }
+
+/**
+ * Der Teil fürs Signet am Schluss (wenn die Montage der letzte Effekt ist): das Signet (2,3 s) und die erste Hälfte seines Stehens; wie als erster
+ * Effekt aus dem Dunkeln (die Schlaufe zeigt sich zuerst nur in den Feldern), Schnitte im schnellen Takt, während es sich zeichnet, dann rastet es ein.
+ */
+export const signetTeil = () => ({ art: "montage", erst: true, vonFoto: false, phasen: [["schnitte", "Schnitte", 0.7], ["montage", "Montage", 0.9], ["bild", "Bild", 1.0]], dauer: 2.6 });

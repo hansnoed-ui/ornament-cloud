@@ -52,8 +52,13 @@ test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappun
       }
       assert.ok(Math.abs(flaeche - (z2 - z0) * (z3 - z1)) < 1e-9, "die Felder füllen die Zone genau");
     }
-    const dicht = S.find((s) => s.felder.length > 40), geteilt = new Set(dicht.felder.map((f) => f.tf));
-    assert.ok(geteilt.size < dicht.felder.length * 0.8, `viele Felder erben den Ausschnitt ihres Elternfelds (${geteilt.size} von ${dicht.felder.length})`);
+    for (const dicht of S.filter((s) => s.felder.length > 40)) {
+      const zahl = new Map();
+      for (const f of dicht.felder) zahl.set(f.tf, (zahl.get(f.tf) ?? 0) + 1);
+      const geteilt = dicht.felder.filter((f) => zahl.get(f.tf) > 1).length;
+      assert.ok(geteilt >= dicht.felder.length * 0.2, `viele Felder teilen den Ausschnitt mit Nachbarn aus demselben Elternfeld (${geteilt} von ${dicht.felder.length})`);
+    }
+    const dicht = S.find((s) => s.felder.length > 40);
     assert.ok(new Set(dicht.felder.map((f) => f.art)).size >= 3, "verschiedene Arten");
     // Ende: alle Felder an ihrem Platz
     const ende = M.montageBei(plan, teil.dauer - 1 / 30);
@@ -70,6 +75,12 @@ test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappun
   }
   const erst = M.montagePlan(G, A.kette("montage").teile[0], { a: 0.8 });
   assert.ok(M.montageBei(erst, 0.15).felder.every((f) => f.licht === 0), "als erster Effekt beginnt sie im Dunkeln");
+  // das Signet am Schluss: bis in die Mitte seines Stehens, nur dichte Schnitte im schnellen Takt, die Zone nicht bis an den Rand, zuletzt exakt
+  const teilS = M.signetTeil(), logo = M.montagePlan(G, teilS, { a: 0.8, takt: M.SIGNET_TAKT, n0: 12, raender: false, licht: false });
+  assert.ok(Math.abs(teilS.dauer - (A.SIGNET + 0.3)) < 0.01, "so lang wie das Signet und die erste Hälfte seines Stehens");
+  assert.ok(logo.schnitte.every((s, i) => i < 3 || s.dicht) && logo.schnitte.length >= 5, "nur dichte Schnitte");
+  for (const s of logo.schnitte) assert.ok(s.zone[0] > 0 && s.zone[2] < 1 && s.zone[3] < 1, "die Zone bleibt um das Signet");
+  assert.equal(M.montageBei(logo, teilS.dauer - 0.05).ende, 1);
   const t = M.aufteilung(G, { n: 60, dicht: true }, 5, 0.8).tafeln;
   assert.ok(t.length >= 1 && t.every((x) => x.y >= 0.08 && x.y <= 0.82 && /^index/.test(x.zeilen[0])), "Zahlentafeln mit Kopf, nicht unter der Beschriftung");
 });
