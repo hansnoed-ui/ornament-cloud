@@ -446,6 +446,25 @@ await check("Redaktion: Zettel bearbeiten (Kommentar, Schlagwort, Status) und l�
   await ctx.close();
 });
 
+await check("Redaktion: die Einstellungen bleiben offen, während man Schlüssel einträgt (Rückmeldung vom 19. Oktober 2026: «klappt sofort wieder ein»)", async () => {
+  const { ctx, page, fehler } = await seite(`${REPO}/social-media/redaktion/`);
+  await page.waitForSelector("body.rd-bereit");
+  assert.equal(await page.locator("#einstellungen").evaluate((d) => d.open), true, "ohne Schlüssel offen");
+  await page.locator("#gh-schluessel").fill("github_pat_neu");
+  await page.locator("#an-schluessel").click();                // verlässt das Feld: change
+  assert.equal(await page.locator("#einstellungen").evaluate((d) => d.open), true, "nach dem GitHub-Schlüssel noch offen");
+  await page.locator("#an-schluessel").fill("sk-ant-neu");
+  await page.locator("#merken").check();
+  assert.equal(await page.locator("#einstellungen").evaluate((d) => d.open), true, "nach dem Anthropic-Schlüssel noch offen");
+  assert.match(await page.locator("#zustand").textContent(), /GitHub bereit, Claude bereit/);
+  await page.reload();
+  await page.waitForSelector("body.rd-bereit");
+  assert.equal(await page.locator("#einstellungen").evaluate((d) => d.open), false, "mit Schlüssel beim nächsten Öffnen zu");
+  assert.equal(await page.locator("#an-schluessel").inputValue(), "sk-ant-neu", "gemerkt");
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
 await check("Redaktion: der Entwurf übersteht das Neuladen (IndexedDB), ohne GitHub-Schlüssel kein Veröffentlichen, die Seite trägt CSP und noindex", async () => {
   const gh = githubNachbau(anfangsdateien()), claude = claudeNachbau([{ ergebnis: ERGEBNIS }]);
   const { ctx, page, fehler } = await redaktion(gh, claude);

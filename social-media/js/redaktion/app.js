@@ -79,7 +79,6 @@ function einstellungenZeigen() {
   $("repo-name").textContent = einst.repo;
   const teile = [einst.github ? "GitHub bereit" : "GitHub-Schlüssel fehlt", einst.anthropic ? "Claude bereit" : "ohne Claude"];
   $("zustand").textContent = teile.join(", ");
-  $("einstellungen").open = !einst.github;
   knoepfe();
 }
 function einstellungenUebernehmen() {
@@ -790,6 +789,7 @@ function verbinden() {
 e = leer();
 verbinden();
 einstellungenZeigen();
+$("einstellungen").open = !einst.github;   // nur beim Öffnen der Seite: ohne GitHub-Schlüssel offen; danach klappt nur, wer darauf klickt (Rückmeldung vom 19. Oktober 2026: «klappt sofort wieder ein»)
 formularFuellen();
 await entwurfLaden();
 await sammlungLaden();
