@@ -1,10 +1,10 @@
 // PHORMA III – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann das Gewebe aus der Bühne (WebGL,
 // buehne.js) mit den Textfragmenten, danach das Bild, darüber die Beschriftung; mit Signet am Schluss das Logo, das aus dem Gewebe entsteht, mit
 // getipptem Schriftzug und verfrickelt im Takt.
-import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=16";
+import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=17";
 import { punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=16";
-import { zufall } from "./analyse.js?v=16";
+import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=17";
+import { zufall } from "./analyse.js?v=17";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
@@ -288,5 +288,5 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
   }
 }
 
-/** Zeitpunkt für das Standbild, wenn nichts anderes gewählt ist: die Mitte der zweiten Phase */
-export const standbildZeit = (sz) => { const p = sz.zeit.phasen[Math.min(1, sz.zeit.phasen.length - 1)]; return p.von + 0.5 * (p.bis - p.von); };
+/** Zeitpunkt für das Standbild, wenn nichts anderes gewählt ist: die Mitte der zweiten Phase (bei der Traube der ersten) */
+export const standbildZeit = (sz) => { const p = sz.zeit.ablauf === "traube" ? sz.zeit.phasen[0] : sz.zeit.phasen[Math.min(1, sz.zeit.phasen.length - 1)]; return p.von + 0.5 * (p.bis - p.von); };   // die Traube hat nur die eine Phase vor dem Logo

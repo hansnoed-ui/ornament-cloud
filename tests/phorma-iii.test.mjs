@@ -96,17 +96,22 @@ test("Irrfahrt und Lichtwürfel: Würfel, Irrfahrt, Logo oder Stille; kein Stehe
   assert.equal(A.zeitachse({ ablauf: "irrfahrt", tempo: "ruhig", signet: false }).tempo, 1.3, "ohne Ton im Tempo");
 });
 
-test("Traube: Keim, Traube, Logo oder Stille; kein Stehen, nach dem Effekt nur der Schluss; so lang wie der Ton", () => {
+test("Traube: Traube, Logo oder Stille (ohne eigene Phase Keim); kein Stehen, nach dem Effekt nur der Schluss; so lang wie der Ton", () => {
   assert.equal(A.TITEL.traube, "Traube"); assert.equal(A.ablaufName("traube"), "traube"); assert.equal(A.NACH(false, "traube"), 0.3);
   const mit = A.zeitachse({ ablauf: "traube", laenge: 30 }), ohne = A.zeitachse({ ablauf: "traube", laenge: 30, signet: false });
-  assert.deepEqual(mit.phasen.map((p) => p.name), ["keim", "traube", "logo"]);
-  assert.deepEqual(ohne.phasen.map((p) => p.name), ["keim", "traube", "stille"]);
+  assert.deepEqual(mit.phasen.map((p) => p.name), ["traube", "logo"]);
+  assert.deepEqual(ohne.phasen.map((p) => p.name), ["traube", "stille"]);
   for (const z of [mit, ohne]) {
     assert.ok(Math.abs(z.abschnitt.bis - z.abschnitt.von - 30) < 1e-9, "so lang wie verlangt");
     assert.equal(z.ab.stehen, undefined); assert.ok(Math.abs(z.dauer - z.abschnitt.bis - 0.3) < 1e-9, "danach nur der Schluss");
   }
-  assert.ok(Math.abs(mit.phasen[2].bis - mit.phasen[2].von - A.LOGO) < 1e-9);
-  assert.ok(A.zeitachse({ ablauf: "traube", laenge: 2 }).phasen[1].bis - A.zeitachse({ ablauf: "traube", laenge: 2 }).phasen[1].von >= 3.2);
+  assert.ok(Math.abs(mit.phasen[1].bis - mit.phasen[1].von - A.LOGO) < 1e-9);
+  assert.ok(A.zeitachse({ ablauf: "traube", laenge: 2 }).phasen[0].bis - A.zeitachse({ ablauf: "traube", laenge: 2 }).phasen[0].von >= 3.2);
+  // die Shader der Traube: keine Potenz einer Zahl, die negativ werden kann, und smoothstep nie mit gleichen Grenzen – beides ist auf Telefonen NaN,
+  // und der Bloom schmiert ein NaN über das ganze Bild (Rückmeldung vom Telefon: «das Video bleibt dunkel»)
+  const tr = lies("traube.js");
+  assert.ok(!/pow\(\s*(sin|cos|1\.0 - n\.z|dot)\(/.test(tr) && !/pow\(1\.0 - n\.z/.test(tr), "pow nur von sicher nicht negativen Werten");
+  assert.match(tr, /smoothstep\(abs\(vR - vB\), max\(vR \+ vB, abs\(vR - vB\) \+ 1e-5\)/, "smoothstep der Deckung mit verschiedenen Grenzen");
 });
 
 test("Traube: Perlen wiederholbar, in der Kugel, Ketten nach hinten kleiner; jede Art je vier Zustände einmal; die Schlaufe als Perlenschnur", async () => {
