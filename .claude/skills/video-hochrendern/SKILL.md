@@ -56,7 +56,8 @@ Bekannt: Das Netz entfernt Kompressionsrauschen und macht sehr feine leuchtende 
 
 ornament.cloud/alpha/hochrendern/ rechnet dasselbe Netz im Browser auf der Grafikkarte des eigenen Geräts (WebGPU, `netz.js`; Gewichte als float16 in
 `modelle/`, erzeugt mit `tools/hochrendern/.venv/bin/python tools/hochrendern/web-gewichte.py`). Video hineinziehen, Probe vorher/nachher (1 : 1),
-×2 oder ×4 bis 4K, MP4 mit Ton (H.264, sonst VP9). Auf einer Grafikkarte viel schneller als hier im Container – für lange oder grosse Videos dorthin
+×2 oder ×4 bis 4K, MP4 mit Ton (H.264, sonst VP9). Dazu **Schrift über dem Video** (`schrift.js`): Ebenen mit 24 lokalen Schriften
+(`vendor/schriften/`, `tools/schriften-holen.mjs`), Stil, Lage zum Ziehen, Zeitfenster und Auftritt; «× 1» setzt nur Schrift, ohne KI. Auf einer Grafikkarte viel schneller als hier im Container – für lange oder grosse Videos dorthin
 verweisen. Gegen onnxruntime geprüft: 64 dB, höchstens 1/255 Abweichung; Kacheln bitgleich zum ganzen Bild.
 Tests: `node --test tests/hochrendern.test.mjs`, `NODE_PATH=$(npm root -g) node tests/hochrendern.e2e.mjs` (WebGPU über SwiftShader).
 

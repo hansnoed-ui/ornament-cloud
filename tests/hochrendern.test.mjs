@@ -57,6 +57,18 @@ test("Seite: Alpha (noindex), nichts von aussen, eigene Module mit einer Marke, 
   assert.match(lies("netz.js"), /@compute @workgroup_size\(8, 8, 1\)/, "WebGPU-Shader");
 });
 
+test("Schriften: über 20 freie Schriften lokal in vendor/schriften/, jede Datei da, je Familie die Lizenz (OFL, Permanent Marker Apache 2.0)", async () => {
+  const S = new URL("vendor/schriften/", root), liste = JSON.parse(readFileSync(new URL("schriften.json", S), "utf8")), css = readFileSync(new URL("schriften.css", S), "utf8");
+  assert.ok(liste.length >= 20, `${liste.length} Schriften`);
+  const { SCHRIFTEN } = await import(new URL("tools/schriften-holen.mjs", root).href);
+  assert.deepEqual(liste.map((s) => s.name), SCHRIFTEN.map((s) => s[0]), "die Liste kommt aus tools/schriften-holen.mjs");
+  for (const s of liste) assert.ok(css.includes(`font-family: '${s.name}'; font-style: ${s.stil}; font-weight: ${s.schnitt};`), `${s.name} in schriften.css`);
+  for (const [, datei] of css.matchAll(/url\(([^)]+)\)/g)) assert.ok(existsSync(new URL(datei, S)), datei);
+  for (const [, paket] of SCHRIFTEN) assert.match(readFileSync(new URL(`lizenzen/${paket}.txt`, S), "utf8"), paket === "permanent-marker" ? /Apache License/ : /SIL OPEN FONT LICENSE/i, `${paket}: freie Lizenz`);
+  assert.ok(!/https?:/.test(css), "nichts von aussen");
+  assert.match(lies("index.html"), /<link rel="stylesheet" href="\.\.\/\.\.\/vendor\/schriften\/schriften\.css">/);
+});
+
 test("Werkzeug: tools/hochrendern (CPU) und der Export der Gewichte für die Seite; der Skill nennt beides", () => {
   for (const f of ["hochrendern", "hochrendern.py", "requirements.txt", "web-gewichte.py"]) assert.ok(existsSync(new URL(`tools/hochrendern/${f}`, root)), f);
   const py = readFileSync(new URL("tools/hochrendern/hochrendern.py", root), "utf8");

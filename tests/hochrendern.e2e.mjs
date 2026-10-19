@@ -1,5 +1,6 @@
 // Hochrendern (alpha/hochrendern/) – Browser-Tests (Playwright, Chromium, WebGPU über SwiftShader): ein WebM mit Ton über das Video-Element
-// (Probe vorher/nachher, ×2 mit Ton), ein MP4 über WebCodecs (×4, Hochformat), ein grosses Video (×4 gesperrt), keine Anfragen nach aussen.
+// (Probe vorher/nachher, ×2 mit Ton), ein MP4 über WebCodecs (×4, Hochformat), ein grosses Video (×4 gesperrt), Schrift über dem Video (Ebene,
+// Schrift, Ziehen, ×1 nur Schrift, gemerkt), keine Anfragen nach aussen.
 // Dieses Chromium kodiert kein H.264: das Ergebnis ist VP9 im MP4 (der Weg für Browser ohne H.264), geprüft mit ffprobe.
 //   NODE_PATH=$(npm root -g) node tests/hochrendern.e2e.mjs
 import assert from "node:assert/strict";
@@ -105,6 +106,54 @@ await check("Grosses Video (1920 × 1080): ×4 gesperrt, ×2 gewählt (höchsten
   assert.ok(await page.isDisabled('[data-faktor="4"]'), "×4 gesperrt");
   assert.equal(await page.getAttribute('[data-faktor="2"]', "aria-pressed"), "true");
   assert.match(await page.textContent("#faktor-info"), /1920 × 1080 → 3840 × 2160 \(× 4 gäbe mehr als 4K\)/);
+  await ctx.close();
+});
+
+await check("Schrift: eine Ebene anlegen, Schrift wählen, in der Vorschau ziehen; ×1 setzt sie ohne KI ins Video, wo sie hingezogen wurde; gemerkt", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  await page.setInputFiles("#datei", fixture("flaeche.webm"));
+  await page.waitForFunction(() => window.__hochrendern.quelle && !document.getElementById("probe").disabled, null, { timeout: 60_000 });
+  assert.ok(await page.isHidden("#editor"), "ohne Ebene kein Editor");
+  assert.ok(await page.evaluate(() => document.querySelectorAll("#s-schriften [data-schrift]").length) >= 20, "mindestens 20 Schriften");
+  await page.click("#ebene-neu");
+  assert.ok(await page.isVisible("#editor"));
+  await page.fill("#s-text", "HALLO");
+  await page.click('#s-schriften [data-schrift="Anton"]');
+  await page.selectOption("#s-stil", "rein"); await page.selectOption("#s-auftritt", "keiner");
+  await page.$eval("#s-farbe", (el) => { el.value = "#ff00ff"; el.dispatchEvent(new Event("input")); });
+  await page.$eval("#s-groesse", (el) => { el.value = "0.25"; el.dispatchEvent(new Event("input")); });
+  await page.waitForFunction(() => document.fonts.check('400 20px "Anton"'), null, { timeout: 30_000 });
+  // die Ebene über dem Video zeigt die Schrift
+  const magenta = (sel) => page.$eval(sel, (c) => { const d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 0; i < d.length; i += 4) if (d[i] > 180 && d[i + 1] < 90 && d[i + 2] > 180) n++; return n; });
+  assert.ok(await page.isVisible("#schrift") && (await magenta("#schrift")) > 100, "Schrift in der Vorschau");
+  // ziehen: von unten (y 0,82) nach oben (y 0,3)
+  const box = await page.locator("#schrift").boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height * 0.82); await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height * 0.5, { steps: 4 }); await page.mouse.move(box.x + box.width / 2, box.y + box.height * 0.3, { steps: 4 }); await page.mouse.up();
+  const e = await page.evaluate(() => window.__hochrendern.ebenen[0]);
+  assert.ok(Math.abs(e.y - 0.3) < 0.04 && Math.abs(e.x - 0.5) < 0.04, `gezogen (${e.x.toFixed(2)}, ${e.y.toFixed(2)})`);
+  assert.deepEqual([e.text, e.schrift, e.farbe, e.stil], ["HALLO", "Anton", "#ff00ff", "rein"]);
+  // ×1: nur Schrift, ohne KI
+  await page.click('[data-faktor="1"]');
+  assert.match(await page.textContent("#faktor-info"), /320 × 180, ohne KI – nur die Schrift kommt dazu/);
+  await page.click("#probe");
+  await page.waitForFunction(() => window.__hochrendern.probe?.ohneKi, null, { timeout: 60_000 });
+  assert.ok((await magenta("#vergleich")) > 300, "die Probe zeigt die Schrift");
+  await page.click("#los");
+  await page.waitForFunction(() => !document.getElementById("ergebnis").hidden || document.getElementById("meldung").classList.contains("fehler"), null, { timeout: 300_000 });
+  assert.ok(await page.isVisible("#ergebnis"), await page.textContent("#meldung"));
+  assert.match(await page.textContent("#film-info"), /^320 × 180 · 30 Bilder · .* · 1 × Schrift · gerechnet in /);
+  const v = await herunterladen(page, "c.mp4");
+  assert.deepEqual([v.breite, v.hoehe, v.bilder], [320, 180, 30]);
+  // im Video: Magenta oben in der Mitte, unten nichts
+  const roh = execFileSync("ffmpeg", ["-v", "error", "-ss", "0.5", "-i", join(ordner, "c.mp4"), "-frames:v", "1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]);
+  let oben = 0, unten = 0;
+  for (let i = 0; i < 320 * 180; i++) if (roh[3 * i] > 170 && roh[3 * i + 1] < 100 && roh[3 * i + 2] > 170) (Math.floor(i / 320) < 90 ? oben++ : unten++);
+  assert.ok(oben > 400 && unten < 20, `Schrift oben im Video (${oben} oben, ${unten} unten)`);
+  await page.reload();
+  await page.waitForFunction(() => document.querySelectorAll("#ebenen button").length === 1);
+  assert.equal(await page.textContent("#ebenen button"), "HALLO", "die Ebene ist gemerkt");
+  assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
 

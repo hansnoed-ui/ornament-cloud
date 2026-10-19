@@ -12,11 +12,13 @@
     tests/navigation.test.mjs): ohne die Navigation oben links.
   -->
   <meta name="robots" content="noindex">
-  <meta name="description" content="Hochrendern: ein Video mit KI (Real-ESRGAN) auf doppelte oder vierfache Auflösung hochrechnen, auf der Grafikkarte deines Geräts, als MP4 mit Ton – alles im Browser.">
+  <meta name="description" content="Hochrendern: ein Video mit KI (Real-ESRGAN) auf doppelte oder vierfache Auflösung hochrechnen und Schrift darüberlegen, auf der Grafikkarte deines Geräts, als MP4 mit Ton – alles im Browser.">
   <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
   <link rel="stylesheet" href="../../styles.css?v=46">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="../../vendor/schriften/schriften.css">
+  <style>@font-face { font-family: "Inter Display"; font-style: normal; font-weight: 600; font-display: swap; src: url(../../vendor/fonts/inter-display-600-latin.woff2) format("woff2"); }</style>
   <style>
     .site-header { padding-bottom: 12px; }
     .karte { display: grid; gap: 28px; padding-bottom: 48px; }
@@ -86,6 +88,32 @@
     .ergebnis video { display: block; width: 100%; max-height: 60vh; border-radius: 8px; background: #000; }
     .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
     .hinweise li { margin: 0.2rem 0; }
+    .schrift-ebene { position: absolute; left: 0; top: 0; touch-action: none; cursor: default; }
+    .schrift-ebene.greifbar { cursor: grab; }
+    .schrift-ebene.zieht { cursor: grabbing; }
+    .ebenen { display: flex; flex-wrap: wrap; gap: 8px; }
+    .ebenen button { max-width: 100%; min-height: 36px; padding: 4px 14px; border: 1px solid var(--border); border-radius: 999px; background: none; color: var(--text); font: inherit;
+      font-size: 0.9rem; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ebenen button[aria-pressed="true"] { border-color: var(--text); background: color-mix(in srgb, var(--text) 8%, transparent); font-weight: 600; }
+    .feld { display: grid; gap: 6px; }
+    .feld > span, .raster label > span { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .feld textarea { min-height: 60px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font: 600 1.1rem/1.3 var(--font); resize: vertical; }
+    .schriften { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; max-height: 260px; overflow: auto; padding: 2px; }
+    .schriften button { min-height: 52px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); cursor: pointer;
+      font-size: 1.05rem; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .schriften button[aria-pressed="true"] { border-color: var(--text); box-shadow: inset 0 0 0 1px var(--text); }
+    .schriften button:focus-visible, .ebenen button:focus-visible, .lagen button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .raster { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px 16px; align-items: end; }
+    .raster label { display: grid; gap: 6px; }
+    .raster select, .raster input[type="number"] { min-height: 40px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); font: inherit; min-width: 0; }
+    .raster input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .raster input[type="color"] { width: 100%; height: 40px; padding: 2px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }
+    .haken { display: flex !important; align-items: center; gap: 8px !important; min-height: 40px; }
+    .haken input { width: 18px; height: 18px; accent-color: var(--accent); }
+    .lagen { display: grid; grid-template-columns: repeat(3, 40px); gap: 4px; }
+    .lagen button { width: 40px; height: 30px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); cursor: pointer; position: relative; }
+    .lagen button::after { content: ""; position: absolute; inset: 11px 16px; border-radius: 2px; background: var(--muted); }
+    .lage-zeile { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
     [hidden] { display: none !important; }
   </style>
 </head>
@@ -93,7 +121,7 @@
   <header class="site-header">
     <div class="wrap">
       <h1>Hochrendern</h1>
-      <p class="lead">Ein Video mit KI auf doppelte oder vierfache Auflösung hochrechnen – auf der Grafikkarte deines Geräts.</p>
+      <p class="lead">Ein Video mit KI auf doppelte oder vierfache Auflösung hochrechnen und Schrift darüberlegen – auf der Grafikkarte deines Geräts.</p>
     </div>
   </header>
 
@@ -103,6 +131,7 @@
       <div class="rahmen" id="rahmen">
         <video id="quelle" muted playsinline preload="auto" hidden></video>
         <canvas id="vergleich" hidden aria-label="Vergleich vorher und nachher"></canvas>
+        <canvas id="schrift" class="schrift-ebene" hidden aria-label="Schrift über dem Video, zum Verschieben ziehen"></canvas>
         <div class="marken" id="marken" hidden><span>Vorher</span><span>KI</span></div>
         <div class="leer" id="leer">
           <p class="gross">Kein Signal</p>
@@ -147,11 +176,51 @@
             <div class="einstellung">
               <span class="name" id="faktor-titel">Vergrösserung</span>
               <div class="segment" role="group" aria-labelledby="faktor-titel">
+                <button type="button" data-faktor="1">× 1</button>
                 <button type="button" data-faktor="2">× 2</button>
                 <button type="button" data-faktor="4">× 4</button>
               </div>
-              <small id="faktor-info">Höchstens 4K (rund 8,3 Millionen Pixel je Bild).</small>
+              <small id="faktor-info">Höchstens 4K (rund 8,3 Millionen Pixel je Bild). × 1: ohne KI, nur Schrift.</small>
             </div>
+          </section>
+        </li>
+        <li>
+          <h2>Schrift</h2>
+          <p>Text über das Video legen, in der Vorschau an seinen Platz ziehen. Gezeichnet wird in der vollen Auflösung des Ergebnisses.</p>
+          <div class="ebenen" id="ebenen" role="group" aria-label="Schriften im Video"></div>
+          <div class="leiste"><button class="knopf klein" type="button" id="ebene-neu">+ Schrift</button></div>
+          <section class="tafel" id="editor" hidden aria-label="Schrift bearbeiten">
+            <div class="einstellung"><label class="feld"><span>Text</span><textarea id="s-text" rows="2" maxlength="300" autocomplete="off"></textarea></label></div>
+            <div class="einstellung">
+              <span class="name" id="s-schriften-titel">Schrift</span>
+              <div class="schriften" id="s-schriften" role="group" aria-labelledby="s-schriften-titel"></div>
+            </div>
+            <div class="einstellung raster">
+              <label><span>Grösse</span><input type="range" id="s-groesse" min="0.02" max="0.3" step="0.005"></label>
+              <label><span>Laufweite</span><input type="range" id="s-laufweite" min="-0.06" max="0.4" step="0.01"></label>
+              <label class="haken"><input type="checkbox" id="s-versalien"> Versalien</label>
+              <label><span>Farbe</span><input type="color" id="s-farbe"></label>
+              <label><span>Stil</span><select id="s-stil"></select></label>
+              <label><span>Zweite Farbe</span><input type="color" id="s-zweite"></label>
+            </div>
+            <div class="einstellung">
+              <span class="name">Ausrichtung und Lage</span>
+              <div class="lage-zeile">
+                <div class="segment" role="group" aria-label="Ausrichtung">
+                  <button type="button" data-ausrichtung="left">links</button>
+                  <button type="button" data-ausrichtung="center">Mitte</button>
+                  <button type="button" data-ausrichtung="right">rechts</button>
+                </div>
+                <div class="lagen" id="lagen" role="group" aria-label="Lage im Bild"></div>
+              </div>
+              <small>Oder in der Vorschau ziehen.</small>
+            </div>
+            <div class="einstellung raster">
+              <label><span>Ab Sekunde</span><input type="number" id="s-von" min="0" step="0.1"></label>
+              <label><span>Bis Sekunde</span><input type="number" id="s-bis" min="0" step="0.1" placeholder="Schluss"></label>
+              <label><span>Auftritt</span><select id="s-auftritt"></select></label>
+            </div>
+            <div class="einstellung"><div class="leiste"><button class="knopf klein" type="button" id="ebene-weg">Diese Schrift entfernen</button></div></div>
           </section>
         </li>
         <li>
@@ -185,6 +254,7 @@
       <li>Das Netz ist Real-ESRGAN in der kompakten Fassung von Xintao Wang und anderen (BSD-3-Lizenz), dasselbe wie im Werkzeug des Repositorys auf dem Prozessor.</li>
       <li>Eigene Animationen werden schärfer, wenn sie gleich in höherer Auflösung gerechnet werden: <a href="../phorma-iii/">PHORMA III</a> kann das am Computer selbst («Auflösung: doppelt»).</li>
       <li>Ausgabe: MP4 (H.264, wo der Browser es kann, sonst VP9), Bildrate und Länge wie das Original, der Ton neu kodiert (AAC).</li>
+      <li>Schriften: 24 freie Schriften (SIL Open Font License, Permanent Marker Apache 2.0; über Fontsource), lokal auf dieser Website – beim Zeichnen wird nichts von aussen geholt.</li>
     </ul>
   </div>
 

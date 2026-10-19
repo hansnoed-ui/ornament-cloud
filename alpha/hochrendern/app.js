@@ -1,7 +1,9 @@
 // Hochrendern – Seite: ein Video wählen, an einer Stelle eine Probe rechnen (vorher und nachher, auf Wunsch 1 : 1), dann Bild für Bild mit dem Netz
 // (netz.js, WebGPU) ×2 oder ×4 hochrechnen und als MP4 schreiben (WebCodecs: H.264, sonst VP9 oder AV1; der Ton neu als AAC, phorma-iii/tonspur.js).
+// Darüber auf Wunsch Schrift (schrift.js, seit 19. Oktober 2026), in der vollen Auflösung des Ergebnisses; ×1: nur Schrift, ohne Netz.
 // Alles bleibt im Browser.
 import { grafik, netz, gewichteLesen } from "./netz.js?v=1";
+import { STILE, AUFTRITTE, neueEbene, zeichneSchrift, treffer, schriftenLaden, satz, auftritt } from "./schrift.js?v=1";
 import { oeffnen } from "./lesen.js?v=1";
 import { zeichneBeschnitten } from "../phorma-iii/filmspur.js?v=19";
 import { tonLesen, tonKodieren, mp4Schreiber } from "../phorma-iii/tonspur.js?v=19";
@@ -10,7 +12,8 @@ const $ = (id) => document.getElementById(id);
 const MODELLE = { grafik: "realesr-animevideov3", foto: "realesr-general-x4v3" };
 // höchstens 4K: so viele Makroblöcke (16 × 16) erlaubt H.264 auf Stufe 5.1/5.2
 const HOECHSTENS = 36864;
-const S = { datei: null, url: null, quelle: null, modell: "grafik", faktor: "2", gpu: null, netze: {}, laeuft: false, abbruch: false, film: null, probe: null, gemessen: {} };
+const S = { datei: null, url: null, quelle: null, modell: "grafik", faktor: "2", gpu: null, netze: {}, laeuft: false, abbruch: false, film: null, probe: null, gemessen: {},
+  ebenen: [], aktiv: -1, schriften: [] };
 window.__hochrendern = S;   // für die Browser-Tests
 
 const merken = (k, v) => { try { localStorage.setItem(`hochrendern.${k}`, v); } catch { /* egal */ } };
@@ -54,24 +57,24 @@ function wahl(attr, schluessel, werte, wenn) {
   return { knoepfe, zeigen };
 }
 const modellWahl = wahl("data-modell", "modell", Object.keys(MODELLE), () => { S.probe = null; ansicht("video"); schaetzen(); });
-const faktorWahl = wahl("data-faktor", "faktor", ["2", "4"], () => { S.probe = null; ansicht("video"); masseZeigen(); });
+const faktorWahl = wahl("data-faktor", "faktor", ["1", "2", "4"], () => { S.probe = null; ansicht("video"); masseZeigen(); });
 
-/** Grösse vorher → nachher; ×4 nur, solange das Ergebnis höchstens 4K ist (sonst ×2, und ist auch das zu gross: nichts) */
+/** Grösse vorher → nachher; ×4 nur, solange das Ergebnis höchstens 4K ist (sonst ×2 oder ×1); ×1 braucht die Grafikkarte nicht */
 function masseZeigen() {
   const q = S.quelle;
   if (!q) return;
   const geht = (f) => bloecke(q.breite * f, q.hoehe * f) <= HOECHSTENS;
-  for (const b of faktorWahl.knoepfe) b.disabled = !geht(Number(b.dataset.faktor));
-  if (!geht(Number(S.faktor)) && geht(2)) { S.faktor = "2"; faktorWahl.zeigen(); }
-  const f = Number(S.faktor), zuGross = !geht(2);
-  $("faktor-info").textContent = zuGross ? `${q.breite} × ${q.hoehe} ist schon so gross, dass doppelt mehr als 4K gäbe.`
+  for (const b of faktorWahl.knoepfe) b.disabled = S.laeuft || !geht(Number(b.dataset.faktor)) || (b.dataset.faktor !== "1" && !S.gpu);
+  if (!geht(Number(S.faktor)) || (S.faktor !== "1" && !S.gpu)) { S.faktor = geht(2) && S.gpu ? "2" : "1"; faktorWahl.zeigen(); }
+  const f = Number(S.faktor);
+  $("faktor-info").textContent = f === 1 ? `${q.breite} × ${q.hoehe}, ohne KI – nur die Schrift kommt dazu.`
     : `${q.breite} × ${q.hoehe} → ${q.breite * f} × ${q.hoehe * f}${geht(4) ? "" : " (× 4 gäbe mehr als 4K)"}`;
   $("info").textContent = `${q.breite} × ${q.hoehe} · ${zahl(q.dauer)} s · ${q.anzahl} Bilder · ${zahl(q.fps, q.fps % 1 ? 2 : 0)} Bilder/s · gelesen über ${q.weg === "webcodecs" ? "WebCodecs" : "das Video-Element"}`;
-  for (const k of ["probe", "los"]) $(k).disabled = zuGross || S.laeuft || !S.gpu;
+  for (const k of ["probe", "los"]) $(k).disabled = !geht(f) || S.laeuft || (f > 1 && !S.gpu);
   schaetzen();
 }
 function schaetzen() {
-  const q = S.quelle, ms = S.gemessen[`${S.modell}|${S.faktor}`];
+  const q = S.quelle, ms = S.faktor === "1" ? 0 : S.gemessen[`${S.modell}|${S.faktor}`];
   $("schaetzung").textContent = q && ms ? `Probe: ${zahl(ms / 1000, 2)} s je Bild – das ganze Video dauert hier etwa ${minuten((ms / 1000) * q.anzahl)}.` : "";
 }
 
@@ -118,9 +121,11 @@ $("spielen").addEventListener("click", () => {
 $("quelle").addEventListener("pause", () => { $("spielen").textContent = "Abspielen"; });
 
 function ansicht(art) {
-  const vergleich = art === "vergleich" && S.probe;
-  $("quelle").hidden = vergleich || !S.url; $("vergleich").hidden = !vergleich; $("marken").hidden = !vergleich; $("teiler-leiste").hidden = !vergleich;
+  const vergleich = art === "vergleich" && S.probe, ohneKi = S.probe?.ohneKi;
+  $("quelle").hidden = vergleich || !S.url; $("vergleich").hidden = !vergleich; $("marken").hidden = !vergleich || ohneKi; $("teiler-leiste").hidden = !vergleich;
+  $("teiler").hidden = !!ohneKi; $("lupe").hidden = false;
   if (!vergleich) { $("rahmen").classList.remove("eins"); $("lupe").setAttribute("aria-pressed", "false"); } else zeichneVergleich();
+  schriftVorschau();
 }
 $("zurueck").addEventListener("click", () => ansicht("video"));
 $("teiler").addEventListener("input", zeichneVergleich);
@@ -140,8 +145,137 @@ function zeichneVergleich() {
   ctx.save(); ctx.beginPath(); ctx.rect(0, 0, x, c.height); ctx.clip();
   ctx.imageSmoothingQuality = "high"; ctx.drawImage(p.vorher, 0, 0, c.width, c.height);
   ctx.restore();
-  ctx.fillStyle = "rgba(255, 255, 255, 0.85)"; ctx.fillRect(x - 1, 0, 2, c.height);
+  zeichneSchrift(ctx, S.ebenen, p.zeit, c.width, c.height, S.quelle?.dauer);
+  if (!p.ohneKi) { ctx.fillStyle = "rgba(255, 255, 255, 0.85)"; ctx.fillRect(x - 1, 0, 2, c.height); }
 }
+
+// ——— Schrift: Ebenen, Editor und die Ebene über dem Video (zum Ziehen) ———
+try { S.ebenen = JSON.parse(erinnern("ebenen") || "[]").filter((e) => typeof e?.text === "string").map((e) => ({ ...neueEbene(), ...e })); } catch { S.ebenen = []; }
+S.aktiv = S.ebenen.length ? 0 : -1;
+const aktiv = () => S.ebenen[S.aktiv];
+// die Schriften: Inter Display aus dem Bestand der Website, dazu die aus vendor/schriften/ (tools/schriften-holen.mjs)
+S.schriften = [{ name: "Inter Display", schnitt: 600, stil: "normal", gruppe: "Grotesk" }];
+const schriftenGeladen = fetch("../../vendor/schriften/schriften.json").then((r) => r.json()).then((l) => { S.schriften.push(...l); }).catch(() => {}).then(() => {
+  $("s-schriften").replaceChildren(...S.schriften.map((s) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = s.name; b.title = `${s.name} · ${s.gruppe}`; b.dataset.schrift = s.name;
+    b.style.font = `${s.stil === "italic" ? "italic " : ""}${s.schnitt} 1.05rem "${s.name}"`;
+    return b;
+  }));
+  editorZeigen();
+});
+for (const [id, werte] of [["s-stil", STILE], ["s-auftritt", AUFTRITTE]])
+  $(id).replaceChildren(...Object.entries(werte).map(([wert, name]) => Object.assign(document.createElement("option"), { value: wert, textContent: name })));
+// neun Lagen: links, Mitte, rechts × oben, Mitte, unten (links und rechts mit passender Ausrichtung)
+const SPALTEN = [["left", 0.07], ["center", 0.5], ["right", 0.93]], ZEILEN = [0.12, 0.5, 0.86];
+$("lagen").replaceChildren(...ZEILEN.flatMap((y) => SPALTEN.map(([ausrichtung, x]) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.dataset.lage = `${ausrichtung},${x},${y}`; b.setAttribute("aria-label", `${ausrichtung === "left" ? "links" : ausrichtung === "right" ? "rechts" : "Mitte"} ${y < 0.3 ? "oben" : y > 0.7 ? "unten" : "mittig"}`);
+  b.style.setProperty("justify-self", "stretch");
+  return b;
+})));
+
+function ebenenZeigen() {
+  $("ebenen").replaceChildren(...S.ebenen.map((e, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.dataset.nr = String(i); b.setAttribute("aria-pressed", String(i === S.aktiv));
+    b.textContent = e.text.trim().split("\n")[0].slice(0, 28) || "(leer)";
+    b.style.fontFamily = `"${e.schrift}"`;
+    return b;
+  }));
+}
+function editorZeigen() {
+  const e = aktiv();
+  $("editor").hidden = !e;
+  if (!e) return;
+  const setzen = (id, wert, art = "value") => { if ($(id)[art] !== wert) $(id)[art] = wert; };
+  setzen("s-text", e.text); setzen("s-groesse", String(e.groesse)); setzen("s-laufweite", String(e.laufweite)); setzen("s-versalien", e.versalien, "checked");
+  setzen("s-farbe", e.farbe); setzen("s-stil", e.stil); setzen("s-zweite", e.zweite); setzen("s-auftritt", e.auftritt);
+  setzen("s-von", String(e.von ?? 0)); setzen("s-bis", e.bis === null ? "" : String(e.bis));
+  for (const b of $("s-schriften").children) b.setAttribute("aria-pressed", String(b.dataset.schrift === e.schrift));
+  for (const b of document.querySelectorAll("[data-ausrichtung]")) b.setAttribute("aria-pressed", String(b.dataset.ausrichtung === e.ausrichtung));
+}
+/** nach jeder Änderung: merken, Liste und Editor nachführen, Vorschau neu (die Schrift zuerst laden, sonst die Ersatzschrift) */
+function geaendert() {
+  merken("ebenen", JSON.stringify(S.ebenen));
+  ebenenZeigen(); editorZeigen(); schriftVorschau();
+  if (!$("vergleich").hidden) zeichneVergleich();
+  schriftenLaden(S.ebenen).then(() => { schriftVorschau(); if (!$("vergleich").hidden) zeichneVergleich(); });
+}
+$("ebenen").addEventListener("click", (ev) => { const b = ev.target.closest("[data-nr]"); if (!b) return; S.aktiv = Number(b.dataset.nr); geaendert(); });
+$("ebene-neu").addEventListener("click", () => {
+  const vorlage = aktiv(), e = neueEbene();
+  // eine weitere Schrift im Stil der gewählten, etwas höher
+  if (vorlage) Object.assign(e, { ...vorlage, text: "Noch ein Text", y: Math.max(0.1, vorlage.y - 1.6 * vorlage.groesse) });
+  S.ebenen.push(e); S.aktiv = S.ebenen.length - 1;
+  geaendert();
+  $("s-text").focus(); $("s-text").select();
+});
+$("ebene-weg").addEventListener("click", () => { if (!aktiv()) return; S.ebenen.splice(S.aktiv, 1); S.aktiv = Math.min(S.aktiv, S.ebenen.length - 1); geaendert(); });
+$("s-schriften").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-schrift]"), e = aktiv();
+  if (!b || !e) return;
+  const s = S.schriften.find((x) => x.name === b.dataset.schrift);
+  Object.assign(e, { schrift: s.name, schnitt: s.schnitt, schriftStil: s.stil });
+  geaendert();
+});
+for (const [id, feld, lesen] of [["s-text", "text", (el) => el.value], ["s-groesse", "groesse", (el) => Number(el.value)], ["s-laufweite", "laufweite", (el) => Number(el.value)],
+  ["s-versalien", "versalien", (el) => el.checked], ["s-farbe", "farbe", (el) => el.value], ["s-stil", "stil", (el) => el.value], ["s-zweite", "zweite", (el) => el.value],
+  ["s-auftritt", "auftritt", (el) => el.value], ["s-von", "von", (el) => Math.max(0, Number(el.value) || 0)], ["s-bis", "bis", (el) => (el.value === "" ? null : Math.max(0, Number(el.value)))]])
+  $(id).addEventListener("input", () => { const e = aktiv(); if (!e) return; e[feld] = lesen($(id)); geaendert(); });
+for (const b of document.querySelectorAll("[data-ausrichtung]")) b.addEventListener("click", () => { const e = aktiv(); if (!e) return; e.ausrichtung = b.dataset.ausrichtung; geaendert(); });
+$("lagen").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-lage]"), e = aktiv();
+  if (!b || !e) return;
+  const [ausrichtung, x, y] = b.dataset.lage.split(",");
+  Object.assign(e, { ausrichtung, x: Number(x), y: Number(y) });
+  geaendert();
+});
+ebenenZeigen(); editorZeigen();
+
+/** die Schrift über dem Video: eine Leinwand genau über dem Bild, in Bildschirmpixeln; die gewählte Ebene gestrichelt umrandet */
+function schriftVorschau() {
+  const c = $("schrift"), el = $("quelle"), zeigen = !el.hidden && !!el.videoWidth && S.ebenen.length > 0;
+  c.hidden = !zeigen;
+  if (!zeigen) return;
+  const r = el.getBoundingClientRect(), rr = $("rahmen").getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  Object.assign(c.style, { left: `${r.left - rr.left}px`, top: `${r.top - rr.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+  const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+  if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+  const ctx = c.getContext("2d"), t = el.currentTime, dauer = S.quelle?.dauer ?? el.duration;
+  ctx.clearRect(0, 0, w, h);
+  zeichneSchrift(ctx, S.ebenen, t, w, h, dauer);
+  const e = aktiv();
+  if (e?.text.trim() && auftritt(e, t, dauer) && el.paused) {
+    const [x0, y0, x1, y1] = satz(ctx, e, w, h).box, rand = 0.012 * Math.min(w, h);
+    ctx.save(); ctx.setLineDash([6 * dpr, 4 * dpr]); ctx.lineWidth = dpr; ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.strokeRect(x0 - rand, y0 - rand, x1 - x0 + 2 * rand, y1 - y0 + 2 * rand); ctx.restore();
+  }
+}
+for (const art of ["seeked", "loadeddata", "pause"]) $("quelle").addEventListener(art, schriftVorschau);
+$("quelle").addEventListener("play", function laufen() { schriftVorschau(); if (!$("quelle").paused) requestAnimationFrame(laufen); });
+window.addEventListener("resize", schriftVorschau);
+// ziehen: die getroffene Ebene wird die gewählte und folgt dem Zeiger
+let ziehen = null;
+const punkt = (ev) => { const c = $("schrift"), r = c.getBoundingClientRect(); return [((ev.clientX - r.left) / r.width) * c.width, ((ev.clientY - r.top) / r.height) * c.height]; };
+$("schrift").addEventListener("pointerdown", (ev) => {
+  const c = $("schrift"), [x, y] = punkt(ev), i = treffer(c.getContext("2d"), S.ebenen, $("quelle").currentTime, c.width, c.height, x, y, S.quelle?.dauer);
+  if (i < 0) return;
+  $("quelle").pause();
+  S.aktiv = i; const e = aktiv();
+  ziehen = { dx: e.x * c.width - x, dy: e.y * c.height - y };
+  c.setPointerCapture(ev.pointerId); c.classList.add("zieht");
+  ebenenZeigen(); editorZeigen(); schriftVorschau();
+});
+$("schrift").addEventListener("pointermove", (ev) => {
+  const c = $("schrift"), [x, y] = punkt(ev);
+  if (!ziehen) { c.classList.toggle("greifbar", treffer(c.getContext("2d"), S.ebenen, $("quelle").currentTime, c.width, c.height, x, y, S.quelle?.dauer) >= 0); return; }
+  const e = aktiv(), klemm = (v) => Math.min(1, Math.max(0, v));
+  e.x = klemm((x + ziehen.dx) / c.width); e.y = klemm((y + ziehen.dy) / c.height);
+  schriftVorschau();
+});
+for (const art of ["pointerup", "pointercancel"]) $("schrift").addEventListener(art, () => { if (!ziehen) return; ziehen = null; $("schrift").classList.remove("zieht"); geaendert(); });
+schriftenGeladen.then(() => schriftenLaden(S.ebenen)).then(schriftVorschau);
 
 // ——— Probe ———
 /** das Bild an der Stelle des Video-Elements als Leinwand (gedreht, wie es gezeigt wird) */
@@ -157,7 +291,15 @@ $("probe").addEventListener("click", async () => {
   sperren(true);
   try {
     el.pause();
-    const n = await netzFuer(S.modell), f = Number(S.faktor), vorher = standbild(), schluessel = `${S.modell}|${S.faktor}`;
+    const f = Number(S.faktor), vorher = standbild(), schluessel = `${S.modell}|${S.faktor}`;
+    await schriftenLaden(S.ebenen);
+    if (f === 1) {
+      S.probe = { vorher, nachher: vorher, zeit: el.currentTime, ohneKi: true };
+      ansicht("vergleich");
+      melden(`Probe bei ${zahl(el.currentTime)} s mit Schrift, ohne KI. «1 : 1» für volle Grösse.`);
+      return;
+    }
+    const n = await netzFuer(S.modell);
     melden("Die Probe wird gerechnet …");
     // das erste Mal übersetzt die Grafikkarte die Programme: dann zweimal, und gemessen wird das zweite
     if (!S.gemessen[schluessel]) await n.rechne(vorher, vorher.width, vorher.height, f);
@@ -165,7 +307,7 @@ $("probe").addEventListener("click", async () => {
     S.gemessen[schluessel] = performance.now() - t0;
     const nachher = leinwand(e.breite, e.hoehe);
     nachher.getContext("2d").putImageData(new ImageData(new Uint8ClampedArray(e.daten.buffer), e.breite, e.hoehe), 0, 0);
-    S.probe = { vorher, nachher };
+    S.probe = { vorher, nachher, zeit: el.currentTime };
     ansicht("vergleich");
     schaetzen();
     melden(`Probe bei ${zahl(el.currentTime)} s: ${e.breite} × ${e.hoehe}. Regler verschieben, «1 : 1» für volle Grösse.`);
@@ -198,7 +340,8 @@ $("los").addEventListener("click", async () => {
   try { wachbleiben = await navigator.wakeLock?.request("screen"); } catch { /* egal */ }
   const t0 = performance.now();
   try {
-    const n = await netzFuer(S.modell), wahlE = await encoderWahl(B, H, fps);
+    const n = f > 1 ? await netzFuer(S.modell) : null, wahlE = await encoderWahl(B, H, fps);
+    await schriftenLaden(S.ebenen);
     if (!wahlE) throw new Error(`dieser Browser kann ${B} × ${H} nicht als Video kodieren`);
     let ton = null;
     try { melden("Der Ton wird gelesen …"); const t = await tonLesen(S.datei); ton = await tonKodieren(t.buffer, q.dauer, { ausblenden: 0 }); } catch { ton = null; }
@@ -216,10 +359,11 @@ $("los").addEventListener("click", async () => {
       error: (e) => { fehler ??= e; },
     });
     enc.configure(wahlE.cfg);
-    const zwischen = leinwand(q.breite, q.hoehe), zx = zwischen.getContext("2d");
+    const zwischen = leinwand(q.breite, q.hoehe), zx = zwischen.getContext("2d"), aus = leinwand(B, H), ax = aus.getContext("2d");
+    let zeit0 = null;
     const schluessel = Math.max(1, Math.round(fps * 2));
     let i = 0, tBild = performance.now();
-    melden(`Hochrendern: ${q.breite} × ${q.hoehe} → ${B} × ${H} …`);
+    melden(f > 1 ? `Hochrendern: ${q.breite} × ${q.hoehe} → ${B} × ${H} …` : "Die Schrift wird ins Video gesetzt …");
     for await (const b of q.bilder()) {
       if (fehler) throw fehler;
       if (S.abbruch) { b.fertig(); break; }
@@ -227,9 +371,13 @@ $("los").addEventListener("click", async () => {
       // quadratischen Pixeln): direkt aus einem VideoFrame oder dem Video-Element zerbrach in Chromium mit SwiftShader die Grafik
       // («A valid external Instance reference no longer exists»)
       zeichneBeschnitten(zx, b.bild, b.bild.displayWidth ?? b.bild.videoWidth, b.bild.displayHeight ?? b.bild.videoHeight, q.breite, q.hoehe, q.drehung);
-      const e = await n.rechne(zwischen, q.breite, q.hoehe, f);
+      if (n) { const e = await n.rechne(zwischen, q.breite, q.hoehe, f); ax.putImageData(new ImageData(new Uint8ClampedArray(e.daten.buffer), B, H), 0, 0); }
+      else ax.drawImage(zwischen, 0, 0);
       b.fertig();
-      const bild = new VideoFrame(e.daten, { format: "RGBA", codedWidth: B, codedHeight: H, timestamp: b.zeit, duration: b.dauer || Math.round(1e6 / fps) });
+      // die Schrift in voller Auflösung darüber, zur Zeit des Bilds im Video
+      zeit0 ??= b.zeit;
+      zeichneSchrift(ax, S.ebenen, (b.zeit - zeit0) / 1e6, B, H, q.dauer);
+      const bild = new VideoFrame(aus, { timestamp: b.zeit, duration: b.dauer || Math.round(1e6 / fps) });
       enc.encode(bild, { keyFrame: i % schluessel === 0 });
       bild.close();
       while (enc.encodeQueueSize > 3) await new Promise((weiter) => setTimeout(weiter, 2));
@@ -262,13 +410,13 @@ function zeigen(blob, { B, H, i, ton, art, sekunden }) {
   $("film").src = S.film;
   const name = (S.datei.name.replace(/\.[^.]+$/, "") || "video") + `-${B}x${H}.mp4`;
   $("laden").href = S.film; $("laden").download = name;
-  $("film-info").textContent = `${B} × ${H} · ${i} Bilder · ${zahl(blob.size / 1e6)} MB · ${art.art === "avc" ? "H.264" : art.art.toUpperCase()} (${art.cfg.codec}, ${Math.round(art.cfg.bitrate / 1e6)} Mbit/s)${ton ? " · mit Ton" : " · ohne Ton"} · gerechnet in ${minuten(sekunden)}`;
+  $("film-info").textContent = `${B} × ${H} · ${i} Bilder · ${zahl(blob.size / 1e6)} MB · ${art.art === "avc" ? "H.264" : art.art.toUpperCase()} (${art.cfg.codec}, ${Math.round(art.cfg.bitrate / 1e6)} Mbit/s)${ton ? " · mit Ton" : " · ohne Ton"}${S.ebenen.some((e) => e.text.trim()) ? ` · ${S.ebenen.filter((e) => e.text.trim()).length} × Schrift` : ""} · gerechnet in ${minuten(sekunden)}`;
   $("ergebnis").hidden = false;
   melden("Fertig. Prüfe das Video und lade es herunter.");
   $("ergebnis").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
 }
 
 function sperren(an) {
-  for (const el of [$("datei"), $("probe"), $("los"), ...modellWahl.knoepfe, ...faktorWahl.knoepfe]) el.disabled = an || ((el.id === "probe" || el.id === "los") && (!S.quelle || !S.gpu));
+  for (const el of [$("datei"), $("probe"), $("los"), ...modellWahl.knoepfe, ...faktorWahl.knoepfe]) el.disabled = an || ((el.id === "probe" || el.id === "los") && !S.quelle);
   if (!an) masseZeigen();
 }
