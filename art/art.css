@@ -153,3 +153,10 @@
   .werk h3 { font-size: 1.05rem; }
 }
 @media (max-width: 380px) { .art-raster { grid-template-columns: minmax(0, 1fr); } }
+
+/* Ankündigung (seit 19. Oktober 2026, solange "ankuendigung" in src/art/werke.json steht): ein ruhiger Absatz, darunter das Beispiel und die Dienstleistungen */
+.art-ankuendigung { max-width: 60ch; margin: 0 0 64px; padding: 28px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.art-ankuendigung h2 { margin: 0 0 10px; font-family: var(--serif); font-weight: 400; font-size: clamp(1.8rem, 4vw, 2.4rem); }
+.art-ankuendigung p { margin: 0 0 18px; color: var(--muted); font-size: 1.05rem; }
+.art-ankuendigung p:last-child { margin: 0; }
+.art-serie--beispiel .art-raster { grid-template-columns: minmax(0, 380px); }   /* das eine Beispiel etwas grösser, auf dem Telefon in voller Breite */

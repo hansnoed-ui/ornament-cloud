@@ -15,28 +15,28 @@ test("Art: die Seiten entsprechen src/art/werke.json (sonst: node tools/build-ar
   assert.ok(lies("sitemap.xml").includes(block), "der Block ART in der Sitemap ist aktuell");
 });
 
-test("Art: jedes Werk hat Titel, Art, Bild mit Beschreibung und Bilddateien; Gestaltung hat Leistungen", () => {
+test("Art: jedes Werk hat Titel, Art (Original, Print, Dienstleistung), Bild mit Beschreibung und Bilddateien; Dienstleistungen haben Leistungen", () => {
   const slugs = new Set();
   for (const w of daten.werke) {
     assert.ok(w.slug && !slugs.has(w.slug) && /^[a-z0-9-]+$/.test(w.slug), `${w.slug}: eindeutiger Slug`);
     slugs.add(w.slug);
-    assert.ok(["original", "edition", "digital", "gestaltung"].includes(w.art), `${w.slug}: Art`);
+    assert.ok(["original", "print", "dienstleistung"].includes(w.art), `${w.slug}: Art`);
     assert.ok(["verfuegbar", "reserviert", "verkauft"].includes(w.status), `${w.slug}: Stand`);
-    if (w.art === "gestaltung") { assert.ok(w.leistungen?.length, `${w.slug}: Leistungen`); continue; }
+    if (w.art === "dienstleistung") { assert.ok(w.leistungen?.length, `${w.slug}: Leistungen`); continue; }
     assert.ok(w.bilder?.length && w.bilder.every((b) => b.alt?.length > 20), `${w.slug}: Bild mit Beschreibung`);
     for (const g of [800, 1600]) assert.ok(existsSync(new URL(`art/bilder/${w.slug}-1-${g}.webp`, root)), `${w.slug}: Bild ${g} (tools/art-bilder.mjs)`);
-    if (w.art === "edition") assert.ok(w.auflage && w.auflage.verfuegbar <= w.auflage.gesamt, `${w.slug}: Auflage`);
+    if (w.art === "print") assert.ok(w.auflage && w.auflage.verfuegbar <= w.auflage.gesamt, `${w.slug}: Auflage`);
   }
 });
 
 test("Art: Preise in Franken mit Hochkomma, Stand in Worten (nie nur Farbe), Muster ehrlich gekennzeichnet", () => {
   assert.equal(chf(1400), "CHF 1’400.–");
   assert.equal(chf(48), "CHF 48.–");
-  assert.deepEqual(stand({ art: "edition", status: "verfuegbar", auflage: { gesamt: 25, verfuegbar: 2 } }), ["Noch 2 von 25", "knapp"]);
+  assert.deepEqual(stand({ art: "print", status: "verfuegbar", auflage: { gesamt: 25, verfuegbar: 2 } }), ["Noch 2 von 25", "knapp"]);
   assert.deepEqual(stand({ art: "original", status: "verkauft" }), ["In Privatbesitz", "vergeben"]);
-  assert.deepEqual(stand({ art: "edition", status: "verkauft" }), ["Vergriffen", "vergeben"]);
+  assert.deepEqual(stand({ art: "print", status: "verkauft" }), ["Vergriffen", "vergeben"]);
   const seiten = bauen();
-  for (const w of daten.werke.filter((x) => x.art !== "gestaltung")) {
+  for (const w of daten.werke.filter((x) => x.art !== "dienstleistung")) {
     const html = seiten[`art/${w.slug}/index.html`];
     assert.equal(html.includes('<meta name="robots" content="noindex">'), !!w.muster, `${w.slug}: Muster sind für Suchmaschinen gesperrt`);
     assert.equal(html.includes("Im Aufbau."), !!w.muster, `${w.slug}: Hinweis auf Muster`);
@@ -46,13 +46,27 @@ test("Art: Preise in Franken mit Hochkomma, Stand in Worten (nie nur Farbe), Mus
 });
 
 test("Art: Bestellen ohne Shop – eine fertige Mail mit Werk, Preis und den nötigen Angaben; Zahlungslinks nur, wo eingetragen", () => {
-  const w = { slug: "x", titel: "Probe", art: "edition", serie: "Probe", jahr: 2026, technik: "Giclée", masse: { b: 30, h: 40 }, auflage: { gesamt: 10, verfuegbar: 4 }, preis: 240, status: "verfuegbar" };
+  const w = { slug: "x", titel: "Probe", art: "print", serie: "Probe", jahr: 2026, technik: "Giclée", masse: { b: 30, h: 40 }, auflage: { gesamt: 10, verfuegbar: 4 }, preis: 240, status: "verfuegbar" };
   const m = decodeURIComponent(mail(daten, w));
   assert.ok(m.startsWith(`mailto:${daten.kontakt}?subject=Bestellung: Probe – CHF 240.–`));
-  for (const z of ["Ich bestelle: Probe (2026)", "Preis: CHF 240.–", "Lieferadresse:", "QR-Rechnung", "fünf Tage für mich reserviert"]) assert.ok(m.includes(z), z);
+  for (const z of ["Ich bestelle: Probe (2026)", "Preis: CHF 240.–", "Auflage 10 Exemplare", "Lieferadresse:", "QR-Rechnung", "fünf Tage für mich reserviert"]) assert.ok(m.includes(z), z);
   assert.ok(decodeURIComponent(mail(daten, { ...w, muster: true })).includes("subject=Interesse: Probe"));
-  const seiten = bauen({ ...daten, werke: [{ ...w, bilder: [{ alt: "eine Probe für den Test der Bestellung" }], zahlungslink: "https://buy.stripe.com/test_123" }] }, {});
+  const seiten = bauen({ ...daten, ankuendigung: undefined, werke: [{ ...w, bilder: [{ alt: "eine Probe für den Test der Bestellung" }], zahlungslink: "https://buy.stripe.com/test_123" }] }, {});
   assert.match(seiten["art/x/index.html"], /<a class="kaufen" href="https:\/\/buy\.stripe\.com\/test_123">Kaufen<\/a>\s*<a class="knopf-text" href="mailto:[^"]+">Lieber per Rechnung<\/a>/);
+});
+
+test("Art: solange die Ankündigung steht, zeigt die Übersicht nur sie, das Beispiel und die Dienstleistungen; ohne sie Filter, Zusagen, Ablauf und Fragen", () => {
+  const mit = bauen()["art/index.html"];
+  if (daten.ankuendigung) {
+    assert.ok(mit.includes(`<h2 id="ankuendigung-titel">${daten.ankuendigung.titel}</h2>`));
+    assert.match(mit, /<meta name="robots" content="noindex">/);
+    assert.match(mit, />Benachrichtigen lassen</);
+    assert.match(mit, /<h2 id="serie-dienstleistungen">Dienstleistungen<\/h2>/);
+    assert.ok(!/art-filter|art-zusagen|art-ablauf|art-fragen/.test(mit), "noch ohne Filter, Zusagen, Ablauf und Fragen");
+  }
+  const ohne = bauen({ ...daten, ankuendigung: undefined })["art/index.html"];
+  for (const k of ["art-zusagen", "art-ablauf", "art-fragen"]) assert.ok(ohne.includes(k), k);
+  assert.ok(!ohne.includes("ankuendigung-titel"));
 });
 
 test("Art: nichts von fremden Servern, Apps über die Seite «Apps» (REGELN §11, §14), Massstab gezeichnet", () => {

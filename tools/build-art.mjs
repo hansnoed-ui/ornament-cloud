@@ -2,11 +2,13 @@
 // Kunstwerken, Gestaltungen und Dienstleistungen … Es muss kein Webshop angebunden werden, die Bestellung, Bestätigung und der Verkauf sollte aber möglichst
 // perfekt und schlank nachvollziehbar sein»; dazu: «verkauf nur nebensächlich, ich kann das ganz klein halten»). Konzept und Recherche: src/art/KONZEPT.md.
 // Quelle ist src/art/werke.json (eine Datei für alle Werke), Bilder aus tools/art-bilder.mjs. Geschrieben werden:
-//   art/index.html            Übersicht: Filter, Serien mit Werken, Gestaltung als Pakete, Zusagen, Ablauf einer Bestellung, Fragen
-//   art/<slug>/index.html     je Werk (nicht für Gestaltung): Bild mit Lupe, Angaben, Preis, Bestellen, Massstab, Text, weitere Werke
+//   art/index.html            Übersicht: Filter, Serien mit Werken, Dienstleistungen als Pakete, Zusagen, Ablauf einer Bestellung, Fragen;
+//                             solange "ankuendigung" gesetzt ist, nur die Ankündigung, die Werke (zurzeit ein Beispiel) und die Dienstleistungen in einem Satz
+//   art/<slug>/index.html     je Werk (nicht für Dienstleistungen): Bild mit Lupe, Angaben, Preis, Bestellen, Massstab, Text, weitere Werke
 //   art/danke/index.html      nach dem Bezahlen (Erfolgsseite eines Zahlungslinks) und als Erklärung, wie es weitergeht
 //   sitemap.xml               der Block zwischen <!-- ART:START --> und <!-- ART:END -->: die Seiten ohne noindex (Muster sind gesperrt, ebenso die Übersicht, solange Muster darauf stehen)
-// Apps auf «Art» führen auf die Seite «Apps», nicht direkt in den Alpha-Bereich (REGELN §14: Alpha-Seiten nur mit Freigabe verlinken).
+// Angeboten werden Werke (Originale, Prints) und Dienstleistungen (Websites, Apps; Präzisierung vom 19. Oktober 2026). Bis die Werke da sind, steht eine Ankündigung
+// mit einem Beispiel (Wunsch: «Lass die Seite noch leer mit einer Ankündigung, dass es hier demnächst mehr zu sehen gibt (eines der Beispiele kannst du gerne lassen)»).
 // Bestellen ohne Shop: Der Knopf öffnet eine fertige Mail mit allen Angaben (wie der Rückkanal, ohne Dienst und ohne Formular, REGELN §11); die Antwort ist die
 // Bestätigung mit QR-Rechnung. Trägt ein Werk "zahlungslink", führt «Kaufen» dorthin (ein gewöhnlicher Link, die Seite lädt nichts von aussen) und die Mail bleibt als zweiter Weg.
 //   node tools/build-art.mjs        (nach jeder Änderung an src/art/werke.json; ein Test prüft, dass die Seiten aktuell sind)
@@ -15,13 +17,11 @@ import { fileURLToPath } from "node:url";
 import { kopfleiste } from "./kopfleiste.mjs";
 
 const ROOT = new URL("../", import.meta.url);
-const CSS = "styles.css?v=46", ART_CSS = "art/art.css?v=1", ART_JS = "art/art.js?v=1";
+const CSS = "styles.css?v=46", ART_CSS = "art/art.css?v=3", ART_JS = "art/art.js?v=1";
 
-export const ARTEN = { original: ["Original", "Originale"], edition: ["Edition", "Editionen"], digital: ["Digital", "Digital"], gestaltung: ["Gestaltung", "Gestaltung"] };
+export const ARTEN = { original: ["Original", "Originale"], print: ["Print", "Prints"], dienstleistung: ["Dienstleistung", "Dienstleistungen"] };
 const SERIEN_TEXT = {
   "Nachtblau": "Blätter auf Nachtblau: Linien, Bündel und Raster. Aus ihnen sind die Bilder von The Fictory geworden.",
-  "OMNA COLOR": "Das Farbrad zum Anfassen.",
-  "Apps": "Werke, die laufen. Frei zu benutzen; eigene Fassungen und Werkstätten auf Anfrage.",
 };
 
 const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -32,30 +32,30 @@ export const format = (m) => (m ? `${zahl(m.b)} × ${zahl(m.h)} cm` : "");
 
 /** Stand eines Werks: [Wort, Art des Punkts] */
 export function stand(w) {
-  if (w.status === "verkauft") return [w.art === "edition" ? "Vergriffen" : "In Privatbesitz", "vergeben"];
+  if (w.status === "verkauft") return [w.art === "print" ? "Vergriffen" : "In Privatbesitz", "vergeben"];
   if (w.status === "reserviert") return ["Reserviert", "knapp"];
-  if (w.art === "edition" && w.auflage) return [`Noch ${w.auflage.verfuegbar} von ${w.auflage.gesamt}`, w.auflage.verfuegbar <= Math.max(3, w.auflage.gesamt * 0.1) ? "knapp" : "frei"];
+  if (w.art === "print" && w.auflage) return [`Noch ${w.auflage.verfuegbar} von ${w.auflage.gesamt}`, w.auflage.verfuegbar <= Math.max(3, w.auflage.gesamt * 0.1) ? "knapp" : "frei"];
   return ["Verfügbar", "frei"];
 }
-export const preisText = (w) => (w.preis === 0 ? "Frei zu benutzen" : w.preis ? chf(w.preis) : "Offerte nach Gespräch");
+export const preisText = (w) => (w.preis ? chf(w.preis) : "Offerte nach Gespräch");
 
 /** die fertige Mail zum Bestellen (oder, bei Mustern, um Interesse zu melden) */
 export function mail(daten, w) {
-  const muster = w.muster, gestaltung = w.art === "gestaltung";
+  const muster = w.muster, gestaltung = w.art === "dienstleistung";
   const was = [w.titel, w.jahr && `(${w.jahr})`].filter(Boolean).join(" ");
   const betreff = `${muster ? "Interesse" : gestaltung ? "Anfrage" : "Bestellung"}: ${w.titel}${w.preis ? ` – ${chf(w.preis)}` : ""}`;
   const zeilen = gestaltung
     ? [`Ich interessiere mich für «${w.titel}».`, "", "Worum es geht:", "", "Zeitrahmen:", "", "Name:", "Telefon (freiwillig):"]
     : muster
       ? [`Ich interessiere mich für «${was}».`, "Bitte melde dich, wenn es verfügbar ist.", "", "Name:"]
-      : [`Ich bestelle: ${was}`, [w.technik, format(w.masse)].filter(Boolean).join(", "), w.auflage ? `Edition, ${w.auflage.gesamt} Exemplare` : "", `Preis: ${chf(w.preis)}`, "",
+      : [`Ich bestelle: ${was}`, [w.technik, format(w.masse)].filter(Boolean).join(", "), w.auflage ? `Auflage ${w.auflage.gesamt} Exemplare` : "", `Preis: ${chf(w.preis)}`, "",
          "Name:", "Lieferadresse:", "Land:", "Telefon für den Versand (freiwillig):", "",
          "Ich bekomme eine Bestätigung mit Rechnung (QR-Rechnung, zahlbar mit E-Banking oder TWINT). Bis die Zahlung da ist, ist die Arbeit fünf Tage für mich reserviert."].filter((z, i, a) => z !== "" || a[i - 1] !== "");
   return `mailto:${daten.kontakt}?subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(zeilen.join("\n"))}`;
 }
 
 const bild = (w, i, g) => `art/bilder/${w.slug}-${i + 1}-${g}.webp`;
-const voll = (w) => w.art === "digital" || w.slug === "omna-color-karten";           // Vorschaubilder, die schon gestaltet sind: randlos
+const voll = (w) => !!w.randlos;                                                    // Bilder, die schon gestaltet sind (etwa ein Vorschaubild): ohne Passepartout
 
 function seitenweg(site) {
   return [`        <nav class="seitenweg" aria-label="Ornament Cloud">`, `          <a href="${site}" aria-current="true">Ornament Cloud</a>`,
@@ -108,7 +108,7 @@ const HINWEIS = `    <p class="art-hinweis"><strong>Im Aufbau.</strong> Werke, A
 function karte(w, site, masse, lazy) {
   const [wort, punkt] = stand(w);
   const g = masse[`${w.slug}-1-800`] ?? [640, 800];
-  const meta = w.art === "digital" ? w.technik : [w.jahr, w.technik, format(w.masse)].filter(Boolean).join(" · ");
+  const meta = [w.jahr, w.technik, format(w.masse)].filter(Boolean).join(" · ");
   return `        <figure class="werk" data-art="${w.art}">
           <div class="passepartout${voll(w) ? " passepartout--voll" : ""}"><img src="${site}${bild(w, 0, 800)}" alt="${esc(w.bilder[0].alt)}" width="${g[0]}" height="${g[1]}"${lazy ? ` loading="lazy"` : ""}></div>
           <figcaption>
@@ -132,7 +132,7 @@ const SYMBOL = {
 const svg = (n) => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${SYMBOL[n]}</svg>`;
 
 function uebersicht(daten, masse) {
-  const site = "../", werke = daten.werke.filter((w) => w.art !== "gestaltung"), pakete = daten.werke.filter((w) => w.art === "gestaltung");
+  const site = "../", werke = daten.werke.filter((w) => w.art !== "dienstleistung"), pakete = daten.werke.filter((w) => w.art === "dienstleistung");
   const serien = [...new Set(werke.map((w) => w.serie))];
   const zahl = (a) => daten.werke.filter((w) => a === "alle" || w.art === a).length;
   const verfuegbar = werke.filter((w) => w.status === "verfuegbar").length;
@@ -148,11 +148,11 @@ ${liste.map((w) => karte(w, site, masse, erste++ >= 4)).join("\n")}
       </div>
     </section>`;
   }).join("\n\n");
-  const paketeHtml = pakete.length ? `    <section class="art-serie" id="gestaltung" aria-labelledby="serie-gestaltung">
-      <h2 id="serie-gestaltung">Gestaltung</h2>
-      <p>Zeichen, Erscheinungsbilder und Arbeiten im Auftrag. Fixpreis, klarer Umfang, ein Gespräch am Anfang.</p>
+  const paketeHtml = pakete.length ? `    <section class="art-serie" id="dienstleistungen" aria-labelledby="serie-dienstleistungen">
+      <h2 id="serie-dienstleistungen">Dienstleistungen</h2>
+      <p>Websites und Apps im Auftrag. Fixpreis, klarer Umfang, ein Gespräch am Anfang.</p>
       <div class="pakete">
-${pakete.map((w) => `        <article class="paket" data-art="gestaltung">
+${pakete.map((w) => `        <article class="paket" data-art="dienstleistung">
           <h3>${esc(w.titel)}</h3>
           <p class="paket-preis">${w.preis ? esc(chf(w.preis)) : "Offerte"} <span>· ${esc(w.dauer)}</span></p>
           <p>${esc(w.text)}</p>
@@ -164,8 +164,26 @@ ${w.ohne ? `          <p class="ohne">Nicht enthalten: ${esc(w.ohne.join(", "))}
       </div>
     </section>` : "";
   const kopf = `      <h1 class="art-titel">Art</h1>
-      <p class="lead">Bilder, Editionen, Apps und Gestaltung. Direkt aus dem Atelier, signiert und versichert verschickt aus der Schweiz.</p>
-      <p class="art-fakten">${werke.length} Arbeiten · ${verfuegbar} verfügbar · ${pakete.length} Angebote für Gestaltung</p>`;
+      <p class="lead">Originale und Prints, dazu Websites und Apps im Auftrag.${daten.ankuendigung ? "" : " Direkt aus dem Atelier, signiert und versichert verschickt aus der Schweiz."}</p>${daten.ankuendigung ? "" : `
+      <p class="art-fakten">${werke.length} Arbeiten · ${verfuegbar} verfügbar${pakete.length ? ` · ${pakete.length} Angebote für Dienstleistungen` : ""}</p>`}`;
+  if (daten.ankuendigung) {
+    const a = daten.ankuendigung, anfrage = mail(daten, { titel: "Website oder App", art: "dienstleistung" });
+    const melden = `mailto:${daten.kontakt}?subject=${encodeURIComponent("Art: Bitte benachrichtigen")}&body=${encodeURIComponent("Bitte schreib mir, wenn auf «Art» die ersten Werke zu sehen sind.")}`;
+    const inhalt = `    <section class="art-ankuendigung" aria-labelledby="ankuendigung-titel">
+      <h2 id="ankuendigung-titel">${esc(a.titel)}</h2>
+      <p>${esc(a.text)}</p>
+      <p><a class="kaufen kaufen--leise" href="${esc(melden)}">Benachrichtigen lassen</a></p>
+    </section>
+
+${serienHtml.replace(/class="art-serie"/g, 'class="art-serie art-serie--beispiel"').replace(/(<h2 id="serie-[^"]+">)([^<]+)(<\/h2>)/g, "$1Beispiel: $2$3")}
+
+    <section class="art-serie" aria-labelledby="serie-dienstleistungen">
+      <h2 id="serie-dienstleistungen">Dienstleistungen</h2>
+      <p>${esc(a.dienstleistungen)}</p>
+      <a class="knopf-text" href="${esc(anfrage)}">Anfrage schreiben <span aria-hidden="true">→</span></a>
+    </section>`;
+    return seite({ site, titel: "Art – Ornament Cloud", beschreibung: "Originale und Prints, dazu Websites und Apps im Auftrag. Demnächst mehr.", robots: true, kanon: "art/", kopf, inhalt, aktuell: "page" });
+  }
   const inhalt = `${daten.werke.some((w) => w.muster) ? HINWEIS + "\n" : ""}    <nav class="art-filter" aria-label="Nach Art zeigen" hidden>
 ${filter}
     </nav>
@@ -200,7 +218,7 @@ ${paketeHtml}
       <details><summary>Darf ich ein Bild ansehen, bevor ich es kaufe?</summary><p>Ja, im Atelier nach Absprache. Schreib mir.</p></details>
       <details><summary>Was gehört mir mit dem Werk?</summary><p>Das Werk selbst. Die Bildrechte bleiben bei mir; für eine Abbildung, etwa in einer Publikation, frag kurz an.</p></details>
     </section>`;
-  return seite({ site, titel: "Art – Ornament Cloud", beschreibung: "Bilder, Editionen, Apps und Gestaltung von ornament.cloud: direkt aus dem Atelier, signiert und versichert verschickt aus der Schweiz.",
+  return seite({ site, titel: "Art – Ornament Cloud", beschreibung: "Originale und Prints, dazu Websites und Apps im Auftrag: direkt aus dem Atelier, signiert und versichert verschickt aus der Schweiz.",
     robots: daten.werke.some((w) => w.muster), kanon: "art/", kopf, inhalt, aktuell: "page" });
 }
 
@@ -234,22 +252,19 @@ export function massstab(m) {
 function werkseite(daten, w, masse) {
   const site = "../../", [wort, punkt] = stand(w), g = masse[`${w.slug}-1-800`] ?? [640, 800], gg = masse[`${w.slug}-1-1600`] ?? g;
   const zahlbar = !w.muster && w.status === "verfuegbar" && w.preis > 0;
-  const haupt = w.link ? `<a class="kaufen" href="${site}${w.link}">Zu den Apps</a>`
-    : w.zahlungslink && zahlbar ? `<a class="kaufen" href="${esc(w.zahlungslink)}">Kaufen</a>`
+  const haupt = w.zahlungslink && zahlbar ? `<a class="kaufen" href="${esc(w.zahlungslink)}">Kaufen</a>`
     : zahlbar ? `<a class="kaufen" href="${esc(mail(daten, w))}">Bestellen</a>`
     : w.status === "verfuegbar" ? `<a class="kaufen kaufen--leise" href="${esc(mail(daten, w))}">Interesse melden</a>`
     : `<a class="kaufen kaufen--leise" href="${esc(mail(daten, { ...w, muster: true }))}">Ähnliche Arbeit anfragen</a>`;
   const zweit = w.zahlungslink && zahlbar ? `<a class="knopf-text" href="${esc(mail(daten, w))}">Lieber per Rechnung</a>`
-    : w.link ? `<a class="knopf-text" href="${esc(mail(daten, { ...w, art: "gestaltung", muster: false, titel: `${w.titel}, eigene Fassung` }))}">Eigene Fassung anfragen</a>`
     : `<a class="knopf-text" href="mailto:${daten.kontakt}?subject=${encodeURIComponent(`Frage zu «${w.titel}»`)}">Frage stellen</a>`;
-  const klein = w.art === "digital" ? "Läuft im Browser und lässt sich als App installieren; nach dem ersten Öffnen auch ohne Netz."
-    : w.art === "edition" ? "Signiert und nummeriert, mit Zertifikat. Versichert verschickt aus der Schweiz, in der Schweiz ohne Versandkosten. 14 Tage Rückgabe."
+  const klein = w.art === "print" ? "Signiert und nummeriert, mit Zertifikat. Versichert verschickt aus der Schweiz, in der Schweiz ohne Versandkosten. 14 Tage Rückgabe."
     : "Signiert, mit Zertifikat. Versichert verschickt aus der Schweiz, in der Schweiz ohne Versandkosten. Ansehen im Atelier nach Absprache.";
   const daten2 = [["Jahr", w.jahr], ["Technik", w.technik], ["Format", format(w.masse)], ["Auflage", w.auflage && `${w.auflage.gesamt} Exemplare`], ...(w.details ?? [])].filter(([, v]) => v);
-  const weitere = daten.werke.filter((x) => x.art !== "gestaltung" && x.slug !== w.slug).sort((a, b) => (b.serie === w.serie) - (a.serie === w.serie)).slice(0, 4);
+  const weitere = daten.werke.filter((x) => x.art !== "dienstleistung" && x.slug !== w.slug).sort((a, b) => (b.serie === w.serie) - (a.serie === w.serie)).slice(0, 4);
   const jsonld = w.muster ? "" : `  <script type="application/ld+json">${JSON.stringify({
-    "@context": "https://schema.org", "@type": w.art === "digital" ? "SoftwareApplication" : ["Product", "VisualArtwork"], name: w.titel,
-    ...(w.art === "digital" ? { applicationCategory: "DesignApplication", operatingSystem: "Web" } : { artMedium: w.technik, dateCreated: String(w.jahr), ...(w.masse ? { width: `${w.masse.b} cm`, height: `${w.masse.h} cm` } : {}), ...(w.auflage ? { artEdition: String(w.auflage.gesamt) } : {}) }),
+    "@context": "https://schema.org", "@type": ["Product", "VisualArtwork"], name: w.titel,
+    artMedium: w.technik, dateCreated: String(w.jahr), ...(w.masse ? { width: `${w.masse.b} cm`, height: `${w.masse.h} cm` } : {}), ...(w.auflage ? { artEdition: String(w.auflage.gesamt) } : {}),
     image: `https://ornament.cloud/${bild(w, 0, 1600)}`, description: w.text, creator: { "@type": "Person", name: "ornament.cloud" },
     offers: { "@type": "Offer", price: String(w.preis ?? 0), priceCurrency: "CHF", url: `https://ornament.cloud/art/${w.slug}/`,
       availability: `https://schema.org/${w.status === "verkauft" ? "SoldOut" : w.status === "reserviert" ? "LimitedAvailability" : "InStock"}` },
@@ -277,14 +292,14 @@ ${daten2.map(([k, v]) => `          <dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join(
       </div>
     </article>
 
-    <section class="weitere" aria-labelledby="weitere-titel">
+${weitere.length ? `    <section class="weitere" aria-labelledby="weitere-titel">
       <h2 id="weitere-titel">Weitere Arbeiten</h2>
       <div class="art-raster">
 ${weitere.map((x) => karte(x, site, masse, true)).join("\n")}
       </div>
     </section>
 
-    <p class="back"><a href="../">← Zu Art</a></p>`;
+` : ""}    <p class="back"><a href="../">← Zu Art</a></p>`;
   const nachher = `
   <div class="leiste" aria-hidden="true"><span>${esc(w.titel)} · ${esc(preisText(w))}</span>${haupt.replace("<a ", '<a tabindex="-1" ')}</div>
   <dialog class="lupe" aria-label="${esc(w.titel)}, gross"><div class="lupe-bild"><img data-src="${site}${bild(w, 0, 1600)}" alt="${esc(w.bilder[0].alt)}"></div><button class="lupe-zu" type="button" aria-label="Schliessen">×</button></dialog>
@@ -321,7 +336,7 @@ export function sitemapEinsetzen(xml, block) {
 
 export function bauen(daten = JSON.parse(readFileSync(new URL("src/art/werke.json", ROOT), "utf8")), masse = JSON.parse(readFileSync(new URL("src/art/bilder.json", ROOT), "utf8"))) {
   const seiten = { "art/index.html": uebersicht(daten, masse), "art/danke/index.html": danke(daten) };
-  for (const w of daten.werke) if (w.art !== "gestaltung") seiten[`art/${w.slug}/index.html`] = werkseite(daten, w, masse);
+  for (const w of daten.werke) if (w.art !== "dienstleistung") seiten[`art/${w.slug}/index.html`] = werkseite(daten, w, masse);
   return seiten;
 }
 

@@ -2,6 +2,12 @@
 
 Stand 19. Oktober 2026. Grundlage sind drei Recherchen vom selben Tag: Zahlung und Bestellablauf in der Schweiz, Backend für eine statische Website sowie Gestaltung und Benutzerführung bei Galerien und Editionsshops. Quellen stehen am Schluss. Was nicht überprüft werden konnte, ist mit **[ungeprüft]** markiert.
 
+## 0. Stand nach dem 19. Oktober 2026
+
+- **Angebot:** Werke (Originale, Prints) und Dienstleistungen (Websites, Apps). Digitale Ware und Gestaltungspakete wie Signet oder Erscheinungsbild entfallen. Wo unten noch «Editionen» oder «Gestaltung» steht, sind jetzt Prints und Dienstleistungen gemeint.
+- **Die Seite ist eine Ankündigung:** «Demnächst mehr», dazu ein Beispiel (der Print «Harbouring», Angaben und Preis Platzhalter) und die Dienstleistungen in einem Satz. Die Werke kommen in den nächsten Tagen.
+- **Domain:** Der Entscheid über eine eigene Domain fällt in der Woche nach dem 19. Oktober 2026 (siehe 6).
+
 ## 1. Haltung
 
 - **Eine Werkschau mit Preisen, kein Shop.** Gekauft wird nebenbei. Die Seite soll aussehen wie ein Galerieraum und nicht wie ein Warenkorb.
