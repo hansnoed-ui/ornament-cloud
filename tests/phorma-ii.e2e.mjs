@@ -247,10 +247,10 @@ await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am End
   const { ctx, page, fehler } = await oeffne({ ablauf: "montage" });
   await page.uncheck("#signet");   // ohne Signet rastet die Montage ins Standbild ein
   await page.setInputFiles("#datei", { name: "zaehler.mp4", mimeType: "video/mp4", buffer: await zaehlvideo(page) });
-  await page.waitForFunction(() => !document.getElementById("laden").hidden, null, { timeout: 20_000 });
+  await page.waitForFunction(() => !document.getElementById("ladeanzeige").hidden, null, { timeout: 20_000 });
   assert.match(await page.textContent("#laden-text"), /Video wird|Standbild|vorbereitet/, "der Ladebalken zeigt, was gerade geschieht");
   await page.waitForFunction(() => window.__phorma.film?.spur && window.__phorma.buehneFertig, null, { timeout: 240_000 });
-  await page.waitForFunction(() => document.getElementById("laden").hidden, null, { timeout: 20_000 });
+  await page.waitForFunction(() => document.getElementById("ladeanzeige").hidden, null, { timeout: 20_000 });
   assert.equal(await page.isVisible("#film-start-box"), true, "«Video ab» erscheint");
   const { zeit } = await messe(page, 0), dauer = zeit.abschnitt.bis - zeit.abschnitt.von;
   assert.equal(await nummer(page, 0, "foto"), Math.round(dauer * 30), "das Standbild ist das Bild am Ende der Montage");

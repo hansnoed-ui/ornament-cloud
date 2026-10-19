@@ -134,11 +134,11 @@ let filmspurModul = null;
 // Bahn des Wachstums), verschwindet er und die Vorschau läuft von vorn.
 function ladenZeigen(text, anteil = null, schritt = "") {
   S.laden = true;
-  $("laden").hidden = false; $("laden-text").textContent = text; $("laden-schritt").textContent = schritt;
+  $("ladeanzeige").hidden = false; $("laden-text").textContent = text; $("laden-schritt").textContent = schritt;
   const b = $("laden-balken");
   if (anteil === null) b.removeAttribute("value"); else b.value = Math.max(0, Math.min(1, anteil));
 }
-function ladenEnde() { S.laden = false; $("laden").hidden = true; }
+function ladenEnde() { S.laden = false; $("ladeanzeige").hidden = true; }
 /** die Vorschau anhalten und leeren, die alte Bühne freigeben (ein neues Video kommt) */
 function vorschauLeeren() {
   anhalten(); S.sz = null; S.t = null;
