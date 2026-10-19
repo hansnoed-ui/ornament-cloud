@@ -11,13 +11,13 @@
 //   Schriftzug) oder 03 Stille (der Faden zieht sich in seinen Kopf zusammen).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich } from "./gemeinsam.js?v=14";
-import { phase } from "./ablauf.js?v=14";
-import { gewebeKurven } from "./kurven.js?v=14";
-import { weichzeichnen } from "./analyse.js?v=14";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=14";
-import { RAUSCHEN } from "./gewebe.js?v=14";
-import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=14";
+import { anteil, weich } from "./gemeinsam.js?v=16";
+import { phase } from "./ablauf.js?v=16";
+import { gewebeKurven } from "./kurven.js?v=16";
+import { weichzeichnen } from "./analyse.js?v=16";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=16";
+import { RAUSCHEN } from "./gewebe.js?v=16";
+import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=16";
 
 const VOR = 0.4;
 

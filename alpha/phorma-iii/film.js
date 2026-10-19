@@ -1,10 +1,10 @@
 // PHORMA III – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann das Gewebe aus der Bühne (WebGL,
 // buehne.js) mit den Textfragmenten, danach das Bild, darüber die Beschriftung; mit Signet am Schluss das Logo, das aus dem Gewebe entsteht, mit
 // getipptem Schriftzug und verfrickelt im Takt.
-import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=14";
+import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=16";
 import { punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=14";
-import { zufall } from "./analyse.js?v=14";
+import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=16";
+import { zufall } from "./analyse.js?v=16";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
@@ -14,8 +14,9 @@ const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo,
 export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = true, beschriftung = true, titel = "", foto = null, buehne = null,
   ablauf = "gewebe", text = "", ton = null, laenge = null } = {}) {
   const zeit = zeitachse({ tempo, signet, laenge, ablauf }), irr = zeit.ablauf === "irrfahrt" || zeit.ablauf === "lichtwuerfel", vid = zeit.ablauf === "video";
-  // halten: die Irrfahrt und das Video haben kein Stehen auf dem Bild – nach dem Effekt hält ihr letztes Bild
-  const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA III").trim(), fragmente: [], schnitte: [], nacht: [], logo: null, halten: irr || vid };
+  const trb = zeit.ablauf === "traube";
+  // halten: die Irrfahrt, die Traube und das Video haben kein Stehen auf dem Bild – nach dem Effekt hält ihr letztes Bild
+  const sz = { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel: (titel || "PHORMA III").trim(), fragmente: [], schnitte: [], nacht: [], logo: null, halten: irr || trb || vid };
   const T = tonOderErsatz(ton), G = zeit.phasen.find((p) => p.name === (irr ? "irrfahrt" : zeit.ablauf));   // der Lichtwürfel hat die Phasen der Irrfahrt
   // die Schnitte zählen wie im Gewebe in der Zeit des Effekts (Vorlauf 0,4 s, ohne Tonspur im Tempo gestreckt)
   const f = zeit.tempo, film = (s) => 0.4 + (s - 0.4) * f, effekt = (s) => 0.4 + (s - 0.4) / f;
@@ -23,14 +24,14 @@ export function szene({ breite = 1080, hoehe = 1350, tempo = "normal", signet = 
   // die Zustände des Gewebes wie in gewebe.js (in der Zeit des Effekts): wo Weiss auf Schwarz steht, stehen auch die Fragmente umgekehrt
   const Z = gewebeZustaende(T, effekt(G.von), effekt(G.bis));
   sz.nacht = Z.map((z, i) => [film(z.t), film(Z[i + 1]?.t ?? effekt(G.bis)), z.nacht]).filter((z) => z[2]).map(([a, b]) => [a, b]);
-  if (text && !irr && !vid) sz.fragmente = fragmentPlan(text, T, G, breite, hoehe);
+  if (text && !irr && !trb && !vid) sz.fragmente = fragmentPlan(text, T, G, breite, hoehe);
   if (zeit.ablauf === "irrfahrt") sz.stoer = stoerPlan(T, G.von, G.bis);         // der Lichtwürfel ohne Stottern und Streifen: er steht ruhig
   const L = zeit.phasen.find((p) => p.name === "logo");
   if (L) {
-    // das Logo am Ende des Gewebes: Farbgebung des letzten Zustands (wie in gewebe.js; die Irrfahrt ist immer Weiss auf Schwarz), Störungen im Takt,
-    // der Schriftzug auf den Einsätzen getippt
-    const nacht = irr || vid || zustandBei(Z, effekt(L.von) - 1e-3, effekt(G.von)).nacht, tipp = L.von + 2.6;
-    sz.logo = { von: L.von, bis: L.bis, nacht, T, schlaufe: vid, plan: logoPlan(T, L.von, L.bis - 1.0, L.bis - 0.35, irr ? L.von + 2.8 : 0),
+    // das Logo am Ende des Gewebes: Farbgebung des letzten Zustands (wie in gewebe.js; die Irrfahrt und die Traube sind immer Weiss auf Schwarz),
+    // Störungen im Takt, der Schriftzug auf den Einsätzen getippt; bei der Traube ist der Punkt eine Perle
+    const nacht = irr || trb || vid || zustandBei(Z, effekt(L.von) - 1e-3, effekt(G.von)).nacht, tipp = L.von + 2.6;
+    sz.logo = { von: L.von, bis: L.bis, nacht, T, schlaufe: vid, perle: trb, plan: logoPlan(T, L.von, L.bis - 1.0, L.bis - 0.35, irr ? L.von + 2.8 : 0),
       tasten: T.einsaetze.filter((e) => e.t >= L.von + 0.1 && e.t < tipp).map((e) => e.t), tipp };
   }
   return sz;
@@ -184,9 +185,24 @@ function schriftzug(ctx, sz, t) {
   // der Punkt: eine Runde in rund drei Sekunden, mit dem Schlag grösser
   const f = 40 + (t - L.tipp - 0.2) * FPS, { lage: [px, py], sicht } = punktLage(f, { punktTempo: 1.6 });
   if (sicht > 0) {
+    const r = PUNKT_RADIUS * (1 + 0.5 * wert(L.T.stoss, t));
     ctx.globalAlpha = sicht; ctx.fillStyle = punkt;
-    ctx.beginPath(); ctx.arc(px, py, PUNKT_RADIUS * (1 + 0.5 * wert(L.T.stoss, t)), 0, Math.PI * 2); ctx.fill();
+    if (L.perle) perle(ctx, px, py, r * 1.25);
+    else { ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill(); }
   }
+  ctx.restore();
+}
+/** der Punkt als glänzende Perle wie in der Traube: Licht von links oben, Glanzpunkt, Karmin am Rand, ein roter Schein, ein Perlmuttschimmer am Rand */
+function perle(ctx, x, y, r) {
+  ctx.save();
+  Object.assign(ctx, { shadowColor: "rgba(255, 90, 70, 0.7)", shadowBlur: r * 2.2 });
+  const g = ctx.createRadialGradient(x - r * 0.38, y - r * 0.45, r * 0.04, x - r * 0.1, y - r * 0.12, r * 1.08);
+  for (const [o, c] of [[0, "#fff6f4"], [0.14, "#ffd3cb"], [0.4, "#f27b6a"], [0.74, "#c22d29"], [1, "#4e070d"]]) g.addColorStop(o, c);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  Object.assign(ctx, { shadowBlur: 0, globalCompositeOperation: "lighter" });
+  const s = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
+  for (const [o, c] of [[0, "rgba(190, 170, 255, 0)"], [0.45, "rgba(170, 255, 225, 0.16)"], [0.7, "rgba(255, 210, 150, 0.2)"], [1, "rgba(220, 160, 255, 0.24)"]]) s.addColorStop(o, c);
+  ctx.fillStyle = s; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 }
 /** das Logo-Bild zur Zeit t (bis zum Ende des Films): das Gewebe aus der Bühne, darüber der Schriftzug, beides zusammen verfrickelt */
