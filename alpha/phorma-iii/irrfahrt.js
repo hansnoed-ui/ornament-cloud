@@ -11,13 +11,13 @@
 //   Schriftzug) oder 03 Stille (der Faden zieht sich in seinen Kopf zusammen).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich } from "./gemeinsam.js?v=12";
-import { phase } from "./ablauf.js?v=12";
-import { gewebeKurven } from "./kurven.js?v=12";
-import { weichzeichnen } from "./analyse.js?v=12";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=12";
-import { RAUSCHEN } from "./gewebe.js?v=12";
-import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=12";
+import { anteil, weich } from "./gemeinsam.js?v=13";
+import { phase } from "./ablauf.js?v=13";
+import { gewebeKurven } from "./kurven.js?v=13";
+import { weichzeichnen } from "./analyse.js?v=13";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=13";
+import { RAUSCHEN } from "./gewebe.js?v=13";
+import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=13";
 
 const VOR = 0.4;
 
@@ -199,8 +199,9 @@ export function irrfahrt(g, teil, { fest = false } = {}) {
       // die Lage des Würfels: je Zustand gewürfelt (auch mitten in ihm), und jeder weitere kräftige Einsatz wirft ihn in eine neue Lage («noch wilder»);
       // darin dreht er sich, der Schlag ruckt; zum Logo gerade und von vorn. Manche Zustände zeigen drei Würfel nebeneinander.
       const jl = fest ? 0 : j * 37 + nr, seitL = nr ? film - ein.filter((t) => t <= film).at(-1) : seit;
-      // mit der Perspektive des Vorbilds höchstens 1,4: näher flogen die vorderen Ecken weit aus dem Bild, und es blieben einzelne Kanten
-      const nah = fest ? 0.74 : jl ? [0.95, 1.1, 1.25, 1.4, 1.3, 1.0, 0.8][Math.floor(zufall(jl, 6) * 7)] : 1.0;
+      // mit der Perspektive des Vorbilds wirkt jede Nähe stärker: höchstens 1,0 (der Würfel meist ganz im Bild) – näher flogen die vorderen Ecken
+      // weit aus dem Bild, und es blieben einzelne Kanten
+      const nah = fest ? 0.74 : jl ? [0.7, 0.8, 0.9, 1.0, 0.95, 0.75, 0.6][Math.floor(zufall(jl, 6) * 7)] : 0.8;
       const w = 0.35 + 0.8 * zufall(jl, 9), drei = !fest && !logo && !zeichen && j > 0 && zufall(j, 13) < 0.28, stossL = fest ? 0 : stoss;
       const lage = (k) => {
         e3.set(zufall(jl, 1) * 6.283 + seitL * w * 0.6 + dreh * 0.35 + k * 2.1, zufall(jl, 2) * 6.283 + seitL * w + dreh * 0.5 + k * 1.3, zufall(jl, 3) * 6.283 + seitL * w * 0.3);
@@ -208,7 +209,7 @@ export function irrfahrt(g, teil, { fest = false } = {}) {
         if (fest) e3.set(0.45 + tau * 0.16, 0.6 + tau * 0.27, 0.1 + tau * 0.05);   // einfach gleichmässig weiter
         q0.setFromEuler(e3); q1.identity(); q0.slerp(q1, ruhig);
         drehM.makeRotationFromQuaternion(q0); U.uDreh.value.setFromMatrix4(drehM);
-        const mass = (logo ? 1 + (nah - 1) * (1 - ruhig) : drei ? 0.55 : nah) * (1 + 0.28 * stossL * (1 - ruhig));
+        const mass = (logo ? 1 + (nah - 1) * (1 - ruhig) : drei ? 0.5 : nah) * (1 + 0.15 * stossL * (1 - ruhig));
         // der Versatz im Bild (Anteil der halben Breite und Höhe, vor dem Zoom: der Zoom verkleinert auch den Abstand)
         const dx = drei ? (k - 1) * 1.13 : fest ? 0 : ((zufall(jl, 4) - 0.5) * 0.3 * (1 - ruhig)) / a;
         U.uLage.value.set(dx, drei ? (k - 1) * -0.22 : fest ? 0 : (zufall(jl, 5) - 0.5) * 0.3 * (1 - ruhig), 0, mass);
