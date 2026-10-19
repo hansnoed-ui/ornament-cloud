@@ -1,4 +1,4 @@
-// PHORMA II (alpha/phorma-ii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): ein Testfoto analysieren (Physarum, Tiefe, Tuch), jede Phase der Kette
+// PHORMA II (alpha/phorma-ii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): ein Testfoto analysieren (Physarum, Tiefe, Tuch, Montage), jede Phase der Kette
 // zeigt etwas und etwas anderes, jeder Effekt beginnt im Dunkeln und endet exakt beim Foto, dasselbe Bild nach einem Sprung zurück (Simulationen
 // mit Wiedereinstiegspunkten), Bewegungsunschärfe, Video über WebCodecs (Ersatz-Encoder), Standbild, KI-Tiefe ohne Netz fällt auf die geschätzte
 // zurück, keine Anfragen nach aussen, Handy ohne seitliches Scrollen. Mit ?test (weniger Agenten, gröbere Netze). Die Tests fürs Gewebe (Text, Ton,
@@ -57,7 +57,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=18");
+  const { bild } = await import("./film.js?v=19");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -166,10 +166,10 @@ await check("Kette: jede Phase zeigt etwas, jede etwas anderes; am Anfang dunkel
 });
 
 await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto", async () => {
-  for (const e of ["physarum", "tiefe", "tuch"]) {
+  for (const e of ["physarum", "tiefe", "tuch", "montage"]) {
     const { ctx, page, fehler } = await oeffne({ ablauf: e });
     await laden(page); await bereit(page);
-    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch" }[e]);
+    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", montage: "Montage" }[e]);
     const { zeit } = await messe(page, 0);
     assert.equal(zeit.teile.length, 1);
     const anfang = await messe(page, zeit.abschnitt.von + 0.15), mitte = await messe(page, (zeit.abschnitt.von + zeit.abschnitt.bis) / 2);
@@ -180,6 +180,21 @@ await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto",
     assert.deepEqual(fehler, []);
     await ctx.close();
   }
+});
+
+await check("Montage nach dem Tuch: beginnt beim Foto, zerfällt in Felder mit Rändern, rastet exakt ein", async () => {
+  const { ctx, page, fehler } = await oeffne({ ablauf: "tuch+montage" });
+  await laden(page); await bereit(page);
+  assert.equal(await page.textContent("#kette"), "Tuch → Montage");
+  const { zeit } = await messe(page, 0), [, von, bis] = zeit.teile[1];
+  assert.equal(zeit.teile.map((t) => t[0]).join("+"), "tuch+montage");
+  const anfang = await messe(page, von), mitte = await messe(page, von + 5.5), ende = await messe(page, bis - 1 / 30);
+  assert.ok(anfang.abw <= 3, `beginnt beim Foto (${anfang.abw})`);
+  assert.ok(mitte.mittelAbw > 5, `in der Mitte zerfallen (${mitte.mittelAbw.toFixed(1)})`);
+  assert.ok(ende.abw <= 3, `endet exakt (${ende.abw})`);
+  assert.match(await page.evaluate((t) => window.__phorma.buehne.zaehler(window.__phorma.sz.zeit, t), von + 5.5), /^montage · felder \d+ · schnitt \d+\/\d+$/);
+  assert.deepEqual(fehler, []);
+  await ctx.close();
 });
 
 await check("Bewegungsunschärfe: acht Proben mitteln ein bewegtes Bild, das stehende Foto bleibt exakt", async () => {

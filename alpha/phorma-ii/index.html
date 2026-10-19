@@ -12,6 +12,8 @@
     seither drei Effekte; dazu Bewegungsunschärfe im
     Export und Übergänge als Zeitfront). Steht für sich wie PHORMA I (Ausnahme in tests/navigation.test.mjs): ohne die Navigation oben links.
     Das Gewebe (Text, Video, Ton) war vom 17. bis 18. Oktober 2026 hier ein vierter Effekt; seither ist es PHORMA III (../phorma-iii/).
+    Seit 19. Oktober 2026 die Montage (Wunsch nach dem Clip «UVA»: «eine neue Animation für Bilder … in diesem Stil»): verschachtelte Rechtecke mit
+    versetzten Ausschnitten, feinen Rändern und Zahlentafeln, harte Schnitte im Takt; einzeln oder am Schluss einer eigenen Kette.
   -->
   <meta name="robots" content="noindex">
   <meta name="description" content="PHORMA II: Ein Schleimpilz findet die Formen deines Fotos, dann wird das Foto Raum und fällt als Seidentuch – als Video im Hochformat für Social Media, alles im Browser.">
@@ -132,7 +134,7 @@
   <header class="site-header">
     <div class="wrap">
       <h1>PHORMA II</h1>
-      <p class="lead">Ein Schleimpilz aus hunderttausend Agenten findet die Formen deines Fotos, dann bekommt das Foto Tiefe und wird Raum – dann weht es als Seidentuch und legt sich glatt. Jeder Effekt einzeln oder als Kette. Als Video für Social Media.</p>
+      <p class="lead">Ein Schleimpilz aus hunderttausend Agenten findet die Formen deines Fotos, dann bekommt das Foto Tiefe und wird Raum – dann weht es als Seidentuch und legt sich glatt. Oder es zerfällt im Takt in verschachtelte Rechtecke, bis alles einrastet. Jeder Effekt einzeln oder als Kette. Als Video für Social Media.</p>
     </div>
   </header>
 
@@ -197,12 +199,14 @@
             <button type="button" data-wahl="physarum" aria-pressed="false"><b>Physarum</b><small>Hunderttausende Agenten strömen aus Keimen und bilden ein leuchtendes Netz, das die Formen deines Fotos findet</small></button>
             <button type="button" data-wahl="tiefe" aria-pressed="false"><b>Tiefe</b><small>Eine Lichtebene tastet das Bild ab, dann wird es Raum: Parallaxe, Tiefenschichten, wandernde Schärfe</small></button>
             <button type="button" data-wahl="tuch" aria-pressed="false"><b>Tuch</b><small>Das Foto als Seidentuch im Wind – eine Stoffsimulation –, das sich zuletzt glatt zum Bild legt</small></button>
+            <button type="button" data-wahl="montage" aria-pressed="false"><b>Montage</b><small>Das Foto zerfällt im Takt in verschachtelte Rechtecke – vergrössert, versetzt, zu Streifen gezogen, mit feinen Rändern und Zahlentafeln –, bis alles einrastet</small></button>
           </div>
           <p class="effekte-hinweis">Oder eine eigene Kette zusammenstellen:</p>
           <div class="segment effekte" role="group" aria-label="Eigene Kette">
             <button type="button" data-effekt="physarum" aria-pressed="true">Physarum</button>
             <button type="button" data-effekt="tiefe" aria-pressed="true">Tiefe</button>
             <button type="button" data-effekt="tuch" aria-pressed="true">Tuch</button>
+            <button type="button" data-effekt="montage" aria-pressed="false">Montage</button>
           </div>
           <p class="kette" id="kette" aria-live="polite"></p>
           <p class="ki-hinweis">Text, Video oder Musik? Dafür gibt es <a href="../phorma-iii/">PHORMA III</a>: das Gewebe aus feinen Linien, das der Ton bewegt.</p>
@@ -287,7 +291,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=28"></script>
+  <script type="module" src="app.js?v=29"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>
