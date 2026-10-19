@@ -57,7 +57,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=25");
+  const { bild } = await import("./film.js?v=26");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -231,7 +231,7 @@ const zaehlvideo = (page, { sekunden = 16 } = {}) => page.evaluate(async (sekund
 }, sekunden).then((b) => Buffer.from(b, "base64"));
 /** die Nummer des Zählvideos in einem Bild (quelle: "film" – das Bild des Films zur Zeit t, wie der Export; "foto" – das Standbild) */
 const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) => {
-  const { bild } = await import("./film.js?v=25");
+  const { bild } = await import("./film.js?v=26");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false }, w = S.mass[0] / 2, h = S.mass[1] / 2;
   const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -243,7 +243,7 @@ const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) =
   return nr;
 }, [t, quelle]);
 
-await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am Ende beim Standbild an; Wachstum folgt ihm", async () => {
+await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am Ende beim Standbild an; Wachstum und die Kette ohne beide auch", async () => {
   const { ctx, page, fehler } = await oeffne({ ablauf: "montage" });
   await page.uncheck("#signet");   // ohne Signet rastet die Montage ins Standbild ein
   await page.setInputFiles("#datei", { name: "zaehler.mp4", mimeType: "video/mp4", buffer: await zaehlvideo(page) });
@@ -266,6 +266,13 @@ await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am End
   const z2 = (await messe(page, 0)).zeit, d2 = z2.abschnitt.bis - z2.abschnitt.von;
   assert.equal(await nummer(page, 0, "foto"), Math.round(d2 * 30), "neues Standbild am Ende des Wachstums");
   assert.ok((await messe(page, z2.abschnitt.bis - 1 / 30)).abw <= 3, "Wachstum endet exakt beim Standbild");
+  // seit dem 19. Oktober 2026 läuft es durch alle Effekte (Rückmeldung: «bleibt ständig ein "altes" Video in den ersten drei Schritten hängen»):
+  // auch die Kette ohne Montage und Wachstum kommt am Ende beim Standbild an, nicht beim ersten Bild
+  await page.click('[data-wahl="physarum+tiefe+tuch"]');
+  await page.waitForFunction(() => window.__phorma.ablauf === "physarum+tiefe+tuch" && window.__phorma.buehneFertig && window.__phorma.sz?.zeit.ablauf === "physarum+tiefe+tuch", null, { timeout: 240_000 });
+  const z3 = (await messe(page, 0)).zeit, d3 = z3.abschnitt.bis - z3.abschnitt.von;
+  assert.equal(await nummer(page, 0, "foto"), Math.round(d3 * 30), "Standbild am Ende der Kette");
+  assert.ok((await messe(page, z3.abschnitt.bis - 1 / 30)).abw <= 3, "die Kette endet exakt beim Standbild");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });

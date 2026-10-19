@@ -7,9 +7,9 @@
 // Die Bilder der Bahn kommen in Päckchen, die Vorschau zeigt jeweils das letzte schon gerechnete; bereit (Promise) sagt, wann sie ganz da ist –
 // Video und Standbild warten darauf.
 import * as THREE from "three";
-import { anteil, weich, inOut, quadMaterial, filmTextur } from "./gemeinsam.js?v=25";
-import { phase } from "./ablauf.js?v=25";
-import { wachstumBahn, ACHTEL, BILDER_JE_S } from "./wachstumsim.js?v=25";
+import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=26";
+import { phase } from "./ablauf.js?v=26";
+import { wachstumBahn, ACHTEL, BILDER_JE_S } from "./wachstumsim.js?v=26";
 
 const VERTEX = /* glsl */ `
   attribute vec4 aStrecke;                 // x0, y0, x1, y1 in Punkten der Analyse (y nach unten)
@@ -71,7 +71,7 @@ export function wachstum(g, teil) {
   const bereit = (async () => { auftrag.film = await filmBilder(); })().then(() => new Promise((fertig) => {
     if (weg) { fertig(); return; }
     const hier = () => { const jeBild = (f, l) => { bilder[f] = l; }; const b = wachstumBahn({ ...auftrag, jeBild }); gesamt = b.bilder; fertigGerechnet = true; fertig(); };
-    try { rechner = new Worker(new URL("./wachstumrechner.js?v=25", import.meta.url), { type: "module" }); } catch { rechner = null; }
+    try { rechner = new Worker(new URL("./wachstumrechner.js?v=26", import.meta.url), { type: "module" }); } catch { rechner = null; }
     if (!rechner) { setTimeout(hier, 0); return; }   // ohne Worker einmal hier
     rechner.onmessage = (e) => {
       const d = e.data;
@@ -121,12 +121,10 @@ export function wachstum(g, teil) {
     geo.instanceCount = anzahl = n;
   }
 
-  // mit Video: das laufende Bild für die Farben der Linie und darunter
-  const film = g.film ? filmTextur() : null;
+  // mit Video ist g.fotoTex das laufende Bild (buehne.js): für die Farben der Linie und darunter
   return {
     groesse(nw, nh) { w = nw; h = nh; },
     render(rt, tau, opt = {}) {
-      if (film) { const tex = film.setzen(g.film.bild(teil, tau, opt.vorschau)) ?? g.fotoTex; mat.uniforms.tFoto.value = tex; unter.uniforms.tFoto.value = tex; }
       // das Bild der Bahn zu tau; ist es noch nicht gerechnet, das letzte, das schon da ist
       const f = Math.min(bilder.length - 1, Math.max(0, Math.floor(tau * BILDER_JE_S + 1e-6)));
       fuellen(f);
@@ -151,6 +149,6 @@ export function wachstum(g, teil) {
     bereit, fortschritt,
     vorab: { szenen: [[szene, kam]], materialien: [unter] },
     zaehler() { const z = (x) => x.toLocaleString("de-CH"); return `wachstum · punkte ${z(anzahl)}${fertigGerechnet ? "" : ` · rechnet ${Math.round(fortschritt() * 100)} %`}`; },
-    entsorgen() { weg = true; rechner?.terminate(); geo.dispose(); mat.dispose(); unter.dispose(); film?.entsorgen(); },
+    entsorgen() { weg = true; rechner?.terminate(); geo.dispose(); mat.dispose(); unter.dispose(); },
   };
 }
