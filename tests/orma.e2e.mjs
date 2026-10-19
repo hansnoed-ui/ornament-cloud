@@ -715,7 +715,7 @@ await check("Apps und Masterprompts (Handy): Karten untereinander, ORNA vor ORMA
   };
   await page.goto(`${origin}/apps/`);
   // seit dem 19. Oktober 2026 in drei Gruppen: Bild und Video, Text und Theorie, Gestaltung (die Titel der Karten als h3)
-  assert.deepEqual(await page.locator("main .card h3").allTextContents(), ["PHORMA III", "PHORMA I", "The Fictory", "ORMA", "ORNA", "OMNA COLOR"]);
+  assert.deepEqual(await page.locator("main .card h3").allTextContents(), ["PHORMA III", "PHORMA II", "PHORMA I", "The Fictory", "ORMA", "ORNA", "OMNA COLOR"]);
   assert.deepEqual(await page.locator("main .apps-gruppe > h2").allTextContents(), ["Bild und Video", "Text und Theorie", "Gestaltung"]);
   await untereinander(6);
   assert.ok(await page.locator(".card").filter({ has: page.getByRole("heading", { name: "ORMA", exact: true }) }).locator(".tags li", { hasText: "Alpha" }).isVisible());
