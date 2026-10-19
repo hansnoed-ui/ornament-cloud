@@ -4,7 +4,7 @@
 //   Montage und Wachstum zeigen das laufende Video: es beginnt mit dem ersten dieser beiden Effekte in der Kette und läuft bis zu ihrem Ende, in der
 //   eigenen Zeit der Kette (Tempo «ruhig» heisst also auch: das Video läuft langsamer). Das Standbild – für die Analyse, für Physarum, Tiefe und
 //   Tuch und für den Schluss – ist das Bild am Ende: dort kommt das laufende Video an.
-import { kette } from "./ablauf.js?v=23";
+import { kette } from "./ablauf.js?v=24";
 
 /** die Effekte, die das laufende Video zeigen */
 export const LEBENDIG = ["wachstum", "montage"];

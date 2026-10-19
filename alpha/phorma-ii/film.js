@@ -1,6 +1,6 @@
 // PHORMA II – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann die Kette aus der Bühne (WebGL,
 // buehne.js), danach das Foto, darüber Abblenden und die Beschriftung, am Schluss auf Wunsch das leuchtende Signet von ornament.cloud wie in PHORMA I.
-import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_BIS, SIGNET_TEMPO } from "./ablauf.js?v=23";
+import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_BIS, SIGNET_TEMPO } from "./ablauf.js?v=24";
 import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
@@ -74,7 +74,7 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
     if (sz.buehne?.montageSchluss) {
       // im Stil der Montage (seit 19. Oktober 2026): das Signet zeichnet sich wie immer, Felder schneiden es im Takt und rasten ein
       // nahtlos nach der Montage: am Anfang liegt noch das Foto unter dem Signet und vergeht, während die Felder schneiden
-      const [w, h] = zielMass(ctx, sz), tau = t - ab.signet[0], fotoSicht = sz.zeit.nahtlos && sz.foto ? 1 - anteil(tau, 0.15, 1.0) ** 0.8 : 0;
+      const [w, h] = zielMass(ctx, sz), tau = t - ab.signet[0], fotoSicht = sz.zeit.nahtlos && sz.foto ? 1 - anteil(tau, 0.05, 0.7) ** 0.8 : 0;
       const zeichnenBei = (c, fb, foto = 0) => {
         c.fillStyle = F.grund; c.fillRect(0, 0, 1080, H);
         if (foto > 0) { c.globalAlpha = foto; c.drawImage(sz.foto, 0, 0, 1080, H); c.globalAlpha = 1; }

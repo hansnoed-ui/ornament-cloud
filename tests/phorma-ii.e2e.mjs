@@ -57,7 +57,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=23");
+  const { bild } = await import("./film.js?v=24");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -169,6 +169,8 @@ await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto",
   for (const e of ["physarum", "tiefe", "tuch", "wachstum", "montage"]) {
     const { ctx, page, fehler } = await oeffne({ ablauf: e });
     await laden(page); await bereit(page);
+    // mit Signet rastet die Montage nicht ins Foto ein (sie schneidet geradewegs ins Signet): hier ohne
+    if (e === "montage") { await page.uncheck("#signet"); await bereit(page); }
     assert.equal(await page.textContent("#kette"), { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", wachstum: "Wachstum", montage: "Montage" }[e]);
     const { zeit } = await messe(page, 0);
     assert.equal(zeit.teile.length, 1);
@@ -182,7 +184,7 @@ await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto",
   }
 });
 
-await check("Montage nach dem Tuch: Rechtecke schneiden das Tuch weg, die Montage beginnt zerschnitten, rastet exakt ein; das Signet im selben Stil", async () => {
+await check("Montage nach dem Tuch: Rechtecke schneiden das Tuch weg, die Montage beginnt zerschnitten und schneidet geradewegs ins Signet im selben Stil", async () => {
   const { ctx, page, fehler } = await oeffne({ ablauf: "tuch+montage" });
   await laden(page); await bereit(page);
   assert.equal(await page.textContent("#kette"), "Tuch → Montage");
@@ -191,14 +193,14 @@ await check("Montage nach dem Tuch: Rechtecke schneiden das Tuch weg, die Montag
   const anfang = await messe(page, von + 0.9), mitte = await messe(page, von + 5.5), ende = await messe(page, bis - 1 / 30);
   assert.ok(anfang.mittelAbw > 5, `beginnt nicht beim fertigen Foto, gleich zerschnitten (${anfang.mittelAbw.toFixed(1)})`);
   assert.ok(mitte.mittelAbw > 5, `in der Mitte zerfallen (${mitte.mittelAbw.toFixed(1)})`);
-  assert.ok(ende.abw <= 3, `endet exakt (${ende.abw})`);
+  assert.ok(ende.mittelAbw > 3, `mit Signet rastet sie nicht ins Foto ein, sie schneidet bis zum Schluss (${ende.mittelAbw.toFixed(1)})`);
   assert.match(await page.evaluate((t) => window.__phorma.buehne.zaehler(window.__phorma.sz.zeit, t), von + 5.5), /^montage · felder \d+ · schnitt \d+\/\d+$/);
   // das Signet am Schluss im Stil der Montage: geschnitten, während es sich zeichnet, dann steht es unverändert
   const ab = await page.evaluate(() => ({ montage: window.__phorma.buehne.montageSchluss, signet: window.__phorma.sz.zeit.ab.signet, stehen: window.__phorma.sz.zeit.ab.signetStehen }));
   assert.equal(ab.montage, true, "Signet im Stil der Montage");
-  assert.ok(Math.abs(ab.signet[0] - bis - 1.0) < 1e-6, "nahtlos: das Signet kommt eine Sekunde nach dem Schlussbild");
+  assert.ok(Math.abs(ab.signet[0] - bis) < 1e-6, "nahtlos: ohne Schlussbild geradewegs ins Signet");
   const uebergang = await messe(page, ab.signet[0] + 0.05);
-  assert.ok(uebergang.mittelAbw < 4, `am Anfang des Signets noch das Foto, nur der Anfang der Schlaufe darüber (${uebergang.mittelAbw.toFixed(1)})`);
+  assert.ok(uebergang.hell > 20 && uebergang.mittelAbw > 3, `am Anfang des Signets das zerschnittene Foto, kein Schwarz (${uebergang.hell.toFixed(1)}, ${uebergang.mittelAbw.toFixed(1)})`);
   const geschnitten = await messe(page, ab.signet[0] + 1.5), endeGeschnitten = await page.evaluate(() => window.__phorma.buehne.ende);
   assert.ok(endeGeschnitten < 1 && geschnitten.hell > 0.5, `während des Signets geschnitten (ende ${endeGeschnitten}, hell ${geschnitten.hell.toFixed(2)})`);
   await messe(page, (ab.stehen[0] + ab.stehen[1]) / 2);
@@ -229,7 +231,7 @@ const zaehlvideo = (page, { sekunden = 16 } = {}) => page.evaluate(async (sekund
 }, sekunden).then((b) => Buffer.from(b, "base64"));
 /** die Nummer des Zählvideos in einem Bild (quelle: "film" – das Bild des Films zur Zeit t, wie der Export; "foto" – das Standbild) */
 const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) => {
-  const { bild } = await import("./film.js?v=23");
+  const { bild } = await import("./film.js?v=24");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false }, w = S.mass[0] / 2, h = S.mass[1] / 2;
   const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -243,8 +245,12 @@ const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) =
 
 await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am Ende beim Standbild an; Wachstum folgt ihm", async () => {
   const { ctx, page, fehler } = await oeffne({ ablauf: "montage" });
+  await page.uncheck("#signet");   // ohne Signet rastet die Montage ins Standbild ein
   await page.setInputFiles("#datei", { name: "zaehler.mp4", mimeType: "video/mp4", buffer: await zaehlvideo(page) });
+  await page.waitForFunction(() => !document.getElementById("laden").hidden, null, { timeout: 20_000 });
+  assert.match(await page.textContent("#laden-text"), /Video wird|Standbild|vorbereitet/, "der Ladebalken zeigt, was gerade geschieht");
   await page.waitForFunction(() => window.__phorma.film?.spur && window.__phorma.buehneFertig, null, { timeout: 240_000 });
+  await page.waitForFunction(() => document.getElementById("laden").hidden, null, { timeout: 20_000 });
   assert.equal(await page.isVisible("#film-start-box"), true, "«Video ab» erscheint");
   const { zeit } = await messe(page, 0), dauer = zeit.abschnitt.bis - zeit.abschnitt.von;
   assert.equal(await nummer(page, 0, "foto"), Math.round(dauer * 30), "das Standbild ist das Bild am Ende der Montage");

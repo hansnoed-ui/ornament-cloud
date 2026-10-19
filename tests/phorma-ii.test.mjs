@@ -45,7 +45,8 @@ test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappun
     const S = plan.schnitte;
     assert.ok(S.length >= 8, `genug Schnitte (${S.length})`);
     for (let i = 1; i < S.length; i++) {
-      assert.ok(S[i].t > S[i - 1].t && Math.abs(S[i].t / M.TAKT - Math.round(S[i].t / M.TAKT)) < 1e-9, "auf dem Schlag, aufsteigend");
+      const schlag = S[i].stotter ? S[i].t - 0.3 * M.TAKT : S[i].t;   // ein Doppelschnitt kommt kurz nach dem Schlag
+      assert.ok(S[i].t > S[i - 1].t && Math.abs(schlag / M.TAKT - Math.round(schlag / M.TAKT)) < 1e-9, "auf dem Schlag, aufsteigend");
       assert.ok(S[i].t < plan.Bp[0], "im Bild kein Schnitt mehr");
     }
     assert.ok(S.at(-1).dicht && S.at(-1).felder.length >= 30, "die letzte Aufteilung ist dicht");
@@ -68,6 +69,9 @@ test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappun
     assert.ok(geteilt >= alle * 0.15, `viele Felder teilen den Ausschnitt mit Nachbarn aus demselben Elternfeld (${geteilt} von ${alle})`);
     const dicht = S.find((s) => s.felder.length > 40);
     assert.ok(new Set(dicht.felder.map((f) => f.art)).size >= 3, "verschiedene Arten");
+    const alleFelder = S.flatMap((s) => s.felder);
+    assert.ok(alleFelder.some((f) => f.stil) && alleFelder.some((f) => f.zeit), "Felder gespiegelt, verpixelt, versetzt … und mit Video zeitversetzt");
+    assert.ok(S.some((s) => s.stotter), "Doppelschnitte");
     // Ende: alle Felder an ihrem Platz
     const ende = M.montageBei(plan, teil.dauer - 1 / 30);
     assert.equal(ende.ende, 1);
@@ -123,7 +127,7 @@ test("Zeitachse: Vorlauf, Kette im Tempo, Stehen und Signet; laufend gibt beim �
   assert.match(A.dateiname(new Date(2026, 9, 17, 9, 5), "mp4"), /^phorma-ii-2026-10-17-0905\.mp4$/);
   // endet die Kette mit der Montage, geht das Foto nach kurzem Stehen nahtlos ins Signet über
   const m = A.zeitachse({ ablauf: "tuch+montage" });
-  assert.ok(m.nahtlos && !m.ab.bildAus && !m.ab.pause && Math.abs(m.ab.signet[0] - m.abschnitt.bis - 1.0) < 1e-9, "nahtlos: eine Sekunde Foto, dann das Signet");
+  assert.ok(m.nahtlos && !m.ab.bildAus && !m.ab.pause && Math.abs(m.ab.signet[0] - m.abschnitt.bis) < 1e-9, "nahtlos: ohne Schlussbild geradewegs ins Signet");
   assert.ok(!z.nahtlos && z.ab.bildAus, "sonst wie bisher: Foto aus, Pause, Signet");
   assert.ok(!A.zeitachse({ ablauf: "montage", signet: false }).nahtlos, "ohne Signet nichts zu überblenden");
 });
