@@ -1,6 +1,6 @@
 // PHORMA II – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann die Kette aus der Bühne (WebGL,
 // buehne.js), danach das Foto, darüber Abblenden und die Beschriftung, am Schluss auf Wunsch das leuchtende Signet von ornament.cloud wie in PHORMA I.
-import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_BIS, SIGNET_TEMPO } from "./ablauf.js?v=19";
+import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_BIS, SIGNET_TEMPO } from "./ablauf.js?v=20";
 import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
@@ -48,7 +48,7 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
   const { ab, abschnitt } = sz.zeit, B = sz.breite, H = sz.hoehe, F = FARBEN;
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H);
-  const bildEnde = ab.bildAus ? ab.bildAus[1] : ab.schluss[1];
+  const bildEnde = ab.bildAus ? ab.bildAus[1] : ab.signet ? ab.signet[0] : ab.schluss[1];   // nahtlos: das Signet übernimmt das Foto
   if (t < bildEnde) {
     if (t >= abschnitt.von && t < abschnitt.bis) {
       if (sz.buehne) {
@@ -73,8 +73,14 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
     const opt = { hoehe: H, farben: F, punktTempo: SIGNET_TEMPO * 1.25, zusammen: [118, 172, (x) => (1 - Math.cos(Math.PI * x)) / 2] };
     if (sz.buehne?.montageSchluss) {
       // im Stil der Montage (seit 19. Oktober 2026): das Signet zeichnet sich wie immer, Felder schneiden es im Takt und rasten ein
-      const [w, h] = zielMass(ctx, sz), zeichnenBei = (c, fb) => { c.fillStyle = F.grund; c.fillRect(0, 0, 1080, H); signetZeichnen(c, fb, opt); };
-      const c = sz.buehne.signetMontage(zeichnenBei, SIGNET_BIS + 10, f, t - ab.signet[0], w, h);
+      // nahtlos nach der Montage: am Anfang liegt noch das Foto unter dem Signet und vergeht, während die Felder schneiden
+      const [w, h] = zielMass(ctx, sz), tau = t - ab.signet[0], fotoSicht = sz.zeit.nahtlos && sz.foto ? 1 - anteil(tau, 0.15, 1.0) ** 0.8 : 0;
+      const zeichnenBei = (c, fb, foto = 0) => {
+        c.fillStyle = F.grund; c.fillRect(0, 0, 1080, H);
+        if (foto > 0) { c.globalAlpha = foto; c.drawImage(sz.foto, 0, 0, 1080, H); c.globalAlpha = 1; }
+        signetZeichnen(c, fb, opt);
+      };
+      const c = sz.buehne.signetMontage(zeichnenBei, SIGNET_BIS + 10, f, tau, w, h, { nahtlos: sz.zeit.nahtlos, foto: fotoSicht });
       if (sz.buehne.ende >= 1) zeichnenBei(ctx, f); else ctx.drawImage(c, 0, 0, 1080, H);
     } else if (sz.buehne) {
       // leuchtend wie in PHORMA I: der Punkt läuft als kleiner Glaskristall durch die Schlaufe, mit Halo und Bokeh auf seiner Spur

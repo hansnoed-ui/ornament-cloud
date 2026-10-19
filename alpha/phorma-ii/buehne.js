@@ -9,12 +9,12 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=19";
-import { FPS, kette, laufend } from "./ablauf.js?v=19";
-import { physarum } from "./physarum.js?v=19";
-import { tiefe } from "./tiefe.js?v=19";
-import { tuch } from "./tuch.js?v=19";
-import { montage, montageSignet } from "./montage.js?v=19";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=20";
+import { FPS, kette, laufend } from "./ablauf.js?v=20";
+import { physarum } from "./physarum.js?v=20";
+import { tiefe } from "./tiefe.js?v=20";
+import { tuch } from "./tuch.js?v=20";
+import { montage, montageSignet } from "./montage.js?v=20";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -180,12 +180,14 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
       this.ende = 0;
       return canvas;
     },
-    /** das Signet im Stil der Montage (zeichnenBei(ctx, f): Grund und Signet bei Bild f; fertig: ein Bild, auf dem es ganz steht; tau: Sekunden
-     *  seit dem Anfang des Signets); ende → 1: es steht unverändert da, film.js zeichnet es dann selbst */
-    signetMontage(zeichnenBei, fertig, f, tau, nw = B, nh = H) {
+    /** das Signet im Stil der Montage (zeichnenBei(ctx, f, foto): Grund, das Foto mit Deckkraft foto und das Signet bei Bild f; fertig: ein Bild,
+     *  auf dem es ganz steht; tau: Sekunden seit dem Anfang des Signets; nahtlos: es beginnt beim Foto statt im Dunkeln); ende → 1: es steht
+     *  unverändert da, film.js zeichnet es dann selbst */
+    signetMontage(zeichnenBei, fertig, f, tau, nw = B, nh = H, { nahtlos = false, foto = 0 } = {}) {
       groesse(Math.max(2, Math.round(nw)), Math.max(2, Math.round(nh)));
-      logo ??= montageSignet(g, zeichnenBei, fertig);
-      const info = logo.render(rtMix, f, tau, w, h), u = ausgabe.uniforms;
+      if (logo && logo.nahtlos !== nahtlos) { logo.entsorgen(); logo = null; }
+      logo ??= montageSignet(g, zeichnenBei, fertig, { nahtlos });
+      const info = logo.render(rtMix, f, tau, w, h, foto), u = ausgabe.uniforms;
       u.tSumme.value = rtMix.texture; u.uEnde.value = 0; u.uAktiv.value = 0; u.uSaumStaerke.value = info.saum; u.uBild.value = 0;
       g.pass(ausgabe, null);
       this.ende = info.ende;

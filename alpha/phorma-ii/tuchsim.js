@@ -4,7 +4,7 @@
 // Abstürzen» – ein Sprung ans Ende rechnete zuvor bis zu 1000 Teilschritte am Stück und hielt die Seite rund 20 s an).
 //   Gitter nx × ny, Abstände längs, quer, diagonal und über zwei Maschen (Biegung), Schwerkraft, Wind von hinten mit Böen, Luftwiderstand nach der
 //   Fläche (die Kraft wirkt entlang der Normalen), oben fünf Haken, im Bild auch die unteren Ecken; 120 Teilschritte je Sekunde, 4 Iterationen.
-import { phase } from "./ablauf.js?v=19";
+import { phase } from "./ablauf.js?v=20";
 
 export const TEILSCHRITTE = 120, BILDER_JE_S = 30, ITERATIONEN = 4, TIEFE_UEBERGABE = 0.3;
 const JE_BILD = TEILSCHRITTE / BILDER_JE_S;

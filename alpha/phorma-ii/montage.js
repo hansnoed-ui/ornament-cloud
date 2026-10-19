@@ -5,9 +5,9 @@
 // Dasselbe Zeichnen schneidet am Schluss das Signet (montageSignet), wenn die Montage der letzte Effekt ist.
 // Zustandslos: jedes Bild hängt nur von der Zeit ab.
 import * as THREE from "three";
-import { anteil, weich, quadMaterial } from "./gemeinsam.js?v=19";
-import { wichtigkeit, montagePlan, montageBei, signetTeil, HOECHSTENS, SIGNET_TAKT } from "./montageplan.js?v=19";
-import { weichzeichnen } from "./analyse.js?v=19";
+import { anteil, weich, quadMaterial } from "./gemeinsam.js?v=20";
+import { wichtigkeit, montagePlan, montageBei, signetTeil, HOECHSTENS, SIGNET_TAKT } from "./montageplan.js?v=20";
+import { weichzeichnen } from "./analyse.js?v=20";
 
 const VERTEX = /* glsl */ `
   attribute vec4 aRect, aQuelle, aZug, aStil;
@@ -139,10 +139,11 @@ export function montage(g, teil) {
 /**
  * Das Signet am Schluss im Stil der Montage (Wunsch vom 19. Oktober 2026: «bitte Logo-Animation am Schluss auf diesen Style anpassen»): das Signet
  * zeichnet sich wie immer auf eine 2D-Leinwand, die Felder schneiden es im schnellen Takt (SIGNET_TAKT) in Rechtecke und rasten zuletzt ein.
- * zeichnenBei(ctx, f): Grund und Signet bei Bild f auf eine Leinwand 1080 × H; fertig: ein Bild, auf dem es ganz steht (für die Aufteilung).
+ * zeichnenBei(ctx, f, foto): Grund, Foto (Deckkraft foto) und Signet bei Bild f auf eine Leinwand 1080 × H; fertig: ein Bild, auf dem es ganz
+ * steht (für die Aufteilung); nahtlos: es beginnt beim Foto (die Felder schneiden es weg) statt im Dunkeln.
  * → { render(rt, f, tau, w, h) → { ende, saum }, entsorgen }
  */
-export function montageSignet(g, zeichnenBei, fertig) {
+export function montageSignet(g, zeichnenBei, fertig, { nahtlos = false } = {}) {
   const { B, H } = g;
   const leinwand = typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(B, H);
   leinwand.width = B; leinwand.height = H;
@@ -157,12 +158,12 @@ export function montageSignet(g, zeichnenBei, fertig) {
   for (let i = 0; i < w * h; i++) hell[i] = (0.2126 * d[i * 4] + 0.7152 * d[i * 4 + 1] + 0.0722 * d[i * 4 + 2]) / 255;
   const weich2 = weichzeichnen(hell, w, h, 1.2), gipfel = Math.max(1e-6, ...weich2), nah = weich2.map((v) => v / gipfel);
   const A = { w, h, hell, tiefe: nah, nahrung: nah };
-  const plan = montagePlan(wichtigkeit(A, 36), signetTeil(), { a: B / H, samen: 4242, takt: SIGNET_TAKT, n0: 12, raender: false, licht: false });
+  const plan = montagePlan(wichtigkeit(A, 36), signetTeil({ nahtlos }), { a: B / H, samen: 4242, takt: SIGNET_TAKT, n0: 12, raender: false, licht: false });
   const Z = zeichner(g, plan, tex, (x, y) => hell[Math.min(h - 1, Math.floor(y * h)) * w + Math.min(w - 1, Math.floor(x * w))]);
   return {
-    plan,
-    render(rt, f, tau, nw, nh) {
-      ctx.setTransform(1, 0, 0, 1, 0, 0); zeichnenBei(ctx, f); tex.needsUpdate = true;
+    plan, nahtlos,
+    render(rt, f, tau, nw, nh, foto = 0) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0); zeichnenBei(ctx, f, foto); tex.needsUpdate = true;
       const M = montageBei(plan, tau);
       Z.zeichnen(rt, M, nw, nh);
       return { ende: M.ende, saum: 0.0012 + 0.005 * M.ruck };

@@ -113,6 +113,11 @@ test("Zeitachse: Vorlauf, Kette im Tempo, Stehen und Signet; laufend gibt beim �
   assert.ok(Math.abs(L[1].lokal - (mitte - s.von)) < 1e-9, "eigene Zeit des Effekts");
   assert.equal(A.laufend(z, 0)[0].lokal, 0);
   assert.match(A.dateiname(new Date(2026, 9, 17, 9, 5), "mp4"), /^phorma-ii-2026-10-17-0905\.mp4$/);
+  // endet die Kette mit der Montage, geht das Foto nach kurzem Stehen nahtlos ins Signet über
+  const m = A.zeitachse({ ablauf: "tuch+montage" });
+  assert.ok(m.nahtlos && !m.ab.bildAus && !m.ab.pause && Math.abs(m.ab.signet[0] - m.abschnitt.bis - 1.0) < 1e-9, "nahtlos: eine Sekunde Foto, dann das Signet");
+  assert.ok(!z.nahtlos && z.ab.bildAus, "sonst wie bisher: Foto aus, Pause, Signet");
+  assert.ok(!A.zeitachse({ ablauf: "montage", signet: false }).nahtlos, "ohne Signet nichts zu überblenden");
 });
 
 /** Testbild: Himmel mit Verlauf, Sonne, ein roter Block vorn, Wiese mit Rauschen (w × h, RGBA) */

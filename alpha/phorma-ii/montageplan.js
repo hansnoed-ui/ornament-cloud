@@ -10,8 +10,8 @@
 //            02 Montage – Schnitte nach zwei, drei, vier Schlägen, dicht und licht im Wechsel
 //            03 Bild – die letzte Aufteilung bleibt, die Felder rasten nacheinander an ihrem Platz ein, das Foto steht
 // Lage in Bildkoordinaten: x 0..1 über die Breite, y 0..1 von oben nach unten. Alles wiederholbar: dasselbe Foto ergibt denselben Film.
-import { zufall } from "./analyse.js?v=19";
-import { anteil, weich, phase } from "./ablauf.js?v=19";
+import { zufall } from "./analyse.js?v=20";
+import { anteil, weich, phase } from "./ablauf.js?v=20";
 
 /** ein Schlag (Sekunden bei Tempo «normal»); fürs Signet am Schluss doppelt so schnell */
 export const TAKT = 0.5, SIGNET_TAKT = 0.25;
@@ -236,12 +236,13 @@ export function montageBei(plan, tau) {
   s.felder.forEach((f, i) => eins(f, i, false));
   s.ausreisser.forEach((f, i) => eins(f, 1000 + i, true));
   const ende = Bp ? weich(anteil(tau, Bp[1] - 0.7, Bp[1] - 0.1)) : 0;
-  const tafelSicht = (erst ? weich(anteil(tau, 0.8, 1.6)) : 1) * (Bp ? 1 - weich(anteil(tau, Bp[0], Bp[0] + 1.0)) : 1) * (k > 0 ? 1 - 0.6 * Math.exp(-seit / 0.12) : 1);
-  return { k, schnitt: s, felder: raus.slice(0, HOECHSTENS), tafelSicht, ende, ruck: k > 0 || !erst ? Math.exp(-seit / 0.09) : 0 };
+  const tafelSicht = (erst ? weich(anteil(tau, 0.8, 1.6)) : weich(anteil(tau, S[0] + 0.2, S[0] + 0.7))) * (Bp ? 1 - weich(anteil(tau, Bp[0], Bp[0] + 1.0)) : 1) * (k > 0 ? 1 - 0.6 * Math.exp(-seit / 0.12) : 1);
+  return { k, schnitt: s, felder: raus.slice(0, HOECHSTENS), tafelSicht, ende, ruck: k > 0 ? Math.exp(-seit / 0.09) : 0 };   // der erste Schnitt ohne Ruck: vom Foto oder aus dem Dunkeln her weich
 }
 
 /**
  * Der Teil fürs Signet am Schluss (wenn die Montage der letzte Effekt ist): das Signet (2,3 s) und die erste Hälfte seines Stehens; wie als erster
- * Effekt aus dem Dunkeln (die Schlaufe zeigt sich zuerst nur in den Feldern), Schnitte im schnellen Takt, während es sich zeichnet, dann rastet es ein.
+ * Effekt aus dem Dunkeln (die Schlaufe zeigt sich zuerst nur in den Feldern) oder nahtlos vom Foto her, Schnitte im schnellen Takt, während es sich
+ * zeichnet, dann rastet es ein.
  */
-export const signetTeil = () => ({ art: "montage", erst: true, vonFoto: false, phasen: [["schnitte", "Schnitte", 0.7], ["montage", "Montage", 0.9], ["bild", "Bild", 1.0]], dauer: 2.6 });
+export const signetTeil = ({ nahtlos = false } = {}) => ({ art: "montage", erst: !nahtlos, vonFoto: false, phasen: [["schnitte", "Schnitte", 0.7], ["montage", "Montage", 0.9], ["bild", "Bild", 1.0]], dauer: 2.6 });
