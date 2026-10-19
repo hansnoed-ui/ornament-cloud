@@ -62,6 +62,7 @@ test("Art: solange die Ankündigung steht, zeigt die Übersicht nur sie, das Bei
     assert.match(mit, /<meta name="robots" content="noindex">/);
     assert.match(mit, />Benachrichtigen lassen</);
     assert.match(mit, /<h2 id="serie-dienstleistungen">Dienstleistungen<\/h2>/);
+    assert.ok(mit.indexOf("serie-dienstleistungen") < mit.indexOf("ankuendigung-titel") && mit.indexOf("ankuendigung-titel") < mit.indexOf("passepartout"), "Websites und Apps zuoberst, vor den Bildern");
     assert.ok(!/art-filter|art-zusagen|art-ablauf|art-fragen/.test(mit), "noch ohne Filter, Zusagen, Ablauf und Fragen");
   }
   const ohne = bauen({ ...daten, ankuendigung: undefined })["art/index.html"];
