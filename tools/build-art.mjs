@@ -165,33 +165,34 @@ ${w.ohne ? `          <p class="ohne">Nicht enthalten: ${esc(w.ohne.join(", "))}
       </div>
     </section>` : "";
   const kopf = `      <h1 class="art-titel">Art</h1>
-      <p class="lead">Originale und Prints, dazu Websites und Apps im Auftrag.${daten.ankuendigung ? "" : " Direkt aus dem Atelier, signiert und versichert verschickt aus der Schweiz."}</p>${daten.ankuendigung ? "" : `
+      <p class="lead">Websites und Apps im Auftrag, dazu Originale und Prints.${daten.ankuendigung ? "" : " Direkt aus dem Atelier, signiert und versichert verschickt aus der Schweiz."}</p>${daten.ankuendigung ? "" : `
       <p class="art-fakten">${werke.length} Arbeiten · ${verfuegbar} verfügbar${pakete.length ? ` · ${pakete.length} Angebote für Dienstleistungen` : ""}</p>`}`;
   if (daten.ankuendigung) {
     const a = daten.ankuendigung, anfrage = mail(daten, { titel: "Website oder App", art: "dienstleistung" });
     const melden = `mailto:${daten.kontakt}?subject=${encodeURIComponent("Art: Bitte benachrichtigen")}&body=${encodeURIComponent("Bitte schreib mir, wenn auf «Art» die ersten Werke zu sehen sind.")}`;
-    const inhalt = `    <section class="art-ankuendigung" aria-labelledby="ankuendigung-titel">
+    // Websites und Apps zuoberst, vor den Bildern (Wunsch vom 19. Oktober 2026: «Nimm das Angebot bezüglich Webseiten und Apps nach oben, vor die Bilder»)
+    const inhalt = `    <section class="art-serie" aria-labelledby="serie-dienstleistungen">
+      <h2 id="serie-dienstleistungen">Dienstleistungen</h2>
+      <p>${esc(a.dienstleistungen)}</p>
+      <a class="knopf-text" href="${esc(anfrage)}">Anfrage schreiben <span aria-hidden="true">→</span></a>
+    </section>
+
+    <section class="art-ankuendigung" aria-labelledby="ankuendigung-titel">
       <h2 id="ankuendigung-titel">${esc(a.titel)}</h2>
       <p>${esc(a.text)}</p>
       <p><a class="kaufen kaufen--leise" href="${esc(melden)}">Benachrichtigen lassen</a></p>
     </section>
 
-${serienHtml.replace(/class="art-serie"/g, 'class="art-serie art-serie--beispiel"').replace(/(<h2 id="serie-[^"]+">)([^<]+)(<\/h2>)/g, "$1Beispiel: $2$3")}
-
-    <section class="art-serie" aria-labelledby="serie-dienstleistungen">
-      <h2 id="serie-dienstleistungen">Dienstleistungen</h2>
-      <p>${esc(a.dienstleistungen)}</p>
-      <a class="knopf-text" href="${esc(anfrage)}">Anfrage schreiben <span aria-hidden="true">→</span></a>
-    </section>`;
-    return seite({ site, titel: "Art – Ornament Cloud", beschreibung: "Originale und Prints, dazu Websites und Apps im Auftrag. Demnächst mehr.", robots: true, kanon: "art/", kopf, inhalt, aktuell: "page" });
+${serienHtml.replace(/class="art-serie"/g, 'class="art-serie art-serie--beispiel"').replace(/(<h2 id="serie-[^"]+">)([^<]+)(<\/h2>)/g, "$1Beispiel: $2$3")}`;
+    return seite({ site, titel: "Art – Ornament Cloud", beschreibung: "Websites und Apps im Auftrag, dazu Originale und Prints. Demnächst mehr.", robots: true, kanon: "art/", kopf, inhalt, aktuell: "page" });
   }
   const inhalt = `${daten.werke.some((w) => w.muster) ? HINWEIS + "\n" : ""}    <nav class="art-filter" aria-label="Nach Art zeigen" hidden>
 ${filter}
     </nav>
 
-${serienHtml}
-
 ${paketeHtml}
+
+${serienHtml}
 
     <ul class="art-zusagen" aria-label="Zusagen">
       <li>${svg("zertifikat")}<span><strong>Signiert, mit Zertifikat</strong>Jede Arbeit und jedes Exemplar einer Edition.</span></li>
@@ -219,7 +220,7 @@ ${paketeHtml}
       <details><summary>Darf ich ein Bild ansehen, bevor ich es kaufe?</summary><p>Ja, im Atelier nach Absprache. Schreib mir.</p></details>
       <details><summary>Was gehört mir mit dem Werk?</summary><p>Das Werk selbst. Die Bildrechte bleiben bei mir; für eine Abbildung, etwa in einer Publikation, frag kurz an.</p></details>
     </section>`;
-  return seite({ site, titel: "Art – Ornament Cloud", beschreibung: "Originale und Prints, dazu Websites und Apps im Auftrag: direkt aus dem Atelier, signiert und versichert verschickt aus der Schweiz.",
+  return seite({ site, titel: "Art – Ornament Cloud", beschreibung: "Websites und Apps im Auftrag, dazu Originale und Prints: direkt aus dem Atelier, signiert und versichert verschickt aus der Schweiz.",
     robots: daten.werke.some((w) => w.muster), kanon: "art/", kopf, inhalt, aktuell: "page" });
 }
 
