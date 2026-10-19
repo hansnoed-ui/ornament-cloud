@@ -58,6 +58,65 @@
       "status": "unbekannt",
       "geprueft": null,
       "geaendert": "2026-10-19T08:00:40Z"
+    },
+    {
+      "nr": 2,
+      "id": "2-beitrag-zu-kunst-nervensystem-und-geist",
+      "plattform": "facebook",
+      "kontext": null,
+      "titel": "Beitrag zu Kunst, Nervensystem und Geist",
+      "autor": {
+        "name": "Christian Strickler",
+        "handle": null,
+        "profil": null,
+        "verifiziert": false,
+        "avatar": "medien/2/avatar.webp"
+      },
+      "quelle": null,
+      "veroeffentlicht": "2026-10-17",
+      "veroeffentlichtQuelle": "bild",
+      "erfasst": "2026-10-19T08:01:00Z",
+      "sprache": "de",
+      "uebersetzung": null,
+      "text": "Die Kunst benutzt unser Nervensystem und unseren Geist, um sich selbst zu verwirklichen.\n\n#GutenMorgen",
+      "medien": [
+        {
+          "typ": "bild",
+          "datei": "medien/2/bild-1.webp",
+          "breite": 359,
+          "hoehe": 414,
+          "alt": "Standbild eines Videos: abstraktes, gemaltes Bild mit blauen, roten und orangefarbenen Flächen, im Zentrum ein stilisiertes Gesicht mit geöffnetem Mund, oben eine orange Sonne."
+        }
+      ],
+      "zitiert": null,
+      "kennzahlen": {
+        "reaktionen": null,
+        "kommentare": null,
+        "teilungen": null
+      },
+      "beleg": {
+        "datei": "medien/2/beleg.webp",
+        "breite": 629,
+        "hoehe": 575,
+        "sha256": "5699c9002738379ab87cc5c47ce2eb9c6f52be8f4b019d606ffb055ca3b1d373",
+        "geschwaerzt": false
+      },
+      "karte": {
+        "datei": "medien/2/karte.jpg",
+        "breite": 1200,
+        "hoehe": 630
+      },
+      "kommentar": "",
+      "schlagworte": [
+        "Bewusstsein",
+        "Kunst",
+        "Nervensystem",
+        "Wahrnehmung"
+      ],
+      "verweise": [],
+      "status": "unbekannt",
+      "geprueft": null,
+      "geaendert": "2026-10-19T08:36:31Z"
     }
   ]
 }
