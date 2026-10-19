@@ -16,6 +16,10 @@ test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette"
   assert.equal(A.ablaufName("quatsch"), A.KETTE);
   assert.equal(A.ablaufName(null), "physarum+tiefe+tuch");
   assert.deepEqual(A.effekte("tuch+tiefe"), ["tiefe", "tuch"]);
+  // seit 19. Oktober 2026 das Wachstum zuerst (Wunsch: «Wachstum, Physarum, Tiefe (Scan), Tuch, Montage»); es geht über die Zeitfront ins Netz
+  assert.deepEqual(A.effekte("montage+tuch+tiefe+physarum+wachstum"), ["wachstum", "physarum", "tiefe", "tuch", "montage"]);
+  const W = A.kette("wachstum+physarum").teile[0];
+  assert.equal(W.uebergang, "front"); assert.ok(!W.phasen.some((p) => p[0] === "bild"), "kein Foto zwischen Wachstum und Netz");
   assert.equal(A.ablaufName("stich"), A.KETTE, "der frühere Stich ergibt die ganze Kette");
   assert.equal(A.ablaufName("physarum+muster+tuch"), "physarum+tuch", "die frühere Morphogenese fällt weg");
   assert.equal(A.ablaufName("gewebe"), A.KETTE, "ein gemerktes Gewebe (seit dem 18. Oktober 2026 PHORMA III) ergibt die ganze Kette");

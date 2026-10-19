@@ -9,14 +9,14 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=28";
-import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=28";
-import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=28";
-import { physarum } from "./physarum.js?v=28";
-import { tiefe } from "./tiefe.js?v=28";
-import { tuch } from "./tuch.js?v=28";
-import { montage, montageSignet } from "./montage.js?v=28";
-import { wachstum } from "./wachstum.js?v=28";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=29";
+import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=29";
+import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=29";
+import { physarum } from "./physarum.js?v=29";
+import { tiefe } from "./tiefe.js?v=29";
+import { tuch } from "./tuch.js?v=29";
+import { montage, montageSignet } from "./montage.js?v=29";
+import { wachstum } from "./wachstum.js?v=29";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -46,7 +46,10 @@ const FELDER = /* glsl */ `
     }
     gl_FragColor = vec4(mix(texture2D(tA, vUv).rgb, texture2D(tB, vUv).rgb, m), 1.0);
   }`;
-const SUMME = /* glsl */ `uniform sampler2D tQuelle; uniform float uGewicht; varying vec2 vUv; void main() { gl_FragColor = vec4(texture2D(tQuelle, vUv).rgb * uGewicht, 1.0); }`;
+// ungültige Werte (NaN, unendlich – manche Grafikchips von Telefonen liefern sie vereinzelt) werden schwarz, bevor sie sich ausbreiten (Rückmeldung vom
+// 19. Oktober 2026: einige schwarze Bilder im Übergang von der Tiefe zum Tuch)
+const SUMME = /* glsl */ `uniform sampler2D tQuelle; uniform float uGewicht; varying vec2 vUv; void main() { vec3 c = texture2D(tQuelle, vUv).rgb;
+  if (any(isnan(c)) || any(isinf(c))) c = vec3(0.0); gl_FragColor = vec4(c * uGewicht, 1.0); }`;
 const AUSGABE = /* glsl */ `
   uniform sampler2D tSumme, tFoto; uniform float uEnde, uAktiv, uSaumStaerke, uKorn; uniform uint uBild; varying vec2 vUv;
   float hash(uvec3 v) { v = v * 1664525u + 1013904223u; v.x += v.y * v.z; v.y += v.z * v.x; v.z += v.x * v.y; v ^= v >> 16u; v.x += v.y * v.z; return float(v.x) / 4294967295.0; }
@@ -90,7 +93,10 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   fotoTex.colorSpace = THREE.SRGBColorSpace; fotoTex.anisotropy = 4;
   const tiefeTex = datenTextur(A.tiefe, A.w, A.h), nahrungTex = datenTextur(A.nahrung, A.w, A.h);
   const quad = new FullScreenQuad();
-  const g = { THREE, renderer, quad, foto, fotoTex, tiefeTex, nahrungTex, A, B, H, grob, test, tiefeQuelle, nahtlos,
+  // helle Fotos (Zeichnung auf weissem Papier): weniger Glühen und weniger Licht, sonst brennt alles aus (Rückmeldung vom 19. Oktober 2026: «einige
+  // Phasen sind viel zu hell (Tiefe, Tuch)»); bis zu einer mittleren Helligkeit von 0,5 bleibt alles wie es war
+  const hellAnteil = Math.min(1, Math.max(0, (A.mittel - 0.5) / 0.3));
+  const g = { THREE, renderer, quad, foto, fotoTex, tiefeTex, nahrungTex, A, B, H, grob, test, tiefeQuelle, nahtlos, belichtung: 1 - 0.45 * hellAnteil,
     pass(material, rt) { renderer.setRenderTarget(rt); quad.material = material; quad.render(renderer); },
     loeschen(rt, farbe = 0x000000) { renderer.setRenderTarget(rt); renderer.setClearColor(farbe, 1); renderer.clear(true, true, true); } };
   const K = kette(ablauf);
@@ -118,8 +124,11 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     for (const r of [rtA, rtB, rtMix, rtSumme]) r?.dispose();
     rtA = ziel(w, h); rtB = ziel(w, h); rtMix = ziel(w, h); rtSumme = ziel(w, h);   // HalfFloat: Mischen in Float32 braucht EXT_float_blend, das viele Telefone nicht haben
     bloom?.dispose();
-    bloom = new UnrealBloomPass(new THREE.Vector2(w, h), 0, 0.55, 0.72);
+    bloom = new UnrealBloomPass(new THREE.Vector2(w, h), 0, 0.55, 0.72 + 0.2 * hellAnteil);
     bloom.highPassUniforms.smoothWidth.value = 0.15;
+    // ein ungültiger Wert im Bild würde vom Glühen über das ganze Bild verteilt (ganz schwarz): vorher abfangen
+    bloom.materialHighPassFilter.fragmentShader = bloom.materialHighPassFilter.fragmentShader.replace("vec4 texel = texture2D( tDiffuse, vUv );",
+      "vec4 texel = texture2D( tDiffuse, vUv ); if ( any( isnan( texel ) ) || any( isinf( texel ) ) ) texel = vec4( 0.0 );");
     for (const e of effekte) e.groesse?.(w, h);
   }
 
@@ -149,7 +158,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
       const m = weich(p);
       info = { aktiv: Math.max(ia.aktiv, ib.aktiv), bloom: ia.bloom * (1 - m) + ib.bloom * m, radius: (ia.radius ?? 0.45) * (1 - m) + (ib.radius ?? 0.45) * m, saum: Math.max(ia.saum ?? 0, ib.saum ?? 0) + 0.004 * Math.sin(Math.PI * p), ende: ib.ende ?? 0 };
     }
-    const s = (info.bloom ?? 0) * info.aktiv * (1 - (info.ende ?? 0));
+    const s = (info.bloom ?? 0) * info.aktiv * (1 - (info.ende ?? 0)) * (1 - 0.75 * hellAnteil);
     if (s > 0.002) { bloom.strength = s; bloom.radius = info.radius ?? 0.45; bloom.render(renderer, null, rtMix); }
     return info;
   }
