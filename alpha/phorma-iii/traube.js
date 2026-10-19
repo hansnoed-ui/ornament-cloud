@@ -15,13 +15,13 @@
 //   Schriftzug, der Punkt ist eine Perle) oder 02 Stille (alles sinkt ins Dunkel).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich, kamera, ABSTAND, FOV } from "./gemeinsam.js?v=17";
-import { phase } from "./ablauf.js?v=17";
-import { gewebeKurven } from "./kurven.js?v=17";
-import { weichzeichnen } from "./analyse.js?v=17";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=17";
-import { RAUSCHEN } from "./gewebe.js?v=17";
-import { traubenBau, perlenLegen, einstellung, artBei, schlaufeWelt, perlenAufZuegen, h1 } from "./traubenplan.js?v=17";
+import { anteil, weich, kamera, ABSTAND, FOV } from "./gemeinsam.js?v=18";
+import { phase } from "./ablauf.js?v=18";
+import { gewebeKurven } from "./kurven.js?v=18";
+import { weichzeichnen } from "./analyse.js?v=18";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=18";
+import { RAUSCHEN } from "./gewebe.js?v=18";
+import { traubenBau, perlenLegen, einstellung, artBei, schlaufeWelt, perlenAufZuegen, traubenZeit, h1 } from "./traubenplan.js?v=18";
 
 const VOR = 0.4, LN = 512;                                                  // Vorlauf des Films; Punkte der Schlaufe in der Textur
 
@@ -153,7 +153,9 @@ const FADEN_VERTEX = /* glsl */ `
     float imLogo = mix(1.0, huelle ? 0.38 : 0.16, zu);
     // die Enden blenden aus; sin(π · u) ist bei u = 1 knapp negativ, und pow einer negativen Zahl (wie pow(0, 0)) ist auf Telefonen NaN
     float enden = mix(sqrt(max(sin(3.14159 * u), 0.0)), 1.0, zu * (huelle ? 0.0 : 1.0));
-    vA = uHell * imLogo * (0.45 + 0.9 * h2.z) * enden * sicht / (1.0 + 0.4 * unscharf);
+    // gut zwei von fünf Strängen dezent (Wunsch: «die weissen Fäden dürften teilweise etwas dezenter sein»), nicht im Strang des Logos
+    float dezent = mix(step(0.42, hash3(floor(k / 7.0) * 5.7 + 2.0 + uSaat).x) * 0.72 + 0.28, 1.0, zu * (huelle ? 0.0 : 1.0));
+    vA = uHell * imLogo * dezent * (0.45 + 0.9 * h2.z) * enden * sicht / (1.0 + 0.4 * unscharf);
     vFarbe = mix(vec3(0.95, 0.94, 0.93), vec3(1.0, 0.42, 0.34), clamp(step(0.86, h2.x) * 0.7 + uGlut * 0.6 * h.x, 0.0, 1.0) * (1.0 - zu));
   }`;
 const FADEN_FRAGMENT = /* glsl */ `varying float vA; varying vec3 vFarbe; void main() { if (!(vA >= 0.0)) discard; gl_FragColor = vec4(vFarbe * vA, 1.0); }`;
@@ -166,8 +168,14 @@ const RAUCH_FRAGMENT = /* glsl */ `
   void main() {
     vec2 p = (vUv - 0.5) * vec2(uA, 1.0) * 1.7 + uSaat;
     vec3 q = vec3(p, uS * 0.06);
+  #ifdef GROB
+    // auf dem Telefon zwei statt fünf Rauschen je Bildpunkt (der Rauch kostete dort am meisten)
+    vec2 w = vec2(0.0);
+    float f = 0.75 * snoise(vec3(p, uS * 0.08)) + 0.35 * snoise(vec3(p * 2.3, uS * 0.11 + 5.0));
+  #else
     vec2 w = vec2(snoise(q + 3.1), snoise(q + vec3(7.7, 1.3, 0.0))) * 0.55;
     float f = 0.6 * snoise(vec3(p + w, uS * 0.08)) + 0.3 * snoise(vec3((p + w) * 2.3, uS * 0.11 + 5.0)) + 0.15 * snoise(vec3(p * 5.1 + w, uS * 0.15));
+  #endif
     float m = pow(smoothstep(0.12, 0.85, f), 1.7);
     gl_FragColor = vec4(mix(vec3(0.5, 0.52, 0.56), vec3(1.0, 0.22, 0.15), clamp(uGlut, 0.0, 1.0) * 0.7) * m * uRauch, 1.0);
   }`;
@@ -181,7 +189,7 @@ export function traube(g, teil) {
   // der erste frühestens 1,4 s nach Beginn (die Traube wächst erst aus dem Dunkeln)
   const ZS = gewebeZustaende(T, G[0] + VOR, G[1] + VOR).reduce((a, z) => ((a.length ? z.t - a.at(-1).t : z.t - G[0] - VOR - 0.4) >= 1.0 ? [...a, z] : a), []).map((z, i) => ({ ...z, nr: i + 1 }));
   const mitBild = g.quelle !== "ton";
-  const bau = traubenBau(N), z = bau.z;
+  const bau = traubenBau(N), z = bau.z, zeitDerTraube = traubenZeit(T.laut);
 
   // das Bild aus Perlen (mit Text, Foto oder Video): die Umrisse wie in der Irrfahrt, auf 62 % verkleinert in der Bildebene
   let zeichen = null;
@@ -223,7 +231,7 @@ export function traube(g, teil) {
     blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation });
   // Rauch über das ganze Bild, zuerst
   const RU = { uS: FU.uS, uRauch: { value: 0 }, uSaat: { value: 0 }, uGlut: PU.uGlut, uA: { value: a } };
-  const rMat = new THREE.ShaderMaterial({ vertexShader: RAUCH_VERTEX, fragmentShader: RAUCH_FRAGMENT, uniforms: RU, transparent: true, depthTest: false, depthWrite: false,
+  const rMat = new THREE.ShaderMaterial({ vertexShader: RAUCH_VERTEX, fragmentShader: RAUCH_FRAGMENT, uniforms: RU, defines: g.grob ? { GROB: 1 } : {}, transparent: true, depthTest: false, depthWrite: false,
     blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation });
   const flaeche = new THREE.PlaneGeometry(2, 2);
   const szene = new THREE.Scene();
@@ -246,20 +254,21 @@ export function traube(g, teil) {
     lage(tau) { const s = stand(tau); return s.istLogo ? "logo" : `${s.zs.nr}`; },
     render(rt, tau) {
       const { film, istLogo, zs } = stand(tau), Z = zustand(zs);
-      const laut = wert(T.laut, film), stoss = wert(T.stoss, film), tief = wert(T.stossTief, film), hoch = wert(T.stossHoch, film), tor = wert(T.tor, film), dreh = wert(T.dreh, film);
-      const s = 0.12 * tau + 0.45 * wert(T.energie, film);
+      const laut = wert(T.laut, film), stoss = wert(T.stoss, film), tief = wert(T.stossTief, film), hoch = wert(T.stossHoch, film), tor = wert(T.tor, film);
+      const s = wert(zeitDerTraube, film);                                  // gleichmässig, laut sanft schneller (traubenZeit)
       const seit = istLogo ? tau - Lg[0] : zs.nr ? film - zs.t0 : Math.max(0, tau);
       const wachs = weich(anteil(tau, 0, 0.9)), still = St ? weich(anteil(tau, St[0], St[1] - 0.3)) : 0;
       const zuLogo = istLogo ? weich(anteil(seit, 0, 1.5)) : 0, ruhig = istLogo ? weich(anteil(seit, 1.3, 2.8)) : 0;
       const blitz = blitze.reduce((m, x) => (film >= x ? Math.max(m, Math.exp(-(film - x) / 0.18)) : m), 0) * (1 - zuLogo);
       const glut = (0.18 * laut + 0.95 * tief + 0.45 * stoss * stoss + 0.8 * blitz) * (1 - 0.75 * ruhig) * (1 - still);
 
-      // die Kamera: die Einstellung des Zustands, beim Schlag ein Ruck nach vorn und ein Schwung um die Mitte; zum Logo gerade von vorn
+      // die Kamera: die Einstellung des Zustands, beim Schlag ein kleiner Ruck nach vorn (der Schwung um die Mitte bei jedem kräftigen Einsatz ist
+      // weg: zusammen mit den Sätzen der Zeit wirkte es ruckelnd); zum Logo gerade von vorn
       const zeichenArt = Z.art === "zeichen", E = zeichenArt ? { pos: [0.25 * Math.sin(seit * 0.2), 0.05, ABSTAND * 0.98 - 0.04 * seit], ziel: [0, 0, 0], fokus: ABSTAND * 0.98, apertur: 0.02 } : einstellung(Z, seit);
       vonV.fromArray(E.pos); zuV.fromArray(E.ziel); blick.subVectors(vonV, zuV);
-      blick.applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.22 * dreh * (1 - zuLogo)).multiplyScalar(1 - 0.07 * stoss * (1 - zuLogo));
+      blick.multiplyScalar(1 - 0.04 * stoss * (1 - zuLogo));
       vonV.addVectors(zuV, blick);
-      let fokus = E.fokus * (1 - 0.07 * stoss), apertur = E.apertur;
+      let fokus = E.fokus * (1 - 0.04 * stoss), apertur = E.apertur;
       if (istLogo) {
         // von der letzten Einstellung gerade vor die Bildebene (dort steht die Schlaufe genau wie im Signet)
         vonV.lerp(new THREE.Vector3(0, 0, ABSTAND), zuLogo); zuV.lerp(new THREE.Vector3(0, 0, 0), zuLogo);
@@ -320,7 +329,7 @@ export function traube(g, teil) {
       PU.uHell.value = hell; PU.uGlut.value = glut;
       // die Fäden
       FU.uArt.value = Z.art === "saeule" ? 1 : Z.art === "schwarm" ? 2 : 0; FU.uSaat.value = zeichenArt ? 0 : (Z.saat % 97) * 0.37; FU.uS.value = s;
-      FU.uKnall.value = knall; FU.uWirr.value = (0.6 + 1.6 * laut + 2.2 * stoss) * (1 - ruhig); FU.uWachs.value = wachs; FU.uLogo.value = zuLogo; FU.uRuhig.value = ruhig; FU.uStill.value = still;
+      FU.uKnall.value = knall; FU.uWirr.value = (0.6 + 1.6 * laut + 1.3 * stoss) * (1 - ruhig); FU.uWachs.value = wachs; FU.uLogo.value = zuLogo; FU.uRuhig.value = ruhig; FU.uStill.value = still;
       FU.uHell.value = (75 / F) * (0.3 + 0.55 * tor + 0.5 * hoch + 0.3 * stoss) * (0.4 + 0.6 * wachs) * (1 - still) * (zeichenArt ? 0.6 : Z.art === "kugel" ? 0.75 : 1) * (1 - 0.55 * zuLogo);
       RU.uRauch.value = (0.02 + 0.05 * laut + 0.04 * tief) * wachs * (1 - still) * (1 - 0.9 * zuLogo); RU.uSaat.value = h1(Z.saat, 1) * 20;
 

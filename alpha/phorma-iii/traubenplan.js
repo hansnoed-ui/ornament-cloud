@@ -4,7 +4,7 @@
 //   ein Wurm aus Beeren) oder eine Traube (ein Büschel um einen Mittelpunkt). Der Weg hängt nur von s ab, der Zeit der Musik: zwischen den
 //   Schlägen steht er fast, beim Schlag macht er einen Satz. Je Zustand eine Art (Kugel, Nah, Säule, Schwarm) und ein eigener Wurf.
 //   Welt: die Bildebene z = 0 füllt das Bild (Höhe 2, Breite 2 · B / H) wie im Gewebe und in der Irrfahrt; die Traube liegt um den Ursprung.
-import { zufallsfolge } from "./irrweg.js?v=17";
+import { zufallsfolge } from "./irrweg.js?v=18";
 
 export const ARTEN = ["kugel", "nah", "saeule", "schwarm"];
 /** wiederholbarer Zufall aus zwei Zahlen (0..1) */
@@ -39,6 +39,18 @@ function block(b) {
 export function artBei(nr) {
   if (nr <= 0) return "kugel";
   return block(Math.floor((nr - 1) / FOLGE.length))[(nr - 1) % FOLGE.length];
+}
+
+/**
+ * Die Zeit der Traube je Filmbild (treibt Schnüre, Büschel und Fäden): gleichmässig, bei lauter Musik sanft schneller (0,36 bis 0,56 je Sekunde,
+ * die Lautstärke über rund 0,8 s geglättet), ohne Sätze. Vorher die «Zeit der Musik» (Sätze bei jedem Schlag, Sprünge bei Schnitten, dazwischen fast
+ * Stillstand) – Rückmeldung: «ruckelt stark, also verlangsamt und verschnellert kontra-intuitiv». Die Schläge zeigen sich im Schwellen, Glühen und Ruck.
+ */
+export function traubenZeit(laut, fps = 30) {
+  const s = new Float32Array(laut.length);
+  let summe = 0, g = laut[0] ?? 0;
+  for (let i = 0; i < laut.length; i++) { g += (laut[i] - g) / (fps * 0.8); summe += (0.36 + 0.2 * Math.min(1, g)) / fps; s[i] = summe; }
+  return s;
 }
 
 /** gleichmässig auf der Kugel (u, v ∈ 0..1) */
