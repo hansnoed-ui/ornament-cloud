@@ -15,13 +15,13 @@
 //   Schriftzug, der Punkt ist eine Perle) oder 02 Stille (alles sinkt ins Dunkel).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich, kamera, ABSTAND, FOV } from "./gemeinsam.js?v=18";
-import { phase } from "./ablauf.js?v=18";
-import { gewebeKurven } from "./kurven.js?v=18";
-import { weichzeichnen } from "./analyse.js?v=18";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=18";
-import { RAUSCHEN } from "./gewebe.js?v=18";
-import { traubenBau, perlenLegen, einstellung, artBei, schlaufeWelt, perlenAufZuegen, traubenZeit, h1 } from "./traubenplan.js?v=18";
+import { anteil, weich, kamera, ABSTAND, FOV } from "./gemeinsam.js?v=19";
+import { phase } from "./ablauf.js?v=19";
+import { gewebeKurven } from "./kurven.js?v=19";
+import { weichzeichnen } from "./analyse.js?v=19";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=19";
+import { RAUSCHEN } from "./gewebe.js?v=19";
+import { traubenBau, perlenLegen, einstellung, artBei, schlaufeWelt, perlenAufZuegen, traubenZeit, h1 } from "./traubenplan.js?v=19";
 
 const VOR = 0.4, LN = 512;                                                  // Vorlauf des Films; Punkte der Schlaufe in der Textur
 
@@ -91,8 +91,8 @@ const TIEFE_FRAGMENT = /* glsl */ `
 
 // die Fäden: k (Faden), u (0..1 entlang) → Welt; drei Formen und die Schlaufe
 const FADEN_VERTEX = /* glsl */ `
-  uniform sampler2D tSchlaufe; uniform vec3 uMitte; uniform float uS, uSaat, uKnall, uHell, uWirr, uWachs, uLogo, uRuhig, uApertur, uFokus, uPx, uGlut, uStill; uniform int uArt;
-  attribute vec2 aRef; varying float vA; varying vec3 vFarbe;
+  uniform sampler2D tSchlaufe; uniform vec3 uMitte; uniform float uS, uSaat, uKnall, uHell, uWirr, uWachs, uLogo, uRuhig, uApertur, uFokus, uPx, uGlut, uStill, uStrich; uniform int uArt;
+  uniform vec2 uVersatz; attribute vec2 aRef; varying float vA; varying vec3 vFarbe;
   ${RAUSCHEN}
   vec3 hash3(float n) { return fract(sin(vec3(n * 12.9898, n * 78.233, n * 37.719)) * 43758.5453); }
   vec3 schlaufe(float f) {
@@ -147,6 +147,7 @@ const FADEN_VERTEX = /* glsl */ `
     }
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
+    gl_Position.xy += uVersatz * gl_Position.w;                           // fein() in buehne.js: um einen Pixel versetzt, mit 1/k des Lichts
     float d = -mv.z, b = uApertur * abs(d - uFokus) / uFokus, unscharf = b / (uPx * max(d, 0.01));
     float sicht = step(u, uWachs * (1.0 + h.x) ) * smoothstep(0.03, 0.15, d);
     // im Logo: der Strang hell und dünn (viele Fäden übereinander – sonst überstrahlt er alles), die Hülle schwach
@@ -155,7 +156,7 @@ const FADEN_VERTEX = /* glsl */ `
     float enden = mix(sqrt(max(sin(3.14159 * u), 0.0)), 1.0, zu * (huelle ? 0.0 : 1.0));
     // gut zwei von fünf Strängen dezent (Wunsch: «die weissen Fäden dürften teilweise etwas dezenter sein»), nicht im Strang des Logos
     float dezent = mix(step(0.42, hash3(floor(k / 7.0) * 5.7 + 2.0 + uSaat).x) * 0.72 + 0.28, 1.0, zu * (huelle ? 0.0 : 1.0));
-    vA = uHell * imLogo * dezent * (0.45 + 0.9 * h2.z) * enden * sicht / (1.0 + 0.4 * unscharf);
+    vA = uStrich * uHell * imLogo * dezent * (0.45 + 0.9 * h2.z) * enden * sicht / (1.0 + 0.4 * unscharf);
     vFarbe = mix(vec3(0.95, 0.94, 0.93), vec3(1.0, 0.42, 0.34), clamp(step(0.86, h2.x) * 0.7 + uGlut * 0.6 * h.x, 0.0, 1.0) * (1.0 - zu));
   }`;
 const FADEN_FRAGMENT = /* glsl */ `varying float vA; varying vec3 vFarbe; void main() { if (!(vA >= 0.0)) discard; gl_FragColor = vec4(vFarbe * vA, 1.0); }`;
@@ -226,7 +227,8 @@ export function traube(g, teil) {
   const fGeo = new THREE.BufferGeometry();
   fGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array((ref.length / 2) * 3), 3)); fGeo.setAttribute("aRef", new THREE.BufferAttribute(ref, 2));
   const FU = { tSchlaufe: { value: schlaufeTex }, uS: { value: 0 }, uSaat: { value: 0 }, uKnall: { value: 0 }, uHell: { value: 0.1 }, uWirr: { value: 1 }, uWachs: { value: 1 }, uLogo: { value: 0 },
-    uRuhig: { value: 0 }, uApertur: PU.uApertur, uFokus: PU.uFokus, uPx: PU.uPx, uGlut: PU.uGlut, uStill: { value: 0 }, uArt: { value: 0 }, uMitte: { value: new THREE.Vector3(mx, my, 0) } };
+    uRuhig: { value: 0 }, uApertur: PU.uApertur, uFokus: PU.uFokus, uPx: PU.uPx, uGlut: PU.uGlut, uStill: { value: 0 }, uArt: { value: 0 }, uMitte: { value: new THREE.Vector3(mx, my, 0) },
+    uVersatz: { value: new THREE.Vector2() }, uStrich: { value: 1 } };
   const fMat = new THREE.ShaderMaterial({ vertexShader: FADEN_VERTEX, fragmentShader: FADEN_FRAGMENT, uniforms: FU, transparent: true, depthTest: true, depthWrite: false,
     blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation });
   // Rauch über das ganze Bild, zuerst
@@ -235,7 +237,8 @@ export function traube(g, teil) {
     blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation });
   const flaeche = new THREE.PlaneGeometry(2, 2);
   const szene = new THREE.Scene();
-  [[new THREE.Mesh(flaeche, rMat), 0], [new THREE.Mesh(pGeo, pMat), 1], [new THREE.Mesh(pGeo, tMat), 2], [new THREE.LineSegments(fGeo, fMat), 3]].forEach(([o, r]) => { o.frustumCulled = false; o.renderOrder = r; szene.add(o); });
+  const faeden = new THREE.LineSegments(fGeo, fMat);
+  [[new THREE.Mesh(flaeche, rMat), 0], [new THREE.Mesh(pGeo, pMat), 1], [new THREE.Mesh(pGeo, tMat), 2], [faeden, 3]].forEach(([o, r]) => { o.frustumCulled = false; o.renderOrder = r; szene.add(o); });
   const kam = kamera(B, H);
 
   // Zustände: Art und Wurf; der Schnitt (Lage) wechselt mit dem Zustand
@@ -335,7 +338,7 @@ export function traube(g, teil) {
 
       g.loeschen(rt, 0x000000);
       renderer.setRenderTarget(rt);
-      renderer.render(szene, kam);
+      g.fein(szene, kam, [faeden]);
       return { aktiv: 0.85 * (1 - ruhig) + 0.1, bloom: (0.22 + 0.3 * stoss + 0.8 * glut) * (1 - 0.75 * zuLogo), radius: 0.55 + 0.25 * blitz, saum: 0.0012 * (1 - ruhig), ende: 0, umkehr: 0 };
     },
     vorab: { szenen: [[szene, kam]], materialien: [] },

@@ -11,13 +11,13 @@
 //   Schriftzug) oder 03 Stille (der Faden zieht sich in seinen Kopf zusammen).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich } from "./gemeinsam.js?v=18";
-import { phase } from "./ablauf.js?v=18";
-import { gewebeKurven } from "./kurven.js?v=18";
-import { weichzeichnen } from "./analyse.js?v=18";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=18";
-import { RAUSCHEN } from "./gewebe.js?v=18";
-import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=18";
+import { anteil, weich } from "./gemeinsam.js?v=19";
+import { phase } from "./ablauf.js?v=19";
+import { gewebeKurven } from "./kurven.js?v=19";
+import { weichzeichnen } from "./analyse.js?v=19";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=19";
+import { RAUSCHEN } from "./gewebe.js?v=19";
+import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=19";
 
 const VOR = 0.4;
 
@@ -51,11 +51,12 @@ const PFAD = /* glsl */ `
   ${ABBILD}`;
 const FADEN_VERTEX = /* glsl */ `
   ${PFAD}
-  attribute vec2 aRef; varying float vA;
+  uniform vec2 uVersatz; uniform float uStrich; attribute vec2 aRef; varying float vA;
   void main() {
     float sicht; vec3 p = faden(aRef.x, aRef.y, sicht);
     gl_Position = abbild(p);
-    vA = uHell * sicht * (1.0 + 0.5 * smoothstep(0.92, 1.0, aRef.y / uL));          // der Kopf leuchtet etwas heller
+    gl_Position.xy += uVersatz * gl_Position.w;                           // fein() in buehne.js: um einen Pixel versetzt, mit 1/k des Lichts
+    vA = uStrich * uHell * sicht * (1.0 + 0.5 * smoothstep(0.92, 1.0, aRef.y / uL));          // der Kopf leuchtet etwas heller
   }`;
 const FUNKEN_VERTEX = /* glsl */ `
   ${PFAD}
@@ -136,7 +137,7 @@ export function irrfahrt(g, teil, { fest = false } = {}) {
   for (let k = 0; k < S; k++) for (let i = 0; i < L - 1; i++) { ref.set([k, i, k, i + 1], r); r += 4; }
   const fGeo = new THREE.BufferGeometry();
   fGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array((ref.length / 2) * 3), 3)); fGeo.setAttribute("aRef", new THREE.BufferAttribute(ref, 2));
-  const fMat = new THREE.ShaderMaterial({ vertexShader: FADEN_VERTEX, fragmentShader: FRAGMENT, uniforms: U, ...plus });
+  const fMat = new THREE.ShaderMaterial({ vertexShader: FADEN_VERTEX, fragmentShader: FRAGMENT, uniforms: { ...U, uVersatz: { value: new THREE.Vector2() }, uStrich: { value: 1 } }, ...plus });
   // die Funken: NF Punkte an zufälligen Stellen der Fäden
   const fr = zufallsfolge(77), fref = Float32Array.from({ length: NF * 2 }, (_, i) => (i % 2 ? fr() * L : Math.floor(fr() * S)));
   const pGeo = new THREE.BufferGeometry();
@@ -154,7 +155,8 @@ export function irrfahrt(g, teil, { fest = false } = {}) {
     uniforms: { uDreh: U.uDreh, uLage: U.uLage, uZeit: U.uZeit, uZeichnen: { value: 0 }, uWuerfel: { value: 1 }, uDicke: { value: 1.5 }, uTiefe: { value: fest ? 0.6 : 0.5 }, uSeiten: { value: new THREE.Vector2(1, 1) } } });
   // der Würfel in einer eigenen Szene: er wird scharf gezeichnet (nur in der letzten Probe des Bilds, nach dem Bloom), der Faden mit Bewegungsunschärfe
   const szene = new THREE.Scene(), wSzene = new THREE.Scene();
-  for (const o of [new THREE.LineSegments(fGeo, fMat), new THREE.Points(pGeo, pMat)]) { o.frustumCulled = false; szene.add(o); }
+  const faeden = new THREE.LineSegments(fGeo, fMat);
+  for (const o of [faeden, new THREE.Points(pGeo, pMat)]) { o.frustumCulled = false; szene.add(o); }
   { const o = new THREE.Mesh(wGeo, wMat); o.frustumCulled = false; wSzene.add(o); }
   // das Objektiv wie im Vorbild (35°, die vordere Kante gut anderthalbmal so lang wie die hintere): mit dem langen Objektiv (15°) fehlte die Perspektive
   // fast ganz, und ein drehender Drahtwürfel kippt dann für das Auge – er schien sich zu verziehen (Rückmeldung: «die Würfel bei der Irrfahrt: bitte
@@ -243,7 +245,7 @@ export function irrfahrt(g, teil, { fest = false } = {}) {
       renderer.getSize(groesse); wMat.uniforms.uSeiten.value.set(groesse.x / 2, groesse.y / 2); wMat.uniforms.uDicke.value = Math.max(1, 3.6 * (groesse.y / 1350));
       g.loeschen(rt, 0x000000);
       renderer.setRenderTarget(rt);
-      for (let k = 0; k < (drei ? 3 : 1); k++) { lage(drei ? k : 0); renderer.render(szene, kam); }
+      for (let k = 0; k < (drei ? 3 : 1); k++) { lage(drei ? k : 0); g.fein(szene, kam, [faeden]); }
       // der Würfel scharf, nach dem Bloom: mit Bewegungsunschärfe wurden seine Haarlinien beim Zoomstoss zu einem Stapel aus acht Kopien (Rückmeldung:
       // «die Würfel sind immer noch verzogen»)
       const danach = scharf ? () => { renderer.setRenderTarget(rt); for (let k = 0; k < (drei ? 3 : 1); k++) { lage(drei ? k : 0); renderer.render(wSzene, kam); } } : null;

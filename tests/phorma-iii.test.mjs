@@ -514,6 +514,7 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /data-tonart="musik">Musik[\s\S]*data-tonart="stimme">Stimme/, "Musik oder Stimme");
   assert.match(html, /id="saeubern" checked> Säubern und klären[\s\S]*id="stimm-ablauf" checked> Scratch → Stimme → Gefrickel[\s\S]*id="stimm-dnb" checked> mit Drum and Bass/, "die Stimme: säubern, der Ablauf, Drum and Bass");
   assert.match(html, /id="signet" checked> Logo am Schluss/);
+  assert.match(html, /data-aufloesung="1">einfach[\s\S]*data-aufloesung="2">doppelt \(4K\)/, "Auflösung einfach oder doppelt (19. Oktober 2026)");
   assert.match(html, /data-wahl="gewebe" aria-pressed="true"[\s\S]*data-wahl="irrfahrt"[\s\S]*data-wahl="lichtwuerfel"[\s\S]*data-wahl="traube"[\s\S]*data-wahl="video"/, "fünf Effekte: Gewebe, Irrfahrt, Lichtwürfel, Traube und Video");
   assert.match(html, /id="ausschnitt-film"[\s\S]*id="ausschnitt-bild"/, "beim Ton aus dem Video: Filmstreifen über der Wellenform");
   assert.match(html, /id="video-ausschnitt"[\s\S]*id="video-streifen"[\s\S]*id="video-von"/, "mit eigener Audiodatei: der Ausschnitt des Videos");

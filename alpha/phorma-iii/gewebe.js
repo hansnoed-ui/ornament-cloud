@@ -9,11 +9,11 @@
 //   sich glatt zum Strich (darüber tippt film.js den Schriftzug).
 // Zustandslos: alles wird aus der Zeit gerechnet (im Vertex-Shader), die Tonkurven liegen als Textur vor und werden nur mit texelFetch gelesen.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=18";
-import { phase } from "./ablauf.js?v=18";
-import { gewebeKurven, abtasten } from "./kurven.js?v=18";
-import { weichzeichnen } from "./analyse.js?v=18";
-import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=18";
+import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=19";
+import { phase } from "./ablauf.js?v=19";
+import { gewebeKurven, abtasten } from "./kurven.js?v=19";
+import { weichzeichnen } from "./analyse.js?v=19";
+import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=19";
 
 // Simplex-Rauschen in 3D (Ashima Arts / Stefan Gustavson, MIT); auch für die Irrfahrt (irrfahrt.js)
 export const RAUSCHEN = /* glsl */ `
@@ -39,7 +39,7 @@ export const RAUSCHEN = /* glsl */ `
 const VERTEX = /* glsl */ `
   uniform sampler2D tKurven, tTon, tStoss, tSpek; uniform int uP, uH, uN, uNK, uSaetze;
   uniform float uZeit, uVon, uB1, uDichte, uWechsel[23], uAuf, uAktiv, uSeit, uAnteil, uTor, uZeichen, uNurTon, uLogo, uDicke, uPflicht; uniform vec4 uZustand;
-  uniform mat3 uKamDreh; uniform vec3 uKam;
+  uniform mat3 uKamDreh; uniform vec3 uKam; uniform vec2 uVersatz;
   attribute vec3 aRef;
   varying float vA;
   ${RAUSCHEN}
@@ -77,6 +77,7 @@ const VERTEX = /* glsl */ `
     // 3 Kamera: je Zustand eine Einstellung (nah oder weit, geneigt, gerollt), darin langsam näher, mit dem Schlag ein kleiner Ruck
     q = uKamDreh * q; q.xy = q.xy * uKam.x + uKam.yz;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(q, 1.0);
+    gl_Position.xy += uVersatz * gl_Position.w;                           // fein() in buehne.js: um einen Pixel versetzt
     float sicht = smoothstep(uAuf - 0.6, uAuf, uZeit) * (1.0 - smoothstep(uB1 - 1.2, uB1 - 0.5, uZeit));   // erst wenn sich das Zeichen löst; am Schluss weg
     // je Zustand nur ein Teil der Kurven, immer mindestens eine (uPflicht) – sonst bleibt bei wenigen Kurven das Papier manchmal sekundenlang leer
     float gewaehlt = mix(1.0, max(step(fract(sin(float(c) * 7.31 + uZustand.x) * 4375.85), uAnteil), float(c) == uPflicht ? 1.0 : 0.0), uAktiv);
@@ -86,7 +87,9 @@ const VERTEX = /* glsl */ `
     sicht *= mix(1.0, uAktiv * uAktiv, uNurTon * (1.0 - uLogo));
     vA = k0.w * uDichte * dichte * sicht * gewaehlt * uTor * (1.0 - uZeichen) * (k <= float(uH - 1) * auf + 0.5 ? 1.0 : 0.0);
   }`;
-const FRAGMENT = /* glsl */ `uniform vec3 uTinte; varying float vA; void main() { gl_FragColor = vec4(uTinte * vA, vA); }`;
+// uStrich (fein() in buehne.js): 1/k bei k-facher Auflösung – k Treffer derselben Linie decken zusammen wie einer im einfachen Bild
+const FRAGMENT = /* glsl */ `uniform vec3 uTinte; uniform float uStrich; varying float vA;
+  void main() { float a = uStrich < 1.0 ? 1.0 - pow(1.0 - min(vA, 1.0), uStrich) : vA; gl_FragColor = vec4(uTinte * a, a); }`;
 const GRUND = /* glsl */ `
   uniform sampler2D tFoto; uniform vec3 uPapier; uniform float uFoto, uSicht; varying vec2 vUv;
   void main() { gl_FragColor = vec4(mix(uPapier, texture2D(tFoto, vUv).rgb, uFoto) * uSicht, 1.0); }`;
@@ -182,7 +185,7 @@ export function gewebe(g, teil) {
       uAuf: { value: g.quelle === "ton" ? 0.9 : Z[1] - 0.5 }, uP: { value: P }, uNK: { value: nk }, uSaetze: { value: saetze.length }, uWechsel: { value: Array.from({ length: 23 }, (_, j) => wechsel[j] ?? 1e9) },
       uH: { value: NH }, uN: { value: TT.n }, uZeit: { value: 0 }, uVon: { value: VOR }, uB1: { value: Bp ? Bp[1] : 1e9 }, uDichte: { value: 0.4 },
       uNurTon: { value: g.quelle === "ton" ? 1 : 0 }, uLogo: { value: 0 }, uDicke: { value: 0 }, uPflicht: { value: 0 }, uAktiv: { value: 0 }, uSeit: { value: 0 }, uAnteil: { value: 1 }, uTor: { value: 1 }, uZeichen: { value: 0 }, uZustand: { value: new THREE.Vector4(0, 0, 0.4, 0) },
-      uTinte: { value: new THREE.Color(0.02, 0.02, 0.025) } },
+      uTinte: { value: new THREE.Color(0.02, 0.02, 0.025) }, uVersatz: { value: new THREE.Vector2() }, uStrich: { value: 1 } },
   });
   const linien = new THREE.LineSegments(geo, mat); linien.frustumCulled = false;
   const szene = new THREE.Scene(); szene.add(linien);
@@ -234,7 +237,7 @@ export function gewebe(g, teil) {
       grund.uniforms.uSicht.value = teil.erst ? weich(anteil(tau, 0, 0.7)) : 1;
       grund.uniforms.uFoto.value = logo ? 0 : (zeichen ? tor : 0) + 1 - inOut(anteil(tau, Z[1] - 1.0, Z[1] + 0.4)) + (Bp ? inOut(anteil(tau, Bp[1] - 1.3, Bp[1] - 0.3)) : 0);
       g.pass(grund, rt);
-      renderer.setRenderTarget(rt); renderer.render(szene, kam);
+      renderer.setRenderTarget(rt); g.fein(szene, kam, [linien]);
       const ende = Bp ? weich(anteil(tau, Bp[1] - 0.6, Bp[1] - 0.1)) : 0;
       // mehr Kontrast (Tonwertkorrektur in der Ausgabe der Bühne), nicht ganz Schwarz-Weiss; wo das Bild selbst steht (Zeichen am Anfang, das Bild
       // am Ende, ein Zeichen-Zustand), bleibt es unverändert

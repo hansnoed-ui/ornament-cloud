@@ -55,7 +55,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=18");
+  const { bild } = await import("./film.js?v=19");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -174,7 +174,7 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
   // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Logo; mitten in einer anders als ohne; der
   // Schriftzug wird getippt und steht nach 2,6 s
   const logo = await page.evaluate(async () => {
-    const { bild, logoZeichen } = await import("./film.js?v=18");
+    const { bild, logoZeichen } = await import("./film.js?v=19");
     const S = window.__phorma, sz = { ...S.sz, buehne: null, beschriftung: false }, L = sz.logo, e = L.plan.find((x) => x.art >= 0.2 && x.t < L.bis - 1);
     const zeichne = (z, t) => { const c = document.createElement("canvas"); c.width = 270; c.height = 338; const x = c.getContext("2d"); x.setTransform(0.25, 0, 0, 0.25, 0, 0); bild(x, z, t); return c.toDataURL(); };
     const t = e.t + e.dauer * 0.3;
@@ -429,7 +429,7 @@ const zaehlvideo = (page, { sekunden = 12, drehung = 0 } = {}) => page.evaluate(
 }, [sekunden, drehung]).then((b) => Buffer.from(b, "base64"));
 /** das Bild des Films zur Zeit t (halbe Grösse, ohne Beschriftung): die Nummer aus den 3 × 3 Feldern und die Farben links und rechts der Mitte */
 const zaehlerLesen = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=18");
+  const { bild } = await import("./film.js?v=19");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -449,7 +449,7 @@ await check("Irrfahrt: das Stottern zeigt nie Reste des Logos (beide teilen eine
   await page.waitForFunction(() => window.__phorma.ton && window.__phorma.A, null, { timeout: 60_000 });
   await bereit(page);
   const r = await page.evaluate(async () => {
-    const { bild } = await import("./film.js?v=18");
+    const { bild } = await import("./film.js?v=19");
     const S = window.__phorma; S.laeuft = false;
     // die Bühne mit einer einzigen Lage: so stottert jedes Ereignis (sonst fällt es vor einem Sprung aus), und die Leinwand wird gebraucht
     const b = S.buehne, buehne = { bild: (...x) => b.bild(...x), lage: () => 0, get ende() { return b.ende; } };
@@ -730,7 +730,7 @@ await check("Traube: wählbar und gemerkt; schwarz mit roten Perlen, neue Einste
   assert.ok(lagen.n >= 3 && lagen.wechsel < lagen.bilder / 20, `Schnitte im Takt (${lagen.n} Einstellungen, ${lagen.wechsel} Wechsel)`);
   // rot auf Schwarz: der Anteil deutlich roter Punkte (die Fäden sind weiss)
   const rot = (t) => page.evaluate(async (t) => {
-    const { bild } = await import("./film.js?v=18");
+    const { bild } = await import("./film.js?v=19");
     const S = window.__phorma, w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
     x.setTransform(0.5, 0, 0, 0.5, 0, 0); bild(x, { ...S.sz, buehne: S.buehne, beschriftung: false }, t);
     const d = x.getImageData(0, 0, w, h).data; let n = 0;
@@ -812,6 +812,38 @@ await check("Foto als Quelle, Format 9 : 16, 16 : 9 und zurück: ohne Logo steht
     assert.ok(ende.abw <= 3, `${format}: am Ende das Foto exakt (${ende.abw})`);
   }
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
+  await ctx.close();
+});
+
+await check("Auflösung doppelt (Wunsch vom 19. Oktober 2026: Videos aus PHORMA III «neu rendern»): Standbild 2160 × 2700, die Fäden so dunkel wie einfach, gemerkt; ohne H.264 ein klarer Hinweis", async () => {
+  const { ctx, page, fehler, fremd } = await oeffne();
+  await laden(page); await bereit(page);
+  await page.click('[data-aufloesung="2"]');
+  await page.waitForFunction(() => window.__phorma.fotoGross?.width === 2160 && window.__phorma.sz?.faktor === 2 && window.__phorma.buehne?.H === 1350, null, { timeout: 120_000 });
+  await bereit(page);
+  assert.match(await page.textContent("#dauer"), / · 2160 × 2700 · 30 Bilder\/s$/);
+  const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#png")]);
+  const png = readFileSync(await dl.path());
+  assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [2160, 2700], "Standbild in doppelter Auflösung");
+  // dasselbe Bild mitten im Gewebe einfach und doppelt (auf einfach verkleinert): gleich hell – die Fäden werden feiner, nicht heller
+  const h = await page.evaluate(async () => {
+    const { bild } = await import("./film.js?v=19");
+    const S = window.__phorma; S.laeuft = false;
+    const sz = { ...S.sz, buehne: S.buehne, beschriftung: false }, p = sz.zeit.phasen[1], t = (p.von + p.bis) / 2;
+    const zeichne = (k) => { const c = document.createElement("canvas"); c.width = 1080 * k; c.height = 1350 * k; const x = c.getContext("2d"); x.setTransform(k, 0, 0, k, 0, 0); bild(x, sz, t); return c; };
+    const mittel = (c) => { const k = document.createElement("canvas"); k.width = 540; k.height = 675; const x = k.getContext("2d"); x.drawImage(c, 0, 0, 540, 675);
+      const d = x.getImageData(0, 0, 540, 675).data; let s = 0; for (let i = 0; i < d.length; i += 4) s += d[i] + d[i + 1] + d[i + 2]; return s / (d.length / 4) / 3; };
+    return { einfach: mittel(zeichne(1)), doppelt: mittel(zeichne(2)) };
+  });
+  assert.ok(Math.abs(h.einfach - h.doppelt) < 2, `gleich hell (${h.einfach.toFixed(1)} / ${h.doppelt.toFixed(1)})`);
+  // dieses Chromium kodiert kein H.264: in Echtzeit aufgenommen käme die doppelte Auflösung nicht mit – darum ein Hinweis statt eines ruckelnden Videos
+  await page.click("#video");
+  await page.waitForFunction(() => document.getElementById("meldung").classList.contains("fehler"), null, { timeout: 60_000 });
+  assert.match(await page.textContent("#meldung"), /kodiert H\.264 nicht in doppelter Auflösung/);
+  await page.reload();
+  assert.equal(await page.getAttribute('[data-aufloesung="2"]', "aria-pressed"), "true", "gemerkt");
+  await page.click('[data-aufloesung="1"]');
+  assert.deepEqual(fehler.filter((f) => !/H\.264/.test(f)), []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
 
