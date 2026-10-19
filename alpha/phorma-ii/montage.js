@@ -5,9 +5,9 @@
 // Dasselbe Zeichnen schneidet am Schluss das Signet (montageSignet), wenn die Montage der letzte Effekt ist.
 // Zustandslos: jedes Bild hängt nur von der Zeit ab.
 import * as THREE from "three";
-import { anteil, weich, quadMaterial, filmTextur } from "./gemeinsam.js?v=27";
-import { wichtigkeit, montagePlan, montageBei, signetTeil, HOECHSTENS, SIGNET_TAKT } from "./montageplan.js?v=27";
-import { weichzeichnen } from "./analyse.js?v=27";
+import { anteil, weich, quadMaterial, filmTextur } from "./gemeinsam.js?v=28";
+import { wichtigkeit, montagePlan, montageBei, signetTeil, HOECHSTENS, SIGNET_TAKT } from "./montageplan.js?v=28";
+import { weichzeichnen } from "./analyse.js?v=28";
 
 const VERTEX = /* glsl */ `
   attribute vec4 aRect, aQuelle, aZug, aStil;
