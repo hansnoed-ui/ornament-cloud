@@ -1,5 +1,5 @@
 // PHORMA II – Web Worker: rechnet die ganze Bahn des Wachstums (wachstumsim.js), ohne die Seite aufzuhalten, und meldet den Fortschritt.
-import { wachstumBahn } from "./wachstumsim.js?v=20";
+import { wachstumBahn } from "./wachstumsim.js?v=21";
 
 self.onmessage = (e) => {
   const { nr, ...auftrag } = e.data;

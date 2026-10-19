@@ -6,9 +6,9 @@
 //   füllt das Motiv; 03 Farbe – sie nimmt die Farben des Fotos an; 04 Bild – das Foto erscheint unter ihr, sie vergeht, das Foto steht.
 // Bis die Bahn da ist, glimmt nur der Keim; bereit (Promise) sagt, wann sie da ist – Video und Standbild warten darauf.
 import * as THREE from "three";
-import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=20";
-import { phase } from "./ablauf.js?v=20";
-import { wachstumBahn, ACHTEL, BILDER_JE_S } from "./wachstumsim.js?v=20";
+import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=21";
+import { phase } from "./ablauf.js?v=21";
+import { wachstumBahn, ACHTEL, BILDER_JE_S } from "./wachstumsim.js?v=21";
 
 const VERTEX = /* glsl */ `
   attribute vec4 aStrecke;                 // x0, y0, x1, y1 in Punkten der Analyse (y nach unten)
@@ -55,7 +55,7 @@ export function wachstum(g, teil) {
     rgb: rgb ? Uint8ClampedArray.from(rgb) : null, ton: A.ton, dichte: g.test ? 2.2 : g.grob ? 1.4 : 1 };
   let bahn = null, fortschritt = 0, rechner = null;
   const bereit = new Promise((fertig) => {
-    try { rechner = new Worker(new URL("./wachstumrechner.js?v=20", import.meta.url), { type: "module" }); } catch { rechner = null; }
+    try { rechner = new Worker(new URL("./wachstumrechner.js?v=21", import.meta.url), { type: "module" }); } catch { rechner = null; }
     if (!rechner) { setTimeout(() => { bahn = wachstumBahn(auftrag); fortschritt = 1; fertig(); }, 0); return; }   // ohne Worker einmal hier
     rechner.onmessage = (e) => {
       if (e.data.fortschritt !== undefined) { fortschritt = e.data.fortschritt; return; }
