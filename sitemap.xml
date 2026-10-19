@@ -578,4 +578,8 @@
   <url><loc>https://ornament.cloud/social-media/1-geraeteintelligenz-stochastik-und-ordnungsfaehig/</loc><lastmod>2026-10-19</lastmod></url>
   <url><loc>https://ornament.cloud/social-media/2-beitrag-zu-kunst-nervensystem-und-geist/</loc><lastmod>2026-10-19</lastmod></url>
   <!-- SOCIAL:END -->
+  <!-- ART:START (erzeugt aus src/art/werke.json, tools/build-art.mjs) -->
+  <url><loc>https://ornament.cloud/art/phorma-i/</loc><lastmod>2026-10-19</lastmod></url>
+  <url><loc>https://ornament.cloud/art/fictory/</loc><lastmod>2026-10-19</lastmod></url>
+  <!-- ART:END -->
 </urlset>

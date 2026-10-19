@@ -1,4 +1,4 @@
-// Struktur der Website – Browser-Tests (Playwright, Chromium), Neuordnung vom 2. Oktober 2026: das Menü (seit 10. Oktober 2026 vier Kästchen: Apps, Prompts, Web, Zettel; seit 19. Oktober 2026 fünf, dazu Social) auf allen Breiten,
+// Struktur der Website – Browser-Tests (Playwright, Chromium), Neuordnung vom 2. Oktober 2026: das Menü (seit 10. Oktober 2026 vier Kästchen: Apps, Prompts, Web, Zettel; seit 19. Oktober 2026 fünf, dazu Social; seit dem Abend desselben Tags Art statt Web) auf allen Breiten,
 // die Startseite (seit 9. Oktober 2026 Lead und drei Kästen; OMNA COLOR war vom 4. bis 9. Oktober 2026 eingebettet), die Seiten Apps, Masterprompts und Web (mit dem Stellenfeld).
 //   NODE_PATH=$(npm root -g) node tests/struktur.e2e.mjs [Teil eines Prüfungsnamens]
 // Das Stellenfeld braucht WebGL (Chromium bringt SwiftShader mit).
@@ -105,9 +105,9 @@ await check("Rückkanal in der Spalte der Seite, bündig mit dem Fuss, nie am Fe
 });
 
 // ---------- Menü ----------
-await check("Menü: fünf Kästchen (Apps, Prompts, Web, Zettel, Social) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
+await check("Menü: fünf Kästchen (Apps, Prompts, Zettel, Social, Art) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
   const ctx = await browser.newContext();
-  for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/social-media/", "/zu-seiner-zeit/", "/zu-seiner-zeit/en/strophe/17-die-person/", "/alpha/sketchory/", "/alpha/omna-color/"]) {
+  for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/social-media/", "/zu-seiner-zeit/", "/zu-seiner-zeit/en/strophe/17-die-person/", "/alpha/sketchory/", "/alpha/omna-color/", "/art/", "/art/linienbuendel/"]) {
     for (const w of [320, 360, 390, 412, 600, 768, 1024, 1280]) {
       const page = await ctx.newPage();
       await page.addInitScript(() => { try { sessionStorage.setItem("start-animation", "1"); } catch {} });
@@ -115,7 +115,7 @@ await check("Menü: fünf Kästchen (Apps, Prompts, Web, Zettel, Social) mit Sym
       await page.goto(origin + pfad);
       const items = page.locator(".menu-item");
       assert.equal(await items.count(), 5);
-      assert.deepEqual(await items.locator("span").allTextContents(), ["Apps", "Prompts", "Web", "Zettel", "Social"], `${pfad} ${w}: Namen`);
+      assert.deepEqual(await items.locator("span").allTextContents(), ["Apps", "Prompts", "Zettel", "Social", "Art"], `${pfad} ${w}: Namen`);
       const bs = [];
       for (let i = 0; i < 5; i++) { assert.ok(await items.nth(i).isVisible(), `${pfad} ${w}: Kästchen ${i + 1} sichtbar`); bs.push(await box(items.nth(i))); }
       for (let i = 0; i < 5; i++) for (let j = i + 1; j < 5; j++) assert.ok(!sich(bs[i], bs[j]), `${pfad} ${w}: Kästchen ${i + 1} und ${j + 1} überlappen`);
@@ -155,9 +155,9 @@ await check("Menü: das Kästchen der Seite hat einen kräftigeren Rand (aria-cu
     const c = getComputedStyle(e);
     return { rand: c.borderTopColor, schatten: c.boxShadow, schrift: c.color, aktiv: e.getAttribute("aria-current") };
   });
-  for (const [pfad, aktiv, art] of [["/apps/", "Apps", "page"], ["/masterprompts/", "Prompts", "page"], ["/web/", "Web", "page"], ["/portfolio/nebeneinander-nacheinander/", "Apps", "true"], ["/zu-seiner-zeit/", "Zettel", "page"], ["/zu-seiner-zeit/strophe/17-die-person/", "Zettel", "true"], ["/alpha/omna-color/", "Web", "true"], ["/alpha/sketchory/", null, null], ["/news/", null, null]]) {
+  for (const [pfad, aktiv, art] of [["/apps/", "Apps", "page"], ["/masterprompts/", "Prompts", "page"], ["/art/", "Art", "page"], ["/art/linienbuendel/", "Art", "true"], ["/web/", null, null], ["/portfolio/nebeneinander-nacheinander/", "Apps", "true"], ["/zu-seiner-zeit/", "Zettel", "page"], ["/zu-seiner-zeit/strophe/17-die-person/", "Zettel", "true"], ["/alpha/omna-color/", "Apps", "true"], ["/alpha/sketchory/", null, null], ["/news/", null, null]]) {
     await page.goto(origin + pfad);
-    for (const name of ["Apps", "Prompts", "Web", "Zettel"]) {
+    for (const name of ["Apps", "Prompts", "Zettel", "Social", "Art"]) {
       const s = await rand(name);
       if (name === aktiv) {
         assert.equal(s.aktiv, art, `${pfad}: ${name} ist aktiv (${art})`);
@@ -177,10 +177,10 @@ await check("Menü: das Kästchen der Seite hat einen kräftigeren Rand (aria-cu
     }
   };
   await page.goto(origin + "/apps/");
-  await page.getByRole("navigation", { name: "Hauptmenü" }).getByRole("link", { name: "Web" }).hover();
-  await warte(async () => { const s = await rand("Web"); return s.rand === s.schrift; }, "Darüberfahren: Rand in der Schriftfarbe");
+  await page.getByRole("navigation", { name: "Hauptmenü" }).getByRole("link", { name: "Art" }).hover();
+  await warte(async () => { const s = await rand("Art"); return s.rand === s.schrift; }, "Darüberfahren: Rand in der Schriftfarbe");
   await page.mouse.move(5, 500);
-  await warte(async () => { const s = await rand("Web"); return s.rand !== s.schrift; }, "Maus weg: wieder der feine Rand");
+  await warte(async () => { const s = await rand("Art"); return s.rand !== s.schrift; }, "Maus weg: wieder der feine Rand");
   await page.getByRole("navigation", { name: "Ornament Cloud" }).getByRole("link", { name: "Das Dritte Rad" }).focus();
   await page.keyboard.press("Tab");              // Tastaturfokus: erstes Kästchen des Menüs
   const f = await page.evaluate(() => { const e = document.activeElement, c = getComputedStyle(e); return { text: e.textContent, kontur: c.outlineStyle, breite: c.outlineWidth }; });
@@ -210,10 +210,10 @@ await check("Menü: serifenlose Schrift der Seite in mittlerem Gewicht (Wunsch v
   await ctx.close();
 });
 
-await check("Menü führt zu den Seiten: Apps, Prompts, Web und Zettel direkt in den Zettelkasten; auch von ORNA aus", async () => {
+await check("Menü führt zu den Seiten: Apps, Prompts, Art und Zettel direkt in den Zettelkasten; auch von ORNA aus", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 } });
   const page = await ctx.newPage();
-  for (const [name, url, h1] of [["Zettel", /\/zu-seiner-zeit\/$/, "Zettelkasten"], ["Apps", /\/apps\/$/, "Apps"], ["Prompts", /\/masterprompts\/$/, "Masterprompts"], ["Web", /\/web\/$/, "Web"]]) {
+  for (const [name, url, h1] of [["Zettel", /\/zu-seiner-zeit\/$/, "Zettelkasten"], ["Apps", /\/apps\/$/, "Apps"], ["Prompts", /\/masterprompts\/$/, "Masterprompts"], ["Art", /\/art\/$/, "Art"]]) {
     for (const von of ["/zu-seiner-zeit/strophe/17-die-person/", "/alpha/sketchory/", "/news/", "/portfolio/nebeneinander-nacheinander/feld/"]) {
       await page.goto(origin + von);
       await page.getByRole("navigation", { name: "Hauptmenü" }).getByRole("link", { name }).click();
@@ -295,30 +295,30 @@ await check("Videoseite «Mensch, Niklas!» (seit 11. Oktober 2026 nur über die
   await ctx.close();
 });
 
-await check("Web: sieben Karten mit Bild (640 × 800), zuoberst Sketchory (seit 12. Oktober 2026), dann The Fictory, zuunterst die Videos («Mensch, Niklas!» seit 11. Oktober 2026 nicht sichtbar), drei in einer Reihe; die Karten führen zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld; die Stadt steht zurzeit nur auf Alpha (seit 10. Oktober 2026)", async () => {
+await check("Web: sechs Karten mit Bild (640 × 800; OMNA COLOR seit 19. Oktober 2026 auf «Apps»), zuoberst Sketchory (seit 12. Oktober 2026), dann The Fictory, zuunterst die Videos («Mensch, Niklas!» seit 11. Oktober 2026 nicht sichtbar), drei in einer Reihe; die Karten führen zu den Videoseiten, zu OMNA COLOR, zum Dritten Rad und zum Stellenfeld; die Stadt steht zurzeit nur auf Alpha (seit 10. Oktober 2026)", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 } });
   const page = await ctx.newPage();
   const errors = fehler(page);
   await page.goto(origin + "/web/");
   await page.locator("main img").last().scrollIntoViewIfNeeded();
   await page.waitForFunction(() => [...document.querySelectorAll("main img")].every((i) => i.complete && i.naturalWidth > 0));
-  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), Array(7).fill([640, 800]));
+  assert.deepEqual(await page.locator("main img").evaluateAll((els) => els.map((i) => [i.naturalWidth, i.naturalHeight])), Array(6).fill([640, 800]));
   const ys = await page.locator("main .card").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().y)));
-  assert.deepEqual(ys.length, 7);
+  assert.deepEqual(ys.length, 6);
   assert.ok(ys[0] === ys[1] && ys[1] === ys[2], "drei in einer Reihe");
   assert.ok(ys[3] > ys[2] && ys[3] === ys[4] && ys[4] === ys[5], "drei in der zweiten Reihe");
-  assert.ok(ys[6] > ys[5], "die siebte in der dritten Reihe");
-  assert.deepEqual(await page.locator("main .card h2").allTextContents(), ["Sketchory", "The Fictory", "OMNA COLOR", "Das Dritte Rad", "Stellenfeld", "ORNA – Zufällige Begegnungen", "Liebling, ich habe den Poststrukturalismus strukturiert"], "Reihenfolge: zuunterst die Videos");
+  assert.deepEqual(await page.locator("main .card h2").allTextContents(), ["Sketchory", "The Fictory", "Das Dritte Rad", "Stellenfeld", "ORNA – Zufällige Begegnungen", "Liebling, ich habe den Poststrukturalismus strukturiert"], "Reihenfolge: zuunterst die Videos");
   const t = await box(page.locator("main .thumb").first());
   assert.ok(Math.abs(t.h / t.w - 5 / 4) < 0.01, "Bild im Format 4 : 5");
   // die Karte nach ihrer Überschrift wählen (der Text des Dritten Rads nennt auch OMNA COLOR)
   const karte = (titel) => page.locator("main .card").filter({ has: page.getByRole("heading", { name: titel, exact: true }) });
-  await karte("OMNA COLOR").getByRole("link", { name: "Öffnen" }).click();
+  await page.goto(origin + "/apps/");                                // OMNA COLOR seit 19. Oktober 2026 auf «Apps»: «Im Browser spielen»
+  await karte("OMNA COLOR").getByRole("link", { name: "Im Browser spielen" }).click();
   await page.waitForURL(/\/alpha\/omna-color\/$/);
   assert.ok(await page.locator("#wheel").isVisible());
   assert.ok(await page.locator(".seitenweg").isVisible(), "allein auf der Seite mit den Hauptlinks");
   assert.equal(await page.evaluate(() => document.documentElement.classList.contains("eingebettet")), false);
-  await page.goBack();
+  await page.goto(origin + "/web/");
   await karte("Das Dritte Rad").getByRole("link", { name: "Öffnen" }).click();
   await page.waitForURL(/\/alpha\/drittes-rad\/$/);
   await page.waitForFunction(() => window.radGeladen === true);

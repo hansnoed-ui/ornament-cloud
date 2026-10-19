@@ -10,7 +10,7 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
 
-const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Web", "web/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"]];   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
+const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"], ["Art", "art/"]];   // seit 19. Oktober 2026 (abends) ohne «Web» (die Seite bleibt, nur nicht im Menü), dahinter «Art»;   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
 const ORNA = "portfolio/nebeneinander-nacheinander/";
 // Seiten mit dem Menü → Eintrag, der aktiv ist ([Ordner, aria-current]); null: keiner (die Seite hängt an keinem Menüpunkt)
 const MENUSEITEN = {
@@ -20,22 +20,24 @@ const MENUSEITEN = {
   "portfolio/index.html": null,
   "apps/index.html": ["apps/", "page"],
   "masterprompts/index.html": ["masterprompts/", "page"],
-  "web/index.html": ["web/", "page"],
-  "web/orna-erklaervideo/index.html": ["web/", "true"],       // die Videoseite des Erklärvideos zu ORNA (9. Oktober 2026)
-  "web/poststrukturalismus/index.html": ["web/", "true"],
-  "web/mensch-niklas/index.html": ["web/", "true"],          // die Videoseite «Mensch, Niklas!» (7. Oktober 2026)   // die Videoseite gehört zu «Web» (6. Oktober 2026)
+  "web/index.html": null,                                   // «Web» ist seit dem 19. Oktober 2026 nicht mehr im Menü; die Seite und ihre Videoseiten bleiben unter ihren Adressen
+  "web/orna-erklaervideo/index.html": null,
+  "web/poststrukturalismus/index.html": null,
+  "web/mensch-niklas/index.html": null,
   [`${ORNA}index.html`]: ["apps/", "true"],           // ORNA gehört zu den Apps
   [`${ORNA}feld/index.html`]: ["apps/", "true"],
   [`${ORNA}app/index.html`]: ["apps/", "true"],       // die App-Seiten sind Abschriften, ihre Kopfzeile ist ausgeblendet
   [`${ORNA}app/feld/index.html`]: ["apps/", "true"],
-  "alpha/omna-color/index.html": ["web/", "true"],          // OMNA COLOR ist ein Beitrag auf «Web»
+  "alpha/omna-color/index.html": ["apps/", "true"],         // OMNA COLOR ist seit dem 19. Oktober 2026 eine App auf «Apps» (vorher ein Beitrag auf «Web»)
+  "alpha/omna-color/rad/index.html": ["apps/", "true"],     // die Seite der installierten App, eine Abschrift (tools/build-omna-app.mjs)
+  "art/index.html": ["art/", "page"],                       // «Art» (19. Oktober 2026): Übersicht; Werkseiten und «Danke» darunter
   "zu-seiner-zeit/index.html": ["zu-seiner-zeit/", "page"],
   "social-media/index.html": ["social-media/", "page"],      // Social Media (19. Oktober 2026): die Zeitleiste; alle Seiten darunter (Zettel, Register, Redaktion) unter «Social»
 };
 // seit 18. Oktober 2026 steht das Menü auf allen Seiten mit Kopf (Wunsch: «das Menü müsste überall auf der Seite sichtbar sein, auch wenn man in den
 // Beiträgen, Anwendungen etc. ist»): auch im Zettelkasten (jede Seite darin unter «Zettel»), auf den Alpha-Seiten und in OMNA COLOR – nur das Dritte Rad
 // bleibt ohne (Entscheid: «Zettelkasten mit Menü, das Dritte Rad ohne»)
-const aktivVon = (p) => (p in MENUSEITEN ? MENUSEITEN[p] : p.startsWith("zu-seiner-zeit/") ? ["zu-seiner-zeit/", "true"] : p.startsWith("social-media/") ? ["social-media/", "true"] : null);
+const aktivVon = (p) => (p in MENUSEITEN ? MENUSEITEN[p] : p.startsWith("zu-seiner-zeit/") ? ["zu-seiner-zeit/", "true"] : p.startsWith("social-media/") ? ["social-media/", "true"] : p.startsWith("art/") ? ["art/", "true"] : null);
 
 function htmlSeiten(dir = root, skip = new Set(["node_modules", "dist", ".git", "src", "tests", "tools", "vendor"])) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) => skip.has(e.name) || e.name.startsWith(".") ? []
@@ -57,7 +59,7 @@ const jpegMass = (buf) => {            // Breite und Höhe aus dem ersten Rahmen
   throw new Error("kein JPEG");
 };
 
-test("Menü: fünf Kästchen mit Symbol und Namen (Apps, Prompts, Web, Zettel, seit 19. Oktober 2026 Social) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
+test("Menü: fünf Kästchen mit Symbol und Namen (Apps, Prompts, Zettel, Social, Art; bis 19. Oktober 2026 mit Web statt Art) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
   const mitKopf = htmlSeiten().filter((p) => lies(p).includes('<nav class="seitenweg"') && !p.startsWith("alpha/drittes-rad/")).sort();
   assert.ok(mitKopf.length > 580, `alle Seiten mit Kopf (${mitKopf.length})`);
   for (const datei of mitKopf) {
@@ -69,7 +71,7 @@ test("Menü: fünf Kästchen mit Symbol und Namen (Apps, Prompts, Web, Zettel, s
     assert.ok(!/data-icon|menu-sub|menu-title/.test(nav[1]), `${datei}: keine animierten Symbole, keine Untertitel`);
     const eintraege = [...nav[1].matchAll(/<a class="menu-item" href="([^"]+)"(?: aria-current="(page|true)")?>(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>([^<]+)<\/span><\/a>/g)];
     assert.equal(eintraege.length, MENU.length, `${datei}: fünf Kästchen mit verborgenem Symbol und Namen`);
-    assert.deepEqual(eintraege.map((e) => e[4]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Apps, Prompts, Web, Zettel, Social (Zettel zuletzt seit 10. Oktober 2026, Social dahinter seit 19. Oktober 2026)`);
+    assert.deepEqual(eintraege.map((e) => e[4]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Apps, Prompts, Zettel, Social, Art (Web seit 19. Oktober 2026 nicht mehr im Menü, Art zuletzt)`);
     for (const [i, e] of eintraege.entries()) {
       const basis = html.match(/<base href="([^"]+)"/)?.[1], ziel = new URL(e[1], new URL(basis ?? "", new URL(datei, root)));   // die Werkbank steht mit <base href="../">
       assert.equal(ziel.pathname, new URL(MENU[i][1], root).pathname, `${datei}: ${MENU[i][0]} führt nach ${MENU[i][1]}`);
@@ -148,7 +150,7 @@ test("Startseite: kein sichtbarer Titel und kein Lead; sie führt zu einem zufä
   assert.match(html, /<footer class="site-footer">[\s\S]*<p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail\.com">hansnoed@gmail\.com<\/a><\/p>[\s\S]*<\/footer>/, "Kontakt im Fuss");
   assert.deepEqual([...html.matchAll(/<iframe [^>]*src="([^"]+)"/g)], [], "kein Rahmen mehr (OMNA COLOR stand vom 10. bis 18. Oktober 2026 hier)");
   assert.ok(!html.includes("stellenfeld"), "das Stellenfeld ist nicht auf der Startseite");
-  assert.ok(existsSync(new URL("alpha/omna-color/index.html", root)) && lies("web/index.html").includes('<h2>OMNA COLOR</h2>'), "OMNA COLOR bleibt unter seiner Adresse und als Beitrag auf «Web»");
+  assert.ok(existsSync(new URL("alpha/omna-color/index.html", root)) && lies("apps/index.html").includes('<h2>OMNA COLOR</h2>'), "OMNA COLOR bleibt unter seiner Adresse, seit 19. Oktober 2026 als App auf «Apps»");
   assert.ok(!/<article|class="card|class="grid/.test(html), "keine Beiträge und keine Karten auf der Startseite");
   // Seit dem 5. Oktober 2026 steht unter dem Fuss der Rückkanal (Anmeldung für die Mail); er ist das Einzige
   // ausserhalb von <main> und bringt die einzige Überschrift mit. Sonst bleibt die Seite ohne Überschriften.
@@ -233,9 +235,9 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 });
 
 const SEITEN = {
-  apps: { titel: "Apps", karten: [["PHORMA I", "../alpha/bildfragmentieren/app/"], ["The Fictory", "../alpha/the-fictory/app/"], ["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"]] },   // The Fictory vom 11. Oktober 2026 an zuerst, seit 17. Oktober 2026 PHORMA I
+  apps: { titel: "Apps", karten: [["PHORMA I", "../alpha/bildfragmentieren/app/"], ["The Fictory", "../alpha/the-fictory/app/"], ["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["ORMA", "../alpha/orma/"], ["OMNA COLOR", "../alpha/omna-color/app/"]] },   // OMNA COLOR seit 19. Oktober 2026 als letzte   // The Fictory vom 11. Oktober 2026 an zuerst, seit 17. Oktober 2026 PHORMA I
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
-  web: { titel: "Web", karten: [["Sketchory", "../alpha/sketchory/"], ["The Fictory", "../alpha/the-fictory/"], ["OMNA COLOR", "../alpha/omna-color/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"]] },
+  web: { titel: "Web", karten: [["Sketchory", "../alpha/sketchory/"], ["The Fictory", "../alpha/the-fictory/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"]] },
 };
 
 test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und Eintrag in der Sitemap", () => {
@@ -256,11 +258,15 @@ test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und 
   }
 });
 
-test("Apps: PHORMA I (seit 17. Oktober 2026, zuerst), The Fictory, ORNA und ORMA als Beiträge, in dieser Reihenfolge, PHORMA I, The Fictory und ORMA als Alpha gekennzeichnet", () => {
+test("Apps: PHORMA I (seit 17. Oktober 2026, zuerst), The Fictory, ORNA, ORMA und OMNA COLOR (seit 19. Oktober 2026, zuletzt) als Beiträge, in dieser Reihenfolge, alle ausser ORNA als Alpha gekennzeichnet", () => {
   const k = karten(lies("apps/index.html"));
   assert.deepEqual(k.map((x) => [x.titel, x.ziel]), SEITEN.apps.karten);
-  assert.ok(k[0].tags.includes("Alpha") && k[1].tags.includes("Alpha") && k[3].tags.includes("Alpha") && !k[2].tags.includes("Alpha"));
-  assert.ok(k.slice(2).every((x) => /data-icon="rad"/.test(x.html)), "ORNA und ORMA zeigen das drehende Rad");
+  assert.ok(k[0].tags.includes("Alpha") && k[1].tags.includes("Alpha") && k[3].tags.includes("Alpha") && k[4].tags.includes("Alpha") && !k[2].tags.includes("Alpha"));
+  assert.ok(k.slice(2, 4).every((x) => /data-icon="rad"/.test(x.html)), "ORNA und ORMA zeigen das drehende Rad");
+  // OMNA COLOR (Wunsch vom 19. Oktober 2026: «sowohl als APP wie als Web-Anwendung … bei den APPs (als letzte)»): die App-Seite und die Web-Anwendung
+  assert.match(k[4].html, /<img src="\.\.\/assets\/vorschau-omna-color-app\.jpg" alt="" width="640" height="800" loading="lazy">/);
+  assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-omna-color-app.jpg", root))), [640, 800]);
+  assert.deepEqual([...k[4].html.matchAll(/<a class="link[^"]*" href="([^"]+)"/g)].map((m) => m[1]), ["../alpha/omna-color/app/", "../alpha/omna-color/"], "Als App, im Browser spielen");
   // PHORMA I: eine Kristallansicht aus der Anwendung als Beitragsbild (tools/phorma-bilder.mjs), dazu der Satz vom 17. Oktober 2026
   assert.match(k[0].html, /<img src="\.\.\/assets\/vorschau-phorma-i\.jpg" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-i.jpg", root))), [640, 800]);
@@ -271,7 +277,7 @@ test("Apps: PHORMA I (seit 17. Oktober 2026, zuerst), The Fictory, ORNA und ORMA
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-the-fictory-app.jpg", root))), [640, 800]);
   assert.ok(k[1].tags.includes("App") && /installieren/.test(k[1].html) && /ohne Netz/.test(k[1].html));
   assert.match(k[3].html, /class="thumb split-invert"/, "ORMA: vertikal geteilt, rechts invers (REGELN §14)");
-  assert.match(lies("apps/index.html"), /<section class="grid grid--stapel grid--paare" aria-label="Apps">/, "vier Karten zwei mal zwei");
+  assert.match(lies("apps/index.html"), /<section class="grid grid--stapel grid--paare" aria-label="Apps">/, "zwei Karten je Reihe");
 });
 
 test("Masterprompts: die vier Prüfraster als Beiträge, in der Reihenfolge der Alpha-Übersicht, alle als Alpha gekennzeichnet", () => {
@@ -288,12 +294,12 @@ test("Masterprompts: die vier Prüfraster als Beiträge, in der Reihenfolge der 
   assert.ok(k.every((x) => /<svg [^>]*role="img" aria-label="[^"]{20,}"/.test(x.html)), "jede Karte trägt eine gezeichnete Vorschau mit Beschreibung");
 });
 
-test("Web: Sketchory und The Fictory zuoberst, OMNA COLOR und Das Dritte Rad (Alpha), das Stellenfeld, dann zuunterst die Videos: das Erklärvideo zu ORNA und «Liebling …» («Mensch, Niklas!» seit 11. Oktober 2026 nicht sichtbar), alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs; «Die Paradoxie der Stadt» zurzeit nur auf Alpha", () => {
+test("Web (seit 19. Oktober 2026 nicht im Menü): Sketchory und The Fictory zuoberst, Das Dritte Rad (Alpha; OMNA COLOR bis 19. Oktober 2026, seither auf «Apps»), das Stellenfeld, dann zuunterst die Videos: das Erklärvideo zu ORNA und «Liebling …» («Mensch, Niklas!» seit 11. Oktober 2026 nicht sichtbar), alle als Beiträge mit Bild (4 : 5); die Bilder der drei Werke erzeugt tools/start-og.mjs; «Die Paradoxie der Stadt» zurzeit nur auf Alpha", () => {
   const html = lies("web/index.html");
   const alle = karten(html);
   assert.deepEqual(alle.map((x) => [x.titel, x.ziel]), SEITEN.web.karten);
   // Wunsch vom 9. Oktober 2026: die beiden Videos stehen zuunterst, «Mensch, Niklas!» als letztes
-  const [sk, f] = alle, k = alle.slice(2, 5), [o, v] = alle.slice(5);
+  const [sk, f] = alle, k = alle.slice(2, 4), [o, v] = alle.slice(4);
   // «Sketchory» (12. Oktober 2026) zuoberst, Alpha, Bild aus tools/sketchory-og.mjs
   assert.ok(sk.tags.includes("Alpha") && sk.tags.includes("Prototyp"));
   assert.match(sk.html, /<img src="\.\.\/assets\/vorschau-sketchory\.jpg" alt="" width="640" height="800" loading="lazy">/);
@@ -332,10 +338,10 @@ test("Web: Sketchory und The Fictory zuoberst, OMNA COLOR und Das Dritte Rad (Al
   const vorschau = readFileSync(new URL("assets/vorschau-poststrukturalismus.jpg", root));
   assert.deepEqual(jpegMass(vorschau), [640, 800], "Vorschaubild 640 × 800");
   assert.ok(vorschau.length < 150_000, `Vorschaubild ${vorschau.length} Byte, unter 150 KB`);
-  assert.ok(k.slice(0, 2).every((x) => x.tags.includes("Alpha") && x.tags.includes("Prototyp")), "die beiden Räder sind Alpha");
-  assert.ok(!k[2].tags.includes("Alpha"), "das Stellenfeld liegt nicht im Alpha-Bereich");
+  assert.ok(k[0].tags.includes("Alpha") && k[0].tags.includes("Prototyp"), "das Dritte Rad ist Alpha");
+  assert.ok(!k[1].tags.includes("Alpha"), "das Stellenfeld liegt nicht im Alpha-Bereich");
   const erzeuger = lies("tools/start-og.mjs");
-  for (const [i, datei] of ["vorschau-omna-color.jpg", "vorschau-drittes-rad.jpg", "vorschau-stellenfeld.jpg"].entries()) {
+  for (const [i, datei] of ["vorschau-drittes-rad.jpg", "vorschau-stellenfeld.jpg"].entries()) {
     assert.match(k[i].html, new RegExp(`<img src="\\.\\./assets/${datei}" alt="" width="640" height="800" loading="lazy">`));
     const bild = readFileSync(new URL(`assets/${datei}`, root));
     assert.deepEqual(bild.subarray(0, 3), Buffer.from([0xff, 0xd8, 0xff]), `${datei}: JPEG`);
