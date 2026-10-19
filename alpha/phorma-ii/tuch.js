@@ -6,9 +6,9 @@
 //   glatt da, das Licht wird zum Foto.
 // Bis die Bahn da ist, liegt das Tuch flach; bereit (Promise) sagt, wann sie da ist – Video und Standbild warten darauf.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, ABSTAND } from "./gemeinsam.js?v=29";
-import { phase } from "./ablauf.js?v=29";
-import { tuchBahn, gitter, BILDER_JE_S, TEILSCHRITTE } from "./tuchsim.js?v=29";
+import { anteil, weich, inOut, kamera, ABSTAND } from "./gemeinsam.js?v=30";
+import { phase } from "./ablauf.js?v=30";
+import { tuchBahn, gitter, BILDER_JE_S, TEILSCHRITTE } from "./tuchsim.js?v=30";
 
 export function tuch(g, teil) {
   const { renderer, A, B, H } = g, a = B / H;
@@ -21,7 +21,7 @@ export function tuch(g, teil) {
   const auftrag = { teil: { erst: teil.erst, vorher: teil.vorher, phasen: teil.phasen }, a, nx, tiefe: Float32Array.from(A.tiefe), tw: A.w, th: A.h };
   let rechner = null;
   const bereit = new Promise((fertig) => {
-    try { rechner = new Worker(new URL("./tuchrechner.js?v=29", import.meta.url), { type: "module" }); } catch { rechner = null; }
+    try { rechner = new Worker(new URL("./tuchrechner.js?v=30", import.meta.url), { type: "module" }); } catch { rechner = null; }
     if (!rechner) { setTimeout(() => { bahn = tuchBahn(auftrag); fortschritt = 1; fertig(); }, 0); return; }   // ohne Worker einmal hier
     rechner.onmessage = (e) => {
       if (e.data.fortschritt !== undefined) { fortschritt = e.data.fortschritt; return; }
@@ -91,7 +91,7 @@ export function tuch(g, teil) {
       const aktiv = (teil.erst ? weich(anteil(tau, 0, 0.8)) : 1) * (Bp ? 1 - weich(anteil(tau, Bp[0] + 0.6, Bp[1])) : 1);
       return { aktiv, bloom: 0.3, saum: 0.0022, ende };
     },
-    bereit, fortschritt: () => fortschritt, vorab: { szenen: [[szene, kam]], materialien: [] },
+    bereit, fortschritt: () => fortschritt, gerechnetBis: () => (bahn ? Infinity : 0), vorab: { szenen: [[szene, kam]], materialien: [] },
     zaehler(tau) { const z = (x) => x.toLocaleString("de-CH"); return `punkte ${z(N)} · teilschritte ${z(Math.round(tau * TEILSCHRITTE))}${bahn ? "" : ` · rechnet ${Math.round(fortschritt * 100)} %`}`; },
     entsorgen() { rechner?.terminate(); geo.dispose(); mat.dispose(); sonne.shadow.map?.dispose(); },
   };

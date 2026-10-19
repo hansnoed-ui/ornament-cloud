@@ -57,7 +57,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=29");
+  const { bild } = await import("./film.js?v=30");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -232,7 +232,7 @@ const zaehlvideo = (page, { sekunden = 16 } = {}) => page.evaluate(async (sekund
 /** die Nummer des Zählvideos in einem Bild (quelle: "film" – das Bild des Films zur Zeit t, wie der Export; "foto" – das Standbild; "jetzt" – das
  *  laufende Bild, das die Bühne zur Zeit t allen Effekten gibt) */
 const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) => {
-  const { bild } = await import("./film.js?v=29");
+  const { bild } = await import("./film.js?v=30");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false }, w = S.mass[0] / 2, h = S.mass[1] / 2;
   const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -268,6 +268,8 @@ await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am End
   const z2 = (await messe(page, 0)).zeit, d2 = z2.abschnitt.bis - z2.abschnitt.von;
   assert.equal(await nummer(page, 0, "foto"), Math.round(d2 * 30), "neues Standbild am Ende des Wachstums");
   assert.ok((await messe(page, z2.abschnitt.bis - 1 / 30)).abw <= 3, "Wachstum endet exakt beim Standbild");
+  // die Vorschau wartet nur, solange das Wachstum rechnet (Rückmeldung vom 19. Oktober 2026: «Wachstum stockt wieder gegen Ende der Sequenz»)
+  assert.equal(await page.evaluate(() => window.__phorma.buehne.gerechnetBis(window.__phorma.sz.zeit) === Infinity), true, "fertig gerechnet: keine Grenze mehr");
   // seit dem 19. Oktober 2026 läuft es durch alle Effekte (Rückmeldung: «bleibt ständig ein "altes" Video in den ersten drei Schritten hängen»):
   // auch die Kette ohne Montage und Wachstum kommt am Ende beim Standbild an, nicht beim ersten Bild
   await page.click('[data-wahl="physarum+tiefe+tuch"]');

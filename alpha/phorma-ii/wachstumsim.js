@@ -5,7 +5,7 @@
 // ist Licht), dunkel weit, an Kanten enger – so zeichnet sie das Bild.
 //   Einheit: ein Punkt der Analyse (halbe Filmgrösse). Einmal ganz von vorn bis zum Ende gerechnet, je Filmbild gespeichert (Int16, 1/8 Punkt);
 //   danach steht die Linie. Wiederholbar: derselbe Auftrag ergibt dieselbe Bahn.
-import { phase } from "./ablauf.js?v=29";
+import { phase } from "./ablauf.js?v=30";
 
 export const BILDER_JE_S = 30, ACHTEL = 8;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
