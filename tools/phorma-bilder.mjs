@@ -3,6 +3,7 @@
 // Motiv: der Glaskörper aus der Verwandlung (Effekt «Körper», 5,4 s: die Geode mit den gebrochenen Figuren des Beispielbilds), gerendert von der
 // Anwendung selbst (alpha/bildfragmentieren/), in voller Grösse, ohne Beschriftung und ohne Signet, auf Schwarz.
 //   assets/vorschau-phorma-i.jpg                      640 × 800   Beitragsbild der Karte auf «Apps»: die Kristallansicht im Hochformat des Films
+//   assets/vorschau-phorma-i-2x.jpg                  1280 × 1600  dasselbe doppelt so gross, für Bildschirme mit hoher Dichte (srcset; seit 19. Oktober 2026)
 //   alpha/bildfragmentieren/app/og-phorma-i.jpg      1200 × 630  Vorschaukachel zum Teilen (Open Graph, X) für die Seite app/
 //   alpha/bildfragmentieren/icons/icon-512.png             512 × 512   Android, Installation («any»)
 //   alpha/bildfragmentieren/icons/icon-192.png             192 × 192   Android, Browser
@@ -25,6 +26,9 @@ const base = `http://localhost:${server.address().port}/`;
 const browser = await playwright.chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 const ZEIT = 5.4;   // Sekunde im Effekt «Körper»: die Geode, gross und ruhig
+// doppelt so gross wie der Film gerechnet und erst dann verkleinert (seit 19. Oktober 2026, Wunsch: «ein qualitativ besseres Beitragsbild für
+// PHORMA I»): die Kanten des Glases werden scharf, die feinen Linien rauschen nicht mehr
+const GROSS = 2;
 
 // 1. die Kristallansicht: Beispielbild laden, nur «Körper» wählen, das Bild zur Zeit ZEIT in voller Grösse zeichnen
 const kristall = await (async () => {
@@ -35,13 +39,13 @@ const kristall = await (async () => {
   await page.setInputFiles("#datei", { name: "beispiel.jpg", mimeType: "image/jpeg", buffer: readFileSync(pfad("../alpha/bildfragmentieren/beispiel.jpg")) });
   await page.waitForFunction(() => window.__bildfragmentieren?.sz?.raum?.art === "koerper", null, { timeout: 180000 });
   const marke = readFileSync(pfad("../alpha/bildfragmentieren/app.js"), "utf8").match(/szene\.js\?v=(\d+)/)[1];
-  const url = await page.evaluate(async ({ t, marke }) => {
+  const url = await page.evaluate(async ({ t, marke, gross }) => {
     const { szene, bild } = await import(`./szene.js?v=${marke}`);
     const S = window.__bildfragmentieren;
-    const sz = szene(S.daten, { breite: S.mass[0], hoehe: S.mass[1], foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, ablauf: S.ablauf, raum: S.raum, signet: false });
+    const sz = szene(S.daten, { breite: S.mass[0] * gross, hoehe: S.mass[1] * gross, foto: S.foto, leinwand: (w, h) => new OffscreenCanvas(w, h), beschriftung: false, ablauf: S.ablauf, raum: S.raum, signet: false });
     const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe; bild(c.getContext("2d"), sz, t);
     return c.toDataURL("image/png");
-  }, { t: ZEIT, marke });
+  }, { t: ZEIT, marke, gross: GROSS });
   await page.close();
   return url;
 })();
@@ -92,8 +96,8 @@ await symbol(180, 0.86, "../alpha/bildfragmentieren/icons/apple-touch-icon.png")
 await symbol(32, 0.98, "../alpha/bildfragmentieren/icons/favicon-32.png");
 
 // 3. Beitragsbild für «Apps»: die Kristallansicht im Hochformat des Films (4:5), der Kristall in der Mitte
-{
-  const page = await browser.newPage({ viewport: { width: 640, height: 800 }, deviceScaleFactor: 1 });
+for (const [dichte, datei, qualitaet] of [[1, "vorschau-phorma-i.jpg", 90], [2, "vorschau-phorma-i-2x.jpg", 86]]) {
+  const page = await browser.newPage({ viewport: { width: 640, height: 800 }, deviceScaleFactor: dichte });
   const s = 640 * 0.84 / groesse;
   await page.setContent(`<!DOCTYPE html><html><head><style>
     html, body { margin: 0; width: 640px; height: 800px; overflow: hidden; background: #000; }
@@ -101,8 +105,8 @@ await symbol(32, 0.98, "../alpha/bildfragmentieren/icons/favicon-32.png");
     img { position: absolute; left: ${320 - mitte[0] * s}px; top: ${400 - mitte[1] * s}px; width: ${rahmen.b * s}px; height: ${rahmen.h * s}px; mix-blend-mode: lighten; }
   </style></head><body><div class="licht"></div><img src="${kristall}"></body></html>`);
   await page.waitForTimeout(300);
-  const out = pfad("../assets/vorschau-phorma-i.jpg");
-  await page.screenshot({ path: out, type: "jpeg", quality: 84 });
+  const out = pfad(`../assets/${datei}`);
+  await page.screenshot({ path: out, type: "jpeg", quality: qualitaet });
   console.log("geschrieben:", out);
   await page.close();
 }

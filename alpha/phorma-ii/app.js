@@ -1,10 +1,10 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=28";
-import { szene, bild, standbildZeit } from "./film.js?v=28";
-import { videoPlan, videoStelleBei, HOECHSTENS } from "./filmquelle.js?v=28";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=28";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=29";
+import { szene, bild, standbildZeit } from "./film.js?v=29";
+import { videoPlan, videoStelleBei, HOECHSTENS } from "./filmquelle.js?v=29";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=29";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
 const $ = (id) => document.getElementById(id);
@@ -149,7 +149,7 @@ const sekunden = (s) => `${s.toFixed(1).replace(".", ",")} s`;
 function filmWeg() {
   if (!S.film) return;
   S.film.nr++; S.film.spur?.entsorgen();
-  const el = $("film"); if (el.src.startsWith("blob:")) URL.revokeObjectURL(el.src); el.removeAttribute("src"); el.load?.();
+  const el = $("quellfilm"); if (el.src.startsWith("blob:")) URL.revokeObjectURL(el.src); el.removeAttribute("src"); el.load?.();
   S.film = null; $("film-start-box").hidden = true;
 }
 async function videoLaden(datei) {
@@ -158,7 +158,7 @@ async function videoLaden(datei) {
   ladenZeigen("Video wird geöffnet …", 0, "Schritt 1 von 3");
   notiz(`Video gewählt (${Math.round((datei.size ?? 0) / 1024)} kB)`);
   melden("Video wird geöffnet …");
-  const el = $("film");
+  const el = $("quellfilm");
   el.src = URL.createObjectURL(datei);
   try {
     await new Promise((ok, nein) => { el.onloadedmetadata = ok; el.onerror = () => nein(new Error("der Browser kann dieses Video nicht öffnen")); setTimeout(() => nein(new Error("das Video lädt nicht")), 20_000); });
@@ -241,7 +241,7 @@ async function filmVorbereiten(sz, t, p) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=28", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=29", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -283,7 +283,7 @@ async function kiAnwenden() {
     const nr = S.rechnen;
     try {
       notiz("Tiefe mit KI wird vorbereitet");
-      kiModul ??= await import("./tiefe-ki.js?v=28");
+      kiModul ??= await import("./tiefe-ki.js?v=29");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m), { telefon: grob, notiz });
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
@@ -309,7 +309,7 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=28");
+    buehneModul ??= await import("./buehne.js?v=29");
     if (S.buehneSchluessel !== schluessel) return;
     notiz(`Bühne wird gebaut: ${S.ablauf}`);
     S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz, film: filmFuerBuehne(), nahtlos,
@@ -544,7 +544,7 @@ $("video").addEventListener("click", async () => {
 
 async function mitWebCodecs(cfg, sz) {
   // die Bilder gehen gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
-  const p = proben(), { mp4Schreiber } = await import("./mp4.js?v=28");
+  const p = proben(), { mp4Schreiber } = await import("./mp4.js?v=29");
   melden(p > 1 ? `Video wird gerechnet, mit Bewegungsunschärfe (${p} Proben je Bild) …` : "Video wird gerechnet …");
   const c = leinwand(sz.breite, sz.hoehe), ctx = c.getContext("2d", { alpha: false });
   const n = sz.zeit.bilder, datei = mp4Schreiber({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, codec: cfg.codec, bilder: n });
@@ -602,11 +602,13 @@ async function mitRecorder(sz) {
 }
 
 function zeigen({ blob, endung, art }, sz, ms) {
-  if (S.film) URL.revokeObjectURL(S.film);
-  S.film = URL.createObjectURL(blob);
-  $("film").src = S.film;
+  // das fertige Video: eigener Name (S.film ist das geladene Video, #quellfilm sein Element; bis 19. Oktober 2026 hiessen beide gleich – das fertige
+  // Video landete im versteckten Element und das sichtbare blieb leer, Rückmeldung: «Das Video wird nach dem Rendern nicht angezeigt»)
+  if (S.ergebnis) URL.revokeObjectURL(S.ergebnis);
+  S.ergebnis = URL.createObjectURL(blob);
+  $("film").src = S.ergebnis;
   $("film").style.aspectRatio = `${sz.breite} / ${sz.hoehe}`;
-  $("laden").href = S.film; $("laden").download = dateiname(new Date(), endung);
+  $("laden").href = S.ergebnis; $("laden").download = dateiname(new Date(), endung);
   $("film-info").textContent = `${sz.breite} × ${sz.hoehe} · ${sz.zeit.dauer.toFixed(1).replace(".", ",")} s · ${(blob.size / 1e6).toFixed(1).replace(".", ",")} MB · ${art} · gerechnet in ${(ms / 1000).toFixed(1).replace(".", ",")} s`;
   $("ergebnis").hidden = false;
   melden("Fertig. Prüfe das Video und lade es herunter.");

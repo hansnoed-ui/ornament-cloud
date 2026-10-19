@@ -6,9 +6,9 @@
 //   glatt da, das Licht wird zum Foto.
 // Bis die Bahn da ist, liegt das Tuch flach; bereit (Promise) sagt, wann sie da ist – Video und Standbild warten darauf.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, ABSTAND } from "./gemeinsam.js?v=28";
-import { phase } from "./ablauf.js?v=28";
-import { tuchBahn, gitter, BILDER_JE_S, TEILSCHRITTE } from "./tuchsim.js?v=28";
+import { anteil, weich, inOut, kamera, ABSTAND } from "./gemeinsam.js?v=29";
+import { phase } from "./ablauf.js?v=29";
+import { tuchBahn, gitter, BILDER_JE_S, TEILSCHRITTE } from "./tuchsim.js?v=29";
 
 export function tuch(g, teil) {
   const { renderer, A, B, H } = g, a = B / H;
@@ -21,7 +21,7 @@ export function tuch(g, teil) {
   const auftrag = { teil: { erst: teil.erst, vorher: teil.vorher, phasen: teil.phasen }, a, nx, tiefe: Float32Array.from(A.tiefe), tw: A.w, th: A.h };
   let rechner = null;
   const bereit = new Promise((fertig) => {
-    try { rechner = new Worker(new URL("./tuchrechner.js?v=28", import.meta.url), { type: "module" }); } catch { rechner = null; }
+    try { rechner = new Worker(new URL("./tuchrechner.js?v=29", import.meta.url), { type: "module" }); } catch { rechner = null; }
     if (!rechner) { setTimeout(() => { bahn = tuchBahn(auftrag); fortschritt = 1; fertig(); }, 0); return; }   // ohne Worker einmal hier
     rechner.onmessage = (e) => {
       if (e.data.fortschritt !== undefined) { fortschritt = e.data.fortschritt; return; }
@@ -78,11 +78,12 @@ export function tuch(g, teil) {
       const ein = teil.erst ? weich(anteil(tau, 0.2, 1.8)) : 1, foto = Bp ? inOut(anteil(tau, Bp[0] + 0.8, Bp[1] - 0.4)) : 0;
       const start = teil.erst ? 0 : 1 - weich(anteil(tau, 0, teil.vorher === "tiefe" ? 0.9 : 0.6));
       const licht = ein * (1 - foto) * (1 - start);
-      sonne.intensity = 3.4 * licht; gegen.intensity = 2.0 * licht; himmel.intensity = 0.35 * licht;
+      const b = g.belichtung;   // helle Fotos: weniger Licht (buehne.js)
+      sonne.intensity = 3.4 * licht * b; gegen.intensity = 2.0 * licht * b; himmel.intensity = 0.35 * licht * b;
       // die Kamera tritt zurück, solange das Tuch weht, damit es ganz im Bild bleibt, und kommt im Bild genau an ihren Platz
       const zurueck = 0.24 * weich(anteil(tau, 0.3, 2.2)) * (Bp ? 1 - inOut(anteil(tau, Bp[0], Bp[0] + 2.2)) : 1);
       kam.position.set(0, 0.04 * zurueck / 0.24, ABSTAND * (1 + zurueck)); kam.lookAt(0, 0, 0);
-      mat.color.setScalar(licht); mat.emissiveIntensity = Math.max(foto, start); mat.sheen = licht;
+      mat.color.setScalar(licht); mat.emissiveIntensity = Math.max(foto, start); mat.sheen = licht * b;
       renderer.setRenderTarget(rt); renderer.setClearColor(0x000000, 1); renderer.clear(true, true, true);
       renderer.render(szene, kam);
       let ende = teil.vonFoto ? 1 - weich(anteil(tau, 0, 0.3)) : 0;

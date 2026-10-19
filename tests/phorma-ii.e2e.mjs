@@ -57,7 +57,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=28");
+  const { bild } = await import("./film.js?v=29");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -232,7 +232,7 @@ const zaehlvideo = (page, { sekunden = 16 } = {}) => page.evaluate(async (sekund
 /** die Nummer des Zählvideos in einem Bild (quelle: "film" – das Bild des Films zur Zeit t, wie der Export; "foto" – das Standbild; "jetzt" – das
  *  laufende Bild, das die Bühne zur Zeit t allen Effekten gibt) */
 const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) => {
-  const { bild } = await import("./film.js?v=28");
+  const { bild } = await import("./film.js?v=29");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false }, w = S.mass[0] / 2, h = S.mass[1] / 2;
   const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -313,6 +313,9 @@ await check("Video über WebCodecs (Ersatz-Encoder): MP4 mit allen Bildern in 4 
   const bilder = await page.evaluate(() => window.__phorma.sz.zeit.bilder);
   await page.click("#video");
   await page.waitForSelector("#ergebnis:not([hidden])", { timeout: 600_000 });
+  // das fertige Video steht im sichtbaren Spieler (bis 19. Oktober 2026 landete es im versteckten Element des geladenen Videos: «Das Video wird nach
+  // dem Rendern nicht angezeigt»)
+  assert.equal(await page.evaluate(() => { const v = document.querySelector("#ergebnis video"); return v.src.startsWith("blob:") && v.src === document.getElementById("laden").href && !document.getElementById("quellfilm").src; }), true, "das fertige Video im Spieler");
   // der Ersatz-Encoder liest die Bilder nicht: die Grafik (SwiftShader, auf dem Prozessor) hängt dann weit hinterher; einmal Pixel lesen wartet sie ab
   await page.evaluate(() => { const gl = window.__phorma.buehne.canvas.getContext("webgl2"); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4)); });
   const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#laden")]);
