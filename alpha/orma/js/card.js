@@ -13,7 +13,10 @@ export const CARD_COLORS = { bg: "#ffffff", ink: "#000000", muted: "#6f6f6f", li
 // Herkunft: die bestehende, veröffentlichte Seite des Werks (keine eigene ORMA-Adresse)
 export const ORIGIN = "ornament.cloud · Nebeneinander, Nacheinander";
 
-const AUFTRAG_LABEL = { beispiel: "Ein Beispiel finden", einwand: "Einen Einwand finden", gestaltung: "Etwas daraus machen" };
+// Sprache (js/sprache.js, nur im Browser): T(deutsch) gibt auf Englisch die Übersetzung; in Node (Tests) den deutschen Text
+const T = (s, ...a) => (typeof window !== "undefined" && window.sprache ? window.sprache.t(s, ...a) : s);
+const AUFTRAG_LABEL_DE = { beispiel: "Ein Beispiel finden", einwand: "Einen Einwand finden", gestaltung: "Etwas daraus machen" };
+const AUFTRAG_LABEL = new Proxy(AUFTRAG_LABEL_DE, { get: (o, k) => (k in o ? T(o[k]) : undefined) });
 
 /** Text in Zeilen zerlegen, die höchstens `max` breit sind; überlange Wörter werden getrennt */
 export function wrap(text, font, max, measure) {
@@ -62,9 +65,9 @@ export function layoutCard(data, opts, measure) {
   gap(40);
   text(data.question, `40px ${SERIF}`, 40, CARD_COLORS.ink, 1.35);
 
-  const who = k => (data.labels && data.labels[k]) || ((opts.names && data.names[k]) ? data.names[k] : `Person ${k.toUpperCase()}`);
-  const answerLabel = k => (data.labels ? data.labels[k] : `Zuerst ${who(k)}`);
-  const say = a => (a.oral ? "hat mündlich geantwortet." : a.text.trim() || "–");
+  const who = k => (data.labels && data.labels[k]) || ((opts.names && data.names[k]) ? data.names[k] : `${T("Person")} ${k.toUpperCase()}`);
+  const answerLabel = k => (data.labels ? data.labels[k] : `${T("Zuerst")} ${who(k)}`);
+  const say = a => (a.oral ? T("hat mündlich geantwortet.") : a.text.trim() || "–");
   const block = (label, body) => {
     text(label, `600 24px ${SANS}`, 24, CARD_COLORS.muted, 1.4);
     gap(6);
@@ -75,13 +78,13 @@ export function layoutCard(data, opts, measure) {
   const hasResult = opts.result && ((r.mode === "gemeinsam" && r.gemeinsam.trim()) || (r.mode === "positionen" && (r.a.trim() || r.b.trim())));
   if (hasResult || opts.answers) {
     gap(56); rule(); gap(24);
-    if (data.auftrag && AUFTRAG_LABEL[data.auftrag]) { text(`Spielauftrag: ${AUFTRAG_LABEL[data.auftrag]}`, `600 24px ${SANS}`, 24, CARD_COLORS.accent, 1.4); gap(20); }
+    if (data.auftrag && AUFTRAG_LABEL[data.auftrag]) { text(`${T("Spielauftrag:")} ${AUFTRAG_LABEL[data.auftrag]}`, `600 24px ${SANS}`, 24, CARD_COLORS.accent, 1.4); gap(20); }
   }
   if (hasResult) {
-    if (r.mode === "gemeinsam") block(data.resultLabel || "Unser neuer Gedanke", r.gemeinsam.trim());
+    if (r.mode === "gemeinsam") block(data.resultLabel || T("Unser neuer Gedanke"), r.gemeinsam.trim());
     else {
-      if (r.a.trim()) { block(`Position ${who("a")}`, r.a.trim()); gap(20); }
-      if (r.b.trim()) block(`Position ${who("b")}`, r.b.trim());
+      if (r.a.trim()) { block(`${T("Position")} ${who("a")}`, r.a.trim()); gap(20); }
+      if (r.b.trim()) block(`${T("Position")} ${who("b")}`, r.b.trim());
     }
   }
   if (opts.answers) {

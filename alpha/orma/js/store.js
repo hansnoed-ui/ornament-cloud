@@ -4,6 +4,9 @@
 // Daten anderer Anwendungen derselben Adresse berührt (ORNA speichert nur «orna-intro» in sessionStorage).
 // Nutzereingaben sind immer Text: sie werden hier nur geprüft und gekürzt, nie als HTML behandelt.
 
+// Sprache (js/sprache.js, nur im Browser): Meldungen auf Englisch, in Node (Tests) auf Deutsch
+const T = (s, ...a) => (typeof window !== "undefined" && window.sprache ? window.sprache.t(s, ...a) : s);
+const TF = (key, de, ...a) => (typeof window !== "undefined" && window.sprache && window.sprache.en() ? window.sprache.t(key, ...a) : de);   // Sätze mit Werten
 export const PREFIX = "orma:";
 export const KEYS = {
   draft: "orma:v1:entwurf",
@@ -101,9 +104,9 @@ export function loadDraft(storage) {
   if (raw == null) return { draft: null };
   try {
     const d = sanitizeRound(JSON.parse(raw));
-    return d ? { draft: d } : { draft: null, error: "Die unterbrochene Runde liess sich nicht lesen und wurde nicht fortgesetzt." };
+    return d ? { draft: d } : { draft: null, error: T("Die unterbrochene Runde liess sich nicht lesen und wurde nicht fortgesetzt.") };
   } catch {
-    return { draft: null, error: "Die unterbrochene Runde liess sich nicht lesen und wurde nicht fortgesetzt." };
+    return { draft: null, error: T("Die unterbrochene Runde liess sich nicht lesen und wurde nicht fortgesetzt.") };
   }
 }
 export const saveDraft = (storage, round) => write(storage, KEYS.draft, JSON.stringify(round));
@@ -121,12 +124,12 @@ export function loadBook(storage) {
   try { list = JSON.parse(raw); } catch { list = null; }
   if (!Array.isArray(list)) {
     if (read(storage, KEYS.bookDamaged) == null) write(storage, KEYS.bookDamaged, raw);
-    return { entries: [], error: "Das Gedankenbuch auf diesem Gerät ist beschädigt. Der alte Inhalt wurde aufbewahrt; neue Einträge werden getrennt davon gespeichert." };
+    return { entries: [], error: T("Das Gedankenbuch auf diesem Gerät ist beschädigt. Der alte Inhalt wurde aufbewahrt; neue Einträge werden getrennt davon gespeichert.") };
   }
   const entries = list.map(sanitizeEntry).filter(Boolean);
   if (entries.length < list.length) {
     if (read(storage, KEYS.bookDamaged) == null) write(storage, KEYS.bookDamaged, raw);
-    return { entries, error: `${list.length - entries.length} Eintrag/Einträge liessen sich nicht lesen und werden nicht angezeigt. Der alte Inhalt wurde aufbewahrt.` };
+    return { entries, error: TF("buchTeils", `${list.length - entries.length} Eintrag/Einträge liessen sich nicht lesen und werden nicht angezeigt. Der alte Inhalt wurde aufbewahrt.`, list.length - entries.length) };
   }
   return { entries };
 }
@@ -177,7 +180,7 @@ export function loadLoops(storage) {
   try { list = JSON.parse(raw); } catch { list = null; }
   if (!Array.isArray(list)) {
     if (read(storage, KEYS.loopsDamaged) == null) write(storage, KEYS.loopsDamaged, raw);
-    return { loops: [], error: "Die offenen Schleifen auf diesem Gerät sind beschädigt. Der alte Inhalt wurde aufbewahrt." };
+    return { loops: [], error: T("Die offenen Schleifen auf diesem Gerät sind beschädigt. Der alte Inhalt wurde aufbewahrt.") };
   }
   return { loops: list.map(sanitizeLoop).filter(Boolean) };
 }
@@ -213,9 +216,9 @@ export function makeBackup(entries, now = new Date(), loops = []) {
  */
 export function mergeBackup(text, existing, existingLoops = []) {
   let data;
-  try { data = JSON.parse(text); } catch { return { error: "Die Datei ist keine lesbare ORMA-Sicherung." }; }
-  if (!data || data.format !== BACKUP_FORMAT || !Array.isArray(data.entries)) return { error: "Die Datei ist keine ORMA-Sicherung." };
-  if (data.version !== BACKUP_VERSION) return { error: `Diese Sicherung hat ein unbekanntes Format (Version ${String(data.version).slice(0, 10)}).` };
+  try { data = JSON.parse(text); } catch { return { error: T("Die Datei ist keine lesbare ORMA-Sicherung.") }; }
+  if (!data || data.format !== BACKUP_FORMAT || !Array.isArray(data.entries)) return { error: T("Die Datei ist keine ORMA-Sicherung.") };
+  if (data.version !== BACKUP_VERSION) return { error: TF("sicherungVersion", `Diese Sicherung hat ein unbekanntes Format (Version ${String(data.version).slice(0, 10)}).`, String(data.version).slice(0, 10)) };
   const have = new Set(existing.map(e => e.id));
   const added = [];
   let skipped = 0, invalid = 0;

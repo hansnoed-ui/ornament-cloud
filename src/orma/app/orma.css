@@ -48,6 +48,20 @@ body {
 :focus-visible { outline: 2px solid var(--faden); outline-offset: 3px; }
 a { color: inherit; }
 
+/* ---------- Kopf der App (20. Oktober 2026, wie OMNA COLOR und ORNA): Signet, d · e, «Über die App»; auf der Bühne (?b=1) nicht ---------- */
+.app-kopf { max-width: 40rem; margin: 0 auto; padding: max(12px, env(safe-area-inset-top)) 20px 0; display: flex; align-items: center; gap: 16px; font-size: 0.95rem; }
+.app-kopf-signet { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--tinte); font-weight: 500; letter-spacing: 0.01em; }
+.app-kopf-signet svg { width: 34px; height: 24px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.app-kopf-signet circle { fill: var(--faden); stroke: none; }
+.app-kopf-zurueck { margin-left: auto; color: var(--grau); text-decoration: none; }
+.app-kopf-zurueck:hover, .app-kopf-zurueck:focus-visible { color: var(--tinte); text-decoration: underline; }
+.sprache { display: flex; gap: 2px; }
+.sprache button { font: inherit; font-size: 0.85rem; line-height: 1; color: var(--grau); background: none; border: 0; border-bottom: 1px solid transparent; padding: 6px 5px 5px; min-width: 24px; cursor: pointer; }
+.sprache button[aria-current] { color: var(--tinte); border-bottom-color: var(--faden); }
+.sprache button:hover, .sprache button:focus-visible { color: var(--tinte); outline: none; border-bottom-color: currentColor; }
+[data-buehne] .app-kopf { display: none; }
+.app-kopf + .orma-top { padding-top: 6px; }
+
 /* ---------- Kopf: Bildmarke, der Punkt läuft über die Schnittstelle ---------- */
 .orma-top { max-width: 40rem; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 20px 0; }
 .orma-home {

@@ -101,7 +101,7 @@ test("b/: die Startseite trägt das Feld mit allen 49 Zetteln, den Dialog und di
 test("b/: Apps, Raster und Angebote verlinken ihre Ziele, und die Ziele gibt es", () => {
   for (const a of APPS) {
     const html = lies(`b/apps/${a.slug}/index.html`);
-    for (const ziel of [a.url, a.app, a.feld].filter(Boolean)) { assert.ok(existsSync(new URL(ziel + "index.html", root)), `${a.slug}: Ziel ${ziel} gibt es`); }
+    for (const ziel of [a.url, a.app, a.feld].filter(Boolean).map((z) => z.replace(/\?.*$/, ""))) { assert.ok(existsSync(new URL(ziel + "index.html", root)), `${a.slug}: Ziel ${ziel} gibt es`); }
     if (a.app) assert.ok(html.includes(`href="/${a.app}"`), `${a.slug}: Link zur App-Seite`);   // Anwendung und Feld öffnen seit 20. Oktober 2026 auf der Bühne unter /b/ (eigener Test)
     assert.ok(existsSync(new URL(a.bild, root)), `${a.slug}: Bild ${a.bild}`);
     for (const b of [].concat(a.beispiele || [])) for (const d of [b.datei, b.webm, b.bild, b.vorher, b.nachher].filter(Boolean)) assert.ok(existsSync(new URL(d, root)), `${a.slug}: Beispiel ${d}`);
