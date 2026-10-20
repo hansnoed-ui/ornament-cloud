@@ -15,12 +15,11 @@ Stand: 20. Oktober 2026. Zuerst der deutschsprachige Markt (Schweiz, dann Deutsc
 
 | Suchabsicht | Beispiele für Suchbegriffe | Seite |
 |---|---|---|
-| Jemand sucht einen Webdesigner in der Region | Webdesign Aargau, Website erstellen lassen Zürcher Unterland, Webdesign Kaiserstuhl, Website für Künstler | `/b/angebot/websites/` |
-| Jemand will eine App ohne App-Store | Web-App entwickeln lassen Schweiz, PWA erstellen, App für Museum | `/b/angebot/apps/` |
+| Jemand sucht einen Webdesigner in der Region | Webdesign Aargau, Website erstellen lassen Zürcher Unterland, Webdesign Kaiserstuhl, Website für Künstler, Web-App für Museum | `/b/angebot/webdesign/` |
 | Ein Haus sucht Kuration | Ausstellung kuratieren lassen, Kurator Aargau, Ausstellungskonzept | `/b/angebot/kuration/` |
-| Jemand sucht Begleitung | Begleitung in Übergängen, Gespräche Kaiserstuhl, Supervision Kunst | `/b/angebot/begleitung/` |
-| Ein Team sucht einen Workshop | Workshop Beobachten, Systemtheorie Seminar, Kreativ-Workshop Team Schweiz | `/b/angebot/seminare/` |
-| Eine Schule sucht ein Projekt | Kunstpädagogik Projektwoche, Kunstvermittlung Schule Aargau | `/b/angebot/kunstpaedagogik/` |
+| Jemand sucht Maltherapie oder Begleitung | Maltherapie Aargau, Maltherapie Zürcher Unterland, Atelier Wohnheim, Kunst in Institutionen | `/b/angebot/soziale-arbeit/` |
+| Ein Team oder eine Schule sucht Vermittlung | Workshop Beobachten, Systemtheorie Seminar, Kunstvermittlung Schule Aargau, Projektwoche Kunst | `/b/angebot/vermittlung/` |
+| Jemand sucht ein Werk | Kunst im Auftrag, Print kaufen Schweiz, Installation für Empfang | `/b/angebot/kunst/` |
 | Jemand sucht Theorie | Luhmann Zettelkasten, Systemtheorie Kunst, Anschluss Luhmann, Kontingenz, Re-Entry | `/b/zettel/` und die 49 Zettel |
 | Jemand sucht ein Prüfinstrument | Prüfraster journalistische Texte, Gesellschaftsdiagnose prüfen, Prompt Theorieanalyse | `/b/raster/` |
 | Jemand sucht ein Spiel oder Werkzeug | Denkspiel zu zweit, Gestaltungsübungen Farbe, Foto in Video verwandeln | `/b/apps/` |
@@ -43,7 +42,7 @@ Apps und Angeboten.
 
 ## 4. Was noch fehlt (Entscheide von Christian)
 
-- Texte zu Therapie, Seminaren, Kuration und Kunstpädagogik: Ausbildung, Setting, Preise. Ohne sie bleibt der Hinweis «Angaben folgen».
+- Preise und Setting für Maltherapie und Vermittlung; Abrechnung über Zusatzversicherungen.
 - Ein Foto oder ein Porträt für `/b/ueber/` (Google zeigt Personen gern mit Bild).
 - Kundenstimmen oder drei Referenzprojekte mit Namen für Websites und Apps.
 - Termine wieder sichtbar machen (`termine/`): regelmässige Einträge sind ein Signal für Aktualität.
@@ -53,9 +52,9 @@ Apps und Angeboten.
 - Der Zettelkasten liegt schon auf Englisch und Spanisch (`src/data/zu-seiner-zeit.en.json`, `.es.json`). Schritt 1: `/b/en/zettel/`
   und `/b/es/zettel/` aus denselben Daten bauen (`tools/build-b.mjs` mit Sprache), `hreflang` in allen drei Richtungen setzen,
   `og:locale` je Sprache, Sitemap mit `xhtml:link`.
-- Schritt 2: Angebote auf Englisch (Websites, Apps, Seminare: die drei, die ohne Ortsbindung gehen).
+- Schritt 2: Leistungen auf Englisch (Webdesign, Kunst, Vermittlung: die drei, die ohne Ortsbindung gehen).
 - Schritt 3: die Apps selbst sind sprachneutral; die App-Seiten unter `/b/en/apps/` sind kurz.
-- Nicht übersetzen: Begleitung und Kunstpädagogik (ortsgebunden), Werkstatt.
+- Nicht übersetzen: Soziale Arbeit und Kuration (ortsgebunden), Werkstatt.
 
 ## 6. Messen
 

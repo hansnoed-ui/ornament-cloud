@@ -263,6 +263,16 @@ ul, ol { padding: 0; list-style: none; }
 .quadrant-leer { margin-top: 32px; display: grid; grid-template-columns: repeat(3, 1fr); max-width: 460px; border: 1px solid var(--tinte); }
 .quadrant-leer span { display: grid; place-items: center; aspect-ratio: 1; border: 1px solid var(--tinte); font-size: clamp(0.8rem, 1.6vw, 1rem); text-align: center; padding: 8px; }
 
+/* Lebenslauf auf «Über» und Referenzen bei der Kuration */
+.lebenslauf { margin-top: 40px; display: grid; gap: 10px; max-width: 62ch; }
+.lebenslauf h2 { font-weight: 500; font-size: 1.1rem; letter-spacing: -0.01em; margin-top: 18px; }
+.jahre { display: grid; border-top: 1px solid var(--linie); max-width: 62ch; }
+.jahre li { display: grid; grid-template-columns: 6rem 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--linie); }
+.jahre .jahr { color: var(--grau); font-variant-numeric: tabular-nums; font-size: 0.95rem; }
+.stationen { display: flex; flex-wrap: wrap; gap: 6px 0; }
+.stationen li { padding: 2px 0; }
+.stationen li:not(:last-child)::after { content: "·"; margin: 0 8px; color: var(--grau); }
+
 /* ---------- Werke, Zuletzt, Über ---------- */
 .werk { display: grid; gap: 10px; }
 .werk .bild { background: var(--flaeche); aspect-ratio: 3 / 4; overflow: hidden; }

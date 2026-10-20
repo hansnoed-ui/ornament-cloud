@@ -205,7 +205,7 @@ function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noi
       <h1 class="sr-nur" hidden>ornament.cloud</h1>
       <p class="leitsatz">${esc(erster.bottom_line)}</p>
       <p class="woher"><a href="/b/zettel/${erster.slug}/">Zettel ${erster.number} · ${esc(erster.title)}</a><button class="knopf still nochmal" type="button">Noch einer</button></p>
-      <p class="buehne-claim">${esc(SEITE.claim)} 49 Zettel, sieben Apps, vier Prüfraster und sieben Angebote, die aneinander anschliessen.</p>
+      <p class="buehne-claim">${esc(SEITE.claim)} 49 Zettel, sieben Apps, vier Prüfraster und fünf Leistungen, die aneinander anschliessen.</p>
     </div>
     <div class="s-4">${feld()}</div>
   </div>
@@ -245,7 +245,7 @@ function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noi
 
 <section class="abschnitt" aria-labelledby="arbeiten-titel">
   <div class="spalte">
-    <div class="abschnitt-kopf"><h2 id="arbeiten-titel">Arbeiten</h2><p>Sieben Angebote von Christian Strickler, Kaiserstuhl. Jedes beginnt mit einem Gespräch; das Briefing entsteht hier auf der Seite.</p><a class="weiter" href="/b/angebot/">Alle Angebote</a></div>
+    <div class="abschnitt-kopf"><h2 id="arbeiten-titel">Arbeiten</h2><p>Kunst, Webdesign, Vermittlung, Kuration, Soziale Arbeit: fünf Leistungen von Christian Strickler, Kaiserstuhl. Jede beginnt mit einem Gespräch; das Briefing entsteht hier auf der Seite.</p><a class="weiter" href="/b/angebot/">Alle Leistungen</a></div>
     <ul class="liste-linien">${ANGEBOTE.map((a, i) => `<li><a href="/b/angebot/${a.slug}/"><span class="n">${i + 1}</span><span class="name">${esc(a.name)}</span><span class="pfeil">Briefing</span><span class="kurz">${esc(a.kurz)}</span></a></li>`).join("")}</ul>
   </div>
 </section>
@@ -283,7 +283,8 @@ function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noi
 function personLd() {
   return { "@context": "https://schema.org", "@type": "Person", name: SEITE.person.name, url: `${BASIS}/b/ueber/`, email: `mailto:${SEITE.person.mail}`,
     address: { "@type": "PostalAddress", streetAddress: SEITE.person.strasse, postalCode: "5466", addressLocality: "Kaiserstuhl", addressRegion: "AG", addressCountry: "CH" },
-    jobTitle: "Gestalter, Kurator, Künstler", knowsAbout: ["Systemtheorie", "Webdesign", "App-Design", "Kuration", "Kunstpädagogik"], makesOffer: ANGEBOTE.map((a) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: a.name, url: `${BASIS}/b/angebot/${a.slug}/` } })) };
+    jobTitle: "Künstler, Webdesigner, Kurator, Maltherapeut, Sozialarbeiter", knowsAbout: ["Systemtheorie", "Webdesign", "Kunstvermittlung", "Kuration", "Maltherapie", "Soziale Arbeit"],
+    alumniOf: [{ "@type": "CollegeOrUniversity", name: "Universität Zürich" }, { "@type": "CollegeOrUniversity", name: "Fachhochschule für Soziale Arbeit St. Gallen" }, { "@type": "EducationalOrganization", name: "iac Zürich" }], makesOffer: ANGEBOTE.map((a) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: a.name, url: `${BASIS}/b/angebot/${a.slug}/` } })) };
 }
 
 function beitrag(e) {
@@ -388,7 +389,7 @@ for (const a of APPS) {
   <div class="stueck-text"><p>${esc(a.text)}</p><p class="fuer">${esc(a.fuer)}</p></div>
 </div></article>
 <section class="spalte">${teilen({ pfad: `apps/${a.slug}/`, titel: a.name, text: a.kurz })}</section>
-${faeden([...zs.map((z) => fZettel(z)), fApp(schwester), fAngebot(angebotVon(a.gattung === "Gestaltung" ? "kunstpaedagogik" : a.gattung === "Bild und Video" ? "kunstprojekte" : "seminare")), a.werk ? fRaster(rasterVon("nebeneinander-nacheinander")) : fAngebot(angebotVon("apps"))])}`;
+${faeden([...zs.map((z) => fZettel(z)), fApp(schwester), fAngebot(angebotVon(a.gattung === "Bild und Video" ? "kunst" : "vermittlung")), a.werk ? fRaster(rasterVon("nebeneinander-nacheinander")) : fAngebot(angebotVon("webdesign"))])}`;
   veroeffentliche({ pfad: `apps/${a.slug}/`, aktiv: "apps/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, beschreibung: beschreibung(a.text), body, bild: `${BASIS}/${a.bild}`, bildAlt: a.bildAlt,
     jsonld: [{ "@context": "https://schema.org", "@type": "SoftwareApplication", name: a.name, applicationCategory: "MultimediaApplication", operatingSystem: "Browser", url: `${BASIS}/${a.url}`, description: a.kurz, offers: { "@type": "Offer", price: "0", priceCurrency: "CHF" }, author: { "@type": "Person", name: SEITE.person.name } }] });
 }
@@ -424,7 +425,7 @@ for (const r of RASTER) {
   <div class="stueck-text"><p>${esc(r.text)}</p><p><strong>Womit man kommt:</strong> ${esc(r.anwendung)}</p></div>
 </div></article>
 <section class="spalte">${teilen({ pfad: `raster/${r.slug}/`, titel: r.name, text: r.kurz })}</section>
-${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" ? fApp(appVon("orna")) : fApp(appVon("orma")), fAngebot(angebotVon("seminare")), fRaster(RASTER.find((x) => x.slug !== r.slug && x.stand === r.stand) || RASTER.find((x) => x.slug !== r.slug))])}`;
+${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" ? fApp(appVon("orna")) : fApp(appVon("orma")), fAngebot(angebotVon("vermittlung")), fRaster(RASTER.find((x) => x.slug !== r.slug && x.stand === r.stand) || RASTER.find((x) => x.slug !== r.slug))])}`;
   veroeffentliche({ pfad: `raster/${r.slug}/`, aktiv: "raster/", titel: `${r.name} – Prüfraster`, beschreibung: beschreibung(r.text), body, typ: "article",
     jsonld: [{ "@context": "https://schema.org", "@type": "CreativeWork", name: r.name, description: r.kurz, url: `${BASIS}/b/raster/${r.slug}/`, author: { "@type": "Person", name: SEITE.person.name }, inLanguage: "de-CH" }] });
 }
@@ -433,19 +434,19 @@ ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" 
 {
   const body = `
 <section class="stueck-kopf"><div class="spalte">
-  <h1 class="titel">Angebot<small>Sieben Angebote von Christian Strickler, Kaiserstuhl. Jedes beginnt mit einem Gespräch. Wähle auf der Seite des Angebots, was du brauchst: Daraus entsteht ein Briefing, das du per Mail schickst.</small></h1>
+  <h1 class="titel">Angebot<small>Kunst, Webdesign, Vermittlung, Kuration, Soziale Arbeit: fünf Leistungen von Christian Strickler, Kaiserstuhl. Jede beginnt mit einem Gespräch. Wähle auf der Seite der Leistung, was du brauchst: Daraus entsteht ein Briefing, das du per Mail schickst.</small></h1>
 </div></section>
 <section class="abschnitt"><div class="spalte">
   <ul class="liste-linien">${ANGEBOTE.map((a, i) => `<li><a href="/b/angebot/${a.slug}/"><span class="n">${i + 1}</span><span class="name">${esc(a.name)}</span><span class="pfeil">Briefing</span><span class="kurz">${esc(a.kurz)} ${esc(a.fuer)}</span></a></li>`).join("")}</ul>
 </div></section>`;
-  veroeffentliche({ pfad: "angebot/", aktiv: "angebot/", titel: "Angebot – Websites, Apps, Kuration, Begleitung, Seminare", beschreibung: "Websites und Apps, Kuration, therapeutische Begleitung, Seminare und Weiterbildung, Kunstpädagogik und künstlerische Projekte: sieben Angebote von Christian Strickler, Kaiserstuhl AG.", body, bildAlt: "Die sieben Angebote" });
+  veroeffentliche({ pfad: "angebot/", aktiv: "angebot/", titel: "Angebot – Kunst, Webdesign, Vermittlung, Kuration, Soziale Arbeit", beschreibung: "Kunst, Webdesign, Vermittlung, Kuration und Soziale Arbeit: fünf Leistungen von Christian Strickler, Kaiserstuhl AG, vom Werk für einen Ort bis zum Atelier in einer Institution.", body, bildAlt: "Die sieben Angebote" });
 }
 for (const [i, a] of ANGEBOTE.entries()) {
   const zs = zettelZu("angebot", a.slug, 3);
   const appTop = beste(Object.fromEntries(APPS.map((x) => [x.slug, zs.reduce((s, z) => s + (jevZettel(z.number).app?.[x.slug] || 0), 0)])))[0]?.k;
   const body = `
 <article class="stueck-kopf"><div class="spalte">
-  <p class="gattung">Angebot ${i + 1} von 7</p>
+  <p class="gattung">Leistung ${i + 1} von ${ANGEBOTE.length}</p>
   <h1 class="titel">${esc(a.name)}</h1>
   <p class="lead">${esc(a.kurz)}</p>
   <p class="knopfreihe"><a class="knopf voll" href="#briefing">Briefing beginnen</a><a class="knopf" href="mailto:${SEITE.person.mail}?subject=${encodeURIComponent("Anfrage: " + a.name)}">Direkt schreiben</a></p>
@@ -456,6 +457,7 @@ for (const [i, a] of ANGEBOTE.entries()) {
   <h2 id="ablauf-titel">So geht es</h2>
   <ol>${a.ablauf.map((s) => `<li><span>${esc(s)}</span></li>`).join("")}</ol>
 </div></section>
+${a.referenzen ? `<section class="ablauf" aria-labelledby="ref-titel"><div class="spalte"><h2 id="ref-titel">Referenzen</h2><ol class="jahre">${a.referenzen.map(([j, t]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}</span></li>`).join("")}</ol></div></section>` : ""}
 <section class="beweis" aria-labelledby="beweis-titel"><div class="spalte">
   <h2 id="beweis-titel">Zum Anschauen</h2>
   <ul>${a.beweis.map(([h, t]) => `<li><a href="/${attr(h)}">${esc(t)}</a></li>`).join("")}</ul>
@@ -472,7 +474,7 @@ for (const [i, a] of ANGEBOTE.entries()) {
 </div></section>
 <section class="spalte">${teilen({ pfad: `angebot/${a.slug}/`, titel: `${a.name} – ${SEITE.person.name}`, text: a.kurz })}</section>
 ${faeden([...zs.map((z) => fZettel(z)), fApp(appVon(appTop)), fAngebot(ANGEBOTE[(i + 1) % ANGEBOTE.length])])}`;
-  veroeffentliche({ pfad: `angebot/${a.slug}/`, aktiv: "angebot/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, kopfTitel: `${a.name} – Christian Strickler, Kaiserstuhl – ornament.cloud`, beschreibung: `${a.kurz} ${a.fuer}`, body,
+  veroeffentliche({ pfad: `angebot/${a.slug}/`, aktiv: "angebot/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, kopfTitel: `${a.name} – Christian Strickler, Kaiserstuhl – ornament.cloud`, beschreibung: beschreibung(`${a.kurz} ${a.fuer}`), body,
     jsonld: [{ "@context": "https://schema.org", "@type": "Service", name: a.name, description: a.text, serviceType: a.name, areaServed: ["CH", "DE", "AT"], url: `${BASIS}/b/angebot/${a.slug}/`, provider: { "@type": "Person", name: SEITE.person.name, address: { "@type": "PostalAddress", addressLocality: "Kaiserstuhl", addressRegion: "AG", addressCountry: "CH" } } }] });
 }
 
@@ -499,7 +501,7 @@ ${faeden([...zs.map((z) => fZettel(z)), fApp(appVon(appTop)), fAngebot(ANGEBOTE[
   <p class="knopfreihe"><a class="knopf" href="${attr(UEBER.liste.mailto)}">Eintragen lassen</a></p>
 </div></section>
 <section class="spalte">${teilen({ pfad: "werke/", titel: "Werke – Christian Strickler", text: "Originale, Prints und Arbeiten im Raum." })}</section>
-${faeden([fZettel(zettel[30]), fZettel(zettel[33]), fAngebot(angebotVon("kunstprojekte")), fApp(appVon("phorma-ii"))])}`;
+${faeden([fZettel(zettel[30]), fZettel(zettel[33]), fAngebot(angebotVon("kunst")), fApp(appVon("phorma-ii"))])}`;
   veroeffentliche({ pfad: "werke/", aktiv: "werke/", titel: "Werke – Originale, Prints und Arbeiten im Raum", beschreibung: "Originale und Prints in kleinen Auflagen von Christian Strickler, dazu Stellenfeld und Re-entry als Arbeiten in 3D. Bestellung per Mail, Versand in der Schweiz inbegriffen.", body, bildAlt: "Werke von Christian Strickler" });
 }
 
@@ -522,8 +524,13 @@ ${faeden([fZettel(zettel[40]), fZettel(zettel[36]), fApp(appVon("orna"))])}`;
   const body = `
 <section class="stueck-kopf"><div class="spalte sieben">
   <div class="s-4">
-    <h1 class="titel">${esc(SEITE.person.name)}<small>Kunst, Design, Webdesign, Therapie und Theorie, aus Kaiserstuhl am Rhein.</small></h1>
+    <h1 class="titel">${esc(SEITE.person.name)}<small>Kunst, Webdesign, Vermittlung, Kuration und Soziale Arbeit, aus Kaiserstuhl am Rhein.</small></h1>
     <div class="ueber-text" style="margin-top:32px">${UEBER.text.map((t) => `<p>${esc(t)}</p>`).join("")}</div>
+    <div class="lebenslauf">
+      <h2>Ausbildung</h2><ol class="jahre">${UEBER.ausbildung.map(([j, t]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}</span></li>`).join("")}</ol>
+      <h2>Berufliche Stationen</h2><ul class="stationen">${UEBER.stationen.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
+      <h2>Kuratorische Referenzen</h2><ol class="jahre">${UEBER.referenzen.map(([j, t]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}</span></li>`).join("")}</ol>
+    </div>
     <div class="liste-kasten"><h2>${esc(UEBER.liste.titel)}</h2><p>${esc(UEBER.liste.text)}</p><p class="knopfreihe"><a class="knopf" href="${attr(UEBER.liste.mailto)}">Eintragen lassen</a></p><p class="klein">Der Link öffnet eine fertige Mail. Austragen mit einer Antwort; die Adresse bleibt bei mir.</p></div>
   </div>
   <div class="s-3" style="padding-top:12px">
@@ -533,8 +540,8 @@ ${faeden([fZettel(zettel[40]), fZettel(zettel[36]), fApp(appVon("orna"))])}`;
   </div>
 </div></section>
 <section class="spalte">${teilen({ pfad: "ueber/", titel: `${SEITE.person.name} – ornament.cloud`, text: "Kunst, Design, Webdesign, Therapie und Theorie." })}</section>
-${faeden([fAngebot(angebotVon("websites")), fAngebot(angebotVon("kuration")), fZettel(zettel[16]), fApp(appVon("orma"))])}`;
-  veroeffentliche({ pfad: "ueber/", aktiv: "ueber/", titel: `Über ${SEITE.person.name}`, beschreibung: `${SEITE.person.name}, Kaiserstuhl AG: Websites und Apps, Kuration, therapeutische Begleitung, Seminare, Kunstpädagogik und künstlerische Projekte. Kontakt und Liste.`, body, typ: "profile", jsonld: [personLd()], bildAlt: `${SEITE.person.name}` });
+${faeden([fAngebot(angebotVon("webdesign")), fAngebot(angebotVon("kuration")), fZettel(zettel[16]), fApp(appVon("orma"))])}`;
+  veroeffentliche({ pfad: "ueber/", aktiv: "ueber/", titel: `Über ${SEITE.person.name}`, beschreibung: `${SEITE.person.name}, Kaiserstuhl AG: Kunst, Webdesign, Vermittlung, Kuration und Soziale Arbeit. Ausbildung, Stationen, Referenzen, Kontakt und Liste.`, body, typ: "profile", jsonld: [personLd()], bildAlt: `${SEITE.person.name}` });
 }
 
 /* ---------- Werkstatt (nicht verlinkt, noindex) ---------- */
