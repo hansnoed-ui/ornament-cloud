@@ -1,5 +1,31 @@
 /* Nebeneinander, Nacheinander – nur für diese Seite.
-   Farben, Schriften und Abstände kommen aus ../../styles.css (Variablen). */
+   Farben, Schriften und Abstände kommen aus ../../styles.css (Variablen); seit dem 20. Oktober 2026 setzt diese Datei sie für ORNA neu
+   (mit dem Neubau der Website unter /b/, nach ORMA und OMNA COLOR: «alles Grafische soll top sein»): Papier und Tinte in echter Umkehr,
+   die Blaupause als einziger Akzent (Laufband, Namen am Rad, Links), Instrument Sans und Newsreader aus vendor/fonts. Das Rad selbst, seine
+   Linien, Zeichen und Regeln (REGELN §4–§7) bleiben unverändert; Abweichung von §5 (nur die vorhandene Akzentfarbe) nach §0 benannt. */
+
+:root {
+  --bg: #ffffff; --surface: #ffffff; --text: #000000; --muted: #6f6f6f; --border: #dadada; --accent: #1d3fd6;
+  --font: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --bg-veil: rgba(255, 255, 255, 0.85);
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #000000; --surface: #000000; --text: #ffffff; --muted: #9a9a9a; --border: #2e2e2e; --accent: #8fb0ff; --bg-veil: rgba(0, 0, 0, 0.85); }
+}
+body { -webkit-font-smoothing: antialiased; }
+/* die Kopfzeile der Website (Hauptlinks und Menü) bleibt in der Schrift der Website: ein Browsertest misst sie auf allen Seiten gleich (REGELN §14) */
+.seitenweg a, .menu-item { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+/* Kopf: Titel in der Schrift der Oberfläche, der Untertitel kursiv, der Vorspann ohne Versalien */
+.site-header h1 { font-family: var(--font); font-weight: 500; letter-spacing: -0.025em; line-height: 1.02; font-size: clamp(2.2rem, 6vw, 3.6rem); }
+.site-header .lead { font-family: var(--serif); font-style: italic; font-size: 1.3rem; }
+.site-header .work-kicker { color: var(--muted); font-weight: 400; letter-spacing: 0; text-transform: none; font-size: 0.92rem; }
+.site-header .work-kicker a { color: inherit; text-decoration: none; }
+.site-header .work-kicker a:hover { color: var(--accent); }
+
+/* die Bühne ohne Kiste: Haarlinien oben und unten statt Rahmen, Rundung und Fläche */
+.work.rad-stage { background: none; border: 0; border-top: 1px solid var(--text); border-bottom: 1px solid var(--border); border-radius: 0; box-shadow: none; }
 
 /* ---------- Bühne: weisse Fläche, Rad im Zentrum, Ergebnis daneben/darunter ---------- */
 .rad-stage {
@@ -80,7 +106,7 @@
 
 /* Namen der beiden getroffenen Plätze (§6a): erst nach dem Stillstand, weg mit der nächsten Drehung */
 .rad-wheel .rad-hitnames text {
-  fill: currentColor;
+  fill: var(--accent);
   font-family: var(--font);
   letter-spacing: 0.02em;
   /* schmale Aussparung in der Grundfarbe, damit die feine Hilfslinie die Buchstaben nicht schneidet */
@@ -123,7 +149,7 @@
   cursor: pointer;
 }
 .rad-legend-toggle:hover,
-.rad-legend-toggle:focus-visible { color: var(--text); }
+.rad-legend-toggle:focus-visible { color: var(--accent); }
 
 .rad-legend {
   display: grid;
@@ -137,11 +163,11 @@
 
 .rad-legend h3 {
   margin: 0 0 8px;
-  font-size: 0.75rem;
-  font-weight: 400;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--accent);
 }
 .rad-legend ol {
   margin: 0;
@@ -176,7 +202,7 @@
 .rad-legend-sym .sym-ghost { opacity: 0.45; }
 
 /* nur die beiden gezogenen Namen, erst beim Stillstand */
-.rad-legend li.is-hit { color: var(--text); }
+.rad-legend li.is-hit { color: var(--accent); }
 .rad-legend li.is-hit .rad-legend-sym { opacity: 1; }
 
 /* ---------- Ergebnis ---------- */
@@ -207,11 +233,13 @@
 
 .rad-names {
   margin: 0 0 20px;
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: 1.7rem;
-  line-height: 1.25;
+  font-family: var(--font);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  font-size: 1.9rem;
+  line-height: 1.15;
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .rad-artist,
@@ -221,20 +249,23 @@
 
 .rad-x {
   padding: 0 0.15em;
-  color: var(--muted);
+  color: var(--accent);
+  font-weight: 400;
 }
 
 .rad-text {
   margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.75;
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  line-height: 1.55;
 }
 
 .rad-question {
-  margin: 2.2em 0 0;
+  margin: 1.8em 0 0;
   font-family: var(--serif);
-  font-size: 1.25rem;
-  line-height: 1.5;
+  font-style: italic;
+  font-size: 1.4rem;
+  line-height: 1.35;
 }
 
 /* zwei gleich gestaltete, zurückhaltende Knöpfe unter der Frage */
@@ -263,7 +294,7 @@
 .rad-again:hover,
 .rad-again:focus-visible,
 .rad-share:hover,
-.rad-share:focus-visible { color: var(--text); }
+.rad-share:focus-visible { color: var(--accent); }
 
 /* Rückfall, wenn weder Teilen noch Zwischenablage verfügbar sind: Adresse zum Markieren */
 .rad-address {
@@ -291,6 +322,8 @@
   overflow: hidden;
   background: transparent;
   color: var(--accent);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .rad-ticker-track {
@@ -336,7 +369,8 @@
   text-align: right;
 }
 
-.rad-about p { margin: 0 0 14px; line-height: 1.7; }
+.rad-about p { margin: 0 0 14px; line-height: 1.55; }
+.rad-about .rad-intro { font-family: var(--serif); font-size: 1.2rem; }
 
 /* Hinweise unter der Beschreibung (Geste und Ziehung, Herkunft der Texte): rechtsbündig, kleiner */
 .rad-about .rad-note {

@@ -311,6 +311,13 @@ Webverzeichnis der Domain hochladen.
 Die Kopien unter `werke/` sind Momentaufnahmen. Wird ein Artefakt auf claude.ai geändert,
 muss die Kopie neu übernommen werden.
 
+## Die Web-Anwendungen in der Gestaltung des Neubaus (seit 20. Oktober 2026)
+
+Wunsch vom 20. Oktober 2026: «alles Grafische soll top sein … das heisst für mich, dass du auch alle Webanwendungen grafisch überarbeiten kannst (nicht die downloadbaren Apps)». Reihenfolge nach Christian: ORMA, OMNA COLOR, ORNA. Gemeinsam: Papier und Tinte in echter Umkehr, die Blaupause (`#1d3fd6`, dunkel `#8fb0ff`) als einziger Akzent, Instrument Sans und Newsreader; Ablauf, Texte, Regeln und Klassen bleiben (Abweichung von REGELN §5 nach §0 benannt).
+- **ORMA:** `src/orma/README.md`, Abschnitt «Gestaltung».
+- **OMNA COLOR:** siehe oben bei `alpha/omna-color/`.
+- **ORNA** (`portfolio/nebeneinander-nacheinander/rad.css?v=25`, `feld/feld.css?v=6`): die Variablen von `styles.css` werden auf diesen Seiten neu gesetzt, die Schriften aus `vendor/fonts/fonts.css` eingebunden; Titel in Instrument Sans, Text und Frage in Newsreader, die Namen am Rad und das Laufband in der Blaupause, die Bühne ohne Kiste (Haarlinien). Rad, Linien, Zeichen, Bewegung und Ergebnis (REGELN §4–§7) unverändert. App-Abschriften und Service Worker mit `tools/build-app.ts` neu erzeugt.
+
 ## `b/` – der Neubau der Website (seit 20. Oktober 2026)
 
 Auftrag vom 20. Oktober 2026: «Ich möchte, dass du diese Website unter ornament.cloud/b/ komplett neu designst und aufbaust.» Konzept und Entscheide:
