@@ -309,3 +309,17 @@ Webverzeichnis der Domain hochladen.
 
 Die Kopien unter `werke/` sind Momentaufnahmen. Wird ein Artefakt auf claude.ai geändert,
 muss die Kopie neu übernommen werden.
+
+## `b/` – der Neubau der Website (seit 20. Oktober 2026)
+
+Auftrag vom 20. Oktober 2026: «Ich möchte, dass du diese Website unter ornament.cloud/b/ komplett neu designst und aufbaust.» Konzept und Entscheide:
+`docs/superpowers/specs/2026-10-20-b-neubau-design.md`; Plan für Suchmaschinen und Teilen: `docs/b/seo-plan.md`. Die bisherige Website bleibt unverändert, `/b/` steht daneben.
+
+- **Bild:** das Feld 7 × 7 der 49 Zettel als Ornament der Seite; alles andere (Konstellationen, Apps, Raster, Angebote, Werke, Beiträge) hängt mit Fäden daran. Jede Seite endet mit «Fäden».
+- **Seiten (75):** Start mit Feld, wechselndem Leitsatz und dem Dialog «Was bringst du mit?»; `zettel/` und 49 Zettel (Texte wörtlich aus `src/data/`, dazu Fäden, Teilen, Karte zum Herunterladen);
+  `apps/` und sieben App-Seiten; `raster/` und vier Prüfraster; `angebot/` und sieben Angebote mit Gestaltungsdialog (Briefing per Mail); `werke/`, `zuletzt/`, `ueber/`; `werkstatt/` (Print on Demand, noindex, nicht verlinkt).
+- **Gestaltung:** eigene Kopfzeile und eigenes CSS (`src/b/b.css`, Ausnahme zu REGELN §14, benannt nach §0): Papier und Tinte in echter Umkehr, ein Akzent (Blaupause), Instrument Sans und Newsreader aus `vendor/fonts/`.
+- **Quellen und Werkzeuge:** Texte und Verzeichnis in `src/b/inhalt.mjs` (die Angebotstexte zu Therapie, Seminaren, Kuration und Kunstpädagogik sind Entwürfe ohne Ausbildung, Setting, Preise); `node tools/build-b.mjs` erzeugt `b/` und den Sitemap-Block `B:START/END`;
+  `NODE_USE_ENV_PROXY=1 node --no-warnings tools/build-b-jev.mjs` lässt jev einmal beim Bauen je Zettel Angebot, App, Raster und ORMA-Konstellation einschätzen (`src/b/jev.json`, Prüfsumme über die Bestände; die Seite ruft nichts auf);
+  `NODE_PATH=$(npm root -g) node tools/b-kacheln.mjs` zeichnet die Vorschaukarten (`b/kacheln/`, 1200 × 630 je Seite, 1080 × 1080 je Zettel); `NODE_PATH=$(npm root -g) node tools/build-b-pod.mjs` setzt die PDFs der Werkstatt (Buch 6 × 9 Zoll mit Umschlag nach KDP-Massen, 49 Karten A6, Poster A2, sieben Notizbuch-Umschläge).
+- **Tests:** `tests/b.test.mjs` (Seiten, Karten, nichts von aussen, Zettel wörtlich, Werkstatt, Sitemap, jev-Tabelle, PDFs). `navigation`, `orma`, `bildfragmentieren`, `fictory` und `phorma-iii` nehmen `b/` aus bzw. prüfen die Alpha-Adresse statt eines Wortteils.

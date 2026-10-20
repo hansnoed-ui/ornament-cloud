@@ -24,6 +24,7 @@ const AUSNAHMEN = [
   ["«PHORMA III», das Gewebe aus PHORMA II, steht für sich wie PHORMA I und II (18. Oktober 2026); ihre App-Seite app/ trägt die Navigation (19. Oktober 2026)", /^alpha\/phorma-iii\/(?!app\/)/],
   ["«Hochrendern», Videos auf der eigenen Grafikkarte hochrechnen, steht für sich wie PHORMA (19. Oktober 2026)", /^alpha\/hochrendern\//],
   ["Beispiele der Skills für Claude (.claude/skills/), keine Seiten der Website (16. Oktober 2026)", /^\.claude\//],
+  ["Der Neubau unter b/ mit eigener Kopfzeile (20. Oktober 2026, docs/superpowers/specs/2026-10-20-b-neubau-design.md); eigene Tests in tests/b.test.mjs", /^b\//],
 ];
 const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git"]);
 const walk = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e) =>

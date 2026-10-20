@@ -234,7 +234,7 @@ test("Seite: Alpha (noindex), steht für sich ohne Navigation oben links, nichts
   // verlinkt nur von «Apps», und dort nur die App-Seite app/ (seit 17. Oktober 2026, als «PHORMA I»)
   const seiten = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e) => ["node_modules", ".git", "vendor", "src"].includes(e.name) ? []
     : e.isDirectory() ? seiten(new URL(e.name + "/", d), vor + e.name + "/") : e.name.endsWith(".html") ? [vor + e.name] : []);
-  for (const p of seiten(root)) if (!p.startsWith("alpha/bildfragmentieren/")) {
+  for (const p of seiten(root)) if (!p.startsWith("alpha/bildfragmentieren/") && !p.startsWith("b/")) {   // der Neubau b/ (20. Oktober 2026) verlinkt PHORMA I auf seiner App-Seite, Tests dort
     const ziele = [...lies(p).matchAll(/bildfragmentieren[^"]*/g)].map((m) => m[0]);
     assert.deepEqual(ziele.filter((z) => z !== "bildfragmentieren/app/"), [], `${p} verlinkt Bildfragmentieren (erlaubt: die App-Seite auf «Apps»)`);
     if (ziele.length) assert.equal(p, "apps/index.html", `${p} verlinkt PHORMA I`);
