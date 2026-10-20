@@ -1,0 +1,66 @@
+# ornament.cloud auf dem Webspace bei Hostpoint (Apache; seit 20. Oktober 2026, Umzug von GitHub Pages: docs/hostpoint-umzug.md).
+# Die Website ist statisch; diese Datei ersetzt, was GitHub Pages von sich aus tat: saubere Adressen (Verzeichnis → index.html macht Apache selbst),
+# 404-Seite, richtige Inhaltstypen, Zwischenspeicher für zehn Minuten (die Versionsmarken ?v= der Seite rechnen damit, README «Versionsmarke»),
+# Kompression, HTTPS. Jede Direktive ist mit <IfModule> abgesichert, damit ein fehlendes Modul die Seite nicht lahmlegt.
+# Auf GitHub Pages ist diese Datei wirkungslos und wird nicht ausgeliefert.
+
+AddDefaultCharset UTF-8
+
+# ---- Adressen: nur https://ornament.cloud, ohne www; die Prüfadresse von Let's Encrypt (FreeSSL) bleibt unberührt ----
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} !^/\.well-known/
+  RewriteCond %{HTTPS} !=on [OR]
+  RewriteCond %{HTTP_HOST} ^www\.ornament\.cloud$ [NC]
+  RewriteRule ^ https://ornament.cloud%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+# ---- Fehler und Verzeichnisse ----
+ErrorDocument 404 /404.html
+<IfModule mod_autoindex.c>
+  IndexIgnore *
+</IfModule>
+
+# ---- Inhaltstypen (Apache kennt nicht alle von sich aus; Module und Manifeste brauchen den richtigen Typ) ----
+<IfModule mod_mime.c>
+  AddType text/javascript .js .mjs
+  AddType application/manifest+json .webmanifest
+  AddType application/json .json
+  AddType font/woff2 .woff2
+  AddType image/svg+xml .svg
+  AddType image/webp .webp
+  AddType video/mp4 .mp4
+  AddType video/webm .webm
+  AddType text/markdown .md
+  AddCharset utf-8 .html .css .js .mjs .json .xml .webmanifest .md .txt .svg
+</IfModule>
+
+# ---- Zwischenspeicher: zehn Minuten wie bei GitHub Pages; Schriften ein Jahr (sie ändern nie), Bilder und Videos einen Tag,
+#      Service Worker immer frisch (sonst merkt die installierte App Änderungen erst nach einem Tag) ----
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 10 minutes"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType image/png "access plus 1 day"
+  ExpiresByType image/jpeg "access plus 1 day"
+  ExpiresByType image/webp "access plus 1 day"
+  ExpiresByType image/svg+xml "access plus 1 day"
+  ExpiresByType video/mp4 "access plus 1 day"
+  ExpiresByType video/webm "access plus 1 day"
+  ExpiresByType application/pdf "access plus 1 day"
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "^sw\.js$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ---- Kompression für Text (Bilder, Videos und Schriften sind schon komprimiert) ----
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript text/plain text/xml text/markdown application/json application/manifest+json application/xml image/svg+xml
+</IfModule>
+<IfModule mod_brotli.c>
+  AddOutputFilterByType BROTLI_COMPRESS text/html text/css text/javascript text/plain text/xml text/markdown application/json application/manifest+json application/xml image/svg+xml
+</IfModule>
