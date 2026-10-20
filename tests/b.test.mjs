@@ -171,3 +171,23 @@ test("b/apps: die Bilder der sieben Apps sind gezeichnete Tafeln (tools/b-app-bi
   // nur OMNA COLOR trägt Farbe
   for (const a of APPS) assert.equal(/hsl\(/.test(lies(a.bild)), a.slug === "omna-color", `${a.slug}: Farbe nur bei OMNA COLOR`);
 });
+
+test("b/apps: die Tafeln leben unter «Was dabei herauskommt» (src/b/tafeln.mjs, b/tafeln-leben.js): Zustand, Schritt und Bild je App, ein Satz dazu; das Modul liegt kopiert in b/", async () => {
+  const { TAFELN, farben } = await import(new URL("src/b/tafeln.mjs", root).href);
+  assert.equal(lies("b/tafeln.mjs"), lies("src/b/tafeln.mjs"), "b/tafeln.mjs ist die Kopie (sonst: node tools/build-b.mjs)");
+  assert.equal(lies("b/tafeln-leben.js"), lies("src/b/tafeln-leben.js").replace('from "./tafeln.mjs"', `from "./tafeln.mjs?v=${lies("b/index.html").match(/b\.js\?v=(\d+)/)[1]}"`), "b/tafeln-leben.js ist die Kopie mit Versionsmarke");
+  for (const a of APPS) {
+    const t = TAFELN[a.slug], z = t.neu(), ruhe = t.svg(z, farben(false));
+    for (let i = 0; i < 120; i++) t.schritt(z, 1 / 30);         // vier Sekunden (PHORMA II hält drei Sekunden und beginnt dann von vorn)
+    const bewegt = t.svg(z, farben(false));
+    assert.ok(bewegt.length > 100 && bewegt !== ruhe, `${a.slug}: nach vier Sekunden ein anderes Bild`);
+    assert.ok(!/NaN|undefined/.test(bewegt), `${a.slug}: keine NaN`);
+    assert.match(a.bewegung, /^So arbeitet /, `${a.slug}: ein Satz zur Bewegung`);
+    const seite = lies(`b/apps/${a.slug}/index.html`);
+    assert.ok(seite.includes(`<figure class="tafel-lebt" data-tafel="${a.slug}"><picture>`), `${a.slug}: lebende Tafel unter «Was dabei herauskommt»`);
+    assert.ok(seite.includes(`<figcaption>${a.bewegung}</figcaption>`));
+    assert.match(seite, /<script type="module" src="\/b\/tafeln-leben\.js\?v=\d+"><\/script>/);
+    assert.ok(seite.indexOf('id="beispiele-titel"') < seite.indexOf('class="tafel-lebt"'), `${a.slug}: die Tafel steht im Abschnitt «Was dabei herauskommt»`);
+  }
+  assert.ok(!lies("b/apps/index.html").includes("tafeln-leben"), "die Übersicht bleibt ohne das Modul");
+});

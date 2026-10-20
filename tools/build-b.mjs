@@ -12,7 +12,7 @@ import { zeichen } from "../src/b/zeichen.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS = new URL("b/", ROOT);
-const V = 5;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 6;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 
@@ -150,7 +150,7 @@ function teilen({ pfad, titel, text, karte }) {
 }
 
 /** Eine ganze Seite */
-function seite({ pfad, titel, beschreibung, body, aktiv, noindex = false, jsonld = [], typ = "website", bild, bildAlt, kopfTitel }) {
+function seite({ pfad, titel, beschreibung, body, aktiv, noindex = false, jsonld = [], typ = "website", bild, bildAlt, kopfTitel, module = [] }) {
   const url = `${BASIS}/b/${pfad}`;
   const k = `/b/kacheln/${kachelName(pfad)}.png`;
   const og = bild || `${BASIS}${k}`;
@@ -209,7 +209,7 @@ ${body}
     </div>
   </footer>
   <template id="zeichen-vollbild">${zeichen("vollbild")}</template><template id="zeichen-tab">${zeichen("tab")}</template><template id="zeichen-schliessen">${zeichen("schliessen")}</template>
-  <script type="module" src="/b/b.js?v=${V}"></script>
+  <script type="module" src="/b/b.js?v=${V}"></script>${module.map((m) => `\n  <script type="module" src="/b/${m}?v=${V}"></script>`).join("")}
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="/vendor/goatcounter/count.js"></script>
 </body>
 </html>
@@ -437,10 +437,12 @@ for (const a of APPS) {
   <figure class="stueck-bild quadrat">${appBild(a)}</figure>
   <div class="stueck-text"><p>${esc(a.text)}</p><p class="fuer">${esc(a.fuer)}</p></div>
 </div></article>
-${a.beispiele ? `<section class="abschnitt" aria-labelledby="beispiele-titel"><div class="spalte"><div class="abschnitt-kopf"><h2 id="beispiele-titel">Was dabei herauskommt</h2></div>${beispiele(a)}</div></section>` : ""}
+<section class="abschnitt" aria-labelledby="beispiele-titel"><div class="spalte"><div class="abschnitt-kopf"><h2 id="beispiele-titel">Was dabei herauskommt</h2></div>
+  <figure class="tafel-lebt" data-tafel="${a.slug}">${appBild(a)}<figcaption>${esc(a.bewegung)}</figcaption></figure>
+  ${beispiele(a)}</div></section>
 <section class="spalte">${teilen({ pfad: `apps/${a.slug}/`, titel: a.name, text: a.kurz })}</section>
 ${faeden([...zs.map((z) => fZettel(z)), fApp(schwester), fAngebot(angebotVon(a.gattung === "Bild und Video" ? "produkte" : "vermittlung")), a.werk ? fRaster(rasterVon("nebeneinander-nacheinander")) : fAngebot(angebotVon("webdesign"))])}`;
-  veroeffentliche({ pfad: `apps/${a.slug}/`, aktiv: "apps/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, beschreibung: beschreibung(a.text), body, bildAlt: a.bildAlt,
+  veroeffentliche({ pfad: `apps/${a.slug}/`, aktiv: "apps/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, beschreibung: beschreibung(a.text), body, bildAlt: a.bildAlt, module: ["tafeln-leben.js"],
     jsonld: [{ "@context": "https://schema.org", "@type": "SoftwareApplication", name: a.name, applicationCategory: "MultimediaApplication", operatingSystem: "Browser", url: `${BASIS}/${a.url}`, description: a.kurz, offers: { "@type": "Offer", price: "0", priceCurrency: "CHF" }, author: { "@type": "Person", name: SEITE.person.name } }] });
 }
 
@@ -626,6 +628,8 @@ Schlagworte: ${p.schlagworte.map(esc).join("; ")}</pre>
 /* ---------- Dateien, Sitemap ---------- */
 copyFileSync(new URL("src/b/b.css", ROOT), new URL("b.css", AUS));
 copyFileSync(new URL("src/b/b.js", ROOT), new URL("b.js", AUS));
+copyFileSync(new URL("src/b/tafeln.mjs", ROOT), new URL("tafeln.mjs", AUS));
+writeFileSync(new URL("tafeln-leben.js", AUS), readFileSync(new URL("src/b/tafeln-leben.js", ROOT), "utf8").replace('from "./tafeln.mjs"', `from "./tafeln.mjs?v=${V}"`));
 mkdirSync(new URL("kacheln/", AUS), { recursive: true });
 writeFileSync(new URL("kacheln/liste.json", AUS), JSON.stringify(seiten.concat(["werkstatt/"]), null, 1) + "\n");
 
