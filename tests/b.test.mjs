@@ -12,7 +12,7 @@ const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const walk = (d, vor = "") => readdirSync(new URL(d, root), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(d + e.name + "/", vor + e.name + "/") : e.name === "index.html" ? [vor] : []);
-const seiten = walk("b/");
+const seiten = walk("b/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p));   // ohne die Bühnen der Apps (noindex, eigener Test)
 const meta = (html, name) => html.match(new RegExp(`<meta (?:name|property)="${name}" content="([^"]*)"`))?.[1];
 const pngMass = (buf) => [buf.readUInt32BE(16), buf.readUInt32BE(20)];
 
@@ -99,7 +99,8 @@ test("b/: die Startseite trägt das Feld mit allen 49 Zetteln, den Dialog und di
 test("b/: Apps, Raster und Angebote verlinken ihre Ziele, und die Ziele gibt es", () => {
   for (const a of APPS) {
     const html = lies(`b/apps/${a.slug}/index.html`);
-    for (const ziel of [a.url, a.app, a.feld].filter(Boolean)) { assert.ok(html.includes(`href="/${ziel}"`), `${a.slug}: Link ${ziel}`); assert.ok(existsSync(new URL(ziel + "index.html", root)), `${a.slug}: ${ziel} gibt es`); }
+    for (const ziel of [a.url, a.app, a.feld].filter(Boolean)) { assert.ok(existsSync(new URL(ziel + "index.html", root)), `${a.slug}: Ziel ${ziel} gibt es`); }
+    if (a.app) assert.ok(html.includes(`href="/${a.app}"`), `${a.slug}: Link zur App-Seite`);   // Anwendung und Feld öffnen seit 20. Oktober 2026 auf der Bühne unter /b/ (eigener Test)
     assert.ok(existsSync(new URL(a.bild, root)), `${a.slug}: Bild ${a.bild}`);
   }
   for (const r of RASTER) {
@@ -214,6 +215,23 @@ test("b/raster: wie die Apps – gezeichnete Tafel (lebend), die vier Felder dan
     assert.ok(lies("b/raster/index.html").includes(`<a class="stueck" href="/b/raster/${r.slug}/"><span class="bild quadrat"><picture>`), `${r.slug}: Kachel in der Übersicht`);
   }
   assert.ok(lies("b/b.js").includes(".prompt-kopieren"), "b.js kopiert den Prompt");
+});
+
+test("b/apps: die Bühne – jede Web-Anwendung unter /b/apps/<app>/oeffnen/ in der Leiste des Neubaus, die Anwendung mit ?b=1 ohne alte Navigation; noindex, nicht in der Sitemap", () => {
+  const sitemap = lies("sitemap.xml");
+  for (const a of APPS) {
+    const seite = lies(`b/apps/${a.slug}/index.html`);
+    assert.ok(seite.includes(`<a class="knopf voll" href="/b/apps/${a.slug}/oeffnen/">${a.name} öffnen</a>`), `${a.slug}: «öffnen» führt auf die Bühne`);
+    assert.ok(!seite.includes("data-fenster"), `${a.slug}: kein Fenster mehr`);
+    const b = lies(`b/apps/${a.slug}/oeffnen/index.html`);
+    assert.ok(b.includes('<body class="buehne-seite">') && b.includes('<meta name="robots" content="noindex">') && b.includes(`<link rel="canonical" href="https://ornament.cloud/b/apps/${a.slug}/">`), `${a.slug}: Bühne`);
+    assert.ok(b.includes(`<iframe class="app-rahmen" src="/${a.url}?b=1" title="${a.name}"`), `${a.slug}: die Anwendung im Rahmen mit ?b=1`);
+    assert.ok(b.includes(`<a class="tab" href="/${a.url}" target="_blank"`) && b.includes(`<a class="zurueck" href="/b/apps/${a.slug}/"`), `${a.slug}: eigener Tab und zurück`);
+    assert.ok(!sitemap.includes(`/b/apps/${a.slug}/oeffnen/`), `${a.slug}: Bühne nicht in der Sitemap`);
+    if (a.slug !== "orma") assert.ok(lies(a.url + "index.html").includes('setAttribute("data-buehne","")'), `${a.url}: blendet mit ?b=1 die alte Navigation aus`);   // ORMA hat keine alte Navigation
+    if (a.feld) { assert.ok(seite.includes(`href="/b/apps/${a.slug}/feld/"`)); assert.ok(lies(`b/apps/${a.slug}/feld/index.html`).includes(`src="/${a.feld}?b=1"`), `${a.slug}: das Feld auf der Bühne`); assert.ok(lies(a.feld + "index.html").includes("data-buehne")); }
+  }
+  assert.ok(lies("b/b.js").includes(".app-rahmen") && !lies("b/b.js").includes("data-fenster"), "b.js: Bühne statt Fenster");
 });
 
 test("b/: das Signet lebt auf Start und Über (Tafel «signet», zeichnet sich aus dem Keim); die Titel der Apps spielen mit «ornament» (data-wort, b.js)", async () => {

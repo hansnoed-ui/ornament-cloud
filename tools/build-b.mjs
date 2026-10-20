@@ -12,7 +12,7 @@ import { zeichen } from "../src/b/zeichen.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS = new URL("b/", ROOT);
-const V = 7;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 8;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 
@@ -210,7 +210,7 @@ ${body}
       <p class="zeile"><span>Diese Seite lädt nichts von aussen: keine Cookies, keine Werbung, keine Tracker.</span></p>
     </div>
   </footer>
-  <template id="zeichen-vollbild">${zeichen("vollbild")}</template><template id="zeichen-tab">${zeichen("tab")}</template><template id="zeichen-schliessen">${zeichen("schliessen")}</template>
+
   <script type="module" src="/b/b.js?v=${V}"></script>${module.map((m) => `\n  <script type="module" src="/b/${m}?v=${V}"></script>`).join("")}
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="/vendor/goatcounter/count.js"></script>
 </body>
@@ -226,6 +226,42 @@ function schreibe(pfad, html) {
 
 const seiten = [];   // für die Sitemap
 function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noindex) seiten.push(opts.pfad); }
+
+/* ---------- Die Bühne: eine Web-Anwendung in der neuen Seite (20. Oktober 2026, Wunsch: «Wenn ich bei den Apps die Webanwendung öffne, lande ich immer noch
+   auf der alten Seite. Diese Webanwendung in der neuen Seite darstellen. Nur die downloadbare App noch in der alten Fassung belassen.») ----------
+   Eine Seite unter /b/apps/<app>/oeffnen/ mit der Leiste des Neubaus (Signet, Name, Vollbild, eigener Tab, zurück) und der Anwendung im Rahmen;
+   die Anwendung blendet mit ?b=1 ihre alte Navigation aus (Skript und Stil im Kopf ihrer Seite). noindex, nicht in der Sitemap; die App-Seite bleibt kanonisch. */
+function buehne({ pfad, name, ziel, zurueck }) {
+  const html = `<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>${esc(name)} – ornament.cloud</title>
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="${BASIS}/b/${zurueck}">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="${ICON}">
+  <link rel="stylesheet" href="/vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="/b/b.css?v=${V}">
+</head>
+<body class="buehne-seite">
+  <div class="app-leiste">
+    <span class="app-name"><a class="signet" href="/b/" title="ornament.cloud">${SIGNET}</a><b>${esc(name)}</b></span>
+    <span class="app-knoepfe">
+      <button type="button" class="vollbild" title="Vollbild">${zeichen("vollbild")}<span>Vollbild</span></button>
+      <a class="tab" href="/${attr(ziel)}" target="_blank" rel="noopener" title="In eigenem Tab öffnen">${zeichen("tab")}<span>Eigener Tab</span></a>
+      <a class="zurueck" href="/b/${zurueck}" title="Zurück zur Seite der App">${zeichen("schliessen")}<span>Zurück</span></a>
+    </span>
+  </div>
+  <iframe class="app-rahmen" src="/${attr(ziel)}?b=1" title="${attr(name)}" allow="fullscreen; autoplay; microphone; camera; display-capture; clipboard-write" allowfullscreen loading="eager"></iframe>
+  <script type="module" src="/b/b.js?v=${V}"></script>
+</body>
+</html>
+`;
+  schreibe(pfad, html);
+}
 
 /* ---------- Startseite ---------- */
 {
@@ -439,7 +475,7 @@ for (const a of APPS) {
   <p class="gattung">${esc(a.gattung)}${a.werk ? ` · zu «${esc(a.werk)}»` : ""}</p>
   <h1 class="titel" data-wort="${attr(a.name)}"><span class="zeichen-gross">${zeichen(a.zeichen)}</span>${esc(a.name)}</h1>
   <p class="lead">${esc(a.kurz)}</p>
-  <p class="knopfreihe"><a class="knopf voll" href="/${attr(a.url)}" data-fenster="${attr(a.name)}">${a.name} öffnen</a>${a.app ? `<a class="knopf" href="/${attr(a.app)}">Als App installieren</a>` : ""}${a.feld ? `<a class="knopf still" href="/${attr(a.feld)}">Alle 326 im Feld</a>` : ""}</p>
+  <p class="knopfreihe"><a class="knopf voll" href="/b/apps/${a.slug}/oeffnen/">${a.name} öffnen</a>${a.app ? `<a class="knopf" href="/${attr(a.app)}">Als App installieren</a>` : ""}${a.feld ? `<a class="knopf still" href="/b/apps/${a.slug}/feld/">Alle 326 im Feld</a>` : ""}</p>
   <figure class="stueck-bild quadrat">${appBild(a)}</figure>
   <div class="stueck-text"><p>${esc(a.text)}</p><p class="fuer">${esc(a.fuer)}</p></div>
 </div></article>
@@ -448,6 +484,8 @@ for (const a of APPS) {
   ${beispiele(a)}</div></section>
 <section class="spalte">${teilen({ pfad: `apps/${a.slug}/`, titel: a.name, text: a.kurz })}</section>
 ${faeden([...zs.map((z) => fZettel(z)), fApp(schwester), fAngebot(angebotVon(a.gattung === "Bild und Video" ? "produkte" : "vermittlung")), a.werk ? fRaster(rasterVon("nebeneinander-nacheinander")) : fAngebot(angebotVon("webdesign"))])}`;
+  buehne({ pfad: `apps/${a.slug}/oeffnen/`, name: a.name, ziel: a.url, zurueck: `apps/${a.slug}/` });
+  if (a.feld) buehne({ pfad: `apps/${a.slug}/feld/`, name: `${a.name} – das Feld`, ziel: a.feld, zurueck: `apps/${a.slug}/` });
   veroeffentliche({ pfad: `apps/${a.slug}/`, aktiv: "apps/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, beschreibung: beschreibung(a.text), body, bildAlt: a.bildAlt, module: ["tafeln-leben.js"],
     jsonld: [{ "@context": "https://schema.org", "@type": "SoftwareApplication", name: a.name, applicationCategory: "MultimediaApplication", operatingSystem: "Browser", url: `${BASIS}/${a.url}`, description: a.kurz, offers: { "@type": "Offer", price: "0", priceCurrency: "CHF" }, author: { "@type": "Person", name: SEITE.person.name } }] });
 }

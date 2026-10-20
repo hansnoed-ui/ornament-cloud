@@ -147,49 +147,15 @@ function briefing(form) {
   setzen();
 }
 
-/* ---------- Das Fenster: eine App über der Seite ---------- */
-function fenster(link) {
-  link.addEventListener("click", (e) => {
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
-    if (matchMedia("(max-width: 560px)").matches && !navigator.userAgentData?.mobile && !/Mobi/.test(navigator.userAgent)) { /* schmales Fenster am Computer: trotzdem im Fenster */ }
-    e.preventDefault();
-    oeffneFenster(link.href, link.dataset.fenster || link.textContent.trim());
-  });
+/* ---------- Die Bühne: eine Web-Anwendung in der neuen Seite (/b/apps/<app>/oeffnen/) ---------- */
+const rahmen = document.querySelector(".app-rahmen");
+if (rahmen) {
+  document.querySelector(".app-knoepfe .vollbild")?.addEventListener("click", () => { const q = rahmen.requestFullscreen?.(); if (q && q.catch) q.catch(() => {}); });
+  const zurueck = document.querySelector(".app-knoepfe .zurueck");
+  const esc = (e) => { if (e.key === "Escape" && zurueck) location.href = zurueck.href; };
+  addEventListener("keydown", esc);
+  rahmen.addEventListener("load", () => { try { rahmen.contentWindow.addEventListener("keydown", esc); } catch {} });   // auch wenn die App den Fokus hat (gleiche Herkunft)
 }
-let fensterEl = null;
-function oeffneFenster(url, name) {
-  schliesseFenster(false);
-  const el = document.createElement("div");
-  el.className = "fenster"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", name);
-  el.innerHTML = `<div class="fenster-leiste"><span class="fenster-name">${document.querySelector(".signet svg")?.outerHTML || ""}<b></b></span><span class="fenster-knoepfe"><button type="button" class="vollbild" title="Vollbild"></button><a class="tab" href="" target="_blank" rel="noopener" title="In eigenem Tab öffnen"></a><button type="button" class="schliessen" title="Schliessen"></button></span></div><iframe title="" allow="fullscreen; autoplay; microphone; camera; display-capture; clipboard-write" allowfullscreen loading="eager"></iframe>`;
-  el.querySelector("b").textContent = name;
-  const zeichenVon = (n) => document.querySelector(`template#zeichen-${n}`)?.innerHTML || "";
-  el.querySelector(".vollbild").innerHTML = zeichenVon("vollbild") + "<span>Vollbild</span>";
-  el.querySelector(".tab").innerHTML = zeichenVon("tab") + "<span>Eigener Tab</span>";
-  el.querySelector(".schliessen").innerHTML = zeichenVon("schliessen") + "<span>Schliessen</span>";
-  el.querySelector(".tab").href = url;
-  const rahmen = el.querySelector("iframe"); rahmen.title = name; rahmen.src = url;
-  // Escape wirkt auch, wenn die App im Rahmen den Fokus hat (gleiche Herkunft)
-  rahmen.addEventListener("load", () => { try { rahmen.contentWindow.addEventListener("keydown", (e) => { if (e.key === "Escape") zu(); }); } catch {} });
-  const zu = () => { if (history.state && history.state.fenster) history.back(); else schliesseFenster(false); };
-  el.querySelector(".schliessen").addEventListener("click", zu);
-  el.querySelector(".vollbild").addEventListener("click", () => { const q = rahmen.requestFullscreen?.(); if (q && q.catch) q.catch(() => {}); });
-  el.querySelector(".tab").addEventListener("click", zu);
-  document.body.append(el); fensterEl = el;
-  document.body.classList.add("fenster-offen");
-  history.pushState({ fenster: url }, "", "#" + name.toLowerCase().replace(/\s+/g, "-"));
-  requestAnimationFrame(() => el.classList.add("da"));
-  el.querySelector(".schliessen").focus();
-}
-function schliesseFenster(zurueck = true) {
-  if (!fensterEl) return;
-  const el = fensterEl; fensterEl = null;
-  el.classList.remove("da"); document.body.classList.remove("fenster-offen");
-  setTimeout(() => el.remove(), ruhig ? 0 : 260);
-  if (zurueck && history.state && history.state.fenster) history.back();
-}
-addEventListener("popstate", () => { if (fensterEl) schliesseFenster(false); });
-addEventListener("keydown", (e) => { if (e.key === "Escape" && fensterEl) { if (history.state && history.state.fenster) history.back(); else schliesseFenster(false); } });
 
 /* ---------- Die Titel der Apps: Buchstaben aus «ornament» (20. Oktober 2026, Wunsch: «bei diesen Titeln … sollen sich diese Wörter bzw. Buchstaben
    bilden, transformieren») – das Wort «ornament» steht da, die Buchstaben, die der Name braucht, bleiben und rücken an ihren Platz, die anderen
@@ -227,4 +193,3 @@ const start = document.querySelector(".buehne");
 if (start) buehne(start); else document.querySelectorAll(".feld-rahmen").forEach(feld);
 document.querySelectorAll(".teilen-knopf").forEach(teilen);
 document.querySelectorAll("form.brief").forEach(briefing);
-document.querySelectorAll("a[data-fenster]").forEach(fenster);
