@@ -6,18 +6,18 @@
 //   Das Bündel: S Fäden auf demselben Weg, je Faden ein eigenes Rauschen und eine eigene Verzögerung; leise liegen sie aufeinander (ein heller Faden),
 //   laut quellen sie zu Rauch auf, der Bass reisst sie auseinander, die Höhen werfen Funken. Additiv, darüber Bloom.
 //   Krasser als das Vorbild: bei jedem kräftigen Einsatz ein harter Schnitt – neuer Weg, neue Lage des Würfels, manchmal mitten in ihm –,
-//   Zoomstoss beim Schlag, bei Schnitten kurz Negativ; der Würfel immer scharf und ohne Echos; mit Text, Foto oder Video schreibt der Faden manchmal deren Umrisse in den Raum.
+//   Zoomstoss beim Schlag, bei Schnitten kurz Negativ; der Würfel immer scharf und ohne Echos; mit einem Video schreibt der Faden manchmal die Umrisse seines Standbilds in den Raum.
 //   01 Würfel (er zeichnet sich, der Faden beginnt) → 02 Irrfahrt → 03 Logo (der Faden legt sich zur Schlaufe des Signets, film.js tippt den
 //   Schriftzug) oder 03 Stille (der Faden zieht sich in seinen Kopf zusammen).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich } from "./gemeinsam.js?v=19";
-import { phase } from "./ablauf.js?v=19";
-import { gewebeKurven } from "./kurven.js?v=19";
-import { weichzeichnen } from "./analyse.js?v=19";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=19";
-import { RAUSCHEN } from "./gewebe.js?v=19";
-import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=19";
+import { anteil, weich } from "./gemeinsam.js?v=20";
+import { phase } from "./ablauf.js?v=20";
+import { gewebeKurven } from "./kurven.js?v=20";
+import { weichzeichnen } from "./analyse.js?v=20";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=20";
+import { RAUSCHEN } from "./gewebe.js?v=20";
+import { PN, irrweg, verbinden, zufallsfolge } from "./irrweg.js?v=20";
 
 const VOR = 0.4;
 

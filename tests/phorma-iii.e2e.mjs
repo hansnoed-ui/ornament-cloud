@@ -1,6 +1,6 @@
-// PHORMA III (alpha/phorma-iii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): Gewebe aus Text mit Ton (verfrickelt, das Logo
-// aus dem Gewebe, Video mit Tonspur), Video als Quelle, nur Ton, nur Musik geladen, die Stimme (säubern, Scratch → Stimme → Gefrickel), die
-// Irrfahrt, Foto in beiden Formaten exakt, keine Anfragen nach aussen,
+// PHORMA III (alpha/phorma-iii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): Gewebe mit Ton (verfrickelt, das Logo aus dem
+// Gewebe, Video mit Tonspur), Video als Quelle, nur Ton, nur Musik geladen, die Stimme (säubern, Scratch → Stimme → Gefrickel), die Irrfahrt,
+// die Formate, keine Anfragen nach aussen; seit dem 19. Oktober 2026 ohne Foto und Text als Quelle,
 // Handy ohne seitliches Scrollen. Mit ?test (gröbere Netze). Bis zum 18. Oktober 2026 Teil von tests/phorma-ii.e2e.mjs.
 //   NODE_PATH=$(npm root -g) node tests/phorma-iii.e2e.mjs
 import assert from "node:assert/strict";
@@ -34,28 +34,11 @@ async function oeffne({ vorher = null, ...opts } = {}) {
   await page.goto(base);
   return { ctx, page, fehler, fremd };
 }
-// Testfoto, im Browser gezeichnet: Himmel, Sonne, eine rote Fläche, Wiese; quer (3 : 2)
-const FOTO = await (async () => {
-  const p = await (await browser.newContext()).newPage();
-  const url = await p.evaluate(() => {
-    const w = 1500, h = 1000, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
-    const g = x.createLinearGradient(0, 0, 0, h * 0.6); g.addColorStop(0, "#2f5fb0"); g.addColorStop(1, "#9cc2ee");
-    x.fillStyle = g; x.fillRect(0, 0, w, h * 0.6);
-    x.fillStyle = "#3c8a3a"; x.fillRect(0, h * 0.6, w, h * 0.4);
-    for (let i = 0; i < 4000; i++) { x.fillStyle = `rgba(20,60,20,${(i % 7) / 14})`; x.fillRect((i * 7919) % w, h * 0.6 + ((i * 104729) % (h * 0.4)), 3, 9); }
-    x.fillStyle = "#ffd23f"; x.beginPath(); x.arc(w * 0.5, h * 0.3, 140, 0, 7); x.fill();
-    x.fillStyle = "#d0302a"; x.fillRect(w * 0.35, h * 0.62, w * 0.3, h * 0.25);
-    return c.toDataURL("image/jpeg", 0.92);
-  });
-  await p.context().close();
-  return Buffer.from(url.split(",")[1], "base64");
-})();
-const laden = (page) => page.setInputFiles("#datei", { name: "foto.jpg", mimeType: "image/jpeg", buffer: FOTO });
 const bereit = (page) => page.waitForFunction(() => !document.getElementById("video").disabled && window.__phorma?.sz && window.__phorma?.buehne && window.__phorma.buehneFertig, null, { timeout: 180_000 });
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=19");
+  const { bild } = await import("./film.js?v=20");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -133,15 +116,14 @@ const WAV = (() => {
   return b;
 })();
 
-await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zeichen, Bänder aus Linien, Fragmente bei den Einsätzen, am Ende exakt der Text; Video mit Tonspur", async () => {
+await check("Gewebe mit Ton: zuerst «Nur Ton» (kein Foto, kein Text); verfrickeln und neu würfeln, Ton aus; Bänder aus Linien; das Logo verfrickelt; Video mit Tonspur", async () => {
   const { ctx, page, fehler, fremd } = await oeffne({ vorher: ERSATZ_ENCODER });
-  assert.equal(await page.getAttribute('[data-quelle="foto"]', "aria-pressed"), "true", "zuerst ein Foto");
-  await page.click('[data-quelle="text"]');
-  assert.ok(await page.isVisible("#text") && !(await page.isVisible("#ablage")), "Textfeld statt Ablage");
-  await page.fill("#text", "ki me");
+  assert.equal(await page.getAttribute('[data-quelle="ton"]', "aria-pressed"), "true", "zuerst «Nur Ton»");
+  assert.deepEqual(await page.locator("[data-quelle]").evaluateAll((k) => k.map((b) => b.dataset.quelle)), ["ton", "video"], "Quelle nur Ton oder Video (Foto und Text seit dem 19. Oktober 2026 nicht mehr)");
+  assert.equal(await page.locator("#datei, #text, #testbild, #ablage").count(), 0);
   await bereit(page);
   await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
-  await page.waitForFunction(() => window.__phorma.ton && window.__phorma.buehneFertig && window.__phorma.sz.fragmente.length, null, { timeout: 120_000 });
+  await page.waitForFunction(() => window.__phorma.ton && window.__phorma.buehneFertig, null, { timeout: 120_000 });
   await bereit(page);
   assert.match(await page.textContent("#ton-info"), /schlaege\.wav · 12,0 s · \d+ Einsätze/);
   // Verfrickeln: ein neues Stück, ein neuer Wurf ein anderes, das Gewebe folgt ihm; zurück zur Datei, wie sie ist
@@ -163,18 +145,18 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
   // Ton an/aus: ohne Haken ist die Vorschau stumm
   await page.uncheck("#ton-im-video"); assert.equal(await page.evaluate(() => document.getElementById("tonspur").muted), true);
   await page.check("#ton-im-video"); assert.equal(await page.evaluate(() => document.getElementById("tonspur").muted), false);
-  await page.waitForFunction(() => window.__phorma.buehneFertig && window.__phorma.sz.fragmente.length, null, { timeout: 120_000 });
+  await page.waitForFunction(() => window.__phorma.buehneFertig, null, { timeout: 120_000 });
   await bereit(page);
-  const s = await page.evaluate(() => { const S = window.__phorma; return { phasen: S.sz.zeit.phasen.map((p) => [p.name, p.von, p.bis]), abschnitt: S.sz.zeit.abschnitt, dauer: S.sz.zeit.dauer, tonDauer: S.ton.analyse.dauer, einsaetze: S.ton.analyse.einsaetze.length, fragmente: S.sz.fragmente.length, schnitte: S.sz.schnitte }; });
+  const s = await page.evaluate(() => { const S = window.__phorma; return { phasen: S.sz.zeit.phasen.map((p) => [p.name, p.von, p.bis]), abschnitt: S.sz.zeit.abschnitt, dauer: S.sz.zeit.dauer, tonDauer: S.ton.analyse.dauer, einsaetze: S.ton.analyse.einsaetze.length, schnitte: S.sz.schnitte }; });
   // mit Signet direkt vom Gewebe ins Logo (Rückmeldung: «der Weissraum einige Sekunden vor dem Logo ist unnötig»), danach nur 0,3 s Schluss
   assert.deepEqual(s.phasen.map((p) => p[0]), ["zeichen", "gewebe", "logo"]);
   assert.ok(Math.abs(s.dauer - s.abschnitt.bis - 0.3) < 1e-6, `nach dem Logo nur der Schluss (${s.dauer}, ${s.abschnitt.bis})`);
   assert.ok(Math.abs(s.dauer - Math.max(s.tonDauer, 10.7)) < 1e-6, `mit Ton: so lang wie die Musik, der Effekt mindestens 10 s (${s.dauer}, Ton ${s.tonDauer})`);
-  assert.ok(s.einsaetze >= 6 && s.fragmente >= 2, `Einsätze ${s.einsaetze}, Fragmente ${s.fragmente}`);
+  assert.ok(s.einsaetze >= 6, `Einsätze ${s.einsaetze}`);
   // das Logo verfrickelt sich im Takt (Wunsch: «eine verfrickelte Animation des Logos»): Störungen im Logo; mitten in einer anders als ohne; der
   // Schriftzug wird getippt und steht nach 2,6 s
   const logo = await page.evaluate(async () => {
-    const { bild, logoZeichen } = await import("./film.js?v=19");
+    const { bild, logoZeichen } = await import("./film.js?v=20");
     const S = window.__phorma, sz = { ...S.sz, buehne: null, beschriftung: false }, L = sz.logo, e = L.plan.find((x) => x.art >= 0.2 && x.t < L.bis - 1);
     const zeichne = (z, t) => { const c = document.createElement("canvas"); c.width = 270; c.height = 338; const x = c.getContext("2d"); x.setTransform(0.25, 0, 0, 0.25, 0, 0); bild(x, z, t); return c.toDataURL(); };
     const t = e.t + e.dauer * 0.3;
@@ -185,16 +167,9 @@ await check("Gewebe aus Text mit Ton: verfrickeln und neu würfeln, Ton aus; Zei
   // kaum leeres Papier: im Logo und im Schluss überall Linien und Schrift (Wunsch: «maximal kurz einen leeren Bildschirm zeigen»)
   const L = s.phasen[2];
   for (const t of [L[1] + 0.1, L[1] + 1.2, L[2] - 0.6, s.dauer - 0.05]) { const m = await messe(page, t); assert.ok(m.tinte > 0.001, `bei ${t.toFixed(2)} s nicht leer (Tinte ${m.tinte.toFixed(4)})`); }
-  const G = s.phasen[1], zeichen = await messe(page, s.phasen[0][1] + 0.9), mitte = await messe(page, (G[1] + G[2]) / 2), mitte2 = await messe(page, (G[1] + G[2]) / 2 + 0.5);
-  // ohne Signet wie bisher: am Ende das Bild, hier exakt der Text
-  await page.uncheck("#unschaerfe"); await page.uncheck("#signet");
-  await page.waitForFunction(() => window.__phorma.sz.zeit.phasen.at(-1).name === "bild" && window.__phorma.buehneSchluessel.endsWith("|false|"));
-  await bereit(page);
-  const ende = await messe(page, (await messe(page, 0)).zeit.abschnitt.bis + 1);
-  assert.ok(zeichen.mittelAbw < 10 && mitte.mittelAbw > zeichen.mittelAbw, `zuerst steht der Text (${zeichen.mittelAbw.toFixed(2)}, später ${mitte.mittelAbw.toFixed(2)})`);
-  assert.ok(mitte.hell > 150, `Papier mit Linien (${mitte.hell.toFixed(0)}, ${mitte.mittelAbw.toFixed(2)})`);
+  const G = s.phasen[1], mitte = await messe(page, (G[1] + G[2]) / 2), mitte2 = await messe(page, (G[1] + G[2]) / 2 + 0.5);
+  assert.ok(mitte.hell > 150 && mitte.tinte > 0.001, `Papier mit Linien (${mitte.hell.toFixed(0)}, ${mitte.tinte.toFixed(4)})`);
   assert.notEqual(mitte.abdruck, mitte2.abdruck, "die Bänder bewegen sich");
-  assert.ok(ende.abw <= 2, `am Ende exakt der Text (${ende.abw})`);
   // Video mit Ton (Bild aus dem Ersatz-Encoder, Ton vom Browser)
   await page.click("#video");
   await page.waitForSelector("#ergebnis:not([hidden])", { timeout: 600_000 });
@@ -235,9 +210,10 @@ await check("Video als Quelle: Standbild, sein Ton als Tonspur, im Gewebe neue L
   });
   await page.uncheck("#signet");                                         // ohne Logo: am Ende das Standbild
   await page.click('[data-quelle="video"]');
-  assert.ok(await page.isVisible("#video-teil") && !(await page.isVisible("#ablage")), "Videoteil statt Ablage");
+  assert.ok(await page.isVisible("#video-teil") && !(await page.isVisible("#ton-teil")), "der Teil für das Video");
   await page.setInputFiles("#videodatei", { name: "probe.webm", mimeType: "video/webm", buffer: Buffer.from(webm) });
-  await page.waitForFunction(() => window.__phorma.video && window.__phorma.A, null, { timeout: 60_000 });
+  // bis das Standbild des Videos analysiert ist (die Seite hat schon das Papier von «Nur Ton» analysiert, darum genügt S.A allein nicht)
+  await page.waitForFunction(() => window.__phorma.video && window.__phorma.bild === window.__phorma.video.bild && window.__phorma.A && window.__phorma.ton, null, { timeout: 60_000 });
   assert.match(await page.textContent("#video-info"), /probe\.webm · \d+,\d s · 320 × 240/);
   const ton = await page.evaluate(() => window.__phorma.ton?.name);
   assert.equal(ton, "Ton von probe.webm", "der Ton des Videos ist die Tonspur");
@@ -256,7 +232,7 @@ await check("Video als Quelle: Standbild, sein Ton als Tonspur, im Gewebe neue L
 await check("Nur Ton: gleich Flächen aus Schlaufen, bei kräftigen Einsätzen neue Bilder; am Ende das Logo, ohne Signet leeres Papier", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   await page.click('[data-quelle="ton"]');
-  assert.ok(await page.isVisible("#ton-teil") && !(await page.isVisible("#ablage")));
+  assert.ok(await page.isVisible("#ton-teil"));
   await page.setInputFiles("#tondatei", { name: "schlaege.wav", mimeType: "audio/wav", buffer: WAV });
   await page.waitForFunction(() => window.__phorma.ton && window.__phorma.A, null, { timeout: 60_000 });
   await bereit(page);
@@ -310,6 +286,15 @@ await check("Nur Musik geladen, kein Bild: «Nur Ton» wird gewählt und die Vor
   assert.ok(!/before initialization|is not defined/.test(await page.textContent("#startfehler")), "kein Fehler beim Start");
   assert.deepEqual(fehler, []);
   await ctx.close();
+  // gemerkt war noch «Foto» oder «Text» (bis zum 19. Oktober 2026): die Seite startet mit «Nur Ton», ohne Fehler
+  for (const alt of ["foto", "text"]) {
+    const o = await oeffne({ vorher: `localStorage.setItem("phorma-iii.quelle", "${alt}")` });
+    await bereit(o.page);
+    assert.equal(await o.page.evaluate(() => window.__phorma.quelle), "ton", `gemerkt «${alt}» → «Nur Ton»`);
+    assert.equal(await o.page.getAttribute('[data-quelle="ton"]', "aria-pressed"), "true");
+    assert.deepEqual(o.fehler, []);
+    await o.ctx.close();
+  }
 });
 
 
@@ -429,7 +414,7 @@ const zaehlvideo = (page, { sekunden = 12, drehung = 0 } = {}) => page.evaluate(
 }, [sekunden, drehung]).then((b) => Buffer.from(b, "base64"));
 /** das Bild des Films zur Zeit t (halbe Grösse, ohne Beschriftung): die Nummer aus den 3 × 3 Feldern und die Farben links und rechts der Mitte */
 const zaehlerLesen = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=19");
+  const { bild } = await import("./film.js?v=20");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -449,7 +434,7 @@ await check("Irrfahrt: das Stottern zeigt nie Reste des Logos (beide teilen eine
   await page.waitForFunction(() => window.__phorma.ton && window.__phorma.A, null, { timeout: 60_000 });
   await bereit(page);
   const r = await page.evaluate(async () => {
-    const { bild } = await import("./film.js?v=19");
+    const { bild } = await import("./film.js?v=20");
     const S = window.__phorma; S.laeuft = false;
     // die Bühne mit einer einzigen Lage: so stottert jedes Ereignis (sonst fällt es vor einem Sprung aus), und die Leinwand wird gebraucht
     const b = S.buehne, buehne = { bild: (...x) => b.bild(...x), lage: () => 0, get ende() { return b.ende; } };
@@ -730,7 +715,7 @@ await check("Traube: wählbar und gemerkt; schwarz mit roten Perlen, neue Einste
   assert.ok(lagen.n >= 3 && lagen.wechsel < lagen.bilder / 20, `Schnitte im Takt (${lagen.n} Einstellungen, ${lagen.wechsel} Wechsel)`);
   // rot auf Schwarz: der Anteil deutlich roter Punkte (die Fäden sind weiss)
   const rot = (t) => page.evaluate(async (t) => {
-    const { bild } = await import("./film.js?v=19");
+    const { bild } = await import("./film.js?v=20");
     const S = window.__phorma, w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
     x.setTransform(0.5, 0, 0, 0.5, 0, 0); bild(x, { ...S.sz, buehne: S.buehne, beschriftung: false }, t);
     const d = x.getImageData(0, 0, w, h).data; let n = 0;
@@ -795,9 +780,9 @@ await check("Irrfahrt: als Effekt wählbar und gemerkt; schwarz, beim Schlag hel
   await ctx.close();
 });
 
-await check("Foto als Quelle, Format 9 : 16, 16 : 9 und zurück: ohne Logo steht am Ende das Foto exakt; mit Logo am Ende das Logo", async () => {
+await check("Formate 9 : 16, 16 : 9 und zurück (Nur Ton): das Bild passt sich an; ohne Logo endet das Gewebe auf dem leeren Papier, mit Logo im Logo", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
-  await laden(page); await bereit(page);
+  await bereit(page);
   assert.equal(await page.evaluate(() => window.__phorma.sz.zeit.phasen.at(-1).name), "logo");
   await page.uncheck("#signet");
   await page.waitForFunction(() => window.__phorma.sz.zeit.phasen.at(-1).name === "bild");
@@ -808,8 +793,8 @@ await check("Foto als Quelle, Format 9 : 16, 16 : 9 und zurück: ohne Logo steht
     const box = await page.locator("#vorschau").boundingBox();
     assert.ok(Math.abs(box.width / box.height - mass[0] / mass[1]) < 0.01);
     const z = (await messe(page, 0)).zeit, mitte = await messe(page, (z.phasen[1][2] + z.phasen[1][3]) / 2), ende = await messe(page, z.stehen[0] + 0.4);
-    assert.ok(mitte.mittelAbw > 3, `${format}: im Gewebe nicht das Foto (${mitte.mittelAbw.toFixed(1)})`);
-    assert.ok(ende.abw <= 3, `${format}: am Ende das Foto exakt (${ende.abw})`);
+    assert.ok(mitte.tinte > 0.001, `${format}: im Gewebe Linien (${mitte.tinte.toFixed(4)})`);
+    assert.ok(ende.tinte < 0.001, `${format}: am Ende das leere Papier (${ende.tinte.toFixed(4)})`);
   }
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
@@ -818,6 +803,7 @@ await check("Foto als Quelle, Format 9 : 16, 16 : 9 und zurück: ohne Logo steht
 await check("PHORMA III als App (19. Oktober 2026): Knopf zum Installieren, Chrome meldet keine Hindernisse; nach dem ersten Besuch läuft die Traube ohne Netz, ebenso die Seite der installierten App (studio/) und die App-Seite", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   const wurzel = base.replace(/\?test$/, "");
+  await bereit(page);                                                    // die Seite rechnet beim Start gleich mit «Nur Ton»
   assert.equal(await page.locator("h1").innerText(), "PHORMA III");
   assert.ok(await page.locator("#installieren").isVisible(), "Knopf sichtbar (nicht in der installierten App)");
   await page.click("#installieren-knopf");
@@ -830,7 +816,7 @@ await check("PHORMA III als App (19. Oktober 2026): Knopf zum Installieren, Chro
   await page.reload(); await page.waitForFunction(() => navigator.serviceWorker.controller);
   const cache = readFileSync(new URL("alpha/phorma-iii/sw.js", new URL("../", import.meta.url)), "utf8").match(/const CACHE = "([^"]+)"/)[1];
   const gespeichert = await page.evaluate(async (c) => (await (await caches.open(c)).keys()).map((r) => new URL(r.url).pathname + new URL(r.url).search), cache);
-  for (const d of ["/alpha/phorma-iii/", "/alpha/phorma-iii/studio/", "/alpha/phorma-iii/app/", "/alpha/phorma-iii/beispiel.jpg", "/alpha/phorma-iii/icons/icon-512.png",
+  for (const d of ["/alpha/phorma-iii/", "/alpha/phorma-iii/studio/", "/alpha/phorma-iii/app/", "/alpha/phorma-iii/icons/icon-512.png",
     "/vendor/three-0.185.1/three.module.min.js", "/vendor/three-0.185.1/addons/postprocessing/UnrealBloomPass.js", "/vendor/mp4-muxer-5.2.2/mp4-muxer.js", "/vendor/mp4box-2.4.1/mp4box.js"])
     assert.ok(gespeichert.some((x) => x.split("?")[0] === d), `gespeichert: ${d}`);   // die Seite selbst mit ?test (so öffnet sie der Test)
   for (const m of ["app", "ablauf", "buehne", "film", "traube", "traubenplan", "gewebe", "irrfahrt", "video", "filmspur", "ton", "tonspur", "frickeln", "stimme", "rechner", "pwa"])
@@ -865,7 +851,7 @@ await check("PHORMA III als App (19. Oktober 2026): Knopf zum Installieren, Chro
 
 await check("Auflösung doppelt (Wunsch vom 19. Oktober 2026: Videos aus PHORMA III «neu rendern»): Standbild 2160 × 2700, die Fäden so dunkel wie einfach, gemerkt; ohne H.264 ein klarer Hinweis", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
-  await laden(page); await bereit(page);
+  await bereit(page);
   await page.click('[data-aufloesung="2"]');
   await page.waitForFunction(() => window.__phorma.fotoGross?.width === 2160 && window.__phorma.sz?.faktor === 2 && window.__phorma.buehne?.H === 1350, null, { timeout: 120_000 });
   await bereit(page);
@@ -875,7 +861,7 @@ await check("Auflösung doppelt (Wunsch vom 19. Oktober 2026: Videos aus PHORMA 
   assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [2160, 2700], "Standbild in doppelter Auflösung");
   // dasselbe Bild mitten im Gewebe einfach und doppelt (auf einfach verkleinert): gleich hell – die Fäden werden feiner, nicht heller
   const h = await page.evaluate(async () => {
-    const { bild } = await import("./film.js?v=19");
+    const { bild } = await import("./film.js?v=20");
     const S = window.__phorma; S.laeuft = false;
     const sz = { ...S.sz, buehne: S.buehne, beschriftung: false }, p = sz.zeit.phasen[1], t = (p.von + p.bis) / 2;
     const zeichne = (k) => { const c = document.createElement("canvas"); c.width = 1080 * k; c.height = 1350 * k; const x = c.getContext("2d"); x.setTransform(k, 0, 0, k, 0, 0); bild(x, sz, t); return c; };
@@ -897,7 +883,7 @@ await check("Auflösung doppelt (Wunsch vom 19. Oktober 2026: Videos aus PHORMA 
 
 await check("Handy: nichts ragt seitlich hinaus, Beschriftungen auf einer Zeile", async () => {
   const { ctx, page, fehler } = await oeffne({ viewport: { width: 375, height: 740 }, isMobile: true, hasTouch: true });
-  await laden(page); await bereit(page);
+  await bereit(page);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
   assert.ok(await page.evaluate(() => [...document.querySelectorAll(".segment button")].every((x) => x.scrollWidth <= x.clientWidth + 1)), "Beschriftungen auf einer Zeile");
   assert.ok(await page.evaluate(() => [...document.querySelectorAll("[data-wahl], .phasen button")].every((x) => x.getBoundingClientRect().right <= window.innerWidth)), "Effekte und Phasen passen");

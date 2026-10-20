@@ -500,13 +500,17 @@ test("MP4 in Teilen: dieselben Bytes wie mp4-muxer am Stück, moov vorn; nie die
   } } finally { Date.now = uhr; }
 });
 
-test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Marken, nichts von aussen; nur das Gewebe, mit Foto, Text, Video oder Ton", () => {
+test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Marken, nichts von aussen; Quelle nur Ton oder Video (Foto und Text seit dem 19. Oktober 2026 nicht mehr)", () => {
   const html = lies("index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.match(html, /<title>PHORMA III – Ornament Cloud · Alpha<\/title>/);
   assert.match(html, /"three": "\.\.\/\.\.\/vendor\/three-0\.185\.1\/three\.module\.min\.js"/);
   assert.ok(!/<script[^>]+src="https?:/.test(html), "keine Skripte von aussen");
-  assert.match(html, /data-quelle="foto"[\s\S]*data-quelle="text"[\s\S]*data-quelle="video"[\s\S]*data-quelle="ton">Nur Ton/, "Foto, Text, Video oder nur Ton als Quelle");
+  assert.match(html, /data-quelle="ton">Nur Ton<\/button>\s*<button type="button" data-quelle="video">Video/, "Nur Ton oder ein Video als Quelle");
+  // Foto und Text sind weg (Rückmeldung: «es läuft einfach der gewählte Effekt, aber weder das Bild noch der Text werden angezeigt. Ich find, das kann raus»)
+  assert.ok(!/data-quelle="(foto|text)"|id="(datei|testbild|text|ablage)"/.test(html), "kein Foto, kein Text, kein Beispielbild");
+  for (const t of [html, lies("app/index.html"), lies("manifest.webmanifest")]) assert.ok(!/Text, Foto|Foto oder Video|Foto, Text/.test(t), "die Beschreibungen nennen weder Foto noch Text");
+  assert.match(lies("app.js"), /wahl\("data-quelle", "quelle", \["video", "ton"\]/, "eine gemerkte Wahl «foto» oder «text» ergibt «Nur Ton»");
   assert.match(html, /id="videodatei"[^>]*accept="video\/\*/, "eine Videodatei");
   assert.match(html, /id="tondatei"[^>]*accept="audio\/\*/, "eine Audiodatei");
   assert.match(html, /id="ton-im-video" checked> Ton an/, "Ton ausschaltbar");
@@ -521,8 +525,8 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.ok(!/data-(effekt|tiefe)=|data-wahl="(physarum|tiefe|tuch)/.test(html), "keine Kette und keine Tiefe: das ist PHORMA II");
   assert.match(html, /href="\.\.\/phorma-ii\/"/, "Hinweis auf PHORMA II");
   const dateien = readdirSync(P).filter((f) => f.endsWith(".js")), marken = new Set();
-  for (const f of ["ablauf.js", "analyse.js", "app.js", "buehne.js", "film.js", "frickeln.js", "gemeinsam.js", "gewebe.js", "irrfahrt.js", "irrweg.js", "kurven.js", "stimme.js", "rechner.js", "textbild.js", "ton.js", "tonspur.js", "traube.js", "traubenplan.js"]) assert.ok(dateien.includes(f), f);
-  for (const f of ["physarum.js", "tiefe.js", "tuch.js", "tuchsim.js", "tiefe-ki.js"]) assert.ok(!dateien.includes(f), `ohne ${f}`);
+  for (const f of ["ablauf.js", "analyse.js", "app.js", "buehne.js", "film.js", "frickeln.js", "gemeinsam.js", "gewebe.js", "irrfahrt.js", "irrweg.js", "kurven.js", "stimme.js", "rechner.js", "ton.js", "tonspur.js", "traube.js", "traubenplan.js"]) assert.ok(dateien.includes(f), f);
+  for (const f of ["physarum.js", "tiefe.js", "tuch.js", "tuchsim.js", "tiefe-ki.js", "textbild.js"]) assert.ok(!dateien.includes(f), `ohne ${f}`);
   for (const f of dateien) {
     const js = lies(f);
     for (const m of js.matchAll(/"\.\/([a-z-]+\.js)(\?v=\d+)?"/g)) { assert.ok(m[2], `${f}: ${m[1]} mit Marke`); marken.add(m[2]); }

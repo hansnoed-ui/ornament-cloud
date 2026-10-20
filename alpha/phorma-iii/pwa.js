@@ -45,7 +45,7 @@ if (box && !standalone) {
   const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   hilfe.innerHTML = esc(schritte()).replace(/«[^»]+»/g, (m) => `<span>${m}</span>`) +
     (inApp && android ? ` <a class="installieren-chrome" href="${esc(chromeUrl()).replace(/"/g, "&quot;")}">In Chrome öffnen</a>`
-      : " Danach steht PHORMA III als eigenes Symbol auf dem Bildschirm und läuft auch ohne Netz; Foto, Video und Musik bleiben auf dem Gerät.");
+      : " Danach steht PHORMA III als eigenes Symbol auf dem Bildschirm und läuft auch ohne Netz; Video und Musik bleiben auf dem Gerät.");
   const zuChrome = hilfe.querySelector(".installieren-chrome");
   let angebot = null;
   box.hidden = false;

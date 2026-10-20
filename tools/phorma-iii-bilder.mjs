@@ -136,7 +136,7 @@ await symbol(32, 0.94, "../alpha/phorma-iii/icons/favicon-32.png");
     <div class="text">
       <div class="marke">App · Video mit Ton · ohne Netz</div>
       <h1>PHORMA III</h1>
-      <p>Aus Klang wird Bild – mit Musik oder Stimme, Text, Foto oder Video.</p>
+      <p>Aus Klang wird Bild – mit Musik, Stimme oder Video.</p>
       <div class="fuss"><b>ornament.cloud/alpha/phorma-iii/app</b>Alles bleibt auf dem Gerät.</div>
     </div></body></html>`);
   await p.evaluate(() => document.fonts.ready);

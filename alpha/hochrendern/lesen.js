@@ -1,7 +1,7 @@
 // Hochrendern – ein Video Bild für Bild lesen. MP4 und MOV: mp4box.js 2.4.1 (BSD-3, vendor/) zerlegt, WebCodecs (VideoDecoder) entpackt jedes
 // Bild genau, mit seinem Zeitstempel; die Drehung kommt aus der Matrix der Spur (Videos vom Telefon stehen oft quer in der Datei). Sonst (WebM,
 // Codec hier nicht entpackbar) über das Spulen des Video-Elements, 30 Bilder je Sekunde.
-import { drehungAusMatrix } from "../phorma-iii/filmspur.js?v=19";
+import { drehungAusMatrix } from "../phorma-iii/filmspur.js?v=20";
 
 /** die Beschreibung des Codecs (avcC, hvcC, vpcC, av1C) aus der Spur, für den VideoDecoder (wie in phorma-iii/filmspur.js) */
 function beschreibung(MP4Box, trak) {

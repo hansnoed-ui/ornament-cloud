@@ -187,7 +187,7 @@ export const wechselZeiten = (T, G, max = 23) => T.schnitte.filter((s) => s > G.
 /**
  * Gewebe: die Zustände – bei jedem kräftigen Einsatz (Stärke ≥ 0,35, mindestens 0,45 s nach dem letzten) ein neues Bild: andere Fläche, andere
  * Einstellung; Lücken über 3 s alle 2 s gefüllt («gib nochmals Gas»). Je Zustand wiederholbar gewürfelt: nacht (Weiss auf Schwarz, etwa jeder dritte, nur ab einem
- * Schnitt) und zeichen (das Zeichen selbst statt der Fläche, etwa jeder fünfte; nur mit Text, Foto oder Video). [{ t, nr, nacht, zeichen }] in Filmzeit.
+ * Schnitt) und zeichen (das Zeichen selbst statt der Fläche, etwa jeder fünfte; nur mit einem Video). [{ t, nr, nacht, zeichen }] in Filmzeit.
  */
 export function gewebeZustaende(T, von, bis) {
   const z = [];

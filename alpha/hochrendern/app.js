@@ -5,8 +5,8 @@
 import { grafik, netz, gewichteLesen } from "./netz.js?v=1";
 import { STILE, AUFTRITTE, neueEbene, zeichneSchrift, treffer, schriftenLaden, satz, auftritt } from "./schrift.js?v=1";
 import { oeffnen } from "./lesen.js?v=1";
-import { zeichneBeschnitten } from "../phorma-iii/filmspur.js?v=19";
-import { tonLesen, tonKodieren, mp4Schreiber } from "../phorma-iii/tonspur.js?v=19";
+import { zeichneBeschnitten } from "../phorma-iii/filmspur.js?v=20";
+import { tonLesen, tonKodieren, mp4Schreiber } from "../phorma-iii/tonspur.js?v=20";
 
 const $ = (id) => document.getElementById(id);
 const MODELLE = { grafik: "realesr-animevideov3", foto: "realesr-general-x4v3" };
