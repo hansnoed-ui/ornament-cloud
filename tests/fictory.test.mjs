@@ -216,7 +216,8 @@ test("App (11. Oktober 2026): Manifest, Symbole und Anmeldung des Service Worker
   assert.match(html, /<link rel="manifest" href="manifest\.webmanifest">/);
   assert.match(html, /<link rel="apple-touch-icon" href="icons\/apple-touch-icon\.png">/);
   assert.match(html, /<link rel="icon" href="icons\/favicon-32\.png"/);
-  assert.match(html, /<meta name="theme-color" content="#151412">/);
+  assert.match(html, /<meta name="theme-color" content="#ffffff" media="\(prefers-color-scheme: light\)">/);   // seit 20. Oktober 2026 Papier und Tinte (neubau.css)
+  assert.match(html, /<meta name="theme-color" content="#000000" media="\(prefers-color-scheme: dark\)">/);
   assert.match(html, /<script type="module" src="pwa\.js\?v=\d+"><\/script>/);
   assert.match(html, /<div class="installieren" id="installieren" hidden>[\s\S]*?id="installieren-knopf"[\s\S]*?The Fictory als App installieren/);
   const pwa = readFileSync(new URL("pwa.js", dir), "utf8");
