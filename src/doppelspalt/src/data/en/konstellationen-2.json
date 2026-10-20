@@ -1,0 +1,330 @@
+{
+  "james-turrell__michel-foucault": {
+    "text": "Michel Foucault examines arrangements that organise visibility: who can see whom, what, and from which position? James Turrell seems to reduce this political question to light, architecture and perception. Yet his spaces, too, determine very precisely where someone may stand, where someone may look and what can appear at all. Visibility is thus not merely a property of an object but the result of an arrangement.",
+    "question": "How is visibility organised?"
+  },
+  "dan-graham__george-spencer-brown": {
+    "text": "George Spencer-Brown describes not only the drawing of a boundary but also the possibility that a distinction re-enters the space it has itself produced. Dan Graham's mirrors and video delays make such a return visible. The observer reappears in her own observation, but shifted in time and from a new position. Self-observation is therefore no return to the starting point.",
+    "question": "What happens when a distinction comes back upon itself?"
+  },
+  "dan-graham__hannah-arendt": {
+    "text": "Hannah Arendt links the public with a space in which people appear before one another. Dan Graham makes this appearing itself observable: mirrors, glass and video let people see themselves being seen. In his time-delay arrangements, one's own past can become part of this situation a few seconds later. To appear then means not only to be visible to others but also to receive one's own visibility back.",
+    "question": "How does public action change when we can observe ourselves at the same time from the perspective of our observers?"
+  },
+  "felix-gonzalez-torres__henri-bergson": {
+    "text": "Felix Gonzalez-Torres creates works whose material may be taken away by the public and whose stock may later be replenished. Henri Bergson understands duration not as a sequence of interchangeable states but as change in which the past continues to act within the present. Gonzalez-Torres' work can return materially to an earlier weight without thereby returning to an earlier state. The new sweets replace those taken; they do not undo their history.",
+    "question": "Can something be restored materially without returning in time?"
+  },
+  "felix-gonzalez-torres__jacques-derrida": {
+    "text": "Jacques Derrida makes repeatability the condition for something to persist beyond its original context. Felix Gonzalez-Torres pushes this repeatability all the way into the material identity of the artwork: paper may be taken away, sweets may be eaten and stocks may be produced anew. The work remains by its material not having to remain. Its identity lies neither entirely in the individual object nor independently of any material execution.",
+    "question": "What must be repeatable for something to recur as the same despite the disappearance of its components?"
+  },
+  "felix-gonzalez-torres__gregory-bateson": {
+    "text": "Gregory Bateson asks about differences that make further differences within a context. With Felix Gonzalez-Torres, a visitor may actually remove part of the work; the stock changes and can later be replenished. A minimal action thus alters material, appearance, relation to the public and the future possibilities of the work all at once. Not every removal is isolated: it changes the situation for the next person.",
+    "question": "When does the action of a single viewer become a condition for the perception of the next?"
+  },
+  "agnes-martin__niklas-luhmann": {
+    "text": "Agnes Martin offers the eye an extremely stable order of lines, intervals and repetitions. Niklas Luhmann distinguishes perception and communication as different operations: communication can presuppose perception and react to it, but cannot carry it out itself. Martin's paintings make this boundary immediately palpable. One can describe grids, dimensions and materials; that does not repeat what someone saw in front of the painting. At the same time, it is precisely the stable form that can trigger ever new events of perception.",
+    "question": "How can a perception be communicated when the perception itself cannot be conveyed?"
+  },
+  "james-turrell__niklas-luhmann": {
+    "text": "James Turrell builds situations in which it is not a depicted object but seeing itself that can become conspicuous. Niklas Luhmann's theory of art is interested in the coupling of perception and communication: art does not communicate by taking over the viewer's perception. It provides forms with which perceiving and communicating can continue. With Turrell this difference becomes especially radical, because it is hard to say what «content» was supposed to be transmitted. The installation organises the conditions of seeing; each body must see for itself.",
+    "question": "Can an artwork communicate precisely by transmitting nothing and instead letting perception happen?"
+  },
+  "dan-graham__heinz-von-foerster": {
+    "text": "Dan Graham builds situations in which observers receive their own observation back: through mirrors, glass, cameras and time delays. Heinz von Foerster turns this reflexive turn into a theoretical problem: every observation has a blind spot, because it cannot simultaneously and completely observe its own operation. Graham seems to want to catch up with this blind spot by technical means. Yet as soon as my image appears on the monitor, I am already seeing an earlier operation from a new present. Self-observation produces a further observation instead of making the first fully visible.",
+    "question": "How often would an observation have to return to itself in order to catch up with the moment of its own observing?"
+  },
+  "william-kentridge__niklas-luhmann": {
+    "text": "William Kentridge draws, erases and draws on. Earlier states disappear and at the same time remain on the sheet as material traces. Niklas Luhmann describes the present as an operation in which the past is already fixed and the future still open. Kentridge's procedure gives this asymmetry a visible surface: the next stroke can change much, but cannot undo what has already been drawn; even erasing leaves traces. The past thus limits the space of further possibilities without determining the next drawing.",
+    "question": "How open is the future when the past has already left traces?"
+  },
+  "felix-gonzalez-torres__niklas-luhmann": {
+    "text": "Felix Gonzalez-Torres lets works diminish materially and be replenished, while institutionally they can continue to exist as the same works. Niklas Luhmann describes identity not necessarily as unchanged substance but as something that is stabilised across changing operations for further connections. This fits astonishingly well, and yet a difference remains. The museum can decide that a renewed installation is the same work; the eaten sweet does not thereby return. The identity of the work and its material history follow different times.",
+    "question": "Who or what decides which changes an identity may survive?"
+  },
+  "mona-hatoum__karen-barad": {
+    "text": "Mona Hatoum alters scale, materials and spatial relations so that familiar objects can lose their self-evident meaning. Karen Barad draws attention to the fact that properties and boundaries do not always exist independently of the material arrangements in which they become determinable. Hatoum's works make such a dependency bodily experienceable: the same recognisable object can, through size, material or position, establish an entirely different relationship to the body. The situation changes not only its interpretation but the possibilities of proximity, movement and touch.",
+    "question": "Which properties belong to an object, and which arise only between object, arrangement and perceiving body?"
+  },
+  "doris-salcedo__donna-haraway": {
+    "text": "Doris Salcedo gives loss and absence material places without being able simply to declare the experiences of others present. Donna Haraway demands of knowledge that it take its own position and limitation into account. With Salcedo this demand becomes particularly delicate: how can a work refer to an experience that neither the artist nor the public can take over? Material can create a place for memory, but cannot replace the standpoint of the absent.",
+    "question": "How can an experience become public without its strangeness disappearing in the process?"
+  },
+  "christian-marclay__elena-esposito": {
+    "text": "In The Clock, Christian Marclay constructs a present out of already recorded pasts. Elena Esposito examines the reverse operation: present data are used to generate expectations about a still unknown future. Between the two lies the same operative moment, the present. Yet it is opened in opposite directions. Marclay lets stored images coincide with the now; forecasting lets stored data point to a possible afterwards. The past is in one case synchronised and in the other extrapolated.",
+    "question": "How does forecasting change our present?"
+  },
+  "sol-lewitt__lucy-suchman": {
+    "text": "Sol LeWitt can formulate a work as an instruction that other people execute in other places. Lucy Suchman disputes that a plan already contains the concrete action that will emerge from it. A LeWitt instruction thereby becomes an almost ideal experiment. It must be precise enough for different executions to count as realisations of the same work, and open enough for its concrete shape to arise only on site. Plan and situation do not compete; they need each other.",
+    "question": "How precise must an instruction be for its execution still to remain an event?"
+  },
+  "robert-smithson__susan-leigh-star": {
+    "text": "In his Site/Non-Site works, Robert Smithson separates and connects landscape, material, map and exhibition space. Susan Leigh Star examines boundary objects that can circulate between different social worlds without meaning the same thing everywhere. Smithson's Non-Site could almost be such a boundary object: in the museum it is artwork, material container, map and reference to another place all at once. Its stability does not arise from all these perspectives becoming identical.",
+    "question": "How can an object connect different places and meanings without cancelling their differences?"
+  },
+  "james-turrell__claude-shannon": {
+    "text": "Claude Shannon abstracts information from its meaning and treats distinguishable signals within a determinable space of possibilities. James Turrell reduces too, but in the opposite direction. Instead of excluding perception, he reduces objects and images to the point where differences of light, space and seeing itself can become conspicuous. Shannon gains determinability by methodically removing the perceiving body; Turrell gains perceptibility by precisely organising its conditions. Both need distinguishable states, but only one must be able to explain how they appear for a body.",
+    "question": "When does a difference between states become a difference in perception?"
+  },
+  "agnes-martin__karen-barad": {
+    "text": "Agnes Martin's grid seems merely to subdivide an already existing surface. Karen Barad would not treat such a division as a mere image of pre-given differences. A boundary can itself take part in what appears as unit, interval or deviation. Martin's lines therefore do not just show differences; they produce the conditions under which differences become visible at all.",
+    "question": "Which differences does the grid itself first produce?"
+  },
+  "hanne-darboven__n-katherine-hayles": {
+    "text": "Hanne Darboven turns days into numbers, writing and long sequences. N. Katherine Hayles reminds us that information never appears without a material form. Darboven's notation can be read as a system, yet handwriting, paper, rhythm and working time belong to the work just as much. What seems abstractly transferable remains bound to a concrete execution.",
+    "question": "What is lost when only the information remains?"
+  },
+  "eva-hesse__elena-esposito": {
+    "text": "Eva Hesse designs clear serial orders and uses materials whose future cannot be fully controlled. Elena Esposito examines how expectations deal with a future that is still open. With Hesse, a planned form meets ageing, gravity and chemical change. The work has a structure, but no definitively predictable state.",
+    "question": "How open does a planned form remain?"
+  },
+  "louise-bourgeois__donna-haraway": {
+    "text": "Louise Bourgeois makes memory spatial without smoothing it into a general history. Donna Haraway demands a knowledge that knows its own standpoint. In the Cells, things therefore do not appear as neutral evidence of a past. They are bound to body, biography, place and direction of gaze, and yet remain accessible to others.",
+    "question": "How does a personal memory become legible for others?"
+  },
+  "marina-abramovic__lucy-suchman": {
+    "text": "Marina Abramović often lays down few rules and leaves much to the actual encounter of bodies. Lucy Suchman understands action as situated coordination that takes shape in the course of a situation. The audience's posture, gaze, waiting and reaction are therefore not merely an external accompaniment to the performance. They help to change what the action becomes in that moment.",
+    "question": "When does the audience become part of the action?"
+  },
+  "rebecca-horn__susan-leigh-star": {
+    "text": "Rebecca Horn extends bodies with apparatuses, feathers, rods and machines. Susan Leigh Star is interested in infrastructures that enable actions and are often overlooked for precisely that reason. With Horn this mediating layer comes to the fore. The connection between body and surroundings becomes visible because the technical in-between itself becomes part of perception.",
+    "question": "What becomes visible when mediation no longer disappears?"
+  },
+  "mona-hatoum__wendy-hui-kyong-chun": {
+    "text": "Mona Hatoum alters familiar objects so that habit suddenly no longer offers reliable orientation. Wendy Hui Kyong Chun describes habit as a force that keeps technical and social orders stable. Hatoum intervenes at exactly this point. When a table, a kitchen utensil or a room no longer functions as expected, habit itself becomes noticeable.",
+    "question": "What do we see only when habit fails?"
+  },
+  "doris-salcedo__judith-butler": {
+    "text": "Doris Salcedo works with things and spaces that bear traces of violence, without re-enacting past experiences. Judith Butler asks how bodies become legible and vulnerable through repeated social orders. Salcedo's works show no abstract vulnerability. They give its consequences weight, material and place without replacing the absent body.",
+    "question": "How does vulnerability become visible when the body is missing?"
+  },
+  "tehching-hsieh__hannah-arendt": {
+    "text": "Tehching Hsieh binds his life over long periods to publicly declared rules. Hannah Arendt understands the public as a space in which actions appear before others and become part of a common world. Hsieh's bodily duration remains his own experience, yet contract, documentation and exhibition make it publicly observable. Time spent in private thereby acquires a social form.",
+    "question": "When does lived time become public?"
+  },
+  "william-kentridge__karen-barad": {
+    "text": "William Kentridge draws, erases, photographs and draws again. Karen Barad's concept of intra-action does not presuppose that already finished actors meet one another. With Kentridge, too, the emerging movement cannot be cleanly attributed to a single agent. Hand, charcoal, paper, eraser and camera together form the conditions for what can appear as the next figure.",
+    "question": "Where does the action lie between hand, paper and camera?"
+  },
+  "bruce-nauman__donna-haraway": {
+    "text": "Bruce Nauman forces bodies into corridors, repetitions and unfamiliar situations of looking. Donna Haraway contradicts the idea of a gaze without location. Nauman's spaces make this situatedness bodily palpable. Where one stands, how one moves and what one's own body cannot see at that moment become part of the work.",
+    "question": "What changes when one's own standpoint becomes conspicuous?"
+  },
+  "dan-graham__lucy-suchman": {
+    "text": "Dan Graham plans reflections, glass surfaces and video delays very precisely. Lucy Suchman shows, however, that an arrangement does not determine how people actually behave within it. With Graham, the work therefore also arises from reactions, glances and movements that are not in the plan beforehand. The construction is precise; the situation remains open.",
+    "question": "What arises only between plan and action?"
+  },
+  "on-kawara__elena-esposito": {
+    "text": "On Kawara paints a date only on the day it designates. Elena Esposito examines a future that can be expected in the present but not known. Kawara's rule separates these two sides sharply. Tomorrow's date is known as a possibility, but as a painting it can come into being only once the day has really become present.",
+    "question": "When does a future date become present?"
+  },
+  "felix-gonzalez-torres__judith-butler": {
+    "text": "Felix Gonzalez-Torres lets works persist through removal, consumption and renewed production. Judith Butler describes identity not as a fixed core but as something that remains effective through repeated enactments. With Gonzalez-Torres, the work remains recognisable although its material components change. Its identity lies in a regulated repetition, not in unchanged substance.",
+    "question": "How much change can the same identity bear?"
+  },
+  "agnes-martin__henri-bergson": {
+    "text": "Agnes Martin's grids divide the surface into regular intervals. Henri Bergson warns against treating lived time like a series of uniform positions. In front of Martin's paintings the two orders meet. The grid stays calm while seeing, attention and memory change in the course of looking.",
+    "question": "How does duration change a seemingly identical picture?"
+  },
+  "hanne-darboven__claude-shannon": {
+    "text": "Hanne Darboven makes time comparable with numbers, dates and series. Claude Shannon describes information as a selection from a determinable space of possibilities and deliberately leaves meaning aside. Darboven's notations can be counted and ordered, yet their daily production carries more than information. Time appears here also as work, handwriting and a day spent.",
+    "question": "What is missing when time appears only as information?"
+  },
+  "eva-hesse__michel-serres": {
+    "text": "Eva Hesse's works combine clear repetition with materials that do not fully submit to it. Michel Serres is interested in interference, noise and change along the path of a transmission. With Hesse this interference does not sit outside the work. Ageing, gravity and material tension alter the form from within.",
+    "question": "When does material become interference?"
+  },
+  "rebecca-horn__niklas-luhmann": {
+    "text": "Rebecca Horn uses technical extensions to change what a body can reach and perceive. Niklas Luhmann separates perception and communication as different processes. Horn's apparatuses can order movements and produce situations, but they do not perceive in place of the body. It is precisely this boundary that makes visible how much mediation is needed without perception becoming transferable.",
+    "question": "What can an apparatus mediate without perceiving?"
+  },
+  "doris-salcedo__jacques-derrida": {
+    "text": "Doris Salcedo gives loss a material trace without making what is lost present again. Jacques Derrida describes the trace as the effect of an absence that does not simply disappear. Salcedo's furniture, cracks and blocked spaces make this tension bodily experienceable. What is missing is not replaced, but it changes the present.",
+    "question": "How can a trace show absence?"
+  },
+  "louise-bourgeois__n-katherine-hayles": {
+    "text": "Louise Bourgeois binds memory to fabrics, furniture, bodily forms and rooms. N. Katherine Hayles criticises the idea that a pattern could be fully preserved independently of its embodiment. With Bourgeois, memory therefore cannot be reduced to an abstract story. Material, scale and spatial proximity help determine how it becomes present.",
+    "question": "What does material contribute to memory?"
+  },
+  "marina-abramovic__wendy-hui-kyong-chun": {
+    "text": "Marina Abramović repeats actions under strict rules until habit and strain become visible. Wendy Hui Kyong Chun examines how repetition produces habits and thereby keeps orders stable. With Abramović this stability comes at a price. The body must execute the rule anew each time and changes in doing so.",
+    "question": "When does repetition become habit?"
+  },
+  "mona-hatoum__susan-leigh-star": {
+    "text": "Mona Hatoum lets familiar rooms and objects become uncertain. Susan Leigh Star shows that infrastructure usually becomes noticeable only when something no longer works smoothly. Hatoum uses exactly this moment. A familiar object loses its self-evidence and makes visible the spatial rules on which we usually rely.",
+    "question": "What becomes visible when the familiar no longer works?"
+  },
+  "agnes-martin__hannah-arendt": {
+    "text": "Hannah Arendt does not understand a common world as a place of identical perceptions. Something becomes common precisely because the same thing can appear from different positions. Agnes Martin's grid offers an unusually stable form for such difference. The picture remains the same while the attention, distance and experience of its viewers diverge.",
+    "question": "Can the same picture hold different points of view together?"
+  },
+  "louise-bourgeois__henri-bergson": {
+    "text": "Louise Bourgeois returns again and again to earlier experiences, figures and rooms. Henri Bergson does not understand memory as a stored image that is retrieved unchanged. The past acts anew out of each present. Bourgeois' Cells show exactly this movement: memory is given a form again, but never the same present.",
+    "question": "How does the present change our memory?"
+  },
+  "hanne-darboven__karen-barad": {
+    "text": "Hanne Darboven orders time through calendars, numbers and writing. Karen Barad asks how an apparatus helps determine what can appear as a difference at all. Darboven's procedure therefore does not simply register time. It fixes which aspects of a day become retrievable as number, date or sign and which remain outside this order.",
+    "question": "What does a notation make visible?"
+  },
+  "eva-hesse__susan-leigh-star": {
+    "text": "Eva Hesse's works age in a way that confronts museums with practical decisions. Susan Leigh Star examines infrastructures that enable stability in the background. With Hesse this infrastructure becomes especially clear, because conservation, storage and exhibition take part in how a changeable work continues to exist. The sculpture and its institutional care cannot be fully separated.",
+    "question": "Who holds an ageing work together?"
+  },
+  "marina-abramovic__donna-haraway": {
+    "text": "Marina Abramović exposes her own body to a situation and makes its presence the material of the work. Donna Haraway demands a gaze that does not deny its bodily and spatial position. Abramović shows that even a seemingly simple rule does not mean the same experience for different bodies. Presence is always situated.",
+    "question": "How does the body change the same rule?"
+  },
+  "rebecca-horn__n-katherine-hayles": {
+    "text": "Rebecca Horn's prostheses change what a body can do and perceive. N. Katherine Hayles links the posthuman not with the disappearance of the body but with the critique of the fully autonomous subject. With Horn, action is distributed across organism, mechanism and surroundings. The body is not replaced, but its capacities no longer belong to it alone.",
+    "question": "Who acts when body and apparatus can act only together?"
+  },
+  "mona-hatoum__lucy-suchman": {
+    "text": "Mona Hatoum's rooms often seem familiar until a small shift changes movement within them. Lucy Suchman shows that acting does not simply follow a plan but takes shape in the situation. A floor plan can stipulate where things stand. How a body orients itself within it, hesitates or steps aside is decided only on the spot.",
+    "question": "What is decided only in crossing a room?"
+  },
+  "doris-salcedo__elena-esposito": {
+    "text": "Elena Esposito examines how the present deals with a future whose outcome is still open. Doris Salcedo works at the other end of this temporal order, with consequences of violence that can no longer be reversed. What was once possibility, decision or risk appears in the work as fixed past. The open future and its irreversible consequence suddenly lie side by side.",
+    "question": "When does a possibility become irreversible past?"
+  },
+  "agnes-martin__wendy-hui-kyong-chun": {
+    "text": "Agnes Martin's grids live on repetition, without every glance seeing the same thing. Wendy Hui Kyong Chun describes habit as a repetition that becomes self-evident and thereby orders perception. Martin's paintings can slow down this self-evidence. The more familiar the grid becomes, the more readily small deviations stand out.",
+    "question": "Can habit make differences more visible?"
+  },
+  "hanne-darboven__judith-butler": {
+    "text": "Hanne Darboven repeats rules of writing and counting over long periods. Judith Butler shows that repetition does not simply mean copying but is what keeps an order effective in the first place. Darboven's rule therefore does not exist independently of her sheets. It gains its duration by being executed again and again and becoming materially different in the process.",
+    "question": "How does execution change a rule?"
+  },
+  "eva-hesse__hannah-arendt": {
+    "text": "Hannah Arendt gives the things of the common world meaning because they can outlast human lives. Artworks possess a special duration in this sense. Eva Hesse chooses materials that undermine precisely this permanence. Her works remain part of a common world although their substances age and their form cannot be secured indefinitely.",
+    "question": "How durable must art be in order to form a world?"
+  },
+  "louise-bourgeois__karen-barad": {
+    "text": "With the Cells, Louise Bourgeois builds boundaries that one looks through, walks along and does not simply cross. Karen Barad understands boundaries not as self-evidently given but as the result of concrete arrangements. With Bourgeois this production becomes bodily experienceable. Inside and outside arise through material, gaze and position.",
+    "question": "How do an inside and an outside arise in a Cell?"
+  },
+  "marina-abramovic__n-katherine-hayles": {
+    "text": "Marina Abramović's performances can be documented, described and re-performed, but no recording takes over the original bodily enactment. N. Katherine Hayles distinguishes abstract information from its embodiment. With Abramović this difference becomes especially clear. The rule can be transmitted; the lived duration cannot.",
+    "question": "What does a documented performance lack?"
+  },
+  "rebecca-horn__elena-esposito": {
+    "text": "Elena Esposito stresses that forecasts do not know the future but generate expectations in the present. Rebecca Horn's machines, by contrast, seem to fix a sequence in advance. Yet as soon as mechanics meet body, friction and space, the intended sequence becomes an actual event. The machine makes the future more calculable without turning it into present.",
+    "question": "What does a machine know about its next moment?"
+  },
+  "mona-hatoum__donna-haraway": {
+    "text": "Mona Hatoum alters familiar things so that one's own body has to reassess its position. Donna Haraway reminds us that every gaze is bound to a location. Hatoum's works make this dependency palpable. Proximity, distance and safety look different when one's own position changes.",
+    "question": "How does location change what seems familiar?"
+  },
+  "doris-salcedo__susan-leigh-star": {
+    "text": "Doris Salcedo makes loss visible in furniture, walls and public interventions. Susan Leigh Star asks about the often invisible structures that carry a shared practice. Public remembering, too, needs such conditions. Institutions, places, care and rituals help decide whether a material trace can persist and be visited again.",
+    "question": "What infrastructure does memory need?"
+  },
+  "agnes-martin__lucy-suchman": {
+    "text": "Agnes Martin's grid gives the gaze a stable order but no fixed route. Lucy Suchman describes acting as something that develops under local conditions. Seeing, too, follows no ready-made plan of the picture. Eyes wander, attention breaks off, distance changes and individual lines emerge only later.",
+    "question": "Can a picture plan the gaze?"
+  },
+  "hanne-darboven__hannah-arendt": {
+    "text": "Hanne Darboven turns private working time into sheets, series and archives that become publicly accessible. Hannah Arendt thinks of a common world as something that gains permanence between different people. Darboven's notations thereby exceed their original moment of writing. An individual activity becomes an object to which others can later return.",
+    "question": "How does private time become part of a common world?"
+  },
+  "eva-hesse__wendy-hui-kyong-chun": {
+    "text": "Eva Hesse's serial forms promise repetition while their materials age and change. Wendy Hui Kyong Chun describes technical stability as the result of continual renewal. With Hesse this logic becomes problematic. Conservation can preserve the work, but every intervention also alters the material course the work has already taken.",
+    "question": "When does preservation itself become change?"
+  },
+  "louise-bourgeois__judith-butler": {
+    "text": "Louise Bourgeois works again and again with bodies, houses, parental figures, sexuality and family roles. Judith Butler examines how bodies and identities become recognisable through social norms. Bourgeois does not simply confirm such categories. Her forms shift, exaggerate and mix what might seem self-evidently feminine, masculine, maternal or bodily.",
+    "question": "Which norms do we read into a body?"
+  },
+  "marina-abramovic__elena-esposito": {
+    "text": "In many of her works, Marina Abramović announces duration and conditions in advance. Elena Esposito shows that ideas of the future already change the present, although what is to come has not yet occurred. Whoever knows that a performance will last six hours already experiences its first moment within the horizon of that end. The fixed duration generates expectations without determining the course.",
+    "question": "How does an announced end change the present?"
+  },
+  "rebecca-horn__karen-barad": {
+    "text": "Rebecca Horn's apparatuses do not simply attach to a finished body. Karen Barad's concept of intra-action draws attention to the fact that relations can help bring forth the sides involved. With a bodily extension, not only the tool changes but also what counts here as reach and bodily boundary. The extended body arises in this connection.",
+    "question": "Does the extended body arise only with the apparatus?"
+  },
+  "doris-salcedo__n-katherine-hayles": {
+    "text": "Doris Salcedo binds memory to wood, concrete, clothing and architectural interventions. N. Katherine Hayles warns against detaching meaning from its embodiment. With Salcedo, material is therefore no interchangeable carrier of a message. Weight, damage, surface and spatial blockage themselves contribute to memory.",
+    "question": "What does a material know that a text does not say?"
+  },
+  "agnes-martin__donna-haraway": {
+    "text": "Agnes Martin's grids seem open precisely because they do not occupy the gaze with many objects. Donna Haraway reminds us that even a reduced picture is never seen from nowhere. Distance, light, body and attention change what emerges in the grid. Objectivity here does not mean having no location but having a more conscious one.",
+    "question": "How does the standpoint change a grid?"
+  },
+  "hanne-darboven__susan-leigh-star": {
+    "text": "Hanne Darboven uses calendars, numbers and ordering systems that exist before her individual sheet. Susan Leigh Star examines such classifications as infrastructures of shared work. Darboven turns them into visible material. The calendar no longer appears merely as a neutral aid but as an order that breaks time down into nameable positions.",
+    "question": "What does a calendar order, apart from days?"
+  },
+  "eva-hesse__lucy-suchman": {
+    "text": "Eva Hesse works with serial rules, yet her materials follow no perfect plan. Lucy Suchman shows that an instruction becomes effective only in a concrete situation. With Hesse, gravity, material tension and ageing belong to this situation. The executed form is therefore always more than the order that preceded it.",
+    "question": "What does material add to a plan?"
+  },
+  "louise-bourgeois__wendy-hui-kyong-chun": {
+    "text": "Louise Bourgeois returns again and again to particular memories and forms. Wendy Hui Kyong Chun examines habits that become stable through repetition. Bourgeois' return, however, differs from a reassuring routine. The familiar can generate a new tension with every repetition and remain effective precisely because of this.",
+    "question": "Can repetition change a memory?"
+  },
+  "marina-abramovic__hannah-arendt": {
+    "text": "Marina Abramović makes presence before others a component of her performances. Hannah Arendt describes a space of appearance that arises where people become visible and act before one another. With Abramović, the public is therefore not just an audience in the background. The presence of others changes the situation in which the body appears.",
+    "question": "What makes presence public?"
+  },
+  "rebecca-horn__judith-butler": {
+    "text": "Rebecca Horn alters bodies through extensions, masks and mechanical additions. Judith Butler asks how social norms determine which bodies become legible as self-evident. Horn's apparatuses disturb this self-evidence. They show a body whose boundaries and possibilities are not fixed, without dissolving it into pure arbitrariness.",
+    "question": "Which bodily boundaries do we take for granted?"
+  },
+  "doris-salcedo__karen-barad": {
+    "text": "Doris Salcedo works with cracks, blocked spaces and damaged objects. Karen Barad asks how arrangements first bring forth particular separations. With Salcedo, a boundary can therefore itself become an event. It does not merely separate two sides but makes loss, exclusion or inaccessibility bodily experienceable.",
+    "question": "What makes a boundary palpable?"
+  },
+  "agnes-martin__susan-leigh-star": {
+    "text": "Agnes Martin's grids function like a silent infrastructure of seeing. Susan Leigh Star is interested in orders that enable actions without constantly standing in the foreground. With Martin this background structure itself becomes the picture. Lines, intervals and repetition carry seeing precisely because they tell almost nothing.",
+    "question": "What carries seeing without itself standing out?"
+  },
+  "hanne-darboven__elena-esposito": {
+    "text": "Hanne Darboven can continue a rule far into the future without having yet executed that future. Elena Esposito examines how present orders generate expectations about what is to come. The next number may be determinable; the next working day is not. Darboven's series therefore hold regularity and open future together at the same time.",
+    "question": "How far does a rule reach into the future?"
+  },
+  "eva-hesse__judith-butler": {
+    "text": "Eva Hesse repeats forms without producing identical bodies. Judith Butler understands repetition as an enactment through which an order persists and can change. With Hesse this change is materially visible. Each execution belongs to the series and yet remains a body of its own.",
+    "question": "How much difference can a series bear?"
+  },
+  "louise-bourgeois__lucy-suchman": {
+    "text": "Louise Bourgeois designs the Cells as precise spaces, but she does not prescribe how someone experiences them. Lucy Suchman shows that a situation in use brings forth more than its plan. With Bourgeois, direction of gaze, proximity and movement change what appears accessible or hidden. The spatial order remains; the experience arises in passing through.",
+    "question": "What arises only in passing through a Cell?"
+  },
+  "rebecca-horn__wendy-hui-kyong-chun": {
+    "text": "Rebecca Horn connects bodies with machines whose movements can repeat. Wendy Hui Kyong Chun examines habits through which technical orders become self-evident. Horn prevents this self-evidence. Her apparatuses make every repetition palpable, because the body has to relate to it anew each time.",
+    "question": "When does technology become habit?"
+  },
+  "doris-salcedo__hannah-arendt": {
+    "text": "Doris Salcedo brings experiences of loss into a public space without unifying them. Hannah Arendt thinks of a common world as a space between different people. Salcedo's works show that commonality does not presuppose the same experience. A material trace can be shared while the respective memories remain different.",
+    "question": "How can memory be shared without becoming the same?"
+  },
+  "eva-hesse__karen-barad": {
+    "text": "Eva Hesse does not separate form and material cleanly from one another. Karen Barad likewise does not understand properties as fully independent of the arrangements in which they emerge. With Hesse, the material changes what the serial form can be at all. Gravity, elasticity and ageing belong to the shape of the work.",
+    "question": "Where does form end and material begin?"
+  },
+  "louise-bourgeois__elena-esposito": {
+    "text": "Elena Esposito is interested in contingency, in the fact that the present could have turned out otherwise. Louise Bourgeois returns to her past again and again in new forms. The events themselves do not thereby become changeable, but the order in which they are remembered does. Memory can make past possibilities visible again without taking the past back.",
+    "question": "Can memory reopen past possibilities?"
+  },
+  "rebecca-horn__lucy-suchman": {
+    "text": "Rebecca Horn's machines and bodies do not share the same situation in the same way. Lucy Suchman's work on human–machine interaction shows how easily technical systems and people seem to understand one another although they draw on different information. Horn's apparatuses make this difference bodily. The mechanism executes a movement while the body experiences weight, resistance and meaning.",
+    "question": "Do body and machine understand the same movement?"
+  },
+  "doris-salcedo__wendy-hui-kyong-chun": {
+    "text": "Doris Salcedo creates material traces that do not have to appear anew through constant updating. Wendy Hui Kyong Chun, by contrast, describes the digital present as something that persists through repetition and update. Salcedo's works set a slower form of duration against this. Their materials remain and change without passing themselves off as new.",
+    "question": "Must memory be updated in order to remain effective?"
+  },
+  "louise-bourgeois__susan-leigh-star": {
+    "text": "Louise Bourgeois' Cells combine personal things, spatial boundaries and institutional exhibition. Susan Leigh Star examines boundary objects around which different social worlds can work together without everyone seeing the same thing in them. A Cell, too, withstands different readings. Its unity demands no uniform meaning.",
+    "question": "How much difference can a shared object withstand?"
+  },
+  "rebecca-horn__hannah-arendt": {
+    "text": "Rebecca Horn uses prostheses and machines to change how a body appears in space. Hannah Arendt understands the public as a space in which people become visible before others. Horn's extensions therefore concern not only private bodily experience. They also change the form in which a body faces others.",
+    "question": "How does technology change our public appearance?"
+  },
+  "doris-salcedo__lucy-suchman": {
+    "text": "Doris Salcedo shapes situations of remembering very precisely, without being able to determine how individual people react to them. Lucy Suchman distinguishes between a planned arrangement and the action that develops within it. With Salcedo this difference remains important. The work can enable an encounter, but cannot prescribe a particular memory.",
+    "question": "What can a site of memory not plan?"
+  }
+}

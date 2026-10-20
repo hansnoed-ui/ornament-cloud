@@ -26,7 +26,7 @@ const { symbolMarkup, SYMBOL_COUNT } = await import(js("symbols.js"));
 const tmp = mkdtempSync(join(tmpdir(), "doppelspalt-"));
 cpSync(new URL("src/doppelspalt/src/", root), tmp, { recursive: true });
 for (const dir of ["data", "lib/double-slit"]) {
-  for (const f of readdirSync(join(tmp, dir))) {
+  for (const f of readdirSync(join(tmp, dir)).filter((n) => n.endsWith(".ts"))) {   // data/en/ (die Konstellationen auf Englisch, JSON) bleibt aussen vor
     const p = join(tmp, dir, f);
     writeFileSync(p, readFileSync(p, "utf8").replace(/from "(\.\.?\/[^"]+)"/g, 'from "$1.ts"'));
   }
@@ -256,7 +256,7 @@ test("Feldansicht: jede Konstellation genau einmal in der Matrix und einmal in d
 });
 
 test("Feldansicht: die Zahlen im Einleitungstext stimmen mit dem Bestand überein", () => {
-  const intro = FELD_PAGE.match(/<p class="feld-intro">([\s\S]*?)<\/p>/)[1];
+  const intro = FELD_PAGE.match(/<p class="feld-intro"[^>]*>([\s\S]*?)<\/p>/)[1];
   const n = constellations.length, total = artists.length * theorists.length;
   assert.equal(total, 400);
   assert.ok(intro.includes(`${n} sind geschrieben`), `Einleitung nennt nicht ${n}`);
