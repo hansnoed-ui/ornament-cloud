@@ -5,7 +5,7 @@
 //
 // Die Liste unten schreibt tools/build-app.ts – nicht von Hand pflegen.
 // <!-- APP:START -->
-const VERSION = "72ca819fa007";
+const VERSION = "fa9631600fbb";
 const PRECACHE = [
   "../../icons.js?v=14",
   "../../styles.css?v=46",
@@ -33,7 +33,7 @@ const PRECACHE = [
   "js/symbols.js?v=2",
   "js/ticker.js?v=5",
   "js/wheel.js?v=14",
-  "rad.css?v=26"
+  "rad.css?v=27"
 ];
 // <!-- APP:END -->
 

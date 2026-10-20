@@ -13,7 +13,7 @@ const lies = (p) => readFileSync(new URL(p, root), "utf8");
 const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"], ["Art", "art/"]];   // seit 19. Oktober 2026 (abends) ohne «Web» (die Seite bleibt, nur nicht im Menü), dahinter «Art»;   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
 const ORNA = "portfolio/nebeneinander-nacheinander/";
 // Seiten mit dem Menü → Eintrag, der aktiv ist ([Ordner, aria-current]); null: keiner (die Seite hängt an keinem Menüpunkt)
-const MENUSEITEN = {
+const MENUSEITEN = {   // OMNA COLOR (alpha/omna-color/, rad/) seit 20. Oktober 2026 mit dem Kopf der App statt des Menüs; ihre App-Seite app/ bleibt
   "index.html": null,
   "news/index.html": null,
   "termine/index.html": null,
@@ -28,8 +28,6 @@ const MENUSEITEN = {
   [`${ORNA}feld/index.html`]: ["apps/", "true"],
   [`${ORNA}app/index.html`]: ["apps/", "true"],       // die App-Seiten sind Abschriften, ihre Kopfzeile ist ausgeblendet
   [`${ORNA}app/feld/index.html`]: ["apps/", "true"],
-  "alpha/omna-color/index.html": ["apps/", "true"],         // OMNA COLOR ist seit dem 19. Oktober 2026 eine App auf «Apps» (vorher ein Beitrag auf «Web»)
-  "alpha/omna-color/rad/index.html": ["apps/", "true"],     // die Seite der installierten App, eine Abschrift (tools/build-omna-app.mjs)
   "art/index.html": ["art/", "page"],                       // «Art» (19. Oktober 2026): Übersicht; Werkseiten und «Danke» darunter
   "zu-seiner-zeit/index.html": ["zu-seiner-zeit/", "page"],
   "social-media/index.html": ["social-media/", "page"],      // Social Media (19. Oktober 2026): die Zeitleiste; alle Seiten darunter (Zettel, Register, Redaktion) unter «Social»
@@ -495,7 +493,7 @@ test("Kontakt: «Fragen und Anmerkungen zur Website» unten auf allen Seiten mit
     assert.match(html, new RegExp(`</main>[\\s\\S]*<footer class="site-footer">[\\s\\S]*<p>Fragen und Anmerkungen zur Website: ${MAIL.replace(/[.]/g, "\\.")}</p>[\\s\\S]*</footer>`), s);
   }
   const omna = lies("alpha/omna-color/index.html");
-  assert.ok(omna.includes(`<footer class="kontakt">\n  <p>Fragen und Anmerkungen zur Website: ${MAIL}</p>`), "OMNA COLOR");
+  assert.ok(omna.includes(`<footer class="kontakt">\n  <p data-t="fuss.fragen">Fragen und Anmerkungen zur Website: ${MAIL}</p>`), "OMNA COLOR (der Satz mit data-t: auf Englisch übersetzt, seit 20. Oktober 2026)");
   assert.ok(omna.includes(".eingebettet .kontakt { display: none; }"), "OMNA COLOR eingebettet ohne Kontakt (die Startseite hat ihn im Fuss)");
   for (const [s, satz] of [["zu-seiner-zeit/index.html", "Fragen und Anmerkungen zur Website"], ["zu-seiner-zeit/en/index.html", "Questions and comments about the website"], ["zu-seiner-zeit/es/spur/index.html", "Preguntas y comentarios sobre el sitio web"]]) {
     assert.ok(lies(s).includes(`<footer class="zsz-fuss">`) && lies(s).includes(`<p>${satz}: ${MAIL}</p>`), s);
@@ -526,7 +524,7 @@ test("Impressum (19. Oktober 2026, Pflicht für den Verkauf auf «Art»): eigene
     if (p === "impressum/index.html" || p === "alpha/metastabilitaet/index.html") continue;
     const s = lies(p);
     if (!kontakt.test(s)) continue;
-    const m = s.match(/<a href="([^"]*)impressum\/"(?: hreflang="de")?>(Impressum|Legal notice|Aviso legal)<\/a>/);
+    const m = s.match(/<a href="([^"]*)impressum\/"(?: hreflang="de")?(?: data-t="fuss\.impressum")?>(Impressum|Legal notice|Aviso legal)<\/a>/);   // data-t: die Apps übersetzen den Fuss (20. Oktober 2026)
     assert.ok(m, `${p}: Impressum im Fuss`);
     const basis = s.match(/<base href="([^"]+)"/)?.[1] ?? "";
     assert.equal(new URL(basis + m[1] + "impressum/", new URL(p, root)).pathname, new URL("impressum/", root).pathname, `${p}: der Link führt zum Impressum`);
