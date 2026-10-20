@@ -254,6 +254,8 @@ h2 .zeichen { width: 1em; height: 1em; margin-right: 0.35em; vertical-align: -0.
 .stueck-kopf .lead { margin-bottom: 24px; }
 .stueck-bild { margin-top: 36px; background: var(--flaeche); }
 .stueck-bild img { width: 100%; height: auto; }
+.stueck-bild.quadrat { max-width: 420px; border: 1px solid var(--linie); }   /* die gezeichnete Tafel der App (tools/b-app-bilder.mjs) */
+.stueck-bild.quadrat img { display: block; }
 .stueck-text { padding: 36px 0 0; display: grid; gap: 14px; max-width: 62ch; font-size: 1.08rem; line-height: 1.5; }
 .stueck-text .fuer { color: var(--grau); }
 .hinweis { margin-top: 18px; padding: 12px 14px; border-left: 2px solid var(--faden); font-size: 0.95rem; color: var(--grau); max-width: 60ch; }

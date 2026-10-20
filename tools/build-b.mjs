@@ -12,7 +12,7 @@ import { zeichen } from "../src/b/zeichen.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS = new URL("b/", ROOT);
-const V = 4;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 5;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 
@@ -121,9 +121,13 @@ const fRaster = (r) => r && { art: "Prüfraster", href: `/b/raster/${r.slug}/`, 
 const fAngebot = (a) => a && { art: "Angebot", href: `/b/angebot/${a.slug}/`, was: a.name, klein: a.kurz };
 const fOrma = (k) => k && { art: "Konstellation", href: `/portfolio/nebeneinander-nacheinander/?pair=${k.id}`, was: `${k.kuenstler} × ${k.theoretiker}`, klein: k.frage };
 
-/** Eine App als Kachel: immer quadratisch, der Ausschnitt je App (bildPos) */
+/** Das Bild einer App: die gezeichnete Tafel (tools/b-app-bilder.mjs), hell oder dunkel nach dem Modus des Geräts */
+function appBild(a, extra = "") {
+  return `<picture><source srcset="/${attr(a.bildDunkel)}" media="(prefers-color-scheme: dark)"><img src="/${attr(a.bild)}" alt="${attr(a.bildAlt)}" width="1200" height="1200"${extra}></picture>`;
+}
+/** Eine App als Kachel: immer quadratisch */
 function appKachel(a) {
-  return `<a class="stueck" href="/b/apps/${a.slug}/"><span class="bild quadrat"><img src="/${a.bild}" alt="${attr(a.bildAlt)}" loading="lazy" style="object-position:${attr(a.bildPos || "50% 50%")}"></span><h3>${zeichen(a.zeichen)}${esc(a.name)}</h3><p>${esc(a.kurz)}</p></a>`;
+  return `<a class="stueck" href="/b/apps/${a.slug}/"><span class="bild quadrat">${appBild(a, ' loading="lazy"')}</span><h3>${zeichen(a.zeichen)}${esc(a.name)}</h3><p>${esc(a.kurz)}</p></a>`;
 }
 
 /** Beispiele: was aus einer App herauskommt (Bildpaar vorher/nachher, Video, oder Texte aus ORNA, ORMA und OMNA COLOR) */
@@ -423,7 +427,6 @@ ${gruppen.map((g) => `<section class="abschnitt" aria-labelledby="g-${g.replace(
 }
 for (const a of APPS) {
   const zs = zettelZu("app", a.slug, 3);
-  const quer = /og-|1200x630/.test(a.bild);
   const schwester = APPS.filter((x) => x.gattung === a.gattung && x.slug !== a.slug)[0];
   const body = `
 <article class="stueck-kopf"><div class="spalte">
@@ -431,13 +434,13 @@ for (const a of APPS) {
   <h1 class="titel"><span class="zeichen-gross">${zeichen(a.zeichen)}</span>${esc(a.name)}</h1>
   <p class="lead">${esc(a.kurz)}</p>
   <p class="knopfreihe"><a class="knopf voll" href="/${attr(a.url)}" data-fenster="${attr(a.name)}">${a.name} öffnen</a>${a.app ? `<a class="knopf" href="/${attr(a.app)}">Als App installieren</a>` : ""}${a.feld ? `<a class="knopf still" href="/${attr(a.feld)}">Alle 326 im Feld</a>` : ""}</p>
-  <figure class="stueck-bild"><img src="/${attr(a.bild)}" alt="${attr(a.bildAlt)}" width="${quer ? 1200 : 640}" height="${quer ? 630 : 800}"${quer ? "" : ' style="max-width:420px"'}></figure>
+  <figure class="stueck-bild quadrat">${appBild(a)}</figure>
   <div class="stueck-text"><p>${esc(a.text)}</p><p class="fuer">${esc(a.fuer)}</p></div>
 </div></article>
 ${a.beispiele ? `<section class="abschnitt" aria-labelledby="beispiele-titel"><div class="spalte"><div class="abschnitt-kopf"><h2 id="beispiele-titel">Was dabei herauskommt</h2></div>${beispiele(a)}</div></section>` : ""}
 <section class="spalte">${teilen({ pfad: `apps/${a.slug}/`, titel: a.name, text: a.kurz })}</section>
 ${faeden([...zs.map((z) => fZettel(z)), fApp(schwester), fAngebot(angebotVon(a.gattung === "Bild und Video" ? "produkte" : "vermittlung")), a.werk ? fRaster(rasterVon("nebeneinander-nacheinander")) : fAngebot(angebotVon("webdesign"))])}`;
-  veroeffentliche({ pfad: `apps/${a.slug}/`, aktiv: "apps/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, beschreibung: beschreibung(a.text), body, bild: `${BASIS}/${a.bild}`, bildAlt: a.bildAlt,
+  veroeffentliche({ pfad: `apps/${a.slug}/`, aktiv: "apps/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, beschreibung: beschreibung(a.text), body, bildAlt: a.bildAlt,
     jsonld: [{ "@context": "https://schema.org", "@type": "SoftwareApplication", name: a.name, applicationCategory: "MultimediaApplication", operatingSystem: "Browser", url: `${BASIS}/${a.url}`, description: a.kurz, offers: { "@type": "Offer", price: "0", priceCurrency: "CHF" }, author: { "@type": "Person", name: SEITE.person.name } }] });
 }
 
