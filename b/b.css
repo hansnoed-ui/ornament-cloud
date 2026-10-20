@@ -154,6 +154,12 @@ h2 .zeichen { width: 1em; height: 1em; margin-right: 0.35em; vertical-align: -0.
 .feldchen i { display: block; width: 7px; height: 7px; border: 1px solid var(--grau); border-radius: 50%; }
 .feldchen i.hier { background: var(--faden); border-color: var(--faden); }
 .feldchen i.nah { background: var(--faden-hell); border-color: var(--faden); }
+a.feldchen { padding: 6px; margin: -6px; border-radius: 6px; }   /* ein Link zurück zum grossen Feld (20. Oktober 2026); der Rand macht ihn am Telefon gut zu treffen */
+a.feldchen:hover i, a.feldchen:focus-visible i { border-color: var(--tinte); }
+a.feldchen:hover i.hier, a.feldchen:focus-visible i.hier { border-color: var(--faden); }
+a.feldchen:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px; }
+.ohne-zeiger { display: none; }
+@media (hover: none) { .mit-zeiger { display: none; } .ohne-zeiger { display: inline; } }   /* am Telefon die Anleitung fürs Tippen */
 
 /* ---------- Startseite ---------- */
 /* ---------- Einstieg: das Angebot zuerst (20. Oktober 2026, Wunsch: «damit der Einstieg in die Website klarer ist») ---------- */
