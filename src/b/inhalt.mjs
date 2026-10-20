@@ -135,7 +135,6 @@ export const ANGEBOTE = [
     text: "Eine Website, die in unter einer Sekunde da ist und nichts von Dritten lädt: keine Cookies, keine Werbung, keine Tracker, Schriften und Skripte auf dem eigenen Server. Dazu Apps, die im Browser laufen, sich auf den Startbildschirm legen lassen und ohne Netz weiterarbeiten. Gestaltet und gebaut aus einer Hand, vom ersten Gespräch bis zur Veröffentlichung, mit allem, was Suchmaschinen und Teilen brauchen. Diese Seite hier ist das Beispiel, die sieben Apps sind es auch.",
     fuer: "Für Künstler:innen, Praxen, Vereine, Galerien, Museen, Schulen und kleine Unternehmen, die eine Adresse brauchen, die bleibt, oder ein Werkzeug, das nicht in einem App-Store wohnt.",
     ablauf: ["Ein Gespräch über das, was die Seite oder die App tun soll, und für wen.", "Ein Entwurf im Browser, zum Anfassen, nicht als Bild; bei Apps ein lauffähiger Prototyp innert Tagen.", "Bau, Texte, Bilder, Veröffentlichung auf der eigenen Adresse; danach bleibt alles in deiner Hand."],
-    beweis: [["b/", "Diese Seite"], ["zu-seiner-zeit/", "Der Zettelkasten in drei Sprachen"], ["b/apps/", "Die sieben Apps"]],
     dialog: [
       { frage: "Was soll entstehen?", wahlen: ["eine Website", "eine App", "beides", "weiss ich noch nicht"] },
       { frage: "Was gibt es schon?", wahlen: ["nichts", "eine alte Seite", "Texte und Bilder", "ein Logo und Farben"] },
@@ -145,7 +144,6 @@ export const ANGEBOTE = [
     text: "Halbe Tage, ganze Tage, Projektwochen oder Reihen: Beobachten zweiter Ordnung, Systemtheorie ohne Hürden, Kunst als Werkzeug für Gruppen. Dazu Beratung für Wohnheime, Werkstätten, Stiftungen und Schulen, die Kunst zu einem Teil ihrer Arbeit machen wollen: ein Atelier aufbauen, Werke von Klient:innen zeigen, Maltherapie als Angebot einrichten. Der Hintergrund dafür sind 25 Jahre Soziale Arbeit in Institutionen und die Ausbildung in Maltherapie.",
     fuer: "Für Schulen, Museen, Unternehmen, Verwaltungen, Praxisteams, Weiterbildungen und für Institutionen mit Menschen, die mehr können, als man ihnen zutraut.",
     ablauf: ["Ein Gespräch über die Gruppe oder das Haus und die Frage, die mitkommt.", "Ein Vorschlag mit Ablauf, Dauer, Material und Preis.", "Der Tag, die Woche oder die Begleitung über ein Jahr; zum Schluss eine Präsentation im Haus oder im Netz."],
-    beweis: [["b/apps/omna-color/", "OMNA COLOR: 180 Übungen"], ["b/apps/orma/", "ORMA zu zweit"], ["b/raster/", "Die vier Prüfraster"], ["b/ueber/", "Der Hintergrund: Soziale Arbeit, Maltherapie, Stationen"]],
     dialog: [
       { frage: "Wer?", wahlen: ["eine Schulklasse", "ein Team aus einem Betrieb", "ein Wohnheim, eine Werkstatt, eine Stiftung", "ein offener Kurs"] },
       { frage: "Was?", wahlen: ["ein Seminar oder Workshop", "eine Projektwoche", "ein Atelier aufbauen", "Beratung zu Kunst im Haus"] },
@@ -156,7 +154,6 @@ export const ANGEBOTE = [
     fuer: "Für Gemeinden, Kunsträume, Galerien, Stiftungen, Firmen mit Räumen und Künstler:innen, die eine Ausstellung nicht allein stemmen wollen.",
     ablauf: ["Ein Rundgang durch den Raum, mit dem Thema im Kopf.", "Konzept, Auswahl und Ablauf als Papier, Budget und Termine dazu.", "Aufbau, Eröffnung, Begleitprogramm, Abbau."],
     referenzen: [["2026", "«Supervisionen», Oberer Turm, Kaiserstuhl: sechs Monate, neun Künstler:innen; für Pro Kaiserstuhl, Gemeinde Zurzach"], ["2024", "Ausstellung mit Werken von Klient:innen, Behmen, Aarau: ein Jahr; für das BKS Aargau und die Stiftung FARO"]],
-    beweis: [["termine/", "Supervisionen, Oberer Turm Kaiserstuhl"], ["b/apps/orna/", "ORNA: Konstellationen als Ausstellungsprinzip"], ["b/werke/", "Eigene Werke"]],
     dialog: [
       { frage: "Welcher Raum?", wahlen: ["ein Haus mit Geschichte", "ein White Cube", "ein öffentlicher Ort", "ein Büro oder Betrieb"] },
       { frage: "Wer stellt aus?", wahlen: ["eine Person", "eine Gruppe", "eine Sammlung", "offen"] },
@@ -166,7 +163,6 @@ export const ANGEBOTE = [
     text: "Werke auf Papier und Leinwand, Prints in kleinen Auflagen, Installationen mit Bild, Bewegung und Ton, Arbeiten für Räume und Bildschirme. Dazu Editionen aus dem Zettelkasten: das Buch, das Kartenset, das Poster und die Notizbücher, gedruckt auf Bestellung. Bestellt wird per Mail, bezahlt per QR-Rechnung oder TWINT; Versand in der Schweiz inbegriffen. Auftragsarbeiten für Häuser, Firmen und Private nach Gespräch.",
     fuer: "Für Sammler:innen, Architekt:innen, Firmen, Gemeinden, Häuser und für alle, die ein Werk oder ein Buch für einen bestimmten Ort suchen.",
     ablauf: ["Aussuchen auf der Seite «Werke» oder ein Gespräch über den Ort und das, was er braucht.", "Bestellung per Mail, Bestätigung mit Rechnung; bei Auftragsarbeiten ein Entwurf als Skizze oder bewegte Vorschau.", "Versand versichert, oder Werk, Montage und Übergabe mit Zertifikat."],
-    beweis: [["b/werke/", "Werke, Prints und Editionen"], ["werke/stellenfeld/", "Stellenfeld: sechs Stationen in 3D"], ["b/apps/phorma-ii/", "PHORMA II: ein Werk in Bewegung"]],
     dialog: [
       { frage: "Was?", wahlen: ["ein Print oder Original", "ein Buch, Karten, ein Poster", "eine Auftragsarbeit", "etwas für einen Bildschirm"] },
       { frage: "Für welchen Ort?", wahlen: ["eine Wohnung", "ein Büro oder Empfang", "einen öffentlichen Raum", "ein Geschenk"] },

@@ -18,7 +18,7 @@ import { zeichen } from "../src/b/zeichen.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 11;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 12;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -608,10 +608,6 @@ ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" 
   <ol>${a.ablauf.map((s) => `<li><span>${esc(s)}</span></li>`).join("")}</ol>
 </div></section>
 ${a.referenzen ? `<section class="referenzen" aria-labelledby="ref-titel"><div class="spalte"><h2 id="ref-titel">${esc(T.angebot.referenzen)}</h2><ol class="jahre">${a.referenzen.map(([j, t]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}</span></li>`).join("")}</ol></div></section>` : ""}
-<section class="beweis" aria-labelledby="beweis-titel"><div class="spalte">
-  <h2 id="beweis-titel">${esc(T.angebot.anschauen)}</h2>
-  <ul>${a.beweis.map(([h, t]) => `<li><a href="/${attr(h)}">${esc(t)}</a></li>`).join("")}</ul>
-</div></section>
 <section class="briefing" id="briefing" aria-labelledby="briefing-titel"><div class="spalte">
   <h2 id="briefing-titel">${esc(T.angebot.dein)}</h2>
   <p>${esc(T.angebot.deinText)}</p>

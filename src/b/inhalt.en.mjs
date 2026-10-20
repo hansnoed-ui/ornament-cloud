@@ -138,7 +138,6 @@ export const ANGEBOTE = [
     text: "A website that is there in under a second and loads nothing from third parties: no cookies, no advertising, no trackers, fonts and scripts on your own server. Plus apps that run in the browser, can be placed on the home screen and keep working without a network. Designed and built from one hand, from the first conversation to publication, with everything search engines and sharing need. This site is the example, and so are the seven apps.",
     fuer: "For artists, practices, associations, galleries, museums, schools and small businesses that need an address that lasts, or a tool that does not live in an app store.",
     ablauf: ["A conversation about what the site or the app should do, and for whom.", "A draft in the browser, to touch rather than a picture; for apps a working prototype within days.", "Build, texts, images, publication at your own address; afterwards everything stays in your hands."],
-    beweis: [["b/en/", "This site"], ["zu-seiner-zeit/en/", "The Zettelkasten in three languages"], ["b/en/apps/", "The seven apps"]],
     dialog: [
       { frage: "What should come into being?", wahlen: ["a website", "an app", "both", "I don't know yet"] },
       { frage: "What is already there?", wahlen: ["nothing", "an old site", "texts and images", "a logo and colours"] },
@@ -148,7 +147,6 @@ export const ANGEBOTE = [
     text: "Half days, whole days, project weeks or series: second-order observation, systems theory without hurdles, art as a tool for groups. Plus consulting for residential homes, workshops, foundations and schools that want to make art a part of their work: setting up a studio, showing clients' works, establishing art therapy as an offer. The background is 25 years of social work in institutions and training in art therapy.",
     fuer: "For schools, museums, companies, administrations, practice teams, further education and for institutions with people who can do more than they are given credit for.",
     ablauf: ["A conversation about the group or the institution and the question that comes with it.", "A proposal with programme, duration, material and price.", "The day, the week or the accompaniment over a year; at the end a presentation in the house or on the web."],
-    beweis: [["b/en/apps/omna-color/", "OMNA COLOR: 180 exercises"], ["b/en/apps/orma/", "ORMA in pairs"], ["b/en/raster/", "The four test grids"], ["b/en/ueber/", "The background: social work, art therapy, stations"]],
     dialog: [
       { frage: "Who?", wahlen: ["a school class", "a team from a company", "a residential home, a workshop, a foundation", "an open course"] },
       { frage: "What?", wahlen: ["a seminar or workshop", "a project week", "setting up a studio", "consulting on art in the institution"] },
@@ -159,7 +157,6 @@ export const ANGEBOTE = [
     fuer: "For municipalities, art spaces, galleries, foundations, companies with rooms and artists who do not want to carry an exhibition alone.",
     ablauf: ["A walk through the space, with the theme in mind.", "Concept, selection and programme on paper, budget and dates included.", "Installation, opening, accompanying programme, dismantling."],
     referenzen: [["2026", "«Supervisionen», Oberer Turm, Kaiserstuhl: six months, nine artists; for Pro Kaiserstuhl, municipality of Zurzach"], ["2024", "Exhibition of clients' works, Behmen, Aarau: one year; for the BKS Aargau and the FARO Foundation"]],
-    beweis: [["termine/", "Supervisionen, Oberer Turm Kaiserstuhl (in German)"], ["b/en/apps/orna/", "ORNA: constellations as an exhibition principle"], ["b/en/werke/", "Own works"]],
     dialog: [
       { frage: "Which space?", wahlen: ["a house with a history", "a white cube", "a public place", "an office or a business"] },
       { frage: "Who exhibits?", wahlen: ["one person", "a group", "a collection", "open"] },
@@ -169,7 +166,6 @@ export const ANGEBOTE = [
     text: "Works on paper and canvas, prints in small editions, installations with image, motion and sound, works for rooms and screens. Plus editions from the Zettelkasten: the book, the card set, the poster and the notebooks, printed on demand. Orders by email, payment by QR invoice or TWINT; shipping within Switzerland included. Commissions for institutions, companies and private clients after a conversation.",
     fuer: "For collectors, architects, companies, municipalities, institutions and for everyone looking for a work or a book for a particular place.",
     ablauf: ["Choose on the «Works» page, or a conversation about the place and what it needs.", "Order by email, confirmation with invoice; for commissions a draft as a sketch or a moving preview.", "Insured shipping, or work, installation and handover with certificate."],
-    beweis: [["b/en/werke/", "Works, prints and editions"], ["werke/stellenfeld/", "Stellenfeld: six stations in 3D (in German)"], ["b/en/apps/phorma-ii/", "PHORMA II: a work in motion"]],
     dialog: [
       { frage: "What?", wahlen: ["a print or an original", "a book, cards, a poster", "a commission", "something for a screen"] },
       { frage: "For which place?", wahlen: ["a home", "an office or reception", "a public space", "a gift"] },

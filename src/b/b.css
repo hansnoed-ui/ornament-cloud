@@ -305,11 +305,6 @@ a.feldchen:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px;
 .ablauf ol { display: grid; gap: 0; border-top: 1px solid var(--linie); counter-reset: schritt; max-width: 62ch; }
 .ablauf li { display: grid; grid-template-columns: 2.2rem 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--linie); counter-increment: schritt; }
 .ablauf li::before { content: counter(schritt); color: var(--grau); font-size: 0.85rem; font-variant-numeric: tabular-nums; padding-top: 0.15em; }
-.beweis { padding: 40px 0 0; }
-.beweis h2 { font-weight: 500; font-size: 1.35rem; letter-spacing: -0.02em; margin-bottom: 14px; }
-.beweis ul { display: grid; gap: 8px; }
-.beweis li a { display: inline-flex; gap: 12px; align-items: baseline; }
-.beweis li a::before { content: ""; width: 18px; height: 1px; background: var(--faden); transform: translateY(-0.35em); }
 
 /* Gestaltungsdialog auf den Angebotsseiten */
 .briefing { padding: 48px 0 0; }
