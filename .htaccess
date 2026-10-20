@@ -13,6 +13,10 @@ AddDefaultCharset UTF-8
   RewriteCond %{HTTPS} !=on [OR]
   RewriteCond %{HTTP_HOST} ^www\.ornament\.cloud$ [NC]
   RewriteRule ^ https://ornament.cloud%{REQUEST_URI} [R=301,L]
+  # die Startseite ist der Neubau (seit 20. Oktober 2026, wie index.html auf GitHub Pages): / → /b/, die Abfrage bleibt dran;
+  # die bisherige Startseite unter /?bisher. 302, solange der Neubau Neubau ist; später 301.
+  RewriteCond %{QUERY_STRING} !(^|&)bisher(&|=|$)
+  RewriteRule ^$ /b/ [R=302,L]
 </IfModule>
 
 # ---- Fehler und Verzeichnisse ----
