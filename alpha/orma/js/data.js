@@ -164,7 +164,7 @@ export const PILOT = Object.freeze([
       "symbol": 25,
       "slot": 3
     },
-    "text": "Marina Abramović legt häufig wenige Regeln fest und überlässt viel dem tatsächlichen Zusammentreffen von Körpern. Lucy Suchman versteht Handlung als situierte Koordination, die sich im Verlauf einer Situation bildet. Haltung, Blick, Warten und Reaktion des Publikums sind deshalb nicht bloß äußere Begleitung der Performance. Sie verändern mit, was die Handlung in diesem Moment wird.",
+    "text": "Marina Abramović legt häufig wenige Regeln fest und überlässt viel dem tatsächlichen Zusammentreffen von Körpern. Lucy Suchman versteht Handlung als situierte Koordination, die sich im Verlauf einer Situation bildet. Haltung, Blick, Warten und Reaktion des Publikums sind deshalb nicht bloss äussere Begleitung der Performance. Sie verändern mit, was die Handlung in diesem Moment wird.",
     "question": "Wann wird Publikum zum Teil der Handlung?",
     "einstieg": "Marina Abramović legt häufig nur wenige Regeln fest und überlässt viel dem tatsächlichen Zusammentreffen von Körpern. Lucy Suchman versteht Handeln als Abstimmung, die sich erst im Verlauf einer Situation bildet. Haltung, Blick, Warten und Reaktion des Publikums begleiten die Performance darum nicht bloss von aussen. Sie verändern mit, was die Handlung in diesem Moment wird.",
     "auftraege": {
@@ -338,7 +338,7 @@ export const PILOT = Object.freeze([
       "symbol": 36,
       "slot": 10
     },
-    "text": "Donald Judd ordnet Körper und Abstände mit großer metrischer Präzision. Michel Serres denkt Raum dagegen auch über Wege, Nachbarschaften und Übergänge. Bei Judd bleibt der Abstand zwischen zwei Objekten messbar gleich, während sich ihre Beziehung im Gehen verändert. Was nebeneinander steht, wird erst durch den Weg des Körpers zu einer Folge von Nähe und Ferne.",
+    "text": "Donald Judd ordnet Körper und Abstände mit grosser metrischer Präzision. Michel Serres denkt Raum dagegen auch über Wege, Nachbarschaften und Übergänge. Bei Judd bleibt der Abstand zwischen zwei Objekten messbar gleich, während sich ihre Beziehung im Gehen verändert. Was nebeneinander steht, wird erst durch den Weg des Körpers zu einer Folge von Nähe und Ferne.",
     "question": "Ist Nähe eine Frage des Abstands oder des Weges?",
     "einstieg": "Donald Judd ordnet Körper und Abstände mit grosser, messbarer Genauigkeit. Michel Serres denkt Raum dagegen auch über Wege, Nachbarschaften und Übergänge. Bei Judd bleibt der Abstand zwischen zwei Objekten messbar gleich, während sich ihre Beziehung beim Gehen verändert. Was nebeneinandersteht, wird erst durch den Weg des Körpers zu einer Folge von Nähe und Ferne.",
     "auftraege": {
@@ -512,7 +512,7 @@ export const PILOT = Object.freeze([
       "symbol": 23,
       "slot": 1
     },
-    "text": "Marina Abramović kündigt bei vielen Arbeiten Dauer und Bedingungen im Voraus an. Elena Esposito zeigt, dass Vorstellungen von Zukunft die Gegenwart schon verändern, obwohl das Kommende noch nicht eingetreten ist. Wer weiß, dass eine Performance sechs Stunden dauern wird, erlebt bereits den ersten Moment im Horizont dieses Endes. Die festgelegte Dauer erzeugt Erwartungen, ohne den Verlauf festzulegen.",
+    "text": "Marina Abramović kündigt bei vielen Arbeiten Dauer und Bedingungen im Voraus an. Elena Esposito zeigt, dass Vorstellungen von Zukunft die Gegenwart schon verändern, obwohl das Kommende noch nicht eingetreten ist. Wer weiss, dass eine Performance sechs Stunden dauern wird, erlebt bereits den ersten Moment im Horizont dieses Endes. Die festgelegte Dauer erzeugt Erwartungen, ohne den Verlauf festzulegen.",
     "question": "Wie verändert ein angekündigtes Ende die Gegenwart?",
     "einstieg": "Marina Abramović kündigt bei vielen Arbeiten Dauer und Bedingungen im Voraus an. Elena Esposito zeigt, dass Vorstellungen von Zukunft die Gegenwart schon verändern, obwohl das Kommende noch nicht eingetreten ist. Wer weiss, dass eine Performance sechs Stunden dauern wird, erlebt schon den ersten Moment im Horizont dieses Endes. Die festgelegte Dauer weckt Erwartungen, ohne den Verlauf festzulegen.",
     "auftraege": {
@@ -1034,7 +1034,7 @@ export const PILOT = Object.freeze([
       "symbol": 34,
       "slot": 9
     },
-    "text": "George Spencer-Brown beginnt mit einer Unterscheidung, die zwei Seiten voneinander trennt. Donald Judds Arbeiten machen deutlich, dass auch der Abstand zwischen Dingen eine solche Trennung leisten kann. Der Zwischenraum ist nicht bloß leer. Er hält Körper auseinander, bestimmt ihre Beziehung und lässt eine Folge einzelner Formen entstehen. Ohne Abstand würden die Elemente zu einer anderen Form zusammenfallen.",
+    "text": "George Spencer-Brown beginnt mit einer Unterscheidung, die zwei Seiten voneinander trennt. Donald Judds Arbeiten machen deutlich, dass auch der Abstand zwischen Dingen eine solche Trennung leisten kann. Der Zwischenraum ist nicht bloss leer. Er hält Körper auseinander, bestimmt ihre Beziehung und lässt eine Folge einzelner Formen entstehen. Ohne Abstand würden die Elemente zu einer anderen Form zusammenfallen.",
     "question": "Kann ein Abstand eine Form erzeugen?",
     "einstieg": "George Spencer-Brown beginnt mit einer Unterscheidung, die zwei Seiten voneinander trennt. Donald Judds Arbeiten zeigen, dass auch der Abstand zwischen Dingen eine solche Trennung leisten kann. Der Zwischenraum ist nicht einfach leer. Er hält Körper auseinander, bestimmt ihre Beziehung und lässt eine Folge einzelner Formen entstehen. Ohne Abstand würden die Elemente zu einer anderen Form zusammenfallen.",
     "auftraege": {
@@ -1063,7 +1063,7 @@ export const PILOT = Object.freeze([
       "symbol": 24,
       "slot": 2
     },
-    "text": "Donald Judds Arbeiten erscheinen oft als autonome, präzise gesetzte Körper. Susan Leigh Star richtet den Blick dagegen auf Infrastrukturen, die im Hintergrund Stabilität ermöglichen. Auch Judds Präzision hängt an weniger sichtbaren Bedingungen: Fertigung, Maße, Wand, Boden, Befestigung und wiederholbare Installationsweisen. Der Abstand zwischen zwei Elementen ist deshalb nicht einfach leerer Raum. Er muss bei jeder Präsentation technisch und institutionell erneut hergestellt werden.",
+    "text": "Donald Judds Arbeiten erscheinen oft als autonome, präzise gesetzte Körper. Susan Leigh Star richtet den Blick dagegen auf Infrastrukturen, die im Hintergrund Stabilität ermöglichen. Auch Judds Präzision hängt an weniger sichtbaren Bedingungen: Fertigung, Masse, Wand, Boden, Befestigung und wiederholbare Installationsweisen. Der Abstand zwischen zwei Elementen ist deshalb nicht einfach leerer Raum. Er muss bei jeder Präsentation technisch und institutionell erneut hergestellt werden.",
     "question": "Was hält einen präzisen Abstand aufrecht?",
     "einstieg": "Donald Judds Arbeiten wirken oft wie eigenständige, präzise gesetzte Körper. Susan Leigh Star richtet den Blick auf Infrastrukturen, die im Hintergrund Stabilität ermöglichen. Auch Judds Präzision hängt an weniger sichtbaren Bedingungen: Fertigung, Masse, Wand, Boden, Befestigung. Der Abstand zwischen zwei Elementen ist darum kein leerer Raum. Er muss bei jeder Präsentation neu hergestellt werden.",
     "auftraege": {
@@ -1208,7 +1208,7 @@ export const PILOT = Object.freeze([
       "symbol": 34,
       "slot": 9
     },
-    "text": "George Spencer-Brown beginnt mit dem Ziehen einer Grenze, durch die zwei Seiten entstehen. Mona Hatoum macht solche Trennungen körperlich unsicher. Ein Gitter kann Schutz oder Gefangenschaft bedeuten, eine Schwelle Zugang oder Ausschluss. Welche Seite als innen oder außen erscheint, hängt deshalb nicht nur von der Linie ab, sondern auch von der Position des Körpers zu ihr. Die Form der Grenze bleibt einfach, ihre soziale und räumliche Bedeutung nicht.",
+    "text": "George Spencer-Brown beginnt mit dem Ziehen einer Grenze, durch die zwei Seiten entstehen. Mona Hatoum macht solche Trennungen körperlich unsicher. Ein Gitter kann Schutz oder Gefangenschaft bedeuten, eine Schwelle Zugang oder Ausschluss. Welche Seite als innen oder aussen erscheint, hängt deshalb nicht nur von der Linie ab, sondern auch von der Position des Körpers zu ihr. Die Form der Grenze bleibt einfach, ihre soziale und räumliche Bedeutung nicht.",
     "question": "Wer steht auf welcher Seite?",
     "einstieg": "George Spencer-Brown beginnt mit dem Ziehen einer Grenze, durch die zwei Seiten entstehen. Mona Hatoum macht solche Trennungen körperlich unsicher. Ein Gitter kann Schutz oder Gefangenschaft bedeuten, eine Schwelle Zugang oder Ausschluss. Welche Seite innen oder aussen ist, hängt nicht nur von der Linie ab, sondern auch davon, wo der Körper steht. Die Grenze bleibt einfach, ihre Bedeutung nicht.",
     "auftraege": {
@@ -1325,7 +1325,7 @@ export const PILOT = Object.freeze([
       "slot": 1
     },
     "text": "Elena Esposito betont, dass Prognosen die Zukunft nicht kennen, sondern in der Gegenwart Erwartungen erzeugen. Rebecca Horns Maschinen scheinen dagegen einen Ablauf bereits festzulegen. Doch sobald Mechanik auf Körper, Reibung und Raum trifft, wird aus dem vorgesehenen Ablauf ein tatsächliches Ereignis. Die Maschine macht Zukunft berechenbarer, ohne sie in Gegenwart zu verwandeln.",
-    "question": "Was weiß eine Maschine über ihren nächsten Moment?",
+    "question": "Was weiss eine Maschine über ihren nächsten Moment?",
     "einstieg": "Elena Esposito betont, dass Prognosen die Zukunft nicht kennen, sondern in der Gegenwart Erwartungen erzeugen. Rebecca Horns Maschinen scheinen einen Ablauf schon festzulegen. Doch sobald Mechanik auf Körper, Reibung und Raum trifft, wird aus dem vorgesehenen Ablauf ein tatsächliches Ereignis. Die Maschine macht Zukunft berechenbarer, ohne sie schon in Gegenwart zu verwandeln.",
     "auftraege": {
       "beispiel": "Denkt an ein Gerät, dem ihr vertraut, dass es morgen wieder funktioniert. Woher kommt dieses Vertrauen, und hat es euch schon einmal überrascht?",
@@ -1382,7 +1382,7 @@ export const PILOT = Object.freeze([
       "symbol": 39,
       "slot": 11
     },
-    "text": "Felix Gonzalez-Torres kann ein Werk durch Zertifikat, Maße und Regeln so beschreiben, dass es an verschiedenen Orten erneut installiert wird. Claude Shannon zeigt, wie Information unabhängig von ihrer Bedeutung zuverlässig übertragen werden kann. Doch eine vollständige Übermittlung der Angaben erzeugt noch nicht dieselbe materielle Situation. Gewicht, Entnahme, Publikum und Erneuerung müssen erst stattfinden. Der übertragbare Code stabilisiert das Werk, ohne seinen jeweiligen Zustand zu enthalten.",
+    "text": "Felix Gonzalez-Torres kann ein Werk durch Zertifikat, Masse und Regeln so beschreiben, dass es an verschiedenen Orten erneut installiert wird. Claude Shannon zeigt, wie Information unabhängig von ihrer Bedeutung zuverlässig übertragen werden kann. Doch eine vollständige Übermittlung der Angaben erzeugt noch nicht dieselbe materielle Situation. Gewicht, Entnahme, Publikum und Erneuerung müssen erst stattfinden. Der übertragbare Code stabilisiert das Werk, ohne seinen jeweiligen Zustand zu enthalten.",
     "question": "Wie viel Werk lässt sich als Information übertragen?",
     "einstieg": "Felix Gonzalez-Torres kann ein Werk durch Zertifikat, Masse und Regeln so beschreiben, dass es an verschiedenen Orten neu installiert wird. Claude Shannon zeigt, wie Information unabhängig von ihrer Bedeutung zuverlässig übertragen werden kann. Doch die vollständigen Angaben erzeugen noch nicht dieselbe Situation. Gewicht, Entnahme, Publikum und Erneuerung müssen erst stattfinden.",
     "auftraege": {

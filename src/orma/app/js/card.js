@@ -6,9 +6,10 @@
 export const CARD_WIDTH = 1080;
 const MIN_HEIGHT = 1350;                     // 4:5, passt in die üblichen Bildformate
 const PAD = 96, INNER = CARD_WIDTH - 2 * PAD;
-const SERIF = 'Georgia, "Times New Roman", serif';
-const SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
-export const CARD_COLORS = { bg: "#f8f8f6", ink: "#1f1d1a", muted: "#6b665e", line: "#d9d4ca", accent: "#c2410c" };
+const SERIF = '"Newsreader", Georgia, "Times New Roman", serif';
+const SANS = '"Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+// Papier, Tinte, Grau, Linie und die Blaupause: wie die App (orma.css) seit dem 20. Oktober 2026
+export const CARD_COLORS = { bg: "#ffffff", ink: "#000000", muted: "#6f6f6f", line: "#dadada", accent: "#1d3fd6" };
 // Herkunft: die bestehende, veröffentlichte Seite des Werks (keine eigene ORMA-Adresse)
 export const ORIGIN = "ornament.cloud · Nebeneinander, Nacheinander";
 

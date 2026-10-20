@@ -94,6 +94,7 @@ const btn = (label, onclick, cls = "orma-btn", extra = {}) => h("button", { type
 
 function show(...nodes) {
   main.replaceChildren(...nodes.flat().filter(Boolean));
+  main.classList.remove("is-fresh"); void main.offsetWidth; main.classList.add("is-fresh");   // Übergang neu anstossen
   const head = main.querySelector("h1, h2");
   if (head) { head.setAttribute("tabindex", "-1"); head.focus({ preventScroll: true }); }
   window.scrollTo(0, 0);
@@ -145,6 +146,7 @@ function renderStart() {
 
   show(
     noticeNode(),
+    heroWheel(),
     h("h1", { text: "ORMA" }),
     h("p", { class: "orma-sub", text: "Nebeneinander, Nacheinander" }),
     h("p", { class: "orma-claim" }, h("strong", { text: "Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke." })),
@@ -221,6 +223,18 @@ function renderRound() {
   }[round.step] || renderSpin)();
 }
 
+// je Ring jede Person einmal, auf ihrem Platz (eine Person kann in mehreren Konstellationen vorkommen)
+const ringItems = key => [...new Map(PILOT.map(p => [p[key].slot, { symbol: p[key].symbol }])).entries()].sort((x, y) => x[0] - y[0]).map(x => x[1]);
+
+// Startbild der Startansicht: das Rad, in der Mitte geteilt wie das Symbol von ORMA (nur Bild, nicht zu drehen)
+function heroWheel() {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "orma-wheel");
+  svg.setAttribute("aria-hidden", "true");
+  createWheel(svg, { outer: ringItems("artist"), inner: ringItems("theorist") });
+  return h("div", { class: "orma-hero", "aria-hidden": "true" }, svg, h("div", { class: "orma-hero-invert" }));
+}
+
 // B. Drehen
 function renderSpin() {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -228,9 +242,7 @@ function renderSpin() {
   svg.setAttribute("role", "button");
   svg.setAttribute("tabindex", "0");
   svg.setAttribute("aria-label", "Rad drehen");
-  // je Ring jede Person einmal, auf ihrem Platz (eine Person kann in mehreren Konstellationen vorkommen)
-  const ring = key => [...new Map(PILOT.map(p => [p[key].slot, { symbol: p[key].symbol }])).entries()].sort((x, y) => x[0] - y[0]).map(x => x[1]);
-  const wheel = createWheel(svg, { outer: ring("artist"), inner: ring("theorist") });
+  const wheel = createWheel(svg, { outer: ringItems("artist"), inner: ringItems("theorist") });
   const pairBox = h("div", { class: "orma-pair-box", "aria-live": "polite" });
   const spinBtn = btn("Drehen", () => spin({ dir: 1, strength: 0.5 }), "orma-btn orma-btn--primary");
   const skipBtn = btn("Überspringen", () => wheel.skip(), "orma-btn orma-btn--quiet", { hidden: true });
