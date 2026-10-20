@@ -24,8 +24,8 @@ function beleben(fig) {
   dunkelheit.addEventListener("change", () => { c = farben(dunkelheit.matches); malen(); });
 
   const bild0 = () => {
-    // Beginn aus dem Keim, nicht aus dem fertigen Bild: PHORMA II wächst vor den Augen; die anderen laufen von ihrem Ruhebild aus weiter
-    if (fig.dataset.tafel === "phorma-ii") zustand = tafel.keim();
+    // Beginn aus dem Keim, nicht aus dem fertigen Bild, wo die Tafel einen hat: PHORMA II wächst vor den Augen, das Signet zeichnet sich; die anderen laufen von ihrem Ruhebild aus weiter
+    if (tafel.keim) zustand = tafel.keim();
     malen();
     bild?.replaceWith(svg);
   };

@@ -150,7 +150,7 @@ test("b/werkstatt: die PDFs der Produkte liegen da", () => {
 
 test("b/apps: die Bilder der sieben Apps sind gezeichnete Tafeln (tools/b-app-bilder.mjs), hell und dunkel, 1200 × 1200, klein; Kachel und App-Seite wählen mit <picture>, Teilen nimmt die Vorschaukarte", async () => {
   const { TAFELN, svg } = await import(new URL("tools/b-app-bilder.mjs", root).href);
-  assert.deepEqual(Object.keys(TAFELN).filter((k) => TAFELN[k].gattung !== "raster").sort(), APPS.map((a) => a.slug).sort(), "je App eine Tafel");
+  assert.deepEqual(Object.keys(TAFELN).filter((k) => !TAFELN[k].gattung).sort(), APPS.map((a) => a.slug).sort(), "je App eine Tafel");
   for (const a of APPS) {
     assert.equal(a.bild, `b/bilder/apps/${a.slug}.svg`); assert.equal(a.bildDunkel, `b/bilder/apps/${a.slug}-dunkel.svg`);
     for (const [datei, dunkel] of [[a.bild, false], [a.bildDunkel, true]]) {
@@ -214,4 +214,21 @@ test("b/raster: wie die Apps – gezeichnete Tafel (lebend), die vier Felder dan
     assert.ok(lies("b/raster/index.html").includes(`<a class="stueck" href="/b/raster/${r.slug}/"><span class="bild quadrat"><picture>`), `${r.slug}: Kachel in der Übersicht`);
   }
   assert.ok(lies("b/b.js").includes(".prompt-kopieren"), "b.js kopiert den Prompt");
+});
+
+test("b/: das Signet lebt auf Start und Über (Tafel «signet», zeichnet sich aus dem Keim); die Titel der Apps spielen mit «ornament» (data-wort, b.js)", async () => {
+  const { TAFELN, svg, farben } = await import(new URL("src/b/tafeln.mjs", root).href);
+  const t = TAFELN.signet;
+  assert.equal(t.gattung, "signet");
+  for (const [datei, dunkel] of [["b/bilder/signet/signet.svg", false], ["b/bilder/signet/signet-dunkel.svg", true]]) assert.equal(lies(datei), svg("signet", dunkel), `${datei} aktuell`);
+  const k = t.keim(); assert.ok(!t.svg(k, farben(false)).includes("<circle"), "aus dem Keim: noch kein Punkt, die Schlaufe zeichnet sich");
+  for (let i = 0; i < 120; i++) t.schritt(k, 1 / 30);
+  assert.ok(t.svg(k, farben(false)).includes("<circle") && t.svg(k, farben(false)).includes('stroke-dashoffset="0"'), "nach vier Sekunden gezeichnet, mit Punkt");
+  for (const p of ["b/index.html", "b/ueber/index.html"]) {
+    assert.ok(lies(p).includes('class="tafel-lebt signet-tafel') && lies(p).includes('data-tafel="signet"><picture><source srcset="/b/bilder/signet/signet-dunkel.svg"'), `${p}: Signet-Tafel`);
+    assert.match(lies(p), /<script type="module" src="\/b\/tafeln-leben\.js\?v=\d+"><\/script>/);
+  }
+  for (const a of APPS) assert.ok(lies(`b/apps/${a.slug}/index.html`).includes(`<h1 class="titel" data-wort="${a.name}">`), `${a.slug}: data-wort`);
+  const js = lies("b/b.js");
+  assert.ok(js.includes('const QUELLE = "ornament"') && js.includes("/OR[NM]A|OMNA/i"), "nur die Namen aus der ornament-Familie");
 });

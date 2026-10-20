@@ -125,6 +125,8 @@ const fOrma = (k) => k && { art: "Konstellation", href: `/portfolio/nebeneinande
 function appBild(a, extra = "") {
   return `<picture><source srcset="/${attr(a.bildDunkel)}" media="(prefers-color-scheme: dark)"><img src="/${attr(a.bild)}" alt="${attr(a.bildAlt)}" width="1200" height="1200"${extra}></picture>`;
 }
+/** Das Signet in Bewegung (tools/b-app-bilder.mjs schreibt das Ruhebild; b/tafeln-leben.js lässt es leben) */
+const SIGNET_TAFEL = `<figure class="tafel-lebt signet-tafel" data-tafel="signet"><picture><source srcset="/b/bilder/signet/signet-dunkel.svg" media="(prefers-color-scheme: dark)"><img src="/b/bilder/signet/signet.svg" alt="Das Signet von ornament.cloud, gezeichnet: die Re-entry-Schlaufe mit dem Punkt, der sie abläuft" width="1200" height="1200"></picture></figure>`;
 /** Eine App als Kachel: immer quadratisch */
 function appKachel(a) {
   return `<a class="stueck" href="/b/apps/${a.slug}/"><span class="bild quadrat">${appBild(a, ' loading="lazy"')}</span><h3>${zeichen(a.zeichen)}${esc(a.name)}</h3><p>${esc(a.kurz)}</p></a>`;
@@ -232,7 +234,10 @@ function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noi
   const body = `
 <section class="einstieg" aria-labelledby="einstieg-titel">
   <div class="spalte">
-    <h1 class="titel" id="einstieg-titel">${esc(SEITE.titel)}<small>${esc(SEITE.lead)}</small></h1>
+    <div class="einstieg-kopf">
+      <h1 class="titel" id="einstieg-titel">${esc(SEITE.titel)}<small>${esc(SEITE.lead)}</small></h1>
+      ${SIGNET_TAFEL}
+    </div>
     <div class="angebote" role="list">${ANGEBOTE.map((a) => `<a class="angebot" role="listitem" href="/b/angebot/${a.slug}/"><span class="zeichen-gross">${zeichen(a.slug)}</span><h2>${esc(a.name)}</h2><p>${esc(a.kurz)}</p><span class="weiter">Leistung und Briefing</span></a>`).join("")}</div>
     <p class="einstieg-satz">${esc(SEITE.claimAlt)} Diese Seite ist das Beispiel: ein Zettelkasten zum Lesen, sieben Apps zum Spielen, vier Prüfraster zum Hinsehen.</p>
   </div>
@@ -312,7 +317,7 @@ function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noi
     </div>
   </div>
 </section>`;
-  veroeffentliche({ pfad: "", titel: "ornament.cloud", beschreibung: SEITE.beschreibung, body, jsonld: [personLd()], bildAlt: "Das Feld: 49 Zettel in sieben Reihen, mit blauen Fäden dazwischen" });
+  veroeffentliche({ pfad: "", titel: "ornament.cloud", beschreibung: SEITE.beschreibung, body, jsonld: [personLd()], module: ["tafeln-leben.js"], bildAlt: "Das Feld: 49 Zettel in sieben Reihen, mit blauen Fäden dazwischen" });
 }
 
 function personLd() {
@@ -432,7 +437,7 @@ for (const a of APPS) {
   const body = `
 <article class="stueck-kopf"><div class="spalte">
   <p class="gattung">${esc(a.gattung)}${a.werk ? ` · zu «${esc(a.werk)}»` : ""}</p>
-  <h1 class="titel"><span class="zeichen-gross">${zeichen(a.zeichen)}</span>${esc(a.name)}</h1>
+  <h1 class="titel" data-wort="${attr(a.name)}"><span class="zeichen-gross">${zeichen(a.zeichen)}</span>${esc(a.name)}</h1>
   <p class="lead">${esc(a.kurz)}</p>
   <p class="knopfreihe"><a class="knopf voll" href="/${attr(a.url)}" data-fenster="${attr(a.name)}">${a.name} öffnen</a>${a.app ? `<a class="knopf" href="/${attr(a.app)}">Als App installieren</a>` : ""}${a.feld ? `<a class="knopf still" href="/${attr(a.feld)}">Alle 326 im Feld</a>` : ""}</p>
   <figure class="stueck-bild quadrat">${appBild(a)}</figure>
@@ -603,6 +608,7 @@ ${faeden([fZettel(zettel[40]), fZettel(zettel[36]), fApp(appVon("orna"))])}`;
     <div class="liste-kasten"><h2>${esc(UEBER.liste.titel)}</h2><p>${esc(UEBER.liste.text)}</p><p class="knopfreihe"><a class="knopf" href="${attr(UEBER.liste.mailto)}">Eintragen lassen</a></p><p class="klein">Der Link öffnet eine fertige Mail. Austragen mit einer Antwort; die Adresse bleibt bei mir.</p></div>
   </div>
   <div class="s-3" style="padding-top:12px">
+    ${SIGNET_TAFEL.replace('class="tafel-lebt signet-tafel"', 'class="tafel-lebt signet-tafel ueber-signet"')}
     <address class="adresse">${esc(SEITE.person.name)}<br>${esc(SEITE.person.strasse)}<br>${esc(SEITE.person.plz)}<br><a href="mailto:${SEITE.person.mail}">${SEITE.person.mail}</a></address>
     <p class="klein" style="margin-top:18px"><a href="/impressum/">Impressum, AGB und Datenschutz</a></p>
     <div style="margin-top:32px">${feld({ klein: true, paare: startPaare.slice(0, 8) })}</div>
@@ -610,7 +616,7 @@ ${faeden([fZettel(zettel[40]), fZettel(zettel[36]), fApp(appVon("orna"))])}`;
 </div></section>
 <section class="spalte">${teilen({ pfad: "ueber/", titel: `${SEITE.person.name} – ornament.cloud`, text: "Kunst, Design, Webdesign, Therapie und Theorie." })}</section>
 ${faeden([fAngebot(angebotVon("webdesign")), fAngebot(angebotVon("kuration")), fZettel(zettel[16]), fApp(appVon("orma"))])}`;
-  veroeffentliche({ pfad: "ueber/", aktiv: "ueber/", titel: `Über ${SEITE.person.name}`, beschreibung: `${SEITE.person.name}, zwischen Zürich, Basel und Aarau: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte. Hintergrund, Kontakt und Liste.`, body, typ: "profile", jsonld: [personLd()], bildAlt: `${SEITE.person.name}` });
+  veroeffentliche({ pfad: "ueber/", aktiv: "ueber/", module: ["tafeln-leben.js"], titel: `Über ${SEITE.person.name}`, beschreibung: `${SEITE.person.name}, zwischen Zürich, Basel und Aarau: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte. Hintergrund, Kontakt und Liste.`, body, typ: "profile", jsonld: [personLd()], bildAlt: `${SEITE.person.name}` });
 }
 
 /* ---------- Werkstatt (nicht verlinkt, noindex) ---------- */

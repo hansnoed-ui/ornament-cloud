@@ -191,6 +191,34 @@ function schliesseFenster(zurueck = true) {
 addEventListener("popstate", () => { if (fensterEl) schliesseFenster(false); });
 addEventListener("keydown", (e) => { if (e.key === "Escape" && fensterEl) { if (history.state && history.state.fenster) history.back(); else schliesseFenster(false); } });
 
+/* ---------- Die Titel der Apps: Buchstaben aus «ornament» (20. Oktober 2026, Wunsch: «bei diesen Titeln … sollen sich diese Wörter bzw. Buchstaben
+   bilden, transformieren») – das Wort «ornament» steht da, die Buchstaben, die der Name braucht, bleiben und rücken an ihren Platz, die anderen
+   verblassen, neue kommen dazu (ORNA aus o-r-n-a, ORMA aus o-r-m-a, PHORMA mit PH davor, OMNA COLOR aus o-m-n-a). Einmal beim Laden, nie bei «weniger Bewegung». */
+const titelEl = document.querySelector(".stueck-kopf .titel[data-wort]");
+if (titelEl && !ruhig) (async () => {
+  const QUELLE = "ornament", wort = titelEl.dataset.wort;
+  if (!/OR[NM]A|OMNA/i.test(wort)) return;   // nur die Namen, die mit «ornament» spielen (ORNA, ORMA, PHORMA, OMNA COLOR, später INPHORMA, PERPHORMA …)
+  const text = [...titelEl.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim()); if (!text) return;
+  try { await document.fonts.ready; } catch {}
+  const frei = QUELLE.split("").map((z, i) => ({ z, i, frei: true }));
+  const ziel = wort.split("").map((z) => { const q = z === " " ? null : frei.find((f) => f.frei && f.z === z.toLowerCase()); if (q) q.frei = false; return { z, von: q ? q.i : -1 }; });
+  if (!ziel.some((t) => t.von >= 0)) return;   // nichts aus «ornament»: der Titel bleibt, wie er ist (The Fictory)
+  const span = (z, cls) => { const e = document.createElement("span"); e.className = "buchstabe " + cls; e.textContent = z === " " ? "\u00a0" : z; return e; };
+  // 1. «ornament» steht da
+  const quelle = QUELLE.split("").map((z, i) => span(z, ziel.some((t) => t.von === i) ? "bleibt" : "geht"));
+  const halter = document.createElement("span"); halter.className = "wort"; halter.append(...quelle); text.replaceWith(halter);
+  await new Promise((r) => setTimeout(r, 900));
+  const lagen = quelle.map((e) => e.getBoundingClientRect());
+  // 2. das Zielwort, die bleibenden Buchstaben kommen von ihrem alten Platz
+  const neu = ziel.map((t) => span(t.z, t.von >= 0 ? "bleibt" : "kommt"));
+  halter.replaceChildren(...neu);
+  neu.forEach((e, k) => { const t = ziel[k]; if (t.von >= 0) { const a = lagen[t.von], b = e.getBoundingClientRect(); e.style.transform = `translate(${a.left - b.left}px, ${a.top - b.top}px)`; } });
+  void halter.offsetWidth;
+  halter.classList.add("bewegt");
+  neu.forEach((e) => { e.style.transform = ""; });
+  setTimeout(() => { halter.replaceWith(document.createTextNode(wort)); }, 1400);
+})();
+
 /* ---------- Signet: der Punkt läuft die Schlaufe entlang ---------- */
 if (!ruhig) document.querySelectorAll(".signet animateMotion").forEach((a) => { try { a.beginElement(); } catch {} });
 

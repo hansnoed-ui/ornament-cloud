@@ -406,11 +406,44 @@ const journalistik = {
   },
 };
 
+/* ================= Das Signet in Bewegung (20. Oktober 2026, Wunsch: «ein wenig mehr Dynamik … neue passende Animationen des Logos») ================= */
+// Die Re-entry-Schlaufe der Videos und des Signets: r = b + a·cos t (LA = 1, LB = 0,45, LK = 1,2). Sie zeichnet sich, der Punkt läuft sie ab,
+// und b atmet langsam zwischen 0,25 und 0,95 – die Schlaufe weitet und verengt sich, die innere Schleife (der Re-Entry) bleibt in der Blaupause.
+const signet = {
+  gattung: "signet",
+  alt: "Das Signet von ornament.cloud, gezeichnet: die Re-entry-Schlaufe mit dem Punkt, der sie abläuft",
+  punkte(b, n = 240) { const LA = 1, LK = 1.2, LOFF = -0.84, p = []; for (let i = 0; i <= n; i++) { const t = (i / n) * Math.PI * 2, r = b + LA * Math.cos(t); p.push([LK * r * Math.cos(t) + LOFF, LK * r * Math.sin(t), t]); } return p; },
+  neu() { return { t: 3 }; },
+  keim() { return { t: 0 }; },   // im Browser: die Schlaufe zeichnet sich erst
+  schritt(z, dt) { z.t += dt; },
+  svg(z, c) {
+    const b = 0.6 + 0.35 * Math.sin((z.t - 3) * 0.42);
+    const pts = signet.punkte(b);
+    // Ausdehnung der Ruheform (b = 0,45), damit die Schlaufe beim Atmen die Mitte hält
+    const ruhe = signet.punkte(0.45), xs = ruhe.map((p) => p[0]), ys = ruhe.map((p) => p[1]);
+    const mx = (Math.min(...xs) + Math.max(...xs)) / 2, my = (Math.min(...ys) + Math.max(...ys)) / 2, sp = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+    const m = 880 / sp, bild = (p) => [f(M + (p[0] - mx) * m), f(M + (p[1] - my) * m)];
+    const d = pts.map((p, i) => (i ? "L" : "M") + bild(p).join(" ")).join("") + "Z";
+    // die innere Schleife: wo r < 0 (cos t < −b)
+    const innen = pts.filter((p) => b + Math.cos(p[2]) < 0);
+    const dInnen = innen.length > 2 ? innen.map((p, i) => (i ? "L" : "M") + bild(p).join(" ")).join("") + "Z" : "";
+    const gezeichnet = Math.min(1, Math.max(0, (z.t - 0.3) / 2.2));
+    const danach = Math.min(1, Math.max(0, (z.t - 2.5) / 0.5));   // Füllung und Punkt erst, wenn die Schlaufe gezeichnet ist
+    const lauf = -Math.PI / 2 + ((z.t - 2.5) / 8) * Math.PI * 2, rl = b + Math.cos(lauf);
+    const [px, py] = bild([1.2 * rl * Math.cos(lauf) - 0.84, 1.2 * rl * Math.sin(lauf)]);
+    return [
+      dInnen ? `<path d="${dInnen}" fill="${c.fadenHell}" opacity="${f(danach)}"/>` : "",
+      `<path d="${d}" fill="none" stroke="${c.tinte}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="${f(1 - gezeichnet)}"/>`,
+      danach > 0 ? `<circle cx="${px}" cy="${py}" r="${f(16 * danach)}" fill="${c.faden}"/>` : "",
+    ].join("");
+  },
+};
+
 export const TAFELN = {
-  orna, orma, "omna-color": omnaColor, "phorma-i": phormaI, "phorma-ii": phormaII, "phorma-iii": phormaIII, "the-fictory": fictory,
+  signet, orna, orma, "omna-color": omnaColor, "phorma-i": phormaI, "phorma-ii": phormaII, "phorma-iii": phormaIII, "the-fictory": fictory,
   "nebeneinander-nacheinander": nebeneinander, verteilapparat, gesellschaftskonzepte: gesellschaft, "journalistische-texte": journalistik,
 };
-/** Ablage je Gattung: Apps unter b/bilder/apps/, Prüfraster unter b/bilder/raster/ */
+/** Ablage je Gattung: Apps unter b/bilder/apps/, Prüfraster unter b/bilder/raster/, das Signet unter b/bilder/signet/ */
 export const ablage = (slug) => `b/bilder/${TAFELN[slug].gattung || "apps"}/${slug}`;
 
 /** die ganze SVG-Datei des Ruhebilds */
