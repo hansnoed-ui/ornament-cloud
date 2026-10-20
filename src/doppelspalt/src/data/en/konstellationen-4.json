@@ -1,0 +1,322 @@
+{
+  "christian-marclay__claude-shannon": {
+    "text": "Christian Marclay breaks films down into fragments that each show or name a time of day. Claude Shannon separates the signal from its meaning in the transmission of a message. In The Clock, such signals from entirely different stories are referred to a shared temporal order. Only the synchronisation with the actual time of the audience turns heterogeneous scenes into a shared now. The technical legibility of time thus becomes the precondition of a common present.",
+    "question": "When does information become shared time?"
+  },
+  "roman-opalka__gilles-deleuze": {
+    "text": "Roman Opalka repeats the same elementary operation over decades: one number follows the next. Gilles Deleuze understands repetition not as the return of the same but as the production of difference. Opalka's series makes this tension extremely visible. The procedure remains almost identical, yet no number and no moment can ever recur. It is precisely repetition that generates a sequence in which each new step widens the distance from the beginning.",
+    "question": "Can repetition exist without return?"
+  },
+  "james-turrell__heinz-von-foerster": {
+    "text": "James Turrell directs attention not only to light but to the act of seeing itself. Heinz von Foerster is interested in second-order observation, that is, in observing an observer in the act of observing. With Turrell, this second level can fold back into one's own perception. One sees a field of light and notices at the same time how one's own eye produces depth, edge or colour. Perception becomes its own object.",
+    "question": "Can seeing observe itself?"
+  },
+  "on-kawara__n-katherine-hayles": {
+    "text": "On Kawara's date paintings look like pure information: a date, standardised lettering, a plain ground. N. Katherine Hayles, however, contradicts the notion that information could exist independently of its embodiment. Kawara's date is painted, on a particular day, on a particular canvas and under a rule that demands bodily work before midnight. The abstract calendar code remains bound to material and to lifetime.",
+    "question": "How much body is there in a date?"
+  },
+  "william-kentridge__jacques-derrida": {
+    "text": "William Kentridge erases his charcoal drawings without letting their earlier states disappear completely. Jacques Derrida's trace designates a presence that remains marked by something absent. With Kentridge, what has been erased can therefore have a stronger effect than an untouched surface. Every remnant points to an image that is no longer there and yet alters the next drawing. Erasing removes a form and at the same time produces its trace.",
+    "question": "Can erasure strengthen a trace?"
+  },
+  "tehching-hsieh__henri-bergson": {
+    "text": "Tehching Hsieh organises a year through rules that recur exactly. Henri Bergson distinguishes measurable time from duration, which is not composed of identical units. A calendar can break Hsieh's year down into days and hours, but the body lives through no hour like any other. Fatigue, memory and expectation alter duration from within. The rule makes time uniform and precisely thereby allows its unevenness to be experienced.",
+    "question": "What remains of duration when every day is counted?"
+  },
+  "roman-opalka__judith-butler": {
+    "text": "Roman Opalka binds his life's work to a simple, self-imposed rule: one number follows the next. Judith Butler examines a different kind of binding. Social forms gain stability because actions are repeated and can thereby come to seem self-evident. With Opalka the rule lies open to view, yet it too becomes a form of life only through countless repetitions. The single number fulfils an instruction, while the continued practice binds the artist and his work ever more closely to one another.",
+    "question": "When does repetition become an obligation?"
+  },
+  "donald-judd__susan-leigh-star": {
+    "text": "Donald Judd's works often appear as autonomous, precisely placed bodies. Susan Leigh Star, by contrast, directs attention to the infrastructures that make stability possible in the background. Judd's precision, too, depends on less visible conditions: fabrication, dimensions, wall, floor, fixings and repeatable modes of installation. The gap between two elements is therefore not simply empty space. It has to be produced anew, technically and institutionally, at every presentation.",
+    "question": "What keeps a precise gap in place?"
+  },
+  "dan-graham__michel-foucault": {
+    "text": "Dan Graham's glass, mirrors and cameras distribute visibility among people who observe one another and at the same time become visible themselves. Michel Foucault examines arrangements in which seeing is not neutral but organises positions and behaviour. Graham's spaces offer no secure external standpoint. Whoever looks in may become an image for others. Transparency therefore does not simply mean more visibility, but a particular order of mutual observation.",
+    "question": "Who sees whom in a transparent space?"
+  },
+  "felix-gonzalez-torres__gilbert-simondon": {
+    "text": "Felix Gonzalez-Torres lets works change their material states continuously. Sweets disappear, stacks of paper shrink and can be replenished. Gilbert Simondon understands individuation not as the production of a definitive individual but as a process that keeps further changes open. The work would then not be a fixed form behind changing states. Its identity consists in the way it can go on individuating itself through these states.",
+    "question": "When does change become the form of identity?"
+  },
+  "bruce-nauman__wendy-hui-kyong-chun": {
+    "text": "Bruce Nauman repeats words, gestures and movements until deliberate execution can pass over into rhythm or habit. Wendy Hui Kyong Chun is interested in how repetition stabilises behaviour and media by letting the past go on working in present routines. With Nauman, the body carries every previous repetition into the next. What looks like the same act therefore already possesses a memory of practice, fatigue and expectation.",
+    "question": "When does repetition acquire a memory?"
+  },
+  "william-kentridge__gregory-bateson": {
+    "text": "William Kentridge leaves earlier states of an image standing as smudges and traces of erasure. Gregory Bateson understands information as a difference that makes a further difference. A trace is therefore not informative simply by being present. It becomes so where the comparison with the present image reveals a change. Kentridge's drawing visibly carries its own history of differences with it.",
+    "question": "When does a trace become information?"
+  },
+  "agnes-martin__heinz-von-foerster": {
+    "text": "Agnes Martin's grids at first appear as an order that exists independently of the person looking at them. Heinz von Foerster, however, directs attention to the observer, who is the one to designate differences in the first place. With Martin, the picture changes with distance, light and attention. Lines come forward or vanish, regularity tips into deviation. The grid therefore does not only order the surface. It can make visible how one's own gaze produces order.",
+    "question": "Can a grid make the observer visible?"
+  },
+  "hanne-darboven__henri-bergson": {
+    "text": "Hanne Darboven rewrites time in numbers, dates and serial notations. Henri Bergson warns against equating duration with a spatially ordered sequence of measurable units. Darboven's work sharpens precisely this difference. The calendar allows days to be set side by side and counted, while the writing itself consumes time that is not absorbed into the page. The notation orders duration and shows at the same time that duration is more than its ordering.",
+    "question": "What does duration lose when it is notated?"
+  },
+  "mona-hatoum__george-spencer-brown": {
+    "text": "George Spencer-Brown begins with the drawing of a boundary through which two sides come into being. Mona Hatoum makes such separations bodily uncertain. A grille can mean protection or captivity, a threshold access or exclusion. Which side appears as inside or outside therefore depends not only on the line but also on the position of the body in relation to it. The form of the boundary remains simple; its social and spatial meaning does not.",
+    "question": "Who stands on which side?"
+  },
+  "dan-graham__donna-haraway": {
+    "text": "Dan Graham's mirrors and transparent pavilions offer no view from nowhere. Every view depends on where a body stands, who is on the other side and which reflections happen to enter the surface at that moment. Donna Haraway's situated knowledge begins precisely with this boundness. Observation thereby loses not its validity but its claim to placelessness. Graham's architecture makes the standpoint a visible component of the image.",
+    "question": "Is there a neutral standpoint in the mirror?"
+  },
+  "christian-marclay__karen-barad": {
+    "text": "Christian Marclay's montages appear to join film or sound fragments that already exist. Karen Barad's concept of intra-action, however, calls into question whether the units involved are already fully determined before their relation. A cut does not only create a connection between two fragments. It also determines where one ends, where the other begins and what meaning both acquire in their new neighbourhood.",
+    "question": "Does a fragment only come into being through its cut?"
+  },
+  "robert-smithson__michel-serres": {
+    "text": "Robert Smithson's Non-Sites bring rock, maps and containers from a distant place into the exhibition space. Michel Serres is interested in passages, translations and routes along which something changes its relations. With Smithson, the place is not simply transported. Material, map and naming produce a new connection between here and there. Precisely because the site remains absent, it can travel through various mediations.",
+    "question": "How far can a place travel?"
+  },
+  "doris-salcedo__gilles-deleuze": {
+    "text": "Doris Salcedo uses recurring things such as furniture, items of clothing or architectural interventions to work through experiences of loss and violence. Gilles Deleuze understands repetition not as the production of the same but as difference. With Salcedo, the recurring form must precisely not make individual losses interchangeable. Her repetition can rather show that similar structures of violence inscribe themselves differently in singular histories.",
+    "question": "Can repetition make singularity visible?"
+  },
+  "rebecca-horn__gregory-bateson": {
+    "text": "Rebecca Horn joins bodies to mechanical extensions whose movement acts back upon the body. Gregory Bateson thinks of systems in terms of feedback loops in which the consequences of an action become the new conditions of acting. With Horn, a prosthesis therefore does not only extend reach. Weight, resistance and reaction alter the next movement. Body and apparatus form a circuit in which each continuously corrects the other.",
+    "question": "When does a prosthesis become feedback?"
+  },
+  "eva-hesse__claude-shannon": {
+    "text": "Claude Shannon treats noise as a disturbance of the most reliable possible transmission of a signal. Eva Hesse's works confront this logic with a problem. Latex discolours, loses tension and alters a form that is supposed to be preserved. Technically the deviation can be described, but Shannon's theory cannot decide whether it is loss or part of the work. With Hesse, it is precisely the boundary between signal and noise that becomes an aesthetic question.",
+    "question": "Who decides whether change is noise?"
+  },
+  "tehching-hsieh__lucy-suchman": {
+    "text": "Tehching Hsieh formulates rules that are meant to hold for a whole year. Lucy Suchman shows that a plan can never fully anticipate concrete action. The longer Hsieh's rule lasts, the more unplanned situations it must pass through: fatigue, weather, illness, encounters and practical obstacles. The plan remains the same, but its survival depends daily on situated coordination.",
+    "question": "How does a plan survive a year?"
+  },
+  "roman-opalka__jacques-derrida": {
+    "text": "Roman Opalka writes a number and moves irrevocably on to the next. Jacques Derrida's trace designates something present that remains co-determined by what is absent. With Opalka, every number therefore stands in a field of what has already been written and what has not yet been written. The previous number has vanished and nevertheless remains the condition of the next. The series does not carry its past alongside itself, but in every further step.",
+    "question": "Where does the number that has just passed remain?"
+  },
+  "james-turrell__n-katherine-hayles": {
+    "text": "James Turrell works with light that can only become depth, surface or coloured space through a perceiving body. N. Katherine Hayles criticises the notion of an information that would be independent of its embodiment. Light, too, can be described physically, but Turrell's work does not consist in these data alone. Eyes, adaptation, posture and space belong to the conditions of what appears at all.",
+    "question": "Can light be information without a body?"
+  },
+  "bruce-nauman__judith-butler": {
+    "text": "Bruce Nauman repeats bodily postures and everyday movements until they appear artificial, strenuous or strange. Judith Butler examines how norms make bodies legible and behaviour self-evident through repeated actions. Nauman can disturb such self-evidence by isolating and exaggerating an ordinary movement. What seems normal suddenly shows the repetitions through which it became normal.",
+    "question": "When does a posture become normal?"
+  },
+  "on-kawara__gilbert-simondon": {
+    "text": "On Kawara's Today Series consists of individual date paintings, each of which may only be made on the day it names. Gilbert Simondon understands individuation as a process out of which a unity first emerges. Kawara's series, too, is not simply the sum of finished paintings. With each new date, what this ongoing work is as a whole changes. The identity of the series grows out of events that remain individually completed and jointly incomplete.",
+    "question": "When does a series become a work?"
+  },
+  "agnes-martin__michel-foucault": {
+    "text": "Agnes Martin's grids order a surface with a few recurring lines. Michel Foucault is interested in orders that do not merely sort things but determine which differences become visible and comparable at all. Martin's grid imposes no single reading. Yet against its background, minimal deviations, interruptions and intensities first become noticeable. The order thereby produces a field of what can appear as a difference.",
+    "question": "What may appear as deviation within the grid?"
+  },
+  "louise-bourgeois__gilles-deleuze": {
+    "text": "Louise Bourgeois returns over decades to spiders, houses, body parts and family motifs. Gilles Deleuze understands repetition as the production of difference. Bourgeois' return to the same motifs therefore does not lead to a stable memory. Material, scale and mood shift, and with them the past that is summoned in the form changes. Memory does not merely repeat. It produces new presents of what has passed.",
+    "question": "Why does memory return changed?"
+  },
+  "mona-hatoum__heinz-von-foerster": {
+    "text": "Mona Hatoum's maps at first seem to order a world in which the viewer would only need to find their own location. Heinz von Foerster, however, directs attention to the observer, who makes distinctions of their own. With Hatoum, a different location does not necessarily change the map, but it does change what appears on it as proximity, border or connection. The order of the world does not simply lie before the gaze. It becomes legible from a position.",
+    "question": "Where does the observer stand in their own map?"
+  },
+  "sol-lewitt__karen-barad": {
+    "text": "Sol LeWitt's instructions at first glance look like abstract rules that subsequently merely have to be executed in material. Karen Barad, however, would not treat matter as the passive carrier of an already finished form. Wall, tool, scale and bodily execution all contribute to which concrete form emerges. The rule remains important, but it does not stand wholly opposed to the material.",
+    "question": "Where does the rule end and the wall begin?"
+  },
+  "felix-gonzalez-torres__donna-haraway": {
+    "text": "Felix Gonzalez-Torres creates works whose state is co-determined by the bodies and decisions of the audience. Donna Haraway insists that knowledge always arises from concrete positions. The work, too, does not appear the same from every standpoint. Whoever takes a sweet, whoever only looks, whoever replenishes or whoever knows the rules of the exhibition encounters a different situation. Commonality here does not arise through identical experience.",
+    "question": "Does every audience have the same work?"
+  },
+  "christian-marclay__henri-bergson": {
+    "text": "Christian Marclay's The Clock arranges thousands of film fragments so that the times they depict coincide with the real time in the exhibition space. Henri Bergson distinguishes such measurable, divisible time from lived duration. Before Marclay's work, the two orders meet. The next minute arrives punctually and has its fixed place, while waiting, suspense or boredom alter its duration. Time is at once precisely set and unevenly experienced.",
+    "question": "How long does an ordered minute last?"
+  },
+  "hanne-darboven__jacques-derrida": {
+    "text": "Hanne Darboven transforms dates and sequences of time into writing, numbers and serial records. Jacques Derrida's trace makes clear that writing can keep what is absent present without bringing back its original presence. A notated day is therefore not the past day itself. It remains available as a repeatable sign and can be read again in new contexts. Writing preserves time only by transferring it into another form.",
+    "question": "Can writing preserve time without holding it fast?"
+  },
+  "william-kentridge__wendy-hui-kyong-chun": {
+    "text": "William Kentridge draws, erases and updates the same sheet again and again. Wendy Hui Kyong Chun describes digital media as systems whose permanence paradoxically depends on continual updating. Kentridge's analogue technique shows a related logic. The image is not preserved by conserving one state. It stays in motion because every state is overwritten and its traces pass into the next version.",
+    "question": "Is erasing a form of updating?"
+  },
+  "eva-hesse__gregory-bateson": {
+    "text": "Eva Hesse's materials change their tension, colour and surface. Gregory Bateson understands information as a difference that triggers a further difference within a context. A small material change therefore only becomes significant where it alters form, perception or the handling of the work. Ageing is not merely a state of the substance. It can become feedback about how strongly form and material depend on one another.",
+    "question": "When does material change become information?"
+  },
+  "rebecca-horn__michel-foucault": {
+    "text": "Rebecca Horn's apparatuses extend bodies and at the same time determine which movements become possible, difficult or impossible. Michel Foucault examines arrangements in terms of how they guide bodies without directly commanding every action. Horn's prostheses show this guidance immediately. A technical extension opens up new ranges of reach and at the same time inscribes new limits, postures and paths of movement into the body.",
+    "question": "Which movement does an apparatus permit, and which does it prevent?"
+  },
+  "dan-graham__susan-leigh-star": {
+    "text": "Dan Graham's pavilions appear transparent, yet they organise very precisely who can see whom, which routes are open and how public or private a position appears. Susan Leigh Star examines infrastructures as relational orders that enable and limit action. Graham's architecture makes such an order visible. Glass and mirror are not merely material but infrastructure for relations between gazes.",
+    "question": "When does architecture become an infrastructure of the gaze?"
+  },
+  "robert-smithson__claude-shannon": {
+    "text": "Robert Smithson's Non-Sites transfer a distant place into the exhibition space through material, map, photograph and naming. Claude Shannon asks which information can be reliably transmitted through a channel. With Smithson, it is precisely what does not come along that becomes visible. Rock can be transported, coordinates can be given and pictures can be shown, yet the site itself remains elsewhere. Mediation makes the place addressable without transmitting it completely.",
+    "question": "How much of a place can be transmitted?"
+  },
+  "marina-abramovic__gilbert-simondon": {
+    "text": "Marina Abramović exposes the body to situations whose duration and conditions change it during the performance. Gilbert Simondon understands individuation as a process, not as the unfolding of an already finished individual. The body therefore does not simply enter a performance and leave it again identical. Fatigue, pain, attention and the relation to the audience form new states out of which the further performance emerges.",
+    "question": "What does the body become during a performance?"
+  },
+  "doris-salcedo__michel-serres": {
+    "text": "Doris Salcedo lets absent people become present through furniture, fabrics, cracks and other material traces, without replacing them. Michel Serres is interested in mediators and passages that change what is transmitted. In this sense Salcedo's material does not function like a neutral messenger. It carries loss onward by giving it a new form, a different weight and a new place.",
+    "question": "How does material carry an absence onward?"
+  },
+  "roman-opalka__henri-bergson": {
+    "text": "Roman Opalka orders his work as an unbroken sequence of numbers. Each number has an unambiguous place, and each new number can be determined as the next step. Henri Bergson distinguishes such countable, spatially ordered time from duration, in which the past goes on working in the present. Opalka's series brings both forms together. The number fixes a position, while the lifetime spent making it is not absorbed into identical positions.",
+    "question": "Can a number contain duration?"
+  },
+  "christian-marclay__n-katherine-hayles": {
+    "text": "Christian Marclay works with stored sound and image that can be cut, rearranged and played back again. N. Katherine Hayles criticises the notion that information could exist independently of its particular embodiment. Marclay's fragments, too, change their effect with medium, loudspeaker, projection space and the body present. The material does not merely transport information. It is part of how this information becomes perceptible at all.",
+    "question": "Where does information acquire a body?"
+  },
+  "bruce-nauman__heinz-von-foerster": {
+    "text": "Bruce Nauman builds situations in which movements, images or observations come back to the person acting. Heinz von Foerster is interested in second-order observation and in recursive processes that alter their own conditions. As soon as Nauman couples a repetition with a mirror, a camera or feedback, the next execution can no longer be quite the same. The repetition sees its own trace and thereby becomes a different one.",
+    "question": "What changes when repetition sees itself?"
+  },
+  "william-kentridge__gilles-deleuze": {
+    "text": "William Kentridge draws, erases and draws again. Gilles Deleuze understands repetition not as the return of the identical but as the production of difference. Kentridge's procedure makes this idea material. The same surface, the same hand and the same figure can recur, yet every repetition meets the remains of the previous one. The drawing does not repeat itself over a neutral present, but on a past that has already entered into it.",
+    "question": "How much difference does a repetition leave behind?"
+  },
+  "james-turrell__karen-barad": {
+    "text": "James Turrell produces situations in which light cannot simply be regarded as an object that is present. Space, aperture, eye and bodily adaptation jointly determine what appears as surface, depth or colour. Karen Barad's concept of intra-action directs attention precisely to such phenomena, in which the sides involved are not fully fixed in advance. Perceiving body and field of light become determinable in the event of their relation.",
+    "question": "Where does light end and perception begin?"
+  },
+  "felix-gonzalez-torres__claude-shannon": {
+    "text": "Felix Gonzalez-Torres can describe a work through certificate, dimensions and rules in such a way that it can be installed anew in different places. Claude Shannon shows how information can be reliably transmitted independently of its meaning. Yet a complete transmission of the specifications does not yet produce the same material situation. Weight, removal, audience and renewal have first to take place. The transmissible code stabilises the work without containing its state at any given moment.",
+    "question": "How much of a work can be transmitted as information?"
+  },
+  "roman-opalka__wendy-hui-kyong-chun": {
+    "text": "Roman Opalka's work persists only by being continued. Wendy Hui Kyong Chun describes digital permanence as paradoxical: something remains available because it is updated, renewed and executed again and again. Opalka's series shows an analogue form of such permanence. It preserves no state. Each new number changes the whole and precisely thereby keeps the project alive.",
+    "question": "Is continuing a form of updating?"
+  },
+  "on-kawara__henri-bergson": {
+    "text": "On Kawara's date paintings give a day an unambiguous place in the calendar. Henri Bergson distinguishes such measurable time from duration, which is not composed of identical units. Kawara's rule brings this difference into a single painting. The day is exactly designated and closed, while the work on it is experienced as fatigue, rhythm and attention. The same time appears at once as a position in the calendar and as a lived course.",
+    "question": "How much duration fits into a date?"
+  },
+  "donald-judd__gregory-bateson": {
+    "text": "Donald Judd organises bodies and intervals in precise relations. Gregory Bateson understands information as a difference that makes a further difference within a context. A gap in Judd's work is therefore not merely an empty, measurable stretch. It lets two bodies appear as separate, as equal in rank or as serially connected. The information lies not in a single element but in the difference between them.",
+    "question": "When does a gap become a difference?"
+  },
+  "christian-marclay__jacques-derrida": {
+    "text": "Christian Marclay detaches film and sound fragments from their original contexts and sets them in new sequences. Jacques Derrida's iterability designates the possibility of a sign functioning again in other contexts. Yet precisely this repeatability changes its relations. Marclay's fragment remains recognisable and at the same time becomes something else as soon as cut, neighbourhood and a new rhythm shift its legibility.",
+    "question": "What changes a fragment when it returns?"
+  },
+  "mona-hatoum__michel-foucault": {
+    "text": "Mona Hatoum works with grilles, maps, thresholds and domestic forms that organise access and exclusion spatially. Michel Foucault examines arrangements in terms of how they distribute people and structure visibility. With Hatoum, a boundary therefore does not only decide where someone can stand. It also changes who becomes visible, protected or exposed from which position. Spatial order and visibility come into being together.",
+    "question": "Who is made visible by a boundary?"
+  },
+  "william-kentridge__judith-butler": {
+    "text": "William Kentridge takes up images of political history, erases them, displaces them and reassembles them. Judith Butler examines the frames through which bodies, violence and loss come to appear as visible and grievable at all. With Kentridge, historical memory is therefore not merely repeated. Changing an image can also change what becomes perceptible in it and whose history becomes legible there. Revision thus concerns not only the past but its present conditions of appearance.",
+    "question": "Which past does an altered frame make visible?"
+  },
+  "dan-graham__n-katherine-hayles": {
+    "text": "Dan Graham's video installations and mirrors entwine bodies with technical images of themselves. N. Katherine Hayles criticises an understanding of information that treats the body merely as an interchangeable carrier. With Graham, however, the image cannot be detached from its embodiment. Location, movement, delay and direction of gaze decide which information the screen delivers at all. The body is not in front of the media system but inside its loop.",
+    "question": "Where is the body in the image?"
+  },
+  "doris-salcedo__heinz-von-foerster": {
+    "text": "Doris Salcedo's works give loss no closed representation. Empty space, damaged material and blocked room set traces without making the absent themselves available. Heinz von Foerster directs attention to the observer as part of every observation. Memory therefore does not lie fully ready in the object. Only in present observation are relations between trace, absence and history established.",
+    "question": "What does observation make of a trace?"
+  },
+  "robert-smithson__donna-haraway": {
+    "text": "Robert Smithson's Site and Non-Site make clear that a place never appears completely from a single position. Map, rock, photograph and exhibition form different approaches to the same site. Donna Haraway's situated knowledge contradicts the claim to a view from nowhere. Smithson's work can therefore be read as a spatial test of this: every approach shows something and leaves other things outside its standpoint.",
+    "question": "Can a place be described from nowhere?"
+  },
+  "hanne-darboven__gilbert-simondon": {
+    "text": "Hanne Darboven's works grow out of continued operations of writing, calculating and dating. Gilbert Simondon understands individuation as a process in which unity first comes into being and is never fully completed. Darboven's series, too, does not possess its identity before its individual entries. Each new section changes the extent and the relations of the whole. Unity here arises through continued becoming.",
+    "question": "How does unity arise from continued writing?"
+  },
+  "agnes-martin__michel-serres": {
+    "text": "Agnes Martin's grids divide the surface into lines and intervals without prescribing a fixed route for the gaze. Michel Serres is interested in routes, neighbourhoods and passages that cannot be reduced to metric distance. With Martin, too, the shortest geometric connection is not necessarily the path of perception. The gaze jumps, lingers, loses lines and finds them again. A spatial order thus becomes a field of possible movements.",
+    "question": "How does the gaze wander through a grid?"
+  },
+  "eva-hesse__jacques-derrida": {
+    "text": "Eva Hesse's materials change even when the work is to be preserved as far as possible. Jacques Derrida's trace designates something present that remains marked by what is no longer fully present. Ageing latex can make such a temporality materially visible. The earlier state is lost but goes on working in the present work as comparison, documentation and change. Decay does not remove the past; it inscribes it into the surface.",
+    "question": "Is decay a trace?"
+  },
+  "dan-graham__karen-barad": {
+    "text": "Dan Graham's mirrors and transparent surfaces make it difficult to separate observer and observed scene cleanly from one another. Karen Barad's intra-action begins precisely where the sides involved only become determinable within a relation. In the mirror the observer appears as part of the image, while the image co-defines their position. The boundary between seeing and being seen is not abolished, but produced anew in every situation.",
+    "question": "Does the observer only come into being in the mirror?"
+  },
+  "tehching-hsieh__susan-leigh-star": {
+    "text": "Tehching Hsieh's time clock performance takes an inconspicuous instrument of labour organisation and makes it the centre of a whole year. Susan Leigh Star examines infrastructures that usually only attract notice when they break down or step out of their background. With Hsieh, precisely this happens with the time clock. A device for administering working hours becomes visible as an order that structures sleep, movement and everyday life.",
+    "question": "When does a time clock become the infrastructure of a life?"
+  },
+  "rebecca-horn__gilles-deleuze": {
+    "text": "Rebecca Horn's machines repeat movements, yet the repetition meets body, material and space. Gilles Deleuze distinguishes repetition from the mere occurrence of the same. With Horn, a mechanically identical movement can therefore have a different effect every time. Feathers bend, bodies react and distances change. The machine repeats a sequence and precisely thereby produces difference.",
+    "question": "What does a machine really repeat?"
+  },
+  "robert-smithson__gregory-bateson": {
+    "text": "Robert Smithson's Site and Non-Site exist through a relation between two different places and forms of representation. Gregory Bateson understands information as a difference within a context. The site therefore cannot be understood through the material in the landscape alone, nor the non-site through its map alone. Only their difference generates information about what is missing in each case and what the other side makes visible.",
+    "question": "When does one place become legible through another?"
+  },
+  "felix-gonzalez-torres__lucy-suchman": {
+    "text": "Felix Gonzalez-Torres specifies dimensions, weights or possibilities of renewal for some works without thereby fixing their actual course. Lucy Suchman shows that plans only become actions in concrete situations. In the museum, staff and audience have to decide how things are taken, replenished, protected or presented. The identity of the work therefore arises not from the rule alone but from its continued situated execution.",
+    "question": "Who executes a work that is allowed to change?"
+  },
+  "louise-bourgeois__claude-shannon": {
+    "text": "Louise Bourgeois translates biographical experiences again and again into spaces, bodies and recurring motifs. Claude Shannon can describe how signs are reliably transmitted, but not what personal meaning they carry. It is precisely this limit that is productive in Bourgeois' work. A spider, a house or a body part can be visibly passed on without the memory from which the form emerged being transmitted along with it.",
+    "question": "How much memory can be transmitted?"
+  },
+  "donald-judd__michel-foucault": {
+    "text": "Donald Judd's objects order the exhibition space through dimensions, intervals and recurring placements. Michel Foucault examines spatial orders in terms of how they structure positions and possibilities of seeing. Judd's work prescribes no single direction of gaze, but it changes where a body can stand and which relations become visible at the same time. Geometric order thereby also becomes an order of possible observations.",
+    "question": "Do intervals become rules of seeing?"
+  },
+  "christian-marclay__gilbert-simondon": {
+    "text": "Christian Marclay breaks down existing material and joins fragments into new temporal units. Gilbert Simondon understands individuation as a process in which a unity emerges from relations and tensions. A montage would then not merely be the sum of already finished parts. Rhythm, cut and neighbourhood change what the fragments are and at the same time let a new form emerge that was previously contained in no single fragment.",
+    "question": "When do fragments become a new unity?"
+  },
+  "on-kawara__judith-butler": {
+    "text": "On Kawara repeats the making of date paintings according to a strict rule over years. Judith Butler shows how repetition can stabilise forms and make them socially legible. Kawara's date is itself a culturally shared convention whose legibility rests on continued repetition. At the same time, each painting designates an unrepeatable day. The work joins a repeatable social form to an event that takes place only once.",
+    "question": "How does repetition make a unique day legible?"
+  },
+  "james-turrell__michel-serres": {
+    "text": "James Turrell lets light enter spaces of perception through apertures, thresholds and architectural transitions. Michel Serres is interested in passages in which what is mediated is changed by its route. Light, too, does not simply reach the gaze unmediated. Aperture, atmosphere, wall and eye jointly determine how it appears. The path of the light thus belongs to its perceived form.",
+    "question": "When does light become space along its way?"
+  },
+  "tehching-hsieh__n-katherine-hayles": {
+    "text": "Tehching Hsieh's rules can be stated briefly, yet their meaning only arises through a body carrying them out over months or years. N. Katherine Hayles criticises the notion that information could be separated from its embodiment. With Hsieh, the rule is transmissible, but the performance is not. Lack of sleep, weight, weather and exhaustion inscribe themselves into an enactment that no description can fully replace.",
+    "question": "Can a body store a rule?"
+  },
+  "bruce-nauman__gregory-bateson": {
+    "text": "Bruce Nauman works with repetitions, feedback and situations in which an action acts back upon the person performing it. Gregory Bateson describes systems in terms of differences and feedback loops. A loop is therefore more than the return of the same signal as soon as its result changes further behaviour. With Nauman, precisely this transition can turn a simple repetition into a system.",
+    "question": "When does a loop become feedback?"
+  },
+  "sol-lewitt__susan-leigh-star": {
+    "text": "Sol LeWitt's instructions allow a work to be executed in different places independently of his own hand. Susan Leigh Star directs attention to the infrastructures that make such apparent self-evidence possible. Those who execute it, wall preparation, documentation, material, rights and institutional knowledge form a network without which the rule does not become a work. The idea appears autonomous because its infrastructure works reliably.",
+    "question": "Which infrastructure executes an idea?"
+  },
+  "william-kentridge__henri-bergson": {
+    "text": "William Kentridge lets earlier states of a drawing live on as traces in the present image. Henri Bergson understands memory not as an archive filed away beside the present but as something that acts into present perception and action. Kentridge's sheet gives this thought a material form. The past is not merely documented. It changes what can be drawn now.",
+    "question": "How much past does an image carry?"
+  },
+  "roman-opalka__claude-shannon": {
+    "text": "Roman Opalka's sequence of numbers can be read as extremely precise information: each number unambiguously designates its place in the series. Claude Shannon can describe how such distinguishable signs are transmitted. Yet the number does not transmit the lifetime, bodily work and attention that its making cost. Opalka's work thus lays bare a difference between an exactly codable order and irreversibly spent time.",
+    "question": "What does a number say about the time it cost?"
+  },
+  "rebecca-horn__jacques-derrida": {
+    "text": "Rebecca Horn supplements bodies with feathers, rods, masks and mechanical extensions. Jacques Derrida's concept of the supplement designates an addition that at the same time makes visible that the supposedly complete whole was never entirely closed in itself. Horn's prostheses add capacities to the body and thereby shift its boundary. The extension does not only show what more a body can do; it calls into question where this body actually ended before.",
+    "question": "Where does a body end that can be supplemented?"
+  },
+  "eva-hesse__george-spencer-brown": {
+    "text": "George Spencer-Brown begins form with a boundary that distinguishes two sides. Eva Hesse's soft, hanging and ageing materials call the stability of such a boundary into question. A contour can sag, lose tension or appear different through material change. The form does not necessarily vanish as a result. Rather, it shows that a boundary can persist without being unchangeable.",
+    "question": "How stable must a boundary be to form a form?"
+  },
+  "donald-judd__donna-haraway": {
+    "text": "Donald Judd's spatial orders appear precise and independent of the individual gaze. Donna Haraway, however, contradicts the idea of a seeing without standpoint. With Judd, too, the position of the body changes which intervals overlap, which sides vanish and which relations can be grasped at the same time. The order persists, but it is never completely given from a single place.",
+    "question": "Where does the body stand in relation to a precise order?"
+  },
+  "on-kawara__karen-barad": {
+    "text": "On Kawara paints a date only on the day it designates. Karen Barad understands apparatuses not as neutral instruments but as material-discursive arrangements through which particular differences are brought forth in the first place. With Kawara, calendar, clock, painting materials and working rule act together. They do not depict the day as such, but they cut a particular artistic event out of continuous time: this painting as this day.",
+    "question": "What does a procedure make of a day?"
+  },
+  "felix-gonzalez-torres__wendy-hui-kyong-chun": {
+    "text": "Felix Gonzalez-Torres preserves some works precisely by having their material stock renewed. Wendy Hui Kyong Chun describes permanence in digital media in terms of repetition and update. A similar tension is found here in analogue form. The work does not persist because its state is frozen, but because removal and replenishment can be continued. Renewal becomes the condition of its continuity.",
+    "question": "Is renewing a form of remembering?"
+  },
+  "hanne-darboven__heinz-von-foerster": {
+    "text": "Hanne Darboven produces serial orders from dates, numbers and recurring operations. Heinz von Foerster distinguishes observation from the observation of observing and thereby directs attention to the distinctions themselves that are being used. Darboven's series do not only make results visible. Whoever follows them can at the same time observe by which rule time is ordered and written onward. The order shows something and exhibits its own procedure along with it.",
+    "question": "When does the rule itself become observable?"
+  },
+  "james-turrell__gilles-deleuze": {
+    "text": "James Turrell can shape conditions of light so that an apparently identical surface appears different in the course of perception. Gilles Deleuze understands repetition as the production of difference. In seeing, this difference becomes bodily: adaptation, attention and duration change what emerges as colour, depth or edge. The same light therefore cannot simply return unchanged for the same gaze.",
+    "question": "Can the same light appear twice?"
+  }
+}

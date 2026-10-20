@@ -40,30 +40,26 @@ function chromeUrl() {
 }
 
 // Schritte je Browser; «…» steht für die Namen von Knöpfen und Menüpunkten
+const T = (k) => window.sprache?.t(k) ?? k;   // die Sätze in beiden Sprachen stehen in sprache.js
 function steps() {
-  if (inApp && android)
-    return "Im Browser dieser App lässt sich ORNA nicht installieren. Die Seite öffnet sich dafür in Chrome; dort noch einmal auf «ORNA als App installieren» tippen.";
-  if (inApp)
-    return "Im Browser dieser App lässt sich ORNA nicht installieren. Über «···» oder das Menü «In Safari öffnen» wählen, dann dort «Teilen» und «Zum Home-Bildschirm».";
-  if (ios)
-    return "Auf «Teilen» tippen, dann «Zum Home-Bildschirm» wählen.";
-  if (android)
-    return "Im Browsermenü (⋮) «App installieren» oder «Zum Startbildschirm hinzufügen» wählen.";
-  if (/Edg\/|Chrome\//.test(ua))
-    return "Im Browsermenü (⋮) «ORNA installieren» wählen oder in der Adresszeile auf das Installationssymbol klicken. Im Inkognito-Fenster geht es nicht.";
-  if (/Macintosh/.test(ua) && /Safari\//.test(ua) && !/Firefox\//.test(ua))
-    return "Im Menü «Ablage» «Zum Dock hinzufügen» wählen.";
-  return "Dieser Browser kann ORNA nicht installieren. Auf dem Smartphone geht es direkt, am Computer mit Chrome oder Edge.";
+  if (inApp && android) return T("install.inAppAndroid");
+  if (inApp) return T("install.inApp");
+  if (ios) return T("install.ios");
+  if (android) return T("install.android");
+  if (/Edg\/|Chrome\//.test(ua)) return T("install.chrome");
+  if (/Macintosh/.test(ua) && /Safari\//.test(ua) && !/Firefox\//.test(ua)) return T("install.safari");
+  return T("install.sonst");
 }
 
 if (box && !standalone) {
   const btn = box.querySelector(".rad-install-btn");
   const help = box.querySelector(".rad-install-hilfe");
   const esc = t => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-  help.innerHTML = esc(steps()).replace(/«[^»]+»/g, m => `<span>${m}</span>`) +
-    (inApp && android ? ` <a class="rad-install-chrome" href="${esc(chromeUrl()).replace(/"/g, "&quot;")}">In Chrome öffnen</a>`
-      : " Ist ORNA schon installiert, steht sie als eigenes Symbol auf dem Bildschirm und läuft auch ohne Netz.");
-  const toChrome = help.querySelector(".rad-install-chrome");
+  const schreiben = () => { help.innerHTML = esc(steps()).replace(/«[^»]+»/g, m => `<span>${m}</span>`) +
+    (inApp && android ? ` <a class="rad-install-chrome" href="${esc(chromeUrl()).replace(/"/g, "&quot;")}">${esc(T("install.chromeOeffnen"))}</a>` : esc(T("install.danach"))); };
+  schreiben();
+  document.addEventListener("sprache", schreiben);   // beim Sprachwechsel neu
+  const toChrome = () => help.querySelector(".rad-install-chrome");
   const alt = box.querySelector(".rad-install-alt");
   if (alt && android && !inApp) alt.hidden = false;
   let deferred = null;
@@ -93,6 +89,6 @@ if (box && !standalone) {
     btn.setAttribute("aria-expanded", String(open));
     if (open) track("rad-app/hinweis", "App: Hinweis angetippt");
     // im eingebauten Browser (Android): gleich weiter nach Chrome; der Link bleibt als Rückfall stehen
-    if (toChrome) { track("rad-app/chrome", "App: in Chrome öffnen"); help.hidden = false; btn.setAttribute("aria-expanded", "true"); toChrome.click(); }
+    if (toChrome()) { track("rad-app/chrome", "App: in Chrome öffnen"); help.hidden = false; btn.setAttribute("aria-expanded", "true"); toChrome().click(); }
   });
 }

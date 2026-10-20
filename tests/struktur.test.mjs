@@ -11,7 +11,6 @@ const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
 
 const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"], ["Art", "art/"]];   // seit 19. Oktober 2026 (abends) ohne «Web» (die Seite bleibt, nur nicht im Menü), dahinter «Art»;   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
-const ORNA = "portfolio/nebeneinander-nacheinander/";
 // Seiten mit dem Menü → Eintrag, der aktiv ist ([Ordner, aria-current]); null: keiner (die Seite hängt an keinem Menüpunkt)
 const MENUSEITEN = {   // OMNA COLOR (alpha/omna-color/, rad/) seit 20. Oktober 2026 mit dem Kopf der App statt des Menüs; ihre App-Seite app/ bleibt
   "index.html": null,
@@ -24,10 +23,7 @@ const MENUSEITEN = {   // OMNA COLOR (alpha/omna-color/, rad/) seit 20. Oktober 
   "web/orna-erklaervideo/index.html": null,
   "web/poststrukturalismus/index.html": null,
   "web/mensch-niklas/index.html": null,
-  [`${ORNA}index.html`]: ["apps/", "true"],           // ORNA gehört zu den Apps
-  [`${ORNA}feld/index.html`]: ["apps/", "true"],
-  [`${ORNA}app/index.html`]: ["apps/", "true"],       // die App-Seiten sind Abschriften, ihre Kopfzeile ist ausgeblendet
-  [`${ORNA}app/feld/index.html`]: ["apps/", "true"],
+  // ORNA (portfolio/nebeneinander-nacheinander/, feld/, app/) seit 20. Oktober 2026 wie OMNA COLOR mit dem Kopf der App statt des Menüs
   "art/index.html": ["art/", "page"],                       // «Art» (19. Oktober 2026): Übersicht; Werkseiten und «Danke» darunter
   "zu-seiner-zeit/index.html": ["zu-seiner-zeit/", "page"],
   "social-media/index.html": ["social-media/", "page"],      // Social Media (19. Oktober 2026): die Zeitleiste; alle Seiten darunter (Zettel, Register, Redaktion) unter «Social»
@@ -432,7 +428,7 @@ test("Videoseite web/mensch-niklas/: «Mensch, Niklas!» (3 : 4) spielt von selb
 
 test("Versionsmarken: styles.css und icons.js tragen auf allen Seiten dieselbe Marke, icons.js kennt nur Symbole, die es noch gibt", () => {
   const marken = (re, texte) => [...new Set(texte.flatMap((t) => [...t.matchAll(re)].map((m) => m[1])))];
-  const dateien = [...htmlSeiten().filter((p) => !p.startsWith("zu-seiner-zeit/")), "tools/build-alpha-texte.ts", `${ORNA}sw.js`];
+  const dateien = [...htmlSeiten().filter((p) => !p.startsWith("zu-seiner-zeit/")), "tools/build-alpha-texte.ts", "portfolio/nebeneinander-nacheinander/sw.js"];
   const texte = dateien.map(lies);
   const css = marken(/styles\.css\?v=(\d+)/g, texte), js = marken(/icons\.js\?v=(\d+)/g, texte);
   assert.equal(css.length, 1, `styles.css: eine Marke, gefunden ${css}`);
@@ -490,7 +486,7 @@ test("Kontakt: «Fragen und Anmerkungen zur Website» unten auf allen Seiten mit
     "alpha/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html"];
   for (const s of seiten) {
     const html = lies(s);
-    assert.match(html, new RegExp(`</main>[\\s\\S]*<footer class="site-footer">[\\s\\S]*<p>Fragen und Anmerkungen zur Website: ${MAIL.replace(/[.]/g, "\\.")}</p>[\\s\\S]*</footer>`), s);
+    assert.match(html, new RegExp(`</main>[\\s\\S]*<footer class="site-footer">[\\s\\S]*<p(?: data-t="fuss\\.fragen")?>Fragen und Anmerkungen zur Website: ${MAIL.replace(/[.]/g, "\\.")}</p>[\\s\\S]*</footer>`), s);
   }
   const omna = lies("alpha/omna-color/index.html");
   assert.ok(omna.includes(`<footer class="kontakt">\n  <p data-t="fuss.fragen">Fragen und Anmerkungen zur Website: ${MAIL}</p>`), "OMNA COLOR (der Satz mit data-t: auf Englisch übersetzt, seit 20. Oktober 2026)");

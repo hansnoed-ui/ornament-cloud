@@ -8,6 +8,7 @@
 import { artists } from "./data/artists.js?v=v6";
 import { theorists } from "./data/theorists.js?v=v6";
 import { constellations } from "./data/constellations.js?v=v6";
+import { constellationsEn } from "./data/constellations.en.js?v=1";   // auf Englisch (20. Oktober 2026), nach sprache.js
 import { drawConstellation } from "./lib/random.js";
 import { validateDataset } from "./lib/validation.js?v=2";
 import { SLOTS, STEP, mod, slotAngle, targetsFor, indexAtAxis } from "./lib/geometry.js";
@@ -22,6 +23,9 @@ const COUPLE = 0.8;                                   // Gegenring beim Ziehen
 const V_MIN = 220, V_MAX = 2600, V_TAP = 760;         // Grad pro Sekunde
 const REVEAL = { names: 550, text: 650, question: 850, again: 700 };   // ms, nacheinander
 
+// Deutsch oder Englisch: sprache.js (vor diesem Modul); ohne es bleibt alles deutsch
+const T = (k, ...a) => (window.sprache ? window.sprache.t(k, ...a) : null);
+const text = (k, de, ...a) => T(k, ...a) ?? de;
 const svg = document.querySelector(".rad-wheel");
 if (!svg) throw new Error("Doppelrad nicht gefunden");
 const result = document.querySelector(".rad-result");
@@ -155,12 +159,18 @@ function legendColumn(title, people, offset) {
     `<li data-id="${p.id}"><svg class="rad-legend-sym" viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true" focusable="false">${symbolMarkup(offset + i, 1)}</svg><span>${p.name}</span></li>`
   ).join("")}</ol></section>`;
 }
-legend.innerHTML = legendColumn("Aussenring", artists, 0) + legendColumn("Innenring", theorists, 20);
+function buildLegend() {
+  const hit = [...legend.querySelectorAll("li.is-hit")].map(li => li.dataset.id);
+  legend.innerHTML = legendColumn(text("aussenring", "Aussenring"), artists, 0) + legendColumn(text("innenring", "Innenring"), theorists, 20);
+  for (const id of hit) legend.querySelector(`li[data-id="${id}"]`)?.classList.add("is-hit");
+}
+buildLegend();
+const legendLabel = () => { legendToggle.textContent = legend.hidden ? text("namenZeigen", "Namen zeigen") : text("namenAus", "Namen ausblenden"); };
 legendToggle.addEventListener("click", () => {
   const open = legend.hidden;
   legend.hidden = !open;
   legendToggle.setAttribute("aria-expanded", String(open));
-  legendToggle.textContent = open ? "Namen ausblenden" : "Namen zeigen";
+  legendLabel();
 });
 
 // ---------- Ergebnis ----------
@@ -183,7 +193,7 @@ function hideResult() {
   result.classList.remove("is-active");
   ["names", "text", "question", "again", "address"].forEach(k => parts[k].classList.remove("is-shown"));
   parts.address.hidden = true;
-  parts.share.textContent = "Link kopieren";
+  parts.share.textContent = text("linkKopieren", "Link kopieren");
   svg.classList.remove("is-selected");
   svg.querySelectorAll(".sym.is-hit").forEach(s => s.classList.remove("is-hit"));
   hitG.classList.remove("is-shown");
@@ -207,11 +217,12 @@ function showResult(record, instant) {
 
   parts.artist.textContent = a.name;
   parts.theorist.textContent = t.name;
-  parts.text.textContent = record.text;
-  parts.question.textContent = record.question;
+  const en = window.sprache?.en() && constellationsEn[record.id];   // der Text auf Englisch, wenn die App englisch steht
+  parts.text.textContent = en ? en.text : record.text;
+  parts.question.textContent = en ? en.question : record.question;
   result.dataset.pair = record.id;
   result.classList.add("is-active");
-  live.textContent = `Konstellation: ${a.name} und ${t.name}.`;
+  live.textContent = text("konstellation", `Konstellation: ${a.name} und ${t.name}.`, a.name, t.name);
 
   const steps = [["names", REVEAL.names], ["text", REVEAL.text], ["question", REVEAL.question], ["again", REVEAL.again]];
   let at = 0;
@@ -285,10 +296,10 @@ async function share() {
 let copiedTimer = 0;
 function confirmCopied() {
   // Rückmeldung über die Live-Region; am Knopf selbst kurz dieselben Worte
-  live.textContent = "Link kopiert";
-  parts.share.textContent = "Link kopiert";
+  live.textContent = text("linkKopiert", "Link kopiert");
+  parts.share.textContent = text("linkKopiert", "Link kopiert");
   clearTimeout(copiedTimer);
-  copiedTimer = setTimeout(() => { parts.share.textContent = "Link kopieren"; }, 2200);
+  copiedTimer = setTimeout(() => { parts.share.textContent = text("linkKopieren", "Link kopieren"); }, 2200);
 }
 
 function showAddress(url) {
@@ -298,7 +309,7 @@ function showAddress(url) {
   parts.address.classList.add("is-shown");
   input.focus();
   input.select();
-  live.textContent = "Adresse zum Kopieren markiert";
+  live.textContent = text("adresseMarkiert", "Adresse zum Kopieren markiert");
 }
 
 // ---------- Spin ----------
@@ -459,6 +470,13 @@ function radInsBild() {
   if (r.top >= 0 && r.bottom <= window.innerHeight) return;
   svg.scrollIntoView({ behavior: reduceMotion.matches ? "auto" : "smooth", block: r.height > window.innerHeight ? "start" : "center" });
 }
+
+// ---------- Sprachwechsel (sprache.js): Legende, Knöpfe und das gezeigte Ergebnis neu schreiben ----------
+document.addEventListener("sprache", () => {
+  buildLegend();
+  legendLabel();
+  if (current && state === "selected") { const r = constellations.find(c => c.id === current.id); if (r) { clearTimers(); showResult(r, true); } }
+});
 
 // ---------- Direktlink: ?pair=künstler__theoretiker ----------
 const pairParam = new URLSearchParams(location.search).get("pair");
