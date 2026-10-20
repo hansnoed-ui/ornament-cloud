@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../../styles.css?v=46">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
   <link rel="stylesheet" href="../social.css?v=1">
-  <link rel="stylesheet" href="redaktion.css?v=1">
+  <link rel="stylesheet" href="redaktion.css?v=2">
 </head>
 <body class="sm rd">
   <!--
@@ -39,7 +39,7 @@
       </div>
       <p class="sm-zurueck"><a href="../">Social Media</a></p>
       <h1>Redaktion</h1>
-      <p class="lead">Bildschirmfoto hineinlegen, Claude liest es, du prüfst, kommentierst und verschlagwortest. Veröffentlichen ist ein Commit; etwa eine Minute später steht der Zettel online.</p>
+      <p class="lead">Sechs Schritte: Bildschirmfoto hineinlegen, Claude liest, Bereiche prüfen, Beitrag und Zeit prüfen, Zettel schreiben, veröffentlichen. Etwa eine Minute später steht der Zettel online.</p>
     </div>
   </header>
 
@@ -47,7 +47,7 @@
     <noscript><p class="rd-hinweis">Die Redaktion braucht JavaScript.</p></noscript>
 
     <details class="rd-einstellungen" id="einstellungen">
-      <summary>Einstellungen <span class="rd-zustand" id="zustand">Schlüssel fehlen</span></summary>
+      <summary><span class="rd-summary-name">Schlüssel</span> <span class="rd-zustand" id="zustand">Schlüssel fehlen</span></summary>
       <div class="rd-einstellungen-inhalt">
         <div class="rd-feld">
           <label for="gh-schluessel">GitHub-Schlüssel</label>
@@ -78,9 +78,11 @@
       <div class="rd-raster">
         <form class="rd-formular" id="formular" autocomplete="off" novalidate>
           <p class="rd-bearbeiten" id="bearbeiten-hinweis" hidden></p>
+          <!-- Geführte Schritte (20. Oktober 2026): ein Schritt zur Zeit, Leiste oben, «Zurück» und «Weiter» unten (js/redaktion/schritte.js); ohne Skript stehen alle untereinander -->
+          <ol class="rd-schritte" id="schritte" aria-label="Schritte"></ol>
 
           <fieldset class="rd-schritt">
-            <legend><span class="rd-nr">1</span> Material</legend>
+            <legend><span class="rd-nr">1</span> <span class="rd-name">Material</span></legend>
             <div class="rd-ablage" id="ablage" tabindex="0">
               <p><strong>Bildschirmfoto hierher ziehen</strong>, mit <kbd>Strg</kbd>/<kbd>⌘</kbd>+<kbd>V</kbd> einfügen oder <label class="rd-datei">wählen<input type="file" id="dateien" accept="image/*,video/mp4,video/webm,video/quicktime" multiple></label>.</p>
               <p class="rd-hilfe">Dazu, wenn du sie hast: die Bilder und Videos des Beitrags in voller Qualität. Das erste Bild gilt als Beleg (Bildschirmfoto).</p>
@@ -108,7 +110,7 @@
           </fieldset>
 
           <fieldset class="rd-schritt" id="schritt-beleg" hidden>
-            <legend><span class="rd-nr">2</span> Bereiche im Bildschirmfoto</legend>
+            <legend><span class="rd-nr">2</span> <span class="rd-name">Bereiche im Bildschirmfoto</span></legend>
             <p class="rd-hilfe">Ziehe ein Rechteck auf: als <strong>Bild</strong> wird es ein Medium des Beitrags, als <strong>Profilbild</strong> der Avatar, <strong>Schwärzen</strong> deckt Namen und Gesichter Dritter ab (auch im veröffentlichten Beleg). Rechtecke lassen sich verschieben, an der Ecke grösser ziehen und mit × entfernen.</p>
             <div class="rd-werkzeug" role="radiogroup" aria-label="Rechteck zeichnen als">
               <label><input type="radio" name="werkzeug" value="bild" checked> Bild</label>
@@ -120,7 +122,7 @@
           </fieldset>
 
           <fieldset class="rd-schritt">
-            <legend><span class="rd-nr">3</span> Beitrag</legend>
+            <legend><span class="rd-nr">3</span> <span class="rd-name">Beitrag</span></legend>
             <div class="rd-feld">
               <span class="rd-label" id="plattform-label">Plattform</span>
               <div class="rd-segment" role="radiogroup" aria-labelledby="plattform-label">
@@ -163,7 +165,7 @@
           </fieldset>
 
           <fieldset class="rd-schritt">
-            <legend><span class="rd-nr">4</span> Zeit</legend>
+            <legend><span class="rd-nr">4</span> <span class="rd-name">Zeit</span></legend>
             <div class="rd-feld rd-feld--zwei">
               <div><label for="f-veroeffentlicht">Veröffentlicht</label><input id="f-veroeffentlicht" placeholder="JJJJ-MM-TT oder JJJJ-MM-TT hh:mm" spellcheck="false"><p class="rd-hilfe" id="veroeffentlicht-info">Zürcher Zeit.</p></div>
               <div><label for="f-erfasst">Gesichert (deine Erfassung)</label><input id="f-erfasst" type="datetime-local"><p class="rd-hilfe">Steht von selbst auf jetzt.</p></div>
@@ -175,7 +177,7 @@
           </fieldset>
 
           <fieldset class="rd-schritt">
-            <legend><span class="rd-nr">5</span> Zettel</legend>
+            <legend><span class="rd-nr">5</span> <span class="rd-name">Zettel</span></legend>
             <div class="rd-feld"><label for="f-titel">Titel</label><input id="f-titel"></div>
             <div class="rd-feld"><label for="f-kommentar">Einleitender Kommentar</label><textarea id="f-kommentar" class="rd-kommentar" rows="5" placeholder="Was zeigt dieser Beitrag? Warum steht er hier?"></textarea><p class="rd-hilfe">Absätze mit einer Leerzeile; *kursiv*, **fett**, [Text](https://…).</p></div>
             <div class="rd-feld">
@@ -194,11 +196,13 @@
             </div>
           </fieldset>
 
-          <div class="rd-abschluss">
+          <fieldset class="rd-schritt rd-abschluss">
+            <legend><span class="rd-nr">6</span> <span class="rd-name">Veröffentlichen</span></legend>
+            <p class="rd-hilfe">Die Redaktion schreibt Bilder neu (WebP, ohne Metadaten), zeichnet die Vorschaukarte, erzeugt alle Seiten und schickt einen Commit. Vorher nennt sie, was noch fehlt.</p>
             <p class="rd-fehler" id="fehler" role="alert" hidden></p>
             <p class="rd-knoepfe"><button type="button" class="rd-knopf rd-knopf--haupt" id="veroeffentlichen" disabled>Veröffentlichen</button> <button type="button" class="knopf-leise" id="verwerfen">Entwurf verwerfen</button></p>
             <ol class="rd-fortschritt" id="fortschritt" aria-live="polite"></ol>
-          </div>
+          </fieldset>
         </form>
 
         <aside class="rd-vorschau" aria-label="Vorschau">
@@ -225,6 +229,7 @@
     </div>
   </footer>
   <script type="module" src="../js/redaktion/app.js?v=3"></script>
+  <script type="module" src="../js/redaktion/schritte.js?v=1"></script>
   <script src="../../icons.js?v=14" defer></script>
 </body>
 </html>

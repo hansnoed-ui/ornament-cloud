@@ -38,6 +38,10 @@ mehrere als Karussell) und an einem feinen Ton (X Tinte, Facebook ein gedämpfte
 Die Schlüssel verlassen den Browser nur in Richtung GitHub und Anthropic; die Seite erlaubt mit einer Inhaltssicherheitsrichtlinie keine anderen
 Verbindungen und keine fremden Skripte, und sie hat keine Besuchsstatistik.
 
+### Gestaltung und Führung (seit 20. Oktober 2026)
+
+Die Redaktion trägt die Gestaltung des Neubaus `/b/` (`redaktion/redaktion.css`: Papier und Tinte, die Blaupause als Akzent, Instrument Sans, Newsreader für den Kommentar, Haarlinien, Pillen) und führt durch **sechs Schritte**, einen zur Zeit: Material, Bereiche im Bildschirmfoto, Beitrag, Zeit, Zettel, Veröffentlichen. Die Leiste oben zeigt, wo man ist (erledigte Schritte schwarz, der aktuelle in der Blaupause, nicht offene grau), unten «Zurück» und «Weiter». Das macht `js/redaktion/schritte.js` über dem unveränderten Formular; `app.js` kennt die Schritte nicht. Für Tests: `window.rdSchritte.zeige(element)` holt den Schritt eines Felds nach vorn.
+
 ### Ein Zettel entsteht
 
 1. **Material**: Bildschirmfoto hineinziehen, mit Strg/⌘+V einfügen oder wählen. Dazu, wenn vorhanden, die Bilder und Videos des Beitrags in voller Qualität
