@@ -10,6 +10,7 @@ import { APPS, RASTER, ANGEBOTE } from "../src/b/inhalt.mjs";
 
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
+const werkeDaten = JSON.parse(lies("src/art/werke.json"));
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const walk = (d, vor = "") => readdirSync(new URL(d, root), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(d + e.name + "/", vor + e.name + "/") : e.name === "index.html" ? [vor] : []);
 const seiten = walk("b/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p));   // ohne die Bühnen der Apps (noindex, eigener Test)
@@ -265,5 +266,13 @@ test("Startseite: wer auf ornament.cloud landet, kommt in den Neubau; die bisher
   assert.ok(lies("b/index.html").includes('<a href="/?bisher">Zur bisherigen Website</a>'), "der Neubau verlinkt die bisherige Startseite mit ?bisher, nicht in die Schleife");
   const h = lies(".htaccess");
   assert.ok(/RewriteCond %\{QUERY_STRING\} !\(\^\|&\)bisher[^\n]*\n\s*RewriteRule \^\$ \/b\/ \[R=302,L\]/.test(h), ".htaccess bei Hostpoint leitet / nach /b/, ausser mit ?bisher");
+});
+
+test("Werke: nur die Ankündigungen (Prints und Originale, Im Raum, Editionen), keine Beispiele – Muster aus werke.json bleiben draussen", () => {
+  const seite = lies("b/werke/index.html"), start = lies("b/index.html");
+  for (const t of ['id="prints-titel"', 'id="raum-titel"', 'id="editionen-titel"', "In Vorbereitung"]) assert.ok(seite.includes(t), t);
+  for (const w of werkeDaten.werke.filter((x) => x.muster)) for (const html of [seite, start]) assert.ok(!html.includes(`/${w.slug}/`) && !html.includes(`#${w.slug}`), `${w.slug}: Muster nicht im Neubau`);
+  for (const t of ["Beispiel", "Interesse melden", "stellenfeld", "reentry", 'class="werk"', 'class="stueck"']) { assert.ok(!seite.includes(t), `Werke: kein ${t}`); }
+  assert.ok(!start.includes("Beispiel, Angaben folgen") && !/werke-titel[\s\S]*?class="stueck"[\s\S]*?zuletzt-titel/.test(start), "Startseite: der Abschnitt Werke ohne Beispiele");
 });
 
