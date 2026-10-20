@@ -70,14 +70,16 @@ function buehne(el) {
   let zettel = [];
   try { zettel = JSON.parse(daten.textContent); } catch { return; }
   const satz = el.querySelector(".leitsatz"), woher = el.querySelector(".woher a"), nochmal = el.querySelector(".nochmal");
+  const vt = el.querySelector(".vorschau-titel");
   const rahmen = el.querySelector(".feld-rahmen"), f = rahmen && feld(rahmen);
   let aktuell = +(el.dataset.aktuell || 0);
   function zeige(n, { markieren = true } = {}) {
     const z = zettel.find((x) => x.n === n); if (!z) return;
     aktuell = n;
     satz.textContent = z.leitsatz;
-    woher.textContent = `Zettel ${z.n} · ${z.titel}`;
+    if (vt) { vt.querySelector(".n").textContent = `Zettel ${z.n}`; vt.querySelector(".t").textContent = z.titel; }
     woher.href = `/b/zettel/${z.slug}/`;
+    if (!ruhig) { satz.classList.remove("wechsel"); void satz.offsetWidth; satz.classList.add("wechsel"); }
     if (f && markieren) f.zellen.forEach((c) => c.classList.toggle("aktiv", +c.dataset.n === n));
   }
   // beim Aufruf ein anderer als der eingebaute, jedes Mal ein anderer
@@ -86,7 +88,7 @@ function buehne(el) {
   const naechster = () => { let m = 1 + zufall(zettel.length); if (m === aktuell) m = (m % zettel.length) + 1; zeige(m); };
   nochmal?.addEventListener("click", naechster);
   // der Leitsatz wechselt von selbst alle neun Sekunden, solange niemand im Feld ist; nicht bei «weniger Bewegung»
-  if (!ruhig) {
+  if (!ruhig && el.dataset.takt !== "0") {
     let takt = setInterval(naechster, 9000);
     el.addEventListener("pointerenter", () => clearInterval(takt));
     el.addEventListener("pointerleave", () => { clearInterval(takt); takt = setInterval(naechster, 9000); });
@@ -101,7 +103,7 @@ function buehne(el) {
       c.addEventListener("click", (e) => {
         if (!matchMedia("(hover: none)").matches) return;
         const m = +c.dataset.n;
-        if (beruehrt !== m) { e.preventDefault(); beruehrt = m; zeige(m); f.hervor(m); }
+        if (beruehrt !== m) { e.preventDefault(); beruehrt = m; zeige(m); f.hervor(m); el.querySelector(".buehne-satz")?.scrollIntoView({ block: "nearest", behavior: ruhig ? "auto" : "smooth" }); }
       });
     });
   }
@@ -138,8 +140,56 @@ function briefing(form) {
   setzen();
 }
 
+/* ---------- Das Fenster: eine App über der Seite ---------- */
+function fenster(link) {
+  link.addEventListener("click", (e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
+    if (matchMedia("(max-width: 560px)").matches && !navigator.userAgentData?.mobile && !/Mobi/.test(navigator.userAgent)) { /* schmales Fenster am Computer: trotzdem im Fenster */ }
+    e.preventDefault();
+    oeffneFenster(link.href, link.dataset.fenster || link.textContent.trim());
+  });
+}
+let fensterEl = null;
+function oeffneFenster(url, name) {
+  schliesseFenster(false);
+  const el = document.createElement("div");
+  el.className = "fenster"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", name);
+  el.innerHTML = `<div class="fenster-leiste"><span class="fenster-name">${document.querySelector(".signet svg")?.outerHTML || ""}<b></b></span><span class="fenster-knoepfe"><button type="button" class="vollbild" title="Vollbild"></button><a class="tab" href="" target="_blank" rel="noopener" title="In eigenem Tab öffnen"></a><button type="button" class="schliessen" title="Schliessen"></button></span></div><iframe title="" allow="fullscreen; autoplay; microphone; camera; display-capture; clipboard-write" allowfullscreen loading="eager"></iframe>`;
+  el.querySelector("b").textContent = name;
+  const zeichenVon = (n) => document.querySelector(`template#zeichen-${n}`)?.innerHTML || "";
+  el.querySelector(".vollbild").innerHTML = zeichenVon("vollbild") + "<span>Vollbild</span>";
+  el.querySelector(".tab").innerHTML = zeichenVon("tab") + "<span>Eigener Tab</span>";
+  el.querySelector(".schliessen").innerHTML = zeichenVon("schliessen") + "<span>Schliessen</span>";
+  el.querySelector(".tab").href = url;
+  const rahmen = el.querySelector("iframe"); rahmen.title = name; rahmen.src = url;
+  // Escape wirkt auch, wenn die App im Rahmen den Fokus hat (gleiche Herkunft)
+  rahmen.addEventListener("load", () => { try { rahmen.contentWindow.addEventListener("keydown", (e) => { if (e.key === "Escape") zu(); }); } catch {} });
+  const zu = () => { if (history.state && history.state.fenster) history.back(); else schliesseFenster(false); };
+  el.querySelector(".schliessen").addEventListener("click", zu);
+  el.querySelector(".vollbild").addEventListener("click", () => { const q = rahmen.requestFullscreen?.(); if (q && q.catch) q.catch(() => {}); });
+  el.querySelector(".tab").addEventListener("click", zu);
+  document.body.append(el); fensterEl = el;
+  document.body.classList.add("fenster-offen");
+  history.pushState({ fenster: url }, "", "#" + name.toLowerCase().replace(/\s+/g, "-"));
+  requestAnimationFrame(() => el.classList.add("da"));
+  el.querySelector(".schliessen").focus();
+}
+function schliesseFenster(zurueck = true) {
+  if (!fensterEl) return;
+  const el = fensterEl; fensterEl = null;
+  el.classList.remove("da"); document.body.classList.remove("fenster-offen");
+  setTimeout(() => el.remove(), ruhig ? 0 : 260);
+  if (zurueck && history.state && history.state.fenster) history.back();
+}
+addEventListener("popstate", () => { if (fensterEl) schliesseFenster(false); });
+addEventListener("keydown", (e) => { if (e.key === "Escape" && fensterEl) { if (history.state && history.state.fenster) history.back(); else schliesseFenster(false); } });
+
+/* ---------- Signet: der Punkt läuft die Schlaufe entlang ---------- */
+if (!ruhig) document.querySelectorAll(".signet animateMotion").forEach((a) => { try { a.beginElement(); } catch {} });
+
 /* ---------- Start ---------- */
 const start = document.querySelector(".buehne");
 if (start) buehne(start); else document.querySelectorAll(".feld-rahmen").forEach(feld);
 document.querySelectorAll(".teilen-knopf").forEach(teilen);
 document.querySelectorAll("form.brief").forEach(briefing);
+document.querySelectorAll("a[data-fenster]").forEach(fenster);
