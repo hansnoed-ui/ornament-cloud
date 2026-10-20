@@ -176,6 +176,8 @@ await check("Social Media auf der Website: ohne Zettel die leere Seite, mit Men�
 });
 
 // ---------- Redaktion gegen nachgebildete Dienste ----------
+/** seit 20. Oktober 2026 zeigt die Redaktion einen Schritt zur Zeit (js/redaktion/schritte.js): vor dem Ausfüllen den Schritt des Felds nach vorn holen */
+const sicht = (page, sel) => page.evaluate((s) => window.rdSchritte?.zeige(document.querySelector(s)), sel);
 
 /** ein Git-Repository im Speicher: Dateien des Zweigs, Commits, Bäume, Blobs; genug von der REST-API von GitHub für die Redaktion */
 function githubNachbau(dateien) {
@@ -315,7 +317,8 @@ await check("Redaktion: Bildschirmfoto einfügen, Claude liest, Bereiche, Kommen
   await page.locator("#f-quelle").fill("https://x.com/test_person/status/1979512345678901248");
   assert.match(await page.locator("#quelle-info").textContent(), /X, @test_person, veröffentlicht/);
   await page.locator("#dateien").setInputFiles({ name: "bildschirmfoto.png", mimeType: "image/png", buffer: await bildschirmfoto() });
-  await page.waitForSelector("#schritt-beleg:not([hidden])");
+  await page.waitForSelector("#schritt-beleg:not([hidden])", { state: "attached" });   // der Schritt ist da, aber erst sichtbar, wenn man zu ihm geht
+  await sicht(page, "#lesen");
   await page.locator("#lesen").click();
   await page.waitForFunction(() => /Gelesen/.test(document.querySelector("#lesen-meldung").textContent));
   // was Claude bekam
@@ -340,6 +343,7 @@ await check("Redaktion: Bildschirmfoto einfügen, Claude liest, Bereiche, Kommen
   assert.equal(await page.locator('[data-zahl="likes"]').inputValue(), "45000");
   assert.deepEqual(await page.locator(".rd-marke").allInnerTexts().then((t) => t.map((x) => x.replace("×", "").trim())), ["Archiv", "Test"]);
   // ein Bereich von Hand dazu: ziehen
+  await sicht(page, 'input[name="werkzeug"]');
   await page.locator('input[name="werkzeug"][value="dritte"]').check();
   await page.locator("#leinwand").evaluate((x) => x.scrollIntoView({ block: "start" }));
   const box = await page.locator("#leinwand").boundingBox();
@@ -348,11 +352,13 @@ await check("Redaktion: Bildschirmfoto einfügen, Claude liest, Bereiche, Kommen
   await page.mouse.move(box.x + box.width * 0.9, box.y + box.height * 0.25, { steps: 4 });
   await page.mouse.up();
   assert.equal(await page.locator(".rd-bereich--dritte").count(), 2);
+  await sicht(page, "#f-kommentar");
   await page.locator("#f-kommentar").fill("Ein *Kommentar* der Redaktion.");
   await page.setViewportSize({ width: 390, height: 844 });            // auch auf dem Handy: nichts ragt über den Rand
   const breit = await page.evaluate(() => [...document.querySelectorAll("main *")].filter((x) => x.getClientRects().length && x.getBoundingClientRect().right > innerWidth + 0.5).map((x) => `${x.tagName}.${x.className}`));
   assert.deepEqual(breit.slice(0, 5), [], "Redaktion auf dem Handy: seitliches Wischen");
   await page.setViewportSize({ width: 1280, height: 900 });
+  await sicht(page, "#f-schlagwort");
   await page.locator("#f-schlagwort").fill("archiv");
   await page.keyboard.press("Enter");
   assert.equal(await page.locator(".rd-marke").count(), 2, "«archiv» ist dasselbe wie «Archiv»");
@@ -361,6 +367,7 @@ await check("Redaktion: Bildschirmfoto einfügen, Claude liest, Bereiche, Kommen
   assert.equal(await page.locator("#vorschau script").count(), 0);
   assert.match(await page.locator("#vorschau .beitrag-text").innerText(), /<script>alert\(1\)<\/script>/);
   // veröffentlichen
+  await sicht(page, "#veroeffentlichen");
   await page.locator("#veroeffentlichen").click();
   await page.waitForFunction(() => /Online: Zettel 1 öffnen/.test(document.querySelector("#fortschritt").textContent), null, { timeout: 30000 });
   const daten = JSON.parse(gh.text("social-media/daten/eintraege.json"));
@@ -394,6 +401,7 @@ await check("Redaktion: lehnt die API den Fallback-Parameter ab, fragt sie ohne;
   const claude = claudeNachbau([{ status: 400, nachricht: "fallbacks: Extra inputs are not permitted" }, { ergebnis: ERGEBNIS }]);
   const { ctx, page, fehler } = await redaktion(gh, claude);
   await page.locator("#dateien").setInputFiles({ name: "b.png", mimeType: "image/png", buffer: await bildschirmfoto() });
+  await sicht(page, "#lesen");
   await page.locator("#lesen").click();
   await page.waitForFunction(() => /Gelesen/.test(document.querySelector("#lesen-meldung").textContent));
   assert.equal(claude.anfragen.length, 2);
@@ -405,6 +413,7 @@ await check("Redaktion: lehnt die API den Fallback-Parameter ab, fragt sie ohne;
     if (einmal && r.request().method() === "POST" && r.request().url().endsWith("/git/commits")) { einmal = false; gh.dazwischen("README.md", "von anderswo"); }
     return gh.route(r);
   });
+  await sicht(page, "#veroeffentlichen");
   await page.locator("#veroeffentlichen").click();
   await page.waitForFunction(() => /Online/.test(document.querySelector("#fortschritt").textContent), null, { timeout: 30000 });
   assert.match(await page.locator("#fortschritt").textContent(), /inzwischen verändert/);
@@ -423,9 +432,12 @@ await check("Redaktion: Zettel bearbeiten (Kommentar, Schlagwort, Status) und l�
   await page.locator('[data-bearbeiten="1-ein-test-fuer-die-redaktion"]').click();
   await page.waitForFunction(() => /Zettel 1/.test(document.querySelector("#bearbeiten-hinweis").textContent));
   assert.equal(await page.locator("#f-kommentar").inputValue(), "Ein *Kommentar* der Redaktion.");
+  await sicht(page, "#f-kommentar");
   await page.locator("#f-kommentar").fill("Neu kommentiert.");
+  await sicht(page, "#f-status");
   await page.locator("#f-status").selectOption("geloescht");
   await page.locator("#f-geprueft").fill("2026-10-19");
+  await sicht(page, "#veroeffentlichen");
   await page.locator("#veroeffentlichen").click();
   await page.waitForFunction(() => /Online/.test(document.querySelector("#fortschritt").textContent), null, { timeout: 30000 });
   const e = JSON.parse(gh.text("social-media/daten/eintraege.json")).eintraege[0];
@@ -461,7 +473,7 @@ await check("Redaktion ohne Anthropic-Schlüssel: Anweisung für claude.ai kopie
   assert.equal(await page.locator("#lesen").isDisabled(), true);
   await page.locator("#f-quelle").fill("https://x.com/test_person/status/1979512345678901248");
   await page.locator("#dateien").setInputFiles({ name: "bildschirmfoto.png", mimeType: "image/png", buffer: await bildschirmfoto() });
-  await page.waitForSelector("#schritt-beleg:not([hidden])");
+  await page.waitForSelector("#schritt-beleg:not([hidden])", { state: "attached" });   // der Schritt ist da, aber erst sichtbar, wenn man zu ihm geht
   await page.locator("#anweisung-kopieren").click();
   await page.waitForFunction(() => document.querySelector("#anweisung-meldung").textContent === "Kopiert.");
   const anweisung = await page.evaluate(() => navigator.clipboard.readText());
@@ -512,6 +524,7 @@ await check("Redaktion: die Einstellungen bleiben offen, während man Schlüssel
 await check("Redaktion: der Entwurf übersteht das Neuladen (IndexedDB), ohne GitHub-Schlüssel kein Veröffentlichen, die Seite trägt CSP und noindex", async () => {
   const gh = githubNachbau(anfangsdateien()), claude = claudeNachbau([{ ergebnis: ERGEBNIS }]);
   const { ctx, page, fehler } = await redaktion(gh, claude);
+  await sicht(page, "#f-text");
   await page.locator("#f-text").fill("Entwurf, der bleibt.");
   await page.waitForFunction(() => /Entwurf gesichert/.test(document.querySelector("#entwurf-stand").textContent));
   await page.reload();
