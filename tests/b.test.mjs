@@ -16,7 +16,7 @@ const seiten = walk("b/");
 const meta = (html, name) => html.match(new RegExp(`<meta (?:name|property)="${name}" content="([^"]*)"`))?.[1];
 const pngMass = (buf) => [buf.readUInt32BE(16), buf.readUInt32BE(20)];
 
-test("b/: alle Seiten (73), jede mit Titel, Beschreibung, Canonical oder noindex, Open Graph, X-Karte und JSON-LD", () => {
+test("b/: alle Seiten (72), jede mit Titel, Beschreibung, Canonical oder noindex, Open Graph, X-Karte und JSON-LD", () => {
   assert.equal(seiten.length, 1 + 1 + 49 + 1 + APPS.length + 1 + RASTER.length + 1 + ANGEBOTE.length + 4);
   for (const p of seiten) {
     const html = lies(`b/${p}index.html`);

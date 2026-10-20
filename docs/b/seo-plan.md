@@ -17,9 +17,8 @@ Stand: 20. Oktober 2026. Zuerst der deutschsprachige Markt (Schweiz, dann Deutsc
 |---|---|---|
 | Jemand sucht einen Webdesigner in der Region | Webdesign Aargau, Website erstellen lassen Zürcher Unterland, Webdesign Kaiserstuhl, Website für Künstler, Web-App für Museum | `/b/angebot/webdesign/` |
 | Ein Haus sucht Kuration | Ausstellung kuratieren lassen, Kurator Aargau, Ausstellungskonzept | `/b/angebot/kuration/` |
-| Jemand sucht Maltherapie oder Begleitung | Maltherapie Aargau, Maltherapie Zürcher Unterland, Atelier Wohnheim, Kunst in Institutionen | `/b/angebot/soziale-arbeit/` |
-| Ein Team oder eine Schule sucht Vermittlung | Workshop Beobachten, Systemtheorie Seminar, Kunstvermittlung Schule Aargau, Projektwoche Kunst | `/b/angebot/vermittlung/` |
-| Jemand sucht ein Werk | Kunst im Auftrag, Print kaufen Schweiz, Installation für Empfang | `/b/angebot/kunst/` |
+| Ein Team, eine Schule oder ein Heim sucht Vermittlung oder Beratung | Workshop Beobachten, Systemtheorie Seminar, Kunstvermittlung Schule Aargau, Atelier Wohnheim aufbauen, Kunst in Institutionen | `/b/angebot/vermittlung/` |
+| Jemand sucht ein Werk oder eine Edition | Kunst im Auftrag, Print kaufen Schweiz, Zettelkasten Buch, Installation für Empfang | `/b/angebot/produkte/` und `/b/werke/` |
 | Jemand sucht Theorie | Luhmann Zettelkasten, Systemtheorie Kunst, Anschluss Luhmann, Kontingenz, Re-Entry | `/b/zettel/` und die 49 Zettel |
 | Jemand sucht ein Prüfinstrument | Prüfraster journalistische Texte, Gesellschaftsdiagnose prüfen, Prompt Theorieanalyse | `/b/raster/` |
 | Jemand sucht ein Spiel oder Werkzeug | Denkspiel zu zweit, Gestaltungsübungen Farbe, Foto in Video verwandeln | `/b/apps/` |
@@ -42,7 +41,7 @@ Apps und Angeboten.
 
 ## 4. Was noch fehlt (Entscheide von Christian)
 
-- Preise und Setting für Maltherapie und Vermittlung (keine Abrechnung über Zusatzversicherungen).
+- Preise für Vermittlung und Beratung; der Verkaufs-Workflow (Bestellung, Zahlung, Veröffentlichung auf POD-Plattformen) wird separat gebaut.
 - Ein Foto oder ein Porträt für `/b/ueber/` (Google zeigt Personen gern mit Bild).
 - Kundenstimmen oder drei Referenzprojekte mit Namen für Websites und Apps.
 - Termine wieder sichtbar machen (`termine/`): regelmässige Einträge sind ein Signal für Aktualität.
@@ -52,9 +51,9 @@ Apps und Angeboten.
 - Der Zettelkasten liegt schon auf Englisch und Spanisch (`src/data/zu-seiner-zeit.en.json`, `.es.json`). Schritt 1: `/b/en/zettel/`
   und `/b/es/zettel/` aus denselben Daten bauen (`tools/build-b.mjs` mit Sprache), `hreflang` in allen drei Richtungen setzen,
   `og:locale` je Sprache, Sitemap mit `xhtml:link`.
-- Schritt 2: Leistungen auf Englisch (Webdesign, Kunst, Vermittlung: die drei, die ohne Ortsbindung gehen).
+- Schritt 2: Leistungen auf Englisch (Webdesign, Produkte: die zwei, die ohne Ortsbindung gehen).
 - Schritt 3: die Apps selbst sind sprachneutral; die App-Seiten unter `/b/en/apps/` sind kurz.
-- Nicht übersetzen: Soziale Arbeit und Kuration (ortsgebunden), Werkstatt.
+- Nicht übersetzen: Vermittlung und Kuration (ortsgebunden), Werkstatt.
 
 ## 6. Messen
 

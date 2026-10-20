@@ -24,8 +24,8 @@ Ziele
 - Jede Seite endet mit Fäden: drei bis fünf Verbindungen über die Gattungen hinweg.
 - Gestaltungsdialog: Die Seite fragt, was jemand mitbringt (ein Bild, eine Frage, einen Auftrag, einen Begriff, eine Gruppe) und
   schlägt einen Weg vor. Auf den Angebotsseiten entsteht aus wenigen Wahlen ein Briefing, das per Mail abgeht.
-- Fünf Leistungen als eigene Seiten, auffindbar für Suchmaschinen (Wunsch vom 20. Oktober 2026): Kunst, Webdesign, Vermittlung,
-  Kuration, Soziale Arbeit.
+- Vier Leistungen als eigene Seiten, auffindbar für Suchmaschinen (Wunsch vom 20. Oktober 2026: das Geschäft): Webdesign,
+  Vermittlung und Beratung, kuratorische Projekte, Produkte. Soziale Arbeit, Maltherapie, Stationen und Referenzen sind der Hintergrund auf «Über».
 - Teilen: jede Seite mit Vorschaukarte (1200 × 630) und Teilen-Knopf (Web Share, sonst Link kopieren); die Zettel zusätzlich als
   quadratische Karte zum Herunterladen.
 - Suchmaschinen: Titel, Beschreibung, Canonical, Open Graph, JSON-LD (Person, WebSite, CreativeWork, Service), Sitemap-Block.
@@ -73,7 +73,7 @@ Bestand selbst.
 | `/b/zettel/<n>-<slug>/` | Der Zettel unverändert (Titel, Leitsatz, Text, vier Verweise), dazu Fäden, Teilen, Karte |
 | `/b/apps/` und `/b/apps/<slug>/` | Die sieben Apps: ORNA, ORMA, OMNA COLOR, PHORMA I–III, The Fictory |
 | `/b/raster/` und `/b/raster/<slug>/` | Die vier Prüfraster, das Feld der Achsen zum Antippen, Prompt zum Kopieren, PDF |
-| `/b/angebot/` und `/b/angebot/<slug>/` | Die fünf Leistungen mit Gestaltungsdialog |
+| `/b/angebot/` und `/b/angebot/<slug>/` | Die vier Leistungen mit Gestaltungsdialog |
 | `/b/werke/` | Originale, Prints, Editionen |
 | `/b/zuletzt/` | Beiträge aus dem Social-Media-Zettelkasten |
 | `/b/ueber/` | Christian Strickler, Kontakt, Liste, Impressum |
@@ -102,6 +102,6 @@ rechnet die Seite mit der Tabelle. Das Aufsetzen des Workers ist Sache von Chris
 
 ## Offen (Entscheide von Christian)
 
-- Preise und Setting für Maltherapie und Vermittlung (Ausbildung, Stationen und Referenzen stehen seit dem 20. Oktober 2026 auf «Über»).
+- Preise für Vermittlung und Beratung; der Verkaufs-Workflow für Produkte (Kunst, POD) wird separat gebaut.
 - Ob die Werkstatt ein Kennwort braucht (zurzeit: nur per Adresse, noindex) und welche Produkte zuerst auf Amazon gehen.
 - Wann /b/ die bisherige Startseite ersetzt.

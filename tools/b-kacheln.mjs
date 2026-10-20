@@ -81,14 +81,14 @@ function karte(pfad) {
   const r = pfad.match(/^raster\/([^/]+)\//); if (r) { const x = RASTER.find((p) => p.slug === r[1]); return { kicker: `Prüfraster · ${x.fassung}`, titel: x.name, satz: x.kurz, titelGroesse: 62, feld: feldSvg() }; }
   const g = pfad.match(/^angebot\/([^/]+)\//); if (g) { const x = ANGEBOTE.find((p) => p.slug === g[1]); return { kicker: `Leistung · ${SEITE.person.name}, Kaiserstuhl`, titel: x.name, satz: x.kurz, titelGroesse: 66, feld: feldSvg() }; }
   const fest = {
-    "": { titel: "ornament.cloud", satz: "Kunst, Webdesign, Vermittlung, Kuration, Soziale Arbeit. 49 Zettel, sieben Apps, vier Prüfraster, fünf Leistungen.", feld: feldSvg({ hier: 1, nah: nahe(zettel[0]) }) },
+    "": { titel: "ornament.cloud", satz: "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte. 49 Zettel, sieben Apps, vier Prüfraster.", feld: feldSvg({ hier: 1, nah: nahe(zettel[0]) }) },
     "zettel/": { kicker: kasten.structure, titel: "Zu seiner Zeit", satz: kasten.subtitle, feld: feldSvg() },
     "apps/": { kicker: "Sieben Apps im Browser", titel: "Apps", satz: "ORNA, ORMA, OMNA COLOR, PHORMA I bis III, The Fictory.", feld: feldSvg() },
     "raster/": { kicker: "Vier Instrumente", titel: "Prüfraster", satz: "Grundlagenpapiere und Anwendungsprompts zum genaueren Hinsehen.", feld: feldSvg() },
-    "angebot/": { kicker: SEITE.person.name + ", Kaiserstuhl", titel: "Angebot", satz: "Kunst, Webdesign, Vermittlung, Kuration, Soziale Arbeit.", feld: feldSvg() },
+    "angebot/": { kicker: SEITE.person.name + ", Kaiserstuhl", titel: "Angebot", satz: "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.", feld: feldSvg() },
     "werke/": { kicker: SEITE.person.name, titel: "Werke", satz: "Originale, Prints in kleinen Auflagen und Arbeiten im Raum.", feld: feldSvg() },
     "zuletzt/": { kicker: "Aus Social Media", titel: "Zuletzt", satz: "Beiträge, gesichert mit Beleg und Schlagworten.", feld: feldSvg() },
-    "ueber/": { kicker: "Kaiserstuhl am Rhein", titel: SEITE.person.name, satz: "Kunst, Webdesign, Vermittlung, Kuration, Soziale Arbeit.", titelGroesse: 66, feld: feldSvg() },
+    "ueber/": { kicker: "Kaiserstuhl am Rhein", titel: SEITE.person.name, satz: "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.", titelGroesse: 66, feld: feldSvg() },
     "werkstatt/": { kicker: "Werkstatt", titel: "Print on Demand", satz: "Produkte aus dem Bestand.", feld: feldSvg() },
   };
   return fest[pfad];

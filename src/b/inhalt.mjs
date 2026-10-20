@@ -1,13 +1,13 @@
 // Inhalte des Neubaus unter /b/ (Entwurf vom 20. Oktober 2026, siehe docs/superpowers/specs/2026-10-20-b-neubau-design.md).
 // Alles Eigene steht hier: Verzeichnis der Apps, Raster, Angebote und Produkte sowie die Texte dazu. Die Zettel, ORNA und ORMA
 // kommen unverändert aus ihren Quellen (src/data/, src/doppelspalt/, src/orma/) und stehen nicht hier.
-// Leistungen, Ausbildung, Stationen und Referenzen nach den Angaben von Christian vom 20. Oktober 2026; Preise und Setting fehlen noch.
+// Leistungen und Hintergrund nach den Angaben von Christian vom 20. Oktober 2026; Preise und Setting fehlen noch.
 
 export const SEITE = {
   name: "ornament.cloud",
   adresse: "https://ornament.cloud/b/",
   claim: "Beobachtung ist Anlass für Veränderung in der Realität.",
-  beschreibung: "49 Zettel, sieben Apps, vier Prüfraster und fünf Leistungen von Christian Strickler, Kaiserstuhl: Kunst, Webdesign, Vermittlung, Kuration, Soziale Arbeit. Theorie, die man anfassen kann.",
+  beschreibung: "49 Zettel, sieben Apps, vier Prüfraster und vier Leistungen von Christian Strickler, Kaiserstuhl: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.",
   person: { name: "Christian Strickler", ort: "Kaiserstuhl AG, Schweiz", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
   sprache: "de-CH",
 };
@@ -16,11 +16,11 @@ export const SEITE = {
 export const DIALOG = {
   frage: "Was bringst du mit?",
   wahlen: [
-    { id: "bild", wort: "ein Bild", satz: "Ein Bild will sich bewegen.", weg: [["b/apps/phorma-ii/", "PHORMA II: eine Linie wächst und zeichnet dein Foto"], ["b/apps/the-fictory/", "The Fictory: das Bild zerfällt und setzt sich neu zusammen"], ["b/angebot/kunst/", "Ein Bild wird ein Werk: Kunst im Auftrag"]] },
-    { id: "frage", wort: "eine Frage", satz: "Eine Frage sucht ein Gegenüber.", weg: [["b/apps/orna/", "ORNA: eine Drehung, eine Begegnung, eine offene Frage"], ["b/zettel/", "Der Zettelkasten: 49 Zettel, die aneinander anschliessen"], ["b/angebot/soziale-arbeit/", "Ein Gespräch, das die Frage ernst nimmt"]] },
-    { id: "auftrag", wort: "einen Auftrag", satz: "Etwas soll gebaut werden.", weg: [["b/angebot/webdesign/", "Websites und Apps: schnell, eigenständig, ohne Dienste von aussen"], ["b/angebot/kunst/", "Ein Werk für einen bestimmten Ort"], ["b/angebot/", "Alle fünf Leistungen und der Weg zum Briefing"]] },
+    { id: "bild", wort: "ein Bild", satz: "Ein Bild will sich bewegen.", weg: [["b/apps/phorma-ii/", "PHORMA II: eine Linie wächst und zeichnet dein Foto"], ["b/apps/the-fictory/", "The Fictory: das Bild zerfällt und setzt sich neu zusammen"], ["b/angebot/produkte/", "Ein Bild wird ein Werk: Auftragsarbeiten und Prints"]] },
+    { id: "frage", wort: "eine Frage", satz: "Eine Frage sucht ein Gegenüber.", weg: [["b/apps/orna/", "ORNA: eine Drehung, eine Begegnung, eine offene Frage"], ["b/zettel/", "Der Zettelkasten: 49 Zettel, die aneinander anschliessen"], ["b/angebot/vermittlung/", "Ein Gespräch, das die Frage ernst nimmt"]] },
+    { id: "auftrag", wort: "einen Auftrag", satz: "Etwas soll gebaut werden.", weg: [["b/angebot/webdesign/", "Websites und Apps: schnell, eigenständig, ohne Dienste von aussen"], ["b/angebot/produkte/", "Ein Werk für einen bestimmten Ort"], ["b/angebot/", "Alle vier Leistungen und der Weg zum Briefing"]] },
     { id: "begriff", wort: "einen Begriff", satz: "Ein Begriff will geprüft werden.", weg: [["b/zettel/", "Im Feld nachsehen: 49 Begriffe von der Brücke bis zur Zukunft"], ["b/raster/", "Vier Prüfraster für Theorien, Texte und Körper"], ["b/apps/orma/", "ORMA: zu zweit antworten, aufdecken, weiterdenken"]] },
-    { id: "gruppe", wort: "eine Gruppe", satz: "Eine Klasse, ein Team, ein Haus.", weg: [["b/angebot/vermittlung/", "Vermittlung: Seminare und Projekte mit Schulen, Museen und Teams"], ["b/apps/omna-color/", "OMNA COLOR: 180 Gestaltungsübungen aus zwei Farbrädern"], ["b/angebot/soziale-arbeit/", "Ateliers in Institutionen"]] },
+    { id: "gruppe", wort: "eine Gruppe", satz: "Eine Klasse, ein Team, ein Haus.", weg: [["b/angebot/vermittlung/", "Vermittlung und Beratung: Seminare, Projekte, Ateliers in Institutionen"], ["b/apps/omna-color/", "OMNA COLOR: 180 Gestaltungsübungen aus zwei Farbrädern"], ["b/angebot/kuration/", "Ein Haus will ausstellen: kuratorische Projekte"]] },
   ],
 };
 
@@ -85,19 +85,10 @@ export const RASTER = [
     anwendung: "Ein Artikel, eine Reportage, ein Kommentar. Der Prompt liest ihn entlang von Ereignis, Kontext und Übergang und macht die Gegenprobe." },
 ];
 
-/** Die fünf Leistungen (Wunsch vom 20. Oktober 2026: «Kunst, Webdesign, Vermittlung, Kuration, Soziale Arbeit»).
+/** Die vier Leistungen (Wunsch vom 20. Oktober 2026: das Geschäft sind Webdesign, Vermittlung und Beratung, kuratorische Projekte und der
+ *  Verkauf von Produkten; Soziale Arbeit, Maltherapie und die Stationen sind der Hintergrund dazu, siehe UEBER).
  *  Jeder Eintrag hat einen Gestaltungsdialog: drei Fragen mit Wahlen, aus denen ein Briefing entsteht. */
 export const ANGEBOTE = [
-  { slug: "kunst", name: "Kunst", kurz: "Werke, Prints und Installationen, klassisch und digital.",
-    text: "Werke auf Papier und Leinwand, Prints in kleinen Auflagen, Installationen mit Bild, Bewegung und Ton, Arbeiten für Räume und Bildschirme. Auftragsarbeiten für Häuser, Firmen und Private; eigene Reihen, die hier zu sehen und zu kaufen sind. Die Bildmaschinen PHORMA und The Fictory sind aus dieser Arbeit entstanden.",
-    fuer: "Für Sammler:innen, Architekt:innen, Firmen, Gemeinden und Häuser, die ein Werk für einen bestimmten Ort suchen.",
-    ablauf: ["Ein Gespräch über den Ort und das, was er braucht.", "Ein Entwurf, als Skizze oder als bewegte Vorschau.", "Das Werk, die Montage, die Übergabe mit Zertifikat."],
-    beweis: [["b/werke/", "Werke und Prints"], ["werke/stellenfeld/", "Stellenfeld: sechs Stationen in 3D"], ["b/apps/phorma-ii/", "PHORMA II"]],
-    dialog: [
-      { frage: "Was für ein Werk?", wahlen: ["ein Bild", "ein Print in Auflage", "eine Installation mit Bewegung", "etwas für einen Bildschirm"] },
-      { frage: "Für welchen Ort?", wahlen: ["eine Wohnung", "ein Büro oder Empfang", "einen öffentlichen Raum", "das Netz"] },
-      { frage: "Wie gross?", wahlen: ["klein", "eine Wand", "ein Raum", "offen"] },
-    ] },
   { slug: "webdesign", name: "Webdesign", kurz: "Websites und Apps: schnell, eigenständig, ohne Dienste von aussen.",
     text: "Eine Website, die in unter einer Sekunde da ist und nichts von Dritten lädt: keine Cookies, keine Werbung, keine Tracker, Schriften und Skripte auf dem eigenen Server. Dazu Apps, die im Browser laufen, sich auf den Startbildschirm legen lassen und ohne Netz weiterarbeiten. Gestaltet und gebaut aus einer Hand, vom ersten Gespräch bis zur Veröffentlichung, mit allem, was Suchmaschinen und Teilen brauchen. Diese Seite hier ist das Beispiel, die sieben Apps sind es auch.",
     fuer: "Für Künstler:innen, Praxen, Vereine, Galerien, Museen, Schulen und kleine Unternehmen, die eine Adresse brauchen, die bleibt, oder ein Werkzeug, das nicht in einem App-Store wohnt.",
@@ -108,17 +99,17 @@ export const ANGEBOTE = [
       { frage: "Was gibt es schon?", wahlen: ["nichts", "eine alte Seite", "Texte und Bilder", "ein Logo und Farben"] },
       { frage: "Wie gross?", wahlen: ["eine Seite oder ein Werkzeug", "fünf bis zehn Seiten", "mit Shop oder Datenbank", "offen"] },
     ] },
-  { slug: "vermittlung", name: "Vermittlung", kurz: "Seminare, Workshops und Projekte mit Schulen, Museen und Teams.",
-    text: "Halbe Tage, ganze Tage, Projektwochen oder Reihen: Beobachten zweiter Ordnung, Systemtheorie ohne Hürden, Kunst als Werkzeug für Gruppen. Gearbeitet wird mit ORNA, ORMA, OMNA COLOR, PHORMA und den Prüfrastern, nicht mit Folien. Kinder und Jugendliche arbeiten mit Linie, Farbe, Material und Bildschirm; Teams mit Fragen, die sie mitbringen. Jede Gruppe geht mit etwas heim, das sie selbst gemacht hat.",
-    fuer: "Für Schulen, Museen, Jugendarbeit, Unternehmen, Verwaltungen, Praxisteams und Weiterbildungen.",
-    ablauf: ["Ein Gespräch über die Gruppe und die Frage, die sie mitbringt.", "Ein Vorschlag mit Ablauf, Dauer, Material und Preis.", "Der Tag oder die Woche; zum Schluss eine Präsentation im Haus oder im Netz, danach eine kurze Nachlese per Mail."],
-    beweis: [["b/apps/omna-color/", "OMNA COLOR: 180 Übungen"], ["b/apps/orma/", "ORMA zu zweit"], ["b/raster/", "Die vier Prüfraster"]],
+  { slug: "vermittlung", name: "Vermittlung und Beratung", kurz: "Seminare, Workshops, Projekte mit Schulen und Teams; Beratung für Institutionen.",
+    text: "Halbe Tage, ganze Tage, Projektwochen oder Reihen: Beobachten zweiter Ordnung, Systemtheorie ohne Hürden, Kunst als Werkzeug für Gruppen. Gearbeitet wird mit ORNA, ORMA, OMNA COLOR, PHORMA und den Prüfrastern, nicht mit Folien. Dazu Beratung für Wohnheime, Werkstätten, Stiftungen und Schulen, die Kunst zu einem Teil ihrer Arbeit machen wollen: ein Atelier aufbauen, Werke von Klient:innen zeigen, Maltherapie als Angebot einrichten. Der Hintergrund dafür sind 25 Jahre Soziale Arbeit in Institutionen und die Ausbildung in Maltherapie.",
+    fuer: "Für Schulen, Museen, Unternehmen, Verwaltungen, Praxisteams, Weiterbildungen und für Institutionen mit Menschen, die mehr können, als man ihnen zutraut.",
+    ablauf: ["Ein Gespräch über die Gruppe oder das Haus und die Frage, die mitkommt.", "Ein Vorschlag mit Ablauf, Dauer, Material und Preis.", "Der Tag, die Woche oder die Begleitung über ein Jahr; zum Schluss eine Präsentation im Haus oder im Netz."],
+    beweis: [["b/apps/omna-color/", "OMNA COLOR: 180 Übungen"], ["b/apps/orma/", "ORMA zu zweit"], ["b/raster/", "Die vier Prüfraster"], ["b/ueber/", "Der Hintergrund: Soziale Arbeit, Maltherapie, Stationen"]],
     dialog: [
-      { frage: "Welche Gruppe?", wahlen: ["eine Schulklasse", "ein Team aus einem Betrieb", "ein Kollegium oder Studierende", "ein offener Kurs"] },
-      { frage: "Welches Thema?", wahlen: ["Beobachten und Entscheiden", "Farbe, Linie, Material", "Theorie, die man anfassen kann", "ein eigenes Thema"] },
-      { frage: "Wie lange?", wahlen: ["zwei Stunden", "ein halber oder ganzer Tag", "eine Projektwoche", "eine Reihe"] },
+      { frage: "Wer?", wahlen: ["eine Schulklasse", "ein Team aus einem Betrieb", "ein Wohnheim, eine Werkstatt, eine Stiftung", "ein offener Kurs"] },
+      { frage: "Was?", wahlen: ["ein Seminar oder Workshop", "eine Projektwoche", "ein Atelier aufbauen", "Beratung zu Kunst im Haus"] },
+      { frage: "Wie lange?", wahlen: ["zwei Stunden", "ein halber oder ganzer Tag", "eine Reihe", "ein Jahr"] },
     ] },
-  { slug: "kuration", name: "Kuration", kurz: "Ausstellungen denken, ordnen, hängen.",
+  { slug: "kuration", name: "Kuratorische Projekte", kurz: "Ausstellungen denken, ordnen, hängen.",
     text: "Vom Konzept bis zur Finissage: Werke auswählen, Räume lesen, Texte schreiben, mit Künstler:innen und Hausherren verhandeln, die Hängung bauen, die Vermittlung mitdenken. Zuletzt «Supervisionen», sechs Monate im Oberen Turm Kaiserstuhl mit neun Künstler:innen, für Pro Kaiserstuhl und die Gemeinde Zurzach (2026), davor ein Jahr lang Werke von Klient:innen im Behmen in Aarau, für das BKS Aargau und die Stiftung FARO (2024).",
     fuer: "Für Gemeinden, Kunsträume, Galerien, Stiftungen, Firmen mit Räumen und Künstler:innen, die eine Ausstellung nicht allein stemmen wollen.",
     ablauf: ["Ein Rundgang durch den Raum, mit dem Thema im Kopf.", "Konzept, Auswahl und Ablauf als Papier, Budget und Termine dazu.", "Aufbau, Eröffnung, Begleitprogramm, Abbau."],
@@ -129,16 +120,15 @@ export const ANGEBOTE = [
       { frage: "Wer stellt aus?", wahlen: ["eine Person", "eine Gruppe", "eine Sammlung", "offen"] },
       { frage: "Wann?", wahlen: ["in drei Monaten", "in einem Jahr", "nächstes Jahr", "offen"] },
     ] },
-  { slug: "soziale-arbeit", name: "Soziale Arbeit", kurz: "Maltherapie, Begleitung und Ateliers in Institutionen.",
-    text: "Maltherapie einzeln und in kleinen Gruppen; Begleitung von Menschen in Übergängen; Aufbau und Leitung von Ateliers in Wohnheimen, Werkstätten und Stiftungen, bis zur Ausstellung der Werke. Grundlage sind das Studium der Sozialen Arbeit, die Ausbildung in Maltherapie (iac Zürich, in Ausbildung: bis zum Diplom fehlen noch einige Supervisionen) und über 25 Jahre, seit 1998, in Institutionen für Menschen mit Behinderung: Stiftung Wagerenhof, NOVEOS Zürcher Oberland, wohnstätten zwyssig, Stiftung Züriwerk, Stiftung Kind & Autismus, Stiftung FARO.",
-    fuer: "Für Erwachsene, die eine Zeit lang jemanden brauchen, der zuhört und mitarbeitet, und für Institutionen, die Kunst ernst nehmen.",
-    ablauf: ["Ein erstes Gespräch, unverbindlich, am Telefon oder in Kaiserstuhl.", "Eine Vereinbarung: wie oft, wie lange, was es kostet.", "Gespräche oder Atelier in einem Rhythmus, der sich der Sache anpasst."],
-    beweis: [["b/apps/orma/", "ORMA allein: Re-Entry"], ["b/zettel/46-die-unterbrechung/", "Zettel 46: Die Unterbrechung"], ["b/raster/verteilapparat/", "Der Verteilapparat des Körpers"]],
-    hinweis: "Kosten und Setting auf Anfrage. Keine Abrechnung über Zusatzversicherungen.",
+  { slug: "produkte", name: "Produkte", kurz: "Werke, Prints, Editionen und Auftragsarbeiten, klassisch und digital.",
+    text: "Werke auf Papier und Leinwand, Prints in kleinen Auflagen, Installationen mit Bild, Bewegung und Ton, Arbeiten für Räume und Bildschirme. Dazu Editionen aus dem Zettelkasten: das Buch, das Kartenset, das Poster und die Notizbücher, gedruckt auf Bestellung. Bestellt wird per Mail, bezahlt per QR-Rechnung oder TWINT; Versand in der Schweiz inbegriffen. Auftragsarbeiten für Häuser, Firmen und Private nach Gespräch.",
+    fuer: "Für Sammler:innen, Architekt:innen, Firmen, Gemeinden, Häuser und für alle, die ein Werk oder ein Buch für einen bestimmten Ort suchen.",
+    ablauf: ["Aussuchen auf der Seite «Werke» oder ein Gespräch über den Ort und das, was er braucht.", "Bestellung per Mail, Bestätigung mit Rechnung; bei Auftragsarbeiten ein Entwurf als Skizze oder bewegte Vorschau.", "Versand versichert, oder Werk, Montage und Übergabe mit Zertifikat."],
+    beweis: [["b/werke/", "Werke, Prints und Editionen"], ["werke/stellenfeld/", "Stellenfeld: sechs Stationen in 3D"], ["b/apps/phorma-ii/", "PHORMA II: ein Werk in Bewegung"]],
     dialog: [
-      { frage: "Worum geht es?", wahlen: ["Maltherapie", "einen Übergang", "ein Atelier in einer Institution", "Supervision oder Beratung"] },
-      { frage: "Wie?", wahlen: ["einzeln", "in einer kleinen Gruppe", "mit einem Team", "weiss ich noch nicht"] },
-      { frage: "Wo?", wahlen: ["in Kaiserstuhl", "bei euch im Haus", "am Telefon oder per Video", "offen"] },
+      { frage: "Was?", wahlen: ["ein Print oder Original", "ein Buch, Karten, ein Poster", "eine Auftragsarbeit", "etwas für einen Bildschirm"] },
+      { frage: "Für welchen Ort?", wahlen: ["eine Wohnung", "ein Büro oder Empfang", "einen öffentlichen Raum", "ein Geschenk"] },
+      { frage: "Wie viele?", wahlen: ["eines", "eine kleine Reihe", "eine Auflage", "offen"] },
     ] },
 ];
 
@@ -170,12 +160,17 @@ export const PRODUKTE = [
 export const UEBER = {
   text: [
     "Christian Strickler arbeitet in Kaiserstuhl am Rhein. Er liest seit über zehn Jahren Niklas Luhmann und macht daraus Dinge, die man anfassen kann: einen Zettelkasten, ein Rad, das Künstler:innen und Theoretiker:innen zusammenbringt, Farbräder mit Übungen, Maschinen, die aus Fotos und Tönen Bilder machen, und Prüfraster, mit denen sich Theorien, Texte und Körperereignisse befragen lassen.",
-    "Fünf Leistungen: Kunst, Webdesign, Vermittlung, Kuration und Soziale Arbeit. Er gestaltet und baut Websites und Apps, kuratiert Ausstellungen, arbeitet seit 1998 als Sozialarbeiter und Maltherapeut iac i.A. mit Menschen in Institutionen und leitet Seminare und Projekte mit Schulen, Museen und Teams.",
+    "Vier Leistungen: Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte. Er gestaltet und baut Websites und Apps, leitet Seminare und Projekte mit Schulen und Teams, berät Institutionen, die Kunst zu einem Teil ihrer Arbeit machen wollen, kuratiert Ausstellungen und verkauft Werke, Prints und Editionen.",
     "Alles auf dieser Seite läuft ohne Dienste von aussen: keine Cookies, keine Werbung, keine Tracker. Besuche werden ohne Cookies gezählt. Die Apps rechnen auf deinem Gerät; deine Bilder verlassen es nicht.",
   ],
-  ausbildung: [["1994–1998", "Studium Germanistik, Universität Zürich"], ["2011–2013", "Fachhochschule für Soziale Arbeit St. Gallen"], ["2022–2025", "Ausbildung Maltherapie, iac Zürich (i.A.: bis zum Diplom fehlen noch einige Supervisionen)"]],
-  stationen: ["Stiftung Wagerenhof", "NOVEOS Zürcher Oberland", "wohnstätten zwyssig", "Stiftung Züriwerk", "Stiftung Kind & Autismus", "Stiftung FARO, Windisch"],
-  referenzen: [["2026", "«Supervisionen», Oberer Turm, Kaiserstuhl: Ausstellung über sechs Monate, neun Künstler:innen; für Pro Kaiserstuhl, Gemeinde Zurzach"], ["2024", "Ausstellung mit Werken von Klient:innen, Behmen, Aarau: ein Jahr; für das BKS Aargau und die Stiftung FARO"]],
+  hintergrund: {
+    titel: "Hintergrund",
+    text: [
+      "Seit 1998 arbeitet er in der Sozialen Arbeit, in Wohnheimen, Werkstätten und Stiftungen für Menschen mit Behinderung: Stiftung Wagerenhof, NOVEOS Zürcher Oberland, wohnstätten zwyssig, Stiftung Züriwerk, Stiftung Kind & Autismus, Stiftung FARO in Windisch. Dort hat er Ateliers aufgebaut, Werke von Klient:innen gezeigt und gelernt, wie Kunst in einem Haus wirkt, das nicht für Kunst gebaut ist.",
+      "Dazu kommen das Studium der Germanistik an der Universität Zürich (1994–1998), die Fachhochschule für Soziale Arbeit St. Gallen (2011–2013) und die Ausbildung in Maltherapie am iac Zürich (2022–2025).",
+      "Kuratorisch zuletzt: ein Jahr lang Werke von Klient:innen im Behmen in Aarau, für das BKS Aargau und die Stiftung FARO (2024), und «Supervisionen» im Oberen Turm Kaiserstuhl, sechs Monate, neun Künstler:innen, für Pro Kaiserstuhl und die Gemeinde Zurzach (2026).",
+    ],
+  },
   liste: { titel: "Wenn etwas fertig ist, schreibe ich", text: "Kein Rhythmus und keine Ankündigungen. Eine kurze Mail, wenn ein Raster, eine App oder ein Text so weit ist, dass man damit arbeiten kann.", mailto: "mailto:hansnoed@gmail.com?subject=Liste&body=Bitte%20nimm%20mich%20in%20die%20Liste%20auf." },
 };
 
