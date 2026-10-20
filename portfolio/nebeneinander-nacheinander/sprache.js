@@ -6,7 +6,7 @@
 // und die Legende neu, feld/feld.js die Fragen. Die Konstellationen auf Englisch: js/data/constellations.en.js (tools/build-konstellationen-en.mjs).
 (() => {
   const DE = {
-    _titel: "Nebeneinander, Nacheinander – Ornament Cloud", _titelFeld: "Das Feld – Nebeneinander, Nacheinander – Ornament Cloud",
+    _titel: "ORNA – Ornament Cloud", _titelFeld: "Das Feld – ORNA – Ornament Cloud",   // seit 20. Oktober 2026 (abends) ORNA statt des Werktitels (Wunsch)
     namenZeigen: "Namen zeigen", namenAus: "Namen ausblenden", aussenring: "Aussenring", innenring: "Innenring",
     linkKopieren: "Link kopieren", linkKopiert: "Link kopiert", adresseMarkiert: "Adresse zum Kopieren markiert",
     konstellation: (a, t) => `Konstellation: ${a} und ${t}.`, feldFrei: (namen) => `Keine Konstellation mit ${namen}.`,
@@ -20,9 +20,9 @@
     "install.chromeOeffnen": "In Chrome öffnen", "install.danach": " Ist ORNA schon installiert, steht sie als eigenes Symbol auf dem Bildschirm und läuft auch ohne Netz.",
   };
   const EN = {
-    _titel: "Side by Side, One after Another – Ornament Cloud", _titelFeld: "The Field – Side by Side, One after Another – Ornament Cloud",
+    _titel: "ORNA – Ornament Cloud", _titelFeld: "The Field – ORNA – Ornament Cloud",
     "kopf.sprache": "Language", "kopf.ueber": "About the app",
-    lead: "An interactive experimental arrangement.",
+    lead: "«Nebeneinander, Nacheinander»: an interactive experimental arrangement.",
     "install.knopf": "Install ORNA as an app",
     "install.alt": "Installation not working? In the browser menu (⋮) choose <span>«Add to Home screen»</span> and then <span>«Create shortcut»</span>.",
     "rad.stage": "The wheel", "rad.aria": "Turn the wheel. Drag, flick or press Enter.", drehen: "Spin",
