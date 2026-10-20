@@ -102,7 +102,7 @@ test("b/: Apps, Raster und Angebote verlinken ihre Ziele, und die Ziele gibt es"
   for (const a of APPS) {
     const html = lies(`b/apps/${a.slug}/index.html`);
     for (const ziel of [a.url, a.app, a.feld].filter(Boolean).map((z) => z.replace(/\?.*$/, ""))) { assert.ok(existsSync(new URL(ziel + "index.html", root)), `${a.slug}: Ziel ${ziel} gibt es`); }
-    if (a.app) assert.ok(html.includes(`href="/${a.app}"`), `${a.slug}: Link zur App-Seite`);   // Anwendung und Feld öffnen seit 20. Oktober 2026 auf der Bühne unter /b/ (eigener Test)
+    if (a.app) assert.ok(html.includes(`href="/${a.app}${a.app.includes("?") ? "&amp;" : "?"}sprache=de"`), `${a.slug}: Link zur App-Seite, mit der Sprache`);   // Anwendung und Feld öffnen seit 20. Oktober 2026 auf der Bühne unter /b/ (eigener Test)
     assert.ok(existsSync(new URL(a.bild, root)), `${a.slug}: Bild ${a.bild}`);
     for (const b of [].concat(a.beispiele || [])) for (const d of [b.datei, b.webm, b.bild, b.vorher, b.nachher].filter(Boolean)) assert.ok(existsSync(new URL(d, root)), `${a.slug}: Beispiel ${d}`);
     for (const b of [].concat(a.beispiele || [])) if (b.art === "video" && b.datei.startsWith("assets/beispiele/")) {
@@ -231,11 +231,13 @@ test("b/apps: die Bühne – jede Web-Anwendung unter /b/apps/<app>/oeffnen/ in 
     assert.ok(!seite.includes("data-fenster"), `${a.slug}: kein Fenster mehr`);
     const b = lies(`b/apps/${a.slug}/oeffnen/index.html`);
     assert.ok(b.includes('<body class="buehne-seite">') && b.includes('<meta name="robots" content="noindex">') && b.includes(`<link rel="canonical" href="https://ornament.cloud/b/apps/${a.slug}/">`), `${a.slug}: Bühne`);
-    assert.ok(b.includes(`<iframe class="app-rahmen" src="/${a.url}?b=1" title="${a.name}"`), `${a.slug}: die Anwendung im Rahmen mit ?b=1`);
-    assert.ok(b.includes(`<a class="tab" href="/${a.url}" target="_blank"`) && b.includes(`<a class="zurueck" href="/b/apps/${a.slug}/"`), `${a.slug}: eigener Tab und zurück`);
+    // seit 20. Oktober 2026 (abends) mit der Sprache der Seite (?sprache=de|en), damit die App in derselben Sprache steht wie der Neubau (OMNA COLOR auf /b/en/ war deutsch)
+    assert.ok(b.includes(`<iframe class="app-rahmen" src="/${a.url}?b=1&amp;sprache=de" title="${a.name}"`), `${a.slug}: die Anwendung im Rahmen mit ?b=1 und der Sprache`);
+    assert.ok(b.includes(`<a class="tab" href="/${a.url}?sprache=de" target="_blank"`) && b.includes(`<a class="zurueck" href="/b/apps/${a.slug}/"`), `${a.slug}: eigener Tab und zurück`);
+    assert.ok(lies(`b/en/apps/${a.slug}/oeffnen/index.html`).includes(`<iframe class="app-rahmen" src="/${a.url}?b=1&amp;sprache=en"`), `${a.slug}: auf Englisch mit sprache=en`);
     assert.ok(!sitemap.includes(`/b/apps/${a.slug}/oeffnen/`), `${a.slug}: Bühne nicht in der Sitemap`);
     if (a.slug !== "orma") assert.ok(lies(a.url + "index.html").includes('setAttribute("data-buehne","")'), `${a.url}: blendet mit ?b=1 die alte Navigation aus`);   // ORMA hat keine alte Navigation
-    if (a.feld) { assert.ok(seite.includes(`href="/b/apps/${a.slug}/feld/"`)); assert.ok(lies(`b/apps/${a.slug}/feld/index.html`).includes(`src="/${a.feld}?b=1"`), `${a.slug}: das Feld auf der Bühne`); assert.ok(lies(a.feld + "index.html").includes("data-buehne")); }
+    if (a.feld) { assert.ok(seite.includes(`href="/b/apps/${a.slug}/feld/"`)); assert.ok(lies(`b/apps/${a.slug}/feld/index.html`).includes(`src="/${a.feld}?b=1&amp;sprache=de"`), `${a.slug}: das Feld auf der Bühne`); assert.ok(lies(a.feld + "index.html").includes("data-buehne")); }
   }
   assert.ok(lies("b/b.js").includes(".app-rahmen") && !lies("b/b.js").includes("data-fenster"), "b.js: Bühne statt Fenster");
 });

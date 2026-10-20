@@ -601,7 +601,7 @@ test("Alpha: Prüfraster in Arbeit – Seiten aktuell, markiert, unten in der Ü
   // seit 20. Oktober 2026 der Kopf der App statt der Kopfleiste: Signet (Weg nach /b/ bzw. /b/en/), der Schalter d · e, «Über die App»
   assert.match(omna, /<header class="app-kopf">\s*<a class="app-kopf-signet" href="\.\.\/\.\.\/b\/" data-t-href="\.\.\/\.\.\/b\/\|\.\.\/\.\.\/b\/en\/"/);
   assert.match(omna, /<nav class="sprache" aria-label="Sprache"[^>]*><button type="button" data-sprache="de" lang="de" title="Deutsch">d<\/button><button type="button" data-sprache="en" lang="en" title="English">e<\/button><\/nav>/);
-  assert.ok(omna.includes('<script src="sprache.js?v=1"></script>') && omna.includes('<script src="ex.en.js?v=1"></script>'), "Sprache und die Übungen auf Englisch vor dem eigenen Skript");
+  assert.ok(omna.includes('<script src="sprache.js?v=2"></script>') && omna.includes('<script src="ex.en.js?v=1"></script>'), "Sprache und die Übungen auf Englisch vor dem eigenen Skript");
   assert.ok(!omna.includes('class="seitenweg"') && !omna.includes('class="menu"'), "ohne die Kopfleiste der bisherigen Website");
   const fenster = {}; new Function("window", readFileSync(new URL("alpha/omna-color/ex.en.js", root), "utf8"))(fenster);
   assert.equal(Object.keys(fenster.EX_EN).length, 180, "alle 180 Übungen auf Englisch");
