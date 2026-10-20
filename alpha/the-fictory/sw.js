@@ -6,7 +6,7 @@
 // alle anderen: zuerst das Netz, ohne Netz aus dem Speicher. Jede erfolgreiche Antwort aktualisiert den Speicher.
 // Eigener Cache «fictory-…»; fremde Caches (ORNA «nn-…», ORMA «orma-…») werden nie berührt.
 
-const CACHE = "fictory-1";
+const CACHE = "fictory-2";   // 2: Gestaltung des Neubaus (neubau.css), 20. Oktober 2026
 const START = new URL("./", self.registration.scope).href;
 // Dinge, die die Seite erst später holt (Beispielbild per fetch) oder die der Browser für die Installation braucht; werkbank/ ist die Seite
 // der installierten App (Abschrift mit <base href="../">, tools/build-fictory-app.mjs)

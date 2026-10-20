@@ -1,0 +1,83 @@
+/* The Fictory – Gestaltung des Neubaus (seit 20. Oktober 2026, mit dem Neubau der Website unter /b/, nach ORMA, OMNA COLOR, ORNA und PHORMA:
+   «alles Grafische soll top sein»). Wird in index.html (und darüber in werkbank/) und in app/ nach dem eigenen <style> geladen und setzt dessen
+   Regeln bei gleicher Spezifität neu: Papier und Tinte in echter Umkehr, die Blaupause als einziger Akzent der Seite, Instrument Sans für Titel
+   und Schritte, Newsreader für Lead und Erklärung, Haarlinien statt Kisten, keine Schatten, keine Rundungen ausser an Pillen.
+   Die Werkbank bleibt, wie sie ist: das dunkle Band in der Farbe des Grunds der Animation (zeichnen.js, NACHT), die Leitfarbe aus dem Bild,
+   die Namen der Schritte in Newsreader – sie gehört zum Werkzeug. Ablauf, Texte, Klassen und Kennungen bleiben; die Kopfzeile der Website
+   bleibt in deren Schrift (ein Browsertest misst sie auf allen Seiten gleich). */
+
+:root {
+  --bg: #ffffff; --surface: #ffffff; --text: #000000; --muted: #6f6f6f; --border: #dadada; --accent: #1d3fd6;
+  --radius: 0px;
+  --font: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --bg-veil: rgba(255, 255, 255, 0.85);
+  --kreide: #ffffff; --staub: #9a9a9a; --fuge: #3a3836;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #000000; --surface: #000000; --text: #ffffff; --muted: #9a9a9a; --border: #2e2e2e; --accent: #8fb0ff; --bg-veil: rgba(0, 0, 0, 0.85); }
+}
+body { -webkit-font-smoothing: antialiased; }
+.seitenweg a, .menu-item { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+/* Kopf */
+.site-header h1 { font-family: var(--font); font-weight: 500; letter-spacing: -0.03em; line-height: 1; font-size: clamp(2.4rem, 7vw, 4rem); }
+.site-header .lead { font-family: var(--serif); font-size: 1.25rem; line-height: 1.45; max-width: 52ch; }
+
+/* Die fünf Schritte in Kürze: die Nummer als Kreis in der Blaupause (die Schritte sind eine Reihenfolge), die Linie zum nächsten als Haarlinie,
+   die freien Schritte (2, 3) grau und gestrichelt */
+.ablauf li::before {
+  width: 28px; height: 28px; margin-bottom: 10px; justify-content: center; box-sizing: border-box;
+  border: 1px solid var(--accent); border-radius: 50%; color: var(--accent); font-family: var(--font); font-weight: 500; font-size: 0.85rem;
+}
+.ablauf li::after { margin: 0 0 10px 38px; border-top-color: var(--border); opacity: 1; }
+.ablauf li.frei::before { color: var(--muted); border-color: var(--border); }
+.ablauf li.frei::after { opacity: 1; }
+.ablauf b { font-weight: 500; }
+@media (max-width: 640px) {
+  .ablauf li::before { grid-row: 1 / span 2; margin: 0; align-items: center; font-size: 0.85rem; width: 28px; height: 28px; }
+  .ablauf li::after { left: 14px; top: 32px; margin: 0; border-left-color: var(--border); }
+  .ablauf li.frei::after { border-left-color: var(--border); }
+}
+
+/* Knöpfe: Pillen, beim Berühren gefüllt, der volle Knopf der Seite wird blau */
+.installieren .bg-knopf img { border-radius: 0; }
+.bg-knopf:hover { background: var(--text); color: var(--bg); }
+.bg-knopf.voll:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.bg-knopf.leise:hover { background: none; color: var(--text); border-color: var(--text); }
+.bg-knopf:disabled:hover { background: none; color: var(--text); }
+.bg-knopf.voll:disabled:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
+.werkbank .bg-knopf:hover { background: color-mix(in srgb, var(--kreide) 12%, transparent); color: var(--kreide); }
+.werkbank .bg-knopf.voll:hover { background: var(--leit); border-color: var(--leit); color: var(--werkbank); }
+.werkbank .bg-knopf.leise:hover { border-color: var(--staub); color: var(--kreide); }
+
+/* Werkbank: die Ablage mit Haarlinie statt gestrichelt, ohne Rundung */
+.ablage { border: 1px solid var(--fuge); border-radius: 0; }
+.ablage.belegt { border-color: transparent; }
+
+/* Arbeitsspalte: Titel der Schritte in der Schrift der Oberfläche, die Nummer als blauer Kreis */
+.bg-schritt > h2 { align-items: center; font-family: var(--font); font-weight: 500; letter-spacing: -0.015em; font-size: 1.35rem; }
+.bg-schritt > h2 .nr {
+  display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; box-sizing: border-box;
+  border: 1px solid var(--accent); border-radius: 50%; color: var(--accent); font-size: 0.85rem; font-weight: 500;
+}
+.bg-befund h3, .bg-export h3, .bg-gegen h3 { font-family: var(--font); font-weight: 500; font-size: 1.1rem; letter-spacing: -0.01em; }
+.bg-vorschau canvas { background: var(--surface); }
+.bg-wahl input:not(:checked) + span:hover { color: var(--accent); }
+.bg-regler input[type="range"] { accent-color: var(--accent); }
+.bg-regler select { border-radius: 0; background: none; }
+.bg-regler select:focus { border-color: var(--accent); }
+.bg-teile i { border-radius: 0; border-color: var(--border); }
+.bg-teile button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 500; }
+.bg-teile button:hover:not([aria-pressed="true"]) { border-color: var(--text); }
+.bg-befund dd.lesart { font-family: var(--serif); }
+.bg-karte { padding: 4px 0 4px 20px; border-left: 2px solid var(--accent); background: none; }
+.bg-karte blockquote, .bg-karte .titel { font-family: var(--serif); }
+.bg-fortschritt { accent-color: var(--accent); }
+.bg-protokoll summary:hover { color: var(--accent); }
+.bg-methode ul { font-family: var(--serif); font-size: 1.05rem; line-height: 1.5; }
+.bg-methode strong { font-weight: 500; }
+
+/* App-Seite (app/): das Symbol ohne Schatten, die Zeilen in Newsreader */
+.app-symbol { box-shadow: 0 0 0 1px var(--border); }
+.app-text p { font-family: var(--serif); font-size: 1.1rem; }

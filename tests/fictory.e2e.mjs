@@ -240,7 +240,7 @@ await check("App (11. Oktober 2026): Knopf «Als App installieren» mit Anleitun
   assert.deepEqual((await cdp.send("Page.getInstallabilityErrors")).installabilityErrors, [], "Chrome meldet keine Hindernisse für die Installation");
   assert.deepEqual((await cdp.send("Page.getAppManifest")).errors, []);
   await page.reload(); await page.waitForFunction(() => window.fictoryTest?.bereit && navigator.serviceWorker.controller);
-  const gespeichert = await page.evaluate(async () => (await (await caches.open("fictory-1")).keys()).map((r) => new URL(r.url).pathname + new URL(r.url).search));
+  const gespeichert = await page.evaluate(async () => (await (await caches.open("fictory-2")).keys()).map((r) => new URL(r.url).pathname + new URL(r.url).search));
   for (const d of ["/alpha/the-fictory/", "/alpha/the-fictory/beispiel.jpg", "/portfolio/nebeneinander-nacheinander/js/data/constellations.js", "/vendor/fonts/newsreader-normal-latin.woff2"])
     assert.ok(gespeichert.includes(d), `gespeichert: ${d}`);
   assert.ok(gespeichert.some((d) => /^\/styles\.css\?v=\d+$/.test(d)), "das Stylesheet der Website mit Versionsmarke");
