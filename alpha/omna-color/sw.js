@@ -7,7 +7,7 @@
 // alle anderen: zuerst das Netz, ohne Netz aus dem Speicher. Jede erfolgreiche Antwort aktualisiert den Speicher.
 // Eigener Cache «omna-…»; fremde Caches (ORNA «nn-…», ORMA «orma-…», The Fictory «fictory-…») werden nie berührt.
 
-const CACHE = "omna-1";
+const CACHE = "omna-2";
 const START = new URL("./", self.registration.scope).href;
 // Dinge, die der Browser für die Installation braucht; rad/ ist die Seite
 // der installierten App (Abschrift mit <base href="../">, tools/build-omna-app.mjs)

@@ -17,7 +17,8 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <meta name="theme-color" content="#12141b">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
   <meta name="apple-mobile-web-app-title" content="OMNA COLOR">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
   <script>
@@ -25,31 +26,34 @@
     if (window.self !== window.top) document.documentElement.classList.add('eingebettet');
   </script>
   <style>
-/* Layout: Rad links, Übung rechts; auf dem Telefon untereinander. Farben nur im Rad, sonst ruhige kühle Neutrale. */
+/* Layout: Rad links, Übung rechts; auf dem Telefon untereinander. Farben nur im Rad, sonst Papier und Tinte in echter Umkehr und die Blaupause
+   als einziger Akzent (seit 20. Oktober 2026, mit dem Neubau der Website unter /b/ und ORMA: «alles Grafische soll top sein»). */
 :root {
-  --bg: #f2f3f6;
+  --bg: #ffffff;
   --surface: #ffffff;
-  --fg: #1c2030;
-  --muted: #5d6477;
-  --line: #d8dbe3;
-  --btn-bg: #1c2030;
-  --btn-fg: #f2f3f6;
-  --ink: #2b2417; --paper2: #f3ead4;
+  --fg: #000000;
+  --muted: #6f6f6f;
+  --line: #dadada;
+  --btn-bg: #000000;
+  --btn-fg: #ffffff;
+  --faden: #1d3fd6;
+  --ink: #000000;
   --c0: #e5484d; --c1: #f08a24; --c2: #f2c230; --c3: #3da35d; --c4: #2f7de1; --c5: #4b4fc4; --c6: #9b51c9;
   --hauptlink: #353b40;   /* die Hauptlinks oben links und die feine Linie darunter: im hellen Modus Anthrazit, wie auf der Website (Wunsch vom 2. Oktober 2026, 19:00 UTC) */
   --display: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
   --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --serif: "Newsreader", "Iowan Old Style", Georgia, serif;   /* für die Schritte und die Abschlussfrage der Übung */
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #12141b; --surface: #1b1e28; --fg: #e8eaf1; --muted: #9aa1b5; --line: #2d3141;
-    --btn-bg: #e8eaf1; --btn-fg: #12141b; --ink: #efe3c6; --paper2: #2a2418; color-scheme: dark;
+    --bg: #000000; --surface: #000000; --fg: #ffffff; --muted: #9a9a9a; --line: #2e2e2e;
+    --btn-bg: #ffffff; --btn-fg: #000000; --faden: #8fb0ff; --ink: #ffffff; color-scheme: dark;
     --hauptlink: #ffd84d;   /* im dunklen Modus ein helles Sonnengelb */
   }
 }
 :root[data-theme="dark"] {
-  --bg: #12141b; --surface: #1b1e28; --fg: #e8eaf1; --muted: #9aa1b5; --line: #2d3141;
-  --btn-bg: #e8eaf1; --btn-fg: #12141b; --ink: #efe3c6; --paper2: #2a2418; color-scheme: dark;
+  --bg: #000000; --surface: #000000; --fg: #ffffff; --muted: #9a9a9a; --line: #2e2e2e;
+  --btn-bg: #ffffff; --btn-fg: #000000; --faden: #8fb0ff; --ink: #ffffff; color-scheme: dark;
   --hauptlink: #ffd84d;
 }
 * { box-sizing: border-box; }
@@ -58,7 +62,10 @@ html:not(:has(:fullscreen)) { scrollbar-gutter: stable; }   /* Platz für den Bi
 body { margin: 0; }
 body { background: var(--bg); color: var(--fg); font: 16px/1.5 var(--body); padding-inline: 20px; padding-block: 40px 40px; }
 main { max-width: 1040px; margin-inline: auto; margin-top: clamp(0px, 4vh, 48px); display: grid; gap: 28px; }   /* unter der Kopfleiste (Welle 30 px darüber) */
-header p { margin: 0; color: var(--muted); max-width: 52ch; }
+/* Kopf der Anwendung (seit 20. Oktober 2026): Name und ein Satz, was das Rad tut */
+.kopf { display: grid; gap: 6px; }
+.kopf h1 { margin: 0; font: 500 clamp(2rem, 6vw, 2.6rem)/1.05 var(--display); letter-spacing: -0.025em; }
+.kopf p, header p { margin: 0; color: var(--muted); max-width: 52ch; }
 .stage { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); align-items: start; }
 .wheelbox { display: grid; gap: 16px; justify-items: center; }
 .wheel { width: min(100%, 420px); aspect-ratio: 224 / 232; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -66,46 +73,62 @@ header p { margin: 0; color: var(--muted); max-width: 52ch; }
 /* Rad seit 6. Oktober 2026 (Wunsch von Christian, Entwurf A «Flach & präzise»): ohne Papierring und Körnung, satte Flächen ohne Konturen,
    feine durchsichtige Fugen zwischen den Feldern (darum stimmen sie auch eingebettet und im dunklen Modus), die Ringe durch Luft getrennt, Zeiger als schlanke Nadeln */
 .tick { fill: none; stroke: var(--ink); stroke-linecap: round; }
-#mixdot { fill: var(--surface); stroke: var(--ink); stroke-width: .6; }
+#mixdot { fill: var(--surface); stroke: var(--ink); stroke-width: .6; transition: fill .4s ease; }
+/* nach dem Stillstand bekommen die beiden getroffenen Felder eine feine Kontur in der Farbe der Schrift (seit 20. Oktober 2026); die anderen bleiben, wie sie sind */
+.seg { stroke: transparent; stroke-width: 1.3; stroke-linejoin: round; paint-order: stroke; transition: stroke .4s ease; }
+.spin.landed .seg.hit { stroke: var(--fg); }
+#mixdot.puls { animation: puls .7s cubic-bezier(.2, .7, .2, 1); }
+@keyframes puls { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { #mixdot.puls { animation: none; } .seg { transition: none; } }
 .spin { transition: transform 5.6s cubic-bezier(.45, 0, .15, 1); }
 @media (prefers-reduced-motion: reduce) { .spin { transition-duration: .01s; } }
 .controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: center; }
-button.go { font: 500 1rem var(--body); background: var(--btn-bg); color: var(--btn-fg); border: 0; border-radius: 5px; padding: 12px 30px; cursor: pointer; }   /* seit 6. Oktober 2026 eckig mit ganz leicht gerundeten Ecken */
+button.go { font: 500 1rem var(--body); background: var(--btn-bg); color: var(--btn-fg); border: 0; border-radius: 5px; padding: 12px 30px; cursor: pointer; transition: background .15s ease; }   /* seit 6. Oktober 2026 eckig mit ganz leicht gerundeten Ecken */
+button.go:hover { background: var(--faden); }
 button.go:disabled { opacity: .45; cursor: default; }
-button:focus-visible, input:focus-visible { outline: 3px solid var(--c4); outline-offset: 3px; }
+button.go:disabled:hover { background: var(--btn-bg); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--faden); outline-offset: 3px; }
 .mix { display: flex; align-items: center; gap: 8px; font-size: .95rem; color: var(--muted); cursor: pointer; }
 .mix input { width: 18px; height: 18px; accent-color: var(--fg); }
 .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: center; margin: 0; padding: 0; list-style: none; font-size: .85rem; color: var(--muted); }
 .legend li { display: flex; align-items: center; gap: 6px; }
 .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
-.card { scroll-margin-top: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; display: grid; gap: 14px; min-height: 280px; align-content: start; }
-.card h2 { font: 500 1.7rem/1.15 var(--display); letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+/* die Übung: keine Kiste, sondern Haarlinien oben und unten (seit 20. Oktober 2026) */
+.card { scroll-margin-top: 16px; background: none; border: 0; border-top: 1px solid var(--fg); border-bottom: 1px solid var(--line); border-radius: 0; padding: 22px 0 20px; display: grid; gap: 14px; min-height: 280px; align-content: start; animation: auf .5s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes auf { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .card { animation: none; } }
+.card h2 { font: 500 clamp(1.7rem, 4.5vw, 2.2rem)/1.08 var(--display); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+/* bevor das Rad das erste Mal steht: eine Einladung an der Stelle der Übung */
+.leer { margin: 0; font: italic 1.35rem/1.35 var(--serif); color: var(--muted); max-width: 30ch; }
+.leer b { font-weight: 400; color: var(--fg); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px 3px 9px; }
+.chip { display: inline-flex; align-items: center; gap: 7px; font-size: .9rem; border: 1px solid var(--line); border-radius: 999px; padding: 4px 13px 4px 10px; }
 .meta { display: flex; flex-wrap: wrap; gap: 4px 18px; color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
-.task { margin: 0; padding-left: 1.3em; max-width: 60ch; }
-.task li { margin: 0 0 4px; padding-left: 2px; }
+.task { margin: 4px 0 0; padding-left: 1.3em; max-width: 60ch; font: 1.15rem/1.45 var(--serif); }
+.task li { margin: 0 0 6px; padding-left: 4px; }
+.task li::marker { font: 500 .9rem var(--body); color: var(--faden); }
 .nutzen { max-width: 60ch; color: var(--muted); font-size: .9rem; margin: 28px 0 0; }
-.nutzen h2 { font-size: 1rem; margin: 0 0 6px; color: inherit; }
+.nutzen h2 { font: 500 1.05rem var(--display); letter-spacing: -0.01em; margin: 0 0 6px; color: var(--fg); }
 .nutzen p { margin: 0 0 8px; }
-.end { margin: 0; padding-top: 12px; border-top: 1px solid var(--line); max-width: 60ch; }
-.end small { display: block; color: var(--muted); font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2px; }
+.end { margin: 0; padding-top: 12px; border-top: 1px solid var(--line); max-width: 60ch; font: italic 1.2rem/1.35 var(--serif); }
+.end small { display: block; color: var(--faden); font: 500 .9rem var(--body); margin-bottom: 4px; }
 .idline { color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
 .empty { color: var(--muted); margin: 0; }
 /* Knopf «OMNA COLOR als App installieren» (seit 19. Oktober 2026, pwa.js), unter «Die Übungen nutzen»; nicht in der installierten App, nicht eingebettet */
 .installieren { margin: 18px 0 0; }
 .app-knopf { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 18px 6px 8px; border: 1px solid var(--fg); border-radius: 999px; background: none; color: var(--fg); font: 500 .95rem var(--body); cursor: pointer; }
-.app-knopf:hover { background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.app-knopf:hover { border-color: var(--faden); color: var(--faden); }
 .app-knopf img { width: 30px; height: 30px; border-radius: 7px; display: block; }
 .installieren-hilfe { margin: 10px 0 0; font-size: .9rem; line-height: 1.5; max-width: 36em; }
 .installieren-hilfe span { color: var(--fg); white-space: nowrap; }
 .eingebettet .installieren { display: none; }
 .again { justify-self: start; font: 500 .9rem var(--body); background: none; color: var(--fg); border: 1px solid var(--line); border-radius: 5px; padding: 6px 16px; cursor: pointer; }
+.again:hover { border-color: var(--faden); color: var(--faden); }
 /* oben links auf jeder Seite (Wunsch vom 2. Oktober 2026): «Ornament Cloud» und darunter «Das Dritte Rad», beide in derselben Farbe (--hauptlink: hell Anthrazit, dunkel ein helles Sonnengelb) und beide als Buttons mit ganz feinem Rahmen,
    der aktive (aria-current) invers: Fläche in der Farbe des Buttons, Schrift in der Farbe der Seite. Darunter steht eine feine Linie in derselben Farbe.
    Die Stelle ist auf jeder Seite dieselbe (Wunsch vom 2. Oktober 2026, 18:08 UTC): die der Website, also bündig mit einer Spalte von 1040 px, die in der Mitte steht (bis 1080 px Fensterbreite 20 px vom Rand),
    oben 55 px, bis 760 px Fensterbreite 40 px. Ein Browsertest misst sie auf allen Seiten (REGELN §14). */
-.topbar { max-width: 1040px; margin: 0 auto 8px; --menu-text: var(--fg); --menu-flaeche: var(--surface); --menu-rand: var(--line); --menu-akzent: #c2410c; }   /* seit 18. Oktober 2026 mit dem Menü der Website und der Welle (kopfleiste.css) */
+.topbar { max-width: 1040px; margin: 0 auto 8px; --menu-text: var(--fg); --menu-flaeche: var(--surface); --menu-rand: var(--line); --menu-akzent: var(--faden); }   /* seit 18. Oktober 2026 mit dem Menü der Website und der Welle (kopfleiste.css) */
 .seitenweg { display: grid; grid-template-columns: max-content; justify-content: start; gap: 8px; margin-top: 15px; }
 @media (max-width: 760px) { .seitenweg { margin-top: 0; } }
 .seitenweg a { --weg: var(--hauptlink); padding: 3px 14px; border: 1px solid var(--weg); border: 1px solid color-mix(in srgb, var(--weg) 40%, transparent); border-radius: 999px; font: 600 .8rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .12em; text-align: center; text-transform: uppercase; text-decoration: none; color: var(--weg); }   /* genau so gesetzt wie auf der Website (styles.css) */
@@ -129,12 +152,12 @@ html.eingebettet body { padding: 4px 4px 8px; background: transparent; }
 .eingebettet .wheel { width: min(100%, 420px, var(--rad-max, 420px)); }
 @media (min-width: 800px) {
   /* Rad und Knopf als eigene Rasterzellen, damit die Karte zur Radmitte ausgerichtet wird und nicht zur Mitte von Rad + Knopf */
-  .stage { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); grid-template-areas: "rad karte" "knopf ."; row-gap: 16px; }
+  .stage { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); grid-template-areas: "rad karte" "knopf ."; row-gap: 16px; column-gap: 48px; }
   .wheelbox { display: contents; }
   .wheel { grid-area: rad; align-self: center; justify-self: center; }
   .controls { grid-area: knopf; }
   /* Die Scheibe sitzt im SVG etwas unter der Mitte (Zeiger oben): 16px Rand oben schiebt die Kartenmitte um 8px nach */
-  .card { grid-area: karte; align-self: center; margin-top: 16px; }
+  .card, .leer { grid-area: karte; align-self: center; margin-top: 16px; }
 }
 </style>
 <link rel="stylesheet" href="../../kopfleiste.css?v=2">
@@ -155,6 +178,10 @@ html.eingebettet body { padding: 4px 4px 8px; background: transparent; }
   </nav>
 </div>
 <main>
+  <header class="kopf">
+    <h1>OMNA COLOR</h1>
+    <p>Zwei Farbräder drehen gegeneinander. Zeigen sie zwei Farben, verbindet die Übung beide Themen; zeigen sie dieselbe, bleibt es beim reinen Thema. 180 Übungen.</p>
+  </header>
   <div class="stage">
     <section class="wheelbox" aria-label="Farbkreis">
       <div class="wheel" id="wheel" role="img" aria-label="Farbkreis mit sieben Themen, aussen und innen ein Rad">
@@ -170,6 +197,7 @@ html.eingebettet body { padding: 4px 4px 8px; background: transparent; }
         <button class="go" id="go" type="button">Drehen</button>
               </div>
     </section>
+    <p class="leer" id="leer">Tippe auf das Rad oder auf <b>Drehen</b>. Was kommt, ist eine Übung mit Material, Schritten und einer Frage zum Schluss.</p>
     <section class="card" id="card" aria-live="polite" hidden></section>
   </div>
   <section class="nutzen" aria-labelledby="nutzen-t">
@@ -271,6 +299,7 @@ function show(e, a, b) {
   const chip = (i) => `<span class="chip"><span class="dot" style="background:${THEMES[i].c}"></span>${THEMES[i].name}</span>`;
   const idx = (name) => THEMES.findIndex((t) => t.name === name);
   const chips = [chip(a)].concat(b !== null ? [chip(b)] : []).join("");
+  $("leer").hidden = true;
   $("card").hidden = false;
   $("card").innerHTML = `
     <div class="chips">${chips}</div>
@@ -293,6 +322,7 @@ function spin(dir = 1, flick = false) {
   $("inner").style.transition = flick ? FLICK : "";
   if (busy) return;
   busy = true; $("go").disabled = true;
+  $("outer").classList.remove("landed"); $("inner").classList.remove("landed"); $("mixdot").classList.remove("puls");
   outerIdx = Math.floor(Math.random() * N);
   innerIdx = Math.floor(Math.random() * N);
   outerDeg = landing(outerDeg, outerIdx, true, dir > 0);
@@ -304,6 +334,7 @@ function spin(dir = 1, flick = false) {
   setTimeout(() => {
     const pure = outerIdx === innerIdx;
     const b = pure ? null : innerIdx;
+    treffer(outerIdx, innerIdx);
     show(pick(THEMES[outerIdx].name, b === null ? null : THEMES[b].name), outerIdx, b);
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     // eingebettet (Startseite): die Seite aussen blättert selbst zur Übung, sie kennt den ganzen Bildlauf
@@ -311,6 +342,14 @@ function spin(dir = 1, flick = false) {
     else $("card").scrollIntoView({ behavior: still ? "auto" : "smooth", block: matchMedia("(min-width: 800px)").matches ? "nearest" : "start" });
     busy = false; $("go").disabled = false;
   }, wait);
+}
+
+// die getroffenen Felder treten hervor, der Punkt in der Mitte pulst einmal
+function treffer(o, i) {
+  [...$("outer").querySelectorAll(".seg")].forEach((p, k) => p.classList.toggle("hit", k === o));
+  [...$("inner").querySelectorAll(".seg")].forEach((p, k) => p.classList.toggle("hit", k === i));
+  $("outer").classList.add("landed"); $("inner").classList.add("landed");
+  $("mixdot").classList.add("puls");
 }
 
 $("go").addEventListener("click", () => spin(1));
@@ -360,6 +399,7 @@ wheel.addEventListener("pointercancel", release);
   outerDeg = -(a + .5) * S; innerDeg = (a + .5) * S;
   $("outer").style.transform = `rotate(${outerDeg}deg)`; $("inner").style.transform = `rotate(${-innerDeg}deg)`;
   $("mixdot").style.fill = THEMES[a].c;
+  treffer(a, a);
   requestAnimationFrame(() => setTransition(true));
 })();
 if (/[?&]rad=/.test(location.search)) import("../drittes-rad/weiter.js");   // «Das Dritte Rad»: Auswahl nur mit ?rad=
