@@ -6,7 +6,7 @@
 // alle anderen: zuerst das Netz, ohne Netz aus dem Speicher. Jede erfolgreiche Antwort aktualisiert den Speicher.
 // Eigener Cache «phorma-…»; fremde Caches (ORNA «nn-…», ORMA «orma-…», The Fictory «fictory-…», Principesse «principesse-…») werden nie berührt.
 
-const CACHE = "phorma-2";   // neu: die Seite der installierten App studio/
+const CACHE = "phorma-3";   // neu: die Seite der installierten App studio/
 const START = new URL("./", self.registration.scope).href;
 // Dinge, die die Seite erst später holt (das Beispielbild per Klick, three.js erst mit einem räumlichen Ablauf) oder die der Browser für die Installation braucht.
 // three.js lädt die Seite über die Import-Map («three», «three/addons/…»): diesen Namen kann das Folgen der Verweise nicht auflösen, darum stehen die Dateien hier,

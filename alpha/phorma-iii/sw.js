@@ -7,7 +7,7 @@
 // Eigener Cache «phormaiii-…» – bewusst nicht «phorma-…»: der Service Worker von PHORMA I löscht beim Aktualisieren alle Caches, die mit «phorma-»
 // beginnen (die Caches gehören der ganzen Website, nicht einem Ordner). Fremde Caches werden nie berührt.
 
-const CACHE = "phormaiii-1";
+const CACHE = "phormaiii-2";
 const START = new URL("./", self.registration.scope).href;
 // Dinge, die die Seite erst später holt oder die der Browser für die Installation braucht. three.js lädt die Seite über
 // die Import-Map («three», «three/addons/…»): diesen Namen kann das Folgen der Verweise nicht auflösen, darum stehen die Dateien hier (die relativen
