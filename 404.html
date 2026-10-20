@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seite nicht gefunden – Ornament Cloud</title>
+  <!-- 404-Seite (seit 20. Oktober 2026, mit dem Umzug auf den Webspace bei Hostpoint: .htaccess «ErrorDocument 404 /404.html»).
+       Apache liefert sie unter jeder nicht vorhandenen Adresse aus, darum sind alle Verweise absolut (von der Wurzel aus). Nicht in der Sitemap. -->
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/styles.css?v=46">
+  <style>
+    .nichts { max-width: 62ch; margin: 0 0 64px; }
+    .nichts p { font-size: 1.1rem; line-height: 1.7; color: var(--muted); }
+    .nichts ul { margin: 24px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+    .nichts li a { font-weight: 600; }
+    .nichts code { font-size: 0.95em; color: var(--text); word-break: break-all; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <div class="topbar">
+        <nav class="seitenweg" aria-label="Ornament Cloud">
+          <a href="/" aria-current="true">Ornament Cloud</a>
+          <a href="/alpha/drittes-rad/">Das Dritte Rad</a>
+        </nav>
+        <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
+        <nav class="menu" aria-label="Hauptmenü">
+          <a class="menu-item" href="/apps/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg><span>Apps</span></a>
+          <a class="menu-item" href="/masterprompts/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-7.5L7 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M7.5 8.5l3 2.25-3 2.25"/><path d="M12.5 13h4"/></svg><span>Prompts</span></a>
+          <a class="menu-item" href="/zu-seiner-zeit/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h11.5A1.5 1.5 0 0 1 20 5v11"/><rect x="4" y="6.5" width="13" height="14" rx="1.5"/><path d="M7 10.5h7"/><path d="M7 13.5h7"/><path d="M7 16.5h4"/></svg><span>Zettel</span></a>
+          <a class="menu-item" href="/social-media/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10 4.5 8 19.5"/><path d="M16 4.5l-2 15"/><path d="M5 9.25h14.5"/><path d="M4.5 14.75H19"/></svg><span>Social</span></a>
+          <a class="menu-item" href="/art/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><rect x="6.5" y="6.5" width="11" height="11" rx="0.5"/><circle cx="10" cy="10" r="1.3"/><path d="M6.5 16c2-2.4 4.2-3.2 6.4-2.3 1.6.6 2.9.4 4.6-.9"/></svg><span>Art</span></a>
+        </nav>
+      </div>
+      <h1>Hier ist nichts.</h1>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="nichts">
+      <p>Unter <code id="adresse">dieser Adresse</code> liegt keine Seite. Vielleicht ist sie umgezogen, vielleicht war der Verweis nie ganz richtig.</p>
+      <ul>
+        <li><a href="/">Zur Startseite</a></li>
+        <li><a href="/b/">Zum Neubau der Website</a></li>
+        <li><a href="/zu-seiner-zeit/">Zum Zettelkasten</a></li>
+        <li><a href="/apps/">Zu den Apps</a></li>
+      </ul>
+    </section>
+    <p class="back"><a href="/">← Zur Startseite</a></p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+      <p><a href="/impressum/">Impressum</a></p>
+    </div>
+  </footer>
+  <script>
+    // zeigt die aufgerufene Adresse (Apache liefert die Seite unter der fehlenden Adresse aus, die Adresszeile bleibt)
+    document.getElementById("adresse").textContent = location.pathname + location.search;
+  </script>
+  <script src="/icons.js?v=14" defer></script>
+</body>
+</html>

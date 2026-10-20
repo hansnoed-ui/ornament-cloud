@@ -39,7 +39,7 @@ const MENUSEITEN = {
 // bleibt ohne (Entscheid: «Zettelkasten mit Menü, das Dritte Rad ohne»)
 const aktivVon = (p) => (p in MENUSEITEN ? MENUSEITEN[p] : p.startsWith("zu-seiner-zeit/") ? ["zu-seiner-zeit/", "true"] : p.startsWith("social-media/") ? ["social-media/", "true"] : p.startsWith("art/") ? ["art/", "true"] : null);
 
-function htmlSeiten(dir = root, skip = new Set(["node_modules", "dist", ".git", "src", "tests", "tools", "vendor"])) {
+function htmlSeiten(dir = root, skip = new Set(["node_modules", "dist", ".git", "src", "tests", "tools", "vendor", "404.html"])) {   // 404.html: absolute Verweise, tests/hostpoint.test.mjs
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) => skip.has(e.name) || e.name.startsWith(".") ? []
     : e.isDirectory() ? htmlSeiten(new URL(e.name + "/", dir), skip) : e.name.endsWith(".html") ? [new URL(e.name, dir).pathname.slice(root.pathname.length)] : []);
 }

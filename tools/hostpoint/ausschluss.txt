@@ -1,0 +1,17 @@
+# Was nicht auf den Webspace gehört (rsync --exclude-from, tools/hostpoint/deploy.sh).
+# Alles andere im Repository ist die Website und wird 1 : 1 hochgeladen – so wie es GitHub Pages ausgeliefert hat.
+# Ausgeschlossene Pfade werden auf dem Server auch nicht gelöscht (rsync --delete schont sie): .well-known/ und logs/ gehören Hostpoint.
+.git/
+.github/
+.claude/
+.mcp.json
+.gitignore
+node_modules/
+src/
+tools/
+tests/
+docs/
+README.md
+CNAME
+.well-known/
+logs/

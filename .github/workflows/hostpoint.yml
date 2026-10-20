@@ -1,0 +1,60 @@
+# Veröffentlicht die Website auf dem Webspace bei Hostpoint (Umzug von GitHub Pages, seit 20. Oktober 2026; Anleitung: docs/hostpoint-umzug.md).
+# Läuft nach jedem Push auf main und von Hand («Run workflow», wahlweise als Probelauf). Solange die Variablen im Repository fehlen
+# (Settings → Secrets and variables → Actions), tut der Workflow nichts – so kann er vor dem Umzug schon im Repository liegen.
+#
+#   Variables:  HOSTPOINT_HOST  (konto.ssh.cloud.hostpoint.ch)   HOSTPOINT_USER  (Benutzername des Webhostings)   HOSTPOINT_PFAD  (www/ornament.cloud)
+#   Secret:     HOSTPOINT_SSH_KEY  (privater Schlüssel; der öffentliche liegt bei Hostpoint unter Advanced → SSH-Zugang)
+name: Hostpoint
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      probe:
+        description: "Nur Probelauf (rsync --dry-run): zeigt, was sich ändern würde"
+        type: boolean
+        default: false
+
+concurrency:
+  group: hostpoint
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  hochladen:
+    name: Auf den Webspace laden
+    runs-on: ubuntu-latest
+    if: vars.HOSTPOINT_HOST != ''
+    env:
+      HOSTPOINT_HOST: ${{ vars.HOSTPOINT_HOST }}
+      HOSTPOINT_USER: ${{ vars.HOSTPOINT_USER }}
+      HOSTPOINT_PFAD: ${{ vars.HOSTPOINT_PFAD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SSH-Schlüssel einrichten
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.HOSTPOINT_SSH_KEY }}" > ~/.ssh/hostpoint
+          chmod 600 ~/.ssh/hostpoint
+          printf 'Host %s\n  IdentityFile ~/.ssh/hostpoint\n  IdentitiesOnly yes\n' "$HOSTPOINT_HOST" > ~/.ssh/config
+          ssh-keyscan -T 20 "$HOSTPOINT_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Verbindung und Ziel prüfen
+        run: |
+          ssh -o BatchMode=yes "$HOSTPOINT_USER@$HOSTPOINT_HOST" "command -v rsync >/dev/null || { echo 'rsync fehlt auf dem Server'; exit 1; }; test -d '$HOSTPOINT_PFAD' || { echo 'Document Root $HOSTPOINT_PFAD fehlt: im Control Panel unter Websites anlegen'; exit 1; }; echo 'Server bereit:' \$(uname -s) \$(rsync --version | head -1)"
+
+      - name: Hochladen
+        env:
+          PROBE: ${{ inputs.probe && '1' || '' }}
+        run: tools/hostpoint/deploy.sh
+
+      - name: Nachsehen
+        if: ${{ !inputs.probe }}
+        run: |
+          # Erst aussagekräftig, wenn die Domain auf Hostpoint zeigt; vorher antwortet noch GitHub Pages.
+          for p in / /b/ /sitemap.xml /alpha/orma/ /nicht-da; do printf '%-16s %s\n' "$p" "$(curl -sS -o /dev/null -w '%{http_code} %{content_type} (%{time_total}s)' "https://ornament.cloud$p" || echo 'keine Antwort')"; done
+          curl -sSI https://ornament.cloud/ | grep -iE '^(server|cache-control|content-encoding|strict-transport|x-content-type):' || true

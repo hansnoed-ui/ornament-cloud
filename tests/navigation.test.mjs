@@ -26,7 +26,7 @@ const AUSNAHMEN = [
   ["Beispiele der Skills für Claude (.claude/skills/), keine Seiten der Website (16. Oktober 2026)", /^\.claude\//],
   ["Der Neubau unter b/ mit eigener Kopfzeile (20. Oktober 2026, docs/superpowers/specs/2026-10-20-b-neubau-design.md); eigene Tests in tests/b.test.mjs", /^b\//],
 ];
-const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git"]);
+const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git", "404.html"]);   // 404.html (20. Oktober 2026, Hostpoint): Kopf wie überall, aber absolute Verweise, weil Apache sie unter jeder Adresse ausliefert; tests/hostpoint.test.mjs
 const walk = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   ueberspringen.has(e.name) ? [] : e.isDirectory() ? walk(new URL(e.name + "/", d), vor + e.name + "/") : e.name.endsWith(".html") ? [vor + e.name] : []);
 const alle = walk(root);
