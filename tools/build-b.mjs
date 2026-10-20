@@ -28,6 +28,7 @@ const kasten = ladeZettelkasten();
 const zettel = ladeZettel();
 const orma = ladeOrma();
 const werke = ladeWerke();
+const echteWerke = werke.werke.filter((w) => !w.muster);   // Muster (muster: true) kommen nie in den Neubau (20. Oktober 2026: «die Beispiel-Werke von der Seite Werke entfernen»)
 const beitraege = ladeBeitraege();
 const omnaUebungen = ladeOmna();
 const konstellationen = ladeKonstellationen();
@@ -337,12 +338,8 @@ function buehne({ pfad, name, ziel, zurueck }) {
 
 <section class="abschnitt" aria-labelledby="werke-titel">
   <div class="spalte">
-    <div class="abschnitt-kopf"><h2 id="werke-titel">${zeichen("werke")}Werke</h2><p>Originale, Prints in kleinen Auflagen und Arbeiten im Raum.</p><a class="weiter" href="/b/werke/">Alle Werke</a></div>
-    <div class="reihe">
-      ${werke.werke.map((w) => `<a class="stueck" href="/b/werke/#${w.slug}"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span><h3>${esc(w.titel)}</h3><p>${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm${w.muster ? " (Beispiel, Angaben folgen)" : ""}</p></a>`).join("")}
-      <a class="stueck" href="/werke/stellenfeld/"><span class="bild"><video autoplay muted loop playsinline poster="/assets/stellenfeld.jpg" aria-hidden="true"><source src="/assets/stellenfeld.webm" type="video/webm"><source src="/assets/stellenfeld.mp4" type="video/mp4"></video></span><h3>Stellenfeld</h3><p>Sechs Stationen in 3D: Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre.</p></a>
-      <a class="stueck" href="/werke/reentry/"><span class="bild"><video autoplay muted loop playsinline poster="/assets/reentry.jpg" aria-hidden="true"><source src="/assets/reentry.webm" type="video/webm"><source src="/assets/reentry.mp4" type="video/mp4"></video></span><h3>Re-entry</h3><p>Knoten, Helix und S/F-Band, im Raum gedreht.</p></a>
-    </div>
+    <div class="abschnitt-kopf"><h2 id="werke-titel">${zeichen("werke")}Werke</h2><p>${echteWerke.length ? "Originale, Prints in kleinen Auflagen und Arbeiten im Raum." : "Originale und Prints in kleinen Auflagen, Arbeiten im Raum und Editionen – in Vorbereitung."}</p><a class="weiter" href="/b/werke/">${echteWerke.length ? "Alle Werke" : "Was kommt"}</a></div>
+    ${echteWerke.length ? `<div class="reihe">${echteWerke.map((w) => `<a class="stueck" href="/b/werke/#${w.slug}"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span><h3>${esc(w.titel)}</h3><p>${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm</p></a>`).join("")}</div>` : ""}
   </div>
 </section>
 
@@ -601,22 +598,19 @@ ${faeden([...zs.map((z) => fZettel(z)), fApp(appVon(appTop)), fAngebot(ANGEBOTE[
 }
 
 /* ---------- Werke ---------- */
+// Nur Ankündigungen, keine Beispiele (Wunsch vom 20. Oktober 2026: «die Beispiel-Werke von der Seite Werke entfernen. Nur die Ankündigungen für
+// Prints und Originale, Im Raum, Editionen lassen»): Muster aus werke.json (muster: true) kommen nie in den Neubau; echte Werke erscheinen, sobald es sie gibt.
 {
   const body = `
 <section class="stueck-kopf"><div class="spalte">
-  <h1 class="titel">Werke<small>Originale und Prints in kleinen Auflagen, dazu Arbeiten im Raum. Bestellt wird per Mail, bezahlt per QR-Rechnung oder TWINT; Versand in der Schweiz inbegriffen.</small></h1>
+  <h1 class="titel">Werke<small>Originale und Prints in kleinen Auflagen, Arbeiten im Raum und Editionen. Alles ist in Vorbereitung; was fertig ist, steht hier.</small></h1>
 </div></section>
 <section class="abschnitt" aria-labelledby="prints-titel"><div class="spalte">
-  <div class="abschnitt-kopf"><h2 id="prints-titel">Prints und Originale</h2><p>${esc(werke.ankuendigung?.text || "")}</p></div>
-  <div class="reihe">${werke.werke.map((w) => `<article class="werk" id="${w.slug}"><a href="/art/${w.slug}/"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span></a><h3>${esc(w.titel)}</h3><p class="klein">${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm, Auflage ${w.auflage.gesamt}</p><p class="preis">CHF ${w.preis}.–${w.muster ? ' <span class="klein">(Beispiel, Angaben folgen)</span>' : ""}</p><p><a href="/art/${w.slug}/">${w.muster ? "Interesse melden" : "Bestellen"}</a></p></article>`).join("")}</div>
+  <div class="abschnitt-kopf"><h2 id="prints-titel">Prints und Originale</h2><p>${esc((werke.ankuendigung?.text || "").replace(/\s*Ein erstes Beispiel zeigt schon[^.]*\.\s*/, ""))}</p></div>
+  ${echteWerke.length ? `<div class="reihe">${echteWerke.map((w) => `<article class="werk" id="${w.slug}"><a href="/art/${w.slug}/"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span></a><h3>${esc(w.titel)}</h3><p class="klein">${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm, Auflage ${w.auflage.gesamt}</p><p class="preis">CHF ${w.preis}.–</p><p><a href="/art/${w.slug}/">Bestellen</a></p></article>`).join("")}</div>` : ""}
 </div></section>
 <section class="abschnitt" aria-labelledby="raum-titel"><div class="spalte">
-  <div class="abschnitt-kopf"><h2 id="raum-titel">Im Raum</h2><p>Arbeiten in 3D für Bildschirm und Projektion; sie laufen hier im Browser.</p></div>
-  <div class="reihe">
-    <a class="stueck" href="/werke/stellenfeld/"><span class="bild"><video autoplay muted loop playsinline poster="/assets/stellenfeld.jpg" aria-hidden="true"><source src="/assets/stellenfeld.webm" type="video/webm"><source src="/assets/stellenfeld.mp4" type="video/mp4"></video></span><h3>Stellenfeld</h3><p>Sechs Stationen: Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre.</p></a>
-    <a class="stueck" href="/werke/reentry/"><span class="bild"><video autoplay muted loop playsinline poster="/assets/reentry.jpg" aria-hidden="true"><source src="/assets/reentry.webm" type="video/webm"><source src="/assets/reentry.mp4" type="video/mp4"></video></span><h3>Re-entry</h3><p>Knoten, Helix und S/F-Band.</p></a>
-    <a class="stueck" href="/portfolio/nebeneinander-nacheinander/feld/"><span class="bild quer"><img src="/assets/og-nebeneinander-nacheinander.png" alt="" loading="lazy" width="1200" height="630"></span><h3>Nebeneinander, Nacheinander</h3><p>Das Werk hinter ORNA: 326 Konstellationen im Feld.</p></a>
-  </div>
+  <div class="abschnitt-kopf"><h2 id="raum-titel">Im Raum</h2><p>In Vorbereitung: Arbeiten in 3D für Bildschirm und Projektion, die im Browser laufen.</p></div>
 </div></section>
 <section class="abschnitt" aria-labelledby="editionen-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="editionen-titel">Editionen</h2><p>In Vorbereitung: der Zettelkasten als Buch, als Kartenset und als Poster, dazu sieben Notizbücher. Wer es wissen will, wenn es so weit ist, lässt sich in die Liste eintragen.</p></div>
@@ -624,7 +618,7 @@ ${faeden([...zs.map((z) => fZettel(z)), fApp(appVon(appTop)), fAngebot(ANGEBOTE[
 </div></section>
 <section class="spalte">${teilen({ pfad: "werke/", titel: "Werke – Christian Strickler", text: "Originale, Prints und Arbeiten im Raum." })}</section>
 ${faeden([fZettel(zettel[30]), fZettel(zettel[33]), fAngebot(angebotVon("produkte")), fApp(appVon("phorma-ii"))])}`;
-  veroeffentliche({ pfad: "werke/", aktiv: "werke/", titel: "Werke – Originale, Prints und Arbeiten im Raum", beschreibung: "Originale und Prints in kleinen Auflagen von Christian Strickler, dazu Stellenfeld und Re-entry als Arbeiten in 3D. Bestellung per Mail, Versand in der Schweiz inbegriffen.", body, bildAlt: "Werke von Christian Strickler" });
+  veroeffentliche({ pfad: "werke/", aktiv: "werke/", titel: "Werke – Originale, Prints und Arbeiten im Raum", beschreibung: "Originale und Prints in kleinen Auflagen von Christian Strickler, Arbeiten im Raum und Editionen – in Vorbereitung.", body, bildAlt: "Werke von Christian Strickler" });
 }
 
 /* ---------- Zuletzt ---------- */
