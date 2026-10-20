@@ -69,9 +69,7 @@ export const APPS = [
     fuer: "Für Künstler:innen, Galerien und Museen, die ein Werk in Bewegung zeigen wollen.",
     url: "alpha/phorma-ii/", bild: "b/bilder/apps/phorma-ii.svg", bildDunkel: "b/bilder/apps/phorma-ii-dunkel.svg", bildAlt: "PHORMA II, gezeichnet: eine einzige Linie, die aus einem Keim gewachsen ist und eine Scheibe füllt",
     beispiele: [
-      { art: "video", datei: "assets/beispiele/phorma-ii-wachstum.mp4", bild: "assets/beispiele/phorma-ii-wachstum.jpg", mass: [540, 676], text: "«Wachstum» mit dem Beispielfoto: eine einzige Linie wächst aus einem Keim und zeichnet das Bild. Gerechnet aus der App, ohne Ton." },
-      { art: "video", datei: "assets/beispiele/phorma-ii-physarum.mp4", bild: "assets/beispiele/phorma-ii-physarum.jpg", mass: [540, 676], text: "«Physarum»: ein Schleimpilz aus über 200 000 Agenten strömt aus den Keimen, riecht die Kanten des Fotos und legt sein Netz auf seine Formen, bis das Bild erscheint." },
-      { art: "video", datei: "assets/beispiele/phorma-ii-tuch.mp4", bild: "assets/beispiele/phorma-ii-tuch.jpg", mass: [540, 676], text: "«Seidentuch»: das Foto schwebt als Stoff herein, an zwei Ecken gehalten, der Wind erfasst es, dann legt es sich glatt und wird wieder zum Bild." },
+      { art: "video", datei: "assets/beispiele/phorma-ii.mp4", bild: "assets/beispiele/phorma-ii.jpg", mass: [540, 676], text: "Die Kette der App mit dem Beispielfoto, drei Effekte in einem Film: ein Schleimpilz legt sein Netz auf die Formen (Physarum), eine Lichtebene tastet das Relief ab (Tiefe), das Foto weht als Seidentuch und legt sich glatt (Tuch). Gerechnet aus der App, ohne Ton." },
       { art: "paar", vorher: "alpha/phorma-ii/beispiel.jpg", nachher: "assets/vorschau-phorma-ii-2x.jpg", text: "Dasselbe Foto, zerlegt in Rechtecke mit versetzten Ausschnitten, Rändern und Zahlentafeln (Montage)." },
     ],
     bewegung: "So arbeitet PHORMA II: Eine einzige Linie wächst aus einem Keim, faltet sich und füllt die Fläche – sie zeichnet das Foto.",
@@ -82,8 +80,7 @@ export const APPS = [
     url: "alpha/phorma-iii/", app: "alpha/phorma-iii/app/", bild: "b/bilder/apps/phorma-iii.svg", bildDunkel: "b/bilder/apps/phorma-iii-dunkel.svg", bildAlt: "PHORMA III, gezeichnet: drei Bänder aus feinen Linien wie zerknitterte Seide, eines in Blau",
     beispiele: [
       { art: "video", datei: "assets/start-intro.mp4", bild: "assets/beispiele/phorma-iii-lichtwuerfel.jpg", mass: [540, 676], text: "Der Lichtwürfel: ein Faden irrt im Würfel aus Licht und legt sich zum Logo; gerechnet aus der Musik, mit Ton. Das Intro der bisherigen Website." },
-      { art: "video", datei: "assets/beispiele/phorma-iii-gewebe.mp4", bild: "assets/beispiele/phorma-iii-gewebe.jpg", mass: [540, 676], text: "«Gewebe» zu einem kurzen Stück Musik: bei jedem kräftigen Einsatz klappt aus einer Linie eine Fläche aus feinen Linien auf wie zerknitterte Seide, am Schluss das Logo. Gerechnet aus der App, mit Ton." },
-      { art: "video", datei: "assets/beispiele/phorma-iii-traube.mp4", bild: "assets/beispiele/phorma-iii-traube.jpg", mass: [540, 676], text: "«Traube» zur selben Musik: glänzende rote Perlen in einer Kugel aus Fäden, mit Tiefenschärfe; der Schlag lässt sie schwellen, der Bass glühen, am Schluss fädeln sie sich auf die Schlaufe des Logos. Mit Ton." },
+      { art: "video", datei: "assets/beispiele/phorma-iii.mp4", bild: "assets/beispiele/phorma-iii.jpg", mass: [540, 676], text: "Drei Effekte zu einem kurzen Stück Musik, auf dem Takt geschnitten: Flächen aus feinen Linien klappen bei jedem Einsatz auf (Gewebe), ein Faden irrt durch den Würfel aus Licht (Irrfahrt), glänzende Perlen in einer Kugel aus Fäden fädeln sich zuletzt auf die Schlaufe des Logos (Traube). Gerechnet aus der App, mit Ton." },
     ],
     bewegung: "So arbeitet PHORMA III: Bänder aus feinen Linien bewegen sich zum Takt; jeder Schlag lässt das Gewebe schwellen.",
     zeichen: "faden" },
