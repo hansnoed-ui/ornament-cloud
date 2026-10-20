@@ -575,3 +575,32 @@ body { -webkit-font-smoothing: antialiased; }
 .orna-intro.is-assembling .orna-wheel .orna-mark,
 .orna-intro.is-assembling .orna-wheel .orna-cross,
 .orna-intro.is-assembling .orna-name { opacity: 1; }
+
+/* ---------- Klarer drehen (20. Oktober 2026, Wunsch: «die beiden Räder klarer designt, das Drehen klarer eingeführt») ----------
+   Nur Linien (REGELN §5), kein Lesefenster, die Mitte leer (§6a): die Achsmarke oben in der Blaupause sagt, wo gelesen wird;
+   ein Kreis um die beiden getroffenen Zeichen zeigt den Treffer beim Stillstand; ein Pfeilbogen zeichnet sich, bis das Rad
+   zum ersten Mal berührt wird; darunter der Knopf «Drehen» und die drei Wege als Zeichen. */
+.rad-wheel .rad-axis-mark { fill: var(--accent); }
+.rad-wheel .rad-axis-notch { stroke: var(--accent); stroke-width: 2; }
+.rad-wheel .sym-ring { opacity: 0; stroke: var(--accent); stroke-width: 1.4; transition: opacity 0.5s ease 0.2s; }
+.rad-wheel.is-selected .sym.is-hit .sym-ring { opacity: 1; }
+.rad-wheel .rad-hint-arc { stroke: var(--accent); stroke-width: 1.6; stroke-dasharray: 1; stroke-dashoffset: 1; animation: rad-hint-zeichnen 3.2s ease-in-out infinite; }
+.rad-wheel .rad-hint-head { stroke: var(--accent); stroke-width: 1.6; animation: rad-hint-kopf 3.2s ease-in-out infinite; }
+@keyframes rad-hint-zeichnen { 0% { stroke-dashoffset: 1; opacity: 0; } 15% { opacity: 1; } 55% { stroke-dashoffset: 0; opacity: 1; } 80% { stroke-dashoffset: 0; opacity: 0; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes rad-hint-kopf { 0%, 48% { opacity: 0; } 58%, 72% { opacity: 1; } 80%, 100% { opacity: 0; } }
+.rad-wheel.is-touched .rad-hint, .rad-wheel.is-selected .rad-hint { display: none; }
+.rad-bedienung { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 6px; }
+.rad-spin {
+  min-height: 44px; padding: 8px 26px; border: 1px solid var(--text); border-radius: 999px; background: var(--text); color: var(--bg);
+  font: 500 0.95rem/1 var(--font); cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease, opacity 0.3s ease;
+}
+.rad-spin:hover:not(:disabled), .rad-spin:focus-visible { background: var(--accent); border-color: var(--accent); color: #fff; outline: none; }
+.rad-spin:disabled { opacity: 0.4; cursor: default; }
+.rad-wheel-wrap:has(.rad-wheel.is-selected) .rad-spin { opacity: 0; pointer-events: none; }   /* im Ergebnis steht «noch einmal drehen» */
+.rad-hinweis { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin: 0; color: var(--muted); font-family: var(--font); font-size: 0.82rem; }
+.rad-hinweis span { display: inline-flex; align-items: center; gap: 6px; }
+.rad-hinweis svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+@media (prefers-reduced-motion: reduce) {
+  .rad-wheel .rad-hint-arc { animation: none; stroke-dashoffset: 0; opacity: 0.8; }
+  .rad-wheel .rad-hint-head { animation: none; opacity: 0.8; }
+}

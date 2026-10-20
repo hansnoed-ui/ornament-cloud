@@ -66,7 +66,7 @@ function buildRing(people, g, geo, offset) {
   const traces = el("g", { class: "rad-traces" }, g);
   const syms = people.map((p, i) => {
     const s = el("g", { class: "sym", transform: `rotate(${slotAngle(i)} ${C} ${C}) translate(${C} ${C - geo.sym})` }, g);
-    s.innerHTML = `<title>${p.name}</title>` + symbolMarkup(offset + i, geo.half);
+    s.innerHTML = `<title>${p.name}</title><circle class="sym-ring" r="${geo.half + 14}"/>` + symbolMarkup(offset + i, geo.half);   // der Kreis zeigt den Treffer beim Stillstand (20. Oktober 2026)
     return s;
   });
   return { g, syms, traces };
@@ -81,7 +81,14 @@ const inner = buildRing(theorists, innerG, INNER, 20);
 const axis = el("g", { class: "rad-axis", "aria-hidden": "true" }, svg);
 el("path", { d: `M${C},${C - 470}V${C - 200}`, class: "rad-axis-line" }, axis);
 el("path", { d: tick(OUTER.edge + 2, OUTER.edge + 14, 0) + tick(OUTER.inner - 1, INNER.edge + 1, 0) + tick(INNER.inner - 2, INNER.inner - 12, 0), class: "rad-axis-notch" }, axis);
-el("path", { d: `M${C},${C - 476}l-7,-13h14Z`, class: "rad-axis-mark" }, axis);
+el("path", { d: `M${C},${C - 474}l-11,-22h22Z`, class: "rad-axis-mark" }, axis);   // seit 20. Oktober 2026 grösser und in der Blaupause: hier wird gelesen
+
+// Einführung der Geste (20. Oktober 2026, Wunsch: «das Drehen klarer eingeführt»): ein Pfeilbogen um den Aussenring, der sich
+// zeichnet, bis das Rad zum ersten Mal berührt wird (rad.css, .rad-hint). Nur eine Linie, keine Fläche (REGELN §5).
+const hint = el("g", { class: "rad-hint", "aria-hidden": "true" }, svg);
+el("path", { d: arcPath(OUTER.edge + 30, 200, 318), class: "rad-hint-arc", pathLength: "1" }, hint);
+const [hx, hy] = polar(OUTER.edge + 30, 318);
+el("path", { d: `M${(hx - 16).toFixed(1)},${(hy - 9).toFixed(1)}L${hx.toFixed(1)},${hy.toFixed(1)}L${(hx - 14).toFixed(1)},${(hy + 12).toFixed(1)}`, class: "rad-hint-head", transform: `rotate(48 ${hx.toFixed(1)} ${hy.toFixed(1)})` }, hint);
 
 // Namen der beiden getroffenen Plätze (REGELN §6a): tangential, nahe am jeweiligen Zeichen.
 // Künstler:in ausserhalb des Aussenrands neben der Achsenmarke, Theoretiker:in an der Innenkante
@@ -105,8 +112,8 @@ function sizeHitNames() {
 sizeHitNames();
 addEventListener("resize", sizeHitNames);
 
-const cue = el("text", { x: C, y: C + 44, class: "rad-cue", "text-anchor": "middle" }, svg);
-cue.textContent = "drehen";
+// Die Mitte bleibt leer (REGELN §6a). Bis zum 20. Oktober 2026 stand hier das Wort «drehen»; seither steht der Knopf «Drehen» unter dem Rad.
+const spinBtn = document.querySelector(".rad-spin");
 
 // ---------- Zustand ----------
 /** @type {"idle"|"dragging"|"spinning"|"settling"|"selected"} */
@@ -120,6 +127,7 @@ let timers = [];
 function setState(s) {
   state = s;
   svg.dataset.state = s;
+  if (spinBtn) spinBtn.disabled = s === "spinning" || s === "settling";
 }
 setState("idle");
 
@@ -232,7 +240,7 @@ function track(path, title, tries = 20) {
     else if (tries > 0) setTimeout(() => track(path, title, tries - 1), 500);   // Skript lädt noch
   } catch { /* Zählung ist nie wichtiger als das Rad */ }
 }
-const HOW = { wischen: "Wischen", tippen: "Antippen", taste: "Tastatur", nochmal: "noch einmal drehen" };
+const HOW = { wischen: "Wischen", tippen: "Antippen", taste: "Tastatur", nochmal: "noch einmal drehen", knopf: "Knopf" };
 
 // ---------- Adresse und Teilen ----------
 // Jede Konstellation hat eine Adresse (?pair=<id>). Sie ersetzt den Eintrag im Verlauf,
@@ -431,6 +439,12 @@ svg.addEventListener("keydown", e => {
 });
 
 parts.share.addEventListener("click", share);
+
+// Knopf «Drehen» unter dem Rad (20. Oktober 2026): dieselbe Ziehung wie Antippen, nur ohne Geste
+spinBtn?.addEventListener("click", () => {
+  radInsBild();
+  if (state === "idle" || state === "selected") startSpin("artist", V_TAP * (0.9 + 0.4 * Math.random()), "knopf");
+});
 
 parts.replay.addEventListener("click", () => {
   // auf dem Handy liegt das Rad über dem Ergebnis: zuerst zum Rad zurück, damit man die Drehung sieht (Rückmeldung vom 12. Oktober 2026)

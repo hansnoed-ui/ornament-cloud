@@ -147,3 +147,47 @@ test("b/werkstatt: die PDFs der Produkte liegen da", () => {
     assert.ok(lies("b/werkstatt/index.html").includes(`href="/b/werkstatt/pod/${f}"`), `${f} verlinkt`);
   }
 });
+
+test("b/apps: die Bilder der sieben Apps sind gezeichnete Tafeln (tools/b-app-bilder.mjs), hell und dunkel, 1200 × 1200, klein; Kachel und App-Seite wählen mit <picture>, Teilen nimmt die Vorschaukarte", async () => {
+  const { TAFELN, svg } = await import(new URL("tools/b-app-bilder.mjs", root).href);
+  assert.deepEqual(Object.keys(TAFELN).sort(), APPS.map((a) => a.slug).sort(), "je App eine Tafel");
+  for (const a of APPS) {
+    assert.equal(a.bild, `b/bilder/apps/${a.slug}.svg`); assert.equal(a.bildDunkel, `b/bilder/apps/${a.slug}-dunkel.svg`);
+    for (const [datei, dunkel] of [[a.bild, false], [a.bildDunkel, true]]) {
+      const s = lies(datei);
+      assert.equal(s, svg(a.slug, dunkel), `${datei} ist der aktuelle Stand des Werkzeugs (sonst: node tools/b-app-bilder.mjs)`);
+      assert.match(s, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" viewBox="0 0 1200 1200" width="1200" height="1200">/);
+      assert.ok(s.includes(`<rect width="1200" height="1200" fill="${dunkel ? "#000000" : "#ffffff"}"/>`), `${datei}: ${dunkel ? "Tinte auf Schwarz" : "Tinte auf Papier"}`);
+      assert.ok(s.length < 60 * 1024, `${datei} unter 60 KB`);
+      assert.ok(!/<script|<image|href=/.test(s), `${datei}: nur Zeichnung`);
+    }
+    assert.ok(a.bildAlt.startsWith(`${a.name}, gezeichnet:`), `${a.slug}: Alt-Text beschreibt die Zeichnung`);
+    const bild = `<picture><source srcset="/${a.bildDunkel}" media="(prefers-color-scheme: dark)"><img src="/${a.bild}" alt="${a.bildAlt}" width="1200" height="1200"`;
+    assert.ok(lies("b/apps/index.html").includes(bild + ' loading="lazy"></picture>'), `${a.slug}: Kachel auf b/apps/`);
+    const seite = lies(`b/apps/${a.slug}/index.html`);
+    assert.ok(seite.includes(`<figure class="stueck-bild quadrat">${bild}></picture></figure>`), `${a.slug}: Tafel auf der App-Seite`);
+    assert.ok(seite.includes(`<meta property="og:image" content="https://ornament.cloud/b/kacheln/apps-${a.slug}.png">`), `${a.slug}: Teilen mit der Vorschaukarte 1200 × 630`);
+  }
+  // nur OMNA COLOR trägt Farbe
+  for (const a of APPS) assert.equal(/hsl\(/.test(lies(a.bild)), a.slug === "omna-color", `${a.slug}: Farbe nur bei OMNA COLOR`);
+});
+
+test("b/apps: die Tafeln leben unter «Was dabei herauskommt» (src/b/tafeln.mjs, b/tafeln-leben.js): Zustand, Schritt und Bild je App, ein Satz dazu; das Modul liegt kopiert in b/", async () => {
+  const { TAFELN, farben } = await import(new URL("src/b/tafeln.mjs", root).href);
+  assert.equal(lies("b/tafeln.mjs"), lies("src/b/tafeln.mjs"), "b/tafeln.mjs ist die Kopie (sonst: node tools/build-b.mjs)");
+  assert.equal(lies("b/tafeln-leben.js"), lies("src/b/tafeln-leben.js").replace('from "./tafeln.mjs"', `from "./tafeln.mjs?v=${lies("b/index.html").match(/b\.js\?v=(\d+)/)[1]}"`), "b/tafeln-leben.js ist die Kopie mit Versionsmarke");
+  for (const a of APPS) {
+    const t = TAFELN[a.slug], z = t.neu(), ruhe = t.svg(z, farben(false));
+    for (let i = 0; i < 120; i++) t.schritt(z, 1 / 30);         // vier Sekunden (PHORMA II hält drei Sekunden und beginnt dann von vorn)
+    const bewegt = t.svg(z, farben(false));
+    assert.ok(bewegt.length > 100 && bewegt !== ruhe, `${a.slug}: nach vier Sekunden ein anderes Bild`);
+    assert.ok(!/NaN|undefined/.test(bewegt), `${a.slug}: keine NaN`);
+    assert.match(a.bewegung, /^So arbeitet /, `${a.slug}: ein Satz zur Bewegung`);
+    const seite = lies(`b/apps/${a.slug}/index.html`);
+    assert.ok(seite.includes(`<figure class="tafel-lebt" data-tafel="${a.slug}"><picture>`), `${a.slug}: lebende Tafel unter «Was dabei herauskommt»`);
+    assert.ok(seite.includes(`<figcaption>${a.bewegung}</figcaption>`));
+    assert.match(seite, /<script type="module" src="\/b\/tafeln-leben\.js\?v=\d+"><\/script>/);
+    assert.ok(seite.indexOf('id="beispiele-titel"') < seite.indexOf('class="tafel-lebt"'), `${a.slug}: die Tafel steht im Abschnitt «Was dabei herauskommt»`);
+  }
+  assert.ok(!lies("b/apps/index.html").includes("tafeln-leben"), "die Übersicht bleibt ohne das Modul");
+});

@@ -254,6 +254,8 @@ h2 .zeichen { width: 1em; height: 1em; margin-right: 0.35em; vertical-align: -0.
 .stueck-kopf .lead { margin-bottom: 24px; }
 .stueck-bild { margin-top: 36px; background: var(--flaeche); }
 .stueck-bild img { width: 100%; height: auto; }
+.stueck-bild.quadrat { max-width: 420px; border: 1px solid var(--linie); }   /* die gezeichnete Tafel der App (tools/b-app-bilder.mjs) */
+.stueck-bild.quadrat img { display: block; }
 .stueck-text { padding: 36px 0 0; display: grid; gap: 14px; max-width: 62ch; font-size: 1.08rem; line-height: 1.5; }
 .stueck-text .fuer { color: var(--grau); }
 .hinweis { margin-top: 18px; padding: 12px 14px; border-left: 2px solid var(--faden); font-size: 0.95rem; color: var(--grau); max-width: 60ch; }
@@ -298,7 +300,11 @@ h2 .zeichen { width: 1em; height: 1em; margin-right: 0.35em; vertical-align: -0.
 .jahre li { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--linie); }
 .jahre .jahr { color: var(--grau); font-variant-numeric: tabular-nums; font-size: 0.95rem; }
 
-/* Beispiele: was aus den Apps herauskommt */
+/* Beispiele: was aus den Apps herauskommt – zuerst die Tafel in Bewegung (b/tafeln-leben.js), dann die Ergebnisse */
+.tafel-lebt { display: grid; gap: 10px; max-width: 520px; margin: 0 0 36px; }
+.tafel-lebt picture, .tafel-lebt svg { display: block; width: 100%; aspect-ratio: 1; border: 1px solid var(--linie); background: var(--papier); }
+.tafel-lebt img { display: block; width: 100%; height: auto; }
+.tafel-lebt figcaption { font-size: 0.95rem; color: var(--grau); max-width: 60ch; }
 .paar { display: grid; grid-template-columns: 1fr 28px 1fr; gap: 12px; align-items: center; max-width: 720px; }
 .paar .bild { aspect-ratio: 4 / 5; background: var(--flaeche); overflow: hidden; }
 .paar .bild img { width: 100%; height: 100%; object-fit: cover; }
