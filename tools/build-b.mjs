@@ -283,7 +283,7 @@ function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noi
 function personLd() {
   return { "@context": "https://schema.org", "@type": "Person", name: SEITE.person.name, url: `${BASIS}/b/ueber/`, email: `mailto:${SEITE.person.mail}`,
     address: { "@type": "PostalAddress", streetAddress: SEITE.person.strasse, postalCode: "5466", addressLocality: "Kaiserstuhl", addressRegion: "AG", addressCountry: "CH" },
-    jobTitle: "Künstler, Webdesigner, Kurator, Maltherapeut, Sozialarbeiter", knowsAbout: ["Systemtheorie", "Webdesign", "Kunstvermittlung", "Kuration", "Maltherapie", "Soziale Arbeit"],
+    jobTitle: "Künstler, Webdesigner, Kurator, Sozialarbeiter, Maltherapeut iac i.A.", knowsAbout: ["Systemtheorie", "Webdesign", "Kunstvermittlung", "Kuration", "Maltherapie", "Soziale Arbeit"],
     alumniOf: [{ "@type": "CollegeOrUniversity", name: "Universität Zürich" }, { "@type": "CollegeOrUniversity", name: "Fachhochschule für Soziale Arbeit St. Gallen" }, { "@type": "EducationalOrganization", name: "iac Zürich" }], makesOffer: ANGEBOTE.map((a) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: a.name, url: `${BASIS}/b/angebot/${a.slug}/` } })) };
 }
 
@@ -528,7 +528,7 @@ ${faeden([fZettel(zettel[40]), fZettel(zettel[36]), fApp(appVon("orna"))])}`;
     <div class="ueber-text" style="margin-top:32px">${UEBER.text.map((t) => `<p>${esc(t)}</p>`).join("")}</div>
     <div class="lebenslauf">
       <h2>Ausbildung</h2><ol class="jahre">${UEBER.ausbildung.map(([j, t]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}</span></li>`).join("")}</ol>
-      <h2>Berufliche Stationen</h2><ul class="stationen">${UEBER.stationen.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
+      <h2>Berufliche Stationen, seit 1998</h2><ul class="stationen">${UEBER.stationen.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
       <h2>Kuratorische Referenzen</h2><ol class="jahre">${UEBER.referenzen.map(([j, t]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}</span></li>`).join("")}</ol>
     </div>
     <div class="liste-kasten"><h2>${esc(UEBER.liste.titel)}</h2><p>${esc(UEBER.liste.text)}</p><p class="knopfreihe"><a class="knopf" href="${attr(UEBER.liste.mailto)}">Eintragen lassen</a></p><p class="klein">Der Link öffnet eine fertige Mail. Austragen mit einer Antwort; die Adresse bleibt bei mir.</p></div>

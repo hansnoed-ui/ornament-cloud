@@ -42,7 +42,7 @@ Apps und Angeboten.
 
 ## 4. Was noch fehlt (Entscheide von Christian)
 
-- Preise und Setting für Maltherapie und Vermittlung; Abrechnung über Zusatzversicherungen.
+- Preise und Setting für Maltherapie und Vermittlung (keine Abrechnung über Zusatzversicherungen).
 - Ein Foto oder ein Porträt für `/b/ueber/` (Google zeigt Personen gern mit Bild).
 - Kundenstimmen oder drei Referenzprojekte mit Namen für Websites und Apps.
 - Termine wieder sichtbar machen (`termine/`): regelmässige Einträge sind ein Signal für Aktualität.

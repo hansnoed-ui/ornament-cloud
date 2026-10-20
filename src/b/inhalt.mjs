@@ -130,11 +130,11 @@ export const ANGEBOTE = [
       { frage: "Wann?", wahlen: ["in drei Monaten", "in einem Jahr", "nächstes Jahr", "offen"] },
     ] },
   { slug: "soziale-arbeit", name: "Soziale Arbeit", kurz: "Maltherapie, Begleitung und Ateliers in Institutionen.",
-    text: "Maltherapie einzeln und in kleinen Gruppen; Begleitung von Menschen in Übergängen; Aufbau und Leitung von Ateliers in Wohnheimen, Werkstätten und Stiftungen, bis zur Ausstellung der Werke. Grundlage sind das Studium der Sozialen Arbeit, die Ausbildung in Maltherapie und über zehn Jahre in Institutionen für Menschen mit Behinderung: Stiftung Wagerenhof, NOVEOS Zürcher Oberland, wohnstätten zwyssig, Stiftung Züriwerk, Stiftung Kind & Autismus, Stiftung FARO.",
+    text: "Maltherapie einzeln und in kleinen Gruppen; Begleitung von Menschen in Übergängen; Aufbau und Leitung von Ateliers in Wohnheimen, Werkstätten und Stiftungen, bis zur Ausstellung der Werke. Grundlage sind das Studium der Sozialen Arbeit, die Ausbildung in Maltherapie (iac Zürich, in Ausbildung: bis zum Diplom fehlen noch einige Supervisionen) und über 25 Jahre, seit 1998, in Institutionen für Menschen mit Behinderung: Stiftung Wagerenhof, NOVEOS Zürcher Oberland, wohnstätten zwyssig, Stiftung Züriwerk, Stiftung Kind & Autismus, Stiftung FARO.",
     fuer: "Für Erwachsene, die eine Zeit lang jemanden brauchen, der zuhört und mitarbeitet, und für Institutionen, die Kunst ernst nehmen.",
     ablauf: ["Ein erstes Gespräch, unverbindlich, am Telefon oder in Kaiserstuhl.", "Eine Vereinbarung: wie oft, wie lange, was es kostet.", "Gespräche oder Atelier in einem Rhythmus, der sich der Sache anpasst."],
     beweis: [["b/apps/orma/", "ORMA allein: Re-Entry"], ["b/zettel/46-die-unterbrechung/", "Zettel 46: Die Unterbrechung"], ["b/raster/verteilapparat/", "Der Verteilapparat des Körpers"]],
-    hinweis: "Kosten und Setting auf Anfrage; Angaben zur Abrechnung über Zusatzversicherungen folgen.",
+    hinweis: "Kosten und Setting auf Anfrage. Keine Abrechnung über Zusatzversicherungen.",
     dialog: [
       { frage: "Worum geht es?", wahlen: ["Maltherapie", "einen Übergang", "ein Atelier in einer Institution", "Supervision oder Beratung"] },
       { frage: "Wie?", wahlen: ["einzeln", "in einer kleinen Gruppe", "mit einem Team", "weiss ich noch nicht"] },
@@ -170,10 +170,10 @@ export const PRODUKTE = [
 export const UEBER = {
   text: [
     "Christian Strickler arbeitet in Kaiserstuhl am Rhein. Er liest seit über zehn Jahren Niklas Luhmann und macht daraus Dinge, die man anfassen kann: einen Zettelkasten, ein Rad, das Künstler:innen und Theoretiker:innen zusammenbringt, Farbräder mit Übungen, Maschinen, die aus Fotos und Tönen Bilder machen, und Prüfraster, mit denen sich Theorien, Texte und Körperereignisse befragen lassen.",
-    "Fünf Leistungen: Kunst, Webdesign, Vermittlung, Kuration und Soziale Arbeit. Er gestaltet und baut Websites und Apps, kuratiert Ausstellungen, arbeitet als Maltherapeut und Sozialarbeiter mit Menschen in Institutionen und leitet Seminare und Projekte mit Schulen, Museen und Teams.",
+    "Fünf Leistungen: Kunst, Webdesign, Vermittlung, Kuration und Soziale Arbeit. Er gestaltet und baut Websites und Apps, kuratiert Ausstellungen, arbeitet seit 1998 als Sozialarbeiter und Maltherapeut iac i.A. mit Menschen in Institutionen und leitet Seminare und Projekte mit Schulen, Museen und Teams.",
     "Alles auf dieser Seite läuft ohne Dienste von aussen: keine Cookies, keine Werbung, keine Tracker. Besuche werden ohne Cookies gezählt. Die Apps rechnen auf deinem Gerät; deine Bilder verlassen es nicht.",
   ],
-  ausbildung: [["1994–1998", "Studium Germanistik, Universität Zürich"], ["2011–2013", "Fachhochschule für Soziale Arbeit St. Gallen"], ["2022–2025", "Ausbildung Maltherapie, iac Zürich"]],
+  ausbildung: [["1994–1998", "Studium Germanistik, Universität Zürich"], ["2011–2013", "Fachhochschule für Soziale Arbeit St. Gallen"], ["2022–2025", "Ausbildung Maltherapie, iac Zürich (i.A.: bis zum Diplom fehlen noch einige Supervisionen)"]],
   stationen: ["Stiftung Wagerenhof", "NOVEOS Zürcher Oberland", "wohnstätten zwyssig", "Stiftung Züriwerk", "Stiftung Kind & Autismus", "Stiftung FARO, Windisch"],
   referenzen: [["2026", "«Supervisionen», Oberer Turm, Kaiserstuhl: Ausstellung über sechs Monate, neun Künstler:innen; für Pro Kaiserstuhl, Gemeinde Zurzach"], ["2024", "Ausstellung mit Werken von Klient:innen, Behmen, Aarau: ein Jahr; für das BKS Aargau und die Stiftung FARO"]],
   liste: { titel: "Wenn etwas fertig ist, schreibe ich", text: "Kein Rhythmus und keine Ankündigungen. Eine kurze Mail, wenn ein Raster, eine App oder ein Text so weit ist, dass man damit arbeiten kann.", mailto: "mailto:hansnoed@gmail.com?subject=Liste&body=Bitte%20nimm%20mich%20in%20die%20Liste%20auf." },
