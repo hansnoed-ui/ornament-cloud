@@ -64,6 +64,8 @@ if (box && !standalone) {
   if (alt && android && !inApp) alt.hidden = false;
   let deferred = null;
   box.hidden = false;
+  // vom Neubau («Als App installieren», /b/apps/orna/) mit ?installieren: zum Knopf scrollen, die Schritte gleich aufklappen
+  if (new URLSearchParams(location.search).has("installieren")) { help.hidden = false; btn.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => { box.scrollIntoView({ block: "center" }); btn.focus({ preventScroll: true }); }); }
 
   addEventListener("beforeinstallprompt", e => {
     e.preventDefault();                 // kein aufdringliches Banner, nur der eigene, stille Knopf
