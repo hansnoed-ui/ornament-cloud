@@ -66,7 +66,7 @@ export const UI = {
       deutsch: "", einzelTitel: (name) => `${name} – Prüfraster`,
     },
     angebot: {
-      titel: "Angebot", small: "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte: vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau. Jede beginnt mit einem Gespräch. Wähle auf der Seite der Leistung, was du brauchst: Daraus entsteht ein Briefing, das du per Mail schickst.",
+      titel: "Angebot", small: "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte, made in Switzerland. Jede beginnt mit einem Gespräch. Wähle auf der Seite der Leistung, was du brauchst: Daraus entsteht ein Briefing, das du per Mail schickst.",
       briefing: "Briefing", seitenTitel: "Angebot – Webdesign, Vermittlung, Kuration, Produkte", beschreibung: "Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte: vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau, von der Website bis zur Ausstellung.", bildAlt: "Die vier Angebote",
       leistung: "Leistung", beginnen: "Briefing beginnen", anfrage: "Anfrage: ", schreiben: "Direkt schreiben", soGeht: "So geht es", referenzen: "Referenzen", anschauen: "Zum Anschauen",
       dein: "Dein Briefing", deinText: "Drei Fragen, je eine Wahl. Was dabei herauskommt, schickst du als Mail; alles Weitere besprechen wir.", leer: "Wähle oben, dann steht hier dein Briefing.",
@@ -153,7 +153,7 @@ export const UI = {
       deutsch: "The prompt and the papers are in German. Add «Answer in English» to your material; the grid works the same.", einzelTitel: (name) => `${name} – test grid`,
     },
     angebot: {
-      titel: "Services", small: "Web design, education and consulting, curatorial projects, products: four services by Christian Strickler, between Zurich, Basel and Aarau. Each begins with a conversation. On the page of a service, choose what you need: this becomes a briefing you send by email.",
+      titel: "Services", small: "Web design, education and consulting, curatorial projects, products, made in Switzerland. Each begins with a conversation. On the page of a service, choose what you need: this becomes a briefing you send by email.",
       briefing: "Briefing", seitenTitel: "Services – web design, education, curation, products", beschreibung: "Web design, education and consulting, curatorial projects and products: four services by Christian Strickler, between Zurich, Basel and Aarau, from the website to the exhibition.", bildAlt: "The four services",
       leistung: "Service", beginnen: "Start the briefing", anfrage: "Enquiry: ", schreiben: "Write directly", soGeht: "How it works", referenzen: "References", anschauen: "Things to look at",
       dein: "Your briefing", deinText: "Three questions, one choice each. Send what comes out as an email; we discuss everything else.", leer: "Choose above, and your briefing appears here.",

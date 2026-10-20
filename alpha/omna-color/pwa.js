@@ -30,23 +30,25 @@ function chromeUrl() {
     `S.browser_fallback_url=${encodeURIComponent(u.href)};end`;
 }
 
+const T = (k) => window.sprache?.t(k) ?? k;   // die Sätze in beiden Sprachen stehen in sprache.js
 function schritte() {
-  if (inApp && android) return "Im Browser dieser App lässt sich OMNA COLOR nicht installieren. Die Seite öffnet sich dafür in Chrome; dort noch einmal auf «OMNA COLOR als App installieren» tippen.";
-  if (inApp) return "Im Browser dieser App lässt sich OMNA COLOR nicht installieren. Über «···» oder das Menü «In Safari öffnen» wählen, dann dort «Teilen» und «Zum Home-Bildschirm».";
-  if (ios) return "Auf «Teilen» tippen, dann «Zum Home-Bildschirm» wählen.";
-  if (android) return "Im Browsermenü (⋮) «App installieren» oder «Zum Startbildschirm hinzufügen» wählen.";
-  if (/Edg\/|Chrome\//.test(ua)) return "Im Browsermenü (⋮) «OMNA COLOR installieren» wählen oder in der Adresszeile auf das Installationssymbol klicken. Im Inkognito-Fenster geht es nicht.";
-  if (/Macintosh/.test(ua) && /Safari\//.test(ua) && !/Firefox\//.test(ua)) return "Im Menü «Ablage» «Zum Dock hinzufügen» wählen.";
-  return "Dieser Browser kann OMNA COLOR nicht installieren. Auf dem Smartphone geht es direkt, am Computer mit Chrome oder Edge.";
+  if (inApp && android) return T("install.inAppAndroid");
+  if (inApp) return T("install.inApp");
+  if (ios) return T("install.ios");
+  if (android) return T("install.android");
+  if (/Edg\/|Chrome\//.test(ua)) return T("install.chrome");
+  if (/Macintosh/.test(ua) && /Safari\//.test(ua) && !/Firefox\//.test(ua)) return T("install.safari");
+  return T("install.sonst");
 }
 
 if (box && !standalone) {
   const knopf = document.getElementById("installieren-knopf"), hilfe = document.getElementById("installieren-hilfe");
   const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-  hilfe.innerHTML = esc(schritte()).replace(/«[^»]+»/g, (m) => `<span>${m}</span>`) +
-    (inApp && android ? ` <a class="installieren-chrome" href="${esc(chromeUrl()).replace(/"/g, "&quot;")}">In Chrome öffnen</a>`
-      : " Danach steht OMNA COLOR als eigenes Symbol auf dem Bildschirm und läuft auch ohne Netz.");
-  const zuChrome = hilfe.querySelector(".installieren-chrome");
+  const schreiben = () => { hilfe.innerHTML = esc(schritte()).replace(/«[^»]+»/g, (m) => `<span>${m}</span>`) +
+    (inApp && android ? ` <a class="installieren-chrome" href="${esc(chromeUrl()).replace(/"/g, "&quot;")}">${esc(T("install.chromeOeffnen"))}</a>` : esc(T("install.danach"))); };
+  schreiben();
+  document.addEventListener("sprache", schreiben);   // beim Sprachwechsel neu
+  const zuChrome = () => hilfe.querySelector(".installieren-chrome");
   let angebot = null;
   box.hidden = false;
   addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); angebot = e; });   // kein Banner, nur der eigene, stille Knopf
@@ -64,6 +66,6 @@ if (box && !standalone) {
     hilfe.hidden = !auf;
     knopf.setAttribute("aria-expanded", String(auf));
     if (auf) zaehle("omna-color-app/hinweis", "OMNA COLOR: Installieren angetippt");
-    if (zuChrome) { hilfe.hidden = false; knopf.setAttribute("aria-expanded", "true"); zuChrome.click(); }
+    if (zuChrome()) { hilfe.hidden = false; knopf.setAttribute("aria-expanded", "true"); zuChrome().click(); }
   });
 }

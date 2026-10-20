@@ -10,9 +10,9 @@ export const SEITE = {
   adresse: "https://ornament.cloud/b/en/",
   claim: "Observation is an occasion for change in reality.",
   titel: "Designing, teaching, curating.",
-  lead: "Web design, education and consulting, curatorial projects and products: four services by Christian Strickler, between Zurich, Basel and Aarau. Plus a Zettelkasten, seven apps and four test grids that show how work is done here.",
+  lead: "Web design, education and consulting, curatorial projects and products, made in Switzerland. Plus a Zettelkasten, seven apps and four test grids that show how work is done here.",
   claimAlt: "Theory you can touch.",
-  beschreibung: "49 notes, seven apps, four test grids and four services by Christian Strickler, between Zurich, Basel and Aarau: web design, education and consulting, curatorial projects, products.",
+  beschreibung: "49 notes, seven apps, four test grids and four services, made in Switzerland: web design, education and consulting, curatorial projects, products.",
   person: { name: "Christian Strickler", ort: "between Zurich, Basel and Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
   sprache: "en",
 };
