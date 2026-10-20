@@ -2,6 +2,7 @@
 // Vier Dinge: die Fäden im Feld zeichnen, auf der Startseite den Leitsatz wechseln, Teilen (Web Share oder Link kopieren),
 // und auf den Angebotsseiten aus den Wahlen ein Briefing setzen. Ohne Skript bleibt alles lesbar und verlinkt.
 
+const EN = document.documentElement.lang === "en";   // /b/en/: die Meldungen auf Englisch (20. Oktober 2026)
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const zufall = (n) => { const a = new Uint32Array(1); try { crypto.getRandomValues(a); return a[0] % n; } catch { return Math.floor(Math.random() * n); } };
 
@@ -114,15 +115,15 @@ function teilen(knopf) {
   knopf.addEventListener("click", async () => {
     const url = knopf.dataset.url || location.href, title = knopf.dataset.titel || document.title, text = knopf.dataset.text || "";
     if (navigator.share) { try { await navigator.share({ title, text, url }); return; } catch (e) { if (e && e.name === "AbortError") return; } }
-    try { await navigator.clipboard.writeText(url); melde("Link kopiert"); } catch { prompt("Link zum Teilen", url); }
+    try { await navigator.clipboard.writeText(url); melde(EN ? "Link copied" : "Link kopiert"); } catch { prompt(EN ? "Link to share" : "Link zum Teilen", url); }
   });
 }
 
 /* ---------- Prüfraster: den Anwendungsprompt kopieren (20. Oktober 2026) ---------- */
 for (const k of document.querySelectorAll(".prompt-kopieren")) k.addEventListener("click", async () => {
   const text = document.getElementById(k.dataset.ziel)?.textContent || "";
-  try { await navigator.clipboard.writeText(text); melde("Prompt kopiert – jetzt in einen KI-Assistenten einfügen"); }
-  catch { melde("Kopieren nicht möglich – «Prompt lesen» öffnet den Text"); }
+  try { await navigator.clipboard.writeText(text); melde(EN ? "Prompt copied – now paste it into an AI assistant" : "Prompt kopiert – jetzt in einen KI-Assistenten einfügen"); }
+  catch { melde(EN ? "Copying not possible – «Read prompt» opens the text" : "Kopieren nicht möglich – «Prompt lesen» öffnet den Text"); }
 });
 
 /* ---------- Briefing auf den Angebotsseiten ---------- */
@@ -130,20 +131,20 @@ function briefing(form) {
   const out = form.querySelector("output"), mail = form.querySelector(".brief-mail"), kopieren = form.querySelector(".brief-kopieren");
   const angebot = form.dataset.angebot || "";
   function setzen() {
-    const zeilen = [`Angebot: ${angebot}`];
+    const zeilen = [`${EN ? "Service" : "Angebot"}: ${angebot}`];
     for (const fs of form.querySelectorAll("fieldset")) {
       const frage = fs.querySelector("legend")?.textContent.trim(), wahl = fs.querySelector("input:checked");
       if (wahl) zeilen.push(`${frage} ${wahl.nextElementSibling.textContent.trim()}.`);
     }
     const fertig = zeilen.length === 1 ? "" : zeilen.join("\n");
-    out.textContent = fertig || "Wähle oben, dann steht hier dein Briefing.";
+    out.textContent = fertig || form.dataset.leer || "Wähle oben, dann steht hier dein Briefing.";
     out.classList.toggle("leer", !fertig);
-    const body = (fertig || `Angebot: ${angebot}`) + "\n\nDazu noch:\n";
-    mail.href = `mailto:hansnoed@gmail.com?subject=${encodeURIComponent("Anfrage: " + angebot)}&body=${encodeURIComponent(body)}`;
+    const body = (fertig || `${EN ? "Service" : "Angebot"}: ${angebot}`) + (EN ? "\n\nAnd also:\n" : "\n\nDazu noch:\n");
+    mail.href = `mailto:hansnoed@gmail.com?subject=${encodeURIComponent((form.dataset.anfrage || "Anfrage: ") + angebot)}&body=${encodeURIComponent(body)}`;
     return fertig;
   }
   form.addEventListener("change", setzen);
-  kopieren?.addEventListener("click", async () => { const t = setzen(); if (!t) { melde("Erst wählen"); return; } try { await navigator.clipboard.writeText(t); melde("Briefing kopiert"); } catch { prompt("Briefing", t); } });
+  kopieren?.addEventListener("click", async () => { const t = setzen(); if (!t) { melde(EN ? "Choose first" : "Erst wählen"); return; } try { await navigator.clipboard.writeText(t); melde(EN ? "Briefing copied" : "Briefing kopiert"); } catch { prompt("Briefing", t); } });
   setzen();
 }
 

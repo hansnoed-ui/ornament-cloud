@@ -62,6 +62,13 @@ ul, ol { padding: 0; list-style: none; }
 .signet svg { width: 34px; height: 24px; overflow: visible; }
 .signet .schlaufe { fill: none; stroke: currentColor; stroke-width: 1.6; }
 .signet .punkt { fill: var(--faden); }
+/* der Schalter d · e neben dem Signet (20. Oktober 2026: «ganz oben neben dem Logo dezent die Wahl d (deutsch) und e (english)») */
+.marke { display: flex; align-items: center; gap: 16px; }
+.sprache { display: flex; gap: 2px; font-size: 0.85rem; color: var(--grau); line-height: 1; }
+.sprache a { text-decoration: none; padding: 5px 5px 4px; min-width: 24px; text-align: center; border-bottom: 1px solid transparent; color: inherit; }
+.sprache a[aria-current] { color: var(--tinte); border-bottom-color: var(--faden); }
+.sprache a:hover, .sprache a:focus-visible { color: var(--tinte); border-bottom-color: currentColor; outline: none; }
+.hinweis-sprache { margin-top: 12px; max-width: 60ch; }
 .hauptnav { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 0.95rem; }
 .hauptnav a { text-decoration: none; padding: 4px 0; border-bottom: 1px solid transparent; }
 .hauptnav a[aria-current] { border-bottom-color: var(--faden); color: var(--faden); }
