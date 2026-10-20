@@ -357,3 +357,20 @@ nachgebildet. Es gab **keine** Prüfung auf echten Geräten.
 13. Erledigt am 27. September 2026: Karte in der Kategorie «Apps» auf der Startseite und ein News-Eintrag,
     beide verlinken auf `alpha/orma/` (REGELN §14). Beim Umzug an den endgültigen Ort beide Links anpassen.
 14. Beim Veröffentlichen die bestehenden Website-Tests um ORMA erweitern (Sitemap, Links).
+
+## Gestaltung (seit 20. Oktober 2026)
+
+Mit dem Neubau der Website unter `/b/` (Wunsch: «alles Grafische soll top sein», Freigabe für die Web-Anwendungen, ORMA zuerst) hat
+ORMA eine neue Gestaltung, bei gleichem Ablauf, gleichen Texten und gleichen Klassen (`orma-…`):
+
+- Papier und Tinte in echter Umkehr (hell: schwarz auf weiss, dunkel: weiss auf schwarz), wie das geteilte Symbol; ein Akzent, die
+  Blaupause (`#1d3fd6`, dunkel `#8fb0ff`), für Achse, Marke, Kicker, Labels und das Aktive. Abweichung von REGELN §5 (nur die
+  vorhandene Akzentfarbe), nach §0 benannt.
+- Schriften in der App selbst (`schrift/`, Instrument Sans und Newsreader, SIL Open Font License, Kopien aus `vendor/fonts/`): die
+  App bleibt in sich geschlossen und läuft offline. Oberfläche und Titel in Instrument Sans, Einstieg, Frage, Aufträge und Antworten
+  in Newsreader.
+- Die Startansicht beginnt mit dem Rad, in der Mitte geteilt wie das Symbol (`heroWheel()` in `js/app.js`, `.orma-hero`, rechte
+  Hälfte mit `backdrop-filter: invert(1)` wie beim Startbild).
+- Jeder Schritt kommt leise herein (`.orma-view.is-fresh`, in `show()` angestossen); während der Drehung glimmt die Achse; die
+  Paarung erscheint mit einer kurzen Bewegung. Bei «weniger Bewegung» steht alles.
+- Die Ergebniskarte (`js/card.js`) nimmt dieselben Farben und Schriften.
