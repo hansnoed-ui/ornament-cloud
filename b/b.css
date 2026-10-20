@@ -346,7 +346,7 @@ h2 .zeichen { width: 1em; height: 1em; margin-right: 0.35em; vertical-align: -0.
 .paar .pfeil::after { content: ""; position: absolute; right: -1px; top: -4px; width: 8px; height: 8px; border-top: 1px solid var(--faden); border-right: 1px solid var(--faden); transform: rotate(45deg); }
 .paar figcaption, .beispiel-video figcaption { grid-column: 1 / -1; margin-top: 8px; font-size: 0.95rem; color: var(--grau); max-width: 60ch; }
 .beispiel-video { display: grid; gap: 8px; max-width: 420px; }
-.beispiel-video video { width: 100%; height: auto; aspect-ratio: 4 / 5; background: #000; }
+.beispiel-video video { width: 100%; height: auto; background: #000; }   /* das Seitenverhältnis aus width/height des Videos (PHORMA 4 : 5, The Fictory nach dem Bild) */
 .beispiel-texte { display: grid; gap: 24px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 .beispiel-texte.eins { grid-template-columns: 1fr; max-width: 62ch; }
 .konstellation, .uebung { display: grid; gap: 10px; align-content: start; padding-top: 14px; border-top: 1px solid var(--linie); font-family: var(--serif); font-size: 1.08rem; line-height: 1.45; }
