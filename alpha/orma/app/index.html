@@ -2,6 +2,8 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
+  <!-- Bühne des Neubaus (?b=1, eingebettet unter /b/apps/orma/oeffnen/): ohne den Kopf der App -->
+  <script>if(/[?&]b=1(&|$)/.test(location.search))document.documentElement.setAttribute("data-buehne","")</script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>ORMA – Nebeneinander, Nacheinander</title>
   <meta name="description" content="Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke. Ein Kunst- und Denkspiel auf Grundlage von «Nebeneinander, Nacheinander».">
@@ -26,7 +28,9 @@
   <meta property="og:image:alt" content="Das Doppelrad von «Nebeneinander, Nacheinander», vertikal geteilt: links schwarz auf weiss, rechts weiss auf schwarz. Daneben ORMA.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://ornament.cloud/alpha/orma/og-orma.png">
-  <link rel="stylesheet" href="../orma.css?v=0d01817cc290">
+  <link rel="stylesheet" href="../orma.css?v=02a4befe892e">
+  <!-- Deutsch und Englisch (20. Oktober 2026): vor den Modulen, js/sprache.js -->
+  <script src="../js/sprache.js?v=02a4befe892e"></script>
   <!-- Startbild: vor dem ersten Bild entscheiden, ob es kommt, damit die Startansicht nicht kurz aufblitzt -->
   <script>
     (function () {
@@ -44,8 +48,14 @@
   </script>
 </head>
 <body>
+  <!-- Kopf der App (20. Oktober 2026, wie OMNA COLOR und ORNA): Signet mit Weg in den Neubau, der Schalter d · e, «Über die App»; absolute Adressen, weil die Ausgabe sonst keinen Bezug auf die Website hat (sie gelten unter ornament.cloud) -->
+  <header class="app-kopf">
+    <a class="app-kopf-signet" href="/b/" data-t-href="/b/|/b/en/" title="ornament.cloud"><svg viewBox="0 0 34 24" aria-hidden="true" focusable="false"><path d="M26.83 12.00L26.78 12.99L26.65 13.98L26.44 14.95L26.13 15.89L25.75 16.80L25.29 17.67L24.75 18.50L24.15 19.27L23.49 19.98L22.76 20.62L21.99 21.20L21.18 21.70L20.33 22.12L19.45 22.46L18.55 22.72L17.64 22.90L16.73 22.99L15.82 23.00L14.93 22.93L14.05 22.78L13.21 22.55L12.40 22.25L11.63 21.89L10.90 21.46L10.23 20.97L9.62 20.43L9.07 19.85L8.59 19.23L8.18 18.57L7.83 17.90L7.56 17.20L7.36 16.50L7.23 15.80L7.17 15.10L7.18 14.42L7.26 13.76L7.40 13.12L7.60 12.52L7.85 11.95L8.16 11.43L8.51 10.96L8.89 10.54L9.31 10.17L9.75 9.87L10.21 9.62L10.69 9.43L11.16 9.30L11.64 9.24L12.10 9.23L12.55 9.27L12.98 9.38L13.38 9.53L13.75 9.73L14.07 9.97L14.36 10.25L14.60 10.56L14.79 10.90L14.93 11.25L15.01 11.62L15.04 12.00L15.01 12.38L14.93 12.75L14.79 13.10L14.60 13.44L14.36 13.75L14.07 14.03L13.75 14.27L13.38 14.47L12.98 14.62L12.55 14.73L12.10 14.77L11.64 14.76L11.16 14.70L10.69 14.57L10.21 14.38L9.75 14.13L9.31 13.83L8.89 13.46L8.51 13.04L8.16 12.57L7.85 12.05L7.60 11.48L7.40 10.88L7.26 10.24L7.18 9.58L7.17 8.90L7.23 8.20L7.36 7.50L7.56 6.80L7.83 6.10L8.18 5.43L8.59 4.77L9.07 4.15L9.62 3.57L10.23 3.03L10.90 2.54L11.63 2.11L12.40 1.75L13.21 1.45L14.05 1.22L14.93 1.07L15.82 1.00L16.73 1.01L17.64 1.10L18.55 1.28L19.45 1.54L20.33 1.88L21.18 2.30L21.99 2.80L22.76 3.38L23.49 4.02L24.15 4.73L24.75 5.50L25.29 6.33L25.75 7.20L26.13 8.11L26.44 9.05L26.65 10.02L26.78 11.01L26.83 12.00Z"/><circle cx="12.55" cy="9.27" r="2.2"/></svg><span>ornament.cloud</span></a>
+    <nav class="sprache" aria-label="Sprache" data-t-attr="aria-label=kopf.sprache"><button type="button" data-sprache="de" lang="de" title="Deutsch">d</button><button type="button" data-sprache="en" lang="en" title="English">e</button></nav>
+    <a class="app-kopf-zurueck" href="/b/apps/orma/" data-t-href="/b/apps/orma/|/b/en/apps/orma/" data-t="kopf.ueber">Über die App</a>
+  </header>
   <header class="orma-top">
-    <button class="orma-home" type="button" data-go="start" aria-label="Zur Startansicht">
+    <button class="orma-home" type="button" data-go="start" aria-label="Zur Startansicht" data-t-attr="aria-label=kopf.start">
       <svg class="orma-logo" viewBox="0 0 64 40" aria-hidden="true"><circle cx="24" cy="20" r="15"/><circle cx="40" cy="20" r="15"/><circle class="orma-logo-dot" cx="32" cy="7.5" r="3"/></svg>
       <span>ORMA</span>
     </button>
@@ -54,7 +64,7 @@
     <noscript><p>ORMA braucht JavaScript.</p></noscript>
   </main>
   <p id="orma-live" class="sr-only" aria-live="polite"></p>
-  <script type="module" src="../js/app.js?v=0d01817cc290"></script>
-  <script type="module" src="../js/intro.js?v=0d01817cc290"></script>
+  <script type="module" src="../js/app.js?v=02a4befe892e"></script>
+  <script type="module" src="../js/intro.js?v=02a4befe892e"></script>
 </body>
 </html>

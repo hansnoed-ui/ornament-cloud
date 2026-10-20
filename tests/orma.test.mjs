@@ -247,6 +247,23 @@ test("Karte: lange Texte und Umlaute werden umbrochen, nie abgeschnitten; die Ka
 });
 
 // ---------- Build und Trennung ----------
+test("Pilot auf Englisch (20. Oktober 2026): je Konstellation «en» mit Text und Frage aus src/doppelspalt/src/data/en/, Einstieg (35–85 Wörter) und sechs Aufträgen aus pilot.en.json; eine fehlende oder fremde ID bricht den Build ab", () => {
+  const { items } = build.buildPilot();
+  assert.equal(items.length, build.PILOT_SIZE);
+  for (const it of items) {
+    assert.ok(it.en && it.en.text && it.en.question && it.en.einstieg, `${it.id}: en`);
+    assert.notEqual(it.en.text, it.text, `${it.id}: Text übersetzt`);
+    const w = build.words(it.en.einstieg);
+    assert.ok(w >= 35 && w <= 85, `${it.id}: Einstieg auf Englisch ${w} Wörter`);
+    for (const a of ["beispiel", "einwand", "gestaltung"]) assert.ok(it.en.auftraege[a] && it.en.auftraegeAllein[a], `${it.id}: Auftrag ${a} auf Englisch`);
+  }
+  const en = JSON.parse(readFileSync(build.PILOT_EN_FILE, "utf8"));
+  const ohne = { ...en, konstellationen: Object.fromEntries(Object.entries(en.konstellationen).slice(1)) };
+  assert.throws(() => build.buildPilot(undefined, JSON.stringify(ohne)), /fehlt in pilot\.en\.json/);
+  const fremd = { ...en, konstellationen: { ...en.konstellationen, "x__y": en.konstellationen[items[0].id] } };
+  assert.throws(() => build.buildPilot(undefined, JSON.stringify(fremd)), /x__y: in pilot\.en\.json, aber nicht im Pilot/);
+});
+
 test("Build: eigene Ausgabe, eigener Cache «orma-», Manifest-Kennung und Geltungsbereich getrennt von ORNA", () => {
   const out = mkdtempSync(join(tmpdir(), "orma-"));
   const r = build.buildOrma(out);
@@ -282,6 +299,13 @@ test("Build: eigene Ausgabe, eigener Cache «orma-», Manifest-Kennung und Geltu
   }
   const data = readFileSync(join(out, "js/data.js"), "utf8");
   assert.match(data, /Erzeugt von tools\/build-orma\.ts/);
+  // seit 20. Oktober 2026 zweisprachig: der Kopf der App (Signet nach /b/, d · e, «Über die App»), js/sprache.js vor den Modulen, je Konstellation «en»
+  assert.match(page, /<header class="app-kopf">\s*<a class="app-kopf-signet" href="\/b\/" data-t-href="\/b\/\|\/b\/en\/"/, "Signet mit Weg in den Neubau");
+  assert.match(page, /<nav class="sprache" aria-label="Sprache"[^>]*><button type="button" data-sprache="de" lang="de" title="Deutsch">d<\/button><button type="button" data-sprache="en" lang="en" title="English">e<\/button><\/nav>/);
+  assert.match(page, /<a class="app-kopf-zurueck" href="\/b\/apps\/orma\/" data-t-href="\/b\/apps\/orma\/\|\/b\/en\/apps\/orma\/" data-t="kopf.ueber">Über die App<\/a>/);
+  assert.ok(page.indexOf('<script src="js/sprache.js?v=') < page.indexOf('<script type="module" src="js/app.js?v='), "js/sprache.js vor den Modulen");
+  assert.ok(r.precache.some(f => f.startsWith("js/sprache.js?v=")), "js/sprache.js offline");
+  assert.match(page, /data-buehne/, "auf der Bühne (?b=1) ohne den Kopf der App");
 });
 
 // Der Ton (sanft, neugierig, liebevoll, ermutigend) soll in den Sätzen liegen, nicht als Wort darin stehen

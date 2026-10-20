@@ -12,6 +12,17 @@ Stand: 27. September 2026. Die App ist als **Alpha-Version** auf der Website, ve
 steht unter <https://ornament.cloud/alpha/>. Der Alpha-Bereich ist öffentlich erreichbar,
 nicht in der Sitemap und für Suchmaschinen gesperrt; ausser Startseite und News verlinkt ihn keine Seite.
 
+## Deutsch und Englisch (20. Oktober 2026)
+
+ORMA startet in der Sprache des Geräts (Englisch → Englisch, sonst Deutsch), der Schalter d · e im Kopf der App wechselt und merkt sich
+die Wahl (`localStorage` «ornament.sprache», gilt für alle Apps der Website). `app/js/sprache.js` hält das Wörterbuch: Schlüssel sind die
+deutschen Sätze aus `app/js/app.js` (dort in `T("…")`), Sätze mit Werten sind Funktionen. Beim Wechsel zeichnet `app.js` die aktuelle Ansicht
+neu; Eingaben bleiben, sie liegen in der Runde. Die Inhalte: Einstieg und Spielaufträge auf Englisch in `redaktion/pilot.en.json` (je ID,
+dieselbe Struktur wie `pilot.json`), Originaltext und Originalfrage aus `src/doppelspalt/src/data/en/` (die Konstellationen von ORNA auf
+Englisch). `tools/build-orma.ts` prüft beides (alle 48 IDs, Einstieg 35–85 Wörter, sechs Aufträge) und schreibt sie je Konstellation unter
+`en` nach `js/data.js`. Der Kopf der App (Signet, d · e, «Über die App») führt in den Neubau unter `/b/` bzw. `/b/en/`; auf der Bühne
+(`?b=1`) ist er ausgeblendet.
+
 ## Vorschau und Produktionsbuild
 
 ```sh
