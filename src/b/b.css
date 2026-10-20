@@ -69,6 +69,21 @@ ul, ol { padding: 0; list-style: none; }
 .kopf::after { content: ""; display: block; max-width: var(--spalte); margin: 18px auto 0; height: 1px; background: var(--linie); }
 @media (min-width: 760px) { .kopf::after { margin-left: auto; margin-right: auto; width: calc(100% - 2 * var(--rand)); } }
 
+/* ---------- Zeichen (src/b/zeichen.mjs): Linie 1.5, zeichnen sich beim Berühren ---------- */
+.zeichen { width: 1.25em; height: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.3em; overflow: visible; }
+.zeichen [fill="currentColor"] { fill: currentColor; stroke: none; }
+.zeichen * { stroke-dasharray: 1; stroke-dashoffset: 0; }
+a:hover .zeichen *, button:hover .zeichen *, .liste-linien a:hover .zeichen *, .faeden a:hover .zeichen * { animation: zeichnen 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+@keyframes zeichnen { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .zeichen * { animation: none !important; } }
+.zeichen-gross { display: block; width: 1em; height: 1em; margin-bottom: 0.25em; color: var(--faden); }
+.zeichen-gross .zeichen { width: 1em; height: 1em; vertical-align: 0; stroke-width: 1.2; }
+h2 .zeichen { width: 1em; height: 1em; margin-right: 0.35em; vertical-align: -0.12em; color: var(--faden); }
+.stueck h3 .zeichen { margin-right: 0.4em; color: var(--faden); }
+.liste-linien .n .zeichen { width: 24px; height: 24px; vertical-align: -0.45em; color: var(--faden); }
+.faeden .art .zeichen { margin-right: 0.4em; color: var(--faden); }
+.knopf .zeichen { width: 1.1em; height: 1.1em; vertical-align: -0.2em; }
+
 /* ---------- Grundtypografie ---------- */
 .titel { font-weight: 500; letter-spacing: -0.025em; line-height: 1; font-size: clamp(2.3rem, 6.5vw, 4.6rem); max-width: 14ch; }
 .titel small { display: block; font-weight: 400; letter-spacing: 0; font-size: 0.4em; line-height: 1.3; color: var(--grau); margin-top: 0.5em; max-width: 44ch; }
@@ -146,11 +161,18 @@ ul, ol { padding: 0; list-style: none; }
 .buehne .titel small { max-width: 60ch; }
 .buehne .sieben { align-items: center; }
 .buehne-satz .kicker { max-width: 44ch; }
+.vorschau-titel { display: flex; gap: 10px; align-items: baseline; font-weight: 500; letter-spacing: -0.01em; }
+.vorschau-titel .n { color: var(--faden); font-variant-numeric: tabular-nums; font-size: 0.9rem; font-weight: 400; }
+.leitsatz.wechsel { animation: wechsel 0.5s ease; }
+@keyframes wechsel { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.feld a.aktiv { animation: puls 0.6s ease; }
+@keyframes puls { 0% { box-shadow: inset 0 0 0 0 var(--papier); } 50% { box-shadow: inset 0 0 0 3px var(--papier); } 100% { box-shadow: inset 0 0 0 0 var(--papier); } }
+.buehne-zettel { padding-top: 0; }
+.buehne-zettel .feld-rahmen { margin-top: 0; }
+@media (max-width: 760px) { .buehne-feld .s-4 { order: -1; } .buehne-feld .buehne-satz { padding-top: 6px; } }
 .buehne-satz { display: grid; gap: 22px; align-content: center; min-height: 100%; }
 .buehne-satz .leitsatz { min-height: 4.4em; }
 .buehne-satz .woher { display: flex; align-items: center; gap: 14px; font-size: 0.92rem; color: var(--grau); }
-.buehne-satz .woher a { color: var(--tinte); }
-.buehne-satz .woher a:hover { color: var(--faden); }
 .buehne-claim { margin-top: 10px; font-size: 1.05rem; max-width: 36ch; }
 .buehne .feld { margin-top: 0; }
 @media (max-width: 760px) { .buehne { padding-top: 28px; } .buehne-satz .leitsatz { min-height: 0; } }
@@ -331,6 +353,26 @@ ul, ol { padding: 0; list-style: none; }
 .fuss a:hover { color: var(--faden); }
 .fuss .feldchen { margin-bottom: 6px; }
 
+/* Das Fenster: eine App über der Seite */
+.fenster { position: fixed; inset: 0; z-index: 900; display: grid; grid-template-rows: 48px 1fr; background: var(--papier); opacity: 0; transform: translateY(12px); transition: opacity 0.25s ease, transform 0.25s ease; }
+.fenster.da { opacity: 1; transform: none; }
+@media (min-width: 900px) { .fenster { inset: 24px; border: 1px solid var(--linie); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25); } }
+.fenster-leiste { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 10px 0 14px; border-bottom: 1px solid var(--linie); font-size: 0.95rem; }
+.fenster-name { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.fenster-name svg { width: 30px; height: 21px; }
+.fenster-name .schlaufe { fill: none; stroke: currentColor; stroke-width: 1.6; }
+.fenster-name .punkt { fill: var(--faden); }
+.fenster-name b { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fenster-knoepfe { display: flex; gap: 2px; }
+.fenster-knoepfe button, .fenster-knoepfe a { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: inherit; text-decoration: none; cursor: pointer; font-size: 0.9rem; }
+.fenster-knoepfe button:hover, .fenster-knoepfe a:hover { background: var(--flaeche); color: var(--faden); }
+.fenster-knoepfe .zeichen { width: 1.2em; height: 1.2em; vertical-align: 0; }
+@media (max-width: 560px) { .fenster-knoepfe span { position: absolute; left: -9999px; } .fenster-knoepfe button, .fenster-knoepfe a { padding: 0 8px; } }
+.fenster iframe { width: 100%; height: 100%; border: 0; background: var(--papier); }
+body.fenster-offen { overflow: hidden; }
+body.fenster-offen > :not(.fenster):not(script) { filter: blur(3px) saturate(0.6); opacity: 0.35; transition: filter 0.3s ease, opacity 0.3s ease; }
+@media (prefers-reduced-motion: reduce) { .fenster { transition: none; transform: none; } body.fenster-offen > :not(.fenster):not(script) { transition: none; } }
+
 /* Eingeblendete Rückmeldung (Link kopiert) */
-.meldung { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--tinte); color: var(--papier); padding: 10px 16px; font-size: 0.95rem; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+.meldung { position: fixed; left: 50%; bottom: 24px; z-index: 950; transform: translateX(-50%); background: var(--tinte); color: var(--papier); padding: 10px 16px; font-size: 0.95rem; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
 .meldung.da { opacity: 1; }
