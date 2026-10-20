@@ -12,7 +12,7 @@ import { zeichen } from "../src/b/zeichen.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS = new URL("b/", ROOT);
-const V = 6;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 8;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 
@@ -125,6 +125,8 @@ const fOrma = (k) => k && { art: "Konstellation", href: `/portfolio/nebeneinande
 function appBild(a, extra = "") {
   return `<picture><source srcset="/${attr(a.bildDunkel)}" media="(prefers-color-scheme: dark)"><img src="/${attr(a.bild)}" alt="${attr(a.bildAlt)}" width="1200" height="1200"${extra}></picture>`;
 }
+/** Das Signet in Bewegung (tools/b-app-bilder.mjs schreibt das Ruhebild; b/tafeln-leben.js lässt es leben) */
+const SIGNET_TAFEL = `<figure class="tafel-lebt signet-tafel" data-tafel="signet"><picture><source srcset="/b/bilder/signet/signet-dunkel.svg" media="(prefers-color-scheme: dark)"><img src="/b/bilder/signet/signet.svg" alt="Das Signet von ornament.cloud, gezeichnet: die Re-entry-Schlaufe mit dem Punkt, der sie abläuft" width="1200" height="1200"></picture></figure>`;
 /** Eine App als Kachel: immer quadratisch */
 function appKachel(a) {
   return `<a class="stueck" href="/b/apps/${a.slug}/"><span class="bild quadrat">${appBild(a, ' loading="lazy"')}</span><h3>${zeichen(a.zeichen)}${esc(a.name)}</h3><p>${esc(a.kurz)}</p></a>`;
@@ -208,7 +210,7 @@ ${body}
       <p class="zeile"><span>Diese Seite lädt nichts von aussen: keine Cookies, keine Werbung, keine Tracker.</span></p>
     </div>
   </footer>
-  <template id="zeichen-vollbild">${zeichen("vollbild")}</template><template id="zeichen-tab">${zeichen("tab")}</template><template id="zeichen-schliessen">${zeichen("schliessen")}</template>
+
   <script type="module" src="/b/b.js?v=${V}"></script>${module.map((m) => `\n  <script type="module" src="/b/${m}?v=${V}"></script>`).join("")}
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="/vendor/goatcounter/count.js"></script>
 </body>
@@ -225,14 +227,61 @@ function schreibe(pfad, html) {
 const seiten = [];   // für die Sitemap
 function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noindex) seiten.push(opts.pfad); }
 
+/* ---------- Die Bühne: eine Web-Anwendung in der neuen Seite (20. Oktober 2026, Wunsch: «Wenn ich bei den Apps die Webanwendung öffne, lande ich immer noch
+   auf der alten Seite. Diese Webanwendung in der neuen Seite darstellen. Nur die downloadbare App noch in der alten Fassung belassen.») ----------
+   Eine Seite unter /b/apps/<app>/oeffnen/ mit der Leiste des Neubaus (Signet, Name, Vollbild, eigener Tab, zurück) und der Anwendung im Rahmen;
+   die Anwendung blendet mit ?b=1 ihre alte Navigation aus (Skript und Stil im Kopf ihrer Seite). noindex, nicht in der Sitemap; die App-Seite bleibt kanonisch. */
+function buehne({ pfad, name, ziel, zurueck }) {
+  const html = `<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>${esc(name)} – ornament.cloud</title>
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="${BASIS}/b/${zurueck}">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="${ICON}">
+  <link rel="stylesheet" href="/vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="/b/b.css?v=${V}">
+</head>
+<body class="buehne-seite">
+  <div class="app-leiste">
+    <span class="app-name"><a class="signet" href="/b/" title="ornament.cloud">${SIGNET}</a><b>${esc(name)}</b></span>
+    <span class="app-knoepfe">
+      <button type="button" class="vollbild" title="Vollbild">${zeichen("vollbild")}<span>Vollbild</span></button>
+      <a class="tab" href="/${attr(ziel)}" target="_blank" rel="noopener" title="In eigenem Tab öffnen">${zeichen("tab")}<span>Eigener Tab</span></a>
+      <a class="zurueck" href="/b/${zurueck}" title="Zurück zur Seite der App">${zeichen("schliessen")}<span>Zurück</span></a>
+    </span>
+  </div>
+  <iframe class="app-rahmen" src="/${attr(ziel)}?b=1" title="${attr(name)}" allow="fullscreen; autoplay; microphone; camera; display-capture; clipboard-write" allowfullscreen loading="eager"></iframe>
+  <script type="module" src="/b/b.js?v=${V}"></script>
+</body>
+</html>
+`;
+  schreibe(pfad, html);
+}
+
 /* ---------- Startseite ---------- */
 {
   const erster = zettel[0];
   const daten = zettel.map((z) => ({ n: z.number, slug: z.slug, titel: z.title, leitsatz: z.bottom_line }));
   const body = `
-<section class="buehne" data-aktuell="${erster.number}" aria-label="Das Feld">
+<section class="einstieg" aria-labelledby="einstieg-titel">
   <div class="spalte">
-    <h1 class="titel">${esc(SEITE.titel)}<small>${esc(SEITE.lead)}</small></h1>
+    <div class="einstieg-kopf">
+      <h1 class="titel" id="einstieg-titel">${esc(SEITE.titel)}<small>${esc(SEITE.lead)}</small></h1>
+      ${SIGNET_TAFEL}
+    </div>
+    <div class="angebote" role="list">${ANGEBOTE.map((a) => `<a class="angebot" role="listitem" href="/b/angebot/${a.slug}/"><span class="zeichen-gross">${zeichen(a.slug)}</span><h2>${esc(a.name)}</h2><p>${esc(a.kurz)}</p><span class="weiter">Leistung und Briefing</span></a>`).join("")}</div>
+    <p class="einstieg-satz">${esc(SEITE.claimAlt)} Diese Seite ist das Beispiel: ein Zettelkasten zum Lesen, sieben Apps zum Spielen, vier Prüfraster zum Hinsehen.</p>
+  </div>
+</section>
+
+<section class="buehne" data-aktuell="${erster.number}" aria-labelledby="feld-titel">
+  <div class="spalte">
+    <div class="abschnitt-kopf"><h2 id="feld-titel">${zeichen("zettel")}Der Zettelkasten</h2><p>49 Zettel zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation, in sieben Zyklen.</p><a class="weiter" href="/b/zettel/">Alle Zettel</a></div>
   </div>
   <div class="spalte sieben buehne-feld">
     <div class="buehne-satz s-3">
@@ -277,13 +326,6 @@ function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noi
   </div>
 </section>
 
-<section class="abschnitt" aria-labelledby="arbeiten-titel">
-  <div class="spalte">
-    <div class="abschnitt-kopf"><h2 id="arbeiten-titel">${zeichen("arbeiten")}Arbeiten</h2><p>Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte: vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau. Jede beginnt mit einem Gespräch; das Briefing entsteht hier auf der Seite.</p><a class="weiter" href="/b/angebot/">Alle Leistungen</a></div>
-    <ul class="liste-linien">${ANGEBOTE.map((a, i) => `<li><a href="/b/angebot/${a.slug}/"><span class="n">${zeichen(a.slug)}</span><span class="name">${esc(a.name)}</span><span class="pfeil">Briefing</span><span class="kurz">${esc(a.kurz)}</span></a></li>`).join("")}</ul>
-  </div>
-</section>
-
 <section class="abschnitt" aria-labelledby="werke-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="werke-titel">${zeichen("werke")}Werke</h2><p>Originale, Prints in kleinen Auflagen und Arbeiten im Raum.</p><a class="weiter" href="/b/werke/">Alle Werke</a></div>
@@ -311,7 +353,7 @@ function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noi
     </div>
   </div>
 </section>`;
-  veroeffentliche({ pfad: "", titel: "ornament.cloud", beschreibung: SEITE.beschreibung, body, jsonld: [personLd()], bildAlt: "Das Feld: 49 Zettel in sieben Reihen, mit blauen Fäden dazwischen" });
+  veroeffentliche({ pfad: "", titel: "ornament.cloud", beschreibung: SEITE.beschreibung, body, jsonld: [personLd()], module: ["tafeln-leben.js"], bildAlt: "Das Feld: 49 Zettel in sieben Reihen, mit blauen Fäden dazwischen" });
 }
 
 function personLd() {
@@ -431,9 +473,9 @@ for (const a of APPS) {
   const body = `
 <article class="stueck-kopf"><div class="spalte">
   <p class="gattung">${esc(a.gattung)}${a.werk ? ` · zu «${esc(a.werk)}»` : ""}</p>
-  <h1 class="titel"><span class="zeichen-gross">${zeichen(a.zeichen)}</span>${esc(a.name)}</h1>
+  <h1 class="titel" data-wort="${attr(a.name)}"><span class="zeichen-gross">${zeichen(a.zeichen)}</span>${esc(a.name)}</h1>
   <p class="lead">${esc(a.kurz)}</p>
-  <p class="knopfreihe"><a class="knopf voll" href="/${attr(a.url)}" data-fenster="${attr(a.name)}">${a.name} öffnen</a>${a.app ? `<a class="knopf" href="/${attr(a.app)}">Als App installieren</a>` : ""}${a.feld ? `<a class="knopf still" href="/${attr(a.feld)}">Alle 326 im Feld</a>` : ""}</p>
+  <p class="knopfreihe"><a class="knopf voll" href="/b/apps/${a.slug}/oeffnen/">${a.name} öffnen</a>${a.app ? `<a class="knopf" href="/${attr(a.app)}">Als App installieren</a>` : ""}${a.feld ? `<a class="knopf still" href="/b/apps/${a.slug}/feld/">Alle 326 im Feld</a>` : ""}</p>
   <figure class="stueck-bild quadrat">${appBild(a)}</figure>
   <div class="stueck-text"><p>${esc(a.text)}</p><p class="fuer">${esc(a.fuer)}</p></div>
 </div></article>
@@ -442,6 +484,8 @@ for (const a of APPS) {
   ${beispiele(a)}</div></section>
 <section class="spalte">${teilen({ pfad: `apps/${a.slug}/`, titel: a.name, text: a.kurz })}</section>
 ${faeden([...zs.map((z) => fZettel(z)), fApp(schwester), fAngebot(angebotVon(a.gattung === "Bild und Video" ? "produkte" : "vermittlung")), a.werk ? fRaster(rasterVon("nebeneinander-nacheinander")) : fAngebot(angebotVon("webdesign"))])}`;
+  buehne({ pfad: `apps/${a.slug}/oeffnen/`, name: a.name, ziel: a.url, zurueck: `apps/${a.slug}/` });
+  if (a.feld) buehne({ pfad: `apps/${a.slug}/feld/`, name: `${a.name} – das Feld`, ziel: a.feld, zurueck: `apps/${a.slug}/` });
   veroeffentliche({ pfad: `apps/${a.slug}/`, aktiv: "apps/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, beschreibung: beschreibung(a.text), body, bildAlt: a.bildAlt, module: ["tafeln-leben.js"],
     jsonld: [{ "@context": "https://schema.org", "@type": "SoftwareApplication", name: a.name, applicationCategory: "MultimediaApplication", operatingSystem: "Browser", url: `${BASIS}/${a.url}`, description: a.kurz, offers: { "@type": "Offer", price: "0", priceCurrency: "CHF" }, author: { "@type": "Person", name: SEITE.person.name } }] });
 }
@@ -461,24 +505,41 @@ function quadrant(r) {
   <h1 class="titel">Prüfraster<small>Vier Instrumente zum genaueren Hinsehen. Jedes hat ein Grundlagenpapier und einen Anwendungsprompt: Den Prompt kopierst du mit deinem Fall in einen KI-Assistenten, das Raster führt die Prüfung.</small></h1>
 </div></section>
 <section class="abschnitt"><div class="spalte">
-  <ul class="liste-linien">${RASTER.map((r, i) => `<li><a href="/b/raster/${r.slug}/"><span class="n">${zeichen(r.slug)}</span><span class="name">${esc(r.name)}</span><span class="pfeil">${esc(r.stand)}</span><span class="kurz">${esc(r.text)}</span></a></li>`).join("")}</ul>
+  <div class="reihe">${RASTER.map((r) => `<a class="stueck" href="/b/raster/${r.slug}/"><span class="bild quadrat">${appBild(r, ' loading="lazy"')}</span><h3>${zeichen(r.slug)}${esc(r.name)}</h3><p>${esc(r.kurz)} ${esc(r.fassung)}, ${esc(r.stand)}.</p></a>`).join("")}</div>
 </div></section>`;
   veroeffentliche({ pfad: "raster/", aktiv: "raster/", titel: "Prüfraster – vier Instrumente zum Hinsehen", beschreibung: "Nebeneinander und Nacheinander, der Verteilapparat des Körpers, ein Raster für Gesellschaftskonzepte und eines für journalistische Texte: Grundlagenpapiere und Anwendungsprompts.", body, bildAlt: "Die vier Prüfraster" });
 }
 for (const r of RASTER) {
   const zs = zettelZu("raster", r.slug, 3);
+  const promptText = readFileSync(new URL(r.prompt, ROOT), "utf8");
+  // Bedienung (20. Oktober 2026, «die Bedienung an den neuen, reduzierten Stil angepasst, analog zu den App-Beiträgen»): der Prompt wird hier kopiert, nicht heruntergeladen
   const body = `
 <article class="stueck-kopf"><div class="spalte">
   <p class="gattung">Prüfraster · ${esc(r.fassung)} · ${esc(r.stand)}</p>
   <h1 class="titel"><span class="zeichen-gross">${zeichen(r.slug)}</span>${esc(r.name)}</h1>
   <p class="lead">${esc(r.kurz)}</p>
-  <p class="knopfreihe"><a class="knopf voll" href="/${attr(r.prompt)}">Anwendungsprompt</a>${r.pdf ? `<a class="knopf" href="/${attr(r.pdf)}">Grundlagenpapier (PDF)</a>` : ""}${r.raster ? `<a class="knopf" href="/${attr(r.raster)}">Das Raster (Text)</a>` : ""}<a class="knopf still" href="/${attr(r.seite)}">Seite mit Anleitung</a></p>
-  ${quadrant(r)}
-  <div class="stueck-text"><p>${esc(r.text)}</p><p><strong>Womit man kommt:</strong> ${esc(r.anwendung)}</p></div>
+  <p class="knopfreihe"><button class="knopf voll prompt-kopieren" type="button" data-ziel="prompt-text">Prompt kopieren</button><a class="knopf" href="/${attr(r.prompt)}">Prompt lesen</a>${r.pdf ? `<a class="knopf" href="/${attr(r.pdf)}">Grundlagenpapier (PDF)</a>` : ""}${r.raster ? `<a class="knopf" href="/${attr(r.raster)}">Das Raster (Text)</a>` : ""}<a class="knopf still" href="/${attr(r.seite)}">Seite mit Anleitung</a></p>
+  <script type="text/plain" id="prompt-text">${promptText.replace(/<\/script/gi, "<\\/script")}</script>
+  <div class="stueck-text"><p>${esc(r.text)}</p></div>
 </div></article>
+<section class="abschnitt" aria-labelledby="arbeit-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="arbeit-titel">So arbeitet das Raster</h2></div>
+  <div class="raster-paar">
+    <figure class="tafel-lebt" data-tafel="${r.slug}">${appBild(r)}<figcaption>${esc(r.bewegung)}</figcaption></figure>
+    ${quadrant(r)}
+  </div>
+</div></section>
+<section class="ablauf" aria-labelledby="ablauf-titel"><div class="spalte">
+  <h2 id="ablauf-titel">So wendest du es an</h2>
+  <ol>
+    <li><span><b>Prompt kopieren.</b> Der ganze ${esc(r.fassung)} liegt dann in der Zwischenablage; wer lieber liest, öffnet ihn als Text.</span></li>
+    <li><span><b>In einen KI-Assistenten einfügen</b> und dein Material dazugeben: ${esc(r.anwendung)}</span></li>
+    <li><span><b>Lesen, was das Raster findet:</b> ${esc(r.ergebnis)}</span></li>
+  </ol>
+</div></section>
 <section class="spalte">${teilen({ pfad: `raster/${r.slug}/`, titel: r.name, text: r.kurz })}</section>
 ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" ? fApp(appVon("orna")) : fApp(appVon("orma")), fAngebot(angebotVon("vermittlung")), fRaster(RASTER.find((x) => x.slug !== r.slug && x.stand === r.stand) || RASTER.find((x) => x.slug !== r.slug))])}`;
-  veroeffentliche({ pfad: `raster/${r.slug}/`, aktiv: "raster/", titel: `${r.name} – Prüfraster`, beschreibung: beschreibung(r.text), body, typ: "article",
+  veroeffentliche({ pfad: `raster/${r.slug}/`, aktiv: "raster/", titel: `${r.name} – Prüfraster`, beschreibung: beschreibung(r.text), body, typ: "article", module: ["tafeln-leben.js"],
     jsonld: [{ "@context": "https://schema.org", "@type": "CreativeWork", name: r.name, description: r.kurz, url: `${BASIS}/b/raster/${r.slug}/`, author: { "@type": "Person", name: SEITE.person.name }, inLanguage: "de-CH" }] });
 }
 
@@ -585,6 +646,7 @@ ${faeden([fZettel(zettel[40]), fZettel(zettel[36]), fApp(appVon("orna"))])}`;
     <div class="liste-kasten"><h2>${esc(UEBER.liste.titel)}</h2><p>${esc(UEBER.liste.text)}</p><p class="knopfreihe"><a class="knopf" href="${attr(UEBER.liste.mailto)}">Eintragen lassen</a></p><p class="klein">Der Link öffnet eine fertige Mail. Austragen mit einer Antwort; die Adresse bleibt bei mir.</p></div>
   </div>
   <div class="s-3" style="padding-top:12px">
+    ${SIGNET_TAFEL.replace('class="tafel-lebt signet-tafel"', 'class="tafel-lebt signet-tafel ueber-signet"')}
     <address class="adresse">${esc(SEITE.person.name)}<br>${esc(SEITE.person.strasse)}<br>${esc(SEITE.person.plz)}<br><a href="mailto:${SEITE.person.mail}">${SEITE.person.mail}</a></address>
     <p class="klein" style="margin-top:18px"><a href="/impressum/">Impressum, AGB und Datenschutz</a></p>
     <div style="margin-top:32px">${feld({ klein: true, paare: startPaare.slice(0, 8) })}</div>
@@ -592,7 +654,7 @@ ${faeden([fZettel(zettel[40]), fZettel(zettel[36]), fApp(appVon("orna"))])}`;
 </div></section>
 <section class="spalte">${teilen({ pfad: "ueber/", titel: `${SEITE.person.name} – ornament.cloud`, text: "Kunst, Design, Webdesign, Therapie und Theorie." })}</section>
 ${faeden([fAngebot(angebotVon("webdesign")), fAngebot(angebotVon("kuration")), fZettel(zettel[16]), fApp(appVon("orma"))])}`;
-  veroeffentliche({ pfad: "ueber/", aktiv: "ueber/", titel: `Über ${SEITE.person.name}`, beschreibung: `${SEITE.person.name}, zwischen Zürich, Basel und Aarau: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte. Hintergrund, Kontakt und Liste.`, body, typ: "profile", jsonld: [personLd()], bildAlt: `${SEITE.person.name}` });
+  veroeffentliche({ pfad: "ueber/", aktiv: "ueber/", module: ["tafeln-leben.js"], titel: `Über ${SEITE.person.name}`, beschreibung: `${SEITE.person.name}, zwischen Zürich, Basel und Aarau: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte. Hintergrund, Kontakt und Liste.`, body, typ: "profile", jsonld: [personLd()], bildAlt: `${SEITE.person.name}` });
 }
 
 /* ---------- Werkstatt (nicht verlinkt, noindex) ---------- */

@@ -7,8 +7,11 @@ export const SEITE = {
   name: "ornament.cloud",
   adresse: "https://ornament.cloud/b/",
   claim: "Beobachtung ist Anlass für Veränderung in der Realität.",
-  titel: "Theorie, die man anfassen kann.",
-  lead: "49 Zettel zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation, sieben Apps zum Spielen und Gestalten, vier Prüfraster zum genaueren Hinsehen und vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau.",
+  // Einstieg über das Angebot (20. Oktober 2026, Wunsch: «landing-page: ich denke, es sollte die ‹Angebote›-Seite sein, damit der Einstieg in die Website klarer ist»;
+  // Entscheid: /b/ beginnt mit den vier Leistungen, Feld, Apps und Zettel folgen). Bis dahin: «Theorie, die man anfassen kann.»
+  titel: "Gestalten, vermitteln, kuratieren.",
+  lead: "Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte: vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau. Dazu ein Zettelkasten, sieben Apps und vier Prüfraster, die zeigen, wie hier gearbeitet wird.",
+  claimAlt: "Theorie, die man anfassen kann.",
   beschreibung: "49 Zettel, sieben Apps, vier Prüfraster und vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.",
   person: { name: "Christian Strickler", ort: "zwischen Zürich, Basel und Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
   sprache: "de-CH",
@@ -81,26 +84,35 @@ export const APPS = [
     zeichen: "teile" },
 ];
 
-/** Die vier Prüfraster (Masterprompts). Prompt und Papier liegen weiter unter alpha/. */
+/** Die vier Prüfraster (Masterprompts). Prompt und Papier liegen weiter unter alpha/. Seit 20. Oktober 2026 mit gezeichneter Tafel (tools/b-app-bilder.mjs),
+ *  einem Satz zur Bewegung und einem Satz zum Ergebnis («Die Prüfraster müssen re-designt werden … analog zu den App-Beiträgen»). */
 export const RASTER = [
   { slug: "nebeneinander-nacheinander", name: "Nebeneinander und Nacheinander", kurz: "Verräumlichung und Verzeitlichung als Achsen.",
     text: "Ordnet Theorien, Kunstpraxen und andere Ansätze danach, wie sie Verräumlichung und Verzeitlichung ins Verhältnis setzen. Vier Felder: Ereignis, Doppelspalt, Stilles Operieren, Ordnung. Das Raster ist die Grundlage von ORNA und ORMA.",
     achsen: { x: "Verräumlichung", y: "Verzeitlichung" }, felder: [["Ereignis", "Doppelspalt"], ["Stilles Operieren", "Ordnung"]], betont: [0, 1],
     seite: "alpha/pruefraster/", pdf: "alpha/pruefraster-nebeneinander-nacheinander.pdf", prompt: "alpha/pruefraster-anwendungsprompt-3.2.0.md", fassung: "Anwendungsprompt 3.2.0", stand: "fertig",
-    anwendung: "Eine Theorie, eine Kunstpraxis, ein Manifest oder eine eigene Arbeitsweise. Der Prompt fragt nach den Unterscheidungen, mit denen der Ansatz Raum und Zeit erzeugt, und setzt ihn ins Feld." },
+    anwendung: "Eine Theorie, eine Kunstpraxis, ein Manifest oder eine eigene Arbeitsweise. Der Prompt fragt nach den Unterscheidungen, mit denen der Ansatz Raum und Zeit erzeugt, und setzt ihn ins Feld.",
+    bild: "b/bilder/raster/nebeneinander-nacheinander.svg", bildDunkel: "b/bilder/raster/nebeneinander-nacheinander-dunkel.svg", bildAlt: "Nebeneinander und Nacheinander, gezeichnet: zwei Achsen, vier Felder; ein Punkt wandert durch das Feld und bleibt in einem Feld stehen",
+    bewegung: "So arbeitet das Raster: Ein Ansatz wird an zwei Achsen gemessen, Verräumlichung und Verzeitlichung, und landet in einem der vier Felder.", ergebnis: "eine Einordnung ins Feld entlang der acht Prüffragen, kurz oder ausführlich, mit den Unterscheidungen, die den Ansatz tragen." },
   { slug: "verteilapparat", name: "Der Verteilapparat des Körpers", kurz: "Wessen Körperereignis kommt wie weit?",
     text: "Ein Prüfinstrument dafür, wessen Körperereignis wie weit kommt, unter welcher Beschreibung, wer sie berichtigen kann und was daraus materiell folgt. Sieben Schwellen, Stimme gegen Messung, vier Felder: Ausgeliefertsein, Verhandelbare Teilhabe, Verschwinden, Privilegierte Opazität.",
     achsen: { x: "Selbstbeschreibung", y: "Fremderfassung" }, felder: [["Ausgeliefertsein", "Verhandelbare Teilhabe"], ["Verschwinden", "Privilegierte Opazität"]], betont: [0, 0],
     seite: "alpha/verteilapparat/", pdf: "alpha/verteilapparat-des-koerpers.pdf", prompt: "alpha/verteilapparat-anwendungsprompt-2.1.0.txt", fassung: "Anwendungsprompt 2.1.0", stand: "fertig",
-    anwendung: "Ein Fall aus Medizin, Pflege, Schule, Sport, Behörde oder Kunst, in dem ein Körper etwas meldet. Der Prompt verfolgt die Meldung über die Schwellen und zeigt, wo sie verschwindet oder sich durchsetzt." },
+    anwendung: "Ein Fall aus Medizin, Pflege, Schule, Sport, Behörde oder Kunst, in dem ein Körper etwas meldet. Der Prompt verfolgt die Meldung über die Schwellen und zeigt, wo sie verschwindet oder sich durchsetzt.",
+    bild: "b/bilder/raster/verteilapparat.svg", bildDunkel: "b/bilder/raster/verteilapparat-dunkel.svg", bildAlt: "Der Verteilapparat des Körpers, gezeichnet: sieben Schwellen; eine Meldung läuft hindurch, an einigen Schwellen bleibt eine Spur zurück",
+    bewegung: "So arbeitet das Raster: Eine Meldung des Körpers geht über sieben Schwellen; an jeder kann sie weiterkommen, verändert werden oder verschwinden.", ergebnis: "den Weg der Meldung über die sieben Schwellen, wo sie verschwindet oder sich durchsetzt, und das Feld, in dem sie landet." },
   { slug: "gesellschaftskonzepte", name: "Prüfraster für Gesellschaftskonzepte", kurz: "Einheit, Operation, Vermittlung.",
     text: "Ein voraussetzungsarmer Vorfilter für Ansätze, die eine Gesellschaftsdiagnose beanspruchen: Was gilt als Einheit der Gesellschaft, welche Operation hält sie am Laufen, und wie wird zwischen beidem vermittelt? In Arbeit, Fassung 0.4.",
     seite: "alpha/gesellschaftskonzepte/", pdf: "alpha/pruefraster-gesellschaftskonzepte-0.4.pdf", prompt: "alpha/gesellschaftskonzepte-anwendungsprompt-0.4.0.md", fassung: "Anwendungsprompt 0.4.0", stand: "in Arbeit",
-    anwendung: "Ein Buch, ein Essay, ein Programm, das sagt, wie die Gesellschaft ist oder sein soll. Der Prompt prüft, ob die drei Fragen beantwortet sind, bevor er weiterliest." },
+    anwendung: "Ein Buch, ein Essay, ein Programm, das sagt, wie die Gesellschaft ist oder sein soll. Der Prompt prüft, ob die drei Fragen beantwortet sind, bevor er weiterliest.",
+    bild: "b/bilder/raster/gesellschaftskonzepte.svg", bildDunkel: "b/bilder/raster/gesellschaftskonzepte-dunkel.svg", bildAlt: "Prüfraster für Gesellschaftskonzepte, gezeichnet: drei Kreise im Dreieck, verbunden; ein Lauf prüft sie der Reihe nach",
+    bewegung: "So arbeitet das Raster: Drei Fragen der Reihe nach, Einheit, Operation, Vermittlung; erst wenn alle drei beantwortet sind, lohnt das Weiterlesen.", ergebnis: "ob Einheit, Operation und Vermittlung benannt sind, wo der Ansatz schweigt und ob er als Gesellschaftsdiagnose weiterzulesen ist." },
   { slug: "journalistische-texte", name: "Prüfraster journalistischer Texte", kurz: "Ereignis, Kontext, Übergang, Gegenprobe, Systembezüge.",
     text: "Wie macht ein journalistischer Text aus ausgewähltem Material eine Aussage, welche Unterscheidungen tragen diese Aussage, und was könnte ihre Geltung begrenzen oder verändern? Zwölf Verfahren der Gegenprobe und ein ausfüllbares Fallblatt. In Arbeit, Fassung 0.4.",
     seite: "alpha/journalistische-texte/", pdf: null, prompt: "alpha/journalistische-texte-anwendungsprompt-0.4.0.md", raster: "alpha/pruefraster-journalistische-texte-0.4.md", fassung: "Anwendungsprompt 0.4.0", stand: "in Arbeit",
-    anwendung: "Ein Artikel, eine Reportage, ein Kommentar. Der Prompt liest ihn entlang von Ereignis, Kontext und Übergang und macht die Gegenprobe." },
+    anwendung: "Ein Artikel, eine Reportage, ein Kommentar. Der Prompt liest ihn entlang von Ereignis, Kontext und Übergang und macht die Gegenprobe.",
+    bild: "b/bilder/raster/journalistische-texte.svg", bildDunkel: "b/bilder/raster/journalistische-texte-dunkel.svg", bildAlt: "Prüfraster journalistischer Texte, gezeichnet: ein Text aus Zeilen; eine Marke geht die Zeilen durch, eine Zeile wird gegengeprüft",
+    bewegung: "So arbeitet das Raster: Es sucht im Text das Ereignis, markiert den Kontext, folgt dem Übergang zur Aussage und macht die Gegenprobe.", ergebnis: "Ereignis, Kontext und Übergang des Textes, die zwölf Verfahren der Gegenprobe und das ausgefüllte Fallblatt." },
 ];
 
 /** Die vier Leistungen (Wunsch vom 20. Oktober 2026: das Geschäft sind Webdesign, Vermittlung und Beratung, kuratorische Projekte und der
@@ -118,7 +130,7 @@ export const ANGEBOTE = [
       { frage: "Wie gross?", wahlen: ["eine Seite oder ein Werkzeug", "fünf bis zehn Seiten", "mit Shop oder Datenbank", "offen"] },
     ] },
   { slug: "vermittlung", name: "Vermittlung und Beratung", kurz: "Seminare, Workshops, Projekte mit Schulen und Teams; Beratung für Institutionen.",
-    text: "Halbe Tage, ganze Tage, Projektwochen oder Reihen: Beobachten zweiter Ordnung, Systemtheorie ohne Hürden, Kunst als Werkzeug für Gruppen. Gearbeitet wird mit ORNA, ORMA, OMNA COLOR, PHORMA und den Prüfrastern, nicht mit Folien. Dazu Beratung für Wohnheime, Werkstätten, Stiftungen und Schulen, die Kunst zu einem Teil ihrer Arbeit machen wollen: ein Atelier aufbauen, Werke von Klient:innen zeigen, Maltherapie als Angebot einrichten. Der Hintergrund dafür sind 25 Jahre Soziale Arbeit in Institutionen und die Ausbildung in Maltherapie.",
+    text: "Halbe Tage, ganze Tage, Projektwochen oder Reihen: Beobachten zweiter Ordnung, Systemtheorie ohne Hürden, Kunst als Werkzeug für Gruppen. Dazu Beratung für Wohnheime, Werkstätten, Stiftungen und Schulen, die Kunst zu einem Teil ihrer Arbeit machen wollen: ein Atelier aufbauen, Werke von Klient:innen zeigen, Maltherapie als Angebot einrichten. Der Hintergrund dafür sind 25 Jahre Soziale Arbeit in Institutionen und die Ausbildung in Maltherapie.",
     fuer: "Für Schulen, Museen, Unternehmen, Verwaltungen, Praxisteams, Weiterbildungen und für Institutionen mit Menschen, die mehr können, als man ihnen zutraut.",
     ablauf: ["Ein Gespräch über die Gruppe oder das Haus und die Frage, die mitkommt.", "Ein Vorschlag mit Ablauf, Dauer, Material und Preis.", "Der Tag, die Woche oder die Begleitung über ein Jahr; zum Schluss eine Präsentation im Haus oder im Netz."],
     beweis: [["b/apps/omna-color/", "OMNA COLOR: 180 Übungen"], ["b/apps/orma/", "ORMA zu zweit"], ["b/raster/", "Die vier Prüfraster"], ["b/ueber/", "Der Hintergrund: Soziale Arbeit, Maltherapie, Stationen"]],

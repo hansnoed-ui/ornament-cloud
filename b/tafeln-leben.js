@@ -2,7 +2,7 @@
 // eine Art Vorstellungs- oder Erkläranimationen, stilisiert, stilvoll»). Jede <figure class="tafel-lebt" data-tafel="slug"> trägt das Ruhebild
 // als <picture>; mit Skript wird daraus die Zeichnung aus src/b/tafeln.mjs, die sich bewegt – nur solange sie im Bild ist, nur wenn die Seite
 // sichtbar ist, nie bei reduzierter Bewegung (dann bleibt das Ruhebild). Hell und dunkel folgen dem Gerät.
-import { TAFELN, farben, W } from "./tafeln.mjs?v=6";
+import { TAFELN, farben, W } from "./tafeln.mjs?v=8";
 
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const dunkelheit = matchMedia("(prefers-color-scheme: dark)");
@@ -24,8 +24,8 @@ function beleben(fig) {
   dunkelheit.addEventListener("change", () => { c = farben(dunkelheit.matches); malen(); });
 
   const bild0 = () => {
-    // Beginn aus dem Keim, nicht aus dem fertigen Bild: PHORMA II wächst vor den Augen; die anderen laufen von ihrem Ruhebild aus weiter
-    if (fig.dataset.tafel === "phorma-ii") zustand = tafel.keim();
+    // Beginn aus dem Keim, nicht aus dem fertigen Bild, wo die Tafel einen hat: PHORMA II wächst vor den Augen, das Signet zeichnet sich; die anderen laufen von ihrem Ruhebild aus weiter
+    if (tafel.keim) zustand = tafel.keim();
     malen();
     bild?.replaceWith(svg);
   };

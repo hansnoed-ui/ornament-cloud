@@ -12,7 +12,7 @@ const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const walk = (d, vor = "") => readdirSync(new URL(d, root), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(d + e.name + "/", vor + e.name + "/") : e.name === "index.html" ? [vor] : []);
-const seiten = walk("b/");
+const seiten = walk("b/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p));   // ohne die Bühnen der Apps (noindex, eigener Test)
 const meta = (html, name) => html.match(new RegExp(`<meta (?:name|property)="${name}" content="([^"]*)"`))?.[1];
 const pngMass = (buf) => [buf.readUInt32BE(16), buf.readUInt32BE(20)];
 
@@ -99,7 +99,8 @@ test("b/: die Startseite trägt das Feld mit allen 49 Zetteln, den Dialog und di
 test("b/: Apps, Raster und Angebote verlinken ihre Ziele, und die Ziele gibt es", () => {
   for (const a of APPS) {
     const html = lies(`b/apps/${a.slug}/index.html`);
-    for (const ziel of [a.url, a.app, a.feld].filter(Boolean)) { assert.ok(html.includes(`href="/${ziel}"`), `${a.slug}: Link ${ziel}`); assert.ok(existsSync(new URL(ziel + "index.html", root)), `${a.slug}: ${ziel} gibt es`); }
+    for (const ziel of [a.url, a.app, a.feld].filter(Boolean)) { assert.ok(existsSync(new URL(ziel + "index.html", root)), `${a.slug}: Ziel ${ziel} gibt es`); }
+    if (a.app) assert.ok(html.includes(`href="/${a.app}"`), `${a.slug}: Link zur App-Seite`);   // Anwendung und Feld öffnen seit 20. Oktober 2026 auf der Bühne unter /b/ (eigener Test)
     assert.ok(existsSync(new URL(a.bild, root)), `${a.slug}: Bild ${a.bild}`);
   }
   for (const r of RASTER) {
@@ -150,7 +151,7 @@ test("b/werkstatt: die PDFs der Produkte liegen da", () => {
 
 test("b/apps: die Bilder der sieben Apps sind gezeichnete Tafeln (tools/b-app-bilder.mjs), hell und dunkel, 1200 × 1200, klein; Kachel und App-Seite wählen mit <picture>, Teilen nimmt die Vorschaukarte", async () => {
   const { TAFELN, svg } = await import(new URL("tools/b-app-bilder.mjs", root).href);
-  assert.deepEqual(Object.keys(TAFELN).sort(), APPS.map((a) => a.slug).sort(), "je App eine Tafel");
+  assert.deepEqual(Object.keys(TAFELN).filter((k) => !TAFELN[k].gattung).sort(), APPS.map((a) => a.slug).sort(), "je App eine Tafel");
   for (const a of APPS) {
     assert.equal(a.bild, `b/bilder/apps/${a.slug}.svg`); assert.equal(a.bildDunkel, `b/bilder/apps/${a.slug}-dunkel.svg`);
     for (const [datei, dunkel] of [[a.bild, false], [a.bildDunkel, true]]) {
@@ -190,4 +191,62 @@ test("b/apps: die Tafeln leben unter «Was dabei herauskommt» (src/b/tafeln.mjs
     assert.ok(seite.indexOf('id="beispiele-titel"') < seite.indexOf('class="tafel-lebt"'), `${a.slug}: die Tafel steht im Abschnitt «Was dabei herauskommt»`);
   }
   assert.ok(!lies("b/apps/index.html").includes("tafeln-leben"), "die Übersicht bleibt ohne das Modul");
+});
+
+test("b/raster: wie die Apps – gezeichnete Tafel (lebend), die vier Felder daneben, Prompt kopieren auf der Seite, drei Schritte; die Übersicht mit Kacheln", async () => {
+  const { TAFELN, svg, farben } = await import(new URL("src/b/tafeln.mjs", root).href);
+  for (const r of RASTER) {
+    assert.equal(TAFELN[r.slug]?.gattung, "raster", `${r.slug}: Tafel`);
+    assert.equal(r.bild, `b/bilder/raster/${r.slug}.svg`); assert.equal(r.bildDunkel, `b/bilder/raster/${r.slug}-dunkel.svg`);
+    for (const [datei, dunkel] of [[r.bild, false], [r.bildDunkel, true]]) assert.equal(lies(datei), svg(r.slug, dunkel), `${datei} ist der aktuelle Stand (sonst: node tools/b-app-bilder.mjs)`);
+    const t = TAFELN[r.slug], z = t.neu(), ruhe = t.svg(z, farben(false));
+    for (let i = 0; i < 120; i++) t.schritt(z, 1 / 30);
+    assert.ok(t.svg(z, farben(false)) !== ruhe && !/NaN/.test(t.svg(z, farben(false))), `${r.slug}: bewegt sich, ohne NaN`);
+    const seite = lies(`b/raster/${r.slug}/index.html`);
+    assert.ok(seite.includes(`<figure class="tafel-lebt" data-tafel="${r.slug}"><picture>`), `${r.slug}: lebende Tafel`);
+    assert.ok(seite.includes(`<figcaption>${r.bewegung}</figcaption>`));
+    assert.ok(seite.includes('<button class="knopf voll prompt-kopieren" type="button" data-ziel="prompt-text">Prompt kopieren</button>'), `${r.slug}: Prompt kopieren`);
+    const prompt = seite.match(/<script type="text\/plain" id="prompt-text">([\s\S]*?)<\/script>/)[1];
+    assert.equal(prompt, lies(r.prompt).replace(/<\/script/gi, "<\\/script"), `${r.slug}: der ganze Anwendungsprompt steht in der Seite`);
+    assert.ok(seite.includes(`<a class="knopf" href="/${r.prompt}">Prompt lesen</a>`));
+    assert.match(seite, /<h2 id="ablauf-titel">So wendest du es an<\/h2>\s*<ol>\s*<li>[\s\S]*?<\/li>\s*<li>[\s\S]*?<\/li>\s*<li>[\s\S]*?<\/li>\s*<\/ol>/, `${r.slug}: drei Schritte`);
+    assert.ok(seite.includes(r.ergebnis.replace(/&/g, "&amp;")), `${r.slug}: Satz zum Ergebnis`);
+    assert.match(seite, /<script type="module" src="\/b\/tafeln-leben\.js\?v=\d+"><\/script>/);
+    assert.ok(lies("b/raster/index.html").includes(`<a class="stueck" href="/b/raster/${r.slug}/"><span class="bild quadrat"><picture>`), `${r.slug}: Kachel in der Übersicht`);
+  }
+  assert.ok(lies("b/b.js").includes(".prompt-kopieren"), "b.js kopiert den Prompt");
+});
+
+test("b/apps: die Bühne – jede Web-Anwendung unter /b/apps/<app>/oeffnen/ in der Leiste des Neubaus, die Anwendung mit ?b=1 ohne alte Navigation; noindex, nicht in der Sitemap", () => {
+  const sitemap = lies("sitemap.xml");
+  for (const a of APPS) {
+    const seite = lies(`b/apps/${a.slug}/index.html`);
+    assert.ok(seite.includes(`<a class="knopf voll" href="/b/apps/${a.slug}/oeffnen/">${a.name} öffnen</a>`), `${a.slug}: «öffnen» führt auf die Bühne`);
+    assert.ok(!seite.includes("data-fenster"), `${a.slug}: kein Fenster mehr`);
+    const b = lies(`b/apps/${a.slug}/oeffnen/index.html`);
+    assert.ok(b.includes('<body class="buehne-seite">') && b.includes('<meta name="robots" content="noindex">') && b.includes(`<link rel="canonical" href="https://ornament.cloud/b/apps/${a.slug}/">`), `${a.slug}: Bühne`);
+    assert.ok(b.includes(`<iframe class="app-rahmen" src="/${a.url}?b=1" title="${a.name}"`), `${a.slug}: die Anwendung im Rahmen mit ?b=1`);
+    assert.ok(b.includes(`<a class="tab" href="/${a.url}" target="_blank"`) && b.includes(`<a class="zurueck" href="/b/apps/${a.slug}/"`), `${a.slug}: eigener Tab und zurück`);
+    assert.ok(!sitemap.includes(`/b/apps/${a.slug}/oeffnen/`), `${a.slug}: Bühne nicht in der Sitemap`);
+    if (a.slug !== "orma") assert.ok(lies(a.url + "index.html").includes('setAttribute("data-buehne","")'), `${a.url}: blendet mit ?b=1 die alte Navigation aus`);   // ORMA hat keine alte Navigation
+    if (a.feld) { assert.ok(seite.includes(`href="/b/apps/${a.slug}/feld/"`)); assert.ok(lies(`b/apps/${a.slug}/feld/index.html`).includes(`src="/${a.feld}?b=1"`), `${a.slug}: das Feld auf der Bühne`); assert.ok(lies(a.feld + "index.html").includes("data-buehne")); }
+  }
+  assert.ok(lies("b/b.js").includes(".app-rahmen") && !lies("b/b.js").includes("data-fenster"), "b.js: Bühne statt Fenster");
+});
+
+test("b/: das Signet lebt auf Start und Über (Tafel «signet», zeichnet sich aus dem Keim); die Titel der Apps spielen mit «ornament» (data-wort, b.js)", async () => {
+  const { TAFELN, svg, farben } = await import(new URL("src/b/tafeln.mjs", root).href);
+  const t = TAFELN.signet;
+  assert.equal(t.gattung, "signet");
+  for (const [datei, dunkel] of [["b/bilder/signet/signet.svg", false], ["b/bilder/signet/signet-dunkel.svg", true]]) assert.equal(lies(datei), svg("signet", dunkel), `${datei} aktuell`);
+  const k = t.keim(); assert.ok(!t.svg(k, farben(false)).includes("<circle"), "aus dem Keim: noch kein Punkt, die Schlaufe zeichnet sich");
+  for (let i = 0; i < 120; i++) t.schritt(k, 1 / 30);
+  assert.ok(t.svg(k, farben(false)).includes("<circle") && t.svg(k, farben(false)).includes('stroke-dashoffset="0"'), "nach vier Sekunden gezeichnet, mit Punkt");
+  for (const p of ["b/index.html", "b/ueber/index.html"]) {
+    assert.ok(lies(p).includes('class="tafel-lebt signet-tafel') && lies(p).includes('data-tafel="signet"><picture><source srcset="/b/bilder/signet/signet-dunkel.svg"'), `${p}: Signet-Tafel`);
+    assert.match(lies(p), /<script type="module" src="\/b\/tafeln-leben\.js\?v=\d+"><\/script>/);
+  }
+  for (const a of APPS) assert.ok(lies(`b/apps/${a.slug}/index.html`).includes(`<h1 class="titel" data-wort="${a.name}">`), `${a.slug}: data-wort`);
+  const js = lies("b/b.js");
+  assert.ok(js.includes('const QUELLE = "ornament"') && js.includes("/OR[NM]A|OMNA/i"), "nur die Namen aus der ornament-Familie");
 });

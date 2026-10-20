@@ -118,6 +118,13 @@ function teilen(knopf) {
   });
 }
 
+/* ---------- Prüfraster: den Anwendungsprompt kopieren (20. Oktober 2026) ---------- */
+for (const k of document.querySelectorAll(".prompt-kopieren")) k.addEventListener("click", async () => {
+  const text = document.getElementById(k.dataset.ziel)?.textContent || "";
+  try { await navigator.clipboard.writeText(text); melde("Prompt kopiert – jetzt in einen KI-Assistenten einfügen"); }
+  catch { melde("Kopieren nicht möglich – «Prompt lesen» öffnet den Text"); }
+});
+
 /* ---------- Briefing auf den Angebotsseiten ---------- */
 function briefing(form) {
   const out = form.querySelector("output"), mail = form.querySelector(".brief-mail"), kopieren = form.querySelector(".brief-kopieren");
@@ -140,49 +147,43 @@ function briefing(form) {
   setzen();
 }
 
-/* ---------- Das Fenster: eine App über der Seite ---------- */
-function fenster(link) {
-  link.addEventListener("click", (e) => {
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
-    if (matchMedia("(max-width: 560px)").matches && !navigator.userAgentData?.mobile && !/Mobi/.test(navigator.userAgent)) { /* schmales Fenster am Computer: trotzdem im Fenster */ }
-    e.preventDefault();
-    oeffneFenster(link.href, link.dataset.fenster || link.textContent.trim());
-  });
+/* ---------- Die Bühne: eine Web-Anwendung in der neuen Seite (/b/apps/<app>/oeffnen/) ---------- */
+const rahmen = document.querySelector(".app-rahmen");
+if (rahmen) {
+  document.querySelector(".app-knoepfe .vollbild")?.addEventListener("click", () => { const q = rahmen.requestFullscreen?.(); if (q && q.catch) q.catch(() => {}); });
+  const zurueck = document.querySelector(".app-knoepfe .zurueck");
+  const esc = (e) => { if (e.key === "Escape" && zurueck) location.href = zurueck.href; };
+  addEventListener("keydown", esc);
+  rahmen.addEventListener("load", () => { try { rahmen.contentWindow.addEventListener("keydown", esc); } catch {} });   // auch wenn die App den Fokus hat (gleiche Herkunft)
 }
-let fensterEl = null;
-function oeffneFenster(url, name) {
-  schliesseFenster(false);
-  const el = document.createElement("div");
-  el.className = "fenster"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", name);
-  el.innerHTML = `<div class="fenster-leiste"><span class="fenster-name">${document.querySelector(".signet svg")?.outerHTML || ""}<b></b></span><span class="fenster-knoepfe"><button type="button" class="vollbild" title="Vollbild"></button><a class="tab" href="" target="_blank" rel="noopener" title="In eigenem Tab öffnen"></a><button type="button" class="schliessen" title="Schliessen"></button></span></div><iframe title="" allow="fullscreen; autoplay; microphone; camera; display-capture; clipboard-write" allowfullscreen loading="eager"></iframe>`;
-  el.querySelector("b").textContent = name;
-  const zeichenVon = (n) => document.querySelector(`template#zeichen-${n}`)?.innerHTML || "";
-  el.querySelector(".vollbild").innerHTML = zeichenVon("vollbild") + "<span>Vollbild</span>";
-  el.querySelector(".tab").innerHTML = zeichenVon("tab") + "<span>Eigener Tab</span>";
-  el.querySelector(".schliessen").innerHTML = zeichenVon("schliessen") + "<span>Schliessen</span>";
-  el.querySelector(".tab").href = url;
-  const rahmen = el.querySelector("iframe"); rahmen.title = name; rahmen.src = url;
-  // Escape wirkt auch, wenn die App im Rahmen den Fokus hat (gleiche Herkunft)
-  rahmen.addEventListener("load", () => { try { rahmen.contentWindow.addEventListener("keydown", (e) => { if (e.key === "Escape") zu(); }); } catch {} });
-  const zu = () => { if (history.state && history.state.fenster) history.back(); else schliesseFenster(false); };
-  el.querySelector(".schliessen").addEventListener("click", zu);
-  el.querySelector(".vollbild").addEventListener("click", () => { const q = rahmen.requestFullscreen?.(); if (q && q.catch) q.catch(() => {}); });
-  el.querySelector(".tab").addEventListener("click", zu);
-  document.body.append(el); fensterEl = el;
-  document.body.classList.add("fenster-offen");
-  history.pushState({ fenster: url }, "", "#" + name.toLowerCase().replace(/\s+/g, "-"));
-  requestAnimationFrame(() => el.classList.add("da"));
-  el.querySelector(".schliessen").focus();
-}
-function schliesseFenster(zurueck = true) {
-  if (!fensterEl) return;
-  const el = fensterEl; fensterEl = null;
-  el.classList.remove("da"); document.body.classList.remove("fenster-offen");
-  setTimeout(() => el.remove(), ruhig ? 0 : 260);
-  if (zurueck && history.state && history.state.fenster) history.back();
-}
-addEventListener("popstate", () => { if (fensterEl) schliesseFenster(false); });
-addEventListener("keydown", (e) => { if (e.key === "Escape" && fensterEl) { if (history.state && history.state.fenster) history.back(); else schliesseFenster(false); } });
+
+/* ---------- Die Titel der Apps: Buchstaben aus «ornament» (20. Oktober 2026, Wunsch: «bei diesen Titeln … sollen sich diese Wörter bzw. Buchstaben
+   bilden, transformieren») – das Wort «ornament» steht da, die Buchstaben, die der Name braucht, bleiben und rücken an ihren Platz, die anderen
+   verblassen, neue kommen dazu (ORNA aus o-r-n-a, ORMA aus o-r-m-a, PHORMA mit PH davor, OMNA COLOR aus o-m-n-a). Einmal beim Laden, nie bei «weniger Bewegung». */
+const titelEl = document.querySelector(".stueck-kopf .titel[data-wort]");
+if (titelEl && !ruhig) (async () => {
+  const QUELLE = "ornament", wort = titelEl.dataset.wort;
+  if (!/OR[NM]A|OMNA/i.test(wort)) return;   // nur die Namen, die mit «ornament» spielen (ORNA, ORMA, PHORMA, OMNA COLOR, später INPHORMA, PERPHORMA …)
+  const text = [...titelEl.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim()); if (!text) return;
+  try { await document.fonts.ready; } catch {}
+  const frei = QUELLE.split("").map((z, i) => ({ z, i, frei: true }));
+  const ziel = wort.split("").map((z) => { const q = z === " " ? null : frei.find((f) => f.frei && f.z === z.toLowerCase()); if (q) q.frei = false; return { z, von: q ? q.i : -1 }; });
+  if (!ziel.some((t) => t.von >= 0)) return;   // nichts aus «ornament»: der Titel bleibt, wie er ist (The Fictory)
+  const span = (z, cls) => { const e = document.createElement("span"); e.className = "buchstabe " + cls; e.textContent = z === " " ? "\u00a0" : z; return e; };
+  // 1. «ornament» steht da
+  const quelle = QUELLE.split("").map((z, i) => span(z, ziel.some((t) => t.von === i) ? "bleibt" : "geht"));
+  const halter = document.createElement("span"); halter.className = "wort"; halter.append(...quelle); text.replaceWith(halter);
+  await new Promise((r) => setTimeout(r, 900));
+  const lagen = quelle.map((e) => e.getBoundingClientRect());
+  // 2. das Zielwort, die bleibenden Buchstaben kommen von ihrem alten Platz
+  const neu = ziel.map((t) => span(t.z, t.von >= 0 ? "bleibt" : "kommt"));
+  halter.replaceChildren(...neu);
+  neu.forEach((e, k) => { const t = ziel[k]; if (t.von >= 0) { const a = lagen[t.von], b = e.getBoundingClientRect(); e.style.transform = `translate(${a.left - b.left}px, ${a.top - b.top}px)`; } });
+  void halter.offsetWidth;
+  halter.classList.add("bewegt");
+  neu.forEach((e) => { e.style.transform = ""; });
+  setTimeout(() => { halter.replaceWith(document.createTextNode(wort)); }, 1400);
+})();
 
 /* ---------- Signet: der Punkt läuft die Schlaufe entlang ---------- */
 if (!ruhig) document.querySelectorAll(".signet animateMotion").forEach((a) => { try { a.beginElement(); } catch {} });
@@ -192,4 +193,3 @@ const start = document.querySelector(".buehne");
 if (start) buehne(start); else document.querySelectorAll(".feld-rahmen").forEach(feld);
 document.querySelectorAll(".teilen-knopf").forEach(teilen);
 document.querySelectorAll("form.brief").forEach(briefing);
-document.querySelectorAll("a[data-fenster]").forEach(fenster);
