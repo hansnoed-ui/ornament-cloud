@@ -419,10 +419,10 @@ const signet = {
   svg(z, c) {
     const b = 0.6 + 0.35 * Math.sin((z.t - 3) * 0.42);
     const pts = signet.punkte(b);
-    // Ausdehnung der Ruheform (b = 0,45), damit die Schlaufe beim Atmen die Mitte hält
-    const ruhe = signet.punkte(0.45), xs = ruhe.map((p) => p[0]), ys = ruhe.map((p) => p[1]);
+    // Ausdehnung der weitesten Form (b = 0,95), damit die Schlaufe beim Atmen im Bild bleibt (Rückmeldung vom 20. Oktober 2026: «fällt aus dem Bildrahmen»)
+    const weit = signet.punkte(0.95), xs = weit.map((p) => p[0]), ys = weit.map((p) => p[1]);
     const mx = (Math.min(...xs) + Math.max(...xs)) / 2, my = (Math.min(...ys) + Math.max(...ys)) / 2, sp = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
-    const m = 880 / sp, bild = (p) => [f(M + (p[0] - mx) * m), f(M + (p[1] - my) * m)];
+    const m = 1000 / sp, bild = (p) => [f(M + (p[0] - mx) * m), f(M + (p[1] - my) * m)];
     const d = pts.map((p, i) => (i ? "L" : "M") + bild(p).join(" ")).join("") + "Z";
     // die innere Schleife: wo r < 0 (cos t < −b)
     const innen = pts.filter((p) => b + Math.cos(p[2]) < 0);
