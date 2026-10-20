@@ -83,7 +83,15 @@ function buehne(el) {
   // beim Aufruf ein anderer als der eingebaute, jedes Mal ein anderer
   let n = 1 + zufall(zettel.length); if (n === aktuell) n = (n % zettel.length) + 1;
   zeige(n);
-  nochmal?.addEventListener("click", () => { let m = 1 + zufall(zettel.length); if (m === aktuell) m = (m % zettel.length) + 1; zeige(m); });
+  const naechster = () => { let m = 1 + zufall(zettel.length); if (m === aktuell) m = (m % zettel.length) + 1; zeige(m); };
+  nochmal?.addEventListener("click", naechster);
+  // der Leitsatz wechselt von selbst alle neun Sekunden, solange niemand im Feld ist; nicht bei «weniger Bewegung»
+  if (!ruhig) {
+    let takt = setInterval(naechster, 9000);
+    el.addEventListener("pointerenter", () => clearInterval(takt));
+    el.addEventListener("pointerleave", () => { clearInterval(takt); takt = setInterval(naechster, 9000); });
+    el.addEventListener("focusin", () => clearInterval(takt));
+  }
   if (f) {
     let beruehrt = null;
     f.zellen.forEach((c) => {

@@ -46,5 +46,11 @@ export function ladeOrma() {
   });
 }
 
+/** Die 180 Gestaltungsübungen von OMNA COLOR (stehen in der Seite selbst, alpha/omna-color/index.html, «const EX = [...]») */
+export function ladeOmna() {
+  const m = lies("alpha/omna-color/index.html").match(/const EX = (\[.*?\]);/s);
+  return m ? JSON.parse(m[1]) : [];
+}
+
 export function ladeWerke() { return JSON.parse(lies("src/art/werke.json")); }
 export function ladeBeitraege() { return JSON.parse(lies("social-media/daten/eintraege.json")); }

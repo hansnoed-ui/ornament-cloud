@@ -109,7 +109,7 @@ ul, ol { padding: 0; list-style: none; }
 .feld { position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--linie); border-left: 1px solid var(--linie); }
 .feld a { position: relative; display: flex; flex-direction: column; justify-content: space-between; aspect-ratio: 1; padding: 8px 8px 7px; border-right: 1px solid var(--linie); border-bottom: 1px solid var(--linie); text-decoration: none; font-size: 0.82rem; line-height: 1.15; overflow: hidden; min-width: 0; transition: background 0.15s ease; }
 .feld a .n { font-size: 0.72rem; color: var(--grau); font-variant-numeric: tabular-nums; }
-.feld a .t { letter-spacing: -0.01em; hyphens: auto; overflow-wrap: anywhere; }
+.feld a .t { letter-spacing: -0.01em; hyphens: manual; }
 .feld a:hover, .feld a:focus-visible, .feld a[aria-current], .feld a.aktiv { background: var(--faden); color: var(--papier); outline: none; }
 .feld a:hover .n, .feld a:focus-visible .n, .feld a[aria-current] .n, .feld a.aktiv .n { color: inherit; opacity: 0.75; }
 .feld a.nah { background: var(--faden-hell); }
@@ -142,7 +142,10 @@ ul, ol { padding: 0; list-style: none; }
 
 /* ---------- Startseite ---------- */
 .buehne { padding: 40px 0 0; }
+.buehne .titel { margin-bottom: 44px; max-width: 18ch; }
+.buehne .titel small { max-width: 60ch; }
 .buehne .sieben { align-items: center; }
+.buehne-satz .kicker { max-width: 44ch; }
 .buehne-satz { display: grid; gap: 22px; align-content: center; min-height: 100%; }
 .buehne-satz .leitsatz { min-height: 4.4em; }
 .buehne-satz .woher { display: flex; align-items: center; gap: 14px; font-size: 0.92rem; color: var(--grau); }
@@ -169,6 +172,7 @@ ul, ol { padding: 0; list-style: none; }
 .stueck .bild { aspect-ratio: 4 / 5; background: var(--flaeche); overflow: hidden; position: relative; }
 .stueck .bild img, .stueck .bild video { width: 100%; height: 100%; object-fit: cover; }
 .stueck .bild.quer { aspect-ratio: 1200 / 630; }
+.stueck .bild.quadrat { aspect-ratio: 1; }
 .stueck h3 { font-weight: 500; font-size: 1.1rem; letter-spacing: -0.01em; }
 .stueck p { color: var(--grau); font-size: 0.95rem; line-height: 1.4; }
 .stueck:hover h3 { color: var(--faden); }
@@ -266,9 +270,35 @@ ul, ol { padding: 0; list-style: none; }
 /* Lebenslauf auf «Über» und Referenzen bei der Kuration */
 .hintergrund { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--linie); display: grid; gap: 14px; max-width: 62ch; color: var(--grau); font-size: 1rem; }
 .hintergrund h2 { font-weight: 500; font-size: 1.1rem; letter-spacing: -0.01em; color: var(--tinte); }
+.referenzen { padding: 40px 0 0; }
+.referenzen h2 { font-weight: 500; font-size: 1.35rem; letter-spacing: -0.02em; margin-bottom: 14px; }
 .jahre { display: grid; border-top: 1px solid var(--linie); max-width: 62ch; }
-.jahre li { display: grid; grid-template-columns: 6rem 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--linie); }
+.jahre li { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--linie); }
 .jahre .jahr { color: var(--grau); font-variant-numeric: tabular-nums; font-size: 0.95rem; }
+
+/* Beispiele: was aus den Apps herauskommt */
+.paar { display: grid; grid-template-columns: 1fr 28px 1fr; gap: 12px; align-items: center; max-width: 720px; }
+.paar .bild { aspect-ratio: 4 / 5; background: var(--flaeche); overflow: hidden; }
+.paar .bild img { width: 100%; height: 100%; object-fit: cover; }
+.paar .pfeil { height: 1px; background: var(--faden); position: relative; }
+.paar .pfeil::after { content: ""; position: absolute; right: -1px; top: -4px; width: 8px; height: 8px; border-top: 1px solid var(--faden); border-right: 1px solid var(--faden); transform: rotate(45deg); }
+.paar figcaption, .beispiel-video figcaption { grid-column: 1 / -1; margin-top: 8px; font-size: 0.95rem; color: var(--grau); max-width: 60ch; }
+.beispiel-video { display: grid; gap: 8px; max-width: 420px; }
+.beispiel-video video { width: 100%; height: auto; aspect-ratio: 4 / 5; background: #000; }
+.beispiel-texte { display: grid; gap: 24px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.beispiel-texte.eins { grid-template-columns: 1fr; max-width: 62ch; }
+.konstellation, .uebung { display: grid; gap: 10px; align-content: start; padding-top: 14px; border-top: 1px solid var(--linie); font-family: var(--serif); font-size: 1.08rem; line-height: 1.45; }
+.konstellation h3, .uebung h3 { font-family: var(--sans); font-weight: 500; font-size: 1.1rem; letter-spacing: -0.01em; }
+.konstellation .frage, .uebung .frage { font-style: italic; }
+.konstellation .klein, .uebung .klein { font-family: var(--sans); }
+.uebung ol { list-style: decimal; padding-left: 1.3em; display: grid; gap: 4px; }
+.auftraege { display: grid; gap: 8px; }
+.auftraege li { display: grid; gap: 2px; }
+.galerie { display: grid; gap: 32px 24px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.galerie-stueck { display: grid; gap: 10px; align-content: start; }
+.galerie-stueck .paar { max-width: none; }
+.galerie-stueck .beispiel-texte { grid-template-columns: 1fr; }
+.galerie-stueck .beispiel-video { max-width: none; }
 
 /* ---------- Werke, Zuletzt, Über ---------- */
 .werk { display: grid; gap: 10px; }

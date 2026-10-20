@@ -7,8 +7,10 @@ export const SEITE = {
   name: "ornament.cloud",
   adresse: "https://ornament.cloud/b/",
   claim: "Beobachtung ist Anlass für Veränderung in der Realität.",
-  beschreibung: "49 Zettel, sieben Apps, vier Prüfraster und vier Leistungen von Christian Strickler, Kaiserstuhl: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.",
-  person: { name: "Christian Strickler", ort: "Kaiserstuhl AG, Schweiz", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
+  titel: "Theorie, die man anfassen kann.",
+  lead: "49 Zettel zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation, sieben Apps zum Spielen und Gestalten, vier Prüfraster zum genaueren Hinsehen und vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau.",
+  beschreibung: "49 Zettel, sieben Apps, vier Prüfraster und vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.",
+  person: { name: "Christian Strickler", ort: "zwischen Zürich, Basel und Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
   sprache: "de-CH",
 };
 
@@ -30,36 +32,43 @@ export const APPS = [
     text: "Zwei Ringe drehen gegeneinander: aussen zwanzig Künstler:innen, innen zwanzig Theoretiker:innen. Wo sie stehen bleiben, steht eine Konstellation aus dem kuratierten Bestand von 326: ein kurzer Text und eine Frage, die offen bleibt. Das Rad erzeugt keine Antworten, es erzeugt Konstellationen.",
     fuer: "Für alle, die mit einem Gedanken anfangen wollen und nicht mit einer Lösung.",
     url: "portfolio/nebeneinander-nacheinander/", app: "portfolio/nebeneinander-nacheinander/app/", feld: "portfolio/nebeneinander-nacheinander/feld/", bild: "assets/og-nebeneinander-nacheinander.png", bildAlt: "Das Doppelrad von ORNA mit vierzig Zeichen",
+    bildPos: "2% 50%", beispiele: { art: "orna", ids: ["agnes-martin__niklas-luhmann", "sol-lewitt__george-spencer-brown", "mona-hatoum__hannah-arendt"] },
     zeichen: "rad" },
   { slug: "orma", name: "ORMA", werk: "Nebeneinander, Nacheinander", gattung: "Text und Theorie", kurz: "Zehn Minuten zu zweit. Zwei Sichtweisen. Ein neuer Gedanke.",
     text: "Ein Kunst- und Denkspiel für zwei Personen an einem Gerät: drehen, lesen, einen Auftrag wählen, getrennt antworten, aufdecken, weiterdenken. Allein spielst du «Re-Entry»: Bringt das Rad dieselbe Konstellation wieder, antwortest du noch einmal, ohne die erste Antwort zu sehen. Ohne Punkte, ohne Zeitdruck, ohne Bewertung.",
     fuer: "Für Paare, Freund:innen, Kolleg:innen, Seminare und für alle, die mit sich selbst ins Gespräch kommen wollen.",
     url: "alpha/orma/", app: "alpha/orma/", bild: "alpha/orma-facebook-1200x630.jpg", bildAlt: "Das Symbol von ORMA, in der Mitte geteilt: links schwarz auf weiss, rechts weiss auf schwarz",
+    bildPos: "50% 50%", beispiele: { art: "orma", id: "eva-hesse__susan-leigh-star" },
     zeichen: "orma" },
   { slug: "omna-color", name: "OMNA COLOR", gattung: "Gestaltung", kurz: "Zwei Farbräder, 180 Gestaltungsübungen.",
     text: "Zwei Farbräder mit sieben Themen drehen gegeneinander: Farbe, Linie, Form, Raum und Material, Zeit und Körper, Zufall, Symbol und Würdigung. Zeigen sie zwei Farben, verbindet die Übung beide Themen; zeigen sie dieselbe, bleibt es beim reinen Thema. Jede Übung nennt Material, Schritte, Dauer und eine Frage zum Schluss.",
     fuer: "Für Ateliers, Schulklassen, Workshops und für alle, die mit den Händen denken.",
     url: "alpha/omna-color/", app: "alpha/omna-color/app/", bild: "assets/vorschau-omna-color-app.jpg", bildAlt: "Die zwei Farbräder von OMNA COLOR",
+    bildPos: "50% 40%", beispiele: { art: "omna", ids: ["001", "045", "170"] },
     zeichen: "farbe" },
   { slug: "phorma-i", name: "PHORMA I", gattung: "Bild und Video", kurz: "Ein Foto zerfällt in Linien, Formen und Farben.",
     text: "Aus einem Foto wird ein Film: Es zerfällt in Linien, Formen und Farben, verwandelt sich in Funken, Glas, Scherben, Echo und Gebirge oder wird im Flug erkundet. Das Ergebnis ist ein Video im Hochformat für Social Media. Alles rechnet auf deinem Gerät; das Bild verlässt es nicht.",
     fuer: "Für alle, die aus einem Bild ein Reel machen wollen, ohne Schnittprogramm.",
     url: "alpha/bildfragmentieren/", app: "alpha/bildfragmentieren/app/", bild: "assets/vorschau-phorma-i.jpg", bildAlt: "Ein Standbild aus PHORMA I: ein Foto, zerlegt in Linien und Scherben",
+    bildPos: "50% 50%", beispiele: { art: "paar", vorher: "alpha/bildfragmentieren/beispiel.jpg", nachher: "assets/vorschau-phorma-i-2x.jpg", text: "Ein Foto wird ein Glaskristall: das Bild liegt auf den Flächen, die Linien sind die Kanten." },
     zeichen: "scherbe" },
   { slug: "phorma-ii", name: "PHORMA II", gattung: "Bild und Video", kurz: "Eine leuchtende Linie wächst und zeichnet dein Foto.",
     text: "Eine Linie wächst und zeichnet das Bild, ein Schleimpilz findet seine Formen, eine Lichtebene tastet die Tiefe ab, das Bild weht als Seidentuch oder zerfällt im Takt in Rechtecke. Jeder Effekt einzeln oder als Kette, aus Foto oder Video. Ein Video im Hochformat, gerechnet auf der eigenen Grafikkarte.",
     fuer: "Für Künstler:innen, Galerien und Museen, die ein Werk in Bewegung zeigen wollen.",
     url: "alpha/phorma-ii/", bild: "assets/vorschau-phorma-ii.jpg", bildAlt: "Ein Standbild aus PHORMA II: Nachtblau mit weissen und kupfernen Linienbündeln",
+    bildPos: "50% 50%", beispiele: { art: "paar", vorher: "alpha/phorma-ii/beispiel.jpg", nachher: "assets/vorschau-phorma-ii-2x.jpg", text: "Dasselbe Foto, zerlegt in Rechtecke mit versetzten Ausschnitten, Rändern und Zahlentafeln (Montage)." },
     zeichen: "linie" },
   { slug: "phorma-iii", name: "PHORMA III", gattung: "Bild und Video", kurz: "Aus Klang wird Bild.",
     text: "Zu Musik oder einer Stimme entstehen Gewebe aus feinen Linien, ein Faden im Würfel aus Licht oder glänzende Perlen in einer Kugel aus Fäden; ein Video wird gescratcht und verfrickelt. Das Ergebnis ist ein Video mit Ton. Das Intro der bisherigen Website ist damit gerechnet.",
     fuer: "Für Musiker:innen, Sprecher:innen und alle, die zu einem Ton ein Bild brauchen.",
     url: "alpha/phorma-iii/", app: "alpha/phorma-iii/app/", bild: "assets/vorschau-phorma-iii.jpg", bildAlt: "Ein Standbild aus PHORMA III: glänzende Perlen in einer Kugel aus Fäden",
+    bildPos: "50% 50%", beispiele: { art: "video", datei: "assets/start-intro.mp4", bild: "assets/vorschau-phorma-iii.jpg", text: "Der Lichtwürfel: ein Faden irrt im Würfel aus Licht und legt sich zum Logo; gerechnet aus der Musik, mit Ton. Das Intro der bisherigen Website." },
     zeichen: "faden" },
   { slug: "the-fictory", name: "The Fictory", gattung: "Bild und Video", kurz: "Ein Bild zerfällt, ordnet sich neu und setzt sich wieder zusammen.",
     text: "Leg ein Bild auf die Werkbank: Es zerfällt in seine Teile, ordnet sich neu, hinterlässt Spuren und setzt sich am Ende neu zusammen. Eine Animation, sechs Standbilder und ein Video. Wer will, gibt eine Regel aus ORNA mit; sie bestimmt den Eingriff.",
     fuer: "Für alle, die sehen wollen, was ein Bild noch sein könnte.",
     url: "alpha/the-fictory/", app: "alpha/the-fictory/app/", bild: "assets/vorschau-the-fictory-app.jpg", bildAlt: "Ein Standbild aus The Fictory: ein Bild in Teilen auf der Werkbank",
+    bildPos: "50% 50%", beispiele: { art: "paar", vorher: "alpha/the-fictory/beispiel.jpg", nachher: "assets/vorschau-the-fictory.jpg", text: "Ein Bild auf der Werkbank zerfällt in seine Teile; jedes Teil wird eine Spur." },
     zeichen: "teile" },
 ];
 
@@ -134,12 +143,12 @@ export const ANGEBOTE = [
 
 /** Produkte der Werkstatt (Print on Demand). Die Dateien erzeugt tools/build-b-pod.mjs; die Angaben sind für Amazon KDP vorbereitet. */
 export const PRODUKTE = [
-  { slug: "zu-seiner-zeit-buch", name: "Zu seiner Zeit", untertitel: "49 Zettel zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation", art: "Taschenbuch, 6 × 9 Zoll (15,24 × 22,86 cm), Innenteil schwarzweiss",
+  { slug: "zu-seiner-zeit-buch", name: "Zettelkasten", untertitel: "49 Zettel zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation", art: "Taschenbuch, 6 × 9 Zoll (15,24 × 22,86 cm), Innenteil schwarzweiss",
     datei: "pod/zu-seiner-zeit-buch-innen.pdf", cover: "pod/zu-seiner-zeit-buch-cover.pdf",
     beschreibung: "Sieben Zyklen, sieben Strophen je Zyklus: 49 Zettel von der Brücke bis zur Zukunft. Jeder Zettel hat einen Leitsatz, einen Text von rund hundert Wörtern und vier Verweise in Soziologie, Philosophie, Kunst und Literatur. Ein Zettelkasten zum Lesen in jeder Reihenfolge.",
-    schlagworte: ["Systemtheorie", "Luhmann", "Zettelkasten", "Kunsttheorie", "Soziologie", "Künstliche Kommunikation", "Plattform"],
+    schlagworte: ["Systemtheorie", "Zettelkasten", "Kunsttheorie", "Soziologie", "Künstliche Kommunikation", "Plattform", "Beobachtung"],
     kategorien: ["Sachbuch › Soziologie › Theorie", "Kunst › Kunsttheorie"], preis: "CHF 19.90 / EUR 18.90 (Vorschlag)" },
-  { slug: "zu-seiner-zeit-karten", name: "Zu seiner Zeit – 49 Karten", untertitel: "Ein Zettelkasten als Kartenset", art: "49 Karten A6, Vorderseite Leitsatz, Rückseite Text; als PDF zum Druck",
+  { slug: "zu-seiner-zeit-karten", name: "Zettelkasten – 49 Karten", untertitel: "Ein Zettelkasten als Kartenset", art: "49 Karten A6, Vorderseite Leitsatz, Rückseite Text; als PDF zum Druck",
     datei: "pod/zu-seiner-zeit-karten.pdf",
     beschreibung: "Die 49 Leitsätze als Karten: ziehen, legen, verbinden. Auf der Rückseite der ganze Zettel. Für Seminare, Ateliers und den Schreibtisch.",
     schlagworte: ["Kartenset", "Impulskarten", "Seminar", "Systemtheorie", "Kunst", "Coaching", "Zettelkasten"],
@@ -147,7 +156,7 @@ export const PRODUKTE = [
   { slug: "das-feld-poster", name: "Das Feld", untertitel: "Die 49 Zettel als Ornament, A2", art: "Poster A2 (420 × 594 mm), schwarz auf weiss, als PDF zum Druck",
     datei: "pod/das-feld-a2.pdf",
     beschreibung: "Sieben mal sieben: alle 49 Titel und Leitsätze auf einem Blatt, als Feld. Zum Aufhängen im Atelier, im Büro, im Seminarraum.",
-    schlagworte: ["Poster", "Typografie", "Systemtheorie", "Zettelkasten", "Ornament", "Kunstdruck", "Luhmann"],
+    schlagworte: ["Poster", "Typografie", "Systemtheorie", "Zettelkasten", "Ornament", "Kunstdruck", "Beobachtung"],
     kategorien: ["Wandbilder und Poster"], preis: "CHF 39.– (Vorschlag)" },
   { slug: "notizbuecher", name: "Sieben Notizbücher", untertitel: "Ein Umschlag je Zyklus", art: "Notizbuch 6 × 9 Zoll, 120 Seiten liniert; Umschläge als PDF (KDP-Vorlage mit Rücken 0,3 Zoll)",
     datei: "pod/notizbuch-umschlaege.pdf",
@@ -159,7 +168,7 @@ export const PRODUKTE = [
 /** Über Christian Strickler. Nur, was belegt ist (Impressum, Termine, Video «Mensch, Niklas!»). */
 export const UEBER = {
   text: [
-    "Christian Strickler arbeitet in Kaiserstuhl am Rhein. Er liest seit über zehn Jahren Niklas Luhmann und macht daraus Dinge, die man anfassen kann: einen Zettelkasten, ein Rad, das Künstler:innen und Theoretiker:innen zusammenbringt, Farbräder mit Übungen, Maschinen, die aus Fotos und Tönen Bilder machen, und Prüfraster, mit denen sich Theorien, Texte und Körperereignisse befragen lassen.",
+    "Christian Strickler lebt und arbeitet zwischen Zürich, Basel und Aarau. Er macht Theorie zu Dingen, die man anfassen kann: einen Zettelkasten, ein Rad, das Künstler:innen und Theoretiker:innen zusammenbringt, Farbräder mit Übungen, Maschinen, die aus Fotos und Tönen Bilder machen, und Prüfraster, mit denen sich Theorien, Texte und Körperereignisse befragen lassen.",
     "Vier Leistungen: Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte. Er gestaltet und baut Websites und Apps, leitet Seminare und Projekte mit Schulen und Teams, berät Institutionen, die Kunst zu einem Teil ihrer Arbeit machen wollen, kuratiert Ausstellungen und verkauft Werke, Prints und Editionen.",
     "Alles auf dieser Seite läuft ohne Dienste von aussen: keine Cookies, keine Werbung, keine Tracker. Besuche werden ohne Cookies gezählt. Die Apps rechnen auf deinem Gerät; deine Bilder verlassen es nicht.",
   ],
@@ -176,5 +185,5 @@ export const UEBER = {
 
 /** Stichworte für Suchmaschinen je Seite (Deutschschweiz zuerst). */
 export const SEO = {
-  start: "Christian Strickler Kaiserstuhl, Webdesign Aargau, App Design Schweiz, Kuration Ausstellung, Systemtheorie Luhmann Zettelkasten, Kunst und Theorie",
+  start: "Christian Strickler Zürich Basel Aarau, Webdesign Aargau, App Design Schweiz, Kuration Ausstellung, Systemtheorie Zettelkasten, Kunst und Theorie",
 };
