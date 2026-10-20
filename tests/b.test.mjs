@@ -1,0 +1,149 @@
+// Der Neubau unter b/ (tools/build-b.mjs, Stand 20. Oktober 2026): jede Seite mit Titel, Beschreibung, Canonical oder noindex, Vorschaukarte und
+// Angaben für Suchmaschinen; die Zettel wörtlich wie die Quelle; nichts von aussen; Werkstatt nicht verlinkt; Sitemap vollständig; jev-Tabelle gültig.
+//   node --test tests/b.test.mjs
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
+import { ladeZettel, ladeOrma } from "../tools/b-daten.mjs";
+import { pruefsumme } from "../tools/build-b-jev.mjs";
+import { APPS, RASTER, ANGEBOTE } from "../src/b/inhalt.mjs";
+
+const root = new URL("../", import.meta.url);
+const lies = (p) => readFileSync(new URL(p, root), "utf8");
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const walk = (d, vor = "") => readdirSync(new URL(d, root), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(d + e.name + "/", vor + e.name + "/") : e.name === "index.html" ? [vor] : []);
+const seiten = walk("b/");
+const meta = (html, name) => html.match(new RegExp(`<meta (?:name|property)="${name}" content="([^"]*)"`))?.[1];
+const pngMass = (buf) => [buf.readUInt32BE(16), buf.readUInt32BE(20)];
+
+test("b/: alle Seiten (72), jede mit Titel, Beschreibung, Canonical oder noindex, Open Graph, X-Karte und JSON-LD", () => {
+  assert.equal(seiten.length, 1 + 1 + 49 + 1 + APPS.length + 1 + RASTER.length + 1 + ANGEBOTE.length + 4);
+  for (const p of seiten) {
+    const html = lies(`b/${p}index.html`);
+    assert.match(html, /<html lang="de">/, p);
+    const titel = html.match(/<title>([^<]+)<\/title>/)?.[1];
+    assert.ok(titel && titel.length >= 10 && titel.length <= 110, `${p}: Titel «${titel}»`);
+    const b = meta(html, "description");
+    assert.ok(b && b.length >= 40 && b.length <= 200, `${p}: Beschreibung 40–200 Zeichen (${b?.length})`);
+    const noindex = /<meta name="robots" content="noindex/.test(html);
+    if (noindex) assert.ok(!/<link rel="canonical"/.test(html), `${p}: noindex ohne Canonical`);
+    else assert.equal(html.match(/<link rel="canonical" href="([^"]+)"/)?.[1], `https://ornament.cloud/b/${p}`, `${p}: Canonical`);
+    assert.equal(meta(html, "og:url"), `https://ornament.cloud/b/${p}`, `${p}: og:url`);
+    for (const k of ["og:title", "og:description", "og:image", "og:image:alt", "twitter:card", "twitter:title", "twitter:image"]) assert.ok(meta(html, k), `${p}: ${k}`);
+    assert.equal(meta(html, "twitter:image"), meta(html, "og:image"), `${p}: X-Bild gleich OG-Bild`);
+    for (const ld of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) assert.doesNotThrow(() => JSON.parse(ld[1]), `${p}: JSON-LD lesbar`);
+    assert.match(html, /<link rel="stylesheet" href="\/b\/b\.css\?v=\d+">/, `${p}: b.css mit Versionsmarke`);
+    assert.match(html, /<script type="module" src="\/b\/b\.js\?v=\d+"><\/script>/, `${p}: b.js mit Versionsmarke`);
+    assert.match(html, /<nav class="hauptnav"/, `${p}: Hauptnavigation`);
+    assert.match(html, /href="\/impressum\/"/, `${p}: Link zum Impressum`);
+  }
+});
+
+test("b/: Vorschaukarten liegen da, 1200 × 630, unter 300 KB", () => {
+  for (const p of seiten) {
+    const html = lies(`b/${p}index.html`);
+    const bild = meta(html, "og:image").replace("https://ornament.cloud/", "");
+    assert.ok(existsSync(new URL(bild, root)), `${p}: ${bild} gibt es`);
+    if (bild.endsWith(".png") && bild.startsWith("b/kacheln/")) {
+      const buf = readFileSync(new URL(bild, root));
+      assert.deepEqual(pngMass(buf), [1200, 630], `${p}: ${bild} ist 1200 × 630`);
+      assert.ok(buf.length < 300 * 1024, `${p}: ${bild} unter 300 KB (${Math.round(buf.length / 1024)} KB)`);
+    }
+    for (const k of html.matchAll(/href="(\/b\/kacheln\/[^"]+)" download/g)) assert.ok(existsSync(new URL(k[1].slice(1), root)), `${p}: ${k[1]} gibt es`);
+  }
+});
+
+test("b/: nichts von aussen – keine Skripte, Stile, Bilder oder Schriften von fremden Adressen", () => {
+  for (const p of seiten) {
+    const html = lies(`b/${p}index.html`).replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "");
+    for (const m of html.matchAll(/(?:src|href)="(https?:\/\/[^"]+)"/g)) assert.ok(/^https:\/\/ornament\.cloud\//.test(m[1]), `${p}: ${m[1]}`);
+    assert.doesNotMatch(html, /fonts\.googleapis|cdn\.|unpkg|jsdelivr/, `${p}: keine CDNs`);
+  }
+  const js = lies("b/b.js");
+  assert.doesNotMatch(js.replace(/^\s*\/\/.*$/gm, ""), /\bfetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|typesafe/i, "b.js ruft nichts auf");
+  assert.equal(lies("b/b.css"), lies("src/b/b.css"), "b.css ist die Kopie der Quelle");
+  assert.equal(js, lies("src/b/b.js"), "b.js ist die Kopie der Quelle");
+});
+
+test("b/zettel: alle 49, Titel, Leitsatz und Text wörtlich wie src/data/zu-seiner-zeit.json, die vier Verweise dazu, Link zum Zettelkasten", () => {
+  const zettel = ladeZettel();
+  for (const z of zettel) {
+    const p = `zettel/${z.slug}/`;
+    assert.ok(seiten.includes(p), `${p} gibt es`);
+    const html = lies(`b/${p}index.html`);
+    assert.ok(html.includes(`<h1 class="titel">${esc(z.title)}</h1>`), `${p}: Titel`);
+    assert.ok(html.includes(`<p class="leitsatz">${esc(z.bottom_line)}</p>`), `${p}: Leitsatz`);
+    assert.ok(html.includes(`<p>${esc(z.text)}</p>`), `${p}: Text wörtlich`);
+    for (const r of z.references) { assert.ok(html.includes(esc(r.citation)), `${p}: Verweis ${r.citation}`); assert.ok(html.includes(esc(r.resonance)), `${p}: Resonanz zu ${r.citation}`); }
+    assert.ok(html.includes(`href="/zu-seiner-zeit/strophe/${z.slug}/"`), `${p}: Link zum Zettelkasten`);
+    assert.ok(existsSync(new URL(`zu-seiner-zeit/strophe/${z.slug}/index.html`, root)), `${p}: der Zettel im Zettelkasten gibt es`);
+    assert.match(html, /<section class="faeden"/, `${p}: Fäden`);
+  }
+  const uebersicht = lies("b/zettel/index.html");
+  for (const z of zettel) assert.ok(uebersicht.includes(`<span class="kurz">${esc(z.bottom_line)}</span>`), `Übersicht: Leitsatz ${z.number}`);
+});
+
+test("b/: die Startseite trägt das Feld mit allen 49 Zetteln, den Dialog und die Daten für den Leitsatz", () => {
+  const html = lies("b/index.html");
+  const zellen = [...html.matchAll(/<a href="\/b\/zettel\/([^"]+)\/" data-n="(\d+)"/g)];
+  assert.equal(zellen.length, 49);
+  assert.deepEqual(zellen.map((m) => +m[2]), Array.from({ length: 49 }, (_, i) => i + 1), "in der Reihenfolge 1 bis 49");
+  const daten = JSON.parse(html.match(/<script type="application\/json" id="zettel-daten">([\s\S]*?)<\/script>/)[1]);
+  assert.equal(daten.length, 49);
+  assert.equal(daten[0].leitsatz, ladeZettel()[0].bottom_line);
+  for (const id of ["bild", "frage", "auftrag", "begriff", "gruppe"]) { assert.match(html, new RegExp(`<input type="radio" name="mit" id="mit-${id}">`)); assert.match(html, new RegExp(`class="weg weg-${id}"`)); }
+  const faeden = JSON.parse(html.match(/data-faeden="([^"]+)"/)[1].replace(/&quot;/g, '"'));
+  assert.ok(faeden.length >= 10 && faeden.every(([a, b]) => a >= 1 && a <= 49 && b >= 1 && b <= 49 && a !== b), "Fäden zwischen Zellen");
+});
+
+test("b/: Apps, Raster und Angebote verlinken ihre Ziele, und die Ziele gibt es", () => {
+  for (const a of APPS) {
+    const html = lies(`b/apps/${a.slug}/index.html`);
+    for (const ziel of [a.url, a.app, a.feld].filter(Boolean)) { assert.ok(html.includes(`href="/${ziel}"`), `${a.slug}: Link ${ziel}`); assert.ok(existsSync(new URL(ziel + "index.html", root)), `${a.slug}: ${ziel} gibt es`); }
+    assert.ok(existsSync(new URL(a.bild, root)), `${a.slug}: Bild ${a.bild}`);
+  }
+  for (const r of RASTER) {
+    const html = lies(`b/raster/${r.slug}/index.html`);
+    for (const ziel of [r.seite, r.pdf, r.prompt, r.raster].filter(Boolean)) { assert.ok(html.includes(`href="/${ziel}"`), `${r.slug}: Link ${ziel}`); assert.ok(existsSync(new URL(ziel.endsWith("/") ? ziel + "index.html" : ziel, root)), `${r.slug}: ${ziel} gibt es`); }
+  }
+  for (const a of ANGEBOTE) {
+    const html = lies(`b/angebot/${a.slug}/index.html`);
+    assert.match(html, /<form class="brief"/, `${a.slug}: Briefing`);
+    assert.equal((html.match(/<fieldset>/g) || []).length, 3, `${a.slug}: drei Fragen`);
+    for (const [ziel] of a.beweis) assert.ok(existsSync(new URL((ziel.endsWith("/") ? ziel + "index.html" : ziel), root)), `${a.slug}: ${ziel} gibt es`);
+  }
+});
+
+test("b/werkstatt: noindex, nicht in der Sitemap, von keiner Seite verlinkt; alles andere in der Sitemap", () => {
+  const w = lies("b/werkstatt/index.html");
+  assert.match(w, /<meta name="robots" content="noindex">/);
+  const sitemap = lies("sitemap.xml");
+  assert.match(sitemap, /<!-- B:START[\s\S]*<!-- B:END -->/, "Block B in der Sitemap");
+  assert.ok(!sitemap.includes("/b/werkstatt/"), "Werkstatt nicht in der Sitemap");
+  for (const p of seiten) {
+    const html = lies(`b/${p}index.html`);
+    if (p !== "werkstatt/") { assert.ok(!html.includes("/b/werkstatt/"), `${p}: kein Link zur Werkstatt`); assert.ok(sitemap.includes(`<loc>https://ornament.cloud/b/${p}</loc>`), `${p}: in der Sitemap`); }
+  }
+  for (const html of ["index.html", "apps/index.html", "zu-seiner-zeit/index.html"].map(lies)) assert.ok(!html.includes("/b/werkstatt/"));
+});
+
+test("b/: die jev-Tabelle passt zu Zetteln, Angeboten, Apps, Rastern und ORMA (sonst tools/build-b-jev.mjs)", () => {
+  const j = JSON.parse(lies("src/b/jev.json"));
+  assert.equal(j.pruefsumme, pruefsumme(ladeZettel(), ladeOrma()));
+  assert.equal(Object.keys(j.zettel).length, 49);
+  for (const [n, a] of Object.entries(j.zettel)) {
+    assert.deepEqual(Object.keys(a).sort(), ["angebot", "app", "orma", "raster"], `Zettel ${n}`);
+    assert.deepEqual(Object.keys(a.angebot).sort(), ANGEBOTE.map((x) => x.slug).sort(), `Zettel ${n}: Angebote`);
+    assert.deepEqual(Object.keys(a.app).sort(), APPS.map((x) => x.slug).sort(), `Zettel ${n}: Apps`);
+  }
+  assert.match(lies("b/zettel/1-die-bruecke/index.html"), new RegExp(`jev \\(${j.modell.replace(/\./g, "\\.")}, api\\.typesafe\\.ai\\)`), "die Seite nennt, woher die Fäden kommen");
+});
+
+test("b/werkstatt: die PDFs der Produkte liegen da", () => {
+  for (const f of ["zu-seiner-zeit-buch-innen.pdf", "zu-seiner-zeit-buch-cover.pdf", "zu-seiner-zeit-karten.pdf", "das-feld-a2.pdf", "notizbuch-umschlaege.pdf"]) {
+    const p = new URL(`b/werkstatt/pod/${f}`, root);
+    assert.ok(existsSync(p), `${f} gibt es (tools/build-b-pod.mjs)`);
+    assert.ok(statSync(p).size > 10 * 1024, `${f} ist nicht leer`);
+    assert.ok(lies("b/werkstatt/index.html").includes(`href="/b/werkstatt/pod/${f}"`), `${f} verlinkt`);
+  }
+});

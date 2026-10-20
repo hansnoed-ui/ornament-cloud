@@ -583,5 +583,5 @@ test("App (19. Oktober 2026): Manifest, Symbole, Service Worker mit eigenem Cach
   const eintraege = [...alpha.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map((x) => x[1]);
   assert.deepEqual(eintraege.slice(0, 3), ["sketchory/", "the-fictory/", "phorma-iii/app/"]);
   assert.match(alpha, /<img src="phorma-iii\/icons\/apple-touch-icon\.png" alt="" width="56" height="56">\s*<div>\s*<a href="phorma-iii\/app\/">PHORMA III<\/a>/);
-  assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("phorma-iii"), "nicht in der Sitemap");
+  assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("alpha/phorma-iii"), "nicht in der Sitemap");   // b/apps/phorma-iii/ (der Neubau, 20. Oktober 2026) darf
 });

@@ -430,7 +430,8 @@ test("Alpha: nur News, Apps, Masterprompts und Web verlinken den Alpha-Bereich (
   const allowed = new Set(Object.keys(ziele));
   const gefunden = new Set();
   const found = new Set();
-  const skip = new Set(["node_modules", "alpha", "dist", ".git"]);
+  // Der Neubau unter b/ (20. Oktober 2026) stellt die Apps und Raster aus dem Alpha-Bereich dar und verlinkt sie darum; er hat eigene Tests (tests/b.test.mjs)
+  const skip = new Set(["node_modules", "alpha", "dist", ".git", "b"]);
   const walk = d => readdirSync(d, { withFileTypes: true }).flatMap(e =>
     skip.has(e.name) || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(new URL(e.name + "/", d)) : e.name.endsWith(".html") ? [new URL(e.name, d)] : []);
   for (const f of walk(root)) {

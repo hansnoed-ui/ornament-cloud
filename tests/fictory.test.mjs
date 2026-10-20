@@ -194,7 +194,7 @@ test("Alpha: Seite mit Navigation, noindex, in der Übersicht oben (seit dem 12.
   const uebersicht = readFileSync(new URL("alpha/index.html", root), "utf8");
   const eintraege = [...uebersicht.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(eintraege.slice(0, 2), ["sketchory/", "the-fictory/"]);
-  assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("the-fictory"));
+  assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("alpha/the-fictory"));   // seit 20. Oktober 2026 steht b/apps/the-fictory/ (der Neubau) in der Sitemap
 });
 
 /** Breite und Höhe aus dem Kopf einer PNG-Datei */
