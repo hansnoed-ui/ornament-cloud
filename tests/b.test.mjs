@@ -13,7 +13,8 @@ const lies = (p) => readFileSync(new URL(p, root), "utf8");
 const werkeDaten = JSON.parse(lies("src/art/werke.json"));
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const walk = (d, vor = "") => readdirSync(new URL(d, root), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(d + e.name + "/", vor + e.name + "/") : e.name === "index.html" ? [vor] : []);
-const seiten = walk("b/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p));   // ohne die Bühnen der Apps (noindex, eigener Test)
+const seiten = walk("b/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p) && !p.startsWith("en/"));   // ohne die Bühnen der Apps (noindex, eigener Test) und ohne die englischen Seiten (eigener Test)
+const seitenEn = walk("b/en/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p));
 const meta = (html, name) => html.match(new RegExp(`<meta (?:name|property)="${name}" content="([^"]*)"`))?.[1];
 const pngMass = (buf) => [buf.readUInt32BE(16), buf.readUInt32BE(20)];
 
@@ -284,5 +285,38 @@ test("Zettel: das kleine Feld führt zurück zum grossen; am Telefon steht die A
   for (const html of [feld, lies("b/index.html")]) { assert.ok(html.includes('<span class="mit-zeiger">Fahre über das Feld'), "mit Zeiger"); assert.ok(html.includes('<span class="ohne-zeiger">Tippe eine Zelle an:') && html.includes("Noch einmal tippen öffnet den Zettel."), "ohne Zeiger"); }
   const css = lies("b/b.css");
   assert.ok(css.includes("@media (hover: none) { .mit-zeiger { display: none; } .ohne-zeiger { display: inline; } }"), "b.css schaltet die Anleitung um");
+});
+
+test("b/en/: jede Seite auch auf Englisch (ohne die Werkstatt), lang=en, hreflang beidseitig, der Schalter d · e neben dem Signet, nichts Deutsches in der Oberfläche", () => {
+  assert.equal(seitenEn.length, seiten.length - 1, "alle Seiten ausser der Werkstatt");
+  for (const p of seitenEn) assert.ok(seiten.includes(p), `${p}: gibt es auch auf Deutsch`);
+  const deutsch = ["Zum Inhalt", "Hauptnavigation", ">Fäden<", "Zettel lesen", "Noch einer", "Eintragen lassen", ">Teilen<", "Zur bisherigen Website", "Impressum und Datenschutz", "Diese Seite lädt nichts", "Weiterdenken", "Was dabei herauskommt", "Prompt kopieren", "Briefing beginnen", "Alle Zettel", "Vorher: das Ausgangsbild"];
+  for (const p of seitenEn) {
+    const html = lies(`b/en/${p}index.html`);
+    assert.match(html, /<html lang="en">/, p);
+    assert.ok(html.includes(`<link rel="canonical" href="https://ornament.cloud/b/en/${p}">`), `${p}: canonical unter /b/en/`);
+    assert.ok(html.includes(`<link rel="alternate" hreflang="de" href="https://ornament.cloud/b/${p}">`) && html.includes(`<link rel="alternate" hreflang="en" href="https://ornament.cloud/b/en/${p}">`), `${p}: hreflang`);
+    assert.ok(html.includes(`<nav class="sprache" aria-label="Language"><a href="/b/${p}" lang="de" hreflang="de" title="Deutsch">d</a><a href="/b/en/${p}" lang="en" hreflang="en" title="English" aria-current="true">e</a></nav>`), `${p}: Schalter`);
+    for (const d of deutsch) assert.ok(!html.includes(d), `${p}: «${d}» ist nicht übersetzt`);
+    assert.ok(/<nav class="hauptnav"[^>]*><a href="\/b\/en\/zettel\/"[^>]*>Notes<\/a>/.test(html), `${p}: die Navigation auf Englisch unter /b/en/`);
+  }
+  // die deutschen Seiten zeigen den Schalter mit d aktiv und verweisen auf /b/en/
+  for (const p of seiten.filter((x) => x !== "werkstatt/")) {
+    const html = lies(`b/${p}index.html`);
+    assert.ok(html.includes(`<a href="/b/${p}" lang="de" hreflang="de" title="Deutsch" aria-current="true">d</a><a href="/b/en/${p}" lang="en" hreflang="en" title="English">e</a>`), `${p}: Schalter auf Deutsch`);
+    assert.ok(html.includes(`<link rel="alternate" hreflang="en" href="https://ornament.cloud/b/en/${p}">`), `${p}: hreflang en`);
+  }
+  // die Zettel auf Englisch aus zu-seiner-zeit.en.json, mit denselben Adressen
+  const z1 = lies("b/en/zettel/1-die-bruecke/index.html");
+  assert.ok(z1.includes("<h1 class=\"titel\">The Bridge</h1>") && z1.includes("Every theory begins with a bridge.") && z1.includes('<span class="gebiet">Sociology</span>'), "Zettel 1 auf Englisch");
+  assert.ok(z1.includes('href="/zu-seiner-zeit/en/strophe/1-die-bruecke/"'), "Link in den englischen Zettelkasten");
+  // Beispiele der Apps auf Englisch, die Apps selbst bleiben deutsch
+  const orna = lies("b/en/apps/orna/index.html");
+  assert.ok(orna.includes("Agnes Martin × Niklas Luhmann") && orna.includes("How can a perception be communicated") && orna.includes("The app itself is in German."), "ORNA: Beispiel übersetzt, Hinweis zur Sprache");
+  assert.ok(lies("b/en/apps/orna/oeffnen/index.html").includes('<span>Full screen</span>'), "die Bühne auf Englisch");
+  // die Bühnen gibt es in beiden Sprachen, die Sitemap kennt beide
+  assert.ok(existsSync(new URL("b/en/apps/orna/feld/index.html", root)));
+  const sm = lies("sitemap.xml");
+  assert.ok(sm.includes("<loc>https://ornament.cloud/b/en/</loc>") && sm.includes("<loc>https://ornament.cloud/b/en/zettel/1-die-bruecke/</loc>"), "Sitemap mit /b/en/");
 });
 

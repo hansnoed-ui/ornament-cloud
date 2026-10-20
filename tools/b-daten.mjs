@@ -7,14 +7,30 @@ const lies = (p) => readFileSync(new URL(p, ROOT), "utf8");
 /** Adresse eines Zettels wie im Zettelkasten: «1-die-bruecke» */
 export const zettelSlug = (z) => `${z.number}-${z.title.toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
 
-/** Die 49 Zettel aus src/data/zu-seiner-zeit.json, mit Zyklus und Adresse */
-export function ladeZettel() {
+/** Die 49 Zettel aus src/data/zu-seiner-zeit.json, mit Zyklus und Adresse; auf Englisch (seit 20. Oktober 2026, /b/en/) aus zu-seiner-zeit.en.json,
+ *  mit denselben Adressen wie auf Deutsch (so wie der Zettelkasten unter zu-seiner-zeit/en/ sie hat): Titel, Leitsatz, Text, Zyklus und die Verweise
+ *  (Gebiet übersetzt, Zitat wie es ist, die Resonanz aus «notes») kommen aus der Übersetzung. */
+export function ladeZettel(sprache = "de") {
   const d = JSON.parse(lies("src/data/zu-seiner-zeit.json"));
-  return d.stanzas.map((z) => ({ ...z, slug: zettelSlug(z), cycleDeck: d.cycles.find((c) => c.roman === z.cycle.roman)?.deck }));
+  const zettel = d.stanzas.map((z) => ({ ...z, slug: zettelSlug(z), cycleDeck: d.cycles.find((c) => c.roman === z.cycle.roman)?.deck }));
+  if (sprache === "de") return zettel;
+  const e = JSON.parse(lies(`src/data/zu-seiner-zeit.${sprache}.json`));
+  return zettel.map((z) => {
+    const u = e.stanzas[String(z.number)]; if (!u) return z;
+    const zyklus = e.cycles[z.cycle.roman] || {};
+    return { ...z, title: u.title, bottom_line: u.bottom_line, text: u.text, editorial_status: STATUS[sprache]?.[z.editorial_status] || z.editorial_status,
+      cycle: { ...z.cycle, name: zyklus.name || z.cycle.name }, cycleDeck: zyklus.deck || z.cycleDeck,
+      references: z.references.map((r, i) => ({ ...r, domain: e.domains?.[r.domain] || r.domain, resonance: u.notes?.[i] || r.resonance })) };
+  });
 }
+const STATUS = { en: { Arbeitsfassung: "Working version", Redaktionsfassung: "Editorial version" } };
 
-export function ladeZettelkasten() {
-  return JSON.parse(lies("src/data/zu-seiner-zeit.json"));
+export function ladeZettelkasten(sprache = "de") {
+  const d = JSON.parse(lies("src/data/zu-seiner-zeit.json"));
+  if (sprache === "de") return d;
+  const e = JSON.parse(lies(`src/data/zu-seiner-zeit.${sprache}.json`));
+  const cycles = d.cycles.map((c) => ({ ...c, name: e.cycles[c.roman]?.name || c.name, deck: e.cycles[c.roman]?.deck || c.deck }));
+  return { ...d, subtitle: e.subtitle || d.subtitle, structure: e.structure || d.structure, cycles, movement: cycles.map((c) => c.name) };
 }
 
 /** Namen der 20 + 20 Personen von ORNA */
