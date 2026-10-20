@@ -6,12 +6,12 @@
 //   node tools/build-b.mjs
 import { mkdirSync, readFileSync, writeFileSync, copyFileSync, existsSync, rmSync, readdirSync } from "node:fs";
 import { SEITE, DIALOG, APPS, RASTER, ANGEBOTE, PRODUKTE, UEBER } from "../src/b/inhalt.mjs";
-import { ladeZettel, ladeZettelkasten, ladeOrma, ladeWerke, ladeBeitraege } from "./b-daten.mjs";
+import { ladeZettel, ladeZettelkasten, ladeOrma, ladeWerke, ladeBeitraege, ladeOmna, ladeKonstellationen, ladePersonen } from "./b-daten.mjs";
 import { pruefsumme } from "./build-b-jev.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS = new URL("b/", ROOT);
-const V = 1;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 3;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 
@@ -28,6 +28,9 @@ const zettel = ladeZettel();
 const orma = ladeOrma();
 const werke = ladeWerke();
 const beitraege = ladeBeitraege();
+const omnaUebungen = ladeOmna();
+const konstellationen = ladeKonstellationen();
+const namen = ladePersonen();
 let jev = null;
 try {
   const j = JSON.parse(readFileSync(new URL("src/b/jev.json", ROOT), "utf8"));
@@ -82,6 +85,10 @@ const ICON = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3
 
 const NAV = [["zettel/", "Zettel"], ["apps/", "Apps"], ["raster/", "Raster"], ["angebot/", "Angebot"], ["werke/", "Werke"], ["zuletzt/", "Zuletzt"], ["ueber/", "Über"]];
 
+// weiche Trennstellen für die Zellen des Felds (Chromium ohne Wörterbuch trennt sonst nicht; die Stellen nach Duden)
+const TRENNUNG = { Beobachter: "Beob&shy;achter", Verspätung: "Ver&shy;spätung", Gedächtnis: "Ge&shy;dächtnis", Erinnerung: "Erin&shy;nerung", Vergessen: "Ver&shy;gessen", Geschichte: "Ge&shy;schichte", Erwartung: "Erwar&shy;tung", Verantwortung: "Verant&shy;wortung", Anerkennung: "Aner&shy;kennung", Berührung: "Berüh&shy;rung", Irritation: "Irri&shy;tation", Wahrnehmung: "Wahr&shy;nehmung", Übersetzung: "Über&shy;setzung", Koppelung: "Koppe&shy;lung", Ausstellung: "Aus&shy;stellung", Information: "Infor&shy;mation", Wahrscheinlichkeit: "Wahrschein&shy;lichkeit", Algorithmus: "Algo&shy;rithmus", Empfehlung: "Empfeh&shy;lung", Plattform: "Platt&shy;form", Identität: "Iden&shy;tität", Möglichkeit: "Möglich&shy;keit", Kontingenz: "Kontin&shy;genz", Unterbrechung: "Unter&shy;brechung" };
+const weich = (titel) => esc(titel).replace(/\S+$/, (w) => TRENNUNG[w] || w);
+
 function feldchen(n, nah = []) {
   return `<span class="feldchen" aria-hidden="true">${zettel.map((z) => `<i${z.number === n ? ' class="hier"' : nah.includes(z.number) ? ' class="nah"' : ""}></i>`).join("")}</span>`;
 }
@@ -89,7 +96,7 @@ function feldchen(n, nah = []) {
 /** Das Feld 7 × 7 als Links; Zeilen sind die Zyklen */
 function feld({ gross = false, klein = false, aktuell = null, paare = startPaare, still = false } = {}) {
   return `<div class="feld-rahmen" data-faeden="${attr(JSON.stringify(paare))}"${still ? " data-still" : ""}>
-  <nav class="feld${gross ? " gross" : ""}${klein ? " klein" : ""}" aria-label="Die 49 Zettel">${zettel.map((z) => `<a href="/b/zettel/${z.slug}/" data-n="${z.number}"${z.number === aktuell ? ' aria-current="page"' : ""} title="${attr(z.title)}"><span class="n">${z.number}</span><span class="t">${esc(z.title)}</span></a>`).join("")}</nav>
+  <nav class="feld${gross ? " gross" : ""}${klein ? " klein" : ""}" aria-label="Die 49 Zettel">${zettel.map((z) => `<a href="/b/zettel/${z.slug}/" data-n="${z.number}"${z.number === aktuell ? ' aria-current="page"' : ""} title="${attr(z.title)}"><span class="n">${z.number}</span><span class="t">${weich(z.title)}</span></a>`).join("")}</nav>
   <svg class="feld-faeden" aria-hidden="true" focusable="false"></svg>
   <div class="feld-zeile" aria-hidden="true">${kasten.movement.map((m) => `<span>${esc(m)}</span>`).join("")}</div>
 </div>`;
@@ -110,6 +117,22 @@ const fApp = (a) => a && { art: "App", href: `/b/apps/${a.slug}/`, was: a.name, 
 const fRaster = (r) => r && { art: "Prüfraster", href: `/b/raster/${r.slug}/`, was: r.name, klein: r.kurz };
 const fAngebot = (a) => a && { art: "Angebot", href: `/b/angebot/${a.slug}/`, was: a.name, klein: a.kurz };
 const fOrma = (k) => k && { art: "Konstellation", href: `/portfolio/nebeneinander-nacheinander/?pair=${k.id}`, was: `${k.kuenstler} × ${k.theoretiker}`, klein: k.frage };
+
+/** Eine App als Kachel: immer quadratisch, der Ausschnitt je App (bildPos) */
+function appKachel(a) {
+  return `<a class="stueck" href="/b/apps/${a.slug}/"><span class="bild quadrat"><img src="/${a.bild}" alt="${attr(a.bildAlt)}" loading="lazy" style="object-position:${attr(a.bildPos || "50% 50%")}"></span><h3>${esc(a.name)}</h3><p>${esc(a.kurz)}</p></a>`;
+}
+
+/** Beispiele: was aus einer App herauskommt (Bildpaar vorher/nachher, Video, oder Texte aus ORNA, ORMA und OMNA COLOR) */
+function beispiele(a, { kurz = false } = {}) {
+  const b = a.beispiele; if (!b) return "";
+  if (b.art === "paar") return `<figure class="paar"><span class="bild"><img src="/${attr(b.vorher)}" alt="Vorher: das Ausgangsbild" loading="lazy"></span><span class="pfeil" aria-hidden="true"></span><span class="bild"><img src="/${attr(b.nachher)}" alt="Nachher: ${attr(a.name)}" loading="lazy"></span><figcaption>${esc(b.text)}</figcaption></figure>`;
+  if (b.art === "video") return `<figure class="beispiel-video"><video controls muted loop playsinline preload="metadata" poster="/${attr(b.bild)}" width="1080" height="1350"><source src="/${attr(b.datei)}" type="video/mp4"></video><figcaption>${esc(b.text)}</figcaption></figure>`;
+  if (b.art === "orna") return `<div class="beispiel-texte">${b.ids.slice(0, kurz ? 1 : 3).map((id) => { const k = konstellationen.find((x) => x.id === id); return k ? `<article class="konstellation"><h3>${esc(namen[k.artistId])} × ${esc(namen[k.theoristId])}</h3><p>${esc(k.text)}</p><p class="frage">${esc(k.question)}</p><p class="klein"><a href="/portfolio/nebeneinander-nacheinander/?pair=${attr(k.id)}">Diese Konstellation im Rad</a></p></article>` : ""; }).join("")}</div>`;
+  if (b.art === "orma") { const k = ormaVon(b.id); if (!k) return ""; return `<div class="beispiel-texte eins"><article class="konstellation"><h3>${esc(k.kuenstler)} × ${esc(k.theoretiker)}</h3><p class="klein">Einstieg (ORMA-Redaktion)</p><p>${esc(k.einstieg)}</p><p class="klein">Drei Aufträge zur Wahl</p><ul class="auftraege">${Object.entries(k.auftraege).map(([n, t]) => `<li><span class="klein">${esc(n)}</span><span>${esc(t)}</span></li>`).join("")}</ul><p class="frage">${esc(k.frage)}</p></article></div>`; }
+  if (b.art === "omna") return `<div class="beispiel-texte">${b.ids.slice(0, kurz ? 1 : 3).map((id) => { const u = omnaUebungen.find((x) => x.id === id); return u ? `<article class="uebung"><p class="klein">${esc(u.t)} · ${u.d} Minuten</p><h3>${esc(u.n)}</h3><ol>${u.a.map((t) => `<li>${esc(t)}</li>`).join("")}</ol><p class="klein">Material: ${esc(u.m)}</p><p class="frage">${esc(u.f)}</p></article>` : ""; }).join("")}</div>`;
+  return "";
+}
 
 function teilen({ pfad, titel, text, karte }) {
   return `<div class="teilen">
@@ -200,12 +223,14 @@ function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noi
   const daten = zettel.map((z) => ({ n: z.number, slug: z.slug, titel: z.title, leitsatz: z.bottom_line }));
   const body = `
 <section class="buehne" data-aktuell="${erster.number}" aria-label="Das Feld">
-  <div class="spalte sieben">
+  <div class="spalte">
+    <h1 class="titel">${esc(SEITE.titel)}<small>${esc(SEITE.lead)}</small></h1>
+  </div>
+  <div class="spalte sieben buehne-feld">
     <div class="buehne-satz s-3">
-      <h1 class="sr-nur" hidden>ornament.cloud</h1>
+      <p class="klein kicker">Ein Zettel aus dem Zettelkasten, jedes Mal ein anderer. Im Feld rechts stehen alle 49; die Fäden verbinden Zettel, die dieselben Personen nennen.</p>
       <p class="leitsatz">${esc(erster.bottom_line)}</p>
       <p class="woher"><a href="/b/zettel/${erster.slug}/">Zettel ${erster.number} · ${esc(erster.title)}</a><button class="knopf still nochmal" type="button">Noch einer</button></p>
-      <p class="buehne-claim">${esc(SEITE.claim)} 49 Zettel, sieben Apps, vier Prüfraster und vier Leistungen, die aneinander anschliessen.</p>
     </div>
     <div class="s-4">${feld()}</div>
   </div>
@@ -239,13 +264,13 @@ function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noi
 <section class="abschnitt" aria-labelledby="spielen-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="spielen-titel">Spielen</h2><p>Sieben Apps, die im Browser laufen und auf dem Gerät rechnen. Ohne Anmeldung, ohne Netz, ohne dass ein Bild das Gerät verlässt.</p><a class="weiter" href="/b/apps/">Alle Apps</a></div>
-    <div class="reihe">${APPS.map((a) => `<a class="stueck" href="/b/apps/${a.slug}/"><span class="bild${/og-|1200x630/.test(a.bild) ? " quer" : ""}"><img src="/${a.bild}" alt="" loading="lazy" width="${/og-|1200x630/.test(a.bild) ? 1200 : 640}" height="${/og-|1200x630/.test(a.bild) ? 630 : 800}"></span><h3>${esc(a.name)}</h3><p>${esc(a.kurz)}</p></a>`).join("")}</div>
+    <div class="reihe">${APPS.map(appKachel).join("")}</div>
   </div>
 </section>
 
 <section class="abschnitt" aria-labelledby="arbeiten-titel">
   <div class="spalte">
-    <div class="abschnitt-kopf"><h2 id="arbeiten-titel">Arbeiten</h2><p>Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte: vier Leistungen von Christian Strickler, Kaiserstuhl. Jede beginnt mit einem Gespräch; das Briefing entsteht hier auf der Seite.</p><a class="weiter" href="/b/angebot/">Alle Leistungen</a></div>
+    <div class="abschnitt-kopf"><h2 id="arbeiten-titel">Arbeiten</h2><p>Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte: vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau. Jede beginnt mit einem Gespräch; das Briefing entsteht hier auf der Seite.</p><a class="weiter" href="/b/angebot/">Alle Leistungen</a></div>
     <ul class="liste-linien">${ANGEBOTE.map((a, i) => `<li><a href="/b/angebot/${a.slug}/"><span class="n">${i + 1}</span><span class="name">${esc(a.name)}</span><span class="pfeil">Briefing</span><span class="kurz">${esc(a.kurz)}</span></a></li>`).join("")}</ul>
   </div>
 </section>
@@ -302,7 +327,7 @@ function beitrag(e) {
   const body = `
 <section class="zettel-kopf">
   <div class="spalte">
-    <h1 class="titel">Zu seiner Zeit<small>${esc(kasten.subtitle)}. ${esc(kasten.structure)}. Jeder Zettel hat einen Leitsatz, einen Text und vier Verweise. Die Fäden zeigen, wer dieselben Personen nennt.</small></h1>
+    <h1 class="titel">Zettelkasten<small>${esc(kasten.subtitle)}. ${esc(kasten.structure)}. Jeder Zettel hat einen Leitsatz, einen Text und vier Verweise. Die Fäden zeigen, wer dieselben Personen nennt.</small></h1>
   </div>
 </section>
 <section class="abschnitt" aria-label="Das Feld">
@@ -316,7 +341,7 @@ ${kasten.cycles.map((c) => `<section class="zyklus" id="zyklus-${c.roman}" aria-
   </div>
 </section>`).join("\n")}
 <section class="abschnitt"><div class="spalte"><p class="klein">Der Zettelkasten in seiner ursprünglichen Form, auch auf Englisch und Spanisch: <a href="/zu-seiner-zeit/">zu-seiner-zeit</a>. Redaktionsfassung vom ${esc(kasten.date)}.</p></div></section>`;
-  veroeffentliche({ pfad: "zettel/", aktiv: "zettel/", titel: "Zu seiner Zeit – 49 Zettel", beschreibung: `${kasten.subtitle}. ${kasten.structure}, von der Brücke bis zur Zukunft, mit Leitsatz, Text und vier Verweisen je Zettel.`, body, bildAlt: "Das Feld der 49 Zettel" });
+  veroeffentliche({ pfad: "zettel/", aktiv: "zettel/", titel: "Zettelkasten – 49 Zettel", beschreibung: `${kasten.subtitle}. ${kasten.structure}, von der Brücke bis zur Zukunft, mit Leitsatz, Text und vier Verweisen je Zettel.`, body, bildAlt: "Das Feld der 49 Zettel" });
 }
 
 for (const z of zettel) {
@@ -352,12 +377,12 @@ for (const z of zettel) {
 </section>
 <section class="spalte">
   <nav class="zettel-weiter" aria-label="Blättern"><a href="/b/zettel/${voriger.slug}/" rel="prev">← ${voriger.number} · ${esc(voriger.title)}</a><a href="/b/zettel/">Das Feld</a><a href="/b/zettel/${naechster.slug}/" rel="next">${naechster.number} · ${esc(naechster.title)} →</a></nav>
-  ${teilen({ pfad: `zettel/${z.slug}/`, titel: `${z.title} – Zu seiner Zeit`, text: z.bottom_line, karte: `zettel-${z.slug}-karte.png` })}
+  ${teilen({ pfad: `zettel/${z.slug}/`, titel: `${z.title} – Zettelkasten`, text: z.bottom_line, karte: `zettel-${z.slug}-karte.png` })}
   <p class="klein" style="margin-top:14px">Derselbe Zettel im Zettelkasten, auch auf Englisch und Spanisch: <a href="/zu-seiner-zeit/strophe/${z.slug}/">zu-seiner-zeit/strophe/${z.slug}</a>.</p>
 </section>
 ${faeden(faedenListe)}`;
-  veroeffentliche({ pfad: `zettel/${z.slug}/`, aktiv: "zettel/", titel: `${z.title} – Zettel ${z.number}`, kopfTitel: `${z.title} – Zu seiner Zeit, Zettel ${z.number} – ornament.cloud`, beschreibung: z.bottom_line.length >= 40 ? z.bottom_line : `${z.bottom_line} Zettel ${z.number} von 49 aus «Zu seiner Zeit», Zyklus ${z.cycle.roman} ${z.cycle.name}.`, body, typ: "article",
-    jsonld: [{ "@context": "https://schema.org", "@type": "CreativeWork", name: z.title, headline: z.title, abstract: z.bottom_line, text: z.text, position: z.number, inLanguage: "de-CH", author: { "@type": "Person", name: SEITE.person.name }, isPartOf: { "@type": "CreativeWorkSeries", name: kasten.title, url: `${BASIS}/b/zettel/` }, url: `${BASIS}/b/zettel/${z.slug}/`, citation: z.references.map((r) => r.citation) }],
+  veroeffentliche({ pfad: `zettel/${z.slug}/`, aktiv: "zettel/", titel: `${z.title} – Zettel ${z.number}`, kopfTitel: `${z.title} – Zettelkasten, Zettel ${z.number} – ornament.cloud`, beschreibung: z.bottom_line.length >= 40 ? z.bottom_line : `${z.bottom_line} Zettel ${z.number} von 49 aus dem Zettelkasten, Zyklus ${z.cycle.roman} ${z.cycle.name}.`, body, typ: "article",
+    jsonld: [{ "@context": "https://schema.org", "@type": "CreativeWork", name: z.title, headline: z.title, abstract: z.bottom_line, text: z.text, position: z.number, inLanguage: "de-CH", author: { "@type": "Person", name: SEITE.person.name }, isPartOf: { "@type": "CreativeWorkSeries", name: "Zettelkasten", url: `${BASIS}/b/zettel/` }, url: `${BASIS}/b/zettel/${z.slug}/`, citation: z.references.map((r) => r.citation) }],
     bildAlt: `Zettel ${z.number}, ${z.title}: ${z.bottom_line}` });
 }
 
@@ -370,8 +395,15 @@ ${faeden(faedenListe)}`;
 </div></section>
 ${gruppen.map((g) => `<section class="abschnitt" aria-labelledby="g-${g.replace(/\W+/g, "-")}"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="g-${g.replace(/\W+/g, "-")}">${esc(g)}</h2></div>
-  <div class="reihe">${APPS.filter((a) => a.gattung === g).map((a) => `<a class="stueck" href="/b/apps/${a.slug}/"><span class="bild${/og-|1200x630/.test(a.bild) ? " quer" : ""}"><img src="/${a.bild}" alt="${attr(a.bildAlt)}" loading="lazy"></span><h3>${esc(a.name)}</h3><p>${esc(a.kurz)}</p></a>`).join("")}</div>
+  <div class="reihe">${APPS.filter((a) => a.gattung === g).map(appKachel).join("")}</div>
 </div></section>`).join("\n")}
+<section class="abschnitt" aria-labelledby="resultate-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="resultate-titel">Was dabei herauskommt</h2><p>Ein Foto vorher und nachher, ein Video aus Musik, eine Konstellation, eine Übung. Mehr auf den Seiten der Apps.</p></div>
+  <div class="galerie">
+    ${["phorma-i", "the-fictory"].map((sl) => { const a = appVon(sl); return `<div class="galerie-stueck"><p class="klein"><a href="/b/apps/${a.slug}/">${esc(a.name)}</a></p>${beispiele(a)}</div>`; }).join("")}
+    ${["phorma-iii", "orna", "omna-color"].map((sl) => { const a = appVon(sl); return `<div class="galerie-stueck"><p class="klein"><a href="/b/apps/${a.slug}/">${esc(a.name)}</a></p>${beispiele(a, { kurz: true })}</div>`; }).join("")}
+  </div>
+</div></section>
 <section class="abschnitt"><div class="spalte"><p class="klein">Weitere Versuche, die nicht im Menü stehen: <a href="/alpha/drittes-rad/">Das Dritte Rad</a>, <a href="/alpha/stadt/">Die Paradoxie der Stadt</a>, <a href="/alpha/sketchory/">Sketchory</a>, <a href="/alpha/aufnahme/">Aufnahme</a>.</p></div></section>`;
   veroeffentliche({ pfad: "apps/", aktiv: "apps/", titel: "Apps – sieben Anwendungen im Browser", beschreibung: "ORNA, ORMA, OMNA COLOR, PHORMA I bis III und The Fictory: Denkspiele, Farbräder und Bildmaschinen, die im Browser laufen und ohne Netz weiterarbeiten.", body, bildAlt: "Die sieben Apps von ornament.cloud" });
 }
@@ -388,6 +420,7 @@ for (const a of APPS) {
   <figure class="stueck-bild"><img src="/${attr(a.bild)}" alt="${attr(a.bildAlt)}" width="${quer ? 1200 : 640}" height="${quer ? 630 : 800}"${quer ? "" : ' style="max-width:420px"'}></figure>
   <div class="stueck-text"><p>${esc(a.text)}</p><p class="fuer">${esc(a.fuer)}</p></div>
 </div></article>
+${a.beispiele ? `<section class="abschnitt" aria-labelledby="beispiele-titel"><div class="spalte"><div class="abschnitt-kopf"><h2 id="beispiele-titel">Was dabei herauskommt</h2></div>${beispiele(a)}</div></section>` : ""}
 <section class="spalte">${teilen({ pfad: `apps/${a.slug}/`, titel: a.name, text: a.kurz })}</section>
 ${faeden([...zs.map((z) => fZettel(z)), fApp(schwester), fAngebot(angebotVon(a.gattung === "Bild und Video" ? "produkte" : "vermittlung")), a.werk ? fRaster(rasterVon("nebeneinander-nacheinander")) : fAngebot(angebotVon("webdesign"))])}`;
   veroeffentliche({ pfad: `apps/${a.slug}/`, aktiv: "apps/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, beschreibung: beschreibung(a.text), body, bild: `${BASIS}/${a.bild}`, bildAlt: a.bildAlt,
@@ -434,12 +467,12 @@ ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" 
 {
   const body = `
 <section class="stueck-kopf"><div class="spalte">
-  <h1 class="titel">Angebot<small>Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte: vier Leistungen von Christian Strickler, Kaiserstuhl. Jede beginnt mit einem Gespräch. Wähle auf der Seite der Leistung, was du brauchst: Daraus entsteht ein Briefing, das du per Mail schickst.</small></h1>
+  <h1 class="titel">Angebot<small>Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte: vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau. Jede beginnt mit einem Gespräch. Wähle auf der Seite der Leistung, was du brauchst: Daraus entsteht ein Briefing, das du per Mail schickst.</small></h1>
 </div></section>
 <section class="abschnitt"><div class="spalte">
   <ul class="liste-linien">${ANGEBOTE.map((a, i) => `<li><a href="/b/angebot/${a.slug}/"><span class="n">${i + 1}</span><span class="name">${esc(a.name)}</span><span class="pfeil">Briefing</span><span class="kurz">${esc(a.kurz)} ${esc(a.fuer)}</span></a></li>`).join("")}</ul>
 </div></section>`;
-  veroeffentliche({ pfad: "angebot/", aktiv: "angebot/", titel: "Angebot – Webdesign, Vermittlung, Kuration, Produkte", beschreibung: "Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte: vier Leistungen von Christian Strickler, Kaiserstuhl AG, von der Website bis zur Ausstellung.", body, bildAlt: "Die sieben Angebote" });
+  veroeffentliche({ pfad: "angebot/", aktiv: "angebot/", titel: "Angebot – Webdesign, Vermittlung, Kuration, Produkte", beschreibung: "Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte: vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau, von der Website bis zur Ausstellung.", body, bildAlt: "Die sieben Angebote" });
 }
 for (const [i, a] of ANGEBOTE.entries()) {
   const zs = zettelZu("angebot", a.slug, 3);
@@ -457,7 +490,7 @@ for (const [i, a] of ANGEBOTE.entries()) {
   <h2 id="ablauf-titel">So geht es</h2>
   <ol>${a.ablauf.map((s) => `<li><span>${esc(s)}</span></li>`).join("")}</ol>
 </div></section>
-${a.referenzen ? `<section class="ablauf" aria-labelledby="ref-titel"><div class="spalte"><h2 id="ref-titel">Referenzen</h2><ol class="jahre">${a.referenzen.map(([j, t]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}</span></li>`).join("")}</ol></div></section>` : ""}
+${a.referenzen ? `<section class="referenzen" aria-labelledby="ref-titel"><div class="spalte"><h2 id="ref-titel">Referenzen</h2><ol class="jahre">${a.referenzen.map(([j, t]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}</span></li>`).join("")}</ol></div></section>` : ""}
 <section class="beweis" aria-labelledby="beweis-titel"><div class="spalte">
   <h2 id="beweis-titel">Zum Anschauen</h2>
   <ul>${a.beweis.map(([h, t]) => `<li><a href="/${attr(h)}">${esc(t)}</a></li>`).join("")}</ul>
@@ -474,8 +507,8 @@ ${a.referenzen ? `<section class="ablauf" aria-labelledby="ref-titel"><div class
 </div></section>
 <section class="spalte">${teilen({ pfad: `angebot/${a.slug}/`, titel: `${a.name} – ${SEITE.person.name}`, text: a.kurz })}</section>
 ${faeden([...zs.map((z) => fZettel(z)), fApp(appVon(appTop)), fAngebot(ANGEBOTE[(i + 1) % ANGEBOTE.length])])}`;
-  veroeffentliche({ pfad: `angebot/${a.slug}/`, aktiv: "angebot/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, kopfTitel: `${a.name} – Christian Strickler, Kaiserstuhl – ornament.cloud`, beschreibung: beschreibung(`${a.kurz} ${a.fuer}`), body,
-    jsonld: [{ "@context": "https://schema.org", "@type": "Service", name: a.name, description: a.text, serviceType: a.name, areaServed: ["CH", "DE", "AT"], url: `${BASIS}/b/angebot/${a.slug}/`, provider: { "@type": "Person", name: SEITE.person.name, address: { "@type": "PostalAddress", addressLocality: "Kaiserstuhl", addressRegion: "AG", addressCountry: "CH" } } }] });
+  veroeffentliche({ pfad: `angebot/${a.slug}/`, aktiv: "angebot/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, kopfTitel: `${a.name} – Christian Strickler, Zürich, Basel, Aarau – ornament.cloud`, beschreibung: beschreibung(`${a.kurz} ${a.fuer}`), body,
+    jsonld: [{ "@context": "https://schema.org", "@type": "Service", name: a.name, description: a.text, serviceType: a.name, areaServed: ["CH", "DE", "AT"], url: `${BASIS}/b/angebot/${a.slug}/`, provider: { "@type": "Person", name: SEITE.person.name, address: { "@type": "PostalAddress", addressLocality: "Kaiserstuhl", addressRegion: "AG", addressCountry: "CH" }, workLocation: ["Zürich", "Basel", "Aarau"] } }] });
 }
 
 /* ---------- Werke ---------- */
@@ -524,7 +557,7 @@ ${faeden([fZettel(zettel[40]), fZettel(zettel[36]), fApp(appVon("orna"))])}`;
   const body = `
 <section class="stueck-kopf"><div class="spalte sieben">
   <div class="s-4">
-    <h1 class="titel">${esc(SEITE.person.name)}<small>Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte, aus Kaiserstuhl am Rhein.</small></h1>
+    <h1 class="titel">${esc(SEITE.person.name)}<small>Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte. Lebt und arbeitet zwischen Zürich, Basel und Aarau.</small></h1>
     <div class="ueber-text" style="margin-top:32px">${UEBER.text.map((t) => `<p>${esc(t)}</p>`).join("")}</div>
     <div class="hintergrund" id="hintergrund">
       <h2>${esc(UEBER.hintergrund.titel)}</h2>
@@ -540,7 +573,7 @@ ${faeden([fZettel(zettel[40]), fZettel(zettel[36]), fApp(appVon("orna"))])}`;
 </div></section>
 <section class="spalte">${teilen({ pfad: "ueber/", titel: `${SEITE.person.name} – ornament.cloud`, text: "Kunst, Design, Webdesign, Therapie und Theorie." })}</section>
 ${faeden([fAngebot(angebotVon("webdesign")), fAngebot(angebotVon("kuration")), fZettel(zettel[16]), fApp(appVon("orma"))])}`;
-  veroeffentliche({ pfad: "ueber/", aktiv: "ueber/", titel: `Über ${SEITE.person.name}`, beschreibung: `${SEITE.person.name}, Kaiserstuhl AG: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte. Hintergrund, Kontakt und Liste.`, body, typ: "profile", jsonld: [personLd()], bildAlt: `${SEITE.person.name}` });
+  veroeffentliche({ pfad: "ueber/", aktiv: "ueber/", titel: `Über ${SEITE.person.name}`, beschreibung: `${SEITE.person.name}, zwischen Zürich, Basel und Aarau: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte. Hintergrund, Kontakt und Liste.`, body, typ: "profile", jsonld: [personLd()], bildAlt: `${SEITE.person.name}` });
 }
 
 /* ---------- Werkstatt (nicht verlinkt, noindex) ---------- */

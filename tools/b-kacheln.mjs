@@ -76,19 +76,19 @@ function seiteHtml({ breite, hoehe, kicker, titel, satz, feld, fuss, serif = fal
 
 /** Was auf die Karte kommt, je Seite */
 function karte(pfad) {
-  const z = pfad.match(/^zettel\/(\d+)-/); if (z) { const s = zettel[+z[1] - 1]; return { kicker: `Zu seiner Zeit · ${s.cycle.roman} ${s.cycle.name} · Zettel ${s.number} von 49`, titel: s.title, satz: s.bottom_line, serif: true, feld: feldSvg({ hier: s.number, nah: nahe(s) }) }; }
+  const z = pfad.match(/^zettel\/(\d+)-/); if (z) { const s = zettel[+z[1] - 1]; return { kicker: `Zettelkasten · ${s.cycle.roman} ${s.cycle.name} · Zettel ${s.number} von 49`, titel: s.title, satz: s.bottom_line, serif: true, feld: feldSvg({ hier: s.number, nah: nahe(s) }) }; }
   const a = pfad.match(/^apps\/([^/]+)\//); if (a) { const x = APPS.find((p) => p.slug === a[1]); return { kicker: `App · ${x.gattung}`, titel: x.name, satz: x.kurz, feld: feldSvg() }; }
   const r = pfad.match(/^raster\/([^/]+)\//); if (r) { const x = RASTER.find((p) => p.slug === r[1]); return { kicker: `Prüfraster · ${x.fassung}`, titel: x.name, satz: x.kurz, titelGroesse: 62, feld: feldSvg() }; }
-  const g = pfad.match(/^angebot\/([^/]+)\//); if (g) { const x = ANGEBOTE.find((p) => p.slug === g[1]); return { kicker: `Leistung · ${SEITE.person.name}, Kaiserstuhl`, titel: x.name, satz: x.kurz, titelGroesse: 66, feld: feldSvg() }; }
+  const g = pfad.match(/^angebot\/([^/]+)\//); if (g) { const x = ANGEBOTE.find((p) => p.slug === g[1]); return { kicker: `Leistung · ${SEITE.person.name}`, titel: x.name, satz: x.kurz, titelGroesse: 66, feld: feldSvg() }; }
   const fest = {
     "": { titel: "ornament.cloud", satz: "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte. 49 Zettel, sieben Apps, vier Prüfraster.", feld: feldSvg({ hier: 1, nah: nahe(zettel[0]) }) },
-    "zettel/": { kicker: kasten.structure, titel: "Zu seiner Zeit", satz: kasten.subtitle, feld: feldSvg() },
+    "zettel/": { kicker: kasten.structure, titel: "Zettelkasten", satz: kasten.subtitle, feld: feldSvg() },
     "apps/": { kicker: "Sieben Apps im Browser", titel: "Apps", satz: "ORNA, ORMA, OMNA COLOR, PHORMA I bis III, The Fictory.", feld: feldSvg() },
     "raster/": { kicker: "Vier Instrumente", titel: "Prüfraster", satz: "Grundlagenpapiere und Anwendungsprompts zum genaueren Hinsehen.", feld: feldSvg() },
-    "angebot/": { kicker: SEITE.person.name + ", Kaiserstuhl", titel: "Angebot", satz: "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.", feld: feldSvg() },
+    "angebot/": { kicker: SEITE.person.name + ", zwischen Zürich, Basel und Aarau", titel: "Angebot", satz: "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.", feld: feldSvg() },
     "werke/": { kicker: SEITE.person.name, titel: "Werke", satz: "Originale, Prints in kleinen Auflagen und Arbeiten im Raum.", feld: feldSvg() },
     "zuletzt/": { kicker: "Aus Social Media", titel: "Zuletzt", satz: "Beiträge, gesichert mit Beleg und Schlagworten.", feld: feldSvg() },
-    "ueber/": { kicker: "Kaiserstuhl am Rhein", titel: SEITE.person.name, satz: "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.", titelGroesse: 66, feld: feldSvg() },
+    "ueber/": { kicker: "Zwischen Zürich, Basel und Aarau", titel: SEITE.person.name, satz: "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.", titelGroesse: 66, feld: feldSvg() },
     "werkstatt/": { kicker: "Werkstatt", titel: "Print on Demand", satz: "Produkte aus dem Bestand.", feld: feldSvg() },
   };
   return fest[pfad];
@@ -121,7 +121,7 @@ for (const pfad of liste) {
       .unten { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; }
       .fuss { display: flex; align-items: center; gap: 14px; font-size: 28px; font-weight: 500; }
     </style></head><body><div class="k">
-      <div class="kicker">Zu seiner Zeit · ${esc(s.cycle.roman)} ${esc(s.cycle.name)} · Zettel ${s.number} von 49</div>
+      <div class="kicker">Zettelkasten · ${esc(s.cycle.roman)} ${esc(s.cycle.name)} · Zettel ${s.number} von 49</div>
       <div class="titel">${esc(s.title)}</div>
       <div class="satz">${esc(s.bottom_line)}</div>
       <div class="unten"><div class="fuss">${signet}<span>ornament.cloud/b</span></div>${feldSvg({ hier: s.number, nah: nahe(s), gross: 1.1 })}</div>
