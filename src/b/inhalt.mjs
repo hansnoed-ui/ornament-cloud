@@ -7,7 +7,7 @@ export const SEITE = {
   name: "ornament.cloud",
   adresse: "https://ornament.cloud/b/",
   claim: "Beobachtung ist Anlass für Veränderung in der Realität.",
-  beschreibung: "Kunst, Design, Webdesign, Therapie und Theorie an einem Ort: 49 Zettel, Apps zum Spielen und Gestalten, Prüfraster zum Hinsehen und fünf Leistungen von Christian Strickler, Kaiserstuhl: Kunst, Webdesign, Vermittlung, Kuration, Soziale Arbeit.",
+  beschreibung: "49 Zettel, sieben Apps, vier Prüfraster und fünf Leistungen von Christian Strickler, Kaiserstuhl: Kunst, Webdesign, Vermittlung, Kuration, Soziale Arbeit. Theorie, die man anfassen kann.",
   person: { name: "Christian Strickler", ort: "Kaiserstuhl AG, Schweiz", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
   sprache: "de-CH",
 };
