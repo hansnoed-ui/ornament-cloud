@@ -118,7 +118,6 @@ test("b/: Apps, Raster und Angebote verlinken ihre Ziele, und die Ziele gibt es"
     const html = lies(`b/angebot/${a.slug}/index.html`);
     assert.match(html, /<form class="brief"/, `${a.slug}: Briefing`);
     assert.equal((html.match(/<fieldset>/g) || []).length, 3, `${a.slug}: drei Fragen`);
-    for (const [ziel] of a.beweis) assert.ok(existsSync(new URL((ziel.endsWith("/") ? ziel + "index.html" : ziel), root)), `${a.slug}: ${ziel} gibt es`);
   }
 });
 

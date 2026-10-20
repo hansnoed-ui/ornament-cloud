@@ -2,7 +2,7 @@
 // eine Art Vorstellungs- oder Erkläranimationen, stilisiert, stilvoll»). Jede <figure class="tafel-lebt" data-tafel="slug"> trägt das Ruhebild
 // als <picture>; mit Skript wird daraus die Zeichnung aus src/b/tafeln.mjs, die sich bewegt – nur solange sie im Bild ist, nur wenn die Seite
 // sichtbar ist, nie bei reduzierter Bewegung (dann bleibt das Ruhebild). Hell und dunkel folgen dem Gerät.
-import { TAFELN, farben, W } from "./tafeln.mjs?v=11";
+import { TAFELN, farben, W } from "./tafeln.mjs?v=12";
 
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const dunkelheit = matchMedia("(prefers-color-scheme: dark)");
