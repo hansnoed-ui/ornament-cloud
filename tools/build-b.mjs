@@ -230,9 +230,17 @@ function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noi
   const erster = zettel[0];
   const daten = zettel.map((z) => ({ n: z.number, slug: z.slug, titel: z.title, leitsatz: z.bottom_line }));
   const body = `
-<section class="buehne" data-aktuell="${erster.number}" aria-label="Das Feld">
+<section class="einstieg" aria-labelledby="einstieg-titel">
   <div class="spalte">
-    <h1 class="titel">${esc(SEITE.titel)}<small>${esc(SEITE.lead)}</small></h1>
+    <h1 class="titel" id="einstieg-titel">${esc(SEITE.titel)}<small>${esc(SEITE.lead)}</small></h1>
+    <div class="angebote" role="list">${ANGEBOTE.map((a) => `<a class="angebot" role="listitem" href="/b/angebot/${a.slug}/"><span class="zeichen-gross">${zeichen(a.slug)}</span><h2>${esc(a.name)}</h2><p>${esc(a.kurz)}</p><span class="weiter">Leistung und Briefing</span></a>`).join("")}</div>
+    <p class="einstieg-satz">${esc(SEITE.claimAlt)} Diese Seite ist das Beispiel: ein Zettelkasten zum Lesen, sieben Apps zum Spielen, vier Prüfraster zum Hinsehen.</p>
+  </div>
+</section>
+
+<section class="buehne" data-aktuell="${erster.number}" aria-labelledby="feld-titel">
+  <div class="spalte">
+    <div class="abschnitt-kopf"><h2 id="feld-titel">${zeichen("zettel")}Der Zettelkasten</h2><p>49 Zettel zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation, in sieben Zyklen.</p><a class="weiter" href="/b/zettel/">Alle Zettel</a></div>
   </div>
   <div class="spalte sieben buehne-feld">
     <div class="buehne-satz s-3">
@@ -274,13 +282,6 @@ function veroeffentliche(opts) { schreibe(opts.pfad, seite(opts)); if (!opts.noi
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="spielen-titel">${zeichen("spielen")}Spielen</h2><p>Sieben Apps, die im Browser laufen und auf dem Gerät rechnen. Ohne Anmeldung, ohne Netz, ohne dass ein Bild das Gerät verlässt.</p><a class="weiter" href="/b/apps/">Alle Apps</a></div>
     <div class="reihe">${APPS.map(appKachel).join("")}</div>
-  </div>
-</section>
-
-<section class="abschnitt" aria-labelledby="arbeiten-titel">
-  <div class="spalte">
-    <div class="abschnitt-kopf"><h2 id="arbeiten-titel">${zeichen("arbeiten")}Arbeiten</h2><p>Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte: vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau. Jede beginnt mit einem Gespräch; das Briefing entsteht hier auf der Seite.</p><a class="weiter" href="/b/angebot/">Alle Leistungen</a></div>
-    <ul class="liste-linien">${ANGEBOTE.map((a, i) => `<li><a href="/b/angebot/${a.slug}/"><span class="n">${zeichen(a.slug)}</span><span class="name">${esc(a.name)}</span><span class="pfeil">Briefing</span><span class="kurz">${esc(a.kurz)}</span></a></li>`).join("")}</ul>
   </div>
 </section>
 

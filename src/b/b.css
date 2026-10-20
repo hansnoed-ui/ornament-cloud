@@ -156,9 +156,24 @@ h2 .zeichen { width: 1em; height: 1em; margin-right: 0.35em; vertical-align: -0.
 .feldchen i.nah { background: var(--faden-hell); border-color: var(--faden); }
 
 /* ---------- Startseite ---------- */
-.buehne { padding: 40px 0 0; }
-.buehne .titel { margin-bottom: 44px; max-width: 18ch; }
-.buehne .titel small { max-width: 60ch; }
+/* ---------- Einstieg: das Angebot zuerst (20. Oktober 2026, Wunsch: «damit der Einstieg in die Website klarer ist») ---------- */
+.einstieg { padding: 40px 0 0; }
+.einstieg .titel { margin-bottom: 40px; max-width: 16ch; }
+.einstieg .titel small { max-width: 62ch; }
+.angebote { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 24px; border-top: 1px solid var(--tinte); }
+.angebot { display: grid; align-content: start; gap: 10px; padding: 22px 0 26px; border-bottom: 1px solid var(--linie); text-decoration: none; color: inherit; }
+.angebot + .angebot { border-left: 0; }
+.angebot .zeichen-gross { font-size: 44px; margin-bottom: 6px; }
+.angebot h2 { font-weight: 500; font-size: 1.35rem; letter-spacing: -0.02em; line-height: 1.1; }
+.angebot p { color: var(--grau); font-size: 0.98rem; line-height: 1.4; }
+.angebot .weiter { margin-top: 6px; font-size: 0.92rem; color: var(--faden); }
+.angebot:hover h2 { color: var(--faden); }
+.angebot:hover .zeichen * { animation: zeichnen 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+.einstieg-satz { margin-top: 28px; font-family: var(--serif); font-size: 1.25rem; line-height: 1.45; max-width: 58ch; color: var(--grau); }
+@media (max-width: 900px) { .angebote { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .angebote { grid-template-columns: minmax(0, 1fr); } .angebot { padding: 18px 0 20px; } .einstieg .titel { margin-bottom: 28px; } }
+
+.buehne { padding: 56px 0 0; }
 .buehne .sieben { align-items: center; }
 .buehne-satz .kicker { max-width: 44ch; }
 .vorschau-titel { display: flex; gap: 10px; align-items: baseline; font-weight: 500; letter-spacing: -0.01em; }

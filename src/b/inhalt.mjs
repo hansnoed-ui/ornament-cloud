@@ -7,8 +7,11 @@ export const SEITE = {
   name: "ornament.cloud",
   adresse: "https://ornament.cloud/b/",
   claim: "Beobachtung ist Anlass für Veränderung in der Realität.",
-  titel: "Theorie, die man anfassen kann.",
-  lead: "49 Zettel zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation, sieben Apps zum Spielen und Gestalten, vier Prüfraster zum genaueren Hinsehen und vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau.",
+  // Einstieg über das Angebot (20. Oktober 2026, Wunsch: «landing-page: ich denke, es sollte die ‹Angebote›-Seite sein, damit der Einstieg in die Website klarer ist»;
+  // Entscheid: /b/ beginnt mit den vier Leistungen, Feld, Apps und Zettel folgen). Bis dahin: «Theorie, die man anfassen kann.»
+  titel: "Gestalten, vermitteln, kuratieren.",
+  lead: "Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte: vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau. Dazu ein Zettelkasten, sieben Apps und vier Prüfraster, die zeigen, wie hier gearbeitet wird.",
+  claimAlt: "Theorie, die man anfassen kann.",
   beschreibung: "49 Zettel, sieben Apps, vier Prüfraster und vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.",
   person: { name: "Christian Strickler", ort: "zwischen Zürich, Basel und Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
   sprache: "de-CH",
