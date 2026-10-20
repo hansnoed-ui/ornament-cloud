@@ -2,6 +2,22 @@
    Farben, Schriften und Abstände aus ../../../styles.css (Variablen).
    Instrumentenästhetik des Rads: dünne Linien, keine Flächen, keine neuen Akzente. */
 
+/* seit dem 20. Oktober 2026 wie das Rad (rad.css): Papier und Tinte in echter Umkehr, die Blaupause, Instrument Sans und Newsreader */
+:root {
+  --bg: #ffffff; --surface: #ffffff; --text: #000000; --muted: #6f6f6f; --border: #dadada; --accent: #1d3fd6;
+  --font: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --bg-veil: rgba(255, 255, 255, 0.85);
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #000000; --surface: #000000; --text: #ffffff; --muted: #9a9a9a; --border: #2e2e2e; --accent: #8fb0ff; --bg-veil: rgba(0, 0, 0, 0.85); }
+}
+body { -webkit-font-smoothing: antialiased; }
+.site-header h1 { font-family: var(--font); font-weight: 500; letter-spacing: -0.025em; line-height: 1.02; font-size: clamp(2.2rem, 6vw, 3.6rem); }
+.site-header .work-kicker { color: var(--muted); font-weight: 400; letter-spacing: 0; text-transform: none; font-size: 0.92rem; }
+.site-header .work-kicker a { color: inherit; text-decoration: none; }
+.feld-voll a:hover::after, .feld-voll a:focus-visible::after { background: var(--accent); }
+
 .feld-intro {
   max-width: 680px;
   margin: 0 0 28px;
