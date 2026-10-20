@@ -276,3 +276,13 @@ test("Werke: nur die Ankündigungen (Prints und Originale, Im Raum, Editionen), 
   assert.ok(!start.includes("Beispiel, Angaben folgen") && !/werke-titel[\s\S]*?class="stueck"[\s\S]*?zuletzt-titel/.test(start), "Startseite: der Abschnitt Werke ohne Beispiele");
 });
 
+test("Zettel: das kleine Feld führt zurück zum grossen; am Telefon steht die Anleitung fürs Tippen", () => {
+  const seite = lies("b/zettel/24-die-irritation/index.html"), feld = lies("b/zettel/index.html");
+  assert.match(seite, /<a class="feldchen" href="\/b\/zettel\/#feld" aria-label="Zum Zettelkasten – Zettel 24 von 49 im Feld"/, "das kleine Feld ist ein Link ins grosse");
+  assert.ok(feld.includes('<section class="buehne buehne-zettel" id="feld"'), "das grosse Feld hat den Anker");
+  assert.ok(lies("b/ueber/index.html").includes('<a class="feldchen" href="/b/zettel/" aria-label="Zum Zettelkasten"'), "im Fuss ebenso");
+  for (const html of [feld, lies("b/index.html")]) { assert.ok(html.includes('<span class="mit-zeiger">Fahre über das Feld'), "mit Zeiger"); assert.ok(html.includes('<span class="ohne-zeiger">Tippe eine Zelle an:') && html.includes("Noch einmal tippen öffnet den Zettel."), "ohne Zeiger"); }
+  const css = lies("b/b.css");
+  assert.ok(css.includes("@media (hover: none) { .mit-zeiger { display: none; } .ohne-zeiger { display: inline; } }"), "b.css schaltet die Anleitung um");
+});
+

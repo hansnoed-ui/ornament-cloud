@@ -12,7 +12,7 @@ import { zeichen } from "../src/b/zeichen.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS = new URL("b/", ROOT);
-const V = 9;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 10;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 
@@ -93,9 +93,13 @@ const NAV = [["zettel/", "Zettel"], ["apps/", "Apps"], ["raster/", "Raster"], ["
 const TRENNUNG = { Beobachter: "Beob&shy;achter", Verspätung: "Ver&shy;spätung", Gedächtnis: "Ge&shy;dächtnis", Erinnerung: "Erin&shy;nerung", Vergessen: "Ver&shy;gessen", Geschichte: "Ge&shy;schichte", Erwartung: "Erwar&shy;tung", Verantwortung: "Verant&shy;wortung", Anerkennung: "Aner&shy;kennung", Berührung: "Berüh&shy;rung", Irritation: "Irri&shy;tation", Wahrnehmung: "Wahr&shy;nehmung", Übersetzung: "Über&shy;setzung", Koppelung: "Koppe&shy;lung", Ausstellung: "Aus&shy;stellung", Information: "Infor&shy;mation", Wahrscheinlichkeit: "Wahrschein&shy;lichkeit", Algorithmus: "Algo&shy;rithmus", Empfehlung: "Empfeh&shy;lung", Plattform: "Platt&shy;form", Identität: "Iden&shy;tität", Möglichkeit: "Möglich&shy;keit", Kontingenz: "Kontin&shy;genz", Unterbrechung: "Unter&shy;brechung" };
 const weich = (titel) => esc(titel).replace(/\S+$/, (w) => TRENNUNG[w] || w);
 
+/** Das kleine Feld (7 × 7 Punkte) führt zurück zum grossen (20. Oktober 2026, Wunsch: «der Klick auf dieses Symbol [soll] wieder zum grossen Zettelkasten-Raster zurückführen») */
 function feldchen(n, nah = []) {
-  return `<span class="feldchen" aria-hidden="true">${zettel.map((z) => `<i${z.number === n ? ' class="hier"' : nah.includes(z.number) ? ' class="nah"' : ""}></i>`).join("")}</span>`;
+  const titel = n ? `Zum Zettelkasten – Zettel ${n} von 49 im Feld` : "Zum Zettelkasten";
+  return `<a class="feldchen" href="/b/zettel/${n ? "#feld" : ""}" aria-label="${attr(titel)}" title="${attr(titel)}">${zettel.map((z) => `<i${z.number === n ? ' class="hier"' : nah.includes(z.number) ? ' class="nah"' : ""}></i>`).join("")}</a>`;
 }
+/** die Anleitung zum Feld: mit Zeiger «fahre über», ohne Zeiger (Telefon) «tippe an, noch einmal öffnet» – b.css blendet je nach (hover) ein */
+const feldHinweis = (satz) => `<span class="mit-zeiger">Fahre über das Feld oder tippe eine Zelle an: ${satz}</span><span class="ohne-zeiger">Tippe eine Zelle an: ${satz} Noch einmal tippen öffnet den Zettel.</span>`;
 
 /** Das Feld 7 × 7 als Links; Zeilen sind die Zyklen */
 function feld({ gross = false, klein = false, aktuell = null, paare = startPaare, still = false } = {}) {
@@ -295,7 +299,7 @@ function buehne({ pfad, name, ziel, zurueck }) {
   </div>
   <div class="spalte sieben buehne-feld">
     <div class="buehne-satz s-3">
-      <p class="klein kicker">Ein Zettel aus dem Zettelkasten, jedes Mal ein anderer. Fahre über das Feld oder tippe eine Zelle an; die Fäden verbinden Zettel, die dieselben Personen nennen.</p>
+      <p class="klein kicker">Ein Zettel aus dem Zettelkasten, jedes Mal ein anderer. ${feldHinweis("die Fäden verbinden Zettel, die dieselben Personen nennen.")}</p>
       <p class="vorschau-titel"><span class="n">Zettel ${erster.number}</span><span class="t">${esc(erster.title)}</span></p>
       <p class="leitsatz">${esc(erster.bottom_line)}</p>
       <p class="woher knopfreihe"><a class="knopf voll lesen" href="/b/zettel/${erster.slug}/">${zeichen("lesen")}<span>Zettel lesen</span></a><button class="knopf still nochmal" type="button">${zeichen("zufall")}Noch einer</button></p>
@@ -387,10 +391,10 @@ function beitrag(e) {
     <h1 class="titel">Zettelkasten<small>${esc(kasten.subtitle)}. ${esc(kasten.structure)}. Jeder Zettel hat einen Leitsatz, einen Text und vier Verweise. Die Fäden zeigen, wer dieselben Personen nennt.</small></h1>
   </div>
 </section>
-<section class="buehne buehne-zettel" data-aktuell="${zettel[0].number}" data-takt="0" aria-label="Das Feld">
+<section class="buehne buehne-zettel" id="feld" data-aktuell="${zettel[0].number}" data-takt="0" aria-label="Das Feld">
   <div class="spalte sieben buehne-feld">
     <div class="buehne-satz s-3">
-      <p class="klein kicker">Fahre über das Feld oder tippe eine Zelle an: Hier erscheint der Leitsatz des Zettels, die Fäden zeigen, wer dieselben Personen nennt.</p>
+      <p class="klein kicker">${feldHinweis("hier erscheint der Leitsatz des Zettels, die Fäden zeigen, wer dieselben Personen nennt.")}</p>
       <p class="vorschau-titel"><span class="n">Zettel ${zettel[0].number}</span><span class="t">${esc(zettel[0].title)}</span></p>
       <p class="leitsatz">${esc(zettel[0].bottom_line)}</p>
       <p class="woher knopfreihe"><a class="knopf voll lesen" href="/b/zettel/${zettel[0].slug}/">${zeichen("lesen")}<span>Zettel lesen</span></a><button class="knopf still nochmal" type="button">${zeichen("zufall")}Noch einer</button></p>
