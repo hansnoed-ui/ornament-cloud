@@ -308,7 +308,110 @@ const fictory = {
   },
 };
 
-export const TAFELN = { orna, orma, "omna-color": omnaColor, "phorma-i": phormaI, "phorma-ii": phormaII, "phorma-iii": phormaIII, "the-fictory": fictory };
+/* ================= Die Prüfraster (20. Oktober 2026, Wunsch: «Die Prüfraster müssen re-designt werden … analog zu den App-Beiträgen») ================= */
+
+/* ---------- Nebeneinander und Nacheinander: zwei Achsen, vier Felder; ein Ansatz wandert und landet in einem Feld ---------- */
+const nebeneinander = {
+  gattung: "raster",
+  alt: "Nebeneinander und Nacheinander, gezeichnet: zwei Achsen, vier Felder; ein Punkt wandert durch das Feld und bleibt in einem Feld stehen",
+  neu() { return { t: 2.2, z: zufall(13), von: [820, 380], bis: [820, 380], seit: 2.2 }; },
+  // Lauf: 2,6 s wandern (weich), 2,4 s stehen; das Ziel liegt jedes Mal in einem anderen Feld
+  schritt(z, dt) {
+    z.t += dt; z.seit += dt;
+    if (z.seit >= 5) { z.seit = 0; z.von = z.bis; const feld = Math.floor(z.z() * 4); z.bis = [160 + (feld % 2) * 440 + 80 + z.z() * 280, 160 + Math.floor(feld / 2) * 440 + 80 + z.z() * 280]; }
+  },
+  svg(z, c) {
+    const p = weich(z.seit / 2.6), x = z.von[0] + (z.bis[0] - z.von[0]) * p, y = z.von[1] + (z.bis[1] - z.von[1]) * p;
+    const steht = z.seit >= 2.6, fx = x < 600 ? 160 : 600, fy = y < 600 ? 160 : 600;
+    const s = [];
+    if (steht) s.push(`<rect x="${fx}" y="${fy}" width="440" height="440" fill="${c.fadenHell}" opacity="${f(Math.min(1, (z.seit - 2.6) / 0.5))}"/>`);
+    s.push(`<path d="M160 160h880v880H160z" fill="none" stroke="${c.tinte}" stroke-width="3"/>`, `<path d="M600 160v880M160 600h880" stroke="${c.tinte}" stroke-width="2"/>`);
+    s.push(`<path d="M160 1090v-60M1040 1090v-60M100 160h60M100 1040h60" stroke="${c.grau}" stroke-width="2"/>`);
+    s.push(`<path d="M160 1090h880" stroke="${c.grau}" stroke-width="2"/><path d="M1040 1090l-18-10v20z" fill="${c.grau}"/>`, `<path d="M100 1040V160" stroke="${c.grau}" stroke-width="2"/><path d="M100 160l-10 18h20z" fill="${c.grau}"/>`);
+    // die Spur des Wegs
+    s.push(`<path d="M${f(z.von[0])} ${f(z.von[1])}L${f(x)} ${f(y)}" stroke="${c.faden}" stroke-width="2" stroke-dasharray="6 8" opacity="0.7"/>`);
+    s.push(`<circle cx="${f(x)}" cy="${f(y)}" r="14" fill="${c.faden}"/>`, `<circle cx="${f(x)}" cy="${f(y)}" r="34" fill="none" stroke="${c.faden}" stroke-width="2.5"/>`);
+    return s.join("");
+  },
+};
+
+/* ---------- Der Verteilapparat des Körpers: sieben Schwellen; eine Meldung geht hindurch, an manchen bleibt etwas hängen ---------- */
+const verteilapparat = {
+  gattung: "raster",
+  alt: "Der Verteilapparat des Körpers, gezeichnet: sieben Schwellen; eine Meldung läuft hindurch, an einigen Schwellen bleibt eine Spur zurück",
+  neu() { const z = zufall(17); return { t: 0, z, seit: 2.4, wege: verteilapparat.weg(z) }; },
+  weg(z) { let y = 600; const w = [[100, y]]; for (let i = 0; i < 7; i++) { y += (z() - 0.5) * 220; y = Math.max(220, Math.min(980, y)); w.push([230 + i * 120 + 60, y]); } w.push([1100, y]); return w; },
+  // Lauf: 3 s laufen, 1,6 s stehen, dann ein neuer Weg
+  schritt(z, dt) { z.t += dt; z.seit += dt; if (z.seit >= 4.6) { z.seit = 0; z.wege = verteilapparat.weg(z.z); } },
+  svg(z, c) {
+    const s = [], p = Math.min(1, z.seit / 3);
+    for (let i = 0; i < 7; i++) { const x = 230 + i * 120; s.push(`<path d="M${x} 160v880" stroke="${c.tinte}" stroke-width="${i % 2 ? 2 : 3}"/>`); for (let k = 0; k < 9; k++) s.push(`<path d="M${x - 8} ${200 + k * 100}h16" stroke="${c.tinte}" stroke-width="2"/>`); }
+    s.push(`<path d="M100 160v880M1100 160v880" stroke="${c.grau}" stroke-width="2" stroke-dasharray="6 8"/>`);
+    // der Weg: so weit, wie die Zeit reicht; an jeder passierten Schwelle eine Spur
+    const w = z.wege, n = w.length - 1, bis = p * n, k = Math.floor(bis), rest = bis - k;
+    let d = `M${f(w[0][0])} ${f(w[0][1])}`;
+    for (let i = 1; i <= k && i <= n; i++) d += `L${f(w[i][0])} ${f(w[i][1])}`;
+    let ende = w[Math.min(k, n)];
+    if (k < n) { const a = w[k], b = w[k + 1]; ende = [a[0] + (b[0] - a[0]) * rest, a[1] + (b[1] - a[1]) * rest]; d += `L${f(ende[0])} ${f(ende[1])}`; }
+    for (let i = 1; i <= Math.min(k, 7); i++) s.push(`<circle cx="${f(w[i][0] - 60)}" cy="${f(w[i][1] + (w[i - 1][1] - w[i][1]) / 2)}" r="7" fill="${c.grau}" opacity="0.6"/>`);
+    s.push(`<path d="${d}" fill="none" stroke="${c.faden}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>`);
+    s.push(`<circle cx="${f(ende[0])}" cy="${f(ende[1])}" r="13" fill="${c.faden}"/>`);
+    return s.join("");
+  },
+};
+
+/* ---------- Prüfraster für Gesellschaftskonzepte: drei Fragen im Dreieck – Einheit, Operation, Vermittlung –, der Vorfilter geht sie der Reihe nach durch ---------- */
+const gesellschaft = {
+  gattung: "raster",
+  alt: "Prüfraster für Gesellschaftskonzepte, gezeichnet: drei Kreise im Dreieck, verbunden; ein Lauf prüft sie der Reihe nach",
+  neu() { return { t: 1.2 }; },
+  schritt(z, dt) { z.t += dt; },
+  svg(z, c) {
+    const E = [[600, 230], [920, 790], [280, 790]], u = (z.t % 6) / 6 * 3, k = Math.floor(u), rest = u - k;
+    const s = [`<path d="M600 230L920 790L280 790Z" fill="none" stroke="${c.tinte}" stroke-width="3" stroke-linejoin="round"/>`];
+    // der Läufer auf der Kante k, von Ecke k zu Ecke k+1
+    const a = E[k % 3], b = E[(k + 1) % 3], x = a[0] + (b[0] - a[0]) * weich(rest), y = a[1] + (b[1] - a[1]) * weich(rest);
+    s.push(`<path d="M${a[0]} ${a[1]}L${f(x)} ${f(y)}" stroke="${c.faden}" stroke-width="4"/>`);
+    E.forEach((e, i) => {
+      const geprueft = i <= k || (k === 2 && rest > 0.98);
+      s.push(`<circle cx="${e[0]}" cy="${e[1]}" r="96" fill="${c.papier}" stroke="${c.tinte}" stroke-width="3"/>`);
+      if (geprueft) s.push(`<circle cx="${e[0]}" cy="${e[1]}" r="96" fill="${c.fadenHell}" stroke="${c.faden}" stroke-width="3"/>`);
+      s.push(`<circle cx="${e[0]}" cy="${e[1]}" r="${geprueft ? 14 : 8}" fill="${geprueft ? c.faden : c.tinte}"/>`);
+    });
+    s.push(`<circle cx="${f(x)}" cy="${f(y)}" r="12" fill="${c.faden}"/>`);
+    return s.join("");
+  },
+};
+
+/* ---------- Prüfraster journalistischer Texte: ein Text aus Zeilen; Ereignis, Kontext, Übergang und Gegenprobe werden der Reihe nach markiert ---------- */
+const journalistik = {
+  gattung: "raster",
+  alt: "Prüfraster journalistischer Texte, gezeichnet: ein Text aus Zeilen; eine Marke geht die Zeilen durch, eine Zeile wird gegengeprüft",
+  neu() { const z = zufall(29), zeilen = []; for (let i = 0; i < 18; i++) zeilen.push(0.55 + z() * 0.45); zeilen[17] = 0.4; return { t: 3.2, zeilen }; },
+  schritt(z, dt) { z.t += dt; },
+  svg(z, c) {
+    const s = [], x0 = 200, breite = 800, y0 = 190, abstand = 46, u = z.t % 8;
+    // Phasen: 0–2 s die Marke wandert zur Ereigniszeile (5), 2–4 s Kontext (Zeilen 3–8 hell), 4–6 s Übergang (Pfeil von 8 nach 12), 6–8 s Gegenprobe (Zeile 12 kippt)
+    const marke = u < 2 ? weich(u / 2) * 5 : 5;
+    z.zeilen.forEach((l, i) => {
+      const y = y0 + i * abstand, kontext = u >= 2 && i >= 3 && i <= 8 && i !== 5, gegen = u >= 6 && i === 12;
+      const ende = x0 + breite * l, flip = gegen ? Math.sin(Math.min(1, (u - 6) / 1.2) * Math.PI) : 0;
+      if (kontext) s.push(`<rect x="${x0 - 14}" y="${y - 16}" width="${f(breite * l + 28)}" height="32" fill="${c.fadenHell}" opacity="${f(Math.min(1, (u - 2) / 0.6))}"/>`);
+      s.push(`<path d="M${x0} ${y}H${f(ende)}" stroke="${i === 5 ? c.faden : c.tinte}" stroke-width="${i === 5 ? 5 : 3}" stroke-linecap="round" transform="rotate(${f(flip * 8)} ${f((x0 + ende) / 2)} ${y})"/>`);
+    });
+    const ym = y0 + marke * abstand;
+    s.push(`<path d="M${x0 - 70} ${f(ym)}h36" stroke="${c.faden}" stroke-width="4"/><circle cx="${x0 - 80}" cy="${f(ym)}" r="10" fill="${c.faden}"/>`);
+    if (u >= 4) { const p = weich((u - 4) / 1.2), ya = y0 + 8 * abstand, yb = y0 + 12 * abstand, xa = x0 + breite * z.zeilen[8] + 50; s.push(`<path d="M${f(xa)} ${ya}C${f(xa + 90)} ${ya} ${f(xa + 90)} ${f(ya + (yb - ya) * p)} ${f(xa + (x0 + breite * z.zeilen[12] + 50 - xa) * p)} ${f(ya + (yb - ya) * p)}" fill="none" stroke="${c.faden}" stroke-width="3"/>`); }
+    return s.join("");
+  },
+};
+
+export const TAFELN = {
+  orna, orma, "omna-color": omnaColor, "phorma-i": phormaI, "phorma-ii": phormaII, "phorma-iii": phormaIII, "the-fictory": fictory,
+  "nebeneinander-nacheinander": nebeneinander, verteilapparat, gesellschaftskonzepte: gesellschaft, "journalistische-texte": journalistik,
+};
+/** Ablage je Gattung: Apps unter b/bilder/apps/, Prüfraster unter b/bilder/raster/ */
+export const ablage = (slug) => `b/bilder/${TAFELN[slug].gattung || "apps"}/${slug}`;
 
 /** die ganze SVG-Datei des Ruhebilds */
 export function svg(slug, dunkel) {

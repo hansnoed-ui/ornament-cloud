@@ -118,6 +118,13 @@ function teilen(knopf) {
   });
 }
 
+/* ---------- Prüfraster: den Anwendungsprompt kopieren (20. Oktober 2026) ---------- */
+for (const k of document.querySelectorAll(".prompt-kopieren")) k.addEventListener("click", async () => {
+  const text = document.getElementById(k.dataset.ziel)?.textContent || "";
+  try { await navigator.clipboard.writeText(text); melde("Prompt kopiert – jetzt in einen KI-Assistenten einfügen"); }
+  catch { melde("Kopieren nicht möglich – «Prompt lesen» öffnet den Text"); }
+});
+
 /* ---------- Briefing auf den Angebotsseiten ---------- */
 function briefing(form) {
   const out = form.querySelector("output"), mail = form.querySelector(".brief-mail"), kopieren = form.querySelector(".brief-kopieren");

@@ -29,7 +29,7 @@
   <link rel="preload" href="/vendor/fonts/instrument-sans-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/vendor/fonts/newsreader-italic-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/vendor/fonts/fonts.css">
-  <link rel="stylesheet" href="/b/b.css?v=6">
+  <link rel="stylesheet" href="/b/b.css?v=7">
   <script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebSite","name":"ornament.cloud","url":"https://ornament.cloud/b/","inLanguage":"de-CH","author":{"@type":"Person","name":"Christian Strickler"}},{"@context":"https://schema.org","@type":"CreativeWork","name":"Der Verteilapparat des Körpers","description":"Wessen Körperereignis kommt wie weit?","url":"https://ornament.cloud/b/raster/verteilapparat/","author":{"@type":"Person","name":"Christian Strickler"},"inLanguage":"de-CH"}]</script>
 </head>
 <body>
@@ -46,14 +46,747 @@
   <p class="gattung">Prüfraster · Anwendungsprompt 2.1.0 · fertig</p>
   <h1 class="titel"><span class="zeichen-gross"><svg class="zeichen" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3v18" pathLength="1" vector-effect="non-scaling-stroke"/><path d="M6 8h12" pathLength="1" vector-effect="non-scaling-stroke"/><path d="M8 12h8" pathLength="1" vector-effect="non-scaling-stroke"/><path d="M10 16h4" pathLength="1" vector-effect="non-scaling-stroke"/><circle cx="12" cy="3.5" r="1.4" fill="currentColor" pathLength="1" vector-effect="non-scaling-stroke"/></svg></span>Der Verteilapparat des Körpers</h1>
   <p class="lead">Wessen Körperereignis kommt wie weit?</p>
-  <p class="knopfreihe"><a class="knopf voll" href="/alpha/verteilapparat-anwendungsprompt-2.1.0.txt">Anwendungsprompt</a><a class="knopf" href="/alpha/verteilapparat-des-koerpers.pdf">Grundlagenpapier (PDF)</a><a class="knopf still" href="/alpha/verteilapparat/">Seite mit Anleitung</a></p>
-  <div class="quadrant" aria-label="Die vier Felder">
+  <p class="knopfreihe"><button class="knopf voll prompt-kopieren" type="button" data-ziel="prompt-text">Prompt kopieren</button><a class="knopf" href="/alpha/verteilapparat-anwendungsprompt-2.1.0.txt">Prompt lesen</a><a class="knopf" href="/alpha/verteilapparat-des-koerpers.pdf">Grundlagenpapier (PDF)</a><a class="knopf still" href="/alpha/verteilapparat/">Seite mit Anleitung</a></p>
+  <script type="text/plain" id="prompt-text">DER VERTEILAPPARAT DES KÖRPERS – PROMPT ZUM KOPIEREN
+Version 2.1.0 · 6. Oktober 2026 · UTF-8
+
+Kopiere den gesamten Text in einen KI-Chat und ergänze unten deinen Fall mit Material. Alternativ kannst du die Datei hochladen und den Fall in einer separaten Nachricht beschreiben. Die Standardausgabe ist ein lesbares Fallblatt. Für eine Kurzfassung setze ausgabeformat auf kurz, für eine strukturierte Ausgabe auf json.
+
+Die Markierungen trennen Anweisung, Schemas und Eingabe. Die Schemas sind Formatregeln, kein Fallmaterial. Leere Eingabefelder sind fehlende Angaben und dürfen nicht als Fall interpretiert werden.
+
+
+<anweisung>
+# Der Verteilapparat des Körpers
+Anwendungsprompt · Version 2.1.0 · 6. Oktober 2026
+
+Grundlage: Christian Strickler, „Der Verteilapparat des Körpers“, internes Grundlagenpapier, Stand 28. September 2026.
+Quelle: https://ornament.cloud/alpha/verteilapparat-des-koerpers.pdf
+
+Diese Anwendungsversion entwickelt Anwendungsprompt 2.0.0 weiter: Ergänzt ist die Ausgabeform «kurz»; die Schemas sind kompakter gesetzt, ihr Inhalt ist unverändert. Version 2.0.0 hatte Anwendungsprompt 1.0.0 weiterentwickelt. Sie bewahrt sieben Schwellen, sechs Querkriterien, vier Leitfragen und drei Ebenen. Das Vierfeld erhält neutrale Bezeichnungen; seine bisherigen Namen werden als belegpflichtige Deutungsmuster geprüft. Formatmacht, tatsächliche Erfassung und Entscheidungsverwendung werden getrennt. Für Theorieaufträge ist ein eigenständiger Anschlussmodus ergänzt. Die Änderungen gehören zu dieser Anwendungsversion und behaupten keine Änderung des verlinkten Grundlagenpapiers. Die Datei ist eigenständig nutzbar; das Grundlagen-PDF muss nicht zusätzlich vorliegen.
+
+## Auftrag und Reichweite
+
+Untersuche im Fall-Modus, wessen Körperereignis unter welcher Beschreibung kommunikativ anschlussfähig wird, wer diese Beschreibung korrigieren kann und welche materiellen Folgen entstehen. Erstelle ein belegbares Fallprofil. Im Theorie-Modus prüfe ausdrücklich begriffliche Anschlussmöglichkeiten und Grenzen, ohne einen Körperfall zu fingieren. Analysiere Chancen, Bedingungen und dokumentierte Folgen; behaupte keine Kausalerklärung, Prognose oder Absicht einzelner Akteure.
+
+Ein Körperereignis ist hier ein Geschehen am Körper, etwa Verletzung, Erschöpfung, Hunger, Schwangerschaft, Untersuchung oder Tod. Ein blosses Thema wie „Gesundheit“, „Migration“ oder „Social Media“ ist noch kein hinreichend abgegrenzter Fall. Verlange bei einem Fallauftrag dann eine Konkretisierung; bei einem eindeutigen Theorieauftrag verwende die theoretische Anschlussprüfung. Die Formulierung „der Körper nimmt wahr“ ist im Papier eine Arbeitsformel; der Status des Körpers als eigenes operatives System bleibt ausdrücklich offen.
+
+Unterscheide zwei Anschlusswege: Selbstbeschreibung über Stimme, Geste, Bild oder Text und Fremderfassung über Messung, Diagnose, Statistik oder Algorithmus. Sie können sich auf denselben Körper beziehen und sehr verschieden verlaufen. Eine Person kann kaum gehört und dennoch intensiv erfasst werden. Unterscheide ausserdem Körperereignis, bewusste Erfahrung und Kommunikation darüber. Erfinde keinen unmittelbaren Zugang zum Erleben einer Person.
+
+## 1. Eingabe und Belege
+
+Benötigt werden Analysemodus und auswertbares Material. Für die Fallprüfung werden zusätzlich Fall, konkretes Körperereignis, Kontext und Zeitraum benötigt; für die theoretische Anschlussprüfung Untersuchungsgegenstand, ausgewählte Operation und Materialumfang. Die Eingabe kann als normaler Text oder gemäss „eingabe_schema“ erfolgen. Ausgabeformat ist „lesbar“, sofern nicht ausdrücklich „kurz“ oder „json“ verlangt wird. Die Materialart, etwa Regeltext, Beteiligtenbericht, Fallrekonstruktion, Modellbeispiel oder literarische Szene, ist ausdrücklich zu kennzeichnen. Sie begrenzt, was als Vollzug oder Folge behauptet werden darf.
+
+Nutze bereitgestellte Quellen. Zusätzlich verwendete Quellen müssen tatsächlich vorliegen oder abgerufen worden sein und gesondert ausgewiesen werden. Ein ungelesener Link ist kein Beleg. Vergib fortlaufende Material-IDs wie M1 und M2, wenn keine angegeben wurden. Erfinde keine Daten, Zitate, Akteninhalte, Regeln, Fristen, Rechtswege oder Quellen. Unterscheide Angaben von Beteiligten, dokumentierte Verfahrensbefunde und deine eigene Deutung.
+
+Fehlende Information bedeutet „offen“, nicht „blockiert“. Das Fehlen eines Belegs für Gehör oder Erfassung ist kein Beleg für deren Fehlen. Erkläre benannte Alternativbeschreibungen nur dann für verdrängt, wenn diese Verdrängung im Material nachweisbar ist. Ein eigener Vorschlag bleibt ein „analytischer_vorschlag“.
+
+Wenn kein auswertbares Material vorliegt oder im Fall-Modus kein abgrenzbarer Fall, stelle wenige gezielte Rückfragen. Erzeuge kein fiktives Profil. Im Theorie-Modus ist ein fehlender Körperfall erwartbar und wird nicht durch erfundene Schwellenbefunde ersetzt. Vergleiche einen Fall nur dann mit anderen Fällen als „typisch“ oder „abweichend“, wenn tatsächlich vergleichbares Material vorliegt. Die Muster aus dem Raster allein beweisen keine Häufigkeit.
+
+## 1a. Fallprüfung oder theoretische Anschlussprüfung
+
+Wähle vor der Auswertung den Analysemodus und begründe die Wahl:
+- „fallpruefung“: Ein Körperereignis, Betrachtungsrahmen, Zeitraum und auswertbares Material liegen vor oder können eindeutig aus dem Material abgegrenzt werden. Das Material darf einen beobachteten Fall, einen Regeltext oder einen ausdrücklich gekennzeichneten Modellfall tragen; diese Evidenzarten werden nicht gleichgesetzt. Die sieben Schwellen, sechs Querkriterien, drei Ebenen und vier Leitfragen werden angewandt.
+- „theoretische_anschlusspruefung“: Der Auftrag betrifft einen Ansatz oder Text, ohne einen hinreichend abgegrenzten Körperfall vorzugeben. Prüfe seine begrifflichen Anschlussmöglichkeiten nach den vier Fragen unten. Vergib keine Vierfeldposition, keine Körper-IDs und keine Schwellenbefunde für erfundene Personen.
+
+Fehlt eine ausdrückliche Modusangabe, leite sie nur aus einem eindeutigen Auftrag ab: Ein konkreter Fallauftrag führt zur Fallprüfung; ein Theorieauftrag ohne Körperfall zur theoretischen Anschlussprüfung. Benenne die Ableitung. Bei unklarem Auftrag oder fehlendem auswertbarem Material gilt „klaerung_noetig“; stelle wenige gezielte Fragen. Das Fehlen eines Körperfalls allein ist im ausdrücklich gewählten Theorie-Modus kein Klärungsfehler.
+
+Theoretische Anschlussprüfung:
+1. Welche Körperereignisse und Unterscheidungen erschliesst der ausgewählte Ansatz? Benenne Textstellen, nicht bloss mögliche Themen.
+2. Wie unterscheidet er Körperereignis, Erfahrung, Ausdruck und fremde Beschreibung? Welche Übergänge begründet er, welche setzt er voraus?
+3. Was erschliesst er über Formatmacht, tatsächliche Erfassung und Entscheidungsverwendung? Welche Organisation oder Gegenstelle bestimmt er, welche lässt er offen?
+4. Was erschliesst er über Zugang zur Korrektur, Berücksichtigung und geänderte Entscheidungen? Welche Fallrecherche wäre nötig, um beanspruchte materielle Folgen zu prüfen?
+
+Die Anschlussprüfung bewertet begriffliche Möglichkeiten und Grenzen. Eine im Text entworfene Stimme beweist kein tatsächlich berücksichtigtes Gehör; die Analyse darf dennoch die begriffliche Unterscheidung anerkennen. Textbelege, begriffliche Aussagen und beanspruchte Fallwirkungen bleiben getrennt. Ein theoretisches Beispiel kann als Modellfall gesondert untersucht werden, wenn Ereignis und Betrachtungsrahmen tragfähig abgegrenzt sind; weise dann den Moduswechsel und den neuen Evidenzrahmen aus.
+
+## 2. Körper und Betrachtungsrahmen unterscheiden
+
+Die Abschnitte 2–8 betreffen die Fallprüfung. Im Theorie-Modus dienen ihre Unterscheidungen als begriffliche Bezugspunkte; sie verlangen kein fiktives Fallblatt.
+
+Benenne die betroffenen und mitbetroffenen Personen oder Gruppen, soweit das Material dies trägt. Frage auch, wessen Perspektive im Material fehlt. Unterscheide eine dokumentierte Auslassung von einer blossen Recherchefrage. Schreibe niemandem aufgrund von Vermutungen Geschlecht, Klasse, Herkunft, Aufenthaltsstatus, Krankheit oder andere Merkmale zu.
+
+Untersuche unterschiedliche Körper, Institutionen, Zeitabschnitte oder Kontexte bei Bedarf als getrennte Profile. Vergib Körper-IDs K1, K2 usw. Ein Profil verweist auf genau einen Körper oder eine ausdrücklich abgegrenzte Gruppe und einen konkreten Betrachtungsrahmen. Eine Gruppenaussage darf nicht automatisch als Aussage über jedes Mitglied gelten.
+
+## 3. Vierfeld deskriptiv verorten, Deutungsmuster gesondert prüfen
+
+Schätze Selbstbeschreibung und Fremderfassung getrennt und jeweils begründet als „stark“, „schwach“ oder „offen“ ein. Selbstbeschreibung meint hier, ob die eigene Darstellung als relevante Stimme berücksichtigt wird; blosse Veröffentlichung genügt nicht. Fremderfassung meint die tatsächlich wirksame institutionelle oder technische Erfassung im benannten Kontext. Ihre Stärke lässt sich nicht allein aus der Macht zur Vorgabe eines Formats oder aus der Erwähnung eines Körpers ableiten. Nenne die konkreten Anhaltspunkte; verwende keine Punkteskala.
+
+Die vier Positionen erhalten zunächst neutrale Bezeichnungen:
+- Selbstbeschreibung schwach / Fremderfassung stark: „SB_schwach_FE_stark“.
+- Selbstbeschreibung stark / Fremderfassung stark: „SB_stark_FE_stark“.
+- Selbstbeschreibung schwach / Fremderfassung schwach: „SB_schwach_FE_schwach“.
+- Selbstbeschreibung stark / Fremderfassung schwach: „SB_stark_FE_schwach“.
+
+Ist eine Dimension offen, bleibt die Position null. Die Position gilt für einen Körper oder eine abgegrenzte Gruppe in genau einem Betrachtungsrahmen, nicht für eine Person als Identität. Bei widersprüchlichem Material trenne den Kontext weiter oder lasse die Dimension offen.
+
+Die bisherigen Feldnamen „Ausgeliefertsein“, „Verhandelbare Teilhabe“, „Verschwinden“ und „Privilegierte Opazität“ bleiben als gesondert zu prüfende Deutungsmuster erhalten. Eine Position erfüllt keines dieser Muster automatisch. Prüfe insbesondere: Welche Folgen zeigen eine tatsächliche Abhängigkeit? Was ist wirklich verhandelbar? In welcher Gegenstelle verschwindet ein Anspruch? Worin besteht ein belegbarer Vorteil geringer Erfassung? Benenne passende Muster mit Beleg und Unsicherheit (Ausgabefeld „befundmuster“); fehlen diese, bleibt die Musterliste leer. Erfassung kann schützen, geringe Erfassung kann Schutz bieten oder Ansprüche erschweren.
+
+Die erste Position ist vorläufig. Prüfe sie anhand der sieben Schwellen und der drei Funktionen des fremden Anschlusswegs; berichte die abschliessend begründete Position und eine etwaige Änderung.
+
+## 3a. Drei Funktionen des fremden Anschlusswegs trennen
+
+Fremde Beschreibungen können unterschiedliche Funktionen haben. Prüfe je einen belegbaren Träger und lasse fehlende Zusammenhänge offen:
+- FORMATMACHT: Wer bestimmt, welche Kategorien, Ausdrucksformen oder Beweise als zulässig gelten? Eine mächtige Formatvorgabe kann eine Erfassung auch verhindern.
+- ERFASSUNG UND SPEICHERUNG: Welche Angaben über den Körper werden tatsächlich erhoben, übernommen oder gespeichert, von wem und mit welcher institutionellen oder technischen Wirksamkeit? Erhebung, Übernahme und dauerhafte Speicherung sind ihrerseits zu unterscheiden. Fehlende Speicherung beweist keine fehlende Erfassung.
+- ENTSCHEIDUNGSVERWENDUNG: Welche Stelle verwendet welche Beschreibung für eine konkrete Entscheidung? Benenne Zuständigkeit, Entscheidungsgrundlage, Entscheidung und materielle Folge, soweit belegt. Eine Akte belegt nicht schon ihre Verwendung.
+
+Diese Funktionen sind keine zusätzlichen Achsen und keine notwendige Abfolge. Die Formatmacht eines Akteurs und die tatsächlich wirksame Erfassung eines Körpers können auseinanderfallen. Die Vierfeld-Dimension „Fremderfassung“ bezieht sich auf die wirksame Erfassung im benannten Kontext. Starke Formatmacht allein begründet weder „stark“ noch „schwach“ in dieser Dimension. Ebenso ist eine gefällte Entscheidung gesondert zu belegen. Bei widersprüchlichen Trägern oder Kontexten trenne die Profile; löse die Spannung nicht durch eine pauschale Gesamteinschätzung auf.
+
+## 3b. Korrektur und Folgen getrennt prüfen
+
+Unterscheide den formalen Einspruchsweg, seine tatsächliche Nutzung, die Berücksichtigung des Einspruchs, eine geänderte Beschreibung und eine geänderte Entscheidung. Benenne Kosten und zuständige Stellen. Die Möglichkeit eines Einspruchs beweist keine Berücksichtigung; Berücksichtigung beweist keine Änderung.
+
+Prüfe anschliessend: Welche untersuchte Folge bleibt trotz möglicher oder tatsächlicher Korrektur bestehen? Eine korrigierte Akte macht einen bereits vollzogenen Eingriff nicht rückgängig. Eine neue Entscheidung kann spätere Folgen ändern, ohne frühere Belastungen aufzuheben. Umgekehrt kann eine wirksame Korrektur eine bestimmte Folge neutralisieren. Benenne solche Fälle symmetrisch, ohne allgemeine Irreversibilität oder automatische Folgenlosigkeit zu behaupten.
+
+## 4. Sieben Schwellen prüfen
+
+Prüfe jede Schwelle einzeln. Die Reihenfolge ist keine Kausalkette. Schwellen können umgangen oder übersprungen werden, mehrfach auftreten und auf frühere Schwellen zurückwirken.
+
+1. AUFFÄLLIG — Gilt das Ereignis überhaupt als Abweichung? Prüfe, ob Belastung als Normalzustand behandelt wird und dadurch unauffällig bleibt.
+2. ARTIKULIERBAR — Gibt es ein Vokabular dafür? Prüfe Begriffe und Ausdrucksmöglichkeiten; setze fehlenden Ausdruck nicht mit fehlendem Willen gleich.
+3. ZUGÄNGLICH — Wird die Stelle erreicht, an der gesprochen wird? Prüfe belegbare Hürden wie Zeit, Geld, Sprache, Mobilität oder Aufenthaltsstatus.
+4. LESBAR — Passt die Äusserung in das Format der Gegenstelle? Prüfe etwa Formulare, Skalen, Symptomlisten, Bildlogik oder Sendelänge und den Verlust durch Umformatierung.
+5. GLAUBWÜRDIG — Wird der eigene Körperbericht abgenommen? Prüfe, wessen Darstellung zählt, welche Bestätigung verlangt wird und wie Widersprüche behandelt werden.
+6. SPEICHERBAR — Wird dokumentiert, und von wem? Unterscheide bleibende Akten oder Datensätze von flüchtiger Selbstbeschreibung. Prüfe, welche Fassung dauerhaft verfügbar bleibt.
+7. ENTSCHEIDUNGSFÄHIG — Wird daraus eine Massnahme? Benenne konkrete Folgen oder das belegbare Ausbleiben einer Folge. Anerkennung und Dokumentation sind nicht bereits eine wirksame Massnahme.
+
+Notiere je Schwelle, welcher Anschlussweg betroffen ist, und wer oder was den Verlauf ermöglicht, blockiert oder umlenkt. Verwende „passiert“, „blockiert“ oder „umgeleitet“. Bei unzureichender Grundlage verwende „offen“. „nicht_anwendbar“ ist nur mit einer konkreten Begründung zur Struktur des untersuchten Wegs zulässig, niemals als Ersatz für fehlendes Material.
+
+Führe Selbstbeschreibung und Fremderfassung getrennt, wenn sie an derselben Schwelle auseinanderfallen. Eine blockierte Selbstbeschreibung darf durch gleichzeitig erfolgreiche Fremderfassung nicht als erfolgreiche Teilhabe erscheinen. Prüfe bei Fremderfassung die Funktion der Schwelle für diesen Anschlussweg; erfinde keinen eigenen Körperbericht, wo gar keiner vorgesehen ist. Dokumentiere Rückwirkungen nur mit Beleg oder ausdrücklich als Deutung.
+
+## 5. Sechs Querkriterien anwenden
+
+Prüfe quer zu den Schwellen:
+- RICHTUNG: Wer beschreibt wen? Wie verhalten sich Selbstbeschreibung und Fremderfassung zueinander? Bei einem Posting können beide Wege zugleich entstehen.
+- ÜBERSETZUNGSLAST: Wer muss das Ereignis in ein institutionell oder medial brauchbares Format übersetzen? Welche Arbeit, Zeit, Kenntnisse oder Kosten sind dafür nötig?
+- LATENZ: Welche Wartezeiten und Verzögerungen sind dokumentiert? Welche Folgen hat ihr Zeitpunkt? Unterstelle einer Verzögerung keine Absicht.
+- AGGREGATIONSNIVEAU: Geht es um die einzelne Person, eine Gruppe oder eine Population? Was wird beim Wechsel der Ebene sichtbar und was verschwindet?
+- REVIDIERBARKEIT: Wer kann eine Beschreibung berichtigen, anfechten, löschen oder verweigern? Unterscheide formalen Weg, tatsächliche Nutzung, Berücksichtigung, geänderte Beschreibung und geänderte Entscheidung. Benenne Kosten und verbleibende Folgen; nutze Querverweise auf die Korrekturprüfung.
+- FOLGENVERTEILUNG: Wer trägt Geld-, Zeit-, Zugangs-, Gesundheits- oder andere materielle Folgen einer Beschreibung, Fehlbeschreibung oder unterlassenen Entscheidung? Behaupte keine Asymmetrie ohne Material.
+
+Verweise bei Bedarf auf mehrere Schwellen. Leite aus diesen Kriterien keine Gesamtnote ab.
+
+## 6. Drei Ebenen des Apparats trennen
+
+1. VERTEILENDE UNTERSCHEIDUNGEN: Prüfe belegbare Zuschreibungen und Unterscheidungen, etwa Geschlecht, Klasse, Rassifizierung, Kolonialität, Behinderung, Alter oder Aufenthaltsstatus, und ihren Bezug zu Zugang und Glaubwürdigkeit.
+2. STABILISATOREN: Benenne konkrete Träger wie Organisation, Technik, Recht, Arbeit oder Profession. Zeige am Material, welche Formulare, Fristen, Zuständigkeiten, Datenformate oder Routinen eine Schwelle stabilisieren.
+3. EXTERNALISIERUNG: Prüfe, ob Belastungen über ökologische Zusammenhänge oder globale Arbeitsteilung auf andere Körper verschoben werden. Benenne Herkunft, Verschiebung und Träger nur, soweit belegt.
+
+Prüfe alle drei Ebenen und suche je einen konkreten Träger. Wenn er nicht belegbar ist, dokumentiere die offene Stelle und den Recherchebedarf. Erfinde keinen Träger, um das Fallblatt zu füllen. Das Raster macht die Prüfung notwendig, beweist aber nicht bereits das Vorkommen einer bestimmten Struktur in jedem Fall.
+
+## 7. Die vier Leitfragen beantworten
+
+1. Wird an das Körperereignis angeschlossen? Geschieht überhaupt Kommunikation darüber, und über welchen Weg?
+2. Unter welcher Beschreibung? Rekonstruiere den vorherrschenden Begriff, seine zuständige Gegenstelle und mögliche Alternativen. Unterscheide dokumentierte Alternativen, belegbar verdrängte Alternativen und eigene analytische Vorschläge.
+3. Wer kann diese Beschreibung berichtigen, anfechten oder verweigern? Unterscheide formale Wege, tatsächliche Nutzung, Berücksichtigung, geänderte Beschreibung, geänderte Entscheidung und Kosten für die betroffene Person.
+4. Welche materiellen Folgen entstehen? Benenne, soweit belegt, Geld, Zugang, Aufenthalt, Behandlung, Freiheit, Arbeit oder Zeit und ordne sie den betroffenen Körpern oder Stellen zu. Unterscheide eingetretene, angeordnete und nur erwartete Folgen in der Formulierung.
+
+Die Schwellen und Querkriterien begründen diese vier Antworten. Sie dürfen sich nicht widersprechen. Unterscheide die Rekonstruktion einer Beschreibung von deiner Zustimmung zu ihr.
+
+## 8. Gegenprüfung und Grenzen
+
+Prüfe in jeder Analyse ausdrücklich die Gegenposition: Erfassung und Dokumentation können Schutz, Ansprüche, Behandlung oder die Anfechtung von Benachteiligung ermöglichen. Suche sowohl nach belegten Schutzwirkungen als auch nach belegten Belastungen. Fehlt Material, bleibt die Gegenprüfung offen; gleiche die Bilanz nicht künstlich aus.
+
+Prüfe die acht Muster des Papiers nur als Hypothesen: Erfassung ohne Stimme; Anerkennung ohne Folge; Zuständigkeitsverschiebung; Selbstübersetzung als Eintrittspreis; Späte Anerkennung; Statistische Sichtbarkeit; Widerspruch kostet Anschluss; Sichtbarkeit als Risiko. Nenne nur passende Muster mit Belegen. Ein Fall muss keinem dieser Muster entsprechen.
+
+Schliesse mit „Was das Modell hier nicht erklärt“. Benenne fallbezogene Leerstellen, alternative Erklärungen oder unpassende Kategorien, soweit erkennbar. Sieben Schwellen sind eine Setzung, keine bewiesene Vollständigkeit. Das Modell beschreibt keine unveränderliche Opferidentität. Sichtbarkeit ist weder Gerechtigkeit noch automatisch Schutz. Institutionelle Effekte beweisen keine Absicht einzelner Beteiligter.
+
+Das Ziel „anfechtbare Anschlussfähigkeit“ wird im Papier ausdrücklich benannt. Trenne dieses normative Ziel von den empirischen Befunden. Wenn eine Bewertung gewünscht wird, lege die verwendeten Massstäbe zusätzlich offen. Leite aus der Modellanwendung allein weder eine rechtliche noch eine medizinische Entscheidung ab.
+
+Der Verteilapparat ergänzt das Raster „Nebeneinander und Nacheinander“ um Chancen, Lasten und Folgen von Übersetzungen. Importiere dessen Koordinaten und 1-bis-5-Skala nicht in diese Analyse.
+
+GEMEINSAME PRÜFUNG BEIDER RASTER: Folgewirksamkeit und Korrekturmacht sind verschiedene Befunde. Das NN-Raster prüft den Verlauf; der Körperapparat prüft zusätzlich Zugang, Lasten, Gegenstellen und wirksame Korrektur. Wird beides am selben Fall angewandt, benenne den gemeinsamen Bezug und frage: Kann eine Beschreibung korrigiert werden? Ändert sich dadurch eine Entscheidung? Welche relevante Folge bleibt dennoch bestehen? Unterschiedliche Körper, Kontexte oder Register müssen getrennt bleiben. Aus einem hohen Y-Wert folgt weder fehlende Korrekturmacht noch eine ungerechte Verteilung; aus einer anerkannten Korrektur folgt keine Aufhebung sämtlicher Folgen. Importiere keine Verteilungsnote in die NN-Koordinate.
+
+## 9. Ausgabe
+
+Bei „lesbar“ im Modus „fallpruefung“: Erstelle ein kompaktes Fallblatt mit Fall, Materialstatus und Evidenzrahmen, Körperereignis, beteiligten Körpern, neutraler Vierfeldposition, Tabelle der sieben Schwellen, drei Funktionen des fremden Anschlusswegs, vier Leitfragen, sechs Querkriterien, drei Ebenen, Korrekturprüfung, Schutzgegenprobe und Grenzen. Deutungsmuster erscheinen gesondert mit ihren Belegen. Fasse Wiederholungen durch Querverweise zusammen. Markiere offene Stellen sichtbar. Bei mehreren Körpern oder Betrachtungsrahmen trenne die Profile.
+
+Bei „lesbar“ im Modus „theoretische_anschlusspruefung“: Erstelle ein kürzeres Blatt mit Untersuchungsgegenstand, ausgewählter Operation, Materialumfang, Antworten auf die vier Anschlussfragen, begründeten und offenen Übergängen sowie benötigter Fallrecherche. Die Vierfeld- und Schwellentabellen entfallen. Bezeichne die Ausgabe ausdrücklich als theoretische Anschlussprüfung.
+
+Bei „kurz“ führe alle Prüfungen vollständig durch und berichte nur die Befunde, die tragen. Im Modus „fallpruefung“ liefere je Körper und Betrachtungsrahmen eine Karte von höchstens etwa 250 Wörtern:
+1. Fall, Körperereignis, Kontext und Zeitraum (je ein Halbsatz) und der Materialstatus (Regeltext, Bericht, Rekonstruktion, Modellbeispiel oder Szene).
+2. Neutrale Vierfeldposition mit je einem Begründungssatz zu Selbstbeschreibung und Fremderfassung, oder „offen“.
+3. Die sieben Schwellen in einer Zeile je Anschlussweg, etwa „Auffällig: Selbst umgeleitet / Fremd passiert“, offene Schwellen als „offen“.
+4. Formatmacht, Erfassung und Entscheidungsverwendung: je ein Halbsatz, oder „offen“.
+5. Korrektur: Einspruchsweg, Berücksichtigung, geänderte Entscheidung und fortbestehende Folge, je soweit belegt.
+6. Die wichtigste Schutzgegenprobe, das Deutungsmuster (falls belegt) und „Was das Modell hier nicht erklärt“ in je einem Satz.
+Im Modus „theoretische_anschlusspruefung“ liefere eine Karte von höchstens etwa 200 Wörtern mit Gegenstand, Operation, Materialumfang, je einem Satz zu den vier Anschlussfragen, den offenen Übergängen und der nötigen Fallrecherche.
+„kurz“ entlastet nur die Darstellung: Belege, „offen“ statt Erfindung und alle Verbote gelten unverändert. Schliesse mit: „Kurzfassung – das vollständige Fallblatt (Schwellentabelle, Querkriterien, Ebenen) liefere ich auf Nachfrage.“ Die Kurzfassung ist nie ein Ersatz für die Schemaform.
+
+Bei „json“ gib ausschliesslich ein gültiges JSON-Objekt gemäss „ausgabe_schema“ dieser Datei aus, ohne Markdown oder Begleittext. Behalte alle vorgesehenen Schlüssel bei. Verwende null für fehlende Einzelwerte und [] für leere Listen. Im Theorie-Modus bleiben „profile“ und „beteiligte_koerper“ leer; „theorieanschluss“ enthält die begriffliche Prüfung. „koerperereignis“ und „kontext_und_zeitraum“ bleiben als Fallbefunde offen. Im Fall-Modus bleibt „theorieanschluss“ null. „quellen“ führt ausschliesslich tatsächlich verwendete Materialien mit ID, Herkunft, Materialart und Fundstelle. Belegverweise enthalten ihre IDs und, wenn möglich, genaue Stellen. Keine privaten Zwischengedanken, sondern prüfbare Befunde und kurze Begründungen ausgeben.
+
+Der Status „klaerung_noetig“ gilt bei unklarem Auftrag, fehlendem Material oder bei fehlender Abgrenzung im Fall-Modus; „profile“ bleibt leer und „theorieanschluss“ null. Bereits bekannte Körperdaten dürfen quellengebunden unter „beteiligte_koerper“ erhalten bleiben. „teilprofil“ kennzeichnet auswertbare, aber lückenhafte Fälle. „profil“ kennzeichnet eine im gewählten Rahmen durchgeführte Fallanalyse, keine verifizierte Wahrheit oder Vollständigkeit der Weltbeschreibung. „anschlusspruefung“ kennzeichnet eine durchgeführte theoretische Anschlussprüfung, auch wenn einzelne begriffliche Übergänge offen bleiben. Sie ist kein unvollständiges empirisches Profil.
+
+## 10. Gekennzeichnete Präzisierungen gegenüber dem Grundlagenpapier
+
+P1 — Fehlende Angaben: „offen“, begründetes „nicht_anwendbar“, Befundstatus, Belegverweise und die JSON-Struktur sind Ergänzungen dieser Anwendungsversion. Sie verhindern, dass fehlendes Wissen als Ausschluss ausgegeben oder eine Ebene durch erfundene Angaben gefüllt wird. Die sieben ursprünglichen Schwellen bleiben erhalten.
+
+P2 — Zwei Wege: Das Ausgabeformat dokumentiert Selbstbeschreibung und Fremderfassung je Schwelle getrennt. Diese formale Ausarbeitung macht die im Papier zentrale Asymmetrie prüfbar; sie behauptet keinen identischen Ablauf beider Wege. Funktionen ohne sinnvolle Entsprechung müssen als solche begründet werden.
+
+P3 — Vierfeld: Die Einordnung bleibt qualitativ. Version 2.0.0 verwendet neutrale Feldbezeichnungen. Die bisherigen Namen sind gesonderte Deutungsmuster mit eigener Beweislast. Diese Änderung ist eine bewusste Weiterentwicklung der Anwendung, keine wortgetreue Wiedergabe der Feldnamen des Grundlagenpapiers.
+
+P4 — Aussagen des Papiers: Allgemeine Zuspitzungen über Kostenverteilung, Wirkung von Fristen, Reichweite von Gegendarstellungen oder Ablehnungsquoten werden als zu prüfende Annahmen behandelt, nicht als automatisch geltende Falltatsachen. Die angekündigte Zurückhaltung bei Kausalerklärungen und Absichtszuschreibungen hat Vorrang vor entsprechenden Deutungen in den Anwendungsbeispielen. Das normative Ziel wird gesondert ausgewiesen.
+
+P5 — Weiterentwicklung: Das Papier erlaubt Änderungen des Rasters durch Fallanalysen. Sammle solche Vorschläge in „revisionsvorschlaege“, jeweils mit Anlass und Beleg. Ändere in derselben Auswertung weder die sieben Schwellen noch deren Bedeutung stillschweigend. Eine übernommene Änderung erhält eine neue Modell- oder Prompt-Version, damit Fälle vergleichbar bleiben.
+
+P6 — Fremder Anschluss: Formatmacht, Erfassung/Speicherung und Entscheidungsverwendung werden als drei Funktionen getrennt; sie bilden keine neuen Achsen und keine lineare Abfolge. Der Vierfeldwert für Fremderfassung bezeichnet die wirksame Erfassung, nicht pauschal sämtliche fremde Macht.
+
+P7 — Zwei Analysemodi: Die Fallprüfung bewahrt das vollständige Raster. Die theoretische Anschlussprüfung hat ein kürzeres eigenes Ausgabeformat und erlaubt weder Vierfeldzuordnung noch fingierte Schwellenbefunde.
+
+P8 — Korrektur und Folge: Berücksichtigung, geänderte Beschreibung, geänderte Entscheidung und fortbestehende Folgen werden unterschieden. Dies ergänzt die Revidierbarkeitsprüfung und verändert keine der sieben Schwellen.
+
+P9 — Ausgabeform «kurz»: Die Kurzfassung ist eine Darstellungsform dieser Anwendungsversion. Sie ändert weder Schwellen noch Kriterien noch Schemas.
+</anweisung>
+
+<eingabe_schema>
+{
+  "type": "object",
+  "properties": {
+    "fall": {"type": "string"},
+    "koerperereignis": {"type": ["string", "null"]},
+    "kontext": {"type": ["string", "null"]},
+    "zeitraum": {"type": ["string", "null"]},
+    "material": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "inhalt": {"type": "string", "minLength": 1},
+          "fundstelle": {"type": ["string", "null"]},
+          "materialart": {"type": ["string", "null"]}
+        },
+        "required": ["id", "inhalt", "fundstelle"],
+        "additionalProperties": false
+      }
+    },
+    "ausgabeformat": {"enum": ["lesbar", "kurz", "json"]},
+    "analysemodus": {"enum": ["fallpruefung", "theoretische_anschlusspruefung", null]},
+    "operation": {"type": ["string", "null"]}
+  },
+  "required": ["fall", "koerperereignis", "kontext", "zeitraum", "material", "ausgabeformat", "analysemodus", "operation"],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
+</eingabe_schema>
+
+<ausgabe_schema>
+{
+  "type": "object",
+  "properties": {
+    "prompt_version": {"const": "2.1.0"},
+    "fall": {"type": ["string", "null"]},
+    "status": {"enum": ["profil", "teilprofil", "klaerung_noetig", "anschlusspruefung"]},
+    "koerperereignis": {"$ref": "#/$defs/befund"},
+    "kontext_und_zeitraum": {"$ref": "#/$defs/befund"},
+    "beteiligte_koerper": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "beschreibung": {"type": "string", "minLength": 1},
+          "rolle": {"enum": ["betroffen", "mitbetroffen", "dokumentiert_ausgelassen"]},
+          "belege": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+        },
+        "required": ["id", "beschreibung", "rolle", "belege"],
+        "additionalProperties": false
+      }
+    },
+    "profile": {"type": "array", "items": {"$ref": "#/$defs/profil"}},
+    "offene_fragen": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "revisionsvorschlaege": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "vorschlag": {"type": "string", "minLength": 1},
+          "anlass": {"type": "string", "minLength": 1},
+          "belege": {"type": "array", "items": {"type": "string", "minLength": 1}}
+        },
+        "required": ["vorschlag", "anlass", "belege"],
+        "additionalProperties": false
+      }
+    },
+    "quellen": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "herkunft": {"enum": ["bereitgestellt", "zusaetzlich"]},
+          "fundstelle": {"type": ["string", "null"]},
+          "materialart": {"type": ["string", "null"]}
+        },
+        "required": ["id", "herkunft", "fundstelle", "materialart"],
+        "additionalProperties": false
+      }
+    },
+    "analysemodus": {"enum": ["fallpruefung", "theoretische_anschlusspruefung", null]},
+    "modus_begruendung": {"type": ["string", "null"]},
+    "theorieanschluss": {"anyOf": [{"$ref": "#/$defs/theorieanschluss"}, {"type": "null"}]}
+  },
+  "required": [
+    "prompt_version",
+    "fall",
+    "status",
+    "koerperereignis",
+    "kontext_und_zeitraum",
+    "beteiligte_koerper",
+    "profile",
+    "offene_fragen",
+    "revisionsvorschlaege",
+    "quellen",
+    "analysemodus",
+    "modus_begruendung",
+    "theorieanschluss"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Der Verteilapparat des Körpers – Fall- oder Theorieprüfung 2.1.0",
+  "$defs": {
+    "befund": {
+      "type": "object",
+      "properties": {
+        "status": {"enum": ["belegt", "deutung", "offen"]},
+        "aussage": {"type": ["string", "null"]},
+        "belege": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "required": ["status", "aussage", "belege"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"enum": ["belegt", "deutung"]}}},
+          "then": {"properties": {"aussage": {"type": "string", "minLength": 1}, "belege": {"minItems": 1}}}
+        }
+      ]
+    },
+    "dimension": {
+      "type": "object",
+      "properties": {
+        "auspraegung": {"enum": ["stark", "schwach", "offen"]},
+        "begruendung": {"type": ["string", "null"]},
+        "belege": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "required": ["auspraegung", "begruendung", "belege"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {"properties": {"auspraegung": {"enum": ["stark", "schwach"]}}},
+          "then": {"properties": {"begruendung": {"type": "string", "minLength": 1}, "belege": {"minItems": 1}}}
+        }
+      ]
+    },
+    "anschlussweg": {
+      "type": "object",
+      "properties": {
+        "status": {"enum": ["passiert", "blockiert", "umgeleitet", "offen", "nicht_anwendbar"]},
+        "befund": {"type": ["string", "null"]},
+        "durch_wen_oder_was": {"type": ["string", "null"]},
+        "belege": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "required": ["status", "befund", "durch_wen_oder_was", "belege"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"enum": ["passiert", "blockiert", "umgeleitet", "nicht_anwendbar"]}}},
+          "then": {"properties": {"befund": {"type": "string", "minLength": 1}, "belege": {"minItems": 1}}}
+        }
+      ]
+    },
+    "schwelle": {
+      "type": "object",
+      "properties": {
+        "selbstbeschreibung": {"$ref": "#/$defs/anschlussweg"},
+        "fremderfassung": {"$ref": "#/$defs/anschlussweg"}
+      },
+      "required": ["selbstbeschreibung", "fremderfassung"],
+      "additionalProperties": false
+    },
+    "vierfeld": {
+      "type": "object",
+      "properties": {
+        "selbstbeschreibung": {"$ref": "#/$defs/dimension"},
+        "fremderfassung": {"$ref": "#/$defs/dimension"},
+        "position": {
+          "enum": ["SB_schwach_FE_stark", "SB_stark_FE_stark", "SB_schwach_FE_schwach", "SB_stark_FE_schwach", null]
+        },
+        "aenderung_nach_schwellenpruefung": {"type": ["string", "null"]}
+      },
+      "required": ["selbstbeschreibung", "fremderfassung", "position", "aenderung_nach_schwellenpruefung"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "selbstbeschreibung": {"properties": {"auspraegung": {"const": "schwach"}}},
+              "fremderfassung": {"properties": {"auspraegung": {"const": "stark"}}}
+            }
+          },
+          "then": {"properties": {"position": {"const": "SB_schwach_FE_stark"}}}
+        },
+        {
+          "if": {
+            "properties": {
+              "selbstbeschreibung": {"properties": {"auspraegung": {"const": "stark"}}},
+              "fremderfassung": {"properties": {"auspraegung": {"const": "stark"}}}
+            }
+          },
+          "then": {"properties": {"position": {"const": "SB_stark_FE_stark"}}}
+        },
+        {
+          "if": {
+            "properties": {
+              "selbstbeschreibung": {"properties": {"auspraegung": {"const": "schwach"}}},
+              "fremderfassung": {"properties": {"auspraegung": {"const": "schwach"}}}
+            }
+          },
+          "then": {"properties": {"position": {"const": "SB_schwach_FE_schwach"}}}
+        },
+        {
+          "if": {
+            "properties": {
+              "selbstbeschreibung": {"properties": {"auspraegung": {"const": "stark"}}},
+              "fremderfassung": {"properties": {"auspraegung": {"const": "schwach"}}}
+            }
+          },
+          "then": {"properties": {"position": {"const": "SB_stark_FE_schwach"}}}
+        },
+        {
+          "if": {
+            "anyOf": [
+              {"properties": {"selbstbeschreibung": {"properties": {"auspraegung": {"const": "offen"}}}}},
+              {"properties": {"fremderfassung": {"properties": {"auspraegung": {"const": "offen"}}}}}
+            ]
+          },
+          "then": {"properties": {"position": {"type": "null"}}}
+        }
+      ]
+    },
+    "ebene": {
+      "type": "object",
+      "properties": {
+        "traeger": {"type": ["string", "null"]},
+        "befund": {"$ref": "#/$defs/befund"},
+        "recherchebedarf": {"type": ["string", "null"]}
+      },
+      "required": ["traeger", "befund", "recherchebedarf"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {"properties": {"befund": {"properties": {"status": {"enum": ["belegt", "deutung"]}}}}},
+          "then": {"properties": {"traeger": {"type": "string", "minLength": 1}}}
+        }
+      ]
+    },
+    "alternative": {
+      "type": "object",
+      "properties": {
+        "beschreibung": {"type": "string", "minLength": 1},
+        "einordnung": {"enum": ["dokumentiert", "dokumentiert_verdraengt", "analytischer_vorschlag"]},
+        "begruendung": {"type": "string", "minLength": 1},
+        "belege": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "required": ["beschreibung", "einordnung", "begruendung", "belege"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {"properties": {"einordnung": {"enum": ["dokumentiert", "dokumentiert_verdraengt"]}}},
+          "then": {"properties": {"belege": {"minItems": 1}}}
+        }
+      ]
+    },
+    "profil": {
+      "type": "object",
+      "properties": {
+        "koerper_id": {"type": "string", "minLength": 1},
+        "betrachtungsrahmen": {"type": "string", "minLength": 1},
+        "vierfeld": {"$ref": "#/$defs/vierfeld"},
+        "schwellen": {
+          "type": "object",
+          "properties": {
+            "auffaellig": {"$ref": "#/$defs/schwelle"},
+            "artikulierbar": {"$ref": "#/$defs/schwelle"},
+            "zugaenglich": {"$ref": "#/$defs/schwelle"},
+            "lesbar": {"$ref": "#/$defs/schwelle"},
+            "glaubwuerdig": {"$ref": "#/$defs/schwelle"},
+            "speicherbar": {"$ref": "#/$defs/schwelle"},
+            "entscheidungsfaehig": {"$ref": "#/$defs/schwelle"}
+          },
+          "required": [
+            "auffaellig",
+            "artikulierbar",
+            "zugaenglich",
+            "lesbar",
+            "glaubwuerdig",
+            "speicherbar",
+            "entscheidungsfaehig"
+          ],
+          "additionalProperties": false
+        },
+        "querkriterien": {
+          "type": "object",
+          "properties": {
+            "richtung": {"$ref": "#/$defs/befund"},
+            "uebersetzungslast": {"$ref": "#/$defs/befund"},
+            "latenz": {"$ref": "#/$defs/befund"},
+            "aggregationsniveau": {"$ref": "#/$defs/befund"},
+            "revidierbarkeit": {"$ref": "#/$defs/befund"},
+            "folgenverteilung": {"$ref": "#/$defs/befund"}
+          },
+          "required": [
+            "richtung",
+            "uebersetzungslast",
+            "latenz",
+            "aggregationsniveau",
+            "revidierbarkeit",
+            "folgenverteilung"
+          ],
+          "additionalProperties": false
+        },
+        "leitfragen": {
+          "type": "object",
+          "properties": {
+            "anschluss": {"$ref": "#/$defs/befund"},
+            "beschreibung": {"$ref": "#/$defs/befund"},
+            "anfechtung": {
+              "type": "object",
+              "properties": {
+                "formal": {"$ref": "#/$defs/befund"},
+                "faktisch": {"$ref": "#/$defs/befund"},
+                "kosten": {"$ref": "#/$defs/befund"},
+                "beruecksichtigung": {"$ref": "#/$defs/befund"},
+                "beschreibungsaenderung": {"$ref": "#/$defs/befund"},
+                "entscheidungsaenderung": {"$ref": "#/$defs/befund"}
+              },
+              "required": [
+                "formal",
+                "faktisch",
+                "kosten",
+                "beruecksichtigung",
+                "beschreibungsaenderung",
+                "entscheidungsaenderung"
+              ],
+              "additionalProperties": false
+            },
+            "materielle_folgen": {"$ref": "#/$defs/befund"}
+          },
+          "required": ["anschluss", "beschreibung", "anfechtung", "materielle_folgen"],
+          "additionalProperties": false
+        },
+        "alternativbeschreibungen": {"type": "array", "items": {"$ref": "#/$defs/alternative"}},
+        "apparat_ebenen": {
+          "type": "object",
+          "properties": {
+            "verteilende_unterscheidungen": {"$ref": "#/$defs/ebene"},
+            "stabilisatoren": {"$ref": "#/$defs/ebene"},
+            "externalisierung": {"$ref": "#/$defs/ebene"}
+          },
+          "required": ["verteilende_unterscheidungen", "stabilisatoren", "externalisierung"],
+          "additionalProperties": false
+        },
+        "rueckwirkungen": {"type": "array", "items": {"$ref": "#/$defs/befund"}},
+        "gegenpruefung_erfassung_als_schutz": {"$ref": "#/$defs/befund"},
+        "befundmuster": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "muster": {
+                "enum": [
+                  "Erfassung ohne Stimme",
+                  "Anerkennung ohne Folge",
+                  "Zuständigkeitsverschiebung",
+                  "Selbstübersetzung als Eintrittspreis",
+                  "Späte Anerkennung",
+                  "Statistische Sichtbarkeit",
+                  "Widerspruch kostet Anschluss",
+                  "Sichtbarkeit als Risiko",
+                  "Ausgeliefertsein",
+                  "Verhandelbare Teilhabe",
+                  "Verschwinden",
+                  "Privilegierte Opazität"
+                ]
+              },
+              "befund": {
+                "allOf": [{"$ref": "#/$defs/befund"}, {"properties": {"status": {"enum": ["belegt", "deutung"]}}}]
+              }
+            },
+            "required": ["muster", "befund"],
+            "additionalProperties": false
+          }
+        },
+        "was_das_modell_nicht_erklaert": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "evidenzrahmen": {"type": "string", "minLength": 1},
+        "fremder_anschluss": {
+          "type": "object",
+          "properties": {
+            "formatmacht": {"$ref": "#/$defs/befund"},
+            "erfassung_und_speicherung": {"$ref": "#/$defs/befund"},
+            "entscheidungsverwendung": {"$ref": "#/$defs/befund"}
+          },
+          "required": ["formatmacht", "erfassung_und_speicherung", "entscheidungsverwendung"],
+          "additionalProperties": false
+        },
+        "folgewirksamkeit_und_korrektur": {
+          "type": "object",
+          "properties": {
+            "untersuchte_folge": {"$ref": "#/$defs/befund"},
+            "moegliche_korrektur": {"$ref": "#/$defs/befund"},
+            "tatsaechliche_korrektur": {"$ref": "#/$defs/befund"},
+            "fortbestehende_folgen": {"$ref": "#/$defs/befund"}
+          },
+          "required": ["untersuchte_folge", "moegliche_korrektur", "tatsaechliche_korrektur", "fortbestehende_folgen"],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "koerper_id",
+        "betrachtungsrahmen",
+        "vierfeld",
+        "schwellen",
+        "querkriterien",
+        "leitfragen",
+        "alternativbeschreibungen",
+        "apparat_ebenen",
+        "rueckwirkungen",
+        "gegenpruefung_erfassung_als_schutz",
+        "befundmuster",
+        "was_das_modell_nicht_erklaert",
+        "evidenzrahmen",
+        "fremder_anschluss",
+        "folgewirksamkeit_und_korrektur"
+      ],
+      "additionalProperties": false
+    },
+    "theorieanschluss": {
+      "type": "object",
+      "properties": {
+        "untersuchungsgegenstand": {"type": "string", "minLength": 1},
+        "operation": {"type": "string", "minLength": 1},
+        "materialumfang": {"$ref": "#/$defs/befund"},
+        "koerperereignisse_und_unterscheidungen": {"$ref": "#/$defs/befund"},
+        "erfahrung_ausdruck_und_fremdbeschreibung": {"$ref": "#/$defs/befund"},
+        "formatmacht_erfassung_und_entscheidung": {"$ref": "#/$defs/befund"},
+        "organisation_und_korrektur": {"$ref": "#/$defs/befund"},
+        "uebergaenge": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "textbeleg": {"type": "string", "minLength": 1},
+              "begriffliche_aussage": {"type": "string", "minLength": 1},
+              "beanspruchte_fallwirkung": {"type": ["string", "null"]},
+              "uebergangsbegruendung": {"$ref": "#/$defs/befund"},
+              "unsicherheit": {"type": ["string", "null"]}
+            },
+            "required": [
+              "textbeleg",
+              "begriffliche_aussage",
+              "beanspruchte_fallwirkung",
+              "uebergangsbegruendung",
+              "unsicherheit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "grenzen_und_fallrecherche": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      },
+      "required": [
+        "untersuchungsgegenstand",
+        "operation",
+        "materialumfang",
+        "koerperereignisse_und_unterscheidungen",
+        "erfahrung_ausdruck_und_fremdbeschreibung",
+        "formatmacht_erfassung_und_entscheidung",
+        "organisation_und_korrektur",
+        "uebergaenge",
+        "grenzen_und_fallrecherche"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "klaerung_noetig"}}},
+      "then": {
+        "properties": {"profile": {"maxItems": 0}, "theorieanschluss": {"type": "null"}, "offene_fragen": {"minItems": 1}}
+      },
+      "else": {
+        "properties": {
+          "fall": {"type": "string", "minLength": 1},
+          "quellen": {"minItems": 1},
+          "modus_begruendung": {"type": "string", "minLength": 1},
+          "analysemodus": {"enum": ["fallpruefung", "theoretische_anschlusspruefung"]}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "anschlusspruefung"}}},
+      "then": {
+        "properties": {
+          "analysemodus": {"const": "theoretische_anschlusspruefung"},
+          "profile": {"maxItems": 0},
+          "beteiligte_koerper": {"maxItems": 0},
+          "theorieanschluss": {"$ref": "#/$defs/theorieanschluss"},
+          "koerperereignis": {"properties": {"status": {"const": "offen"}}},
+          "kontext_und_zeitraum": {"properties": {"status": {"const": "offen"}}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"enum": ["profil", "teilprofil"]}}},
+      "then": {
+        "properties": {
+          "analysemodus": {"const": "fallpruefung"},
+          "profile": {"minItems": 1},
+          "beteiligte_koerper": {"minItems": 1},
+          "theorieanschluss": {"type": "null"},
+          "koerperereignis": {"properties": {"status": {"enum": ["belegt", "deutung"]}}}
+        }
+      }
+    }
+  ]
+}
+</ausgabe_schema>
+
+MEINE EINGABE
+
+Ergänze die Vorlage oder beschreibe den Auftrag in normaler Sprache. Bei einer Theorieprüfung bezeichnet „fall“ den untersuchten Ansatz oder Text; Körperereignis, Kontext und Zeitraum des Falls bleiben null. „operation“ grenzt den theoretischen Zugriff ein. Setze „analysemodus“ ausdrücklich oder lasse ihn bei einem eindeutigen Auftrag ableiten. „ausgabeformat“: „lesbar“, „kurz“ oder „json“. Leere Felder sind keine Belege. Material enthält tatsächliche Inhalte, IDs und Fundstellen; „materialart“ kann zusätzlich angegeben werden.
+
+<eingabe>
+{
+  "fall": "",
+  "analysemodus": null,
+  "operation": null,
+  "koerperereignis": null,
+  "kontext": null,
+  "zeitraum": null,
+  "material": [],
+  "ausgabeformat": "lesbar"
+}
+</eingabe>
+</script>
+  <div class="stueck-text"><p>Ein Prüfinstrument dafür, wessen Körperereignis wie weit kommt, unter welcher Beschreibung, wer sie berichtigen kann und was daraus materiell folgt. Sieben Schwellen, Stimme gegen Messung, vier Felder: Ausgeliefertsein, Verhandelbare Teilhabe, Verschwinden, Privilegierte Opazität.</p></div>
+</div></article>
+<section class="abschnitt" aria-labelledby="arbeit-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="arbeit-titel">So arbeitet das Raster</h2></div>
+  <div class="raster-paar">
+    <figure class="tafel-lebt" data-tafel="verteilapparat"><picture><source srcset="/b/bilder/raster/verteilapparat-dunkel.svg" media="(prefers-color-scheme: dark)"><img src="/b/bilder/raster/verteilapparat.svg" alt="Der Verteilapparat des Körpers, gezeichnet: sieben Schwellen; eine Meldung läuft hindurch, an einigen Schwellen bleibt eine Spur zurück" width="1200" height="1200"></picture><figcaption>So arbeitet das Raster: Eine Meldung des Körpers geht über sieben Schwellen; an jeder kann sie weiterkommen, verändert werden oder verschwinden.</figcaption></figure>
+    <div class="quadrant" aria-label="Die vier Felder">
   <span class="y">Fremderfassung →</span>
   <div class="vier"><span class="betont">Ausgeliefertsein</span><span>Verhandelbare Teilhabe</span><span>Verschwinden</span><span>Privilegierte Opazität</span></div>
   <span class="x">Selbstbeschreibung →</span>
 </div>
-  <div class="stueck-text"><p>Ein Prüfinstrument dafür, wessen Körperereignis wie weit kommt, unter welcher Beschreibung, wer sie berichtigen kann und was daraus materiell folgt. Sieben Schwellen, Stimme gegen Messung, vier Felder: Ausgeliefertsein, Verhandelbare Teilhabe, Verschwinden, Privilegierte Opazität.</p><p><strong>Womit man kommt:</strong> Ein Fall aus Medizin, Pflege, Schule, Sport, Behörde oder Kunst, in dem ein Körper etwas meldet. Der Prompt verfolgt die Meldung über die Schwellen und zeigt, wo sie verschwindet oder sich durchsetzt.</p></div>
-</div></article>
+  </div>
+</div></section>
+<section class="ablauf" aria-labelledby="ablauf-titel"><div class="spalte">
+  <h2 id="ablauf-titel">So wendest du es an</h2>
+  <ol>
+    <li><span><b>Prompt kopieren.</b> Der ganze Anwendungsprompt 2.1.0 liegt dann in der Zwischenablage; wer lieber liest, öffnet ihn als Text.</span></li>
+    <li><span><b>In einen KI-Assistenten einfügen</b> und dein Material dazugeben: Ein Fall aus Medizin, Pflege, Schule, Sport, Behörde oder Kunst, in dem ein Körper etwas meldet. Der Prompt verfolgt die Meldung über die Schwellen und zeigt, wo sie verschwindet oder sich durchsetzt.</span></li>
+    <li><span><b>Lesen, was das Raster findet:</b> den Weg der Meldung über die sieben Schwellen, wo sie verschwindet oder sich durchsetzt, und das Feld, in dem sie landet.</span></li>
+  </ol>
+</div></section>
 <section class="spalte"><div class="teilen">
   <button class="knopf teilen-knopf" type="button" data-url="https://ornament.cloud/b/raster/verteilapparat/" data-titel="Der Verteilapparat des Körpers" data-text="Wessen Körperereignis kommt wie weit?">Teilen</button>
   
@@ -74,7 +807,8 @@
     </div>
   </footer>
   <template id="zeichen-vollbild"><svg class="zeichen" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9V4h5" pathLength="1" vector-effect="non-scaling-stroke"/><path d="M20 9V4h-5" pathLength="1" vector-effect="non-scaling-stroke"/><path d="M4 15v5h5" pathLength="1" vector-effect="non-scaling-stroke"/><path d="M20 15v5h-5" pathLength="1" vector-effect="non-scaling-stroke"/></svg></template><template id="zeichen-tab"><svg class="zeichen" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 4h6v6" pathLength="1" vector-effect="non-scaling-stroke"/><path d="M20 4l-9 9" pathLength="1" vector-effect="non-scaling-stroke"/><path d="M18 13v7H4V6h7" pathLength="1" vector-effect="non-scaling-stroke"/></svg></template><template id="zeichen-schliessen"><svg class="zeichen" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12" pathLength="1" vector-effect="non-scaling-stroke"/><path d="M18 6L6 18" pathLength="1" vector-effect="non-scaling-stroke"/></svg></template>
-  <script type="module" src="/b/b.js?v=6"></script>
+  <script type="module" src="/b/b.js?v=7"></script>
+  <script type="module" src="/b/tafeln-leben.js?v=7"></script>
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="/vendor/goatcounter/count.js"></script>
 </body>
 </html>

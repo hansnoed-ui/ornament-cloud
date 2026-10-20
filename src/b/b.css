@@ -296,15 +296,21 @@ h2 .zeichen { width: 1em; height: 1em; margin-right: 0.35em; vertical-align: -0.
 .briefing .ohne { margin-top: 12px; }
 
 /* Das Feld der vier Felder (Prüfraster) */
+/* Prüfraster (20. Oktober 2026): die Tafel in Bewegung neben den vier Feldern; Felder mit Haarlinien */
+.raster-paar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+.raster-paar .tafel-lebt { margin: 0; max-width: none; }
+.raster-paar .quadrant, .raster-paar .quadrant-leer { margin-top: 0; max-width: none; }
+@media (max-width: 760px) { .raster-paar { grid-template-columns: minmax(0, 1fr); } }
+.ablauf li b { font-weight: 500; }
 .quadrant { display: grid; grid-template-columns: 2rem 1fr; grid-template-rows: 1fr 2rem; max-width: 460px; margin-top: 32px; }
 .quadrant .y { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 0.82rem; color: var(--grau); text-align: center; }
 .quadrant .x { grid-column: 2; font-size: 0.82rem; color: var(--grau); text-align: center; padding-top: 8px; }
-.quadrant .vier { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--tinte); aspect-ratio: 1; }
-.quadrant .vier span { display: grid; place-items: center; text-align: center; padding: 10px; border: 1px solid var(--tinte); font-size: clamp(0.8rem, 1.6vw, 1rem); line-height: 1.25; transition: background 0.15s ease, color 0.15s ease; }
+.quadrant .vier { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--tinte); aspect-ratio: 1; background: var(--papier); }
+.quadrant .vier span { display: grid; place-items: center; text-align: center; padding: 10px; border: 1px solid var(--linie); font-size: clamp(0.8rem, 1.6vw, 1rem); line-height: 1.25; transition: background 0.15s ease, color 0.15s ease; }
 .quadrant .vier span.betont { background: var(--tinte); color: var(--papier); }
 .quadrant .vier span:hover { background: var(--faden); color: var(--papier); }
-.quadrant-leer { margin-top: 32px; display: grid; grid-template-columns: repeat(3, 1fr); max-width: 460px; border: 1px solid var(--tinte); }
-.quadrant-leer span { display: grid; place-items: center; aspect-ratio: 1; border: 1px solid var(--tinte); font-size: clamp(0.8rem, 1.6vw, 1rem); text-align: center; padding: 8px; }
+.quadrant-leer { margin-top: 32px; display: grid; grid-template-columns: repeat(3, 1fr); max-width: 460px; border: 1px solid var(--tinte); background: var(--papier); }
+.quadrant-leer span { display: grid; place-items: center; aspect-ratio: 1; border: 1px solid var(--linie); font-size: clamp(0.8rem, 1.6vw, 1rem); text-align: center; padding: 8px; }
 
 /* Lebenslauf auf «Über» und Referenzen bei der Kuration */
 .hintergrund { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--linie); display: grid; gap: 14px; max-width: 62ch; color: var(--grau); font-size: 1rem; }

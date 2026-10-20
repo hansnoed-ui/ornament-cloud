@@ -12,7 +12,7 @@ import { zeichen } from "../src/b/zeichen.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS = new URL("b/", ROOT);
-const V = 6;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 7;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 
@@ -462,24 +462,41 @@ function quadrant(r) {
   <h1 class="titel">Prüfraster<small>Vier Instrumente zum genaueren Hinsehen. Jedes hat ein Grundlagenpapier und einen Anwendungsprompt: Den Prompt kopierst du mit deinem Fall in einen KI-Assistenten, das Raster führt die Prüfung.</small></h1>
 </div></section>
 <section class="abschnitt"><div class="spalte">
-  <ul class="liste-linien">${RASTER.map((r, i) => `<li><a href="/b/raster/${r.slug}/"><span class="n">${zeichen(r.slug)}</span><span class="name">${esc(r.name)}</span><span class="pfeil">${esc(r.stand)}</span><span class="kurz">${esc(r.text)}</span></a></li>`).join("")}</ul>
+  <div class="reihe">${RASTER.map((r) => `<a class="stueck" href="/b/raster/${r.slug}/"><span class="bild quadrat">${appBild(r, ' loading="lazy"')}</span><h3>${zeichen(r.slug)}${esc(r.name)}</h3><p>${esc(r.kurz)} ${esc(r.fassung)}, ${esc(r.stand)}.</p></a>`).join("")}</div>
 </div></section>`;
   veroeffentliche({ pfad: "raster/", aktiv: "raster/", titel: "Prüfraster – vier Instrumente zum Hinsehen", beschreibung: "Nebeneinander und Nacheinander, der Verteilapparat des Körpers, ein Raster für Gesellschaftskonzepte und eines für journalistische Texte: Grundlagenpapiere und Anwendungsprompts.", body, bildAlt: "Die vier Prüfraster" });
 }
 for (const r of RASTER) {
   const zs = zettelZu("raster", r.slug, 3);
+  const promptText = readFileSync(new URL(r.prompt, ROOT), "utf8");
+  // Bedienung (20. Oktober 2026, «die Bedienung an den neuen, reduzierten Stil angepasst, analog zu den App-Beiträgen»): der Prompt wird hier kopiert, nicht heruntergeladen
   const body = `
 <article class="stueck-kopf"><div class="spalte">
   <p class="gattung">Prüfraster · ${esc(r.fassung)} · ${esc(r.stand)}</p>
   <h1 class="titel"><span class="zeichen-gross">${zeichen(r.slug)}</span>${esc(r.name)}</h1>
   <p class="lead">${esc(r.kurz)}</p>
-  <p class="knopfreihe"><a class="knopf voll" href="/${attr(r.prompt)}">Anwendungsprompt</a>${r.pdf ? `<a class="knopf" href="/${attr(r.pdf)}">Grundlagenpapier (PDF)</a>` : ""}${r.raster ? `<a class="knopf" href="/${attr(r.raster)}">Das Raster (Text)</a>` : ""}<a class="knopf still" href="/${attr(r.seite)}">Seite mit Anleitung</a></p>
-  ${quadrant(r)}
-  <div class="stueck-text"><p>${esc(r.text)}</p><p><strong>Womit man kommt:</strong> ${esc(r.anwendung)}</p></div>
+  <p class="knopfreihe"><button class="knopf voll prompt-kopieren" type="button" data-ziel="prompt-text">Prompt kopieren</button><a class="knopf" href="/${attr(r.prompt)}">Prompt lesen</a>${r.pdf ? `<a class="knopf" href="/${attr(r.pdf)}">Grundlagenpapier (PDF)</a>` : ""}${r.raster ? `<a class="knopf" href="/${attr(r.raster)}">Das Raster (Text)</a>` : ""}<a class="knopf still" href="/${attr(r.seite)}">Seite mit Anleitung</a></p>
+  <script type="text/plain" id="prompt-text">${promptText.replace(/<\/script/gi, "<\\/script")}</script>
+  <div class="stueck-text"><p>${esc(r.text)}</p></div>
 </div></article>
+<section class="abschnitt" aria-labelledby="arbeit-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="arbeit-titel">So arbeitet das Raster</h2></div>
+  <div class="raster-paar">
+    <figure class="tafel-lebt" data-tafel="${r.slug}">${appBild(r)}<figcaption>${esc(r.bewegung)}</figcaption></figure>
+    ${quadrant(r)}
+  </div>
+</div></section>
+<section class="ablauf" aria-labelledby="ablauf-titel"><div class="spalte">
+  <h2 id="ablauf-titel">So wendest du es an</h2>
+  <ol>
+    <li><span><b>Prompt kopieren.</b> Der ganze ${esc(r.fassung)} liegt dann in der Zwischenablage; wer lieber liest, öffnet ihn als Text.</span></li>
+    <li><span><b>In einen KI-Assistenten einfügen</b> und dein Material dazugeben: ${esc(r.anwendung)}</span></li>
+    <li><span><b>Lesen, was das Raster findet:</b> ${esc(r.ergebnis)}</span></li>
+  </ol>
+</div></section>
 <section class="spalte">${teilen({ pfad: `raster/${r.slug}/`, titel: r.name, text: r.kurz })}</section>
 ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" ? fApp(appVon("orna")) : fApp(appVon("orma")), fAngebot(angebotVon("vermittlung")), fRaster(RASTER.find((x) => x.slug !== r.slug && x.stand === r.stand) || RASTER.find((x) => x.slug !== r.slug))])}`;
-  veroeffentliche({ pfad: `raster/${r.slug}/`, aktiv: "raster/", titel: `${r.name} – Prüfraster`, beschreibung: beschreibung(r.text), body, typ: "article",
+  veroeffentliche({ pfad: `raster/${r.slug}/`, aktiv: "raster/", titel: `${r.name} – Prüfraster`, beschreibung: beschreibung(r.text), body, typ: "article", module: ["tafeln-leben.js"],
     jsonld: [{ "@context": "https://schema.org", "@type": "CreativeWork", name: r.name, description: r.kurz, url: `${BASIS}/b/raster/${r.slug}/`, author: { "@type": "Person", name: SEITE.person.name }, inLanguage: "de-CH" }] });
 }
 
