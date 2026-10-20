@@ -5,8 +5,9 @@
   <meta charset="utf-8">
   <meta name="robots" content="noindex">
   <!-- In der Bühne des Neubaus (/b/apps/…/oeffnen/, seit 20. Oktober 2026) mit ?b=1: ohne die Navigation der bisherigen Website -->
-  <script>if(/[?&]b=1(&|$)/.test(location.search))document.documentElement.setAttribute("data-buehne","")</script>
-  <style>[data-buehne] .topbar,[data-buehne] .divider,[data-buehne] .site-footer,[data-buehne] .work-kicker{display:none!important}</style>
+  <script>if(/[?&]b=1(&|$)/.test(location.search)){document.documentElement.setAttribute("data-buehne","");addEventListener("DOMContentLoaded",()=>{for(const [s,h] of [[".rad-more-link a","/b/apps/orna/feld/"],[".back a","/b/apps/"]]){const a=document.querySelector(s);if(a){a.href=h;a.target="_top"}}})}</script>
+  <!-- auf der Bühne (Rückmeldung vom 20. Oktober 2026: «Der Beschreibungstext kann weg, die beiden Links führen wieder auf die alte Seite»): ohne die Beschreibung, «Das Feld» und «Zu den Apps» führen in den Neubau, im obersten Fenster statt im Rahmen -->
+  <style>[data-buehne] .topbar,[data-buehne] .divider,[data-buehne] .site-footer,[data-buehne] .work-kicker,[data-buehne] .rad-intro{display:none!important}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Nebeneinander, Nacheinander – Ornament Cloud</title>
   <meta name="description" content="Eine interaktive Versuchsanordnung zur Verräumlichung und Verzeitlichung von Wahrnehmung.">
