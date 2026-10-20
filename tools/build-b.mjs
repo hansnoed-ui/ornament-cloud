@@ -12,7 +12,7 @@ import { zeichen } from "../src/b/zeichen.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS = new URL("b/", ROOT);
-const V = 8;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 9;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 
@@ -135,7 +135,15 @@ function appKachel(a) {
 /** Beispiele: was aus einer App herauskommt (Bildpaar vorher/nachher, Video, oder Texte aus ORNA, ORMA und OMNA COLOR) */
 function beispiele(a, { kurz = false } = {}) {
   const b = a.beispiele; if (!b) return "";
-  if (Array.isArray(b)) return b.map((x) => beispiele({ ...a, beispiele: x }, { kurz })).join("");   // mehrere Stücke: zuerst der Film, dann das Bildpaar
+  if (Array.isArray(b)) {
+    // mehrere Stücke: die Filme nebeneinander in einer Reihe, dann das Bildpaar; kurz (Galerie): nur das erste
+    if (kurz) return beispiele({ ...a, beispiele: b[0] }, { kurz });
+    const teile = []; let filme = [];
+    const reihe = () => { if (filme.length) teile.push(filme.length > 1 ? `<div class="filme">${filme.join("")}</div>` : filme[0]); filme = []; };
+    for (const x of b) { const s = beispiele({ ...a, beispiele: x }); if (x.art === "video") filme.push(s); else { reihe(); teile.push(s); } }
+    reihe();
+    return teile.join("");
+  }
   if (b.art === "paar") return `<figure class="paar"><span class="bild"><img src="/${attr(b.vorher)}" alt="Vorher: das Ausgangsbild" loading="lazy"></span><span class="pfeil" aria-hidden="true"></span><span class="bild"><img src="/${attr(b.nachher)}" alt="Nachher: ${attr(a.name)}" loading="lazy"></span><figcaption>${esc(b.text)}</figcaption></figure>`;
   if (b.art === "video") return `<figure class="beispiel-video"><video controls muted loop playsinline preload="metadata" poster="/${attr(b.bild)}" width="${b.mass?.[0] || 1080}" height="${b.mass?.[1] || 1350}">${b.webm ? `<source src="/${attr(b.webm)}" type="video/webm">` : ""}<source src="/${attr(b.datei)}" type="video/mp4"></video><figcaption>${esc(b.text)}</figcaption></figure>`;
   if (b.art === "orna") return `<div class="beispiel-texte">${b.ids.slice(0, kurz ? 1 : 3).map((id) => { const k = konstellationen.find((x) => x.id === id); return k ? `<article class="konstellation"><h3>${esc(namen[k.artistId])} × ${esc(namen[k.theoristId])}</h3><p>${esc(k.text)}</p><p class="frage">${esc(k.question)}</p><p class="klein"><a href="/portfolio/nebeneinander-nacheinander/?pair=${attr(k.id)}">Diese Konstellation im Rad</a></p></article>` : ""; }).join("")}</div>`;
