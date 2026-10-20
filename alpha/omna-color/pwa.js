@@ -51,6 +51,8 @@ if (box && !standalone) {
   const zuChrome = () => hilfe.querySelector(".installieren-chrome");
   let angebot = null;
   box.hidden = false;
+  // vom Neubau («Als App installieren», /b/apps/omna-color/) mit ?installieren: zum Knopf scrollen, die Schritte gleich aufklappen
+  if (new URLSearchParams(location.search).has("installieren")) { hilfe.hidden = false; knopf.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => { box.scrollIntoView({ block: "center" }); knopf.focus({ preventScroll: true }); }); }
   addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); angebot = e; });   // kein Banner, nur der eigene, stille Knopf
   addEventListener("appinstalled", () => { box.hidden = true; angebot = null; zaehle("omna-color-app/installiert", "OMNA COLOR: installiert"); });
   knopf.addEventListener("click", async () => {

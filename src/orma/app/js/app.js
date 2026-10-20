@@ -59,9 +59,10 @@ function installSteps() {
   return T("Dieser Browser kann ORMA nicht installieren. Auf dem Smartphone geht es direkt, am Computer mit Chrome oder Edge.");
 }
 
+let installGewuenscht = new URLSearchParams(location.search).has("installieren");   // vom Neubau («Als App installieren», /b/apps/orma/): Schritte aufgeklappt, bis man weitergeht
 function installBlock() {
   if (STANDALONE) return [];
-  const help = h("p", { class: "orma-small orma-install-help", id: "orma-install-help", hidden: true, text: installSteps() + T(" Danach funktioniert ORMA auch ohne Netz.") });
+  const help = h("p", { class: "orma-small orma-install-help", id: "orma-install-help", hidden: !installGewuenscht, text: installSteps() + T(" Danach funktioniert ORMA auch ohne Netz.") });
   const b = btn(T("ORMA als App installieren"), async () => {
     if (installPrompt) {
       const p = installPrompt; installPrompt = null;
@@ -70,9 +71,11 @@ function installBlock() {
       if (choice && choice.outcome === "accepted") b.hidden = true;
       return;
     }
+    installGewuenscht = false;
     help.hidden = !help.hidden;
     b.setAttribute("aria-expanded", String(!help.hidden));
-  }, "orma-link", { "aria-expanded": "false", "aria-controls": "orma-install-help" });
+  }, "orma-link", { "aria-expanded": String(installGewuenscht), "aria-controls": "orma-install-help" });
+  if (installGewuenscht) requestAnimationFrame(() => { b.scrollIntoView({ block: "center" }); b.focus({ preventScroll: true }); });   // die Startansicht wird beim Sprachwechsel neu gezeichnet, darum bleibt die Wahl bis zum nächsten Schritt
   return [b, help];
 }
 
@@ -192,6 +195,7 @@ function confirmView(message, yes, onYes, onNo) {
 
 // ---------- A. Beginnen ----------
 function renderNames(prev = {}) {
+  installGewuenscht = false;
   rerender = () => renderNames({ a: a.value, b: b.value });
   const a = h("input", { class: "orma-input", id: "orma-name-a", autocomplete: "off", maxlength: "40", placeholder: T("Person A"), value: prev.a || "" });
   const b = h("input", { class: "orma-input", id: "orma-name-b", autocomplete: "off", maxlength: "40", placeholder: T("Person B"), value: prev.b || "" });
@@ -213,6 +217,7 @@ function renderNames(prev = {}) {
 }
 
 function startSolo() {
+  installGewuenscht = false;
   round = newRound({ mode: "allein" });
   persist();
   renderRound();
@@ -220,6 +225,7 @@ function startSolo() {
 
 // ---------- Runde ----------
 function renderRound() {
+  installGewuenscht = false;
   rerender = renderRound;
   const p = byId.get(round.constellationId);
   if (round.step !== "drehen" && !p) { round.step = "drehen"; round.constellationId = ""; }
@@ -598,6 +604,7 @@ function renderExport(r, back) {
 
 // ---------- Gedankenbuch ----------
 function renderBook() {
+  installGewuenscht = false;
   rerender = renderBook;
   const { entries, error } = loadBook(storage);
   const { loops, error: loopError } = loadLoops(storage);
