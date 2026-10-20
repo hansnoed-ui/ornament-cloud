@@ -42,7 +42,13 @@
     "install.chromeOeffnen": "Open in Chrome", "install.danach": " Afterwards OMNA COLOR has its own icon on the screen and runs without a network too.",
   };
   const KEY = "ornament.sprache";
-  const erkannt = () => { try { const s = localStorage.getItem(KEY); if (s === "de" || s === "en") return s; } catch { /* ohne Speicher */ } return /^en/i.test(navigator.language || "") ? "en" : "de"; };
+  // zuerst die Adresse (?sprache=de|en: die Bühne und die Links des Neubaus geben die Sprache der Seite mit, 20. Oktober 2026, und die Wahl wird gemerkt), dann die gemerkte Wahl, sonst das Gerät
+  const erkannt = () => {
+    const q = new URLSearchParams(location.search).get("sprache");
+    if (q === "de" || q === "en") { try { localStorage.setItem(KEY, q); } catch { /* ohne Speicher */ } return q; }
+    try { const s = localStorage.getItem(KEY); if (s === "de" || s === "en") return s; } catch { /* ohne Speicher */ }
+    return /^en/i.test(navigator.language || "") ? "en" : "de";
+  };
   let sprache = erkannt();
   const originale = new WeakMap();
   function anwenden() {

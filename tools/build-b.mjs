@@ -18,7 +18,7 @@ import { zeichen } from "../src/b/zeichen.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 13;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 14;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -288,11 +288,11 @@ ${body}
     <span class="app-name"><a class="signet" href="${B}" title="ornament.cloud">${SIGNET}</a><b>${esc(name)}</b></span>
     <span class="app-knoepfe">
       <button type="button" class="vollbild" title="${attr(T.buehne.vollbild)}">${zeichen("vollbild")}<span>${esc(T.buehne.vollbild)}</span></button>
-      <a class="tab" href="/${attr(ziel)}" target="_blank" rel="noopener" title="${attr(T.buehne.tabTitel)}">${zeichen("tab")}<span>${esc(T.buehne.tab)}</span></a>
+      <a class="tab" href="/${attr(ziel)}?sprache=${sprache}" target="_blank" rel="noopener" title="${attr(T.buehne.tabTitel)}">${zeichen("tab")}<span>${esc(T.buehne.tab)}</span></a>
       <a class="zurueck" href="${B}${zurueck}" title="${attr(T.buehne.zurueckTitel)}">${zeichen("schliessen")}<span>${esc(T.buehne.zurueck)}</span></a>
     </span>
   </div>
-  <iframe class="app-rahmen" src="/${attr(ziel)}?b=1" title="${attr(name)}" allow="fullscreen; autoplay; microphone; camera; display-capture; clipboard-write" allowfullscreen loading="eager"></iframe>
+  <iframe class="app-rahmen" src="/${attr(ziel)}?b=1&amp;sprache=${sprache}" title="${attr(name)}" allow="fullscreen; autoplay; microphone; camera; display-capture; clipboard-write" allowfullscreen loading="eager"></iframe>
   <script type="module" src="/b/b.js?v=${V}"></script>
 </body>
 </html>
@@ -509,7 +509,7 @@ ${gruppen.map((g) => `<section class="abschnitt" aria-labelledby="g-${g.replace(
   <p class="gattung">${esc(a.gattung)}${a.werk ? esc(T.apps.zu(a.werk)) : ""}</p>
   <h1 class="titel" data-wort="${attr(a.name)}"><span class="zeichen-gross">${zeichen(a.zeichen)}</span>${esc(a.name)}</h1>
   <p class="lead">${esc(a.kurz)}</p>
-  <p class="knopfreihe"><a class="knopf voll" href="${B}apps/${a.slug}/oeffnen/">${esc(T.apps.oeffnen(a.name))}</a>${a.app ? `<a class="knopf" href="/${attr(a.app)}">${esc(T.apps.installieren)}</a>` : ""}${a.feld ? `<a class="knopf still" href="${B}apps/${a.slug}/feld/">${esc(T.apps.feld)}</a>` : ""}</p>
+  <p class="knopfreihe"><a class="knopf voll" href="${B}apps/${a.slug}/oeffnen/">${esc(T.apps.oeffnen(a.name))}</a>${a.app ? `<a class="knopf" href="/${attr(a.app)}${a.app.includes("?") ? "&amp;" : "?"}sprache=${sprache}">${esc(T.apps.installieren)}</a>` : ""}${a.feld ? `<a class="knopf still" href="${B}apps/${a.slug}/feld/">${esc(T.apps.feld)}</a>` : ""}</p>
   ${T.apps.deutsch ? `<p class="klein hinweis-sprache">${esc(T.apps.deutsch)}</p>` : ""}
   <figure class="stueck-bild quadrat">${appBild(a)}</figure>
   <div class="stueck-text"><p>${esc(a.text)}</p><p class="fuer">${esc(a.fuer)}</p></div>
