@@ -255,3 +255,15 @@ test("b/: das Signet lebt auf Start und Über (Tafel «signet», zeichnet sich a
   const js = lies("b/b.js");
   assert.ok(js.includes('const QUELLE = "ornament"') && js.includes("/OR[NM]A|OMNA/i"), "nur die Namen aus der ornament-Familie");
 });
+
+test("Startseite: wer auf ornament.cloud landet, kommt in den Neubau; die bisherige Startseite bleibt unter /?bisher", () => {
+  const start = lies("index.html");
+  assert.ok(start.includes('location.replace("/b/"+location.search+location.hash)'), "Skript leitet nach /b/ und nimmt die Abfrage mit");
+  assert.ok(/if\(!\/\[\?&\]bisher/.test(start), "?bisher hält die bisherige Startseite");
+  assert.ok(start.includes('<noscript><meta http-equiv="refresh" content="0; url=/b/"></noscript>'), "ohne Skript der meta refresh");
+  assert.ok(start.indexOf("location.replace") < start.indexOf("<link"), "die Umleitung steht vor allem, was lädt");
+  assert.ok(lies("b/index.html").includes('<a href="/?bisher">Zur bisherigen Website</a>'), "der Neubau verlinkt die bisherige Startseite mit ?bisher, nicht in die Schleife");
+  const h = lies(".htaccess");
+  assert.ok(/RewriteCond %\{QUERY_STRING\} !\(\^\|&\)bisher[^\n]*\n\s*RewriteRule \^\$ \/b\/ \[R=302,L\]/.test(h), ".htaccess bei Hostpoint leitet / nach /b/, ausser mit ?bisher");
+});
+

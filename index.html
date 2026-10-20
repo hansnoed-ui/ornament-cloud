@@ -3,6 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Seit 20. Oktober 2026 landet, wer auf ornament.cloud kommt, im Neubau unter /b/ (Wunsch: «dieses heute bearbeitete directory ornament.cloud/b schon
+       als Hauptseite anzeigen … via einen re-direct»). Die bisherige Startseite bleibt unter /?bisher erreichbar (der Link «Zur bisherigen Website» im
+       Neubau); Suchmaschinen folgen dem meta refresh, bei Hostpoint leitet .htaccess serverseitig um. -->
+  <script>if(!/[?&]bisher(&|=|$)/.test(location.search))location.replace("/b/"+location.search+location.hash)</script>
+  <noscript><meta http-equiv="refresh" content="0; url=/b/"></noscript>
   <title>Ornament Cloud</title>
   <meta name="description" content="Beobachtung ist Anlass für Veränderung in der Realität.">
   <link rel="canonical" href="https://ornament.cloud/">

@@ -215,7 +215,7 @@ ${body}
     <div class="spalte">
       ${feldchen(0)}
       <p class="zeile"><span>${esc(SEITE.person.name)}, ${esc(SEITE.person.ort)}</span><a href="mailto:${SEITE.person.mail}">${SEITE.person.mail}</a></p>
-      <p class="zeile"><a href="/b/ueber/">Über</a><a href="/impressum/">Impressum und Datenschutz</a><a href="/">Zur bisherigen Website</a><a href="/feed.xml">Feed</a></p>
+      <p class="zeile"><a href="/b/ueber/">Über</a><a href="/impressum/">Impressum und Datenschutz</a><a href="/?bisher">Zur bisherigen Website</a><a href="/feed.xml">Feed</a></p>
       <p class="zeile"><span>Diese Seite lädt nichts von aussen: keine Cookies, keine Werbung, keine Tracker.</span></p>
     </div>
   </footer>
