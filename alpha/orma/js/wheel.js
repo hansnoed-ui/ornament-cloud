@@ -3,7 +3,7 @@
 // (drawNext), die Ringe fahren nur dorthin. Richtung, Umdrehungen und Dauer kommen aus der Geste.
 // Überspringbar; bei reduzierter Bewegung kurz und ohne Umdrehungen.
 
-import { symbolMarkup } from "./symbols.js?v=2341aca06389";
+import { symbolMarkup } from "./symbols.js?v=0d01817cc290";
 
 const NS = "http://www.w3.org/2000/svg";
 const C = 500, SLOTS = 12, STEP = 360 / SLOTS;
@@ -13,11 +13,15 @@ const INNER = { edge: 330, inner: 212, sym: 271, half: 38 };
 const easeOut = t => 1 - Math.pow(1 - t, 3);
 const mod = (a, m) => ((a % m) + m) % m;
 
-export function createWheel(svg, { outer, inner }) {
+const polar = (r, deg) => { const a = (deg - 90) * Math.PI / 180; return [(C + r * Math.cos(a)).toFixed(1), (C + r * Math.sin(a)).toFixed(1)]; };
+const arc = (r, from, to) => { const [x0, y0] = polar(r, from), [x1, y1] = polar(r, to); return `M${x0},${y0}A${r},${r} 0 ${to - from > 180 ? 1 : 0},1 ${x1},${y1}`; };
+
+/** hinweis: der Pfeilbogen um den Aussenring, der sich zeichnet, bis zum ersten Mal gedreht wird (20. Oktober 2026, «das Drehen klarer eingeführt») */
+export function createWheel(svg, { outer, inner, hinweis = false }) {
   if (outer.length !== SLOTS || inner.length !== SLOTS) throw new Error(`Rad: je Ring ${SLOTS} Personen erwartet`);
   const ring = (geo, items, cls) => {
     const slots = items.map((it, i) =>
-      `<g transform="rotate(${i * STEP} ${C} ${C}) translate(${C} ${C - geo.sym})"><g class="orma-sym">${symbolMarkup(it.symbol, geo.half)}</g></g>`).join("");
+      `<g class="orma-platz" transform="rotate(${i * STEP} ${C} ${C}) translate(${C} ${C - geo.sym})"><circle class="orma-treffer" r="${geo.half + 14}"/><g class="orma-sym">${symbolMarkup(it.symbol, geo.half)}</g></g>`).join("");
     const ticks = Array.from({ length: SLOTS }, (_, i) =>
       `<path class="orma-tick" transform="rotate(${i * STEP + STEP / 2} ${C} ${C})" d="M${C},${C - geo.edge}V${C - geo.edge + 14}"/>`).join("");
     return `<g class="${cls}"><circle class="orma-ring" cx="${C}" cy="${C}" r="${geo.edge}"/>` +
@@ -26,9 +30,17 @@ export function createWheel(svg, { outer, inner }) {
   svg.setAttribute("viewBox", "0 0 1000 1000");
   svg.innerHTML = ring(OUTER, outer, "orma-outer") + ring(INNER, inner, "orma-inner") +
     `<path class="orma-axis" d="M${C},${C - OUTER.inner + 4}V${C - INNER.edge - 4}"/>` +      // Achse nur zwischen den Ringen
-    `<path class="orma-mark" d="M${C},${C - 474}l-10,-18h20Z"/>` +
-    `<path class="orma-cross" d="M${C - 12},${C}H${C + 12}M${C},${C - 12}V${C + 12}"/>`;
+    `<path class="orma-mark" d="M${C},${C - 476}l-12,-24h24Z"/>` +
+    `<path class="orma-cross" d="M${C - 12},${C}H${C + 12}M${C},${C - 12}V${C + 12}"/>` +
+    (hinweis ? `<g class="orma-hint" aria-hidden="true"><path class="orma-hint-arc" pathLength="1" d="${arc(OUTER.edge + 28, 200, 318)}"/>` +
+      (() => { const [hx, hy] = polar(OUTER.edge + 28, 318); return `<path class="orma-hint-head" transform="rotate(48 ${hx} ${hy})" d="M${(+hx - 16).toFixed(1)},${(+hy - 9).toFixed(1)}L${hx},${hy}L${(+hx - 14).toFixed(1)},${(+hy + 12).toFixed(1)}"/>`; })() + `</g>` : "");
   const gOuter = svg.querySelector(".orma-outer"), gInner = svg.querySelector(".orma-inner");
+  const plaetze = { outer: [...gOuter.querySelectorAll(".orma-platz")], inner: [...gInner.querySelectorAll(".orma-platz")] };
+  /** Treffer zeigen: ein Kreis um die beiden gelandeten Zeichen (ohne Argumente: keiner) */
+  function mark(outerSlot, innerSlot) {
+    svg.querySelectorAll(".orma-platz.is-hit").forEach(g => g.classList.remove("is-hit"));
+    if (outerSlot != null) { plaetze.outer[outerSlot].classList.add("is-hit"); plaetze.inner[innerSlot].classList.add("is-hit"); }
+  }
 
   const rot = { outer: 0, inner: 0 };
   const apply = () => {
@@ -60,6 +72,8 @@ export function createWheel(svg, { outer, inner }) {
    */
   function spinTo(outerSlot, innerSlot, { dir = 1, strength = 0.5, reduce = false } = {}) {
     if (running) running.finish();
+    mark();
+    svg.classList.add("is-touched");
     const dirO = dir >= 0 ? 1 : -1, dirI = -dirO;                       // gegenläufig
     const s = Math.max(0, Math.min(1, strength));
     const turnsO = reduce ? 0 : 1 + Math.round(s * 3), turnsI = reduce ? 0 : 1 + Math.round(s * 2) + 1;
@@ -92,7 +106,7 @@ export function createWheel(svg, { outer, inner }) {
   }
 
   return {
-    spinTo, setTo,
+    spinTo, setTo, mark,
     skip() { if (running) running.finish(); },
     get spinning() { return !!running; },
   };

@@ -8,15 +8,15 @@
 // textContent und value in die Seite, nie als HTML.
 // Keine Anmeldung, keine Zählung, keine Netzanfragen ausser dem eigenen Service Worker.
 
-import { APP, CONTENT_VERSION, PILOT } from "./data.js?v=2341aca06389";
-import { drawNext } from "./draw.js?v=2341aca06389";
+import { APP, CONTENT_VERSION, PILOT } from "./data.js?v=0d01817cc290";
+import { drawNext } from "./draw.js?v=0d01817cc290";
 import {
   KEYS, newRound, loadDraft, saveDraft, clearDraft, loadBook, saveBook, keepRound, setFavorite, deleteEntry,
   deleteAllEntries, makeBackup, mergeBackup, loadText, saveText,
   loadLoops, saveLoops, openLoopFor, openLoop, closeLoop,
-} from "./store.js?v=2341aca06389";
-import { createWheel, bindGesture } from "./wheel.js?v=2341aca06389";
-import { layoutCard, drawCard, canvasMeasure } from "./card.js?v=2341aca06389";
+} from "./store.js?v=0d01817cc290";
+import { createWheel, bindGesture } from "./wheel.js?v=0d01817cc290";
+import { layoutCard, drawCard, canvasMeasure } from "./card.js?v=0d01817cc290";
 
 // ---------- Umgebung ----------
 const storage = (() => { try { const s = window.localStorage; s.getItem("orma:probe"); return s; } catch { return memoryStorage(); } })();
@@ -242,13 +242,20 @@ function renderSpin() {
   svg.setAttribute("role", "button");
   svg.setAttribute("tabindex", "0");
   svg.setAttribute("aria-label", "Rad drehen");
-  const wheel = createWheel(svg, { outer: ringItems("artist"), inner: ringItems("theorist") });
+  const wheel = createWheel(svg, { outer: ringItems("artist"), inner: ringItems("theorist"), hinweis: true });
   const pairBox = h("div", { class: "orma-pair-box", "aria-live": "polite" });
+  // die drei Wege als Zeichen (20. Oktober 2026, «das Drehen klarer eingeführt»): ziehen oder wischen, antippen, Eingabetaste
+  const hinweis = h("p", { class: "orma-hinweis", "aria-label": "So dreht man: ziehen oder wischen, antippen, Eingabetaste" });
+  hinweis.innerHTML = `<span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13a8 8 0 0 1 14-5"/><path d="M15 5l3 3-3 3"/><path d="M8 20l1.5-6 4 .8-1 4.2"/></svg>ziehen oder wischen</span>` +
+    `<span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 12V5a1.5 1.5 0 0 1 3 0v6"/><path d="M14 11l4 1.5v3.5a4 4 0 0 1-4 4h-2a4 4 0 0 1-3.4-1.9L6 15"/><circle cx="12.5" cy="4" r="3.6" stroke-dasharray="1.5 2.5"/></svg>antippen</span>` +
+    `<span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="11" rx="1.5"/><path d="M15 10v3H9"/><path d="M11 11l-2 2 2 2"/></svg>Eingabetaste</span>`;
   const spinBtn = btn("Drehen", () => spin({ dir: 1, strength: 0.5 }), "orma-btn orma-btn--primary");
   const skipBtn = btn("Überspringen", () => wheel.skip(), "orma-btn orma-btn--quiet", { hidden: true });
   const goBtn = btn(solo(round) ? "Lesen" : "Gemeinsam lesen", () => go(round.loopId ? "wiedersehen" : "lesen"), "orma-btn orma-btn--primary", { hidden: true });
 
   const landed = p => {
+    wheel.mark(p.artist.slot, p.theorist.slot);
+    hinweis.hidden = true;
     pairBox.replaceChildren(pairTitle(p));
     spinBtn.hidden = true; skipBtn.hidden = true; goBtn.hidden = false;
     svg.setAttribute("aria-label", `Rad: ${p.artist.name} und ${p.theorist.name}`);
@@ -282,6 +289,7 @@ function renderSpin() {
     h("h2", { text: "Das Rad bringt zwei zusammen" }),
     h("p", { class: "orma-muted", text: solo(round) ? "Tippen oder wischen. Wie du drehst, bestimmt nur den Weg, nicht das Ergebnis." : "Tippen oder wischen. Wie ihr dreht, bestimmt nur den Weg, nicht das Ergebnis." }),
     h("div", { class: "orma-wheel-wrap" }, svg),
+    hinweis,
     pairBox,
     h("div", { class: "orma-actions" }, spinBtn, skipBtn, goBtn),
   );
