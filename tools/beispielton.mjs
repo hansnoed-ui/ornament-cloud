@@ -5,7 +5,8 @@
 // danach kräftig schneiden. Mono, 16 Bit, 44,1 kHz, mit Ausklang am Ende.
 //   beispielton({ dauer: 28 }) → Buffer (WAV)
 
-const RATE = 44100, BPM = 112;
+export const BPM = 112;
+const RATE = 44100;
 
 export function beispielton({ dauer = 28, rate = RATE } = {}) {
   const n = Math.round(dauer * rate), pcm = new Float32Array(n);
