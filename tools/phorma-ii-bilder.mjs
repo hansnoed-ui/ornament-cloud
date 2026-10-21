@@ -72,7 +72,7 @@ for (const [b, datei, qualitaet] of [[640, "vorschau-phorma-ii.jpg", 90], [1080,
     <div class="text">
       <div class="marke">Alpha · Video im Hochformat</div>
       <h1>PHORMA II</h1>
-      <p>Aus Foto oder Video wird ein Film – Wachstum, Netz, Scan, Tuch und Montage.</p>
+      <p>Aus Foto oder Video wird ein Film – Netz, Scan, Tuch und Montage.</p>
       <div class="fuss"><b>ornament.cloud/alpha/phorma-ii</b>Alles bleibt auf dem Gerät.</div>
     </div></body></html>`);
   await p.evaluate(() => document.fonts.ready);

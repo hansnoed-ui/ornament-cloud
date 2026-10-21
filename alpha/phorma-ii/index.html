@@ -18,7 +18,7 @@
     Seit 19. Oktober 2026 die Montage (Wunsch nach dem Clip «UVA»: «eine neue Animation für Bilder … in diesem Stil»): verschachtelte Rechtecke mit
     versetzten Ausschnitten, feinen Rändern und Zahlentafeln, harte Schnitte im Takt; einzeln oder am Schluss einer eigenen Kette. Dann auch das
     Signet am Schluss in diesem Stil.
-    Seit 19. Oktober 2026 das Wachstum (Wunsch nach dem Clip «algorigraph»): eine leuchtende Linie wächst aus einem Keim und zeichnet das Foto.
+    Vom 19. bis 21. Oktober 2026 auch das Wachstum (eine leuchtende Linie wächst aus einem Keim); seither weg (Wunsch: «Ich möchte wachstum weg»).
     Seit 19. Oktober 2026 auch Videos (Etappe 2): alle Effekte zeigen das laufende Video, vom ersten Bild am Anfang bis zum letzten am Ende (ein kürzeres mehrmals hintereinander); das Standbild dort ist das Foto.
   -->
   <meta name="robots" content="noindex">
@@ -28,14 +28,14 @@
   <meta property="og:locale" content="de_CH">
   <meta property="og:url" content="https://ornament.cloud/alpha/phorma-ii/">
   <meta property="og:title" content="PHORMA II">
-  <meta property="og:description" content="PHORMA II: Aus Foto oder Video wird ein Film – Wachstum, Netz, Scan, Tuch und Montage. Als Video im Hochformat für Social Media, alles im Browser.">
+  <meta property="og:description" content="PHORMA II: Aus Foto oder Video wird ein Film – Netz, Scan, Tuch und Montage. Als Video im Hochformat für Social Media, alles im Browser.">
   <meta property="og:image" content="https://ornament.cloud/alpha/phorma-ii/og-phorma-ii.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="PHORMA II: links der Titel und der Satz «Aus Foto oder Video wird ein Film – Wachstum, Netz, Scan, Tuch und Montage.», rechts das Bild, in verschachtelte Rechtecke zerschnitten, mit feinen hellen Rändern und kleinen Zahlentafeln.">
+  <meta property="og:image:alt" content="PHORMA II: links der Titel und der Satz «Aus Foto oder Video wird ein Film – Netz, Scan, Tuch und Montage.», rechts das Bild, in verschachtelte Rechtecke zerschnitten, mit feinen hellen Rändern und kleinen Zahlentafeln.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="PHORMA II">
-  <meta name="twitter:description" content="PHORMA II: Aus Foto oder Video wird ein Film – Wachstum, Netz, Scan, Tuch und Montage. Als Video im Hochformat für Social Media, alles im Browser.">
+  <meta name="twitter:description" content="PHORMA II: Aus Foto oder Video wird ein Film – Netz, Scan, Tuch und Montage. Als Video im Hochformat für Social Media, alles im Browser.">
   <meta name="twitter:image" content="https://ornament.cloud/alpha/phorma-ii/og-phorma-ii.jpg">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
@@ -143,8 +143,6 @@
     .film-start label { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; font-size: 0.92rem; }
     .film-start output { font-variant-numeric: tabular-nums; color: var(--muted); }
     .effekte button { padding: 4px 2px; font-size: 0.92rem; }
-    /* fünf Schalter (seit dem Wachstum) passen auf dem Telefon nicht in eine Reihe: dort drei und zwei */
-    @media (max-width: 560px) { .segment.effekte { grid-auto-flow: row; grid-template-columns: repeat(3, 1fr); border-radius: 22px; } }
     .kette { margin: 6px 0 0; min-height: 1.3em; color: var(--muted); font-size: 0.84rem; }
     [data-grund="schwarz"] .muster { background: #000; }
     [data-grund="weiss"] .muster { background: #fff; }
@@ -258,16 +256,14 @@
           <p data-t="effekte.text">Ein Effekt allein oder mehrere als Kette. Alle beginnen im Dunkeln und enden mit deinem Foto; in einer Kette geht jeder in den nächsten über, immer in dieser Reihenfolge.</p>
           <div class="ablaeufe" role="group" aria-label="Effekt wählen" data-t-attr="aria-label=ablaeufe.aria">
             <button type="button" data-wahl="physarum+tiefe+tuch" aria-pressed="true"><b data-t="wahl.drei">Alle drei als Kette</b><small data-t="wahl.drei.text">Das Netz findet die Formen, eine Lichtebene tastet die Tiefe ab, das Foto weht als Tuch – bis es glatt daliegt</small></button>
-            <button type="button" data-wahl="wachstum+physarum+tiefe+tuch+montage" aria-pressed="false"><b data-t="wahl.fuenf">Alle fünf als Kette</b><small data-t="wahl.fuenf.text">Eine leuchtende Linie wächst, das Netz findet die Formen, eine Lichtebene tastet die Tiefe ab, das Foto weht als Tuch und zerfällt zuletzt in Rechtecke</small></button>
+            <button type="button" data-wahl="physarum+tiefe+tuch+montage" aria-pressed="false"><b data-t="wahl.vier">Alle vier als Kette</b><small data-t="wahl.vier.text">Das Netz findet die Formen, eine Lichtebene tastet die Tiefe ab, das Foto weht als Tuch und zerfällt zuletzt in Rechtecke</small></button>
             <button type="button" data-wahl="physarum" aria-pressed="false"><b data-t="wahl.physarum">Physarum</b><small data-t="wahl.physarum.text">Hunderttausende Agenten strömen aus Keimen und bilden ein leuchtendes Netz, das die Formen deines Fotos findet</small></button>
             <button type="button" data-wahl="tiefe" aria-pressed="false"><b data-t="wahl.tiefe">Tiefe</b><small data-t="wahl.tiefe.text">Eine Lichtebene tastet das Bild von vorn nach hinten ab, im Streiflicht steht es als Relief</small></button>
             <button type="button" data-wahl="tuch" aria-pressed="false"><b data-t="wahl.tuch">Tuch</b><small data-t="wahl.tuch.text">Das Foto als Seidentuch im Wind – eine Stoffsimulation –, das sich zuletzt glatt zum Bild legt</small></button>
-            <button type="button" data-wahl="wachstum" aria-pressed="false"><b data-t="wahl.wachstum">Wachstum</b><small data-t="wahl.wachstum.text">Eine einzige leuchtende Linie wächst aus einem Keim, faltet sich und zeichnet dein Foto – dicht im Hellen, weit im Dunkeln –, nimmt seine Farben an und wird zum Bild</small></button>
             <button type="button" data-wahl="montage" aria-pressed="false"><b data-t="wahl.montage">Montage</b><small data-t="wahl.montage.text">Das Foto zerfällt im Takt in verschachtelte Rechtecke – vergrössert, versetzt, zu Streifen gezogen, mit feinen Rändern und Zahlentafeln –, bis alles einrastet</small></button>
           </div>
           <p class="effekte-hinweis" data-t="effekte.hinweis">Oder eine eigene Kette zusammenstellen:</p>
           <div class="segment effekte" role="group" aria-label="Eigene Kette" data-t-attr="aria-label=effekte.aria">
-            <button type="button" data-effekt="wachstum" aria-pressed="false" data-t="effekt.wachstum">Wachstum</button>
             <button type="button" data-effekt="physarum" aria-pressed="true" data-t="effekt.physarum">Physarum</button>
             <button type="button" data-effekt="tiefe" aria-pressed="true" data-t="effekt.tiefe">Tiefe</button>
             <button type="button" data-effekt="tuch" aria-pressed="true" data-t="effekt.tuch">Tuch</button>
@@ -351,8 +347,8 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=46"></script>
-  <script type="module" src="pwa.js?v=46"></script>
+  <script type="module" src="app.js?v=47"></script>
+  <script type="module" src="pwa.js?v=47"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

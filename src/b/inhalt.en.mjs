@@ -20,7 +20,7 @@ export const SEITE = {
 export const DIALOG = {
   frage: "What do you bring along?",
   wahlen: [
-    { id: "bild", wort: "an image", satz: "An image wants to move.", weg: [["b/en/apps/phorma-ii/", "PHORMA II: a line grows and draws your photo"], ["b/en/apps/the-fictory/", "The Fictory: the image falls apart and reassembles"], ["b/en/angebot/produkte/", "An image becomes a work: commissions and prints"]] },
+    { id: "bild", wort: "an image", satz: "An image wants to move.", weg: [["b/en/apps/phorma-ii/", "PHORMA II: a net finds the shapes of your photo"], ["b/en/apps/the-fictory/", "The Fictory: the image falls apart and reassembles"], ["b/en/angebot/produkte/", "An image becomes a work: commissions and prints"]] },
     { id: "frage", wort: "a question", satz: "A question is looking for a counterpart.", weg: [["b/en/apps/orna/", "ORNA: one turn, one encounter, one open question"], ["b/en/zettel/", "The Zettelkasten: 49 notes that connect to each other"], ["b/en/angebot/vermittlung/", "A conversation that takes the question seriously"]] },
     { id: "auftrag", wort: "a commission", satz: "Something is to be built.", weg: [["b/en/angebot/webdesign/", "Websites and apps: fast, independent, no outside services"], ["b/en/angebot/produkte/", "A work for a particular place"], ["b/en/angebot/", "All four services and the way to a briefing"]] },
     { id: "begriff", wort: "a concept", satz: "A concept wants to be tested.", weg: [["b/en/zettel/", "Look it up in the field: 49 concepts from the bridge to the future"], ["b/en/raster/", "Four test grids for theories, texts and bodies"], ["b/en/apps/orma/", "ORMA: answer in pairs, reveal, think on"]] },
@@ -73,15 +73,15 @@ export const APPS = [
     ],
     bewegung: "How PHORMA III works, in five effects to the sound: surfaces of fine lines (Weave), a thread in a cube of light, wild or calm (Odyssey, Cube of light), beads in a ball of threads (Grape) or the video itself, scratched and fiddled (Video). Every beat moves the picture. The drawing shows the weave.",
     zeichen: "faden" },
-  { slug: "phorma-ii", name: "PHORMA II", gattung: "Image and video", kurz: "Five effects for photo and video: Growth, Physarum, Depth, Cloth, Montage.",
-    text: "A line grows and draws the image, a slime mould finds its shapes, a plane of light scans the depth, the image blows in the wind as a silk cloth or falls apart into rectangles in time with the beat. Each effect on its own or as a chain, from photo or video. A portrait-format video, computed on your own graphics card.",
+  { slug: "phorma-ii", name: "PHORMA II", gattung: "Image and video", kurz: "Four effects for photo and video: Physarum, Depth, Cloth, Montage.",
+    text: "A slime mould finds the shapes of the image, a plane of light scans the depth, the image blows in the wind as a silk cloth or falls apart into rectangles in time with the beat. Each effect on its own or as a chain, from photo or video. A portrait-format video, computed on your own graphics card.",
     fuer: "For artists, galleries and museums who want to show a work in motion.",
     url: "alpha/phorma-ii/", app: "alpha/phorma-ii/?installieren", bild: "b/bilder/apps/phorma-ii.svg", bildDunkel: "b/bilder/apps/phorma-ii-dunkel.svg", bildAlt: "PHORMA II, drawn: a single line that has grown from a seed and fills a disc",
     beispiele: [
       { art: "video", datei: "assets/beispiele/phorma-ii.mp4", bild: "assets/beispiele/phorma-ii.jpg", mass: [540, 676], text: "The app's chain with the example photo, three effects in one film: a slime mould lays its network over the shapes (Physarum), a plane of light scans the relief (Depth), the photo blows as a silk cloth and settles flat (Cloth). Computed from the app, without sound." },
       { art: "paar", vorher: "alpha/phorma-ii/beispiel.jpg", nachher: "assets/vorschau-phorma-ii-2x.jpg", text: "The same photo, broken into rectangles with shifted crops, borders and number plates (Montage)." },
     ],
-    bewegung: "How PHORMA II works, in five effects, alone or as a chain: a line grows and draws the photo (Growth), a slime mould finds its shapes (Physarum), a plane of light scans the depth (Depth), the photo billows as a silk cloth (Cloth) or breaks into rectangles to the beat (Montage). The drawing shows the growth.",
+    bewegung: "How PHORMA II works, in four effects, alone or as a chain: a slime mould finds its shapes (Physarum), a plane of light scans the depth (Depth), the photo billows as a silk cloth (Cloth) or breaks into rectangles to the beat (Montage). The drawing shows a single line filling a surface.",
     zeichen: "linie" },
   { slug: "phorma-i", name: "PHORMA I", gattung: "Image and video", kurz: "A photo becomes a film: Fragments, Transformation or Relief flight.",
     text: "A photo becomes a film: it falls apart into lines, shapes and colours, turns into sparks, glass, shards, echo and mountains, or is explored in flight. The result is a portrait-format video for social media. Everything computes on your device; the image never leaves it.",
