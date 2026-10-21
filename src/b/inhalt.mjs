@@ -57,7 +57,7 @@ export const APPS = [
   { slug: "phorma-i", name: "PHORMA I", gattung: "Bild und Video", kurz: "Ein Foto zerfällt in Linien, Formen und Farben.",
     text: "Aus einem Foto wird ein Film: Es zerfällt in Linien, Formen und Farben, verwandelt sich in Funken, Glas, Scherben, Echo und Gebirge oder wird im Flug erkundet. Das Ergebnis ist ein Video im Hochformat für Social Media. Alles rechnet auf deinem Gerät; das Bild verlässt es nicht.",
     fuer: "Für alle, die aus einem Bild ein Reel machen wollen, ohne Schnittprogramm.",
-    url: "alpha/bildfragmentieren/", app: "alpha/bildfragmentieren/app/", bild: "b/bilder/apps/phorma-i.svg", bildDunkel: "b/bilder/apps/phorma-i-dunkel.svg", bildAlt: "PHORMA I, gezeichnet: ein Kristall aus Scherben, Dreiecke über einer Scheibe, eine Scherbe in Blau",
+    url: "alpha/bildfragmentieren/", app: "alpha/bildfragmentieren/?installieren", bild: "b/bilder/apps/phorma-i.svg", bildDunkel: "b/bilder/apps/phorma-i-dunkel.svg", bildAlt: "PHORMA I, gezeichnet: ein Kristall aus Scherben, Dreiecke über einer Scheibe, eine Scherbe in Blau",
     beispiele: [
       { art: "video", datei: "assets/beispiele/phorma-i.mp4", bild: "assets/beispiele/phorma-i.jpg", mass: [540, 676], text: "Der Ablauf «Fragmente» mit dem Beispielfoto: Linien, Formen, Farben – und am Ende das Foto. Gerechnet aus der App, ohne Ton." },
       { art: "paar", vorher: "alpha/bildfragmentieren/beispiel.jpg", nachher: "assets/vorschau-phorma-i-2x.jpg", text: "Ein Foto wird ein Glaskristall: das Bild liegt auf den Flächen, die Linien sind die Kanten." },

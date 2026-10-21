@@ -1,13 +1,15 @@
 // «Bildfragmentieren» – Seite: Foto laden, zerlegen (Worker), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in Sketchory: WebCodecs (H.264) und der MP4-Schreiber von Sketchory;
 // ohne WebCodecs in Echtzeit über MediaRecorder (die Länge trägt dauer.js von The Fictory nach).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, ABLAEUFE, ablaufName, effekte, VERWANDLUNG } from "./ablauf.js?v=33";
-import { szene, bild, standbildZeit, vorbereiten, FARBEN } from "./szene.js?v=33";
-import { zerlegen } from "./fragmente.js?v=33";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, ABLAEUFE, ablaufName, effekte, VERWANDLUNG } from "./ablauf.js?v=34";
+import { szene, bild, standbildZeit, vorbereiten, FARBEN } from "./szene.js?v=34";
+import { zerlegen } from "./fragmente.js?v=34";
 import { mp4 } from "../sketchory/mp4.js?v=10";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
 const $ = (id) => document.getElementById(id);
+// Sprache (sprache.js, vor den Modulen): T(deutsch, …) gibt auf Englisch die Übersetzung, sonst den deutschen Text
+const T = (s, ...a) => (window.sprache ? window.sprache.t(s, ...a) : s);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 // Auflösung der Vorschau gegenüber dem Film (das Video rechnet in voller Grösse): nach der Schärfe des Bildschirms, mindestens die halbe, höchstens 0,85
@@ -43,26 +45,26 @@ for (const art of ["dragleave", "drop"]) ablage.addEventListener(art, () => abla
 ablage.addEventListener("drop", (e) => {
   e.preventDefault();
   const datei = [...(e.dataTransfer?.files ?? [])].find((f) => f.type.startsWith("image/"));
-  if (datei) fotoLaden(datei); else melden("Das ist kein Bild. Bitte ein Foto (JPG, PNG, HEIC je nach Browser) verwenden.", true);
+  if (datei) fotoLaden(datei); else melden(T("Das ist kein Bild. Bitte ein Foto (JPG, PNG, HEIC je nach Browser) verwenden."), true);
 });
 $("datei").addEventListener("change", (e) => { if (e.target.files?.[0]) fotoLaden(e.target.files[0]); });
 // das Beispielbild (seit dem 15. Oktober 2026 ein eigenes Bild statt eines im Browser gezeichneten Testbilds)
 $("testbild").addEventListener("click", async () => fotoLaden(new File([await (await fetch("beispiel.jpg")).blob()], "beispiel.jpg", { type: "image/jpeg" })));
 
 async function fotoLaden(datei) {
-  melden("Foto wird gelesen …");
+  melden(T("Foto wird gelesen …"));
   let q;
-  try { q = await bitmap(datei); } catch { melden("Dieses Foto kann der Browser nicht öffnen. Versuche es als JPG oder PNG.", true); return; }
+  try { q = await bitmap(datei); } catch { melden(T("Dieses Foto kann der Browser nicht öffnen. Versuche es als JPG oder PNG."), true); return; }
   S.bild = q;
   anhalten(); S.sz = null; S.t = null;
   $("quelle").src = URL.createObjectURL(datei); $("quelle").hidden = false;
-  ablage.classList.add("hat-bild"); $("ablage-titel").textContent = "Anderes Foto wählen";
+  ablage.classList.add("hat-bild"); $("ablage-titel").dataset.t = "Anderes Foto wählen"; $("ablage-titel").textContent = T("Anderes Foto wählen");
   await lesen();
 }
 
 // ——— zerlegen (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=33", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=34", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   // zerlegt wird auf der halben Filmgrösse (für Kanten und Mosaik genug), das Foto für den Schluss bleibt in voller Grösse
@@ -85,19 +87,25 @@ function rechnen() {
 
 async function lesen() {
   if (!S.bild) return;
-  melden("Das Foto wird zerlegt …");
+  melden(T("Das Foto wird zerlegt …"));
   sperren(true);
   const t0 = performance.now();
   const { nr, ergebnis, fehler } = await rechnen();
   if (nr !== S.rechnen) return;
   sperren(false);
-  if (fehler || !ergebnis) { melden(`Das Foto liess sich nicht zerlegen: ${fehler}`, true); return; }
+  if (fehler || !ergebnis) { melden(`${T("Das Foto liess sich nicht zerlegen:")} ${fehler}`, true); return; }
   S.daten = ergebnis;
-  const z = (n) => n.toLocaleString("de-CH");
-  $("auswertung").textContent = `${z(ergebnis.zeilen.reihen)} Zeilen · ${z(ergebnis.kanten.length)} Kanten · ${z(ergebnis.dreiecke.n)} Dreiecke · ${Math.round(performance.now() - t0)} ms`;
+  S.auswertung = { ergebnis, ms: Math.round(performance.now() - t0) }; auswertungZeigen();
   neu();
-  melden("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4.");
+  melden(T("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4."));
 }
+
+function auswertungZeigen() {
+  if (!S.auswertung) return;
+  const { ergebnis, ms } = S.auswertung, z = (n) => n.toLocaleString(window.sprache?.en() ? "en-GB" : "de-CH");
+  $("auswertung").textContent = `${z(ergebnis.zeilen.reihen)} ${T("Zeilen")} · ${z(ergebnis.kanten.length)} ${T("Kanten")} · ${z(ergebnis.dreiecke.n)} ${T("Dreiecke")} · ${ms} ms`;
+}
+const komma = (x) => (window.sprache?.en() ? x : x.replace(".", ","));   // Dezimalzeichen nach Sprache
 
 function optionen() {
   return { breite: S.mass[0], hoehe: S.mass[1], tempo: $("tempo").value, grund: S.grund, signet: $("signet").checked, beschriftung: $("beschriftung").checked,
@@ -115,16 +123,18 @@ async function raumBereit() {
   S.raum?.entsorgen(); S.raum = null;
   if (!schluessel) return;
   try {
-    raumModul ??= await import("./raum.js?v=33");
+    raumModul ??= await import("./raum.js?v=34");
     if (S.raumSchluessel !== schluessel) return;
     const F = FARBEN[S.grund] ?? FARBEN.schwarz;
     S.raum = raumModul.raum(S.foto, art, { grund: F.grund, akzent: F.punkt });
   } catch (fehler) {
-    melden(`Verwandlung und Relief-Flug brauchen WebGL 2; hier blendet an ihrer Stelle das Foto auf (${fehler?.message ?? fehler}).`, true);
+    melden(`${T("Verwandlung und Relief-Flug brauchen WebGL 2; hier blendet an ihrer Stelle das Foto auf")} (${fehler?.message ?? fehler}).`, true);
     return;
   }
   neu();
 }
+
+function dauerZeigen() { if (S.sz) $("dauer").textContent = `${komma(S.sz.zeit.dauer.toFixed(1))} s · ${S.mass[0]} × ${S.mass[1]} · ${FPS} ${T("Bilder/s")}`; }
 
 /** Sprungknöpfe: eine je Phase des Ablaufs (die vier von «Fragmente» behalten ihre Kennungen); die letzte springt zum fertigen Foto */
 const KENNUNG = { linien: "zu-linien", formen: "zu-formen", farben: "zu-farben", zusammen: "zu-bild" };
@@ -141,7 +151,7 @@ function sprungknoepfe(sz) {
   leiste.replaceChildren(...sz.zeit.phasen.map((p, i) => {
     const b = document.createElement("button");
     b.type = "button"; b.id = KENNUNG[p.name] ?? `zu-${p.name}`; b.dataset.phase = p.name;
-    b.textContent = `${String(i + 1).padStart(2, "0")} ${p.titel}`;
+    b.textContent = `${String(i + 1).padStart(2, "0")} ${T(p.titel)}`;
     return b;
   }));
 }
@@ -165,7 +175,7 @@ function neu({ abspielen = !ruhig } = {}) {
   vctx.setTransform(VORSCHAU, 0, 0, VORSCHAU, 0, 0);
   vorschau.parentElement.style.aspectRatio = `${S.mass[0]} / ${S.mass[1]}`;
   vorschau.parentElement.style.setProperty("--seiten", String(S.mass[0] / S.mass[1]));
-  $("dauer").textContent = `${S.sz.zeit.dauer.toFixed(1).replace(".", ",")} s · ${S.mass[0]} × ${S.mass[1]} · ${FPS} Bilder/s`;
+  dauerZeigen();
   $("zeit").max = String(S.sz.zeit.dauer); $("zeit").disabled = false;
   for (const k of ["video", "png", "spielen"]) $(k).disabled = false;
   $("leer").hidden = true;
@@ -203,7 +213,7 @@ const ablaufZeigen = () => {
   const karte = S.ablauf === "fragmente" || S.ablauf === "flug" ? S.ablauf : "verwandlung";
   ablaufKnoepfe.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.ablauf === karte)));
   effektKnoepfe.forEach((b) => b.setAttribute("aria-pressed", String(karte === "verwandlung" && gewaehlt.includes(b.dataset.effekt))));
-  $("kette").textContent = karte === "verwandlung" ? gewaehlt.map((e) => ABLAEUFE[e].titel).join(" → ") : "";
+  $("kette").textContent = karte === "verwandlung" ? gewaehlt.map((e) => T(ABLAEUFE[e].titel)).join(" → ") : "";
 };
 ablaufZeigen();
 const ablaufSetzen = (a) => { a = ablaufName(a); if (a === S.ablauf) return; S.ablauf = a; merken("ablauf", a); ablaufZeigen(); neu(); };
@@ -228,9 +238,9 @@ function spielen() {
   S.ende = false;
   S.start = performance.now() - ab * 1000; zuletzt = 0;
   if (!S.laeuft) { S.laeuft = true; requestAnimationFrame(takt); }
-  $("spielen").textContent = "Anhalten";
+  $("spielen").dataset.t = "Anhalten"; $("spielen").textContent = T("Anhalten");
 }
-function anhalten() { S.laeuft = false; $("spielen").textContent = "Abspielen"; }
+function anhalten() { S.laeuft = false; $("spielen").dataset.t = "Abspielen"; $("spielen").textContent = T("Abspielen"); }
 function zeigeZeit(t) {
   S.t = t; S.ende = false; bild(vctx, S.sz, t);
   $("zeit").value = String(t); $("zeitcode").textContent = zeitcode(t);
@@ -282,12 +292,12 @@ $("video").addEventListener("click", async () => {
     const erg = cfg ? await mitWebCodecs(cfg, sz) : await mitRecorder(sz);
     zeigen(erg, sz, performance.now() - t0);
   } catch (fehler) {
-    melden(`Das Video liess sich nicht erstellen: ${fehler?.message ?? fehler}`, true);
+    melden(`${T("Das Video liess sich nicht erstellen:")} ${fehler?.message ?? fehler}`, true);
   } finally { sperren(false); fort.hidden = true; }
 });
 
 async function mitWebCodecs(cfg, sz) {
-  melden("Video wird gerechnet …");
+  melden(T("Video wird gerechnet …"));
   const c = leinwand(sz.breite, sz.hoehe), ctx = c.getContext("2d", { alpha: false });
   const proben = [];
   let avcC = null, fehler = null;
@@ -312,15 +322,15 @@ async function mitWebCodecs(cfg, sz) {
   }
   await enc.flush(); enc.close();
   if (fehler) throw fehler;
-  if (!avcC) throw new Error("der Encoder hat keine Beschreibung geliefert");
+  if (!avcC) throw new Error(T("der Encoder hat keine Beschreibung geliefert"));
   return { blob: new Blob([mp4({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, avcC, proben })], { type: "video/mp4" }), endung: "mp4", art: `MP4 (H.264, ${cfg.codec})` };
 }
 
 async function mitRecorder(sz) {
   const typen = [["video/mp4;codecs=avc1.42E01E", "mp4"], ["video/mp4", "mp4"], ["video/webm;codecs=vp9", "webm"], ["video/webm;codecs=vp8", "webm"], ["video/webm", "webm"]];
   const typ = typeof MediaRecorder !== "undefined" && typen.find(([m]) => MediaRecorder.isTypeSupported(m));
-  if (!typ) throw new Error("dieser Browser kann keine Videos erzeugen (weder WebCodecs noch MediaRecorder)");
-  melden(`Video wird in Echtzeit aufgenommen (${sz.zeit.dauer.toFixed(0)} s). Lass diese Seite sichtbar.`);
+  if (!typ) throw new Error(T("dieser Browser kann keine Videos erzeugen (weder WebCodecs noch MediaRecorder)"));
+  melden(T("aufnahme", sz.zeit.dauer.toFixed(0)));
   const c = document.createElement("canvas"); c.width = sz.breite; c.height = sz.hoehe;
   const ctx = c.getContext("2d", { alpha: false });
   const strom = c.captureStream(0), spur = strom.getVideoTracks()[0];
@@ -346,11 +356,22 @@ function zeigen({ blob, endung, art }, sz, ms) {
   $("film").src = S.film;
   $("film").style.aspectRatio = `${sz.breite} / ${sz.hoehe}`;
   $("laden").href = S.film; $("laden").download = dateiname(new Date(), endung);
-  $("film-info").textContent = `${sz.breite} × ${sz.hoehe} · ${sz.zeit.dauer.toFixed(1).replace(".", ",")} s · ${(blob.size / 1e6).toFixed(1).replace(".", ",")} MB · ${art} · gerechnet in ${(ms / 1000).toFixed(1).replace(".", ",")} s`;
+  S.filmInfo = { sz, blob, art, ms }; filmInfoZeigen();
   $("ergebnis").hidden = false;
-  melden("Fertig. Prüfe das Video und lade es herunter.");
+  melden(T("Fertig. Prüfe das Video und lade es herunter."));
   $("ergebnis").scrollIntoView({ behavior: ruhig ? "auto" : "smooth", block: "nearest" });
 }
+
+function filmInfoZeigen() {
+  if (!S.filmInfo) return;
+  const { sz, blob, art, ms } = S.filmInfo;
+  $("film-info").textContent = `${sz.breite} × ${sz.hoehe} · ${komma(sz.zeit.dauer.toFixed(1))} s · ${komma((blob.size / 1e6).toFixed(1))} MB · ${art} · ${T("gerechnet in")} ${komma((ms / 1000).toFixed(1))} s`;
+}
+// Wechsel der Sprache (sprache.js): alles, was das Skript geschrieben hat, in der anderen Sprache neu
+document.addEventListener("sprache", () => {
+  const leiste = document.querySelector(".phasen"); leiste.dataset.namen = ""; if (S.sz) sprungknoepfe(S.sz);
+  ablaufZeigen(); dauerZeigen(); auswertungZeigen(); filmInfoZeigen();
+});
 
 function sperren(an) {
   for (const el of [$("datei"), $("testbild"), ...formatKnoepfe, ...feinKnoepfe, ...ablaufKnoepfe, ...effektKnoepfe, $("video"), $("png")])

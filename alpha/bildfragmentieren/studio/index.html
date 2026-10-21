@@ -7,7 +7,7 @@
   <base href="../">
   <!-- In der Bühne des Neubaus (/b/apps/…/oeffnen/, seit 20. Oktober 2026) mit ?b=1: ohne die Navigation der bisherigen Website -->
   <script>if(/[?&]b=1(&|$)/.test(location.search))document.documentElement.setAttribute("data-buehne","")</script>
-  <style>[data-buehne] .topbar,[data-buehne] .divider,[data-buehne] .site-footer,[data-buehne] .work-kicker{display:none!important}</style>
+  <style>[data-buehne] .app-kopf,[data-buehne] .topbar,[data-buehne] .divider,[data-buehne] .site-footer,[data-buehne] .work-kicker{display:none!important}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PHORMA I – Ornament Cloud · Alpha</title>
   <!--
@@ -158,38 +158,46 @@
     .installieren-hilfe span { color: var(--text); white-space: nowrap; }
     [hidden] { display: none !important; }
   </style>
-  <link rel="stylesheet" href="../phorma.css?v=1">
+  <link rel="stylesheet" href="../phorma.css?v=2">
+  <!-- Deutsch und Englisch (21. Oktober 2026): vor den Modulen -->
+  <script src="sprache.js?v=1"></script>
 </head>
 <body>
+  <!-- Kopf der App (21. Oktober 2026, wie OMNA COLOR, ORNA und ORMA): Signet mit Weg in den Neubau, der Schalter d · e, «Über die App»; auf der Bühne (?b=1) nicht -->
+  <header class="app-kopf wrap">
+    <a class="app-kopf-signet" href="../../b/" data-t-href="../../b/|../../b/en/" title="ornament.cloud"><svg viewBox="0 0 34 24" aria-hidden="true" focusable="false"><path d="M26.83 12.00L26.78 12.99L26.65 13.98L26.44 14.95L26.13 15.89L25.75 16.80L25.29 17.67L24.75 18.50L24.15 19.27L23.49 19.98L22.76 20.62L21.99 21.20L21.18 21.70L20.33 22.12L19.45 22.46L18.55 22.72L17.64 22.90L16.73 22.99L15.82 23.00L14.93 22.93L14.05 22.78L13.21 22.55L12.40 22.25L11.63 21.89L10.90 21.46L10.23 20.97L9.62 20.43L9.07 19.85L8.59 19.23L8.18 18.57L7.83 17.90L7.56 17.20L7.36 16.50L7.23 15.80L7.17 15.10L7.18 14.42L7.26 13.76L7.40 13.12L7.60 12.52L7.85 11.95L8.16 11.43L8.51 10.96L8.89 10.54L9.31 10.17L9.75 9.87L10.21 9.62L10.69 9.43L11.16 9.30L11.64 9.24L12.10 9.23L12.55 9.27L12.98 9.38L13.38 9.53L13.75 9.73L14.07 9.97L14.36 10.25L14.60 10.56L14.79 10.90L14.93 11.25L15.01 11.62L15.04 12.00L15.01 12.38L14.93 12.75L14.79 13.10L14.60 13.44L14.36 13.75L14.07 14.03L13.75 14.27L13.38 14.47L12.98 14.62L12.55 14.73L12.10 14.77L11.64 14.76L11.16 14.70L10.69 14.57L10.21 14.38L9.75 14.13L9.31 13.83L8.89 13.46L8.51 13.04L8.16 12.57L7.85 12.05L7.60 11.48L7.40 10.88L7.26 10.24L7.18 9.58L7.17 8.90L7.23 8.20L7.36 7.50L7.56 6.80L7.83 6.10L8.18 5.43L8.59 4.77L9.07 4.15L9.62 3.57L10.23 3.03L10.90 2.54L11.63 2.11L12.40 1.75L13.21 1.45L14.05 1.22L14.93 1.07L15.82 1.00L16.73 1.01L17.64 1.10L18.55 1.28L19.45 1.54L20.33 1.88L21.18 2.30L21.99 2.80L22.76 3.38L23.49 4.02L24.15 4.73L24.75 5.50L25.29 6.33L25.75 7.20L26.13 8.11L26.44 9.05L26.65 10.02L26.78 11.01L26.83 12.00Z"/><circle cx="12.55" cy="9.27" r="2.2"/></svg><span>ornament.cloud</span></a>
+    <nav class="sprache" aria-label="Sprache" data-t-attr="aria-label=kopf.sprache"><button type="button" data-sprache="de" lang="de" title="Deutsch">d</button><button type="button" data-sprache="en" lang="en" title="English">e</button></nav>
+    <a class="app-kopf-zurueck" href="../../b/apps/phorma-i/" data-t-href="../../b/apps/phorma-i/|../../b/en/apps/phorma-i/" data-t="kopf.ueber">Über die App</a>
+  </header>
   <header class="site-header">
     <div class="wrap">
       <h1>PHORMA I</h1>
-      <p class="lead">Ein Foto zerfällt in Linien, dann in Formen, dann in Farben – und setzt sich am Ende wieder zusammen. Oder als Verwandlung: Funken, Glaskörper, Scherben, Echo und Gebirge, einzeln oder kombiniert. Oder als Flug über die Formen des Fotos. Als Video für Social Media.</p>
+      <p class="lead" data-t="lead">Ein Foto zerfällt in Linien, dann in Formen, dann in Farben – und setzt sich am Ende wieder zusammen. Oder als Verwandlung: Funken, Glaskörper, Scherben, Echo und Gebirge, einzeln oder kombiniert. Oder als Flug über die Formen des Fotos. Als Video für Social Media.</p>
     </div>
   </header>
 
   <main class="wrap karte" id="karte">
-    <section class="buehne" aria-label="Vorschau">
+    <section class="buehne" aria-label="Vorschau" data-t-attr="aria-label=buehne.aria">
       <div class="rahmen">
-        <canvas id="vorschau" width="540" height="675" aria-label="Vorschau des Videos: das Foto in Linien, Formen und Farben"></canvas>
+        <canvas id="vorschau" width="540" height="675" aria-label="Vorschau des Videos: das Foto in Linien, Formen und Farben" data-t-attr="aria-label=vorschau.aria"></canvas>
         <div class="leer" id="leer">
-          <p class="gross">Kein Signal</p>
-          <p>Lade ein Foto.</p>
+          <p class="gross" data-t="leer.gross">Kein Signal</p>
+          <p data-t="leer.text">Lade ein Foto.</p>
         </div>
       </div>
       <div class="zeitleiste">
-        <button class="knopf klein" type="button" id="spielen" disabled>Abspielen</button>
-        <input type="range" id="zeit" min="0" max="20" step="0.0333" value="0" disabled aria-label="Zeit im Film">
+        <button class="knopf klein" type="button" id="spielen" disabled data-t="Abspielen">Abspielen</button>
+        <input type="range" id="zeit" min="0" max="20" step="0.0333" value="0" disabled aria-label="Zeit im Film" data-t-attr="aria-label=zeit.aria">
         <output id="zeitcode" for="zeit">00:00:00</output>
       </div>
-      <div class="phasen" role="group" aria-label="Zu einer Phase springen">
-        <button type="button" id="zu-linien">01 Linien</button>
-        <button type="button" id="zu-formen">02 Formen</button>
-        <button type="button" id="zu-farben">03 Farben</button>
-        <button type="button" id="zu-bild">04 Bild</button>
+      <div class="phasen" role="group" aria-label="Zu einer Phase springen" data-t-attr="aria-label=phasen.aria">
+        <button type="button" id="zu-linien">01 <span data-t="Linien">Linien</span></button>
+        <button type="button" id="zu-formen">02 <span data-t="Formen">Formen</span></button>
+        <button type="button" id="zu-farben">03 <span data-t="Farben">Farben</span></button>
+        <button type="button" id="zu-bild">04 <span data-t="Bild">Bild</span></button>
       </div>
       <div class="unter">
-        <p class="info" id="dauer">Hochformat 4 : 5, wahlweise 9 : 16</p>
+        <p class="info" id="dauer" data-t="dauer">Hochformat 4 : 5, wahlweise 9 : 16</p>
       </div>
       <p class="info" id="auswertung"></p>
     </section>
@@ -197,88 +205,88 @@
     <div>
       <ol class="schritte">
         <li>
-          <h2>Foto</h2>
+          <h2 data-t="schritt.foto">Foto</h2>
           <label class="ablage" id="ablage">
             <span class="plus" aria-hidden="true">
               <img id="quelle" alt="" hidden>
               <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             </span>
-            <span class="ablage-text"><b id="ablage-titel">Foto wählen</b><span>oder hierher ziehen. Es wird in Zeilen, Kanten und Dreiecke zerlegt – auf deinem Gerät.</span></span>
-            <input type="file" id="datei" accept="image/*" aria-label="Foto wählen">
+            <span class="ablage-text"><b id="ablage-titel" data-t="ablage.titel">Foto wählen</b><span data-t="ablage.text">oder hierher ziehen. Es wird in Zeilen, Kanten und Dreiecke zerlegt – auf deinem Gerät.</span></span>
+            <input type="file" id="datei" accept="image/*" aria-label="Foto wählen" data-t-attr="aria-label=datei.aria">
           </label>
-          <div class="leiste"><button class="knopf klein beispiel" type="button" id="testbild"><img src="beispiel.jpg" alt="" width="26" height="37" loading="lazy">Mit dem Beispielbild ausprobieren</button></div>
-          <section class="tafel" aria-label="Format, Fragmente und Grund">
+          <div class="leiste"><button class="knopf klein beispiel" type="button" id="testbild"><img src="beispiel.jpg" alt="" width="26" height="37" loading="lazy"><span data-t="testbild">Mit dem Beispielbild ausprobieren</span></button></div>
+          <section class="tafel" aria-label="Format, Fragmente und Grund" data-t-attr="aria-label=tafel.aria">
             <div class="einstellung">
-              <span class="name" id="format-titel">Format</span>
+              <span class="name" id="format-titel" data-t="format">Format</span>
               <div class="segment" role="group" aria-labelledby="format-titel">
-                <button type="button" data-format="4:5">4 : 5 Hochformat</button>
-                <button type="button" data-format="9:16">9 : 16</button>
+                <button type="button" data-format="4:5" data-t="format.45">4 : 5 Hochformat</button>
+                <button type="button" data-format="9:16" data-t="format.916">9 : 16</button>
               </div>
             </div>
             <div class="einstellung">
-              <span class="name" id="feinheit-titel">Fragmente</span>
+              <span class="name" id="feinheit-titel" data-t="fragmente">Fragmente</span>
               <div class="segment" role="group" aria-labelledby="feinheit-titel">
-                <button type="button" data-feinheit="grob">grob</button>
-                <button type="button" data-feinheit="mittel">mittel</button>
-                <button type="button" data-feinheit="fein">fein</button>
+                <button type="button" data-feinheit="grob" data-t="grob">grob</button>
+                <button type="button" data-feinheit="mittel" data-t="mittel">mittel</button>
+                <button type="button" data-feinheit="fein" data-t="fein">fein</button>
               </div>
             </div>
             <div class="einstellung">
-              <span class="name" id="grund-titel">Grund</span>
+              <span class="name" id="grund-titel" data-t="grund">Grund</span>
               <div class="segment" role="group" aria-labelledby="grund-titel">
-                <button type="button" data-grund="schwarz"><span class="muster" aria-hidden="true"></span>Schwarz</button>
-                <button type="button" data-grund="weiss"><span class="muster" aria-hidden="true"></span>Weiss</button>
+                <button type="button" data-grund="schwarz"><span class="muster" aria-hidden="true"></span><span data-t="schwarz">Schwarz</span></button>
+                <button type="button" data-grund="weiss"><span class="muster" aria-hidden="true"></span><span data-t="weiss">Weiss</span></button>
               </div>
             </div>
           </section>
         </li>
         <li>
-          <h2>Ablauf</h2>
-          <p>Alle beginnen im Dunkeln und enden mit deinem Foto. Verwandlung und Relief-Flug sind räumlich (WebGL); im Signet leuchtet ihr Punkt.</p>
-          <div class="ablaeufe" role="group" aria-label="Ablauf">
-            <button type="button" data-ablauf="fragmente" aria-pressed="true"><b>Fragmente</b><small>Linien, Formen, Farben – das Foto wird Teil um Teil montiert</small></button>
-            <button type="button" data-ablauf="verwandlung" aria-pressed="false"><b>Verwandlung</b><small>Funken verdichten sich zu einem Glaskörper, er zerspringt, die Scherben ziehen Spuren durch einen Tunnel, daraus wird ein Gebirge – und es legt sich flach zum Foto</small></button>
-            <button type="button" data-ablauf="flug" aria-pressed="false"><b>Relief-Flug</b><small>Leuchtende Höhenkurven im leeren Bild, dann das Gebirge – eine Kamerafahrt mit Zoom und Drehungen über die Formen deines Fotos, bis es flach daliegt</small></button>
+          <h2 data-t="schritt.ablauf">Ablauf</h2>
+          <p data-t="ablauf.text">Alle beginnen im Dunkeln und enden mit deinem Foto. Verwandlung und Relief-Flug sind räumlich (WebGL); im Signet leuchtet ihr Punkt.</p>
+          <div class="ablaeufe" role="group" aria-label="Ablauf" data-t-attr="aria-label=ablaeufe.aria">
+            <button type="button" data-ablauf="fragmente" aria-pressed="true"><b data-t="ablauf.fragmente">Fragmente</b><small data-t="ablauf.fragmente.text">Linien, Formen, Farben – das Foto wird Teil um Teil montiert</small></button>
+            <button type="button" data-ablauf="verwandlung" aria-pressed="false"><b data-t="ablauf.verwandlung">Verwandlung</b><small data-t="ablauf.verwandlung.text">Funken verdichten sich zu einem Glaskörper, er zerspringt, die Scherben ziehen Spuren durch einen Tunnel, daraus wird ein Gebirge – und es legt sich flach zum Foto</small></button>
+            <button type="button" data-ablauf="flug" aria-pressed="false"><b data-t="ablauf.flug">Relief-Flug</b><small data-t="ablauf.flug.text">Leuchtende Höhenkurven im leeren Bild, dann das Gebirge – eine Kamerafahrt mit Zoom und Drehungen über die Formen deines Fotos, bis es flach daliegt</small></button>
           </div>
-          <p class="effekte-hinweis">Die Effekte der Verwandlung – einzeln oder beliebig kombiniert:</p>
-          <div class="segment effekte" role="group" aria-label="Effekte der Verwandlung">
-            <button type="button" data-effekt="strom" aria-pressed="false" title="Glänzende Teilchen leuchten auf und ziehen in Bändern durchs Bild">Strom</button>
-            <button type="button" data-effekt="koerper" aria-pressed="false" title="Kristalle verschmelzen zu einem Glaskörper, durch den das Foto scheint">Körper</button>
-            <button type="button" data-effekt="scherben" aria-pressed="false" title="Ein Ball aus Scherben zerspringt, die Scherben setzen das Foto zusammen">Scherben</button>
-            <button type="button" data-effekt="echo" aria-pressed="false" title="Die Kanten des Fotos ziehen Spuren in einen Tunnel wie in TouchDesigner">Echo</button>
-            <button type="button" data-effekt="relief" aria-pressed="false" title="Das Foto als Gebirge im Streiflicht, mit leuchtenden Höhenlinien">Relief</button>
+          <p class="effekte-hinweis" data-t="effekte.hinweis">Die Effekte der Verwandlung – einzeln oder beliebig kombiniert:</p>
+          <div class="segment effekte" role="group" aria-label="Effekte der Verwandlung" data-t-attr="aria-label=effekte.aria">
+            <button type="button" data-effekt="strom" aria-pressed="false" title="Glänzende Teilchen leuchten auf und ziehen in Bändern durchs Bild" data-t="effekt.strom" data-t-attr="title=effekt.strom.title">Strom</button>
+            <button type="button" data-effekt="koerper" aria-pressed="false" title="Kristalle verschmelzen zu einem Glaskörper, durch den das Foto scheint" data-t="effekt.koerper" data-t-attr="title=effekt.koerper.title">Körper</button>
+            <button type="button" data-effekt="scherben" aria-pressed="false" title="Ein Ball aus Scherben zerspringt, die Scherben setzen das Foto zusammen" data-t="effekt.scherben" data-t-attr="title=effekt.scherben.title">Scherben</button>
+            <button type="button" data-effekt="echo" aria-pressed="false" title="Die Kanten des Fotos ziehen Spuren in einen Tunnel wie in TouchDesigner" data-t="effekt.echo" data-t-attr="title=effekt.echo.title">Echo</button>
+            <button type="button" data-effekt="relief" aria-pressed="false" title="Das Foto als Gebirge im Streiflicht, mit leuchtenden Höhenlinien" data-t="effekt.relief" data-t-attr="title=effekt.relief.title">Relief</button>
           </div>
           <p class="kette" id="kette" aria-live="polite"></p>
         </li>
         <li>
-          <h2>Gestaltung</h2>
-          <p>Die Beschriftung zeigt wie in einem Bildwerkzeug Phase, Zähler und Zeitcode; oben links steht dein Titel.</p>
+          <h2 data-t="schritt.gestaltung">Gestaltung</h2>
+          <p data-t="gestaltung.text">Die Beschriftung zeigt wie in einem Bildwerkzeug Phase, Zähler und Zeitcode; oben links steht dein Titel.</p>
           <div class="einstellungen">
-            <label><span>Titel</span><input type="text" id="titel" maxlength="40" placeholder="PHORMA I" autocomplete="off"></label>
-            <label><span>Tempo</span>
+            <label><span data-t="titel">Titel</span><input type="text" id="titel" maxlength="40" placeholder="PHORMA I" autocomplete="off"></label>
+            <label><span data-t="tempo">Tempo</span>
               <select id="tempo">
-                <option value="ruhig">ruhig</option>
-                <option value="normal" selected>normal</option>
-                <option value="schnell">schnell</option>
+                <option value="ruhig" data-t="ruhig">ruhig</option>
+                <option value="normal" selected data-t="normal">normal</option>
+                <option value="schnell" data-t="schnell">schnell</option>
               </select></label>
-            <label class="haken"><input type="checkbox" id="beschriftung" checked> Beschriftung</label>
-            <label class="haken"><input type="checkbox" id="signet" checked> Signet am Schluss</label>
+            <label class="haken"><input type="checkbox" id="beschriftung" checked> <span data-t="beschriftung">Beschriftung</span></label>
+            <label class="haken"><input type="checkbox" id="signet" checked> <span data-t="signet">Signet am Schluss</span></label>
           </div>
         </li>
         <li>
-          <h2>Video</h2>
-          <p>Das Video rechnet Bild für Bild in voller Grösse; die räumlichen Abläufe brauchen dafür etwas länger.</p>
+          <h2 data-t="schritt.video">Video</h2>
+          <p data-t="video.text">Das Video rechnet Bild für Bild in voller Grösse; die räumlichen Abläufe brauchen dafür etwas länger.</p>
           <div class="leiste">
-            <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
-            <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
+            <button class="knopf haupt" type="button" id="video" disabled data-t="video.knopf">Video erstellen</button>
+            <button class="knopf" type="button" id="png" disabled data-t="png">Standbild (PNG)</button>
           </div>
           <progress id="fortschritt" max="1" value="0" hidden></progress>
           <p class="meldung" id="meldung" role="status" aria-live="polite"></p>
           <section class="ergebnis" id="ergebnis" hidden aria-labelledby="ergebnis-titel">
-            <h2 id="ergebnis-titel">Dein Video</h2>
+            <h2 id="ergebnis-titel" data-t="ergebnis.titel">Dein Video</h2>
             <video id="film" controls playsinline muted></video>
             <p class="info" id="film-info"></p>
-            <div class="leiste"><a class="knopf haupt" id="laden" href="#" download>Herunterladen</a></div>
+            <div class="leiste"><a class="knopf haupt" id="laden" href="#" download data-t="laden">Herunterladen</a></div>
           </section>
         </li>
       </ol>
@@ -287,30 +295,30 @@
 
   <div class="wrap">
     <div class="installieren" id="installieren" hidden>
-      <button class="knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="icons/icon-192.png" alt="" width="30" height="30"><span>PHORMA I als App installieren</span></button>
+      <button class="knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="icons/icon-192.png" alt="" width="30" height="30"><span data-t="install.knopf">PHORMA I als App installieren</span></button>
       <p class="installieren-hilfe" id="installieren-hilfe" hidden></p>
     </div>
     <ul class="hinweise">
-      <li>Alles bleibt in deinem Browser: Das Foto wird nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
-      <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories); das Foto wird bei Bedarf mittig beschnitten.</li>
-      <li>Das Standbild nimmt die Stelle der Zeitleiste, in voller Grösse; ohne Wahl das fertige farbige Mosaik (sonst die Mitte der zweiten Phase).</li>
-      <li>Video: MP4 (H.264), 30 Bilder pro Sekunde, ohne Ton.</li>
+      <li data-t="hinweis.1">Alles bleibt in deinem Browser: Das Foto wird nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
+      <li data-t="hinweis.2">Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories); das Foto wird bei Bedarf mittig beschnitten.</li>
+      <li data-t="hinweis.3">Das Standbild nimmt die Stelle der Zeitleiste, in voller Grösse; ohne Wahl das fertige farbige Mosaik (sonst die Mitte der zweiten Phase).</li>
+      <li data-t="hinweis.4">Video: MP4 (H.264), 30 Bilder pro Sekunde, ohne Ton.</li>
     </ul>
   </div>
 
   <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
   <footer class="site-footer">
     <div class="wrap">
-      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
-      <p><a href="../../impressum/">Impressum</a></p>
+      <p data-t="fuss.fragen">Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+      <p><a href="../../impressum/" data-t="fuss.impressum">Impressum</a></p>
     </div>
   </footer>
   <!-- three.js für die räumlichen Workflows (lokal; erst geladen, wenn einer gewählt ist) -->
   <script type="importmap">
   { "imports": { "three": "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" } }
   </script>
-  <script type="module" src="app.js?v=33"></script>
-  <script type="module" src="pwa.js?v=33"></script>
+  <script type="module" src="app.js?v=34"></script>
+  <script type="module" src="pwa.js?v=34"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>
