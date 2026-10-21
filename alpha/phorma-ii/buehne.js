@@ -9,14 +9,14 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=32";
-import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=32";
-import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=32";
-import { physarum } from "./physarum.js?v=32";
-import { tiefe } from "./tiefe.js?v=32";
-import { tuch } from "./tuch.js?v=32";
-import { montage, montageSignet } from "./montage.js?v=32";
-import { wachstum } from "./wachstum.js?v=32";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=33";
+import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=33";
+import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=33";
+import { physarum } from "./physarum.js?v=33";
+import { tiefe } from "./tiefe.js?v=33";
+import { tuch } from "./tuch.js?v=33";
+import { montage, montageSignet } from "./montage.js?v=33";
+import { wachstum } from "./wachstum.js?v=33";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
