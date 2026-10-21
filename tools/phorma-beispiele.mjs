@@ -3,7 +3,8 @@
 // zwei zusätzliche Effekte wünschen … innerhalb des einen Videos: zwei bis drei Effektphasen»).
 // Rechnet die Filme hier, Bild für Bild aus den Szenen der Apps (ohne Browser-Encoder, WebGL über SwiftShader), in halber Grösse (540 breit) und
 // kodiert sie mit ffmpeg klein: MP4 (H.264, crf 31, PHORMA III mit Korn und Ton crf 34; ein WebM wäre bei diesen feinen Linien nicht kleiner), dazu ein Standbild als Poster.
-//   PHORMA I:    «Fragmente» mit dem Beispielfoto der App, ohne Ton
+//   PHORMA I:    «Fragmente» mit dem Beispielfoto der App, ohne Ton – nur mit dem Namen phorma-i; der Film auf der Website ist seit dem
+//                21. Oktober 2026 einer von Christian (ein Porträt), siehe VON_HAND
 //   PHORMA II:   die Kette der App «Physarum → Tiefe → Tuch» mit dem Beispielfoto, ohne Ton
 //   PHORMA III:  «Gewebe», «Irrfahrt» und «Traube» nacheinander zu einem hier gerechneten Musikstück (tools/beispielton.mjs) – die App kennt je Film
 //                einen Effekt; hier laufen drei zur selben Musik, und der Film schneidet auf dem Taktanfang vom einen zum nächsten, wie die Effekte
@@ -34,7 +35,10 @@ const AUS = process.env.AUS ? pathToFileURL(process.env.AUS.replace(/\/?$/, "/")
 const FPS = 24, BREITE = 540, HOEHE = 675, PROBEN = Math.max(1, Number(process.env.PROBEN) || 1), HOECHSTENS = Number(process.env.HOECHSTENS_BILDER) || Infinity;
 const BILDER_BEI = process.env.BILDER_BEI ? process.env.BILDER_BEI.split(",").map(Number).filter((x) => x >= 0) : null;
 const nur = process.argv.slice(2);
-const will = (name) => !nur.length || nur.includes(name);
+// PHORMA I rechnet nur, wer es ausdrücklich nennt: seit dem 21. Oktober 2026 liegt dort ein Film von Christian («Ich habe hier bessere
+// Beispielvideos: PHORMA I»), den ein Lauf ohne Namen sonst überschreiben würde
+const VON_HAND = ["phorma-i"];
+const will = (name) => (nur.length ? nur.includes(name) : !VON_HAND.includes(name));
 
 const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript", ".woff2": "font/woff2", ".jpg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".json": "application/json", ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml", ".wasm": "application/wasm", ".bin": "application/octet-stream" };
 const server = createServer((req, res) => { let p = decodeURIComponent(new URL(req.url, "http://x").pathname); if (p.endsWith("/")) p += "index.html"; let body; try { body = readFileSync(join(root, p)); } catch { res.writeHead(404).end(); return; } res.writeHead(200, { "content-type": types[extname(p)] || "application/octet-stream" }).end(body); }).listen(0);

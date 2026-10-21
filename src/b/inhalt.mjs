@@ -59,7 +59,8 @@ export const APPS = [
     fuer: "Für alle, die aus einem Bild ein Reel machen wollen, ohne Schnittprogramm.",
     url: "alpha/bildfragmentieren/", app: "alpha/bildfragmentieren/?installieren", bild: "b/bilder/apps/phorma-i.svg", bildDunkel: "b/bilder/apps/phorma-i-dunkel.svg", bildAlt: "PHORMA I, gezeichnet: ein Kristall aus Scherben, Dreiecke über einer Scheibe, eine Scherbe in Blau",
     beispiele: [
-      { art: "video", datei: "assets/beispiele/phorma-i.mp4", bild: "assets/beispiele/phorma-i.jpg", mass: [540, 676], text: "Der Ablauf «Fragmente» mit dem Beispielfoto: Linien, Formen, Farben – und am Ende das Foto. Gerechnet aus der App, ohne Ton." },
+      { art: "video", datei: "assets/beispiele/phorma-i.mp4", bild: "assets/beispiele/phorma-i.jpg", mass: [540, 676], text: "Der Ablauf «Fragmente» an einem Porträt: Linien legen sich zu Konturen, Formen zerbrechen in Scherben, dann kommen die Farben – und am Ende das Bild. Ohne Ton." },
+      { art: "video", datei: "assets/beispiele/phorma-i-verwandlung.mp4", bild: "assets/beispiele/phorma-i-verwandlung.jpg", mass: [540, 676], text: "Der Ablauf «Verwandlung»: glänzende Funken strömen (Strom), verdichten sich zu einem Glaskörper (Körper), er zerspringt (Scherben), die Scherben ziehen durch einen Tunnel (Echo), daraus wird ein Gebirge mit Höhenlinien (Relief) – und es legt sich flach zum Foto. Ohne Ton." },
       { art: "paar", vorher: "alpha/bildfragmentieren/beispiel.jpg", nachher: "assets/vorschau-phorma-i-2x.jpg", text: "Ein Foto wird ein Glaskristall: das Bild liegt auf den Flächen, die Linien sind die Kanten." },
     ],
     bewegung: "So arbeitet PHORMA I, in drei Abläufen: «Fragmente» montiert das Foto aus Linien, Formen und Farben; «Verwandlung» führt über Funken, Glaskörper, Scherben, Echo und Gebirge zum Foto; der «Relief-Flug» fliegt über die Formen, bis das Bild flach daliegt. Die Tafel zeigt die Scherben.",
