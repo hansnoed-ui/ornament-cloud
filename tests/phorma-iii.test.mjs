@@ -506,19 +506,19 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /<title>PHORMA III – Ornament Cloud · Alpha<\/title>/);
   assert.match(html, /"three": "\.\.\/\.\.\/vendor\/three-0\.185\.1\/three\.module\.min\.js"/);
   assert.ok(!/<script[^>]+src="https?:/.test(html), "keine Skripte von aussen");
-  assert.match(html, /data-quelle="ton">Nur Ton<\/button>\s*<button type="button" data-quelle="video">Video/, "Nur Ton oder ein Video als Quelle");
+  assert.match(html, /data-quelle="ton"[^>]*>Nur Ton<\/button>\s*<button type="button" data-quelle="video"[^>]*>Video/, "Nur Ton oder ein Video als Quelle");   // [^>]*: seit 21. Oktober 2026 data-t (zweisprachig)
   // Foto und Text sind weg (Rückmeldung: «es läuft einfach der gewählte Effekt, aber weder das Bild noch der Text werden angezeigt. Ich find, das kann raus»)
   assert.ok(!/data-quelle="(foto|text)"|id="(datei|testbild|text|ablage)"/.test(html), "kein Foto, kein Text, kein Beispielbild");
   for (const t of [html, lies("app/index.html"), lies("manifest.webmanifest")]) assert.ok(!/Text, Foto|Foto oder Video|Foto, Text/.test(t), "die Beschreibungen nennen weder Foto noch Text");
   assert.match(lies("app.js"), /wahl\("data-quelle", "quelle", \["video", "ton"\]/, "eine gemerkte Wahl «foto» oder «text» ergibt «Nur Ton»");
   assert.match(html, /id="videodatei"[^>]*accept="video\/\*/, "eine Videodatei");
   assert.match(html, /id="tondatei"[^>]*accept="audio\/\*/, "eine Audiodatei");
-  assert.match(html, /id="ton-im-video" checked> Ton an/, "Ton ausschaltbar");
-  assert.match(html, /id="frickeln"> Verfrickeln[\s\S]*id="wuerfeln"/, "Verfrickeln als Option, mit neuem Wurf");
-  assert.match(html, /data-tonart="musik">Musik[\s\S]*data-tonart="stimme">Stimme/, "Musik oder Stimme");
-  assert.match(html, /id="saeubern" checked> Säubern und klären[\s\S]*id="stimm-ablauf" checked> Scratch → Stimme → Gefrickel[\s\S]*id="stimm-dnb" checked> mit Drum and Bass/, "die Stimme: säubern, der Ablauf, Drum and Bass");
-  assert.match(html, /id="signet" checked> Logo am Schluss/);
-  assert.match(html, /data-aufloesung="1">einfach[\s\S]*data-aufloesung="2">doppelt \(4K\)/, "Auflösung einfach oder doppelt (19. Oktober 2026)");
+  assert.match(html, /id="ton-im-video" checked> (<span data-t="ton\.an">)?Ton an/, "Ton ausschaltbar");
+  assert.match(html, /id="frickeln"> (<span data-t="Verfrickeln">)?Verfrickeln[\s\S]*id="wuerfeln"/, "Verfrickeln als Option, mit neuem Wurf");
+  assert.match(html, /data-tonart="musik"[^>]*>Musik[\s\S]*data-tonart="stimme"[^>]*>Stimme/, "Musik oder Stimme");
+  assert.match(html, /id="saeubern" checked> (<span data-t="saeubern">)?Säubern und klären[\s\S]*id="stimm-ablauf" checked> (<span data-t="stimm\.ablauf">)?Scratch → Stimme → Gefrickel[\s\S]*id="stimm-dnb" checked> (<span data-t="stimm\.dnb">)?mit Drum and Bass/, "die Stimme: säubern, der Ablauf, Drum and Bass");
+  assert.match(html, /id="signet" checked> (<span data-t="signet">)?Logo am Schluss/);
+  assert.match(html, /data-aufloesung="1"[^>]*>einfach[\s\S]*data-aufloesung="2"[^>]*>doppelt \(4K\)/, "Auflösung einfach oder doppelt (19. Oktober 2026)");
   assert.match(html, /data-wahl="gewebe" aria-pressed="true"[\s\S]*data-wahl="irrfahrt"[\s\S]*data-wahl="lichtwuerfel"[\s\S]*data-wahl="traube"[\s\S]*data-wahl="video"/, "fünf Effekte: Gewebe, Irrfahrt, Lichtwürfel, Traube und Video");
   assert.match(html, /id="ausschnitt-film"[\s\S]*id="ausschnitt-bild"/, "beim Ton aus dem Video: Filmstreifen über der Wellenform");
   assert.match(html, /id="video-ausschnitt"[\s\S]*id="video-streifen"[\s\S]*id="video-von"/, "mit eigener Audiodatei: der Ausschnitt des Videos");
