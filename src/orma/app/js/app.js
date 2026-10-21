@@ -60,7 +60,18 @@ function installSteps() {
 }
 
 let installGewuenscht = new URLSearchParams(location.search).has("installieren");   // vom Neubau («Als App installieren», /b/apps/orma/): Schritte aufgeklappt, bis man weitergeht
-function installBlock() {
+// und dazu ein deutliches Feld ganz oben in der Startansicht (21. Oktober 2026, Rückmeldung: der Knopf im Neubau «führt nicht zum Download, sondern
+// verlinkt eine andere Seite»; wie in den anderen Apps, pwa.js obenAnbieten): bis «×» oder bis man in eine andere Ansicht geht
+let installOben = installGewuenscht;
+function installObenFeld() {
+  const [b, help] = installBlock("orma-btn orma-btn--primary", true);
+  return h("section", { class: "orma-install-oben", "aria-labelledby": "orma-install-oben-titel" },
+    btn("×", () => { installOben = false; installGewuenscht = false; renderStart(); }, "orma-install-oben-zu", { "aria-label": T("Schliessen") }),
+    h("h2", { id: "orma-install-oben-titel", text: T("ORMA installieren") }),
+    h("p", { class: "orma-install-oben-satz", text: T("Auf den Knopf tippen und bestätigen. Geht das in diesem Browser nicht direkt, stehen die Schritte darunter.") }),
+    b, help);
+}
+function installBlock(cls = "orma-link", oben = false) {
   if (STANDALONE) return [];
   const help = h("p", { class: "orma-small orma-install-help", id: "orma-install-help", hidden: !installGewuenscht, text: installSteps() + T(" Danach funktioniert ORMA auch ohne Netz.") });
   const b = btn(T("ORMA als App installieren"), async () => {
@@ -74,8 +85,8 @@ function installBlock() {
     installGewuenscht = false;
     help.hidden = !help.hidden;
     b.setAttribute("aria-expanded", String(!help.hidden));
-  }, "orma-link", { "aria-expanded": String(installGewuenscht), "aria-controls": "orma-install-help" });
-  if (installGewuenscht) requestAnimationFrame(() => { b.scrollIntoView({ block: "center" }); b.focus({ preventScroll: true }); });   // die Startansicht wird beim Sprachwechsel neu gezeichnet, darum bleibt die Wahl bis zum nächsten Schritt
+  }, cls, { "aria-expanded": String(installGewuenscht), "aria-controls": "orma-install-help" });
+  if (installGewuenscht && !oben) requestAnimationFrame(() => { b.scrollIntoView({ block: "center" }); b.focus({ preventScroll: true }); });   // die Startansicht wird beim Sprachwechsel neu gezeichnet, darum bleibt die Wahl bis zum nächsten Schritt
   return [b, help];
 }
 
@@ -102,6 +113,7 @@ function show(...nodes) {
   const head = main.querySelector("h1, h2");
   if (head) { head.setAttribute("tabindex", "-1"); head.focus({ preventScroll: true }); }
   window.scrollTo(0, 0);
+  if (rerender !== renderStart) installOben = false;   // das Feld zum Installieren nur in der Startansicht, bis man weitergeht
 }
 const say = t => { live.textContent = ""; setTimeout(() => { live.textContent = t; }, 30); };
 const noticeNode = () => { if (!notice) return null; const n = h("p", { class: "orma-note", role: "status", text: notice }); notice = ""; return n; };
@@ -147,13 +159,15 @@ function renderStart() {
   if (draft && !resumable) extra.push(h("p", { class: "orma-note", text: T("Die unterbrochene Runde gehört zu einer älteren Fassung von ORMA und kann nicht fortgesetzt werden.") }),
     btn(T("Unterbrochene Runde verwerfen"), () => { clearDraft(storage); renderStart(); }, "orma-link"));
   else if (resumable) extra.push(btn(T("Unterbrochene Runde verwerfen"), () => confirmView(T("Die unterbrochene Runde wird gelöscht."), T("Verwerfen"), () => { clearDraft(storage); renderStart(); }, renderStart), "orma-link"));
-  extra.push(...installBlock());
+  const oben = installOben && !STANDALONE ? installObenFeld() : null;
+  if (!oben) extra.push(...installBlock());
   // Android: Manche Geräte lassen die Installation auch in Chrome nicht zu (Warnung «unsichere App»);
   // eine Verknüpfung geht immer. Die Seite erfährt vom Fehlschlag nichts, darum steht der Hinweis immer da.
   if (ANDROID && !IN_APP && !STANDALONE) extra.push(h("p", { class: "orma-small orma-install-alt", text: T("Klappt die Installation nicht? Im Browsermenü (⋮) «Zum Startbildschirm hinzufügen» und dann «Verknüpfung erstellen» wählen.") }));
 
   show(
     noticeNode(),
+    oben,
     heroWheel(),
     h("h1", { text: "ORMA" }),
     h("p", { class: "orma-sub", text: "Nebeneinander, Nacheinander" }),

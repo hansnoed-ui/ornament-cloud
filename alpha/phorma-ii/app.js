@@ -343,12 +343,21 @@ async function buehneBereit() {
   S.buehneWarm = true;
   melden(T("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4."));
   if (S.sz) { S.sz.buehne = b; if (S.laeuft) { S.start = performance.now(); } else zeigeZeit(S.t ?? 0); }
+  const rechenSatz = () => { const namen = b.rechnend?.() ?? ["Tuch"]; return `${namen.map((n) => T(n)).join(` ${T("und")} `)} ${T(namen.length > 1 ? "werden" : "wird")} ${T("berechnet …")} ${Math.round(b.fortschritt() * 100)} %`; };
+  // Beginnt die Kette mit einem Effekt, der im Hintergrund rechnet (das Wachstum zuerst, seit 19. Oktober 2026; auch das Tuch allein), wartet die
+  // Vorschau mit dem Balken, bis er fertig ist – wie beim Video. Sonst holt sie die Rechnung nach drei Sekunden ein und steht, auf dem Handy
+  // minutenlang (Rückmeldung vom 21. Oktober 2026: «bleibt nach Wachstum stehen, egal welche Kette», «am Laptop auch»; Vermutung von Christian:
+  // «weil er nicht schon im Vorfeld gerechnet werden konnte» – genau). Rechnet erst ein späterer Effekt im Hintergrund, puffert die Vorschau wie bisher.
+  if (!S.laden && S.sz && b.fortschritt() < 1 && (b.gerechnetBis?.(S.sz.zeit) ?? Infinity) < 3) {
+    anhalten(); S.t = 0; zeigeZeit(0);
+    ladenZeigen(rechenSatz(), b.fortschritt(), T("Schritt 3 von 3"));
+    notiz("Vorschau wartet mit dem Balken, bis der erste Effekt gerechnet ist");
+  }
   // was im Hintergrund rechnet (die Bahn des Tuchs, des Wachstums): Fortschritt melden, danach die Vorschau neu zeichnen
   if (b.fortschritt() < 1) {
     const zeigen = () => {
       if (S.buehne !== b || b.fortschritt() >= 1) return;
-      const namen = b.rechnend?.() ?? ["Tuch"];
-      const satz = `${namen.map((n) => T(n)).join(` ${T("und")} `)} ${T(namen.length > 1 ? "werden" : "wird")} ${T("berechnet …")} ${Math.round(b.fortschritt() * 100)} %`;
+      const satz = rechenSatz();
       melden(satz);
       if (S.laden) ladenZeigen(satz, b.fortschritt(), T("Schritt 3 von 3"));
       if (!S.laeuft && S.sz && S.t !== null) zeigeZeit(S.t);   // steht die Vorschau, zeigt sie, was inzwischen gerechnet ist (das Wachstum kommt in Päckchen)
