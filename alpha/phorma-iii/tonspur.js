@@ -7,8 +7,10 @@ export async function tonKodieren(buffer, dauer, { ausblenden = 1.2 } = {}) {
   if (typeof AudioEncoder === "undefined" || typeof AudioData === "undefined") return null;
   const rate = buffer.sampleRate, kanaele = Math.min(2, buffer.numberOfChannels);
   let cfg = null;
-  for (const [codec, art] of [["mp4a.40.2", "aac"], ["opus", "opus"]]) {
-    const c = { codec, sampleRate: rate, numberOfChannels: kanaele, bitrate: 256_000 };   // AAC mit 256 kbit/s (Wunsch «den Sound qualitativ optimieren»; vorher 192)
+  // AAC mit 256 kbit/s (Wunsch «den Sound qualitativ optimieren»; vorher 192); kann der Encoder das nicht, AAC mit weniger, erst dann Opus –
+  // Opus im MP4 spielen manche Programme stumm ab (21. Oktober 2026, Rückmeldung: «Beim rendern fällt der Ton weg»)
+  for (const [codec, art, bitrate] of [["mp4a.40.2", "aac", 256_000], ["mp4a.40.2", "aac", 192_000], ["mp4a.40.2", "aac", 128_000], ["opus", "opus", 192_000]]) {
+    const c = { codec, sampleRate: rate, numberOfChannels: kanaele, bitrate };
     try { if ((await AudioEncoder.isConfigSupported(c)).supported) { cfg = { ...c, art }; break; } } catch { /* nächster */ }
   }
   if (!cfg) return null;

@@ -9,11 +9,11 @@
 //   sich glatt zum Strich (darüber tippt film.js den Schriftzug).
 // Zustandslos: alles wird aus der Zeit gerechnet (im Vertex-Shader), die Tonkurven liegen als Textur vor und werden nur mit texelFetch gelesen.
 import * as THREE from "three";
-import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=22";
-import { phase } from "./ablauf.js?v=22";
-import { gewebeKurven, abtasten } from "./kurven.js?v=22";
-import { weichzeichnen } from "./analyse.js?v=22";
-import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=22";
+import { anteil, weich, inOut, kamera, quadMaterial } from "./gemeinsam.js?v=23";
+import { phase } from "./ablauf.js?v=23";
+import { gewebeKurven, abtasten } from "./kurven.js?v=23";
+import { weichzeichnen } from "./analyse.js?v=23";
+import { FPS, BAENDER, tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=23";
 
 // Simplex-Rauschen in 3D (Ashima Arts / Stefan Gustavson, MIT); auch für die Irrfahrt (irrfahrt.js)
 export const RAUSCHEN = /* glsl */ `

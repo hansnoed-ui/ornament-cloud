@@ -513,6 +513,8 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(lies("app.js"), /wahl\("data-quelle", "quelle", \["video", "ton"\]/, "eine gemerkte Wahl «foto» oder «text» ergibt «Nur Ton»");
   assert.match(html, /id="videodatei"[^>]*accept="video\/\*/, "eine Videodatei");
   assert.match(html, /id="tondatei"[^>]*accept="audio\/\*/, "eine Audiodatei");
+  // das fertige Video spielt mit Ton (21. Oktober 2026, Rückmeldung: «Beim rendern fällt der Ton weg» – der Spieler war stumm geschaltet)
+  assert.match(html, /<video id="film" controls playsinline><\/video>/, "der Spieler fürs fertige Video ist nicht stumm");
   assert.match(html, /id="ton-im-video" checked> (<span data-t="ton\.an">)?Ton an/, "Ton ausschaltbar");
   assert.match(html, /id="frickeln"> (<span data-t="Verfrickeln">)?Verfrickeln[\s\S]*id="wuerfeln"/, "Verfrickeln als Option, mit neuem Wurf");
   assert.match(html, /data-tonart="musik"[^>]*>Musik[\s\S]*data-tonart="stimme"[^>]*>Stimme/, "Musik oder Stimme");
