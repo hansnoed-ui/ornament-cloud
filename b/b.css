@@ -468,7 +468,13 @@ body.buehne-seite { height: 100dvh; display: grid; grid-template-rows: 48px minm
 /* die bewegte Tafel darüber (Seiten der Apps) gleich gross wie die Filme; auf den Seiten der Prüfraster steht sie neben dem Vierfeld und bleibt */
 .spalte > .tafel-lebt:not(.signet-tafel) { grid-template-columns: 240px minmax(0, 1fr); column-gap: 20px; align-items: start; max-width: 760px; }
 .spalte > .tafel-lebt:not(.signet-tafel) figcaption { grid-column: 2; }
+/* Filme im Querformat (PHORMA III «Traube», 16 : 9): breiter, damit sie nicht winzig werden; auf dem Handy über die ganze Breite, Text darunter */
+.beispiel-video.quer { grid-template-columns: 400px minmax(0, 1fr); }
+/* in der Galerie der Apps-Seite alle im selben Hochformat, ein Querfilm auf die Mitte zugeschnitten */
+.galerie-film video { aspect-ratio: 4 / 5; object-fit: cover; }
 @media (max-width: 560px) {
   .beispiel-video, .spalte > .tafel-lebt:not(.signet-tafel) { grid-template-columns: 150px minmax(0, 1fr); column-gap: 14px; }
   .beispiel-video figcaption { font-size: 0.9rem; }
+  .beispiel-video.quer { grid-template-columns: minmax(0, 1fr); }
+  .beispiel-video.quer figcaption { grid-column: 1; margin-top: 8px; }
 }

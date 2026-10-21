@@ -90,6 +90,7 @@ export const APPS = [
     beispiele: [
       { art: "video", datei: "assets/start-intro.mp4", bild: "assets/beispiele/phorma-iii-lichtwuerfel.jpg", mass: [540, 676], text: "The cube of light: a thread wanders in a cube of light and settles into the logo; computed from the music, with sound. The intro of the previous website." },
       { art: "video", datei: "assets/beispiele/phorma-iii.mp4", bild: "assets/beispiele/phorma-iii.jpg", mass: [540, 676], text: "Three effects to a short piece of music, cut on the beat: surfaces of fine lines unfold at every onset (Weave), a thread wanders through the cube of light (Odyssey), shiny pearls in a sphere of threads finally string themselves onto the loop of the logo (Grape). Computed from the app, with sound." },
+      { art: "video", datei: "assets/beispiele/phorma-iii-traube.mp4", bild: "assets/beispiele/phorma-iii-traube.jpg", mass: [640, 360], text: "The Grape to a piece of music: shining beads in a ball of threads, with depth of field; every strong entry cuts to a new shot, and at the end the beads thread themselves onto the loop of the logo. With sound." },
     ],
     bewegung: "How PHORMA III works, in five effects to the sound: surfaces of fine lines (Weave), a thread in a cube of light, wild or calm (Odyssey, Cube of light), beads in a ball of threads (Grape) or the video itself, scratched and fiddled (Video). Every beat moves the picture. The drawing shows the weave.",
     zeichen: "faden" },

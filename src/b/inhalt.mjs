@@ -82,6 +82,7 @@ export const APPS = [
     beispiele: [
       { art: "video", datei: "assets/start-intro.mp4", bild: "assets/beispiele/phorma-iii-lichtwuerfel.jpg", mass: [540, 676], text: "Der Lichtwürfel: ein Faden irrt im Würfel aus Licht und legt sich zum Logo; gerechnet aus der Musik, mit Ton. Das Intro der bisherigen Website." },
       { art: "video", datei: "assets/beispiele/phorma-iii.mp4", bild: "assets/beispiele/phorma-iii.jpg", mass: [540, 676], text: "Drei Effekte zu einem kurzen Stück Musik, auf dem Takt geschnitten: Flächen aus feinen Linien klappen bei jedem Einsatz auf (Gewebe), ein Faden irrt durch den Würfel aus Licht (Irrfahrt), glänzende Perlen in einer Kugel aus Fäden fädeln sich zuletzt auf die Schlaufe des Logos (Traube). Gerechnet aus der App, mit Ton." },
+      { art: "video", datei: "assets/beispiele/phorma-iii-traube.mp4", bild: "assets/beispiele/phorma-iii-traube.jpg", mass: [640, 360], text: "Die Traube zu einem Stück Musik: glänzende Perlen in einer Kugel aus Fäden, mit Tiefenschärfe; jeder kräftige Einsatz schneidet in eine neue Einstellung, zuletzt fädeln sich die Perlen auf die Schlaufe des Logos. Mit Ton." },
     ],
     bewegung: "So arbeitet PHORMA III, in fünf Effekten zum Ton: Flächen aus feinen Linien (Gewebe), ein Faden im Würfel aus Licht, wild oder ruhig (Irrfahrt, Lichtwürfel), Perlen in einer Kugel aus Fäden (Traube) oder das Video selbst, gescratcht und verfrickelt (Video). Jeder Schlag bewegt das Bild. Die Tafel zeigt das Gewebe.",
     zeichen: "faden" },
