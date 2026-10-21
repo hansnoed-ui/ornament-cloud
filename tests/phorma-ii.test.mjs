@@ -3,7 +3,7 @@
 //   node --test tests/phorma-ii.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 
 const root = new URL("../", import.meta.url);
 const P = new URL("alpha/phorma-ii/", root);
@@ -283,4 +283,57 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(lies("tiefe-ki.js"), /const VERSION = "3\.8\.1";[\s\S]*@huggingface\/transformers@\$\{VERSION\}\/dist\//, "transformers.js mit fester Version");
   assert.equal(marken.size, 1, `eine Marke für alle eigenen Module (${[...marken]})`);
   assert.match(lies("app.js"), /import\("\.\/tiefe-ki\.js\?v=\d+"\)/, "die KI erst auf Wunsch geladen");
+});
+
+test("App (21. Oktober 2026): Manifest, Symbole, Service Worker mit eigenem Cache, studio/ aktuell, App-Seite, Eintrag auf der Alpha-Seite und im Neubau", async () => {
+  const html = lies("index.html"), app = lies("app/index.html");
+  // Manifest und Symbole (tools/phorma-ii-symbole.mjs); eigene Adresse studio/ wie bei PHORMA I: die Website (./ und app/) bleibt im Browser
+  const m = JSON.parse(lies("manifest.webmanifest"));
+  assert.equal(m.name, "PHORMA II"); assert.equal(m.short_name, "PHORMA II"); assert.equal(m.id, "phorma-ii");
+  assert.equal(m.start_url, "studio/"); assert.equal(m.scope, "studio/"); assert.equal(m.display, "standalone"); assert.equal(m.lang, "de-CH");
+  for (const seite of ["/alpha/phorma-ii/", "/alpha/phorma-ii/app/"]) assert.ok(!seite.startsWith(new URL(m.scope, "https://x/alpha/phorma-ii/").pathname), `${seite} liegt ausserhalb der installierten App`);
+  const png = (f) => { const b = readFileSync(new URL(f, P)); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
+  for (const i of m.icons) assert.deepEqual(png(i.src).map(String), i.sizes.split("x"), i.src);
+  assert.deepEqual(png("icons/apple-touch-icon.png"), [180, 180]); assert.deepEqual(png("icons/favicon-32.png"), [32, 32]);
+  assert.ok(m.icons.some((i) => i.purpose === "maskable"));
+  for (const h of [html, app]) {
+    assert.match(h, /<link rel="manifest" href="(\.\.\/)?manifest\.webmanifest">/);
+    assert.match(h, /<link rel="apple-touch-icon" href="(\.\.\/)?icons\/apple-touch-icon\.png">/);
+    assert.match(h, /id="installieren-knopf"[^>]*>.*PHORMA II als App installieren/);
+    assert.match(h, /<meta property="og:image" content="https:\/\/ornament\.cloud\/alpha\/phorma-ii\/og-phorma-ii\.jpg">/);
+  }
+  assert.equal(html.match(/pwa\.js\?v=(\d+)/)[1], html.match(/app\.js\?v=(\d+)/)[1], "pwa.js mit der Marke der Anwendung");
+  assert.equal(app.match(/pwa\.js\?v=(\d+)/)[1], html.match(/app\.js\?v=(\d+)/)[1], "App-Seite: pwa.js mit der Marke der Anwendung");
+  assert.ok(existsSync(new URL("og-phorma-ii.jpg", P)), "Vorschaukachel (die der Anwendung)");
+  // Service Worker: eigener Cache, der nicht mit «phorma-» beginnt – der von PHORMA I löscht alle «phorma-…» Caches beim Aktualisieren
+  const sw = lies("sw.js"), cache = sw.match(/const CACHE = "([^"]+)"/)[1];
+  assert.ok(!cache.startsWith("phorma-"), `Cache ${cache} überlebt das Aufräumen von PHORMA I`);
+  assert.match(sw, new RegExp(`k\\.startsWith\\("${cache.replace(/\d+$/, "")}"\\)`), "räumt nur die eigenen Caches auf");
+  const phormaI = readFileSync(new URL("alpha/bildfragmentieren/sw.js", root), "utf8").match(/k\.startsWith\("([^"]+)"\)/)[1];
+  assert.ok(!cache.startsWith(phormaI), "PHORMA I räumt diesen Cache nicht weg");
+  const phormaIII = readFileSync(new URL("alpha/phorma-iii/sw.js", root), "utf8").match(/k\.startsWith\("([^"]+)"\)/)[1];
+  assert.ok(!cache.startsWith(phormaIII), "PHORMA III räumt diesen Cache nicht weg");
+  assert.match(lies("pwa.js"), /new URL\("sw\.js", import\.meta\.url\)/);
+  // three.js über die Import-Map kann er nicht auflösen: alles, was die Bühne und die Effekte daraus laden, steht in seiner Liste
+  const dazu = new Function(`${sw.match(/const THREE = [^\n]+/)[0]}\n${sw.match(/const DAZU = [\s\S]*?\];/)[0]}\nreturn DAZU;`)();
+  for (const d of dazu) assert.ok(existsSync(new URL(d.endsWith("/") ? d + "index.html" : d, P)), `${d} gibt es`);
+  const geladen = new Set(["three.module.min.js", "three.core.min.js", "addons/shaders/CopyShader.js", "addons/shaders/LuminosityHighPassShader.js"]);
+  for (const f of readdirSync(P).filter((f) => f.endsWith(".js"))) for (const [, z] of lies(f).matchAll(/from "(three[^"]*)"/g)) geladen.add(z === "three" ? "three.module.min.js" : z.replace("three/addons/", "addons/"));
+  for (const z of geladen) assert.ok(dazu.includes(`../../vendor/three-0.185.1/${z}`), `sw.js speichert ${z}`);
+  // studio/: die aktuelle Abschrift mit <base href="../"> (sonst: node tools/build-phorma-ii-app.mjs)
+  const { bauen } = await import(new URL("tools/build-phorma-ii-app.mjs", root).href);
+  assert.equal(lies("studio/index.html"), bauen(html), "studio/ veraltet: node tools/build-phorma-ii-app.mjs");
+  assert.ok(sw.includes('"studio/"'), "der Service Worker speichert die Seite der App für den Start ohne Netz");
+  // App-Seite: Navigation oben links, noindex, Im Browser öffnen
+  assert.match(app, /<nav class="seitenweg" aria-label="Ornament Cloud">/);
+  assert.match(app, /<meta name="robots" content="noindex">/);
+  assert.match(app, /<a class="link" href="\.\.\/">Im Browser öffnen/);
+  // auf der Alpha-Seite: gleich nach Sketchory und The Fictory, mit dem Symbol, zur App-Seite
+  const alpha = readFileSync(new URL("alpha/index.html", root), "utf8");
+  const eintraege = [...alpha.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map((x) => x[1]);
+  assert.deepEqual(eintraege.slice(0, 4), ["sketchory/", "the-fictory/", "phorma-iii/app/", "phorma-ii/app/"]);
+  assert.match(alpha, /<img src="phorma-ii\/icons\/apple-touch-icon\.png" alt="" width="56" height="56">\s*<div>\s*<a href="phorma-ii\/app\/">PHORMA II<\/a>/);
+  assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("alpha/phorma-ii"), "nicht in der Sitemap");
+  // im Neubau: «Als App installieren» führt mit ?installieren in die App, wie bei PHORMA III
+  assert.match(readFileSync(new URL("b/apps/phorma-ii/index.html", root), "utf8"), /href="\/alpha\/phorma-ii\/\?installieren&amp;sprache=de"/);   // b/apps/phorma-ii/ (der Neubau, 20. Oktober 2026) darf
 });

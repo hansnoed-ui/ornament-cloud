@@ -76,7 +76,7 @@ export const APPS = [
   { slug: "phorma-ii", name: "PHORMA II", gattung: "Image and video", kurz: "Five effects for photo and video: Growth, Physarum, Depth, Cloth, Montage.",
     text: "A line grows and draws the image, a slime mould finds its shapes, a plane of light scans the depth, the image blows in the wind as a silk cloth or falls apart into rectangles in time with the beat. Each effect on its own or as a chain, from photo or video. A portrait-format video, computed on your own graphics card.",
     fuer: "For artists, galleries and museums who want to show a work in motion.",
-    url: "alpha/phorma-ii/", bild: "b/bilder/apps/phorma-ii.svg", bildDunkel: "b/bilder/apps/phorma-ii-dunkel.svg", bildAlt: "PHORMA II, drawn: a single line that has grown from a seed and fills a disc",
+    url: "alpha/phorma-ii/", app: "alpha/phorma-ii/?installieren", bild: "b/bilder/apps/phorma-ii.svg", bildDunkel: "b/bilder/apps/phorma-ii-dunkel.svg", bildAlt: "PHORMA II, drawn: a single line that has grown from a seed and fills a disc",
     beispiele: [
       { art: "video", datei: "assets/beispiele/phorma-ii.mp4", bild: "assets/beispiele/phorma-ii.jpg", mass: [540, 676], text: "The app's chain with the example photo, three effects in one film: a slime mould lays its network over the shapes (Physarum), a plane of light scans the relief (Depth), the photo blows as a silk cloth and settles flat (Cloth). Computed from the app, without sound." },
       { art: "paar", vorher: "alpha/phorma-ii/beispiel.jpg", nachher: "assets/vorschau-phorma-ii-2x.jpg", text: "The same photo, broken into rectangles with shifted crops, borders and number plates (Montage)." },
