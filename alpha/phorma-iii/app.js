@@ -669,7 +669,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
       notiz(`Stimmen-Ablauf: Wurf ${S.wurf}, ${a.dauer.toFixed(1)} s, ${a.huepfer.map((h) => h.art).join(", ")}`);
     }
     buffer = new AudioBuffer({ length: kan[0].length, numberOfChannels: 2, sampleRate: rate });
-    kan.forEach((c, k) => buffer.copyToChannel(c, k));
+    for (let k = 0; k < 2; k++) buffer.copyToChannel(kan[Math.min(k, kan.length - 1)], k);   // Mono auf beide Seiten (sonst blieb rechts still)
     url = URL.createObjectURL(new Blob([wav(kan, rate)], { type: "audio/wav" }));
     name = `${q.name} · ${teile.join(" · ")}`;
   } else if (S.tonart === "musik" && S.frickeln) {
@@ -679,7 +679,7 @@ async function tonSetzen({ auffrischen = true } = {}) {
     if (nr !== S.tonNr) return;                                             // inzwischen umgestellt
     const f = frickeln(kanaele, rate, { samen: S.wurf });
     buffer = new AudioBuffer({ length: f.kanaele[0].length, numberOfChannels: 2, sampleRate: rate });
-    f.kanaele.forEach((c, k) => buffer.copyToChannel(c, k));
+    for (let k = 0; k < 2; k++) buffer.copyToChannel(f.kanaele[Math.min(k, f.kanaele.length - 1)], k);
     url = URL.createObjectURL(new Blob([wav(f.kanaele, rate)], { type: "audio/wav" }));
     name = `${q.name}${schnitt ? ` · ${schnitt}` : ""} · ${T("verfrickelt", S.wurf)}`; mehr = T("frickelMehr", f.bpm, f.takte, f.scheiben);
     notiz(`Ton verfrickelt: Wurf ${S.wurf}, ${f.bpm} BPM, ${f.dauer.toFixed(1)} s`);
