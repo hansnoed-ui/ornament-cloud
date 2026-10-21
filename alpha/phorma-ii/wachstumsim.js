@@ -5,7 +5,7 @@
 // ist Licht), dunkel weit, an Kanten enger – so zeichnet sie das Bild.
 //   Einheit: ein Punkt der Analyse (halbe Filmgrösse). Einmal ganz von vorn bis zum Ende gerechnet, je Filmbild gespeichert (Int16, 1/8 Punkt);
 //   danach steht die Linie. Wiederholbar: derselbe Auftrag ergibt dieselbe Bahn.
-import { phase } from "./ablauf.js?v=32";
+import { phase } from "./ablauf.js?v=33";
 
 export const BILDER_JE_S = 30, ACHTEL = 8;
 const anteil = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -95,7 +95,16 @@ export function wachstumBahn({ teil, w, h, hell, nahrung = null, tiefe = null, r
   const ende = F ? F[1] : W[1], bilder = Math.round(ende * BILDER_JE_S) + 1;
   if (jeBild) jeBild.bilder = bilder;
   const maske = wachsfeld({ w, h, tiefe, rgb });
-  const start = abstandsfeld({ w, h, hell, nahrung, ton, dichte, maske }), { abstand, max } = start;
+  // so viele Punkte füllen das Bild etwa (Linienlänge Fläche / Abstand, ein Punkt je halbem Abstand; lieber zu viele als Lücken): darüber wächst sie
+  // nur noch durch Dehnung
+  const fuellen = (a) => { let n = 0; for (let i = 0; i < w * h; i++) n += (2 / (a[i] * a[i])) * (maske ? maske[i] : 1); return n * 2.6; };
+  let start = abstandsfeld({ w, h, hell, nahrung, ton, dichte, maske }), genug = fuellen(start.abstand);
+  // Braucht ein Bild mehr Punkte, als sich in kurzer Zeit rechnen (helle, feine Bilder: bis 75 000), werden die Windungen so viel weiter, dass sie
+  // es mit dieser Zahl füllen – die Linie zeichnet dasselbe, nur gröber. (21. Oktober 2026, Rückmeldung: «Das Wachstum berechnen bleibt bei 40 %
+  // stehen» – dort wird die Linie lang, jedes Bild kostete mit 75 000 Punkten bis zehnmal so viel wie mit 10 000.)
+  const GRENZE = 24000 / (dichte * dichte);
+  if (genug > GRENZE) { dichte *= Math.sqrt(genug / GRENZE); start = abstandsfeld({ w, h, hell, nahrung, ton, dichte, maske }); genug = fuellen(start.abstand); }
+  const { abstand } = start;
   // die Felder, nach denen die Linie gerade wächst: vom Foto (Standbild) oder, mit Video, je film.je Filmbilder aus dem Bild des Videos (kleiner,
   // fw × fh; dann folgt die Linie dem bewegten Bild)
   let fA = abstand, fw = w, fh = h, sx0 = 1, sy0 = 1, key = -1;
@@ -134,10 +143,6 @@ export function wachstumBahn({ teil, w, h, hell, nahrung = null, tiefe = null, r
   const anzahl = new Uint32Array(bilder), ab = new Uint32Array(bilder + 1), stuecke = [];
   let gesamt = 0;
 
-  // so viele Punkte füllen das Bild etwa (Linienlänge Fläche / Abstand, ein Punkt je halbem Abstand): darüber wächst sie nur noch durch Dehnung
-  let genug = 0;
-  for (let i = 0; i < w * h; i++) genug += (2 / (abstand[i] * abstand[i])) * (maske ? maske[i] : 1);
-  genug = Math.min(genug * 2.6, 75000 / (dichte * dichte));   // lieber zu viele Punkte als Lücken; aber nie mehr, als sich in einer Minute rechnet
   // Umlaufsinn der Linie (bleibt, weil sie sich nie kreuzt): die Normale nach aussen ist die Tangente um 90° gedreht
   let sinn = 0;
   for (let i = 0; i < n; i++) { const q = (i + 1) % n; sinn += x[i] * y[q] - x[q] * y[i]; }
