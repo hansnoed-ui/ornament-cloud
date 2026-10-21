@@ -8,12 +8,12 @@ import { constellationsEn } from "../../portfolio/nebeneinander-nacheinander/js/
 import { artists } from "../../portfolio/nebeneinander-nacheinander/js/data/artists.js";
 import { theorists } from "../../portfolio/nebeneinander-nacheinander/js/data/theorists.js";
 import { drawConstellation } from "../../portfolio/nebeneinander-nacheinander/js/lib/random.js";
-import { REGELN, REGEL_IDS, saetze, pruefsumme } from "./regeln.js?v=22";
-import { JEV } from "./jev.js?v=22";
+import { REGELN, REGEL_IDS, saetze, pruefsumme } from "./regeln.js?v=23";
+import { JEV } from "./jev.js?v=23";
 // Sprache (sprache.js, nur im Browser): TF(schlüssel, deutscher Satz, …) gibt auf Englisch die Übersetzung, in Node (Tests) den deutschen Satz
 const TF = (k, de, ...a) => (globalThis.sprache?.en() ? globalThis.sprache.t(k, ...a) : de);   // auf der Seite und im Worker; in Node bleibt Deutsch
 const T = (k) => TF(k, k);
-import { zufall } from "./analyse.js?v=22";
+import { zufall } from "./analyse.js?v=23";
 
 export const BESTAND = constellations.length;
 export const jevGueltig = () => Boolean(JEV && JEV.pruefsumme === pruefsumme(constellations) && JEV.eintraege);

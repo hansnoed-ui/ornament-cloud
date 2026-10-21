@@ -8,12 +8,12 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { ziel, quadMaterial } from "./gemeinsam.js?v=21";
-import { FPS, kette, laufend } from "./ablauf.js?v=21";
-import { gewebe } from "./gewebe.js?v=21";
-import { irrfahrt } from "./irrfahrt.js?v=21";
-import { traube } from "./traube.js?v=21";
-import { video } from "./video.js?v=21";
+import { ziel, quadMaterial } from "./gemeinsam.js?v=22";
+import { FPS, kette, laufend } from "./ablauf.js?v=22";
+import { gewebe } from "./gewebe.js?v=22";
+import { irrfahrt } from "./irrfahrt.js?v=22";
+import { traube } from "./traube.js?v=22";
+import { video } from "./video.js?v=22";
 
 const FABRIK = { gewebe, irrfahrt, lichtwuerfel: (g, teil) => irrfahrt(g, teil, { fest: true }), traube, video };
 

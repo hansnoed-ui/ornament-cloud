@@ -11,8 +11,8 @@
 //                              später und langsamer an (die Spuren bestimmen die Reihenfolge, nicht mehr das Ziel). Es bleiben feine Fugen.
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall } from "./analyse.js?v=22";
-import { REGELN } from "./regeln.js?v=22";
+import { zufall } from "./analyse.js?v=23";
+import { REGELN } from "./regeln.js?v=23";
 
 // Sprache (sprache.js, nur im Browser): TF(schlüssel, deutscher Satz, …) gibt auf Englisch die Übersetzung, in Node (Tests) den deutschen Satz
 const TF = (k, de, ...a) => (globalThis.sprache?.en() ? globalThis.sprache.t(k, ...a) : de);   // auf der Seite und im Worker; in Node bleibt Deutsch

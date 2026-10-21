@@ -2,7 +2,7 @@
 // Analyse, demselben Startwert und derselben Regel, also dieselben Zustände. Die Seite spielt währenddessen schon ab; sobald die Momentaufnahmen
 // (alle MERKEN Schritte und an den Schlüsselschritten) da sind, stehen Zeitleiste, Standbilder und Export bereit.
 import "./sprache.js?v=2";   // die Sätze der Ereignisse in der Sprache der Seite (sie kommt mit der Nachricht)
-import { erzeugeLauf, anfang, schritt, kopie, SCHLUESSEL, GESAMT } from "./operationen.js?v=22";
+import { erzeugeLauf, anfang, schritt, kopie, SCHLUESSEL, GESAMT } from "./operationen.js?v=23";
 
 self.onmessage = ({ data }) => {
   self.sprache?.setze(data.sprache);

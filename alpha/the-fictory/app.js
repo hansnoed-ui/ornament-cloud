@@ -1,13 +1,13 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen, leitfarbe } from "./analyse.js?v=22";
-import { mitDauer } from "./dauer.js?v=22";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=22";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=22";
-import { REGELN } from "./regeln.js?v=22";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=22";
-import { JEV } from "./jev.js?v=22";
-import { zip } from "./zip.js?v=22";
+import { analysiere, konturen, leitfarbe } from "./analyse.js?v=23";
+import { mitDauer } from "./dauer.js?v=23";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=23";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=23";
+import { REGELN } from "./regeln.js?v=23";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=23";
+import { JEV } from "./jev.js?v=23";
+import { zip } from "./zip.js?v=23";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln
@@ -265,7 +265,7 @@ function vorausrechnen(L) {
   return new Promise((fertig) => {
     const hier = () => { if (S.lauf === L) zustandBei(GESAMT); fertig(); };
     let w = null;
-    try { w = new Worker(new URL("rechner.js?v=22", import.meta.url), { type: "module" }); } catch { w = null; }
+    try { w = new Worker(new URL("rechner.js?v=23", import.meta.url), { type: "module" }); } catch { w = null; }
     if (!w) { setTimeout(hier, 0); return; }
     w.onmessage = ({ data }) => {
       w.terminate();

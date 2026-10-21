@@ -15,13 +15,13 @@
 //   Schriftzug, der Punkt ist eine Perle) oder 02 Stille (alles sinkt ins Dunkel).
 // Zustandslos: alles hängt nur von der Zeit ab (Bewegungsunschärfe, Spulen, Video Bild für Bild).
 import * as THREE from "three";
-import { anteil, weich, kamera, ABSTAND, FOV } from "./gemeinsam.js?v=21";
-import { phase } from "./ablauf.js?v=21";
-import { gewebeKurven } from "./kurven.js?v=21";
-import { weichzeichnen } from "./analyse.js?v=21";
-import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=21";
-import { RAUSCHEN } from "./gewebe.js?v=21";
-import { traubenBau, perlenLegen, einstellung, artBei, schlaufeWelt, perlenAufZuegen, traubenZeit, h1 } from "./traubenplan.js?v=21";
+import { anteil, weich, kamera, ABSTAND, FOV } from "./gemeinsam.js?v=22";
+import { phase } from "./ablauf.js?v=22";
+import { gewebeKurven } from "./kurven.js?v=22";
+import { weichzeichnen } from "./analyse.js?v=22";
+import { tonOderErsatz, wert, gewebeZustaende, zustandBei } from "./ton.js?v=22";
+import { RAUSCHEN } from "./gewebe.js?v=22";
+import { traubenBau, perlenLegen, einstellung, artBei, schlaufeWelt, perlenAufZuegen, traubenZeit, h1 } from "./traubenplan.js?v=22";
 
 const VOR = 0.4, LN = 512;                                                  // Vorlauf des Films; Punkte der Schlaufe in der Textur
 
