@@ -19,7 +19,7 @@ import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 20;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 21;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -592,7 +592,7 @@ ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" 
   <h1 class="titel">${esc(T.angebot.titel)}<small>${esc(T.angebot.small)}</small></h1>
 </div></section>
 <section class="abschnitt"><div class="spalte">
-  <ul class="liste-linien">${ANGEBOTE.map((a) => `<li><a href="${B}angebot/${a.slug}/"><span class="n">${zeichen(a.slug)}</span><span class="name">${esc(a.name)}</span><span class="pfeil">${esc(T.angebot.briefing)}</span><span class="kurz">${esc(a.kurz)} ${esc(a.fuer)}</span></a></li>`).join("")}</ul>
+  <ul class="liste-linien am-ende">${ANGEBOTE.map((a) => `<li><a href="${B}angebot/${a.slug}/"><span class="n">${zeichen(a.slug)}</span><span class="name">${esc(a.name)}</span><span class="pfeil">${esc(T.angebot.briefing)}</span><span class="kurz">${esc(a.kurz)} ${esc(a.fuer)}</span></a></li>`).join("")}</ul>
 </div></section>`;
     veroeffentliche({ pfad: "angebot/", aktiv: "angebot/", titel: T.angebot.seitenTitel, beschreibung: T.angebot.beschreibung, body, bildAlt: T.angebot.bildAlt });
   }
