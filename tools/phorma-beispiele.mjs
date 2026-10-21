@@ -4,12 +4,14 @@
 // Rechnet die Filme hier, Bild für Bild aus den Szenen der Apps (ohne Browser-Encoder, WebGL über SwiftShader), in halber Grösse (540 breit) und
 // kodiert sie mit ffmpeg klein: MP4 (H.264, crf 31, PHORMA III mit Korn und Ton crf 34; ein WebM wäre bei diesen feinen Linien nicht kleiner), dazu ein Standbild als Poster.
 //   PHORMA I:    «Fragmente» mit dem Beispielfoto der App, ohne Ton – nur mit dem Namen phorma-i; der Film auf der Website ist seit dem
-//                21. Oktober 2026 einer von Christian (ein Porträt), siehe VON_HAND
-//   PHORMA II:   die Kette der App «Physarum → Tiefe → Tuch» mit dem Beispielfoto, ohne Ton
+//                21. Oktober 2026 einer von Christian (die «Verwandlung» mit einem Foto des Saturn), siehe VON_HAND
+//   PHORMA II:   die Kette der App «Physarum → Tiefe → Tuch» mit dem Beispielfoto, ohne Ton – auf der Website seit dem 21. Oktober 2026 einer
+//                von Christian (Physarum → Tuch → Montage), siehe VON_HAND
 //   PHORMA III:  «Gewebe», «Irrfahrt» und «Traube» nacheinander zu einem hier gerechneten Musikstück (tools/beispielton.mjs) – die App kennt je Film
 //                einen Effekt; hier laufen drei zur selben Musik, und der Film schneidet auf dem Taktanfang vom einen zum nächsten, wie die Effekte
 //                selbst bei jedem kräftigen Einsatz schneiden. Jeder Teil rechnet nur seine Sekunden; der Film trägt die Musik.
-//   The Fictory: der ganze Lauf von 30 Sekunden mit dem Beispielbild (die Bühne der App, Schritt für Schritt), ohne Ton
+//   The Fictory: der ganze Lauf von 30 Sekunden mit dem Beispielbild (die Bühne der App, Schritt für Schritt), ohne Ton – auf der Website seit dem
+//                21. Oktober 2026 einer von Christian (ein Gemälde), siehe VON_HAND
 // BILDER_ORDNER=… behält die Einzelbilder; HOECHSTENS_BILDER=24 rechnet nur die ersten Bilder (zum Messen); AUS=… schreibt anderswohin als nach
 // assets/beispiele/; PROBEN=2 mittelt Proben je Bild (Bewegungsunschärfe in PHORMA II und III, entsprechend langsamer).
 // BILDER_BEI=1,3,5 (Sekunden) rechnet nur diese Bilder und schreibt sie als <name>-<s>s.jpg nach AUS bzw. assets/beispiele/ – zum Abstimmen von Licht
@@ -37,7 +39,8 @@ const BILDER_BEI = process.env.BILDER_BEI ? process.env.BILDER_BEI.split(",").ma
 const nur = process.argv.slice(2);
 // PHORMA I rechnet nur, wer es ausdrücklich nennt: seit dem 21. Oktober 2026 liegt dort ein Film von Christian («Ich habe hier bessere
 // Beispielvideos: PHORMA I»), den ein Lauf ohne Namen sonst überschreiben würde
-const VON_HAND = ["phorma-i"];
+// von Christian gerechnet, hier nicht überschreiben (21. Oktober 2026: «Ich habe neue Beispiel Videos und möchte, dass du diese nutzt»)
+const VON_HAND = ["phorma-i", "phorma-ii", "the-fictory"];
 const will = (name) => (nur.length ? nur.includes(name) : !VON_HAND.includes(name));
 
 const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript", ".woff2": "font/woff2", ".jpg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".json": "application/json", ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml", ".wasm": "application/wasm", ".bin": "application/octet-stream" };

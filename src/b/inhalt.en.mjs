@@ -78,8 +78,7 @@ export const APPS = [
     fuer: "For artists, galleries and museums who want to show a work in motion.",
     url: "alpha/phorma-ii/", app: "alpha/phorma-ii/?installieren", bild: "b/bilder/apps/phorma-ii.svg", bildDunkel: "b/bilder/apps/phorma-ii-dunkel.svg", bildAlt: "PHORMA II, drawn: a single line that has grown from a seed and fills a disc",
     beispiele: [
-      { art: "video", datei: "assets/beispiele/phorma-ii.mp4", bild: "assets/beispiele/phorma-ii.jpg", mass: [540, 676], text: "The app's chain with the example photo, three effects in one film: a slime mould lays its network over the shapes (Physarum), a plane of light scans the relief (Depth), the photo blows as a silk cloth and settles flat (Cloth). Computed from the app, without sound." },
-      { art: "paar", vorher: "alpha/phorma-ii/beispiel.jpg", nachher: "assets/vorschau-phorma-ii-2x.jpg", text: "The same photo, broken into rectangles with shifted crops, borders and number plates (Montage)." },
+      { art: "video", datei: "assets/beispiele/phorma-ii.mp4", bild: "assets/beispiele/phorma-ii.jpg", mass: [540, 676], text: "A chain with an iridescent, mirrored image: a slime mould lays its network over the shapes (Physarum), the image blows as a silk cloth (Cloth) and breaks apart into rectangles to the beat (Montage) – up to the signet. Computed from the app, without sound." },
     ],
     bewegung: "How PHORMA II works, in four effects, alone or as a chain: a slime mould finds its shapes (Physarum), a plane of light scans the depth (Depth), the photo billows as a silk cloth (Cloth) or breaks into rectangles to the beat (Montage). The drawing shows a single line filling a surface.",
     zeichen: "linie" },
@@ -88,9 +87,7 @@ export const APPS = [
     fuer: "For everyone who wants to make a reel from an image, without an editing program.",
     url: "alpha/bildfragmentieren/", app: "alpha/bildfragmentieren/?installieren", bild: "b/bilder/apps/phorma-i.svg", bildDunkel: "b/bilder/apps/phorma-i-dunkel.svg", bildAlt: "PHORMA I, drawn: a crystal of shards, triangles over a disc, one shard in blue",
     beispiele: [
-      { art: "video", datei: "assets/beispiele/phorma-i.mp4", bild: "assets/beispiele/phorma-i.jpg", mass: [540, 676], text: "The sequence «Fragments» on a portrait: lines settle into contours, shapes break into shards, then the colours arrive – and at the end the picture. Without sound." },
-      { art: "video", datei: "assets/beispiele/phorma-i-verwandlung.mp4", bild: "assets/beispiele/phorma-i-verwandlung.jpg", mass: [540, 676], text: "The sequence «Transformation»: shining sparks stream (Stream), condense into a glass body (Body), it shatters (Shards), the shards trail through a tunnel (Echo), they become mountains with contour lines (Relief) – and lie down flat as the photo. Without sound." },
-      { art: "paar", vorher: "alpha/bildfragmentieren/beispiel.jpg", nachher: "assets/vorschau-phorma-i-2x.jpg", text: "A photo becomes a glass crystal: the image lies on the facets, the lines are the edges." },
+      { art: "video", datei: "assets/beispiele/phorma-i.mp4", bild: "assets/beispiele/phorma-i.jpg", mass: [540, 676], text: "The sequence «Transformation» with a photo of Saturn: sparks stream, condense into a glass body, it shatters into shards, which become a mountain range of contour lines in raking light – and at the end the photo. Computed from the app, without sound." },
     ],
     bewegung: "How PHORMA I works, in three sequences: «Fragments» assembles the photo from lines, shapes and colours; «Transformation» leads through sparks, a glass body, shards, echo and mountains to the photo; the «Relief flight» flies over the shapes until the picture lies flat. The drawing shows the shards.",
     zeichen: "scherbe" },
@@ -99,8 +96,7 @@ export const APPS = [
     fuer: "For everyone who wants to see what else an image could be.",
     url: "alpha/the-fictory/", app: "alpha/the-fictory/?installieren", bild: "b/bilder/apps/the-fictory.svg", bildDunkel: "b/bilder/apps/the-fictory-dunkel.svg", bildAlt: "The Fictory, drawn: a grid of tiles, each wandered and turned away from its origin, with traces and threads",
     beispiele: [
-      { art: "video", datei: "assets/beispiele/the-fictory.mp4", bild: "assets/beispiele/the-fictory.jpg", mass: [540, 766], text: "The whole run of 30 seconds with the example image: archive, timeline, traces, couplings, cut – and the image reassembles. Computed from the app." },
-      { art: "paar", vorher: "alpha/the-fictory/beispiel.jpg", nachher: "assets/vorschau-the-fictory.jpg", text: "An image on the workbench falls apart into its pieces; each piece becomes a trace." },
+      { art: "video", datei: "assets/beispiele/the-fictory.mp4", bild: "assets/beispiele/the-fictory.jpg", mass: [540, 720], text: "A whole run with a painting: the image falls apart into its pieces, the pieces travel as traces across contour lines, threads connect them, and at the end the image comes together again. Computed from the app, without sound." },
     ],
     bewegung: "How The Fictory works: the image falls apart into its pieces, the pieces wander, threads connect them, and in the end the image comes back together.",
     zeichen: "teile" },

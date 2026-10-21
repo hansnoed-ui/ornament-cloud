@@ -70,8 +70,7 @@ export const APPS = [
     fuer: "Für Künstler:innen, Galerien und Museen, die ein Werk in Bewegung zeigen wollen.",
     url: "alpha/phorma-ii/", app: "alpha/phorma-ii/?installieren", bild: "b/bilder/apps/phorma-ii.svg", bildDunkel: "b/bilder/apps/phorma-ii-dunkel.svg", bildAlt: "PHORMA II, gezeichnet: eine einzige Linie, die aus einem Keim gewachsen ist und eine Scheibe füllt",
     beispiele: [
-      { art: "video", datei: "assets/beispiele/phorma-ii.mp4", bild: "assets/beispiele/phorma-ii.jpg", mass: [540, 676], text: "Die Kette der App mit dem Beispielfoto, drei Effekte in einem Film: ein Schleimpilz legt sein Netz auf die Formen (Physarum), eine Lichtebene tastet das Relief ab (Tiefe), das Foto weht als Seidentuch und legt sich glatt (Tuch). Gerechnet aus der App, ohne Ton." },
-      { art: "paar", vorher: "alpha/phorma-ii/beispiel.jpg", nachher: "assets/vorschau-phorma-ii-2x.jpg", text: "Dasselbe Foto, zerlegt in Rechtecke mit versetzten Ausschnitten, Rändern und Zahlentafeln (Montage)." },
+      { art: "video", datei: "assets/beispiele/phorma-ii.mp4", bild: "assets/beispiele/phorma-ii.jpg", mass: [540, 676], text: "Eine Kette mit einem schillernden, gespiegelten Bild: ein Schleimpilz legt sein Netz auf die Formen (Physarum), das Bild weht als Seidentuch (Tuch) und zerfällt im Takt in Rechtecke (Montage) – bis zum Signet. Gerechnet aus der App, ohne Ton." },
     ],
     bewegung: "So arbeitet PHORMA II, in vier Effekten, einzeln oder als Kette: ein Schleimpilz findet seine Formen (Physarum), eine Lichtebene tastet die Tiefe ab (Tiefe), das Foto weht als Seidentuch (Tuch) oder zerfällt im Takt in Rechtecke (Montage). Die Tafel zeigt eine einzige Linie, die eine Fläche füllt.",
     zeichen: "linie" },
@@ -80,9 +79,7 @@ export const APPS = [
     fuer: "Für alle, die aus einem Bild ein Reel machen wollen, ohne Schnittprogramm.",
     url: "alpha/bildfragmentieren/", app: "alpha/bildfragmentieren/?installieren", bild: "b/bilder/apps/phorma-i.svg", bildDunkel: "b/bilder/apps/phorma-i-dunkel.svg", bildAlt: "PHORMA I, gezeichnet: ein Kristall aus Scherben, Dreiecke über einer Scheibe, eine Scherbe in Blau",
     beispiele: [
-      { art: "video", datei: "assets/beispiele/phorma-i.mp4", bild: "assets/beispiele/phorma-i.jpg", mass: [540, 676], text: "Der Ablauf «Fragmente» an einem Porträt: Linien legen sich zu Konturen, Formen zerbrechen in Scherben, dann kommen die Farben – und am Ende das Bild. Ohne Ton." },
-      { art: "video", datei: "assets/beispiele/phorma-i-verwandlung.mp4", bild: "assets/beispiele/phorma-i-verwandlung.jpg", mass: [540, 676], text: "Der Ablauf «Verwandlung»: glänzende Funken strömen (Strom), verdichten sich zu einem Glaskörper (Körper), er zerspringt (Scherben), die Scherben ziehen durch einen Tunnel (Echo), daraus wird ein Gebirge mit Höhenlinien (Relief) – und es legt sich flach zum Foto. Ohne Ton." },
-      { art: "paar", vorher: "alpha/bildfragmentieren/beispiel.jpg", nachher: "assets/vorschau-phorma-i-2x.jpg", text: "Ein Foto wird ein Glaskristall: das Bild liegt auf den Flächen, die Linien sind die Kanten." },
+      { art: "video", datei: "assets/beispiele/phorma-i.mp4", bild: "assets/beispiele/phorma-i.jpg", mass: [540, 676], text: "Der Ablauf «Verwandlung» mit einem Foto des Saturn: Funken strömen, verdichten sich zu einem Glaskörper, er zerspringt in Scherben, daraus wird ein Gebirge aus Höhenlinien im Streiflicht – und am Ende das Foto. Gerechnet aus der App, ohne Ton." },
     ],
     bewegung: "So arbeitet PHORMA I, in drei Abläufen: «Fragmente» montiert das Foto aus Linien, Formen und Farben; «Verwandlung» führt über Funken, Glaskörper, Scherben, Echo und Gebirge zum Foto; der «Relief-Flug» fliegt über die Formen, bis das Bild flach daliegt. Die Tafel zeigt die Scherben.",
     zeichen: "scherbe" },
@@ -91,8 +88,7 @@ export const APPS = [
     fuer: "Für alle, die sehen wollen, was ein Bild noch sein könnte.",
     url: "alpha/the-fictory/", app: "alpha/the-fictory/?installieren", bild: "b/bilder/apps/the-fictory.svg", bildDunkel: "b/bilder/apps/the-fictory-dunkel.svg", bildAlt: "The Fictory, gezeichnet: ein Raster von Kacheln, jede aus ihrer Herkunft gewandert und gedreht, mit Spuren und Fäden",
     beispiele: [
-      { art: "video", datei: "assets/beispiele/the-fictory.mp4", bild: "assets/beispiele/the-fictory.jpg", mass: [540, 766], text: "Der ganze Lauf von 30 Sekunden mit dem Beispielbild: Archiv, Zeitachse, Spuren, Kopplungen, Schnitt – und das Bild setzt sich wieder zusammen. Gerechnet aus der App." },
-      { art: "paar", vorher: "alpha/the-fictory/beispiel.jpg", nachher: "assets/vorschau-the-fictory.jpg", text: "Ein Bild auf der Werkbank zerfällt in seine Teile; jedes Teil wird eine Spur." },
+      { art: "video", datei: "assets/beispiele/the-fictory.mp4", bild: "assets/beispiele/the-fictory.jpg", mass: [540, 720], text: "Ein ganzer Lauf mit einem Gemälde: Das Bild zerfällt in seine Teile, die Teile wandern als Spuren über Höhenlinien, Fäden verbinden sie, und am Ende setzt sich das Bild wieder zusammen. Gerechnet aus der App, ohne Ton." },
     ],
     bewegung: "So arbeitet The Fictory: Das Bild zerfällt in seine Teile, die Teile wandern, Fäden verbinden sie, und am Ende setzt sich das Bild wieder zusammen.",
     zeichen: "teile" },
