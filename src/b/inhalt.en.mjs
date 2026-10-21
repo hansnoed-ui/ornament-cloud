@@ -65,7 +65,7 @@ export const APPS = [
   { slug: "phorma-i", name: "PHORMA I", gattung: "Image and video", kurz: "A photo falls apart into lines, shapes and colours.",
     text: "A photo becomes a film: it falls apart into lines, shapes and colours, turns into sparks, glass, shards, echo and mountains, or is explored in flight. The result is a portrait-format video for social media. Everything computes on your device; the image never leaves it.",
     fuer: "For everyone who wants to make a reel from an image, without an editing program.",
-    url: "alpha/bildfragmentieren/", app: "alpha/bildfragmentieren/app/", bild: "b/bilder/apps/phorma-i.svg", bildDunkel: "b/bilder/apps/phorma-i-dunkel.svg", bildAlt: "PHORMA I, drawn: a crystal of shards, triangles over a disc, one shard in blue",
+    url: "alpha/bildfragmentieren/", app: "alpha/bildfragmentieren/?installieren", bild: "b/bilder/apps/phorma-i.svg", bildDunkel: "b/bilder/apps/phorma-i-dunkel.svg", bildAlt: "PHORMA I, drawn: a crystal of shards, triangles over a disc, one shard in blue",
     beispiele: [
       { art: "video", datei: "assets/beispiele/phorma-i.mp4", bild: "assets/beispiele/phorma-i.jpg", mass: [540, 676], text: "The sequence «Fragments» with the example photo: lines, shapes, colours – and at the end the photo. Computed from the app, without sound." },
       { art: "paar", vorher: "alpha/bildfragmentieren/beispiel.jpg", nachher: "assets/vorschau-phorma-i-2x.jpg", text: "A photo becomes a glass crystal: the image lies on the facets, the lines are the edges." },

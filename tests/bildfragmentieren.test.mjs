@@ -218,6 +218,15 @@ test("Seite: Alpha (noindex), steht für sich ohne Navigation oben links, nichts
   const html = lies("alpha/bildfragmentieren/index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.ok(!html.includes('class="seitenweg"'), "ohne Navigation oben links (steht für sich)");
+  // seit 21. Oktober 2026 zweisprachig mit dem Kopf der App (Signet nach /b/, d · e, «Über die App»), sprache.js vor den Modulen, auf der Bühne ohne Kopf
+  assert.match(html, /<header class="app-kopf wrap">\s*<a class="app-kopf-signet" href="\.\.\/\.\.\/b\/" data-t-href="\.\.\/\.\.\/b\/\|\.\.\/\.\.\/b\/en\/"/, "Signet mit Weg in den Neubau");
+  assert.match(html, /<nav class="sprache" aria-label="Sprache"[^>]*><button type="button" data-sprache="de" lang="de" title="Deutsch">d<\/button><button type="button" data-sprache="en" lang="en" title="English">e<\/button><\/nav>/);
+  assert.match(html, /<a class="app-kopf-zurueck" href="\.\.\/\.\.\/b\/apps\/phorma-i\/" data-t-href="[^"]+" data-t="kopf.ueber">Über die App<\/a>/);
+  assert.ok(html.indexOf('<script src="sprache.js?v=') < html.indexOf('<script type="module" src="app.js?v='), "sprache.js vor den Modulen");
+  assert.match(html, /\[data-buehne\] \.app-kopf/, "auf der Bühne ohne den Kopf der App");
+  const fenster = {}; new Function("window", "document", "localStorage", "navigator", "CustomEvent", "location", lies("alpha/bildfragmentieren/sprache.js"))(fenster, { documentElement: { lang: "de" }, querySelectorAll: () => [], addEventListener() {}, dispatchEvent() {}, readyState: "complete" }, { getItem: () => null, setItem() {} }, { language: "en-US" }, class {}, { search: "" });
+  assert.ok(fenster.sprache.en() && fenster.sprache.t("lead").startsWith("A photo falls apart"), "englisch bei englischem Gerät");
+  for (const k of ["Linien", "Formen", "Farben", "Bild", "Strom", "Körper", "Scherben", "Relief-Flug", "Fragmente", "Abspielen", "Anhalten"])   // Echo und Relief heissen auf Englisch gleich assert.notEqual(fenster.sprache.t(k), k, `${k} übersetzt`);
   assert.ok(!/(src|href)="(https?:)?\/\//.test(html.replace(/<!--[\s\S]*?-->/g, "")), "nichts von fremden Servern");
   for (const id of ["vorschau", "datei", "testbild", "zeit", "spielen", "video", "png", "titel", "tempo", "signet", "beschriftung", "zu-linien", "zu-formen", "zu-farben", "zu-bild"])
     assert.match(html, new RegExp(`id="${id}"`), `#${id}`);
