@@ -18,7 +18,7 @@ import { zeichen } from "../src/b/zeichen.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 16;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 17;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -377,7 +377,7 @@ ${body}
 <section class="abschnitt" aria-labelledby="werke-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="werke-titel">${zeichen("werke")}${esc(T.start.werke)}</h2><p>${esc(echteWerke.length ? T.start.werkeText : T.start.werkeBald)}</p><a class="weiter" href="${B}werke/">${esc(echteWerke.length ? T.start.alleWerke : T.start.wasKommt)}</a></div>
-    ${echteWerke.length ? `<div class="reihe">${echteWerke.map((w) => `<a class="stueck" href="${B}werke/#${w.slug}"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span><h3>${esc(w.titel)}</h3><p>${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm</p></a>`).join("")}</div>` : ""}
+    ${echteWerke.length ? `<div class="reihe zeilen">${echteWerke.map((w) => `<a class="stueck" href="${B}werke/#${w.slug}"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span><h3>${esc(w.titel)}</h3><p>${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm</p></a>`).join("")}</div>` : ""}
   </div>
 </section>
 
@@ -629,7 +629,7 @@ ${faeden([...zs.map((z) => fZettel(z)), fApp(appVon(appTop)), fAngebot(ANGEBOTE[
 </div></section>
 <section class="abschnitt" aria-labelledby="prints-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="prints-titel">${esc(T.werke.prints)}</h2><p>${esc(ankuendigung)}</p></div>
-  ${echteWerke.length ? `<div class="reihe">${echteWerke.map((w) => `<article class="werk" id="${w.slug}"><a href="/art/${w.slug}/"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span></a><h3>${esc(w.titel)}</h3><p class="klein">${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm, ${esc(T.werke.auflage(w.auflage.gesamt))}</p><p class="preis">CHF ${w.preis}.–</p><p><a href="/art/${w.slug}/">${esc(T.werke.bestellen)}</a></p></article>`).join("")}</div>` : ""}
+  ${echteWerke.length ? `<div class="reihe zeilen">${echteWerke.map((w) => `<article class="werk" id="${w.slug}"><a href="/art/${w.slug}/"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span></a><h3>${esc(w.titel)}</h3><p class="klein">${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm, ${esc(T.werke.auflage(w.auflage.gesamt))}</p><p class="preis">CHF ${w.preis}.–</p><p><a href="/art/${w.slug}/">${esc(T.werke.bestellen)}</a></p></article>`).join("")}</div>` : ""}
 </div></section>
 <section class="abschnitt" aria-labelledby="raum-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="raum-titel">${esc(T.werke.raum)}</h2><p>${esc(T.werke.raumText)}</p></div>

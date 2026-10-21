@@ -237,11 +237,16 @@ a.feldchen:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px;
    links die Tafel klein, rechts Name und Satz; so stehen alle sieben Apps auf gut einem Bildschirm. Ab 561 px die Kacheln wie bisher. */
 @media (max-width: 560px) {
   .reihe.zeilen { grid-template-columns: minmax(0, 1fr); gap: 0; border-bottom: 1px solid var(--linie); }
-  .zeilen > .stueck { grid-template-columns: 88px minmax(0, 1fr); column-gap: 16px; row-gap: 4px; align-items: start; padding: 14px 0; border-top: 1px solid var(--linie); }
+  .zeilen > .stueck { grid-template-columns: 88px minmax(0, 1fr); grid-template-rows: auto 1fr; column-gap: 16px; row-gap: 4px; align-items: start; padding: 14px 0; border-top: 1px solid var(--linie); }
   .zeilen > .stueck .bild { grid-row: 1 / span 2; width: 88px; }
   .zeilen > .stueck h3 { margin-top: 4px; }
   .zeilen > .stueck h3 .zeichen { display: inline-block; }                          /* das Symbol vor dem Namen, nicht darüber */
-  .abschnitt-kopf + .reihe.zeilen > .stueck:first-child { border-top: 0; }          /* die Linie der Überschrift genügt */
+  .abschnitt-kopf + .reihe.zeilen > :first-child { border-top: 0; }                 /* die Linie der Überschrift genügt */
+  /* die Werke auf ihrer Seite ebenso (sobald es welche gibt): das Bild links, Titel, Angaben, Preis und «Bestellen» rechts */
+  .zeilen > .werk { grid-template-columns: 88px minmax(0, 1fr); column-gap: 16px; row-gap: 2px; align-content: start; padding: 14px 0; border-top: 1px solid var(--linie); }
+  .zeilen > .werk > a:first-child { grid-row: 1 / span 4; }
+  .zeilen > .werk > :not(:first-child) { grid-column: 2; }
+  .zeilen > .werk h3 { font-size: 1.05rem; margin-top: 2px; }
   .zeilen > .stueck p { font-size: 0.92rem; }
 }
 .liste-linien { border-top: 1px solid var(--linie); }
