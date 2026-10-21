@@ -15,10 +15,11 @@ import { UI } from "../src/b/ui.mjs";
 import { ladeZettel, ladeZettelkasten, ladeOrma, ladeWerke, ladeBeitraege, ladeOmna, ladeKonstellationen, ladePersonen } from "./b-daten.mjs";
 import { pruefsumme } from "./build-b-jev.mjs";
 import { zeichen } from "../src/b/zeichen.mjs";
+import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 18;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 19;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -33,7 +34,11 @@ const personAus = (citation) => citation.split(",")[0].trim();
 /* ---------- Daten, die in beiden Sprachen gleich sind ---------- */
 const orma = ladeOrma();
 const werke = ladeWerke();
-const echteWerke = werke.werke.filter((w) => !w.muster);   // Muster (muster: true) kommen nie in den Neubau (20. Oktober 2026: «die Beispiel-Werke von der Seite Werke entfernen»)
+const echteWerke = werke.werke.filter((w) => !w.muster);
+// Versionsmarke aus dem Inhalt einer Datei (21. Oktober 2026: das neu gerechnete Beispielvideo von PHORMA II kam nicht an, weil Browser die alte
+// Datei unter derselben Adresse behielten); ändert sich nur, wenn sich die Datei ändert
+const MARKEN = new Map();
+const mitMarke = (pfad) => { if (!MARKEN.has(pfad)) MARKEN.set(pfad, createHash("sha256").update(readFileSync(new URL(pfad, ROOT))).digest("hex").slice(0, 10)); return `/${pfad}?v=${MARKEN.get(pfad)}`; };   // Muster (muster: true) kommen nie in den Neubau (20. Oktober 2026: «die Beispiel-Werke von der Seite Werke entfernen»)
 const beitraege = ladeBeitraege();
 const omnaUebungen = ladeOmna();
 const konstellationen = ladeKonstellationen();
@@ -153,6 +158,11 @@ function bau(sprache) {
     return `<a class="stueck" href="${B}apps/${a.slug}/"><span class="bild quadrat">${appBild(a, ' loading="lazy"')}</span><h3>${zeichen(a.zeichen)}${esc(a.name)}</h3><p>${esc(a.kurz)}</p></a>`;
   }
 
+  /** ein Beispielvideo mit Versionsmarke an Film und Poster */
+  const video = (b) => `<video controls muted loop playsinline preload="metadata" poster="${attr(mitMarke(b.bild))}" width="${b.mass?.[0] || 1080}" height="${b.mass?.[1] || 1350}">${b.webm ? `<source src="${attr(mitMarke(b.webm))}" type="video/webm">` : ""}<source src="${attr(mitMarke(b.datei))}" type="video/mp4"></video>`;
+  /** der gerechnete Film einer App (der letzte unter assets/beispiele/: bei PHORMA III der Film mit drei Effekten, nicht das Intro) */
+  const filmVon = (a) => [].concat(a.beispiele || []).filter((b) => b.art === "video" && b.datei.startsWith("assets/beispiele/")).at(-1);
+
   /** Beispiele: was aus einer App herauskommt (Bildpaar vorher/nachher, Video, Texte aus ORNA, ORMA und OMNA COLOR – auf Englisch als «texte» übersetzt im Inhalt) */
   function beispiele(a, { kurz = false } = {}) {
     const b = a.beispiele; if (!b) return "";
@@ -166,7 +176,7 @@ function bau(sprache) {
       return teile.join("");
     }
     if (b.art === "paar") return `<figure class="paar"><span class="bild"><img src="/${attr(b.vorher)}" alt="${attr(T.vorher)}" loading="lazy"></span><span class="pfeil" aria-hidden="true"></span><span class="bild"><img src="/${attr(b.nachher)}" alt="${attr(T.nachher + a.name)}" loading="lazy"></span><figcaption>${esc(b.text)}</figcaption></figure>`;
-    if (b.art === "video") return `<figure class="beispiel-video"><video controls muted loop playsinline preload="metadata" poster="/${attr(b.bild)}" width="${b.mass?.[0] || 1080}" height="${b.mass?.[1] || 1350}">${b.webm ? `<source src="/${attr(b.webm)}" type="video/webm">` : ""}<source src="/${attr(b.datei)}" type="video/mp4"></video><figcaption>${esc(b.text)}</figcaption></figure>`;
+    if (b.art === "video") return `<figure class="beispiel-video">${video(b)}<figcaption>${esc(b.text)}</figcaption></figure>`;
     if (b.art === "orna") return `<div class="beispiel-texte">${b.ids.slice(0, kurz ? 1 : 3).map((id) => { const k = konstellationen.find((x) => x.id === id); return k ? `<article class="konstellation"><h3>${esc(namen[k.artistId])} × ${esc(namen[k.theoristId])}</h3><p>${esc(k.text)}</p><p class="frage">${esc(k.question)}</p><p class="klein"><a href="/portfolio/nebeneinander-nacheinander/?pair=${attr(k.id)}">${esc(T.imRad)}</a></p></article>` : ""; }).join("")}</div>`;
     if (b.art === "orma") { const k = ormaVon(b.id); if (!k) return ""; return `<div class="beispiel-texte eins"><article class="konstellation"><h3>${esc(k.kuenstler)} × ${esc(k.theoretiker)}</h3><p class="klein">${esc(T.einstieg)}</p><p>${esc(k.einstieg)}</p><p class="klein">${esc(T.auftraege)}</p><ul class="auftraege">${Object.entries(k.auftraege).map(([n, t]) => `<li><span class="klein">${esc(n)}</span><span>${esc(t)}</span></li>`).join("")}</ul><p class="frage">${esc(k.frage)}</p></article></div>`; }
     if (b.art === "omna") return `<div class="beispiel-texte">${b.ids.slice(0, kurz ? 1 : 3).map((id) => { const u = omnaUebungen.find((x) => x.id === id); return u ? `<article class="uebung"><p class="klein">${esc(u.t)} · ${u.d} ${esc(T.minuten)}</p><h3>${esc(u.n)}</h3><ol>${u.a.map((t) => `<li>${esc(t)}</li>`).join("")}</ol><p class="klein">${esc(T.material)}${esc(u.m)}</p><p class="frage">${esc(u.f)}</p></article>` : ""; }).join("")}</div>`;
@@ -486,9 +496,11 @@ ${gruppen.map((g) => `<section class="abschnitt" aria-labelledby="g-${g.replace(
 </div></section>`).join("\n")}
 <section class="abschnitt" aria-labelledby="resultate-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="resultate-titel">${esc(T.apps.ergebnis)}</h2><p>${esc(T.apps.ergebnisText)}</p></div>
+  <!-- die vier gerechneten Filme klein nebeneinander (21. Oktober 2026, Rückmeldung: «schlecht lesbar, weil gross», und es fehlten die neu
+       gerechneten Beispiele), die Beschreibung steht auf der Seite der App; darunter eine Konstellation und eine Übung -->
+  <div class="galerie-filme">${["phorma-i", "phorma-ii", "phorma-iii", "the-fictory"].map((sl) => { const a = appVon(sl), b = filmVon(a); return b ? `<figure class="galerie-film">${video(b)}<figcaption class="klein"><a href="${B}apps/${a.slug}/">${esc(a.name)}</a></figcaption></figure>` : ""; }).join("")}</div>
   <div class="galerie">
-    ${["phorma-i", "the-fictory"].map((sl) => { const a = appVon(sl); return `<div class="galerie-stueck"><p class="klein"><a href="${B}apps/${a.slug}/">${esc(a.name)}</a></p>${beispiele(a)}</div>`; }).join("")}
-    ${["phorma-iii", "orna", "omna-color"].map((sl) => { const a = appVon(sl); return `<div class="galerie-stueck"><p class="klein"><a href="${B}apps/${a.slug}/">${esc(a.name)}</a></p>${beispiele(a, { kurz: true })}</div>`; }).join("")}
+    ${["orna", "omna-color"].map((sl) => { const a = appVon(sl); return `<div class="galerie-stueck"><p class="klein"><a href="${B}apps/${a.slug}/">${esc(a.name)}</a></p>${beispiele(a, { kurz: true })}</div>`; }).join("")}
   </div>
 </div></section>
 <section class="abschnitt"><div class="spalte"><p class="klein">${esc(T.apps.weitere)}<a href="/alpha/drittes-rad/">Das Dritte Rad</a>, <a href="/alpha/stadt/">Die Paradoxie der Stadt</a>, <a href="/alpha/sketchory/">Sketchory</a>, <a href="/alpha/aufnahme/">Aufnahme</a>.</p></div></section>`;

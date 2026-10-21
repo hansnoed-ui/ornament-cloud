@@ -122,7 +122,7 @@ test("b/: Apps, Raster und Angebote verlinken ihre Ziele, und die Ziele gibt es"
     for (const b of [].concat(a.beispiele || [])) for (const d of [b.datei, b.webm, b.bild, b.vorher, b.nachher].filter(Boolean)) assert.ok(existsSync(new URL(d, root)), `${a.slug}: Beispiel ${d}`);
     for (const b of [].concat(a.beispiele || [])) if (b.art === "video" && b.datei.startsWith("assets/beispiele/")) {
       assert.ok(statSync(new URL(b.datei, root)).size < 6 * 1024 * 1024, `${a.slug}: ${b.datei} unter 6 MB`);
-      assert.ok(html.includes(`<source src="/${b.datei}" type="video/mp4">`), `${a.slug}: MP4`);
+      assert.ok(new RegExp(`<source src="/${b.datei.replace(/\./g, "\\.")}\\?v=[0-9a-f]{10}" type="video/mp4">`).test(html), `${a.slug}: MP4 mit Versionsmarke`);
     }
   }
   for (const r of RASTER) {
