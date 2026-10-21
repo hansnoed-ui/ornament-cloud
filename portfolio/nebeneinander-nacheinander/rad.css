@@ -358,19 +358,21 @@ body { -webkit-font-smoothing: antialiased; }
 }
 
 /* ---------- Einführung ---------- */
+/* Erklärung und Verweise unter dem Band (21. Oktober 2026, Rückmeldung: «das Layout unten beim Erklärungstext und den Links ist noch nicht gut»):
+   linksbündig wie der Neubau, der Text in Lesebreite, darunter die beiden Verweise in einer Zeile (auf dem Handy untereinander) */
 .rad-about {
-  margin: 56px 0 0;
+  margin: 56px 0 72px;
+  max-width: 62ch;
 }
 
 /* Beschreibung rechtsbündig am rechten Rand */
 .rad-intro {
-  max-width: 720px;
-  margin-left: auto !important;
-  text-align: right;
+  margin: 0;
+  text-align: left;
 }
 
 .rad-about p { margin: 0 0 14px; line-height: 1.55; }
-.rad-about .rad-intro { font-family: var(--serif); font-size: 1.2rem; }
+.rad-about .rad-intro { font-family: var(--serif); font-size: 1.2rem; line-height: 1.5; }
 
 /* Hinweise unter der Beschreibung (Geste und Ziehung, Herkunft der Texte): rechtsbündig, kleiner */
 .rad-about .rad-note {
@@ -443,12 +445,17 @@ body { -webkit-font-smoothing: antialiased; }
 .rad-install-alt[hidden] { display: none; }
 .rad-install-alt span { white-space: nowrap; }
 
-/* Verweis auf die Feldansicht, rechtsbündig unter der Beschreibung */
+/* die Verweise unter der Beschreibung: das Feld und alle Apps im Neubau */
 .rad-about .rad-more-link {
-  max-width: 720px;
-  margin: 8px 0 0 auto;
-  text-align: right;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 32px;
+  margin: 24px 0 0;
+  text-align: left;
 }
+.rad-about .rad-more-link a { color: inherit; text-decoration-color: var(--border); text-underline-offset: 4px; }
+.rad-about .rad-more-link a:hover, .rad-about .rad-more-link a:focus-visible { color: var(--accent); text-decoration-color: currentColor; }
+.rad-about .rad-more-link span { white-space: nowrap; }
 
 /* ---------- Diagnose (nur ?debug) ---------- */
 .rad-debug {
@@ -499,8 +506,7 @@ body { -webkit-font-smoothing: antialiased; }
 @media (display-mode: standalone) {
   .site-header .topbar,
   .site-header .divider,
-  .work-kicker,
-  main > .back { display: none; }
+  .work-kicker { display: none; }
   .site-header { padding-top: max(24px, env(safe-area-inset-top)); }
 }
 
