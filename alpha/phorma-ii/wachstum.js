@@ -7,9 +7,9 @@
 // Die Bilder der Bahn kommen in Päckchen, die Vorschau zeigt jeweils das letzte schon gerechnete; bereit (Promise) sagt, wann sie ganz da ist –
 // Video und Standbild warten darauf.
 import * as THREE from "three";
-import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=31";
-import { phase } from "./ablauf.js?v=31";
-import { wachstumBahn, ACHTEL, BILDER_JE_S } from "./wachstumsim.js?v=31";
+import { anteil, weich, inOut, quadMaterial } from "./gemeinsam.js?v=32";
+import { phase } from "./ablauf.js?v=32";
+import { wachstumBahn, ACHTEL, BILDER_JE_S } from "./wachstumsim.js?v=32";
 
 const VERTEX = /* glsl */ `
   attribute vec4 aStrecke;                 // x0, y0, x1, y1 in Punkten der Analyse (y nach unten)
@@ -71,7 +71,7 @@ export function wachstum(g, teil) {
   const bereit = (async () => { auftrag.film = await filmBilder(); })().then(() => new Promise((fertig) => {
     if (weg) { fertig(); return; }
     const hier = () => { const jeBild = (f, l) => { bilder[f] = l; }; const b = wachstumBahn({ ...auftrag, jeBild }); gesamt = b.bilder; fertigGerechnet = true; fertig(); };
-    try { rechner = new Worker(new URL("./wachstumrechner.js?v=31", import.meta.url), { type: "module" }); } catch { rechner = null; }
+    try { rechner = new Worker(new URL("./wachstumrechner.js?v=32", import.meta.url), { type: "module" }); } catch { rechner = null; }
     if (!rechner) { setTimeout(hier, 0); return; }   // ohne Worker einmal hier
     rechner.onmessage = (e) => {
       const d = e.data;

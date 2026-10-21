@@ -7,9 +7,9 @@
 //   glühende Schnittkanten) – Rückmeldung: «"Raum", das gefällt mir gar nicht, kann ersatzlos raus, "Scan" bitte behalten». Die Shader können es noch.
 // Gestreckte Maschen an Tiefensprüngen werden dunkel statt verschmiert. Zustandslos.
 import * as THREE from "three";
-import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=31";
-import { phase } from "./ablauf.js?v=31";
-import { TIEFE_UEBERGABE } from "./tuchsim.js?v=31";   // dasselbe Relief, aus dem das Tuch beginnt
+import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=32";
+import { phase } from "./ablauf.js?v=32";
+import { TIEFE_UEBERGABE } from "./tuchsim.js?v=32";   // dasselbe Relief, aus dem das Tuch beginnt
 
 export { TIEFE_UEBERGABE };
 const SCHICHTEN = 7;
@@ -42,7 +42,7 @@ const FRAGMENT = /* glsl */ `
     float nach = vD - uScan, vor = smoothstep(-0.004, 0.004, nach);
     float band = exp(-pow(nach / 0.009, 2.0));
     float k = vD * 42.0, fw = fwidth(k), iso = 1.0 - smoothstep(0.0, 1.4 * fw, min(fract(k), 1.0 - fract(k)));
-    vec3 scan = uKupfer * band * 2.4 + vec3(0.85, 0.92, 1.0) * iso * 0.7 * exp(-max(nach, 0.0) * 9.0) * vor;
+    vec3 scan = uKupfer * band * 1.8 + vec3(0.85, 0.92, 1.0) * iso * 0.6 * exp(-max(nach, 0.0) * 9.0) * vor;
     c = mix(c, c * smoothstep(0.0, 0.22, nach), uDunkel * uScanAn) + scan * uScanAn;
     // Tiefensprünge und die Stufen der Schichten: die gestreckten Maschen werden zu feinen glühenden Schnittkanten statt zu verschmierten Flächen
     float riss = smoothstep(1.2, 3.5, vRiss) * uRissAn;
@@ -113,7 +113,7 @@ export function tiefe(g, teil) {
       let ende = 0, aktiv = teil.erst ? weich(anteil(tau, 0, 0.6)) : weich(anteil(tau, 0, 0.5));
       if (teil.vonFoto) ende = 1 - weich(anteil(tau, 0, 0.35));
       if (Bp) { ende = Math.max(ende, weich(anteil(tau, Bp[1] - 0.7, Bp[1] - 0.1))); aktiv *= 1 - weich(anteil(tau, Bp[0], Bp[1])); }
-      return { aktiv, bloom: 0.55 * u.uScanAn.value + 0.25, saum: 0.0025, ende };
+      return { aktiv, bloom: 0.35 * u.uScanAn.value + 0.18, saum: 0.0025, ende };   // vorher 0.55 · scan + 0.25: der Scan war überblendet (Rückmeldung 21. Oktober 2026)
     },
     vorab: { szenen: [[szene, kam]], materialien: [schaerfe] },
     zaehler() { return `tiefe ${g.tiefeQuelle === "ki" ? "ki (depth anything)" : "aus dem bild"} · schichten ${SCHICHTEN} · maschen ${geo.index.count / 6 | 0}`; },
