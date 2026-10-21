@@ -18,7 +18,7 @@ import { zeichen } from "../src/b/zeichen.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 15;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 16;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -359,17 +359,11 @@ ${body}
   </div>
 </section>
 
-<section class="abschnitt" aria-labelledby="denken-titel">
+<!-- Prüfraster (seit 21. Oktober 2026 statt «Denken»: die sieben Zyklen standen doppelt, der Zettelkasten hat oben seinen Abschnitt; die Raster hatten keinen Titel) -->
+<section class="abschnitt" aria-labelledby="raster-titel">
   <div class="spalte">
-    <div class="abschnitt-kopf"><h2 id="denken-titel">${zeichen("denken")}${esc(T.start.denken)}</h2><p>${esc(T.start.denkenText)}</p></div>
-    <div class="sieben">
-      <div class="s-4">
-        <ul class="liste-linien">${kasten.cycles.map((c) => `<li><a href="${B}zettel/#zyklus-${c.roman}"><span class="n">${c.roman}</span><span class="name">${esc(c.name)}</span><span class="pfeil">${c.stanzas[0]}–${c.stanzas[6]}</span><span class="kurz">${esc(c.deck)}</span></a></li>`).join("")}</ul>
-      </div>
-      <div class="s-3">
-        <ul class="liste-linien">${RASTER.map((r) => `<li><a href="${B}raster/${r.slug}/"><span class="n">${zeichen(r.slug)}</span><span class="name">${esc(r.name)}</span><span class="pfeil">${esc(r.stand)}</span><span class="kurz">${esc(r.kurz)}</span></a></li>`).join("")}</ul>
-      </div>
-    </div>
+    <div class="abschnitt-kopf"><h2 id="raster-titel">${zeichen("raster")}${esc(T.start.raster)}</h2><p>${esc(T.start.rasterText)}</p><a class="weiter" href="${B}raster/">${esc(T.start.alleRaster)}</a></div>
+    <ul class="liste-linien">${RASTER.map((r) => `<li><a href="${B}raster/${r.slug}/"><span class="n">${zeichen(r.slug)}</span><span class="name">${esc(r.name)}</span><span class="pfeil">${esc(r.stand)}</span><span class="kurz">${esc(r.kurz)}</span></a></li>`).join("")}</ul>
   </div>
 </section>
 
