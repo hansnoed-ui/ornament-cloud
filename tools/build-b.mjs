@@ -19,7 +19,7 @@ import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 22;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 23;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -510,12 +510,14 @@ ${gruppen.map((g) => `<section class="abschnitt" aria-labelledby="g-${g.replace(
     const schwester = APPS.filter((x) => x.gattung === a.gattung && x.slug !== a.slug)[0];
     const bildUndVideo = APPS.find((x) => x.slug === "phorma-i").gattung;
     const body = `
-<article class="stueck-kopf"><div class="spalte">
+<article class="stueck-kopf"><div class="spalte app-oben">
+  <div class="app-oben-text">
   <p class="gattung">${esc(a.gattung)}${a.werk ? esc(T.apps.zu(a.werk)) : ""}</p>
   <h1 class="titel" data-wort="${attr(a.name)}"><span class="zeichen-gross">${zeichen(a.zeichen)}</span>${esc(a.name)}</h1>
   <p class="lead">${esc(a.kurz)}</p>
   <p class="knopfreihe"><a class="knopf voll" href="${B}apps/${a.slug}/oeffnen/">${esc(T.apps.oeffnen(a.name))}</a>${a.app ? `<a class="knopf" href="/${attr(a.app)}${a.app.includes("?") ? "&amp;" : "?"}sprache=${sprache}">${esc(T.apps.installieren)}</a>` : ""}${a.feld ? `<a class="knopf still" href="${B}apps/${a.slug}/feld/">${esc(T.apps.feld)}</a>` : ""}</p>
   ${T.apps.deutsch ? `<p class="klein hinweis-sprache">${esc(T.apps.deutsch)}</p>` : ""}
+  </div>
   <figure class="stueck-bild quadrat">${appBild(a)}</figure>
   <div class="stueck-text"><p>${esc(a.text)}</p><p class="fuer">${esc(a.fuer)}</p></div>
 </div></article>
