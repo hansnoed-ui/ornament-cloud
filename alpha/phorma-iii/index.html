@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <!-- In der Bühne des Neubaus (/b/apps/…/oeffnen/, seit 20. Oktober 2026) mit ?b=1: ohne die Navigation der bisherigen Website -->
   <script>if(/[?&]b=1(&|$)/.test(location.search))document.documentElement.setAttribute("data-buehne","")</script>
-  <style>[data-buehne] .topbar,[data-buehne] .divider,[data-buehne] .site-footer,[data-buehne] .work-kicker{display:none!important}</style>
+  <style>[data-buehne] .app-kopf,[data-buehne] .topbar,[data-buehne] .divider,[data-buehne] .site-footer,[data-buehne] .work-kicker{display:none!important}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PHORMA III – Ornament Cloud · Alpha</title>
   <!--
@@ -151,8 +151,16 @@
     [hidden] { display: none !important; }
   </style>
   <link rel="stylesheet" href="../phorma.css?v=2">
+  <!-- Deutsch und Englisch (21. Oktober 2026): vor den Modulen -->
+  <script src="sprache.js?v=1"></script>
 </head>
 <body>
+  <!-- Kopf der App (21. Oktober 2026, wie OMNA COLOR, ORNA, ORMA, PHORMA I und II): Signet mit Weg in den Neubau, der Schalter d · e, «Über die App»; auf der Bühne (?b=1) nicht -->
+  <header class="app-kopf wrap">
+    <a class="app-kopf-signet" href="../../b/" data-t-href="../../b/|../../b/en/" title="ornament.cloud"><svg viewBox="0 0 34 24" aria-hidden="true" focusable="false"><path d="M26.83 12.00L26.78 12.99L26.65 13.98L26.44 14.95L26.13 15.89L25.75 16.80L25.29 17.67L24.75 18.50L24.15 19.27L23.49 19.98L22.76 20.62L21.99 21.20L21.18 21.70L20.33 22.12L19.45 22.46L18.55 22.72L17.64 22.90L16.73 22.99L15.82 23.00L14.93 22.93L14.05 22.78L13.21 22.55L12.40 22.25L11.63 21.89L10.90 21.46L10.23 20.97L9.62 20.43L9.07 19.85L8.59 19.23L8.18 18.57L7.83 17.90L7.56 17.20L7.36 16.50L7.23 15.80L7.17 15.10L7.18 14.42L7.26 13.76L7.40 13.12L7.60 12.52L7.85 11.95L8.16 11.43L8.51 10.96L8.89 10.54L9.31 10.17L9.75 9.87L10.21 9.62L10.69 9.43L11.16 9.30L11.64 9.24L12.10 9.23L12.55 9.27L12.98 9.38L13.38 9.53L13.75 9.73L14.07 9.97L14.36 10.25L14.60 10.56L14.79 10.90L14.93 11.25L15.01 11.62L15.04 12.00L15.01 12.38L14.93 12.75L14.79 13.10L14.60 13.44L14.36 13.75L14.07 14.03L13.75 14.27L13.38 14.47L12.98 14.62L12.55 14.73L12.10 14.77L11.64 14.76L11.16 14.70L10.69 14.57L10.21 14.38L9.75 14.13L9.31 13.83L8.89 13.46L8.51 13.04L8.16 12.57L7.85 12.05L7.60 11.48L7.40 10.88L7.26 10.24L7.18 9.58L7.17 8.90L7.23 8.20L7.36 7.50L7.56 6.80L7.83 6.10L8.18 5.43L8.59 4.77L9.07 4.15L9.62 3.57L10.23 3.03L10.90 2.54L11.63 2.11L12.40 1.75L13.21 1.45L14.05 1.22L14.93 1.07L15.82 1.00L16.73 1.01L17.64 1.10L18.55 1.28L19.45 1.54L20.33 1.88L21.18 2.30L21.99 2.80L22.76 3.38L23.49 4.02L24.15 4.73L24.75 5.50L25.29 6.33L25.75 7.20L26.13 8.11L26.44 9.05L26.65 10.02L26.78 11.01L26.83 12.00Z"/><circle cx="12.55" cy="9.27" r="2.2"/></svg><span>ornament.cloud</span></a>
+    <nav class="sprache" aria-label="Sprache" data-t-attr="aria-label=kopf.sprache"><button type="button" data-sprache="de" lang="de" title="Deutsch">d</button><button type="button" data-sprache="en" lang="en" title="English">e</button></nav>
+    <a class="app-kopf-zurueck" href="../../b/apps/phorma-iii/" data-t-href="../../b/apps/phorma-iii/|../../b/en/apps/phorma-iii/" data-t="kopf.ueber">Über die App</a>
+  </header>
   <header class="site-header">
     <div class="wrap">
       <h1>PHORMA III</h1>
@@ -161,22 +169,22 @@
 
   <p class="wrap meldung fehler" id="startfehler" role="alert" hidden></p>
   <main class="wrap karte" id="karte">
-    <section class="buehne" aria-label="Vorschau">
+    <section class="buehne" aria-label="Vorschau" data-t-attr="aria-label=buehne.aria">
       <div class="rahmen">
-        <canvas id="vorschau" width="540" height="675" aria-label="Vorschau des Videos"></canvas>
+        <canvas id="vorschau" width="540" height="675" aria-label="Vorschau des Videos" data-t-attr="aria-label=vorschau.aria"></canvas>
         <div class="leer" id="leer">
-          <p class="gross">Kein Signal</p>
-          <p>Wähle eine Musik, eine Stimme oder ein Video.</p>
+          <p class="gross" data-t="leer.gross">Kein Signal</p>
+          <p data-t="leer.text">Wähle eine Musik, eine Stimme oder ein Video.</p>
         </div>
       </div>
       <div class="zeitleiste">
-        <button class="knopf klein" type="button" id="spielen" disabled>Abspielen</button>
-        <input type="range" id="zeit" min="0" max="30" step="0.0333" value="0" disabled aria-label="Zeit im Film">
+        <button class="knopf klein" type="button" id="spielen" disabled data-t="Abspielen">Abspielen</button>
+        <input type="range" id="zeit" min="0" max="30" step="0.0333" value="0" disabled aria-label="Zeit im Film" data-t-attr="aria-label=zeit.aria">
         <output id="zeitcode" for="zeit">00:00:00</output>
       </div>
-      <div class="phasen" role="group" aria-label="Zu einer Phase springen"></div>
+      <div class="phasen" role="group" aria-label="Zu einer Phase springen" data-t-attr="aria-label=phasen.aria"></div>
       <div class="unter">
-        <p class="info" id="dauer">Hochformat 4 : 5, wahlweise 9 : 16 oder quer 16 : 9</p>
+        <p class="info" id="dauer" data-t="dauer">Hochformat 4 : 5, wahlweise 9 : 16 oder quer 16 : 9</p>
       </div>
       <p class="info" id="auswertung"></p>
     </section>
@@ -184,132 +192,132 @@
     <div>
       <ol class="schritte">
         <li>
-          <h2>Nur Ton – oder ein Video</h2>
-          <div class="segment" role="group" aria-label="Quelle">
-            <button type="button" data-quelle="ton">Nur Ton</button>
-            <button type="button" data-quelle="video">Video</button>
+          <h2 data-t="schritt.quelle">Nur Ton – oder ein Video</h2>
+          <div class="segment" role="group" aria-label="Quelle" data-t-attr="aria-label=quelle.aria">
+            <button type="button" data-quelle="ton" data-t="quelle.ton">Nur Ton</button>
+            <button type="button" data-quelle="video" data-t="quelle.video">Video</button>
           </div>
           <div class="teil" id="video-teil" hidden>
             <div class="leiste">
-              <label class="knopf klein dateiknopf">Videodatei wählen<input type="file" id="videodatei" accept="video/*,.mp4,.mov,.webm,.m4v"></label>
+              <label class="knopf klein dateiknopf"><span data-t="videodatei">Videodatei wählen</span><input type="file" id="videodatei" accept="video/*,.mp4,.mov,.webm,.m4v"></label>
               <img id="video-bild" class="video-bild" alt="" hidden>
             </div>
             <p class="info" id="video-info"></p>
-            <div class="leiste"><label class="haken"><input type="checkbox" id="video-ablauf" checked> Scratch → Video mit Hüpfern → Gefrickel</label></div>
-            <p class="ki-hinweis">Mit dem Effekt «Video» läuft der Ablauf in Bild und Ton zugleich: zuerst wird der Anfang wie eine Platte vor und zurück gerieben (das Bild verschmiert mit dem Tempo und blitzt mit dem Fader), dann läuft das Video klar mit zwei, drei Hüpfern – an jedem bricht das Bild auf: Datamosh, Makroblöcke, Slit-Scan oder Pixel-Sortierung, je Wurf andere –, am Schluss das Gefrickel – das Bild springt mit jeder Scheibe des Tons, ein Wirbel legt es in Kacheln, Bitcrush verpixelt es, Körner werden zu Flecken aus anderen Zeiten. Mit Musik wie mit einer Stimme.</p>
+            <div class="leiste"><label class="haken"><input type="checkbox" id="video-ablauf" checked> <span data-t="video.ablauf">Scratch → Video mit Hüpfern → Gefrickel</span></label></div>
+            <p class="ki-hinweis" data-t="video.hinweis">Mit dem Effekt «Video» läuft der Ablauf in Bild und Ton zugleich: zuerst wird der Anfang wie eine Platte vor und zurück gerieben (das Bild verschmiert mit dem Tempo und blitzt mit dem Fader), dann läuft das Video klar mit zwei, drei Hüpfern – an jedem bricht das Bild auf: Datamosh, Makroblöcke, Slit-Scan oder Pixel-Sortierung, je Wurf andere –, am Schluss das Gefrickel – das Bild springt mit jeder Scheibe des Tons, ein Wirbel legt es in Kacheln, Bitcrush verpixelt es, Körner werden zu Flecken aus anderen Zeiten. Mit Musik wie mit einer Stimme.</p>
             <div class="ausschnitt" id="video-ausschnitt" hidden>
-              <div class="ausschnitt-kopf"><span>Ausschnitt des Videos</span><output id="video-ausschnitt-info"></output></div>
+              <div class="ausschnitt-kopf"><span data-t="video.ausschnitt">Ausschnitt des Videos</span><output id="video-ausschnitt-info"></output></div>
               <canvas id="video-streifen" aria-hidden="true"></canvas>
-              <p class="ki-hinweis">Mit einer eigenen Audiodatei wählst du hier, welcher Teil des Videos läuft: im Filmstreifen ziehen oder tippen, oder der Regler «ab». Die Länge folgt dem Ton (kommt der Ton aus dem Video, schneidet unten «Ausschnitt schneiden» Bild und Ton zusammen).</p>
+              <p class="ki-hinweis" data-t="video.ausschnitt.hinweis">Mit einer eigenen Audiodatei wählst du hier, welcher Teil des Videos läuft: im Filmstreifen ziehen oder tippen, oder der Regler «ab». Die Länge folgt dem Ton (kommt der Ton aus dem Video, schneidet unten «Ausschnitt schneiden» Bild und Ton zusammen).</p>
               <div class="ausschnitt-regler">
-                <label for="video-von">ab</label><input type="range" id="video-von" min="0" max="1" step="0.1" value="0">
+                <label for="video-von" data-t="ab">ab</label><input type="range" id="video-von" min="0" max="1" step="0.1" value="0">
               </div>
             </div>
-            <p class="ki-hinweis">Ein Standbild des Videos ist Anfang und Schluss, sein Ton wird die Tonspur (ausser du wählst unten eine andere Audiodatei). Im Gewebe holt jeder Schnitt die Linien eines neuen Bildes aus dem Video; mit dem Effekt «Video» ist das Video selbst das Bild.</p>
+            <p class="ki-hinweis" data-t="video.standbild">Ein Standbild des Videos ist Anfang und Schluss, sein Ton wird die Tonspur (ausser du wählst unten eine andere Audiodatei). Im Gewebe holt jeder Schnitt die Linien eines neuen Bildes aus dem Video; mit dem Effekt «Video» ist das Video selbst das Bild.</p>
           </div>
           <div class="teil" id="ton-teil">
-            <p class="ki-hinweis">Die Musik oder eine Stimme allein macht das Bild. Wähle unten unter «Ton» eine Audiodatei.</p>
+            <p class="ki-hinweis" data-t="ton.allein">Die Musik oder eine Stimme allein macht das Bild. Wähle unten unter «Ton» eine Audiodatei.</p>
           </div>
-          <section class="tafel" aria-label="Format">
+          <section class="tafel" aria-label="Format" data-t-attr="aria-label=tafel.aria">
             <div class="einstellung">
-              <span class="name" id="format-titel">Format</span>
+              <span class="name" id="format-titel" data-t="format">Format</span>
               <div class="segment" role="group" aria-labelledby="format-titel">
-                <button type="button" data-format="4:5">4 : 5 hoch</button>
-                <button type="button" data-format="9:16">9 : 16</button>
-                <button type="button" data-format="16:9">16 : 9 quer</button>
+                <button type="button" data-format="4:5" data-t="format.45">4 : 5 hoch</button>
+                <button type="button" data-format="9:16" data-t="format.916">9 : 16</button>
+                <button type="button" data-format="16:9" data-t="format.169">16 : 9 quer</button>
               </div>
             </div>
             <div class="einstellung" id="aufloesung">
-              <span class="name" id="aufloesung-titel">Auflösung</span>
+              <span class="name" id="aufloesung-titel" data-t="aufloesung">Auflösung</span>
               <div class="segment" role="group" aria-labelledby="aufloesung-titel">
-                <button type="button" data-aufloesung="1">einfach</button>
-                <button type="button" data-aufloesung="2">doppelt (4K)</button>
+                <button type="button" data-aufloesung="1" data-t="aufloesung.1">einfach</button>
+                <button type="button" data-aufloesung="2" data-t="aufloesung.2">doppelt (4K)</button>
               </div>
             </div>
           </section>
         </li>
         <li>
-          <h2>Effekt</h2>
-          <div class="ablaeufe" role="group" aria-label="Effekt wählen">
-            <button type="button" data-wahl="gewebe" aria-pressed="true"><b>Gewebe</b><small>Aus Ringen und Linien (mit einem Video: aus seinen Umrissen) wachsen Flächen aus feinen Linien wie zerknitterte Seide, schwarz auf Papier; jeder kräftige Schlag schneidet auf ein neues Bild</small></button>
-            <button type="button" data-wahl="irrfahrt" aria-pressed="false"><b>Irrfahrt</b><small>Ein leuchtender Faden irrt durch einen Würfel aus Licht und quillt mit der Musik zu Rauch auf; der Bass sprengt ihn, die Höhen werfen Funken, jeder Schlag wirft den Würfel herum</small></button>
-            <button type="button" data-wahl="lichtwuerfel" aria-pressed="false"><b>Lichtwürfel</b><small>Wie die Irrfahrt, aber ruhig: der Würfel bleibt in der Mitte stehen und dreht sich gleichmässig, der Faden irrt darin, feiner und weniger überblendet</small></button>
-            <button type="button" data-wahl="traube" aria-pressed="false"><b>Traube</b><small>Glänzende rote Perlen in einem Knäuel aus feinen Fäden, mit Tiefenschärfe und Rauch; der Schlag lässt sie schwellen, der Bass glühen, jeder kräftige Einsatz schneidet in eine neue Einstellung – am Schluss fädeln sie sich auf die Schlaufe des Logos</small></button>
-            <button type="button" data-wahl="video" aria-pressed="false"><b>Video</b><small>Das Video selbst ist das Bild, bildgenau und synchron zum Ton – oben unter «Video» wählen; Scratching, Cracks und Gefrickel im Bild folgen</small></button>
+          <h2 data-t="schritt.effekt">Effekt</h2>
+          <div class="ablaeufe" role="group" aria-label="Effekt wählen" data-t-attr="aria-label=ablaeufe.aria">
+            <button type="button" data-wahl="gewebe" aria-pressed="true"><b data-t="wahl.gewebe">Gewebe</b><small data-t="wahl.gewebe.text">Aus Ringen und Linien (mit einem Video: aus seinen Umrissen) wachsen Flächen aus feinen Linien wie zerknitterte Seide, schwarz auf Papier; jeder kräftige Schlag schneidet auf ein neues Bild</small></button>
+            <button type="button" data-wahl="irrfahrt" aria-pressed="false"><b data-t="wahl.irrfahrt">Irrfahrt</b><small data-t="wahl.irrfahrt.text">Ein leuchtender Faden irrt durch einen Würfel aus Licht und quillt mit der Musik zu Rauch auf; der Bass sprengt ihn, die Höhen werfen Funken, jeder Schlag wirft den Würfel herum</small></button>
+            <button type="button" data-wahl="lichtwuerfel" aria-pressed="false"><b data-t="wahl.lichtwuerfel">Lichtwürfel</b><small data-t="wahl.lichtwuerfel.text">Wie die Irrfahrt, aber ruhig: der Würfel bleibt in der Mitte stehen und dreht sich gleichmässig, der Faden irrt darin, feiner und weniger überblendet</small></button>
+            <button type="button" data-wahl="traube" aria-pressed="false"><b data-t="wahl.traube">Traube</b><small data-t="wahl.traube.text">Glänzende rote Perlen in einem Knäuel aus feinen Fäden, mit Tiefenschärfe und Rauch; der Schlag lässt sie schwellen, der Bass glühen, jeder kräftige Einsatz schneidet in eine neue Einstellung – am Schluss fädeln sie sich auf die Schlaufe des Logos</small></button>
+            <button type="button" data-wahl="video" aria-pressed="false"><b data-t="wahl.video">Video</b><small data-t="wahl.video.text">Das Video selbst ist das Bild, bildgenau und synchron zum Ton – oben unter «Video» wählen; Scratching, Cracks und Gefrickel im Bild folgen</small></button>
           </div>
         </li>
         <li>
-          <h2>Ton</h2>
-          <p>Eine Audiodatei (Musik oder eine Stimme; MP3, WAV, M4A – auch ein kurzes Sample) bewegt das Gewebe und klingt in der Vorschau und im Video mit; der Film dauert dann so lange wie der Ton. Ohne Haken bei «Ton an» oder ohne Datei bleibt es stumm, und das Gewebe folgt einem ruhigen eigenen Takt.</p>
+          <h2 data-t="schritt.ton">Ton</h2>
+          <p data-t="ton.text">Eine Audiodatei (Musik oder eine Stimme; MP3, WAV, M4A – auch ein kurzes Sample) bewegt das Gewebe und klingt in der Vorschau und im Video mit; der Film dauert dann so lange wie der Ton. Ohne Haken bei «Ton an» oder ohne Datei bleibt es stumm, und das Gewebe folgt einem ruhigen eigenen Takt.</p>
           <div class="leiste">
-            <label class="knopf klein dateiknopf">Audiodatei wählen<input type="file" id="tondatei" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,video/mp4"></label>
-            <button class="knopf klein" type="button" id="ton-weg" hidden>Ton entfernen</button>
-            <label class="haken"><input type="checkbox" id="ton-im-video" checked> Ton an</label>
+            <label class="knopf klein dateiknopf"><span data-t="tondatei">Audiodatei wählen</span><input type="file" id="tondatei" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,video/mp4"></label>
+            <button class="knopf klein" type="button" id="ton-weg" hidden data-t="ton.weg">Ton entfernen</button>
+            <label class="haken"><input type="checkbox" id="ton-im-video" checked> <span data-t="ton.an">Ton an</span></label>
           </div>
           <div class="ausschnitt" id="ausschnitt" hidden>
-            <div class="ausschnitt-kopf"><span>Ausschnitt schneiden</span><output id="ausschnitt-info"></output></div>
+            <div class="ausschnitt-kopf"><span data-t="ausschnitt.titel">Ausschnitt schneiden</span><output id="ausschnitt-info"></output></div>
             <canvas id="ausschnitt-film" aria-hidden="true" hidden></canvas>
             <canvas id="ausschnitt-bild" aria-hidden="true"></canvas>
-            <p class="ki-hinweis">Zum Schneiden in der Wellenform ziehen oder tippen, oder die Regler «ab» und «Länge». Ohne Wahl gilt die ganze Datei (bei Stimme mit Ablauf rund 10 Sekunden ab dem ersten Wort).</p>
+            <p class="ki-hinweis" data-t="ausschnitt.hinweis">Zum Schneiden in der Wellenform ziehen oder tippen, oder die Regler «ab» und «Länge». Ohne Wahl gilt die ganze Datei (bei Stimme mit Ablauf rund 10 Sekunden ab dem ersten Wort).</p>
             <div class="ausschnitt-regler">
-              <label for="ausschnitt-von">ab</label><input type="range" id="ausschnitt-von" min="0" max="1" step="0.1" value="0">
-              <label for="ausschnitt-laenge">Länge</label><input type="range" id="ausschnitt-laenge" min="1" max="30" step="0.5" value="10">
+              <label for="ausschnitt-von" data-t="ab">ab</label><input type="range" id="ausschnitt-von" min="0" max="1" step="0.1" value="0">
+              <label for="ausschnitt-laenge" data-t="laenge">Länge</label><input type="range" id="ausschnitt-laenge" min="1" max="30" step="0.5" value="10">
             </div>
             <div class="leiste">
-              <button class="knopf klein" type="button" id="ausschnitt-hoeren">Anhören</button>
-              <button class="knopf klein" type="button" id="ausschnitt-auto" disabled>Automatisch</button>
+              <button class="knopf klein" type="button" id="ausschnitt-hoeren" data-t="Anhören">Anhören</button>
+              <button class="knopf klein" type="button" id="ausschnitt-auto" disabled data-t="Automatisch">Automatisch</button>
             </div>
           </div>
-          <div class="segment" role="group" aria-label="Art der Audiodatei">
-            <button type="button" data-tonart="musik">Musik</button>
-            <button type="button" data-tonart="stimme">Stimme</button>
+          <div class="segment" role="group" aria-label="Art der Audiodatei" data-t-attr="aria-label=tonart.aria">
+            <button type="button" data-tonart="musik" data-t="Musik">Musik</button>
+            <button type="button" data-tonart="stimme" data-t="Stimme">Stimme</button>
           </div>
           <div class="teil" id="musik-teil">
-            <div class="leiste"><label class="haken"><input type="checkbox" id="frickeln"> Verfrickeln</label></div>
-            <p class="ki-hinweis">Verfrickeln zerschneidet die Musik an ihren Einsätzen und baut daraus ein neues Stück wie ein Modularsynthesizer: Schnipsel im Raster, rückwärts, höher und tiefer, zerhackt, Wirbel, Filter, Echo und Hall. Jeder Wurf klingt anders und bleibt wiederholbar.</p>
+            <div class="leiste"><label class="haken"><input type="checkbox" id="frickeln"> <span data-t="Verfrickeln">Verfrickeln</span></label></div>
+            <p class="ki-hinweis" data-t="frickeln.hinweis">Verfrickeln zerschneidet die Musik an ihren Einsätzen und baut daraus ein neues Stück wie ein Modularsynthesizer: Schnipsel im Raster, rückwärts, höher und tiefer, zerhackt, Wirbel, Filter, Echo und Hall. Jeder Wurf klingt anders und bleibt wiederholbar.</p>
           </div>
           <div class="teil" id="stimme-teil" hidden>
             <div class="leiste">
-              <label class="haken"><input type="checkbox" id="saeubern" checked> Säubern und klären</label>
-              <label class="haken"><input type="checkbox" id="stimm-ablauf" checked> Scratch → Stimme → Gefrickel</label>
-              <label class="haken"><input type="checkbox" id="stimm-dnb" checked> mit Drum and Bass</label>
+              <label class="haken"><input type="checkbox" id="saeubern" checked> <span data-t="saeubern">Säubern und klären</span></label>
+              <label class="haken"><input type="checkbox" id="stimm-ablauf" checked> <span data-t="stimm.ablauf">Scratch → Stimme → Gefrickel</span></label>
+              <label class="haken"><input type="checkbox" id="stimm-dnb" checked> <span data-t="stimm.dnb">mit Drum and Bass</span></label>
             </div>
-            <p class="ki-hinweis">Für Sprachaufnahmen: Säubern nimmt Rauschen, Brummen und Rumpeln weg, klärt die Stimme (Präsenz, Luft, weniger Zischlaute), gleicht sie aus und gibt ihr einen leichten Raum. Der Ablauf macht daraus ein Stück, das verständlich und zugleich dekonstruiert ist: zuerst 3–4 Sekunden Scratching auf dem ersten Wort, dann rund 10 Sekunden die klare Stimme mit zwei, drei Hüpfern, am Ende 3–4 Sekunden Gefrickel; gegen das Gefrickel hin auf Wunsch unterlegt mit ein wenig Drum and Bass.</p>
+            <p class="ki-hinweis" data-t="stimme.hinweis">Für Sprachaufnahmen: Säubern nimmt Rauschen, Brummen und Rumpeln weg, klärt die Stimme (Präsenz, Luft, weniger Zischlaute), gleicht sie aus und gibt ihr einen leichten Raum. Der Ablauf macht daraus ein Stück, das verständlich und zugleich dekonstruiert ist: zuerst 3–4 Sekunden Scratching auf dem ersten Wort, dann rund 10 Sekunden die klare Stimme mit zwei, drei Hüpfern, am Ende 3–4 Sekunden Gefrickel; gegen das Gefrickel hin auf Wunsch unterlegt mit ein wenig Drum and Bass.</p>
           </div>
-          <div class="leiste"><button class="knopf klein" type="button" id="wuerfeln" hidden>Neu würfeln</button></div>
+          <div class="leiste"><button class="knopf klein" type="button" id="wuerfeln" hidden data-t="wuerfeln">Neu würfeln</button></div>
           <p class="info" id="ton-info"></p>
           <audio id="tonspur" preload="auto" hidden></audio>
         </li>
         <li>
-          <h2>Gestaltung</h2>
-          <p>Die Beschriftung zeigt wie in einem Bildwerkzeug Phase, Zähler und Zeitcode; oben links steht dein Titel.</p>
+          <h2 data-t="schritt.gestaltung">Gestaltung</h2>
+          <p data-t="gestaltung.text">Die Beschriftung zeigt wie in einem Bildwerkzeug Phase, Zähler und Zeitcode; oben links steht dein Titel.</p>
           <div class="einstellungen">
-            <label><span>Titel</span><input type="text" id="titel" maxlength="40" placeholder="PHORMA III" autocomplete="off"></label>
-            <label><span>Tempo</span>
+            <label><span data-t="titel">Titel</span><input type="text" id="titel" maxlength="40" placeholder="PHORMA III" autocomplete="off"></label>
+            <label><span data-t="tempo">Tempo</span>
               <select id="tempo">
-                <option value="ruhig">ruhig</option>
-                <option value="normal" selected>normal</option>
-                <option value="schnell">schnell</option>
+                <option value="ruhig" data-t="ruhig">ruhig</option>
+                <option value="normal" selected data-t="normal">normal</option>
+                <option value="schnell" data-t="schnell">schnell</option>
               </select></label>
-            <label class="haken"><input type="checkbox" id="beschriftung" checked> Beschriftung</label>
-            <label class="haken"><input type="checkbox" id="signet" checked> Logo am Schluss</label>
-            <label class="haken"><input type="checkbox" id="unschaerfe" checked> Bewegungsunschärfe</label>
+            <label class="haken"><input type="checkbox" id="beschriftung" checked> <span data-t="beschriftung">Beschriftung</span></label>
+            <label class="haken"><input type="checkbox" id="signet" checked> <span data-t="signet">Logo am Schluss</span></label>
+            <label class="haken"><input type="checkbox" id="unschaerfe" checked> <span data-t="unschaerfe">Bewegungsunschärfe</span></label>
           </div>
         </li>
         <li>
-          <h2>Video</h2>
-          <p>Das Video rechnet Bild für Bild in voller Grösse; mit Bewegungsunschärfe acht Proben je Bild – das dauert einige Minuten, in doppelter Auflösung etwa viermal so lange.</p>
+          <h2 data-t="schritt.video">Video</h2>
+          <p data-t="video.text">Das Video rechnet Bild für Bild in voller Grösse; mit Bewegungsunschärfe acht Proben je Bild – das dauert einige Minuten, in doppelter Auflösung etwa viermal so lange.</p>
           <div class="leiste">
-            <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
-            <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
+            <button class="knopf haupt" type="button" id="video" disabled data-t="video.knopf">Video erstellen</button>
+            <button class="knopf" type="button" id="png" disabled data-t="png">Standbild (PNG)</button>
           </div>
           <progress id="fortschritt" max="1" value="0" hidden></progress>
           <p class="meldung" id="meldung" role="status" aria-live="polite"></p>
           <section class="ergebnis" id="ergebnis" hidden aria-labelledby="ergebnis-titel">
-            <h2 id="ergebnis-titel">Dein Video</h2>
+            <h2 id="ergebnis-titel" data-t="ergebnis.titel">Dein Video</h2>
             <video id="film" controls playsinline muted></video>
             <p class="info" id="film-info"></p>
-            <div class="leiste"><a class="knopf haupt" id="laden" href="#" download>Herunterladen</a></div>
+            <div class="leiste"><a class="knopf haupt" id="laden" href="#" download data-t="laden">Herunterladen</a></div>
           </section>
         </li>
       </ol>
@@ -318,22 +326,22 @@
 
   <div class="wrap">
     <div class="installieren" id="installieren" hidden>
-      <button class="knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="icons/icon-192.png" alt="" width="30" height="30"><span>PHORMA III als App installieren</span></button>
+      <button class="knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="icons/icon-192.png" alt="" width="30" height="30"><span data-t="install.knopf">PHORMA III als App installieren</span></button>
       <p class="installieren-hilfe" id="installieren-hilfe" hidden></p>
     </div>
     <ul class="hinweise">
-      <li>Alles bleibt in deinem Browser: Video und Musik werden nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
-      <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories) oder quer 16 : 9 (1920 × 1080, für Bildschirme und Websites); ein Video wird bei Bedarf mittig beschnitten. Am Computer auf Wunsch in doppelter Auflösung (2160 × 2700, 2160 × 3840 oder 3840 × 2160): neu gerechnet, nicht hochskaliert.</li>
-      <li>Video: MP4 (H.264), 30 Bilder pro Sekunde, mit Ton (AAC) wenn eine Audiodatei gewählt ist. PHORMA III braucht WebGL 2.</li>
-      <li>Für Fotos gibt es <a href="../phorma-ii/">PHORMA II</a>: ein Schleimpilz findet die Formen, das Foto wird Raum und weht als Seidentuch.</li>
+      <li data-t="hinweis.1">Alles bleibt in deinem Browser: Video und Musik werden nicht hochgeladen, das Video entsteht auf deinem Gerät.</li>
+      <li data-t="hinweis.2">Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories) oder quer 16 : 9 (1920 × 1080, für Bildschirme und Websites); ein Video wird bei Bedarf mittig beschnitten. Am Computer auf Wunsch in doppelter Auflösung (2160 × 2700, 2160 × 3840 oder 3840 × 2160): neu gerechnet, nicht hochskaliert.</li>
+      <li data-t="hinweis.3">Video: MP4 (H.264), 30 Bilder pro Sekunde, mit Ton (AAC) wenn eine Audiodatei gewählt ist. PHORMA III braucht WebGL 2.</li>
+      <li><span data-t="hinweis.4a">Für Fotos gibt es </span><a href="../phorma-ii/">PHORMA II</a><span data-t="hinweis.4b">: ein Schleimpilz findet die Formen, das Foto wird Raum und weht als Seidentuch.</span></li>
     </ul>
   </div>
 
   <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
   <footer class="site-footer">
     <div class="wrap">
-      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
-      <p><a href="../../impressum/">Impressum</a></p>
+      <p data-t="fuss.fragen">Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+      <p><a href="../../impressum/" data-t="fuss.impressum">Impressum</a></p>
     </div>
   </footer>
   <script type="importmap">
@@ -355,8 +363,8 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=20"></script>
-  <script type="module" src="pwa.js?v=20"></script>
+  <script type="module" src="app.js?v=21"></script>
+  <script type="module" src="pwa.js?v=21"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

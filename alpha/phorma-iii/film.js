@@ -1,10 +1,10 @@
 // PHORMA III – das Bild zur Zeit t auf einer 2D-Leinwand (Vorschau, Standbild, Video): vorn der Grund, dann das Gewebe aus der Bühne (WebGL,
 // buehne.js), danach das Bild, darüber die Beschriftung; mit Signet am Schluss das Logo, das aus dem Gewebe entsteht, mit
 // getipptem Schriftzug und verfrickelt im Takt.
-import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=20";
+import { FPS, anteil, inOut, zeitachse, zeitcode } from "./ablauf.js?v=21";
 import { punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=20";
-import { zufall } from "./analyse.js?v=20";
+import { tonOderErsatz, gewebeZustaende, zustandBei, wert } from "./ton.js?v=21";
+import { zufall } from "./analyse.js?v=21";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';

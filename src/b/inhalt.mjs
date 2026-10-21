@@ -77,7 +77,7 @@ export const APPS = [
   { slug: "phorma-iii", name: "PHORMA III", gattung: "Bild und Video", kurz: "Aus Klang wird Bild.",
     text: "Zu Musik oder einer Stimme entstehen Gewebe aus feinen Linien, ein Faden im Würfel aus Licht oder glänzende Perlen in einer Kugel aus Fäden; ein Video wird gescratcht und verfrickelt. Das Ergebnis ist ein Video mit Ton. Das Intro der bisherigen Website ist damit gerechnet.",
     fuer: "Für Musiker:innen, Sprecher:innen und alle, die zu einem Ton ein Bild brauchen.",
-    url: "alpha/phorma-iii/", app: "alpha/phorma-iii/app/", bild: "b/bilder/apps/phorma-iii.svg", bildDunkel: "b/bilder/apps/phorma-iii-dunkel.svg", bildAlt: "PHORMA III, gezeichnet: drei Bänder aus feinen Linien wie zerknitterte Seide, eines in Blau",
+    url: "alpha/phorma-iii/", app: "alpha/phorma-iii/?installieren", bild: "b/bilder/apps/phorma-iii.svg", bildDunkel: "b/bilder/apps/phorma-iii-dunkel.svg", bildAlt: "PHORMA III, gezeichnet: drei Bänder aus feinen Linien wie zerknitterte Seide, eines in Blau",
     beispiele: [
       { art: "video", datei: "assets/start-intro.mp4", bild: "assets/beispiele/phorma-iii-lichtwuerfel.jpg", mass: [540, 676], text: "Der Lichtwürfel: ein Faden irrt im Würfel aus Licht und legt sich zum Logo; gerechnet aus der Musik, mit Ton. Das Intro der bisherigen Website." },
       { art: "video", datei: "assets/beispiele/phorma-iii.mp4", bild: "assets/beispiele/phorma-iii.jpg", mass: [540, 676], text: "Drei Effekte zu einem kurzen Stück Musik, auf dem Takt geschnitten: Flächen aus feinen Linien klappen bei jedem Einsatz auf (Gewebe), ein Faden irrt durch den Würfel aus Licht (Irrfahrt), glänzende Perlen in einer Kugel aus Fäden fädeln sich zuletzt auf die Schlaufe des Logos (Traube). Gerechnet aus der App, mit Ton." },

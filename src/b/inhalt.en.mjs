@@ -85,7 +85,7 @@ export const APPS = [
   { slug: "phorma-iii", name: "PHORMA III", gattung: "Image and video", kurz: "Sound becomes image.",
     text: "To music or a voice, weaves of fine lines emerge, a thread in a cube of light or shiny pearls in a sphere of threads; a video is scratched and mangled. The result is a video with sound. The intro of the previous website was computed with it.",
     fuer: "For musicians, speakers and everyone who needs an image for a sound.",
-    url: "alpha/phorma-iii/", app: "alpha/phorma-iii/app/", bild: "b/bilder/apps/phorma-iii.svg", bildDunkel: "b/bilder/apps/phorma-iii-dunkel.svg", bildAlt: "PHORMA III, drawn: three bands of fine lines like crumpled silk, one in blue",
+    url: "alpha/phorma-iii/", app: "alpha/phorma-iii/?installieren", bild: "b/bilder/apps/phorma-iii.svg", bildDunkel: "b/bilder/apps/phorma-iii-dunkel.svg", bildAlt: "PHORMA III, drawn: three bands of fine lines like crumpled silk, one in blue",
     beispiele: [
       { art: "video", datei: "assets/start-intro.mp4", bild: "assets/beispiele/phorma-iii-lichtwuerfel.jpg", mass: [540, 676], text: "The cube of light: a thread wanders in a cube of light and settles into the logo; computed from the music, with sound. The intro of the previous website." },
       { art: "video", datei: "assets/beispiele/phorma-iii.mp4", bild: "assets/beispiele/phorma-iii.jpg", mass: [540, 676], text: "Three effects to a short piece of music, cut on the beat: surfaces of fine lines unfold at every onset (Weave), a thread wanders through the cube of light (Odyssey), shiny pearls in a sphere of threads finally string themselves onto the loop of the logo (Grape). Computed from the app, with sound." },
