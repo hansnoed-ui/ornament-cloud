@@ -2,6 +2,8 @@
 // Sicherung und Import, Export, Ziehungsregel, Offline-Betrieb und Trennung von ORNA.
 //   NODE_PATH=$(npm root -g) node tests/orma.e2e.mjs
 // Baut zuerst den Produktionsbuild (src/orma/dist/) und liefert ihn unter /orma/ aus, die Website mit ORNA unter /.
+// Alle Kontexte mit locale «de-CH» (seit 21. Oktober 2026): ORMA folgt seit dem Umbau auf zwei Sprachen der Sprache des Geräts, und der
+// Testbrowser meldet sich sonst englisch – die Prüfungen hier gelten der deutschen Fassung.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -28,7 +30,7 @@ async function check(name, fn) {
   catch (e) { results.push(["FAIL", name]); console.log("FAIL", name, "\n     ", e.message.split("\n").slice(0, 6).join("\n      ")); }
 }
 async function open(opts = {}, url = base) {
-  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", ...opts });
+  const ctx = await browser.newContext({ locale: "de-CH", ...devices["Pixel 7"], reducedMotion: "reduce", ...opts });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
@@ -271,7 +273,7 @@ await check("Gedankenbuch: behalten, öffnen, Favorit, einzeln löschen, Sicheru
 });
 
 await check("Beschädigte lokale Daten: verständliche Meldung, App bleibt nutzbar, alter Inhalt bleibt aufbewahrt; Eingaben erscheinen als Text", async () => {
-  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
+  const ctx = await browser.newContext({ locale: "de-CH", ...devices["Pixel 7"], reducedMotion: "reduce" });
   await ctx.addInitScript(() => {
     if (sessionStorage.getItem("gesetzt")) return;
     sessionStorage.setItem("gesetzt", "1");
@@ -347,7 +349,7 @@ await check("Offline: nach der Einrichtung startet ORMA ohne Netz; ganze Runde, 
 
 // ---------- Trennung von ORNA ----------
 await check("Trennung: ORNA und ORMA nebeneinander – eigene Service Worker, eigene Caches, ORMA löscht nichts von ORNA", async () => {
-  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
+  const ctx = await browser.newContext({ locale: "de-CH", ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
   const page = await ctx.newPage();
   const orna = `${origin}/portfolio/nebeneinander-nacheinander/app/`;
   await page.goto(orna);
@@ -494,7 +496,7 @@ await check("Startbild: wie ORNA 40 Zeichen und Name, links hell, rechts dunkel 
   assert.deepEqual(errors, []);
   await ctx.close();
   // installierte App: beim ersten Öffnen das Startbild, beim Neuladen in derselben Sitzung nicht
-  const c2 = await browser.newContext({ ...devices["Pixel 7"] });
+  const c2 = await browser.newContext({ locale: "de-CH", ...devices["Pixel 7"] });
   await c2.addInitScript(() => { Object.defineProperty(Navigator.prototype, "standalone", { value: true, configurable: true }); });
   const p2 = await c2.newPage();
   await p2.goto(base);
@@ -518,7 +520,7 @@ for (const [titel, seite, datei, anfang] of [
   ["Prüfraster: Nebeneinander und Nacheinander", "pruefraster", "pruefraster-anwendungsprompt-3.2.0.md", /^# Prüfraster: Nebeneinander und Nacheinander/],
   ["Der Verteilapparat des Körpers", "verteilapparat", "verteilapparat-anwendungsprompt-2.1.0.txt", /^DER VERTEILAPPARAT DES KÖRPERS/],
 ]) await check(`Alpha, ${titel}: Seite aus der Übersicht, Prompt lässt sich herunterladen, kopieren und im Textfeld markieren`, async () => {
-  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", permissions: ["clipboard-read", "clipboard-write"] });
+  const ctx = await browser.newContext({ locale: "de-CH", ...devices["Pixel 7"], reducedMotion: "reduce", permissions: ["clipboard-read", "clipboard-write"] });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
@@ -558,7 +560,7 @@ for (const [titel, seite, datei, anfang] of [
 });
 
 await check("News: Eintrag zu den beiden Prüfrastern zuoberst, Links führen zu beiden Seiten", async () => {
-  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
+  const ctx = await browser.newContext({ locale: "de-CH", ...devices["Pixel 7"], reducedMotion: "reduce" });
   const page = await ctx.newPage();
   await page.goto(`${origin}/news/`);
   const e = page.locator("details.entry").first();
@@ -577,7 +579,7 @@ await check("News: Eintrag zu den beiden Prüfrastern zuoberst, Links führen zu
 });
 
 await check("Alpha: alpha/ listet ORMA; alpha/orma/ läuft unter dem Website-Pfad mit eigenem Service Worker", async () => {
-  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
+  const ctx = await browser.newContext({ locale: "de-CH", ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
@@ -594,7 +596,7 @@ await check("Alpha: alpha/ listet ORMA; alpha/orma/ läuft unter dem Website-Pfa
 });
 
 await check("Installierte App: startet in alpha/orma/app/, spielbar, vom selben Service Worker betreut; alpha/orma/ bleibt Website", async () => {
-  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
+  const ctx = await browser.newContext({ locale: "de-CH", ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
@@ -642,7 +644,7 @@ await check("Installieren: Knopf überall ausser in der App; iPhone erklärt «T
   await inst(b.page).waitFor({ state: "hidden" });
   await b.ctx.close();
   // in der installierten App: kein Knopf
-  const ctx = await browser.newContext({ ...devices["iPhone 13"], reducedMotion: "reduce" });
+  const ctx = await browser.newContext({ locale: "de-CH", ...devices["iPhone 13"], reducedMotion: "reduce" });
   await ctx.addInitScript(() => { Object.defineProperty(Navigator.prototype, "standalone", { value: true, configurable: true }); });
   const page = await ctx.newPage();
   await page.goto(base);
@@ -658,7 +660,7 @@ await check("Rückfall «Verknüpfung erstellen»: auf Android in der Startansic
   const b = await open({ ...devices["iPhone 13"] });
   assert.equal(await b.page.locator(".orma-install-alt").count(), 0);
   await b.ctx.close();
-  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
+  const ctx = await browser.newContext({ locale: "de-CH", ...devices["Pixel 7"], reducedMotion: "reduce" });
   await ctx.addInitScript(() => { const m = window.matchMedia.bind(window); window.matchMedia = q => q.includes("standalone") ? { matches: true, media: q, addEventListener() {}, removeEventListener() {} } : m(q); });
   const page = await ctx.newPage();
   await page.goto(base);
@@ -682,7 +684,7 @@ await check("Aktualisieren: neue Fassung sofort beim nächsten Öffnen, auch wen
   await new Promise(ok => proxy.listen(0, ok));
   try {
     const url = `http://localhost:${proxy.address().port}/orma/`;
-    const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
+    const ctx = await browser.newContext({ locale: "de-CH", ...devices["Pixel 7"], reducedMotion: "reduce", serviceWorkers: "allow" });
     const page = await ctx.newPage();
     await page.goto(url);
     await page.waitForFunction(async () => (await navigator.serviceWorker.getRegistration())?.active?.state === "activated", null, { timeout: 15000 });
@@ -701,7 +703,7 @@ await check("Aktualisieren: neue Fassung sofort beim nächsten Öffnen, auch wen
 
 // ---------- Apps, Masterprompts, Portfolio, Startseite (Neuordnung vom 2. Oktober 2026: die Karten liegen nicht mehr auf der Startseite, die Rückmeldungen sind entfernt) ----------
 await check("Apps und Masterprompts (Handy): Karten untereinander, ORNA vor ORMA (seit 11. Oktober 2026 The Fictory zuerst, seit 17. Oktober 2026 PHORMA I davor), die vier Prüfraster in der Reihenfolge der Alpha-Übersicht; Artefakte stehen unten im Portfolio", async () => {
-  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
+  const ctx = await browser.newContext({ locale: "de-CH", ...devices["Pixel 7"], reducedMotion: "reduce" });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
@@ -823,7 +825,7 @@ await check("Apps und News: ORMA zeigt dasselbe drehende Rad wie ORNA, vertikal 
 
 // ---------- Termine: Einträge ausblenden, ohne sie zu löschen ----------
 await check("Termine: ausgeblendete Einträge (hidden) sind unsichtbar, dann steht der Hinweis; einer sichtbar → Hinweis weg", async () => {
-  const ctx = await browser.newContext({ ...devices["Pixel 7"], reducedMotion: "reduce" });
+  const ctx = await browser.newContext({ locale: "de-CH", ...devices["Pixel 7"], reducedMotion: "reduce" });
   const page = await ctx.newPage();
   await page.goto(`${origin}/termine/`);
   assert.equal(await page.locator("details.entry").count(), 2);
