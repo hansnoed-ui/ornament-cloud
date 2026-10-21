@@ -199,52 +199,70 @@ const phormaI = {
   },
 };
 
-/* ---------- PHORMA II: eine Linie wächst – Differential Growth aus einem Keim, bis sie die Scheibe füllt ---------- */
-const R2 = 430, MAX2 = 2200, SCHRITTE2 = 420;
-function wachsen(z) {
-  const zelle = 28, g = new Map(), pts = z.pts, zf = z.z;
-  pts.forEach((p, i) => { const k = `${Math.floor(p[0] / zelle)},${Math.floor(p[1] / zelle)}`; (g.get(k) || g.set(k, []).get(k)).push(i); });
-  const neu = pts.map((p, i) => {
-    const n = pts.length, vor = pts[(i + n - 1) % n], nach = pts[(i + 1) % n];
-    let dx = ((vor[0] + nach[0]) / 2 - p[0]) * 0.09, dy = ((vor[1] + nach[1]) / 2 - p[1]) * 0.09;
-    const gx = Math.floor(p[0] / zelle), gy = Math.floor(p[1] / zelle);
-    for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (const j of g.get(`${gx + a},${gy + b}`) || []) {
-      if (j === i) continue;
-      const ex = p[0] - pts[j][0], ey = p[1] - pts[j][1], d2 = ex * ex + ey * ey;
-      if (d2 < 26 * 26 && d2 > 0.01) { const d = Math.sqrt(d2), kraft = (26 - d) / 26 * 1.1; dx += ex / d * kraft; dy += ey / d * kraft; }
-    }
-    dx += (zf() - 0.5) * 0.3; dy += (zf() - 0.5) * 0.3;
-    let x = p[0] + dx, y = p[1] + dy;
-    const rx = x - M, ry = y - M, r = Math.hypot(rx, ry);
-    if (r > R2) { x = M + rx / r * R2; y = M + ry / r * R2; }
-    return [x, y];
-  });
-  const aus2 = [];
-  for (let i = 0; i < neu.length; i++) {
-    const p = neu[i], q = neu[(i + 1) % neu.length];
-    aus2.push(p);
-    if (Math.hypot(q[0] - p[0], q[1] - p[1]) > 11 && aus2.length < MAX2) aus2.push([(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]);
+/* ---------- PHORMA II: ein Netz – aus Keimen wachsen Adern, finden einander und legen sich auf eine Form (Physarum) ---------- */
+// (bis 21. Oktober 2026 die wachsende Linie des Effekts «Wachstum», der seither weg ist; Wunsch: «Ja, neu» – das Netz von Physarum)
+const R2 = 430;
+/** die Form, die das Netz findet: ein weicher Fleck rechts oben der Mitte */
+const form2 = (x, y) => { const dx = x - (M + 70), dy = y - (M - 50), a = Math.atan2(dy, dx); return Math.hypot(dx, dy) < 165 + 55 * Math.sin(3 * a + 0.8) + 28 * Math.sin(5 * a - 1.2); };
+const formRand2 = (() => { const q = []; for (let i = 0; i < 90; i++) { const a = i / 90 * Math.PI * 2, r = 165 + 55 * Math.sin(3 * a + 0.8) + 28 * Math.sin(5 * a - 1.2); q.push([f(M + 70 + r * Math.cos(a)), f(M - 50 + r * Math.sin(a))]); } return q; })();
+function netz2() {
+  const z = zufall(7), pts = [];
+  // Punkte in der Scheibe, keiner näher als 40 am andern (verworfen, was zu nah liegt)
+  for (let i = 0; i < 60000 && pts.length < 260; i++) {
+    const a = z() * Math.PI * 2, r = Math.sqrt(z()) * (R2 - 22), x = M + Math.cos(a) * r, y = M + Math.sin(a) * r;
+    if (pts.every((q) => Math.hypot(q[0] - x, q[1] - y) >= 40)) pts.push([f(x), f(y)]);
   }
-  z.pts = aus2; z.n += 1;
+  // Adern: jeder Punkt zu seinen drei nächsten Nachbarn, keine länger als 110; jede leicht gebogen (ein Schleimpilz zieht keine Geraden)
+  const kanten = new Map();
+  pts.forEach((q, i) => {
+    const nah = pts.map((w, j) => [Math.hypot(w[0] - q[0], w[1] - q[1]), j]).filter(([d, j]) => j !== i && d <= 110).sort((u, v) => u[0] - v[0]).slice(0, 3);
+    for (const [d, j] of nah) if (!kanten.has(i < j ? `${i}-${j}` : `${j}-${i}`)) kanten.set(i < j ? `${i}-${j}` : `${j}-${i}`, [d, (z() - 0.5) * 0.5]);
+  });
+  // fünf Keime, weit auseinander, alle im Innern: der erste nahe der Mitte, dann je der Punkt, der von allen bisherigen am weitesten weg ist
+  const innen = pts.map((q, i) => i).filter((i) => Math.hypot(pts[i][0] - M, pts[i][1] - M) < 300);
+  const keime = [innen.map((i) => [Math.hypot(pts[i][0] - M, pts[i][1] - M), i]).sort((u, v) => u[0] - v[0])[0][1]];
+  while (keime.length < 5) { let best = -1, bd = -1; for (const i of innen) { const d = Math.min(...keime.map((k) => Math.hypot(pts[k][0] - pts[i][0], pts[k][1] - pts[i][1]))); if (d > bd) { bd = d; best = i; } } keime.push(best); }
+  // von den Keimen aus: der Weg entlang der Adern zu jedem Punkt (Dijkstra)
+  const dist = new Array(pts.length).fill(Infinity), adj = pts.map(() => []), fertig = new Set();
+  for (const [k, [d]] of kanten) { const [a, b] = k.split("-").map(Number); adj[a].push([b, d]); adj[b].push([a, d]); }
+  for (const k of keime) dist[k] = 0;
+  for (;;) {
+    let u = -1;
+    for (let i = 0; i < pts.length; i++) if (!fertig.has(i) && dist[i] < Infinity && (u < 0 || dist[i] < dist[u])) u = i;
+    if (u < 0) break;
+    fertig.add(u);
+    for (const [v, d] of adj[u]) if (dist[u] + d < dist[v]) dist[v] = dist[u] + d;
+  }
+  const weit = Math.max(...dist.filter(Number.isFinite));
+  const adern = [];
+  for (const [k, [d, bauch]] of kanten) {
+    let [a, b] = k.split("-").map(Number);
+    if (!Number.isFinite(dist[a]) || !Number.isFinite(dist[b])) continue;
+    if (dist[b] < dist[a]) [a, b] = [b, a];
+    const A = pts[a], B = pts[b], nx = -(B[1] - A[1]) / d, ny = (B[0] - A[0]) / d;   // der Bauch der Ader: quer zur Strecke
+    adern.push({ a, b, d, ab: dist[a], k: [f((A[0] + B[0]) / 2 + nx * bauch * d), f((A[1] + B[1]) / 2 + ny * bauch * d)] });
+  }
+  adern.sort((u, v) => u.ab - v.ab);
+  return { pts, keime, adern, weit };
 }
 const phormaII = {
-  alt: "PHORMA II, gezeichnet: eine einzige Linie, die aus einem Keim gewachsen ist und eine Scheibe füllt",
-  keim() { const z = zufall(11), pts = []; for (let i = 0; i < 48; i++) { const a = i / 48 * Math.PI * 2; pts.push([M + Math.cos(a) * (70 + z() * 8), M + Math.sin(a) * (70 + z() * 8)]); } return { t: 0, z, pts, n: 0, rest: 0, pause: 0 }; },
-  neu() { const z = phormaII.keim(); while (z.n < SCHRITTE2 && z.pts.length < MAX2) wachsen(z); return z; },   // Ruhe: ausgewachsen
-  // Lauf: aus dem Keim wachsen (etwa 70 Schritte je Sekunde), dann 3 s halten, dann von vorn
-  schritt(z, dt) {
-    z.t += dt;
-    if (z.n >= SCHRITTE2 || z.pts.length >= MAX2) { z.pause += dt; if (z.pause > 3) Object.assign(z, phormaII.keim(), { t: z.t }); return; }
-    z.rest += dt * 70;
-    while (z.rest >= 1 && z.n < SCHRITTE2 && z.pts.length < MAX2) { wachsen(z); z.rest -= 1; }
-  },
+  alt: "PHORMA II, gezeichnet: ein Netz aus Adern, das aus fünf Keimen wächst und sich auf eine Form legt, dort in Blau",
+  neu() { return { t: 4.5, ...netz2() }; },   // Ruhe: ausgewachsen
+  // Lauf (8 s): 4,5 s wachsen (von den Keimen her, ausrollend), dann halten, dann von vorn
+  schritt(z, dt) { z.t += dt; },
   svg(z, c) {
-    const d = z.pts.map((p, i) => (i ? "L" : "M") + f(p[0]) + " " + f(p[1])).join("") + "Z";
-    return [
-      `<circle cx="${M}" cy="${M}" r="${R2 + 30}" fill="none" stroke="${c.linie}" stroke-width="2"/>`,
-      `<path d="${d}" fill="none" stroke="${c.tinte}" stroke-width="3.2" stroke-linejoin="round"/>`,
-      `<circle cx="${f(z.pts[0][0])}" cy="${f(z.pts[0][1])}" r="12" fill="${c.faden}"/>`,
-    ].join("");
+    const u = z.t % 8, p = u < 4.5 ? aus(u / 4.5) : 1, front = p * (z.weit + 80);
+    const s = [`<circle cx="${M}" cy="${M}" r="${R2 + 30}" fill="none" stroke="${c.linie}" stroke-width="2"/>`];
+    const da = Math.min(1, Math.max(0, (p - 0.75) / 0.25));   // die Form erscheint, wenn das Netz sie erreicht hat
+    if (da > 0) s.push(`<path d="${formRand2.map((q, i) => (i ? "L" : "M") + q[0] + " " + q[1]).join("")}Z" fill="${c.fadenHell}" opacity="${f(da)}"/>`);
+    for (const v of z.adern) {
+      const teil = Math.min(1, Math.max(0, (front - v.ab) / v.d));
+      if (teil <= 0) continue;
+      const A = z.pts[v.a], B = z.pts[v.b], drin = form2(A[0], A[1]) && form2(B[0], B[1]), breit = 1.3 + 3.2 * (1 - v.ab / z.weit) ** 1.5;
+      s.push(`<path d="M${A[0]} ${A[1]}Q${v.k[0]} ${v.k[1]} ${B[0]} ${B[1]}" fill="none" stroke="${drin ? c.faden : c.tinte}" stroke-width="${f(breit)}" stroke-linecap="round"${teil < 1 ? ` pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="${f(1 - teil)}"` : ""}/>`);
+    }
+    for (const k of z.keime) s.push(`<circle cx="${z.pts[k][0]}" cy="${z.pts[k][1]}" r="11" fill="${c.faden}"/>`);
+    return s.join("");
   },
 };
 
