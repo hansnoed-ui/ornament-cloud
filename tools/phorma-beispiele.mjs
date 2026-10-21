@@ -7,7 +7,7 @@
 //                21. Oktober 2026 einer von Christian (die «Verwandlung» mit einem Foto des Saturn), siehe VON_HAND
 //   PHORMA II:   die Kette der App «Physarum → Tiefe → Tuch» mit dem Beispielfoto, ohne Ton – auf der Website seit dem 21. Oktober 2026 einer
 //                von Christian (Physarum → Tuch → Montage), siehe VON_HAND
-//   PHORMA III:  «Gewebe», «Irrfahrt» und «Traube» nacheinander zu einem hier gerechneten Musikstück (tools/beispielton.mjs) – die App kennt je Film
+//   PHORMA III:  (auf der Website seit dem 21. Oktober 2026 einer von Christian: das Gewebe mit Ton, siehe VON_HAND) «Gewebe», «Irrfahrt» und «Traube» nacheinander zu einem hier gerechneten Musikstück (tools/beispielton.mjs) – die App kennt je Film
 //                einen Effekt; hier laufen drei zur selben Musik, und der Film schneidet auf dem Taktanfang vom einen zum nächsten, wie die Effekte
 //                selbst bei jedem kräftigen Einsatz schneiden. Jeder Teil rechnet nur seine Sekunden; der Film trägt die Musik.
 //   The Fictory: der ganze Lauf von 30 Sekunden mit dem Beispielbild (die Bühne der App, Schritt für Schritt), ohne Ton – auf der Website seit dem
@@ -40,7 +40,7 @@ const nur = process.argv.slice(2);
 // PHORMA I rechnet nur, wer es ausdrücklich nennt: seit dem 21. Oktober 2026 liegt dort ein Film von Christian («Ich habe hier bessere
 // Beispielvideos: PHORMA I»), den ein Lauf ohne Namen sonst überschreiben würde
 // von Christian gerechnet, hier nicht überschreiben (21. Oktober 2026: «Ich habe neue Beispiel Videos und möchte, dass du diese nutzt»)
-const VON_HAND = ["phorma-i", "phorma-ii", "the-fictory"];
+const VON_HAND = ["phorma-i", "phorma-ii", "phorma-iii", "the-fictory"];
 const will = (name) => (nur.length ? nur.includes(name) : !VON_HAND.includes(name));
 
 const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript", ".woff2": "font/woff2", ".jpg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".json": "application/json", ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml", ".wasm": "application/wasm", ".bin": "application/octet-stream" };
