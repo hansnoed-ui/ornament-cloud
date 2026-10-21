@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="robots" content="noindex">
   <!-- In der Bühne des Neubaus (/b/apps/…/oeffnen/, seit 20. Oktober 2026) mit ?b=1: ohne die Navigation der bisherigen Website -->
-  <script>if(/[?&]b=1(&|$)/.test(location.search)){document.documentElement.setAttribute("data-buehne","");document.addEventListener("sprache",(e)=>{const b=e.detail==="en"?"/b/en/":"/b/";for(const [s,h] of [[".rad-more-link a",b+"apps/orna/feld/"],[".back a",b+"apps/"]]){const a=document.querySelector(s);if(a){a.href=h;a.target="_top"}}})}</script>
+  <script>if(/[?&]b=1(&|$)/.test(location.search)){document.documentElement.setAttribute("data-buehne","");document.addEventListener("sprache",(e)=>{const b=e.detail==="en"?"/b/en/":"/b/";for(const [s,h] of [[".rad-more-link a",b+"apps/orna/feld/"],[".rad-more-link a[data-t=zurueckApps]",b+"apps/"]]){const a=document.querySelector(s);if(a){a.href=h;a.target="_top"}}})}</script>
   <!-- auf der Bühne (Rückmeldung vom 20. Oktober 2026: «Der Beschreibungstext kann weg, die beiden Links führen wieder auf die alte Seite»): ohne die Beschreibung, «Das Feld» und «Zu den Apps» führen in den Neubau, im obersten Fenster statt im Rahmen -->
   <style>[data-buehne] .app-kopf,[data-buehne] .divider,[data-buehne] .site-footer,[data-buehne] .work-kicker,[data-buehne] .rad-intro{display:none!important}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -39,8 +39,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="stylesheet" href="../../../styles.css?v=46">
   <link rel="stylesheet" href="../../../vendor/fonts/fonts.css">
-  <link rel="stylesheet" href="../rad.css?v=28">
-  <script src="../sprache.js?v=3"></script>
+  <link rel="stylesheet" href="../rad.css?v=29">
+  <script src="../sprache.js?v=4"></script>
   <!-- ORNA-Startbild: vor dem ersten Bild entscheiden, ob es kommt, damit die Seite nicht kurz aufblitzt -->
   <script>
     (function () {
@@ -121,10 +121,8 @@
 
     <section class="rad-about">
       <p class="rad-intro" data-t="intro">„Nebeneinander, Nacheinander“ ist eine interaktive Versuchsanordnung zur Verräumlichung und Verzeitlichung von Wahrnehmung. Auf zwei gegenläufigen Rädern begegnen sich Künstler:innen und Theoretiker:innen in zufällig ausgewählten Konstellationen. Raum stellt Möglichkeiten nebeneinander bereit, während die Drehung sie in eine zeitliche Folge versetzt und jeweils eine Begegnung aktualisiert. Aus jeder Begegnung entsteht ein kurzer Text und eine offene Frage, aber keine abschliessende Synthese. Das Rad erzeugt keine Antworten – es erzeugt Konstellationen.</p>
-      <p class="rad-more-link"><a href="feld/" data-t="feldLink">Das Feld: alle Konstellationen nebeneinander <span aria-hidden="true">→</span></a></p>
+      <p class="rad-more-link"><a href="feld/" data-t="feldLink">Das Feld: alle Konstellationen nebeneinander<span aria-hidden="true"> →</span></a><a href="/b/apps/" data-t-href="/b/apps/|/b/en/apps/" data-t="zurueckApps">Alle Apps</a></p>
     </section>
-
-    <p class="back"><a href="../../../apps/" data-t="zurueckApps">← Zu den Apps</a></p>
   </main>
 
   <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->

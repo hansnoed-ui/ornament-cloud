@@ -32,7 +32,7 @@
     konstellation: (a, t) => `Constellation: ${a} and ${t}.`,
     "ticker.aria": "All names on the wheel",
     intro: "«Side by Side, One after Another» is an interactive experimental arrangement on the spatialisation and temporalisation of perception. On two counter-rotating wheels, artists and theorists meet in randomly selected constellations. Space holds possibilities side by side, while the turn puts them into a temporal sequence and actualises one encounter at a time. Each encounter yields a short text and an open question, but no final synthesis. The wheel does not produce answers – it produces constellations.",
-    feldLink: "The field: all constellations side by side <span aria-hidden=\"true\">→</span>", zurueckApps: "← To the apps",
+    feldLink: "The field: all constellations side by side<span aria-hidden=\"true\"> →</span>", zurueckApps: "All apps",
     "fuss.fragen": "Questions and comments about the website: <a href=\"mailto:hansnoed@gmail.com\">hansnoed@gmail.com</a>", "fuss.impressum": "Imprint",
     "feld.titel": "The Field",
     "feld.intro": "Four hundred pairings are arithmetically possible, 326 are written. The field shows both states at once: the curated constellations and the 74 places where none stands yet. The gaps are not forbidden. They record what the work considers connectable at this point in time, and they can fill as soon as another question opens them. The wheel brings forth one encounter after another. Here everything lies side by side.",

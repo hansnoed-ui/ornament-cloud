@@ -230,8 +230,8 @@ await check("Menü führt zu den Seiten: Apps, Prompts, Art und Zettel direkt in
   await page.locator(".work-kicker").getByRole("link", { name: "Apps" }).click();
   await page.waitForURL(/\/apps\/$/);
   await page.goto(origin + "/portfolio/nebeneinander-nacheinander/");
-  await page.getByRole("link", { name: "← Zu den Apps" }).click();
-  await page.waitForURL(/\/apps\/$/);
+  await page.getByRole("link", { name: "Alle Apps" }).click();            // seit 21. Oktober 2026 in den Neubau
+  await page.waitForURL(/\/b\/apps\/$/);
   await ctx.close();
 });
 
