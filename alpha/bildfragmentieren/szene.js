@@ -22,10 +22,10 @@
 // Seit dem 16. Oktober 2026 ist das alles der Ablauf «Fragmente»; zur Wahl steht dazu die «Verwandlung» (Strom, Körper, Scherben, Echo, Relief, einzeln oder
 // kombiniert; raum.js, WebGL). Auch sie beginnt im Dunkeln und endet beim Foto; ihr Bild kommt fertig aus WebGL (sz.raum) und wird hier nur
 // eingesetzt, ebenso ihr leuchtendes Signet.
-import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=34";
+import { FPS, anteil, weich, sanft, inOut, ausblenden, klemm, zeitachse, zeitcode, SIGNET_VON, SIGNET_TEMPO } from "./ablauf.js?v=35";
 import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
-import { zufall, auszuege, delaunay } from "./fragmente.js?v=34";
-import { KOERPER, abbilden } from "./koerper.js?v=34";
+import { zufall, auszuege, delaunay } from "./fragmente.js?v=35";
+import { KOERPER, abbilden } from "./koerper.js?v=35";
 
 export const FARBEN = {
   schwarz: { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true },
