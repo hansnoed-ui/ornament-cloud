@@ -119,6 +119,9 @@
     "Die offenen Schleifen auf diesem Gerät sind beschädigt. Der alte Inhalt wurde aufbewahrt.": "The open loops on this device are damaged. The old content has been kept.",
     "Die Datei ist keine lesbare ORMA-Sicherung.": "The file is not a readable ORMA backup.", "Die Datei ist keine ORMA-Sicherung.": "The file is not an ORMA backup.",
     sicherungVersion: (v) => `This backup has an unknown format (version ${v}).`,
+    // das Feld zum Installieren ganz oben (21. Oktober 2026)
+    "ORMA installieren": "Install ORMA", "Schliessen": "Close",
+    "Auf den Knopf tippen und bestätigen. Geht das in diesem Browser nicht direkt, stehen die Schritte darunter.": "Tap the button and confirm. If this browser cannot do it directly, the steps are below.",
   };
   const KEY = "ornament.sprache";
   // zuerst die Adresse (?sprache=de|en: die Bühne und die Links des Neubaus geben die Sprache der Seite mit, 20. Oktober 2026, und die Wahl wird gemerkt), dann die gemerkte Wahl, sonst das Gerät

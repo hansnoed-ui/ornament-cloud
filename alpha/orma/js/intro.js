@@ -8,7 +8,7 @@
 // Bei reduzierter Bewegung entfällt es ganz. Antippen oder eine Taste überspringt es.
 // Eigenständige Abschrift: eigene Klassen (orma-intro, oi-…), eigener Sitzungsschlüssel «orma-intro».
 
-import { symbolMarkup } from "./symbols.js?v=8d7d079c0a4e";
+import { symbolMarkup } from "./symbols.js?v=6530b30dd187";
 
 const params = new URLSearchParams(location.search);
 const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
