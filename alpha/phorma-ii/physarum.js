@@ -45,8 +45,8 @@ const ZEIGEN = /* glsl */ `
     float T = texture2D(tSpur, vUv).r, I = 1.0 - exp(-T * uGain);
     vec3 foto = texture2D(tFoto, vUv).rgb;
     vec3 netz = mix(vec3(0.03, 0.08, 0.3), vec3(1.0, 0.45, 0.18), smoothstep(0.04, 0.4, I));
-    netz = mix(netz, vec3(1.0, 0.92, 0.82), smoothstep(0.45, 0.95, I)) * I * 1.2;   // 1.5 war überblendet (Rückmeldung 21. Oktober 2026)
-    vec3 farbig = foto * (0.15 + 1.9 * I) + vec3(1.0, 0.6, 0.35) * pow(I, 3.0) * 0.3;
+    netz = mix(netz, vec3(1.0, 0.92, 0.82), smoothstep(0.6, 1.0, I)) * I * 0.85;   // 1.5 war überblendet (Rückmeldung 21. Oktober 2026, zweimal: «immer noch zu hell»)
+    vec3 farbig = foto * (0.15 + 1.4 * I) + vec3(1.0, 0.6, 0.35) * pow(I, 3.0) * 0.2;
     vec3 c = mix(netz, farbig, uFarbe) * uSicht;
     // dichte Stellen: das Netz in der Umgebung (acht Proben im Abstand von 6 Punkten)
     float d = 0.0;
@@ -147,7 +147,7 @@ export function physarum(g, teil) {
         aktiv = 1 - weich(anteil(tau, Bp[0] + 0.5 * (Bp[1] - Bp[0]), Bp[1]));
       } else { u.uZeigen.value = 0; u.uSchwelle.value = 1; }
       g.pass(zeigen, rt);
-      return { aktiv, bloom: 0.2, radius: 0.15, saum: 0.003, ende };
+      return { aktiv, bloom: 0.1, radius: 0.15, saum: 0.003, ende };
     },
     vorab: { szenen: [[szene, kam]], materialien: [bewegen, verlaufen, kopie, zeigen] },
     /** für Tests und zum Abstimmen: Perzentile der Spur (10, 50, 90, 99, 99,9 %) beim aktuellen Schritt */

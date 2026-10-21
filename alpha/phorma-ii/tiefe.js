@@ -36,13 +36,13 @@ const FRAGMENT = /* glsl */ `
   void main() {
     vec3 foto = texture2D(tFoto, vUv).rgb, n = normalize(vN);
     float diff = max(dot(n, uL), 0.0);
-    vec3 c = mix(foto, foto * (0.22 + 1.08 * diff) + uKupfer * 0.1 * pow(1.0 - n.z, 1.5), uLicht);
+    vec3 c = mix(foto, foto * (0.25 + 0.75 * diff) + uKupfer * 0.1 * pow(1.0 - n.z, 1.5), uLicht);   // Streiflicht hellt das Foto höchstens bis 1 auf (vorher bis 1,3: die hellen Stellen glühten)
     c *= mix(1.0, 0.18 + 0.82 * pow(vD, 0.9), uNebel);
     // Scan: die Ebene steht bei Tiefe uScan und wandert von nah (1) nach fern (0)
     float nach = vD - uScan, vor = smoothstep(-0.004, 0.004, nach);
     float band = exp(-pow(nach / 0.009, 2.0));
     float k = vD * 42.0, fw = fwidth(k), iso = 1.0 - smoothstep(0.0, 1.4 * fw, min(fract(k), 1.0 - fract(k)));
-    vec3 scan = uKupfer * band * 1.8 + vec3(0.85, 0.92, 1.0) * iso * 0.6 * exp(-max(nach, 0.0) * 9.0) * vor;
+    vec3 scan = uKupfer * band * 1.1 + vec3(0.85, 0.92, 1.0) * iso * 0.45 * exp(-max(nach, 0.0) * 9.0) * vor;
     c = mix(c, c * smoothstep(0.0, 0.22, nach), uDunkel * uScanAn) + scan * uScanAn;
     // Tiefensprünge und die Stufen der Schichten: die gestreckten Maschen werden zu feinen glühenden Schnittkanten statt zu verschmierten Flächen
     float riss = smoothstep(1.2, 3.5, vRiss) * uRissAn;
@@ -101,7 +101,7 @@ export function tiefe(g, teil) {
       u.uScan.value = 1.04 - 1.1 * inOut(anteil(tau, S[0] + 0.15, S[1] - 0.2));
       // über dem Foto schwächer: sonst leuchtet eine flache, gleich tiefe Stelle ganz auf, wenn die Ebene durch sie geht
       u.uScanAn.value = teil.erst ? 1 - weich(anteil(tau, S[1] - 0.4, S[1] + 0.4)) : 0.55 * glocke(tau, S[0], S[1] + 0.3) ** 0.5;
-      const licht = teil.erst ? 0.75 : 0.75 * weich(anteil(tau, S[0], S[1]));
+      const licht = teil.erst ? 0.6 : 0.6 * weich(anteil(tau, S[0], S[1]));
       u.uLicht.value = licht * (1 - flach) * (1 - 0.35 * uebergabe) * g.belichtung;   // helle Fotos: weniger Streiflicht (buehne.js)
       // die Kamera steht frontal (ohne Raum keine Fahrt)
       kam.position.set(0, 0, ABSTAND); kam.lookAt(0, 0, 0);
@@ -113,7 +113,7 @@ export function tiefe(g, teil) {
       let ende = 0, aktiv = teil.erst ? weich(anteil(tau, 0, 0.6)) : weich(anteil(tau, 0, 0.5));
       if (teil.vonFoto) ende = 1 - weich(anteil(tau, 0, 0.35));
       if (Bp) { ende = Math.max(ende, weich(anteil(tau, Bp[1] - 0.7, Bp[1] - 0.1))); aktiv *= 1 - weich(anteil(tau, Bp[0], Bp[1])); }
-      return { aktiv, bloom: 0.35 * u.uScanAn.value + 0.18, saum: 0.0025, ende };   // vorher 0.55 · scan + 0.25: der Scan war überblendet (Rückmeldung 21. Oktober 2026)
+      return { aktiv, bloom: 0.18 * u.uScanAn.value + 0.08, saum: 0.0025, ende };   // vorher 0.55 · scan + 0.25: der Scan war überblendet (Rückmeldung 21. Oktober 2026, zweimal)
     },
     vorab: { szenen: [[szene, kam]], materialien: [schaerfe] },
     zaehler() { return `tiefe ${g.tiefeQuelle === "ki" ? "ki (depth anything)" : "aus dem bild"} · schichten ${SCHICHTEN} · maschen ${geo.index.count / 6 | 0}`; },
