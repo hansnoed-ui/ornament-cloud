@@ -19,7 +19,7 @@ import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 21;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 22;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -176,7 +176,7 @@ function bau(sprache) {
       return teile.join("");
     }
     if (b.art === "paar") return `<figure class="paar"><span class="bild"><img src="/${attr(b.vorher)}" alt="${attr(T.vorher)}" loading="lazy"></span><span class="pfeil" aria-hidden="true"></span><span class="bild"><img src="/${attr(b.nachher)}" alt="${attr(T.nachher + a.name)}" loading="lazy"></span><figcaption>${esc(b.text)}</figcaption></figure>`;
-    if (b.art === "video") return `<figure class="beispiel-video">${video(b)}<figcaption>${esc(b.text)}</figcaption></figure>`;
+    if (b.art === "video") return `<figure class="beispiel-video${(b.mass?.[0] || 0) > (b.mass?.[1] || 1) ? " quer" : ""}">${video(b)}<figcaption>${esc(b.text)}</figcaption></figure>`;
     if (b.art === "orna") return `<div class="beispiel-texte">${b.ids.slice(0, kurz ? 1 : 3).map((id) => { const k = konstellationen.find((x) => x.id === id); return k ? `<article class="konstellation"><h3>${esc(namen[k.artistId])} × ${esc(namen[k.theoristId])}</h3><p>${esc(k.text)}</p><p class="frage">${esc(k.question)}</p><p class="klein"><a href="/portfolio/nebeneinander-nacheinander/?pair=${attr(k.id)}">${esc(T.imRad)}</a></p></article>` : ""; }).join("")}</div>`;
     if (b.art === "orma") { const k = ormaVon(b.id); if (!k) return ""; return `<div class="beispiel-texte eins"><article class="konstellation"><h3>${esc(k.kuenstler)} × ${esc(k.theoretiker)}</h3><p class="klein">${esc(T.einstieg)}</p><p>${esc(k.einstieg)}</p><p class="klein">${esc(T.auftraege)}</p><ul class="auftraege">${Object.entries(k.auftraege).map(([n, t]) => `<li><span class="klein">${esc(n)}</span><span>${esc(t)}</span></li>`).join("")}</ul><p class="frage">${esc(k.frage)}</p></article></div>`; }
     if (b.art === "omna") return `<div class="beispiel-texte">${b.ids.slice(0, kurz ? 1 : 3).map((id) => { const u = omnaUebungen.find((x) => x.id === id); return u ? `<article class="uebung"><p class="klein">${esc(u.t)} · ${u.d} ${esc(T.minuten)}</p><h3>${esc(u.n)}</h3><ol>${u.a.map((t) => `<li>${esc(t)}</li>`).join("")}</ol><p class="klein">${esc(T.material)}${esc(u.m)}</p><p class="frage">${esc(u.f)}</p></article>` : ""; }).join("")}</div>`;
