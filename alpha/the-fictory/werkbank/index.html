@@ -7,7 +7,7 @@
   <base href="../">
   <!-- In der Bühne des Neubaus (/b/apps/…/oeffnen/, seit 20. Oktober 2026) mit ?b=1: ohne die Navigation der bisherigen Website -->
   <script>if(/[?&]b=1(&|$)/.test(location.search))document.documentElement.setAttribute("data-buehne","")</script>
-  <style>[data-buehne] .topbar,[data-buehne] .divider,[data-buehne] .site-footer,[data-buehne] .work-kicker{display:none!important}</style>
+  <style>[data-buehne] .app-kopf,[data-buehne] .topbar,[data-buehne] .divider,[data-buehne] .site-footer,[data-buehne] .work-kicker{display:none!important}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>The Fictory – Ornament Cloud · Alpha</title>
   <!-- Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). Zuoberst in der Alpha-Übersicht, sonst nicht verlinkt. -->
@@ -270,60 +270,55 @@
     }
     @media (prefers-reduced-motion: reduce) { .ablage, .kontaktbogen canvas { transition: none; } }
   </style>
-  <link rel="stylesheet" href="neubau.css?v=1">
-  <script type="module" src="app.js?v=21"></script>
-  <script type="module" src="pwa.js?v=21"></script>
+  <link rel="stylesheet" href="neubau.css?v=2">
+  <!-- Deutsch und Englisch (21. Oktober 2026): vor den Modulen -->
+  <script src="sprache.js?v=2"></script>
+  <script type="module" src="app.js?v=22"></script>
+  <script type="module" src="pwa.js?v=22"></script>
 </head>
 <body>
+  <!-- Kopf der App (21. Oktober 2026, wie OMNA COLOR, ORNA, ORMA und PHORMA I–III): Signet mit Weg in den Neubau, der Schalter d · e, «Über die App»; auf der Bühne (?b=1) nicht.
+       Die Kopfleiste der bisherigen Website (Hauptlinks, Welle, Menü) ist damit weg; die App-Seite app/ behält sie. -->
+  <header class="app-kopf wrap">
+    <a class="app-kopf-signet" href="../../b/" data-t-href="../../b/|../../b/en/" title="ornament.cloud"><svg viewBox="0 0 34 24" aria-hidden="true" focusable="false"><path d="M26.83 12.00L26.78 12.99L26.65 13.98L26.44 14.95L26.13 15.89L25.75 16.80L25.29 17.67L24.75 18.50L24.15 19.27L23.49 19.98L22.76 20.62L21.99 21.20L21.18 21.70L20.33 22.12L19.45 22.46L18.55 22.72L17.64 22.90L16.73 22.99L15.82 23.00L14.93 22.93L14.05 22.78L13.21 22.55L12.40 22.25L11.63 21.89L10.90 21.46L10.23 20.97L9.62 20.43L9.07 19.85L8.59 19.23L8.18 18.57L7.83 17.90L7.56 17.20L7.36 16.50L7.23 15.80L7.17 15.10L7.18 14.42L7.26 13.76L7.40 13.12L7.60 12.52L7.85 11.95L8.16 11.43L8.51 10.96L8.89 10.54L9.31 10.17L9.75 9.87L10.21 9.62L10.69 9.43L11.16 9.30L11.64 9.24L12.10 9.23L12.55 9.27L12.98 9.38L13.38 9.53L13.75 9.73L14.07 9.97L14.36 10.25L14.60 10.56L14.79 10.90L14.93 11.25L15.01 11.62L15.04 12.00L15.01 12.38L14.93 12.75L14.79 13.10L14.60 13.44L14.36 13.75L14.07 14.03L13.75 14.27L13.38 14.47L12.98 14.62L12.55 14.73L12.10 14.77L11.64 14.76L11.16 14.70L10.69 14.57L10.21 14.38L9.75 14.13L9.31 13.83L8.89 13.46L8.51 13.04L8.16 12.57L7.85 12.05L7.60 11.48L7.40 10.88L7.26 10.24L7.18 9.58L7.17 8.90L7.23 8.20L7.36 7.50L7.56 6.80L7.83 6.10L8.18 5.43L8.59 4.77L9.07 4.15L9.62 3.57L10.23 3.03L10.90 2.54L11.63 2.11L12.40 1.75L13.21 1.45L14.05 1.22L14.93 1.07L15.82 1.00L16.73 1.01L17.64 1.10L18.55 1.28L19.45 1.54L20.33 1.88L21.18 2.30L21.99 2.80L22.76 3.38L23.49 4.02L24.15 4.73L24.75 5.50L25.29 6.33L25.75 7.20L26.13 8.11L26.44 9.05L26.65 10.02L26.78 11.01L26.83 12.00Z"/><circle cx="12.55" cy="9.27" r="2.2"/></svg><span>ornament.cloud</span></a>
+    <nav class="sprache" aria-label="Sprache" data-t-attr="aria-label=kopf.sprache"><button type="button" data-sprache="de" lang="de" title="Deutsch">d</button><button type="button" data-sprache="en" lang="en" title="English">e</button></nav>
+    <a class="app-kopf-zurueck" href="../../b/apps/the-fictory/" data-t-href="../../b/apps/the-fictory/|../../b/en/apps/the-fictory/" data-t="kopf.ueber">Über die App</a>
+  </header>
   <header class="site-header">
     <div class="wrap">
-      <div class="topbar">
-        <nav class="seitenweg" aria-label="Ornament Cloud">
-          <a href="../../" aria-current="true">Ornament Cloud</a>
-          <a href="../drittes-rad/">Das Dritte Rad</a>
-        </nav>
-        <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
-        <nav class="menu" aria-label="Hauptmenü">
-          <a class="menu-item" href="../../apps/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg><span>Apps</span></a>
-          <a class="menu-item" href="../../masterprompts/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-7.5L7 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M7.5 8.5l3 2.25-3 2.25"/><path d="M12.5 13h4"/></svg><span>Prompts</span></a>
-          <a class="menu-item" href="../../zu-seiner-zeit/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h11.5A1.5 1.5 0 0 1 20 5v11"/><rect x="4" y="6.5" width="13" height="14" rx="1.5"/><path d="M7 10.5h7"/><path d="M7 13.5h7"/><path d="M7 16.5h4"/></svg><span>Zettel</span></a>
-          <a class="menu-item" href="../../social-media/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10 4.5 8 19.5"/><path d="M16 4.5l-2 15"/><path d="M5 9.25h14.5"/><path d="M4.5 14.75H19"/></svg><span>Social</span></a>
-          <a class="menu-item" href="../../art/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><rect x="6.5" y="6.5" width="11" height="11" rx="0.5"/><circle cx="10" cy="10" r="1.3"/><path d="M6.5 16c2-2.4 4.2-3.2 6.4-2.3 1.6.6 2.9.4 4.6-.9"/></svg><span>Art</span></a>
-        </nav>
-      </div>
       <h1>The Fictory</h1>
-      <p class="lead">Ein Bild zerfällt in seine Teile und geht weiter.</p>
-      <ol class="ablauf" aria-label="So geht es">
-        <li><b>Bild laden</b><span>oder das Beispielbild</span></li>
-        <li class="frei"><b>Analyse prüfen</b><span>wenn du willst</span></li>
-        <li class="frei"><b>ORNA</b><span>eine Regel ziehen, wenn du willst</span></li>
-        <li><b>Erzeugen</b><span>30 Sekunden Animation</span></li>
-        <li><b>Ansehen und speichern</b><span>Video und Standbilder</span></li>
+      <p class="lead" data-t="lead">Ein Bild zerfällt in seine Teile und geht weiter.</p>
+      <ol class="ablauf" aria-label="So geht es" data-t-attr="aria-label=ablauf.aria">
+        <li><b data-t="ablauf.1">Bild laden</b><span data-t="ablauf.1.text">oder das Beispielbild</span></li>
+        <li class="frei"><b data-t="ablauf.2">Analyse prüfen</b><span data-t="ablauf.2.text">wenn du willst</span></li>
+        <li class="frei"><b data-t="ablauf.3">ORNA</b><span data-t="ablauf.3.text">eine Regel ziehen, wenn du willst</span></li>
+        <li><b data-t="ablauf.4">Erzeugen</b><span data-t="ablauf.4.text">30 Sekunden Animation</span></li>
+        <li><b data-t="ablauf.5">Ansehen und speichern</b><span data-t="ablauf.5.text">Video und Standbilder</span></li>
       </ol>
       <div class="installieren" id="installieren" hidden>
-        <button class="bg-knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="icons/icon-192.png" alt="" width="30" height="30"><span>The Fictory als App installieren</span></button>
+        <button class="bg-knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="icons/icon-192.png" alt="" width="30" height="30"><span data-t="install.knopf">The Fictory als App installieren</span></button>
         <p class="installieren-hilfe" id="installieren-hilfe" hidden></p>
       </div>
     </div>
   </header>
 
   <!-- Die Werkbank: zuerst Ablage, dann das Original, nach «Erzeugen» die Animation mit Massstab und Kontaktbogen -->
-  <section class="werkbank" id="werkbank" aria-label="Werkbank">
+  <section class="werkbank" id="werkbank" aria-label="Werkbank" data-t-attr="aria-label=werkbank.aria">
     <div class="werkbank-innen">
       <div class="ablage" id="ablage">
-        <p class="ablage-satz">Leg ein Bild auf die Werkbank.</p>
+        <p class="ablage-satz" data-t="ablage.satz">Leg ein Bild auf die Werkbank.</p>
         <img id="original" alt="" hidden>
         <div class="bg-knoepfe">
-          <label class="bg-knopf voll" for="datei">Bild wählen<input class="bg-datei" type="file" id="datei" accept="image/*"></label>
-          <button type="button" class="bg-knopf" id="beispiel">Beispielbild</button>
-          <button type="button" class="bg-knopf voll" id="erzeugen-werkbank" hidden>Erzeugen</button>
+          <label class="bg-knopf voll" for="datei"><span data-t="Bild wählen">Bild wählen</span><input class="bg-datei" type="file" id="datei" accept="image/*"></label>
+          <button type="button" class="bg-knopf" id="beispiel" data-t="Beispielbild">Beispielbild</button>
+          <button type="button" class="bg-knopf voll" id="erzeugen-werkbank" hidden data-t="Erzeugen">Erzeugen</button>
         </div>
-        <p class="bg-status" id="status-laden" role="status">Es bleibt auf deinem Gerät.</p>
+        <p class="bg-status" id="status-laden" role="status" data-t="status.laden">Es bleibt auf deinem Gerät.</p>
       </div>
 
       <div class="buehne" id="buehne-box" hidden>
         <div class="buehne-flaeche" id="buehne-flaeche">
-          <canvas id="buehne" aria-label="Die Animation"></canvas>
+          <canvas id="buehne" aria-label="Die Animation" data-t-attr="aria-label=buehne.aria"></canvas>
           <canvas id="daten" aria-hidden="true"></canvas>
         </div>
         <div class="stand">
@@ -331,16 +326,16 @@
           <p class="stand-zeit" id="uhr"></p>
         </div>
         <div class="massstab">
-          <input type="range" id="zeitleiste" min="0" max="900" step="1" value="0" aria-label="Zeitleiste">
+          <input type="range" id="zeitleiste" min="0" max="900" step="1" value="0" aria-label="Zeitleiste" data-t-attr="aria-label=zeitleiste.aria">
           <div class="marken" id="marken"></div>
         </div>
         <div class="werkbank-knoepfe">
-          <button type="button" class="bg-knopf voll" id="spielen" aria-pressed="false">Abspielen</button>
-          <button type="button" class="bg-knopf" id="neustart">Neustart</button>
-          <button type="button" class="bg-knopf" id="daten-knopf" aria-pressed="true" title="Blendet Namen, Lagen und Zähler ein. Nicht in Standbildern und Video.">Daten</button>
-          <button type="button" class="bg-knopf leise" id="anderes-bild">Anderes Bild</button>
+          <button type="button" class="bg-knopf voll" id="spielen" aria-pressed="false" data-t="Abspielen">Abspielen</button>
+          <button type="button" class="bg-knopf" id="neustart" data-t="Neustart">Neustart</button>
+          <button type="button" class="bg-knopf" id="daten-knopf" aria-pressed="true" title="Blendet Namen, Lagen und Zähler ein. Nicht in Standbildern und Video." data-t="Daten" data-t-attr="title=daten.title">Daten</button>
+          <button type="button" class="bg-knopf leise" id="anderes-bild" data-t="Anderes Bild">Anderes Bild</button>
         </div>
-        <h2 class="nur-lesen">Sechs Standbilder</h2>
+        <h2 class="nur-lesen" data-t="standbilder.titel">Sechs Standbilder</h2>
         <ol class="kontaktbogen" id="standbilder"></ol>
       </div>
     </div>
@@ -348,103 +343,103 @@
 
   <main class="bg-seite" id="app">
     <section class="bg-schritt" id="schritt-analyse" aria-labelledby="h-analyse" hidden>
-      <h2 id="h-analyse"><span class="nr">2</span>Analyse prüfen</h2>
+      <h2 id="h-analyse"><span class="nr">2</span><span data-t="analyse.titel">Analyse prüfen</span></h2>
       <details class="bg-auf" id="analyse-auf">
-        <summary><span class="auf">Ansehen und korrigieren</span><span class="kurz" id="analyse-kurz"></span></summary>
-      <p class="bg-hinweis">So liest die App dein Bild: Farben, Flächen, Kanten, Lagen. Sie erkennt keine Dinge. Tippe in die Vorschau, um zu korrigieren.</p>
+        <summary><span class="auf" data-t="analyse.auf">Ansehen und korrigieren</span><span class="kurz" id="analyse-kurz"></span></summary>
+      <p class="bg-hinweis" data-t="analyse.hinweis">So liest die App dein Bild: Farben, Flächen, Kanten, Lagen. Sie erkennt keine Dinge. Tippe in die Vorschau, um zu korrigieren.</p>
       <div class="bg-analyse">
         <div>
-          <div class="bg-vorschau"><canvas id="gliederung" aria-label="Vorschau der Bildgliederung: Flächen in ihrer mittleren Farbe, Figuren mit kräftiger Kontur, Grund schraffiert"></canvas></div>
+          <div class="bg-vorschau"><canvas id="gliederung" aria-label="Vorschau der Bildgliederung: Flächen in ihrer mittleren Farbe, Figuren mit kräftiger Kontur, Grund schraffiert" data-t-attr="aria-label=gliederung.aria"></canvas></div>
           <div class="bg-zeile">
-            <span class="bg-wahl" role="radiogroup" aria-label="Was ein Tipp in der Vorschau tut">
-              <label><input type="radio" name="tipp" value="teil" checked><span>Figur an/aus</span></label>
-              <label><input type="radio" name="tipp" value="grund"><span>Grund ↔ Figur</span></label>
+            <span class="bg-wahl" role="radiogroup" aria-label="Was ein Tipp in der Vorschau tut" data-t-attr="aria-label=tipp.aria">
+              <label><input type="radio" name="tipp" value="teil" checked><span data-t="tipp.teil">Figur an/aus</span></label>
+              <label><input type="radio" name="tipp" value="grund"><span data-t="tipp.grund">Grund ↔ Figur</span></label>
             </span>
-            <span class="bg-wahl" role="radiogroup" aria-label="Ansicht der Vorschau">
-              <label><input type="radio" name="ansicht" value="gliederung" checked><span>Gliederung</span></label>
-              <label><input type="radio" name="ansicht" value="original"><span>Original</span></label>
+            <span class="bg-wahl" role="radiogroup" aria-label="Ansicht der Vorschau" data-t-attr="aria-label=ansicht.aria">
+              <label><input type="radio" name="ansicht" value="gliederung" checked><span data-t="ansicht.gliederung">Gliederung</span></label>
+              <label><input type="radio" name="ansicht" value="original"><span data-t="ansicht.original">Original</span></label>
             </span>
           </div>
-          <p class="bg-hinweis">Alles wird zu Teilen. Figuren liegen obenauf.</p>
-          <div class="bg-teile" id="teile" aria-label="Figuren"></div>
+          <p class="bg-hinweis" data-t="teile.hinweis">Alles wird zu Teilen. Figuren liegen obenauf.</p>
+          <div class="bg-teile" id="teile" aria-label="Figuren" data-t-attr="aria-label=teile.aria"></div>
         </div>
         <div class="bg-regler">
-          <label>Farbgruppen <output id="farben-wert">6</output><input type="range" id="farben" min="3" max="10" step="1" value="6"></label>
-          <label>Kleinste Fläche <output id="mindest-wert">0,4 %</output><input type="range" id="mindest" min="1" max="20" step="1" value="4"></label>
-          <label>Regel für neue Nachbarschaften
+          <label><span data-t="Farbgruppen">Farbgruppen</span> <output id="farben-wert">6</output><input type="range" id="farben" min="3" max="10" step="1" value="6"></label>
+          <label><span data-t="Kleinste Fläche">Kleinste Fläche</span> <output id="mindest-wert">0,4 %</output><input type="range" id="mindest" min="1" max="20" step="1" value="4"></label>
+          <label><span data-t="regel.label">Regel für neue Nachbarschaften</span>
             <select id="regel">
-              <option value="">aus dem Befund</option>
-              <option value="farbe">nach Farbgruppe</option>
-              <option value="groesse">nach Fläche</option>
-              <option value="helligkeit">nach Helligkeit</option>
+              <option value="" data-t="regel.befund">aus dem Befund</option>
+              <option value="farbe" data-t="regel.farbe">nach Farbgruppe</option>
+              <option value="groesse" data-t="regel.groesse">nach Fläche</option>
+              <option value="helligkeit" data-t="regel.helligkeit">nach Helligkeit</option>
             </select>
           </label>
-          <div class="bg-knoepfe"><button type="button" class="bg-knopf klein leise" id="zuruecksetzen">Korrekturen zurücksetzen</button></div>
+          <div class="bg-knoepfe"><button type="button" class="bg-knopf klein leise" id="zuruecksetzen" data-t="zuruecksetzen">Korrekturen zurücksetzen</button></div>
         </div>
       </div>
       <div class="bg-befunde">
-        <div class="bg-befunde-kopf" aria-hidden="true"><span>Befund</span><span>Lesart</span><span>Eingriff</span></div>
+        <div class="bg-befunde-kopf" aria-hidden="true"><span data-t="Befund">Befund</span><span data-t="Lesart">Lesart</span><span data-t="Eingriff">Eingriff</span></div>
         <div id="befunde"></div>
       </div>
       </details>
     </section>
 
     <section class="bg-schritt" id="schritt-orna" aria-labelledby="h-orna" hidden>
-      <h2 id="h-orna"><span class="nr">3</span>ORNA <span class="bg-marke">optional</span></h2>
-      <p class="bg-hinweis">Eine gezogene Konstellation aus ORNA gibt dem Lauf eine Regel.</p>
+      <h2 id="h-orna"><span class="nr">3</span>ORNA <span class="bg-marke" data-t="optional">optional</span></h2>
+      <p class="bg-hinweis" data-t="orna.hinweis">Eine gezogene Konstellation aus ORNA gibt dem Lauf eine Regel.</p>
       <div class="bg-knoepfe">
-        <span class="bg-wahl" role="radiogroup" aria-label="ORNA einbeziehen">
-          <label><input type="radio" name="orna" value="ohne" checked><span>Ohne ORNA</span></label>
-          <label><input type="radio" name="orna" value="ziehen"><span>Konstellation ziehen</span></label>
+        <span class="bg-wahl" role="radiogroup" aria-label="ORNA einbeziehen" data-t-attr="aria-label=orna.aria">
+          <label><input type="radio" name="orna" value="ohne" checked><span data-t="Ohne ORNA">Ohne ORNA</span></label>
+          <label><input type="radio" name="orna" value="ziehen"><span data-t="Konstellation ziehen">Konstellation ziehen</span></label>
         </span>
-        <button type="button" class="bg-knopf klein" id="neu-ziehen" hidden>Neu ziehen</button>
+        <button type="button" class="bg-knopf klein" id="neu-ziehen" hidden data-t="Neu ziehen">Neu ziehen</button>
       </div>
       <div class="bg-karte" id="orna-karte" hidden aria-live="polite"></div>
     </section>
 
     <section class="bg-schritt" id="schritt-erzeugen" aria-labelledby="h-erzeugen" hidden>
-      <h2 id="h-erzeugen"><span class="nr">4</span>Erzeugen</h2>
-      <p class="bg-hinweis">30 Sekunden, sechs Schritte. Jeder baut auf dem vorigen auf, zuletzt setzt sich das Bild neu zusammen. Die Standbilder sind Momente dieses Laufs.</p>
+      <h2 id="h-erzeugen"><span class="nr">4</span><span data-t="erzeugen.titel">Erzeugen</span></h2>
+      <p class="bg-hinweis" data-t="erzeugen.hinweis">30 Sekunden, sechs Schritte. Jeder baut auf dem vorigen auf, zuletzt setzt sich das Bild neu zusammen. Die Standbilder sind Momente dieses Laufs.</p>
       <div class="bg-knoepfe">
-        <button type="button" class="bg-knopf voll" id="erzeugen">Erzeugen</button>
-        <button type="button" class="bg-knopf klein leise" id="neuer-startwert">Neuer Startwert</button>
+        <button type="button" class="bg-knopf voll" id="erzeugen" data-t="Erzeugen">Erzeugen</button>
+        <button type="button" class="bg-knopf klein leise" id="neuer-startwert" data-t="Neuer Startwert">Neuer Startwert</button>
       </div>
       <p class="bg-status" id="startwert"></p>
       <p class="bg-status" id="status-erzeugen" role="status"></p>
     </section>
 
     <section class="bg-schritt" id="ergebnis" aria-labelledby="h-ergebnis" hidden>
-      <h2 id="h-ergebnis"><span class="nr">5</span>Exportieren und prüfen</h2>
+      <h2 id="h-ergebnis"><span class="nr">5</span><span data-t="ergebnis.titel">Exportieren und prüfen</span></h2>
       <div class="bg-export">
         <div class="bg-knoepfe">
-          <button type="button" class="bg-knopf" id="alle-png">Alle sechs Standbilder (ZIP)</button>
-          <button type="button" class="bg-knopf" id="video">Animation als Video</button>
-          <button type="button" class="bg-knopf" id="protokoll">Protokoll (JSON)</button>
-          <label class="bg-knopf leise" for="protokoll-laden">Lauf aus Protokoll wiederholen<input class="bg-datei" type="file" id="protokoll-laden" accept="application/json,.json"></label>
+          <button type="button" class="bg-knopf" id="alle-png" data-t="alle-png">Alle sechs Standbilder (ZIP)</button>
+          <button type="button" class="bg-knopf" id="video" data-t="video.knopf">Animation als Video</button>
+          <button type="button" class="bg-knopf" id="protokoll" data-t="protokoll">Protokoll (JSON)</button>
+          <label class="bg-knopf leise" for="protokoll-laden"><span data-t="protokoll.laden">Lauf aus Protokoll wiederholen</span><input class="bg-datei" type="file" id="protokoll-laden" accept="application/json,.json"></label>
         </div>
         <progress class="bg-fortschritt" id="fortschritt" max="1" value="0" hidden></progress>
         <p class="bg-status" id="status-export" role="status"></p>
       </div>
 
       <div class="bg-gegen">
-        <h3>Gegenprobe</h3>
-        <p class="bg-hinweis">Derselbe Lauf, nur ohne wirksame Spuren ab Schritt 4. Was ändert sich?</p>
-        <div class="bg-knoepfe"><button type="button" class="bg-knopf klein" id="gegenprobe">Gegenprobe rechnen</button></div>
+        <h3 data-t="Gegenprobe">Gegenprobe</h3>
+        <p class="bg-hinweis" data-t="gegen.hinweis">Derselbe Lauf, nur ohne wirksame Spuren ab Schritt 4. Was ändert sich?</p>
+        <div class="bg-knoepfe"><button type="button" class="bg-knopf klein" id="gegenprobe" data-t="gegen.knopf">Gegenprobe rechnen</button></div>
         <div class="bg-gegen-bilder" id="gegen-bilder" hidden>
           <figure><canvas id="gegen-mit"></canvas><figcaption id="gegen-mit-text"></figcaption></figure>
           <figure><canvas id="gegen-ohne"></canvas><figcaption id="gegen-ohne-text"></figcaption></figure>
         </div>
       </div>
 
-      <details class="bg-protokoll" id="ereignisse"><summary>Ereignisse des Laufs</summary><ol id="ereignis-liste"></ol></details>
+      <details class="bg-protokoll" id="ereignisse"><summary data-t="ereignisse.titel">Ereignisse des Laufs</summary><ol id="ereignis-liste"></ol></details>
     </section>
 
     <section class="bg-schritt bg-methode" aria-labelledby="h-methode">
-      <h2 id="h-methode">Was hier geschieht</h2>
+      <h2 id="h-methode" data-t="methode.titel">Was hier geschieht</h2>
       <ul>
-        <li><strong>Nebeneinander:</strong> Jedes Teil bleibt auffindbar (F1, F2 …), wo immer es hinwandert.</li>
-        <li><strong>Nacheinander:</strong> Spuren und ein wucherndes Feld bremsen und lenken die späteren Schritte. Am Ende setzt sich das Bild neu zusammen; die Spuren bestimmen, in welcher Reihenfolge.</li>
-        <li>Keine Bewertung. Keine Aussage darüber, wie das Bild entstanden ist oder wie es wirkt.</li>
+        <li data-t="methode.1"><strong>Nebeneinander:</strong> Jedes Teil bleibt auffindbar (F1, F2 …), wo immer es hinwandert.</li>
+        <li data-t="methode.2"><strong>Nacheinander:</strong> Spuren und ein wucherndes Feld bremsen und lenken die späteren Schritte. Am Ende setzt sich das Bild neu zusammen; die Spuren bestimmen, in welcher Reihenfolge.</li>
+        <li data-t="methode.3">Keine Bewertung. Keine Aussage darüber, wie das Bild entstanden ist oder wie es wirkt.</li>
         <li id="integrationen">Integrationen werden beim Laden ermittelt.</li>
       </ul>
     </section>
@@ -453,8 +448,8 @@
   <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
   <footer class="site-footer">
     <div class="wrap">
-      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
-      <p><a href="../../impressum/">Impressum</a></p>
+      <p data-t="fuss.fragen">Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+      <p><a href="../../impressum/" data-t="fuss.impressum">Impressum</a></p>
     </div>
   </footer>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->

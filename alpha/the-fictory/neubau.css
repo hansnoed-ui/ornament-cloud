@@ -81,3 +81,16 @@ body { -webkit-font-smoothing: antialiased; }
 /* App-Seite (app/): das Symbol ohne Schatten, die Zeilen in Newsreader */
 .app-symbol { box-shadow: 0 0 0 1px var(--border); }
 .app-text p { font-family: var(--serif); font-size: 1.1rem; }
+
+/* Kopf der App (21. Oktober 2026, wie OMNA COLOR, ORNA, ORMA und PHORMA I–III): Signet mit Weg in den Neubau, der Schalter d · e, «Über die App»; auf der Bühne (?b=1) nicht */
+.app-kopf { display: flex; align-items: center; gap: 16px; padding: 14px 0 12px; border-bottom: 1px solid var(--border); font-family: var(--font, system-ui, sans-serif); font-size: 0.95rem; }
+.app-kopf-signet { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-weight: 500; letter-spacing: 0.01em; }
+.app-kopf-signet svg { width: 34px; height: 24px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.app-kopf-signet circle { fill: var(--accent); stroke: none; }
+.app-kopf-zurueck { margin-left: auto; color: var(--muted); text-decoration: none; }
+.app-kopf-zurueck:hover, .app-kopf-zurueck:focus-visible { color: var(--text); text-decoration: underline; }
+.sprache { display: flex; gap: 2px; }
+.sprache button { font: inherit; font-size: 0.85rem; line-height: 1; color: var(--muted); background: none; border: 0; border-bottom: 1px solid transparent; padding: 6px 5px 5px; min-width: 24px; cursor: pointer; }
+.sprache button[aria-current] { color: var(--text); border-bottom-color: var(--accent); }
+.sprache button:hover, .sprache button:focus-visible { color: var(--text); outline: none; border-bottom-color: currentColor; }
+.app-kopf + .site-header { padding-top: 18px; }

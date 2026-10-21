@@ -87,7 +87,7 @@ export const APPS = [
   { slug: "the-fictory", name: "The Fictory", gattung: "Bild und Video", kurz: "Ein Bild zerfällt, ordnet sich neu und setzt sich wieder zusammen.",
     text: "Leg ein Bild auf die Werkbank: Es zerfällt in seine Teile, ordnet sich neu, hinterlässt Spuren und setzt sich am Ende neu zusammen. Eine Animation, sechs Standbilder und ein Video. Wer will, gibt eine Regel aus ORNA mit; sie bestimmt den Eingriff.",
     fuer: "Für alle, die sehen wollen, was ein Bild noch sein könnte.",
-    url: "alpha/the-fictory/", app: "alpha/the-fictory/app/", bild: "b/bilder/apps/the-fictory.svg", bildDunkel: "b/bilder/apps/the-fictory-dunkel.svg", bildAlt: "The Fictory, gezeichnet: ein Raster von Kacheln, jede aus ihrer Herkunft gewandert und gedreht, mit Spuren und Fäden",
+    url: "alpha/the-fictory/", app: "alpha/the-fictory/?installieren", bild: "b/bilder/apps/the-fictory.svg", bildDunkel: "b/bilder/apps/the-fictory-dunkel.svg", bildAlt: "The Fictory, gezeichnet: ein Raster von Kacheln, jede aus ihrer Herkunft gewandert und gedreht, mit Spuren und Fäden",
     beispiele: [
       { art: "video", datei: "assets/beispiele/the-fictory.mp4", bild: "assets/beispiele/the-fictory.jpg", mass: [540, 766], text: "Der ganze Lauf von 30 Sekunden mit dem Beispielbild: Archiv, Zeitachse, Spuren, Kopplungen, Schnitt – und das Bild setzt sich wieder zusammen. Gerechnet aus der App." },
       { art: "paar", vorher: "alpha/the-fictory/beispiel.jpg", nachher: "assets/vorschau-the-fictory.jpg", text: "Ein Bild auf der Werkbank zerfällt in seine Teile; jedes Teil wird eine Spur." },

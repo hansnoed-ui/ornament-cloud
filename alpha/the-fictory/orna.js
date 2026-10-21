@@ -4,18 +4,27 @@
 // mit der jev-Tabelle (jev.js, beim Bauen erzeugt), sonst über Stichworte im Text. Der Gedanke ist immer ein unveränderter Satz des Textes.
 // Die Ableitung ist eine gestalterische Interpretation; eine schwierige Passung bleibt als solche stehen.
 import { constellations } from "../../portfolio/nebeneinander-nacheinander/js/data/constellations.js";
+import { constellationsEn } from "../../portfolio/nebeneinander-nacheinander/js/data/constellations.en.js";
 import { artists } from "../../portfolio/nebeneinander-nacheinander/js/data/artists.js";
 import { theorists } from "../../portfolio/nebeneinander-nacheinander/js/data/theorists.js";
 import { drawConstellation } from "../../portfolio/nebeneinander-nacheinander/js/lib/random.js";
-import { REGELN, REGEL_IDS, saetze, pruefsumme } from "./regeln.js?v=21";
-import { JEV } from "./jev.js?v=21";
-import { zufall } from "./analyse.js?v=21";
+import { REGELN, REGEL_IDS, saetze, pruefsumme } from "./regeln.js?v=22";
+import { JEV } from "./jev.js?v=22";
+// Sprache (sprache.js, nur im Browser): TF(schlüssel, deutscher Satz, …) gibt auf Englisch die Übersetzung, in Node (Tests) den deutschen Satz
+const TF = (k, de, ...a) => (globalThis.sprache?.en() ? globalThis.sprache.t(k, ...a) : de);   // auf der Seite und im Worker; in Node bleibt Deutsch
+const T = (k) => TF(k, k);
+import { zufall } from "./analyse.js?v=22";
 
 export const BESTAND = constellations.length;
 export const jevGueltig = () => Boolean(JEV && JEV.pruefsumme === pruefsumme(constellations) && JEV.eintraege);
 
 /** Konstellation aus dem Bestand (Text und Frage unverändert) */
-export const konstellation = (id) => constellations.find((c) => c.id === id) ?? null;
+/** die Konstellation zum Lesen: auf Englisch mit Text und Frage aus constellations.en.js (gleiche Satzzahl wie das Original), sonst das Original */
+export const konstellation = (id) => {
+  const k = constellations.find((c) => c.id === id) ?? null;
+  const e = k && globalThis.sprache?.en() ? constellationsEn[k.id] : null;
+  return e ? { ...k, text: e.text, question: e.question } : k;
+};
 
 const person = (id) => [...artists, ...theorists].find((p) => p.id === id)?.name ?? id;
 
@@ -39,11 +48,13 @@ function gewichtet(r, eintraege) {
 export function ableiten(id, seed) {
   const k = constellations.find((c) => c.id === id);
   if (!k) throw new Error(`Konstellation nicht im Bestand: ${id}`);
-  const s = saetze(k.text);
+  const s = saetze(k.text);   // die Ableitung (Regel, Satznummer) läuft immer über den deutschen Text: gleicher Startwert, gleiches Ergebnis
+  const lesen = konstellation(id), sl = lesen === k ? s : saetze(lesen.text);
+  const satzIn = (nr) => (sl.length === s.length ? sl : s)[nr];   // zum Lesen der Satz in der Sprache der Seite, wenn die Sätze sich decken
   const r = zufall((seed ^ 0xa5a5a5a5) >>> 0);
   const basis = {
-    konstellation: { id: k.id, nummer: k.editorialNumber, kuenstler: person(k.artistId), theoretiker: person(k.theoristId), frage: k.question },
-    herkunft: `ORNA, «Nebeneinander, Nacheinander»: kuratierter Bestand von ${BESTAND} Konstellationen, Datensatz ${k.id} (redaktionelle Nummer ${k.editorialNumber})`,
+    konstellation: { id: k.id, nummer: k.editorialNumber, kuenstler: person(k.artistId), theoretiker: person(k.theoristId), frage: lesen.question },
+    herkunft: TF("herkunft", `ORNA, «Nebeneinander, Nacheinander»: kuratierter Bestand von ${BESTAND} Konstellationen, Datensatz ${k.id} (redaktionelle Nummer ${k.editorialNumber})`, BESTAND, k.id, k.editorialNumber),
   };
   if (jevGueltig() && JEV.eintraege[id]) {
     const e = JEV.eintraege[id];
@@ -51,9 +62,9 @@ export function ableiten(id, seed) {
     const regel = kandidaten.length ? gewichtet(r, kandidaten) : REGEL_IDS.reduce((a, b) => ((e.regel[b] ?? 0) > (e.regel[a] ?? 0) ? b : a));
     const p = e.regel[regel] ?? 0;
     const satzNr = Math.min(s.length - 1, Math.max(0, e.satz[regel] ?? 0));
-    return { ...basis, regel, satz: s[satzNr], satzNr, quelle: "jev", wahrscheinlichkeit: p,
+    return { ...basis, regel, satz: satzIn(satzNr), satzNr, quelle: "jev", wahrscheinlichkeit: p,
       passung: p >= 0.4 ? "naheliegend" : p >= 0.15 ? "möglich" : "schwierig",
-      begruendung: `jev (${JEV.modell}, beim Bauen am ${JEV.stand}) hielt diese Regel für ${p >= 0.4 ? "naheliegend" : p >= 0.15 ? "möglich" : "eine schwierige Passung"}; gezogen wurde mit dem Startwert aus den Einschätzungen von jev, gewichtet.` };
+      begruendung: TF("begruendungJev", `jev (${JEV.modell}, beim Bauen am ${JEV.stand}) hielt diese Regel für ${p >= 0.4 ? "naheliegend" : p >= 0.15 ? "möglich" : "eine schwierige Passung"}; gezogen wurde mit dem Startwert aus den Einschätzungen von jev, gewichtet.`, JEV.modell, JEV.stand, p) };
   }
   // ohne jev-Tabelle: Stichworte der Regeln im Text zählen
   const klein = s.map((t) => t.toLowerCase());
@@ -62,12 +73,12 @@ export function ableiten(id, seed) {
   if (!kandidaten.length) {
     const regel = REGEL_IDS[Math.floor(r() * REGEL_IDS.length)];
     return { ...basis, regel, satz: null, satzNr: null, quelle: "zufall", passung: "offen",
-      begruendung: "Kein Satz enthält ein Stichwort einer Regel; die Regel ist ohne Beleg im Text gezogen. Die Passung bleibt offen." };
+      begruendung: T("Kein Satz enthält ein Stichwort einer Regel; die Regel ist ohne Beleg im Text gezogen. Die Passung bleibt offen.") };
   }
   const regel = gewichtet(r, kandidaten);
   const je = treffer.find(([rid]) => rid === regel)[1];
   const satzNr = je.indexOf(Math.max(...je));
   const n = kandidaten.find(([rid]) => rid === regel)[1];
-  return { ...basis, regel, satz: s[satzNr], satzNr, quelle: "stichworte", treffer: n, passung: n >= 3 ? "naheliegend" : n === 2 ? "möglich" : "schwierig",
-    begruendung: `Zuordnung über Stichworte der Regel im Text (${n} Treffer), ohne jev; gezogen mit dem Startwert, gewichtet nach Treffern.` };
+  return { ...basis, regel, satz: satzIn(satzNr), satzNr, quelle: "stichworte", treffer: n, passung: n >= 3 ? "naheliegend" : n === 2 ? "möglich" : "schwierig",
+    begruendung: TF("begruendungStichworte", `Zuordnung über Stichworte der Regel im Text (${n} Treffer), ohne jev; gezogen mit dem Startwert, gewichtet nach Treffern.`, n) };
 }
