@@ -437,3 +437,12 @@ body.buehne-seite { height: 100dvh; display: grid; grid-template-rows: 48px minm
 /* Eingeblendete Rückmeldung (Link kopiert) */
 .meldung { position: fixed; left: 50%; bottom: 24px; z-index: 950; transform: translateX(-50%); background: var(--tinte); color: var(--papier); padding: 10px 16px; font-size: 0.95rem; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
 .meldung.da { opacity: 1; }
+
+/* Die Tafeln in den Beiträgen der Apps und Prüfraster auf dem Handy kleiner (21. Oktober 2026, Wunsch: «die Symbole im Beitrag selber analog
+   verkleinern», wie die Zeilen der Übersichten): oben die Tafel der App auf 160 px, die bewegten Tafeln als Zeile, links 120 px, rechts die
+   Erklärung. Am Ende der Datei, damit die Grundregeln oben sie nicht überschreiben. */
+@media (max-width: 560px) {
+  .stueck-bild.quadrat { max-width: 160px; margin-top: 28px; }
+  .tafel-lebt:not(.signet-tafel) { grid-template-columns: 120px minmax(0, 1fr); column-gap: 16px; align-items: start; }
+  .tafel-lebt:not(.signet-tafel) figcaption { font-size: 0.92rem; }
+}
