@@ -122,6 +122,7 @@
     // das Feld zum Installieren ganz oben (21. Oktober 2026)
     "ORMA installieren": "Install ORMA", "Schliessen": "Close",
     "Auf den Knopf tippen und bestätigen. Geht das in diesem Browser nicht direkt, stehen die Schritte darunter.": "Tap the button and confirm. If this browser cannot do it directly, the steps are below.",
+    "Bereit: auf den Knopf tippen und die Installation bestätigen.": "Ready: tap the button and confirm the installation.",
   };
   const KEY = "ornament.sprache";
   // zuerst die Adresse (?sprache=de|en: die Bühne und die Links des Neubaus geben die Sprache der Seite mit, 20. Oktober 2026, und die Wahl wird gemerkt), dann die gemerkte Wahl, sonst das Gerät

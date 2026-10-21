@@ -68,9 +68,12 @@ function installObenFeld() {
   return h("section", { class: "orma-install-oben", "aria-labelledby": "orma-install-oben-titel" },
     btn("×", () => { installOben = false; installGewuenscht = false; renderStart(); }, "orma-install-oben-zu", { "aria-label": T("Schliessen") }),
     h("h2", { id: "orma-install-oben-titel", text: T("ORMA installieren") }),
-    h("p", { class: "orma-install-oben-satz", text: T("Auf den Knopf tippen und bestätigen. Geht das in diesem Browser nicht direkt, stehen die Schritte darunter.") }),
+    h("p", { class: "orma-install-oben-satz", text: installObenSatz() }),
     b, help);
 }
+// sobald der Browser die Installation freigibt (beforeinstallprompt), sagt das Feld «Bereit»: dann öffnet der Knopf das Fenster direkt
+const installObenSatz = () => installPrompt ? T("Bereit: auf den Knopf tippen und die Installation bestätigen.")
+  : T("Auf den Knopf tippen und bestätigen. Geht das in diesem Browser nicht direkt, stehen die Schritte darunter.");
 function installBlock(cls = "orma-link", oben = false) {
   if (STANDALONE) return [];
   const help = h("p", { class: "orma-small orma-install-help", id: "orma-install-help", hidden: !installGewuenscht, text: installSteps() + T(" Danach funktioniert ORMA auch ohne Netz.") });
@@ -82,8 +85,10 @@ function installBlock(cls = "orma-link", oben = false) {
       if (choice && choice.outcome === "accepted") b.hidden = true;
       return;
     }
-    installGewuenscht = false;
-    help.hidden = !help.hidden;
+    // im Feld oben bleiben die Schritte offen und blinken kurz auf (21. Oktober 2026: dort klappte der Tipp sie zu, der Knopf schien nichts zu tun –
+    // «Bei allen Apps funktioniert er nicht»); sonst klappt er sie wie bisher auf und zu
+    if (oben) { help.hidden = false; help.classList.remove("orma-install-blinkt"); void help.offsetWidth; help.classList.add("orma-install-blinkt"); }
+    else { installGewuenscht = false; help.hidden = !help.hidden; }
     b.setAttribute("aria-expanded", String(!help.hidden));
   }, cls, { "aria-expanded": String(installGewuenscht), "aria-controls": "orma-install-help" });
   if (installGewuenscht && !oben) requestAnimationFrame(() => { b.scrollIntoView({ block: "center" }); b.focus({ preventScroll: true }); });   // die Startansicht wird beim Sprachwechsel neu gezeichnet, darum bleibt die Wahl bis zum nächsten Schritt
@@ -728,7 +733,11 @@ document.querySelector(".orma-home").addEventListener("click", () => { persist()
 // Wechsel der Sprache (js/sprache.js): die aktuelle Ansicht neu zeichnen; Eingaben bleiben, sie liegen in der Runde
 document.addEventListener("sprache", () => { if (document.documentElement.dataset.ready) rerender(); });
 addEventListener("pagehide", persist);
-addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt = e; });
+addEventListener("beforeinstallprompt", e => {
+  e.preventDefault(); installPrompt = e;
+  const satz = document.querySelector(".orma-install-oben-satz");
+  if (satz) satz.textContent = installObenSatz();
+});
 
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
   addEventListener("load", () => { navigator.serviceWorker.register(new URL("../sw.js", import.meta.url)).catch(() => { /* ohne Offline-Betrieb weiter */ }); });
