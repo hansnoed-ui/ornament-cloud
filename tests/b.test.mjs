@@ -55,6 +55,21 @@ test("b/: Vorschaukarten liegen da, 1200 × 630, unter 300 KB", () => {
   }
 });
 
+test("b/en/: Vorschaukarten auf Englisch unter b/en/kacheln/, 1200 × 630; die Download-Karten der Zettel ebenso", () => {
+  for (const p of seitenEn) {
+    const html = lies(`b/en/${p}index.html`);
+    const bild = meta(html, "og:image").replace("https://ornament.cloud/", "");
+    if (bild.endsWith(".png")) {
+      assert.ok(bild.startsWith("b/en/kacheln/"), `${p}: die englische Karte (${bild})`);
+      assert.ok(existsSync(new URL(bild, root)), `${p}: ${bild} gibt es`);
+      assert.deepEqual(pngMass(readFileSync(new URL(bild, root))), [1200, 630], `${p}: ${bild} ist 1200 × 630`);
+    }
+    const karten = [...html.matchAll(/href="(\/b\/[^"]+)" download/g)].map((k) => k[1]);
+    for (const k of karten) { assert.ok(k.startsWith("/b/en/kacheln/"), `${p}: Download-Karte auf Englisch (${k})`); assert.ok(existsSync(new URL(k.slice(1), root)), `${p}: ${k} gibt es`); }
+    if (/^zettel\/\d/.test(p)) assert.equal(karten.length, 1, `${p}: eine Karte zum Herunterladen`);
+  }
+});
+
 test("b/: nichts von aussen – keine Skripte, Stile, Bilder oder Schriften von fremden Adressen", () => {
   for (const p of seiten) {
     const html = lies(`b/${p}index.html`).replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "");
