@@ -67,7 +67,8 @@ export const APPS = [
     fuer: "For everyone who wants to make a reel from an image, without an editing program.",
     url: "alpha/bildfragmentieren/", app: "alpha/bildfragmentieren/?installieren", bild: "b/bilder/apps/phorma-i.svg", bildDunkel: "b/bilder/apps/phorma-i-dunkel.svg", bildAlt: "PHORMA I, drawn: a crystal of shards, triangles over a disc, one shard in blue",
     beispiele: [
-      { art: "video", datei: "assets/beispiele/phorma-i.mp4", bild: "assets/beispiele/phorma-i.jpg", mass: [540, 676], text: "The sequence «Fragments» with the example photo: lines, shapes, colours – and at the end the photo. Computed from the app, without sound." },
+      { art: "video", datei: "assets/beispiele/phorma-i.mp4", bild: "assets/beispiele/phorma-i.jpg", mass: [540, 676], text: "The sequence «Fragments» on a portrait: lines settle into contours, shapes break into shards, then the colours arrive – and at the end the picture. Without sound." },
+      { art: "video", datei: "assets/beispiele/phorma-i-verwandlung.mp4", bild: "assets/beispiele/phorma-i-verwandlung.jpg", mass: [540, 676], text: "The sequence «Transformation»: shining sparks stream (Stream), condense into a glass body (Body), it shatters (Shards), the shards trail through a tunnel (Echo), they become mountains with contour lines (Relief) – and lie down flat as the photo. Without sound." },
       { art: "paar", vorher: "alpha/bildfragmentieren/beispiel.jpg", nachher: "assets/vorschau-phorma-i-2x.jpg", text: "A photo becomes a glass crystal: the image lies on the facets, the lines are the edges." },
     ],
     bewegung: "How PHORMA I works, in three sequences: «Fragments» assembles the photo from lines, shapes and colours; «Transformation» leads through sparks, a glass body, shards, echo and mountains to the photo; the «Relief flight» flies over the shapes until the picture lies flat. The drawing shows the shards.",
