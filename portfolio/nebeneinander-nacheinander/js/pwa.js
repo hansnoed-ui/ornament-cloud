@@ -65,7 +65,7 @@ if (box && !standalone) {
   let deferred = null;
   box.hidden = false;
   // vom Neubau («Als App installieren», /b/apps/orna/) mit ?installieren: zum Knopf scrollen, die Schritte gleich aufklappen
-  if (new URLSearchParams(location.search).has("installieren")) { help.hidden = false; btn.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => { box.scrollIntoView({ block: "center" }); btn.focus({ preventScroll: true }); }); }
+  if (new URLSearchParams(location.search).has("installieren")) { help.hidden = false; btn.setAttribute("aria-expanded", "true"); obenAnbieten(box, btn, "ORNA"); }
 
   addEventListener("beforeinstallprompt", e => {
     e.preventDefault();                 // kein aufdringliches Banner, nur der eigene, stille Knopf
@@ -93,4 +93,39 @@ if (box && !standalone) {
     // im eingebauten Browser (Android): gleich weiter nach Chrome; der Link bleibt als Rückfall stehen
     if (toChrome()) { track("rad-app/chrome", "App: in Chrome öffnen"); help.hidden = false; btn.setAttribute("aria-expanded", "true"); toChrome().click(); }
   });
+}
+
+// Vom Neubau («Als App installieren», /b/apps/…) mit ?installieren: ein deutliches Feld ganz oben, unter dem Kopf der App, statt nur zum Knopf
+// unten zu scrollen (21. Oktober 2026, Rückmeldung: der Knopf im Neubau «führt nicht zum Download, sondern verlinkt eine andere Seite»).
+// Titel, ein Satz, der Knopf und die Schritte; «×» legt den Knopf an seinen Platz zurück. Das Installationsfenster selbst kann der Browser nur nach
+// einem Tippen auf einer Seite der App öffnen – darum dieser Schritt und nicht schon der Knopf im Neubau.
+function obenAnbieten(box, knopf, name) {
+  const platz = document.createComment("installieren"), feld = document.createElement("section");
+  const titel = document.createElement("h2"), satz = document.createElement("p"), zu = document.createElement("button");
+  feld.className = "install-oben"; titel.id = "install-oben-titel"; feld.setAttribute("aria-labelledby", titel.id);
+  satz.className = "install-oben-satz"; zu.type = "button"; zu.className = "install-oben-zu"; zu.textContent = "×";
+  const texte = () => {
+    const en = !!window.sprache?.en?.();
+    titel.textContent = en ? `Install ${name}` : `${name} installieren`;
+    satz.textContent = en ? "Tap the button and confirm. If this browser cannot do it directly, the steps are below."
+      : "Auf den Knopf tippen und bestätigen. Geht das in diesem Browser nicht direkt, stehen die Schritte darunter.";
+    zu.setAttribute("aria-label", en ? "Close" : "Schliessen");
+  };
+  texte();
+  document.addEventListener("sprache", texte);
+  const stil = document.createElement("style");
+  stil.textContent = ".install-oben{position:relative;box-sizing:border-box;max-width:40rem;margin:16px auto 28px;padding:22px 20px 20px;border:1.5px solid currentColor;border-radius:16px;text-align:center}"
+    + "@media (max-width:700px){.install-oben{margin:12px 16px 24px}}"
+    + ".install-oben h2{margin:0 0 6px;padding:0 28px;font-size:1.3rem;line-height:1.2;font-weight:600}"
+    + ".install-oben-satz{margin:0 auto 16px;max-width:30em;line-height:1.45;opacity:.75}"
+    + ".install-oben-zu{position:absolute;top:6px;right:8px;width:40px;height:40px;border:0;background:none;color:inherit;font:inherit;font-size:1.6rem;line-height:1;cursor:pointer;opacity:.6}"
+    + ".install-oben-zu:hover,.install-oben-zu:focus-visible{opacity:1}"
+    + ".install-oben>:last-child{margin:0 auto!important}";
+  document.head.append(stil);
+  box.before(platz);
+  feld.append(zu, titel, satz, box);
+  const kopf = document.querySelector(".app-kopf");   // bei ORNA ein div im Kopf der Seite
+  if (kopf) kopf.after(feld); else document.body.prepend(feld);
+  zu.addEventListener("click", () => { platz.replaceWith(box); feld.remove(); });
+  requestAnimationFrame(() => { scrollTo(0, 0); knopf.focus({ preventScroll: true }); });
 }
