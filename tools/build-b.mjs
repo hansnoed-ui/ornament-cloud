@@ -502,8 +502,7 @@ ${gruppen.map((g) => `<section class="abschnitt" aria-labelledby="g-${g.replace(
   <div class="galerie">
     ${["orna", "omna-color"].map((sl) => { const a = appVon(sl); return `<div class="galerie-stueck"><p class="klein"><a href="${B}apps/${a.slug}/">${esc(a.name)}</a></p>${beispiele(a, { kurz: true })}</div>`; }).join("")}
   </div>
-</div></section>
-<section class="abschnitt"><div class="spalte"><p class="klein">${esc(T.apps.weitere)}<a href="/alpha/drittes-rad/">Das Dritte Rad</a>, <a href="/alpha/stadt/">Die Paradoxie der Stadt</a>, <a href="/alpha/sketchory/">Sketchory</a>, <a href="/alpha/aufnahme/">Aufnahme</a>.</p></div></section>`;
+</div></section>`;
     veroeffentliche({ pfad: "apps/", aktiv: "apps/", titel: T.apps.seitenTitel, beschreibung: T.apps.beschreibung, body, bildAlt: T.apps.bildAlt });
   }
   for (const a of APPS) {
