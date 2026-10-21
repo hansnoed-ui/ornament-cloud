@@ -10,9 +10,8 @@
 //   Tuch     – 01 Tuch (das Foto als Seidentuch im Wind) → 02 Bild (es wird glattgezogen und liegt als Foto da)
 //   Montage  – 01 Schnitte (das Foto zerfällt im Takt in immer mehr Rechtecke) → 02 Montage (jedes zeigt einen eigenen Ausschnitt, harte Schnitte
 //              zu neuen Aufteilungen) → 03 Bild (die Felder rasten ein); seit dem 19. Oktober 2026, nach dem Clip «UVA» (montageplan.js)
-//   Wachstum – 01 Keim (ein kleiner leuchtender Kreis) → 02 Wachstum (eine einzige Linie faltet sich und füllt das Motiv, Differential Growth) →
-//              03 Farbe (sie nimmt die Farben des Fotos an) → 04 Bild (das Foto erscheint); seit dem 19. Oktober 2026, nach dem Clip «algorigraph»
-//              (wachstumsim.js)
+// Das Wachstum (eine leuchtende Linie wächst aus einem Keim, Differential Growth) war vom 19. bis 21. Oktober 2026 ein Effekt; seither ist es weg
+// (Wunsch: «Ich möchte wachstum weg, das scheint nicht recht zu klappen» – die Bahn rechnete auf dem Telefon zu lange; im Verlauf von Git).
 // Das Gewebe (für Text, Foto, Video und Ton) war vom 17. bis 18. Oktober 2026 ein vierter Effekt, für sich; seither ist es PHORMA III
 // (alpha/phorma-iii/; Wunsch: «Es sind ja zwei ganz verschiedene Ansätze … all das soll aus PHORMA II ausgelagert werden»).
 // Danach steht das Foto, dann (wenn gewählt) das Signet von ornament.cloud.
@@ -29,11 +28,10 @@ export const ABSPANN = 0.9 + 0.15 + SIGNET + 0.6 + 0.6 + 0.2;
 
 export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 
-// die Reihenfolge in einer Kette; seit 19. Oktober 2026 das Wachstum zuerst (Wunsch: «Ich möchte einen anderen Ablauf: Wachstum, Physarum, Tiefe (Scan),
-// Tuch, Montage»), davor stand es nach dem Tuch
-export const EFFEKTE = ["wachstum", "physarum", "tiefe", "tuch", "montage"];
-export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", wachstum: "Wachstum", montage: "Montage" };
-/** die Kette der Karte «Alle drei» (Montage und Wachstum kamen am 19. Oktober 2026 dazu und sind nur einzeln oder in einer eigenen Kette dabei) */
+// die Reihenfolge in einer Kette (Wunsch vom 19. Oktober 2026: «Physarum, Tiefe (Scan), Tuch, Montage»; ein gemerktes «wachstum» fällt weg)
+export const EFFEKTE = ["physarum", "tiefe", "tuch", "montage"];
+export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", montage: "Montage" };
+/** die Kette der Karte «Alle drei» (die Montage kam am 19. Oktober 2026 dazu und ist nur einzeln oder in einer eigenen Kette dabei) */
 export const KETTE = "physarum+tiefe+tuch";
 
 /** die gewählten Effekte in fester Reihenfolge, mit «+» verbunden; Unbekanntes oder nichts (auch ein gemerktes «gewebe») ergibt die ganze Kette */
@@ -64,10 +62,6 @@ export function rolle(art, liste, i) {
   } else if (art === "tuch") {
     phasen = [["tuch", "Tuch", vorher === "tiefe" ? 4.6 : 5.0]];
     if (naechstes === "montage") { ueber = 0.8; uebergang = "felder"; } else phasen.push(["bild", "Bild", 3.4]);
-  } else if (art === "wachstum") {
-    phasen = [["keim", "Keim", 1.2], ["wachstum", "Wachstum", 6.6], ["farbe", "Farbe", 2.4]];
-    // vor einem anderen Effekt ohne Foto dazwischen: vor der Montage Rechtecke, sonst die Zeitfront (die leuchtende Linie geht ins Netz über)
-    if (naechstes === "montage") { ueber = 0.8; uebergang = "felder"; } else if (naechstes) { ueber = 1.2; uebergang = "front"; } else phasen.push(["bild", "Bild", 2.6]);
   } else {
     // die Montage steht immer am Schluss; nach einem anderen Effekt schneiden Rechtecke ihn weg, sie beginnt schon zerschnitten
     phasen = [["schnitte", "Schnitte", erst ? 2.5 : 2.0], ["montage", "Montage", 7.0], ["bild", "Bild", 2.6]];

@@ -1,11 +1,11 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=33";
-import { szene, bild, standbildZeit } from "./film.js?v=33";
-import { videoPlan, videoStelleBei, HOECHSTENS } from "./filmquelle.js?v=33";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=33";
-import { mitDauer } from "../the-fictory/dauer.js?v=33";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=34";
+import { szene, bild, standbildZeit } from "./film.js?v=34";
+import { videoPlan, videoStelleBei, HOECHSTENS } from "./filmquelle.js?v=34";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=34";
+import { mitDauer } from "../the-fictory/dauer.js?v=34";
 
 const $ = (id) => document.getElementById(id);
 const vorschau = $("vorschau"), vctx = vorschau.getContext("2d");
@@ -208,24 +208,13 @@ $("film-start").addEventListener("input", () => {
   const v = Number($("film-start").value); $("film-start-wert").textContent = sekunden(v);
   clearTimeout(filmUmstellen); filmUmstellen = setTimeout(() => { S.film.von = v; filmLesen(); }, 400);
 });
-/** für die Bühne: das Bild des Videos zu einer Sekunde, und kleine Bilder für das Wachstum */
+/** für die Bühne: das Bild des Videos zu einer Sekunde */
 function filmFuerBuehne() {
   const F = S.film; if (!F?.spur) return null;
   const spur = F.spur;
   return {
     von: F.von, dauer: spur.dauer,
     bild: (qt, o) => spur.bild(qt, o),
-    async klein(stellen, w, h) {
-      const c = leinwand(w, h), x = c.getContext("2d", { willReadFrequently: true }), raus = [];
-      for (const s of stellen) {
-        const qt = F.von + s;
-        await spur.vorbereiten([qt], { vorschau: true });
-        const b = spur.bild(qt, { vorschau: true });
-        if (b) x.drawImage(b, 0, 0, w, h);
-        raus.push(x.getImageData(0, 0, w, h).data);
-      }
-      return raus;
-    },
   };
 }
 /** vor einem Bild des Videos oder dem Standbild: die Bilder des Videos in voller Grösse bereitlegen (die Vorschau nimmt, was da ist) */
@@ -244,7 +233,7 @@ async function filmVorbereiten(sz, t, p) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=33", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=34", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -286,7 +275,7 @@ async function kiAnwenden() {
     const nr = S.rechnen;
     try {
       notiz("Tiefe mit KI wird vorbereitet");
-      kiModul ??= await import("./tiefe-ki.js?v=33");
+      kiModul ??= await import("./tiefe-ki.js?v=34");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m), { telefon: grob, notiz });
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
@@ -312,7 +301,7 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=33");
+    buehneModul ??= await import("./buehne.js?v=34");
     if (S.buehneSchluessel !== schluessel) return;
     notiz(`Bühne wird gebaut: ${S.ablauf}`);
     S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz, film: filmFuerBuehne(), nahtlos,
@@ -370,7 +359,7 @@ async function buehneBereit() {
     // mit Video: erst jetzt (alles gerechnet) verschwindet der Balken und die Vorschau läuft von vorn
     if (S.laden) { ladenEnde(); S.buehneFertig = true; if (S.sz) { S.t = 0; zeigeZeit(0); if (!ruhig) spielen(); } }
     S.buehneFertig = true;
-    notiz("alles bereit (auch Tuch und Wachstum)");
+    notiz("alles bereit (auch das Tuch)");
     if (/berechnet …|being computed/.test($("meldung").textContent)) melden(T("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4."));
     if (!S.laeuft && S.sz && S.t !== null) zeigeZeit(S.t);
   });
@@ -566,7 +555,7 @@ $("video").addEventListener("click", async () => {
 
 async function mitWebCodecs(cfg, sz) {
   // die Bilder gehen gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
-  const p = proben(), { mp4Schreiber } = await import("./mp4.js?v=33");
+  const p = proben(), { mp4Schreiber } = await import("./mp4.js?v=34");
   melden(p > 1 ? T("unschaerfeProben", p) : T("Video wird gerechnet …"));
   const c = leinwand(sz.breite, sz.hoehe), ctx = c.getContext("2d", { alpha: false });
   const n = sz.zeit.bilder, datei = mp4Schreiber({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, codec: cfg.codec, bilder: n });

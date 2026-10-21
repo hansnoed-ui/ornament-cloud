@@ -1,4 +1,4 @@
-// PHORMA II (alpha/phorma-ii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): ein Testfoto analysieren (Physarum, Tiefe, Tuch, Wachstum, Montage), jede Phase der Kette
+// PHORMA II (alpha/phorma-ii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): ein Testfoto analysieren (Physarum, Tiefe, Tuch, Montage), jede Phase der Kette
 // zeigt etwas und etwas anderes, jeder Effekt beginnt im Dunkeln und endet exakt beim Foto, dasselbe Bild nach einem Sprung zurück (Simulationen
 // mit Wiedereinstiegspunkten), Bewegungsunschärfe, Video über WebCodecs (Ersatz-Encoder), Standbild, KI-Tiefe ohne Netz fällt auf die geschätzte
 // zurück, keine Anfragen nach aussen, Handy ohne seitliches Scrollen. Mit ?test (weniger Agenten, gröbere Netze). Die Tests fürs Gewebe (Text, Ton,
@@ -25,7 +25,7 @@ async function check(name, fn) {
   catch (e) { ergebnisse.push(false); console.log("FAIL", name, "\n     ", e.message.split("\n").slice(0, 8).join("\n      ")); }
 }
 async function oeffne({ vorher = null, ablauf = null, ...opts } = {}) {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 950 }, acceptDownloads: true, ...opts });
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 950 }, acceptDownloads: true, locale: "de-CH", ...opts });
   const page = await ctx.newPage();
   const fehler = [], fremd = [];
   page.on("pageerror", (e) => fehler.push(e.message));
@@ -38,7 +38,7 @@ async function oeffne({ vorher = null, ablauf = null, ...opts } = {}) {
 }
 // Testfoto, im Browser gezeichnet: Himmel, Sonne, eine rote Fläche, Wiese; quer (3 : 2)
 const FOTO = await (async () => {
-  const p = await (await browser.newContext()).newPage();
+  const p = await (await browser.newContext({ locale: "de-CH" })).newPage();
   const url = await p.evaluate(() => {
     const w = 1500, h = 1000, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
     const g = x.createLinearGradient(0, 0, 0, h * 0.6); g.addColorStop(0, "#2f5fb0"); g.addColorStop(1, "#9cc2ee");
@@ -166,12 +166,12 @@ await check("Kette: jede Phase zeigt etwas, jede etwas anderes; am Anfang dunkel
 });
 
 await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto", async () => {
-  for (const e of ["physarum", "tiefe", "tuch", "wachstum", "montage"]) {
+  for (const e of ["physarum", "tiefe", "tuch", "montage"]) {
     const { ctx, page, fehler } = await oeffne({ ablauf: e });
     await laden(page); await bereit(page);
     // mit Signet rastet die Montage nicht ins Foto ein (sie schneidet geradewegs ins Signet): hier ohne
     if (e === "montage") { await page.uncheck("#signet"); await bereit(page); }
-    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", wachstum: "Wachstum", montage: "Montage" }[e]);
+    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", montage: "Montage" }[e]);
     const { zeit } = await messe(page, 0);
     assert.equal(zeit.teile.length, 1);
     const anfang = await messe(page, zeit.abschnitt.von + 0.15), mitte = await messe(page, (zeit.abschnitt.von + zeit.abschnitt.bis) / 2);
@@ -245,7 +245,7 @@ const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) =
   return nr;
 }, [t, quelle]);
 
-await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am Ende beim Standbild an; Wachstum und die Kette ohne beide auch", async () => {
+await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am Ende beim Standbild an; die Kette ohne sie auch", async () => {
   const { ctx, page, fehler } = await oeffne({ ablauf: "montage" });
   await page.uncheck("#signet");   // ohne Signet rastet die Montage ins Standbild ein
   await page.setInputFiles("#datei", { name: "zaehler.mp4", mimeType: "video/mp4", buffer: await zaehlvideo(page) });
@@ -262,16 +262,8 @@ await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am End
     assert.ok(Math.abs(n - Math.round(tau * 30)) <= 1, `bei ${tau.toFixed(2)} s das Bild ${Math.round(tau * 30)} des Videos (gelesen ${n})`);
   }
   assert.ok((await messe(page, zeit.abschnitt.bis - 1 / 30)).abw <= 3, "endet exakt beim Standbild");
-  // ein anderer Effekt: das Wachstum (dauert länger, also ein anderes Standbild)
-  await page.click('[data-wahl="wachstum"]');
-  await page.waitForFunction(() => window.__phorma.ablauf === "wachstum" && window.__phorma.buehneFertig && window.__phorma.sz?.zeit.ablauf === "wachstum", null, { timeout: 240_000 });
-  const z2 = (await messe(page, 0)).zeit, d2 = z2.abschnitt.bis - z2.abschnitt.von;
-  assert.equal(await nummer(page, 0, "foto"), Math.round(d2 * 30), "neues Standbild am Ende des Wachstums");
-  assert.ok((await messe(page, z2.abschnitt.bis - 1 / 30)).abw <= 3, "Wachstum endet exakt beim Standbild");
-  // die Vorschau wartet nur, solange das Wachstum rechnet (Rückmeldung vom 19. Oktober 2026: «Wachstum stockt wieder gegen Ende der Sequenz»)
-  assert.equal(await page.evaluate(() => window.__phorma.buehne.gerechnetBis(window.__phorma.sz.zeit) === Infinity), true, "fertig gerechnet: keine Grenze mehr");
   // seit dem 19. Oktober 2026 läuft es durch alle Effekte (Rückmeldung: «bleibt ständig ein "altes" Video in den ersten drei Schritten hängen»):
-  // auch die Kette ohne Montage und Wachstum kommt am Ende beim Standbild an, nicht beim ersten Bild
+  // auch die Kette ohne Montage kommt am Ende beim Standbild an, nicht beim ersten Bild
   await page.click('[data-wahl="physarum+tiefe+tuch"]');
   await page.waitForFunction(() => window.__phorma.ablauf === "physarum+tiefe+tuch" && window.__phorma.buehneFertig && window.__phorma.sz?.zeit.ablauf === "physarum+tiefe+tuch", null, { timeout: 240_000 });
   const z3 = (await messe(page, 0)).zeit, d3 = z3.abschnitt.bis - z3.abschnitt.von;

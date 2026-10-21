@@ -21,7 +21,7 @@ export const SEITE = {
 export const DIALOG = {
   frage: "Was bringst du mit?",
   wahlen: [
-    { id: "bild", wort: "ein Bild", satz: "Ein Bild will sich bewegen.", weg: [["b/apps/phorma-ii/", "PHORMA II: eine Linie wächst und zeichnet dein Foto"], ["b/apps/the-fictory/", "The Fictory: das Bild zerfällt und setzt sich neu zusammen"], ["b/angebot/produkte/", "Ein Bild wird ein Werk: Auftragsarbeiten und Prints"]] },
+    { id: "bild", wort: "ein Bild", satz: "Ein Bild will sich bewegen.", weg: [["b/apps/phorma-ii/", "PHORMA II: ein Netz findet die Formen deines Fotos"], ["b/apps/the-fictory/", "The Fictory: das Bild zerfällt und setzt sich neu zusammen"], ["b/angebot/produkte/", "Ein Bild wird ein Werk: Auftragsarbeiten und Prints"]] },
     { id: "frage", wort: "eine Frage", satz: "Eine Frage sucht ein Gegenüber.", weg: [["b/apps/orna/", "ORNA: eine Drehung, eine Begegnung, eine offene Frage"], ["b/zettel/", "Der Zettelkasten: 49 Zettel, die aneinander anschliessen"], ["b/angebot/vermittlung/", "Ein Gespräch, das die Frage ernst nimmt"]] },
     { id: "auftrag", wort: "einen Auftrag", satz: "Etwas soll gebaut werden.", weg: [["b/angebot/webdesign/", "Websites und Apps: schnell, eigenständig, ohne Dienste von aussen"], ["b/angebot/produkte/", "Ein Werk für einen bestimmten Ort"], ["b/angebot/", "Alle vier Leistungen und der Weg zum Briefing"]] },
     { id: "begriff", wort: "einen Begriff", satz: "Ein Begriff will geprüft werden.", weg: [["b/zettel/", "Im Feld nachsehen: 49 Begriffe von der Brücke bis zur Zukunft"], ["b/raster/", "Vier Prüfraster für Theorien, Texte und Körper"], ["b/apps/orma/", "ORMA: zu zweit antworten, aufdecken, weiterdenken"]] },
@@ -65,15 +65,15 @@ export const APPS = [
     ],
     bewegung: "So arbeitet PHORMA III, in fünf Effekten zum Ton: Flächen aus feinen Linien (Gewebe), ein Faden im Würfel aus Licht, wild oder ruhig (Irrfahrt, Lichtwürfel), Perlen in einer Kugel aus Fäden (Traube) oder das Video selbst, gescratcht und verfrickelt (Video). Jeder Schlag bewegt das Bild. Die Tafel zeigt das Gewebe.",
     zeichen: "faden" },
-  { slug: "phorma-ii", name: "PHORMA II", gattung: "Bild und Video", kurz: "Fünf Effekte für Foto und Video: Wachstum, Physarum, Tiefe, Tuch, Montage.",
-    text: "Eine Linie wächst und zeichnet das Bild, ein Schleimpilz findet seine Formen, eine Lichtebene tastet die Tiefe ab, das Bild weht als Seidentuch oder zerfällt im Takt in Rechtecke. Jeder Effekt einzeln oder als Kette, aus Foto oder Video. Ein Video im Hochformat, gerechnet auf der eigenen Grafikkarte.",
+  { slug: "phorma-ii", name: "PHORMA II", gattung: "Bild und Video", kurz: "Vier Effekte für Foto und Video: Physarum, Tiefe, Tuch, Montage.",
+    text: "Ein Schleimpilz findet die Formen des Bilds, eine Lichtebene tastet die Tiefe ab, das Bild weht als Seidentuch oder zerfällt im Takt in Rechtecke. Jeder Effekt einzeln oder als Kette, aus Foto oder Video. Ein Video im Hochformat, gerechnet auf der eigenen Grafikkarte.",
     fuer: "Für Künstler:innen, Galerien und Museen, die ein Werk in Bewegung zeigen wollen.",
     url: "alpha/phorma-ii/", app: "alpha/phorma-ii/?installieren", bild: "b/bilder/apps/phorma-ii.svg", bildDunkel: "b/bilder/apps/phorma-ii-dunkel.svg", bildAlt: "PHORMA II, gezeichnet: eine einzige Linie, die aus einem Keim gewachsen ist und eine Scheibe füllt",
     beispiele: [
       { art: "video", datei: "assets/beispiele/phorma-ii.mp4", bild: "assets/beispiele/phorma-ii.jpg", mass: [540, 676], text: "Die Kette der App mit dem Beispielfoto, drei Effekte in einem Film: ein Schleimpilz legt sein Netz auf die Formen (Physarum), eine Lichtebene tastet das Relief ab (Tiefe), das Foto weht als Seidentuch und legt sich glatt (Tuch). Gerechnet aus der App, ohne Ton." },
       { art: "paar", vorher: "alpha/phorma-ii/beispiel.jpg", nachher: "assets/vorschau-phorma-ii-2x.jpg", text: "Dasselbe Foto, zerlegt in Rechtecke mit versetzten Ausschnitten, Rändern und Zahlentafeln (Montage)." },
     ],
-    bewegung: "So arbeitet PHORMA II, in fünf Effekten, einzeln oder als Kette: eine Linie wächst und zeichnet das Foto (Wachstum), ein Schleimpilz findet seine Formen (Physarum), eine Lichtebene tastet die Tiefe ab (Tiefe), das Foto weht als Seidentuch (Tuch) oder zerfällt im Takt in Rechtecke (Montage). Die Tafel zeigt das Wachstum.",
+    bewegung: "So arbeitet PHORMA II, in vier Effekten, einzeln oder als Kette: ein Schleimpilz findet seine Formen (Physarum), eine Lichtebene tastet die Tiefe ab (Tiefe), das Foto weht als Seidentuch (Tuch) oder zerfällt im Takt in Rechtecke (Montage). Die Tafel zeigt eine einzige Linie, die eine Fläche füllt.",
     zeichen: "linie" },
   { slug: "phorma-i", name: "PHORMA I", gattung: "Bild und Video", kurz: "Ein Foto wird ein Film: Fragmente, Verwandlung oder Relief-Flug.",
     text: "Aus einem Foto wird ein Film: Es zerfällt in Linien, Formen und Farben, verwandelt sich in Funken, Glas, Scherben, Echo und Gebirge oder wird im Flug erkundet. Das Ergebnis ist ein Video im Hochformat für Social Media. Alles rechnet auf deinem Gerät; das Bild verlässt es nicht.",

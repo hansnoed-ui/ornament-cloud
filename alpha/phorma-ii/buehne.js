@@ -9,14 +9,13 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=33";
-import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=33";
-import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=33";
-import { physarum } from "./physarum.js?v=33";
-import { tiefe } from "./tiefe.js?v=33";
-import { tuch } from "./tuch.js?v=33";
-import { montage, montageSignet } from "./montage.js?v=33";
-import { wachstum } from "./wachstum.js?v=33";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=34";
+import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=34";
+import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=34";
+import { physarum } from "./physarum.js?v=34";
+import { tiefe } from "./tiefe.js?v=34";
+import { tuch } from "./tuch.js?v=34";
+import { montage, montageSignet } from "./montage.js?v=34";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -67,7 +66,7 @@ const AUSGABE = /* glsl */ `
     gl_FragColor = vec4(o, 1.0);
   }`;
 
-const FABRIK = { physarum, tiefe, tuch, wachstum, montage };
+const FABRIK = { physarum, tiefe, tuch, montage };
 const leinwandWie = (q) => Object.assign(typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(q.width, q.height), { width: q.width, height: q.height });
 
 /**
@@ -101,12 +100,12 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     loeschen(rt, farbe = 0x000000) { renderer.setRenderTarget(rt); renderer.setClearColor(farbe, 1); renderer.clear(true, true, true); } };
   const K = kette(ablauf);
   g.ablaufDauer = K.dauer;
-  // mit Video (film: { von, dauer, bild(sekunde, { vorschau }), klein(stellen, w, h) }): Montage und Wachstum holen das laufende Bild selbst
+  // mit Video (film: { von, dauer, bild(sekunde, { vorschau }) }): die Montage holt das laufende Bild selbst
   // (dazu frühere Stellen), die anderen nehmen fotoTex (filmquelle.js)
   let zuletzt = "";
   if (film) {
     const plan = videoPlan(ablauf, film.dauer);
-    g.film = { plan, stelle: (teil, tau) => videoStelle(plan, teil.von + tau), klein: film.klein,
+    g.film = { plan, stelle: (teil, tau) => videoStelle(plan, teil.von + tau),
       bild: (teil, tau, vorschau) => film.bild(film.von + videoStelle(plan, teil.von + tau), { vorschau }) };
   }
   const effekte = K.teile.map((teil) => { spur(`Effekt wird aufgebaut: ${teil.art}`); return FABRIK[teil.art](g, teil); });
@@ -193,13 +192,13 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   // was erst im Hintergrund fertig wird (die Programme, die Bahn des Tuchs): die Vorschau beginnt danach, Video und Standbild warten darauf
   const bereit = Promise.all([warm, ...effekte.map((e) => e.bereit ?? null)]);
   const fortschritt = () => Math.min(1, ...effekte.map((e) => e.fortschritt?.() ?? 1));
-  /** die Effekte, deren Bahn noch rechnet (für die Meldung: «Das Tuch …», «Das Wachstum …») */
+  /** die Effekte, deren Bahn noch rechnet (für die Meldung: «Das Tuch …») */
   const rechnend = () => K.teile.filter((_, i) => (effekte[i].fortschritt?.() ?? 1) < 1).map((t) => TITEL[t.art]);
   return {
     canvas, B, H, effekte, ende: 0, warm, bereit, fortschritt, rechnend,
     /** mit Video: das laufende Bild der letzten Probe (ist ende = 1, zeichnet film.js es statt des Standbilds) */
     jetzt,                                     // ende: wie weit das letzte Bild schon das Foto war (1: exakt)
-    /** bis wohin (Filmzeit) alles gerechnet ist, was im Hintergrund rechnet (Wachstum, Tuch); Infinity, wenn alles da ist */
+    /** bis wohin (Filmzeit) alles gerechnet ist, was im Hintergrund rechnet (das Tuch); Infinity, wenn alles da ist */
     gerechnetBis(zeit) {
       let bis = Infinity;
       K.teile.forEach((_, i) => { const g = effekte[i].gerechnetBis?.() ?? Infinity; if (g < Infinity) bis = Math.min(bis, zeit.teile[i].von + g * zeit.tempo); });

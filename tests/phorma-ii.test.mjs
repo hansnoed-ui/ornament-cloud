@@ -1,4 +1,4 @@
-// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Plan der Montage, Bahn des Wachstums, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, MP4,
+// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Plan der Montage, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, MP4,
 // Seite. Die Tests fürs Gewebe (Ton, Höhenlinien, Verfrickeln) stehen seit dem 18. Oktober 2026 in tests/phorma-iii.test.mjs.
 //   node --test tests/phorma-ii.test.mjs
 import test from "node:test";
@@ -16,17 +16,16 @@ test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette"
   assert.equal(A.ablaufName("quatsch"), A.KETTE);
   assert.equal(A.ablaufName(null), "physarum+tiefe+tuch");
   assert.deepEqual(A.effekte("tuch+tiefe"), ["tiefe", "tuch"]);
-  // seit 19. Oktober 2026 das Wachstum zuerst (Wunsch: «Wachstum, Physarum, Tiefe (Scan), Tuch, Montage»); es geht über die Zeitfront ins Netz
-  assert.deepEqual(A.effekte("montage+tuch+tiefe+physarum+wachstum"), ["wachstum", "physarum", "tiefe", "tuch", "montage"]);
-  const W = A.kette("wachstum+physarum").teile[0];
-  assert.equal(W.uebergang, "front"); assert.ok(!W.phasen.some((p) => p[0] === "bild"), "kein Foto zwischen Wachstum und Netz");
+  assert.deepEqual(A.effekte("montage+tuch+tiefe+physarum"), ["physarum", "tiefe", "tuch", "montage"]);
+  // das Wachstum ist seit dem 21. Oktober 2026 weg (Wunsch: «Ich möchte wachstum weg»): eine gemerkte Kette mit ihm verliert es nur
+  assert.equal(A.ablaufName("wachstum+physarum+tiefe+tuch+montage"), "physarum+tiefe+tuch+montage");
+  assert.equal(A.ablaufName("wachstum"), A.KETTE, "das Wachstum allein ergibt die ganze Kette");
   assert.equal(A.ablaufName("stich"), A.KETTE, "der frühere Stich ergibt die ganze Kette");
   assert.equal(A.ablaufName("physarum+muster+tuch"), "physarum+tuch", "die frühere Morphogenese fällt weg");
   assert.equal(A.ablaufName("gewebe"), A.KETTE, "ein gemerktes Gewebe (seit dem 18. Oktober 2026 PHORMA III) ergibt die ganze Kette");
   assert.equal(A.ablaufName("struktur"), A.KETTE);
   assert.equal(A.ablaufName("montage+tuch"), "tuch+montage", "die Montage steht immer am Schluss");
-  for (const k of ["wachstum+montage", "physarum+montage", "tiefe+montage"]) assert.equal(A.kette(k).teile[0].uebergang, "felder", `${k}: in Rechtecken in die Montage`);
-  assert.equal(A.kette("wachstum+montage").teile[0].phasen.at(-1)[0], "farbe", "das Wachstum zeigt vor der Montage das Foto nicht");
+  for (const k of ["physarum+montage", "tiefe+montage"]) assert.equal(A.kette(k).teile[0].uebergang, "felder", `${k}: in Rechtecken in die Montage`);
 });
 
 test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappung, geerbte Ausschnitte, Anfang dunkel, Ende exakt, wiederholbar", async () => {
@@ -181,40 +180,10 @@ test("Tuch: die Bahn wird ganz vorausgerechnet, ist wiederholbar und endet genau
   }
 });
 
-test("Wachstum: die Linie wächst aus dem Keim ins Motiv (nicht in den Grund), dicht im Hellen, wiederholbar", async () => {
-  const W = await import(new URL("wachstumsim.js", P).href);
-  // ein heller Kreis (Motiv) vor einer ruhigen grünen Wand
-  const w = 80, h = 100, rgb = new Uint8ClampedArray(w * h * 4), hell = new Float32Array(w * h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const i = y * w + x, drin = Math.hypot(x - 40, y - 48) < 26, c = drin ? [200 + (x % 7) * 5, 150, 120] : [150, 205, 185];
-    rgb.set([...c, 255], i * 4); hell[i] = (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255 * (drin && x > 40 ? 1 : 0.6);
-  }
-  const maske = W.wachsfeld({ w, h, rgb });
-  assert.ok(maske && maske[48 * w + 40] > 0.9 && maske[5 * w + 5] < 0.1, "der Grund ist aus der Farbe des Rands erkannt");
-  assert.equal(W.wachsfeld({ w, h, rgb: new Uint8ClampedArray(w * h * 4).fill(128) }), null, "ein einfarbiges Bild: überall");
-  const { abstand } = W.abstandsfeld({ w, h, hell, maske });
-  assert.ok(abstand[48 * w + 60] < abstand[48 * w + 20], "im Hellen enger");
-  const teil = A.kette("wachstum").teile[0], auftrag = { teil, w, h, hell, rgb, dichte: 1.2 };
-  assert.deepEqual(teil.phasen.map((p) => p[0]), ["keim", "wachstum", "farbe", "bild"]);
-  const b = W.wachstumBahn(auftrag), b2 = W.wachstumBahn(auftrag);
-  assert.equal(b.bilder, Math.round((1.2 + 6.6 + 2.4) * 30) + 1);
-  assert.ok(b.anzahl[0] < 40 && b.anzahl.at(-1) > 300, `wächst (${b.anzahl[0]} → ${b.anzahl.at(-1)} Punkte)`);
-  let drin = 0;
-  const n = b.anzahl.at(-1), o = b.ab.at(-2) * 2;
-  for (let i = 0; i < n; i++) { const x = b.lagen[o + i * 2] / W.ACHTEL, y = b.lagen[o + i * 2 + 1] / W.ACHTEL; if (Math.hypot(x - 40, y - 48) < 30) drin++; }
-  assert.ok(drin / n > 0.9, `die Linie bleibt im Motiv (${(100 * drin / n).toFixed(0)} %)`);
-  assert.deepEqual(b.lagen, b2.lagen, "wiederholbar");
-  // in Päckchen (für die Vorschau, während der Rest rechnet): dieselben Bilder
-  const einzeln = [], jeBild = (f, l) => { einzeln[f] = l; };
-  W.wachstumBahn({ ...auftrag, jeBild });
-  assert.equal(jeBild.bilder, b.bilder);
-  assert.deepEqual(Array.from(einzeln.at(-1)), Array.from(b.lagen.subarray(b.ab.at(-2) * 2)), "das letzte Bild gleich");
-});
-
 test("Video als Quelle: es läuft durch die ganze Kette, vom ersten bis zum letzten Bild; ist es kürzer, mehrmals", async () => {
   const F = await import(new URL("filmquelle.js", P).href);
   const K = A.kette("physarum+tiefe+tuch"), p = F.videoPlan("physarum+tiefe+tuch");
-  assert.ok(p.lebendig && p.faktor === 1 && Math.abs(p.dauer - K.dauer) < 1e-9, "genug Video: in Echtzeit, auch ohne Montage und Wachstum");
+  assert.ok(p.lebendig && p.faktor === 1 && Math.abs(p.dauer - K.dauer) < 1e-9, "genug Video: in Echtzeit, auch ohne Montage");
   assert.equal(F.videoStelle(p, 0), 0); assert.ok(Math.abs(F.videoStelle(p, 2) - 2) < 1e-9);
   const kurz = F.videoPlan("physarum+tiefe+tuch", 6), runden = Math.floor(K.dauer / 6);
   assert.ok(runden >= 2 && kurz.runden === runden && Math.abs(kurz.faktor - (runden * 6) / K.dauer) < 1e-9, "ein kurzes Video läuft mehrmals (Wunsch: «wiederholen statt Zeitlupe»)");
@@ -226,7 +195,7 @@ test("Video als Quelle: es läuft durch die ganze Kette, vom ersten bis zum letz
   assert.ok(F.videoStelle(kurz, runde * 1.01) < 0.2, "nach einer Runde wieder am Anfang");
   assert.equal(F.videoStelle(kurz, K.dauer), 6, "am Ende sein letztes Bild"); assert.equal(F.videoStelle(kurz, 999), 6);
   assert.equal(F.videoPlan("physarum+tiefe+tuch", K.dauer * 0.6).runden, 1, "passt es nur einmal hinein: einmal, etwas langsamer");
-  const lang = A.kette("physarum+tiefe+tuch+wachstum+montage"), pl = F.videoPlan("physarum+tiefe+tuch+wachstum+montage", 120);
+  const lang = A.kette("physarum+tiefe+tuch+montage"), pl = F.videoPlan("physarum+tiefe+tuch+montage", 120);
   assert.equal(pl.dauer, Math.min(F.HOECHSTENS, lang.dauer), "höchstens 30 s");
   assert.ok(Math.abs(F.videoStelle(pl, lang.dauer) - pl.dauer) < 1e-9);
   const z = A.zeitachse({ ablauf: "montage", tempo: "ruhig" }), pm = F.videoPlan("montage");
@@ -270,7 +239,7 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
   assert.match(html, /data-wahl="physarum\+tiefe\+tuch"/, "die ganze Kette als Karte");
   assert.ok(!/data-wahl="(gewebe|struktur)"|data-quelle=|id="(tondatei|videodatei|text|frickeln)"/.test(html), "kein Gewebe, kein Ton, kein Text: das ist PHORMA III");
-  assert.match(html, /id="datei" accept="image\/\*,video\/\*"/, "Foto oder Video (seit Etappe 2 von Montage und Wachstum)");
+  assert.match(html, /id="datei" accept="image\/\*,video\/\*"/, "Foto oder Video (seit Etappe 2 der Montage)");
   assert.match(html, /href="\.\.\/phorma-iii\/"/, "Hinweis auf PHORMA III");
   for (const f of ["gewebe.js", "ton.js", "tonspur.js", "frickeln.js", "kurven.js", "textbild.js"]) assert.ok(!readdirSync(P).includes(f), `ohne ${f}`);
   assert.ok(!/data-(wahl|effekt)="(stich|muster)"|data-(strich|muster)=/.test(html), "weder Stich noch Morphogenese");
