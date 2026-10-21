@@ -456,3 +456,17 @@ body.buehne-seite { height: 100dvh; display: grid; grid-template-rows: 48px minm
   .tafel-lebt:not(.signet-tafel) { grid-template-columns: 120px minmax(0, 1fr); column-gap: 16px; align-items: start; }
   .tafel-lebt:not(.signet-tafel) figcaption { font-size: 0.92rem; }
 }
+
+/* Die Beispielvideos auf den Seiten der Apps kleiner (21. Oktober 2026, Wunsch: «Auf den App-Seiten die Videos auch kleiner»): als Zeile, das
+   Video links (240 px, auf dem Handy 150 px), die Beschreibung rechts daneben; mehrere Filme untereinander. Am Ende, damit es die Grundregeln oben
+   überschreibt. */
+.beispiel-video { grid-template-columns: 240px minmax(0, 1fr); column-gap: 20px; align-items: start; max-width: 760px; }
+.beispiel-video figcaption { grid-column: 2; margin-top: 0; }
+.filme { grid-template-columns: minmax(0, 1fr); max-width: 760px; }
+/* die bewegte Tafel darüber (Seiten der Apps) gleich gross wie die Filme; auf den Seiten der Prüfraster steht sie neben dem Vierfeld und bleibt */
+.spalte > .tafel-lebt:not(.signet-tafel) { grid-template-columns: 240px minmax(0, 1fr); column-gap: 20px; align-items: start; max-width: 760px; }
+.spalte > .tafel-lebt:not(.signet-tafel) figcaption { grid-column: 2; }
+@media (max-width: 560px) {
+  .beispiel-video, .spalte > .tafel-lebt:not(.signet-tafel) { grid-template-columns: 150px minmax(0, 1fr); column-gap: 14px; }
+  .beispiel-video figcaption { font-size: 0.9rem; }
+}
