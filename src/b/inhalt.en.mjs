@@ -95,7 +95,7 @@ export const APPS = [
   { slug: "the-fictory", name: "The Fictory", gattung: "Image and video", kurz: "An image falls apart, rearranges itself and comes back together.",
     text: "Put an image on the workbench: it falls apart into its pieces, rearranges itself, leaves traces and in the end reassembles. An animation, six stills and a video. If you like, give it a rule from ORNA; it determines the intervention.",
     fuer: "For everyone who wants to see what else an image could be.",
-    url: "alpha/the-fictory/", app: "alpha/the-fictory/app/", bild: "b/bilder/apps/the-fictory.svg", bildDunkel: "b/bilder/apps/the-fictory-dunkel.svg", bildAlt: "The Fictory, drawn: a grid of tiles, each wandered and turned away from its origin, with traces and threads",
+    url: "alpha/the-fictory/", app: "alpha/the-fictory/?installieren", bild: "b/bilder/apps/the-fictory.svg", bildDunkel: "b/bilder/apps/the-fictory-dunkel.svg", bildAlt: "The Fictory, drawn: a grid of tiles, each wandered and turned away from its origin, with traces and threads",
     beispiele: [
       { art: "video", datei: "assets/beispiele/the-fictory.mp4", bild: "assets/beispiele/the-fictory.jpg", mass: [540, 766], text: "The whole run of 30 seconds with the example image: archive, timeline, traces, couplings, cut – and the image reassembles. Computed from the app." },
       { art: "paar", vorher: "alpha/the-fictory/beispiel.jpg", nachher: "assets/vorschau-the-fictory.jpg", text: "An image on the workbench falls apart into its pieces; each piece becomes a trace." },

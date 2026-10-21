@@ -1,13 +1,13 @@
 // «The Fictory» – Bedienung: Bild laden → Analyse prüfen → optional ORNA ziehen → erzeugen → ansehen und exportieren.
 // Alles läuft im Browser. Externe Dienste werden nicht aufgerufen; jev wirkt nur über die beim Bauen erzeugte Tabelle (jev.js).
-import { analysiere, konturen, leitfarbe } from "./analyse.js?v=21";
-import { mitDauer } from "./dauer.js?v=21";
-import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=21";
-import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=21";
-import { REGELN } from "./regeln.js?v=21";
-import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=21";
-import { JEV } from "./jev.js?v=21";
-import { zip } from "./zip.js?v=21";
+import { analysiere, konturen, leitfarbe } from "./analyse.js?v=22";
+import { mitDauer } from "./dauer.js?v=22";
+import { erzeugeLauf, anfang, schritt, kopie, bis, SCHLUESSEL, GESAMT, STATIONEN, TAKT, zustandsSchluessel, beschreibungen } from "./operationen.js?v=22";
+import { baueMaterial, zeichne, PAPIER, TINTE } from "./zeichnen.js?v=22";
+import { REGELN } from "./regeln.js?v=22";
+import { ziehe, ableiten, jevGueltig, konstellation, BESTAND } from "./orna.js?v=22";
+import { JEV } from "./jev.js?v=22";
+import { zip } from "./zip.js?v=22";
 
 const $ = (id) => document.getElementById(id);
 const ANALYSE_SEITE = 200;      // längste Seite der Analyse in Pixeln
@@ -36,11 +36,14 @@ function herunterladen(blob, name) {
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
+// Sprache (sprache.js, vor den Modulen): T(deutsch, …) gibt auf Englisch die Übersetzung, sonst den deutschen Text
+const T = (s, ...a) => (window.sprache ? window.sprache.t(s, ...a) : s);
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const alsBlob = (c, typ = "image/png") => new Promise((ok, nein) => c.toBlob((b) => (b ? ok(b) : nein(new Error("Bild konnte nicht erzeugt werden"))), typ));
 
 // ---------- 1 · Bild laden ----------
 async function ladeDatei(datei) {
-  $("status-laden").textContent = "Bild wird gelesen …";
+  $("status-laden").textContent = T("Bild wird gelesen …");
   try {
     const bytes = new Uint8Array(await datei.arrayBuffer());
     const sha = [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))].map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -62,20 +65,20 @@ async function ladeDatei(datei) {
     S.einstellungen = { farben: 6, mindestanteil: 0.004, korrekturen: [], verworfen: [], regel: null };
     $("farben").value = 6; $("mindest").value = 4; $("regel").value = "";
     const img = $("original");
-    img.src = URL.createObjectURL(datei); img.alt = `Eingangsbild ${S.bild.name}`; img.hidden = false;
+    img.src = URL.createObjectURL(datei); img.alt = `${T("Eingangsbild")} ${S.bild.name}`; img.hidden = false;
     $("ablage").classList.add("belegt"); $("ablage").hidden = false; $("buehne-box").hidden = true;
     // geladen: «Erzeugen» gleich auf der Werkbank; «Bild wählen» wird zu einem leisen «Anderes Bild»
     $("erzeugen-werkbank").hidden = false;
     const wahl = document.querySelector('label[for="datei"]');
-    wahl.classList.remove("voll"); wahl.firstChild.textContent = "Anderes Bild";
-    $("status-laden").textContent = `${S.bild.name}, ${bw} × ${bh} px. Gleich erzeugen, oder unten Analyse und ORNA anpassen.`;
+    wahl.classList.remove("voll"); wahl.firstChild.dataset.t = "Anderes Bild"; wahl.firstChild.textContent = T("Anderes Bild");
+    $("status-laden").textContent = `${S.bild.name}, ${bw} × ${bh} px. ${T("Gleich erzeugen, oder unten Analyse und ORNA anpassen.")}`;
     stoppe(); S.lauf = null; $("ergebnis").hidden = true;
     neuAnalysieren();
     setzeLeitfarbe(S.A);
     for (const id of ["schritt-analyse", "schritt-orna", "schritt-erzeugen"]) $(id).hidden = false;
     zeigeStartwert();
   } catch (e) {
-    $("status-laden").textContent = `Das Bild liess sich nicht lesen (${e.message}).`;
+    $("status-laden").textContent = `${T("Das Bild liess sich nicht lesen")} (${e.message}).`;
   }
 }
 
@@ -87,9 +90,10 @@ function neuAnalysieren() {
   S.A = analysiere(S.analyseBild, S.einstellungen);
   S.A.konturen = null;
   zeichneGliederung(); zeigeTeile(); zeigeBefunde();
-  $("analyse-kurz").textContent = `${S.A.flaechen.length} Flächen, ${S.A.zentren.length} Farbgruppen, ${S.A.teile.length} Figuren`;
-  if (S.lauf) $("status-erzeugen").textContent = "Die Analyse hat sich geändert. «Erzeugen» übernimmt sie.";
+  analyseKurz();
+  if (S.lauf) $("status-erzeugen").textContent = T("Die Analyse hat sich geändert. «Erzeugen» übernimmt sie.");
 }
+const analyseKurz = () => { $("analyse-kurz").textContent = window.sprache?.en() ? T("analyseKurz", S.A.flaechen.length, S.A.zentren.length, S.A.teile.length) : `${S.A.flaechen.length} Flächen, ${S.A.zentren.length} Farbgruppen, ${S.A.teile.length} Figuren`; };
 function regionKonturen(A) {
   if (A.konturen) return A.konturen;
   const { breite: aw, hoehe: ah } = A;
@@ -157,7 +161,7 @@ function zeigeTeile() {
   for (const F of kandidaten) {
     const b = document.createElement("button");
     b.type = "button"; b.setAttribute("aria-pressed", String(teile.has(F.id)));
-    b.title = `${teile.has(F.id) ? "Figur" : "Keine Figur"} · ${Math.round(F.anteil * 1000) / 10} % des Bildes`;
+    b.title = `${T(teile.has(F.id) ? "Figur" : "Keine Figur")} · ${Math.round(F.anteil * 1000) / 10} % ${T("des Bildes")}`;
     const i = document.createElement("i"); i.style.background = `rgb(${F.rgb.join(",")})`;
     b.append(i, `F${F.id + 1}`);
     b.addEventListener("click", () => { S.einstellungen.korrekturen.push({ ...punktIn(A, F.id), art: teile.has(F.id) ? "teil-" : "teil+" }); neuAnalysieren(); });
@@ -169,8 +173,8 @@ function zeigeBefunde() {
   for (const b of S.A.befunde) {
     const a = document.createElement("article");
     a.className = `bg-befund${b.aktiv ? "" : " verworfen"}`;
-    a.innerHTML = `<h3></h3><dl><dt>Befund</dt><dd class="befund"></dd><dt>Lesart</dt><dd class="lesart"></dd><dt>Eingriff</dt><dd class="eingriff"></dd></dl>`;
-    a.querySelector("h3").textContent = b.thema;
+    a.innerHTML = `<h3></h3><dl><dt>${T("Befund")}</dt><dd class="befund"></dd><dt>${T("Lesart")}</dt><dd class="lesart"></dd><dt>${T("Eingriff")}</dt><dd class="eingriff"></dd></dl>`;
+    a.querySelector("h3").textContent = T(b.thema);
     a.querySelector(".befund").textContent = b.befund;
     a.querySelector(".lesart").textContent = b.lesart;
     a.querySelector(".eingriff").textContent = b.eingriff;
@@ -182,7 +186,7 @@ function zeigeBefunde() {
         c.checked ? v.delete(b.id) : v.add(b.id);
         S.einstellungen.verworfen = [...v]; neuAnalysieren();
       });
-      l.append(c, "Lesart verwenden");
+      l.append(c, T("Lesart verwenden"));
       a.append(l);
     }
     box.append(a);
@@ -204,35 +208,35 @@ function zeigeOrna() {
   const a = S.orna.ableitung, R = REGELN[a.regel];
   karte.innerHTML = `<dl>
     <dt>Konstellation</dt><dd class="titel"></dd>
-    <dt>Herkunft</dt><dd class="herkunft"></dd>
-    <dt>Gedanke</dt><dd><blockquote class="satz"></blockquote><span class="bg-hinweis satz-quelle"></span></dd>
-    <dt>Eingriff</dt><dd><strong class="regel"></strong><br><span class="eingriff"></span></dd>
-    <dt>Passung</dt><dd class="passung"></dd>
-    <dt>Kennzeichnung</dt><dd><span class="bg-marke">Gestalterische Interpretation</span> Keine Aussage der genannten Personen.</dd>
-    <dt>Ganzer Text</dt><dd><details><summary>anzeigen</summary><p class="text"></p><p class="frage"></p></details></dd>
+    <dt>${T("Herkunft")}</dt><dd class="herkunft"></dd>
+    <dt>${T("Gedanke")}</dt><dd><blockquote class="satz"></blockquote><span class="bg-hinweis satz-quelle"></span></dd>
+    <dt>${T("Eingriff")}</dt><dd><strong class="regel"></strong><br><span class="eingriff"></span></dd>
+    <dt>${T("Passung")}</dt><dd class="passung"></dd>
+    <dt>${T("Kennzeichnung")}</dt><dd><span class="bg-marke">${T("Gestalterische Interpretation")}</span> ${T("Keine Aussage der genannten Personen.")}</dd>
+    <dt>${T("Ganzer Text")}</dt><dd><details><summary>${T("anzeigen")}</summary><p class="text"></p><p class="frage"></p></details></dd>
   </dl>`;
   const k = a.konstellation;
   karte.querySelector(".titel").textContent = `${k.kuenstler} × ${k.theoretiker}`;
   karte.querySelector(".herkunft").textContent = a.herkunft;
   karte.querySelector(".satz").textContent = a.satz ? `«${a.satz}»` : "–";
-  karte.querySelector(".satz-quelle").textContent = a.satz ? `Satz ${a.satzNr + 1} des Konstellationstexts, unverändert.` : "Kein Satz trägt ein Stichwort einer Regel.";
-  karte.querySelector(".regel").textContent = `${a.regel}: ${R.name}`;
-  karte.querySelector(".eingriff").textContent = R.eingriff;
-  karte.querySelector(".passung").textContent = `${a.passung[0].toUpperCase()}${a.passung.slice(1)}. ${a.begruendung}`;
+  karte.querySelector(".satz-quelle").textContent = a.satz ? `${T("Satz")} ${a.satzNr + 1} ${T("Satz des Konstellationstexts, unverändert.")}` : T("Kein Satz trägt ein Stichwort einer Regel.");
+  karte.querySelector(".regel").textContent = `${a.regel}: ${T(R.name)}`;
+  karte.querySelector(".eingriff").textContent = T(R.eingriff);
+  karte.querySelector(".passung").textContent = `${cap(T(a.passung))}. ${a.begruendung}`;
   const c = konstellation(k.id);
   karte.querySelector(".text").textContent = c.text;
   karte.querySelector(".frage").textContent = c.question;
 }
-function zeigeStartwert() { $("startwert").textContent = `Startwert ${S.seed}${S.orna ? " (aus der ORNA-Ziehung)" : ""}`; }
+function zeigeStartwert() { $("startwert").textContent = `${T("Startwert")} ${S.seed}${S.orna ? ` ${T("(aus der ORNA-Ziehung)")}` : ""}`; }
 
 // ---------- 4 · Erzeugen ----------
 async function erzeugen(stumm = false) {
   $("standbilder").textContent = "";                // die Standbilder des alten Laufs nicht mehr zeichnen
   stoppe();
-  $("status-erzeugen").textContent = "Material wird aus dem Bild geschnitten …";
+  $("status-erzeugen").textContent = T("Material wird aus dem Bild geschnitten …");
   await new Promise((ok) => requestAnimationFrame(() => setTimeout(ok, 0)));
   const A = S.A;
-  if (A.teile.length < 2) { $("status-erzeugen").textContent = "Es braucht mindestens zwei Teile. Wähle in der Vorschau weitere Flächen aus oder erhöhe die Zahl der Farbgruppen."; return; }
+  if (A.teile.length < 2) { $("status-erzeugen").textContent = T("Es braucht mindestens zwei Teile. Wähle in der Vorschau weitere Flächen aus oder erhöhe die Zahl der Farbgruppen."); return; }
   const regel = S.orna?.ableitung.regel ?? null;
   const M = erzeugeLauf(A, { seed: S.seed, regel });
   const mat = baueMaterial(S.arbeit, A, M);
@@ -246,7 +250,7 @@ async function erzeugen(stumm = false) {
   zeigeMarken();
   $("ergebnis").hidden = true; $("gegen-bilder").hidden = true; $("standbilder").textContent = "";
   $("ablage").hidden = true; $("buehne-box").hidden = false;
-  $("status-erzeugen").textContent = "Läuft. Zeitleiste, Standbilder und Export werden nebenher gerechnet …";
+  $("status-erzeugen").textContent = T("Läuft. Zeitleiste, Standbilder und Export werden nebenher gerechnet …");
   zeichneBuehne();
   // die Animation beginnt sofort (sie rechnet ihre Schritte selbst); den ganzen Lauf rechnet ein Worker nebenher voraus
   L.bereit = vorausrechnen(L).then(() => fertigstellen(L));
@@ -261,7 +265,7 @@ function vorausrechnen(L) {
   return new Promise((fertig) => {
     const hier = () => { if (S.lauf === L) zustandBei(GESAMT); fertig(); };
     let w = null;
-    try { w = new Worker(new URL("rechner.js?v=21", import.meta.url), { type: "module" }); } catch { w = null; }
+    try { w = new Worker(new URL("rechner.js?v=22", import.meta.url), { type: "module" }); } catch { w = null; }
     if (!w) { setTimeout(hier, 0); return; }
     w.onmessage = ({ data }) => {
       w.terminate();
@@ -272,7 +276,7 @@ function vorausrechnen(L) {
       fertig();
     };
     w.onerror = (e) => { e.preventDefault?.(); w.terminate(); hier(); };
-    w.postMessage({ A: S.A, seed: L.seed, regel: L.regel, merken: MERKEN });
+    w.postMessage({ A: S.A, seed: L.seed, regel: L.regel, merken: MERKEN, sprache: window.sprache?.get() ?? "de" });
   });
 }
 /** wenn der Lauf vorausgerechnet ist: Schlüsselzustände, Beschreibungen, Kontaktbogen, Ereignisse und Export */
@@ -284,7 +288,8 @@ function fertigstellen(L) {
   L.beschreibung = beschreibungen(M, keys);
   zeigeStandbilder(); zeigeEreignisse(keys[STATIONEN.length - 1]);
   $("ergebnis").hidden = false;
-  $("status-erzeugen").textContent = `Erzeugt: ${M.teile.length} Teile (${M.teile.filter((e) => e.kachel >= 0).length} davon Kacheln grosser Flächen), Regel ${L.regel ? `${L.regel} (${REGELN[L.regel].name})` : "keine (ohne ORNA)"}, Startwert ${L.seed}.`;
+  const regelText = L.regel ? `${L.regel} (${T(REGELN[L.regel].name)})` : T("keine (ohne ORNA)");
+  $("status-erzeugen").textContent = window.sprache?.en() ? T("erzeugt", M.teile.length, M.teile.filter((e) => e.kachel >= 0).length, regelText, L.seed) : `Erzeugt: ${M.teile.length} Teile (${M.teile.filter((e) => e.kachel >= 0).length} davon Kacheln grosser Flächen), Regel ${regelText}, Startwert ${L.seed}.`;
 }
 function neustartZustand() {
   const L = S.lauf;
@@ -348,9 +353,9 @@ function zeichneBuehne(f = 1) {
   if (name.dataset.st !== String(st)) {
     name.dataset.st = st; name.textContent = "";
     const z = document.createElement("span"); z.className = "ziffer"; z.textContent = st;
-    name.append(z, st === 0 ? "Eingangsbild" : STATIONEN[st].titel);
+    name.append(z, T(st === 0 ? "Eingangsbild" : STATIONEN[st].titel));
   }
-  $("uhr").textContent = `${zahl(n / TAKT)} von ${GESAMT / TAKT} Sekunden${schl > 0 ? `, Standbild ${schl}` : ""}`;
+  $("uhr").textContent = window.sprache?.en() ? T("uhr", zahl(n / TAKT), GESAMT / TAKT, schl > 0 ? schl : 0) : `${zahl(n / TAKT)} von ${GESAMT / TAKT} Sekunden${schl > 0 ? `, Standbild ${schl}` : ""}`;
   $("zeitleiste").style.setProperty("--fortschritt", `${(n / GESAMT) * 100}%`);
   for (const b of $("marken").children) b.setAttribute("aria-current", String(Number(b.dataset.nr) === schl));
   // im Kontaktbogen ist das Standbild markiert, dessen Zustand zuletzt erreicht wurde
@@ -400,7 +405,7 @@ function spiele() {
   if (!L) return;
   if (L.z.schritt >= GESAMT) { neustartZustand(); }
   S.spielt = true;
-  $("spielen").textContent = "Pause"; $("spielen").setAttribute("aria-pressed", "true");
+  $("spielen").dataset.t = "Pause"; $("spielen").textContent = T("Pause"); $("spielen").setAttribute("aria-pressed", "true");
   let start = performance.now(), basis = L.z.schritt, letztes = start;
   // Die Simulation rechnet 30 Schritte je Sekunde; der Bildschirm zeigt meist 60 oder mehr Bilder. Zwischen zwei Schritten werden die Lagen
   // der Teile darum weich übergeblendet (nur in der Anzeige; die Zustände, Standbilder und das Video bleiben dieselben).
@@ -425,7 +430,7 @@ function spiele() {
 }
 function stoppe() {
   S.spielt = false;
-  $("spielen").textContent = "Abspielen"; $("spielen").setAttribute("aria-pressed", "false");
+  $("spielen").dataset.t = "Abspielen"; $("spielen").textContent = T("Abspielen"); $("spielen").setAttribute("aria-pressed", "false");
   alleStandbilder();                                  // die Wiedergabe steht: jetzt die noch offenen Standbilder zeichnen
 }
 function springe(k) {
@@ -440,10 +445,10 @@ function zeigeMarken() {
     const b = document.createElement("button");
     b.type = "button"; b.dataset.nr = s.nr;
     const z = document.createElement("span"); z.className = "ziffer"; z.textContent = s.nr;
-    const t = document.createElement("span"); t.className = "titel"; t.textContent = s.nr === 0 ? "Bild" : s.titel;
+    const t = document.createElement("span"); t.className = "titel"; t.textContent = T(s.nr === 0 ? "Bild" : s.titel);
     b.append(z, t);
     b.style.left = `${(SCHLUESSEL[s.nr] / GESAMT) * 100}%`;
-    b.setAttribute("aria-label", s.nr === 0 ? "Zum Eingangsbild mit Gliederung" : `Zu Schlüsselzustand ${s.nr}: ${s.titel}`);
+    b.setAttribute("aria-label", s.nr === 0 ? T("Zum Eingangsbild mit Gliederung") : `${T("Zu Schlüsselzustand")} ${s.nr}: ${T(s.titel)}`);
     b.addEventListener("click", () => springe(SCHLUESSEL[s.nr]));
     box.append(b);
   }
@@ -466,18 +471,18 @@ function zeigeStandbilder() {
   for (const b of L.beschreibung) {
     const li = document.createElement("li"); li.dataset.nr = b.nr;
     const c = leinwand(tw, th);
-    c.setAttribute("role", "img"); c.setAttribute("aria-label", `Standbild ${b.nr}: ${b.titel}`); c.dataset.standbild = b.nr; c.dataset.offen = "1";
+    c.setAttribute("role", "img"); c.setAttribute("aria-label", `${T("Standbild")} ${b.nr}: ${T(b.titel)}`); c.dataset.standbild = b.nr; c.dataset.offen = "1";
     sichtbar?.observe(c);
     c.addEventListener("click", () => springe(SCHLUESSEL[b.nr]));
     const h = document.createElement("h3");
     const ziffer = document.createElement("span"); ziffer.className = "ziffer"; ziffer.textContent = b.nr;
-    h.append(ziffer, b.titel);
+    h.append(ziffer, T(b.titel));
     const p = document.createElement("p"); p.textContent = b.kurz || b.text; p.title = b.text;
     const k = document.createElement("div"); k.className = "bg-knoepfe";
     const png = document.createElement("button"); png.type = "button"; png.className = "bg-knopf klein"; png.textContent = "PNG";
-    png.setAttribute("aria-label", `Standbild ${b.nr} als PNG herunterladen`);
+    png.setAttribute("aria-label", `${T("Standbild")} ${b.nr} ${T("als PNG herunterladen")}`);
     png.addEventListener("click", async () => { const { blob, name } = await standbildPNG(b.nr); herunterladen(blob, name); });
-    const zeig = document.createElement("button"); zeig.type = "button"; zeig.className = "bg-knopf klein leise"; zeig.textContent = "In der Animation";
+    const zeig = document.createElement("button"); zeig.type = "button"; zeig.className = "bg-knopf klein leise"; zeig.textContent = T("In der Animation");
     zeig.addEventListener("click", () => { springe(SCHLUESSEL[b.nr]); $("buehne").scrollIntoView({ block: "start" }); });
     k.append(png, zeig);
     li.append(c, h, p, k);
@@ -533,7 +538,7 @@ function integrationen() {
 }
 async function allePNG() {
   const L = S.lauf; if (!L) return;
-  $("status-export").textContent = `${SCHLUESSEL.length - 1} Standbilder werden gerechnet …`;
+  $("status-export").textContent = T("standbilderRechnen", SCHLUESSEL.length - 1);
   const dateien = [];
   for (let nr = 1; nr < SCHLUESSEL.length; nr++) {
     const { blob, name } = await standbildPNG(nr);
@@ -541,7 +546,7 @@ async function allePNG() {
   }
   dateien.push({ name: dateiname("protokoll.json"), bytes: new TextEncoder().encode(JSON.stringify(protokoll(), null, 2)) });
   herunterladen(new Blob([zip(dateien)], { type: "application/zip" }), dateiname("standbilder.zip"));
-  $("status-export").textContent = `ZIP mit ${SCHLUESSEL.length - 1} PNG (${exportMass().join(" × ")} px) und dem Protokoll.`;
+  $("status-export").textContent = T("zipFertig", SCHLUESSEL.length - 1, exportMass().join(" × "));
 }
 function videoTyp() {
   if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream) return null;
@@ -553,7 +558,7 @@ function videoTyp() {
 async function video() {
   const L = S.lauf, typ = videoTyp();
   if (!L) return;
-  if (!typ) { $("status-export").textContent = "Dieser Browser kann keine Videos aus einer Zeichenfläche aufnehmen."; return; }
+  if (!typ) { $("status-export").textContent = T("Dieser Browser kann keine Videos aus einer Zeichenfläche aufnehmen."); return; }
   const [w0, h0] = mass(L.M.seite, VIDEO_SEITE), w = w0 - (w0 % 2), h = h0 - (h0 % 2);
   const c = leinwand(w, h), ctx = c.getContext("2d");
   const strom = c.captureStream(0), spur = strom.getVideoTracks()[0];
@@ -563,7 +568,7 @@ async function video() {
   const fertig = new Promise((ok) => { rec.onstop = ok; });
   const knopf = $("video"); knopf.disabled = true;
   const fort = $("fortschritt"); fort.hidden = false; fort.value = 0;
-  $("status-export").textContent = `Video wird aufgenommen (${GESAMT / TAKT} s in Echtzeit) …`;
+  $("status-export").textContent = T("videoLaeuft", GESAMT / TAKT);
   const z = anfang(L.M), spurCache = {};
   zeichne(ctx, w, h, z, L.M, L.mat, spurCache);
   rec.start(1000);
@@ -583,14 +588,14 @@ async function video() {
   const blob = new Blob([mitDauer(roh, sekunden)], { type: typ.mime.split(";")[0] });
   herunterladen(blob, dateiname(`animation.${typ.endung}`));
   knopf.disabled = false; fort.hidden = true;
-  $("status-export").textContent = `Video: ${typ.endung.toUpperCase()} (${typ.mime}), ${w} × ${h} px, ${GESAMT / TAKT} s und eine Sekunde Halt, ${(blob.size / 1e6).toFixed(1)} MB.`;
+  $("status-export").textContent = T("videoFertig", typ.endung.toUpperCase(), typ.mime, w, h, GESAMT / TAKT, (blob.size / 1e6).toFixed(1));
   return blob;
 }
 async function protokollLaden(datei) {
   try {
     const p = JSON.parse(await datei.text());
     if (!["The Fictory", "Das Bild geht weiter"].includes(p.anwendung)) throw new Error("kein Protokoll dieser Anwendung");
-    if (p.bild?.sha256 !== S.bild?.sha256) { $("status-export").textContent = `Das Protokoll gehört zu einem anderen Bild (${p.bild?.name ?? "?"}). Lade zuerst dieses Bild.`; return; }
+    if (p.bild?.sha256 !== S.bild?.sha256) { $("status-export").textContent = T("protokollFremd", p.bild?.name ?? "?"); return; }
     S.einstellungen = { ...p.analyse.einstellungen };
     $("farben").value = S.einstellungen.farben; $("mindest").value = Math.round(S.einstellungen.mindestanteil * 1000); $("regel").value = S.einstellungen.regel ?? "";
     zeigeRegler();
@@ -602,8 +607,8 @@ async function protokollLaden(datei) {
     neuAnalysieren(); zeigeOrna(); zeigeStartwert();
     await erzeugen(true);
     const gleich = S.lauf.schluessel.every((s, i) => s === p.lauf.schluesselzustaende[i]?.zustand);
-    $("status-export").textContent = gleich ? `Lauf aus dem Protokoll wiederholt: alle ${SCHLUESSEL.length} Schlüsselzustände stimmen überein.` : "Lauf wiederholt, aber die Schlüsselzustände weichen ab (andere Fassung der Anwendung?).";
-  } catch (e) { $("status-export").textContent = `Protokoll nicht lesbar: ${e.message}`; }
+    $("status-export").textContent = gleich ? T("protokollGleich", SCHLUESSEL.length) : T("Lauf wiederholt, aber die Schlüsselzustände weichen ab (andere Fassung der Anwendung?).");
+  } catch (e) { $("status-export").textContent = `${T("Protokoll nicht lesbar:")} ${e.message}`; }
 }
 function gegenprobe() {
   const L = S.lauf; if (!L) return;
@@ -614,8 +619,8 @@ function gegenprobe() {
   for (const [id, z] of [["gegen-mit", mit], ["gegen-ohne", ohne]]) { const c = $(id); c.width = w; c.height = h; zeichne(c.getContext("2d"), w, h, z, L.M, L.mat); }
   const verschiebung = mit.teile.reduce((s, t, i) => s + Math.hypot(t.x - ohne.teile[i].x, t.y - ohne.teile[i].y), 0) / mit.teile.length;
   const gerissen = (z) => z.federn.filter((f) => !f.aktiv).length;
-  $("gegen-mit-text").textContent = `Mit wirksamen Spuren (Standbild ${STATIONEN.length - 2}). Gerissene Kopplungen: ${gerissen(mit)}.`;
-  $("gegen-ohne-text").textContent = `Spurenfeld vor Schritt 4 gelöscht. Gerissene Kopplungen: ${gerissen(ohne)}. Die Teile stehen im Mittel ${zahl(verschiebung * 100)} % der Bildhöhe anders.`;
+  $("gegen-mit-text").textContent = T("gegenMit", STATIONEN.length - 2, gerissen(mit));
+  $("gegen-ohne-text").textContent = T("gegenOhne", gerissen(ohne), zahl(verschiebung * 100));
   $("gegen-bilder").hidden = false;
   return { verschiebung, mit: zustandsSchluessel(mit), ohne: zustandsSchluessel(ohne) };
 }
@@ -674,10 +679,20 @@ $("daten-knopf").addEventListener("click", (e) => { const an = e.currentTarget.g
 $("anderes-bild").addEventListener("click", () => { stoppe(); $("datei").click(); });
 
 const vt = videoTyp();
-if (!vt) { $("video").disabled = true; $("video").title = "Dieser Browser kann keine Videos aus einer Zeichenfläche aufnehmen."; }
-else $("video").textContent = `Animation als ${vt.endung.toUpperCase()}`;
-$("integrationen").textContent = `Läuft ganz im Browser, nichts wird hochgeladen. ORNA: ${BESTAND} Konstellationen. jev: ${jevGueltig() ? "hat die Regeln beim Bauen vorgeschlagen und wird hier nicht aufgerufen" : "keine gültige Tabelle, die Regel folgt Stichworten"}. Video: ${vt ? vt.endung.toUpperCase() : "in diesem Browser nicht möglich"}.`;
+function videoKnopf() { if (!vt) { $("video").disabled = true; $("video").title = T("Dieser Browser kann keine Videos aus einer Zeichenfläche aufnehmen."); } else { $("video").removeAttribute("data-t"); $("video").textContent = `${T("Animation als")} ${vt.endung.toUpperCase()}`; } }
+videoKnopf();
+function integrationenZeigen() { $("integrationen").textContent = T("integrationen", BESTAND, T(jevGueltig() ? "hat die Regeln beim Bauen vorgeschlagen und wird hier nicht aufgerufen" : "keine gültige Tabelle, die Regel folgt Stichworten"), vt ? vt.endung.toUpperCase() : T("in diesem Browser nicht möglich")); }
+integrationenZeigen();
 zeigeRegler();
+// Wechsel der Sprache (sprache.js): alles, was das Skript geschrieben hat, in der anderen Sprache neu; Befunde und ORNA-Karte werden neu abgeleitet,
+// die Texte eines fertigen Laufs (Standbilder, Ereignisse) behalten die Sprache, in der er erzeugt wurde
+document.addEventListener("sprache", () => {
+  videoKnopf(); integrationenZeigen(); zeigeMarken(); zeigeRegler();
+  if (S.A) { S.A = analysiere(S.analyseBild, S.einstellungen); zeigeTeile(); zeigeBefunde(); analyseKurz(); }
+  if (S.orna) { S.orna.ableitung = ableiten(S.orna.id, S.orna.seed); zeigeOrna(); }
+  if (S.bild) zeigeStartwert();
+  if (S.lauf) { $("stand-name").dataset.st = ""; zeichneBuehne(); zeigeStandbilder(); }
+});
 
 // für die Browser-Tests (tests/fictory.e2e.mjs)
 window.fictoryTest = { S, zustandBei, zustandsSchluessel, standbildPNG, video, gegenprobe, protokoll, protokollLaden, springe, SCHLUESSEL, GESAMT,

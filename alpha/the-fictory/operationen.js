@@ -11,9 +11,12 @@
 //                              später und langsamer an (die Spuren bestimmen die Reihenfolge, nicht mehr das Ziel). Es bleiben feine Fugen.
 // (Die frühere Station «Figur und Grund» ist seit dem 10. Oktober 2026 auf Wunsch von Christian entfernt.)
 // Schlüsselzustände (Standbilder) sind die Zustände an den Stationsenden. Reine Rechnung ohne DOM.
-import { zufall } from "./analyse.js?v=21";
-import { REGELN } from "./regeln.js?v=21";
+import { zufall } from "./analyse.js?v=22";
+import { REGELN } from "./regeln.js?v=22";
 
+// Sprache (sprache.js, nur im Browser): TF(schlüssel, deutscher Satz, …) gibt auf Englisch die Übersetzung, in Node (Tests) den deutschen Satz
+const TF = (k, de, ...a) => (globalThis.sprache?.en() ? globalThis.sprache.t(k, ...a) : de);   // auf der Seite und im Worker; in Node bleibt Deutsch
+const TX = (k) => TF(k, k);   // TX, nicht T: T ist in den Operationen die Liste der Teile
 export const TAKT = 30;
 export const STATIONEN = Object.freeze([
   { nr: 0, titel: "Eingangsbild", ende: 2 },
@@ -204,7 +207,7 @@ export function schritt(M, z) {
     z.feldAlpha = Math.min(1, z.feldAlpha + 1 / 60);
   }
   z.schritt = n + 1;
-  if (z.schritt === GESAMT) z.ereignisse.push({ schritt: GESAMT, text: "Ende des Laufs: Das Ursprungsbild steht wieder, aus seinen Teilen neu zusammengesetzt; der Zustand bleibt stehen." });
+  if (z.schritt === GESAMT) z.ereignisse.push({ schritt: GESAMT, text: TX("Ende des Laufs: Das Ursprungsbild steht wieder, aus seinen Teilen neu zusammengesetzt; der Zustand bleibt stehen.") });
   return z;
 }
 
@@ -213,7 +216,7 @@ function planen(M, z, st) {
   const r = zufall((M.seed ^ Math.imul(st + 1, 0x9e3779b1)) >>> 0);
   if (M.neutralisiere === st) {
     z.spuren.fill(0); z.feldA.fill(1); z.feldB.fill(0); z.stromU.fill(0); z.stromV.fill(0); z.tinte.fill(0);
-    z.ereignisse.push({ schritt: z.schritt, text: `Gegenprobe: Spurenfeld, wucherndes Feld und Strömung vor Schritt ${st} gelöscht (gestempelte Spuren bleiben sichtbar, wirken aber nicht mehr).` });
+    z.ereignisse.push({ schritt: z.schritt, text: TF("gegenprobe", `Gegenprobe: Spurenfeld, wucherndes Feld und Strömung vor Schritt ${st} gelöscht (gestempelte Spuren bleiben sichtbar, wirken aber nicht mehr).`, st) });
   }
   z.plan = OPS[st].plan(M, z, r);
 }
@@ -339,7 +342,7 @@ function spiegelSpur(M, z, lagen, welcher) {
     const dx = l.x - cx, dy = l.y - cy;
     stempeln(M, z, i, 0.22, mal(S, matrix(l.rot, l.s)), cx + S[0] * dx + S[2] * dy, cy + S[1] * dx + S[3] * dy);
   }
-  z.ereignisse.push({ schritt: z.schritt, text: `Regel R2: Die Anordnung von ${welcher} kehrt gespiegelt (Achse ${grad(w)}) als ${lagen.length} Spuren zurück.` });
+  z.ereignisse.push({ schritt: z.schritt, text: TF("regelR2", `Regel R2: Die Anordnung von ${welcher} kehrt gespiegelt (Achse ${grad(w)}) als ${lagen.length} Spuren zurück.`, welcher, grad(w), lagen.length) });
 }
 function imBild(M, t, e) {
   // zurück ins Bild, aber in kleinen Schritten (wächst ein Teil am Rand, springt es nicht)
@@ -394,8 +397,8 @@ const OPS = {
       for (const q of Object.values(ziel)) { q.start = 0.2 + (q.start - 0.2) * 0.65 / (ende - 0.2); q.dauer *= 0.65 / (ende - 0.2); }
       const ankunft = Object.entries(ziel).sort((a, b) => a[1].start + a[1].dauer - (b[1].start + b[1].dauer) || a[0] - b[0]).map(([i]) => Number(i));
       z.ankunft = ankunft;
-      const regeltext = { farbe: "nach Farbgruppe", groesse: "nach Fläche", helligkeit: "nach Helligkeit" }[A.regel];
-      z.ereignisse.push({ schritt: z.schritt, kurz: `${M.teile.length} Teile, ${regeltext} ins Raster gelegt.`, text: `Schritt 1: Das Bild wird in ${M.teile.length} Teile zerlegt (Flächen, grosse Flächen in Kacheln); ${N} Teile gehen ${regeltext} in ein Archiv-Raster von ${nx} × ${ny} Feldern, jedes auf seine Feldgrösse gebracht${M.regel === "R3" ? ", eingerastet" : ""}. Zuerst angekommen: ${ankunft.slice(0, 4).map((i) => name(M.teile[i])).join(", ")} …` });
+      const regeltext = TX({ farbe: "nach Farbgruppe", groesse: "nach Fläche", helligkeit: "nach Helligkeit" }[A.regel]), zuerst = ankunft.slice(0, 4).map((i) => name(M.teile[i])).join(", ");
+      z.ereignisse.push({ schritt: z.schritt, kurz: TF("kurz1", `${M.teile.length} Teile, ${regeltext} ins Raster gelegt.`, M.teile.length, regeltext), text: TF("text1", `Schritt 1: Das Bild wird in ${M.teile.length} Teile zerlegt (Flächen, grosse Flächen in Kacheln); ${N} Teile gehen ${regeltext} in ein Archiv-Raster von ${nx} × ${ny} Feldern, jedes auf seine Feldgrösse gebracht${M.regel === "R3" ? ", eingerastet" : ""}. Zuerst angekommen: ${zuerst} …`, M.teile.length, N, regeltext, nx, ny, M.regel === "R3", zuerst) });
       return { ziel, nx, ny };
     },
     lauf(M, z, p) {
@@ -434,7 +437,7 @@ const OPS = {
         ziel[i] = { x0: t.x, y0: t.y, s0: t.s, rot0: t.rot, x, y, s, rot: t.rot + wende, start: f * 0.45, dauer: 0.42 * e.last, z: (e.figur ? 1000 : 0) + (e.eingeschlossen && !M.verworfen.has("ueberlagerung") ? 500 : 0) + k, stempel: [0, 0.5] };
         if (!e.beweglich) Object.assign(ziel[i], { x: t.x, y: t.y, s: t.s, rot: t.rot });
       });
-      z.ereignisse.push({ schritt: z.schritt, kurz: "Die Reihenfolge der Ankunft wird zur Zeitachse.", text: `Schritt 2: Die Ankunftsreihenfolge aus Schritt 1 wird zur Zeitachse entlang ${grad(w)}: früh Angekommenes am Anfang, spät Angekommenes am Ende und obenauf; quer dazu behält jedes Teil seine Lage aus dem Eingangsbild, in voller Grösse. Jeder Zwischenstand bleibt als Spur.` });
+      z.ereignisse.push({ schritt: z.schritt, kurz: TX("Die Reihenfolge der Ankunft wird zur Zeitachse."), text: TF("text2", `Schritt 2: Die Ankunftsreihenfolge aus Schritt 1 wird zur Zeitachse entlang ${grad(w)}: früh Angekommenes am Anfang, spät Angekommenes am Ende und obenauf; quer dazu behält jedes Teil seine Lage aus dem Eingangsbild, in voller Grösse. Jeder Zwischenstand bleibt als Spur.`, grad(w)) });
       return { ziel };
     },
     lauf(M, z, p) {
@@ -452,7 +455,7 @@ const OPS = {
   //     Die Teile sind gegeneinander versetzt (bis zu gut einer halben Runde): ein Wogen statt eines Takts, und die Arbeit verteilt sich auf viele Bilder.
   3: {
     plan(M, z, r) {
-      z.ereignisse.push({ schritt: z.schritt, kurz: "Sechs Runden: stempeln, ausweichen, nah an der Herkunft bleiben.", text: `Schritt 3: Sechsmal stempeln und weitergleiten, gegeneinander versetzt; jedes Teil wählt die Nachbarstelle mit der geringsten Spur, bleibt aber an seine Herkunftsstelle im Bild gebunden, und dreht sich in seine Richtung (Spuren bisher: ${z.stempel.length}).` });
+      z.ereignisse.push({ schritt: z.schritt, kurz: TX("Sechs Runden: stempeln, ausweichen, nah an der Herkunft bleiben."), text: TF("text3", `Schritt 3: Sechsmal stempeln und weitergleiten, gegeneinander versetzt; jedes Teil wählt die Nachbarstelle mit der geringsten Spur, bleibt aber an seine Herkunftsstelle im Bild gebunden, und dreht sich in seine Richtung (Spuren bisher: ${z.stempel.length}).`, z.stempel.length) });
       return { runden: 6, runde: z.teile.map(() => -1), ziel: {}, r: Math.floor(r() * 2 ** 31) };
     },
     lauf(M, z, p) {
@@ -477,7 +480,7 @@ const OPS = {
             const wert = spurUnter(M, z, i, x, y, matrix(t.rot, t.s)) + 0.15 * r() + 2.2 * Math.hypot(x - e.hx, y - e.hy);
             if (!best || wert < best.wert) best = { x, y, w, wert };
           }
-          if (!best) { t.erschoepft = true; z.ereignisse.push({ schritt: z.schritt, text: `Regel R1: ${name(e)} findet keine Stelle ohne Spur und bleibt stehen.` }); continue; }
+          if (!best) { t.erschoepft = true; z.ereignisse.push({ schritt: z.schritt, text: TF("regelR1", `Regel R1: ${name(e)} findet keine Stelle ohne Spur und bleibt stehen.`, name(e)) }); continue; }
           let dw = best.w - t.rot; dw = Math.atan2(Math.sin(dw), Math.cos(dw));
           P.ziel[i] = { x0: t.x, y0: t.y, x: best.x, y: best.y, rot0: t.rot, rot: t.rot + dw * 0.35, von: runde };
         }
@@ -514,7 +517,8 @@ const OPS = {
       const anstoss = [...T].filter((e) => e.figur).sort((a, b) => b.anteil - a.anteil)[0]?.i ?? [...T].sort((a, b) => b.anteil - a.anteil)[0].i;
       z.anstoss = anstoss;
       const t = z.teile[anstoss];
-      z.ereignisse.push({ schritt: z.schritt, kurz: `${z.federn.length} Kopplungen ziehen das Bild verdreht zusammen.`, text: `Schritt 4: ${z.federn.length} Kopplungen mit der Distanz aus dem Eingangsbild (${kanten.filter((k) => k.art === "baum").length} Gerüst, ${kanten.filter((k) => k.art === "grenze").length} gemeinsame Grenzen${M.regel === "R7" ? `, ${kanten.filter((k) => k.art === "farbe").length} gleiche Farbe` : ""}) ziehen das Bild wieder zusammen; alle Teile kehren zur Originalgrösse zurück. Anstoss: ${name(T[anstoss])} dreht um 90°. Stellen mit Spur sind zäh.` });
+      const baum = kanten.filter((k) => k.art === "baum").length, grenze = kanten.filter((k) => k.art === "grenze").length, farbe = M.regel === "R7" ? TF("farbeKopplungen", `, ${kanten.filter((k) => k.art === "farbe").length} gleiche Farbe`, kanten.filter((k) => k.art === "farbe").length) : "";
+      z.ereignisse.push({ schritt: z.schritt, kurz: TF("kurz4", `${z.federn.length} Kopplungen ziehen das Bild verdreht zusammen.`, z.federn.length), text: TF("text4", `Schritt 4: ${z.federn.length} Kopplungen mit der Distanz aus dem Eingangsbild (${baum} Gerüst, ${grenze} gemeinsame Grenzen${farbe}) ziehen das Bild wieder zusammen; alle Teile kehren zur Originalgrösse zurück. Anstoss: ${name(T[anstoss])} dreht um 90°. Stellen mit Spur sind zäh.`, z.federn.length, baum, grenze, farbe, name(T[anstoss])) });
       return { rot0: t.rot, s0: z.teile.map((x) => x.s) };
     },
     lauf(M, z, p) {
@@ -556,7 +560,7 @@ const OPS = {
       const richtung = kleiner ? 1 : -1;
       const drall = z.teile.map(() => (r() - 0.5) * 0.06);
       z.schnitt = { x: px, y: py, w };
-      z.ereignisse.push({ schritt: z.schritt, kurz: `Ein Schnitt: ${weg.size} Teile brechen weg.`, text: `Schritt 5: Eingriff – ein Schnitt quer zur Hauptachse, zwischen ${name(M.teile[ort])} (das Teil mit der meisten Spur, ${meist.toFixed(1)}) und dem Schwerpunkt des Gefüges. ${gerissen} Kopplungen reissen; ${weg.size} Teile brechen weg und drehen sich, ${z.teile.length - weg.size} halten zusammen.` });
+      z.ereignisse.push({ schritt: z.schritt, kurz: TF("kurz5", `Ein Schnitt: ${weg.size} Teile brechen weg.`, weg.size), text: TF("text5", `Schritt 5: Eingriff – ein Schnitt quer zur Hauptachse, zwischen ${name(M.teile[ort])} (das Teil mit der meisten Spur, ${meist.toFixed(1)}) und dem Schwerpunkt des Gefüges. ${gerissen} Kopplungen reissen; ${weg.size} Teile brechen weg und drehen sich, ${z.teile.length - weg.size} halten zusammen.`, name(M.teile[ort]), meist.toFixed(1), gerissen, weg.size, z.teile.length - weg.size) });
       return { weg: [...weg], dx: nx * richtung, dy: ny * richtung, drall, kopplung0: z.kopplungAlpha };
     },
     lauf(M, z, p) {
@@ -593,7 +597,7 @@ const OPS = {
         ziel[i] = { x0: t.x, y0: t.y, s0: t.s, rot0: t.rot, x: e.hx, y: e.hy, s: 1, rot: t.rot + wende, vx: t.vx ?? 0, vy: t.vy ?? 0, vr: t.vr ?? 0, start: 0.3 * f, dauer: 0.45 + 0.08 * f, z: anfangsEbene(M, i) };
       });
       const zuerst = zaeh.slice(0, 3).map(({ i }) => name(M.teile[i])), zuletzt = zaeh.slice(-2).map(({ i }) => name(M.teile[i]));
-      z.ereignisse.push({ schritt: z.schritt, kurz: "Jedes Teil kehrt zurück: das Bild setzt sich neu zusammen.", text: `Schritt 6: Alle Kopplungen lösen sich; jedes der ${N} Teile kehrt an seine Herkunftsstelle zurück, in Originalgrösse und ohne Drehung, und das Ursprungsbild setzt sich neu zusammen. Die Spuren bestimmen die Reihenfolge: zuerst ${zuerst.join(", ")} (wenig Spur), zuletzt ${zuletzt.join(", ")}. Es bleiben feine Fugen.` });
+      z.ereignisse.push({ schritt: z.schritt, kurz: TX("Jedes Teil kehrt zurück: das Bild setzt sich neu zusammen."), text: TF("text6", `Schritt 6: Alle Kopplungen lösen sich; jedes der ${N} Teile kehrt an seine Herkunftsstelle zurück, in Originalgrösse und ohne Drehung, und das Ursprungsbild setzt sich neu zusammen. Die Spuren bestimmen die Reihenfolge: zuerst ${zuerst.join(", ")} (wenig Spur), zuletzt ${zuletzt.join(", ")}. Es bleiben feine Fugen.`, N, zuerst.join(", "), zuletzt.join(", ")) });
       return { ziel, schnitt0: z.schnittAlpha ?? 1, kopplung0: z.kopplungAlpha, spur0: z.spurAlpha };
     },
     lauf(M, z, p, k) {
