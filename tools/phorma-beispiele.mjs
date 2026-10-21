@@ -11,6 +11,8 @@
 //   The Fictory: der ganze Lauf von 30 Sekunden mit dem Beispielbild (die Bühne der App, Schritt für Schritt), ohne Ton
 // BILDER_ORDNER=… behält die Einzelbilder; HOECHSTENS_BILDER=24 rechnet nur die ersten Bilder (zum Messen); AUS=… schreibt anderswohin als nach
 // assets/beispiele/; PROBEN=2 mittelt Proben je Bild (Bewegungsunschärfe in PHORMA II und III, entsprechend langsamer).
+// BILDER_BEI=1,3,5 (Sekunden) rechnet nur diese Bilder und schreibt sie als <name>-<s>s.jpg nach AUS bzw. assets/beispiele/ – zum Abstimmen von Licht
+// und Farbe, ohne jedes Mal den ganzen Film zu rechnen (21. Oktober 2026, Rückmeldung «Physarum und Tiefe … immer noch zu hell»).
 //
 //   NODE_PATH=$(npm root -g) node tools/phorma-beispiele.mjs                  alle nach assets/beispiele/<name>.mp4 und .jpg
 //   NODE_PATH=$(npm root -g) node tools/phorma-beispiele.mjs phorma-iii       einzelne (phorma-i, phorma-ii, phorma-iii, the-fictory)
@@ -30,6 +32,7 @@ try { playwright = require("playwright"); } catch { playwright = require(join(pr
 const ROOT = new URL("../", import.meta.url), root = fileURLToPath(ROOT);
 const AUS = process.env.AUS ? pathToFileURL(process.env.AUS.replace(/\/?$/, "/")) : new URL("assets/beispiele/", ROOT); mkdirSync(AUS, { recursive: true });
 const FPS = 24, BREITE = 540, HOEHE = 675, PROBEN = Math.max(1, Number(process.env.PROBEN) || 1), HOECHSTENS = Number(process.env.HOECHSTENS_BILDER) || Infinity;
+const BILDER_BEI = process.env.BILDER_BEI ? process.env.BILDER_BEI.split(",").map(Number).filter((x) => x >= 0) : null;
 const nur = process.argv.slice(2);
 const will = (name) => !nur.length || nur.includes(name);
 
@@ -56,6 +59,15 @@ async function film(name, { teile, ton = null, poster: posterBei = 0.6, crf = 31
     await teil.vorbereiten(page);
     await teil.bereit(page);
     const d = await page.evaluate(teil.dauerFn);
+    if (BILDER_BEI) {   // nur einzelne Bilder zum Abstimmen
+      for (const t of BILDER_BEI.filter((t) => t >= (teil.von ?? 0) && t < Math.min(d, teil.bis ?? d))) {
+        const data = await page.evaluate(teil.bildFn, [t, BREITE, HOEHE, PROBEN]);
+        writeFileSync(fileURLToPath(new URL(`${name}-${t}s.jpg`, AUS)), Buffer.from(data.split(",")[1], "base64"));
+        console.log(`${name}: Bild bei ${t} s`);
+      }
+      await page.close();
+      continue;
+    }
     const i0 = Math.round((teil.von ?? 0) * FPS), i1 = Math.min(HOECHSTENS, Math.ceil(Math.min(d, teil.bis ?? d) * FPS));
     for (let i = i0; i < i1; i++) {
       const data = await page.evaluate(teil.bildFn, [i / FPS, BREITE, HOEHE, PROBEN]);
@@ -67,6 +79,7 @@ async function film(name, { teile, ton = null, poster: posterBei = 0.6, crf = 31
     n = Math.max(n, i1); dauer = Math.max(dauer, Math.min(d, teil.bis ?? d));
     if (i1 >= HOECHSTENS) break;
   }
+  if (BILDER_BEI) { rmSync(ordner, { recursive: true, force: true }); return; }
   // kodieren: H.264, Poster bei 60 % der Dauer (oder wo der Effekt am besten zu sehen ist); mit Ton: AAC, ausgeblendet über die letzten 1,2 s wie im Export der App
   const mp4 = fileURLToPath(new URL(`${name}.mp4`, AUS)), poster = fileURLToPath(new URL(`${name}.jpg`, AUS));
   const filmDauer = n / FPS, tonArgs = [];
