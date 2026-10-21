@@ -245,6 +245,7 @@ a.feldchen:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px;
   .zeilen > .stueck p { font-size: 0.92rem; }
 }
 .liste-linien { border-top: 1px solid var(--linie); }
+.abschnitt-kopf + .liste-linien { border-top: 0; margin-top: -24px; }   /* direkt unter der Überschrift: deren Linie genügt */
 .liste-linien > li { border-bottom: 1px solid var(--linie); }
 .liste-linien > li > a { display: grid; grid-template-columns: 2.2rem 1fr auto; gap: 16px; align-items: baseline; padding: 14px 0; text-decoration: none; }
 .liste-linien .n { color: var(--grau); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
