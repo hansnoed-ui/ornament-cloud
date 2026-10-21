@@ -478,3 +478,13 @@ body.buehne-seite { height: 100dvh; display: grid; grid-template-rows: 48px minm
   .beispiel-video.quer { grid-template-columns: minmax(0, 1fr); }
   .beispiel-video.quer figcaption { grid-column: 1; margin-top: 8px; }
 }
+
+/* Seite einer App auf breiten Bildschirmen: die Tafel rechts neben Titel, Satz und Knöpfen statt darunter (21. Oktober 2026, Rückmeldung vom
+   Laptop: «das Rad ist immer leicht abgeschnitten» – mit der Vergrösserung von Windows lag ihr unteres Ende unter dem Rand); der Text darunter
+   über die ganze Breite. Auf dem Handy bleibt alles untereinander. */
+@media (min-width: 900px) {
+  .app-oben { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 340px); column-gap: 64px; align-items: center; }
+  .app-oben > .stueck-bild.quadrat { grid-column: 2; grid-row: 1; margin-top: 0; max-width: 340px; width: 100%; }
+  .app-oben > .app-oben-text { grid-column: 1; grid-row: 1; }
+  .app-oben > .stueck-text { grid-column: 1 / -1; }
+}
