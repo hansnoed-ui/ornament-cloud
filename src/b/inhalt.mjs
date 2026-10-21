@@ -68,7 +68,7 @@ export const APPS = [
   { slug: "phorma-ii", name: "PHORMA II", gattung: "Bild und Video", kurz: "Fünf Effekte für Foto und Video: Wachstum, Physarum, Tiefe, Tuch, Montage.",
     text: "Eine Linie wächst und zeichnet das Bild, ein Schleimpilz findet seine Formen, eine Lichtebene tastet die Tiefe ab, das Bild weht als Seidentuch oder zerfällt im Takt in Rechtecke. Jeder Effekt einzeln oder als Kette, aus Foto oder Video. Ein Video im Hochformat, gerechnet auf der eigenen Grafikkarte.",
     fuer: "Für Künstler:innen, Galerien und Museen, die ein Werk in Bewegung zeigen wollen.",
-    url: "alpha/phorma-ii/", bild: "b/bilder/apps/phorma-ii.svg", bildDunkel: "b/bilder/apps/phorma-ii-dunkel.svg", bildAlt: "PHORMA II, gezeichnet: eine einzige Linie, die aus einem Keim gewachsen ist und eine Scheibe füllt",
+    url: "alpha/phorma-ii/", app: "alpha/phorma-ii/?installieren", bild: "b/bilder/apps/phorma-ii.svg", bildDunkel: "b/bilder/apps/phorma-ii-dunkel.svg", bildAlt: "PHORMA II, gezeichnet: eine einzige Linie, die aus einem Keim gewachsen ist und eine Scheibe füllt",
     beispiele: [
       { art: "video", datei: "assets/beispiele/phorma-ii.mp4", bild: "assets/beispiele/phorma-ii.jpg", mass: [540, 676], text: "Die Kette der App mit dem Beispielfoto, drei Effekte in einem Film: ein Schleimpilz legt sein Netz auf die Formen (Physarum), eine Lichtebene tastet das Relief ab (Tiefe), das Foto weht als Seidentuch und legt sich glatt (Tuch). Gerechnet aus der App, ohne Ton." },
       { art: "paar", vorher: "alpha/phorma-ii/beispiel.jpg", nachher: "assets/vorschau-phorma-ii-2x.jpg", text: "Dasselbe Foto, zerlegt in Rechtecke mit versetzten Ausschnitten, Rändern und Zahlentafeln (Montage)." },

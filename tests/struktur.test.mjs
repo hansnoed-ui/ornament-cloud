@@ -231,7 +231,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 });
 
 const SEITEN = {
-  apps: { titel: "Apps", karten: [["PHORMA III", "../alpha/phorma-iii/app/"], ["PHORMA II", "../alpha/phorma-ii/"], ["PHORMA I", "../alpha/bildfragmentieren/app/"], ["The Fictory", "../alpha/the-fictory/app/"], ["ORMA", "../alpha/orma/"], ["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["OMNA COLOR", "../alpha/omna-color/app/"]] },   // seit 19. Oktober 2026 in drei Gruppen   // OMNA COLOR seit 19. Oktober 2026 als letzte   // The Fictory vom 11. Oktober 2026 an zuerst, seit 17. Oktober 2026 PHORMA I
+  apps: { titel: "Apps", karten: [["PHORMA III", "../alpha/phorma-iii/app/"], ["PHORMA II", "../alpha/phorma-ii/app/"], ["PHORMA I", "../alpha/bildfragmentieren/app/"], ["The Fictory", "../alpha/the-fictory/app/"], ["ORMA", "../alpha/orma/"], ["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["OMNA COLOR", "../alpha/omna-color/app/"]] },   // seit 19. Oktober 2026 in drei Gruppen   // OMNA COLOR seit 19. Oktober 2026 als letzte   // The Fictory vom 11. Oktober 2026 an zuerst, seit 17. Oktober 2026 PHORMA I
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
   web: { titel: "Web", karten: [["Sketchory", "../alpha/sketchory/"], ["The Fictory", "../alpha/the-fictory/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"]] },
 };
@@ -267,11 +267,11 @@ test("Apps: drei Gruppen (seit 19. Oktober 2026) – Bild und Video: PHORMA III,
   assert.match(k[0].html, /<img src="\.\.\/assets\/vorschau-phorma-iii\.jpg" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-iii.jpg", root))), [640, 800]);
   assert.ok(k[0].tags.includes("App") && k[0].tags.includes("Video") && /installieren/.test(k[0].html) && /ohne Netz/.test(k[0].html) && /Aus Klang wird Bild/.test(k[0].html));
-  // PHORMA II (seit 19. Oktober 2026): die Montage als Beitragsbild (tools/phorma-ii-bilder.mjs), im Browser, keine App
+  // PHORMA II (seit 19. Oktober 2026): die Montage als Beitragsbild (tools/phorma-ii-bilder.mjs); seit 21. Oktober 2026 als App
   assert.match(k[1].html, /<img src="\.\.\/assets\/vorschau-phorma-ii\.jpg" srcset="\.\.\/assets\/vorschau-phorma-ii\.jpg 1x, \.\.\/assets\/vorschau-phorma-ii-2x\.jpg 1\.6875x" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-ii-2x.jpg", root))), [1080, 1350]);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-ii.jpg", root))), [640, 800]);
-  assert.ok(k[1].tags.includes("Video") && !k[1].tags.includes("App"));
+  assert.ok(k[1].tags.includes("App") && k[1].tags.includes("Video") && /installieren/.test(k[1].html) && /ohne Netz/.test(k[1].html));
   assert.deepEqual(jpegMass(readFileSync(new URL("alpha/phorma-ii/og-phorma-ii.jpg", root))), [1200, 630], "Vorschaukachel zum Teilen");
   assert.match(lies("alpha/phorma-ii/index.html"), /<meta property="og:image" content="https:\/\/ornament\.cloud\/alpha\/phorma-ii\/og-phorma-ii\.jpg">/);
   // PHORMA I: eine Kristallansicht aus der Anwendung als Beitragsbild (tools/phorma-bilder.mjs), dazu der Satz vom 17. Oktober 2026

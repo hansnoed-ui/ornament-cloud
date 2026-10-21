@@ -39,6 +39,11 @@
   <meta name="twitter:image" content="https://ornament.cloud/alpha/phorma-ii/og-phorma-ii.jpg">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <!-- Seit dem 21. Oktober 2026 als App installierbar (Wunsch: «ja, bau PHORMA II als App»; wie PHORMA III): manifest.webmanifest, icons/
+       (tools/phorma-ii-bilder.mjs), sw.js und der Knopf aus pwa.js; die installierte App startet in studio/ (tools/build-phorma-ii-app.mjs). -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="stylesheet" href="../../styles.css?v=46">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
   <style>
@@ -160,13 +165,20 @@
     .ergebnis video { display: block; width: min(100%, 360px); aspect-ratio: 4 / 5; border-radius: 8px; background: #000; }
     .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 0.92rem; }
     .hinweise li { margin: 0.2rem 0; }
+    /* «PHORMA II als App installieren» (pwa.js): nicht in der installierten App */
+    .installieren { margin: 8px auto 36px; max-width: 36em; text-align: center; }
+    .installieren[hidden], .installieren [hidden] { display: none; }
+    .installieren .knopf { display: inline-flex; align-items: center; gap: 10px; padding-left: 8px; }
+    .installieren .knopf img { width: 30px; height: 30px; border-radius: 7px; display: block; }
+    .installieren-hilfe { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; color: var(--muted); }
+    .installieren-hilfe span { color: var(--text); white-space: nowrap; }
     .ki-hinweis { margin: 0; font-size: 0.86rem; color: var(--muted); }
     .diagnose { margin: 0; padding: 10px; border: 1px solid var(--border); border-radius: 10px; white-space: pre-wrap; font: 0.72rem/1.4 ui-monospace, Menlo, Consolas, monospace; }
     [hidden] { display: none !important; }
   </style>
   <link rel="stylesheet" href="../phorma.css?v=2">
   <!-- Deutsch und Englisch (21. Oktober 2026): vor den Modulen -->
-  <script src="sprache.js?v=1"></script>
+  <script src="sprache.js?v=2"></script>
 </head>
 <body>
   <!-- Kopf der App (21. Oktober 2026, wie OMNA COLOR, ORNA, ORMA und PHORMA I): Signet mit Weg in den Neubau, der Schalter d · e, «Über die App»; auf der Bühne (?b=1) nicht -->
@@ -301,6 +313,10 @@
   </main>
 
   <div class="wrap">
+    <div class="installieren" id="installieren" hidden>
+      <button class="knopf" id="installieren-knopf" type="button" aria-expanded="false" aria-controls="installieren-hilfe"><img src="icons/icon-192.png" alt="" width="30" height="30"><span data-t="install.knopf">PHORMA II als App installieren</span></button>
+      <p class="installieren-hilfe" id="installieren-hilfe" hidden></p>
+    </div>
     <ul class="hinweise">
       <li data-t="hinweis.1">Alles bleibt in deinem Browser: Das Foto wird nicht hochgeladen, das Video entsteht auf deinem Gerät. Nur «Tiefe mit KI» lädt einmal ein Modell aus dem Netz.</li>
       <li data-t="hinweis.2">Ohne KI wird die Tiefe aus dem Bild geschätzt – aus Schärfe, Lage, Farbe und Himmel – und an die Kanten des Fotos gelegt.</li>
@@ -336,6 +352,7 @@
     })();
   </script>
   <script type="module" src="app.js?v=42"></script>
+  <script type="module" src="pwa.js?v=42"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

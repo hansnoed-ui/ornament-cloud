@@ -60,6 +60,16 @@
     "Das Tiefenmodell wird geladen …": "Loading the depth model …", "Die KI schätzt die Tiefe …": "The AI is estimating the depth …",
     // Phasen und Effekte (ablauf.js)
     Physarum: "Physarum", Tiefe: "Depth", Tuch: "Cloth", Wachstum: "Growth", Montage: "Montage", Keim: "Seed", Netz: "Net", Bild: "Picture", Scan: "Scan", Farbe: "Colour", Schnitte: "Cuts",
+    // Installieren (pwa.js, seit 21. Oktober 2026 als App)
+    "install.knopf": "Install PHORMA II as an app",
+    "Im Browser dieser App lässt sich PHORMA II nicht installieren. Die Seite öffnet sich dafür in Chrome; dort noch einmal auf «PHORMA II als App installieren» tippen.": "PHORMA II cannot be installed from this app's browser. The page opens in Chrome for that; tap «Install PHORMA II as an app» there once more.",
+    "Im Browser dieser App lässt sich PHORMA II nicht installieren. Über «···» oder das Menü «In Safari öffnen» wählen, dann dort «Teilen» und «Zum Home-Bildschirm».": "PHORMA II cannot be installed from this app's browser. Choose «···» or the menu «Open in Safari», then «Share» and «Add to Home Screen» there.",
+    "Auf «Teilen» tippen, dann «Zum Home-Bildschirm» wählen.": "Tap «Share», then choose «Add to Home Screen».",
+    "Im Browsermenü (⋮) «App installieren» oder «Zum Startbildschirm hinzufügen» wählen.": "In the browser menu (⋮) choose «Install app» or «Add to Home screen».",
+    "Im Browsermenü (⋮) «PHORMA II installieren» wählen oder in der Adresszeile auf das Installationssymbol klicken. Im Inkognito-Fenster geht es nicht.": "In the browser menu (⋮) choose «Install PHORMA II» or click the install icon in the address bar. It does not work in an incognito window.",
+    "Im Menü «Ablage» «Zum Dock hinzufügen» wählen.": "In the «File» menu choose «Add to Dock».",
+    "Dieser Browser kann PHORMA II nicht installieren. Auf dem Smartphone geht es direkt, am Computer mit Chrome oder Edge.": "This browser cannot install PHORMA II. On a smartphone it works directly, on a computer with Chrome or Edge.",
+    "In Chrome öffnen": "Open in Chrome", " Danach steht PHORMA II als eigenes Symbol auf dem Bildschirm und läuft auch ohne Netz; Foto und Video bleiben auf dem Gerät.": " After that PHORMA II has its own icon on the screen and runs without a network too; photo and video stay on the device.",
   };
   DE.unschaerfeProben = (p) => `Video wird gerechnet, mit Bewegungsunschärfe (${p} Proben je Bild) …`;
   DE.aufnahme = (s) => `Video wird in Echtzeit aufgenommen (${s} s, ohne Bewegungsunschärfe). Lass diese Seite sichtbar.`;
