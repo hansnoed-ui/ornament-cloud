@@ -24,7 +24,7 @@ async function check(name, fn) {
   catch (e) { ergebnisse.push(false); console.log("FAIL", name, "\n     ", e.message.split("\n").slice(0, 8).join("\n      ")); }
 }
 async function oeffne({ vorher = null, ...opts } = {}) {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 950 }, acceptDownloads: true, ...opts });
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 950 }, acceptDownloads: true, locale: "de-CH", ...opts });
   const page = await ctx.newPage();
   const fehler = [], fremd = [];
   page.on("pageerror", (e) => fehler.push(e.message));
