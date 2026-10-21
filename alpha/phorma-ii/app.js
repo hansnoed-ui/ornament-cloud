@@ -1,10 +1,10 @@
 // PHORMA II – Seite: Foto laden, analysieren (Worker), Bühne (WebGL), Vorschau mit Zeitleiste, Video (MP4) und Standbild (PNG).
 // Alles bleibt im Browser. Video wie in PHORMA I: WebCodecs (H.264) und der MP4-Schreiber von Sketchory; ohne WebCodecs in Echtzeit über
 // MediaRecorder. Mit Bewegungsunschärfe rechnet jedes Bild des Videos acht Proben (Verschluss 180°).
-import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=30";
-import { szene, bild, standbildZeit } from "./film.js?v=30";
-import { videoPlan, videoStelleBei, HOECHSTENS } from "./filmquelle.js?v=30";
-import { analysieren, tiefeNormieren } from "./analyse.js?v=30";
+import { FPS, dateiname, filmMass, zeitcode, FORMATE, TITEL, KETTE, ablaufName, effekte } from "./ablauf.js?v=31";
+import { szene, bild, standbildZeit } from "./film.js?v=31";
+import { videoPlan, videoStelleBei, HOECHSTENS } from "./filmquelle.js?v=31";
+import { analysieren, tiefeNormieren } from "./analyse.js?v=31";
 import { mitDauer } from "../the-fictory/dauer.js?v=32";
 
 const $ = (id) => document.getElementById(id);
@@ -62,6 +62,9 @@ const vorschauMass = () => { const b = vorschau.parentElement.getBoundingClientR
 const leinwand = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
 const merken = (k, v) => { try { localStorage.setItem(`phorma-ii.${k}`, v); } catch { /* egal */ } };
 const erinnern = (k) => { try { return localStorage.getItem(`phorma-ii.${k}`); } catch { return null; } };
+// Sprache (sprache.js, vor den Modulen): T(deutsch, …) gibt auf Englisch die Übersetzung, sonst den deutschen Text
+const T = (s, ...a) => (window.sprache ? window.sprache.t(s, ...a) : s);
+const komma = (x) => (window.sprache?.en() ? x : x.replace(".", ","));   // Dezimalzeichen nach Sprache
 function melden(text, fehler = false) { const m = $("meldung"); m.textContent = text; m.classList.toggle("fehler", fehler); }
 
 // ——— Foto laden ———
@@ -97,7 +100,7 @@ for (const art of ["dragleave", "drop"]) ablage.addEventListener(art, () => abla
 ablage.addEventListener("drop", (e) => {
   e.preventDefault();
   const datei = [...(e.dataTransfer?.files ?? [])].find((f) => f.type.startsWith("image/") || f.type.startsWith("video/"));
-  if (datei) quelleLaden(datei); else melden("Das ist weder Foto noch Video. Bitte ein Foto (JPG, PNG, HEIC je nach Browser) oder ein Video (MP4, MOV, WebM) verwenden.", true);
+  if (datei) quelleLaden(datei); else melden(T("Das ist weder Foto noch Video. Bitte ein Foto (JPG, PNG, HEIC je nach Browser) oder ein Video (MP4, MOV, WebM) verwenden."), true);
 });
 $("datei").addEventListener("change", (e) => { if (e.target.files?.[0]) quelleLaden(e.target.files[0]); });
 const istVideo = (datei) => datei.type.startsWith("video/") || /\.(mp4|m4v|mov|webm)$/i.test(datei.name ?? "");
@@ -107,11 +110,11 @@ $("testbild").addEventListener("click", async () => fotoLaden(new File([await (a
 async function fotoLaden(datei) {
   filmWeg(); ladenEnde();
   notiz(`Foto gewählt (${Math.round((datei.size ?? 0) / 1024)} kB)`);
-  melden("Foto wird gelesen …");
+  melden(T("Foto wird gelesen …"));
   let q;
-  try { q = await bitmap(datei); } catch { melden("Dieses Foto kann der Browser nicht öffnen. Versuche es als JPG oder PNG.", true); return; }
+  try { q = await bitmap(datei); } catch { melden(T("Dieses Foto kann der Browser nicht öffnen. Versuche es als JPG oder PNG."), true); return; }
   notiz(`Foto gelesen und verkleinert auf ${q.width} × ${q.height}`);
-  ablage.classList.add("hat-bild"); $("ablage-titel").textContent = "Anderes Foto wählen";
+  ablage.classList.add("hat-bild"); $("ablage-titel").dataset.t = "Anderes Foto wählen"; $("ablage-titel").textContent = T("Anderes Foto wählen");
   await bildSetzen(q);
 }
 /** ein neues Foto (oder das Standbild eines Videos): das alte und seine Bühne sofort freigeben, nicht erst, wenn das neue analysiert ist */
@@ -145,7 +148,7 @@ function vorschauLeeren() {
   S.buehne?.entsorgen(); S.buehne = null; S.buehneSchluessel = ""; S.buehneWarm = false; S.buehneFertig = false;
   vctx.save(); vctx.setTransform(1, 0, 0, 1, 0, 0); vctx.fillStyle = "#000"; vctx.fillRect(0, 0, vorschau.width, vorschau.height); vctx.restore();
 }
-const sekunden = (s) => `${s.toFixed(1).replace(".", ",")} s`;
+const sekunden = (s) => `${komma(s.toFixed(1))} s`;
 function filmWeg() {
   if (!S.film) return;
   S.film.nr++; S.film.spur?.entsorgen();
@@ -155,21 +158,21 @@ function filmWeg() {
 async function videoLaden(datei) {
   filmWeg();
   vorschauLeeren();
-  ladenZeigen("Video wird geöffnet …", 0, "Schritt 1 von 3");
+  ladenZeigen(T("Video wird geöffnet …"), 0, T("Schritt 1 von 3"));
   notiz(`Video gewählt (${Math.round((datei.size ?? 0) / 1024)} kB)`);
-  melden("Video wird geöffnet …");
+  melden(T("Video wird geöffnet …"));
   const el = $("quellfilm");
   el.src = URL.createObjectURL(datei);
   try {
     await new Promise((ok, nein) => { el.onloadedmetadata = ok; el.onerror = () => nein(new Error("der Browser kann dieses Video nicht öffnen")); setTimeout(() => nein(new Error("das Video lädt nicht")), 20_000); });
     // WebM aus Rekordern ohne Dauer: einmal hinter das Ende spulen (wie in PHORMA III)
     if (!Number.isFinite(el.duration)) await new Promise((ok) => { el.ondurationchange = () => { if (Number.isFinite(el.duration)) ok(); }; el.currentTime = 1e7; setTimeout(ok, 4000); });
-  } catch (fehler) { ladenEnde(); melden(`Das Video liess sich nicht öffnen: ${fehler.message}. Versuche es als MP4.`, true); return; }
+  } catch (fehler) { ladenEnde(); melden(`${T("Das Video liess sich nicht öffnen:")} ${fehler.message}. ${T("Versuche es als MP4.")}`, true); return; }
   const dauer = Number.isFinite(el.duration) ? el.duration : 0;
   S.film = { datei, el, dauer, von: 0, spur: null, nr: 0, gelesen: "" };
   const r = $("film-start"); r.max = String(Math.max(0, dauer - 1).toFixed(1)); r.value = "0"; $("film-start-wert").textContent = sekunden(0);
   $("film-start-box").hidden = dauer < 2;
-  ablage.classList.add("hat-bild"); $("ablage-titel").textContent = "Anderes Foto oder Video wählen";
+  ablage.classList.add("hat-bild"); $("ablage-titel").dataset.t = "Anderes Foto oder Video wählen"; $("ablage-titel").textContent = T("Anderes Foto oder Video wählen");
   await filmLesen();
 }
 /** die Bilder lesen (nur wenn nötig: anderer Anfang, anderes Format oder zu kurz) und das Standbild setzen */
@@ -179,15 +182,15 @@ async function filmLesen() {
   const noetig = Math.min(HOECHSTENS, voll.dauer + 0.2, Math.max(0.1, F.dauer - F.von)), schluessel = `${F.von}|${B}x${H}`;
   if (!F.spur || F.gelesen !== schluessel || F.spur.dauer < noetig - 0.05) {
     vorschauLeeren(); sperren(true);
-    ladenZeigen("Video wird gelesen …", 0, "Schritt 1 von 3 · bis 30 s, Bild für Bild");
+    ladenZeigen(T("Video wird gelesen …"), 0, T("Schritt 1 von 3 · bis 30 s, Bild für Bild"));
     try {
       filmspurModul ??= await import("../phorma-iii/filmspur.js?v=14");   // dieselbe Filmspur wie in PHORMA III, mit deren Marke
       const spur = await filmspurModul.filmspurLesen(F.datei, F.el, { von: F.von, bis: Math.min(F.dauer || F.von + noetig, F.von + noetig), breite: B, hoehe: H,
-        fortschritt: (i, n) => { if (nr === F.nr) { melden(`Video wird gelesen … ${Math.round((100 * i) / n)} %`); ladenZeigen(`Video wird gelesen … ${Math.round((100 * i) / n)} %`, i / n, "Schritt 1 von 3 · bis 30 s, Bild für Bild"); } }, abbruch: () => nr !== F.nr || S.film !== F });
+        fortschritt: (i, n) => { if (nr === F.nr) { melden(`${T("Video wird gelesen …")} ${Math.round((100 * i) / n)} %`); ladenZeigen(`${T("Video wird gelesen …")} ${Math.round((100 * i) / n)} %`, i / n, T("Schritt 1 von 3 · bis 30 s, Bild für Bild")); } }, abbruch: () => nr !== F.nr || S.film !== F });
       if (!spur || nr !== F.nr || S.film !== F) return;
       F.spur?.entsorgen(); F.spur = spur; F.gelesen = schluessel;
       notiz(`Video gelesen (${spur.n} Bilder, ${spur.weg}${spur.grund ? `: ${spur.grund}` : ""})`);
-    } catch (fehler) { if (nr === F.nr) { ladenEnde(); melden(`Die Bilder des Videos liessen sich nicht lesen (${fehler?.message ?? fehler}).`, true); } return; }
+    } catch (fehler) { if (nr === F.nr) { ladenEnde(); melden(`${T("Die Bilder des Videos liessen sich nicht lesen")} (${fehler?.message ?? fehler}).`, true); } return; }
     finally { if (nr === F.nr) sperren(false); }
   }
   // das Standbild: das Bild, bei dem das laufende Video am Ende ankommt
@@ -196,7 +199,7 @@ async function filmLesen() {
   if (nr !== F.nr) return;
   const c = leinwand(B, H); c.getContext("2d").drawImage(F.spur.bild(qt, { vorschau: false }), 0, 0, B, H);
   if (!S.laden) vorschauLeeren();
-  ladenZeigen("Das Standbild wird analysiert …", null, "Schritt 2 von 3");
+  ladenZeigen(T("Das Standbild wird analysiert …"), null, T("Schritt 2 von 3"));
   await bildSetzen(c);
 }
 let filmUmstellen = 0;
@@ -241,7 +244,7 @@ async function filmVorbereiten(sz, t, p) {
 
 // ——— analysieren (Worker, sonst hier) ———
 let worker = null, offen = null;
-const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=30", import.meta.url), { type: "module" }); } catch { return null; } };
+const neuerWorker = () => { try { return new Worker(new URL("./rechner.js?v=31", import.meta.url), { type: "module" }); } catch { return null; } };
 worker = neuerWorker();
 function rechnen() {
   const [B, H] = (S.mass = filmMass(S.format));
@@ -260,20 +263,20 @@ function rechnen() {
 }
 async function lesen() {
   if (!S.bild) return;
-  melden("Das Foto wird analysiert …");
+  melden(T("Das Foto wird analysiert …"));
   sperren(true);
   const { nr, ergebnis, fehler } = await rechnen();
   if (nr !== S.rechnen) return;
   sperren(false);
-  if (fehler || !ergebnis) { melden(`Das Foto liess sich nicht analysieren: ${fehler}`, true); return; }
+  if (fehler || !ergebnis) { melden(`${T("Das Foto liess sich nicht analysieren:")} ${fehler}`, true); return; }
   S.A = ergebnis; S.A.geschaetzt = ergebnis.tiefe;
   notiz(`Analyse fertig (${ergebnis.ms} ms im Worker)`);
-  const z = (n) => n.toLocaleString("de-CH");
-  $("auswertung").textContent = `${ergebnis.keime.length} Keime · Kanten · Tiefe · Tonumfang · ${ergebnis.ms} ms`;
+  S.auswertung = ergebnis; auswertungZeigen();
   if (S.tiefe === "ki") await kiAnwenden();
   neu();
-  if (S.tiefe !== "ki" || S.ki) melden("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4.");
+  if (S.tiefe !== "ki" || S.ki) melden(T("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4."));
 }
+function auswertungZeigen() { if (S.auswertung) $("auswertung").textContent = `${S.auswertung.keime.length} ${T("Keime")} · ${T("Kanten · Tiefe · Tonumfang")} · ${S.auswertung.ms} ms`; }
 
 // ——— Tiefe: aus dem Bild oder von der KI (lädt beim ersten Mal das Modell) ———
 let kiModul = null;
@@ -283,13 +286,13 @@ async function kiAnwenden() {
     const nr = S.rechnen;
     try {
       notiz("Tiefe mit KI wird vorbereitet");
-      kiModul ??= await import("./tiefe-ki.js?v=30");
+      kiModul ??= await import("./tiefe-ki.js?v=31");
       const { tiefe, name, device } = await kiModul.kiTiefe(S.foto, S.A.w, S.A.h, (m) => melden(m), { telefon: grob, notiz });
       if (nr !== S.rechnen) return;
       S.ki = { tiefe: tiefeNormieren(tiefe, S.A.w, S.A.h, S.A.hell), name, device };
-      melden(`Bereit. Tiefe von der KI (${name.split("/")[1]}, ${device === "webgpu" ? "WebGPU" : "WebAssembly"}).`);
+      melden(`${T("Bereit. Tiefe von der KI")} (${name.split("/")[1]}, ${device === "webgpu" ? "WebGPU" : "WebAssembly"}).`);
     } catch (fehler) {
-      melden(`Die KI-Tiefe liess sich nicht laden (${fehler?.message ?? fehler}); es bleibt die aus dem Bild geschätzte Tiefe.`, true);
+      melden(`${T("Die KI-Tiefe liess sich nicht laden")} (${fehler?.message ?? fehler}); ${T("es bleibt die aus dem Bild geschätzte Tiefe.")}`, true);
       return;
     }
   }
@@ -309,7 +312,7 @@ async function buehneBereit() {
   if (!schluessel) return;
   try {
     if (!buehneModul) notiz("three.js und die Bühne werden geladen");
-    buehneModul ??= await import("./buehne.js?v=30");
+    buehneModul ??= await import("./buehne.js?v=31");
     if (S.buehneSchluessel !== schluessel) return;
     notiz(`Bühne wird gebaut: ${S.ablauf}`);
     S.buehne = buehneModul.buehne(S.foto, S.A, S.ablauf, { grob, test, tiefeQuelle: S.A.tiefe === S.A.geschaetzt ? "bild" : "ki", spur: notiz, film: filmFuerBuehne(), nahtlos,
@@ -318,13 +321,13 @@ async function buehneBereit() {
         anhalten();
         notiz("Grafik ausgestiegen (webglcontextlost)");
         ladenEnde();
-        melden("Die Grafik dieses Geräts ist ausgestiegen (meist: zu wenig Grafikspeicher). Wähle einen einzelnen Effekt oder lade die Seite neu.", true);
+        melden(T("Die Grafik dieses Geräts ist ausgestiegen (meist: zu wenig Grafikspeicher). Wähle einen einzelnen Effekt oder lade die Seite neu."), true);
         if (S.sz) { S.sz.buehne = null; zeigeZeit(S.t ?? 0); }
         S.buehneSchluessel = ""; S.buehne = null;
       } });
   } catch (fehler) {
     ladenEnde();
-    melden(`PHORMA II braucht WebGL 2; hier blendet an seiner Stelle das Foto auf (${fehler?.message ?? fehler}).`, true);
+    melden(`${T("PHORMA II braucht WebGL 2; hier blendet an seiner Stelle das Foto auf")} (${fehler?.message ?? fehler}).`, true);
     return;
   }
   // erst wenn die Programme übersetzt sind, zeichnet die Vorschau mit der Bühne (bis dahin der Grund)
@@ -332,21 +335,22 @@ async function buehneBereit() {
   try { b.infoGemerkt = b.info(); } catch { /* egal */ }                    // einmal, nicht bei jeder Anzeige
   const i = b.infoGemerkt;
   notiz(`Bühne gebaut · Grafik ${i?.grafik ?? "?"} · Float-Ziel ${i?.floatZiel} · Float mischen ${i?.floatMischen} · Float linear ${i?.floatLinear} · parallel ${i?.parallel}`);
-  melden("Die Effekte werden vorbereitet …");
-  if (S.laden) ladenZeigen("Die Effekte werden vorbereitet …", null, "Schritt 3 von 3");
+  melden(T("Die Effekte werden vorbereitet …"));
+  if (S.laden) ladenZeigen(T("Die Effekte werden vorbereitet …"), null, T("Schritt 3 von 3"));
   await b.warm;
   notiz("Programme übersetzt");
   if (S.buehne !== b) return;
   S.buehneWarm = true;
-  melden("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4.");
+  melden(T("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4."));
   if (S.sz) { S.sz.buehne = b; if (S.laeuft) { S.start = performance.now(); } else zeigeZeit(S.t ?? 0); }
   // was im Hintergrund rechnet (die Bahn des Tuchs, des Wachstums): Fortschritt melden, danach die Vorschau neu zeichnen
   if (b.fortschritt() < 1) {
     const zeigen = () => {
       if (S.buehne !== b || b.fortschritt() >= 1) return;
       const namen = b.rechnend?.() ?? ["Tuch"];
-      melden(`${namen.join(" und ")} ${namen.length > 1 ? "werden" : "wird"} berechnet … ${Math.round(b.fortschritt() * 100)} %`);
-      if (S.laden) ladenZeigen(`${namen.join(" und ")} ${namen.length > 1 ? "werden" : "wird"} berechnet … ${Math.round(b.fortschritt() * 100)} %`, b.fortschritt(), "Schritt 3 von 3");
+      const satz = `${namen.map((n) => T(n)).join(` ${T("und")} `)} ${T(namen.length > 1 ? "werden" : "wird")} ${T("berechnet …")} ${Math.round(b.fortschritt() * 100)} %`;
+      melden(satz);
+      if (S.laden) ladenZeigen(satz, b.fortschritt(), T("Schritt 3 von 3"));
       if (!S.laeuft && S.sz && S.t !== null) zeigeZeit(S.t);   // steht die Vorschau, zeigt sie, was inzwischen gerechnet ist (das Wachstum kommt in Päckchen)
       setTimeout(zeigen, 500);
     };
@@ -358,7 +362,7 @@ async function buehneBereit() {
     if (S.laden) { ladenEnde(); S.buehneFertig = true; if (S.sz) { S.t = 0; zeigeZeit(0); if (!ruhig) spielen(); } }
     S.buehneFertig = true;
     notiz("alles bereit (auch Tuch und Wachstum)");
-    if (/berechnet …/.test($("meldung").textContent)) melden("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4.");
+    if (/berechnet …|being computed/.test($("meldung").textContent)) melden(T("Bereit. Die Vorschau läuft; «Video erstellen» rechnet das MP4."));
     if (!S.laeuft && S.sz && S.t !== null) zeigeZeit(S.t);
   });
 }
@@ -370,6 +374,7 @@ function optionen() {
     titel: $("titel").value.replace(/\s+/g, " ").trim(), foto: S.foto, ablauf: S.ablauf, buehne: S.buehneWarm ? S.buehne : null };
 }
 
+function dauerZeigen() { if (S.sz) $("dauer").textContent = `${komma(S.sz.zeit.dauer.toFixed(1))} s · ${S.mass[0]} × ${S.mass[1]} · ${FPS} ${T("Bilder/s")}`; }
 function sprungknoepfe(sz) {
   const leiste = document.querySelector(".phasen"), namen = sz.zeit.phasen.map((p) => `${p.art}.${p.name}`).join(",");
   if (leiste.dataset.namen === namen) return;
@@ -377,7 +382,7 @@ function sprungknoepfe(sz) {
   leiste.replaceChildren(...sz.zeit.phasen.map((p, i) => {
     const b = document.createElement("button");
     b.type = "button"; b.id = `zu-${p.art}-${p.name}`; b.dataset.nr = String(i);
-    b.textContent = `${String(i + 1).padStart(2, "0")} ${p.titel}`;
+    b.textContent = `${String(i + 1).padStart(2, "0")} ${T(p.titel)}`;
     return b;
   }));
 }
@@ -399,7 +404,7 @@ function neu({ abspielen = !ruhig } = {}) {
   vctx.setTransform(VORSCHAU, 0, 0, VORSCHAU, 0, 0);
   vorschau.parentElement.style.aspectRatio = `${S.mass[0]} / ${S.mass[1]}`;
   vorschau.parentElement.style.setProperty("--seiten", String(S.mass[0] / S.mass[1]));
-  $("dauer").textContent = `${S.sz.zeit.dauer.toFixed(1).replace(".", ",")} s · ${S.mass[0]} × ${S.mass[1]} · ${FPS} Bilder/s`;
+  dauerZeigen();
   $("zeit").max = String(S.sz.zeit.dauer); $("zeit").disabled = false;
   for (const k of ["video", "png", "spielen"]) $(k).disabled = false;
   $("leer").hidden = true;
@@ -427,17 +432,17 @@ const formatKnoepfe = wahl("data-format", "format", FORMATE, () => { S.ki = null
 if (grob) { S.tiefe = "bild"; merken("tiefe", "bild"); }
 const tiefeKnoepfe = wahl("data-tiefe", "tiefe", grob ? ["bild"] : ["bild", "ki"], async () => {
   if (!S.A) return;
-  if (S.tiefe === "ki") { melden("Die KI-Tiefe wird vorbereitet …"); await kiAnwenden(); } else { S.A.tiefe = S.A.geschaetzt; melden("Tiefe aus dem Bild geschätzt."); }
+  if (S.tiefe === "ki") { melden(T("Die KI-Tiefe wird vorbereitet …")); await kiAnwenden(); } else { S.A.tiefe = S.A.geschaetzt; melden(T("Tiefe aus dem Bild geschätzt.")); }
   neu();
 });
 $("ki-hinweis").hidden = S.tiefe !== "ki";
 if (grob) {
   const ki = document.querySelector('[data-tiefe="ki"]');
-  ki.disabled = true; ki.title = "Auf dem Handy nicht verfügbar";
-  $("ki-hinweis").textContent = "«Mit KI» gibt es nur am Computer: auf Handys brachte die KI-Tiefe den Browser zum Absturz.";
+  ki.disabled = true; ki.title = T("Auf dem Handy nicht verfügbar");
+  $("ki-hinweis").dataset.t = "«Mit KI» gibt es nur am Computer: auf Handys brachte die KI-Tiefe den Browser zum Absturz."; $("ki-hinweis").textContent = T("«Mit KI» gibt es nur am Computer: auf Handys brachte die KI-Tiefe den Browser zum Absturz.");
   $("ki-hinweis").hidden = false;
 }
-if (kiAbsturz) melden("Die KI-Tiefe hat beim letzten Mal den Browser zum Absturz gebracht; sie ist darum ausgeschaltet (Tiefe aus dem Bild).", true);
+if (kiAbsturz) melden(T("Die KI-Tiefe hat beim letzten Mal den Browser zum Absturz gebracht; sie ist darum ausgeschaltet (Tiefe aus dem Bild)."), true);
 for (const b of tiefeKnoepfe) b.addEventListener("click", () => { if (!grob) $("ki-hinweis").hidden = S.tiefe !== "ki"; });
 for (const id of ["tempo"]) { const v = erinnern(id); if (v && [...$(id).options].some((o) => o.value === v)) $(id).value = v; $(id).addEventListener("change", () => { merken(id, $(id).value); neu(); }); }
 for (const id of ["signet", "beschriftung", "unschaerfe"]) { const v = erinnern(id); if (v !== null) $(id).checked = v === "1"; $(id).addEventListener("change", () => { merken(id, $(id).checked ? "1" : "0"); if (id !== "unschaerfe") neu(); }); }
@@ -449,7 +454,7 @@ const ablaufZeigen = () => {
   const gewaehlt = effekte(S.ablauf);
   wahlKnoepfe.forEach((b) => b.setAttribute("aria-pressed", String(ablaufName(b.dataset.wahl) === S.ablauf)));
   effektKnoepfe.forEach((b) => b.setAttribute("aria-pressed", String(gewaehlt.includes(b.dataset.effekt))));
-  $("kette").textContent = gewaehlt.map((e) => TITEL[e]).join(" → ");
+  $("kette").textContent = gewaehlt.map((e) => T(TITEL[e])).join(" → ");
 };
 ablaufZeigen();
 // mit Video hängt das Standbild an der Kette (dort kommt das laufende Video an): dann neu lesen bzw. analysieren
@@ -473,9 +478,9 @@ function spielen() {
   S.ende = false;
   S.start = performance.now() - ab * 1000; zuletzt = 0;
   if (!S.laeuft) { S.laeuft = true; requestAnimationFrame(takt); }
-  $("spielen").textContent = "Anhalten";
+  $("spielen").dataset.t = "Anhalten"; $("spielen").textContent = T("Anhalten");
 }
-function anhalten() { S.laeuft = false; $("spielen").textContent = "Abspielen"; }
+function anhalten() { S.laeuft = false; $("spielen").dataset.t = "Abspielen"; $("spielen").textContent = T("Abspielen"); }
 function zeigeZeit(t) {
   const t0 = performance.now();
   S.t = t; S.ende = false;
@@ -546,14 +551,14 @@ $("video").addEventListener("click", async () => {
     const erg = cfg ? await mitWebCodecs(cfg, sz) : await mitRecorder(sz);
     zeigen(erg, sz, performance.now() - t0);
   } catch (fehler) {
-    melden(`Das Video liess sich nicht erstellen: ${fehler?.message ?? fehler}`, true);
+    melden(`${T("Das Video liess sich nicht erstellen:")} ${fehler?.message ?? fehler}`, true);
   } finally { sperren(false); fort.hidden = true; if (S.t !== null) zeigeZeit(S.t); }
 });
 
 async function mitWebCodecs(cfg, sz) {
   // die Bilder gehen gleich beim Kodieren ins MP4 – nie die ganze Datei am Stück im Speicher
-  const p = proben(), { mp4Schreiber } = await import("./mp4.js?v=30");
-  melden(p > 1 ? `Video wird gerechnet, mit Bewegungsunschärfe (${p} Proben je Bild) …` : "Video wird gerechnet …");
+  const p = proben(), { mp4Schreiber } = await import("./mp4.js?v=31");
+  melden(p > 1 ? T("unschaerfeProben", p) : T("Video wird gerechnet …"));
   const c = leinwand(sz.breite, sz.hoehe), ctx = c.getContext("2d", { alpha: false });
   const n = sz.zeit.bilder, datei = mp4Schreiber({ breite: sz.breite, hoehe: sz.hoehe, fps: FPS, codec: cfg.codec, bilder: n });
   let avcC = null, fehler = null;
@@ -589,7 +594,7 @@ async function mitRecorder(sz) {
   const typen = [["video/mp4;codecs=avc1.42E01E", "mp4"], ["video/mp4", "mp4"], ["video/webm;codecs=vp9", "webm"], ["video/webm;codecs=vp8", "webm"], ["video/webm", "webm"]];
   const typ = typeof MediaRecorder !== "undefined" && typen.find(([m]) => MediaRecorder.isTypeSupported(m));
   if (!typ) throw new Error("dieser Browser kann keine Videos erzeugen (weder WebCodecs noch MediaRecorder)");
-  melden(`Video wird in Echtzeit aufgenommen (${sz.zeit.dauer.toFixed(0)} s, ohne Bewegungsunschärfe). Lass diese Seite sichtbar.`);
+  melden(T("aufnahme", sz.zeit.dauer.toFixed(0)));
   const c = leinwand(sz.breite, sz.hoehe), ctx = c.getContext("2d", { alpha: false });
   const strom = c.captureStream(0), spur = strom.getVideoTracks()[0];
   const rec = new MediaRecorder(strom, { mimeType: typ[0], videoBitsPerSecond: 14_000_000 });
@@ -617,11 +622,23 @@ function zeigen({ blob, endung, art }, sz, ms) {
   $("film").src = S.ergebnis;
   $("film").style.aspectRatio = `${sz.breite} / ${sz.hoehe}`;
   $("laden").href = S.ergebnis; $("laden").download = dateiname(new Date(), endung);
-  $("film-info").textContent = `${sz.breite} × ${sz.hoehe} · ${sz.zeit.dauer.toFixed(1).replace(".", ",")} s · ${(blob.size / 1e6).toFixed(1).replace(".", ",")} MB · ${art} · gerechnet in ${(ms / 1000).toFixed(1).replace(".", ",")} s`;
+  S.filmInfo = { sz, blob, art, ms }; filmInfoZeigen();
   $("ergebnis").hidden = false;
-  melden("Fertig. Prüfe das Video und lade es herunter.");
+  melden(T("Fertig. Prüfe das Video und lade es herunter."));
   $("ergebnis").scrollIntoView({ behavior: ruhig ? "auto" : "smooth", block: "nearest" });
 }
+
+function filmInfoZeigen() {
+  if (!S.filmInfo) return;
+  const { sz, blob, art, ms } = S.filmInfo;
+  $("film-info").textContent = `${sz.breite} × ${sz.hoehe} · ${komma(sz.zeit.dauer.toFixed(1))} s · ${komma((blob.size / 1e6).toFixed(1))} MB · ${art} · ${T("gerechnet in")} ${komma((ms / 1000).toFixed(1))} s`;
+}
+// Wechsel der Sprache (sprache.js): alles, was das Skript geschrieben hat, in der anderen Sprache neu
+document.addEventListener("sprache", () => {
+  const leiste = document.querySelector(".phasen"); leiste.dataset.namen = ""; if (S.sz) sprungknoepfe(S.sz);
+  ablaufZeigen(); dauerZeigen(); auswertungZeigen(); filmInfoZeigen();
+  if (S.film) $("film-start-wert").textContent = sekunden(Number($("film-start").value));
+});
 
 function sperren(an) {
   for (const el of [$("datei"), $("testbild"), $("film-start"), ...formatKnoepfe, ...tiefeKnoepfe, ...wahlKnoepfe, ...effektKnoepfe, $("video"), $("png")])

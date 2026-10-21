@@ -7,9 +7,9 @@
 //   glühende Schnittkanten) – Rückmeldung: «"Raum", das gefällt mir gar nicht, kann ersatzlos raus, "Scan" bitte behalten». Die Shader können es noch.
 // Gestreckte Maschen an Tiefensprüngen werden dunkel statt verschmiert. Zustandslos.
 import * as THREE from "three";
-import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=30";
-import { phase } from "./ablauf.js?v=30";
-import { TIEFE_UEBERGABE } from "./tuchsim.js?v=30";   // dasselbe Relief, aus dem das Tuch beginnt
+import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=31";
+import { phase } from "./ablauf.js?v=31";
+import { TIEFE_UEBERGABE } from "./tuchsim.js?v=31";   // dasselbe Relief, aus dem das Tuch beginnt
 
 export { TIEFE_UEBERGABE };
 const SCHICHTEN = 7;

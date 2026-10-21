@@ -2,6 +2,7 @@
 // Das Foto verlässt das Gerät nicht; geladen werden nur die Bibliothek (cdn.jsdelivr.net) und einmal das Modell (huggingface.co, je nach Fassung
 // rund 25–50 MB, danach im Cache des Browsers). Ohne Netz oder bei einem Fehler bleibt die aus dem Bild geschätzte Tiefe (analyse.js).
 // Ergebnis: relative inverse Tiefe (gross = nah), auf die Grösse der Analyse gebracht; analyse.js/tiefeNormieren legt sie an die Kanten des Fotos.
+const TX = (k) => window.sprache?.t(k) ?? k;   // Sprache (sprache.js), 21. Oktober 2026 (T ist unten das Modul transformers)
 const VERSION = "3.8.1";
 const MODELLE = ["onnx-community/depth-anything-v2-small", "Xenova/depth-anything-small-hf"];
 let geladen = null;
@@ -19,7 +20,7 @@ async function modell(melden, telefon, notiz) {
       notiz?.(`KI: Modell ${name} wird geladen (${device})`);
       const pipe = await T.pipeline("depth-estimation", name, {
         device, dtype: device === "webgpu" ? "fp16" : "q8",
-        progress_callback: (p) => { if (p?.status === "progress" && p.total) melden?.(`Das Tiefenmodell wird geladen … ${Math.round((p.loaded / p.total) * 100)} %`); },
+        progress_callback: (p) => { if (p?.status === "progress" && p.total) melden?.(`${TX("Das Tiefenmodell wird geladen …")} ${Math.round((p.loaded / p.total) * 100)} %`); },
       });
       return { T, pipe, name, device };
     } catch (e) { fehler = e; }
@@ -31,7 +32,7 @@ async function modell(melden, telefon, notiz) {
 export async function kiTiefe(foto, w, h, melden, { telefon = false, notiz = null } = {}) {
   geladen ??= modell(melden, telefon, notiz).catch((e) => { geladen = null; throw e; });
   const { T, pipe, name, device } = await geladen;
-  melden?.("Die KI schätzt die Tiefe …");
+  melden?.(TX("Die KI schätzt die Tiefe …"));
   // das Modell rechnet ohnehin auf 518 Punkten: ein kleines Bild spart Speicher
   const s = Math.min(1, 518 / Math.max(foto.width, foto.height)), klein = document.createElement("canvas");
   klein.width = Math.round(foto.width * s); klein.height = Math.round(foto.height * s);

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <!-- In der Bühne des Neubaus (/b/apps/…/oeffnen/, seit 20. Oktober 2026) mit ?b=1: ohne die Navigation der bisherigen Website -->
   <script>if(/[?&]b=1(&|$)/.test(location.search))document.documentElement.setAttribute("data-buehne","")</script>
-  <style>[data-buehne] .topbar,[data-buehne] .divider,[data-buehne] .site-footer,[data-buehne] .work-kicker{display:none!important}</style>
+  <style>[data-buehne] .app-kopf,[data-buehne] .topbar,[data-buehne] .divider,[data-buehne] .site-footer,[data-buehne] .work-kicker{display:none!important}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PHORMA II – Ornament Cloud · Alpha</title>
   <!--
@@ -165,34 +165,42 @@
     [hidden] { display: none !important; }
   </style>
   <link rel="stylesheet" href="../phorma.css?v=2">
+  <!-- Deutsch und Englisch (21. Oktober 2026): vor den Modulen -->
+  <script src="sprache.js?v=1"></script>
 </head>
 <body>
+  <!-- Kopf der App (21. Oktober 2026, wie OMNA COLOR, ORNA, ORMA und PHORMA I): Signet mit Weg in den Neubau, der Schalter d · e, «Über die App»; auf der Bühne (?b=1) nicht -->
+  <header class="app-kopf wrap">
+    <a class="app-kopf-signet" href="../../b/" data-t-href="../../b/|../../b/en/" title="ornament.cloud"><svg viewBox="0 0 34 24" aria-hidden="true" focusable="false"><path d="M26.83 12.00L26.78 12.99L26.65 13.98L26.44 14.95L26.13 15.89L25.75 16.80L25.29 17.67L24.75 18.50L24.15 19.27L23.49 19.98L22.76 20.62L21.99 21.20L21.18 21.70L20.33 22.12L19.45 22.46L18.55 22.72L17.64 22.90L16.73 22.99L15.82 23.00L14.93 22.93L14.05 22.78L13.21 22.55L12.40 22.25L11.63 21.89L10.90 21.46L10.23 20.97L9.62 20.43L9.07 19.85L8.59 19.23L8.18 18.57L7.83 17.90L7.56 17.20L7.36 16.50L7.23 15.80L7.17 15.10L7.18 14.42L7.26 13.76L7.40 13.12L7.60 12.52L7.85 11.95L8.16 11.43L8.51 10.96L8.89 10.54L9.31 10.17L9.75 9.87L10.21 9.62L10.69 9.43L11.16 9.30L11.64 9.24L12.10 9.23L12.55 9.27L12.98 9.38L13.38 9.53L13.75 9.73L14.07 9.97L14.36 10.25L14.60 10.56L14.79 10.90L14.93 11.25L15.01 11.62L15.04 12.00L15.01 12.38L14.93 12.75L14.79 13.10L14.60 13.44L14.36 13.75L14.07 14.03L13.75 14.27L13.38 14.47L12.98 14.62L12.55 14.73L12.10 14.77L11.64 14.76L11.16 14.70L10.69 14.57L10.21 14.38L9.75 14.13L9.31 13.83L8.89 13.46L8.51 13.04L8.16 12.57L7.85 12.05L7.60 11.48L7.40 10.88L7.26 10.24L7.18 9.58L7.17 8.90L7.23 8.20L7.36 7.50L7.56 6.80L7.83 6.10L8.18 5.43L8.59 4.77L9.07 4.15L9.62 3.57L10.23 3.03L10.90 2.54L11.63 2.11L12.40 1.75L13.21 1.45L14.05 1.22L14.93 1.07L15.82 1.00L16.73 1.01L17.64 1.10L18.55 1.28L19.45 1.54L20.33 1.88L21.18 2.30L21.99 2.80L22.76 3.38L23.49 4.02L24.15 4.73L24.75 5.50L25.29 6.33L25.75 7.20L26.13 8.11L26.44 9.05L26.65 10.02L26.78 11.01L26.83 12.00Z"/><circle cx="12.55" cy="9.27" r="2.2"/></svg><span>ornament.cloud</span></a>
+    <nav class="sprache" aria-label="Sprache" data-t-attr="aria-label=kopf.sprache"><button type="button" data-sprache="de" lang="de" title="Deutsch">d</button><button type="button" data-sprache="en" lang="en" title="English">e</button></nav>
+    <a class="app-kopf-zurueck" href="../../b/apps/phorma-ii/" data-t-href="../../b/apps/phorma-ii/|../../b/en/apps/phorma-ii/" data-t="kopf.ueber">Über die App</a>
+  </header>
   <header class="site-header">
     <div class="wrap">
       <h1>PHORMA II</h1>
-      <p class="lead">Ein Schleimpilz aus hunderttausend Agenten findet die Formen deines Fotos, dann tastet eine Lichtebene seine Tiefe ab – dann weht es als Seidentuch und legt sich glatt. Oder eine leuchtende Linie wächst aus einem Keim und zeichnet es, oder es zerfällt im Takt in verschachtelte Rechtecke, bis alles einrastet. Jeder Effekt einzeln oder als Kette. Als Video für Social Media.</p>
+      <p class="lead" data-t="lead">Ein Schleimpilz aus hunderttausend Agenten findet die Formen deines Fotos, dann tastet eine Lichtebene seine Tiefe ab – dann weht es als Seidentuch und legt sich glatt. Oder eine leuchtende Linie wächst aus einem Keim und zeichnet es, oder es zerfällt im Takt in verschachtelte Rechtecke, bis alles einrastet. Jeder Effekt einzeln oder als Kette. Als Video für Social Media.</p>
     </div>
   </header>
 
   <p class="wrap meldung fehler" id="startfehler" role="alert" hidden></p>
   <main class="wrap karte" id="karte">
-    <section class="buehne" aria-label="Vorschau">
+    <section class="buehne" aria-label="Vorschau" data-t-attr="aria-label=buehne.aria">
       <div class="rahmen">
-        <canvas id="vorschau" width="540" height="675" aria-label="Vorschau des Videos"></canvas>
-        <div class="laden" id="ladeanzeige" hidden role="status" aria-live="polite"><p id="laden-text">Video wird gelesen …</p><progress id="laden-balken" max="1" value="0"></progress><p class="klein" id="laden-schritt"></p></div>
+        <canvas id="vorschau" width="540" height="675" aria-label="Vorschau des Videos" data-t-attr="aria-label=vorschau.aria"></canvas>
+        <div class="laden" id="ladeanzeige" hidden role="status" aria-live="polite"><p id="laden-text" data-t="laden.text">Video wird gelesen …</p><progress id="laden-balken" max="1" value="0"></progress><p class="klein" id="laden-schritt"></p></div>
         <div class="leer" id="leer">
-          <p class="gross">Kein Signal</p>
-          <p>Lade ein Foto.</p>
+          <p class="gross" data-t="leer.gross">Kein Signal</p>
+          <p data-t="leer.text">Lade ein Foto.</p>
         </div>
       </div>
       <div class="zeitleiste">
-        <button class="knopf klein" type="button" id="spielen" disabled>Abspielen</button>
-        <input type="range" id="zeit" min="0" max="30" step="0.0333" value="0" disabled aria-label="Zeit im Film">
+        <button class="knopf klein" type="button" id="spielen" disabled data-t="Abspielen">Abspielen</button>
+        <input type="range" id="zeit" min="0" max="30" step="0.0333" value="0" disabled aria-label="Zeit im Film" data-t-attr="aria-label=zeit.aria">
         <output id="zeitcode" for="zeit">00:00:00</output>
       </div>
-      <div class="phasen" role="group" aria-label="Zu einer Phase springen"></div>
+      <div class="phasen" role="group" aria-label="Zu einer Phase springen" data-t-attr="aria-label=phasen.aria"></div>
       <div class="unter">
-        <p class="info" id="dauer">Hochformat 4 : 5, wahlweise 9 : 16</p>
+        <p class="info" id="dauer" data-t="dauer">Hochformat 4 : 5, wahlweise 9 : 16</p>
       </div>
       <p class="info" id="auswertung"></p>
     </section>
@@ -200,92 +208,92 @@
     <div>
       <ol class="schritte">
         <li>
-          <h2>Foto oder Video</h2>
+          <h2 data-t="schritt.quelle">Foto oder Video</h2>
           <label class="ablage" id="ablage">
             <span class="plus" aria-hidden="true">
               <img id="quelle" alt="" hidden>
               <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             </span>
-            <span class="ablage-text"><b id="ablage-titel">Foto oder Video wählen</b><span>oder hierher ziehen. Es wird auf deinem Gerät analysiert: Kanten, Tonumfang und Tiefe.</span></span>
-            <input type="file" id="datei" accept="image/*,video/*" aria-label="Foto oder Video wählen">
+            <span class="ablage-text"><b id="ablage-titel" data-t="ablage.titel">Foto oder Video wählen</b><span data-t="ablage.text">oder hierher ziehen. Es wird auf deinem Gerät analysiert: Kanten, Tonumfang und Tiefe.</span></span>
+            <input type="file" id="datei" accept="image/*,video/*" aria-label="Foto oder Video wählen" data-t-attr="aria-label=datei.aria">
           </label>
           <div class="film-start" id="film-start-box" hidden>
-            <label><span>Video ab</span><input type="range" id="film-start" min="0" max="0" step="0.1" value="0"><output id="film-start-wert">0,0 s</output></label>
-            <p class="ki-hinweis">Alle Effekte zeigen das laufende Video, bis zu 30 s ab hier, vom Anfang bis zum Ende des Films (ist das Video kürzer, läuft es mehrmals hintereinander). Ohne Ton.</p>
+            <label><span data-t="film.ab">Video ab</span><input type="range" id="film-start" min="0" max="0" step="0.1" value="0"><output id="film-start-wert">0,0 s</output></label>
+            <p class="ki-hinweis" data-t="film.hinweis">Alle Effekte zeigen das laufende Video, bis zu 30 s ab hier, vom Anfang bis zum Ende des Films (ist das Video kürzer, läuft es mehrmals hintereinander). Ohne Ton.</p>
           </div>
           <video id="quellfilm" muted playsinline preload="auto" hidden></video>
-          <div class="leiste"><button class="knopf klein beispiel" type="button" id="testbild"><img src="beispiel.jpg" alt="" width="26" height="37" loading="lazy">Mit dem Beispielbild ausprobieren</button></div>
-          <section class="tafel" aria-label="Format und Tiefe">
+          <div class="leiste"><button class="knopf klein beispiel" type="button" id="testbild"><img src="beispiel.jpg" alt="" width="26" height="37" loading="lazy"><span data-t="testbild">Mit dem Beispielbild ausprobieren</span></button></div>
+          <section class="tafel" aria-label="Format und Tiefe" data-t-attr="aria-label=tafel.aria">
             <div class="einstellung">
-              <span class="name" id="format-titel">Format</span>
+              <span class="name" id="format-titel" data-t="format">Format</span>
               <div class="segment" role="group" aria-labelledby="format-titel">
-                <button type="button" data-format="4:5">4 : 5 Hochformat</button>
-                <button type="button" data-format="9:16">9 : 16</button>
+                <button type="button" data-format="4:5" data-t="format.45">4 : 5 Hochformat</button>
+                <button type="button" data-format="9:16" data-t="format.916">9 : 16</button>
               </div>
             </div>
             <div class="einstellung">
-              <span class="name" id="tiefe-titel">Tiefe</span>
+              <span class="name" id="tiefe-titel" data-t="tiefe">Tiefe</span>
               <div class="segment" role="group" aria-labelledby="tiefe-titel">
-                <button type="button" data-tiefe="bild">aus dem Bild</button>
-                <button type="button" data-tiefe="ki">mit KI</button>
+                <button type="button" data-tiefe="bild" data-t="tiefe.bild">aus dem Bild</button>
+                <button type="button" data-tiefe="ki" data-t="tiefe.ki">mit KI</button>
               </div>
-              <p class="ki-hinweis" id="ki-hinweis" hidden>Die KI (Depth Anything V2) läuft auf deinem Gerät; beim ersten Mal lädt sie das Modell (rund 25–50 MB) von Hugging Face. Dein Foto wird nicht hochgeladen.</p>
+              <p class="ki-hinweis" id="ki-hinweis" hidden data-t="ki.hinweis">Die KI (Depth Anything V2) läuft auf deinem Gerät; beim ersten Mal lädt sie das Modell (rund 25–50 MB) von Hugging Face. Dein Foto wird nicht hochgeladen.</p>
             </div>
           </section>
         </li>
         <li>
-          <h2>Effekte</h2>
-          <p>Ein Effekt allein oder mehrere als Kette. Alle beginnen im Dunkeln und enden mit deinem Foto; in einer Kette geht jeder in den nächsten über, immer in dieser Reihenfolge.</p>
-          <div class="ablaeufe" role="group" aria-label="Effekt wählen">
-            <button type="button" data-wahl="physarum+tiefe+tuch" aria-pressed="true"><b>Alle drei als Kette</b><small>Das Netz findet die Formen, eine Lichtebene tastet die Tiefe ab, das Foto weht als Tuch – bis es glatt daliegt</small></button>
-            <button type="button" data-wahl="wachstum+physarum+tiefe+tuch+montage" aria-pressed="false"><b>Alle fünf als Kette</b><small>Eine leuchtende Linie wächst, das Netz findet die Formen, eine Lichtebene tastet die Tiefe ab, das Foto weht als Tuch und zerfällt zuletzt in Rechtecke</small></button>
-            <button type="button" data-wahl="physarum" aria-pressed="false"><b>Physarum</b><small>Hunderttausende Agenten strömen aus Keimen und bilden ein leuchtendes Netz, das die Formen deines Fotos findet</small></button>
-            <button type="button" data-wahl="tiefe" aria-pressed="false"><b>Tiefe</b><small>Eine Lichtebene tastet das Bild von vorn nach hinten ab, im Streiflicht steht es als Relief</small></button>
-            <button type="button" data-wahl="tuch" aria-pressed="false"><b>Tuch</b><small>Das Foto als Seidentuch im Wind – eine Stoffsimulation –, das sich zuletzt glatt zum Bild legt</small></button>
-            <button type="button" data-wahl="wachstum" aria-pressed="false"><b>Wachstum</b><small>Eine einzige leuchtende Linie wächst aus einem Keim, faltet sich und zeichnet dein Foto – dicht im Hellen, weit im Dunkeln –, nimmt seine Farben an und wird zum Bild</small></button>
-            <button type="button" data-wahl="montage" aria-pressed="false"><b>Montage</b><small>Das Foto zerfällt im Takt in verschachtelte Rechtecke – vergrössert, versetzt, zu Streifen gezogen, mit feinen Rändern und Zahlentafeln –, bis alles einrastet</small></button>
+          <h2 data-t="schritt.effekte">Effekte</h2>
+          <p data-t="effekte.text">Ein Effekt allein oder mehrere als Kette. Alle beginnen im Dunkeln und enden mit deinem Foto; in einer Kette geht jeder in den nächsten über, immer in dieser Reihenfolge.</p>
+          <div class="ablaeufe" role="group" aria-label="Effekt wählen" data-t-attr="aria-label=ablaeufe.aria">
+            <button type="button" data-wahl="physarum+tiefe+tuch" aria-pressed="true"><b data-t="wahl.drei">Alle drei als Kette</b><small data-t="wahl.drei.text">Das Netz findet die Formen, eine Lichtebene tastet die Tiefe ab, das Foto weht als Tuch – bis es glatt daliegt</small></button>
+            <button type="button" data-wahl="wachstum+physarum+tiefe+tuch+montage" aria-pressed="false"><b data-t="wahl.fuenf">Alle fünf als Kette</b><small data-t="wahl.fuenf.text">Eine leuchtende Linie wächst, das Netz findet die Formen, eine Lichtebene tastet die Tiefe ab, das Foto weht als Tuch und zerfällt zuletzt in Rechtecke</small></button>
+            <button type="button" data-wahl="physarum" aria-pressed="false"><b data-t="wahl.physarum">Physarum</b><small data-t="wahl.physarum.text">Hunderttausende Agenten strömen aus Keimen und bilden ein leuchtendes Netz, das die Formen deines Fotos findet</small></button>
+            <button type="button" data-wahl="tiefe" aria-pressed="false"><b data-t="wahl.tiefe">Tiefe</b><small data-t="wahl.tiefe.text">Eine Lichtebene tastet das Bild von vorn nach hinten ab, im Streiflicht steht es als Relief</small></button>
+            <button type="button" data-wahl="tuch" aria-pressed="false"><b data-t="wahl.tuch">Tuch</b><small data-t="wahl.tuch.text">Das Foto als Seidentuch im Wind – eine Stoffsimulation –, das sich zuletzt glatt zum Bild legt</small></button>
+            <button type="button" data-wahl="wachstum" aria-pressed="false"><b data-t="wahl.wachstum">Wachstum</b><small data-t="wahl.wachstum.text">Eine einzige leuchtende Linie wächst aus einem Keim, faltet sich und zeichnet dein Foto – dicht im Hellen, weit im Dunkeln –, nimmt seine Farben an und wird zum Bild</small></button>
+            <button type="button" data-wahl="montage" aria-pressed="false"><b data-t="wahl.montage">Montage</b><small data-t="wahl.montage.text">Das Foto zerfällt im Takt in verschachtelte Rechtecke – vergrössert, versetzt, zu Streifen gezogen, mit feinen Rändern und Zahlentafeln –, bis alles einrastet</small></button>
           </div>
-          <p class="effekte-hinweis">Oder eine eigene Kette zusammenstellen:</p>
-          <div class="segment effekte" role="group" aria-label="Eigene Kette">
-            <button type="button" data-effekt="wachstum" aria-pressed="false">Wachstum</button>
-            <button type="button" data-effekt="physarum" aria-pressed="true">Physarum</button>
-            <button type="button" data-effekt="tiefe" aria-pressed="true">Tiefe</button>
-            <button type="button" data-effekt="tuch" aria-pressed="true">Tuch</button>
-            <button type="button" data-effekt="montage" aria-pressed="false">Montage</button>
+          <p class="effekte-hinweis" data-t="effekte.hinweis">Oder eine eigene Kette zusammenstellen:</p>
+          <div class="segment effekte" role="group" aria-label="Eigene Kette" data-t-attr="aria-label=effekte.aria">
+            <button type="button" data-effekt="wachstum" aria-pressed="false" data-t="effekt.wachstum">Wachstum</button>
+            <button type="button" data-effekt="physarum" aria-pressed="true" data-t="effekt.physarum">Physarum</button>
+            <button type="button" data-effekt="tiefe" aria-pressed="true" data-t="effekt.tiefe">Tiefe</button>
+            <button type="button" data-effekt="tuch" aria-pressed="true" data-t="effekt.tuch">Tuch</button>
+            <button type="button" data-effekt="montage" aria-pressed="false" data-t="effekt.montage">Montage</button>
           </div>
           <p class="kette" id="kette" aria-live="polite"></p>
-          <p class="ki-hinweis">Video oder Musik? Dafür gibt es <a href="../phorma-iii/">PHORMA III</a>: aus Klang wird Bild.</p>
+          <p class="ki-hinweis" data-t="phorma3.hinweis">Video oder Musik? Dafür gibt es <a href="../phorma-iii/">PHORMA III</a>: aus Klang wird Bild.</p>
         </li>
         <li>
-          <h2>Gestaltung</h2>
-          <p>Die Beschriftung zeigt wie in einem Bildwerkzeug Phase, Zähler und Zeitcode; oben links steht dein Titel.</p>
+          <h2 data-t="schritt.gestaltung">Gestaltung</h2>
+          <p data-t="gestaltung.text">Die Beschriftung zeigt wie in einem Bildwerkzeug Phase, Zähler und Zeitcode; oben links steht dein Titel.</p>
           <div class="einstellungen">
-            <label><span>Titel</span><input type="text" id="titel" maxlength="40" placeholder="PHORMA II" autocomplete="off"></label>
-            <label><span>Tempo</span>
+            <label><span data-t="titel">Titel</span><input type="text" id="titel" maxlength="40" placeholder="PHORMA II" autocomplete="off"></label>
+            <label><span data-t="tempo">Tempo</span>
               <select id="tempo">
-                <option value="ruhig">ruhig</option>
-                <option value="normal" selected>normal</option>
-                <option value="schnell">schnell</option>
+                <option value="ruhig" data-t="ruhig">ruhig</option>
+                <option value="normal" selected data-t="normal">normal</option>
+                <option value="schnell" data-t="schnell">schnell</option>
               </select></label>
-            <label class="haken"><input type="checkbox" id="beschriftung" checked> Beschriftung</label>
-            <label class="haken"><input type="checkbox" id="signet" checked> Signet am Schluss</label>
-            <label class="haken"><input type="checkbox" id="unschaerfe" checked> Bewegungsunschärfe</label>
+            <label class="haken"><input type="checkbox" id="beschriftung" checked> <span data-t="beschriftung">Beschriftung</span></label>
+            <label class="haken"><input type="checkbox" id="signet" checked> <span data-t="signet">Signet am Schluss</span></label>
+            <label class="haken"><input type="checkbox" id="unschaerfe" checked> <span data-t="unschaerfe">Bewegungsunschärfe</span></label>
           </div>
         </li>
         <li>
-          <h2>Video</h2>
-          <p>Das Video rechnet Bild für Bild in voller Grösse; mit Bewegungsunschärfe acht Proben je Bild – das dauert einige Minuten.</p>
+          <h2 data-t="schritt.video">Video</h2>
+          <p data-t="video.text">Das Video rechnet Bild für Bild in voller Grösse; mit Bewegungsunschärfe acht Proben je Bild – das dauert einige Minuten.</p>
           <div class="leiste">
-            <button class="knopf haupt" type="button" id="video" disabled>Video erstellen</button>
-            <button class="knopf" type="button" id="png" disabled>Standbild (PNG)</button>
+            <button class="knopf haupt" type="button" id="video" disabled data-t="video.knopf">Video erstellen</button>
+            <button class="knopf" type="button" id="png" disabled data-t="png">Standbild (PNG)</button>
           </div>
           <progress id="fortschritt" max="1" value="0" hidden></progress>
           <p class="meldung" id="meldung" role="status" aria-live="polite"></p>
           <section class="ergebnis" id="ergebnis" hidden aria-labelledby="ergebnis-titel">
-            <h2 id="ergebnis-titel">Dein Video</h2>
+            <h2 id="ergebnis-titel" data-t="ergebnis.titel">Dein Video</h2>
             <video id="film" controls playsinline muted></video>
             <p class="info" id="film-info"></p>
-            <div class="leiste"><a class="knopf haupt" id="laden" href="#" download>Herunterladen</a></div>
+            <div class="leiste"><a class="knopf haupt" id="laden" href="#" download data-t="laden">Herunterladen</a></div>
           </section>
         </li>
       </ol>
@@ -294,18 +302,18 @@
 
   <div class="wrap">
     <ul class="hinweise">
-      <li>Alles bleibt in deinem Browser: Das Foto wird nicht hochgeladen, das Video entsteht auf deinem Gerät. Nur «Tiefe mit KI» lädt einmal ein Modell aus dem Netz.</li>
-      <li>Ohne KI wird die Tiefe aus dem Bild geschätzt – aus Schärfe, Lage, Farbe und Himmel – und an die Kanten des Fotos gelegt.</li>
-      <li>Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories); das Foto wird bei Bedarf mittig beschnitten.</li>
-      <li>Video: MP4 (H.264), 30 Bilder pro Sekunde, ohne Ton. PHORMA II braucht WebGL 2.</li>
+      <li data-t="hinweis.1">Alles bleibt in deinem Browser: Das Foto wird nicht hochgeladen, das Video entsteht auf deinem Gerät. Nur «Tiefe mit KI» lädt einmal ein Modell aus dem Netz.</li>
+      <li data-t="hinweis.2">Ohne KI wird die Tiefe aus dem Bild geschätzt – aus Schärfe, Lage, Farbe und Himmel – und an die Kanten des Fotos gelegt.</li>
+      <li data-t="hinweis.3">Format: Hochformat 4 : 5 (1080 × 1350, für den Feed), wahlweise 9 : 16 (1080 × 1920, für Reels und Stories); das Foto wird bei Bedarf mittig beschnitten.</li>
+      <li data-t="hinweis.4">Video: MP4 (H.264), 30 Bilder pro Sekunde, ohne Ton. PHORMA II braucht WebGL 2.</li>
     </ul>
   </div>
 
   <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
   <footer class="site-footer">
     <div class="wrap">
-      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
-      <p><a href="../../impressum/">Impressum</a></p>
+      <p data-t="fuss.fragen">Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+      <p><a href="../../impressum/" data-t="fuss.impressum">Impressum</a></p>
     </div>
   </footer>
   <script type="importmap">
@@ -327,7 +335,7 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=40"></script>
+  <script type="module" src="app.js?v=41"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>
