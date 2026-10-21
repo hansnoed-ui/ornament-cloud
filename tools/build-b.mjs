@@ -75,7 +75,7 @@ function appBild(a, extra = "") {
 }
 
 const sitemapSeiten = [];   // b/… und b/en/… für die Sitemap
-const kachelSeiten = [];    // nur deutsch: die Vorschaukarten gibt es einmal
+const kachelSeiten = { de: [], en: [] };    // je Sprache: die Vorschaukarten liegen unter b/kacheln/ und b/en/kacheln/ (tools/b-kacheln.mjs)
 
 /* ========== Eine Sprache ========== */
 function bau(sprache) {
@@ -177,7 +177,7 @@ function bau(sprache) {
   function teilen({ pfad, titel, text, karte }) {
     return `<div class="teilen">
   <button class="knopf teilen-knopf" type="button" data-url="${attr(BASIS + B + pfad)}" data-titel="${attr(titel)}" data-text="${attr(text || "")}">${esc(T.teilen)}</button>
-  ${karte ? `<a class="knopf still" href="/b/kacheln/${karte}" download>${esc(T.karte)}</a>` : ""}
+  ${karte ? `<a class="knopf still" href="${B}kacheln/${karte}" download>${esc(T.karte)}</a>` : ""}
   <span class="klein">${esc(T.vorschau)}</span>
 </div>`;
   }
@@ -188,7 +188,7 @@ function bau(sprache) {
   /** Eine ganze Seite */
   function seite({ pfad, titel, beschreibung, body, aktiv, noindex = false, jsonld = [], typ = "website", bild, bildAlt, kopfTitel, module = [], nurDe = false }) {
     const url = `${BASIS}${B}${pfad}`;
-    const k = `/b/kacheln/${kachelName(pfad)}.png`;
+    const k = `${B}kacheln/${kachelName(pfad)}.png`;
     const og = bild || `${BASIS}${k}`;
     const ld = [{ "@context": "https://schema.org", "@type": "WebSite", name: "ornament.cloud", url: `${BASIS}${B}`, inLanguage: T.inLanguage, author: { "@type": "Person", name: SEITE.person.name } }, ...jsonld];
     return `<!DOCTYPE html>
@@ -261,7 +261,7 @@ ${body}
 
   function veroeffentliche(opts) {
     schreibe(opts.pfad, seite(opts));
-    if (!opts.noindex) { sitemapSeiten.push(`${B.slice(1)}${opts.pfad}`); if (istDe) kachelSeiten.push(opts.pfad); }
+    if (!opts.noindex) { sitemapSeiten.push(`${B.slice(1)}${opts.pfad}`); kachelSeiten[sprache].push(opts.pfad); }
   }
 
   /* ---------- Die Bühne: eine Web-Anwendung in der neuen Seite (20. Oktober 2026, Wunsch: «Wenn ich bei den Apps die Webanwendung öffne, lande ich immer noch
@@ -728,7 +728,9 @@ copyFileSync(new URL("src/b/b.js", ROOT), new URL("b.js", AUS_DE));
 copyFileSync(new URL("src/b/tafeln.mjs", ROOT), new URL("tafeln.mjs", AUS_DE));
 writeFileSync(new URL("tafeln-leben.js", AUS_DE), readFileSync(new URL("src/b/tafeln-leben.js", ROOT), "utf8").replace('from "./tafeln.mjs"', `from "./tafeln.mjs?v=${V}"`));
 mkdirSync(new URL("kacheln/", AUS_DE), { recursive: true });
-writeFileSync(new URL("kacheln/liste.json", AUS_DE), JSON.stringify(kachelSeiten.concat(["werkstatt/"]), null, 1) + "\n");
+writeFileSync(new URL("kacheln/liste.json", AUS_DE), JSON.stringify(kachelSeiten.de.concat(["werkstatt/"]), null, 1) + "\n");
+mkdirSync(new URL("en/kacheln/", AUS_DE), { recursive: true });
+writeFileSync(new URL("en/kacheln/liste.json", AUS_DE), JSON.stringify(kachelSeiten.en, null, 1) + "\n");
 
 {
   const sm = new URL("sitemap.xml", ROOT);
