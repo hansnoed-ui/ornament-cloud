@@ -4,7 +4,7 @@
 // Die Dateiliste und die Version setzt tools/build-orma.ts zwischen die Marken.
 
 // <!-- ORMA:START -->
-const VERSION = "6530b30dd187";
+const VERSION = "c52a7651162a";
 const PRECACHE = [
   "./",
   "app/",
@@ -13,18 +13,18 @@ const PRECACHE = [
   "icons/icon-512.png",
   "icons/icon-maskable-512.png",
   "icons/icon.svg",
-  "js/app.js?v=6530b30dd187",
-  "js/card.js?v=6530b30dd187",
-  "js/data.js?v=6530b30dd187",
-  "js/draw.js?v=6530b30dd187",
-  "js/intro.js?v=6530b30dd187",
-  "js/sprache.js?v=6530b30dd187",
-  "js/store.js?v=6530b30dd187",
-  "js/symbols.js?v=6530b30dd187",
-  "js/wheel.js?v=6530b30dd187",
+  "js/app.js?v=c52a7651162a",
+  "js/card.js?v=c52a7651162a",
+  "js/data.js?v=c52a7651162a",
+  "js/draw.js?v=c52a7651162a",
+  "js/intro.js?v=c52a7651162a",
+  "js/sprache.js?v=c52a7651162a",
+  "js/store.js?v=c52a7651162a",
+  "js/symbols.js?v=c52a7651162a",
+  "js/wheel.js?v=c52a7651162a",
   "manifest.webmanifest",
   "og-orma.png",
-  "orma.css?v=6530b30dd187",
+  "orma.css?v=c52a7651162a",
   "schrift/instrument-sans-normal-latin-ext.woff2",
   "schrift/instrument-sans-normal-latin.woff2",
   "schrift/newsreader-italic-latin.woff2",
