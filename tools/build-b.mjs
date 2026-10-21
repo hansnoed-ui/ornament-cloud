@@ -18,7 +18,7 @@ import { zeichen } from "../src/b/zeichen.mjs";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 14;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 15;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -376,7 +376,7 @@ ${body}
 <section class="abschnitt" aria-labelledby="spielen-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="spielen-titel">${zeichen("spielen")}${esc(T.start.spielen)}</h2><p>${esc(T.start.spielenText)}</p><a class="weiter" href="${B}apps/">${esc(T.start.alleApps)}</a></div>
-    <div class="reihe">${APPS.map(appKachel).join("")}</div>
+    <div class="reihe zeilen">${APPS.map(appKachel).join("")}</div>
   </div>
 </section>
 
@@ -488,7 +488,7 @@ ${faeden(faedenListe)}`;
 </div></section>
 ${gruppen.map((g) => `<section class="abschnitt" aria-labelledby="g-${g.replace(/\W+/g, "-")}"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="g-${g.replace(/\W+/g, "-")}">${esc(g)}</h2></div>
-  <div class="reihe">${APPS.filter((a) => a.gattung === g).map(appKachel).join("")}</div>
+  <div class="reihe zeilen">${APPS.filter((a) => a.gattung === g).map(appKachel).join("")}</div>
 </div></section>`).join("\n")}
 <section class="abschnitt" aria-labelledby="resultate-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="resultate-titel">${esc(T.apps.ergebnis)}</h2><p>${esc(T.apps.ergebnisText)}</p></div>
@@ -540,7 +540,7 @@ ${faeden([...zs.map((z) => fZettel(z)), fApp(schwester), fAngebot(angebotVon(a.g
   <h1 class="titel">${esc(T.raster.titel)}<small>${esc(T.raster.small)}</small></h1>
 </div></section>
 <section class="abschnitt"><div class="spalte">
-  <div class="reihe">${RASTER.map((r) => `<a class="stueck" href="${B}raster/${r.slug}/"><span class="bild quadrat">${appBild(r, ' loading="lazy"')}</span><h3>${zeichen(r.slug)}${esc(r.name)}</h3><p>${esc(r.kurz)} ${esc(r.fassung)}, ${esc(r.stand)}.</p></a>`).join("")}</div>
+  <div class="reihe zeilen">${RASTER.map((r) => `<a class="stueck" href="${B}raster/${r.slug}/"><span class="bild quadrat">${appBild(r, ' loading="lazy"')}</span><h3>${zeichen(r.slug)}${esc(r.name)}</h3><p>${esc(r.kurz)} ${esc(r.fassung)}, ${esc(r.stand)}.</p></a>`).join("")}</div>
 </div></section>`;
     veroeffentliche({ pfad: "raster/", aktiv: "raster/", titel: T.raster.seitenTitel, beschreibung: T.raster.beschreibung, body, bildAlt: T.raster.bildAlt });
   }
