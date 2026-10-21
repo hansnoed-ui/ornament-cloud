@@ -154,6 +154,12 @@ html.eingebettet body { padding: 4px 4px 8px; background: transparent; }
 /* Auf der Startseite höchstens so gross wie hier, aber nie grösser, als das Fenster unter dem Kopf der Startseite Platz lässt:
    «Drehen» bleibt beim Laden sichtbar (die Startseite setzt --rad-max, seit 5. Oktober 2026) */
 .eingebettet .wheel { width: min(100%, 420px, var(--rad-max, 420px)); }
+/* Auf dem Handy (eine Spalte) höchstens so gross, dass Titel, Text, Rad und «Drehen» ohne Scrollen ins Fenster passen (21. Oktober 2026,
+   Rückmeldung: der Knopf wurde auf der Bühne angeschnitten). 360 px sind Titel, Einleitung, Abstände und Knopf, mit Reserve für einen
+   Text, der eine Zeile mehr umbricht; 224/232 ist das Seitenverhältnis des Rads. Nie kleiner als 240 px. */
+@media (max-width: 799px) {
+  .wheel { width: min(100%, 420px, max(240px, calc((100svh - 360px) * 224 / 232))); }
+}
 @media (min-width: 800px) {
   /* Rad und Knopf als eigene Rasterzellen, damit die Karte zur Radmitte ausgerichtet wird und nicht zur Mitte von Rad + Knopf */
   .stage { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); grid-template-areas: "rad karte" "knopf ."; row-gap: 16px; column-gap: 48px; }
