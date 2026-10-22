@@ -25,8 +25,8 @@
     "effekte.hinweis": "Or put together your own chain:", "effekte.aria": "Your own chain",
     "effekt.physarum": "Physarum", "effekt.tiefe": "Depth", "effekt.tuch": "Cloth", "effekt.montage": "Montage",
     "wahl.welle": "Ripple tank", "wahl.welle.text": "The photo lies under calm water: long waves pass slowly over it, now and then a drop spreads as a ring, light gathers into bright lines",
-    "wahl.sortierung": "Pixel sorting", "wahl.sortierung.text": "The points of each column sort themselves by brightness and run out as glowing streaks, until they withdraw into the photo",
-    "effekt.welle": "Ripple tank", "effekt.sortierung": "Pixel sorting",
+    "wahl.raster": "Halftone", "wahl.raster.text": "The photo becomes a four-colour print: dots in cyan, magenta, yellow and black grow, the plates slip against each other, and the print remains at the end",
+    "effekt.welle": "Ripple tank", "effekt.raster": "Halftone",
     "phorma3.hinweis": "Video or music? For that there is <a href=\"../phorma-iii/\">PHORMA III</a>: sound becomes image.",
     "schritt.gestaltung": "Design", "gestaltung.text": "The caption shows phase, counter and timecode as in an imaging tool; your title stands top left.",
     titel: "Title", tempo: "Pace", ruhig: "calm", normal: "normal", schnell: "fast", beschriftung: "Caption", signet: "Signet at the end", unschaerfe: "Motion blur",
@@ -61,8 +61,8 @@
     "gerechnet in": "computed in", "Fertig. Prüfe das Video und lade es herunter.": "Done. Check the video and download it.",
     "Das Tiefenmodell wird geladen …": "Loading the depth model …", "Die KI schätzt die Tiefe …": "The AI is estimating the depth …",
     // Phasen und Effekte (ablauf.js)
-    Physarum: "Physarum", Tiefe: "Depth", Tuch: "Cloth", Montage: "Montage", Wellenwanne: "Ripple tank", "Pixel-Sortierung": "Pixel sorting",
-    Dünung: "Swell", Wellen: "Waves", Schwelle: "Threshold", Sortieren: "Sorting", Netz: "Net", Bild: "Picture", Scan: "Scan", Farbe: "Colour", Schnitte: "Cuts",
+    Physarum: "Physarum", Tiefe: "Depth", Tuch: "Cloth", Montage: "Montage", Wellenwanne: "Ripple tank", Rasterdruck: "Halftone",
+    Dünung: "Swell", Wellen: "Waves", Raster: "Screen", Versatz: "Misregister", Netz: "Net", Bild: "Picture", Scan: "Scan", Farbe: "Colour", Schnitte: "Cuts",
     // Installieren (pwa.js, seit 21. Oktober 2026 als App)
     "install.knopf": "Install PHORMA II as an app",
     "Im Browser dieser App lässt sich PHORMA II nicht installieren. Die Seite öffnet sich dafür in Chrome; dort noch einmal auf «PHORMA II als App installieren» tippen.": "PHORMA II cannot be installed from this app's browser. The page opens in Chrome for that; tap «Install PHORMA II as an app» there once more.",

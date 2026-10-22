@@ -57,7 +57,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=36");
+  const { bild } = await import("./film.js?v=37");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -75,7 +75,7 @@ const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]
     const a = Math.max(Math.abs(d[i] - q[i]), Math.abs(d[i + 1] - q[i + 1]), Math.abs(d[i + 2] - q[i + 2])); if (a > abw) abw = a; mittelAbw += a;
     abdruck = (abdruck * 31 + d[i] * 7 + d[i + 1] * 3 + d[i + 2]) >>> 0;
   }
-  return { hell: hell / n, streu: Math.sqrt(Math.max(0, hell2 / n - (hell / n) ** 2)), tinte: tinte / n, schwarz: schwarz / n, abw, mittelAbw: mittelAbw / n, abdruck, dauer: sz.zeit.dauer, zeit: { teile: sz.zeit.teile.map((tl) => [tl.art, tl.von, tl.bis]), phasen: sz.zeit.phasen.map((p) => [p.art, p.name, p.von, p.bis]), abschnitt: sz.zeit.abschnitt, stehen: sz.zeit.ab.stehen } };
+  return { hell: hell / n, streu: Math.sqrt(Math.max(0, hell2 / n - (hell / n) ** 2)), tinte: tinte / n, schwarz: schwarz / n, abw, mittelAbw: mittelAbw / n, abdruck, dauer: sz.zeit.dauer, zeit: { teile: sz.zeit.teile.map((tl) => [tl.art, tl.von, tl.bis]), phasen: sz.zeit.phasen.map((p) => [p.art, p.name, p.von, p.bis]), abschnitt: sz.zeit.abschnitt, stehen: sz.zeit.ab.stehen, ab: sz.zeit.ab } };
 }, [t, proben]);
 
 // Ersatz für den H.264-Encoder (SwiftShader hat keinen): liefert kleine Stücke und eine Beschreibung
@@ -165,20 +165,28 @@ await check("Kette: jede Phase zeigt etwas, jede etwas anderes; am Anfang dunkel
   await ctx.close();
 });
 
-await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto", async () => {
-  for (const e of ["physarum", "tiefe", "welle", "tuch", "sortierung", "montage"]) {
+await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto (der Rasterdruck im Druck, der stehen bleibt)", async () => {
+  for (const e of ["physarum", "tiefe", "welle", "tuch", "raster", "montage"]) {
     const { ctx, page, fehler } = await oeffne({ ablauf: e });
     await laden(page); await bereit(page);
     // mit Signet rastet die Montage nicht ins Foto ein (sie schneidet geradewegs ins Signet): hier ohne
     if (e === "montage") { await page.uncheck("#signet"); await bereit(page); }
-    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", tiefe: "Tiefe", welle: "Wellenwanne", tuch: "Tuch", sortierung: "Pixel-Sortierung", montage: "Montage" }[e]);
+    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", tiefe: "Tiefe", welle: "Wellenwanne", tuch: "Tuch", raster: "Rasterdruck", montage: "Montage" }[e]);
     const { zeit } = await messe(page, 0);
     assert.equal(zeit.teile.length, 1);
     const anfang = await messe(page, zeit.abschnitt.von + 0.15), mitte = await messe(page, (zeit.abschnitt.von + zeit.abschnitt.bis) / 2);
     const ende = await messe(page, zeit.abschnitt.bis - 1 / 30);
     assert.ok(anfang.hell < 12, `${e}: Anfang dunkel (${anfang.hell.toFixed(1)})`);
     assert.ok(mitte.mittelAbw > 5, `${e}: in der Mitte nicht das Foto (${mitte.mittelAbw.toFixed(1)})`);
-    assert.ok(ende.abw <= 3, `${e}: Ende exakt (${ende.abw})`);
+    if (e === "raster") {
+      // «Es sollte aber nicht im Anfangsbild enden»: am Ende und im Stehen danach der Druck, beide gleich
+      const stehen = await messe(page, zeit.ab.stehen[0] + 1);
+      assert.ok(ende.mittelAbw > 5, `${e}: Ende ist nicht das Foto (${ende.mittelAbw.toFixed(1)})`);
+      assert.ok(Math.abs(stehen.mittelAbw - ende.mittelAbw) < 1.5, `${e}: der Druck bleibt stehen (${stehen.mittelAbw.toFixed(1)} / ${ende.mittelAbw.toFixed(1)})`);
+      // danach das Signet gedruckt, auf dem Papier des Drucks (hell) statt leuchtend auf Schwarz
+      const signet = await messe(page, zeit.ab.signetStehen[0] + 0.2);
+      assert.ok(signet.hell > 180, `${e}: Signet auf Papier (${signet.hell.toFixed(1)})`);
+    } else assert.ok(ende.abw <= 3, `${e}: Ende exakt (${ende.abw})`);
     assert.deepEqual(fehler, []);
     await ctx.close();
   }
@@ -232,7 +240,7 @@ const zaehlvideo = (page, { sekunden = 16 } = {}) => page.evaluate(async (sekund
 /** die Nummer des Zählvideos in einem Bild (quelle: "film" – das Bild des Films zur Zeit t, wie der Export; "foto" – das Standbild; "jetzt" – das
  *  laufende Bild, das die Bühne zur Zeit t allen Effekten gibt) */
 const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) => {
-  const { bild } = await import("./film.js?v=36");
+  const { bild } = await import("./film.js?v=37");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false }, w = S.mass[0] / 2, h = S.mass[1] / 2;
   const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");

@@ -54,7 +54,7 @@ export const APPS = [
     beispiele: [
       { art: "video", datei: "assets/beispiele/phorma-ii.mp4", bild: "assets/beispiele/phorma-ii.jpg", mass: [540, 676], text: "A chain with an iridescent, mirrored image: a slime mould lays its network over the shapes (Physarum), the image blows as a silk cloth (Cloth) and breaks apart into rectangles to the beat (Montage) – up to the signet. Computed from the app, without sound." },
     ],
-    bewegung: "How PHORMA II works, in six effects, alone or as a chain: a slime mould finds its shapes (Physarum), a plane of light scans the depth (Depth), the image lies under calm water (Ripple tank), the photo billows as a silk cloth (Cloth), its points sort themselves into streaks (Pixel sorting) or it breaks into rectangles to the beat (Montage). The drawing shows a single line filling a surface.",
+    bewegung: "How PHORMA II works, in six effects, alone or as a chain: a slime mould finds its shapes (Physarum), a plane of light scans the depth (Depth), the image lies under calm water (Ripple tank), the photo billows as a silk cloth (Cloth), it becomes a four-colour print whose plates slip (Halftone) or it breaks into rectangles to the beat (Montage). The drawing shows a single line filling a surface.",
     zeichen: "netz" },
   { slug: "phorma-iii", name: "PHORMA III", gattung: "Image and video", kurz: "Sound becomes image.",
     text: "To music or a voice, weaves of fine lines emerge, a thread in a cube of light or shiny pearls in a sphere of threads; a video is scratched and mangled. The result is a video with sound. The intro of the previous website was computed with it.",

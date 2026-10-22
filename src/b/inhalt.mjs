@@ -58,7 +58,7 @@ export const APPS = [
     beispiele: [
       { art: "video", datei: "assets/beispiele/phorma-ii.mp4", bild: "assets/beispiele/phorma-ii.jpg", mass: [540, 676], text: "Eine Kette mit einem schillernden, gespiegelten Bild: ein Schleimpilz legt sein Netz auf die Formen (Physarum), das Bild weht als Seidentuch (Tuch) und zerfällt im Takt in Rechtecke (Montage) – bis zum Signet. Gerechnet aus der App, ohne Ton." },
     ],
-    bewegung: "So arbeitet PHORMA II, in sechs Effekten, einzeln oder als Kette: ein Schleimpilz findet seine Formen (Physarum), eine Lichtebene tastet die Tiefe ab (Tiefe), das Bild liegt unter ruhigem Wasser (Wellenwanne), das Foto weht als Seidentuch (Tuch), seine Punkte sortieren sich in Streifen (Pixel-Sortierung) oder es zerfällt im Takt in Rechtecke (Montage). Die Tafel zeigt eine einzige Linie, die eine Fläche füllt.",
+    bewegung: "So arbeitet PHORMA II, in sechs Effekten, einzeln oder als Kette: ein Schleimpilz findet seine Formen (Physarum), eine Lichtebene tastet die Tiefe ab (Tiefe), das Bild liegt unter ruhigem Wasser (Wellenwanne), das Foto weht als Seidentuch (Tuch), es wird zum Vierfarbendruck, dessen Platten verrutschen (Rasterdruck) oder es zerfällt im Takt in Rechtecke (Montage). Die Tafel zeigt eine einzige Linie, die eine Fläche füllt.",
     zeichen: "netz" },
   { slug: "phorma-iii", name: "PHORMA III", gattung: "Bild und Video", kurz: "Aus Klang wird Bild.",
     text: "Zu Musik oder einer Stimme entstehen Gewebe aus feinen Linien, ein Faden im Würfel aus Licht oder glänzende Perlen in einer Kugel aus Fäden; ein Video wird gescratcht und verfrickelt. Das Ergebnis ist ein Video mit Ton. Das Intro der bisherigen Website ist damit gerechnet.",

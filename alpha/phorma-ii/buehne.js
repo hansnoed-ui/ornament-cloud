@@ -9,15 +9,15 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=36";
-import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=36";
-import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=36";
-import { physarum } from "./physarum.js?v=36";
-import { tiefe } from "./tiefe.js?v=36";
-import { tuch } from "./tuch.js?v=36";
-import { montage, montageSignet } from "./montage.js?v=36";
-import { welle } from "./welle.js?v=36";
-import { sortierung } from "./sortierung.js?v=36";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=37";
+import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=37";
+import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=37";
+import { physarum } from "./physarum.js?v=37";
+import { tiefe } from "./tiefe.js?v=37";
+import { tuch } from "./tuch.js?v=37";
+import { montage, montageSignet } from "./montage.js?v=37";
+import { welle } from "./welle.js?v=37";
+import { raster, druckSignet } from "./raster.js?v=37";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=35";
@@ -68,7 +68,7 @@ const AUSGABE = /* glsl */ `
     gl_FragColor = vec4(o, 1.0);
   }`;
 
-const FABRIK = { physarum, tiefe, welle, tuch, sortierung, montage };
+const FABRIK = { physarum, tiefe, welle, tuch, raster, montage };
 const leinwandWie = (q) => Object.assign(typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(q.width, q.height), { width: q.width, height: q.height });
 
 /**
@@ -113,7 +113,7 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   const effekte = K.teile.map((teil) => { spur(`Effekt wird aufgebaut: ${teil.art}`); return FABRIK[teil.art](g, teil); });
   const art = (teil) => effekte[K.teile.findIndex((x) => x.art === teil.art)];
 
-  let w = 0, h = 0, rtA, rtB, rtMix, rtSumme, bloom, glanz = null, logo = null;
+  let w = 0, h = 0, rtA, rtB, rtMix, rtSumme, bloom, glanz = null, logo = null, druck = null;
   const front = quadMaterial(FRONT, { tA: { value: null }, tB: { value: null }, tKarte: { value: tiefeTex }, uP: { value: 0 }, uBreite: { value: 0.18 }, uSaum: { value: KUPFER.clone() } });
   const felder = quadMaterial(FELDER, { tA: { value: null }, tB: { value: null }, uP: { value: 0 }, uSeite: { value: B / H } });
   const summe = quadMaterial(SUMME, { tQuelle: { value: null }, uGewicht: { value: 1 } }, { blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation, transparent: true });
@@ -208,6 +208,8 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     },
     /** ist die Montage der letzte Effekt, kommt auch das Signet im Stil der Montage (signetMontage statt signet) */
     montageSchluss: K.teile.at(-1).art === "montage",
+    /** ist der Rasterdruck der letzte Effekt, kommt das Signet gedruckt (signetDruck) */
+    druckSchluss: K.teile.at(-1).art === "raster",
     get verloren() { return verloren; },
     /** für ?diagnose: Grafikchip und die Erweiterungen, auf die es ankommt */
     info() {
@@ -257,11 +259,22 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
       this.ende = info.ende;
       return canvas;
     },
+    /** das Signet im Stil des Rasterdrucks (zeichnenBei(ctx, f): Papier und Signet bei Bild f; tau: Sekunden seit dem Anfang des Signets);
+     *  ende → 1: es steht scharf da, film.js zeichnet es dann selbst */
+    signetDruck(zeichnenBei, f, tau, nw = B, nh = H) {
+      groesse(Math.max(2, Math.round(nw)), Math.max(2, Math.round(nh)));
+      druck ??= druckSignet(g, zeichnenBei);
+      const info = druck.render(rtMix, f, tau, w), u = ausgabe.uniforms;
+      u.tSumme.value = rtMix.texture; u.uEnde.value = 0; u.uAktiv.value = 0; u.uSaumStaerke.value = info.saum; u.uBild.value = 0;
+      g.pass(ausgabe, null);
+      this.ende = info.ende;
+      return canvas;
+    },
     zaehler(zeit, t) { const L = laufend(zeit, t); return art(L.at(-1).teil).zaehler?.(L.at(-1).lokal) ?? ""; },
     entsorgen() {
       entsorgt = true;
       for (const e of effekte) e.entsorgen();
-      glanz?.entsorgen(); logo?.entsorgen();
+      glanz?.entsorgen(); logo?.entsorgen(); druck?.entsorgen();
       for (const r of [rtA, rtB, rtMix, rtSumme]) r?.dispose();
       bloom?.dispose(); front.dispose(); felder.dispose(); summe.dispose(); ausgabe.dispose(); quad.dispose();
       fotoTex.dispose(); tiefeTex.dispose(); nahrungTex.dispose();

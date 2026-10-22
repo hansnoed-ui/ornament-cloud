@@ -25,24 +25,28 @@ test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette"
   assert.equal(A.ablaufName("gewebe"), A.KETTE, "ein gemerktes Gewebe (seit dem 18. Oktober 2026 PHORMA III) ergibt die ganze Kette");
   assert.equal(A.ablaufName("struktur"), A.KETTE);
   assert.equal(A.ablaufName("montage+tuch"), "tuch+montage", "die Montage steht immer am Schluss");
-  for (const k of ["physarum+montage", "tiefe+montage", "sortierung+montage", "welle+montage"]) assert.equal(A.kette(k).teile[0].uebergang, "felder", `${k}: in Rechtecken in die Montage`);
+  for (const k of ["physarum+montage", "tiefe+montage", "raster+montage", "welle+montage"]) assert.equal(A.kette(k).teile[0].uebergang, "felder", `${k}: in Rechtecken in die Montage`);
 });
 
-test("Wellenwanne und Pixel-Sortierung (22. Oktober 2026): ihr Platz in der Kette, kurz, als letzter Effekt mit Bild", () => {
-  assert.deepEqual(A.effekte("montage+sortierung+tuch+welle+tiefe+physarum"), ["physarum", "tiefe", "welle", "tuch", "sortierung", "montage"]);
-  assert.equal(A.TITEL.welle, "Wellenwanne"); assert.equal(A.TITEL.sortierung, "Pixel-Sortierung");
-  // Wunsch: Wellen «insgesamt maximal 8 Sekunden», seit dem Abend «ohne Doppelspalt und langsamere Animation, ganz ruhig»; Sortierung «eher 6–8 Sekunden», ohne Zurückverwandeln
-  const W = A.kette("welle").teile[0], S = A.kette("sortierung").teile[0];
+test("Wellenwanne und Rasterdruck (22. Oktober 2026): ihr Platz in der Kette, kurz; die Wellenwanne endet im Foto, der Rasterdruck im Druck", () => {
+  assert.deepEqual(A.effekte("montage+raster+tuch+welle+tiefe+physarum"), ["physarum", "tiefe", "welle", "tuch", "raster", "montage"]);
+  assert.equal(A.TITEL.welle, "Wellenwanne"); assert.equal(A.TITEL.raster, "Rasterdruck");
+  // der Rasterdruck ersetzt die Pixel-Sortierung («mit der Pixelsortierung noch nicht ganz zufrieden»): eine gemerkte Wahl wird zu ihm
+  assert.equal(A.ablaufName("sortierung"), "raster"); assert.equal(A.ablaufName("tuch+sortierung+montage"), "tuch+raster+montage");
+  // Wunsch: Wellen «insgesamt maximal 8 Sekunden», seit dem Abend «ohne Doppelspalt und langsamere Animation, ganz ruhig»; Rasterdruck ebenso knapp
+  const W = A.kette("welle").teile[0], S = A.kette("raster").teile[0];
   assert.deepEqual(W.phasen.map((p) => p[0]), ["duenung", "wellen", "bild"]);
   assert.ok(W.dauer <= 8 + 1e-9, `Wellenwanne ${W.dauer} s`);
   assert.ok(!A.kette("welle").teile.some((t) => t.phasen.some((p) => p[0] === "spalt")), "ohne Doppelspalt");
-  assert.deepEqual(S.phasen.map((p) => p[0]), ["schwelle", "sortieren", "bild"]);
-  assert.ok(S.dauer >= 6 && S.dauer <= 8, `Pixel-Sortierung ${S.dauer} s`);
-  assert.ok(S.phasen.at(-1)[2] <= 1, "nur ein kurzes Überblenden ins Foto");
+  // der Rasterdruck endet nicht im Foto («Es sollte aber nicht im Anfangsbild enden»): keine Phase «Bild», danach steht der Druck
+  assert.deepEqual(S.phasen.map((p) => p[0]), ["raster", "versatz"]);
+  assert.ok(S.dauer >= 6 && S.dauer <= 8, `Rasterdruck ${S.dauer} s`);
+  assert.equal(A.zeitachse({ ablauf: "raster" }).druck, true); assert.equal(A.zeitachse({ ablauf: "physarum+raster" }).druck, true);
+  assert.equal(A.zeitachse({ ablauf: "raster+montage" }).druck, false); assert.equal(A.zeitachse({ ablauf: "welle" }).druck, false);
   // in der Kette ohne Bild: sie gehen über die Zeitfront weiter
-  const K = A.kette("tiefe+welle+tuch+sortierung");
+  const K = A.kette("tiefe+welle+tuch+raster");
   assert.deepEqual(K.teile.map((t) => [t.art, t.uebergang, t.phasen.some((p) => p[0] === "bild")]),
-    [["tiefe", "front", false], ["welle", "front", false], ["tuch", "schnitt", true], ["sortierung", "schnitt", true]]);
+    [["tiefe", "front", false], ["welle", "front", false], ["tuch", "schnitt", true], ["raster", "schnitt", false]]);
 });
 
 test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappung, geerbte Ausschnitte, Anfang dunkel, Ende exakt, wiederholbar", async () => {
@@ -127,7 +131,8 @@ test("Kette: Physarum geht über eine Zeitfront in die Tiefe über, die Tiefe ü
   assert.ok(!p.phasen.some(([n]) => n === "bild"), "nur der letzte Effekt hat eine Phase «Bild»");
   assert.equal(u.phasen.at(-1)[0], "bild");
   for (let i = 1; i < K.phasen.length; i++) assert.ok(K.phasen[i].von >= K.phasen[i - 1].von && K.phasen[i - 1].bis <= K.phasen[i].von + 1e-9, "Phasen hintereinander");
-  for (const e of A.EFFEKTE) { const k = A.kette(e); assert.equal(k.teile.length, 1); assert.equal(k.teile[0].phasen.at(-1)[1], "Bild", `${e} allein endet beim Bild`); }
+  // allein endet jeder beim Bild, ausser dem Rasterdruck (er endet im Druck, seit dem 22. Oktober 2026)
+  for (const e of A.EFFEKTE) { const k = A.kette(e); assert.equal(k.teile.length, 1); assert.equal(k.teile[0].phasen.at(-1)[1], e === "raster" ? "Versatz" : "Bild", `${e} allein endet beim Bild`); }
   assert.ok(K.dauer < 21, `kürzer als mit vier Effekten (${K.dauer.toFixed(1)} s)`);
 });
 

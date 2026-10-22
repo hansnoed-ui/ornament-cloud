@@ -266,7 +266,7 @@
             <button type="button" data-wahl="tiefe" aria-pressed="false"><b data-t="wahl.tiefe">Tiefe</b><small data-t="wahl.tiefe.text">Eine Lichtebene tastet das Bild von vorn nach hinten ab, im Streiflicht steht es als Relief</small></button>
             <button type="button" data-wahl="welle" aria-pressed="false"><b data-t="wahl.welle">Wellenwanne</b><small data-t="wahl.welle.text">Das Foto liegt unter ruhigem Wasser: lange Wellen ziehen langsam darüber, ab und zu läuft ein Tropfen als Ring aus, Licht bündelt sich zu hellen Linien</small></button>
             <button type="button" data-wahl="tuch" aria-pressed="false"><b data-t="wahl.tuch">Tuch</b><small data-t="wahl.tuch.text">Das Foto als Seidentuch im Wind – eine Stoffsimulation –, das sich zuletzt glatt zum Bild legt</small></button>
-            <button type="button" data-wahl="sortierung" aria-pressed="false"><b data-t="wahl.sortierung">Pixel-Sortierung</b><small data-t="wahl.sortierung.text">Die Punkte jeder Spalte sortieren sich nach ihrer Helligkeit und laufen als glühende Schlieren aus, bis sie sich ins Foto zurückziehen</small></button>
+            <button type="button" data-wahl="raster" aria-pressed="false"><b data-t="wahl.raster">Rasterdruck</b><small data-t="wahl.raster.text">Das Foto wird zum Vierfarbendruck: Punkte in Cyan, Magenta, Gelb und Schwarz wachsen, die Platten verrutschen gegeneinander, am Ende steht der Druck</small></button>
             <button type="button" data-wahl="montage" aria-pressed="false"><b data-t="wahl.montage">Montage</b><small data-t="wahl.montage.text">Das Foto zerfällt im Takt in verschachtelte Rechtecke – vergrössert, versetzt, zu Streifen gezogen, mit feinen Rändern und Zahlentafeln –, bis alles einrastet</small></button>
           </div>
           <p class="effekte-hinweis" data-t="effekte.hinweis">Oder eine eigene Kette zusammenstellen:</p>
@@ -275,7 +275,7 @@
             <button type="button" data-effekt="tiefe" aria-pressed="true" data-t="effekt.tiefe">Tiefe</button>
             <button type="button" data-effekt="welle" aria-pressed="false" data-t="effekt.welle">Wellenwanne</button>
             <button type="button" data-effekt="tuch" aria-pressed="true" data-t="effekt.tuch">Tuch</button>
-            <button type="button" data-effekt="sortierung" aria-pressed="false" data-t="effekt.sortierung">Pixel-Sortierung</button>
+            <button type="button" data-effekt="raster" aria-pressed="false" data-t="effekt.raster">Rasterdruck</button>
             <button type="button" data-effekt="montage" aria-pressed="false" data-t="effekt.montage">Montage</button>
           </div>
           <p class="kette" id="kette" aria-live="polite"></p>
@@ -356,8 +356,8 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=49"></script>
-  <script type="module" src="pwa.js?v=49"></script>
+  <script type="module" src="app.js?v=50"></script>
+  <script type="module" src="pwa.js?v=50"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>
