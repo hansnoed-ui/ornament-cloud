@@ -13,7 +13,7 @@ const lies = (p) => readFileSync(new URL(p, root), "utf8");
 const werkeDaten = JSON.parse(lies("src/art/werke.json"));
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const walk = (d, vor = "") => readdirSync(new URL(d, root), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(d + e.name + "/", vor + e.name + "/") : e.name === "index.html" ? [vor] : []);
-const seiten = walk("b/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p) && !p.startsWith("en/"));   // ohne die Bühnen der Apps (noindex, eigener Test) und ohne die englischen Seiten (eigener Test)
+const seiten = walk("b/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p) && !p.startsWith("en/") && p !== "redaktion/");   // ohne die Bühnen der Apps (noindex, eigener Test), ohne die englischen Seiten (eigener Test) und ohne die Redaktion (eigener Test in tests/social-media.test.mjs)
 const seitenEn = walk("b/en/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p));
 const meta = (html, name) => html.match(new RegExp(`<meta (?:name|property)="${name}" content="([^"]*)"`))?.[1];
 const pngMass = (buf) => [buf.readUInt32BE(16), buf.readUInt32BE(20)];

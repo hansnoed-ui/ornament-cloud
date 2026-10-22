@@ -142,7 +142,10 @@ test("Website: die Seiten von Social Media sind auf dem Stand der Daten (sonst: 
 });
 
 test("Redaktion: von keiner Seite verlinkt, noindex, nicht in der Sitemap, mit Inhaltssicherheitsrichtlinie; das SDK liegt mit Lizenz bei", () => {
-  const html = lies("social-media/redaktion/index.html");
+  // seit 22. Oktober 2026 im Neubau unter /b/redaktion/ («im neuen design am neuen ort»); die alte Adresse leitet weiter
+  assert.match(lies("social-media/redaktion/index.html"), /<meta http-equiv="refresh" content="0; url=\/b\/redaktion\/">/);
+  const html = lies("b/redaktion/index.html");
+  assert.match(html, /<header class="kopf">/, "im Rahmen des Neubaus");
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.match(html, /<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self';/);
   assert.ok(!html.includes("goatcounter"), "keine Besuchsstatistik in der Redaktion");
