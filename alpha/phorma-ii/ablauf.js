@@ -116,13 +116,15 @@ export function zeitachse({ tempo = "normal", signet = true, ablauf = KETTE } = 
   // nochmals vor dem Logo»): die Montage rastet nicht ins Foto ein, sie schneidet geradewegs ins Signet
   const nahtlos = signet && effekte(art).at(-1) === "montage";
   if (nahtlos) { dazu("stehen", 0); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }
-  else {
-    dazu("stehen", 3.2);
-    if (signet) { dazu("bildAus", 0.9); dazu("pause", 0.15); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }   // zusammen ABSPANN
+  // endet die Kette mit dem Rasterdruck, steht danach der Druck statt des Fotos (film.js zeichnet dann das letzte Bild der Bühne weiter); er steht
+  // nur kurz und geht rasch ins Papier des Signets über – der Versatz kommt schon selbst zur Ruhe (22. Oktober 2026, Rückmeldung: «Der Übergang vom
+  // Rasterdruckeffekt zum Logo ist zu lang»; vorher 3,2 s stehen, 0,9 s aus und 0,15 s Pause wie nach dem Foto)
+  const druck = effekte(art).at(-1) === "raster";
+  if (!nahtlos) {
+    dazu("stehen", druck && signet ? 1.0 : 3.2);
+    if (signet) { dazu("bildAus", druck ? 0.6 : 0.9); dazu("pause", druck ? 0 : 0.15); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }   // ohne Druck zusammen ABSPANN
     else dazu("schluss", 0.3);
   }
-  // endet die Kette mit dem Rasterdruck, steht danach der Druck statt des Fotos (film.js zeichnet dann das letzte Bild der Bühne weiter)
-  const druck = effekte(art).at(-1) === "raster";
   return { ab, ablauf: art, abschnitt, teile, phasen, dauer: t, bilder: Math.round(t * 30), tempo: f, nahtlos, druck };
 }
 

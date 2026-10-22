@@ -180,7 +180,7 @@ await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto (
     assert.ok(mitte.mittelAbw > 5, `${e}: in der Mitte nicht das Foto (${mitte.mittelAbw.toFixed(1)})`);
     if (e === "raster") {
       // «Es sollte aber nicht im Anfangsbild enden»: am Ende und im Stehen danach der Druck, beide gleich
-      const stehen = await messe(page, zeit.ab.stehen[0] + 1);
+      const stehen = await messe(page, (zeit.ab.stehen[0] + zeit.ab.stehen[1]) / 2);   // seit 22. Oktober 2026 nur 1 s («Übergang … zu lang»)
       assert.ok(ende.mittelAbw > 5, `${e}: Ende ist nicht das Foto (${ende.mittelAbw.toFixed(1)})`);
       assert.ok(Math.abs(stehen.mittelAbw - ende.mittelAbw) < 1.5, `${e}: der Druck bleibt stehen (${stehen.mittelAbw.toFixed(1)} / ${ende.mittelAbw.toFixed(1)})`);
       // danach das Signet gedruckt, auf dem Papier des Drucks (hell) statt leuchtend auf Schwarz
