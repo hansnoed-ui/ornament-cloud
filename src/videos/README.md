@@ -17,6 +17,9 @@ src/
     Wachstum.ts       die Simulation (Punkte, Abstossung, Feder, Kantenteilung, Grenze), deterministisch
     Formen.ts         die beiden Grenzen: atmende Wolke aus Kreisen, Buchstaben des Namens (Maske, Abstandsfeld, Keime)
     Video.tsx         Zeitplan T und Szenen
+  rundgang/           Rundgang durch ornament.cloud (22. Oktober 2026)
+    Video.tsx         Zeitplan T, das Menü als durchgehende Ebene, Szenen
+    daten.mjs         liest Menü, Leads, Namen und den Zettel «Die Brücke» unverändert aus der Website → rundgang/data/rundgang.json (nicht eingecheckt)
   orna/               Erklärvideo zu ORNA (5. Oktober 2026)
     Video.tsx         Zeitplan T und Szenen
     Rad.tsx           das Doppelrad, nachgezeichnet nach portfolio/nebeneinander-nacheinander/js/wheel.js
@@ -174,6 +177,25 @@ ffmpeg -i out/start-hell.mp4 -vf "scale=in_range=pc:out_range=tv:in_color_matrix
   -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv -c:v libx264 -crf 28 -preset slow -movflags +faststart -an ../../assets/start-animation.mp4
 # dunkel ebenso mit out/start-dunkel.mp4 nach ../../assets/start-animation-dunkel.mp4
 ```
+
+## Rundgang durch ornament.cloud (22. Oktober 2026)
+
+49,5 s, **9:16** (1080 × 1920, `RundgangVideo`), ohne Ton, im Stil des ORNA-Videos. Ein Rundgang durch das Menü der Website, Szene für Szene ein Kästchen.
+Das Menü ist eine durchgehende Ebene: erst gross in der Mitte, ab «Apps» unten und kleiner, das Kästchen der Szene aktiv (kräftiger Rand, wie `aria-current` auf der Website).
+Die Symbole kommen aus `kopfleiste.js` und zeichnen sich mit `pathLength`. Nur als Datei, nicht auf der Website.
+
+0. Intro mit «ornament.cloud» und «apps • prompts • zettel»
+1. «Beobachtung ist Anlass für Veränderung in der Realität.» (Beschreibung der Startseite), die fünf Kästchen bauen sich auf
+2. Apps: Lead der Seite, die drei Gruppen mit ihren Apps
+3. Prompts: Lead von «Masterprompts», die vier Prüfraster
+4. Zettel: Titel und Beschreibung des Zettelkastens, das Raster 7 × 7 nach Zyklen, die Zählzeile; der erste Zettel leuchtet auf
+5. Der Zettel «Die Brücke» als Karteikarte: Kennzeile, Titel, Schlusssatz, Weiterdenken (vier Verweise)
+6. Social: Lead der Seite, grosses Symbol
+7. Art: Lead der Seite, grosses Symbol
+8. Outro: Signet
+
+`daten.mjs` bricht ab, wenn sich ein Text auf der Website nicht mehr findet, und prüft die Kennzeile des Zettels gegen seine Seite.
+`npx remotion render RundgangVideo out/rundgang.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
 
 ## Rendern ohne Internetzugang zu remotion.media
 
