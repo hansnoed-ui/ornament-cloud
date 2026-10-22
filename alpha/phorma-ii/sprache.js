@@ -24,7 +24,7 @@
     "wahl.montage": "Montage", "wahl.montage.text": "The photo breaks apart in rhythm into nested rectangles – enlarged, shifted, drawn into stripes, with fine edges and number plates –, until everything snaps into place",
     "effekte.hinweis": "Or put together your own chain:", "effekte.aria": "Your own chain",
     "effekt.physarum": "Physarum", "effekt.tiefe": "Depth", "effekt.tuch": "Cloth", "effekt.montage": "Montage",
-    "wahl.welle": "Ripple tank", "wahl.welle.text": "Drops fall on the photo, the rings refract the picture like water, light gathers into bright lines; a wall with two slits shows the pattern of the double slit",
+    "wahl.welle": "Ripple tank", "wahl.welle.text": "The photo lies under calm water: long waves pass slowly over it, now and then a drop spreads as a ring, light gathers into bright lines",
     "wahl.sortierung": "Pixel sorting", "wahl.sortierung.text": "The points of each column sort themselves by brightness and run out as glowing streaks, until they withdraw into the photo",
     "effekt.welle": "Ripple tank", "effekt.sortierung": "Pixel sorting",
     "phorma3.hinweis": "Video or music? For that there is <a href=\"../phorma-iii/\">PHORMA III</a>: sound becomes image.",
@@ -62,7 +62,7 @@
     "Das Tiefenmodell wird geladen …": "Loading the depth model …", "Die KI schätzt die Tiefe …": "The AI is estimating the depth …",
     // Phasen und Effekte (ablauf.js)
     Physarum: "Physarum", Tiefe: "Depth", Tuch: "Cloth", Montage: "Montage", Wellenwanne: "Ripple tank", "Pixel-Sortierung": "Pixel sorting",
-    Dünung: "Swell", Doppelspalt: "Double slit", Wellen: "Waves", Schwelle: "Threshold", Sortieren: "Sorting", Netz: "Net", Bild: "Picture", Scan: "Scan", Farbe: "Colour", Schnitte: "Cuts",
+    Dünung: "Swell", Wellen: "Waves", Schwelle: "Threshold", Sortieren: "Sorting", Netz: "Net", Bild: "Picture", Scan: "Scan", Farbe: "Colour", Schnitte: "Cuts",
     // Installieren (pwa.js, seit 21. Oktober 2026 als App)
     "install.knopf": "Install PHORMA II as an app",
     "Im Browser dieser App lässt sich PHORMA II nicht installieren. Die Seite öffnet sich dafür in Chrome; dort noch einmal auf «PHORMA II als App installieren» tippen.": "PHORMA II cannot be installed from this app's browser. The page opens in Chrome for that; tap «Install PHORMA II as an app» there once more.",
