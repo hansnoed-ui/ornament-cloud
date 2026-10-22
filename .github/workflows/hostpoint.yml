@@ -58,6 +58,12 @@ jobs:
           # Erst aussagekräftig, wenn die Domain auf Hostpoint zeigt; vorher antwortet noch GitHub Pages.
           for p in / /b/ /sitemap.xml /alpha/orma/ /nicht-da; do printf '%-16s %s\n' "$p" "$(curl -sS -o /dev/null -w '%{http_code} %{content_type} (%{time_total}s)' "https://ornament.cloud$p" || echo 'keine Antwort')"; done
           curl -sSI https://ornament.cloud/ | grep -iE '^(server|cache-control|content-encoding|strict-transport|x-content-type):' || true
+          # nach dem Umstellen (docs/hostpoint-umzug.md, Schritt 4.3): www leitet um, komprimiert wird, das Manifest hat seinen Typ, das Zertifikat
+          printf '%-16s %s\n' "www" "$(curl -sS -o /dev/null -w '%{http_code} → %{redirect_url}' http://www.ornament.cloud/ || echo 'keine Antwort')"
+          printf '%-16s %s\n' "www https" "$(curl -sS -o /dev/null -w '%{http_code} → %{redirect_url}' https://www.ornament.cloud/b/ || echo 'keine Antwort')"
+          printf '%-16s %s\n' "Kompression" "$(curl -sS -o /dev/null -H 'Accept-Encoding: br, gzip' -D - https://ornament.cloud/b/ | grep -i '^content-encoding' | tr -d '\r' || echo 'keine')"
+          printf '%-16s %s\n' "Manifest" "$(curl -sS -o /dev/null -w '%{content_type}' https://ornament.cloud/alpha/orma/manifest.webmanifest || echo 'keine Antwort')"
+          echo | openssl s_client -connect ornament.cloud:443 -servername ornament.cloud 2>/dev/null | openssl x509 -noout -issuer -subject -enddate -ext subjectAltName 2>/dev/null || echo 'Zertifikat: keine Antwort'
           # Direkt beim Webhosting, an der Domain vorbei (vor dem Umstellen der DNS: zeigt, was Hostpoint ausliefern wird). Die Adresse des
           # Webservers: die von KONTO.myhostpoint.ch, zum Vergleich die des SSH-Servers; -k, weil FreeSSL erst nach der DNS-Änderung kommt.
           for name in "$HOSTPOINT_USER.myhostpoint.ch" "$HOSTPOINT_HOST"; do
