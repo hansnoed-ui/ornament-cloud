@@ -58,3 +58,13 @@ jobs:
           # Erst aussagekräftig, wenn die Domain auf Hostpoint zeigt; vorher antwortet noch GitHub Pages.
           for p in / /b/ /sitemap.xml /alpha/orma/ /nicht-da; do printf '%-16s %s\n' "$p" "$(curl -sS -o /dev/null -w '%{http_code} %{content_type} (%{time_total}s)' "https://ornament.cloud$p" || echo 'keine Antwort')"; done
           curl -sSI https://ornament.cloud/ | grep -iE '^(server|cache-control|content-encoding|strict-transport|x-content-type):' || true
+          # Direkt beim Webhosting, an der Domain vorbei (vor dem Umstellen der DNS: zeigt, was Hostpoint ausliefern wird). Die Adresse des
+          # Webservers: die von KONTO.myhostpoint.ch, zum Vergleich die des SSH-Servers; -k, weil FreeSSL erst nach der DNS-Änderung kommt.
+          for name in "$HOSTPOINT_USER.myhostpoint.ch" "$HOSTPOINT_HOST"; do
+            ip=$(getent ahostsv4 "$name" | awk 'NR==1{print $1}')
+            [ -n "$ip" ] || { echo "$name: keine Adresse"; continue; }
+            echo "== direkt bei $name ($ip)"
+            printf '%-16s %s\n' "http /" "$(curl -sS -o /dev/null --resolve ornament.cloud:80:$ip -w '%{http_code} → %{redirect_url}' http://ornament.cloud/ || echo 'keine Antwort')"
+            for p in / /b/ /sitemap.xml /alpha/orma/ /b/apps/phorma-ii/ /nicht-da; do printf '%-16s %s\n' "$p" "$(curl -sSk -o /dev/null --resolve ornament.cloud:443:$ip -w '%{http_code} %{content_type} %{size_download} B (%{time_total}s)' "https://ornament.cloud$p" || echo 'keine Antwort')"; done
+            curl -sSkI --resolve ornament.cloud:443:$ip https://ornament.cloud/b/ | grep -iE '^(server|cache-control|content-encoding|strict-transport|x-content-type):' || true
+          done
