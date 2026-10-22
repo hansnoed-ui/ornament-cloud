@@ -75,7 +75,7 @@ const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]
     const a = Math.max(Math.abs(d[i] - q[i]), Math.abs(d[i + 1] - q[i + 1]), Math.abs(d[i + 2] - q[i + 2])); if (a > abw) abw = a; mittelAbw += a;
     abdruck = (abdruck * 31 + d[i] * 7 + d[i + 1] * 3 + d[i + 2]) >>> 0;
   }
-  return { hell: hell / n, streu: Math.sqrt(Math.max(0, hell2 / n - (hell / n) ** 2)), tinte: tinte / n, schwarz: schwarz / n, abw, mittelAbw: mittelAbw / n, abdruck, dauer: sz.zeit.dauer, zeit: { teile: sz.zeit.teile.map((tl) => [tl.art, tl.von, tl.bis]), phasen: sz.zeit.phasen.map((p) => [p.art, p.name, p.von, p.bis]), abschnitt: sz.zeit.abschnitt, stehen: sz.zeit.ab.stehen } };
+  return { hell: hell / n, streu: Math.sqrt(Math.max(0, hell2 / n - (hell / n) ** 2)), tinte: tinte / n, schwarz: schwarz / n, abw, mittelAbw: mittelAbw / n, abdruck, dauer: sz.zeit.dauer, zeit: { teile: sz.zeit.teile.map((tl) => [tl.art, tl.von, tl.bis]), phasen: sz.zeit.phasen.map((p) => [p.art, p.name, p.von, p.bis]), abschnitt: sz.zeit.abschnitt, stehen: sz.zeit.ab.stehen, ab: sz.zeit.ab } };
 }, [t, proben]);
 
 // Ersatz für den H.264-Encoder (SwiftShader hat keinen): liefert kleine Stücke und eine Beschreibung
@@ -183,6 +183,9 @@ await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto (
       const stehen = await messe(page, zeit.ab.stehen[0] + 1);
       assert.ok(ende.mittelAbw > 5, `${e}: Ende ist nicht das Foto (${ende.mittelAbw.toFixed(1)})`);
       assert.ok(Math.abs(stehen.mittelAbw - ende.mittelAbw) < 1.5, `${e}: der Druck bleibt stehen (${stehen.mittelAbw.toFixed(1)} / ${ende.mittelAbw.toFixed(1)})`);
+      // danach das Signet gedruckt, auf dem Papier des Drucks (hell) statt leuchtend auf Schwarz
+      const signet = await messe(page, zeit.ab.signetStehen[0] + 0.2);
+      assert.ok(signet.hell > 180, `${e}: Signet auf Papier (${signet.hell.toFixed(1)})`);
     } else assert.ok(ende.abw <= 3, `${e}: Ende exakt (${ende.abw})`);
     assert.deepEqual(fehler, []);
     await ctx.close();

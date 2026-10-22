@@ -4,6 +4,8 @@ import { FPS, anteil, ausblenden, zeitachse, zeitcode, SIGNET_VON, SIGNET_BIS, S
 import { signet as signetZeichnen, punktLage, PUNKT_RADIUS } from "../sketchory/signet.js?v=10";
 
 export const FARBEN = { grund: "#000000", tinte: "#ffffff", punkt: "#f08a5d", hell: true };
+// endet die Kette mit dem Rasterdruck, steht das Signet gedruckt auf seinem Papier (dieselbe Farbe wie PAPIER in raster.js)
+const DRUCK = { grund: "#ede8db", tinte: "#1f1d22", punkt: "#e0652e", hell: false };
 const MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
 
 /** Szene: { breite, hoehe, zeit, foto, buehne, signet, beschriftung, titel } */
@@ -47,7 +49,9 @@ function beschriftung(ctx, sz, t, sicht) {
 export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
   const { ab, abschnitt } = sz.zeit, B = sz.breite, H = sz.hoehe, F = FARBEN;
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
-  ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H);
+  // nach dem Rasterdruck: zwischen Bild und Signet das Papier statt des Grunds
+  const papier = sz.zeit.druck && sz.buehne?.druckSchluss && ab.bildAus && ab.signet && t >= ab.bildAus[0];
+  ctx.fillStyle = papier && t >= ab.bildAus[1] ? DRUCK.grund : F.grund; ctx.fillRect(0, 0, B, H);
   const bildEnde = ab.bildAus ? ab.bildAus[1] : ab.signet ? ab.signet[0] : ab.schluss[1];   // nahtlos: das Signet übernimmt das Foto
   if (t < bildEnde) {
     if (t >= abschnitt.von && t < abschnitt.bis) {
@@ -65,7 +69,7 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
     } else if (t >= abschnitt.bis && sz.foto) ctx.drawImage(sz.foto, 0, 0, B, H);
     if (ab.bildAus) {
       const weg = ausblenden(anteil(t, ab.bildAus[0], ab.bildAus[1]));
-      if (weg > 0) { ctx.globalAlpha = weg; ctx.fillStyle = F.grund; ctx.fillRect(0, 0, B, H); ctx.globalAlpha = 1; }
+      if (weg > 0) { ctx.globalAlpha = weg; ctx.fillStyle = papier ? DRUCK.grund : F.grund; ctx.fillRect(0, 0, B, H); ctx.globalAlpha = 1; }
     }
     if (sz.beschriftung) {
       const sicht = anteil(t, ab.vor[0] + 0.1, ab.vor[1] + 0.3) * (1 - anteil(t, ab.stehen[0] - 0.1, ab.stehen[0] + 0.6));
@@ -86,6 +90,12 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
         signetZeichnen(c, fb, opt);
       };
       const c = sz.buehne.signetMontage(zeichnenBei, SIGNET_BIS + 10, f, tau, w, h, { nahtlos: sz.zeit.nahtlos, foto: fotoSicht });
+      if (sz.buehne.ende >= 1) zeichnenBei(ctx, f); else ctx.drawImage(c, 0, 0, 1080, H);
+    } else if (sz.buehne?.druckSchluss) {
+      // im Stil des Rasterdrucks (seit 22. Oktober 2026): gedruckt auf dem Papier, die Platten rasten ein, zuletzt scharf
+      const [w, h] = zielMass(ctx, sz), dopt = { ...opt, farben: DRUCK };
+      const zeichnenBei = (c, fb) => { c.fillStyle = DRUCK.grund; c.fillRect(0, 0, 1080, H); signetZeichnen(c, fb, dopt); };
+      const c = sz.buehne.signetDruck(zeichnenBei, f, t - ab.signet[0], w, h);
       if (sz.buehne.ende >= 1) zeichnenBei(ctx, f); else ctx.drawImage(c, 0, 0, 1080, H);
     } else if (sz.buehne) {
       // leuchtend wie in PHORMA I: der Punkt läuft als kleiner Glaskristall durch die Schlaufe, mit Halo und Bokeh auf seiner Spur
