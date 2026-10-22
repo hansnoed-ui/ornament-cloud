@@ -149,7 +149,7 @@ const daempfung = (tau) => 0.997 - 0.025 * glocke(tau, D[0] - 0.4, D[0] + 0.3) -
       const sp = wand(tau);
       u.uKaustik.value = 2.4 * (1 - ruhig) * (1 + 1.5 * sp); u.uDunkel.value = 0.45 * sp;
       u.uWand.value = wand(tau);
-      u.uSicht.value = teil.erst ? weich(anteil(tau, 0, 0.4)) : 1;
+      u.uSicht.value = teil.erst ? weich(anteil(tau, 0, 1.0)) ** 2 : 1;   // als erster Effekt kurz aus dem Dunkeln (das Wasser ist schon bewegt)
       u.uDuenung.value = duenung(tau); u.uZeit.value = tau;
       g.pass(zeigen, ziel);
       let ende = 0, aktiv = teil.erst ? weich(anteil(tau, 0, 0.6)) : 1;

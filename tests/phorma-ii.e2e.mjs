@@ -166,12 +166,12 @@ await check("Kette: jede Phase zeigt etwas, jede etwas anderes; am Anfang dunkel
 });
 
 await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto", async () => {
-  for (const e of ["physarum", "tiefe", "tuch", "montage"]) {
+  for (const e of ["physarum", "tiefe", "welle", "tuch", "sortierung", "montage"]) {
     const { ctx, page, fehler } = await oeffne({ ablauf: e });
     await laden(page); await bereit(page);
     // mit Signet rastet die Montage nicht ins Foto ein (sie schneidet geradewegs ins Signet): hier ohne
     if (e === "montage") { await page.uncheck("#signet"); await bereit(page); }
-    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", montage: "Montage" }[e]);
+    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", tiefe: "Tiefe", welle: "Wellenwanne", tuch: "Tuch", sortierung: "Pixel-Sortierung", montage: "Montage" }[e]);
     const { zeit } = await messe(page, 0);
     assert.equal(zeit.teile.length, 1);
     const anfang = await messe(page, zeit.abschnitt.von + 0.15), mitte = await messe(page, (zeit.abschnitt.von + zeit.abschnitt.bis) / 2);

@@ -112,7 +112,7 @@ export function sortierung(g, teil) {
       if (tau < So[0] || n < 0) bis(0); else bis(m, vorschau ? 220 : Infinity);
       const u = zeigen.uniforms, [lo, hi] = band(tau);
       u.tQ.value = puffer[i].texture; u.uLo.value = lo; u.uHi.value = hi;
-      u.uSicht.value = teil.erst ? weich(anteil(tau, 0, 0.9)) : 1;
+      u.uSicht.value = teil.erst ? weich(anteil(tau, 0, 1.0)) ** 2 : 1;   // aus dem Dunkeln (quadratisch: wenig Licht wirkt nach der Gammakurve hell)
       u.uBand.value = 0.85 * glocke(tau, Sw[0] + 0.2, So[0] + 1.2);
       u.uGlut.value = 0.35 * weich(anteil(tau, So[0], So[0] + 1.5)) * (Bp ? 1 - weich(anteil(tau, Bp[0], Bp[1])) : 1);
       u.uZurueck.value = Bp ? weich(anteil(tau, Bp[0], Bp[1] - 0.1)) : 0;
