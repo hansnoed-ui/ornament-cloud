@@ -63,9 +63,9 @@ export function rolle(art, liste, i) {
     else { ueber = 0.7; uebergang = naechstes === "montage" ? "felder" : "front"; }
   } else if (art === "welle" || art === "sortierung") {
     // die beiden Simulationen auf der GPU (seit 22. Oktober 2026): als letzter Effekt mit Bild, sonst gehen sie wie Physarum über
-    // kurz (Wunsch nach den Probefilmen: Wellen «vor allem die langsamen Phasen und nur kurz schneller, insgesamt maximal 8 Sekunden»; Sortierung
+    // kurz (Wunsch nach den Probefilmen: Wellen «insgesamt maximal 8 Sekunden», seit dem Abend «ohne Doppelspalt und langsamere Animation, ganz ruhig»; Sortierung
     // «insgesamt eher 6–8 Sekunden», «das Bild muss sich nicht wieder in den Anfangszustand zurückverwandeln»: als letzter Effekt nur ein kurzes Überblenden)
-    phasen = art === "welle" ? [["duenung", "Dünung", 2.6], ["spalt", "Doppelspalt", 2.8], ["wellen", "Wellen", 1.2]]
+    phasen = art === "welle" ? [["duenung", "Dünung", 3.4], ["wellen", "Wellen", 3.2]]   // ohne Doppelspalt, ganz ruhig (22. Oktober 2026, abends)
       : [["schwelle", "Schwelle", 1.2], ["sortieren", "Sortieren", 5.6]];
     if (letzt) phasen.push(["bild", "Bild", art === "welle" ? 1.4 : 0.8]);
     else { ueber = 1.0; uebergang = naechstes === "montage" ? "felder" : "front"; }

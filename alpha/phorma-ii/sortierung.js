@@ -12,9 +12,9 @@
 // Gerechnet in halber Grösse (8 Bit, genau, keine Rundungsfehler beim Tauschen), 220 Schritte je Sekunde eigener Zeit, alle 2 s ein
 // Wiedereinstiegspunkt (wie Physarum): Bild n ist beim Abspielen, Spulen und im Video dasselbe. Mit Video laufen die Punkte ausserhalb des Bands mit.
 import * as THREE from "three";
-import { anteil, weich, glocke, quadMaterial } from "./gemeinsam.js?v=35";
-import { phase } from "./ablauf.js?v=35";
-import { zufall } from "./analyse.js?v=35";
+import { anteil, weich, glocke, quadMaterial } from "./gemeinsam.js?v=36";
+import { phase } from "./ablauf.js?v=36";
+import { zufall } from "./analyse.js?v=36";
 
 export const SCHRITTE = 220;
 const SICHERN = 440;

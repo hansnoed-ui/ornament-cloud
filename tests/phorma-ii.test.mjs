@@ -31,12 +31,11 @@ test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette"
 test("Wellenwanne und Pixel-Sortierung (22. Oktober 2026): ihr Platz in der Kette, kurz, als letzter Effekt mit Bild", () => {
   assert.deepEqual(A.effekte("montage+sortierung+tuch+welle+tiefe+physarum"), ["physarum", "tiefe", "welle", "tuch", "sortierung", "montage"]);
   assert.equal(A.TITEL.welle, "Wellenwanne"); assert.equal(A.TITEL.sortierung, "Pixel-Sortierung");
-  // Wunsch: Wellen «insgesamt maximal 8 Sekunden», vor allem langsam; Sortierung «eher 6–8 Sekunden», ohne Zurückverwandeln
+  // Wunsch: Wellen «insgesamt maximal 8 Sekunden», seit dem Abend «ohne Doppelspalt und langsamere Animation, ganz ruhig»; Sortierung «eher 6–8 Sekunden», ohne Zurückverwandeln
   const W = A.kette("welle").teile[0], S = A.kette("sortierung").teile[0];
-  assert.deepEqual(W.phasen.map((p) => p[0]), ["duenung", "spalt", "wellen", "bild"]);
+  assert.deepEqual(W.phasen.map((p) => p[0]), ["duenung", "wellen", "bild"]);
   assert.ok(W.dauer <= 8 + 1e-9, `Wellenwanne ${W.dauer} s`);
-  const [du, sp, we] = W.phasen.map((p) => p[2]);
-  assert.ok(we < du && we < sp, "nur kurz schneller");
+  assert.ok(!A.kette("welle").teile.some((t) => t.phasen.some((p) => p[0] === "spalt")), "ohne Doppelspalt");
   assert.deepEqual(S.phasen.map((p) => p[0]), ["schwelle", "sortieren", "bild"]);
   assert.ok(S.dauer >= 6 && S.dauer <= 8, `Pixel-Sortierung ${S.dauer} s`);
   assert.ok(S.phasen.at(-1)[2] <= 1, "nur ein kurzes Überblenden ins Foto");
