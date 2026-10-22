@@ -1,5 +1,5 @@
 // Alle Videos von ornament.cloud, je eine Composition. Neue Videos trägt «npm run neu -- <name>» unten ein.
-import { Composition } from "remotion";
+import { Composition, Folder } from "remotion";
 import { OrnaVideo, T } from "./orna/Video";
 import { BREITE, FPS, HOEHE } from "./vorlage/stil";
 import { DoppelpruefungVideo, T as TDoppelpruefung } from "./doppelpruefung/Video";
@@ -7,6 +7,7 @@ import { DreiervergleichVideo, T as TDreiervergleich } from "./dreiervergleich/V
 import { MenschVideo, T as TMensch, zeitplan as zeitplanMensch } from "./mensch/Video";
 import { StartAnimation, TStart, WachstumVideo, T as TWachstum } from "./wachstum/Video";
 import { RundgangVideo, T as TRundgang } from "./rundgang/Video";
+import { DAUER as DauerNeubau, NeubauVideo, SZENEN as SzenenNeubau } from "./neubau/Video";
 // neue Videos: Import
 
 export const RemotionRoot: React.FC = () => (
@@ -27,6 +28,11 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="StartAnimation" component={StartAnimation} durationInFrames={TStart.ende} fps={FPS} width={BREITE} height={1080} />
     <Composition id="StartAnimationDunkel" component={StartAnimation} durationInFrames={TStart.ende} fps={FPS} width={BREITE} height={1080} defaultProps={{ dunkel: true }} />
     <Composition id="RundgangVideo" component={RundgangVideo} durationInFrames={TRundgang.ende} fps={FPS} width={BREITE} height={HOEHE} />
+    {/* «neubau»: ornament.cloud/b/ in der Gestaltung des Neubaus, 9:16; jede Szene auch einzeln (22. Oktober 2026) */}
+    <Composition id="NeubauVideo" component={NeubauVideo} durationInFrames={DauerNeubau} fps={FPS} width={BREITE} height={HOEHE} />
+    <Folder name="Neubau-Szenen">
+      {SzenenNeubau.map(({ id, Szene, dauer }) => <Composition key={id} id={id} component={Szene} durationInFrames={dauer} fps={FPS} width={BREITE} height={HOEHE} />)}
+    </Folder>
     {/* neue Videos: Composition */}
   </>
 );

@@ -17,6 +17,9 @@ src/
     Wachstum.ts       die Simulation (Punkte, Abstossung, Feder, Kantenteilung, Grenze), deterministisch
     Formen.ts         die beiden Grenzen: atmende Wolke aus Kreisen, Buchstaben des Namens (Maske, Abstandsfeld, Keime)
     Video.tsx         Zeitplan T und Szenen
+  neubau/             ornament.cloud/b/ in der Gestaltung des Neubaus, ohne die Vorlage (22. Oktober 2026)
+    Video.tsx         Szenen mit TransitionSeries, Kopfzeile darüber; Teile.tsx (Farben, Schriften, Zeichen, Signet), Kopf.tsx, szenen/*.tsx
+    daten.mjs         liest Farben, Texte, Zeichen und Fäden unverändert aus /b/ → neubau/data/neubau.json (nicht eingecheckt)
   rundgang/           Rundgang durch ornament.cloud (22. Oktober 2026)
     Video.tsx         Zeitplan T, das Menü als durchgehende Ebene, Szenen
     daten.mjs         liest Menü, Leads, Namen und den Zettel «Die Brücke» unverändert aus der Website → rundgang/data/rundgang.json (nicht eingecheckt)
@@ -196,6 +199,26 @@ Die Symbole kommen aus `kopfleiste.js` und zeichnen sich mit `pathLength`. Nur a
 
 `daten.mjs` bricht ab, wenn sich ein Text auf der Website nicht mehr findet, und prüft die Kennzeile des Zettels gegen seine Seite.
 `npx remotion render RundgangVideo out/rundgang.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
+
+## «neubau» – ornament.cloud/b/ (22. Oktober 2026)
+
+51,7 s, **9:16** (1080 × 1920, `NeubauVideo`), ohne Ton. Wunsch: ein Video zur neuen Website `/b/`, mit den Skills für Animation und Video, ohne den Stil der ORNA-Videos.
+Darum **ohne die Vorlage** (`src/vorlage/`): eigene Gestaltung nach `b/b.css` (Papier und Tinte, die Blaupause `#1d3fd6` als einziger Akzent, Instrument Sans für Titel,
+Newsreader für den Zettelkasten, Haarlinien statt Kästen), das Signet als Re-entry-Schlaufe mit blauem Punkt nach `src/b/tafeln.mjs`. Gebaut nach den Remotion-Skills:
+jede Szene in `src/neubau/szenen/` und als eigene Composition im Ordner «Neubau-Szenen» (Root.tsx), verbunden mit `TransitionSeries` (`@remotion/transitions`, Blenden von 15 Bildern).
+Über den Szenen die Kopfzeile des Neubaus (`Kopf.tsx`): Signet, «ornament.cloud», die Hauptnavigation; der Punkt der Szene ist blau unterstrichen.
+`daten.mjs` liest Farben aus `b/b.css`, Texte aus `src/b/inhalt.mjs` und `src/b/ui.mjs`, die Zeichen aus `src/b/zeichen.mjs`, die Fäden aus `b/index.html` und den Zettel aus `zu-seiner-zeit/zsz-daten.json`.
+
+1. Auftakt: das Signet zeichnet sich, der Punkt läuft, darunter «ornament.cloud»
+2. Einstieg: «Gestalten, vermitteln, kuratieren.» Wort für Wort, der erste Satz des Leads, das atmende Signet
+3. Die vier Leistungen mit ihren Zeichen (Navigation: Angebot)
+4. «Theorie, die man anfassen kann.» und der Satz dazu
+5. Der Zettelkasten: das Feld 7 × 7, die 18 Fäden wachsen; dann Zettel 1 aktiv, «Die Brücke» mit Leitsatz (Navigation: Zettel)
+6. Prüfraster: die vier Raster mit Stand (Navigation: Raster)
+7. Spielen: die sieben Apps (Navigation: Apps)
+8. Schluss: Signet, «ornament.cloud», «Beobachtung ist Anlass für Veränderung in der Realität.»
+
+`npx remotion render NeubauVideo out/neubau.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
 
 ## Rendern ohne Internetzugang zu remotion.media
 
