@@ -196,7 +196,7 @@ function bau(sprache) {
   const sprachwahl = (pfad, nurDe = false) => `<nav class="sprache" aria-label="${attr(T.sprache.aria)}"><a href="/b/${pfad}" lang="de" hreflang="de" title="${T.sprache.de}"${istDe ? ' aria-current="true"' : ""}>d</a>${nurDe ? "" : `<a href="/b/en/${pfad}" lang="en" hreflang="en" title="${T.sprache.en}"${istDe ? "" : ' aria-current="true"'}>e</a>`}</nav>`;
 
   /** Eine ganze Seite */
-  function seite({ pfad, titel, beschreibung, body, aktiv, noindex = false, jsonld = [], typ = "website", bild, bildAlt, kopfTitel, module = [], nurDe = false }) {
+  function seite({ pfad, titel, beschreibung, body, aktiv, noindex = false, jsonld = [], typ = "website", bild, bildAlt, kopfTitel, module = [], nurDe = false, kopfMehr = "", skripte = [], zaehlen = true }) {
     const url = `${BASIS}${B}${pfad}`;
     const k = `${B}kacheln/${kachelName(pfad)}.png`;
     const og = bild || `${BASIS}${k}`;
@@ -208,7 +208,7 @@ function bau(sprache) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${esc(kopfTitel || (pfad ? `${titel} – ornament.cloud` : T.kopfTitelStart))}</title>
   <meta name="description" content="${attr(beschreibung)}">
-  ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${attr(url)}">`}
+  ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${attr(url)}">`}${kopfMehr ? `\n  ${kopfMehr}` : ""}
   ${noindex || nurDe ? "" : `<link rel="alternate" hreflang="de" href="${BASIS}/b/${pfad}">\n  <link rel="alternate" hreflang="en" href="${BASIS}/b/en/${pfad}">\n  <link rel="alternate" hreflang="x-default" href="${BASIS}/b/${pfad}">`}
   <meta name="author" content="${attr(SEITE.person.name)}">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
@@ -256,8 +256,8 @@ ${body}
     </div>
   </footer>
 
-  <script type="module" src="/b/b.js?v=${V}"></script>${module.map((m) => `\n  <script type="module" src="/b/${m}?v=${V}"></script>`).join("")}
-  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="/vendor/goatcounter/count.js"></script>
+  <script type="module" src="/b/b.js?v=${V}"></script>${module.map((m) => `\n  <script type="module" src="/b/${m}?v=${V}"></script>`).join("")}${skripte.map((src) => `\n  <script type="module" src="${src}"></script>`).join("")}
+${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="/vendor/goatcounter/count.js"></script>' : ""}
 </body>
 </html>
 `;
@@ -693,6 +693,30 @@ ${faeden([fZettel(zettel[40]), fZettel(zettel[36]), fApp(appVon("orna"))])}`;
 <section class="spalte">${teilen({ pfad: "ueber/", titel: `${SEITE.person.name} – ornament.cloud`, text: T.ueber.teilenText })}</section>
 ${faeden([fAngebot(angebotVon("webdesign")), fAngebot(angebotVon("kuration")), fZettel(zettel[16]), fApp(appVon("orma"))])}`;
     veroeffentliche({ pfad: "ueber/", aktiv: "ueber/", module: ["tafeln-leben.js"], titel: T.ueber.seitenTitel(SEITE.person.name), beschreibung: T.ueber.beschreibung(SEITE.person.name), body, typ: "profile", jsonld: [personLd()], bildAlt: `${SEITE.person.name}` });
+  }
+
+  /* ---------- Redaktion von «Social Media» (nicht verlinkt, noindex; nur deutsch) ----------
+     Seit 22. Oktober 2026 im Neubau (Wunsch: «ich möchte einfach dass die Redaktionsseite im neuen design am neuen ort liegt»): das Formular aus
+     src/b/redaktion.html im Rahmen des Neubaus, Verhalten unverändert aus social-media/js/redaktion/. Die Redaktion hält zwei Schlüssel im Browser:
+     Skripte nur von dieser Website, Verbindungen nur zu GitHub und Anthropic (Inhaltssicherheitsrichtlinie), ohne Besuchszählung. */
+  if (istDe) {
+    const form = readFileSync(new URL("../src/b/redaktion.html", import.meta.url), "utf8").replace(/^<!--[\s\S]*?-->\n/, "");
+    const body = `
+<section class="stueck-kopf"><div class="spalte">
+  <p class="gattung">Werkstatt · nicht verlinkt, für Suchmaschinen gesperrt</p>
+  <h1 class="titel">Redaktion<small>Sechs Schritte: Bildschirmfoto hineinlegen, Claude liest, Bereiche prüfen, Beitrag und Zeit prüfen, Zettel schreiben, veröffentlichen. Etwa eine Minute später steht der Zettel online.</small></h1>
+</div></section>
+<div class="spalte sm rd">
+${form}</div>`;
+    veroeffentliche({ pfad: "redaktion/", titel: "Redaktion – Social Media", beschreibung: "Redaktion des Zettelkastens «Social Media»: Bildschirmfotos, Bilder und Videos zu Zetteln machen.",
+      body, noindex: true, nurDe: true, zaehlen: false,
+      kopfMehr: [
+        `<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://api.github.com https://api.anthropic.com; object-src 'none'; base-uri 'self'; form-action 'none'">`,
+        `<meta name="referrer" content="no-referrer">`,
+        `<link rel="stylesheet" href="/social-media/social.css?v=1">`,
+        `<link rel="stylesheet" href="/social-media/redaktion/redaktion.css?v=3">`,
+      ].join("\n  "),
+      skripte: ["/social-media/js/redaktion/app.js?v=4", "/social-media/js/redaktion/schritte.js?v=2"] });
   }
 
   /* ---------- Werkstatt (nicht verlinkt, noindex; nur deutsch) ---------- */

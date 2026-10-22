@@ -19,7 +19,7 @@ und die Zeitleiste lässt sich nach beiden ordnen.
 | `social-media/schlagworte/` | Register der Schlagworte, A–Z, mit den Zetteln |
 | `social-media/autorinnen/` | Register der Autor:innen, nach Plattform, mit Profil-Link |
 | `social-media/feed.xml` | RSS der letzten 50 Zettel |
-| `social-media/redaktion/` | **die Redaktion** (noindex, nicht verlinkt, nicht in der Sitemap) |
+| `b/redaktion/` | **die Redaktion** im Neubau (seit 22. Oktober 2026; erzeugt von `tools/build-b.mjs` aus `src/b/redaktion.html`; noindex, nicht verlinkt, nicht in der Sitemap). `social-media/redaktion/` leitet dorthin weiter, `redaktion.css` liegt weiter dort |
 
 Gestaltung: `social-media/social.css`. Zwei Stimmen, zwei Schriften: Der Beitrag steht in der Schrift der Website, der Kommentar in Newsreader.
 Die Plattformen erkennt man an ihrer Ordnung (X: Name, Text, Zahlen; Facebook: Kopf, Text, Bilanz, Tun – kurze Texte gross; Instagram: zuerst das Bild,
