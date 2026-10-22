@@ -16,6 +16,8 @@ import { physarum } from "./physarum.js?v=34";
 import { tiefe } from "./tiefe.js?v=34";
 import { tuch } from "./tuch.js?v=34";
 import { montage, montageSignet } from "./montage.js?v=34";
+import { welle } from "./welle.js?v=34";
+import { sortierung } from "./sortierung.js?v=34";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
@@ -66,7 +68,7 @@ const AUSGABE = /* glsl */ `
     gl_FragColor = vec4(o, 1.0);
   }`;
 
-const FABRIK = { physarum, tiefe, tuch, montage };
+const FABRIK = { physarum, tiefe, welle, tuch, sortierung, montage };
 const leinwandWie = (q) => Object.assign(typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(q.width, q.height), { width: q.width, height: q.height });
 
 /**

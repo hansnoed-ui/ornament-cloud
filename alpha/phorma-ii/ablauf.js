@@ -29,8 +29,10 @@ export const ABSPANN = 0.9 + 0.15 + SIGNET + 0.6 + 0.6 + 0.2;
 export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 
 // die Reihenfolge in einer Kette (Wunsch vom 19. Oktober 2026: «Physarum, Tiefe (Scan), Tuch, Montage»; ein gemerktes «wachstum» fällt weg)
-export const EFFEKTE = ["physarum", "tiefe", "tuch", "montage"];
-export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", montage: "Montage" };
+// seit 22. Oktober 2026 dazu die Wellenwanne (nach der Tiefe) und die Pixel-Sortierung (vor der Montage), Wunsch: weitere Bildtransformationen,
+// «spektakulär, aber nicht zuuu viel Rechenzeit»
+export const EFFEKTE = ["physarum", "tiefe", "welle", "tuch", "sortierung", "montage"];
+export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", welle: "Wellenwanne", tuch: "Tuch", sortierung: "Pixel-Sortierung", montage: "Montage" };
 /** die Kette der Karte «Alle drei» (die Montage kam am 19. Oktober 2026 dazu und ist nur einzeln oder in einer eigenen Kette dabei) */
 export const KETTE = "physarum+tiefe+tuch";
 
@@ -59,6 +61,12 @@ export function rolle(art, liste, i) {
     phasen = [["scan", "Scan", erst ? 3.4 : 3.0]];   // ohne «Raum» (seit 19. Oktober 2026): der Scan etwas länger, er baut das Relief auf
     if (letzt) phasen.push(["bild", "Bild", 2.8]);
     else { ueber = 0.7; uebergang = naechstes === "montage" ? "felder" : "front"; }
+  } else if (art === "welle" || art === "sortierung") {
+    // die beiden Simulationen auf der GPU (seit 22. Oktober 2026): als letzter Effekt mit Bild, sonst gehen sie wie Physarum über
+    phasen = art === "welle" ? [["tropfen", "Tropfen", erst ? 2.4 : 2.0], ["spalt", "Doppelspalt", 4.0], ["wellen", "Wellen", 3.4]]
+      : [["schwelle", "Schwelle", erst ? 1.8 : 1.4], ["sortieren", "Sortieren", 6.0]];
+    if (letzt) phasen.push(["bild", "Bild", 2.6]);
+    else { ueber = 1.0; uebergang = naechstes === "montage" ? "felder" : "front"; }
   } else if (art === "tuch") {
     phasen = [["tuch", "Tuch", vorher === "tiefe" ? 4.6 : 5.0]];
     if (naechstes === "montage") { ueber = 0.8; uebergang = "felder"; } else phasen.push(["bild", "Bild", 3.4]);

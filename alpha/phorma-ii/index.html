@@ -126,6 +126,8 @@
     .segment button[aria-pressed="true"] { background: var(--text); color: var(--bg); font-weight: 600; }
     .segment button:disabled { opacity: 0.5; cursor: default; }
     .segment button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    /* die eigene Kette: sechs Effekte (seit 22. Oktober 2026) in drei Spalten, zwei Reihen – in einer Reihe ragten sie auf dem Handy hinaus */
+    .segment.effekte { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); border-radius: 24px; }
     .muster { width: 16px; height: 16px; border-radius: 50%; flex: none; box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 35%, transparent); }
     .ablaeufe { display: grid; gap: 8px; }
     .ablaeufe button { display: grid; gap: 3px; padding: 12px 14px 12px 44px; border: 1px solid var(--border); border-radius: 12px; background: none; color: var(--text);
@@ -259,14 +261,18 @@
             <button type="button" data-wahl="physarum+tiefe+tuch+montage" aria-pressed="false"><b data-t="wahl.vier">Alle vier als Kette</b><small data-t="wahl.vier.text">Das Netz findet die Formen, eine Lichtebene tastet die Tiefe ab, das Foto weht als Tuch und zerfällt zuletzt in Rechtecke</small></button>
             <button type="button" data-wahl="physarum" aria-pressed="false"><b data-t="wahl.physarum">Physarum</b><small data-t="wahl.physarum.text">Hunderttausende Agenten strömen aus Keimen und bilden ein leuchtendes Netz, das die Formen deines Fotos findet</small></button>
             <button type="button" data-wahl="tiefe" aria-pressed="false"><b data-t="wahl.tiefe">Tiefe</b><small data-t="wahl.tiefe.text">Eine Lichtebene tastet das Bild von vorn nach hinten ab, im Streiflicht steht es als Relief</small></button>
+            <button type="button" data-wahl="welle" aria-pressed="false"><b data-t="wahl.welle">Wellenwanne</b><small data-t="wahl.welle.text">Tropfen fallen auf das Foto, die Ringe brechen das Bild wie Wasser, Licht bündelt sich zu hellen Linien; eine Wand mit zwei Spalten zeigt das Muster des Doppelspalts</small></button>
             <button type="button" data-wahl="tuch" aria-pressed="false"><b data-t="wahl.tuch">Tuch</b><small data-t="wahl.tuch.text">Das Foto als Seidentuch im Wind – eine Stoffsimulation –, das sich zuletzt glatt zum Bild legt</small></button>
+            <button type="button" data-wahl="sortierung" aria-pressed="false"><b data-t="wahl.sortierung">Pixel-Sortierung</b><small data-t="wahl.sortierung.text">Die Punkte jeder Spalte sortieren sich nach ihrer Helligkeit und laufen als glühende Schlieren aus, bis sie sich ins Foto zurückziehen</small></button>
             <button type="button" data-wahl="montage" aria-pressed="false"><b data-t="wahl.montage">Montage</b><small data-t="wahl.montage.text">Das Foto zerfällt im Takt in verschachtelte Rechtecke – vergrössert, versetzt, zu Streifen gezogen, mit feinen Rändern und Zahlentafeln –, bis alles einrastet</small></button>
           </div>
           <p class="effekte-hinweis" data-t="effekte.hinweis">Oder eine eigene Kette zusammenstellen:</p>
           <div class="segment effekte" role="group" aria-label="Eigene Kette" data-t-attr="aria-label=effekte.aria">
             <button type="button" data-effekt="physarum" aria-pressed="true" data-t="effekt.physarum">Physarum</button>
             <button type="button" data-effekt="tiefe" aria-pressed="true" data-t="effekt.tiefe">Tiefe</button>
+            <button type="button" data-effekt="welle" aria-pressed="false" data-t="effekt.welle">Wellenwanne</button>
             <button type="button" data-effekt="tuch" aria-pressed="true" data-t="effekt.tuch">Tuch</button>
+            <button type="button" data-effekt="sortierung" aria-pressed="false" data-t="effekt.sortierung">Pixel-Sortierung</button>
             <button type="button" data-effekt="montage" aria-pressed="false" data-t="effekt.montage">Montage</button>
           </div>
           <p class="kette" id="kette" aria-live="polite"></p>
