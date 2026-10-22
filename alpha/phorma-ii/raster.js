@@ -3,9 +3,9 @@
 // Schwarz, jedes in seinem klassischen Winkel (15°, 75°, 0°, 45°), die Grösse jedes Punkts aus dem Farbanteil an seiner Stelle; auf warmem Papier
 // gedruckt, die Farben decken sich wie Druckfarbe (multipliziert).
 //   01 Raster – aus dem Foto wachsen die Punkte, das Raster wird gröber
-//   02 Versatz – die vier Platten verrutschen gegeneinander (der Passer stimmt nicht mehr), die Raster drehen sich langsam, die Punkte werden gross;
-//      gegen Ende rasten die Platten wieder ein
-//   03 Bild (nur als letzter Effekt) – das Raster wird fein und geht ins Foto über
+//   02 Versatz – die vier Platten verrutschen gegeneinander (der Passer stimmt nicht mehr), die Raster drehen sich langsam, die Punkte werden gross
+//   als letzter Effekt kommt der Versatz zur Ruhe, und der Druck bleibt stehen – er kehrt nicht ins Foto zurück (Rückmeldung zum zweiten Probefilm:
+//   «Top. Es sollte aber nicht im Anfangsbild enden»; bis dahin wurde das Raster in einer Phase «Bild» wieder fein)
 // Nur ein Shader, keine Simulation: jedes Bild für sich, kein Vorrechnen, mit Video laufen die Punkte mit dem laufenden Bild.
 // Rückmeldung zum ersten Probefilm: «deutlicher, grössere Punkte noch grösser, weniger Schwarz, viel ruhiger» – Punkte bis 56 statt 34, die Platten
 // gleiten weit auseinander (120 Punkte), alles stetig ohne Zittern, kaum Schwarz, der Farbauftrag begrenzt.
@@ -55,7 +55,7 @@ const ZEIGEN = /* glsl */ `
 
 export function raster(g, teil) {
   const { B, H } = g, s = B / 1080;   // Grössen in Punkten eines Films von 1080 Breite
-  const R = phase(teil, "raster"), V = phase(teil, "versatz"), Bp = phase(teil, "bild");
+  const R = phase(teil, "raster"), V = phase(teil, "versatz");
   const zeigen = quadMaterial(ZEIGEN, { tFoto: { value: g.fotoTex }, uGroesse: { value: new g.THREE.Vector2(B, H) }, uZelle: { value: 2 }, uAA: { value: 1 },
     uDreh: { value: 0 }, uMisch: { value: 0 }, uSicht: { value: 0 }, uDeckung: { value: 1 }, uVersatz: { value: [0, 1, 2, 3].map(() => new g.THREE.Vector2()) } });
   // die Richtungen, in die die Platten verrutschen (Schwarz bleibt fast stehen, wie die Schlüsselplatte)
@@ -64,24 +64,23 @@ export function raster(g, teil) {
   return {
     render(ziel, tau) {
       const u = zeigen.uniforms;
-      // die Zelle: aus dem Foto wachsen die Punkte (fein → 24), im Versatz langsam weiter bis 56, im Bild wieder fein; stetig, ohne Hin und Her
+      // die Zelle: aus dem Foto wachsen die Punkte (fein → 24), im Versatz langsam weiter bis 56; stetig, ohne Hin und Her
       // (Rückmeldung zum ersten Probefilm: «deutlicher, grössere Punkte noch grösser, weniger Schwarz, viel ruhiger»)
-      const wachsen = weich(anteil(tau, 0.1, R[1])), gross = weich(anteil(tau, V[0], V[1])), fein = Bp ? weich(anteil(tau, Bp[0], Bp[1] - 0.15)) : 0;
+      const wachsen = weich(anteil(tau, 0.1, R[1])), gross = weich(anteil(tau, V[0], V[1]));
       const gr = 2.5 + 21.5 * wachsen + 32 * gross;
-      u.uZelle.value = s * Math.exp(Math.log(gr) * (1 - fein) + Math.log(1.6) * fein);   // logarithmisch zurück: gleichmässig statt zuerst ein Sturz
+      u.uZelle.value = s * gr;
       u.uAA.value = Math.max(1, B / (ziel?.width || B)) * 0.75;
-      u.uMisch.value = weich(anteil(tau, 0, 0.9)) * (1 - fein);
+      u.uMisch.value = weich(anteil(tau, 0, 0.9));
       u.uDeckung.value = 1 + 0.1 * gross;   // die Punkte laufen etwas zu (Tonwertzunahme)
-      // der Versatz: schwillt im Versatz an und rastet gegen dessen Ende wieder ein (als letzter Effekt; sonst geht er verrutscht weiter)
-      const auf = weich(anteil(tau, R[1] - 0.6, V[0] + 0.6 * (V[1] - V[0]))), zu = Bp ? weich(anteil(tau, V[0] + 0.65 * (V[1] - V[0]), Bp[0] + 0.3)) : 0;
-      const weit = s * 120 * auf * (1 - zu);   // weit genug, dass man die Farbbilder einzeln sieht; langsam, ohne Zittern
+      // der Versatz: schwillt langsam an und kommt zur Ruhe (er rastet nicht wieder ein); weit genug, dass man die Farbbilder einzeln sieht
+      const auf = weich(anteil(tau, R[1] - 0.6, V[0] + 0.75 * (V[1] - V[0]))), weit = s * 120 * auf;
       RICHTUNG.forEach(([x, y], k) => u.uVersatz.value[k].set(x * weit, y * weit));
-      u.uDreh.value = 0.07 * gross * (1 - fein);
+      u.uDreh.value = 0.07 * gross;
       u.uSicht.value = teil.erst ? weich(anteil(tau, 0, 1.0)) ** 2 : 1;   // aus dem Dunkeln (quadratisch: wenig Licht wirkt nach der Gammakurve hell)
       g.pass(zeigen, ziel);
       let ende = 0, aktiv = teil.erst ? weich(anteil(tau, 0, 0.6)) : 1;
       if (teil.vonFoto) ende = 1 - weich(anteil(tau, 0, 0.35));
-      if (Bp) { ende = Math.max(ende, weich(anteil(tau, Bp[1] - 0.2, Bp[1] - 0.05))); aktiv *= 1 - fein; }
+      if (teil.letzt) aktiv *= 1 - 0.6 * weich(anteil(tau, V[1] - 1.2, V[1]));   // der Druck kommt zur Ruhe: weniger Korn und Saum
       return { aktiv, bloom: 0.08, radius: 0.3, saum: 0.002, ende };
     },
     vorab: { szenen: [], materialien: [zeigen] },

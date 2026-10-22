@@ -25,7 +25,7 @@
     "effekte.hinweis": "Or put together your own chain:", "effekte.aria": "Your own chain",
     "effekt.physarum": "Physarum", "effekt.tiefe": "Depth", "effekt.tuch": "Cloth", "effekt.montage": "Montage",
     "wahl.welle": "Ripple tank", "wahl.welle.text": "The photo lies under calm water: long waves pass slowly over it, now and then a drop spreads as a ring, light gathers into bright lines",
-    "wahl.raster": "Halftone", "wahl.raster.text": "The photo becomes a four-colour print: dots in cyan, magenta, yellow and black grow, the plates slip against each other and snap back into register",
+    "wahl.raster": "Halftone", "wahl.raster.text": "The photo becomes a four-colour print: dots in cyan, magenta, yellow and black grow, the plates slip against each other, and the print remains at the end",
     "effekt.welle": "Ripple tank", "effekt.raster": "Halftone",
     "phorma3.hinweis": "Video or music? For that there is <a href=\"../phorma-iii/\">PHORMA III</a>: sound becomes image.",
     "schritt.gestaltung": "Design", "gestaltung.text": "The caption shows phase, counter and timecode as in an imaging tool; your title stands top left.",

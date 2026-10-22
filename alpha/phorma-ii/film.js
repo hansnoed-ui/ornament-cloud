@@ -58,6 +58,10 @@ export function bild(ctx, sz, t, { proben = 1, vorschau = false } = {}) {
         ctx.drawImage(sz.buehne.ende >= 1 && sz.foto ? sz.buehne.jetzt ?? sz.foto : c, 0, 0, B, H);
       }
       else if (sz.foto) { ctx.globalAlpha = anteil(t, abschnitt.bis - 1.5, abschnitt.bis); ctx.drawImage(sz.foto, 0, 0, B, H); ctx.globalAlpha = 1; }   // ohne WebGL 2
+    } else if (t >= abschnitt.bis && sz.zeit.druck && sz.buehne) {
+      // der Rasterdruck endet nicht im Foto: sein letztes Bild bleibt stehen
+      const [w, h] = zielMass(ctx, sz);
+      ctx.drawImage(sz.buehne.bild(sz.zeit, abschnitt.bis - 1e-3, w, h, { proben, vorschau }), 0, 0, B, H);
     } else if (t >= abschnitt.bis && sz.foto) ctx.drawImage(sz.foto, 0, 0, B, H);
     if (ab.bildAus) {
       const weg = ausblenden(anteil(t, ab.bildAus[0], ab.bildAus[1]));

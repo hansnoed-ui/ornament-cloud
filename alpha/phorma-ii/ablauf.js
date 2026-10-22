@@ -62,12 +62,13 @@ export function rolle(art, liste, i) {
     if (letzt) phasen.push(["bild", "Bild", 2.8]);
     else { ueber = 0.7; uebergang = naechstes === "montage" ? "felder" : "front"; }
   } else if (art === "welle" || art === "raster") {
-    // Wellenwanne und Rasterdruck (seit 22. Oktober 2026): als letzter Effekt mit Bild, sonst gehen sie wie Physarum über
+    // Wellenwanne und Rasterdruck (seit 22. Oktober 2026): die Wellenwanne als letzter Effekt mit Bild, sonst gehen sie wie Physarum über
     // kurz (Wunsch nach den Probefilmen: Wellen «insgesamt maximal 8 Sekunden», seit dem Abend «ohne Doppelspalt und langsamere Animation, ganz ruhig»;
-    // der Rasterdruck ebenso knapp 8 s, als letzter Effekt nur ein kurzes Überblenden ins Foto)
+    // der Rasterdruck kehrt nie ins Foto zurück: als letzter Effekt steht am Ende der Druck (Rückmeldung: «Es sollte aber nicht im Anfangsbild enden»),
+    // der Versatz kommt dafür langsam zur Ruhe)
     phasen = art === "welle" ? [["duenung", "Dünung", 3.4], ["wellen", "Wellen", 3.2]]
-      : [["raster", "Raster", 2.4], ["versatz", "Versatz", 4.0]];
-    if (letzt) phasen.push(["bild", "Bild", 1.4]);
+      : [["raster", "Raster", 2.4], ["versatz", "Versatz", letzt ? 4.4 : 4.0]];
+    if (letzt) { if (art === "welle") phasen.push(["bild", "Bild", 1.4]); }
     else { ueber = 1.0; uebergang = naechstes === "montage" ? "felder" : "front"; }
   } else if (art === "tuch") {
     phasen = [["tuch", "Tuch", vorher === "tiefe" ? 4.6 : 5.0]];
@@ -120,7 +121,9 @@ export function zeitachse({ tempo = "normal", signet = true, ablauf = KETTE } = 
     if (signet) { dazu("bildAus", 0.9); dazu("pause", 0.15); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }   // zusammen ABSPANN
     else dazu("schluss", 0.3);
   }
-  return { ab, ablauf: art, abschnitt, teile, phasen, dauer: t, bilder: Math.round(t * 30), tempo: f, nahtlos };
+  // endet die Kette mit dem Rasterdruck, steht danach der Druck statt des Fotos (film.js zeichnet dann das letzte Bild der Bühne weiter)
+  const druck = effekte(art).at(-1) === "raster";
+  return { ab, ablauf: art, abschnitt, teile, phasen, dauer: t, bilder: Math.round(t * 30), tempo: f, nahtlos, druck };
 }
 
 /** die Effekte, die zur Zeit t laufen (beim Übergang zwei), mit ihrer eigenen Zeit */

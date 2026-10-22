@@ -165,7 +165,7 @@ await check("Kette: jede Phase zeigt etwas, jede etwas anderes; am Anfang dunkel
   await ctx.close();
 });
 
-await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto", async () => {
+await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto (der Rasterdruck im Druck, der stehen bleibt)", async () => {
   for (const e of ["physarum", "tiefe", "welle", "tuch", "raster", "montage"]) {
     const { ctx, page, fehler } = await oeffne({ ablauf: e });
     await laden(page); await bereit(page);
@@ -178,7 +178,12 @@ await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto",
     const ende = await messe(page, zeit.abschnitt.bis - 1 / 30);
     assert.ok(anfang.hell < 12, `${e}: Anfang dunkel (${anfang.hell.toFixed(1)})`);
     assert.ok(mitte.mittelAbw > 5, `${e}: in der Mitte nicht das Foto (${mitte.mittelAbw.toFixed(1)})`);
-    assert.ok(ende.abw <= 3, `${e}: Ende exakt (${ende.abw})`);
+    if (e === "raster") {
+      // «Es sollte aber nicht im Anfangsbild enden»: am Ende und im Stehen danach der Druck, beide gleich
+      const stehen = await messe(page, zeit.ab.stehen[0] + 1);
+      assert.ok(ende.mittelAbw > 5, `${e}: Ende ist nicht das Foto (${ende.mittelAbw.toFixed(1)})`);
+      assert.ok(Math.abs(stehen.mittelAbw - ende.mittelAbw) < 1.5, `${e}: der Druck bleibt stehen (${stehen.mittelAbw.toFixed(1)} / ${ende.mittelAbw.toFixed(1)})`);
+    } else assert.ok(ende.abw <= 3, `${e}: Ende exakt (${ende.abw})`);
     assert.deepEqual(fehler, []);
     await ctx.close();
   }
