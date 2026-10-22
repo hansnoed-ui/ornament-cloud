@@ -1,31 +1,38 @@
-// Schluss (Papier): das Signet zeichnet sich, der Name, und die Frage als Knopf – die Einladung auf die Seite.
+// Schluss (Tinte): die Logo-Animation von Christian aus PHORMA III (Export vom 19. Oktober 2026, 14:10, 1920 × 1080): die Fäden ziehen sich
+// zur Re-entry-Schlaufe zusammen, «ornament.cloud» tippt sich. Hochkant die Mitte ausgeschnitten und vergrössert; der Punkt von Orange in die
+// Blaupause gedreht (hue-rotate, das Grau bleibt grau), wie das Signet auf /b/. Die Animation zuckt zwischendurch (gewollt); ab Bild 160 steht sie still,
+// in einem ruhigen Moment, bevor die Schlaufe am Ende wieder zerfällt.
+// Darunter die Frage, blau unterstrichen – die Einladung auf die Seite.
 import React from "react";
-import { interpolate, useCurrentFrame } from "remotion";
+import { Freeze, interpolate, staticFile, useCurrentFrame } from "remotion";
+import { Video } from "@remotion/media";
 import daten from "../data/reel.json";
-import { Signet } from "../../neubau/Teile";
 import { C, Grund, klemm, weich } from "../Teile";
 
-export const SCHLUSS = 120;
+const STILL = 160;            // ab hier steht das Logo (das letzte ruhige Bild vor dem Zerfall)
+export const SCHLUSS = STILL + 30;
+const AUSSCHNITT = { x: 515, y: 0, seite: 900 };   // Bildpunkte im Querformat
+const M = 1080 / AUSSCHNITT.seite;
 
 export const Schluss: React.FC = () => {
   const f = useCurrentFrame();
-  const c = C("hell");
+  const c = C("dunkel");
   return (
-    <Grund m="hell">
-      <div style={{ position: "absolute", left: 270, top: 430 }}>
-        <Signet groesse={540} dicke={7} c={c}
-          gezeichnet={interpolate(f, [0, 34], [0, 1], { ...klemm, easing: weich })}
-          fuellung={interpolate(f, [28, 40], [0, 1], klemm)}
-          lauf={interpolate(f, [0, 34], [0, 1], { ...klemm, easing: weich }) + interpolate(f, [34, 120], [0, 0.3], klemm)}
-          b={0.45 + 0.25 * interpolate(f, [0, 120], [0, 1], { ...klemm, easing: weich })} />
+    <Grund m="dunkel">
+      <div style={{ position: "absolute", left: 0, top: 360, width: 1080, height: 1080, overflow: "hidden" }}>
+        <Freeze frame={STILL} active={f >= STILL}>
+          <Video src={staticFile("reel/phorma-iii-logo.mp4")} muted
+            style={{ position: "absolute", left: -AUSSCHNITT.x * M, top: -AUSSCHNITT.y * M, width: 1920 * M, height: 1080 * M, maxWidth: "none", filter: "hue-rotate(200deg) saturate(1.4)" }} />
+        </Freeze>
       </div>
-      <div style={{ position: "absolute", left: 0, right: 0, top: 1080, textAlign: "center", fontWeight: 500, fontSize: 104, letterSpacing: "-0.01em",
-        opacity: interpolate(f, [22, 32], [0, 1], klemm), translate: `0 ${interpolate(f, [22, 40], [30, 0], { ...klemm, easing: weich })}px` }}>
-        {daten.name}
-      </div>
-      <div style={{ position: "absolute", left: 0, right: 0, top: 1260, display: "flex", justifyContent: "center", opacity: interpolate(f, [40, 50], [0, 1], klemm),
-        scale: interpolate(f, [40, 56], [0.9, 1], { ...klemm, easing: weich }) }}>
-        <div style={{ fontSize: 56, padding: "18px 44px 22px", borderRadius: 999, backgroundColor: c.tinte, color: c.papier }}>{daten.frage}</div>
+      <div style={{ position: "absolute", left: 0, right: 0, top: 1500, display: "flex", justifyContent: "center", opacity: interpolate(f, [136, 146], [0, 1], klemm),
+        translate: `0 ${interpolate(f, [136, 154], [24, 0], { ...klemm, easing: weich })}px` }}>
+        <div style={{ position: "relative", fontSize: 60, letterSpacing: "-0.01em", color: c.grau, paddingBottom: 14 }}>
+          {daten.frage}
+          {/* unterstrichen wie der aktive Punkt der Navigation */}
+          <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 4, backgroundColor: c.faden, transformOrigin: "0 50%",
+            scale: `${interpolate(f, [146, 164], [0, 1], { ...klemm, easing: weich })} 1` }} />
+        </div>
       </div>
     </Grund>
   );

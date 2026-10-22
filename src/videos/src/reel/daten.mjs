@@ -4,7 +4,7 @@
 import { APPS, DIALOG, SEITE } from "../../../../src/b/inhalt.mjs";
 import { UI } from "../../../../src/b/ui.mjs";
 import { ZEICHEN } from "../../../../src/b/zeichen.mjs";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const hier = (p) => new URL(p, import.meta.url);
 const wurzel = (p) => new URL(`../../../../${p}`, import.meta.url);
@@ -34,7 +34,10 @@ const app = (slug) => APPS.find((a) => a.slug === slug);
 
 // Beispielvideos der Apps (assets/beispiele/) nach public/reel/
 mkdirSync(hier("../../public/reel/"), { recursive: true });
-for (const n of ["phorma-ii", "the-fictory"]) copyFileSync(wurzel(`assets/beispiele/${n}.mp4`), hier(`../../public/reel/${n}.mp4`));
+// zwei Läufe von Christian (22. Oktober 2026), nicht im Repository – von Hand nach public/reel/ legen:
+// phorma-iii-lauf.mp4 (PHORMA III, 1080 × 1350, Export vom 21. Oktober 2026, 21:08), phorma-i-lauf.mp4 (Ablauf «Verwandlung», 720 × 900)
+// und phorma-iii-logo.mp4 (die Logo-Animation, 1920 × 1080, Export vom 19. Oktober 2026, 14:10)
+for (const n of ["phorma-iii-lauf", "phorma-i-lauf", "phorma-iii-logo"]) if (!existsSync(hier(`../../public/reel/${n}.mp4`))) throw new Error(`reel: public/reel/${n}.mp4 fehlt`);
 const aufnahme = hier("../../public/reel/b-stellen.json");
 if (!existsSync(aufnahme)) throw new Error("reel: keine Aufnahme der Seite – zuerst «NODE_PATH=$(npm root -g) node src/reel/aufnahme.mjs»");
 const stellen = JSON.parse(readFileSync(aufnahme, "utf8"));
@@ -50,7 +53,8 @@ writeFileSync(hier("data/reel.json"), JSON.stringify({
   frage: DIALOG.frage,
   // ohne «ein Bild wird ein Werk» (Prints): das Reel zeigt keine Werke
   woerter: DIALOG.wahlen.map((w) => w.wort),
-  bild: { satz: wahl("bild").satz, a: { ...weg("bild", 0), zeichen: zeichen(app("phorma-ii").zeichen) }, b: { ...weg("bild", 1), zeichen: zeichen(app("the-fictory").zeichen) } },
+  // Bilder aus PHORMA I und PHORMA III (Wunsch vom 22. Oktober 2026: «Bessere Clips»): Name und Kurzsatz der Apps
+  bild: { satz: wahl("bild").satz, ...Object.fromEntries([["a", "phorma-i"], ["b", "phorma-iii"]].map(([k, slug]) => [k, { name: app(slug).name, text: app(slug).kurz, zeichen: zeichen(app(slug).zeichen) }])) },
   frage2: { satz: wahl("frage").satz, a: { ...weg("frage", 0), zeichen: zeichen(app("orna").zeichen) } },
   auftrag: { satz: wahl("auftrag").satz, a: { ...weg("auftrag", 0), zeichen: zeichen("webdesign") } },
   begriff: { satz: wahl("begriff").satz, a: { ...weg("begriff", 1), zeichen: zeichen("raster") } },

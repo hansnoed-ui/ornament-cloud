@@ -1,38 +1,48 @@
-// Die fünf Antworten der Startseite als Knöpfe (Papier); ein Tippen wählt «ein Bild», der Knopf füllt sich wie auf der Seite.
+// Die fünf Antworten als Walze (Papier): sie laufen zwischen zwei Haarlinien durch, werden langsamer und bleiben auf «ein Bild» stehen;
+// die Antwort wird blau unterstrichen wie der aktive Punkt der Navigation auf /b/.
 import React from "react";
-import { interpolate, useCurrentFrame } from "remotion";
+import { Easing, interpolate, useCurrentFrame } from "remotion";
 import daten from "../data/reel.json";
 import { C, Grund, RAND, klemm, weich } from "../Teile";
 
-export const WAHLEN = 90;
-const TIPP = 56;
+export const WAHLEN = 105;
+const ZEILE = 168, MITTE = 1000, RUNDEN = 2;
+const LANDUNG = 72;
 
 export const Wahlen: React.FC = () => {
   const f = useCurrentFrame();
   const c = C("hell");
-  const voll = interpolate(f, [TIPP, TIPP + 4], [0, 1], klemm);
+  const n = daten.woerter.length;
+  const ziel = RUNDEN * n;   // landet auf woerter[0], «ein Bild»
+  const p = interpolate(f, [4, LANDUNG], [0, ziel], { ...klemm, easing: Easing.bezier(0.3, 0.1, 0.1, 1) });
+  const strich = interpolate(f, [LANDUNG + 2, LANDUNG + 16], [0, 1], { ...klemm, easing: weich });
   return (
     <Grund m="hell">
-      <div style={{ position: "absolute", left: RAND, right: RAND, top: 470, fontWeight: 500, fontSize: 64, letterSpacing: "-0.02em", color: c.grau, opacity: interpolate(f, [0, 6], [0, 1], klemm) }}>{daten.frage}</div>
-      <div style={{ position: "absolute", left: RAND, right: RAND, top: 640, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 34 }}>
-        {daten.woerter.map((w, i) => {
-          const a = 4 + i * 5;
-          const gewaehlt = i === 0;
+      <div style={{ position: "absolute", left: RAND, right: RAND, top: 440, fontWeight: 500, fontSize: 60, letterSpacing: "-0.02em", color: c.grau,
+        opacity: interpolate(f, [0, 8], [0, 1], klemm), translate: `0 ${interpolate(f, [0, 16], [20, 0], { ...klemm, easing: weich })}px` }}>
+        {daten.frage}
+      </div>
+      {/* die Walze */}
+      <div style={{ position: "absolute", left: 0, right: 0, top: MITTE - 2.2 * ZEILE, height: 4.4 * ZEILE, overflow: "hidden",
+        maskImage: "linear-gradient(transparent, #000 32%, #000 68%, transparent)", WebkitMaskImage: "linear-gradient(transparent, #000 32%, #000 68%, transparent)" }}>
+        {Array.from({ length: ziel + 4 }, (_, k) => {
+          const d = k - p;
+          if (Math.abs(d) > 3) return null;
           return (
-            <div key={w} style={{ position: "relative", fontSize: 84, letterSpacing: "-0.01em", padding: "24px 56px 28px", borderRadius: 999, border: `3px solid ${gewaehlt && voll > 0 ? c.tinte : c.linie}`,
-              backgroundColor: gewaehlt && voll > 0 ? c.tinte : c.papier, color: gewaehlt && voll > 0.5 ? c.papier : c.tinte,
-              opacity: interpolate(f, [a, a + 6], [0, 1], klemm) * (gewaehlt ? 1 : interpolate(f, [TIPP, TIPP + 10], [1, 0.35], klemm)),
-              scale: interpolate(f, [a, a + 12], [0.8, 1], { ...klemm, easing: weich }) * (gewaehlt ? interpolate(f, [TIPP - 3, TIPP, TIPP + 8], [1, 0.94, 1.04], klemm) : 1),
-              transformOrigin: "0 50%", translate: `${gewaehlt ? interpolate(f, [TIPP, TIPP + 30], [0, 30], { ...klemm, easing: weich }) : 0}px 0` }}>
-              {w}
-              {gewaehlt ? (
-                <div style={{ position: "absolute", left: "72%", top: "55%", width: 70, height: 70, marginLeft: -35, marginTop: -35, borderRadius: 999, border: `4px solid ${c.faden}`,
-                  opacity: interpolate(f, [TIPP - 12, TIPP - 4, TIPP + 6, TIPP + 16], [0, 1, 1, 0], klemm), scale: interpolate(f, [TIPP - 12, TIPP, TIPP + 16], [1.6, 0.7, 1.8], klemm) }} />
-              ) : null}
+            <div key={k} style={{ position: "absolute", left: RAND, top: 2.2 * ZEILE + d * ZEILE - ZEILE / 2, height: ZEILE, display: "flex", alignItems: "center",
+              fontWeight: 500, fontSize: 132, letterSpacing: "-0.035em", whiteSpace: "nowrap",
+              color: Math.abs(d) < 0.5 ? c.tinte : c.grau, opacity: 1 - Math.min(1, Math.abs(d)) * 0.55 }}>
+              {daten.woerter[k % n]}
             </div>
           );
         })}
       </div>
+      {/* die Haarlinien um die Zeile der Wahl */}
+      {[-1, 1].map((s) => (
+        <div key={s} style={{ position: "absolute", left: RAND, right: RAND, top: MITTE + (s * ZEILE) / 2, height: 2, backgroundColor: c.linie,
+          transformOrigin: "0 50%", scale: `${interpolate(f, [0, 18], [0, 1], { ...klemm, easing: weich })} 1` }} />
+      ))}
+      <div style={{ position: "absolute", left: RAND, top: MITTE + 62, width: 420, height: 6, backgroundColor: c.faden, transformOrigin: "0 50%", scale: `${strich} 1` }} />
     </Grund>
   );
 };

@@ -223,21 +223,27 @@ jede Szene in `src/neubau/szenen/` und als eigene Composition im Ordner «Neubau
 
 ## Reel «Was bringst du mit?» (22. Oktober 2026)
 
-38 s, **9:16** (1080 × 1920, `ReelVideo`), ohne Ton. Wunsch: «nicht bloss eine Aufzählung sondern ein professionelles Werbe-Reel, ohne ‹art› … sei kreativ».
+42,3 s, **9:16** (1080 × 1920, `ReelVideo`), ohne Ton. Wunsch: «nicht bloss eine Aufzählung sondern ein professionelles Werbe-Reel, ohne ‹art› … sei kreativ».
 Ein Werbefilm für `/b/`, gebaut um die Frage der Startseite: fünf Antworten aus dem Dialog (`DIALOG` in `src/b/inhalt.mjs`), jede mit eigener Bildwelt;
 Papier und Tinte kippen bei jedem Schnitt (echte Umkehr wie hell und dunkel auf der Seite), harte Schnitte auf einem Schlag von 0,5 s (`TAKT`), damit sich Musik mit 120 Schlägen je Minute darunterlegen lässt.
-Keine Werke und Prints (die Station «Ein Bild wird ein Werk» fehlt absichtlich). Gestaltung und Signet aus `src/neubau/Teile.tsx`; jede Szene in `src/reel/szenen/` und als Composition im Ordner «Reel-Szenen».
+Keine Werke und Prints (die Station «Ein Bild wird ein Werk» fehlt absichtlich). Gestaltung aus `src/neubau/Teile.tsx`; jede Szene in `src/reel/szenen/` und als Composition im Ordner «Reel-Szenen».
+Zweite Fassung am selben Tag (Rückmeldung: «Was bringst du mit?» gefällt, «aber grafisch nicht»; dazu drei Aufnahmen von Christian): reine Typografie statt Knöpfe, bessere Bilder, das Logo zum Schluss.
 
-1. Tinte: ein blauer Punkt zieht die Schlaufe des Signets, «Was bringst du mit?» Wort für Wort
-2. Papier: die fünf Antworten als Knöpfe, ein Tippen wählt «ein Bild»
-3. Tinte: «Ein Bild will sich bewegen.» – echte Läufe aus PHORMA II und The Fictory (`assets/beispiele/`), im Rahmen aufgedeckt
+1. Tinte: «Was», «bringst», «du», «mit?» je allein und bildfüllend auf den Schlag, dann die ganze Frage als Block, das Fragezeichen in der Blaupause
+2. Papier: die fünf Antworten als Walze zwischen zwei Haarlinien; sie wird langsamer und bleibt auf «ein Bild» stehen, blau unterstrichen wie der aktive Punkt der Navigation
+3. Tinte: «Ein Bild will sich bewegen.» – vier Schnitte, im Wechsel PHORMA I (Ablauf «Verwandlung»: Glaskörper, Scherben) und PHORMA III (Lichtwürfel)
 4. Papier: «Eine Frage sucht ein Gegenüber.» – die lebende Tafel von ORNA dreht und zeigt die Begegnung
 5. Tinte: «Etwas soll gebaut werden.» – ein Telefon kippt ins Bild und blättert durch die echte Startseite
 6. Papier: «Ein Begriff will geprüft werden.» – die Tafel «Nebeneinander und Nacheinander»
 7. Tinte: «Eine Klasse, ein Team, ein Haus.» – die Tafel von OMNA COLOR
 8. «Gestalten, vermitteln, kuratieren.» in drei Schlägen, Komma und Punkt in der Blaupause
 9. Tinte: «keine Cookies, keine Werbung, keine Tracker», «made in Switzerland»
-10. Papier: Signet, «ornament.cloud», die Frage als Knopf
+10. Tinte: die Logo-Animation aus PHORMA III (die Fäden ziehen sich zur Schlaufe, «ornament.cloud» tippt sich), hochkant die Mitte, der Punkt in die Blaupause gedreht
+    (`hue-rotate`), ab Bild 160 stehend (vor dem Zerfall am Ende des Exports); darunter die Frage, blau unterstrichen
+
+**Drei Aufnahmen von Christian** liegen nicht im Repository (zusammen gut 34 MB); vor dem Rendern von Hand nach `public/reel/` legen:
+`phorma-iii-lauf.mp4` (PHORMA III, 1080 × 1350, Export vom 21. Oktober 2026, 21:08), `phorma-i-lauf.mp4` (720 × 900, als «PHORMA ii» geschickt, zeigt aber den Ablauf «Verwandlung» von PHORMA I)
+und `phorma-iii-logo.mp4` (die Logo-Animation, 1920 × 1080, Export vom 19. Oktober 2026, 14:10). `daten.mjs` bricht ab, wenn eine fehlt.
 
 Die Tafeln kommen aus `src/b/tafeln.mjs` und werden je Bild um 1/30 s weitergerechnet (`LebendeTafel` in `src/reel/Teile.tsx`, deterministisch).
 Die Aufnahme der Seite macht `src/reel/aufnahme.mjs` (Playwright, 430 px, doppelte Dichte → `public/reel/`), einmal vor `npm run vorbereiten`:
