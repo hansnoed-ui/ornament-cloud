@@ -10,8 +10,8 @@
 // Bewegungen zeigen», dann «vor allem die langsamen Phasen …, insgesamt maximal 8 Sekunden», seit dem 22. Oktober 2026 (abends) «ohne Doppelspalt und
 // langsamere Animation, ganz ruhig»: die Wand mit den zwei Spalten und die schnelle Phase sind weg, die Wellen laufen halb so schnell.
 import * as THREE from "three";
-import { anteil, weich, ziel, quadMaterial } from "./gemeinsam.js?v=37";
-import { phase } from "./ablauf.js?v=37";
+import { anteil, weich, ziel, quadMaterial } from "./gemeinsam.js?v=38";
+import { phase } from "./ablauf.js?v=38";
 
 export const SCHRITTE = 80;
 const SICHERN = 240, TROPFEN_JE_SCHRITT = 4, VORLAUF = 2.0;   // so viele Sekunden rechnet das Wasser vor dem Anfang (es startet bewegt)

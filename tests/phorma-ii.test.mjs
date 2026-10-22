@@ -43,6 +43,10 @@ test("Wellenwanne und Rasterdruck (22. Oktober 2026): ihr Platz in der Kette, ku
   assert.ok(S.dauer >= 6 && S.dauer <= 8, `Rasterdruck ${S.dauer} s`);
   assert.equal(A.zeitachse({ ablauf: "raster" }).druck, true); assert.equal(A.zeitachse({ ablauf: "physarum+raster" }).druck, true);
   assert.equal(A.zeitachse({ ablauf: "raster+montage" }).druck, false); assert.equal(A.zeitachse({ ablauf: "welle" }).druck, false);
+  // vom Druck zum Signet kurz (Rückmeldung: «Der Übergang vom Rasterdruckeffekt zum Logo ist zu lang»): höchstens 1,6 s, sonst wie bisher 4,25 s
+  const zr = A.zeitachse({ ablauf: "raster" }), zw = A.zeitachse({ ablauf: "welle" });
+  assert.ok(zr.ab.signet[0] - zr.abschnitt.bis <= 1.6 + 1e-9, `Rasterdruck bis zum Signet ${(zr.ab.signet[0] - zr.abschnitt.bis).toFixed(2)} s`);
+  assert.ok(Math.abs(zw.ab.signet[0] - zw.abschnitt.bis - 4.25) < 1e-9, "nach dem Foto wie bisher");
   // in der Kette ohne Bild: sie gehen über die Zeitfront weiter
   const K = A.kette("tiefe+welle+tuch+raster");
   assert.deepEqual(K.teile.map((t) => [t.art, t.uebergang, t.phasen.some((p) => p[0] === "bild")]),
