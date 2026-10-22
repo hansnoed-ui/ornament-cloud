@@ -4,7 +4,8 @@
 // (h, h vorher, Energie in einem HalfFloat-Ziel), 120 Schritte je Sekunde eigener Zeit, alle 2 s ein Wiedereinstiegspunkt (wie Physarum).
 //   01 Dünung – das Wasser ist schon bewegt (1,5 s Vorlauf mit Tropfen), lange ruhige Wellen ziehen darüber, ab und zu ein Tropfen
 //   02 Doppelspalt – eine Wand mit zwei Spalten quer durchs Bild, von oben laufen gerade Wellen hinein, dahinter das Interferenzmuster
-//   03 Wellen – die Wand verschwindet; unruhige Abschnitte mit Tropfen im Takt wechseln mit ruhigen, in denen nur die Dünung zieht
+//   03 Wellen – die Wand verschwindet, nur kurz unruhig: Tropfen dicht hintereinander (Wunsch: «vor allem die langsamen Phasen und nur kurz
+//   schneller, insgesamt maximal 8 Sekunden»)
 // Nach dem ersten Probefilm (Wunsch: «Den Bildaufbau beim Wellenbad will ich nicht, das Bild soll schon verwellt starten und teilweise auch ruhigere
 // Bewegungen zeigen»): kein Aufdecken mehr aus dem Dunkeln, dafür der Vorlauf und die Dünung (lange Wellen, im Shader gerechnet, nicht simuliert).
 //   04 Bild (nur als letzter Effekt) – die Oberfläche beruhigt sich, das Foto steht
@@ -13,8 +14,8 @@ import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=34";
 import { phase } from "./ablauf.js?v=34";
 import { zufall } from "./analyse.js?v=34";
 
-export const SCHRITTE = 120;
-const SICHERN = 240, TROPFEN_JE_SCHRITT = 4, VORLAUF = 1.5;   // so viele Sekunden rechnet das Wasser vor dem Anfang (es startet bewegt)
+export const SCHRITTE = 160;
+const SICHERN = 320, TROPFEN_JE_SCHRITT = 4, VORLAUF = 1.5;   // so viele Sekunden rechnet das Wasser vor dem Anfang (es startet bewegt)
 
 const SCHRITT = /* glsl */ `
   uniform sampler2D tW; uniform vec2 uPixel; uniform float uC, uDaempfung, uWand, uWandY, uSpaltB, uQuelle, uSeite;
@@ -99,25 +100,22 @@ export function welle(g, teil) {
   const setzen = (t, x, y, rad, st) => tropfen.push({ n: Math.round((t + VORLAUF) * SCHRITTE), x, y, r: rad, s: st });
   [-1.4, -1.0, -0.6, -0.25].forEach((t, k) => { const q = keime[k % keime.length]; setzen(t, q[0], q[1], 0.03, 0.5); });   // vor dem Anfang: schon bewegt
   [0.7, 1.5].forEach((t, k) => { if (T[0] + t < T[1] - 0.4) { const q = keime[(k + 4) % keime.length]; setzen(T[0] + t, q[0], q[1], 0.025, 0.25); } });
-  // unruhig (1,4 s Tropfen im Takt) und ruhig (1,2 s nur Dünung) im Wechsel
-  const unruhig = (t) => (t - W[0]) % 2.6 < 1.4;
-  for (let t = W[0] + 0.1, k = 4; W[1] > W[0] && t < W[1] - 0.3; t += 0.5, k++) {
-    if (!unruhig(t)) continue;
+  // nur kurz unruhig: Tropfen dicht hintereinander in der kurzen Phase «Wellen»
+  for (let t = W[0] + 0.05, k = 4; W[1] > W[0] && t < W[1] - 0.15; t += 0.3, k++) {
     const q = keime[k % keime.length];
     setzen(t, q[0] + (r() - 0.5) * 0.08, q[1] + (r() - 0.5) * 0.08, 0.018 + 0.02 * r(), 0.45 + 0.3 * r());
     if (r() < 0.6) { const p = keime[(k * 7 + 3) % keime.length]; setzen(t + 0.25, p[0], p[1], 0.015 + 0.015 * r(), 0.25 + 0.2 * r()); }
   }
-  // Doppelspalt: gerade Wellen von oben, 2,8 je Sekunde (etwa vier Wellenlängen zwischen den Spalten); die Wand steht während der ganzen Phase
-  const quelle = (tau) => (D[1] > D[0] && tau >= D[0] && tau < D[1] - 0.8 ? 0.05 * Math.sin(2 * Math.PI * 2.8 * (tau - D[0])) * weich(anteil(tau, D[0], D[0] + 0.5)) : 0);
+  // Doppelspalt: gerade Wellen von oben, 3,7 je Sekunde (etwa vier Wellenlängen zwischen den Spalten); die Wand steht während der ganzen Phase
+  const quelle = (tau) => (D[1] > D[0] && tau >= D[0] && tau < D[1] - 0.3 ? 0.05 * Math.sin(2 * Math.PI * 3.7 * (tau - D[0])) * weich(anteil(tau, D[0], D[0] + 0.5)) : 0);
   const wand = (tau) => (D[1] > D[0] ? weich(anteil(tau, D[0] - 0.3, D[0] + 0.2)) * (1 - weich(anteil(tau, D[1] - 0.2, D[1] + 0.4))) : 0);
   // die Oberfläche beruhigt sich im Bild
   // kurz vor dem Doppelspalt wird das Wasser ruhig (die Ringe der Tropfen verschwinden), im Bild ebenso
-const daempfung = (tau) => 0.996 - 0.03 * glocke(tau, D[0] - 0.5, D[0] + 0.4) - (Bp ? 0.03 * weich(anteil(tau, Bp[0], Bp[0] + 1.2)) : 0);
+const daempfung = (tau) => 0.997 - 0.025 * glocke(tau, D[0] - 0.4, D[0] + 0.3) - (Bp ? 0.04 * weich(anteil(tau, Bp[0], Bp[0] + 0.8)) : 0);
 
   // die Dünung: stark in der ersten Phase, schwach im Doppelspalt (damit man das Muster liest), in den ruhigen Abschnitten der Wellen stärker
   const duenung = (tau) => {
-    const ruhe = W[1] > W[0] && tau >= W[0] ? glocke(((tau - W[0]) % 2.6) - 1.4, 0, 1.2) : 0;
-    return (1 - 0.8 * wand(tau)) * (tau < W[0] ? 1 : 0.45 + 0.55 * ruhe) * (Bp ? 1 - weich(anteil(tau, Bp[0], Bp[1] - 0.6)) : 1);
+    return (1 - 0.8 * wand(tau)) * (tau < W[0] ? 1 : 0.5) * (Bp ? 1 - weich(anteil(tau, Bp[0], Bp[1] - 0.4)) : 1);
   };
   let n = -1, i = 0;
   const sicherungen = [];
@@ -144,7 +142,7 @@ const daempfung = (tau) => 0.996 - 0.03 * glocke(tau, D[0] - 0.5, D[0] + 0.4) - 
   return {
     render(ziel, tau, { vorschau = false } = {}) {
       bis(Math.floor((tau + VORLAUF) * SCHRITTE + 1e-6), vorschau ? 120 : Infinity);
-      const u = zeigen.uniforms, ruhig = Bp ? weich(anteil(tau, Bp[0], Bp[1] - 0.6)) : 0;
+      const u = zeigen.uniforms, ruhig = Bp ? weich(anteil(tau, Bp[0], Bp[1] - 0.3)) : 0;
       u.tW.value = wasser[i].texture;
       u.uBrechung.value = 0.085 * (1 - ruhig);
       // im Doppelspalt mehr Licht auf dunklerem Foto: so liest man das Interferenzmuster
@@ -156,7 +154,7 @@ const daempfung = (tau) => 0.996 - 0.03 * glocke(tau, D[0] - 0.5, D[0] + 0.4) - 
       g.pass(zeigen, ziel);
       let ende = 0, aktiv = teil.erst ? weich(anteil(tau, 0, 0.6)) : 1;
       if (teil.vonFoto) ende = 1 - weich(anteil(tau, 0, 0.35));
-      if (Bp) { ende = Math.max(ende, weich(anteil(tau, Bp[1] - 0.5, Bp[1] - 0.1))); aktiv *= 1 - weich(anteil(tau, Bp[0] + 0.5, Bp[1])); }
+      if (Bp) { ende = Math.max(ende, weich(anteil(tau, Bp[1] - 0.35, Bp[1] - 0.05))); aktiv *= 1 - weich(anteil(tau, Bp[0] + 0.3, Bp[1])); }
       return { aktiv, bloom: 0.3, radius: 0.35, saum: 0.0025, ende };
     },
     vorab: { szenen: [], materialien: [schrittM, zeigen, kopie] },

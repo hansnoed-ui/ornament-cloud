@@ -1,12 +1,14 @@
 // PHORMA II – Pixel-Sortierung (seit 22. Oktober 2026, Wunsch: weitere Bildtransformationen, «spektakulär, aber nicht zuuu viel Rechenzeit»). In
 // jedem Streifen sortieren sich die Zeilen nach ihrer Helligkeit, aber nur innerhalb eines Bands mittlerer Helligkeit: Zeilen ausserhalb sind
 // Wände, dazwischen laufen die Läufe als glühende Schlieren aus. Die Streifen sind unregelmässig breit (Wunsch nach dem ersten Probefilm: «breitere
-// Spalten, unregelmässig breitere und schmalere»): ein Drittel schmal (1–3 Punkte), die anderen bis 45 Punkte; ein Streifen sortiert als Ganzes nach
-// der Helligkeit seiner Mittelspalte, seine Zeilen rutschen als Blöcke. Die Sortierung läuft wirklich, Schritt für Schritt (Odd-Even-Transposition auf der GPU,
+// Spalten, unregelmässig breitere und schmalere», danach «teilweise noch viel breitere Bereiche»): je ein Drittel schmal (1–3 Punkte), mittel (6–40)
+// und sehr breit (70–180, bis ein Drittel des Bilds); ein Streifen sortiert als Ganzes nach der Helligkeit seiner Mittelspalte, seine Zeilen rutschen
+// als Blöcke. Die Sortierung läuft wirklich, Schritt für Schritt (Odd-Even-Transposition auf der GPU,
 // je Schritt ein Durchgang über das Bild: Paare benachbarter Punkte tauschen, wenn sie falsch liegen), so sieht man die Punkte fliessen.
 //   01 Schwelle – das Foto, die Punkte im Band leuchten auf (als erster Effekt aus dem Dunkeln)
 //   02 Sortieren – das Band öffnet sich nach unten, immer mehr läuft aus; in manchen Spalten steigt das Helle auf statt abzusinken
-//   03 Bild (nur als letzter Effekt) – Spalte für Spalte zieht sich das Sortierte von oben zurück, das Foto steht
+//   03 Bild (nur als letzter Effekt) – ein kurzes Überblenden ins Foto (der Film endet immer mit dem Foto oder dem Signet); bis zum 22. Oktober 2026
+//   zog sich das Sortierte Streifen für Streifen zurück – «das Bild muss sich nicht wieder in den Anfangszustand zurückverwandeln»
 // Gerechnet in halber Grösse (8 Bit, genau, keine Rundungsfehler beim Tauschen), 220 Schritte je Sekunde eigener Zeit, alle 2 s ein
 // Wiedereinstiegspunkt (wie Physarum): Bild n ist beim Abspielen, Spulen und im Video dasselbe. Mit Video laufen die Punkte ausserhalb des Bands mit.
 import * as THREE from "three";
@@ -56,8 +58,8 @@ const ZEIGEN = /* glsl */ `
     // Schwelle: die Punkte im Band leuchten kupfern auf
     float k = hell(pow(foto, vec3(1.0 / 2.2))), im = smoothstep(uLo - 0.02, uLo, k) * (1.0 - smoothstep(uHi, uHi + 0.02, k));
     c = mix(c, c * 0.55 + vec3(1.0, 0.48, 0.22) * (0.35 + 0.65 * k), im * uBand);
-    // Rückkehr: Streifen für Streifen von oben, jeder zu seiner Zeit
-    c = mix(c, foto, smoothstep(0.0, 0.1, uZurueck * 1.6 - 0.4 * z - (1.0 - vUv.y)));
+    // als letzter Effekt: kurz ins Foto
+    c = mix(c, foto, uZurueck);
     gl_FragColor = vec4(c * uSicht, 1.0);
   }`;
 
@@ -70,7 +72,9 @@ export function sortierung(g, teil) {
   // die Streifen: je Spalte die Mitte ihres Streifens und sein Zufall (wiederholbar)
   const r = zufall(0x50a7 + sw), streifen = new Float32Array(sw * 4);
   for (let x = 0; x < sw;) {
-    const b = Math.min(sw - x, r() < 0.35 ? 1 + Math.floor(r() * 3) : Math.round((6 + r() * r() * 40) * (sw / 540))), m = x + Math.floor(b / 2), z = r();
+    // ein Drittel schmal, ein Drittel mittel, ein Drittel sehr breit (Wunsch: «teilweise noch viel breitere Bereiche»)
+    const w = r(), b = Math.min(sw - x, w < 0.33 ? 1 + Math.floor(r() * 3) : Math.round((w < 0.66 ? 6 + r() * 34 : 70 + r() * 110) * (sw / 540)));
+    const m = x + Math.floor(b / 2), z = r();
     for (let k = x; k < x + b; k++) { streifen[k * 4] = (m + 0.5) / sw; streifen[k * 4 + 1] = z; }
     x += Math.max(1, b);
   }
@@ -83,7 +87,7 @@ export function sortierung(g, teil) {
     uLo: { value: 0.6 }, uHi: { value: 0.98 }, uZurueck: { value: 0 }, uGlut: { value: 0 } });
 
   // das Band: zuerst nur das Helle, dann öffnet es sich nach unten (immer mehr läuft aus), gegen Ende etwas zurück
-  const band = (tau) => [0.7 - 0.45 * weich(anteil(tau, So[0], So[0] + 0.45 * (So[1] - So[0]))), 0.985];
+  const band = (tau) => [0.7 - 0.45 * weich(anteil(tau, So[0], So[0] + 0.4 * (So[1] - So[0]))), 0.985];
   let n = -1, i = 0;
   const sicherungen = [];
   function zuruecksetzen() { g.pass(anfang, puffer[0]); i = 0; n = 0; }
@@ -111,11 +115,11 @@ export function sortierung(g, teil) {
       u.uSicht.value = teil.erst ? weich(anteil(tau, 0, 0.9)) : 1;
       u.uBand.value = 0.85 * glocke(tau, Sw[0] + 0.2, So[0] + 1.2);
       u.uGlut.value = 0.35 * weich(anteil(tau, So[0], So[0] + 1.5)) * (Bp ? 1 - weich(anteil(tau, Bp[0], Bp[1])) : 1);
-      u.uZurueck.value = Bp ? weich(anteil(tau, Bp[0], Bp[1] - 0.5)) : 0;
+      u.uZurueck.value = Bp ? weich(anteil(tau, Bp[0], Bp[1] - 0.1)) : 0;
       g.pass(zeigen, ziel);
       let ende = 0, aktiv = teil.erst ? weich(anteil(tau, 0, 0.6)) : 1;
       if (teil.vonFoto) ende = 1 - weich(anteil(tau, 0, 0.35));
-      if (Bp) { ende = Math.max(ende, weich(anteil(tau, Bp[1] - 0.5, Bp[1] - 0.1))); aktiv *= 1 - weich(anteil(tau, Bp[0] + 0.5, Bp[1])); }
+      if (Bp) { ende = Math.max(ende, weich(anteil(tau, Bp[1] - 0.2, Bp[1] - 0.05))); aktiv *= 1 - weich(anteil(tau, Bp[0], Bp[1])); }
       return { aktiv, bloom: 0.22, radius: 0.3, saum: 0.003, ende };
     },
     vorab: { szenen: [], materialien: [anfang, sortieren, kopie, zeigen] },
