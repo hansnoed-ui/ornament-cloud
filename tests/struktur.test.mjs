@@ -513,7 +513,7 @@ test("Impressum (19. Oktober 2026, Pflicht für den Verkauf auf «Art»): eigene
   // seit demselben Tag auch AGB und Datenschutz auf dieser Seite (Wunsch: «AGB und Datenschutz beim Impressum»); die Werkseiten auf «Art» verweisen auf die AGB
   assert.match(html, /<section class="recht" id="agb"[\s\S]*<h2 id="agb-titel">Allgemeine Geschäftsbedingungen<\/h2>[\s\S]*<\/ol>\s*<\/section>/);
   assert.equal([...html.matchAll(/<li><strong>[^<]+\.<\/strong>/g)].length, 9, "neun Punkte");
-  assert.match(html, /<section class="recht" id="datenschutz"[\s\S]*Verantwortlich:[\s\S]*GitHub Pages[\s\S]*GoatCounter[\s\S]*EDÖB/);
+  assert.match(html, /<section class="recht" id="datenschutz"[\s\S]*Verantwortlich:[\s\S]*Hostpoint AG in Rapperswil-Jona \(Schweiz\)[\s\S]*GoatCounter[\s\S]*EDÖB/);
   assert.match(lies("art/harbouring/index.html"), /Es gelten die <a href="\.\.\/\.\.\/impressum\/#agb">AGB<\/a>\./);
   const kontakt = /(Fragen und Anmerkungen zur Website|Questions and comments about the website|Preguntas y comentarios sobre el sitio web): <a href="mailto:hansnoed@gmail\.com">/;
   for (const p of htmlSeiten()) {
