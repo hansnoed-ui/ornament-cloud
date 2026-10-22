@@ -62,7 +62,7 @@
     "Das Tiefenmodell wird geladen …": "Loading the depth model …", "Die KI schätzt die Tiefe …": "The AI is estimating the depth …",
     // Phasen und Effekte (ablauf.js)
     Physarum: "Physarum", Tiefe: "Depth", Tuch: "Cloth", Montage: "Montage", Wellenwanne: "Ripple tank", "Pixel-Sortierung": "Pixel sorting",
-    Tropfen: "Drops", Doppelspalt: "Double slit", Wellen: "Waves", Schwelle: "Threshold", Sortieren: "Sorting", Netz: "Net", Bild: "Picture", Scan: "Scan", Farbe: "Colour", Schnitte: "Cuts",
+    Dünung: "Swell", Doppelspalt: "Double slit", Wellen: "Waves", Schwelle: "Threshold", Sortieren: "Sorting", Netz: "Net", Bild: "Picture", Scan: "Scan", Farbe: "Colour", Schnitte: "Cuts",
     // Installieren (pwa.js, seit 21. Oktober 2026 als App)
     "install.knopf": "Install PHORMA II as an app",
     "Im Browser dieser App lässt sich PHORMA II nicht installieren. Die Seite öffnet sich dafür in Chrome; dort noch einmal auf «PHORMA II als App installieren» tippen.": "PHORMA II cannot be installed from this app's browser. The page opens in Chrome for that; tap «Install PHORMA II as an app» there once more.",

@@ -2,9 +2,11 @@
 // Doppelspalt). Das Foto liegt unter einer Wasseroberfläche: Tropfen fallen an den markantesten Stellen (die Keime der Analyse), ihre Ringe brechen
 // das Bild, wo Wellen Licht bündeln, glänzen helle Linien (Kaustik). Die Oberfläche ist eine Wellengleichung auf der GPU in kleiner Auflösung
 // (h, h vorher, Energie in einem HalfFloat-Ziel), 120 Schritte je Sekunde eigener Zeit, alle 2 s ein Wiedereinstiegspunkt (wie Physarum).
-//   01 Tropfen – einzelne Tropfen; als erster Effekt erscheint das Foto erst dort, wo eine Welle vorbeigekommen ist
+//   01 Dünung – das Wasser ist schon bewegt (1,5 s Vorlauf mit Tropfen), lange ruhige Wellen ziehen darüber, ab und zu ein Tropfen
 //   02 Doppelspalt – eine Wand mit zwei Spalten quer durchs Bild, von oben laufen gerade Wellen hinein, dahinter das Interferenzmuster
-//   03 Wellen – die Wand verschwindet, Tropfen im Takt, die Ringe überlagern sich
+//   03 Wellen – die Wand verschwindet; unruhige Abschnitte mit Tropfen im Takt wechseln mit ruhigen, in denen nur die Dünung zieht
+// Nach dem ersten Probefilm (Wunsch: «Den Bildaufbau beim Wellenbad will ich nicht, das Bild soll schon verwellt starten und teilweise auch ruhigere
+// Bewegungen zeigen»): kein Aufdecken mehr aus dem Dunkeln, dafür der Vorlauf und die Dünung (lange Wellen, im Shader gerechnet, nicht simuliert).
 //   04 Bild (nur als letzter Effekt) – die Oberfläche beruhigt sich, das Foto steht
 import * as THREE from "three";
 import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=34";
@@ -12,7 +14,7 @@ import { phase } from "./ablauf.js?v=34";
 import { zufall } from "./analyse.js?v=34";
 
 export const SCHRITTE = 120;
-const SICHERN = 240, TROPFEN_JE_SCHRITT = 4;
+const SICHERN = 240, TROPFEN_JE_SCHRITT = 4, VORLAUF = 1.5;   // so viele Sekunden rechnet das Wasser vor dem Anfang (es startet bewegt)
 
 const SCHRITT = /* glsl */ `
   uniform sampler2D tW; uniform vec2 uPixel; uniform float uC, uDaempfung, uWand, uWandY, uSpaltB, uQuelle, uSeite;
@@ -40,19 +42,23 @@ const SCHRITT = /* glsl */ `
     float inWand = step(abs(vUv.y - uWandY), 1.2 * uPixel.y);
     float offen = max(step(abs(vUv.x - uSpalt.x), uSpaltB), step(abs(vUv.x - uSpalt.y), uSpaltB));
     neu *= 1.0 - uWand * inWand * (1.0 - offen);
-    float e = max(w.b * 0.9985, min(1.0, abs(neu) * 6.0));                  // wo schon eine Welle war (für das erste Erscheinen des Fotos)
-    gl_FragColor = vec4(neu, h, e, 1.0);
+    gl_FragColor = vec4(neu, h, 0.0, 1.0);
   }`;
 const ZEIGEN = /* glsl */ `
-  uniform sampler2D tW, tFoto; uniform vec2 uPixel; uniform float uBrechung, uKaustik, uSicht, uAufdecken, uWand, uWandY, uSpaltB, uSeite, uDunkel;
+  uniform sampler2D tW, tFoto; uniform vec2 uPixel; uniform float uBrechung, uKaustik, uSicht, uWand, uWandY, uSpaltB, uSeite, uDunkel, uDuenung, uZeit;
   uniform vec2 uSpalt; varying vec2 vUv;
+  // Dünung: drei lange Wellen aus verschiedenen Richtungen; je (Steigung x, Steigung y, Krümmung)
+  vec3 zug(vec2 p, vec2 d, float lam, float om, float s) { float k = 6.2831853 / lam, ph = k * dot(normalize(d), p) - om * uZeit; return vec3(s * cos(ph) * normalize(d), -s * k * sin(ph)); }
   void main() {
     float hx = texture2D(tW, vUv + vec2(uPixel.x, 0.0)).r - texture2D(tW, vUv - vec2(uPixel.x, 0.0)).r;
     float hy = texture2D(tW, vUv + vec2(0.0, uPixel.y)).r - texture2D(tW, vUv - vec2(0.0, uPixel.y)).r;
     vec4 w = texture2D(tW, vUv);
     float l = texture2D(tW, vUv - vec2(uPixel.x, 0.0)).r + texture2D(tW, vUv + vec2(uPixel.x, 0.0)).r
             + texture2D(tW, vUv - vec2(0.0, uPixel.y)).r + texture2D(tW, vUv + vec2(0.0, uPixel.y)).r - 4.0 * w.r;
-    vec3 n = normalize(vec3(-hx * 6.0, -hy * 6.0, 1.0));
+    vec2 p = vec2(vUv.x * uSeite, vUv.y);
+    vec3 du = (zug(p, vec2(1.0, 0.35), 0.55, 1.1, 0.16) + zug(p, vec2(-0.45, 1.0), 0.34, 1.5, 0.11) + zug(p, vec2(0.7, -0.6), 0.22, 2.0, 0.06)) * uDuenung;
+    vec3 n = normalize(vec3(-hx * 6.0 - du.x, -hy * 6.0 - du.y, 1.0));
+    l += du.z * 0.004;
     // Brechung: das Foto unter dem Wasser verschoben, die Farbkanäle ein wenig verschieden (wie Glas)
     vec2 v = n.xy * uBrechung;
     vec3 c = vec3(texture2D(tFoto, vUv + v * 1.04).r, texture2D(tFoto, vUv + v).g, texture2D(tFoto, vUv + v * 0.96).b);
@@ -64,8 +70,6 @@ const ZEIGEN = /* glsl */ `
     float wand = (1.0 - smoothstep(0.0, 1.8 * uPixel.y, abs(vUv.y - uWandY)))
                * (1.0 - max(step(abs(vUv.x - uSpalt.x), uSpaltB), step(abs(vUv.x - uSpalt.y), uSpaltB)));
     c = mix(c, vec3(1.0, 0.5, 0.25) * 1.4, wand * uWand);
-    // als erster Effekt: das Foto zuerst nur, wo schon eine Welle war
-    c *= mix(1.0, smoothstep(0.0, 0.6, w.b), uAufdecken);
     gl_FragColor = vec4(c * uSicht, 1.0);
   }`;
 const KOPIE = /* glsl */ `uniform sampler2D tQ; varying vec2 vUv; void main() { gl_FragColor = texture2D(tQ, vUv); }`;
@@ -73,7 +77,7 @@ const KOPIE = /* glsl */ `uniform sampler2D tQ; varying vec2 vUv; void main() { 
 export function welle(g, teil) {
   const { A, B, H } = g, a = B / H;
   const sw = g.test ? 96 : g.grob ? 160 : 240, sh = Math.round(sw / a);
-  const T = phase(teil, "tropfen"), D = phase(teil, "spalt"), W = phase(teil, "wellen"), Bp = phase(teil, "bild");
+  const T = phase(teil, "duenung"), D = phase(teil, "spalt"), W = phase(teil, "wellen"), Bp = phase(teil, "bild");
   const rt = () => ziel(sw, sh, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
   const wasser = [rt(), rt()];
   const tropfenU = Array.from({ length: TROPFEN_JE_SCHRITT }, () => new THREE.Vector4());
@@ -81,7 +85,7 @@ export function welle(g, teil) {
     uWand: { value: 0 }, uWandY: { value: 0.5 }, uSpaltB: { value: 0.03 }, uSpalt: { value: new THREE.Vector2(0.4, 0.6) }, uQuelle: { value: 0 }, uSeite: { value: a },
     uTropfen: { value: tropfenU } });
   const zeigen = quadMaterial(ZEIGEN, { tW: { value: null }, tFoto: { value: g.fotoTex }, uPixel: { value: new THREE.Vector2(1 / sw, 1 / sh) }, uBrechung: { value: 0 },
-    uKaustik: { value: 0 }, uSicht: { value: 0 }, uAufdecken: { value: 0 }, uWand: { value: 0 }, uWandY: { value: 0.5 }, uSpaltB: { value: 0.025 },
+    uKaustik: { value: 0 }, uSicht: { value: 0 }, uDuenung: { value: 0 }, uZeit: { value: 0 }, uWand: { value: 0 }, uWandY: { value: 0.5 }, uSpaltB: { value: 0.025 },
     uSpalt: { value: new THREE.Vector2(0.4, 0.6) }, uSeite: { value: a }, uDunkel: { value: 0 } });
   const kopie = quadMaterial(KOPIE, { tQ: { value: null } });
 
@@ -91,9 +95,14 @@ export function welle(g, teil) {
   const spalt = [Math.min(0.75, Math.max(0.25, mx)) - 0.14, Math.min(0.75, Math.max(0.25, mx)) + 0.14];
   const wandY = 1 - 0.3;                                                      // im oberen Drittel (y von unten): darunter Platz für das Muster
   const tropfen = [];                                                          // { n, x, y, r, s }
-  const setzen = (t, x, y, rad, st) => tropfen.push({ n: Math.round(t * SCHRITTE), x, y, r: rad, s: st });
-  [0.25, 0.95, 1.55, 2.0].forEach((t, k) => { if (t < T[1]) { const q = keime[k % keime.length]; setzen(T[0] + t, q[0], q[1], 0.03, 0.5); } });
+  // n zählt die Schritte ab dem Vorlauf
+  const setzen = (t, x, y, rad, st) => tropfen.push({ n: Math.round((t + VORLAUF) * SCHRITTE), x, y, r: rad, s: st });
+  [-1.4, -1.0, -0.6, -0.25].forEach((t, k) => { const q = keime[k % keime.length]; setzen(t, q[0], q[1], 0.03, 0.5); });   // vor dem Anfang: schon bewegt
+  [0.7, 1.5].forEach((t, k) => { if (T[0] + t < T[1] - 0.4) { const q = keime[(k + 4) % keime.length]; setzen(T[0] + t, q[0], q[1], 0.025, 0.25); } });
+  // unruhig (1,4 s Tropfen im Takt) und ruhig (1,2 s nur Dünung) im Wechsel
+  const unruhig = (t) => (t - W[0]) % 2.6 < 1.4;
   for (let t = W[0] + 0.1, k = 4; W[1] > W[0] && t < W[1] - 0.3; t += 0.5, k++) {
+    if (!unruhig(t)) continue;
     const q = keime[k % keime.length];
     setzen(t, q[0] + (r() - 0.5) * 0.08, q[1] + (r() - 0.5) * 0.08, 0.018 + 0.02 * r(), 0.45 + 0.3 * r());
     if (r() < 0.6) { const p = keime[(k * 7 + 3) % keime.length]; setzen(t + 0.25, p[0], p[1], 0.015 + 0.015 * r(), 0.25 + 0.2 * r()); }
@@ -105,12 +114,17 @@ export function welle(g, teil) {
   // kurz vor dem Doppelspalt wird das Wasser ruhig (die Ringe der Tropfen verschwinden), im Bild ebenso
 const daempfung = (tau) => 0.996 - 0.03 * glocke(tau, D[0] - 0.5, D[0] + 0.4) - (Bp ? 0.03 * weich(anteil(tau, Bp[0], Bp[0] + 1.2)) : 0);
 
+  // die Dünung: stark in der ersten Phase, schwach im Doppelspalt (damit man das Muster liest), in den ruhigen Abschnitten der Wellen stärker
+  const duenung = (tau) => {
+    const ruhe = W[1] > W[0] && tau >= W[0] ? glocke(((tau - W[0]) % 2.6) - 1.4, 0, 1.2) : 0;
+    return (1 - 0.8 * wand(tau)) * (tau < W[0] ? 1 : 0.45 + 0.55 * ruhe) * (Bp ? 1 - weich(anteil(tau, Bp[0], Bp[1] - 0.6)) : 1);
+  };
   let n = -1, i = 0;
   const sicherungen = [];
   const kopieren = (von, nach) => { kopie.uniforms.tQ.value = von.texture; g.pass(kopie, nach); };
   function zuruecksetzen() { g.loeschen(wasser[0]); g.loeschen(wasser[1]); i = 0; n = 0; }
   function schritt() {
-    const tau = n / SCHRITTE, u = schrittM.uniforms;
+    const tau = n / SCHRITTE - VORLAUF, u = schrittM.uniforms;
     const jetzt = tropfen.filter((t) => t.n === n);
     tropfenU.forEach((v, k) => { const t = jetzt[k]; if (t) v.set(t.x, t.y, t.r, t.s); else v.set(0, 0, 1, 0); });
     u.tW.value = wasser[i].texture; u.uQuelle.value = quelle(tau); u.uWand.value = wand(tau) > 0.5 ? 1 : 0; u.uDaempfung.value = daempfung(tau);
@@ -129,7 +143,7 @@ const daempfung = (tau) => 0.996 - 0.03 * glocke(tau, D[0] - 0.5, D[0] + 0.4) - 
 
   return {
     render(ziel, tau, { vorschau = false } = {}) {
-      bis(Math.floor(tau * SCHRITTE + 1e-6), vorschau ? 120 : Infinity);
+      bis(Math.floor((tau + VORLAUF) * SCHRITTE + 1e-6), vorschau ? 120 : Infinity);
       const u = zeigen.uniforms, ruhig = Bp ? weich(anteil(tau, Bp[0], Bp[1] - 0.6)) : 0;
       u.tW.value = wasser[i].texture;
       u.uBrechung.value = 0.085 * (1 - ruhig);
@@ -138,7 +152,7 @@ const daempfung = (tau) => 0.996 - 0.03 * glocke(tau, D[0] - 0.5, D[0] + 0.4) - 
       u.uKaustik.value = 2.4 * (1 - ruhig) * (1 + 1.5 * sp); u.uDunkel.value = 0.45 * sp;
       u.uWand.value = wand(tau);
       u.uSicht.value = teil.erst ? weich(anteil(tau, 0, 0.4)) : 1;
-      u.uAufdecken.value = teil.erst ? 1 - weich(anteil(tau, T[1] - 0.6, D[0] + 1.5)) : 0;
+      u.uDuenung.value = duenung(tau); u.uZeit.value = tau;
       g.pass(zeigen, ziel);
       let ende = 0, aktiv = teil.erst ? weich(anteil(tau, 0, 0.6)) : 1;
       if (teil.vonFoto) ende = 1 - weich(anteil(tau, 0, 0.35));
@@ -146,7 +160,7 @@ const daempfung = (tau) => 0.996 - 0.03 * glocke(tau, D[0] - 0.5, D[0] + 0.4) - 
       return { aktiv, bloom: 0.3, radius: 0.35, saum: 0.0025, ende };
     },
     vorab: { szenen: [], materialien: [schrittM, zeigen, kopie] },
-    zaehler() { return `wellenwanne · ${sw}×${sh} · tropfen ${tropfen.length} · schritt ${Math.max(0, n).toLocaleString("de-CH")}`; },
+    zaehler() { return `wellenwanne · ${sw}×${sh} · tropfen ${tropfen.length} · schritt ${Math.max(0, n - VORLAUF * SCHRITTE).toLocaleString("de-CH")}`; },
     entsorgen() { for (const x of [...wasser, ...sicherungen.map((s) => s.rt)]) x.dispose(); for (const m of [schrittM, zeigen, kopie]) m.dispose(); },
   };
 }

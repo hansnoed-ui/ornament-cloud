@@ -63,7 +63,7 @@ export function rolle(art, liste, i) {
     else { ueber = 0.7; uebergang = naechstes === "montage" ? "felder" : "front"; }
   } else if (art === "welle" || art === "sortierung") {
     // die beiden Simulationen auf der GPU (seit 22. Oktober 2026): als letzter Effekt mit Bild, sonst gehen sie wie Physarum über
-    phasen = art === "welle" ? [["tropfen", "Tropfen", erst ? 2.4 : 2.0], ["spalt", "Doppelspalt", 4.0], ["wellen", "Wellen", 3.4]]
+    phasen = art === "welle" ? [["duenung", "Dünung", 2.4], ["spalt", "Doppelspalt", 4.0], ["wellen", "Wellen", 5.2]]
       : [["schwelle", "Schwelle", erst ? 1.8 : 1.4], ["sortieren", "Sortieren", 6.0]];
     if (letzt) phasen.push(["bild", "Bild", 2.6]);
     else { ueber = 1.0; uebergang = naechstes === "montage" ? "felder" : "front"; }
