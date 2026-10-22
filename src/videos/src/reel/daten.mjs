@@ -36,8 +36,8 @@ const app = (slug) => APPS.find((a) => a.slug === slug);
 mkdirSync(hier("../../public/reel/"), { recursive: true });
 // zwei Läufe von Christian (22. Oktober 2026), nicht im Repository – von Hand nach public/reel/ legen:
 // phorma-iii-lauf.mp4 (PHORMA III, 1080 × 1350, Export vom 21. Oktober 2026, 21:08), phorma-i-lauf.mp4 (Ablauf «Verwandlung», 720 × 900)
-// und phorma-iii-logo.mp4 (die Logo-Animation, 1920 × 1080, Export vom 19. Oktober 2026, 14:10)
-for (const n of ["phorma-iii-lauf", "phorma-i-lauf", "phorma-iii-logo"]) if (!existsSync(hier(`../../public/reel/${n}.mp4`))) throw new Error(`reel: public/reel/${n}.mp4 fehlt`);
+// sowie die Logo-Animationen phorma-ii-logo.mp4 (1080 × 1350, Export vom 21. Oktober 2026, 21:55) und phorma-iii-logo.mp4 (1920 × 1080, Export vom 19. Oktober 2026, 14:10)
+for (const n of ["phorma-iii-lauf", "phorma-i-lauf", "phorma-iii-logo", "phorma-ii-logo"]) if (!existsSync(hier(`../../public/reel/${n}.mp4`))) throw new Error(`reel: public/reel/${n}.mp4 fehlt`);
 const aufnahme = hier("../../public/reel/b-stellen.json");
 if (!existsSync(aufnahme)) throw new Error("reel: keine Aufnahme der Seite – zuerst «NODE_PATH=$(npm root -g) node src/reel/aufnahme.mjs»");
 const stellen = JSON.parse(readFileSync(aufnahme, "utf8"));

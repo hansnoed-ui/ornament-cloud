@@ -223,7 +223,7 @@ jede Szene in `src/neubau/szenen/` und als eigene Composition im Ordner «Neubau
 
 ## Reel «Was bringst du mit?» (22. Oktober 2026)
 
-42,3 s, **9:16** (1080 × 1920, `ReelVideo`), ohne Ton. Wunsch: «nicht bloss eine Aufzählung sondern ein professionelles Werbe-Reel, ohne ‹art› … sei kreativ».
+42,4 s, **9:16** (1080 × 1920, `ReelVideo`; mit dem anderen Logo `ReelVideoLogoIII`), ohne Ton. Wunsch: «nicht bloss eine Aufzählung sondern ein professionelles Werbe-Reel, ohne ‹art› … sei kreativ».
 Ein Werbefilm für `/b/`, gebaut um die Frage der Startseite: fünf Antworten aus dem Dialog (`DIALOG` in `src/b/inhalt.mjs`), jede mit eigener Bildwelt;
 Papier und Tinte kippen bei jedem Schnitt (echte Umkehr wie hell und dunkel auf der Seite), harte Schnitte auf einem Schlag von 0,5 s (`TAKT`), damit sich Musik mit 120 Schlägen je Minute darunterlegen lässt.
 Keine Werke und Prints (die Station «Ein Bild wird ein Werk» fehlt absichtlich). Gestaltung aus `src/neubau/Teile.tsx`; jede Szene in `src/reel/szenen/` und als Composition im Ordner «Reel-Szenen».
@@ -238,12 +238,15 @@ Zweite Fassung am selben Tag (Rückmeldung: «Was bringst du mit?» gefällt, «
 7. Tinte: «Eine Klasse, ein Team, ein Haus.» – die Tafel von OMNA COLOR
 8. «Gestalten, vermitteln, kuratieren.» in drei Schlägen, Komma und Punkt in der Blaupause
 9. Tinte: «keine Cookies, keine Werbung, keine Tracker», «made in Switzerland»
-10. Tinte: die Logo-Animation aus PHORMA III (die Fäden ziehen sich zur Schlaufe, «ornament.cloud» tippt sich), hochkant die Mitte, der Punkt in die Blaupause gedreht
-    (`hue-rotate`), ab Bild 160 stehend (vor dem Zerfall am Ende des Exports); darunter die Frage, blau unterstrichen
+10. Tinte: eine Logo-Animation von Christian, der Punkt in die Blaupause gedreht (`hue-rotate`), am Ende stehend; darunter die Frage, blau unterstrichen.
+    Standard (`ReelVideo`): **PHORMA II** – die schillernde Montage fällt zu Rahmen zusammen, aus ihnen wird das Signet (hochkant, ganz gezeigt; der Punkt wird erst blau,
+    wenn die Montage vorbei ist, sonst kippen ihre Farben; ab Bild 162 stehend). Fassung `ReelVideoLogoIII`: **PHORMA III** – die Fäden ziehen sich zur Schlaufe,
+    «ornament.cloud» tippt sich (hochkant die Mitte; ab Bild 160 stehend, vor dem Zerfall am Ende des Exports)
 
-**Drei Aufnahmen von Christian** liegen nicht im Repository (zusammen gut 34 MB); vor dem Rendern von Hand nach `public/reel/` legen:
+**Vier Aufnahmen von Christian** liegen nicht im Repository (zusammen gut 40 MB); vor dem Rendern von Hand nach `public/reel/` legen:
 `phorma-iii-lauf.mp4` (PHORMA III, 1080 × 1350, Export vom 21. Oktober 2026, 21:08), `phorma-i-lauf.mp4` (720 × 900, als «PHORMA ii» geschickt, zeigt aber den Ablauf «Verwandlung» von PHORMA I)
-und `phorma-iii-logo.mp4` (die Logo-Animation, 1920 × 1080, Export vom 19. Oktober 2026, 14:10). `daten.mjs` bricht ab, wenn eine fehlt.
+sowie die Logo-Animationen `phorma-ii-logo.mp4` (1080 × 1350, Export vom 21. Oktober 2026, 21:55) und `phorma-iii-logo.mp4` (1920 × 1080, Export vom 19. Oktober 2026, 14:10).
+`daten.mjs` bricht ab, wenn eine fehlt.
 
 Die Tafeln kommen aus `src/b/tafeln.mjs` und werden je Bild um 1/30 s weitergerechnet (`LebendeTafel` in `src/reel/Teile.tsx`, deterministisch).
 Die Aufnahme der Seite macht `src/reel/aufnahme.mjs` (Playwright, 430 px, doppelte Dichte → `public/reel/`), einmal vor `npm run vorbereiten`:
