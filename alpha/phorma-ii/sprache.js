@@ -7,7 +7,7 @@
   const EN = {
     _titel: "PHORMA II – Ornament Cloud · Alpha",
     "kopf.sprache": "Language", "kopf.ueber": "About the app",
-    lead: "A slime mould of a hundred thousand agents finds the shapes of your photo, then a plane of light scans its depth – then it blows as a silk cloth and settles flat. Or a glowing line grows from a seed and draws it, or it breaks apart in rhythm into nested rectangles until everything snaps into place. Each effect singly or as a chain. As a video for social media.",
+    lead: "A slime mould of a hundred thousand agents finds the shapes of your photo, then a plane of light scans its depth – then it blows as a silk cloth and settles flat. Or it lies under moving water, its points sort themselves into glowing streaks, or it breaks apart in rhythm into nested rectangles until everything snaps into place. Each effect singly or as a chain. As a video for social media.",
     "buehne.aria": "Preview", "vorschau.aria": "Preview of the video", "laden.text": "Reading the video …",
     "leer.gross": "No signal", "leer.text": "Load a photo.", "zeit.aria": "Time in the film", "phasen.aria": "Jump to a phase", dauer: "Portrait 4 : 5, or 9 : 16",
     "schritt.quelle": "Photo or video", "ablage.titel": "Choose a photo or video", "ablage.text": "or drag it here. It is analysed on your device: edges, tonal range and depth.", "datei.aria": "Choose a photo or video",
