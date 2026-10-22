@@ -10,8 +10,8 @@
 //            02 Montage – Schnitte nach einem bis drei Schlägen, dicht und licht im Wechsel, manchmal doppelt (Stottern); Raster und Streifen
 //            03 Bild – die letzte Aufteilung bleibt, die Felder rasten nacheinander an ihrem Platz ein, das Foto steht
 // Lage in Bildkoordinaten: x 0..1 über die Breite, y 0..1 von oben nach unten. Alles wiederholbar: dasselbe Foto ergibt denselben Film.
-import { zufall } from "./analyse.js?v=34";
-import { anteil, phase } from "./ablauf.js?v=34";
+import { zufall } from "./analyse.js?v=35";
+import { anteil, phase } from "./ablauf.js?v=35";
 // die S-Kurve wie in gemeinsam.js (das «weich» von ablauf.js läuft stark aus: damit setzte das Einrasten ins Foto viel zu früh ein)
 const weich = (x) => x * x * (3 - 2 * x);
 

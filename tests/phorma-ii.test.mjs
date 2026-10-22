@@ -25,7 +25,25 @@ test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette"
   assert.equal(A.ablaufName("gewebe"), A.KETTE, "ein gemerktes Gewebe (seit dem 18. Oktober 2026 PHORMA III) ergibt die ganze Kette");
   assert.equal(A.ablaufName("struktur"), A.KETTE);
   assert.equal(A.ablaufName("montage+tuch"), "tuch+montage", "die Montage steht immer am Schluss");
-  for (const k of ["physarum+montage", "tiefe+montage"]) assert.equal(A.kette(k).teile[0].uebergang, "felder", `${k}: in Rechtecken in die Montage`);
+  for (const k of ["physarum+montage", "tiefe+montage", "sortierung+montage", "welle+montage"]) assert.equal(A.kette(k).teile[0].uebergang, "felder", `${k}: in Rechtecken in die Montage`);
+});
+
+test("Wellenwanne und Pixel-Sortierung (22. Oktober 2026): ihr Platz in der Kette, kurz, als letzter Effekt mit Bild", () => {
+  assert.deepEqual(A.effekte("montage+sortierung+tuch+welle+tiefe+physarum"), ["physarum", "tiefe", "welle", "tuch", "sortierung", "montage"]);
+  assert.equal(A.TITEL.welle, "Wellenwanne"); assert.equal(A.TITEL.sortierung, "Pixel-Sortierung");
+  // Wunsch: Wellen «insgesamt maximal 8 Sekunden», vor allem langsam; Sortierung «eher 6–8 Sekunden», ohne Zurückverwandeln
+  const W = A.kette("welle").teile[0], S = A.kette("sortierung").teile[0];
+  assert.deepEqual(W.phasen.map((p) => p[0]), ["duenung", "spalt", "wellen", "bild"]);
+  assert.ok(W.dauer <= 8 + 1e-9, `Wellenwanne ${W.dauer} s`);
+  const [du, sp, we] = W.phasen.map((p) => p[2]);
+  assert.ok(we < du && we < sp, "nur kurz schneller");
+  assert.deepEqual(S.phasen.map((p) => p[0]), ["schwelle", "sortieren", "bild"]);
+  assert.ok(S.dauer >= 6 && S.dauer <= 8, `Pixel-Sortierung ${S.dauer} s`);
+  assert.ok(S.phasen.at(-1)[2] <= 1, "nur ein kurzes Überblenden ins Foto");
+  // in der Kette ohne Bild: sie gehen über die Zeitfront weiter
+  const K = A.kette("tiefe+welle+tuch+sortierung");
+  assert.deepEqual(K.teile.map((t) => [t.art, t.uebergang, t.phasen.some((p) => p[0] === "bild")]),
+    [["tiefe", "front", false], ["welle", "front", false], ["tuch", "schnitt", true], ["sortierung", "schnitt", true]]);
 });
 
 test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappung, geerbte Ausschnitte, Anfang dunkel, Ende exakt, wiederholbar", async () => {

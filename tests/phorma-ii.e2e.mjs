@@ -57,7 +57,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=30");
+  const { bild } = await import("./film.js?v=35");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -166,12 +166,12 @@ await check("Kette: jede Phase zeigt etwas, jede etwas anderes; am Anfang dunkel
 });
 
 await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto", async () => {
-  for (const e of ["physarum", "tiefe", "tuch", "montage"]) {
+  for (const e of ["physarum", "tiefe", "welle", "tuch", "sortierung", "montage"]) {
     const { ctx, page, fehler } = await oeffne({ ablauf: e });
     await laden(page); await bereit(page);
     // mit Signet rastet die Montage nicht ins Foto ein (sie schneidet geradewegs ins Signet): hier ohne
     if (e === "montage") { await page.uncheck("#signet"); await bereit(page); }
-    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", montage: "Montage" }[e]);
+    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", tiefe: "Tiefe", welle: "Wellenwanne", tuch: "Tuch", sortierung: "Pixel-Sortierung", montage: "Montage" }[e]);
     const { zeit } = await messe(page, 0);
     assert.equal(zeit.teile.length, 1);
     const anfang = await messe(page, zeit.abschnitt.von + 0.15), mitte = await messe(page, (zeit.abschnitt.von + zeit.abschnitt.bis) / 2);
@@ -232,7 +232,7 @@ const zaehlvideo = (page, { sekunden = 16 } = {}) => page.evaluate(async (sekund
 /** die Nummer des Zählvideos in einem Bild (quelle: "film" – das Bild des Films zur Zeit t, wie der Export; "foto" – das Standbild; "jetzt" – das
  *  laufende Bild, das die Bühne zur Zeit t allen Effekten gibt) */
 const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) => {
-  const { bild } = await import("./film.js?v=30");
+  const { bild } = await import("./film.js?v=35");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false }, w = S.mass[0] / 2, h = S.mass[1] / 2;
   const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
