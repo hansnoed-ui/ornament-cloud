@@ -10,9 +10,9 @@
 // Bewegungen zeigen»): kein Aufdecken mehr aus dem Dunkeln, dafür der Vorlauf und die Dünung (lange Wellen, im Shader gerechnet, nicht simuliert).
 //   04 Bild (nur als letzter Effekt) – die Oberfläche beruhigt sich, das Foto steht
 import * as THREE from "three";
-import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=34";
-import { phase } from "./ablauf.js?v=34";
-import { zufall } from "./analyse.js?v=34";
+import { anteil, weich, glocke, ziel, quadMaterial } from "./gemeinsam.js?v=35";
+import { phase } from "./ablauf.js?v=35";
+import { zufall } from "./analyse.js?v=35";
 
 export const SCHRITTE = 160;
 const SICHERN = 320, TROPFEN_JE_SCHRITT = 4, VORLAUF = 1.5;   // so viele Sekunden rechnet das Wasser vor dem Anfang (es startet bewegt)
