@@ -17,6 +17,7 @@ src/
     Wachstum.ts       die Simulation (Punkte, Abstossung, Feder, Kantenteilung, Grenze), deterministisch
     Formen.ts         die beiden Grenzen: atmende Wolke aus Kreisen, Buchstaben des Namens (Maske, Abstandsfeld, Keime)
     Video.tsx         Zeitplan T und Szenen
+  reel/               Werbe-Reel «Was bringst du mit?» für /b/ (22. Oktober 2026): Video.tsx, Teile.tsx (Schlagzeile, lebende Tafeln), szenen/*.tsx, daten.mjs, aufnahme.mjs
   neubau/             ornament.cloud/b/ in der Gestaltung des Neubaus, ohne die Vorlage (22. Oktober 2026)
     Video.tsx         Szenen mit TransitionSeries, Kopfzeile darüber; Teile.tsx (Farben, Schriften, Zeichen, Signet), Kopf.tsx, szenen/*.tsx
     daten.mjs         liest Farben, Texte, Zeichen und Fäden unverändert aus /b/ → neubau/data/neubau.json (nicht eingecheckt)
@@ -219,6 +220,33 @@ jede Szene in `src/neubau/szenen/` und als eigene Composition im Ordner «Neubau
 8. Schluss: Signet, «ornament.cloud», «Beobachtung ist Anlass für Veränderung in der Realität.»
 
 `npx remotion render NeubauVideo out/neubau.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
+
+## Reel «Was bringst du mit?» (22. Oktober 2026)
+
+38 s, **9:16** (1080 × 1920, `ReelVideo`), ohne Ton. Wunsch: «nicht bloss eine Aufzählung sondern ein professionelles Werbe-Reel, ohne ‹art› … sei kreativ».
+Ein Werbefilm für `/b/`, gebaut um die Frage der Startseite: fünf Antworten aus dem Dialog (`DIALOG` in `src/b/inhalt.mjs`), jede mit eigener Bildwelt;
+Papier und Tinte kippen bei jedem Schnitt (echte Umkehr wie hell und dunkel auf der Seite), harte Schnitte auf einem Schlag von 0,5 s (`TAKT`), damit sich Musik mit 120 Schlägen je Minute darunterlegen lässt.
+Keine Werke und Prints (die Station «Ein Bild wird ein Werk» fehlt absichtlich). Gestaltung und Signet aus `src/neubau/Teile.tsx`; jede Szene in `src/reel/szenen/` und als Composition im Ordner «Reel-Szenen».
+
+1. Tinte: ein blauer Punkt zieht die Schlaufe des Signets, «Was bringst du mit?» Wort für Wort
+2. Papier: die fünf Antworten als Knöpfe, ein Tippen wählt «ein Bild»
+3. Tinte: «Ein Bild will sich bewegen.» – echte Läufe aus PHORMA II und The Fictory (`assets/beispiele/`), im Rahmen aufgedeckt
+4. Papier: «Eine Frage sucht ein Gegenüber.» – die lebende Tafel von ORNA dreht und zeigt die Begegnung
+5. Tinte: «Etwas soll gebaut werden.» – ein Telefon kippt ins Bild und blättert durch die echte Startseite
+6. Papier: «Ein Begriff will geprüft werden.» – die Tafel «Nebeneinander und Nacheinander»
+7. Tinte: «Eine Klasse, ein Team, ein Haus.» – die Tafel von OMNA COLOR
+8. «Gestalten, vermitteln, kuratieren.» in drei Schlägen, Komma und Punkt in der Blaupause
+9. Tinte: «keine Cookies, keine Werbung, keine Tracker», «made in Switzerland»
+10. Papier: Signet, «ornament.cloud», die Frage als Knopf
+
+Die Tafeln kommen aus `src/b/tafeln.mjs` und werden je Bild um 1/30 s weitergerechnet (`LebendeTafel` in `src/reel/Teile.tsx`, deterministisch).
+Die Aufnahme der Seite macht `src/reel/aufnahme.mjs` (Playwright, 430 px, doppelte Dichte → `public/reel/`), einmal vor `npm run vorbereiten`:
+
+```bash
+cd src/videos
+NODE_PATH=$(npm root -g) node src/reel/aufnahme.mjs
+npx remotion render ReelVideo out/reel.mp4 --codec=h264 --crf=18   # danach nach yuv420p umwandeln (siehe unten)
+```
 
 ## Rendern ohne Internetzugang zu remotion.media
 

@@ -8,6 +8,7 @@ import { MenschVideo, T as TMensch, zeitplan as zeitplanMensch } from "./mensch/
 import { StartAnimation, TStart, WachstumVideo, T as TWachstum } from "./wachstum/Video";
 import { RundgangVideo, T as TRundgang } from "./rundgang/Video";
 import { DAUER as DauerNeubau, NeubauVideo, SZENEN as SzenenNeubau } from "./neubau/Video";
+import { DAUER as DauerReel, ReelVideo, SZENEN as SzenenReel } from "./reel/Video";
 // neue Videos: Import
 
 export const RemotionRoot: React.FC = () => (
@@ -32,6 +33,11 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="NeubauVideo" component={NeubauVideo} durationInFrames={DauerNeubau} fps={FPS} width={BREITE} height={HOEHE} />
     <Folder name="Neubau-Szenen">
       {SzenenNeubau.map(({ id, Szene, dauer }) => <Composition key={id} id={id} component={Szene} durationInFrames={dauer} fps={FPS} width={BREITE} height={HOEHE} />)}
+    </Folder>
+    {/* Reel «Was bringst du mit?»: Werbefilm für /b/, 9:16 (22. Oktober 2026) */}
+    <Composition id="ReelVideo" component={ReelVideo} durationInFrames={DauerReel} fps={FPS} width={BREITE} height={HOEHE} />
+    <Folder name="Reel-Szenen">
+      {SzenenReel.map(({ id, Szene, dauer }) => <Composition key={id} id={id} component={Szene} durationInFrames={dauer} fps={FPS} width={BREITE} height={HOEHE} />)}
     </Folder>
     {/* neue Videos: Composition */}
   </>

@@ -12,7 +12,7 @@ export const SERIF = "Newsreader, Georgia, serif";
 export const RAND = 90;          // seitlicher Rand (sicherer Bereich)
 export const OBEN = 330;         // Inhalt beginnt unter der Kopfzeile
 
-const schriften = Promise.all([
+export const schriften = Promise.all([
   loadFont({ family: "Instrument Sans", url: staticFile("instrument-sans-normal-latin.woff2"), weight: "400 700" }),
   loadFont({ family: "Newsreader", url: staticFile("newsreader-normal-latin.woff2"), weight: "200 800" }),
   loadFont({ family: "Newsreader", url: staticFile("newsreader-italic-latin.woff2"), style: "italic", weight: "200 800" }),
@@ -46,8 +46,8 @@ const XS = WEIT.map((p) => p[0]), YS = WEIT.map((p) => p[1]);
 const MX = (Math.min(...XS) + Math.max(...XS)) / 2, MY = (Math.min(...YS) + Math.max(...YS)) / 2;
 const SP = Math.max(Math.max(...XS) - Math.min(...XS), Math.max(...YS) - Math.min(...YS));
 
-/** Signet: gezeichnet (0–1), Füllung der inneren Schleife (0–1), Lauf des Punkts (Umläufe), b (Weite) */
-export const Signet: React.FC<{ groesse: number; gezeichnet: number; fuellung: number; lauf: number; b?: number; dicke?: number }> = ({ groesse, gezeichnet, fuellung, lauf, b = 0.6, dicke = 4 }) => {
+/** Signet: gezeichnet (0–1), Füllung der inneren Schleife (0–1), Lauf des Punkts (Umläufe), b (Weite); c: Farben (Standard: heller Modus) */
+export const Signet: React.FC<{ groesse: number; gezeichnet: number; fuellung: number; lauf: number; b?: number; dicke?: number; c?: { tinte: string; faden: string; fadenHell: string } }> = ({ groesse, gezeichnet, fuellung, lauf, b = 0.6, dicke = 4, c = F }) => {
   const m = groesse / SP;
   const bild = ([x, y]: [number, number]) => `${((x - MX) * m + groesse / 2).toFixed(2)} ${((y - MY) * m + groesse / 2).toFixed(2)}`;
   const ts = Array.from({ length: 241 }, (_, i) => (i / 240) * Math.PI * 2);
@@ -58,9 +58,9 @@ export const Signet: React.FC<{ groesse: number; gezeichnet: number; fuellung: n
   const [px, py] = bild(punkt(b, t)).split(" ").map(Number);
   return (
     <svg width={groesse} height={groesse} style={{ overflow: "visible" }}>
-      {dInnen ? <path d={dInnen} fill={F.fadenHell} opacity={fuellung} /> : null}
-      <path d={d} fill="none" stroke={F.tinte} strokeWidth={dicke} strokeLinejoin="round" strokeLinecap="round" pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - gezeichnet} />
-      {fuellung > 0 ? <circle cx={px} cy={py} r={dicke * 4 * fuellung} fill={F.faden} /> : null}
+      {dInnen ? <path d={dInnen} fill={c.fadenHell} opacity={fuellung} /> : null}
+      <path d={d} fill="none" stroke={c.tinte} strokeWidth={dicke} strokeLinejoin="round" strokeLinecap="round" pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - gezeichnet} />
+      {fuellung > 0 ? <circle cx={px} cy={py} r={dicke * 4 * fuellung} fill={c.faden} /> : null}
     </svg>
   );
 };
