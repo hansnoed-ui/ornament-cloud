@@ -25,24 +25,26 @@ test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette"
   assert.equal(A.ablaufName("gewebe"), A.KETTE, "ein gemerktes Gewebe (seit dem 18. Oktober 2026 PHORMA III) ergibt die ganze Kette");
   assert.equal(A.ablaufName("struktur"), A.KETTE);
   assert.equal(A.ablaufName("montage+tuch"), "tuch+montage", "die Montage steht immer am Schluss");
-  for (const k of ["physarum+montage", "tiefe+montage", "sortierung+montage", "welle+montage"]) assert.equal(A.kette(k).teile[0].uebergang, "felder", `${k}: in Rechtecken in die Montage`);
+  for (const k of ["physarum+montage", "tiefe+montage", "raster+montage", "welle+montage"]) assert.equal(A.kette(k).teile[0].uebergang, "felder", `${k}: in Rechtecken in die Montage`);
 });
 
-test("Wellenwanne und Pixel-Sortierung (22. Oktober 2026): ihr Platz in der Kette, kurz, als letzter Effekt mit Bild", () => {
-  assert.deepEqual(A.effekte("montage+sortierung+tuch+welle+tiefe+physarum"), ["physarum", "tiefe", "welle", "tuch", "sortierung", "montage"]);
-  assert.equal(A.TITEL.welle, "Wellenwanne"); assert.equal(A.TITEL.sortierung, "Pixel-Sortierung");
-  // Wunsch: Wellen «insgesamt maximal 8 Sekunden», seit dem Abend «ohne Doppelspalt und langsamere Animation, ganz ruhig»; Sortierung «eher 6–8 Sekunden», ohne Zurückverwandeln
-  const W = A.kette("welle").teile[0], S = A.kette("sortierung").teile[0];
+test("Wellenwanne und Rasterdruck (22. Oktober 2026): ihr Platz in der Kette, kurz, als letzter Effekt mit Bild", () => {
+  assert.deepEqual(A.effekte("montage+raster+tuch+welle+tiefe+physarum"), ["physarum", "tiefe", "welle", "tuch", "raster", "montage"]);
+  assert.equal(A.TITEL.welle, "Wellenwanne"); assert.equal(A.TITEL.raster, "Rasterdruck");
+  // der Rasterdruck ersetzt die Pixel-Sortierung («mit der Pixelsortierung noch nicht ganz zufrieden»): eine gemerkte Wahl wird zu ihm
+  assert.equal(A.ablaufName("sortierung"), "raster"); assert.equal(A.ablaufName("tuch+sortierung+montage"), "tuch+raster+montage");
+  // Wunsch: Wellen «insgesamt maximal 8 Sekunden», seit dem Abend «ohne Doppelspalt und langsamere Animation, ganz ruhig»; Rasterdruck ebenso knapp
+  const W = A.kette("welle").teile[0], S = A.kette("raster").teile[0];
   assert.deepEqual(W.phasen.map((p) => p[0]), ["duenung", "wellen", "bild"]);
   assert.ok(W.dauer <= 8 + 1e-9, `Wellenwanne ${W.dauer} s`);
   assert.ok(!A.kette("welle").teile.some((t) => t.phasen.some((p) => p[0] === "spalt")), "ohne Doppelspalt");
-  assert.deepEqual(S.phasen.map((p) => p[0]), ["schwelle", "sortieren", "bild"]);
-  assert.ok(S.dauer >= 6 && S.dauer <= 8, `Pixel-Sortierung ${S.dauer} s`);
-  assert.ok(S.phasen.at(-1)[2] <= 1, "nur ein kurzes Überblenden ins Foto");
+  assert.deepEqual(S.phasen.map((p) => p[0]), ["raster", "versatz", "bild"]);
+  assert.ok(S.dauer >= 6 && S.dauer <= 8, `Rasterdruck ${S.dauer} s`);
+  assert.ok(S.phasen.at(-1)[2] <= 1.5, "nur ein kurzes Überblenden ins Foto");
   // in der Kette ohne Bild: sie gehen über die Zeitfront weiter
-  const K = A.kette("tiefe+welle+tuch+sortierung");
+  const K = A.kette("tiefe+welle+tuch+raster");
   assert.deepEqual(K.teile.map((t) => [t.art, t.uebergang, t.phasen.some((p) => p[0] === "bild")]),
-    [["tiefe", "front", false], ["welle", "front", false], ["tuch", "schnitt", true], ["sortierung", "schnitt", true]]);
+    [["tiefe", "front", false], ["welle", "front", false], ["tuch", "schnitt", true], ["raster", "schnitt", true]]);
 });
 
 test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappung, geerbte Ausschnitte, Anfang dunkel, Ende exakt, wiederholbar", async () => {

@@ -30,15 +30,15 @@ export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 
 // die Reihenfolge in einer Kette (Wunsch vom 19. Oktober 2026: «Physarum, Tiefe (Scan), Tuch, Montage»; ein gemerktes «wachstum» fällt weg)
 // seit 22. Oktober 2026 dazu die Wellenwanne (nach der Tiefe) und die Pixel-Sortierung (vor der Montage), Wunsch: weitere Bildtransformationen,
-// «spektakulär, aber nicht zuuu viel Rechenzeit»
-export const EFFEKTE = ["physarum", "tiefe", "welle", "tuch", "sortierung", "montage"];
-export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", welle: "Wellenwanne", tuch: "Tuch", sortierung: "Pixel-Sortierung", montage: "Montage" };
+// «spektakulär, aber nicht zuuu viel Rechenzeit»; am selben Abend ersetzt der Rasterdruck die Pixel-Sortierung (ein gemerktes «sortierung» wird zu ihm)
+export const EFFEKTE = ["physarum", "tiefe", "welle", "tuch", "raster", "montage"];
+export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", welle: "Wellenwanne", tuch: "Tuch", raster: "Rasterdruck", montage: "Montage" };
 /** die Kette der Karte «Alle drei» (die Montage kam am 19. Oktober 2026 dazu und ist nur einzeln oder in einer eigenen Kette dabei) */
 export const KETTE = "physarum+tiefe+tuch";
 
 /** die gewählten Effekte in fester Reihenfolge, mit «+» verbunden; Unbekanntes oder nichts (auch ein gemerktes «gewebe») ergibt die ganze Kette */
 export function ablaufName(a) {
-  const teile = String(a ?? "").split("+");
+  const teile = String(a ?? "").split("+").map((e) => (e === "sortierung" ? "raster" : e));
   const liste = EFFEKTE.filter((e) => teile.includes(e));
   return liste.length ? liste.join("+") : KETTE;
 }
@@ -61,13 +61,13 @@ export function rolle(art, liste, i) {
     phasen = [["scan", "Scan", erst ? 3.4 : 3.0]];   // ohne «Raum» (seit 19. Oktober 2026): der Scan etwas länger, er baut das Relief auf
     if (letzt) phasen.push(["bild", "Bild", 2.8]);
     else { ueber = 0.7; uebergang = naechstes === "montage" ? "felder" : "front"; }
-  } else if (art === "welle" || art === "sortierung") {
-    // die beiden Simulationen auf der GPU (seit 22. Oktober 2026): als letzter Effekt mit Bild, sonst gehen sie wie Physarum über
-    // kurz (Wunsch nach den Probefilmen: Wellen «insgesamt maximal 8 Sekunden», seit dem Abend «ohne Doppelspalt und langsamere Animation, ganz ruhig»; Sortierung
-    // «insgesamt eher 6–8 Sekunden», «das Bild muss sich nicht wieder in den Anfangszustand zurückverwandeln»: als letzter Effekt nur ein kurzes Überblenden)
-    phasen = art === "welle" ? [["duenung", "Dünung", 3.4], ["wellen", "Wellen", 3.2]]   // ohne Doppelspalt, ganz ruhig (22. Oktober 2026, abends)
-      : [["schwelle", "Schwelle", 1.2], ["sortieren", "Sortieren", 5.6]];
-    if (letzt) phasen.push(["bild", "Bild", art === "welle" ? 1.4 : 0.8]);
+  } else if (art === "welle" || art === "raster") {
+    // Wellenwanne und Rasterdruck (seit 22. Oktober 2026): als letzter Effekt mit Bild, sonst gehen sie wie Physarum über
+    // kurz (Wunsch nach den Probefilmen: Wellen «insgesamt maximal 8 Sekunden», seit dem Abend «ohne Doppelspalt und langsamere Animation, ganz ruhig»;
+    // der Rasterdruck ebenso knapp 8 s, als letzter Effekt nur ein kurzes Überblenden ins Foto)
+    phasen = art === "welle" ? [["duenung", "Dünung", 3.4], ["wellen", "Wellen", 3.2]]
+      : [["raster", "Raster", 2.4], ["versatz", "Versatz", 4.0]];
+    if (letzt) phasen.push(["bild", "Bild", 1.4]);
     else { ueber = 1.0; uebergang = naechstes === "montage" ? "felder" : "front"; }
   } else if (art === "tuch") {
     phasen = [["tuch", "Tuch", vorher === "tiefe" ? 4.6 : 5.0]];
