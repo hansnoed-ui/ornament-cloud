@@ -19,7 +19,7 @@ import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 23;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 24;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -69,8 +69,17 @@ const SIGNET = `<svg viewBox="0 0 34 24" aria-hidden="true" focusable="false"><p
 const ICON = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 24"><path d="${signetPfad.d}" fill="none" stroke="#000" stroke-width="1.8"/><circle cx="${signetPfad.punkt[0]}" cy="${signetPfad.punkt[1]}" r="2.6" fill="#1d3fd6"/></svg>`)}`;
 
 // weiche Trennstellen für die Zellen des Felds (Chromium ohne Wörterbuch trennt sonst nicht; die Stellen nach Duden)
-const TRENNUNG = { Beobachter: "Beob&shy;achter", Verspätung: "Ver&shy;spätung", Gedächtnis: "Ge&shy;dächtnis", Erinnerung: "Erin&shy;nerung", Vergessen: "Ver&shy;gessen", Geschichte: "Ge&shy;schichte", Erwartung: "Erwar&shy;tung", Verantwortung: "Verant&shy;wortung", Anerkennung: "Aner&shy;kennung", Berührung: "Berüh&shy;rung", Irritation: "Irri&shy;tation", Wahrnehmung: "Wahr&shy;nehmung", Übersetzung: "Über&shy;setzung", Koppelung: "Koppe&shy;lung", Ausstellung: "Aus&shy;stellung", Information: "Infor&shy;mation", Wahrscheinlichkeit: "Wahrschein&shy;lichkeit", Algorithmus: "Algo&shy;rithmus", Empfehlung: "Empfeh&shy;lung", Plattform: "Platt&shy;form", Identität: "Iden&shy;tität", Möglichkeit: "Möglich&shy;keit", Kontingenz: "Kontin&shy;genz", Unterbrechung: "Unter&shy;brechung", Responsibility: "Respon&shy;sibility", Recognition: "Recog&shy;nition", Interruption: "Inter&shy;ruption", Probability: "Proba&shy;bility", Recommendation: "Recommen&shy;dation", Contingency: "Contin&shy;gency", Possibility: "Possi&shy;bility", Translation: "Trans&shy;lation", Perception: "Percep&shy;tion", Expectation: "Expec&shy;tation", Exhibition: "Exhi&shy;bition" };
-const weich = (titel) => esc(titel).replace(/\S+$/, (w) => TRENNUNG[w] || w);
+const TRENNUNG = { Beobachter: "Beob&shy;achter", Verspätung: "Ver&shy;spätung", Gedächtnis: "Ge&shy;dächtnis", Erinnerung: "Erin&shy;nerung", Vergessen: "Ver&shy;gessen", Geschichte: "Ge&shy;schichte", Erwartung: "Erwar&shy;tung", Verantwortung: "Verant&shy;wortung", Anerkennung: "Aner&shy;kennung", Berührung: "Berüh&shy;rung", Irritation: "Irri&shy;tation", Wahrnehmung: "Wahr&shy;nehmung", Übersetzung: "Über&shy;setzung", Koppelung: "Koppe&shy;lung", Ausstellung: "Aus&shy;stellung", Information: "Infor&shy;mation", Wahrscheinlichkeit: "Wahrschein&shy;lichkeit", Anschluss: "An&shy;schluss", Publikum: "Publi&shy;kum", Algorithmus: "Algo&shy;rithmus", Empfehlung: "Empfeh&shy;lung", Plattform: "Platt&shy;form", Identität: "Iden&shy;tität", Möglichkeit: "Möglich&shy;keit", Kontingenz: "Kontin&shy;genz", Unterbrechung: "Unter&shy;brechung", 
+  // Englisch (22. Oktober 2026, Rückmeldung: «bei der englischen Fassung des Zettelkastens passen einige Begriffe nicht in die Felder» – The Connection,
+  // Remembering, Forgetting, The Algorithm, The Recommendation liefen hinaus): eine Stelle je Wort, zwei nur bei den längsten
+  Responsibility: "Respon&shy;sibility", Recognition: "Recog&shy;nition", Interruption: "Inter&shy;ruption", Probability: "Proba&shy;bility",
+  Recommendation: "Recom&shy;menda&shy;tion", Contingency: "Contin&shy;gency", Possibility: "Possi&shy;bility", Translation: "Trans&shy;lation",
+  Perception: "Percep&shy;tion", Expectation: "Expec&shy;tation", Exhibition: "Exhi&shy;bition", Connection: "Connec&shy;tion", Remembering: "Remem&shy;bering",
+  Forgetting: "Forget&shy;ting", Algorithm: "Algo&shy;rithm", Observer: "Obser&shy;ver", Boundary: "Bound&shy;ary", Audience: "Audi&shy;ence", Material: "Mate&shy;rial",
+  Identity: "Iden&shy;tity", Coupling: "Cou&shy;pling", Platform: "Plat&shy;form" };
+// das letzte Wort als Ganzes auf die nächste Zeile (sonst trennte der Browser «The Ad-dress», «Die Ver-spätung», obwohl das Wort auf der eigenen
+// Zeile Platz hätte); nur wenn es auch dort zu lang ist, gilt die Trennstelle; Wörter ab 11 und ab 14 Zeichen etwas kleiner (b.css: .feld a .t .w)
+const weich = (titel) => esc(titel).replace(/\S+$/, (w) => `<span class="w${w.length >= 14 ? " sehr-lang" : w.length >= 11 ? " lang" : ""}">${TRENNUNG[w] || w}</span>`);
 
 /** Das Signet in Bewegung (tools/b-app-bilder.mjs schreibt das Ruhebild; b/tafeln-leben.js lässt es leben) */
 const SIGNET_TAFEL = `<figure class="tafel-lebt signet-tafel" data-tafel="signet"><picture><source srcset="/b/bilder/signet/signet-dunkel.svg" media="(prefers-color-scheme: dark)"><img src="/b/bilder/signet/signet.svg" alt="Das Signet von ornament.cloud, gezeichnet: die Re-entry-Schlaufe mit dem Punkt, der sie abläuft" width="1200" height="1200"></picture></figure>`;
