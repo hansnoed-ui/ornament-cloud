@@ -203,3 +203,15 @@ if (html.classList.contains("uebersicht")) {
   ansicht(html.dataset.ansicht === "raster" ? "raster" : "buehne", { merken: false });
   if (location.hash === "#info" || location.hash === "#werke") $(location.hash)?.scrollIntoView();
 }
+
+/* ---------- Werkseite: Ton des Films ein- und ausschalten ---------- */
+for (const t of $$(".stueck .ton")) {
+  const v = t.parentElement.querySelector("video");
+  if (ruhig) { v.removeAttribute("autoplay"); v.pause(); }
+  t.addEventListener("click", () => {
+    v.muted = !v.muted;
+    if (!v.muted) v.play().catch(() => {});
+    t.setAttribute("aria-pressed", String(!v.muted));
+    t.textContent = v.muted ? "Ton an" : "Ton aus";
+  });
+}

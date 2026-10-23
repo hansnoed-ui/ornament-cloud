@@ -8,7 +8,7 @@ Die Werkschau der Ergebnisse aus ORNAMENT LAB. Eigenständig: nicht in der Navig
 - **Raster**: auf 62 % der Breite, zwei Spalten mit schmalen Fugen, Kacheln im Hochformat. Beim Darüberfahren erscheint oben links ein Etikett in der Farbe des Werks (Vorgabe: Blaupause) mit Titel, Jahr und Kurztext; auf dem Telefon steht das Etikett unter dem Bild. Filme laufen beim Darüberfahren.
 - **Pille** oben rechts schaltet zwischen Bühne und Raster; der Browser merkt sich die Wahl, `#raster` oder `#buehne` im Link gehen vor.
 - **Dock** unten in der Mitte: links das gezeigte Werk (oder das Signet), Mitte «Werk ansehen» bzw. «Zurück zu Works», rechts das Menü aus Kacheln (Works, Info, ORNAMENT LAB, ornament.cloud und das animierte Signet).
-- **Werkseite**: Schlagworte (Jahr, Operationen), Titel und Kurztext gross, links das Akkordeon «Über das Werk · Verlauf · Angaben», rechts die Bildfolge (Film, Bild, weitere Bilder: das erste über die ganze Breite, danach paarweise breit und schmal).
+- **Werkseite**: Schlagworte (Jahr, Operationen), Titel und Kurztext gross, links das Akkordeon «Über das Werk · Verlauf · Angaben», rechts die Bildfolge (Film oder Bild, dann weitere Bilder: das erste über die ganze Breite, danach paarweise breit und schmal). Der Film läuft wie bei mubien stumm und ohne Bedienleiste, eine Taste «Ton an» schaltet den Ton. Auf dem Telefon folgen auf den grossen Satz zuerst die Bilder, dann die Abschnitte.
 - Von ornament.cloud: Signet mit laufendem Punkt, Blaupause, Instrument Sans und Newsreader, echte Umkehr im Dunkeln, Feldchen und Fuss.
 
 ## Ein Werk ergänzen
