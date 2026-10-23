@@ -1,4 +1,4 @@
-# Projektformat `ornament-lab-projekt` 0.1.0
+# Projektformat `ornament-lab-projekt` 0.2.0
 
 Ein Projekt ist ein ZIP-Archiv (`<titel>.ornalab.zip`) mit diesem Inhalt:
 
@@ -15,7 +15,7 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
 
 ```jsonc
 {
-  "format": "ornament-lab-projekt", "formatVersion": "0.1.0", "labVersion": "0.1.0",
+  "format": "ornament-lab-projekt", "formatVersion": "0.2.0", "labVersion": "0.1.1",
   "id": "p-…", "titel": "…", "modus": "manuell | jev | experimentell", "erstellt": "ISO", "geaendert": "ISO",
 
   "ergebnisse": [{                        // Material und alle erzeugten Zustände; nichts wird überschrieben
@@ -35,7 +35,10 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
     "eingaben": { "bild": "e-…", "konstellation": "e-…" },    // nur frühere Ergebnisse (azyklisch)
     "parameter": { … },                   // bereinigt und begrenzt
     "variation": { "anzahl": 6, "achse": "varianten | zeit | beide",
-                   "routen": [{ "ziel": "drehung", "tiefe": 0.5, "modulator": { "quelle": "sinus", "frequenz": 1, "phase": 0, "seed": 1 } }] },
+                   "routen": [{ "ziel": "drehung", "tiefe": 0.5,
+                                "polaritaet": "einpolig",   // seit 0.2.0, fehlt bei bipolar (Standard)
+                                "modulator": { "quelle": "sinus", "frequenz": 1, "phase": 0, "seed": 1,
+                                               "halten": 3 } }] },   // seit 0.2.0: abtasten und halten in Stufen, fehlt bei fortlaufend
     "seed": 123,                          // Startwert; Variante i rechnet mit seed + i
     "ausgaben": ["e-…"], "gewaehlt": "e-… | null",
     "status": "fertig | fehler | laeuft", "fehler": null, "warnungen": [],
@@ -64,7 +67,8 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
 - `reproduzierbar: "ja"`: Gleiche Eingänge, Parameter und Startwert ergeben dieselben Pixel. Das wird für Feedback, Wiederholung, Farbe und Ketten getestet.
 - `"bedingt"` gilt für die ORNA-Konstellation: Die Ziehung ist echter Zufall (`crypto.getRandomValues`). Mit Kennung und Startwert ist die Ableitung reproduzierbar.
 - Steuersignale werden über ihre Ergebnis-Kennung verbunden und nicht doppelt gespeichert.
-- Formatversion: Eine neue Nebenversion darf Felder hinzufügen. Eine neue Hauptversion braucht eine Migration (`ladeProjekt`).
+- Mehrere Routen auf denselben Parameter werden summiert und erst dann begrenzt (seit Lab 0.1.1, nach VCV Rack). Mit einer Route rechnet 0.1.1 genau wie 0.1.0.
+- Formatversion: Eine neue Nebenversion darf Felder hinzufügen (0.2.0: `polaritaet` je Route, `halten` je Modulator; Projekte 0.1.0 öffnen unverändert). Eine neue Hauptversion braucht eine Migration (`ladeProjekt`).
 
 ## Vorbereitet für später
 

@@ -85,6 +85,27 @@ test("Modulation: Quellen im Bereich −1…1, Attenuverter, Steuersignal, Grenz
   assert.deepEqual(M.stellen(3), [0, 0.5, 1]);
 });
 
+test("Modulation nach VCV Rack: Summe vor Begrenzung, einpolig, Abtasten und halten, ungültige Werte", () => {
+  const op = labRegister().hole("lab.feedback"), basis = standardParameter(op);
+  const hoch = { quelle: "sinus", frequenz: 1 };
+  const zwei = [{ ziel: "drehung", tiefe: 1, modulator: hoch }, { ziel: "drehung", tiefe: -1, modulator: hoch }];
+  assert.equal(M.moduliere(op, basis, zwei, 0.25).drehung, basis.drehung, "gestapelte Routen heben sich auf, unabhängig von der Reihenfolge");
+  assert.equal(M.moduliere(op, basis, [...zwei].reverse(), 0.25).drehung, basis.drehung);
+  const ein = { ziel: "drehung", tiefe: 0.25, polaritaet: "einpolig", modulator: { quelle: "saege", frequenz: 1 } };
+  assert.equal(M.moduliere(op, basis, [ein], 0).drehung, basis.drehung, "einpolig: der tiefste Wert lässt den Grundwert stehen");
+  assert.equal(M.moduliere(op, basis, [{ ...ein, modulator: hoch }], 0.25).drehung, basis.drehung + 10, "einpolig: derselbe Hub wie bipolar, nur verschoben");
+  assert.equal(M.routenwert({ polaritaet: "einpolig", modulator: { quelle: "signal", signal: { werte: [0, 1] } } }, 0), 0, "ein dunkles Signal verändert nichts");
+  assert.equal(M.halte(0.6, 3), 0.5);
+  assert.equal(M.halte(1, 3), 1);
+  assert.equal(M.halte(0.2, 0), 0.2, "0 Stufen: fortlaufend");
+  assert.equal(M.wert({ quelle: "signal", halten: 2, signal: { werte: [0, 1] } }, 0.4), -1, "das Signal wird abgetastet und gehalten");
+  assert.equal(M.wert({ quelle: "sinus", halten: 4 }, 0.3), M.wert({ quelle: "sinus", halten: 4 }, 0.45), "innerhalb einer Stufe derselbe Wert");
+  assert.equal(M.wert({ quelle: "signal", signal: { werte: [NaN, NaN] } }, 0.5), -1, "ungültige Werte zählen als 0");
+  assert.equal(M.moduliere(op, basis, [{ ziel: "drehung", tiefe: NaN, modulator: hoch }], 0.25).drehung, basis.drehung);
+  assert.deepEqual(M.routeFuersProtokoll({ ...ein, modulator: { quelle: "signal", ergebnis: "e1", halten: 3, signal: { werte: [1] } } }),
+    { ziel: "drehung", tiefe: 0.25, polaritaet: "einpolig", modulator: { quelle: "signal", ergebnis: "e1", halten: 3, signal: undefined } });
+});
+
 test("Feedback: reproduzierbar, verändert das Bild, Verlauf hat Iterationen + 1 Bilder, Zeitmodulation wirkt", async () => {
   const op = labRegister().hole("lab.feedback"), p = { ...standardParameter(op), iterationen: 6, seite: 64 };
   const a = (await op.ausfuehren({ bild: bild() }, p)).ausgaben[0].bild, b = (await op.ausfuehren({ bild: bild() }, p)).ausgaben[0].bild;
