@@ -43,9 +43,9 @@ async function ausfuehren(page) { await page.click("#ausfuehren"); await page.wa
 const { ctx, page, fehler, fremd } = await oeffne();
 let gespeichert = null;
 
-await check("Start: vier Bereiche, Register mit zehn Operationen, keine Fehler", async () => {
+await check("Start: vier Bereiche, Register mit elf Operationen, keine Fehler", async () => {
   for (const id of ["material", "operationen", "experiment", "protokoll"]) assert.ok(await page.locator(`#${id}`).isVisible(), id);
-  assert.match(await page.textContent("#status"), /10 Operationen/);
+  assert.match(await page.textContent("#status"), /11 Operationen/);
   assert.deepEqual(fehler, []);
 });
 
@@ -350,6 +350,63 @@ await check("Ton: eine Tondatei wird Material, Tonsignal misst sie, das Signal d
   await page.locator("#op-form select").first().selectOption("schwerpunkt");
   await ausfuehren(page);
   assert.equal(await S(page, () => ornamentLab.projekt.knoten.at(-1).status), "fertig");
+});
+
+await check("Klangerzeuger: Klang ohne Tondatei aus dem Startwert und aus einem Bild, Tonsignal daraus, Animation mit Tonspur", async () => {
+  await page.click("#neu");
+  await page.waitForFunction(() => ornamentLab.projekt.ergebnisse.length === 0);
+  await operation(page, "lab.klang");   // ohne jedes Material wählbar
+  await page.locator('#op-form input[data-param="dauer"]').fill("2");
+  await ausfuehren(page);
+  const a = await S(page, () => ornamentLab.projekt.ergebnisse.filter((e) => e.typ === "AUDIO").map((e) => ({ datei: e.datei, dauer: e.ton.dauer, sha: e.sha256 })));
+  assert.equal(a.length, 6, "sechs Varianten nebeneinander");
+  assert.ok(new Set(a.map((x) => x.dauer)).size > 1, "die Dauer ist moduliert");
+  for (const x of a) { assert.match(x.datei, /\.wav$/); assert.match(x.sha, /^[0-9a-f]{64}$/); }
+  assert.equal(await page.locator("#buehne .karte.klang").count(), 6);
+  assert.equal(await page.locator("#buehne .karte.klang svg").count(), 6, "Umriss");
+  const dauer = await page.locator("#buehne .karte.klang audio").first().evaluate((au) => new Promise((ok, nein) => { au.preload = "metadata"; au.onloadedmetadata = () => ok(au.duration); au.onerror = () => nein(new Error("WAV nicht abspielbar")); au.load(); }));
+  assert.ok(Math.abs(dauer - a[0].dauer) < 0.05, `der Browser spielt die WAV: ${dauer} s`);
+  assert.ok(await page.locator("#buehne .signal svg").count() >= 1, "Partitur");
+  assert.equal(await S(page, () => ornamentLab.projekt.entscheidungen.filter((d) => d.gegenstand === "tonfolge" && d.art === "zufall").length), 6);
+  // aus einem Bild: das Bild steht als Eingang vor
+  await page.click("#beispiel");
+  await page.waitForFunction(() => ornamentLab.projekt.ergebnisse.find((e) => e.id === ornamentLab.aktuell)?.typ === "IMAGE");
+  await operation(page, "lab.klang");
+  await page.locator('#op-form input[data-param="dauer"]').fill("1.5");
+  await page.locator('#op-form input[data-param="anzahl"]').fill("1");
+  await ausfuehren(page);
+  const k = await S(page, () => { const k = ornamentLab.projekt.knoten.at(-1); return { quelle: k.protokoll.quelle, eingaben: Object.keys(k.eingaben), klang: k.ausgaben[0] }; });
+  assert.equal(k.quelle, "bild"); assert.deepEqual(k.eingaben, ["bild"]);
+  // weiterführen: der Klang ist Ausgang, Tonsignal misst ihn
+  await page.locator("#buehne .karte.klang").getByRole("button", { name: "weiterführen" }).click();
+  assert.equal(await S(page, () => ornamentLab.aktuell), k.klang);
+  await operation(page, "lab.tonsignal");
+  await ausfuehren(page);
+  const sig = await S(page, () => ornamentLab.projekt.knoten.at(-1).ausgaben[0]);
+  // das Bild über die Zeit vom Klang steuern und mit Tonspur exportieren
+  await page.locator("#materialien button").last().click();
+  await operation(page, "lab.feedback");
+  await page.locator('#op-form input[data-param="seite"]').fill("300");
+  await page.locator('#op-form input[data-param="iterationen"]').fill("12");
+  const sel = page.locator("#op-form select");
+  for (let i = 0; i < await sel.count(); i++) if ((await sel.nth(i).locator("option").allTextContents()).includes("Steuersignal aus einem Ergebnis")) await sel.nth(i).selectOption("signal");
+  for (let i = 0; i < await sel.count(); i++) if ((await sel.nth(i).locator("option").allTextContents()).some((t) => t.startsWith("über die Zeit"))) await sel.nth(i).selectOption("zeit");
+  await ausfuehren(page);
+  assert.equal(await S(page, () => ornamentLab.projekt.knoten.at(-1).variation.routen[0].modulator.ergebnis), sig);
+  await page.locator('input[name="ansicht"][value="nach"]').check({ force: true });
+  assert.equal(await page.locator("#tonspur").inputValue(), k.klang, "der Klang, der das Signal gab, steht als Tonspur vor");
+  await page.click("#animation");
+  await warteFertig(page, 120000);
+  const x = await S(page, () => ornamentLab.projekt.exporte.at(-1));
+  assert.equal(x.tonspur.ergebnis, k.klang);
+  assert.ok(x.tonspur.codec || x.tonspur.fehlt, JSON.stringify(x.tonspur));
+  if (x.tonspur.codec) {
+    assert.equal(x.tonspur.sekunden, 1.5, "der ganze Klang");
+    const boxen = await S(page, async () => { const t = new TextDecoder("latin1").decode(await (await fetch([...ornamentLab.filme.values()].at(-1).url)).arrayBuffer()); return { soun: t.includes("soun"), ton: t.includes("Opus") || t.includes("mp4a") }; });
+    assert.deepEqual(boxen, { soun: true, ton: true }, "das MP4 hat eine Tonspur");
+  }
+  console.log("      Tonspur:", JSON.stringify(x.tonspur));
+  await page.locator('input[name="ansicht"][value="neben"]').check({ force: true });
 });
 
 await check("Keine Fehler in der Konsole, keine Anfragen nach aussen", async () => {

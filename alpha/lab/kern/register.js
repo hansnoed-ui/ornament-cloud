@@ -55,12 +55,17 @@ export function erstelleRegister() {
     anwendbar(vorhandeneTypen) {
       return [...ops.values()].filter((op) => op.eingaenge.every((e) => e.optional || vorhandeneTypen.some((t) => kompatibel(t, e.typ))));
     },
-    /** Operationen, die ein Ergebnis eines bestimmten Typs als Haupteingang annehmen (für Weiterverarbeitung) */
+    /** Operationen, die ein Ergebnis eines bestimmten Typs als Haupteingang annehmen (für Weiterverarbeitung); ohne Generatoren */
     fuer(typ) {
-      return [...ops.values()].filter((op) => op.eingaenge.length && kompatibel(typ, op.eingaenge[0].typ));
+      return [...ops.values()].filter((op) => op.eingaenge.length && !istGenerator(op) && kompatibel(typ, op.eingaenge[0].typ));
     },
+    /** Generatoren: Operationen ohne Pflichteingang (ORNA, Klangerzeuger); sie stehen immer zur Wahl */
+    generatoren: () => [...ops.values()].filter(istGenerator),
   };
 }
+
+/** ohne Pflichteingang: kann aus dem Nichts (Startwert) oder aus beliebigen vorhandenen Ergebnissen erzeugen */
+export const istGenerator = (op) => op.eingaenge.every((e) => e.optional);
 
 /** Standardwerte aller Parameter einer Operation */
 export const standardParameter = (op) => Object.fromEntries(op.parameter.map((p) => [p.id, p.standard]));

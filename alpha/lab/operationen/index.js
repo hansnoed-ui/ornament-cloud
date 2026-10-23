@@ -7,10 +7,11 @@ import { wiederholung } from "./wiederholung.js";
 import { farbe } from "./farbe.js";
 import { bildsignal } from "./bildsignal.js";
 import { tonsignal } from "./tonsignal.js";
+import { klang } from "./klang.js";
 import { differenz } from "./differenz.js";
 import { kompositionProfil, komposition } from "./komposition.js";
 
-export const OPERATIONEN = [orna, fictory, feedback, wiederholung, farbe, bildsignal, tonsignal, differenz, kompositionProfil, komposition];
+export const OPERATIONEN = [orna, fictory, feedback, wiederholung, farbe, bildsignal, tonsignal, klang, differenz, kompositionProfil, komposition];
 
 export function labRegister() {
   const r = erstelleRegister();

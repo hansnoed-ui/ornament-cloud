@@ -15,6 +15,7 @@ const { fuehreAus, bildfolge, regelVorschlaege, experiment, ketteAnwenden } = aw
 const { packe, entpacke } = await lab("kern/archiv.js");
 const { fingerabdruck, neuesBild } = await lab("kern/bilddaten.js");
 const K = await lab("kern/komposition.js");
+const KL = await lab("kern/klang.js");
 const ST = await lab("kern/stationen.js");
 
 /** synthetisches Bild: Verlauf mit Scheibe und Balken */
@@ -36,6 +37,7 @@ function speicher() {
     async ton(e) { const t = toene.get(e.id); if (!t) throw new Error(`Ton ${e.id} fehlt`); return t; },
     async ablegen(e, b) { bilder.set(e.id, b); const datei = `medien/${e.id}.rgba`; dateien.set(datei, new Uint8Array(b.data.buffer.slice(0))); return { datei, mime: "application/x-rgba", breite: b.width, hoehe: b.height }; },
     async ablegenDaten(e, d) { const datei = `medien/${e.id}.json`; dateien.set(datei, new TextEncoder().encode(JSON.stringify(d))); return { datei, mime: "application/json" }; },
+    async ablegenKlang(e, t) { toene.set(e.id, t); const datei = `medien/${e.id}.wav`; dateien.set(datei, KL.wavBytes(t.pcm, t.rate)); return { datei, mime: "audio/wav" }; },
   };
 }
 function mitMaterial() {
@@ -255,7 +257,7 @@ test("Kopplung Ton → Bild: das Tonsignal moduliert Varianten und die Zeit eine
   assert.equal(p.ergebnisse.find((x) => x.id === t.id).ton.dauer, 6, "Tonmaterial mit Dauer, Abtastrate, Kanälen");
 });
 
-test("Archiv mit Ton und alte Projekte: Tondatei kommt unverändert mit, Projekte 0.1.0–0.3.0 öffnen weiter", async () => {
+test("Archiv mit Ton und alte Projekte: Tondatei kommt unverändert mit, Projekte 0.1.0–0.5.0 öffnen weiter", async () => {
   const { p, m, r, t } = mitTon();
   await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.tonsignal", eingaben: { ton: t.id } } });
   const wav = Uint8Array.from({ length: 64 }, (_, i) => i);
@@ -264,8 +266,8 @@ test("Archiv mit Ton und alte Projekte: Tondatei kommt unverändert mit, Projekt
   assert.deepEqual(fehlt.filter((d) => d === "medien/t.wav"), []);
   assert.deepEqual(medien.get("medien/t.wav"), wav);
   assert.equal(projekt.ergebnisse.find((x) => x.typ === "AUDIO").ton.abtastrate, 44100);
-  assert.equal(projekt.formatVersion, "0.5.0");
-  for (const v of ["0.1.0", "0.2.0", "0.3.0", "0.4.0"]) assert.doesNotThrow(() => P.ladeProjekt({ ...P.neuesProjekt(), formatVersion: v, labVersion: "0.1.0" }), v);
+  assert.equal(projekt.formatVersion, "0.6.0");
+  for (const v of ["0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"]) assert.doesNotThrow(() => P.ladeProjekt({ ...P.neuesProjekt(), formatVersion: v, labVersion: "0.1.0" }), v);
 });
 
 /** Scheibe auf gleichmässigem Grund, für Schwerpunkt und Ausschnitt */
@@ -562,4 +564,96 @@ test("jev: Katalog passt zum Register, Lage wird streng geprüft, Frage hat fest
     assert.deepEqual(a.wahrscheinlichkeiten, { "lab.feedback": 0.7, "lab.farbe": 0.3 }, "nur erlaubte Optionen");
     assert.deepEqual(Object.keys(gefragt.body), ["verlauf", "optionen"]);
   } finally { globalThis.fetch = echt; }
+});
+
+// ---------- Klangerzeuger (Lab 0.1.5): Klang ohne Tondatei ----------
+const energie = (pcm, a, z) => { let s = 0; for (let i = a; i < z; i++) s += pcm[i] * pcm[i]; return s / Math.max(1, z - a); };
+/** Nulldurchgänge je Sekunde: grobes Mass für die Tonhöhe */
+const durchgaenge = (pcm, rate) => { let n = 0; for (let i = 1; i < pcm.length; i++) if ((pcm[i - 1] < 0) !== (pcm[i] < 0)) n++; return n / (pcm.length / rate); };
+/** dunkles Bild mit einem hellen Feld: Spalten x0–x1, Zeilen y0–y1 (Anteile) */
+function feld(x0, x1, y0, y1, w = 80, h = 40) {
+  const b = neuesBild(w, h, [0, 0, 0]);
+  for (let y = Math.floor(y0 * h); y < Math.floor(y1 * h); y++) for (let x = Math.floor(x0 * w); x < Math.floor(x1 * w); x++) { const i = (y * w + x) * 4; b.data[i] = b.data[i + 1] = b.data[i + 2] = 255; }
+  return b;
+}
+
+test("Klangerzeuger: Generator ohne Pflichteingang, steht nicht unter den Bildoperationen, Klanggenerator implementiert", () => {
+  const r = labRegister();
+  assert.deepEqual(r.generatoren().map((o) => o.id), ["orna.konstellation", "lab.klang"]);
+  assert.ok(!r.fuer("IMAGE").some((o) => o.id === "lab.klang"), "Bildoperationen, Vorschläge und Experiment bleiben wie bisher");
+  assert.equal(KLANGFORMEN.generator.implementiert, true);
+  assert.equal(r.hole("lab.klang").klasse, "zeitlich");
+  assert.equal(r.hole("lab.klang").ausgaenge[0].typ, "AUDIO");
+});
+
+test("Klangerzeuger aus dem Startwert: derselbe Startwert derselbe Klang, ein anderer ein anderer; Zufall protokolliert", async () => {
+  const op = labRegister().hole("lab.klang"), std = { ...standardParameter(op), dauer: 3 };
+  const a = await op.ausfuehren({}, std, { seed: 7 }), b = await op.ausfuehren({}, std, { seed: 7 }), c = await op.ausfuehren({}, std, { seed: 8 });
+  assert.equal(a.protokoll.quelle, "startwert");
+  assert.equal(a.ausgaben[0].typ, "AUDIO");
+  assert.equal(a.ausgaben[0].ton.pcm.length, 3 * 44100);
+  assert.deepEqual(a.ausgaben[0].ton.pcm, b.ausgaben[0].ton.pcm, "reproduzierbar");
+  assert.notDeepEqual(a.ausgaben[0].ton.pcm, c.ausgaben[0].ton.pcm);
+  const partitur = a.ausgaben[1].daten;
+  assert.equal(partitur.art, "partitur"); assert.equal(partitur.ereignisse.length, a.protokoll.toene);
+  assert.ok(partitur.ereignisse.every((e) => e.t >= 0 && e.t < 3 && e.hz >= 110 && e.hz <= 110 * 16 + 1));
+  assert.equal(a.entscheidungen[0].art, "zufall"); assert.equal(a.entscheidungen[0].details.startwert, 7);
+  let spitze = 0; for (const v of a.ausgaben[0].ton.pcm) spitze = Math.max(spitze, Math.abs(v));
+  nahe(spitze, 0.89, 0.01, "auf −1 dBFS gebracht");
+  // Stimmung: pentatonische Stufen liegen auf den Halbtönen 0, 2, 4, 7, 9 über dem Grundton
+  const raum = { grundton: 100, umfang: 2, stimmung: "pentatonik" };
+  for (const x of [0, 0.3, 0.55, 1]) { const h = (12 * Math.log2(KL.tonhoehe(x, raum) / 100)) % 12; assert.ok([0, 2, 4, 7, 9].some((s) => Math.abs(h - s) < 1e-6), `${x}: ${h}`); }
+  assert.equal(KL.tonhoehe(1, { grundton: 100, umfang: 3, stimmung: "obertoene" }), 800);
+});
+
+test("Klangerzeuger liest ein Bild: links zuerst, hell laut, oben hoch", async () => {
+  const op = labRegister().hole("lab.klang"), std = { ...standardParameter(op), dauer: 2, nachhall: 0 };
+  const links = (await op.ausfuehren({ bild: feld(0, 0.4, 0, 1) }, std)).ausgaben[0].ton.pcm, n = links.length;
+  assert.ok(energie(links, 0, n * 0.3) > 20 * energie(links, n * 0.6, n), "das helle Feld links klingt am Anfang");
+  const oben = await op.ausfuehren({ bild: feld(0, 1, 0, 0.25) }, std), unten = await op.ausfuehren({ bild: feld(0, 1, 0.75, 1) }, std);
+  assert.ok(durchgaenge(oben.ausgaben[0].ton.pcm, 44100) > 4 * durchgaenge(unten.ausgaben[0].ton.pcm, 44100), "oben hoch, unten tief");
+  assert.equal(oben.ausgaben.length, 1, "beim Bild keine Partitur");
+  assert.equal(oben.protokoll.gelesen.baender, 24);
+  await assert.rejects(op.ausfuehren({ bild: neuesBild(20, 20, [0, 0, 0]) }, std), /ganz dunkel/);
+});
+
+test("Klangerzeuger aus Steuersignal und Konstellation; fehlender Eingang wird gemeldet", async () => {
+  const op = labRegister().hole("lab.klang"), std = { ...standardParameter(op), dauer: 4, dichte: 2 };
+  const s = await op.ausfuehren({ signal: { werte: [0, 0.25, 0.5, 0.75, 1] } }, std);
+  const hz = s.ausgaben[1].daten.ereignisse.map((e) => e.hz);
+  assert.equal(hz.length, 8); assert.ok(hz.every((h, i) => i === 0 || h >= hz[i - 1]), "steigendes Signal, steigende Töne");
+  const gleit = await op.ausfuehren({ signal: { werte: [0, 1] } }, { ...std, stimmung: "gleitend" });
+  assert.equal(gleit.ausgaben.length, 1, "gleitend: ein Ton ohne Partitur");
+  const k = await op.ausfuehren({ konstellation: { id: "x", text: "Die Form ist eine Unterscheidung. Und sie bezeichnet." } }, std);
+  assert.deepEqual(k.ausgaben[1].daten.ereignisse.map((e) => e.wort), ["Die", "Form", "ist", "eine", "Unterscheidung", "Und", "sie", "bezeichnet"]);
+  const t = k.ausgaben[1].daten.ereignisse.map((e) => e.t);
+  assert.ok(t[5] - t[4] > t[2] - t[1], "langes Wort mit Punkt dauert länger");
+  await assert.rejects(op.ausfuehren({}, { ...std, quelle: "bild" }), /braucht ein Bild/);
+  await assert.rejects(op.ausfuehren({}, { ...std, quelle: "konstellation" }), /braucht eine Konstellation/);
+});
+
+test("Kopplung Bild → Klang → Bild: der Klang wird AUDIO-Ergebnis mit WAV, Tonsignal misst ihn, Varianten über die Dauer, Archiv", async () => {
+  const { p, m, e, r } = mitMaterial();
+  const k = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.klang", eingaben: { bild: e.id }, parameter: { dauer: 2 }, seed: 3,
+    variation: { anzahl: 3, routen: [{ ziel: "dauer", tiefe: 1, polaritaet: "einpolig", modulator: { quelle: "saege", frequenz: 0.75, phase: 0 } }] } } });
+  const klaenge = k.ergebnisse.filter((x) => x.typ === "AUDIO");
+  assert.equal(klaenge.length, 3);
+  assert.equal(new Set(klaenge.map((x) => x.ton.dauer)).size, 3, "die Dauer ist moduliert");
+  for (const x of klaenge) { assert.match(x.datei, /\.wav$/); assert.equal(x.ton.umriss.length, 200); assert.equal(x.ton.kanaele, 1); }
+  const knoten = p.knoten.find((x) => x.operation === "lab.klang");
+  assert.equal(knoten.protokoll[0].quelle, "bild"); assert.equal(knoten.seed, 3);
+  // WAV hin und zurück
+  const wav = m.dateien.get(klaenge[0].datei), gelesen = KL.wavLesen(wav);
+  assert.equal(gelesen.rate, 44100); assert.equal(gelesen.pcm.length, m.toene.get(klaenge[0].id).pcm.length);
+  nahe(gelesen.pcm[22050], m.toene.get(klaenge[0].id).pcm[22050], 1 / 32767 + 1e-6, "16 Bit");
+  // der erzeugte Klang geht wie eine Tondatei ins Tonsignal und moduliert ein Bild
+  const s = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.tonsignal", eingaben: { ton: klaenge[2].id }, parameter: { proben: 32 } } });
+  assert.equal(s.ergebnisse[0].daten.quelle, "ton");
+  const w = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.wiederholung", eingaben: { bild: e.id }, parameter: { seite: 64 },
+    variation: { anzahl: 3, routen: [{ ziel: "drehung", tiefe: 1, modulator: { quelle: "signal", ergebnis: s.ergebnisse[0].id } }] } } });
+  assert.equal(w.ergebnisse.length, 3);
+  assert.deepEqual(P.pruefeProjekt(p), []);
+  const { projekt, medien } = await entpacke(packe(p, m.dateien));
+  assert.deepEqual(medien.get(klaenge[0].datei), wav, "die WAV kommt ins Archiv");
+  assert.equal(projekt.ergebnisse.filter((x) => x.typ === "AUDIO" && x.knoten).length, 3);
 });

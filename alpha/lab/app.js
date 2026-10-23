@@ -19,7 +19,7 @@ const $ = (id) => document.getElementById(id);
 const S = {
   projekt: P.neuesProjekt(), medien: browserMedien(), aktuell: null, op: null, parameter: {}, eingaben: {}, seed: neuerStartwert(),
   variation: { anzahl: 6, achse: "varianten", ziel: "", quelle: "sinus", tiefe: 0.5, polaritaet: "bipolar", frequenz: 1, halten: 0, signal: "" },
-  wahl: null, ansicht: "neben", modus: "manuell", laeuft: null, vergleich: new Set(), filme: new Map(), ungespeichert: false,
+  wahl: null, ansicht: "neben", modus: "manuell", laeuft: null, vergleich: new Set(), filme: new Map(), tonspur: new Map(), ungespeichert: false,
   experimentErlaubt: new Set(["lab.feedback", "lab.wiederholung", "lab.farbe", "lab.differenz"]), experimentSchritte: 3, experimentVarianten: 3,
   // Film über Stationen: null folgt dem Verlauf des Ausgangs, sonst die eigene Auswahl (Kennungen, mit Übergang je Station)
   stationen: null,
@@ -106,8 +106,7 @@ function zeigeAusgang() {
 }
 function verfuegbareOperationen() {
   const e = aktuellesErgebnis();
-  const ohneEingang = R.alle().filter((op) => !op.eingaenge.length);
-  return [...ohneEingang, ...(e ? R.fuer(e.typ) : [])];
+  return [...R.generatoren(), ...(e ? R.fuer(e.typ) : [])];   // Generatoren (ORNA, Klangerzeuger) stehen immer zur Wahl
 }
 function zeigeOperationen() {
   zeigeAusgang();
@@ -143,7 +142,9 @@ function regler(p, wert, setze) {
   return el("label", { class: "regler", title: p.hilfe ?? null }, el("span", { class: "kopfzeile" }, el("span", { text: p.name }), aus),
     el("input", { type: "range", min: p.min, max: p.max, step: p.schritt ?? "any", value: wert, "data-param": p.id, oninput: (ev) => { const v = Number(ev.target.value); aus.textContent = zahl(v); setze(v); } }));
 }
-const EINGANG_NAME = { konstellation: "Konstellation", vergleich: "Vergleichen mit", profil: "Zielprofil (angleichen an)" };
+const EINGANG_NAME = { konstellation: "Konstellation", vergleich: "Vergleichen mit", profil: "Zielprofil (angleichen an)", bild: "Bild", signal: "Steuersignal" };
+/** Eingänge mit Auswahlfeld: alle ausser dem ersten (der ist der Ausgang), bei Generatoren mit lauter optionalen Eingängen alle */
+const waehlbareEingaenge = (op) => (op.eingaenge.every((x) => x.optional) ? op.eingaenge : op.eingaenge.slice(1));
 /** Titel eines Ergebnisses, bei Befunden mit dem Bild, an dem gemessen wurde */
 function mitQuelle(x) {
   if (x.typ !== "METADATA" || !x.knoten) return x.titel;
@@ -157,9 +158,12 @@ function zeigeFormular() {
   f.hidden = false;
   const teile = [el("h3", { text: op.name }), el("p", { class: "beschreibung", text: op.beschreibung })];
   // weitere Eingänge (Konstellation, Vergleich)
-  for (const ein of op.eingaenge.slice(1)) {
-    const kandidaten = S.projekt.ergebnisse.filter((x) => x.typ === ein.typ && x.id !== S.aktuell);
-    if (!(ein.name in S.eingaben)) S.eingaben[ein.name] = ein.vorwaehlen === false ? "" : (kandidaten.at(-1)?.id ?? "");
+  const generator = op.eingaenge.every((x) => x.optional);
+  if (generator && S.eingabenFuer !== S.aktuell) { S.eingaben = {}; S.eingabenFuer = S.aktuell; }   // neuer Ausgang: neu vorwählen
+  for (const ein of waehlbareEingaenge(op)) {
+    const kandidaten = S.projekt.ergebnisse.filter((x) => x.typ === ein.typ && (generator || x.id !== S.aktuell));
+    // beim Generator steht nur der Ausgang vor, wo sein Typ passt; die anderen Eingänge bleiben leer
+    if (!(ein.name in S.eingaben)) S.eingaben[ein.name] = generator ? (e?.typ === ein.typ ? e.id : "") : ein.vorwaehlen === false ? "" : (kandidaten.at(-1)?.id ?? "");
     teile.push(el("label", { class: "regler" }, el("span", { text: `${EINGANG_NAME[ein.name] ?? ein.name}${ein.optional ? " (optional)" : ""}` }),
       el("select", { onchange: (ev) => { S.eingaben[ein.name] = ev.target.value; } },
         ein.optional ? el("option", { value: "", text: "keine" }) : null,
@@ -171,6 +175,7 @@ function zeigeFormular() {
     const zahlen = op.parameter.filter((p) => p.art === "zahl");
     const signale = S.projekt.ergebnisse.filter((x) => x.typ === "CONTROL_SIGNAL");
     const v = S.variation;
+    if (v.quelle === "signal" && !signale.length) v.quelle = "sinus";   // etwa nach «Neu»: die Einstellung bleibt, das Signal nicht
     if (v.quelle === "signal" && !signale.some((s) => s.id === v.signal)) v.signal = signale.at(-1)?.id ?? "";
     const achsen = [{ wert: "varianten", name: "über die Varianten (Nebeneinander)" }, ...(op.verlauf ? [{ wert: "zeit", name: "über die Zeit (Nacheinander)" }, { wert: "beide", name: "beides" }] : [])];
     teile.push(el("fieldset", { class: "gruppe" }, el("legend", { text: "Variation und Modulation" }),
@@ -184,7 +189,7 @@ function zeigeFormular() {
       v.quelle !== "zufall" ? regler({ id: "halten", name: "Abtasten und halten (Stufen, 0 = fortlaufend)", art: "zahl", min: 0, max: 16, schritt: 1 }, v.halten, (x) => { v.halten = x; }) : null,
       regler({ id: "achse", name: "Modulation wirkt", art: "wahl", optionen: achsen }, achsen.some((a) => a.wert === v.achse) ? v.achse : "varianten", (x) => { v.achse = x; })));
   }
-  const kannLaufen = !op.eingaenge.length || (e && op.eingaenge.every((x, i) => i === 0 || x.optional || S.eingaben[x.name]));
+  const kannLaufen = op.eingaenge.every((x) => x.optional) || (e && op.eingaenge.every((x, i) => i === 0 || x.optional || S.eingaben[x.name]));
   teile.push(el("div", { class: "aktionen" },
     el("button", { class: "knopf voll", type: "submit", id: "ausfuehren", disabled: !kannLaufen || Boolean(S.laeuft), text: "Ausführen" }),
     el("span", { class: "startwert", text: `Startwert ${S.seed}` }),
@@ -195,8 +200,8 @@ function zeigeFormular() {
 async function ausfuehren() {
   const op = R.hole(S.op);
   const eingaben = {};
-  if (op.eingaenge.length) eingaben[op.eingaenge[0].name] = S.aktuell;
-  for (const x of op.eingaenge.slice(1)) if (S.eingaben[x.name]) eingaben[x.name] = S.eingaben[x.name];
+  if (op.eingaenge.length && !op.eingaenge[0].optional) eingaben[op.eingaenge[0].name] = S.aktuell;
+  for (const x of waehlbareEingaenge(op)) if (S.eingaben[x.name]) eingaben[x.name] = S.eingaben[x.name];
   const v = S.variation;
   const halten = v.quelle !== "zufall" && v.halten >= 1 ? { halten: v.halten } : {};
   const routen = op.varianten === "moduliert" && v.ziel ? [{ ziel: v.ziel, tiefe: v.tiefe, polaritaet: v.polaritaet, modulator: v.quelle === "signal" ? { quelle: "signal", ergebnis: v.signal, ...halten } : { quelle: v.quelle, frequenz: v.frequenz, phase: 0, seed: S.seed, stufen: v.anzahl, ...halten } }] : [];
@@ -211,7 +216,9 @@ async function ausfuehren() {
     if (ergebnisse[0].typ === "IMAGE" || !S.aktuell) S.aktuell = ergebnisse[0].id;
     S.ansicht = "neben"; document.querySelector('input[name="ansicht"][value="neben"]').checked = true;
     S.knotenAnsicht = ergebnisse[0].knoten;
-    status(ergebnisse[0].typ === "CONTROL_SIGNAL" && ergebnisse[0].daten?.quelle === "ton"
+    status(ergebnisse[0].typ === "AUDIO"
+      ? `${op.name}: ${ergebnisse.filter((x) => x.typ === "AUDIO").length} Klang. Anhören, mit «weiterführen» zum Ausgang machen: dann misst «Tonsignal» ihn für Bildparameter.`
+      : ergebnisse[0].typ === "CONTROL_SIGNAL" && ergebnisse[0].daten?.quelle === "ton"
       ? `${op.name}: Steuersignal über ${sekunden(ergebnisse[0].daten.dauer)}. Wähle ein Bild und bei einer Operation die Quelle «Steuersignal».`
       : `${op.name}: ${ergebnisse.length} Ergebnis${ergebnisse.length === 1 ? "" : "se"}. Wähle eine Variante, um weiterzuführen.`);
   });
@@ -282,6 +289,27 @@ async function experimentStarten() {
 }
 
 // ---------- 3 · Experiment: Nebeneinander und Nacheinander ----------
+/** Umriss eines Klangs (Spitzenwerte) als Fläche */
+function umriss(e) {
+  const u = e.ton?.umriss;
+  if (!u?.length) return tonSymbol(e);
+  const pts = u.map((v, i) => `${(i / (u.length - 1)) * 100},${22 - v * 20}`), unten = u.map((v, i) => `${(i / (u.length - 1)) * 100},${22 + v * 20}`).reverse();
+  return svg(`<svg viewBox="0 0 100 44" preserveAspectRatio="none" role="img" aria-label="Umriss des Klangs"><polygon points="${[...pts, ...unten].join(" ")}" fill="#f4f1ea" opacity="0.85"/></svg>`);
+}
+/** ein erzeugter Klang: Umriss, Wiedergabe, weiterführen (dann ist er Ausgang für Tonsignal), WAV */
+function klangKarte(e, { gewaehlt = false, knoten = null } = {}) {
+  const k = knoten ?? (e.knoten ? P.knoten(S.projekt, e.knoten) : null);
+  const ziel = k?.variation?.routen?.[0]?.ziel, p = e.variante?.parameter;
+  const werte = p && ziel ? `${R.hole(k.operation).parameter.find((x) => x.id === ziel)?.name}: ${zahl(p[ziel])}` : `${sekunden(e.ton?.dauer ?? 0)}, ${e.ton?.abtastrate ?? "?"} Hz`;
+  return el("div", { class: `karte klang${gewaehlt ? " gewaehlt" : ""}`, dataset: { ergebnis: e.id } },
+    el("div", { class: "umriss" }, umriss(e)),
+    el("audio", { src: S.medien.url(e), controls: true, preload: "none" }),
+    el("div", { class: "titel", text: e.titel }),
+    el("div", { class: "werte", text: werte }),
+    el("div", { class: "aktionen" },
+      e.knoten ? el("button", { class: `knopf klein${gewaehlt ? " voll" : ""}`, type: "button", onclick: () => weiterfuehren(e.id), text: gewaehlt ? "gewählt" : "weiterführen" }) : null,
+      el("button", { class: "knopf klein leise", type: "button", onclick: () => herunterladen(new Blob([S.medien.dateien.get(e.datei)], { type: e.mime || "audio/wav" }), `${slug(S.projekt.titel)}-${slug(e.titel)}.${e.datei.split(".").pop()}`), text: "WAV" })));
+}
 function bildKarte(e, { gewaehlt = false, knoten = null } = {}) {
   const k = knoten ?? (e.knoten ? P.knoten(S.projekt, e.knoten) : null);
   const ziel = k?.variation?.routen?.[0]?.ziel;
@@ -318,6 +346,12 @@ function textKarte(e) {
     return el("div", { class: "signal" },
       svg(`<svg viewBox="0 0 100 44" preserveAspectRatio="none" role="img" aria-label="Steuersignal"><polyline points="${pts}" fill="none" stroke="#f4f1ea" stroke-width="0.6" vector-effect="non-scaling-stroke"/></svg>`),
       el("p", { class: "startwert", text: `${e.titel}: ${w.length} Werte 0–1${zeit} Als Modulationsquelle «Steuersignal» für jede Operation wählbar.` }));
+  }
+  if (e.typ === "EVENT_SEQUENCE" && d.art === "partitur") {
+    const striche = d.ereignisse.map((x) => { const X = (x.t / d.dauer) * 100, Y = 42 - (Math.log2(x.hz / Math.min(...d.ereignisse.map((z) => z.hz))) / 6) * 38; return `<line x1="${X}" y1="${Y}" x2="${X + 1.2}" y2="${Y}" stroke="#f4f1ea" stroke-width="${1 + 2 * x.staerke}" vector-effect="non-scaling-stroke"/>`; }).join("");
+    return el("div", { class: "signal" },
+      svg(`<svg viewBox="0 0 100 44" preserveAspectRatio="none" role="img" aria-label="Partitur: ${d.ereignisse.length} Töne">${striche}</svg>`),
+      el("p", { class: "startwert", text: `${e.titel}: Zeitpunkt, Tonhöhe (Hz) und Stärke jedes Tons, wie der Klangerzeuger ihn gesetzt hat. Als Ereignisfolge im Projekt.` }));
   }
   if (e.typ === "EVENT_SEQUENCE") {
     const striche = d.ereignisse.map((x) => `<line x1="${(x.t / d.dauer) * 100}" y1="44" x2="${(x.t / d.dauer) * 100}" y2="${44 - Math.max(4, Math.min(1, x.staerke) * 40)}" stroke="#f4f1ea" stroke-width="0.8" vector-effect="non-scaling-stroke"/>`).join("");
@@ -382,8 +416,9 @@ function nebeneinander(e) {
       el("span", { class: "startwert", text: `Startwert ${k.seed}` }), ...entsch.map((d) => el("span", {}, artEtikett(d.art), ` ${d.gegenstand}`)),
       k.status === "fehler" ? el("span", { class: "fehler", text: k.fehler }) : null,
       ausgaben.filter((x) => x.typ === "IMAGE").length > 1 ? el("button", { class: "knopf klein leise", type: "button", onclick: () => alleAlsStationen(k), text: "alle als Stationen" }) : null));
-    const bilder = ausgaben.filter((x) => x.typ === "IMAGE"), andere = ausgaben.filter((x) => x.typ !== "IMAGE");
+    const bilder = ausgaben.filter((x) => x.typ === "IMAGE"), klaenge = ausgaben.filter((x) => x.typ === "AUDIO"), andere = ausgaben.filter((x) => x.typ !== "IMAGE" && x.typ !== "AUDIO");
     if (bilder.length) teile.push(el("div", { class: "raster" }, ...bilder.map((x) => bildKarte(x, { gewaehlt: k.gewaehlt === x.id || S.aktuell === x.id, knoten: k }))));
+    if (klaenge.length) teile.push(el("div", { class: "raster" }, ...klaenge.map((x) => klangKarte(x, { gewaehlt: k.gewaehlt === x.id || S.aktuell === x.id, knoten: k }))));
     teile.push(...andere.map(textKarte));
   }
   if (S.vergleich.size === 2) {
@@ -421,34 +456,58 @@ function nacheinander(e) {
       el("div", { class: "parameter", text: material.herkunft?.hinweis ?? "" }))));
   for (const [i, { knoten: k, ergebnis: x }] of schritte.entries()) {
     const entsch = S.projekt.entscheidungen.filter((d) => d.knoten === k.id);
-    liste.append(el("li", {}, el("div", { class: "bild" }, el("img", { src: S.medien.url(x), alt: x.titel })),
+    liste.append(el("li", {}, el("div", { class: "bild" }, x.typ === "AUDIO" ? umriss(x) : el("img", { src: S.medien.url(x), alt: x.titel })),
       el("div", {},
         el("div", { class: "schrittkopf" }, el("b", { text: `${i + 1}. ${opName(k.operation)}` }), el("span", { text: x.titel }), ...entsch.map((d) => el("span", { title: JSON.stringify(d.details) }, artEtikett(d.art), ` ${d.gegenstand}`))),
         el("div", { class: "parameter", text: parameterText(k) }),
         el("div", { class: "parameter", text: `Startwert ${k.seed}, ${k.dauerMs ?? "?"} ms, Operation ${k.operation} ${k.operationVersion}` }),
+        x.typ === "AUDIO" ? el("audio", { src: S.medien.url(x), controls: true, preload: "none" }) : null,
         k.ausgaben.length > 1 ? el("div", { class: "geschwister" }, ...k.ausgaben.map((id) => P.ergebnis(S.projekt, id)).filter((y) => y.typ === "IMAGE").map((y) =>
           el("button", { type: "button", "aria-pressed": String(y.id === x.id), title: `${y.titel}: als Ausgang wählen`, onclick: () => weiterfuehren(y.id) }, el("img", { src: S.medien.url(y), alt: y.titel })))) : null)));
   }
   const film = S.filme.get(e.id);
-  return el("div", {}, liste, stationenAnsicht(e), schritte.length ? el("div", { class: "film" },
+  const klaenge = S.projekt.ergebnisse.filter((x) => x.typ === "AUDIO");
+  if (!S.tonspur.has(e.id)) S.tonspur.set(e.id, tonDesVerlaufs(e.id) ?? "");
+  return el("div", {}, liste, stationenAnsicht(e), schritte.length && e.typ === "IMAGE" ? el("div", { class: "film" },
     el("div", { class: "aktionen" },
       el("button", { class: "knopf", type: "button", id: "animation", disabled: Boolean(S.laeuft), onclick: () => animation(e.id), text: "Animation des letzten Schritts" }),
+      klaenge.length ? el("label", { class: "regler tonspur" }, el("span", { text: "Tonspur" }),
+        el("select", { id: "tonspur", onchange: (ev) => S.tonspur.set(e.id, ev.target.value) }, el("option", { value: "", text: "keine" }),
+          ...klaenge.map((x) => el("option", { value: x.id, selected: S.tonspur.get(e.id) === x.id, text: x.titel })))) : null,
       el("button", { class: "knopf leise", type: "button", onclick: () => verlaufExportieren(e.id), text: "Verlauf als ZIP" }),
       el("small", { text: "Die Operation rechnet ihren Verlauf mit denselben Parametern und demselben Startwert noch einmal." })),
     film ? el("video", { src: film.url, controls: true, loop: true, muted: true, playsinline: true }) : null,
-    film ? el("div", { class: "aktionen" }, el("button", { class: "knopf klein", type: "button", onclick: () => herunterladen(film.blob, film.name), text: `${film.endung.toUpperCase()} speichern` }), el("small", { text: `${film.bilder} Bilder, ${film.breite} × ${film.hoehe}, ${film.codec}` })) : null) : null);
+    film ? el("div", { class: "aktionen" }, el("button", { class: "knopf klein", type: "button", onclick: () => herunterladen(film.blob, film.name), text: `${film.endung.toUpperCase()} speichern` }), el("small", { text: `${film.bilder} Bilder, ${film.breite} × ${film.hoehe}, ${film.codec}${film.tonspur?.codec ? `, Ton ${film.tonspur.codec}` : film.tonspur?.fehlt ? `, ohne Ton: ${film.tonspur.fehlt}` : ""}` })) : null) : null);
 }
+/** der Klang, der den Verlauf über ein Tonsignal gesteuert hat (sonst keiner): er steht als Tonspur vor */
+function tonDesVerlaufs(id) {
+  for (const { knoten: k } of P.verlauf(S.projekt, id).schritte.reverse()) for (const r of k.variation?.routen ?? []) {
+    const s = r.modulator?.quelle === "signal" ? P.ergebnis(S.projekt, r.modulator.ergebnis) : null;
+    const q = s?.knoten ? P.ergebnis(S.projekt, P.knoten(S.projekt, s.knoten).eingaben.ton) : null;
+    if (q?.typ === "AUDIO") return q.id;
+  }
+  return null;
+}
+const TON_FEHLT = "dieser Browser kann keinen Ton kodieren (AudioEncoder für AAC oder Opus fehlt, oder das Video entstand in Echtzeit)";
 async function animation(id) {
   await laufen(async (signal) => {
     const e = P.ergebnis(S.projekt, id);
     status("Animation wird gerechnet …", 0);
-    const r = await videoAus(bildfolge({ register: R, projekt: S.projekt, medien: S.medien, ergebnisId: id, abbrechen: signal }), { melden: status });
+    const tonId = S.tonspur.get(id) || null, tonE = tonId ? P.ergebnis(S.projekt, tonId) : null;
+    // ein Tonsignal mit Ausschnitt: die Tonspur beginnt dort, wo das Signal beginnt
+    const sig = tonE ? P.verlauf(S.projekt, id).schritte.flatMap(({ knoten: k }) => k.variation?.routen ?? []).map((r) => P.ergebnis(S.projekt, r.modulator?.ergebnis)).find((x) => x?.knoten && P.knoten(S.projekt, x.knoten).eingaben.ton === tonId) : null;
+    // die Bildzahl steht erst nach dem Rechnen fest: der Klang läuft ab «beginn» ganz, höchstens so lang wie die längste Animation
+    const t = tonE ? await S.medien.ton(tonE) : null, beginn = sig?.daten?.beginn ?? 0;
+    const ton = t ? { pcm: t.pcm, rate: t.rate, beginn, dauer: Math.min(t.pcm.length / t.rate - beginn, P.GRENZEN.animationBilder / FPS) } : null;
+    const r = await videoAus(bildfolge({ register: R, projekt: S.projekt, medien: S.medien, ergebnisId: id, abbrechen: signal }), { melden: status, ton });
     const name = `medien/${id}-animation.${r.endung}`;
     const bytes = new Uint8Array(await r.blob.arrayBuffer());
     const abgelegt = await S.medien.ablegenDatei(name, bytes, r.mime);
-    S.projekt.exporte.push({ id: P.neueId("x"), art: "animation", ergebnis: id, datei: name, mime: r.mime, codec: r.codec, bilder: r.bilder, fps: FPS, breite: r.breite, hoehe: r.hoehe, sha256: abgelegt.sha256, zeit: new Date().toISOString() });
-    S.filme.set(id, { ...r, url: URL.createObjectURL(r.blob), name: `${slug(S.projekt.titel)}-${slug(e.titel)}.${r.endung}` });
-    status(`Animation: ${r.bilder} Bilder (${(r.bilder / FPS).toFixed(1)} s), ${(r.blob.size / 1e6).toFixed(1)} MB, ${r.codec}.`);
+    S.projekt.exporte.push({ id: P.neueId("x"), art: "animation", ergebnis: id, datei: name, mime: r.mime, codec: r.codec, bilder: r.bilder, fps: FPS, breite: r.breite, hoehe: r.hoehe, sha256: abgelegt.sha256, zeit: new Date().toISOString(),
+      ...(ton ? { tonspur: { ergebnis: tonId, beginn, sekunden: Math.round(ton.dauer * 1000) / 1000, ...(r.ton ? { codec: r.ton } : { fehlt: TON_FEHLT }) } } : {}) });
+    const tonspur = S.projekt.exporte.at(-1).tonspur ?? null;
+    S.filme.set(id, { ...r, tonspur, url: URL.createObjectURL(r.blob), name: `${slug(S.projekt.titel)}-${slug(e.titel)}.${r.endung}` });
+    status(`Animation: ${r.bilder} Bilder (${(r.bilder / FPS).toFixed(1)} s), ${(r.blob.size / 1e6).toFixed(1)} MB, ${r.codec}${tonspur?.codec ? `, mit Tonspur (${tonspur.codec}, ab ${sekunden(beginn)})` : tonspur?.fehlt ? `. Ohne Ton: ${tonspur.fehlt}` : ""}.`);
   });
 }
 function verlaufExportieren(id) {
@@ -633,7 +692,7 @@ async function oeffnen(datei) {
   try {
     const { projekt, medien, fehlt } = await entpacke(new Uint8Array(await datei.arrayBuffer()));
     projekt.exporte ??= [];
-    S.projekt = projekt; S.medien.uebernehmen(medien); S.filme.clear(); S.vergleich.clear(); S.knotenAnsicht = null; S.op = null; S.stationen = null;
+    S.projekt = projekt; S.medien.uebernehmen(medien); S.filme.clear(); S.tonspur.clear(); S.vergleich.clear(); S.knotenAnsicht = null; S.op = null; S.stationen = null;
     const gewaehlt = [...projekt.knoten].reverse().find((k) => k.gewaehlt)?.gewaehlt;
     S.aktuell = gewaehlt ?? projekt.ergebnisse.filter((e) => e.typ === "IMAGE").at(-1)?.id ?? null;
     $("titel").value = projekt.titel; S.ungespeichert = false;
@@ -662,7 +721,7 @@ $("speichern").addEventListener("click", speichern);
 $("oeffnen").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) oeffnen(f); });
 $("neu").addEventListener("click", () => {
   if (S.ungespeichert && !confirm("Das aktuelle Projekt ist nicht gespeichert. Trotzdem neu beginnen?")) return;
-  S.projekt = P.neuesProjekt({ modus: S.modus }); S.medien = browserMedien(); S.aktuell = null; S.op = null; S.filme.clear(); S.knotenAnsicht = null; S.stationen = null; S.ungespeichert = false;
+  S.projekt = P.neuesProjekt({ modus: S.modus }); S.medien = browserMedien(); S.aktuell = null; S.op = null; S.filme.clear(); S.tonspur.clear(); S.knotenAnsicht = null; S.stationen = null; S.ungespeichert = false;
   $("titel").value = S.projekt.titel; status("Neues Projekt."); alles();
 });
 $("titel").addEventListener("change", (ev) => { S.projekt.titel = ev.target.value.trim() || "Ohne Titel"; geaendert(); });

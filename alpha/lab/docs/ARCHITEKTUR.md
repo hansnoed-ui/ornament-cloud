@@ -7,6 +7,7 @@ Die zentrale Einheit ist die **Operation**, nicht die App. Vorhandene Anwendunge
             │ orna.konstellation  fictory.prozess  lab.feedback  lab.farbe  │
             │ lab.wiederholung    lab.bildsignal   lab.differenz            │
             │ lab.profil  lab.komposition  lab.tonsignal (Ton → Signal)     │
+            │ lab.klang (Klangerzeuger: Bild, Signal, Text, Startwert → Ton)│
             └──────────────┬───────────────────────────────────────────────┘
                            │ beschreibt sich selbst: Kennung, Version, Herkunft, Klasse,
                            │ Ein-/Ausgänge mit Typen, Parameter (min/max = harte Grenzen),
@@ -23,10 +24,11 @@ Die zentrale Einheit ist die **Operation**, nicht die App. Vorhandene Anwendunge
 
 | Ordner/Datei | Aufgabe | DOM? |
 |---|---|---|
-| `kern/typen.js` | Datentypen. Implementiert: IMAGE, ANIMATION, CONSTELLATION, CONTROL_SIGNAL, METADATA, seit 0.1.3 AUDIO (als Material) und EVENT_SEQUENCE. Benannt für später: VIDEO, TEXT, GEOMETRY. Register `KLANGFORMEN`: die acht Formen des Audio-Operationsformats (docs/AUDIO-FORMAT.md). Verbindungen nur bei gleichem Typ. | nein |
+| `kern/typen.js` | Datentypen. Implementiert: IMAGE, ANIMATION, CONSTELLATION, CONTROL_SIGNAL, METADATA, seit 0.1.3 AUDIO (als Material, seit 0.1.5 auch vom Klangerzeuger) und EVENT_SEQUENCE. Benannt für später: VIDEO, TEXT, GEOMETRY. Register `KLANGFORMEN`: die acht Formen des Audio-Operationsformats (docs/AUDIO-FORMAT.md). Verbindungen nur bei gleichem Typ. | nein |
 | `kern/register.js` | prüft Operationsbeschreibungen, findet anwendbare Operationen, bereinigt und begrenzt Parameter | nein |
 | `kern/modulation.js` | Modulatoren (Sinus, Dreieck, Säge, gehaltener Zufall, Steuersignal), Abtasten und halten, Routen mit Attenuverter und Polarität; mehrere Routen werden summiert, dann begrenzt (geprüft: docs/MODULATION-DOSSIER.md) | nein |
 | `kern/komposition.js` | kompositorisches Profil (Schwerpunkt, Symmetrie, Licht, Kontrast, Farbe, Richtung) und die Zerlegung, mit der `lab.komposition` diese Komponenten skaliert oder einem Zielprofil angleicht (docs/KOMPOSITION.md) | nein |
+| `kern/klang.js` | Klang in reinem JavaScript für `lab.klang`: Stimmungen, Klangfarben, Hüllkurve, Nachhall, WAV schreiben und lesen | nein |
 | `kern/projekt.js` | Projektformat, Knoten, Ergebnisse, Entscheidungen (4 Arten), Verlauf, Geschwister, Ketten, Prüfung, Grenzen | nein |
 | `kern/ausfuehrung.js` | `fuehreAus`, `bildfolge` (Animation), `regelVorschlaege`, `experiment`, `ketteAnwenden` | nein |
 | `kern/stationen.js` | Animation über Stationen: Partitur (Reihenfolge, Halten, Übergänge, Modulation der Zeit, Takt aus Ereignisfolgen) und die Bilder des Films (docs/STATIONEN.md) | nein |
