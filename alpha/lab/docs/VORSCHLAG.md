@@ -1,4 +1,4 @@
-# Vorschlag für 30 Sekunden aus Bild und Klang (Lab 0.1.11, Zusammenstellung seit 0.1.12, Video seit 0.1.13, Bewegung seit 0.1.14)
+# Vorschlag für 30 Sekunden aus Bild und Klang (Lab 0.1.11, Zusammenstellung seit 0.1.12, Video seit 0.1.13, Bewegung seit 0.1.14, 60 Motive seit 0.1.15)
 
 Christian wollte ein Bild und eine MP3 hochladen und von jev einen Vorschlag für eine Animation von 30 Sekunden bekommen. Der Bereich «Animation aus Bild und Klang (30 s)» steht unter **Material**, sobald das Projekt ein Bild und einen Ton hat.
 
@@ -36,8 +36,8 @@ Aus den Wahrscheinlichkeiten zieht das Lab mit Startwert (`zusammenstellen()` in
 
 1. die zwei Klangeffekte nacheinander auf den Ton (Tempo, Zerlegen, Neu-Rhythmisierung, Körner)
 2. *Tonsignal* misst den neuen Klang: Hüllkurve für die Modulation, Anschläge für den Takt; ein bearbeiteter Klang beginnt am Anfang
-3. sechs Abschnitte zu je drei Varianten, die Lautstärke verteilt den Hauptparameter jedes Effekts über die Varianten (Zerfall: drei der sechs Zustände)
-4. Film über 19 Stationen mit dem neuen Klang als Tonspur, im Takt der stärksten Anschläge (jede Station einmal) oder gleichmässig
+3. sechs Abschnitte zu je zehn Varianten (seit Lab 0.1.15, vorher drei), die Lautstärke verteilt den Hauptparameter jedes Effekts über die Varianten (Zerfall: seine sechs Zustände)
+4. Film über 61 Stationen (Bild und 60 Motive) mit dem neuen Klang als Tonspur, im Takt der stärksten Anschläge (jede Station einmal, höchstens zwei Wechsel je Sekunde, beim Schnitt 2,5) oder gleichmässig, wenn die Anschläge nicht für alle Motive reichen
 
 Kosten: ein Aufruf mit etwa 4000 Eingabe-Token, also etwa 0,02 Cent; gleiche Stufen kommen 30 Tage aus dem Zwischenspeicher. Am Desktop dauert das Rechnen etwa 50 s, am Telefon länger.
 

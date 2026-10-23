@@ -1081,7 +1081,7 @@ test("Zusammenstellung: Kataloge passen zum Register, Ziehen mit Startwert ohne 
   } finally { globalThis.fetch = echt; }
 });
 
-test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte zu drei Varianten, Film im Takt des neuen Klangs", async () => {
+test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte zu zehn Varianten, Film im Takt des neuen Klangs", async () => {
   const VS = await lab("kern/vorschlag.js");
   const Z = await lab("kern/zusammenstellung.js");
   const r = labRegister();
@@ -1094,12 +1094,12 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   const zerlegt = p.knoten[3];
   assert.equal(zerlegt.eingaben.ton, p.knoten[2].ausgaben[0], "der zweite Klangeffekt wirkt auf das Ergebnis des ersten");
   assert.equal(x.klang, P.ergebnis(p, zerlegt.ausgaben[0]).id);
-  assert.equal(x.ergebnisse.length, 18);
-  for (let i = 1; i < 6; i++) assert.equal(p.knoten[5 + i].eingaben.bild, x.ergebnisse[i * 3 - 1].id, "Kette: auf der letzten Variante des vorigen Abschnitts");
+  assert.equal(x.ergebnisse.length, 60);
+  for (let i = 1; i < 6; i++) assert.equal(p.knoten[5 + i].eingaben.bild, x.ergebnisse[i * 10 - 1].id, "Kette: auf der letzten Variante des vorigen Abschnitts");
   assert.equal(x.entscheidung.gegenstand, "zusammenstellung"); assert.equal(x.entscheidung.art, "jev");
   assert.deepEqual(x.entscheidung.gewaehlt.bild, plan.bild);
   assert.ok(p.entscheidungen.filter((d) => d.details?.entscheidung === x.entscheidung.id).length >= 9, "jeder Schritt verweist auf die Zusammenstellung");
-  assert.equal(x.plan.stationen.length, 19); assert.equal(x.plan.tonspur, x.klang); assert.equal(x.plan.tonBeginn, 0);
+  assert.equal(x.plan.stationen.length, 61); assert.equal(x.plan.tonspur, x.klang); assert.equal(x.plan.tonBeginn, 0);
   assert.deepEqual(x.plan.bewegung, { staerke: Z.BEWEGUNG, signal: x.signal }, "die Kamera atmet mit dem neuen Klang");
   const pt = ST.partitur(p, { ...x.plan, fps: 30 });
   assert.ok(pt.dauer > 3 && pt.dauer <= 30, `${pt.dauer}`);

@@ -620,7 +620,7 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   assert.equal(z.d.gewaehlt.bild[5], "bild.raster");
   assert.deepEqual(z.ops.slice(0, 3), ["lab.tempo", "lab.zerlegen", "lab.tonsignal"]);
   assert.equal(z.ops.at(-1), "lab.raster");
-  assert.equal(z.x.dramaturgie, "zusammenstellung"); assert.equal(z.x.stationen.length, 19); assert.ok(z.x.ton, "mit Tonspur");
+  assert.equal(z.x.dramaturgie, "zusammenstellung"); assert.equal(z.x.stationen.length, 61); assert.ok(z.x.ton, "mit Tonspur");
   assert.deepEqual(fehler2, []);
   await c.close();
 });

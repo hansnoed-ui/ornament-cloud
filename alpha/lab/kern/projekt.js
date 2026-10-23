@@ -7,7 +7,7 @@
 
 export const FORMAT = "ornament-lab-projekt";
 export const FORMAT_VERSION = "0.7.0";
-export const LAB_VERSION = "0.1.14";
+export const LAB_VERSION = "0.1.15";
 
 export const ENTSCHEIDUNGSARTEN = Object.freeze({
   mensch: "menschliche Entscheidung",
@@ -32,7 +32,7 @@ export const GRENZEN = Object.freeze({
   seite: 2048,             // längste Seite der Arbeitsbilder in Pixeln
   animationBilder: 900,    // Bilder je Animation
   tonSekunden: 600,        // Länge einer Tondatei (sie wird ganz dekodiert)
-  stationen: 48,           // Stationen je Film (kern/stationen.js)
+  stationen: 64,           // Stationen je Film (kern/stationen.js)
   filmBilder: 3600,        // Bilder je Film über Stationen (2 Minuten bei 30 Bildern/s)
 });
 
