@@ -66,7 +66,7 @@ const name = (liste, id) => liste.find((p) => p.id === id).name;
 // was nicht auf zwei Zeilen gehört: «ein Gegenüber», «die Welt» (Rückmeldung vom 23. Oktober 2026: «ein Gegenüber»)
 const ANTWORTEN = {
   bild: { wort: "ein Bild", satz: "Ein Bild, das Bewegung sucht" },        // PHORMA I, PHORMA II
-  klang: { wort: "einen Klang", satz: "Ein Klang, der sich sehen lässt" },  // PHORMA III
+  klang: { wort: "einen Klang", satz: "Einen Klang, der sich sehen lässt" },  // PHORMA III
   frage: { wort: "eine Frage", satz: "Eine Frage, die ein\u00a0Gegenüber sucht" }, // ORNA
   idee: { wort: "eine Idee", satz: "Eine Idee, die in die\u00a0Welt kommt" },    // die Angebote
   begriff: { wort: "einen Begriff", satz: "Ein Begriff, der Verbindung sucht" }, // der Zettelkasten

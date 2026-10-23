@@ -239,7 +239,7 @@ die Szene «Eine Gruppe» (OMNA COLOR) ist damit entfallen.
 1. Tinte: «Was», «bringst», «du», «mit?» je allein und bildfüllend auf den Schlag, dann die ganze Frage als Block, das Fragezeichen in der Blaupause
 2. Papier: die Antworten als Walze zwischen zwei Haarlinien (ein Bild, einen Klang, eine Frage, eine Idee, einen Begriff); sie bleibt auf «ein Bild» stehen, blau unterstrichen
 3. Tinte: «Ein Bild, das Bewegung sucht» – PHORMA I (Glaskörper), PHORMA II (Rasterdruck, dann Montage), PHORMA I (Scherben)
-4. Papier: «Ein Klang, der sich sehen lässt» – PHORMA III (Traube, Irrfahrt mit einem und mit drei Würfeln)
+4. Papier: «Einen Klang, der sich sehen lässt» – PHORMA III (Traube, Irrfahrt mit einem und mit drei Würfeln)
 5. Tinte: «Eine Frage, die ein Gegenüber sucht» – die lebende Tafel von ORNA dreht, die Begegnung leuchtet; dann rückt das Rad nach oben und die Konstellation
    steht darunter: Doris Salcedo × George Spencer-Brown, «Kann eine Grenze erinnern?» (aus den Daten von ORNA; Wunsch: «ORNA könnte auch noch eine Konstellation zeigen»)
 6. Papier: «Eine Idee, die in die Welt kommt» – ein Telefon kippt ins Bild und blättert durch die echte Startseite bis zu den vier Leistungen (Unterzeile «Angebot»)
