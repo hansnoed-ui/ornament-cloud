@@ -19,6 +19,12 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.differenz` 0.1.0 | Differenz | Beobachtungsoperation | neu, nach Difference-Komposition (Fusion Merge, After Effects, Resolume) | Bild + Bild → Bild | eine |
 | `lab.profil` 0.1.0 | Kompositorisches Profil | Beobachtungsoperation | neu, nach Kategorien von ShotDeck, FilmGrab und Flim (Bildausschnitt, Licht, Farbe, Symmetrie) als Messgrössen; Strukturtensor (Bildanalyse) | Bild → Befund | eine |
 | `lab.komposition` 0.1.0 | Komposition verändern | Räumliche Operation | neu, nach Attenuverter (VCV Rack) auf gemessene Bildkomponenten übertragen; Kategorien von ShotDeck, FilmGrab und Flim | Bild + Befund (opt.) → Bild | über Modulation |
+| `lab.glitch` 0.1.0 | Glitch | Räumliche Operation | neu, nach Databending und Datamoshing (Rosa Menkman, The Glitch Moment(um)); RGB-Split in Resolume (Shift RGB) und After Effects (Channel Offset) | Bild → Bild | über Modulation |
+| `lab.pixelsortierung` 0.1.0 | Pixelsortierung | Räumliche Operation | neu, nach Kim Asendorf, ASDFPixelSort (Processing, 2010): Abschnitte zwischen Schwellen sortieren | Bild → Bild | über Modulation |
+| `lab.verzerrung` 0.1.0 | Optische Verzerrung | Räumliche Operation | neu, nach Verzerrungsfilter der Bildbearbeitung (Strudel, Wölben, Wellen, Versetzen in Photoshop und GIMP); TouchDesigner Displace TOP; Kaleidoskop | Bild + Bild (opt.) → Bild | über Modulation |
+| `lab.licht` 0.1.0 | Licht: Glühen und Streifen | Räumliche Operation | neu, nach Bloom der Echtzeitgrafik (TouchDesigner Bloom TOP, Post-Processing in Unity und Unreal); Glow in Fusion und After Effects; anamorphotische Lichtfahnen | Bild → Bild | über Modulation |
+| `lab.raster` 0.1.0 | Raster und Linien | Räumliche Operation | neu, nach amplitudenmodulierte Rasterung des Drucks; Kupferstich und Schraffur; Bild abtasten und Formen zeichnen in Processing/p5.js; gestapelte Profillinien (Unknown Pleasures) | Bild → Bild | über Modulation |
+| `lab.neusetzen` 0.1.0 | Zerlegen und neu setzen | Räumliche Operation | neu, nach Cut-up (Brion Gysin, William S. Burroughs); Collage und Montage; Kachel-Filter der Bildbearbeitung (GIMP Puzzle, Mosaik) | Bild → Bild | über Modulation |
 
 ## ORNA-Konstellation (`orna.konstellation`)
 
@@ -315,3 +321,151 @@ Verstärkt, hebt auf oder kehrt um, was das Profil misst: Lage des Schwerpunkts,
 | Sättigung (`saettigung`) | -1 … 2, Standard 1 – die Farbabweichung vom Grau, −1 ergibt Gegenfarben. 1 lässt stehen, 0 hebt auf, −1 kehrt um, 2 verdoppelt |
 | Angleichung an das Zielprofil (`angleichung`) | 0 … 1, Standard 1 – nur mit Zielprofil: 0 gelten die Faktoren, 1 gilt das Ziel |
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher |
+
+## Glitch (`lab.glitch`)
+
+Stört das Bild wie einen beschädigten Datenstrom: Blöcke zeigen Inhalt von anderer Stelle, Zeilenbänder verrutschen, Rot und Blau trennen sich. Alles aus dem Startwert gewürfelt, darum wiederholbar; «Flackern» würfelt im Verlauf jedes Bild neu.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/glitch.js; Prinzip nach Databending und Datamoshing (Rosa Menkman, The Glitch Moment(um)); RGB-Split in Resolume (Shift RGB) und After Effects (Channel Offset)
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** ein Durchgang über die Pixel (1200 px: unter 0,3 s); Speicher: ein Bild
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Kanalversatz (`kanalversatz`) | 0 … 0.1, Standard 0.015 – Anteil der Bildbreite, um den Rot und Blau auseinanderrücken |
+| Richtung des Kanalversatzes (°) (`richtung`) | -180 … 180, Standard 0 |
+| Kanäle (`kanaele`) | **an ihrem Platz** / Rot und Blau vertauscht / zyklisch verschoben |
+| verrutschte Zeilenbänder (`streifen`) | 0 … 1, Standard 0.3 – Anteil der Bänder, die waagrecht verrutschen |
+| Höhe der Bänder (`streifenHoehe`) | 0.002 … 0.2, Standard 0.03 – Anteil der Bildhöhe, gewürfelt um diesen Wert |
+| Weite des Verrutschens (`verschiebung`) | 0 … 0.5, Standard 0.1 – höchstens dieser Anteil der Bildbreite |
+| versetzte Blöcke (`bloecke`) | 0 … 1, Standard 0.12 – Anteil der Blöcke, die Inhalt von anderer Stelle zeigen |
+| Blockgrösse (`blockgroesse`) | 0.01 … 0.25, Standard 0.05 – Anteil der längsten Seite |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| im Verlauf neu würfeln (Flackern) (`flackern`) | ein/aus, Standard aus |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Pixelsortierung (`lab.pixelsortierung`)
+
+Sortiert in jeder Zeile oder Spalte die Abschnitte, deren Helligkeit (oder Farbton, Sättigung) zwischen zwei Schwellen liegt. Was ausserhalb liegt, bleibt stehen. Die Schwellen sind die Unterscheidung zwischen Bild und Fliessen.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/pixelsortierung.js; Prinzip nach Kim Asendorf, ASDFPixelSort (Processing, 2010): Abschnitte zwischen Schwellen sortieren
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** ein Durchgang mit Sortieren in linearer Zeit (1200 px: unter 0,5 s); Speicher: ein Bild und eine Zeile
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Richtung (`richtung`) | **waagrecht (Zeilen)** / senkrecht (Spalten) |
+| sortiert nach (`schluessel`) | **Helligkeit** / Farbton / Sättigung / Rot / Blau |
+| untere Schwelle (`unten`) | 0 … 1, Standard 0.25 |
+| obere Schwelle (`oben`) | 0 … 1, Standard 0.8 |
+| sortiert wird (`auswahl`) | **zwischen den Schwellen** / ausserhalb der Schwellen |
+| längster Abschnitt (`laenge`) | 0.02 … 1, Standard 1 – Anteil der Zeile; kürzer bricht das Fliessen in Stücke |
+| Zufall der Abschnittslänge (`zufall`) | 0 … 1, Standard 0 – 0: alle gleich lang, 1: zwischen 0 und dem längsten gewürfelt |
+| absteigend sortieren (`umkehren`) | ein/aus, Standard aus |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| im Verlauf neu würfeln (Flackern) (`flackern`) | ein/aus, Standard aus |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Optische Verzerrung (`lab.verzerrung`)
+
+Verzieht das Bild als Wirbel, Linse, Welle, Kaleidoskop oder versetzt es nach der Helligkeit eines Bildes: des eigenen oder eines zweiten, das dann das erste steuert.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/verzerrung.js; Prinzip nach Verzerrungsfilter der Bildbearbeitung (Strudel, Wölben, Wellen, Versetzen in Photoshop und GIMP); TouchDesigner Displace TOP; Kaleidoskop
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** ein Durchgang mit bilinearer Abtastung (1200 px: unter 0,5 s); Speicher: ein Gleitkommabild
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Art (`art`) | **Wirbel** / Linse (wölben/einschnüren) / Welle / Versetzen nach Helligkeit / Kaleidoskop |
+| Stärke (`staerke`) | -1 … 1, Standard 0.5 – negativ kehrt die Richtung um (Linse: einschnüren, Kaleidoskop: heranholen) |
+| Radius (Wirbel, Linse) (`radius`) | 0.05 … 1.5, Standard 0.7 – Anteil der halben Bilddiagonale |
+| Mitte waagrecht (`mitteX`) | 0 … 1, Standard 0.5 |
+| Mitte senkrecht (`mitteY`) | 0 … 1, Standard 0.5 |
+| Wellen über das Bild (`frequenz`) | 1 … 40, Standard 6 |
+| Phase / Richtung (°) (`phase`) | -180 … 180, Standard 0 – Welle: Phase, Versetzen: Richtung, Kaleidoskop: Drehung der Segmente |
+| Segmente (Kaleidoskop) (`segmente`) | 2 … 24, Standard 6 |
+| Rand (`rand`) | **spiegeln** / wiederholen / dunkler Grund |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Licht: Glühen und Streifen (`lab.licht`)
+
+Zieht heraus, was heller ist als eine Schwelle, lässt es glühen oder zu Lichtfahnen ausstreichen und legt es über das Bild, auch farblich verschoben. «nur Licht» zeigt den Auszug allein.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/licht.js; Prinzip nach Bloom der Echtzeitgrafik (TouchDesigner Bloom TOP, Post-Processing in Unity und Unreal); Glow in Fusion und After Effects; anamorphotische Lichtfahnen
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** sechs laufende Kastenfilter je Kanal, unabhängig vom Radius (1200 px: unter 0,5 s); Speicher: zwei bis drei Gleitkommabilder
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Form des Lichts (`art`) | **Glühen (rund)** / Streifen waagrecht / Streifen senkrecht / Kreuz (Sternfilter) |
+| Schwelle (`schwelle`) | 0 … 1, Standard 0.6 – was heller ist, beginnt zu leuchten |
+| Kniebreite (`weich`) | 0 … 0.5, Standard 0.15 – weicher Übergang um die Schwelle |
+| Radius (`radius`) | 0.002 … 0.15, Standard 0.03 – Anteil der längsten Seite |
+| Länge der Streifen (`streckung`) | 1 … 12, Standard 5 – Vielfaches des Radius (nur Streifen und Kreuz) |
+| Stärke (`staerke`) | 0 … 4, Standard 1.2 |
+| Farbdrehung des Lichts (°) (`farbdrehung`) | -180 … 180, Standard 0 |
+| Sättigung des Lichts (`saettigung`) | 0 … 2.5, Standard 1 |
+| Komposition (`mischart`) | **addieren** / aufhellen (Screen) / nur Licht |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Raster und Linien (`lab.raster`)
+
+Übersetzt das Bild in ein gedrehtes Raster: Punkte, Linien, Kreuzschraffur oder Wellenlinien, deren Grösse dem Dunkel folgt, oder ein Mosaik. In Tinte auf Papier oder in den Farben des Bildes.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/raster.js; Prinzip nach amplitudenmodulierte Rasterung des Drucks; Kupferstich und Schraffur; Bild abtasten und Formen zeichnen in Processing/p5.js; gestapelte Profillinien (Unknown Pleasures)
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** ein Durchgang mit ein bis wenigen Abtastungen je Pixel (1200 px: unter 0,5 s); Speicher: ein Gleitkommabild
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Form (`art`) | **Punkte (Druckraster)** / Linien / Kreuzschraffur / Wellenlinien / Mosaik |
+| Rasterweite (`zelle`) | 0.004 … 0.08, Standard 0.015 – Anteil der längsten Seite |
+| Rasterwinkel (°) (`winkel`) | -90 … 90, Standard 45 |
+| Gewicht der Tonwerte (`gewicht`) | 0.3 … 3, Standard 1 – unter 1 kräftiger, über 1 nur das tiefe Dunkel |
+| Höhe der Wellen (`amplitude`) | 0 … 6, Standard 1.5 – in Rasterweiten (nur Wellenlinien) |
+| Farben (`farbe`) | **Tinte auf Papier** / Bildfarben auf Papier / Bildfarben auf Nacht |
+| Licht statt Dunkel zeichnen (`umkehren`) | ein/aus, Standard aus |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Zerlegen und neu setzen (`lab.neusetzen`)
+
+Teilt das Bild in Kacheln oder Streifen und setzt einen Anteil davon neu: zufällig, nach Helligkeit oder in umgekehrter Reihe. Teile können kippen, verrutschen und Fugen bekommen. Die Zuordnung steht im Protokoll.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/neusetzen.js; Prinzip nach Cut-up (Brion Gysin, William S. Burroughs); Collage und Montage; Kachel-Filter der Bildbearbeitung (GIMP Puzzle, Mosaik)
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** ein Durchgang über die Pixel (1200 px: unter 0,3 s); Speicher: ein Bild
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Teilung (`teilung`) | **Kacheln** / waagrechte Streifen / senkrechte Streifen |
+| Spalten (`spalten`) | 1 … 48, Standard 6 |
+| Zeilen (`zeilen`) | 1 … 48, Standard 6 |
+| neue Ordnung (`ordnung`) | **Zufall (Startwert)** / nach Helligkeit, hell zuerst / nach Helligkeit, dunkel zuerst / Reihe umgekehrt |
+| beteiligte Teile (`beteiligt`) | 0 … 1, Standard 1 – Anteil der Teile, die neu gesetzt werden; die übrigen bleiben stehen |
+| Teile kippen (`kippen`) | 0 … 1, Standard 0 – Wahrscheinlichkeit, dass ein Teil gespiegelt wird |
+| Verrutschen (`versatz`) | 0 … 0.5, Standard 0 – Anteil der Teilgrösse, um den der Inhalt verrutscht |
+| Fuge (`fuge`) | 0 … 0.3, Standard 0 – dunkle Fuge zwischen den Teilen |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| im Verlauf neu würfeln (Flackern) (`flackern`) | ein/aus, Standard aus |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
