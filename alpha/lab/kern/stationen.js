@@ -33,6 +33,11 @@ export function stationenAusVerlauf(projekt, ergebnisId) {
   return [material, ...schritte.map((s) => s.ergebnis)].filter((e) => e?.typ === "IMAGE").map((e) => e.id);
 }
 
+/** alle Bildvarianten aller Schritte des Verlaufs bis zu einem Ergebnis, Schritt für Schritt in ihrer Reihenfolge (ohne Material) */
+export function variantenAusVerlauf(projekt, ergebnisId) {
+  return verlauf(projekt, ergebnisId).schritte.flatMap((s) => s.knoten.ausgaben).filter((id) => ergebnis(projekt, id)?.typ === "IMAGE");
+}
+
 /** Ist «nach» aus «von» durch eine Operation entstanden? Dann kann der Übergang deren eigener Verlauf sein. */
 export function verlaufMoeglich(projekt, von, nach) {
   const e = ergebnis(projekt, nach);

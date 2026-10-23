@@ -434,6 +434,10 @@ function nebeneinander(e) {
   const kId = S.knotenAnsicht && P.knoten(S.projekt, S.knotenAnsicht) ? S.knotenAnsicht : e.knoten;
   const k = kId ? P.knoten(S.projekt, kId) : null;
   const teile = [];
+  // die Schritte des Verlaufs bis zum Ausgang: so stehen auch die Varianten früherer Schritte wieder nebeneinander
+  const { schritte } = e.knoten ? P.verlauf(S.projekt, e.id) : { schritte: [] };
+  if (schritte.length > 1) teile.push(el("div", { class: "alternativen schritte" }, el("span", { text: "Schritte:" }),
+    ...schritte.map(({ knoten: x }, i) => el("button", { class: `knopf klein${x.id === kId ? " voll" : " leise"}`, type: "button", "aria-pressed": String(x.id === kId), onclick: () => { S.knotenAnsicht = x.id; zeigeBuehne(); }, text: `${i + 1}. ${opName(x.operation)}` }))));
   if (!k && e.typ === "AUDIO") {
     teile.push(el("div", { class: "knotenkopf" }, el("b", { text: e.titel }), el("span", { text: "Material: Ton" })),
       el("div", { class: "ton-karte" }, el("audio", { src: S.medien.url(e), controls: true, preload: "metadata", loop: S.schleife }),
@@ -447,7 +451,7 @@ function nebeneinander(e) {
     teile.push(el("div", { class: "knotenkopf" }, el("b", { text: op.name }), el("span", { text: `${ausgaben.length} Ergebnis${ausgaben.length === 1 ? "" : "se"}` }),
       el("span", { class: "startwert", text: `Startwert ${k.seed}` }), ...entsch.map((d) => el("span", {}, artEtikett(d.art), ` ${d.gegenstand}`)),
       k.status === "fehler" ? el("span", { class: "fehler", text: k.fehler }) : null,
-      ausgaben.filter((x) => x.typ === "IMAGE").length > 1 ? el("button", { class: "knopf klein leise", type: "button", onclick: () => alleAlsStationen(k), text: "alle als Stationen" }) : null));
+      ausgaben.filter((x) => x.typ === "IMAGE").length > 1 ? el("button", { class: "knopf klein leise", type: "button", onclick: () => alleAlsStationen(k), text: S.stationen?.length ? "alle als Stationen dazu" : "alle als Stationen" }) : null));
     const bilder = ausgaben.filter((x) => x.typ === "IMAGE"), klaenge = ausgaben.filter((x) => x.typ === "AUDIO"), andere = ausgaben.filter((x) => x.typ !== "IMAGE" && x.typ !== "AUDIO");
     if (bilder.length) teile.push(el("div", { class: "raster" }, ...bilder.map((x) => bildKarte(x, { gewaehlt: k.gewaehlt === x.id || S.aktuell === x.id, knoten: k }))));
     if (klaenge.length) teile.push(ausspielLeiste(), el("div", { class: "raster" }, ...klaenge.map((x) => klangKarte(x, { gewaehlt: k.gewaehlt === x.id || S.aktuell === x.id, knoten: k }))));
@@ -606,9 +610,18 @@ function stationUmschalten(id) {
   status(i >= 0 ? "Station entfernt." : `Station ${S.stationen.length} aufgenommen. Der Film über die Stationen steht unter «Nacheinander».`);
   zeigeBuehne();
 }
+/** die Varianten eines Schritts als Stationen: zur eigenen Auswahl hinzu (ohne doppelte), so kommen mehrere Schritte zusammen */
 function alleAlsStationen(k) {
-  S.stationen = k.ausgaben.filter((id) => P.ergebnis(S.projekt, id)?.typ === "IMAGE").map((id) => ({ ergebnis: id }));
-  status(`${S.stationen.length} Stationen: die Varianten dieses Schritts. Der Film steht unter «Nacheinander».`);
+  const neu = k.ausgaben.filter((id) => P.ergebnis(S.projekt, id)?.typ === "IMAGE" && !S.stationen?.some((x) => x.ergebnis === id));
+  const vorher = S.stationen?.length ?? 0;
+  S.stationen = [...(S.stationen ?? []), ...neu.map((id) => ({ ergebnis: id }))];
+  status(vorher ? `${neu.length} Varianten dazu, jetzt ${S.stationen.length} Stationen. Der Film steht unter «Nacheinander».` : `${S.stationen.length} Stationen: die Varianten dieses Schritts. Weitere Schritte oben wählen und ebenso dazunehmen. Der Film steht unter «Nacheinander».`);
+  zeigeBuehne();
+}
+/** alle Bildvarianten aller Schritte des Verlaufs als Stationen */
+function alleVariantenAlsStationen(e) {
+  S.stationen = ST.variantenAusVerlauf(S.projekt, e.id).map((id) => ({ ergebnis: id }));
+  status(`${S.stationen.length} Stationen: alle Varianten aller Schritte.`);
   zeigeBuehne();
 }
 function stationenPlan(liste) {
@@ -619,7 +632,8 @@ function stationenPlan(liste) {
 }
 function stationenAnsicht(e) {
   const liste = stationen(e), f = S.film;
-  const eigene = Boolean(S.stationen);
+  const eigene = Boolean(S.stationen), alle = e ? ST.variantenAusVerlauf(S.projekt, e.id) : [];
+  const alleGewaehlt = eigene && liste.length === alle.length && liste.every((x, i) => x.ergebnis === alle[i]);
   if (liste.length < 2 && !eigene) return el("p", { class: "startwert stationen", text: "Animation über Stationen: sobald der Verlauf zwei Bildzustände hat, oder mit «Station» unter «Nebeneinander»." });
   const setze = (neu) => { S.stationen = neu; zeigeBuehne(); };
   const verschiebe = (i, d) => { const l = liste.map((x) => ({ ...x })); [l[i], l[i + d]] = [l[i + d], l[i]]; setze(l); };
@@ -659,9 +673,10 @@ function stationenAnsicht(e) {
   return el("section", { class: "stationen", "aria-labelledby": "h-stationen" },
     el("div", { class: "knotenkopf" }, el("b", { id: "h-stationen", text: "Animation über Stationen" }),
       el("span", { class: "startwert", text: eigene ? "eigene Auswahl" : "der Verlauf bis zum Ausgang" }),
-      eigene ? el("button", { class: "knopf klein leise", type: "button", onclick: () => setze(null), text: "Verlauf übernehmen" }) : null),
+      eigene ? el("button", { class: "knopf klein leise", type: "button", onclick: () => setze(null), text: "Verlauf übernehmen" }) : null,
+      alle.length > 1 && !alleGewaehlt ? el("button", { class: "knopf klein leise", type: "button", onclick: () => alleVariantenAlsStationen(e), text: `alle Varianten aller Schritte (${alle.length})` }) : null),
     liste.length ? el("ol", { class: "stationen-liste" }, ...zeilen) : null,
-    el("small", { class: "startwert", text: "Unter «Nebeneinander» nimmt «Station» weitere Zustände auf, auch Varianten, die nicht weitergeführt wurden." }),
+    el("small", { class: "startwert", text: "Unter «Nebeneinander» nimmt «Station» weitere Zustände auf, auch Varianten, die nicht weitergeführt wurden. Oben unter «Schritte» lassen sich frühere Schritte wählen, «alle als Stationen dazu» nimmt ihre Varianten hinzu." }),
     el("fieldset", { class: "gruppe stationen-regler" }, el("legend", { text: "Zeit" }),
       zahlRegler("halten", "Halten je Station (s)", 0, 10, 0.1, f.halten, (v) => { f.halten = v; }),
       zahlRegler("uebergang", "Übergang (s)", 0, 6, 0.1, f.uebergang, (v) => { f.uebergang = v; }),

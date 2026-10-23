@@ -143,6 +143,7 @@ fieldset { border: 0; margin: 0; padding: 0; }
 .knotenkopf b { font-weight: 500; font-size: 1rem; }
 .alternativen { margin-top: 18px; font-size: 0.88rem; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .alternativen > span { color: var(--muted); margin-right: 4px; }
+.alternativen.schritte { margin: 0 0 14px; }
 
 /* Nacheinander */
 .verlauf { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }

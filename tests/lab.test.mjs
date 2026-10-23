@@ -392,6 +392,7 @@ test("Stationen: Partitur aus dem Verlauf, Halten und Übergang, Verlauf nur wo 
   const { p, e, f, c } = await mitStationen();
   const ids = ST.stationenAusVerlauf(p, c.ergebnisse[0].id);
   assert.deepEqual(ids, [e.id, f.ergebnisse[1].id, c.ergebnisse[0].id], "Material, Feedback, Farbe");
+  assert.deepEqual(ST.variantenAusVerlauf(p, c.ergebnisse[0].id), [...f.ergebnisse, ...c.ergebnisse].map((x) => x.id), "alle Varianten aller Schritte, ohne Material");
   assert.ok(ST.verlaufMoeglich(p, e.id, f.ergebnisse[1].id));
   assert.ok(!ST.verlaufMoeglich(p, f.ergebnisse[0].id, f.ergebnisse[2].id), "Geschwister entstehen nicht auseinander");
   const pt = ST.partitur(p, { stationen: ids, halten: 1, uebergang: 0.5, art: "blende" });

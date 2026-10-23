@@ -8,7 +8,7 @@ Ein allgemeiner Videoeditor ist das nicht. Es gibt keine Spuren, keine Schnittka
 
 Unter **Nacheinander** steht der Bereich «Animation über Stationen».
 
-- **Stationen:** Ohne eigene Auswahl ist es der Verlauf vom Material bis zum Ausgang. Unter **Nebeneinander** nimmt «Station» an jeder Karte einen Zustand auf. «alle als Stationen» nimmt alle Varianten eines Schritts, zum Beispiel die sechs Zustände der Fictory. ↑ ↓ ordnen um, ✕ entfernt eine Station, «Verlauf übernehmen» kehrt zum Verlauf zurück.
+- **Stationen:** Ohne eigene Auswahl ist es der Verlauf vom Material bis zum Ausgang. Unter **Nebeneinander** nimmt «Station» an jeder Karte einen Zustand auf. «alle als Stationen» nimmt alle Varianten eines Schritts, zum Beispiel die sechs Zustände der Fictory. Seit Lab 0.1.11 kommt das zu einer schon bestehenden Auswahl hinzu (ohne doppelte), und unter «Nebeneinander» wählt «Schritte» auch frühere Schritte des Verlaufs, so lassen sich die Varianten mehrerer Schritte sammeln. «alle Varianten aller Schritte» (unter «Nacheinander») nimmt sie auf einmal, Schritt für Schritt in ihrer Reihenfolge, ohne das Material (`variantenAusVerlauf`). ↑ ↓ ordnen um, ✕ entfernt eine Station, «Verlauf übernehmen» kehrt zum Verlauf zurück.
 - **Zeit:** Halten je Station und Dauer des Übergangs in Sekunden. Für jede Station lässt sich der Übergang zur nächsten einzeln wählen.
 - **Übergänge:**
   - *Überblendung:* weich, mit sanftem Anfang und Ende.
