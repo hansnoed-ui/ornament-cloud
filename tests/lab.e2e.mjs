@@ -94,7 +94,7 @@ await check("Weiterführen: Variante wählen (Mensch), Feedback mit sechs moduli
   await page.locator("#buehne .karte").nth(1).getByRole("button", { name: "weiterführen" }).click();
 });
 
-await check("Kopplung: Bildsignal → moduliert die Wiederholung (Quelle Steuersignal)", async () => {
+await check("Kopplung: Bildsignal → moduliert die Wiederholung (Quelle Steuersignal, einpolig, abgetastet)", async () => {
   await operation(page, "lab.bildsignal");
   await ausfuehren(page);
   assert.ok(await page.locator(".signal svg").isVisible());
@@ -102,9 +102,13 @@ await check("Kopplung: Bildsignal → moduliert die Wiederholung (Quelle Steuers
   await page.locator('#op-form input[data-param="seite"]').fill("400");
   const sel = page.locator("#op-form select");
   for (let i = 0; i < await sel.count(); i++) if ((await sel.nth(i).locator("option").allTextContents()).includes("Steuersignal aus einem Ergebnis")) await sel.nth(i).selectOption("signal");
+  // einpolig und abgetastet (nach VCV Rack: LFO-Schalter OFFSET, Sample & Hold)
+  for (let i = 0; i < await sel.count(); i++) if ((await sel.nth(i).locator("option").allTextContents()).some((t) => t.startsWith("einpolig"))) await sel.nth(i).selectOption("einpolig");
+  await page.locator('#op-form input[data-param="halten"]').fill("3");
   await ausfuehren(page);
-  const r = await S(page, () => ornamentLab.projekt.knoten.at(-1).variation.routen[0].modulator);
+  const route = await S(page, () => ornamentLab.projekt.knoten.at(-1).variation.routen[0]), r = route.modulator;
   assert.equal(r.quelle, "signal"); assert.match(r.ergebnis, /^e-/);
+  assert.equal(route.polaritaet, "einpolig"); assert.equal(r.halten, 3);
   await page.locator("#buehne .karte").nth(2).getByRole("button", { name: "weiterführen" }).click();
 });
 

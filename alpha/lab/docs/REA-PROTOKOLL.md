@@ -88,3 +88,5 @@ Ghidra und Hopper nur dann einrichten, wenn eine konkrete Untersuchung von Masch
 ## 5. Nicht untersucht (bewusst)
 
 Proprietäre Programme (TouchDesigner, Notch, Reason, Bitwig, Resolume, Fusion, Sapphire, After Effects, Topaz) wurden **nicht** dekompiliert. Sie wurden nur über öffentliche Dokumentation gelesen (REFERENZ-MATRIX.md). Für eine berechtigte Laufzeituntersuchung bräuchte es ein rechtmässig installiertes Programm und eine klar begrenzte Frage. Kandidaten für eine nächste Runde: Bitwig Grid oder VCV Rack mit offenem Quellcode, und zwar das Modulationsrouting im Quellcode von VCV Rack (GPL-3.0), nicht als Binärdatei.
+
+**Nachtrag 23. Oktober 2026:** Das Modulationsrouting von VCV Rack ist untersucht, mit normalen Repository-Werkzeugen am Quellcode (Masterprompt §9 A), dazu die Handbücher von Bitwig und TouchDesigner. REA war dafür nicht nötig, weil keine Frage einen Laufzeit- oder Binärbefund verlangte. Befunde und Änderungen: [MODULATION-DOSSIER.md](MODULATION-DOSSIER.md).

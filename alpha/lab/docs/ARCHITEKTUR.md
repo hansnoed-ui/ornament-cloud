@@ -24,7 +24,7 @@ Die zentrale Einheit ist die **Operation**, nicht die App. Vorhandene Anwendunge
 |---|---|---|
 | `kern/typen.js` | Datentypen. Implementiert: IMAGE, ANIMATION, CONSTELLATION, CONTROL_SIGNAL, METADATA. Benannt für später: VIDEO, AUDIO, TEXT, GEOMETRY, EVENT_SEQUENCE. Verbindungen nur bei gleichem Typ. | nein |
 | `kern/register.js` | prüft Operationsbeschreibungen, findet anwendbare Operationen, bereinigt und begrenzt Parameter | nein |
-| `kern/modulation.js` | Modulatoren (Sinus, Dreieck, Säge, gehaltener Zufall, Steuersignal) und Routen mit Attenuverter | nein |
+| `kern/modulation.js` | Modulatoren (Sinus, Dreieck, Säge, gehaltener Zufall, Steuersignal), Abtasten und halten, Routen mit Attenuverter und Polarität; mehrere Routen werden summiert, dann begrenzt (geprüft: docs/MODULATION-DOSSIER.md) | nein |
 | `kern/projekt.js` | Projektformat, Knoten, Ergebnisse, Entscheidungen (4 Arten), Verlauf, Geschwister, Ketten, Prüfung, Grenzen | nein |
 | `kern/ausfuehrung.js` | `fuehreAus`, `bildfolge` (Animation), `regelVorschlaege`, `experiment`, `ketteAnwenden` | nein |
 | `kern/archiv.js` | ZIP schreiben (ZIP-Schreiber der Fictory) und lesen, mit Prüfsummen und Pfadprüfung | nein |

@@ -7,7 +7,7 @@ import { videoAus, FPS } from "./medien/video.js";
 import * as P from "./kern/projekt.js";
 import { fuehreAus, bildfolge, regelVorschlaege, experiment, ketteAnwenden, neuerStartwert } from "./kern/ausfuehrung.js";
 import { packe, entpacke, ENDUNG } from "./kern/archiv.js";
-import { QUELLEN } from "./kern/modulation.js";
+import { QUELLEN, POLARITAETEN } from "./kern/modulation.js";
 import { KLASSEN, standardParameter } from "./kern/register.js";
 import { TYPEN } from "./kern/typen.js";
 import { jevVerfuegbar, jevWahl } from "./jev/jev.js";
@@ -17,7 +17,7 @@ const R = labRegister();
 const $ = (id) => document.getElementById(id);
 const S = {
   projekt: P.neuesProjekt(), medien: browserMedien(), aktuell: null, op: null, parameter: {}, eingaben: {}, seed: neuerStartwert(),
-  variation: { anzahl: 6, achse: "varianten", ziel: "", quelle: "sinus", tiefe: 0.5, frequenz: 1, signal: "" },
+  variation: { anzahl: 6, achse: "varianten", ziel: "", quelle: "sinus", tiefe: 0.5, polaritaet: "bipolar", frequenz: 1, halten: 0, signal: "" },
   wahl: null, ansicht: "neben", modus: "manuell", laeuft: null, vergleich: new Set(), filme: new Map(), ungespeichert: false,
   experimentErlaubt: new Set(["lab.feedback", "lab.wiederholung", "lab.farbe", "lab.differenz"]), experimentSchritte: 3, experimentVarianten: 3,
 };
@@ -153,7 +153,9 @@ function zeigeFormular() {
       regler({ id: "quelle", name: "Quelle", art: "wahl", optionen: Object.entries(QUELLEN).filter(([k]) => k !== "keine" && (k !== "signal" || signale.length)).map(([k, n]) => ({ wert: k, name: n })) }, v.quelle, (x) => { v.quelle = x; zeigeFormular(); }),
       v.quelle === "signal" ? regler({ id: "signal", name: "Steuersignal", art: "wahl", optionen: signale.map((s) => ({ wert: s.id, name: s.titel })) }, v.signal, (x) => { v.signal = x; }) : null,
       regler({ id: "tiefe", name: "Tiefe (Attenuverter)", art: "zahl", min: -1, max: 1, schritt: 0.05 }, v.tiefe, (x) => { v.tiefe = x; }),
+      regler({ id: "polaritaet", name: "Polarität", art: "wahl", optionen: Object.entries(POLARITAETEN).map(([k, n]) => ({ wert: k, name: n })) }, v.polaritaet, (x) => { v.polaritaet = x; }),
       v.quelle !== "signal" ? regler({ id: "frequenz", name: "Frequenz (Zyklen)", art: "zahl", min: 0.25, max: 4, schritt: 0.25 }, v.frequenz, (x) => { v.frequenz = x; }) : null,
+      v.quelle !== "zufall" ? regler({ id: "halten", name: "Abtasten und halten (Stufen, 0 = fortlaufend)", art: "zahl", min: 0, max: 16, schritt: 1 }, v.halten, (x) => { v.halten = x; }) : null,
       regler({ id: "achse", name: "Modulation wirkt", art: "wahl", optionen: achsen }, achsen.some((a) => a.wert === v.achse) ? v.achse : "varianten", (x) => { v.achse = x; })));
   }
   const kannLaufen = !op.eingaenge.length || (e && op.eingaenge.every((x, i) => i === 0 || x.optional || S.eingaben[x.name]));
@@ -170,7 +172,8 @@ async function ausfuehren() {
   if (op.eingaenge.length) eingaben[op.eingaenge[0].name] = S.aktuell;
   for (const x of op.eingaenge.slice(1)) if (S.eingaben[x.name]) eingaben[x.name] = S.eingaben[x.name];
   const v = S.variation;
-  const routen = op.varianten === "moduliert" && v.ziel ? [{ ziel: v.ziel, tiefe: v.tiefe, modulator: v.quelle === "signal" ? { quelle: "signal", ergebnis: v.signal } : { quelle: v.quelle, frequenz: v.frequenz, phase: 0, seed: S.seed, stufen: v.anzahl } }] : [];
+  const halten = v.quelle !== "zufall" && v.halten >= 1 ? { halten: v.halten } : {};
+  const routen = op.varianten === "moduliert" && v.ziel ? [{ ziel: v.ziel, tiefe: v.tiefe, polaritaet: v.polaritaet, modulator: v.quelle === "signal" ? { quelle: "signal", ergebnis: v.signal, ...halten } : { quelle: v.quelle, frequenz: v.frequenz, phase: 0, seed: S.seed, stufen: v.anzahl, ...halten } }] : [];
   const wahl = S.wahl ?? { art: "mensch", details: { modus: S.modus } };
   const vorherigeKonstellation = S.projekt.ergebnisse.filter((x) => x.typ === "CONSTELLATION").at(-1)?.daten?.id ?? null;
   await laufen(async (signal) => {
@@ -332,7 +335,7 @@ function parameterText(k) {
   const op = R.hole(k.operation), std = standardParameter(op);
   const abw = op.parameter.filter((p) => k.parameter[p.id] !== std[p.id]).map((p) => `${p.name} ${typeof k.parameter[p.id] === "number" ? zahl(k.parameter[p.id]) : k.parameter[p.id]}`);
   const r = k.variation?.routen?.[0];
-  return [abw.length ? abw.join(" · ") : "Standardwerte", r ? `moduliert: ${op.parameter.find((p) => p.id === r.ziel)?.name} ← ${QUELLEN[r.modulator.quelle]} (Tiefe ${zahl(r.tiefe)}, ${k.variation.achse})` : null].filter(Boolean).join(" — ");
+  return [abw.length ? abw.join(" · ") : "Standardwerte", r ? `moduliert: ${op.parameter.find((p) => p.id === r.ziel)?.name} ← ${QUELLEN[r.modulator.quelle]} (Tiefe ${zahl(r.tiefe)}${r.polaritaet === "einpolig" ? ", einpolig" : ""}${r.modulator.halten ? `, ${r.modulator.halten} Stufen gehalten` : ""}, ${k.variation.achse})` : null].filter(Boolean).join(" — ");
 }
 function nacheinander(e) {
   const { material, schritte } = P.verlauf(S.projekt, e.id);

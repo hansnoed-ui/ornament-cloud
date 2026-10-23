@@ -20,7 +20,7 @@ Keine Installation und keine Abhängigkeiten, nur Node 18 oder neuer. Der Server
 1. **Material:** «Bild wählen», das Bild hineinziehen oder «Beispielbild» (das Bild von Christian aus The Fictory). Das Arbeitsbild ist höchstens 2048 px gross. Name, Grösse und SHA-256 des Originals stehen im Projekt.
 2. **Operationen:** Ziehe eine *ORNA-Konstellation*. Wähle dann *The Fictory*: Die Konstellation ist als zweiter Eingang vorgewählt und bestimmt die Regel R1–R7.
 3. **Experiment, Nebeneinander:** Die sechs Zustände der Fictory stehen nebeneinander. «weiterführen» macht einen davon zum Ausgang.
-4. Wähle *Feedback*. Unter «Variation und Modulation» verteilt ein Sinus (oder eine Rampe, gehaltener Zufall oder ein Steuersignal) einen Parameter über sechs Varianten. Danach wieder «weiterführen».
+4. Wähle *Feedback*. Unter «Variation und Modulation» verteilt ein Sinus (oder eine Rampe, gehaltener Zufall oder ein Steuersignal) einen Parameter über sechs Varianten. «Polarität» und «Abtasten und halten» verändern, wie die Quelle wirkt (nach VCV Rack, docs/MODULATION-DOSSIER.md). Danach wieder «weiterführen».
 5. *Bildsignal* macht aus einem Bild ein Steuersignal. Bei *Wiederholung* und den anderen Operationen ist es als Modulationsquelle «Steuersignal» wählbar: Ein Bild steuert die nächste Operation.
 6. **Nacheinander:** zeigt den Verlauf vom Material bis zum gewählten Zustand, mit Parametern, Startwerten und Entscheidungen. Daneben stehen die anderen Varianten jedes Schritts. «Animation des letzten Schritts» rechnet die Bewegung als MP4, «Verlauf als ZIP» exportiert die Zustände als PNG samt `verlauf.json`.
 7. **Protokoll:** Hier steht jede Ausführung und jede Entscheidung in einer von vier Arten: **Mensch**, **Zufall**, **Regel** oder **jev**. «Verlauf speichern» legt eine **Kette** an, die sich auf anderes Material anwenden lässt.
@@ -42,7 +42,8 @@ NODE_PATH=$(npm root -g) node tests/lab.e2e.mjs      # der ganze Prozess in Chro
 | [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md) | Module, Datenfluss, Grenzen, Erweiterung |
 | [docs/OPERATIONEN.md](docs/OPERATIONEN.md) | Operationsverzeichnis mit Herkunft, Ein- und Ausgängen, Parametern |
 | [docs/PROJEKTFORMAT.md](docs/PROJEKTFORMAT.md) | `ornament-lab-projekt` 0.1.0 |
-| [docs/REFERENZ-MATRIX.md](docs/REFERENZ-MATRIX.md) | Recherche zu den Referenzprogrammen: Operationsmatrix und Auswahl |
+| [docs/REFERENZ-MATRIX.md](docs/REFERENZ-MATRIX.md) | Recherche zu den Referenzprogrammen: Operationsmatrix und Auswahl, mit Stand (geprüft oder Hypothese) |
+| [docs/MODULATION-DOSSIER.md](docs/MODULATION-DOSSIER.md) | Operations-Dossier zur Modulation: VCV Rack (Quellcode), Bitwig und TouchDesigner (Handbücher), je 13 Punkte nach §9 |
 | [docs/REA-PROTOKOLL.md](docs/REA-PROTOKOLL.md) | REA: Prüfung, Setup-Probelauf, zwei Untersuchungen |
 | [docs/JEV-STATUS.md](docs/JEV-STATUS.md) | jev: was eingebunden ist, was fehlt, wie es live wird |
 | [docs/AUDIO-FORMAT.md](docs/AUDIO-FORMAT.md) | mögliches Audio-Operationsformat (nicht gebaut) |
