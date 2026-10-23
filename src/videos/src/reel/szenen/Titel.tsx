@@ -15,7 +15,7 @@ export const Titel: React.FC = () => {
   const wort = daten.titel[i];
   return (
     <Grund m={m}>
-      <div style={{ position: "absolute", left: RAND - 6, right: 0, top: 800, fontWeight: 500, fontSize: wort.length > 9 ? 196 : 216, letterSpacing: "-0.045em", lineHeight: 1, whiteSpace: "nowrap",
+      <div style={{ position: "absolute", left: RAND - 6, right: 0, top: 800, fontWeight: 500, fontSize: Math.min(216, (1080 - 2 * RAND) / ((wort.length + 1) * 0.5)),   // Wort mit Komma passt in die Breite (Instrument Sans 500, gesperrt: etwa 0,5 em je Zeichen) letterSpacing: "-0.045em", lineHeight: 1, whiteSpace: "nowrap",
         scale: interpolate(g, [0, SCHLAG], [1.08, 1], { ...klemm, easing: weich }), transformOrigin: "0 50%" }}>
         {wort}<span style={{ color: C(m).faden }}>{i < 2 ? "," : "."}</span>
       </div>

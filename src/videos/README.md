@@ -221,33 +221,41 @@ jede Szene in `src/neubau/szenen/` und als eigene Composition im Ordner «Neubau
 
 `npx remotion render NeubauVideo out/neubau.mp4 --codec=h264 --crf=20`, danach nach `yuv420p` umwandeln (siehe unten).
 
-## Reel «Was bringst du mit?» (22. Oktober 2026)
+## Reel «Was bringst du mit?» (22. und 23. Oktober 2026)
 
-42,9 s, **9:16** (1080 × 1920, `ReelVideo`; mit dem anderen Logo `ReelVideoLogoIII`), ohne Ton. Wunsch: «nicht bloss eine Aufzählung sondern ein professionelles Werbe-Reel, ohne ‹art› … sei kreativ».
-Ein Werbefilm für `/b/`, gebaut um die Frage der Startseite: fünf Antworten aus dem Dialog (`DIALOG` in `src/b/inhalt.mjs`), jede mit eigener Bildwelt;
-Papier und Tinte kippen bei jedem Schnitt (echte Umkehr wie hell und dunkel auf der Seite), harte Schnitte auf einem Schlag von 0,5 s (`TAKT`), damit sich Musik mit 120 Schlägen je Minute darunterlegen lässt.
-Keine Werke und Prints (die Station «Ein Bild wird ein Werk» fehlt absichtlich). Gestaltung aus `src/neubau/Teile.tsx`; jede Szene in `src/reel/szenen/` und als Composition im Ordner «Reel-Szenen».
-Zweite Fassung am selben Tag (Rückmeldung: «Was bringst du mit?» gefällt, «aber grafisch nicht»; dazu drei Aufnahmen von Christian): reine Typografie statt Knöpfe, bessere Bilder, das Logo zum Schluss.
+41,3 s, **9:16** (1080 × 1920, `ReelVideo`; mit dem anderen Logo `ReelVideoLogoIII`), ohne Ton. Wunsch: «nicht bloss eine Aufzählung sondern ein professionelles Werbe-Reel, ohne ‹art› … sei kreativ».
+Ein Werbefilm für `/b/`, gebaut um die Frage der Startseite, fünf Antworten mit je eigener Bildwelt; Papier und Tinte kippen bei jedem Schnitt (echte Umkehr wie hell und dunkel auf der Seite),
+harte Schnitte auf einem Schlag von 0,5 s (`TAKT`), damit sich Musik mit 120 Schlägen je Minute darunterlegen lässt. Keine Werke und Prints.
+Gestaltung aus `src/neubau/Teile.tsx`; jede Szene in `src/reel/szenen/` und als Composition im Ordner «Reel-Szenen».
+**Antworten und Sätze seit dem 23. Oktober 2026 von Christian** («Damit es sprachlich passt zu ‹Was bringst du mit?›»; `ANTWORTEN` in `daten.mjs`, nicht mehr die Wahlen des Dialogs der Startseite);
+die Szene «Eine Gruppe» (OMNA COLOR) ist damit entfallen.
 
 1. Tinte: «Was», «bringst», «du», «mit?» je allein und bildfüllend auf den Schlag, dann die ganze Frage als Block, das Fragezeichen in der Blaupause
-2. Papier: die fünf Antworten als Walze zwischen zwei Haarlinien; sie wird langsamer und bleibt auf «ein Bild» stehen, blau unterstrichen wie der aktive Punkt der Navigation
-3. Tinte: «Ein Bild will sich bewegen.» – Schnitte auf den Schlag: PHORMA I (Glaskörper), PHORMA III (Traube), PHORMA II (Rasterdruck, dann Montage), PHORMA III (Irrfahrt)
-   (seit dem 23. Oktober 2026: «einmal Irrfahrt ersetzen mit Traube, einmal Scherben ersetzen mit Raster und Montage»)
-4. Papier: «Eine Frage sucht ein Gegenüber.» – die lebende Tafel von ORNA dreht und zeigt die Begegnung
-5. Tinte: «Etwas soll gebaut werden.» – ein Telefon kippt ins Bild und blättert durch die echte Startseite
-6. Papier: «Ein Begriff will geprüft werden.» – der Zettelkasten (seit dem 23. Oktober 2026 statt der Prüfraster, Wunsch: «Prüfraster weg, dafür Zettelkasten präsentieren»):
-   die erste Station des Wegs, «Im Feld nachsehen», das Feld 7 × 7 mit den Fäden der Startseite; dann leuchtet ein Zettel auf, der mit dem kürzesten Leitsatz
+2. Papier: die Antworten als Walze zwischen zwei Haarlinien (ein Bild, einen Klang, eine Frage, eine Idee, einen Begriff); sie bleibt auf «ein Bild» stehen, blau unterstrichen
+3. Tinte: «Ein Bild, das Bewegung sucht» – PHORMA I (Glaskörper), PHORMA II (Rasterdruck, dann Montage), PHORMA I (Scherben)
+4. Papier: «Ein Klang, der sich sehen lässt» – PHORMA III (Traube, Irrfahrt mit einem und mit drei Würfeln)
+5. Tinte: «Eine Frage, die ein Gegenüber sucht» – die lebende Tafel von ORNA dreht, die Begegnung leuchtet; dann rückt das Rad nach oben und die Konstellation
+   steht darunter: Doris Salcedo × George Spencer-Brown, «Kann eine Grenze erinnern?» (aus den Daten von ORNA; Wunsch: «ORNA könnte auch noch eine Konstellation zeigen»)
+6. Papier: «Eine Idee, die in die Welt kommt» – ein Telefon kippt ins Bild und blättert durch die echte Startseite bis zu den vier Leistungen (Unterzeile «Angebot»)
+7. Tinte: «Ein Begriff, der Verbindung sucht» – der Zettelkasten: das Feld 7 × 7 mit den Fäden der Startseite, ein Zettel leuchtet auf, der mit dem kürzesten Leitsatz
    unter denen mit mindestens zwei Fäden (zurzeit Zettel 24, «Die Irritation»), darunter Titel und Leitsatz (`szenen/Zettel.tsx`)
-7. Tinte: «Eine Klasse, ein Team, ein Haus.» – die Tafel von OMNA COLOR
-8. «Gestalten, vermitteln, kuratieren.» in drei Schlägen, Komma und Punkt in der Blaupause
+8. «Gestalten, vermitteln, kuratieren.» in drei Schlägen, Komma und Punkt in der Blaupause (Schriftgrösse nach der Wortlänge, damit das Komma im Bild bleibt)
 9. Tinte: «keine Cookies, keine Werbung, keine Tracker», «made in Switzerland»
 10. Tinte: eine Logo-Animation von Christian, der Punkt in die Blaupause gedreht (`hue-rotate`), am Ende stehend; darunter die Frage, blau unterstrichen.
-    Standard (`ReelVideo`): **PHORMA II** – die schillernde Montage fällt zu Rahmen zusammen, aus ihnen wird das Signet (hochkant, ganz gezeigt; der Punkt wird erst blau,
-    wenn die Montage vorbei ist, sonst kippen ihre Farben; ab Bild 162 stehend). Seit dem 23. Oktober 2026 mit mehr Kontrast («Besserer Kontrast beim Logo Schluss»):
-    nach der Montage fährt das Bild auf das Logo zu (1,3-fach) und wird heller (`brightness(1.4) contrast(1.25)`, erst danach `hue-rotate`, sonst brennt der Punkt türkis aus).
-    Ab Bild 150 blendet eine Vektorzeichnung desselben Logos darüber (`src/reel/LogoVektor.tsx`: die Zeichnung aus `alpha/sketchory/signet.js`, gegen Bild 162 der Aufnahme
-    deckungsgleich geprüft, Schriftzug ohne Kerning wie auf der Leinwand); der Punkt läuft dann scharf weiter (Rückmeldung: «Das Logo ganz am Schluss bei Stillstand war noch etwas verpixelt»). Fassung `ReelVideoLogoIII`: **PHORMA III** – die Fäden ziehen sich zur Schlaufe,
-    «ornament.cloud» tippt sich (hochkant die Mitte; ab Bild 160 stehend, vor dem Zerfall am Ende des Exports)
+    Standard (`ReelVideo`): **PHORMA II**, seit dem 23. Oktober 2026 erst ab Bild 92 der Aufnahme, wenn die Montage vorbei und der Grund schwarz ist
+    («Vor der Logo Animation hängt noch eine Montage-Sequenz: die kann weg»): die Rahmen werden zum Signet; das Bild fährt auf das Logo zu (1,3-fach) und wird heller
+    (`brightness(1.4) contrast(1.25)`, erst danach `hue-rotate`, sonst brennt der Punkt türkis aus). Ab Bild 150 blendet eine Vektorzeichnung desselben Logos darüber
+    (`src/reel/LogoVektor.tsx`: die Zeichnung aus `alpha/sketchory/signet.js`, gegen Bild 162 der Aufnahme deckungsgleich geprüft, Schriftzug ohne Kerning wie auf der Leinwand);
+    der Punkt läuft dann scharf weiter. Fassung `ReelVideoLogoIII`: **PHORMA III** – die Fäden ziehen sich zur Schlaufe, «ornament.cloud» tippt sich (hochkant die Mitte; ab Bild 160 stehend).
+
+Die Tafeln kommen aus `src/b/tafeln.mjs` und werden je Bild um 1/30 s weitergerechnet (`LebendeTafel` in `src/reel/Teile.tsx`, deterministisch).
+Die Aufnahme der Seite macht `src/reel/aufnahme.mjs` (Playwright, 430 px, doppelte Dichte → `public/reel/`), einmal vor `npm run vorbereiten`:
+
+```bash
+cd src/videos
+NODE_PATH=$(npm root -g) node src/reel/aufnahme.mjs
+npx remotion render ReelVideo out/reel.mp4 --codec=h264 --crf=18   # danach nach yuv420p umwandeln (siehe unten)
+```
 
 **Sechs Aufnahmen von Christian** liegen nicht im Repository (zusammen gut 70 MB); vor dem Rendern von Hand nach `public/reel/` legen:
 `phorma-iii-lauf.mp4` (PHORMA III, 1080 × 1350, Export vom 21. Oktober 2026, 21:08), `phorma-i-lauf.mp4` (720 × 900, als «PHORMA ii» geschickt, zeigt aber den Ablauf «Verwandlung» von PHORMA I)

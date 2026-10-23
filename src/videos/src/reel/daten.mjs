@@ -1,7 +1,10 @@
 // Daten des Reels: liest Farben (hell und dunkel), den Dialog der Startseite und die Sätze unverändert aus dem Neubau (/b/)
 // und legt die Beispielvideos der Apps nach public/reel/. Erzeugt src/reel/data/reel.json – nicht eingecheckt. Läuft mit «npm run vorbereiten».
 // Die Bildschirmaufnahme der Seite macht aufnahme.mjs (einmal von Hand, braucht Playwright).
-import { APPS, DIALOG, SEITE } from "../../../../src/b/inhalt.mjs";
+import { ANGEBOTE, APPS, DIALOG, SEITE } from "../../../../src/b/inhalt.mjs";
+import { artists } from "../../../../portfolio/nebeneinander-nacheinander/js/data/artists.js";
+import { theorists } from "../../../../portfolio/nebeneinander-nacheinander/js/data/theorists.js";
+import { constellations } from "../../../../portfolio/nebeneinander-nacheinander/js/data/constellations.js";
 import { UI } from "../../../../src/b/ui.mjs";
 import { ZEICHEN } from "../../../../src/b/zeichen.mjs";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -52,6 +55,23 @@ const zahl = (n) => faeden.filter(([a, b]) => a === n || b === n).length;
 const zettel = zsz.stanzas.filter((z) => zahl(z.id) >= 2).sort((a, b) => a.bottomLine.length - b.bottomLine.length)[0];
 if (!start.includes(zettel.bottomLine)) throw new Error("reel: Leitsatz des Zettels steht nicht auf der Startseite");
 
+// Die Konstellation, auf der ORNA im Reel stehen bleibt (Wunsch vom 23. Oktober 2026: «ORNA könnte auch noch eine Konstellation zeigen»):
+// Doris Salcedo × George Spencer-Brown – kurz genug fürs Reel, und Spencer-Brown ist der Re-entry im Signet. Frage unverändert aus den Daten von ORNA.
+const konst = constellations.find((k) => k.artistId === "doris-salcedo" && k.theoristId === "george-spencer-brown");
+if (!konst) throw new Error("reel: Konstellation Salcedo × Spencer-Brown fehlt");
+const name = (liste, id) => liste.find((p) => p.id === id).name;
+
+// Die Antworten und Sätze des Reels (Wunsch von Christian vom 23. Oktober 2026: «Damit es sprachlich passt zu ‹Was bringst du mit?›»):
+// nicht mehr die Wahlen des Dialogs der Startseite, sondern fünf eigene, je mit einem Satz
+const ANTWORTEN = {
+  bild: { wort: "ein Bild", satz: "Ein Bild, das Bewegung sucht" },        // PHORMA I, PHORMA II
+  klang: { wort: "einen Klang", satz: "Ein Klang, der sich sehen lässt" },  // PHORMA III
+  frage: { wort: "eine Frage", satz: "Eine Frage, die ein Gegenüber sucht" }, // ORNA
+  idee: { wort: "eine Idee", satz: "Eine Idee, die in die Welt kommt" },    // die Angebote
+  begriff: { wort: "einen Begriff", satz: "Ein Begriff, der Verbindung sucht" }, // der Zettelkasten
+};
+const appZeile = (slug) => ({ name: app(slug).name, text: app(slug).kurz, zeichen: zeichen(app(slug).zeichen) });
+
 // «Diese Seite lädt nichts von aussen: keine Cookies, keine Werbung, keine Tracker.» → die drei Glieder nach dem Doppelpunkt
 const ohne = T.fuss.ohne.slice(T.fuss.ohne.indexOf(": ") + 2).replace(/\.$/, "").split(", ");
 if (ohne.length !== 3) throw new Error("reel: Satz «ohne» hat sich geändert");
@@ -61,16 +81,16 @@ writeFileSync(hier("data/reel.json"), JSON.stringify({
   hell, dunkel,
   name: SEITE.name,
   frage: DIALOG.frage,
-  // ohne «ein Bild wird ein Werk» (Prints): das Reel zeigt keine Werke
-  woerter: DIALOG.wahlen.map((w) => w.wort),
-  // Bilder aus PHORMA I, II und III (Wunsch vom 22. und 23. Oktober 2026: «Bessere Clips»): Name und Kurzsatz der Apps
-  bild: { satz: wahl("bild").satz, ...Object.fromEntries([["a", "phorma-i"], ["b", "phorma-iii"], ["c", "phorma-ii"]].map(([k, slug]) => [k, { name: app(slug).name, text: app(slug).kurz, zeichen: zeichen(app(slug).zeichen) }])) },
-  frage2: { satz: wahl("frage").satz, a: { ...weg("frage", 0), zeichen: zeichen(app("orna").zeichen) } },
-  auftrag: { satz: wahl("auftrag").satz, a: { ...weg("auftrag", 0), zeichen: zeichen("webdesign") } },
-  // «Ein Begriff will geprüft werden.» → die erste Station des Wegs: «Im Feld nachsehen: 49 Begriffe von der Brücke bis zur Zukunft»
-  begriff: { satz: wahl("begriff").satz, a: { ...weg("begriff", 0), zeichen: zeichen("zettel") }, faeden,
+  woerter: Object.values(ANTWORTEN).map((a) => a.wort),
+  bild: { satz: ANTWORTEN.bild.satz, a: appZeile("phorma-i"), c: appZeile("phorma-ii") },
+  klang: { satz: ANTWORTEN.klang.satz, b: appZeile("phorma-iii") },
+  frage2: { satz: ANTWORTEN.frage.satz, a: { ...weg("frage", 0), zeichen: zeichen(app("orna").zeichen) },
+    konstellation: { kuenstler: name(artists, konst.artistId), theoretiker: name(theorists, konst.theoristId), frage: konst.question } },
+  // die vier Leistungen, wie sie die Navigation der Seite nennt («Angebot»)
+  idee: { satz: ANTWORTEN.idee.satz, a: { name: T.nav["angebot/"], text: ANGEBOTE.map((x) => x.name).join(" · "), zeichen: zeichen("angebot") } },
+  // die erste Station des Wegs «einen Begriff» auf der Startseite: «Im Feld nachsehen: 49 Begriffe von der Brücke bis zur Zukunft»
+  begriff: { satz: ANTWORTEN.begriff.satz, a: { ...weg("begriff", 0), zeichen: zeichen("zettel") }, faeden,
     zettel: { nr: zettel.id, kenn: T.zettelN(zettel.id), titel: zettel.title, leitsatz: zettel.bottomLine } },
-  gruppe: { satz: wahl("gruppe").satz, a: { ...weg("gruppe", 1), zeichen: zeichen(app("omna-color").zeichen) } },
   titel: SEITE.titel.replace(/\.$/, "").split(", "),
   ohne,
   swiss: "made in Switzerland",

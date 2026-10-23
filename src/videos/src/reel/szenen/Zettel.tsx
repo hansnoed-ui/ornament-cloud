@@ -1,4 +1,4 @@
-// «Ein Begriff will geprüft werden.» (Papier): der Zettelkasten statt der Prüfraster (Wunsch vom 23. Oktober 2026) – das Feld 7 × 7 der Startseite,
+// «Ein Begriff, der Verbindung sucht» (Tinte): der Zettelkasten statt der Prüfraster (Wunsch vom 23. Oktober 2026) – das Feld 7 × 7 der Startseite,
 // die Fäden wachsen leicht gebogen (wie b.js), dann leuchtet ein Zettel in der Blaupause auf, seine Nachbarn hell, die übrigen Fäden leise;
 // darunter sein Titel und sein Leitsatz.
 import React from "react";
@@ -24,13 +24,13 @@ const nachbarn = new Set(daten.begriff.faeden.filter(([a, b]) => a === NR || b =
 
 export const Zettel: React.FC = () => {
   const f = useCurrentFrame();
-  const c = C("hell");
+  const c = C("dunkel");
   const an = interpolate(f, [AN, AN + 6], [0, 1], klemm);
   const z = daten.begriff.zettel;
   return (
-    <Grund m="hell">
+    <Grund m="dunkel">
       <Schlagzeile f={f} text={daten.begriff.satz} groesse={100} style={{ position: "absolute", left: RAND, right: RAND, top: 230 }} />
-      <Unterzeile f={f} a={14} m="hell" {...daten.begriff.a} style={{ position: "absolute", left: RAND, right: RAND, top: 470 }} />
+      <Unterzeile f={f} a={14} m="dunkel" {...daten.begriff.a} style={{ position: "absolute", left: RAND, right: RAND, top: 470 }} />
       <div style={{ position: "absolute", left: LINKS, top: OBEN, width: BREITE, height: BREITE }}>
         {Array.from({ length: 49 }, (_, i) => {
           const n = i + 1, s = 4 + ((n - 1) % 7) + Math.floor((n - 1) / 7);
