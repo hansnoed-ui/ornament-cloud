@@ -35,7 +35,7 @@ Ein **Effekt** ist das sichtbare Ergebnis, eine **Operation** das nachvollziehba
 | **FFmpeg** | Filtergraphen als Text, Transkodierung, Einzelbilder | Video | Zeit | in 0.1 nicht nötig: MP4 über WebCodecs im Browser | Hypothese |
 | **Figma** | Komponenten und Varianten mit Eigenschaften | Gestaltung | Selektion | Varianten mit Parametern sichtbar | Hypothese |
 | **Rive** | State Machines: Zustände, Übergänge, Eingaben | Animation | Zeit | später: Ketten mit Bedingungen | Hypothese |
-| **ShotDeck, FilmGrab, Flim, Frameset** | strukturierte Suche nach Bildausschnitt, Licht, Farbe, Kamera; visuelle Ähnlichkeit | Referenzbilder | Beobachtung | **nichts importiert, nichts erfasst**; nur ein künftiges kompositorisches Profil (ERWEITERUNGEN.md) | Hypothese |
+| **ShotDeck, FilmGrab, Flim, Frameset** | strukturierte Suche nach Bildausschnitt, Licht, Farbe, Kamera; visuelle Ähnlichkeit | Referenzbilder | Beobachtung | **nichts importiert, nichts erfasst**; ihre Kategorien wurden als Messgrössen des kompositorischen Profils übernommen (KOMPOSITION.md), die Dienste selbst nicht abgefragt | Hypothese |
 
 ## Ausgewählte Prinzipien für 0.1
 
@@ -46,6 +46,6 @@ Ein **Effekt** ist das sichtbare Ergebnis, eine **Operation** das nachvollziehba
 
 **Übertragene Erkenntnis in der Architektur:** Typisierte Ausgänge mit expliziten Wandlern (TouchDesigner) plus Modulationsrouten mit Tiefe, Polarität und Summe (Bitwig, VCV, geprüft) ergeben eine Kopplung über Medien hinweg. Das Lab koppelt so Bild an Parameter. Dieselbe Form (Werte 0–1 entlang u) kann später Klang an Bild koppeln, ohne neues Format.
 
-## Filmästhetik als Operationsparameter (Ausblick, nichts gebaut)
+## Filmästhetik als Operationsparameter (seit 0.1.2)
 
-Bildausschnitt, Symmetrie oder Asymmetrie, Gewicht der Lichtverteilung, Farbsättigung, Tiefenstaffelung und Bewegungsrichtung lassen sich an **eigenem oder freigegebenem** Material messen. Das Bildsignal ist ein erster Baustein dafür (Helligkeit oder Sättigung entlang x, y, radial). Ein kompositorisches Profil wäre ein METADATA-Ergebnis. Operationen könnten es verstärken, abschwächen oder umkehren. Geschützte Filmstills werden nicht importiert, nicht erfasst und nicht trainiert.
+Bildausschnitt, Symmetrie, Lichtverteilung, Kontrast und Sättigung werden an **eigenem oder freigegebenem** Material gemessen und als Faktor verändert (1 stehen lassen, 0 aufheben, −1 umkehren, 2 verdoppeln). Die Kantenrichtung wird nur gemessen. Tiefenstaffelung, Einstellungslänge und Rhythmus bleiben offen. → `lab.profil`, `lab.komposition`, KOMPOSITION.md. Geschützte Filmstills werden nicht importiert, nicht erfasst und nicht trainiert.

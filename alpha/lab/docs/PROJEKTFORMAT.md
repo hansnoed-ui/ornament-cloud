@@ -1,4 +1,4 @@
-# Projektformat `ornament-lab-projekt` 0.2.0
+# Projektformat `ornament-lab-projekt` 0.3.0
 
 Ein Projekt ist ein ZIP-Archiv (`<titel>.ornalab.zip`) mit diesem Inhalt:
 
@@ -15,7 +15,7 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
 
 ```jsonc
 {
-  "format": "ornament-lab-projekt", "formatVersion": "0.2.0", "labVersion": "0.1.1",
+  "format": "ornament-lab-projekt", "formatVersion": "0.3.0", "labVersion": "0.1.2",
   "id": "p-…", "titel": "…", "modus": "manuell | jev | experimentell", "erstellt": "ISO", "geaendert": "ISO",
 
   "ergebnisse": [{                        // Material und alle erzeugten Zustände; nichts wird überschrieben
@@ -26,13 +26,13 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
              | { "art": "operation", "operation": "lab.feedback" },
     "index": 0,                           // Stelle in der Reihe der Varianten
     "variante": { "stelle": 0.4, "parameter": { … }, "seed": 123, "teil": 0 },   // die tatsächlich benutzten Parameter
-    "daten": { … } | null,                // bei CONSTELLATION, CONTROL_SIGNAL
-    "befund": { "art": "verifiziert", … } | null
+    "daten": { … } | null,                // bei CONSTELLATION, CONTROL_SIGNAL, METADATA (seit 0.3.0: kompositorisches Profil, siehe unten)
+    "befund": { "art": "verifiziert", … } | null   // seit 0.3.0 bei lab.komposition: { kurz, profil } = Profil nachher
   }],
 
   "knoten": [{                            // eine Ausführung einer Operation
     "id": "k-…", "operation": "lab.feedback", "operationVersion": "0.1.0",
-    "eingaben": { "bild": "e-…", "konstellation": "e-…" },    // nur frühere Ergebnisse (azyklisch)
+    "eingaben": { "bild": "e-…", "konstellation": "e-…", "profil": "e-…" },    // nur frühere Ergebnisse (azyklisch); profil = Zielprofil
     "parameter": { … },                   // bereinigt und begrenzt
     "variation": { "anzahl": 6, "achse": "varianten | zeit | beide",
                    "routen": [{ "ziel": "drehung", "tiefe": 0.5,
@@ -61,6 +61,27 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
 }
 ```
 
+## Kompositorisches Profil (seit 0.3.0)
+
+Ein METADATA-Ergebnis von `lab.profil`, Definitionen in KOMPOSITION.md. Nur Zahlen, kein Bild:
+
+```jsonc
+{
+  "art": "kompositorisches-profil", "version": "0.1.0", "hinweis": "Messung, keine Bewertung",
+  "gemessenIn": [breite, hoehe], "messpunkte": …,            // die Werte unten: Beispielbild der Fictory
+  "schwerpunkt": { "x": -0.02, "y": 0.05, "abstand": 0.08, "ausdehnung": 0.95 },
+  "symmetrie": { "linksRechts": 0.46, "obenUnten": 0.42 },
+  "licht": { "helligkeit": 0.27, "gefaelleX": -0.07, "gefaelleY": 0.21, "gefaelleWinkel": 251, "gefaelleStaerke": 0.22, "mitte": 0.16 },
+  "kontrast": { "gesamt": 0.27, "binnen": 0.26, "tonumfang": 0.84 },
+  "farbe": { "saettigung": 0.09, "farbton": 233, "buendelung": 0.89 },
+  "richtung": { "kantenWinkel": 20, "kohaerenz": 0.05, "radial": 0.63 },
+  "lesarten": { "richtung.radial": "Hypothese: …", … },   // Deutungen getrennt von den Messungen
+  "referenz": null                                         // vorgesehen für Quelle und Rechte eines freigegebenen Referenzbildes
+}
+```
+
+Der Knoten von `lab.komposition` hält im `protokoll` fest: `reihenfolge` (die sechs Schritte), `faktoren` (die tatsächlich wirksamen, auch nach Angleichung), `zielprofil` (ja/nein), `vorher`, `nachher` (beide Profile) und `veraenderung` (Kurzzeile). Bei mehreren Varianten steht je Variante ein solcher Eintrag in einer Liste.
+
 ## Reproduzierbarkeit
 
 - Jede Operation ist versioniert. Parameter, Startwert und Modulationsrouten der Varianten stehen im Projekt.
@@ -68,8 +89,8 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
 - `"bedingt"` gilt für die ORNA-Konstellation: Die Ziehung ist echter Zufall (`crypto.getRandomValues`). Mit Kennung und Startwert ist die Ableitung reproduzierbar.
 - Steuersignale werden über ihre Ergebnis-Kennung verbunden und nicht doppelt gespeichert.
 - Mehrere Routen auf denselben Parameter werden summiert und erst dann begrenzt (seit Lab 0.1.1, nach VCV Rack). Mit einer Route rechnet 0.1.1 genau wie 0.1.0.
-- Formatversion: Eine neue Nebenversion darf Felder hinzufügen (0.2.0: `polaritaet` je Route, `halten` je Modulator; Projekte 0.1.0 öffnen unverändert). Eine neue Hauptversion braucht eine Migration (`ladeProjekt`).
+- Formatversion: Eine neue Nebenversion darf Felder hinzufügen (0.2.0: `polaritaet` je Route, `halten` je Modulator; 0.3.0: kompositorische Profile als METADATA-Ergebnisse, `befund.profil`, Eingang `profil`; ältere Projekte öffnen unverändert). Eine neue Hauptversion braucht eine Migration (`ladeProjekt`).
 
 ## Vorbereitet für später
 
-Weitere Typen (VIDEO, AUDIO, TEXT, GEOMETRY, EVENT_SEQUENCE) sind in `kern/typen.js` benannt. `herkunft` kann Referenzmetadaten tragen, etwa ein späteres kompositorisches Profil mit Bildausschnitt, Symmetrie, Licht und Farbverteilung ohne fremde Bilder. Der Wert `reproduzierbar: "nein"` mit der Befundart `modell` ist für künftige Modellaufrufe vorgesehen.
+Weitere Typen (VIDEO, AUDIO, TEXT, GEOMETRY, EVENT_SEQUENCE) sind in `kern/typen.js` benannt. Das kompositorische Profil hält mit `referenz` einen Platz für Quelle und Rechte eines freigegebenen Referenzbildes offen. Der Wert `reproduzierbar: "nein"` mit der Befundart `modell` ist für künftige Modellaufrufe vorgesehen.

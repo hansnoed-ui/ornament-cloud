@@ -11,6 +11,8 @@ export const KATALOG = Object.freeze({
   "lab.farbe": "Farbe modulieren: Farbdrehung, Sättigung, Kontrast, Tonwertstufen (räumliche Operation auf den Farben)",
   "lab.bildsignal": "Bildsignal: ein Merkmal des Bildes wird zu einem Steuersignal für andere Operationen (Kopplung)",
   "lab.differenz": "Differenz: zeigt und misst den Unterschied zu einem anderen Zustand (Beobachtung)",
+  "lab.profil": "Kompositorisches Profil: misst Schwerpunkt, Symmetrie, Lichtverteilung, Kontrast, Sättigung und Kantenrichtung des Bildes (Beobachtung)",
+  "lab.komposition": "Komposition verändern: verstärkt, hebt auf oder kehrt um, was das Profil misst, etwa Symmetrie, Lichtgefälle oder Sättigung (räumliche Operation)",
 });
 
 const KENNUNG = /^[a-z]+\.[a-z0-9-]+$/;

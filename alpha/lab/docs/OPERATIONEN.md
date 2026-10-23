@@ -11,6 +11,8 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.farbe` 0.1.0 | Farbe modulieren | Räumliche Operation | neu, nach Fusion Color Corrector; p5.js filter() (POSTERIZE, INVERT); CSS Filter Effects (hue-rotate) | Bild → Bild | über Modulation |
 | `lab.bildsignal` 0.1.0 | Bildsignal | Kopplungsoperation | neu, nach TouchDesigner TOP to CHOP; Max/Jitter (Matrix zu Zahlen) | Bild → Steuersignal | eine |
 | `lab.differenz` 0.1.0 | Differenz | Beobachtungsoperation | neu, nach Difference-Komposition (Fusion Merge, After Effects, Resolume) | Bild + Bild → Bild | eine |
+| `lab.profil` 0.1.0 | Kompositorisches Profil | Beobachtungsoperation | neu, nach Kategorien von ShotDeck, FilmGrab und Flim (Bildausschnitt, Licht, Farbe, Symmetrie) als Messgrössen; Strukturtensor (Bildanalyse) | Bild → Befund | eine |
+| `lab.komposition` 0.1.0 | Komposition verändern | Räumliche Operation | neu, nach Attenuverter (VCV Rack) auf gemessene Bildkomponenten übertragen; Kategorien von ShotDeck, FilmGrab und Flim | Bild + Befund (opt.) → Bild | über Modulation |
 
 ## ORNA-Konstellation (`orna.konstellation`)
 
@@ -134,3 +136,39 @@ Zeigt die Unterschiede zwischen zwei Zuständen und misst sie. Messung, keine Be
 |---|---|
 | Verstärkung der Anzeige (`verstaerkung`) | 1 … 8, Standard 2 |
 | Schwelle für «verändert» (0–1) (`schwelle`) | 0.02 … 0.5, Standard 0.1 |
+
+## Kompositorisches Profil (`lab.profil`)
+
+Misst, wie ein Bild gebaut ist: Schwerpunkt und Ausschnitt, Symmetrie, Lichtgefälle, Mitte und Rand, Kontrast, Sättigung, Farbton und Kantenrichtung. Messung, keine Bewertung.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/komposition.js; Prinzip nach Kategorien von ShotDeck, FilmGrab und Flim (Bildausschnitt, Licht, Farbe, Symmetrie) als Messgrössen; Strukturtensor (Bildanalyse)
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** einige Durchgänge über höchstens 512 × 512 Messpunkte; Speicher: ein Gleitkommabild
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+
+## Komposition verändern (`lab.komposition`)
+
+Verstärkt, hebt auf oder kehrt um, was das Profil misst: Lage des Schwerpunkts, Nähe, Symmetrie, Lichtgefälle, Mitte und Rand, Binnenkontrast, Sättigung. Mit einem Zielprofil gleicht sie das Bild einem anderen an. Profil vorher und nachher stehen im Protokoll.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/komposition.js; Prinzip nach Attenuverter (VCV Rack) auf gemessene Bildkomponenten übertragen; Kategorien von ShotDeck, FilmGrab und Flim
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** sechs Schritte mit je einer Messung (1200 px: unter 1 s); Speicher: zwei Gleitkommabilder
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Ausschnitt: Versatz des Schwerpunkts (`ausschnitt`) | -1 … 2, Standard 1 – Lage des Gewichts gegenüber der Bildmitte, 0 rückt es in die Mitte. 1 lässt stehen, 0 hebt auf, −1 kehrt um, 2 verdoppelt |
+| Nähe (Zoom um den Schwerpunkt) (`naehe`) | 0.5 … 3, Standard 1 – über 1 näher heran, unter 1 weiter weg |
+| Rand beim Verschieben (`rand`) | **wiederholen (im Kreis, aller Inhalt bleibt)** / spiegeln / dunkler Grund |
+| Asymmetrie (`symmetrie`) | -1 … 2, Standard 1 – der asymmetrische Teil zur gewählten Achse, 0 macht spiegelgleich, −1 spiegelt. 1 lässt stehen, 0 hebt auf, −1 kehrt um, 2 verdoppelt |
+| Spiegelachse (`achse`) | **links–rechts** / oben–unten |
+| Lichtgefälle (`licht`) | -1 … 2, Standard 1 – die Zunahme der Helligkeit quer über das Bild, −1 lässt das Licht von der anderen Seite kommen. 1 lässt stehen, 0 hebt auf, −1 kehrt um, 2 verdoppelt |
+| Mitte/Rand (`mitte`) | -1 … 2, Standard 1 – der Unterschied zwischen heller oder dunkler Mitte und Rand. 1 lässt stehen, 0 hebt auf, −1 kehrt um, 2 verdoppelt |
+| Binnenkontrast (`kontrast`) | -1 … 2, Standard 1 – die Tonwerte ohne Mittel und Lichtverteilung, −1 kehrt sie um. 1 lässt stehen, 0 hebt auf, −1 kehrt um, 2 verdoppelt |
+| Sättigung (`saettigung`) | -1 … 2, Standard 1 – die Farbabweichung vom Grau, −1 ergibt Gegenfarben. 1 lässt stehen, 0 hebt auf, −1 kehrt um, 2 verdoppelt |
+| Angleichung an das Zielprofil (`angleichung`) | 0 … 1, Standard 1 – nur mit Zielprofil: 0 gelten die Faktoren, 1 gilt das Ziel |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher |

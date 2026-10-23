@@ -14,6 +14,7 @@ const P = await lab("kern/projekt.js");
 const { fuehreAus, bildfolge, regelVorschlaege, experiment, ketteAnwenden } = await lab("kern/ausfuehrung.js");
 const { packe, entpacke } = await lab("kern/archiv.js");
 const { fingerabdruck, neuesBild } = await lab("kern/bilddaten.js");
+const K = await lab("kern/komposition.js");
 
 /** synthetisches Bild: Verlauf mit Scheibe und Balken */
 function bild(w = 96, h = 72) {
@@ -174,6 +175,102 @@ test("Kopplung: ein Bildsignal moduliert die Wiederholung (Bild → Steuersignal
   const k = p.knoten.at(-1);
   assert.equal(k.variation.routen[0].modulator.ergebnis, s.ergebnisse[0].id, "die Kopplung steht im Projekt");
   assert.equal(k.variation.routen[0].modulator.signal, undefined, "ohne die Werte zu verdoppeln");
+});
+
+/** Scheibe auf gleichmässigem Grund, für Schwerpunkt und Ausschnitt */
+function scheibe(cx = 30, cy = 50, w = 120, h = 80) {
+  const b = neuesBild(w, h, [40, 40, 40]);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if ((x - cx) ** 2 + (y - cy) ** 2 < 100) { const i = (y * w + x) * 4; b.data[i] = 230; b.data[i + 1] = 200; b.data[i + 2] = 90; }
+  return b;
+}
+const EINS = { ausschnitt: 1, naehe: 1, rand: "wiederholen", symmetrie: 1, achse: "lr", licht: 1, mitte: 1, kontrast: 1, saettigung: 1 };
+const nahe = (a, b, eps, text) => assert.ok(Math.abs(a - b) <= eps, `${text}: ${a} statt ${b} (± ${eps})`);
+
+test("Kompositorisches Profil: misst Schwerpunkt, Symmetrie, Licht, Kontrast, Farbe und Richtung, ohne Bewertung", () => {
+  const p = K.profil(scheibe());
+  nahe(p.schwerpunkt.x, 30.5 / 120 - 0.5, 0.01, "Schwerpunkt x");
+  nahe(p.schwerpunkt.y, 50.5 / 80 - 0.5, 0.01, "Schwerpunkt y");
+  assert.ok(p.schwerpunkt.ausdehnung < 0.4, "eine kleine Scheibe ist eng");
+  const sym = neuesBild(64, 48);
+  for (let y = 0; y < 48; y++) for (let x = 0; x < 64; x++) { const i = (y * 64 + x) * 4, v = Math.abs(x - 31.5) * 6 + y * 2; sym.data[i] = v; sym.data[i + 1] = v / 2; sym.data[i + 2] = 255 - v; sym.data[i + 3] = 255; }
+  const s = K.profil(sym);
+  assert.equal(s.symmetrie.linksRechts, 1, "spiegelgleich links–rechts");
+  assert.ok(s.symmetrie.obenUnten < 1);
+  assert.ok(s.licht.gefaelleY > 0 && s.licht.gefaelleWinkel === 270, "nach unten heller: Gefälle zeigt nach unten (270°)");
+  assert.ok(s.licht.mitte < 0, "die Mitte ist dunkler als der Rand");
+  assert.equal(K.profil(neuesBild(32, 32, [90, 90, 90])).farbe.saettigung, 0, "Grau hat keine Sättigung");
+  const streifen = neuesBild(64, 64);
+  for (let i = 0; i < streifen.data.length; i += 4) { const y = Math.floor(i / 4 / 64), v = y % 8 < 4 ? 220 : 30; streifen.data.fill(v, i, i + 3); streifen.data[i + 3] = 255; }
+  const r = K.profil(streifen).richtung;
+  assert.equal(r.kantenWinkel, 0, "waagrechte Streifen: Kanten waagrecht");
+  assert.ok(r.kohaerenz > 0.95);
+  assert.deepEqual(K.profil(bild()), K.profil(bild()), "reproduzierbar");
+  assert.equal(p.hinweis, "Messung, keine Bewertung");
+  assert.ok(!/qualit|score|bewertung"|gut|schlecht|golden/i.test(JSON.stringify(Object.keys(p)) + JSON.stringify(p.lesarten).replace(/Hypothese/g, "")), "keine Bewertungsgrösse");
+  assert.ok(Object.values(p.lesarten).every((t) => t.startsWith("Hypothese")), "Lesarten sind als Hypothesen gekennzeichnet");
+});
+
+test("Komposition verändern: Faktor 1 lässt stehen, 0 hebt auf, −1 kehrt um, 2 verstärkt", () => {
+  const b = bild(), vorher = K.profil(b);
+  assert.equal(fingerabdruck(K.komponiere(b, EINS).bild), fingerabdruck(b), "alle Faktoren 1: dieselben Pixel");
+  const p = (f) => K.profil(K.komponiere(b, { ...EINS, ...f }).bild);
+  assert.ok(p({ symmetrie: 0 }).symmetrie.linksRechts > 0.99, "Asymmetrie aufgehoben");
+  const gespiegelt = K.komponiere(b, { ...EINS, symmetrie: -1 }).bild;
+  for (const [x, y] of [[3, 5], [50, 20], [90, 70]]) for (let c = 0; c < 3; c++) assert.ok(Math.abs(gespiegelt.data[(y * 96 + x) * 4 + c] - b.data[(y * 96 + 95 - x) * 4 + c]) <= 1, "−1 spiegelt");
+  assert.ok(p({ symmetrie: 2 }).symmetrie.linksRechts < vorher.symmetrie.linksRechts, "2: asymmetrischer");
+  assert.ok(p({ licht: -1 }).licht.gefaelleY < 0 && vorher.licht.gefaelleY > 0, "Licht kommt von der anderen Seite");
+  assert.ok(p({ licht: 0 }).licht.gefaelleStaerke < 0.03, "Gefälle aufgehoben");
+  nahe(p({ mitte: 2 }).licht.mitte, 2 * vorher.licht.mitte, 0.01, "Mitte/Rand verdoppelt");
+  assert.ok(p({ kontrast: 0 }).kontrast.binnen < 0.01, "Binnenkontrast aufgehoben");
+  nahe(p({ kontrast: 0.5 }).kontrast.binnen, vorher.kontrast.binnen / 2, 0.01, "halber Binnenkontrast");
+  assert.equal(p({ saettigung: 0 }).farbe.saettigung, 0, "grau");
+  const gegen = p({ saettigung: -1 }).farbe;
+  nahe((gegen.farbton - vorher.farbe.farbton + 360) % 360, 180, 20, "Gegenfarben: Farbton um 180° gedreht");
+  const s = scheibe();
+  assert.ok(K.profil(K.komponiere(s, { ...EINS, ausschnitt: 0 }).bild).schwerpunkt.abstand < 0.03, "Ausschnitt 0: Schwerpunkt in der Mitte");
+  const gegenueber = K.profil(K.komponiere(s, { ...EINS, ausschnitt: -1 }).bild).schwerpunkt;
+  nahe(gegenueber.x, -K.profil(s).schwerpunkt.x, 0.02, "Ausschnitt −1: gegenüber");
+  assert.ok(K.profil(K.komponiere(s, { ...EINS, naehe: 2 }).bild).schwerpunkt.ausdehnung > K.profil(s).schwerpunkt.ausdehnung, "näher: das Gewicht dehnt sich aus");
+});
+
+test("Komposition im Lab: Profil als Befund, Zielprofil aus einem anderen Bild, Modulation, Verlauf, Protokoll vorher/nachher", async () => {
+  const { p, m, e, r } = mitMaterial();
+  const zweites = P.fuegeMaterialHinzu(p, { titel: "ruhig.png", datei: "medien/r.rgba", breite: 64, hoehe: 48 });
+  const ruhig = neuesBild(64, 48, [120, 118, 115]);
+  for (let i = 0; i < ruhig.data.length; i += 4) { const x = (i / 4) % 64; ruhig.data[i] += Math.abs(x - 31.5) * 2; }
+  m.bilder.set(zweites.id, ruhig);
+  const pr = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.profil", eingaben: { bild: zweites.id } } });
+  const ziel = pr.ergebnisse[0];
+  assert.equal(ziel.typ, "METADATA");
+  assert.equal(ziel.daten.art, "kompositorisches-profil");
+  assert.deepEqual(p.knoten.at(-1).protokoll.profil, ziel.daten, "das Profil steht im Protokoll");
+  assert.deepEqual(r.fuer("METADATA"), [], "ein Profil ist kein Haupteingang, nur Ziel");
+
+  const a = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.komposition", eingaben: { bild: e.id, profil: ziel.id }, parameter: { seite: 256 } } });
+  const k = p.knoten.at(-1), { vorher, nachher } = k.protokoll;
+  assert.ok(k.protokoll.zielprofil);
+  for (const [gruppe, wert] of [["farbe", "saettigung"], ["kontrast", "binnen"], ["symmetrie", "linksRechts"]]) {
+    assert.ok(Math.abs(nachher[gruppe][wert] - ziel.daten[gruppe][wert]) < Math.abs(vorher[gruppe][wert] - ziel.daten[gruppe][wert]), `${gruppe}.${wert} rückt zum Ziel: ${vorher[gruppe][wert]} → ${nachher[gruppe][wert]}, Ziel ${ziel.daten[gruppe][wert]}`);
+  }
+  assert.deepEqual(a.ergebnisse[0].befund.profil, nachher, "jedes Ergebnis trägt sein Profil");
+  assert.match(a.ergebnisse[0].befund.kurz, /→/);
+
+  const v = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.komposition", eingaben: { bild: e.id }, parameter: { seite: 128 },
+    variation: { anzahl: 4, routen: [{ ziel: "saettigung", tiefe: -1, modulator: { quelle: "sinus", frequenz: 0.25 } }] } } });
+  const faktoren = v.ergebnisse.map((x) => x.variante.parameter.saettigung);
+  assert.deepEqual(faktoren, [1, 0.25, -0.299038, -0.5], "die Modulation verteilt den Faktor über die Varianten (bis in die Gegenfarben)");
+  const prot = p.knoten.at(-1).protokoll;
+  for (const [i, x] of prot.entries()) nahe(x.nachher.farbe.saettigung, Math.abs(faktoren[i]) * x.vorher.farbe.saettigung, 0.02, `Variante ${i + 1}: gemessene Sättigung folgt dem Faktor`);
+  let n = 0; for await (const _ of bildfolge({ register: r, projekt: p, medien: m, ergebnisId: a.ergebnisse[0].id })) n++;
+  assert.equal(n, 36, "eigener Verlauf vom Eingang zum Ergebnis");
+  assert.deepEqual(P.pruefeProjekt(p), []);
+  const zurueck = P.ladeProjekt(P.serialisiere(p));
+  assert.equal(zurueck.ergebnisse.find((x) => x.id === ziel.id).daten.symmetrie.linksRechts, ziel.daten.symmetrie.linksRechts, "das Profil übersteht Speichern und Öffnen");
+
+  const s = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.bildsignal", eingaben: { bild: e.id } } });
+  assert.ok(s.ergebnisse[0].typ === "CONTROL_SIGNAL");
+  p.ergebnisse.push({ ...ziel, id: "e-falsch", daten: { art: "anderes" } });
+  await assert.rejects(fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.komposition", eingaben: { bild: e.id, profil: "e-falsch" } } }), /kein kompositorisches Profil/);
 });
 
 test("Typfehler und fehlende Eingänge: Knoten bleibt mit Fehler im Protokoll", async () => {
