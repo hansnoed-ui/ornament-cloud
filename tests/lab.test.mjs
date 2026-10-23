@@ -1011,3 +1011,82 @@ test("Bildfilter im Projekt: Varianten über die Modulation, ein zweites Bild ve
   const { projekt } = await entpacke(packe(p, m.dateien));
   assert.equal(projekt.formatVersion, "0.7.0", "die Filter brauchen kein neues Projektformat");
 });
+
+// ---------- Zusammenstellung durch jev (Lab 0.1.12) ----------
+test("Zusammenstellung: Kataloge passen zum Register, Ziehen mit Startwert ohne Wiederholung, jev-Antwort geprüft", async () => {
+  const Z = await lab("kern/zusammenstellung.js");
+  const F = await lab("jev/fragen.js");
+  const { jevKomposition } = await lab("jev/jev.js");
+  const r = labRegister();
+  assert.deepEqual(Object.keys(Z.BILD_REZEPTE), Object.keys(F.BILD_EFFEKTE));
+  assert.deepEqual(Object.keys(Z.KLANG_REZEPTE), Object.keys(F.KLANG_EFFEKTE));
+  for (const [id, x] of Object.entries({ ...Z.BILD_REZEPTE, ...Z.KLANG_REZEPTE })) if (x) {
+    assert.ok(r.hat(x.operation), id);
+    const op = r.hole(x.operation);
+    for (const k of Object.keys(x.parameter)) assert.ok(op.parameter.some((p) => p.id === k), `${id}: ${k}`);
+    if (x.ziel) assert.equal(op.parameter.find((p) => p.id === x.ziel)?.art, "zahl", `${id}: ${x.ziel}`);
+    if (id.startsWith("bild.") && x.ziel === undefined) assert.ok(op.moduliert, `${id}: Operation schlägt ein Ziel vor`);
+  }
+  const g = Z.gleichverteilt();
+  assert.deepEqual(Object.keys(g), Object.keys(F.KOMPOSITION_FRAGEN));
+  const a = Z.zusammenstellen(g, 42), b = Z.zusammenstellen(g, 42), c = Z.zusammenstellen(g, 43);
+  assert.deepEqual(a, b, "derselbe Startwert, dieselbe Wahl");
+  assert.notDeepEqual(a, c);
+  for (let s = 1; s < 60; s++) {
+    const x = Z.zusammenstellen(g, s);
+    assert.equal(x.bild.length, F.ABSCHNITTE);
+    assert.ok(x.bild.every((y, i) => i === 0 || y !== x.bild[i - 1]), `kein Effekt zweimal hintereinander: ${x.bild}`);
+    assert.ok(x.klang[0] === "klang.keine" || x.klang[1] !== x.klang[0]);
+  }
+  // jev sagt fast sicher Glitch: trotzdem nie zweimal hintereinander
+  const fast = { ...g, bild1: { ...g.bild1 } };
+  for (const k of Object.keys(g).filter((k) => k.startsWith("bild"))) fast[k] = Object.fromEntries(Object.keys(F.BILD_EFFEKTE).map((o) => [o, o === "bild.glitch" ? 0.95 : 0.005]));
+  const x = Z.zusammenstellen(fast, 5);
+  assert.equal(x.bild.filter((y) => y === "bild.glitch").length, 3, `${x.bild}`);
+  assert.equal(Z.wahrscheinlichkeit(fast, "bild1", "bild.glitch"), Math.round((0.95 / (0.95 + 10 * 0.005)) * 1000) / 1000);
+  // jev.js: alle zehn Antworten, nur bekannte Optionen; fehlt eine, ist die Antwort ungültig
+  const echt = globalThis.fetch;
+  const merkmale = { kontrast: "hoch", farbigkeit: "bunt", symmetrie: "asymmetrisch", helligkeit: "dunkel", dichte: "dicht", dynamik: "wechselhaft" };
+  try {
+    let gefragt = null;
+    globalThis.fetch = async (url, o) => { gefragt = JSON.parse(o.body); return new Response(JSON.stringify({ antworten: Object.fromEntries(Object.entries(g).map(([k, w]) => [k, { ...w, fremd: 1 }])), modell: "jev-test" })); };
+    const j = await jevKomposition({ merkmale }, { adresse: "http://localhost:1/wahl" });
+    assert.deepEqual(gefragt, { frage: "komposition", merkmale });
+    assert.deepEqual(Object.keys(j.antworten), Object.keys(g));
+    assert.ok(!("fremd" in j.antworten.bild1));
+    assert.equal(j.quelle, "live");
+    globalThis.fetch = async () => new Response(JSON.stringify({ antworten: { aufbau: g.aufbau }, modell: "jev-test" }));
+    await assert.rejects(jevKomposition({ merkmale }, { adresse: "http://localhost:1/wahl" }), /unerwartete Antwort/);
+  } finally { globalThis.fetch = echt; }
+});
+
+test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte zu drei Varianten, Film im Takt des neuen Klangs", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const Z = await lab("kern/zusammenstellung.js");
+  const r = labRegister();
+  const { p, m, e, t } = mitTon();
+  const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id });
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.schneller", "klang.zerlegt"], bild: ["bild.glitch", "bild.farbe", "bild.licht", "bild.raster", "bild.feedback", "bild.neusetzen"], seed: 9 };
+  const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "jev", details: { modell: "jev-test" } }, seed: 3 });
+  const ops = p.knoten.map((k) => k.operation);
+  assert.deepEqual(ops.slice(2), ["lab.tempo", "lab.zerlegen", "lab.tonsignal", "lab.glitch", "lab.farbe", "lab.licht", "lab.raster", "lab.feedback", "lab.neusetzen"]);
+  const zerlegt = p.knoten[3];
+  assert.equal(zerlegt.eingaben.ton, p.knoten[2].ausgaben[0], "der zweite Klangeffekt wirkt auf das Ergebnis des ersten");
+  assert.equal(x.klang, P.ergebnis(p, zerlegt.ausgaben[0]).id);
+  assert.equal(x.ergebnisse.length, 18);
+  for (let i = 1; i < 6; i++) assert.equal(p.knoten[5 + i].eingaben.bild, x.ergebnisse[i * 3 - 1].id, "Kette: auf der letzten Variante des vorigen Abschnitts");
+  assert.equal(x.entscheidung.gegenstand, "zusammenstellung"); assert.equal(x.entscheidung.art, "jev");
+  assert.deepEqual(x.entscheidung.gewaehlt.bild, plan.bild);
+  assert.ok(p.entscheidungen.filter((d) => d.details?.entscheidung === x.entscheidung.id).length >= 9, "jeder Schritt verweist auf die Zusammenstellung");
+  assert.equal(x.plan.stationen.length, 19); assert.equal(x.plan.tonspur, x.klang); assert.equal(x.plan.tonBeginn, 0);
+  const pt = ST.partitur(p, { ...x.plan, fps: 30 });
+  assert.ok(pt.dauer > 3 && pt.dauer <= 30, `${pt.dauer}`);
+  if (x.plan.takt) assert.equal(pt.takt.ton, x.klang, "der Takt kommt aus dem bearbeiteten Klang");
+  // Fächer: jeder Abschnitt auf dem Ausgangsbild; ohne Klangeffekt bleibt der Ton und sein Ausschnitt
+  const y = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: { ...mg, beginn: 1 }, plan: { ...plan, aufbau: "aufbau.faecher", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.wiederholung", "bild.farbe", "bild.komposition", "bild.farbe", "bild.licht"] }, wahl: { art: "zufall", details: {} } });
+  const letzte = p.knoten.slice(-6);
+  assert.ok(letzte.every((k) => k.eingaben.bild === e.id), "Fächer");
+  assert.equal(y.klang, t.id); assert.equal(y.plan.tonBeginn, 1);
+  await assert.rejects(Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, bild: ["bild.gibtsnicht"] }, wahl: { art: "mensch" } }), /gibt es nicht/);
+  assert.deepEqual(P.pruefeProjekt(p), []);
+});

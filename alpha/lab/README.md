@@ -32,7 +32,7 @@ Keine Installation und keine Abhängigkeiten, nur Node 18 oder neuer. Der Server
 10. **Protokoll:** Hier steht jede Ausführung und jede Entscheidung in einer von vier Arten: **Mensch**, **Zufall**, **Regel** oder **jev**. «Verlauf speichern» legt eine **Kette** an, die sich auf anderes Material anwenden lässt.
 11. **Projekt speichern** ergibt eine `.ornalab.zip`, die `projekt.json` und `medien/` enthält, auch die Tondateien. **Projekt öffnen** stellt alles wieder her, auch das Weiterarbeiten.
 
-**Vorschlag für 30 s:** Mit einem Bild und einem Ton im Material schlägt das Lab eine Animation von 30 Sekunden vor. jev (oder ohne jev feste Regeln) wählt aus sechs Dramaturgien, der Mensch übernimmt oder wählt eine andere (docs/VORSCHLAG.md).
+**Vorschlag für 30 s:** Mit einem Bild und einem Ton im Material schlägt das Lab eine Animation von 30 Sekunden vor. jev stellt zwei Klangeffekte und sechs Bildabschnitte aus vielen Effekten zusammen (seit 0.1.12) und wählt aus sechs festen Dramaturgien (ohne jev: Zufall und Regeln), der Mensch übernimmt oder wählt eine andere (docs/VORSCHLAG.md).
 
 Arbeitsmodi: **Manuell**. **jev-assistiert** zeigt Vorschläge nach offen gelegten Regeln und, sobald der Schlüssel hinterlegt ist, auf Knopfdruck Wahrscheinlichkeiten von jev live (`docs/JEV-STATUS.md`). **Experimentell** lässt das Lab selbst Operationen verbinden, in Grenzen und mit Startwert.
 

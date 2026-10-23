@@ -117,6 +117,11 @@ fieldset { border: 0; margin: 0; padding: 0; }
 .vorschlag-wahl { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 .vorschlag-wahl select, .vorschlag-wahl input { width: 100%; min-width: 0; }
 .dramaturgien { gap: 10px; }
+.zusammenstellung { gap: 10px; }
+.zusammenstellung small { color: var(--muted); }
+.stellen { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.stellen select { width: 100%; min-width: 0; }
+.vorschlag30 h4.oder { margin: 6px 0 0; font-size: 0.9rem; font-weight: 500; color: var(--muted); }
 .dramaturgie { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; row-gap: 2px; align-items: start; cursor: pointer; }
 .dramaturgie input { margin-top: 3px; }
 .dramaturgie small { grid-column: 2; color: var(--muted); }

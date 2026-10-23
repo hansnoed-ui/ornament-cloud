@@ -31,8 +31,8 @@ test.before(async () => {
     let roh = ""; req.on("data", (d) => (roh += d));
     req.on("end", () => {
       gesendet.push({ auth: req.headers.authorization, body: JSON.parse(roh) });
-      const opt = Object.keys(JSON.parse(roh).questions.wahl.criteria);
-      const antwort = jev.antwort ?? { model: "jev-test", answers: { wahl: { probabilities: { ...Object.fromEntries(opt.map((o, i) => [o, i === 0 ? 1.4 : 0.1])), fremd: 0.9 } } } };
+      const fragen = JSON.parse(roh).questions;
+      const antwort = jev.antwort ?? { model: "jev-test", answers: Object.fromEntries(Object.entries(fragen).map(([k, q]) => [k, { probabilities: { ...Object.fromEntries(Object.keys(q.criteria).map((o, i) => [o, i === 0 ? 1.4 : 0.1])), fremd: 0.9 } }])) };
       res.writeHead(jev.status, { "content-type": "application/json" }); res.end(JSON.stringify(antwort));
     });
   });
@@ -172,4 +172,32 @@ test("wahl.php: derselbe Katalog der Operationen wie fragen.js", { skip: ohnePhp
   const a = await frage(lage);
   assert.equal(a.status, 200, JSON.stringify(a.json));
   assert.deepEqual(gesendet[0].body.questions, labFrage(labLage(lage)).fragen);
+});
+
+test("wahl.php: die Zusammenstellung (zehn Fragen in einem Aufruf) prüft wie fragen.js, fragt wörtlich gleich und gibt alle Antworten zurück", { skip: ohnePhp && "kein php" }, async () => {
+  konfig({});
+  const merkmale = { kontrast: "mittel", farbigkeit: "grau", symmetrie: "symmetrisch", helligkeit: "hell", dichte: "ruhig", dynamik: "abschwellend" };
+  for (const [lage, re] of [
+    [{ frage: "komposition", merkmale, optionen: ["bild.glitch"] }, /unbekannte Felder/],
+    [{ frage: "komposition", merkmale: { ...merkmale, dichte: "x" } }, /Merkmal dichte/],
+    [{ frage: "komposition" }, /Merkmale fehlen/],
+  ]) {
+    const a = await frage(lage);
+    assert.equal(a.status, 400, JSON.stringify(lage)); assert.match(a.json.fehler, re);
+    assert.throws(() => labLage(lage), re, "dieselbe Regel wie fragen.js");
+  }
+  gesendet = [];
+  const roh = { frage: "komposition", merkmale };
+  const a = await frage(roh);
+  assert.equal(a.status, 200, JSON.stringify(a.json));
+  const f = labFrage(labLage(roh));
+  assert.equal(gesendet.length, 1);
+  assert.deepEqual(gesendet[0].body, { model: "jev-latest", state: f.zustand, questions: f.fragen }, "PHP und fragen.js fragen wörtlich gleich");
+  assert.deepEqual(Object.keys(a.json.antworten), Object.keys(f.fragen));
+  for (const [k, q] of Object.entries(f.fragen)) assert.deepEqual(Object.keys(a.json.antworten[k]), Object.keys(q.criteria), k);
+  assert.equal(a.json.antworten.bild1["bild.feedback"], 1, "begrenzt");
+  assert.equal((await frage(roh)).json.zwischengespeichert, true);
+  jev = { status: 200, antwort: { model: "x", answers: { aufbau: { probabilities: {} } } } };
+  assert.match((await frage({ ...roh, merkmale: { ...merkmale, dichte: "dicht" } })).json.fehler, /unerwartete Antwort/, "fehlt eine Antwort, gilt das Ganze nicht");
+  jev = { status: 200, antwort: null };
 });
