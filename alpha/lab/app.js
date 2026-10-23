@@ -110,7 +110,7 @@ function waehleOperation(id) {
     S.parameter = standardParameter(op);
     S.eingaben = {};
     const zahlen = op.parameter.filter((p) => p.art === "zahl" && p.id !== "seite");
-    S.variation.ziel = ["drehung", "farbdrehung", "zoom"].find((id) => zahlen.some((p) => p.id === id)) ?? zahlen[0]?.id ?? "";
+    S.variation.ziel = ["drehung", "farbdrehung", "zoom", "symmetrie"].find((id) => zahlen.some((p) => p.id === id)) ?? zahlen[0]?.id ?? "";
     S.variation.anzahl = op.varianten === "moduliert" ? 6 : 1;
     S.variation.achse = "varianten";
   }
@@ -124,6 +124,13 @@ function regler(p, wert, setze) {
   return el("label", { class: "regler", title: p.hilfe ?? null }, el("span", { class: "kopfzeile" }, el("span", { text: p.name }), aus),
     el("input", { type: "range", min: p.min, max: p.max, step: p.schritt ?? "any", value: wert, "data-param": p.id, oninput: (ev) => { const v = Number(ev.target.value); aus.textContent = zahl(v); setze(v); } }));
 }
+const EINGANG_NAME = { konstellation: "Konstellation", vergleich: "Vergleichen mit", profil: "Zielprofil (angleichen an)" };
+/** Titel eines Ergebnisses, bei Befunden mit dem Bild, an dem gemessen wurde */
+function mitQuelle(x) {
+  if (x.typ !== "METADATA" || !x.knoten) return x.titel;
+  const q = P.ergebnis(S.projekt, Object.values(P.knoten(S.projekt, x.knoten).eingaben)[0]);
+  return q ? `${x.titel} von ${q.titel}` : x.titel;
+}
 function zeigeFormular() {
   const f = $("op-form");
   if (!S.op || S.modus === "experimentell") { f.hidden = true; f.replaceChildren(); return; }
@@ -133,11 +140,11 @@ function zeigeFormular() {
   // weitere Eingänge (Konstellation, Vergleich)
   for (const ein of op.eingaenge.slice(1)) {
     const kandidaten = S.projekt.ergebnisse.filter((x) => x.typ === ein.typ && x.id !== S.aktuell);
-    if (!(ein.name in S.eingaben)) S.eingaben[ein.name] = ein.optional ? (kandidaten.at(-1)?.id ?? "") : (kandidaten.at(-1)?.id ?? "");
-    teile.push(el("label", { class: "regler" }, el("span", { text: `${ein.name === "konstellation" ? "Konstellation" : ein.name === "vergleich" ? "Vergleichen mit" : ein.name}${ein.optional ? " (optional)" : ""}` }),
+    if (!(ein.name in S.eingaben)) S.eingaben[ein.name] = ein.vorwaehlen === false ? "" : (kandidaten.at(-1)?.id ?? "");
+    teile.push(el("label", { class: "regler" }, el("span", { text: `${EINGANG_NAME[ein.name] ?? ein.name}${ein.optional ? " (optional)" : ""}` }),
       el("select", { onchange: (ev) => { S.eingaben[ein.name] = ev.target.value; } },
         ein.optional ? el("option", { value: "", text: "keine" }) : null,
-        ...kandidaten.map((x) => el("option", { value: x.id, selected: S.eingaben[ein.name] === x.id, text: x.titel })))));
+        ...kandidaten.map((x) => el("option", { value: x.id, selected: S.eingaben[ein.name] === x.id, text: mitQuelle(x) })))));
   }
   teile.push(...op.parameter.map((p) => regler(p, S.parameter[p.id], (v) => { S.parameter[p.id] = v; })));
   // Variation über Modulation (Nebeneinander) oder über die Zeit (Nacheinander)
@@ -256,7 +263,8 @@ async function experimentStarten() {
 function bildKarte(e, { gewaehlt = false, knoten = null } = {}) {
   const k = knoten ?? (e.knoten ? P.knoten(S.projekt, e.knoten) : null);
   const ziel = k?.variation?.routen?.[0]?.ziel;
-  const werte = e.variante?.parameter && ziel ? `${R.hole(k.operation).parameter.find((p) => p.id === ziel)?.name}: ${zahl(e.variante.parameter[ziel])}` : e.befund?.kurz || (e.befund?.mittlereAbweichung !== undefined ? `mittlere Abweichung ${zahl(e.befund.mittlereAbweichung)}, verändert ${Math.round(e.befund.anteilVeraendert * 100)} %` : "");
+  const werte = [e.variante?.parameter && ziel ? `${R.hole(k.operation).parameter.find((p) => p.id === ziel)?.name}: ${zahl(e.variante.parameter[ziel])}` : "",
+    e.befund?.kurz || (e.befund?.mittlereAbweichung !== undefined ? `mittlere Abweichung ${zahl(e.befund.mittlereAbweichung)}, verändert ${Math.round(e.befund.anteilVeraendert * 100)} %` : "")].filter(Boolean).join(" · ");
   return el("div", { class: `karte${gewaehlt ? " gewaehlt" : ""}`, dataset: { ergebnis: e.id } },
     el("div", { class: "bild" }, el("img", { src: S.medien.url(e), alt: e.titel, loading: "lazy" })),
     el("div", { class: "titel", text: e.titel }),
@@ -287,7 +295,38 @@ function textKarte(e) {
       svg(`<svg viewBox="0 0 100 44" preserveAspectRatio="none" role="img" aria-label="Steuersignal"><polyline points="${pts}" fill="none" stroke="#f4f1ea" stroke-width="0.6" vector-effect="non-scaling-stroke"/></svg>`),
       el("p", { class: "startwert", text: `${e.titel}: ${w.length} Werte 0–1. Als Modulationsquelle «Steuersignal» für jede Operation wählbar.` }));
   }
+  if (e.typ === "METADATA" && d?.art === "kompositorisches-profil") return profilKarte(e, d);
   return el("pre", { text: JSON.stringify(d, null, 2) });
+}
+/** das kompositorische Profil: eine Skizze (Schwerpunkt, Ausdehnung, Lichtgefälle, Kantenrichtung) und die Messwerte */
+function profilKarte(e, d) {
+  const [w, h] = d.gemessenIn, H = Math.round((100 * h) / w), sp = d.schwerpunkt, li = d.licht, ri = d.richtung;
+  const px = 50 + sp.x * 100, py = H / 2 + sp.y * H, rad = (g) => (g * Math.PI) / 180;
+  const pfeil = Math.min(1, li.gefaelleStaerke * 2) * 0.4 * Math.min(100, H), kante = ri.kohaerenz * 0.45 * Math.min(100, H);
+  const lx = 50 + Math.cos(rad(li.gefaelleWinkel)) * pfeil, ly = H / 2 - Math.sin(rad(li.gefaelleWinkel)) * pfeil;
+  const kx = Math.cos(rad(ri.kantenWinkel)) * kante, ky = Math.sin(rad(ri.kantenWinkel)) * kante;
+  const skizze = svg(`<svg viewBox="0 0 100 ${H}" role="img" aria-label="Skizze des Profils: Schwerpunkt, Lichtgefälle und Kantenrichtung">
+    <rect x="0.5" y="0.5" width="99" height="${H - 1}" fill="none" stroke="#9a9a9a" stroke-width="0.5"/>
+    <path d="M48 ${H / 2}h4M50 ${H / 2 - 2}v4" stroke="#9a9a9a" stroke-width="0.4"/>
+    <line x1="${50 - kx}" y1="${H / 2 + ky}" x2="${50 + kx}" y2="${H / 2 - ky}" stroke="#9a9a9a" stroke-width="0.6" stroke-dasharray="2 1.5"/>
+    <line x1="50" y1="${H / 2}" x2="${lx}" y2="${ly}" stroke="#f4f1ea" stroke-width="0.8" marker-end="url(#spitze)"/>
+    <circle cx="${px}" cy="${py}" r="${Math.max(1.5, sp.ausdehnung * 0.25 * Math.min(100, H))}" fill="none" stroke="#f4f1ea" stroke-width="0.5" stroke-dasharray="1 1"/>
+    <circle cx="${px}" cy="${py}" r="1.6" fill="#f4f1ea"/>
+    <defs><marker id="spitze" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L6 3L0 6z" fill="#f4f1ea"/></marker></defs></svg>`);
+  const zeile = (name, wert, hilfe) => [el("dt", { text: name, title: hilfe ?? null }), el("dd", { text: wert })];
+  const hyp = (k) => d.lesarten?.[k] ?? null;
+  return el("div", { class: "profil" }, skizze,
+    el("div", {}, el("p", { class: "startwert", text: `${mitQuelle(e)}: ${d.hinweis}. Punkt: Schwerpunkt des Gewichts, Kreis: Ausdehnung, Pfeil: wohin es heller wird, gestrichelt: Kantenrichtung.` }),
+      el("dl", {},
+        zeile("Schwerpunkt", `${zahl(sp.x)} / ${zahl(sp.y)} (Abstand zur Mitte ${zahl(sp.abstand)})`, "Versatz von der Bildmitte, −0,5 … 0,5"),
+        zeile("Ausdehnung", zahl(sp.ausdehnung), hyp("schwerpunkt.ausdehnung")),
+        zeile("Symmetrie", `links–rechts ${zahl(d.symmetrie.linksRechts)}, oben–unten ${zahl(d.symmetrie.obenUnten)}`, "1 spiegelgleich, 0,5 ohne Bezug, 0 gegengleich"),
+        zeile("Licht", `Helligkeit ${zahl(li.helligkeit)}, Gefälle ${zahl(li.gefaelleStaerke)} nach ${li.gefaelleWinkel}°, Mitte/Rand ${zahl(li.mitte)}`),
+        zeile("Kontrast", `gesamt ${zahl(d.kontrast.gesamt)}, binnen ${zahl(d.kontrast.binnen)}, Tonumfang ${zahl(d.kontrast.tonumfang)}`),
+        zeile("Farbe", `Sättigung ${zahl(d.farbe.saettigung)}, Farbton ${d.farbe.farbton}°, Bündelung ${zahl(d.farbe.buendelung)}`),
+        zeile("Richtung", `Kanten ${ri.kantenWinkel}°, Kohärenz ${zahl(ri.kohaerenz)}, radial ${zahl(ri.radial)}`, [hyp("richtung.kantenWinkel"), hyp("richtung.radial")].filter(Boolean).join(" ")),
+      ),
+      el("p", { class: "startwert", text: "Als Zielprofil bei «Komposition verändern» wählbar: ein anderes Bild wird diesem angeglichen." })));
 }
 const svg = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstChild; };
 

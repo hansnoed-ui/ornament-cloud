@@ -1,6 +1,7 @@
 // ORNAMENT LAB – Browsertest (Playwright, Chromium) des ersten durchgehenden Prozesses mit dem Beispielbild:
 // Bild → ORNA-Konstellation → The Fictory (sechs Zustände nebeneinander) → Variante wählen → Feedback mit modulierten Varianten → Variante wählen
-// → Bildsignal koppelt Wiederholung → Animation → Projekt speichern und wieder öffnen; dazu jev-assistiert, experimentell, Kette, Handy.
+// → Bildsignal koppelt Wiederholung → Animation → Projekt speichern und wieder öffnen; dazu jev-assistiert, experimentell, Kette,
+// kompositorisches Profil mit Zielprofil, Handy.
 //   NODE_PATH=$(npm root -g) node tests/lab.e2e.mjs
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -41,9 +42,9 @@ async function ausfuehren(page) { await page.click("#ausfuehren"); await page.wa
 const { ctx, page, fehler, fremd } = await oeffne();
 let gespeichert = null;
 
-await check("Start: vier Bereiche, Register mit sieben Operationen, keine Fehler", async () => {
+await check("Start: vier Bereiche, Register mit neun Operationen, keine Fehler", async () => {
   for (const id of ["material", "operationen", "experiment", "protokoll"]) assert.ok(await page.locator(`#${id}`).isVisible(), id);
-  assert.match(await page.textContent("#status"), /7 Operationen/);
+  assert.match(await page.textContent("#status"), /9 Operationen/);
   assert.deepEqual(fehler, []);
 });
 
@@ -196,6 +197,45 @@ await check("Projekt speichern: Archiv mit projekt.json und PNG; wieder öffnen 
   await operation(page, "lab.farbe");
   await ausfuehren(page);
   assert.equal(await S(page, () => ornamentLab.projekt.knoten.at(-1).status), "fertig");
+});
+
+await check("Kompositorisches Profil: messen, Skizze und Werte; Komposition verändern mit modulierten Varianten und mit Zielprofil", async () => {
+  await page.locator("#materialien button").first().click();
+  await operation(page, "lab.profil");
+  await ausfuehren(page);
+  assert.ok(await page.locator(".profil svg").isVisible());
+  assert.match(await page.textContent(".profil dl"), /Symmetrie.*links–rechts/);
+  assert.equal(await S(page, () => ornamentLab.projekt.ergebnisse.find((e) => e.id === ornamentLab.aktuell).typ), "IMAGE", "der Bildausgang bleibt");
+  // ein anderer Ausgang: die zuletzt erzeugte Farbvariante, verändert über sechs Varianten der Asymmetrie
+  const farbe = await S(page, () => ornamentLab.projekt.knoten.filter((k) => k.operation === "lab.farbe").at(-1).ausgaben[0]);
+  await page.evaluate((id) => { ornamentLab.aktuell = id; }, farbe);
+  await page.locator('input[name="ansicht"][value="nach"]').check({ force: true });
+  await page.locator('input[name="ansicht"][value="neben"]').check({ force: true });
+  await operation(page, "lab.komposition");
+  const zielWahl = page.locator("#op-form select").first();
+  assert.equal(await zielWahl.inputValue(), "", "das Zielprofil ist nicht vorgewählt");
+  await page.locator('#op-form input[data-param="seite"]').fill("400");
+  // vom Bildsignal-Schritt stehen noch «einpolig» und 3 Stufen in der Variation
+  await page.locator('#op-form input[data-param="halten"]').fill("0");
+  const auswahl = page.locator("#op-form select");
+  for (let i = 0; i < await auswahl.count(); i++) if ((await auswahl.nth(i).locator("option").allTextContents()).some((t) => t.startsWith("bipolar"))) await auswahl.nth(i).selectOption("bipolar");
+  await ausfuehren(page);
+  assert.equal(await page.locator("#buehne .karte").count(), 6);
+  const k = await S(page, () => { const k = ornamentLab.projekt.knoten.at(-1); return { ziel: k.variation.routen[0].ziel, prot: k.protokoll.map((x) => [x.faktoren.symmetrie, x.nachher.symmetrie.linksRechts]) }; });
+  assert.equal(k.ziel, "symmetrie");
+  assert.ok(new Set(k.prot.map((x) => x[0])).size >= 4, `Faktoren verteilt: ${JSON.stringify(k.prot)}`);
+  await page.locator("#buehne .karte").nth(4).getByRole("button", { name: "weiterführen" }).click();
+  await operation(page, "lab.komposition");
+  const wahl = page.locator("#op-form select").first();
+  const option = (await wahl.locator("option").allTextContents()).find((t) => t.startsWith("Profil von"));
+  assert.ok(option, "das Profil des Materials steht als Ziel bereit");
+  await wahl.selectOption({ label: option });
+  await page.locator('#op-form input[data-param="anzahl"]').fill("1");
+  await page.locator('#op-form input[data-param="seite"]').fill("400");
+  await ausfuehren(page);
+  const z = await S(page, () => { const k = ornamentLab.projekt.knoten.at(-1); return { ziel: k.protokoll.zielprofil, eingang: Object.keys(k.eingaben), kurz: ornamentLab.projekt.ergebnisse.find((e) => e.id === k.ausgaben[0]).befund.kurz }; });
+  assert.ok(z.ziel); assert.deepEqual(z.eingang, ["bild", "profil"]); assert.match(z.kurz, /→|unverändert/);
+  assert.ok(await page.locator("#buehne .karte .werte").first().isVisible());
 });
 
 await check("Keine Fehler in der Konsole, keine Anfragen nach aussen", async () => {
