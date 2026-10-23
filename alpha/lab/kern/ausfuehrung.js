@@ -98,8 +98,10 @@ export async function fuehreAus({ register, projekt, medien, auftrag, melden = (
 /**
  * Die Bildfolge, die zu einem Ergebnis geführt hat (Nacheinander als Bewegung): die Operation rechnet ihren Verlauf mit denselben
  * Parametern und demselben Startwert noch einmal. Operationen ohne eigenen Verlauf werden als Überblendung vom Eingang zum Ergebnis gezeigt.
+ * Mit `bilder` dauert die Folge genau so viele Bilder (etwa so lang wie ein Klang): der Verlauf wird zwischen seinen Bildern überblendet
+ * gedehnt oder ausgedünnt, die Überblendung bekommt die Länge direkt.
  */
-export async function* bildfolge({ register, projekt, medien, ergebnisId, ueberblendung = 30, abbrechen = null }) {
+export async function* bildfolge({ register, projekt, medien, ergebnisId, ueberblendung = 30, abbrechen = null, bilder = null }) {
   const e = ergebnis(projekt, ergebnisId);
   if (!e?.knoten || e.typ !== "IMAGE") throw new Error("Nur Bildergebnisse einer Operation haben einen Verlauf");
   const k = projekt.knoten.find((x) => x.id === e.knoten), op = register.hole(k.operation);
@@ -107,13 +109,17 @@ export async function* bildfolge({ register, projekt, medien, ergebnisId, ueberb
   if (op.verlauf) {
     const ein = await eingaengeLaden(op, projekt, medien, k.eingaben);
     const zeitRouten = k.variation?.achse === "zeit" || k.variation?.achse === "beide" ? routenAufloesen(projekt, k.variation.routen) : [];
-    let n = 0;
-    for await (const f of op.verlauf(ein, p, { seed: e.variante?.seed ?? k.seed, zeitRouten, abbrechen, teil: e.variante?.teil ?? 0 })) {
-      if (++n > GRENZEN.animationBilder) break;
-      yield f.bild;
+    const kontext = { seed: e.variante?.seed ?? k.seed, zeitRouten, abbrechen, teil: e.variante?.teil ?? 0 };
+    const quelle = (async function* () { for await (const f of op.verlauf(ein, p, kontext)) yield f.bild; })();
+    const n = bilder && op.verlaufBilder ? op.verlaufBilder(p, kontext) : 0;
+    let m = 0;
+    for await (const b of n ? strecken(quelle, n, Math.min(bilder, GRENZEN.animationBilder)) : quelle) {
+      if (++m > GRENZEN.animationBilder) break;
+      yield b;
     }
     return;
   }
+  if (bilder) ueberblendung = Math.max(1, Math.min(bilder, GRENZEN.animationBilder) - 1);
   const a = await medien.bild(ergebnis(projekt, Object.values(k.eingaben)[0])), b = await medien.bild(e);
   const { skalieren } = await import("./bilddaten.js");
   const a2 = a.width === b.width && a.height === b.height ? a : skalieren(a, b.width, b.height);
@@ -122,6 +128,35 @@ export async function* bildfolge({ register, projekt, medien, ergebnisId, ueberb
     for (let j = 0; j < out.data.length; j++) out.data[j] = a2.data[j] * (1 - s) + b.data[j] * s;
     yield out;
   }
+}
+
+/** gleiche zwei Bilder gleicher Grösse: (1 − t)·a + t·b */
+function mischen(a, b, t) {
+  const out = { width: b.width, height: b.height, data: new Uint8ClampedArray(b.data.length) };
+  for (let j = 0; j < out.data.length; j++) out.data[j] = a.data[j] * (1 - t) + b.data[j] * t;
+  return out;
+}
+
+/**
+ * Bringt eine Folge von n Bildern auf genau `ziel` Bilder, ohne sie ganz im Speicher zu halten: Bild j liegt an der Stelle
+ * j·(n−1)/(ziel−1) der Quelle und wird aus den beiden Nachbarn überblendet. Liefert die Quelle weniger als n, steht das letzte Bild.
+ */
+export async function* strecken(quelle, n, ziel) {
+  let vor = null, i = -1, j = 0;
+  const stelle = (j) => (ziel <= 1 || n <= 1 ? 0 : (j * (n - 1)) / (ziel - 1));
+  for await (const b of quelle) {
+    i++;
+    if (i > 0) {
+      while (j < ziel && stelle(j) <= i) {
+        const t = stelle(j) - (i - 1);
+        yield t <= 1e-9 ? vor : t >= 1 - 1e-9 ? b : mischen(vor, b, t);
+        j++;
+      }
+    } else if (n <= 1) { while (j < ziel) { yield b; j++; } }
+    vor = b;
+    if (j >= ziel) break;
+  }
+  while (vor && j < ziel) { yield vor; j++; }
 }
 
 /**

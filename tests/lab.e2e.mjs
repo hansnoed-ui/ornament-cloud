@@ -348,11 +348,21 @@ await check("Ton: eine Tondatei wird Material, Tonsignal misst sie, das Signal d
   assert.match(await page.locator(".verlauf .parameter").allTextContents().then((t) => t.join(" ")), /Ton: Hüllkurve/);
   await page.click("#animation");
   await warteFertig(page, 120000);
-  assert.ok((await S(page, () => ornamentLab.projekt.exporte.at(-1).bilder)) >= 13);
+  const anim = await S(page, () => ornamentLab.projekt.exporte.at(-1));
+  assert.equal(anim.bilder, 120, "Bildfolge so lang wie der Klang: 4 s × 30, der Verlauf aus 13 Bildern gedehnt");
+  if (anim.tonspur.codec) assert.equal(anim.tonspur.sekunden, 4);
+  assert.equal(await page.locator(".film video").first().evaluate((v) => v.muted), !anim.tonspur.codec, "die Vorschau spielt den Ton");
+  // ohne Takt (gleichmässig): der Klang steht trotzdem als Tonspur vor, die Halten lassen sich an seine Länge anpassen
+  assert.ok(await page.getByText("Einen anderen Takt gibt es").count() === 0, "Ereignisfolgen sind da, kein Hinweis");
+  const tonWahl = page.locator('.stationen-regler label:has(> span:text-is("Tonspur")) select');
+  assert.equal(await tonWahl.inputValue(), await S(page, () => ornamentLab.projekt.ergebnisse.find((e) => e.typ === "AUDIO").id));
+  await page.getByRole("button", { name: "Halten an den Klang anpassen" }).click();
+  const halten = await S(page, () => ornamentLab.film.halten), stationen = await page.locator(".stationen-liste > li").count();
+  assert.ok(Math.abs(stationen * halten + (stationen - 1) * (await S(page, () => ornamentLab.film.uebergang)) - 4) < 0.2 * stationen, `Halten ${halten} s bei ${stationen} Stationen`);
   // Ton als Taktgeber: die Einsätze lösen die Wechsel zwischen den Stationen aus, der Ton wird Tonspur
   await page.locator('.stationen-regler label:has(> span:text-is("Takt")) select').selectOption({ label: await S(page, () => ornamentLab.projekt.ergebnisse.filter((e) => e.typ === "EVENT_SEQUENCE").at(-1).titel) });
   await page.locator('.stationen input[data-param="seite"]').fill("320");
-  assert.ok(await page.getByText("den gemessenen Ton als Tonspur").isVisible());
+  assert.equal(await tonWahl.inputValue(), await S(page, () => ornamentLab.projekt.ergebnisse.find((e) => e.typ === "AUDIO").id), "der gemessene Ton des Takts als Tonspur");
   await page.click("#stationenfilm");
   await warteFertig(page, 120000);
   const film = await S(page, () => ornamentLab.projekt.exporte.at(-1));
@@ -427,6 +437,7 @@ await check("Klangerzeuger: Klang ohne Tondatei aus dem Startwert und aus einem 
   assert.ok(x.tonspur.codec || x.tonspur.fehlt, JSON.stringify(x.tonspur));
   if (x.tonspur.codec) {
     assert.equal(x.tonspur.sekunden, 1.5, "der ganze Klang");
+    assert.equal(x.bilder, 45, "die Bildfolge so lang wie der Klang");
     const boxen = await S(page, async () => { const t = new TextDecoder("latin1").decode(await (await fetch([...ornamentLab.filme.values()].at(-1).url)).arrayBuffer()); return { soun: t.includes("soun"), ton: t.includes("Opus") || t.includes("mp4a") }; });
     assert.deepEqual(boxen, { soun: true, ton: true }, "das MP4 hat eine Tonspur");
   }

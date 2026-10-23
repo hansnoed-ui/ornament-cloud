@@ -45,6 +45,9 @@ export const feedback = {
     return { ausgaben: [{ typ: "IMAGE", titel: "Feedback", bild: letztes.bild }], protokoll: { iterationen: p.iterationen, rechengroesse: [letztes.bild.width, letztes.bild.height] } };
   },
 
+  /** wie viele Bilder der Verlauf liefert */
+  verlaufBilder: (p) => p.iterationen + 1,
+
   /** die Bildfolge: Iteration 0 ist der Eingang, danach jedes Zwischenergebnis */
   async *verlauf({ bild }, p, kontext = {}) {
     const quelle = alsFelder(begrenzen(bild, p.seite));

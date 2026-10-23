@@ -103,7 +103,7 @@ Ausgaben: ein `AUDIO`-Ergebnis (WAV, 44,1 kHz, 16 Bit, mono, auf −1 dBFS gebra
 
 ### Tonspur im MP4
 
-Unter «Nacheinander» steht neben «Animation des letzten Schritts» die Wahl **Tonspur**: keine oder ein Klang des Projekts (Tondatei oder erzeugt). Hat ein Tonsignal den Verlauf gesteuert, steht sein Klang vor, und die Spur beginnt beim `beginn` seines Ausschnitts. Der Klang läuft ab dort in Echtzeit und ganz, höchstens 30 s (die längste Animation). Er kann also länger oder kürzer sein als das Bild, weil die Bildzahl erst nach dem Rechnen feststeht. Genau im Takt ist der **Film über Stationen** (docs/STATIONEN.md): Er schneidet den Ton auf die Länge des Films.
+Unter «Nacheinander» steht neben «Animation des letzten Schritts» die Wahl **Tonspur**: keine oder ein Klang des Projekts (Tondatei oder erzeugt). Hat ein Tonsignal den Verlauf gesteuert, steht sein Klang vor, und die Spur beginnt beim `beginn` seines Ausschnitts. Der Klang läuft ab dort in Echtzeit und ganz, höchstens 30 s (die längste Animation). Seit Lab 0.1.8 ist dazu **«Bildfolge so lang wie der Klang»** eingeschaltet: Die Animation bekommt so viele Bilder, wie der Klang (bei einem Tonsignal mit Ausschnitt: der Ausschnitt) Sekunden mal 30 hat, höchstens 900. `bildfolge({ bilder })` in `kern/ausfuehrung.js` dehnt dafür den Verlauf der Operation: Bild j liegt an der Stelle j·(n−1)/(bilder−1) der n Verlaufsbilder und wird aus den beiden Nachbarn überblendet (`strecken`, ohne alle Bilder im Speicher). Die Operation sagt mit `verlaufBilder(p, kontext)`, wie viele Bilder ihr Verlauf hat (Feedback: Iterationen + 1, Komposition: 36, Fictory: Anfang, jeder zweite Schritt und der Zielschritt). Operationen ohne Verlauf bekommen eine Überblendung dieser Länge. Damit laufen Bild und Ton gleich lang, die Steuerung über die Zeit bleibt dieselbe. Ausgeschaltet bleibt es beim alten Verhalten: der Klang läuft ganz, das Bild so lang, wie die Operation rechnet. Die Vorschau spielt den Ton mit ab. Genau auf die Einsätze geschnitten ist der **Film über Stationen** (docs/STATIONEN.md).
 
 Kodiert wird wie beim Film über Stationen mit `tonspur.js` aus PHORMA III (unverändert): AAC, sonst Opus, gemuxt mit mp4-muxer 5.2.2. AAC kommt zuerst, weil manche Programme Opus im MP4 stumm abspielen. Ohne `AudioEncoder` und im Rückfall MediaRecorder entsteht das Video ohne Ton, der Grund steht im Export (`tonspur.fehlt`) und in der Statuszeile. Ein erzeugter Klang ist ein AUDIO-Ergebnis wie eine Tondatei: Über *Tonsignal* gibt er auch dem Film über Stationen Takt und Tonspur.
 
@@ -136,7 +136,7 @@ Neu in 0.6.0: AUDIO-Ergebnisse des Klangerzeugers mit `ton.umriss`, die Partitur
 
 ## Nächste Schritte
 
-- Echtzeit-Synchronität: Feedback oder Komposition so viele Bilder rechnen lassen, wie der Klang Sekunden mal 30 hat, damit die Tonspur genau passt.
+- Echtzeit-Synchronität mit eigenen Zwischenschritten: Feedback so viele Iterationen rechnen lassen, wie der Klang Bilder braucht, statt den Verlauf zu dehnen (seit 0.1.8 gedehnt, siehe oben).
 - Ereignisfolge als Takt fürs Abtasten und Halten.
 - Frequenzspektrum als Befund, Bänder auf Spalten der Wiederholung.
 - Klangtransformation: gebaut in 0.1.7 (Tempo, Dekonstruktion, Neu-Rhythmisierung, Körner; KLANGTRANSFORMATION.md). Offen bleiben Filter, Hall und ein Phasenvocoder.

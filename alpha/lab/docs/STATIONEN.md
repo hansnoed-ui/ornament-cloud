@@ -17,7 +17,8 @@ Unter **Nacheinander** steht der Bereich «Animation über Stationen».
   - *Schnitt.*
 - **Modulation über die Stationen:** Halten und Übergang sind beschrieben wie Parameter einer Operation (`ZEITPARAMETER`). Darum verteilt dieselbe Modulation sie über die Folge: Sinus, Dreieck, Rampe, gehaltener Zufall oder ein Steuersignal aus dem Projekt, zum Beispiel ein Bildsignal oder ein Tonsignal. Die Stelle u einer Station (0 bis 1) ist hier ihre Lage in der Zeit des Films. Ein Beispiel: Eine Rampe auf «Halten» lässt den Film immer langsamer werden.
 - **Takt:** Statt gleichmässig kann eine Ereignisfolge den Takt geben, also die Einsätze aus *Tonsignal*. Jeder Einsatz über der gewählten Stärke löst einen Wechsel aus. Der Übergang endet spätestens beim nächsten Einsatz und wird zum Schnitt, wenn dafür weniger als ein Bild bleibt. Mit «Stationen reihum» kehren die Stationen wieder, bis die Einsätze aufgebraucht sind. Der Film dauert so lang wie der gemessene Ausschnitt. Verläufe von Operationen werden dafür in der Zeit gestaucht oder gedehnt: Aus ihren Bildern wird gleichmässig ausgewählt.
-- **Tonspur:** Kommt der Takt aus einem Ton des Projekts, kann derselbe Ausschnitt als Tonspur unter das MP4. Kodiert wird mit `tonspur.js` aus PHORMA III (unverändert): AAC, sonst Opus. Ohne WebCodecs (Rückfall WebM) bleibt der Film stumm, und der Status sagt das.
+- **Takt** zeigt nur Ereignisfolgen. Gibt es noch keine, steht dort ein Hinweis: den Klang wählen und *Tonsignal* (Merkmal «Einsätze») oder *Neu-Rhythmisierung* ausführen.
+- **Tonspur** (seit Lab 0.1.8 frei wählbar): keine oder ein Klang des Projekts. Vorgewählt ist der Ton des Takts, ohne Takt der zuletzt entstandene Klang. Kommt der Takt aus diesem Ton, liegt derselbe Ausschnitt unter dem MP4. Sonst beginnt der Ton am Anfang und endet mit dem Film. «Halten an den Klang anpassen» setzt das Halten so, dass ein gleichmässiger Film etwa so lang ist wie der Klang (höchstens 10 s je Station). Kodiert wird mit `tonspur.js` aus PHORMA III (unverändert): AAC, sonst Opus. Ohne WebCodecs (Rückfall WebM) bleibt der Film stumm, und der Status sagt das.
 - **Filmgrösse:** die längste Seite, 320 bis 2048 px. Stationen anderer Form werden unverzerrt eingepasst, auf dem dunklen Grund der Fictory.
 
 ## Rechnung
@@ -40,7 +41,6 @@ Der Film steht unter `exporte` mit `art: "stationen"`, der vollständigen Partit
 
 ## Offen
 
-- eine Tonspur auch ohne Takt (ein beliebiger Ton des Projekts unter einem gleichmässigen Film)
 - Übergänge als eigene Operationen im Register, damit sie Parameter haben und moduliert werden können (Kante der Schwelle, Richtung)
 - die Einsätze nach Band trennen (tief schneidet, hoch blendet)
 - Kamerabewegung innerhalb einer Station (Zoom, Fahrt) als Zeitparameter
