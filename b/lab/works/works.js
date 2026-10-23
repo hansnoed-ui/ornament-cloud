@@ -132,6 +132,7 @@ if (html.classList.contains("uebersicht")) {
   };
   const blaettern = (d) => drehe(d);
   html.dataset.karussell = "";
+  if (L < 2) $(".ring-hinweis")?.remove();   // mit einem einzigen Werk gibt es nichts zu drehen
   zeichne(); vornSetzen();
 
   // Klick auf eine Nachbarkarte: sie dreht nach vorn (kürzester Weg); Klick auf die vordere Karte im Ring: heranzoomen;

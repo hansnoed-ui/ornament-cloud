@@ -1,0 +1,14 @@
+{
+  "format": "ornament-lab-werk",
+  "version": 1,
+  "titel": "Ohne Titel",
+  "jahr": 2026,
+  "text": "",
+  "bild": "bild.jpg",
+  "breite": 616,
+  "hoehe": 900,
+  "film": "film.mp4",
+  "operationen": ["Stationen"],
+  "exportiert": "2026-10-23T20:45:00Z",
+  "veroeffentlicht": true
+}
