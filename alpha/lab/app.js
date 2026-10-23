@@ -79,6 +79,7 @@ const aktuellesErgebnis = () => (S.aktuell ? P.ergebnis(S.projekt, S.aktuell) : 
 
 // ---------- 1 · Material ----------
 async function importiere(datei) {
+  if (datei.type.startsWith("video/") || (!datei.type && /\.(mp4|m4v|mov|webm|ogv)$/i.test(datei.name))) return importiereVideo(datei);
   if (datei.type.startsWith("audio/") || (!datei.type && /\.(wav|mp3|ogg|flac|m4a|aac|opus)$/i.test(datei.name))) return importiereTon(datei);
   status(`${datei.name} wird gelesen …`);
   try {
@@ -101,6 +102,33 @@ async function importiereTon(datei) {
     status(`${imp.original.name}: ${sekunden(imp.ton.dauer)}, ${imp.ton.abtastrate} Hz. «Tempo und Tonhöhe», «Dekonstruktion», «Neu-Rhythmisierung» und «Körner» verwandeln ihn, «Tonsignal» macht daraus ein Steuersignal für Bildparameter.`);
     alles();
   } catch (f) { status(`Der Ton liess sich nicht lesen: ${f.message}`, null, true); }
+}
+/**
+ * ein Video wird Material: sechs Standbilder (IMAGE) über seine Länge und, falls es Ton hat, die Tonspur (AUDIO). Die Bilder tragen
+ * herkunft.video mit Name, Prüfsumme und Zeitpunkt; der Vorschlag für 30 s nimmt sie als Abschnitte (kern/zusammenstellung.js).
+ */
+async function importiereVideo(datei) {
+  status(`${datei.name} wird gelesen …`, 0);
+  try {
+    const imp = await S.medien.importiereVideo(datei, { melden: status });
+    const video = { name: imp.original.name, sha256: imp.original.sha256, dauer: imp.original.dauer, breite: imp.original.breite, hoehe: imp.original.hoehe };
+    const ids = [];
+    for (const b of imp.bilder) {
+      const e = P.fuegeMaterialHinzu(S.projekt, { titel: `${imp.original.name} · ${sekunden(b.zeit)}`, mime: "image/png", herkunft: { original: imp.original, video: { ...video, zeit: b.zeit }, hinweis: `Standbild bei ${sekunden(b.zeit)} von ${sekunden(video.dauer)}, ${b.arbeit.width} × ${b.arbeit.height} px` } });
+      Object.assign(e, await S.medien.ablegen(e, b.arbeit));
+      ids.push(e.id);
+    }
+    let tonId = null;
+    if (imp.ton) {
+      const t = P.fuegeMaterialHinzu(S.projekt, { titel: `${imp.original.name} · Ton`, typ: "AUDIO", mime: "audio/wav", ton: imp.ton.ton, herkunft: { original: imp.ton.original, video, hinweis: `Tonspur des Videos, ${sekunden(imp.ton.ton.dauer)}${imp.ton.gekuerzt ? " (die ersten 120 s)" : ""}, ${imp.ton.ton.abtastrate} Hz` } });
+      Object.assign(t, await S.medien.ablegenTon(t, imp.ton));
+      tonId = t.id;
+    }
+    S.aktuell = ids[0]; S.vergleich.clear(); S.knotenAnsicht = null; geaendert();
+    S.vorschlag.bild = ids[0]; if (tonId) S.vorschlag.ton = tonId;
+    status(`${imp.original.name}: ${sekunden(video.dauer)}, ${ids.length} Standbilder${tonId ? " und die Tonspur" : ", ohne lesbaren Ton"}. Das Video selbst bleibt draussen, im Projekt stehen die Bilder${tonId ? " und der Ton" : ""}.`);
+    alles();
+  } catch (f) { status(`Das Video liess sich nicht lesen: ${f.message}`, null, true); }
 }
 const sekunden = (s) => `${(Math.round(s * 10) / 10).toLocaleString("de-CH")} s`;
 const tonSymbol = (e) => el("span", { class: "ton-symbol", "aria-hidden": "true", text: "♪", title: e.titel });
@@ -169,7 +197,7 @@ function zusammenstellungAnsicht(v) {
       el("select", { "data-frage": frage, onchange: (ev) => { setze(ev.target.value); z.geaendert.add(frage); zeigeVorschlag30(); } },
         ...Object.entries(KOMPOSITION_FRAGEN[frage].katalog).map(([k, t]) => el("option", { value: k, selected: k === wert, text: frage === "uebergang" ? t : kurzname(t) }))));
   };
-  const film = S.filme.get("stationen");
+  const film = S.filme.get("stationen"), video = v.messung.videoBilder?.length > 1;
   return el("fieldset", { class: "gruppe zusammenstellung" },
     el("legend", { text: z.jev ? `jev stellt zusammen (${z.jev.modell})` : "Zufällig zusammengestellt (ohne jev)" }),
     el("small", { text: `${ART_NAME[quelle]}: ${z.jev ? "aus den Wahrscheinlichkeiten von jev gezogen" : "gleichverteilt gezogen"}, Startwert ${pl.seed}. Kein Bildeffekt zweimal hintereinander. Jede Stelle lässt sich ändern.` }),
@@ -177,7 +205,8 @@ function zusammenstellungAnsicht(v) {
       stelle("aufbau", pl.aufbau, (x) => { pl.aufbau = x; }), stelle("uebergang", pl.uebergang, (x) => { pl.uebergang = x; }),
       stelle("klang1", pl.klang[0], (x) => { pl.klang[0] = x; }), stelle("klang2", pl.klang[1], (x) => { pl.klang[1] = x; }),
       ...pl.bild.map((b, i) => stelle(`bild${i + 1}`, b, (x) => { pl.bild[i] = x; }))),
-    el("small", { class: "hinweis", text: `${kurzname(AUFBAU[pl.aufbau])}, ${FILM_UEBERGAENGE[pl.uebergang]}. Klang: ${pl.klang.map((k) => kurzname(KLANG_EFFEKTE[k])).join(" → ")}. Bild: ${pl.bild.map((b) => kurzname(BILD_EFFEKTE[b])).join(" → ")}, je ${ZS.VARIANTEN_JE_ABSCHNITT} Varianten.` }),
+    video ? el("small", { class: "hinweis", text: `Aus dem Video: jeder Abschnitt nimmt das Standbild seiner Zeit (${v.messung.videoBilder.length} Standbilder), so folgt der Film dem Video. Der Aufbau gilt darum nicht.` }) : null,
+    el("small", { class: "hinweis", text: `${video ? "Abschnitte nach dem Video" : kurzname(AUFBAU[pl.aufbau])}, ${FILM_UEBERGAENGE[pl.uebergang]}. Klang: ${pl.klang.map((k) => kurzname(KLANG_EFFEKTE[k])).join(" → ")}. Bild: ${pl.bild.map((b) => kurzname(BILD_EFFEKTE[b])).join(" → ")}, je ${ZS.VARIANTEN_JE_ABSCHNITT} Varianten.` }),
     el("div", { class: "aktionen" },
       el("button", { class: "knopf voll", type: "button", id: "zusammenstellung-rechnen", disabled: Boolean(S.laeuft), onclick: zusammenstellungRechnen, text: "Zusammenstellung rechnen" }),
       el("button", { class: "knopf leise", type: "button", id: "zusammenstellung-neu", disabled: Boolean(S.laeuft), onclick: () => { v.zusammen = neueZusammenstellung(z.antworten, z.jev); zeigeVorschlag30(); }, text: "neu ziehen" })),
@@ -214,6 +243,10 @@ async function vorschlagMachen() {
     status("Bild und Klang werden gemessen …", 0);
     v.messung = await VS.messen({ register: R, projekt: S.projekt, medien: S.medien, bild: v.bild, ton: v.ton, beginn: v.beginn, melden: status, abbrechen: signal });
     v.regel = VS.regelDramaturgie(v.messung.merkmale); v.jev = null; v.jevFehler = ""; v.gewaehlt = null;
+    // ein Standbild aus einem Video: die anderen Standbilder desselben Videos werden die Abschnitte der Zusammenstellung
+    const quelle = P.ergebnis(S.projekt, v.bild)?.herkunft?.video;
+    const stills = quelle ? S.projekt.ergebnisse.filter((x) => x.typ === "IMAGE" && !x.knoten && x.herkunft?.video?.sha256 === quelle.sha256).sort((a, b) => a.herkunft.video.zeit - b.herkunft.video.zeit) : [];
+    if (stills.length > 1) v.messung.videoBilder = stills.map((x) => x.id);
     let komposition = null;
     if (jevVerfuegbar()) {
       status("jev stellt zusammen …");
@@ -945,6 +978,7 @@ function alles() { zeigeMaterial(); zeigeVorschlag30(); zeigeOperationen(); zeig
 // ---------- Anschlüsse ----------
 $("datei").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) importiere(f); });
 $("tondatei").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) importiereTon(f); });
+$("videodatei").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) importiereVideo(f); });
 $("beispiel").addEventListener("click", async () => {
   const r = await fetch("../../alpha/the-fictory/beispiel.jpg");
   importiere(new File([await r.blob()], "beispiel.jpg (The Fictory)", { type: "image/jpeg" }));

@@ -1,4 +1,4 @@
-# Vorschlag für 30 Sekunden aus Bild und Klang (Lab 0.1.11, Zusammenstellung seit 0.1.12)
+# Vorschlag für 30 Sekunden aus Bild und Klang (Lab 0.1.11, Zusammenstellung seit 0.1.12, Video seit 0.1.13)
 
 Christian wollte ein Bild und eine MP3 hochladen und von jev einen Vorschlag für eine Animation von 30 Sekunden bekommen. Der Bereich «Animation aus Bild und Klang (30 s)» steht unter **Material**, sobald das Projekt ein Bild und einen Ton hat.
 
@@ -43,6 +43,15 @@ Kosten: ein Aufruf mit etwa 4000 Eingabe-Token, also etwa 0,02 Cent; gleiche Stu
 
 Im Projekt: Entscheidung `gegenstand: "zusammenstellung"` mit `gewaehlt: { aufbau, uebergang, klang, bild }`, Startwert, Antworten von jev, Merkmalen; jeder Schritt verweist mit `details.entscheidung` darauf; der Film unter `exporte` mit `dramaturgie: "zusammenstellung"`.
 
+## Video als Eingang (seit Lab 0.1.13)
+
+«Video wählen» unter Material (oder ein Video hineinziehen) liest MP4, WebM oder MOV, soweit der Browser es abspielen kann (H.264 und VP8/VP9 fast überall, HEVC je nach Gerät), höchstens 300 MB:
+
+- **sechs Standbilder** gleichmässig über die Länge, in Arbeitsgrösse, als IMAGE-Material mit `herkunft.video` (Name, Prüfsumme, Länge, Zeitpunkt)
+- **die Tonspur**, höchstens die ersten 120 s, als AUDIO-Material (WAV, 24 Bit, Abtastrate der Datei); ein Video ohne lesbaren Ton gibt nur Bilder
+
+Das Video selbst kommt nicht ins Projekt, nur was daraus gelesen wurde. Im Vorschlag stehen danach das erste Standbild und die Tonspur vor. Bei der **Zusammenstellung** nimmt jeder Abschnitt das Standbild seiner Zeit (Abschnitt 1 und 2 das erste, 3 und 4 das zweite …, bei sechs Standbildern je eines), so folgt der Film dem Video; der Aufbau gilt dann nicht. Die Entscheidung trägt `details.video` mit den Standbildern. Die festen Dramaturgien nehmen das gewählte Standbild.
+
 ## Die sechs Dramaturgien (`kern/vorschlag.js`, `REZEPTE`)
 
 | Kennung | Name | Operationen | Film |
@@ -69,6 +78,6 @@ Eine Frage an jev je «Vorschlag machen», gleiche Stufen kommen 30 Tage aus dem
 ## Offen
 
 - **Zettelkasten und ORNA** in die Zusammenstellung einbinden (Christians nächster Wunsch).
-- **Video als Eingang:** Ein Video als Material (Standbilder als Stationen, Bewegung als Steuersignal) ist der nächste Schritt. Heute nimmt der Vorschlag ein Bild.
+- Bewegung im Video als Steuersignal (Unterschied zwischen Bildern) und mehr Standbilder bei langen Videos.
 - jev könnte auch Parameter wählen (Tiefe der Modulation, Takt), über eine weitere feste Frage.
 - Klangfarbe (spektraler Schwerpunkt) als Merkmal und als zweite Route.

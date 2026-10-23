@@ -13,6 +13,9 @@ const ERLAUBT = new Set(["image/png", "image/jpeg", "image/webp", "image/gif", "
 const HOECHSTENS_BYTES = 60 * 1024 * 1024;
 const TON = new Map([["audio/wav", "wav"], ["audio/x-wav", "wav"], ["audio/wave", "wav"], ["audio/mpeg", "mp3"], ["audio/mp3", "mp3"], ["audio/ogg", "ogg"], ["audio/flac", "flac"], ["audio/x-flac", "flac"], ["audio/mp4", "m4a"], ["audio/x-m4a", "m4a"], ["audio/aac", "aac"], ["audio/webm", "webm"], ["audio/opus", "opus"]]);
 const TON_ENDUNG = Object.fromEntries([...TON].reverse().map(([mime, endung]) => [endung, mime]));
+const VIDEO = new Set(["video/mp4", "video/webm", "video/quicktime", "video/x-m4v", "video/ogg"]);
+const VIDEO_ENDUNG = { mp4: "video/mp4", m4v: "video/x-m4v", mov: "video/quicktime", webm: "video/webm", ogv: "video/ogg" };
+const VIDEO_BYTES = 300 * 1024 * 1024, VIDEO_TON_SEKUNDEN = 120;
 const RATE = 48000;   // wenn der Kopf der Datei keine Abtastrate verrät (bis Lab 0.1.6 wurde alles auf 44,1 kHz gebracht)
 /** Typ einer Datei im Archiv nach ihrer Endung */
 const mimeNachName = (name) => { const x = name.split(".").pop(); return x === "png" ? "image/png" : x === "json" ? "application/json" : x === "mp4" ? "video/mp4" : x === "webm" && !/-(animation|stationen)\./.test(name) ? "audio/webm" : x === "webm" ? "video/webm" : TON_ENDUNG[x] ?? "application/octet-stream"; };
@@ -103,6 +106,47 @@ export function browserMedien() {
       if (t.dauer < 0.2) throw new Error("Ton kürzer als 0,2 s");
       return { bytes, endung, mime, dekodiert: t, original: { name: datei.name, sha256: await sha256(bytes), mime, bytes: bytes.length },
         ton: { dauer: Math.round(t.dauer * 1000) / 1000, abtastrate: t.rate, kanaele: t.kanaele } };
+    },
+    /**
+     * ein Video lesen (seit Lab 0.1.13): Standbilder gleichmässig über die Länge, in Arbeitsgrösse, und die Tonspur, höchstens die ersten
+     * 120 s, als WAV mit 24 Bit. Das Video selbst kommt nicht ins Projekt, nur was daraus gelesen wurde; seine Prüfsumme steht in der Herkunft.
+     * Der Browser muss das Format abspielen können (MP4 mit H.264 oder WebM fast überall, MOV je nach Gerät).
+     */
+    async importiereVideo(datei, { bilder: n = 6, melden = () => {} } = {}) {
+      const mime = datei.type || VIDEO_ENDUNG[datei.name.split(".").pop().toLowerCase()] || "";
+      if (!VIDEO.has(mime)) throw new Error(`Dateityp ${mime || "unbekannt"} wird nicht angenommen (MP4, WebM, MOV)`);
+      if (datei.size > VIDEO_BYTES) throw new Error("Video grösser als 300 MB");
+      const bytes = new Uint8Array(await datei.arrayBuffer());
+      const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
+      const v = document.createElement("video");
+      v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = url;
+      try {
+        await new Promise((ok, nein) => { v.onloadeddata = ok; v.onerror = () => nein(new Error("dieser Browser kann das Video nicht lesen")); setTimeout(() => nein(new Error("das Video lädt nicht")), 20000); });
+        const dauer = v.duration;
+        if (!Number.isFinite(dauer) || dauer < 0.2) throw new Error("das Video hat keine lesbare Länge");
+        const w0 = v.videoWidth, h0 = v.videoHeight, f = Math.min(1, GRENZEN.seite / Math.max(w0, h0));
+        const c = leinwand(Math.max(1, Math.round(w0 * f)), Math.max(1, Math.round(h0 * f))), x = c.getContext("2d", { willReadFrequently: true });
+        const stills = [];
+        for (let i = 0; i < n; i++) {
+          const zeit = Math.min(dauer - 0.05, ((i + 0.5) / n) * dauer);
+          melden(`Standbild ${i + 1} von ${n} …`, i / n);
+          await new Promise((ok) => { v.onseeked = ok; v.currentTime = Math.max(0, zeit); });
+          x.drawImage(v, 0, 0, c.width, c.height);
+          stills.push({ zeit: Math.round(zeit * 100) / 100, arbeit: x.getImageData(0, 0, c.width, c.height) });
+        }
+        const original = { name: datei.name, sha256: await sha256(bytes), mime, bytes: bytes.length, breite: w0, hoehe: h0, dauer: Math.round(dauer * 1000) / 1000 };
+        // die Tonspur: decodeAudioData liest den Ton auch aus einem Video; ohne Ton (oder unlesbar) bleibt es bei den Bildern
+        let ton = null;
+        try {
+          melden("Tonspur wird gelesen …", null);
+          const t = await dekodiereTon(bytes), m = Math.min(t.pcm.length, Math.round(VIDEO_TON_SEKUNDEN * t.rate));
+          const spuren = t.spuren.map((s) => s.slice(0, m)), pcm = t.pcm.slice(0, m), wav = wavSchreiben(spuren, t.rate, { bits: "24" });
+          if (m / t.rate >= 0.2) ton = { bytes: wav, endung: "wav", mime: "audio/wav", dekodiert: { spuren, pcm, rate: t.rate, dauer: m / t.rate, kanaele: spuren.length },
+            original: { name: `${datei.name} (Tonspur)`, sha256: await sha256(wav), mime: "audio/wav", bytes: wav.length }, gekuerzt: t.dauer > VIDEO_TON_SEKUNDEN,
+            ton: { dauer: Math.round((m / t.rate) * 1000) / 1000, abtastrate: t.rate, kanaele: spuren.length } };
+        } catch { ton = null; }
+        return { original, bilder: stills, ton };
+      } finally { v.removeAttribute("src"); v.load(); URL.revokeObjectURL(url); }
     },
     /** die Tondatei unverändert unter medien/<id>.<endung> ablegen */
     async ablegenTon(e, imp) {

@@ -625,6 +625,43 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   await c.close();
 });
 
+await check("Video als Eingang: Standbilder und Tonspur werden Material, die Zusammenstellung folgt dem Video", async () => {
+  const { spawnSync } = await import("node:child_process");
+  const { mkdtempSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const ordner = mkdtempSync(join(tmpdir(), "lab-video-")), datei = join(ordner, "clip.webm");
+  const ff = spawnSync("ffmpeg", ["-loglevel", "error", "-y", "-f", "lavfi", "-i", "testsrc=size=320x240:rate=15:duration=6", "-f", "lavfi", "-i", "aevalsrc=0.6*sin(2*PI*110*t)*exp(-8*mod(t\\,0.5)):s=48000:d=6", "-c:v", "libvpx", "-b:v", "400k", "-c:a", "libopus", "-shortest", datei]);
+  if (ff.status !== 0) { console.log("      (ohne ffmpeg übersprungen)"); return; }
+  const c = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const p = await c.newPage();
+  const fehler3 = [];
+  p.on("pageerror", (e) => fehler3.push(e.message));
+  await p.goto(base); await p.waitForFunction(() => globalThis.ornamentLab);
+  await p.setInputFiles("#videodatei", datei);
+  await p.waitForFunction(() => ornamentLab.projekt.ergebnisse.length >= 7, null, { timeout: 60000 });
+  await warteFertig(p);
+  const m = await S(p, () => ornamentLab.projekt.ergebnisse.map((e) => ({ typ: e.typ, titel: e.titel, video: e.herkunft?.video ?? null, dauer: e.ton?.dauer })));
+  const bilder = m.filter((x) => x.typ === "IMAGE"), ton = m.find((x) => x.typ === "AUDIO");
+  assert.equal(bilder.length, 6); assert.ok(bilder.every((x) => x.video?.dauer > 5.5), "Standbilder mit Herkunft Video");
+  const zeiten = bilder.map((x) => x.video.zeit);
+  assert.ok(zeiten.every((z, i) => z > (zeiten[i - 1] ?? 0) && z < bilder[0].video.dauer) && Math.abs(zeiten[0] - 0.5) < 0.05, `gleichmässig über die Länge: ${zeiten}`);
+  assert.ok(ton && Math.abs(ton.dauer - 6) < 0.2, `Tonspur: ${JSON.stringify(ton)}`);
+  assert.equal(await p.locator("#materialien img").count(), 6);
+  await p.click("#vorschlag-machen");
+  await p.waitForSelector("#vorschlag30 .zusammenstellung");
+  await warteFertig(p);
+  assert.match(await p.textContent("#vorschlag30 .zusammenstellung"), /Aus dem Video: jeder Abschnitt nimmt das Standbild seiner Zeit \(6 Standbilder\)/);
+  for (const [i, w] of ["bild.farbe", "bild.licht", "bild.raster", "bild.farbe", "bild.glitch", "bild.licht"].entries()) await p.locator(`#vorschlag30 select[data-frage="bild${i + 1}"]`).selectOption(w);
+  await p.click("#zusammenstellung-rechnen"); await p.waitForTimeout(50);
+  await warteFertig(p, 300000);
+  await p.waitForSelector("#vorschlag30 .zusammenstellung video");
+  const z = await S(p, () => { const pr = ornamentLab.projekt, stills = pr.ergebnisse.filter((e) => e.typ === "IMAGE" && !e.knoten).map((e) => e.id); return { stills, eingaben: pr.knoten.slice(-6).map((k) => k.eingaben.bild), x: pr.exporte.at(-1) }; });
+  assert.deepEqual(z.eingaben, z.stills, "jeder Abschnitt auf seinem Standbild");
+  assert.equal(z.x.stationen[0], z.stills[0]); assert.ok(z.x.ton, "mit Tonspur aus dem Video");
+  assert.deepEqual(fehler3, []);
+  await c.close();
+});
+
 await check("Telefon: kein seitliches Scrollen, Bereiche untereinander", async () => {
   const t = await oeffne({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const breit = await t.page.evaluate(() => document.documentElement.scrollWidth - innerWidth);

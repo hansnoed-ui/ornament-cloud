@@ -1090,3 +1090,18 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   await assert.rejects(Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, bild: ["bild.gibtsnicht"] }, wahl: { art: "mensch" } }), /gibt es nicht/);
   assert.deepEqual(P.pruefeProjekt(p), []);
 });
+
+test("Zusammenstellung aus einem Video (Lab 0.1.13): jeder Abschnitt nimmt das Standbild seiner Zeit", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const Z = await lab("kern/zusammenstellung.js");
+  const r = labRegister();
+  const { p, m, e, t } = mitTon();
+  const stills = [e.id];
+  for (let i = 1; i < 3; i++) { const s = P.fuegeMaterialHinzu(p, { titel: `video · ${i}`, datei: `medien/s${i}.rgba`, breite: 96, hoehe: 72, mime: "image/png", sha256: "v", herkunft: { video: { sha256: "v", zeit: i } } }); m.bilder.set(s.id, bild()); stills.push(s.id); }
+  const mg = { ...(await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id })), videoBilder: stills };
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.schnitt", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.raster", "bild.farbe", "bild.licht"], seed: 2 };
+  const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "zufall" } });
+  assert.deepEqual(p.knoten.slice(-6).map((k) => k.eingaben.bild), [stills[0], stills[0], stills[1], stills[1], stills[2], stills[2]], "die Abschnitte folgen den Standbildern, auch in der Kette");
+  assert.deepEqual(x.entscheidung.details.video, stills);
+  assert.equal(x.plan.stationen[0], stills[0]);
+});

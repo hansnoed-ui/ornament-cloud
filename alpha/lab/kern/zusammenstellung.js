@@ -85,7 +85,7 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   for (const b of plan.bild) if (!BILD_REZEPTE[b]) throw new Error(`Bildeffekt ${b} gibt es nicht`);
   if (!FILM[plan.uebergang]) throw new Error(`Übergang ${plan.uebergang} gibt es nicht`);
   const d = entscheide(projekt, { art: wahl.art, gegenstand: "zusammenstellung", optionen: [], gewaehlt: { aufbau: plan.aufbau, uebergang: plan.uebergang, klang: plan.klang, bild: plan.bild },
-    details: { ...(wahl.details ?? {}), startwert: plan.seed, merkmale: messung.merkmale, werte: messung.werte, version: ZUSAMMENSTELLUNG_VERSION } });
+    details: { ...(wahl.details ?? {}), ...(messung.videoBilder?.length > 1 ? { video: messung.videoBilder } : {}), startwert: plan.seed, merkmale: messung.merkmale, werte: messung.werte, version: ZUSAMMENSTELLUNG_VERSION } });
   const schritt = (anlass) => ({ art: wahl.art, details: { anlass, entscheidung: d.id } });
 
   // 1 · Klang: die Effekte nacheinander, jeder auf dem Ergebnis des vorigen
@@ -104,8 +104,10 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
     auftrag: { operation: "lab.tonsignal", eingaben: { ton }, parameter: { merkmal: "laut", beginn, laenge: DAUER, proben: 120, normieren: false }, wahl: schritt("Zusammenstellung, Klang messen") } });
   const [signal, einsaetze] = t.ergebnisse;
 
-  // 3 · Bild: sechs Abschnitte, in der Kette auf dem vorigen, im Fächer jeweils auf dem Ausgangsbild
-  let eingang = messung.bild;
+  // 3 · Bild: sechs Abschnitte, in der Kette auf dem vorigen, im Fächer jeweils auf dem Ausgangsbild;
+  //     aus einem Video (messung.videoBilder) nimmt jeder Abschnitt das Standbild seiner Zeit, so folgt der Film dem Video
+  const video = messung.videoBilder?.length > 1 ? messung.videoBilder : null;
+  let eingang = video?.[0] ?? messung.bild;
   const ergebnisse = [];
   for (const [i, b] of plan.bild.entries()) {
     const r = BILD_REZEPTE[b], op = register.hole(r.operation);
@@ -113,7 +115,7 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
     const routen = ziel && op.varianten === "moduliert" ? [{ ziel, tiefe: r.tiefe ?? 0.5, modulator: { quelle: "signal", ergebnis: signal.id } }] : [];
     melden(`Abschnitt ${i + 1} von ${plan.bild.length}: ${BILD_EFFEKTE[b].split(":")[0]} …`, null);
     const x = await fuehreAus({ register, projekt, medien, melden, abbrechen,
-      auftrag: { operation: r.operation, eingaben: { bild: plan.aufbau === "aufbau.faecher" ? messung.bild : eingang }, parameter: r.parameter, seed: (seed + 101 * (i + 1)) >>> 0,
+      auftrag: { operation: r.operation, eingaben: { bild: video ? video[Math.min(video.length - 1, Math.floor((i * video.length) / plan.bild.length))] : plan.aufbau === "aufbau.faecher" ? messung.bild : eingang }, parameter: r.parameter, seed: (seed + 101 * (i + 1)) >>> 0,
         variation: { anzahl: VARIANTEN_JE_ABSCHNITT, achse: "varianten", routen }, wahl: schritt(`Zusammenstellung, Abschnitt ${i + 1} von ${plan.bild.length}`) } });
     const bilder = x.ergebnisse.filter((e) => e.typ === "IMAGE");
     // The Fictory gibt sechs Zustände aus: davon jeder zweite, damit jeder Abschnitt etwa gleich viel Zeit bekommt
@@ -123,7 +125,7 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   }
 
   // 4 · Film: Bild, dann alle Abschnitte; im Takt der Anschläge reihum, sonst gleichmässig über die Dauer
-  const stationen = [messung.bild, ...ergebnisse.map((e) => e.id)].slice(0, GRENZEN.stationen);
+  const stationen = [video?.[0] ?? messung.bild, ...ergebnisse.map((e) => e.id)].slice(0, GRENZEN.stationen);
   const f = FILM[plan.uebergang], folge = ergebnis(projekt, einsaetze.id).daten;
   const dauer = Math.min(DAUER, folge?.dauer ?? DAUER), n = stationen.length;
   // nicht reihum: jede Station kommt einmal, darum höchstens so viele Wechsel wie Stationen, verteilt auf die stärksten Anschläge
