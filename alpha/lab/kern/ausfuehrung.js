@@ -19,7 +19,7 @@ async function eingaengeLaden(op, projekt, medien, eingaben) {
     const erg = ergebnis(projekt, id);
     if (!erg) throw new Error(`${op.name}: Ergebnis ${id} gibt es nicht`);
     if (!kompatibel(erg.typ, e.typ)) throw new Error(`${op.name}: Eingang «${e.name}» verlangt ${e.typ}, bekommt ${erg.typ}`);
-    out[e.name] = erg.typ === "IMAGE" ? await medien.bild(erg) : erg.daten;
+    out[e.name] = erg.typ === "IMAGE" ? await medien.bild(erg) : erg.typ === "AUDIO" ? await medien.ton(erg) : erg.daten;
   }
   return out;
 }

@@ -73,6 +73,10 @@ fieldset { border: 0; margin: 0; padding: 0; }
 .streifen button { padding: 0; border: 1px solid var(--border); background: var(--nacht); cursor: pointer; display: block; }
 .streifen button[aria-pressed="true"] { outline: 2px solid var(--accent); outline-offset: 1px; }
 .streifen img { display: block; width: 72px; height: 72px; object-fit: cover; }
+.ton-symbol { display: grid; place-items: center; width: 72px; height: 72px; font-size: 1.8rem; color: var(--kreide); background: var(--nacht); }
+.ausgang .ton-symbol { width: 52px; height: 52px; font-size: 1.3rem; }
+.ton-karte { display: grid; gap: 8px; max-width: 70ch; }
+.ton-karte audio { width: 100%; }
 
 /* Operationen */
 .ausgang { display: flex; gap: 10px; align-items: center; padding: 8px 0 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px; font-size: 0.9rem; }

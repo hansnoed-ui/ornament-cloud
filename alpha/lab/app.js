@@ -61,6 +61,7 @@ const aktuellesErgebnis = () => (S.aktuell ? P.ergebnis(S.projekt, S.aktuell) : 
 
 // ---------- 1 · Material ----------
 async function importiere(datei) {
+  if (datei.type.startsWith("audio/") || (!datei.type && /\.(wav|mp3|ogg|flac|m4a|aac|opus)$/i.test(datei.name))) return importiereTon(datei);
   status(`${datei.name} wird gelesen …`);
   try {
     const { original, arbeit } = await S.medien.importiere(datei);
@@ -71,18 +72,32 @@ async function importiere(datei) {
     alles();
   } catch (f) { status(`Das Bild liess sich nicht lesen: ${f.message}`, null, true); }
 }
+/** eine Tondatei wird Material (AUDIO): sie bleibt unverändert, gemessen wird sie erst von einer Operation (Tonsignal) */
+async function importiereTon(datei) {
+  status(`${datei.name} wird gelesen …`);
+  try {
+    const imp = await S.medien.importiereTon(datei);
+    const e = P.fuegeMaterialHinzu(S.projekt, { titel: imp.original.name, typ: "AUDIO", mime: imp.mime, ton: imp.ton, herkunft: { original: imp.original, hinweis: `${sekunden(imp.ton.dauer)}, ${imp.ton.kanaele === 1 ? "mono" : `${imp.ton.kanaele} Kanäle`}, gelesen mit ${imp.ton.abtastrate} Hz` } });
+    Object.assign(e, await S.medien.ablegenTon(e, imp));
+    S.aktuell = e.id; S.vergleich.clear(); S.knotenAnsicht = null; geaendert();
+    status(`${imp.original.name}: ${sekunden(imp.ton.dauer)}. Mit «Tonsignal» wird daraus ein Steuersignal für Bildparameter.`);
+    alles();
+  } catch (f) { status(`Der Ton liess sich nicht lesen: ${f.message}`, null, true); }
+}
+const sekunden = (s) => `${(Math.round(s * 10) / 10).toLocaleString("de-CH")} s`;
+const tonSymbol = (e) => el("span", { class: "ton-symbol", "aria-hidden": "true", text: "♪", title: e.titel });
 function zeigeMaterial() {
   const liste = $("materialien");
   ersetze(liste, ...S.projekt.ergebnisse.filter((e) => !e.knoten).map((e) => el("li", {},
-    el("button", { type: "button", "aria-pressed": String(S.aktuell === e.id), title: e.titel, onclick: () => { S.aktuell = e.id; alles(); } },
-      el("img", { src: S.medien.url(e), alt: e.titel })))));
+    el("button", { type: "button", "aria-pressed": String(S.aktuell === e.id), title: e.titel, "aria-label": e.typ === "AUDIO" ? `Ton: ${e.titel}` : null, onclick: () => { S.aktuell = e.id; S.knotenAnsicht = null; alles(); } },
+      e.typ === "AUDIO" ? tonSymbol(e) : el("img", { src: S.medien.url(e), alt: e.titel })))));
 }
 
 // ---------- 2 · Operationen ----------
 function zeigeAusgang() {
   const e = aktuellesErgebnis(), box = $("ausgang");
   if (!e) { ersetze(box, el("span", { class: "leer", text: "Noch kein Ausgang. Wähle ein Bild oder ziehe eine ORNA-Konstellation." })); return; }
-  ersetze(box, e.typ === "IMAGE" ? el("img", { src: S.medien.url(e), alt: "" }) : null,
+  ersetze(box, e.typ === "IMAGE" ? el("img", { src: S.medien.url(e), alt: "" }) : e.typ === "AUDIO" ? tonSymbol(e) : null,
     el("div", {}, el("div", { text: "Ausgang" }), el("b", { text: e.titel }), " ", el("span", { class: "etikett", text: TYPEN[e.typ].name })));
 }
 function verfuegbareOperationen() {
@@ -187,11 +202,14 @@ async function ausfuehren() {
     const { ergebnisse } = await fuehreAus({ register: R, projekt: S.projekt, medien: S.medien, abbrechen: signal, melden: status,
       auftrag: { operation: op.id, eingaben, parameter: S.parameter, seed: S.seed, variation: { anzahl: v.anzahl, achse: v.achse, routen }, wahl, vorherigeKonstellation } });
     S.wahl = null; S.seed = neuerStartwert(); S.vergleich.clear();
+    if (ergebnisse[0].typ === "CONTROL_SIGNAL") S.variation.signal = ergebnisse[0].id;   // das neue Signal steht als Quelle vorne
     // Konstellationen und Signale werden sofort Ausgang zweiter Wahl: der Bildausgang bleibt, sie stehen in den Eingängen bereit
     if (ergebnisse[0].typ === "IMAGE" || !S.aktuell) S.aktuell = ergebnisse[0].id;
     S.ansicht = "neben"; document.querySelector('input[name="ansicht"][value="neben"]').checked = true;
     S.knotenAnsicht = ergebnisse[0].knoten;
-    status(`${op.name}: ${ergebnisse.length} Ergebnis${ergebnisse.length === 1 ? "" : "se"}. Wähle eine Variante, um weiterzuführen.`);
+    status(ergebnisse[0].typ === "CONTROL_SIGNAL" && ergebnisse[0].daten?.quelle === "ton"
+      ? `${op.name}: Steuersignal über ${sekunden(ergebnisse[0].daten.dauer)}. Wähle ein Bild und bei einer Operation die Quelle «Steuersignal».`
+      : `${op.name}: ${ergebnisse.length} Ergebnis${ergebnisse.length === 1 ? "" : "se"}. Wähle eine Variante, um weiterzuführen.`);
   });
 }
 async function laufen(fn) {
@@ -215,7 +233,7 @@ function zeigeVorschlaege() {
       el("button", { class: "knopf klein", type: "button", onclick: () => { S.wahl = { art: "regel", details: { gruende: v.gruende, gewicht: v.gewicht, rang: regel.indexOf(v) + 1 } }; S.op = v.operation; waehleOperationOhneZuruecksetzen(); }, text: "übernehmen" })),
       el("small", { text: v.gruende.join("; ") || "keine besondere Regel" })))),
     el("div", { class: "aktionen" },
-      el("button", { class: "knopf klein", type: "button", disabled: !jevVerfuegbar(), onclick: jevFragen, text: "jev fragen" }),
+      el("button", { class: "knopf klein", type: "button", disabled: !jevVerfuegbar() || e.typ !== "IMAGE", onclick: jevFragen, text: "jev fragen" }),
       el("small", { text: jevVerfuegbar() ? "jev live: Wahrscheinlichkeiten für die nächste Operation" : "jev live ist nicht eingerichtet (docs/JEV-STATUS.md). Die Regeln oben sind keine jev-Urteile." })),
     S.jevAntwort ? el("ul", {}, ...Object.entries(S.jevAntwort.wahrscheinlichkeiten).sort((a, b) => b[1] - a[1]).map(([id, p]) => el("li", {},
       el("span", {}, artEtikett("jev"), " ", el("b", { text: opName(id) }), ` p = ${zahl(p)} `,
@@ -291,9 +309,16 @@ function textKarte(e) {
     el("div", { class: "meta" }, "Die Konstellation steht beim Prozess von The Fictory als zweiter Eingang bereit."));
   if (e.typ === "CONTROL_SIGNAL") {
     const w = d.werte, pts = w.map((v, i) => `${(i / (w.length - 1)) * 100},${(1 - v) * 40 + 2}`).join(" ");
+    const zeit = d.achse === "zeit" ? `, ein Wert je ${zahl(d.je)} s. Über die Varianten stehen Momente des Klangs nebeneinander, über die Zeit folgt die Bildfolge ihm.` : ".";
     return el("div", { class: "signal" },
       svg(`<svg viewBox="0 0 100 44" preserveAspectRatio="none" role="img" aria-label="Steuersignal"><polyline points="${pts}" fill="none" stroke="#f4f1ea" stroke-width="0.6" vector-effect="non-scaling-stroke"/></svg>`),
-      el("p", { class: "startwert", text: `${e.titel}: ${w.length} Werte 0–1. Als Modulationsquelle «Steuersignal» für jede Operation wählbar.` }));
+      el("p", { class: "startwert", text: `${e.titel}: ${w.length} Werte 0–1${zeit} Als Modulationsquelle «Steuersignal» für jede Operation wählbar.` }));
+  }
+  if (e.typ === "EVENT_SEQUENCE") {
+    const striche = d.ereignisse.map((x) => `<line x1="${(x.t / d.dauer) * 100}" y1="44" x2="${(x.t / d.dauer) * 100}" y2="${44 - Math.max(4, Math.min(1, x.staerke) * 40)}" stroke="#f4f1ea" stroke-width="0.8" vector-effect="non-scaling-stroke"/>`).join("");
+    return el("div", { class: "signal" },
+      svg(`<svg viewBox="0 0 100 44" preserveAspectRatio="none" role="img" aria-label="Ereignisfolge: ${d.ereignisse.length} Einsätze">${striche}</svg>`),
+      el("p", { class: "startwert", text: `${e.titel}: Zeitpunkte und Stärke der Anschläge (Messung, keine Bewertung). Als Ereignisfolge im Projekt, für Trigger und Rhythmus vorgesehen.` }));
   }
   if (e.typ === "METADATA" && d?.art === "kompositorisches-profil") return profilKarte(e, d);
   return el("pre", { text: JSON.stringify(d, null, 2) });
@@ -339,7 +364,11 @@ function nebeneinander(e) {
   const kId = S.knotenAnsicht && P.knoten(S.projekt, S.knotenAnsicht) ? S.knotenAnsicht : e.knoten;
   const k = kId ? P.knoten(S.projekt, kId) : null;
   const teile = [];
-  if (!k) {
+  if (!k && e.typ === "AUDIO") {
+    teile.push(el("div", { class: "knotenkopf" }, el("b", { text: e.titel }), el("span", { text: "Material: Ton" })),
+      el("div", { class: "ton-karte" }, el("audio", { src: S.medien.url(e), controls: true, preload: "metadata" }),
+        el("p", { class: "startwert", text: `${e.herkunft?.hinweis ?? ""}. Der Ton bleibt unverändert. «Tonsignal» misst ihn (Hüllkurve, Bänder, Schwerpunkt, Einsätze) und gibt ein Steuersignal aus, das Bildparameter moduliert.` })));
+  } else if (!k) {
     teile.push(el("div", { class: "knotenkopf" }, el("b", { text: e.titel }), el("span", { text: "Material" })), el("div", { class: "raster" }, bildKarte(e)));
   } else {
     const op = R.hole(k.operation), ausgaben = k.ausgaben.map((id) => P.ergebnis(S.projekt, id));
@@ -374,7 +403,9 @@ function parameterText(k) {
   const op = R.hole(k.operation), std = standardParameter(op);
   const abw = op.parameter.filter((p) => k.parameter[p.id] !== std[p.id]).map((p) => `${p.name} ${typeof k.parameter[p.id] === "number" ? zahl(k.parameter[p.id]) : k.parameter[p.id]}`);
   const r = k.variation?.routen?.[0];
-  return [abw.length ? abw.join(" · ") : "Standardwerte", r ? `moduliert: ${op.parameter.find((p) => p.id === r.ziel)?.name} ← ${QUELLEN[r.modulator.quelle]} (Tiefe ${zahl(r.tiefe)}${r.polaritaet === "einpolig" ? ", einpolig" : ""}${r.modulator.halten ? `, ${r.modulator.halten} Stufen gehalten` : ""}, ${k.variation.achse})` : null].filter(Boolean).join(" — ");
+  const sig = r?.modulator?.quelle === "signal" ? P.ergebnis(S.projekt, r.modulator.ergebnis) : null;
+  const quelle = sig ? `${QUELLEN.signal} «${sig.titel}»` : r ? QUELLEN[r.modulator.quelle] : "";
+  return [abw.length ? abw.join(" · ") : "Standardwerte", r ? `moduliert: ${op.parameter.find((p) => p.id === r.ziel)?.name} ← ${quelle} (Tiefe ${zahl(r.tiefe)}${r.polaritaet === "einpolig" ? ", einpolig" : ""}${r.modulator.halten ? `, ${r.modulator.halten} Stufen gehalten` : ""}, ${k.variation.achse})` : null].filter(Boolean).join(" — ");
 }
 function nacheinander(e) {
   const { material, schritte } = P.verlauf(S.projekt, e.id);
@@ -496,6 +527,7 @@ function alles() { zeigeMaterial(); zeigeOperationen(); zeigeBuehne(); zeigeProt
 
 // ---------- Anschlüsse ----------
 $("datei").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) importiere(f); });
+$("tondatei").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) importiereTon(f); });
 $("beispiel").addEventListener("click", async () => {
   const r = await fetch("../../alpha/the-fictory/beispiel.jpg");
   importiere(new File([await r.blob()], "beispiel.jpg (The Fictory)", { type: "image/jpeg" }));

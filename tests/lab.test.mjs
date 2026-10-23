@@ -8,7 +8,7 @@ const root = new URL("../", import.meta.url);
 const lab = (p) => import(new URL(`alpha/lab/${p}`, root).href);
 const { labRegister, OPERATIONEN } = await lab("operationen/index.js");
 const { pruefeOperation, standardParameter, bereinigeParameter } = await lab("kern/register.js");
-const { kompatibel } = await lab("kern/typen.js");
+const { kompatibel, TYPEN, KLANGFORMEN } = await lab("kern/typen.js");
 const M = await lab("kern/modulation.js");
 const P = await lab("kern/projekt.js");
 const { fuehreAus, bildfolge, regelVorschlaege, experiment, ketteAnwenden } = await lab("kern/ausfuehrung.js");
@@ -28,10 +28,11 @@ function bild(w = 96, h = 72) {
 
 /** Medienspeicher im Arbeitsspeicher (der Browser legt PNG ab, hier rohe Pixel) */
 function speicher() {
-  const bilder = new Map(), dateien = new Map();
+  const bilder = new Map(), toene = new Map(), dateien = new Map();
   return {
-    bilder, dateien,
+    bilder, toene, dateien,
     async bild(e) { const b = bilder.get(e.id); if (!b) throw new Error(`Bild ${e.id} fehlt`); return b; },
+    async ton(e) { const t = toene.get(e.id); if (!t) throw new Error(`Ton ${e.id} fehlt`); return t; },
     async ablegen(e, b) { bilder.set(e.id, b); const datei = `medien/${e.id}.rgba`; dateien.set(datei, new Uint8Array(b.data.buffer.slice(0))); return { datei, mime: "application/x-rgba", breite: b.width, hoehe: b.height }; },
     async ablegenDaten(e, d) { const datei = `medien/${e.id}.json`; dateien.set(datei, new TextEncoder().encode(JSON.stringify(d))); return { datei, mime: "application/json" }; },
   };
@@ -175,6 +176,95 @@ test("Kopplung: ein Bildsignal moduliert die Wiederholung (Bild → Steuersignal
   const k = p.knoten.at(-1);
   assert.equal(k.variation.routen[0].modulator.ergebnis, s.ergebnisse[0].id, "die Kopplung steht im Projekt");
   assert.equal(k.variation.routen[0].modulator.signal, undefined, "ohne die Werte zu verdoppeln");
+});
+
+/**
+ * synthetischer Ton, 6 s bei 44,1 kHz: Anschläge (kurzes Rauschen) alle 0,5 s ab 0,25 s; die ersten 3 s dazu ein leiser tiefer Ton (100 Hz),
+ * die letzten 3 s ein lauter hoher (5 kHz). So sind Hüllkurve, Schwerpunkt und Einsätze bekannt.
+ */
+function ton(rate = 44100, dauer = 6) {
+  const pcm = new Float32Array(rate * dauer);
+  let s = 7; const r = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff - 0.5; };
+  for (let i = 0; i < pcm.length; i++) {
+    const t = i / rate, nach = (t - 0.25) % 0.5;
+    pcm[i] = t < 3 ? 0.05 * Math.sin(2 * Math.PI * 100 * t) : 0.4 * Math.sin(2 * Math.PI * 5000 * t);
+    if (t >= 0.25 && nach < 0.02) pcm[i] += 1.2 * r() * (1 - nach / 0.02);
+  }
+  return { pcm, rate, dauer, kanaele: 1 };
+}
+const mittel = (w, a, z) => w.slice(a, z).reduce((x, y) => x + y, 0) / (z - a);
+function mitTon() {
+  const x = mitMaterial();
+  const t = P.fuegeMaterialHinzu(x.p, { titel: "takt.wav", typ: "AUDIO", datei: "medien/t.wav", mime: "audio/wav", sha256: "y", ton: { dauer: 6, abtastrate: 44100, kanaele: 1 } });
+  x.m.toene.set(t.id, ton());
+  return { ...x, t };
+}
+
+test("Audio-Operationsformat: acht Klangformen in den vorhandenen Typen, AUDIO und Ereignisfolge sind implementiert", () => {
+  assert.deepEqual(Object.keys(KLANGFORMEN), ["audiosignal", "ereignis", "steuerwert", "parameterverlauf", "spektrum", "rhythmus", "generator", "transformation"]);
+  for (const f of Object.values(KLANGFORMEN)) assert.ok(TYPEN[f.typ], f.name);
+  assert.ok(TYPEN.AUDIO.implementiert && TYPEN.EVENT_SEQUENCE.implementiert);
+  assert.equal(KLANGFORMEN.parameterverlauf.typ, KLANGFORMEN.steuerwert.typ, "ein Klangverlauf ist dasselbe Steuersignal wie ein Bildsignal");
+  assert.deepEqual(labRegister().fuer("AUDIO").map((o) => o.id), ["lab.tonsignal"]);
+});
+
+test("Tonsignal: Hüllkurve, Schwerpunkt und Einsätze eines bekannten Tons, Ausschnitt, Grenzen", async () => {
+  const op = labRegister().hole("lab.tonsignal"), std = standardParameter(op);
+  const laut = await op.ausfuehren({ ton: ton() }, std);
+  const [sig, ereignisse] = laut.ausgaben;
+  assert.equal(sig.typ, "CONTROL_SIGNAL"); assert.equal(ereignisse.typ, "EVENT_SEQUENCE");
+  assert.equal(sig.daten.werte.length, 120);
+  assert.equal(sig.daten.achse, "zeit"); assert.equal(sig.daten.dauer, 6); assert.equal(sig.daten.je, 0.05);
+  assert.ok(mittel(sig.daten.werte, 70, 120) > mittel(sig.daten.werte, 0, 50) + 0.2, "hinten lauter als vorne");
+  const sp = (await op.ausfuehren({ ton: ton() }, { ...std, merkmal: "schwerpunkt" })).ausgaben[0].daten.werte;
+  assert.ok(mittel(sp, 70, 120) > mittel(sp, 0, 50), "hinten heller (5 kHz) als vorne (100 Hz)");
+  const t = ereignisse.daten.ereignisse.map((x) => x.t);
+  assert.ok(t.length >= 9 && t.length <= 13, `etwa zwölf Anschläge: ${t}`);
+  const abstand = (x) => { const d = (((x - 0.25) % 0.5) + 0.5) % 0.5; return Math.min(d, 0.5 - d); };
+  assert.ok(t.every((x) => abstand(x) < 0.06 || Math.abs(x - 3) < 0.06), `Einsätze auf den Anschlägen oder beim Wechsel nach 3 s: ${t}`);
+  const stoesse = (await op.ausfuehren({ ton: ton() }, { ...std, merkmal: "einsaetze", proben: 24 })).ausgaben[0].daten.werte;
+  assert.ok(stoesse.slice(0, 12).filter((v) => v > 0.5).length >= 5, `Einsätze: im leisen Teil je halbe Sekunde ein Ausschlag: ${stoesse}`);
+  const stueck = await op.ausfuehren({ ton: ton() }, { ...std, beginn: 3, laenge: 2 });
+  assert.deepEqual([stueck.ausgaben[0].daten.beginn, stueck.ausgaben[0].daten.dauer], [3, 2]);
+  assert.deepEqual(stueck.protokoll.ausschnitt, { beginn: 3, ende: 5, dauer: 2, gesamt: 6 });
+  await assert.rejects(op.ausfuehren({ ton: ton() }, { ...std, beginn: 6 }), /Ausschnitt ist leer/);
+  const nochmal = await op.ausfuehren({ ton: ton() }, std);
+  assert.deepEqual(nochmal.ausgaben[0].daten, sig.daten, "reproduzierbar");
+});
+
+test("Kopplung Ton → Bild: das Tonsignal moduliert Varianten und die Zeit eines Feedbacks; nur AUDIO geht in das Tonsignal", async () => {
+  const { p, m, e, r, t } = mitTon();
+  const s = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.tonsignal", eingaben: { ton: t.id }, parameter: { proben: 60 } } });
+  assert.deepEqual(s.ergebnisse.map((x) => x.typ), ["CONTROL_SIGNAL", "EVENT_SEQUENCE"]);
+  const route = { ziel: "spalten", tiefe: 1, polaritaet: "einpolig", modulator: { quelle: "signal", ergebnis: s.ergebnisse[0].id } };
+  const w = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.wiederholung", eingaben: { bild: e.id }, parameter: { seite: 64, spalten: 2 }, variation: { anzahl: 4, routen: [route] } } });
+  const spalten = w.ergebnisse.map((x) => x.variante.parameter.spalten);
+  assert.ok(spalten.at(-1) > spalten[0], `der laute Schluss gibt mehr Spalten als der leise Anfang: ${spalten}`);
+  const zeit = { ziel: "drehung", tiefe: 1, modulator: { quelle: "signal", ergebnis: s.ergebnisse[0].id } };
+  const ohne = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.feedback", eingaben: { bild: e.id }, parameter: { iterationen: 6, seite: 48 }, seed: 1 } });
+  const mit = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.feedback", eingaben: { bild: e.id }, parameter: { iterationen: 6, seite: 48 }, seed: 1, variation: { achse: "zeit", routen: [zeit] } } });
+  assert.notEqual(fingerabdruck(m.bilder.get(mit.ergebnisse[0].id)), fingerabdruck(m.bilder.get(ohne.ergebnisse[0].id)), "der Ton dreht das Feedback über die Iterationen");
+  let n = 0; for await (const _ of bildfolge({ register: r, projekt: p, medien: m, ergebnisId: mit.ergebnisse[0].id })) n++;
+  assert.equal(n, 7, "die Animation rechnet dieselbe Zeitmodulation noch einmal");
+  const k = p.knoten.at(-1);
+  assert.deepEqual(k.variation.routen[0].modulator, { quelle: "signal", ergebnis: s.ergebnisse[0].id, signal: undefined }, "die Kopplung steht im Projekt, ohne die Werte zu verdoppeln");
+  assert.deepEqual(P.pruefeProjekt(p), []);
+  await assert.rejects(fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.tonsignal", eingaben: { ton: e.id } } }), /verlangt AUDIO, bekommt IMAGE/);
+  await assert.rejects(fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.feedback", eingaben: { bild: t.id } } }), /verlangt IMAGE, bekommt AUDIO/);
+  assert.equal(p.ergebnisse.find((x) => x.id === t.id).ton.dauer, 6, "Tonmaterial mit Dauer, Abtastrate, Kanälen");
+});
+
+test("Archiv mit Ton und alte Projekte: Tondatei kommt unverändert mit, Projekte 0.1.0–0.3.0 öffnen weiter", async () => {
+  const { p, m, r, t } = mitTon();
+  await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.tonsignal", eingaben: { ton: t.id } } });
+  const wav = Uint8Array.from({ length: 64 }, (_, i) => i);
+  m.dateien.set("medien/t.wav", wav);
+  const { projekt, medien, fehlt } = await entpacke(packe(p, m.dateien));
+  assert.deepEqual(fehlt.filter((d) => d === "medien/t.wav"), []);
+  assert.deepEqual(medien.get("medien/t.wav"), wav);
+  assert.equal(projekt.ergebnisse.find((x) => x.typ === "AUDIO").ton.abtastrate, 44100);
+  assert.equal(projekt.formatVersion, "0.4.0");
+  for (const v of ["0.1.0", "0.2.0", "0.3.0"]) assert.doesNotThrow(() => P.ladeProjekt({ ...P.neuesProjekt(), formatVersion: v, labVersion: "0.1.0" }), v);
 });
 
 /** Scheibe auf gleichmässigem Grund, für Schwerpunkt und Ausschnitt */

@@ -7,6 +7,7 @@
 - **WebGL-Fassungen** von Feedback und Farbe mit derselben Kennung und denselben Parametern (Befund aus p5.js, REA-PROTOKOLL Fall 2), für grössere Bilder in Echtzeit.
 - **Animation mit Zeitmodulation:** Die Achse «über die Zeit» gibt es schon. Als Nächstes käme eine Vorschau, die beim Ziehen eines Reglers live rechnet.
 - **Kompositorisches Profil:** umgesetzt in 0.1.2 (`lab.profil`, `lab.komposition`, docs/KOMPOSITION.md). Offen sind das Profil als Steuersignal, örtliche Profile je Bildbereich und ein Eingriff in die Kantenrichtung.
+- **Klang:** umgesetzt in 0.1.3 (`lab.tonsignal`, docs/AUDIO-FORMAT.md): eine Tondatei als Steuersignal für Bildparameter. Offen sind eine Tonspur im MP4, die Ereignisfolge als Takt fürs Abtasten und Halten, das Frequenzspektrum als Befund und der Rückweg Bild → Klang.
 - **jev live** nach Zustimmung (JEV-STATUS.md). Danach eventuell NOUL für technische Kompatibilität.
 - **Prüfraster:** Das NN-Raster und der Verteilapparat bleiben in 0.1 unangetastet. Eine Text-Operation könnte später Passagen nur zitieren und nichts erfinden. Dafür braucht es zuerst eine Absprache, welche Fassung gilt.
 - **Online:** seit dem 23. Oktober 2026 unter `/alpha/lab/` (nur per Direktlink). Ein eigener Eintrag in der Navigation oder eine kürzere Adresse nur mit Zustimmung.
