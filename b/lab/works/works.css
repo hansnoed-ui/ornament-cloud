@@ -221,7 +221,7 @@ a.dock-mitte:hover .dock-text { color: var(--faden); }
 @keyframes auf { from { opacity: 0; transform: translateY(10px) scale(0.97); } }
 .kachel { display: grid; align-content: space-between; gap: 18px; min-height: 120px; padding: 10px; border-radius: 8px; background: var(--papier); }
 .kachel:hover { color: inherit; }
-.kachel > span:last-child, .uhr-text { display: grid; gap: 1px; }
+.kachel > span:last-child { display: grid; gap: 1px; }
 .kachel small { color: var(--leise); font-size: var(--klein); }
 .kachel:hover > span:last-child { color: var(--faden); }
 .kachel.breit { grid-column: 1 / -1; min-height: 0; grid-template-columns: auto 1fr; align-items: center; }
@@ -236,12 +236,10 @@ a.dock-mitte:hover .dock-text { color: var(--faden); }
 .feldchen.gross { grid-template-columns: repeat(7, 6px); gap: 3px; }
 .feldchen.gross i { width: 6px; height: 6px; }
 .kachel-lab:hover .feldchen i:nth-child(3n + 1) { background: var(--faden); border-color: var(--faden); }
-.uhr { position: relative; place-items: center; align-content: center; border-radius: 50%; aspect-ratio: 1; min-height: 0; padding: 0; text-align: center; }
-.uhr svg { position: absolute; inset: 6px; width: calc(100% - 12px); height: calc(100% - 12px); overflow: visible; }
-.zifferblatt { fill: none; stroke: var(--linie); stroke-width: 1; }
-.uhr .std { fill: var(--tinte); }
-.uhr .min { fill: var(--faden); }
-.uhr-text { position: relative; font-size: 12px; }
-.uhr-text small { font-size: 12px; font-variant-numeric: tabular-nums; }
+/* das Signet als eigene Kachel: die Schlaufe gross, der Punkt läuft sie entlang */
+.kachel-logo { display: grid; place-items: center; align-content: center; min-height: 0; aspect-ratio: 1; padding: 0; border-radius: 50%; }
+.kachel-logo svg { width: 64%; height: auto; overflow: visible; }
+.kachel-logo .schlaufe { fill: none; stroke: currentColor; stroke-width: 1.1; }
+.kachel-logo .punkt { fill: var(--faden); }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }

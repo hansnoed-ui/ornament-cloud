@@ -1,12 +1,11 @@
 // ornament.lab · Works: Bühne und Raster umschalten (gemerkt im Browser, #raster und #buehne im Link gehen vor), auf der Bühne blättern
-// (Rad, Pfeiltasten, Wischen, Tasten), Filme stumm abspielen (Bühne: das gezeigte Werk, Raster: beim Darüberfahren), Dock und Menü, die Uhr
-// von Zürich, der Punkt im Signet läuft wie im Neubau. Bei «weniger Bewegung» bleiben Punkt und Filme stehen.
+// (Rad, Pfeiltasten, Wischen, Tasten), Filme stumm abspielen (Bühne: das gezeigte Werk, Raster: beim Darüberfahren), Dock und Menü, der Punkt im Signet läuft wie im Neubau. Bei «weniger Bewegung» bleiben Punkt und Filme stehen.
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const html = document.documentElement;
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
-if (!ruhig) for (const lauf of $$(".signet .lauf, .dock-marke .lauf, .kachel-signet .lauf")) lauf.beginElement?.();
+if (!ruhig) for (const lauf of $$(".signet .lauf, .dock-marke .lauf, .kachel-signet .lauf, .kachel-logo .lauf")) lauf.beginElement?.();
 
 const spiele = (v, an) => {
   if (!v) return;
@@ -16,21 +15,15 @@ const spiele = (v, an) => {
 
 /* ---------- Dock und Menü ---------- */
 const dock = $(".dock"), menue = $("#menue"), knopf = $(".dock-menue");
-const menueAuf = (auf) => { menue.hidden = !auf; knopf.setAttribute("aria-expanded", String(auf)); if (auf) uhr(); };
+const menueAuf = (auf) => {
+  menue.hidden = !auf; knopf.setAttribute("aria-expanded", String(auf));
+  if (auf && !ruhig) $(".kachel-logo .lauf", menue)?.beginElement?.();   // das Signet im Menü läuft los, sobald man es sieht
+};
 knopf?.addEventListener("click", () => menueAuf(menue.hidden));
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !menue.hidden) { menueAuf(false); knopf.focus(); } });
 document.addEventListener("pointerdown", (e) => { if (!menue.hidden && !dock.contains(e.target)) menueAuf(false); });
 menue?.addEventListener("click", (e) => { if (e.target.closest("a")) menueAuf(false); });
 
-function uhr() {
-  const teile = Object.fromEntries(new Intl.DateTimeFormat("de-CH", { timeZone: "Europe/Zurich", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date()).map((t) => [t.type, t.value]));
-  const h = +teile.hour, m = +teile.minute;
-  $(".uhr-zeit").textContent = `${teile.hour}:${teile.minute}`;
-  const setze = (el, winkel, r) => { el.setAttribute("cx", (50 + r * Math.sin(winkel)).toFixed(2)); el.setAttribute("cy", (50 - r * Math.cos(winkel)).toFixed(2)); };
-  setze($(".uhr .min"), (m / 60) * 2 * Math.PI, 46);
-  setze($(".uhr .std"), (((h % 12) + m / 60) / 12) * 2 * Math.PI, 30);
-}
-setInterval(() => { if (!menue.hidden) uhr(); }, 20000);
 
 const dockSetzen = ({ text, href, bild }) => {
   const mitte = $(".dock-mitte"), marke = $(".dock-marke");
