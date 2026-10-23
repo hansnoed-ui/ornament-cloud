@@ -7,7 +7,8 @@ import { Series } from "remotion";
 import { AUFTAKT, Auftakt } from "./szenen/Auftakt";
 import { WAHLEN, Wahlen } from "./szenen/Wahlen";
 import { BILD, Bild } from "./szenen/Bild";
-import { BEGRIFF, Begriff, FRAGE, Frage, GRUPPE, Gruppe } from "./szenen/Antworten";
+import { FRAGE, Frage, GRUPPE, Gruppe } from "./szenen/Antworten";
+import { ZETTEL, Zettel } from "./szenen/Zettel";
 import { AUFTRAG, Auftrag } from "./szenen/Auftrag";
 import { TITEL, Titel } from "./szenen/Titel";
 import { OHNE, Ohne } from "./szenen/Ohne";
@@ -19,7 +20,7 @@ export const SZENEN = [
   { id: "ReelBild", name: "Ein Bild", Szene: Bild, dauer: BILD },
   { id: "ReelFrage", name: "Eine Frage", Szene: Frage, dauer: FRAGE },
   { id: "ReelAuftrag", name: "Ein Auftrag", Szene: Auftrag, dauer: AUFTRAG },
-  { id: "ReelBegriff", name: "Ein Begriff", Szene: Begriff, dauer: BEGRIFF },
+  { id: "ReelBegriff", name: "Ein Begriff", Szene: Zettel, dauer: ZETTEL },
   { id: "ReelGruppe", name: "Eine Gruppe", Szene: Gruppe, dauer: GRUPPE },
   { id: "ReelTitel", name: "Gestalten, vermitteln, kuratieren", Szene: Titel, dauer: TITEL },
   { id: "ReelOhne", name: "Ohne", Szene: Ohne, dauer: OHNE },

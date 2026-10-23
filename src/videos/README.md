@@ -223,7 +223,7 @@ jede Szene in `src/neubau/szenen/` und als eigene Composition im Ordner «Neubau
 
 ## Reel «Was bringst du mit?» (22. Oktober 2026)
 
-42,4 s, **9:16** (1080 × 1920, `ReelVideo`; mit dem anderen Logo `ReelVideoLogoIII`), ohne Ton. Wunsch: «nicht bloss eine Aufzählung sondern ein professionelles Werbe-Reel, ohne ‹art› … sei kreativ».
+42,9 s, **9:16** (1080 × 1920, `ReelVideo`; mit dem anderen Logo `ReelVideoLogoIII`), ohne Ton. Wunsch: «nicht bloss eine Aufzählung sondern ein professionelles Werbe-Reel, ohne ‹art› … sei kreativ».
 Ein Werbefilm für `/b/`, gebaut um die Frage der Startseite: fünf Antworten aus dem Dialog (`DIALOG` in `src/b/inhalt.mjs`), jede mit eigener Bildwelt;
 Papier und Tinte kippen bei jedem Schnitt (echte Umkehr wie hell und dunkel auf der Seite), harte Schnitte auf einem Schlag von 0,5 s (`TAKT`), damit sich Musik mit 120 Schlägen je Minute darunterlegen lässt.
 Keine Werke und Prints (die Station «Ein Bild wird ein Werk» fehlt absichtlich). Gestaltung aus `src/neubau/Teile.tsx`; jede Szene in `src/reel/szenen/` und als Composition im Ordner «Reel-Szenen».
@@ -231,20 +231,25 @@ Zweite Fassung am selben Tag (Rückmeldung: «Was bringst du mit?» gefällt, «
 
 1. Tinte: «Was», «bringst», «du», «mit?» je allein und bildfüllend auf den Schlag, dann die ganze Frage als Block, das Fragezeichen in der Blaupause
 2. Papier: die fünf Antworten als Walze zwischen zwei Haarlinien; sie wird langsamer und bleibt auf «ein Bild» stehen, blau unterstrichen wie der aktive Punkt der Navigation
-3. Tinte: «Ein Bild will sich bewegen.» – vier Schnitte, im Wechsel PHORMA I (Ablauf «Verwandlung»: Glaskörper, Scherben) und PHORMA III (Lichtwürfel)
+3. Tinte: «Ein Bild will sich bewegen.» – Schnitte auf den Schlag: PHORMA I (Glaskörper), PHORMA III (Traube), PHORMA II (Rasterdruck, dann Montage), PHORMA III (Irrfahrt)
+   (seit dem 23. Oktober 2026: «einmal Irrfahrt ersetzen mit Traube, einmal Scherben ersetzen mit Raster und Montage»)
 4. Papier: «Eine Frage sucht ein Gegenüber.» – die lebende Tafel von ORNA dreht und zeigt die Begegnung
 5. Tinte: «Etwas soll gebaut werden.» – ein Telefon kippt ins Bild und blättert durch die echte Startseite
-6. Papier: «Ein Begriff will geprüft werden.» – die Tafel «Nebeneinander und Nacheinander»
+6. Papier: «Ein Begriff will geprüft werden.» – der Zettelkasten (seit dem 23. Oktober 2026 statt der Prüfraster, Wunsch: «Prüfraster weg, dafür Zettelkasten präsentieren»):
+   die erste Station des Wegs, «Im Feld nachsehen», das Feld 7 × 7 mit den Fäden der Startseite; dann leuchtet ein Zettel auf, der mit dem kürzesten Leitsatz
+   unter denen mit mindestens zwei Fäden (zurzeit Zettel 24, «Die Irritation»), darunter Titel und Leitsatz (`szenen/Zettel.tsx`)
 7. Tinte: «Eine Klasse, ein Team, ein Haus.» – die Tafel von OMNA COLOR
 8. «Gestalten, vermitteln, kuratieren.» in drei Schlägen, Komma und Punkt in der Blaupause
 9. Tinte: «keine Cookies, keine Werbung, keine Tracker», «made in Switzerland»
 10. Tinte: eine Logo-Animation von Christian, der Punkt in die Blaupause gedreht (`hue-rotate`), am Ende stehend; darunter die Frage, blau unterstrichen.
     Standard (`ReelVideo`): **PHORMA II** – die schillernde Montage fällt zu Rahmen zusammen, aus ihnen wird das Signet (hochkant, ganz gezeigt; der Punkt wird erst blau,
-    wenn die Montage vorbei ist, sonst kippen ihre Farben; ab Bild 162 stehend). Fassung `ReelVideoLogoIII`: **PHORMA III** – die Fäden ziehen sich zur Schlaufe,
+    wenn die Montage vorbei ist, sonst kippen ihre Farben; ab Bild 162 stehend). Seit dem 23. Oktober 2026 mit mehr Kontrast («Besserer Kontrast beim Logo Schluss»):
+    nach der Montage fährt das Bild auf das Logo zu (1,3-fach) und wird heller (`brightness(1.4) contrast(1.25)`, erst danach `hue-rotate`, sonst brennt der Punkt türkis aus). Fassung `ReelVideoLogoIII`: **PHORMA III** – die Fäden ziehen sich zur Schlaufe,
     «ornament.cloud» tippt sich (hochkant die Mitte; ab Bild 160 stehend, vor dem Zerfall am Ende des Exports)
 
-**Vier Aufnahmen von Christian** liegen nicht im Repository (zusammen gut 40 MB); vor dem Rendern von Hand nach `public/reel/` legen:
+**Sechs Aufnahmen von Christian** liegen nicht im Repository (zusammen gut 70 MB); vor dem Rendern von Hand nach `public/reel/` legen:
 `phorma-iii-lauf.mp4` (PHORMA III, 1080 × 1350, Export vom 21. Oktober 2026, 21:08), `phorma-i-lauf.mp4` (720 × 900, als «PHORMA ii» geschickt, zeigt aber den Ablauf «Verwandlung» von PHORMA I)
+`phorma-iii-traube.mp4` (PHORMA III, Traube, 1080 × 1350, Export vom 23. Oktober 2026, 08:37), `phorma-ii-raster.mp4` (PHORMA II, Raster und Montage, 1080 × 1350, 08:44)
 sowie die Logo-Animationen `phorma-ii-logo.mp4` (1080 × 1350, Export vom 21. Oktober 2026, 21:55) und `phorma-iii-logo.mp4` (1920 × 1080, Export vom 19. Oktober 2026, 14:10).
 `daten.mjs` bricht ab, wenn eine fehlt.
 

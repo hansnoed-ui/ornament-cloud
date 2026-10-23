@@ -34,13 +34,23 @@ const app = (slug) => APPS.find((a) => a.slug === slug);
 
 // Beispielvideos der Apps (assets/beispiele/) nach public/reel/
 mkdirSync(hier("../../public/reel/"), { recursive: true });
-// zwei Läufe von Christian (22. Oktober 2026), nicht im Repository – von Hand nach public/reel/ legen:
-// phorma-iii-lauf.mp4 (PHORMA III, 1080 × 1350, Export vom 21. Oktober 2026, 21:08), phorma-i-lauf.mp4 (Ablauf «Verwandlung», 720 × 900)
+// Aufnahmen von Christian (22. und 23. Oktober 2026), nicht im Repository – von Hand nach public/reel/ legen:
+// phorma-iii-lauf.mp4 (PHORMA III, Irrfahrt, 1080 × 1350, Export vom 21. Oktober 2026, 21:08), phorma-i-lauf.mp4 (PHORMA I, Ablauf «Verwandlung», 720 × 900),
+// phorma-iii-traube.mp4 (PHORMA III, Traube, 1080 × 1350, Export vom 23. Oktober 2026, 08:37), phorma-ii-raster.mp4 (PHORMA II, Raster und Montage, 1080 × 1350, 08:44)
 // sowie die Logo-Animationen phorma-ii-logo.mp4 (1080 × 1350, Export vom 21. Oktober 2026, 21:55) und phorma-iii-logo.mp4 (1920 × 1080, Export vom 19. Oktober 2026, 14:10)
-for (const n of ["phorma-iii-lauf", "phorma-i-lauf", "phorma-iii-logo", "phorma-ii-logo"]) if (!existsSync(hier(`../../public/reel/${n}.mp4`))) throw new Error(`reel: public/reel/${n}.mp4 fehlt`);
+for (const n of ["phorma-iii-lauf", "phorma-i-lauf", "phorma-iii-traube", "phorma-ii-raster", "phorma-iii-logo", "phorma-ii-logo"]) if (!existsSync(hier(`../../public/reel/${n}.mp4`))) throw new Error(`reel: public/reel/${n}.mp4 fehlt`);
 const aufnahme = hier("../../public/reel/b-stellen.json");
 if (!existsSync(aufnahme)) throw new Error("reel: keine Aufnahme der Seite – zuerst «NODE_PATH=$(npm root -g) node src/reel/aufnahme.mjs»");
 const stellen = JSON.parse(readFileSync(aufnahme, "utf8"));
+
+// Der Zettelkasten (statt der Prüfraster, Wunsch vom 23. Oktober 2026): das Feld 7 × 7 mit den Fäden der Startseite (Paare von Zetteln, die dieselben
+// Personen nennen) und ein Zettel, der aufleuchtet – der mit dem kürzesten Leitsatz unter denen mit mindestens zwei Fäden, damit er im Reel lesbar ist
+const start = readFileSync(wurzel("b/index.html"), "utf8");
+const faeden = JSON.parse(start.match(/class="feld-rahmen" data-faeden="([^"]+)"/)[1].replace(/&quot;/g, '"'));
+const zsz = JSON.parse(readFileSync(wurzel("zu-seiner-zeit/zsz-daten.json"), "utf8"));
+const zahl = (n) => faeden.filter(([a, b]) => a === n || b === n).length;
+const zettel = zsz.stanzas.filter((z) => zahl(z.id) >= 2).sort((a, b) => a.bottomLine.length - b.bottomLine.length)[0];
+if (!start.includes(zettel.bottomLine)) throw new Error("reel: Leitsatz des Zettels steht nicht auf der Startseite");
 
 // «Diese Seite lädt nichts von aussen: keine Cookies, keine Werbung, keine Tracker.» → die drei Glieder nach dem Doppelpunkt
 const ohne = T.fuss.ohne.slice(T.fuss.ohne.indexOf(": ") + 2).replace(/\.$/, "").split(", ");
@@ -53,11 +63,13 @@ writeFileSync(hier("data/reel.json"), JSON.stringify({
   frage: DIALOG.frage,
   // ohne «ein Bild wird ein Werk» (Prints): das Reel zeigt keine Werke
   woerter: DIALOG.wahlen.map((w) => w.wort),
-  // Bilder aus PHORMA I und PHORMA III (Wunsch vom 22. Oktober 2026: «Bessere Clips»): Name und Kurzsatz der Apps
-  bild: { satz: wahl("bild").satz, ...Object.fromEntries([["a", "phorma-i"], ["b", "phorma-iii"]].map(([k, slug]) => [k, { name: app(slug).name, text: app(slug).kurz, zeichen: zeichen(app(slug).zeichen) }])) },
+  // Bilder aus PHORMA I, II und III (Wunsch vom 22. und 23. Oktober 2026: «Bessere Clips»): Name und Kurzsatz der Apps
+  bild: { satz: wahl("bild").satz, ...Object.fromEntries([["a", "phorma-i"], ["b", "phorma-iii"], ["c", "phorma-ii"]].map(([k, slug]) => [k, { name: app(slug).name, text: app(slug).kurz, zeichen: zeichen(app(slug).zeichen) }])) },
   frage2: { satz: wahl("frage").satz, a: { ...weg("frage", 0), zeichen: zeichen(app("orna").zeichen) } },
   auftrag: { satz: wahl("auftrag").satz, a: { ...weg("auftrag", 0), zeichen: zeichen("webdesign") } },
-  begriff: { satz: wahl("begriff").satz, a: { ...weg("begriff", 1), zeichen: zeichen("raster") } },
+  // «Ein Begriff will geprüft werden.» → die erste Station des Wegs: «Im Feld nachsehen: 49 Begriffe von der Brücke bis zur Zukunft»
+  begriff: { satz: wahl("begriff").satz, a: { ...weg("begriff", 0), zeichen: zeichen("zettel") }, faeden,
+    zettel: { nr: zettel.id, kenn: T.zettelN(zettel.id), titel: zettel.title, leitsatz: zettel.bottomLine } },
   gruppe: { satz: wahl("gruppe").satz, a: { ...weg("gruppe", 1), zeichen: zeichen(app("omna-color").zeichen) } },
   titel: SEITE.titel.replace(/\.$/, "").split(", "),
   ohne,
