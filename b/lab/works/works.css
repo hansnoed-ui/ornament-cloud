@@ -1,0 +1,113 @@
+/* ornament.lab · Works – die Werkschau der Ergebnisse aus ORNAMENT LAB (23. Oktober 2026, tools/build-lab-works.mjs).
+   Eigenständig gegenüber dem Neubau: die Werke füllen die Breite, die Schrift tritt zurück. Von ornament.cloud übernommen:
+   Papier und Tinte in echter Umkehr, die Blaupause als einziger Akzent, Instrument Sans und Newsreader, Signet, Feldchen und Fuss. */
+
+:root {
+  --papier: #ffffff;
+  --tinte: #000000;
+  --grau: #6f6f6f;
+  --linie: #dadada;
+  --flaeche: #f3f3f1;
+  --faden: #1d3fd6;
+  --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --rand: 16px;
+  --luecke: 16px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --papier: #000000; --tinte: #ffffff; --grau: #9a9a9a; --linie: #2e2e2e; --flaeche: #141414; --faden: #8fb0ff; }
+}
+@media (min-width: 760px) { :root { --rand: 32px; --luecke: 24px; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--papier); color: var(--tinte); font-family: var(--sans); font-size: 16px; line-height: 1.45; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--faden); }
+:focus-visible { outline: 2px solid var(--faden); outline-offset: 3px; }
+img, video, svg { display: block; max-width: 100%; }
+h1, h2, p, ul, ol, dl, dd, figure { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+.sprung { position: absolute; left: -9999px; }
+.sprung:focus { left: var(--rand); top: 12px; z-index: 10; background: var(--papier); padding: 6px 10px; }
+
+/* ---------- Kopf: eine Zeile, bleibt oben ---------- */
+.kopf { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px var(--rand); background: var(--papier); }
+.signet { display: inline-flex; align-items: center; gap: 10px; font-weight: 500; letter-spacing: 0.01em; }
+.signet svg { width: 34px; height: 24px; overflow: visible; }
+.signet .schlaufe { fill: none; stroke: currentColor; stroke-width: 1.6; }
+.signet .punkt { fill: var(--faden); }
+.signet .still { color: var(--grau); font-weight: 400; }
+.kopfnav { display: flex; gap: 18px; font-size: 0.95rem; }
+.kopfnav a { padding: 4px 0; border-bottom: 1px solid transparent; }
+.kopfnav a:hover { border-bottom-color: currentColor; }
+@media (max-width: 520px) { .kopfnav a:last-child { display: none; } }
+
+/* ---------- Auftakt ---------- */
+.auftakt { display: grid; gap: 20px; padding: clamp(48px, 10vw, 140px) var(--rand) clamp(40px, 7vw, 96px); }
+.auftakt h1 { font-weight: 500; font-size: clamp(3rem, 12vw, 10rem); line-height: 0.9; letter-spacing: -0.045em; }
+.leitsatz { font-family: var(--serif); font-style: italic; font-size: clamp(1.3rem, 2.4vw, 2rem); line-height: 1.25; max-width: 34ch; text-wrap: balance; }
+@media (min-width: 960px) { .auftakt { grid-template-columns: 1fr 1fr; align-items: end; } }
+
+/* ---------- Werke: Raster, Bild zuerst ---------- */
+.werke { padding: 0 var(--rand); }
+.hinweis { color: var(--grau); margin-bottom: 14px; }
+.raster { display: grid; grid-template-columns: 1fr; gap: calc(var(--luecke) * 2) var(--luecke); }
+@media (min-width: 640px) { .raster { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1200px) { .raster { grid-template-columns: repeat(3, 1fr); } }
+.werk { display: grid; gap: 10px; }
+.werk .medium { position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden; background: var(--flaeche); }
+.werk .medium img, .werk .medium video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.werk .medium video { opacity: 0; transition: opacity 0.3s; }
+.werk .medium.spielt video { opacity: 1; }
+a.werk:hover .medium img { transform: scale(1.02); }
+.werk .zeile { display: grid; grid-template-columns: 3ch 1fr auto; gap: 12px; align-items: baseline; padding-top: 2px; border-top: 1px solid var(--linie); }
+a.werk:hover .zeile { border-top-color: var(--faden); }
+.nr { color: var(--grau); font-variant-numeric: tabular-nums; font-size: 0.85rem; }
+.werk .titel { font-weight: 500; }
+.werk .jahr { color: var(--grau); font-variant-numeric: tabular-nums; }
+/* Platzhalter: deutlich als solche, kein Werk */
+.platzhalter .medium { background: repeating-linear-gradient(135deg, transparent 0 11px, var(--linie) 11px 12px), var(--papier); border: 1px dashed var(--grau); }
+.platzhalter .schild { position: absolute; left: 12px; top: 12px; padding: 2px 8px; font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--grau); background: var(--papier); border: 1px solid var(--linie); }
+.platzhalter .titel, .platzhalter .jahr { color: var(--grau); font-weight: 400; }
+
+/* die Liste darunter: alle Werke in einer Zeile je Werk */
+.index { margin-top: clamp(56px, 8vw, 112px); border-top: 1px solid var(--tinte); }
+.index a { display: grid; grid-template-columns: 3ch 1fr auto; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--linie); align-items: baseline; }
+.index .ops { display: none; color: var(--grau); }
+.index .jahr { color: var(--grau); font-variant-numeric: tabular-nums; }
+@media (min-width: 760px) { .index a { grid-template-columns: 3ch 2fr 2fr auto; } .index .ops { display: block; } }
+
+/* ---------- Info ---------- */
+.info { display: grid; gap: 16px; margin-top: clamp(72px, 10vw, 140px); padding: 24px var(--rand) 0; border-top: 1px solid var(--linie); }
+.info h2 { font-size: 0.95rem; font-weight: 500; }
+.lesen { display: grid; gap: 0.8em; font-family: var(--serif); font-size: 1.2rem; line-height: 1.5; max-width: 60ch; }
+@media (min-width: 960px) { .info { grid-template-columns: 1fr 1fr; } }
+
+/* ---------- Werkseite ---------- */
+.werkseite { display: grid; gap: 28px; padding: 8px var(--rand) 0; }
+.buehne { background: var(--flaeche); display: grid; place-items: center; }
+.buehne img, .buehne video { width: auto; height: auto; max-width: 100%; max-height: calc(100vh - 120px); }
+.werkkopf { display: grid; gap: 16px; align-content: start; }
+.werkkopf h1 { font-weight: 500; font-size: clamp(1.8rem, 4vw, 3.2rem); line-height: 1.05; letter-spacing: -0.02em; }
+.angaben { display: grid; border-top: 1px solid var(--linie); }
+.angaben div { display: grid; grid-template-columns: 10em 1fr; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--linie); }
+.angaben dt { color: var(--grau); }
+.angaben a { border-bottom: 1px solid var(--linie); }
+.angaben a:hover { border-bottom-color: var(--faden); }
+@media (min-width: 1100px) { .werkseite { grid-template-columns: 2fr 1fr; } .werkkopf { position: sticky; top: 72px; } }
+.blaettern { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; padding-top: 18px; border-top: 1px solid var(--tinte); }
+.blaettern a span { display: block; color: var(--grau); font-size: 0.85rem; }
+.blaettern a[rel="next"] { text-align: right; }
+
+/* ---------- Fuss wie im Neubau ---------- */
+.fuss { display: grid; gap: 10px; margin-top: 96px; padding: 28px var(--rand) 48px; border-top: 1px solid var(--linie); font-size: 0.92rem; color: var(--grau); }
+.fuss .zeile { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.fuss a { color: var(--tinte); }
+.fuss a:hover { color: var(--faden); }
+.feldchen { display: grid; grid-template-columns: repeat(7, 7px); gap: 4px; width: max-content; padding: 6px; margin: -6px -6px 0; border-radius: 6px; }
+.feldchen i { display: block; width: 7px; height: 7px; border: 1px solid var(--grau); border-radius: 50%; }
+a.feldchen:hover i { border-color: var(--tinte); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

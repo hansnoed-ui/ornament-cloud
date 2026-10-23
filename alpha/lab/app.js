@@ -475,6 +475,7 @@ function nacheinander(e) {
         el("select", { id: "tonspur", onchange: (ev) => S.tonspur.set(e.id, ev.target.value) }, el("option", { value: "", text: "keine" }),
           ...klaenge.map((x) => el("option", { value: x.id, selected: S.tonspur.get(e.id) === x.id, text: x.titel })))) : null,
       el("button", { class: "knopf leise", type: "button", onclick: () => verlaufExportieren(e.id), text: "Verlauf als ZIP" }),
+      el("button", { class: "knopf leise", type: "button", title: "Bild, Film (falls gerechnet) und Protokoll als Ordner für die Lab-Werkschau unter /b/lab/works/", onclick: () => werkExportieren(e.id), text: "Für Works" }),
       el("small", { text: "Die Operation rechnet ihren Verlauf mit denselben Parametern und demselben Startwert noch einmal." })),
     film ? el("video", { src: film.url, controls: true, loop: true, muted: true, playsinline: true }) : null,
     film ? el("div", { class: "aktionen" }, el("button", { class: "knopf klein", type: "button", onclick: () => herunterladen(film.blob, film.name), text: `${film.endung.toUpperCase()} speichern` }), el("small", { text: `${film.bilder} Bilder, ${film.breite} × ${film.hoehe}, ${film.codec}${film.tonspur?.codec ? `, Ton ${film.tonspur.codec}` : film.tonspur?.fehlt ? `, ohne Ton: ${film.tonspur.fehlt}` : ""}` })) : null) : null);
@@ -510,18 +511,41 @@ async function animation(id) {
     status(`Animation: ${r.bilder} Bilder (${(r.bilder / FPS).toFixed(1)} s), ${(r.blob.size / 1e6).toFixed(1)} MB, ${r.codec}${tonspur?.codec ? `, mit Tonspur (${tonspur.codec}, ab ${sekunden(beginn)})` : tonspur?.fehlt ? `. Ohne Ton: ${tonspur.fehlt}` : ""}.`);
   });
 }
+/** das Protokoll eines Verlaufs: Material, Schritte mit Operation, Parametern, Startwert und Entscheidungen */
+function verlaufProtokoll(id) {
+  const { material, schritte } = P.verlauf(S.projekt, id);
+  return { lab: P.LAB_VERSION, projekt: S.projekt.id, titel: S.projekt.titel, exportiert: new Date().toISOString(), material: material?.titel,
+    schritte: schritte.map(({ knoten: k, ergebnis: e }) => ({ operation: k.operation, version: k.operationVersion, parameter: e.variante?.parameter ?? k.parameter, startwert: e.variante?.seed ?? k.seed, ergebnis: e.titel,
+      entscheidungen: S.projekt.entscheidungen.filter((d) => d.knoten === k.id).map(({ art, gegenstand, gewaehlt, details }) => ({ art, gegenstand, gewaehlt, details })) })) };
+}
+const json = (o) => new TextEncoder().encode(JSON.stringify(o, null, 2));
 function verlaufExportieren(id) {
   const { material, schritte } = P.verlauf(S.projekt, id);
   const dateien = [];
   const nimm = (e, name) => { const b = S.medien.dateien.get(e.datei); if (b) dateien.push({ name, bytes: b }); };
   if (material) nimm(material, `00-material.png`);
   schritte.forEach(({ knoten: k, ergebnis: e }, i) => nimm(e, `${String(i + 1).padStart(2, "0")}-${slug(opName(k.operation))}.png`));
-  const protokoll = { lab: P.LAB_VERSION, projekt: S.projekt.id, titel: S.projekt.titel, exportiert: new Date().toISOString(), material: material?.titel,
-    schritte: schritte.map(({ knoten: k, ergebnis: e }) => ({ operation: k.operation, version: k.operationVersion, parameter: e.variante?.parameter ?? k.parameter, startwert: e.variante?.seed ?? k.seed, ergebnis: e.titel,
-      entscheidungen: S.projekt.entscheidungen.filter((d) => d.knoten === k.id).map(({ art, gegenstand, gewaehlt, details }) => ({ art, gegenstand, gewaehlt, details })) })) };
-  dateien.push({ name: "verlauf.json", bytes: new TextEncoder().encode(JSON.stringify(protokoll, null, 2)) });
+  dateien.push({ name: "verlauf.json", bytes: json(verlaufProtokoll(id)) });
   herunterladen(new Blob([zip(dateien)], { type: "application/zip" }), `${slug(S.projekt.titel)}-verlauf.zip`);
   S.projekt.exporte.push({ id: P.neueId("x"), art: "verlauf", ergebnis: id, dateien: dateien.map((d) => d.name), zeit: new Date().toISOString() });
+  zeigeProtokoll();
+}
+/** Ein Ordner für die Lab-Werkschau (b/lab/works/<ordner>/, tools/build-lab-works.mjs): werk.json, bild.png, der Film des letzten Schritts,
+    falls gerechnet, und verlauf.json. Titel, Jahr und Text stehen in werk.json vor und werden dort ergänzt; nichts wird veröffentlicht. */
+async function werkExportieren(id) {
+  const e = P.ergebnis(S.projekt, id), bild = S.medien.dateien.get(e.datei);
+  if (!bild) return status("Für Works: das Bild dieses Ergebnisses fehlt.", null, true);
+  const ordner = slug(`${S.projekt.titel}-${e.titel}`), film = S.filme.get(id), protokoll = verlaufProtokoll(id);
+  const dateien = [{ name: `${ordner}/bild.png`, bytes: bild }];
+  if (film) dateien.push({ name: `${ordner}/film.${film.endung}`, bytes: new Uint8Array(await film.blob.arrayBuffer()) });
+  dateien.push({ name: `${ordner}/verlauf.json`, bytes: json(protokoll) });
+  const werk = { format: "ornament-lab-werk", version: 1, titel: S.projekt.titel === "Ohne Titel" ? e.titel : S.projekt.titel, jahr: new Date().getFullYear(),
+    text: "", bild: "bild.png", breite: e.breite, hoehe: e.hoehe, film: film ? `film.${film.endung}` : null, verlauf: "verlauf.json",
+    lab: P.LAB_VERSION, operationen: [...new Set(protokoll.schritte.map((x) => opName(x.operation)))], exportiert: protokoll.exportiert, veroeffentlicht: false };
+  dateien.splice(1, 0, { name: `${ordner}/werk.json`, bytes: json(werk) });
+  herunterladen(new Blob([zip(dateien)], { type: "application/zip" }), `${ordner}-works.zip`);
+  S.projekt.exporte.push({ id: P.neueId("x"), art: "werk", ergebnis: id, dateien: dateien.map((d) => d.name), zeit: protokoll.exportiert });
+  status(`Für Works: ${ordner}-works.zip${film ? " mit Film" : " ohne Film (vorher «Animation des letzten Schritts» rechnen, wenn einer dazugehört)"}.`);
   zeigeProtokoll();
 }
 

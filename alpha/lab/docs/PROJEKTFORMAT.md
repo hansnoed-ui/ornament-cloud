@@ -59,7 +59,7 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
   }],
 
   "ketten": [{ "id": "c-…", "name": "…", "schritte": [{ "operation", "operationVersion", "parameter", "variation", "auswahl": 3, "nebeneingaenge": [] }] }],
-  "exporte": [{ "art": "animation | verlauf | stationen", "ergebnis": "e-…", "datei": "medien/…", "codec": "avc1.640028", "bilder": 451, "fps": 30, "sha256": "…",
+  "exporte": [{ "art": "animation | verlauf | stationen | werk", "ergebnis": "e-…", "datei": "medien/…", "codec": "avc1.640028", "bilder": 451, "fps": 30, "sha256": "…",
                 "tonspur": { "ergebnis": "e-…", "beginn": 0, "sekunden": 8, "codec": "aac" } }],   // tonspur seit 0.6.0 bei «animation», nur wenn gewählt; sonst { …, "fehlt": "Grund" }
   "meldungen": [{ "zeit": "ISO", "art": "warnung | hinweis", "text": "…" }]
 }
@@ -143,7 +143,7 @@ Der Knoten von `lab.komposition` hält im `protokoll` fest: `reihenfolge` (die s
 - Steuersignale werden über ihre Ergebnis-Kennung verbunden und nicht doppelt gespeichert.
 - `lab.tonsignal` ist reproduzierbar: Dieselben Abtastwerte ergeben dasselbe Signal. Die Tondatei liegt unverändert mit SHA-256 im Archiv.
 - Mehrere Routen auf denselben Parameter werden summiert und erst dann begrenzt (seit Lab 0.1.1, nach VCV Rack). Mit einer Route rechnet 0.1.1 genau wie 0.1.0.
-- Formatversion: Eine neue Nebenversion darf Felder hinzufügen (0.2.0: `polaritaet` je Route, `halten` je Modulator; 0.3.0: kompositorische Profile als METADATA-Ergebnisse, `befund.profil`, Eingang `profil`; 0.4.0: AUDIO-Material mit `ton`, EVENT_SEQUENCE, Steuersignale mit `achse: "zeit"`, Eingang `ton`; 0.5.0: Exporte `art: "stationen"` mit Partitur; 0.6.0: AUDIO-Ergebnisse von `lab.klang` mit `ton.umriss`, Partitur des Klangerzeugers, Eingänge `bild`, `signal`, `konstellation` ohne Pflicht, `exporte[].tonspur` bei «animation»; ältere Projekte öffnen unverändert). Eine neue Hauptversion braucht eine Migration (`ladeProjekt`).
+- Formatversion: Eine neue Nebenversion darf Felder hinzufügen (0.2.0: `polaritaet` je Route, `halten` je Modulator; 0.3.0: kompositorische Profile als METADATA-Ergebnisse, `befund.profil`, Eingang `profil`; 0.4.0: AUDIO-Material mit `ton`, EVENT_SEQUENCE, Steuersignale mit `achse: "zeit"`, Eingang `ton`; 0.5.0: Exporte `art: "stationen"` mit Partitur; 0.6.0: AUDIO-Ergebnisse von `lab.klang` mit `ton.umriss`, Partitur des Klangerzeugers, Eingänge `bild`, `signal`, `konstellation` ohne Pflicht, `exporte[].tonspur` bei «animation»; seit Lab 0.1.6 ohne neue Formatversion zusätzlich `art: "werk"` für den Export «Für Works»; ältere Projekte öffnen unverändert). Eine neue Hauptversion braucht eine Migration (`ladeProjekt`).
 
 ## Vorbereitet für später
 
