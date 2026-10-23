@@ -142,6 +142,31 @@ await check("Animation des letzten Schritts: Video wird erzeugt und ins Projekt 
   assert.ok(await page.locator(".film video").isVisible());
 });
 
+await check("Für Works: Ordner mit werk.json, bild.png, Film und verlauf.json; die Werkschau baut daraus eine Werkseite", async () => {
+  const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Für Works" }).click()]);
+  assert.match(dl.suggestedFilename(), /-works\.zip$/);
+  const { leseZip } = await import(new URL("alpha/lab/kern/archiv.js", root).href);
+  const dateien = Object.fromEntries(await leseZip(new Uint8Array(readFileSync(await dl.path()))));
+  const namen = Object.keys(dateien), ordner = namen[0].split("/")[0];
+  for (const n of ["werk.json", "bild.png", "film.mp4", "verlauf.json"]) assert.ok(namen.includes(`${ordner}/${n}`), `${n} fehlt: ${namen.join(", ")}`);
+  const werk = JSON.parse(new TextDecoder().decode(dateien[`${ordner}/werk.json`]));
+  assert.equal(werk.format, "ornament-lab-werk"); assert.equal(werk.film, "film.mp4"); assert.equal(werk.veroeffentlicht, false);
+  assert.ok(werk.operationen.length >= 3, werk.operationen.join(", "));
+  assert.equal((await S(page, () => ornamentLab.projekt.exporte.at(-1))).art, "werk");
+  // dieselben Dateien in eine leere Werkschau gelegt: Übersicht und Werkseite entstehen, das Werk ist veröffentlicht erst mit «veroeffentlicht: true»
+  const { mkdtempSync, mkdirSync, writeFileSync } = await import("node:fs"), { tmpdir } = await import("node:os");
+  const ziel = mkdtempSync(join(tmpdir(), "works-"));
+  mkdirSync(join(ziel, ordner));
+  for (const [n, b] of Object.entries(dateien)) writeFileSync(join(ziel, n), b);
+  const { baue } = await import(new URL("tools/build-lab-works.mjs", root).href);
+  assert.equal(baue({ ordner: ziel }).werke.length, 0, "ein frischer Export ist noch nicht veröffentlicht");
+  writeFileSync(join(ziel, ordner, "werk.json"), JSON.stringify({ ...werk, veroeffentlicht: true }));
+  const r = baue({ ordner: ziel });
+  assert.equal(r.werke.length, 1);
+  const seite = readFileSync(join(ziel, ordner, "index.html"), "utf8");
+  assert.match(seite, /film\.mp4/); assert.match(seite, /verlauf\.json/);
+});
+
 await check("Animation über Stationen: der Verlauf als Stationen, Übergang als Verlauf der Operation, Film mit Partitur im Projekt", async () => {
   assert.equal(await page.locator(".stationen-liste > li").count(), 4, "Material, Fictory, Feedback, Wiederholung");
   await page.locator('.stationen input[data-param="halten"]').fill("0.4");
