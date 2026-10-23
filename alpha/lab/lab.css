@@ -208,6 +208,10 @@ fieldset { border: 0; margin: 0; padding: 0; }
 .stationen-liste .station-text { overflow-wrap: anywhere; }
 .stationen-liste .station-text b { color: var(--accent); font-weight: 500; }
 .stationen-liste .aktionen { gap: 4px; }
+.klangstationen .stationen-liste { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.klangstationen .umriss { background: var(--nacht); aspect-ratio: 3; }
+.klangstationen .umriss svg { width: 100%; height: 100%; display: block; }
+.klangstationen audio { width: 100%; }
 .stationen-regler { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); column-gap: 18px; }
 .stationen-regler > legend { grid-column: 1 / -1; }
 #stationen-plan.fehler { color: #c0392b; }
