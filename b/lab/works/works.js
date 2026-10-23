@@ -9,7 +9,8 @@ if (!ruhig) for (const lauf of $$(".signet .lauf, .dock-marke .lauf, .kachel-sig
 
 const spiele = (v, an) => {
   if (!v) return;
-  if (an && !ruhig) { if (!v.src) v.src = v.dataset.film; return v.play().then(() => true).catch(() => false); }
+  // erst wenn das erste Bild wirklich gemalt ist, gilt der Film als laufend; sonst blitzt beim Einblenden eine schwarze Fläche auf
+  if (an && !ruhig) { if (!v.src) v.src = v.dataset.film; return v.play().then(() => new Promise((ok) => (v.requestVideoFrameCallback ? v.requestVideoFrameCallback(() => ok(true)) : v.addEventListener("timeupdate", () => ok(true), { once: true })))).catch(() => false); }
   v.pause(); return Promise.resolve(false);
 };
 
@@ -44,7 +45,7 @@ if (html.classList.contains("uebersicht")) {
   const L = dias.length;
   const schmal = matchMedia("(max-width: 759px)");
   let phase = 0, vorn = 0, i = 0, laeuft = false, ende = 0;
-  const glatt = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+  const glatt = (t) => (1 - Math.cos(Math.PI * t)) / 2;   // sanft an- und auslaufend, ohne Ruck in der Mitte
   const zeichne = () => {
     const R = schmal.matches ? 34 : 30, H = schmal.matches ? 30 : 34;   // Halbmesser des Rings in vw, Höhe der Ellipse in vh
     dias.forEach((d, j) => {
@@ -52,12 +53,12 @@ if (html.classList.contains("uebersicht")) {
       if (k > L / 2) k -= L;
       const w = (2 * Math.PI * k) / L, tiefe = (Math.cos(w) + 1) / 2;   // 1 vorne, 0 hinten
       // von leicht oben gesehen: hintere Karten stehen höher und kleiner, damit der ganze Ring sichtbar ist
-      let x = Math.sin(w) * R, y = (tiefe - 0.5) * H - 7, s = schmal.matches ? 0.2 + 0.32 * tiefe : 0.13 + 0.24 * tiefe, o = 0.55 + 0.45 * tiefe, dreh = -Math.sin(w) * 34;
+      let x = Math.sin(w) * R, y = (tiefe - 0.5) * H - 7, s = schmal.matches ? 0.17 + 0.27 * tiefe : 0.11 + 0.19 * tiefe, o = 0.55 + 0.45 * tiefe, dreh = -Math.sin(w) * 34;
       const vorne = Math.abs(k) < 0.001;
       if (vorne) { x *= 1 - vorn; y *= 1 - vorn; s += (1 - s) * vorn; dreh *= 1 - vorn; o = 1; } else o *= 1 - vorn;
       d.style.setProperty("--x", x.toFixed(3)); d.style.setProperty("--y", y.toFixed(3)); d.style.setProperty("--s", s.toFixed(4));
       d.style.setProperty("--o", o.toFixed(3)); d.style.setProperty("--dreh", dreh.toFixed(2));
-      d.style.setProperty("--z", String(Math.round(tiefe * 20) + (vorne ? 1 : 0)));
+      d.style.setProperty("--z", String(Math.round(tiefe * 200) + (vorne ? 1 : 0)));
     });
   };
   const bewege = (zu, ms) => new Promise((fertig) => {
@@ -73,14 +74,15 @@ if (html.classList.contains("uebersicht")) {
   });
   const imRing = (an) => { if (an) html.dataset.karussell = ""; else delete html.dataset.karussell; };
   const vorne = () => dias[i];
-  const ruhigStellen = () => { for (const d of dias) { spiele($("video", d), false); d.classList.remove("spielt", "ist"); } };
+  // der Film hält nur an und bleibt sichtbar: ein Wechsel zurück aufs Standbild liess die Karte beim Schrumpfen flackern
+  const ruhigStellen = () => { for (const d of dias) { spiele($("video", d), false); d.classList.remove("ist"); } };
 
   /** in den Ring zurück (die vordere Karte schrumpft) */
-  const zumRing = async () => { ruhigStellen(); imRing(true); await bewege({ vorn: 0 }, 550); };
+  const zumRing = async () => { ruhigStellen(); imRing(true); await bewege({ vorn: 0 }, 900); };
   /** die vordere Karte auf die Bühne holen */
   const nachVorn = async () => {
     const d = vorne();
-    await bewege({ vorn: 1 }, 650);
+    await bewege({ vorn: 1 }, 1100);
     imRing(false); d.classList.add("ist");
     for (const x of dias) $(".dia-flaeche", x)?.setAttribute("tabindex", x === d ? "0" : "-1");
     if (d.classList.contains("hat-film")) spiele($("video", d), true).then((ok) => ok && d.classList.add("spielt"));
@@ -91,7 +93,7 @@ if (html.classList.contains("uebersicht")) {
     laeuft = true;
     if (vorn > 0) await zumRing();
     const ziel = phase + d;
-    await bewege({ phase: ziel }, 420 + 160 * Math.min(Math.abs(d), 3));
+    await bewege({ phase: ziel }, 1000 + 350 * Math.min(Math.abs(d), 3));
     phase = ((Math.round(ziel) % L) + L) % L; i = phase; zeichne();
     jetzt.textContent = String(i + 1).padStart(2, "0");
     dockSetzen({ text: vorne().dataset.text, href: vorne().dataset.href, bild: vorne().dataset.bild });
@@ -121,7 +123,7 @@ if (html.classList.contains("uebersicht")) {
     if (d) { e.preventDefault(); blaettern(d); }
   });
 
-  buehne.addEventListener("wheel", (e) => { e.preventDefault(); if (Math.abs(e.deltaY) + Math.abs(e.deltaX) < 12 || laeuft || performance.now() < ende + 450) return; blaettern((e.deltaY || e.deltaX) > 0 ? 1 : -1); }, { passive: false });
+  buehne.addEventListener("wheel", (e) => { e.preventDefault(); if (Math.abs(e.deltaY) + Math.abs(e.deltaX) < 12 || laeuft || performance.now() < ende + 600) return; blaettern((e.deltaY || e.deltaX) > 0 ? 1 : -1); }, { passive: false });
   let start = null, gewischt = false;
   buehne.addEventListener("pointerdown", (e) => { start = { x: e.clientX, y: e.clientY }; });
   buehne.addEventListener("pointerup", (e) => {

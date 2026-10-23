@@ -80,17 +80,17 @@ html:not(.js) .ansicht { display: none; }
 .dias { position: absolute; inset: 0; perspective: 1800px; }
 .dia { position: absolute; top: 8px; bottom: 8px; left: var(--links); width: var(--breite); overflow: hidden; border-radius: 14px; background: var(--buehne); opacity: var(--o, 0); z-index: var(--z, 0);
   transform: translate(calc(var(--x, 0) * 1vw), calc(var(--y, 0) * 1vh)) scale(var(--s, 1)) rotateY(calc(var(--dreh, 0) * 1deg));
-  transition: border-radius 0.5s; will-change: transform, opacity; }
+  transition: border-radius 0.9s; will-change: transform, opacity; }
 .dia.ist { --o: 1; --z: 5; }
 .js[data-karussell] .dia { border-radius: 22px; }
 .js[data-karussell] .ansicht { background: var(--flaeche); }
 .js[data-karussell] .ansicht button { color: var(--leise); }
 /* ein Schleier oben und unten, damit Kopf, Titel und Zähler auch auf hellen Bildern lesbar bleiben */
 .dia::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(rgba(0, 0, 0, 0.32), transparent 22%, transparent 62%, rgba(0, 0, 0, 0.38)), linear-gradient(90deg, rgba(0, 0, 0, 0.22), transparent 45%); opacity: 1; transition: opacity 0.4s; }
-.js[data-karussell] .dia::after { opacity: 0; }
+.js[data-karussell] .dia::after { opacity: 0; transition-duration: 0.8s; }
 .dia-flaeche { position: absolute; inset: 0; display: block; }
 .dia-flaeche img, .dia-flaeche video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.dia-flaeche video { opacity: 0; transition: opacity 0.4s; }
+.dia-flaeche video { opacity: 0; transition: opacity 1.2s; }
 .dia.spielt .dia-flaeche video { opacity: 1; }
 .dia-titel { position: absolute; left: var(--rand); top: 50%; transform: translateY(-50%); z-index: 2; max-width: min(18ch, 70vw); font-size: var(--gross); line-height: 1.2; letter-spacing: -0.01em; text-wrap: balance; text-shadow: 0 0 24px rgba(0, 0, 0, 0.25); }
 .dia-titel a:hover { color: inherit; }
@@ -101,7 +101,8 @@ html:not(.js) .ansicht { display: none; }
 .ring-hinweis { position: absolute; left: var(--rand); right: var(--rand); bottom: calc(var(--dock-h) + 30px); z-index: 6; text-align: center; color: var(--grau); opacity: 0; pointer-events: none; }
 .js[data-karussell] .ring-hinweis { opacity: 1; }
 .dia { cursor: pointer; }
-.buehne > :not(.dias) { transition: opacity 0.3s; }
+.buehne > :not(.dias) { transition: opacity 0.6s; }
+.kopf, .kopf .signet .still, .ansicht, .ansicht button { transition: color 0.6s, background-color 0.6s, text-shadow 0.6s; }
 .zaehler { position: absolute; left: calc(var(--links) + var(--rand)); bottom: calc(var(--rand) + 8px); z-index: 6; padding: 5px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.12); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); font-variant-numeric: tabular-nums; }
 .buehne-satz { position: absolute; right: var(--rand); top: 50%; z-index: 6; transform: translateY(-50%); width: calc(var(--links) - 2 * var(--rand) - 8px); max-width: 22ch; text-align: right; font-family: var(--serif); font-style: italic; font-size: 18px; line-height: 1.3; color: var(--grau); }
 @media (max-width: 1100px) { .buehne-satz { display: none; } }
