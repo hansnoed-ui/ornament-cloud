@@ -80,6 +80,7 @@ if (html.classList.contains("uebersicht")) {
     });
     // Stapelfolge nach Rang: z-index ändert sich nur, wenn zwei Karten wirklich die Plätze tauschen
     rang.sort((a, b) => a[0] - b[0]).forEach(([, d], n) => setze(d, "zIndex", String(n + 1)));
+    buehne.classList.toggle("zoomt", vorn > 0);   // der Hinweis unter dem Ring weicht der wachsenden Karte
   };
   const bewege = (zu, ms) => new Promise((fertig) => {
     const von = { phase, vorn }, t0 = performance.now();
