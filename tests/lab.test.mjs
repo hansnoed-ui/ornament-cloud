@@ -168,6 +168,17 @@ test("Ausführung: Varianten über Modulation, Projekt als azyklische Grafik, We
   assert.equal(n, 5, "Feedback-Verlauf: Eingang + 4 Iterationen");
   n = 0; for await (const _ of bildfolge({ register: r, projekt: p, medien: m, ergebnisId: b.ergebnisse[0].id, ueberblendung: 10 })) n++;
   assert.equal(n, 11, "Farbe ohne eigenen Verlauf: Überblendung");
+  // so lang wie ein Klang: der Verlauf (5 Bilder) wird auf genau 61 Bilder gedehnt, Anfang und Ende bleiben die Originalbilder
+  const roh = []; for await (const b of bildfolge({ register: r, projekt: p, medien: m, ergebnisId: a.ergebnisse[1].id })) roh.push(b);
+  const lang = []; for await (const b of bildfolge({ register: r, projekt: p, medien: m, ergebnisId: a.ergebnisse[1].id, bilder: 61 })) lang.push(b);
+  assert.equal(lang.length, 61);
+  assert.deepEqual([lang[0].data, lang[15].data, lang[60].data], [roh[0].data, roh[1].data, roh[4].data], "Stützbilder an j·(n−1)/(ziel−1)");
+  const mitte = lang[7].data[0], grenzen = [roh[0].data[0], roh[1].data[0]].sort((x, y) => x - y);
+  assert.ok(mitte >= grenzen[0] && mitte <= grenzen[1], "dazwischen überblendet");
+  n = 0; for await (const _ of bildfolge({ register: r, projekt: p, medien: m, ergebnisId: a.ergebnisse[1].id, bilder: 3 })) n++;
+  assert.equal(n, 3, "auch kürzer: ausgedünnt");
+  n = 0; for await (const _ of bildfolge({ register: r, projekt: p, medien: m, ergebnisId: b.ergebnisse[0].id, bilder: 90 })) n++;
+  assert.equal(n, 90, "Überblendung so lang wie verlangt");
 });
 
 test("Kopplung: ein Bildsignal moduliert die Wiederholung (Bild → Steuersignal → Parameter)", async () => {

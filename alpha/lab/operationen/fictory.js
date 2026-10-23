@@ -83,6 +83,9 @@ export const fictory = {
     };
   },
 
+  /** Anfangsbild, jeder zweite Schritt und der Zielschritt */
+  verlaufBilder: (p, kontext = {}) => 1 + Math.ceil(SCHLUESSEL[Math.min(6, (kontext.teil ?? 5) + 1)] / 2),
+
   /** die ganze Bewegung: jeder zweite Schritt ein Bild (15 Bilder je Sekunde der Fictory-Zeit), endet im gewählten Zustand */
   async *verlauf({ bild, konstellation }, p, kontext = {}) {
     const { A, M, mat } = vorbereiten(bild, p, konstellation, (kontext.seed ?? 1) >>> 0);

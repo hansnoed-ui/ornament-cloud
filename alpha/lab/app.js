@@ -26,7 +26,9 @@ const S = {
   stationen: null,
   // Ausspielen eines Klangs als WAV (Bittiefe, Abtastrate; 0 = wie der Klang) und Wiedergabe in der Schleife
   ausspielen: { bits: "24", rate: 0 }, schleife: false,
-  film: { halten: 1.5, uebergang: 1, art: "blende", quelle: "keine", ziel: "halten", tiefe: 0.3, frequenz: 1, signal: "", takt: "", schwelle: 0.2, wiederholen: true, tonspur: true, seite: 1280 },
+  // Animation des letzten Schritts: die Bildfolge auf die Länge der Tonspur strecken (seit 0.1.8), je Ausgang
+  strecken: new Map(),
+  film: { halten: 1.5, uebergang: 1, art: "blende", quelle: "keine", ziel: "halten", tiefe: 0.3, frequenz: 1, signal: "", takt: "", schwelle: 0.2, wiederholen: true, tonspur: "auto", seite: 1280 },
 };
 globalThis.ornamentLab = S;   // für Browsertests und die Konsole
 // Nebeneinander anhören: es klingt immer nur ein Klang, der nächste hält den vorigen an
@@ -504,10 +506,11 @@ function nacheinander(e) {
       klaenge.length ? el("label", { class: "regler tonspur" }, el("span", { text: "Tonspur" }),
         el("select", { id: "tonspur", onchange: (ev) => S.tonspur.set(e.id, ev.target.value) }, el("option", { value: "", text: "keine" }),
           ...klaenge.map((x) => el("option", { value: x.id, selected: S.tonspur.get(e.id) === x.id, text: x.titel })))) : null,
+      klaenge.length ? el("label", { class: "regler schalter" }, el("input", { type: "checkbox", id: "strecken", checked: S.strecken.get(e.id) !== false, onchange: (ev) => S.strecken.set(e.id, ev.target.checked) }), "Bildfolge so lang wie der Klang") : null,
       el("button", { class: "knopf leise", type: "button", onclick: () => verlaufExportieren(e.id), text: "Verlauf als ZIP" }),
       el("button", { class: "knopf leise", type: "button", title: "Bild, Film (falls gerechnet) und Protokoll als Ordner für die Lab-Werkschau unter /b/lab/works/", onclick: () => werkExportieren(e.id), text: "Für Works" }),
       el("small", { text: "Die Operation rechnet ihren Verlauf mit denselben Parametern und demselben Startwert noch einmal." })),
-    film ? el("video", { src: film.url, controls: true, loop: true, muted: true, playsinline: true }) : null,
+    film ? el("video", { src: film.url, controls: true, loop: true, muted: !film.tonspur?.codec, playsinline: true }) : null,
     film ? el("div", { class: "aktionen" }, el("button", { class: "knopf klein", type: "button", onclick: () => herunterladen(film.blob, film.name), text: `${film.endung.toUpperCase()} speichern` }), el("small", { text: `${film.bilder} Bilder, ${film.breite} × ${film.hoehe}, ${film.codec}${film.tonspur?.codec ? `, Ton ${film.tonspur.codec}` : film.tonspur?.fehlt ? `, ohne Ton: ${film.tonspur.fehlt}` : ""}` })) : null) : null);
 }
 /** der Klang, der den Verlauf über ein Tonsignal gesteuert hat (sonst keiner): er steht als Tonspur vor */
@@ -530,7 +533,10 @@ async function animation(id) {
     // die Bildzahl steht erst nach dem Rechnen fest: der Klang läuft ab «beginn» ganz, höchstens so lang wie die längste Animation
     const t = tonE ? await S.medien.ton(tonE) : null, beginn = sig?.daten?.beginn ?? 0;
     const ton = t ? { pcm: t.pcm, spuren: t.spuren, rate: t.rate, beginn, dauer: Math.min(t.pcm.length / t.rate - beginn, P.GRENZEN.animationBilder / FPS) } : null;
-    const r = await videoAus(bildfolge({ register: R, projekt: S.projekt, medien: S.medien, ergebnisId: id, abbrechen: signal }), { melden: status, ton });
+    // auf Wunsch so viele Bilder wie der Klang (oder das steuernde Signal) Sekunden mal 30 hat: dann läuft das Bild genau mit dem Ton
+    const ziel = ton && S.strecken.get(id) !== false ? Math.min(P.GRENZEN.animationBilder, Math.round((sig?.daten?.dauer ?? ton.dauer) * FPS)) : null;
+    if (ton && ziel) ton.dauer = ziel / FPS;
+    const r = await videoAus(bildfolge({ register: R, projekt: S.projekt, medien: S.medien, ergebnisId: id, abbrechen: signal, bilder: ziel }), { melden: status, ton, halten: ziel ? 0 : 1 });
     const name = `medien/${id}-animation.${r.endung}`;
     const bytes = new Uint8Array(await r.blob.arrayBuffer());
     const abgelegt = await S.medien.ablegenDatei(name, bytes, r.mime);
@@ -639,7 +645,7 @@ function stationenAnsicht(e) {
   const zahlRegler = (id, name, min, max, schritt, wert, fn) => regler({ id, name, art: "zahl", min, max, schritt }, wert, neu(fn));
   const wahlRegler = (id, name, optionen, wert, fn, neuZeichnen = false) => regler({ id, name, art: "wahl", optionen }, wert, neuZeichnen ? (v) => { fn(v); zeigeBuehne(); } : neu(fn));
   const takt = folgen.find((x) => x.id === f.takt);
-  const tonDa = takt?.knoten && Object.values(P.knoten(S.projekt, takt.knoten).eingaben).some((id) => P.ergebnis(S.projekt, id)?.typ === "AUDIO");
+  const klaenge = S.projekt.ergebnisse.filter((x) => x.typ === "AUDIO"), tonId = stationenTon(liste);
   const film = S.filme.get("stationen");
   rechnen();
   return el("section", { class: "stationen", "aria-labelledby": "h-stationen" },
@@ -658,9 +664,12 @@ function stationenAnsicht(e) {
       f.quelle !== "keine" ? zahlRegler("tiefe", "Tiefe (Attenuverter)", -1, 1, 0.05, f.tiefe, (v) => { f.tiefe = v; }) : null,
       f.quelle !== "keine" && f.quelle !== "signal" ? zahlRegler("frequenz", "Frequenz (Zyklen)", 0.25, 4, 0.25, f.frequenz, (v) => { f.frequenz = v; }) : null,
       wahlRegler("takt", "Takt", [{ wert: "", name: "gleichmässig (Halten und Übergang)" }, ...folgen.map((x) => ({ wert: x.id, name: x.titel }))], f.takt, (v) => { f.takt = v; }, true),
+      !folgen.length ? el("small", { class: "hinweis", text: klaenge.length ? "Einen anderen Takt gibt es, sobald eine Ereignisfolge da ist: den Klang oben wählen und «Tonsignal» mit Merkmal «Einsätze» (oder «Neu-Rhythmisierung») ausführen." : "Einen anderen Takt gibt es mit einem Klang: Ton einlesen, dann «Tonsignal» mit Merkmal «Einsätze» ausführen." }) : null,
       f.takt ? zahlRegler("schwelle", "Einsätze ab Stärke", 0, 1, 0.05, f.schwelle, (v) => { f.schwelle = v; }) : null,
       f.takt ? el("label", { class: "regler schalter" }, el("input", { type: "checkbox", checked: f.wiederholen, onchange: (ev) => { f.wiederholen = ev.target.checked; rechnen(); } }), "Stationen reihum, bis die Einsätze aufgebraucht sind") : null,
-      tonDa ? el("label", { class: "regler schalter" }, el("input", { type: "checkbox", checked: f.tonspur, onchange: (ev) => { f.tonspur = ev.target.checked; } }), "den gemessenen Ton als Tonspur") : null,
+      klaenge.length ? wahlRegler("tonspur", "Tonspur", [{ wert: "", name: "keine" }, ...klaenge.map((x) => ({ wert: x.id, name: x.titel }))], tonId, (v) => { f.tonspur = v; }, true) : null,
+      tonId && !f.takt ? el("div", { class: "aktionen" }, el("button", { class: "knopf klein leise", type: "button", onclick: () => halteAnKlang(liste, tonId), text: "Halten an den Klang anpassen" }),
+        el("small", { text: "Ohne Takt läuft der Ton ab dem Anfang und endet mit dem Film." })) : null,
       zahlRegler("seite", "Filmgrösse, längste Seite (px)", 320, 2048, 16, f.seite, (v) => { f.seite = v; })),
     plan,
     el("div", { class: "aktionen" },
@@ -670,12 +679,28 @@ function stationenAnsicht(e) {
       el("div", { class: "aktionen" }, el("button", { class: "knopf klein", type: "button", onclick: () => herunterladen(film.blob, film.name), text: `${film.endung.toUpperCase()} speichern` }),
         el("small", { text: `${film.bilder} Bilder, ${film.breite} × ${film.hoehe}, ${film.codec}${film.ton ? `, Ton ${film.ton}` : ", ohne Ton"}` }))) : null);
 }
+/** die Tonspur des Films über Stationen: gewählt, sonst («auto») der Ton des Takts, sonst der zuletzt entstandene Klang */
+function stationenTon(liste) {
+  const f = S.film, klaenge = S.projekt.ergebnisse.filter((x) => x.typ === "AUDIO");
+  if (f.tonspur !== "auto") return klaenge.some((x) => x.id === f.tonspur) ? f.tonspur : null;
+  let takt = null;
+  try { takt = f.takt ? ST.partitur(S.projekt, stationenPlan(liste)).takt : null; } catch { /* Plan noch unvollständig */ }
+  return takt?.ton ?? klaenge.at(-1)?.id ?? null;
+}
+/** Halten je Station so setzen, dass der Film (gleichmässig) so lang ist wie der Klang, höchstens 10 s je Station */
+async function halteAnKlang(liste, tonId) {
+  const t = await S.medien.ton(P.ergebnis(S.projekt, tonId)), dauer = t.pcm.length / t.rate, n = liste.length;
+  S.film.halten = Math.max(0, Math.min(10, Math.round(((dauer - (n - 1) * S.film.uebergang) / n) * 10) / 10));
+  zeigeBuehne();
+  status(`Halten je Station: ${zahl(S.film.halten)} s, damit ${n} Stationen etwa ${sekunden(dauer)} dauern wie der Klang.`);
+}
 async function stationenFilm(liste) {
   await laufen(async (signal) => {
     const pt = ST.partitur(S.projekt, stationenPlan(liste)), zeitplan = [];
-    const tonId = S.film.tonspur ? pt.takt?.ton : null;
+    const tonId = stationenTon(liste);
     const roh = tonId ? await S.medien.ton(P.ergebnis(S.projekt, tonId)) : null;
-    const ton = roh ? { pcm: roh.pcm, spuren: roh.spuren, rate: roh.rate, beginn: pt.takt.tonBeginn, dauer: pt.dauer } : null;
+    // im Takt eines Tons beginnt die Spur dort, wo seine Einsätze gemessen wurden; sonst am Anfang des Klangs
+    const ton = roh ? { pcm: roh.pcm, spuren: roh.spuren, rate: roh.rate, beginn: pt.takt?.ton === tonId ? pt.takt.tonBeginn : 0, dauer: pt.dauer } : null;
     const ids = liste.map((x) => x.ergebnis);
     const d = P.entscheide(S.projekt, { art: "mensch", gegenstand: "stationen", gewaehlt: ids, details: { auswahl: S.stationen ? "eigene" : "Verlauf", uebergang: pt.art, takt: pt.takt?.ereignisfolge ?? null } });
     status(`Film über ${liste.length} Stationen wird gerechnet …`, 0);

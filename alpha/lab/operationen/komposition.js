@@ -74,6 +74,8 @@ export const komposition = {
     };
   },
 
+  verlaufBilder: () => VERLAUF_BILDER,
+
   /** die Bildfolge: vom Eingang (alle Faktoren 1) bis zum Ergebnis, die Faktoren wandern gleichmässig */
   async *verlauf({ bild, profil: ziel }, p, kontext = {}) {
     const ein = begrenzen(bild, Math.min(p.seite, 900));
