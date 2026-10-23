@@ -563,6 +563,11 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   await p.route("**/alpha/lab/jev/wahl.php", (r) => {
     if (r.request().method() === "GET") return r.fulfill({ contentType: "application/json", body: JSON.stringify({ bereit: true }) });
     const lage = r.request().postDataJSON(); gesendet.push(lage);
+    // die Zusammenstellung: Glitch überall wahrscheinlich, Klang zuerst schneller, dann zerlegt
+    if (lage.frage === "komposition") return r.fulfill({ contentType: "application/json", body: JSON.stringify({ modell: "jev-test", zwischengespeichert: false, antworten: {
+      aufbau: { "aufbau.kette": 0.8, "aufbau.faecher": 0.2 }, uebergang: { "film.schnitt": 0.1, "film.blende": 0.8, "film.schwelle": 0.1 },
+      klang1: { "klang.schneller": 1 }, klang2: { "klang.zerlegt": 1 },
+      ...Object.fromEntries([1, 2, 3, 4, 5, 6].map((i) => [`bild${i}`, { "bild.glitch": 0.9, "bild.farbe": 0.05, "bild.licht": 0.05 }])) } }) });
     return r.fulfill({ contentType: "application/json", body: JSON.stringify({ wahrscheinlichkeiten: Object.fromEntries(lage.optionen.map((o) => [o, o === "vorschlag.farbwelle" ? 0.7 : 0.05])), modell: "jev-test", zwischengespeichert: false }) });
   });
   await p.goto(base);
@@ -576,9 +581,16 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   await p.click("#vorschlag-machen");
   await p.waitForSelector('#vorschlag30 input[name="dramaturgie"]');
   await warteFertig(p);
-  assert.deepEqual(Object.keys(gesendet[0]), ["frage", "merkmale", "optionen"]);
-  assert.equal(gesendet[0].frage, "dramaturgie");
-  assert.ok(Object.values(gesendet[0].merkmale).every((v) => /^[a-z]+$/.test(v)), "nur Stufen");
+  const dr = gesendet.find((g) => g.frage === "dramaturgie"), ko = gesendet.find((g) => g.frage === "komposition");
+  assert.deepEqual(Object.keys(dr), ["frage", "merkmale", "optionen"]);
+  assert.deepEqual(Object.keys(ko), ["frage", "merkmale"]);
+  assert.ok(Object.values(dr.merkmale).every((v) => /^[a-z]+$/.test(v)), "nur Stufen");
+  assert.match(await p.textContent("#vorschlag30 .zusammenstellung legend"), /jev stellt zusammen \(jev-test\)/);
+  const stellen = await p.$$eval("#vorschlag30 .stellen select", (l) => l.map((x) => [x.dataset.frage, x.value]));
+  assert.equal(stellen.length, 10);
+  const bilder = stellen.filter(([k]) => k.startsWith("bild")).map(([, w]) => w);
+  assert.ok(bilder.every((b, i) => i === 0 || b !== bilder[i - 1]), `kein Effekt zweimal hintereinander: ${bilder}`);
+  assert.deepEqual(stellen.filter(([k]) => k.startsWith("klang")).map(([, w]) => w), ["klang.schneller", "klang.zerlegt"]);
   assert.equal(await p.locator('#vorschlag30 input[name="dramaturgie"]:checked').getAttribute("value"), "vorschlag.farbwelle", "der wahrscheinlichste steht vorgewählt");
   assert.match(await p.textContent("#vorschlag30"), /Gemessen\. Bild: .*Klang/);
   await p.locator('#vorschlag30 input[value="vorschlag.raster"]').check();
@@ -596,6 +608,19 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   // unter «Nacheinander» steht derselbe Film mit den Stationen des Vorschlags
   await p.locator('input[name="ansicht"][value="nach"]').check({ force: true });
   assert.equal(await p.locator(".stationen-liste li").count(), 7);
+  // die Zusammenstellung von jev: einen Abschnitt von Hand ändern, dann rechnen
+  await p.locator('input[name="ansicht"][value="neben"]').check({ force: true });
+  await p.locator('#vorschlag30 select[data-frage="bild6"]').selectOption("bild.raster");
+  await p.click("#zusammenstellung-rechnen");
+  await p.waitForTimeout(50);
+  await warteFertig(p, 300000);
+  await p.waitForSelector("#vorschlag30 .zusammenstellung video");
+  const z = await S(p, () => { const pr = ornamentLab.projekt; const d = pr.entscheidungen.find((y) => y.gegenstand === "zusammenstellung"); return { d, ops: pr.knoten.slice(-9).map((k) => k.operation), x: pr.exporte.at(-1) }; });
+  assert.equal(z.d.art, "mensch", "eine Stelle geändert: die Entscheidung ist menschlich"); assert.deepEqual(z.d.details.geaendert, ["bild6"]); assert.equal(z.d.details.vorschlag, "jev");
+  assert.equal(z.d.gewaehlt.bild[5], "bild.raster");
+  assert.deepEqual(z.ops.slice(0, 3), ["lab.tempo", "lab.zerlegen", "lab.tonsignal"]);
+  assert.equal(z.ops.at(-1), "lab.raster");
+  assert.equal(z.x.dramaturgie, "zusammenstellung"); assert.equal(z.x.stationen.length, 19); assert.ok(z.x.ton, "mit Tonspur");
   assert.deepEqual(fehler2, []);
   await c.close();
 });

@@ -12,8 +12,9 @@ import { QUELLEN, POLARITAETEN } from "./kern/modulation.js";
 import { KLASSEN, standardParameter } from "./kern/register.js";
 import { TYPEN } from "./kern/typen.js";
 import { AUSSPIELEN, wavSchreiben, rateWandeln, spurenVon } from "./kern/klangwerk.js";
-import { jevVerfuegbar, jevWahl, jevDramaturgie, jevPruefen, jevZustand } from "./jev/jev.js";
-import { DRAMATURGIEN, MERKMALE } from "./jev/fragen.js";
+import { jevVerfuegbar, jevWahl, jevDramaturgie, jevKomposition, jevPruefen, jevZustand } from "./jev/jev.js";
+import { DRAMATURGIEN, MERKMALE, KOMPOSITION_FRAGEN, BILD_EFFEKTE, KLANG_EFFEKTE, AUFBAU, FILM_UEBERGAENGE } from "./jev/fragen.js";
+import * as ZS from "./kern/zusammenstellung.js";
 import * as VS from "./kern/vorschlag.js";
 import { zip } from "../../alpha/the-fictory/zip.js?v=23";
 
@@ -33,7 +34,7 @@ const S = {
   // … oder auf eine frei gewählte Länge in Sekunden (seit 0.1.9), je Ausgang; leer: so lang, wie die Operation rechnet
   laenge: new Map(),
   // Vorschlag für 30 s aus Bild und Klang (kern/vorschlag.js): Auswahl, Messung, Antworten von jev und Regeln, gewählte Dramaturgie
-  vorschlag: { bild: "", ton: "", beginn: 0, messung: null, jev: null, jevFehler: "", regel: null, gewaehlt: null },
+  vorschlag: { bild: "", ton: "", beginn: 0, messung: null, jev: null, jevFehler: "", regel: null, gewaehlt: null, zusammen: null },
   film: { halten: 1.5, uebergang: 1, art: "blende", quelle: "keine", ziel: "halten", tiefe: 0.3, frequenz: 1, signal: "", takt: "", schwelle: 0.2, wiederholen: true, tonspur: "auto", seite: 1280 },
 };
 globalThis.ornamentLab = S;   // für Browsertests und die Konsole
@@ -130,7 +131,7 @@ function zeigeVorschlag30() {
   const passt = v.messung && v.messung.bild === v.bild && v.messung.ton === v.ton && v.messung.beginn === v.beginn;
   const neuWaehlen = (fn) => (ev) => { fn(ev.target.value); zeigeVorschlag30(); };
   const teile = [el("h3", { text: "Animation aus Bild und Klang (30 s)" }),
-    el("small", { text: "Das Lab misst Bild und Klang und schlägt eine Dramaturgie vor: jev, wenn es eingerichtet ist, sonst feste Regeln. jev sieht nur die gemessenen Stufen, nie Bild oder Klang. Du entscheidest." }),
+    el("small", { text: "Das Lab misst Bild und Klang. jev stellt daraus viele Bild- und Klangeffekte zu einem Film zusammen und schlägt eine feste Dramaturgie vor. jev sieht nur die gemessenen Stufen, nie Bild oder Klang. Du entscheidest." }),
     el("div", { class: "vorschlag-wahl" },
       el("label", { class: "regler" }, el("span", { text: "Bild" }), el("select", { id: "vorschlag-bild", onchange: neuWaehlen((x) => { v.bild = x; }) }, ...bilder.map((x) => el("option", { value: x.id, selected: x.id === v.bild, text: x.titel })))),
       el("label", { class: "regler" }, el("span", { text: "Ton" }), el("select", { id: "vorschlag-ton", onchange: neuWaehlen((x) => { v.ton = x; }) }, ...klaenge.map((x) => el("option", { value: x.id, selected: x.id === v.ton, text: x.titel })))),
@@ -139,7 +140,9 @@ function zeigeVorschlag30() {
   if (passt) {
     const m = v.messung.merkmale;
     teile.push(el("p", { class: "startwert", text: `Gemessen. Bild: ${Object.keys(MERKMALE.bild).map((k) => merkmalText(k, m[k])).join(", ")}. Klang (${sekunden(v.messung.werte.dauer)}): ${Object.keys(MERKMALE.klang).map((k) => merkmalText(k, m[k])).join(", ")}.` }));
-    if (v.jevFehler) teile.push(el("small", { class: "hinweis", text: `jev: ${v.jevFehler}. Die Liste kommt darum aus den festen Regeln.` }));
+    if (v.jevFehler) teile.push(el("small", { class: "hinweis", text: `jev: ${v.jevFehler}. Ohne jev wird zufällig zusammengestellt, und die festen Dramaturgien ordnen die Regeln.` }));
+    if (v.zusammen) teile.push(zusammenstellungAnsicht(v));
+    teile.push(el("h4", { class: "oder", text: "oder eine feste Dramaturgie" }));
     const liste = vorschlagListe();
     if (!liste.some((x) => x.dramaturgie === v.gewaehlt)) v.gewaehlt = liste[0]?.dramaturgie ?? null;
     teile.push(el("fieldset", { class: "gruppe dramaturgien" }, el("legend", { text: v.jev ? `Vorschlag von jev (${v.jev.modell})` : "Vorschlag nach festen Regeln" }),
@@ -148,14 +151,62 @@ function zeigeVorschlag30() {
         el("span", {}, artEtikett(x.art), " ", el("b", { text: VS.REZEPTE[x.dramaturgie].name }), x.art === "jev" ? ` p = ${zahl(Math.round(x.p * 100) / 100)}` : ""),
         el("small", { text: `${DRAMATURGIEN[x.dramaturgie].split(": ").slice(1).join(": ")}${x.gruende?.length ? ` (${x.gruende.join("; ")})` : ""}` })))));
     teile.push(el("div", { class: "aktionen" },
-      el("button", { class: "knopf voll", type: "button", id: "vorschlag-rechnen", disabled: Boolean(S.laeuft) || !v.gewaehlt, onclick: vorschlagRechnen, text: "Animation rechnen" }),
+      el("button", { class: `knopf${v.zusammen ? "" : " voll"}`, type: "button", id: "vorschlag-rechnen", disabled: Boolean(S.laeuft) || !v.gewaehlt, onclick: vorschlagRechnen, text: "Dramaturgie rechnen" }),
       el("small", { text: "Danach steht der Film unter «Nacheinander», dort lässt er sich weiter verändern." })));
     const film = S.filme.get("stationen");
-    if (film && film.vorschlag === v.gewaehlt) teile.push(el("div", { class: "film" }, el("video", { src: film.url, controls: true, loop: true, playsinline: true, muted: !film.ton }),
-      el("div", { class: "aktionen" }, el("button", { class: "knopf klein", type: "button", onclick: () => herunterladen(film.blob, film.name), text: `${film.endung.toUpperCase()} speichern` }),
-        el("small", { text: `${sekunden(film.bilder / FPS)}, ${film.breite} × ${film.hoehe}${film.ton ? `, Ton ${film.ton}` : ", ohne Ton"}` }))));
+    if (film && film.vorschlag === v.gewaehlt) teile.push(filmKarte(film));
   }
   ersetze(box, teile);
+}
+const kurzname = (text) => text.split(":")[0];
+const effektName = (frage, wahl) => kurzname(KOMPOSITION_FRAGEN[frage].katalog[wahl]);
+/** die Zusammenstellung: was jev (oder der Zufall) gezogen hat, jede Stelle änderbar; dann rechnen */
+function zusammenstellungAnsicht(v) {
+  const z = v.zusammen, pl = z.plan, quelle = z.jev ? "jev" : "zufall";
+  const stelle = (frage, wert, setze) => {
+    const p = z.jev ? ZS.wahrscheinlichkeit(z.antworten, frage, wert) : null;
+    return el("label", { class: "regler stelle" }, el("span", {}, `${{ aufbau: "Aufbau", uebergang: "Übergang", klang1: "Klang 1", klang2: "Klang 2" }[frage] ?? `Abschnitt ${frage.slice(4)}`}${p !== null ? ` · p = ${zahl(Math.round(p * 100) / 100)}` : ""}`),
+      el("select", { "data-frage": frage, onchange: (ev) => { setze(ev.target.value); z.geaendert.add(frage); zeigeVorschlag30(); } },
+        ...Object.entries(KOMPOSITION_FRAGEN[frage].katalog).map(([k, t]) => el("option", { value: k, selected: k === wert, text: frage === "uebergang" ? t : kurzname(t) }))));
+  };
+  const film = S.filme.get("stationen");
+  return el("fieldset", { class: "gruppe zusammenstellung" },
+    el("legend", { text: z.jev ? `jev stellt zusammen (${z.jev.modell})` : "Zufällig zusammengestellt (ohne jev)" }),
+    el("small", { text: `${ART_NAME[quelle]}: ${z.jev ? "aus den Wahrscheinlichkeiten von jev gezogen" : "gleichverteilt gezogen"}, Startwert ${pl.seed}. Kein Bildeffekt zweimal hintereinander. Jede Stelle lässt sich ändern.` }),
+    el("div", { class: "stellen" },
+      stelle("aufbau", pl.aufbau, (x) => { pl.aufbau = x; }), stelle("uebergang", pl.uebergang, (x) => { pl.uebergang = x; }),
+      stelle("klang1", pl.klang[0], (x) => { pl.klang[0] = x; }), stelle("klang2", pl.klang[1], (x) => { pl.klang[1] = x; }),
+      ...pl.bild.map((b, i) => stelle(`bild${i + 1}`, b, (x) => { pl.bild[i] = x; }))),
+    el("small", { class: "hinweis", text: `${kurzname(AUFBAU[pl.aufbau])}, ${FILM_UEBERGAENGE[pl.uebergang]}. Klang: ${pl.klang.map((k) => kurzname(KLANG_EFFEKTE[k])).join(" → ")}. Bild: ${pl.bild.map((b) => kurzname(BILD_EFFEKTE[b])).join(" → ")}, je ${ZS.VARIANTEN_JE_ABSCHNITT} Varianten.` }),
+    el("div", { class: "aktionen" },
+      el("button", { class: "knopf voll", type: "button", id: "zusammenstellung-rechnen", disabled: Boolean(S.laeuft), onclick: zusammenstellungRechnen, text: "Zusammenstellung rechnen" }),
+      el("button", { class: "knopf leise", type: "button", id: "zusammenstellung-neu", disabled: Boolean(S.laeuft), onclick: () => { v.zusammen = neueZusammenstellung(z.antworten, z.jev); zeigeVorschlag30(); }, text: "neu ziehen" })),
+    film && film.vorschlag === "zusammenstellung" ? filmKarte(film) : null);
+}
+function neueZusammenstellung(antworten, jev) {
+  return { antworten, jev, plan: ZS.zusammenstellen(antworten, neuerStartwert()), geaendert: new Set() };
+}
+async function zusammenstellungRechnen() {
+  const v = S.vorschlag, z = v.zusammen;
+  const herkunft = z.jev ? { quelle: z.jev.quelle, modell: z.jev.modell, antworten: z.antworten, lage: z.jev.lage, zwischengespeichert: z.jev.zwischengespeichert, gefragt: z.jev.zeit } : { verteilung: "gleich", ...(v.jevFehler ? { ohneJev: v.jevFehler } : {}) };
+  // hat der Mensch eine Stelle geändert, ist die Zusammenstellung seine Entscheidung; was gezogen war, steht dabei
+  const wahl = z.geaendert.size ? { art: "mensch", details: { geaendert: [...z.geaendert], vorschlag: z.jev ? "jev" : "zufall", ...herkunft } } : { art: z.jev ? "jev" : "zufall", details: herkunft };
+  await laufen(async (signal) => {
+    const r = await ZS.zusammenstellungRechnen({ register: R, projekt: S.projekt, medien: S.medien, messung: v.messung, plan: z.plan, wahl, seed: S.seed, melden: status, abbrechen: signal });
+    filmPlanUebernehmen(r.plan);
+    S.aktuell = r.ergebnisse.at(-1)?.id ?? S.aktuell; S.seed = neuerStartwert();
+    await stationenFilmRechnen(stationen(), signal, { vorschlag: "zusammenstellung", auswahl: "Zusammenstellung", entscheidung: r.entscheidung.id });
+  });
+}
+/** der Film über Stationen übernimmt einen Plan: so lässt er sich unter «Nacheinander» wie jeder andere weiter verändern */
+function filmPlanUebernehmen(plan) {
+  S.stationen = plan.stationen.map((id) => ({ ergebnis: id }));
+  Object.assign(S.film, { art: plan.art, halten: plan.halten, uebergang: plan.uebergang, quelle: "keine", takt: plan.takt?.ereignisfolge ?? "", schwelle: plan.takt?.schwelle ?? S.film.schwelle, wiederholen: true, tonspur: plan.tonspur, tonBeginn: plan.tonBeginn });
+}
+function filmKarte(film) {
+  return el("div", { class: "film" }, el("video", { src: film.url, controls: true, loop: true, playsinline: true, muted: !film.ton }),
+      el("div", { class: "aktionen" }, el("button", { class: "knopf klein", type: "button", onclick: () => herunterladen(film.blob, film.name), text: `${film.endung.toUpperCase()} speichern` }),
+        el("small", { text: `${sekunden(film.bilder / FPS)}, ${film.breite} × ${film.hoehe}${film.ton ? `, Ton ${film.ton}` : ", ohne Ton"}` })));
 }
 async function vorschlagMachen() {
   const v = S.vorschlag;
@@ -163,13 +214,17 @@ async function vorschlagMachen() {
     status("Bild und Klang werden gemessen …", 0);
     v.messung = await VS.messen({ register: R, projekt: S.projekt, medien: S.medien, bild: v.bild, ton: v.ton, beginn: v.beginn, melden: status, abbrechen: signal });
     v.regel = VS.regelDramaturgie(v.messung.merkmale); v.jev = null; v.jevFehler = ""; v.gewaehlt = null;
+    let komposition = null;
     if (jevVerfuegbar()) {
-      status("jev wird gefragt …");
-      try { v.jev = await jevDramaturgie(VS.jevLage(v.messung)); }
-      catch (f) { v.jevFehler = f.message; }
+      status("jev stellt zusammen …");
+      // beide Fragen zugleich: die Zusammenstellung (zehn Wahlen) und die feste Dramaturgie
+      const [k, d] = await Promise.allSettled([jevKomposition({ merkmale: v.messung.merkmale }), jevDramaturgie(VS.jevLage(v.messung))]);
+      if (k.status === "fulfilled") komposition = k.value; else v.jevFehler = k.reason.message;
+      if (d.status === "fulfilled") v.jev = d.value; else v.jevFehler ||= d.reason.message;
     } else v.jevFehler = `nicht eingerichtet (${jevZustand().grund})`;
-    const erste = vorschlagListe()[0];
-    status(`${v.jev ? `jev (${v.jev.modell}) schlägt vor${v.jev.zwischengespeichert ? ", aus dem Zwischenspeicher" : ""}` : "Die Regeln schlagen vor"}: ${VS.REZEPTE[erste.dramaturgie].name}. Wähle eine Dramaturgie und «Animation rechnen».`);
+    v.zusammen = neueZusammenstellung(komposition?.antworten ?? ZS.gleichverteilt(), komposition);
+    const b = v.zusammen.plan.bild.map((x) => kurzname(BILD_EFFEKTE[x])).join(", ");
+    status(`${komposition ? `jev (${komposition.modell}) hat zusammengestellt${komposition.zwischengespeichert ? ", aus dem Zwischenspeicher" : ""}` : "Zufällig zusammengestellt"}: ${b}. «Zusammenstellung rechnen» oder eine Stelle ändern.`);
   });
 }
 async function vorschlagRechnen() {
@@ -180,9 +235,7 @@ async function vorschlagRechnen() {
   await laufen(async (signal) => {
     const r = await VS.vorschlagAusfuehren({ register: R, projekt: S.projekt, medien: S.medien, messung: v.messung, dramaturgie: v.gewaehlt, wahl, seed: S.seed, melden: status, abbrechen: signal });
     const plan = r.plan;
-    // der Film über Stationen übernimmt den Plan: so lässt er sich unter «Nacheinander» wie jeder andere weiter verändern
-    S.stationen = plan.stationen.map((id) => ({ ergebnis: id }));
-    Object.assign(S.film, { art: plan.art, halten: plan.halten, uebergang: plan.uebergang, quelle: "keine", takt: plan.takt?.ereignisfolge ?? "", schwelle: plan.takt?.schwelle ?? S.film.schwelle, wiederholen: true, tonspur: plan.tonspur, tonBeginn: plan.tonBeginn });
+    filmPlanUebernehmen(plan);
     S.aktuell = r.ergebnisse.at(-1)?.id ?? S.aktuell; S.seed = neuerStartwert();
     await stationenFilmRechnen(stationen(), signal, { vorschlag: v.gewaehlt, auswahl: "Vorschlag", entscheidung: r.entscheidung.id });
     if (plan.hinweis) status(`${letzterStatus[0]} Hinweis: ${plan.hinweis}.`);
@@ -819,7 +872,7 @@ async function stationenFilmRechnen(liste, signal, { vorschlag = null, auswahl =
   S.projekt.exporte.push({ id, art: "stationen", ergebnis: ids.at(-1), stationen: ids, entscheidung: d.id, partitur: pt, zeitplan, datei: name, mime: r.mime, codec: r.codec, ton: r.ton, tonQuelle: r.ton ? tonId : null,
     ...(ton ? { tonBeginn: ton.beginn } : {}), ...(vorschlag ? { dramaturgie: vorschlag } : {}), bilder: r.bilder, fps: FPS, breite: r.breite, hoehe: r.hoehe, sha256: abgelegt.sha256, zeit: new Date().toISOString() });
   const alt = S.filme.get("stationen"); if (alt) URL.revokeObjectURL(alt.url);
-  S.filme.set("stationen", { ...r, vorschlag, url: URL.createObjectURL(r.blob), name: `${slug(S.projekt.titel)}-${vorschlag ? slug(VS.REZEPTE[vorschlag].name) : "stationen"}.${r.endung}` });
+  S.filme.set("stationen", { ...r, vorschlag, url: URL.createObjectURL(r.blob), name: `${slug(S.projekt.titel)}-${vorschlag ? slug(VS.REZEPTE[vorschlag]?.name ?? vorschlag) : "stationen"}.${r.endung}` });
   status(`Film über ${liste.length} Stationen: ${r.bilder} Bilder (${sekunden(r.bilder / FPS)}), ${(r.blob.size / 1e6).toFixed(1)} MB, ${r.codec}${r.ton ? `, Ton ${r.ton}` : tonId ? ", ohne Ton (dieser Browser kodiert keinen)" : ""}.`);
 }
 
@@ -878,7 +931,7 @@ async function oeffnen(datei) {
   try {
     const { projekt, medien, fehlt } = await entpacke(new Uint8Array(await datei.arrayBuffer()));
     projekt.exporte ??= [];
-    S.projekt = projekt; S.medien.uebernehmen(medien); S.filme.clear(); S.tonspur.clear(); S.vergleich.clear(); S.knotenAnsicht = null; S.op = null; S.stationen = null; S.vorschlag = { ...S.vorschlag, messung: null, jev: null, regel: null, gewaehlt: null };
+    S.projekt = projekt; S.medien.uebernehmen(medien); S.filme.clear(); S.tonspur.clear(); S.vergleich.clear(); S.knotenAnsicht = null; S.op = null; S.stationen = null; S.vorschlag = { ...S.vorschlag, messung: null, jev: null, regel: null, gewaehlt: null, zusammen: null };
     const gewaehlt = [...projekt.knoten].reverse().find((k) => k.gewaehlt)?.gewaehlt;
     S.aktuell = gewaehlt ?? projekt.ergebnisse.filter((e) => e.typ === "IMAGE").at(-1)?.id ?? null;
     $("titel").value = projekt.titel; S.ungespeichert = false;
@@ -907,7 +960,7 @@ $("speichern").addEventListener("click", speichern);
 $("oeffnen").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) oeffnen(f); });
 $("neu").addEventListener("click", () => {
   if (S.ungespeichert && !confirm("Das aktuelle Projekt ist nicht gespeichert. Trotzdem neu beginnen?")) return;
-  S.projekt = P.neuesProjekt({ modus: S.modus }); S.medien = browserMedien(); S.aktuell = null; S.op = null; S.filme.clear(); S.tonspur.clear(); S.knotenAnsicht = null; S.stationen = null; S.vorschlag = { ...S.vorschlag, messung: null, jev: null, regel: null, gewaehlt: null }; S.ungespeichert = false;
+  S.projekt = P.neuesProjekt({ modus: S.modus }); S.medien = browserMedien(); S.aktuell = null; S.op = null; S.filme.clear(); S.tonspur.clear(); S.knotenAnsicht = null; S.stationen = null; S.vorschlag = { ...S.vorschlag, messung: null, jev: null, regel: null, gewaehlt: null, zusammen: null }; S.ungespeichert = false;
   $("titel").value = S.projekt.titel; status("Neues Projekt."); alles();
 });
 $("titel").addEventListener("change", (ev) => { S.projekt.titel = ev.target.value.trim() || "Ohne Titel"; geaendert(); });

@@ -50,14 +50,60 @@ export const MERKMALE = Object.freeze({
 const MERKMAL_SCHLUESSEL = [...Object.keys(MERKMALE.bild), ...Object.keys(MERKMALE.klang)];
 const merkmalText = (k, v) => MERKMALE.bild[k]?.[v] ?? MERKMALE.klang[k]?.[v];
 
+/** Zusammenstellung durch jev (seit Lab 0.1.12): für jeden Abschnitt des Films ein Bildeffekt, dazu zwei Klangeffekte nacheinander,
+    der Aufbau und der Übergang. Feste Kataloge, je eine CHOICE-Frage; die Zuordnung zu Operationen steht in kern/zusammenstellung.js */
+export const ABSCHNITTE = 6;
+export const BILD_EFFEKTE = Object.freeze({
+  "bild.feedback": "Feedback-Schleife: das Bild wird immer wieder auf sich selbst gelegt, gezoomt und gedreht, es entsteht ein Sog",
+  "bild.wiederholung": "Wiederholung: das Bild vervielfacht sich im Raster, die Kopien werden grösser und kleiner",
+  "bild.farbe": "Farbe: die Farben drehen sich durch den Farbkreis und werden kräftiger",
+  "bild.komposition": "Komposition: die Symmetrie des Bildes wird verstärkt oder umgekehrt",
+  "bild.glitch": "Glitch: Blöcke verrutschen, Zeilen springen, Farbkanäle trennen sich",
+  "bild.pixelsortierung": "Pixelsortierung: helle Streifen ziehen sich durch das Bild, die Pixel sind nach Helligkeit sortiert",
+  "bild.verzerrung": "Verzerrung: das Bild wird verwirbelt, gewellt oder wie durch eine Linse gesehen",
+  "bild.licht": "Licht: helle Stellen glühen auf und strahlen aus",
+  "bild.raster": "Raster: das Bild wird zu Punkten und Linien wie im Druck",
+  "bild.neusetzen": "Neu setzen: das Bild wird in Kacheln zerlegt und neu zusammengesetzt",
+  "bild.fictory": "Zerfall: das Bild zerfällt in Farbflächen und setzt sich neu zusammen (The Fictory)",
+});
+export const KLANG_EFFEKTE = Object.freeze({
+  "klang.keine": "nichts: der Klang bleibt, wie er ist",
+  "klang.schneller": "schneller: das Tempo steigt um ein Viertel, die Tonhöhe bleibt",
+  "klang.langsamer": "langsamer: das Tempo sinkt um ein Fünftel, die Tonhöhe bleibt",
+  "klang.tiefer": "tiefer: die Tonhöhe sinkt um eine Quarte, das Tempo bleibt",
+  "klang.zerlegt": "zerlegt: der Klang wird an seinen Anschlägen geschnitten und neu geordnet, mit Wiederholungen und Umkehrungen",
+  "klang.rhythmus": "neu rhythmisiert: die Schnitte des Klangs werden auf ein neues, euklidisches Raster gesetzt",
+  "klang.koerner": "Körner: der Klang wird in kleine Körner zerstäubt und zu einer Fläche von 30 Sekunden gestreckt",
+});
+export const AUFBAU = Object.freeze({
+  "aufbau.kette": "Kette: jeder Abschnitt verwandelt das Ergebnis des vorigen weiter, das Bild entfernt sich immer mehr vom Anfang",
+  "aufbau.faecher": "Fächer: jeder Abschnitt geht wieder vom Ausgangsbild aus, die Effekte stehen nebeneinander",
+});
+export const FILM_UEBERGAENGE = Object.freeze({
+  "film.schnitt": "harte Schnitte auf den Anschlägen des Klangs",
+  "film.blende": "weiche Überblendungen im Takt der Anschläge",
+  "film.schwelle": "Übergänge, bei denen die dunklen Stellen des nächsten Bildes zuerst erscheinen",
+});
+const ABSCHNITT_NAMEN = ["Anfang", "Entfaltung", "Verdichtung", "Höhepunkt", "Umbruch", "Ausklang"];
+export const KOMPOSITION_FRAGEN = Object.freeze({
+  aufbau: { katalog: AUFBAU, text: "Wie sollen die Abschnitte aufeinander aufbauen?" },
+  uebergang: { katalog: FILM_UEBERGAENGE, text: "Welche Art von Übergang zwischen den Bildern passt?" },
+  klang1: { katalog: KLANG_EFFEKTE, text: "Welcher Klangeffekt soll zuerst auf den Klang wirken?" },
+  klang2: { katalog: KLANG_EFFEKTE, text: "Welcher Klangeffekt soll danach auf das Ergebnis wirken?" },
+  ...Object.fromEntries(ABSCHNITT_NAMEN.map((n, i) => [`bild${i + 1}`, { katalog: BILD_EFFEKTE, text: `Welcher Bildeffekt prägt Abschnitt ${i + 1} von ${ABSCHNITT_NAMEN.length} («${n}», etwa Sekunde ${i * 5} bis ${i * 5 + 5})?` }])),
+});
+export const FRAGE_KOMPOSITION = "In einem künstlerischen Labor stellt jev aus vielen Bild- und Klangeffekten eine Animation von 30 Sekunden aus einem Bild und einem Klang zusammen; der bearbeitete Klang ist die Tonspur. Gemessen wurden nur die genannten Merkmale. Die Zusammenstellung soll abwechslungsreich sein und aus diesem Bild und diesem Klang hervorgehen.";
+
 /**
- * eine Lage prüfen und bereinigen. Zwei feste Fragen:
+ * eine Lage prüfen und bereinigen. Drei feste Fragen:
  *   { verlauf: [Kennungen, höchstens 8], optionen: [Operationen aus KATALOG, 2–6] }                      nächste Operation
  *   { frage: "dramaturgie", merkmale: { alle Schlüssel aus MERKMALE, je eine Stufe }, optionen: [aus DRAMATURGIEN, 2–6] }
+ *   { frage: "komposition", merkmale: { wie oben } }                     Zusammenstellung, die Optionen sind die festen Kataloge
  */
 export function labLage(roh) {
   if (!roh || typeof roh !== "object" || Array.isArray(roh)) throw new Error("Lage fehlt");
   if (roh.frage === "dramaturgie") return dramaturgieLage(roh);
+  if (roh.frage === "komposition") return kompositionLage(roh);
   const fremd = Object.keys(roh).filter((k) => !["verlauf", "optionen"].includes(k));
   if (fremd.length) throw new Error(`unbekannte Felder: ${fremd.join(", ")}`);
   const verlauf = Array.isArray(roh.verlauf) ? roh.verlauf.slice(-8) : [];
@@ -67,10 +113,7 @@ export function labLage(roh) {
   return { verlauf, optionen };
 }
 
-function dramaturgieLage(roh) {
-  const fremd = Object.keys(roh).filter((k) => !["frage", "merkmale", "optionen"].includes(k));
-  if (fremd.length) throw new Error(`unbekannte Felder: ${fremd.join(", ")}`);
-  const m = roh.merkmale;
+function merkmaleLage(m) {
   if (!m || typeof m !== "object" || Array.isArray(m)) throw new Error("Merkmale fehlen");
   const fremdeMerkmale = Object.keys(m).filter((k) => !MERKMAL_SCHLUESSEL.includes(k));
   if (fremdeMerkmale.length) throw new Error(`unbekannte Merkmale: ${fremdeMerkmale.join(", ")}`);
@@ -79,6 +122,17 @@ function dramaturgieLage(roh) {
     if (typeof m[k] !== "string" || !Object.hasOwn(MERKMALE.bild[k] ?? MERKMALE.klang[k], m[k])) throw new Error(`Merkmal ${k} fehlt oder hat keine gültige Stufe`);
     merkmale[k] = m[k];
   }
+  return merkmale;
+}
+function kompositionLage(roh) {
+  const fremd = Object.keys(roh).filter((k) => !["frage", "merkmale"].includes(k));
+  if (fremd.length) throw new Error(`unbekannte Felder: ${fremd.join(", ")}`);
+  return { frage: "komposition", merkmale: merkmaleLage(roh.merkmale) };
+}
+function dramaturgieLage(roh) {
+  const fremd = Object.keys(roh).filter((k) => !["frage", "merkmale", "optionen"].includes(k));
+  if (fremd.length) throw new Error(`unbekannte Felder: ${fremd.join(", ")}`);
+  const merkmale = merkmaleLage(roh.merkmale);
   const optionen = [...new Set(Array.isArray(roh.optionen) ? roh.optionen : [])];
   if (optionen.length < 2 || optionen.length > 6 || !optionen.every((k) => typeof k === "string" && Object.hasOwn(DRAMATURGIEN, k))) throw new Error("Optionen müssen 2–6 Dramaturgien aus dem Katalog sein");
   return { frage: "dramaturgie", merkmale, optionen };
@@ -88,8 +142,12 @@ export const FRAGE_DRAMATURGIE = "In einem künstlerischen Labor sollen ein Bild
 
 /** feste Frage an jev aus einer geprüften Lage */
 export function labFrage(lage) {
+  const zeile = (gruppe) => Object.keys(MERKMALE[gruppe]).map((k) => merkmalText(k, lage.merkmale[k])).join("; ");
+  if (lage.frage === "komposition") return {
+    zustand: { labor: "ORNAMENT LAB, Animation aus Bild und Klang, von jev zusammengestellt", bild: zeile("bild"), klang: zeile("klang") },
+    fragen: Object.fromEntries(Object.entries(KOMPOSITION_FRAGEN).map(([k, f]) => [k, { type: "choice", instructions: `${FRAGE_KOMPOSITION} ${f.text}`, criteria: { ...f.katalog } }])),
+  };
   if (lage.frage === "dramaturgie") {
-    const zeile = (gruppe) => Object.keys(MERKMALE[gruppe]).map((k) => merkmalText(k, lage.merkmale[k])).join("; ");
     return {
       zustand: { labor: "ORNAMENT LAB, Animation aus Bild und Klang", bild: zeile("bild"), klang: zeile("klang") },
       fragen: { wahl: { type: "choice", instructions: FRAGE_DRAMATURGIE, criteria: Object.fromEntries(lage.optionen.map((k) => [k, DRAMATURGIEN[k]])) } },

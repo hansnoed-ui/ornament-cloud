@@ -8,6 +8,7 @@
 //   GET  wahl.php                                 → { bereit: true|false, grund? }   (kostet nichts, fragt jev nicht)
 //   POST wahl.php  { verlauf: [...], optionen: [...] }  → { wahrscheinlichkeiten: { "lab.feedback": 0.6, … }, modell, zwischengespeichert }
 //   POST wahl.php  { frage: "dramaturgie", merkmale: {...}, optionen: [...] }  → ebenso, für die Animation aus Bild und Klang (seit Lab 0.1.11)
+//   POST wahl.php  { frage: "komposition", merkmale: {...} }  → { antworten: { aufbau: {…}, klang1: {…}, bild1: {…}, … }, modell, … } (seit 0.1.12)
 //
 // Was die Zwischenstelle annimmt: nur POST von https://ornament.cloud (Origin), JSON, höchstens 2000 Bytes, nur eine Lage, die dieselben
 // Regeln erfüllt wie labLage() in fragen.js (Kennungen aus dem festen Katalog, keine freien Texte). Die Frage baut sie selbst mit festem
@@ -66,6 +67,53 @@ const MERKMALE = [
 ];
 const FRAGE_DRAMATURGIE = 'In einem künstlerischen Labor sollen ein Bild und ein Klang zu einer Animation von 30 Sekunden werden; der Klang ist die Tonspur. Gemessen wurden nur die genannten Merkmale. Bei welcher der folgenden Dramaturgien geht die Bewegung am ehesten aus diesem Bild und diesem Klang hervor, statt ihnen von aussen übergestülpt zu werden?';
 
+const BILD_EFFEKTE = [
+  'bild.feedback' => 'Feedback-Schleife: das Bild wird immer wieder auf sich selbst gelegt, gezoomt und gedreht, es entsteht ein Sog',
+  'bild.wiederholung' => 'Wiederholung: das Bild vervielfacht sich im Raster, die Kopien werden grösser und kleiner',
+  'bild.farbe' => 'Farbe: die Farben drehen sich durch den Farbkreis und werden kräftiger',
+  'bild.komposition' => 'Komposition: die Symmetrie des Bildes wird verstärkt oder umgekehrt',
+  'bild.glitch' => 'Glitch: Blöcke verrutschen, Zeilen springen, Farbkanäle trennen sich',
+  'bild.pixelsortierung' => 'Pixelsortierung: helle Streifen ziehen sich durch das Bild, die Pixel sind nach Helligkeit sortiert',
+  'bild.verzerrung' => 'Verzerrung: das Bild wird verwirbelt, gewellt oder wie durch eine Linse gesehen',
+  'bild.licht' => 'Licht: helle Stellen glühen auf und strahlen aus',
+  'bild.raster' => 'Raster: das Bild wird zu Punkten und Linien wie im Druck',
+  'bild.neusetzen' => 'Neu setzen: das Bild wird in Kacheln zerlegt und neu zusammengesetzt',
+  'bild.fictory' => 'Zerfall: das Bild zerfällt in Farbflächen und setzt sich neu zusammen (The Fictory)',
+];
+const KLANG_EFFEKTE = [
+  'klang.keine' => 'nichts: der Klang bleibt, wie er ist',
+  'klang.schneller' => 'schneller: das Tempo steigt um ein Viertel, die Tonhöhe bleibt',
+  'klang.langsamer' => 'langsamer: das Tempo sinkt um ein Fünftel, die Tonhöhe bleibt',
+  'klang.tiefer' => 'tiefer: die Tonhöhe sinkt um eine Quarte, das Tempo bleibt',
+  'klang.zerlegt' => 'zerlegt: der Klang wird an seinen Anschlägen geschnitten und neu geordnet, mit Wiederholungen und Umkehrungen',
+  'klang.rhythmus' => 'neu rhythmisiert: die Schnitte des Klangs werden auf ein neues, euklidisches Raster gesetzt',
+  'klang.koerner' => 'Körner: der Klang wird in kleine Körner zerstäubt und zu einer Fläche von 30 Sekunden gestreckt',
+];
+const AUFBAU = [
+  'aufbau.kette' => 'Kette: jeder Abschnitt verwandelt das Ergebnis des vorigen weiter, das Bild entfernt sich immer mehr vom Anfang',
+  'aufbau.faecher' => 'Fächer: jeder Abschnitt geht wieder vom Ausgangsbild aus, die Effekte stehen nebeneinander',
+];
+const FILM_UEBERGAENGE = [
+  'film.schnitt' => 'harte Schnitte auf den Anschlägen des Klangs',
+  'film.blende' => 'weiche Überblendungen im Takt der Anschläge',
+  'film.schwelle' => 'Übergänge, bei denen die dunklen Stellen des nächsten Bildes zuerst erscheinen',
+];
+const ABSCHNITT_NAMEN = ['Anfang', 'Entfaltung', 'Verdichtung', 'Höhepunkt', 'Umbruch', 'Ausklang'];
+const FRAGE_KOMPOSITION = 'In einem künstlerischen Labor stellt jev aus vielen Bild- und Klangeffekten eine Animation von 30 Sekunden aus einem Bild und einem Klang zusammen; der bearbeitete Klang ist die Tonspur. Gemessen wurden nur die genannten Merkmale. Die Zusammenstellung soll abwechslungsreich sein und aus diesem Bild und diesem Klang hervorgehen.';
+
+/** die Fragen der Zusammenstellung, wie KOMPOSITION_FRAGEN in fragen.js */
+function kompositionFragen(): array {
+  $f = [
+    'aufbau' => [AUFBAU, 'Wie sollen die Abschnitte aufeinander aufbauen?'],
+    'uebergang' => [FILM_UEBERGAENGE, 'Welche Art von Übergang zwischen den Bildern passt?'],
+    'klang1' => [KLANG_EFFEKTE, 'Welcher Klangeffekt soll zuerst auf den Klang wirken?'],
+    'klang2' => [KLANG_EFFEKTE, 'Welcher Klangeffekt soll danach auf das Ergebnis wirken?'],
+  ];
+  $n = count(ABSCHNITT_NAMEN);
+  foreach (ABSCHNITT_NAMEN as $i => $name) $f['bild' . ($i + 1)] = [BILD_EFFEKTE, 'Welcher Bildeffekt prägt Abschnitt ' . ($i + 1) . " von $n («" . $name . '», etwa Sekunde ' . ($i * 5) . ' bis ' . ($i * 5 + 5) . ')?'];
+  return $f;
+}
+
 function antwort(array $daten, int $status = 200): void {
   http_response_code($status);
   header('Content-Type: application/json; charset=utf-8');
@@ -102,6 +150,7 @@ function schluessel(?string $ordner): ?string {
 function lage($roh): array {
   if (!is_array($roh) || ($roh !== [] && array_keys($roh) === range(0, count($roh) - 1))) throw new InvalidArgumentException('Lage fehlt');
   if (($roh['frage'] ?? null) === 'dramaturgie') return dramaturgieLage($roh);
+  if (($roh['frage'] ?? null) === 'komposition') return kompositionLage($roh);
   $fremd = array_diff(array_keys($roh), ['verlauf', 'optionen']);
   if ($fremd) throw new InvalidArgumentException('unbekannte Felder: ' . implode(', ', $fremd));
   $verlauf = (isset($roh['verlauf']) && is_array($roh['verlauf'])) ? array_slice(array_values($roh['verlauf']), -8) : [];
@@ -115,19 +164,16 @@ function lage($roh): array {
   return ['verlauf' => $verlauf, 'optionen' => $optionen];
 }
 
+function kompositionLage(array $roh): array {
+  $fremd = array_diff(array_keys($roh), ['frage', 'merkmale']);
+  if ($fremd) throw new InvalidArgumentException('unbekannte Felder: ' . implode(', ', $fremd));
+  return ['frage' => 'komposition', 'merkmale' => merkmaleLage($roh['merkmale'] ?? null)];
+}
+
 function dramaturgieLage(array $roh): array {
   $fremd = array_diff(array_keys($roh), ['frage', 'merkmale', 'optionen']);
   if ($fremd) throw new InvalidArgumentException('unbekannte Felder: ' . implode(', ', $fremd));
-  $m = $roh['merkmale'] ?? null;
-  if (!is_array($m) || ($m !== [] && array_keys($m) === range(0, count($m) - 1))) throw new InvalidArgumentException('Merkmale fehlen');
-  $stufen = MERKMALE['bild'] + MERKMALE['klang'];
-  $fremd = array_diff(array_keys($m), array_keys($stufen));
-  if ($fremd) throw new InvalidArgumentException('unbekannte Merkmale: ' . implode(', ', $fremd));
-  $merkmale = [];
-  foreach ($stufen as $k => $werte) {
-    if (!isset($m[$k]) || !is_string($m[$k]) || !array_key_exists($m[$k], $werte)) throw new InvalidArgumentException("Merkmal $k fehlt oder hat keine gültige Stufe");
-    $merkmale[$k] = $m[$k];
-  }
+  $merkmale = merkmaleLage($roh['merkmale'] ?? null);
   $optionen = [];
   foreach ((isset($roh['optionen']) && is_array($roh['optionen'])) ? array_values($roh['optionen']) : [] as $k) {
     if (!is_string($k) || !isset(DRAMATURGIEN[$k])) throw new InvalidArgumentException('Optionen müssen 2–6 Dramaturgien aus dem Katalog sein');
@@ -137,14 +183,32 @@ function dramaturgieLage(array $roh): array {
   return ['frage' => 'dramaturgie', 'merkmale' => $merkmale, 'optionen' => $optionen];
 }
 
+function merkmaleLage($m): array {
+  if (!is_array($m) || ($m !== [] && array_keys($m) === range(0, count($m) - 1))) throw new InvalidArgumentException('Merkmale fehlen');
+  $stufen = MERKMALE['bild'] + MERKMALE['klang'];
+  $fremd = array_diff(array_keys($m), array_keys($stufen));
+  if ($fremd) throw new InvalidArgumentException('unbekannte Merkmale: ' . implode(', ', $fremd));
+  $merkmale = [];
+  foreach ($stufen as $k => $werte) {
+    if (!isset($m[$k]) || !is_string($m[$k]) || !array_key_exists($m[$k], $werte)) throw new InvalidArgumentException("Merkmal $k fehlt oder hat keine gültige Stufe");
+    $merkmale[$k] = $m[$k];
+  }
+  return $merkmale;
+}
+
 /** feste Frage an jev, wie labFrage() in fragen.js */
 function frage(array $lage): array {
+  $zeile = function (string $gruppe) use ($lage): string {
+    $teile = [];
+    foreach (MERKMALE[$gruppe] as $k => $werte) $teile[] = $werte[$lage['merkmale'][$k]];
+    return implode('; ', $teile);
+  };
+  if (($lage['frage'] ?? null) === 'komposition') {
+    $fragen = [];
+    foreach (kompositionFragen() as $k => [$katalog, $text]) $fragen[$k] = ['type' => 'choice', 'instructions' => FRAGE_KOMPOSITION . ' ' . $text, 'criteria' => $katalog];
+    return ['zustand' => ['labor' => 'ORNAMENT LAB, Animation aus Bild und Klang, von jev zusammengestellt', 'bild' => $zeile('bild'), 'klang' => $zeile('klang')], 'fragen' => $fragen];
+  }
   if (($lage['frage'] ?? null) === 'dramaturgie') {
-    $zeile = function (string $gruppe) use ($lage): string {
-      $teile = [];
-      foreach (MERKMALE[$gruppe] as $k => $werte) $teile[] = $werte[$lage['merkmale'][$k]];
-      return implode('; ', $teile);
-    };
     $kriterien = [];
     foreach ($lage['optionen'] as $k) $kriterien[$k] = DRAMATURGIEN[$k];
     return [
@@ -236,7 +300,7 @@ $speicher = $ordner . '/jev-lab/zwischen';
 $datei = $speicher . '/' . hash('sha256', json_encode([$modell, $l])) . '.json';
 if (is_file($datei) && filemtime($datei) > time() - HALTBAR) {
   $alt = json_decode((string) file_get_contents($datei), true);
-  if (is_array($alt) && isset($alt['wahrscheinlichkeiten'])) antwort($alt + ['zwischengespeichert' => true]);
+  if (is_array($alt) && (isset($alt['wahrscheinlichkeiten']) || isset($alt['antworten']))) antwort($alt + ['zwischengespeichert' => true]);
 }
 
 // Kostengrenze für alle zusammen; der Aufruf wird vorher gezählt, damit gleichzeitige Fragen sie nicht überschreiten
@@ -256,7 +320,7 @@ curl_setopt_array($c, [
   CURLOPT_POSTFIELDS => json_encode(['model' => $modell, 'state' => $fr['zustand'], 'questions' => $fr['fragen']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_CONNECTTIMEOUT => 4,
-  CURLOPT_TIMEOUT => 12,
+  CURLOPT_TIMEOUT => ($l['frage'] ?? null) === 'komposition' ? 25 : 12,   // zehn Fragen auf einmal brauchen länger
   CURLOPT_FOLLOWLOCATION => false,
   CURLOPT_PROTOCOLS => CURLPROTO_HTTPS | CURLPROTO_HTTP,
 ]);
@@ -268,10 +332,23 @@ if ($status === 401 || $status === 403) antwort(['fehler' => 'jev hat den Schlü
 if ($status === 402 || $status === 429) antwort(['fehler' => "jev: Kontingent oder Guthaben erschöpft (HTTP $status)"], 502);
 if ($status < 200 || $status >= 300) antwort(['fehler' => "jev: HTTP $status"], 502);
 $j = json_decode((string) $roh, true);
-$p = $j['answers']['wahl']['probabilities'] ?? null;
-if (!is_array($p)) antwort(['fehler' => 'jev: unerwartete Antwort'], 502);
-$w = [];
-foreach ($l['optionen'] as $o) $w[$o] = max(0.0, min(1.0, (float) (is_numeric($p[$o] ?? null) ? $p[$o] : 0)));
-$daten = ['wahrscheinlichkeiten' => $w, 'modell' => is_string($j['model'] ?? null) ? kurz($j['model'], 60) : 'jev'];
+/** die Wahrscheinlichkeiten einer Frage, nur für ihre Optionen, auf 0…1 begrenzt; null, wenn jev sie nicht beantwortet hat */
+$lies = function (string $frage, array $optionen) use ($j): ?array {
+  $p = $j['answers'][$frage]['probabilities'] ?? null;
+  if (!is_array($p)) return null;
+  $w = [];
+  foreach ($optionen as $o) $w[$o] = max(0.0, min(1.0, (float) (is_numeric($p[$o] ?? null) ? $p[$o] : 0)));
+  return $w;
+};
+$modell = is_string($j['model'] ?? null) ? kurz($j['model'], 60) : 'jev';
+if (($l['frage'] ?? null) === 'komposition') {
+  $antworten = [];
+  foreach ($fr['fragen'] as $k => $q) { $w = $lies($k, array_keys($q['criteria'])); if ($w === null) antwort(['fehler' => 'jev: unerwartete Antwort'], 502); $antworten[$k] = $w; }
+  $daten = ['antworten' => $antworten, 'modell' => $modell];
+} else {
+  $w = $lies('wahl', $l['optionen']);
+  if ($w === null) antwort(['fehler' => 'jev: unerwartete Antwort'], 502);
+  $daten = ['wahrscheinlichkeiten' => $w, 'modell' => $modell];
+}
 @file_put_contents($datei, json_encode($daten, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX);
 antwort($daten + ['zwischengespeichert' => false]);
