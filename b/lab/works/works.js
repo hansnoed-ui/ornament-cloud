@@ -44,9 +44,14 @@ if (html.classList.contains("uebersicht")) {
   // phase: Stellung des Rings (Index der vorderen Karte, als Kommazahl während der Drehung); vorn: 0 = Ring, 1 = vordere Karte auf der Bühne.
   const L = dias.length;
   const schmal = matchMedia("(max-width: 759px)");
+  // Filme auf der Bühne nur mit Maus: auf Telefonen (Chrome auf Android) liess ein Film in einer bewegten Karte den Bildschirm flackern,
+  // dort bleibt das Standbild stehen
+  const filme = matchMedia("(hover: hover) and (pointer: fine)");
   let phase = 0, vorn = 0, i = 0, laeuft = false, ende = 0;
   const glatt = (t) => (1 - Math.cos(Math.PI * t)) / 2;   // sanft an- und auslaufend, ohne Ruck in der Mitte
+  const setze = (d, k, v) => { if (d.style[k] !== v) d.style[k] = v; };
   const zeichne = () => {
+    const rang = [];
     const R = schmal.matches ? 34 : 30, H = schmal.matches ? 30 : 34;   // Halbmesser des Rings in vw, Höhe der Ellipse in vh
     dias.forEach((d, j) => {
       let k = (((j - phase) % L) + L) % L;
@@ -56,10 +61,13 @@ if (html.classList.contains("uebersicht")) {
       let x = Math.sin(w) * R, y = (tiefe - 0.5) * H - 7, s = schmal.matches ? 0.17 + 0.27 * tiefe : 0.11 + 0.19 * tiefe, o = 0.55 + 0.45 * tiefe, dreh = -Math.sin(w) * 34;
       const vorne = Math.abs(k) < 0.001;
       if (vorne) { x *= 1 - vorn; y *= 1 - vorn; s += (1 - s) * vorn; dreh *= 1 - vorn; o = 1; } else o *= 1 - vorn;
-      d.style.setProperty("--x", x.toFixed(3)); d.style.setProperty("--y", y.toFixed(3)); d.style.setProperty("--s", s.toFixed(4));
-      d.style.setProperty("--o", o.toFixed(3)); d.style.setProperty("--dreh", dreh.toFixed(2));
-      d.style.setProperty("--z", String(Math.round(tiefe * 200) + (vorne ? 1 : 0)));
+      // Transform und Deckkraft direkt setzen (keine CSS-Variablen, die bis in Bild und Film vererbt würden), und nur, was sich ändert
+      setze(d, "transform", `translate(${x.toFixed(3)}vw, ${y.toFixed(3)}vh) scale(${s.toFixed(4)}) rotateY(${dreh.toFixed(2)}deg)`);
+      setze(d, "opacity", o.toFixed(3));
+      rang.push([tiefe + (vorne ? 1 : 0), d]);
     });
+    // Stapelfolge nach Rang statt nach Tiefe: z-index ändert sich nur, wenn zwei Karten wirklich die Plätze tauschen
+    rang.sort((a, b) => a[0] - b[0]).forEach(([, d], n) => setze(d, "zIndex", String(n + 1)));
   };
   const bewege = (zu, ms) => new Promise((fertig) => {
     const von = { phase, vorn }, t0 = performance.now();
@@ -85,7 +93,7 @@ if (html.classList.contains("uebersicht")) {
     await bewege({ vorn: 1 }, 1100);
     imRing(false); d.classList.add("ist");
     for (const x of dias) $(".dia-flaeche", x)?.setAttribute("tabindex", x === d ? "0" : "-1");
-    if (d.classList.contains("hat-film")) spiele($("video", d), true).then((ok) => ok && d.classList.add("spielt"));
+    if (filme.matches && d.classList.contains("hat-film")) spiele($("video", d), true).then((ok) => ok && d.classList.add("spielt"));
   };
   /** den Ring um d Karten drehen und die neue vordere Karte nach vorn holen */
   const drehe = async (d) => {
@@ -154,7 +162,7 @@ if (html.classList.contains("uebersicht")) {
     const d = dias[i];
     if (a === "buehne") {
       dockSetzen({ text: d.dataset.text, href: d.dataset.href, bild: d.dataset.bild });
-      if (vorn === 1 && d.classList.contains("hat-film")) spiele($("video", d), true).then((ok) => ok && d.classList.add("spielt"));
+      if (vorn === 1 && filme.matches && d.classList.contains("hat-film")) spiele($("video", d), true).then((ok) => ok && d.classList.add("spielt"));
     } else {
       spiele($("video", d), false); d.classList.remove("spielt");
       const n = $$("a.werk:not(.platzhalter)").length;
