@@ -15,6 +15,7 @@ const { fuehreAus, bildfolge, regelVorschlaege, experiment, ketteAnwenden } = aw
 const { packe, entpacke } = await lab("kern/archiv.js");
 const { fingerabdruck, neuesBild } = await lab("kern/bilddaten.js");
 const K = await lab("kern/komposition.js");
+const ST = await lab("kern/stationen.js");
 
 /** synthetisches Bild: Verlauf mit Scheibe und Balken */
 function bild(w = 96, h = 72) {
@@ -263,8 +264,8 @@ test("Archiv mit Ton und alte Projekte: Tondatei kommt unverändert mit, Projekt
   assert.deepEqual(fehlt.filter((d) => d === "medien/t.wav"), []);
   assert.deepEqual(medien.get("medien/t.wav"), wav);
   assert.equal(projekt.ergebnisse.find((x) => x.typ === "AUDIO").ton.abtastrate, 44100);
-  assert.equal(projekt.formatVersion, "0.4.0");
-  for (const v of ["0.1.0", "0.2.0", "0.3.0"]) assert.doesNotThrow(() => P.ladeProjekt({ ...P.neuesProjekt(), formatVersion: v, labVersion: "0.1.0" }), v);
+  assert.equal(projekt.formatVersion, "0.5.0");
+  for (const v of ["0.1.0", "0.2.0", "0.3.0", "0.4.0"]) assert.doesNotThrow(() => P.ladeProjekt({ ...P.neuesProjekt(), formatVersion: v, labVersion: "0.1.0" }), v);
 });
 
 /** Scheibe auf gleichmässigem Grund, für Schwerpunkt und Ausschnitt */
@@ -361,6 +362,115 @@ test("Komposition im Lab: Profil als Befund, Zielprofil aus einem anderen Bild, 
   assert.ok(s.ergebnisse[0].typ === "CONTROL_SIGNAL");
   p.ergebnisse.push({ ...ziel, id: "e-falsch", daten: { art: "anderes" } });
   await assert.rejects(fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.komposition", eingaben: { bild: e.id, profil: "e-falsch" } } }), /kein kompositorisches Profil/);
+});
+
+/** Material → Feedback (sechs Varianten) → Farbe: Stationen mit und ohne eigenen Verlauf */
+async function mitStationen() {
+  const x = mitMaterial();
+  const f = await fuehreAus({ register: x.r, projekt: x.p, medien: x.m, auftrag: { operation: "lab.feedback", eingaben: { bild: x.e.id }, parameter: { iterationen: 8, seite: 48 }, seed: 3,
+    variation: { anzahl: 3, routen: [{ ziel: "drehung", tiefe: 0.5, modulator: { quelle: "sinus" } }] } } });
+  P.waehleVariante(x.p, f.ergebnisse[1].id);
+  const c = await fuehreAus({ register: x.r, projekt: x.p, medien: x.m, auftrag: { operation: "lab.farbe", eingaben: { bild: f.ergebnisse[1].id }, parameter: { farbdrehung: 120 } } });
+  return { ...x, f, c };
+}
+
+test("Stationen: Partitur aus dem Verlauf, Halten und Übergang, Verlauf nur wo eine Station aus der vorigen entstanden ist", async () => {
+  const { p, e, f, c } = await mitStationen();
+  const ids = ST.stationenAusVerlauf(p, c.ergebnisse[0].id);
+  assert.deepEqual(ids, [e.id, f.ergebnisse[1].id, c.ergebnisse[0].id], "Material, Feedback, Farbe");
+  assert.ok(ST.verlaufMoeglich(p, e.id, f.ergebnisse[1].id));
+  assert.ok(!ST.verlaufMoeglich(p, f.ergebnisse[0].id, f.ergebnisse[2].id), "Geschwister entstehen nicht auseinander");
+  const pt = ST.partitur(p, { stationen: ids, halten: 1, uebergang: 0.5, art: "blende" });
+  assert.deepEqual(pt.folge.map((x) => [x.beginn, x.halten, x.uebergang?.art, x.uebergang?.dauer]), [[0, 1, "blende", 0.5], [1.5, 1, "blende", 0.5], [3, 1, undefined, undefined]]);
+  assert.equal(pt.dauer, 4); assert.equal(pt.bilder, 120); assert.equal(pt.offen, 0);
+  // Verlauf der Operation: eigene Länge, bei Geschwistern Überblendung mit Hinweis; Übergang je Station
+  const v = ST.partitur(p, { stationen: [e.id, f.ergebnisse[1].id, { ergebnis: f.ergebnisse[0].id, uebergang: "schnitt" }, f.ergebnisse[2].id], art: "verlauf", halten: 1, uebergang: 1 });
+  assert.deepEqual(v.folge.slice(0, 3).map((x) => x.uebergang.art), ["verlauf", "blende", "schnitt"]);
+  assert.equal(v.folge[0].uebergang.dauer, null); assert.equal(v.offen, 1);
+  assert.match(v.folge[1].uebergang.hinweis, /nicht aus dieser entstanden/);
+  assert.equal(v.folge[2].uebergang.dauer, 0);
+  assert.throws(() => ST.partitur(p, { stationen: [e.id] }), /mindestens zwei/);
+  assert.throws(() => ST.partitur(p, { stationen: [e.id, "e-gibtsnicht"] }), /kein Bild/);
+  assert.throws(() => ST.partitur(p, { stationen: [e.id, c.ergebnisse[0].id], halten: 10, uebergang: 6, takt: null, fps: 400 }), /Grenze/);
+  const grenzen = ST.partitur(p, { stationen: [e.id, c.ergebnisse[0].id], halten: 99, uebergang: -3 });
+  assert.deepEqual([grenzen.halten, grenzen.uebergang], [10, 0], "Zeitparameter sind hart begrenzt");
+});
+
+test("Stationen: dieselbe Modulation verteilt die Dauern über die Stationen (Rampe, Steuersignal)", async () => {
+  const { p, e, f, c, r, m } = await mitStationen();
+  const ids = [e.id, ...f.ergebnisse.map((x) => x.id), c.ergebnisse[0].id];
+  const rampe = ST.partitur(p, { stationen: ids, halten: 2, uebergang: 1, routen: [{ ziel: "halten", tiefe: 0.2, modulator: { quelle: "saege", frequenz: 0.9 } }] });
+  const h = rampe.folge.map((x) => x.halten);
+  assert.ok(h.slice(0, -1).every((x, i) => x < h[i + 1]), `das Halten wächst über die Stationen: ${h}`);
+  assert.equal(rampe.folge[0].stelle, 0); assert.equal(rampe.folge.at(-1).stelle, 1);
+  // ein Bildsignal als Quelle: wird über die Kennung aufgelöst und nicht ins Protokoll kopiert
+  const s = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.bildsignal", eingaben: { bild: e.id } } });
+  const mitSignal = ST.partitur(p, { stationen: ids, routen: [{ ziel: "uebergang", tiefe: 0.5, modulator: { quelle: "signal", ergebnis: s.ergebnisse[0].id } }] });
+  assert.equal(new Set(mitSignal.folge.slice(0, -1).map((x) => x.uebergang.dauer)).size > 1, true, "die Übergänge folgen dem Signal");
+  assert.equal(mitSignal.routen[0].modulator.signal, undefined);
+});
+
+test("Stationen im Takt: Einsätze eines Tons lösen die Wechsel aus, reihum bis die Einsätze aufgebraucht sind, Tonspur aus derselben Messung", async () => {
+  const { p, m, e, r, t } = mitTon();
+  const s = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.tonsignal", eingaben: { ton: t.id } } });
+  const folge = s.ergebnisse[1], einsaetze = folge.daten.ereignisse.map((x) => x.t);
+  const b = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.farbe", eingaben: { bild: e.id }, parameter: { farbdrehung: 90 } } });
+  const pt = ST.partitur(p, { stationen: [e.id, b.ergebnisse[0].id], halten: 1, uebergang: 0.2, art: "blende", takt: { ereignisfolge: folge.id, schwelle: 0, wiederholen: true } });
+  assert.equal(pt.takt.ton, t.id, "der gemessene Ton wird Tonspur");
+  assert.equal(pt.folge.length, Math.min(einsaetze.length + 1, 48 * 8));
+  for (let j = 0; j < 3; j++) assert.ok(Math.abs(pt.folge[j].beginn + pt.folge[j].halten - einsaetze[j]) < 1e-3, `Wechsel ${j} beim Einsatz ${einsaetze[j]}`);
+  assert.deepEqual(pt.folge.slice(0, 4).map((x) => x.ergebnis), [e.id, b.ergebnisse[0].id, e.id, b.ergebnisse[0].id], "reihum");
+  assert.ok(Math.abs(pt.dauer - 6) < 0.04, `der Film dauert so lang wie der Ton: ${pt.dauer}`);
+  const ohne = ST.partitur(p, { stationen: [e.id, b.ergebnisse[0].id], halten: 1, uebergang: 0.2, takt: { ereignisfolge: folge.id, schwelle: 0 } });
+  assert.equal(ohne.folge.length, 2);
+  folge.daten = { ...folge.daten, ereignisse: folge.daten.ereignisse.map((x) => ({ ...x, staerke: 0.3 })) };
+  assert.throws(() => ST.partitur(p, { stationen: [e.id, b.ergebnisse[0].id], takt: { ereignisfolge: folge.id, schwelle: 0.5 } }), /keine Einsätze/);
+  assert.throws(() => ST.partitur(p, { stationen: [e.id, b.ergebnisse[0].id], takt: { ereignisfolge: s.ergebnisse[0].id } }), /Ereignisfolge/);
+});
+
+test("Stationen: die Bilder des Films folgen der Partitur, Verläufe mit eigener und mit fester Länge, alles reproduzierbar", async () => {
+  const { p, m, e, f, c, r } = await mitStationen();
+  const ids = ST.stationenAusVerlauf(p, c.ergebnisse[0].id);
+  const rechne = async (plan) => {
+    const pt = ST.partitur(p, plan), zeitplan = [], bilder = [];
+    for await (const b of ST.filmbilder({ register: r, projekt: p, medien: m, partitur: pt, seite: 40, zeitplan })) bilder.push(b);
+    return { pt, zeitplan, bilder };
+  };
+  const a = await rechne({ stationen: ids, halten: 0.5, uebergang: 0.5, art: "schwelle" });
+  assert.equal(a.bilder.length, a.pt.bilder);
+  assert.ok(a.bilder.every((b) => b.width === 40 && b.height === 30), "eingepasst auf die Filmgrösse");
+  assert.equal(a.bilder[0], a.bilder[1], "gehaltene Bilder sind dasselbe Objekt");
+  assert.deepEqual(a.zeitplan.map((x) => [x.ab, x.bilder]), [[0, 30], [1, 30], [2, 15]]);
+  const zwei = await rechne({ stationen: ids, halten: 0.5, uebergang: 0.5, art: "schwelle" });
+  assert.deepEqual(zwei.bilder.map(fingerabdruck), a.bilder.map(fingerabdruck));
+  // Verlauf mit eigener Länge: das Feedback zeigt seine 9 Bilder (8 Iterationen), dann hält die Station
+  const v = await rechne({ stationen: ids.slice(0, 2), halten: 0.2, art: "verlauf" });
+  assert.equal(v.zeitplan[0].bilder, 6 + 9);
+  assert.equal(v.bilder.length, 6 + 9 + 6);
+  // Verlauf mit fester Länge (Schnitt im Takt): gleichmässig ausgewählte Bilder des Verlaufs, letztes = Ziel
+  const pt = ST.partitur(p, { stationen: ids.slice(0, 2), halten: 0.2, uebergang: 0.2, art: "verlauf" });
+  pt.folge[0].uebergang.dauer = 0.2;   // wie im Takt
+  const fest = [];
+  for await (const b of ST.filmbilder({ register: r, projekt: p, medien: m, partitur: pt, seite: 48 })) fest.push(b);
+  assert.equal(fest.length, 6 + 6 + 6);
+  assert.notEqual(fingerabdruck(fest[6]), fingerabdruck(fest[11]), "der Verlauf bewegt sich");
+  assert.equal(fest[12], fest[17], "danach hält die Station");
+  void e; void f;
+});
+
+test("Stationen im Projekt: Film als Export mit Partitur, Format 0.5.0 prüft die Verweise, alte Projekte bleiben gültig", async () => {
+  const { p, c, e } = await mitStationen();
+  const pt = ST.partitur(p, { stationen: ST.stationenAusVerlauf(p, c.ergebnisse[0].id) });
+  p.exporte.push({ id: "x-1", art: "stationen", ergebnis: c.ergebnisse[0].id, stationen: pt.folge.map((x) => x.ergebnis), partitur: pt, datei: "medien/x-1-stationen.mp4" });
+  assert.deepEqual(P.pruefeProjekt(p), []);
+  p.exporte.push({ id: "x-2", art: "stationen", stationen: [e.id, "e-weg"] });
+  assert.match(P.pruefeProjekt(p).join(), /Station e-weg ist kein Bild/);
+  p.exporte.pop();
+  const { projekt, fehlt } = await entpacke(packe(p, new Map()));
+  assert.deepEqual(projekt.exporte[0].partitur, pt);
+  assert.ok(fehlt.includes("medien/x-1-stationen.mp4"), "eine fehlende Filmdatei wird gemeldet");
+  const alt = { ...P.neuesProjekt(), formatVersion: "0.4.0" }; delete alt.exporte;
+  assert.doesNotThrow(() => P.ladeProjekt(alt), "Projekte ohne Exporte öffnen weiter");
 });
 
 test("Typfehler und fehlende Eingänge: Knoten bleibt mit Fehler im Protokoll", async () => {

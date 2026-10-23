@@ -1,4 +1,4 @@
-# Projektformat `ornament-lab-projekt` 0.4.0
+# Projektformat `ornament-lab-projekt` 0.5.0
 
 Ein Projekt ist ein ZIP-Archiv (`<titel>.ornalab.zip`) mit diesem Inhalt:
 
@@ -8,6 +8,7 @@ medien/<id>.png       Bildergebnisse und Material (verlustfrei)
 medien/<id>.json      Konstellationen, Steuersignale, Ereignisfolgen, Befunde
 medien/<id>.wav|mp3|ogg|flac|m4a|…   Tonmaterial, unverändert (seit 0.4.0)
 medien/<id>-animation.mp4|webm   exportierte Animationen
+medien/<id>-stationen.mp4|webm   Filme über Stationen (seit 0.5.0), MP4 auf Wunsch mit Tonspur
 ```
 
 Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen werden die CRC-Prüfsummen, die Pfade (kein `..`, nur `medien/`), die Formatversion (gleiche Hauptversion) und alle Verweise geprüft. Fehlende Mediendateien werden gemeldet.
@@ -16,7 +17,7 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
 
 ```jsonc
 {
-  "format": "ornament-lab-projekt", "formatVersion": "0.4.0", "labVersion": "0.1.3",
+  "format": "ornament-lab-projekt", "formatVersion": "0.5.0", "labVersion": "0.1.4",
   "id": "p-…", "titel": "…", "modus": "manuell | jev | experimentell", "erstellt": "ISO", "geaendert": "ISO",
 
   "ergebnisse": [{                        // Material und alle erzeugten Zustände; nichts wird überschrieben
@@ -58,8 +59,30 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
   }],
 
   "ketten": [{ "id": "c-…", "name": "…", "schritte": [{ "operation", "operationVersion", "parameter", "variation", "auswahl": 3, "nebeneingaenge": [] }] }],
-  "exporte": [{ "art": "animation | verlauf", "ergebnis": "e-…", "datei": "medien/…", "codec": "avc1.640028", "bilder": 451, "fps": 30, "sha256": "…" }],
+  "exporte": [{ "art": "animation | verlauf | stationen", "ergebnis": "e-…", "datei": "medien/…", "codec": "avc1.640028", "bilder": 451, "fps": 30, "sha256": "…" }],
   "meldungen": [{ "zeit": "ISO", "art": "warnung | hinweis", "text": "…" }]
+}
+```
+
+## Film über Stationen (seit 0.5.0)
+
+Ein Export mit `art: "stationen"` (Beschreibung: STATIONEN.md). `stationen` verweist auf Bildergebnisse des Projekts. `pruefeProjekt` prüft das, eine fehlende Filmdatei meldet das Archiv beim Öffnen.
+
+```jsonc
+{
+  "id": "x-…", "art": "stationen", "ergebnis": "e-…",            // die letzte Station
+  "stationen": ["m-…", "e-…", …], "entscheidung": "d-…",           // Auswahl als Entscheidung «mensch», gegenstand «stationen»
+  "partitur": {
+    "version": "0.1.0", "fps": 30, "art": "blende", "halten": 1.5, "uebergang": 1,
+    "routen": [{ "ziel": "halten | uebergang", "tiefe": 0.3, "modulator": { "quelle": "saege", … } }],   // wie bei Knoten, ohne Signaldaten
+    "takt": null | { "ereignisfolge": "e-…", "schwelle": 0.2, "wiederholen": true, "einsaetze": 23, "ton": "m-… | null", "tonBeginn": 0, "tonDauer": 12.5 },
+    "folge": [{ "ergebnis": "e-…", "stelle": 0.25, "beginn": 2.5, "halten": 1.5,
+                "uebergang": { "art": "blende | schwelle | verlauf | schnitt", "dauer": 1 | null, "hinweis": "…" } | null }],   // null: letzte Station; dauer null: eigene Länge des Verlaufs
+    "dauer": 12.5, "bilder": 375, "offen": 0                         // offen: Verläufe mit eigener Länge, nicht in dauer enthalten
+  },
+  "zeitplan": [{ "ergebnis": "e-…", "ab": 2.2, "bild": 66, "uebergang": "verlauf", "bilder": 75 }],   // wie tatsächlich gerechnet
+  "datei": "medien/x-…-stationen.mp4", "mime": "video/mp4", "codec": "avc1.640028", "ton": "aac | opus | null", "tonQuelle": "m-… | null",
+  "bilder": 375, "fps": 30, "breite": 904, "hoehe": 1280, "sha256": "…", "zeit": "ISO"
 }
 ```
 
@@ -109,7 +132,7 @@ Der Knoten von `lab.komposition` hält im `protokoll` fest: `reihenfolge` (die s
 - Steuersignale werden über ihre Ergebnis-Kennung verbunden und nicht doppelt gespeichert.
 - `lab.tonsignal` ist reproduzierbar: Dieselben Abtastwerte ergeben dasselbe Signal. Die Tondatei liegt unverändert mit SHA-256 im Archiv.
 - Mehrere Routen auf denselben Parameter werden summiert und erst dann begrenzt (seit Lab 0.1.1, nach VCV Rack). Mit einer Route rechnet 0.1.1 genau wie 0.1.0.
-- Formatversion: Eine neue Nebenversion darf Felder hinzufügen (0.2.0: `polaritaet` je Route, `halten` je Modulator; 0.3.0: kompositorische Profile als METADATA-Ergebnisse, `befund.profil`, Eingang `profil`; 0.4.0: AUDIO-Material mit `ton`, EVENT_SEQUENCE, Steuersignale mit `achse: "zeit"`, Eingang `ton`; ältere Projekte öffnen unverändert). Eine neue Hauptversion braucht eine Migration (`ladeProjekt`).
+- Formatversion: Eine neue Nebenversion darf Felder hinzufügen (0.2.0: `polaritaet` je Route, `halten` je Modulator; 0.3.0: kompositorische Profile als METADATA-Ergebnisse, `befund.profil`, Eingang `profil`; 0.4.0: AUDIO-Material mit `ton`, EVENT_SEQUENCE, Steuersignale mit `achse: "zeit"`, Eingang `ton`; 0.5.0: Exporte `art: "stationen"` mit Partitur; ältere Projekte öffnen unverändert). Eine neue Hauptversion braucht eine Migration (`ladeProjekt`).
 
 ## Vorbereitet für später
 

@@ -1,7 +1,8 @@
 // ORNAMENT LAB – Browsertest (Playwright, Chromium) des ersten durchgehenden Prozesses mit dem Beispielbild:
 // Bild → ORNA-Konstellation → The Fictory (sechs Zustände nebeneinander) → Variante wählen → Feedback mit modulierten Varianten → Variante wählen
 // → Bildsignal koppelt Wiederholung → Animation → Projekt speichern und wieder öffnen; dazu jev-assistiert, experimentell, Kette,
-// kompositorisches Profil mit Zielprofil, Tondatei als Steuersignal für ein Feedback über die Zeit, Handy.
+// kompositorisches Profil mit Zielprofil, Tondatei als Steuersignal für ein Feedback über die Zeit, Animation über Stationen (auch im Takt
+// der Toneinsätze mit Tonspur), Handy.
 //   NODE_PATH=$(npm root -g) node tests/lab.e2e.mjs
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -139,6 +140,40 @@ await check("Animation des letzten Schritts: Video wird erzeugt und ins Projekt 
   const x = await S(page, () => ornamentLab.projekt.exporte.at(-1));
   assert.equal(x.art, "animation"); assert.ok(x.bilder >= 30, `${x.bilder} Bilder`);
   assert.ok(await page.locator(".film video").isVisible());
+});
+
+await check("Animation über Stationen: der Verlauf als Stationen, Übergang als Verlauf der Operation, Film mit Partitur im Projekt", async () => {
+  assert.equal(await page.locator(".stationen-liste > li").count(), 4, "Material, Fictory, Feedback, Wiederholung");
+  await page.locator('.stationen input[data-param="halten"]').fill("0.4");
+  await page.locator('.stationen input[data-param="uebergang"]').fill("0.4");
+  await page.locator('.stationen input[data-param="seite"]').fill("400");
+  await page.locator('.stationen-regler label:has(> span:text-is("Übergang")) select').selectOption("verlauf");
+  await page.locator('.stationen-regler label:has(> span:text-is("Modulation über die Stationen")) select').selectOption("saege");
+  assert.match(await page.textContent("#stationen-plan"), /4 Auftritte/);
+  await page.click("#stationenfilm");
+  await warteFertig(page, 240000);
+  const x = await S(page, () => ornamentLab.projekt.exporte.at(-1));
+  assert.equal(x.art, "stationen", await page.textContent("#status"));
+  assert.equal(x.stationen.length, 4); assert.equal(x.zeitplan.length, 4);
+  assert.deepEqual(x.partitur.folge.slice(0, 3).map((f) => f.uebergang.art), ["verlauf", "verlauf", "verlauf"], "jeder Schritt ist aus dem vorigen entstanden");
+  assert.equal(x.partitur.routen[0].modulator.quelle, "saege");
+  assert.ok(x.bilder >= x.partitur.bilder, `${x.bilder} Bilder`);
+  assert.ok(Math.max(x.breite, x.hoehe) <= 400);
+  assert.ok(await page.locator(".stationen video").isVisible());
+  const d = await S(page, () => ornamentLab.projekt.entscheidungen.at(-1));
+  assert.deepEqual([d.art, d.gegenstand, d.gewaehlt.length], ["mensch", "stationen", 4]);
+  assert.match(await page.textContent("#ereignisse"), /Film über 4 Stationen/);
+  // die Varianten eines Schritts als Stationen, umordnen, zurück zum Verlauf
+  await page.locator('input[name="ansicht"][value="neben"]').check({ force: true });
+  await page.getByRole("button", { name: "alle als Stationen" }).click();
+  await page.locator('input[name="ansicht"][value="nach"]').check({ force: true });
+  assert.equal(await page.locator(".stationen-liste > li").count(), 6);
+  const vorher = await S(page, () => ornamentLab.stationen.map((x) => x.ergebnis));
+  await page.getByRole("button", { name: "Station 1 nach hinten" }).click();
+  assert.deepEqual(await S(page, () => ornamentLab.stationen.map((x) => x.ergebnis)), [vorher[1], vorher[0], ...vorher.slice(2)]);
+  assert.equal(await page.locator('.stationen-liste option[value="verlauf"]:not([disabled])').count(), 0, "Geschwister haben keinen Verlauf zueinander");
+  await page.getByRole("button", { name: "Verlauf übernehmen" }).click();
+  assert.equal(await page.locator(".stationen-liste > li").count(), 4);
 });
 
 await check("Kette speichern und auf das Material anwenden (wie ein Combinator)", async () => {
@@ -289,6 +324,18 @@ await check("Ton: eine Tondatei wird Material, Tonsignal misst sie, das Signal d
   await page.click("#animation");
   await warteFertig(page, 120000);
   assert.ok((await S(page, () => ornamentLab.projekt.exporte.at(-1).bilder)) >= 13);
+  // Ton als Taktgeber: die Einsätze lösen die Wechsel zwischen den Stationen aus, der Ton wird Tonspur
+  await page.locator('.stationen-regler label:has(> span:text-is("Takt")) select').selectOption({ label: await S(page, () => ornamentLab.projekt.ergebnisse.filter((e) => e.typ === "EVENT_SEQUENCE").at(-1).titel) });
+  await page.locator('.stationen input[data-param="seite"]').fill("320");
+  assert.ok(await page.getByText("den gemessenen Ton als Tonspur").isVisible());
+  await page.click("#stationenfilm");
+  await warteFertig(page, 120000);
+  const film = await S(page, () => ornamentLab.projekt.exporte.at(-1));
+  assert.equal(film.art, "stationen", await page.textContent("#status"));
+  assert.ok(film.partitur.takt.einsaetze >= 4 && film.partitur.folge.length === film.partitur.takt.einsaetze + 1, "reihum bis die Einsätze aufgebraucht sind");
+  assert.ok(Math.abs(film.partitur.dauer - 4) < 0.05, `so lang wie der Ton: ${film.partitur.dauer}`);
+  assert.ok(film.ton, `Tonspur: ${await page.textContent("#status")}`);
+  assert.equal(film.tonQuelle, await S(page, () => ornamentLab.projekt.ergebnisse.find((e) => e.typ === "AUDIO").id));
   // speichern und öffnen: die WAV kommt unverändert mit, das Tonsignal lässt sich aus dem Archiv neu rechnen
   const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#speichern")]);
   const pfad = await dl.path();
