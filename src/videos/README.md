@@ -244,7 +244,9 @@ Zweite Fassung am selben Tag (Rückmeldung: «Was bringst du mit?» gefällt, «
 10. Tinte: eine Logo-Animation von Christian, der Punkt in die Blaupause gedreht (`hue-rotate`), am Ende stehend; darunter die Frage, blau unterstrichen.
     Standard (`ReelVideo`): **PHORMA II** – die schillernde Montage fällt zu Rahmen zusammen, aus ihnen wird das Signet (hochkant, ganz gezeigt; der Punkt wird erst blau,
     wenn die Montage vorbei ist, sonst kippen ihre Farben; ab Bild 162 stehend). Seit dem 23. Oktober 2026 mit mehr Kontrast («Besserer Kontrast beim Logo Schluss»):
-    nach der Montage fährt das Bild auf das Logo zu (1,3-fach) und wird heller (`brightness(1.4) contrast(1.25)`, erst danach `hue-rotate`, sonst brennt der Punkt türkis aus). Fassung `ReelVideoLogoIII`: **PHORMA III** – die Fäden ziehen sich zur Schlaufe,
+    nach der Montage fährt das Bild auf das Logo zu (1,3-fach) und wird heller (`brightness(1.4) contrast(1.25)`, erst danach `hue-rotate`, sonst brennt der Punkt türkis aus).
+    Ab Bild 150 blendet eine Vektorzeichnung desselben Logos darüber (`src/reel/LogoVektor.tsx`: die Zeichnung aus `alpha/sketchory/signet.js`, gegen Bild 162 der Aufnahme
+    deckungsgleich geprüft, Schriftzug ohne Kerning wie auf der Leinwand); der Punkt läuft dann scharf weiter (Rückmeldung: «Das Logo ganz am Schluss bei Stillstand war noch etwas verpixelt»). Fassung `ReelVideoLogoIII`: **PHORMA III** – die Fäden ziehen sich zur Schlaufe,
     «ornament.cloud» tippt sich (hochkant die Mitte; ab Bild 160 stehend, vor dem Zerfall am Ende des Exports)
 
 **Sechs Aufnahmen von Christian** liegen nicht im Repository (zusammen gut 70 MB); vor dem Rendern von Hand nach `public/reel/` legen:
