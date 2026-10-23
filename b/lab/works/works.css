@@ -74,15 +74,14 @@ html:not(.js) .ansicht { display: none; }
 .buehne { --breite: 62vw; --links: calc((100vw - var(--breite)) / 2); }
 @media (max-width: 759px) { .buehne { --breite: calc(100vw - 16px); --links: 8px; } }
 /* das Drehkarussell: beim Wechsel schrumpft das Werk zur Karte in einem Ring, der Ring dreht um eins, das nächste wächst wieder zur Bühne
-   (works.js setzt --x, --s, --o, --dreh, --z je Karte) */
+   (works.js setzt transform, opacity und z-index je Karte; die Variablen hier gelten nur ohne Skript) */
 .js[data-karussell] .kopf { color: var(--tinte); text-shadow: none; }
 .js[data-karussell] .kopf .signet .still { color: var(--grau); }
 .dias { position: absolute; inset: 0; perspective: 1800px; }
 .dia { position: absolute; top: 8px; bottom: 8px; left: var(--links); width: var(--breite); overflow: hidden; border-radius: 14px; background: var(--buehne); opacity: var(--o, 0); z-index: var(--z, 0);
   transform: translate(calc(var(--x, 0) * 1vw), calc(var(--y, 0) * 1vh)) scale(var(--s, 1)) rotateY(calc(var(--dreh, 0) * 1deg));
-  transition: border-radius 0.9s; will-change: transform, opacity; }
+  will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
 .dia.ist { --o: 1; --z: 5; }
-.js[data-karussell] .dia { border-radius: 22px; }
 .js[data-karussell] .ansicht { background: var(--flaeche); }
 .js[data-karussell] .ansicht button { color: var(--leise); }
 /* ein Schleier oben und unten, damit Kopf, Titel und Zähler auch auf hellen Bildern lesbar bleiben */
@@ -252,3 +251,6 @@ a.dock-mitte:hover .dock-text { color: var(--faden); }
 .kachel-logo .punkt { fill: var(--faden); }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+/* auf Touch-Geräten ohne Unschärfe hinter Dock, Zähler und Tasten: über bewegten Karten flackerte sie auf Android */
+@media (pointer: coarse) { .dock-leiste, .menue, .zaehler, .buehne-tasten button, .ansicht { -webkit-backdrop-filter: none; backdrop-filter: none; } }
