@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 const PFAD = "/b/lab/works/";
 const BASIS = "https://ornament.cloud";
-const V = 2;   // Versionsmarke für works.css und works.js (?v=), bei Änderungen hochzählen
+const V = 3;   // Versionsmarke für works.css und works.js (?v=), bei Änderungen hochzählen
 
 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const absaetze = (t) => String(t ?? "").split(/\n\s*\n/).map((a) => a.trim()).filter(Boolean).map((a) => `<p>${esc(a)}</p>`).join("");
@@ -128,17 +128,34 @@ function vorschau(w, { laden = "lazy" } = {}) {
   return w.film ? `${img}<video data-film="${w.url}${w.film}" muted loop playsinline preload="none" aria-hidden="true"></video>` : img;
 }
 
-const PLATZHALTER = 3;   // so viele leere Felder zeigen Bühne und Raster, solange kein Werk veröffentlicht ist
+// Solange kein Werk veröffentlicht ist, stehen Beispiele aus der PHORMA-Serie als Platzhalter auf Bühne und Raster (Wunsch von Christian,
+// 23. Oktober 2026: «Füll einige sachen aus der PHORMA Serie als Platzhalter»). Sie sind als Platzhalter beschriftet, führen zur jeweiligen App
+// und verschwinden, sobald das erste Werk erscheint. Material aus assets/ (dieselben Filme und Bilder wie auf /b/apps/).
+const PLATZHALTER = [
+  { titel: "PHORMA I", kurz: "Verwandlung: Funken, Glaskörper, Scherben, Höhenlinien.", bild: "/assets/beispiele/phorma-i.jpg", film: "/assets/beispiele/phorma-i.mp4", breite: 540, hoehe: 676, href: "/b/apps/phorma-i/" },
+  { titel: "PHORMA II", kurz: "Physarum, Tuch und Montage in einer Kette.", bild: "/assets/beispiele/phorma-ii.jpg", film: "/assets/beispiele/phorma-ii.mp4", breite: 540, hoehe: 676, href: "/b/apps/phorma-ii/" },
+  { titel: "PHORMA III", kurz: "Aus Klang wird Bild: ein Gewebe aus feinen Linien.", bild: "/assets/beispiele/phorma-iii.jpg", film: "/assets/beispiele/phorma-iii.mp4", breite: 540, hoehe: 676, href: "/b/apps/phorma-iii/" },
+  { titel: "PHORMA I, Standbild", kurz: "Ein Foto, in Fragmente zerlegt.", bild: "/assets/vorschau-phorma-i-2x.jpg", breite: 1280, hoehe: 1600, href: "/b/apps/phorma-i/" },
+  { titel: "PHORMA II, Standbild", kurz: "Ein Netz findet die Formen des Fotos.", bild: "/assets/vorschau-phorma-ii-2x.jpg", breite: 1080, hoehe: 1350, href: "/b/apps/phorma-ii/" },
+  { titel: "PHORMA III, Standbild", kurz: "Linien wie zerknitterte Seide.", bild: "/assets/vorschau-phorma-iii.jpg", breite: 640, hoehe: 800, href: "/b/apps/phorma-iii/" },
+];
+for (const p of PLATZHALTER) for (const d of [p.bild, p.film].filter(Boolean)) if (!existsSync(join(ROOT, d))) throw new Error(`Platzhalter: ${d} fehlt`);
+
+/** Bild (und Film) eines Platzhalters, wie vorschau() für ein Werk */
+function platzhalterMedium(p, { laden = "lazy" } = {}) {
+  const img = `<img src="${p.bild}" alt="${esc(p.titel)}, Beispiel aus der PHORMA-Serie" width="${p.breite}" height="${p.hoehe}" loading="${laden}" decoding="async">`;
+  return p.film ? `${img}<video data-film="${p.film}" muted loop playsinline preload="none" aria-hidden="true"></video>` : img;
+}
 const stil = (w) => (w.farbe ? ` style="--farbe: ${esc(w.farbe)}"` : "");
 
 function uebersicht(werke) {
   const leer = werke.length === 0;
-  const anzahl = leer ? PLATZHALTER : werke.length;
+  const anzahl = leer ? PLATZHALTER.length : werke.length;
   const dias = leer
-    ? Array.from({ length: PLATZHALTER }, (_, i) => `        <li class="dia platzhalter${i ? "" : " ist"}" data-text="Platzhalter, noch kein Werk"><div class="dia-flaeche"><span class="schild">Platzhalter</span></div><h2 class="dia-titel">Noch kein Werk</h2></li>`)
+    ? PLATZHALTER.map((p, i) => `        <li class="dia platzhalter${i ? "" : " ist"}${p.film ? " hat-film" : ""}" data-href="${p.href}" data-text="Platzhalter · ${esc(p.titel)}" data-bild="${p.bild}"><a class="dia-flaeche" href="${p.href}" tabindex="${i ? -1 : 0}">${platzhalterMedium(p, { laden: i ? "lazy" : "eager" })}</a><span class="schild">Platzhalter</span><h2 class="dia-titel"><a href="${p.href}" tabindex="-1">${esc(p.titel)}</a></h2></li>`)
     : werke.map((w, i) => `        <li class="dia${i ? "" : " ist"}${w.film ? " hat-film" : ""}" data-href="${w.url}" data-text="Werk ansehen" data-bild="${w.url}${w.bild}"${stil(w)}><a class="dia-flaeche" href="${w.url}" tabindex="${i ? -1 : 0}">${vorschau(w, { laden: i ? "lazy" : "eager" })}</a><h2 class="dia-titel"><a href="${w.url}" tabindex="-1">${esc(w.titel)}</a></h2></li>`);
   const kacheln = leer
-    ? Array.from({ length: PLATZHALTER }, (_, i) => `      <li><div class="werk platzhalter" aria-label="Platzhalter, noch kein Werk"><span class="medium"><span class="schild">Platzhalter</span></span><span class="etikett"><span class="etikett-titel">${nr(i)} · Platzhalter</span><span class="etikett-text">Noch kein Werk</span></span></div></li>`)
+    ? PLATZHALTER.map((p, i) => `      <li><a class="werk platzhalter" href="${p.href}"><span class="medium${p.film ? " hat-film" : ""}">${platzhalterMedium(p)}<span class="schild">Platzhalter</span></span><span class="etikett"><span class="etikett-titel">${nr(i)} · Platzhalter · ${esc(p.titel)}</span><span class="etikett-text">${esc(p.kurz)}</span></span></a></li>`)
     : werke.map((w, i) => `      <li><a class="werk" href="${w.url}"${stil(w)}><span class="medium${w.film ? " hat-film" : ""}">${vorschau(w)}</span><span class="etikett"><span class="etikett-titel">${nr(i)} · ${esc(w.titel)}${w.jahr ? `, ${esc(w.jahr)}` : ""}</span><span class="etikett-text">${esc(w.kurz ?? (w.operationen ?? []).join(" · "))}</span></span></a></li>`);
   return seite({
     klasse: "uebersicht",
@@ -146,13 +163,13 @@ function uebersicht(werke) {
     beschreibung: BESCHREIBUNG,
     pfad: PFAD, indexieren: !leer, bild: leer ? null : `${werke[0].url}${werke[0].bild}`,
     kopfRechts: `<div class="ansicht" role="group" aria-label="Ansicht"><button type="button" data-ansicht="buehne" aria-pressed="true">Bühne</button><button type="button" data-ansicht="raster" aria-pressed="false">Raster</button></div>`,
-    dockInfo: leer ? { text: "Noch kein Werk veröffentlicht" } : { text: "Werk ansehen", href: werke[0].url, bild: `${werke[0].url}${werke[0].bild}` },
+    dockInfo: leer ? { text: `Platzhalter · ${PLATZHALTER[0].titel}`, href: PLATZHALTER[0].href, bild: PLATZHALTER[0].bild } : { text: "Werk ansehen", href: werke[0].url, bild: `${werke[0].url}${werke[0].bild}` },
     inhalt: `    <section class="buehne" aria-roledescription="Bühne" aria-label="Werke, eines nach dem anderen">
       <ol class="dias">
 ${dias.join("\n")}
       </ol>
       <p class="zaehler" aria-live="polite"><span class="zaehler-jetzt">01</span> / ${nr(anzahl - 1)}</p>
-      <p class="buehne-satz">${leer ? "Noch kein Werk veröffentlicht. Die Felder sind Platzhalter." : "Ergebnisse aus ORNAMENT LAB."}</p>
+      <p class="buehne-satz">${leer ? "Noch kein Werk veröffentlicht. Bis dahin: Beispiele aus der PHORMA-Serie als Platzhalter." : "Ergebnisse aus ORNAMENT LAB."}</p>
       <div class="buehne-tasten"><button type="button" class="zurueck" aria-label="Vorheriges Werk">↑</button><button type="button" class="weiter" aria-label="Nächstes Werk">↓</button></div>
     </section>
     <div class="raster-ansicht">
@@ -161,7 +178,7 @@ ${dias.join("\n")}
         <p class="leitsatz">Ergebnisse aus ORNAMENT LAB, jedes mit dem Protokoll seines Wegs.</p>
       </section>
       <section id="werke" class="werke" aria-label="Werke">
-${leer ? `      <p class="hinweis">Noch ist kein Werk veröffentlicht. Die Felder unten sind Platzhalter, keine Werke.</p>\n` : ""}      <ul class="raster">
+${leer ? `      <p class="hinweis">Noch ist kein Werk veröffentlicht. Bis dahin stehen hier Beispiele aus der PHORMA-Serie als Platzhalter, keine Werke aus dem Lab.</p>\n` : ""}      <ul class="raster">
 ${kacheln.join("\n")}
       </ul>
       </section>

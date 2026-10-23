@@ -1,10 +1,10 @@
 # ornament.lab · Works (`/b/lab/works/`)
 
-Die Werkschau der Ergebnisse aus ORNAMENT LAB. Eigenständig: nicht in der Navigation des Neubaus, nicht in der Sitemap. Solange kein Werk veröffentlicht ist, zeigen Bühne und Raster drei als «Platzhalter» beschriftete Felder, und die Übersicht trägt `noindex`.
+Die Werkschau der Ergebnisse aus ORNAMENT LAB. Eigenständig: nicht in der Navigation des Neubaus, nicht in der Sitemap. Solange kein Werk veröffentlicht ist, zeigen Bühne und Raster sechs Beispiele aus der PHORMA-Serie (Filme und Standbilder aus `assets/`), jedes als «Platzhalter» beschriftet und mit einem Link zu seiner App; die Übersicht trägt `noindex`. Mit dem ersten veröffentlichten Werk verschwinden sie (Liste `PLATZHALTER` in `tools/build-lab-works.mjs`).
 
 ## Aufbau (nach dem Prinzip von mubien.com, ohne deren Inhalte oder Material)
 
-- **Bühne** (Vorgabe): ein Werk füllt den Bildschirm, Titel links, Zähler «01 / 04» unten links. Blättern mit Rad, Pfeiltasten, Wischen oder den Tasten unten rechts; der Wechsel wischt von der Seite herein. Ein Film läuft stumm, solange sein Werk gezeigt wird.
+- **Bühne** (Vorgabe): ein Werk füllt den Bildschirm, Titel links, Zähler «01 / 04» unten links. Blättern mit Rad, Pfeiltasten, Wischen oder den Tasten unten rechts. Der Wechsel ist ein Drehkarussell: das Werk schrumpft zur Karte in einem Ring, der Ring dreht weiter, das nächste wächst wieder zur Bühne. Alle 6 Sekunden dreht es von selbst; der Fortschritt füllt das Dock (hält an bei offenem Menü, im Hintergrund und bei «weniger Bewegung»). Ein Film läuft stumm, solange sein Werk gezeigt wird.
 - **Raster**: zwei Spalten mit schmalen Fugen. Beim Darüberfahren erscheint oben links ein Etikett in der Farbe des Werks (Vorgabe: Blaupause) mit Titel, Jahr und Kurztext; auf dem Telefon steht das Etikett unter dem Bild. Filme laufen beim Darüberfahren.
 - **Pille** oben rechts schaltet zwischen Bühne und Raster; der Browser merkt sich die Wahl, `#raster` oder `#buehne` im Link gehen vor.
 - **Dock** unten in der Mitte: links das gezeigte Werk (oder das Signet), Mitte «Werk ansehen» bzw. «Zurück zu Works», rechts das Menü aus Kacheln (Works, Info, ORNAMENT LAB, ornament.cloud, Uhr von Zürich).
