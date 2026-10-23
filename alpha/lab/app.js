@@ -229,7 +229,7 @@ async function zusammenstellungRechnen() {
 }
 /** der Film über Stationen übernimmt einen Plan: so lässt er sich unter «Nacheinander» wie jeder andere weiter verändern */
 function filmPlanUebernehmen(plan) {
-  S.stationen = plan.stationen.map((id) => ({ ergebnis: id }));
+  S.stationen = plan.stationen.map((s) => (typeof s === "string" ? { ergebnis: s } : { ...s }));
   Object.assign(S.film, { art: plan.art, halten: plan.halten, uebergang: plan.uebergang, quelle: "keine", takt: plan.takt?.ereignisfolge ?? "", schwelle: plan.takt?.schwelle ?? S.film.schwelle, wiederholen: true, tonspur: plan.tonspur, tonBeginn: plan.tonBeginn,
     bewegung: plan.bewegung?.staerke ?? 0, bewegungSignal: plan.bewegung?.signal ?? "" });
 }

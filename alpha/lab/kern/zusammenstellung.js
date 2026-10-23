@@ -20,12 +20,12 @@ export const BILD_REZEPTE = Object.freeze({
   "bild.wiederholung": { operation: "lab.wiederholung", parameter: { seite: 1200 }, ziel: "groesse", tiefe: 0.5 },
   "bild.farbe": { operation: "lab.farbe", parameter: { saettigung: 1.3 }, ziel: "farbdrehung", tiefe: 1 },
   "bild.komposition": { operation: "lab.komposition", parameter: { seite: 900 }, ziel: "symmetrie", tiefe: 0.9 },
-  "bild.glitch": { operation: "lab.glitch", parameter: { seite: 1000 }, tiefe: 0.6 },
-  "bild.pixelsortierung": { operation: "lab.pixelsortierung", parameter: { seite: 1000 }, tiefe: 0.5 },
-  "bild.verzerrung": { operation: "lab.verzerrung", parameter: { seite: 1000 }, tiefe: 0.6 },
-  "bild.licht": { operation: "lab.licht", parameter: { seite: 1000 }, tiefe: 0.5 },
-  "bild.raster": { operation: "lab.raster", parameter: { seite: 1000 }, tiefe: 0.5 },
-  "bild.neusetzen": { operation: "lab.neusetzen", parameter: { seite: 1000 }, tiefe: 0.6 },
+  "bild.glitch": { operation: "lab.glitch", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
+  "bild.pixelsortierung": { operation: "lab.pixelsortierung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
+  "bild.verzerrung": { operation: "lab.verzerrung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
+  "bild.licht": { operation: "lab.licht", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
+  "bild.raster": { operation: "lab.raster", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
+  "bild.neusetzen": { operation: "lab.neusetzen", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
   "bild.fictory": { operation: "fictory.prozess", parameter: {}, ziel: null },
 });
 /** Klangeffekt → Operation (null: der Klang bleibt) */
@@ -111,7 +111,7 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   //     aus einem Video (messung.videoBilder) nimmt jeder Abschnitt das Standbild seiner Zeit, so folgt der Film dem Video
   const video = messung.videoBilder?.length > 1 ? messung.videoBilder : null;
   let eingang = video?.[0] ?? messung.bild;
-  const ergebnisse = [];
+  const ergebnisse = [], uebergaenge = new Set();
   for (const [i, b] of plan.bild.entries()) {
     const r = BILD_REZEPTE[b], op = register.hole(r.operation);
     const ziel = r.ziel === null ? null : r.ziel ?? op.moduliert ?? op.parameter.find((p) => p.art === "zahl" && p.id !== "seite")?.id;
@@ -123,12 +123,14 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
     const bilder = x.ergebnisse.filter((e) => e.typ === "IMAGE");
     // The Fictory gibt sechs Zustände aus: davon jeder zweite, damit jeder Abschnitt etwa gleich viel Zeit bekommt
     const genommen = bilder.length > VARIANTEN_JE_ABSCHNITT ? bilder.filter((_, j) => j % Math.ceil(bilder.length / VARIANTEN_JE_ABSCHNITT) === Math.ceil(bilder.length / VARIANTEN_JE_ABSCHNITT) - 1) : bilder;
+    // in der Kette entsteht der Abschnitt aus dem letzten Bild des vorigen: dieser Wechsel ist der Verlauf der Operation selbst
+    if (!video && plan.aufbau !== "aufbau.faecher" && i > 0) uebergaenge.add(eingang);
     ergebnisse.push(...genommen);
     eingang = genommen.at(-1).id;
   }
 
   // 4 · Film: Bild, dann alle Abschnitte; im Takt der Anschläge reihum, sonst gleichmässig über die Dauer
-  const stationen = [video?.[0] ?? messung.bild, ...ergebnisse.map((e) => e.id)].slice(0, GRENZEN.stationen);
+  let stationen = [video?.[0] ?? messung.bild, ...ergebnisse.map((e) => e.id)].slice(0, GRENZEN.stationen);
   const f = FILM[plan.uebergang], folge = ergebnis(projekt, einsaetze.id).daten;
   const dauer = Math.min(DAUER, folge?.dauer ?? DAUER), n = stationen.length;
   // nicht reihum: jede Station kommt einmal, darum höchstens so viele Wechsel wie Stationen, verteilt auf die stärksten Anschläge
@@ -137,6 +139,8 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   if (schwelle !== null && (folge?.ereignisse ?? []).filter((x) => x.t > 0 && (x.staerke ?? 1) >= schwelle).length < n - 1) schwelle = null;
   const takt = schwelle === null ? null : { ereignisfolge: einsaetze.id, schwelle: Math.round(schwelle * 1000) / 1000, wiederholen: true };
   const uebergang = takt ? f.uebergang : Math.min(f.uebergang, (0.5 * dauer) / Math.max(1, n - 1));
+  // im Takt hat jeder Wechsel eine feste Länge, auch der Verlauf zwischen zwei Abschnitten (ohne Takt bliebe seine Länge offen)
+  if (takt) stationen = stationen.map((id) => (uebergaenge.has(id) ? { ergebnis: id, uebergang: "verlauf" } : id));
   const halten = takt ? 1 : Math.max(0, Math.min(10, Math.round(((dauer - (n - 1) * uebergang) / n) * 100) / 100));
   return { entscheidung: d, ergebnisse, klang: ton, signal: signal.id,
     plan: { stationen, art: f.art, halten, uebergang: Math.round(uebergang * 100) / 100, takt, bewegung: { staerke: BEWEGUNG, signal: signal.id }, tonspur: ton, tonBeginn: beginn, dauer } };

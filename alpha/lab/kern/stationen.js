@@ -47,6 +47,12 @@ export function verlaufMoeglich(projekt, von, nach) {
   return Object.values(knoten(projekt, e.knoten)?.eingaben ?? {})[0] === von;
 }
 
+/** Liefert die Operation hinter einem Ergebnis ihre Bildzahl vorab (oder hat sie keinen eigenen Verlauf)? Dann streckt bildfolge() in einem Durchgang. */
+function verlaufGestreckt(register, projekt, id) {
+  const k = knoten(projekt, ergebnis(projekt, id)?.knoten), op = k ? register.hole(k.operation) : null;
+  return Boolean(op && (!op.verlauf || op.verlaufBilder));
+}
+
 /** die Einsätze einer Ereignisfolge ab einer Mindeststärke, in Sekunden ab ihrem Beginn, aufsteigend und mindestens ein Bild auseinander */
 function taktzeiten(daten, schwelle, fps) {
   const t = (daten?.ereignisse ?? []).filter((x) => (x.staerke ?? 1) >= schwelle && x.t > 0).map((x) => x.t).sort((a, b) => a - b);
@@ -230,6 +236,12 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
       if (ue.dauer === null) {   // eigene Länge: jedes Bild des Verlaufs
         for await (const f of folge()) { yield einpassen(f, W, H); n++; grenze(); }
         soll = n / fps;
+      } else if (verlaufGestreckt(register, projekt, ziel)) {   // feste Länge, die Operation kennt ihre Bildzahl: in einem Durchgang gestreckt
+        const m = Math.round((soll + ue.dauer) * fps) - n;
+        let q = 0, letztes = null;
+        if (m > 0) for await (const f of bildfolge({ register, projekt, medien, ergebnisId: ziel, abbrechen, bilder: m })) { if (q >= m) break; yield (letztes = einpassen(f, W, H)); n++; q++; }
+        while (letztes && q < m) { yield letztes; n++; q++; }
+        soll += ue.dauer;
       } else {   // feste Länge (Takt): die Bilder des Verlaufs gleichmässig auswählen, dafür erst zählen
         const m = Math.round((soll + ue.dauer) * fps) - n;
         let N = 0;
