@@ -1,22 +1,24 @@
 // Auftakt (Tinte): «Was bringst du mit?» auf den Schlag – erst jedes Wort allein und bildfüllend, harte Schnitte;
-// dann die ganze Frage als Block, das Fragezeichen in der Blaupause (Hochformate: vier Zeilen, Querformat: zwei).
+// dann die ganze Frage als Block, das Fragezeichen in der Blaupause (Hochformate: ein Wort je Zeile, Querformat: zwei Zeilen).
+// Deutsch vier Wörter («Was bringst du mit?»), Englisch fünf («What do you bring along?»).
 import React from "react";
 import { interpolate, useCurrentFrame } from "remotion";
-import daten from "../data/reel.json";
+import { useDaten } from "../Sprache";
 import { useLage } from "../Format";
 import { C, Grund, klemm, weich } from "../Teile";
 
 export const AUFTAKT = 90;
 const WORT = 11;                 // Bilder je Wort
-const BLOCK = 4 * WORT + 2;      // ab hier die ganze Frage
 
 const Frage: React.FC<{ text: string; letztes: boolean; faden: string }> = ({ text, letztes, faden }) => <>{text}{letztes ? <span style={{ color: faden }}>?</span> : null}</>;
 
 export const Auftakt: React.FC = () => {
+  const daten = useDaten();
   const f = useCurrentFrame();
   const L = useLage();
   const c = C("dunkel");
   const woerter = daten.frage.replace(/\?$/, "").split(" ");
+  const BLOCK = woerter.length * WORT + 2;   // ab hier die ganze Frage
   const i = Math.floor(f / WORT);
   if (f < BLOCK) {
     const w = woerter[Math.min(i, woerter.length - 1)];
@@ -34,7 +36,8 @@ export const Auftakt: React.FC = () => {
     );
   }
   const k = f - BLOCK;
-  const zeilen = L.quer ? [`${woerter[0]} ${woerter[1]}`, `${woerter[2]} ${woerter[3]}`] : woerter;
+  const halb = Math.ceil(woerter.length / 2);
+  const zeilen = L.quer ? [woerter.slice(0, halb).join(" "), woerter.slice(halb).join(" ")] : woerter;
   const g = L.quer ? 260 : Math.min(228, (L.h - 220) / (zeilen.length * 0.94));
   const hoehe = zeilen.length * g * 0.94;
   const oben = L.mitteY - hoehe / 2 - 30;

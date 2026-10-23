@@ -1,6 +1,7 @@
 // Bildschirmaufnahme für das Reel: die Startseite /b/ am Telefon (430 px breit, doppelte Dichte), ganze Länge, hell,
 // dazu die Lage der Abschnitte. Schreibt public/reel/b-telefon.png und public/reel/b-stellen.json (nicht eingecheckt).
-// Aufruf (braucht Playwright und Chromium): NODE_PATH=$(npm root -g) node src/reel/aufnahme.mjs [pfad/zu/chrome]
+// Aufruf (braucht Playwright und Chromium): NODE_PATH=$(npm root -g) node src/reel/aufnahme.mjs [de|en] [pfad/zu/chrome]
+// Englisch (/b/en/) schreibt b-telefon-en.png und b-stellen-en.json.
 /* global process, document, scrollY */
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
@@ -20,16 +21,17 @@ const server = createServer((req, res) => {
 }).listen(0);
 const port = server.address().port;
 
-const browser = await chromium.launch({ executablePath: process.argv[2] || "/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell" });
+const sprache = process.argv[2] === "en" ? "en" : "de", zusatz = sprache === "de" ? "" : `-${sprache}`;
+const browser = await chromium.launch({ executablePath: process.argv[3] || "/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell" });
 const seite = await browser.newPage({ viewport: { width: 430, height: 932 }, deviceScaleFactor: 2, colorScheme: "light", reducedMotion: "reduce" });
-await seite.goto(`http://localhost:${port}/b/`, { waitUntil: "networkidle" });
+await seite.goto(`http://localhost:${port}/b/${sprache === "de" ? "" : `${sprache}/`}`, { waitUntil: "networkidle" });
 await seite.waitForTimeout(800);
 const stellen = await seite.evaluate(() => Object.fromEntries(
   [["angebote", ".angebote"], ["feld", "#feld-titel"], ["raster", "#raster-titel"], ["spielen", "#spielen-titel"]]
     .map(([n, s]) => [n, Math.round(document.querySelector(s).getBoundingClientRect().top + scrollY)])));
 mkdirSync(ziel, { recursive: true });
-await seite.screenshot({ path: fileURLToPath(new URL("b-telefon.png", ziel)), fullPage: true });
-writeFileSync(new URL("b-stellen.json", ziel), JSON.stringify({ breite: 430, ...stellen }));
+await seite.screenshot({ path: fileURLToPath(new URL(`b-telefon${zusatz}.png`, ziel)), fullPage: true });
+writeFileSync(new URL(`b-stellen${zusatz}.json`, ziel), JSON.stringify({ breite: 430, ...stellen }));
 await browser.close();
 server.close();
-console.log("reel: Aufnahme /b/", stellen);
+console.log(`reel: Aufnahme /b/ (${sprache})`, stellen);

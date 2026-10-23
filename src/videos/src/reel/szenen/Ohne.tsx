@@ -1,13 +1,14 @@
 // Was die Seite verspricht (Tinte): keine Cookies, keine Werbung, keine Tracker – auf den Schlag; dann «made in Switzerland» in der Blaupause.
 import React from "react";
 import { interpolate, useCurrentFrame } from "remotion";
-import daten from "../data/reel.json";
+import { useDaten } from "../Sprache";
 import { useLage } from "../Format";
 import { C, Grund, klemm, weich } from "../Teile";
 
 export const OHNE = 90;
 
 export const Ohne: React.FC = () => {
+  const daten = useDaten();
   const f = useCurrentFrame();
   const c = C("dunkel");
   const L = useLage();

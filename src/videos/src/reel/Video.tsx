@@ -5,6 +5,7 @@
 import React from "react";
 import { Series } from "remotion";
 import { type Format, FormatRahmen } from "./Format";
+import { type Sprache, SpracheRahmen } from "./Sprache";
 import { AUFTAKT, Auftakt } from "./szenen/Auftakt";
 import { WAHLEN, Wahlen } from "./szenen/Wahlen";
 import { BILD, Bild, KLANG, Klang } from "./szenen/Clips";
@@ -30,11 +31,13 @@ export const SZENEN = [
 /** Dauer des ganzen Reels mit dem einen oder anderen Logo am Schluss */
 export const dauer = (logo: Logo) => SZENEN.slice(0, -1).reduce((s, z) => s + z.dauer, 0) + schlussDauer(logo);
 
-export const ReelVideo: React.FC<{ logo?: Logo; format?: Format }> = ({ logo = "ii", format = "9:16" }) => (
-  <FormatRahmen format={format}>
-    <Series>
-      {SZENEN.slice(0, -1).map(({ name, Szene, dauer: d }) => <Series.Sequence key={name} name={name} durationInFrames={d}><Szene /></Series.Sequence>)}
-      <Series.Sequence name="Schluss" durationInFrames={schlussDauer(logo)}><Schluss logo={logo} /></Series.Sequence>
-    </Series>
-  </FormatRahmen>
+export const ReelVideo: React.FC<{ logo?: Logo; format?: Format; sprache?: Sprache }> = ({ logo = "ii", format = "9:16", sprache = "de" }) => (
+  <SpracheRahmen sprache={sprache}>
+    <FormatRahmen format={format}>
+      <Series>
+        {SZENEN.slice(0, -1).map(({ name, Szene, dauer: d }) => <Series.Sequence key={name} name={name} durationInFrames={d}><Szene /></Series.Sequence>)}
+        <Series.Sequence name="Schluss" durationInFrames={schlussDauer(logo)}><Schluss logo={logo} /></Series.Sequence>
+      </Series>
+    </FormatRahmen>
+  </SpracheRahmen>
 );

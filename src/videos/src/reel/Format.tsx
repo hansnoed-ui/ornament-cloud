@@ -22,7 +22,7 @@ const LAGEN: Record<Format, Omit<Lage, "format" | "w" | "h">> = {
   "9:16": { quer: false, rand: 90, kopf: { x: 90, y: 230, b: 900, gr: 100 }, bild: { x: 90, y: 610, b: 900, h: 1060 }, clip: { x: 90, y: 470, b: 900, h: 1125 }, clipUnterY: 1635, mitteY: 960, logo: { cy: 942, mass: 1 } },
   "4:5": { quer: false, rand: 90, kopf: { x: 90, y: 100, b: 900, gr: 88 }, bild: { x: 90, y: 450, b: 900, h: 850 }, clip: { x: 90, y: 300, b: 900, h: 850 }, clipUnterY: 1175, mitteY: 675, logo: { cy: 620, mass: 0.92 } },
   "1:1": { quer: false, rand: 90, kopf: { x: 90, y: 70, b: 900, gr: 76 }, bild: { x: 90, y: 370, b: 900, h: 660 }, clip: { x: 90, y: 250, b: 900, h: 620 }, clipUnterY: 890, mitteY: 540, logo: { cy: 470, mass: 0.8 } },
-  "16:9": { quer: true, rand: 120, kopf: { x: 120, y: 200, b: 780, gr: 92 }, bild: { x: 1000, y: 90, b: 800, h: 900 }, clip: { x: 1000, y: 90, b: 800, h: 900 }, clipUnterY: null, mitteY: 540, logo: { cy: 470, mass: 0.8 } },
+  "16:9": { quer: true, rand: 120, kopf: { x: 120, y: 200, b: 840, gr: 92 }, bild: { x: 1000, y: 90, b: 800, h: 900 }, clip: { x: 1000, y: 90, b: 800, h: 900 }, clipUnterY: null, mitteY: 540, logo: { cy: 470, mass: 0.8 } },
 };
 
 const Kontext = React.createContext<Format>("9:16");

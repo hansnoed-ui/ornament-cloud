@@ -3,14 +3,13 @@
 // darunter sein Titel und sein Leitsatz.
 import React from "react";
 import { Easing, interpolate, useCurrentFrame } from "remotion";
-import daten from "../data/reel.json";
+import { useDaten } from "../Sprache";
 import { SERIF } from "../../neubau/Teile";
 import { useLage } from "../Format";
 import { C, Grund, Textspalte, Unterzeile, klemm, weich } from "../Teile";
 
 export const ZETTEL = 135;
 const AN = 62;                  // der Zettel leuchtet auf
-const NR = daten.begriff.zettel.nr;
 
 /** wie b.js: leicht gebogen, immer zur selben Seite (Z: Seite einer Zelle) */
 const faden = (a: number, b: number, Z: number) => {
@@ -20,10 +19,12 @@ const faden = (a: number, b: number, Z: number) => {
   const cx = (x1 + x2) / 2 - (dy / l) * k, cy = (y1 + y2) / 2 + (dx / l) * k;
   return `M${x1.toFixed(1)} ${y1.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
 };
-const nachbarn = new Set(daten.begriff.faeden.filter(([a, b]) => a === NR || b === NR).map(([a, b]) => (a === NR ? b : a)));
 
 export const Zettel: React.FC = () => {
   const f = useCurrentFrame();
+  const daten = useDaten();
+  const NR = daten.begriff.zettel.nr;
+  const nachbarn = new Set(daten.begriff.faeden.filter(([a, b]) => a === NR || b === NR).map(([a, b]) => (a === NR ? b : a)));
   const c = C("dunkel");
   const an = interpolate(f, [AN, AN + 6], [0, 1], klemm);
   const z = daten.begriff.zettel;

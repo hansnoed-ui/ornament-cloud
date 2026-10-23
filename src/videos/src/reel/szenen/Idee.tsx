@@ -1,13 +1,11 @@
 // «Eine Idee, die in die Welt kommt» (Papier): ein Telefon kippt ins Bild und blättert durch die echte Startseite /b/ bis zu den vier Leistungen.
 import React from "react";
 import { Img, interpolate, staticFile, useCurrentFrame } from "remotion";
-import daten from "../data/reel.json";
+import { useDaten } from "../Sprache";
 import { useLage } from "../Format";
 import { C, Grund, Textspalte, Unterzeile, klemm, weich } from "../Teile";
 
 export const IDEE = 150;
-// Lage der Abschnitte in der Aufnahme (CSS-Pixel), von aufnahme.mjs über daten.mjs
-const stellen = daten.stellen;
 // Breite und Oberkante des Telefons je Format (es reicht absichtlich über den unteren Rand hinaus)
 const TELEFON = { "9:16": [600, 700], "4:5": [520, 520], "1:1": [440, 420], "16:9": [480, 130] } as const;
 
@@ -15,6 +13,9 @@ export const Idee: React.FC = () => {
   const f = useCurrentFrame();
   const c = C("hell");
   const L = useLage();
+  const daten = useDaten();
+  // die Aufnahme der Startseite in der Sprache des Reels und die Lage ihrer Abschnitte (CSS-Pixel), von aufnahme.mjs über daten.mjs
+  const stellen = daten.telefon.stellen;
   const [BREITE, oben] = TELEFON[L.format];
   const s = BREITE / 600;                    // Mass gegenüber dem Telefon im Hochformat 9:16
   const RAHMEN = 16 * s, SCHIRM = BREITE - 2 * RAHMEN, HOEHE = 1300 * s;
@@ -33,7 +34,7 @@ export const Idee: React.FC = () => {
         transform: `perspective(2200px) rotateX(${interpolate(f, [0, 34], [24, 0], { ...klemm, easing: weich })}deg) translateY(${interpolate(f, [0, 34], [520, 0], { ...klemm, easing: weich })}px)`,
       }}>
         <div style={{ width: SCHIRM, height: HOEHE - 2 * RAHMEN, borderRadius: 70 * s, overflow: "hidden", backgroundColor: "#ffffff", position: "relative" }}>
-          <Img src={staticFile("reel/b-telefon.png")} style={{ position: "absolute", left: 0, top: 0, width: SCHIRM, translate: `0 ${-y}px` }} />
+          <Img src={staticFile(daten.telefon.bild)} style={{ position: "absolute", left: 0, top: 0, width: SCHIRM, translate: `0 ${-y}px` }} />
         </div>
       </div>
     </Grund>

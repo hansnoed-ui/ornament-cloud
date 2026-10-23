@@ -3,7 +3,7 @@
 // Im Querformat bleibt das Rad rechts stehen, die Konstellation kommt links unter die Unterzeile.
 import React from "react";
 import { interpolate, useCurrentFrame } from "remotion";
-import daten from "../data/reel.json";
+import { useDaten } from "../Sprache";
 import { SERIF } from "../../neubau/Teile";
 import { useLage } from "../Format";
 import { C, Grund, LebendeTafel, Textspalte, Unterzeile, klemm, weich } from "../Teile";
@@ -12,6 +12,7 @@ export const FRAGE = 210;
 const STEHT = 118;   // die Ringe stehen, die Begegnung erscheint (ORNA dreht 3,6 s ab 2,4 s; Vorlauf 2,35 s)
 
 export const Frage: React.FC = () => {
+  const daten = useDaten();
   const f = useCurrentFrame();
   const c = C("dunkel");
   const k = daten.frage2.konstellation;

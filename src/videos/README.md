@@ -229,11 +229,17 @@ Seit dem 23. Oktober 2026 auch in **4:5** (1080 × 1350, `ReelVideo45`), **1:1**
 Wunsch: «nun bitte noch eine Version 4:5 (Hochformat), 1:1 und 16:9 Querformat». Nicht skaliert oder beschnitten: `src/reel/Format.tsx` hält je Format ein Raster
 (Textspalte, Bildfläche, Fläche der Aufnahmen, Lage der Unterzeile, Mitte, Lage des Logos), alle Szenen lesen es über `useLage()`. Die Hochformate stapeln
 (Schlagzeile oben, höchstens etwa neun Schriftgrössen breit, damit sie überall gleich umbricht); 16:9 hat zwei Spalten, links der Text senkrecht mittig
-(mit Unterzeile, Konstellation, Zettel), rechts Aufnahme, Rad, Telefon oder Feld; «Was bringst du mit?» steht dort auf zwei Zeilen. `ReelVideoLogoIII` gibt es nur in 9:16. Wunsch: «nicht bloss eine Aufzählung sondern ein professionelles Werbe-Reel, ohne ‹art› … sei kreativ».
+(mit Unterzeile, Konstellation, Zettel), rechts Aufnahme, Rad, Telefon oder Feld; «Was bringst du mit?» steht dort auf zwei Zeilen. `ReelVideoLogoIII` gibt es nur in 9:16.
+**Englisch** (seit dem 23. Oktober 2026, Wunsch: «Bitte beide auch in englisch»): `ReelVideoEN` (9:16) und `ReelVideo169EN` (16:9). `daten.mjs` schreibt `data/reel.json` und
+`data/reel-en.json`, die Szenen holen ihre Texte über `useDaten()` (`src/reel/Sprache.tsx`). Frage, Titel, Wege, Apps, Leistungen, «no cookies …», der Zettel
+(«Note 24», Titel und Leitsatz wie unter `/b/en/`, geprüft) und die Frage der Konstellation kommen aus `/b/en/` (`inhalt.en.mjs`, `UI.en`, `ladeZettel("en")`,
+`constellations.en.js`); die fünf Sätze hat Claude übersetzt (`ANTWORTEN.en`: «An image that seeks movement», «A sound you can see», «A question that seeks a counterpart»,
+«An idea that comes into the world», «A concept that seeks connection»). Das Telefon zeigt die englische Startseite: einmal `NODE_PATH=$(npm root -g) node src/reel/aufnahme.mjs en`
+(→ `public/reel/b-telefon-en.png`, `b-stellen-en.json`). «What do you bring along?» hat fünf Wörter: der Auftakt zeigt fünf Einzelwörter, im Querformat zwei Zeilen. Wunsch: «nicht bloss eine Aufzählung sondern ein professionelles Werbe-Reel, ohne ‹art› … sei kreativ».
 Ein Werbefilm für `/b/`, gebaut um die Frage der Startseite, fünf Antworten mit je eigener Bildwelt; Papier und Tinte kippen bei jedem Schnitt (echte Umkehr wie hell und dunkel auf der Seite),
 harte Schnitte auf einem Schlag von 0,5 s (`TAKT`), damit sich Musik mit 120 Schlägen je Minute darunterlegen lässt. Keine Werke und Prints.
 Gestaltung aus `src/neubau/Teile.tsx`; jede Szene in `src/reel/szenen/` und als Composition im Ordner «Reel-Szenen».
-**Antworten und Sätze seit dem 23. Oktober 2026 von Christian** («Damit es sprachlich passt zu ‹Was bringst du mit?›»; `ANTWORTEN` in `daten.mjs`, nicht mehr die Wahlen des Dialogs der Startseite);
+**Antworten und Sätze seit dem 23. Oktober 2026 von Christian** («Einen Klang …» und «Einen Begriff …» im Akkusativ wie die Antwort auf die Frage) («Damit es sprachlich passt zu ‹Was bringst du mit?›»; `ANTWORTEN` in `daten.mjs`, nicht mehr die Wahlen des Dialogs der Startseite);
 die Szene «Eine Gruppe» (OMNA COLOR) ist damit entfallen.
 
 1. Tinte: «Was», «bringst», «du», «mit?» je allein und bildfüllend auf den Schlag, dann die ganze Frage als Block, das Fragezeichen in der Blaupause

@@ -2,7 +2,7 @@
 // die Antwort wird blau unterstrichen wie der aktive Punkt der Navigation auf /b/.
 import React from "react";
 import { Easing, interpolate, useCurrentFrame } from "remotion";
-import daten from "../data/reel.json";
+import { useDaten } from "../Sprache";
 import { useLage } from "../Format";
 import { C, Grund, klemm, weich } from "../Teile";
 
@@ -11,6 +11,7 @@ const RUNDEN = 2;
 const LANDUNG = 72;
 
 export const Wahlen: React.FC = () => {
+  const daten = useDaten();
   const f = useCurrentFrame();
   const L = useLage();
   const RAND = L.rand;

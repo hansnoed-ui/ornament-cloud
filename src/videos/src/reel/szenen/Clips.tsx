@@ -5,7 +5,7 @@
 import React from "react";
 import { Sequence, interpolate, staticFile, useCurrentFrame } from "remotion";
 import { Video } from "@remotion/media";
-import daten from "../data/reel.json";
+import { useDaten } from "../Sprache";
 import { einpassen, useLage } from "../Format";
 import { C, Grund, Modus, Textspalte, Unterzeile, klemm, weich } from "../Teile";
 
@@ -43,21 +43,24 @@ const Clipszene: React.FC<{ m: Modus; satz: string; schnitte: Schnitt[] }> = ({ 
   );
 };
 
-const P1 = daten.bild.a, P2 = daten.bild.c, P3 = daten.klang.b;
 export const BILD = 135;
-export const Bild: React.FC = () => (
-  <Clipszene m="dunkel" satz={daten.bild.satz} schnitte={[
+export const Bild: React.FC = () => {
+  const daten = useDaten();
+  const P1 = daten.bild.a, P2 = daten.bild.c;
+  return <Clipszene m="dunkel" satz={daten.bild.satz} schnitte={[
     ["phorma-i-lauf", 0, 45, 285, P1],        // PHORMA I: Glaskörper
     ["phorma-ii-raster", 45, 22, 120, P2],    // PHORMA II: Rasterdruck …
     ["phorma-ii-raster", 67, 23, 282, P2],    // … und Montage
     ["phorma-i-lauf", 90, 45, 420, P1],       // PHORMA I: Scherben
-  ]} />
-);
+  ]} />;
+};
 export const KLANG = 135;
-export const Klang: React.FC = () => (
-  <Clipszene m="hell" satz={daten.klang.satz} schnitte={[
+export const Klang: React.FC = () => {
+  const daten = useDaten();
+  const P3 = daten.klang.b;
+  return <Clipszene m="hell" satz={daten.klang.satz} schnitte={[
     ["phorma-iii-traube", 0, 45, 114, P3],    // die Traube: ein Herz aus Perlen
     ["phorma-iii-lauf", 45, 45, 60, P3],      // Irrfahrt: ein Würfel, die Fäden wachsen
     ["phorma-iii-lauf", 90, 45, 228, P3],     // Irrfahrt: drei Würfel
-  ]} />
-);
+  ]} />;
+};

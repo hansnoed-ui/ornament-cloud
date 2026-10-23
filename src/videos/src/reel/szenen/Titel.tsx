@@ -1,7 +1,7 @@
 // «Gestalten, vermitteln, kuratieren.»: drei Schläge, drei Wörter, Papier und Tinte kippen bei jedem Schnitt; Komma und Punkt in der Blaupause.
 import React from "react";
 import { interpolate, useCurrentFrame } from "remotion";
-import daten from "../data/reel.json";
+import { useDaten } from "../Sprache";
 import { useLage } from "../Format";
 import { C, Grund, Modus, klemm, weich } from "../Teile";
 
@@ -9,6 +9,7 @@ export const SCHLAG = 30;
 export const TITEL = SCHLAG * 3;
 
 export const Titel: React.FC = () => {
+  const daten = useDaten();
   const f = useCurrentFrame();
   const i = Math.min(2, Math.floor(f / SCHLAG));
   const m: Modus = i % 2 === 0 ? "hell" : "dunkel";

@@ -13,7 +13,7 @@
 import React from "react";
 import { Freeze, interpolate, staticFile, useCurrentFrame } from "remotion";
 import { Video } from "@remotion/media";
-import daten from "../data/reel.json";
+import { useDaten } from "../Sprache";
 import { C, Grund, klemm, weich } from "../Teile";
 import { LogoVektor } from "../LogoVektor";
 import { useLage } from "../Format";
@@ -28,6 +28,7 @@ const FASSUNG = {
 export const schlussDauer = (logo: Logo) => FASSUNG[logo].still - FASSUNG[logo].ab + HALT;
 
 export const Schluss: React.FC<{ logo?: Logo }> = ({ logo = "ii" }) => {
+  const daten = useDaten();
   const v = FASSUNG[logo];
   const L = useLage();
   // PHORMA II: die Mitte des Logos (540, 657 in der Aufnahme) kommt je Format auf L.logo.cy, in der Grösse L.logo.mass; PHORMA III nur im Hochformat 9:16
