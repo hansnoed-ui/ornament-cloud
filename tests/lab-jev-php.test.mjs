@@ -133,3 +133,43 @@ test("wahl.php: Fehler von jev werden verständlich; Grenzen je Adresse und für
   konfig({});
   assert.deepEqual(await bereit(), { bereit: true });
 });
+
+test("wahl.php: die Frage nach der Dramaturgie (Bild und Klang, 30 s) prüft wie fragen.js und fragt wörtlich gleich", { skip: ohnePhp && "kein php" }, async () => {
+  konfig({});
+  const { DRAMATURGIEN } = await import(new URL("alpha/lab/jev/fragen.js", root).href);
+  const merkmale = { kontrast: "hoch", farbigkeit: "bunt", symmetrie: "asymmetrisch", helligkeit: "dunkel", dichte: "dicht", dynamik: "wechselhaft" };
+  for (const [lage, re] of [
+    [{ frage: "dramaturgie", merkmale, optionen: ["vorschlag.puls"] }, /2–6 Dramaturgien/],
+    [{ frage: "dramaturgie", merkmale, optionen: ["vorschlag.puls", "lab.feedback"] }, /Dramaturgien/],
+    [{ frage: "dramaturgie", merkmale: { ...merkmale, dichte: "sehr" }, optionen: ["vorschlag.puls", "vorschlag.raster"] }, /Merkmal dichte/],
+    [{ frage: "dramaturgie", merkmale: { ...merkmale, text: "frei" }, optionen: ["vorschlag.puls", "vorschlag.raster"] }, /unbekannte Merkmale/],
+    [{ frage: "dramaturgie", merkmale: { kontrast: "hoch" }, optionen: ["vorschlag.puls", "vorschlag.raster"] }, /Merkmal farbigkeit/],
+    [{ frage: "dramaturgie", merkmale, optionen: ["vorschlag.puls", "vorschlag.raster"], bild: "x" }, /unbekannte Felder/],
+    [{ frage: "dramaturgie", merkmale: ["hoch"], optionen: ["vorschlag.puls", "vorschlag.raster"] }, /Merkmale fehlen/],
+  ]) {
+    const a = await frage(lage);
+    assert.equal(a.status, 400, JSON.stringify(lage)); assert.match(a.json.fehler, re);
+    assert.throws(() => labLage(lage), re, "dieselbe Regel wie fragen.js");
+  }
+  gesendet = [];
+  const roh = { optionen: Object.keys(DRAMATURGIEN), merkmale: { ...merkmale, dynamik: "anschwellend" }, frage: "dramaturgie" };
+  const a = await frage(roh);
+  assert.equal(a.status, 200, JSON.stringify(a.json));
+  const f = labFrage(labLage(roh));
+  assert.equal(gesendet.length, 1);
+  assert.deepEqual(gesendet[0].body, { model: "jev-latest", state: f.zustand, questions: f.fragen }, "PHP und fragen.js fragen wörtlich gleich");
+  assert.deepEqual(Object.keys(a.json.wahrscheinlichkeiten), Object.keys(DRAMATURGIEN));
+  assert.equal((await frage(roh)).json.zwischengespeichert, true);
+  const andere = await frage({ ...roh, merkmale: { ...roh.merkmale, dichte: "ruhig" } });
+  assert.equal(andere.json.zwischengespeichert, false, "andere Stufen, neue Frage");
+  assert.equal(gesendet.length, 2);
+});
+
+test("wahl.php: derselbe Katalog der Operationen wie fragen.js", { skip: ohnePhp && "kein php" }, async () => {
+  const { KATALOG } = await import(new URL("alpha/lab/jev/fragen.js", root).href);
+  gesendet = [];
+  const lage = { verlauf: [], optionen: Object.keys(KATALOG).slice(-6) };
+  const a = await frage(lage);
+  assert.equal(a.status, 200, JSON.stringify(a.json));
+  assert.deepEqual(gesendet[0].body.questions, labFrage(labLage(lage)).fragen);
+});

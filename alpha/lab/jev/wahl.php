@@ -7,6 +7,7 @@
 //
 //   GET  wahl.php                                 → { bereit: true|false, grund? }   (kostet nichts, fragt jev nicht)
 //   POST wahl.php  { verlauf: [...], optionen: [...] }  → { wahrscheinlichkeiten: { "lab.feedback": 0.6, … }, modell, zwischengespeichert }
+//   POST wahl.php  { frage: "dramaturgie", merkmale: {...}, optionen: [...] }  → ebenso, für die Animation aus Bild und Klang (seit Lab 0.1.11)
 //
 // Was die Zwischenstelle annimmt: nur POST von https://ornament.cloud (Origin), JSON, höchstens 2000 Bytes, nur eine Lage, die dieselben
 // Regeln erfüllt wie labLage() in fragen.js (Kennungen aus dem festen Katalog, keine freien Texte). Die Frage baut sie selbst mit festem
@@ -33,8 +34,37 @@ const KATALOG = [
   'lab.differenz' => 'Differenz: zeigt und misst den Unterschied zu einem anderen Zustand (Beobachtung)',
   'lab.profil' => 'Kompositorisches Profil: misst Schwerpunkt, Symmetrie, Lichtverteilung, Kontrast, Sättigung und Kantenrichtung des Bildes (Beobachtung)',
   'lab.komposition' => 'Komposition verändern: verstärkt, hebt auf oder kehrt um, was das Profil misst, etwa Symmetrie, Lichtgefälle oder Sättigung (räumliche Operation)',
+  'lab.glitch' => 'Glitch: Blöcke zeigen Inhalt von anderer Stelle, Zeilen verrutschen, Farbkanäle trennen sich (räumliche Operation)',
+  'lab.pixelsortierung' => 'Pixelsortierung: Abschnitte zwischen zwei Helligkeitsschwellen werden sortiert, das Bild zerfliesst in Streifen (räumliche Operation)',
+  'lab.verzerrung' => 'Optische Verzerrung: Wirbel, Linse, Welle, Kaleidoskop oder Versetzen nach Helligkeit (räumliche Operation)',
+  'lab.licht' => 'Licht: helle Stellen glühen oder streichen zu Lichtfahnen aus (räumliche Operation)',
+  'lab.raster' => 'Raster und Linien: das Bild wird zu Punkten, Linien, Schraffur, Wellenlinien oder Mosaik (räumliche Operation)',
+  'lab.neusetzen' => 'Zerlegen und neu setzen: Kacheln oder Streifen werden zufällig, nach Helligkeit oder umgekehrt neu geordnet (räumliche Operation)',
 ];
 const FRAGE = 'In einem künstlerischen Labor wird ein Bild schrittweise durch Operationen verändert; jedes Ergebnis kann weitergeführt werden. Welche der folgenden Operationen eröffnet als nächster Schritt am ehesten eine Fortsetzung, die sich vom bisherigen Verlauf deutlich unterscheidet, statt ihn nur zu wiederholen?';
+
+/** Dramaturgien und Merkmale (gleich wie DRAMATURGIEN und MERKMALE in fragen.js) */
+const DRAMATURGIEN = [
+  'vorschlag.puls' => 'Puls: sechs Varianten einer Feedback-Schleife, deren Zoom der Lautstärke folgt; harte Schnitte zwischen ihnen auf den Anschlägen des Klangs',
+  'vorschlag.zerfall' => 'Zerfall: das Bild zerfällt in Farbflächen und setzt sich in sechs Zuständen neu zusammen (The Fictory); ruhige Übergänge, bei denen die dunklen Stellen zuerst erscheinen',
+  'vorschlag.spiegel' => 'Spiegelung: die Symmetrie des Bildes wird verstärkt oder umgekehrt, je nach Lautstärke des Klangs; weiche Überblendungen im Takt der Anschläge',
+  'vorschlag.farbwelle' => 'Farbwelle: die Farben drehen sich mit der Lautstärke durch den Farbkreis, in acht Varianten; Überblendungen im Takt der Anschläge',
+  'vorschlag.raster' => 'Vervielfältigung: das Bild wird im Raster wiederholt, die Grösse der Kopien folgt der Lautstärke; Schnitte im Takt der Anschläge',
+  'vorschlag.steigerung' => 'Steigerung: drei Operationen nacheinander (Farbe, Wiederholung, Feedback), das Bild verwandelt sich schrittweise immer weiter; lange, ruhige Übergänge',
+];
+const MERKMALE = [
+  'bild' => [
+    'kontrast' => ['niedrig' => 'Kontrast niedrig', 'mittel' => 'Kontrast mittel', 'hoch' => 'Kontrast hoch'],
+    'farbigkeit' => ['grau' => 'fast ohne Farbe', 'gedaempft' => 'gedämpfte Farben', 'bunt' => 'kräftige Farben'],
+    'symmetrie' => ['symmetrisch' => 'nahezu spiegelgleich', 'asymmetrisch' => 'deutlich asymmetrisch'],
+    'helligkeit' => ['dunkel' => 'eher dunkel', 'mittel' => 'mittlere Helligkeit', 'hell' => 'eher hell'],
+  ],
+  'klang' => [
+    'dichte' => ['ruhig' => 'wenige Anschläge (weniger als einer je zwei Sekunden)', 'bewegt' => 'regelmässige Anschläge (etwa einer bis zwei je Sekunde)', 'dicht' => 'dichte Anschläge (mehr als zwei je Sekunde)'],
+    'dynamik' => ['gleichmaessig' => 'die Lautstärke bleibt etwa gleich', 'anschwellend' => 'wird über die Zeit lauter', 'abschwellend' => 'wird über die Zeit leiser', 'wechselhaft' => 'die Lautstärke wechselt stark'],
+  ],
+];
+const FRAGE_DRAMATURGIE = 'In einem künstlerischen Labor sollen ein Bild und ein Klang zu einer Animation von 30 Sekunden werden; der Klang ist die Tonspur. Gemessen wurden nur die genannten Merkmale. Bei welcher der folgenden Dramaturgien geht die Bewegung am ehesten aus diesem Bild und diesem Klang hervor, statt ihnen von aussen übergestülpt zu werden?';
 
 function antwort(array $daten, int $status = 200): void {
   http_response_code($status);
@@ -71,6 +101,7 @@ function schluessel(?string $ordner): ?string {
 /** Lage prüfen und bereinigen, wie labLage() in fragen.js */
 function lage($roh): array {
   if (!is_array($roh) || ($roh !== [] && array_keys($roh) === range(0, count($roh) - 1))) throw new InvalidArgumentException('Lage fehlt');
+  if (($roh['frage'] ?? null) === 'dramaturgie') return dramaturgieLage($roh);
   $fremd = array_diff(array_keys($roh), ['verlauf', 'optionen']);
   if ($fremd) throw new InvalidArgumentException('unbekannte Felder: ' . implode(', ', $fremd));
   $verlauf = (isset($roh['verlauf']) && is_array($roh['verlauf'])) ? array_slice(array_values($roh['verlauf']), -8) : [];
@@ -84,8 +115,43 @@ function lage($roh): array {
   return ['verlauf' => $verlauf, 'optionen' => $optionen];
 }
 
+function dramaturgieLage(array $roh): array {
+  $fremd = array_diff(array_keys($roh), ['frage', 'merkmale', 'optionen']);
+  if ($fremd) throw new InvalidArgumentException('unbekannte Felder: ' . implode(', ', $fremd));
+  $m = $roh['merkmale'] ?? null;
+  if (!is_array($m) || ($m !== [] && array_keys($m) === range(0, count($m) - 1))) throw new InvalidArgumentException('Merkmale fehlen');
+  $stufen = MERKMALE['bild'] + MERKMALE['klang'];
+  $fremd = array_diff(array_keys($m), array_keys($stufen));
+  if ($fremd) throw new InvalidArgumentException('unbekannte Merkmale: ' . implode(', ', $fremd));
+  $merkmale = [];
+  foreach ($stufen as $k => $werte) {
+    if (!isset($m[$k]) || !is_string($m[$k]) || !array_key_exists($m[$k], $werte)) throw new InvalidArgumentException("Merkmal $k fehlt oder hat keine gültige Stufe");
+    $merkmale[$k] = $m[$k];
+  }
+  $optionen = [];
+  foreach ((isset($roh['optionen']) && is_array($roh['optionen'])) ? array_values($roh['optionen']) : [] as $k) {
+    if (!is_string($k) || !isset(DRAMATURGIEN[$k])) throw new InvalidArgumentException('Optionen müssen 2–6 Dramaturgien aus dem Katalog sein');
+    if (!in_array($k, $optionen, true)) $optionen[] = $k;
+  }
+  if (count($optionen) < 2 || count($optionen) > 6) throw new InvalidArgumentException('Optionen müssen 2–6 Dramaturgien aus dem Katalog sein');
+  return ['frage' => 'dramaturgie', 'merkmale' => $merkmale, 'optionen' => $optionen];
+}
+
 /** feste Frage an jev, wie labFrage() in fragen.js */
 function frage(array $lage): array {
+  if (($lage['frage'] ?? null) === 'dramaturgie') {
+    $zeile = function (string $gruppe) use ($lage): string {
+      $teile = [];
+      foreach (MERKMALE[$gruppe] as $k => $werte) $teile[] = $werte[$lage['merkmale'][$k]];
+      return implode('; ', $teile);
+    };
+    $kriterien = [];
+    foreach ($lage['optionen'] as $k) $kriterien[$k] = DRAMATURGIEN[$k];
+    return [
+      'zustand' => ['labor' => 'ORNAMENT LAB, Animation aus Bild und Klang', 'bild' => $zeile('bild'), 'klang' => $zeile('klang')],
+      'fragen' => ['wahl' => ['type' => 'choice', 'instructions' => FRAGE_DRAMATURGIE, 'criteria' => $kriterien]],
+    ];
+  }
   $zeilen = [];
   foreach ($lage['verlauf'] as $i => $k) $zeilen[] = ($i + 1) . '. ' . (KATALOG[$k] ?? $k);
   $kriterien = [];

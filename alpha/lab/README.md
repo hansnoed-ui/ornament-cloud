@@ -13,7 +13,7 @@ node alpha/lab/starten.mjs            # → http://localhost:8790/alpha/lab/
 
 Keine Installation und keine Abhängigkeiten, nur Node 18 oder neuer. Der Server liefert das Repository nur an `127.0.0.1` aus, weil das Lab The Fictory, ORNA und `vendor/` an ihren Orten liest. Ein Chromium-Browser wird empfohlen: Er erzeugt das MP4 über WebCodecs. Andere Browser fallen auf WebM in Echtzeit zurück.
 
-**Online und Isolation:** Das Lab liegt in `alpha/lab/` und ist seit dem 23. Oktober 2026 auf Christians Wunsch unter <https://ornament.cloud/alpha/lab/> erreichbar. Es läuft ganz im Browser: Bilder und Projekte bleiben auf dem Gerät der Person, nichts wird hochgeladen. Wie die anderen Alpha-Apps ist es nur per Direktlink erreichbar, keine Seite verlinkt es, und `noindex` hält es aus der Suche. Nicht auf den Webspace kommen `docs/`, `werkzeuge/`, `starten.mjs`, und `README.md` (`tools/hostpoint/ausschluss.txt`). Einzige Ausnahme vom «nur im Browser»: `jev/wahl.php`, die Zwischenstelle für jev live (Kennungen von Operationen, keine Bilder, `docs/JEV-STATUS.md`). Die Website und die bestehenden Apps bleiben unverändert.
+**Online und Isolation:** Das Lab liegt in `alpha/lab/` und ist seit dem 23. Oktober 2026 auf Christians Wunsch unter <https://ornament.cloud/alpha/lab/> erreichbar. Es läuft ganz im Browser: Bilder und Projekte bleiben auf dem Gerät der Person, nichts wird hochgeladen. Wie die anderen Alpha-Apps ist es nur per Direktlink erreichbar, keine Seite verlinkt es, und `noindex` hält es aus der Suche. Nicht auf den Webspace kommen `docs/`, `werkzeuge/`, `starten.mjs`, und `README.md` (`tools/hostpoint/ausschluss.txt`). Einzige Ausnahme vom «nur im Browser»: `jev/wahl.php`, die Zwischenstelle für jev live (Kennungen von Operationen und gemessene Stufen, keine Bilder und keine Töne, `docs/JEV-STATUS.md`). Die Website und die bestehenden Apps bleiben unverändert.
 
 ## Ein Durchgang
 
@@ -31,6 +31,8 @@ Keine Installation und keine Abhängigkeiten, nur Node 18 oder neuer. Der Server
    **Animation über Stationen** macht aus mehreren Zuständen einen Film: den Verlauf, oder Zustände, die unter «Nebeneinander» mit «Station» aufgenommen wurden. Dort lassen sich unter «Schritte» auch frühere Schritte wählen, und «alle Varianten aller Schritte» nimmt alle Varianten des Verlaufs auf einmal (seit 0.1.11). Wählbar sind Reihenfolge, Halten und Übergang (Überblendung, Schwelle, Verlauf der Operation, Schnitt). Die Dauern lassen sich über die Stationen modulieren. Die Einsätze eines Tons können den Takt geben, dann liegt der Ton als Tonspur darunter. Auch ohne Takt lässt sich ein Klang als Tonspur wählen, und «Halten an den Klang anpassen» macht den Film so lang wie den Klang (docs/STATIONEN.md).
 10. **Protokoll:** Hier steht jede Ausführung und jede Entscheidung in einer von vier Arten: **Mensch**, **Zufall**, **Regel** oder **jev**. «Verlauf speichern» legt eine **Kette** an, die sich auf anderes Material anwenden lässt.
 11. **Projekt speichern** ergibt eine `.ornalab.zip`, die `projekt.json` und `medien/` enthält, auch die Tondateien. **Projekt öffnen** stellt alles wieder her, auch das Weiterarbeiten.
+
+**Vorschlag für 30 s:** Mit einem Bild und einem Ton im Material schlägt das Lab eine Animation von 30 Sekunden vor. jev (oder ohne jev feste Regeln) wählt aus sechs Dramaturgien, der Mensch übernimmt oder wählt eine andere (docs/VORSCHLAG.md).
 
 Arbeitsmodi: **Manuell**. **jev-assistiert** zeigt Vorschläge nach offen gelegten Regeln und, sobald der Schlüssel hinterlegt ist, auf Knopfdruck Wahrscheinlichkeiten von jev live (`docs/JEV-STATUS.md`). **Experimentell** lässt das Lab selbst Operationen verbinden, in Grenzen und mit Startwert.
 
@@ -54,6 +56,7 @@ NODE_PATH=$(npm root -g) node tests/lab.e2e.mjs      # der ganze Prozess in Chro
 | [docs/REFERENZ-MATRIX.md](docs/REFERENZ-MATRIX.md) | Recherche zu den Referenzprogrammen: Operationsmatrix und Auswahl, mit Stand (geprüft oder Hypothese) |
 | [docs/MODULATION-DOSSIER.md](docs/MODULATION-DOSSIER.md) | Operations-Dossier zur Modulation: VCV Rack (Quellcode), Bitwig und TouchDesigner (Handbücher), je 13 Punkte nach §9 |
 | [docs/REA-PROTOKOLL.md](docs/REA-PROTOKOLL.md) | REA: Prüfung, Setup-Probelauf, zwei Untersuchungen |
+| [docs/VORSCHLAG.md](docs/VORSCHLAG.md) | Vorschlag für 30 s aus Bild und Klang: Messung in Stufen, jev oder Regeln, sechs Dramaturgien |
 | [docs/JEV-STATUS.md](docs/JEV-STATUS.md) | jev: was eingebunden ist, was fehlt, wie es live wird |
 | [docs/AUDIO-FORMAT.md](docs/AUDIO-FORMAT.md) | Audio-Operationsformat: acht Klangformen, ihre Kopplung an Bildoperationen, Tonsignal, Klangerzeuger, Tonspur (§5) |
 | [docs/KLANGTRANSFORMATION.md](docs/KLANGTRANSFORMATION.md) | Klangtransformationen: Tempo und Tonhöhe, Dekonstruktion, Neu-Rhythmisierung, Körner; Qualität beim Lesen und Ausspielen; Referenzen (SuperCollider, Pure Data geprüft) |

@@ -864,6 +864,71 @@ test("Klangtransformationen im Projekt: sechs Tempi nebeneinander, Kette auf ein
   assert.equal(projekt.ergebnisse.filter((x) => x.typ === "AUDIO" && x.knoten).length, 6 + 1 + 6 + 1);
 });
 
+// ---------- Vorschlag für 30 s aus Bild und Klang (Lab 0.1.11) ----------
+test("Vorschlag: messen in festen Stufen, Regeln ohne jev, jev-Lage nur aus Kennungen, Rezepte aus dem Register", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const { DRAMATURGIEN, MERKMALE, labLage, labFrage } = await lab("jev/fragen.js");
+  const r = labRegister();
+  assert.deepEqual(Object.keys(VS.REZEPTE), Object.keys(DRAMATURGIEN), "jeder Dramaturgie im jev-Katalog gehört ein Rezept");
+  for (const [id, x] of Object.entries(VS.REZEPTE)) for (const s of x.schritte) {
+    assert.ok(r.hat(s.operation), `${id}: ${s.operation}`);
+    const op = r.hole(s.operation);
+    if (s.route) assert.equal(op.parameter.find((p) => p.id === s.route.ziel)?.art, "zahl", `${id}: ${s.route.ziel} ist modulierbar`);
+    for (const k of Object.keys(s.parameter)) assert.ok(op.parameter.some((p) => p.id === k), `${id}: Parameter ${k}`);
+  }
+  const { p, m, e, t } = mitTon();
+  const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id });
+  assert.deepEqual(Object.keys(mg.merkmale).sort(), [...Object.keys(MERKMALE.bild), ...Object.keys(MERKMALE.klang)].sort());
+  assert.equal(mg.merkmale.dichte, "bewegt", `je halbe Sekunde ein Anschlag: ${mg.werte.anschlaegeJeSekunde}`);
+  assert.equal(mg.merkmale.dynamik, "anschwellend", `leise, dann laut: ${mg.werte.lautAnfang} → ${mg.werte.lautEnde}`);
+  assert.deepEqual(p.knoten.map((k) => k.operation), ["lab.tonsignal", "lab.profil"], "messen steht im Projekt");
+  assert.equal(P.ergebnis(p, mg.signal).daten.dauer, 6);
+  const lage = labLage(VS.jevLage(mg));
+  assert.deepEqual(lage.optionen, Object.keys(DRAMATURGIEN));
+  assert.ok(!JSON.stringify(lage).match(/medien|\.wav|\.png/), "jev bekommt nur Stufen und Kennungen");
+  const f = labFrage(lage);
+  assert.deepEqual(Object.keys(f.zustand), ["labor", "bild", "klang"]);
+  assert.match(f.zustand.klang, /über die Zeit lauter/);
+  assert.throws(() => labLage({ ...VS.jevLage(mg), frage: "dramaturgie", merkmale: { ...mg.merkmale, dichte: "frei erfunden" } }), /Merkmal dichte/);
+  assert.throws(() => labLage({ frage: "dramaturgie", merkmale: mg.merkmale, optionen: ["vorschlag.puls", "lab.feedback"] }), /Dramaturgien/);
+  assert.throws(() => labLage({ frage: "dramaturgie", merkmale: { ...mg.merkmale, bild: "x" }, optionen: ["vorschlag.puls", "vorschlag.raster"] }), /unbekannte Merkmale/);
+  const regel = VS.regelDramaturgie(mg.merkmale);
+  assert.equal(regel[0].dramaturgie, "vorschlag.steigerung", "lauter werdend → Steigerung");
+  assert.ok(regel[0].gruende.length > 0);
+  assert.equal(VS.taktSchwelle({ ereignisse: [{ t: 1, staerke: 1 }], dauer: 30 }, 1), null, "zu wenige Anschläge");
+  assert.equal(VS.taktSchwelle({ ereignisse: Array.from({ length: 10 }, (_, i) => ({ t: i + 1, staerke: i / 10 })), dauer: 4 }, 1), 0.6, "die vier stärksten");
+});
+
+test("Vorschlag: eine Dramaturgie ausführen ergibt Stationen und einen Plan von höchstens 30 s, im Takt der Anschläge mit Tonspur", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const r = labRegister();
+  const { p, m, e, t } = mitTon();
+  const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id, beginn: 1 });
+  const x = await VS.vorschlagAusfuehren({ register: r, projekt: p, medien: m, messung: mg, dramaturgie: "vorschlag.raster", wahl: { art: "regel", details: { rang: 1 } }, seed: 3 });
+  assert.equal(x.entscheidung.art, "regel"); assert.equal(x.entscheidung.gegenstand, "dramaturgie"); assert.equal(x.entscheidung.details.merkmale.dichte, mg.merkmale.dichte);
+  assert.equal(x.ergebnisse.length, 6);
+  const groessen = x.ergebnisse.map((y) => y.variante.parameter.groesse);
+  assert.ok(new Set(groessen).size > 1, `die Lautstärke verteilt die Grösse: ${groessen}`);
+  assert.equal(x.plan.stationen[0], e.id); assert.equal(x.plan.stationen.length, 7);
+  assert.equal(x.plan.tonspur, t.id); assert.equal(x.plan.tonBeginn, 1); assert.equal(x.plan.dauer, 5);
+  assert.ok(x.plan.takt, "Anschläge genug für einen Takt");
+  const pt = ST.partitur(p, { ...x.plan, fps: 30 });
+  assert.equal(pt.dauer, 5, "so lang wie der gemessene Ausschnitt");
+  assert.equal(pt.takt.ton, t.id);
+  assert.ok(pt.folge.length > 7, "reihum im Takt");
+  const k = p.knoten.at(-1);
+  assert.equal(p.entscheidungen.find((d) => d.knoten === k.id).art, "regel");
+  // ohne Takt (Steigerung): drei Schritte nacheinander, das Halten füllt die Dauer
+  const s = await VS.vorschlagAusfuehren({ register: r, projekt: p, medien: m, messung: mg, dramaturgie: "vorschlag.steigerung", wahl: { art: "jev", details: { wahrscheinlichkeit: 0.5 } } });
+  assert.deepEqual(p.knoten.slice(-3).map((k) => k.operation), ["lab.farbe", "lab.wiederholung", "lab.feedback"]);
+  assert.equal(P.knoten(p, p.knoten.at(-1).id).eingaben.bild, p.knoten.at(-2).ausgaben[0], "jeder Schritt auf dem vorigen");
+  assert.equal(s.plan.takt, null);
+  const ps = ST.partitur(p, { ...s.plan, fps: 30 });
+  assert.ok(Math.abs(ps.dauer - 5) < 0.2, `${ps.dauer}`);
+  await assert.rejects(VS.vorschlagAusfuehren({ register: r, projekt: p, medien: m, messung: mg, dramaturgie: "vorschlag.gibtsnicht", wahl: { art: "mensch" } }), /gibt es nicht/);
+  assert.deepEqual(P.pruefeProjekt(p), []);
+});
+
 const FILTER = ["lab.glitch", "lab.pixelsortierung", "lab.verzerrung", "lab.licht", "lab.raster", "lab.neusetzen"];
 
 test("Bildfilter (0.1.10): jeder verändert das Bild, ist mit demselben Startwert wiederholbar, Anteil 0 lässt den Eingang stehen", async () => {

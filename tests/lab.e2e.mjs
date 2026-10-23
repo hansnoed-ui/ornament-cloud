@@ -554,10 +554,66 @@ await check("Keine Fehler in der Konsole, keine Anfragen nach aussen", async () 
 });
 await ctx.close();
 
+await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) bekommt nur Stufen, Dramaturgie übernehmen, Film mit Tonspur", async () => {
+  const c = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  const p = await c.newPage();
+  const fehler2 = [];
+  p.on("pageerror", (e) => fehler2.push(e.message));
+  const gesendet = [];
+  await p.route("**/alpha/lab/jev/wahl.php", (r) => {
+    if (r.request().method() === "GET") return r.fulfill({ contentType: "application/json", body: JSON.stringify({ bereit: true }) });
+    const lage = r.request().postDataJSON(); gesendet.push(lage);
+    return r.fulfill({ contentType: "application/json", body: JSON.stringify({ wahrscheinlichkeiten: Object.fromEntries(lage.optionen.map((o) => [o, o === "vorschlag.farbwelle" ? 0.7 : 0.05])), modell: "jev-test", zwischengespeichert: false }) });
+  });
+  await p.goto(base);
+  await p.waitForFunction(() => globalThis.ornamentLab);
+  await p.waitForFunction(() => /jev live: bereit/.test(document.querySelector("#status").textContent));
+  await p.click("#beispiel");
+  await p.waitForFunction(() => ornamentLab.aktuell);
+  assert.match(await p.textContent("#vorschlag30"), /Mit einem Ton dazu/);
+  await p.setInputFiles("#tondatei", { name: "beat.wav", mimeType: "audio/wav", buffer: beatWav() });
+  await p.waitForSelector("#vorschlag-machen");
+  await p.click("#vorschlag-machen");
+  await p.waitForSelector('#vorschlag30 input[name="dramaturgie"]');
+  await warteFertig(p);
+  assert.deepEqual(Object.keys(gesendet[0]), ["frage", "merkmale", "optionen"]);
+  assert.equal(gesendet[0].frage, "dramaturgie");
+  assert.ok(Object.values(gesendet[0].merkmale).every((v) => /^[a-z]+$/.test(v)), "nur Stufen");
+  assert.equal(await p.locator('#vorschlag30 input[name="dramaturgie"]:checked').getAttribute("value"), "vorschlag.farbwelle", "der wahrscheinlichste steht vorgewählt");
+  assert.match(await p.textContent("#vorschlag30"), /Gemessen\. Bild: .*Klang/);
+  await p.locator('#vorschlag30 input[value="vorschlag.raster"]').check();
+  await p.click("#vorschlag-rechnen");
+  await p.waitForTimeout(50);
+  await warteFertig(p, 180000);
+  await p.waitForSelector("#vorschlag30 video");
+  const x = await S(p, () => { const pr = ornamentLab.projekt; return { export: pr.exporte.at(-1), d: pr.entscheidungen.find((y) => y.gegenstand === "dramaturgie"), ops: pr.knoten.map((k) => k.operation), ton: pr.ergebnisse.find((e) => e.titel === "beat.wav").id }; });
+  assert.equal(x.d.art, "jev"); assert.equal(x.d.gewaehlt, "vorschlag.raster"); assert.equal(x.d.details.modell, "jev-test"); assert.equal(x.d.details.wahrscheinlichkeit, 0.05); assert.ok(x.d.details.rang > 1, "der Mensch hat einen anderen als den ersten gewählt");
+  assert.deepEqual(x.ops, ["lab.tonsignal", "lab.profil", "lab.wiederholung"]);
+  assert.equal(x.export.art, "stationen"); assert.equal(x.export.dramaturgie, "vorschlag.raster"); assert.equal(x.export.stationen.length, 7);
+  assert.ok(Math.abs(x.export.partitur.dauer - 4) < 0.05, `so lang wie der Klang: ${x.export.partitur.dauer}`);
+  assert.ok(x.export.partitur.takt, "im Takt der Anschläge");
+  assert.equal(x.export.tonQuelle ?? x.ton, x.ton);
+  // unter «Nacheinander» steht derselbe Film mit den Stationen des Vorschlags
+  await p.locator('input[name="ansicht"][value="nach"]').check({ force: true });
+  assert.equal(await p.locator(".stationen-liste li").count(), 7);
+  assert.deepEqual(fehler2, []);
+  await c.close();
+});
+
 await check("Telefon: kein seitliches Scrollen, Bereiche untereinander", async () => {
   const t = await oeffne({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const breit = await t.page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   assert.ok(breit <= 0, `${breit}px zu breit`);
+  // mit Bild und Ton steht der Vorschlag für 30 s im Material, ohne Überbreite
+  await t.page.click("#beispiel");
+  await t.page.waitForFunction(() => ornamentLab.aktuell);
+  await t.page.setInputFiles("#tondatei", { name: "beat.wav", mimeType: "audio/wav", buffer: beatWav() });
+  await t.page.waitForSelector("#vorschlag-machen");
+  await t.page.click("#vorschlag-machen");
+  await t.page.waitForSelector('#vorschlag30 input[name="dramaturgie"]');
+  await t.page.waitForFunction(() => !ornamentLab.laeuft);
+  assert.match(await t.page.textContent("#vorschlag30"), /nach festen Regeln/, "ohne jev: Regeln");
+  assert.ok(await t.page.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 0, "Vorschlag ohne Überbreite");
   const [a, b] = await Promise.all(["#material", "#experiment"].map((s) => t.page.locator(s).boundingBox()));
   assert.ok(b.y > a.y && Math.abs(b.x - a.x) < 2);
   await t.ctx.close();

@@ -110,6 +110,16 @@ fieldset { border: 0; margin: 0; padding: 0; }
 .vorschlaege ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
 .vorschlaege li { display: grid; gap: 2px; }
 .vorschlaege small { color: var(--muted); }
+/* Vorschlag für 30 s aus Bild und Klang (Material) */
+.vorschlag30 { border-left: 2px solid var(--accent); padding: 4px 0 4px 14px; margin-top: 14px; display: grid; gap: 10px; font-size: 0.9rem; }
+.vorschlag30 h3 { font-size: 0.95rem; margin: 0; }
+.vorschlag30 > small { color: var(--muted); }
+.vorschlag-wahl { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.vorschlag-wahl select, .vorschlag-wahl input { width: 100%; min-width: 0; }
+.dramaturgien { gap: 10px; }
+.dramaturgie { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; row-gap: 2px; align-items: start; cursor: pointer; }
+.dramaturgie input { margin-top: 3px; }
+.dramaturgie small { grid-column: 2; color: var(--muted); }
 
 /* Bühne */
 .buehne { min-height: 320px; }
