@@ -18,8 +18,8 @@ Die vier Entscheidungsarten **Mensch, Zufall, Regel, jev** bleiben im Projekt un
 
 ## jev live einrichten (braucht Zustimmung, kleine Kosten)
 
-1. Den Worker aus `src/lab/jev/worker-entwurf.js` nach dem Muster von `tools/jev-worker/` einrichten (eigene `wrangler.toml`, Secret `TYPESAFE_API_KEY`, `ERLAUBT` auf die Lab-Adresse setzen).
-2. Die Adresse in `src/lab/jev/jev.js` als `JEV_LAB_ADRESSE` eintragen.
+1. Den Worker aus `alpha/lab/jev/worker-entwurf.js` nach dem Muster von `tools/jev-worker/` einrichten (eigene `wrangler.toml`, Secret `TYPESAFE_API_KEY`, `ERLAUBT` auf die Lab-Adresse setzen).
+2. Die Adresse in `alpha/lab/jev/jev.js` als `JEV_LAB_ADRESSE` eintragen.
 3. Kosten: etwa 1000 Eingabe-Token je Frage, bei 0,042 $ je Million rund 0,004 Cent. Gefragt wird nur auf Knopfdruck.
 
 Die Lage enthält nur Operationskennungen (Verlauf, höchstens 8, und Optionen). Es werden keine Bilder, keine freien Texte und keine Namen übertragen. Die Frage hat einen festen Wortlaut (`labFrage`).

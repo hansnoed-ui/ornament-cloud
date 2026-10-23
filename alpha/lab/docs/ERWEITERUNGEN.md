@@ -9,7 +9,7 @@
 - **Kompositorisches Profil** (METADATA): Symmetrie, Lichtschwerpunkt, Sättigung, Kantenrichtung, gemessen nur an eigenem oder freigegebenem Material, als Ziel für Operationen «verstärken / umkehren».
 - **jev live** nach Zustimmung (JEV-STATUS.md). Danach eventuell NOUL für technische Kompatibilität.
 - **Prüfraster:** Das NN-Raster und der Verteilapparat bleiben in 0.1 unangetastet. Eine Text-Operation könnte später Passagen nur zitieren und nichts erfinden. Dafür braucht es zuerst eine Absprache, welche Fassung gilt.
-- **Einbindung unter /lab** auf ornament.cloud nur mit Zustimmung: `src/lab/` nach `lab/` verschieben und die Pfade (`../../`) anpassen.
+- **Online:** seit dem 23. Oktober 2026 unter `/alpha/lab/` (nur per Direktlink). Ein eigener Eintrag in der Navigation oder eine kürzere Adresse nur mit Zustimmung.
 
 ## Die grosse Vision (nicht gebaut)
 

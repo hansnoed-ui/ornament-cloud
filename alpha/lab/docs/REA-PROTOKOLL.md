@@ -17,7 +17,19 @@ REA: <https://github.com/morluto/rea>, Paket `rea-agents` 6.7.0 (npm), Installat
 - `configure_client:claude_code` → `/root/.claude.json` ergänzen (MCP-Registrierung `npx -y rea-agents@6.7.0 mcp`), mit Sicherung `/root/.claude.json.rea.backup`
 - `install_skill:claude_code` → `/root/.claude/skills/reverse-engineer-anything`
 
-Das Setup ist **nicht ausgeführt**. Es ändert die Konfiguration von Claude Code und braucht darum Christians Zustimmung. In diesem Container würde die Änderung mit der Sitzung verschwinden. Für die beiden Untersuchungen genügte die REA-Kommandozeile über `npx`, ohne jede Änderung am System. Auf dem eigenen Rechner wird so eingerichtet:
+Die Untersuchungsfälle 1 und 2 liefen ohne Setup, nur über die REA-Kommandozeile (`npx`).
+
+**Setup ausgeführt am 23.10.2026** mit Christians Zustimmung («möchte rea erlauben»):
+- Vorher wurde `/root/.claude.json` gesichert, zusätzlich zur Sicherung von REA. Der Probelauf wurde wiederholt, der Plan war unverändert.
+- `npx -y rea-agents@6.7.0 setup --client claude_code --yes` hatte den Status `ready`. REA legte `/root/.claude.json.rea.backup` an.
+- Der Vergleich vorher/nachher zeigt nur eine Änderung: In `mcpServers` kam `rea` dazu (`npx -y rea-agents@6.7.0 mcp`). Alle anderen Einstellungen sind unverändert.
+- Der Skill `reverse-engineer-anything` (Version 42) ist installiert.
+- `doctor --client claude_code --skill --json` meldet `healthy: true`, Skill und Registrierung sind `aligned`. Die Angabe `environment_healthy: false` kommt nur von den fehlenden Engines für Maschinencode (Ghidra, IDA, jadx, Kuna). Für JavaScript braucht es sie nicht.
+- **Handschlag mit dem MCP-Server:** `initialize` meldete den Server `rea` 6.7.0, `tools/list` zählte 207 Werkzeuge.
+- In der laufenden Sitzung erscheinen die REA-Werkzeuge erst nach einem Neustart von Claude Code. Fall 3 lief darum noch über die Kommandozeile, mit demselben Paket.
+- Das Setup gilt nur für diesen Cloud-Container und verschwindet mit ihm.
+
+Auf dem eigenen Rechner wird so eingerichtet:
 
 ```bash
 npx rea-agents setup --client claude_code --dry-run      # Plan ansehen
@@ -58,6 +70,21 @@ Ghidra und Hopper nur dann einrichten, wenn eine konkrete Untersuchung von Masch
   2. **Standardwerte in der Beschreibung** (`parameter[].standard`), damit Ketten und Projekte sie kennen.
   3. **Mehrfachdurchgänge als Parameter** (`iterationen` im Feedback). Was p5.js als Störung ausschliesst, wird im Lab zur eigenen, gestaltbaren Operation.
 
-## 4. Nicht untersucht (bewusst)
+## 4. Untersuchungsfall 3: Was tut die mitgelieferte Bibliothek mp4-muxer im Lab?
+
+- **Frage:** Das Lab lädt für den Videoexport eine fremde, mitgelieferte Datei (`vendor/mp4-muxer-5.2.2/mp4-muxer.js`). Ist sie byte-gleich mit der veröffentlichten Version? Und greift sie über Netz, Speicher, Worker oder Code aus Zeichenketten über ihre Aufgabe hinaus? Das ist eine Lieferkettenprüfung, bevor das Lab öffentlich laufen kann.
+- **Berechtigung:** mp4-muxer 5.2.2, Lizenz MIT, liegt im Repository. Zum Vergleich diente die veröffentlichte Fassung von npm (`npm pack mp4-muxer@5.2.2`). Die Analyse lief statisch, der Code wurde nicht ausgeführt.
+- **Befehl:** `npx -y rea-agents@6.7.0 analyze-javascript-application <Kopie von vendor/mp4-muxer-5.2.2/> --json`
+- **Evidence:** `ev_46625ba82a72fc3953083a6cd7abff0301d2259f16d84d49b46bb34f67145acf`, Vertrauensangabe `derived` / `shipped-artifact`. Die Datei mit SHA-256 `d2c4c782…8f9bb5` (69 011 Bytes) wurde ohne Parse-Fehler gelesen. REA zählte 9 714 AST-Knoten im Anwendungsgraphen, 154 Funktionen und 8 703 semantische Beziehungen.
+- **Verifizierte Befunde (statisch):**
+  - Die Datei ist **byte-gleich** mit `build/mp4-muxer.mjs` aus dem npm-Paket (gleiche SHA-256). Sie ist also unverändert.
+  - Es ist ein ES-Modul **ohne Importe**. Es exportiert genau vier Namen: `Muxer`, `ArrayBufferTarget`, `StreamTarget` und `FileSystemWritableFileStreamTarget`. Das Lab benutzt nur `Muxer` und `ArrayBufferTarget`.
+  - Die Zusammenfassung des Anwendungsgraphen meldet **null** Worker, Endpunkte, IPC, Hilfsprozesse und native Bindungen. Im semantischen Graphen gibt es nur fünf Grenzstellen, alles Zahlumwandlungen (`Number`, `parseInt`).
+  - Eine Gegenprobe mit Textsuche fand kein `fetch`, `XMLHttpRequest`, `WebSocket`, `localStorage`, `indexedDB`, `eval`, `Function(`, `importScripts`, `document.` und kein `window.`. Gefunden wurde nur der Typname `FileSystemWritableFileStream`, und zwar in dem Ziel, das das Lab nicht benutzt.
+- **Grenzen:** REA weist ausdrücklich darauf hin, dass die Abdeckung des Graphen unvollständig ist (`partial`) und dass ein fehlender Befund keine Abwesenheit beweist. Statisch heisst ausserdem nicht ausgeführt. Dass der Export im Browser funktioniert, zeigen die Browsertests (`tests/lab.e2e.mjs`, MP4 über WebCodecs).
+- **Verwendung im Lab:** Die Bibliothek ist unverändert und arbeitet nur im Speicher: Das Video entsteht als `ArrayBuffer` im Browser. Weil sie nichts hochlädt und nichts nachlädt, kann sie auch auf dem Webspace bleiben, wie sie ist.
+- **Einordnung:** Die Referenz-Matrix bleibt bei höchstens zwei REA-Fällen (Masterprompt). Fall 3 ist kein Referenzfall, sondern eine Prüfung der eigenen Abhängigkeit, und ist zugleich die erste Untersuchung nach dem Setup.
+
+## 5. Nicht untersucht (bewusst)
 
 Proprietäre Programme (TouchDesigner, Notch, Reason, Bitwig, Resolume, Fusion, Sapphire, After Effects, Topaz) wurden **nicht** dekompiliert. Sie wurden nur über öffentliche Dokumentation gelesen (REFERENZ-MATRIX.md). Für eine berechtigte Laufzeituntersuchung bräuchte es ein rechtmässig installiertes Programm und eine klar begrenzte Frage. Kandidaten für eine nächste Runde: Bitwig Grid oder VCV Rack mit offenem Quellcode, und zwar das Modulationsrouting im Quellcode von VCV Rack (GPL-3.0), nicht als Binärdatei.

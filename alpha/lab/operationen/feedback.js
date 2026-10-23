@@ -17,7 +17,7 @@ export const feedback = {
   name: "Feedback",
   version: "0.1.0",
   klasse: "rekursiv",
-  herkunft: { art: "neu", quelle: "ORNAMENT LAB", referenz: "TouchDesigner Feedback TOP; Video-Feedback (Resolume); Kamera-Monitor-Schleife", datei: "src/lab/operationen/feedback.js" },
+  herkunft: { art: "neu", quelle: "ORNAMENT LAB", referenz: "TouchDesigner Feedback TOP; Video-Feedback (Resolume); Kamera-Monitor-Schleife", datei: "alpha/lab/operationen/feedback.js" },
   beschreibung: "Das Bild wird wiederholt auf sein eigenes Ergebnis angewandt: gezoomt, gedreht, verschoben, farblich gedreht und mit dem Eingang gemischt.",
   eingaenge: [{ name: "bild", typ: "IMAGE" }],
   ausgaenge: [{ name: "bild", typ: "IMAGE" }],

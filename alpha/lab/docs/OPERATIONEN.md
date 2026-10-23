@@ -1,6 +1,6 @@
 # Operationsverzeichnis – ORNAMENT LAB 0.1
 
-Erzeugt aus dem Register mit `node src/lab/werkzeuge/operationsverzeichnis.mjs`. Die Beschreibungen in `src/lab/operationen/` sind die Quelle.
+Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs`. Die Beschreibungen in `alpha/lab/operationen/` sind die Quelle.
 
 | Kennung | Name | Klasse | Herkunft | Eingänge → Ausgänge | Varianten |
 |---|---|---|---|---|---|
@@ -46,7 +46,7 @@ Das Bild zerfällt in seine Teile: neue Nachbarschaften, Abfolge als Bild, wirks
 
 Das Bild wird wiederholt auf sein eigenes Ergebnis angewandt: gezoomt, gedreht, verschoben, farblich gedreht und mit dem Eingang gemischt.
 
-- **Herkunft:** neu im Lab; Datei src/lab/operationen/feedback.js; Prinzip nach TouchDesigner Feedback TOP; Video-Feedback (Resolume); Kamera-Monitor-Schleife
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/feedback.js; Prinzip nach TouchDesigner Feedback TOP; Video-Feedback (Resolume); Kamera-Monitor-Schleife
 - **Voraussetzungen:** keine (läuft auch in Node)
 - **Ressourcen:** Iterationen × Pixel (900 px, 24 Iterationen: etwa 1 s); Speicher: drei Gleitkommabilder
 - **Reproduzierbar:** ja
@@ -70,7 +70,7 @@ Das Bild wird wiederholt auf sein eigenes Ergebnis angewandt: gezoomt, gedreht, 
 
 Das Bild wird im Raster wiederholt; Grösse und Drehung jeder Kopie folgen einem Falloff über die Lage.
 
-- **Herkunft:** neu im Lab; Datei src/lab/operationen/wiederholung.js; Prinzip nach Cavalry Duplicator + Falloff; Blender Geometry Nodes (Instances)
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/wiederholung.js; Prinzip nach Cavalry Duplicator + Falloff; Blender Geometry Nodes (Instances)
 - **Voraussetzungen:** keine (läuft auch in Node)
 - **Ressourcen:** ein Durchgang über die Pixel; Speicher: ein Bild
 - **Reproduzierbar:** ja
@@ -92,7 +92,7 @@ Das Bild wird im Raster wiederholt; Grösse und Drehung jeder Kopie folgen einem
 
 Farbdrehung, Sättigung, Kontrast, Tonwertstufen und Umkehr in fester Reihenfolge.
 
-- **Herkunft:** neu im Lab; Datei src/lab/operationen/farbe.js; Prinzip nach Fusion Color Corrector; p5.js filter() (POSTERIZE, INVERT); CSS Filter Effects (hue-rotate)
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/farbe.js; Prinzip nach Fusion Color Corrector; p5.js filter() (POSTERIZE, INVERT); CSS Filter Effects (hue-rotate)
 - **Voraussetzungen:** keine (läuft auch in Node)
 - **Ressourcen:** ein Durchgang über die Pixel; Speicher: ein Bild
 - **Reproduzierbar:** ja
@@ -109,7 +109,7 @@ Farbdrehung, Sättigung, Kontrast, Tonwertstufen und Umkehr in fester Reihenfolg
 
 Misst ein Merkmal entlang einer Achse und gibt es als Steuersignal aus, das andere Operationen modulieren kann.
 
-- **Herkunft:** neu im Lab; Datei src/lab/operationen/bildsignal.js; Prinzip nach TouchDesigner TOP to CHOP; Max/Jitter (Matrix zu Zahlen)
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/bildsignal.js; Prinzip nach TouchDesigner TOP to CHOP; Max/Jitter (Matrix zu Zahlen)
 - **Voraussetzungen:** keine (läuft auch in Node)
 - **Ressourcen:** ein Durchgang über die Pixel; Speicher: gering
 - **Reproduzierbar:** ja
@@ -125,7 +125,7 @@ Misst ein Merkmal entlang einer Achse und gibt es als Steuersignal aus, das ande
 
 Zeigt die Unterschiede zwischen zwei Zuständen und misst sie. Messung, keine Bewertung.
 
-- **Herkunft:** neu im Lab; Datei src/lab/operationen/differenz.js; Prinzip nach Difference-Komposition (Fusion Merge, After Effects, Resolume)
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/differenz.js; Prinzip nach Difference-Komposition (Fusion Merge, After Effects, Resolume)
 - **Voraussetzungen:** keine (läuft auch in Node)
 - **Ressourcen:** ein Durchgang über die Pixel; Speicher: ein Bild
 - **Reproduzierbar:** ja
