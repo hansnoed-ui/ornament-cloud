@@ -1222,22 +1222,29 @@ test("Partitur 0.4.0: Stationen mit «einmal» stehen als Titelkarten ausserhalb
   const folge = s.ergebnisse[1], einsaetze = folge.daten.ereignisse.map((x) => x.t);
   const b = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.farbe", eingaben: { bild: e.id }, parameter: { farbdrehung: 90 }, variation: { anzahl: 3, achse: "varianten" } } });
   const [k1, k2, k3] = b.ergebnisse.map((x) => x.id);
-  const plan = { stationen: [{ ergebnis: k1, einmal: true, halten: 2.5 }, e.id, k2, { ergebnis: k3, einmal: true, halten: 2.5 }], halten: 1, uebergang: 0.2, art: "blende" };
+  const plan = { stationen: [{ ergebnis: k1, einmal: true, halten: 1.2 }, e.id, k2, { ergebnis: k3, einmal: true, halten: 1.2 }], halten: 1, uebergang: 0.2, art: "blende" };
   const pt = ST.partitur(p, { ...plan, takt: { ereignisfolge: folge.id, schwelle: 0, wiederholen: true } });
   assert.equal(pt.version, "0.4.0");
-  assert.equal(pt.folge[0].ergebnis, k1); assert.equal(pt.folge[0].einmal, true); assert.equal(pt.folge[0].halten, 2.5); assert.equal(pt.folge[0].uebergang.dauer, 0.2);
+  assert.equal(pt.folge[0].ergebnis, k1); assert.equal(pt.folge[0].einmal, true); assert.equal(pt.folge[0].halten, 1.2); assert.equal(pt.folge[0].uebergang.dauer, 0.2);
   assert.equal(pt.folge.at(-1).ergebnis, k3); assert.equal(pt.folge.at(-1).einmal, true);
-  const mitte = pt.folge.slice(1, -1), nach = einsaetze.filter((z) => z > 2.7);
+  const mitte = pt.folge.slice(1, -1), nach = einsaetze.filter((z) => z > 1.4 && z <= 6 - 1.4);
   assert.ok(mitte.length >= 3 && mitte.every((x) => !x.einmal && [e.id, k2].includes(x.ergebnis)), "die Runde besteht nur aus den Stationen zwischen den Karten");
   assert.deepEqual(mitte.slice(0, 3).map((x) => x.ergebnis), [e.id, k2, e.id], "reihum");
-  assert.equal(mitte.length, nach.length, "so viele Auftritte wie Einsätze nach der ersten Karte");
-  assert.ok(Math.abs(mitte[0].beginn - 2.7) < 1e-3 && Math.abs(mitte[0].beginn + mitte[0].halten - nach[0]) < 1e-3, "die Runde beginnt nach der Karte und wechselt beim ersten Einsatz danach");
+  assert.equal(mitte.length, nach.length, "so viele Auftritte wie Einsätze zwischen den Karten");
+  assert.ok(pt.folge.at(-1).halten >= 1.2 - 1e-9, `die Karte hinten steht ihre Dauer bis zum Ende des Tons: ${pt.folge.at(-1).halten}`);
+  assert.ok(Math.abs(mitte[0].beginn - 1.4) < 1e-3 && Math.abs(mitte[0].beginn + mitte[0].halten - nach[0]) < 1e-3, "die Runde beginnt nach der Karte und wechselt beim ersten Einsatz danach");
   assert.ok(Math.abs(pt.dauer - 6) < 0.04, `bis zum Ende des Tons: ${pt.dauer}`);
   assert.ok(pt.folge.slice(1, -1).every((x) => x.uebergang.dauer <= 0.2 + 1e-9), "kein Übergang länger als eingestellt");
   // ohne Takt: die Karte hält ihre eigene Dauer, die anderen die eingestellte
   const ohne = ST.partitur(p, { ...plan, art: "schnitt" });
-  assert.deepEqual(ohne.folge.map((x) => x.halten), [2.5, 1, 1, 2.5]); assert.deepEqual(ohne.folge.map((x) => Boolean(x.einmal)), [true, false, false, true]);
-  assert.equal(ohne.dauer, 7);
+  assert.deepEqual(ohne.folge.map((x) => x.halten), [1.2, 1, 1, 1.2]); assert.deepEqual(ohne.folge.map((x) => Boolean(x.einmal)), [true, false, false, true]);
+  assert.equal(ohne.dauer, 4.4);
+  // mit Kamera: die Karten stehen still (dasselbe Bild wie ohne Bewegung), dazwischen führt die Kamera
+  const rechne = async (pl) => { const out = []; for await (const b of ST.filmbilder({ register: r, projekt: p, medien: m, partitur: pl, seite: 40 })) out.push(fingerabdruck(b)); return out; };
+  const still = await rechne(ohne), bewegt = await rechne(ST.partitur(p, { ...plan, art: "schnitt", bewegung: { staerke: 1, signal: null } }));
+  assert.equal(bewegt.length, still.length);
+  assert.equal(bewegt[0], still[0], "die Titelkarte vorn steht still"); assert.equal(bewegt.at(-1), still.at(-1), "die Karte hinten auch");
+  assert.notEqual(bewegt[40], still[40], "dazwischen führt die Kamera");
   // ohne «einmal» gehören auch Stationen mit eigener Dauer zur Runde
   const alle = ST.partitur(p, { stationen: [{ ergebnis: k1, halten: 2.5 }, e.id], halten: 1, uebergang: 0.2, art: "schnitt", takt: { ereignisfolge: folge.id, schwelle: 0, wiederholen: true } });
   assert.equal(alle.folge.length, einsaetze.length + 1); assert.equal(alle.folge[2].ergebnis, k1);

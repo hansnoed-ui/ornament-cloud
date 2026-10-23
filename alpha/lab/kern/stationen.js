@@ -106,8 +106,9 @@ export function partitur(projekt, plan) {
     while (a < b && st[a].einmal) vorne.push(st[a++]);
     while (b > a && st[b - 1].einmal) hinten.unshift(st[--b]);
     const mitte = b > a ? st.slice(a, b) : st;
-    const t0 = vorne.reduce((s, x) => s + begrenze(ZEITPARAMETER[0], x.halten ?? grund.halten) + grund.uebergang, 0);
-    const rest = zeiten.filter((z) => z > t0);
+    const dauerVon = (k) => k.reduce((s, x) => s + begrenze(ZEITPARAMETER[0], x.halten ?? grund.halten) + grund.uebergang, 0);
+    const t0 = dauerVon(vorne), tEnde = hinten.length && takt.tonDauer ? takt.tonDauer - dauerVon(hinten) : Infinity;   // die Karten hinten brauchen ihre Zeit vor dem Ende des Tons
+    const rest = zeiten.filter((z) => z > t0 && z <= tEnde);
     const runde = Math.max(1, Math.min(GRENZEN.stationen * 8, rest.length + (hinten.length ? 0 : 1)));
     folge = [...vorne.map((s) => ({ ...s, ein: undefined })), ...Array.from({ length: runde }, (_, i) => ({ ...mitte[i % mitte.length], ein: rest[i] })), ...hinten.map((s) => ({ ...s, ein: undefined }))];
   } else folge = st.map((s) => ({ ...s, ein: undefined }));
@@ -188,9 +189,23 @@ export function filmgroesse(b, seite) {
 export async function* filmbilder({ partitur: pt, projekt, ...rest }) {
   const quelle = stationsbilder({ partitur: pt, projekt, ...rest });
   if (!pt.bewegung) { yield* quelle; return; }
-  const sig = pt.bewegung.signal ? ergebnis(projekt, pt.bewegung.signal)?.daten : null;
+  const sig = pt.bewegung.signal ? ergebnis(projekt, pt.bewegung.signal)?.daten : null, ruhe = kartenRuhe(pt);
   let n = 0;
-  for await (const b of quelle) yield kamera(b, n++ / pt.fps, pt.bewegung.staerke, sig);
+  for await (const b of quelle) { const t = n++ / pt.fps, k = ruhe(t); yield k <= 0 ? b : kamera(b, t, pt.bewegung.staerke * k, sig); }
+}
+
+/** Titelkarten («einmal») stehen still: Faktor 0 der Kamera, solange sie stehen; über den Übergang hinaus oder hinein eine Rampe; sonst 1 */
+function kartenRuhe(pt) {
+  const fenster = [];
+  pt.folge.forEach((x, j) => {
+    if (!x.einmal) return;
+    const ende = x.beginn + x.halten, d = x.uebergang?.dauer ?? 0, vor = pt.folge[j - 1], dv = vor?.uebergang?.dauer ?? 0;
+    fenster.push({ von: x.beginn, bis: ende, a: 0, b: 0 });
+    if (d > 0) fenster.push({ von: ende, bis: ende + d, a: 0, b: 1 });   // hinaus: die Kamera kommt
+    if (vor && !vor.einmal && dv > 0) fenster.push({ von: x.beginn - dv, bis: x.beginn, a: 1, b: 0 });   // hinein: die Kamera geht
+  });
+  if (!fenster.length) return () => 1;
+  return (t) => { for (const f of fenster) if (t >= f.von && t < f.bis) return f.a + ((f.b - f.a) * (t - f.von)) / (f.bis - f.von); return 1; };
 }
 
 /** die Lautstärke (0–1) eines Steuersignals zur Zeit t (s), linear zwischen den Proben; ohne Signal 0 */

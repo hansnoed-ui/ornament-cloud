@@ -72,16 +72,17 @@ export const karte = {
     const kurz = Math.min(W, H), rand = Math.round(kurz * 0.1), breite = W - 2 * rand;
     const gross = Math.round(kurz * p.groesse), klein = Math.round(gross * 0.42), mittel = Math.round(gross * 0.6);
     ctx.fillStyle = rgb(vorn); ctx.textBaseline = "top";
-    // Kopfzeile oben, Fusszeile unten, Titel und Text in der Mitte
+    // Kopfzeile oben, Fusszeile unten (beide umbrochen, wenn nötig), Titel und Text in der Mitte
     ctx.font = `${klein}px ${SANS}`;
-    if (inhalt.kopf) ctx.fillText(inhalt.kopf, rand, rand);
-    if (inhalt.fuss) ctx.fillText(inhalt.fuss, rand, H - rand - klein);
+    const kopfZeilen = zeilen(ctx, inhalt.kopf, breite), fussZeilen = zeilen(ctx, inhalt.fuss, breite);
+    kopfZeilen.forEach((z, i) => ctx.fillText(z, rand, rand + i * klein * 1.3));
+    fussZeilen.forEach((z, i) => ctx.fillText(z, rand, H - rand - klein * 1.3 * (fussZeilen.length - i) + klein * 0.3));
     ctx.font = `${gross}px ${SERIF}`;
     const titelZeilen = zeilen(ctx, inhalt.titel, breite);
     ctx.font = `italic ${mittel}px ${SERIF}`;
     const textZeilen = zeilen(ctx, inhalt.text, breite);
     const hoehe = titelZeilen.length * gross * 1.15 + (textZeilen.length ? mittel * 0.9 + textZeilen.length * mittel * 1.35 : 0);
-    let y = Math.max(rand + klein * 2, (H - hoehe) / 2);
+    let y = Math.max(rand + klein * 1.3 * kopfZeilen.length + klein, (H - hoehe) / 2);
     ctx.font = `${gross}px ${SERIF}`;
     for (const z of titelZeilen) { ctx.fillText(z, rand, y); y += gross * 1.15; }
     y += mittel * 0.9;
@@ -90,7 +91,7 @@ export const karte = {
     const out = ctx.getImageData(0, 0, W, H);
     return {
       ausgaben: [{ typ: "IMAGE", titel: inhalt.titel ? `Karte: ${inhalt.titel}` : "Karte", bild: { width: W, height: H, data: out.data } }],
-      protokoll: { inhalt, masse: [W, H], zeilen: titelZeilen.length + textZeilen.length },
+      protokoll: { inhalt, masse: [W, H], zeilen: kopfZeilen.length + titelZeilen.length + textZeilen.length + fussZeilen.length },
     };
   },
 };
