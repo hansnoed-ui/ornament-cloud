@@ -53,7 +53,7 @@ Die Trennung zwischen Rechnung und Darstellung ist durch REA belegt (REA-PROTOKO
 
 ## Grenzen gegen Schleifen und Verbrauch (`GRENZEN` in kern/projekt.js)
 
-- höchstens 300 Ausführungen je Projekt, 12 Varianten je Ausführung, 900 Bilder je Animation, 48 Stationen und 3600 Bilder je Film über Stationen
+- höchstens 300 Ausführungen je Projekt, 12 Varianten je Ausführung, 900 Bilder je Animation, 64 Stationen und 3600 Bilder je Film über Stationen
 - Experiment: höchstens 8 Schritte und 120 s, nur erlaubte Operationen
 - Arbeitsbilder höchstens 2048 px, Importdateien höchstens 60 MB und nur Bild- oder Tontypen, Töne höchstens 10 Minuten
 - Parametergrenzen sind hart (`bereinigeParameter`). Rechengrösse und Iterationen sind Parameter und darum sichtbar.

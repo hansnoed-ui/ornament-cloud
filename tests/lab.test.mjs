@@ -930,6 +930,62 @@ test("Vorschlag: eine Dramaturgie ausführen ergibt Stationen und einen Plan von
   assert.deepEqual(P.pruefeProjekt(p), []);
 });
 
+test("Stationen mit Bewegung (Lab 0.1.15): die Kamera macht jedes Bild anders, der Zoom atmet mit dem Signal, reproduzierbar", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const { p, m, e, t, r } = mitTon();
+  const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id, beginn: 1 });
+  const x = await VS.vorschlagAusfuehren({ register: r, projekt: p, medien: m, messung: mg, dramaturgie: "vorschlag.steigerung", wahl: { art: "regel", details: {} } });
+  assert.deepEqual(x.plan.bewegung, { staerke: 0.6, signal: mg.signal });
+  const pt = ST.partitur(p, { ...x.plan, fps: 10 });
+  assert.deepEqual(pt.bewegung, { staerke: 0.6, signal: mg.signal });
+  const rechne = async (pl) => { const out = []; for await (const b of ST.filmbilder({ register: r, projekt: p, medien: m, partitur: pl, seite: 40 })) out.push(fingerabdruck(b)); return out; };
+  const a = await rechne(pt);
+  assert.equal(a.length, pt.bilder);
+  assert.ok(new Set(a).size > 0.9 * a.length, `fast jedes Bild ist anders: ${new Set(a).size} von ${a.length}`);
+  assert.deepEqual(await rechne(pt), a, "derselbe Plan, dieselben Bilder");
+  const ruhig = ST.partitur(p, { ...x.plan, bewegung: null, fps: 10 });
+  assert.equal(ruhig.bewegung, null);
+  assert.ok(new Set(await rechne(ruhig)).size < new Set(a).size, "ohne Bewegung stehen die Stationen");
+  assert.ok(ST.kameraLage(3, 1, 1).zoom > ST.kameraLage(3, 1, 0).zoom, "lauter zoomt näher");
+  assert.equal(ST.kameraLage(3, 0, 1).zoom, 1);
+  assert.throws(() => ST.partitur(p, { ...x.plan, bewegung: { staerke: 0.5, signal: e.id } }), /Bewegung/);
+});
+
+test("Stationen lebendig (Lab 0.1.17): mit lebendiger Fassung rechnet der Film jede Station in jedem Bild neu, ohne bleibt alles wie bisher", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const { p, m, e, t, r } = mitTon();
+  const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id, beginn: 1 });
+  const x = await VS.vorschlagAusfuehren({ register: r, projekt: p, medien: m, messung: mg, dramaturgie: "vorschlag.steigerung", wahl: { art: "regel", details: {} } });
+  assert.equal(x.plan.lebendig, true);
+  const pt = ST.partitur(p, { ...x.plan, bewegung: null, fps: 10 });
+  assert.equal(pt.lebendig, true);
+  assert.equal(ST.partitur(p, { ...x.plan, lebendig: false, fps: 10 }).lebendig, false);
+  // eine vorgetäuschte Grafikkarte: kennt Farbe und Feedback, stempelt Operation, Zeit und Parameter ins Bild
+  const aufrufe = [];
+  const fake = { kann: (op) => op === "lab.farbe" || op === "lab.feedback", vergiss() {},
+    bild: ({ operation, eingang, parameter, t, W, H, schluessel }) => { aufrufe.push({ operation, t, schluessel, farbdrehung: parameter.farbdrehung, zoom: parameter.zoom }); const b = neuesBild(W, H); b.data.fill(Math.round(t * 10) % 256); b.stempel = { operation, ein: eingang.width }; return b; } };
+  const rechne = async (pl, lebendig) => { const zeitplan = [], out = []; for await (const b of ST.filmbilder({ register: r, projekt: p, medien: m, partitur: pl, seite: 40, zeitplan, lebendig })) out.push(b); return { zeitplan, out }; };
+  const a = await rechne(pt, fake);
+  assert.equal(a.out.length, pt.bilder);
+  const lebendige = a.zeitplan.filter((z) => z.lebendig);
+  assert.ok(lebendige.length >= 2, `Farbe und Feedback sind lebendig: ${JSON.stringify(a.zeitplan)}`);
+  assert.ok(a.zeitplan.some((z) => !z.lebendig), "die Wiederholung bleibt ein Standbild (keine lebendige Fassung im Fake)");
+  assert.ok(a.out.some((b) => b.stempel?.operation === "lab.farbe") && a.out.some((b) => b.stempel?.operation === "lab.feedback"));
+  assert.ok(aufrufe.every((c) => c.t >= 0 && c.t <= pt.dauer + 1e-9), "die Zeit läuft über den Film");
+  assert.ok(new Set(aufrufe.map((c) => c.t)).size > 5, "jedes Bild zu seiner Zeit");
+  assert.equal(new Set(aufrufe.filter((c) => c.operation === "lab.farbe").map((c) => c.farbdrehung)).size, 1, "Steigerung: Farbe ohne Route, die Parameter stehen fest");
+  // Farbwelle: die Lautstärke verteilt die Farbdrehung über die Varianten, lebendig läuft sie über die Zeit des Films
+  const w = await VS.vorschlagAusfuehren({ register: r, projekt: p, medien: m, messung: mg, dramaturgie: "vorschlag.farbwelle", wahl: { art: "regel", details: {} } });
+  aufrufe.length = 0;
+  await rechne(ST.partitur(p, { ...w.plan, bewegung: null, fps: 10 }), fake);
+  assert.ok(new Set(aufrufe.filter((c) => c.operation === "lab.farbe").map((c) => c.farbdrehung)).size > 3, "die Route der Varianten läuft über die Zeit des Films");
+  // ohne Grafikkarte, oder ohne lebendig im Plan: dieselben Standbilder wie bisher
+  const ohne = await rechne(pt, null), still = await rechne(ST.partitur(p, { ...x.plan, bewegung: null, lebendig: false, fps: 10 }), fake);
+  assert.ok(ohne.out.every((b) => !b.stempel) && still.out.every((b) => !b.stempel));
+  assert.ok(ohne.zeitplan.every((z) => !z.lebendig));
+  assert.deepEqual(ohne.out.map(fingerabdruck), still.out.map(fingerabdruck));
+});
+
 const FILTER = ["lab.glitch", "lab.pixelsortierung", "lab.verzerrung", "lab.licht", "lab.raster", "lab.neusetzen"];
 
 test("Bildfilter (0.1.10): jeder verändert das Bild, ist mit demselben Startwert wiederholbar, Anteil 0 lässt den Eingang stehen", async () => {
@@ -1061,7 +1117,7 @@ test("Zusammenstellung: Kataloge passen zum Register, Ziehen mit Startwert ohne 
   } finally { globalThis.fetch = echt; }
 });
 
-test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte zu drei Varianten, Film im Takt des neuen Klangs", async () => {
+test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte zu zehn Varianten, Film im Takt des neuen Klangs", async () => {
   const VS = await lab("kern/vorschlag.js");
   const Z = await lab("kern/zusammenstellung.js");
   const r = labRegister();
@@ -1074,15 +1130,20 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   const zerlegt = p.knoten[3];
   assert.equal(zerlegt.eingaben.ton, p.knoten[2].ausgaben[0], "der zweite Klangeffekt wirkt auf das Ergebnis des ersten");
   assert.equal(x.klang, P.ergebnis(p, zerlegt.ausgaben[0]).id);
-  assert.equal(x.ergebnisse.length, 18);
-  for (let i = 1; i < 6; i++) assert.equal(p.knoten[5 + i].eingaben.bild, x.ergebnisse[i * 3 - 1].id, "Kette: auf der letzten Variante des vorigen Abschnitts");
+  assert.equal(x.ergebnisse.length, 60);
+  for (let i = 1; i < 6; i++) assert.equal(p.knoten[5 + i].eingaben.bild, x.ergebnisse[i * 10 - 1].id, "Kette: auf der letzten Variante des vorigen Abschnitts");
   assert.equal(x.entscheidung.gegenstand, "zusammenstellung"); assert.equal(x.entscheidung.art, "jev");
   assert.deepEqual(x.entscheidung.gewaehlt.bild, plan.bild);
   assert.ok(p.entscheidungen.filter((d) => d.details?.entscheidung === x.entscheidung.id).length >= 9, "jeder Schritt verweist auf die Zusammenstellung");
-  assert.equal(x.plan.stationen.length, 19); assert.equal(x.plan.tonspur, x.klang); assert.equal(x.plan.tonBeginn, 0);
+  assert.equal(x.plan.stationen.length, 61); assert.equal(x.plan.tonspur, x.klang); assert.equal(x.plan.tonBeginn, 0);
+  assert.deepEqual(x.plan.bewegung, { staerke: Z.BEWEGUNG, signal: x.signal }, "die Kamera atmet mit dem neuen Klang");
   const pt = ST.partitur(p, { ...x.plan, fps: 30 });
   assert.ok(pt.dauer > 3 && pt.dauer <= 30, `${pt.dauer}`);
   if (x.plan.takt) assert.equal(pt.takt.ton, x.klang, "der Takt kommt aus dem bearbeiteten Klang");
+  if (x.plan.takt) {   // Kette im Takt: zwischen den Abschnitten der Verlauf der Operation (fünf Wechsel)
+    assert.equal(x.plan.stationen.filter((s) => s.uebergang === "verlauf").length, 5);
+    assert.ok(pt.folge.filter((f) => f.uebergang?.art === "verlauf").length >= 5, "die Partitur behält die Verläufe");
+  }
   // Fächer: jeder Abschnitt auf dem Ausgangsbild; ohne Klangeffekt bleibt der Ton und sein Ausschnitt
   const y = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: { ...mg, beginn: 1 }, plan: { ...plan, aufbau: "aufbau.faecher", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.wiederholung", "bild.farbe", "bild.komposition", "bild.farbe", "bild.licht"] }, wahl: { art: "zufall", details: {} } });
   const letzte = p.knoten.slice(-6);
@@ -1090,6 +1151,21 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   assert.equal(y.klang, t.id); assert.equal(y.plan.tonBeginn, 1);
   await assert.rejects(Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, bild: ["bild.gibtsnicht"] }, wahl: { art: "mensch" } }), /gibt es nicht/);
   assert.deepEqual(P.pruefeProjekt(p), []);
+});
+
+test("Zusammenstellung aus einem Video (Lab 0.1.14): jeder Abschnitt nimmt das Standbild seiner Zeit", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const Z = await lab("kern/zusammenstellung.js");
+  const r = labRegister();
+  const { p, m, e, t } = mitTon();
+  const stills = [e.id];
+  for (let i = 1; i < 3; i++) { const s = P.fuegeMaterialHinzu(p, { titel: `video · ${i}`, datei: `medien/s${i}.rgba`, breite: 96, hoehe: 72, mime: "image/png", sha256: "v", herkunft: { video: { sha256: "v", zeit: i } } }); m.bilder.set(s.id, bild()); stills.push(s.id); }
+  const mg = { ...(await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id })), videoBilder: stills };
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.schnitt", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.raster", "bild.farbe", "bild.licht"], seed: 2 };
+  const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "zufall" } });
+  assert.deepEqual(p.knoten.slice(-6).map((k) => k.eingaben.bild), [stills[0], stills[0], stills[1], stills[1], stills[2], stills[2]], "die Abschnitte folgen den Standbildern, auch in der Kette");
+  assert.deepEqual(x.entscheidung.details.video, stills);
+  assert.equal(x.plan.stationen[0], stills[0]);
 });
 
 test("Klangfolge (0.1.13): Klänge hintereinander mit Überblendung, umgetastet in die erste Rate, stereo sobald einer stereo ist", () => {

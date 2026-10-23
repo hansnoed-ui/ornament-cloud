@@ -12,7 +12,7 @@ import { taktSchwelle, DAUER } from "./vorschlag.js";
 import { zufall } from "../../../alpha/the-fictory/analyse.js?v=23";
 
 export const ZUSAMMENSTELLUNG_VERSION = "0.1.0";
-export const VARIANTEN_JE_ABSCHNITT = 3;
+export const VARIANTEN_JE_ABSCHNITT = 10;   // seit Lab 0.1.16: 60 Motive in 30 s (vorher 3, also 18)
 
 /** Bildeffekt → Operation: Parameter, und welcher Parameter der Lautstärke folgt (ohne Angabe: was die Operation selbst vorschlägt) */
 export const BILD_REZEPTE = Object.freeze({
@@ -20,12 +20,12 @@ export const BILD_REZEPTE = Object.freeze({
   "bild.wiederholung": { operation: "lab.wiederholung", parameter: { seite: 1200 }, ziel: "groesse", tiefe: 0.5 },
   "bild.farbe": { operation: "lab.farbe", parameter: { saettigung: 1.3 }, ziel: "farbdrehung", tiefe: 1 },
   "bild.komposition": { operation: "lab.komposition", parameter: { seite: 900 }, ziel: "symmetrie", tiefe: 0.9 },
-  "bild.glitch": { operation: "lab.glitch", parameter: { seite: 1000 }, tiefe: 0.6 },
-  "bild.pixelsortierung": { operation: "lab.pixelsortierung", parameter: { seite: 1000 }, tiefe: 0.5 },
-  "bild.verzerrung": { operation: "lab.verzerrung", parameter: { seite: 1000 }, tiefe: 0.6 },
-  "bild.licht": { operation: "lab.licht", parameter: { seite: 1000 }, tiefe: 0.5 },
-  "bild.raster": { operation: "lab.raster", parameter: { seite: 1000 }, tiefe: 0.5 },
-  "bild.neusetzen": { operation: "lab.neusetzen", parameter: { seite: 1000 }, tiefe: 0.6 },
+  "bild.glitch": { operation: "lab.glitch", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
+  "bild.pixelsortierung": { operation: "lab.pixelsortierung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
+  "bild.verzerrung": { operation: "lab.verzerrung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
+  "bild.licht": { operation: "lab.licht", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
+  "bild.raster": { operation: "lab.raster", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
+  "bild.neusetzen": { operation: "lab.neusetzen", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
   "bild.fictory": { operation: "fictory.prozess", parameter: {}, ziel: null },
 });
 /** Klangeffekt → Operation (null: der Klang bleibt) */
@@ -39,7 +39,10 @@ export const KLANG_REZEPTE = Object.freeze({
   "klang.koerner": { operation: "lab.koerner", parameter: { dauer: DAUER } },
 });
 /** Übergang → Film: Art, Dauer des Übergangs (s) und höchstens so viele Wechsel je Sekunde auf den Anschlägen */
-const FILM = { "film.schnitt": { art: "schnitt", uebergang: 0, jeSekunde: 2.5 }, "film.blende": { art: "blende", uebergang: 0.4, jeSekunde: 1.5 }, "film.schwelle": { art: "schwelle", uebergang: 0.6, jeSekunde: 1 } };
+//   Überblendung und Schwelle dauern bis zum nächsten Anschlag (höchstens so lange), so verwandelt sich das Bild fortlaufend
+const FILM = { "film.schnitt": { art: "schnitt", uebergang: 0, jeSekunde: 2.5 }, "film.blende": { art: "blende", uebergang: 1.2, jeSekunde: 2 }, "film.schwelle": { art: "schwelle", uebergang: 1.5, jeSekunde: 2 } };
+/** die Kamera über jedem Bild des Films (kern/stationen.js): ihr Zoom atmet mit der Lautstärke des neuen Klangs */
+export const BEWEGUNG = 1;
 
 /** ein gewichteter Zug; ausser: Optionen, die nicht gezogen werden sollen (solange andere Gewicht haben) */
 function ziehe(w, rnd, ausser = []) {
@@ -77,15 +80,15 @@ export function wahrscheinlichkeit(antworten, frage, wahl) {
 /**
  * Eine Zusammenstellung rechnen. messung: von messen() (kern/vorschlag.js); plan: von zusammenstellen(), vom Menschen ggf. geändert;
  * wahl: { art: "jev"|"zufall"|"mensch", details }. Zuerst die Klangeffekte nacheinander, dann misst ein Tonsignal den neuen Klang
- * (Takt und Steuersignal), dann sechs Abschnitte zu je drei Varianten. Gibt { entscheidung, ergebnisse, klang, plan } zurück; plan wie bei
- * vorschlagAusfuehren(): { stationen, art, halten, uebergang, takt, tonspur, tonBeginn, dauer }.
+ * (Takt und Steuersignal), dann sechs Abschnitte zu je zehn Varianten. Gibt { entscheidung, ergebnisse, klang, plan } zurück; plan wie bei
+ * vorschlagAusfuehren(): { stationen, art, halten, uebergang, takt, bewegung, tonspur, tonBeginn, dauer }.
  */
 export async function zusammenstellungRechnen({ register, projekt, medien, messung, plan, wahl, seed = 1, melden = () => {}, abbrechen = null }) {
   for (const k of plan.klang) if (!(k in KLANG_REZEPTE)) throw new Error(`Klangeffekt ${k} gibt es nicht`);
   for (const b of plan.bild) if (!BILD_REZEPTE[b]) throw new Error(`Bildeffekt ${b} gibt es nicht`);
   if (!FILM[plan.uebergang]) throw new Error(`Übergang ${plan.uebergang} gibt es nicht`);
   const d = entscheide(projekt, { art: wahl.art, gegenstand: "zusammenstellung", optionen: [], gewaehlt: { aufbau: plan.aufbau, uebergang: plan.uebergang, klang: plan.klang, bild: plan.bild },
-    details: { ...(wahl.details ?? {}), startwert: plan.seed, merkmale: messung.merkmale, werte: messung.werte, version: ZUSAMMENSTELLUNG_VERSION } });
+    details: { ...(wahl.details ?? {}), ...(messung.videoBilder?.length > 1 ? { video: messung.videoBilder } : {}), startwert: plan.seed, merkmale: messung.merkmale, werte: messung.werte, version: ZUSAMMENSTELLUNG_VERSION } });
   const schritt = (anlass) => ({ art: wahl.art, details: { anlass, entscheidung: d.id } });
 
   // 1 · Klang: die Effekte nacheinander, jeder auf dem Ergebnis des vorigen
@@ -104,33 +107,41 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
     auftrag: { operation: "lab.tonsignal", eingaben: { ton }, parameter: { merkmal: "laut", beginn, laenge: DAUER, proben: 120, normieren: false }, wahl: schritt("Zusammenstellung, Klang messen") } });
   const [signal, einsaetze] = t.ergebnisse;
 
-  // 3 · Bild: sechs Abschnitte, in der Kette auf dem vorigen, im Fächer jeweils auf dem Ausgangsbild
-  let eingang = messung.bild;
-  const ergebnisse = [];
+  // 3 · Bild: sechs Abschnitte, in der Kette auf dem vorigen, im Fächer jeweils auf dem Ausgangsbild;
+  //     aus einem Video (messung.videoBilder) nimmt jeder Abschnitt das Standbild seiner Zeit, so folgt der Film dem Video
+  const video = messung.videoBilder?.length > 1 ? messung.videoBilder : null;
+  let eingang = video?.[0] ?? messung.bild;
+  const ergebnisse = [], uebergaenge = new Set();
   for (const [i, b] of plan.bild.entries()) {
     const r = BILD_REZEPTE[b], op = register.hole(r.operation);
     const ziel = r.ziel === null ? null : r.ziel ?? op.moduliert ?? op.parameter.find((p) => p.art === "zahl" && p.id !== "seite")?.id;
     const routen = ziel && op.varianten === "moduliert" ? [{ ziel, tiefe: r.tiefe ?? 0.5, modulator: { quelle: "signal", ergebnis: signal.id } }] : [];
     melden(`Abschnitt ${i + 1} von ${plan.bild.length}: ${BILD_EFFEKTE[b].split(":")[0]} …`, null);
     const x = await fuehreAus({ register, projekt, medien, melden, abbrechen,
-      auftrag: { operation: r.operation, eingaben: { bild: plan.aufbau === "aufbau.faecher" ? messung.bild : eingang }, parameter: r.parameter, seed: (seed + 101 * (i + 1)) >>> 0,
+      auftrag: { operation: r.operation, eingaben: { bild: video ? video[Math.min(video.length - 1, Math.floor((i * video.length) / plan.bild.length))] : plan.aufbau === "aufbau.faecher" ? messung.bild : eingang }, parameter: r.parameter, seed: (seed + 101 * (i + 1)) >>> 0,
         variation: { anzahl: VARIANTEN_JE_ABSCHNITT, achse: "varianten", routen }, wahl: schritt(`Zusammenstellung, Abschnitt ${i + 1} von ${plan.bild.length}`) } });
     const bilder = x.ergebnisse.filter((e) => e.typ === "IMAGE");
     // The Fictory gibt sechs Zustände aus: davon jeder zweite, damit jeder Abschnitt etwa gleich viel Zeit bekommt
     const genommen = bilder.length > VARIANTEN_JE_ABSCHNITT ? bilder.filter((_, j) => j % Math.ceil(bilder.length / VARIANTEN_JE_ABSCHNITT) === Math.ceil(bilder.length / VARIANTEN_JE_ABSCHNITT) - 1) : bilder;
+    // in der Kette entsteht der Abschnitt aus dem letzten Bild des vorigen: dieser Wechsel ist der Verlauf der Operation selbst
+    if (!video && plan.aufbau !== "aufbau.faecher" && i > 0) uebergaenge.add(eingang);
     ergebnisse.push(...genommen);
     eingang = genommen.at(-1).id;
   }
 
   // 4 · Film: Bild, dann alle Abschnitte; im Takt der Anschläge reihum, sonst gleichmässig über die Dauer
-  const stationen = [messung.bild, ...ergebnisse.map((e) => e.id)].slice(0, GRENZEN.stationen);
+  let stationen = [video?.[0] ?? messung.bild, ...ergebnisse.map((e) => e.id)].slice(0, GRENZEN.stationen);
   const f = FILM[plan.uebergang], folge = ergebnis(projekt, einsaetze.id).daten;
   const dauer = Math.min(DAUER, folge?.dauer ?? DAUER), n = stationen.length;
   // nicht reihum: jede Station kommt einmal, darum höchstens so viele Wechsel wie Stationen, verteilt auf die stärksten Anschläge
-  const schwelle = taktSchwelle(folge, Math.min(f.jeSekunde, (n - 1) / dauer));
+  // reichen die Anschläge nicht für alle Stationen, läuft der Film gleichmässig, damit jedes Motiv vorkommt
+  let schwelle = taktSchwelle(folge, Math.min(f.jeSekunde, (n - 1) / dauer));
+  if (schwelle !== null && (folge?.ereignisse ?? []).filter((x) => x.t > 0 && (x.staerke ?? 1) >= schwelle).length < n - 1) schwelle = null;
   const takt = schwelle === null ? null : { ereignisfolge: einsaetze.id, schwelle: Math.round(schwelle * 1000) / 1000, wiederholen: true };
   const uebergang = takt ? f.uebergang : Math.min(f.uebergang, (0.5 * dauer) / Math.max(1, n - 1));
-  const halten = takt ? 1 : Math.max(0, Math.min(10, Math.round(((dauer - (n - 1) * uebergang) / n) * 10) / 10));
+  // im Takt hat jeder Wechsel eine feste Länge, auch der Verlauf zwischen zwei Abschnitten (ohne Takt bliebe seine Länge offen)
+  if (takt) stationen = stationen.map((id) => (uebergaenge.has(id) ? { ergebnis: id, uebergang: "verlauf" } : id));
+  const halten = takt ? 1 : Math.max(0, Math.min(10, Math.round(((dauer - (n - 1) * uebergang) / n) * 100) / 100));
   return { entscheidung: d, ergebnisse, klang: ton, signal: signal.id,
-    plan: { stationen, art: f.art, halten, uebergang: Math.round(uebergang * 100) / 100, takt, tonspur: ton, tonBeginn: beginn, dauer } };
+    plan: { stationen, art: f.art, halten, uebergang: Math.round(uebergang * 100) / 100, takt, bewegung: { staerke: BEWEGUNG, signal: signal.id }, lebendig: true, tonspur: ton, tonBeginn: beginn, dauer } };
 }
