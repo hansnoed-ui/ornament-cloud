@@ -43,9 +43,9 @@ async function ausfuehren(page) { await page.click("#ausfuehren"); await page.wa
 const { ctx, page, fehler, fremd } = await oeffne();
 let gespeichert = null;
 
-await check("Start: vier Bereiche, Register mit fünfzehn Operationen, keine Fehler", async () => {
+await check("Start: vier Bereiche, Register mit einundzwanzig Operationen, keine Fehler", async () => {
   for (const id of ["material", "operationen", "experiment", "protokoll"]) assert.ok(await page.locator(`#${id}`).isVisible(), id);
-  assert.match(await page.textContent("#status"), /15 Operationen/);
+  assert.match(await page.textContent("#status"), /21 Operationen/);
   assert.deepEqual(fehler, []);
 });
 
@@ -601,6 +601,31 @@ await check("Telefon: kein seitliches Scrollen, Bereiche untereinander", async (
   assert.ok(await t.page.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 0, "Vorschlag ohne Überbreite");
   const [a, b] = await Promise.all(["#material", "#experiment"].map((s) => t.page.locator(s).boundingBox()));
   assert.ok(b.y > a.y && Math.abs(b.x - a.x) < 2);
+  await t.ctx.close();
+});
+
+await check("Telefon (wie Samsung S21 FE, Rechenleistung gedrosselt): je sechs Varianten von Glitch, Pixelsortierung und Raster", async () => {
+  const t = await oeffne({ viewport: { width: 384, height: 854 }, deviceScaleFactor: 2.8, isMobile: true, hasTouch: true });
+  const cdp = await t.ctx.newCDPSession(t.page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });   // ein Mittelklasse-Telefon rechnet etwa viermal langsamer
+  await t.page.click("#beispiel");
+  await t.page.waitForFunction(() => ornamentLab.aktuell);
+  const zeiten = {};
+  for (const id of ["lab.glitch", "lab.pixelsortierung", "lab.raster"]) {
+    await operation(t.page, id);
+    const t0 = Date.now();
+    await ausfuehren(t.page);
+    zeiten[id] = Date.now() - t0;
+    const k = await S(t.page, () => ornamentLab.projekt.knoten.at(-1));
+    assert.equal(k.status, "fertig", id);
+    assert.equal(k.ausgaben.length, 6, `${id}: sechs Varianten nebeneinander`);
+    await t.page.getByRole("button", { name: "weiterführen", exact: true }).nth(2).click();
+  }
+  console.log("      Rechenzeit gedrosselt:", Object.entries(zeiten).map(([k, v]) => `${k} ${(v / 1000).toFixed(1)} s`).join(", "));
+  for (const [id, ms] of Object.entries(zeiten)) assert.ok(ms < 30000, `${id}: ${ms} ms`);
+  const breit = await t.page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+  assert.ok(breit <= 0, `${breit}px zu breit`);
+  assert.deepEqual(t.fehler, []);
   await t.ctx.close();
 });
 

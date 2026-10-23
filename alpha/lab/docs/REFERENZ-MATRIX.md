@@ -29,7 +29,8 @@ Ein **Effekt** ist das sichtbare Ergebnis, eine **Operation** das nachvollziehba
 | TouchDesigner Audio Spectrum CHOP | Spektrum als Kanäle (Betrag und Phase), FFT-Grösse einstellbar | Klang → Kanäle | Kopplung | Schwerpunkt aus 32 Bändern; Spektrum als Befund vorgesehen | **geprüft** (docs.derivative.ca) |
 | **SuperCollider** | Server-Client, Audio- und Kontrollrate; Klang als formale Operation | Signal | Zeit | Klanggenerator und -transformation als Signaturen vorgesehen (AUDIO-FORMAT.md) | Hypothese |
 | **DaVinci Resolve / Fusion** | nodebasiertes Compositing: Merge mit Modi, Masken, Keyframes, Vergleich zweier Pfade | Bild → Bild | Raum, Beobachtung | **Differenz** (Merge Difference); Vergleich im Nebeneinander | Hypothese |
-| **Boris FX Sapphire** | Effektklassen (Glow, Lens, Distort, Glitch) mit vielen Parametern und Presets | Bild → Bild | Raum | nur als Klassen gelesen; keine Übernahme | Hypothese |
+| **Boris FX Sapphire** | Effektklassen (Glow, Lens, Distort, Glitch) mit vielen Parametern und Presets | Bild → Bild | Raum | als Klassen gelesen; die Klassen Glow, Distort und Glitch kamen in 0.1.10 als eigene Operationen dazu (**Licht**, **Optische Verzerrung**, **Glitch**, BILDFILTER.md), mit eigenen Verfahren | Hypothese |
+| **Glitch-Praxis, ASDFPixelSort** | Databending und Datamoshing (Menkman); Pixelsortierung zwischen Schwellen (Asendorf, Processing) | Bild → Bild | Raum | **Glitch**, **Pixelsortierung** mit Startwert und Anteil (BILDFILTER.md) | Hypothese |
 | **Resolume** | Ebenen, Effektketten, Feedback, Clips im Takt | Video | Zeit, Rekursion | Feedback; Kette | Hypothese |
 | **Topaz Video** | Modelle für Entrauschen, Hochrechnen, Zwischenbilder | Video → Video | Zeit | nicht im Lab (es gibt `alpha/hochrendern/`). Artefakte bleiben erlaubt. | Hypothese |
 | **After Effects** | Kompositionen in Kompositionen, Expressions koppeln Parameter | Ebenen | Kopplung | Expressions ≈ Routen; Verschachtelung später | Hypothese |

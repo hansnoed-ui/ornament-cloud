@@ -11,8 +11,15 @@ import { klang } from "./klang.js";
 import { tempo, zerlegen, rhythmus, koerner } from "./klangtransformation.js";
 import { differenz } from "./differenz.js";
 import { kompositionProfil, komposition } from "./komposition.js";
+import { glitchOperation } from "./glitch.js";
+import { pixelsortierungOperation } from "./pixelsortierung.js";
+import { verzerrungOperation } from "./verzerrung.js";
+import { lichtOperation } from "./licht.js";
+import { rasterOperation } from "./raster.js";
+import { neusetzenOperation } from "./neusetzen.js";
 
-export const OPERATIONEN = [orna, fictory, feedback, wiederholung, farbe, bildsignal, tonsignal, klang, tempo, zerlegen, rhythmus, koerner, differenz, kompositionProfil, komposition];
+export const OPERATIONEN = [orna, fictory, feedback, wiederholung, farbe, bildsignal, tonsignal, klang, tempo, zerlegen, rhythmus, koerner, differenz, kompositionProfil, komposition,
+  glitchOperation, pixelsortierungOperation, verzerrungOperation, lichtOperation, rasterOperation, neusetzenOperation];
 
 export function labRegister() {
   const r = erstelleRegister();

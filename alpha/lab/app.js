@@ -234,7 +234,7 @@ function regler(p, wert, setze) {
   return el("label", { class: "regler", title: p.hilfe ?? null }, el("span", { class: "kopfzeile" }, el("span", { text: p.name }), aus),
     el("input", { type: "range", min: p.min, max: p.max, step: p.schritt ?? "any", value: wert, "data-param": p.id, oninput: (ev) => { const v = Number(ev.target.value); aus.textContent = zahl(v); setze(v); } }));
 }
-const EINGANG_NAME = { einsaetze: "Ereignisfolge (Schnittstellen)", muster: "Muster (Ereignisfolge)", konstellation: "Konstellation", vergleich: "Vergleichen mit", profil: "Zielprofil (angleichen an)", bild: "Bild", signal: "Steuersignal" };
+const EINGANG_NAME = { einsaetze: "Ereignisfolge (Schnittstellen)", muster: "Muster (Ereignisfolge)", konstellation: "Konstellation", vergleich: "Vergleichen mit", profil: "Zielprofil (angleichen an)", bild: "Bild", signal: "Steuersignal", steuerbild: "Versetzen durch Bild" };
 /** Eingänge mit Auswahlfeld: alle ausser dem ersten (der ist der Ausgang), bei Generatoren mit lauter optionalen Eingängen alle */
 const waehlbareEingaenge = (op) => (op.eingaenge.every((x) => x.optional) ? op.eingaenge : op.eingaenge.slice(1));
 /** Titel eines Ergebnisses, bei Befunden mit dem Bild, an dem gemessen wurde */

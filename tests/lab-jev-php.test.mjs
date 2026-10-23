@@ -164,3 +164,12 @@ test("wahl.php: die Frage nach der Dramaturgie (Bild und Klang, 30 s) prüft wie
   assert.equal(andere.json.zwischengespeichert, false, "andere Stufen, neue Frage");
   assert.equal(gesendet.length, 2);
 });
+
+test("wahl.php: derselbe Katalog der Operationen wie fragen.js", { skip: ohnePhp && "kein php" }, async () => {
+  const { KATALOG } = await import(new URL("alpha/lab/jev/fragen.js", root).href);
+  gesendet = [];
+  const lage = { verlauf: [], optionen: Object.keys(KATALOG).slice(-6) };
+  const a = await frage(lage);
+  assert.equal(a.status, 200, JSON.stringify(a.json));
+  assert.deepEqual(gesendet[0].body.questions, labFrage(labLage(lage)).fragen);
+});

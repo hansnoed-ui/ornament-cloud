@@ -34,6 +34,12 @@ const KATALOG = [
   'lab.differenz' => 'Differenz: zeigt und misst den Unterschied zu einem anderen Zustand (Beobachtung)',
   'lab.profil' => 'Kompositorisches Profil: misst Schwerpunkt, Symmetrie, Lichtverteilung, Kontrast, Sättigung und Kantenrichtung des Bildes (Beobachtung)',
   'lab.komposition' => 'Komposition verändern: verstärkt, hebt auf oder kehrt um, was das Profil misst, etwa Symmetrie, Lichtgefälle oder Sättigung (räumliche Operation)',
+  'lab.glitch' => 'Glitch: Blöcke zeigen Inhalt von anderer Stelle, Zeilen verrutschen, Farbkanäle trennen sich (räumliche Operation)',
+  'lab.pixelsortierung' => 'Pixelsortierung: Abschnitte zwischen zwei Helligkeitsschwellen werden sortiert, das Bild zerfliesst in Streifen (räumliche Operation)',
+  'lab.verzerrung' => 'Optische Verzerrung: Wirbel, Linse, Welle, Kaleidoskop oder Versetzen nach Helligkeit (räumliche Operation)',
+  'lab.licht' => 'Licht: helle Stellen glühen oder streichen zu Lichtfahnen aus (räumliche Operation)',
+  'lab.raster' => 'Raster und Linien: das Bild wird zu Punkten, Linien, Schraffur, Wellenlinien oder Mosaik (räumliche Operation)',
+  'lab.neusetzen' => 'Zerlegen und neu setzen: Kacheln oder Streifen werden zufällig, nach Helligkeit oder umgekehrt neu geordnet (räumliche Operation)',
 ];
 const FRAGE = 'In einem künstlerischen Labor wird ein Bild schrittweise durch Operationen verändert; jedes Ergebnis kann weitergeführt werden. Welche der folgenden Operationen eröffnet als nächster Schritt am ehesten eine Fortsetzung, die sich vom bisherigen Verlauf deutlich unterscheidet, statt ihn nur zu wiederholen?';
 
