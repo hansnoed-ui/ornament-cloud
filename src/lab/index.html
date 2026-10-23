@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ORNAMENT LAB 0.1</title>
+  <!-- Entwicklungsstand: nur lokal (src/ wird nicht auf den Webspace geladen). Eine spätere Einbindung unter /lab nur mit Zustimmung. -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="ORNAMENT LAB: Operationen erzeugen, beobachten und weiterführen – Bild, Konstellation, Transformation, Varianten.">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+  <header class="kopf">
+    <div class="marke">
+      <h1>ORNAMENT LAB <span class="version">0.1</span></h1>
+      <p class="leitsatz">Erzeugen · Beobachten · Weiterführen</p>
+    </div>
+    <fieldset class="modus" aria-label="Arbeitsmodus">
+      <label><input type="radio" name="modus" value="manuell" checked><span>Manuell</span></label>
+      <label><input type="radio" name="modus" value="jev"><span>jev-assistiert</span></label>
+      <label><input type="radio" name="modus" value="experimentell"><span>Experimentell</span></label>
+    </fieldset>
+    <div class="projekt">
+      <input id="titel" type="text" value="Ohne Titel" aria-label="Titel des Projekts" maxlength="80">
+      <button id="speichern" class="knopf voll" type="button">Projekt speichern</button>
+      <label class="knopf" for="oeffnen">Projekt öffnen</label>
+      <input id="oeffnen" type="file" accept=".zip,application/zip" hidden>
+      <button id="neu" class="knopf leise" type="button">Neu</button>
+    </div>
+  </header>
+
+  <main class="labor">
+    <section id="material" class="bereich" aria-labelledby="h-material">
+      <h2 id="h-material"><span class="nr">1</span> Material</h2>
+      <div class="ablage" id="ablage">
+        <label class="knopf voll" for="datei">Bild wählen</label>
+        <input id="datei" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/bmp" hidden>
+        <button id="beispiel" class="knopf leise" type="button">Beispielbild</button>
+        <p class="hinweis">oder hineinziehen. Das Bild bleibt auf diesem Gerät.</p>
+      </div>
+      <ul id="materialien" class="streifen"></ul>
+    </section>
+
+    <section id="operationen" class="bereich" aria-labelledby="h-operationen">
+      <h2 id="h-operationen"><span class="nr">2</span> Operationen</h2>
+      <div id="ausgang" class="ausgang"></div>
+      <div id="vorschlaege" class="vorschlaege" hidden></div>
+      <div id="experimentell" class="experimentell" hidden></div>
+      <div id="op-liste" class="op-liste"></div>
+      <form id="op-form" class="op-form" hidden></form>
+    </section>
+
+    <section id="experiment" class="bereich breit" aria-labelledby="h-experiment">
+      <div class="zeile">
+        <h2 id="h-experiment"><span class="nr">3</span> Experiment</h2>
+        <fieldset class="ansicht" aria-label="Ansicht">
+          <label><input type="radio" name="ansicht" value="neben" checked><span>Nebeneinander</span></label>
+          <label><input type="radio" name="ansicht" value="nach"><span>Nacheinander</span></label>
+        </fieldset>
+      </div>
+      <div id="buehne" class="buehne"></div>
+    </section>
+
+    <section id="protokoll" class="bereich" aria-labelledby="h-protokoll">
+      <h2 id="h-protokoll"><span class="nr">4</span> Protokoll</h2>
+      <div id="ketten" class="ketten"></div>
+      <div id="exporte" class="exporte"></div>
+      <ol id="ereignisse" class="ereignisse" reversed></ol>
+    </section>
+  </main>
+
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

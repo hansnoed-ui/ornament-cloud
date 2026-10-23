@@ -28,6 +28,7 @@ const AUSNAHMEN = [
   ["OMNA COLOR mit dem Kopf der App statt der Kopfleiste: Signet, d · e, Weg in den Neubau (20. Oktober 2026, «auch alle downloadbaren Apps re-designen, auch doppelsprachig»); ihre App-Seite app/ trägt die Navigation", /^alpha\/omna-color\/(?!app\/)/],
   ["The Fictory mit dem Kopf der App statt der Kopfleiste (21. Oktober 2026, zweisprachig); ihre App-Seite app/ trägt die Navigation", /^alpha\/the-fictory\/(?!app\/)/],
   ["Die Redaktion von «Social Media» im Neubau (22. Oktober 2026, «im neuen design am neuen ort»): ihr Formular src/b/redaktion.html und die Weiterleitung an der alten Adresse", /^(social-media\/redaktion\/index|src\/b\/redaktion)\.html$/],
+  ["ORNAMENT LAB 0.1 mit eigener Oberfläche, nur lokal (23. Oktober 2026; src/ wird nicht auf den Webspace geladen, src/lab/README.md)", /^src\/lab\//],
   ["Der Neubau unter b/ mit eigener Kopfzeile (20. Oktober 2026, docs/superpowers/specs/2026-10-20-b-neubau-design.md); eigene Tests in tests/b.test.mjs", /^b\//],
 ];
 const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git", "404.html"]);   // 404.html (20. Oktober 2026, Hostpoint): Kopf wie überall, aber absolute Verweise, weil Apache sie unter jeder Adresse ausliefert; tests/hostpoint.test.mjs
