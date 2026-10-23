@@ -929,7 +929,7 @@ test("Vorschlag: eine Dramaturgie ausführen ergibt Stationen und einen Plan von
   assert.deepEqual(P.pruefeProjekt(p), []);
 });
 
-test("Stationen mit Bewegung (Lab 0.1.14): die Kamera macht jedes Bild anders, der Zoom atmet mit dem Signal, reproduzierbar", async () => {
+test("Stationen mit Bewegung (Lab 0.1.15): die Kamera macht jedes Bild anders, der Zoom atmet mit dem Signal, reproduzierbar", async () => {
   const VS = await lab("kern/vorschlag.js");
   const { p, m, e, t, r } = mitTon();
   const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id, beginn: 1 });
@@ -950,7 +950,7 @@ test("Stationen mit Bewegung (Lab 0.1.14): die Kamera macht jedes Bild anders, d
   assert.throws(() => ST.partitur(p, { ...x.plan, bewegung: { staerke: 0.5, signal: e.id } }), /Bewegung/);
 });
 
-test("Stationen lebendig (Lab 0.1.16): mit lebendiger Fassung rechnet der Film jede Station in jedem Bild neu, ohne bleibt alles wie bisher", async () => {
+test("Stationen lebendig (Lab 0.1.17): mit lebendiger Fassung rechnet der Film jede Station in jedem Bild neu, ohne bleibt alles wie bisher", async () => {
   const VS = await lab("kern/vorschlag.js");
   const { p, m, e, t, r } = mitTon();
   const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id, beginn: 1 });
@@ -1152,7 +1152,7 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   assert.deepEqual(P.pruefeProjekt(p), []);
 });
 
-test("Zusammenstellung aus einem Video (Lab 0.1.13): jeder Abschnitt nimmt das Standbild seiner Zeit", async () => {
+test("Zusammenstellung aus einem Video (Lab 0.1.14): jeder Abschnitt nimmt das Standbild seiner Zeit", async () => {
   const VS = await lab("kern/vorschlag.js");
   const Z = await lab("kern/zusammenstellung.js");
   const r = labRegister();

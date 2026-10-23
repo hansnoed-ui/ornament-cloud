@@ -108,7 +108,7 @@ export function browserMedien() {
         ton: { dauer: Math.round(t.dauer * 1000) / 1000, abtastrate: t.rate, kanaele: t.kanaele } };
     },
     /**
-     * ein Video lesen (seit Lab 0.1.13): Standbilder gleichmässig über die Länge, in Arbeitsgrösse, und die Tonspur, höchstens die ersten
+     * ein Video lesen (seit Lab 0.1.14): Standbilder gleichmässig über die Länge, in Arbeitsgrösse, und die Tonspur, höchstens die ersten
      * 120 s, als WAV mit 24 Bit. Das Video selbst kommt nicht ins Projekt, nur was daraus gelesen wurde; seine Prüfsumme steht in der Herkunft.
      * Der Browser muss das Format abspielen können (MP4 mit H.264 oder WebM fast überall, MOV je nach Gerät).
      */

@@ -1,4 +1,4 @@
-// ORNAMENT LAB – lebendige Effekte auf der Grafikkarte (WebGL 2, seit Lab 0.1.16). Wie bei PHORMA III ist ein Bild hier eine Rechnung
+// ORNAMENT LAB – lebendige Effekte auf der Grafikkarte (WebGL 2, seit Lab 0.1.17). Wie bei PHORMA III ist ein Bild hier eine Rechnung
 // der Zeit: Der Film über Stationen fragt für jedes seiner Bilder den Effekt einer Station neu an, mit den Parametern zu diesem Zeitpunkt
 // (die Modulation folgt dem Klang Bild für Bild). So zeigt jedes der 900 Bilder eines 30-s-Films ein echtes Effektbild, in Sekunden.
 // Die Effekte sind dieselben Operationen wie auf der CPU (operationen/*.js), mit denselben Parametern und in derselben Reihenfolge der

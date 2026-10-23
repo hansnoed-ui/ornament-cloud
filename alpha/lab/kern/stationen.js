@@ -4,8 +4,8 @@
 // Die Dauern sind Parameter wie die einer Operation, darum verteilt dieselbe Modulation (kern/modulation.js) sie über die Stationen:
 // die Stelle u einer Station in der Folge ist hier die Zeit. Eine Ereignisfolge (die Einsätze eines Tons) kann statt eines gleichmässigen
 // Masses den Takt geben: ein Einsatz löst den Wechsel aus. Danach rechnet filmbilder() die Bilder der Partitur, ebenfalls ohne DOM.
-// Eine Bewegung (seit Lab 0.1.14) führt eine Kamera über jedes Bild: langsames Schweben und Drehen, der Zoom atmet mit einem Steuersignal.
-// So ist jedes Bild des Films anders, auch während eine Station steht. Lebendig (seit Lab 0.1.16) rechnet die Grafikkarte den Effekt einer
+// Eine Bewegung (seit Lab 0.1.15) führt eine Kamera über jedes Bild: langsames Schweben und Drehen, der Zoom atmet mit einem Steuersignal.
+// So ist jedes Bild des Films anders, auch während eine Station steht. Lebendig (seit Lab 0.1.17) rechnet die Grafikkarte den Effekt einer
 // Station in jedem Bild neu, die Modulation folgt dem Klang Bild für Bild; ohne Grafikkarte bleibt es bei Stationen und Kamera.
 import { GRENZEN, ergebnis, knoten, verlauf } from "./projekt.js";
 import { moduliere, routeFuersProtokoll } from "./modulation.js";

@@ -12,7 +12,7 @@ import { taktSchwelle, DAUER } from "./vorschlag.js";
 import { zufall } from "../../../alpha/the-fictory/analyse.js?v=23";
 
 export const ZUSAMMENSTELLUNG_VERSION = "0.1.0";
-export const VARIANTEN_JE_ABSCHNITT = 10;   // seit Lab 0.1.15: 60 Motive in 30 s (vorher 3, also 18)
+export const VARIANTEN_JE_ABSCHNITT = 10;   // seit Lab 0.1.16: 60 Motive in 30 s (vorher 3, also 18)
 
 /** Bildeffekt → Operation: Parameter, und welcher Parameter der Lautstärke folgt (ohne Angabe: was die Operation selbst vorschlägt) */
 export const BILD_REZEPTE = Object.freeze({

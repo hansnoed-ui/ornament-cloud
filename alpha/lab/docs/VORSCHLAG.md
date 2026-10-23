@@ -1,4 +1,4 @@
-# Vorschlag für 30 Sekunden aus Bild und Klang (Lab 0.1.11, Zusammenstellung seit 0.1.12, Video seit 0.1.13, Bewegung seit 0.1.14, 60 Motive seit 0.1.15, lebendige Effekte seit 0.1.16)
+# Vorschlag für 30 Sekunden aus Bild und Klang (Lab 0.1.11, Zusammenstellung seit 0.1.12, Video seit 0.1.14, Bewegung seit 0.1.15, 60 Motive seit 0.1.16, lebendige Effekte seit 0.1.17)
 
 Christian wollte ein Bild und eine MP3 hochladen und von jev einen Vorschlag für eine Animation von 30 Sekunden bekommen. Der Bereich «Animation aus Bild und Klang (30 s)» steht unter **Material**, sobald das Projekt ein Bild und einen Ton hat.
 
@@ -36,14 +36,14 @@ Aus den Wahrscheinlichkeiten zieht das Lab mit Startwert (`zusammenstellen()` in
 
 1. die zwei Klangeffekte nacheinander auf den Ton (Tempo, Zerlegen, Neu-Rhythmisierung, Körner)
 2. *Tonsignal* misst den neuen Klang: Hüllkurve für die Modulation, Anschläge für den Takt; ein bearbeiteter Klang beginnt am Anfang
-3. sechs Abschnitte zu je zehn Varianten (seit Lab 0.1.15, vorher drei), die Lautstärke verteilt den Hauptparameter jedes Effekts über die Varianten (Zerfall: seine sechs Zustände)
+3. sechs Abschnitte zu je zehn Varianten (seit Lab 0.1.16, vorher drei), die Lautstärke verteilt den Hauptparameter jedes Effekts über die Varianten (Zerfall: seine sechs Zustände)
 4. Film über 61 Stationen (Bild und 60 Motive) mit dem neuen Klang als Tonspur, im Takt der stärksten Anschläge (jede Station einmal, höchstens zwei Wechsel je Sekunde, beim Schnitt 2,5) oder gleichmässig, wenn die Anschläge nicht für alle Motive reichen
 
 Kosten: ein Aufruf mit etwa 4000 Eingabe-Token, also etwa 0,02 Cent; gleiche Stufen kommen 30 Tage aus dem Zwischenspeicher. Am Desktop dauert das Rechnen etwa 50 s, am Telefon länger.
 
 Im Projekt: Entscheidung `gegenstand: "zusammenstellung"` mit `gewaehlt: { aufbau, uebergang, klang, bild }`, Startwert, Antworten von jev, Merkmalen; jeder Schritt verweist mit `details.entscheidung` darauf; der Film unter `exporte` mit `dramaturgie: "zusammenstellung"`.
 
-## Video als Eingang (seit Lab 0.1.13)
+## Video als Eingang (seit Lab 0.1.14)
 
 «Video wählen» unter Material (oder ein Video hineinziehen) liest MP4, WebM oder MOV, soweit der Browser es abspielen kann (H.264 und VP8/VP9 fast überall, HEVC je nach Gerät), höchstens 300 MB:
 
@@ -52,11 +52,11 @@ Im Projekt: Entscheidung `gegenstand: "zusammenstellung"` mit `gewaehlt: { aufba
 
 Das Video selbst kommt nicht ins Projekt, nur was daraus gelesen wurde. Im Vorschlag stehen danach das erste Standbild und die Tonspur vor. Bei der **Zusammenstellung** nimmt jeder Abschnitt das Standbild seiner Zeit (Abschnitt 1 und 2 das erste, 3 und 4 das zweite …, bei sechs Standbildern je eines), so folgt der Film dem Video; der Aufbau gilt dann nicht. Die Entscheidung trägt `details.video` mit den Standbildern. Die festen Dramaturgien nehmen das gewählte Standbild.
 
-## Bewegung (seit Lab 0.1.14)
+## Bewegung (seit Lab 0.1.15)
 
 Vorher stand jede Station still, bis die nächste kam: ein Film von 900 Bildern zeigte so nur etwa zwei Dutzend Veränderungen. Jetzt führt der Film eine Kamera über jedes Bild (`bewegung` im Plan, siehe docs/STATIONEN.md): Die Zusammenstellung mit voller Stärke, deren Zoom mit der Lautstärke des neuen Klangs atmet, die festen Dramaturgien mit 0,6 und der Lautstärke des gemessenen Klangs. Überblendung und Schwelle der Zusammenstellung dauern zudem bis zum nächsten Anschlag (höchstens 1,2 s bzw. 1,5 s), das Bild verwandelt sich also fortlaufend. Unter «Nacheinander» lässt sich die Bewegung danach ändern oder auf 0 setzen.
 
-## Lebendige Effekte (seit Lab 0.1.16)
+## Lebendige Effekte (seit Lab 0.1.17)
 
 Christian am 23. Oktober 2026: PHORMA hat einen flüssigen Film in kurzer Zeit. Dort rechnet die Grafikkarte jedes Bild aus der Zeit. Jetzt tut das Lab dasselbe für sieben Effekte (`medien/gpu.js`, Übersicht in docs/STATIONEN.md): In der Zusammenstellung und bei den Dramaturgien ist `lebendig` gesetzt, jede Station aus Farbe, Glitch, Verzerrung, Raster, Wiederholung, Feedback oder Licht ist in jedem der 900 Bilder ein neues Effektbild, und die Lautstärke moduliert den Hauptparameter Bild für Bild statt nur über die Varianten. Pixelsortierung, Neu setzen, Komposition und Zerfall bleiben Standbilder mit Kamera. Unter «Nacheinander» lässt sich «lebendige Effekte» abschalten.
 
