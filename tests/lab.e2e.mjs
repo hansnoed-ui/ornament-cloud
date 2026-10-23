@@ -548,6 +548,38 @@ await check("Klangtransformation: eigener Beat in 48 kHz stereo, sechs Rhythmen 
   assert.equal(await S(page, () => ornamentLab.projekt.exporte.at(-1).art), "wav");
 });
 
+await check("Klang über Stationen: die Rhythmen eines früheren Schritts und der letzte Klang hintereinander, als neuer Klang im Projekt", async () => {
+  await page.locator('input[name="ansicht"][value="neben"]').check({ force: true });
+  await page.locator("#buehne .karte.klang").first().getByRole("button", { name: "weiterführen" }).click();   // der schnellere Klang wird Ausgang
+  await page.locator(".schritte button").first().click();   // zurück zu «Neu-Rhythmisierung»
+  await page.getByRole("button", { name: "alle Klänge als Stationen" }).click();
+  assert.equal(await S(page, () => ornamentLab.klangstationen.length), 6);
+  await page.locator('input[name="ansicht"][value="nach"]').check({ force: true });
+  assert.equal(await page.locator(".klangstationen .stationen-liste > li").count(), 6);
+  const alle = page.getByRole("button", { name: /alle Klänge aller Schritte/ });
+  assert.match(await alle.textContent(), /\(7\)/);
+  await alle.click();
+  assert.equal(await page.locator(".klangstationen .stationen-liste > li").count(), 7);
+  await page.getByRole("button", { name: "Klang 1 nach hinten" }).click();
+  await page.locator('.klangstationen input[data-param="klangblende"]').fill("0.1");
+  const ids = await S(page, () => ornamentLab.klangstationen.map((x) => x.ergebnis));
+  const summe = await S(page, () => ornamentLab.klangstationen.reduce((a, x) => a + ornamentLab.projekt.ergebnisse.find((y) => y.id === x.ergebnis).ton.dauer, 0));
+  await page.click("#klangfolge");
+  await warteFertig(page);
+  const e = await S(page, () => ornamentLab.projekt.ergebnisse.at(-1));
+  assert.equal(e.typ, "AUDIO", await page.textContent("#status"));
+  assert.equal(e.herkunft.art, "klangfolge"); assert.deepEqual(e.herkunft.stationen, ids); assert.equal(e.herkunft.blende, 0.1);
+  assert.ok(Math.abs(e.ton.dauer - (summe - 6 * 0.1)) < 0.01, `${e.ton.dauer} statt ${summe - 0.6}`);
+  assert.deepEqual([e.ton.abtastrate, e.ton.kanaele, e.ton.umriss.length], [48000, 2, 200]);
+  const d = await S(page, () => ornamentLab.projekt.entscheidungen.at(-1));
+  assert.deepEqual([d.art, d.gegenstand, d.gewaehlt.length], ["mensch", "klangstationen", 7]);
+  assert.ok(await page.locator(".klangstationen .ton-karte audio").isVisible());
+  // der neue Klang ist Material wie eine Tondatei: unter Material, als WAV ausspielbar
+  assert.equal(await page.locator(`#materialien button[aria-label="Ton: ${e.titel}"]`).count(), 1, "unter Material");
+  const [dl] = await Promise.all([page.waitForEvent("download"), page.locator(".klangstationen .ton-karte").getByRole("button", { name: "WAV" }).click()]);
+  assert.match(dl.suggestedFilename(), /klang-uber-7-stationen/);
+});
+
 await check("Keine Fehler in der Konsole, keine Anfragen nach aussen", async () => {
   assert.deepEqual(fehler, []);
   assert.deepEqual(fremd, []);

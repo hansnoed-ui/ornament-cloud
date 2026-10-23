@@ -406,3 +406,33 @@ export function abtastrateLesen(bytes) {
   } catch { /* Kopf unvollständig */ }
   return null;
 }
+
+// ---------- Klangfolge: Klänge als Stationen hintereinander (seit Lab 0.1.13) ----------
+/**
+ * Klänge aneinanderlegen, mit einer gleich lauten Überblendung (Sinus/Kosinus) dazwischen. Alle werden in die Abtastrate des ersten
+ * umgetastet; ist einer stereo, wird die Folge stereo und einkanalige Klänge liegen auf beiden Seiten. Die Blende ist höchstens halb so
+ * lang wie der kürzere der beiden Nachbarn. Gibt einen Ton { spuren, pcm, rate } und die Stelle (s), an der jeder Klang einsetzt.
+ */
+export function klangfolge(toene, { blende = 0.05, hoechstens = Infinity } = {}) {
+  if (toene.length < 2) throw new Error("Eine Klangfolge braucht mindestens zwei Klänge");
+  const rate = toene[0].rate, kanaele = Math.min(2, Math.max(...toene.map((t) => spurenVon(t).length)));
+  const teile = toene.map((t) => {
+    const sp = spurenVon(t).slice(0, kanaele).map((s) => rateWandeln(s, t.rate, rate));
+    return sp.length < kanaele ? [sp[0], sp[0]] : sp;
+  });
+  const b = Math.max(0, Math.round(blende * rate));
+  const ueber = teile.map((t, i) => (i ? Math.min(b, Math.floor(Math.min(t[0].length, teile[i - 1][0].length) / 2)) : 0));
+  const anfaenge = [];
+  let pos = 0;
+  for (const [i, t] of teile.entries()) { pos -= ueber[i]; anfaenge.push(pos); pos += t[0].length; }
+  if (pos / rate > hoechstens) throw new Error(`Klangfolge länger als ${Math.round(hoechstens / 60)} Minuten (${Math.round(pos / rate)} s)`);
+  const spuren = Array.from({ length: kanaele }, () => new Float32Array(pos));
+  for (const [i, t] of teile.entries()) {
+    const ein = ueber[i], aus = ueber[i + 1] ?? 0, n = t[0].length;
+    for (let j = 0; j < n; j++) {
+      const g = (j < ein ? Math.sin(((j + 0.5) / ein) * (Math.PI / 2)) : 1) * (j >= n - aus ? Math.cos(((j - (n - aus) + 0.5) / aus) * (Math.PI / 2)) : 1);
+      for (let c = 0; c < kanaele; c++) spuren[c][anfaenge[i] + j] += t[c][j] * g;
+    }
+  }
+  return { ...alsTon(spuren, rate), einsaetze: anfaenge.map((a) => rund(a / rate)) };
+}

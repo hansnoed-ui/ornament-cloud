@@ -5,13 +5,13 @@ import { labRegister } from "./operationen/index.js";
 import { browserMedien } from "./medien/browser.js";
 import { videoAus, FPS } from "./medien/video.js";
 import * as P from "./kern/projekt.js";
-import { fuehreAus, bildfolge, regelVorschlaege, experiment, ketteAnwenden, neuerStartwert } from "./kern/ausfuehrung.js";
+import { fuehreAus, tonAngaben, bildfolge, regelVorschlaege, experiment, ketteAnwenden, neuerStartwert } from "./kern/ausfuehrung.js";
 import * as ST from "./kern/stationen.js";
 import { packe, entpacke, ENDUNG } from "./kern/archiv.js";
 import { QUELLEN, POLARITAETEN } from "./kern/modulation.js";
 import { KLASSEN, standardParameter } from "./kern/register.js";
 import { TYPEN } from "./kern/typen.js";
-import { AUSSPIELEN, wavSchreiben, rateWandeln, spurenVon } from "./kern/klangwerk.js";
+import { AUSSPIELEN, wavSchreiben, rateWandeln, spurenVon, klangfolge } from "./kern/klangwerk.js";
 import { jevVerfuegbar, jevWahl, jevDramaturgie, jevKomposition, jevPruefen, jevZustand } from "./jev/jev.js";
 import { DRAMATURGIEN, MERKMALE, KOMPOSITION_FRAGEN, BILD_EFFEKTE, KLANG_EFFEKTE, AUFBAU, FILM_UEBERGAENGE } from "./jev/fragen.js";
 import * as ZS from "./kern/zusammenstellung.js";
@@ -27,6 +27,8 @@ const S = {
   experimentErlaubt: new Set(["lab.feedback", "lab.wiederholung", "lab.farbe", "lab.differenz"]), experimentSchritte: 3, experimentVarianten: 3,
   // Film über Stationen: null folgt dem Verlauf des Ausgangs, sonst die eigene Auswahl (Kennungen, mit Übergang je Station)
   stationen: null,
+  // Klang über Stationen (seit 0.1.13): ebenso, die Klänge des Verlaufs oder eine eigene Auswahl; Blende zwischen zwei Klängen in s
+  klangstationen: null, klangblende: 0.05,
   // Ausspielen eines Klangs als WAV (Bittiefe, Abtastrate; 0 = wie der Klang) und Wiedergabe in der Schleife
   ausspielen: { bits: "24", rate: 0 }, schleife: false,
   // Animation des letzten Schritts: die Bildfolge auf die Länge der Tonspur strecken (seit 0.1.8), je Ausgang
@@ -473,7 +475,8 @@ function klangKarte(e, { gewaehlt = false, knoten = null } = {}) {
     el("div", { class: "werte", text: werte }),
     el("div", { class: "aktionen" },
       e.knoten ? el("button", { class: `knopf klein${gewaehlt ? " voll" : ""}`, type: "button", onclick: () => weiterfuehren(e.id), text: gewaehlt ? "gewählt" : "weiterführen" }) : null,
-      el("button", { class: "knopf klein leise", type: "button", title: "als WAV in der Bittiefe und Abtastrate darüber", onclick: () => wavAusspielen(e), text: "WAV" })));
+      el("button", { class: "knopf klein leise", type: "button", title: "als WAV in der Bittiefe und Abtastrate darüber", onclick: () => wavAusspielen(e), text: "WAV" }),
+      el("button", { class: "knopf klein leise", type: "button", "aria-pressed": String(Boolean(S.klangstationen?.some((x) => x.ergebnis === e.id))), title: "als Station in den Klang über Stationen (Nacheinander)", onclick: () => stationUmschalten(e.id, "AUDIO"), text: "Station" })));
 }
 function bildKarte(e, { gewaehlt = false, knoten = null } = {}) {
   const k = knoten ?? (e.knoten ? P.knoten(S.projekt, e.knoten) : null);
@@ -587,7 +590,8 @@ function nebeneinander(e) {
     teile.push(el("div", { class: "knotenkopf" }, el("b", { text: op.name }), el("span", { text: `${ausgaben.length} Ergebnis${ausgaben.length === 1 ? "" : "se"}` }),
       el("span", { class: "startwert", text: `Startwert ${k.seed}` }), ...entsch.map((d) => el("span", {}, artEtikett(d.art), ` ${d.gegenstand}`)),
       k.status === "fehler" ? el("span", { class: "fehler", text: k.fehler }) : null,
-      ausgaben.filter((x) => x.typ === "IMAGE").length > 1 ? el("button", { class: "knopf klein leise", type: "button", onclick: () => alleAlsStationen(k), text: S.stationen?.length ? "alle als Stationen dazu" : "alle als Stationen" }) : null));
+      ausgaben.filter((x) => x.typ === "IMAGE").length > 1 ? el("button", { class: "knopf klein leise", type: "button", onclick: () => alleAlsStationen(k), text: S.stationen?.length ? "alle als Stationen dazu" : "alle als Stationen" }) : null,
+      ausgaben.filter((x) => x.typ === "AUDIO").length > 1 ? el("button", { class: "knopf klein leise", type: "button", onclick: () => alleAlsStationen(k, "AUDIO"), text: S.klangstationen?.length ? "alle Klänge als Stationen dazu" : "alle Klänge als Stationen" }) : null));
     const bilder = ausgaben.filter((x) => x.typ === "IMAGE"), klaenge = ausgaben.filter((x) => x.typ === "AUDIO"), andere = ausgaben.filter((x) => x.typ !== "IMAGE" && x.typ !== "AUDIO");
     if (bilder.length) teile.push(el("div", { class: "raster" }, ...bilder.map((x) => bildKarte(x, { gewaehlt: k.gewaehlt === x.id || S.aktuell === x.id, knoten: k }))));
     if (klaenge.length) teile.push(ausspielLeiste(), el("div", { class: "raster" }, ...klaenge.map((x) => klangKarte(x, { gewaehlt: k.gewaehlt === x.id || S.aktuell === x.id, knoten: k }))));
@@ -642,7 +646,7 @@ function nacheinander(e) {
   const film = S.filme.get(e.id);
   const klaenge = S.projekt.ergebnisse.filter((x) => x.typ === "AUDIO");
   if (!S.tonspur.has(e.id)) S.tonspur.set(e.id, tonDesVerlaufs(e.id) ?? "");
-  return el("div", {}, liste, stationenAnsicht(e), schritte.length && e.typ === "IMAGE" ? el("div", { class: "film" },
+  return el("div", {}, liste, stationenAnsicht(e), klangStationenAnsicht(e), schritte.length && e.typ === "IMAGE" ? el("div", { class: "film" },
     el("div", { class: "aktionen" },
       el("button", { class: "knopf", type: "button", id: "animation", disabled: Boolean(S.laeuft), onclick: () => animation(e.id), text: "Animation des letzten Schritts" }),
       klaenge.length ? el("label", { class: "regler tonspur" }, el("span", { text: "Tonspur" }),
@@ -739,19 +743,23 @@ function stationen(e) {
   if (S.stationen) return S.stationen.filter((x) => P.ergebnis(S.projekt, x.ergebnis)?.typ === "IMAGE");
   return e ? ST.stationenAusVerlauf(S.projekt, e.id).map((id) => ({ ergebnis: id })) : [];
 }
-function stationUmschalten(id) {
-  S.stationen ??= [];
-  const i = S.stationen.findIndex((x) => x.ergebnis === id);
-  if (i >= 0) S.stationen.splice(i, 1); else S.stationen.push({ ergebnis: id });
-  status(i >= 0 ? "Station entfernt." : `Station ${S.stationen.length} aufgenommen. Der Film über die Stationen steht unter «Nacheinander».`);
+/** Bilder sind Stationen des Films, Klänge Stationen der Klangfolge: je eine eigene Auswahl */
+const STATIONEN_VON = { IMAGE: { feld: "stationen", ziel: "Der Film über die Stationen" }, AUDIO: { feld: "klangstationen", ziel: "Der Klang über die Stationen" } };
+function stationUmschalten(id, typ = "IMAGE") {
+  const { feld, ziel } = STATIONEN_VON[typ], l = (S[feld] ??= []);
+  const i = l.findIndex((x) => x.ergebnis === id);
+  if (i >= 0) l.splice(i, 1); else l.push({ ergebnis: id });
+  status(i >= 0 ? "Station entfernt." : `Station ${l.length} aufgenommen. ${ziel} steht unter «Nacheinander».`);
   zeigeBuehne();
 }
 /** die Varianten eines Schritts als Stationen: zur eigenen Auswahl hinzu (ohne doppelte), so kommen mehrere Schritte zusammen */
-function alleAlsStationen(k) {
-  const neu = k.ausgaben.filter((id) => P.ergebnis(S.projekt, id)?.typ === "IMAGE" && !S.stationen?.some((x) => x.ergebnis === id));
-  const vorher = S.stationen?.length ?? 0;
-  S.stationen = [...(S.stationen ?? []), ...neu.map((id) => ({ ergebnis: id }))];
-  status(vorher ? `${neu.length} Varianten dazu, jetzt ${S.stationen.length} Stationen. Der Film steht unter «Nacheinander».` : `${S.stationen.length} Stationen: die Varianten dieses Schritts. Weitere Schritte oben wählen und ebenso dazunehmen. Der Film steht unter «Nacheinander».`);
+function alleAlsStationen(k, typ = "IMAGE") {
+  const { feld, ziel } = STATIONEN_VON[typ], alt = S[feld];
+  const neu = k.ausgaben.filter((id) => P.ergebnis(S.projekt, id)?.typ === typ && !alt?.some((x) => x.ergebnis === id));
+  const vorher = alt?.length ?? 0;
+  S[feld] = [...(alt ?? []), ...neu.map((id) => ({ ergebnis: id }))];
+  const n = S[feld].length;
+  status(vorher ? `${neu.length} Varianten dazu, jetzt ${n} Stationen. ${ziel} steht unter «Nacheinander».` : `${n} Stationen: die Varianten dieses Schritts. Weitere Schritte oben wählen und ebenso dazunehmen. ${ziel} steht unter «Nacheinander».`);
   zeigeBuehne();
 }
 /** alle Bildvarianten aller Schritte des Verlaufs als Stationen */
@@ -759,6 +767,63 @@ function alleVariantenAlsStationen(e) {
   S.stationen = ST.variantenAusVerlauf(S.projekt, e.id).map((id) => ({ ergebnis: id }));
   status(`${S.stationen.length} Stationen: alle Varianten aller Schritte.`);
   zeigeBuehne();
+}
+// ---------- Klang über Stationen: Klänge hintereinander zu einem neuen Klang (kern/klangwerk.js klangfolge) ----------
+function klangstationen(e) {
+  if (S.klangstationen) return S.klangstationen.filter((x) => P.ergebnis(S.projekt, x.ergebnis)?.typ === "AUDIO");
+  return e ? ST.stationenAusVerlauf(S.projekt, e.id, "AUDIO").map((id) => ({ ergebnis: id })) : [];
+}
+function klangStationenAnsicht(e) {
+  const liste = klangstationen(e), eigene = Boolean(S.klangstationen), alle = e ? ST.variantenAusVerlauf(S.projekt, e.id, "AUDIO") : [];
+  const alleGewaehlt = eigene && liste.length === alle.length && liste.every((x, i) => x.ergebnis === alle[i]);
+  if (!eigene && liste.length < 2 && alle.length < 2) return null;
+  const setze = (neu) => { S.klangstationen = neu; zeigeBuehne(); };
+  const verschiebe = (i, d) => { const l = liste.map((x) => ({ ...x })); [l[i], l[i + d]] = [l[i + d], l[i]]; setze(l); };
+  const zeilen = liste.map((x, i) => {
+    const t = P.ergebnis(S.projekt, x.ergebnis);
+    return el("li", {},
+      el("div", { class: "umriss" }, umriss(t)),
+      el("div", { class: "station-text" }, el("b", { text: `${i + 1}` }), " ", t.titel, el("small", { text: ` · ${sekunden(t.ton?.dauer ?? 0)}` })),
+      el("audio", { src: S.medien.url(t), controls: true, preload: "none" }),
+      el("div", { class: "aktionen" },
+        el("button", { class: "knopf klein leise", type: "button", disabled: i === 0, "aria-label": `Klang ${i + 1} nach vorn`, onclick: () => verschiebe(i, -1), text: "↑" }),
+        el("button", { class: "knopf klein leise", type: "button", disabled: i === liste.length - 1, "aria-label": `Klang ${i + 1} nach hinten`, onclick: () => verschiebe(i, 1), text: "↓" }),
+        el("button", { class: "knopf klein leise", type: "button", "aria-label": `Klang ${i + 1} entfernen`, onclick: () => setze(liste.filter((_, j) => j !== i)), text: "✕" })));
+  });
+  const dauer = liste.reduce((a, x) => a + (P.ergebnis(S.projekt, x.ergebnis).ton?.dauer ?? 0), 0);
+  const letzte = S.projekt.ergebnisse.filter((x) => x.herkunft?.art === "klangfolge").at(-1);
+  const plan = el("p", { class: "startwert", id: "klangstationen-plan" });
+  const rechnen = () => { plan.textContent = `${liste.length} Klänge, zusammen etwa ${sekunden(Math.max(0, dauer - S.klangblende * Math.max(0, liste.length - 1)))}.`; };
+  rechnen();
+  return el("section", { class: "stationen klangstationen", "aria-labelledby": "h-klangstationen" },
+    el("div", { class: "knotenkopf" }, el("b", { id: "h-klangstationen", text: "Klang über Stationen" }),
+      el("span", { class: "startwert", text: eigene ? "eigene Auswahl" : "die Klänge des Verlaufs" }),
+      eigene ? el("button", { class: "knopf klein leise", type: "button", onclick: () => setze(null), text: "Verlauf übernehmen" }) : null,
+      alle.length > 1 && !alleGewaehlt ? el("button", { class: "knopf klein leise", type: "button", onclick: () => setze(alle.map((id) => ({ ergebnis: id }))), text: `alle Klänge aller Schritte (${alle.length})` }) : null),
+    liste.length ? el("ol", { class: "stationen-liste" }, ...zeilen) : null,
+    el("small", { class: "startwert", text: "Unter «Nebeneinander» nimmt «Station» an einem Klang weitere auf, «alle Klänge als Stationen» die Varianten eines Schritts." }),
+    el("fieldset", { class: "gruppe stationen-regler" }, el("legend", { text: "Zusammenfügen" }),
+      regler({ id: "klangblende", name: "Überblendung zwischen zwei Klängen (s)", art: "zahl", min: 0, max: 2, schritt: 0.01 }, S.klangblende, (v) => { S.klangblende = v; rechnen(); })),
+    plan,
+    el("div", { class: "aktionen" },
+      el("button", { class: "knopf", type: "button", id: "klangfolge", disabled: liste.length < 2 || Boolean(S.laeuft), onclick: () => klangfolgeErzeugen(liste), text: "Klang über die Stationen" }),
+      el("small", { text: "Der neue Klang erscheint als Material: anhören, als WAV speichern, weiter verwandeln oder oben als Tonspur unter die Animation legen." })),
+    letzte ? el("div", { class: "ton-karte" }, el("audio", { src: S.medien.url(letzte), controls: true, preload: "metadata" }),
+      el("div", { class: "aktionen" }, el("small", { text: `${letzte.titel}, ${sekunden(letzte.ton?.dauer ?? 0)}` }),
+        el("button", { class: "knopf klein leise", type: "button", onclick: () => wavAusspielen(letzte), text: "WAV" }))) : null);
+}
+async function klangfolgeErzeugen(liste) {
+  await laufen(async () => {
+    const ids = liste.map((x) => x.ergebnis), blende = S.klangblende;
+    const toene = await Promise.all(ids.map((id) => S.medien.ton(P.ergebnis(S.projekt, id))));
+    const t = klangfolge(toene, { blende, hoechstens: P.GRENZEN.tonSekunden });
+    const e = P.fuegeMaterialHinzu(S.projekt, { titel: `Klang über ${ids.length} Stationen`, typ: "AUDIO", mime: "audio/wav",
+      herkunft: { art: "klangfolge", stationen: ids, blende, einsaetze: t.einsaetze, hinweis: `${ids.length} Klänge hintereinander, ${blende} s Überblendung, ${sekunden(t.pcm.length / t.rate)}` } });
+    Object.assign(e, await S.medien.ablegenKlang(e, t));
+    e.ton = tonAngaben(t);
+    P.entscheide(S.projekt, { art: "mensch", gegenstand: "klangstationen", gewaehlt: ids, details: { auswahl: S.klangstationen ? "eigene" : "Verlauf", blende, ergebnis: e.id } });
+    status(`${e.titel}: ${sekunden(e.ton.dauer)}, ${e.ton.abtastrate} Hz${e.ton.kanaele === 2 ? ", stereo" : ""}. Er steht unter Material und als Tonspur zur Wahl.`);
+  });
 }
 function stationenPlan(liste) {
   const f = S.film;
@@ -931,7 +996,7 @@ async function oeffnen(datei) {
   try {
     const { projekt, medien, fehlt } = await entpacke(new Uint8Array(await datei.arrayBuffer()));
     projekt.exporte ??= [];
-    S.projekt = projekt; S.medien.uebernehmen(medien); S.filme.clear(); S.tonspur.clear(); S.vergleich.clear(); S.knotenAnsicht = null; S.op = null; S.stationen = null; S.vorschlag = { ...S.vorschlag, messung: null, jev: null, regel: null, gewaehlt: null, zusammen: null };
+    S.projekt = projekt; S.medien.uebernehmen(medien); S.filme.clear(); S.tonspur.clear(); S.vergleich.clear(); S.knotenAnsicht = null; S.op = null; S.stationen = null; S.klangstationen = null; S.vorschlag = { ...S.vorschlag, messung: null, jev: null, regel: null, gewaehlt: null, zusammen: null };
     const gewaehlt = [...projekt.knoten].reverse().find((k) => k.gewaehlt)?.gewaehlt;
     S.aktuell = gewaehlt ?? projekt.ergebnisse.filter((e) => e.typ === "IMAGE").at(-1)?.id ?? null;
     $("titel").value = projekt.titel; S.ungespeichert = false;
@@ -960,7 +1025,7 @@ $("speichern").addEventListener("click", speichern);
 $("oeffnen").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) oeffnen(f); });
 $("neu").addEventListener("click", () => {
   if (S.ungespeichert && !confirm("Das aktuelle Projekt ist nicht gespeichert. Trotzdem neu beginnen?")) return;
-  S.projekt = P.neuesProjekt({ modus: S.modus }); S.medien = browserMedien(); S.aktuell = null; S.op = null; S.filme.clear(); S.tonspur.clear(); S.knotenAnsicht = null; S.stationen = null; S.vorschlag = { ...S.vorschlag, messung: null, jev: null, regel: null, gewaehlt: null, zusammen: null }; S.ungespeichert = false;
+  S.projekt = P.neuesProjekt({ modus: S.modus }); S.medien = browserMedien(); S.aktuell = null; S.op = null; S.filme.clear(); S.tonspur.clear(); S.knotenAnsicht = null; S.stationen = null; S.klangstationen = null; S.vorschlag = { ...S.vorschlag, messung: null, jev: null, regel: null, gewaehlt: null, zusammen: null }; S.ungespeichert = false;
   $("titel").value = S.projekt.titel; status("Neues Projekt."); alles();
 });
 $("titel").addEventListener("change", (ev) => { S.projekt.titel = ev.target.value.trim() || "Ohne Titel"; geaendert(); });

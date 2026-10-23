@@ -25,7 +25,7 @@ async function eingaengeLaden(op, projekt, medien, eingaben) {
 }
 
 /** Angaben zu einem erzeugten Klang (wie bei Tonmaterial) und ein Umriss mit 200 Spitzenwerten für die Anzeige */
-function tonAngaben({ pcm, rate, spuren = null }) {
+export function tonAngaben({ pcm, rate, spuren = null }) {
   const n = 200, umriss = Array.from({ length: n }, (_, k) => {
     let m = 0;
     for (let i = Math.floor((k * pcm.length) / n), z = Math.floor(((k + 1) * pcm.length) / n); i < z; i++) m = Math.max(m, Math.abs(pcm[i]));

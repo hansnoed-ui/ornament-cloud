@@ -26,7 +26,8 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
     "ton": { "dauer": 12.5, "abtastrate": 44100, "kanaele": 2 },   // seit 0.4.0 nur bei AUDIO-Material (Datei unverändert)
     "knoten": "k-… | null",               // null = importiertes Material
     "herkunft": { "art": "import", "original": { "name", "sha256", "breite", "hoehe", "mime", "bytes" } }
-             | { "art": "operation", "operation": "lab.feedback" },
+             | { "art": "operation", "operation": "lab.feedback" }
+             | { "art": "klangfolge", "stationen": ["e-…"], "blende": 0.05, "einsaetze": [0, 1.9], "hinweis": "…" },   // seit Lab 0.1.13: Klang über Stationen (AUDIO, knoten null)
     "index": 0,                           // Stelle in der Reihe der Varianten
     "variante": { "stelle": 0.4, "parameter": { … }, "seed": 123, "teil": 0 },   // die tatsächlich benutzten Parameter
     "daten": { … } | null,                // bei CONSTELLATION, CONTROL_SIGNAL, EVENT_SEQUENCE, METADATA (siehe unten)

@@ -7,7 +7,7 @@
 
 export const FORMAT = "ornament-lab-projekt";
 export const FORMAT_VERSION = "0.7.0";
-export const LAB_VERSION = "0.1.12";
+export const LAB_VERSION = "0.1.13";
 
 export const ENTSCHEIDUNGSARTEN = Object.freeze({
   mensch: "menschliche Entscheidung",
