@@ -40,6 +40,7 @@ if (html.classList.contains("uebersicht")) {
   let i = 0, laeuft = false, ende = 0;
   const warte = (ms) => new Promise((r) => setTimeout(r, ruhig ? 0 : ms));
 
+  const schmal = matchMedia("(max-width: 759px)");   // Ring in vw: auf dem Telefon weiter auseinander
   // die Karten im Ring: k = Abstand zur Mitte (kürzester Weg rundherum); voll: die Mitte füllt die Bühne
   const ring = (mitte, { voll = false, nachbarn = true } = {}) => dias.forEach((d, j) => {
     const L = dias.length;
@@ -48,7 +49,7 @@ if (html.classList.contains("uebersicht")) {
     if (k < -L / 2) k += L;
     const a = Math.min(Math.abs(k), 3), r = Math.sign(k);
     const p = voll && k === 0 ? { x: 0, s: 1, o: 1, dreh: 0 }
-      : { x: r * [0, 47, 73, 92][a], s: [0.42, 0.22, 0.12, 0.06][a], o: a > 2 || (voll && !nachbarn) ? 0 : 1, dreh: r * -22 };
+      : { x: r * (schmal.matches ? [0, 45, 70, 88] : [0, 31, 46, 56])[a], s: [0.42, 0.22, 0.12, 0.06][a], o: a > 2 || (voll && !nachbarn) ? 0 : 1, dreh: r * -22 };
     for (const [n, v] of Object.entries(p)) d.style.setProperty(`--${n}`, v);
     d.style.setProperty("--z", String(10 - a));
   });

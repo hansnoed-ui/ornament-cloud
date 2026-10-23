@@ -61,19 +61,25 @@ html:not(.js) .ansicht { display: none; }
 .js[data-ansicht="buehne"] body { overflow: hidden; }
 .js[data-ansicht="buehne"] .buehne { display: block; position: fixed; inset: 0; z-index: 1; color: #fff; touch-action: none; }
 .js[data-ansicht="buehne"] .raster-ansicht, .js[data-ansicht="buehne"] .fuss { display: none; }
-.js[data-ansicht="buehne"] .kopf { color: #fff; inset: 8px 8px auto; text-shadow: 0 0 18px rgba(0, 0, 0, 0.3); transition: color 0.4s; }
-.js[data-ansicht="buehne"] .signet .still { color: rgba(255, 255, 255, 0.7); }
-.js[data-ansicht="buehne"] .ansicht { background: rgba(255, 255, 255, 0.16); text-shadow: none; }
-.js[data-ansicht="buehne"] .ansicht button { color: rgba(255, 255, 255, 0.75); }
-.js[data-ansicht="buehne"] .ansicht button[aria-pressed="true"] { background: #fff; color: #1d1d1d; }
-.js[data-ansicht="buehne"] .signet .punkt { fill: #8fb0ff; }
+@media (max-width: 759px) {
+  .js[data-ansicht="buehne"] .kopf { color: #fff; inset: 8px 8px auto; text-shadow: 0 0 18px rgba(0, 0, 0, 0.3); transition: color 0.4s; }
+  .js[data-ansicht="buehne"] .signet .still { color: rgba(255, 255, 255, 0.7); }
+  .js[data-ansicht="buehne"] .ansicht { background: rgba(255, 255, 255, 0.16); text-shadow: none; }
+  .js[data-ansicht="buehne"] .ansicht button { color: rgba(255, 255, 255, 0.75); }
+  .js[data-ansicht="buehne"] .ansicht button[aria-pressed="true"] { background: #fff; color: #1d1d1d; }
+  .js[data-ansicht="buehne"] .signet .punkt { fill: #8fb0ff; }
+}
+/* die Bühne nimmt 62 % der Bildschirmbreite, das Werk steht im Hochformat (4 : 5) in der Mitte (Wunsch von Christian, 23. Oktober 2026);
+   passt das Hochformat nicht in die Höhe, wird es schmaler. Auf dem Telefon die ganze Breite. */
+.buehne { --breite: min(62vw, calc((100svh - 16px) * 0.8)); --links: calc((100vw - var(--breite)) / 2); }
+@media (max-width: 759px) { .buehne { --breite: calc(100vw - 16px); --links: 8px; } }
 /* das Drehkarussell: beim Wechsel schrumpft das Werk zur Karte in einem Ring, der Ring dreht um eins, das nächste wächst wieder zur Bühne
    (works.js setzt --x, --s, --o, --dreh, --z je Karte) */
 .js[data-karussell] .kopf { color: var(--tinte); text-shadow: none; }
 .js[data-karussell] .kopf .signet .still { color: var(--grau); }
 .dias { position: absolute; inset: 0; perspective: 1800px; }
-.dia { position: absolute; inset: 8px; overflow: hidden; border-radius: 14px; background: var(--buehne); opacity: var(--o, 0); z-index: var(--z, 0);
-  transform: translateX(calc(var(--x, 0) * 1%)) scale(var(--s, 1)) rotateY(calc(var(--dreh, 0) * 1deg));
+.dia { position: absolute; top: 8px; bottom: 8px; left: var(--links); width: var(--breite); overflow: hidden; border-radius: 14px; background: var(--buehne); opacity: var(--o, 0); z-index: var(--z, 0);
+  transform: translateX(calc(var(--x, 0) * 1vw)) scale(var(--s, 1)) rotateY(calc(var(--dreh, 0) * 1deg));
   transition: transform 0.65s cubic-bezier(0.65, 0, 0.3, 1), border-radius 0.65s, opacity 0.25s; }
 .dia.ist { --o: 1; --z: 5; }
 .js[data-karussell] .dia { border-radius: 22px; }
@@ -92,9 +98,10 @@ html:not(.js) .ansicht { display: none; }
 .dia.ist .dia-titel { opacity: 1; translate: 0 0; transition: opacity 0.5s 0.15s, translate 0.7s 0.15s cubic-bezier(0.2, 0.7, 0.2, 1); }
 .js[data-karussell] .dia .dia-titel, .js[data-karussell] .buehne > :not(.dias) { opacity: 0; }
 .buehne > :not(.dias) { transition: opacity 0.3s; }
-.zaehler { position: absolute; left: calc(var(--rand) + 8px); bottom: calc(var(--rand) + 8px); z-index: 6; padding: 5px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.12); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); font-variant-numeric: tabular-nums; }
-.buehne-satz { position: absolute; right: calc(var(--rand) + 8px); top: 50%; z-index: 6; transform: translateY(-50%); max-width: 22ch; text-align: right; font-family: var(--serif); font-style: italic; font-size: 18px; line-height: 1.3; opacity: 0.8; }
-.buehne-tasten { position: absolute; right: calc(var(--rand) + 8px); bottom: calc(var(--rand) + 8px); z-index: 6; display: flex; gap: 4px; }
+.zaehler { position: absolute; left: calc(var(--links) + var(--rand)); bottom: calc(var(--rand) + 8px); z-index: 6; padding: 5px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.12); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); font-variant-numeric: tabular-nums; }
+.buehne-satz { position: absolute; right: var(--rand); top: 50%; z-index: 6; transform: translateY(-50%); width: calc(var(--links) - 2 * var(--rand) - 8px); max-width: 22ch; text-align: right; font-family: var(--serif); font-style: italic; font-size: 18px; line-height: 1.3; color: var(--grau); }
+@media (max-width: 1100px) { .buehne-satz { display: none; } }
+.buehne-tasten { position: absolute; right: calc(var(--links) + var(--rand)); bottom: calc(var(--rand) + 8px); z-index: 6; display: flex; gap: 4px; }
 .buehne-tasten button { width: 36px; height: 36px; border-radius: 6px; background: rgba(255, 255, 255, 0.12); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: #fff; }
 .buehne-tasten button:hover { background: rgba(255, 255, 255, 0.24); }
 @media (max-width: 759px) { .buehne-satz, .buehne-tasten { display: none; } .dia-titel { top: auto; bottom: calc(var(--dock-h) + 76px); transform: none; } .zaehler { bottom: calc(var(--dock-h) + 30px); } }
@@ -106,6 +113,7 @@ html:not(.js) .ansicht { display: none; }
 
 /* ---------- Raster ---------- */
 .raster-ansicht { padding-top: 64px; }
+@media (min-width: 760px) { .raster-ansicht { width: 62vw; margin-inline: auto; } }
 .auftakt { display: grid; gap: 14px; padding: clamp(40px, 9vw, 120px) var(--rand) clamp(28px, 4vw, 48px); }
 .auftakt h1 { font-size: var(--gross); line-height: 1.22; letter-spacing: -0.01em; max-width: 24ch; text-wrap: balance; }
 .leitsatz { font-family: var(--serif); font-style: italic; font-size: 19px; line-height: 1.35; color: var(--grau); max-width: 40ch; }
@@ -115,7 +123,7 @@ html:not(.js) .ansicht { display: none; }
 @media (min-width: 760px) { .raster { grid-template-columns: repeat(2, 1fr); gap: var(--fuge); } }
 .werk { position: relative; display: grid; gap: 10px; }
 .werk:hover { color: inherit; }
-.werk .medium { position: relative; display: block; aspect-ratio: 3 / 2; overflow: hidden; border-radius: var(--rund); background: var(--flaeche); }
+.werk .medium { position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--rund); background: var(--flaeche); }
 .werk .medium img, .werk .medium video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1); }
 .werk .medium video { opacity: 0; transition: opacity 0.3s; }
 .werk .medium.spielt video { opacity: 1; }
