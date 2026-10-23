@@ -71,7 +71,7 @@ html:not(.js) .ansicht { display: none; }
 }
 /* die Bühne nimmt 62 % der Bildschirmbreite, das Werk steht im Hochformat (4 : 5) in der Mitte (Wunsch von Christian, 23. Oktober 2026);
    passt das Hochformat nicht in die Höhe, wird es schmaler. Auf dem Telefon die ganze Breite. */
-.buehne { --breite: min(62vw, calc((100svh - 16px) * 0.8)); --links: calc((100vw - var(--breite)) / 2); }
+.buehne { --breite: 62vw; --links: calc((100vw - var(--breite)) / 2); }
 @media (max-width: 759px) { .buehne { --breite: calc(100vw - 16px); --links: 8px; } }
 /* das Drehkarussell: beim Wechsel schrumpft das Werk zur Karte in einem Ring, der Ring dreht um eins, das nächste wächst wieder zur Bühne
    (works.js setzt --x, --s, --o, --dreh, --z je Karte) */

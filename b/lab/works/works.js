@@ -52,7 +52,7 @@ if (html.classList.contains("uebersicht")) {
       if (k > L / 2) k -= L;
       const w = (2 * Math.PI * k) / L, tiefe = (Math.cos(w) + 1) / 2;   // 1 vorne, 0 hinten
       // von leicht oben gesehen: hintere Karten stehen höher und kleiner, damit der ganze Ring sichtbar ist
-      let x = Math.sin(w) * R, y = (tiefe - 0.5) * H - 7, s = schmal.matches ? 0.2 + 0.32 * tiefe : 0.16 + 0.3 * tiefe, o = 0.55 + 0.45 * tiefe, dreh = -Math.sin(w) * 34;
+      let x = Math.sin(w) * R, y = (tiefe - 0.5) * H - 7, s = schmal.matches ? 0.2 + 0.32 * tiefe : 0.13 + 0.24 * tiefe, o = 0.55 + 0.45 * tiefe, dreh = -Math.sin(w) * 34;
       const vorne = Math.abs(k) < 0.001;
       if (vorne) { x *= 1 - vorn; y *= 1 - vorn; s += (1 - s) * vorn; dreh *= 1 - vorn; o = 1; } else o *= 1 - vorn;
       d.style.setProperty("--x", x.toFixed(3)); d.style.setProperty("--y", y.toFixed(3)); d.style.setProperty("--s", s.toFixed(4));
