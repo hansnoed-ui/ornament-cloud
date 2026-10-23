@@ -16,7 +16,7 @@ export const Frage: React.FC = () => {
   const rueck = interpolate(f, [STEHT + 6, STEHT + 28], [0, 1], { ...klemm, easing: weich });
   return (
     <Grund m="dunkel">
-      <Schlagzeile f={f} text={daten.frage2.satz} groesse={100} style={{ position: "absolute", left: RAND, right: RAND, top: 230 }} />
+      <Schlagzeile f={f} text={daten.frage2.satz} groesse={88} style={{ position: "absolute", left: RAND, right: RAND, top: 230 }} />
       <Unterzeile f={f} a={14} m="dunkel" {...daten.frage2.a} style={{ position: "absolute", left: RAND, right: RAND, top: 470 }} />
       <div style={{ position: "absolute", left: 90, top: 610, width: 900, height: 900, opacity: interpolate(f, [4, 14], [0, 1], klemm),
         scale: interpolate(f, [4, 30], [0.86, 1], { ...klemm, easing: weich }) * interpolate(rueck, [0, 1], [1, 0.62]), transformOrigin: "50% 0" }}>
