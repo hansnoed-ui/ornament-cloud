@@ -12,7 +12,7 @@ import { QUELLEN, POLARITAETEN } from "./kern/modulation.js";
 import { KLASSEN, standardParameter } from "./kern/register.js";
 import { TYPEN } from "./kern/typen.js";
 import { AUSSPIELEN, wavSchreiben, rateWandeln, spurenVon } from "./kern/klangwerk.js";
-import { jevVerfuegbar, jevWahl } from "./jev/jev.js";
+import { jevVerfuegbar, jevWahl, jevPruefen, jevZustand } from "./jev/jev.js";
 import { zip } from "../../alpha/the-fictory/zip.js?v=23";
 
 const R = labRegister();
@@ -242,7 +242,7 @@ async function laufen(fn) {
   finally { S.laeuft = null; alles(); status(letzterStatus[0], null, letzterStatus[2]); }
 }
 
-// jev-assistiert: feste Regeln immer, jev live nur wenn eingerichtet
+// jev-assistiert: feste Regeln immer, jev live nur wenn die Zwischenstelle bereit ist (jev/wahl.php)
 function zeigeVorschlaege() {
   const box = $("vorschlaege"), e = aktuellesErgebnis();
   box.hidden = S.modus !== "jev";
@@ -255,10 +255,10 @@ function zeigeVorschlaege() {
       el("small", { text: v.gruende.join("; ") || "keine besondere Regel" })))),
     el("div", { class: "aktionen" },
       el("button", { class: "knopf klein", type: "button", disabled: !jevVerfuegbar() || e.typ !== "IMAGE", onclick: jevFragen, text: "jev fragen" }),
-      el("small", { text: jevVerfuegbar() ? "jev live: Wahrscheinlichkeiten für die nächste Operation" : "jev live ist nicht eingerichtet (docs/JEV-STATUS.md). Die Regeln oben sind keine jev-Urteile." })),
+      el("small", { text: jevVerfuegbar() ? "jev live: Wahrscheinlichkeiten für die nächste Operation. Ein Vorschlag, kein Urteil; die Regeln oben sind keine jev-Urteile." : `jev live ist nicht eingerichtet (${jevZustand().grund}). Die Regeln oben sind keine jev-Urteile.` })),
     S.jevAntwort ? el("ul", {}, ...Object.entries(S.jevAntwort.wahrscheinlichkeiten).sort((a, b) => b[1] - a[1]).map(([id, p]) => el("li", {},
       el("span", {}, artEtikett("jev"), " ", el("b", { text: opName(id) }), ` p = ${zahl(p)} `,
-        el("button", { class: "knopf klein", type: "button", onclick: () => { S.wahl = { art: "jev", details: { modell: S.jevAntwort.modell, wahrscheinlichkeit: p, wahrscheinlichkeiten: S.jevAntwort.wahrscheinlichkeiten, lage: S.jevAntwort.lage } }; S.op = id; waehleOperationOhneZuruecksetzen(); }, text: "übernehmen" }))))) : null);
+        el("button", { class: "knopf klein", type: "button", onclick: () => { S.wahl = { art: "jev", details: { quelle: S.jevAntwort.quelle, modell: S.jevAntwort.modell, wahrscheinlichkeit: p, wahrscheinlichkeiten: S.jevAntwort.wahrscheinlichkeiten, lage: S.jevAntwort.lage, zwischengespeichert: S.jevAntwort.zwischengespeichert, gefragt: S.jevAntwort.zeit } }; S.op = id; waehleOperationOhneZuruecksetzen(); }, text: "übernehmen" }))))) : null);
 }
 function waehleOperationOhneZuruecksetzen() { const w = S.wahl; waehleOperation(S.op); S.wahl = w; zeigeFormular(); }
 async function jevFragen() {
@@ -266,7 +266,7 @@ async function jevFragen() {
   const optionen = R.fuer(e.typ).map((o) => o.id).slice(0, 6);
   const verlauf = P.verlauf(S.projekt, e.id).schritte.map((s) => s.knoten.operation);
   status("jev wird gefragt …");
-  try { S.jevAntwort = await jevWahl({ verlauf, optionen }); status(`jev (${S.jevAntwort.modell}) hat geantwortet.`); }
+  try { S.jevAntwort = await jevWahl({ verlauf, optionen }); status(`jev (${S.jevAntwort.modell}) hat geantwortet${S.jevAntwort.zwischengespeichert ? " (aus dem Zwischenspeicher, ohne Kosten)" : ""}.`); }
   catch (f) { S.jevAntwort = null; status(`jev: ${f.message}. Manuelle Wahl und Regeln bleiben verfügbar.`, null, true); }
   zeigeVorschlaege();
 }
@@ -815,4 +815,5 @@ $("titel").addEventListener("change", (ev) => { S.projekt.titel = ev.target.valu
 addEventListener("beforeunload", (ev) => { if (S.ungespeichert) { ev.preventDefault(); ev.returnValue = ""; } });
 
 alles();
-status(`ORNAMENT LAB ${P.LAB_VERSION}: ${R.alle().length} Operationen im Register. jev live: ${jevVerfuegbar() ? "eingerichtet" : "nicht eingerichtet"}.`);
+status(`ORNAMENT LAB ${P.LAB_VERSION}: ${R.alle().length} Operationen im Register.`);
+jevPruefen().then((z) => { if (!S.laeuft && letzterStatus[0]?.startsWith("ORNAMENT LAB")) status(`ORNAMENT LAB ${P.LAB_VERSION}: ${R.alle().length} Operationen im Register. jev live: ${z.bereit ? "bereit" : "nicht eingerichtet"}.`); zeigeVorschlaege(); });

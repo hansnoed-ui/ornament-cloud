@@ -1,5 +1,5 @@
-// ORNAMENT LAB – jev für die Wahl der nächsten Operation (Entscheidungsform CHOICE). Gemeinsam für die Seite (jev.js) und den
-// vorgeschlagenen Worker (worker-entwurf.js): Die Lage enthält nur Kennungen aus einem festen Katalog, keine freien Texte, keine Bilder.
+// ORNAMENT LAB – jev für die Wahl der nächsten Operation (Entscheidungsform CHOICE). Für die Seite (jev.js); die Zwischenstelle wahl.php
+// (PHP auf dem Webspace) hat dieselben Regeln und denselben Wortlaut, tests/lab-jev-php.test.mjs hält beide gleich. Die Lage enthält nur Kennungen aus einem festen Katalog, keine freien Texte, keine Bilder.
 // Die Frage hat einen festen Wortlaut; jev liefert Wahrscheinlichkeiten je Option. Das ist eine technische Entscheidungshilfe,
 // kein Urteil über die Arbeit: der Mensch nimmt an, verwirft oder ändert (Masterprompt §11).
 

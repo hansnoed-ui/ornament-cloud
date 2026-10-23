@@ -15,9 +15,8 @@ README.md
 CNAME
 .well-known/
 logs/
-# ORNAMENT LAB (alpha/lab/): online ist nur die Oberfläche; Dokumentation, Startskript, Werkzeuge und Worker-Entwurf bleiben im Repository.
+# ORNAMENT LAB (alpha/lab/): online sind die Oberfläche und die jev-Zwischenstelle jev/wahl.php; Dokumentation, Startskript und Werkzeuge bleiben im Repository.
 alpha/lab/docs/
 alpha/lab/werkzeuge/
 alpha/lab/starten.mjs
 alpha/lab/README.md
-alpha/lab/jev/worker-entwurf.js
