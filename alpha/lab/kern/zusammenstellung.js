@@ -39,7 +39,10 @@ export const KLANG_REZEPTE = Object.freeze({
   "klang.koerner": { operation: "lab.koerner", parameter: { dauer: DAUER } },
 });
 /** Übergang → Film: Art, Dauer des Übergangs (s) und höchstens so viele Wechsel je Sekunde auf den Anschlägen */
-const FILM = { "film.schnitt": { art: "schnitt", uebergang: 0, jeSekunde: 2.5 }, "film.blende": { art: "blende", uebergang: 0.4, jeSekunde: 1.5 }, "film.schwelle": { art: "schwelle", uebergang: 0.6, jeSekunde: 1 } };
+//   Überblendung und Schwelle dauern bis zum nächsten Anschlag (höchstens so lange), so verwandelt sich das Bild fortlaufend
+const FILM = { "film.schnitt": { art: "schnitt", uebergang: 0, jeSekunde: 2.5 }, "film.blende": { art: "blende", uebergang: 1.2, jeSekunde: 1.5 }, "film.schwelle": { art: "schwelle", uebergang: 1.5, jeSekunde: 1 } };
+/** die Kamera über jedem Bild des Films (kern/stationen.js): ihr Zoom atmet mit der Lautstärke des neuen Klangs */
+export const BEWEGUNG = 1;
 
 /** ein gewichteter Zug; ausser: Optionen, die nicht gezogen werden sollen (solange andere Gewicht haben) */
 function ziehe(w, rnd, ausser = []) {
@@ -78,7 +81,7 @@ export function wahrscheinlichkeit(antworten, frage, wahl) {
  * Eine Zusammenstellung rechnen. messung: von messen() (kern/vorschlag.js); plan: von zusammenstellen(), vom Menschen ggf. geändert;
  * wahl: { art: "jev"|"zufall"|"mensch", details }. Zuerst die Klangeffekte nacheinander, dann misst ein Tonsignal den neuen Klang
  * (Takt und Steuersignal), dann sechs Abschnitte zu je drei Varianten. Gibt { entscheidung, ergebnisse, klang, plan } zurück; plan wie bei
- * vorschlagAusfuehren(): { stationen, art, halten, uebergang, takt, tonspur, tonBeginn, dauer }.
+ * vorschlagAusfuehren(): { stationen, art, halten, uebergang, takt, bewegung, tonspur, tonBeginn, dauer }.
  */
 export async function zusammenstellungRechnen({ register, projekt, medien, messung, plan, wahl, seed = 1, melden = () => {}, abbrechen = null }) {
   for (const k of plan.klang) if (!(k in KLANG_REZEPTE)) throw new Error(`Klangeffekt ${k} gibt es nicht`);
@@ -134,5 +137,5 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   const uebergang = takt ? f.uebergang : Math.min(f.uebergang, (0.5 * dauer) / Math.max(1, n - 1));
   const halten = takt ? 1 : Math.max(0, Math.min(10, Math.round(((dauer - (n - 1) * uebergang) / n) * 10) / 10));
   return { entscheidung: d, ergebnisse, klang: ton, signal: signal.id,
-    plan: { stationen, art: f.art, halten, uebergang: Math.round(uebergang * 100) / 100, takt, tonspur: ton, tonBeginn: beginn, dauer } };
+    plan: { stationen, art: f.art, halten, uebergang: Math.round(uebergang * 100) / 100, takt, bewegung: { staerke: BEWEGUNG, signal: signal.id }, tonspur: ton, tonBeginn: beginn, dauer } };
 }

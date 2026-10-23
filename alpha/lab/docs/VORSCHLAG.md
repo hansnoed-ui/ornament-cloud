@@ -1,4 +1,4 @@
-# Vorschlag für 30 Sekunden aus Bild und Klang (Lab 0.1.11, Zusammenstellung seit 0.1.12, Video seit 0.1.13)
+# Vorschlag für 30 Sekunden aus Bild und Klang (Lab 0.1.11, Zusammenstellung seit 0.1.12, Video seit 0.1.13, Bewegung seit 0.1.14)
 
 Christian wollte ein Bild und eine MP3 hochladen und von jev einen Vorschlag für eine Animation von 30 Sekunden bekommen. Der Bereich «Animation aus Bild und Klang (30 s)» steht unter **Material**, sobald das Projekt ein Bild und einen Ton hat.
 
@@ -51,6 +51,10 @@ Im Projekt: Entscheidung `gegenstand: "zusammenstellung"` mit `gewaehlt: { aufba
 - **die Tonspur**, höchstens die ersten 120 s, als AUDIO-Material (WAV, 24 Bit, Abtastrate der Datei); ein Video ohne lesbaren Ton gibt nur Bilder
 
 Das Video selbst kommt nicht ins Projekt, nur was daraus gelesen wurde. Im Vorschlag stehen danach das erste Standbild und die Tonspur vor. Bei der **Zusammenstellung** nimmt jeder Abschnitt das Standbild seiner Zeit (Abschnitt 1 und 2 das erste, 3 und 4 das zweite …, bei sechs Standbildern je eines), so folgt der Film dem Video; der Aufbau gilt dann nicht. Die Entscheidung trägt `details.video` mit den Standbildern. Die festen Dramaturgien nehmen das gewählte Standbild.
+
+## Bewegung (seit Lab 0.1.14)
+
+Vorher stand jede Station still, bis die nächste kam: ein Film von 900 Bildern zeigte so nur etwa zwei Dutzend Veränderungen. Jetzt führt der Film eine Kamera über jedes Bild (`bewegung` im Plan, siehe docs/STATIONEN.md): Die Zusammenstellung mit voller Stärke, deren Zoom mit der Lautstärke des neuen Klangs atmet, die festen Dramaturgien mit 0,6 und der Lautstärke des gemessenen Klangs. Überblendung und Schwelle der Zusammenstellung dauern zudem bis zum nächsten Anschlag (höchstens 1,2 s bzw. 1,5 s), das Bild verwandelt sich also fortlaufend. Unter «Nacheinander» lässt sich die Bewegung danach ändern oder auf 0 setzen.
 
 ## Die sechs Dramaturgien (`kern/vorschlag.js`, `REZEPTE`)
 

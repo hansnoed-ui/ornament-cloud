@@ -19,6 +19,7 @@ Unter **Nacheinander** steht der Bereich «Animation über Stationen».
 - **Takt:** Statt gleichmässig kann eine Ereignisfolge den Takt geben, also die Einsätze aus *Tonsignal*. Jeder Einsatz über der gewählten Stärke löst einen Wechsel aus. Der Übergang endet spätestens beim nächsten Einsatz und wird zum Schnitt, wenn dafür weniger als ein Bild bleibt. Mit «Stationen reihum» kehren die Stationen wieder, bis die Einsätze aufgebraucht sind. Der Film dauert so lang wie der gemessene Ausschnitt. Verläufe von Operationen werden dafür in der Zeit gestaucht oder gedehnt: Aus ihren Bildern wird gleichmässig ausgewählt.
 - **Takt** zeigt nur Ereignisfolgen. Gibt es noch keine, steht dort ein Hinweis: den Klang wählen und *Tonsignal* (Merkmal «Einsätze») oder *Neu-Rhythmisierung* ausführen.
 - **Tonspur** (seit Lab 0.1.8 frei wählbar): keine oder ein Klang des Projekts. Vorgewählt ist der Ton des Takts, ohne Takt der zuletzt entstandene Klang. Kommt der Takt aus diesem Ton, liegt derselbe Ausschnitt unter dem MP4. Sonst beginnt der Ton am Anfang und endet mit dem Film. «Halten an den Klang anpassen» setzt das Halten so, dass ein gleichmässiger Film etwa so lang ist wie der Klang (höchstens 10 s je Station). Kodiert wird mit `tonspur.js` aus PHORMA III (unverändert): AAC, sonst Opus. Ohne WebCodecs (Rückfall WebM) bleibt der Film stumm, und der Status sagt das.
+- **Bewegung** (seit Lab 0.1.14), 0 bis 1: eine Kamera über jedem Bild des Films. Sie schwebt langsam, dreht sich leicht und zoomt; mit «Zoom atmet mit» und einem Steuersignal (etwa der Lautstärke eines Tonsignals) geht sie bei lauten Stellen näher heran. So ist jedes Bild anders, auch während eine Station steht. 0 lässt die Stationen ruhig stehen wie bisher.
 - **Filmgrösse:** die längste Seite, 320 bis 2048 px. Stationen anderer Form werden unverzerrt eingepasst, auf dem dunklen Grund der Fictory.
 
 ## Rechnung
@@ -26,7 +27,7 @@ Unter **Nacheinander** steht der Bereich «Animation über Stationen».
 `kern/stationen.js` arbeitet ohne DOM und ist in `tests/lab.test.mjs` geprüft.
 
 1. `partitur(projekt, plan)` ergibt die Folge mit `beginn`, `halten` und `uebergang { art, dauer, hinweis? }` je Auftritt, dazu `dauer`, `bilder`, `takt` und die Routen ohne Signaldaten. Ein Verlauf ohne Takt hat `dauer: null`: Er behält die Länge, mit der die Operation ihn rechnet.
-2. `filmbilder({ … partitur })` erzeugt die Bilder. Gehaltene Bilder sind dasselbe Objekt, der Kodierer malt sie nur einmal. Der `zeitplan` hält fest, ab welchem Bild jede Station tatsächlich steht, auch nach Verläufen mit eigener Länge.
+2. `filmbilder({ … partitur })` erzeugt die Bilder. Gehaltene Bilder sind dasselbe Objekt, der Kodierer malt sie nur einmal. Der `zeitplan` hält fest, ab welchem Bild jede Station tatsächlich steht, auch nach Verläufen mit eigener Länge. Mit `partitur.bewegung { staerke, signal }` geht jedes Bild danach durch die Kamera (`kameraLage(t, staerke, laut)`: Zoom, Versatz, Drehung; bilinear abgetastet), dann ist kein Bild mehr dasselbe Objekt.
 3. `videoAus` in `medien/video.js` kodiert wie bisher, auf Wunsch mit Tonspur.
 
 ## Im Projekt

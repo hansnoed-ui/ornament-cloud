@@ -929,6 +929,27 @@ test("Vorschlag: eine Dramaturgie ausführen ergibt Stationen und einen Plan von
   assert.deepEqual(P.pruefeProjekt(p), []);
 });
 
+test("Stationen mit Bewegung (Lab 0.1.14): die Kamera macht jedes Bild anders, der Zoom atmet mit dem Signal, reproduzierbar", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const { p, m, e, t, r } = mitTon();
+  const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id, beginn: 1 });
+  const x = await VS.vorschlagAusfuehren({ register: r, projekt: p, medien: m, messung: mg, dramaturgie: "vorschlag.steigerung", wahl: { art: "regel", details: {} } });
+  assert.deepEqual(x.plan.bewegung, { staerke: 0.6, signal: mg.signal });
+  const pt = ST.partitur(p, { ...x.plan, fps: 10 });
+  assert.deepEqual(pt.bewegung, { staerke: 0.6, signal: mg.signal });
+  const rechne = async (pl) => { const out = []; for await (const b of ST.filmbilder({ register: r, projekt: p, medien: m, partitur: pl, seite: 40 })) out.push(fingerabdruck(b)); return out; };
+  const a = await rechne(pt);
+  assert.equal(a.length, pt.bilder);
+  assert.ok(new Set(a).size > 0.9 * a.length, `fast jedes Bild ist anders: ${new Set(a).size} von ${a.length}`);
+  assert.deepEqual(await rechne(pt), a, "derselbe Plan, dieselben Bilder");
+  const ruhig = ST.partitur(p, { ...x.plan, bewegung: null, fps: 10 });
+  assert.equal(ruhig.bewegung, null);
+  assert.ok(new Set(await rechne(ruhig)).size < new Set(a).size, "ohne Bewegung stehen die Stationen");
+  assert.ok(ST.kameraLage(3, 1, 1).zoom > ST.kameraLage(3, 1, 0).zoom, "lauter zoomt näher");
+  assert.equal(ST.kameraLage(3, 0, 1).zoom, 1);
+  assert.throws(() => ST.partitur(p, { ...x.plan, bewegung: { staerke: 0.5, signal: e.id } }), /Bewegung/);
+});
+
 const FILTER = ["lab.glitch", "lab.pixelsortierung", "lab.verzerrung", "lab.licht", "lab.raster", "lab.neusetzen"];
 
 test("Bildfilter (0.1.10): jeder verändert das Bild, ist mit demselben Startwert wiederholbar, Anteil 0 lässt den Eingang stehen", async () => {
@@ -1079,6 +1100,7 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   assert.deepEqual(x.entscheidung.gewaehlt.bild, plan.bild);
   assert.ok(p.entscheidungen.filter((d) => d.details?.entscheidung === x.entscheidung.id).length >= 9, "jeder Schritt verweist auf die Zusammenstellung");
   assert.equal(x.plan.stationen.length, 19); assert.equal(x.plan.tonspur, x.klang); assert.equal(x.plan.tonBeginn, 0);
+  assert.deepEqual(x.plan.bewegung, { staerke: Z.BEWEGUNG, signal: x.signal }, "die Kamera atmet mit dem neuen Klang");
   const pt = ST.partitur(p, { ...x.plan, fps: 30 });
   assert.ok(pt.dauer > 3 && pt.dauer <= 30, `${pt.dauer}`);
   if (x.plan.takt) assert.equal(pt.takt.ton, x.klang, "der Takt kommt aus dem bearbeiteten Klang");

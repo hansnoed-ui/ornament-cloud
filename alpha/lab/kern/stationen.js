@@ -4,12 +4,14 @@
 // Die Dauern sind Parameter wie die einer Operation, darum verteilt dieselbe Modulation (kern/modulation.js) sie über die Stationen:
 // die Stelle u einer Station in der Folge ist hier die Zeit. Eine Ereignisfolge (die Einsätze eines Tons) kann statt eines gleichmässigen
 // Masses den Takt geben: ein Einsatz löst den Wechsel aus. Danach rechnet filmbilder() die Bilder der Partitur, ebenfalls ohne DOM.
+// Eine Bewegung (seit Lab 0.1.14) führt eine Kamera über jedes Bild: langsames Schweben und Drehen, der Zoom atmet mit einem Steuersignal.
+// So ist jedes Bild des Films anders, auch während eine Station steht.
 import { GRENZEN, ergebnis, knoten, verlauf } from "./projekt.js";
 import { moduliere, routeFuersProtokoll } from "./modulation.js";
 import { bildfolge, routenAufloesen } from "./ausfuehrung.js";
 import { neuesBild, skalieren, luminanz, NACHT } from "./bilddaten.js";
 
-export const STATIONEN_VERSION = "0.1.0";
+export const STATIONEN_VERSION = "0.2.0";
 
 export const UEBERGAENGE = Object.freeze({
   blende: "Überblendung",
@@ -55,6 +57,7 @@ function taktzeiten(daten, schwelle, fps) {
  * Die Partitur: welche Station wann steht und wie sie in die nächste übergeht.
  * plan: { stationen: [ergebnisId | { ergebnis, uebergang? }], halten, uebergang, art, routen, takt: { ereignisfolge, schwelle, wiederholen } | null, fps }
  * Ein Übergang «verlauf» ohne festen Takt behält die Länge, mit der die Operation ihren Verlauf rechnet (dauer null).
+ * bewegung: { staerke 0–1, signal: CONTROL_SIGNAL | null } führt eine Kamera über die Bilder (0 oder ohne Angabe: keine Bewegung).
  */
 export function partitur(projekt, plan) {
   const fps = plan.fps ?? 30;
@@ -65,6 +68,9 @@ export function partitur(projekt, plan) {
   const grund = { halten: begrenze(ZEITPARAMETER[0], plan.halten), uebergang: begrenze(ZEITPARAMETER[1], plan.uebergang) };
   const art = UEBERGAENGE[plan.art] ? plan.art : "blende";
   const routen = routenAufloesen(projekt, plan.routen ?? []);
+  const staerke = Math.min(1, Math.max(0, Number(plan.bewegung?.staerke) || 0));
+  if (staerke && plan.bewegung.signal && ergebnis(projekt, plan.bewegung.signal)?.typ !== "CONTROL_SIGNAL") throw new Error(`Bewegung: Steuersignal ${plan.bewegung.signal} gibt es nicht`);
+  const bewegung = staerke ? { staerke: rund(staerke), signal: plan.bewegung.signal || null } : null;
 
   // Takt aus einer Ereignisfolge: die Einsätze, und der Ton, aus dem sie gemessen wurden (für die Tonspur)
   let takt = null, zeiten = [];
@@ -114,7 +120,7 @@ export function partitur(projekt, plan) {
   if (bilder > GRENZEN.filmBilder) throw new Error(`Grenze: höchstens ${GRENZEN.filmBilder} Bilder (${Math.round(GRENZEN.filmBilder / fps)} s), geplant sind ${bilder}`);
   return {
     version: STATIONEN_VERSION, fps, art, halten: grund.halten, uebergang: grund.uebergang,
-    routen: (plan.routen ?? []).map(routeFuersProtokoll), takt, folge: out, dauer: rund(t), bilder, offen,
+    routen: (plan.routen ?? []).map(routeFuersProtokoll), takt, bewegung, folge: out, dauer: rund(t), bilder, offen,
   };
 }
 
@@ -155,7 +161,54 @@ export function filmgroesse(b, seite) {
  * Die Bilder einer Partitur (async iterierbar, für videoAus). zeitplan bekommt je Station { ergebnis, ab, bild, uebergang, bilder },
  * so stehen auch die eigenen Längen von Verläufen nachher im Protokoll. Gehaltene Bilder sind dasselbe Objekt (der Kodierer malt sie nur einmal).
  */
-export async function* filmbilder({ register, projekt, medien, partitur: pt, seite = 1280, abbrechen = null, zeitplan = [] }) {
+export async function* filmbilder({ partitur: pt, projekt, ...rest }) {
+  const quelle = stationsbilder({ partitur: pt, projekt, ...rest });
+  if (!pt.bewegung) { yield* quelle; return; }
+  const sig = pt.bewegung.signal ? ergebnis(projekt, pt.bewegung.signal)?.daten : null;
+  let n = 0;
+  for await (const b of quelle) yield kamera(b, n++ / pt.fps, pt.bewegung.staerke, sig);
+}
+
+/** die Lautstärke (0–1) eines Steuersignals zur Zeit t (s), linear zwischen den Proben; ohne Signal 0 */
+function signalBei(sig, t) {
+  const w = sig?.werte;
+  if (!w?.length) return 0;
+  const je = sig.je ?? (sig.dauer ?? 30) / w.length, p = Math.min(w.length - 1, Math.max(0, t / je)), i = Math.floor(p), f = p - i;
+  return (w[i] ?? 0) * (1 - f) + (w[Math.min(w.length - 1, i + 1)] ?? 0) * f;
+}
+
+/** die Lage der Kamera zur Zeit t: Zoom (atmet mit dem Signal), Versatz (Anteil der Bildgrösse) und Drehung (rad); langsame, teilerfremde Perioden */
+export function kameraLage(t, staerke, laut = 0) {
+  const w = (p) => Math.sin((2 * Math.PI * t) / p);
+  return {
+    zoom: 1 + staerke * (0.1 + 0.03 * w(9.7) + 0.16 * laut),
+    dx: staerke * 0.035 * w(11.3), dy: staerke * 0.025 * Math.cos((2 * Math.PI * t) / 13.1),
+    drehung: staerke * 0.025 * w(17.9),
+  };
+}
+
+/** ein Bild durch die Kamera: um die Mitte gezoomt, gedreht und verschoben, bilinear abgetastet, am Rand gehalten */
+function kamera(b, t, staerke, sig) {
+  const { zoom, dx, dy, drehung } = kameraLage(t, staerke, signalBei(sig, t));
+  const W = b.width, H = b.height, out = neuesBild(W, H), d = b.data, o = out.data;
+  const c = Math.cos(drehung) / zoom, s = Math.sin(drehung) / zoom, mx = W / 2 + dx * W, my = H / 2 + dy * H;
+  for (let y = 0, k = 0; y < H; y++) {
+    const v = y - H / 2 + 0.5, u = 0.5 - W / 2;
+    let sx = mx + u * c - v * s - 0.5, sy = my + u * s + v * c - 0.5;
+    for (let x = 0; x < W; x++, k += 4, sx += c, sy += s) {
+      const px = Math.min(W - 1.001, Math.max(0, sx)), py = Math.min(H - 1.001, Math.max(0, sy));
+      const x0 = px | 0, y0 = py | 0, fx = px - x0, fy = py - y0, i = (y0 * W + x0) * 4, j = i + W * 4;
+      const a = (1 - fx) * (1 - fy), e = fx * (1 - fy), g = (1 - fx) * fy, h = fx * fy;
+      o[k] = d[i] * a + d[i + 4] * e + d[j] * g + d[j + 4] * h;
+      o[k + 1] = d[i + 1] * a + d[i + 5] * e + d[j + 1] * g + d[j + 5] * h;
+      o[k + 2] = d[i + 2] * a + d[i + 6] * e + d[j + 2] * g + d[j + 6] * h;
+      o[k + 3] = 255;
+    }
+  }
+  return out;
+}
+
+async function* stationsbilder({ register, projekt, medien, partitur: pt, seite = 1280, abbrechen = null, zeitplan = [] }) {
   const roh = async (id) => medien.bild(ergebnis(projekt, id));
   const { breite: W, hoehe: H } = filmgroesse(await roh(pt.folge[0].ergebnis), seite);
   const vorrat = new Map();
