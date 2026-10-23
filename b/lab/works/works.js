@@ -40,16 +40,24 @@ if (html.classList.contains("uebersicht")) {
   const buehne = $(".buehne"), dias = $$(".dia"), jetzt = $(".zaehler-jetzt");
   // Das Drehkarussell nach dem Vorbild von mubien.com (Screenshots von Christian, 23. Oktober 2026): ein flacher Ring auf Augenhöhe,
   // vorn eine grosse Karte im Hochformat, die Nachbarn kleiner und am Rand angeschnitten, die hinteren klein dahinter. Rad, Pfeile,
-  // Wischen oder ein Klick auf eine Karte drehen den Ring; ein Klick auf die vordere Karte öffnet das Werk.
-  // phase: Stellung des Rings (Index der vorderen Karte, als Kommazahl während der Drehung)
+  // Wischen oder ein Klick auf eine Karte drehen den Ring. Ein Klick auf die vordere Karte zoomt sie zur Bühne heran (62 % der Breite,
+  // ganze Höhe); dort öffnet ein Klick das Werk, Esc, ein Klick daneben oder Weiterdrehen führen zurück in den Ring.
+  // phase: Stellung des Rings (Index der vorderen Karte, als Kommazahl während der Drehung); vorn: 0 = Ring, 1 = Bühne
   const L = dias.length;
   const schmal = matchMedia("(max-width: 759px)");
   // Filme nur mit Maus: auf Telefonen (Chrome auf Android) liess ein Film in einer bewegten Karte den Bildschirm flackern,
   // dort bleibt das Standbild stehen
   const filme = matchMedia("(hover: hover) and (pointer: fine)");
-  let phase = 0, i = 0, laeuft = false, ende = 0;
+  let phase = 0, vorn = 0, i = 0, laeuft = false, ende = 0;
   const glatt = (t) => (1 - Math.cos(Math.PI * t)) / 2;   // sanft an- und auslaufend, ohne Ruck in der Mitte
   const setze = (d, k, v) => { if (d.style[k] !== v) d.style[k] = v; };
+  /** Rahmen der vorderen Karte in px: im Ring (wie works.css) und auf der Bühne */
+  const rahmen = () => {
+    const B = innerWidth, H = innerHeight;
+    const kb = schmal.matches ? 0.54 * B : Math.min(0.27 * B, 0.7 * H * 0.62), kh = kb / 0.62;
+    const bb = schmal.matches ? B - 16 : 0.62 * B;
+    return [[(B - kb) / 2, (H - kh) / 2, kb, kh], [(B - bb) / 2, 8, bb, H - 16]];
+  };
   const zeichne = () => {
     const rang = [];
     const R = schmal.matches ? 56 : 40;   // Halbmesser des Rings in vw: die Nachbarn stehen am Rand
@@ -60,16 +68,27 @@ if (html.classList.contains("uebersicht")) {
       const x = Math.sin(w) * R, s = 1 / (1 + 3.4 * tief);       // Perspektive: Nachbarn gut ein Drittel so gross
       // Transform direkt setzen (keine CSS-Variablen, die bis in Bild und Film vererbt würden), und nur, was sich ändert
       setze(d, "transform", `translateX(${x.toFixed(3)}vw) scale(${s.toFixed(4)})`);
-      rang.push([-tief, d]);
+      setze(d, "opacity", j === i ? "1" : (1 - vorn).toFixed(3));
+      setze(d, "pointerEvents", j !== i && vorn > 0 ? "none" : "");   // ausgeblendete Karten fangen auf der Bühne keine Klicks
+      // die vordere Karte wächst beim Heranzoomen vom Ringrahmen zum Bühnenrahmen (ohne Verzerrung: Bild und Film füllen per object-fit)
+      if (j === i && vorn > 0 && vorn < 1) {
+        const [a, b] = rahmen(), m = (n) => a[n] + (b[n] - a[n]) * vorn;
+        setze(d, "left", `${m(0).toFixed(1)}px`); setze(d, "top", `${m(1).toFixed(1)}px`);
+        setze(d, "width", `${m(2).toFixed(1)}px`); setze(d, "height", `${m(3).toFixed(1)}px`); setze(d, "bottom", "auto");
+      } else for (const k of ["left", "top", "width", "height", "bottom"]) setze(d, k, "");
+      rang.push([j === i && vorn > 0 ? 9 : -tief, d]);
     });
     // Stapelfolge nach Rang: z-index ändert sich nur, wenn zwei Karten wirklich die Plätze tauschen
     rang.sort((a, b) => a[0] - b[0]).forEach(([, d], n) => setze(d, "zIndex", String(n + 1)));
+    buehne.classList.toggle("zoomt", vorn > 0);   // der Hinweis unter dem Ring weicht der wachsenden Karte
   };
-  const bewege = (ziel, ms) => new Promise((fertig) => {
-    const von = phase, t0 = performance.now();
+  const bewege = (zu, ms) => new Promise((fertig) => {
+    const von = { phase, vorn }, t0 = performance.now();
     const schritt = (t) => {
-      const p = ruhig ? 1 : Math.min(1, (t - t0) / ms);
-      phase = von + (ziel - von) * glatt(p); zeichne();
+      const p = ruhig ? 1 : Math.min(1, (t - t0) / ms), e = glatt(p);
+      if ("phase" in zu) phase = von.phase + (zu.phase - von.phase) * e;
+      if ("vorn" in zu) vorn = von.vorn + (zu.vorn - von.vorn) * e;
+      zeichne();
       p < 1 ? requestAnimationFrame(schritt) : fertig();
     };
     requestAnimationFrame(schritt);
@@ -83,14 +102,30 @@ if (html.classList.contains("uebersicht")) {
     dockSetzen({ text: d.dataset.text, href: d.dataset.href, bild: d.dataset.bild });
     if (html.dataset.ansicht !== "raster" && filme.matches && d.classList.contains("hat-film")) spiele($("video", d), true).then((ok) => ok && d.classList.add("spielt"));
   };
-  /** den Ring um d Karten drehen */
+  /** die vordere Karte zur Bühne heranzoomen; am Ende übernimmt das Bühnen-Layout aus works.css (gleicher Rahmen) */
+  const heran = async () => {
+    vorne().classList.remove("ist");   // der kleine Titel blendet aus, auf der Bühne erscheint der grosse
+    await bewege({ vorn: 1 }, 1000);
+    delete html.dataset.karussell; zeichne();
+    vorne().classList.add("ist");
+  };
+  /** zurück in den Ring */
+  const zurueck = async () => {
+    vorne().classList.remove("ist");
+    vorn = 0.999; html.dataset.karussell = ""; zeichne();   // vom Bühnenrahmen aus, im Ring-Layout
+    await bewege({ vorn: 0 }, 900);
+    vorne().classList.add("ist");
+  };
+  const einmal = (f) => { if (laeuft) return; laeuft = true; f().then(() => { laeuft = false; ende = performance.now(); }); };
+  /** den Ring um d Karten drehen (von der Bühne aus erst zurück in den Ring) */
   const drehe = async (d) => {
     if (laeuft || !d) return;
     laeuft = true;
+    if (vorn > 0) await zurueck();
     // der Film hält nur an und bleibt sichtbar: ein Wechsel zurück aufs Standbild liess die Karte flackern
     for (const x of dias) { spiele($("video", x), false); x.classList.remove("ist"); }
     const ziel = phase + d;
-    await bewege(ziel, 900 + 300 * Math.min(Math.abs(d), 3));
+    await bewege({ phase: ziel }, 900 + 300 * Math.min(Math.abs(d), 3));
     phase = ((Math.round(ziel) % L) + L) % L; i = phase; zeichne();
     vornSetzen();
     laeuft = false; ende = performance.now();
@@ -99,18 +134,23 @@ if (html.classList.contains("uebersicht")) {
   html.dataset.karussell = "";
   zeichne(); vornSetzen();
 
-  // Klick auf eine Nachbarkarte: sie dreht nach vorn (kürzester Weg); ein Klick auf die vordere Karte öffnet das Werk
+  // Klick auf eine Nachbarkarte: sie dreht nach vorn (kürzester Weg); Klick auf die vordere Karte im Ring: heranzoomen;
+  // auf der Bühne öffnet der Klick das Werk, ein Klick daneben führt zurück in den Ring
   buehne.addEventListener("click", (e) => {
     if (gewischt) { e.preventDefault(); return; }
     const d = e.target.closest(".dia");
-    if (!d || (d === vorne() && !laeuft)) return;
+    if (vorn === 1 && d === vorne()) return;
     e.preventDefault();
+    if (!d) { if (vorn === 1 && !e.target.closest("button, a, .zaehler")) einmal(zurueck); return; }
+    if (d === vorne()) { if (vorn === 0) einmal(heran); return; }
     let k = (dias.indexOf(d) - i + L) % L;
     if (k > L / 2) k -= L;
     drehe(k);
   }, true);
   document.addEventListener("keydown", (e) => {
     if (html.dataset.ansicht !== "buehne" || e.altKey || e.metaKey || e.ctrlKey || !menue.hidden) return;
+    if (e.key === "Escape" && vorn === 1) { einmal(zurueck); return; }
+    if (e.key === "Enter" && vorn === 0 && e.target.closest?.(".dia") === vorne()) { e.preventDefault(); einmal(heran); return; }
     const d = { ArrowDown: 1, ArrowRight: 1, PageDown: 1, ArrowUp: -1, ArrowLeft: -1, PageUp: -1 }[e.key];
     if (d) { e.preventDefault(); blaettern(d); }
   });
