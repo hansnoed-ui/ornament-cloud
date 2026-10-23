@@ -1,4 +1,4 @@
-// ORNAMENT LAB – das Projektformat (Version 0.3.0, Beschreibung: docs/PROJEKTFORMAT.md). Reines JSON für die Struktur, Mediendateien
+// ORNAMENT LAB – das Projektformat (Version 0.4.0, Beschreibung: docs/PROJEKTFORMAT.md). Reines JSON für die Struktur, Mediendateien
 // getrennt daneben (im Archiv unter medien/). Ein Projekt ist eine gerichtete, azyklische Ausführungsgrafik:
 //   Ergebnisse (Material und erzeugte Zustände)  ←ausgaben—  Knoten (eine Ausführung einer Operation)  —eingaben→  frühere Ergebnisse
 // Ein Knoten kann nur auf Ergebnisse verweisen, die es schon gibt; damit sind Schleifen ausgeschlossen, und nichts wird überschrieben:
@@ -6,8 +6,8 @@
 // Entscheidungen sind eigene Einträge mit einer von vier Arten (mensch, zufall, regel, jev), damit sie unterscheidbar bleiben (§11).
 
 export const FORMAT = "ornament-lab-projekt";
-export const FORMAT_VERSION = "0.3.0";
-export const LAB_VERSION = "0.1.2";
+export const FORMAT_VERSION = "0.4.0";
+export const LAB_VERSION = "0.1.3";
 
 export const ENTSCHEIDUNGSARTEN = Object.freeze({
   mensch: "menschliche Entscheidung",
@@ -31,6 +31,7 @@ export const GRENZEN = Object.freeze({
   experimentSekunden: 120, // Rechenzeit im experimentellen Modus
   seite: 2048,             // längste Seite der Arbeitsbilder in Pixeln
   animationBilder: 900,    // Bilder je Animation
+  tonSekunden: 600,        // Länge einer Tondatei (sie wird ganz dekodiert)
 });
 
 let zaehler = 0;
@@ -53,9 +54,10 @@ const beruehrt = (p) => { p.geaendert = new Date().toISOString(); return p; };
 export const ergebnis = (p, id) => p.ergebnisse.find((e) => e.id === id) ?? null;
 export const knoten = (p, id) => p.knoten.find((k) => k.id === id) ?? null;
 
-/** importiertes Material als Ergebnis ohne erzeugenden Knoten */
-export function fuegeMaterialHinzu(p, { titel, typ = "IMAGE", datei, sha256, breite, hoehe, mime, herkunft }) {
+/** importiertes Material als Ergebnis ohne erzeugenden Knoten (Bild oder, seit 0.4.0, Ton) */
+export function fuegeMaterialHinzu(p, { titel, typ = "IMAGE", datei, sha256, breite, hoehe, mime, herkunft, ton = null }) {
   const e = { id: neueId("m"), typ, titel, datei, sha256, breite, hoehe, mime, herkunft: { art: "import", ...herkunft }, knoten: null, index: null, erstellt: new Date().toISOString() };
+  if (ton) e.ton = { dauer: ton.dauer, abtastrate: ton.abtastrate, kanaele: ton.kanaele };   // seit 0.4.0 bei AUDIO
   p.ergebnisse.push(e);
   beruehrt(p);
   return e;

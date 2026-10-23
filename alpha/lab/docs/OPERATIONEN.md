@@ -10,6 +10,7 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.wiederholung` 0.1.0 | Wiederholung mit Falloff | Räumliche Operation | neu, nach Cavalry Duplicator + Falloff; Blender Geometry Nodes (Instances) | Bild → Bild | über Modulation |
 | `lab.farbe` 0.1.0 | Farbe modulieren | Räumliche Operation | neu, nach Fusion Color Corrector; p5.js filter() (POSTERIZE, INVERT); CSS Filter Effects (hue-rotate) | Bild → Bild | über Modulation |
 | `lab.bildsignal` 0.1.0 | Bildsignal | Kopplungsoperation | neu, nach TouchDesigner TOP to CHOP; Max/Jitter (Matrix zu Zahlen) | Bild → Steuersignal | eine |
+| `lab.tonsignal` 0.1.0 | Tonsignal | Kopplungsoperation | Adapter: PHORMA III (Tonanalyse) | Audiosignal → Steuersignal, Ereignisfolge | eine |
 | `lab.differenz` 0.1.0 | Differenz | Beobachtungsoperation | neu, nach Difference-Komposition (Fusion Merge, After Effects, Resolume) | Bild + Bild → Bild | eine |
 | `lab.profil` 0.1.0 | Kompositorisches Profil | Beobachtungsoperation | neu, nach Kategorien von ShotDeck, FilmGrab und Flim (Bildausschnitt, Licht, Farbe, Symmetrie) als Messgrössen; Strukturtensor (Bildanalyse) | Bild → Befund | eine |
 | `lab.komposition` 0.1.0 | Komposition verändern | Räumliche Operation | neu, nach Attenuverter (VCV Rack) auf gemessene Bildkomponenten übertragen; Kategorien von ShotDeck, FilmGrab und Flim | Bild + Befund (opt.) → Bild | über Modulation |
@@ -121,6 +122,23 @@ Misst ein Merkmal entlang einer Achse und gibt es als Steuersignal aus, das ande
 | Achse (`achse`) | **waagrecht (links → rechts)** / senkrecht (oben → unten) / radial (Mitte → Rand) |
 | Merkmal (`merkmal`) | **Helligkeit** / Sättigung / Kantenstärke |
 | Proben (`proben`) | 8 … 256, Standard 48 |
+| auf 0–1 strecken (`normieren`) | ein/aus, Standard ein |
+
+## Tonsignal (`lab.tonsignal`)
+
+Misst ein Merkmal einer Tondatei über die Zeit und gibt es als Steuersignal aus, dazu die Einsätze als Ereignisfolge.
+
+- **Herkunft:** Adapter, PHORMA III (Tonanalyse); Datei alpha/phorma-iii/ton.js (v=23, unverändert), alpha/lab/operationen/tonsignal.js; Prinzip nach Hüllkurvenfolger (Modularsynthese); TouchDesigner Audio Spectrum CHOP; Pure Data env~ und bonk~
+- **Voraussetzungen:** Web Audio (decodeAudioData) zum Lesen der Datei; die Analyse selbst läuft auch in Node
+- **Ressourcen:** ein Durchgang über die Abtastwerte, mit Spektrum eine FFT (2048) je Filmbild; Speicher: der Klang einkanalig als Gleitkommazahlen
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Merkmal (`merkmal`) | **Hüllkurve (Lautstärke)** / Band tief (unter 200 Hz) / Band Mitte (200 Hz – 3 kHz) / Band hoch (über 3 kHz) / spektraler Schwerpunkt (hell oder dunkel) / spektraler Fluss (wie stark es einsetzt) / Einsätze (Hüllkurve je Anschlag) |
+| Ausschnitt ab (s) (`beginn`) | 0 … 600, Standard 0 |
+| Ausschnitt Länge (s, 0 = bis zum Ende) (`laenge`) | 0 … 600, Standard 0 |
+| Proben (Mittelung über gleich lange Abschnitte) (`proben`) | 8 … 1024, Standard 120 |
 | auf 0–1 strecken (`normieren`) | ein/aus, Standard ein |
 
 ## Differenz (`lab.differenz`)

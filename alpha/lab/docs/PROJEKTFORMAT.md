@@ -1,11 +1,12 @@
-# Projektformat `ornament-lab-projekt` 0.3.0
+# Projektformat `ornament-lab-projekt` 0.4.0
 
 Ein Projekt ist ein ZIP-Archiv (`<titel>.ornalab.zip`) mit diesem Inhalt:
 
 ```
 projekt.json          Struktur, Verlauf, Entscheidungen (JSON, UTF-8)
 medien/<id>.png       Bildergebnisse und Material (verlustfrei)
-medien/<id>.json      Konstellationen, Steuersignale, Befunde
+medien/<id>.json      Konstellationen, Steuersignale, Ereignisfolgen, Befunde
+medien/<id>.wav|mp3|ogg|flac|m4a|…   Tonmaterial, unverändert (seit 0.4.0)
 medien/<id>-animation.mp4|webm   exportierte Animationen
 ```
 
@@ -15,24 +16,25 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
 
 ```jsonc
 {
-  "format": "ornament-lab-projekt", "formatVersion": "0.3.0", "labVersion": "0.1.2",
+  "format": "ornament-lab-projekt", "formatVersion": "0.4.0", "labVersion": "0.1.3",
   "id": "p-…", "titel": "…", "modus": "manuell | jev | experimentell", "erstellt": "ISO", "geaendert": "ISO",
 
   "ergebnisse": [{                        // Material und alle erzeugten Zustände; nichts wird überschrieben
-    "id": "m-… | e-…", "typ": "IMAGE | CONSTELLATION | CONTROL_SIGNAL | METADATA | …", "titel": "…",
+    "id": "m-… | e-…", "typ": "IMAGE | AUDIO | CONSTELLATION | CONTROL_SIGNAL | EVENT_SEQUENCE | METADATA | …", "titel": "…",
     "datei": "medien/….png", "sha256": "…", "mime": "image/png", "breite": 900, "hoehe": 1273,
+    "ton": { "dauer": 12.5, "abtastrate": 44100, "kanaele": 2 },   // seit 0.4.0 nur bei AUDIO-Material (Datei unverändert)
     "knoten": "k-… | null",               // null = importiertes Material
     "herkunft": { "art": "import", "original": { "name", "sha256", "breite", "hoehe", "mime", "bytes" } }
              | { "art": "operation", "operation": "lab.feedback" },
     "index": 0,                           // Stelle in der Reihe der Varianten
     "variante": { "stelle": 0.4, "parameter": { … }, "seed": 123, "teil": 0 },   // die tatsächlich benutzten Parameter
-    "daten": { … } | null,                // bei CONSTELLATION, CONTROL_SIGNAL, METADATA (seit 0.3.0: kompositorisches Profil, siehe unten)
+    "daten": { … } | null,                // bei CONSTELLATION, CONTROL_SIGNAL, EVENT_SEQUENCE, METADATA (siehe unten)
     "befund": { "art": "verifiziert", … } | null   // seit 0.3.0 bei lab.komposition: { kurz, profil } = Profil nachher
   }],
 
   "knoten": [{                            // eine Ausführung einer Operation
     "id": "k-…", "operation": "lab.feedback", "operationVersion": "0.1.0",
-    "eingaben": { "bild": "e-…", "konstellation": "e-…", "profil": "e-…" },    // nur frühere Ergebnisse (azyklisch); profil = Zielprofil
+    "eingaben": { "bild": "e-…", "konstellation": "e-…", "profil": "e-…", "ton": "m-…" },    // nur frühere Ergebnisse (azyklisch); profil = Zielprofil
     "parameter": { … },                   // bereinigt und begrenzt
     "variation": { "anzahl": 6, "achse": "varianten | zeit | beide",
                    "routen": [{ "ziel": "drehung", "tiefe": 0.5,
@@ -61,6 +63,23 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
 }
 ```
 
+## Steuersignal und Ereignisfolge (Klang seit 0.4.0)
+
+Ein Steuersignal (`CONTROL_SIGNAL`) hat immer `werte` (0–1). Aus einem Bild (`lab.bildsignal`) kommt `achse: "x" | "y" | "radial"`, aus einem Ton (`lab.tonsignal`) ein zeitlicher Parameterverlauf:
+
+```jsonc
+{ "werte": [0, 0.12, …], "achse": "zeit", "merkmal": "laut | tief | mitte | hoch | schwerpunkt | fluss | einsaetze", "einheit": "0–1",
+  "beginn": 0, "dauer": 12.5, "je": 0.104167, "quelle": "ton" }       // Sekunden; Stelle u der Modulation = Zeit beginn + u · dauer
+```
+
+Eine Ereignisfolge (`EVENT_SEQUENCE`):
+
+```jsonc
+{ "art": "einsaetze", "ereignisse": [{ "t": 0.733, "staerke": 0.91, "band": "tief | mitte | hoch" }], "beginn": 0, "dauer": 12.5, "einheit": "s", "quelle": "ton" }
+```
+
+Vorgesehen, nicht gebaut (AUDIO-FORMAT.md): `METADATA` mit `art: "frequenzspektrum"` und an Ereignisfolgen `bpm`, `takt`, `raster`.
+
 ## Kompositorisches Profil (seit 0.3.0)
 
 Ein METADATA-Ergebnis von `lab.profil`, Definitionen in KOMPOSITION.md. Nur Zahlen, kein Bild:
@@ -88,9 +107,10 @@ Der Knoten von `lab.komposition` hält im `protokoll` fest: `reihenfolge` (die s
 - `reproduzierbar: "ja"`: Gleiche Eingänge, Parameter und Startwert ergeben dieselben Pixel. Das wird für Feedback, Wiederholung, Farbe und Ketten getestet.
 - `"bedingt"` gilt für die ORNA-Konstellation: Die Ziehung ist echter Zufall (`crypto.getRandomValues`). Mit Kennung und Startwert ist die Ableitung reproduzierbar.
 - Steuersignale werden über ihre Ergebnis-Kennung verbunden und nicht doppelt gespeichert.
+- `lab.tonsignal` ist reproduzierbar: Dieselben Abtastwerte ergeben dasselbe Signal. Die Tondatei liegt unverändert mit SHA-256 im Archiv.
 - Mehrere Routen auf denselben Parameter werden summiert und erst dann begrenzt (seit Lab 0.1.1, nach VCV Rack). Mit einer Route rechnet 0.1.1 genau wie 0.1.0.
-- Formatversion: Eine neue Nebenversion darf Felder hinzufügen (0.2.0: `polaritaet` je Route, `halten` je Modulator; 0.3.0: kompositorische Profile als METADATA-Ergebnisse, `befund.profil`, Eingang `profil`; ältere Projekte öffnen unverändert). Eine neue Hauptversion braucht eine Migration (`ladeProjekt`).
+- Formatversion: Eine neue Nebenversion darf Felder hinzufügen (0.2.0: `polaritaet` je Route, `halten` je Modulator; 0.3.0: kompositorische Profile als METADATA-Ergebnisse, `befund.profil`, Eingang `profil`; 0.4.0: AUDIO-Material mit `ton`, EVENT_SEQUENCE, Steuersignale mit `achse: "zeit"`, Eingang `ton`; ältere Projekte öffnen unverändert). Eine neue Hauptversion braucht eine Migration (`ladeProjekt`).
 
 ## Vorbereitet für später
 
-Weitere Typen (VIDEO, AUDIO, TEXT, GEOMETRY, EVENT_SEQUENCE) sind in `kern/typen.js` benannt. Das kompositorische Profil hält mit `referenz` einen Platz für Quelle und Rechte eines freigegebenen Referenzbildes offen. Der Wert `reproduzierbar: "nein"` mit der Befundart `modell` ist für künftige Modellaufrufe vorgesehen.
+Weitere Typen (VIDEO, TEXT, GEOMETRY) sind in `kern/typen.js` benannt. AUDIO und EVENT_SEQUENCE sind seit 0.4.0 implementiert, die übrigen Klangformen (Spektrum, Rhythmus, Generator, Transformation) stehen im Register `KLANGFORMEN`. Das kompositorische Profil hält mit `referenz` einen Platz für Quelle und Rechte eines freigegebenen Referenzbildes offen. Der Wert `reproduzierbar: "nein"` mit der Befundart `modell` ist für künftige Modellaufrufe vorgesehen.

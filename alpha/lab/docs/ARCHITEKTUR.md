@@ -6,6 +6,7 @@ Die zentrale Einheit ist die **Operation**, nicht die App. Vorhandene Anwendunge
             ┌──────────── Operationsregister (kern/register.js) ────────────┐
             │ orna.konstellation  fictory.prozess  lab.feedback  lab.farbe  │
             │ lab.wiederholung    lab.bildsignal   lab.differenz            │
+            │ lab.profil  lab.komposition  lab.tonsignal (Ton → Signal)     │
             └──────────────┬───────────────────────────────────────────────┘
                            │ beschreibt sich selbst: Kennung, Version, Herkunft, Klasse,
                            │ Ein-/Ausgänge mit Typen, Parameter (min/max = harte Grenzen),
@@ -22,7 +23,7 @@ Die zentrale Einheit ist die **Operation**, nicht die App. Vorhandene Anwendunge
 
 | Ordner/Datei | Aufgabe | DOM? |
 |---|---|---|
-| `kern/typen.js` | Datentypen. Implementiert: IMAGE, ANIMATION, CONSTELLATION, CONTROL_SIGNAL, METADATA. Benannt für später: VIDEO, AUDIO, TEXT, GEOMETRY, EVENT_SEQUENCE. Verbindungen nur bei gleichem Typ. | nein |
+| `kern/typen.js` | Datentypen. Implementiert: IMAGE, ANIMATION, CONSTELLATION, CONTROL_SIGNAL, METADATA, seit 0.1.3 AUDIO (als Material) und EVENT_SEQUENCE. Benannt für später: VIDEO, TEXT, GEOMETRY. Register `KLANGFORMEN`: die acht Formen des Audio-Operationsformats (docs/AUDIO-FORMAT.md). Verbindungen nur bei gleichem Typ. | nein |
 | `kern/register.js` | prüft Operationsbeschreibungen, findet anwendbare Operationen, bereinigt und begrenzt Parameter | nein |
 | `kern/modulation.js` | Modulatoren (Sinus, Dreieck, Säge, gehaltener Zufall, Steuersignal), Abtasten und halten, Routen mit Attenuverter und Polarität; mehrere Routen werden summiert, dann begrenzt (geprüft: docs/MODULATION-DOSSIER.md) | nein |
 | `kern/komposition.js` | kompositorisches Profil (Schwerpunkt, Symmetrie, Licht, Kontrast, Farbe, Richtung) und die Zerlegung, mit der `lab.komposition` diese Komponenten skaliert oder einem Zielprofil angleicht (docs/KOMPOSITION.md) | nein |
@@ -31,7 +32,7 @@ Die zentrale Einheit ist die **Operation**, nicht die App. Vorhandene Anwendunge
 | `kern/archiv.js` | ZIP schreiben (ZIP-Schreiber der Fictory) und lesen, mit Prüfsummen und Pfadprüfung | nein |
 | `kern/bilddaten.js` | reine Bildhilfen in ImageData-Form, Abtastung, Farbmatrix, SHA-256 | nein |
 | `operationen/*.js` | die Operationen; `index.js` trägt sie ins Register ein | nur `fictory.js` |
-| `medien/browser.js` | PNG-Kodierung, Import mit Typ-, Grössen- und Ausrichtungsprüfung, Objekt-URLs | ja |
+| `medien/browser.js` | PNG-Kodierung, Import mit Typ-, Grössen- und Ausrichtungsprüfung, Objekt-URLs; Tondateien unverändert ablegen und mit Web Audio dekodieren (einkanalig, 44,1 kHz) | ja |
 | `medien/video.js` | MP4 über WebCodecs und mp4-muxer (vendor/), Rückfall WebM über MediaRecorder | ja |
 | `jev/` | jev live: Lage, Frage, Seite, Worker-Entwurf (aus, solange keine Adresse eingetragen ist) | nein |
 | `app.js`, `index.html`, `lab.css` | Oberfläche mit vier Bereichen und zwei Ansichten | ja |
@@ -41,6 +42,7 @@ Die Trennung zwischen Rechnung und Darstellung ist durch REA belegt (REA-PROTOKO
 ## Wiederverwendet, unverändert
 
 - `alpha/the-fictory/analyse.js`, `operationen.js`, `zeichnen.js`, `feld.js`, `regeln.js`, `jev.js`, `orna.js`, `zip.js`, `dauer.js` (Importe mit `?v=23` wie in der Fictory, damit jedes Modul nur einmal geladen wird)
+- `alpha/phorma-iii/ton.js` (Tonanalyse: Hüllkurve, Bänder, Spektrum, Fluss, Einsätze) für `lab.tonsignal`
 - `portfolio/nebeneinander-nacheinander/js/data/` (ORNA-Bestand) und `js/lib/random.js` (Ziehung)
 - `vendor/mp4-muxer-5.2.2/`, `vendor/fonts/`
 - `tools/serve-orma.mjs` (lokaler Server)
@@ -49,7 +51,7 @@ Die Trennung zwischen Rechnung und Darstellung ist durch REA belegt (REA-PROTOKO
 
 - höchstens 300 Ausführungen je Projekt, 12 Varianten je Ausführung, 900 Bilder je Animation
 - Experiment: höchstens 8 Schritte und 120 s, nur erlaubte Operationen
-- Arbeitsbilder höchstens 2048 px, Importdateien höchstens 60 MB und nur Bildtypen
+- Arbeitsbilder höchstens 2048 px, Importdateien höchstens 60 MB und nur Bild- oder Tontypen, Töne höchstens 10 Minuten
 - Parametergrenzen sind hart (`bereinigeParameter`). Rechengrösse und Iterationen sind Parameter und darum sichtbar.
 - Zyklen sind nicht möglich: Ein Knoten liest nur Ergebnisse, die vor ihm entstanden sind (`pruefeProjekt` prüft das beim Öffnen).
 - Abbrechen ist jederzeit möglich (AbortController). Ein abgebrochener oder fehlerhafter Knoten bleibt mit Status und Fehler im Protokoll.
