@@ -48,7 +48,7 @@ if (html.classList.contains("uebersicht")) {
   // Filme nur mit Maus: auf Telefonen (Chrome auf Android) liess ein Film in einer bewegten Karte den Bildschirm flackern,
   // dort bleibt das Standbild stehen
   const filme = matchMedia("(hover: hover) and (pointer: fine)");
-  let phase = 0, vorn = 0, i = 0, laeuft = false, ende = 0;
+  let phase = 0, vorn = 0, i = 0, laeuft = false, ende = 0, richtung = -1;
   const glatt = (t) => (1 - Math.cos(Math.PI * t)) / 2;   // sanft an- und auslaufend, ohne Ruck in der Mitte
   const setze = (d, k, v) => { if (d.style[k] !== v) d.style[k] = v; };
   /** Rahmen der vorderen Karte in px: im Ring (wie works.css) und auf der Bühne */
@@ -64,7 +64,10 @@ if (html.classList.contains("uebersicht")) {
     dias.forEach((d, j) => {
       let k = (((j - phase) % L) + L) % L;
       if (k > L / 2) k -= L;
-      const w = (2 * Math.PI * k) / L, tief = 1 - Math.cos(w);   // 0 vorne, 2 hinten
+      // genau gegenüber (bei gerader Zahl): die Seite, auf die die Karte zuletzt gedreht wurde, damit sie am Ende nicht springt
+      if (k === L / 2 && richtung > 0) k = -k;
+      // höchstens 60° zwischen zwei Karten: bei wenigen Werken stehen die Nachbarn trotzdem seitlich und nicht verdeckt hinter der vorderen
+      const w = k * Math.min((2 * Math.PI) / L, Math.PI / 3), tief = 1 - Math.cos(w);   // 0 vorne, 2 hinten
       const x = Math.sin(w) * R, s = 1 / (1 + 3.4 * tief);       // Perspektive: Nachbarn gut ein Drittel so gross
       // Transform direkt setzen (keine CSS-Variablen, die bis in Bild und Film vererbt würden), und nur, was sich ändert
       setze(d, "transform", `translateX(${x.toFixed(3)}vw) scale(${s.toFixed(4)})`);
@@ -125,6 +128,7 @@ if (html.classList.contains("uebersicht")) {
     // der Film hält nur an und bleibt sichtbar: ein Wechsel zurück aufs Standbild liess die Karte flackern
     for (const x of dias) { spiele($("video", x), false); x.classList.remove("ist"); }
     const ziel = phase + d;
+    richtung = Math.sign(d);
     await bewege({ phase: ziel }, 900 + 300 * Math.min(Math.abs(d), 3));
     phase = ((Math.round(ziel) % L) + L) % L; i = phase; zeichne();
     vornSetzen();
