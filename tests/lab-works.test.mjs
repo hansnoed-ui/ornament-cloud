@@ -50,7 +50,8 @@ test("Works: ein veröffentlichtes Werk auf Bühne, im Raster und auf seiner Sei
   assert.ok(html.includes('<p class="zaehler" aria-live="polite"><span class="zaehler-jetzt">01</span> / 01</p>'), "Zähler");
   assert.ok(html.includes('<span class="etikett-titel">01 · Probe, 2026</span><span class="etikett-text">Ein Satz zur Probe.</span>'), "Etikett");
   assert.ok(html.includes('data-ansicht="buehne"') && html.includes('data-ansicht="raster"'), "Pille");
-  assert.match(html, /<nav class="dock"[\s\S]*<div class="menue" id="menue" hidden>[\s\S]*href="\/alpha\/lab\/"[\s\S]*class="kachel uhr"/, "Dock mit Menü");
+  assert.match(html, /<nav class="dock"[\s\S]*<div class="menue" id="menue" hidden>[\s\S]*href="\/alpha\/lab\/"[\s\S]*class="kachel kachel-logo" aria-hidden="true"><svg/, "Dock mit Menü und Signet");
+  assert.ok(!html.includes("uhr"), "keine Uhr mehr");
   assert.ok(!html.includes("Entwurf"), "kein Entwurf");
   const seite = readFileSync(join(dir, "probe/index.html"), "utf8");
   assert.ok(seite.includes('<ul class="schlagworte"><li>2026</li><li>The Fictory</li><li>Feedback</li></ul>'));

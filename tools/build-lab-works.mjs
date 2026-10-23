@@ -7,7 +7,7 @@
 // unten links, Rad, Pfeiltasten oder Wischen blättern), daneben das Raster (zwei Spalten, schmale Fugen, beim Darüberfahren ein farbiges Etikett),
 // der Umschalter «Bühne · Raster» als Pille oben rechts, das schwebende Dock unten in der Mitte (Werk, Satz, Menü) mit dem kleinen Menü aus Kacheln,
 // und die Werkseite mit Schlagworten, grossem Satz, Akkordeon links und Bildfolge rechts. Von ornament.cloud: Signet mit laufendem Punkt,
-// Blaupause als Akzent (und als Vorgabe der Etiketten), Instrument Sans und Newsreader, echte Umkehr im Dunkeln, das Feldchen, die Uhr von Zürich
+// Blaupause als Akzent (und als Vorgabe der Etiketten), Instrument Sans und Newsreader, echte Umkehr im Dunkeln, das Feldchen, das animierte Signet im Menü
 // und der Fuss «lädt nichts von aussen».
 //
 // Ein Werk ist ein Ordner b/lab/works/<ordner>/ mit werk.json und den Medien, so wie ihn der Export «Für Works» des Labs liefert
@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 const PFAD = "/b/lab/works/";
 const BASIS = "https://ornament.cloud";
-const V = 3;   // Versionsmarke für works.css und works.js (?v=), bei Änderungen hochzählen
+const V = 4;   // Versionsmarke für works.css und works.js (?v=), bei Änderungen hochzählen
 
 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const absaetze = (t) => String(t ?? "").split(/\n\s*\n/).map((a) => a.trim()).filter(Boolean).map((a) => `<p>${esc(a)}</p>`).join("");
@@ -59,7 +59,7 @@ const MENUE = `<div class="menue" id="menue" hidden>
       <a class="kachel" href="${PFAD}#info"><span class="kachel-bild kachel-text" aria-hidden="true">Aa</span><span>Info<small>Über die Werkschau</small></span></a>
       <a class="kachel breit kachel-lab" href="/alpha/lab/">${FELDCHEN("feldchen gross")}<span>ORNAMENT LAB<small>Die Werkstatt öffnen</small></span></a>
       <a class="kachel" href="/b/"><span class="kachel-bild kachel-signet" aria-hidden="true">${SIGNET}</span><span>ornament.cloud<small>Zur Hauptseite</small></span></a>
-      <div class="kachel uhr" aria-label="Uhrzeit in Zürich"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="zifferblatt" cx="50" cy="50" r="46"/><circle class="std" cx="50" cy="20" r="2.4"/><circle class="min" cx="50" cy="4" r="3.6"/></svg><span class="uhr-text">Zürich<small class="uhr-zeit">–</small></span></div>
+      <div class="kachel kachel-logo" aria-hidden="true">${SIGNET}</div>
     </div>`;
 
 /** das schwebende Dock unten in der Mitte: links das Werk (oder das Signet), Mitte ein Satz, rechts das Menü */
