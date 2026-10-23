@@ -21,10 +21,14 @@ export async function jevPruefen({ adresse = JEV_LAB_ADRESSE, abbrechen = null }
 }
 
 /** fragt jev nach Wahrscheinlichkeiten für die nächste Operation; wirft, wenn jev aus oder nicht erreichbar ist */
-export async function jevWahl({ verlauf, optionen }, { adresse = null, abbrechen = null } = {}) {
+export const jevWahl = ({ verlauf, optionen }, wie = {}) => jevFragen({ verlauf, optionen }, wie);
+/** fragt jev, welche Dramaturgie eine Animation aus Bild und Klang nehmen soll (merkmale: feste Stufen, kern/vorschlag.js) */
+export const jevDramaturgie = ({ merkmale, optionen }, wie = {}) => jevFragen({ frage: "dramaturgie", merkmale, optionen }, wie);
+
+async function jevFragen(roh, { adresse = null, abbrechen = null } = {}) {
   const ziel = adresse ?? (zustand.bereit ? JEV_LAB_ADRESSE : null);
   if (!ziel) throw new Error("jev live ist nicht eingerichtet");
-  const lage = labLage({ verlauf, optionen });
+  const lage = labLage(roh);
   const r = await fetch(ziel, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(lage), signal: abbrechen ?? AbortSignal.timeout(15000) });
   const j = await r.json().catch(() => null);
   if (!r.ok) throw new Error(j?.fehler ? String(j.fehler).slice(0, 160) : `HTTP ${r.status}`);

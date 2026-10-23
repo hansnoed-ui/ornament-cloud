@@ -1,4 +1,4 @@
-# jev im ORNAMENT LAB – Integrationsstatus (23. Oktober 2026, Lab 0.1.10)
+# jev im ORNAMENT LAB – Integrationsstatus (23. Oktober 2026, Lab 0.1.11)
 
 ## Kurz
 
@@ -23,7 +23,7 @@ Lab im Browser  ──POST, nur Kennungen──▶  ornament.cloud/alpha/lab/jev
 |---|---|
 | Herkunft | nur `Origin: https://ornament.cloud`, bei vorhandenem `Sec-Fetch-Site` nur `same-origin` |
 | Form | nur POST mit JSON, höchstens 2000 Bytes |
-| Inhalt | dieselben Regeln wie `labLage()` in `fragen.js`: Verlauf höchstens 8 Kennungen, 2–6 Optionen aus dem festen Katalog, keine weiteren Felder, keine freien Texte, keine Bilder |
+| Inhalt | dieselben Regeln wie `labLage()` in `fragen.js`: Verlauf höchstens 8 Kennungen, 2–6 Optionen aus dem festen Katalog, keine weiteren Felder, keine freien Texte, keine Bilder. Seit 0.1.11 auch die Dramaturgie: alle sechs Merkmale mit je einer Stufe aus einer festen Liste, 2–6 Dramaturgien |
 | Frage | baut sie selbst mit festem Wortlaut (wie `labFrage()`); ein Test hält beide Fassungen wörtlich gleich |
 | Ziel | nur `https://api.typesafe.ai/v1/systemone`, keine Weiterleitungen |
 | Je Adresse | 6 Fragen in der Minute, 60 am Tag (Adressen nur als Prüfsumme, am nächsten Tag vergessen) |
@@ -40,6 +40,7 @@ Fehler kommen verständlich im Lab an (Schlüssel abgelehnt, Kontingent erschöp
 |---|---|---|---|
 | Regel R1–R7 aus einer ORNA-Konstellation (`orna.konstellation`) | CHOICE (Wahrscheinlichkeiten, gewichtet gezogen) | **jev**, mit Modell, Stand, Wahrscheinlichkeit, allen Wahrscheinlichkeiten und Startwert | **aktiv**, über die Tabelle der Fictory (jev-1.13.0, beim Bauen erstellt); ohne gültige Tabelle über Stichworte (**Regel**) oder per Zufall (**Zufall**) |
 | nächste Operation im Modus «jev-assistiert» | CHOICE über 2–6 Operationen aus einem festen Katalog | **jev**, mit `quelle: "live"`, Modell, Wahrscheinlichkeit der gewählten und aller Optionen, Lage, `zwischengespeichert`, Zeitpunkt | **live**, sobald das Secret gesetzt ist; sonst Knopf deaktiviert mit Grund |
+| Dramaturgie einer Animation aus Bild und Klang (30 s) | CHOICE über sechs feste Dramaturgien, Lage nur aus gemessenen Stufen (`frage: "dramaturgie"`) | **jev**, mit Modell, Wahrscheinlichkeiten, Lage, Rang; ohne jev **Regel** mit Gründen | **live** seit Lab 0.1.11 (docs/VORSCHLAG.md) |
 | Vorschläge ohne jev | feste Regeln (Abwechslung der Klassen, Beobachtung nach Rekursion, Kopplung) | **Regel**, mit Gründen | **aktiv**, wird nie als jev-Urteil ausgegeben |
 
 Die vier Entscheidungsarten **Mensch, Zufall, Regel, jev** bleiben im Projekt und in der Oberfläche getrennt (`ENTSCHEIDUNGSARTEN`); eine jev-Entscheidung aus der Tabelle und eine aus jev live unterscheiden sich durch `details.quelle`. jev bestimmt nie selbst: Der Mensch übernimmt einen Vorschlag, verwirft ihn oder ändert ihn.
