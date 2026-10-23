@@ -1,4 +1,4 @@
-// ORNAMENT LAB – das Projektformat (Version 0.4.0, Beschreibung: docs/PROJEKTFORMAT.md). Reines JSON für die Struktur, Mediendateien
+// ORNAMENT LAB – das Projektformat (Version 0.5.0, Beschreibung: docs/PROJEKTFORMAT.md). Reines JSON für die Struktur, Mediendateien
 // getrennt daneben (im Archiv unter medien/). Ein Projekt ist eine gerichtete, azyklische Ausführungsgrafik:
 //   Ergebnisse (Material und erzeugte Zustände)  ←ausgaben—  Knoten (eine Ausführung einer Operation)  —eingaben→  frühere Ergebnisse
 // Ein Knoten kann nur auf Ergebnisse verweisen, die es schon gibt; damit sind Schleifen ausgeschlossen, und nichts wird überschrieben:
@@ -6,8 +6,8 @@
 // Entscheidungen sind eigene Einträge mit einer von vier Arten (mensch, zufall, regel, jev), damit sie unterscheidbar bleiben (§11).
 
 export const FORMAT = "ornament-lab-projekt";
-export const FORMAT_VERSION = "0.4.0";
-export const LAB_VERSION = "0.1.3";
+export const FORMAT_VERSION = "0.5.0";
+export const LAB_VERSION = "0.1.4";
 
 export const ENTSCHEIDUNGSARTEN = Object.freeze({
   mensch: "menschliche Entscheidung",

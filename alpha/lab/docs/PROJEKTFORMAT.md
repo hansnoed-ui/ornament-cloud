@@ -1,4 +1,4 @@
-# Projektformat `ornament-lab-projekt` 0.4.0
+# Projektformat `ornament-lab-projekt` 0.5.0
 
 Ein Projekt ist ein ZIP-Archiv (`<titel>.ornalab.zip`) mit diesem Inhalt:
 
@@ -6,7 +6,7 @@ Ein Projekt ist ein ZIP-Archiv (`<titel>.ornalab.zip`) mit diesem Inhalt:
 projekt.json          Struktur, Verlauf, Entscheidungen (JSON, UTF-8)
 medien/<id>.png       Bildergebnisse und Material (verlustfrei)
 medien/<id>.json      Konstellationen, Steuersignale, Ereignisfolgen, Befunde
-medien/<id>.wav|mp3|ogg|flac|m4a|…   Tonmaterial, unverändert (seit 0.4.0)
+medien/<id>.wav|mp3|ogg|flac|m4a|…   Tonmaterial, unverändert (seit 0.4.0); erzeugte Klänge als WAV, 16 Bit, mono (seit 0.5.0)
 medien/<id>-animation.mp4|webm   exportierte Animationen
 ```
 
@@ -16,7 +16,7 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
 
 ```jsonc
 {
-  "format": "ornament-lab-projekt", "formatVersion": "0.4.0", "labVersion": "0.1.3",
+  "format": "ornament-lab-projekt", "formatVersion": "0.5.0", "labVersion": "0.1.4",
   "id": "p-…", "titel": "…", "modus": "manuell | jev | experimentell", "erstellt": "ISO", "geaendert": "ISO",
 
   "ergebnisse": [{                        // Material und alle erzeugten Zustände; nichts wird überschrieben
@@ -58,7 +58,8 @@ Die Struktur steht in JSON, die Medien liegen getrennt daneben. Beim Öffnen wer
   }],
 
   "ketten": [{ "id": "c-…", "name": "…", "schritte": [{ "operation", "operationVersion", "parameter", "variation", "auswahl": 3, "nebeneingaenge": [] }] }],
-  "exporte": [{ "art": "animation | verlauf", "ergebnis": "e-…", "datei": "medien/…", "codec": "avc1.640028", "bilder": 451, "fps": 30, "sha256": "…" }],
+  "exporte": [{ "art": "animation | verlauf", "ergebnis": "e-…", "datei": "medien/…", "codec": "avc1.640028", "bilder": 451, "fps": 30, "sha256": "…",
+                "tonspur": { "ergebnis": "e-…", "beginn": 0, "codec": "opus", "abtastrate": 48000, "sekunden": 15.03, "klangSekunden": 8 } }],   // tonspur seit 0.5.0, nur wenn gewählt; sonst { …, "fehlt": "Grund" }
   "meldungen": [{ "zeit": "ISO", "art": "warnung | hinweis", "text": "…" }]
 }
 ```
@@ -76,6 +77,16 @@ Eine Ereignisfolge (`EVENT_SEQUENCE`):
 
 ```jsonc
 { "art": "einsaetze", "ereignisse": [{ "t": 0.733, "staerke": 0.91, "band": "tief | mitte | hoch" }], "beginn": 0, "dauer": 12.5, "einheit": "s", "quelle": "ton" }
+```
+
+## Erzeugter Klang (seit 0.5.0)
+
+Der Klangerzeuger (`lab.klang`) legt AUDIO-Ergebnisse an, die zu einem Knoten gehören. Sie haben wie Tonmaterial ein Feld `ton`, dazu einen Umriss für die Anzeige. Die WAV liegt unter `medien/<id>.wav`. Die Partitur ist eine Ereignisfolge mit `art: "partitur"`:
+
+```jsonc
+{ "typ": "AUDIO", "titel": "Klang: Bild gelesen, 8 s", "datei": "medien/e-….wav", "mime": "audio/wav", "knoten": "k-…",
+  "ton": { "dauer": 8, "abtastrate": 44100, "kanaele": 1, "umriss": [0.12, 0.4, …] } }                   // umriss: 200 Spitzenwerte 0–1
+{ "art": "partitur", "ereignisse": [{ "t": 0.42, "staerke": 0.8, "hz": 220, "wort": "Form" }], "beginn": 0, "dauer": 8, "einheit": "s", "quelle": "klang" }   // wort nur aus einer Konstellation
 ```
 
 Vorgesehen, nicht gebaut (AUDIO-FORMAT.md): `METADATA` mit `art: "frequenzspektrum"` und an Ereignisfolgen `bpm`, `takt`, `raster`.
@@ -109,8 +120,8 @@ Der Knoten von `lab.komposition` hält im `protokoll` fest: `reihenfolge` (die s
 - Steuersignale werden über ihre Ergebnis-Kennung verbunden und nicht doppelt gespeichert.
 - `lab.tonsignal` ist reproduzierbar: Dieselben Abtastwerte ergeben dasselbe Signal. Die Tondatei liegt unverändert mit SHA-256 im Archiv.
 - Mehrere Routen auf denselben Parameter werden summiert und erst dann begrenzt (seit Lab 0.1.1, nach VCV Rack). Mit einer Route rechnet 0.1.1 genau wie 0.1.0.
-- Formatversion: Eine neue Nebenversion darf Felder hinzufügen (0.2.0: `polaritaet` je Route, `halten` je Modulator; 0.3.0: kompositorische Profile als METADATA-Ergebnisse, `befund.profil`, Eingang `profil`; 0.4.0: AUDIO-Material mit `ton`, EVENT_SEQUENCE, Steuersignale mit `achse: "zeit"`, Eingang `ton`; ältere Projekte öffnen unverändert). Eine neue Hauptversion braucht eine Migration (`ladeProjekt`).
+- Formatversion: Eine neue Nebenversion darf Felder hinzufügen (0.2.0: `polaritaet` je Route, `halten` je Modulator; 0.3.0: kompositorische Profile als METADATA-Ergebnisse, `befund.profil`, Eingang `profil`; 0.4.0: AUDIO-Material mit `ton`, EVENT_SEQUENCE, Steuersignale mit `achse: "zeit"`, Eingang `ton`; 0.5.0: AUDIO-Ergebnisse von `lab.klang` mit `ton.umriss`, Partitur, Eingänge `bild`, `signal`, `konstellation` ohne Pflicht, `exporte[].tonspur`; ältere Projekte öffnen unverändert). Eine neue Hauptversion braucht eine Migration (`ladeProjekt`).
 
 ## Vorbereitet für später
 
-Weitere Typen (VIDEO, TEXT, GEOMETRY) sind in `kern/typen.js` benannt. AUDIO und EVENT_SEQUENCE sind seit 0.4.0 implementiert, die übrigen Klangformen (Spektrum, Rhythmus, Generator, Transformation) stehen im Register `KLANGFORMEN`. Das kompositorische Profil hält mit `referenz` einen Platz für Quelle und Rechte eines freigegebenen Referenzbildes offen. Der Wert `reproduzierbar: "nein"` mit der Befundart `modell` ist für künftige Modellaufrufe vorgesehen.
+Weitere Typen (VIDEO, TEXT, GEOMETRY) sind in `kern/typen.js` benannt. AUDIO und EVENT_SEQUENCE sind seit 0.4.0 implementiert, der Klanggenerator seit 0.5.0. Die übrigen Klangformen (Spektrum, Rhythmus, Transformation) stehen im Register `KLANGFORMEN`. Das kompositorische Profil hält mit `referenz` einen Platz für Quelle und Rechte eines freigegebenen Referenzbildes offen. Der Wert `reproduzierbar: "nein"` mit der Befundart `modell` ist für künftige Modellaufrufe vorgesehen.

@@ -24,6 +24,16 @@ async function eingaengeLaden(op, projekt, medien, eingaben) {
   return out;
 }
 
+/** Angaben zu einem erzeugten Klang (wie bei Tonmaterial) und ein Umriss mit 200 Spitzenwerten für die Anzeige */
+function tonAngaben({ pcm, rate }) {
+  const n = 200, umriss = Array.from({ length: n }, (_, k) => {
+    let m = 0;
+    for (let i = Math.floor((k * pcm.length) / n), z = Math.floor(((k + 1) * pcm.length) / n); i < z; i++) m = Math.max(m, Math.abs(pcm[i]));
+    return Math.round(m * 1000) / 1000;
+  });
+  return { dauer: Math.round((pcm.length / rate) * 1000) / 1000, abtastrate: rate, kanaele: 1, umriss };
+}
+
 /** Steuersignal-Quellen in Routen mit den Werten aus dem Projekt versehen */
 function routenAufloesen(projekt, routen = []) {
   return routen.map((r) => {
@@ -71,6 +81,7 @@ export async function fuehreAus({ register, projekt, medien, auftrag, melden = (
         const e = fuegeErgebnisHinzu(projekt, k.id, { typ: a.typ, titel: laeufe.length > 1 ? `${a.titel} · ${i + 1}` : a.titel, daten: a.daten ?? null, befund: a.befund ?? null, index: idx });
         e.variante = { stelle: u, parameter: u === null ? null : p, seed: (seed + i) >>> 0, teil: j };
         if (a.bild) Object.assign(e, await medien.ablegen(e, a.bild));
+        else if (a.ton) { Object.assign(e, await medien.ablegenKlang(e, a.ton)); e.ton = tonAngaben(a.ton); }
         else if (a.daten) Object.assign(e, await medien.ablegenDaten(e, a.daten));
         ergebnisse.push(e);
       }

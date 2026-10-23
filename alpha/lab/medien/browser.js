@@ -3,6 +3,7 @@
 // gespeichert wird; nichts wird hochgeladen. Ton wird mit Web Audio dekodiert, einkanalig gemischt und auf 44,1 kHz gebracht.
 import { sha256, begrenzen } from "../kern/bilddaten.js";
 import { GRENZEN } from "../kern/projekt.js";
+import { wavBytes } from "../kern/klang.js";
 
 const leinwand = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
 const alsBlob = (c, typ = "image/png") => new Promise((ok, nein) => c.toBlob((b) => (b ? ok(b) : nein(new Error("Bild konnte nicht kodiert werden"))), typ));
@@ -100,6 +101,12 @@ export function browserMedien() {
       const datei = `medien/${e.id}.${imp.endung}`;
       e.datei = datei; merke(e, imp.bytes, imp.mime); toene.set(e.id, imp.dekodiert);
       return { datei, sha256: imp.original.sha256, mime: imp.mime, bytes: imp.bytes.length };
+    },
+    /** einen erzeugten Klang als WAV (16 Bit, mono) ablegen; das PCM bleibt für Tonsignal und Tonspur gemerkt */
+    async ablegenKlang(e, { pcm, rate }) {
+      const datei = `medien/${e.id}.wav`, bytes = wavBytes(pcm, rate);
+      e.datei = datei; merke(e, bytes, "audio/wav"); toene.set(e.id, { pcm, rate, dauer: pcm.length / rate, kanaele: 1 });
+      return { datei, sha256: await sha256(bytes), mime: "audio/wav", bytes: bytes.length };
     },
     /** Medien eines geöffneten Archivs übernehmen */
     uebernehmen(medien) {

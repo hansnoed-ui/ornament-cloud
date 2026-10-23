@@ -11,6 +11,7 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.farbe` 0.1.0 | Farbe modulieren | Räumliche Operation | neu, nach Fusion Color Corrector; p5.js filter() (POSTERIZE, INVERT); CSS Filter Effects (hue-rotate) | Bild → Bild | über Modulation |
 | `lab.bildsignal` 0.1.0 | Bildsignal | Kopplungsoperation | neu, nach TouchDesigner TOP to CHOP; Max/Jitter (Matrix zu Zahlen) | Bild → Steuersignal | eine |
 | `lab.tonsignal` 0.1.0 | Tonsignal | Kopplungsoperation | Adapter: PHORMA III (Tonanalyse) | Audiosignal → Steuersignal, Ereignisfolge | eine |
+| `lab.klang` 0.1.0 | Klangerzeuger | Zeitliche Operation | neu, nach ANS-Synthesizer (Murzin), UPIC (Xenakis): Bild als Partitur; Oszillator und Hüllkurve der Modularsynthese | Bild (opt.) + Steuersignal (opt.) + Konstellation (opt.) → Audiosignal, Ereignisfolge | über Modulation |
 | `lab.differenz` 0.1.0 | Differenz | Beobachtungsoperation | neu, nach Difference-Komposition (Fusion Merge, After Effects, Resolume) | Bild + Bild → Bild | eine |
 | `lab.profil` 0.1.0 | Kompositorisches Profil | Beobachtungsoperation | neu, nach Kategorien von ShotDeck, FilmGrab und Flim (Bildausschnitt, Licht, Farbe, Symmetrie) als Messgrössen; Strukturtensor (Bildanalyse) | Bild → Befund | eine |
 | `lab.komposition` 0.1.0 | Komposition verändern | Räumliche Operation | neu, nach Attenuverter (VCV Rack) auf gemessene Bildkomponenten übertragen; Kategorien von ShotDeck, FilmGrab und Flim | Bild + Befund (opt.) → Bild | über Modulation |
@@ -140,6 +141,29 @@ Misst ein Merkmal einer Tondatei über die Zeit und gibt es als Steuersignal aus
 | Ausschnitt Länge (s, 0 = bis zum Ende) (`laenge`) | 0 … 600, Standard 0 |
 | Proben (Mittelung über gleich lange Abschnitte) (`proben`) | 8 … 1024, Standard 120 |
 | auf 0–1 strecken (`normieren`) | ein/aus, Standard ein |
+
+## Klangerzeuger (`lab.klang`)
+
+Erzeugt Klang ohne Tondatei: liest ein Bild wie eine Partitur, macht ein Steuersignal oder den Text einer Konstellation hörbar oder zieht eine Tonfolge aus dem Startwert.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/klang.js, alpha/lab/kern/klang.js; Prinzip nach ANS-Synthesizer (Murzin), UPIC (Xenakis): Bild als Partitur; Oszillator und Hüllkurve der Modularsynthese
+- **Voraussetzungen:** keine (reines JavaScript); zum Anhören ein Browser mit <audio>
+- **Ressourcen:** Bild: Bänder × Abtastwerte (24 Bänder, 8 s: etwa 8 Millionen Schritte); sonst je Ton einige tausend; Speicher: der Klang einkanalig, 44,1 kHz, höchstens 30 s
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Quelle (`quelle`) | **aus dem Eingang (Bild, sonst Signal, sonst Konstellation, sonst Startwert)** / Bild lesen (Spalten nacheinander) / Steuersignal als Tonhöhe / Text der Konstellation, Wort für Wort / Tonfolge aus dem Startwert |
+| Dauer (s) (`dauer`) | 1 … 30, Standard 8 |
+| Grundton (Hz) (`grundton`) | 40 … 880, Standard 110 |
+| Umfang (Oktaven) (`umfang`) | 1 … 6, Standard 4 |
+| Stimmung (`stimmung`) | **pentatonisch (5 Stufen je Oktave)** / chromatisch (12 Halbtöne) / Obertonreihe über dem Grundton / gleitend (stufenlos) |
+| Klangfarbe (`klangfarbe`) | **Sinus** / hell (vier Teiltöne 1, 1/2, 1/3, 1/4) / FM, harmonisch (Verhältnis 2:1) / FM, glockenartig (Verhältnis 1,4:1) |
+| Dichte (Töne je s; Startwert und Signal) (`dichte`) | 0.5 … 16, Standard 3 |
+| Bänder (Zeilen des Bildes) (`baender`) | 4 … 64, Standard 24 |
+| Anschlag (s) (`anschlag`) | 0.002 … 0.5, Standard 0.01 |
+| Abklingen (s) (`abklingen`) | 0.05 … 4, Standard 0.6 |
+| Nachhall (`nachhall`) | 0 … 0.9, Standard 0.3 |
 
 ## Differenz (`lab.differenz`)
 

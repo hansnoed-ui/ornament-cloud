@@ -8,7 +8,7 @@ export const TYPEN = Object.freeze({
   CONSTELLATION: { name: "Konstellation", implementiert: true, datei: "json", beschreibung: "ORNA-Konstellation mit abgeleiteter Operationsregel" },
   CONTROL_SIGNAL: { name: "Steuersignal", implementiert: true, datei: "json", beschreibung: "Folge von Werten 0–1, kann Parameter modulieren" },
   METADATA: { name: "Befund", implementiert: true, datei: "json", beschreibung: "Messungen und Beobachtungen, keine Bewertung" },
-  AUDIO: { name: "Audiosignal", implementiert: true, datei: "wav|mp3|ogg|flac|m4a|webm", beschreibung: "abgetastetes Signal; im Lab nur als Material, das gemessen wird (seit Lab 0.1.3)" },
+  AUDIO: { name: "Audiosignal", implementiert: true, datei: "wav|mp3|ogg|flac|m4a|webm", beschreibung: "abgetastetes Signal: eigene Tondatei (seit Lab 0.1.3) oder vom Klangerzeuger gerechnet (seit 0.1.4)" },
   EVENT_SEQUENCE: { name: "Ereignisfolge", implementiert: true, datei: "json", beschreibung: "Ereignisse mit Zeitpunkten in Sekunden (Einsätze, Trigger, später Rhythmus und Schnitte)" },
   VIDEO: { name: "Video", implementiert: false, beschreibung: "zeitbasiertes Bild mit eigener Bildrate (später ORNAMENT MOTION)" },
   TEXT: { name: "Text", implementiert: false, beschreibung: "Text mit Herkunft (später ORNAMENT TEXT, Prüfraster)" },
@@ -30,7 +30,7 @@ export const KLANGFORMEN = Object.freeze({
   parameterverlauf: { name: "zeitlicher Parameterverlauf", typ: "CONTROL_SIGNAL", kennzeichen: "daten.achse = \"zeit\" mit dauer und je", implementiert: true },
   spektrum: { name: "Frequenzspektrum", typ: "METADATA", kennzeichen: "daten.art = \"frequenzspektrum\"", implementiert: false },
   rhythmus: { name: "rhythmisches Muster", typ: "EVENT_SEQUENCE", kennzeichen: "daten.bpm, daten.raster", implementiert: false },
-  generator: { name: "Klanggenerator", typ: "AUDIO", kennzeichen: "Operation ohne AUDIO-Eingang, Ausgang AUDIO", implementiert: false },
+  generator: { name: "Klanggenerator", typ: "AUDIO", kennzeichen: "Operation ohne AUDIO-Eingang, Ausgang AUDIO", implementiert: true },   // lab.klang
   transformation: { name: "Klangtransformation", typ: "AUDIO", kennzeichen: "Operation AUDIO → AUDIO", implementiert: false },
 });
 

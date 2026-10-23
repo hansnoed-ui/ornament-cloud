@@ -1,8 +1,8 @@
 # Audio-Operationsformat
 
-Masterprompt §5. Stand: 23. Oktober 2026, Lab 0.1.3, Projektformat 0.4.0.
+Masterprompt §5. Stand: 23. Oktober 2026, Lab 0.1.4, Projektformat 0.5.0.
 
-Das Lab produziert keinen Klang. Es gibt keinen Audioeditor und keine Synthese. Dieses Format legt fest, in welchen Formen Klang im Lab vorkommen kann und wie er an Bildoperationen koppelt. Ein erster Teil ist gebaut: Eine eigene Tondatei wird Material, die Operation **Tonsignal** misst sie, und das Ergebnis moduliert Bildparameter über die vorhandene Modulation (`kern/modulation.js`), über die Varianten oder über die Zeit.
+Dieses Format legt fest, in welchen Formen Klang im Lab vorkommen kann und wie er an Bildoperationen koppelt. Gebaut sind zwei Wege. Erstens wird eine eigene Tondatei Material, die Operation **Tonsignal** misst sie, und das Ergebnis moduliert Bildparameter über die vorhandene Modulation (`kern/modulation.js`), über die Varianten oder über die Zeit (Lab 0.1.3). Zweitens erzeugt der **Klangerzeuger** Klang ohne Tondatei, aus einem Bild, einem Steuersignal, dem Text einer Konstellation oder dem Startwert, und eine Animation kann einen Klang als Tonspur tragen (Lab 0.1.4). Es gibt weiterhin keinen Audioeditor und keinen vollständigen Synthesizer (§23).
 
 **Kennzeichnung (§20):** **geprüft** heisst, im Quellcode oder in der offiziellen Dokumentation nachgelesen, mit Fundstelle. **Hypothese** heisst, aus dem Wissensstand beschrieben, nicht einzeln nachgelesen. **Entscheidung** heisst, das Lab macht es bewusst so.
 
@@ -22,7 +22,7 @@ Klang bringt keine eigene Welt von Typen mit. Die acht Formen aus §5 werden in 
 | **zeitlicher Parameterverlauf** | `CONTROL_SIGNAL` | zusätzlich `achse: "zeit"`, `beginn`, `dauer`, `je` (Sekunden je Wert) | Automationskurve | **gebaut** (Tonsignal) |
 | **Frequenzspektrum** | `METADATA` | `daten: { art: "frequenzspektrum", baender: 32, grenzenHz: [...], je, werte: [[...32], …] }` | Analyse | vorgesehen |
 | **rhythmisches Muster** | `EVENT_SEQUENCE` | zusätzlich `bpm`, `takt` (z. B. `[4, 4]`), `raster` (Teilung), `ereignisse[].schritt` | Pattern, Sequenz | vorgesehen |
-| **Klanggenerator** | `AUDIO` | eine Operation ohne `AUDIO`-Eingang mit Ausgang `AUDIO` (Klasse `zeitlich`) | Oszillator, Rauschen, Sonifikation eines Bildes | vorgesehen |
+| **Klanggenerator** | `AUDIO` | eine Operation ohne `AUDIO`-Eingang mit Ausgang `AUDIO` (Klasse `zeitlich`) | Oszillator, Sonifikation eines Bildes | **gebaut** (`lab.klang`) |
 | **Klangtransformation** | `AUDIO` | eine Operation `AUDIO → AUDIO` | Filter, Hall, Granular | vorgesehen |
 
 Generator und Transformation sind keine Datenformen, sondern Signaturen von Operationen. Sie brauchen kein neues Feld im Projekt, nur Operationen mit Beschreibung im Register. Ein Generator ohne jeden Eingang erscheint wie die ORNA-Konstellation immer in der Liste. Eine Sonifikation hätte die Signatur `IMAGE → AUDIO`, der Rückweg zu Tonsignal.
@@ -40,14 +40,15 @@ Tondatei ──Import──► AUDIO ──lab.tonsignal──► CONTROL_SIGNAL
 | Ereignisfolge | als Takt für Abtasten und halten (Wert springt bei jedem Ereignis, wie Sample & Hold mit Trigger), als Auslöser einer neuen Variante oder eines Schnitts in einer Bildfolge | vorgesehen |
 | Frequenzspektrum | 32 Bänder auf 32 Spalten einer Wiederholung oder Farbtöne einer Farbmodulation (Spektrum als Nebeneinander) | vorgesehen |
 | rhythmisches Muster | Takt der Iterationen eines Feedbacks: eine Iteration je Schritt des Rasters | vorgesehen |
-| Generator, Transformation | Rückweg Bild → Klang: ein Bildsignal moduliert einen Klangparameter, dieselbe Route in Gegenrichtung | vorgesehen |
+| Generator | Rückweg Bild → Klang: der Klangerzeuger liest ein Bild oder ein Steuersignal; jeder seiner Zahlparameter ist wie bei einer Bildoperation modulierbar | gebaut |
+| Transformation | ein Klang wird gefiltert, gedehnt, zerstückelt | vorgesehen |
 
 ### Die gemeinsame Uhr
 
 Die Modulation kennt nur die Stelle u von 0 bis 1 (`kern/modulation.js`). Ein Steuersignal mit `achse: "zeit"` übersetzt sie in Klangzeit: **t = beginn + u · dauer**.
 
 - **Über die Varianten (Nebeneinander):** Sechs Varianten lesen den Klang bei u = 0, 0,2, … 1, also sechs Momente gleichmässig über den Ausschnitt verteilt. Ein Nacheinander wird so als Nebeneinander sichtbar.
-- **Über die Zeit (Nacheinander):** Das Feedback liest bei Iteration k die Stelle u = k / Iterationen, die Komposition je Bild ihrer Bildfolge. Die ganze Bildfolge durchläuft also den ganzen Ausschnitt. In Echtzeit synchron ist das, wenn die Bildfolge so viele Bilder hat wie der Ausschnitt mal 30 (Bildrate der Animation). Beim Feedback heisst das höchstens 4 s Klang bei 120 Iterationen. **Entscheidung:** Für 0.1.3 bleibt die Zeit gestreckt und nicht in Echtzeit, darum steht keine Tonspur in der exportierten Animation. Der Zeitbezug steht im Signal (`beginn`, `dauer`, `je`) und kann später für eine Tonspur im MP4 genutzt werden.
+- **Über die Zeit (Nacheinander):** Das Feedback liest bei Iteration k die Stelle u = k / Iterationen, die Komposition je Bild ihrer Bildfolge. Die ganze Bildfolge durchläuft also den ganzen Ausschnitt. In Echtzeit synchron ist das, wenn die Bildfolge so viele Bilder hat wie der Ausschnitt mal 30 (Bildrate der Animation). Beim Feedback heisst das höchstens 4 s Klang bei 120 Iterationen. **Entscheidung:** Die Zeit bleibt gestreckt und nicht in Echtzeit. Seit 0.1.4 kann die Animation trotzdem eine Tonspur tragen (siehe unten). Sie läuft in Echtzeit ab dem `beginn` des Signals und ist darum nur dann genau synchron, wenn die Bildfolge so viele Bilder hat wie der Klang Sekunden mal 30.
 
 ## Gebaut: Tondatei als Steuersignal
 
@@ -81,6 +82,29 @@ Das Protokoll des Knotens hält Ausschnitt, Abtastrate, Zahl der Filmbilder, Ein
 3. Ein Bild im Material wählen, eine Operation wie *Feedback*, *Wiederholung* oder *Komposition verändern*. Unter «Variation und Modulation» die Quelle «Steuersignal» nehmen. Das neue Tonsignal ist vorgewählt. «Modulation wirkt» entscheidet: über die Varianten oder über die Zeit.
 4. Im Nacheinander steht beim Schritt, welches Signal welchen Parameter bewegt hat. «Animation des letzten Schritts» rechnet die Bewegung mit derselben Zeitmodulation.
 
+## Gebaut: Klangerzeuger (Lab 0.1.4)
+
+### Operation `lab.klang`
+
+Ein Generator: Alle Eingänge sind freiwillig, darum steht er wie die ORNA-Konstellation immer in der Liste, auch ohne Material. Eingänge sind ein Bild, ein Steuersignal und eine Konstellation. Ist der Ausgang eines davon, steht er als Eingang vor. Der Parameter **Quelle** entscheidet, was klingt. Bei «aus dem Eingang» gilt die Reihenfolge Bild, Signal, Konstellation, sonst Startwert.
+
+| Quelle | Abbildung (Entscheidung) |
+|---|---|
+| **Bild** | gelesen wie ein Spektrogramm: Spalten werden nacheinander gespielt (links zuerst, über die ganze Dauer), Zeilen sind Bänder (oben hoch, unten tief), Helligkeit² ist die Stärke. Ein Oszillator je Band, die Stärke gleitet linear von Spalte zu Spalte. Das Nebeneinander des Bildes wird Nacheinander. |
+| **Steuersignal** | der Verlauf ist die Tonhöhe. Bei gestufter Stimmung ein Ton je 1/Dichte Sekunden (abgetastet), bei «gleitend» ein einziger gleitender Ton. Ein Bildsignal wird so hörbar, ein Tonsignal ergibt einen Klang zweiter Ordnung. |
+| **Konstellation** | der Text der ORNA-Konstellation, ein Ton je Wort: die Wortlänge gibt die Dauer, nach Satzzeichen folgt eine Pause, der Anfangsbuchstabe (a … z) gibt die Tonhöhe, gross geschriebene Wörter sind stärker. Der Text wird nicht gedeutet, nur gelesen. |
+| **Startwert** | ein Zufallsweg im Tonraum (Schritt ±0,125, mit Wahrscheinlichkeit 0,2 ein Sprung), Abstände exponentiell mit der Dichte. Die Ziehung steht als Entscheidung «Zufall» mit Startwert im Protokoll. |
+
+Weitere Parameter: Dauer (1–30 s), Grundton (40–880 Hz), Umfang (1–6 Oktaven), Stimmung (pentatonisch, chromatisch, Obertonreihe, gleitend), Klangfarbe (Sinus, vier Teiltöne, FM 2:1, FM 1,4:1 glockenartig), Dichte, Bänder, Anschlag, Abklingen, Nachhall. Alle Zahlen sind modulierbar: Sechs Varianten mit verschiedener Dauer, Grundton oder Nachhall stehen nebeneinander und lassen sich anhören.
+
+Ausgaben: ein `AUDIO`-Ergebnis (WAV, 44,1 kHz, 16 Bit, mono, auf −1 dBFS gebracht, mit Umriss für die Anzeige) und ausser beim Bild eine **Partitur** als `EVENT_SEQUENCE` mit Zeit, Stärke und Frequenz jedes Tons. Der Klang ist ein Ergebnis wie jedes andere: «weiterführen» macht ihn zum Ausgang, dann misst **Tonsignal** ihn, und das Signal moduliert wieder Bilder. Der Kreis Bild → Klang → Steuersignal → Bild ist damit geschlossen.
+
+**Entscheidung: reines JavaScript statt Web Audio.** Die Abtastwerte rechnet `kern/klang.js` selbst (Oszillatoren über die Phase, Hüllkurve, Nachhall aus vier Kammfiltern und zwei Allpässen nach Schroeder). Ein `OfflineAudioContext` wäre bequemer, aber seine Oszillatoren und Filter sind in jedem Browser etwas anders gebaut. So ergibt derselbe Startwert überall dieselbe Rechnung (`reproduzierbar: "ja"`, in Node getestet). Zwischen Browsern kann `Math.sin` in den letzten Stellen abweichen, nach der Rundung auf 16 Bit fällt das kaum ins Gewicht (Hypothese, nur Node und Chromium geprüft). Web Audio braucht das Lab weiterhin zum Lesen fremder Tondateien und zum Abspielen.
+
+### Tonspur im MP4
+
+Unter «Nacheinander» steht neben «Animation des letzten Schritts» die Wahl **Tonspur**: keine oder ein Klang des Projekts (Tondatei oder erzeugt). Hat ein Tonsignal den Verlauf gesteuert, steht sein Klang vor, und die Spur beginnt beim `beginn` seines Ausschnitts. Der Klang läuft in Echtzeit so lang wie das Video; ist er kürzer, endet die Spur still. Kodiert wird mit WebCodecs (`AudioEncoder`, Opus mit 48 kHz, sonst AAC), gemuxt mit demselben mp4-muxer 5.2.2 wie das Bild (geprüft: der Muxer kennt `aac` und `opus`, `SUPPORTED_AUDIO_CODECS` in `vendor/mp4-muxer-5.2.2/mp4-muxer.js`). Ohne `AudioEncoder` und im Rückfall MediaRecorder entsteht das Video ohne Ton, der Grund steht im Export (`tonspur.fehlt`) und in der Statuszeile. Getestet in Chromium: Opus, Spur so lang wie das Video.
+
 ## Referenzen
 
 | Programm | Prinzip | Stand |
@@ -88,6 +112,9 @@ Das Protokoll des Knotens hält Ausschnitt, Abtastrate, Zahl der Filmbilder, Ein
 | **Pure Data** `env~` | Hüllkurvenfolger: mittlere Leistung (Quadrate der Abtastwerte, mit einem Hann-Fenster gewichtet, Standard 1024 Abtastwerte), alle halbe Fensterlänge ein Wert, ausgegeben in dB (`powtodb`) als Zahl, also als Nachricht und nicht als Signal (`src/d_ctl.c`, «env~ – simple envelope follower», Z. 614–750) | **geprüft** (Quellcode, `pure-data/pure-data`, master, 23. 10. 2026; BSD) |
 | **Pure Data** `bonk~` | Anschlagerkennung: Wachstum der Energie in einer Filterbank gegenüber einer nachlaufenden Maske, Auslösen über `hithresh`, Wiederbereitschaft unter `lothresh` (Hysterese), Ausgabe Nummer und Stärke (`extra/bonk~/bonk~.c`, Z. 219–239, 640–730) | **geprüft** (Quellcode, ebd.) |
 | **TouchDesigner** Audio Spectrum CHOP | Spektrum der Eingangskanäle, wahlweise Betrag und Phase je Kanal (`chan1_m`, `chan1_p`), FFT-Grösse einstellbar (Standard 8192) | **geprüft** (docs.derivative.ca, 23. 10. 2026) |
+| **ANS-Synthesizer** (Jewgeni Murzin, 1958) | ein Bild als Partitur: auf Glas gezeichnete Spuren, waagrecht die Zeit, senkrecht die Tonhöhe, abgetastet von Licht | Hypothese (Wissensstand, nicht nachgelesen) |
+| **UPIC** (Iannis Xenakis, 1977) | Zeichnungen auf einem Grafiktablett werden Tonhöhenverläufe und Wellenformen | Hypothese |
+| **Schroeder-Nachhall** (Freeverb) | parallele Kammfilter mit Dämpfung, danach Allpässe; die Verzögerungen 1116–1356 und 556/441 Abtastwerte stammen aus Freeverb | Hypothese (Zahlen aus dem Wissensstand) |
 | PHORMA III `ton.js` | Effektivwert, drei Bänder, 32 Spektralbänder, Fluss mit gleitender Schwelle und Mindestabstand (wie bonk~: Wachstum gegen Vorgeschichte, Schwelle), Einsatz-Hüllkurven | **geprüft** (eigener Code, unverändert wiederverwendet) |
 | Reason / Rack | Audio- und CV-Kabel getrennt, Combinator als Einheit | Hypothese |
 | Bitwig Grid, VCV Rack | Signal und Steuerspannung in derselben Form, Summe und Abschwächer | geprüft (MODULATION-DOSSIER) |
@@ -101,9 +128,12 @@ Das Protokoll des Knotens hält Ausschnitt, Abtastrate, Zahl der Filmbilder, Ein
 
 Neu in 0.4.0 (PROJEKTFORMAT.md): AUDIO-Material mit `ton`, EVENT_SEQUENCE-Ergebnisse, die Felder `achse: "zeit"`, `beginn`, `dauer`, `je` an Steuersignalen. Die Hauptversion bleibt gleich, Projekte 0.1.0 bis 0.3.0 öffnen unverändert. Vorbereitet, aber nicht gebaut: `METADATA` mit `art: "frequenzspektrum"` und Rhythmusfelder an Ereignisfolgen. Beides fügt nur Felder hinzu und braucht keine neue Hauptversion.
 
+Neu in 0.5.0: AUDIO-Ergebnisse des Klangerzeugers mit `ton.umriss`, die Partitur (`art: "partitur"`) und `tonspur` an exportierten Animationen. Projekte 0.1.0 bis 0.4.0 öffnen unverändert.
+
 ## Nächste Schritte
 
-- Tonspur im MP4, wenn die Bildfolge in Echtzeit zum Ausschnitt passt (mp4-muxer kann Audio, AudioEncoder im Browser).
+- Echtzeit-Synchronität: Feedback oder Komposition so viele Bilder rechnen lassen, wie der Klang Sekunden mal 30 hat, damit die Tonspur genau passt.
 - Ereignisfolge als Takt fürs Abtasten und Halten.
 - Frequenzspektrum als Befund, Bänder auf Spalten der Wiederholung.
-- Rückweg Bild → Klang (Sonifikation) als erster Klanggenerator. Das ist der Schritt zu ORNAMENT SOUND und gehört nicht mehr in 0.1.
+- Klangtransformation (`AUDIO → AUDIO`: Filter, Dehnung, Granular). Das ist der Schritt zu ORNAMENT SOUND und gehört nicht mehr in 0.1.
+- Der Klangerzeuger liest das Bild bisher nur als Helligkeit. Farbe als Klangfarbe oder Raum wäre eine nächste, eigene Entscheidung.
