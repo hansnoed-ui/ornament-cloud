@@ -243,7 +243,7 @@ die Szene «Eine Gruppe» (OMNA COLOR) ist damit entfallen.
 5. Tinte: «Eine Frage, die ein Gegenüber sucht» – die lebende Tafel von ORNA dreht, die Begegnung leuchtet; dann rückt das Rad nach oben und die Konstellation
    steht darunter: Doris Salcedo × George Spencer-Brown, «Kann eine Grenze erinnern?» (aus den Daten von ORNA; Wunsch: «ORNA könnte auch noch eine Konstellation zeigen»)
 6. Papier: «Eine Idee, die in die Welt kommt» – ein Telefon kippt ins Bild und blättert durch die echte Startseite bis zu den vier Leistungen (Unterzeile «Angebot»)
-7. Tinte: «Ein Begriff, der Verbindung sucht» – der Zettelkasten: das Feld 7 × 7 mit den Fäden der Startseite, ein Zettel leuchtet auf, der mit dem kürzesten Leitsatz
+7. Tinte: «Einen Begriff, der Verbindung sucht» – der Zettelkasten: das Feld 7 × 7 mit den Fäden der Startseite, ein Zettel leuchtet auf, der mit dem kürzesten Leitsatz
    unter denen mit mindestens zwei Fäden (zurzeit Zettel 24, «Die Irritation»), darunter Titel und Leitsatz (`szenen/Zettel.tsx`)
 8. «Gestalten, vermitteln, kuratieren.» in drei Schlägen, Komma und Punkt in der Blaupause (Schriftgrösse nach der Wortlänge, damit das Komma im Bild bleibt)
 9. Tinte: «keine Cookies, keine Werbung, keine Tracker», «made in Switzerland»
