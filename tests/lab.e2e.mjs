@@ -43,9 +43,9 @@ async function ausfuehren(page) { await page.click("#ausfuehren"); await page.wa
 const { ctx, page, fehler, fremd } = await oeffne();
 let gespeichert = null;
 
-await check("Start: vier Bereiche, Register mit elf Operationen, keine Fehler", async () => {
+await check("Start: vier Bereiche, Register mit fünfzehn Operationen, keine Fehler", async () => {
   for (const id of ["material", "operationen", "experiment", "protokoll"]) assert.ok(await page.locator(`#${id}`).isVisible(), id);
-  assert.match(await page.textContent("#status"), /11 Operationen/);
+  assert.match(await page.textContent("#status"), /15 Operationen/);
   assert.deepEqual(fehler, []);
 });
 
@@ -432,6 +432,56 @@ await check("Klangerzeuger: Klang ohne Tondatei aus dem Startwert und aus einem 
   }
   console.log("      Tonspur:", JSON.stringify(x.tonspur));
   await page.locator('input[name="ansicht"][value="neben"]').check({ force: true });
+});
+
+/** ein Beat als WAV mit 24 Bit, stereo, 48 kHz: Bass auf jedem Schlag (120 BPM), Rauschen dazwischen, rechts leiser */
+function beatWav(rate = 48000, dauer = 4) {
+  const n = rate * dauer, b = Buffer.alloc(44 + n * 6);
+  b.write("RIFF", 0); b.writeUInt32LE(36 + n * 6, 4); b.write("WAVE", 8); b.write("fmt ", 12); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(2, 22);
+  b.writeUInt32LE(rate, 24); b.writeUInt32LE(rate * 6, 28); b.writeUInt16LE(6, 32); b.writeUInt16LE(24, 34); b.write("data", 36); b.writeUInt32LE(n * 6, 40);
+  let z = 5;
+  for (let i = 0; i < n; i++) {
+    const t = i / rate, k = (t % 0.5) * rate, h = ((t + 0.25) % 0.5) * rate;
+    let v = Math.sin((2 * Math.PI * (55 + 80 * Math.exp(-k / 2000)) * k) / rate) * Math.exp(-k / 5000) * 0.7, w = v;
+    if (h < 0.04 * rate) { z = (z * 1103515245 + 12345) & 0x7fffffff; const r = (z / 0x7fffffff - 0.5) * Math.exp(-h / 500) * 0.5; v += r; w += r * 0.6; }
+    b.writeIntLE(Math.round(Math.max(-1, Math.min(1, v)) * 8388607), 44 + i * 6, 3); b.writeIntLE(Math.round(Math.max(-1, Math.min(1, w)) * 8388607), 47 + i * 6, 3);
+  }
+  return b;
+}
+
+await check("Klangtransformation: eigener Beat in 48 kHz stereo, sechs Rhythmen nebeneinander, weiterführen ins Tempo, WAV mit 24 Bit und 96 kHz", async () => {
+  await page.setInputFiles("#tondatei", { name: "beat.wav", mimeType: "audio/wav", buffer: beatWav() });
+  await page.waitForFunction(() => ornamentLab.projekt.ergebnisse.find((e) => e.id === ornamentLab.aktuell)?.titel === "beat.wav");
+  const m = await S(page, () => ornamentLab.projekt.ergebnisse.find((e) => e.id === ornamentLab.aktuell).ton);
+  assert.deepEqual([m.abtastrate, m.kanaele, m.dauer], [48000, 2, 4], "die eigene Abtastrate und beide Kanäle bleiben");
+  for (const id of ["lab.tempo", "lab.zerlegen", "lab.rhythmus", "lab.koerner"]) assert.equal(await page.locator(`.op input[value="${id}"]`).count(), 1, id);
+  await operation(page, "lab.rhythmus");
+  assert.equal(await S(page, () => ornamentLab.variation.ziel), "treffer", "die Treffer verteilen sich über die Varianten");
+  await ausfuehren(page);
+  const k = await S(page, () => { const k = ornamentLab.projekt.knoten.at(-1), aus = k.ausgaben.map((id) => ornamentLab.projekt.ergebnisse.find((x) => x.id === id)); return { op: k.operation, klaenge: aus.filter((x) => x.typ === "AUDIO").map((x) => ({ id: x.id, ton: x.ton })), treffer: aus.filter((x) => x.typ === "EVENT_SEQUENCE").map((x) => x.daten.ereignisse.length), bpm: k.protokoll[0].bpm }; });
+  assert.equal(k.op, "lab.rhythmus"); assert.equal(k.klaenge.length, 6);
+  assert.ok(k.klaenge.every((x) => x.ton.abtastrate === 48000 && x.ton.kanaele === 2), "stereo, 48 kHz");
+  assert.ok(Math.abs(k.bpm - 120) < 1, `Tempo geschätzt: ${k.bpm}`);
+  assert.ok(new Set(k.treffer).size >= 4, `verschiedene Rhythmen nebeneinander: ${k.treffer}`);
+  assert.equal(await page.locator("#buehne .karte.klang").count(), 6);
+  assert.ok(await page.locator("#buehne .ausspielen").isVisible());
+  // weiterführen: der dritte Rhythmus wird Ausgang, dann schneller ohne Tonhöhe
+  await page.locator("#buehne .karte.klang").nth(2).getByRole("button", { name: "weiterführen" }).click();
+  assert.equal(await S(page, () => ornamentLab.aktuell), k.klaenge[2].id);
+  await operation(page, "lab.tempo");
+  await page.locator('#op-form input[data-param="tempo"]').fill("1.5");
+  await page.locator('#op-form input[data-param="anzahl"]').fill("1");
+  await ausfuehren(page);
+  const t = await S(page, () => { const k = ornamentLab.projekt.knoten.at(-1); const e = ornamentLab.projekt.ergebnisse.find((x) => x.id === k.ausgaben[0]); return { eingang: k.eingaben.ton, dauer: e.ton.dauer, id: e.id }; });
+  assert.equal(t.eingang, k.klaenge[2].id); assert.ok(Math.abs(t.dauer - k.klaenge[2].ton.dauer / 1.5) < 0.01, `${t.dauer}`);
+  // ausspielen: 24 Bit, 96 kHz
+  const leiste = page.locator("#buehne .ausspielen select");
+  await leiste.nth(0).selectOption("24"); await leiste.nth(1).selectOption("96000");
+  const [dl] = await Promise.all([page.waitForEvent("download"), page.locator("#buehne .karte.klang").first().getByRole("button", { name: "WAV" }).click()]);
+  const kopf = readFileSync(await dl.path()).subarray(0, 44);
+  assert.deepEqual([kopf.readUInt16LE(22), kopf.readUInt32LE(24), kopf.readUInt16LE(34)], [2, 96000, 24], "stereo, 96 kHz, 24 Bit");
+  assert.match(dl.suggestedFilename(), /-24bit-96khz\.wav$/);
+  assert.equal(await S(page, () => ornamentLab.projekt.exporte.at(-1).art), "wav");
 });
 
 await check("Keine Fehler in der Konsole, keine Anfragen nach aussen", async () => {

@@ -12,6 +12,10 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.bildsignal` 0.1.0 | Bildsignal | Kopplungsoperation | neu, nach TouchDesigner TOP to CHOP; Max/Jitter (Matrix zu Zahlen) | Bild → Steuersignal | eine |
 | `lab.tonsignal` 0.1.0 | Tonsignal | Kopplungsoperation | Adapter: PHORMA III (Tonanalyse) | Audiosignal → Steuersignal, Ereignisfolge | eine |
 | `lab.klang` 0.1.0 | Klangerzeuger | Zeitliche Operation | neu, nach ANS-Synthesizer (Murzin), UPIC (Xenakis): Bild als Partitur; Oszillator und Hüllkurve der Modularsynthese | Bild (opt.) + Steuersignal (opt.) + Konstellation (opt.) → Audiosignal, Ereignisfolge | über Modulation |
+| `lab.tempo` 0.1.0 | Tempo und Tonhöhe | Zeitliche Operation | neu, nach Tonband und Sampler (Re-Pitch), REX-Schnitte in Reason und Modus «Beats» in Ableton Live, WSOLA | Audiosignal → Audiosignal | über Modulation |
+| `lab.zerlegen` 0.1.0 | Dekonstruktion | Zeitliche Operation | neu, nach Slicing (REX-Dateien in Reason, Simpler/Slice in Ableton Live), Stottern und Umkehren des Breakbeat-Schnitts | Audiosignal + Ereignisfolge (opt.) + Konstellation (opt.) → Audiosignal, Ereignisfolge | über Modulation |
+| `lab.rhythmus` 0.1.0 | Neu-Rhythmisierung | Zeitliche Operation | neu, nach Step-Sequencer und Slices (Reason Dr. Octo Rex, Bitwig, VCV), euklidische Rhythmen (Toussaint), Pattern in SuperCollider | Audiosignal + Ereignisfolge (opt.) + Steuersignal (opt.) + Konstellation (opt.) → Audiosignal, Ereignisfolge | über Modulation |
+| `lab.koerner` 0.1.0 | Körner (Granular) | Zeitliche Operation | neu, nach Granularsynthese: Warp1 und GrainBuf in SuperCollider (Lesekopf, Fenster, Überlappung); Granulatoren in Max/MSP und VCV | Audiosignal + Steuersignal (opt.) → Audiosignal | über Modulation |
 | `lab.differenz` 0.1.0 | Differenz | Beobachtungsoperation | neu, nach Difference-Komposition (Fusion Merge, After Effects, Resolume) | Bild + Bild → Bild | eine |
 | `lab.profil` 0.1.0 | Kompositorisches Profil | Beobachtungsoperation | neu, nach Kategorien von ShotDeck, FilmGrab und Flim (Bildausschnitt, Licht, Farbe, Symmetrie) als Messgrössen; Strukturtensor (Bildanalyse) | Bild → Befund | eine |
 | `lab.komposition` 0.1.0 | Komposition verändern | Räumliche Operation | neu, nach Attenuverter (VCV Rack) auf gemessene Bildkomponenten übertragen; Kategorien von ShotDeck, FilmGrab und Flim | Bild + Befund (opt.) → Bild | über Modulation |
@@ -164,6 +168,103 @@ Erzeugt Klang ohne Tondatei: liest ein Bild wie eine Partitur, macht ein Steuers
 | Anschlag (s) (`anschlag`) | 0.002 … 0.5, Standard 0.01 |
 | Abklingen (s) (`abklingen`) | 0.05 … 4, Standard 0.6 |
 | Nachhall (`nachhall`) | 0 … 0.9, Standard 0.3 |
+
+## Tempo und Tonhöhe (`lab.tempo`)
+
+Macht einen Klang schneller oder langsamer: wie ein Tonband (die Tonhöhe geht mit), in Schnitten an den Einsätzen (jeder Schlag bleibt, das Raster rückt zusammen) oder gedehnt ohne Änderung der Tonhöhe. Tonhöhe auch ohne Tempo.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/klangtransformation.js, alpha/lab/kern/klangwerk.js; Prinzip nach Tonband und Sampler (Re-Pitch), REX-Schnitte in Reason und Modus «Beats» in Ableton Live, WSOLA
+- **Voraussetzungen:** keine (reines JavaScript)
+- **Ressourcen:** Tonband: 32 bis 128 Rechenschritte je Abtastwert und Kanal; Dehnen: eine Suche je Fenster; Schnitte: eine Messung (FFT 1024 alle 6 ms); Speicher: der Klang zwei- bis dreimal als Gleitkommazahlen
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Verfahren (`verfahren`) | **dehnen: Tempo ohne Tonhöhe (WSOLA)** / Schnitte: jeder Schlag bleibt, das Raster rückt (Beats) / Tonband: Tempo und Tonhöhe zusammen (Re-Pitch) |
+| Tempo (Faktor, 2 = doppelt so schnell) (`tempo`) | 0.25 … 4, Standard 1 |
+| Ziel-Tempo (BPM, 0 = der Faktor gilt) (`zielBpm`) | 0 … 300, Standard 0 |
+| Tempo der Quelle (BPM, 0 = schätzen) (`quellBpm`) | 0 … 300, Standard 0 |
+| Tonhöhe (Halbtöne; beim Tonband folgt sie dem Tempo) (`halbtoene`) | -24 … 24, Standard 0 |
+| Fenster beim Dehnen (ms; kurz für Schläge, lang für Flächen) (`fenster`) | 10 … 200, Standard 50 |
+| Empfindlichkeit für Einsätze (`empfindlichkeit`) | 0 … 1, Standard 0.5 |
+| Pegel (`pegel`) | **wie die Quelle (nur gegen Übersteuerung)** / auf −1 dBFS bringen |
+
+## Dekonstruktion (`lab.zerlegen`)
+
+Zerschneidet einen Klang an seinen Einsätzen, in einem Raster oder an den Zeitpunkten einer Ereignisfolge und setzt die Schnitte neu zusammen: umgeordnet, wiederholt, umgekehrt, ausgelassen.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/klangtransformation.js, alpha/lab/kern/klangwerk.js; Prinzip nach Slicing (REX-Dateien in Reason, Simpler/Slice in Ableton Live), Stottern und Umkehren des Breakbeat-Schnitts
+- **Voraussetzungen:** keine (reines JavaScript)
+- **Ressourcen:** eine Messung der Einsätze (FFT 1024 alle 6 ms), dann Kopieren; Speicher: der Klang etwa doppelt; höchstens 512 Schnitte
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Schneiden (`schnitt`) | **an den Einsätzen** / im Raster des Tempos / an den Zeitpunkten der Ereignisfolge (Eingang) |
+| Empfindlichkeit für Einsätze (`empfindlichkeit`) | 0 … 1, Standard 0.5 |
+| Tempo für das Raster (BPM, 0 = schätzen) (`bpm`) | 0 … 300, Standard 0 |
+| Schnitte je Schlag (Raster) (`teilung`) | 1 … 8, Standard 2 |
+| Reihenfolge (`reihenfolge`) | **zufällig (Startwert)** / unter Nachbarn vertauscht / rückwärts / vorwärts, dann rückwärts / verschränkt (erst die geraden, dann die ungeraden) / nach dem Text der Konstellation / behalten |
+| Wiederholen (Wahrscheinlichkeit) (`wiederholen`) | 0 … 1, Standard 0.2 |
+| höchstens so oft (`wiederholungen`) | 1 … 8, Standard 3 |
+| wiederholt wird (`stottern`) | der ganze Schnitt / **die erste Hälfte** / das erste Viertel / das erste Achtel |
+| Umkehren (Wahrscheinlichkeit) (`umkehren`) | 0 … 1, Standard 0.15 |
+| Auslassen: Stille statt Schnitt (Wahrscheinlichkeit) (`auslassen`) | 0 … 1, Standard 0 |
+| Pegel (`pegel`) | **wie die Quelle (nur gegen Übersteuerung)** / auf −1 dBFS bringen |
+
+## Neu-Rhythmisierung (`lab.rhythmus`)
+
+Setzt die Schnitte eines Klangs auf ein neues Raster: in einem anderen Tempo, nach einem euklidischen Muster, nach Zufall, nach dem Rhythmus eines anderen Klangs, nach einem Steuersignal oder dem Text einer Konstellation. Das Ergebnis lässt sich nahtlos schleifen.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/klangtransformation.js, alpha/lab/kern/klangwerk.js; Prinzip nach Step-Sequencer und Slices (Reason Dr. Octo Rex, Bitwig, VCV), euklidische Rhythmen (Toussaint), Pattern in SuperCollider
+- **Voraussetzungen:** keine (reines JavaScript)
+- **Ressourcen:** Messung der Einsätze und des Tempos, dann Kopieren je Treffer; Speicher: das Raster (höchstens 16 Takte) in der Abtastrate der Quelle
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Muster (`muster`) | **euklidisch (Treffer gleichmässig verteilt)** / Zufall (Startwert, Dichte) / die eigenen Einsätze, ins neue Raster gesetzt / Ereignisfolge (Eingang: Rhythmus eines anderen Klangs) / Steuersignal (Eingang: über der Schwelle ein Treffer) / Text der Konstellation (Wortlängen als Abstände) |
+| Tempo (BPM, 0 = wie die Quelle) (`bpm`) | 0 … 300, Standard 0 |
+| Tempo der Quelle (BPM, 0 = schätzen) (`quellBpm`) | 0 … 300, Standard 0 |
+| Takte (4/4) (`takte`) | 1 … 16, Standard 2 |
+| Schritte je Takt (`schritte`) | 4 … 32, Standard 16 |
+| Treffer je Takt (euklidisch) (`treffer`) | 1 … 32, Standard 7 |
+| Drehung (Schritte) (`drehung`) | 0 … 31, Standard 0 |
+| Dichte (Zufall; beim Signal: Schwelle 1 − Dichte) (`dichte`) | 0 … 1, Standard 0.5 |
+| Swing (`swing`) | 0 … 0.6, Standard 0 |
+| welcher Schnitt auf welchen Treffer (`zuordnung`) | **der Schnitt an derselben Stelle der Quelle** / die Schnitte der Reihe nach / zufällig (Startwert) / nach Stärke: kräftige Schnitte auf kräftige Treffer |
+| Schnitte der Quelle (`schnitt`) | **an den Einsätzen** / im Raster (ein Schritt je Schnitt) |
+| Empfindlichkeit für Einsätze (`empfindlichkeit`) | 0 … 1, Standard 0.5 |
+| ein Schnitt endet beim nächsten Treffer (`abschneiden`) | ein/aus, Standard ein |
+| Umkehren (Wahrscheinlichkeit) (`umkehren`) | 0 … 1, Standard 0 |
+| Tonhöhe streuen (Halbtöne) (`streuung`) | 0 … 12, Standard 0 |
+| nahtlos schleifbar (der Nachklang läuft am Anfang weiter) (`schleife`) | ein/aus, Standard ein |
+| Pegel (`pegel`) | **wie die Quelle (nur gegen Übersteuerung)** / auf −1 dBFS bringen |
+
+## Körner (Granular) (`lab.koerner`)
+
+Löst einen Klang in kurze Körner auf und setzt sie neu zusammen: der Lesekopf wandert, steht still oder folgt einem Steuersignal; Tonhöhe, Stelle und Richtung lassen sich streuen.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/klangtransformation.js, alpha/lab/kern/klangwerk.js; Prinzip nach Granularsynthese: Warp1 und GrainBuf in SuperCollider (Lesekopf, Fenster, Überlappung); Granulatoren in Max/MSP und VCV
+- **Voraussetzungen:** keine (reines JavaScript)
+- **Ressourcen:** Dauer × Abtastrate × Überlappung Lesungen (8 s, 6 Körner zugleich: etwa 2 Millionen je Kanal); höchstens 40 000 Körner; Speicher: die Ausgabe zweikanalig
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Lesekopf (`leser`) | **wandert (Geschwindigkeit unten)** / folgt dem Steuersignal (Eingang) |
+| Dauer (s) (`dauer`) | 0.5 … 60, Standard 8 |
+| Beginn in der Quelle (0–1) (`position`) | 0 … 1, Standard 0 |
+| Geschwindigkeit des Lesekopfs (1 = Originalzeit, 0 = steht) (`lauf`) | -2 … 2, Standard 0.5 |
+| Korngrösse (ms) (`korn`) | 5 … 500, Standard 90 |
+| Überlappung (Körner zugleich) (`ueberlappung`) | 1 … 32, Standard 6 |
+| Streuung der Stelle (s) (`streuung`) | 0 … 2, Standard 0.04 |
+| Tonhöhe (Halbtöne) (`tonhoehe`) | -24 … 24, Standard 0 |
+| Tonhöhe streuen (Halbtöne) (`tonstreuung`) | 0 … 12, Standard 0 |
+| Körner rückwärts (Wahrscheinlichkeit) (`umkehren`) | 0 … 1, Standard 0 |
+| Stereobreite (`breite`) | 0 … 1, Standard 0.6 |
+| Form des Korns (`fenster`) | **weich (Hann)** / flach mit kurzen Flanken / perkussiv (schnell an, abklingend) |
+| Pegel (`pegel`) | wie die Quelle (nur gegen Übersteuerung) / **auf −1 dBFS bringen** |
 
 ## Differenz (`lab.differenz`)
 

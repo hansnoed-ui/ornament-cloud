@@ -1,9 +1,11 @@
 // ORNAMENT LAB – Medienspeicher im Browser. Bilder liegen als PNG (verlustfrei) unter medien/<ergebnis>.png, Daten als JSON, Videos als
 // MP4/WebM, Tondateien unverändert in ihrem Format (WAV, MP3, …). Alles bleibt lokal im Speicher der Seite, bis das Projekt als Archiv
-// gespeichert wird; nichts wird hochgeladen. Ton wird mit Web Audio dekodiert, einkanalig gemischt und auf 44,1 kHz gebracht.
+// gespeichert wird; nichts wird hochgeladen. Ton wird mit Web Audio dekodiert, in seiner eigenen Abtastrate (aus dem Kopf der Datei gelesen)
+// und mit beiden Kanälen; für die Messungen kommt eine einkanalige Mischung dazu. Erzeugte Klänge liegen als WAV mit 24 Bit (seit Lab 0.1.7).
 import { sha256, begrenzen } from "../kern/bilddaten.js";
 import { GRENZEN } from "../kern/projekt.js";
 import { wavBytes } from "../kern/klang.js";
+import { abtastrateLesen, wavSchreiben, mono } from "../kern/klangwerk.js";
 
 const leinwand = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
 const alsBlob = (c, typ = "image/png") => new Promise((ok, nein) => c.toBlob((b) => (b ? ok(b) : nein(new Error("Bild konnte nicht kodiert werden"))), typ));
@@ -11,19 +13,25 @@ const ERLAUBT = new Set(["image/png", "image/jpeg", "image/webp", "image/gif", "
 const HOECHSTENS_BYTES = 60 * 1024 * 1024;
 const TON = new Map([["audio/wav", "wav"], ["audio/x-wav", "wav"], ["audio/wave", "wav"], ["audio/mpeg", "mp3"], ["audio/mp3", "mp3"], ["audio/ogg", "ogg"], ["audio/flac", "flac"], ["audio/x-flac", "flac"], ["audio/mp4", "m4a"], ["audio/x-m4a", "m4a"], ["audio/aac", "aac"], ["audio/webm", "webm"], ["audio/opus", "opus"]]);
 const TON_ENDUNG = Object.fromEntries([...TON].reverse().map(([mime, endung]) => [endung, mime]));
-const RATE = 44100;
+const RATE = 48000;   // wenn der Kopf der Datei keine Abtastrate verrät (bis Lab 0.1.6 wurde alles auf 44,1 kHz gebracht)
 /** Typ einer Datei im Archiv nach ihrer Endung */
 const mimeNachName = (name) => { const x = name.split(".").pop(); return x === "png" ? "image/png" : x === "json" ? "application/json" : x === "mp4" ? "video/mp4" : x === "webm" && !/-(animation|stationen)\./.test(name) ? "audio/webm" : x === "webm" ? "video/webm" : TON_ENDUNG[x] ?? "application/octet-stream"; };
 
-/** Tonbytes → { pcm (einkanalig), rate, dauer, kanaele } über Web Audio (OfflineAudioContext rechnet auf eine feste Abtastrate um) */
+/**
+ * Tonbytes → { spuren (höchstens zwei Kanäle), pcm (einkanalig gemischt), rate, dauer, kanaele } über Web Audio. decodeAudioData rechnet auf die
+ * Abtastrate des Kontexts um; darum bekommt der Kontext die Rate, die im Kopf der Datei steht: ein Beat mit 48 oder 96 kHz bleibt so.
+ */
 async function dekodiereTon(bytes) {
   const Ctx = globalThis.OfflineAudioContext ?? globalThis.webkitOfflineAudioContext;
   if (!Ctx) throw new Error("Dieser Browser kann keinen Ton lesen (Web Audio fehlt)");
-  const ctx = new Ctx(1, 1, RATE);
-  const buf = await ctx.decodeAudioData(bytes.slice().buffer);
-  const pcm = new Float32Array(buf.length), k = buf.numberOfChannels;
-  for (let c = 0; c < k; c++) { const d = buf.getChannelData(c); for (let i = 0; i < d.length; i++) pcm[i] += d[i] / k; }
-  return { pcm, rate: buf.sampleRate, dauer: buf.duration, kanaele: k };
+  const eigen = abtastrateLesen(bytes), rate = eigen >= 8000 && eigen <= 192000 ? eigen : RATE;
+  let buf;
+  try { buf = await new Ctx(1, 1, rate).decodeAudioData(bytes.slice().buffer); }
+  catch (f) { if (rate === RATE) throw f; buf = await new Ctx(1, 1, RATE).decodeAudioData(bytes.slice().buffer); }
+  const k = buf.numberOfChannels, spuren = Array.from({ length: Math.min(2, k) }, (_, c) => buf.getChannelData(c));
+  let pcm = mono(spuren);
+  if (k > 2) { pcm = new Float32Array(buf.length); for (let c = 0; c < k; c++) { const d = buf.getChannelData(c); for (let i = 0; i < d.length; i++) pcm[i] += d[i] / k; } }
+  return { spuren, pcm, rate: buf.sampleRate, dauer: buf.duration, kanaele: k };
 }
 
 export function browserMedien() {
@@ -102,10 +110,13 @@ export function browserMedien() {
       e.datei = datei; merke(e, imp.bytes, imp.mime); toene.set(e.id, imp.dekodiert);
       return { datei, sha256: imp.original.sha256, mime: imp.mime, bytes: imp.bytes.length };
     },
-    /** einen erzeugten Klang als WAV (16 Bit, mono) ablegen; das PCM bleibt für Tonsignal und Tonspur gemerkt */
-    async ablegenKlang(e, { pcm, rate }) {
-      const datei = `medien/${e.id}.wav`, bytes = wavBytes(pcm, rate);
-      e.datei = datei; merke(e, bytes, "audio/wav"); toene.set(e.id, { pcm, rate, dauer: pcm.length / rate, kanaele: 1 });
+    /**
+     * einen erzeugten Klang als WAV ablegen: der Klangerzeuger einkanalig mit 16 Bit (wie seit 0.1.5), eine Klangtransformation mit ihren
+     * Kanälen, in der Abtastrate der Quelle und mit 24 Bit. Das PCM bleibt für die nächste Operation, Tonsignal und Tonspur gemerkt.
+     */
+    async ablegenKlang(e, { pcm, rate, spuren = null }) {
+      const datei = `medien/${e.id}.wav`, bytes = spuren ? wavSchreiben(spuren, rate, { bits: "24" }) : wavBytes(pcm, rate);
+      e.datei = datei; merke(e, bytes, "audio/wav"); toene.set(e.id, { pcm, spuren: spuren ?? [pcm], rate, dauer: pcm.length / rate, kanaele: spuren?.length ?? 1 });
       return { datei, sha256: await sha256(bytes), mime: "audio/wav", bytes: bytes.length };
     },
     /** Medien eines geöffneten Archivs übernehmen */

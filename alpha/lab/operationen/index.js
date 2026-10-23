@@ -8,10 +8,11 @@ import { farbe } from "./farbe.js";
 import { bildsignal } from "./bildsignal.js";
 import { tonsignal } from "./tonsignal.js";
 import { klang } from "./klang.js";
+import { tempo, zerlegen, rhythmus, koerner } from "./klangtransformation.js";
 import { differenz } from "./differenz.js";
 import { kompositionProfil, komposition } from "./komposition.js";
 
-export const OPERATIONEN = [orna, fictory, feedback, wiederholung, farbe, bildsignal, tonsignal, klang, differenz, kompositionProfil, komposition];
+export const OPERATIONEN = [orna, fictory, feedback, wiederholung, farbe, bildsignal, tonsignal, klang, tempo, zerlegen, rhythmus, koerner, differenz, kompositionProfil, komposition];
 
 export function labRegister() {
   const r = erstelleRegister();

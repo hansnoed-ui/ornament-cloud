@@ -194,3 +194,8 @@ fieldset { border: 0; margin: 0; padding: 0; }
 .stationen-regler { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); column-gap: 18px; }
 .stationen-regler > legend { grid-column: 1 / -1; }
 #stationen-plan.fehler { color: #c0392b; }
+/* Ausspielen eines Klangs (Lab 0.1.7): Schleife, Bittiefe, Abtastrate in einer Zeile über den Klängen */
+.aktionen.ausspielen { align-items: end; margin: 6px 0 12px; }
+.aktionen.ausspielen .regler { min-width: 0; }
+details.beigaben { margin-top: 14px; }
+details.beigaben > summary { cursor: pointer; font-size: 0.88rem; }
