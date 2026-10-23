@@ -16,6 +16,7 @@ import { Video } from "@remotion/media";
 import daten from "../data/reel.json";
 import { C, Grund, klemm, weich } from "../Teile";
 import { LogoVektor } from "../LogoVektor";
+import { useLage } from "../Format";
 
 export type Logo = "ii" | "iii";
 const HALT = 30;   // so lange steht das Logo am Ende
@@ -28,13 +29,18 @@ export const schlussDauer = (logo: Logo) => FASSUNG[logo].still - FASSUNG[logo].
 
 export const Schluss: React.FC<{ logo?: Logo }> = ({ logo = "ii" }) => {
   const v = FASSUNG[logo];
+  const L = useLage();
+  // PHORMA II: die Mitte des Logos (540, 657 in der Aufnahme) kommt je Format auf L.logo.cy, in der Grösse L.logo.mass; PHORMA III nur im Hochformat 9:16
+  const lage = logo === "ii"
+    ? { left: L.w / 2 - 540, top: L.logo.cy - 657, mass: L.logo.mass, frageTop: L.logo.cy + (942 - 657) * L.logo.mass * 1.3 + 90 * L.logo.mass }
+    : { left: 0, top: v.rahmen.top, mass: 1, frageTop: v.frageTop };
   // f: Bild in der Aufnahme (die Szene beginnt bei v.ab; alle Zeiten in FASSUNG sind Bilder der Aufnahme)
   const f = useCurrentFrame() + v.ab;
   const c = C("dunkel");
   return (
     <Grund m="dunkel">
-      <div style={{ position: "absolute", left: 0, top: v.rahmen.top, width: 1080, height: v.rahmen.hoehe, overflow: "hidden",
-        scale: interpolate(f, [v.naeher.von, v.naeher.bis], [1, v.naeher.mass], { ...klemm, easing: weich }), transformOrigin: v.naeher.mitte }}>
+      <div style={{ position: "absolute", left: lage.left, top: lage.top, width: 1080, height: v.rahmen.hoehe, overflow: "hidden",
+        scale: lage.mass * interpolate(f, [v.naeher.von, v.naeher.bis], [1, v.naeher.mass], { ...klemm, easing: weich }), transformOrigin: v.naeher.mitte }}>
         {/* bei PHORMA II blendet die Vektorzeichnung des Logos über das Video, bevor es stillsteht: scharf bei jeder Grösse, der Punkt läuft weiter */}
         <Freeze frame={v.still - v.ab} active={f >= v.still}>
           <Video src={staticFile(v.datei)} trimBefore={v.ab} muted
@@ -48,7 +54,7 @@ export const Schluss: React.FC<{ logo?: Logo }> = ({ logo = "ii" }) => {
           </div>
         ) : null}
       </div>
-      <div style={{ position: "absolute", left: 0, right: 0, top: v.frageTop, display: "flex", justifyContent: "center", opacity: interpolate(f, [v.frage, v.frage + 10], [0, 1], klemm),
+      <div style={{ position: "absolute", left: 0, right: 0, top: lage.frageTop, display: "flex", justifyContent: "center", opacity: interpolate(f, [v.frage, v.frage + 10], [0, 1], klemm),
         translate: `0 ${interpolate(f, [v.frage, v.frage + 18], [24, 0], { ...klemm, easing: weich })}px` }}>
         <div style={{ position: "relative", fontSize: 64, letterSpacing: "-0.01em", color: c.tinte, paddingBottom: 14 }}>
           {daten.frage}

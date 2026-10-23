@@ -6,10 +6,10 @@ import { AbsoluteFill, Easing, continueRender, delayRender, interpolate } from "
 import { TAFELN, farben, W } from "../../../../src/b/tafeln.mjs";
 import daten from "./data/reel.json";
 import { SANS, Zeichen, schriften } from "../neubau/Teile";
+import { useLage } from "./Format";
 
 export type Modus = "hell" | "dunkel";
 export const C = (m: Modus) => (m === "hell" ? daten.hell : daten.dunkel);
-export const RAND = 90;
 export const klemm = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 export const weich = Easing.bezier(0.16, 1, 0.3, 1);
 export const TAKT = 15;   // ein Schlag (0,5 s bei 120 Schlägen je Minute): Schnitte und Einsätze liegen darauf, damit sich Musik darunterlegen lässt
@@ -31,6 +31,20 @@ export const Schlagzeile: React.FC<{ f: number; text: string; a?: number; s?: nu
     ))}
   </div>
 );
+
+/** Die Textspalte nach dem Raster des Formats: Schlagzeile, darunter (mit Abstand) Unterzeile und weitere Zeilen */
+export const Textspalte: React.FC<{ f: number; satz: string; groesse?: number; children?: React.ReactNode }> = ({ f, satz, groesse, children }) => {
+  const L = useLage();
+  return (
+    // Hochformate: oben im Raster; Querformat: senkrecht mittig. Die Schlagzeile höchstens etwa neun Schriftgrössen breit, damit sie in allen
+    // Formaten gleich umbricht («Ein Bild, das / Bewegung sucht») und kein Wort allein auf der letzten Zeile steht
+    <div style={{ position: "absolute", left: L.kopf.x, width: L.kopf.b, display: "flex", flexDirection: "column", gap: 34,
+      ...(L.quer ? { top: 0, height: L.h, justifyContent: "center" } : { top: L.kopf.y }) }}>
+      <Schlagzeile f={f} text={satz} groesse={groesse ?? L.kopf.gr} style={{ maxWidth: L.kopf.gr * 9.2 }} />
+      {children}
+    </div>
+  );
+};
 
 /** Unterzeile: Zeichen in der Blaupause, Name, Beschreibung in Grau */
 export const Unterzeile: React.FC<{ f: number; a: number; m: Modus; zeichen: string; name: string; text: string; style?: React.CSSProperties }> = ({ f, a, m, zeichen, name, text, style }) => (

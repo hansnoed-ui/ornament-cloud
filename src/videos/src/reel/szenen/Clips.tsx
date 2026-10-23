@@ -6,23 +6,28 @@ import React from "react";
 import { Sequence, interpolate, staticFile, useCurrentFrame } from "remotion";
 import { Video } from "@remotion/media";
 import daten from "../data/reel.json";
-import { C, Grund, Modus, RAND, Schlagzeile, Unterzeile, klemm, weich } from "../Teile";
+import { einpassen, useLage } from "../Format";
+import { C, Grund, Modus, Textspalte, Unterzeile, klemm, weich } from "../Teile";
 
-const B = 900, H = (B * 5) / 4;
 type Zeile = { name: string; text: string; zeichen: string };
 // [Aufnahme in public/reel/, Beginn im Reel, Länge, Beginn in der Aufnahme (Bilder), Unterzeile]
 type Schnitt = [string, number, number, number, Zeile];
 
 const Clipszene: React.FC<{ m: Modus; satz: string; schnitte: Schnitt[] }> = ({ m, satz, schnitte }) => {
   const f = useCurrentFrame();
+  const L = useLage();
   const c = C(m);
+  const k4 = einpassen(L.clip, 4, 5);   // die Aufnahmen sind 4 : 5
   const i = schnitte.reduce((w, [, ab], k) => (f >= ab ? k : w), 0);
   // die Unterzeile wechselt nur, wenn die App wechselt
   const ab = schnitte.slice(0, i + 1).reduce((w, s, k) => (k > 0 && s[4] !== schnitte[k - 1][4] ? s[1] : w), 0);
   return (
     <Grund m={m}>
-      <Schlagzeile f={f} text={satz} groesse={100} style={{ position: "absolute", left: RAND, right: RAND, top: 230 }} />
-      <div style={{ position: "absolute", left: (1080 - B) / 2, top: 470, width: B, height: H, overflow: "hidden", backgroundColor: "#000000", outline: `2px solid ${c.linie}`,
+      {/* Hochformate: die Unterzeile unter der Aufnahme; Querformat: in der Textspalte unter der Schlagzeile */}
+      <Textspalte f={f} satz={satz}>
+        {L.quer ? <Unterzeile key={ab} f={f} a={ab === 0 ? 18 : ab} m={m} {...schnitte[i][4]} /> : null}
+      </Textspalte>
+      <div style={{ position: "absolute", left: k4.x, top: k4.y, width: k4.b, height: k4.h, overflow: "hidden", backgroundColor: "#000000", outline: `2px solid ${c.linie}`,
         clipPath: `inset(${interpolate(f, [4, 20], [100, 0], { ...klemm, easing: weich })}% 0 0 0)` }}>
         {schnitte.map(([datei, von, lang, lauf], k) => (
           <Sequence key={k} from={von} durationInFrames={lang} layout="absolute-fill">
@@ -31,7 +36,9 @@ const Clipszene: React.FC<{ m: Modus; satz: string; schnitte: Schnitt[] }> = ({ 
           </Sequence>
         ))}
       </div>
-      <Unterzeile key={ab} f={f} a={ab === 0 ? 18 : ab} m={m} {...schnitte[i][4]} style={{ position: "absolute", left: RAND, right: RAND, top: 470 + H + 40 }} />
+      {L.clipUnterY !== null ? (
+        <Unterzeile key={ab} f={f} a={ab === 0 ? 18 : ab} m={m} {...schnitte[i][4]} style={{ position: "absolute", left: L.rand, right: L.rand, top: L.clipUnterY }} />
+      ) : null}
     </Grund>
   );
 };

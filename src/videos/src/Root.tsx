@@ -36,6 +36,10 @@ export const RemotionRoot: React.FC = () => (
     </Folder>
     {/* Reel «Was bringst du mit?»: Werbefilm für /b/, 9:16 (22. Oktober 2026) */}
     <Composition id="ReelVideo" component={ReelVideo} durationInFrames={dauerReel("ii")} fps={FPS} width={BREITE} height={HOEHE} defaultProps={{ logo: "ii" as const }} />
+    {/* dasselbe Reel in 4:5, 1:1 und 16:9 (23. Oktober 2026): eigenes Raster je Format (reel/Format.tsx), nicht skaliert */}
+    <Composition id="ReelVideo45" component={ReelVideo} durationInFrames={dauerReel("ii")} fps={FPS} width={1080} height={1350} defaultProps={{ logo: "ii" as const, format: "4:5" as const }} />
+    <Composition id="ReelVideo11" component={ReelVideo} durationInFrames={dauerReel("ii")} fps={FPS} width={1080} height={1080} defaultProps={{ logo: "ii" as const, format: "1:1" as const }} />
+    <Composition id="ReelVideo169" component={ReelVideo} durationInFrames={dauerReel("ii")} fps={FPS} width={1920} height={1080} defaultProps={{ logo: "ii" as const, format: "16:9" as const }} />
     <Composition id="ReelVideoLogoIII" component={ReelVideo} durationInFrames={dauerReel("iii")} fps={FPS} width={BREITE} height={HOEHE} defaultProps={{ logo: "iii" as const }} />
     <Folder name="Reel-Szenen">
       {SzenenReel.map(({ id, Szene, dauer }) => <Composition key={id} id={id} component={Szene} durationInFrames={dauer} fps={FPS} width={BREITE} height={HOEHE} />)}
