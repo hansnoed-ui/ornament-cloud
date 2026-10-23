@@ -545,7 +545,7 @@ test("Projektformat: Formatversion und Verweise werden geprüft", () => {
 
 test("Online: nur die Oberfläche des Labs kommt auf den Webspace, sie ist nicht in der Suche und macht keine festen Aufrufe nach aussen", () => {
   const aus = readFileSync(new URL("tools/hostpoint/ausschluss.txt", root), "utf8").split("\n").map((z) => z.trim());
-  for (const p of ["alpha/lab/docs/", "alpha/lab/werkzeuge/", "alpha/lab/starten.mjs", "alpha/lab/README.md", "alpha/lab/jev/worker-entwurf.js"]) assert.ok(aus.includes(p), `${p} bleibt im Repository`);
+  for (const p of ["alpha/lab/docs/", "alpha/lab/werkzeuge/", "alpha/lab/starten.mjs", "alpha/lab/README.md"]) assert.ok(aus.includes(p), `${p} bleibt im Repository`);
   assert.match(readFileSync(new URL("alpha/lab/index.html", root), "utf8"), /<meta name="robots" content="noindex/);
   const dateien = readdirSync(new URL("alpha/lab/", root), { recursive: true }).filter((f) => f.endsWith(".js"));
   for (const f of dateien) {
@@ -556,7 +556,7 @@ test("Online: nur die Oberfläche des Labs kommt auf den Webspace, sie ist nicht
 
 test("jev: Katalog passt zum Register, Lage wird streng geprüft, Frage hat festen Wortlaut", async () => {
   const { KATALOG, labLage, labFrage } = await lab("jev/fragen.js");
-  const { jevVerfuegbar, jevWahl } = await lab("jev/jev.js");
+  const { jevVerfuegbar, jevWahl, jevPruefen, JEV_LAB_ADRESSE } = await lab("jev/jev.js");
   const r = labRegister();
   const fuerBild = r.fuer("IMAGE").map((o) => o.id).sort();
   assert.deepEqual(Object.keys(KATALOG).sort(), fuerBild);
@@ -575,6 +575,20 @@ test("jev: Katalog passt zum Register, Lage wird streng geprüft, Frage hat fest
     const a = await jevWahl({ verlauf: [], optionen: ["lab.feedback", "lab.farbe"] }, { adresse: "http://localhost:1/lab/wahl" });
     assert.deepEqual(a.wahrscheinlichkeiten, { "lab.feedback": 0.7, "lab.farbe": 0.3 }, "nur erlaubte Optionen");
     assert.deepEqual(Object.keys(gefragt.body), ["verlauf", "optionen"]);
+    assert.equal(a.quelle, "live");
+    // Bereitschaft: die Zwischenstelle wahl.php neben jev.js sagt es auf GET; ohne PHP (lokal) kommt ihr Quelltext, dann bleibt jev aus
+    assert.match(JEV_LAB_ADRESSE, /\/alpha\/lab\/jev\/wahl\.php$/);
+    globalThis.fetch = async () => new Response("<?php // Quelltext", { headers: { "content-type": "application/x-httpd-php" } });
+    assert.deepEqual(await jevPruefen(), { bereit: false, grund: "Zwischenstelle nicht erreichbar" });
+    globalThis.fetch = async () => new Response(JSON.stringify({ bereit: false, grund: "Kein Schlüssel hinterlegt" }), { headers: { "content-type": "application/json" } });
+    assert.deepEqual(await jevPruefen(), { bereit: false, grund: "Kein Schlüssel hinterlegt" });
+    globalThis.fetch = async (url, o) => { gefragt = { url, o }; return new Response(JSON.stringify(o?.method === "POST" ? { fehler: "Die Tagesgrenze für jev ist erreicht." } : { bereit: true }), { status: o?.method === "POST" ? 429 : 200, headers: { "content-type": "application/json" } }); };
+    assert.deepEqual(await jevPruefen(), { bereit: true, grund: "" });
+    assert.equal(jevVerfuegbar(), true);
+    await assert.rejects(jevWahl({ verlauf: [], optionen: ["lab.feedback", "lab.farbe"] }), /Tagesgrenze/, "die Meldung der Zwischenstelle kommt an");
+    assert.equal(gefragt.url, JEV_LAB_ADRESSE);
+    globalThis.fetch = async () => { throw new TypeError("offline"); };
+    assert.equal((await jevPruefen()).bereit, false);
   } finally { globalThis.fetch = echt; }
 });
 

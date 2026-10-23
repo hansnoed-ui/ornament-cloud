@@ -13,7 +13,7 @@ node alpha/lab/starten.mjs            # → http://localhost:8790/alpha/lab/
 
 Keine Installation und keine Abhängigkeiten, nur Node 18 oder neuer. Der Server liefert das Repository nur an `127.0.0.1` aus, weil das Lab The Fictory, ORNA und `vendor/` an ihren Orten liest. Ein Chromium-Browser wird empfohlen: Er erzeugt das MP4 über WebCodecs. Andere Browser fallen auf WebM in Echtzeit zurück.
 
-**Online und Isolation:** Das Lab liegt in `alpha/lab/` und ist seit dem 23. Oktober 2026 auf Christians Wunsch unter <https://ornament.cloud/alpha/lab/> erreichbar. Es läuft ganz im Browser: Bilder und Projekte bleiben auf dem Gerät der Person, nichts wird hochgeladen. Wie die anderen Alpha-Apps ist es nur per Direktlink erreichbar, keine Seite verlinkt es, und `noindex` hält es aus der Suche. Nicht auf den Webspace kommen `docs/`, `werkzeuge/`, `starten.mjs`, `README.md` und `jev/worker-entwurf.js` (`tools/hostpoint/ausschluss.txt`). Die Website und die bestehenden Apps bleiben unverändert.
+**Online und Isolation:** Das Lab liegt in `alpha/lab/` und ist seit dem 23. Oktober 2026 auf Christians Wunsch unter <https://ornament.cloud/alpha/lab/> erreichbar. Es läuft ganz im Browser: Bilder und Projekte bleiben auf dem Gerät der Person, nichts wird hochgeladen. Wie die anderen Alpha-Apps ist es nur per Direktlink erreichbar, keine Seite verlinkt es, und `noindex` hält es aus der Suche. Nicht auf den Webspace kommen `docs/`, `werkzeuge/`, `starten.mjs`, und `README.md` (`tools/hostpoint/ausschluss.txt`). Einzige Ausnahme vom «nur im Browser»: `jev/wahl.php`, die Zwischenstelle für jev live (Kennungen von Operationen, keine Bilder, `docs/JEV-STATUS.md`). Die Website und die bestehenden Apps bleiben unverändert.
 
 ## Ein Durchgang
 
@@ -31,7 +31,7 @@ Keine Installation und keine Abhängigkeiten, nur Node 18 oder neuer. Der Server
 9. **Protokoll:** Hier steht jede Ausführung und jede Entscheidung in einer von vier Arten: **Mensch**, **Zufall**, **Regel** oder **jev**. «Verlauf speichern» legt eine **Kette** an, die sich auf anderes Material anwenden lässt.
 10. **Projekt speichern** ergibt eine `.ornalab.zip`, die `projekt.json` und `medien/` enthält, auch die Tondateien. **Projekt öffnen** stellt alles wieder her, auch das Weiterarbeiten.
 
-Arbeitsmodi: **Manuell**. **jev-assistiert** zeigt Vorschläge nach offen gelegten Regeln und, sobald eingerichtet, Wahrscheinlichkeiten von jev live. **Experimentell** lässt das Lab selbst Operationen verbinden, in Grenzen und mit Startwert.
+Arbeitsmodi: **Manuell**. **jev-assistiert** zeigt Vorschläge nach offen gelegten Regeln und, sobald der Schlüssel hinterlegt ist, auf Knopfdruck Wahrscheinlichkeiten von jev live (`docs/JEV-STATUS.md`). **Experimentell** lässt das Lab selbst Operationen verbinden, in Grenzen und mit Startwert.
 
 ## Prüfen
 

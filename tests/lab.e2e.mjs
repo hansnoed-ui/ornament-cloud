@@ -224,6 +224,34 @@ await check("jev-assistiert: Regelvorschläge mit Gründen; jev live ehrlich als
   assert.equal(await S(page, () => ornamentLab.projekt.entscheidungen.filter((d) => d.gegenstand === "operation").at(-1).art), "regel");
 });
 
+await check("jev live über die Zwischenstelle (vorgetäuscht): Knopf frei, nur Kennungen gesendet, Übernahme als jev mit Quelle live im Protokoll", async () => {
+  const c = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  const p = await c.newPage();
+  const gesendet = [];
+  await p.route("**/alpha/lab/jev/wahl.php", (r) => {
+    if (r.request().method() === "GET") return r.fulfill({ contentType: "application/json", body: JSON.stringify({ bereit: true }) });
+    const lage = r.request().postDataJSON(); gesendet.push(lage);
+    return r.fulfill({ contentType: "application/json", body: JSON.stringify({ wahrscheinlichkeiten: Object.fromEntries(lage.optionen.map((o, i) => [o, o === "lab.farbe" ? 0.8 : 0.02 * i])), modell: "jev-test", zwischengespeichert: false }) });
+  });
+  await p.goto(base);
+  await p.waitForFunction(() => globalThis.ornamentLab);
+  await p.waitForFunction(() => /jev live: bereit/.test(document.querySelector("#status").textContent));
+  await p.click("#beispiel");
+  await p.waitForFunction(() => ornamentLab.aktuell);
+  await p.locator('input[name="modus"][value="jev"]').check({ force: true });
+  await p.getByRole("button", { name: "jev fragen" }).click();
+  await p.waitForSelector("#vorschlaege .art.jev");
+  assert.deepEqual(Object.keys(gesendet[0]), ["verlauf", "optionen"]);
+  assert.ok(gesendet[0].optionen.every((o) => /^[a-z]+\.[a-z0-9-]+$/.test(o)));
+  await p.locator("#vorschlaege li", { has: p.locator(".art.jev") }).first().getByRole("button", { name: "übernehmen" }).click();
+  assert.equal(await S(p, () => ornamentLab.op ?? document.querySelector(".op input:checked")?.value), "lab.farbe", "der wahrscheinlichste Vorschlag steht oben");
+  await ausfuehren(p);
+  const d = await S(p, () => ornamentLab.projekt.entscheidungen.filter((x) => x.gegenstand === "operation").at(-1));
+  assert.equal(d.art, "jev");
+  assert.equal(d.details.quelle, "live"); assert.equal(d.details.modell, "jev-test"); assert.equal(d.details.wahrscheinlichkeit, 0.8);
+  await c.close();
+});
+
 await check("Experimentell: höchstens die gewählten Schritte, Wahlen als Zufall mit Startwert", async () => {
   await page.locator('input[name="modus"][value="experimentell"]').check({ force: true });
   await page.locator("#materialien button").first().click();
