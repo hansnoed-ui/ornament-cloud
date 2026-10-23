@@ -142,6 +142,6 @@ export async function vorschlagAusfuehren({ register, projekt, medien, messung, 
   // ohne Takt füllt das Halten die Dauer: n · halten + (n − 1) · Übergang = Dauer; bei kurzem Klang werden die Übergänge kürzer
   const n = stationen.length, uebergang = takt ? r.film.uebergang : rund(Math.min(r.film.uebergang, (0.6 * dauer) / Math.max(1, n - 1)), 10);
   const halten = takt ? r.film.halten : Math.max(0, Math.min(10, rund((dauer - (n - 1) * uebergang) / n, 10)));
-  return { entscheidung: d, ergebnisse, plan: { stationen, art: r.film.art, halten, uebergang, takt, bewegung: { staerke: 0.6, signal: messung.signal }, tonspur: messung.ton, tonBeginn: messung.beginn, dauer,
+  return { entscheidung: d, ergebnisse, plan: { stationen, art: r.film.art, halten, uebergang, takt, bewegung: { staerke: 0.6, signal: messung.signal }, lebendig: true, tonspur: messung.ton, tonBeginn: messung.beginn, dauer,
     ...(r.film.takt && !takt ? { hinweis: "zu wenige Anschläge für einen Takt, darum gleichmässig" } : {}) } };
 }

@@ -16,7 +16,8 @@ const root = new URL("../", import.meta.url);
 const { startServer } = await import(new URL("tools/serve-orma.mjs", root).href);
 const server = await startServer(0);
 const base = `http://localhost:${server.address().port}/alpha/lab/`;
-const browser = await playwright.chromium.launch();
+// WebGL 2 über SwiftShader, damit die lebendigen Effekte (medien/gpu.js) auch ohne Grafikkarte laufen
+const browser = await playwright.chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
 const ergebnisse = [];
 async function check(name, fn) {
   try { await fn(); ergebnisse.push(true); console.log("ok  ", name); }
@@ -621,6 +622,8 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   assert.deepEqual(z.ops.slice(0, 3), ["lab.tempo", "lab.zerlegen", "lab.tonsignal"]);
   assert.equal(z.ops.at(-1), "lab.raster");
   assert.equal(z.x.dramaturgie, "zusammenstellung"); assert.equal(z.x.stationen.length, 61); assert.ok(z.x.ton, "mit Tonspur");
+  assert.ok(z.x.partitur.lebendig, "die Zusammenstellung ist lebendig");
+  assert.ok(z.x.zeitplan.some((y) => y.lebendig), `die Grafikkarte rechnet Stationen in jedem Bild neu: ${JSON.stringify(z.x.zeitplan.slice(0, 3))}`);
   assert.deepEqual(fehler2, []);
   await c.close();
 });

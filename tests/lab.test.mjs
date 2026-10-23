@@ -950,6 +950,41 @@ test("Stationen mit Bewegung (Lab 0.1.14): die Kamera macht jedes Bild anders, d
   assert.throws(() => ST.partitur(p, { ...x.plan, bewegung: { staerke: 0.5, signal: e.id } }), /Bewegung/);
 });
 
+test("Stationen lebendig (Lab 0.1.16): mit lebendiger Fassung rechnet der Film jede Station in jedem Bild neu, ohne bleibt alles wie bisher", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const { p, m, e, t, r } = mitTon();
+  const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id, beginn: 1 });
+  const x = await VS.vorschlagAusfuehren({ register: r, projekt: p, medien: m, messung: mg, dramaturgie: "vorschlag.steigerung", wahl: { art: "regel", details: {} } });
+  assert.equal(x.plan.lebendig, true);
+  const pt = ST.partitur(p, { ...x.plan, bewegung: null, fps: 10 });
+  assert.equal(pt.lebendig, true);
+  assert.equal(ST.partitur(p, { ...x.plan, lebendig: false, fps: 10 }).lebendig, false);
+  // eine vorgetäuschte Grafikkarte: kennt Farbe und Feedback, stempelt Operation, Zeit und Parameter ins Bild
+  const aufrufe = [];
+  const fake = { kann: (op) => op === "lab.farbe" || op === "lab.feedback", vergiss() {},
+    bild: ({ operation, eingang, parameter, t, W, H, schluessel }) => { aufrufe.push({ operation, t, schluessel, farbdrehung: parameter.farbdrehung, zoom: parameter.zoom }); const b = neuesBild(W, H); b.data.fill(Math.round(t * 10) % 256); b.stempel = { operation, ein: eingang.width }; return b; } };
+  const rechne = async (pl, lebendig) => { const zeitplan = [], out = []; for await (const b of ST.filmbilder({ register: r, projekt: p, medien: m, partitur: pl, seite: 40, zeitplan, lebendig })) out.push(b); return { zeitplan, out }; };
+  const a = await rechne(pt, fake);
+  assert.equal(a.out.length, pt.bilder);
+  const lebendige = a.zeitplan.filter((z) => z.lebendig);
+  assert.ok(lebendige.length >= 2, `Farbe und Feedback sind lebendig: ${JSON.stringify(a.zeitplan)}`);
+  assert.ok(a.zeitplan.some((z) => !z.lebendig), "die Wiederholung bleibt ein Standbild (keine lebendige Fassung im Fake)");
+  assert.ok(a.out.some((b) => b.stempel?.operation === "lab.farbe") && a.out.some((b) => b.stempel?.operation === "lab.feedback"));
+  assert.ok(aufrufe.every((c) => c.t >= 0 && c.t <= pt.dauer + 1e-9), "die Zeit läuft über den Film");
+  assert.ok(new Set(aufrufe.map((c) => c.t)).size > 5, "jedes Bild zu seiner Zeit");
+  assert.equal(new Set(aufrufe.filter((c) => c.operation === "lab.farbe").map((c) => c.farbdrehung)).size, 1, "Steigerung: Farbe ohne Route, die Parameter stehen fest");
+  // Farbwelle: die Lautstärke verteilt die Farbdrehung über die Varianten, lebendig läuft sie über die Zeit des Films
+  const w = await VS.vorschlagAusfuehren({ register: r, projekt: p, medien: m, messung: mg, dramaturgie: "vorschlag.farbwelle", wahl: { art: "regel", details: {} } });
+  aufrufe.length = 0;
+  await rechne(ST.partitur(p, { ...w.plan, bewegung: null, fps: 10 }), fake);
+  assert.ok(new Set(aufrufe.filter((c) => c.operation === "lab.farbe").map((c) => c.farbdrehung)).size > 3, "die Route der Varianten läuft über die Zeit des Films");
+  // ohne Grafikkarte, oder ohne lebendig im Plan: dieselben Standbilder wie bisher
+  const ohne = await rechne(pt, null), still = await rechne(ST.partitur(p, { ...x.plan, bewegung: null, lebendig: false, fps: 10 }), fake);
+  assert.ok(ohne.out.every((b) => !b.stempel) && still.out.every((b) => !b.stempel));
+  assert.ok(ohne.zeitplan.every((z) => !z.lebendig));
+  assert.deepEqual(ohne.out.map(fingerabdruck), still.out.map(fingerabdruck));
+});
+
 const FILTER = ["lab.glitch", "lab.pixelsortierung", "lab.verzerrung", "lab.licht", "lab.raster", "lab.neusetzen"];
 
 test("Bildfilter (0.1.10): jeder verändert das Bild, ist mit demselben Startwert wiederholbar, Anteil 0 lässt den Eingang stehen", async () => {

@@ -5,13 +5,14 @@
 // die Stelle u einer Station in der Folge ist hier die Zeit. Eine Ereignisfolge (die Einsätze eines Tons) kann statt eines gleichmässigen
 // Masses den Takt geben: ein Einsatz löst den Wechsel aus. Danach rechnet filmbilder() die Bilder der Partitur, ebenfalls ohne DOM.
 // Eine Bewegung (seit Lab 0.1.14) führt eine Kamera über jedes Bild: langsames Schweben und Drehen, der Zoom atmet mit einem Steuersignal.
-// So ist jedes Bild des Films anders, auch während eine Station steht.
+// So ist jedes Bild des Films anders, auch während eine Station steht. Lebendig (seit Lab 0.1.16) rechnet die Grafikkarte den Effekt einer
+// Station in jedem Bild neu, die Modulation folgt dem Klang Bild für Bild; ohne Grafikkarte bleibt es bei Stationen und Kamera.
 import { GRENZEN, ergebnis, knoten, verlauf } from "./projekt.js";
 import { moduliere, routeFuersProtokoll } from "./modulation.js";
 import { bildfolge, routenAufloesen } from "./ausfuehrung.js";
 import { neuesBild, skalieren, luminanz, NACHT } from "./bilddaten.js";
 
-export const STATIONEN_VERSION = "0.2.0";
+export const STATIONEN_VERSION = "0.3.0";
 
 export const UEBERGAENGE = Object.freeze({
   blende: "Überblendung",
@@ -64,6 +65,7 @@ function taktzeiten(daten, schwelle, fps) {
  * plan: { stationen: [ergebnisId | { ergebnis, uebergang? }], halten, uebergang, art, routen, takt: { ereignisfolge, schwelle, wiederholen } | null, fps }
  * Ein Übergang «verlauf» ohne festen Takt behält die Länge, mit der die Operation ihren Verlauf rechnet (dauer null).
  * bewegung: { staerke 0–1, signal: CONTROL_SIGNAL | null } führt eine Kamera über die Bilder (0 oder ohne Angabe: keine Bewegung).
+ * lebendig: true rechnet Stationen mit lebendiger Fassung ihrer Operation in jedem Bild neu (filmbilder({ lebendig }), medien/gpu.js).
  */
 export function partitur(projekt, plan) {
   const fps = plan.fps ?? 30;
@@ -77,6 +79,7 @@ export function partitur(projekt, plan) {
   const staerke = Math.min(1, Math.max(0, Number(plan.bewegung?.staerke) || 0));
   if (staerke && plan.bewegung.signal && ergebnis(projekt, plan.bewegung.signal)?.typ !== "CONTROL_SIGNAL") throw new Error(`Bewegung: Steuersignal ${plan.bewegung.signal} gibt es nicht`);
   const bewegung = staerke ? { staerke: rund(staerke), signal: plan.bewegung.signal || null } : null;
+  const lebendig = Boolean(plan.lebendig);
 
   // Takt aus einer Ereignisfolge: die Einsätze, und der Ton, aus dem sie gemessen wurden (für die Tonspur)
   let takt = null, zeiten = [];
@@ -126,7 +129,7 @@ export function partitur(projekt, plan) {
   if (bilder > GRENZEN.filmBilder) throw new Error(`Grenze: höchstens ${GRENZEN.filmBilder} Bilder (${Math.round(GRENZEN.filmBilder / fps)} s), geplant sind ${bilder}`);
   return {
     version: STATIONEN_VERSION, fps, art, halten: grund.halten, uebergang: grund.uebergang,
-    routen: (plan.routen ?? []).map(routeFuersProtokoll), takt, bewegung, folge: out, dauer: rund(t), bilder, offen,
+    routen: (plan.routen ?? []).map(routeFuersProtokoll), takt, bewegung, lebendig, folge: out, dauer: rund(t), bilder, offen,
   };
 }
 
@@ -214,20 +217,44 @@ function kamera(b, t, staerke, sig) {
   return out;
 }
 
-async function* stationsbilder({ register, projekt, medien, partitur: pt, seite = 1280, abbrechen = null, zeitplan = [] }) {
+async function* stationsbilder({ register, projekt, medien, partitur: pt, seite = 1280, abbrechen = null, zeitplan = [], lebendig = null }) {
   const roh = async (id) => medien.bild(ergebnis(projekt, id));
   const { breite: W, hoehe: H } = filmgroesse(await roh(pt.folge[0].ergebnis), seite);
   const vorrat = new Map();
   const bild = async (id) => { if (!vorrat.has(id)) { if (vorrat.size > 3) vorrat.delete(vorrat.keys().next().value); vorrat.set(id, einpassen(await roh(id), W, H)); } return vorrat.get(id); };
   const fps = pt.fps;
   let n = 0, soll = 0;
+  // lebendig (medien/gpu.js): eine Station, die eine Operation mit lebendiger Fassung ergeben hat, wird in jedem Bild neu gerechnet,
+  // auf ihrem Eingang, mit den Parametern zu diesem Zeitpunkt: dieselben Routen, die die Varianten verteilt haben, laufen über die Zeit des Films
+  const mitGpu = pt.lebendig && lebendig ? lebendig : null, lagen = new Map(), eingaenge = new Map();
+  const lage = async (id) => {
+    if (!mitGpu) return null;
+    if (lagen.has(id)) return lagen.get(id);
+    const e = ergebnis(projekt, id), k = e?.knoten ? knoten(projekt, e.knoten) : null;
+    const nurBild = k && Object.entries(k.eingaben ?? {}).every(([name, v]) => name === "bild" || !v);
+    let l = null;
+    if (k && nurBild && k.eingaben.bild && mitGpu.kann(k.operation)) {
+      const op = register.hole(k.operation), routen = routenAufloesen(projekt, k.variation?.routen ?? []), fest = e.variante?.parameter ?? k.parameter;
+      l = { operation: k.operation, eingang: k.eingaben.bild, seed: (e.variante?.seed ?? k.seed ?? 1) >>> 0,
+        parameter: (t) => (routen.length ? moduliere(op, k.parameter, routen, Math.min(1, Math.max(0, t / Math.max(1e-3, pt.dauer)))) : fest) };
+    }
+    lagen.set(id, l);
+    return l;
+  };
+  const lebend = async (j, id) => {
+    const l = await lage(id);
+    if (!l) return null;
+    if (!eingaenge.has(l.eingang)) { if (eingaenge.size > 3) eingaenge.delete(eingaenge.keys().next().value); eingaenge.set(l.eingang, await roh(l.eingang)); }
+    const t = n / fps;
+    return mitGpu.bild({ operation: l.operation, eingang: eingaenge.get(l.eingang), parameter: l.parameter(t), seed: l.seed, t, schritt: n, schluessel: String(j), W, H });
+  };
   const grenze = () => { if (n > GRENZEN.filmBilder) throw new Error(`Grenze: höchstens ${GRENZEN.filmBilder} Bilder je Film`); };
   for (const [j, x] of pt.folge.entries()) {
     abbrechen?.throwIfAborted?.();
     const a = await bild(x.ergebnis), ab = n;
     soll += x.halten;
-    do { yield a; n++; } while (n < Math.round(soll * fps));
-    const ue = x.uebergang, eintrag = { ergebnis: x.ergebnis, ab: rund(ab / fps), bild: ab, uebergang: ue?.art ?? null, bilder: 0 };
+    do { yield (await lebend(j, x.ergebnis)) ?? a; n++; } while (n < Math.round(soll * fps));
+    const ue = x.uebergang, eintrag = { ergebnis: x.ergebnis, ab: rund(ab / fps), bild: ab, uebergang: ue?.art ?? null, bilder: 0, ...((await lage(x.ergebnis)) ? { lebendig: true } : {}) };
     zeitplan.push(eintrag);
     if (!ue) { eintrag.bilder = n - ab; break; }
     const ziel = pt.folge[j + 1].ergebnis;
@@ -257,10 +284,15 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
     } else if (ue.art !== "schnitt") {
       const b = await bild(ziel), hell = ue.art === "schwelle" ? helligkeit(b) : null;
       const m = Math.round((soll + ue.dauer) * fps) - n;
-      for (let i = 1; i <= m; i++) { abbrechen?.throwIfAborted?.(); yield hell ? schwelle(a, b, hell, i / (m + 1)) : blende(a, b, i / (m + 1)); n++; }
+      for (let i = 1; i <= m; i++) {
+        abbrechen?.throwIfAborted?.();
+        const a1 = (await lebend(j, x.ergebnis)) ?? a, b1 = (await lebend(j + 1, ziel)) ?? b;
+        yield hell ? schwelle(a1, b1, hell, i / (m + 1)) : blende(a1, b1, i / (m + 1)); n++;
+      }
       soll += ue.dauer;
     }
     eintrag.bilder = n - ab;
+    mitGpu?.vergiss?.(String(j));
     grenze();
   }
 }

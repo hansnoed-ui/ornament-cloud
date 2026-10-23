@@ -4,6 +4,7 @@
 import { labRegister } from "./operationen/index.js";
 import { browserMedien } from "./medien/browser.js";
 import { videoAus, FPS } from "./medien/video.js";
+import { gpuEffekte, LEBENDIG } from "./medien/gpu.js";
 import * as P from "./kern/projekt.js";
 import { fuehreAus, bildfolge, regelVorschlaege, experiment, ketteAnwenden, neuerStartwert } from "./kern/ausfuehrung.js";
 import * as ST from "./kern/stationen.js";
@@ -35,7 +36,7 @@ const S = {
   laenge: new Map(),
   // Vorschlag für 30 s aus Bild und Klang (kern/vorschlag.js): Auswahl, Messung, Antworten von jev und Regeln, gewählte Dramaturgie
   vorschlag: { bild: "", ton: "", beginn: 0, messung: null, jev: null, jevFehler: "", regel: null, gewaehlt: null, zusammen: null },
-  film: { halten: 1.5, uebergang: 1, art: "blende", quelle: "keine", ziel: "halten", tiefe: 0.3, frequenz: 1, signal: "", takt: "", schwelle: 0.2, wiederholen: true, tonspur: "auto", seite: 1280, bewegung: 0, bewegungSignal: "" },
+  film: { halten: 1.5, uebergang: 1, art: "blende", quelle: "keine", ziel: "halten", tiefe: 0.3, frequenz: 1, signal: "", takt: "", schwelle: 0.2, wiederholen: true, tonspur: "auto", seite: 1280, bewegung: 0, bewegungSignal: "", lebendig: true },
 };
 globalThis.ornamentLab = S;   // für Browsertests und die Konsole
 // Nebeneinander anhören: es klingt immer nur ein Klang, der nächste hält den vorigen an
@@ -62,6 +63,13 @@ const slug = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 const ART_NAME = { mensch: "Mensch", zufall: "Zufall", regel: "Regel", jev: "jev" };
 const artEtikett = (art) => el("span", { class: `art ${art}`, title: P.ENTSCHEIDUNGSARTEN[art], text: ART_NAME[art] ?? art });
 const opName = (id) => (R.hat(id) ? R.hole(id).name : id);
+/** die Grafikkarte für lebendige Effekte, einmal geholt (null ohne WebGL 2 oder wenn sie nicht startet) */
+let gpuZustand;
+function gpu() {
+  if (gpuZustand === undefined) { try { gpuZustand = gpuEffekte(); } catch (x) { console.warn("WebGL 2:", x.message); gpuZustand = null; } }
+  return gpuZustand;
+}
+const gpuDa = () => Boolean(gpu());
 function herunterladen(blob, name) {
   const a = el("a", { href: URL.createObjectURL(blob), download: name });
   document.body.append(a); a.click(); a.remove();
@@ -231,7 +239,7 @@ async function zusammenstellungRechnen() {
 function filmPlanUebernehmen(plan) {
   S.stationen = plan.stationen.map((s) => (typeof s === "string" ? { ergebnis: s } : { ...s }));
   Object.assign(S.film, { art: plan.art, halten: plan.halten, uebergang: plan.uebergang, quelle: "keine", takt: plan.takt?.ereignisfolge ?? "", schwelle: plan.takt?.schwelle ?? S.film.schwelle, wiederholen: true, tonspur: plan.tonspur, tonBeginn: plan.tonBeginn,
-    bewegung: plan.bewegung?.staerke ?? 0, bewegungSignal: plan.bewegung?.signal ?? "" });
+    bewegung: plan.bewegung?.staerke ?? 0, bewegungSignal: plan.bewegung?.signal ?? "", lebendig: plan.lebendig ?? S.film.lebendig });
 }
 function filmKarte(film) {
   return el("div", { class: "film" }, el("video", { src: film.url, controls: true, loop: true, playsinline: true, muted: !film.ton }),
@@ -798,7 +806,7 @@ function stationenPlan(liste) {
   const f = S.film;
   const routen = f.quelle !== "keine" && (f.quelle !== "signal" || f.signal)
     ? [{ ziel: f.ziel, tiefe: f.tiefe, modulator: f.quelle === "signal" ? { quelle: "signal", ergebnis: f.signal } : { quelle: f.quelle, frequenz: f.frequenz, phase: 0, seed: S.seed, stufen: liste.length } }] : [];
-  return { stationen: liste, halten: f.halten, uebergang: f.uebergang, art: f.art, routen, fps: FPS, takt: f.takt ? { ereignisfolge: f.takt, schwelle: f.schwelle, wiederholen: f.wiederholen } : null,
+  return { stationen: liste, halten: f.halten, uebergang: f.uebergang, art: f.art, routen, fps: FPS, lebendig: f.lebendig, takt: f.takt ? { ereignisfolge: f.takt, schwelle: f.schwelle, wiederholen: f.wiederholen } : null,
     bewegung: f.bewegung > 0 ? { staerke: f.bewegung, signal: S.projekt.ergebnisse.some((x) => x.id === f.bewegungSignal && x.typ === "CONTROL_SIGNAL") ? f.bewegungSignal : null } : null };
 }
 function stationenAnsicht(e) {
@@ -864,6 +872,8 @@ function stationenAnsicht(e) {
       klaenge.length ? wahlRegler("tonspur", "Tonspur", [{ wert: "", name: "keine" }, ...klaenge.map((x) => ({ wert: x.id, name: x.titel }))], tonId, (v) => { f.tonspur = v; }, true) : null,
       tonId && !f.takt ? el("div", { class: "aktionen" }, el("button", { class: "knopf klein leise", type: "button", onclick: () => halteAnKlang(liste, tonId), text: "Halten an den Klang anpassen" }),
         el("small", { text: "Ohne Takt läuft der Ton ab dem Anfang und endet mit dem Film." })) : null,
+      el("label", { class: "regler schalter" }, el("input", { type: "checkbox", id: "lebendig", checked: f.lebendig, disabled: !gpuDa(), onchange: (ev) => { f.lebendig = ev.target.checked; rechnen(); } }),
+        `lebendige Effekte: ${LEBENDIG.map(opName).join(", ")} rechnet die Grafikkarte in jedem Bild neu${gpuDa() ? "" : " (dieser Browser hat kein WebGL 2)"}`),
       zahlRegler("bewegung", "Bewegung (Kamera über jedem Bild, 0 = ruhig)", 0, 1, 0.05, f.bewegung, (v) => { const war = f.bewegung > 0; f.bewegung = v; if (war !== v > 0) zeigeBuehne(); }),
       f.bewegung > 0 && signale.length ? wahlRegler("bewegungSignal", "Zoom atmet mit", [{ wert: "", name: "nichts (nur Schweben)" }, ...signale.map((x) => ({ wert: x.id, name: x.titel }))], f.bewegungSignal, (v) => { f.bewegungSignal = v; }, true) : null,
       zahlRegler("seite", "Filmgrösse, längste Seite (px)", 320, 2048, 16, f.seite, (v) => { f.seite = v; })),
@@ -903,7 +913,7 @@ async function stationenFilmRechnen(liste, signal, { vorschlag = null, auswahl =
   const d = P.entscheide(S.projekt, { art: "mensch", gegenstand: "stationen", gewaehlt: ids, details: { auswahl: auswahl ?? (S.stationen ? "eigene" : "Verlauf"), uebergang: pt.art, takt: pt.takt?.ereignisfolge ?? null, ...(entscheidung ? { dramaturgie: entscheidung } : {}) } });
   status(`Film über ${liste.length} Stationen wird gerechnet …`, 0);
   const melden = (t) => status(`${t}, geplant ${pt.bilder}${pt.offen ? " und Verläufe" : ""}`, null);
-  const r = await videoAus(ST.filmbilder({ register: R, projekt: S.projekt, medien: S.medien, partitur: pt, seite: S.film.seite, abbrechen: signal, zeitplan }), { melden, halten: 0, ton });
+  const r = await videoAus(ST.filmbilder({ register: R, projekt: S.projekt, medien: S.medien, partitur: pt, seite: S.film.seite, abbrechen: signal, zeitplan, lebendig: pt.lebendig ? gpu() : null }), { melden, halten: 0, ton });
   const id = P.neueId("x"), name = `medien/${id}-stationen.${r.endung}`;
   const abgelegt = await S.medien.ablegenDatei(name, new Uint8Array(await r.blob.arrayBuffer()), r.mime);
   S.projekt.exporte.push({ id, art: "stationen", ergebnis: ids.at(-1), stationen: ids, entscheidung: d.id, partitur: pt, zeitplan, datei: name, mime: r.mime, codec: r.codec, ton: r.ton, tonQuelle: r.ton ? tonId : null,

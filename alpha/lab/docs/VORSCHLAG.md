@@ -1,4 +1,4 @@
-# Vorschlag für 30 Sekunden aus Bild und Klang (Lab 0.1.11, Zusammenstellung seit 0.1.12, Video seit 0.1.13, Bewegung seit 0.1.14, 60 Motive seit 0.1.15)
+# Vorschlag für 30 Sekunden aus Bild und Klang (Lab 0.1.11, Zusammenstellung seit 0.1.12, Video seit 0.1.13, Bewegung seit 0.1.14, 60 Motive seit 0.1.15, lebendige Effekte seit 0.1.16)
 
 Christian wollte ein Bild und eine MP3 hochladen und von jev einen Vorschlag für eine Animation von 30 Sekunden bekommen. Der Bereich «Animation aus Bild und Klang (30 s)» steht unter **Material**, sobald das Projekt ein Bild und einen Ton hat.
 
@@ -55,6 +55,10 @@ Das Video selbst kommt nicht ins Projekt, nur was daraus gelesen wurde. Im Vorsc
 ## Bewegung (seit Lab 0.1.14)
 
 Vorher stand jede Station still, bis die nächste kam: ein Film von 900 Bildern zeigte so nur etwa zwei Dutzend Veränderungen. Jetzt führt der Film eine Kamera über jedes Bild (`bewegung` im Plan, siehe docs/STATIONEN.md): Die Zusammenstellung mit voller Stärke, deren Zoom mit der Lautstärke des neuen Klangs atmet, die festen Dramaturgien mit 0,6 und der Lautstärke des gemessenen Klangs. Überblendung und Schwelle der Zusammenstellung dauern zudem bis zum nächsten Anschlag (höchstens 1,2 s bzw. 1,5 s), das Bild verwandelt sich also fortlaufend. Unter «Nacheinander» lässt sich die Bewegung danach ändern oder auf 0 setzen.
+
+## Lebendige Effekte (seit Lab 0.1.16)
+
+Christian am 23. Oktober 2026: PHORMA hat einen flüssigen Film in kurzer Zeit. Dort rechnet die Grafikkarte jedes Bild aus der Zeit. Jetzt tut das Lab dasselbe für sieben Effekte (`medien/gpu.js`, Übersicht in docs/STATIONEN.md): In der Zusammenstellung und bei den Dramaturgien ist `lebendig` gesetzt, jede Station aus Farbe, Glitch, Verzerrung, Raster, Wiederholung, Feedback oder Licht ist in jedem der 900 Bilder ein neues Effektbild, und die Lautstärke moduliert den Hauptparameter Bild für Bild statt nur über die Varianten. Pixelsortierung, Neu setzen, Komposition und Zerfall bleiben Standbilder mit Kamera. Unter «Nacheinander» lässt sich «lebendige Effekte» abschalten.
 
 ## Die sechs Dramaturgien (`kern/vorschlag.js`, `REZEPTE`)
 

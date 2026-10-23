@@ -143,5 +143,5 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   if (takt) stationen = stationen.map((id) => (uebergaenge.has(id) ? { ergebnis: id, uebergang: "verlauf" } : id));
   const halten = takt ? 1 : Math.max(0, Math.min(10, Math.round(((dauer - (n - 1) * uebergang) / n) * 100) / 100));
   return { entscheidung: d, ergebnisse, klang: ton, signal: signal.id,
-    plan: { stationen, art: f.art, halten, uebergang: Math.round(uebergang * 100) / 100, takt, bewegung: { staerke: BEWEGUNG, signal: signal.id }, tonspur: ton, tonBeginn: beginn, dauer } };
+    plan: { stationen, art: f.art, halten, uebergang: Math.round(uebergang * 100) / 100, takt, bewegung: { staerke: BEWEGUNG, signal: signal.id }, lebendig: true, tonspur: ton, tonBeginn: beginn, dauer } };
 }
