@@ -11,6 +11,8 @@ import * as ST from "./kern/stationen.js";
 import { packe, entpacke, ENDUNG } from "./kern/archiv.js";
 import { QUELLEN, POLARITAETEN } from "./kern/modulation.js";
 import { KLASSEN, standardParameter } from "./kern/register.js";
+import { STROPHEN_WAHL } from "./operationen/zettel.js";
+import { KONSTELLATIONEN } from "./operationen/orna.js";
 import { TYPEN } from "./kern/typen.js";
 import { AUSSPIELEN, wavSchreiben, rateWandeln, spurenVon, klangfolge } from "./kern/klangwerk.js";
 import { jevVerfuegbar, jevWahl, jevDramaturgie, jevKomposition, jevPruefen, jevZustand } from "./jev/jev.js";
@@ -215,15 +217,28 @@ function zusammenstellungAnsicht(v) {
       stelle("aufbau", pl.aufbau, (x) => { pl.aufbau = x; }), stelle("uebergang", pl.uebergang, (x) => { pl.uebergang = x; }),
       stelle("klang1", pl.klang[0], (x) => { pl.klang[0] = x; }), stelle("klang2", pl.klang[1], (x) => { pl.klang[1] = x; }),
       ...pl.bild.map((b, i) => stelle(`bild${i + 1}`, b, (x) => { pl.bild[i] = x; }))),
+    el("div", { class: "stellen bestaende" },
+      bestandStelle(pl, "zettel", "Zettel", "strophe", "mit dem Startwert ziehen", STROPHEN_WAHL),
+      bestandStelle(pl, "orna", "ORNA", "konstellation", "per Zufall ziehen (wie in ORNA)", KONSTELLATIONEN)),
+    el("small", { class: "hinweis", text: "Beide wahlweise, jev sieht sie nicht: Der Zettel eröffnet den Film als Karte mit seinem Leitsatz. Die ORNA-Konstellation schliesst ihn als Karte und gibt dem Zerfall ihre Operationsregel; ohne Zerfall in der Zusammenstellung kommt er als siebter Abschnitt dazu." }),
     video ? el("small", { class: "hinweis", text: `Aus dem Video: jeder Abschnitt nimmt das Standbild seiner Zeit (${v.messung.videoBilder.length} Standbilder), so folgt der Film dem Video. Der Aufbau gilt darum nicht.` }) : null,
     el("small", { class: "hinweis", text: `${video ? "Abschnitte nach dem Video" : kurzname(AUFBAU[pl.aufbau])}, ${FILM_UEBERGAENGE[pl.uebergang]}. Klang: ${pl.klang.map((k) => kurzname(KLANG_EFFEKTE[k])).join(" → ")}. Bild: ${pl.bild.map((b) => kurzname(BILD_EFFEKTE[b])).join(" → ")}, je ${ZS.VARIANTEN_JE_ABSCHNITT} Varianten.` }),
     el("div", { class: "aktionen" },
       el("button", { class: "knopf voll", type: "button", id: "zusammenstellung-rechnen", disabled: Boolean(S.laeuft), onclick: zusammenstellungRechnen, text: "Zusammenstellung rechnen" }),
-      el("button", { class: "knopf leise", type: "button", id: "zusammenstellung-neu", disabled: Boolean(S.laeuft), onclick: () => { v.zusammen = neueZusammenstellung(z.antworten, z.jev); zeigeVorschlag30(); }, text: "neu ziehen" })),
+      el("button", { class: "knopf leise", type: "button", id: "zusammenstellung-neu", disabled: Boolean(S.laeuft), onclick: () => { v.zusammen = neueZusammenstellung(z.antworten, z.jev, z.plan); zeigeVorschlag30(); }, text: "neu ziehen" })),
     film && film.vorschlag === "zusammenstellung" ? filmKarte(film) : null);
 }
-function neueZusammenstellung(antworten, jev) {
-  return { antworten, jev, plan: ZS.zusammenstellen(antworten, neuerStartwert()), geaendert: new Set() };
+/** ein Bestand (Zettelkasten, ORNA) in der Zusammenstellung: Schalter und, wenn an, die Wahl (ziehen oder ein bestimmter Eintrag) */
+function bestandStelle(pl, feld, name, wahlName, ziehenText, optionen) {
+  return el("label", { class: "regler stelle bestand" }, el("span", {}, name),
+    el("span", { class: "bestand-wahl" },
+      el("input", { type: "checkbox", "data-bestand": feld, checked: Boolean(pl[feld]), onchange: (ev) => { pl[feld] = ev.target.checked ? { [wahlName]: "" } : null; zeigeVorschlag30(); } }),
+      pl[feld] ? el("select", { "data-bestand-wahl": feld, "aria-label": `${name}: Wahl`, onchange: (ev) => { pl[feld][wahlName] = ev.target.value; } },
+        el("option", { value: "", text: ziehenText }), ...optionen.map((o) => el("option", { value: o.wert, selected: String(pl[feld][wahlName]) === String(o.wert), text: o.name }))) : el("small", { text: "aus" })));
+}
+function neueZusammenstellung(antworten, jev, alt = null) {
+  // neu gezogen wird, was jev oder der Zufall wählt; die Bestände bleiben, wie der Mensch sie geschaltet hat
+  return { antworten, jev, plan: { ...ZS.zusammenstellen(antworten, neuerStartwert()), zettel: alt?.zettel ?? null, orna: alt?.orna ?? null }, geaendert: new Set() };
 }
 async function zusammenstellungRechnen() {
   const v = S.vorschlag, z = v.zusammen;
@@ -235,6 +250,8 @@ async function zusammenstellungRechnen() {
     filmPlanUebernehmen(r.plan);
     S.aktuell = r.ergebnisse.at(-1)?.id ?? S.aktuell; S.seed = neuerStartwert();
     await stationenFilmRechnen(stationen(), signal, { vorschlag: "zusammenstellung", auswahl: "Zusammenstellung", entscheidung: r.entscheidung.id });
+    const bestaende = [r.zettel ? `Zettel ${r.zettel.nummer}: ${r.zettel.titel}` : null, r.konstellation ? `ORNA ${r.konstellation.nummer}: ${r.konstellation.kuenstler} × ${r.konstellation.theoretiker}, Regel ${r.konstellation.regel}` : null].filter(Boolean);
+    if (bestaende.length) status(`${letzterStatus[0]} ${bestaende.join("; ")}.`);
   });
 }
 /** der Film über Stationen übernimmt einen Plan: so lässt er sich unter «Nacheinander» wie jeder andere weiter verändern */

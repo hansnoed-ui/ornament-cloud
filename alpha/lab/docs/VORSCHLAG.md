@@ -37,11 +37,11 @@ Aus den Wahrscheinlichkeiten zieht das Lab mit Startwert (`zusammenstellen()` in
 1. die zwei Klangeffekte nacheinander auf den Ton (Tempo, Zerlegen, Neu-Rhythmisierung, Körner)
 2. *Tonsignal* misst den neuen Klang: Hüllkurve für die Modulation, Anschläge für den Takt; ein bearbeiteter Klang beginnt am Anfang
 3. sechs Abschnitte zu je zehn Varianten (seit Lab 0.1.16, vorher drei), die Lautstärke verteilt den Hauptparameter jedes Effekts über die Varianten (Zerfall: seine sechs Zustände)
-4. Film über 61 Stationen (Bild und 60 Motive) mit dem neuen Klang als Tonspur, im Takt der stärksten Anschläge (jede Station einmal, höchstens zwei Wechsel je Sekunde, beim Schnitt 2,5) oder gleichmässig, wenn die Anschläge nicht für alle Motive reichen
+4. Film über 61 Stationen (Bild und 60 Motive) mit dem neuen Klang als Tonspur, im Takt der stärksten Anschläge (jede Station einmal, höchstens zwei Wechsel je Sekunde, beim Schnitt 2,5) oder gleichmässig, wenn die Anschläge nicht für alle Motive reichen; mit Zettel oder ORNA-Konstellation (seit Lab 0.1.18, unten) dazu eine Karte vorn oder hinten und ein siebter Abschnitt
 
 Kosten: ein Aufruf mit etwa 4000 Eingabe-Token, also etwa 0,02 Cent; gleiche Stufen kommen 30 Tage aus dem Zwischenspeicher. Am Desktop dauert das Rechnen etwa 50 s, am Telefon länger.
 
-Im Projekt: Entscheidung `gegenstand: "zusammenstellung"` mit `gewaehlt: { aufbau, uebergang, klang, bild }`, Startwert, Antworten von jev, Merkmalen; jeder Schritt verweist mit `details.entscheidung` darauf; der Film unter `exporte` mit `dramaturgie: "zusammenstellung"`.
+Im Projekt: Entscheidung `gegenstand: "zusammenstellung"` mit `gewaehlt: { aufbau, uebergang, klang, bild, zettel, orna }` (die beiden Bestände null, `"ziehen"` oder die gewählte Nummer bzw. Kennung), Startwert, Antworten von jev, Merkmalen; jeder Schritt verweist mit `details.entscheidung` darauf; der Film unter `exporte` mit `dramaturgie: "zusammenstellung"`.
 
 ## Video als Eingang (seit Lab 0.1.14)
 
@@ -59,6 +59,16 @@ Vorher stand jede Station still, bis die nächste kam: ein Film von 900 Bildern 
 ## Lebendige Effekte (seit Lab 0.1.17)
 
 Christian am 23. Oktober 2026: PHORMA hat einen flüssigen Film in kurzer Zeit. Dort rechnet die Grafikkarte jedes Bild aus der Zeit. Jetzt tut das Lab dasselbe für sieben Effekte (`medien/gpu.js`, Übersicht in docs/STATIONEN.md): In der Zusammenstellung und bei den Dramaturgien ist `lebendig` gesetzt, jede Station aus Farbe, Glitch, Verzerrung, Raster, Wiederholung, Feedback oder Licht ist in jedem der 900 Bilder ein neues Effektbild, und die Lautstärke moduliert den Hauptparameter Bild für Bild statt nur über die Varianten. Pixelsortierung, Neu setzen, Komposition und Zerfall bleiben Standbilder mit Kamera. Unter «Nacheinander» lässt sich «lebendige Effekte» abschalten.
+
+## Zettelkasten und ORNA (seit Lab 0.1.18)
+
+Christian wollte beides in die Zusammenstellung einbinden, **beides wahlweise**. Unter den zehn Stellen stehen zwei Schalter, «Zettel» und «ORNA», vorgewählt aus. jev sieht beide nie: Die Fragen an jev bleiben dieselben zehn, der Zettel und die Konstellation werden mit dem Startwert gezogen oder vom Menschen gewählt (Entscheidungen `gegenstand: "strophe"` und `"konstellation"`, Art **Zufall** oder **Mensch**). Die Texte bleiben wörtlich.
+
+- **Zettel** (`zettel.strophe`, operationen/zettel.js): einer der 49 Zettel aus «Zu seiner Zeit» (die erzeugten Daten des Dritten Rads, alpha/drittes-rad/daten.js), als Befund mit Nummer, Zyklus, Titel, Leitsatz und Text. Er **eröffnet** den Film als Titelkarte: Kopfzeile «Zettelkasten · Zyklus · n / 49», der Titel, der Leitsatz, unten «Zu seiner Zeit».
+- **ORNA** (`orna.konstellation`): eine der 326 Konstellationen. Sie **schliesst** den Film als Karte (Nummer, Künstler × Theoretiker, Gedanke, Operationsregel) und gibt dem **Zerfall** (The Fictory) ihre Regel; steht kein Zerfall in der Zusammenstellung, kommt er als siebter Abschnitt dazu (sechs Zustände, auf dem letzten Bild der Kette).
+- **Karten** zeichnet `lab.karte` (operationen/karte.js) im Mass des Ausgangsbilds, Papier auf Nacht, in den Systemschriften des Zettelkastens; sie braucht die Leinwand des Browsers (`verfuegbar()`), in Node fällt sie weg und der Zettel bleibt im Projekt. Jede Karte steht 2,5 s (`KARTE_DAUER`) und `einmal` ausserhalb der Runde im Takt (Partitur 0.4.0, docs/STATIONEN.md): die Runde der Motive beginnt beim ersten Anschlag nach der Zettelkarte, die ORNA-Karte steht bis zum Ende des Tons. Der Film hat dann bis 69 Stationen (Grenze 80).
+
+«neu ziehen» behält die Schalter, ändert aber Zettel und Konstellation mit dem neuen Startwert, wenn sie gezogen werden. Nach dem Rechnen nennt der Status beides. Im Projekt: `gewaehlt.zettel` und `gewaehlt.orna` in der Entscheidung, die Operationen `zettel.strophe`, `orna.konstellation`, zweimal `lab.karte` mit `details.entscheidung`, der Zerfall mit dem Eingang `konstellation`.
 
 ## Die sechs Dramaturgien (`kern/vorschlag.js`, `REZEPTE`)
 
@@ -85,7 +95,7 @@ Eine Frage an jev je «Vorschlag machen», gleiche Stufen kommen 30 Tage aus dem
 
 ## Offen
 
-- **Zettelkasten und ORNA** in die Zusammenstellung einbinden (Christians nächster Wunsch).
+- Zettel und Konstellation auch in den sechs festen Dramaturgien; eine Karte mit dem Text des Zettels (nicht nur dem Leitsatz) als zweite Zwischentitelkarte.
 - Bewegung im Video als Steuersignal (Unterschied zwischen Bildern) und mehr Standbilder bei langen Videos.
 - jev könnte auch Parameter wählen (Tiefe der Modulation, Takt), über eine weitere feste Frage.
 - Klangfarbe (spektraler Schwerpunkt) als Merkmal und als zweite Route.

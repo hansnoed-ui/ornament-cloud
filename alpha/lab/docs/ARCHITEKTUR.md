@@ -34,13 +34,13 @@ Die zentrale Einheit ist die **Operation**, nicht die App. Vorhandene Anwendunge
 | `kern/stationen.js` | Animation über Stationen: Partitur (Reihenfolge, Halten, Übergänge, Modulation der Zeit, Takt aus Ereignisfolgen) und die Bilder des Films (docs/STATIONEN.md) | nein |
 | `kern/archiv.js` | ZIP schreiben (ZIP-Schreiber der Fictory) und lesen, mit Prüfsummen und Pfadprüfung | nein |
 | `kern/bilddaten.js` | reine Bildhilfen in ImageData-Form, Abtastung, Farbmatrix, SHA-256 | nein |
-| `operationen/*.js` | die Operationen; `index.js` trägt sie ins Register ein | nur `fictory.js` |
+| `operationen/*.js` | die Operationen; `index.js` trägt sie ins Register ein | nur `fictory.js` und `karte.js` (Leinwand; `verfuegbar()` sagt es) |
 | `medien/browser.js` | PNG-Kodierung, Import mit Typ-, Grössen- und Ausrichtungsprüfung, Objekt-URLs; Tondateien unverändert ablegen und mit Web Audio dekodieren (einkanalig, 44,1 kHz) | ja |
 | `medien/video.js` | MP4 über WebCodecs und mp4-muxer (vendor/), seit 0.1.4 mit Tonspur, Rückfall WebM über MediaRecorder | ja |
 | `jev/` | jev live: Lage, Frage, Seite, Worker-Entwurf (aus, solange keine Adresse eingetragen ist) | nein |
 | `app.js`, `index.html`, `lab.css` | Oberfläche mit vier Bereichen und zwei Ansichten | ja |
 
-Die Trennung zwischen Rechnung und Darstellung ist durch REA belegt (REA-PROTOKOLL.md, Fall 1): In The Fictory greifen nur `zeichnen.js` und `feld.js` auf `document` und Canvas zu, `orna.js` auf `crypto`, `rechner.js` ist ein Worker. Alles andere ist reine Rechnung. Darum laufen im Lab alle Operationen ausser dem Fictory-Adapter auch in Node.
+Die Trennung zwischen Rechnung und Darstellung ist durch REA belegt (REA-PROTOKOLL.md, Fall 1): In The Fictory greifen nur `zeichnen.js` und `feld.js` auf `document` und Canvas zu, `orna.js` auf `crypto`, `rechner.js` ist ein Worker. Alles andere ist reine Rechnung. Darum laufen im Lab alle Operationen ausser dem Fictory-Adapter und der Textkarte auch in Node.
 
 ## Wiederverwendet, unverändert
 
@@ -48,12 +48,13 @@ Die Trennung zwischen Rechnung und Darstellung ist durch REA belegt (REA-PROTOKO
 - `alpha/phorma-iii/ton.js` (Tonanalyse: Hüllkurve, Bänder, Spektrum, Fluss, Einsätze) für `lab.tonsignal`
 - `alpha/phorma-iii/tonspur.js` (`tonKodieren`: AAC, sonst Opus) für die Tonspur eines Films über Stationen
 - `portfolio/nebeneinander-nacheinander/js/data/` (ORNA-Bestand) und `js/lib/random.js` (Ziehung)
+- `alpha/drittes-rad/daten.js` (die 49 Zettel von «Zu seiner Zeit», erzeugt aus `src/data/zu-seiner-zeit.json`) für `zettel.strophe`
 - `vendor/mp4-muxer-5.2.2/`, `vendor/fonts/`
 - `tools/serve-orma.mjs` (lokaler Server)
 
 ## Grenzen gegen Schleifen und Verbrauch (`GRENZEN` in kern/projekt.js)
 
-- höchstens 300 Ausführungen je Projekt, 12 Varianten je Ausführung, 900 Bilder je Animation, 64 Stationen und 3600 Bilder je Film über Stationen
+- höchstens 300 Ausführungen je Projekt, 12 Varianten je Ausführung, 900 Bilder je Animation, 80 Stationen und 3600 Bilder je Film über Stationen
 - Experiment: höchstens 8 Schritte und 120 s, nur erlaubte Operationen
 - Arbeitsbilder höchstens 2048 px, Importdateien höchstens 60 MB und nur Bild- oder Tontypen, Töne höchstens 10 Minuten
 - Parametergrenzen sind hart (`bereinigeParameter`). Rechengrösse und Iterationen sind Parameter und darum sichtbar.

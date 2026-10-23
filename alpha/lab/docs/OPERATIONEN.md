@@ -25,6 +25,8 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.licht` 0.1.0 | Licht: Glühen und Streifen | Räumliche Operation | neu, nach Bloom der Echtzeitgrafik (TouchDesigner Bloom TOP, Post-Processing in Unity und Unreal); Glow in Fusion und After Effects; anamorphotische Lichtfahnen | Bild → Bild | über Modulation |
 | `lab.raster` 0.1.0 | Raster und Linien | Räumliche Operation | neu, nach amplitudenmodulierte Rasterung des Drucks; Kupferstich und Schraffur; Bild abtasten und Formen zeichnen in Processing/p5.js; gestapelte Profillinien (Unknown Pleasures) | Bild → Bild | über Modulation |
 | `lab.neusetzen` 0.1.0 | Zerlegen und neu setzen | Räumliche Operation | neu, nach Cut-up (Brion Gysin, William S. Burroughs); Collage und Montage; Kachel-Filter der Bildbearbeitung (GIMP Puzzle, Mosaik) | Bild → Bild | über Modulation |
+| `zettel.strophe` 0.1.0 | Zettel aus dem Zettelkasten | Selektionsoperation | Adapter: Zettelkasten (Zu seiner Zeit, 49 Strophen in sieben Zyklen) | – → Befund | eine |
+| `lab.karte` 0.1.0 | Textkarte | Räumliche Operation | neu, nach Titel- und Zwischentitelkarten des Films; Typografie des Zettelkastens (Systemschriften, Papier und Nacht) | Bild (opt.) + Befund (opt.) + Konstellation (opt.) → Bild | eine |
 
 ## ORNA-Konstellation (`orna.konstellation`)
 
@@ -469,3 +471,31 @@ Teilt das Bild in Kacheln oder Streifen und setzt einen Anteil davon neu: zufäl
 | im Verlauf neu würfeln (Flackern) (`flackern`) | ein/aus, Standard aus |
 | Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Zettel aus dem Zettelkasten (`zettel.strophe`)
+
+Zieht eine der 49 Strophen des Zettelkastens mit dem Startwert oder nimmt die gewählte: Nummer, Zyklus, Titel, Leitsatz und Text, unverändert.
+
+- **Herkunft:** Adapter, Zettelkasten (Zu seiner Zeit, 49 Strophen in sieben Zyklen); Datei alpha/drittes-rad/daten.js (erzeugt aus src/data/zu-seiner-zeit.json)
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** sofort; Speicher: gering
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Strophe (`strophe`) | 50 Optionen, Standard «mit dem Startwert ziehen» |
+
+## Textkarte (`lab.karte`)
+
+Macht aus einem Zettel des Zettelkastens oder einer ORNA-Konstellation ein Bild: Kopfzeile, Titel, Text und Fusszeile, in Papier auf Nacht oder umgekehrt, im Mass des Bildes am Eingang.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/karte.js; Prinzip nach Titel- und Zwischentitelkarten des Films; Typografie des Zettelkastens (Systemschriften, Papier und Nacht)
+- **Voraussetzungen:** Leinwand (Canvas) des Browsers
+- **Ressourcen:** sofort; Speicher: ein Bild
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Grund (`grund`) | **Papier auf Nacht** / Nacht auf Papier |
+| Schriftgrösse des Titels (`groesse`) | 0.03 … 0.15, Standard 0.07 – Anteil der kürzeren Seite |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1280 |

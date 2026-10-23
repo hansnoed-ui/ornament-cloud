@@ -607,7 +607,7 @@ function feld(x0, x1, y0, y1, w = 80, h = 40) {
 
 test("Klangerzeuger: Generator ohne Pflichteingang, steht nicht unter den Bildoperationen, Klanggenerator implementiert", () => {
   const r = labRegister();
-  assert.deepEqual(r.generatoren().map((o) => o.id), ["orna.konstellation", "lab.klang"]);
+  assert.deepEqual(r.generatoren().map((o) => o.id), ["orna.konstellation", "lab.klang", "zettel.strophe", "lab.karte"]);
   assert.ok(!r.fuer("IMAGE").some((o) => o.id === "lab.klang"), "Bildoperationen, Vorschläge und Experiment bleiben wie bisher");
   assert.equal(KLANGFORMEN.generator.implementiert, true);
   assert.equal(r.hole("lab.klang").klasse, "zeitlich");
@@ -1184,4 +1184,121 @@ test("Klangfolge (0.1.13): Klänge hintereinander mit Überblendung, umgetastet 
   assert.equal(KW.klangfolge([a, { spuren: [new Float32Array(100)], rate: 48000 }], { blende: 2 }).pcm.length, 48000 + 50);
   assert.throws(() => KW.klangfolge([a]), /mindestens zwei/);
   assert.throws(() => KW.klangfolge([a, a], { hoechstens: 1.5 }), /länger als/);
+});
+
+test("Zettelkasten (0.1.18): 49 Strophen, Ziehen mit dem Startwert wiederholbar, eigene Wahl als Mensch, Text wörtlich; die Karte beschreibt Zettel und Konstellation", async () => {
+  const { BESTAND, STROPHEN_WAHL, stropheDaten } = await lab("operationen/zettel.js");
+  const { karteText } = await lab("operationen/karte.js");
+  const { STROPHEN } = await import(new URL("alpha/drittes-rad/daten.js", root).href);
+  const r = labRegister(), op = r.hole("zettel.strophe"), std = standardParameter(op);
+  assert.equal(BESTAND, 49); assert.equal(STROPHEN_WAHL.length, 49); assert.equal(op.klasse, "selektion"); assert.equal(std.strophe, "");
+  const a = await op.ausfuehren({}, std, { seed: 11 }), b = await op.ausfuehren({}, std, { seed: 11 });
+  assert.equal(a.ausgaben[0].typ, "METADATA"); assert.equal(a.ausgaben[0].daten.nummer, b.ausgaben[0].daten.nummer, "derselbe Startwert, derselbe Zettel");
+  assert.equal(a.entscheidungen[0].art, "zufall"); assert.equal(a.entscheidungen[0].gegenstand, "strophe"); assert.equal(a.entscheidungen[0].details.startwert, 11);
+  const nummern = new Set();
+  for (let s = 1; s <= 40; s++) nummern.add((await op.ausfuehren({}, std, { seed: s })).ausgaben[0].daten.nummer);
+  assert.ok(nummern.size > 15, `verschiedene Startwerte ziehen verschiedene Strophen: ${nummern.size}`);
+  const c = await op.ausfuehren({}, { ...std, strophe: "7" }, { seed: 1 });
+  const s7 = STROPHEN.find((s) => s.n === 7);
+  assert.equal(c.entscheidungen[0].art, "mensch"); assert.equal(c.entscheidungen[0].gewaehlt, 7);
+  assert.deepEqual(c.ausgaben[0].daten, stropheDaten(s7));
+  assert.equal(c.ausgaben[0].daten.text, s7.x); assert.equal(c.ausgaben[0].daten.leitsatz, s7.b); assert.equal(c.ausgaben[0].daten.titel, s7.t);
+  assert.ok(c.ausgaben[0].daten.zyklusTitel, "der Zyklus hat einen Titel"); assert.match(c.ausgaben[0].daten.adresse, /^https:\/\/ornament\.cloud\/zu-seiner-zeit\/strophe\//);
+  await assert.rejects(op.ausfuehren({}, { ...std, strophe: "99" }), /gibt es nicht/);
+  // die Textkarte: Inhalt ohne DOM, das Zeichnen braucht den Browser
+  const kz = karteText({ text: c.ausgaben[0].daten });
+  assert.match(kz.kopf, /^Zettelkasten · .* · 7 \/ 49$/); assert.equal(kz.titel, s7.t); assert.equal(kz.text, s7.b); assert.equal(kz.fuss, "Zu seiner Zeit");
+  const ko = karteText({ konstellation: { nummer: 3, kuenstler: "A", theoretiker: "B", gedanke: "G", regel: "R2", regelName: "Spiegel" } });
+  assert.deepEqual(ko, { kopf: "ORNA · Konstellation 3", titel: "A × B", text: "G", fuss: "Operationsregel R2: Spiegel" });
+  const karte = r.hole("lab.karte");
+  assert.equal(karte.verfuegbar(), false, "in Node keine Leinwand");
+  assert.ok(karte.eingaenge.every((e) => e.optional), "die Karte steht unter den Generatoren");
+  await assert.rejects(karte.ausfuehren({}, standardParameter(karte)), /Browser/);
+});
+
+test("Partitur 0.4.0: Stationen mit «einmal» stehen als Titelkarten ausserhalb der Runde im Takt, vorn mit eigener Dauer, hinten bis zum Schluss", async () => {
+  const { p, m, e, r, t } = mitTon();
+  const s = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.tonsignal", eingaben: { ton: t.id } } });
+  const folge = s.ergebnisse[1], einsaetze = folge.daten.ereignisse.map((x) => x.t);
+  const b = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.farbe", eingaben: { bild: e.id }, parameter: { farbdrehung: 90 }, variation: { anzahl: 3, achse: "varianten" } } });
+  const [k1, k2, k3] = b.ergebnisse.map((x) => x.id);
+  const plan = { stationen: [{ ergebnis: k1, einmal: true, halten: 2.5 }, e.id, k2, { ergebnis: k3, einmal: true, halten: 2.5 }], halten: 1, uebergang: 0.2, art: "blende" };
+  const pt = ST.partitur(p, { ...plan, takt: { ereignisfolge: folge.id, schwelle: 0, wiederholen: true } });
+  assert.equal(pt.version, "0.4.0");
+  assert.equal(pt.folge[0].ergebnis, k1); assert.equal(pt.folge[0].einmal, true); assert.equal(pt.folge[0].halten, 2.5); assert.equal(pt.folge[0].uebergang.dauer, 0.2);
+  assert.equal(pt.folge.at(-1).ergebnis, k3); assert.equal(pt.folge.at(-1).einmal, true);
+  const mitte = pt.folge.slice(1, -1), nach = einsaetze.filter((z) => z > 2.7);
+  assert.ok(mitte.length >= 3 && mitte.every((x) => !x.einmal && [e.id, k2].includes(x.ergebnis)), "die Runde besteht nur aus den Stationen zwischen den Karten");
+  assert.deepEqual(mitte.slice(0, 3).map((x) => x.ergebnis), [e.id, k2, e.id], "reihum");
+  assert.equal(mitte.length, nach.length, "so viele Auftritte wie Einsätze nach der ersten Karte");
+  assert.ok(Math.abs(mitte[0].beginn - 2.7) < 1e-3 && Math.abs(mitte[0].beginn + mitte[0].halten - nach[0]) < 1e-3, "die Runde beginnt nach der Karte und wechselt beim ersten Einsatz danach");
+  assert.ok(Math.abs(pt.dauer - 6) < 0.04, `bis zum Ende des Tons: ${pt.dauer}`);
+  assert.ok(pt.folge.slice(1, -1).every((x) => x.uebergang.dauer <= 0.2 + 1e-9), "kein Übergang länger als eingestellt");
+  // ohne Takt: die Karte hält ihre eigene Dauer, die anderen die eingestellte
+  const ohne = ST.partitur(p, { ...plan, art: "schnitt" });
+  assert.deepEqual(ohne.folge.map((x) => x.halten), [2.5, 1, 1, 2.5]); assert.deepEqual(ohne.folge.map((x) => Boolean(x.einmal)), [true, false, false, true]);
+  assert.equal(ohne.dauer, 7);
+  // ohne «einmal» gehören auch Stationen mit eigener Dauer zur Runde
+  const alle = ST.partitur(p, { stationen: [{ ergebnis: k1, halten: 2.5 }, e.id], halten: 1, uebergang: 0.2, art: "schnitt", takt: { ereignisfolge: folge.id, schwelle: 0, wiederholen: true } });
+  assert.equal(alle.folge.length, einsaetze.length + 1); assert.equal(alle.folge[2].ergebnis, k1);
+});
+
+test("Zusammenstellung mit Zettelkasten und ORNA (0.1.18): beides wahlweise; der Zettel eröffnet den Film, die Konstellation schliesst ihn und gibt dem Zerfall die Regel", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const Z = await lab("kern/zusammenstellung.js");
+  const { erstelleRegister } = await lab("kern/register.js");
+  const { OPERATIONEN } = await lab("operationen/index.js");
+  const { karteText } = await lab("operationen/karte.js");
+  const { KONSTELLATIONEN } = await lab("operationen/orna.js");
+  // in Node zeichnen weder The Fictory noch die Textkarte (beide brauchen die Leinwand): Stellvertreter mit derselben Beschreibung
+  const r = erstelleRegister();
+  for (const op of OPERATIONEN) {
+    if (op.id === "fictory.prozess") r.registriere({ ...op, async ausfuehren({ bild, konstellation }, p) { return { ausgaben: Array.from({ length: 6 }, (_, i) => ({ typ: "IMAGE", titel: `Zustand ${i + 1}`, bild: neuesBild(bild.width, bild.height, [i * 40, 0, 0]) })), protokoll: { regel: p.regel || konstellation?.regel || null } }; } });
+    else if (op.id === "lab.karte") r.registriere({ ...op, verfuegbar: () => true, async ausfuehren({ bild, text, konstellation }) { return { ausgaben: [{ typ: "IMAGE", titel: "Karte", bild: neuesBild(bild.width, bild.height, [20, 20, 20]) }], protokoll: { inhalt: karteText({ text, konstellation }) } }; } });
+    else r.registriere(op);
+  }
+  const { p, m, e, t } = mitTon();
+  const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id });
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.raster", "bild.farbe", "bild.licht"], seed: 4, zettel: { strophe: "" }, orna: { konstellation: "" } };
+  const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "jev", details: { modell: "jev-test" } }, seed: 3 });
+  assert.ok(x.zettel.nummer >= 1 && x.zettel.nummer <= 49 && x.zettel.leitsatz, "ein gezogener Zettel");
+  assert.ok(x.konstellation.regel && x.konstellation.kuenstler, "eine gezogene Konstellation mit Regel");
+  assert.equal(x.entscheidung.gewaehlt.zettel, "ziehen"); assert.equal(x.entscheidung.gewaehlt.orna, "ziehen");
+  assert.ok(!("zettel" in mg.merkmale) && Object.values(mg.merkmale).every((v) => typeof v === "string"), "jev bekommt nur die Stufen der Messung");
+  const ops = p.knoten.map((k) => k.operation);
+  assert.ok(ops.includes("zettel.strophe") && ops.includes("orna.konstellation"));
+  assert.equal(ops.filter((o) => o === "lab.karte").length, 2, "zwei Karten");
+  assert.equal(p.entscheidungen.find((d) => d.gegenstand === "strophe").art, "zufall"); assert.equal(p.entscheidungen.find((d) => d.gegenstand === "konstellation").art, "zufall");
+  const fict = p.knoten.find((k) => k.operation === "fictory.prozess");
+  assert.ok(fict, "ohne Zerfall in der Zusammenstellung kommt er als siebter Abschnitt dazu");
+  assert.equal(P.ergebnis(p, fict.eingaben.konstellation).typ, "CONSTELLATION"); assert.equal(fict.protokoll.regel, x.konstellation.regel, "der Zerfall rechnet nach der Regel der Konstellation");
+  assert.equal(x.ergebnisse.length, 66, "sechs Abschnitte zu zehn Varianten und sechs Zustände");
+  assert.equal(x.plan.stationen.length, 69);
+  assert.deepEqual(x.plan.stationen[0], { ergebnis: x.karten.zettel, einmal: true, halten: Z.KARTE_DAUER });
+  assert.deepEqual(x.plan.stationen.at(-1), { ergebnis: x.karten.orna, einmal: true, halten: Z.KARTE_DAUER });
+  assert.equal(x.plan.stationen[1], e.id);
+  const kz = p.knoten.find((k) => k.operation === "lab.karte");
+  assert.match(kz.protokoll.inhalt.kopf, /^Zettelkasten/); assert.equal(kz.protokoll.inhalt.titel, x.zettel.titel);
+  const pt = ST.partitur(p, { ...x.plan, fps: 30 });
+  assert.equal(pt.folge[0].ergebnis, x.karten.zettel); assert.equal(pt.folge[0].einmal, true); assert.equal(pt.folge[0].halten, Z.KARTE_DAUER);
+  assert.equal(pt.folge.at(-1).ergebnis, x.karten.orna); assert.equal(pt.folge.at(-1).einmal, true);
+  assert.ok(pt.dauer <= 30, `${pt.dauer}`);
+  // eigene Wahl: Zettel 7 und eine bestimmte Konstellation; mit Zerfall in der Zusammenstellung kein siebter Abschnitt
+  const q = mitTon();
+  const mq = await VS.messen({ register: r, projekt: q.p, medien: q.m, bild: q.e.id, ton: q.t.id });
+  const y = await Z.zusammenstellungRechnen({ register: r, projekt: q.p, medien: q.m, messung: mq, plan: { ...plan, bild: ["bild.farbe", "bild.fictory", "bild.licht", "bild.raster", "bild.farbe", "bild.licht"], zettel: { strophe: "7" }, orna: { konstellation: KONSTELLATIONEN[2].wert } }, wahl: { art: "mensch", details: {} } });
+  assert.equal(y.zettel.nummer, 7); assert.equal(y.konstellation.id, KONSTELLATIONEN[2].wert);
+  assert.equal(y.entscheidung.gewaehlt.zettel, "7"); assert.equal(y.entscheidung.gewaehlt.orna, KONSTELLATIONEN[2].wert);
+  assert.equal(q.p.entscheidungen.find((d) => d.gegenstand === "strophe").art, "mensch"); assert.equal(q.p.entscheidungen.find((d) => d.gegenstand === "konstellation").art, "mensch");
+  assert.equal(q.p.knoten.filter((k) => k.operation === "fictory.prozess").length, 1);
+  assert.equal(q.p.knoten.find((k) => k.operation === "fictory.prozess").protokoll.regel, y.konstellation.regel);
+  assert.equal(y.ergebnisse.length, 56); assert.equal(y.plan.stationen.length, 59);
+  // ohne Bestände wie bisher; mit dem echten Register (ohne Leinwand) gibt es den Zettel, aber keine Karte
+  const o = mitTon();
+  const mo = await VS.messen({ register: r, projekt: o.p, medien: o.m, bild: o.e.id, ton: o.t.id });
+  const z = await Z.zusammenstellungRechnen({ register: r, projekt: o.p, medien: o.m, messung: mo, plan: { ...plan, zettel: null, orna: null }, wahl: { art: "zufall" } });
+  assert.equal(z.zettel, null); assert.equal(z.konstellation, null); assert.deepEqual(z.karten, { zettel: null, orna: null }); assert.equal(z.plan.stationen.length, 61); assert.equal(z.entscheidung.gewaehlt.zettel, null);
+  const w = await Z.zusammenstellungRechnen({ register: labRegister(), projekt: o.p, medien: o.m, messung: mo, plan: { ...plan, orna: null }, wahl: { art: "zufall" } });
+  assert.ok(w.zettel); assert.equal(w.karten.zettel, null, "ohne Leinwand keine Karte"); assert.equal(w.plan.stationen.length, 61);
+  assert.deepEqual(P.pruefeProjekt(p), []); assert.deepEqual(P.pruefeProjekt(q.p), []);
 });
