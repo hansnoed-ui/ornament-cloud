@@ -1,8 +1,8 @@
 # Audio-Operationsformat
 
-Masterprompt §5. Stand: 23. Oktober 2026, Lab 0.1.4, Projektformat 0.5.0.
+Masterprompt §5. Stand: 23. Oktober 2026, Lab 0.1.5, Projektformat 0.6.0.
 
-Dieses Format legt fest, in welchen Formen Klang im Lab vorkommen kann und wie er an Bildoperationen koppelt. Gebaut sind zwei Wege. Erstens wird eine eigene Tondatei Material, die Operation **Tonsignal** misst sie, und das Ergebnis moduliert Bildparameter über die vorhandene Modulation (`kern/modulation.js`), über die Varianten oder über die Zeit (Lab 0.1.3). Zweitens erzeugt der **Klangerzeuger** Klang ohne Tondatei, aus einem Bild, einem Steuersignal, dem Text einer Konstellation oder dem Startwert, und eine Animation kann einen Klang als Tonspur tragen (Lab 0.1.4). Es gibt weiterhin keinen Audioeditor und keinen vollständigen Synthesizer (§23).
+Dieses Format legt fest, in welchen Formen Klang im Lab vorkommen kann und wie er an Bildoperationen koppelt. Gebaut sind zwei Wege. Erstens wird eine eigene Tondatei Material, die Operation **Tonsignal** misst sie, und das Ergebnis moduliert Bildparameter über die vorhandene Modulation (`kern/modulation.js`), über die Varianten oder über die Zeit (Lab 0.1.3). Zweitens erzeugt der **Klangerzeuger** Klang ohne Tondatei, aus einem Bild, einem Steuersignal, dem Text einer Konstellation oder dem Startwert, und eine Animation kann einen Klang als Tonspur tragen (Lab 0.1.5; der Film über Stationen seit 0.1.4, docs/STATIONEN.md). Es gibt weiterhin keinen Audioeditor und keinen vollständigen Synthesizer (§23).
 
 **Kennzeichnung (§20):** **geprüft** heisst, im Quellcode oder in der offiziellen Dokumentation nachgelesen, mit Fundstelle. **Hypothese** heisst, aus dem Wissensstand beschrieben, nicht einzeln nachgelesen. **Entscheidung** heisst, das Lab macht es bewusst so.
 
@@ -48,7 +48,7 @@ Tondatei ──Import──► AUDIO ──lab.tonsignal──► CONTROL_SIGNAL
 Die Modulation kennt nur die Stelle u von 0 bis 1 (`kern/modulation.js`). Ein Steuersignal mit `achse: "zeit"` übersetzt sie in Klangzeit: **t = beginn + u · dauer**.
 
 - **Über die Varianten (Nebeneinander):** Sechs Varianten lesen den Klang bei u = 0, 0,2, … 1, also sechs Momente gleichmässig über den Ausschnitt verteilt. Ein Nacheinander wird so als Nebeneinander sichtbar.
-- **Über die Zeit (Nacheinander):** Das Feedback liest bei Iteration k die Stelle u = k / Iterationen, die Komposition je Bild ihrer Bildfolge. Die ganze Bildfolge durchläuft also den ganzen Ausschnitt. In Echtzeit synchron ist das, wenn die Bildfolge so viele Bilder hat wie der Ausschnitt mal 30 (Bildrate der Animation). Beim Feedback heisst das höchstens 4 s Klang bei 120 Iterationen. **Entscheidung:** Die Zeit bleibt gestreckt und nicht in Echtzeit. Seit 0.1.4 kann die Animation trotzdem eine Tonspur tragen (siehe unten). Sie läuft in Echtzeit ab dem `beginn` des Signals und ist darum nur dann genau synchron, wenn die Bildfolge so viele Bilder hat wie der Klang Sekunden mal 30.
+- **Über die Zeit (Nacheinander):** Das Feedback liest bei Iteration k die Stelle u = k / Iterationen, die Komposition je Bild ihrer Bildfolge. Die ganze Bildfolge durchläuft also den ganzen Ausschnitt. In Echtzeit synchron ist das, wenn die Bildfolge so viele Bilder hat wie der Ausschnitt mal 30 (Bildrate der Animation). Beim Feedback heisst das höchstens 4 s Klang bei 120 Iterationen. **Entscheidung:** Die Zeit bleibt gestreckt und nicht in Echtzeit. Seit 0.1.4 kann der Film über Stationen, seit 0.1.5 auch die Animation des letzten Schritts trotzdem eine Tonspur tragen (siehe unten). Sie läuft in Echtzeit ab dem `beginn` des Signals und ist darum nur dann genau synchron, wenn die Bildfolge so viele Bilder hat wie der Klang Sekunden mal 30.
 
 ## Gebaut: Tondatei als Steuersignal
 
@@ -82,7 +82,7 @@ Das Protokoll des Knotens hält Ausschnitt, Abtastrate, Zahl der Filmbilder, Ein
 3. Ein Bild im Material wählen, eine Operation wie *Feedback*, *Wiederholung* oder *Komposition verändern*. Unter «Variation und Modulation» die Quelle «Steuersignal» nehmen. Das neue Tonsignal ist vorgewählt. «Modulation wirkt» entscheidet: über die Varianten oder über die Zeit.
 4. Im Nacheinander steht beim Schritt, welches Signal welchen Parameter bewegt hat. «Animation des letzten Schritts» rechnet die Bewegung mit derselben Zeitmodulation.
 
-## Gebaut: Klangerzeuger (Lab 0.1.4)
+## Gebaut: Klangerzeuger (Lab 0.1.5)
 
 ### Operation `lab.klang`
 
@@ -103,7 +103,9 @@ Ausgaben: ein `AUDIO`-Ergebnis (WAV, 44,1 kHz, 16 Bit, mono, auf −1 dBFS gebra
 
 ### Tonspur im MP4
 
-Unter «Nacheinander» steht neben «Animation des letzten Schritts» die Wahl **Tonspur**: keine oder ein Klang des Projekts (Tondatei oder erzeugt). Hat ein Tonsignal den Verlauf gesteuert, steht sein Klang vor, und die Spur beginnt beim `beginn` seines Ausschnitts. Der Klang läuft in Echtzeit so lang wie das Video; ist er kürzer, endet die Spur still. Kodiert wird mit WebCodecs (`AudioEncoder`, Opus mit 48 kHz, sonst AAC), gemuxt mit demselben mp4-muxer 5.2.2 wie das Bild (geprüft: der Muxer kennt `aac` und `opus`, `SUPPORTED_AUDIO_CODECS` in `vendor/mp4-muxer-5.2.2/mp4-muxer.js`). Ohne `AudioEncoder` und im Rückfall MediaRecorder entsteht das Video ohne Ton, der Grund steht im Export (`tonspur.fehlt`) und in der Statuszeile. Getestet in Chromium: Opus, Spur so lang wie das Video.
+Unter «Nacheinander» steht neben «Animation des letzten Schritts» die Wahl **Tonspur**: keine oder ein Klang des Projekts (Tondatei oder erzeugt). Hat ein Tonsignal den Verlauf gesteuert, steht sein Klang vor, und die Spur beginnt beim `beginn` seines Ausschnitts. Der Klang läuft ab dort in Echtzeit und ganz, höchstens 30 s (die längste Animation). Er kann also länger oder kürzer sein als das Bild, weil die Bildzahl erst nach dem Rechnen feststeht. Genau im Takt ist der **Film über Stationen** (docs/STATIONEN.md): Er schneidet den Ton auf die Länge des Films.
+
+Kodiert wird wie beim Film über Stationen mit `tonspur.js` aus PHORMA III (unverändert): AAC, sonst Opus, gemuxt mit mp4-muxer 5.2.2. AAC kommt zuerst, weil manche Programme Opus im MP4 stumm abspielen. Ohne `AudioEncoder` und im Rückfall MediaRecorder entsteht das Video ohne Ton, der Grund steht im Export (`tonspur.fehlt`) und in der Statuszeile. Ein erzeugter Klang ist ein AUDIO-Ergebnis wie eine Tondatei: Über *Tonsignal* gibt er auch dem Film über Stationen Takt und Tonspur.
 
 ## Referenzen
 
@@ -128,7 +130,7 @@ Unter «Nacheinander» steht neben «Animation des letzten Schritts» die Wahl *
 
 Neu in 0.4.0 (PROJEKTFORMAT.md): AUDIO-Material mit `ton`, EVENT_SEQUENCE-Ergebnisse, die Felder `achse: "zeit"`, `beginn`, `dauer`, `je` an Steuersignalen. Die Hauptversion bleibt gleich, Projekte 0.1.0 bis 0.3.0 öffnen unverändert. Vorbereitet, aber nicht gebaut: `METADATA` mit `art: "frequenzspektrum"` und Rhythmusfelder an Ereignisfolgen. Beides fügt nur Felder hinzu und braucht keine neue Hauptversion.
 
-Neu in 0.5.0: AUDIO-Ergebnisse des Klangerzeugers mit `ton.umriss`, die Partitur (`art: "partitur"`) und `tonspur` an exportierten Animationen. Projekte 0.1.0 bis 0.4.0 öffnen unverändert.
+Neu in 0.6.0: AUDIO-Ergebnisse des Klangerzeugers mit `ton.umriss`, die Partitur (`art: "partitur"`) und `tonspur` an exportierten Animationen. Projekte 0.1.0 bis 0.5.0 öffnen unverändert.
 
 ## Nächste Schritte
 

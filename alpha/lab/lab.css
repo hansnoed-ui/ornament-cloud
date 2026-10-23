@@ -180,3 +180,17 @@ fieldset { border: 0; margin: 0; padding: 0; }
 .status progress { accent-color: var(--accent); width: 160px; }
 .status .fehler { color: #c0392b; }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+/* Animation über Stationen */
+.stationen { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--border); display: grid; gap: 10px; }
+.stationen .knotenkopf { margin-bottom: 0; }
+.stationen-liste { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; counter-reset: station; }
+.stationen-liste > li { display: grid; gap: 6px; align-content: start; font-size: 0.82rem; }
+.stationen-liste .bild { background: var(--nacht); aspect-ratio: 1; display: grid; place-items: center; overflow: hidden; }
+.stationen-liste .bild img { max-width: 100%; max-height: 100%; display: block; }
+.stationen-liste .station-text { overflow-wrap: anywhere; }
+.stationen-liste .station-text b { color: var(--accent); font-weight: 500; }
+.stationen-liste .aktionen { gap: 4px; }
+.stationen-regler { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); column-gap: 18px; }
+.stationen-regler > legend { grid-column: 1 / -1; }
+#stationen-plan.fehler { color: #c0392b; }

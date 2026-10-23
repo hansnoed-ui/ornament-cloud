@@ -13,7 +13,7 @@ const TON = new Map([["audio/wav", "wav"], ["audio/x-wav", "wav"], ["audio/wave"
 const TON_ENDUNG = Object.fromEntries([...TON].reverse().map(([mime, endung]) => [endung, mime]));
 const RATE = 44100;
 /** Typ einer Datei im Archiv nach ihrer Endung */
-const mimeNachName = (name) => { const x = name.split(".").pop(); return x === "png" ? "image/png" : x === "json" ? "application/json" : x === "mp4" ? "video/mp4" : x === "webm" && !name.includes("-animation") ? "audio/webm" : x === "webm" ? "video/webm" : TON_ENDUNG[x] ?? "application/octet-stream"; };
+const mimeNachName = (name) => { const x = name.split(".").pop(); return x === "png" ? "image/png" : x === "json" ? "application/json" : x === "mp4" ? "video/mp4" : x === "webm" && !/-(animation|stationen)\./.test(name) ? "audio/webm" : x === "webm" ? "video/webm" : TON_ENDUNG[x] ?? "application/octet-stream"; };
 
 /** Tonbytes → { pcm (einkanalig), rate, dauer, kanaele } über Web Audio (OfflineAudioContext rechnet auf eine feste Abtastrate um) */
 async function dekodiereTon(bytes) {

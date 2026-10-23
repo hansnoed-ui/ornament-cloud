@@ -34,8 +34,8 @@ function tonAngaben({ pcm, rate }) {
   return { dauer: Math.round((pcm.length / rate) * 1000) / 1000, abtastrate: rate, kanaele: 1, umriss };
 }
 
-/** Steuersignal-Quellen in Routen mit den Werten aus dem Projekt versehen */
-function routenAufloesen(projekt, routen = []) {
+/** Steuersignal-Quellen in Routen mit den Werten aus dem Projekt versehen (auch für die Zeitparameter eines Films, kern/stationen.js) */
+export function routenAufloesen(projekt, routen = []) {
   return routen.map((r) => {
     if (r.modulator?.quelle !== "signal") return r;
     const s = ergebnis(projekt, r.modulator.ergebnis);

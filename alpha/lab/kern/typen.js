@@ -8,7 +8,7 @@ export const TYPEN = Object.freeze({
   CONSTELLATION: { name: "Konstellation", implementiert: true, datei: "json", beschreibung: "ORNA-Konstellation mit abgeleiteter Operationsregel" },
   CONTROL_SIGNAL: { name: "Steuersignal", implementiert: true, datei: "json", beschreibung: "Folge von Werten 0–1, kann Parameter modulieren" },
   METADATA: { name: "Befund", implementiert: true, datei: "json", beschreibung: "Messungen und Beobachtungen, keine Bewertung" },
-  AUDIO: { name: "Audiosignal", implementiert: true, datei: "wav|mp3|ogg|flac|m4a|webm", beschreibung: "abgetastetes Signal: eigene Tondatei (seit Lab 0.1.3) oder vom Klangerzeuger gerechnet (seit 0.1.4)" },
+  AUDIO: { name: "Audiosignal", implementiert: true, datei: "wav|mp3|ogg|flac|m4a|webm", beschreibung: "abgetastetes Signal: eigene Tondatei (seit Lab 0.1.3) oder vom Klangerzeuger gerechnet (seit 0.1.5)" },
   EVENT_SEQUENCE: { name: "Ereignisfolge", implementiert: true, datei: "json", beschreibung: "Ereignisse mit Zeitpunkten in Sekunden (Einsätze, Trigger, später Rhythmus und Schnitte)" },
   VIDEO: { name: "Video", implementiert: false, beschreibung: "zeitbasiertes Bild mit eigener Bildrate (später ORNAMENT MOTION)" },
   TEXT: { name: "Text", implementiert: false, beschreibung: "Text mit Herkunft (später ORNAMENT TEXT, Prüfraster)" },

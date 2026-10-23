@@ -1,4 +1,4 @@
-// ORNAMENT LAB – das Projektformat (Version 0.5.0, Beschreibung: docs/PROJEKTFORMAT.md). Reines JSON für die Struktur, Mediendateien
+// ORNAMENT LAB – das Projektformat (Version 0.6.0, Beschreibung: docs/PROJEKTFORMAT.md). Reines JSON für die Struktur, Mediendateien
 // getrennt daneben (im Archiv unter medien/). Ein Projekt ist eine gerichtete, azyklische Ausführungsgrafik:
 //   Ergebnisse (Material und erzeugte Zustände)  ←ausgaben—  Knoten (eine Ausführung einer Operation)  —eingaben→  frühere Ergebnisse
 // Ein Knoten kann nur auf Ergebnisse verweisen, die es schon gibt; damit sind Schleifen ausgeschlossen, und nichts wird überschrieben:
@@ -6,8 +6,8 @@
 // Entscheidungen sind eigene Einträge mit einer von vier Arten (mensch, zufall, regel, jev), damit sie unterscheidbar bleiben (§11).
 
 export const FORMAT = "ornament-lab-projekt";
-export const FORMAT_VERSION = "0.5.0";
-export const LAB_VERSION = "0.1.4";
+export const FORMAT_VERSION = "0.6.0";
+export const LAB_VERSION = "0.1.5";
 
 export const ENTSCHEIDUNGSARTEN = Object.freeze({
   mensch: "menschliche Entscheidung",
@@ -32,6 +32,8 @@ export const GRENZEN = Object.freeze({
   seite: 2048,             // längste Seite der Arbeitsbilder in Pixeln
   animationBilder: 900,    // Bilder je Animation
   tonSekunden: 600,        // Länge einer Tondatei (sie wird ganz dekodiert)
+  stationen: 48,           // Stationen je Film (kern/stationen.js)
+  filmBilder: 3600,        // Bilder je Film über Stationen (2 Minuten bei 30 Bildern/s)
 });
 
 let zaehler = 0;
@@ -174,6 +176,8 @@ export function pruefeProjekt(p) {
   }
   for (const e of p.ergebnisse) if (e.knoten && !knoten(p, e.knoten)) m.push(`Ergebnis ${e.id}: Knoten ${e.knoten} fehlt`);
   for (const d of p.entscheidungen) if (!ENTSCHEIDUNGSARTEN[d.art]) m.push(`Entscheidung ${d.id}: unbekannte Art ${d.art}`);
+  // seit 0.5.0: ein Film über Stationen verweist auf Bildergebnisse des Projekts
+  for (const x of p.exporte ?? []) if (x.art === "stationen") for (const id of x.stationen ?? []) if (ergebnis(p, id)?.typ !== "IMAGE") m.push(`Film ${x.id}: Station ${id} ist kein Bild des Projekts`);
   return m;
 }
 

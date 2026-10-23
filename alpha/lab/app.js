@@ -6,6 +6,7 @@ import { browserMedien } from "./medien/browser.js";
 import { videoAus, FPS } from "./medien/video.js";
 import * as P from "./kern/projekt.js";
 import { fuehreAus, bildfolge, regelVorschlaege, experiment, ketteAnwenden, neuerStartwert } from "./kern/ausfuehrung.js";
+import * as ST from "./kern/stationen.js";
 import { packe, entpacke, ENDUNG } from "./kern/archiv.js";
 import { QUELLEN, POLARITAETEN } from "./kern/modulation.js";
 import { KLASSEN, standardParameter } from "./kern/register.js";
@@ -20,6 +21,9 @@ const S = {
   variation: { anzahl: 6, achse: "varianten", ziel: "", quelle: "sinus", tiefe: 0.5, polaritaet: "bipolar", frequenz: 1, halten: 0, signal: "" },
   wahl: null, ansicht: "neben", modus: "manuell", laeuft: null, vergleich: new Set(), filme: new Map(), tonspur: new Map(), ungespeichert: false,
   experimentErlaubt: new Set(["lab.feedback", "lab.wiederholung", "lab.farbe", "lab.differenz"]), experimentSchritte: 3, experimentVarianten: 3,
+  // Film über Stationen: null folgt dem Verlauf des Ausgangs, sonst die eigene Auswahl (Kennungen, mit Übergang je Station)
+  stationen: null,
+  film: { halten: 1.5, uebergang: 1, art: "blende", quelle: "keine", ziel: "halten", tiefe: 0.3, frequenz: 1, signal: "", takt: "", schwelle: 0.2, wiederholen: true, tonspur: true, seite: 1280 },
 };
 globalThis.ornamentLab = S;   // für Browsertests und die Konsole
 
@@ -318,6 +322,7 @@ function bildKarte(e, { gewaehlt = false, knoten = null } = {}) {
     el("div", { class: "aktionen" },
       e.knoten ? el("button", { class: `knopf klein${gewaehlt ? " voll" : ""}`, type: "button", onclick: () => weiterfuehren(e.id), text: gewaehlt ? "gewählt" : "weiterführen" }) : null,
       el("button", { class: "knopf klein leise", type: "button", onclick: async () => herunterladen(new Blob([S.medien.dateien.get(e.datei)], { type: "image/png" }), `${slug(S.projekt.titel)}-${slug(e.titel)}.png`), text: "PNG" }),
+      el("button", { class: "knopf klein leise", type: "button", "aria-pressed": String(Boolean(S.stationen?.some((x) => x.ergebnis === e.id))), title: "als Station in den Film über Stationen (Nacheinander)", onclick: () => stationUmschalten(e.id), text: "Station" }),
       el("label", { class: "vergleich" }, el("input", { type: "checkbox", checked: S.vergleich.has(e.id), onchange: (ev) => { ev.target.checked ? S.vergleich.add(e.id) : S.vergleich.delete(e.id); zeigeBuehne(); } }), "vergleichen")));
 }
 function weiterfuehren(id) {
@@ -409,7 +414,8 @@ function nebeneinander(e) {
     const entsch = S.projekt.entscheidungen.filter((d) => d.knoten === k.id);
     teile.push(el("div", { class: "knotenkopf" }, el("b", { text: op.name }), el("span", { text: `${ausgaben.length} Ergebnis${ausgaben.length === 1 ? "" : "se"}` }),
       el("span", { class: "startwert", text: `Startwert ${k.seed}` }), ...entsch.map((d) => el("span", {}, artEtikett(d.art), ` ${d.gegenstand}`)),
-      k.status === "fehler" ? el("span", { class: "fehler", text: k.fehler }) : null));
+      k.status === "fehler" ? el("span", { class: "fehler", text: k.fehler }) : null,
+      ausgaben.filter((x) => x.typ === "IMAGE").length > 1 ? el("button", { class: "knopf klein leise", type: "button", onclick: () => alleAlsStationen(k), text: "alle als Stationen" }) : null));
     const bilder = ausgaben.filter((x) => x.typ === "IMAGE"), klaenge = ausgaben.filter((x) => x.typ === "AUDIO"), andere = ausgaben.filter((x) => x.typ !== "IMAGE" && x.typ !== "AUDIO");
     if (bilder.length) teile.push(el("div", { class: "raster" }, ...bilder.map((x) => bildKarte(x, { gewaehlt: k.gewaehlt === x.id || S.aktuell === x.id, knoten: k }))));
     if (klaenge.length) teile.push(el("div", { class: "raster" }, ...klaenge.map((x) => klangKarte(x, { gewaehlt: k.gewaehlt === x.id || S.aktuell === x.id, knoten: k }))));
@@ -462,7 +468,7 @@ function nacheinander(e) {
   const film = S.filme.get(e.id);
   const klaenge = S.projekt.ergebnisse.filter((x) => x.typ === "AUDIO");
   if (!S.tonspur.has(e.id)) S.tonspur.set(e.id, tonDesVerlaufs(e.id) ?? "");
-  return el("div", {}, liste, schritte.length && e.typ === "IMAGE" ? el("div", { class: "film" },
+  return el("div", {}, liste, stationenAnsicht(e), schritte.length && e.typ === "IMAGE" ? el("div", { class: "film" },
     el("div", { class: "aktionen" },
       el("button", { class: "knopf", type: "button", id: "animation", disabled: Boolean(S.laeuft), onclick: () => animation(e.id), text: "Animation des letzten Schritts" }),
       klaenge.length ? el("label", { class: "regler tonspur" }, el("span", { text: "Tonspur" }),
@@ -482,6 +488,7 @@ function tonDesVerlaufs(id) {
   }
   return null;
 }
+const TON_FEHLT = "dieser Browser kann keinen Ton kodieren (AudioEncoder für AAC oder Opus fehlt, oder das Video entstand in Echtzeit)";
 async function animation(id) {
   await laufen(async (signal) => {
     const e = P.ergebnis(S.projekt, id);
@@ -489,15 +496,18 @@ async function animation(id) {
     const tonId = S.tonspur.get(id) || null, tonE = tonId ? P.ergebnis(S.projekt, tonId) : null;
     // ein Tonsignal mit Ausschnitt: die Tonspur beginnt dort, wo das Signal beginnt
     const sig = tonE ? P.verlauf(S.projekt, id).schritte.flatMap(({ knoten: k }) => k.variation?.routen ?? []).map((r) => P.ergebnis(S.projekt, r.modulator?.ergebnis)).find((x) => x?.knoten && P.knoten(S.projekt, x.knoten).eingaben.ton === tonId) : null;
-    const ton = tonE ? { ...(await S.medien.ton(tonE)), beginn: sig?.daten?.beginn ?? 0 } : null;
+    // die Bildzahl steht erst nach dem Rechnen fest: der Klang läuft ab «beginn» ganz, höchstens so lang wie die längste Animation
+    const t = tonE ? await S.medien.ton(tonE) : null, beginn = sig?.daten?.beginn ?? 0;
+    const ton = t ? { pcm: t.pcm, rate: t.rate, beginn, dauer: Math.min(t.pcm.length / t.rate - beginn, P.GRENZEN.animationBilder / FPS) } : null;
     const r = await videoAus(bildfolge({ register: R, projekt: S.projekt, medien: S.medien, ergebnisId: id, abbrechen: signal }), { melden: status, ton });
     const name = `medien/${id}-animation.${r.endung}`;
     const bytes = new Uint8Array(await r.blob.arrayBuffer());
     const abgelegt = await S.medien.ablegenDatei(name, bytes, r.mime);
     S.projekt.exporte.push({ id: P.neueId("x"), art: "animation", ergebnis: id, datei: name, mime: r.mime, codec: r.codec, bilder: r.bilder, fps: FPS, breite: r.breite, hoehe: r.hoehe, sha256: abgelegt.sha256, zeit: new Date().toISOString(),
-      ...(ton ? { tonspur: { ergebnis: tonId, beginn: ton.beginn, ...r.tonspur } } : {}) });
-    S.filme.set(id, { ...r, url: URL.createObjectURL(r.blob), name: `${slug(S.projekt.titel)}-${slug(e.titel)}.${r.endung}` });
-    status(`Animation: ${r.bilder} Bilder (${(r.bilder / FPS).toFixed(1)} s), ${(r.blob.size / 1e6).toFixed(1)} MB, ${r.codec}${r.tonspur?.codec ? `, mit Tonspur (${r.tonspur.codec}, ab ${sekunden(ton.beginn)})` : r.tonspur?.fehlt ? `. Ohne Ton: ${r.tonspur.fehlt}` : ""}.`);
+      ...(ton ? { tonspur: { ergebnis: tonId, beginn, sekunden: Math.round(ton.dauer * 1000) / 1000, ...(r.ton ? { codec: r.ton } : { fehlt: TON_FEHLT }) } } : {}) });
+    const tonspur = S.projekt.exporte.at(-1).tonspur ?? null;
+    S.filme.set(id, { ...r, tonspur, url: URL.createObjectURL(r.blob), name: `${slug(S.projekt.titel)}-${slug(e.titel)}.${r.endung}` });
+    status(`Animation: ${r.bilder} Bilder (${(r.bilder / FPS).toFixed(1)} s), ${(r.blob.size / 1e6).toFixed(1)} MB, ${r.codec}${tonspur?.codec ? `, mit Tonspur (${tonspur.codec}, ab ${sekunden(beginn)})` : tonspur?.fehlt ? `. Ohne Ton: ${tonspur.fehlt}` : ""}.`);
   });
 }
 function verlaufExportieren(id) {
@@ -515,6 +525,118 @@ function verlaufExportieren(id) {
   zeigeProtokoll();
 }
 
+// ---------- Film über Stationen (kern/stationen.js) ----------
+/** die Stationen: die eigene Auswahl oder der Verlauf bis zum Ausgang */
+function stationen(e) {
+  if (S.stationen) return S.stationen.filter((x) => P.ergebnis(S.projekt, x.ergebnis)?.typ === "IMAGE");
+  return e ? ST.stationenAusVerlauf(S.projekt, e.id).map((id) => ({ ergebnis: id })) : [];
+}
+function stationUmschalten(id) {
+  S.stationen ??= [];
+  const i = S.stationen.findIndex((x) => x.ergebnis === id);
+  if (i >= 0) S.stationen.splice(i, 1); else S.stationen.push({ ergebnis: id });
+  status(i >= 0 ? "Station entfernt." : `Station ${S.stationen.length} aufgenommen. Der Film über die Stationen steht unter «Nacheinander».`);
+  zeigeBuehne();
+}
+function alleAlsStationen(k) {
+  S.stationen = k.ausgaben.filter((id) => P.ergebnis(S.projekt, id)?.typ === "IMAGE").map((id) => ({ ergebnis: id }));
+  status(`${S.stationen.length} Stationen: die Varianten dieses Schritts. Der Film steht unter «Nacheinander».`);
+  zeigeBuehne();
+}
+function stationenPlan(liste) {
+  const f = S.film;
+  const routen = f.quelle !== "keine" && (f.quelle !== "signal" || f.signal)
+    ? [{ ziel: f.ziel, tiefe: f.tiefe, modulator: f.quelle === "signal" ? { quelle: "signal", ergebnis: f.signal } : { quelle: f.quelle, frequenz: f.frequenz, phase: 0, seed: S.seed, stufen: liste.length } }] : [];
+  return { stationen: liste, halten: f.halten, uebergang: f.uebergang, art: f.art, routen, fps: FPS, takt: f.takt ? { ereignisfolge: f.takt, schwelle: f.schwelle, wiederholen: f.wiederholen } : null };
+}
+function stationenAnsicht(e) {
+  const liste = stationen(e), f = S.film;
+  const eigene = Boolean(S.stationen);
+  if (liste.length < 2 && !eigene) return el("p", { class: "startwert stationen", text: "Animation über Stationen: sobald der Verlauf zwei Bildzustände hat, oder mit «Station» unter «Nebeneinander»." });
+  const setze = (neu) => { S.stationen = neu; zeigeBuehne(); };
+  const verschiebe = (i, d) => { const l = liste.map((x) => ({ ...x })); [l[i], l[i + d]] = [l[i + d], l[i]]; setze(l); };
+  const zeilen = liste.map((x, i) => {
+    const b = P.ergebnis(S.projekt, x.ergebnis), naechste = liste[i + 1];
+    const verlaufGeht = naechste && ST.verlaufMoeglich(S.projekt, x.ergebnis, naechste.ergebnis);
+    return el("li", {},
+      el("div", { class: "bild" }, el("img", { src: S.medien.url(b), alt: b.titel })),
+      el("div", { class: "station-text" }, el("b", { text: `${i + 1}` }), " ", b.titel),
+      el("div", { class: "aktionen" },
+        el("button", { class: "knopf klein leise", type: "button", disabled: i === 0, "aria-label": `Station ${i + 1} nach vorn`, onclick: () => verschiebe(i, -1), text: "↑" }),
+        el("button", { class: "knopf klein leise", type: "button", disabled: i === liste.length - 1, "aria-label": `Station ${i + 1} nach hinten`, onclick: () => verschiebe(i, 1), text: "↓" }),
+        el("button", { class: "knopf klein leise", type: "button", "aria-label": `Station ${i + 1} entfernen`, onclick: () => setze(liste.filter((_, j) => j !== i)), text: "✕" })),
+      naechste ? el("label", { class: "regler" }, el("span", { text: "Übergang zur nächsten" }),
+        el("select", { onchange: (ev) => setze(liste.map((y, j) => (j === i ? { ergebnis: y.ergebnis, ...(ev.target.value ? { uebergang: ev.target.value } : {}) } : y))) },
+          el("option", { value: "", text: `wie eingestellt (${ST.UEBERGAENGE[f.art]})` }),
+          ...Object.entries(ST.UEBERGAENGE).map(([k, n]) => el("option", { value: k, selected: x.uebergang === k, disabled: k === "verlauf" && !verlaufGeht, text: n })))) : null);
+  });
+  const signale = S.projekt.ergebnisse.filter((x) => x.typ === "CONTROL_SIGNAL"), folgen = S.projekt.ergebnisse.filter((x) => x.typ === "EVENT_SEQUENCE");
+  if (f.quelle === "signal" && !signale.some((x) => x.id === f.signal)) f.signal = signale.at(-1)?.id ?? "";
+  if (f.takt && !folgen.some((x) => x.id === f.takt)) f.takt = "";
+  const plan = el("p", { class: "startwert", id: "stationen-plan" });
+  const rechnen = () => {
+    try {
+      const pt = ST.partitur(S.projekt, stationenPlan(liste));
+      plan.textContent = `${pt.folge.length} Auftritte, ${sekunden(pt.dauer)}${pt.offen ? ` und die eigene Länge von ${pt.offen} Verlauf${pt.offen > 1 ? "en" : ""}` : ""}, ${pt.bilder} Bilder${pt.takt ? `, im Takt von ${pt.takt.einsaetze} Einsätzen` : ""}.${pt.folge.some((x) => x.uebergang?.hinweis) ? ` ${pt.folge.find((x) => x.uebergang?.hinweis).uebergang.hinweis}.` : ""}`;
+      plan.classList.remove("fehler");
+    } catch (x) { plan.textContent = x.message; plan.classList.add("fehler"); }
+  };
+  const neu = (fn) => (v) => { fn(v); rechnen(); };
+  const zahlRegler = (id, name, min, max, schritt, wert, fn) => regler({ id, name, art: "zahl", min, max, schritt }, wert, neu(fn));
+  const wahlRegler = (id, name, optionen, wert, fn, neuZeichnen = false) => regler({ id, name, art: "wahl", optionen }, wert, neuZeichnen ? (v) => { fn(v); zeigeBuehne(); } : neu(fn));
+  const takt = folgen.find((x) => x.id === f.takt);
+  const tonDa = takt?.knoten && Object.values(P.knoten(S.projekt, takt.knoten).eingaben).some((id) => P.ergebnis(S.projekt, id)?.typ === "AUDIO");
+  const film = S.filme.get("stationen");
+  rechnen();
+  return el("section", { class: "stationen", "aria-labelledby": "h-stationen" },
+    el("div", { class: "knotenkopf" }, el("b", { id: "h-stationen", text: "Animation über Stationen" }),
+      el("span", { class: "startwert", text: eigene ? "eigene Auswahl" : "der Verlauf bis zum Ausgang" }),
+      eigene ? el("button", { class: "knopf klein leise", type: "button", onclick: () => setze(null), text: "Verlauf übernehmen" }) : null),
+    liste.length ? el("ol", { class: "stationen-liste" }, ...zeilen) : null,
+    el("small", { class: "startwert", text: "Unter «Nebeneinander» nimmt «Station» weitere Zustände auf, auch Varianten, die nicht weitergeführt wurden." }),
+    el("fieldset", { class: "gruppe stationen-regler" }, el("legend", { text: "Zeit" }),
+      zahlRegler("halten", "Halten je Station (s)", 0, 10, 0.1, f.halten, (v) => { f.halten = v; }),
+      zahlRegler("uebergang", "Übergang (s)", 0, 6, 0.1, f.uebergang, (v) => { f.uebergang = v; }),
+      wahlRegler("art", "Übergang", Object.entries(ST.UEBERGAENGE).map(([k, n]) => ({ wert: k, name: n })), f.art, (v) => { f.art = v; }, true),
+      wahlRegler("quelle", "Modulation über die Stationen", Object.entries(QUELLEN).filter(([k]) => k !== "signal" || signale.length).map(([k, n]) => ({ wert: k, name: n })), f.quelle, (v) => { f.quelle = v; }, true),
+      f.quelle !== "keine" ? wahlRegler("ziel", "moduliert", ST.ZEITPARAMETER.map((p) => ({ wert: p.id, name: p.name })), f.ziel, (v) => { f.ziel = v; }) : null,
+      f.quelle === "signal" ? wahlRegler("signal", "Steuersignal", signale.map((x) => ({ wert: x.id, name: x.titel })), f.signal, (v) => { f.signal = v; }) : null,
+      f.quelle !== "keine" ? zahlRegler("tiefe", "Tiefe (Attenuverter)", -1, 1, 0.05, f.tiefe, (v) => { f.tiefe = v; }) : null,
+      f.quelle !== "keine" && f.quelle !== "signal" ? zahlRegler("frequenz", "Frequenz (Zyklen)", 0.25, 4, 0.25, f.frequenz, (v) => { f.frequenz = v; }) : null,
+      wahlRegler("takt", "Takt", [{ wert: "", name: "gleichmässig (Halten und Übergang)" }, ...folgen.map((x) => ({ wert: x.id, name: x.titel }))], f.takt, (v) => { f.takt = v; }, true),
+      f.takt ? zahlRegler("schwelle", "Einsätze ab Stärke", 0, 1, 0.05, f.schwelle, (v) => { f.schwelle = v; }) : null,
+      f.takt ? el("label", { class: "regler schalter" }, el("input", { type: "checkbox", checked: f.wiederholen, onchange: (ev) => { f.wiederholen = ev.target.checked; rechnen(); } }), "Stationen reihum, bis die Einsätze aufgebraucht sind") : null,
+      tonDa ? el("label", { class: "regler schalter" }, el("input", { type: "checkbox", checked: f.tonspur, onchange: (ev) => { f.tonspur = ev.target.checked; } }), "den gemessenen Ton als Tonspur") : null,
+      zahlRegler("seite", "Filmgrösse, längste Seite (px)", 320, 2048, 16, f.seite, (v) => { f.seite = v; })),
+    plan,
+    el("div", { class: "aktionen" },
+      el("button", { class: "knopf", type: "button", id: "stationenfilm", disabled: liste.length < 2 || Boolean(S.laeuft), onclick: () => stationenFilm(liste), text: "Animation über die Stationen" }),
+      el("small", { text: "Verläufe von Operationen werden mit denselben Parametern und Startwerten noch einmal gerechnet." })),
+    film ? el("div", { class: "film" }, el("video", { src: film.url, controls: true, loop: true, playsinline: true, muted: !film.ton }),
+      el("div", { class: "aktionen" }, el("button", { class: "knopf klein", type: "button", onclick: () => herunterladen(film.blob, film.name), text: `${film.endung.toUpperCase()} speichern` }),
+        el("small", { text: `${film.bilder} Bilder, ${film.breite} × ${film.hoehe}, ${film.codec}${film.ton ? `, Ton ${film.ton}` : ", ohne Ton"}` }))) : null);
+}
+async function stationenFilm(liste) {
+  await laufen(async (signal) => {
+    const pt = ST.partitur(S.projekt, stationenPlan(liste)), zeitplan = [];
+    const tonId = S.film.tonspur ? pt.takt?.ton : null;
+    const roh = tonId ? await S.medien.ton(P.ergebnis(S.projekt, tonId)) : null;
+    const ton = roh ? { pcm: roh.pcm, rate: roh.rate, beginn: pt.takt.tonBeginn, dauer: pt.dauer } : null;
+    const ids = liste.map((x) => x.ergebnis);
+    const d = P.entscheide(S.projekt, { art: "mensch", gegenstand: "stationen", gewaehlt: ids, details: { auswahl: S.stationen ? "eigene" : "Verlauf", uebergang: pt.art, takt: pt.takt?.ereignisfolge ?? null } });
+    status(`Film über ${liste.length} Stationen wird gerechnet …`, 0);
+    const melden = (t) => status(`${t}, geplant ${pt.bilder}${pt.offen ? " und Verläufe" : ""}`, null);
+    const r = await videoAus(ST.filmbilder({ register: R, projekt: S.projekt, medien: S.medien, partitur: pt, seite: S.film.seite, abbrechen: signal, zeitplan }), { melden, halten: 0, ton });
+    const id = P.neueId("x"), name = `medien/${id}-stationen.${r.endung}`;
+    const abgelegt = await S.medien.ablegenDatei(name, new Uint8Array(await r.blob.arrayBuffer()), r.mime);
+    S.projekt.exporte.push({ id, art: "stationen", ergebnis: ids.at(-1), stationen: ids, entscheidung: d.id, partitur: pt, zeitplan, datei: name, mime: r.mime, codec: r.codec, ton: r.ton, tonQuelle: r.ton ? tonId : null,
+      bilder: r.bilder, fps: FPS, breite: r.breite, hoehe: r.hoehe, sha256: abgelegt.sha256, zeit: new Date().toISOString() });
+    const alt = S.filme.get("stationen"); if (alt) URL.revokeObjectURL(alt.url);
+    S.filme.set("stationen", { ...r, url: URL.createObjectURL(r.blob), name: `${slug(S.projekt.titel)}-stationen.${r.endung}` });
+    status(`Film über ${liste.length} Stationen: ${r.bilder} Bilder (${sekunden(r.bilder / FPS)}), ${(r.blob.size / 1e6).toFixed(1)} MB, ${r.codec}${r.ton ? `, Ton ${r.ton}` : tonId ? ", ohne Ton (dieser Browser kodiert keinen)" : ""}.`);
+  });
+}
+
 // ---------- 4 · Protokoll ----------
 function zeigeProtokoll() {
   const p = S.projekt;
@@ -529,8 +651,9 @@ function zeigeProtokoll() {
     const zeit = el("time", { datetime: x.zeit, text: uhr(x.zeit) });
     if (x.material) return el("li", {}, zeit, el("span", {}, "Material: ", el("b", { text: x.material.titel })));
     if (x.meldung) return el("li", {}, zeit, el("span", { text: x.meldung.text }));
-    if (x.export) return el("li", {}, zeit, el("span", { text: `Export: ${x.export.art}${x.export.codec ? ` (${x.export.codec})` : ""}` }));
-    if (x.entscheidung) { const d = x.entscheidung; return el("li", {}, zeit, el("span", {}, artEtikett(d.art), ` ${d.gegenstand}: `, el("b", { text: d.gegenstand === "operation" ? opName(d.gewaehlt) : d.gegenstand === "variante" ? (P.ergebnis(p, d.gewaehlt)?.titel ?? d.gewaehlt) : d.gegenstand === "konstellation" ? (p.ergebnisse.find((x) => x.typ === "CONSTELLATION" && x.daten?.id === d.gewaehlt)?.titel ?? d.gewaehlt) : d.gewaehlt })),
+    if (x.export) return el("li", {}, zeit, el("span", { text: `Export: ${x.export.art === "stationen" ? `Film über ${x.export.stationen.length} Stationen, ${sekunden(x.export.partitur.dauer)}${x.export.ton ? `, Ton ${x.export.ton}` : ""}` : x.export.art}${x.export.codec ? ` (${x.export.codec})` : ""}` }),
+      x.export.partitur ? el("details", {}, el("summary", { text: "Partitur" }), el("pre", { text: JSON.stringify({ partitur: x.export.partitur, zeitplan: x.export.zeitplan }, null, 2) })) : null);
+    if (x.entscheidung) { const d = x.entscheidung; return el("li", {}, zeit, el("span", {}, artEtikett(d.art), ` ${d.gegenstand}: `, el("b", { text: d.gegenstand === "operation" ? opName(d.gewaehlt) : d.gegenstand === "variante" ? (P.ergebnis(p, d.gewaehlt)?.titel ?? d.gewaehlt) : d.gegenstand === "konstellation" ? (p.ergebnisse.find((x) => x.typ === "CONSTELLATION" && x.daten?.id === d.gewaehlt)?.titel ?? d.gewaehlt) : d.gegenstand === "stationen" ? `${d.gewaehlt.length} Stationen` : d.gewaehlt })),
       Object.keys(d.details ?? {}).length ? el("details", {}, el("summary", { text: "Einzelheiten" }), el("pre", { text: JSON.stringify(d.details, null, 2) })) : null); }
     const k = x.knoten;
     return el("li", {}, zeit, el("span", {}, el("b", { text: opName(k.operation) }), ` ${k.operationVersion} · ${k.status === "fertig" ? `${k.ausgaben.length} Ergebnis${k.ausgaben.length === 1 ? "" : "se"}, ${k.dauerMs} ms` : k.status}`),
@@ -569,7 +692,7 @@ async function oeffnen(datei) {
   try {
     const { projekt, medien, fehlt } = await entpacke(new Uint8Array(await datei.arrayBuffer()));
     projekt.exporte ??= [];
-    S.projekt = projekt; S.medien.uebernehmen(medien); S.filme.clear(); S.tonspur.clear(); S.vergleich.clear(); S.knotenAnsicht = null; S.op = null;
+    S.projekt = projekt; S.medien.uebernehmen(medien); S.filme.clear(); S.tonspur.clear(); S.vergleich.clear(); S.knotenAnsicht = null; S.op = null; S.stationen = null;
     const gewaehlt = [...projekt.knoten].reverse().find((k) => k.gewaehlt)?.gewaehlt;
     S.aktuell = gewaehlt ?? projekt.ergebnisse.filter((e) => e.typ === "IMAGE").at(-1)?.id ?? null;
     $("titel").value = projekt.titel; S.ungespeichert = false;
@@ -598,7 +721,7 @@ $("speichern").addEventListener("click", speichern);
 $("oeffnen").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) oeffnen(f); });
 $("neu").addEventListener("click", () => {
   if (S.ungespeichert && !confirm("Das aktuelle Projekt ist nicht gespeichert. Trotzdem neu beginnen?")) return;
-  S.projekt = P.neuesProjekt({ modus: S.modus }); S.medien = browserMedien(); S.aktuell = null; S.op = null; S.filme.clear(); S.tonspur.clear(); S.knotenAnsicht = null; S.ungespeichert = false;
+  S.projekt = P.neuesProjekt({ modus: S.modus }); S.medien = browserMedien(); S.aktuell = null; S.op = null; S.filme.clear(); S.tonspur.clear(); S.knotenAnsicht = null; S.stationen = null; S.ungespeichert = false;
   $("titel").value = S.projekt.titel; status("Neues Projekt."); alles();
 });
 $("titel").addEventListener("change", (ev) => { S.projekt.titel = ev.target.value.trim() || "Ohne Titel"; geaendert(); });

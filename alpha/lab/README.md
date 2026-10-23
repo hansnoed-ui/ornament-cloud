@@ -26,6 +26,7 @@ Keine Installation und keine Abhängigkeiten, nur Node 18 oder neuer. Der Server
    **Klang ohne Tondatei:** Der *Klangerzeuger* steht immer zur Wahl, auch ohne Material. Er liest ein Bild wie eine Partitur (Spalten nacheinander, oben hoch, hell laut), macht ein Steuersignal oder den Text einer Konstellation hörbar oder zieht eine Tonfolge aus dem Startwert. Die Klänge stehen nebeneinander zum Anhören. «weiterführen» macht einen zum Ausgang, dann misst *Tonsignal* ihn wie eine eigene Tondatei. Unter «Nacheinander» legt «Tonspur» einen Klang ins MP4 der Animation.
 7. **Komposition:** *Kompositorisches Profil* misst, wie ein Bild gebaut ist: Schwerpunkt, Symmetrie, Lichtgefälle, Mitte und Rand, Kontrast, Sättigung, Kantenrichtung. Es misst nur und bewertet nicht. *Komposition verändern* skaliert dieselben Komponenten mit Faktoren: 1 lässt stehen, 0 hebt auf, −1 kehrt um, 2 verdoppelt. Die Faktoren sind modulierbar. Mit einem *Zielprofil*, das an einem anderen eigenen Bild gemessen wurde, gleicht die Operation das Bild jenem an. Die Profile vorher und nachher stehen im Protokoll (docs/KOMPOSITION.md).
 8. **Nacheinander:** zeigt den Verlauf vom Material bis zum gewählten Zustand, mit Parametern, Startwerten und Entscheidungen. Daneben stehen die anderen Varianten jedes Schritts. «Animation des letzten Schritts» rechnet die Bewegung als MP4, «Verlauf als ZIP» exportiert die Zustände als PNG samt `verlauf.json`.
+   **Animation über Stationen** macht aus mehreren Zuständen einen Film: den Verlauf, oder Zustände, die unter «Nebeneinander» mit «Station» aufgenommen wurden. Wählbar sind Reihenfolge, Halten und Übergang (Überblendung, Schwelle, Verlauf der Operation, Schnitt). Die Dauern lassen sich über die Stationen modulieren. Die Einsätze eines Tons können den Takt geben, dann liegt der Ton als Tonspur darunter (docs/STATIONEN.md).
 9. **Protokoll:** Hier steht jede Ausführung und jede Entscheidung in einer von vier Arten: **Mensch**, **Zufall**, **Regel** oder **jev**. «Verlauf speichern» legt eine **Kette** an, die sich auf anderes Material anwenden lässt.
 10. **Projekt speichern** ergibt eine `.ornalab.zip`, die `projekt.json` und `medien/` enthält, auch die Tondateien. **Projekt öffnen** stellt alles wieder her, auch das Weiterarbeiten.
 
@@ -44,7 +45,8 @@ NODE_PATH=$(npm root -g) node tests/lab.e2e.mjs      # der ganze Prozess in Chro
 |---|---|
 | [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md) | Module, Datenfluss, Grenzen, Erweiterung |
 | [docs/OPERATIONEN.md](docs/OPERATIONEN.md) | Operationsverzeichnis mit Herkunft, Ein- und Ausgängen, Parametern |
-| [docs/PROJEKTFORMAT.md](docs/PROJEKTFORMAT.md) | `ornament-lab-projekt` 0.5.0 |
+| [docs/PROJEKTFORMAT.md](docs/PROJEKTFORMAT.md) | `ornament-lab-projekt` 0.6.0 |
+| [docs/STATIONEN.md](docs/STATIONEN.md) | Animation über Stationen: Partitur, Übergänge, Modulation der Zeit, Takt und Tonspur aus einem Ton |
 | [docs/KOMPOSITION.md](docs/KOMPOSITION.md) | kompositorisches Parametersystem: Messgrössen, Faktorprinzip, Zielprofil, Grenzen (§8, §18) |
 | [docs/REFERENZ-MATRIX.md](docs/REFERENZ-MATRIX.md) | Recherche zu den Referenzprogrammen: Operationsmatrix und Auswahl, mit Stand (geprüft oder Hypothese) |
 | [docs/MODULATION-DOSSIER.md](docs/MODULATION-DOSSIER.md) | Operations-Dossier zur Modulation: VCV Rack (Quellcode), Bitwig und TouchDesigner (Handbücher), je 13 Punkte nach §9 |
