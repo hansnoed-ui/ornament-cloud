@@ -3,7 +3,7 @@
 //   node --test tests/lab-works.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync, mkdtempSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { baue } from "../tools/build-lab-works.mjs";
@@ -22,13 +22,16 @@ function werkschau(werke) {
   return dir;
 }
 
-test("Works im Repository: gebaut, noindex, nur Platzhalter, keine Werke, nicht in der Sitemap", () => {
+test("Works im Repository: gebaut, noindex, nur Platzhalter aus der PHORMA-Serie, keine Werke, nicht in der Sitemap", () => {
   const html = lies("b/lab/works/index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
-  assert.equal((html.match(/class="dia platzhalter/g) || []).length, 3, "drei Platzhalter auf der Bühne");
-  assert.equal((html.match(/class="werk platzhalter"/g) || []).length, 3, "drei Platzhalter im Raster");
-  assert.ok(html.includes("Die Felder unten sind Platzhalter, keine Werke."));
-  assert.ok(!html.includes('<a class="werk"'), "kein Werk verlinkt");
+  assert.equal((html.match(/class="dia platzhalter/g) || []).length, 6, "sechs Platzhalter auf der Bühne");
+  assert.equal((html.match(/class="werk platzhalter"/g) || []).length, 6, "sechs Platzhalter im Raster");
+  assert.equal((html.match(/<span class="schild">Platzhalter<\/span>/g) || []).length, 12, "jeder beschriftet");
+  for (const m of html.matchAll(/(?:src|data-film)="(\/assets\/[^"]+)"/g)) assert.ok(existsSync(new URL(m[1].slice(1), root)), `${m[1]} gibt es`);
+  for (const a of ["phorma-i", "phorma-ii", "phorma-iii"]) assert.ok(html.includes(`href="/b/apps/${a}/"`), `führt zu ${a}`);
+  assert.ok(html.includes("Bis dahin stehen hier Beispiele aus der PHORMA-Serie als Platzhalter, keine Werke aus dem Lab."));
+  assert.ok(!html.includes(`<a class="werk" href`), "kein Werk verlinkt");
   assert.ok(!lies("sitemap.xml").includes("/b/lab/works/"));
   const dir = werkschau([]);
   baue({ ordner: dir });
