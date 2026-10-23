@@ -208,7 +208,8 @@ test("Audio-Operationsformat: acht Klangformen in den vorhandenen Typen, AUDIO u
   for (const f of Object.values(KLANGFORMEN)) assert.ok(TYPEN[f.typ], f.name);
   assert.ok(TYPEN.AUDIO.implementiert && TYPEN.EVENT_SEQUENCE.implementiert);
   assert.equal(KLANGFORMEN.parameterverlauf.typ, KLANGFORMEN.steuerwert.typ, "ein Klangverlauf ist dasselbe Steuersignal wie ein Bildsignal");
-  assert.deepEqual(labRegister().fuer("AUDIO").map((o) => o.id), ["lab.tonsignal"]);
+  assert.deepEqual(labRegister().fuer("AUDIO").map((o) => o.id), ["lab.tonsignal", "lab.tempo", "lab.zerlegen", "lab.rhythmus", "lab.koerner"]);
+  assert.ok(KLANGFORMEN.transformation.implementiert && KLANGFORMEN.rhythmus.implementiert, "seit 0.1.7");
 });
 
 test("Tonsignal: Hüllkurve, Schwerpunkt und Einsätze eines bekannten Tons, Ausschnitt, Grenzen", async () => {
@@ -266,8 +267,8 @@ test("Archiv mit Ton und alte Projekte: Tondatei kommt unverändert mit, Projekt
   assert.deepEqual(fehlt.filter((d) => d === "medien/t.wav"), []);
   assert.deepEqual(medien.get("medien/t.wav"), wav);
   assert.equal(projekt.ergebnisse.find((x) => x.typ === "AUDIO").ton.abtastrate, 44100);
-  assert.equal(projekt.formatVersion, "0.6.0");
-  for (const v of ["0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0"]) assert.doesNotThrow(() => P.ladeProjekt({ ...P.neuesProjekt(), formatVersion: v, labVersion: "0.1.0" }), v);
+  assert.equal(projekt.formatVersion, "0.7.0");
+  for (const v of ["0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0"]) assert.doesNotThrow(() => P.ladeProjekt({ ...P.neuesProjekt(), formatVersion: v, labVersion: "0.1.0" }), v);
 });
 
 /** Scheibe auf gleichmässigem Grund, für Schwerpunkt und Ausschnitt */
@@ -656,4 +657,183 @@ test("Kopplung Bild → Klang → Bild: der Klang wird AUDIO-Ergebnis mit WAV, T
   const { projekt, medien } = await entpacke(packe(p, m.dateien));
   assert.deepEqual(medien.get(klaenge[0].datei), wav, "die WAV kommt ins Archiv");
   assert.equal(projekt.ergebnisse.filter((x) => x.typ === "AUDIO" && x.knoten).length, 3);
+});
+
+// ---------- Klangtransformationen (Lab 0.1.7, docs/KLANGTRANSFORMATION.md) ----------
+const KW = await lab("kern/klangwerk.js");
+
+/** ein Beat in Stereo, 48 kHz: Bassschlag auf jedem Schlag (bpm), Rauschen auf jedem Achtel dazwischen, rechts leiser */
+function beat({ bpm = 120, sekunden = 6, rate = 48000 } = {}) {
+  const n = Math.round(rate * sekunden), L = new Float32Array(n), R = new Float32Array(n), schlag = 60 / bpm;
+  const einsaetze = [];
+  for (let t = 0; t < sekunden - 0.05; t += schlag) {
+    const s = Math.round(t * rate); einsaetze.push(t);
+    for (let k = 0; k < 0.2 * rate && s + k < n; k++) { const v = Math.sin((2 * Math.PI * (55 + 80 * Math.exp(-k / 2000)) * k) / rate) * Math.exp(-k / 5000) * Math.min(1, (0.2 * rate - k) / 200) * 0.8; L[s + k] += v; R[s + k] += v; }
+  }
+  let z = 9;
+  for (let t = schlag / 2; t < sekunden - 0.05; t += schlag) {
+    const s = Math.round(t * rate); einsaetze.push(t);
+    for (let k = 0; k < 0.04 * rate && s + k < n; k++) { z = (z * 1103515245 + 12345) & 0x7fffffff; const v = (z / 0x7fffffff - 0.5) * Math.exp(-k / 500) * 0.5; L[s + k] += v; R[s + k] += v * 0.6; }
+  }
+  return { ton: KW.alsTon([L, R], rate), einsaetze: einsaetze.sort((a, b) => a - b) };
+}
+const sinus = (hz, sekunden = 1, rate = 48000) => Float32Array.from({ length: Math.round(sekunden * rate) }, (_, i) => 0.5 * Math.sin((2 * Math.PI * hz * i) / rate));
+const frequenz = (s, rate) => { let c = 0; for (let i = 1; i < s.length; i++) if (s[i - 1] < 0 && s[i] >= 0) c++; return c / (s.length / rate); };
+function mitBeat(opts) {
+  const x = mitMaterial(), b = beat(opts);
+  const t = P.fuegeMaterialHinzu(x.p, { titel: "beat.wav", typ: "AUDIO", datei: "medien/beat.wav", mime: "audio/wav", sha256: "b", ton: { dauer: 6, abtastrate: 48000, kanaele: 2 } });
+  x.m.toene.set(t.id, b.ton);
+  return { ...x, t, b };
+}
+
+test("Klangwerk: Umtasten, Dehnen ohne Tonhöhe, Abtastrate, WAV 16/24/32 Bit, Abtastrate aus dem Dateikopf", () => {
+  const s = sinus(440);
+  const schnell = KW.umtasten(s, 2);
+  assert.equal(schnell.length, 24000); nahe(frequenz(schnell, 48000), 880, 4, "Tonband: doppelt so schnell, eine Oktave höher");
+  const lang = KW.dehnen([s], 48000, 2)[0];
+  assert.equal(lang.length, 96000); nahe(frequenz(lang.subarray(4800, 91200), 48000), 440, 3, "gedehnt: Tonhöhe bleibt");
+  const kurz = KW.dehnen([s], 48000, 0.5)[0];
+  assert.equal(kurz.length, 24000); nahe(frequenz(kurz.subarray(2400, 21600), 48000), 440, 4, "gestaucht: Tonhöhe bleibt");
+  const hoch = KW.rateWandeln(s, 48000, 96000);
+  assert.equal(hoch.length, 96000); nahe(frequenz(hoch, 96000), 440, 1, "96 kHz: dieselbe Frequenz");
+  for (const [bits, eps] of [["16", 2 / 32767], ["24", 2 / 8388607], ["32f", 0]]) {
+    const w = KW.wavSchreiben([s, schnell.length === s.length ? schnell : s.map((v) => -v)], 96000, { bits }), r = KW.wavSpuren(w);
+    assert.equal(r.rate, 96000); assert.equal(r.spuren.length, 2); assert.equal(KW.abtastrateLesen(w), 96000);
+    nahe(r.spuren[0][1234], s[1234], eps + 1e-7, `${bits} Bit links`); nahe(r.spuren[1][1234], -s[1234], eps + 1e-7, `${bits} Bit rechts`);
+  }
+  assert.equal(KL.wavLesen(KW.wavSchreiben([s], 44100, { bits: "16" })).rate, 44100, "16 Bit liest auch der alte Leser");
+  // Dateiköpfe: FLAC (STREAMINFO), MP3 (MPEG-1 Layer III, 48 kHz), Ogg Opus
+  const flac = new Uint8Array(42); flac.set([0x66, 0x4c, 0x61, 0x43]); flac[18] = (88200 >> 12) & 255; flac[19] = (88200 >> 4) & 255; flac[20] = (88200 & 15) << 4;
+  assert.equal(KW.abtastrateLesen(flac), 88200);
+  assert.equal(KW.abtastrateLesen(Uint8Array.from([0xff, 0xfb, 0x94, 0x00, 0, 0, 0, 0])), 48000);
+  const ogg = new Uint8Array(64); ogg.set([0x4f, 0x67, 0x67, 0x53]); ogg.set(new TextEncoder().encode("OpusHead"), 28);
+  assert.equal(KW.abtastrateLesen(ogg), 48000);
+  assert.equal(KW.abtastrateLesen(new Uint8Array(16)), null);
+});
+
+test("Klangwerk: Einsätze liegen auf den Anschlägen, Tempo wird geschätzt, euklidische Muster", () => {
+  const { ton, einsaetze } = beat({ bpm: 120 });
+  const gefunden = KW.einsaetzeFinden(ton.pcm, 48000);
+  for (const t of einsaetze) assert.ok(gefunden.some((e) => Math.abs(e.t - t) < 0.012), `Einsatz bei ${t} s gefunden`);
+  assert.ok(gefunden.length <= einsaetze.length + 2, `${gefunden.length} Einsätze statt ${einsaetze.length}`);
+  nahe(KW.tempoSchaetzen(ton.pcm, 48000).bpm, 120, 1, "120 BPM");
+  nahe(KW.tempoSchaetzen(beat({ bpm: 96 }).ton.pcm, 48000).bpm, 96, 1, "96 BPM");
+  assert.deepEqual(KW.euklid(3, 8).map(Number), [1, 0, 0, 1, 0, 0, 1, 0], "E(3,8): der Tresillo");
+  assert.equal(KW.euklid(5, 16).filter(Boolean).length, 5);
+  assert.deepEqual(KW.textAbstaende("Die Form, ist").map((w) => w.abstand), [3, 4, 3]);
+});
+
+test("Tempo und Tonhöhe: Tonband, Dehnen und Schnitte; Ziel-Tempo aus dem geschätzten Tempo; Stereo und Abtastrate bleiben", async () => {
+  const op = labRegister().hole("lab.tempo"), std = standardParameter(op), { ton } = beat({ bpm: 120 });
+  const s = KW.alsTon([sinus(440, 2)], 48000);
+  const band = await op.ausfuehren({ ton: s }, { ...std, verfahren: "band", tempo: 2 });
+  nahe(band.ausgaben[0].ton.spuren[0].length, 48000, 1, "halb so lang"); nahe(frequenz(band.ausgaben[0].ton.spuren[0], 48000), 880, 4, "eine Oktave höher");
+  nahe(band.protokoll.halbtoene, 12, 0.01, "die Tonhöhe folgt");
+  const gedehnt = await op.ausfuehren({ ton: s }, { ...std, tempo: 0.5 });
+  assert.equal(gedehnt.ausgaben[0].ton.spuren[0].length, 192000); nahe(frequenz(gedehnt.ausgaben[0].ton.spuren[0].subarray(9600, 182400), 48000), 440, 3, "langsamer, gleiche Tonhöhe");
+  const quinte = await op.ausfuehren({ ton: s }, { ...std, halbtoene: 7 });
+  assert.equal(quinte.ausgaben[0].ton.spuren[0].length, 96000); nahe(frequenz(quinte.ausgaben[0].ton.spuren[0].subarray(4800, 91200), 48000), 440 * 2 ** (7 / 12), 5, "Quinte ohne Tempo");
+  const ziel = await op.ausfuehren({ ton }, { ...std, verfahren: "schnitte", zielBpm: 90 });
+  const a = ziel.ausgaben[0].ton;
+  assert.equal(a.spuren.length, 2); assert.equal(a.rate, 48000);
+  nahe(a.spuren[0].length / 48000, 6 * 120 / 90, 0.01, "auf 90 BPM gedehnt");
+  assert.equal(ziel.protokoll.quelle.art, "geschätzt"); nahe(ziel.protokoll.quelle.bpm, 120, 1, "Quelle geschätzt");
+  const neu = KW.einsaetzeFinden(a.pcm, 48000);
+  assert.ok(neu.some((e) => Math.abs(e.t - 4 / 3) < 0.015) && neu.some((e) => Math.abs(e.t - 2) < 0.015), "die Schläge liegen im neuen Raster");
+  assert.ok(KW.spitze(a.spuren) <= 0.967, "keine Übersteuerung");
+  assert.deepEqual((await op.ausfuehren({ ton }, { ...std, tempo: 1.3 })).ausgaben[0].ton.pcm, (await op.ausfuehren({ ton }, { ...std, tempo: 1.3 })).ausgaben[0].ton.pcm, "reproduzierbar");
+});
+
+test("Dekonstruktion: Schnitte umordnen, wiederholen, umkehren; mit Startwert wiederholbar; Ereignisfolge und Konstellation als Eingang", async () => {
+  const op = labRegister().hole("lab.zerlegen"), std = standardParameter(op), { ton, einsaetze } = beat();
+  const a = await op.ausfuehren({ ton }, std, { seed: 4 }), b = await op.ausfuehren({ ton }, std, { seed: 4 }), c = await op.ausfuehren({ ton }, std, { seed: 5 });
+  assert.deepEqual(a.ausgaben[0].ton.pcm, b.ausgaben[0].ton.pcm, "derselbe Startwert, derselbe Klang");
+  assert.notDeepEqual(a.protokoll.folge, c.protokoll.folge);
+  assert.equal(a.entscheidungen[0].art, "zufall"); assert.equal(a.entscheidungen[0].details.startwert, 4);
+  const ordnung = a.ausgaben[1].daten;
+  assert.equal(ordnung.art, "schnitte"); assert.equal(ordnung.ereignisse.length, a.protokoll.stuecke);
+  assert.ok(Math.abs(a.protokoll.schnitte - einsaetze.length) <= 2, `${a.protokoll.schnitte} Schnitte`);
+  const rueck = await op.ausfuehren({ ton }, { ...std, reihenfolge: "rueckwaerts", wiederholen: 0, umkehren: 0 });
+  const quellen = rueck.ausgaben[1].daten.ereignisse.map((e) => e.quelle);
+  assert.deepEqual(quellen, [...quellen].sort((x, y) => y - x), "rückwärts: die letzten Schnitte zuerst");
+  nahe(rueck.ausgaben[0].ton.spuren[0].length, ton.spuren[0].length, 1, "ohne Wiederholung gleich lang");
+  assert.deepEqual(rueck.entscheidungen, [], "ohne Zufall keine Zufallsentscheidung");
+  // eigene Schnittstellen aus einer Ereignisfolge
+  const folge = { ereignisse: [{ t: 0 }, { t: 1 }, { t: 2.5 }], beginn: 0 };
+  const drei = await op.ausfuehren({ ton, einsaetze: folge }, { ...std, schnitt: "ereignisfolge", reihenfolge: "behalten", wiederholen: 0, umkehren: 0 });
+  assert.equal(drei.protokoll.schnitte, 3);
+  await assert.rejects(op.ausfuehren({ ton }, { ...std, schnitt: "ereignisfolge" }), /braucht eine Ereignisfolge/);
+  await assert.rejects(op.ausfuehren({ ton }, { ...std, reihenfolge: "konstellation" }), /braucht eine Konstellation/);
+  const text = await op.ausfuehren({ ton, konstellation: { text: "Zeit ist Anfang" } }, { ...std, reihenfolge: "konstellation", wiederholen: 0, umkehren: 0 });
+  assert.deepEqual(text.protokoll.folge.slice(0, 3), [2, 5, 8], "erst die Schnitte, denen «Anfang» zufällt");
+});
+
+test("Neu-Rhythmisierung: euklidisch, im neuen Tempo, nahtlos schleifbar; Muster aus einer Ereignisfolge, einem Signal, der Konstellation", async () => {
+  const op = labRegister().hole("lab.rhythmus"), std = standardParameter(op), { ton } = beat({ bpm: 120 });
+  const e = await op.ausfuehren({ ton }, { ...std, bpm: 100, takte: 2, schritte: 16, treffer: 5 }, { seed: 2 });
+  const r = e.ausgaben[1].daten;
+  assert.equal(r.art, "rhythmus"); assert.equal(r.bpm, 100); assert.equal(r.raster, 16); assert.deepEqual(r.takt, [4, 4]);
+  assert.equal(r.ereignisse.length, 10, "5 Treffer je Takt");
+  assert.deepEqual(r.ereignisse.slice(0, 5).map((x) => x.schritt), [0, 4, 7, 10, 13], "E(5,16)");
+  nahe(e.ausgaben[0].ton.spuren[0].length / 48000, 2 * 4 * 60 / 100, 1e-3, "zwei Takte bei 100 BPM");
+  assert.equal(e.ausgaben[0].ton.spuren.length, 2);
+  const neu = KW.einsaetzeFinden(e.ausgaben[0].ton.pcm, 48000), schritt = 60 / 100 / 4;
+  for (const x of r.ereignisse.slice(0, 5)) assert.ok(neu.some((y) => Math.abs(y.t - x.schritt * schritt) < 0.015), `Treffer auf Schritt ${x.schritt}`);
+  // der Rhythmus eines Klangs als Muster für einen anderen: dieselben Schritte
+  const uebertragen = await op.ausfuehren({ ton, muster: r }, { ...std, muster: "ereignisfolge", bpm: 140 });
+  assert.deepEqual(uebertragen.ausgaben[1].daten.ereignisse.map((x) => x.schritt), r.ereignisse.map((x) => x.schritt));
+  // ein Steuersignal: nur wo es über der Schwelle liegt
+  const sig = await op.ausfuehren({ ton, signal: { werte: [0, 0, 1, 1] } }, { ...std, muster: "signal", dichte: 0.5, takte: 1 });
+  assert.ok(sig.ausgaben[1].daten.ereignisse.every((x) => x.schritt >= 8), "die erste Hälfte bleibt still");
+  const text = await op.ausfuehren({ ton, konstellation: { text: "Die Form ist eine Unterscheidung" } }, { ...std, muster: "konstellation", takte: 1 });
+  assert.deepEqual(text.ausgaben[1].daten.ereignisse.slice(0, 4).map((x) => x.schritt), [0, 3, 7, 10]);
+  // die eigenen Einsätze, ins Raster gesetzt: Quantisieren
+  const q = await op.ausfuehren({ ton }, { ...std, muster: "quelle", takte: 1 });
+  assert.deepEqual(q.ausgaben[1].daten.ereignisse.map((x) => x.schritt), [0, 2, 4, 6, 8, 10, 12, 14]);
+  await assert.rejects(op.ausfuehren({ ton }, { ...std, muster: "ereignisfolge" }), /braucht eine Ereignisfolge/);
+  await assert.rejects(op.ausfuehren({ ton }, { ...std, muster: "signal", takte: 1 }), /braucht ein Steuersignal/);
+  await assert.rejects(op.ausfuehren({ ton, signal: { werte: [0, 0.1] } }, { ...std, muster: "signal", dichte: 0.2, takte: 1 }), /keinen Treffer/);
+});
+
+test("Körner: Dauer, Stereo aus Mono, Lesekopf nach Steuersignal, reproduzierbar", async () => {
+  const op = labRegister().hole("lab.koerner"), std = { ...standardParameter(op), dauer: 2 }, s = KW.alsTon([sinus(330, 2)], 48000);
+  const a = await op.ausfuehren({ ton: s }, std, { seed: 1 }), b = await op.ausfuehren({ ton: s }, std, { seed: 1 });
+  assert.equal(a.ausgaben[0].ton.spuren.length, 2, "Stereobreite macht aus mono stereo"); assert.equal(a.ausgaben[0].ton.spuren[0].length, 96000);
+  assert.deepEqual(a.ausgaben[0].ton.pcm, b.ausgaben[0].ton.pcm);
+  nahe(KW.spitze(a.ausgaben[0].ton.spuren), 0.891, 0.01, "auf −1 dBFS");
+  const hoch = await op.ausfuehren({ ton: s }, { ...std, tonhoehe: 12, breite: 0 }, { seed: 1 });
+  nahe(frequenz(hoch.ausgaben[0].ton.spuren[0], 48000), 660, 25, "eine Oktave höher");
+  await assert.rejects(op.ausfuehren({ ton: s }, { ...std, leser: "signal" }), /braucht ein Steuersignal/);
+  const g = await op.ausfuehren({ ton: s, signal: { werte: [0.2, 0.8] } }, { ...std, leser: "signal" });
+  assert.equal(g.entscheidungen[0].details.startwert, 1);
+});
+
+test("Klangtransformationen im Projekt: sechs Tempi nebeneinander, Kette auf einen anderen Beat, Takt und Tonspur aus dem neuen Rhythmus, Archiv", async () => {
+  const { p, m, r, t, e } = mitBeat();
+  const v = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.tempo", eingaben: { ton: t.id }, parameter: { verfahren: "schnitte" }, seed: 1,
+    variation: { anzahl: 6, routen: [{ ziel: "tempo", tiefe: 0.5, modulator: { quelle: "saege", frequenz: 0.75, phase: 0 } }] } } });
+  assert.equal(v.ergebnisse.length, 6);
+  assert.equal(new Set(v.ergebnisse.map((x) => x.ton.dauer)).size, 6, "sechs verschiedene Tempi");
+  for (const x of v.ergebnisse) { assert.equal(x.typ, "AUDIO"); assert.equal(x.ton.kanaele, 2); assert.equal(x.ton.abtastrate, 48000); assert.match(x.datei, /\.wav$/); }
+  // weiterführen: ein Ergebnis wird Ausgang der nächsten Transformation
+  P.waehleVariante(p, v.ergebnisse[2].id);
+  const rh = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.rhythmus", eingaben: { ton: v.ergebnisse[2].id }, parameter: { bpm: 110 }, seed: 8 } });
+  const [klang, folge] = rh.ergebnisse;
+  assert.deepEqual([klang.typ, folge.typ], ["AUDIO", "EVENT_SEQUENCE"]);
+  assert.deepEqual(P.verlauf(p, klang.id).schritte.map((s) => s.knoten.operation), ["lab.tempo", "lab.rhythmus"]);
+  // der neue Rhythmus gibt einem Film über Stationen den Takt, und sein eigener Klang ist die Tonspur
+  const w = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.wiederholung", eingaben: { bild: e.id }, parameter: { seite: 64 }, variation: { anzahl: 2 } } });
+  const pt = ST.partitur(p, { stationen: w.ergebnisse.map((x) => x.id), takt: { ereignisfolge: folge.id, schwelle: 0 } });
+  assert.equal(pt.takt.ton, klang.id, "die Tonspur ist der neu rhythmisierte Klang, nicht die Quelle");
+  // die Kette (Tempo → Rhythmus) auf einen anderen Beat anwenden
+  P.waehleVariante(p, klang.id);
+  const kette = P.ketteAusVerlauf(p, klang.id, "schneller und neu gesetzt");
+  const t2 = P.fuegeMaterialHinzu(p, { titel: "beat2.wav", typ: "AUDIO", datei: "medien/b2.wav", mime: "audio/wav", sha256: "c", ton: { dauer: 6, abtastrate: 48000, kanaele: 2 } });
+  m.toene.set(t2.id, beat({ bpm: 96 }).ton);
+  const ende = await ketteAnwenden({ register: r, projekt: p, medien: m, kette, start: t2.id });
+  assert.equal(P.ergebnis(p, ende).typ, "AUDIO");
+  assert.deepEqual(P.pruefeProjekt(p), []);
+  const { projekt } = await entpacke(packe(p, m.dateien));
+  assert.equal(projekt.formatVersion, "0.7.0");
+  assert.equal(projekt.ergebnisse.filter((x) => x.typ === "AUDIO" && x.knoten).length, 6 + 1 + 6 + 1);
 });

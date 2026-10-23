@@ -1,6 +1,6 @@
 # Audio-Operationsformat
 
-Masterprompt §5. Stand: 23. Oktober 2026, Lab 0.1.5, Projektformat 0.6.0.
+Masterprompt §5. Stand: 23. Oktober 2026, Lab 0.1.7, Projektformat 0.7.0.
 
 Dieses Format legt fest, in welchen Formen Klang im Lab vorkommen kann und wie er an Bildoperationen koppelt. Gebaut sind zwei Wege. Erstens wird eine eigene Tondatei Material, die Operation **Tonsignal** misst sie, und das Ergebnis moduliert Bildparameter über die vorhandene Modulation (`kern/modulation.js`), über die Varianten oder über die Zeit (Lab 0.1.3). Zweitens erzeugt der **Klangerzeuger** Klang ohne Tondatei, aus einem Bild, einem Steuersignal, dem Text einer Konstellation oder dem Startwert, und eine Animation kann einen Klang als Tonspur tragen (Lab 0.1.5; der Film über Stationen seit 0.1.4, docs/STATIONEN.md). Es gibt weiterhin keinen Audioeditor und keinen vollständigen Synthesizer (§23).
 
@@ -21,9 +21,9 @@ Klang bringt keine eigene Welt von Typen mit. Die acht Formen aus §5 werden in 
 | **Steuerwert** | `CONTROL_SIGNAL` | `daten.werte`: Folge 0–1 | Hüllkurve, Bildsignal | **gebaut** (seit 0.1.0) |
 | **zeitlicher Parameterverlauf** | `CONTROL_SIGNAL` | zusätzlich `achse: "zeit"`, `beginn`, `dauer`, `je` (Sekunden je Wert) | Automationskurve | **gebaut** (Tonsignal) |
 | **Frequenzspektrum** | `METADATA` | `daten: { art: "frequenzspektrum", baender: 32, grenzenHz: [...], je, werte: [[...32], …] }` | Analyse | vorgesehen |
-| **rhythmisches Muster** | `EVENT_SEQUENCE` | zusätzlich `bpm`, `takt` (z. B. `[4, 4]`), `raster` (Teilung), `ereignisse[].schritt` | Pattern, Sequenz | vorgesehen |
+| **rhythmisches Muster** | `EVENT_SEQUENCE` | zusätzlich `bpm`, `takt` (z. B. `[4, 4]`), `raster` (Teilung), `ereignisse[].schritt` | Pattern, Sequenz | **gebaut** (`lab.rhythmus`, 0.1.7) |
 | **Klanggenerator** | `AUDIO` | eine Operation ohne `AUDIO`-Eingang mit Ausgang `AUDIO` (Klasse `zeitlich`) | Oszillator, Sonifikation eines Bildes | **gebaut** (`lab.klang`) |
-| **Klangtransformation** | `AUDIO` | eine Operation `AUDIO → AUDIO` | Filter, Hall, Granular | vorgesehen |
+| **Klangtransformation** | `AUDIO` | eine Operation `AUDIO → AUDIO` | Tempo, Zerlegen, Granular | **gebaut** (`lab.tempo`, `lab.zerlegen`, `lab.rhythmus`, `lab.koerner`, 0.1.7, KLANGTRANSFORMATION.md) |
 
 Generator und Transformation sind keine Datenformen, sondern Signaturen von Operationen. Sie brauchen kein neues Feld im Projekt, nur Operationen mit Beschreibung im Register. Ein Generator ohne jeden Eingang erscheint wie die ORNA-Konstellation immer in der Liste. Eine Sonifikation hätte die Signatur `IMAGE → AUDIO`, der Rückweg zu Tonsignal.
 
@@ -39,9 +39,9 @@ Tondatei ──Import──► AUDIO ──lab.tonsignal──► CONTROL_SIGNAL
 | Steuerwert, Parameterverlauf | Modulationsquelle «Steuersignal»: Tiefe −1 … +1, bipolar oder einpolig, fortlaufend oder abgetastet, mehrere Routen summiert | gebaut |
 | Ereignisfolge | als Takt für Abtasten und halten (Wert springt bei jedem Ereignis, wie Sample & Hold mit Trigger), als Auslöser einer neuen Variante oder eines Schnitts in einer Bildfolge | vorgesehen |
 | Frequenzspektrum | 32 Bänder auf 32 Spalten einer Wiederholung oder Farbtöne einer Farbmodulation (Spektrum als Nebeneinander) | vorgesehen |
-| rhythmisches Muster | Takt der Iterationen eines Feedbacks: eine Iteration je Schritt des Rasters | vorgesehen |
+| rhythmisches Muster | Takt eines Films über Stationen (gebaut, 0.1.7), Muster für einen anderen Klang (gebaut); Takt der Iterationen eines Feedbacks | teils gebaut |
 | Generator | Rückweg Bild → Klang: der Klangerzeuger liest ein Bild oder ein Steuersignal; jeder seiner Zahlparameter ist wie bei einer Bildoperation modulierbar | gebaut |
-| Transformation | ein Klang wird gefiltert, gedehnt, zerstückelt | vorgesehen |
+| Transformation | ein Klang wird gedehnt, zerstückelt, neu gesetzt, in Körner aufgelöst; Steuersignal (auch aus einem Bild) als Rhythmus oder Lesekopf | gebaut (0.1.7) |
 
 ### Die gemeinsame Uhr
 
@@ -54,7 +54,7 @@ Die Modulation kennt nur die Stelle u von 0 bis 1 (`kern/modulation.js`). Ein St
 
 ### Material `AUDIO`
 
-«Ton wählen» oder Hineinziehen liest WAV, MP3, OGG, FLAC, M4A, AAC, WebM und Opus, höchstens 60 MB und 10 Minuten. Die Datei bleibt unverändert und lokal im Browser. Sie liegt mit SHA-256 im Projekt und kommt so ins Archiv. Zum Messen dekodiert der Browser sie mit Web Audio (`OfflineAudioContext`, 44,1 kHz) und mischt sie einkanalig (`medien/browser.js`).
+«Ton wählen» oder Hineinziehen liest WAV, MP3, OGG, FLAC, M4A, AAC, WebM und Opus, höchstens 60 MB und 10 Minuten. Die Datei bleibt unverändert und lokal im Browser. Sie liegt mit SHA-256 im Projekt und kommt so ins Archiv. Zum Messen dekodiert der Browser sie mit Web Audio (`OfflineAudioContext`) und mischt sie einkanalig (`medien/browser.js`). Seit 0.1.7 in der Abtastrate aus dem Kopf der Datei und mit beiden Kanälen (bis 0.1.6: 44,1 kHz mono), damit die Klangtransformationen in voller Qualität rechnen.
 
 ### Operation `lab.tonsignal` (Adapter)
 
@@ -130,6 +130,8 @@ Kodiert wird wie beim Film über Stationen mit `tonspur.js` aus PHORMA III (unve
 
 Neu in 0.4.0 (PROJEKTFORMAT.md): AUDIO-Material mit `ton`, EVENT_SEQUENCE-Ergebnisse, die Felder `achse: "zeit"`, `beginn`, `dauer`, `je` an Steuersignalen. Die Hauptversion bleibt gleich, Projekte 0.1.0 bis 0.3.0 öffnen unverändert. Vorbereitet, aber nicht gebaut: `METADATA` mit `art: "frequenzspektrum"` und Rhythmusfelder an Ereignisfolgen. Beides fügt nur Felder hinzu und braucht keine neue Hauptversion.
 
+Neu in 0.7.0: Klangtransformationen mit Stereo und eigener Abtastrate (24 Bit WAV), Ereignisfolgen `rhythmus` und `schnitte`, Export `wav`. Projekte 0.1.0 bis 0.6.0 öffnen unverändert.
+
 Neu in 0.6.0: AUDIO-Ergebnisse des Klangerzeugers mit `ton.umriss`, die Partitur (`art: "partitur"`) und `tonspur` an exportierten Animationen. Projekte 0.1.0 bis 0.5.0 öffnen unverändert.
 
 ## Nächste Schritte
@@ -137,5 +139,5 @@ Neu in 0.6.0: AUDIO-Ergebnisse des Klangerzeugers mit `ton.umriss`, die Partitur
 - Echtzeit-Synchronität: Feedback oder Komposition so viele Bilder rechnen lassen, wie der Klang Sekunden mal 30 hat, damit die Tonspur genau passt.
 - Ereignisfolge als Takt fürs Abtasten und Halten.
 - Frequenzspektrum als Befund, Bänder auf Spalten der Wiederholung.
-- Klangtransformation (`AUDIO → AUDIO`: Filter, Dehnung, Granular). Das ist der Schritt zu ORNAMENT SOUND und gehört nicht mehr in 0.1.
+- Klangtransformation: gebaut in 0.1.7 (Tempo, Dekonstruktion, Neu-Rhythmisierung, Körner; KLANGTRANSFORMATION.md). Offen bleiben Filter, Hall und ein Phasenvocoder.
 - Der Klangerzeuger liest das Bild bisher nur als Helligkeit. Farbe als Klangfarbe oder Raum wäre eine nächste, eigene Entscheidung.

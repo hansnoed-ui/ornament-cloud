@@ -69,7 +69,10 @@ export function partitur(projekt, plan) {
     const schwelle = Math.min(1, Math.max(0, Number(plan.takt.schwelle) || 0));
     zeiten = taktzeiten(f.daten, schwelle, fps);
     if (!zeiten.length) throw new Error("Takt: die Ereignisfolge hat keine Einsätze über der Schwelle");
-    const tonId = f.knoten ? Object.values(knoten(projekt, f.knoten).eingaben).find((id) => ergebnis(projekt, id)?.typ === "AUDIO") ?? null : null;
+    // eine Klangtransformation (Rhythmus, Dekonstruktion) gibt die Ereignisfolge zu ihrem eigenen Klang aus: dann trägt dieser die Tonspur
+    const k = f.knoten ? knoten(projekt, f.knoten) : null;
+    const eigen = k?.ausgaben.map((id) => ergebnis(projekt, id)).find((x) => x?.typ === "AUDIO" && x.variante?.seed === f.variante?.seed);
+    const tonId = eigen?.id ?? (k ? Object.values(k.eingaben).find((id) => ergebnis(projekt, id)?.typ === "AUDIO") ?? null : null);
     takt = { ereignisfolge: f.id, schwelle, wiederholen: Boolean(plan.takt.wiederholen), einsaetze: zeiten.length, ton: tonId, tonBeginn: f.daten.beginn ?? 0, tonDauer: f.daten.dauer ?? null };
   }
   // die Folge: jede Station einmal, oder im Takt reihum, bis die Einsätze aufgebraucht sind

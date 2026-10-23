@@ -11,6 +11,7 @@ import { packe, entpacke, ENDUNG } from "./kern/archiv.js";
 import { QUELLEN, POLARITAETEN } from "./kern/modulation.js";
 import { KLASSEN, standardParameter } from "./kern/register.js";
 import { TYPEN } from "./kern/typen.js";
+import { AUSSPIELEN, wavSchreiben, rateWandeln, spurenVon } from "./kern/klangwerk.js";
 import { jevVerfuegbar, jevWahl } from "./jev/jev.js";
 import { zip } from "../../alpha/the-fictory/zip.js?v=23";
 
@@ -23,9 +24,13 @@ const S = {
   experimentErlaubt: new Set(["lab.feedback", "lab.wiederholung", "lab.farbe", "lab.differenz"]), experimentSchritte: 3, experimentVarianten: 3,
   // Film über Stationen: null folgt dem Verlauf des Ausgangs, sonst die eigene Auswahl (Kennungen, mit Übergang je Station)
   stationen: null,
+  // Ausspielen eines Klangs als WAV (Bittiefe, Abtastrate; 0 = wie der Klang) und Wiedergabe in der Schleife
+  ausspielen: { bits: "24", rate: 0 }, schleife: false,
   film: { halten: 1.5, uebergang: 1, art: "blende", quelle: "keine", ziel: "halten", tiefe: 0.3, frequenz: 1, signal: "", takt: "", schwelle: 0.2, wiederholen: true, tonspur: true, seite: 1280 },
 };
 globalThis.ornamentLab = S;   // für Browsertests und die Konsole
+// Nebeneinander anhören: es klingt immer nur ein Klang, der nächste hält den vorigen an
+document.addEventListener("play", (ev) => { for (const a of document.querySelectorAll("audio")) if (a !== ev.target) a.pause(); }, true);
 
 // ---------- Hilfen ----------
 function el(tag, attrs = {}, ...kinder) {
@@ -84,7 +89,7 @@ async function importiereTon(datei) {
     const e = P.fuegeMaterialHinzu(S.projekt, { titel: imp.original.name, typ: "AUDIO", mime: imp.mime, ton: imp.ton, herkunft: { original: imp.original, hinweis: `${sekunden(imp.ton.dauer)}, ${imp.ton.kanaele === 1 ? "mono" : `${imp.ton.kanaele} Kanäle`}, gelesen mit ${imp.ton.abtastrate} Hz` } });
     Object.assign(e, await S.medien.ablegenTon(e, imp));
     S.aktuell = e.id; S.vergleich.clear(); S.knotenAnsicht = null; geaendert();
-    status(`${imp.original.name}: ${sekunden(imp.ton.dauer)}. Mit «Tonsignal» wird daraus ein Steuersignal für Bildparameter.`);
+    status(`${imp.original.name}: ${sekunden(imp.ton.dauer)}, ${imp.ton.abtastrate} Hz. «Tempo und Tonhöhe», «Dekonstruktion», «Neu-Rhythmisierung» und «Körner» verwandeln ihn, «Tonsignal» macht daraus ein Steuersignal für Bildparameter.`);
     alles();
   } catch (f) { status(`Der Ton liess sich nicht lesen: ${f.message}`, null, true); }
 }
@@ -128,7 +133,7 @@ function waehleOperation(id) {
     S.parameter = standardParameter(op);
     S.eingaben = {};
     const zahlen = op.parameter.filter((p) => p.art === "zahl" && p.id !== "seite");
-    S.variation.ziel = ["drehung", "farbdrehung", "zoom", "symmetrie"].find((id) => zahlen.some((p) => p.id === id)) ?? zahlen[0]?.id ?? "";
+    S.variation.ziel = op.moduliert ?? ["drehung", "farbdrehung", "zoom", "symmetrie"].find((id) => zahlen.some((p) => p.id === id)) ?? zahlen[0]?.id ?? "";
     S.variation.anzahl = op.varianten === "moduliert" ? 6 : 1;
     S.variation.achse = "varianten";
   }
@@ -142,7 +147,7 @@ function regler(p, wert, setze) {
   return el("label", { class: "regler", title: p.hilfe ?? null }, el("span", { class: "kopfzeile" }, el("span", { text: p.name }), aus),
     el("input", { type: "range", min: p.min, max: p.max, step: p.schritt ?? "any", value: wert, "data-param": p.id, oninput: (ev) => { const v = Number(ev.target.value); aus.textContent = zahl(v); setze(v); } }));
 }
-const EINGANG_NAME = { konstellation: "Konstellation", vergleich: "Vergleichen mit", profil: "Zielprofil (angleichen an)", bild: "Bild", signal: "Steuersignal" };
+const EINGANG_NAME = { einsaetze: "Ereignisfolge (Schnittstellen)", muster: "Muster (Ereignisfolge)", konstellation: "Konstellation", vergleich: "Vergleichen mit", profil: "Zielprofil (angleichen an)", bild: "Bild", signal: "Steuersignal" };
 /** Eingänge mit Auswahlfeld: alle ausser dem ersten (der ist der Ausgang), bei Generatoren mit lauter optionalen Eingängen alle */
 const waehlbareEingaenge = (op) => (op.eingaenge.every((x) => x.optional) ? op.eingaenge : op.eingaenge.slice(1));
 /** Titel eines Ergebnisses, bei Befunden mit dem Bild, an dem gemessen wurde */
@@ -216,8 +221,9 @@ async function ausfuehren() {
     if (ergebnisse[0].typ === "IMAGE" || !S.aktuell) S.aktuell = ergebnisse[0].id;
     S.ansicht = "neben"; document.querySelector('input[name="ansicht"][value="neben"]').checked = true;
     S.knotenAnsicht = ergebnisse[0].knoten;
+    const klaenge = ergebnisse.filter((x) => x.typ === "AUDIO").length;
     status(ergebnisse[0].typ === "AUDIO"
-      ? `${op.name}: ${ergebnisse.filter((x) => x.typ === "AUDIO").length} Klang. Anhören, mit «weiterführen» zum Ausgang machen: dann misst «Tonsignal» ihn für Bildparameter.`
+      ? `${op.name}: ${klaenge === 1 ? "ein Klang" : `${klaenge} Klänge nebeneinander`}. Anhören, mit «weiterführen» zum Ausgang machen: dann lässt er sich weiter verwandeln, oder «Tonsignal» misst ihn für Bildparameter.`
       : ergebnisse[0].typ === "CONTROL_SIGNAL" && ergebnisse[0].daten?.quelle === "ton"
       ? `${op.name}: Steuersignal über ${sekunden(ergebnisse[0].daten.dauer)}. Wähle ein Bild und bei einer Operation die Quelle «Steuersignal».`
       : `${op.name}: ${ergebnisse.length} Ergebnis${ergebnisse.length === 1 ? "" : "se"}. Wähle eine Variante, um weiterzuführen.`);
@@ -296,19 +302,38 @@ function umriss(e) {
   const pts = u.map((v, i) => `${(i / (u.length - 1)) * 100},${22 - v * 20}`), unten = u.map((v, i) => `${(i / (u.length - 1)) * 100},${22 + v * 20}`).reverse();
   return svg(`<svg viewBox="0 0 100 44" preserveAspectRatio="none" role="img" aria-label="Umriss des Klangs"><polygon points="${[...pts, ...unten].join(" ")}" fill="#f4f1ea" opacity="0.85"/></svg>`);
 }
-/** ein erzeugter Klang: Umriss, Wiedergabe, weiterführen (dann ist er Ausgang für Tonsignal), WAV */
+/** einen Klang als WAV ausspielen, in der gewählten Bittiefe und Abtastrate (umgetastet mit gefenstertem Sinc, 16 Bit mit Dither) */
+async function wavAusspielen(e) {
+  const t = await S.medien.ton(e), { bits } = S.ausspielen, rate = S.ausspielen.rate || t.rate;
+  const spuren = spurenVon(t).map((s) => rateWandeln(s, t.rate, rate));
+  const bytes = wavSchreiben(spuren, rate, { bits, seed: 1 });
+  const name = `${slug(S.projekt.titel)}-${slug(e.titel)}-${bits === "32f" ? "32bit-float" : `${bits}bit`}-${rate / 1000}khz.wav`;
+  herunterladen(new Blob([bytes], { type: "audio/wav" }), name);
+  S.projekt.exporte.push({ id: P.neueId("x"), art: "wav", ergebnis: e.id, bits, rate, quelleRate: t.rate, kanaele: spuren.length, sekunden: Math.round((spuren[0].length / rate) * 1000) / 1000, name, zeit: new Date().toISOString() });
+  geaendert();
+  status(`${name}: ${spuren.length === 1 ? "mono" : "stereo"}, ${bits === "32f" ? "32 Bit Gleitkomma" : `${bits} Bit`}, ${rate} Hz${rate !== t.rate ? ` (umgetastet von ${t.rate} Hz)` : ""}, ${(bytes.length / 1e6).toFixed(1)} MB.`);
+}
+/** Einstellungen fürs Anhören und Ausspielen: Schleife, Bittiefe, Abtastrate */
+function ausspielLeiste() {
+  return el("div", { class: "aktionen ausspielen" },
+    el("label", { class: "regler schalter" }, el("input", { type: "checkbox", checked: S.schleife, onchange: (ev) => { S.schleife = ev.target.checked; for (const a of document.querySelectorAll("#buehne audio")) a.loop = S.schleife; } }), "in der Schleife hören"),
+    el("label", { class: "regler" }, el("span", { text: "WAV mit" }), el("select", { onchange: (ev) => { S.ausspielen.bits = ev.target.value; } }, ...AUSSPIELEN.bits.map((o) => el("option", { value: o.wert, selected: S.ausspielen.bits === o.wert, text: o.name })))),
+    el("label", { class: "regler" }, el("span", { text: "Abtastrate" }), el("select", { onchange: (ev) => { S.ausspielen.rate = Number(ev.target.value); } }, ...AUSSPIELEN.raten.map((o) => el("option", { value: o.wert, selected: S.ausspielen.rate === o.wert, text: o.name })))));
+}
+/** ein erzeugter Klang: Umriss, Wiedergabe, weiterführen (dann ist er Ausgang für Tonsignal und die Klangtransformationen), WAV */
 function klangKarte(e, { gewaehlt = false, knoten = null } = {}) {
   const k = knoten ?? (e.knoten ? P.knoten(S.projekt, e.knoten) : null);
   const ziel = k?.variation?.routen?.[0]?.ziel, p = e.variante?.parameter;
-  const werte = p && ziel ? `${R.hole(k.operation).parameter.find((x) => x.id === ziel)?.name}: ${zahl(p[ziel])}` : `${sekunden(e.ton?.dauer ?? 0)}, ${e.ton?.abtastrate ?? "?"} Hz`;
+  const angaben = `${sekunden(e.ton?.dauer ?? 0)}, ${e.ton?.abtastrate ?? "?"} Hz${e.ton?.kanaele === 2 ? ", stereo" : ""}`;
+  const werte = p && ziel ? `${R.hole(k.operation).parameter.find((x) => x.id === ziel)?.name}: ${zahl(p[ziel])} · ${angaben}` : angaben;
   return el("div", { class: `karte klang${gewaehlt ? " gewaehlt" : ""}`, dataset: { ergebnis: e.id } },
     el("div", { class: "umriss" }, umriss(e)),
-    el("audio", { src: S.medien.url(e), controls: true, preload: "none" }),
+    el("audio", { src: S.medien.url(e), controls: true, preload: "none", loop: S.schleife }),
     el("div", { class: "titel", text: e.titel }),
     el("div", { class: "werte", text: werte }),
     el("div", { class: "aktionen" },
       e.knoten ? el("button", { class: `knopf klein${gewaehlt ? " voll" : ""}`, type: "button", onclick: () => weiterfuehren(e.id), text: gewaehlt ? "gewählt" : "weiterführen" }) : null,
-      el("button", { class: "knopf klein leise", type: "button", onclick: () => herunterladen(new Blob([S.medien.dateien.get(e.datei)], { type: e.mime || "audio/wav" }), `${slug(S.projekt.titel)}-${slug(e.titel)}.${e.datei.split(".").pop()}`), text: "WAV" })));
+      el("button", { class: "knopf klein leise", type: "button", title: "als WAV in der Bittiefe und Abtastrate darüber", onclick: () => wavAusspielen(e), text: "WAV" })));
 }
 function bildKarte(e, { gewaehlt = false, knoten = null } = {}) {
   const k = knoten ?? (e.knoten ? P.knoten(S.projekt, e.knoten) : null);
@@ -357,7 +382,9 @@ function textKarte(e) {
     const striche = d.ereignisse.map((x) => `<line x1="${(x.t / d.dauer) * 100}" y1="44" x2="${(x.t / d.dauer) * 100}" y2="${44 - Math.max(4, Math.min(1, x.staerke) * 40)}" stroke="#f4f1ea" stroke-width="0.8" vector-effect="non-scaling-stroke"/>`).join("");
     return el("div", { class: "signal" },
       svg(`<svg viewBox="0 0 100 44" preserveAspectRatio="none" role="img" aria-label="Ereignisfolge: ${d.ereignisse.length} Einsätze">${striche}</svg>`),
-      el("p", { class: "startwert", text: `${e.titel}: Zeitpunkte und Stärke der Anschläge (Messung, keine Bewertung). Als Ereignisfolge im Projekt, für Trigger und Rhythmus vorgesehen.` }));
+      el("p", { class: "startwert", text: d.art === "rhythmus" ? `${e.titel}: wo die Schnitte im neuen Raster liegen (${d.raster} Schritte je Takt). Als Ereignisfolge im Projekt: Muster für einen anderen Klang oder Takt für den Film über Stationen.`
+        : d.art === "schnitte" ? `${e.titel}: in welcher Ordnung die Schnitte stehen, umgekehrt oder wiederholt. Als Ereignisfolge im Projekt.`
+        : `${e.titel}: Zeitpunkte und Stärke der Anschläge (Messung, keine Bewertung). Als Ereignisfolge im Projekt: Takt für den Film über Stationen, Schnittstellen für die Dekonstruktion.` }));
   }
   if (e.typ === "METADATA" && d?.art === "kompositorisches-profil") return profilKarte(e, d);
   return el("pre", { text: JSON.stringify(d, null, 2) });
@@ -405,8 +432,9 @@ function nebeneinander(e) {
   const teile = [];
   if (!k && e.typ === "AUDIO") {
     teile.push(el("div", { class: "knotenkopf" }, el("b", { text: e.titel }), el("span", { text: "Material: Ton" })),
-      el("div", { class: "ton-karte" }, el("audio", { src: S.medien.url(e), controls: true, preload: "metadata" }),
-        el("p", { class: "startwert", text: `${e.herkunft?.hinweis ?? ""}. Der Ton bleibt unverändert. «Tonsignal» misst ihn (Hüllkurve, Bänder, Schwerpunkt, Einsätze) und gibt ein Steuersignal aus, das Bildparameter moduliert.` })));
+      el("div", { class: "ton-karte" }, el("audio", { src: S.medien.url(e), controls: true, preload: "metadata", loop: S.schleife }),
+        el("p", { class: "startwert", text: `${e.herkunft?.hinweis ?? ""}. Der Ton bleibt unverändert. «Tempo und Tonhöhe», «Dekonstruktion», «Neu-Rhythmisierung» und «Körner» verwandeln ihn in neue Klänge, sechs Varianten nebeneinander. «Tonsignal» misst ihn (Hüllkurve, Bänder, Schwerpunkt, Einsätze) und gibt ein Steuersignal aus, das Bildparameter moduliert.` }),
+        ausspielLeiste(), el("div", { class: "aktionen" }, el("button", { class: "knopf klein leise", type: "button", onclick: () => wavAusspielen(e), text: "WAV" }))));
   } else if (!k) {
     teile.push(el("div", { class: "knotenkopf" }, el("b", { text: e.titel }), el("span", { text: "Material" })), el("div", { class: "raster" }, bildKarte(e)));
   } else {
@@ -418,8 +446,10 @@ function nebeneinander(e) {
       ausgaben.filter((x) => x.typ === "IMAGE").length > 1 ? el("button", { class: "knopf klein leise", type: "button", onclick: () => alleAlsStationen(k), text: "alle als Stationen" }) : null));
     const bilder = ausgaben.filter((x) => x.typ === "IMAGE"), klaenge = ausgaben.filter((x) => x.typ === "AUDIO"), andere = ausgaben.filter((x) => x.typ !== "IMAGE" && x.typ !== "AUDIO");
     if (bilder.length) teile.push(el("div", { class: "raster" }, ...bilder.map((x) => bildKarte(x, { gewaehlt: k.gewaehlt === x.id || S.aktuell === x.id, knoten: k }))));
-    if (klaenge.length) teile.push(el("div", { class: "raster" }, ...klaenge.map((x) => klangKarte(x, { gewaehlt: k.gewaehlt === x.id || S.aktuell === x.id, knoten: k }))));
-    teile.push(...andere.map(textKarte));
+    if (klaenge.length) teile.push(ausspielLeiste(), el("div", { class: "raster" }, ...klaenge.map((x) => klangKarte(x, { gewaehlt: k.gewaehlt === x.id || S.aktuell === x.id, knoten: k }))));
+    // neben Klängen sind die Ereignisfolgen Beigaben (Rhythmus, Ordnung): eingeklappt, damit die Klänge vorn stehen
+    if (klaenge.length && andere.length) teile.push(el("details", { class: "beigaben" }, el("summary", { text: `${andere.length === 1 ? andere[0].titel : `${andere.length} Ereignisfolgen (Rhythmus, Ordnung)`}` }), ...andere.map(textKarte)));
+    else teile.push(...andere.map(textKarte));
   }
   if (S.vergleich.size === 2) {
     const [a, c] = [...S.vergleich];
@@ -499,7 +529,7 @@ async function animation(id) {
     const sig = tonE ? P.verlauf(S.projekt, id).schritte.flatMap(({ knoten: k }) => k.variation?.routen ?? []).map((r) => P.ergebnis(S.projekt, r.modulator?.ergebnis)).find((x) => x?.knoten && P.knoten(S.projekt, x.knoten).eingaben.ton === tonId) : null;
     // die Bildzahl steht erst nach dem Rechnen fest: der Klang läuft ab «beginn» ganz, höchstens so lang wie die längste Animation
     const t = tonE ? await S.medien.ton(tonE) : null, beginn = sig?.daten?.beginn ?? 0;
-    const ton = t ? { pcm: t.pcm, rate: t.rate, beginn, dauer: Math.min(t.pcm.length / t.rate - beginn, P.GRENZEN.animationBilder / FPS) } : null;
+    const ton = t ? { pcm: t.pcm, spuren: t.spuren, rate: t.rate, beginn, dauer: Math.min(t.pcm.length / t.rate - beginn, P.GRENZEN.animationBilder / FPS) } : null;
     const r = await videoAus(bildfolge({ register: R, projekt: S.projekt, medien: S.medien, ergebnisId: id, abbrechen: signal }), { melden: status, ton });
     const name = `medien/${id}-animation.${r.endung}`;
     const bytes = new Uint8Array(await r.blob.arrayBuffer());
@@ -645,7 +675,7 @@ async function stationenFilm(liste) {
     const pt = ST.partitur(S.projekt, stationenPlan(liste)), zeitplan = [];
     const tonId = S.film.tonspur ? pt.takt?.ton : null;
     const roh = tonId ? await S.medien.ton(P.ergebnis(S.projekt, tonId)) : null;
-    const ton = roh ? { pcm: roh.pcm, rate: roh.rate, beginn: pt.takt.tonBeginn, dauer: pt.dauer } : null;
+    const ton = roh ? { pcm: roh.pcm, spuren: roh.spuren, rate: roh.rate, beginn: pt.takt.tonBeginn, dauer: pt.dauer } : null;
     const ids = liste.map((x) => x.ergebnis);
     const d = P.entscheide(S.projekt, { art: "mensch", gegenstand: "stationen", gewaehlt: ids, details: { auswahl: S.stationen ? "eigene" : "Verlauf", uebergang: pt.art, takt: pt.takt?.ereignisfolge ?? null } });
     status(`Film über ${liste.length} Stationen wird gerechnet …`, 0);
@@ -675,7 +705,7 @@ function zeigeProtokoll() {
     const zeit = el("time", { datetime: x.zeit, text: uhr(x.zeit) });
     if (x.material) return el("li", {}, zeit, el("span", {}, "Material: ", el("b", { text: x.material.titel })));
     if (x.meldung) return el("li", {}, zeit, el("span", { text: x.meldung.text }));
-    if (x.export) return el("li", {}, zeit, el("span", { text: `Export: ${x.export.art === "stationen" ? `Film über ${x.export.stationen.length} Stationen, ${sekunden(x.export.partitur.dauer)}${x.export.ton ? `, Ton ${x.export.ton}` : ""}` : x.export.art}${x.export.codec ? ` (${x.export.codec})` : ""}` }),
+    if (x.export) return el("li", {}, zeit, el("span", { text: `Export: ${x.export.art === "stationen" ? `Film über ${x.export.stationen.length} Stationen, ${sekunden(x.export.partitur.dauer)}${x.export.ton ? `, Ton ${x.export.ton}` : ""}` : x.export.art === "wav" ? `${x.export.name} (${x.export.bits === "32f" ? "32 Bit Gleitkomma" : `${x.export.bits} Bit`}, ${x.export.rate} Hz)` : x.export.art}${x.export.codec ? ` (${x.export.codec})` : ""}` }),
       x.export.partitur ? el("details", {}, el("summary", { text: "Partitur" }), el("pre", { text: JSON.stringify({ partitur: x.export.partitur, zeitplan: x.export.zeitplan }, null, 2) })) : null);
     if (x.entscheidung) { const d = x.entscheidung; return el("li", {}, zeit, el("span", {}, artEtikett(d.art), ` ${d.gegenstand}: `, el("b", { text: d.gegenstand === "operation" ? opName(d.gewaehlt) : d.gegenstand === "variante" ? (P.ergebnis(p, d.gewaehlt)?.titel ?? d.gewaehlt) : d.gegenstand === "konstellation" ? (p.ergebnisse.find((x) => x.typ === "CONSTELLATION" && x.daten?.id === d.gewaehlt)?.titel ?? d.gewaehlt) : d.gegenstand === "stationen" ? `${d.gewaehlt.length} Stationen` : d.gewaehlt })),
       Object.keys(d.details ?? {}).length ? el("details", {}, el("summary", { text: "Einzelheiten" }), el("pre", { text: JSON.stringify(d.details, null, 2) })) : null); }

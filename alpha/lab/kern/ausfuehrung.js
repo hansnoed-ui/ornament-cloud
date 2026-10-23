@@ -25,13 +25,13 @@ async function eingaengeLaden(op, projekt, medien, eingaben) {
 }
 
 /** Angaben zu einem erzeugten Klang (wie bei Tonmaterial) und ein Umriss mit 200 Spitzenwerten für die Anzeige */
-function tonAngaben({ pcm, rate }) {
+function tonAngaben({ pcm, rate, spuren = null }) {
   const n = 200, umriss = Array.from({ length: n }, (_, k) => {
     let m = 0;
     for (let i = Math.floor((k * pcm.length) / n), z = Math.floor(((k + 1) * pcm.length) / n); i < z; i++) m = Math.max(m, Math.abs(pcm[i]));
     return Math.round(m * 1000) / 1000;
   });
-  return { dauer: Math.round((pcm.length / rate) * 1000) / 1000, abtastrate: rate, kanaele: 1, umriss };
+  return { dauer: Math.round((pcm.length / rate) * 1000) / 1000, abtastrate: rate, kanaele: spuren?.length ?? 1, umriss };
 }
 
 /** Steuersignal-Quellen in Routen mit den Werten aus dem Projekt versehen (auch für die Zeitparameter eines Films, kern/stationen.js) */

@@ -1,6 +1,7 @@
 // ORNAMENT LAB – kurze Animation aus einer Bildfolge. Bevorzugt WebCodecs (schneller als Echtzeit) mit mp4-muxer 5.2.2 (MIT, lokal in vendor/,
 // wie PHORMA); H.264, sonst VP9 im MP4. Ohne WebCodecs: MediaRecorder (WebM) in Echtzeit, die Dauer wird mit dauer.js aus The Fictory nachgetragen.
-// Eine Tonspur (seit Lab 0.1.4, Film über Stationen) kodiert tonspur.js aus PHORMA III (unverändert): AAC, sonst Opus. Der Rückfall bleibt stumm.
+// Eine Tonspur (seit Lab 0.1.4, Film über Stationen) kodiert tonspur.js aus PHORMA III (unverändert): AAC, sonst Opus. Seit Lab 0.1.7 in Stereo
+// und zuerst mit 320 kbit/s (eigener Versuch hier, dann tonspur.js mit 256 kbit/s und weniger). Der Rückfall bleibt stumm.
 import { Muxer, ArrayBufferTarget } from "../../../vendor/mp4-muxer-5.2.2/mp4-muxer.js";
 import { mitDauer } from "../../../alpha/the-fictory/dauer.js?v=23";
 
@@ -56,7 +57,7 @@ export async function videoAus(bilder, { fps = FPS, melden = () => {}, halten = 
     await kodiere(vorher, Math.round(halten * fps));   // am Ende kurz stehen bleiben
     await enc.flush(); enc.close(); muxer.finalize();
     if (fehler) throw fehler;
-    return { blob: new Blob([target.buffer], { type: "video/mp4" }), mime: "video/mp4", endung: "mp4", bilder: n, codec: k.cfg.codec, breite: w, hoehe: h, ton: spur ? spur.codec : null };
+    return { blob: new Blob([target.buffer], { type: "video/mp4" }), mime: "video/mp4", endung: "mp4", bilder: n, codec: k.cfg.codec, breite: w, hoehe: h, ton: spur ? `${spur.codec}${spur.kanaele === 2 ? " stereo" : ""}${spur.bitrate ? ` ${spur.bitrate / 1000} kbit/s` : ""}` : null };
   }
   // Rückfall: MediaRecorder in Echtzeit
   const typ = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"].find((t) => typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(t));
@@ -76,9 +77,40 @@ export async function videoAus(bilder, { fps = FPS, melden = () => {}, halten = 
   return { blob: new Blob([mitDauer(roh, (performance.now() - t0) / 1000)], { type: "video/webm" }), mime: "video/webm", endung: "webm", bilder: n, codec: typ, breite: w, hoehe: h, ton: null };
 }
 
-/** einen Ausschnitt eines einkanaligen Tons als Tonspur kodieren (tonKodieren aus PHORMA III erwartet einen AudioBuffer: hier dessen Form) */
-async function tonspur({ pcm, rate, beginn = 0, dauer }) {
+/**
+ * einen Ausschnitt eines Tons (ein oder zwei Spuren) als Tonspur kodieren. tonKodieren aus PHORMA III erwartet einen AudioBuffer: hier dessen
+ * Form. AAC kodieren die Browser nur bei 44,1 und 48 kHz: ein Klang mit 88,2 oder 96 kHz wird dafür auf 48 kHz umgetastet (die WAV behält ihre Rate).
+ */
+async function tonspur({ pcm, spuren = null, rate, beginn = 0, dauer }) {
   const { tonKodieren } = await import("../../../alpha/phorma-iii/tonspur.js?v=23");
-  const daten = pcm.subarray(Math.min(pcm.length, Math.max(0, Math.round(beginn * rate))));
-  return tonKodieren({ sampleRate: rate, numberOfChannels: 1, length: daten.length, getChannelData: () => daten }, dauer, { ausblenden: 0.5 });
+  const { rateWandeln } = await import("../kern/klangwerk.js");
+  const ab = Math.max(0, Math.round(beginn * rate)), ziel = rate === 44100 || rate === 48000 ? rate : 48000;
+  const kanaele = (spuren?.length ? spuren : [pcm]).slice(0, 2).map((s) => rateWandeln(s.subarray(Math.min(s.length, ab), Math.min(s.length, ab + Math.ceil(dauer * rate) + rate)), rate, ziel));
+  const buffer = { sampleRate: ziel, numberOfChannels: kanaele.length, length: kanaele[0].length, getChannelData: (k) => kanaele[k] };
+  return (await tonHoch(buffer, dauer)) ?? tonKodieren(buffer, dauer, { ausblenden: 0.5 });
+}
+
+/** AAC mit 320 kbit/s versuchen (wie tonKodieren, nur die höchste Stufe); null, wenn der Encoder das nicht kann */
+async function tonHoch(buffer, dauer, ausblenden = 0.5) {
+  if (typeof AudioEncoder === "undefined" || typeof AudioData === "undefined") return null;
+  const cfg = { codec: "mp4a.40.2", sampleRate: buffer.sampleRate, numberOfChannels: buffer.numberOfChannels, bitrate: 320_000 };
+  try { if (!(await AudioEncoder.isConfigSupported(cfg)).supported) return null; } catch { return null; }
+  const proben = [];
+  let meta = null, fehler = null;
+  const enc = new AudioEncoder({
+    output: (chunk, m) => { if (m?.decoderConfig && !meta) meta = m; const d = new Uint8Array(chunk.byteLength); chunk.copyTo(d); proben.push({ daten: d, key: chunk.type === "key", zeit: chunk.timestamp, dauer: chunk.duration ?? 0 }); },
+    error: (e) => { fehler = e; },
+  });
+  enc.configure(cfg);
+  const rate = buffer.sampleRate, k = buffer.numberOfChannels, n = Math.min(buffer.length, Math.round(dauer * rate)), aus = Math.round(ausblenden * rate), block = 4096;
+  for (let i0 = 0; i0 < n; i0 += block) {
+    if (fehler) break;
+    const m = Math.min(block, n - i0), d = new Float32Array(m * k);
+    for (let c = 0; c < k; c++) { const q = buffer.getChannelData(c); for (let i = 0; i < m; i++) d[c * m + i] = q[i0 + i] * Math.min(1, (n - (i0 + i)) / aus); }
+    const a = new AudioData({ format: "f32-planar", sampleRate: rate, numberOfFrames: m, numberOfChannels: k, timestamp: Math.round((i0 / rate) * 1e6), data: d });
+    enc.encode(a); a.close();
+  }
+  try { await enc.flush(); enc.close(); } catch { return null; }
+  if (fehler || !proben.length) return null;
+  return { proben, meta, codec: "aac", rate, kanaele: k, bitrate: cfg.bitrate };
 }
