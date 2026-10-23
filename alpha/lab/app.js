@@ -28,6 +28,8 @@ const S = {
   ausspielen: { bits: "24", rate: 0 }, schleife: false,
   // Animation des letzten Schritts: die Bildfolge auf die Länge der Tonspur strecken (seit 0.1.8), je Ausgang
   strecken: new Map(),
+  // … oder auf eine frei gewählte Länge in Sekunden (seit 0.1.9), je Ausgang; leer: so lang, wie die Operation rechnet
+  laenge: new Map(),
   film: { halten: 1.5, uebergang: 1, art: "blende", quelle: "keine", ziel: "halten", tiefe: 0.3, frequenz: 1, signal: "", takt: "", schwelle: 0.2, wiederholen: true, tonspur: "auto", seite: 1280 },
 };
 globalThis.ornamentLab = S;   // für Browsertests und die Konsole
@@ -506,6 +508,9 @@ function nacheinander(e) {
       klaenge.length ? el("label", { class: "regler tonspur" }, el("span", { text: "Tonspur" }),
         el("select", { id: "tonspur", onchange: (ev) => S.tonspur.set(e.id, ev.target.value) }, el("option", { value: "", text: "keine" }),
           ...klaenge.map((x) => el("option", { value: x.id, selected: S.tonspur.get(e.id) === x.id, text: x.titel })))) : null,
+      el("label", { class: "regler laenge", title: "Leer: so lang, wie die Operation ihren Verlauf rechnet. Sonst wird die Bildfolge auf diese Länge gedehnt oder gestaucht." }, el("span", { text: "Länge (s)" }),
+        el("input", { type: "number", id: "laenge", min: 1, max: P.GRENZEN.animationBilder / FPS, step: 0.5, placeholder: "eigene", value: S.laenge.get(e.id) ?? "",
+          onchange: (ev) => { const v = Number(ev.target.value); if (ev.target.value === "" || !(v > 0)) S.laenge.delete(e.id); else S.laenge.set(e.id, Math.min(P.GRENZEN.animationBilder / FPS, Math.max(1, v))); } })),
       klaenge.length ? el("label", { class: "regler schalter" }, el("input", { type: "checkbox", id: "strecken", checked: S.strecken.get(e.id) !== false, onchange: (ev) => S.strecken.set(e.id, ev.target.checked) }), "Bildfolge so lang wie der Klang") : null,
       el("button", { class: "knopf leise", type: "button", onclick: () => verlaufExportieren(e.id), text: "Verlauf als ZIP" }),
       el("button", { class: "knopf leise", type: "button", title: "Bild, Film (falls gerechnet) und Protokoll als Ordner für die Lab-Werkschau unter /b/lab/works/", onclick: () => werkExportieren(e.id), text: "Für Works" }),
@@ -534,13 +539,16 @@ async function animation(id) {
     const t = tonE ? await S.medien.ton(tonE) : null, beginn = sig?.daten?.beginn ?? 0;
     const ton = t ? { pcm: t.pcm, spuren: t.spuren, rate: t.rate, beginn, dauer: Math.min(t.pcm.length / t.rate - beginn, P.GRENZEN.animationBilder / FPS) } : null;
     // auf Wunsch so viele Bilder wie der Klang (oder das steuernde Signal) Sekunden mal 30 hat: dann läuft das Bild genau mit dem Ton
-    const ziel = ton && S.strecken.get(id) !== false ? Math.min(P.GRENZEN.animationBilder, Math.round((sig?.daten?.dauer ?? ton.dauer) * FPS)) : null;
-    if (ton && ziel) ton.dauer = ziel / FPS;
+    // eine frei gewählte Länge geht vor; der Ton läuft dann höchstens so lang wie das Bild
+    const laenge = S.laenge.get(id);
+    const ziel = laenge ? Math.min(P.GRENZEN.animationBilder, Math.round(laenge * FPS))
+      : ton && S.strecken.get(id) !== false ? Math.min(P.GRENZEN.animationBilder, Math.round((sig?.daten?.dauer ?? ton.dauer) * FPS)) : null;
+    if (ton && ziel) ton.dauer = laenge ? Math.min(ton.dauer, ziel / FPS) : ziel / FPS;
     const r = await videoAus(bildfolge({ register: R, projekt: S.projekt, medien: S.medien, ergebnisId: id, abbrechen: signal, bilder: ziel }), { melden: status, ton, halten: ziel ? 0 : 1 });
     const name = `medien/${id}-animation.${r.endung}`;
     const bytes = new Uint8Array(await r.blob.arrayBuffer());
     const abgelegt = await S.medien.ablegenDatei(name, bytes, r.mime);
-    S.projekt.exporte.push({ id: P.neueId("x"), art: "animation", ergebnis: id, datei: name, mime: r.mime, codec: r.codec, bilder: r.bilder, fps: FPS, breite: r.breite, hoehe: r.hoehe, sha256: abgelegt.sha256, zeit: new Date().toISOString(),
+    S.projekt.exporte.push({ id: P.neueId("x"), art: "animation", ergebnis: id, ...(laenge ? { laenge } : {}), datei: name, mime: r.mime, codec: r.codec, bilder: r.bilder, fps: FPS, breite: r.breite, hoehe: r.hoehe, sha256: abgelegt.sha256, zeit: new Date().toISOString(),
       ...(ton ? { tonspur: { ergebnis: tonId, beginn, sekunden: Math.round(ton.dauer * 1000) / 1000, ...(r.ton ? { codec: r.ton } : { fehlt: TON_FEHLT }) } } : {}) });
     const tonspur = S.projekt.exporte.at(-1).tonspur ?? null;
     S.filme.set(id, { ...r, tonspur, url: URL.createObjectURL(r.blob), name: `${slug(S.projekt.titel)}-${slug(e.titel)}.${r.endung}` });

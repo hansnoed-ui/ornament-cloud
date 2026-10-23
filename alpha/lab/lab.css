@@ -125,6 +125,7 @@ fieldset { border: 0; margin: 0; padding: 0; }
 .karte.klang .umriss svg, .verlauf .bild > svg { width: 100%; height: 100%; display: block; }
 .karte.klang audio { width: 100%; }
 .tonspur { min-width: 14rem; }
+.laenge input { width: 6rem; }
 .karte .werte { font-size: 0.76rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .karte .aktionen { gap: 6px; }
 .karte label.vergleich { font-size: 0.78rem; color: var(--muted); display: flex; gap: 4px; align-items: center; }

@@ -352,6 +352,16 @@ await check("Ton: eine Tondatei wird Material, Tonsignal misst sie, das Signal d
   assert.equal(anim.bilder, 120, "Bildfolge so lang wie der Klang: 4 s × 30, der Verlauf aus 13 Bildern gedehnt");
   if (anim.tonspur.codec) assert.equal(anim.tonspur.sekunden, 4);
   assert.equal(await page.locator(".film video").first().evaluate((v) => v.muted), !anim.tonspur.codec, "die Vorschau spielt den Ton");
+  // eine frei gewählte Länge geht vor: 6 s Bild, der 4 s lange Ton endet vorher
+  await page.locator("#laenge").fill("6");
+  await page.locator("#laenge").dispatchEvent("change");
+  await page.click("#animation");
+  await warteFertig(page, 120000);
+  const lang = await S(page, () => ornamentLab.projekt.exporte.at(-1));
+  assert.deepEqual([lang.bilder, lang.laenge], [180, 6], "Länge 6 s = 180 Bilder");
+  if (lang.tonspur.codec) assert.equal(lang.tonspur.sekunden, 4);
+  await page.locator("#laenge").fill("");
+  await page.locator("#laenge").dispatchEvent("change");
   // ohne Takt (gleichmässig): der Klang steht trotzdem als Tonspur vor, die Halten lassen sich an seine Länge anpassen
   assert.ok(await page.getByText("Einen anderen Takt gibt es").count() === 0, "Ereignisfolgen sind da, kein Hinweis");
   const tonWahl = page.locator('.stationen-regler label:has(> span:text-is("Tonspur")) select');
