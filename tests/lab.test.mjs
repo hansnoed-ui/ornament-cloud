@@ -848,3 +848,86 @@ test("Klangtransformationen im Projekt: sechs Tempi nebeneinander, Kette auf ein
   assert.equal(projekt.formatVersion, "0.7.0");
   assert.equal(projekt.ergebnisse.filter((x) => x.typ === "AUDIO" && x.knoten).length, 6 + 1 + 6 + 1);
 });
+
+const FILTER = ["lab.glitch", "lab.pixelsortierung", "lab.verzerrung", "lab.licht", "lab.raster", "lab.neusetzen"];
+
+test("Bildfilter (0.1.10): jeder verändert das Bild, ist mit demselben Startwert wiederholbar, Anteil 0 lässt den Eingang stehen", async () => {
+  const r = labRegister(), b = bild();
+  for (const id of FILTER) {
+    const op = r.hole(id), p = { ...standardParameter(op), seite: 96 };
+    assert.equal(op.varianten, "moduliert", id);
+    assert.ok(op.verlauf && op.moduliert && op.parameter.some((q) => q.id === op.moduliert), `${id}: Verlauf und Modulationsziel`);
+    const a = await op.ausfuehren({ bild: b }, p, { seed: 5 }), a2 = await op.ausfuehren({ bild: b }, p, { seed: 5 });
+    const x = a.ausgaben[0].bild;
+    assert.deepEqual([x.width, x.height], [96, 72], id);
+    assert.equal(fingerabdruck(x), fingerabdruck(a2.ausgaben[0].bild), `${id}: wiederholbar`);
+    assert.notEqual(fingerabdruck(x), fingerabdruck(b), `${id}: verändert das Bild`);
+    const leer = await op.ausfuehren({ bild: b }, { ...p, anteil: 0 }, { seed: 5 });
+    assert.equal(fingerabdruck(leer.ausgaben[0].bild), fingerabdruck(b), `${id}: Anteil 0 ist der Eingang`);
+    assert.equal(a.protokoll.anteil, 1, id);
+    if (op.parameter.some((q) => q.id === "flackern")) {
+      const q = id === "lab.pixelsortierung" ? { ...p, laenge: 0.3, zufall: 0.8 } : p;   // die Sortierung würfelt nur die Abschnittslängen
+      const [c, c2] = [await op.ausfuehren({ bild: b }, q, { seed: 6 }), await op.ausfuehren({ bild: b }, q, { seed: 5 })];
+      assert.notEqual(fingerabdruck(c.ausgaben[0].bild), fingerabdruck(c2.ausgaben[0].bild), `${id}: ein anderer Startwert würfelt anders`);
+    }
+  }
+});
+
+test("Bildfilter: der Verlauf wächst vom Eingang zum Ergebnis; Flackern und Zeitmodulation enden beim Ergebnis", async () => {
+  const r = labRegister(), b = bild();
+  for (const id of FILTER) {
+    const op = r.hole(id), p = { ...standardParameter(op), seite: 96, bilder: 5, flackern: true };
+    const fl = [];
+    for await (const f of op.verlauf({ bild: b }, p, { seed: 3 })) fl.push(fingerabdruck(f.bild));
+    assert.equal(fl.length, op.verlaufBilder(p), id);
+    assert.equal(fl[0], fingerabdruck(b), `${id}: das erste Bild ist der Eingang`);
+    const end = await op.ausfuehren({ bild: b }, p, { seed: 3 });
+    assert.equal(fl.at(-1), fingerabdruck(end.ausgaben[0].bild), `${id}: das letzte Bild ist das Ergebnis`);
+  }
+  const op = r.hole("lab.verzerrung"), p = { ...standardParameter(op), art: "welle", seite: 96, bilder: 4 };
+  const zeitRouten = [{ ziel: "phase", tiefe: 1, modulator: { quelle: "saege", frequenz: 0.75, phase: 0 } }];
+  const fl = [];
+  for await (const f of op.verlauf({ bild: b }, p, { seed: 1, zeitRouten })) fl.push(fingerabdruck(f.bild));
+  assert.equal(new Set(fl).size, 4, "die Phase wandert über die Zeit");
+  const end = await op.ausfuehren({ bild: b }, p, { seed: 1, zeitRouten });
+  assert.equal(fl.at(-1), fingerabdruck(end.ausgaben[0].bild));
+});
+
+test("Pixelsortierung: mit offenen Schwellen ist jede Zeile nach Helligkeit sortiert, ausserhalb der Schwellen bleibt alles stehen", async () => {
+  const { pixelsortierung } = await lab("operationen/pixelsortierung.js");
+  const b = bild(), basis = { richtung: "waagrecht", schluessel: "helligkeit", unten: 0, oben: 1, auswahl: "innerhalb", laenge: 1, zufall: 0, umkehren: false };
+  const { bild: s, protokoll } = pixelsortierung(b, basis, 1);
+  assert.equal(protokoll.anteilSortiert, 1);
+  const hell = (d, i) => 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+  for (let y = 0; y < s.height; y += 7) for (let x = 1; x < s.width; x++) assert.ok(Math.round(hell(s.data, (y * s.width + x) * 4)) >= Math.round(hell(s.data, (y * s.width + x - 1) * 4)), `Zeile ${y}`);
+  const roh = (x) => [...x.data].sort().join();
+  assert.equal(roh(s), roh(b), "nur umgeordnet, kein Pixel verändert");
+  const nichts = pixelsortierung(b, { ...basis, auswahl: "ausserhalb" }, 1);
+  assert.equal(fingerabdruck(nichts.bild), fingerabdruck(b));
+});
+
+test("Bildfilter im Projekt: Varianten über die Modulation, ein zweites Bild versetzt, Kette Glitch → Pixelsortierung → Raster, Animation, Archiv", async () => {
+  const { p, m, e, r } = mitMaterial();
+  const g = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.glitch", eingaben: { bild: e.id }, parameter: { seite: 96 }, seed: 11,
+    variation: { anzahl: 4, routen: [{ ziel: "kanalversatz", tiefe: 0.5, polaritaet: "einpolig", modulator: { quelle: "saege", frequenz: 0.75, phase: 0 } }] } } });
+  assert.equal(g.ergebnisse.length, 4);
+  assert.deepEqual(g.ergebnisse.map((x) => x.variante.seed), [11, 12, 13, 14], "jede Variante mit eigenem, protokolliertem Startwert");
+  const kv = g.ergebnisse.map((x) => x.variante.parameter.kanalversatz);
+  assert.ok(kv.every((v, i) => !i || v > kv[i - 1]), `der Versatz wächst über die Reihe: ${kv}`);
+  P.waehleVariante(p, g.ergebnisse[2].id);
+  const s = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.pixelsortierung", eingaben: { bild: g.ergebnisse[2].id }, parameter: { seite: 96, richtung: "senkrecht" } } });
+  const v = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.verzerrung", eingaben: { bild: s.ergebnisse[0].id, steuerbild: e.id }, parameter: { seite: 96, art: "versetzen" } } });
+  assert.equal(v.knoten.protokoll.steuerbild, true, "das Material steuert die Verschiebung");
+  const ra = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.raster", eingaben: { bild: s.ergebnisse[0].id }, parameter: { seite: 96, bilder: 6 },
+    variation: { achse: "zeit", routen: [{ ziel: "zelle", tiefe: 0.3, modulator: { quelle: "sinus", frequenz: 1, phase: 0 } }] } } });
+  let n = 0; for await (const _ of bildfolge({ register: r, projekt: p, medien: m, ergebnisId: ra.ergebnisse[0].id })) n++;
+  assert.equal(n, 6, "die Animation rechnet den Verlauf des Rasters");
+  P.waehleVariante(p, s.ergebnisse[0].id); P.waehleVariante(p, ra.ergebnisse[0].id);
+  assert.deepEqual(P.verlauf(p, ra.ergebnisse[0].id).schritte.map((x) => x.knoten.operation), ["lab.glitch", "lab.pixelsortierung", "lab.raster"]);
+  const kette = P.ketteAusVerlauf(p, ra.ergebnisse[0].id, "Glitch, Sortierung, Raster");
+  const ende = await ketteAnwenden({ register: r, projekt: p, medien: m, kette, start: e.id });
+  assert.equal(P.ergebnis(p, ende).typ, "IMAGE");
+  assert.deepEqual(P.pruefeProjekt(p), []);
+  const { projekt } = await entpacke(packe(p, m.dateien));
+  assert.equal(projekt.formatVersion, "0.7.0", "die Filter brauchen kein neues Projektformat");
+});
