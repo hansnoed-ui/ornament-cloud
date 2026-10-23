@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 const PFAD = "/b/lab/works/";
 const BASIS = "https://ornament.cloud";
-const V = 5;   // Versionsmarke für works.css und works.js (?v=), bei Änderungen hochzählen
+const V = 6;   // Versionsmarke für works.css und works.js (?v=), bei Änderungen hochzählen
 
 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const absaetze = (t) => String(t ?? "").split(/\n\s*\n/).map((a) => a.trim()).filter(Boolean).map((a) => `<p>${esc(a)}</p>`).join("");
@@ -170,6 +170,7 @@ ${dias.join("\n")}
       </ol>
       <p class="zaehler" aria-live="polite"><span class="zaehler-jetzt">01</span> / ${nr(anzahl - 1)}</p>
       <p class="buehne-satz">${leer ? "Noch kein Werk veröffentlicht. Bis dahin: Beispiele aus der PHORMA-Serie als Platzhalter." : "Ergebnisse aus ORNAMENT LAB."}</p>
+      <p class="ring-hinweis">Drehen mit Rad, Pfeiltasten oder Wischen, oder eine Karte antippen.</p>
       <div class="buehne-tasten"><button type="button" class="zurueck" aria-label="Vorheriges Werk">↑</button><button type="button" class="weiter" aria-label="Nächstes Werk">↓</button></div>
     </section>
     <div class="raster-ansicht">

@@ -19,7 +19,7 @@
   <link rel="preload" href="/vendor/fonts/instrument-sans-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/vendor/fonts/newsreader-italic-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/vendor/fonts/fonts.css">
-  <link rel="stylesheet" href="/b/lab/works/works.css?v=5">
+  <link rel="stylesheet" href="/b/lab/works/works.css?v=6">
   <script>/* Ansicht vor dem ersten Bild setzen, damit nichts springt (works.js) */ (() => { const h = document.documentElement; h.classList.add("js"); if (!h.classList.contains("uebersicht")) return; let a = { "#raster": "raster", "#buehne": "buehne" }[location.hash]; try { a ??= localStorage.getItem("works-ansicht"); } catch {} h.dataset.ansicht = a === "raster" ? "raster" : "buehne"; })();</script>
 </head>
 <body>
@@ -40,6 +40,7 @@
       </ol>
       <p class="zaehler" aria-live="polite"><span class="zaehler-jetzt">01</span> / 06</p>
       <p class="buehne-satz">Noch kein Werk veröffentlicht. Bis dahin: Beispiele aus der PHORMA-Serie als Platzhalter.</p>
+      <p class="ring-hinweis">Drehen mit Rad, Pfeiltasten oder Wischen, oder eine Karte antippen.</p>
       <div class="buehne-tasten"><button type="button" class="zurueck" aria-label="Vorheriges Werk">↑</button><button type="button" class="weiter" aria-label="Nächstes Werk">↓</button></div>
     </section>
     <div class="raster-ansicht">
@@ -80,6 +81,6 @@
     </div>
     <div class="dock-leiste"><a class="dock-mitte" href="/b/apps/phorma-i/"><span class="dock-marke" aria-hidden="true"><img src="/assets/beispiele/phorma-i.jpg" alt=""></span><span class="dock-text">Platzhalter · PHORMA I</span></a><button class="dock-menue" type="button" aria-expanded="false" aria-controls="menue" aria-label="Menü"><i></i><i></i></button></div>
   </nav>
-  <script type="module" src="/b/lab/works/works.js?v=5"></script>
+  <script type="module" src="/b/lab/works/works.js?v=6"></script>
 </body>
 </html>
