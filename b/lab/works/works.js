@@ -38,100 +38,84 @@ const dockSetzen = ({ text, href, bild }) => {
 /* ---------- Übersicht: Bühne und Raster ---------- */
 if (html.classList.contains("uebersicht")) {
   const buehne = $(".buehne"), dias = $$(".dia"), jetzt = $(".zaehler-jetzt");
-  // Das Drehkarussell (Wunsch von Christian, 23. Oktober 2026: «in der ersten Ansicht gerne das ganze Karussell sehen, das erst bei Bewegung
-  // dreht und eine Karte in den Vordergrund bringt»): zuerst stehen alle Karten im Ring; erst Rad, Pfeile, Wischen oder ein Klick drehen ihn,
-  // dann wächst die vordere Karte zur Bühne. Weiteres Drehen: zurück in den Ring, drehen, wieder nach vorn. Esc oder Klick daneben: zurück in den Ring.
-  // phase: Stellung des Rings (Index der vorderen Karte, als Kommazahl während der Drehung); vorn: 0 = Ring, 1 = vordere Karte auf der Bühne.
+  // Das Drehkarussell nach dem Vorbild von mubien.com (Screenshots von Christian, 23. Oktober 2026): ein flacher Ring auf Augenhöhe,
+  // vorn eine grosse Karte im Hochformat, die Nachbarn kleiner und am Rand angeschnitten, die hinteren klein dahinter. Rad, Pfeile,
+  // Wischen oder ein Klick auf eine Karte drehen den Ring; ein Klick auf die vordere Karte öffnet das Werk.
+  // phase: Stellung des Rings (Index der vorderen Karte, als Kommazahl während der Drehung)
   const L = dias.length;
   const schmal = matchMedia("(max-width: 759px)");
-  // Filme auf der Bühne nur mit Maus: auf Telefonen (Chrome auf Android) liess ein Film in einer bewegten Karte den Bildschirm flackern,
+  // Filme nur mit Maus: auf Telefonen (Chrome auf Android) liess ein Film in einer bewegten Karte den Bildschirm flackern,
   // dort bleibt das Standbild stehen
   const filme = matchMedia("(hover: hover) and (pointer: fine)");
-  let phase = 0, vorn = 0, i = 0, laeuft = false, ende = 0;
+  let phase = 0, i = 0, laeuft = false, ende = 0;
   const glatt = (t) => (1 - Math.cos(Math.PI * t)) / 2;   // sanft an- und auslaufend, ohne Ruck in der Mitte
   const setze = (d, k, v) => { if (d.style[k] !== v) d.style[k] = v; };
   const zeichne = () => {
     const rang = [];
-    const R = schmal.matches ? 34 : 30, H = schmal.matches ? 30 : 34;   // Halbmesser des Rings in vw, Höhe der Ellipse in vh
+    const R = schmal.matches ? 56 : 40;   // Halbmesser des Rings in vw: die Nachbarn stehen am Rand
     dias.forEach((d, j) => {
       let k = (((j - phase) % L) + L) % L;
       if (k > L / 2) k -= L;
-      const w = (2 * Math.PI * k) / L, tiefe = (Math.cos(w) + 1) / 2;   // 1 vorne, 0 hinten
-      // von leicht oben gesehen: hintere Karten stehen höher und kleiner, damit der ganze Ring sichtbar ist
-      let x = Math.sin(w) * R, y = (tiefe - 0.5) * H - 7, s = schmal.matches ? 0.17 + 0.27 * tiefe : 0.11 + 0.19 * tiefe, o = 0.55 + 0.45 * tiefe, dreh = -Math.sin(w) * 34;
-      const vorne = Math.abs(k) < 0.001;
-      if (vorne) { x *= 1 - vorn; y *= 1 - vorn; s += (1 - s) * vorn; dreh *= 1 - vorn; o = 1; } else o *= 1 - vorn;
-      // Transform und Deckkraft direkt setzen (keine CSS-Variablen, die bis in Bild und Film vererbt würden), und nur, was sich ändert
-      setze(d, "transform", `translate(${x.toFixed(3)}vw, ${y.toFixed(3)}vh) scale(${s.toFixed(4)}) rotateY(${dreh.toFixed(2)}deg)`);
-      setze(d, "opacity", o.toFixed(3));
-      rang.push([tiefe + (vorne ? 1 : 0), d]);
+      const w = (2 * Math.PI * k) / L, tief = 1 - Math.cos(w);   // 0 vorne, 2 hinten
+      const x = Math.sin(w) * R, s = 1 / (1 + 3.4 * tief);       // Perspektive: Nachbarn gut ein Drittel so gross
+      // Transform direkt setzen (keine CSS-Variablen, die bis in Bild und Film vererbt würden), und nur, was sich ändert
+      setze(d, "transform", `translateX(${x.toFixed(3)}vw) scale(${s.toFixed(4)})`);
+      rang.push([-tief, d]);
     });
-    // Stapelfolge nach Rang statt nach Tiefe: z-index ändert sich nur, wenn zwei Karten wirklich die Plätze tauschen
+    // Stapelfolge nach Rang: z-index ändert sich nur, wenn zwei Karten wirklich die Plätze tauschen
     rang.sort((a, b) => a[0] - b[0]).forEach(([, d], n) => setze(d, "zIndex", String(n + 1)));
   };
-  const bewege = (zu, ms) => new Promise((fertig) => {
-    const von = { phase, vorn }, t0 = performance.now();
+  const bewege = (ziel, ms) => new Promise((fertig) => {
+    const von = phase, t0 = performance.now();
     const schritt = (t) => {
-      const p = ruhig || ms === 0 ? 1 : Math.min(1, (t - t0) / ms), e = glatt(p);
-      if ("phase" in zu) phase = von.phase + (zu.phase - von.phase) * e;
-      if ("vorn" in zu) vorn = von.vorn + (zu.vorn - von.vorn) * e;
-      zeichne();
+      const p = ruhig ? 1 : Math.min(1, (t - t0) / ms);
+      phase = von + (ziel - von) * glatt(p); zeichne();
       p < 1 ? requestAnimationFrame(schritt) : fertig();
     };
     requestAnimationFrame(schritt);
   });
-  const imRing = (an) => { if (an) html.dataset.karussell = ""; else delete html.dataset.karussell; };
   const vorne = () => dias[i];
-  // der Film hält nur an und bleibt sichtbar: ein Wechsel zurück aufs Standbild liess die Karte beim Schrumpfen flackern
-  const ruhigStellen = () => { for (const d of dias) { spiele($("video", d), false); d.classList.remove("ist"); } };
-
-  /** in den Ring zurück (die vordere Karte schrumpft) */
-  const zumRing = async () => { ruhigStellen(); imRing(true); await bewege({ vorn: 0 }, 900); };
-  /** die vordere Karte auf die Bühne holen */
-  const nachVorn = async () => {
+  /** die vordere Karte wird zum Werk: Dock, Zähler, Fokus, Film */
+  const vornSetzen = () => {
     const d = vorne();
-    await bewege({ vorn: 1 }, 1100);
-    imRing(false); d.classList.add("ist");
-    for (const x of dias) $(".dia-flaeche", x)?.setAttribute("tabindex", x === d ? "0" : "-1");
-    if (filme.matches && d.classList.contains("hat-film")) spiele($("video", d), true).then((ok) => ok && d.classList.add("spielt"));
+    for (const x of dias) { x.classList.toggle("ist", x === d); $(".dia-flaeche", x)?.setAttribute("tabindex", x === d ? "0" : "-1"); }
+    jetzt.textContent = String(i + 1).padStart(2, "0");
+    dockSetzen({ text: d.dataset.text, href: d.dataset.href, bild: d.dataset.bild });
+    if (html.dataset.ansicht !== "raster" && filme.matches && d.classList.contains("hat-film")) spiele($("video", d), true).then((ok) => ok && d.classList.add("spielt"));
   };
-  /** den Ring um d Karten drehen und die neue vordere Karte nach vorn holen */
+  /** den Ring um d Karten drehen */
   const drehe = async (d) => {
     if (laeuft || !d) return;
     laeuft = true;
-    if (vorn > 0) await zumRing();
+    // der Film hält nur an und bleibt sichtbar: ein Wechsel zurück aufs Standbild liess die Karte flackern
+    for (const x of dias) { spiele($("video", x), false); x.classList.remove("ist"); }
     const ziel = phase + d;
-    await bewege({ phase: ziel }, 1000 + 350 * Math.min(Math.abs(d), 3));
+    await bewege(ziel, 900 + 300 * Math.min(Math.abs(d), 3));
     phase = ((Math.round(ziel) % L) + L) % L; i = phase; zeichne();
-    jetzt.textContent = String(i + 1).padStart(2, "0");
-    dockSetzen({ text: vorne().dataset.text, href: vorne().dataset.href, bild: vorne().dataset.bild });
-    await nachVorn();
+    vornSetzen();
     laeuft = false; ende = performance.now();
   };
-  const blaettern = (d) => (vorn === 0 && d === 0 ? (laeuft = true, nachVorn().then(() => { laeuft = false; })) : drehe(d));
-  imRing(true); zeichne();
-  for (const d of dias) d.classList.remove("ist");
-  for (const x of dias) $(".dia-flaeche", x)?.setAttribute("tabindex", "-1");
+  const blaettern = (d) => drehe(d);
+  html.dataset.karussell = "";
+  zeichne(); vornSetzen();
 
-  // Klick auf eine Karte im Ring: sie dreht nach vorn (kürzester Weg); auf der Bühne öffnet der Klick das Werk
+  // Klick auf eine Nachbarkarte: sie dreht nach vorn (kürzester Weg); ein Klick auf die vordere Karte öffnet das Werk
   buehne.addEventListener("click", (e) => {
     if (gewischt) { e.preventDefault(); return; }
     const d = e.target.closest(".dia");
-    if (vorn === 1 && d === vorne()) return;
+    if (!d || (d === vorne() && !laeuft)) return;
     e.preventDefault();
-    if (!d) { if (vorn === 1 && !laeuft && !e.target.closest("button, a, .zaehler")) { laeuft = true; zumRing().then(() => { laeuft = false; }); } return; }
     let k = (dias.indexOf(d) - i + L) % L;
     if (k > L / 2) k -= L;
-    k === 0 ? blaettern(0) : drehe(k);
+    drehe(k);
   }, true);
   document.addEventListener("keydown", (e) => {
     if (html.dataset.ansicht !== "buehne" || e.altKey || e.metaKey || e.ctrlKey || !menue.hidden) return;
-    if (e.key === "Escape" && vorn === 1 && !laeuft) { laeuft = true; zumRing().then(() => { laeuft = false; }); return; }
     const d = { ArrowDown: 1, ArrowRight: 1, PageDown: 1, ArrowUp: -1, ArrowLeft: -1, PageUp: -1 }[e.key];
     if (d) { e.preventDefault(); blaettern(d); }
   });
 
-  buehne.addEventListener("wheel", (e) => { e.preventDefault(); if (Math.abs(e.deltaY) + Math.abs(e.deltaX) < 12 || laeuft || performance.now() < ende + 600) return; blaettern((e.deltaY || e.deltaX) > 0 ? 1 : -1); }, { passive: false });
+  buehne.addEventListener("wheel", (e) => { e.preventDefault(); if (Math.abs(e.deltaY) + Math.abs(e.deltaX) < 12 || laeuft || performance.now() < ende + 500) return; blaettern((e.deltaY || e.deltaX) > 0 ? 1 : -1); }, { passive: false });
   let start = null, gewischt = false;
   buehne.addEventListener("pointerdown", (e) => { start = { x: e.clientX, y: e.clientY }; });
   buehne.addEventListener("pointerup", (e) => {
@@ -162,7 +146,7 @@ if (html.classList.contains("uebersicht")) {
     const d = dias[i];
     if (a === "buehne") {
       dockSetzen({ text: d.dataset.text, href: d.dataset.href, bild: d.dataset.bild });
-      if (vorn === 1 && filme.matches && d.classList.contains("hat-film")) spiele($("video", d), true).then((ok) => ok && d.classList.add("spielt"));
+      if (filme.matches && d.classList.contains("hat-film")) spiele($("video", d), true).then((ok) => ok && d.classList.add("spielt"));
     } else {
       spiele($("video", d), false); d.classList.remove("spielt");
       const n = $$("a.werk:not(.platzhalter)").length;

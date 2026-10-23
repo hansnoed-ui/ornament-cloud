@@ -254,3 +254,11 @@ a.dock-mitte:hover .dock-text { color: var(--faden); }
 
 /* auf Touch-Geräten ohne Unschärfe hinter Dock, Zähler und Tasten: über bewegten Karten flackerte sie auf Android */
 @media (pointer: coarse) { .dock-leiste, .menue, .zaehler, .buehne-tasten button, .ansicht { -webkit-backdrop-filter: none; backdrop-filter: none; } }
+
+/* das Karussell nach mubien.com: flacher Ring auf Augenhöhe, vorn eine Karte im Hochformat (works.js setzt transform und z-index) */
+.js[data-karussell] .buehne { --kb: min(27vw, calc(70svh * 0.62)); }
+@media (max-width: 759px) { .js[data-karussell] .buehne { --kb: 54vw; } }
+.js[data-karussell] .dia { top: calc(50% - var(--kb) / 0.62 / 2); bottom: auto; height: calc(var(--kb) / 0.62); left: calc(50% - var(--kb) / 2); width: var(--kb); opacity: 1; border-radius: 14px; }
+.js[data-karussell] .dia.ist::after { opacity: 1; }
+.js[data-karussell] .dia.ist .dia-titel { opacity: 1; translate: 0 0; top: auto; bottom: 16px; left: 16px; transform: none; font-size: 22px; }
+@media (max-width: 759px) { .js[data-karussell] .dia.ist .dia-titel { bottom: 12px; left: 12px; font-size: 16px; } }
