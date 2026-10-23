@@ -1,9 +1,9 @@
 // ornament.lab · Works (b/lab/works/, tools/build-lab-works.mjs, 23. Oktober 2026): leer mit Platzhaltern und noindex; ein veröffentlichtes Werk
-// erscheint auf Bühne und im Raster und bekommt eine Werkseite nach dem Prinzip von mubien.com; werk.json wird geprüft. Werke liegen nur im Temp-Ordner.
+// erscheint auf Bühne und im Raster und bekommt eine Werkseite nach dem Prinzip von mubien.com; werk.json wird geprüft. Testwerke liegen nur im Temp-Ordner; der Stand im Repository muss dem Bau entsprechen.
 //   node --test tests/lab-works.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, existsSync, readdirSync, cpSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { baue } from "../tools/build-lab-works.mjs";
@@ -22,8 +22,10 @@ function werkschau(werke) {
   return dir;
 }
 
-test("Works im Repository: gebaut, noindex, nur Platzhalter aus der PHORMA-Serie, keine Werke, nicht in der Sitemap", () => {
-  const html = lies("b/lab/works/index.html");
+test("Works ohne Werk: noindex, nur Platzhalter aus der PHORMA-Serie, keine Werke", () => {
+  const dir = werkschau([]);
+  baue({ ordner: dir });
+  const html = readFileSync(join(dir, "index.html"), "utf8");
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.equal((html.match(/class="dia platzhalter/g) || []).length, 6, "sechs Platzhalter auf der Bühne");
   assert.equal((html.match(/class="werk platzhalter"/g) || []).length, 6, "sechs Platzhalter im Raster");
@@ -32,10 +34,17 @@ test("Works im Repository: gebaut, noindex, nur Platzhalter aus der PHORMA-Serie
   for (const a of ["phorma-i", "phorma-ii", "phorma-iii"]) assert.ok(html.includes(`href="/b/apps/${a}/"`), `führt zu ${a}`);
   assert.ok(html.includes("Bis dahin stehen hier Beispiele aus der PHORMA-Serie als Platzhalter, keine Werke aus dem Lab."));
   assert.ok(!html.includes(`<a class="werk" href`), "kein Werk verlinkt");
-  assert.ok(!lies("sitemap.xml").includes("/b/lab/works/"));
-  const dir = werkschau([]);
+});
+
+test("Works im Repository: gebaut wie von tools/build-lab-works.mjs, Medien vorhanden, nicht in der Sitemap", () => {
+  const html = lies("b/lab/works/index.html");
+  const dir = mkdtempSync(join(tmpdir(), "lab-works-repo-"));
+  for (const e of readdirSync(new URL("b/lab/works/", root), { withFileTypes: true })) if (e.isDirectory()) cpSync(new URL(`b/lab/works/${e.name}/`, root), join(dir, e.name), { recursive: true });
   baue({ ordner: dir });
   assert.equal(readFileSync(join(dir, "index.html"), "utf8"), html, "b/lab/works/index.html entspricht dem Bau (node tools/build-lab-works.mjs)");
+  for (const m of html.matchAll(/(?:src|data-film|data-bild)="(\/b\/lab\/works\/[^"]+)"/g)) assert.ok(existsSync(new URL(m[1].slice(1), root)), `${m[1]} gibt es`);
+  if (!html.includes("dia platzhalter")) assert.ok(!html.includes("noindex"), "mit Werken indexierbar");
+  assert.ok(!lies("sitemap.xml").includes("/b/lab/works/"));
 });
 
 test("Works: ein veröffentlichtes Werk auf Bühne, im Raster und auf seiner Seite; Entwürfe bleiben draussen", () => {
@@ -72,7 +81,7 @@ test("Works: werk.json wird geprüft (Farbe, weitere Bilder, Ordnername)", () =>
 
 test("Works: nichts von aussen, Schriften lokal, Versionsmarke in CSS und Skript", () => {
   const html = lies("b/lab/works/index.html");
-  for (const m of html.matchAll(/(?:src|href)="(https?:[^"]+)"/g)) assert.fail(`von aussen: ${m[1]}`);
+  for (const m of html.matchAll(/(?<!rel="canonical" )(?:src|href)="(https?:[^"]+)"/g)) assert.fail(`von aussen: ${m[1]}`);   // die kanonische Adresse ist kein Laden von aussen
   assert.match(html, /works\.css\?v=\d+/); assert.match(html, /works\.js\?v=\d+/);
   assert.ok(html.includes("/vendor/fonts/fonts.css"));
 });
