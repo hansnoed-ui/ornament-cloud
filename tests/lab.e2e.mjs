@@ -197,6 +197,21 @@ await check("Animation über Stationen: der Verlauf als Stationen, Übergang als
   await page.getByRole("button", { name: "Station 1 nach hinten" }).click();
   assert.deepEqual(await S(page, () => ornamentLab.stationen.map((x) => x.ergebnis)), [vorher[1], vorher[0], ...vorher.slice(2)]);
   assert.equal(await page.locator('.stationen-liste option[value="verlauf"]:not([disabled])').count(), 0, "Geschwister haben keinen Verlauf zueinander");
+  // frühere Schritte unter «Nebeneinander»: ihre Varianten kommen zur Auswahl hinzu
+  await page.locator('input[name="ansicht"][value="neben"]').check({ force: true });
+  const schritte = page.locator(".schritte button");
+  assert.equal(await schritte.count(), 3, "Fictory, Feedback, Wiederholung");
+  await schritte.nth(0).click();
+  await page.getByRole("button", { name: "alle als Stationen dazu" }).click();
+  const zusammen = await S(page, () => ornamentLab.stationen.length);
+  assert.ok(zusammen > 6, `${zusammen} Stationen aus zwei Schritten`);
+  await page.locator('input[name="ansicht"][value="nach"]').check({ force: true });
+  assert.equal(await page.locator(".stationen-liste > li").count(), zusammen);
+  const alle = page.getByRole("button", { name: /alle Varianten aller Schritte/ });
+  const anzahl = Number((await alle.textContent()).match(/\((\d+)\)/)[1]);
+  await alle.click();
+  assert.equal(await page.locator(".stationen-liste > li").count(), anzahl, "alle Varianten aller Schritte");
+  assert.ok(anzahl >= zusammen);
   await page.getByRole("button", { name: "Verlauf übernehmen" }).click();
   assert.equal(await page.locator(".stationen-liste > li").count(), 4);
 });
