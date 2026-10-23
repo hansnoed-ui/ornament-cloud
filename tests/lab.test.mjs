@@ -393,6 +393,7 @@ test("Stationen: Partitur aus dem Verlauf, Halten und Übergang, Verlauf nur wo 
   const ids = ST.stationenAusVerlauf(p, c.ergebnisse[0].id);
   assert.deepEqual(ids, [e.id, f.ergebnisse[1].id, c.ergebnisse[0].id], "Material, Feedback, Farbe");
   assert.deepEqual(ST.variantenAusVerlauf(p, c.ergebnisse[0].id), [...f.ergebnisse, ...c.ergebnisse].map((x) => x.id), "alle Varianten aller Schritte, ohne Material");
+  assert.deepEqual(ST.variantenAusVerlauf(p, c.ergebnisse[0].id, "AUDIO"), [], "Klänge gibt es hier keine");
   assert.ok(ST.verlaufMoeglich(p, e.id, f.ergebnisse[1].id));
   assert.ok(!ST.verlaufMoeglich(p, f.ergebnisse[0].id, f.ergebnisse[2].id), "Geschwister entstehen nicht auseinander");
   const pt = ST.partitur(p, { stationen: ids, halten: 1, uebergang: 0.5, art: "blende" });
@@ -1165,4 +1166,22 @@ test("Zusammenstellung aus einem Video (Lab 0.1.14): jeder Abschnitt nimmt das S
   assert.deepEqual(p.knoten.slice(-6).map((k) => k.eingaben.bild), [stills[0], stills[0], stills[1], stills[1], stills[2], stills[2]], "die Abschnitte folgen den Standbildern, auch in der Kette");
   assert.deepEqual(x.entscheidung.details.video, stills);
   assert.equal(x.plan.stationen[0], stills[0]);
+});
+
+test("Klangfolge (0.1.13): Klänge hintereinander mit Überblendung, umgetastet in die erste Rate, stereo sobald einer stereo ist", () => {
+  const a = { spuren: [new Float32Array(48000).fill(0.5)], rate: 48000 };
+  const b = { spuren: [new Float32Array(22050).fill(1), new Float32Array(22050).fill(-1)], rate: 44100 };
+  const t = KW.klangfolge([a, b, a], { blende: 0.1 });
+  assert.equal(t.rate, 48000); assert.equal(t.spuren.length, 2);
+  assert.equal(t.spuren[0].length, 48000 + 24000 + 48000 - 2 * 4800, "die Blenden überlappen");
+  assert.deepEqual(t.einsaetze, [0, 0.9, 1.3]);
+  assert.equal(t.spuren[1][1000], 0.5, "einkanalig auf beiden Seiten");
+  assert.ok(Math.abs(t.spuren[1][50000] + 1) < 0.02, "der zweite Klang, rechter Kanal");
+  const mitte = 43200 + 2400;   // in der Blende: Sinus und Kosinus gleich laut
+  assert.ok(Math.abs(t.spuren[0][mitte] - (0.5 + 1) * Math.SQRT1_2) < 0.01, `${t.spuren[0][mitte]}`);
+  // ohne Blende: einfach hintereinander; die Blende ist höchstens halb so lang wie der kürzere Nachbar
+  assert.equal(KW.klangfolge([a, a], { blende: 0 }).pcm.length, 96000);
+  assert.equal(KW.klangfolge([a, { spuren: [new Float32Array(100)], rate: 48000 }], { blende: 2 }).pcm.length, 48000 + 50);
+  assert.throws(() => KW.klangfolge([a]), /mindestens zwei/);
+  assert.throws(() => KW.klangfolge([a, a], { hoechstens: 1.5 }), /länger als/);
 });

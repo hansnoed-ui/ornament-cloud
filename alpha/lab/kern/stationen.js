@@ -31,14 +31,14 @@ const rund = (x) => Math.round(x * 1000) / 1000;
 const begrenze = (p, v) => Math.min(p.max, Math.max(p.min, Number.isFinite(Number(v)) ? Number(v) : p.standard));
 
 /** die Bildzustände des Verlaufs bis zu einem Ergebnis (Material zuerst), die übliche Folge von Stationen */
-export function stationenAusVerlauf(projekt, ergebnisId) {
+export function stationenAusVerlauf(projekt, ergebnisId, typ = "IMAGE") {
   const { material, schritte } = verlauf(projekt, ergebnisId);
-  return [material, ...schritte.map((s) => s.ergebnis)].filter((e) => e?.typ === "IMAGE").map((e) => e.id);
+  return [material, ...schritte.map((s) => s.ergebnis)].filter((e) => e?.typ === typ).map((e) => e.id);
 }
 
-/** alle Bildvarianten aller Schritte des Verlaufs bis zu einem Ergebnis, Schritt für Schritt in ihrer Reihenfolge (ohne Material) */
-export function variantenAusVerlauf(projekt, ergebnisId) {
-  return verlauf(projekt, ergebnisId).schritte.flatMap((s) => s.knoten.ausgaben).filter((id) => ergebnis(projekt, id)?.typ === "IMAGE");
+/** alle Varianten (Bilder, mit typ "AUDIO" Klänge) aller Schritte des Verlaufs bis zu einem Ergebnis, Schritt für Schritt (ohne Material) */
+export function variantenAusVerlauf(projekt, ergebnisId, typ = "IMAGE") {
+  return verlauf(projekt, ergebnisId).schritte.flatMap((s) => s.knoten.ausgaben).filter((id) => ergebnis(projekt, id)?.typ === typ);
 }
 
 /** Ist «nach» aus «von» durch eine Operation entstanden? Dann kann der Übergang deren eigener Verlauf sein. */

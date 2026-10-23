@@ -23,6 +23,12 @@ Unter **Nacheinander** steht der Bereich «Animation über Stationen».
 - **Bewegung** (seit Lab 0.1.15), 0 bis 1: eine Kamera über jedem Bild des Films. Sie schwebt langsam, dreht sich leicht und zoomt; mit «Zoom atmet mit» und einem Steuersignal (etwa der Lautstärke eines Tonsignals) geht sie bei lauten Stellen näher heran. So ist jedes Bild anders, auch während eine Station steht. 0 lässt die Stationen ruhig stehen wie bisher.
 - **Filmgrösse:** die längste Seite, 320 bis 2048 px. Stationen anderer Form werden unverzerrt eingepasst, auf dem dunklen Grund der Fictory.
 
+## Klang über Stationen (seit Lab 0.1.13)
+
+Dasselbe gibt es für Klänge. Unter **Nebeneinander** hat jede Klangkarte «Station», und ein Schritt mit mehreren Klängen hat «alle Klänge als Stationen» (fügt hinzu, wie bei den Bildern). Unter **Nacheinander** steht der Bereich «Klang über Stationen»: ohne eigene Auswahl die Klänge des Verlaufs, sonst die eigene Auswahl. «alle Klänge aller Schritte» nimmt alle Klangvarianten des Verlaufs auf einmal. ↑ ↓ ✕ wie oben.
+
+«Klang über die Stationen» legt die Klänge hintereinander (`klangfolge` in kern/klangwerk.js, ohne DOM, getestet). Dazwischen liegt eine gleich laute Überblendung (Sinus/Kosinus) von 0 bis 2 s, höchstens halb so lang wie der kürzere Nachbar. Alle Klänge werden in die Abtastrate des ersten umgetastet. Ist einer stereo, wird die Folge stereo. Das Ergebnis ist ein neuer Klang wie eine Tondatei, unter Material: mit `herkunft.art: "klangfolge"`, den Stationen, der Blende und den Einsätzen (s). Er lässt sich anhören, als WAV ausspielen, weiter verwandeln und als Tonspur unter einen Film legen. Die Auswahl ist eine menschliche Entscheidung mit `gegenstand: "klangstationen"`. Höchstens 10 Minuten (`GRENZEN.tonSekunden`).
+
 ## Rechnung
 
 `kern/stationen.js` arbeitet ohne DOM und ist in `tests/lab.test.mjs` geprüft.
