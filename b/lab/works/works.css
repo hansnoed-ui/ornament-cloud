@@ -157,7 +157,7 @@ a.werk:hover .medium img { transform: scale(1.025); }
 .werk-kopf { display: grid; gap: 18px; padding: clamp(24px, 6vw, 88px) 0 clamp(28px, 4vw, 56px); }
 .schlagworte { display: flex; flex-wrap: wrap; gap: 4px; }
 .schlagworte li { padding: 3px 8px; border-radius: 4px; background: var(--flaeche); }
-.werk-kopf h1 { font-size: var(--gross); line-height: 1.2; letter-spacing: -0.01em; max-width: 26ch; }
+.werk-kopf h1 { font-size: clamp(32px, 4.4vw, 64px); line-height: 1.1; letter-spacing: -0.02em; max-width: 20ch; text-wrap: balance; }
 .werk-satz { font-size: var(--gross); line-height: 1.2; letter-spacing: -0.01em; color: var(--leise); max-width: 26ch; margin-top: -18px; text-wrap: balance; }
 .werk-koerper { display: grid; gap: 28px; }
 .werk-leiste { display: grid; gap: 14px; align-content: start; }
@@ -175,7 +175,12 @@ a.werk:hover .medium img { transform: scale(1.025); }
 .angaben div { display: grid; gap: 2px; padding: 6px 0; border-bottom: 1px solid var(--linie); }
 .angaben dt { color: var(--leise); }
 .bildfolge { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--fuge); }
-.stueck { grid-column: span 6; overflow: hidden; border-radius: var(--rund); background: var(--flaeche); display: grid; place-items: center; }
+.stueck { position: relative; grid-column: span 6; overflow: hidden; border-radius: 12px; background: var(--flaeche); display: grid; place-items: center; }
+/* Tontaste auf dem Film (unten links, wie die kleinen Schilder auf mubien.com) */
+.ton { position: absolute; left: 12px; bottom: 12px; padding: 5px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.85); color: #111; font-size: 13px; }
+.ton[aria-pressed="true"] { background: var(--farbe, var(--faden)); color: #fff; }
+/* auf schmalen Bildschirmen wie bei mubien: zuerst der grosse Satz, dann die Bilder, danach die Abschnitte */
+@media (max-width: 999px) { .werk-leiste { order: 2; } .bildfolge { order: 1; } }
 .stueck img, .stueck video { width: 100%; height: auto; }
 .stueck.voll img, .stueck.voll video { width: auto; max-height: calc(100svh - 96px); }
 @media (min-width: 760px) {

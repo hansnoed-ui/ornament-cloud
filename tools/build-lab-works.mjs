@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 const PFAD = "/b/lab/works/";
 const BASIS = "https://ornament.cloud";
-const V = 12;   // Versionsmarke für works.css und works.js (?v=), bei Änderungen hochzählen
+const V = 13;   // Versionsmarke für works.css und works.js (?v=), bei Änderungen hochzählen
 
 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const absaetze = (t) => String(t ?? "").split(/\n\s*\n/).map((a) => a.trim()).filter(Boolean).map((a) => `<p>${esc(a)}</p>`).join("");
@@ -194,8 +194,9 @@ ${kacheln.join("\n")}
 /** Bildfolge der Werkseite: das erste Stück über die ganze Breite, danach paarweise, abwechselnd breit und schmal (wie die Bildfolgen auf mubien.com) */
 function bildfolge(w) {
   const stuecke = [];
-  if (w.film) stuecke.push(`<video src="${w.url}${w.film}" poster="${w.url}${w.bild}"${masse(w)} controls loop muted playsinline preload="metadata"></video>`);
-  stuecke.push(`<img src="${w.url}${w.bild}" alt="${esc(altText(w))}"${masse(w)}${stuecke.length ? ` loading="lazy"` : ""}>`);
+  // wie auf mubien.com: der Film läuft stumm und ohne Bedienleiste, eine kleine Taste schaltet den Ton; das Standbild ist dann sein Poster
+  if (w.film) stuecke.push(`<video src="${w.url}${w.film}" poster="${w.url}${w.bild}"${masse(w)} autoplay loop muted playsinline preload="auto" aria-label="${esc(altText(w))}"></video><button type="button" class="ton" aria-pressed="false">Ton an</button>`);
+  else stuecke.push(`<img src="${w.url}${w.bild}" alt="${esc(altText(w))}"${masse(w)}>`);
   for (const b of w.bilder) stuecke.push(`<img src="${w.url}${esc(b.datei)}" alt="${esc(b.alt ?? `${w.titel}, Ansicht`)}" loading="lazy">`);
   const breiten = ["voll"];
   for (let i = 1, paar = 0; i < stuecke.length; i += 2, paar++) {
