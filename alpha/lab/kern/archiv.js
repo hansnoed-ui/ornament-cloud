@@ -62,6 +62,6 @@ export async function entpacke(bytes) {
   if (!json) throw new Error("projekt.json fehlt im Archiv");
   const projekt = ladeProjekt(new TextDecoder().decode(json));
   const medien = new Map([...dateien].filter(([n]) => n.startsWith("medien/")));
-  const fehlt = projekt.ergebnisse.filter((e) => e.datei && !medien.has(e.datei)).map((e) => e.datei);
+  const fehlt = [...projekt.ergebnisse, ...(projekt.exporte ?? [])].filter((e) => e.datei && !medien.has(e.datei)).map((e) => e.datei);
   return { projekt, medien, fehlt };
 }

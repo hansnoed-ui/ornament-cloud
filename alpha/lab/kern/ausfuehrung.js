@@ -24,8 +24,8 @@ async function eingaengeLaden(op, projekt, medien, eingaben) {
   return out;
 }
 
-/** Steuersignal-Quellen in Routen mit den Werten aus dem Projekt versehen */
-function routenAufloesen(projekt, routen = []) {
+/** Steuersignal-Quellen in Routen mit den Werten aus dem Projekt versehen (auch für die Zeitparameter eines Films, kern/stationen.js) */
+export function routenAufloesen(projekt, routen = []) {
   return routen.map((r) => {
     if (r.modulator?.quelle !== "signal") return r;
     const s = ergebnis(projekt, r.modulator.ergebnis);

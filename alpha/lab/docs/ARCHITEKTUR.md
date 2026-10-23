@@ -29,11 +29,12 @@ Die zentrale Einheit ist die **Operation**, nicht die App. Vorhandene Anwendunge
 | `kern/komposition.js` | kompositorisches Profil (Schwerpunkt, Symmetrie, Licht, Kontrast, Farbe, Richtung) und die Zerlegung, mit der `lab.komposition` diese Komponenten skaliert oder einem Zielprofil angleicht (docs/KOMPOSITION.md) | nein |
 | `kern/projekt.js` | Projektformat, Knoten, Ergebnisse, Entscheidungen (4 Arten), Verlauf, Geschwister, Ketten, Prüfung, Grenzen | nein |
 | `kern/ausfuehrung.js` | `fuehreAus`, `bildfolge` (Animation), `regelVorschlaege`, `experiment`, `ketteAnwenden` | nein |
+| `kern/stationen.js` | Animation über Stationen: Partitur (Reihenfolge, Halten, Übergänge, Modulation der Zeit, Takt aus Ereignisfolgen) und die Bilder des Films (docs/STATIONEN.md) | nein |
 | `kern/archiv.js` | ZIP schreiben (ZIP-Schreiber der Fictory) und lesen, mit Prüfsummen und Pfadprüfung | nein |
 | `kern/bilddaten.js` | reine Bildhilfen in ImageData-Form, Abtastung, Farbmatrix, SHA-256 | nein |
 | `operationen/*.js` | die Operationen; `index.js` trägt sie ins Register ein | nur `fictory.js` |
 | `medien/browser.js` | PNG-Kodierung, Import mit Typ-, Grössen- und Ausrichtungsprüfung, Objekt-URLs; Tondateien unverändert ablegen und mit Web Audio dekodieren (einkanalig, 44,1 kHz) | ja |
-| `medien/video.js` | MP4 über WebCodecs und mp4-muxer (vendor/), Rückfall WebM über MediaRecorder | ja |
+| `medien/video.js` | MP4 über WebCodecs und mp4-muxer (vendor/), seit 0.1.4 mit Tonspur, Rückfall WebM über MediaRecorder | ja |
 | `jev/` | jev live: Lage, Frage, Seite, Worker-Entwurf (aus, solange keine Adresse eingetragen ist) | nein |
 | `app.js`, `index.html`, `lab.css` | Oberfläche mit vier Bereichen und zwei Ansichten | ja |
 
@@ -43,13 +44,14 @@ Die Trennung zwischen Rechnung und Darstellung ist durch REA belegt (REA-PROTOKO
 
 - `alpha/the-fictory/analyse.js`, `operationen.js`, `zeichnen.js`, `feld.js`, `regeln.js`, `jev.js`, `orna.js`, `zip.js`, `dauer.js` (Importe mit `?v=23` wie in der Fictory, damit jedes Modul nur einmal geladen wird)
 - `alpha/phorma-iii/ton.js` (Tonanalyse: Hüllkurve, Bänder, Spektrum, Fluss, Einsätze) für `lab.tonsignal`
+- `alpha/phorma-iii/tonspur.js` (`tonKodieren`: AAC, sonst Opus) für die Tonspur eines Films über Stationen
 - `portfolio/nebeneinander-nacheinander/js/data/` (ORNA-Bestand) und `js/lib/random.js` (Ziehung)
 - `vendor/mp4-muxer-5.2.2/`, `vendor/fonts/`
 - `tools/serve-orma.mjs` (lokaler Server)
 
 ## Grenzen gegen Schleifen und Verbrauch (`GRENZEN` in kern/projekt.js)
 
-- höchstens 300 Ausführungen je Projekt, 12 Varianten je Ausführung, 900 Bilder je Animation
+- höchstens 300 Ausführungen je Projekt, 12 Varianten je Ausführung, 900 Bilder je Animation, 48 Stationen und 3600 Bilder je Film über Stationen
 - Experiment: höchstens 8 Schritte und 120 s, nur erlaubte Operationen
 - Arbeitsbilder höchstens 2048 px, Importdateien höchstens 60 MB und nur Bild- oder Tontypen, Töne höchstens 10 Minuten
 - Parametergrenzen sind hart (`bereinigeParameter`). Rechengrösse und Iterationen sind Parameter und darum sichtbar.
