@@ -8,12 +8,12 @@ Stand: 23. Oktober 2026, Masterprompt «ORNAMENT LAB» Version 0.2 von Christian
 ## Starten
 
 ```bash
-node src/lab/starten.mjs            # → http://localhost:8790/src/lab/
+node alpha/lab/starten.mjs            # → http://localhost:8790/alpha/lab/
 ```
 
 Keine Installation und keine Abhängigkeiten, nur Node 18 oder neuer. Der Server liefert das Repository nur an `127.0.0.1` aus, weil das Lab The Fictory, ORNA und `vendor/` an ihren Orten liest. Ein Chromium-Browser wird empfohlen: Er erzeugt das MP4 über WebCodecs. Andere Browser fallen auf WebM in Echtzeit zurück.
 
-**Isolation:** Das Lab liegt in `src/lab/`. `src/` steht in `tools/hostpoint/ausschluss.txt` und wird darum nicht auf den Webspace geladen, auch nicht nach einem Merge auf `main`. Eine spätere Einbindung unter `/lab` braucht Christians ausdrückliche Zustimmung.
+**Online und Isolation:** Das Lab liegt in `alpha/lab/` und ist seit dem 23. Oktober 2026 auf Christians Wunsch unter <https://ornament.cloud/alpha/lab/> erreichbar. Es läuft ganz im Browser: Bilder und Projekte bleiben auf dem Gerät der Person, nichts wird hochgeladen. Wie die anderen Alpha-Apps ist es nur per Direktlink erreichbar, keine Seite verlinkt es, und `noindex` hält es aus der Suche. Nicht auf den Webspace kommen `docs/`, `werkzeuge/`, `starten.mjs`, `README.md` und `jev/worker-entwurf.js` (`tools/hostpoint/ausschluss.txt`). Die Website und die bestehenden Apps bleiben unverändert.
 
 ## Ein Durchgang
 

@@ -13,7 +13,7 @@ try { playwright = require("playwright"); } catch { playwright = require(join(pr
 const root = new URL("../", import.meta.url);
 const { startServer } = await import(new URL("tools/serve-orma.mjs", root).href);
 const server = await startServer(0);
-const base = `http://localhost:${server.address().port}/src/lab/`;
+const base = `http://localhost:${server.address().port}/alpha/lab/`;
 const browser = await playwright.chromium.launch();
 const ergebnisse = [];
 async function check(name, fn) {

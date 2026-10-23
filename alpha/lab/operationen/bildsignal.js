@@ -11,7 +11,7 @@ export const bildsignal = {
   name: "Bildsignal",
   version: "0.1.0",
   klasse: "kopplung",
-  herkunft: { art: "neu", quelle: "ORNAMENT LAB", referenz: "TouchDesigner TOP to CHOP; Max/Jitter (Matrix zu Zahlen)", datei: "src/lab/operationen/bildsignal.js" },
+  herkunft: { art: "neu", quelle: "ORNAMENT LAB", referenz: "TouchDesigner TOP to CHOP; Max/Jitter (Matrix zu Zahlen)", datei: "alpha/lab/operationen/bildsignal.js" },
   beschreibung: "Misst ein Merkmal entlang einer Achse und gibt es als Steuersignal aus, das andere Operationen modulieren kann.",
   eingaenge: [{ name: "bild", typ: "IMAGE" }],
   ausgaenge: [{ name: "signal", typ: "CONTROL_SIGNAL" }],

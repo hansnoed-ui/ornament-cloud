@@ -8,7 +8,7 @@ export const differenz = {
   name: "Differenz",
   version: "0.1.0",
   klasse: "beobachtung",
-  herkunft: { art: "neu", quelle: "ORNAMENT LAB", referenz: "Difference-Komposition (Fusion Merge, After Effects, Resolume)", datei: "src/lab/operationen/differenz.js" },
+  herkunft: { art: "neu", quelle: "ORNAMENT LAB", referenz: "Difference-Komposition (Fusion Merge, After Effects, Resolume)", datei: "alpha/lab/operationen/differenz.js" },
   beschreibung: "Zeigt die Unterschiede zwischen zwei Zuständen und misst sie. Messung, keine Bewertung.",
   eingaenge: [{ name: "bild", typ: "IMAGE" }, { name: "vergleich", typ: "IMAGE" }],
   ausgaenge: [{ name: "bild", typ: "IMAGE" }],

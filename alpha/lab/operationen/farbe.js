@@ -10,7 +10,7 @@ export const farbe = {
   name: "Farbe modulieren",
   version: "0.1.0",
   klasse: "raeumlich",
-  herkunft: { art: "neu", quelle: "ORNAMENT LAB", referenz: "Fusion Color Corrector; p5.js filter() (POSTERIZE, INVERT); CSS Filter Effects (hue-rotate)", datei: "src/lab/operationen/farbe.js" },
+  herkunft: { art: "neu", quelle: "ORNAMENT LAB", referenz: "Fusion Color Corrector; p5.js filter() (POSTERIZE, INVERT); CSS Filter Effects (hue-rotate)", datei: "alpha/lab/operationen/farbe.js" },
   beschreibung: "Farbdrehung, Sättigung, Kontrast, Tonwertstufen und Umkehr in fester Reihenfolge.",
   eingaenge: [{ name: "bild", typ: "IMAGE" }],
   ausgaenge: [{ name: "bild", typ: "IMAGE" }],

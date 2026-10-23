@@ -1,11 +1,11 @@
-// ORNAMENT LAB (src/lab/): Kern, Operationen, Projektformat und Archiv ohne Browser.
+// ORNAMENT LAB (alpha/lab/): Kern, Operationen, Projektformat und Archiv ohne Browser.
 //   node --test tests/lab.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 
 const root = new URL("../", import.meta.url);
-const lab = (p) => import(new URL(`src/lab/${p}`, root).href);
+const lab = (p) => import(new URL(`alpha/lab/${p}`, root).href);
 const { labRegister, OPERATIONEN } = await lab("operationen/index.js");
 const { pruefeOperation, standardParameter, bereinigeParameter } = await lab("kern/register.js");
 const { kompatibel } = await lab("kern/typen.js");
@@ -211,12 +211,13 @@ test("Projektformat: Formatversion und Verweise werden geprüft", () => {
   assert.throws(() => P.entscheide(p, { art: "orakel" }), /unbekannte Entscheidungsart/);
 });
 
-test("Isolation: das Lab ändert nichts an Website und Apps und liegt nicht im Upload", () => {
+test("Online: nur die Oberfläche des Labs kommt auf den Webspace, sie ist nicht in der Suche und macht keine festen Aufrufe nach aussen", () => {
   const aus = readFileSync(new URL("tools/hostpoint/ausschluss.txt", root), "utf8").split("\n").map((z) => z.trim());
-  assert.ok(aus.includes("src/"), "src/ (und damit src/lab/) wird nicht auf den Webspace geladen");
-  const dateien = readdirSync(new URL("src/lab/", root), { recursive: true }).filter((f) => f.endsWith(".js"));
+  for (const p of ["alpha/lab/docs/", "alpha/lab/werkzeuge/", "alpha/lab/starten.mjs", "alpha/lab/README.md", "alpha/lab/jev/worker-entwurf.js"]) assert.ok(aus.includes(p), `${p} bleibt im Repository`);
+  assert.match(readFileSync(new URL("alpha/lab/index.html", root), "utf8"), /<meta name="robots" content="noindex/);
+  const dateien = readdirSync(new URL("alpha/lab/", root), { recursive: true }).filter((f) => f.endsWith(".js"));
   for (const f of dateien) {
-    const text = readFileSync(new URL(`src/lab/${f}`, root), "utf8");
+    const text = readFileSync(new URL(`alpha/lab/${f}`, root), "utf8");
     assert.ok(!/fetch\(\s*["']https?:\/\/(?!localhost)/.test(text) || f.includes("jev"), `${f}: keine festen Aufrufe nach aussen`);
   }
 });

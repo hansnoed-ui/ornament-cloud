@@ -15,7 +15,7 @@ export const wiederholung = {
   name: "Wiederholung mit Falloff",
   version: "0.1.0",
   klasse: "raeumlich",
-  herkunft: { art: "neu", quelle: "ORNAMENT LAB", referenz: "Cavalry Duplicator + Falloff; Blender Geometry Nodes (Instances)", datei: "src/lab/operationen/wiederholung.js" },
+  herkunft: { art: "neu", quelle: "ORNAMENT LAB", referenz: "Cavalry Duplicator + Falloff; Blender Geometry Nodes (Instances)", datei: "alpha/lab/operationen/wiederholung.js" },
   beschreibung: "Das Bild wird im Raster wiederholt; Grösse und Drehung jeder Kopie folgen einem Falloff über die Lage.",
   eingaenge: [{ name: "bild", typ: "IMAGE" }],
   ausgaenge: [{ name: "bild", typ: "IMAGE" }],
