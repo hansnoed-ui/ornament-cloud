@@ -221,6 +221,11 @@ function zusammenstellungAnsicht(v) {
       bestandStelle(pl, "zettel", "Zettel", "strophe", "mit dem Startwert ziehen", STROPHEN_WAHL),
       bestandStelle(pl, "orna", "ORNA", "konstellation", "per Zufall ziehen (wie in ORNA)", KONSTELLATIONEN)),
     el("small", { class: "hinweis", text: "Beide wahlweise, jev sieht sie nicht: Der Zettel eröffnet den Film als Karte mit seinem Leitsatz. Die ORNA-Konstellation schliesst ihn als Karte und gibt dem Zerfall ihre Operationsregel; ohne Zerfall in der Zusammenstellung kommt er als siebter Abschnitt dazu." }),
+    el("div", { class: "stellen film" },
+      el("label", { class: "regler schalter stelle" }, el("input", { type: "checkbox", id: "zusammenstellung-lebendig", checked: pl.lebendig !== false && gpuDa(), disabled: !gpuDa(), onchange: (ev) => { pl.lebendig = ev.target.checked; } }),
+        gpuDa() ? "lebendige Effekte" : "lebendige Effekte (dieser Browser hat kein WebGL 2: Standbilder mit Kamera)"),
+      regler({ id: "zusammenstellung-bewegung", name: "Bewegung (Kamera über jedem Bild, 0 = ruhig)", art: "zahl", min: 0, max: 1, schritt: 0.05 }, pl.bewegung ?? ZS.BEWEGUNG, (v) => { pl.bewegung = v; })),
+    el("small", { class: "hinweis", text: `Lebendig sind ${LEBENDIG.map(opName).join(", ")}: in jedem der 900 Bilder ein neues Effektbild, die Lautstärke moduliert Bild für Bild. Dieselben Schalter stehen danach unter «Nacheinander».` }),
     video ? el("small", { class: "hinweis", text: `Aus dem Video: jeder Abschnitt nimmt das Standbild seiner Zeit (${v.messung.videoBilder.length} Standbilder), so folgt der Film dem Video. Der Aufbau gilt darum nicht.` }) : null,
     el("small", { class: "hinweis", text: `${video ? "Abschnitte nach dem Video" : kurzname(AUFBAU[pl.aufbau])}, ${FILM_UEBERGAENGE[pl.uebergang]}. Klang: ${pl.klang.map((k) => kurzname(KLANG_EFFEKTE[k])).join(" → ")}. Bild: ${pl.bild.map((b) => kurzname(BILD_EFFEKTE[b])).join(" → ")}, je ${ZS.VARIANTEN_JE_ABSCHNITT} Varianten.` }),
     el("div", { class: "aktionen" },
@@ -237,8 +242,8 @@ function bestandStelle(pl, feld, name, wahlName, ziehenText, optionen) {
         el("option", { value: "", text: ziehenText }), ...optionen.map((o) => el("option", { value: o.wert, selected: String(pl[feld][wahlName]) === String(o.wert), text: o.name }))) : el("small", { text: "aus" })));
 }
 function neueZusammenstellung(antworten, jev, alt = null) {
-  // neu gezogen wird, was jev oder der Zufall wählt; die Bestände bleiben, wie der Mensch sie geschaltet hat
-  return { antworten, jev, plan: { ...ZS.zusammenstellen(antworten, neuerStartwert()), zettel: alt?.zettel ?? null, orna: alt?.orna ?? null }, geaendert: new Set() };
+  // neu gezogen wird, was jev oder der Zufall wählt; Bestände und Filmeinstellungen bleiben, wie der Mensch sie geschaltet hat
+  return { antworten, jev, plan: { ...ZS.zusammenstellen(antworten, neuerStartwert()), zettel: alt?.zettel ?? null, orna: alt?.orna ?? null, lebendig: alt?.lebendig ?? true, bewegung: alt?.bewegung ?? ZS.BEWEGUNG }, geaendert: new Set() };
 }
 async function zusammenstellungRechnen() {
   const v = S.vorschlag, z = v.zusammen;

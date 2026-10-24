@@ -650,6 +650,11 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   await p.locator('#vorschlag30 select[data-bestand-wahl="zettel"]').selectOption("7");
   await p.locator('#vorschlag30 [data-bestand="orna"]').check();
   assert.equal(await p.locator('#vorschlag30 select[data-frage="bild6"]').inputValue(), "bild.raster", "die eigene Änderung bleibt");
+  // die Filmeinstellungen stehen direkt in der Zusammenstellung (0.1.19): lebendig vorgewählt, Bewegung voll; die Kamera auf 0,6 setzen
+  assert.equal(await p.locator("#zusammenstellung-lebendig").isChecked(), true, "lebendige Effekte vorgewählt");
+  assert.equal(await p.locator("#zusammenstellung-lebendig").isDisabled(), false, "WebGL 2 ist da");
+  assert.equal(await p.locator('#vorschlag30 input[data-param="zusammenstellung-bewegung"]').inputValue(), "1");
+  await p.locator('#vorschlag30 input[data-param="zusammenstellung-bewegung"]').fill("0.6");
   await p.click("#zusammenstellung-rechnen");
   await p.waitForTimeout(50);
   await warteFertig(p, 420000);
@@ -668,6 +673,7 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   assert.equal(z.x.partitur.folge[0].einmal, true); assert.equal(z.x.partitur.folge[0].halten, 2.5); assert.equal(z.x.partitur.folge.at(-1).einmal, true);
   assert.equal(z.x.partitur.folge[0].ergebnis, z.x.stationen[0]); assert.equal(z.x.partitur.folge.at(-1).ergebnis, z.x.stationen.at(-1));
   assert.ok(z.x.partitur.lebendig, "die Zusammenstellung ist lebendig");
+  assert.equal(z.x.partitur.bewegung.staerke, 0.6, "die Kamera wie in der Zusammenstellung eingestellt"); assert.deepEqual(z.d.details.film, { lebendig: true, bewegung: 0.6 });
   assert.ok(z.x.zeitplan.some((y) => y.lebendig), `die Grafikkarte rechnet Stationen in jedem Bild neu: ${JSON.stringify(z.x.zeitplan.slice(0, 3))}`);
   assert.deepEqual(fehler2, []);
   await c.close();
