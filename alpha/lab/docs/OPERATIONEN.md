@@ -34,6 +34,10 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `phorma.traube` 0.1.0 | PHORMA: Traube | Zeitliche Operation | Adapter: PHORMA III | Bild + Audiosignal (opt.) → Bild | erzeugt selbst mehrere |
 | `phorma.ii` 0.1.0 | PHORMA II: Szene | Zeitliche Operation | Adapter: PHORMA II | Bild + Konstellation (opt.) + Befund (opt.) → Bild | erzeugt selbst mehrere |
 | `phorma.i` 0.1.0 | PHORMA I: Szene | Zeitliche Operation | Adapter: PHORMA I (Bildfragmentieren) | Bild + Konstellation (opt.) + Befund (opt.) → Bild | erzeugt selbst mehrere |
+| `signatur.intro` 0.1.0 | Signatur: Intro mit Zettel | Zeitliche Operation | neu, nach Zettelkasten (Zu seiner Zeit), PHORMA III | Befund + Bild (opt.) + Audiosignal (opt.) → Bild | eine |
+| `signatur.outro` 0.1.0 | Signatur: Outro mit ORNA | Zeitliche Operation | neu, nach ORNA (Nebeneinander, Nacheinander) | Konstellation + Bild (opt.) → Bild | eine |
+| `signatur.signet` 0.1.0 | Signatur: Signet ornament.lab | Zeitliche Operation | neu, nach Signet von ornament.cloud | Audiosignal + Bild (opt.) → Bild | eine |
+| `signatur.ton` 0.1.0 | Signatur: Tonspur mit Scratch und Gefrickel | Zeitliche Operation | neu, nach PHORMA III (Scratch → … → Gefrickel) | Audiosignal → Audiosignal | eine |
 
 ## ORNA-Konstellation (`orna.konstellation`)
 
@@ -635,3 +639,62 @@ PHORMA I: Fragmente (Linien tasten das Bild ab, Dreiecke fliegen herein, Farben,
 | Grund (`grund`) | **schwarz** / weiss |
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1080 |
 | Beschriftung (Titel, Phase, Zeitcode) (`beschriftung`) | **mit Zettel oder Konstellation** / an / aus |
+
+## Signatur: Intro mit Zettel (`signatur.intro`)
+
+Ein Lichtwürfel taucht aus dem Nichts auf und pulsiert einige Schläge lang, entfaltet sich zum Raster des Zettelkastens (7 × 7), das Feld des Zettels leuchtet, der Zettel wird gezogen und zeigt Leitsatz und vier Verweise (Person, Werk); ein Scratch führt ins Bild am Eingang.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/signatur.js, alpha/lab/kern/signatur.js; Prinzip nach Zettelkasten (Zu seiner Zeit), PHORMA III
+- **Voraussetzungen:** Leinwand (Canvas) des Browsers
+- **Ressourcen:** jedes Bild neu gezeichnet (2D); Speicher: zwei Bilder in Rechengrösse
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Ton ab (s) (`beginn`) | 0 … 600, Standard 0 – die Schläge, auf denen der Würfel pulsiert |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1280 |
+
+## Signatur: Outro mit ORNA (`signatur.outro`)
+
+Das Bild am Eingang (die letzte Sequenz) faltet sich zu einem Körper, der Körper wird zur Kugel, die Kugel zum Doppelrad von ORNA, das sich einschwingt und die Konstellation zeigt (Namen, Frage, Regel); dann wieder Kugel.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/signatur.js, alpha/lab/kern/signatur.js; Prinzip nach ORNA (Nebeneinander, Nacheinander)
+- **Voraussetzungen:** Leinwand (Canvas) des Browsers
+- **Ressourcen:** jedes Bild neu gezeichnet (2D); Speicher: ein Bild in Rechengrösse
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Dauer (s; im Film so lange, wie die Station steht) (`dauer`) | 6 … 10, Standard 8 |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1280 |
+
+## Signatur: Signet ornament.lab (`signatur.signet`)
+
+Aus einer Kugel aus Licht wird das Signet «ornament.lab» wie das von ornament.cloud (Schlaufe, Punkt, Kästchen werden Buchstaben), dazu dreht es sich einmal im Raum; auf den Einsätzen des Tons (dem Gefrickel) schneidet eine leichte Montage hinein. Ohne Outro davor legt sich zuerst das Bild am Eingang auf die Kugel.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/signatur.js, alpha/lab/kern/signatur.js; Prinzip nach Signet von ornament.cloud
+- **Voraussetzungen:** Leinwand (Canvas) des Browsers
+- **Ressourcen:** jedes Bild neu gezeichnet (2D), bei der Montage zwei; Speicher: drei Bilder in Rechengrösse
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Auftakt (`auftakt`) | **aus der Kugel (nach dem Outro)** / aus dem Bild (ohne Outro) |
+| Ton ab (s) (`beginn`) | 0 … 600, Standard 0 – ab hier das Gefrickel, auf dessen Einsätzen die Montage schneidet |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1280 |
+
+## Signatur: Tonspur mit Scratch und Gefrickel (`signatur.ton`)
+
+Die Tonspur eines Films mit Signatur: der Klang ab «Ton ab» für die ganze Dauer, am Ende des Intros ein Scratch (dieselbe Bewegung wie im Bild), unter dem Signet verfrickelt (frickeln.js aus PHORMA III).
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/signatur.js, alpha/lab/kern/signatur.js; Prinzip nach PHORMA III (Scratch → … → Gefrickel)
+- **Voraussetzungen:** keine (reines JavaScript)
+- **Ressourcen:** Verfrickeln: etwa eine Sekunde; Speicher: der Klang zwei- bis dreimal
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Ton ab (s) (`beginn`) | 0 … 600, Standard 0 |
+| Dauer (s) (`dauer`) | 6 … 120, Standard 52.5 |
+| Intro (s, 0 = ohne Scratch) (`vor`) | 0 … 10, Standard 10 |
+| Gefrickel am Schluss (s) (`frickel`) | 2 … 12, Standard 6.5 |

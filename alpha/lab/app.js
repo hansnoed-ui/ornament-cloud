@@ -13,6 +13,7 @@ import { QUELLEN, POLARITAETEN } from "./kern/modulation.js";
 import { KLASSEN, standardParameter } from "./kern/register.js";
 import { STROPHEN_WAHL } from "./operationen/zettel.js";
 import { KONSTELLATIONEN } from "./operationen/orna.js";
+import { signaturZeiten } from "./kern/signatur.js";
 import { TYPEN } from "./kern/typen.js";
 import { AUSSPIELEN, wavSchreiben, rateWandeln, spurenVon, klangfolge } from "./kern/klangwerk.js";
 import { jevVerfuegbar, jevWahl, jevDramaturgie, jevKomposition, jevBeat, jevPruefen, jevZustand } from "./jev/jev.js";
@@ -234,7 +235,12 @@ function zusammenstellungAnsicht(v) {
     el("div", { class: "stellen bestaende" },
       bestandStelle(pl, "zettel", "Zettel", "strophe", "mit dem Startwert ziehen", STROPHEN_WAHL),
       bestandStelle(pl, "orna", "ORNA", "konstellation", "per Zufall ziehen (wie in ORNA)", KONSTELLATIONEN)),
-    el("small", { class: "hinweis", text: "Beide wahlweise, jev sieht sie nicht: Der Zettel eröffnet den Film als Karte mit seinem Leitsatz und steht als Titel in den Szenen von PHORMA I und II. Die ORNA-Konstellation schliesst ihn als Karte mit ihrer Operationsregel; wählt jev den Zerfall (The Fictory), folgt er dieser Regel." }),
+    el("div", { class: "stellen signatur" },
+      el("label", { class: "regler schalter stelle" }, el("input", { type: "checkbox", id: "zusammenstellung-signatur", checked: pl.signatur !== false, onchange: (ev) => { pl.signatur = ev.target.checked; zeigeVorschlag30(); } }),
+        "Signatur: Intro, Outro und Signet ornament.lab")),
+    el("small", { class: "hinweis", text: pl.signatur !== false
+      ? `Beide Bestände wahlweise, jev sieht sie nicht. Mit Signatur ${pl.zettel ? "eröffnet ein Intro den Film: ein Lichtwürfel entfaltet sich zum Raster des Zettelkastens, der Zettel wird gezogen und zeigt Leitsatz und Verweise, ein Scratch führt in die Animation" : "beginnt der Film gleich mit der Animation (mit einem Zettel käme das Intro davor)"}; ${pl.orna ? "danach faltet sich die letzte Sequenz zur Kugel, die zum Rad von ORNA wird und die Konstellation zeigt" : "ohne ORNA-Konstellation gibt es kein Outro"}; am Schluss wird aus der Kugel das Signet ornament.lab, mit Gefrickel im Ton. Die 30 Sekunden der Animation bleiben, der Film dauert ${zahl(Math.round(signaturZeiten({ intro: Boolean(pl.zettel), outro: Boolean(pl.orna) }).gesamt * 10) / 10)} s. Der Zettel steht auch als Titel in den Szenen von PHORMA I und II; wählt jev den Zerfall (The Fictory), folgt er der Regel der Konstellation.`
+      : "Beide wahlweise, jev sieht sie nicht: Der Zettel eröffnet den Film als Karte mit seinem Leitsatz und steht als Titel in den Szenen von PHORMA I und II. Die ORNA-Konstellation schliesst ihn als Karte mit ihrer Operationsregel; wählt jev den Zerfall (The Fictory), folgt er dieser Regel." }),
     el("div", { class: "stellen film" },
       el("label", { class: "regler schalter stelle" }, el("input", { type: "checkbox", id: "zusammenstellung-lebendig", checked: pl.lebendig !== false && gpuDa(), disabled: !gpuDa(), onchange: (ev) => { pl.lebendig = ev.target.checked; } }),
         gpuDa() ? "lebendige Effekte" : "lebendige Effekte (dieser Browser hat kein WebGL 2: Standbilder mit Kamera)"),
@@ -257,7 +263,7 @@ function bestandStelle(pl, feld, name, wahlName, ziehenText, optionen) {
 }
 function neueZusammenstellung(antworten, jev, alt = null) {
   // neu gezogen wird, was jev oder der Zufall wählt; Bestände und Filmeinstellungen bleiben, wie der Mensch sie geschaltet hat
-  return { antworten, jev, plan: { ...ZS.zusammenstellen(antworten, neuerStartwert()), zettel: alt?.zettel ?? null, orna: alt?.orna ?? null, lebendig: alt?.lebendig ?? true, bewegung: alt?.bewegung ?? ZS.BEWEGUNG }, geaendert: new Set() };
+  return { antworten, jev, plan: { ...ZS.zusammenstellen(antworten, neuerStartwert()), zettel: alt?.zettel ?? null, orna: alt?.orna ?? null, lebendig: alt?.lebendig ?? true, bewegung: alt?.bewegung ?? ZS.BEWEGUNG, signatur: alt?.signatur ?? true }, geaendert: new Set() };
 }
 async function zusammenstellungRechnen() {
   const v = S.vorschlag, z = v.zusammen;
@@ -269,7 +275,8 @@ async function zusammenstellungRechnen() {
     filmPlanUebernehmen(r.plan);
     S.aktuell = r.ergebnisse.at(-1)?.id ?? S.aktuell; S.seed = neuerStartwert();
     await stationenFilmRechnen(stationen(), signal, { vorschlag: "zusammenstellung", auswahl: "Zusammenstellung", entscheidung: r.entscheidung.id });
-    const bestaende = [r.zettel ? `Zettel ${r.zettel.nummer}: ${r.zettel.titel}` : null, r.konstellation ? `ORNA ${r.konstellation.nummer}: ${r.konstellation.kuenstler} × ${r.konstellation.theoretiker}, Regel ${r.konstellation.regel}` : null].filter(Boolean);
+    const bestaende = [r.zettel ? `Zettel ${r.zettel.nummer}: ${r.zettel.titel}` : null, r.konstellation ? `ORNA ${r.konstellation.nummer}: ${r.konstellation.kuenstler} × ${r.konstellation.theoretiker}, Regel ${r.konstellation.regel}` : null,
+      r.signatur ? `Signatur: ${[r.signatur.intro ? "Intro" : null, r.signatur.outro ? "Outro" : null, "Signet"].filter(Boolean).join(", ")}` : null].filter(Boolean);
     if (bestaende.length) status(`${letzterStatus[0]} ${bestaende.join("; ")}.`);
   });
 }
