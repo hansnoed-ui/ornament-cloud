@@ -10,8 +10,8 @@ import { zufall } from "../../../alpha/the-fictory/analyse.js?v=23";
 const jetzt = () => (globalThis.performance?.now?.() ?? Date.now());
 export const neuerStartwert = () => { const b = new Uint32Array(1); crypto.getRandomValues(b); return b[0]; };
 
-/** Eingänge einer Operation aus Ergebnissen des Projekts laden, mit Typprüfung */
-async function eingaengeLaden(op, projekt, medien, eingaben) {
+/** Eingänge einer Operation aus Ergebnissen des Projekts laden, mit Typprüfung (auch für die lebendigen Bühnen in kern/stationen.js) */
+export async function eingaengeLaden(op, projekt, medien, eingaben) {
   const out = {};
   for (const e of op.eingaenge) {
     const id = eingaben[e.name];

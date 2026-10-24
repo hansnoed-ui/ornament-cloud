@@ -1102,7 +1102,7 @@ test("Zusammenstellung: Kataloge passen zum Register, Ziehen mit Startwert ohne 
   assert.equal(x.bild.filter((y) => y === "bild.glitch").length, 3, `${x.bild}`);
   assert.equal(Z.wahrscheinlichkeit(fast, "bild1", "bild.glitch"), Math.round((0.95 / (0.95 + (Object.keys(F.BILD_EFFEKTE).length - 1) * 0.005)) * 1000) / 1000);
   const { LEBENDIG } = await lab("medien/gpu.js");
-  assert.ok(Object.keys(F.BILD_EFFEKTE).every((k) => LEBENDIG.includes(Z.BILD_REZEPTE[k].operation)), "seit 0.1.20 nur lebendige Effekte in der Zusammenstellung");
+  assert.ok(Object.keys(F.BILD_EFFEKTE).every((k) => LEBENDIG.includes(Z.BILD_REZEPTE[k].operation) || typeof r.hole(Z.BILD_REZEPTE[k].operation).lebend === "function"), "seit 0.1.20 nur lebendige Effekte in der Zusammenstellung (GPU-Fassung oder eigene Bühne)");
   // jev.js: alle zehn Antworten, nur bekannte Optionen; fehlt eine, ist die Antwort ungültig
   const echt = globalThis.fetch;
   const merkmale = { kontrast: "hoch", farbigkeit: "bunt", symmetrie: "asymmetrisch", helligkeit: "dunkel", dichte: "dicht", dynamik: "wechselhaft" };
@@ -1345,4 +1345,100 @@ test("Tonspur aus MP4/MOV/M4A (0.1.20): die Kästen werden gelesen, AAC, Opus un
   assert.throws(() => tonspurLesen(frag), /fragmentiert/);
   const stumm = ff("stumm.mp4", "-f", "lavfi", "-i", "testsrc=size=64x48:rate=10:duration=1", "-c:v", "mpeg4", "-an");
   assert.throws(() => tonspurLesen(stumm), /keine Tonspur/);
+});
+
+test("PHORMA-Szenen (0.1.21): vier Operationen im Register, nur im Browser verfügbar, Zeitachse und Zustandszeiten, Tonanalyse ab Beginn", async () => {
+  const PH = await lab("operationen/phorma.js");
+  const r = labRegister();
+  assert.deepEqual(PH.PHORMA_ARTEN.map((a) => `phorma.${a}`).filter((id) => r.hat(id)).length, 4);
+  for (const op of PH.PHORMA_OPERATIONEN) {
+    assert.equal(op.herkunft.art, "adapter"); assert.equal(op.herkunft.quelle, "PHORMA III"); assert.equal(op.varianten, "selbst"); assert.equal(op.klasse, "zeitlich");
+    assert.deepEqual(op.eingaenge.map((e) => [e.name, e.typ, Boolean(e.optional)]), [["bild", "IMAGE", false], ["ton", "AUDIO", true]]);
+    assert.equal(op.verfuegbar(), false, "in Node keine Leinwand und kein WebGL 2");
+    assert.equal(typeof op.lebend, "function");
+    await assert.rejects(op.ausfuehren({ bild: bild() }, standardParameter(op)), /Browser/);
+  }
+  assert.ok(r.fuer("IMAGE").some((o) => o.id === "phorma.gewebe"), "steht unter den Operationen für ein Bild");
+  // die Zeitachse der Szene (PHORMA ablauf.js): Vorlauf 0,4 s, dann die Szene so lang wie verlangt, dann Stehen/Schluss; Zustände gleichmässig in der Szene
+  const z = PH.szenenZeit("gewebe", 30);
+  assert.ok(Math.abs(z.abschnitt.von - 0.4) < 1e-9 && Math.abs(z.abschnitt.bis - 30.4) < 1e-9, JSON.stringify(z.abschnitt));
+  assert.ok(z.dauer > 30.4 && z.dauer < 35, `${z.dauer}`);
+  const zt = PH.zustandsZeiten(z, 10);
+  assert.equal(zt.length, 10); assert.ok(zt[0] > 0.4 && zt.at(-1) < 30.4 && zt.every((t, i) => i === 0 || t > zt[i - 1]), `${zt}`);
+  assert.deepEqual(PH.zustandsZeiten(PH.szenenZeit("traube", 6), 1), [3.4]);
+  for (const art of PH.PHORMA_ARTEN) assert.ok(PH.szenenZeit(art, 12).dauer >= 12.4, art);
+  // die Tonanalyse: ab beginn, höchstens dauer + 1 s; ohne Ton oder zu kurz null (dann Ersatzkurven)
+  const t = ton();
+  const T = PH.tonAnalyse(t, 1, 3);
+  assert.ok(T && Math.abs(T.dauer - 4) < 0.1, `${T?.dauer}`); assert.ok(T.einsaetze.length >= 2, "Anschläge des Testtons");
+  assert.equal(PH.tonAnalyse(null, 0, 30), null); assert.equal(PH.tonAnalyse(t, 5.95, 30), null);
+  assert.ok(PH.tonAnalyse(t, 0, 30).dauer <= 6.01);
+});
+
+test("Film mit eigener Bühne (0.1.21): eine Operation mit lebend() rechnet ihre Stationen in jedem Bild zur Filmzeit, einmal gebaut, am Ende entsorgt", async () => {
+  const { erstelleRegister } = await lab("kern/register.js");
+  const { OPERATIONEN } = await lab("operationen/index.js");
+  const r = erstelleRegister();
+  const gebaut = [], entsorgt = [], gefragt = [];
+  // ein Stellvertreter der PHORMA-Szene: Standbilder und eine Bühne, die die Filmzeit ins Bild stempelt
+  for (const op of OPERATIONEN) {
+    if (op.id === "phorma.gewebe") r.registriere({ ...op, verfuegbar: () => true,
+      async lebend({ bild: b, ton }, p, kontext) { gebaut.push({ dauer: p.dauer, beginn: p.beginn, ton: Boolean(ton), seed: kontext.seed }); return { dauer: p.dauer, bild(t) { gefragt.push(t); const x = neuesBild(b.width, b.height, [Math.round(t * 10) % 256, 0, 0]); x.zeit = t; return x; }, entsorgen() { entsorgt.push(1); } }; },
+      async ausfuehren({ bild: b }, p) { return { ausgaben: Array.from({ length: p.bilder }, (_, i) => ({ typ: "IMAGE", titel: `Gewebe ${i}`, bild: neuesBild(b.width, b.height, [0, i * 50, 0]) })), protokoll: { art: "gewebe" } }; } });
+    else r.registriere(op);
+  }
+  const { p, m, e, t } = mitTon();
+  const x = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "phorma.gewebe", eingaben: { bild: e.id, ton: t.id }, parameter: { bilder: 3, dauer: 6, beginn: 1 }, seed: 7 } });
+  assert.equal(x.ergebnisse.length, 3);
+  const plan = { stationen: [e.id, ...x.ergebnisse.map((y) => y.id)], art: "schnitt", halten: 0.5, uebergang: 0, fps: 10, lebendig: true };
+  const rechne = async (pl, lebendig = null) => { const zeitplan = [], out = []; for await (const b of ST.filmbilder({ register: r, projekt: p, medien: m, partitur: ST.partitur(p, pl), seite: 40, zeitplan, lebendig })) out.push(b); return { zeitplan, out }; };
+  const a = await rechne(plan);
+  assert.equal(gebaut.length, 1, "die Bühne wird einmal je Knoten gebaut, nicht je Station");
+  assert.deepEqual(gebaut[0], { dauer: 6, beginn: 1, ton: true, seed: 7 });
+  assert.equal(entsorgt.length, 1, "und am Ende entsorgt");
+  assert.deepEqual(a.zeitplan.map((z) => Boolean(z.lebendig)), [false, true, true, true], "das Material bleibt ein Standbild, die drei Gewebe-Stationen sind lebendig");
+  assert.equal(gefragt.length, 15, "drei Stationen zu 0,5 s bei 10 Bildern je Sekunde");
+  assert.ok(gefragt.every((z, i) => i === 0 || z > gefragt[i - 1]) && Math.abs(gefragt[0] - 0.5) < 1e-9 && Math.abs(gefragt.at(-1) - 1.9) < 1e-9, `Filmzeit läuft weiter: ${gefragt}`);
+  const { width: W, height: H } = a.out[0], mitte = ((H >> 1) * W + (W >> 1)) * 4;
+  assert.ok(a.out.every((b) => b.width === W && b.height === H), "eingepasst in die Filmgrösse");
+  assert.equal(a.out[5].data[mitte], 5, "Bild 5 (0,5 s): die Bühne hat die Filmzeit gestempelt"); assert.equal(a.out[19].data[mitte], 19);
+  assert.equal(a.out[2].data[mitte], 220, "das Material davor ist das Standbild (die Scheibe des Testbilds)");
+  // ohne lebendig: Standbilder, keine Bühne
+  gebaut.length = 0; entsorgt.length = 0; gefragt.length = 0;
+  const still = await rechne({ ...plan, lebendig: false });
+  assert.equal(gebaut.length, 0); assert.equal(gefragt.length, 0); assert.ok(still.zeitplan.every((z) => !z.lebendig));
+  assert.equal(still.out[5].data[mitte], 0); assert.equal(still.out[5].data[mitte + 1], 0, "das erste Standbild der Szene (grün 0)"); assert.equal(still.out[19].data[mitte + 1], 100, "das dritte (grün 100)");
+  assert.deepEqual(P.pruefeProjekt(p), []);
+});
+
+test("Zusammenstellung mit PHORMA (0.1.21): die Szene bekommt den neuen Klang als Eingang und seinen Beginn, zehn Momente als Varianten", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const Z = await lab("kern/zusammenstellung.js");
+  const F = await lab("jev/fragen.js");
+  const { erstelleRegister } = await lab("kern/register.js");
+  const { OPERATIONEN } = await lab("operationen/index.js");
+  for (const k of ["bild.gewebe", "bild.irrfahrt", "bild.lichtwuerfel", "bild.traube"]) { assert.ok(F.BILD_EFFEKTE[k], k); assert.equal(Z.BILD_REZEPTE[k].operation, `phorma.${k.slice(5)}`); assert.equal(Z.BILD_REZEPTE[k].parameter.bilder, Z.VARIANTEN_JE_ABSCHNITT); }
+  const r = erstelleRegister(), laeufe = [];
+  for (const op of OPERATIONEN) {
+    if (op.id.startsWith("phorma.")) r.registriere({ ...op, verfuegbar: () => true, async ausfuehren({ bild: b, ton }, p) { laeufe.push({ op: op.id, ton: ton ? ton.pcm.length : null, beginn: p.beginn, dauer: p.dauer, bilder: p.bilder }); return { ausgaben: Array.from({ length: p.bilder }, (_, i) => ({ typ: "IMAGE", titel: `${op.id} ${i}`, bild: neuesBild(b.width, b.height, [i * 20, 0, 0]) })), protokoll: {} }; } });
+    else r.registriere(op);
+  }
+  const { p, m, e, t } = mitTon();
+  const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id, beginn: 1 });
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.schnitt", klang: ["klang.keine", "klang.keine"], bild: ["bild.gewebe", "bild.farbe", "bild.traube", "bild.licht", "bild.irrfahrt", "bild.lichtwuerfel"], seed: 2 };
+  const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "jev", details: {} }, seed: 5 });
+  assert.deepEqual(laeufe.map((l) => l.op), ["phorma.gewebe", "phorma.traube", "phorma.irrfahrt", "phorma.lichtwuerfel"]);
+  assert.ok(laeufe.every((l) => l.ton && l.beginn === 1 && l.dauer === VS.DAUER && l.bilder === 10), `der unveränderte Klang ab Sekunde 1: ${JSON.stringify(laeufe[0])}`);
+  assert.equal(x.ergebnisse.length, 60); assert.equal(x.plan.stationen.length, 61); assert.equal(x.plan.lebendig, true);
+  const kn = p.knoten.filter((k) => k.operation.startsWith("phorma."));
+  assert.ok(kn.every((k) => k.eingaben.ton === t.id && k.eingaben.bild), "Eingang ton ist der Klang, Eingang bild der vorige Abschnitt");
+  // ein bearbeiteter Klang beginnt am Anfang: beginn 0
+  laeufe.length = 0;
+  const q = mitTon(), mq = await VS.messen({ register: r, projekt: q.p, medien: q.m, bild: q.e.id, ton: q.t.id, beginn: 1 });
+  await Z.zusammenstellungRechnen({ register: r, projekt: q.p, medien: q.m, messung: mq, plan: { ...plan, klang: ["klang.schneller", "klang.keine"] }, wahl: { art: "zufall" } });
+  assert.ok(laeufe.every((l) => l.beginn === 0), "nach einem Klangeffekt ab 0");
+  assert.notEqual(q.p.knoten.find((k) => k.operation === "phorma.gewebe").eingaben.ton, q.t.id, "der neue Klang, nicht der alte");
+  // ohne WebGL 2 (echtes Register in Node) ist die Wahl nicht verfügbar: klare Meldung statt Absturz
+  await assert.rejects(Z.zusammenstellungRechnen({ register: labRegister(), projekt: q.p, medien: q.m, messung: mq, plan, wahl: { art: "zufall" } }), /nicht verfügbar/);
+  assert.deepEqual(P.pruefeProjekt(p), []);
 });

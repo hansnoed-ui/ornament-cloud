@@ -76,6 +76,10 @@
   </main>
 
   <div id="status" class="status" role="status" aria-live="polite"></div>
+  <!-- three.js für die Szenen von PHORMA III (operationen/phorma.js lädt alpha/phorma-iii/buehne.js erst im Browser), wie in alpha/phorma-iii/index.html -->
+  <script type="importmap">
+  { "imports": { "three": "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" } }
+  </script>
   <script type="module" src="app.js"></script>
 </body>
 </html>

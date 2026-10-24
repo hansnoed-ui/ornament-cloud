@@ -28,7 +28,7 @@ Christian wollte, dass jev viele verschiedene Bild- und Klangeffekte selbst zusa
 | `aufbau` | Kette (jeder Abschnitt auf dem vorigen) oder Fächer (jeder auf dem Ausgangsbild) |
 | `uebergang` | Schnitt, Überblendung, Schwelle |
 | `klang1`, `klang2` | keine, schneller, langsamer, tiefer, zerlegt, neu rhythmisiert, Körner |
-| `bild1` … `bild6` | Feedback, Wiederholung, Farbe, Glitch, Verzerrung, Licht, Raster (seit Lab 0.1.20 nur diese sieben lebendigen; bis 0.1.19 auch Komposition, Pixelsortierung, Neu setzen und Zerfall) |
+| `bild1` … `bild6` | Feedback, Wiederholung, Farbe, Glitch, Verzerrung, Licht, Raster (seit Lab 0.1.20 nur diese sieben lebendigen; bis 0.1.19 auch Komposition, Pixelsortierung, Neu setzen und Zerfall); seit 0.1.21 dazu die PHORMA-Szenen Gewebe, Irrfahrt, Lichtwürfel, Traube |
 
 Aus den Wahrscheinlichkeiten zieht das Lab mit Startwert (`zusammenstellen()` in `kern/zusammenstellung.js`): kein Bildeffekt zweimal hintereinander, der zweite Klangeffekt nicht derselbe wie der erste. «neu ziehen» zieht mit neuem Startwert aus denselben Antworten, ohne jev erneut zu fragen. Jede Stelle lässt sich von Hand ändern, dann ist die Zusammenstellung eine Entscheidung des **Menschen** (`details.geaendert`, `details.vorschlag`). Ohne jev wird gleichverteilt gezogen (**Zufall**).
 
@@ -71,6 +71,12 @@ Christian wollte beides in die Zusammenstellung einbinden, **beides wahlweise**.
 - **Karten** zeichnet `lab.karte` (operationen/karte.js) im Mass des Ausgangsbilds, Papier auf Nacht, in den Systemschriften des Zettelkastens; sie braucht die Leinwand des Browsers (`verfuegbar()`), in Node fällt sie weg und der Zettel bleibt im Projekt. Jede Karte steht 2,5 s (`KARTE_DAUER`) und `einmal` ausserhalb der Runde im Takt (Partitur 0.4.0, docs/STATIONEN.md): die Runde der Motive beginnt beim ersten Anschlag nach der Zettelkarte, die ORNA-Karte steht bis zum Ende des Tons. Der Film hat dann bis 63 Stationen (Grenze 80; bis 0.1.19 mit dem Zerfall 69).
 
 «neu ziehen» behält die Schalter, ändert aber Zettel und Konstellation mit dem neuen Startwert, wenn sie gezogen werden. Nach dem Rechnen nennt der Status beides. Im Projekt: `gewaehlt.zettel` und `gewaehlt.orna` in der Entscheidung, die Operationen `zettel.strophe`, `orna.konstellation`, zweimal `lab.karte` mit `details.entscheidung`.
+
+## PHORMA-Szenen (seit Lab 0.1.21)
+
+Christian am 24. Oktober 2026: «wieso sind die Effekte bei PHORMA so viel spektakulärer und fliessender?» – und dann «Ja» zum Vorschlag, PHORMAs Szenen ins Lab zu holen, damit jev sie wählen kann, und PHORMA-Videos im Lab re-mixen zu können. `operationen/phorma.js` macht aus den vier Szenen von PHORMA III Operationen (`phorma.gewebe`, `phorma.irrfahrt`, `phorma.lichtwuerfel`, `phorma.traube`; Adapter, PHORMA unverändert, `buehne.js` erst im Browser geladen, three.js über die Importmap in index.html): Eingang `bild` und wahlweise `ton`; Parameter `dauer` (Szene, 6–120 s), `beginn` (Ton ab), `bilder` (Standbilder als Varianten), `guete` (fein/grob), `seite`. `ausfuehren()` baut die Bühne (Bild zugeschnitten, Analyse auf halber Grösse, Tonanalyse von PHORMA ab `beginn`) und rechnet `bilder` Momente gleichmässig über die Szene; `lebend()` gibt dem Film über Stationen die Bühne selbst (docs/STATIONEN.md), so läuft die Szene im Film in jedem Bild weiter, im Takt des Klangs.
+
+In der Zusammenstellung stehen sie als `bild.gewebe`, `bild.irrfahrt`, `bild.lichtwuerfel`, `bild.traube` im Katalog von jev (gleich in `wahl.php`); ihr Rezept gibt zehn Momente als Varianten (`bilder: 10`, `dauer: 30`), den neuen Klang als Eingang `ton` und dessen Beginn als `beginn` (bearbeitet 0, sonst der gemessene). Ohne WebGL 2 ist eine solche Stelle nicht verfügbar; die Rechnung meldet es klar, statt abzustürzen. Im jev-Katalog der nächsten Operation (`KATALOG`) stehen sie ebenfalls.
 
 ## Nur fliessende Effekte (seit Lab 0.1.20)
 
