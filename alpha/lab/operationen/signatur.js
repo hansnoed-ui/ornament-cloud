@@ -83,10 +83,11 @@ function alsLeinwand(bild, W, H) {
   x.imageSmoothingQuality = "high"; x.drawImage(q, Math.floor((W - bw) / 2), Math.floor((H - bh) / 2), bw, bh);
   return c;
 }
-/** die Masse der Bühne aus dem Bild am Eingang (längste Seite seite, gerade Masse), ohne Bild 4 : 5 */
+/** die Masse der Bühne aus dem Bild am Eingang (längste Seite seite, gerade Masse), ohne Bild 4 : 5. Seit 0.1.30 auch grösser als das Bild:
+ *  die Bühne zeichnet Linien und Schrift, die in Rechengrösse scharf bleiben sollen, statt im Film hochgerechnet zu werden */
 function masse(bild, seite) {
   if (!bild) return { W: gerade((seite * 4) / 5), H: gerade(seite) };
-  const f = Math.min(1, seite / Math.max(bild.width, bild.height));
+  const f = seite / Math.max(bild.width, bild.height);
   return { W: gerade(bild.width * f), H: gerade(bild.height * f) };
 }
 /** die Einsätze eines Tons ab beginn für dauer Sekunden (PHORMA III, ton.js), Zeiten ab beginn */
@@ -547,9 +548,9 @@ function textZeichnen(ctx, feld, s, sicht, t) {
 const TAFEL = { x: 140, y: 600, w: 800, h: 700 };   // der Ausschnitt der Zeichnung, der auf die Tafel kommt
 const SCHLAUFE_PX = 420, SCHLAUFE_Y = 870, KASTEN = 52, ABSTAND = 4, GROESSE = 52, OBEN = 1175;
 /** der Schriftzug auf die Tafel (die Schlaufe und der Punkt stehen als Linien im Raum, signetBuehne) */
-function tafelZeichnen(tc, sc, f) {
-  tc.setTransform(1, 0, 0, 1, 0, 0); tc.clearRect(0, 0, tc.canvas.width, tc.canvas.height);
-  tc.setTransform(sc, 0, 0, sc, -TAFEL.x * sc, -TAFEL.y * sc);
+function tafelZeichnen(tc, sc, f, { dx = -TAFEL.x * sc, dy = -TAFEL.y * sc, leeren = true } = {}) {
+  tc.setTransform(1, 0, 0, 1, 0, 0); if (leeren) tc.clearRect(0, 0, tc.canvas.width, tc.canvas.height);
+  tc.setTransform(sc, 0, 0, sc, dx, dy);
   // Schriftzug: Kästchen erscheinen, aus jedem wird ein Buchstabe, dann rücken sie zusammen (Zeitplan von signet.js)
   tc.font = `400 ${GROESSE}px ${SANS}`;
   const zusammen = inOut(anteil(f, 128, 146)), sperrung = 0.14 * GROESSE;
@@ -591,8 +592,9 @@ function signetBuehne(B, { auftakt, bild, einsaetze, seed }) {
   const plan = G.montagePlan(einsaetze, { von: P.fliessen[1], bis: P.stehen[0] + 0.7, samen: seed, staerke: 0.5 });
   const neben = leinwand(W, H), nx = neben.getContext("2d");
   const lage = (t) => {
-    const x = anteil(t, P.drehen[0], P.drehen[1]), ruhe = anteil(t, P.stehen[0], P.stehen[0] + 1);
-    const gier = -2 * Math.PI * (1 - inOut(x)) + 0.05 * ruhe * Math.sin((t - P.stehen[0]) * 1.4);
+    // seit 0.1.30 ohne Pendeln am Schluss: das Signet steht genau von vorn und wird ohne Umrechnung scharf gezeichnet
+    const x = anteil(t, P.drehen[0], P.drehen[1]);
+    const gier = -2 * Math.PI * (1 - inOut(x));
     const nick = 0.28 * Math.sin(Math.PI * x) * (1 - x * 0.3);
     return (p) => G.drehen(p, gier, nick);
   };
@@ -640,10 +642,14 @@ function signetBuehne(B, { auftakt, bild, einsaetze, seed }) {
       const a = ps * anteil(t, P.fliessen[1] - 0.1, P.fliessen[1] + 0.3);
       if (a > 0) { ctx.globalAlpha = schlaufe * a; ctx.fillStyle = PUNKT; ctx.beginPath(); ctx.arc(q[0], q[1], 11 * k * u * q[2], 0, Math.PI * 2); ctx.fill(); }
       ctx.restore();
-      if (f > 56) { tafelZeichnen(tc, sc, f); tafelImRaum(tl, schlaufe); }
+      if (f > 56 && t >= P.drehen[1]) {
+        // von vorn (Massstab 1 in der Ebene z = 0): der Schriftzug direkt auf die Bühne, ohne den Umweg über die Tafel
+        ctx.save(); ctx.globalAlpha = schlaufe; tafelZeichnen(ctx, k * u, f, { dx: W / 2 - 540 * k * u, dy: H / 2 - 950 * k * u, leeren: false }); ctx.restore();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+      } else if (f > 56) { tafelZeichnen(tc, sc, f); tafelImRaum(tl, schlaufe); }
     }
     punkteZeichnen(B, pts, schlaufe > 0 ? new Map([...sicht].map(([i, a]) => [i, a * (1 - schlaufe)])) : sicht, WEISS, 0.013);
-    B.leuchten(0.45 * (auftakt ? anteil(t, 0.5, P.auftakt[1]) : 1) * (1 - 0.5 * anteil(t, P.stehen[0], P.stehen[0] + 1)), 3);
+    B.leuchten(0.45 * (auftakt ? anteil(t, 0.5, P.auftakt[1]) : 1) * (1 - 0.85 * anteil(t, P.stehen[0], P.stehen[0] + 1)), 3);   // am Schluss kaum Schein: die Schrift bleibt scharf
   }
   function zeichne(t) {
     szene(t);
