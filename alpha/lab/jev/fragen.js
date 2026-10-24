@@ -26,6 +26,7 @@ export const KATALOG = Object.freeze({
   "phorma.traube": "PHORMA Traube: glänzende Perlen in einer Kugel aus Fäden, Schnitte im Takt des Tons (zeitliche Operation, eigene Bühne)",
   "phorma.ii": "PHORMA II: Physarum, Tiefe, Wellenwanne, Tuch, Rasterdruck oder Montage, einzeln oder als Kette (zeitliche Operation, eigene Bühne)",
   "phorma.i": "PHORMA I: Fragmente oder die Verwandlung aus Strom, Körper, Scherben, Echo, Relief (zeitliche Operation, eigene Bühne)",
+  "sketchory.satz": "Sketchory: das Foto einer Kritzelkarte wird zur Strichzeichnung, die sich Strich für Strich zeichnet, dann ein Satz Buchstabe für Buchstabe (zeitliche Operation, eigene Bühne)",
 });
 
 const KENNUNG = /^[a-z]+\.[a-z0-9-]+$/;

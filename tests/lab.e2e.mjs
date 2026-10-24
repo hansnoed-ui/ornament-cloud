@@ -8,6 +8,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
 let playwright;
@@ -46,9 +47,9 @@ async function ausfuehren(page) { await page.click("#ausfuehren"); await page.wa
 const { ctx, page, fehler, fremd } = await oeffne();
 let gespeichert = null;
 
-await check("Start: vier Bereiche, Register mit neunundzwanzig Operationen, keine Fehler", async () => {
+await check("Start: vier Bereiche, Register mit dreissig Operationen, keine Fehler", async () => {
   for (const id of ["material", "operationen", "experiment", "protokoll"]) assert.ok(await page.locator(`#${id}`).isVisible(), id);
-  assert.match(await page.textContent("#status"), /29 Operationen/);
+  assert.match(await page.textContent("#status"), /30 Operationen/);
   assert.deepEqual(fehler, []);
 });
 
@@ -888,6 +889,74 @@ await check("PHORMA I und II (0.1.22): Fragmente mit Zettel als Titel, Physarum 
   assert.equal(x.art, "stationen", await t.page.textContent("#status"));
   assert.deepEqual(x.zeitplan.map((z) => Boolean(z.lebendig)), [true, true, true, true, true, true], "alle sechs Stationen lebendig: PHORMA I, PHORMA II und der Zerfall auf ihren Bühnen");
   assert.equal(x.bilder, 72); assert.ok(Math.max(x.breite, x.hoehe) <= 320);
+  assert.ok(await t.page.locator(".stationen video").isVisible());
+  assert.deepEqual(t.fehler, []);
+  await t.ctx.close();
+});
+
+await check("Sketchory (0.1.23): die Beispielkarte wird gelesen, der Leitsatz des Zettels ist der Satz, die ORNA-Regel wählt die Handschrift, dann als lebendiger Film", async () => {
+  const t = await oeffne();
+  // die Kritzelkarte von Sketchory als Material (ein Foto: Fineliner auf Papier)
+  await t.page.setInputFiles("#datei", fileURLToPath(new URL("alpha/sketchory/beispiel.jpg", root)));
+  await t.page.waitForFunction(() => ornamentLab.aktuell);
+  await t.page.locator("#materialien button").first().click();
+  await operation(t.page, "zettel.strophe");
+  await t.page.locator("#op-form select").first().selectOption("7");
+  await ausfuehren(t.page);
+  await t.page.locator("#materialien button").first().click();
+  await operation(t.page, "orna.konstellation");
+  await ausfuehren(t.page);
+  const ids = await S(t.page, () => { const z = ornamentLab.projekt.ergebnisse.find((e) => e.typ === "METADATA" && e.daten?.leitsatz), k = ornamentLab.projekt.ergebnisse.find((e) => e.typ === "CONSTELLATION"); return { zettel: z.id, leitsatz: z.daten.leitsatz, orna: k.id, regel: k.daten.regel, gedanke: k.daten.gedanke }; });
+  assert.ok(ids.zettel && ids.orna && /^R[1-7]$/.test(ids.regel) && ids.leitsatz, JSON.stringify(ids));
+  const waehle = async (werte) => { const l = t.page.locator("#op-form select"); for (let i = 0; i < await l.count(); i++) { const o = await l.nth(i).evaluate((s) => [...s.options].map((x) => x.value)); for (const w of werte) if (o.includes(w)) await l.nth(i).selectOption(w); } };
+  // Sketchory mit Zettel und Konstellation: der Leitsatz wird der Satz (auto), die Regel wählt Strich, Schrift und Grund; drei Momente, hoch 3 : 4
+  await t.page.locator("#materialien button").first().click();
+  await operation(t.page, "sketchory.satz");
+  await t.page.locator('#op-form input[data-param="seite"]').fill("360");
+  await t.page.locator('#op-form input[data-param="bilder"]').fill("3");
+  await waehle(["hoch", ids.zettel, ids.orna]);
+  await t.page.click("#ausfuehren"); await t.page.waitForTimeout(50);
+  await warteFertig(t.page, 300000);
+  const k1 = await S(t.page, () => { const k = ornamentLab.projekt.knoten.at(-1); const d = ornamentLab.projekt.entscheidungen.filter((x) => x.gegenstand === "handschrift").at(-1); return { status: k.status, fehler: k.fehler ?? null, aus: k.ausgaben.length, eingaben: k.eingaben, p: k.protokoll, d, titel: k.ausgaben.map((id) => ornamentLab.projekt.ergebnisse.find((e) => e.id === id).titel) }; });
+  assert.equal(k1.status, "fertig", JSON.stringify(k1.fehler));
+  assert.equal(k1.aus, 3); assert.equal(k1.eingaben.text, ids.zettel); assert.equal(k1.eingaben.konstellation, ids.orna);
+  assert.equal(k1.p.satzQuelle, "zettel.leitsatz"); assert.ok(k1.p.satz.startsWith(ids.leitsatz.replace(/\s+/g, " ").trim().replace(/\.$/, "")), `Satz «${k1.p.satz}»`);
+  assert.ok(k1.p.striche > 20, `${k1.p.striche} Striche aus der Beispielkarte`);
+  assert.deepEqual(k1.p.handschriftHerkunft, { stil: "orna", schrift: "orna", farbe: "orna" }); assert.equal(k1.p.regel, ids.regel);
+  assert.ok(k1.d && k1.d.art === "regel" && k1.d.gewaehlt === `${k1.p.handschrift.stil} · ${k1.p.handschrift.schrift} · ${k1.p.handschrift.farbe}`, JSON.stringify(k1.d));
+  assert.deepEqual(k1.p.mass, [270, 360]); assert.ok(k1.p.zeit.dauer > 12 && k1.p.zeit.faktor === 1, JSON.stringify(k1.p.zeit));
+  assert.ok(k1.titel.some((x) => /zeichnen/.test(x)) && k1.titel.some((x) => /text/.test(x)), k1.titel.join(" | "));
+  const momente = await S(t.page, () => ornamentLab.projekt.knoten.at(-1).ausgaben.slice());
+  // ohne Satz, der Mensch wählt die Handschrift, im Mass des Bildes, Dauer 6 s: die Szene wird gerafft
+  await t.page.locator("#materialien button").first().click();
+  await operation(t.page, "sketchory.satz");
+  await t.page.locator('#op-form input[data-param="seite"]').fill("320");
+  await t.page.locator('#op-form input[data-param="bilder"]').fill("2");
+  await t.page.locator('#op-form input[data-param="dauer"]').fill("6");
+  await waehle(["keiner", "gleichmaessig", "serif", "hell", ids.orna]);
+  await t.page.click("#ausfuehren"); await t.page.waitForTimeout(50);
+  await warteFertig(t.page, 300000);
+  const k2 = await S(t.page, () => { const k = ornamentLab.projekt.knoten.at(-1); return { status: k.status, fehler: k.fehler ?? null, aus: k.ausgaben.length, p: k.protokoll, n: ornamentLab.projekt.entscheidungen.filter((x) => x.gegenstand === "handschrift").length }; });
+  assert.equal(k2.status, "fertig", JSON.stringify(k2.fehler));
+  assert.equal(k2.aus, 2); assert.equal(k2.p.satz, ""); assert.equal(k2.p.satzQuelle, null);
+  assert.deepEqual(k2.p.handschrift, { stil: "gleichmaessig", schrift: "serif", farbe: "hell" }); assert.deepEqual(k2.p.handschriftHerkunft, { stil: "mensch", schrift: "mensch", farbe: "mensch" });
+  assert.equal(k2.n, 1, "keine neue Entscheidung, wenn der Mensch alles wählt");
+  assert.ok(Math.abs(k2.p.zeit.dauer - 6) < 0.01 && k2.p.zeit.faktor < 1 && Math.max(...k2.p.mass) === 320, JSON.stringify(k2.p.zeit));
+  console.log(`      Sketchory: ${k1.p.striche} Striche, Handschrift aus ${ids.regel}: ${k1.d.gewaehlt}; Satz «${k1.p.satz}»`);
+  // ein Film über die drei Momente und einen der zweiten Szene: alle Stationen lebendig (Sketchory zeichnet ab dem Auftritt)
+  const zweite = await S(t.page, () => ornamentLab.projekt.knoten.at(-1).ausgaben.slice());
+  await t.page.evaluate((ids) => { ornamentLab.stationen = ids.map((id) => ({ ergebnis: id, uebergang: "schnitt" })); }, [...momente, zweite[0]]);
+  await t.page.locator('input[name="ansicht"][value="nach"]').check({ force: true });
+  assert.equal(await t.page.locator(".stationen-liste > li").count(), 4);
+  await t.page.locator('.stationen input[data-param="halten"]').fill("0.5");
+  await t.page.locator('.stationen input[data-param="uebergang"]').fill("0");
+  await t.page.locator('.stationen input[data-param="seite"]').fill("320");
+  await t.page.click("#stationenfilm");
+  await warteFertig(t.page, 300000);
+  const x = await S(t.page, () => { const x = ornamentLab.projekt.exporte.at(-1); return { art: x.art, zeitplan: x.zeitplan, bilder: x.bilder, breite: x.breite, hoehe: x.hoehe }; });
+  assert.equal(x.art, "stationen", await t.page.textContent("#status"));
+  assert.deepEqual(x.zeitplan.map((z) => Boolean(z.lebendig)), [true, true, true, true], "alle vier Stationen lebendig auf Sketchorys Bühne");
+  assert.equal(x.bilder, 60); assert.ok(Math.max(x.breite, x.hoehe) <= 320);
   assert.ok(await t.page.locator(".stationen video").isVisible());
   assert.deepEqual(t.fehler, []);
   await t.ctx.close();

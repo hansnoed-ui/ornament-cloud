@@ -1,6 +1,9 @@
 /* ORNAMENT LAB 0.1 – Gestaltung nach der Sprache von ornament.cloud (Neubau, The Fictory neubau.css): Papier und Tinte, die Blaupause als
    einziger Akzent, Instrument Sans für die Oberfläche, Newsreader für Texte, Haarlinien statt Kisten, keine Schatten, Rundung nur an Pillen.
    Die Bühne der Ergebnisse ist dunkel wie der Grund der Fictory (NACHT), damit Bilder vor ruhigem Grund stehen. */
+/* Satz in Sketchory (operationen/sketchory.js, seit 0.1.23): Inter Display wie in alpha/sketchory/index.html (OFL, vendor/fonts/LICENSE-Inter.txt) */
+@font-face { font-family: "Inter Display"; font-style: normal; font-weight: 500; font-display: swap; src: url(../../vendor/fonts/inter-display-500-latin.woff2) format("woff2"); }
+@font-face { font-family: "Inter Display"; font-style: normal; font-weight: 600; font-display: swap; src: url(../../vendor/fonts/inter-display-600-latin.woff2) format("woff2"); }
 :root {
   --bg: #ffffff; --text: #000000; --muted: #6f6f6f; --border: #dadada; --accent: #1d3fd6;
   --nacht: #151412; --kreide: #f4f1ea; --staub: #9a9a9a; --fuge: #3a3836;

@@ -33,6 +33,7 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `phorma.traube` 0.1.0 | PHORMA: Traube | Zeitliche Operation | Adapter: PHORMA III | Bild + Audiosignal (opt.) → Bild | erzeugt selbst mehrere |
 | `phorma.ii` 0.1.0 | PHORMA II: Szene | Zeitliche Operation | Adapter: PHORMA II | Bild + Konstellation (opt.) + Befund (opt.) → Bild | erzeugt selbst mehrere |
 | `phorma.i` 0.1.0 | PHORMA I: Szene | Zeitliche Operation | Adapter: PHORMA I (Bildfragmentieren) | Bild + Konstellation (opt.) + Befund (opt.) → Bild | erzeugt selbst mehrere |
+| `sketchory.satz` 0.1.0 | Sketchory: Karte und Satz | Zeitliche Operation | Adapter: Sketchory | Bild + Konstellation (opt.) + Befund (opt.) → Bild | erzeugt selbst mehrere |
 
 ## ORNA-Konstellation (`orna.konstellation`)
 
@@ -610,3 +611,28 @@ PHORMA I: Fragmente (Linien tasten das Bild ab, Dreiecke fliegen herein, Farben,
 | Grund (`grund`) | **schwarz** / weiss |
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1080 |
 | Beschriftung (Titel, Phase, Zeitcode) (`beschriftung`) | **mit Zettel oder Konstellation** / an / aus |
+
+## Sketchory: Karte und Satz (`sketchory.satz`)
+
+Sketchory: aus dem Foto einer Kritzelkarte (Fineliner auf Papier) werden saubere Striche, die sich Strich für Strich zeichnen, stehen und ausblenden; dann erscheint ein Satz Buchstabe für Buchstabe – der Leitsatz eines Zettels oder der Gedanke einer ORNA-Konstellation. Die Operationsregel der Konstellation wählt die Handschrift (Strich, Schrift, Grund).
+
+- **Herkunft:** Adapter, Sketchory; Datei alpha/sketchory/strich.js, ablauf.js, szene.js, signet.js (v=10, unverändert)
+- **Voraussetzungen:** Browser mit Leinwand 2D (kein WebGL nötig); die Schriften des Satzes aus vendor/fonts/ (lab.css: Inter Display, Instrument Sans, Newsreader)
+- **Ressourcen:** das Lesen der Karte einige Sekunden (Analyse bis 1400 px, auf dem Hauptfaden), dann zeichnet die Leinwand jedes Bild; Speicher: die Zeichnungsebene 1080 × 1440 und das Bild in Rechengrösse
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Der Satz (`satz`) | **Leitsatz des Zettels, sonst Gedanke der Konstellation** / Leitsatz des Zettels / Titel des Zettels / Gedanke der Konstellation / Frage der Konstellation / ohne Satz (nur die Zeichnung) – wörtlich aus dem Zettel oder der Konstellation am Eingang; ohne beide nur die Zeichnung |
+| Strich (`stil`) | **aus der Konstellation (sonst gezeichnet)** / gezeichnet (Strichbreite wie auf der Karte) / gleichmässig (alle Striche gleich breit) |
+| Schrift des Satzes (`schrift`) | **aus der Konstellation (sonst Grotesk)** / Grotesk (Inter Display) / Instrument Sans / Newsreader |
+| Grund (`farbe`) | **aus der Konstellation (sonst weiss auf Schwarz)** / weiss auf Schwarz / schwarz auf Weiss |
+| Zeichnen (s) (`zeichnen`) | 2 … 12, Standard 4.5 – wie lange die Karte sich zeichnet; Stehen, Ausblenden und der Satz kommen dazu |
+| Dauer der Szene (s, 0 = eigenes Tempo) (`dauer`) | 0 … 120, Standard 0 – Sketchory rechnet in eigener Zeit; eine Dauer streckt oder rafft die ganze Szene |
+| Standbilder (Varianten) (`bilder`) | 1 … 12, Standard 6 – gleichmässig über die Szene, vom Zeichnen bis zum Satz |
+| Strichstärke (Faktor) (`staerke`) | 0.5 … 2, Standard 1 |
+| Streckung der Buchstaben (`streckung`) | 1 … 1.4, Standard 1.15 |
+| oranger Punkt am Satzende (`punkt`) | ein/aus, Standard ein |
+| Empfindlichkeit beim Lesen der Karte (`empfindlichkeit`) | -50 … 50, Standard 0 – höher: auch blasse Linien; tiefer: nur kräftige |
+| Format (`format`) | **im Mass des Bildes (Sketchory eingepasst, Grund ringsum)** / hoch 3 : 4 wie Sketchory |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1080 |

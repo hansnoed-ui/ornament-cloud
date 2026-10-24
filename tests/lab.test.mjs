@@ -1558,3 +1558,45 @@ test("Zusammenstellung mit den Beständen an die Szenen (0.1.22): der Zerfall be
   assert.ok(q.p.knoten.filter((k) => k.operation === "phorma.ii").every((k) => !("konstellation" in k.eingaben) && !("text" in k.eingaben)));
   assert.deepEqual(P.pruefeProjekt(p), []);
 });
+
+test("Sketchory (0.1.23): Operation im Register, der Satz aus Zettel oder Konstellation, die ORNA-Regel wählt die Handschrift, in Node nicht verfügbar", async () => {
+  const r = labRegister();
+  const SK = await lab("operationen/sketchory.js"), op = SK.sketchory;
+  const A = await import(new URL("alpha/sketchory/ablauf.js?v=10", root).href), SZ = await import(new URL("alpha/sketchory/szene.js?v=10", root).href);
+  assert.ok(r.hat("sketchory.satz")); assert.equal(r.hole("sketchory.satz"), op);
+  assert.equal(op.verfuegbar(), false, "ohne Browser nicht verfügbar"); assert.equal(typeof op.lebend, "function", "eigene Bühne für den Film");
+  assert.deepEqual(op.eingaenge.map((e) => e.name), ["bild", "konstellation", "text"]);
+  await assert.rejects(op.ausfuehren({ bild: neuesBild(8, 8) }, standardParameter(op)), /Browser/);
+  // der Satz: der Leitsatz des Zettels zuerst, sonst der Gedanke der Konstellation; der Mensch kann Titel, Frage oder keinen wählen; der Text bleibt wörtlich
+  const z = { titel: "Der Zettel", leitsatz: "Was  bleibt,\n ist der Rest." }, k = { regel: "R2", regelName: "Verzögerter Spiegel", nummer: 3, kuenstler: "A", theoretiker: "B", gedanke: "Ein Gedanke", frage: "Eine Frage?" };
+  assert.deepEqual(SK.satzWaehlen({ satz: "auto" }, { text: z, konstellation: k }), { satz: "Was bleibt, ist der Rest.", quelle: "zettel.leitsatz" });
+  assert.deepEqual(SK.satzWaehlen({ satz: "auto" }, { konstellation: k }), { satz: "Ein Gedanke", quelle: "orna.gedanke" });
+  assert.deepEqual(SK.satzWaehlen({ satz: "auto" }, {}), { satz: "", quelle: null });
+  assert.deepEqual(SK.satzWaehlen({ satz: "titel" }, { text: z, konstellation: k }), { satz: "Der Zettel", quelle: "zettel.titel" });
+  assert.deepEqual(SK.satzWaehlen({ satz: "frage" }, { text: z, konstellation: k }), { satz: "Eine Frage?", quelle: "orna.frage" });
+  assert.deepEqual(SK.satzWaehlen({ satz: "gedanke" }, { text: z }), { satz: "", quelle: null }, "gewählte Quelle ohne Eingang: kein Satz");
+  assert.deepEqual(SK.satzWaehlen({ satz: "keiner" }, { text: z, konstellation: k }), { satz: "", quelle: null });
+  assert.equal(A.satzPunkt("Ein Gedanke").text, "Ein Gedanke.", "Sketchory setzt den Punkt");
+  for (const o of op.parameter.find((p) => p.id === "satz").optionen) assert.ok(SK.SATZ_QUELLEN.some((q) => q.wert === o.wert));
+  // die Handschrift: Tabelle R1–R7 mit sieben verschiedenen Handschriften, alle Werte stehen zur Wahl; der Mensch je Feld zuerst, dann die Regel, sonst Standard
+  assert.deepEqual(Object.keys(SK.REGEL_HANDSCHRIFT), ["R1", "R2", "R3", "R4", "R5", "R6", "R7"]);
+  assert.equal(new Set(Object.values(SK.REGEL_HANDSCHRIFT).map(SK.handschriftName)).size, 7);
+  for (const h of Object.values(SK.REGEL_HANDSCHRIFT)) for (const f of SK.FELDER) assert.ok(op.parameter.find((p) => p.id === f).optionen.some((o) => o.wert === h[f]), `${f} ${h[f]}`);
+  for (const s of SK.SCHRIFTEN_WAHL) assert.ok(SZ.SCHRIFTEN[s.wert], s.wert);
+  const w = SK.handschriftWaehlen({ stil: "", schrift: "", farbe: "" }, k);
+  assert.deepEqual(w.wahl, SK.REGEL_HANDSCHRIFT.R2); assert.deepEqual(w.herkunft, { stil: "orna", schrift: "orna", farbe: "orna" }); assert.equal(w.regel, "R2");
+  assert.equal(w.entscheidungen.length, 1); assert.equal(w.entscheidungen[0].gegenstand, "handschrift"); assert.equal(w.entscheidungen[0].gewaehlt, "gezeichnet · serif · hell"); assert.ok(w.entscheidungen[0].optionen.includes(w.entscheidungen[0].gewaehlt));
+  const m = SK.handschriftWaehlen({ stil: "gleichmaessig", schrift: "", farbe: "dunkel" }, k);
+  assert.deepEqual(m.wahl, { stil: "gleichmaessig", schrift: "serif", farbe: "dunkel" }); assert.deepEqual(m.herkunft, { stil: "mensch", schrift: "orna", farbe: "mensch" }); assert.deepEqual(m.entscheidungen[0].details.felder, ["schrift"]);
+  assert.deepEqual(SK.handschriftWaehlen({ stil: "", schrift: "", farbe: "" }, null), { wahl: SK.STANDARD, herkunft: { stil: "standard", schrift: "standard", farbe: "standard" }, regel: null, entscheidungen: [] });
+  assert.deepEqual(SK.handschriftWaehlen({ stil: "gezeichnet", schrift: "sans", farbe: "hell" }, k).entscheidungen, [], "wählt der Mensch alles, entscheidet die Regel nichts");
+  // das Ausgabemass: im Mass des Bildes (nicht grösser als das Bild) oder hoch 3 : 4 wie Sketchory
+  assert.deepEqual(SK.ausgabeMass({ width: 1600, height: 900 }, "bild", 800), { B: 800, H: 450 });
+  assert.deepEqual(SK.ausgabeMass({ width: 300, height: 200 }, "bild", 800), { B: 300, H: 200 });
+  assert.deepEqual(SK.ausgabeMass({ width: 1600, height: 900 }, "hoch", 1440), { B: 1080, H: 1440 });
+  // die Zeitachse der App endet für das Lab vor dem Signet; der Katalog von jev kennt die Operation
+  const zeit = A.zeitachse({ zeichnen: 4.5, text: "Ein Satz." });
+  assert.ok(zeit.ab.pause2[0] > 9 && zeit.ab.pause2[0] < zeit.ab.signet[0] && zeit.ab.signet[0] < zeit.dauer);
+  const F = await lab("jev/fragen.js"), Z = await lab("kern/zusammenstellung.js");
+  assert.ok(F.KATALOG["sketchory.satz"]); assert.ok(!Object.values(Z.BILD_REZEPTE).some((x) => x.operation === "sketchory.satz"), "nicht in der Zusammenstellung: die Karte ist kein Foto");
+});
