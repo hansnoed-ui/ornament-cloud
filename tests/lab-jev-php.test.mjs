@@ -202,7 +202,7 @@ test("wahl.php: die Zusammenstellung (zehn Fragen in einem Aufruf) prüft wie fr
   jev = { status: 200, antwort: null };
 });
 
-test("wahl.php: der Beat aus Bild oder Video (sieben Fragen, seit 0.1.24) prüft wie fragen.js, fragt wörtlich gleich und gibt alle Antworten zurück", { skip: ohnePhp && "kein php" }, async () => {
+test("wahl.php: der Beat aus Bild oder Video (acht Fragen, seit 0.1.24, Fläche seit 0.1.25) prüft wie fragen.js, fragt wörtlich gleich und gibt alle Antworten zurück", { skip: ohnePhp && "kein php" }, async () => {
   konfig({});
   const merkmale = { helligkeit: "hell", kontrast: "hoch", farbigkeit: "bunt", farbton: "warm", detail: "fein", schwerpunkt: "unten", symmetrie: "asymmetrisch", bewegung: "bewegt" };
   for (const [lage, re] of [
@@ -221,7 +221,7 @@ test("wahl.php: der Beat aus Bild oder Video (sieben Fragen, seit 0.1.24) prüft
   assert.equal(a.status, 200, JSON.stringify(a.json));
   const f = labFrage(labLage(roh));
   assert.deepEqual(gesendet[0].body, { model: "jev-latest", state: f.zustand, questions: f.fragen }, "PHP und fragen.js fragen wörtlich gleich");
-  assert.deepEqual(Object.keys(a.json.antworten), ["tempo", "groove", "kit", "tonart", "bass", "melodie", "verlauf"]);
+  assert.deepEqual(Object.keys(a.json.antworten), ["tempo", "groove", "kit", "tonart", "bass", "melodie", "verlauf", "flaeche"]);
   for (const [k, q] of Object.entries(f.fragen)) assert.deepEqual(Object.keys(a.json.antworten[k]), Object.keys(q.criteria), k);
   assert.equal(a.json.antworten.tempo.langsam, 1, "begrenzt");
   assert.equal((await frage(roh)).json.zwischengespeichert, true);

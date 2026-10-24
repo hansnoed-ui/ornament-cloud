@@ -41,7 +41,7 @@ const S = {
   laenge: new Map(),
   // Vorschlag für 30 s aus Bild und Klang (kern/vorschlag.js): Auswahl, Messung, Antworten von jev und Regeln, gewählte Dramaturgie
   vorschlag: { bild: "", ton: "", beginn: 0, messung: null, jev: null, jevFehler: "", regel: null, gewaehlt: null, zusammen: null },
-  // Beat aus Bild oder Video (seit 0.1.24): Bild, Dauer, Messung, Plan der sieben Stellen und woher er kommt (Regeln oder jev), Ergebnis
+  // Beat aus Bild oder Video (seit 0.1.24): Bild, Dauer, Messung, Plan der acht Stellen und woher er kommt (Regeln oder jev), Ergebnis
   beat: { bild: "", dauer: null, messung: null, plan: null, quelle: "regel", gruende: null, jev: null, antworten: null, jevFehler: "", seed: 1, geaendert: new Set(), ergebnis: null },
   film: { halten: 1.5, uebergang: 1, art: "blende", quelle: "keine", ziel: "halten", tiefe: 0.3, frequenz: 1, signal: "", takt: "", schwelle: 0.2, wiederholen: true, tonspur: "auto", seite: 1280, bewegung: 0, bewegungSignal: "", lebendig: true },
 };
@@ -323,7 +323,7 @@ async function vorschlagRechnen() {
 }
 
 // ---------- Beat aus Bild oder Video (kern/beat.js, Operation lab.beat) ----------
-const BEAT_NAMEN = { tempo: "Tempo", groove: "Groove", kit: "Schlagzeug", tonart: "Tonart", bass: "Bass", melodie: "Melodie", verlauf: "Verlauf" };
+const BEAT_NAMEN = { tempo: "Tempo", groove: "Groove", kit: "Schlagzeug", tonart: "Tonart", bass: "Bass", melodie: "Melodie", verlauf: "Verlauf", flaeche: "Fläche" };
 /** ein Standbild aus einem Video: alle Standbilder desselben Videos in zeitlicher Folge (höchstens sechs), sonst nur das Bild */
 function beatBilder(id) {
   const quelle = P.ergebnis(S.projekt, id)?.herkunft?.video;
@@ -394,7 +394,7 @@ async function beatMachen(art) {
     Object.assign(b, { messung: { ids, merkmale: messung.merkmale, werte: messung.werte }, seed: neuerStartwert(), geaendert: new Set(), jev: null, antworten: null, jevFehler: "", gruende: null });
     const regeln = () => { const r = regelPlan(messung.merkmale); Object.assign(b, { plan: r.plan, gruende: r.gruende, quelle: "regel" }); };
     if (art === "jev") {
-      status("jev wählt Tempo, Groove, Klänge, Tonart, Bass, Melodie und Verlauf …");
+      status("jev wählt Tempo, Groove, Klänge, Tonart, Bass, Melodie, Verlauf und Fläche …");
       try { const a = await jevBeat({ merkmale: messung.merkmale }, { abbrechen: signal }); Object.assign(b, { jev: a, antworten: a.antworten, plan: planAusJev(a.antworten, b.seed), quelle: "jev" }); }
       catch (f) { if (f.name === "AbortError") throw f; b.jevFehler = f.message; regeln(); }
     } else regeln();
