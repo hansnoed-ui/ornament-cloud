@@ -33,7 +33,7 @@ Dasselbe gibt es für Klänge. Unter **Nebeneinander** hat jede Klangkarte «Sta
 
 `kern/stationen.js` arbeitet ohne DOM und ist in `tests/lab.test.mjs` geprüft.
 
-1. `partitur(projekt, plan)` ergibt die Folge mit `beginn`, `halten` und `uebergang { art, dauer, hinweis? }` je Auftritt, dazu `dauer`, `bilder`, `takt` und die Routen ohne Signaldaten. Ein Verlauf ohne Takt hat `dauer: null`: Er behält die Länge, mit der die Operation ihn rechnet.
+1. `partitur(projekt, plan)` ergibt die Folge mit `beginn`, `halten` und `uebergang { art, dauer, hinweis? }` je Auftritt, dazu `dauer`, `bilder`, `takt` und die Routen ohne Signaldaten. Ein Verlauf ohne Takt hat `dauer: null`: Er behält die Länge, mit der die Operation ihn rechnet. Eine Station im Plan ist eine Kennung oder `{ ergebnis, uebergang?, halten?, einmal? }` (seit Partitur 0.4.0, Lab 0.1.18): mit eigenem `halten` steht sie so lange statt wie eingestellt; mit `einmal` am Anfang oder Ende steht sie wie eine Titelkarte ausserhalb der Runde im Takt (im Auftritt `einmal: true`): vorn mit ihrer Dauer, die Runde beginnt beim ersten Einsatz danach; hinten endet die Runde so früh, dass die Karte ihre Dauer hat, und die Karte steht bis zum Ende des Tons. Die Kamera (`bewegung`) lässt solche Karten still stehen und kommt oder geht über den Übergang. So macht die Zusammenstellung ihre Zettel- und ORNA-Karten (docs/VORSCHLAG.md).
 2. `filmbilder({ … partitur })` erzeugt die Bilder. Gehaltene Bilder sind dasselbe Objekt, der Kodierer malt sie nur einmal. Der `zeitplan` hält fest, ab welchem Bild jede Station tatsächlich steht, auch nach Verläufen mit eigener Länge. Mit `partitur.lebendig` und einer Grafikkarte (`filmbilder({ lebendig: gpuEffekte() })`) wird jede Station mit lebendiger Fassung in jedem Bild neu gerechnet (im `zeitplan` steht dann `lebendig: true`), auch unter Überblendung und Schwelle. Mit `partitur.bewegung { staerke, signal }` geht jedes Bild danach durch die Kamera (`kameraLage(t, staerke, laut)`: Zoom, Versatz, Drehung; bilinear abgetastet), dann ist kein Bild mehr dasselbe Objekt.
 3. `videoAus` in `medien/video.js` kodiert wie bisher, auf Wunsch mit Tonspur.
 
@@ -43,7 +43,7 @@ Der Film steht unter `exporte` mit `art: "stationen"`, der vollständigen Partit
 
 ## Grenzen
 
-- höchstens 64 Stationen (bis Lab 0.1.15: 48) und 3600 Bilder (2 Minuten bei 30 Bildern/s) je Film, bei «reihum» höchstens 512 Auftritte
+- höchstens 80 Stationen (bis Lab 0.1.15: 48, bis 0.1.17: 64) und 3600 Bilder (2 Minuten bei 30 Bildern/s) je Film, bei «reihum» höchstens 512 Auftritte
 - Halten 0 bis 10 s, Übergang 0 bis 6 s (harte Grenzen, auch nach Modulation)
 - Verläufe werden neu gerechnet. Bei grossen Arbeitsbildern dauert das so lange wie die Operation selbst, bei festem Takt doppelt so lange, weil zuerst gezählt wird.
 

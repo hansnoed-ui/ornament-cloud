@@ -12,7 +12,7 @@ import { moduliere, routeFuersProtokoll } from "./modulation.js";
 import { bildfolge, routenAufloesen } from "./ausfuehrung.js";
 import { neuesBild, skalieren, luminanz, NACHT } from "./bilddaten.js";
 
-export const STATIONEN_VERSION = "0.3.0";
+export const STATIONEN_VERSION = "0.4.0";
 
 export const UEBERGAENGE = Object.freeze({
   blende: "Überblendung",
@@ -62,7 +62,9 @@ function taktzeiten(daten, schwelle, fps) {
 
 /**
  * Die Partitur: welche Station wann steht und wie sie in die nächste übergeht.
- * plan: { stationen: [ergebnisId | { ergebnis, uebergang? }], halten, uebergang, art, routen, takt: { ereignisfolge, schwelle, wiederholen } | null, fps }
+ * plan: { stationen: [ergebnisId | { ergebnis, uebergang?, halten?, einmal? }], halten, uebergang, art, routen, takt: { ereignisfolge, schwelle, wiederholen } | null, fps }
+ * Eine Station mit eigenem halten (s) hält so lange statt wie eingestellt; mit einmal am Anfang oder Ende steht sie ausserhalb der Runde
+ * im Takt (eine Titelkarte): sie kommt genau einmal, die Runde beginnt beim ersten Einsatz nach ihr (seit Partitur 0.4.0).
  * Ein Übergang «verlauf» ohne festen Takt behält die Länge, mit der die Operation ihren Verlauf rechnet (dauer null).
  * bewegung: { staerke 0–1, signal: CONTROL_SIGNAL | null } führt eine Kamera über die Bilder (0 oder ohne Angabe: keine Bewegung).
  * lebendig: true rechnet Stationen mit lebendiger Fassung ihrer Operation in jedem Bild neu (filmbilder({ lebendig }), medien/gpu.js).
@@ -95,14 +97,28 @@ export function partitur(projekt, plan) {
     const tonId = eigen?.id ?? (k ? Object.values(k.eingaben).find((id) => ergebnis(projekt, id)?.typ === "AUDIO") ?? null : null);
     takt = { ereignisfolge: f.id, schwelle, wiederholen: Boolean(plan.takt.wiederholen), einsaetze: zeiten.length, ton: tonId, tonBeginn: f.daten.beginn ?? 0, tonDauer: f.daten.dauer ?? null };
   }
-  // die Folge: jede Station einmal, oder im Takt reihum, bis die Einsätze aufgebraucht sind
-  const folge = takt?.wiederholen ? Array.from({ length: Math.min(GRENZEN.stationen * 8, zeiten.length + 1) }, (_, i) => st[i % st.length]) : st;
+  // die Folge: jede Station einmal, oder im Takt reihum, bis die Einsätze aufgebraucht sind. Stationen mit «einmal» am Anfang oder
+  // Ende stehen ausserhalb der Runde: vorn mit eigener Dauer, dann die Runde ab dem ersten Einsatz danach, hinten bis zum Schluss
+  let folge;
+  if (takt?.wiederholen) {
+    const vorne = [], hinten = [];
+    let a = 0, b = st.length;
+    while (a < b && st[a].einmal) vorne.push(st[a++]);
+    while (b > a && st[b - 1].einmal) hinten.unshift(st[--b]);
+    const mitte = b > a ? st.slice(a, b) : st;
+    const dauerVon = (k) => k.reduce((s, x) => s + begrenze(ZEITPARAMETER[0], x.halten ?? grund.halten) + grund.uebergang, 0);
+    const t0 = dauerVon(vorne), tEnde = hinten.length && takt.tonDauer ? takt.tonDauer - dauerVon(hinten) : Infinity;   // die Karten hinten brauchen ihre Zeit vor dem Ende des Tons
+    const rest = zeiten.filter((z) => z > t0 && z <= tEnde);
+    const runde = Math.max(1, Math.min(GRENZEN.stationen * 8, rest.length + (hinten.length ? 0 : 1)));
+    folge = [...vorne.map((s) => ({ ...s, ein: undefined })), ...Array.from({ length: runde }, (_, i) => ({ ...mitte[i % mitte.length], ein: rest[i] })), ...hinten.map((s) => ({ ...s, ein: undefined }))];
+  } else folge = st.map((s) => ({ ...s, ein: undefined }));
 
   let t = 0, offen = 0;
   const eintraege = folge.map((s, j) => {
     const u = folge.length > 1 ? j / (folge.length - 1) : 0.5;
-    const p = moduliere(ZEIT, grund, routen, u);
-    return { ergebnis: s.ergebnis, stelle: rund(u), p, art: UEBERGAENGE[s.uebergang] ? s.uebergang : art };
+    const p = { ...moduliere(ZEIT, grund, routen, u) };
+    if (Number.isFinite(Number(s.halten))) p.halten = begrenze(ZEITPARAMETER[0], s.halten);   // eigene Dauer der Station
+    return { ergebnis: s.ergebnis, stelle: rund(u), p, art: UEBERGAENGE[s.uebergang] ? s.uebergang : art, ein: s.ein, einmal: Boolean(s.einmal) };
   });
   const out = eintraege.map((x, j) => {
     const naechste = eintraege[j + 1];
@@ -110,20 +126,20 @@ export function partitur(projekt, plan) {
     if (!naechste) {   // die letzte Station: halten, im Takt bis zum Ende des Tons
       const halten = takt?.tonDauer ? Math.max(1 / fps, takt.tonDauer - beginn) : x.p.halten;
       t += halten;
-      return { ergebnis: x.ergebnis, stelle: x.stelle, beginn: rund(beginn), halten: rund(halten), uebergang: null };
+      return { ergebnis: x.ergebnis, stelle: x.stelle, beginn: rund(beginn), halten: rund(halten), uebergang: null, ...(x.einmal ? { einmal: true } : {}) };
     }
     let a = x.art, hinweis;
     if (a === "verlauf" && !verlaufMoeglich(projekt, x.ergebnis, naechste.ergebnis)) { a = "blende"; hinweis = "kein eigener Verlauf: die nächste Station ist nicht aus dieser entstanden, darum Überblendung"; }
     let halten = x.p.halten, dauer = a === "schnitt" ? 0 : x.p.uebergang;
-    const ein = takt ? zeiten[j] : undefined;
+    const ein = x.ein;
     if (ein !== undefined) {   // ein Einsatz löst den Wechsel aus; der Übergang endet spätestens beim nächsten Einsatz
       halten = Math.max(0, ein - beginn);
-      const luecke = (zeiten[j + 1] ?? Infinity) - ein;
+      const luecke = (zeiten.find((z) => z > ein) ?? Infinity) - ein;   // bis zum nächsten Einsatz (vor der Runde können Karten stehen, darum nicht über j)
       if (a !== "schnitt") dauer = Math.min(dauer, luecke);
       if (dauer < 1 / fps) { dauer = 0; if (a !== "schnitt") hinweis = "zu wenig Zeit bis zum nächsten Einsatz, darum Schnitt"; a = "schnitt"; }
     } else if (a === "verlauf") { dauer = null; offen++; }   // eigene Länge der Operation
     t += halten + (dauer ?? 0);
-    return { ergebnis: x.ergebnis, stelle: x.stelle, beginn: rund(beginn), halten: rund(halten), uebergang: { art: a, dauer: dauer === null ? null : rund(dauer), ...(hinweis ? { hinweis } : {}) } };
+    return { ergebnis: x.ergebnis, stelle: x.stelle, beginn: rund(beginn), halten: rund(halten), uebergang: { art: a, dauer: dauer === null ? null : rund(dauer), ...(hinweis ? { hinweis } : {}) }, ...(x.einmal ? { einmal: true } : {}) };
   });
   const bilder = Math.max(1, Math.round(t * fps));
   if (bilder > GRENZEN.filmBilder) throw new Error(`Grenze: höchstens ${GRENZEN.filmBilder} Bilder (${Math.round(GRENZEN.filmBilder / fps)} s), geplant sind ${bilder}`);
@@ -173,9 +189,23 @@ export function filmgroesse(b, seite) {
 export async function* filmbilder({ partitur: pt, projekt, ...rest }) {
   const quelle = stationsbilder({ partitur: pt, projekt, ...rest });
   if (!pt.bewegung) { yield* quelle; return; }
-  const sig = pt.bewegung.signal ? ergebnis(projekt, pt.bewegung.signal)?.daten : null;
+  const sig = pt.bewegung.signal ? ergebnis(projekt, pt.bewegung.signal)?.daten : null, ruhe = kartenRuhe(pt);
   let n = 0;
-  for await (const b of quelle) yield kamera(b, n++ / pt.fps, pt.bewegung.staerke, sig);
+  for await (const b of quelle) { const t = n++ / pt.fps, k = ruhe(t); yield k <= 0 ? b : kamera(b, t, pt.bewegung.staerke * k, sig); }
+}
+
+/** Titelkarten («einmal») stehen still: Faktor 0 der Kamera, solange sie stehen; über den Übergang hinaus oder hinein eine Rampe; sonst 1 */
+function kartenRuhe(pt) {
+  const fenster = [];
+  pt.folge.forEach((x, j) => {
+    if (!x.einmal) return;
+    const ende = x.beginn + x.halten, d = x.uebergang?.dauer ?? 0, vor = pt.folge[j - 1], dv = vor?.uebergang?.dauer ?? 0;
+    fenster.push({ von: x.beginn, bis: ende, a: 0, b: 0 });
+    if (d > 0) fenster.push({ von: ende, bis: ende + d, a: 0, b: 1 });   // hinaus: die Kamera kommt
+    if (vor && !vor.einmal && dv > 0) fenster.push({ von: x.beginn - dv, bis: x.beginn, a: 1, b: 0 });   // hinein: die Kamera geht
+  });
+  if (!fenster.length) return () => 1;
+  return (t) => { for (const f of fenster) if (t >= f.von && t < f.bis) return f.a + ((f.b - f.a) * (t - f.von)) / (f.bis - f.von); return 1; };
 }
 
 /** die Lautstärke (0–1) eines Steuersignals zur Zeit t (s), linear zwischen den Proben; ohne Signal 0 */

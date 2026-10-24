@@ -17,9 +17,11 @@ import { verzerrungOperation } from "./verzerrung.js";
 import { lichtOperation } from "./licht.js";
 import { rasterOperation } from "./raster.js";
 import { neusetzenOperation } from "./neusetzen.js";
+import { zettel } from "./zettel.js";
+import { karte } from "./karte.js";
 
 export const OPERATIONEN = [orna, fictory, feedback, wiederholung, farbe, bildsignal, tonsignal, klang, tempo, zerlegen, rhythmus, koerner, differenz, kompositionProfil, komposition,
-  glitchOperation, pixelsortierungOperation, verzerrungOperation, lichtOperation, rasterOperation, neusetzenOperation];
+  glitchOperation, pixelsortierungOperation, verzerrungOperation, lichtOperation, rasterOperation, neusetzenOperation, zettel, karte];
 
 export function labRegister() {
   const r = erstelleRegister();

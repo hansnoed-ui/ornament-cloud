@@ -119,7 +119,9 @@ fieldset { border: 0; margin: 0; padding: 0; }
 .dramaturgien { gap: 10px; }
 .zusammenstellung { gap: 10px; }
 .zusammenstellung small { color: var(--muted); }
+.bestand-wahl { display: inline-flex; align-items: center; gap: 0.5rem; }
 .stellen { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.bestand-wahl { display: inline-flex; align-items: center; gap: 0.5rem; }
 .stellen select { width: 100%; min-width: 0; }
 .vorschlag30 h4.oder { margin: 6px 0 0; font-size: 0.9rem; font-weight: 500; color: var(--muted); }
 .dramaturgie { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; row-gap: 2px; align-items: start; cursor: pointer; }
