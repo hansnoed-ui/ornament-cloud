@@ -15,8 +15,9 @@ import { STROPHEN_WAHL } from "./operationen/zettel.js";
 import { KONSTELLATIONEN } from "./operationen/orna.js";
 import { TYPEN } from "./kern/typen.js";
 import { AUSSPIELEN, wavSchreiben, rateWandeln, spurenVon, klangfolge } from "./kern/klangwerk.js";
-import { jevVerfuegbar, jevWahl, jevDramaturgie, jevKomposition, jevPruefen, jevZustand } from "./jev/jev.js";
-import { DRAMATURGIEN, MERKMALE, KOMPOSITION_FRAGEN, BILD_EFFEKTE, KLANG_EFFEKTE, AUFBAU, FILM_UEBERGAENGE } from "./jev/fragen.js";
+import { jevVerfuegbar, jevWahl, jevDramaturgie, jevKomposition, jevBeat, jevPruefen, jevZustand } from "./jev/jev.js";
+import { DRAMATURGIEN, MERKMALE, KOMPOSITION_FRAGEN, BILD_EFFEKTE, KLANG_EFFEKTE, AUFBAU, FILM_UEBERGAENGE, BEAT_FRAGEN, BEAT_MERKMALE } from "./jev/fragen.js";
+import { beatMessen, regelPlan, planAusJev, ABSCHNITTE_HOECHSTENS } from "./kern/beat.js";
 import * as ZS from "./kern/zusammenstellung.js";
 import * as VS from "./kern/vorschlag.js";
 import { zip } from "../../alpha/the-fictory/zip.js?v=23";
@@ -40,6 +41,8 @@ const S = {
   laenge: new Map(),
   // Vorschlag für 30 s aus Bild und Klang (kern/vorschlag.js): Auswahl, Messung, Antworten von jev und Regeln, gewählte Dramaturgie
   vorschlag: { bild: "", ton: "", beginn: 0, messung: null, jev: null, jevFehler: "", regel: null, gewaehlt: null, zusammen: null },
+  // Beat aus Bild oder Video (seit 0.1.24): Bild, Dauer, Messung, Plan der sieben Stellen und woher er kommt (Regeln oder jev), Ergebnis
+  beat: { bild: "", dauer: null, messung: null, plan: null, quelle: "regel", gruende: null, jev: null, antworten: null, jevFehler: "", seed: 1, geaendert: new Set(), ergebnis: null },
   film: { halten: 1.5, uebergang: 1, art: "blende", quelle: "keine", ziel: "halten", tiefe: 0.3, frequenz: 1, signal: "", takt: "", schwelle: 0.2, wiederholen: true, tonspur: "auto", seite: 1280, bewegung: 0, bewegungSignal: "", lebendig: true },
 };
 globalThis.ornamentLab = S;   // für Browsertests und die Konsole
@@ -317,6 +320,99 @@ async function vorschlagRechnen() {
     await stationenFilmRechnen(stationen(), signal, { vorschlag: v.gewaehlt, auswahl: "Vorschlag", entscheidung: r.entscheidung.id });
     if (plan.hinweis) status(`${letzterStatus[0]} Hinweis: ${plan.hinweis}.`);
   });
+}
+
+// ---------- Beat aus Bild oder Video (kern/beat.js, Operation lab.beat) ----------
+const BEAT_NAMEN = { tempo: "Tempo", groove: "Groove", kit: "Schlagzeug", tonart: "Tonart", bass: "Bass", melodie: "Melodie", verlauf: "Verlauf" };
+/** ein Standbild aus einem Video: alle Standbilder desselben Videos in zeitlicher Folge (höchstens sechs), sonst nur das Bild */
+function beatBilder(id) {
+  const quelle = P.ergebnis(S.projekt, id)?.herkunft?.video;
+  if (!quelle) return [id];
+  const stills = S.projekt.ergebnisse.filter((x) => x.typ === "IMAGE" && !x.knoten && x.herkunft?.video?.sha256 === quelle.sha256).sort((a, b) => a.herkunft.video.zeit - b.herkunft.video.zeit);
+  return stills.length > 1 ? stills.slice(0, ABSCHNITTE_HOECHSTENS).map((x) => x.id) : [id];
+}
+function zeigeBeat() {
+  const box = $("beat"), b = S.beat, bilder = bilderDesProjekts();
+  box.hidden = !bilder.length;
+  if (box.hidden) return;
+  if (!bilder.some((x) => x.id === b.bild)) {
+    const a = aktuellesErgebnis();
+    b.bild = a?.typ === "IMAGE" ? a.id : bilder.filter((x) => !x.knoten).at(-1)?.id ?? bilder.at(-1).id; b.dauer = null;
+  }
+  const folge = beatBilder(b.bild), video = P.ergebnis(S.projekt, b.bild)?.herkunft?.video;
+  if (b.dauer === null) b.dauer = video ? Math.min(60, Math.max(4, Math.round(video.dauer * 2) / 2)) : 15;
+  const bereit = jevVerfuegbar(), beschaeftigt = Boolean(S.laeuft);
+  const teile = [el("h3", { text: "Beat aus Bild oder Video" }),
+    el("small", { text: "Das Lab misst Farbe, Helligkeit, Feinheit und Komposition, bei einem Video auch die Bewegung zwischen den Standbildern. Daraus wird ein kurzer Beat mit Schlagzeug, Bass und Melodie: nach festen Regeln oder von jev gewählt. jev sieht nur die gemessenen Stufen, nie das Bild." }),
+    el("div", { class: "vorschlag-wahl" },
+      el("label", { class: "regler" }, el("span", { text: "Bild" }), el("select", { id: "beat-bild", onchange: (ev) => { b.bild = ev.target.value; b.dauer = null; zeigeBeat(); } },
+        ...bilder.map((x) => el("option", { value: x.id, selected: x.id === b.bild, text: x.titel })))),
+      el("label", { class: "regler" }, el("span", { text: "Dauer (s)" }), el("input", { type: "number", id: "beat-dauer", min: 4, max: 60, step: 0.5, value: b.dauer,
+        onchange: (ev) => { b.dauer = Math.min(60, Math.max(4, Number(ev.target.value) || 15)); } }))),
+    folge.length > 1 ? el("small", { class: "hinweis", text: `Aus dem Video «${video.name}»: ${folge.length} Standbilder werden ${folge.length} Abschnitte, die Bewegung zwischen ihnen gibt die Energie. Die Dauer ist die Länge des Videos.` }) : null,
+    el("div", { class: "aktionen" },
+      el("button", { class: "knopf voll", type: "button", id: "beat-regeln", disabled: beschaeftigt, onclick: () => beatMachen("regel"), text: "Beat nach Regeln" }),
+      el("button", { class: "knopf", type: "button", id: "beat-jev", disabled: beschaeftigt || !bereit, onclick: () => beatMachen("jev"), text: "Beat mit jev" })),
+    bereit ? null : el("small", { class: "hinweis", text: `jev ist gerade nicht bereit (${jevZustand().grund}). Die Regeln gehen immer.` })];
+  if (b.plan && b.messung) {
+    const m = b.messung.merkmale;
+    teile.push(el("p", { class: "startwert", id: "beat-merkmale", text: `Gemessen${b.messung.ids.length > 1 ? ` (${b.messung.ids.length} Standbilder)` : ""}: ${Object.keys(BEAT_MERKMALE).map((k) => BEAT_MERKMALE[k][m[k]]).join(", ")}.` }));
+    if (b.jevFehler) teile.push(el("small", { class: "hinweis fehler", text: `jev: ${b.jevFehler}. Darum nach Regeln.` }));
+    const p = (frage, wert) => { const w = b.antworten?.[frage]; if (!w) return null; const sum = Object.values(w).reduce((x, y) => x + y, 0); return sum > 0 ? Math.round((w[wert] / sum) * 100) / 100 : null; };
+    teile.push(el("fieldset", { class: "gruppe zusammenstellung" },
+      el("legend", { text: b.quelle === "jev" ? `jev wählt (${b.jev.modell})` : "nach festen Regeln" }),
+      el("small", { text: b.quelle === "jev" ? `Aus den Wahrscheinlichkeiten von jev gezogen, Startwert ${b.seed}. Jede Stelle lässt sich ändern.` : "Je Stelle der Wert, zu dem die meisten Regeln passen. Jede Stelle lässt sich ändern." }),
+      el("div", { class: "stellen" }, ...Object.entries(BEAT_FRAGEN).map(([frage, f]) => {
+        const q = b.quelle === "jev" ? p(frage, b.plan[frage]) : null;
+        return el("label", { class: "regler stelle" }, el("span", {}, `${BEAT_NAMEN[frage]}${q !== null ? ` · p = ${zahl(q)}` : ""}`),
+          el("select", { "data-beat": frage, onchange: (ev) => { b.plan[frage] = ev.target.value; b.geaendert.add(frage); zeigeBeat(); } },
+            ...Object.entries(f.katalog).map(([k, t]) => el("option", { value: k, selected: k === b.plan[frage], text: kurzname(t) }))));
+      })),
+      b.quelle === "regel" && b.gruende ? el("small", { class: "hinweis", text: Object.keys(BEAT_FRAGEN).filter((k) => !b.geaendert.has(k)).map((k) => `${BEAT_NAMEN[k]}: ${b.gruende[k].join(", ")}`).join(". ") + "." }) : null,
+      el("div", { class: "aktionen" },
+        el("button", { class: "knopf voll", type: "button", id: "beat-rechnen", disabled: beschaeftigt, onclick: () => laufen(beatRechnenOberflaeche), text: "neu rechnen" }),
+        el("button", { class: "knopf leise", type: "button", id: "beat-neu", disabled: beschaeftigt, onclick: () => laufen(async (signal) => {
+          b.seed = neuerStartwert();
+          if (b.quelle === "jev") { b.plan = planAusJev(b.antworten, b.seed); b.geaendert.clear(); }
+          await beatRechnenOberflaeche(signal);
+        }), text: b.quelle === "jev" ? "neu ziehen" : "anderer Startwert" }))));
+    const e = b.ergebnis ? P.ergebnis(S.projekt, b.ergebnis) : null;
+    if (e) teile.push(el("div", { class: "ton-karte", id: "beat-ergebnis" }, el("b", { text: e.titel }),
+      el("audio", { src: S.medien.url(e), controls: true, preload: "metadata", loop: true }),
+      el("div", { class: "aktionen" }, el("button", { class: "knopf klein", type: "button", onclick: () => wavAusspielen(e), text: "WAV speichern" }),
+        el("small", { text: "Der Beat steht als Ton im Projekt: «Animation aus Bild und Klang» nimmt ihn als Tonspur, seine Schläge taugen als Takt für den Film über Stationen." }))));
+  }
+  ersetze(box, teile);
+}
+/** messen, wählen (Regeln oder jev) und gleich rechnen: am Telefon genügt ein Knopf */
+async function beatMachen(art) {
+  const b = S.beat;
+  await laufen(async (signal) => {
+    status("Das Bild wird gemessen …", 0);
+    const ids = beatBilder(b.bild), bilder = await Promise.all(ids.map((id) => S.medien.bild(P.ergebnis(S.projekt, id))));
+    const messung = beatMessen(bilder);
+    Object.assign(b, { messung: { ids, merkmale: messung.merkmale, werte: messung.werte }, seed: neuerStartwert(), geaendert: new Set(), jev: null, antworten: null, jevFehler: "", gruende: null });
+    const regeln = () => { const r = regelPlan(messung.merkmale); Object.assign(b, { plan: r.plan, gruende: r.gruende, quelle: "regel" }); };
+    if (art === "jev") {
+      status("jev wählt Tempo, Groove, Klänge, Tonart, Bass, Melodie und Verlauf …");
+      try { const a = await jevBeat({ merkmale: messung.merkmale }, { abbrechen: signal }); Object.assign(b, { jev: a, antworten: a.antworten, plan: planAusJev(a.antworten, b.seed), quelle: "jev" }); }
+      catch (f) { if (f.name === "AbortError") throw f; b.jevFehler = f.message; regeln(); }
+    } else regeln();
+    await beatRechnenOberflaeche(signal);
+  });
+}
+async function beatRechnenOberflaeche(signal) {
+  const b = S.beat;
+  const herkunft = b.quelle === "jev" ? { quelle: b.jev.quelle, modell: b.jev.modell, antworten: b.antworten, lage: b.jev.lage, zwischengespeichert: b.jev.zwischengespeichert, gefragt: b.jev.zeit, gezogen: b.seed }
+    : { gruende: b.gruende, merkmale: b.messung.merkmale, ...(b.jevFehler ? { ohneJev: b.jevFehler } : {}) };
+  const wahl = b.geaendert.size ? { art: "mensch", details: { anlass: "Beat aus Bild", geaendert: [...b.geaendert], vorschlag: b.quelle, ...herkunft } } : { art: b.quelle, details: { anlass: "Beat aus Bild", ...herkunft } };
+  const eingaben = Object.fromEntries(b.messung.ids.map((id, i) => [i ? `bild${i + 1}` : "bild", id]));
+  const r = await fuehreAus({ register: R, projekt: S.projekt, medien: S.medien, melden: status, abbrechen: signal,
+    auftrag: { operation: "lab.beat", eingaben, parameter: { ...b.plan, dauer: b.dauer }, seed: b.seed, wahl } });
+  const ton = r.ergebnisse.find((x) => x.typ === "AUDIO");
+  b.ergebnis = ton.id; S.aktuell = ton.id; S.knotenAnsicht = r.knoten.id;
+  S.vorschlag.ton = ton.id; if (S.vorschlag.bild !== b.bild && !S.vorschlag.messung) S.vorschlag.bild = b.bild;
+  status(`${ton.titel}. Er steht als Ton im Projekt, auch für «Animation aus Bild und Klang».`);
 }
 
 // ---------- 2 · Operationen ----------
@@ -1085,7 +1181,7 @@ async function oeffnen(datei) {
   } catch (f) { status(`Das Projekt liess sich nicht öffnen: ${f.message}`, null, true); }
 }
 
-function alles() { zeigeMaterial(); zeigeVorschlag30(); zeigeOperationen(); zeigeBuehne(); zeigeProtokoll(); }
+function alles() { zeigeMaterial(); zeigeVorschlag30(); zeigeBeat(); zeigeOperationen(); zeigeBuehne(); zeigeProtokoll(); }
 
 // ---------- Anschlüsse ----------
 $("datei").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) importiere(f); });

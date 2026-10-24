@@ -26,6 +26,7 @@ export const KATALOG = Object.freeze({
   "phorma.traube": "PHORMA Traube: glänzende Perlen in einer Kugel aus Fäden, Schnitte im Takt des Tons (zeitliche Operation, eigene Bühne)",
   "phorma.ii": "PHORMA II: Physarum, Tiefe, Wellenwanne, Tuch, Rasterdruck oder Montage, einzeln oder als Kette (zeitliche Operation, eigene Bühne)",
   "phorma.i": "PHORMA I: Fragmente oder die Verwandlung aus Strom, Körper, Scherben, Echo, Relief (zeitliche Operation, eigene Bühne)",
+  "lab.beat": "Beat aus Bild: das Bild wird zu einem kurzen Beat mit Schlagzeug, Bass und Melodie, aus Farbe, Helligkeit und Komposition gelesen (Medienwechsel nach Klang)",
 });
 
 const KENNUNG = /^[a-z]+\.[a-z0-9-]+$/;
@@ -123,15 +124,57 @@ export const KOMPOSITION_FRAGEN = Object.freeze({
 export const FRAGE_KOMPOSITION = "In einem künstlerischen Labor stellt jev aus vielen Bild- und Klangeffekten eine Animation von 30 Sekunden aus einem Bild und einem Klang zusammen; der bearbeitete Klang ist die Tonspur. Gemessen wurden nur die genannten Merkmale. Die Zusammenstellung soll abwechslungsreich sein und aus diesem Bild und diesem Klang hervorgehen.";
 
 /**
- * eine Lage prüfen und bereinigen. Drei feste Fragen:
+ * Beat aus Bild oder Video (seit Lab 0.1.24): jev wählt die sieben Stellen eines Beats aus festen Katalogen, gemessen sind nur die Stufen
+ * in BEAT_MERKMALE (kern/beat.js misst sie). Die Werte der Kataloge sind die Parameter von «Beat aus Bild» (operationen/beat.js).
+ */
+export const BEAT_MERKMALE = Object.freeze({
+  helligkeit: { dunkel: "eher dunkel", mittel: "mittlere Helligkeit", hell: "eher hell" },
+  kontrast: { niedrig: "Kontrast niedrig", mittel: "Kontrast mittel", hoch: "Kontrast hoch" },
+  farbigkeit: { grau: "fast ohne Farbe", gedaempft: "gedämpfte Farben", bunt: "kräftige Farben" },
+  farbton: { warm: "vorwiegend warme Farben (Rot, Orange, Gelb)", kalt: "vorwiegend kalte Farben (Grün, Blau, Violett)", neutral: "ohne vorherrschenden Farbton" },
+  detail: { glatt: "grosse, ruhige Flächen", mittel: "mittlere Feinheit", fein: "viele feine Einzelheiten und Kanten" },
+  schwerpunkt: { oben: "das Gewicht des Bildes liegt oben", mitte: "das Gewicht liegt in der Mitte", unten: "das Gewicht liegt unten" },
+  symmetrie: { symmetrisch: "nahezu spiegelgleich", asymmetrisch: "deutlich asymmetrisch" },
+  bewegung: { still: "ein einzelnes Bild, keine Bewegung", ruhig: "ein Video mit wenig Bewegung", bewegt: "ein Video mit deutlicher Bewegung", heftig: "ein Video mit heftiger Bewegung oder Schnitten" },
+});
+export const BEAT_FRAGEN = Object.freeze({
+  tempo: { text: "Welches Tempo passt?", katalog: Object.freeze({
+    langsam: "langsam, etwa 75 Schläge je Minute", mittel: "mittel, etwa 100 Schläge je Minute", schnell: "schnell, etwa 125 Schläge je Minute", rasend: "rasend, etwa 160 Schläge je Minute" }) },
+  groove: { text: "Welcher Groove passt?", katalog: Object.freeze({
+    gerade: "gerade: Bassdrum auf jedem Viertel, Snare auf zwei und vier",
+    halftime: "Halftime: Bassdrum am Anfang, Snare nur auf drei, schwer und breit",
+    breakbeat: "Breakbeat: synkopierte Bassdrum, Snare auf zwei und vier mit leisen Zwischenschlägen",
+    euklidisch: "euklidisch: Schläge möglichst gleichmässig verteilt, ungerade Muster wie fünf aus sechzehn",
+    schleppend: "schleppend: Groove mit Swing, die Zwischenschläge kommen spät" }) },
+  kit: { text: "Welche Klänge soll das Schlagzeug haben?", katalog: Object.freeze({
+    trocken: "trocken: kurze, akustisch wirkende Trommeln", elektronisch: "elektronisch: lange, tiefe Bassdrum und Klatschen wie bei einer Drum-Machine",
+    metallisch: "metallisch: klirrende Becken und glockenartige Töne", weich: "weich: gedämpfte, runde Schläge ohne Härte" }) },
+  tonart: { text: "Welche Tonart soll der Beat haben?", katalog: Object.freeze({
+    dur: "Dur: hell und offen", moll: "Moll: dunkel und ernst", dorisch: "dorisch: Moll mit einem hellen Ton, schwebend",
+    phrygisch: "phrygisch: dunkel und fremd, mit kleiner Sekunde", pentatonik: "pentatonisch: fünf Töne ohne Halbtöne, nichts reibt" }) },
+  bass: { text: "Was soll der Bass tun?", katalog: Object.freeze({
+    keiner: "kein Bass", liegend: "liegend: lange Töne, je Takt einer", pulsierend: "pulsierend: Achtel auf dem Grundton, mit Oktavsprüngen", laufend: "laufend: der Bass geht in Schritten durch die Tonleiter" }) },
+  melodie: { text: "Welche Melodie soll über dem Beat liegen?", katalog: Object.freeze({
+    keine: "keine Melodie", bild: "aus dem Bild gelesen: die hellste Stelle jeder Spalte gibt den Ton, von links nach rechts",
+    arpeggio: "Arpeggio: die Töne des Akkords auf und ab", glocken: "Glocken: wenige Töne auf den hellsten Punkten des Bildes" }) },
+  verlauf: { text: "Wie soll sich der Beat über die Zeit entwickeln?", katalog: Object.freeze({
+    gleich: "gleich: alles spielt von Anfang an", steigend: "steigend: die Stimmen setzen nacheinander ein, es wird dichter",
+    abschwellend: "abschwellend: voll am Anfang, dann lichtet es sich", wellen: "in Wellen: dichter, wo sich das Video stark bewegt, sonst lichter" }) },
+});
+export const FRAGE_BEAT = "In einem künstlerischen Labor entsteht aus einem Bild oder einem Video ein kurzer Beat als Soundtrack. Gemessen wurden nur die genannten Merkmale. Der Beat soll aus diesem Bild hervorgehen, statt ihm von aussen übergestülpt zu werden.";
+
+/**
+ * eine Lage prüfen und bereinigen. Vier feste Fragen:
  *   { verlauf: [Kennungen, höchstens 8], optionen: [Operationen aus KATALOG, 2–6] }                      nächste Operation
  *   { frage: "dramaturgie", merkmale: { alle Schlüssel aus MERKMALE, je eine Stufe }, optionen: [aus DRAMATURGIEN, 2–6] }
  *   { frage: "komposition", merkmale: { wie oben } }                     Zusammenstellung, die Optionen sind die festen Kataloge
+ *   { frage: "beat", merkmale: { alle Schlüssel aus BEAT_MERKMALE } }      Beat aus Bild oder Video, die Optionen sind BEAT_FRAGEN
  */
 export function labLage(roh) {
   if (!roh || typeof roh !== "object" || Array.isArray(roh)) throw new Error("Lage fehlt");
   if (roh.frage === "dramaturgie") return dramaturgieLage(roh);
   if (roh.frage === "komposition") return kompositionLage(roh);
+  if (roh.frage === "beat") return beatLage(roh);
   const fremd = Object.keys(roh).filter((k) => !["verlauf", "optionen"].includes(k));
   if (fremd.length) throw new Error(`unbekannte Felder: ${fremd.join(", ")}`);
   const verlauf = Array.isArray(roh.verlauf) ? roh.verlauf.slice(-8) : [];
@@ -157,6 +200,20 @@ function kompositionLage(roh) {
   if (fremd.length) throw new Error(`unbekannte Felder: ${fremd.join(", ")}`);
   return { frage: "komposition", merkmale: merkmaleLage(roh.merkmale) };
 }
+function beatLage(roh) {
+  const fremd = Object.keys(roh).filter((k) => !["frage", "merkmale"].includes(k));
+  if (fremd.length) throw new Error(`unbekannte Felder: ${fremd.join(", ")}`);
+  const m = roh.merkmale;
+  if (!m || typeof m !== "object" || Array.isArray(m)) throw new Error("Merkmale fehlen");
+  const fremdeMerkmale = Object.keys(m).filter((k) => !Object.hasOwn(BEAT_MERKMALE, k));
+  if (fremdeMerkmale.length) throw new Error(`unbekannte Merkmale: ${fremdeMerkmale.join(", ")}`);
+  const merkmale = {};
+  for (const k of Object.keys(BEAT_MERKMALE)) {
+    if (typeof m[k] !== "string" || !Object.hasOwn(BEAT_MERKMALE[k], m[k])) throw new Error(`Merkmal ${k} fehlt oder hat keine gültige Stufe`);
+    merkmale[k] = m[k];
+  }
+  return { frage: "beat", merkmale };
+}
 function dramaturgieLage(roh) {
   const fremd = Object.keys(roh).filter((k) => !["frage", "merkmale", "optionen"].includes(k));
   if (fremd.length) throw new Error(`unbekannte Felder: ${fremd.join(", ")}`);
@@ -171,6 +228,10 @@ export const FRAGE_DRAMATURGIE = "In einem künstlerischen Labor sollen ein Bild
 /** feste Frage an jev aus einer geprüften Lage */
 export function labFrage(lage) {
   const zeile = (gruppe) => Object.keys(MERKMALE[gruppe]).map((k) => merkmalText(k, lage.merkmale[k])).join("; ");
+  if (lage.frage === "beat") return {
+    zustand: { labor: "ORNAMENT LAB, Beat aus Bild oder Video", bild: Object.entries(BEAT_MERKMALE).map(([k, w]) => w[lage.merkmale[k]]).join("; ") },
+    fragen: Object.fromEntries(Object.entries(BEAT_FRAGEN).map(([k, f]) => [k, { type: "choice", instructions: `${FRAGE_BEAT} ${f.text}`, criteria: { ...f.katalog } }])),
+  };
   if (lage.frage === "komposition") return {
     zustand: { labor: "ORNAMENT LAB, Animation aus Bild und Klang, von jev zusammengestellt", bild: zeile("bild"), klang: zeile("klang") },
     fragen: Object.fromEntries(Object.entries(KOMPOSITION_FRAGEN).map(([k, f]) => [k, { type: "choice", instructions: `${FRAGE_KOMPOSITION} ${f.text}`, criteria: { ...f.katalog } }])),
