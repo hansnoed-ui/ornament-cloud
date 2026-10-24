@@ -1137,6 +1137,8 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   assert.ok(p.entscheidungen.filter((d) => d.details?.entscheidung === x.entscheidung.id).length >= 9, "jeder Schritt verweist auf die Zusammenstellung");
   assert.equal(x.plan.stationen.length, 61); assert.equal(x.plan.tonspur, x.klang); assert.equal(x.plan.tonBeginn, 0);
   assert.deepEqual(x.plan.bewegung, { staerke: Z.BEWEGUNG, signal: x.signal }, "die Kamera atmet mit dem neuen Klang");
+  assert.equal(x.plan.lebendig, true); assert.deepEqual(x.entscheidung.details.film, { lebendig: true, bewegung: Z.BEWEGUNG });
+  assert.equal(Z.zusammenstellen(Z.gleichverteilt(), 1).lebendig, true); assert.equal(Z.zusammenstellen(Z.gleichverteilt(), 1).bewegung, Z.BEWEGUNG);
   const pt = ST.partitur(p, { ...x.plan, fps: 30 });
   assert.ok(pt.dauer > 3 && pt.dauer <= 30, `${pt.dauer}`);
   if (x.plan.takt) assert.equal(pt.takt.ton, x.klang, "der Takt kommt aus dem bearbeiteten Klang");
@@ -1148,6 +1150,12 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   const y = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: { ...mg, beginn: 1 }, plan: { ...plan, aufbau: "aufbau.faecher", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.wiederholung", "bild.farbe", "bild.komposition", "bild.farbe", "bild.licht"] }, wahl: { art: "zufall", details: {} } });
   const letzte = p.knoten.slice(-6);
   assert.ok(letzte.every((k) => k.eingaben.bild === e.id), "Fächer");
+  // Filmeinstellungen des Menschen (0.1.19): ohne lebendige Effekte, Kamera ruhig
+  const ruhig = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.licht", "bild.farbe", "bild.licht"], lebendig: false, bewegung: 0 }, wahl: { art: "mensch", details: {} } });
+  assert.equal(ruhig.plan.lebendig, false); assert.equal(ruhig.plan.bewegung, null); assert.deepEqual(ruhig.entscheidung.details.film, { lebendig: false, bewegung: 0 });
+  const halb = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.licht", "bild.farbe", "bild.licht"], bewegung: 0.5 }, wahl: { art: "mensch", details: {} } });
+  assert.equal(halb.plan.bewegung.staerke, 0.5); assert.equal(halb.plan.lebendig, true);
+  assert.equal(ST.partitur(p, { ...ruhig.plan, fps: 30 }).bewegung, null);
   assert.equal(y.klang, t.id); assert.equal(y.plan.tonBeginn, 1);
   await assert.rejects(Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, bild: ["bild.gibtsnicht"] }, wahl: { art: "mensch" } }), /gibt es nicht/);
   assert.deepEqual(P.pruefeProjekt(p), []);

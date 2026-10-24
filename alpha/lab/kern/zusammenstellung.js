@@ -14,7 +14,7 @@ import { fuehreAus } from "./ausfuehrung.js";
 import { taktSchwelle, DAUER } from "./vorschlag.js";
 import { zufall } from "../../../alpha/the-fictory/analyse.js?v=23";
 
-export const ZUSAMMENSTELLUNG_VERSION = "0.2.0";
+export const ZUSAMMENSTELLUNG_VERSION = "0.3.0";
 /** Dauer einer Karte (Zettel, ORNA) am Anfang oder Ende des Films, in Sekunden */
 export const KARTE_DAUER = 2.5;
 export const VARIANTEN_JE_ABSCHNITT = 10;   // seit Lab 0.1.16: 60 Motive in 30 s (vorher 3, also 18)
@@ -72,7 +72,7 @@ export function zusammenstellen(antworten, seed = 1) {
   const aufbau = ziehe(antworten.aufbau, rnd), uebergang = ziehe(antworten.uebergang, rnd);
   const k1 = ziehe(antworten.klang1, rnd), k2 = ziehe(antworten.klang2, rnd, k1 === "klang.keine" ? [] : [k1]);
   for (const k of Object.keys(KOMPOSITION_FRAGEN).filter((x) => x.startsWith("bild"))) bild.push(ziehe(antworten[k], rnd, bild.slice(-1)));
-  return { aufbau, uebergang, klang: [k1, k2], bild, seed: seed >>> 0, zettel: null, orna: null };
+  return { aufbau, uebergang, klang: [k1, k2], bild, seed: seed >>> 0, zettel: null, orna: null, lebendig: true, bewegung: BEWEGUNG };
 }
 
 /** die Wahrscheinlichkeit, mit der jev eine Stelle der Zusammenstellung gewählt hat (fürs Protokoll und die Anzeige) */
@@ -84,7 +84,8 @@ export function wahrscheinlichkeit(antworten, frage, wahl) {
 
 /**
  * Eine Zusammenstellung rechnen. messung: von messen() (kern/vorschlag.js); plan: von zusammenstellen(), vom Menschen ggf. geändert;
- * wahl: { art: "jev"|"zufall"|"mensch", details }. plan.zettel: null | { strophe: "" | Nummer }, plan.orna: null | { konstellation: "" | Kennung }.
+ * wahl: { art: "jev"|"zufall"|"mensch", details }. plan.zettel: null | { strophe: "" | Nummer }, plan.orna: null | { konstellation: "" | Kennung };
+ * plan.lebendig (Schalter, Standard an) und plan.bewegung (Stärke der Kamera 0–1, Standard BEWEGUNG) sind die Filmeinstellungen des Menschen (seit 0.1.19).
  * Zuerst die Klangeffekte nacheinander, dann misst ein Tonsignal den neuen Klang
  * (Takt und Steuersignal), dann sechs Abschnitte zu je zehn Varianten. Gibt { entscheidung, ergebnisse, klang, plan } zurück; plan wie bei
  * vorschlagAusfuehren(): { stationen, art, halten, uebergang, takt, bewegung, tonspur, tonBeginn, dauer }.
@@ -95,9 +96,10 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   if (!FILM[plan.uebergang]) throw new Error(`Übergang ${plan.uebergang} gibt es nicht`);
   if (plan.zettel && !register.hat("zettel.strophe")) throw new Error("Der Zettelkasten ist nicht im Register");
   if (plan.orna && !register.hat("orna.konstellation")) throw new Error("ORNA ist nicht im Register");
+  const lebendig = plan.lebendig !== false, staerke = Math.min(1, Math.max(0, Number(plan.bewegung ?? BEWEGUNG) || 0));
   const d = entscheide(projekt, { art: wahl.art, gegenstand: "zusammenstellung", optionen: [], gewaehlt: { aufbau: plan.aufbau, uebergang: plan.uebergang, klang: plan.klang, bild: plan.bild,
       zettel: plan.zettel ? (plan.zettel.strophe || "ziehen") : null, orna: plan.orna ? (plan.orna.konstellation || "ziehen") : null },
-    details: { ...(wahl.details ?? {}), ...(messung.videoBilder?.length > 1 ? { video: messung.videoBilder } : {}), startwert: plan.seed, merkmale: messung.merkmale, werte: messung.werte, version: ZUSAMMENSTELLUNG_VERSION } });
+    details: { ...(wahl.details ?? {}), ...(messung.videoBilder?.length > 1 ? { video: messung.videoBilder } : {}), startwert: plan.seed, merkmale: messung.merkmale, werte: messung.werte, film: { lebendig, bewegung: staerke }, version: ZUSAMMENSTELLUNG_VERSION } });
   const schritt = (anlass) => ({ art: wahl.art, details: { anlass, entscheidung: d.id } });
 
   // 1 · Klang: die Effekte nacheinander, jeder auf dem Ergebnis des vorigen
@@ -188,5 +190,5 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   // ohne Takt füllt das Halten die Dauer; die Karten haben ihre eigene
   const halten = takt ? 1 : Math.max(0, Math.min(10, Math.round(((dauer - karten * KARTE_DAUER - (n - 1) * uebergang) / Math.max(1, n - karten)) * 100) / 100));
   return { entscheidung: d, ergebnisse, klang: ton, signal: signal.id, zettel: zettel?.daten ?? null, konstellation: konstellation?.daten ?? null, karten: { zettel: zettelKarte, orna: ornaKarte },
-    plan: { stationen, art: f.art, halten, uebergang: Math.round(uebergang * 100) / 100, takt, bewegung: { staerke: BEWEGUNG, signal: signal.id }, lebendig: true, tonspur: ton, tonBeginn: beginn, dauer } };
+    plan: { stationen, art: f.art, halten, uebergang: Math.round(uebergang * 100) / 100, takt, bewegung: staerke ? { staerke, signal: signal.id } : null, lebendig, tonspur: ton, tonBeginn: beginn, dauer } };
 }
