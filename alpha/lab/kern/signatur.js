@@ -14,7 +14,7 @@ import { zufall } from "../../../alpha/the-fictory/analyse.js?v=23";
 
 export const SIGNATUR_VERSION = "0.1.0";
 /** Dauern in Sekunden: das Intro, das Outro (es dehnt sich, wenn der Film mehr Zeit lässt), das Signet und sein Auftakt aus dem Bild (ohne Outro) */
-export const INTRO_DAUER = 10, OUTRO_DAUER = 8, SIGNET_DAUER = 6.5, AUFTAKT_DAUER = 1.6;
+export const INTRO_DAUER = 11, OUTRO_DAUER = 9, SIGNET_DAUER = 6.5, AUFTAKT_DAUER = 1.6;   // seit 0.1.34 Intro 11 und Outro 9: der Zettel und die Konstellation stehen je eine Sekunde länger (Wunsch vom 24. Oktober 2026)
 /** der Scratch am Ende des Intros (s) */
 export const SCRATCH_DAUER = 0.75;
 
@@ -32,7 +32,7 @@ export const INTRO_PHASEN = Object.freeze({
   entfalten: [3.4, 5.0],   // seine 49 Felder lösen sich und legen sich zum Raster
   leuchten: [4.9, 5.6],    // das Feld des Zettels leuchtet auf, die Zyklen stehen daneben
   ziehen: [5.6, 6.4],      // der Zettel kommt aus dem Raster nach vorn
-  zettel: [6.4, INTRO_DAUER - SCRATCH_DAUER],   // Leitsatz und die vier Verweise, Zeit zum Lesen
+  zettel: [6.4, INTRO_DAUER - SCRATCH_DAUER],   // Leitsatz und die vier Verweise, Zeit zum Lesen (seit 0.1.34 eine Sekunde mehr: bis 10,25 s)
   scratch: [INTRO_DAUER - SCRATCH_DAUER, INTRO_DAUER],
 });
 

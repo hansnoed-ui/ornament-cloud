@@ -665,7 +665,7 @@ Das Bild am Eingang (die letzte Sequenz) faltet sich zu einem Körper, der Körp
 
 | Parameter | Bereich |
 |---|---|
-| Dauer (s; im Film so lange, wie die Station steht) (`dauer`) | 6 … 10, Standard 8 |
+| Dauer (s; im Film so lange, wie die Station steht) (`dauer`) | 6 … 12, Standard 9 |
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1280 |
 
 ## Signatur: Signet ornament.lab (`signatur.signet`)
@@ -696,5 +696,5 @@ Die Tonspur eines Films mit Signatur: der Klang ab «Ton ab» für die ganze Dau
 |---|---|
 | Ton ab (s) (`beginn`) | 0 … 600, Standard 0 |
 | Dauer (s) (`dauer`) | 6 … 120, Standard 52.5 |
-| Intro (s, 0 = ohne Scratch) (`vor`) | 0 … 10, Standard 10 |
+| Intro (s, 0 = ohne Scratch) (`vor`) | 0 … 12, Standard 11 |
 | Gefrickel am Schluss (s) (`frickel`) | 2 … 12, Standard 6.5 |

@@ -22,8 +22,8 @@ import { zufall } from "../../../alpha/the-fictory/analyse.js?v=23";
 import { signaturZeiten, INTRO_DAUER, OUTRO_DAUER, SIGNATUR_VERSION } from "./signatur.js";
 
 export const ZUSAMMENSTELLUNG_VERSION = "0.5.0";
-/** Dauer einer Karte (Zettel, ORNA) am Anfang oder Ende des Films, in Sekunden */
-export const KARTE_DAUER = 2.5;
+/** Dauer einer Karte (Zettel, ORNA) am Anfang oder Ende des Films, in Sekunden (seit 0.1.34 eine Sekunde länger, vorher 2,5) */
+export const KARTE_DAUER = 3.5;
 export const VARIANTEN_JE_ABSCHNITT = 10;   // seit Lab 0.1.16: 60 Motive in 30 s (vorher 3, also 18)
 
 /**

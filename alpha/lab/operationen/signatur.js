@@ -703,7 +703,7 @@ export const signaturOutro = {
   beschreibung: "Das Bild am Eingang (die letzte Sequenz) faltet sich zu einem Körper, der Körper wird zur Kugel, die Kugel zum Doppelrad von ORNA, das sich einschwingt und die Konstellation zeigt (Namen, Frage, Regel); dann wieder Kugel.",
   eingaenge: [{ name: "konstellation", typ: "CONSTELLATION" }, { name: "bild", typ: "IMAGE", optional: true, vorwaehlen: false }],
   ausgaenge: [{ name: "bild", typ: "IMAGE" }],
-  parameter: [{ id: "dauer", name: "Dauer (s; im Film so lange, wie die Station steht)", art: "zahl", min: 6, max: 10, standard: G.OUTRO_DAUER, schritt: 0.5 }, SEITE],
+  parameter: [{ id: "dauer", name: "Dauer (s; im Film so lange, wie die Station steht)", art: "zahl", min: 6, max: 12, standard: G.OUTRO_DAUER, schritt: 0.5 }, SEITE],
   voraussetzungen: BROWSER,
   ressourcen: { zeit: "jedes Bild neu gezeichnet (2D)", speicher: "ein Bild in Rechengrösse" },
   reproduzierbar: "ja",
@@ -762,7 +762,7 @@ export const signaturTon = {
   parameter: [
     { id: "beginn", name: "Ton ab (s)", art: "zahl", min: 0, max: 600, standard: 0, schritt: 0.5 },
     { id: "dauer", name: "Dauer (s)", art: "zahl", min: 6, max: 120, standard: 52.5, schritt: 0.5 },
-    { id: "vor", name: "Intro (s, 0 = ohne Scratch)", art: "zahl", min: 0, max: 10, standard: G.INTRO_DAUER, schritt: 0.5 },
+    { id: "vor", name: "Intro (s, 0 = ohne Scratch)", art: "zahl", min: 0, max: 12, standard: G.INTRO_DAUER, schritt: 0.5 },
     { id: "frickel", name: "Gefrickel am Schluss (s)", art: "zahl", min: 2, max: 12, standard: G.SIGNET_DAUER, schritt: 0.1 },
   ],
   voraussetzungen: ["keine (reines JavaScript)"],
