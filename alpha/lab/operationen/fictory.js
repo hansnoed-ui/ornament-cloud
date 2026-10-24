@@ -3,7 +3,8 @@
 //   erzeugeLauf() / schritt()  sechs Operationen in 900 Schritten          → die sechs Schlüsselzustände sind die sechs Varianten
 //   zeichne()     jeder Zustand in beliebiger Grösse                       → Standbilder und die Bildfolge der Animation
 // Die Operationsregel (R1–R7) kommt aus einer ORNA-Konstellation am zweiten Eingang oder wird hier von Hand gewählt.
-// Braucht den Browser (Canvas); in Node steht die Operation im Register, meldet aber ihre Voraussetzung.
+// Braucht den Browser (Canvas); in Node steht die Operation im Register, meldet aber ihre Voraussetzung (verfuegbar()).
+// Seit Lab 0.1.22 mit lebend(): im Film über Stationen läuft der Prozess von Zustand zu Zustand weiter (eigene Bühne, kern/stationen.js).
 import { analysiere } from "../../../alpha/the-fictory/analyse.js?v=23";
 import { erzeugeLauf, anfang, schritt, SCHLUESSEL, GESAMT, STATIONEN, TAKT, beschreibungen } from "../../../alpha/the-fictory/operationen.js?v=23";
 import { baueMaterial, zeichne } from "../../../alpha/the-fictory/zeichnen.js?v=23";
@@ -50,6 +51,38 @@ export const fictory = {
   ressourcen: { zeit: `${GESAMT} Schritte (${GESAMT / TAKT} s Animation), einige Sekunden Rechnung`, speicher: "Material in Arbeitsauflösung" },
   reproduzierbar: "ja",
   varianten: "selbst",
+  verfuegbar: () => typeof document !== "undefined",
+
+  /**
+   * Die lebendige Fassung für den Film über Stationen (seit Lab 0.1.22): der Prozess läuft im Film weiter, Schritt für Schritt, statt dass die
+   * Zustände als Standbilder stehen. Jede Station ist ein Schlüsselzustand (ihre Variante); über ihr Halten läuft der Prozess vom Stand, den er
+   * hat, bis zu diesem Zustand (anteil 0..1 aus kern/stationen.js) – so kommt er in der Zeit der Stationen an, wie lang sie auch sind. Liegt eine
+   * Station vor dem Stand (umgeordnet), beginnt der Prozess von vorn und läuft bis dorthin. Ohne Lage läuft er mit dem Takt der Fictory (30 Schritte je s).
+   */
+  async lebend({ bild, konstellation }, p, kontext = {}) {
+    const { A, M, mat } = vorbereiten(bild, p, konstellation, (kontext.seed ?? 1) >>> 0);
+    const [w0, h0] = mass(A.seite, Math.min(p.seite, 1080)), w = gerade(w0), h = gerade(h0);
+    const c = leinwand(w, h), ctx = c.getContext("2d", { willReadFrequently: true }), spurCache = {};
+    let z = anfang(M), gezeichnet = -1, station = null, von = 0;
+    return {
+      dauer: GESAMT / TAKT, zeitbasis: "auftritt",
+      bild(t, lage = {}) {
+        const k = lage.variante?.teil;
+        let ziel;
+        if (Number.isInteger(k)) {
+          const schluessel = SCHLUESSEL[Math.min(SCHLUESSEL.length - 1, k + 1)];
+          if (lage.station !== station) { station = lage.station; if (z.schritt > schluessel) { z = anfang(M); } von = z.schritt; }
+          ziel = Math.round(von + lage.anteil * (schluessel - von));
+        } else ziel = Math.min(GESAMT, Math.max(0, Math.round(t * TAKT)));
+        if (ziel < z.schritt) z = anfang(M);
+        while (z.schritt < ziel) schritt(M, z);
+        if (gezeichnet !== z.schritt) { zeichne(ctx, w, h, z, M, mat, spurCache); gezeichnet = z.schritt; }
+        const d = ctx.getImageData(0, 0, w, h);
+        return { width: w, height: h, data: d.data };
+      },
+      entsorgen() { /* nur Leinwände */ },
+    };
+  },
 
   async ausfuehren({ bild, konstellation }, p, kontext = {}) {
     const seed = (kontext.seed ?? 1) >>> 0;

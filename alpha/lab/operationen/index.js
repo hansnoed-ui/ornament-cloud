@@ -20,9 +20,11 @@ import { neusetzenOperation } from "./neusetzen.js";
 import { zettel } from "./zettel.js";
 import { karte } from "./karte.js";
 import { PHORMA_OPERATIONEN } from "./phorma.js";
+import { phorma2 } from "./phorma2.js";
+import { phorma1 } from "./phorma1.js";
 
 export const OPERATIONEN = [orna, fictory, feedback, wiederholung, farbe, bildsignal, tonsignal, klang, tempo, zerlegen, rhythmus, koerner, differenz, kompositionProfil, komposition,
-  glitchOperation, pixelsortierungOperation, verzerrungOperation, lichtOperation, rasterOperation, neusetzenOperation, zettel, karte, ...PHORMA_OPERATIONEN];
+  glitchOperation, pixelsortierungOperation, verzerrungOperation, lichtOperation, rasterOperation, neusetzenOperation, zettel, karte, ...PHORMA_OPERATIONEN, phorma2, phorma1];
 
 export function labRegister() {
   const r = erstelleRegister();

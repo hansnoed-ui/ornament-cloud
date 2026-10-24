@@ -256,8 +256,9 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
   let n = 0, soll = 0;
   // lebendig (medien/gpu.js): eine Station, die eine Operation mit lebendiger Fassung ergeben hat, wird in jedem Bild neu gerechnet,
   // auf ihrem Eingang, mit den Parametern zu diesem Zeitpunkt: dieselben Routen, die die Varianten verteilt haben, laufen über die Zeit des Films.
-  // Eigene Bühnen (seit 0.1.21, op.lebend, PHORMA): die Operation baut ihre Bühne einmal je Knoten und gibt bild(t) zur Filmzeit t, so läuft die
-  // Szene im Takt der Tonspur weiter, während ihre Standbilder als Stationen stehen; am Ende wird jede Bühne entsorgt
+  // Eigene Bühnen (seit 0.1.21, op.lebend, PHORMA): die Operation baut ihre Bühne einmal je Knoten und gibt bild(t, lage) zur Filmzeit t, so läuft die
+  // Szene im Takt der Tonspur weiter, während ihre Standbilder als Stationen stehen; am Ende wird jede Bühne entsorgt. Seit 0.1.22 kann die Bühne
+  // ihre Zeit ab dem Auftritt ihrer Stationen zählen (zeitbasis "auftritt": PHORMA I und II, The Fictory) und bekommt die Lage der Station mit
   const mitGpu = pt.lebendig && lebendig ? lebendig : null, lagen = new Map(), eingaenge = new Map(), eigene = new Map();
   const lage = async (id) => {
     if (!pt.lebendig) return null;
@@ -280,10 +281,18 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
     lagen.set(id, l);
     return l;
   };
-  const lebend = async (j, id) => {
+  // anteil: wie weit die Station in ihrem Halten ist (0..1; beim Übergang 1 für die gehende, 0 für die kommende) – für Bühnen, die ihre Stationen
+  // kennen (The Fictory läuft so von Zustand zu Zustand); eine Bühne mit zeitbasis «auftritt» zählt ihre Zeit ab dem ersten Bild ihrer Stationen
+  const lebend = async (j, id, anteil = 0) => {
     const l = await lage(id);
     if (!l) return null;
-    if (l.eigen) { const b = await l.eigen.bild(n / fps); return b.width === W && b.height === H ? b : einpassen(b, W, H); }
+    if (l.eigen) {
+      const e = l.eigen;
+      if (e.zeitbasis === "auftritt") e.auftrittBild ??= n;
+      const t = (n - (e.zeitbasis === "auftritt" ? e.auftrittBild : 0)) / fps, erg = ergebnis(projekt, id);
+      const b = await e.bild(t, { station: j, ergebnis: id, variante: erg?.variante ?? null, anteil: Math.min(1, Math.max(0, anteil)) });
+      return b.width === W && b.height === H ? b : einpassen(b, W, H);
+    }
     if (!eingaenge.has(l.eingang)) { if (eingaenge.size > 3) eingaenge.delete(eingaenge.keys().next().value); eingaenge.set(l.eingang, await roh(l.eingang)); }
     const t = n / fps;
     return mitGpu.bild({ operation: l.operation, eingang: eingaenge.get(l.eingang), parameter: l.parameter(t), seed: l.seed, t, schritt: n, schluessel: String(j), W, H });
@@ -294,7 +303,8 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
     abbrechen?.throwIfAborted?.();
     const a = await bild(x.ergebnis), ab = n;
     soll += x.halten;
-    do { yield (await lebend(j, x.ergebnis)) ?? a; n++; } while (n < Math.round(soll * fps));
+    const bis = Math.max(ab + 1, Math.round(soll * fps));
+    do { yield (await lebend(j, x.ergebnis, (n - ab) / Math.max(1, bis - 1 - ab))) ?? a; n++; } while (n < Math.round(soll * fps));
     const ue = x.uebergang, eintrag = { ergebnis: x.ergebnis, ab: rund(ab / fps), bild: ab, uebergang: ue?.art ?? null, bilder: 0, ...((await lage(x.ergebnis)) ? { lebendig: true } : {}) };
     zeitplan.push(eintrag);
     if (!ue) { eintrag.bilder = n - ab; break; }
@@ -327,7 +337,7 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
       const m = Math.round((soll + ue.dauer) * fps) - n;
       for (let i = 1; i <= m; i++) {
         abbrechen?.throwIfAborted?.();
-        const a1 = (await lebend(j, x.ergebnis)) ?? a, b1 = (await lebend(j + 1, ziel)) ?? b;
+        const a1 = (await lebend(j, x.ergebnis, 1)) ?? a, b1 = (await lebend(j + 1, ziel, 0)) ?? b;
         yield hell ? schwelle(a1, b1, hell, i / (m + 1)) : blende(a1, b1, i / (m + 1)); n++;
       }
       soll += ue.dauer;

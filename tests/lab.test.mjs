@@ -1442,3 +1442,119 @@ test("Zusammenstellung mit PHORMA (0.1.21): die Szene bekommt den neuen Klang al
   await assert.rejects(Z.zusammenstellungRechnen({ register: labRegister(), projekt: q.p, medien: q.m, messung: mq, plan, wahl: { art: "zufall" } }), /nicht verfügbar/);
   assert.deepEqual(P.pruefeProjekt(p), []);
 });
+
+test("PHORMA I und II (0.1.22): zwei Operationen mit Abläufen im Register, ORNA-Regel wählt den Ablauf, Zettel gibt den Titel, in Node nicht verfügbar", async () => {
+  const r = labRegister();
+  const P2 = await lab("operationen/phorma2.js"), P1 = await lab("operationen/phorma1.js"), H = await lab("operationen/buehnenhilfe.js");
+  const A2 = await import(new URL("alpha/phorma-ii/ablauf.js?v=38", root).href), A1 = await import(new URL("alpha/bildfragmentieren/ablauf.js?v=36", root).href);
+  for (const [id, op] of [["phorma.ii", P2.phorma2], ["phorma.i", P1.phorma1]]) {
+    assert.ok(r.hat(id), id); assert.equal(r.hole(id), op);
+    assert.equal(op.verfuegbar(), false, "ohne Browser nicht verfügbar");
+    assert.equal(typeof op.lebend, "function", "eigene Bühne für den Film");
+    assert.deepEqual(op.eingaenge.map((e) => e.name), ["bild", "konstellation", "text"]);
+    await assert.rejects(op.ausfuehren({ bild: neuesBild(8, 8) }, standardParameter(op)), /Browser/);
+    // alle Abläufe zur Wahl sind gültige Abläufe der App, die Tabelle Regel → Ablauf deckt R1–R7 und nennt nur Abläufe aus der Wahl
+    const name = id === "phorma.ii" ? A2.ablaufName : A1.ablaufName, wahl = op.parameter.find((p) => p.id === "ablauf");
+    for (const o of wahl.optionen.filter((o) => o.wert)) assert.equal(name(o.wert), o.wert, o.wert);
+    const T = id === "phorma.ii" ? P2.REGEL_ABLAUF : P1.REGEL_ABLAUF;
+    assert.deepEqual(Object.keys(T), ["R1", "R2", "R3", "R4", "R5", "R6", "R7"]);
+    for (const a of Object.values(T)) assert.ok(wahl.optionen.some((o) => o.wert === a), `${id}: ${a} steht zur Wahl`);
+    assert.equal(new Set(Object.values(T)).size, 7, "sieben verschiedene Abläufe");
+  }
+  // die Wahl des Ablaufs: der Mensch zuerst, dann die Regel der Konstellation (mit Entscheidung), sonst der Standard
+  const k = { regel: "R5", regelName: "Fortwirkende Last", nummer: 12, kuenstler: "A", theoretiker: "B" };
+  const opts = P2.phorma2.parameter.find((p) => p.id === "ablauf").optionen;
+  assert.deepEqual(H.ablaufWaehlen({ ablauf: "welle" }, k, P2.REGEL_ABLAUF, "x", opts).ablauf, "welle");
+  const w = H.ablaufWaehlen({ ablauf: "" }, k, P2.REGEL_ABLAUF, "x", opts);
+  assert.equal(w.ablauf, "tuch"); assert.equal(w.herkunft, "orna"); assert.equal(w.entscheidungen[0].art, "regel"); assert.equal(w.entscheidungen[0].gewaehlt, "tuch"); assert.equal(w.entscheidungen[0].details.regel, "R5");
+  assert.deepEqual(H.ablaufWaehlen({ ablauf: "" }, null, P2.REGEL_ABLAUF, "x", opts), { ablauf: "x", herkunft: "standard", regel: null, entscheidungen: [] });
+  assert.equal(H.ablaufWaehlen({ ablauf: "" }, { regel: null }, P1.REGEL_ABLAUF, "fragmente", opts).ablauf, "fragmente");
+  assert.equal(P1.REGEL_ABLAUF.R7, A1.VERWANDLUNG); assert.equal(P2.REGEL_ABLAUF.R7, "physarum");
+  // der Titel: Zettel vor Konstellation; die Beschriftung «auto» nur mit einem von beiden
+  assert.equal(H.titelAus({ titel: "Der Zettel" }, k), "Der Zettel"); assert.equal(H.titelAus(null, k), "A × B"); assert.equal(H.titelAus(null, null), "");
+  assert.equal(H.beschriftungAn({ beschriftung: "auto" }, {}), false); assert.equal(H.beschriftungAn({ beschriftung: "auto" }, { text: { titel: "x" } }), true);
+  assert.equal(H.beschriftungAn({ beschriftung: "aus" }, { text: { titel: "x" } }), false); assert.equal(H.beschriftungAn({ beschriftung: "an" }, {}), true);
+  // die Dauer eines Ablaufs von PHORMA I bei Tempo «normal», und The Fictory hat jetzt lebend() und verfuegbar()
+  assert.ok(P1.ablaufDauer("fragmente") > 10 && P1.ablaufDauer("flug") > 10 && P1.ablaufDauer(A1.VERWANDLUNG) > P1.ablaufDauer("strom"));
+  assert.equal(P1.TITEL("strom+relief"), "Strom → Relief");
+  const f = r.hole("fictory.prozess");
+  assert.equal(typeof f.lebend, "function"); assert.equal(f.verfuegbar(), false);
+  // die Kataloge von jev kennen die neuen Operationen und Effekte, die Dramaturgie Zerfall ist wieder da
+  const F = await lab("jev/fragen.js"), Z = await lab("kern/zusammenstellung.js"), VS = await lab("kern/vorschlag.js");
+  assert.ok(F.KATALOG["phorma.ii"] && F.KATALOG["phorma.i"]);
+  for (const b of ["bild.physarum", "bild.tiefe", "bild.welle", "bild.tuch", "bild.druck", "bild.montage"]) assert.equal(Z.BILD_REZEPTE[b].operation, "phorma.ii", b);
+  for (const b of ["bild.fragmente", "bild.strom", "bild.koerper", "bild.scherben", "bild.echo", "bild.relief"]) assert.equal(Z.BILD_REZEPTE[b].operation, "phorma.i", b);
+  assert.equal(Z.BILD_REZEPTE["bild.druck"].parameter.ablauf, "raster"); assert.equal(Z.BILD_REZEPTE["bild.zerfall"].operation, "fictory.prozess");
+  assert.ok(Object.keys(F.BILD_EFFEKTE).every((b) => Z.BILD_REZEPTE[b]) && Object.keys(Z.BILD_REZEPTE).every((b) => F.BILD_EFFEKTE[b]), "Katalog und Rezepte decken sich");
+  assert.ok(F.DRAMATURGIEN["vorschlag.zerfall"] && VS.REZEPTE["vorschlag.zerfall"].schritte[0].operation === "fictory.prozess");
+  assert.deepEqual(Object.keys(F.DRAMATURGIEN).sort(), Object.keys(VS.REZEPTE).sort());
+});
+
+test("Film mit eigener Bühne, Zeit ab dem Auftritt (0.1.22): die Bühne zählt ab dem ersten Bild ihrer Stationen und bekommt die Lage der Station", async () => {
+  const { erstelleRegister } = await lab("kern/register.js");
+  const { OPERATIONEN } = await lab("operationen/index.js");
+  const r = erstelleRegister(), gefragt = [];
+  for (const op of OPERATIONEN) {
+    if (op.id === "phorma.ii") r.registriere({ ...op, verfuegbar: () => true,
+      async lebend({ bild: b }) { return { dauer: 20, zeitbasis: "auftritt", bild(t, lage) { gefragt.push({ t: Math.round(t * 1000) / 1000, station: lage.station, teil: lage.variante?.teil, anteil: Math.round(lage.anteil * 100) / 100 }); return neuesBild(b.width, b.height, [0, 0, 0]); }, entsorgen() {} }; },
+      async ausfuehren({ bild: b }, p) { return { ausgaben: Array.from({ length: p.bilder }, (_, i) => ({ typ: "IMAGE", titel: `Moment ${i}`, bild: neuesBild(b.width, b.height, [0, i * 50, 0]) })), protokoll: {} }; } });
+    else r.registriere(op);
+  }
+  const { p, m, e } = mitMaterial();
+  const x = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "phorma.ii", eingaben: { bild: e.id }, parameter: { bilder: 3, ablauf: "tuch" }, seed: 7 } });
+  // das Material steht 1 s voran: die Bühne beginnt trotzdem bei 0, mit dem Auftritt ihrer ersten Station
+  const plan = { stationen: [{ ergebnis: e.id, halten: 1 }, ...x.ergebnisse.map((y) => y.id)], art: "schnitt", halten: 0.5, uebergang: 0, fps: 10, lebendig: true };
+  const zeitplan = [];
+  for await (const b of ST.filmbilder({ register: r, projekt: p, medien: m, partitur: ST.partitur(p, plan), seite: 40, zeitplan })) void b;
+  assert.equal(gefragt.length, 15);
+  assert.deepEqual(gefragt.slice(0, 3).map((g) => g.t), [0, 0.1, 0.2], "die Zeit der Bühne beginnt mit dem Auftritt");
+  assert.equal(gefragt.at(-1).t, 1.4);
+  assert.deepEqual(gefragt.map((g) => g.station).filter((v, i, a) => a.indexOf(v) === i), [1, 2, 3], "die Lage nennt die Station");
+  assert.deepEqual(gefragt.map((g) => g.teil).filter((v, i, a) => a.indexOf(v) === i), [0, 1, 2], "… und ihre Variante (den Moment)");
+  assert.deepEqual(gefragt.slice(0, 5).map((g) => g.anteil), [0, 0.25, 0.5, 0.75, 1], "der Anteil läuft über das Halten von 0 bis 1");
+  assert.deepEqual(zeitplan.map((z) => Boolean(z.lebendig)), [false, true, true, true]);
+  // mit Überblendung: die gehende Station steht bei 1, die kommende bei 0
+  gefragt.length = 0;
+  for await (const b of ST.filmbilder({ register: r, projekt: p, medien: m, partitur: ST.partitur(p, { ...plan, art: "blende", uebergang: 0.2 }), seite: 40 })) void b;
+  const paare = gefragt.filter((g, i) => gefragt[i + 1] && gefragt[i + 1].station === g.station + 1 && Math.abs(gefragt[i + 1].t - g.t) < 1e-9);
+  assert.ok(paare.length >= 2 && paare.every((g, i) => g.anteil === 1 && gefragt[gefragt.indexOf(g) + 1].anteil === 0), `Übergänge: ${JSON.stringify(paare)}`);
+});
+
+test("Zusammenstellung mit den Beständen an die Szenen (0.1.22): der Zerfall bekommt die Konstellation, die Szenen von PHORMA den Zettel und die Konstellation", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const Z = await lab("kern/zusammenstellung.js");
+  const { erstelleRegister } = await lab("kern/register.js");
+  const { OPERATIONEN } = await lab("operationen/index.js");
+  const r = erstelleRegister(), laeufe = [];
+  for (const op of OPERATIONEN) {
+    if (["phorma.ii", "phorma.i", "fictory.prozess"].includes(op.id)) r.registriere({ ...op, verfuegbar: () => true, async ausfuehren({ bild: b, konstellation, text }, p) {
+      laeufe.push({ op: op.id, ablauf: p.ablauf, dauer: p.dauer, konstellation: konstellation?.regel ?? null, text: text?.titel ?? null });
+      const n = op.id === "fictory.prozess" ? 6 : p.bilder;
+      return { ausgaben: Array.from({ length: n }, (_, i) => ({ typ: "IMAGE", titel: `${op.id} ${i}`, bild: neuesBild(b.width, b.height, [i * 20, 0, 0]) })), protokoll: {} }; } });
+    else if (op.id === "lab.karte") r.registriere({ ...op, verfuegbar: () => true, async ausfuehren({ bild }) { return { ausgaben: [{ typ: "IMAGE", titel: "Karte", bild: neuesBild(bild.width, bild.height, [20, 20, 20]) }], protokoll: {} }; } });
+    else r.registriere(op);
+  }
+  const { p, m, e, t } = mitTon();
+  const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id });
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.schnitt", klang: ["klang.keine", "klang.keine"], bild: ["bild.physarum", "bild.zerfall", "bild.fragmente", "bild.druck", "bild.farbe", "bild.relief"], seed: 2, zettel: { strophe: "7" }, orna: { konstellation: "" } };
+  const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "jev", details: {} }, seed: 5 });
+  assert.deepEqual(laeufe.map((l) => l.op), ["phorma.ii", "fictory.prozess", "phorma.i", "phorma.ii", "phorma.i"]);
+  assert.deepEqual(laeufe.map((l) => l.ablauf), ["physarum", undefined, "fragmente", "raster", "relief"]);
+  assert.ok(laeufe.filter((l) => l.op !== "fictory.prozess").every((l) => l.dauer === Z.SZENE_DAUER));
+  assert.ok(laeufe.every((l) => l.konstellation === x.konstellation.regel), "jede Szene und der Zerfall bekommen die Konstellation");
+  assert.ok(laeufe.filter((l) => l.op !== "fictory.prozess").every((l) => l.text === x.zettel.titel), "die Szenen bekommen den Zettel (Titel)");
+  assert.equal(laeufe[1].text, null, "der Zerfall hat keinen Eingang «text»");
+  assert.equal(x.zettel.nummer, 7);
+  assert.equal(x.ergebnisse.length, 56, "fünf Abschnitte zu zehn und der Zerfall zu sechs");
+  assert.equal(x.plan.stationen.length, 59); assert.equal(x.plan.lebendig, true);
+  const kn = p.knoten.filter((k) => ["phorma.ii", "phorma.i", "fictory.prozess"].includes(k.operation));
+  assert.ok(kn.every((k) => k.eingaben.konstellation && k.eingaben.bild), "Eingang konstellation ist die Konstellation");
+  assert.ok(kn.filter((k) => k.operation !== "fictory.prozess").every((k) => k.eingaben.text), "Eingang text ist der Zettel");
+  // ohne Bestände: keine solchen Eingänge
+  laeufe.length = 0;
+  const q = mitTon(), mq = await VS.messen({ register: r, projekt: q.p, medien: q.m, bild: q.e.id, ton: q.t.id });
+  await Z.zusammenstellungRechnen({ register: r, projekt: q.p, medien: q.m, messung: mq, plan: { ...plan, zettel: null, orna: null }, wahl: { art: "zufall" } });
+  assert.ok(laeufe.every((l) => l.konstellation === null && l.text === null));
+  assert.ok(q.p.knoten.filter((k) => k.operation === "phorma.ii").every((k) => !("konstellation" in k.eingaben) && !("text" in k.eingaben)));
+  assert.deepEqual(P.pruefeProjekt(p), []);
+});
