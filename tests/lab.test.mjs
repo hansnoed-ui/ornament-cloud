@@ -647,7 +647,7 @@ test("Beat aus Bild rechnen: Stereo in genau der Dauer, Tempo in der Stufe, repr
   assert.ok(t.spuren[0].every(Number.isFinite));
   let spitze = 0; for (const s of t.spuren) for (const v of s) spitze = Math.max(spitze, Math.abs(v));
   assert.ok(spitze > 0.85 && spitze <= 0.9, `−1 dBFS: ${spitze}`);
-  const pl = knoten.protokoll.plan, [lo, hi] = pl.groove === "dnb" ? [170, 176] : (await lab("kern/beat.js")).TEMPI[pl.tempo];
+  const pl = knoten.protokoll.plan, [lo, hi] = ["dnb", "jazzstep"].includes(pl.groove) ? [170, 176] : (await lab("kern/beat.js")).TEMPI[pl.tempo];
   assert.ok(knoten.protokoll.bpm >= lo - 10 && knoten.protokoll.bpm <= hi + 10, `Tempo ${knoten.protokoll.bpm} in ${pl.tempo}`);
   assert.equal(folge.daten.art, "rhythmus"); assert.equal(folge.daten.raster, 16);
   assert.ok(folge.daten.ereignisse.length > 4 && folge.daten.ereignisse.every((x, i, a) => x.t >= 0 && x.t < 6 && (i === 0 || x.t >= a[i - 1].t)));
@@ -676,8 +676,21 @@ test("Beat aus Bild rechnen: Stereo in genau der Dauer, Tempo in der Stufe, repr
   const m1 = B.beatMessen([b0]), plan = { tempo: "mittel", groove: "gerade", kit: "weich", tonart: "moll", bass: "liegend", melodie: "keine", verlauf: "gleich", flaeche: "keine" };
   const r432 = B.beatRechnen({ messung: m1, plan, dauer: 4, grundton: 9, kammerton: 432, nachhall: 0 }), r440 = B.beatRechnen({ messung: m1, plan, dauer: 4, grundton: 9, kammerton: 440, nachhall: 0 });
   assert.notDeepEqual(r432.spuren[0], r440.spuren[0]);
-  assert.equal(B.regelPlan(m1.merkmale).plan.groove === "gerade" || B.regelPlan(m1.merkmale).plan.groove === "dnb", true);
-  assert.equal(B.regelPlan({ helligkeit: "mittel", kontrast: "mittel", farbigkeit: "gedaempft", farbton: "neutral", detail: "mittel", schwerpunkt: "mitte", symmetrie: "asymmetrisch", bewegung: "still" }).plan.groove, "dnb", "ohne starke Regel: Drum and Bass");
+  assert.ok(["gerade", "jazzstep"].includes(B.regelPlan(m1.merkmale).plan.groove));
+  // Christians Richtung (0.1.26): ohne starke Regel Jazzstep, Jazz-Schlagzeug, Kontrabass und eine Jazzlinie; nie eine einfache Melodie
+  const ohne = B.regelPlan({ helligkeit: "mittel", kontrast: "mittel", farbigkeit: "gedaempft", farbton: "neutral", detail: "mittel", schwerpunkt: "mitte", symmetrie: "asymmetrisch", bewegung: "still" }).plan;
+  assert.deepEqual([ohne.groove, ohne.kit, ohne.bass, ohne.melodie], ["jazzstep", "jazz", "kontrabass", "linie"], "ohne starke Regel: Jazzstep");
+  assert.ok(!B.BEAT_REGELN.some(([fr, w]) => fr === "melodie" && ["bild", "arpeggio", "glocken"].includes(w)), "die Regeln führen nicht zu einfachen Melodien");
+  // Jazz: Achtel auf den Triolen, Ride-Becken, Akkorde mit Septime und None, der Kontrabass in Vierteln
+  const jz = B.beatRechnen({ messung: m1, plan: { tempo: "mittel", groove: "jazz", kit: "jazz", tonart: "dorisch", bass: "kontrabass", melodie: "linie", verlauf: "gleich", flaeche: "keine" }, dauer: 8, grundton: 2, seed: 4 });
+  const sch = 60 / jz.angaben.bpm / 4, ride = jz.partitur.filter((y) => y.stimme === "ride");
+  assert.ok(ride.length > 8 && jz.partitur.some((y) => y.stimme === "akkord") && jz.partitur.some((y) => y.stimme === "melodie"), "Ride, Akkorde, Linie");
+  const spaet = ride.filter((y) => y.schritt % 4 === 2);
+  assert.ok(spaet.length && spaet.every((y) => Math.abs(y.t - (y.schritt + 2 / 3) * sch) < 0.002), "das zweite Achtel liegt auf der Triole");
+  assert.ok(jz.spuren[0].every(Number.isFinite));
+  const js = B.beatRechnen({ messung: m1, plan: { ...ohne, verlauf: "wechselnd", flaeche: "sphaere" }, dauer: 6, grundton: 9, seed: 4 });
+  assert.ok(js.angaben.bpm >= 168 && js.angaben.bpm <= 178, `Jazzstep: ${js.angaben.bpm}`);
+  assert.ok(js.partitur.filter((y) => y.stimme === "bassdrum").every((y) => Math.abs(y.t - y.schritt * (60 / js.angaben.bpm / 4)) < 0.002), "Jazzstep genau auf dem Raster");
   // Standbilder eines Videos: jedes ein Abschnitt, die Bewegung zählt
   const zweites = neuesBild(96, 72, [240, 240, 240]);
   const v = await op.ausfuehren({ bild: b0, bild2: b0, bild3: zweites }, { ...std, verlauf: "wellen" }, { seed: 9 });

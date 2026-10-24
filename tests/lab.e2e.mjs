@@ -901,8 +901,8 @@ await check("Beat aus Bild oder Video (0.1.24): am Telefon nach Regeln und mit j
   await t.page.route("**/alpha/lab/jev/wahl.php", (r) => {
     if (r.request().method() === "GET") return r.fulfill({ contentType: "application/json", body: JSON.stringify({ bereit: true }) });
     const lage = r.request().postDataJSON(); gesendet.push(lage);
-    const antworten = { tempo: { langsam: 0, mittel: 0, schnell: 0, rasend: 1 }, groove: { gerade: 0, halftime: 1, breakbeat: 0, euklidisch: 0, schleppend: 0, dnb: 0 }, kit: { trocken: 0, elektronisch: 0, metallisch: 1, weich: 0 },
-      tonart: { dur: 0, moll: 0, dorisch: 0, phrygisch: 1, pentatonik: 0 }, bass: { keiner: 0, liegend: 0, pulsierend: 0, laufend: 1, reese: 0 }, melodie: { keine: 0, bild: 0, arpeggio: 1, glocken: 0 }, verlauf: { gleich: 1, steigend: 0, abschwellend: 0, wellen: 0, wechselnd: 0 }, flaeche: { keine: 0, sphaere: 0, schimmer: 1 } };
+    const antworten = { tempo: { langsam: 0, mittel: 0, schnell: 0, rasend: 1 }, groove: { gerade: 0, halftime: 1, breakbeat: 0, euklidisch: 0, schleppend: 0, dnb: 0, jazz: 0, jazzstep: 0 }, kit: { trocken: 0, elektronisch: 0, metallisch: 1, weich: 0, jazz: 0 },
+      tonart: { dur: 0, moll: 0, dorisch: 0, phrygisch: 1, pentatonik: 0 }, bass: { keiner: 0, liegend: 0, pulsierend: 0, laufend: 1, reese: 0, kontrabass: 0 }, melodie: { keine: 0, bild: 0, arpeggio: 1, glocken: 0, linie: 0, akkorde: 0 }, verlauf: { gleich: 1, steigend: 0, abschwellend: 0, wellen: 0, wechselnd: 0 }, flaeche: { keine: 0, sphaere: 0, schimmer: 1 } };
     return r.fulfill({ contentType: "application/json", body: JSON.stringify({ antworten, modell: "jev-test", zwischengespeichert: false }) });
   });
   await t.page.reload(); await t.page.waitForFunction(() => globalThis.ornamentLab);

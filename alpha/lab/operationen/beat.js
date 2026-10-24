@@ -1,5 +1,5 @@
 // ORNAMENT LAB – Beat aus Bild (zeitliche Operation, Medienwechsel nach Klang, seit Lab 0.1.24). Ein kurzer Soundtrack aus einem Bild
-// oder aus den Standbildern eines Videos: Schlagzeug, Bass und Melodie. Gemessen werden Farbe, Helligkeit, Feinheit, Komposition und,
+// oder aus den Standbildern eines Videos: Schlagzeug, Bass, Melodie oder Akkorde und Fläche. Gemessen werden Farbe, Helligkeit, Feinheit, Komposition und,
 // zwischen den Standbildern, die Bewegung (kern/beat.js). Jede der acht Stellen ist ein Parameter: «nach Regeln» wählt sie die Operation
 // selbst nach offen gelegten Regeln (Entscheidungsart «regel»), sonst gilt, was gewählt ist: vom Menschen oder, über die Oberfläche,
 // von jev (jev/fragen.js, Frage «beat»). Gerechnet wird in reinem JavaScript; derselbe Startwert ist derselbe Beat.
@@ -56,7 +56,7 @@ export const beat = {
       ],
       entscheidungen,
       protokoll: { plan, nachRegeln, grundton: NOTEN[grundton], merkmale: messung.merkmale, werte: messung.werte, ...r.angaben,
-        abbildung: "Farbton → Grundton (je 30° ein Halbton), Feinheit → Tempo in seiner Stufe und Dichte der Becken, Zeilen → Tonhöhe der Melodie, Standbild → Abschnitt, Bewegung → Energie (Verlauf «in Wellen»)",
+        abbildung: "Farbton → Grundton (je 30° ein Halbton), Feinheit → Tempo in seiner Stufe und Dichte der Becken, Zeilen → Tonhöhe der Melodie, Standbild → Abschnitt, Bewegung → Energie (Verlauf «in Wellen»), Spalten → Richtung der Jazzlinie",
         hinweis: "Abbildung, keine Deutung: welche Eigenschaft welchen Klang ergibt, ist eine gestalterische Entscheidung des Labs." },
     };
   },
