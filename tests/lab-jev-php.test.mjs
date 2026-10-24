@@ -202,7 +202,7 @@ test("wahl.php: die Zusammenstellung (zehn Fragen in einem Aufruf) prüft wie fr
   jev = { status: 200, antwort: null };
 });
 
-test("wahl.php: der Beat aus Bild oder Video (acht Fragen, seit 0.1.24, Fläche seit 0.1.25) prüft wie fragen.js, fragt wörtlich gleich und gibt alle Antworten zurück", { skip: ohnePhp && "kein php" }, async () => {
+test("wahl.php: der Beat aus Bild oder Video (acht Fragen, seit 0.1.24, Fläche seit 0.1.25, Jazz seit 0.1.26) prüft wie fragen.js, fragt wörtlich gleich und gibt alle Antworten zurück", { skip: ohnePhp && "kein php" }, async () => {
   konfig({});
   const merkmale = { helligkeit: "hell", kontrast: "hoch", farbigkeit: "bunt", farbton: "warm", detail: "fein", schwerpunkt: "unten", symmetrie: "asymmetrisch", bewegung: "bewegt" };
   for (const [lage, re] of [
