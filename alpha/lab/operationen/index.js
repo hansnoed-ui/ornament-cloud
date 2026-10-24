@@ -8,6 +8,7 @@ import { farbe } from "./farbe.js";
 import { bildsignal } from "./bildsignal.js";
 import { tonsignal } from "./tonsignal.js";
 import { klang } from "./klang.js";
+import { beat } from "./beat.js";
 import { tempo, zerlegen, rhythmus, koerner } from "./klangtransformation.js";
 import { differenz } from "./differenz.js";
 import { kompositionProfil, komposition } from "./komposition.js";
@@ -23,7 +24,7 @@ import { PHORMA_OPERATIONEN } from "./phorma.js";
 import { phorma2 } from "./phorma2.js";
 import { phorma1 } from "./phorma1.js";
 
-export const OPERATIONEN = [orna, fictory, feedback, wiederholung, farbe, bildsignal, tonsignal, klang, tempo, zerlegen, rhythmus, koerner, differenz, kompositionProfil, komposition,
+export const OPERATIONEN = [orna, fictory, feedback, wiederholung, farbe, bildsignal, tonsignal, klang, beat, tempo, zerlegen, rhythmus, koerner, differenz, kompositionProfil, komposition,
   glitchOperation, pixelsortierungOperation, verzerrungOperation, lichtOperation, rasterOperation, neusetzenOperation, zettel, karte, ...PHORMA_OPERATIONEN, phorma2, phorma1];
 
 export function labRegister() {

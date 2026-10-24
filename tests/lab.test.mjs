@@ -594,6 +594,82 @@ test("jev: Katalog passt zum Register, Lage wird streng geprüft, Frage hat fest
   } finally { globalThis.fetch = echt; }
 });
 
+// ---------- Beat aus Bild oder Video (Lab 0.1.24) ----------
+test("Beat aus Bild: misst in festen Stufen, Regeln mit Gründen, jev-Lage nur aus Stufen, Ziehen mit Startwert", async () => {
+  const B = await lab("kern/beat.js");
+  const F = await lab("jev/fragen.js");
+  const { jevBeat } = await lab("jev/jev.js");
+  const r = labRegister(), op = r.hole("lab.beat");
+  assert.ok(r.fuer("IMAGE").some((o) => o.id === "lab.beat") && F.KATALOG["lab.beat"], "Bildoperation, steht im Katalog");
+  for (const k of Object.keys(F.BEAT_FRAGEN)) assert.deepEqual(op.parameter.find((p) => p.id === k).optionen.map((o) => o.wert), ["auto", ...Object.keys(F.BEAT_FRAGEN[k].katalog)], k);
+  for (const [frage, wert, m, s] of B.BEAT_REGELN) { assert.ok(F.BEAT_FRAGEN[frage].katalog[wert], `${frage}.${wert}`); assert.ok(F.BEAT_MERKMALE[m][s], `${m}.${s}`); }
+  // ein dunkles, glattes Bild gegen ein helles, buntes, feines
+  const dunkel = neuesBild(96, 72, [20, 22, 40]);
+  const hell = neuesBild(96, 72);
+  for (let i = 0; i < hell.data.length; i += 4) { const x = (i / 4) % 96, y = Math.floor(i / 4 / 96), k = (x + y) % 2; hell.data.set([k ? 255 : 230, k ? 200 : 120, 40, 255], i); }
+  const a = B.beatMessen([dunkel]), b = B.beatMessen([hell]);
+  assert.equal(a.merkmale.helligkeit, "dunkel"); assert.equal(a.merkmale.detail, "glatt"); assert.equal(a.merkmale.bewegung, "still");
+  assert.equal(b.merkmale.helligkeit, "hell"); assert.equal(b.merkmale.detail, "fein"); assert.equal(b.merkmale.farbton, "warm"); assert.equal(b.merkmale.farbigkeit, "bunt");
+  assert.deepEqual(Object.keys(a.merkmale), Object.keys(F.BEAT_MERKMALE));
+  const ra = B.regelPlan(a.merkmale), rb = B.regelPlan(b.merkmale);
+  assert.equal(ra.plan.tonart, "moll"); assert.equal(ra.plan.tempo, "langsam"); assert.equal(rb.plan.tonart, "dur");
+  assert.ok(Object.values(ra.gruende).every((g) => g.length), "jede Stelle mit Grund");
+  // Bewegung zwischen Standbildern
+  assert.equal(B.beatMessen([dunkel, dunkel]).merkmale.bewegung, "ruhig");
+  assert.equal(B.beatMessen([dunkel, hell, dunkel]).merkmale.bewegung, "heftig");
+  // jev: die Lage ist streng, nur Stufen
+  assert.deepEqual(F.labLage({ frage: "beat", merkmale: b.merkmale }), { frage: "beat", merkmale: b.merkmale });
+  assert.throws(() => F.labLage({ frage: "beat", merkmale: { ...b.merkmale, bild: "x" } }), /unbekannte Merkmale/);
+  assert.throws(() => F.labLage({ frage: "beat", merkmale: { ...b.merkmale, bewegung: "schnell" } }), /Merkmal bewegung/);
+  const fr = F.labFrage(F.labLage({ frage: "beat", merkmale: b.merkmale }));
+  assert.deepEqual(Object.keys(fr.fragen), Object.keys(F.BEAT_FRAGEN));
+  assert.ok(Object.values(fr.fragen).every((q) => q.type === "choice" && q.instructions.startsWith(F.FRAGE_BEAT)));
+  const echt = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({ antworten: Object.fromEntries(Object.entries(F.BEAT_FRAGEN).map(([k, f]) => [k, { ...Object.fromEntries(Object.keys(f.katalog).map((o, i) => [o, i === 1 ? 0.9 : 0.01])), fremd: 1 }])), modell: "jev-test" }));
+  try {
+    const j = await jevBeat({ merkmale: b.merkmale }, { adresse: "http://localhost:1/wahl" });
+    assert.equal(j.antworten.tempo.mittel, 0.9); assert.ok(!("fremd" in j.antworten.tempo));
+    const p1 = B.planAusJev(j.antworten, 5), p2 = B.planAusJev(j.antworten, 5);
+    assert.deepEqual(p1, p2, "derselbe Startwert, derselbe Plan");
+    assert.deepEqual(Object.keys(p1), Object.keys(F.BEAT_FRAGEN));
+    const sicher = Object.fromEntries(Object.entries(F.BEAT_FRAGEN).map(([k, f]) => [k, Object.fromEntries(Object.keys(f.katalog).map((o, i) => [o, i === 2 ? 1 : 0]))]));
+    assert.deepEqual(B.planAusJev(sicher, 9), Object.fromEntries(Object.entries(F.BEAT_FRAGEN).map(([k, f]) => [k, Object.keys(f.katalog)[2]])));
+  } finally { globalThis.fetch = echt; }
+});
+
+test("Beat aus Bild rechnen: Stereo in genau der Dauer, Tempo in der Stufe, reproduzierbar, Schläge als Rhythmus, Video als Abschnitte", async () => {
+  const { p, m, e, r } = mitMaterial();
+  const k = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.beat", eingaben: { bild: e.id }, parameter: { dauer: 6 }, seed: 3, wahl: { art: "mensch" } } });
+  const [ton, folge] = k.ergebnisse, knoten = p.knoten.at(-1);
+  assert.equal(ton.typ, "AUDIO"); assert.equal(folge.typ, "EVENT_SEQUENCE");
+  const t = m.toene.get(ton.id);
+  assert.equal(t.spuren.length, 2); assert.equal(t.spuren[0].length, 6 * 44100);
+  assert.ok(t.spuren[0].every(Number.isFinite));
+  let spitze = 0; for (const s of t.spuren) for (const v of s) spitze = Math.max(spitze, Math.abs(v));
+  assert.ok(spitze > 0.85 && spitze <= 0.9, `−1 dBFS: ${spitze}`);
+  const pl = knoten.protokoll.plan, [lo, hi] = (await lab("kern/beat.js")).TEMPI[pl.tempo];
+  assert.ok(knoten.protokoll.bpm >= lo - 10 && knoten.protokoll.bpm <= hi + 10, `Tempo ${knoten.protokoll.bpm} in ${pl.tempo}`);
+  assert.equal(folge.daten.art, "rhythmus"); assert.equal(folge.daten.raster, 16);
+  assert.ok(folge.daten.ereignisse.length > 4 && folge.daten.ereignisse.every((x, i, a) => x.t >= 0 && x.t < 6 && (i === 0 || x.t >= a[i - 1].t)));
+  const d = p.entscheidungen.filter((x) => x.knoten === knoten.id);
+  assert.deepEqual(d.map((x) => x.art), ["mensch", "regel"], "die Stellen «nach Regeln» sind eine Regelentscheidung");
+  assert.equal(d[1].gegenstand, "beat"); assert.equal(Object.keys(d[1].details.gruende).length, 7);
+  // derselbe Startwert, derselbe Beat; ein anderer Groove ein anderer
+  const op = r.hole("lab.beat"), std = { ...standardParameter(op), dauer: 4 }, b0 = m.bilder.get(e.id);
+  const x1 = await op.ausfuehren({ bild: b0 }, std, { seed: 9 }), x2 = await op.ausfuehren({ bild: b0 }, std, { seed: 9 });
+  assert.deepEqual(x1.ausgaben[0].ton.spuren[0], x2.ausgaben[0].ton.spuren[0]);
+  const x3 = await op.ausfuehren({ bild: b0 }, { ...std, groove: "halftime", tempo: "rasend", kit: "metallisch", melodie: "glocken", bass: "laufend", tonart: "pentatonik", verlauf: "gleich", grundton: "0" }, { seed: 9 });
+  assert.notDeepEqual(x3.ausgaben[0].ton.spuren[0], x1.ausgaben[0].ton.spuren[0]);
+  assert.equal(x3.entscheidungen.length, 0, "alles gewählt: keine Regel");
+  assert.equal(x3.protokoll.grundton, "C"); assert.ok(x3.protokoll.bpm >= 145, `rasend: ${x3.protokoll.bpm}`);
+  assert.ok(x3.ausgaben[1].daten.ereignisse.filter((y) => y.stimme === "snare" && y.staerke === 0.8).every((y) => y.schritt % 16 === 8), "Halftime: Snare auf drei");
+  // Standbilder eines Videos: jedes ein Abschnitt, die Bewegung zählt
+  const zweites = neuesBild(96, 72, [240, 240, 240]);
+  const v = await op.ausfuehren({ bild: b0, bild2: b0, bild3: zweites }, { ...std, verlauf: "wellen" }, { seed: 9 });
+  assert.equal(v.protokoll.abschnitte, 3); assert.notEqual(v.protokoll.merkmale.bewegung, "still");
+  assert.ok(new Set(v.protokoll.energie).size > 1, "in Wellen: die Energie folgt der Bewegung");
+});
+
 // ---------- Klangerzeuger (Lab 0.1.5): Klang ohne Tondatei ----------
 const energie = (pcm, a, z) => { let s = 0; for (let i = a; i < z; i++) s += pcm[i] * pcm[i]; return s / Math.max(1, z - a); };
 /** Nulldurchgänge je Sekunde: grobes Mass für die Tonhöhe */

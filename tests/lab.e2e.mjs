@@ -46,9 +46,9 @@ async function ausfuehren(page) { await page.click("#ausfuehren"); await page.wa
 const { ctx, page, fehler, fremd } = await oeffne();
 let gespeichert = null;
 
-await check("Start: vier Bereiche, Register mit neunundzwanzig Operationen, keine Fehler", async () => {
+await check("Start: vier Bereiche, Register mit dreissig Operationen, keine Fehler", async () => {
   for (const id of ["material", "operationen", "experiment", "protokoll"]) assert.ok(await page.locator(`#${id}`).isVisible(), id);
-  assert.match(await page.textContent("#status"), /29 Operationen/);
+  assert.match(await page.textContent("#status"), /30 Operationen/);
   assert.deepEqual(fehler, []);
 });
 
@@ -889,6 +889,75 @@ await check("PHORMA I und II (0.1.22): Fragmente mit Zettel als Titel, Physarum 
   assert.deepEqual(x.zeitplan.map((z) => Boolean(z.lebendig)), [true, true, true, true, true, true], "alle sechs Stationen lebendig: PHORMA I, PHORMA II und der Zerfall auf ihren Bühnen");
   assert.equal(x.bilder, 72); assert.ok(Math.max(x.breite, x.hoehe) <= 320);
   assert.ok(await t.page.locator(".stationen video").isVisible());
+  assert.deepEqual(t.fehler, []);
+  await t.ctx.close();
+});
+
+await check("Beat aus Bild oder Video (0.1.24): am Telefon nach Regeln und mit jev (vorgetäuscht), aus einem Video sechs Abschnitte", async () => {
+  const t = await oeffne({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const cdp = await t.ctx.newCDPSession(t.page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  const gesendet = [];
+  await t.page.route("**/alpha/lab/jev/wahl.php", (r) => {
+    if (r.request().method() === "GET") return r.fulfill({ contentType: "application/json", body: JSON.stringify({ bereit: true }) });
+    const lage = r.request().postDataJSON(); gesendet.push(lage);
+    const antworten = { tempo: { langsam: 0, mittel: 0, schnell: 0, rasend: 1 }, groove: { gerade: 0, halftime: 1, breakbeat: 0, euklidisch: 0, schleppend: 0 }, kit: { trocken: 0, elektronisch: 0, metallisch: 1, weich: 0 },
+      tonart: { dur: 0, moll: 0, dorisch: 0, phrygisch: 1, pentatonik: 0 }, bass: { keiner: 0, liegend: 0, pulsierend: 0, laufend: 1 }, melodie: { keine: 0, bild: 0, arpeggio: 1, glocken: 0 }, verlauf: { gleich: 1, steigend: 0, abschwellend: 0, wellen: 0 } };
+    return r.fulfill({ contentType: "application/json", body: JSON.stringify({ antworten, modell: "jev-test", zwischengespeichert: false }) });
+  });
+  await t.page.reload(); await t.page.waitForFunction(() => globalThis.ornamentLab);
+  await t.page.waitForFunction(() => /jev live: bereit/.test(document.querySelector("#status").textContent));
+  await t.page.click("#beispiel");
+  await t.page.waitForSelector("#beat-regeln");
+  const t0 = Date.now();
+  await t.page.click("#beat-regeln"); await t.page.waitForTimeout(50); await warteFertig(t.page);
+  const zeit = Date.now() - t0;
+  await t.page.waitForSelector("#beat-ergebnis audio");
+  const a = await S(t.page, () => { const p = ornamentLab.projekt, k = p.knoten.at(-1), e = p.ergebnisse.find((x) => x.id === k.ausgaben[0]), f = p.ergebnisse.find((x) => x.id === k.ausgaben[1]);
+    return { op: k.operation, status: k.status, ton: e.ton, typ: e.typ, folge: f.daten, d: p.entscheidungen.filter((x) => x.knoten === k.id).map((x) => ({ art: x.art, gegenstand: x.gegenstand, gruende: x.details.gruende })), param: k.parameter }; });
+  assert.equal(a.op, "lab.beat"); assert.equal(a.status, "fertig"); assert.equal(a.typ, "AUDIO");
+  assert.equal(a.ton.kanaele, 2, "Stereo"); assert.ok(Math.abs(a.ton.dauer - 15) < 0.01, `15 s: ${a.ton.dauer}`);
+  assert.equal(a.folge.art, "rhythmus"); assert.ok(a.folge.bpm > 60 && a.folge.ereignisse.length > 20);
+  assert.equal(a.d[0].art, "regel"); assert.ok(Object.keys(a.d[0].gruende).length === 7, "Gründe je Stelle");
+  assert.match(await t.page.textContent("#beat"), /nach festen Regeln/);
+  console.log(`      Beat 15 s gedrosselt: ${(zeit / 1000).toFixed(1)} s`);
+  assert.ok(zeit < 30000, `${zeit} ms`);
+  // eine Stelle ändern: die Entscheidung ist dann menschlich
+  await t.page.locator('#beat select[data-beat="kit"]').selectOption("weich");
+  await t.page.click("#beat-rechnen"); await t.page.waitForTimeout(50); await warteFertig(t.page);
+  const m = await S(t.page, () => { const p = ornamentLab.projekt, k = p.knoten.at(-1); return { kit: k.parameter.kit, art: p.entscheidungen.filter((x) => x.knoten === k.id)[0].art }; });
+  assert.deepEqual(m, { kit: "weich", art: "mensch" });
+  // mit jev: nur die Stufen gehen hinaus, der Plan folgt den Wahrscheinlichkeiten
+  await t.page.click("#beat-jev"); await t.page.waitForTimeout(50); await warteFertig(t.page);
+  assert.deepEqual(Object.keys(gesendet[0]), ["frage", "merkmale"]);
+  assert.equal(gesendet[0].frage, "beat");
+  assert.deepEqual(Object.keys(gesendet[0].merkmale), ["helligkeit", "kontrast", "farbigkeit", "farbton", "detail", "schwerpunkt", "symmetrie", "bewegung"]);
+  const j = await S(t.page, () => { const p = ornamentLab.projekt, k = p.knoten.at(-1), d = p.entscheidungen.filter((x) => x.knoten === k.id)[0]; return { param: k.parameter, art: d.art, quelle: d.details.quelle, modell: d.details.modell }; });
+  assert.deepEqual({ tempo: j.param.tempo, groove: j.param.groove, kit: j.param.kit, tonart: j.param.tonart, bass: j.param.bass, melodie: j.param.melodie, verlauf: j.param.verlauf },
+    { tempo: "rasend", groove: "halftime", kit: "metallisch", tonart: "phrygisch", bass: "laufend", melodie: "arpeggio", verlauf: "gleich" });
+  assert.deepEqual([j.art, j.quelle, j.modell], ["jev", "live", "jev-test"]);
+  assert.match(await t.page.textContent("#beat"), /jev wählt \(jev-test\)/);
+  assert.match(await t.page.textContent("#beat"), /p = 1/);
+  assert.ok(await t.page.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 0, "ohne Überbreite");
+  // aus einem Video: die Standbilder werden Abschnitte, die Dauer ist die Länge des Videos
+  const { spawnSync } = await import("node:child_process");
+  const { mkdtempSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const datei = join(mkdtempSync(join(tmpdir(), "lab-beat-")), "clip.webm");
+  const ff = spawnSync("ffmpeg", ["-loglevel", "error", "-y", "-f", "lavfi", "-i", "testsrc=size=320x240:rate=15:duration=6", "-c:v", "libvpx", "-b:v", "400k", datei]);
+  if (ff.status === 0) {
+    await t.page.setInputFiles("#videodatei", datei);
+    await t.page.waitForFunction(() => ornamentLab.projekt.ergebnisse.filter((e) => e.herkunft?.video).length >= 6, null, { timeout: 60000 });
+    await warteFertig(t.page);
+    const still = await S(t.page, () => ornamentLab.projekt.ergebnisse.find((e) => e.herkunft?.video).id);
+    await t.page.locator("#beat-bild").selectOption(still);
+    assert.match(await t.page.textContent("#beat"), /6 Standbilder werden 6 Abschnitte/);
+    assert.equal(await t.page.inputValue("#beat-dauer"), "6");
+    await t.page.click("#beat-regeln"); await t.page.waitForTimeout(50); await warteFertig(t.page);
+    const v = await S(t.page, () => { const p = ornamentLab.projekt, k = p.knoten.at(-1); return { eingaben: Object.keys(k.eingaben), dauer: p.ergebnisse.find((x) => x.id === k.ausgaben[0]).ton.dauer, bewegung: k.protokoll.merkmale.bewegung }; });
+    assert.deepEqual(v.eingaben, ["bild", "bild2", "bild3", "bild4", "bild5", "bild6"]);
+    assert.ok(Math.abs(v.dauer - 6) < 0.01); assert.notEqual(v.bewegung, "still");
+  } else console.log("      (Video ohne ffmpeg übersprungen)");
   assert.deepEqual(t.fehler, []);
   await t.ctx.close();
 });

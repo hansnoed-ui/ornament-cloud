@@ -9,6 +9,7 @@
 //   POST wahl.php  { verlauf: [...], optionen: [...] }  → { wahrscheinlichkeiten: { "lab.feedback": 0.6, … }, modell, zwischengespeichert }
 //   POST wahl.php  { frage: "dramaturgie", merkmale: {...}, optionen: [...] }  → ebenso, für die Animation aus Bild und Klang (seit Lab 0.1.11)
 //   POST wahl.php  { frage: "komposition", merkmale: {...} }  → { antworten: { aufbau: {…}, klang1: {…}, bild1: {…}, … }, modell, … } (seit 0.1.12)
+//   POST wahl.php  { frage: "beat", merkmale: {...} }  → { antworten: { tempo: {…}, groove: {…}, … }, modell, … } (Beat aus Bild oder Video, seit 0.1.24)
 //
 // Was die Zwischenstelle annimmt: nur POST von https://ornament.cloud (Origin), JSON, höchstens 2000 Bytes, nur eine Lage, die dieselben
 // Regeln erfüllt wie labLage() in fragen.js (Kennungen aus dem festen Katalog, keine freien Texte). Die Frage baut sie selbst mit festem
@@ -47,6 +48,7 @@ const KATALOG = [
   'phorma.traube' => 'PHORMA Traube: glänzende Perlen in einer Kugel aus Fäden, Schnitte im Takt des Tons (zeitliche Operation, eigene Bühne)',
   'phorma.ii' => 'PHORMA II: Physarum, Tiefe, Wellenwanne, Tuch, Rasterdruck oder Montage, einzeln oder als Kette (zeitliche Operation, eigene Bühne)',
   'phorma.i' => 'PHORMA I: Fragmente oder die Verwandlung aus Strom, Körper, Scherben, Echo, Relief (zeitliche Operation, eigene Bühne)',
+  'lab.beat' => 'Beat aus Bild: das Bild wird zu einem kurzen Beat mit Schlagzeug, Bass und Melodie, aus Farbe, Helligkeit und Komposition gelesen (Medienwechsel nach Klang)',
 ];
 const FRAGE = 'In einem künstlerischen Labor wird ein Bild schrittweise durch Operationen verändert; jedes Ergebnis kann weitergeführt werden. Welche der folgenden Operationen eröffnet als nächster Schritt am ehesten eine Fortsetzung, die sich vom bisherigen Verlauf deutlich unterscheidet, statt ihn nur zu wiederholen?';
 
@@ -135,6 +137,43 @@ function kompositionFragen(): array {
   return $f;
 }
 
+/** Beat aus Bild oder Video (gleich wie BEAT_MERKMALE, BEAT_FRAGEN und FRAGE_BEAT in fragen.js) */
+const BEAT_MERKMALE = [
+  'helligkeit' => ['dunkel' => 'eher dunkel', 'mittel' => 'mittlere Helligkeit', 'hell' => 'eher hell'],
+  'kontrast' => ['niedrig' => 'Kontrast niedrig', 'mittel' => 'Kontrast mittel', 'hoch' => 'Kontrast hoch'],
+  'farbigkeit' => ['grau' => 'fast ohne Farbe', 'gedaempft' => 'gedämpfte Farben', 'bunt' => 'kräftige Farben'],
+  'farbton' => ['warm' => 'vorwiegend warme Farben (Rot, Orange, Gelb)', 'kalt' => 'vorwiegend kalte Farben (Grün, Blau, Violett)', 'neutral' => 'ohne vorherrschenden Farbton'],
+  'detail' => ['glatt' => 'grosse, ruhige Flächen', 'mittel' => 'mittlere Feinheit', 'fein' => 'viele feine Einzelheiten und Kanten'],
+  'schwerpunkt' => ['oben' => 'das Gewicht des Bildes liegt oben', 'mitte' => 'das Gewicht liegt in der Mitte', 'unten' => 'das Gewicht liegt unten'],
+  'symmetrie' => ['symmetrisch' => 'nahezu spiegelgleich', 'asymmetrisch' => 'deutlich asymmetrisch'],
+  'bewegung' => ['still' => 'ein einzelnes Bild, keine Bewegung', 'ruhig' => 'ein Video mit wenig Bewegung', 'bewegt' => 'ein Video mit deutlicher Bewegung', 'heftig' => 'ein Video mit heftiger Bewegung oder Schnitten'],
+];
+const BEAT_FRAGEN = [
+  'tempo' => ['Welches Tempo passt?', [
+    'langsam' => 'langsam, etwa 75 Schläge je Minute', 'mittel' => 'mittel, etwa 100 Schläge je Minute', 'schnell' => 'schnell, etwa 125 Schläge je Minute', 'rasend' => 'rasend, etwa 160 Schläge je Minute']],
+  'groove' => ['Welcher Groove passt?', [
+    'gerade' => 'gerade: Bassdrum auf jedem Viertel, Snare auf zwei und vier',
+    'halftime' => 'Halftime: Bassdrum am Anfang, Snare nur auf drei, schwer und breit',
+    'breakbeat' => 'Breakbeat: synkopierte Bassdrum, Snare auf zwei und vier mit leisen Zwischenschlägen',
+    'euklidisch' => 'euklidisch: Schläge möglichst gleichmässig verteilt, ungerade Muster wie fünf aus sechzehn',
+    'schleppend' => 'schleppend: Groove mit Swing, die Zwischenschläge kommen spät']],
+  'kit' => ['Welche Klänge soll das Schlagzeug haben?', [
+    'trocken' => 'trocken: kurze, akustisch wirkende Trommeln', 'elektronisch' => 'elektronisch: lange, tiefe Bassdrum und Klatschen wie bei einer Drum-Machine',
+    'metallisch' => 'metallisch: klirrende Becken und glockenartige Töne', 'weich' => 'weich: gedämpfte, runde Schläge ohne Härte']],
+  'tonart' => ['Welche Tonart soll der Beat haben?', [
+    'dur' => 'Dur: hell und offen', 'moll' => 'Moll: dunkel und ernst', 'dorisch' => 'dorisch: Moll mit einem hellen Ton, schwebend',
+    'phrygisch' => 'phrygisch: dunkel und fremd, mit kleiner Sekunde', 'pentatonik' => 'pentatonisch: fünf Töne ohne Halbtöne, nichts reibt']],
+  'bass' => ['Was soll der Bass tun?', [
+    'keiner' => 'kein Bass', 'liegend' => 'liegend: lange Töne, je Takt einer', 'pulsierend' => 'pulsierend: Achtel auf dem Grundton, mit Oktavsprüngen', 'laufend' => 'laufend: der Bass geht in Schritten durch die Tonleiter']],
+  'melodie' => ['Welche Melodie soll über dem Beat liegen?', [
+    'keine' => 'keine Melodie', 'bild' => 'aus dem Bild gelesen: die hellste Stelle jeder Spalte gibt den Ton, von links nach rechts',
+    'arpeggio' => 'Arpeggio: die Töne des Akkords auf und ab', 'glocken' => 'Glocken: wenige Töne auf den hellsten Punkten des Bildes']],
+  'verlauf' => ['Wie soll sich der Beat über die Zeit entwickeln?', [
+    'gleich' => 'gleich: alles spielt von Anfang an', 'steigend' => 'steigend: die Stimmen setzen nacheinander ein, es wird dichter',
+    'abschwellend' => 'abschwellend: voll am Anfang, dann lichtet es sich', 'wellen' => 'in Wellen: dichter, wo sich das Video stark bewegt, sonst lichter']],
+];
+const FRAGE_BEAT = 'In einem künstlerischen Labor entsteht aus einem Bild oder einem Video ein kurzer Beat als Soundtrack. Gemessen wurden nur die genannten Merkmale. Der Beat soll aus diesem Bild hervorgehen, statt ihm von aussen übergestülpt zu werden.';
+
 function antwort(array $daten, int $status = 200): void {
   http_response_code($status);
   header('Content-Type: application/json; charset=utf-8');
@@ -172,6 +211,7 @@ function lage($roh): array {
   if (!is_array($roh) || ($roh !== [] && array_keys($roh) === range(0, count($roh) - 1))) throw new InvalidArgumentException('Lage fehlt');
   if (($roh['frage'] ?? null) === 'dramaturgie') return dramaturgieLage($roh);
   if (($roh['frage'] ?? null) === 'komposition') return kompositionLage($roh);
+  if (($roh['frage'] ?? null) === 'beat') return beatLage($roh);
   $fremd = array_diff(array_keys($roh), ['verlauf', 'optionen']);
   if ($fremd) throw new InvalidArgumentException('unbekannte Felder: ' . implode(', ', $fremd));
   $verlauf = (isset($roh['verlauf']) && is_array($roh['verlauf'])) ? array_slice(array_values($roh['verlauf']), -8) : [];
@@ -189,6 +229,21 @@ function kompositionLage(array $roh): array {
   $fremd = array_diff(array_keys($roh), ['frage', 'merkmale']);
   if ($fremd) throw new InvalidArgumentException('unbekannte Felder: ' . implode(', ', $fremd));
   return ['frage' => 'komposition', 'merkmale' => merkmaleLage($roh['merkmale'] ?? null)];
+}
+
+function beatLage(array $roh): array {
+  $fremd = array_diff(array_keys($roh), ['frage', 'merkmale']);
+  if ($fremd) throw new InvalidArgumentException('unbekannte Felder: ' . implode(', ', $fremd));
+  $m = $roh['merkmale'] ?? null;
+  if (!is_array($m) || ($m !== [] && array_keys($m) === range(0, count($m) - 1))) throw new InvalidArgumentException('Merkmale fehlen');
+  $fremd = array_diff(array_keys($m), array_keys(BEAT_MERKMALE));
+  if ($fremd) throw new InvalidArgumentException('unbekannte Merkmale: ' . implode(', ', $fremd));
+  $merkmale = [];
+  foreach (BEAT_MERKMALE as $k => $werte) {
+    if (!isset($m[$k]) || !is_string($m[$k]) || !array_key_exists($m[$k], $werte)) throw new InvalidArgumentException("Merkmal $k fehlt oder hat keine gültige Stufe");
+    $merkmale[$k] = $m[$k];
+  }
+  return ['frage' => 'beat', 'merkmale' => $merkmale];
 }
 
 function dramaturgieLage(array $roh): array {
@@ -224,6 +279,13 @@ function frage(array $lage): array {
     foreach (MERKMALE[$gruppe] as $k => $werte) $teile[] = $werte[$lage['merkmale'][$k]];
     return implode('; ', $teile);
   };
+  if (($lage['frage'] ?? null) === 'beat') {
+    $teile = [];
+    foreach (BEAT_MERKMALE as $k => $werte) $teile[] = $werte[$lage['merkmale'][$k]];
+    $fragen = [];
+    foreach (BEAT_FRAGEN as $k => [$text, $katalog]) $fragen[$k] = ['type' => 'choice', 'instructions' => FRAGE_BEAT . ' ' . $text, 'criteria' => $katalog];
+    return ['zustand' => ['labor' => 'ORNAMENT LAB, Beat aus Bild oder Video', 'bild' => implode('; ', $teile)], 'fragen' => $fragen];
+  }
   if (($lage['frage'] ?? null) === 'komposition') {
     $fragen = [];
     foreach (kompositionFragen() as $k => [$katalog, $text]) $fragen[$k] = ['type' => 'choice', 'instructions' => FRAGE_KOMPOSITION . ' ' . $text, 'criteria' => $katalog];
@@ -341,7 +403,7 @@ curl_setopt_array($c, [
   CURLOPT_POSTFIELDS => json_encode(['model' => $modell, 'state' => $fr['zustand'], 'questions' => $fr['fragen']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_CONNECTTIMEOUT => 4,
-  CURLOPT_TIMEOUT => ($l['frage'] ?? null) === 'komposition' ? 25 : 12,   // zehn Fragen auf einmal brauchen länger
+  CURLOPT_TIMEOUT => in_array($l['frage'] ?? null, ['komposition', 'beat'], true) ? 25 : 12,   // zehn (sieben) Fragen auf einmal brauchen länger
   CURLOPT_FOLLOWLOCATION => false,
   CURLOPT_PROTOCOLS => CURLPROTO_HTTPS | CURLPROTO_HTTP,
 ]);
@@ -362,7 +424,7 @@ $lies = function (string $frage, array $optionen) use ($j): ?array {
   return $w;
 };
 $modell = is_string($j['model'] ?? null) ? kurz($j['model'], 60) : 'jev';
-if (($l['frage'] ?? null) === 'komposition') {
+if (in_array($l['frage'] ?? null, ['komposition', 'beat'], true)) {
   $antworten = [];
   foreach ($fr['fragen'] as $k => $q) { $w = $lies($k, array_keys($q['criteria'])); if ($w === null) antwort(['fehler' => 'jev: unerwartete Antwort'], 502); $antworten[$k] = $w; }
   $daten = ['antworten' => $antworten, 'modell' => $modell];

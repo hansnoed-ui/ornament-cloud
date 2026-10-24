@@ -175,6 +175,7 @@ export function regelVorschlaege(register, projekt, ergebnisId) {
     if (zuletzt.at(-1) === "rekursiv" && op.klasse === "beobachtung") { gewicht += 1; gruende.push("nach einer Rekursion: beobachten, was sie verändert hat"); }
     if (!hatSignal && op.klasse === "kopplung") { gewicht += 1; gruende.push("noch kein Steuersignal im Projekt: Kopplung möglich"); }
     if (op.eingaenge.some((x, i) => i > 0 && !x.optional)) { gewicht -= 0.5; gruende.push("braucht einen zweiten Eingang"); }
+    if (e.typ === "IMAGE" && op.ausgaenge[0]?.typ === "AUDIO") { gewicht -= 0.5; gruende.push("führt vom Bild in den Klang, die Bildkette endet dort"); }
     return { operation: op.id, name: op.name, gewicht, gruende };
   }).sort((a, b) => b.gewicht - a.gewicht || a.name.localeCompare(b.name));
 }
