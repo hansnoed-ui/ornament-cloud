@@ -3,6 +3,7 @@
 // alles, was geschieht, steht im Projekt (kern/projekt.js) und wird von dort gezeichnet.
 import { labRegister } from "./operationen/index.js";
 import { browserMedien } from "./medien/browser.js";
+import { dateiLesen } from "./medien/dateilesen.js";
 import { videoAus, FPS } from "./medien/video.js";
 import { gpuEffekte, LEBENDIG } from "./medien/gpu.js";
 import * as P from "./kern/projekt.js";
@@ -1190,7 +1191,7 @@ function speichern() {
 async function oeffnen(datei) {
   status(`${datei.name} wird geöffnet …`);
   try {
-    const { projekt, medien, fehlt } = await entpacke(new Uint8Array(await datei.arrayBuffer()));
+    const { projekt, medien, fehlt } = await entpacke(await dateiLesen(datei));
     projekt.exporte ??= [];
     S.projekt = projekt; S.medien.uebernehmen(medien); S.filme.clear(); S.tonspur.clear(); S.vergleich.clear(); S.knotenAnsicht = null; S.op = null; S.stationen = null; S.klangstationen = null; S.vorschlag = { ...S.vorschlag, messung: null, jev: null, regel: null, gewaehlt: null, zusammen: null };
     const gewaehlt = [...projekt.knoten].reverse().find((k) => k.gewaehlt)?.gewaehlt;
@@ -1204,9 +1205,11 @@ async function oeffnen(datei) {
 function alles() { zeigeMaterial(); zeigeVorschlag30(); zeigeBeat(); zeigeOperationen(); zeigeBuehne(); zeigeProtokoll(); }
 
 // ---------- Anschlüsse ----------
-$("datei").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) importiere(f); });
-$("tondatei").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) importiereTon(f); });
-$("videodatei").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) importiereVideo(f); });
+// die Auswahl wird erst geleert, wenn die Datei gelesen ist: auf Android verliert die Seite sonst den Zugriff auf sie (seit 0.1.29)
+const gewaehlt = (fn) => async (ev) => { const f = ev.target.files[0]; try { if (f) await fn(f); } finally { ev.target.value = ""; } };
+$("datei").addEventListener("change", gewaehlt(importiere));
+$("tondatei").addEventListener("change", gewaehlt(importiereTon));
+$("videodatei").addEventListener("change", gewaehlt(importiereVideo));
 $("beispiel").addEventListener("click", async () => {
   const r = await fetch("../../alpha/the-fictory/beispiel.jpg");
   importiere(new File([await r.blob()], "beispiel.jpg (The Fictory)", { type: "image/jpeg" }));
@@ -1219,7 +1222,7 @@ $("op-form").addEventListener("submit", (ev) => { ev.preventDefault(); ausfuehre
 for (const r of document.querySelectorAll('input[name="modus"]')) r.addEventListener("change", (ev) => { S.modus = ev.target.value; S.projekt.modus = S.modus; S.wahl = null; zeigeOperationen(); });
 for (const r of document.querySelectorAll('input[name="ansicht"]')) r.addEventListener("change", (ev) => { S.ansicht = ev.target.value; S.knotenAnsicht = null; zeigeBuehne(); });
 $("speichern").addEventListener("click", speichern);
-$("oeffnen").addEventListener("change", (ev) => { const f = ev.target.files[0]; ev.target.value = ""; if (f) oeffnen(f); });
+$("oeffnen").addEventListener("change", gewaehlt(oeffnen));
 $("neu").addEventListener("click", () => {
   if (S.ungespeichert && !confirm("Das aktuelle Projekt ist nicht gespeichert. Trotzdem neu beginnen?")) return;
   S.projekt = P.neuesProjekt({ modus: S.modus }); S.medien = browserMedien(); S.aktuell = null; S.op = null; S.filme.clear(); S.tonspur.clear(); S.knotenAnsicht = null; S.stationen = null; S.klangstationen = null; S.vorschlag = { ...S.vorschlag, messung: null, jev: null, regel: null, gewaehlt: null, zusammen: null }; S.ungespeichert = false;

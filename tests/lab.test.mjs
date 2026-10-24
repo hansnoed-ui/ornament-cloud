@@ -1811,3 +1811,25 @@ test("Zusammenstellung: Abschnitte ausschalten und ihre Dauer setzen (0.1.28): n
   assert.equal(z.ergebnisse.length, 50);
   assert.deepEqual(P.pruefeProjekt(p), []);
 });
+
+test("Datei lesen (0.1.29): in Stücken, ein verweigertes Stück wird wiederholt, anhaltende Verweigerung gibt eine verständliche Meldung", async () => {
+  const { dateiLesen, STUECK } = await import("../alpha/lab/medien/dateilesen.js");
+  const inhalt = new Uint8Array(STUECK * 2 + 123).map((_, i) => (i * 7) % 251);
+  const blob = new Blob([inhalt]);
+  // eine Datei wie auf Android: die ersten zwei Leseversuche brechen mit NotReadableError ab
+  let fehler = 2, stuecke = 0;
+  const wackelig = { size: blob.size, slice: (a, b) => ({ arrayBuffer: async () => {
+    if (fehler-- > 0) throw Object.assign(new Error("The requested file could not be read, typically due to permission problems that have occurred after a reference to a file was acquired."), { name: "NotReadableError" });
+    stuecke++; return blob.slice(a, b).arrayBuffer();
+  } }) };
+  const gelesen = await dateiLesen(wackelig, { warten: async () => {} });
+  assert.equal(stuecke, 3);
+  assert.deepEqual(gelesen, inhalt);
+  const tot = { size: 10, slice: () => ({ arrayBuffer: async () => { throw Object.assign(new Error("permission problems"), { name: "NotReadableError" }); } }) };
+  await assert.rejects(dateiLesen(tot, { warten: async () => {} }), (f) => f.name === "Zugriffsfehler" && /noch einmal aus/.test(f.message) && /NotReadableError/.test(f.ursache));
+  // ein anderer Fehler wird nicht wiederholt und bleibt, wie er ist
+  let n = 0;
+  const kaputt = { size: 10, slice: () => ({ arrayBuffer: async () => { n++; throw new TypeError("kaputt"); } }) };
+  await assert.rejects(dateiLesen(kaputt, { warten: async () => {} }), TypeError);
+  assert.equal(n, 1);
+});
