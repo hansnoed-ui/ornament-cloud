@@ -148,18 +148,21 @@ export const BEAT_FRAGEN = Object.freeze({
     schleppend: "schleppend: Groove mit Swing, die Zwischenschläge kommen spät",
     dnb: "Drum and Bass: 170 bis 176 Schläge je Minute, Bassdrum auf eins und kurz vor drei, Snare auf zwei und vier, dazwischen gebrochene Schläge",
     jazz: "Jazz: Ride-Becken im Swing mit Triolen-Gefühl, Hi-Hat mit dem Fuss auf zwei und vier, Bassdrum und Snare setzen leise Akzente",
-    jazzstep: "Jazzstep: Drum and Bass mit Jazz, 170 bis 176 Schläge je Minute, genau gesetzt, Ride-Becken statt Hi-Hat, leise Geisternoten auf der Snare" }) },
+    jazzstep: "Jazzstep: Drum and Bass mit Jazz, 170 bis 176 Schläge je Minute, genau gesetzt, Ride-Becken statt Hi-Hat, leise Geisternoten auf der Snare",
+    jungle: "Jungle: zerhackter Breakbeat wie in den Neunzigern, 170 bis 176 Schläge je Minute, darüber ein halbes Gefühl, dunkel und weich" }) },
   kit: { text: "Welche Klänge soll das Schlagzeug haben?", katalog: Object.freeze({
     trocken: "trocken: kurze, akustisch wirkende Trommeln", elektronisch: "elektronisch: lange, tiefe Bassdrum und Klatschen wie bei einer Drum-Machine",
     metallisch: "metallisch: klirrende Becken und glockenartige Töne", weich: "weich: gedämpfte, runde Schläge ohne Härte",
-    jazz: "Jazz: gestimmte, kurze Trommeln, Besen auf der Snare, Ride-Becken mit Glocke" }) },
+    jazz: "Jazz: gestimmte, kurze Trommeln, Besen auf der Snare, Ride-Becken mit Glocke",
+    jungle: "Jungle: dunkle, gefilterte Breaks wie vom Sampler, runde tiefe Bassdrum, gedämpfte Becken" }) },
   tonart: { text: "Welche Tonart soll der Beat haben?", katalog: Object.freeze({
     dur: "Dur: hell und offen", moll: "Moll: dunkel und ernst", dorisch: "dorisch: Moll mit einem hellen Ton, schwebend",
     phrygisch: "phrygisch: dunkel und fremd, mit kleiner Sekunde", pentatonik: "pentatonisch: fünf Töne ohne Halbtöne, nichts reibt" }) },
   bass: { text: "Was soll der Bass tun?", katalog: Object.freeze({
     keiner: "kein Bass", liegend: "liegend: lange Töne, je Takt einer", pulsierend: "pulsierend: Achtel auf dem Grundton, mit Oktavsprüngen", laufend: "laufend: der Bass geht in Schritten durch die Tonleiter",
     reese: "Reese: tiefer, schwebender Bass aus zwei gegeneinander verstimmten Sägezähnen, wie im Drum and Bass",
-    kontrabass: "Kontrabass: gezupfter, warmer Walking Bass in Vierteln durch die Akkorde, mit chromatischen Annäherungen" }) },
+    kontrabass: "Kontrabass: gezupfter, warmer Walking Bass in Vierteln durch die Akkorde, mit chromatischen Annäherungen",
+    sub: "Sub-Bass: sehr tiefer, runder Bass, der in Halbtönen rollt und gleitet, wie im atmosphärischen Jungle" }) },
   melodie: { text: "Welche Melodie soll über dem Beat liegen?", katalog: Object.freeze({
     keine: "keine Melodie", bild: "aus dem Bild gelesen: die hellste Stelle jeder Spalte gibt den Ton, von links nach rechts",
     arpeggio: "Arpeggio: die Töne des Akkords auf und ab", glocken: "Glocken: wenige Töne auf den hellsten Punkten des Bildes",
