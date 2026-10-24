@@ -123,7 +123,8 @@ async function importiereVideo(datei) {
   status(`${datei.name} wird gelesen …`, 0);
   try {
     const imp = await S.medien.importiereVideo(datei, { melden: status });
-    const video = { name: imp.original.name, sha256: imp.original.sha256, dauer: imp.original.dauer, breite: imp.original.breite, hoehe: imp.original.hoehe };
+    // ohne lesbare Tonspur steht der Grund bei den Standbildern (herkunft.video.tonFehler), der Vorschlag zeigt ihn an (seit 0.1.20)
+    const video = { name: imp.original.name, sha256: imp.original.sha256, dauer: imp.original.dauer, breite: imp.original.breite, hoehe: imp.original.hoehe, ...(imp.ton ? {} : { tonFehler: imp.tonFehler ?? "keine Tonspur" }) };
     const ids = [];
     for (const b of imp.bilder) {
       const e = P.fuegeMaterialHinzu(S.projekt, { titel: `${imp.original.name} · ${sekunden(b.zeit)}`, mime: "image/png", herkunft: { original: imp.original, video: { ...video, zeit: b.zeit }, hinweis: `Standbild bei ${sekunden(b.zeit)} von ${sekunden(video.dauer)}, ${b.arbeit.width} × ${b.arbeit.height} px` } });
@@ -132,13 +133,13 @@ async function importiereVideo(datei) {
     }
     let tonId = null;
     if (imp.ton) {
-      const t = P.fuegeMaterialHinzu(S.projekt, { titel: `${imp.original.name} · Ton`, typ: "AUDIO", mime: "audio/wav", ton: imp.ton.ton, herkunft: { original: imp.ton.original, video, hinweis: `Tonspur des Videos, ${sekunden(imp.ton.ton.dauer)}${imp.ton.gekuerzt ? " (die ersten 120 s)" : ""}, ${imp.ton.ton.abtastrate} Hz` } });
+      const t = P.fuegeMaterialHinzu(S.projekt, { titel: `${imp.original.name} · Ton`, typ: "AUDIO", mime: "audio/wav", ton: imp.ton.ton, herkunft: { original: imp.ton.original, video, leseweg: imp.ton.leseweg, hinweis: `Tonspur des Videos, ${sekunden(imp.ton.ton.dauer)}${imp.ton.gekuerzt ? " (die ersten 120 s)" : ""}, ${imp.ton.ton.abtastrate} Hz${imp.ton.leseweg === "webcodecs" ? ", gelesen mit dem Dekoder des Geräts" : ""}` } });
       Object.assign(t, await S.medien.ablegenTon(t, imp.ton));
       tonId = t.id;
     }
     S.aktuell = ids[0]; S.vergleich.clear(); S.knotenAnsicht = null; geaendert();
     S.vorschlag.bild = ids[0]; if (tonId) S.vorschlag.ton = tonId;
-    status(`${imp.original.name}: ${sekunden(video.dauer)}, ${ids.length} Standbilder${tonId ? " und die Tonspur" : ", ohne lesbaren Ton"}. Das Video selbst bleibt draussen, im Projekt stehen die Bilder${tonId ? " und der Ton" : ""}.`);
+    status(`${imp.original.name}: ${sekunden(video.dauer)}, ${ids.length} Standbilder${tonId ? " und die Tonspur" : `, ohne lesbaren Ton (${video.tonFehler})`}. Das Video selbst bleibt draussen, im Projekt stehen die Bilder${tonId ? " und der Ton" : ". Für den Vorschlag für 30 s lade den Ton dazu (MP3 oder WAV)"}.`, null, !tonId);
     alles();
   } catch (f) { status(`Das Video liess sich nicht lesen: ${f.message}`, null, true); }
 }
@@ -164,7 +165,17 @@ function vorschlagListe() {
 function zeigeVorschlag30() {
   const box = $("vorschlag30"), v = S.vorschlag, bilder = bilderDesProjekts(), klaenge = klaengeDesProjekts();
   box.hidden = !bilder.length || !klaenge.length;
-  if (box.hidden) { if (bilder.length || klaenge.length) { box.hidden = false; ersetze(box, el("small", { class: "hinweis", text: bilder.length ? "Mit einem Ton dazu (MP3 oder WAV) schlägt das Lab eine Animation von 30 Sekunden vor." : "Mit einem Bild dazu schlägt das Lab eine Animation von 30 Sekunden zu diesem Ton vor." })); } return; }
+  if (box.hidden) {
+    if (bilder.length || klaenge.length) {
+      box.hidden = false;
+      // Standbilder eines Videos ohne lesbare Tonspur: sagen, warum der Vorschlag fehlt (Christian, 24. Oktober 2026: «ich sehe die Option auf dem Handy nicht»)
+      const stumm = bilder.find((x) => x.herkunft?.video?.tonFehler)?.herkunft.video;
+      ersetze(box, el("h3", { text: "Animation aus Bild und Klang (30 s)" }), el("small", { class: `hinweis${stumm ? " fehler" : ""}`, text: !bilder.length ? "Mit einem Bild dazu schlägt das Lab eine Animation von 30 Sekunden zu diesem Ton vor."
+        : stumm ? `Die Tonspur des Videos «${stumm.name}» liess sich in diesem Browser nicht lesen (${stumm.tonFehler}). Lade den Ton dazu (MP3 oder WAV, Knopf «Ton wählen»), dann schlägt das Lab eine Animation von 30 Sekunden vor und nimmt die Standbilder des Videos.`
+        : "Mit einem Ton dazu (MP3 oder WAV) schlägt das Lab eine Animation von 30 Sekunden vor." }));
+    }
+    return;
+  }
   const aktuell = aktuellesErgebnis();
   if (!bilder.some((x) => x.id === v.bild)) v.bild = aktuell?.typ === "IMAGE" ? aktuell.id : bilder.filter((x) => !x.knoten).at(-1)?.id ?? bilder.at(-1).id;
   if (!klaenge.some((x) => x.id === v.ton)) v.ton = klaenge.filter((x) => !x.knoten).at(-1)?.id ?? klaenge.at(-1).id;
@@ -220,12 +231,12 @@ function zusammenstellungAnsicht(v) {
     el("div", { class: "stellen bestaende" },
       bestandStelle(pl, "zettel", "Zettel", "strophe", "mit dem Startwert ziehen", STROPHEN_WAHL),
       bestandStelle(pl, "orna", "ORNA", "konstellation", "per Zufall ziehen (wie in ORNA)", KONSTELLATIONEN)),
-    el("small", { class: "hinweis", text: "Beide wahlweise, jev sieht sie nicht: Der Zettel eröffnet den Film als Karte mit seinem Leitsatz. Die ORNA-Konstellation schliesst ihn als Karte und gibt dem Zerfall ihre Operationsregel; ohne Zerfall in der Zusammenstellung kommt er als siebter Abschnitt dazu." }),
+    el("small", { class: "hinweis", text: "Beide wahlweise, jev sieht sie nicht: Der Zettel eröffnet den Film als Karte mit seinem Leitsatz. Die ORNA-Konstellation schliesst ihn als Karte mit ihrer Operationsregel." }),
     el("div", { class: "stellen film" },
       el("label", { class: "regler schalter stelle" }, el("input", { type: "checkbox", id: "zusammenstellung-lebendig", checked: pl.lebendig !== false && gpuDa(), disabled: !gpuDa(), onchange: (ev) => { pl.lebendig = ev.target.checked; } }),
         gpuDa() ? "lebendige Effekte" : "lebendige Effekte (dieser Browser hat kein WebGL 2: Standbilder mit Kamera)"),
       regler({ id: "zusammenstellung-bewegung", name: "Bewegung (Kamera über jedem Bild, 0 = ruhig)", art: "zahl", min: 0, max: 1, schritt: 0.05 }, pl.bewegung ?? ZS.BEWEGUNG, (v) => { pl.bewegung = v; })),
-    el("small", { class: "hinweis", text: `Lebendig sind ${LEBENDIG.map(opName).join(", ")}: in jedem der 900 Bilder ein neues Effektbild, die Lautstärke moduliert Bild für Bild. Dieselben Schalter stehen danach unter «Nacheinander».` }),
+    el("small", { class: "hinweis", text: `Alle sieben Effekte der Zusammenstellung sind lebendig (${LEBENDIG.map(opName).join(", ")}): in jedem der 900 Bilder ein neues Effektbild, die Lautstärke moduliert Bild für Bild. Dieselben Schalter stehen danach unter «Nacheinander».` }),
     video ? el("small", { class: "hinweis", text: `Aus dem Video: jeder Abschnitt nimmt das Standbild seiner Zeit (${v.messung.videoBilder.length} Standbilder), so folgt der Film dem Video. Der Aufbau gilt darum nicht.` }) : null,
     el("small", { class: "hinweis", text: `${video ? "Abschnitte nach dem Video" : kurzname(AUFBAU[pl.aufbau])}, ${FILM_UEBERGAENGE[pl.uebergang]}. Klang: ${pl.klang.map((k) => kurzname(KLANG_EFFEKTE[k])).join(" → ")}. Bild: ${pl.bild.map((b) => kurzname(BILD_EFFEKTE[b])).join(" → ")}, je ${ZS.VARIANTEN_JE_ABSCHNITT} Varianten.` }),
     el("div", { class: "aktionen" },

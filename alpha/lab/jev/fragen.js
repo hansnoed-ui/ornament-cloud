@@ -24,11 +24,13 @@ export const KATALOG = Object.freeze({
 
 const KENNUNG = /^[a-z]+\.[a-z0-9-]+$/;
 
-/** fester Katalog der Dramaturgien für eine Animation von 30 Sekunden aus Bild und Klang (kern/vorschlag.js hat die Schritte dazu) */
+/**
+ * fester Katalog der Dramaturgien für eine Animation von 30 Sekunden aus Bild und Klang (kern/vorschlag.js hat die Schritte dazu).
+ * Seit Lab 0.1.20 vorerst nur Dramaturgien aus lebendigen Effekten (medien/gpu.js): Zerfall (The Fictory) und Spiegelung (Komposition) sind
+ * Standbilder mit Kamera und stehen einem fliessenden Film wie bei PHORMA entgegen (Christian, 24. Oktober 2026); ihre Operationen bleiben im Register.
+ */
 export const DRAMATURGIEN = Object.freeze({
   "vorschlag.puls": "Puls: sechs Varianten einer Feedback-Schleife, deren Zoom der Lautstärke folgt; harte Schnitte zwischen ihnen auf den Anschlägen des Klangs",
-  "vorschlag.zerfall": "Zerfall: das Bild zerfällt in Farbflächen und setzt sich in sechs Zuständen neu zusammen (The Fictory); ruhige Übergänge, bei denen die dunklen Stellen zuerst erscheinen",
-  "vorschlag.spiegel": "Spiegelung: die Symmetrie des Bildes wird verstärkt oder umgekehrt, je nach Lautstärke des Klangs; weiche Überblendungen im Takt der Anschläge",
   "vorschlag.farbwelle": "Farbwelle: die Farben drehen sich mit der Lautstärke durch den Farbkreis, in acht Varianten; Überblendungen im Takt der Anschläge",
   "vorschlag.raster": "Vervielfältigung: das Bild wird im Raster wiederholt, die Grösse der Kopien folgt der Lautstärke; Schnitte im Takt der Anschläge",
   "vorschlag.steigerung": "Steigerung: drei Operationen nacheinander (Farbe, Wiederholung, Feedback), das Bild verwandelt sich schrittweise immer weiter; lange, ruhige Übergänge",
@@ -53,18 +55,16 @@ const merkmalText = (k, v) => MERKMALE.bild[k]?.[v] ?? MERKMALE.klang[k]?.[v];
 /** Zusammenstellung durch jev (seit Lab 0.1.12): für jeden Abschnitt des Films ein Bildeffekt, dazu zwei Klangeffekte nacheinander,
     der Aufbau und der Übergang. Feste Kataloge, je eine CHOICE-Frage; die Zuordnung zu Operationen steht in kern/zusammenstellung.js */
 export const ABSCHNITTE = 6;
+// seit Lab 0.1.20 vorerst nur die sieben lebendigen Effekte (jedes Filmbild neu gerechnet, medien/gpu.js); Komposition, Pixelsortierung,
+// Neu setzen und Zerfall (The Fictory) blieben Standbilder mit Kamera und stünden einem fliessenden Film entgegen (Christian, 24. Oktober 2026)
 export const BILD_EFFEKTE = Object.freeze({
   "bild.feedback": "Feedback-Schleife: das Bild wird immer wieder auf sich selbst gelegt, gezoomt und gedreht, es entsteht ein Sog",
   "bild.wiederholung": "Wiederholung: das Bild vervielfacht sich im Raster, die Kopien werden grösser und kleiner",
   "bild.farbe": "Farbe: die Farben drehen sich durch den Farbkreis und werden kräftiger",
-  "bild.komposition": "Komposition: die Symmetrie des Bildes wird verstärkt oder umgekehrt",
   "bild.glitch": "Glitch: Blöcke verrutschen, Zeilen springen, Farbkanäle trennen sich",
-  "bild.pixelsortierung": "Pixelsortierung: helle Streifen ziehen sich durch das Bild, die Pixel sind nach Helligkeit sortiert",
   "bild.verzerrung": "Verzerrung: das Bild wird verwirbelt, gewellt oder wie durch eine Linse gesehen",
   "bild.licht": "Licht: helle Stellen glühen auf und strahlen aus",
   "bild.raster": "Raster: das Bild wird zu Punkten und Linien wie im Druck",
-  "bild.neusetzen": "Neu setzen: das Bild wird in Kacheln zerlegt und neu zusammengesetzt",
-  "bild.fictory": "Zerfall: das Bild zerfällt in Farbflächen und setzt sich neu zusammen (The Fictory)",
 });
 export const KLANG_EFFEKTE = Object.freeze({
   "klang.keine": "nichts: der Klang bleibt, wie er ist",

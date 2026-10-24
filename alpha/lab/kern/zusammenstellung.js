@@ -5,8 +5,9 @@
 // Ohne jev zieht das Lab gleichverteilt (Entscheidungsart «zufall»). Der Mensch sieht die Zusammenstellung, zieht neu oder ändert einzelne
 // Stellen, bevor gerechnet wird. Gerechnet wird mit gewöhnlichen Operationen des Registers; der Film ist ein Film über Stationen.
 // Die Bestände (seit Lab 0.1.18, beide wahlweise, jev sieht sie nicht): ein Zettel aus dem Zettelkasten eröffnet den Film als Karte mit
-// seinem Leitsatz; eine ORNA-Konstellation schliesst ihn als Karte und gibt dem Zerfall (The Fictory) ihre Operationsregel, ohne Zerfall
-// in der Zusammenstellung kommt dafür ein siebter Abschnitt dazu. Die Karten zeichnet lab.karte, nur im Browser.
+// seinem Leitsatz; eine ORNA-Konstellation schliesst ihn als Karte mit ihrer Operationsregel. Bis 0.1.19 gab sie die Regel dem Zerfall
+// (The Fictory) als siebtem Abschnitt; seit 0.1.20 bleiben vorerst nur lebendige Effekte in der Zusammenstellung, damit der Film fliesst
+// (Christian, 24. Oktober 2026). Die Karten zeichnet lab.karte, nur im Browser.
 // Ohne DOM, geprüft in tests/lab.test.mjs.
 import { KOMPOSITION_FRAGEN, BILD_EFFEKTE, KLANG_EFFEKTE } from "../jev/fragen.js";
 import { ergebnis, entscheide, GRENZEN } from "./projekt.js";
@@ -24,15 +25,11 @@ export const BILD_REZEPTE = Object.freeze({
   "bild.feedback": { operation: "lab.feedback", parameter: { seite: 720 }, ziel: "zoom", tiefe: 0.35 },
   "bild.wiederholung": { operation: "lab.wiederholung", parameter: { seite: 1200 }, ziel: "groesse", tiefe: 0.5 },
   "bild.farbe": { operation: "lab.farbe", parameter: { saettigung: 1.3 }, ziel: "farbdrehung", tiefe: 1 },
-  "bild.komposition": { operation: "lab.komposition", parameter: { seite: 900 }, ziel: "symmetrie", tiefe: 0.9 },
   "bild.glitch": { operation: "lab.glitch", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
-  "bild.pixelsortierung": { operation: "lab.pixelsortierung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
   "bild.verzerrung": { operation: "lab.verzerrung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
   "bild.licht": { operation: "lab.licht", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
   "bild.raster": { operation: "lab.raster", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
-  "bild.neusetzen": { operation: "lab.neusetzen", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
-  "bild.fictory": { operation: "fictory.prozess", parameter: {}, ziel: null },
-});
+});   // seit 0.1.20 vorerst nur lebendige Effekte (jev/fragen.js, BILD_EFFEKTE)
 /** Klangeffekt → Operation (null: der Klang bleibt) */
 export const KLANG_REZEPTE = Object.freeze({
   "klang.keine": null,
@@ -133,8 +130,8 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
       auftrag: { operation: "orna.konstellation", eingaben: {}, parameter: { konstellation: plan.orna.konstellation || "" }, seed: (seed + 1409) >>> 0, wahl: bestand(plan.orna.konstellation, "Zusammenstellung, ORNA") } });
     konstellation = o.ergebnisse.find((e) => e.typ === "CONSTELLATION");
   }
-  // mit Konstellation bekommt der Zerfall ihre Regel; ist keiner in der Zusammenstellung, kommt er als siebter Abschnitt dazu
-  const abschnitte = konstellation && !plan.bild.includes("bild.fictory") ? [...plan.bild, "bild.fictory"] : plan.bild;
+  // seit 0.1.20 vorerst ohne den Zerfall als siebten Abschnitt (Standbilder): die Konstellation nennt ihre Regel auf der Schlusskarte
+  const abschnitte = plan.bild;
 
   // 3 · Bild: sechs Abschnitte, in der Kette auf dem vorigen, im Fächer jeweils auf dem Ausgangsbild;
   //     aus einem Video (messung.videoBilder) nimmt jeder Abschnitt das Standbild seiner Zeit, so folgt der Film dem Video
@@ -147,8 +144,8 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
     const routen = ziel && op.varianten === "moduliert" ? [{ ziel, tiefe: r.tiefe ?? 0.5, modulator: { quelle: "signal", ergebnis: signal.id } }] : [];
     melden(`Abschnitt ${i + 1} von ${abschnitte.length}: ${BILD_EFFEKTE[b].split(":")[0]} …`, null);
     const x = await fuehreAus({ register, projekt, medien, melden, abbrechen,
-      auftrag: { operation: r.operation, eingaben: { bild: video ? video[Math.min(video.length - 1, Math.floor((i * video.length) / abschnitte.length))] : plan.aufbau === "aufbau.faecher" ? messung.bild : eingang,
-        ...(konstellation && r.operation === "fictory.prozess" ? { konstellation: konstellation.id } : {}) }, parameter: r.parameter, seed: (seed + 101 * (i + 1)) >>> 0,
+      auftrag: { operation: r.operation, eingaben: { bild: video ? video[Math.min(video.length - 1, Math.floor((i * video.length) / abschnitte.length))] : plan.aufbau === "aufbau.faecher" ? messung.bild : eingang },
+        parameter: r.parameter, seed: (seed + 101 * (i + 1)) >>> 0,
         variation: { anzahl: VARIANTEN_JE_ABSCHNITT, achse: "varianten", routen }, wahl: schritt(`Zusammenstellung, Abschnitt ${i + 1} von ${abschnitte.length}`) } });
     const bilder = x.ergebnisse.filter((e) => e.typ === "IMAGE");
     // The Fictory gibt sechs Zustände aus: davon jeder zweite, damit jeder Abschnitt etwa gleich viel Zeit bekommt

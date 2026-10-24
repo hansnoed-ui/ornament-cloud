@@ -28,7 +28,7 @@ Christian wollte, dass jev viele verschiedene Bild- und Klangeffekte selbst zusa
 | `aufbau` | Kette (jeder Abschnitt auf dem vorigen) oder Fächer (jeder auf dem Ausgangsbild) |
 | `uebergang` | Schnitt, Überblendung, Schwelle |
 | `klang1`, `klang2` | keine, schneller, langsamer, tiefer, zerlegt, neu rhythmisiert, Körner |
-| `bild1` … `bild6` | Feedback, Wiederholung, Farbe, Komposition, Glitch, Pixelsortierung, Verzerrung, Licht, Raster, Neu setzen, Zerfall (The Fictory) |
+| `bild1` … `bild6` | Feedback, Wiederholung, Farbe, Glitch, Verzerrung, Licht, Raster (seit Lab 0.1.20 nur diese sieben lebendigen; bis 0.1.19 auch Komposition, Pixelsortierung, Neu setzen und Zerfall) |
 
 Aus den Wahrscheinlichkeiten zieht das Lab mit Startwert (`zusammenstellen()` in `kern/zusammenstellung.js`): kein Bildeffekt zweimal hintereinander, der zweite Klangeffekt nicht derselbe wie der erste. «neu ziehen» zieht mit neuem Startwert aus denselben Antworten, ohne jev erneut zu fragen. Jede Stelle lässt sich von Hand ändern, dann ist die Zusammenstellung eine Entscheidung des **Menschen** (`details.geaendert`, `details.vorschlag`). Ohne jev wird gleichverteilt gezogen (**Zufall**).
 
@@ -36,8 +36,8 @@ Aus den Wahrscheinlichkeiten zieht das Lab mit Startwert (`zusammenstellen()` in
 
 1. die zwei Klangeffekte nacheinander auf den Ton (Tempo, Zerlegen, Neu-Rhythmisierung, Körner)
 2. *Tonsignal* misst den neuen Klang: Hüllkurve für die Modulation, Anschläge für den Takt; ein bearbeiteter Klang beginnt am Anfang
-3. sechs Abschnitte zu je zehn Varianten (seit Lab 0.1.16, vorher drei), die Lautstärke verteilt den Hauptparameter jedes Effekts über die Varianten (Zerfall: seine sechs Zustände)
-4. Film über 61 Stationen (Bild und 60 Motive) mit dem neuen Klang als Tonspur, im Takt der stärksten Anschläge (jede Station einmal, höchstens zwei Wechsel je Sekunde, beim Schnitt 2,5) oder gleichmässig, wenn die Anschläge nicht für alle Motive reichen; mit Zettel oder ORNA-Konstellation (seit Lab 0.1.18, unten) dazu eine Karte vorn oder hinten und ein siebter Abschnitt
+3. sechs Abschnitte zu je zehn Varianten (seit Lab 0.1.16, vorher drei), die Lautstärke verteilt den Hauptparameter jedes Effekts über die Varianten
+4. Film über 61 Stationen (Bild und 60 Motive) mit dem neuen Klang als Tonspur, im Takt der stärksten Anschläge (jede Station einmal, höchstens zwei Wechsel je Sekunde, beim Schnitt 2,5) oder gleichmässig, wenn die Anschläge nicht für alle Motive reichen; mit Zettel oder ORNA-Konstellation (seit Lab 0.1.18, unten) dazu eine Karte vorn oder hinten
 
 Kosten: ein Aufruf mit etwa 4000 Eingabe-Token, also etwa 0,02 Cent; gleiche Stufen kommen 30 Tage aus dem Zwischenspeicher. Am Desktop dauert das Rechnen etwa 50 s, am Telefon länger.
 
@@ -50,6 +50,8 @@ Im Projekt: Entscheidung `gegenstand: "zusammenstellung"` mit `gewaehlt: { aufba
 - **sechs Standbilder** gleichmässig über die Länge, in Arbeitsgrösse, als IMAGE-Material mit `herkunft.video` (Name, Prüfsumme, Länge, Zeitpunkt)
 - **die Tonspur**, höchstens die ersten 120 s, als AUDIO-Material (WAV, 24 Bit, Abtastrate der Datei); ein Video ohne lesbaren Ton gibt nur Bilder
 
+Die Tonspur liest zuerst Web Audio (`decodeAudioData`). Seit Lab 0.1.20 gibt es einen zweiten Leseweg (`medien/mp4ton.js`): Chrome für Android liest mit Web Audio keinen AAC-Ton, und der Ton eines Handyvideos ist fast immer AAC; Christian sah darum am 24. Oktober 2026 auf dem Handy den Vorschlag für ein Video nicht (ohne Ton im Projekt erscheint der Bereich nicht). Das Modul liest die Kästen der MP4-, MOV- oder M4A-Datei selbst (moov → trak «soun» → stbl), holt die kodierten Stücke und dekodiert sie mit WebCodecs (`AudioDecoder`, der Dekoder des Geräts): AAC, MP3 in MP4 und Opus; fragmentierte und verschlüsselte Dateien nicht. Dasselbe gilt für Tondateien (M4A). Bleibt die Tonspur unlesbar, steht der Grund bei den Standbildern (`herkunft.video.tonFehler`) und im Bereich «Animation aus Bild und Klang» mit der Bitte, den Ton als MP3 oder WAV dazuzuladen; die Tonspur trägt `herkunft.leseweg` («webaudio» oder «webcodecs»).
+
 Das Video selbst kommt nicht ins Projekt, nur was daraus gelesen wurde. Im Vorschlag stehen danach das erste Standbild und die Tonspur vor. Bei der **Zusammenstellung** nimmt jeder Abschnitt das Standbild seiner Zeit (Abschnitt 1 und 2 das erste, 3 und 4 das zweite …, bei sechs Standbildern je eines), so folgt der Film dem Video; der Aufbau gilt dann nicht. Die Entscheidung trägt `details.video` mit den Standbildern. Die festen Dramaturgien nehmen das gewählte Standbild.
 
 ## Bewegung (seit Lab 0.1.15)
@@ -58,25 +60,27 @@ Vorher stand jede Station still, bis die nächste kam: ein Film von 900 Bildern 
 
 ## Lebendige Effekte (seit Lab 0.1.17)
 
-Christian am 23. Oktober 2026: PHORMA hat einen flüssigen Film in kurzer Zeit. Dort rechnet die Grafikkarte jedes Bild aus der Zeit. Jetzt tut das Lab dasselbe für sieben Effekte (`medien/gpu.js`, Übersicht in docs/STATIONEN.md): In der Zusammenstellung und bei den Dramaturgien ist `lebendig` gesetzt, jede Station aus Farbe, Glitch, Verzerrung, Raster, Wiederholung, Feedback oder Licht ist in jedem der 900 Bilder ein neues Effektbild, und die Lautstärke moduliert den Hauptparameter Bild für Bild statt nur über die Varianten. Pixelsortierung, Neu setzen, Komposition und Zerfall bleiben Standbilder mit Kamera. Seit Lab 0.1.19 stehen der Schalter «lebendige Effekte» und der Regler «Bewegung» direkt in der Zusammenstellung (unter Zettel und ORNA; Christian: «so platzieren, dass ich sie nicht suchen muss»), vorgewählt an und 1; sie gehen als `plan.lebendig` und `plan.bewegung` in die Rechnung und stehen in der Entscheidung unter `details.film`. Dieselben Schalter stehen danach unter «Nacheinander». Ohne WebGL 2 ist der Schalter grau, der Film läuft dann mit Standbildern und Kamera.
+Christian am 23. Oktober 2026: PHORMA hat einen flüssigen Film in kurzer Zeit. Dort rechnet die Grafikkarte jedes Bild aus der Zeit. Jetzt tut das Lab dasselbe für sieben Effekte (`medien/gpu.js`, Übersicht in docs/STATIONEN.md): In der Zusammenstellung und bei den Dramaturgien ist `lebendig` gesetzt, jede Station aus Farbe, Glitch, Verzerrung, Raster, Wiederholung, Feedback oder Licht ist in jedem der 900 Bilder ein neues Effektbild, und die Lautstärke moduliert den Hauptparameter Bild für Bild statt nur über die Varianten. Pixelsortierung, Neu setzen, Komposition und Zerfall bleiben Standbilder mit Kamera; seit Lab 0.1.20 sind sie vorerst nicht mehr in der Zusammenstellung (unten, «Nur fliessende Effekte»). Seit Lab 0.1.19 stehen der Schalter «lebendige Effekte» und der Regler «Bewegung» direkt in der Zusammenstellung (unter Zettel und ORNA; Christian: «so platzieren, dass ich sie nicht suchen muss»), vorgewählt an und 1; sie gehen als `plan.lebendig` und `plan.bewegung` in die Rechnung und stehen in der Entscheidung unter `details.film`. Dieselben Schalter stehen danach unter «Nacheinander». Ohne WebGL 2 ist der Schalter grau, der Film läuft dann mit Standbildern und Kamera.
 
 ## Zettelkasten und ORNA (seit Lab 0.1.18)
 
 Christian wollte beides in die Zusammenstellung einbinden, **beides wahlweise**. Unter den zehn Stellen stehen zwei Schalter, «Zettel» und «ORNA», vorgewählt aus. jev sieht beide nie: Die Fragen an jev bleiben dieselben zehn, der Zettel und die Konstellation werden mit dem Startwert gezogen oder vom Menschen gewählt (Entscheidungen `gegenstand: "strophe"` und `"konstellation"`, Art **Zufall** oder **Mensch**). Die Texte bleiben wörtlich.
 
 - **Zettel** (`zettel.strophe`, operationen/zettel.js): einer der 49 Zettel aus «Zu seiner Zeit» (die erzeugten Daten des Dritten Rads, alpha/drittes-rad/daten.js), als Befund mit Nummer, Zyklus, Titel, Leitsatz und Text. Er **eröffnet** den Film als Titelkarte: Kopfzeile «Zettelkasten · Zyklus · n / 49», der Titel, der Leitsatz, unten «Zu seiner Zeit».
-- **ORNA** (`orna.konstellation`): eine der 326 Konstellationen. Sie **schliesst** den Film als Karte (Nummer, Künstler × Theoretiker, Gedanke, Operationsregel) und gibt dem **Zerfall** (The Fictory) ihre Regel; steht kein Zerfall in der Zusammenstellung, kommt er als siebter Abschnitt dazu (sechs Zustände, auf dem letzten Bild der Kette).
-- **Karten** zeichnet `lab.karte` (operationen/karte.js) im Mass des Ausgangsbilds, Papier auf Nacht, in den Systemschriften des Zettelkastens; sie braucht die Leinwand des Browsers (`verfuegbar()`), in Node fällt sie weg und der Zettel bleibt im Projekt. Jede Karte steht 2,5 s (`KARTE_DAUER`) und `einmal` ausserhalb der Runde im Takt (Partitur 0.4.0, docs/STATIONEN.md): die Runde der Motive beginnt beim ersten Anschlag nach der Zettelkarte, die ORNA-Karte steht bis zum Ende des Tons. Der Film hat dann bis 69 Stationen (Grenze 80).
+- **ORNA** (`orna.konstellation`): eine der 326 Konstellationen. Sie **schliesst** den Film als Karte (Nummer, Künstler × Theoretiker, Gedanke, Operationsregel). Bis Lab 0.1.19 gab sie dem **Zerfall** (The Fictory) ihre Regel, und ohne Zerfall in der Zusammenstellung kam er als siebter Abschnitt dazu; seit 0.1.20 vorerst nicht mehr (unten), die Regel steht auf der Karte.
+- **Karten** zeichnet `lab.karte` (operationen/karte.js) im Mass des Ausgangsbilds, Papier auf Nacht, in den Systemschriften des Zettelkastens; sie braucht die Leinwand des Browsers (`verfuegbar()`), in Node fällt sie weg und der Zettel bleibt im Projekt. Jede Karte steht 2,5 s (`KARTE_DAUER`) und `einmal` ausserhalb der Runde im Takt (Partitur 0.4.0, docs/STATIONEN.md): die Runde der Motive beginnt beim ersten Anschlag nach der Zettelkarte, die ORNA-Karte steht bis zum Ende des Tons. Der Film hat dann bis 63 Stationen (Grenze 80; bis 0.1.19 mit dem Zerfall 69).
 
-«neu ziehen» behält die Schalter, ändert aber Zettel und Konstellation mit dem neuen Startwert, wenn sie gezogen werden. Nach dem Rechnen nennt der Status beides. Im Projekt: `gewaehlt.zettel` und `gewaehlt.orna` in der Entscheidung, die Operationen `zettel.strophe`, `orna.konstellation`, zweimal `lab.karte` mit `details.entscheidung`, der Zerfall mit dem Eingang `konstellation`.
+«neu ziehen» behält die Schalter, ändert aber Zettel und Konstellation mit dem neuen Startwert, wenn sie gezogen werden. Nach dem Rechnen nennt der Status beides. Im Projekt: `gewaehlt.zettel` und `gewaehlt.orna` in der Entscheidung, die Operationen `zettel.strophe`, `orna.konstellation`, zweimal `lab.karte` mit `details.entscheidung`.
 
-## Die sechs Dramaturgien (`kern/vorschlag.js`, `REZEPTE`)
+## Nur fliessende Effekte (seit Lab 0.1.20)
+
+Christian am 24. Oktober 2026: «nimm bitte vorerst die Effekte raus, die einem fliessenden Video à la PHORMA entgegenstehen». Darum stehen in der Zusammenstellung nur noch die sieben lebendigen Effekte (Feedback, Wiederholung, Farbe, Glitch, Verzerrung, Licht, Raster), und von den Dramaturgien bleiben vier (Puls, Farbwelle, Vervielfältigung, Steigerung). Komposition, Pixelsortierung, Neu setzen und der Zerfall (The Fictory) sowie die Dramaturgien Zerfall und Spiegelung ergaben Standbilder mit Kamera; sie bleiben als Operationen im Register und unter «Nebeneinander» wählbar, nur jev bekommt sie vorerst nicht mehr zur Wahl (`BILD_EFFEKTE`, `DRAMATURGIEN` in `jev/fragen.js` und `wahl.php`, `BILD_REZEPTE`, `REZEPTE`). Alte Projekte mit diesen Kennungen öffnen weiter. Wenn Pixelsortierung, Neu setzen, Komposition und Zerfall eine lebendige Fassung haben, kommen sie zurück.
+
+## Die Dramaturgien (`kern/vorschlag.js`, `REZEPTE`; seit Lab 0.1.20 vier, vorher sechs)
 
 | Kennung | Name | Operationen | Film |
 |---|---|---|---|
 | `vorschlag.puls` | Puls | Feedback, 6 Varianten, Zoom ← Lautstärke | Schnitt, im Takt (höchstens 2,5 Wechsel/s) |
-| `vorschlag.zerfall` | Zerfall | The Fictory, 6 Zustände | Schwelle, gleichmässig |
-| `vorschlag.spiegel` | Spiegelung | Komposition verändern, 6 Varianten, Asymmetrie ← Lautstärke | Überblendung, im Takt (1/s) |
 | `vorschlag.farbwelle` | Farbwelle | Farbe modulieren, 8 Varianten, Farbdrehung ← Lautstärke | Überblendung, im Takt (1,2/s) |
 | `vorschlag.raster` | Vervielfältigung | Wiederholung, 6 Varianten, Grösse ← Lautstärke | Schnitt, im Takt (2/s) |
 | `vorschlag.steigerung` | Steigerung | Farbe → Wiederholung → Feedback | Schwelle, gleichmässig |
@@ -95,7 +99,7 @@ Eine Frage an jev je «Vorschlag machen», gleiche Stufen kommen 30 Tage aus dem
 
 ## Offen
 
-- Zettel und Konstellation auch in den sechs festen Dramaturgien; eine Karte mit dem Text des Zettels (nicht nur dem Leitsatz) als zweite Zwischentitelkarte.
+- Zettel und Konstellation auch in den festen Dramaturgien; eine Karte mit dem Text des Zettels (nicht nur dem Leitsatz) als zweite Zwischentitelkarte.
 - Bewegung im Video als Steuersignal (Unterschied zwischen Bildern) und mehr Standbilder bei langen Videos.
 - jev könnte auch Parameter wählen (Tiefe der Modulation, Takt), über eine weitere feste Frage.
 - Klangfarbe (spektraler Schwerpunkt) als Merkmal und als zweite Route.
