@@ -157,19 +157,28 @@ const BEAT_FRAGEN = [
     'breakbeat' => 'Breakbeat: synkopierte Bassdrum, Snare auf zwei und vier mit leisen Zwischenschlägen',
     'euklidisch' => 'euklidisch: Schläge möglichst gleichmässig verteilt, ungerade Muster wie fünf aus sechzehn',
     'schleppend' => 'schleppend: Groove mit Swing, die Zwischenschläge kommen spät',
-    'dnb' => 'Drum and Bass: 170 bis 176 Schläge je Minute, Bassdrum auf eins und kurz vor drei, Snare auf zwei und vier, dazwischen gebrochene Schläge']],
+    'dnb' => 'Drum and Bass: 170 bis 176 Schläge je Minute, Bassdrum auf eins und kurz vor drei, Snare auf zwei und vier, dazwischen gebrochene Schläge',
+    'jazz' => 'Jazz: Ride-Becken im Swing mit Triolen-Gefühl, Hi-Hat mit dem Fuss auf zwei und vier, Bassdrum und Snare setzen leise Akzente',
+    'jazzstep' => 'Jazzstep: Drum and Bass mit Jazz, 170 bis 176 Schläge je Minute, genau gesetzt, Ride-Becken statt Hi-Hat, leise Geisternoten auf der Snare',
+    'jungle' => 'Jungle: zerhackter Breakbeat wie in den Neunzigern, 170 bis 176 Schläge je Minute, darüber ein halbes Gefühl, dunkel und weich']],
   'kit' => ['Welche Klänge soll das Schlagzeug haben?', [
     'trocken' => 'trocken: kurze, akustisch wirkende Trommeln', 'elektronisch' => 'elektronisch: lange, tiefe Bassdrum und Klatschen wie bei einer Drum-Machine',
-    'metallisch' => 'metallisch: klirrende Becken und glockenartige Töne', 'weich' => 'weich: gedämpfte, runde Schläge ohne Härte']],
+    'metallisch' => 'metallisch: klirrende Becken und glockenartige Töne', 'weich' => 'weich: gedämpfte, runde Schläge ohne Härte',
+    'jazz' => 'Jazz: gestimmte, kurze Trommeln, Besen auf der Snare, Ride-Becken mit Glocke',
+    'jungle' => 'Jungle: dunkle, gefilterte Breaks wie vom Sampler, runde tiefe Bassdrum, gedämpfte Becken']],
   'tonart' => ['Welche Tonart soll der Beat haben?', [
     'dur' => 'Dur: hell und offen', 'moll' => 'Moll: dunkel und ernst', 'dorisch' => 'dorisch: Moll mit einem hellen Ton, schwebend',
     'phrygisch' => 'phrygisch: dunkel und fremd, mit kleiner Sekunde', 'pentatonik' => 'pentatonisch: fünf Töne ohne Halbtöne, nichts reibt']],
   'bass' => ['Was soll der Bass tun?', [
     'keiner' => 'kein Bass', 'liegend' => 'liegend: lange Töne, je Takt einer', 'pulsierend' => 'pulsierend: Achtel auf dem Grundton, mit Oktavsprüngen', 'laufend' => 'laufend: der Bass geht in Schritten durch die Tonleiter',
-    'reese' => 'Reese: tiefer, schwebender Bass aus zwei gegeneinander verstimmten Sägezähnen, wie im Drum and Bass']],
+    'reese' => 'Reese: tiefer, schwebender Bass aus zwei gegeneinander verstimmten Sägezähnen, wie im Drum and Bass',
+    'kontrabass' => 'Kontrabass: gezupfter, warmer Walking Bass in Vierteln durch die Akkorde, mit chromatischen Annäherungen',
+    'sub' => 'Sub-Bass: sehr tiefer, runder Bass, der in Halbtönen rollt und gleitet, wie im atmosphärischen Jungle']],
   'melodie' => ['Welche Melodie soll über dem Beat liegen?', [
     'keine' => 'keine Melodie', 'bild' => 'aus dem Bild gelesen: die hellste Stelle jeder Spalte gibt den Ton, von links nach rechts',
-    'arpeggio' => 'Arpeggio: die Töne des Akkords auf und ab', 'glocken' => 'Glocken: wenige Töne auf den hellsten Punkten des Bildes']],
+    'arpeggio' => 'Arpeggio: die Töne des Akkords auf und ab', 'glocken' => 'Glocken: wenige Töne auf den hellsten Punkten des Bildes',
+    'linie' => 'Jazzlinie: eine improvisierte Linie in Achteln, Akkordtöne mit Septime und None auf den schweren Zeiten, chromatische Durchgänge, Pausen zwischen den Phrasen, auf einem E-Piano',
+    'akkorde' => 'Akkorde: E-Piano-Akkorde mit Septime und None, synkopiert gesetzt wie im Jazz (Comping), ohne Melodie']],
   'verlauf' => ['Wie soll sich der Beat über die Zeit entwickeln?', [
     'gleich' => 'gleich: alles spielt von Anfang an', 'steigend' => 'steigend: die Stimmen setzen nacheinander ein, es wird dichter',
     'abschwellend' => 'abschwellend: voll am Anfang, dann lichtet es sich', 'wellen' => 'in Wellen: dichter, wo sich das Video stark bewegt, sonst lichter',
