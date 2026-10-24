@@ -12,7 +12,7 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.bildsignal` 0.1.0 | Bildsignal | Kopplungsoperation | neu, nach TouchDesigner TOP to CHOP; Max/Jitter (Matrix zu Zahlen) | Bild → Steuersignal | eine |
 | `lab.tonsignal` 0.1.0 | Tonsignal | Kopplungsoperation | Adapter: PHORMA III (Tonanalyse) | Audiosignal → Steuersignal, Ereignisfolge | eine |
 | `lab.klang` 0.1.0 | Klangerzeuger | Zeitliche Operation | neu, nach ANS-Synthesizer (Murzin), UPIC (Xenakis): Bild als Partitur; Oszillator und Hüllkurve der Modularsynthese | Bild (opt.) + Steuersignal (opt.) + Konstellation (opt.) → Audiosignal, Ereignisfolge | über Modulation |
-| `lab.beat` 0.1.0 | Beat aus Bild | Zeitliche Operation | neu, nach Drum-Machine (Roland TR-808: Bassdrum mit fallender Tonhöhe, Becken aus sechs Rechtecken), euklidische Rhythmen (Toussaint), Bild als Partitur wie beim Klangerzeuger | Bild + Bild (opt.) + Bild (opt.) + Bild (opt.) + Bild (opt.) + Bild (opt.) → Audiosignal, Ereignisfolge | über Modulation |
+| `lab.beat` 0.2.0 | Beat aus Bild | Zeitliche Operation | neu, nach Drum-Machine (Roland TR-808: Bassdrum mit fallender Tonhöhe, Becken aus sechs Rechtecken), euklidische Rhythmen (Toussaint), Bild als Partitur wie beim Klangerzeuger | Bild + Bild (opt.) + Bild (opt.) + Bild (opt.) + Bild (opt.) + Bild (opt.) → Audiosignal, Ereignisfolge | über Modulation |
 | `lab.tempo` 0.1.0 | Tempo und Tonhöhe | Zeitliche Operation | neu, nach Tonband und Sampler (Re-Pitch), REX-Schnitte in Reason und Modus «Beats» in Ableton Live, WSOLA | Audiosignal → Audiosignal | über Modulation |
 | `lab.zerlegen` 0.1.0 | Dekonstruktion | Zeitliche Operation | neu, nach Slicing (REX-Dateien in Reason, Simpler/Slice in Ableton Live), Stottern und Umkehren des Breakbeat-Schnitts | Audiosignal + Ereignisfolge (opt.) + Konstellation (opt.) → Audiosignal, Ereignisfolge | über Modulation |
 | `lab.rhythmus` 0.1.0 | Neu-Rhythmisierung | Zeitliche Operation | neu, nach Step-Sequencer und Slices (Reason Dr. Octo Rex, Bitwig, VCV), euklidische Rhythmen (Toussaint), Pattern in SuperCollider | Audiosignal + Ereignisfolge (opt.) + Steuersignal (opt.) + Konstellation (opt.) → Audiosignal, Ereignisfolge | über Modulation |
@@ -201,13 +201,15 @@ Macht aus einem Bild oder den Standbildern eines Videos einen kurzen Beat mit Sc
 |---|---|
 | Dauer (s) (`dauer`) | 4 … 60, Standard 15 |
 | Tempo (`tempo`) | **nach Regeln aus dem Bild** / langsam, etwa 75 Schläge je Minute / mittel, etwa 100 Schläge je Minute / schnell, etwa 125 Schläge je Minute / rasend, etwa 160 Schläge je Minute |
-| Groove (`groove`) | **nach Regeln aus dem Bild** / gerade / Halftime / Breakbeat / euklidisch / schleppend |
+| Groove (`groove`) | **nach Regeln aus dem Bild** / gerade / Halftime / Breakbeat / euklidisch / schleppend / Drum and Bass |
 | Schlagzeug (`kit`) | **nach Regeln aus dem Bild** / trocken / elektronisch / metallisch / weich |
 | Tonart (`tonart`) | **nach Regeln aus dem Bild** / Dur / Moll / dorisch / phrygisch / pentatonisch |
-| Bass (`bass`) | **nach Regeln aus dem Bild** / kein Bass / liegend / pulsierend / laufend |
+| Bass (`bass`) | **nach Regeln aus dem Bild** / kein Bass / liegend / pulsierend / laufend / Reese |
 | Melodie (`melodie`) | **nach Regeln aus dem Bild** / keine Melodie / aus dem Bild gelesen / Arpeggio / Glocken |
-| Verlauf (`verlauf`) | **nach Regeln aus dem Bild** / gleich / steigend / abschwellend / in Wellen |
+| Verlauf (`verlauf`) | **nach Regeln aus dem Bild** / gleich / steigend / abschwellend / in Wellen / fein und wild im Wechsel |
+| Fläche (`flaeche`) | **nach Regeln aus dem Bild** / keine Fläche / sphärisch / schimmernd |
 | Grundton (`grundton`) | 13 Optionen, Standard «aus dem Farbton» |
+| Stimmung (Kammerton A) (`kammerton`) | **432 Hz** / 440 Hz |
 | Nachhall (`nachhall`) | 0 … 0.8, Standard 0.25 |
 
 ## Tempo und Tonhöhe (`lab.tempo`)

@@ -647,22 +647,37 @@ test("Beat aus Bild rechnen: Stereo in genau der Dauer, Tempo in der Stufe, repr
   assert.ok(t.spuren[0].every(Number.isFinite));
   let spitze = 0; for (const s of t.spuren) for (const v of s) spitze = Math.max(spitze, Math.abs(v));
   assert.ok(spitze > 0.85 && spitze <= 0.9, `−1 dBFS: ${spitze}`);
-  const pl = knoten.protokoll.plan, [lo, hi] = (await lab("kern/beat.js")).TEMPI[pl.tempo];
+  const pl = knoten.protokoll.plan, [lo, hi] = pl.groove === "dnb" ? [170, 176] : (await lab("kern/beat.js")).TEMPI[pl.tempo];
   assert.ok(knoten.protokoll.bpm >= lo - 10 && knoten.protokoll.bpm <= hi + 10, `Tempo ${knoten.protokoll.bpm} in ${pl.tempo}`);
   assert.equal(folge.daten.art, "rhythmus"); assert.equal(folge.daten.raster, 16);
   assert.ok(folge.daten.ereignisse.length > 4 && folge.daten.ereignisse.every((x, i, a) => x.t >= 0 && x.t < 6 && (i === 0 || x.t >= a[i - 1].t)));
   const d = p.entscheidungen.filter((x) => x.knoten === knoten.id);
   assert.deepEqual(d.map((x) => x.art), ["mensch", "regel"], "die Stellen «nach Regeln» sind eine Regelentscheidung");
-  assert.equal(d[1].gegenstand, "beat"); assert.equal(Object.keys(d[1].details.gruende).length, 7);
+  assert.equal(d[1].gegenstand, "beat"); assert.equal(Object.keys(d[1].details.gruende).length, 8);
   // derselbe Startwert, derselbe Beat; ein anderer Groove ein anderer
   const op = r.hole("lab.beat"), std = { ...standardParameter(op), dauer: 4 }, b0 = m.bilder.get(e.id);
   const x1 = await op.ausfuehren({ bild: b0 }, std, { seed: 9 }), x2 = await op.ausfuehren({ bild: b0 }, std, { seed: 9 });
   assert.deepEqual(x1.ausgaben[0].ton.spuren[0], x2.ausgaben[0].ton.spuren[0]);
-  const x3 = await op.ausfuehren({ bild: b0 }, { ...std, groove: "halftime", tempo: "rasend", kit: "metallisch", melodie: "glocken", bass: "laufend", tonart: "pentatonik", verlauf: "gleich", grundton: "0" }, { seed: 9 });
+  const x3 = await op.ausfuehren({ bild: b0 }, { ...std, groove: "halftime", tempo: "rasend", kit: "metallisch", melodie: "glocken", bass: "laufend", tonart: "pentatonik", verlauf: "gleich", flaeche: "keine", grundton: "0", kammerton: "440" }, { seed: 9 });
   assert.notDeepEqual(x3.ausgaben[0].ton.spuren[0], x1.ausgaben[0].ton.spuren[0]);
   assert.equal(x3.entscheidungen.length, 0, "alles gewählt: keine Regel");
   assert.equal(x3.protokoll.grundton, "C"); assert.ok(x3.protokoll.bpm >= 145, `rasend: ${x3.protokoll.bpm}`);
   assert.ok(x3.ausgaben[1].daten.ereignisse.filter((y) => y.stimme === "snare" && y.staerke === 0.8).every((y) => y.schritt % 16 === 8), "Halftime: Snare auf drei");
+  // Christians Richtung (0.1.25): Drum and Bass mit eigenem Tempo, 432 Hz, fein und wild im Wechsel, sphärische Fläche
+  const dnb = await op.ausfuehren({ bild: b0 }, { ...std, dauer: 8, groove: "dnb", tempo: "langsam", verlauf: "wechselnd", bass: "reese", flaeche: "sphaere", grundton: "9" }, { seed: 9 });
+  assert.ok(dnb.protokoll.bpm >= 168 && dnb.protokoll.bpm <= 178, `Drum and Bass: ${dnb.protokoll.bpm}`);
+  assert.equal(dnb.protokoll.kammerton, 432); assert.match(dnb.ausgaben[0].titel, /432 Hz/);
+  assert.ok(dnb.protokoll.wild > 0 && dnb.protokoll.energie.includes(0.7) && dnb.protokoll.energie.includes(1), "fein und wild im Wechsel");
+  const schlaege = (x, takt) => x.ausgaben[1].daten.ereignisse.filter((y) => Math.floor(y.schritt / 16) === takt).length;
+  assert.ok(schlaege(dnb, 2) > schlaege(dnb, 0) * 1.3, `wild ist dichter: ${schlaege(dnb, 0)} gegen ${schlaege(dnb, 2)}`);
+  assert.deepEqual(op.parameter.find((p) => p.id === "kammerton").standard, "432");
+  const B = await lab("kern/beat.js");
+  // Kammerton: der Grundton A liegt bei 432/8 = 54 Hz statt 55 Hz (Nulldurchgänge des Reese-Basses allein sind zu unruhig; gemessen wird die Rechnung)
+  const m1 = B.beatMessen([b0]), plan = { tempo: "mittel", groove: "gerade", kit: "weich", tonart: "moll", bass: "liegend", melodie: "keine", verlauf: "gleich", flaeche: "keine" };
+  const r432 = B.beatRechnen({ messung: m1, plan, dauer: 4, grundton: 9, kammerton: 432, nachhall: 0 }), r440 = B.beatRechnen({ messung: m1, plan, dauer: 4, grundton: 9, kammerton: 440, nachhall: 0 });
+  assert.notDeepEqual(r432.spuren[0], r440.spuren[0]);
+  assert.equal(B.regelPlan(m1.merkmale).plan.groove === "gerade" || B.regelPlan(m1.merkmale).plan.groove === "dnb", true);
+  assert.equal(B.regelPlan({ helligkeit: "mittel", kontrast: "mittel", farbigkeit: "gedaempft", farbton: "neutral", detail: "mittel", schwerpunkt: "mitte", symmetrie: "asymmetrisch", bewegung: "still" }).plan.groove, "dnb", "ohne starke Regel: Drum and Bass");
   // Standbilder eines Videos: jedes ein Abschnitt, die Bewegung zählt
   const zweites = neuesBild(96, 72, [240, 240, 240]);
   const v = await op.ausfuehren({ bild: b0, bild2: b0, bild3: zweites }, { ...std, verlauf: "wellen" }, { seed: 9 });

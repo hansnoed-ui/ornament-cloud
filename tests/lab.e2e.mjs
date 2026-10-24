@@ -904,8 +904,8 @@ await check("Beat aus Bild oder Video (0.1.24): am Telefon nach Regeln und mit j
   await t.page.route("**/alpha/lab/jev/wahl.php", (r) => {
     if (r.request().method() === "GET") return r.fulfill({ contentType: "application/json", body: JSON.stringify({ bereit: true }) });
     const lage = r.request().postDataJSON(); gesendet.push(lage);
-    const antworten = { tempo: { langsam: 0, mittel: 0, schnell: 0, rasend: 1 }, groove: { gerade: 0, halftime: 1, breakbeat: 0, euklidisch: 0, schleppend: 0 }, kit: { trocken: 0, elektronisch: 0, metallisch: 1, weich: 0 },
-      tonart: { dur: 0, moll: 0, dorisch: 0, phrygisch: 1, pentatonik: 0 }, bass: { keiner: 0, liegend: 0, pulsierend: 0, laufend: 1 }, melodie: { keine: 0, bild: 0, arpeggio: 1, glocken: 0 }, verlauf: { gleich: 1, steigend: 0, abschwellend: 0, wellen: 0 } };
+    const antworten = { tempo: { langsam: 0, mittel: 0, schnell: 0, rasend: 1 }, groove: { gerade: 0, halftime: 1, breakbeat: 0, euklidisch: 0, schleppend: 0, dnb: 0 }, kit: { trocken: 0, elektronisch: 0, metallisch: 1, weich: 0 },
+      tonart: { dur: 0, moll: 0, dorisch: 0, phrygisch: 1, pentatonik: 0 }, bass: { keiner: 0, liegend: 0, pulsierend: 0, laufend: 1, reese: 0 }, melodie: { keine: 0, bild: 0, arpeggio: 1, glocken: 0 }, verlauf: { gleich: 1, steigend: 0, abschwellend: 0, wellen: 0, wechselnd: 0 }, flaeche: { keine: 0, sphaere: 0, schimmer: 1 } };
     return r.fulfill({ contentType: "application/json", body: JSON.stringify({ antworten, modell: "jev-test", zwischengespeichert: false }) });
   });
   await t.page.reload(); await t.page.waitForFunction(() => globalThis.ornamentLab);
@@ -921,7 +921,7 @@ await check("Beat aus Bild oder Video (0.1.24): am Telefon nach Regeln und mit j
   assert.equal(a.op, "lab.beat"); assert.equal(a.status, "fertig"); assert.equal(a.typ, "AUDIO");
   assert.equal(a.ton.kanaele, 2, "Stereo"); assert.ok(Math.abs(a.ton.dauer - 15) < 0.01, `15 s: ${a.ton.dauer}`);
   assert.equal(a.folge.art, "rhythmus"); assert.ok(a.folge.bpm > 60 && a.folge.ereignisse.length > 20);
-  assert.equal(a.d[0].art, "regel"); assert.ok(Object.keys(a.d[0].gruende).length === 7, "Gründe je Stelle");
+  assert.equal(a.d[0].art, "regel"); assert.ok(Object.keys(a.d[0].gruende).length === 8, "Gründe je Stelle");
   assert.match(await t.page.textContent("#beat"), /nach festen Regeln/);
   console.log(`      Beat 15 s gedrosselt: ${(zeit / 1000).toFixed(1)} s`);
   assert.ok(zeit < 30000, `${zeit} ms`);
@@ -936,8 +936,8 @@ await check("Beat aus Bild oder Video (0.1.24): am Telefon nach Regeln und mit j
   assert.equal(gesendet[0].frage, "beat");
   assert.deepEqual(Object.keys(gesendet[0].merkmale), ["helligkeit", "kontrast", "farbigkeit", "farbton", "detail", "schwerpunkt", "symmetrie", "bewegung"]);
   const j = await S(t.page, () => { const p = ornamentLab.projekt, k = p.knoten.at(-1), d = p.entscheidungen.filter((x) => x.knoten === k.id)[0]; return { param: k.parameter, art: d.art, quelle: d.details.quelle, modell: d.details.modell }; });
-  assert.deepEqual({ tempo: j.param.tempo, groove: j.param.groove, kit: j.param.kit, tonart: j.param.tonart, bass: j.param.bass, melodie: j.param.melodie, verlauf: j.param.verlauf },
-    { tempo: "rasend", groove: "halftime", kit: "metallisch", tonart: "phrygisch", bass: "laufend", melodie: "arpeggio", verlauf: "gleich" });
+  assert.deepEqual({ tempo: j.param.tempo, groove: j.param.groove, kit: j.param.kit, tonart: j.param.tonart, bass: j.param.bass, melodie: j.param.melodie, verlauf: j.param.verlauf, flaeche: j.param.flaeche },
+    { tempo: "rasend", groove: "halftime", kit: "metallisch", tonart: "phrygisch", bass: "laufend", melodie: "arpeggio", verlauf: "gleich", flaeche: "schimmer" });
   assert.deepEqual([j.art, j.quelle, j.modell], ["jev", "live", "jev-test"]);
   assert.match(await t.page.textContent("#beat"), /jev wählt \(jev-test\)/);
   assert.match(await t.page.textContent("#beat"), /p = 1/);
