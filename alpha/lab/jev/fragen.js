@@ -24,6 +24,8 @@ export const KATALOG = Object.freeze({
   "phorma.irrfahrt": "PHORMA Irrfahrt: ein Faden irrt durch einen Würfel aus Licht und quillt mit der Musik zu Rauch auf (zeitliche Operation, eigene Bühne)",
   "phorma.lichtwuerfel": "PHORMA Lichtwürfel: ein Faden irrt in einem festen Würfel aus Licht (zeitliche Operation, eigene Bühne)",
   "phorma.traube": "PHORMA Traube: glänzende Perlen in einer Kugel aus Fäden, Schnitte im Takt des Tons (zeitliche Operation, eigene Bühne)",
+  "phorma.ii": "PHORMA II: Physarum, Tiefe, Wellenwanne, Tuch, Rasterdruck oder Montage, einzeln oder als Kette (zeitliche Operation, eigene Bühne)",
+  "phorma.i": "PHORMA I: Fragmente oder die Verwandlung aus Strom, Körper, Scherben, Echo, Relief (zeitliche Operation, eigene Bühne)",
 });
 
 const KENNUNG = /^[a-z]+\.[a-z0-9-]+$/;
@@ -37,6 +39,7 @@ export const DRAMATURGIEN = Object.freeze({
   "vorschlag.puls": "Puls: sechs Varianten einer Feedback-Schleife, deren Zoom der Lautstärke folgt; harte Schnitte zwischen ihnen auf den Anschlägen des Klangs",
   "vorschlag.farbwelle": "Farbwelle: die Farben drehen sich mit der Lautstärke durch den Farbkreis, in acht Varianten; Überblendungen im Takt der Anschläge",
   "vorschlag.raster": "Vervielfältigung: das Bild wird im Raster wiederholt, die Grösse der Kopien folgt der Lautstärke; Schnitte im Takt der Anschläge",
+  "vorschlag.zerfall": "Zerfall: das Bild zerfällt in Farbflächen und setzt sich in sechs Zuständen neu zusammen (The Fictory); ruhige Übergänge, bei denen die dunklen Stellen zuerst erscheinen",
   "vorschlag.steigerung": "Steigerung: drei Operationen nacheinander (Farbe, Wiederholung, Feedback), das Bild verwandelt sich schrittweise immer weiter; lange, ruhige Übergänge",
 });
 
@@ -74,6 +77,22 @@ export const BILD_EFFEKTE = Object.freeze({
   "bild.irrfahrt": "Irrfahrt: ein Faden irrt durch einen Würfel aus Licht, quillt mit der Musik zu Rauch auf, bei Schlägen springt alles (PHORMA)",
   "bild.lichtwuerfel": "Lichtwürfel: ein Faden irrt in einem festen Würfel aus Licht, ruhiger als die Irrfahrt (PHORMA)",
   "bild.traube": "Traube: glänzende rote Perlen in einer Kugel aus Fäden, Schnitte im Takt, der Bass lässt sie glühen (PHORMA)",
+  // PHORMA II (seit Lab 0.1.22, eine Operation mit Abläufen): die Grafikkarte rechnet jedes Bild aus der Zeit
+  "bild.physarum": "Physarum: ein Schleimpilz wächst aus den markanten Stellen und findet die Formen des Bildes als Netz (PHORMA II)",
+  "bild.tiefe": "Tiefe: ein Lichtscan tastet das Bild ab, es bekommt Relief und wird Raum (PHORMA II)",
+  "bild.welle": "Wellenwanne: das Bild liegt unter Wasser, Dünung und Ringe brechen es, helle Linien glänzen (PHORMA II)",
+  "bild.tuch": "Tuch: das Bild fällt als Seidentuch und legt sich glatt (PHORMA II)",
+  "bild.druck": "Rasterdruck: das Bild wird zum Vierfarbendruck aus Punkten, die Platten rasten ein und bleiben versetzt (PHORMA II)",
+  "bild.montage": "Montage: das Bild zerfällt in verschachtelte Rechtecke mit eigenen Ausschnitten, harte Schnitte im Takt (PHORMA II)",
+  // PHORMA I (seit Lab 0.1.22, eine Operation mit Abläufen)
+  "bild.fragmente": "Fragmente: Linien tasten das Bild ab, Dreiecke fliegen herein, Farben, das Foto rastet ein (PHORMA I)",
+  "bild.strom": "Strom: Teilchen leuchten auf, ziehen zu Bändern und fliegen an ihren Platz (PHORMA I)",
+  "bild.koerper": "Körper: drei Kristalle verschmelzen zu einem Glaskörper, der am Ende klar wird (PHORMA I)",
+  "bild.scherben": "Scherben: das Bild bricht, die Scherben setzen sich neu zusammen (PHORMA I)",
+  "bild.echo": "Echo: eine Rückkopplung zieht das Bild durch einen Tunnel, es baut sich aus Echos auf (PHORMA I)",
+  "bild.relief": "Relief: Höhenlinien werden zu einem Gebirge aus dem Bild, das sich wieder flach legt (PHORMA I)",
+  // The Fictory (seit Lab 0.1.22 wieder, lebendig: der Prozess läuft im Film von Zustand zu Zustand)
+  "bild.zerfall": "Zerfall: das Bild zerfällt in Farbflächen und setzt sich in sechs Zuständen neu zusammen (The Fictory)",
 });
 export const KLANG_EFFEKTE = Object.freeze({
   "klang.keine": "nichts: der Klang bleibt, wie er ist",

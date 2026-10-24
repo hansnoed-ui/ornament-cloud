@@ -28,7 +28,7 @@ Christian wollte, dass jev viele verschiedene Bild- und Klangeffekte selbst zusa
 | `aufbau` | Kette (jeder Abschnitt auf dem vorigen) oder Fächer (jeder auf dem Ausgangsbild) |
 | `uebergang` | Schnitt, Überblendung, Schwelle |
 | `klang1`, `klang2` | keine, schneller, langsamer, tiefer, zerlegt, neu rhythmisiert, Körner |
-| `bild1` … `bild6` | Feedback, Wiederholung, Farbe, Glitch, Verzerrung, Licht, Raster (seit Lab 0.1.20 nur diese sieben lebendigen; bis 0.1.19 auch Komposition, Pixelsortierung, Neu setzen und Zerfall); seit 0.1.21 dazu die PHORMA-Szenen Gewebe, Irrfahrt, Lichtwürfel, Traube |
+| `bild1` … `bild6` | Feedback, Wiederholung, Farbe, Glitch, Verzerrung, Licht, Raster (seit Lab 0.1.20 nur diese sieben lebendigen; bis 0.1.19 auch Komposition, Pixelsortierung, Neu setzen und Zerfall); seit 0.1.21 dazu die PHORMA-Szenen Gewebe, Irrfahrt, Lichtwürfel, Traube; seit 0.1.22 PHORMA II (Physarum, Tiefe, Wellenwanne, Tuch, Rasterdruck, Montage), PHORMA I (Fragmente, Strom, Körper, Scherben, Echo, Relief) und der Zerfall (The Fictory, lebendig) |
 
 Aus den Wahrscheinlichkeiten zieht das Lab mit Startwert (`zusammenstellen()` in `kern/zusammenstellung.js`): kein Bildeffekt zweimal hintereinander, der zweite Klangeffekt nicht derselbe wie der erste. «neu ziehen» zieht mit neuem Startwert aus denselben Antworten, ohne jev erneut zu fragen. Jede Stelle lässt sich von Hand ändern, dann ist die Zusammenstellung eine Entscheidung des **Menschen** (`details.geaendert`, `details.vorschlag`). Ohne jev wird gleichverteilt gezogen (**Zufall**).
 
@@ -67,7 +67,7 @@ Christian am 23. Oktober 2026: PHORMA hat einen flüssigen Film in kurzer Zeit. 
 Christian wollte beides in die Zusammenstellung einbinden, **beides wahlweise**. Unter den zehn Stellen stehen zwei Schalter, «Zettel» und «ORNA», vorgewählt aus. jev sieht beide nie: Die Fragen an jev bleiben dieselben zehn, der Zettel und die Konstellation werden mit dem Startwert gezogen oder vom Menschen gewählt (Entscheidungen `gegenstand: "strophe"` und `"konstellation"`, Art **Zufall** oder **Mensch**). Die Texte bleiben wörtlich.
 
 - **Zettel** (`zettel.strophe`, operationen/zettel.js): einer der 49 Zettel aus «Zu seiner Zeit» (die erzeugten Daten des Dritten Rads, alpha/drittes-rad/daten.js), als Befund mit Nummer, Zyklus, Titel, Leitsatz und Text. Er **eröffnet** den Film als Titelkarte: Kopfzeile «Zettelkasten · Zyklus · n / 49», der Titel, der Leitsatz, unten «Zu seiner Zeit».
-- **ORNA** (`orna.konstellation`): eine der 326 Konstellationen. Sie **schliesst** den Film als Karte (Nummer, Künstler × Theoretiker, Gedanke, Operationsregel). Bis Lab 0.1.19 gab sie dem **Zerfall** (The Fictory) ihre Regel, und ohne Zerfall in der Zusammenstellung kam er als siebter Abschnitt dazu; seit 0.1.20 vorerst nicht mehr (unten), die Regel steht auf der Karte.
+- **ORNA** (`orna.konstellation`): eine der 326 Konstellationen. Sie **schliesst** den Film als Karte (Nummer, Künstler × Theoretiker, Gedanke, Operationsregel). Bis Lab 0.1.19 gab sie dem **Zerfall** (The Fictory) ihre Regel, und ohne Zerfall in der Zusammenstellung kam er als siebter Abschnitt dazu; seit 0.1.20 vorerst nicht mehr (unten), die Regel steht auf der Karte. Seit 0.1.22 bekommt der Zerfall die Regel wieder, wenn jev ihn als Bildeffekt wählt (`bild.zerfall`), und die Szenen von PHORMA I und II bekommen die Konstellation (Titel, oder bei leerem Ablauf die Regel → Ablauf).
 - **Karten** zeichnet `lab.karte` (operationen/karte.js) im Mass des Ausgangsbilds, Papier auf Nacht, in den Systemschriften des Zettelkastens; sie braucht die Leinwand des Browsers (`verfuegbar()`), in Node fällt sie weg und der Zettel bleibt im Projekt. Jede Karte steht 2,5 s (`KARTE_DAUER`) und `einmal` ausserhalb der Runde im Takt (Partitur 0.4.0, docs/STATIONEN.md): die Runde der Motive beginnt beim ersten Anschlag nach der Zettelkarte, die ORNA-Karte steht bis zum Ende des Tons. Der Film hat dann bis 63 Stationen (Grenze 80; bis 0.1.19 mit dem Zerfall 69).
 
 «neu ziehen» behält die Schalter, ändert aber Zettel und Konstellation mit dem neuen Startwert, wenn sie gezogen werden. Nach dem Rechnen nennt der Status beides. Im Projekt: `gewaehlt.zettel` und `gewaehlt.orna` in der Entscheidung, die Operationen `zettel.strophe`, `orna.konstellation`, zweimal `lab.karte` mit `details.entscheidung`.
@@ -78,11 +78,33 @@ Christian am 24. Oktober 2026: «wieso sind die Effekte bei PHORMA so viel spekt
 
 In der Zusammenstellung stehen sie als `bild.gewebe`, `bild.irrfahrt`, `bild.lichtwuerfel`, `bild.traube` im Katalog von jev (gleich in `wahl.php`); ihr Rezept gibt zehn Momente als Varianten (`bilder: 10`, `dauer: 30`), den neuen Klang als Eingang `ton` und dessen Beginn als `beginn` (bearbeitet 0, sonst der gemessene). Ohne WebGL 2 ist eine solche Stelle nicht verfügbar; die Rechnung meldet es klar, statt abzustürzen. Im jev-Katalog der nächsten Operation (`KATALOG`) stehen sie ebenfalls.
 
+## PHORMA I und II, The Fictory lebendig, die Bestände an die Szenen (seit Lab 0.1.22)
+
+Christian am 24. Oktober 2026, nach dem Merge der PHORMA-III-Szenen: «phorma-ii, phorma-i und the fictory auch berücksichtigen» – und zuvor: «Workflows aus allen Bild- und Video-Apps mit Zettelkasten und ORNA verbinden, visuell und operational».
+
+- **`phorma.ii`** (operationen/phorma2.js): PHORMA II als eine Operation mit dem Parameter `ablauf` – Physarum, Tiefe, Wellenwanne, Tuch, Rasterdruck, Montage einzeln oder als Kette (Alle drei, Physarum → Montage, Tiefe → Tuch, Rasterdruck → Montage). `buehne.js` rechnet mit three.js, `film.js` setzt das Bild mit Beschriftung (ohne Signet); `dauer` streckt oder rafft die Kette (numerisches Tempo der App), `guete` grob wie am Telefon.
+- **`phorma.i`** (operationen/phorma1.js): PHORMA I (Bildfragmentieren) als eine Operation – Fragmente (Leinwand 2D, geht ohne WebGL), die Verwandlung aus Strom, Körper, Scherben, Echo, Relief (einzeln oder Ketten) und der Relief-Flug (`raum.js`, WebGL 2). `feinheit` und `grund` wie in der App.
+- **Zettelkasten, visuell:** beide nehmen am Eingang `text` einen Zettel (METADATA von `zettel.strophe`): sein Titel steht als Beschriftung oben links im Bild (`beschriftung` «auto»: an, sobald ein Zettel oder eine Konstellation am Eingang liegt). Ohne Zettel nennt die Beschriftung Künstler × Theoretiker der Konstellation.
+- **ORNA, operational:** am Eingang `konstellation` wählt die Operationsregel R1–R7 den Ablauf, wenn der Mensch keinen wählt (`ablauf` leer). Die Tabellen `REGEL_ABLAUF` stehen offen in beiden Dateien und werden als Entscheidung `gegenstand: "ablauf"` (Art «regel») protokolliert:
+
+| Regel | PHORMA II | PHORMA I |
+| --- | --- | --- |
+| R1 Keine Rückkehr an dieselbe Stelle | Rasterdruck (kehrt nie ins Foto zurück) | Strom (die Teilchen fliegen einmal an ihren Platz) |
+| R2 Verzögerter Spiegel | Wellenwanne | Echo |
+| R3 Raster als Regel | Rasterdruck → Montage | Fragmente |
+| R4 Nur Unterschiede, die Unterschiede machen | Tiefe | Scherben |
+| R5 Fortwirkende Last | Tuch | Relief |
+| R6 Die Leerstelle bleibt | Montage | Körper |
+| R7 Verflechtung | Physarum | Verwandlung (alle fünf) |
+
+- **The Fictory lebendig** (`fictory.prozess`, `lebend()`): im Film über Stationen läuft der Prozess von Zustand zu Zustand weiter statt als Standbilder zu stehen (docs/STATIONEN.md, Zeit ab dem Auftritt, Lage der Station). Darum ist der **Zerfall** zurück: als Bildeffekt `bild.zerfall` in der Zusammenstellung und als Dramaturgie `vorschlag.zerfall`, mit `verfuegbar()` (braucht die Leinwand).
+- **In der Zusammenstellung** stehen die neuen Abläufe als `bild.physarum`, `bild.tiefe`, `bild.welle`, `bild.tuch`, `bild.druck`, `bild.montage`, `bild.fragmente`, `bild.strom`, `bild.koerper`, `bild.scherben`, `bild.echo`, `bild.relief` und `bild.zerfall` im Katalog von jev (gleich in `wahl.php`); die Szenen bekommen `dauer: SZENE_DAUER` (8 s, etwas länger als ein Abschnitt). Die Bestände gehen an alle Operationen, die sie annehmen: die Konstellation an den Zerfall (Regel) und an die Szenen von PHORMA I und II, der Zettel an die Szenen (Titel). jev wählt den Effekt; die Regel wählt den Ablauf nur, wenn der Mensch die Operation von Hand mit leerem Ablauf ausführt.
+
 ## Nur fliessende Effekte (seit Lab 0.1.20)
 
 Christian am 24. Oktober 2026: «nimm bitte vorerst die Effekte raus, die einem fliessenden Video à la PHORMA entgegenstehen». Darum stehen in der Zusammenstellung nur noch die sieben lebendigen Effekte (Feedback, Wiederholung, Farbe, Glitch, Verzerrung, Licht, Raster), und von den Dramaturgien bleiben vier (Puls, Farbwelle, Vervielfältigung, Steigerung). Komposition, Pixelsortierung, Neu setzen und der Zerfall (The Fictory) sowie die Dramaturgien Zerfall und Spiegelung ergaben Standbilder mit Kamera; sie bleiben als Operationen im Register und unter «Nebeneinander» wählbar, nur jev bekommt sie vorerst nicht mehr zur Wahl (`BILD_EFFEKTE`, `DRAMATURGIEN` in `jev/fragen.js` und `wahl.php`, `BILD_REZEPTE`, `REZEPTE`). Alte Projekte mit diesen Kennungen öffnen weiter. Wenn Pixelsortierung, Neu setzen, Komposition und Zerfall eine lebendige Fassung haben, kommen sie zurück.
 
-## Die Dramaturgien (`kern/vorschlag.js`, `REZEPTE`; seit Lab 0.1.20 vier, vorher sechs)
+## Die Dramaturgien (`kern/vorschlag.js`, `REZEPTE`; seit Lab 0.1.20 ohne Spiegelung, seit 0.1.22 wieder mit Zerfall: fünf)
 
 | Kennung | Name | Operationen | Film |
 |---|---|---|---|

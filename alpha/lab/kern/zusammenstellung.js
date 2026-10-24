@@ -6,8 +6,10 @@
 // Stellen, bevor gerechnet wird. Gerechnet wird mit gewöhnlichen Operationen des Registers; der Film ist ein Film über Stationen.
 // Die Bestände (seit Lab 0.1.18, beide wahlweise, jev sieht sie nicht): ein Zettel aus dem Zettelkasten eröffnet den Film als Karte mit
 // seinem Leitsatz; eine ORNA-Konstellation schliesst ihn als Karte mit ihrer Operationsregel. Bis 0.1.19 gab sie die Regel dem Zerfall
-// (The Fictory) als siebtem Abschnitt; seit 0.1.20 bleiben vorerst nur lebendige Effekte in der Zusammenstellung, damit der Film fliesst
-// (Christian, 24. Oktober 2026). Die Karten zeichnet lab.karte, nur im Browser.
+// (The Fictory) als siebtem Abschnitt; seit 0.1.20 bleiben nur lebendige Effekte in der Zusammenstellung, damit der Film fliesst
+// (Christian, 24. Oktober 2026). Seit 0.1.22 sind das auch die Szenen von PHORMA I, II und III und der Zerfall selbst (eigene Bühnen): wählt jev
+// den Zerfall, bekommt er die Regel der Konstellation; die Szenen von PHORMA I und II tragen den Titel des Zettels (sonst der Konstellation).
+// Die Karten zeichnet lab.karte, nur im Browser.
 // Ohne DOM, geprüft in tests/lab.test.mjs.
 import { KOMPOSITION_FRAGEN, BILD_EFFEKTE, KLANG_EFFEKTE } from "../jev/fragen.js";
 import { ergebnis, entscheide, GRENZEN } from "./projekt.js";
@@ -20,6 +22,8 @@ export const ZUSAMMENSTELLUNG_VERSION = "0.3.0";
 export const KARTE_DAUER = 2.5;
 export const VARIANTEN_JE_ABSCHNITT = 10;   // seit Lab 0.1.16: 60 Motive in 30 s (vorher 3, also 18)
 
+/** Dauer eines Ablaufs von PHORMA I oder II in der Zusammenstellung (s): etwas länger als ein Abschnitt, damit er beim Wechsel noch läuft */
+export const SZENE_DAUER = 8;
 /** Bildeffekt → Operation: Parameter, und welcher Parameter der Lautstärke folgt (ohne Angabe: was die Operation selbst vorschlägt) */
 export const BILD_REZEPTE = Object.freeze({
   "bild.feedback": { operation: "lab.feedback", parameter: { seite: 720 }, ziel: "zoom", tiefe: 0.35 },
@@ -35,7 +39,13 @@ export const BILD_REZEPTE = Object.freeze({
   "bild.irrfahrt": { operation: "phorma.irrfahrt", parameter: { bilder: VARIANTEN_JE_ABSCHNITT, dauer: DAUER }, ziel: null },
   "bild.lichtwuerfel": { operation: "phorma.lichtwuerfel", parameter: { bilder: VARIANTEN_JE_ABSCHNITT, dauer: DAUER }, ziel: null },
   "bild.traube": { operation: "phorma.traube", parameter: { bilder: VARIANTEN_JE_ABSCHNITT, dauer: DAUER }, ziel: null },
-});   // seit 0.1.20 nur lebendige Effekte (jev/fragen.js, BILD_EFFEKTE)
+  // PHORMA II und PHORMA I (seit 0.1.22, operationen/phorma2.js, phorma1.js): zehn Momente des Ablaufs als Varianten; im Film läuft der Ablauf ab dem
+  // Auftritt seiner Stationen (zeitbasis «auftritt») in SZENE_DAUER Sekunden; ein Zettel oder eine Konstellation am Eingang gibt ihnen den Titel
+  ...Object.fromEntries(["physarum", "tiefe", "welle", "tuch", ["druck", "raster"], "montage"].map((e) => { const [k, a] = Array.isArray(e) ? e : [e, e]; return [`bild.${k}`, { operation: "phorma.ii", parameter: { ablauf: a, bilder: VARIANTEN_JE_ABSCHNITT, dauer: SZENE_DAUER }, ziel: null }]; })),
+  ...Object.fromEntries(["fragmente", "strom", "koerper", "scherben", "echo", "relief"].map((a) => [`bild.${a}`, { operation: "phorma.i", parameter: { ablauf: a, bilder: VARIANTEN_JE_ABSCHNITT, dauer: SZENE_DAUER }, ziel: null }])),
+  // The Fictory (seit 0.1.22 wieder, lebendig): die sechs Zustände als Varianten, im Film läuft der Prozess von Zustand zu Zustand; die Konstellation gibt die Regel
+  "bild.zerfall": { operation: "fictory.prozess", parameter: { seite: 1000 }, ziel: null },
+});   // seit 0.1.20 nur lebendige Effekte (jev/fragen.js, BILD_EFFEKTE): GPU-Fassung oder eigene Bühne
 /** Klangeffekt → Operation (null: der Klang bleibt) */
 export const KLANG_REZEPTE = Object.freeze({
   "klang.keine": null,
@@ -150,11 +160,14 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   const ergebnisse = [], uebergaenge = new Set();
   for (const [i, b] of abschnitte.entries()) {
     const r = BILD_REZEPTE[b], op = register.hole(r.operation), mitTon = op.eingaenge.some((x) => x.name === "ton");
+    // die Bestände an die Operationen, die sie annehmen (seit 0.1.22): die Konstellation gibt dem Zerfall die Regel und den Szenen den Titel, der Zettel den Titel
+    const mitKonstellation = konstellation && op.eingaenge.some((x) => x.name === "konstellation"), mitText = zettel && op.eingaenge.some((x) => x.name === "text");
     const ziel = r.ziel === null ? null : r.ziel ?? op.moduliert ?? op.parameter.find((p) => p.art === "zahl" && p.id !== "seite")?.id;
     const routen = ziel && op.varianten === "moduliert" ? [{ ziel, tiefe: r.tiefe ?? 0.5, modulator: { quelle: "signal", ergebnis: signal.id } }] : [];
     melden(`Abschnitt ${i + 1} von ${abschnitte.length}: ${BILD_EFFEKTE[b].split(":")[0]} …`, null);
     const x = await fuehreAus({ register, projekt, medien, melden, abbrechen,
-      auftrag: { operation: r.operation, eingaben: { bild: video ? video[Math.min(video.length - 1, Math.floor((i * video.length) / abschnitte.length))] : plan.aufbau === "aufbau.faecher" ? messung.bild : eingang, ...(mitTon ? { ton } : {}) },
+      auftrag: { operation: r.operation, eingaben: { bild: video ? video[Math.min(video.length - 1, Math.floor((i * video.length) / abschnitte.length))] : plan.aufbau === "aufbau.faecher" ? messung.bild : eingang, ...(mitTon ? { ton } : {}),
+          ...(mitKonstellation ? { konstellation: konstellation.id } : {}), ...(mitText ? { text: zettel.id } : {}) },
         parameter: mitTon ? { ...r.parameter, beginn } : r.parameter, seed: (seed + 101 * (i + 1)) >>> 0,
         variation: { anzahl: VARIANTEN_JE_ABSCHNITT, achse: "varianten", routen }, wahl: schritt(`Zusammenstellung, Abschnitt ${i + 1} von ${abschnitte.length}`) } });
     const bilder = x.ergebnisse.filter((e) => e.typ === "IMAGE");

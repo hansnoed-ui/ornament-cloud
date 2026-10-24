@@ -2,7 +2,7 @@
 // Bild → ORNA-Konstellation → The Fictory (sechs Zustände nebeneinander) → Variante wählen → Feedback mit modulierten Varianten → Variante wählen
 // → Bildsignal koppelt Wiederholung → Animation → Projekt speichern und wieder öffnen; dazu jev-assistiert, experimentell, Kette,
 // kompositorisches Profil mit Zielprofil, Tondatei als Steuersignal für ein Feedback über die Zeit, Animation über Stationen (auch im Takt
-// der Toneinsätze mit Tonspur), PHORMA-Szenen auf der eigenen Bühne, Handy.
+// der Toneinsätze mit Tonspur), PHORMA-Szenen auf der eigenen Bühne (I, II, III), The Fictory lebendig, Handy.
 //   NODE_PATH=$(npm root -g) node tests/lab.e2e.mjs
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -19,7 +19,9 @@ const base = `http://localhost:${server.address().port}/alpha/lab/`;
 // WebGL 2 über SwiftShader, damit die lebendigen Effekte (medien/gpu.js) auch ohne Grafikkarte laufen
 const browser = await playwright.chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
 const ergebnisse = [];
+const NUR = process.env.LAB_E2E_NUR || "";   // nur die Prüfungen, deren Name das enthält (zum Entwickeln; die Startprüfungen laufen immer)
 async function check(name, fn) {
+  if (NUR && !name.includes(NUR) && ergebnisse.length >= 2) { console.log("--  ", name); return; }
   try { await fn(); ergebnisse.push(true); console.log("ok  ", name); }
   catch (e) { ergebnisse.push(false); console.log("FAIL", name, "\n     ", e.message.split("\n").slice(0, 8).join("\n      ")); }
 }
@@ -44,9 +46,9 @@ async function ausfuehren(page) { await page.click("#ausfuehren"); await page.wa
 const { ctx, page, fehler, fremd } = await oeffne();
 let gespeichert = null;
 
-await check("Start: vier Bereiche, Register mit siebenundzwanzig Operationen, keine Fehler", async () => {
+await check("Start: vier Bereiche, Register mit neunundzwanzig Operationen, keine Fehler", async () => {
   for (const id of ["material", "operationen", "experiment", "protokoll"]) assert.ok(await page.locator(`#${id}`).isVisible(), id);
-  assert.match(await page.textContent("#status"), /27 Operationen/);
+  assert.match(await page.textContent("#status"), /29 Operationen/);
   assert.deepEqual(fehler, []);
 });
 
@@ -815,6 +817,77 @@ await check("PHORMA-Szenen (0.1.21): Gewebe aus Bild und Beat als Operation, zwe
   assert.deepEqual(x.zeitplan.map((z) => z.lebendig), [true, true], "beide Stationen lebendig auf der eigenen Bühne");
   assert.equal(x.bilder, 30); assert.ok(Math.max(x.breite, x.hoehe) <= 320);
   assert.ok(x.ton, "der Beat ist die Tonspur");
+  assert.ok(await t.page.locator(".stationen video").isVisible());
+  assert.deepEqual(t.fehler, []);
+  await t.ctx.close();
+});
+
+await check("PHORMA I und II (0.1.22): Fragmente mit Zettel als Titel, Physarum aus der ORNA-Regel, dann als lebendiger Film mit dem Zerfall", async () => {
+  const t = await oeffne();
+  await t.page.click("#beispiel");
+  await t.page.waitForFunction(() => ornamentLab.aktuell);
+  // ein Zettel und eine Konstellation als Material (ohne Bild gewählt: beide ohne Eingang)
+  await t.page.locator("#materialien button").first().click();
+  await operation(t.page, "zettel.strophe");
+  await t.page.locator("#op-form select").first().selectOption("7");
+  await ausfuehren(t.page);
+  await t.page.locator("#materialien button").first().click();
+  await operation(t.page, "orna.konstellation");
+  await ausfuehren(t.page);
+  const ids = await S(t.page, () => ({ zettel: ornamentLab.projekt.ergebnisse.find((e) => e.typ === "METADATA" && e.daten?.leitsatz).id, orna: ornamentLab.projekt.ergebnisse.find((e) => e.typ === "CONSTELLATION").id, regel: ornamentLab.projekt.ergebnisse.find((e) => e.typ === "CONSTELLATION").daten.regel }));
+  assert.ok(ids.zettel && ids.orna && /^R[1-7]$/.test(ids.regel), JSON.stringify(ids));
+  // PHORMA I, Fragmente (Leinwand 2D), zwei Momente, der Zettel gibt den Titel der Beschriftung
+  await t.page.locator("#materialien button").first().click();
+  await operation(t.page, "phorma.i");
+  await t.page.locator('#op-form input[data-param="seite"]').fill("320");
+  await t.page.locator('#op-form input[data-param="bilder"]').fill("2");
+  await t.page.locator('#op-form input[data-param="dauer"]').fill("6");
+  const waehle = async (werte) => { const l = t.page.locator("#op-form select"); for (let i = 0; i < await l.count(); i++) { const o = await l.nth(i).evaluate((s) => [...s.options].map((x) => x.value)); for (const w of werte) if (o.includes(w)) await l.nth(i).selectOption(w); } };
+  await waehle(["fragmente", "grob", ids.zettel]);
+  await t.page.click("#ausfuehren"); await t.page.waitForTimeout(50);
+  await warteFertig(t.page, 300000);
+  const k1 = await S(t.page, () => { const k = ornamentLab.projekt.knoten.at(-1); return { status: k.status, fehler: k.fehler ?? null, aus: k.ausgaben.length, eingaben: k.eingaben, p: k.protokoll }; });
+  assert.equal(k1.status, "fertig", JSON.stringify(k1.fehler));
+  assert.equal(k1.aus, 2); assert.equal(k1.p.ablauf, "fragmente"); assert.equal(k1.p.ablaufHerkunft, "mensch"); assert.equal(k1.eingaben.text, ids.zettel);
+  assert.ok(k1.p.titel && k1.p.zerlegung.dreiecke > 50, `Titel «${k1.p.titel}», ${JSON.stringify(k1.p.zerlegung)}`);
+  const fragmente = await S(t.page, () => ornamentLab.projekt.knoten.at(-1).ausgaben.slice());
+  // PHORMA II ohne Ablauf: die Regel der Konstellation wählt ihn (Tabelle REGEL_ABLAUF), protokolliert als Entscheidung «regel»
+  await t.page.locator("#materialien button").first().click();
+  await operation(t.page, "phorma.ii");
+  await t.page.locator('#op-form input[data-param="seite"]').fill("256");
+  await t.page.locator('#op-form input[data-param="bilder"]').fill("2");
+  await t.page.locator('#op-form input[data-param="dauer"]').fill("6");
+  await waehle(["grob", ids.orna]);
+  await t.page.click("#ausfuehren"); await t.page.waitForTimeout(50);
+  await warteFertig(t.page, 300000);
+  const k2 = await S(t.page, () => { const k = ornamentLab.projekt.knoten.at(-1); const d = ornamentLab.projekt.entscheidungen.filter((x) => x.gegenstand === "ablauf").at(-1); return { status: k.status, fehler: k.fehler ?? null, aus: k.ausgaben.length, eingaben: k.eingaben, p: k.protokoll, d }; });
+  assert.equal(k2.status, "fertig", JSON.stringify(k2.fehler));
+  assert.equal(k2.aus, 2); assert.equal(k2.p.ablaufHerkunft, "orna"); assert.equal(k2.p.regel, ids.regel); assert.equal(k2.eingaben.konstellation, ids.orna);
+  assert.ok(k2.p.ablauf && k2.d && k2.d.art === "regel" && k2.d.gewaehlt === k2.p.ablauf, `Ablauf ${k2.p.ablauf} aus ${ids.regel}: ${JSON.stringify(k2.d)}`);
+  assert.ok(Math.max(...k2.p.mass) === 256);
+  console.log(`      PHORMA II aus ${ids.regel}: ${k2.p.ablauf}; PHORMA I Titel: ${k1.p.titel}`);
+  // der Zerfall mit der Konstellation (Regel), dann ein Film: Fragmente, Physarum-Momente und zwei Zustände als Stationen, alle lebendig
+  await t.page.locator("#materialien button").first().click();
+  await operation(t.page, "fictory.prozess");
+  await t.page.locator('#op-form input[data-param="seite"]').fill("480");
+  await waehle([ids.orna]);
+  await t.page.click("#ausfuehren"); await t.page.waitForTimeout(50);
+  await warteFertig(t.page, 300000);
+  const k3 = await S(t.page, () => { const k = ornamentLab.projekt.knoten.at(-1); return { status: k.status, aus: k.ausgaben, regel: k.protokoll?.lauf?.regel }; });
+  assert.equal(k3.status, "fertig"); assert.equal(k3.aus.length, 6); assert.equal(k3.regel, ids.regel, "die Regel aus der Konstellation");
+  const physarum = await S(t.page, () => ornamentLab.projekt.knoten.filter((k) => k.operation === "phorma.ii").at(-1).ausgaben.slice());
+  await t.page.evaluate((ids) => { ornamentLab.stationen = ids.map((id) => ({ ergebnis: id, uebergang: "schnitt" })); }, [...fragmente, ...physarum, k3.aus[1], k3.aus[3]]);
+  await t.page.locator('input[name="ansicht"][value="nach"]').check({ force: true });
+  assert.equal(await t.page.locator(".stationen-liste > li").count(), 6);
+  await t.page.locator('.stationen input[data-param="halten"]').fill("0.4");
+  await t.page.locator('.stationen input[data-param="uebergang"]').fill("0");
+  await t.page.locator('.stationen input[data-param="seite"]').fill("320");
+  await t.page.click("#stationenfilm");
+  await warteFertig(t.page, 300000);
+  const x = await S(t.page, () => { const x = ornamentLab.projekt.exporte.at(-1); return { art: x.art, zeitplan: x.zeitplan, bilder: x.bilder, breite: x.breite, hoehe: x.hoehe }; });
+  assert.equal(x.art, "stationen", await t.page.textContent("#status"));
+  assert.deepEqual(x.zeitplan.map((z) => Boolean(z.lebendig)), [true, true, true, true, true, true], "alle sechs Stationen lebendig: PHORMA I, PHORMA II und der Zerfall auf ihren Bühnen");
+  assert.equal(x.bilder, 72); assert.ok(Math.max(x.breite, x.hoehe) <= 320);
   assert.ok(await t.page.locator(".stationen video").isVisible());
   assert.deepEqual(t.fehler, []);
   await t.ctx.close();

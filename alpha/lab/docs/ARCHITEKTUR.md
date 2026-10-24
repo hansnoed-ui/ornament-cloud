@@ -48,6 +48,7 @@ Die Trennung zwischen Rechnung und Darstellung ist durch REA belegt (REA-PROTOKO
 - `alpha/the-fictory/analyse.js`, `operationen.js`, `zeichnen.js`, `feld.js`, `regeln.js`, `jev.js`, `orna.js`, `zip.js`, `dauer.js` (Importe mit `?v=23` wie in der Fictory, damit jedes Modul nur einmal geladen wird)
 - `alpha/phorma-iii/ton.js` (Tonanalyse: Hüllkurve, Bänder, Spektrum, Fluss, Einsätze) für `lab.tonsignal` und die PHORMA-Szenen
 - `alpha/phorma-iii/buehne.js`, `gewebe.js`, `irrfahrt.js`, `traube.js`, `analyse.js`, `ablauf.js` (die Bühne und die Szenen von PHORMA III, three.js) für `phorma.gewebe`, `phorma.irrfahrt`, `phorma.lichtwuerfel`, `phorma.traube` (operationen/phorma.js, seit 0.1.21); `buehne.js` wird erst im Browser geladen
+- `alpha/phorma-ii/buehne.js`, `film.js`, `ablauf.js`, `analyse.js` und die Effekte (`physarum.js`, `tiefe.js`, `welle.js`, `tuch.js`, `raster.js`, `montage.js`) für `phorma.ii` (operationen/phorma2.js, seit 0.1.22); `alpha/bildfragmentieren/fragmente.js`, `ablauf.js`, `szene.js`, `raum.js` für `phorma.i` (operationen/phorma1.js, seit 0.1.22); gemeinsame Hilfen in operationen/buehnenhilfe.js (Foto in Rechengrösse, Titel aus Zettel oder Konstellation, Ablauf aus der Operationsregel)
 - `alpha/phorma-iii/tonspur.js` (`tonKodieren`: AAC, sonst Opus) für die Tonspur eines Films über Stationen
 - `portfolio/nebeneinander-nacheinander/js/data/` (ORNA-Bestand) und `js/lib/random.js` (Ziehung)
 - `alpha/drittes-rad/daten.js` (die 49 Zettel von «Zu seiner Zeit», erzeugt aus `src/data/zu-seiner-zeit.json`) für `zettel.strophe`
