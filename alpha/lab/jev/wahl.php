@@ -156,7 +156,8 @@ const BEAT_FRAGEN = [
     'halftime' => 'Halftime: Bassdrum am Anfang, Snare nur auf drei, schwer und breit',
     'breakbeat' => 'Breakbeat: synkopierte Bassdrum, Snare auf zwei und vier mit leisen Zwischenschlägen',
     'euklidisch' => 'euklidisch: Schläge möglichst gleichmässig verteilt, ungerade Muster wie fünf aus sechzehn',
-    'schleppend' => 'schleppend: Groove mit Swing, die Zwischenschläge kommen spät']],
+    'schleppend' => 'schleppend: Groove mit Swing, die Zwischenschläge kommen spät',
+    'dnb' => 'Drum and Bass: 170 bis 176 Schläge je Minute, Bassdrum auf eins und kurz vor drei, Snare auf zwei und vier, dazwischen gebrochene Schläge']],
   'kit' => ['Welche Klänge soll das Schlagzeug haben?', [
     'trocken' => 'trocken: kurze, akustisch wirkende Trommeln', 'elektronisch' => 'elektronisch: lange, tiefe Bassdrum und Klatschen wie bei einer Drum-Machine',
     'metallisch' => 'metallisch: klirrende Becken und glockenartige Töne', 'weich' => 'weich: gedämpfte, runde Schläge ohne Härte']],
@@ -164,13 +165,17 @@ const BEAT_FRAGEN = [
     'dur' => 'Dur: hell und offen', 'moll' => 'Moll: dunkel und ernst', 'dorisch' => 'dorisch: Moll mit einem hellen Ton, schwebend',
     'phrygisch' => 'phrygisch: dunkel und fremd, mit kleiner Sekunde', 'pentatonik' => 'pentatonisch: fünf Töne ohne Halbtöne, nichts reibt']],
   'bass' => ['Was soll der Bass tun?', [
-    'keiner' => 'kein Bass', 'liegend' => 'liegend: lange Töne, je Takt einer', 'pulsierend' => 'pulsierend: Achtel auf dem Grundton, mit Oktavsprüngen', 'laufend' => 'laufend: der Bass geht in Schritten durch die Tonleiter']],
+    'keiner' => 'kein Bass', 'liegend' => 'liegend: lange Töne, je Takt einer', 'pulsierend' => 'pulsierend: Achtel auf dem Grundton, mit Oktavsprüngen', 'laufend' => 'laufend: der Bass geht in Schritten durch die Tonleiter',
+    'reese' => 'Reese: tiefer, schwebender Bass aus zwei gegeneinander verstimmten Sägezähnen, wie im Drum and Bass']],
   'melodie' => ['Welche Melodie soll über dem Beat liegen?', [
     'keine' => 'keine Melodie', 'bild' => 'aus dem Bild gelesen: die hellste Stelle jeder Spalte gibt den Ton, von links nach rechts',
     'arpeggio' => 'Arpeggio: die Töne des Akkords auf und ab', 'glocken' => 'Glocken: wenige Töne auf den hellsten Punkten des Bildes']],
   'verlauf' => ['Wie soll sich der Beat über die Zeit entwickeln?', [
     'gleich' => 'gleich: alles spielt von Anfang an', 'steigend' => 'steigend: die Stimmen setzen nacheinander ein, es wird dichter',
-    'abschwellend' => 'abschwellend: voll am Anfang, dann lichtet es sich', 'wellen' => 'in Wellen: dichter, wo sich das Video stark bewegt, sonst lichter']],
+    'abschwellend' => 'abschwellend: voll am Anfang, dann lichtet es sich', 'wellen' => 'in Wellen: dichter, wo sich das Video stark bewegt, sonst lichter',
+    'wechselnd' => 'fein und wild im Wechsel: lichte, zarte Takte wechseln mit dichten, gebrochenen']],
+  'flaeche' => ['Soll eine Klangfläche den Beat tragen?', [
+    'keine' => 'keine Fläche', 'sphaere' => 'sphärisch: lange, schwebende Akkorde mit viel Raum', 'schimmer' => 'schimmernd: sphärisch und dazu hohe, glitzernde Töne']],
 ];
 const FRAGE_BEAT = 'In einem künstlerischen Labor entsteht aus einem Bild oder einem Video ein kurzer Beat als Soundtrack. Gemessen wurden nur die genannten Merkmale. Der Beat soll aus diesem Bild hervorgehen, statt ihm von aussen übergestülpt zu werden.';
 
@@ -403,7 +408,7 @@ curl_setopt_array($c, [
   CURLOPT_POSTFIELDS => json_encode(['model' => $modell, 'state' => $fr['zustand'], 'questions' => $fr['fragen']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_CONNECTTIMEOUT => 4,
-  CURLOPT_TIMEOUT => in_array($l['frage'] ?? null, ['komposition', 'beat'], true) ? 25 : 12,   // zehn (sieben) Fragen auf einmal brauchen länger
+  CURLOPT_TIMEOUT => in_array($l['frage'] ?? null, ['komposition', 'beat'], true) ? 25 : 12,   // zehn (acht) Fragen auf einmal brauchen länger
   CURLOPT_FOLLOWLOCATION => false,
   CURLOPT_PROTOCOLS => CURLPROTO_HTTPS | CURLPROTO_HTTP,
 ]);

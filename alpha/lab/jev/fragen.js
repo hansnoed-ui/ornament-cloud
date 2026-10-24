@@ -124,7 +124,7 @@ export const KOMPOSITION_FRAGEN = Object.freeze({
 export const FRAGE_KOMPOSITION = "In einem künstlerischen Labor stellt jev aus vielen Bild- und Klangeffekten eine Animation von 30 Sekunden aus einem Bild und einem Klang zusammen; der bearbeitete Klang ist die Tonspur. Gemessen wurden nur die genannten Merkmale. Die Zusammenstellung soll abwechslungsreich sein und aus diesem Bild und diesem Klang hervorgehen.";
 
 /**
- * Beat aus Bild oder Video (seit Lab 0.1.24): jev wählt die sieben Stellen eines Beats aus festen Katalogen, gemessen sind nur die Stufen
+ * Beat aus Bild oder Video (seit Lab 0.1.24): jev wählt die acht Stellen eines Beats aus festen Katalogen, gemessen sind nur die Stufen
  * in BEAT_MERKMALE (kern/beat.js misst sie). Die Werte der Kataloge sind die Parameter von «Beat aus Bild» (operationen/beat.js).
  */
 export const BEAT_MERKMALE = Object.freeze({
@@ -145,7 +145,8 @@ export const BEAT_FRAGEN = Object.freeze({
     halftime: "Halftime: Bassdrum am Anfang, Snare nur auf drei, schwer und breit",
     breakbeat: "Breakbeat: synkopierte Bassdrum, Snare auf zwei und vier mit leisen Zwischenschlägen",
     euklidisch: "euklidisch: Schläge möglichst gleichmässig verteilt, ungerade Muster wie fünf aus sechzehn",
-    schleppend: "schleppend: Groove mit Swing, die Zwischenschläge kommen spät" }) },
+    schleppend: "schleppend: Groove mit Swing, die Zwischenschläge kommen spät",
+    dnb: "Drum and Bass: 170 bis 176 Schläge je Minute, Bassdrum auf eins und kurz vor drei, Snare auf zwei und vier, dazwischen gebrochene Schläge" }) },
   kit: { text: "Welche Klänge soll das Schlagzeug haben?", katalog: Object.freeze({
     trocken: "trocken: kurze, akustisch wirkende Trommeln", elektronisch: "elektronisch: lange, tiefe Bassdrum und Klatschen wie bei einer Drum-Machine",
     metallisch: "metallisch: klirrende Becken und glockenartige Töne", weich: "weich: gedämpfte, runde Schläge ohne Härte" }) },
@@ -153,13 +154,17 @@ export const BEAT_FRAGEN = Object.freeze({
     dur: "Dur: hell und offen", moll: "Moll: dunkel und ernst", dorisch: "dorisch: Moll mit einem hellen Ton, schwebend",
     phrygisch: "phrygisch: dunkel und fremd, mit kleiner Sekunde", pentatonik: "pentatonisch: fünf Töne ohne Halbtöne, nichts reibt" }) },
   bass: { text: "Was soll der Bass tun?", katalog: Object.freeze({
-    keiner: "kein Bass", liegend: "liegend: lange Töne, je Takt einer", pulsierend: "pulsierend: Achtel auf dem Grundton, mit Oktavsprüngen", laufend: "laufend: der Bass geht in Schritten durch die Tonleiter" }) },
+    keiner: "kein Bass", liegend: "liegend: lange Töne, je Takt einer", pulsierend: "pulsierend: Achtel auf dem Grundton, mit Oktavsprüngen", laufend: "laufend: der Bass geht in Schritten durch die Tonleiter",
+    reese: "Reese: tiefer, schwebender Bass aus zwei gegeneinander verstimmten Sägezähnen, wie im Drum and Bass" }) },
   melodie: { text: "Welche Melodie soll über dem Beat liegen?", katalog: Object.freeze({
     keine: "keine Melodie", bild: "aus dem Bild gelesen: die hellste Stelle jeder Spalte gibt den Ton, von links nach rechts",
     arpeggio: "Arpeggio: die Töne des Akkords auf und ab", glocken: "Glocken: wenige Töne auf den hellsten Punkten des Bildes" }) },
   verlauf: { text: "Wie soll sich der Beat über die Zeit entwickeln?", katalog: Object.freeze({
     gleich: "gleich: alles spielt von Anfang an", steigend: "steigend: die Stimmen setzen nacheinander ein, es wird dichter",
-    abschwellend: "abschwellend: voll am Anfang, dann lichtet es sich", wellen: "in Wellen: dichter, wo sich das Video stark bewegt, sonst lichter" }) },
+    abschwellend: "abschwellend: voll am Anfang, dann lichtet es sich", wellen: "in Wellen: dichter, wo sich das Video stark bewegt, sonst lichter",
+    wechselnd: "fein und wild im Wechsel: lichte, zarte Takte wechseln mit dichten, gebrochenen" }) },
+  flaeche: { text: "Soll eine Klangfläche den Beat tragen?", katalog: Object.freeze({
+    keine: "keine Fläche", sphaere: "sphärisch: lange, schwebende Akkorde mit viel Raum", schimmer: "schimmernd: sphärisch und dazu hohe, glitzernde Töne" }) },
 });
 export const FRAGE_BEAT = "In einem künstlerischen Labor entsteht aus einem Bild oder einem Video ein kurzer Beat als Soundtrack. Gemessen wurden nur die genannten Merkmale. Der Beat soll aus diesem Bild hervorgehen, statt ihm von aussen übergestülpt zu werden.";
 
