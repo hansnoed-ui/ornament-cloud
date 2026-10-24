@@ -7,6 +7,7 @@ import { GRENZEN } from "../kern/projekt.js";
 import { wavBytes } from "../kern/klang.js";
 import { abtastrateLesen, wavSchreiben, mono } from "../kern/klangwerk.js";
 import { istIsoBmff, tonMitWebCodecs } from "./mp4ton.js";
+import { dateiLesen } from "./dateilesen.js";
 
 const leinwand = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
 const alsBlob = (c, typ = "image/png") => new Promise((ok, nein) => c.toBlob((b) => (b ? ok(b) : nein(new Error("Bild konnte nicht kodiert werden"))), typ));
@@ -102,7 +103,7 @@ export function browserMedien() {
     async importiere(datei) {
       if (!ERLAUBT.has(datei.type)) throw new Error(`Dateityp ${datei.type || "unbekannt"} wird nicht angenommen (PNG, JPEG, WebP, GIF, AVIF, BMP)`);
       if (datei.size > HOECHSTENS_BYTES) throw new Error("Datei grösser als 60 MB");
-      const bytes = new Uint8Array(await datei.arrayBuffer());
+      const bytes = await dateiLesen(datei);
       const original = await dekodiere(bytes, datei.type);
       return { original: { name: datei.name, sha256: await sha256(bytes), breite: original.width, hoehe: original.height, mime: datei.type, bytes: bytes.length }, arbeit: begrenzen(original, GRENZEN.seite) };
     },
@@ -111,7 +112,7 @@ export function browserMedien() {
       const mime = datei.type || TON_ENDUNG[datei.name.split(".").pop().toLowerCase()] || "", endung = TON.get(mime);
       if (!endung) throw new Error(`Dateityp ${mime || "unbekannt"} wird nicht angenommen (WAV, MP3, OGG, FLAC, M4A, AAC, WebM, Opus)`);
       if (datei.size > HOECHSTENS_BYTES) throw new Error("Datei grösser als 60 MB");
-      const bytes = new Uint8Array(await datei.arrayBuffer());
+      const bytes = await dateiLesen(datei);
       let t;
       try { t = await dekodiereTon(bytes); } catch (f) { throw new Error(`der Ton liess sich nicht dekodieren (${f.message || f.name})`); }   // M4A/MP4 auch über WebCodecs
       if (t.dauer > GRENZEN.tonSekunden) throw new Error(`Ton länger als ${GRENZEN.tonSekunden / 60} Minuten (${Math.round(t.dauer)} s)`);
@@ -128,12 +129,21 @@ export function browserMedien() {
       const mime = datei.type || VIDEO_ENDUNG[datei.name.split(".").pop().toLowerCase()] || "";
       if (!VIDEO.has(mime)) throw new Error(`Dateityp ${mime || "unbekannt"} wird nicht angenommen (MP4, WebM, MOV)`);
       if (datei.size > VIDEO_BYTES) throw new Error("Video grösser als 300 MB");
-      const bytes = new Uint8Array(await datei.arrayBuffer());
-      const url = URL.createObjectURL(datei.type ? datei : new Blob([datei], { type: mime }));   // die Datei selbst, keine zweite Kopie im Speicher des Telefons
+      const bytes = await dateiLesen(datei, { melden: (a) => melden("Video wird gelesen …", a * 0.2) });
+      // zuerst die Datei selbst (keine zweite Kopie im Speicher des Telefons); verweigert Android dem Videoelement den Zugriff auf die Datei
+      // (seit 0.1.29), spielt es die schon gelesenen Bytes
+      let url = URL.createObjectURL(datei.type ? datei : new Blob([datei], { type: mime }));
       const v = document.createElement("video");
-      v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = url;
+      v.muted = true; v.playsInline = true; v.preload = "auto";
+      const laden = (quelle) => new Promise((ok, nein) => {
+        v.onloadeddata = ok; v.onerror = () => nein(new Error("dieser Browser kann das Video nicht lesen")); setTimeout(() => nein(new Error("das Video lädt nicht")), 20000);
+        v.src = quelle;
+      });
       try {
-        await new Promise((ok, nein) => { v.onloadeddata = ok; v.onerror = () => nein(new Error("dieser Browser kann das Video nicht lesen")); setTimeout(() => nein(new Error("das Video lädt nicht")), 20000); });
+        try { await laden(url); } catch {
+          URL.revokeObjectURL(url); url = URL.createObjectURL(new Blob([bytes], { type: mime }));
+          await laden(url);
+        }
         const dauer = v.duration;
         if (!Number.isFinite(dauer) || dauer < 0.2) throw new Error("das Video hat keine lesbare Länge");
         const w0 = v.videoWidth, h0 = v.videoHeight, f = Math.min(1, GRENZEN.seite / Math.max(w0, h0));
