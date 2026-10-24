@@ -225,13 +225,16 @@ function zusammenstellungAnsicht(v) {
         ...Object.entries(KOMPOSITION_FRAGEN[frage].katalog).map(([k, t]) => el("option", { value: k, selected: k === wert, text: frage === "uebergang" ? t : kurzname(t) }))));
   };
   const film = S.filme.get("stationen"), video = v.messung.videoBilder?.length > 1;
+  // die Abschnitte (0.1.28): welche an sind und wie lang; die Länge der Animation ist ihre Summe
+  pl.abschnitte ??= ZS.standardAbschnitte();
+  const ab = ZS.abschnitteNormieren(pl), aktiv = pl.bild.map((b, i) => ({ b, ...ab[i] })).filter((a) => a.an), haupt = Math.round(aktiv.reduce((s, a) => s + a.dauer, 0) * 2) / 2, aus = pl.bild.length - aktiv.length;
   return el("fieldset", { class: "gruppe zusammenstellung" },
     el("legend", { text: z.jev ? `jev stellt zusammen (${z.jev.modell})` : "Zufällig zusammengestellt (ohne jev)" }),
-    el("small", { text: `${ART_NAME[quelle]}: ${z.jev ? "aus den Wahrscheinlichkeiten von jev gezogen" : "gleichverteilt gezogen"}, Startwert ${pl.seed}. Kein Bildeffekt zweimal hintereinander. Jede Stelle lässt sich ändern.` }),
+    el("small", { text: `${ART_NAME[quelle]}: ${z.jev ? "aus den Wahrscheinlichkeiten von jev gezogen" : "gleichverteilt gezogen"}, Startwert ${pl.seed}. Kein Bildeffekt zweimal hintereinander. Jede Stelle lässt sich ändern; jeder Abschnitt lässt sich ausschalten oder in seiner Dauer ändern.` }),
     el("div", { class: "stellen" },
       stelle("aufbau", pl.aufbau, (x) => { pl.aufbau = x; }), stelle("uebergang", pl.uebergang, (x) => { pl.uebergang = x; }),
       stelle("klang1", pl.klang[0], (x) => { pl.klang[0] = x; }), stelle("klang2", pl.klang[1], (x) => { pl.klang[1] = x; }),
-      ...pl.bild.map((b, i) => stelle(`bild${i + 1}`, b, (x) => { pl.bild[i] = x; }))),
+      ...pl.bild.map((b, i) => abschnittStelle(z, i, stelle(`bild${i + 1}`, b, (x) => { pl.bild[i] = x; })))),
     el("div", { class: "stellen bestaende" },
       bestandStelle(pl, "zettel", "Zettel", "strophe", "mit dem Startwert ziehen", STROPHEN_WAHL),
       bestandStelle(pl, "orna", "ORNA", "konstellation", "per Zufall ziehen (wie in ORNA)", KONSTELLATIONEN)),
@@ -239,7 +242,7 @@ function zusammenstellungAnsicht(v) {
       el("label", { class: "regler schalter stelle" }, el("input", { type: "checkbox", id: "zusammenstellung-signatur", checked: pl.signatur !== false, onchange: (ev) => { pl.signatur = ev.target.checked; zeigeVorschlag30(); } }),
         "Signatur: Intro, Outro und Signet ornament.lab")),
     el("small", { class: "hinweis", text: pl.signatur !== false
-      ? `Beide Bestände wahlweise, jev sieht sie nicht. Mit Signatur ${pl.zettel ? "eröffnet ein Intro den Film: ein Lichtwürfel entfaltet sich zum Raster des Zettelkastens, der Zettel wird gezogen und zeigt Leitsatz und Verweise, ein Scratch führt in die Animation" : "beginnt der Film gleich mit der Animation (mit einem Zettel käme das Intro davor)"}; ${pl.orna ? "danach faltet sich die letzte Sequenz zur Kugel, die zum Rad von ORNA wird und die Konstellation zeigt" : "ohne ORNA-Konstellation gibt es kein Outro"}; am Schluss wird aus der Kugel das Signet ornament.lab, mit Gefrickel im Ton. Die 30 Sekunden der Animation bleiben, der Film dauert ${zahl(Math.round(signaturZeiten({ intro: Boolean(pl.zettel), outro: Boolean(pl.orna) }).gesamt * 10) / 10)} s. Der Zettel steht auch als Titel in den Szenen von PHORMA I und II; wählt jev den Zerfall (The Fictory), folgt er der Regel der Konstellation.`
+      ? `Beide Bestände wahlweise, jev sieht sie nicht. Mit Signatur ${pl.zettel ? "eröffnet ein Intro den Film: ein Lichtwürfel entfaltet sich zum Raster des Zettelkastens, der Zettel wird gezogen und zeigt Leitsatz und Verweise, ein Scratch führt in die Animation" : "beginnt der Film gleich mit der Animation (mit einem Zettel käme das Intro davor)"}; ${pl.orna ? "danach faltet sich die letzte Sequenz zur Kugel, die zum Rad von ORNA wird und die Konstellation zeigt" : "ohne ORNA-Konstellation gibt es kein Outro"}; am Schluss wird aus der Kugel das Signet ornament.lab, mit Gefrickel im Ton. Die ${zahl(haupt)} Sekunden der Animation bleiben, der Film dauert ${zahl(Math.round(signaturZeiten({ intro: Boolean(pl.zettel), outro: Boolean(pl.orna), haupt }).gesamt * 10) / 10)} s. Der Zettel steht auch als Titel in den Szenen von PHORMA I und II; wählt jev den Zerfall (The Fictory), folgt er der Regel der Konstellation.`
       : "Beide wahlweise, jev sieht sie nicht: Der Zettel eröffnet den Film als Karte mit seinem Leitsatz und steht als Titel in den Szenen von PHORMA I und II. Die ORNA-Konstellation schliesst ihn als Karte mit ihrer Operationsregel; wählt jev den Zerfall (The Fictory), folgt er dieser Regel." }),
     el("div", { class: "stellen film" },
       el("label", { class: "regler schalter stelle" }, el("input", { type: "checkbox", id: "zusammenstellung-lebendig", checked: pl.lebendig !== false && gpuDa(), disabled: !gpuDa(), onchange: (ev) => { pl.lebendig = ev.target.checked; } }),
@@ -247,11 +250,21 @@ function zusammenstellungAnsicht(v) {
       regler({ id: "zusammenstellung-bewegung", name: "Bewegung (Kamera über jedem Bild, 0 = ruhig)", art: "zahl", min: 0, max: 1, schritt: 0.05 }, pl.bewegung ?? ZS.BEWEGUNG, (v) => { pl.bewegung = v; })),
     el("small", { class: "hinweis", text: `Alle Effekte der Zusammenstellung sind lebendig: ${LEBENDIG.map(opName).join(", ")} rechnet die Grafikkarte in jedem der 900 Bilder neu, die Lautstärke moduliert Bild für Bild; die Szenen von PHORMA III (Gewebe, Irrfahrt, Lichtwürfel, Traube) laufen auf ihrer eigenen Bühne im Takt des Klangs weiter, die von PHORMA I und II und der Zerfall (The Fictory) ab dem Auftritt ihrer Stationen. Dieselben Schalter stehen danach unter «Nacheinander».` }),
     video ? el("small", { class: "hinweis", text: `Aus dem Video: jeder Abschnitt nimmt das Standbild seiner Zeit (${v.messung.videoBilder.length} Standbilder), so folgt der Film dem Video. Der Aufbau gilt darum nicht.` }) : null,
-    el("small", { class: "hinweis", text: `${video ? "Abschnitte nach dem Video" : kurzname(AUFBAU[pl.aufbau])}, ${FILM_UEBERGAENGE[pl.uebergang]}. Klang: ${pl.klang.map((k) => kurzname(KLANG_EFFEKTE[k])).join(" → ")}. Bild: ${pl.bild.map((b) => kurzname(BILD_EFFEKTE[b])).join(" → ")}, je ${ZS.VARIANTEN_JE_ABSCHNITT} Varianten.` }),
+    el("small", { class: "hinweis", id: "zusammenstellung-plan", text: `${video ? "Abschnitte nach dem Video" : kurzname(AUFBAU[pl.aufbau])}, ${FILM_UEBERGAENGE[pl.uebergang]}. Klang: ${pl.klang.map((k) => kurzname(KLANG_EFFEKTE[k])).join(" → ")}. Bild: ${aktiv.length ? aktiv.map((a) => `${kurzname(BILD_EFFEKTE[a.b])} ${zahl(a.dauer)} s`).join(" → ") : "kein Abschnitt an"}${aus ? ` (${aus} von ${pl.bild.length} aus)` : ""}; ${zahl(haupt)} s Animation, ${aktiv.map((a) => ZS.variantenFuer(a.dauer)).reduce((x, y) => x + y, 0)} Varianten (zwei je Sekunde). ${pl.uebergang === "film.schnitt" ? "Im Takt der Anschläge bekommt ein längerer Abschnitt mehr Stationen; ohne Takt hält jede Station so lange, dass der Abschnitt seine Dauer hat." : "Ohne Takt hält jede Station so lange, dass der Abschnitt seine Dauer hat; im Takt der Anschläge bekommt ein längerer Abschnitt mehr Stationen."}` }),
     el("div", { class: "aktionen" },
-      el("button", { class: "knopf voll", type: "button", id: "zusammenstellung-rechnen", disabled: Boolean(S.laeuft), onclick: zusammenstellungRechnen, text: "Zusammenstellung rechnen" }),
+      el("button", { class: "knopf voll", type: "button", id: "zusammenstellung-rechnen", disabled: Boolean(S.laeuft) || !aktiv.length, onclick: zusammenstellungRechnen, text: "Zusammenstellung rechnen" }),
       el("button", { class: "knopf leise", type: "button", id: "zusammenstellung-neu", disabled: Boolean(S.laeuft), onclick: () => { v.zusammen = neueZusammenstellung(z.antworten, z.jev, z.plan); zeigeVorschlag30(); }, text: "neu ziehen" })),
     film && film.vorschlag === "zusammenstellung" ? filmKarte(film) : null);
+}
+/** ein Abschnitt der Zusammenstellung (seit 0.1.28): die Stelle (der Effekt, von jev oder dem Menschen) mit Schalter an/aus und Dauer in Sekunden */
+function abschnittStelle(z, i, stelleEl) {
+  const a = z.plan.abschnitte[i];
+  const merke = () => { z.geaendert.add(`abschnitt${i + 1}`); zeigeVorschlag30(); };
+  return el("div", { class: `abschnitt${a.an ? "" : " aus"}` }, stelleEl,
+    el("span", { class: "abschnitt-zeit" },
+      el("label", { class: "schalter" }, el("input", { type: "checkbox", "data-abschnitt": i + 1, checked: a.an, "aria-label": `Abschnitt ${i + 1} an`, onchange: (ev) => { a.an = ev.target.checked; merke(); } }), a.an ? "an" : "aus"),
+      el("label", {}, el("input", { type: "number", "data-abschnitt-dauer": i + 1, min: 1, max: ZS.ABSCHNITT_DAUER_MAX, step: 0.5, value: a.dauer, disabled: !a.an, "aria-label": `Abschnitt ${i + 1}: Dauer in Sekunden`,
+        onchange: (ev) => { a.dauer = Math.min(ZS.ABSCHNITT_DAUER_MAX, Math.max(1, Math.round((Number(ev.target.value) || ZS.ABSCHNITT_DAUER) * 2) / 2)); merke(); } }), " s")));
 }
 /** ein Bestand (Zettelkasten, ORNA) in der Zusammenstellung: Schalter und, wenn an, die Wahl (ziehen oder ein bestimmter Eintrag) */
 function bestandStelle(pl, feld, name, wahlName, ziehenText, optionen) {
@@ -263,7 +276,7 @@ function bestandStelle(pl, feld, name, wahlName, ziehenText, optionen) {
 }
 function neueZusammenstellung(antworten, jev, alt = null) {
   // neu gezogen wird, was jev oder der Zufall wählt; Bestände und Filmeinstellungen bleiben, wie der Mensch sie geschaltet hat
-  return { antworten, jev, plan: { ...ZS.zusammenstellen(antworten, neuerStartwert()), zettel: alt?.zettel ?? null, orna: alt?.orna ?? null, lebendig: alt?.lebendig ?? true, bewegung: alt?.bewegung ?? ZS.BEWEGUNG, signatur: alt?.signatur ?? true }, geaendert: new Set() };
+  return { antworten, jev, plan: { ...ZS.zusammenstellen(antworten, neuerStartwert()), zettel: alt?.zettel ?? null, orna: alt?.orna ?? null, lebendig: alt?.lebendig ?? true, bewegung: alt?.bewegung ?? ZS.BEWEGUNG, signatur: alt?.signatur ?? true, abschnitte: alt?.abschnitte ?? ZS.standardAbschnitte() }, geaendert: new Set() };
 }
 async function zusammenstellungRechnen() {
   const v = S.vorschlag, z = v.zusammen;

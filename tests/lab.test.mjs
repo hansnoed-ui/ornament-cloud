@@ -1763,3 +1763,51 @@ test("Zusammenstellung mit Signatur (0.1.26): Intro mit dem Zettel, Outro mit de
   assert.ok(!w.p.knoten.some((k) => k.operation === "signatur.ton"));
   assert.deepEqual(P.pruefeProjekt(p), []);
 });
+
+test("Zusammenstellung: Abschnitte ausschalten und ihre Dauer setzen (0.1.28): nur die Abschnitte an werden gerechnet, Varianten und Halten folgen der Dauer", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const Z = await lab("kern/zusammenstellung.js");
+  const r = labRegister();
+  // Standard: sechs Abschnitte an, je 5 s; Varianten zwei je Sekunde, höchstens die Grenze je Ausführung
+  assert.equal(Z.ABSCHNITT_DAUER, 5); assert.deepEqual(Z.standardAbschnitte(), Array.from({ length: 6 }, () => ({ an: true, dauer: 5 })));
+  assert.deepEqual(Z.zusammenstellen(Z.gleichverteilt(), 1).abschnitte, Z.standardAbschnitte());
+  assert.deepEqual(Z.abschnitteNormieren({ bild: ["a", "b", "c"], abschnitte: [{ an: false }, { dauer: 10.3 }, { dauer: 99 }] }), [{ an: false, dauer: 5 }, { an: true, dauer: 10.5 }, { an: true, dauer: Z.ABSCHNITT_DAUER_MAX }]);
+  assert.deepEqual(Z.abschnitteNormieren({ bild: ["a", "b"] }), [{ an: true, dauer: 5 }, { an: true, dauer: 5 }]);
+  assert.equal(Z.variantenFuer(5), 10); assert.equal(Z.variantenFuer(2.5), 5); assert.equal(Z.variantenFuer(10), P.GRENZEN.varianten); assert.equal(Z.variantenFuer(0.3), 1);
+  assert.equal(Z.abschnitteEigen(Z.standardAbschnitte()), false); assert.equal(Z.abschnitteEigen([{ an: true, dauer: 5 }, { an: false, dauer: 5 }]), true);
+  const { p, m, e, t } = mitTon();
+  const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id });
+  const bild = ["bild.farbe", "bild.licht", "bild.farbe", "bild.glitch", "bild.farbe", "bild.licht"];
+  // Abschnitt 1 aus, Abschnitt 2 doppelt so lang (10 s → 12 Varianten, die Grenze), Abschnitt 5 kurz (2,5 s → 5 Varianten), Abschnitt 6 aus
+  const abschnitte = [{ an: false }, { dauer: 10 }, {}, {}, { dauer: 2.5 }, { an: false, dauer: 7 }];
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.keine", "klang.keine"], bild, seed: 4, abschnitte, lebendig: false, bewegung: 0 };
+  const vorher = p.knoten.length;
+  const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "mensch", details: { geaendert: ["abschnitt1"] } }, seed: 3 });
+  const neu = p.knoten.slice(vorher).filter((k) => k.operation !== "lab.tonsignal");
+  assert.deepEqual(neu.map((k) => k.operation), ["lab.licht", "lab.farbe", "lab.glitch", "lab.farbe"], "nur die vier Abschnitte, die an sind");
+  assert.deepEqual(neu.map((k) => k.ausgaben.length), [12, 10, 10, 5], "Varianten nach der Dauer");
+  assert.equal(x.ergebnisse.length, 37); assert.equal(x.haupt, 22.5);
+  assert.deepEqual(x.entscheidung.gewaehlt.abschnitte, [{ an: false, dauer: 5 }, { an: true, dauer: 10 }, { an: true, dauer: 5 }, { an: true, dauer: 5 }, { an: true, dauer: 2.5 }, { an: false, dauer: 7 }]);
+  assert.deepEqual(x.entscheidung.gewaehlt.bild, bild, "jevs Wahl bleibt vollständig im Protokoll");
+  assert.equal(neu[1].eingaben.bild, neu[0].ausgaben.at(-1), "Kette über die Abschnitte, die an sind");
+  // ohne Takt: die Stationen eines Abschnitts halten so lange, dass er seine Dauer bekommt
+  const st = x.plan.stationen;
+  if (!x.plan.takt) {
+    const u = x.plan.art === "schnitt" ? 0 : x.plan.uebergang;
+    const je = (ids) => ids.map((id) => st.find((s) => s.ergebnis === id)).map((s) => s.halten + u).reduce((a, b) => a + b, 0);
+    assert.ok(Math.abs(je(neu[0].ausgaben) - 10) < 0.2, `Abschnitt 2 etwa 10 s: ${je(neu[0].ausgaben)}`);
+    assert.ok(Math.abs(je(neu[3].ausgaben) - 2.5) < 0.2, `Abschnitt 5 etwa 2,5 s: ${je(neu[3].ausgaben)}`);
+    const pt = ST.partitur(p, { ...x.plan, fps: 30 });
+    assert.ok(pt.dauer > 20 && pt.dauer < 25, `die Animation etwa 22,5 s: ${pt.dauer}`);
+  } else {
+    assert.equal(st.filter((s) => s.halten !== undefined).length, 0, "im Takt entscheiden die Anschläge");
+  }
+  // alles an und Standard: wie bisher, keine eigenen Haltezeiten
+  const y = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, abschnitte: undefined }, wahl: { art: "zufall" } });
+  assert.equal(y.ergebnisse.length, 60); assert.equal(y.haupt, 30); assert.ok(y.plan.stationen.every((s) => typeof s === "string" || s.halten === undefined));
+  // kein Abschnitt an: Fehler; ein Abschnitt aus mit einem Effekt, der hier nicht geht, stört nicht
+  await assert.rejects(Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, abschnitte: bild.map(() => ({ an: false })) }, wahl: { art: "mensch" } }), /Mindestens ein Abschnitt/);
+  const z = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, bild: ["bild.physarum", ...bild.slice(1)], abschnitte: [{ an: false }, ...bild.slice(1).map(() => ({}))] }, wahl: { art: "mensch" } });
+  assert.equal(z.ergebnisse.length, 50);
+  assert.deepEqual(P.pruefeProjekt(p), []);
+});

@@ -123,6 +123,11 @@ fieldset { border: 0; margin: 0; padding: 0; }
 .stellen { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 .bestand-wahl { display: inline-flex; align-items: center; gap: 0.5rem; }
 .stellen select { width: 100%; min-width: 0; }
+.abschnitt { display: grid; gap: 4px; align-content: start; }
+.abschnitt.aus select { opacity: 0.45; }
+.abschnitt-zeit { display: inline-flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; color: var(--muted); }
+.abschnitt-zeit label { display: inline-flex; align-items: center; gap: 0.35rem; }
+.abschnitt-zeit input[type="number"] { width: 4.5em; min-width: 0; }
 .vorschlag30 h4.oder { margin: 6px 0 0; font-size: 0.9rem; font-weight: 500; color: var(--muted); }
 .dramaturgie { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; row-gap: 2px; align-items: start; cursor: pointer; }
 .dramaturgie input { margin-top: 3px; }
