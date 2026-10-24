@@ -16,7 +16,7 @@ In der **Zusammenstellung** (Animation aus Bild und Klang) steht neben «lebendi
 1. **Lichtwürfel** (0–3,6 s): ein Licht im Nichts, der Würfel zeichnet seine Kanten und dreht sich; in ihm irrt der Faden aus PHORMA III (derselbe Weg, `alpha/phorma-iii/irrweg.js`, unverändert). Er pulsiert auf den Einsätzen der Tonspur, einige Schläge lang.
 2. **Entfalten** (3,4–5 s): seine 49 Felder lösen sich von den sechs Seiten und legen sich zum Raster des Zettelkastens, sieben Zyklen (Zeilen I–VII) zu sieben Strophen.
 3. **Das Feld leuchtet** (4,9–5,6 s) im Rot-Orange des Signets, die Zyklen stehen daneben, darunter Zyklus, Nummer und Titel.
-4. **Der Zettel wird gezogen** (5,6–6,4 s): das Feld kommt nach vorn und wird zur Karte (Papier auf Nacht).
+4. **Der Zettel wird gezogen** (5,6–6,4 s): das Feld kommt nach vorn und wird zur Karte (seit Lab 0.1.33 in der Gestaltung des Neubaus: Schwarz auf Weiss, Kopf in Grau, das Feld 7 × 7 als Punkte mit den Fäden zu den nahen Zetteln, die Blaupause als Akzent; vorher Papier `#f4f1ea` mit dem Punkt `#f08a5d`).
 5. **Der Zettel** (6,4–9,25 s): Zettelkasten · Zyklus, die Nummer mit dem kleinen Raster, der Titel (Instrument Sans), der Leitsatz (Newsreader kursiv) und die **vier Verweise** (Person, Werk, Disziplin), einer nach dem anderen.
 6. **Scratch** (9,25–10 s): wie eine Platte unter der Hand läuft der Streifen Zettel | Animation vor und zurück, an den Umkehrungen macht der Fader zu; am Ende steht das erste Bild der Animation. Im Ton derselbe Scratch (dieselbe Kurve `scratch()` in `kern/signatur.js`).
 
