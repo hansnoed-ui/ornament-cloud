@@ -10,11 +10,16 @@ export const BESTAND = STROPHEN.length;
 const zyklusTitel = (c) => ZYKLEN.find(([k]) => k === c)?.[1] ?? "";
 /** die Strophen zur Wahl, wie sie der Zettelkasten zählt */
 export const STROPHEN_WAHL = STROPHEN.map((s) => ({ wert: String(s.n), name: `${s.n}. ${s.t}` }));
-/** eine Strophe als Befund: Nummer, Zyklus, Titel, Leitsatz (Bottom-Line) und Text, dazu ihre Adresse und (seit Lab 0.1.26, für das Intro der
- *  Signatur) die vier Verweise: Person, Werk, Disziplin */
+/** die nahen Strophen: alle, die eine Person der Verweise teilen (wie die Fäden auf den Zettelkarten des Neubaus, tools/b-kacheln.mjs) */
+export const naheStrophen = (s) => {
+  const personen = new Set((s.r ?? []).map((v) => v.p));
+  return STROPHEN.filter((o) => o.n !== s.n && (o.r ?? []).some((v) => personen.has(v.p))).map((o) => o.n);
+};
+/** eine Strophe als Befund: Nummer, Zyklus, Titel, Leitsatz (Bottom-Line) und Text, dazu ihre Adresse, (seit Lab 0.1.26, für das Intro der
+ *  Signatur) die vier Verweise: Person, Werk, Disziplin, und (seit 0.1.33, für das Feld auf der Karte) die Nummern der nahen Strophen */
 export const stropheDaten = (s) => ({
   nummer: s.n, slug: s.s, zyklus: s.c, zyklusTitel: zyklusTitel(s.c), titel: s.t, leitsatz: s.b, text: s.x,
-  verweise: (s.r ?? []).map((v) => ({ person: v.p, werk: v.w, disziplin: v.d })),
+  verweise: (s.r ?? []).map((v) => ({ person: v.p, werk: v.w, disziplin: v.d })), nahe: naheStrophen(s),
   adresse: `https://ornament.cloud/zu-seiner-zeit/strophe/${s.s}/`, kennzeichnung: "Text unverändert aus dem Zettelkasten",
 });
 

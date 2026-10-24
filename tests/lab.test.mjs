@@ -1841,3 +1841,51 @@ test("Blob der Seite (0.1.32): verweigertes Lesen eines eigenen Blobs meldet den
   assert.equal(zugriffsMeldung(Object.assign(new Error("x"), { name: "NotReadableError" }), new Blob()).name, "Speicherfehler");
   assert.equal(zugriffsMeldung(Object.assign(new Error("x"), { name: "AbortError" }), new Blob()).name, "AbortError");
 });
+
+test("Karten in der Gestaltung des Neubaus (0.1.33): Schriften und Farben der Website, das Feld mit den nahen Zetteln, das Signet", async () => {
+  const { NEUBAU, SIGNET, SANS, SERIF, schriftenLaden, schriftenDa, signetZeichnen, feldZeichnen } = await lab("medien/schriften.js");
+  const { karteFeld, karte, karteText } = await lab("operationen/karte.js");
+  const { naheStrophen, stropheDaten } = await lab("operationen/zettel.js");
+  const { STROPHEN } = await import(new URL("alpha/drittes-rad/daten.js", root).href);
+  // die Farben wie b/b.css: Papier und Tinte in echter Umkehr, die Blaupause als Akzent; die Schriften der Website
+  assert.deepEqual([NEUBAU.hell.papier, NEUBAU.hell.tinte, NEUBAU.hell.faden, NEUBAU.hell.grau], ["#ffffff", "#000000", "#1d3fd6", "#6f6f6f"]);
+  assert.deepEqual([NEUBAU.dunkel.papier, NEUBAU.dunkel.tinte, NEUBAU.dunkel.faden, NEUBAU.dunkel.grau], ["#000000", "#ffffff", "#8fb0ff", "#9a9a9a"]);
+  const bcss = readFileSync(new URL("b/b.css", root), "utf8");
+  for (const f of ["#1d3fd6", "#8fb0ff", "#6f6f6f", "#9a9a9a"]) assert.ok(bcss.includes(f), `${f} steht in b/b.css`);
+  assert.match(SANS, /^"Instrument Sans"/); assert.match(SERIF, /^Newsreader/);
+  assert.equal(await schriftenLaden(), false, "in Node keine Schriften"); assert.deepEqual(schriftenDa(), { sans: false, serif: false });
+  // das Signet: die Schlaufe in einem Kasten 34 × 24, der Punkt innerhalb
+  assert.equal(SIGNET.bahn.length, 121); assert.ok(SIGNET.bahn.every(([x, y]) => x >= -0.01 && x <= 34.01 && y >= -0.01 && y <= 24.01));
+  assert.ok(SIGNET.punkt[0] > 0 && SIGNET.punkt[0] < 34 && SIGNET.punkt[1] > 0 && SIGNET.punkt[1] < 24);
+  // die nahen Strophen: gemeinsame Personen in den Verweisen, nie die eigene, symmetrisch
+  const s1 = STROPHEN[0], nahe1 = naheStrophen(s1);
+  assert.ok(nahe1.length >= 1 && !nahe1.includes(s1.n)); for (const n of nahe1) assert.ok(naheStrophen(STROPHEN.find((o) => o.n === n)).includes(s1.n), `Nähe ist gegenseitig (${n})`);
+  const personen1 = new Set(s1.r.map((v) => v.p));
+  for (const n of nahe1) assert.ok(STROPHEN.find((o) => o.n === n).r.some((v) => personen1.has(v.p)));
+  assert.deepEqual(stropheDaten(s1).nahe, nahe1);
+  // das Feld der Karte: beim Zettel seine Nummer und die nahen, sonst keines
+  assert.deepEqual(karteFeld({ text: stropheDaten(s1) }), { hier: s1.n, nah: nahe1 });
+  assert.deepEqual(karteFeld({ text: { ...stropheDaten(s1), nahe: [0, 3, 50, "x"] } }), { hier: s1.n, nah: [3] }, "nur gültige Nummern");
+  assert.deepEqual(karteFeld({ konstellation: { nummer: 3, kuenstler: "A", theoretiker: "B" } }), { hier: null, nah: [] }, "bei ORNA das leere Feld, wie im Neubau"); assert.equal(karteFeld({ text: { kopf: "x", titel: "y" } }), null);
+  assert.deepEqual(karteText({ text: stropheDaten(s1) }).titel, s1.t, "die Texte der Karte unverändert");
+  // die Operation: neue Fassung, die Optionen des Grunds bleiben (gespeicherte Projekte), die Herkunft nennt den Neubau
+  assert.equal(karte.version, "0.2.0"); assert.deepEqual(karte.parameter.find((q) => q.id === "grund").optionen.map((o) => o.wert), ["nacht", "papier"]);
+  assert.equal(karte.parameter.find((q) => q.id === "grund").standard, "nacht"); assert.match(karte.herkunft.referenz, /Neubau/); assert.match(karte.beschreibung, /Gestaltung der Website/);
+  // Zeichnen mit einer Stellvertreter-Leinwand: das Feld setzt 49 Kreise, dazu die Fäden; das Signet eine Schlaufe und den Punkt
+  const stub = () => { const l = []; const ctx = new Proxy({}, { get: (_, k) => (k === "log" ? l : (...a) => { l.push([k, ...a]); }), set: (_, k, v) => { l.push(["=" + k, v]); return true; } }); return ctx; };
+  let ctx = stub();
+  assert.equal(feldZeichnen(ctx, 10, 20, 12, { hier: null, nah: [] }, NEUBAU.hell), 84, "das leere Feld");
+  assert.equal(ctx.log.filter((e) => e[0] === "arc").length, 49); assert.equal(ctx.log.filter((e) => e[0] === "fill").length, 0);
+  ctx = stub();
+  assert.equal(feldZeichnen(ctx, 10, 20, 12, { hier: 1, nah: nahe1 }, NEUBAU.hell), 84);
+  assert.equal(ctx.log.filter((e) => e[0] === "arc").length, 49); assert.equal(ctx.log.filter((e) => e[0] === "quadraticCurveTo").length, nahe1.length);
+  assert.equal(ctx.log.filter((e) => e[0] === "fill").length, 1 + nahe1.length, "der Zettel und die nahen gefüllt");
+  assert.ok(ctx.log.some((e) => e[0] === "=fillStyle" && e[1] === "#1d3fd6"));
+  ctx = stub();
+  const breite = signetZeichnen(ctx, 0, 0, 24, NEUBAU.dunkel);
+  assert.equal(breite, 34); assert.equal(ctx.log.filter((e) => e[0] === "lineTo").length, 120); assert.equal(ctx.log.filter((e) => e[0] === "arc").length, 1);
+  assert.ok(ctx.log.some((e) => e[0] === "=fillStyle" && e[1] === "#8fb0ff"), "der Punkt in der Blaupause");
+  // die Signatur zeichnet mit denselben Konstanten (kein #f08a5d, kein #f4f1ea mehr)
+  const sig = readFileSync(new URL("alpha/lab/operationen/signatur.js", root), "utf8");
+  assert.ok(!/#f08a5d"|#f4f1ea"|#141414"|#f2f2f0"/.test(sig), "keine alten Farben im Code"); assert.match(sig, /from "\.\.\/medien\/schriften\.js"/);
+});

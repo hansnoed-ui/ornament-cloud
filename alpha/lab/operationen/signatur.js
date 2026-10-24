@@ -7,8 +7,11 @@
 // lebend() gibt dem Film über Stationen die Bühne (zeitbasis «auftritt»), ausfuehren() ein Standbild als Station. Gelesen und unverändert
 // importiert werden: der Weg des Lichtwürfels (alpha/phorma-iii/irrweg.js), die Tonanalyse (ton.js), die 40 Zeichen und die Daten des Doppelrads
 // (portfolio/nebeneinander-nacheinander/js/), die Strophen des Zettelkastens kommen über zettel.strophe, die Konstellation über orna.konstellation.
-// Das Signet folgt alpha/sketchory/signet.js (Kurve, Zeitplan, Farben), mit dem Namen «ornament.lab». Schriften: Instrument Sans und Newsreader (vendor/fonts).
+// Das Signet folgt alpha/sketchory/signet.js (Kurve, Zeitplan), mit dem Namen «ornament.lab». Schriften und Farben seit Lab 0.1.33 die des Neubaus
+// der Website (medien/schriften.js; Wunsch vom 24. Oktober 2026): Instrument Sans und Newsreader, Papier und Tinte in echter Umkehr, die Blaupause
+// (#8fb0ff auf Schwarz, #1d3fd6 auf der Zettelkarte) als einziger Akzent – vorher Papier #f4f1ea und der Punkt #f08a5d.
 import * as G from "../kern/signatur.js";
+import { SANS, SERIF, NEUBAU, schriftenLaden, feldZeichnen } from "../medien/schriften.js";
 import { tonAnalysieren } from "../../../alpha/phorma-iii/ton.js?v=23";
 import { irrweg } from "../../../alpha/phorma-iii/irrweg.js?v=23";
 import { symbolMarkup } from "../../../portfolio/nebeneinander-nacheinander/js/symbols.js?v=2";
@@ -17,9 +20,8 @@ import { artists } from "../../../portfolio/nebeneinander-nacheinander/js/data/a
 import { theorists } from "../../../portfolio/nebeneinander-nacheinander/js/data/theorists.js";
 
 const { anteil, weich, inOut, aus, mix, klemm } = G;
-const GRUND = "#000000", TINTE = "#f2f2f0", WEISS = "#ffffff", PUNKT = "#f08a5d", PAPIER = "#f4f1ea", SCHWARZ = "#141414";
-const SANS = '"Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
-const SERIF = 'Newsreader, Georgia, "Times New Roman", serif';
+const GRUND = NEUBAU.dunkel.papier, TINTE = NEUBAU.dunkel.tinte, WEISS = "#ffffff", PUNKT = NEUBAU.dunkel.faden;   // auf Schwarz
+const PAPIER = NEUBAU.hell.papier, SCHWARZ = NEUBAU.hell.tinte, GRAU = NEUBAU.hell.grau, FADEN = NEUBAU.hell.faden;   // die Zettelkarte
 const ROEMISCH = ["I", "II", "III", "IV", "V", "VI", "VII"];
 const NAME = "ornament.lab";
 const KUGEL_PUNKTE = 160, KUGEL_R = 0.62, KUGEL_DREHUNG = 0.9;
@@ -28,25 +30,6 @@ const DATEI = "alpha/lab/operationen/signatur.js, alpha/lab/kern/signatur.js";
 const imBrowser = () => typeof document !== "undefined";
 const leinwand = (w, h) => { const c = document.createElement("canvas"); c.width = Math.max(2, Math.round(w)); c.height = Math.max(2, Math.round(h)); return c; };
 const gerade = (n) => Math.max(2, Math.round(n / 2) * 2);
-
-// ---------- Schriften (einmal geladen; ohne sie zeichnet die Leinwand in den Ersatzschriften) ----------
-const LATIN = "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD";
-const LATIN_EXT = "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF";
-let schriften = null;
-function schriftenLaden() {
-  if (schriften) return schriften;
-  schriften = (async () => {
-    if (typeof FontFace === "undefined" || !document.fonts) return;
-    const url = (f) => `url(${new URL(`../../../vendor/fonts/${f}`, import.meta.url).href}) format("woff2")`;
-    const ff = [
-      ["Instrument Sans", "instrument-sans-normal-latin.woff2", "normal", LATIN], ["Instrument Sans", "instrument-sans-normal-latin-ext.woff2", "normal", LATIN_EXT],
-      ["Newsreader", "newsreader-normal-latin.woff2", "normal", LATIN], ["Newsreader", "newsreader-normal-latin-ext.woff2", "normal", LATIN_EXT],
-      ["Newsreader", "newsreader-italic-latin.woff2", "italic", LATIN], ["Newsreader", "newsreader-italic-latin-ext.woff2", "italic", LATIN_EXT],
-    ].map(([f, d, style, unicodeRange]) => new FontFace(f, url(d), { style, weight: "200 800", unicodeRange }));
-    await Promise.all(ff.map(async (f) => { try { await f.load(); document.fonts.add(f); } catch { /* Ersatzschrift */ } }));
-  })();
-  return schriften;
-}
 
 // ---------- die Bühne: Leinwand, Perspektive, Leuchten ----------
 function buehne(W, H) {
@@ -276,7 +259,7 @@ function introBuehne(B, { zettel, ziel, einsaetze, seed }) {
         const a = felderSicht * (ist ? 1 : 1 - 0.6 * dunkler) * (1 - 0.85 * weg2);
         ctx.save(); ctx.globalAlpha = a; vieleck(ctx, q);
         if (ist && leuchtet > 0) { ctx.fillStyle = PUNKT; ctx.globalAlpha = a * leuchtet; ctx.fill(); ctx.globalAlpha = a; }
-        else { ctx.fillStyle = "rgba(242,242,240,0.07)"; ctx.fill(); }
+        else { ctx.fillStyle = "rgba(255,255,255,0.07)"; ctx.fill(); }
         ctx.strokeStyle = ist && leuchtet > 0 ? PUNKT : TINTE; ctx.lineWidth = Math.max(1, u * 0.0042); ctx.stroke();
         ctx.restore();
       }
@@ -355,37 +338,37 @@ function karteSetzen(kc, kw, kh, z) {
 function karteZeichnen(kc, kw, kh, s, z, t) {
   const P = G.INTRO_PHASEN, { q, rand } = s, sicht = (a) => weich(anteil(t, a, a + 0.3)), hoch = (a) => (1 - sicht(a)) * q * 0.6;
   kc.setTransform(1, 0, 0, 1, 0, 0); kc.globalAlpha = 1; kc.fillStyle = PAPIER; kc.fillRect(0, 0, kw, kh);
-  kc.fillStyle = SCHWARZ; kc.textBaseline = "alphabetic"; kc.textAlign = "left";
+  kc.textBaseline = "alphabetic"; kc.textAlign = "left";
   const t0 = P.zettel[0] - 0.2;
-  // Kopf: Zettelkasten · Zyklus, rechts die Nummer und das kleine Raster mit dem Feld
+  // Kopf in Grau: Zettelkasten · Zyklus · Nummer, rechts das kleine Feld 7 × 7 als Punkte mit den Fäden zu den nahen Zetteln (wie die Zettelkarten des Neubaus)
   kc.globalAlpha = sicht(t0);
-  kc.font = `500 ${Math.round(q * 0.78)}px ${SANS}`;
-  kc.fillText(`Zettelkasten · ${z.zyklus} ${z.zyklusTitel}`, rand, rand + q * 0.8);
-  const m = q * 0.24, gx = kw - rand - 7 * m * 1.35;
-  for (let i = 0; i < 49; i++) { const x = gx + (i % 7) * m * 1.35, y = rand + Math.floor(i / 7) * m * 1.35 - q * 0.2; kc.fillStyle = i + 1 === z.nummer ? PUNKT : "rgba(20,20,20,0.22)"; kc.fillRect(x, y, m, m); }
-  kc.fillStyle = SCHWARZ; kc.textAlign = "right";
-  kc.fillText(`${z.nummer} / 49`, gx - q * 0.6, rand + q * 0.8); kc.textAlign = "left";
-  kc.globalAlpha = sicht(t0) * 0.35; kc.fillRect(rand, rand + q * 1.5, kw - 2 * rand, Math.max(1, q * 0.06));
+  kc.fillStyle = GRAU; kc.font = `400 ${Math.round(q * 0.78)}px ${SANS}`;
+  const a = q * 0.34, gx = kw - rand - 7 * a;
+  zeilen(kc, `Zettelkasten · ${z.zyklus} ${z.zyklusTitel} · ${z.nummer} / 49`, gx - rand - q * 0.6).slice(0, 2).forEach((l, i) => kc.fillText(l, rand, rand + q * 0.8 + i * q * 1.0));
+  feldZeichnen(kc, gx, rand - q * 0.2, a, { hier: z.nummer, nah: (z.nahe ?? []).filter((n) => n >= 1 && n <= 49) }, NEUBAU.hell);
+  kc.fillStyle = SCHWARZ;
   // Titel und Leitsatz
   let y = rand + q * 2.6 + q * 2;
   kc.globalAlpha = sicht(t0 + 0.15); kc.font = `500 ${Math.round(q * 2)}px ${SANS}`;
+  if ("letterSpacing" in kc) kc.letterSpacing = `${-0.05 * q}px`;
   for (const l of s.titel) { kc.fillText(l, rand, y + hoch(t0 + 0.15)); y += q * 2.3; }
+  if ("letterSpacing" in kc) kc.letterSpacing = "0px";
   y += q * 1.1;
   kc.globalAlpha = sicht(t0 + 0.35); kc.font = `italic 400 ${Math.round(q * 1.32)}px ${SERIF}`;
   for (const l of s.satz) { kc.fillText(l, rand, y + hoch(t0 + 0.35)); y += q * 1.32 * 1.42; }
   // die vier Verweise, unten, einer nach dem anderen
   let yu = kh - rand - s.unten + q * 0.9;
-  kc.globalAlpha = sicht(t0 + 0.8) * 0.55; kc.font = `500 ${Math.round(q * 0.66)}px ${SANS}`;
-  kc.fillText("VERWEISE", rand, yu); kc.fillRect(rand, yu + q * 0.35, kw - 2 * rand, Math.max(1, q * 0.04));
+  kc.globalAlpha = sicht(t0 + 0.8); kc.fillStyle = GRAU; kc.font = `400 ${Math.round(q * 0.66)}px ${SANS}`;
+  kc.fillText("Weiterdenken", rand, yu); kc.fillStyle = NEUBAU.hell.linie; kc.fillRect(rand, yu + q * 0.35, kw - 2 * rand, Math.max(1, q * 0.04));
   yu += q * 0.7;
   s.verweise.forEach((v, k) => {
     const a = t0 + 1.0 + k * 0.3;
     kc.globalAlpha = sicht(a);
     yu += q * 1.25;
-    kc.fillStyle = PUNKT; kc.fillRect(rand, yu - q * 0.62, q * 0.36, q * 0.36);
+    kc.fillStyle = FADEN; kc.beginPath(); kc.arc(rand + q * 0.18, yu - q * 0.36, q * 0.17, 0, Math.PI * 2); kc.fill();
     kc.fillStyle = SCHWARZ; kc.font = `500 ${Math.round(q * 0.92)}px ${SANS}`; kc.fillText(v.person, rand + q * 0.75, yu + hoch(a));
     kc.font = `italic 400 ${Math.round(q * 0.86)}px ${SERIF}`;
-    for (const l of s.werke[k]) { yu += q * 1.15; kc.globalAlpha = sicht(a) * 0.8; kc.fillText(l, rand + q * 0.75, yu + hoch(a)); }
+    kc.fillStyle = GRAU; for (const l of s.werke[k]) { yu += q * 1.15; kc.fillText(l, rand + q * 0.75, yu + hoch(a)); }
     yu += q * 0.55;
   });
   kc.globalAlpha = 1;

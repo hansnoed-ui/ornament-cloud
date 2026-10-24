@@ -29,8 +29,8 @@ async function oeffne(opts = {}) {
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true, ...opts });
   const page = await ctx.newPage();
   const fehler = [], fremd = [];
-  page.on("pageerror", (e) => fehler.push(e.message));
-  page.on("console", (m) => { if (m.type() === "error") fehler.push(m.text()); });
+  page.on("pageerror", (e) => { fehler.push(e.message); if (process.env.LAB_E2E_DEBUG) console.log("      pageerror:", e.message); });
+  page.on("console", (m) => { if (m.type() === "error") { fehler.push(m.text()); if (process.env.LAB_E2E_DEBUG) console.log("      console:", m.text()); } });
   page.on("request", (r) => { const u = new URL(r.url()); if (!["localhost", "127.0.0.1"].includes(u.hostname) && u.protocol.startsWith("http")) fremd.push(r.url()); });
   page.on("dialog", (d) => d.accept());
   await page.goto(base);
@@ -672,7 +672,7 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   await warteFertig(p, 420000);
   await p.waitForSelector("#vorschlag30 .zusammenstellung video");
   const z = await S(p, () => { const pr = ornamentLab.projekt; const d = pr.entscheidungen.find((y) => y.gegenstand === "zusammenstellung"); return { d, ops: pr.knoten.slice(-12).map((k) => k.operation), x: pr.exporte.at(-1), status: document.querySelector("#status").textContent, abschnitte: pr.knoten.slice(-7, -2).map((k) => k.ausgaben.length),
-    strophe: pr.entscheidungen.find((y) => y.gegenstand === "strophe"), konstellation: pr.entscheidungen.find((y) => y.gegenstand === "konstellation"), karten: pr.knoten.filter((k) => k.operation === "lab.karte").map((k) => k.protokoll.inhalt), fictory: pr.knoten.find((k) => k.operation === "fictory.prozess") ?? null }; });
+    strophe: pr.entscheidungen.find((y) => y.gegenstand === "strophe"), konstellation: pr.entscheidungen.find((y) => y.gegenstand === "konstellation"), karten: pr.knoten.filter((k) => k.operation === "lab.karte").map((k) => k.protokoll.inhalt), kartenP: pr.knoten.filter((k) => k.operation === "lab.karte").map((k) => ({ gestaltung: k.protokoll.gestaltung, schriften: k.protokoll.schriften, feld: k.protokoll.feld })), fictory: pr.knoten.find((k) => k.operation === "fictory.prozess") ?? null }; });
   assert.equal(z.d.art, "mensch", "eine Stelle geändert: die Entscheidung ist menschlich"); assert.deepEqual([...z.d.details.geaendert].sort(), ["abschnitt1", "abschnitt5", "bild6"]); assert.equal(z.d.details.vorschlag, "jev");
   assert.equal(z.d.gewaehlt.bild[5], "bild.raster"); assert.deepEqual(z.d.gewaehlt.abschnitte.map((a) => a.an), [true, true, true, true, false, true]); assert.equal(z.d.gewaehlt.abschnitte[0].dauer, 10);
   assert.deepEqual(z.abschnitte, [12, 10, 10, 10, 10], "fünf Abschnitte, der erste mit zwölf Varianten (10 s, die Grenze je Ausführung)"); assert.equal(z.d.gewaehlt.zettel, "7"); assert.equal(z.d.gewaehlt.orna, "ziehen");
@@ -682,6 +682,16 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   assert.equal(z.fictory, null, "seit 0.1.20 kein Zerfall in der Zusammenstellung (Standbilder)");
   assert.match(z.karten[0].kopf, /^Zettelkasten · .* · 7 \/ 49$/); assert.match(z.karten[1].kopf, /^ORNA · Konstellation /); assert.match(z.karten[1].fuss, /^Operationsregel R/);
   assert.match(z.status, /Zettel 7: .*ORNA \d+: /);
+  // die Karten in der Gestaltung des Neubaus (0.1.33): Schriften der Website geladen, das Feld; Weiss auf Schwarz mit der Blaupause, kein Orange
+  assert.deepEqual(z.kartenP.map((k) => k.gestaltung), ["Neubau", "Neubau"]); assert.deepEqual(z.kartenP.map((k) => k.schriften), [{ sans: true, serif: true }, { sans: true, serif: true }]);
+  assert.equal(z.kartenP[0].feld.hier, 7); assert.ok(z.kartenP[0].feld.nah >= 1, "Fäden zu nahen Zetteln"); assert.deepEqual(z.kartenP[1].feld, { hier: null, nah: 0 }, "bei ORNA das leere Feld");
+  const farben = await S(p, async () => {
+    const pr = ornamentLab.projekt, m = (id) => pr.ergebnisse.find((e) => e.id === id), k = pr.knoten.filter((k) => k.operation === "lab.karte");
+    const nah = (a, b) => Math.abs(a[0] - b[0]) < 24 && Math.abs(a[1] - b[1]) < 24 && Math.abs(a[2] - b[2]) < 24;
+    const zaehle = (b) => { const z = { blau: 0, orange: 0, schwarz: 0, weiss: 0 }; for (let i = 0; i < b.data.length; i += 4) { const px = [b.data[i], b.data[i + 1], b.data[i + 2]]; if (nah(px, [143, 176, 255])) z.blau++; if (nah(px, [240, 138, 93])) z.orange++; if (px[0] < 8 && px[1] < 8 && px[2] < 8) z.schwarz++; if (px[0] > 247 && px[1] > 247 && px[2] > 247) z.weiss++; } z.n = b.data.length / 4; return z; };
+    return Promise.all(k.map(async (k) => zaehle(await ornamentLab.medien.bild(m(k.ausgaben[0])))));
+  });
+  for (const f of farben) { assert.ok(f.schwarz / f.n > 0.6, `Grund Schwarz: ${JSON.stringify(f)}`); assert.ok(f.weiss > 0, "Tinte Weiss"); assert.ok(f.blau > 0, `die Blaupause: ${JSON.stringify(f)}`); assert.equal(f.orange, 0, "kein Orange"); }
   assert.equal(z.x.dramaturgie, "zusammenstellung"); assert.equal(z.x.stationen.length, 55, "Zettelkarte, Bild, 52 Varianten, ORNA-Karte"); assert.ok(z.x.ton, "mit Tonspur");
   assert.equal(z.x.partitur.folge[0].einmal, true); assert.equal(z.x.partitur.folge[0].halten, 2.5); assert.equal(z.x.partitur.folge.at(-1).einmal, true);
   assert.equal(z.x.partitur.folge[0].ergebnis, z.x.stationen[0]); assert.equal(z.x.partitur.folge.at(-1).ergebnis, z.x.stationen.at(-1));
@@ -1014,9 +1024,15 @@ await check("Signatur (0.1.26): am Telefon Intro mit dem Zettel, Outro mit ORNA,
   const hell = await S(t.page, async () => {
     const pr = ornamentLab.projekt, m = (id) => pr.ergebnisse.find((e) => e.id === id), x = pr.exporte.at(-1);
     const mittel = (b) => { let s = 0; for (let i = 0; i < b.data.length; i += 4) s += b.data[i]; return s / (b.data.length / 4) / 255; };
-    return { intro: mittel(await ornamentLab.medien.bild(m(x.partitur.folge[0].ergebnis))), signet: mittel(await ornamentLab.medien.bild(m(x.partitur.folge.at(-1).ergebnis))) };
+    const nah = (a, b) => Math.abs(a[0] - b[0]) < 24 && Math.abs(a[1] - b[1]) < 24 && Math.abs(a[2] - b[2]) < 24;
+    const zaehle = (b) => { const z = { blau: 0, blauHell: 0, orange: 0 }; for (let i = 0; i < b.data.length; i += 4) { const px = [b.data[i], b.data[i + 1], b.data[i + 2]]; if (nah(px, [29, 63, 214])) z.blau++; if (nah(px, [143, 176, 255])) z.blauHell++; if (nah(px, [240, 138, 93])) z.orange++; } return z; };
+    const intro = await ornamentLab.medien.bild(m(x.partitur.folge[0].ergebnis)), signet = await ornamentLab.medien.bild(m(x.partitur.folge.at(-1).ergebnis));
+    return { intro: mittel(intro), signet: mittel(signet), introFarben: zaehle(intro), signetFarben: zaehle(signet) };
   });
   assert.ok(hell.intro > 0.5, `Zettel auf Papier: ${hell.intro}`); assert.ok(hell.signet < 0.1, `Signet auf Schwarz: ${hell.signet}`);
+  // seit 0.1.33 in den Farben des Neubaus: die Blaupause statt des Punkts #f08a5d
+  assert.ok(hell.introFarben.blau > 0, `die Blaupause auf der Zettelkarte: ${JSON.stringify(hell.introFarben)}`); assert.equal(hell.introFarben.orange, 0);
+  assert.ok(hell.signetFarben.blauHell > 0, `der Punkt des Signets in der Blaupause: ${JSON.stringify(hell.signetFarben)}`); assert.equal(hell.signetFarben.orange, 0);
   assert.match(z.status, /Signatur: Intro, Outro, Signet/);
   const breit = await t.page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   assert.ok(breit <= 0, `${breit}px zu breit`);

@@ -27,7 +27,7 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.raster` 0.1.0 | Raster und Linien | Räumliche Operation | neu, nach amplitudenmodulierte Rasterung des Drucks; Kupferstich und Schraffur; Bild abtasten und Formen zeichnen in Processing/p5.js; gestapelte Profillinien (Unknown Pleasures) | Bild → Bild | über Modulation |
 | `lab.neusetzen` 0.1.0 | Zerlegen und neu setzen | Räumliche Operation | neu, nach Cut-up (Brion Gysin, William S. Burroughs); Collage und Montage; Kachel-Filter der Bildbearbeitung (GIMP Puzzle, Mosaik) | Bild → Bild | über Modulation |
 | `zettel.strophe` 0.1.0 | Zettel aus dem Zettelkasten | Selektionsoperation | Adapter: Zettelkasten (Zu seiner Zeit, 49 Strophen in sieben Zyklen) | – → Befund | eine |
-| `lab.karte` 0.1.0 | Textkarte | Räumliche Operation | neu, nach Titel- und Zwischentitelkarten des Films; Typografie des Zettelkastens (Systemschriften, Papier und Nacht) | Bild (opt.) + Befund (opt.) + Konstellation (opt.) → Bild | eine |
+| `lab.karte` 0.2.0 | Textkarte | Räumliche Operation | neu, nach Titel- und Zwischentitelkarten des Films; Gestaltung des Neubaus der Website (Instrument Sans, Newsreader, Papier und Tinte, die Blaupause; die Zettelkarten aus tools/b-kacheln.mjs) | Bild (opt.) + Befund (opt.) + Konstellation (opt.) → Bild | eine |
 | `phorma.gewebe` 0.1.0 | PHORMA: Gewebe | Zeitliche Operation | Adapter: PHORMA III | Bild + Audiosignal (opt.) → Bild | erzeugt selbst mehrere |
 | `phorma.irrfahrt` 0.1.0 | PHORMA: Irrfahrt | Zeitliche Operation | Adapter: PHORMA III | Bild + Audiosignal (opt.) → Bild | erzeugt selbst mehrere |
 | `phorma.lichtwuerfel` 0.1.0 | PHORMA: Lichtwürfel | Zeitliche Operation | Adapter: PHORMA III | Bild + Audiosignal (opt.) → Bild | erzeugt selbst mehrere |
@@ -522,16 +522,16 @@ Zieht eine der 49 Strophen des Zettelkastens mit dem Startwert oder nimmt die ge
 
 ## Textkarte (`lab.karte`)
 
-Macht aus einem Zettel des Zettelkastens oder einer ORNA-Konstellation ein Bild: Kopfzeile, Titel, Text und Fusszeile, in Papier auf Nacht oder umgekehrt, im Mass des Bildes am Eingang.
+Macht aus einem Zettel des Zettelkastens oder einer ORNA-Konstellation ein Bild in der Gestaltung der Website: Kopfzeile, Titel, Satz, Signet und Fusszeile, das Feld 7 × 7 der Website (beim Zettel mit den Fäden zu den nahen Zetteln); Weiss auf Schwarz oder Schwarz auf Weiss, im Mass des Bildes am Eingang.
 
-- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/karte.js; Prinzip nach Titel- und Zwischentitelkarten des Films; Typografie des Zettelkastens (Systemschriften, Papier und Nacht)
-- **Voraussetzungen:** Leinwand (Canvas) des Browsers
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/karte.js; Prinzip nach Titel- und Zwischentitelkarten des Films; Gestaltung des Neubaus der Website (Instrument Sans, Newsreader, Papier und Tinte, die Blaupause; die Zettelkarten aus tools/b-kacheln.mjs)
+- **Voraussetzungen:** Leinwand (Canvas) des Browsers; die Schriften der Website aus vendor/fonts/ (sonst Ersatzschriften)
 - **Ressourcen:** sofort; Speicher: ein Bild
 - **Reproduzierbar:** ja
 
 | Parameter | Bereich |
 |---|---|
-| Grund (`grund`) | **Papier auf Nacht** / Nacht auf Papier |
+| Grund (`grund`) | **Weiss auf Schwarz (die Website im Dunkeln)** / Schwarz auf Weiss (die Website im Hellen) |
 | Schriftgrösse des Titels (`groesse`) | 0.03 … 0.15, Standard 0.07 – Anteil der kürzeren Seite |
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1280 |
 

@@ -38,6 +38,7 @@ Die zentrale Einheit ist die **Operation**, nicht die App. Vorhandene Anwendunge
 | `medien/browser.js` | PNG-Kodierung, Import mit Typ-, Grössen- und Ausrichtungsprüfung, Objekt-URLs; Tondateien unverändert ablegen und mit Web Audio dekodieren (einkanalig, 44,1 kHz) | ja |
 | `medien/mp4ton.js` | Tonspur aus MP4/MOV/M4A: Kästen lesen (ohne Browser geprüft) und mit WebCodecs dekodieren, der zweite Leseweg, wenn Web Audio den Ton nicht liest (AAC auf Android) | Dekoder: ja, Lesen: nein |
 | `medien/video.js` | MP4 über WebCodecs und mp4-muxer (vendor/), seit 0.1.4 mit Tonspur, Rückfall WebM über MediaRecorder | ja |
+| `medien/schriften.js` | die Gestaltung des Neubaus für die Leinwand (seit 0.1.33): Instrument Sans und Newsreader aus vendor/fonts als FontFace, die Farben (Papier, Tinte, Grau, Blaupause) hell und dunkel, das Signet als Linie und das Feld 7 × 7 mit Fäden; für `karte.js` und `signatur.js` | Laden: ja (sonst Ersatzschriften), Konstanten und Geometrie: nein |
 | `jev/` | jev live: Lage, Frage, Seite, Worker-Entwurf (aus, solange keine Adresse eingetragen ist) | nein |
 | `app.js`, `index.html`, `lab.css` | Oberfläche mit vier Bereichen und zwei Ansichten | ja |
 
