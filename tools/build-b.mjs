@@ -768,7 +768,7 @@ copyFileSync(new URL("src/b/b.js", ROOT), new URL("b.js", AUS_DE));
 copyFileSync(new URL("src/b/tafeln.mjs", ROOT), new URL("tafeln.mjs", AUS_DE));
 writeFileSync(new URL("tafeln-leben.js", AUS_DE), readFileSync(new URL("src/b/tafeln-leben.js", ROOT), "utf8").replace('from "./tafeln.mjs"', `from "./tafeln.mjs?v=${V}"`));
 mkdirSync(new URL("kacheln/", AUS_DE), { recursive: true });
-writeFileSync(new URL("kacheln/liste.json", AUS_DE), JSON.stringify(kachelSeiten.de.concat(["werkstatt/"]), null, 1) + "\n");
+writeFileSync(new URL("kacheln/liste.json", AUS_DE), JSON.stringify(kachelSeiten.de.concat(["werkstatt/", "redaktion/"]), null, 1) + "\n");
 mkdirSync(new URL("en/kacheln/", AUS_DE), { recursive: true });
 writeFileSync(new URL("en/kacheln/liste.json", AUS_DE), JSON.stringify(kachelSeiten.en, null, 1) + "\n");
 
