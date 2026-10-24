@@ -714,8 +714,9 @@ await check("Video als Eingang: Standbilder und Tonspur werden Material, die Zus
   await p.click("#zusammenstellung-rechnen"); await p.waitForTimeout(50);
   await warteFertig(p, 300000);
   await p.waitForSelector("#vorschlag30 .zusammenstellung video");
-  const z = await S(p, () => { const pr = ornamentLab.projekt, stills = pr.ergebnisse.filter((e) => e.typ === "IMAGE" && !e.knoten).map((e) => e.id); return { stills, eingaben: pr.knoten.slice(-6).map((k) => k.eingaben.bild), x: pr.exporte.at(-1) }; });
+  const z = await S(p, () => { const pr = ornamentLab.projekt, stills = pr.ergebnisse.filter((e) => e.typ === "IMAGE" && !e.knoten).map((e) => e.id); abschnitte = pr.knoten.filter((k) => !k.operation.startsWith("signatur.")); return { stills, eingaben: abschnitte.slice(-6).map((k) => k.eingaben.bild), signatur: pr.knoten.filter((k) => k.operation.startsWith("signatur.")).map((k) => k.operation), x: pr.exporte.at(-1) }; });
   assert.deepEqual(z.eingaben, z.stills, "jeder Abschnitt auf seinem Standbild");
+  assert.deepEqual(z.signatur, ["signatur.ton", "signatur.signet"], "ohne Zettel und ORNA nur Tonspur und Signet");
   assert.equal(z.x.stationen[0], z.stills[0]); assert.ok(z.x.ton, "mit Tonspur aus dem Video");
   assert.deepEqual(fehler3, []);
   await c.close();
