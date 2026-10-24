@@ -409,7 +409,7 @@ test("Stationen: Partitur aus dem Verlauf, Halten und Übergang, Verlauf nur wo 
   assert.throws(() => ST.partitur(p, { stationen: [e.id, "e-gibtsnicht"] }), /kein Bild/);
   assert.throws(() => ST.partitur(p, { stationen: [e.id, c.ergebnisse[0].id], halten: 10, uebergang: 6, takt: null, fps: 400 }), /Grenze/);
   const grenzen = ST.partitur(p, { stationen: [e.id, c.ergebnisse[0].id], halten: 99, uebergang: -3 });
-  assert.deepEqual([grenzen.halten, grenzen.uebergang], [10, 0], "Zeitparameter sind hart begrenzt");
+  assert.deepEqual([grenzen.halten, grenzen.uebergang], [12, 0], "Zeitparameter sind hart begrenzt (Halten bis 12 s seit 0.1.34)");
 });
 
 test("Stationen: dieselbe Modulation verteilt die Dauern über die Stationen (Rampe, Steuersignal)", async () => {
@@ -1654,13 +1654,15 @@ test("Zusammenstellung mit den Beständen an die Szenen (0.1.22): der Zerfall be
 test("Signatur (0.1.26): Zeitpläne, Geometrie von Würfel, Raster, Kugel, Rad und Schlaufe, der Scratch", async () => {
   const G = await lab("kern/signatur.js");
   const z = G.signaturZeiten({ intro: true, outro: true });
-  assert.deepEqual([z.vor, z.haupt, z.gesamt, z.outro, z.signet], [10, 30, 54.5, 40, 48]);
+  assert.deepEqual([z.vor, z.haupt, z.gesamt, z.outro, z.signet], [11, 30, 56.5, 41, 50]);
   assert.equal(G.signaturZeiten({ intro: false, outro: false }).gesamt, 30 + G.SIGNET_DAUER + G.AUFTAKT_DAUER, "ohne Outro legt sich das Bild zuerst auf die Kugel");
   const P = G.INTRO_PHASEN;
-  assert.ok(P.erscheinen[0] === 0 && P.scratch[1] === G.INTRO_DAUER && P.zettel[1] - P.zettel[0] >= 2.5, "Zeit zum Lesen des Zettels");
-  const o8 = G.outroPhasen(8), o10 = G.outroPhasen(10);
-  assert.ok(Math.abs(o10.zeigen[1] - o10.zeigen[0] - (o8.zeigen[1] - o8.zeigen[0] + 2)) < 1e-9, "das Outro dehnt nur das Zeigen der Konstellation");
-  assert.ok(G.signetPhasen(true).dauer <= 10 && G.INTRO_DAUER <= 10 && G.OUTRO_DAUER <= 10, "jede Station hält höchstens 10 s");
+  assert.ok(P.erscheinen[0] === 0 && P.scratch[1] === G.INTRO_DAUER && P.zettel[1] - P.zettel[0] >= 3.5, "Zeit zum Lesen des Zettels (seit 0.1.34 eine Sekunde mehr)");
+  const o9 = G.outroPhasen(9), o10 = G.outroPhasen(10);
+  assert.ok(Math.abs(o10.zeigen[1] - o10.zeigen[0] - (o9.zeigen[1] - o9.zeigen[0] + 1)) < 1e-9, "das Outro dehnt nur das Zeigen der Konstellation");
+  assert.ok(o9.zeigen[1] - o9.zeigen[0] >= 2.4, "die Konstellation steht mindestens 2,4 s (seit 0.1.34 eine Sekunde mehr)");
+  const ST2 = await lab("kern/stationen.js");
+  assert.ok(G.signetPhasen(true).dauer <= ST2.ZEITPARAMETER[0].max && G.INTRO_DAUER <= ST2.ZEITPARAMETER[0].max && G.OUTRO_DAUER <= ST2.ZEITPARAMETER[0].max, "jede Station hält höchstens so lange, wie die Partitur erlaubt (12 s seit 0.1.34)");
   assert.equal(G.signetPhasen().f(G.signetPhasen().fliessen[0] + 1.1), 50, "das Bild des Signets wie in sketchory/signet.js");
   const f = G.rasterFeld(17, 0.2);
   assert.deepEqual([f.zeile, f.spalte], [2, 2], "Strophe 17: dritter Zyklus, dritte Strophe");
@@ -1740,11 +1742,11 @@ test("Zusammenstellung mit Signatur (0.1.26): Intro mit dem Zettel, Outro mit de
   assert.deepEqual(laeufe[0].ein.sort(), ["bild", "text", "ton"]); assert.deepEqual(laeufe[1].ein.sort(), ["bild", "konstellation"]);
   assert.equal(laeufe[2].p.auftakt, "kugel"); assert.equal(laeufe[2].p.beginn, z.signet, "das Signet liest das Gefrickel ab seinem Beginn");
   const ton = p.knoten.find((k) => k.operation === "signatur.ton");
-  assert.ok(ton, "eine eigene Tonspur"); assert.equal(ton.parameter.dauer, z.gesamt); assert.equal(ton.parameter.vor, 10);
+  assert.ok(ton, "eine eigene Tonspur"); assert.equal(ton.parameter.dauer, z.gesamt); assert.equal(ton.parameter.vor, G.INTRO_DAUER);
   assert.equal(x.plan.tonspur, ton.ausgaben[0]); assert.equal(x.plan.tonBeginn, 0);
   const mess = p.knoten.filter((k) => k.operation === "lab.tonsignal").at(-1);
   assert.equal(mess.parameter.laenge, z.gesamt, "der ganze Film wird auf der neuen Tonspur gemessen");
-  assert.deepEqual(x.plan.stationen[0], { ergebnis: x.signatur.intro, einmal: true, halten: 10, uebergang: "schnitt" });
+  assert.deepEqual(x.plan.stationen[0], { ergebnis: x.signatur.intro, einmal: true, halten: G.INTRO_DAUER, uebergang: "schnitt" });
   assert.deepEqual(x.plan.stationen.at(-2), { ergebnis: x.signatur.outro, einmal: true, halten: G.OUTRO_DAUER, uebergang: "schnitt", dehnen: true });
   assert.deepEqual(x.plan.stationen.at(-1), { ergebnis: x.signatur.signet, einmal: true, halten: G.SIGNET_DAUER });
   assert.equal(x.plan.stationen.length, 64);

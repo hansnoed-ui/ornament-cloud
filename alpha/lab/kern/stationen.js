@@ -23,7 +23,7 @@ export const UEBERGAENGE = Object.freeze({
 
 /** die zeitlichen Grössen des Films, beschrieben wie Parameter einer Operation: so kann moduliere() sie über die Stationen verteilen */
 export const ZEITPARAMETER = Object.freeze([
-  { id: "halten", name: "Halten je Station (s)", art: "zahl", min: 0, max: 10, standard: 1.5, schritt: 0.1 },
+  { id: "halten", name: "Halten je Station (s)", art: "zahl", min: 0, max: 12, standard: 1.5, schritt: 0.1 },
   { id: "uebergang", name: "Übergang (s)", art: "zahl", min: 0, max: 6, standard: 1, schritt: 0.1 },
 ]);
 const ZEIT = { parameter: ZEITPARAMETER };

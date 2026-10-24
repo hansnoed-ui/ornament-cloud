@@ -44,7 +44,7 @@ Der Film steht unter `exporte` mit `art: "stationen"`, der vollständigen Partit
 ## Grenzen
 
 - höchstens 80 Stationen (bis Lab 0.1.15: 48, bis 0.1.17: 64) und 3600 Bilder (2 Minuten bei 30 Bildern/s) je Film, bei «reihum» höchstens 512 Auftritte
-- Halten 0 bis 10 s, Übergang 0 bis 6 s (harte Grenzen, auch nach Modulation)
+- Halten 0 bis 12 s (bis Lab 0.1.33: 10 s; die 12 braucht das Intro der Signatur), Übergang 0 bis 6 s (harte Grenzen, auch nach Modulation)
 - Verläufe werden neu gerechnet. Bei grossen Arbeitsbildern dauert das so lange wie die Operation selbst, bei festem Takt doppelt so lange, weil zuerst gezählt wird.
 
 ## Offen
