@@ -9,7 +9,7 @@
 // Station in jedem Bild neu, die Modulation folgt dem Klang Bild für Bild; ohne Grafikkarte bleibt es bei Stationen und Kamera.
 import { GRENZEN, ergebnis, knoten, verlauf } from "./projekt.js";
 import { moduliere, routeFuersProtokoll } from "./modulation.js";
-import { bildfolge, routenAufloesen } from "./ausfuehrung.js";
+import { bildfolge, routenAufloesen, eingaengeLaden } from "./ausfuehrung.js";
 import { neuesBild, skalieren, luminanz, NACHT } from "./bilddaten.js";
 
 export const STATIONEN_VERSION = "0.4.0";
@@ -255,15 +255,24 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
   const fps = pt.fps;
   let n = 0, soll = 0;
   // lebendig (medien/gpu.js): eine Station, die eine Operation mit lebendiger Fassung ergeben hat, wird in jedem Bild neu gerechnet,
-  // auf ihrem Eingang, mit den Parametern zu diesem Zeitpunkt: dieselben Routen, die die Varianten verteilt haben, laufen über die Zeit des Films
-  const mitGpu = pt.lebendig && lebendig ? lebendig : null, lagen = new Map(), eingaenge = new Map();
+  // auf ihrem Eingang, mit den Parametern zu diesem Zeitpunkt: dieselben Routen, die die Varianten verteilt haben, laufen über die Zeit des Films.
+  // Eigene Bühnen (seit 0.1.21, op.lebend, PHORMA): die Operation baut ihre Bühne einmal je Knoten und gibt bild(t) zur Filmzeit t, so läuft die
+  // Szene im Takt der Tonspur weiter, während ihre Standbilder als Stationen stehen; am Ende wird jede Bühne entsorgt
+  const mitGpu = pt.lebendig && lebendig ? lebendig : null, lagen = new Map(), eingaenge = new Map(), eigene = new Map();
   const lage = async (id) => {
-    if (!mitGpu) return null;
+    if (!pt.lebendig) return null;
     if (lagen.has(id)) return lagen.get(id);
     const e = ergebnis(projekt, id), k = e?.knoten ? knoten(projekt, e.knoten) : null;
+    const op = k && register.hat(k.operation) ? register.hole(k.operation) : null;
     const nurBild = k && Object.entries(k.eingaben ?? {}).every(([name, v]) => name === "bild" || !v);
     let l = null;
-    if (k && nurBild && k.eingaben.bild && mitGpu.kann(k.operation)) {
+    if (op?.lebend && (op.verfuegbar?.() ?? true)) {
+      if (!eigene.has(k.id)) {
+        const ein = await eingaengeLaden(op, projekt, medien, k.eingaben);
+        eigene.set(k.id, await op.lebend(ein, e.variante?.parameter ?? k.parameter, { seed: (e.variante?.seed ?? k.seed ?? 1) >>> 0, abbrechen }));
+      }
+      l = { eigen: eigene.get(k.id) };
+    } else if (k && nurBild && k.eingaben.bild && mitGpu?.kann(k.operation)) {
       const op = register.hole(k.operation), routen = routenAufloesen(projekt, k.variation?.routen ?? []), fest = e.variante?.parameter ?? k.parameter;
       l = { operation: k.operation, eingang: k.eingaben.bild, seed: (e.variante?.seed ?? k.seed ?? 1) >>> 0,
         parameter: (t) => (routen.length ? moduliere(op, k.parameter, routen, Math.min(1, Math.max(0, t / Math.max(1e-3, pt.dauer)))) : fest) };
@@ -274,11 +283,13 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
   const lebend = async (j, id) => {
     const l = await lage(id);
     if (!l) return null;
+    if (l.eigen) { const b = await l.eigen.bild(n / fps); return b.width === W && b.height === H ? b : einpassen(b, W, H); }
     if (!eingaenge.has(l.eingang)) { if (eingaenge.size > 3) eingaenge.delete(eingaenge.keys().next().value); eingaenge.set(l.eingang, await roh(l.eingang)); }
     const t = n / fps;
     return mitGpu.bild({ operation: l.operation, eingang: eingaenge.get(l.eingang), parameter: l.parameter(t), seed: l.seed, t, schritt: n, schluessel: String(j), W, H });
   };
   const grenze = () => { if (n > GRENZEN.filmBilder) throw new Error(`Grenze: höchstens ${GRENZEN.filmBilder} Bilder je Film`); };
+  try {
   for (const [j, x] of pt.folge.entries()) {
     abbrechen?.throwIfAborted?.();
     const a = await bild(x.ergebnis), ab = n;
@@ -325,4 +336,5 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
     mitGpu?.vergiss?.(String(j));
     grenze();
   }
+  } finally { for (const b of eigene.values()) { try { b.entsorgen?.(); } catch { /* schon weg */ } } }
 }

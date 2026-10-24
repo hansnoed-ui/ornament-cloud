@@ -20,6 +20,10 @@ export const KATALOG = Object.freeze({
   "lab.licht": "Licht: helle Stellen glühen oder streichen zu Lichtfahnen aus (räumliche Operation)",
   "lab.raster": "Raster und Linien: das Bild wird zu Punkten, Linien, Schraffur, Wellenlinien oder Mosaik (räumliche Operation)",
   "lab.neusetzen": "Zerlegen und neu setzen: Kacheln oder Streifen werden zufällig, nach Helligkeit oder umgekehrt neu geordnet (räumliche Operation)",
+  "phorma.gewebe": "PHORMA Gewebe: die Umrisse des Bildes werden zu Flächen aus feinen Linien, die ein Ton bewegt (zeitliche Operation, eigene Bühne)",
+  "phorma.irrfahrt": "PHORMA Irrfahrt: ein Faden irrt durch einen Würfel aus Licht und quillt mit der Musik zu Rauch auf (zeitliche Operation, eigene Bühne)",
+  "phorma.lichtwuerfel": "PHORMA Lichtwürfel: ein Faden irrt in einem festen Würfel aus Licht (zeitliche Operation, eigene Bühne)",
+  "phorma.traube": "PHORMA Traube: glänzende Perlen in einer Kugel aus Fäden, Schnitte im Takt des Tons (zeitliche Operation, eigene Bühne)",
 });
 
 const KENNUNG = /^[a-z]+\.[a-z0-9-]+$/;
@@ -65,6 +69,11 @@ export const BILD_EFFEKTE = Object.freeze({
   "bild.verzerrung": "Verzerrung: das Bild wird verwirbelt, gewellt oder wie durch eine Linse gesehen",
   "bild.licht": "Licht: helle Stellen glühen auf und strahlen aus",
   "bild.raster": "Raster: das Bild wird zu Punkten und Linien wie im Druck",
+  // die Szenen von PHORMA III (seit Lab 0.1.21): eigene Welten aus dem Bild, die Grafikkarte rechnet jedes Bild aus der Zeit und dem Ton
+  "bild.gewebe": "Gewebe: die Umrisse des Bildes werden zu Flächen aus feinen Linien, die der Ton bewegt, bei kräftigen Einsätzen neue Bilder (PHORMA)",
+  "bild.irrfahrt": "Irrfahrt: ein Faden irrt durch einen Würfel aus Licht, quillt mit der Musik zu Rauch auf, bei Schlägen springt alles (PHORMA)",
+  "bild.lichtwuerfel": "Lichtwürfel: ein Faden irrt in einem festen Würfel aus Licht, ruhiger als die Irrfahrt (PHORMA)",
+  "bild.traube": "Traube: glänzende rote Perlen in einer Kugel aus Fäden, Schnitte im Takt, der Bass lässt sie glühen (PHORMA)",
 });
 export const KLANG_EFFEKTE = Object.freeze({
   "klang.keine": "nichts: der Klang bleibt, wie er ist",

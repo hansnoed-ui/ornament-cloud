@@ -27,6 +27,10 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.neusetzen` 0.1.0 | Zerlegen und neu setzen | Räumliche Operation | neu, nach Cut-up (Brion Gysin, William S. Burroughs); Collage und Montage; Kachel-Filter der Bildbearbeitung (GIMP Puzzle, Mosaik) | Bild → Bild | über Modulation |
 | `zettel.strophe` 0.1.0 | Zettel aus dem Zettelkasten | Selektionsoperation | Adapter: Zettelkasten (Zu seiner Zeit, 49 Strophen in sieben Zyklen) | – → Befund | eine |
 | `lab.karte` 0.1.0 | Textkarte | Räumliche Operation | neu, nach Titel- und Zwischentitelkarten des Films; Typografie des Zettelkastens (Systemschriften, Papier und Nacht) | Bild (opt.) + Befund (opt.) + Konstellation (opt.) → Bild | eine |
+| `phorma.gewebe` 0.1.0 | PHORMA: Gewebe | Zeitliche Operation | Adapter: PHORMA III | Bild + Audiosignal (opt.) → Bild | erzeugt selbst mehrere |
+| `phorma.irrfahrt` 0.1.0 | PHORMA: Irrfahrt | Zeitliche Operation | Adapter: PHORMA III | Bild + Audiosignal (opt.) → Bild | erzeugt selbst mehrere |
+| `phorma.lichtwuerfel` 0.1.0 | PHORMA: Lichtwürfel | Zeitliche Operation | Adapter: PHORMA III | Bild + Audiosignal (opt.) → Bild | erzeugt selbst mehrere |
+| `phorma.traube` 0.1.0 | PHORMA: Traube | Zeitliche Operation | Adapter: PHORMA III | Bild + Audiosignal (opt.) → Bild | erzeugt selbst mehrere |
 
 ## ORNA-Konstellation (`orna.konstellation`)
 
@@ -498,4 +502,72 @@ Macht aus einem Zettel des Zettelkastens oder einer ORNA-Konstellation ein Bild:
 |---|---|
 | Grund (`grund`) | **Papier auf Nacht** / Nacht auf Papier |
 | Schriftgrösse des Titels (`groesse`) | 0.03 … 0.15, Standard 0.07 – Anteil der kürzeren Seite |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1280 |
+
+## PHORMA: Gewebe (`phorma.gewebe`)
+
+PHORMA III, Gewebe: die Umrisse des Bildes werden zu Flächen aus feinen Linien, die der Ton bewegt; bei kräftigen Einsätzen neue Bilder, am Ende steht das Bild wieder.
+
+- **Herkunft:** Adapter, PHORMA III; Datei alpha/phorma-iii/buehne.js, gewebe.js, ton.js, analyse.js, ablauf.js (v=23, unverändert)
+- **Voraussetzungen:** Browser mit WebGL 2 (three.js aus vendor/, Importmap in index.html)
+- **Ressourcen:** Aufbau einige Sekunden (Programme übersetzen), dann rechnet die Grafikkarte jedes Bild; Speicher: Bühne in Rechengrösse (Float-Ziele)
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Dauer der Szene (s) (`dauer`) | 6 … 120, Standard 30 |
+| Ton ab (s) (`beginn`) | 0 … 600, Standard 0 – ab hier läuft der Ton in der Szene |
+| Standbilder (Varianten) (`bilder`) | 1 … 12, Standard 6 – gleichmässig über die Szene |
+| Güte (`guete`) | **fein** / grob (wie am Telefon) |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1280 |
+
+## PHORMA: Irrfahrt (`phorma.irrfahrt`)
+
+PHORMA III, Irrfahrt: ein Faden irrt durch einen Würfel aus Licht, quillt mit der Musik zu Rauch auf, bei Schlägen springt alles; Bloom und Negativ.
+
+- **Herkunft:** Adapter, PHORMA III; Datei alpha/phorma-iii/buehne.js, irrfahrt.js, ton.js, analyse.js, ablauf.js (v=23, unverändert)
+- **Voraussetzungen:** Browser mit WebGL 2 (three.js aus vendor/, Importmap in index.html)
+- **Ressourcen:** Aufbau einige Sekunden (Programme übersetzen), dann rechnet die Grafikkarte jedes Bild; Speicher: Bühne in Rechengrösse (Float-Ziele)
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Dauer der Szene (s) (`dauer`) | 6 … 120, Standard 30 |
+| Ton ab (s) (`beginn`) | 0 … 600, Standard 0 – ab hier läuft der Ton in der Szene |
+| Standbilder (Varianten) (`bilder`) | 1 … 12, Standard 6 – gleichmässig über die Szene |
+| Güte (`guete`) | **fein** / grob (wie am Telefon) |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1280 |
+
+## PHORMA: Lichtwürfel (`phorma.lichtwuerfel`)
+
+PHORMA III, Lichtwürfel: die Irrfahrt mit festem Würfel, der Faden irrt in ihm, ruhiger als die Irrfahrt.
+
+- **Herkunft:** Adapter, PHORMA III; Datei alpha/phorma-iii/buehne.js, irrfahrt.js (fest), ton.js, analyse.js, ablauf.js (v=23, unverändert)
+- **Voraussetzungen:** Browser mit WebGL 2 (three.js aus vendor/, Importmap in index.html)
+- **Ressourcen:** Aufbau einige Sekunden (Programme übersetzen), dann rechnet die Grafikkarte jedes Bild; Speicher: Bühne in Rechengrösse (Float-Ziele)
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Dauer der Szene (s) (`dauer`) | 6 … 120, Standard 30 |
+| Ton ab (s) (`beginn`) | 0 … 600, Standard 0 – ab hier läuft der Ton in der Szene |
+| Standbilder (Varianten) (`bilder`) | 1 … 12, Standard 6 – gleichmässig über die Szene |
+| Güte (`guete`) | **fein** / grob (wie am Telefon) |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1280 |
+
+## PHORMA: Traube (`phorma.traube`)
+
+PHORMA III, Traube: glänzende rote Perlen in einer Kugel aus Fäden, Schnitte im Takt, der Bass lässt sie glühen.
+
+- **Herkunft:** Adapter, PHORMA III; Datei alpha/phorma-iii/buehne.js, traube.js, ton.js, analyse.js, ablauf.js (v=23, unverändert)
+- **Voraussetzungen:** Browser mit WebGL 2 (three.js aus vendor/, Importmap in index.html)
+- **Ressourcen:** Aufbau einige Sekunden (Programme übersetzen), dann rechnet die Grafikkarte jedes Bild; Speicher: Bühne in Rechengrösse (Float-Ziele)
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Dauer der Szene (s) (`dauer`) | 6 … 120, Standard 30 |
+| Ton ab (s) (`beginn`) | 0 … 600, Standard 0 – ab hier läuft der Ton in der Szene |
+| Standbilder (Varianten) (`bilder`) | 1 … 12, Standard 6 – gleichmässig über die Szene |
+| Güte (`guete`) | **fein** / grob (wie am Telefon) |
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1280 |

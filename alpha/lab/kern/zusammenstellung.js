@@ -29,7 +29,13 @@ export const BILD_REZEPTE = Object.freeze({
   "bild.verzerrung": { operation: "lab.verzerrung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
   "bild.licht": { operation: "lab.licht", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
   "bild.raster": { operation: "lab.raster", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
-});   // seit 0.1.20 vorerst nur lebendige Effekte (jev/fragen.js, BILD_EFFEKTE)
+  // die Szenen von PHORMA III (seit 0.1.21, operationen/phorma.js): zehn Momente der Szene als Varianten, der Film rechnet die Bühne lebendig;
+  // sie bekommen den neuen Klang als Eingang «ton» und seinen Beginn (unten)
+  "bild.gewebe": { operation: "phorma.gewebe", parameter: { bilder: VARIANTEN_JE_ABSCHNITT, dauer: DAUER }, ziel: null },
+  "bild.irrfahrt": { operation: "phorma.irrfahrt", parameter: { bilder: VARIANTEN_JE_ABSCHNITT, dauer: DAUER }, ziel: null },
+  "bild.lichtwuerfel": { operation: "phorma.lichtwuerfel", parameter: { bilder: VARIANTEN_JE_ABSCHNITT, dauer: DAUER }, ziel: null },
+  "bild.traube": { operation: "phorma.traube", parameter: { bilder: VARIANTEN_JE_ABSCHNITT, dauer: DAUER }, ziel: null },
+});   // seit 0.1.20 nur lebendige Effekte (jev/fragen.js, BILD_EFFEKTE)
 /** Klangeffekt → Operation (null: der Klang bleibt) */
 export const KLANG_REZEPTE = Object.freeze({
   "klang.keine": null,
@@ -89,7 +95,11 @@ export function wahrscheinlichkeit(antworten, frage, wahl) {
  */
 export async function zusammenstellungRechnen({ register, projekt, medien, messung, plan, wahl, seed = 1, melden = () => {}, abbrechen = null }) {
   for (const k of plan.klang) if (!(k in KLANG_REZEPTE)) throw new Error(`Klangeffekt ${k} gibt es nicht`);
-  for (const b of plan.bild) if (!BILD_REZEPTE[b]) throw new Error(`Bildeffekt ${b} gibt es nicht`);
+  for (const b of plan.bild) {
+    if (!BILD_REZEPTE[b]) throw new Error(`Bildeffekt ${b} gibt es nicht`);
+    const op = register.hole(BILD_REZEPTE[b].operation);
+    if (op.verfuegbar && !op.verfuegbar()) throw new Error(`${op.name} ist in diesem Browser nicht verfügbar (${op.voraussetzungen.join(", ")}); eine andere Stelle wählen`);
+  }
   if (!FILM[plan.uebergang]) throw new Error(`Übergang ${plan.uebergang} gibt es nicht`);
   if (plan.zettel && !register.hat("zettel.strophe")) throw new Error("Der Zettelkasten ist nicht im Register");
   if (plan.orna && !register.hat("orna.konstellation")) throw new Error("ORNA ist nicht im Register");
@@ -139,13 +149,13 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   let eingang = video?.[0] ?? messung.bild;
   const ergebnisse = [], uebergaenge = new Set();
   for (const [i, b] of abschnitte.entries()) {
-    const r = BILD_REZEPTE[b], op = register.hole(r.operation);
+    const r = BILD_REZEPTE[b], op = register.hole(r.operation), mitTon = op.eingaenge.some((x) => x.name === "ton");
     const ziel = r.ziel === null ? null : r.ziel ?? op.moduliert ?? op.parameter.find((p) => p.art === "zahl" && p.id !== "seite")?.id;
     const routen = ziel && op.varianten === "moduliert" ? [{ ziel, tiefe: r.tiefe ?? 0.5, modulator: { quelle: "signal", ergebnis: signal.id } }] : [];
     melden(`Abschnitt ${i + 1} von ${abschnitte.length}: ${BILD_EFFEKTE[b].split(":")[0]} …`, null);
     const x = await fuehreAus({ register, projekt, medien, melden, abbrechen,
-      auftrag: { operation: r.operation, eingaben: { bild: video ? video[Math.min(video.length - 1, Math.floor((i * video.length) / abschnitte.length))] : plan.aufbau === "aufbau.faecher" ? messung.bild : eingang },
-        parameter: r.parameter, seed: (seed + 101 * (i + 1)) >>> 0,
+      auftrag: { operation: r.operation, eingaben: { bild: video ? video[Math.min(video.length - 1, Math.floor((i * video.length) / abschnitte.length))] : plan.aufbau === "aufbau.faecher" ? messung.bild : eingang, ...(mitTon ? { ton } : {}) },
+        parameter: mitTon ? { ...r.parameter, beginn } : r.parameter, seed: (seed + 101 * (i + 1)) >>> 0,
         variation: { anzahl: VARIANTEN_JE_ABSCHNITT, achse: "varianten", routen }, wahl: schritt(`Zusammenstellung, Abschnitt ${i + 1} von ${abschnitte.length}`) } });
     const bilder = x.ergebnisse.filter((e) => e.typ === "IMAGE");
     // The Fictory gibt sechs Zustände aus: davon jeder zweite, damit jeder Abschnitt etwa gleich viel Zeit bekommt

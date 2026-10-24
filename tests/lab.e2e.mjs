@@ -2,7 +2,7 @@
 // Bild → ORNA-Konstellation → The Fictory (sechs Zustände nebeneinander) → Variante wählen → Feedback mit modulierten Varianten → Variante wählen
 // → Bildsignal koppelt Wiederholung → Animation → Projekt speichern und wieder öffnen; dazu jev-assistiert, experimentell, Kette,
 // kompositorisches Profil mit Zielprofil, Tondatei als Steuersignal für ein Feedback über die Zeit, Animation über Stationen (auch im Takt
-// der Toneinsätze mit Tonspur), Handy.
+// der Toneinsätze mit Tonspur), PHORMA-Szenen auf der eigenen Bühne, Handy.
 //   NODE_PATH=$(npm root -g) node tests/lab.e2e.mjs
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -44,9 +44,9 @@ async function ausfuehren(page) { await page.click("#ausfuehren"); await page.wa
 const { ctx, page, fehler, fremd } = await oeffne();
 let gespeichert = null;
 
-await check("Start: vier Bereiche, Register mit dreiundzwanzig Operationen, keine Fehler", async () => {
+await check("Start: vier Bereiche, Register mit siebenundzwanzig Operationen, keine Fehler", async () => {
   for (const id of ["material", "operationen", "experiment", "protokoll"]) assert.ok(await page.locator(`#${id}`).isVisible(), id);
-  assert.match(await page.textContent("#status"), /23 Operationen/);
+  assert.match(await page.textContent("#status"), /27 Operationen/);
   assert.deepEqual(fehler, []);
 });
 
@@ -769,6 +769,54 @@ await check("Telefon: kein seitliches Scrollen, Bereiche untereinander", async (
   assert.ok(await t.page.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 0, "Vorschlag ohne Überbreite");
   const [a, b] = await Promise.all(["#material", "#experiment"].map((s) => t.page.locator(s).boundingBox()));
   assert.ok(b.y > a.y && Math.abs(b.x - a.x) < 2);
+  await t.ctx.close();
+});
+
+await check("PHORMA-Szenen (0.1.21): Gewebe aus Bild und Beat als Operation, zwei Standbilder, dann als lebendiger Film auf der eigenen Bühne", async () => {
+  const t = await oeffne();
+  await t.page.click("#beispiel");
+  await t.page.waitForFunction(() => ornamentLab.aktuell);
+  await t.page.setInputFiles("#tondatei", { name: "beat.wav", mimeType: "audio/wav", buffer: beatWav() });
+  await t.page.waitForFunction(() => ornamentLab.projekt.ergebnisse.find((e) => e.id === ornamentLab.aktuell)?.titel === "beat.wav");
+  const tonId = await S(t.page, () => ornamentLab.projekt.ergebnisse.find((e) => e.typ === "AUDIO").id);
+  await t.page.locator("#materialien button").first().click();
+  for (const id of ["phorma.gewebe", "phorma.irrfahrt", "phorma.lichtwuerfel", "phorma.traube"]) assert.equal(await t.page.locator(`.op input[value="${id}"]`).count(), 1, id);
+  await operation(t.page, "phorma.gewebe");
+  await t.page.locator('#op-form input[data-param="seite"]').fill("256");
+  await t.page.locator('#op-form input[data-param="bilder"]').fill("2");
+  await t.page.locator('#op-form input[data-param="dauer"]').fill("6");
+  const wahlen = t.page.locator("#op-form select");
+  for (let i = 0; i < await wahlen.count(); i++) {
+    const werte = await wahlen.nth(i).evaluate((s) => [...s.options].map((o) => o.value));
+    if (werte.includes("grob")) await wahlen.nth(i).selectOption("grob");
+    if (werte.includes(tonId)) await wahlen.nth(i).selectOption(tonId);
+  }
+  await t.page.click("#ausfuehren"); await t.page.waitForTimeout(50);
+  await warteFertig(t.page, 300000);
+  const k = await S(t.page, () => { const k = ornamentLab.projekt.knoten.at(-1); return { status: k.status, fehler: k.fehler ?? null, aus: k.ausgaben.length, eingaben: k.eingaben, p: k.protokoll }; });
+  assert.equal(k.status, "fertig", JSON.stringify(k.fehler));
+  assert.equal(k.aus, 2, "zwei Standbilder");
+  assert.equal(k.eingaben.ton, tonId, "der Beat ist der Ton der Szene");
+  assert.equal(k.p.art, "gewebe"); assert.equal(k.p.zeiten.length, 2); assert.equal(k.p.guete, "grob");
+  assert.ok(k.p.ton.einsaetze >= 4, `Einsätze des Beats: ${JSON.stringify(k.p.ton)}`);
+  assert.ok(Math.max(...k.p.mass) === 256, `Rechengrösse ${k.p.mass}`);
+  assert.equal(await t.page.locator("#buehne .karte").count(), 2);
+  // die beiden Momente als Stationen: der Film rechnet sie auf der Bühne von PHORMA in jedem Bild neu
+  await t.page.getByRole("button", { name: "alle als Stationen" }).click();
+  await t.page.locator('input[name="ansicht"][value="nach"]').check({ force: true });
+  assert.equal(await t.page.locator(".stationen-liste > li").count(), 2);
+  await t.page.locator('.stationen input[data-param="halten"]').fill("0.4");
+  await t.page.locator('.stationen input[data-param="uebergang"]').fill("0.2");
+  await t.page.locator('.stationen input[data-param="seite"]').fill("320");
+  await t.page.click("#stationenfilm");
+  await warteFertig(t.page, 300000);
+  const x = await S(t.page, () => { const x = ornamentLab.projekt.exporte.at(-1); return { art: x.art, zeitplan: x.zeitplan, bilder: x.bilder, breite: x.breite, hoehe: x.hoehe, ton: Boolean(x.ton) }; });
+  assert.equal(x.art, "stationen", await t.page.textContent("#status"));
+  assert.deepEqual(x.zeitplan.map((z) => z.lebendig), [true, true], "beide Stationen lebendig auf der eigenen Bühne");
+  assert.equal(x.bilder, 30); assert.ok(Math.max(x.breite, x.hoehe) <= 320);
+  assert.ok(x.ton, "der Beat ist die Tonspur");
+  assert.ok(await t.page.locator(".stationen video").isVisible());
+  assert.deepEqual(t.fehler, []);
   await t.ctx.close();
 });
 
