@@ -1,4 +1,4 @@
-// ORNAMENT LAB – Beat aus Bild oder Video (seit Lab 0.1.24; jazziger seit 0.1.26). Ohne DOM, in reinem JavaScript wie der Klangerzeuger (kern/klang.js):
+// ORNAMENT LAB – Beat aus Bild oder Video (seit Lab 0.1.24; jazziger und dunkler seit 0.1.27). Ohne DOM, in reinem JavaScript wie der Klangerzeuger (kern/klang.js):
 // derselbe Startwert ergibt in jedem Browser und in Node denselben Beat.
 //   messen:   jedes Bild (bei einem Video jedes Standbild) wird gemessen: Helligkeit, Kontrast, Sättigung und Farbton, Feinheit der
 //             Kanten, Schwerpunkt und Symmetrie (kompositorisches Profil, kern/komposition.js); zwischen den Standbildern die Bewegung.
