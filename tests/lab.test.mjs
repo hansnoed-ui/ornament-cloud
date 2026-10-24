@@ -1825,11 +1825,19 @@ test("Datei lesen (0.1.29): in Stücken, ein verweigertes Stück wird wiederholt
   const gelesen = await dateiLesen(wackelig, { warten: async () => {} });
   assert.equal(stuecke, 3);
   assert.deepEqual(gelesen, inhalt);
-  const tot = { size: 10, slice: () => ({ arrayBuffer: async () => { throw Object.assign(new Error("permission problems"), { name: "NotReadableError" }); } }) };
+  const tot = { name: "film.mp4", size: 10, slice: () => ({ arrayBuffer: async () => { throw Object.assign(new Error("permission problems"), { name: "NotReadableError" }); } }) };
   await assert.rejects(dateiLesen(tot, { warten: async () => {} }), (f) => f.name === "Zugriffsfehler" && /noch einmal aus/.test(f.message) && /NotReadableError/.test(f.ursache));
   // ein anderer Fehler wird nicht wiederholt und bleibt, wie er ist
   let n = 0;
   const kaputt = { size: 10, slice: () => ({ arrayBuffer: async () => { n++; throw new TypeError("kaputt"); } }) };
   await assert.rejects(dateiLesen(kaputt, { warten: async () => {} }), TypeError);
   assert.equal(n, 1);
+});
+
+test("Blob der Seite (0.1.32): verweigertes Lesen eines eigenen Blobs meldet den vollen Speicher, nicht die Dateiauswahl", async () => {
+  const { dateiLesen, zugriffsMeldung } = await import("../alpha/lab/medien/dateilesen.js");
+  const blob = { size: 10, slice: () => ({ arrayBuffer: async () => { throw Object.assign(new Error("The requested file could not be read"), { name: "NotReadableError" }); } }) };
+  await assert.rejects(dateiLesen(blob, { warten: async () => {} }), (f) => f.name === "Speicherfehler" && /Speicher des Browsers ist voll/.test(f.message));
+  assert.equal(zugriffsMeldung(Object.assign(new Error("x"), { name: "NotReadableError" }), new Blob()).name, "Speicherfehler");
+  assert.equal(zugriffsMeldung(Object.assign(new Error("x"), { name: "AbortError" }), new Blob()).name, "AbortError");
 });

@@ -4,6 +4,7 @@
 // und zuerst mit 320 kbit/s (eigener Versuch hier, dann tonspur.js mit 256 kbit/s und weniger). Der Rückfall bleibt stumm.
 import { Muxer, ArrayBufferTarget } from "../../../vendor/mp4-muxer-5.2.2/mp4-muxer.js";
 import { mitDauer } from "../../../alpha/the-fictory/dauer.js?v=23";
+import { dateiLesen } from "./dateilesen.js";
 
 export const FPS = 30;
 const KANDIDATEN = [["avc1.640028", "avc"], ["avc1.42001f", "avc"], ["vp09.00.10.08", "vp9"]];
@@ -18,7 +19,8 @@ async function konfiguration(w, h) {
 }
 
 /**
- * bilder: async iterierbar von ImageData-artigen Bildern gleicher Grösse → { blob, mime, endung, bilder, codec, ton }.
+ * bilder: async iterierbar von ImageData-artigen Bildern gleicher Grösse → { blob, bytes, mime, endung, bilder, codec, ton }. bytes (seit 0.1.32)
+ * ist derselbe Inhalt wie blob: wer ihn ablegt, liest den Blob nicht zurück (auf Android scheitert das, wenn der Blob-Speicher voll ist).
  * ton: { pcm (einkanalig), rate, beginn (s), dauer (s) } legt diesen Ausschnitt als Tonspur unter das MP4. Folgt dasselbe Bildobjekt
  * mehrmals (eine gehaltene Station), wird es nur einmal gemalt.
  */
@@ -57,7 +59,8 @@ export async function videoAus(bilder, { fps = FPS, melden = () => {}, halten = 
     await kodiere(vorher, Math.round(halten * fps));   // am Ende kurz stehen bleiben
     await enc.flush(); enc.close(); muxer.finalize();
     if (fehler) throw fehler;
-    return { blob: new Blob([target.buffer], { type: "video/mp4" }), mime: "video/mp4", endung: "mp4", bilder: n, codec: k.cfg.codec, breite: w, hoehe: h, ton: spur ? `${spur.codec}${spur.kanaele === 2 ? " stereo" : ""}${spur.bitrate ? ` ${spur.bitrate / 1000} kbit/s` : ""}` : null };
+    const bytes = new Uint8Array(target.buffer);
+    return { blob: new Blob([bytes], { type: "video/mp4" }), bytes, mime: "video/mp4", endung: "mp4", bilder: n, codec: k.cfg.codec, breite: w, hoehe: h, ton: spur ? `${spur.codec}${spur.kanaele === 2 ? " stereo" : ""}${spur.bitrate ? ` ${spur.bitrate / 1000} kbit/s` : ""}` : null };
   }
   // Rückfall: MediaRecorder in Echtzeit
   const typ = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"].find((t) => typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(t));
@@ -73,8 +76,8 @@ export async function videoAus(bilder, { fps = FPS, melden = () => {}, halten = 
   for (let r = await it.next(); !r.done; r = await it.next()) await zeige(r.value);
   await new Promise((ok) => setTimeout(ok, halten * 1000));
   rec.stop(); await fertig;
-  const roh = new Uint8Array(await new Blob(stuecke).arrayBuffer());
-  return { blob: new Blob([mitDauer(roh, (performance.now() - t0) / 1000)], { type: "video/webm" }), mime: "video/webm", endung: "webm", bilder: n, codec: typ, breite: w, hoehe: h, ton: null };
+  const roh = await dateiLesen(new Blob(stuecke)), bytes = mitDauer(roh, (performance.now() - t0) / 1000);
+  return { blob: new Blob([bytes], { type: "video/webm" }), bytes, mime: "video/webm", endung: "webm", bilder: n, codec: typ, breite: w, hoehe: h, ton: null };
 }
 
 /**

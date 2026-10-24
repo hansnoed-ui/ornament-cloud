@@ -3,7 +3,7 @@
 // alles, was geschieht, steht im Projekt (kern/projekt.js) und wird von dort gezeichnet.
 import { labRegister } from "./operationen/index.js";
 import { browserMedien } from "./medien/browser.js";
-import { dateiLesen } from "./medien/dateilesen.js";
+import { dateiLesen, zugriffsMeldung } from "./medien/dateilesen.js";
 import { videoAus, FPS } from "./medien/video.js";
 import { gpuEffekte, LEBENDIG } from "./medien/gpu.js";
 import * as P from "./kern/projekt.js";
@@ -568,7 +568,7 @@ async function laufen(fn) {
   S.laeuft = new AbortController();
   zeigeFormular();
   try { await fn(S.laeuft.signal); geaendert(); }
-  catch (f) { status(f.name === "AbortError" ? "Abgebrochen." : `Fehler: ${f.message}`, null, f.name !== "AbortError"); console.warn(f); }
+  catch (f) { f = zugriffsMeldung(f, new Blob()); status(f.name === "AbortError" ? "Abgebrochen." : `Fehler: ${f.message}`, null, f.name !== "AbortError"); console.warn(f); }
   finally { S.laeuft = null; alles(); status(letzterStatus[0], null, letzterStatus[2]); }
 }
 
@@ -882,11 +882,11 @@ async function animation(id) {
     if (ton && ziel) ton.dauer = laenge ? Math.min(ton.dauer, ziel / FPS) : ziel / FPS;
     const r = await videoAus(bildfolge({ register: R, projekt: S.projekt, medien: S.medien, ergebnisId: id, abbrechen: signal, bilder: ziel }), { melden: status, ton, halten: ziel ? 0 : 1 });
     const name = `medien/${id}-animation.${r.endung}`;
-    const bytes = new Uint8Array(await r.blob.arrayBuffer());
-    const abgelegt = await S.medien.ablegenDatei(name, bytes, r.mime);
+    const abgelegt = await S.medien.ablegenDatei(name, r.bytes, r.mime);
     S.projekt.exporte.push({ id: P.neueId("x"), art: "animation", ergebnis: id, ...(laenge ? { laenge } : {}), datei: name, mime: r.mime, codec: r.codec, bilder: r.bilder, fps: FPS, breite: r.breite, hoehe: r.hoehe, sha256: abgelegt.sha256, zeit: new Date().toISOString(),
       ...(ton ? { tonspur: { ergebnis: tonId, beginn, sekunden: Math.round(ton.dauer * 1000) / 1000, ...(r.ton ? { codec: r.ton } : { fehlt: TON_FEHLT }) } } : {}) });
     const tonspur = S.projekt.exporte.at(-1).tonspur ?? null;
+    const vorige = S.filme.get(id); if (vorige) URL.revokeObjectURL(vorige.url);   // der vorige Film dieses Ergebnisses gibt seinen Blob frei (0.1.32)
     S.filme.set(id, { ...r, tonspur, url: URL.createObjectURL(r.blob), name: `${slug(S.projekt.titel)}-${slug(e.titel)}.${r.endung}` });
     status(`Animation: ${r.bilder} Bilder (${(r.bilder / FPS).toFixed(1)} s), ${(r.blob.size / 1e6).toFixed(1)} MB, ${r.codec}${tonspur?.codec ? `, mit Tonspur (${tonspur.codec}, ab ${sekunden(beginn)})` : tonspur?.fehlt ? `. Ohne Ton: ${tonspur.fehlt}` : ""}.`);
   });
@@ -917,7 +917,7 @@ async function werkExportieren(id) {
   if (!bild) return status("Für Works: das Bild dieses Ergebnisses fehlt.", null, true);
   const ordner = slug(`${S.projekt.titel}-${e.titel}`), film = S.filme.get(id), protokoll = verlaufProtokoll(id);
   const dateien = [{ name: `${ordner}/bild.png`, bytes: bild }];
-  if (film) dateien.push({ name: `${ordner}/film.${film.endung}`, bytes: new Uint8Array(await film.blob.arrayBuffer()) });
+  if (film) dateien.push({ name: `${ordner}/film.${film.endung}`, bytes: film.bytes ?? await dateiLesen(film.blob) });
   dateien.push({ name: `${ordner}/verlauf.json`, bytes: json(protokoll) });
   const werk = { format: "ornament-lab-werk", version: 1, titel: S.projekt.titel === "Ohne Titel" ? e.titel : S.projekt.titel, jahr: new Date().getFullYear(),
     text: "", bild: "bild.png", breite: e.breite, hoehe: e.hoehe, film: film ? `film.${film.endung}` : null, verlauf: "verlauf.json",
@@ -1130,7 +1130,7 @@ async function stationenFilmRechnen(liste, signal, { vorschlag = null, auswahl =
   const melden = (t) => status(`${t}, geplant ${pt.bilder}${pt.offen ? " und Verläufe" : ""}`, null);
   const r = await videoAus(ST.filmbilder({ register: R, projekt: S.projekt, medien: S.medien, partitur: pt, seite: S.film.seite, abbrechen: signal, zeitplan, lebendig: pt.lebendig ? gpu() : null }), { melden, halten: 0, ton });
   const id = P.neueId("x"), name = `medien/${id}-stationen.${r.endung}`;
-  const abgelegt = await S.medien.ablegenDatei(name, new Uint8Array(await r.blob.arrayBuffer()), r.mime);
+  const abgelegt = await S.medien.ablegenDatei(name, r.bytes, r.mime);
   S.projekt.exporte.push({ id, art: "stationen", ergebnis: ids.at(-1), stationen: ids, entscheidung: d.id, partitur: pt, zeitplan, datei: name, mime: r.mime, codec: r.codec, ton: r.ton, tonQuelle: r.ton ? tonId : null,
     ...(ton ? { tonBeginn: ton.beginn } : {}), ...(vorschlag ? { dramaturgie: vorschlag } : {}), bilder: r.bilder, fps: FPS, breite: r.breite, hoehe: r.hoehe, sha256: abgelegt.sha256, zeit: new Date().toISOString() });
   const alt = S.filme.get("stationen"); if (alt) URL.revokeObjectURL(alt.url);
