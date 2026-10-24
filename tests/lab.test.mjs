@@ -1100,7 +1100,9 @@ test("Zusammenstellung: Kataloge passen zum Register, Ziehen mit Startwert ohne 
   for (const k of Object.keys(g).filter((k) => k.startsWith("bild"))) fast[k] = Object.fromEntries(Object.keys(F.BILD_EFFEKTE).map((o) => [o, o === "bild.glitch" ? 0.95 : 0.005]));
   const x = Z.zusammenstellen(fast, 5);
   assert.equal(x.bild.filter((y) => y === "bild.glitch").length, 3, `${x.bild}`);
-  assert.equal(Z.wahrscheinlichkeit(fast, "bild1", "bild.glitch"), Math.round((0.95 / (0.95 + 10 * 0.005)) * 1000) / 1000);
+  assert.equal(Z.wahrscheinlichkeit(fast, "bild1", "bild.glitch"), Math.round((0.95 / (0.95 + (Object.keys(F.BILD_EFFEKTE).length - 1) * 0.005)) * 1000) / 1000);
+  const { LEBENDIG } = await lab("medien/gpu.js");
+  assert.ok(Object.keys(F.BILD_EFFEKTE).every((k) => LEBENDIG.includes(Z.BILD_REZEPTE[k].operation)), "seit 0.1.20 nur lebendige Effekte in der Zusammenstellung");
   // jev.js: alle zehn Antworten, nur bekannte Optionen; fehlt eine, ist die Antwort ungültig
   const echt = globalThis.fetch;
   const merkmale = { kontrast: "hoch", farbigkeit: "bunt", symmetrie: "asymmetrisch", helligkeit: "dunkel", dichte: "dicht", dynamik: "wechselhaft" };
@@ -1123,10 +1125,10 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   const r = labRegister();
   const { p, m, e, t } = mitTon();
   const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id });
-  const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.schneller", "klang.zerlegt"], bild: ["bild.glitch", "bild.farbe", "bild.licht", "bild.raster", "bild.feedback", "bild.neusetzen"], seed: 9 };
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.schneller", "klang.zerlegt"], bild: ["bild.glitch", "bild.farbe", "bild.licht", "bild.raster", "bild.feedback", "bild.verzerrung"], seed: 9 };
   const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "jev", details: { modell: "jev-test" } }, seed: 3 });
   const ops = p.knoten.map((k) => k.operation);
-  assert.deepEqual(ops.slice(2), ["lab.tempo", "lab.zerlegen", "lab.tonsignal", "lab.glitch", "lab.farbe", "lab.licht", "lab.raster", "lab.feedback", "lab.neusetzen"]);
+  assert.deepEqual(ops.slice(2), ["lab.tempo", "lab.zerlegen", "lab.tonsignal", "lab.glitch", "lab.farbe", "lab.licht", "lab.raster", "lab.feedback", "lab.verzerrung"]);
   const zerlegt = p.knoten[3];
   assert.equal(zerlegt.eingaben.ton, p.knoten[2].ausgaben[0], "der zweite Klangeffekt wirkt auf das Ergebnis des ersten");
   assert.equal(x.klang, P.ergebnis(p, zerlegt.ausgaben[0]).id);
@@ -1147,7 +1149,7 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
     assert.ok(pt.folge.filter((f) => f.uebergang?.art === "verlauf").length >= 5, "die Partitur behält die Verläufe");
   }
   // Fächer: jeder Abschnitt auf dem Ausgangsbild; ohne Klangeffekt bleibt der Ton und sein Ausschnitt
-  const y = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: { ...mg, beginn: 1 }, plan: { ...plan, aufbau: "aufbau.faecher", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.wiederholung", "bild.farbe", "bild.komposition", "bild.farbe", "bild.licht"] }, wahl: { art: "zufall", details: {} } });
+  const y = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: { ...mg, beginn: 1 }, plan: { ...plan, aufbau: "aufbau.faecher", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.wiederholung", "bild.farbe", "bild.glitch", "bild.farbe", "bild.licht"] }, wahl: { art: "zufall", details: {} } });
   const letzte = p.knoten.slice(-6);
   assert.ok(letzte.every((k) => k.eingaben.bild === e.id), "Fächer");
   // Filmeinstellungen des Menschen (0.1.19): ohne lebendige Effekte, Kamera ruhig
@@ -1258,7 +1260,7 @@ test("Partitur 0.4.0: Stationen mit «einmal» stehen als Titelkarten ausserhalb
   assert.equal(alle.folge.length, einsaetze.length + 1); assert.equal(alle.folge[2].ergebnis, k1);
 });
 
-test("Zusammenstellung mit Zettelkasten und ORNA (0.1.18): beides wahlweise; der Zettel eröffnet den Film, die Konstellation schliesst ihn und gibt dem Zerfall die Regel", async () => {
+test("Zusammenstellung mit Zettelkasten und ORNA (0.1.18): beides wahlweise; der Zettel eröffnet den Film, die Konstellation schliesst ihn mit ihrer Regel (seit 0.1.20 ohne Zerfall)", async () => {
   const VS = await lab("kern/vorschlag.js");
   const Z = await lab("kern/zusammenstellung.js");
   const { erstelleRegister } = await lab("kern/register.js");
@@ -1284,11 +1286,9 @@ test("Zusammenstellung mit Zettelkasten und ORNA (0.1.18): beides wahlweise; der
   assert.ok(ops.includes("zettel.strophe") && ops.includes("orna.konstellation"));
   assert.equal(ops.filter((o) => o === "lab.karte").length, 2, "zwei Karten");
   assert.equal(p.entscheidungen.find((d) => d.gegenstand === "strophe").art, "zufall"); assert.equal(p.entscheidungen.find((d) => d.gegenstand === "konstellation").art, "zufall");
-  const fict = p.knoten.find((k) => k.operation === "fictory.prozess");
-  assert.ok(fict, "ohne Zerfall in der Zusammenstellung kommt er als siebter Abschnitt dazu");
-  assert.equal(P.ergebnis(p, fict.eingaben.konstellation).typ, "CONSTELLATION"); assert.equal(fict.protokoll.regel, x.konstellation.regel, "der Zerfall rechnet nach der Regel der Konstellation");
-  assert.equal(x.ergebnisse.length, 66, "sechs Abschnitte zu zehn Varianten und sechs Zustände");
-  assert.equal(x.plan.stationen.length, 69);
+  assert.ok(!p.knoten.some((k) => k.operation === "fictory.prozess"), "seit 0.1.20 kein Zerfall als siebter Abschnitt: der Film bleibt fliessend");
+  assert.equal(x.ergebnisse.length, 60, "sechs Abschnitte zu zehn Varianten");
+  assert.equal(x.plan.stationen.length, 63);
   assert.deepEqual(x.plan.stationen[0], { ergebnis: x.karten.zettel, einmal: true, halten: Z.KARTE_DAUER });
   assert.deepEqual(x.plan.stationen.at(-1), { ergebnis: x.karten.orna, einmal: true, halten: Z.KARTE_DAUER });
   assert.equal(x.plan.stationen[1], e.id);
@@ -1298,16 +1298,14 @@ test("Zusammenstellung mit Zettelkasten und ORNA (0.1.18): beides wahlweise; der
   assert.equal(pt.folge[0].ergebnis, x.karten.zettel); assert.equal(pt.folge[0].einmal, true); assert.equal(pt.folge[0].halten, Z.KARTE_DAUER);
   assert.equal(pt.folge.at(-1).ergebnis, x.karten.orna); assert.equal(pt.folge.at(-1).einmal, true);
   assert.ok(pt.dauer <= 30, `${pt.dauer}`);
-  // eigene Wahl: Zettel 7 und eine bestimmte Konstellation; mit Zerfall in der Zusammenstellung kein siebter Abschnitt
+  // eigene Wahl: Zettel 7 und eine bestimmte Konstellation
   const q = mitTon();
   const mq = await VS.messen({ register: r, projekt: q.p, medien: q.m, bild: q.e.id, ton: q.t.id });
-  const y = await Z.zusammenstellungRechnen({ register: r, projekt: q.p, medien: q.m, messung: mq, plan: { ...plan, bild: ["bild.farbe", "bild.fictory", "bild.licht", "bild.raster", "bild.farbe", "bild.licht"], zettel: { strophe: "7" }, orna: { konstellation: KONSTELLATIONEN[2].wert } }, wahl: { art: "mensch", details: {} } });
+  const y = await Z.zusammenstellungRechnen({ register: r, projekt: q.p, medien: q.m, messung: mq, plan: { ...plan, bild: ["bild.farbe", "bild.glitch", "bild.licht", "bild.raster", "bild.farbe", "bild.licht"], zettel: { strophe: "7" }, orna: { konstellation: KONSTELLATIONEN[2].wert } }, wahl: { art: "mensch", details: {} } });
   assert.equal(y.zettel.nummer, 7); assert.equal(y.konstellation.id, KONSTELLATIONEN[2].wert);
   assert.equal(y.entscheidung.gewaehlt.zettel, "7"); assert.equal(y.entscheidung.gewaehlt.orna, KONSTELLATIONEN[2].wert);
   assert.equal(q.p.entscheidungen.find((d) => d.gegenstand === "strophe").art, "mensch"); assert.equal(q.p.entscheidungen.find((d) => d.gegenstand === "konstellation").art, "mensch");
-  assert.equal(q.p.knoten.filter((k) => k.operation === "fictory.prozess").length, 1);
-  assert.equal(q.p.knoten.find((k) => k.operation === "fictory.prozess").protokoll.regel, y.konstellation.regel);
-  assert.equal(y.ergebnisse.length, 56); assert.equal(y.plan.stationen.length, 59);
+  assert.equal(y.ergebnisse.length, 60); assert.equal(y.plan.stationen.length, 63);
   // ohne Bestände wie bisher; mit dem echten Register (ohne Leinwand) gibt es den Zettel, aber keine Karte
   const o = mitTon();
   const mo = await VS.messen({ register: r, projekt: o.p, medien: o.m, bild: o.e.id, ton: o.t.id });
@@ -1316,4 +1314,35 @@ test("Zusammenstellung mit Zettelkasten und ORNA (0.1.18): beides wahlweise; der
   const w = await Z.zusammenstellungRechnen({ register: labRegister(), projekt: o.p, medien: o.m, messung: mo, plan: { ...plan, orna: null }, wahl: { art: "zufall" } });
   assert.ok(w.zettel); assert.equal(w.karten.zettel, null, "ohne Leinwand keine Karte"); assert.equal(w.plan.stationen.length, 61);
   assert.deepEqual(P.pruefeProjekt(p), []); assert.deepEqual(P.pruefeProjekt(q.p), []);
+});
+
+test("Tonspur aus MP4/MOV/M4A (0.1.20): die Kästen werden gelesen, AAC, Opus und MP3 erkannt, höchstens so viele Sekunden, fragmentiert abgelehnt", async () => {
+  const { tonspurLesen, istIsoBmff } = await lab("medien/mp4ton.js");
+  const { spawnSync } = await import("node:child_process");
+  const { mkdtempSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const ordner = mkdtempSync(join(tmpdir(), "lab-mp4-"));
+  const ff = (name, ...args) => { const r = spawnSync("ffmpeg", ["-loglevel", "error", "-y", ...args, join(ordner, name)]); return r.status === 0 ? new Uint8Array(readFileSync(join(ordner, name))) : null; };
+  const ton = ["-f", "lavfi", "-i", "aevalsrc=0.5*sin(2*PI*220*t)|0.5*sin(2*PI*330*t):s=48000:d=3"];
+  const m4a = ff("ton.m4a", ...ton, "-c:a", "aac");
+  if (!m4a) { console.log("      (ohne ffmpeg übersprungen)"); return; }
+  assert.ok(istIsoBmff(m4a)); assert.equal(istIsoBmff(KL.wavBytes(new Float32Array(100), 8000)), false);
+  assert.throws(() => tonspurLesen(KL.wavBytes(new Float32Array(100), 8000)), /keine MP4-Datei/);
+  const a = tonspurLesen(m4a);
+  assert.equal(a.codec, "mp4a.40.2"); assert.equal(a.sampleRate, 48000); assert.equal(a.numberOfChannels, 2); assert.equal(a.timescale, 48000);
+  assert.deepEqual([...a.description.subarray(0, 2)], [0x11, 0x90], "AudioSpecificConfig: AAC-LC, 48 kHz, stereo");
+  assert.ok(Math.abs(a.dauer - 3) < 0.1, `${a.dauer}`); assert.ok(a.stuecke.length >= 130 && a.stuecke.length <= 150, `${a.stuecke.length} Stücke zu 1024 Proben`);
+  assert.ok(a.stuecke.every((s, i) => s.size > 0 && s.offset + s.size <= m4a.length && (i === 0 || s.zeit > a.stuecke[i - 1].zeit)), "Stücke in der Datei, aufsteigend");
+  assert.ok(Math.abs(tonspurLesen(m4a, { sekunden: 1 }).dauer - 1) < 0.05, "nur die erste Sekunde");
+  const mov = ff("clip.mov", "-f", "lavfi", "-i", "testsrc=size=64x48:rate=10:duration=3", ...ton, "-c:v", "mpeg4", "-c:a", "aac", "-shortest");
+  const b = tonspurLesen(mov); assert.equal(b.codec, "mp4a.40.2"); assert.ok(Math.abs(b.dauer - 3) < 0.1, "die Tonspur neben der Bildspur (MOV)");
+  const opus = ff("opus.mp4", ...ton, "-c:a", "libopus", "-strict", "-2");
+  if (opus) { const c = tonspurLesen(opus); assert.equal(c.codec, "opus"); assert.equal(String.fromCharCode(...c.description.subarray(0, 8)), "OpusHead"); assert.equal(c.description[9], 2); }
+  const mp3 = ff("mp3.mp4", ...ton, "-c:a", "libmp3lame");
+  if (mp3) { const d = tonspurLesen(mp3); assert.equal(d.codec, "mp3"); assert.equal(d.description, null); }
+  const frag = ff("frag.mp4", ...ton, "-c:a", "aac", "-movflags", "frag_keyframe+empty_moov");
+  assert.throws(() => tonspurLesen(frag), /fragmentiert/);
+  const stumm = ff("stumm.mp4", "-f", "lavfi", "-i", "testsrc=size=64x48:rate=10:duration=1", "-c:v", "mpeg4", "-an");
+  assert.throws(() => tonspurLesen(stumm), /keine Tonspur/);
 });

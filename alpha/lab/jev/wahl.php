@@ -47,8 +47,6 @@ const FRAGE = 'In einem künstlerischen Labor wird ein Bild schrittweise durch O
 /** Dramaturgien und Merkmale (gleich wie DRAMATURGIEN und MERKMALE in fragen.js) */
 const DRAMATURGIEN = [
   'vorschlag.puls' => 'Puls: sechs Varianten einer Feedback-Schleife, deren Zoom der Lautstärke folgt; harte Schnitte zwischen ihnen auf den Anschlägen des Klangs',
-  'vorschlag.zerfall' => 'Zerfall: das Bild zerfällt in Farbflächen und setzt sich in sechs Zuständen neu zusammen (The Fictory); ruhige Übergänge, bei denen die dunklen Stellen zuerst erscheinen',
-  'vorschlag.spiegel' => 'Spiegelung: die Symmetrie des Bildes wird verstärkt oder umgekehrt, je nach Lautstärke des Klangs; weiche Überblendungen im Takt der Anschläge',
   'vorschlag.farbwelle' => 'Farbwelle: die Farben drehen sich mit der Lautstärke durch den Farbkreis, in acht Varianten; Überblendungen im Takt der Anschläge',
   'vorschlag.raster' => 'Vervielfältigung: das Bild wird im Raster wiederholt, die Grösse der Kopien folgt der Lautstärke; Schnitte im Takt der Anschläge',
   'vorschlag.steigerung' => 'Steigerung: drei Operationen nacheinander (Farbe, Wiederholung, Feedback), das Bild verwandelt sich schrittweise immer weiter; lange, ruhige Übergänge',
@@ -71,14 +69,10 @@ const BILD_EFFEKTE = [
   'bild.feedback' => 'Feedback-Schleife: das Bild wird immer wieder auf sich selbst gelegt, gezoomt und gedreht, es entsteht ein Sog',
   'bild.wiederholung' => 'Wiederholung: das Bild vervielfacht sich im Raster, die Kopien werden grösser und kleiner',
   'bild.farbe' => 'Farbe: die Farben drehen sich durch den Farbkreis und werden kräftiger',
-  'bild.komposition' => 'Komposition: die Symmetrie des Bildes wird verstärkt oder umgekehrt',
   'bild.glitch' => 'Glitch: Blöcke verrutschen, Zeilen springen, Farbkanäle trennen sich',
-  'bild.pixelsortierung' => 'Pixelsortierung: helle Streifen ziehen sich durch das Bild, die Pixel sind nach Helligkeit sortiert',
   'bild.verzerrung' => 'Verzerrung: das Bild wird verwirbelt, gewellt oder wie durch eine Linse gesehen',
   'bild.licht' => 'Licht: helle Stellen glühen auf und strahlen aus',
   'bild.raster' => 'Raster: das Bild wird zu Punkten und Linien wie im Druck',
-  'bild.neusetzen' => 'Neu setzen: das Bild wird in Kacheln zerlegt und neu zusammengesetzt',
-  'bild.fictory' => 'Zerfall: das Bild zerfällt in Farbflächen und setzt sich neu zusammen (The Fictory)',
 ];
 const KLANG_EFFEKTE = [
   'klang.keine' => 'nichts: der Klang bleibt, wie er ist',

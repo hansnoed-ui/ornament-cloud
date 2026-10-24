@@ -659,17 +659,17 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   await p.waitForTimeout(50);
   await warteFertig(p, 420000);
   await p.waitForSelector("#vorschlag30 .zusammenstellung video");
-  const z = await S(p, () => { const pr = ornamentLab.projekt; const d = pr.entscheidungen.find((y) => y.gegenstand === "zusammenstellung"); return { d, ops: pr.knoten.slice(-14).map((k) => k.operation), x: pr.exporte.at(-1), status: document.querySelector("#status").textContent,
-    strophe: pr.entscheidungen.find((y) => y.gegenstand === "strophe"), konstellation: pr.entscheidungen.find((y) => y.gegenstand === "konstellation"), karten: pr.knoten.filter((k) => k.operation === "lab.karte").map((k) => k.protokoll.inhalt), fictory: pr.knoten.find((k) => k.operation === "fictory.prozess") }; });
+  const z = await S(p, () => { const pr = ornamentLab.projekt; const d = pr.entscheidungen.find((y) => y.gegenstand === "zusammenstellung"); return { d, ops: pr.knoten.slice(-13).map((k) => k.operation), x: pr.exporte.at(-1), status: document.querySelector("#status").textContent,
+    strophe: pr.entscheidungen.find((y) => y.gegenstand === "strophe"), konstellation: pr.entscheidungen.find((y) => y.gegenstand === "konstellation"), karten: pr.knoten.filter((k) => k.operation === "lab.karte").map((k) => k.protokoll.inhalt), fictory: pr.knoten.find((k) => k.operation === "fictory.prozess") ?? null }; });
   assert.equal(z.d.art, "mensch", "eine Stelle geändert: die Entscheidung ist menschlich"); assert.deepEqual(z.d.details.geaendert, ["bild6"]); assert.equal(z.d.details.vorschlag, "jev");
   assert.equal(z.d.gewaehlt.bild[5], "bild.raster"); assert.equal(z.d.gewaehlt.zettel, "7"); assert.equal(z.d.gewaehlt.orna, "ziehen");
   assert.deepEqual(z.ops.slice(0, 5), ["lab.tempo", "lab.zerlegen", "lab.tonsignal", "zettel.strophe", "orna.konstellation"]);
-  assert.deepEqual(z.ops.slice(-3), ["fictory.prozess", "lab.karte", "lab.karte"], "der Zerfall als siebter Abschnitt, dann die zwei Karten");
+  assert.deepEqual(z.ops.slice(-2), ["lab.karte", "lab.karte"], "zuletzt die zwei Karten");
   assert.equal(z.strophe.art, "mensch"); assert.equal(z.strophe.gewaehlt, 7); assert.equal(z.konstellation.art, "zufall");
-  assert.ok(z.fictory.eingaben.konstellation, "der Zerfall rechnet nach der Konstellation");
+  assert.equal(z.fictory, null, "seit 0.1.20 kein Zerfall in der Zusammenstellung (Standbilder)");
   assert.match(z.karten[0].kopf, /^Zettelkasten · .* · 7 \/ 49$/); assert.match(z.karten[1].kopf, /^ORNA · Konstellation /); assert.match(z.karten[1].fuss, /^Operationsregel R/);
   assert.match(z.status, /Zettel 7: .*ORNA \d+: /);
-  assert.equal(z.x.dramaturgie, "zusammenstellung"); assert.equal(z.x.stationen.length, 69, "Zettelkarte, Bild, 66 Varianten, ORNA-Karte"); assert.ok(z.x.ton, "mit Tonspur");
+  assert.equal(z.x.dramaturgie, "zusammenstellung"); assert.equal(z.x.stationen.length, 63, "Zettelkarte, Bild, 60 Varianten, ORNA-Karte"); assert.ok(z.x.ton, "mit Tonspur");
   assert.equal(z.x.partitur.folge[0].einmal, true); assert.equal(z.x.partitur.folge[0].halten, 2.5); assert.equal(z.x.partitur.folge.at(-1).einmal, true);
   assert.equal(z.x.partitur.folge[0].ergebnis, z.x.stationen[0]); assert.equal(z.x.partitur.folge.at(-1).ergebnis, z.x.stationen.at(-1));
   assert.ok(z.x.partitur.lebendig, "die Zusammenstellung ist lebendig");
@@ -714,6 +714,43 @@ await check("Video als Eingang: Standbilder und Tonspur werden Material, die Zus
   assert.equal(z.x.stationen[0], z.stills[0]); assert.ok(z.x.ton, "mit Tonspur aus dem Video");
   assert.deepEqual(fehler3, []);
   await c.close();
+});
+
+await check("Tonspur über WebCodecs (0.1.20): AAC aus MP4 über den Dekoder des Geräts, gleich laut wie über Web Audio; unlesbarer Ton wird im Vorschlag erklärt", async () => {
+  const { spawnSync } = await import("node:child_process");
+  const { mkdtempSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const ordner = mkdtempSync(join(tmpdir(), "lab-mp4ton-"));
+  const ton = ["-f", "lavfi", "-i", "aevalsrc=0.6*sin(2*PI*110*t)*exp(-8*mod(t\\,0.5)):s=48000:d=6"];
+  const ff = (name, ...a) => { const r = spawnSync("ffmpeg", ["-loglevel", "error", "-y", "-f", "lavfi", "-i", "testsrc=size=320x240:rate=15:duration=6", ...ton, "-c:v", "libvpx-vp9", "-b:v", "300k", ...a, "-shortest", join(ordner, name)]); return r.status === 0 ? join(ordner, name) : null; };
+  const aac = ff("clip-aac.mp4", "-c:a", "aac"), ac3 = ff("clip-ac3.mp4", "-c:a", "ac3");
+  if (!aac || !ac3) { console.log("      (ohne ffmpeg übersprungen)"); return; }
+  const t = await oeffne({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const probe = async (datei, leseweg) => t.page.evaluate(async ({ bytes, leseweg }) => {
+    const f = new File([new Uint8Array(bytes)], "clip.mp4", { type: "video/mp4" });
+    const imp = await ornamentLab.medien.importiereVideo(f, { leseweg });
+    const pcm = imp.ton?.dekodiert.pcm, rms = pcm ? Math.sqrt(pcm.reduce((s, x) => s + x * x, 0) / pcm.length) : null;
+    return { bilder: imp.bilder.length, ton: imp.ton ? { leseweg: imp.ton.leseweg, dauer: imp.ton.ton.dauer, rate: imp.ton.ton.abtastrate, rms } : null, tonFehler: imp.tonFehler };
+  }, { bytes: [...readFileSync(datei)], leseweg });
+  const w = await probe(aac, "webcodecs"), a = await probe(aac, "auto");
+  assert.equal(w.bilder, 6); assert.ok(w.ton, `WebCodecs liest die Tonspur: ${w.tonFehler}`);
+  assert.equal(w.ton.leseweg, "webcodecs"); assert.ok(Math.abs(w.ton.dauer - 6) < 0.2, `${w.ton.dauer} s`); assert.equal(w.ton.rate, 48000);
+  assert.ok(w.ton.rms > 0.1, `Ton mit Pegel: ${w.ton.rms}`);
+  assert.ok(a.ton && Math.abs(a.ton.rms - w.ton.rms) < 0.01, `beide Lesewege gleich laut: ${a.ton?.rms} / ${w.ton.rms} (${a.ton?.leseweg})`);
+  // AC-3 kann weder Web Audio noch der Dekoder: die Standbilder kommen, der Grund steht beim Vorschlag, mit einem Ton dazu erscheint er
+  await t.page.setInputFiles("#videodatei", ac3);
+  await t.page.waitForFunction(() => ornamentLab.projekt.ergebnisse.length >= 6, null, { timeout: 60000 });
+  await warteFertig(t.page);
+  assert.match(await t.page.textContent("#status"), /ohne lesbaren Ton \(.*WebCodecs: /);
+  const h = await S(t.page, () => ({ stumm: ornamentLab.projekt.ergebnisse.filter((e) => e.typ === "IMAGE").map((e) => e.herkunft.video.tonFehler), toene: ornamentLab.projekt.ergebnisse.filter((e) => e.typ === "AUDIO").length }));
+  assert.equal(h.toene, 0); assert.ok(h.stumm.every((x) => /WebCodecs/.test(x)), `${h.stumm[0]}`);
+  assert.match(await t.page.textContent("#vorschlag30"), /Tonspur des Videos «clip-ac3\.mp4» liess sich in diesem Browser nicht lesen \(.*\)\. Lade den Ton dazu/);
+  assert.equal(await t.page.locator("#vorschlag-machen").count(), 0);
+  await t.page.setInputFiles("#tondatei", { name: "beat.wav", mimeType: "audio/wav", buffer: beatWav() });
+  await t.page.waitForSelector("#vorschlag-machen");
+  assert.equal(await t.page.locator("#vorschlag-bild option").count(), 6, "die Standbilder stehen zur Wahl");
+  assert.deepEqual(t.fehler, []);
+  await t.ctx.close();
 });
 
 await check("Telefon: kein seitliches Scrollen, Bereiche untereinander", async () => {

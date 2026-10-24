@@ -6,6 +6,7 @@ import { sha256, begrenzen } from "../kern/bilddaten.js";
 import { GRENZEN } from "../kern/projekt.js";
 import { wavBytes } from "../kern/klang.js";
 import { abtastrateLesen, wavSchreiben, mono } from "../kern/klangwerk.js";
+import { istIsoBmff, tonMitWebCodecs } from "./mp4ton.js";
 
 const leinwand = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
 const alsBlob = (c, typ = "image/png") => new Promise((ok, nein) => c.toBlob((b) => (b ? ok(b) : nein(new Error("Bild konnte nicht kodiert werden"))), typ));
@@ -24,17 +25,28 @@ const mimeNachName = (name) => { const x = name.split(".").pop(); return x === "
  * Tonbytes → { spuren (höchstens zwei Kanäle), pcm (einkanalig gemischt), rate, dauer, kanaele } über Web Audio. decodeAudioData rechnet auf die
  * Abtastrate des Kontexts um; darum bekommt der Kontext die Rate, die im Kopf der Datei steht: ein Beat mit 48 oder 96 kHz bleibt so.
  */
-async function dekodiereTon(bytes) {
+async function dekodiereTon(bytes, { sekunden = Infinity, leseweg = "auto", melden = () => {} } = {}) {
   const Ctx = globalThis.OfflineAudioContext ?? globalThis.webkitOfflineAudioContext;
-  if (!Ctx) throw new Error("Dieser Browser kann keinen Ton lesen (Web Audio fehlt)");
-  const eigen = abtastrateLesen(bytes), rate = eigen >= 8000 && eigen <= 192000 ? eigen : RATE;
-  let buf;
-  try { buf = await new Ctx(1, 1, rate).decodeAudioData(bytes.slice().buffer); }
-  catch (f) { if (rate === RATE) throw f; buf = await new Ctx(1, 1, RATE).decodeAudioData(bytes.slice().buffer); }
-  const k = buf.numberOfChannels, spuren = Array.from({ length: Math.min(2, k) }, (_, c) => buf.getChannelData(c));
-  let pcm = mono(spuren);
-  if (k > 2) { pcm = new Float32Array(buf.length); for (let c = 0; c < k; c++) { const d = buf.getChannelData(c); for (let i = 0; i < d.length; i++) pcm[i] += d[i] / k; } }
-  return { spuren, pcm, rate: buf.sampleRate, dauer: buf.duration, kanaele: k };
+  let webAudio = null;
+  if (leseweg !== "webcodecs") {
+    try {
+      if (!Ctx) throw new Error("Web Audio fehlt");
+      const eigen = abtastrateLesen(bytes), rate = eigen >= 8000 && eigen <= 192000 ? eigen : RATE;
+      let buf;
+      try { buf = await new Ctx(1, 1, rate).decodeAudioData(bytes.slice().buffer); }
+      catch (f) { if (rate === RATE) throw f; buf = await new Ctx(1, 1, RATE).decodeAudioData(bytes.slice().buffer); }
+      const k = buf.numberOfChannels, spuren = Array.from({ length: Math.min(2, k) }, (_, c) => buf.getChannelData(c));
+      let pcm = mono(spuren);
+      if (k > 2) { pcm = new Float32Array(buf.length); for (let c = 0; c < k; c++) { const d = buf.getChannelData(c); for (let i = 0; i < d.length; i++) pcm[i] += d[i] / k; } }
+      return { spuren, pcm, rate: buf.sampleRate, dauer: buf.duration, kanaele: k, leseweg: "webaudio" };
+    } catch (f) { webAudio = f?.message || f?.name || String(f); }
+  }
+  // zweiter Leseweg (seit 0.1.20): MP4, MOV und M4A über den Dekoder des Geräts (medien/mp4ton.js); auf Telefonen liest Web Audio oft kein AAC
+  if (!istIsoBmff(bytes)) throw new Error(webAudio ? `Web Audio: ${webAudio}` : "kein MP4");
+  try {
+    const t = await tonMitWebCodecs(bytes, { sekunden, melden });
+    return { spuren: t.spuren, pcm: mono(t.spuren), rate: t.rate, dauer: t.dauer, kanaele: t.kanaele, leseweg: "webcodecs" };
+  } catch (f) { throw new Error(`${webAudio ? `Web Audio: ${webAudio}; ` : ""}WebCodecs: ${f?.message || f?.name || f}`); }
 }
 
 export function browserMedien() {
@@ -101,7 +113,7 @@ export function browserMedien() {
       if (datei.size > HOECHSTENS_BYTES) throw new Error("Datei grösser als 60 MB");
       const bytes = new Uint8Array(await datei.arrayBuffer());
       let t;
-      try { t = await dekodiereTon(bytes); } catch (f) { throw new Error(`der Ton liess sich nicht dekodieren (${f.message || f.name})`); }
+      try { t = await dekodiereTon(bytes); } catch (f) { throw new Error(`der Ton liess sich nicht dekodieren (${f.message || f.name})`); }   // M4A/MP4 auch über WebCodecs
       if (t.dauer > GRENZEN.tonSekunden) throw new Error(`Ton länger als ${GRENZEN.tonSekunden / 60} Minuten (${Math.round(t.dauer)} s)`);
       if (t.dauer < 0.2) throw new Error("Ton kürzer als 0,2 s");
       return { bytes, endung, mime, dekodiert: t, original: { name: datei.name, sha256: await sha256(bytes), mime, bytes: bytes.length },
@@ -112,12 +124,12 @@ export function browserMedien() {
      * 120 s, als WAV mit 24 Bit. Das Video selbst kommt nicht ins Projekt, nur was daraus gelesen wurde; seine Prüfsumme steht in der Herkunft.
      * Der Browser muss das Format abspielen können (MP4 mit H.264 oder WebM fast überall, MOV je nach Gerät).
      */
-    async importiereVideo(datei, { bilder: n = 6, melden = () => {} } = {}) {
+    async importiereVideo(datei, { bilder: n = 6, melden = () => {}, leseweg = "auto" } = {}) {
       const mime = datei.type || VIDEO_ENDUNG[datei.name.split(".").pop().toLowerCase()] || "";
       if (!VIDEO.has(mime)) throw new Error(`Dateityp ${mime || "unbekannt"} wird nicht angenommen (MP4, WebM, MOV)`);
       if (datei.size > VIDEO_BYTES) throw new Error("Video grösser als 300 MB");
       const bytes = new Uint8Array(await datei.arrayBuffer());
-      const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
+      const url = URL.createObjectURL(datei.type ? datei : new Blob([datei], { type: mime }));   // die Datei selbst, keine zweite Kopie im Speicher des Telefons
       const v = document.createElement("video");
       v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = url;
       try {
@@ -135,17 +147,20 @@ export function browserMedien() {
           stills.push({ zeit: Math.round(zeit * 100) / 100, arbeit: x.getImageData(0, 0, c.width, c.height) });
         }
         const original = { name: datei.name, sha256: await sha256(bytes), mime, bytes: bytes.length, breite: w0, hoehe: h0, dauer: Math.round(dauer * 1000) / 1000 };
-        // die Tonspur: decodeAudioData liest den Ton auch aus einem Video; ohne Ton (oder unlesbar) bleibt es bei den Bildern
-        let ton = null;
+        // die Tonspur: decodeAudioData liest den Ton auch aus einem Video, sonst (MP4, MOV) der Dekoder des Geräts über WebCodecs;
+        // ohne Ton (oder unlesbar) bleibt es bei den Bildern, und tonFehler sagt, warum
+        let ton = null, tonFehler = null;
         try {
           melden("Tonspur wird gelesen …", null);
-          const t = await dekodiereTon(bytes), m = Math.min(t.pcm.length, Math.round(VIDEO_TON_SEKUNDEN * t.rate));
+          const t = await dekodiereTon(bytes, { sekunden: VIDEO_TON_SEKUNDEN, leseweg, melden: (a) => melden("Tonspur wird gelesen …", a) });
+          const m = Math.min(t.pcm.length, Math.round(VIDEO_TON_SEKUNDEN * t.rate));
           const spuren = t.spuren.map((s) => s.slice(0, m)), pcm = t.pcm.slice(0, m), wav = wavSchreiben(spuren, t.rate, { bits: "24" });
-          if (m / t.rate >= 0.2) ton = { bytes: wav, endung: "wav", mime: "audio/wav", dekodiert: { spuren, pcm, rate: t.rate, dauer: m / t.rate, kanaele: spuren.length },
+          if (m / t.rate >= 0.2) ton = { bytes: wav, endung: "wav", mime: "audio/wav", dekodiert: { spuren, pcm, rate: t.rate, dauer: m / t.rate, kanaele: spuren.length }, leseweg: t.leseweg,
             original: { name: `${datei.name} (Tonspur)`, sha256: await sha256(wav), mime: "audio/wav", bytes: wav.length }, gekuerzt: t.dauer > VIDEO_TON_SEKUNDEN,
             ton: { dauer: Math.round((m / t.rate) * 1000) / 1000, abtastrate: t.rate, kanaele: spuren.length } };
-        } catch { ton = null; }
-        return { original, bilder: stills, ton };
+          else tonFehler = "die Tonspur ist kürzer als 0,2 s";
+        } catch (f) { ton = null; tonFehler = String(f?.message || f?.name || f).slice(0, 200); }
+        return { original, bilder: stills, ton, tonFehler };
       } finally { v.removeAttribute("src"); v.load(); URL.revokeObjectURL(url); }
     },
     /** die Tondatei unverändert unter medien/<id>.<endung> ablegen */

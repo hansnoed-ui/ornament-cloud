@@ -13,17 +13,14 @@ export const VORSCHLAG_VERSION = "0.1.0";
 export const DAUER = 30;   // Sekunden: so lang wird der Film, wenn der Klang lang genug ist
 
 /**
- * Die Rezepte. schritte: Operationen nacheinander, jede auf dem Ergebnis der vorigen; route: das Steuersignal (Lautstärke des Klangs)
+ * Die Rezepte (seit Lab 0.1.20 vorerst vier: Zerfall und Spiegelung sind Standbilder mit Kamera und stehen einem fliessenden Film entgegen,
+ * Christian, 24. Oktober 2026; jev/fragen.js hat denselben Katalog). schritte: Operationen nacheinander, jede auf dem Ergebnis der vorigen; route: das Steuersignal (Lautstärke des Klangs)
  * moduliert diesen Parameter über die Varianten, so stehen Momente des Klangs nebeneinander. film: Übergang, Halten, Übergangsdauer und
  * takt (Wechsel je Sekunde auf den Anschlägen) oder null (gleichmässig, das Halten füllt die Dauer).
  */
 export const REZEPTE = Object.freeze({
   "vorschlag.puls": { name: "Puls", schritte: [{ operation: "lab.feedback", parameter: { seite: 720 }, anzahl: 6, route: { ziel: "zoom", tiefe: 0.35 } }],
     film: { art: "schnitt", uebergang: 0, halten: 1, takt: 2.5 } },
-  "vorschlag.zerfall": { name: "Zerfall", schritte: [{ operation: "fictory.prozess", parameter: {} }],
-    film: { art: "schwelle", uebergang: 1.6, takt: null } },
-  "vorschlag.spiegel": { name: "Spiegelung", schritte: [{ operation: "lab.komposition", parameter: { seite: 900 }, anzahl: 6, route: { ziel: "symmetrie", tiefe: 0.9 } }],
-    film: { art: "blende", uebergang: 0.6, halten: 1, takt: 1 } },
   "vorschlag.farbwelle": { name: "Farbwelle", schritte: [{ operation: "lab.farbe", parameter: { saettigung: 1.3 }, anzahl: 8, route: { ziel: "farbdrehung", tiefe: 1 } }],
     film: { art: "blende", uebergang: 0.5, halten: 1, takt: 1.2 } },
   "vorschlag.raster": { name: "Vervielfältigung", schritte: [{ operation: "lab.wiederholung", parameter: { seite: 1200 }, anzahl: 6, route: { ziel: "groesse", tiefe: 0.5 } }],
@@ -72,14 +69,9 @@ const REGELN = [
   ["vorschlag.puls", "dynamik", "wechselhaft", 1, "wechselnde Lautstärke verändert den Zoom deutlich"],
   ["vorschlag.raster", "dichte", "dicht", 1, "dichte Anschläge tragen schnelle Schnitte"],
   ["vorschlag.raster", "kontrast", "hoch", 1, "hoher Kontrast bleibt auch in kleinen Kopien lesbar"],
-  ["vorschlag.spiegel", "symmetrie", "asymmetrisch", 1.5, "ein asymmetrisches Bild hat etwas, das sich spiegeln oder umkehren lässt"],
-  ["vorschlag.spiegel", "dichte", "bewegt", 0.5, "regelmässige Anschläge lassen Zeit für Überblendungen"],
   ["vorschlag.farbwelle", "farbigkeit", "bunt", 1.5, "kräftige Farben machen die Farbdrehung sichtbar"],
   ["vorschlag.farbwelle", "farbigkeit", "gedaempft", 0.5, "gedämpfte Farben werden durch die Sättigung kräftiger"],
   ["vorschlag.farbwelle", "dynamik", "gleichmaessig", 1, "eine gleichmässige Lautstärke trägt eine ruhige Farbbewegung"],
-  ["vorschlag.zerfall", "dichte", "ruhig", 2, "wenige Anschläge: ein langsamer Zerfall ohne Takt"],
-  ["vorschlag.zerfall", "farbigkeit", "bunt", 0.5, "kräftige Farben ergeben deutliche Farbflächen"],
-  ["vorschlag.zerfall", "dynamik", "abschwellend", 1, "ein leiser werdender Klang passt zu einem Zerfall"],
   ["vorschlag.steigerung", "dynamik", "anschwellend", 2.5, "ein lauter werdender Klang passt zu einer Steigerung"],
   ["vorschlag.steigerung", "dichte", "ruhig", 1, "wenige Anschläge: lange Übergänge ohne Takt"],
 ];

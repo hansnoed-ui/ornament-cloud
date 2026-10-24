@@ -198,6 +198,7 @@ fieldset { border: 0; margin: 0; padding: 0; }
 .status { position: sticky; bottom: 0; background: var(--bg); border-top: 1px solid var(--border); padding: 8px 24px; font-size: 0.88rem; min-height: 36px; display: flex; gap: 12px; align-items: center; }
 .status progress { accent-color: var(--accent); width: 160px; }
 .status .fehler { color: #c0392b; }
+#vorschlag30 .hinweis.fehler { color: #c0392b; }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 
 /* Animation über Stationen */
