@@ -51,8 +51,10 @@ async function dekodiereTon(bytes, { sekunden = Infinity, leseweg = "auto", meld
 }
 
 export function browserMedien() {
-  const bilder = new Map(), toene = new Map(), dateien = new Map(), urls = new Map();
-  const merke = (e, bytes, mime) => { dateien.set(e.datei, bytes); const u = URL.createObjectURL(new Blob([bytes], { type: mime })); urls.get(e.datei) && URL.revokeObjectURL(urls.get(e.datei)); urls.set(e.datei, u); };
+  const bilder = new Map(), toene = new Map(), dateien = new Map(), urls = new Map(), mimes = new Map();
+  // seit 0.1.32 entsteht der Blob (und seine Adresse) erst, wenn die Seite die Datei zeigt: beim Rechnen eines Films werden Dutzende Bilder
+  // abgelegt, und Chrome auf Android liest Blobs nicht mehr («could not be read»), wenn sein Blob-Speicher voll ist
+  const merke = (e, bytes, mime) => { urls.get(e.datei) && URL.revokeObjectURL(urls.get(e.datei)); urls.delete(e.datei); dateien.set(e.datei, bytes); mimes.set(e.datei, mime); };
   async function dekodiere(bytes, mime) {
     const bmp = await createImageBitmap(new Blob([bytes], { type: mime }), { imageOrientation: "from-image" });
     const c = leinwand(bmp.width, bmp.height), x = c.getContext("2d", { willReadFrequently: true });
@@ -62,11 +64,16 @@ export function browserMedien() {
   async function pngBytes(b) {
     const c = leinwand(b.width, b.height);
     c.getContext("2d").putImageData(b instanceof ImageData ? b : new ImageData(new Uint8ClampedArray(b.data), b.width, b.height), 0, 0);
-    return new Uint8Array(await (await alsBlob(c)).arrayBuffer());
+    return dateiLesen(await alsBlob(c));   // in Stücken und mit Wiederholung (medien/dateilesen.js)
   }
   return {
     dateien,
-    url: (e) => (e?.datei ? urls.get(e.datei) ?? null : null),
+    url(e) {
+      const d = e?.datei;
+      if (!d || !dateien.has(d)) return null;
+      if (!urls.has(d)) urls.set(d, URL.createObjectURL(new Blob([dateien.get(d)], { type: mimes.get(d) })));
+      return urls.get(d);
+    },
     async bild(e) {
       if (bilder.has(e.id)) return bilder.get(e.id);
       const bytes = dateien.get(e.datei);
@@ -191,7 +198,7 @@ export function browserMedien() {
     /** Medien eines geöffneten Archivs übernehmen */
     uebernehmen(medien) {
       for (const u of urls.values()) URL.revokeObjectURL(u);
-      bilder.clear(); toene.clear(); dateien.clear(); urls.clear();
+      bilder.clear(); toene.clear(); dateien.clear(); urls.clear(); mimes.clear();
       for (const [name, bytes] of medien) merke({ datei: name }, bytes, mimeNachName(name));
     },
   };

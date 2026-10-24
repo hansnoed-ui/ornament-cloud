@@ -1,7 +1,8 @@
 // ORNAMENT LAB – eine gewählte Datei sicher in den Speicher lesen (seit Lab 0.1.29). Chrome auf Android gibt eine Datei aus der Auswahl
 // (Google Fotos, Drive, Downloads) nur als Verweis auf den Anbieter; wird sie in einem Stück gelesen, bricht das Lesen bei grossen oder noch
 // ladenden Dateien oft mit NotReadableError ab: «The requested file could not be read, typically due to permission problems …». Darum wird
-// in Stücken gelesen, ein misslungenes Stück nach einer kurzen Pause wiederholt, und erst danach gibt die Seite die Auswahl frei.
+// in Stücken gelesen, ein misslungenes Stück nach einer kurzen Pause wiederholt, und erst danach gibt die Seite die Auswahl frei. Seit 0.1.32 liest
+// die Seite so auch ihre eigenen Blobs (Bilder als PNG, Filme), die Chrome auf Android ebenso verweigert, wenn sein Blob-Speicher voll ist.
 
 export const STUECK = 4 * 1024 * 1024;
 const VERSUCHE = 4;
@@ -25,7 +26,7 @@ export async function dateiLesen(datei, { melden = () => {}, warten = pause } = 
         bytes.set(teil, a);
         break;
       } catch (f) {
-        if (v >= VERSUCHE || !istZugriffsfehler(f)) throw zugriffsMeldung(f);
+        if (v >= VERSUCHE || !istZugriffsfehler(f)) throw zugriffsMeldung(f, datei);
         await warten(250 * 2 ** (v - 1));
       }
     }
@@ -35,8 +36,11 @@ export async function dateiLesen(datei, { melden = () => {}, warten = pause } = 
 }
 
 /** eine verständliche Meldung für das Telefon; andere Fehler bleiben, wie sie sind */
-export function zugriffsMeldung(f) {
+export function zugriffsMeldung(f, datei = null) {
   if (!istZugriffsfehler(f)) return f;
+  // ein Blob der Seite (ein Bild oder Film, eben gerechnet): dann ist der Blob-Speicher des Browsers voll (seit 0.1.32)
+  if (datei && !("name" in datei)) return Object.assign(new Error("der Speicher des Browsers ist voll, ein eben gerechnetes Bild oder ein Film liess sich nicht mehr lesen. "
+    + "Speichere das Projekt, lade die Seite neu und öffne es wieder; ein kürzerer Film oder eine kleinere Rechengrösse braucht weniger Speicher"), { name: "Speicherfehler", ursache: `${f.name}: ${f.message}` });
   return Object.assign(new Error("das Telefon hat den Zugriff auf die Datei verweigert. Wähle sie bitte noch einmal aus. Liegt sie in Google Fotos oder Drive, "
     + "lade sie zuerst auf das Gerät herunter und wähle sie über «Dateien» bzw. «Downloads»"), { name: "Zugriffsfehler", ursache: `${f.name}: ${f.message}` });
 }
