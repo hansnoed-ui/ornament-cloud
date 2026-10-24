@@ -646,6 +646,13 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   // die Zusammenstellung von jev: einen Abschnitt von Hand ändern, dann rechnen
   await p.locator('input[name="ansicht"][value="neben"]').check({ force: true });
   await p.locator('#vorschlag30 select[data-frage="bild6"]').selectOption("bild.raster");
+  // die Abschnitte (0.1.28): Abschnitt 5 aus, Abschnitt 1 zehn Sekunden lang; der Hinweis rechnet die Animation vor
+  assert.equal(await p.locator("#vorschlag30 input[data-abschnitt]:checked").count(), 6, "alle sechs Abschnitte an");
+  await p.locator('#vorschlag30 input[data-abschnitt="5"]').uncheck();
+  await p.locator('#vorschlag30 input[data-abschnitt-dauer="1"]').fill("10");
+  await p.locator('#vorschlag30 input[data-abschnitt-dauer="1"]').dispatchEvent("change");
+  assert.equal(await p.locator('#vorschlag30 input[data-abschnitt-dauer="5"]').isDisabled(), true, "die Dauer eines Abschnitts, der aus ist, ist gesperrt");
+  assert.match(await p.textContent("#zusammenstellung-plan"), /\(1 von 6 aus\); 30 s Animation, 52 Varianten/);
   // dazu beide Bestände (seit 0.1.18): ein Zettel aus dem Zettelkasten (Nummer 7 gewählt) und eine ORNA-Konstellation (gezogen)
   assert.equal(await p.locator("#vorschlag30 [data-bestand]:checked").count(), 0, "ohne Zettel und ORNA, bis man sie einschaltet");
   await p.locator('#vorschlag30 [data-bestand="zettel"]').check();
@@ -664,17 +671,18 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   await p.waitForTimeout(50);
   await warteFertig(p, 420000);
   await p.waitForSelector("#vorschlag30 .zusammenstellung video");
-  const z = await S(p, () => { const pr = ornamentLab.projekt; const d = pr.entscheidungen.find((y) => y.gegenstand === "zusammenstellung"); return { d, ops: pr.knoten.slice(-13).map((k) => k.operation), x: pr.exporte.at(-1), status: document.querySelector("#status").textContent,
+  const z = await S(p, () => { const pr = ornamentLab.projekt; const d = pr.entscheidungen.find((y) => y.gegenstand === "zusammenstellung"); return { d, ops: pr.knoten.slice(-12).map((k) => k.operation), x: pr.exporte.at(-1), status: document.querySelector("#status").textContent, abschnitte: pr.knoten.slice(-7, -2).map((k) => k.ausgaben.length),
     strophe: pr.entscheidungen.find((y) => y.gegenstand === "strophe"), konstellation: pr.entscheidungen.find((y) => y.gegenstand === "konstellation"), karten: pr.knoten.filter((k) => k.operation === "lab.karte").map((k) => k.protokoll.inhalt), fictory: pr.knoten.find((k) => k.operation === "fictory.prozess") ?? null }; });
-  assert.equal(z.d.art, "mensch", "eine Stelle geändert: die Entscheidung ist menschlich"); assert.deepEqual(z.d.details.geaendert, ["bild6"]); assert.equal(z.d.details.vorschlag, "jev");
-  assert.equal(z.d.gewaehlt.bild[5], "bild.raster"); assert.equal(z.d.gewaehlt.zettel, "7"); assert.equal(z.d.gewaehlt.orna, "ziehen");
+  assert.equal(z.d.art, "mensch", "eine Stelle geändert: die Entscheidung ist menschlich"); assert.deepEqual([...z.d.details.geaendert].sort(), ["abschnitt1", "abschnitt5", "bild6"]); assert.equal(z.d.details.vorschlag, "jev");
+  assert.equal(z.d.gewaehlt.bild[5], "bild.raster"); assert.deepEqual(z.d.gewaehlt.abschnitte.map((a) => a.an), [true, true, true, true, false, true]); assert.equal(z.d.gewaehlt.abschnitte[0].dauer, 10);
+  assert.deepEqual(z.abschnitte, [12, 10, 10, 10, 10], "fünf Abschnitte, der erste mit zwölf Varianten (10 s, die Grenze je Ausführung)"); assert.equal(z.d.gewaehlt.zettel, "7"); assert.equal(z.d.gewaehlt.orna, "ziehen");
   assert.deepEqual(z.ops.slice(0, 5), ["lab.tempo", "lab.zerlegen", "lab.tonsignal", "zettel.strophe", "orna.konstellation"]);
   assert.deepEqual(z.ops.slice(-2), ["lab.karte", "lab.karte"], "zuletzt die zwei Karten");
   assert.equal(z.strophe.art, "mensch"); assert.equal(z.strophe.gewaehlt, 7); assert.equal(z.konstellation.art, "zufall");
   assert.equal(z.fictory, null, "seit 0.1.20 kein Zerfall in der Zusammenstellung (Standbilder)");
   assert.match(z.karten[0].kopf, /^Zettelkasten · .* · 7 \/ 49$/); assert.match(z.karten[1].kopf, /^ORNA · Konstellation /); assert.match(z.karten[1].fuss, /^Operationsregel R/);
   assert.match(z.status, /Zettel 7: .*ORNA \d+: /);
-  assert.equal(z.x.dramaturgie, "zusammenstellung"); assert.equal(z.x.stationen.length, 63, "Zettelkarte, Bild, 60 Varianten, ORNA-Karte"); assert.ok(z.x.ton, "mit Tonspur");
+  assert.equal(z.x.dramaturgie, "zusammenstellung"); assert.equal(z.x.stationen.length, 55, "Zettelkarte, Bild, 52 Varianten, ORNA-Karte"); assert.ok(z.x.ton, "mit Tonspur");
   assert.equal(z.x.partitur.folge[0].einmal, true); assert.equal(z.x.partitur.folge[0].halten, 2.5); assert.equal(z.x.partitur.folge.at(-1).einmal, true);
   assert.equal(z.x.partitur.folge[0].ergebnis, z.x.stationen[0]); assert.equal(z.x.partitur.folge.at(-1).ergebnis, z.x.stationen.at(-1));
   assert.ok(z.x.partitur.lebendig, "die Zusammenstellung ist lebendig");

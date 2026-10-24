@@ -41,7 +41,7 @@ Aus den Wahrscheinlichkeiten zieht das Lab mit Startwert (`zusammenstellen()` in
 
 Kosten: ein Aufruf mit etwa 4000 Eingabe-Token, also etwa 0,02 Cent; gleiche Stufen kommen 30 Tage aus dem Zwischenspeicher. Am Desktop dauert das Rechnen etwa 50 s, am Telefon länger.
 
-Im Projekt: Entscheidung `gegenstand: "zusammenstellung"` mit `gewaehlt: { aufbau, uebergang, klang, bild, zettel, orna }` (die beiden Bestände null, `"ziehen"` oder die gewählte Nummer bzw. Kennung), Startwert, Antworten von jev, Merkmalen; jeder Schritt verweist mit `details.entscheidung` darauf; der Film unter `exporte` mit `dramaturgie: "zusammenstellung"`.
+Im Projekt: Entscheidung `gegenstand: "zusammenstellung"` mit `gewaehlt: { aufbau, uebergang, klang, bild, zettel, orna, abschnitte }` (die beiden Bestände null, `"ziehen"` oder die gewählte Nummer bzw. Kennung; `abschnitte` seit 0.1.28, unten), Startwert, Antworten von jev, Merkmalen; jeder Schritt verweist mit `details.entscheidung` darauf; der Film unter `exporte` mit `dramaturgie: "zusammenstellung"`.
 
 ## Video als Eingang (seit Lab 0.1.14)
 
@@ -99,6 +99,15 @@ Christian am 24. Oktober 2026, nach dem Merge der PHORMA-III-Szenen: «phorma-ii
 
 - **The Fictory lebendig** (`fictory.prozess`, `lebend()`): im Film über Stationen läuft der Prozess von Zustand zu Zustand weiter statt als Standbilder zu stehen (docs/STATIONEN.md, Zeit ab dem Auftritt, Lage der Station). Darum ist der **Zerfall** zurück: als Bildeffekt `bild.zerfall` in der Zusammenstellung und als Dramaturgie `vorschlag.zerfall`, mit `verfuegbar()` (braucht die Leinwand).
 - **In der Zusammenstellung** stehen die neuen Abläufe als `bild.physarum`, `bild.tiefe`, `bild.welle`, `bild.tuch`, `bild.druck`, `bild.montage`, `bild.fragmente`, `bild.strom`, `bild.koerper`, `bild.scherben`, `bild.echo`, `bild.relief` und `bild.zerfall` im Katalog von jev (gleich in `wahl.php`); die Szenen bekommen `dauer: SZENE_DAUER` (8 s, etwas länger als ein Abschnitt). Die Bestände gehen an alle Operationen, die sie annehmen: die Konstellation an den Zerfall (Regel) und an die Szenen von PHORMA I und II, der Zettel an die Szenen (Titel). jev wählt den Effekt; die Regel wählt den Ablauf nur, wenn der Mensch die Operation von Hand mit leerem Ablauf ausführt.
+
+## Abschnitte ausschalten und ihre Dauer setzen (seit Lab 0.1.28)
+
+Christian am 24. Oktober 2026: «Wenn jev eine Zusammenstellung macht: wie kann ich einzeln Schritte ausschalten und wie ihre Länge verändern.» Bis 0.1.27 ging beides nur nach dem Rechnen unter «Nacheinander», Station für Station. Jetzt steht es in der Zusammenstellung selbst: neben jedem der sechs Abschnitte ein Schalter **an/aus** und die **Dauer** in Sekunden (1 bis 20, in halben Sekunden; Standard 5, zusammen die 30).
+
+- `plan.abschnitte = [{ an, dauer }]` je Stelle von `plan.bild` (`standardAbschnitte()`, `abschnitteNormieren()` in `kern/zusammenstellung.js`). jev wählt weiterhin alle sechs Effekte; was der Mensch schaltet, steht in `details.geaendert` als `abschnitt1` … `abschnitt6`, und die Zusammenstellung ist seine Entscheidung.
+- Ein Abschnitt, der **aus** ist, wird nicht gerechnet und nicht geprüft (ein Effekt, der in diesem Browser nicht geht, stört dort nicht). Die Kette läuft über die Abschnitte, die an sind; aus einem Video nimmt jeder Abschnitt weiterhin das Standbild seiner Stelle unter den sechs. Mindestens einer muss an sein.
+- Die **Dauer** bestimmt die Varianten des Abschnitts (`variantenFuer()`: zwei je Sekunde wie bisher, höchstens `GRENZEN.varianten` = 12, mindestens eine) und seine Zeit im Film: ohne Takt hält jede seiner Stationen so lange, dass der Abschnitt seine Dauer bekommt (`halten` je Station in der Partitur, Übergänge eingerechnet); im Takt der Anschläge entscheiden die Anschläge, dort hat ein längerer Abschnitt entsprechend mehr Stationen. Die Länge der Animation ist die Summe der Dauern der Abschnitte, die an sind (`haupt`); Tonsignal, PHORMA-Szenen (Filmzeit) und die Signatur rechnen damit, die Szenen von PHORMA I und II laufen etwas länger als ihr Abschnitt.
+- Bleibt alles beim Standard, läuft die Zusammenstellung wie bis 0.1.27 (60 Varianten, gleiches Halten für alle). Der Hinweis unter den Stellen rechnet vor: Abschnitte mit Dauer, Sekunden der Animation, Zahl der Varianten.
 
 ## Nur fliessende Effekte (seit Lab 0.1.20)
 
