@@ -17,6 +17,7 @@ src/
     Wachstum.ts       die Simulation (Punkte, Abstossung, Feder, Kantenteilung, Grenze), deterministisch
     Formen.ts         die beiden Grenzen: atmende Wolke aus Kreisen, Buchstaben des Namens (Maske, Abstandsfeld, Keime)
     Video.tsx         Zeitplan T und Szenen
+  untitled/           «Untitled»: Cézanne zerfällt, Karussell, Strudel, Jet-Ski; Film aus Seedance (24. Oktober 2026)
   orna/               Erklärvideo zu ORNA (5. Oktober 2026)
     Video.tsx         Zeitplan T und Szenen
     Rad.tsx           das Doppelrad, nachgezeichnet nach portfolio/nebeneinander-nacheinander/js/wheel.js
@@ -174,6 +175,15 @@ ffmpeg -i out/start-hell.mp4 -vf "scale=in_range=pc:out_range=tv:in_color_matrix
   -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv -c:v libx264 -crf 28 -preset slow -movflags +faststart -an ../../assets/start-animation.mp4
 # dunkel ebenso mit out/start-dunkel.mp4 nach ../../assets/start-animation-dunkel.mp4
 ```
+
+## «Untitled» – Cézanne, Rothko, Kapoor, Holzinger (24. Oktober 2026)
+
+39 s: Intro mit «Untitled» und «Cézanne • Rothko • Kapoor • Holzinger» (3 s), ein mit Seedance erzeugter Film (30 s, aus dem Grund ein- und ausgeblendet), Outro (6 s).
+Im Film zerfällt Cézannes «Montagne Sainte-Victoire» in Farbflächen, daraus wird ein Karussell von Farbfeldern, das in einen schwarzen Strudel im Galerieboden abfliesst; auf dem Strudel fährt eine anonyme Performerin Jet-Ski.
+Der Prompt (und warum Rothko und Kapoor nicht genannt sind und die Fahrerin anonym bleibt) steht in `src/untitled/seedance-prompt.md`.
+
+Der Film ist nicht eingecheckt: den Clip von Seedance (720 × 1280) mit dem Skill `video-hochrendern` auf 1080 × 1920 bringen und als `public/untitled/clip.mp4` ablegen, dann
+`npx remotion render UntitledVideo out/untitled.mp4 --codec=h264 --crf=20` und nach `yuv420p` umwandeln (siehe unten). Ohne Ton: der Clip wird stumm eingebunden.
 
 ## Rendern ohne Internetzugang zu remotion.media
 
