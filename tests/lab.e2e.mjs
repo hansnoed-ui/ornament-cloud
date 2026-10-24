@@ -46,9 +46,9 @@ async function ausfuehren(page) { await page.click("#ausfuehren"); await page.wa
 const { ctx, page, fehler, fremd } = await oeffne();
 let gespeichert = null;
 
-await check("Start: vier Bereiche, Register mit dreissig Operationen, keine Fehler", async () => {
+await check("Start: vier Bereiche, Register mit 34 Operationen, keine Fehler", async () => {
   for (const id of ["material", "operationen", "experiment", "protokoll"]) assert.ok(await page.locator(`#${id}`).isVisible(), id);
-  assert.match(await page.textContent("#status"), /30 Operationen/);
+  assert.match(await page.textContent("#status"), /34 Operationen/);
   assert.deepEqual(fehler, []);
 });
 
@@ -657,6 +657,9 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   assert.equal(await p.locator("#zusammenstellung-lebendig").isDisabled(), false, "WebGL 2 ist da");
   assert.equal(await p.locator('#vorschlag30 input[data-param="zusammenstellung-bewegung"]').inputValue(), "1");
   await p.locator('#vorschlag30 input[data-param="zusammenstellung-bewegung"]').fill("0.6");
+  // die Karten (bis 0.1.25): ohne Signatur; mit Signatur prüft «Signatur (0.1.26)» weiter unten
+  assert.equal(await p.locator("#zusammenstellung-signatur").isChecked(), true, "Signatur vorgewählt");
+  await p.locator("#zusammenstellung-signatur").uncheck();
   await p.click("#zusammenstellung-rechnen");
   await p.waitForTimeout(50);
   await warteFertig(p, 420000);
@@ -675,7 +678,7 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   assert.equal(z.x.partitur.folge[0].einmal, true); assert.equal(z.x.partitur.folge[0].halten, 2.5); assert.equal(z.x.partitur.folge.at(-1).einmal, true);
   assert.equal(z.x.partitur.folge[0].ergebnis, z.x.stationen[0]); assert.equal(z.x.partitur.folge.at(-1).ergebnis, z.x.stationen.at(-1));
   assert.ok(z.x.partitur.lebendig, "die Zusammenstellung ist lebendig");
-  assert.equal(z.x.partitur.bewegung.staerke, 0.6, "die Kamera wie in der Zusammenstellung eingestellt"); assert.deepEqual(z.d.details.film, { lebendig: true, bewegung: 0.6 });
+  assert.equal(z.x.partitur.bewegung.staerke, 0.6, "die Kamera wie in der Zusammenstellung eingestellt"); assert.deepEqual(z.d.details.film, { lebendig: true, bewegung: 0.6, signatur: "aus" });
   assert.ok(z.x.zeitplan.some((y) => y.lebendig), `die Grafikkarte rechnet Stationen in jedem Bild neu: ${JSON.stringify(z.x.zeitplan.slice(0, 3))}`);
   assert.deepEqual(fehler2, []);
   await c.close();
@@ -959,6 +962,56 @@ await check("Beat aus Bild oder Video (0.1.24): am Telefon nach Regeln und mit j
     assert.ok(Math.abs(v.dauer - 6) < 0.01); assert.notEqual(v.bewegung, "still");
   } else console.log("      (Video ohne ffmpeg übersprungen)");
   assert.deepEqual(t.fehler, []);
+  await t.ctx.close();
+});
+
+await check("Signatur (0.1.26): am Telefon Intro mit dem Zettel, Outro mit ORNA, Signet ornament.lab; eigene Tonspur, das Signet endet mit dem Ton", async () => {
+  const t = await oeffne({ viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true });
+  await t.page.click("#beispiel");
+  await t.page.waitForFunction(() => ornamentLab.aktuell);
+  await t.page.setInputFiles("#tondatei", { name: "beat.wav", mimeType: "audio/wav", buffer: beatWav() });
+  await t.page.waitForSelector("#vorschlag-machen");
+  await t.page.click("#vorschlag-machen");
+  await t.page.waitForSelector("#vorschlag30 .zusammenstellung");
+  await warteFertig(t.page);
+  await t.page.locator('#vorschlag30 [data-bestand="zettel"]').check();
+  await t.page.locator('#vorschlag30 select[data-bestand-wahl="zettel"]').selectOption("17");
+  await t.page.locator('#vorschlag30 [data-bestand="orna"]').check();
+  await t.page.locator('#vorschlag30 select[data-bestand-wahl="orna"]').selectOption("tehching-hsieh__wendy-hui-kyong-chun");
+  assert.equal(await t.page.locator("#zusammenstellung-signatur").isChecked(), true);
+  assert.match(await t.page.textContent("#vorschlag30 .zusammenstellung"), /Lichtwürfel .* Rad von ORNA .* Signet ornament\.lab.* 54[.,]5 s/);
+  await S(t.page, () => { ornamentLab.film.seite = 480; });   // kleiner Film, damit die Prüfung in SwiftShader nicht zu lange rechnet
+  await t.page.click("#zusammenstellung-rechnen");
+  await t.page.waitForTimeout(50);
+  await warteFertig(t.page, 900000);
+  await t.page.waitForSelector("#vorschlag30 .zusammenstellung video");
+  const z = await S(t.page, () => { const pr = ornamentLab.projekt, x = pr.exporte.at(-1), k = (op) => pr.knoten.filter((y) => y.operation === op);
+    return { x, ops: pr.knoten.map((y) => y.operation), status: document.querySelector("#status").textContent, ton: k("signatur.ton")[0], intro: k("signatur.intro")[0], outro: k("signatur.outro")[0], signet: k("signatur.signet")[0],
+      film: pr.entscheidungen.find((y) => y.gegenstand === "zusammenstellung").details.film }; });
+  for (const k of ["intro", "outro", "signet", "ton"]) assert.equal(z[k]?.status, "fertig", `${k}: ${JSON.stringify(z[k]?.fehler ?? null)}`);
+  assert.ok(!z.ops.includes("lab.karte"), "keine Karten");
+  assert.equal(z.intro.protokoll.zettel, 17); assert.equal(z.intro.protokoll.verweise, 4);
+  assert.equal(z.outro.eingaben.konstellation !== undefined, true);
+  assert.equal(z.film.signatur.gesamt, 54.5);
+  const pt = z.x.partitur, ende = pt.folge.at(-1), outro = pt.folge.at(-2);
+  assert.equal(pt.folge[0].ergebnis, z.intro.ausgaben[0]); assert.equal(pt.folge[0].halten, 10); assert.equal(pt.folge[0].uebergang.art, "schnitt");
+  assert.equal(outro.ergebnis, z.outro.ausgaben[0]); assert.equal(outro.dehnen, true); assert.ok(outro.halten >= 8);
+  assert.equal(ende.ergebnis, z.signet.ausgaben[0]); assert.equal(ende.halten, 6.5);
+  assert.ok(Math.abs(pt.dauer - 54.5) < 0.05, `${pt.dauer}`); assert.ok(Math.abs(ende.beginn - 48) < 0.05, `das Signet beginnt bei ${ende.beginn} s`);
+  assert.equal(z.x.tonQuelle, z.ton.ausgaben[0], "die Tonspur der Signatur"); assert.ok(z.x.ton, "mit Ton");
+  assert.ok(z.ton.protokoll.scratch && z.ton.protokoll.frickel.von === 48);
+  assert.ok(z.x.zeitplan[0].lebendig && z.x.zeitplan.at(-1).lebendig, "Intro und Signet laufen auf ihrer eigenen Bühne");
+  // einzelne Bilder: der Zettel ist hell (Papier), das Signet dunkel mit wenig Weiss
+  const hell = await S(t.page, async () => {
+    const pr = ornamentLab.projekt, m = (id) => pr.ergebnisse.find((e) => e.id === id), x = pr.exporte.at(-1);
+    const mittel = (b) => { let s = 0; for (let i = 0; i < b.data.length; i += 4) s += b.data[i]; return s / (b.data.length / 4) / 255; };
+    return { intro: mittel(await ornamentLab.medien.bild(m(x.partitur.folge[0].ergebnis))), signet: mittel(await ornamentLab.medien.bild(m(x.partitur.folge.at(-1).ergebnis))) };
+  });
+  assert.ok(hell.intro > 0.5, `Zettel auf Papier: ${hell.intro}`); assert.ok(hell.signet < 0.1, `Signet auf Schwarz: ${hell.signet}`);
+  assert.match(z.status, /Signatur: Intro, Outro, Signet/);
+  const breit = await t.page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+  assert.ok(breit <= 0, `${breit}px zu breit`);
+  assert.deepEqual(t.fehler, []); assert.deepEqual(t.fremd, []);
   await t.ctx.close();
 });
 

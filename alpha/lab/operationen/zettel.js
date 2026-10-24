@@ -10,9 +10,11 @@ export const BESTAND = STROPHEN.length;
 const zyklusTitel = (c) => ZYKLEN.find(([k]) => k === c)?.[1] ?? "";
 /** die Strophen zur Wahl, wie sie der Zettelkasten zählt */
 export const STROPHEN_WAHL = STROPHEN.map((s) => ({ wert: String(s.n), name: `${s.n}. ${s.t}` }));
-/** eine Strophe als Befund: Nummer, Zyklus, Titel, Leitsatz (Bottom-Line) und Text, dazu ihre Adresse */
+/** eine Strophe als Befund: Nummer, Zyklus, Titel, Leitsatz (Bottom-Line) und Text, dazu ihre Adresse und (seit Lab 0.1.26, für das Intro der
+ *  Signatur) die vier Verweise: Person, Werk, Disziplin */
 export const stropheDaten = (s) => ({
   nummer: s.n, slug: s.s, zyklus: s.c, zyklusTitel: zyklusTitel(s.c), titel: s.t, leitsatz: s.b, text: s.x,
+  verweise: (s.r ?? []).map((v) => ({ person: v.p, werk: v.w, disziplin: v.d })),
   adresse: `https://ornament.cloud/zu-seiner-zeit/strophe/${s.s}/`, kennzeichnung: "Text unverändert aus dem Zettelkasten",
 });
 

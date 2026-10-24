@@ -219,7 +219,7 @@ test("Audio-Operationsformat: acht Klangformen in den vorhandenen Typen, AUDIO u
   for (const f of Object.values(KLANGFORMEN)) assert.ok(TYPEN[f.typ], f.name);
   assert.ok(TYPEN.AUDIO.implementiert && TYPEN.EVENT_SEQUENCE.implementiert);
   assert.equal(KLANGFORMEN.parameterverlauf.typ, KLANGFORMEN.steuerwert.typ, "ein Klangverlauf ist dasselbe Steuersignal wie ein Bildsignal");
-  assert.deepEqual(labRegister().fuer("AUDIO").map((o) => o.id), ["lab.tonsignal", "lab.tempo", "lab.zerlegen", "lab.rhythmus", "lab.koerner"]);
+  assert.deepEqual(labRegister().fuer("AUDIO").map((o) => o.id), ["lab.tonsignal", "lab.tempo", "lab.zerlegen", "lab.rhythmus", "lab.koerner", "signatur.signet", "signatur.ton"]);
   assert.ok(KLANGFORMEN.transformation.implementiert && KLANGFORMEN.rhythmus.implementiert, "seit 0.1.7");
 });
 
@@ -349,7 +349,7 @@ test("Komposition im Lab: Profil als Befund, Zielprofil aus einem anderen Bild, 
   assert.equal(ziel.typ, "METADATA");
   assert.equal(ziel.daten.art, "kompositorisches-profil");
   assert.deepEqual(p.knoten.at(-1).protokoll.profil, ziel.daten, "das Profil steht im Protokoll");
-  assert.deepEqual(r.fuer("METADATA"), [], "ein Profil ist kein Haupteingang, nur Ziel");
+  assert.deepEqual(r.fuer("METADATA").map((o) => o.id), ["signatur.intro"], "ein Profil ist kein Haupteingang, nur Ziel (nur das Intro der Signatur nimmt einen Zettel)");
 
   const a = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.komposition", eingaben: { bild: e.id, profil: ziel.id }, parameter: { seite: 256 } } });
   const k = p.knoten.at(-1), { vorher, nachher } = k.protokoll;
@@ -1230,7 +1230,7 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   assert.ok(p.entscheidungen.filter((d) => d.details?.entscheidung === x.entscheidung.id).length >= 9, "jeder Schritt verweist auf die Zusammenstellung");
   assert.equal(x.plan.stationen.length, 61); assert.equal(x.plan.tonspur, x.klang); assert.equal(x.plan.tonBeginn, 0);
   assert.deepEqual(x.plan.bewegung, { staerke: Z.BEWEGUNG, signal: x.signal }, "die Kamera atmet mit dem neuen Klang");
-  assert.equal(x.plan.lebendig, true); assert.deepEqual(x.entscheidung.details.film, { lebendig: true, bewegung: Z.BEWEGUNG });
+  assert.equal(x.plan.lebendig, true); assert.deepEqual(x.entscheidung.details.film, { lebendig: true, bewegung: Z.BEWEGUNG, signatur: "nicht verfügbar" });
   assert.equal(Z.zusammenstellen(Z.gleichverteilt(), 1).lebendig, true); assert.equal(Z.zusammenstellen(Z.gleichverteilt(), 1).bewegung, Z.BEWEGUNG);
   const pt = ST.partitur(p, { ...x.plan, fps: 30 });
   assert.ok(pt.dauer > 3 && pt.dauer <= 30, `${pt.dauer}`);
@@ -1245,7 +1245,7 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   assert.ok(letzte.every((k) => k.eingaben.bild === e.id), "Fächer");
   // Filmeinstellungen des Menschen (0.1.19): ohne lebendige Effekte, Kamera ruhig
   const ruhig = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.licht", "bild.farbe", "bild.licht"], lebendig: false, bewegung: 0 }, wahl: { art: "mensch", details: {} } });
-  assert.equal(ruhig.plan.lebendig, false); assert.equal(ruhig.plan.bewegung, null); assert.deepEqual(ruhig.entscheidung.details.film, { lebendig: false, bewegung: 0 });
+  assert.equal(ruhig.plan.lebendig, false); assert.equal(ruhig.plan.bewegung, null); assert.deepEqual(ruhig.entscheidung.details.film, { lebendig: false, bewegung: 0, signatur: "nicht verfügbar" });
   const halb = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.licht", "bild.farbe", "bild.licht"], bewegung: 0.5 }, wahl: { art: "mensch", details: {} } });
   assert.equal(halb.plan.bewegung.staerke, 0.5); assert.equal(halb.plan.lebendig, true);
   assert.equal(ST.partitur(p, { ...ruhig.plan, fps: 30 }).bewegung, null);
@@ -1325,7 +1325,7 @@ test("Partitur 0.4.0: Stationen mit «einmal» stehen als Titelkarten ausserhalb
   const [k1, k2, k3] = b.ergebnisse.map((x) => x.id);
   const plan = { stationen: [{ ergebnis: k1, einmal: true, halten: 1.2 }, e.id, k2, { ergebnis: k3, einmal: true, halten: 1.2 }], halten: 1, uebergang: 0.2, art: "blende" };
   const pt = ST.partitur(p, { ...plan, takt: { ereignisfolge: folge.id, schwelle: 0, wiederholen: true } });
-  assert.equal(pt.version, "0.4.0");
+  assert.equal(pt.version, "0.5.0");
   assert.equal(pt.folge[0].ergebnis, k1); assert.equal(pt.folge[0].einmal, true); assert.equal(pt.folge[0].halten, 1.2); assert.equal(pt.folge[0].uebergang.dauer, 0.2);
   assert.equal(pt.folge.at(-1).ergebnis, k3); assert.equal(pt.folge.at(-1).einmal, true);
   const mitte = pt.folge.slice(1, -1), nach = einsaetze.filter((z) => z > 1.4 && z <= 6 - 1.4);
@@ -1647,5 +1647,119 @@ test("Zusammenstellung mit den Beständen an die Szenen (0.1.22): der Zerfall be
   await Z.zusammenstellungRechnen({ register: r, projekt: q.p, medien: q.m, messung: mq, plan: { ...plan, zettel: null, orna: null }, wahl: { art: "zufall" } });
   assert.ok(laeufe.every((l) => l.konstellation === null && l.text === null));
   assert.ok(q.p.knoten.filter((k) => k.operation === "phorma.ii").every((k) => !("konstellation" in k.eingaben) && !("text" in k.eingaben)));
+  assert.deepEqual(P.pruefeProjekt(p), []);
+});
+
+// ---------- Signatur: Intro, Outro, Signet (Lab 0.1.26) ----------
+test("Signatur (0.1.26): Zeitpläne, Geometrie von Würfel, Raster, Kugel, Rad und Schlaufe, der Scratch", async () => {
+  const G = await lab("kern/signatur.js");
+  const z = G.signaturZeiten({ intro: true, outro: true });
+  assert.deepEqual([z.vor, z.haupt, z.gesamt, z.outro, z.signet], [10, 30, 54.5, 40, 48]);
+  assert.equal(G.signaturZeiten({ intro: false, outro: false }).gesamt, 30 + G.SIGNET_DAUER + G.AUFTAKT_DAUER, "ohne Outro legt sich das Bild zuerst auf die Kugel");
+  const P = G.INTRO_PHASEN;
+  assert.ok(P.erscheinen[0] === 0 && P.scratch[1] === G.INTRO_DAUER && P.zettel[1] - P.zettel[0] >= 2.5, "Zeit zum Lesen des Zettels");
+  const o8 = G.outroPhasen(8), o10 = G.outroPhasen(10);
+  assert.ok(Math.abs(o10.zeigen[1] - o10.zeigen[0] - (o8.zeigen[1] - o8.zeigen[0] + 2)) < 1e-9, "das Outro dehnt nur das Zeigen der Konstellation");
+  assert.ok(G.signetPhasen(true).dauer <= 10 && G.INTRO_DAUER <= 10 && G.OUTRO_DAUER <= 10, "jede Station hält höchstens 10 s");
+  assert.equal(G.signetPhasen().f(G.signetPhasen().fliessen[0] + 1.1), 50, "das Bild des Signets wie in sketchory/signet.js");
+  const f = G.rasterFeld(17, 0.2);
+  assert.deepEqual([f.zeile, f.spalte], [2, 2], "Strophe 17: dritter Zyklus, dritte Strophe");
+  for (let i = 0; i < 49; i++) assert.ok(G.wuerfelFeld(i, 49, 0.4).ecken.every((p) => Math.abs(Math.max(...p.map(Math.abs)) - 0.4) < 1e-9), "auf der Oberfläche des Würfels");
+  assert.ok(G.kugelPunkte(160, 0.62).every((p) => Math.abs(Math.hypot(...p) - 0.62) < 1e-9));
+  assert.deepEqual([G.radZiel(0), G.radZiel(5), G.radZiel(19)], [0, 270, 18]);
+  assert.equal(G.radDrehung(270, 1, -1), 270, "das Rad landet genau auf dem Platz");
+  const s = G.schlaufe(240), xs = s.map((p) => p[0]), ys = s.map((p) => p[1]);
+  assert.ok(Math.abs(Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) - 1) < 1e-9);
+  assert.deepEqual([G.scratch(0).stelle, G.scratch(1).stelle, G.scratch(0).fader, G.scratch(1).fader], [0, 1, 1, 1]);
+  assert.ok([0.3, 0.58].some((u) => G.scratch(u).fader < 0.5), "an den Umkehrungen ist der Fader zu");
+  const e = [0.2, 0.3, 0.9, 1.5, 2.2, 3].map((t) => ({ t, staerke: 0.8 }));
+  assert.deepEqual(G.montagePlan(e, { samen: 5 }), G.montagePlan(e, { samen: 5 }), "wiederholbar");
+  const plan = G.montagePlan(e, { von: 0.5, samen: 5 });
+  assert.ok(plan.every((x) => x.t >= 0.5) && plan.length === 4);
+  assert.ok(G.montageBei(plan, plan[0].t + 0.01).every((x) => x.rest > 0.9) && G.montageBei(plan, plan[0].t + 0.3) === null, "rastet in 0,16 s ein");
+});
+
+test("Signatur (0.1.26): Tonspur mit Scratch am Ende des Intros und Gefrickel unter dem Signet; Zettel mit vier Verweisen; Plätze im Rad", async () => {
+  const G = await lab("kern/signatur.js");
+  const rate = 22050, n = rate * 6, L = new Float32Array(n), R = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const t = i / rate, b = (t * 2) % 1; L[i] = 0.5 * Math.sin(2 * Math.PI * 110 * t) * Math.exp(-b * 8); R[i] = L[i] * 0.8; }
+  const a = G.signaturTon({ spuren: [L, R], rate }, { beginn: 1, dauer: 20, vor: 4, frickel: 5, samen: 7 });
+  assert.equal(a.spuren.length, 2); assert.equal(a.spuren[0].length, 20 * rate, "so lang wie der Film (der Klang beginnt von vorn)");
+  assert.deepEqual(a.scratch, { von: 3.25, bis: 4 }); assert.equal(a.frickel.von, 15); assert.equal(a.frickel.dauer, 5);
+  assert.equal(a.spuren[0][rate * 2], L[rate * 3], "vor dem Scratch der Klang ab «Ton ab»");
+  assert.ok(Math.abs(a.spuren[0].at(-1)) < 1e-3, "am Ende ausgeblendet");
+  const b = G.signaturTon({ spuren: [L, R], rate }, { beginn: 1, dauer: 20, vor: 4, frickel: 5, samen: 7 });
+  assert.deepEqual(a.spuren[0].slice(15 * rate, 16 * rate), b.spuren[0].slice(15 * rate, 16 * rate), "derselbe Wurf, dasselbe Gefrickel");
+  assert.equal(G.signaturTon({ spuren: [L], rate }, { dauer: 8, vor: 0, frickel: 3 }).scratch, null, "ohne Intro kein Scratch");
+  const Z = await lab("operationen/zettel.js");
+  const x = (await Z.zettel.ausfuehren({}, { strophe: "17" })).ausgaben[0].daten;
+  assert.equal(x.verweise.length, 4); assert.ok(x.verweise.every((v) => v.person && v.werk));
+  const S = await lab("operationen/signatur.js");
+  const { constellations } = await import(new URL("portfolio/nebeneinander-nacheinander/js/data/constellations.js", root).href);
+  const { artists } = await import(new URL("portfolio/nebeneinander-nacheinander/js/data/artists.js", root).href);
+  const k = constellations[3], pl = S.radPlaetze({ id: k.id });
+  assert.equal(artists[pl.aussen].id, k.artistId);
+  assert.equal(S.signaturIntro.verfuegbar(), false, "in Node ohne Leinwand");
+});
+
+test("Partitur 0.5.0: «dehnen» gibt im Takt die übrige Zeit dem Outro, das Signet behält seine Dauer und endet mit dem Ton", async () => {
+  const { p, m, e, r, t } = mitTon();
+  const s = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.tonsignal", eingaben: { ton: t.id } } });
+  const folge = s.ergebnisse[1];
+  const b = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.farbe", eingaben: { bild: e.id }, parameter: { farbdrehung: 90 }, variation: { anzahl: 5, achse: "varianten" } } });
+  const [k1, k2, k3, k4, k5] = b.ergebnisse.map((x) => x.id);
+  const plan = { stationen: [{ ergebnis: k1, einmal: true, halten: 1, uebergang: "schnitt" }, e.id, k2, k3, { ergebnis: k4, einmal: true, halten: 1, uebergang: "schnitt", dehnen: true }, { ergebnis: k5, einmal: true, halten: 0.8 }], halten: 1, uebergang: 0.2, art: "blende" };
+  const pt = ST.partitur(p, { ...plan, takt: { ereignisfolge: folge.id, schwelle: 0, wiederholen: true } });
+  const ende = pt.folge.at(-1), outro = pt.folge.at(-2);
+  assert.equal(ende.halten, 0.8, "das Signet behält seine Dauer");
+  assert.ok(Math.abs(ende.beginn + ende.halten - folge.daten.dauer) < 1e-6, "und endet mit dem Ton");
+  assert.equal(outro.dehnen, true); assert.ok(outro.halten >= 1, `das Outro nimmt die übrige Zeit: ${outro.halten}`);
+  assert.equal(outro.uebergang.art, "schnitt"); assert.equal(pt.folge[0].uebergang.art, "schnitt");
+  assert.ok(Math.abs(outro.beginn + outro.halten - ende.beginn) < 1e-6, "lückenlos");
+  assert.ok(pt.folge[1].beginn >= 1 - 1e-9, "die Runde beginnt nach dem Intro");
+});
+
+test("Zusammenstellung mit Signatur (0.1.26): Intro mit dem Zettel, Outro mit der Konstellation, Signet; eigene Tonspur über den ganzen Film", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const Z = await lab("kern/zusammenstellung.js");
+  const G = await lab("kern/signatur.js");
+  const { erstelleRegister } = await lab("kern/register.js");
+  const { OPERATIONEN } = await lab("operationen/index.js");
+  // in Node zeichnet die Signatur nicht (Leinwand): Stellvertreter mit derselben Beschreibung, die ihre Eingänge festhalten
+  const r = erstelleRegister(), laeufe = [];
+  for (const op of OPERATIONEN) {
+    if (["signatur.intro", "signatur.outro", "signatur.signet", "lab.karte"].includes(op.id)) r.registriere({ ...op, verfuegbar: () => true, async ausfuehren(ein, p) { laeufe.push({ op: op.id, ein: Object.keys(ein).filter((k) => ein[k]), p }); const b = ein.bild ?? { width: 96, height: 72 }; return { ausgaben: [{ typ: "IMAGE", titel: op.id, bild: neuesBild(b.width, b.height, [9, 9, 9]) }] }; } });
+    else r.registriere(op);
+  }
+  const { p, m, e, t } = mitTon();
+  const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id });
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.raster", "bild.farbe", "bild.licht"], seed: 4, zettel: { strophe: "17" }, orna: { konstellation: "" } };
+  const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "zufall" }, seed: 3 });
+  const z = G.signaturZeiten({ intro: true, outro: true });
+  assert.deepEqual(laeufe.map((l) => l.op), ["signatur.intro", "signatur.outro", "signatur.signet"], "keine Karten");
+  assert.deepEqual(laeufe[0].ein.sort(), ["bild", "text", "ton"]); assert.deepEqual(laeufe[1].ein.sort(), ["bild", "konstellation"]);
+  assert.equal(laeufe[2].p.auftakt, "kugel"); assert.equal(laeufe[2].p.beginn, z.signet, "das Signet liest das Gefrickel ab seinem Beginn");
+  const ton = p.knoten.find((k) => k.operation === "signatur.ton");
+  assert.ok(ton, "eine eigene Tonspur"); assert.equal(ton.parameter.dauer, z.gesamt); assert.equal(ton.parameter.vor, 10);
+  assert.equal(x.plan.tonspur, ton.ausgaben[0]); assert.equal(x.plan.tonBeginn, 0);
+  const mess = p.knoten.filter((k) => k.operation === "lab.tonsignal").at(-1);
+  assert.equal(mess.parameter.laenge, z.gesamt, "der ganze Film wird auf der neuen Tonspur gemessen");
+  assert.deepEqual(x.plan.stationen[0], { ergebnis: x.signatur.intro, einmal: true, halten: 10, uebergang: "schnitt" });
+  assert.deepEqual(x.plan.stationen.at(-2), { ergebnis: x.signatur.outro, einmal: true, halten: G.OUTRO_DAUER, uebergang: "schnitt", dehnen: true });
+  assert.deepEqual(x.plan.stationen.at(-1), { ergebnis: x.signatur.signet, einmal: true, halten: G.SIGNET_DAUER });
+  assert.equal(x.plan.stationen.length, 64);
+  assert.equal(x.entscheidung.details.film.signatur.gesamt, z.gesamt);
+  const pt = ST.partitur(p, { ...x.plan, fps: 30 });
+  assert.ok(Math.abs(pt.dauer - z.gesamt) < 0.6, `der Film dauert mit Signatur ${pt.dauer} s`);
+  // ohne ORNA: das Signet legt erst das Bild auf die Kugel; ohne Signatur bleibt es bei den Karten
+  const q = mitTon(); laeufe.length = 0;
+  const mq = await VS.messen({ register: r, projekt: q.p, medien: q.m, bild: q.e.id, ton: q.t.id });
+  await Z.zusammenstellungRechnen({ register: r, projekt: q.p, medien: q.m, messung: mq, plan: { ...plan, orna: null }, wahl: { art: "zufall" } });
+  assert.deepEqual(laeufe.map((l) => [l.op, l.p.auftakt ?? null]), [["signatur.intro", null], ["signatur.signet", "bild"]]);
+  const w = mitTon(); laeufe.length = 0;
+  const mw = await VS.messen({ register: r, projekt: w.p, medien: w.m, bild: w.e.id, ton: w.t.id });
+  const y = await Z.zusammenstellungRechnen({ register: r, projekt: w.p, medien: w.m, messung: mw, plan: { ...plan, signatur: false }, wahl: { art: "zufall" } });
+  assert.deepEqual(laeufe.map((l) => l.op), ["lab.karte", "lab.karte"]); assert.equal(y.signatur, null); assert.equal(y.entscheidung.details.film.signatur, "aus");
+  assert.ok(!w.p.knoten.some((k) => k.operation === "signatur.ton"));
   assert.deepEqual(P.pruefeProjekt(p), []);
 });

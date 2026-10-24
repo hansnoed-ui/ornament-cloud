@@ -9,15 +9,19 @@
 // (The Fictory) als siebtem Abschnitt; seit 0.1.20 bleiben nur lebendige Effekte in der Zusammenstellung, damit der Film fliesst
 // (Christian, 24. Oktober 2026). Seit 0.1.22 sind das auch die Szenen von PHORMA I, II und III und der Zerfall selbst (eigene Bühnen): wählt jev
 // den Zerfall, bekommt er die Regel der Konstellation; die Szenen von PHORMA I und II tragen den Titel des Zettels (sonst der Konstellation).
-// Die Karten zeichnet lab.karte, nur im Browser.
+// Die Karten zeichnet lab.karte, nur im Browser. Seit 0.1.26 trägt der Film eine Signatur (Schalter, Standard an; kern/signatur.js): statt der Karten
+// eröffnet ein Intro mit dem Zettel (Lichtwürfel → Raster des Zettelkastens → der Zettel mit Leitsatz und Verweisen → Scratch), ein Outro mit der
+// Konstellation schliesst ihn (Körper → Kugel → Doppelrad von ORNA → Kugel), am Schluss steht immer das Signet «ornament.lab». Die 30 Sekunden der
+// Animation bleiben; die Signatur kommt davor und danach dazu, auf einer eigenen Tonspur (der Klang läuft weiter, Scratch und Gefrickel).
 // Ohne DOM, geprüft in tests/lab.test.mjs.
 import { KOMPOSITION_FRAGEN, BILD_EFFEKTE, KLANG_EFFEKTE } from "../jev/fragen.js";
 import { ergebnis, entscheide, GRENZEN } from "./projekt.js";
 import { fuehreAus } from "./ausfuehrung.js";
 import { taktSchwelle, DAUER } from "./vorschlag.js";
 import { zufall } from "../../../alpha/the-fictory/analyse.js?v=23";
+import { signaturZeiten, INTRO_DAUER, OUTRO_DAUER, SIGNATUR_VERSION } from "./signatur.js";
 
-export const ZUSAMMENSTELLUNG_VERSION = "0.3.0";
+export const ZUSAMMENSTELLUNG_VERSION = "0.4.0";
 /** Dauer einer Karte (Zettel, ORNA) am Anfang oder Ende des Films, in Sekunden */
 export const KARTE_DAUER = 2.5;
 export const VARIANTEN_JE_ABSCHNITT = 10;   // seit Lab 0.1.16: 60 Motive in 30 s (vorher 3, also 18)
@@ -85,7 +89,7 @@ export function zusammenstellen(antworten, seed = 1) {
   const aufbau = ziehe(antworten.aufbau, rnd), uebergang = ziehe(antworten.uebergang, rnd);
   const k1 = ziehe(antworten.klang1, rnd), k2 = ziehe(antworten.klang2, rnd, k1 === "klang.keine" ? [] : [k1]);
   for (const k of Object.keys(KOMPOSITION_FRAGEN).filter((x) => x.startsWith("bild"))) bild.push(ziehe(antworten[k], rnd, bild.slice(-1)));
-  return { aufbau, uebergang, klang: [k1, k2], bild, seed: seed >>> 0, zettel: null, orna: null, lebendig: true, bewegung: BEWEGUNG };
+  return { aufbau, uebergang, klang: [k1, k2], bild, seed: seed >>> 0, zettel: null, orna: null, lebendig: true, bewegung: BEWEGUNG, signatur: true };
 }
 
 /** die Wahrscheinlichkeit, mit der jev eine Stelle der Zusammenstellung gewählt hat (fürs Protokoll und die Anzeige) */
@@ -98,7 +102,8 @@ export function wahrscheinlichkeit(antworten, frage, wahl) {
 /**
  * Eine Zusammenstellung rechnen. messung: von messen() (kern/vorschlag.js); plan: von zusammenstellen(), vom Menschen ggf. geändert;
  * wahl: { art: "jev"|"zufall"|"mensch", details }. plan.zettel: null | { strophe: "" | Nummer }, plan.orna: null | { konstellation: "" | Kennung };
- * plan.lebendig (Schalter, Standard an) und plan.bewegung (Stärke der Kamera 0–1, Standard BEWEGUNG) sind die Filmeinstellungen des Menschen (seit 0.1.19).
+ * plan.lebendig (Schalter, Standard an) und plan.bewegung (Stärke der Kamera 0–1, Standard BEWEGUNG) sind die Filmeinstellungen des Menschen (seit 0.1.19);
+ * plan.signatur (Standard an, seit 0.1.26): Intro (mit Zettel), Outro (mit Konstellation) und Signet statt der Karten, wo der Browser zeichnen kann.
  * Zuerst die Klangeffekte nacheinander, dann misst ein Tonsignal den neuen Klang
  * (Takt und Steuersignal), dann sechs Abschnitte zu je zehn Varianten. Gibt { entscheidung, ergebnisse, klang, plan } zurück; plan wie bei
  * vorschlagAusfuehren(): { stationen, art, halten, uebergang, takt, bewegung, tonspur, tonBeginn, dauer }.
@@ -114,9 +119,13 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   if (plan.zettel && !register.hat("zettel.strophe")) throw new Error("Der Zettelkasten ist nicht im Register");
   if (plan.orna && !register.hat("orna.konstellation")) throw new Error("ORNA ist nicht im Register");
   const lebendig = plan.lebendig !== false, staerke = Math.min(1, Math.max(0, Number(plan.bewegung ?? BEWEGUNG) || 0));
+  // die Signatur braucht die Leinwand des Browsers; ohne sie (Node, Tests) bleibt es bei den Karten
+  const sigOp = register.hat("signatur.signet") ? register.hole("signatur.signet") : null;
+  const signatur = plan.signatur !== false && Boolean(sigOp && (sigOp.verfuegbar?.() ?? true));
+  const zeiten = signatur ? signaturZeiten({ intro: Boolean(plan.zettel), outro: Boolean(plan.orna), haupt: DAUER }) : null;
   const d = entscheide(projekt, { art: wahl.art, gegenstand: "zusammenstellung", optionen: [], gewaehlt: { aufbau: plan.aufbau, uebergang: plan.uebergang, klang: plan.klang, bild: plan.bild,
       zettel: plan.zettel ? (plan.zettel.strophe || "ziehen") : null, orna: plan.orna ? (plan.orna.konstellation || "ziehen") : null },
-    details: { ...(wahl.details ?? {}), ...(messung.videoBilder?.length > 1 ? { video: messung.videoBilder } : {}), startwert: plan.seed, merkmale: messung.merkmale, werte: messung.werte, film: { lebendig, bewegung: staerke }, version: ZUSAMMENSTELLUNG_VERSION } });
+    details: { ...(wahl.details ?? {}), ...(messung.videoBilder?.length > 1 ? { video: messung.videoBilder } : {}), startwert: plan.seed, merkmale: messung.merkmale, werte: messung.werte, film: { lebendig, bewegung: staerke, signatur: zeiten ? { ...zeiten, version: SIGNATUR_VERSION } : (plan.signatur === false ? "aus" : "nicht verfügbar") }, version: ZUSAMMENSTELLUNG_VERSION } });
   const schritt = (anlass) => ({ art: wahl.art, details: { anlass, entscheidung: d.id } });
 
   // 1 · Klang: die Effekte nacheinander, jeder auf dem Ergebnis des vorigen
@@ -130,9 +139,18 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
     ton = x.ergebnisse.find((e) => e.typ === "AUDIO").id;
   }
   // 2 · der neue Klang wird gemessen: Hüllkurve für die Modulation, Anschläge für den Takt; bearbeitet beginnt er am Anfang
-  const beginn = ton === messung.ton ? messung.beginn : 0;
+  let beginn = ton === messung.ton ? messung.beginn : 0;
+  // mit Signatur: eine eigene Tonspur über den ganzen Film (der Klang läuft weiter, Scratch am Ende des Intros, Gefrickel unter dem Signet);
+  // der ganze Film wird dann auf ihr gemessen, so stehen die Anschläge für Takt und Kamera in der Zeit des Films
+  if (zeiten) {
+    melden("Signatur: die Tonspur mit Scratch und Gefrickel …", null);
+    const s = await fuehreAus({ register, projekt, medien, melden, abbrechen,
+      auftrag: { operation: "signatur.ton", eingaben: { ton }, parameter: { beginn, dauer: zeiten.gesamt, vor: zeiten.vor, frickel: zeiten.signetDauer }, seed: (seed + 3) >>> 0, wahl: schritt("Zusammenstellung, Tonspur der Signatur") } });
+    ton = s.ergebnisse.find((e) => e.typ === "AUDIO").id; beginn = 0;
+  }
+  const laenge = zeiten ? zeiten.gesamt : DAUER;
   const t = await fuehreAus({ register, projekt, medien, melden, abbrechen,
-    auftrag: { operation: "lab.tonsignal", eingaben: { ton }, parameter: { merkmal: "laut", beginn, laenge: DAUER, proben: 120, normieren: false }, wahl: schritt("Zusammenstellung, Klang messen") } });
+    auftrag: { operation: "lab.tonsignal", eingaben: { ton }, parameter: { merkmal: "laut", beginn, laenge, proben: Math.round(laenge * 4), normieren: false }, wahl: schritt("Zusammenstellung, Klang messen") } });
   const [signal, einsaetze] = t.ergebnisse;
 
   // 2b · die Bestände, beide wahlweise: ein Zettel aus dem Zettelkasten, eine ORNA-Konstellation (gezogen oder gewählt, nie von jev)
@@ -168,7 +186,7 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
     const x = await fuehreAus({ register, projekt, medien, melden, abbrechen,
       auftrag: { operation: r.operation, eingaben: { bild: video ? video[Math.min(video.length - 1, Math.floor((i * video.length) / abschnitte.length))] : plan.aufbau === "aufbau.faecher" ? messung.bild : eingang, ...(mitTon ? { ton } : {}),
           ...(mitKonstellation ? { konstellation: konstellation.id } : {}), ...(mitText ? { text: zettel.id } : {}) },
-        parameter: mitTon ? { ...r.parameter, beginn } : r.parameter, seed: (seed + 101 * (i + 1)) >>> 0,
+        parameter: mitTon ? { ...r.parameter, beginn, ...(zeiten && r.parameter.dauer === DAUER ? { dauer: zeiten.vor + DAUER } : {}) } : r.parameter, seed: (seed + 101 * (i + 1)) >>> 0,
         variation: { anzahl: VARIANTEN_JE_ABSCHNITT, achse: "varianten", routen }, wahl: schritt(`Zusammenstellung, Abschnitt ${i + 1} von ${abschnitte.length}`) } });
     const bilder = x.ergebnisse.filter((e) => e.typ === "IMAGE");
     // The Fictory gibt sechs Zustände aus: davon jeder zweite, damit jeder Abschnitt etwa gleich viel Zeit bekommt
@@ -187,18 +205,30 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
       auftrag: { operation: "lab.karte", eingaben: { bild: video?.[0] ?? messung.bild, ...eingaben }, parameter: {}, seed, wahl: schritt(anlass) } });
     return k.ergebnisse.find((e) => e.typ === "IMAGE")?.id ?? null;
   };
-  const zettelKarte = zettel ? await karte({ text: zettel.id }, "Zusammenstellung, Zettelkarte") : null;
-  const ornaKarte = konstellation ? await karte({ konstellation: konstellation.id }, "Zusammenstellung, ORNA-Karte") : null;
-  const karten = [zettelKarte, ornaKarte].filter(Boolean).length;
+  // 3c · die Signatur (seit 0.1.26): Intro mit dem Zettel, Outro mit der Konstellation, Signet; je ein Standbild als Station, im Film lebendig
+  const signaturSchritt = async (operation, eingaben, parameter, anlass) => {
+    const k = await fuehreAus({ register, projekt, medien, melden, abbrechen, auftrag: { operation, eingaben, parameter, seed: (seed + 31) >>> 0, wahl: schritt(anlass) } });
+    return k.ergebnisse.find((e) => e.typ === "IMAGE")?.id ?? null;
+  };
+  let intro = null, outro = null, signet = null;
+  if (zeiten) {
+    const erstes = video?.[0] ?? messung.bild, letztes = ergebnisse.at(-1)?.id ?? erstes;
+    if (zettel) { melden("Signatur: das Intro mit dem Zettel …", null); intro = await signaturSchritt("signatur.intro", { text: zettel.id, bild: erstes, ton }, { beginn: 0 }, "Zusammenstellung, Signatur: Intro"); }
+    if (konstellation) { melden("Signatur: das Outro mit ORNA …", null); outro = await signaturSchritt("signatur.outro", { konstellation: konstellation.id, bild: letztes }, { dauer: OUTRO_DAUER }, "Zusammenstellung, Signatur: Outro"); }
+    melden("Signatur: das Signet ornament.lab …", null);
+    signet = await signaturSchritt("signatur.signet", { ton, bild: letztes }, { auftakt: konstellation ? "kugel" : "bild", beginn: zeiten.signet }, "Zusammenstellung, Signatur: Signet");
+  }
+  const zettelKarte = zettel && !zeiten ? await karte({ text: zettel.id }, "Zusammenstellung, Zettelkarte") : null;
+  const ornaKarte = konstellation && !zeiten ? await karte({ konstellation: konstellation.id }, "Zusammenstellung, ORNA-Karte") : null;
+  const vorne = [...(intro ? [{ ergebnis: intro, einmal: true, halten: INTRO_DAUER, uebergang: "schnitt" }] : []), ...(zettelKarte ? [{ ergebnis: zettelKarte, einmal: true, halten: KARTE_DAUER }] : [])];
+  const hinten = [...(outro ? [{ ergebnis: outro, einmal: true, halten: OUTRO_DAUER, uebergang: "schnitt", dehnen: true }] : []), ...(signet ? [{ ergebnis: signet, einmal: true, halten: zeiten.signetDauer }] : []),
+    ...(ornaKarte ? [{ ergebnis: ornaKarte, einmal: true, halten: KARTE_DAUER }] : [])];
+  const karten = vorne.length + hinten.length, kartenDauer = [...vorne, ...hinten].reduce((s, x) => s + x.halten, 0);
 
-  // 4 · Film: Zettel, Bild, alle Abschnitte, Konstellation; im Takt der Anschläge reihum, sonst gleichmässig über die Dauer
-  let stationen = [
-    ...(zettelKarte ? [{ ergebnis: zettelKarte, einmal: true, halten: KARTE_DAUER }] : []),
-    ...[video?.[0] ?? messung.bild, ...ergebnisse.map((e) => e.id)].slice(0, GRENZEN.stationen - karten),
-    ...(ornaKarte ? [{ ergebnis: ornaKarte, einmal: true, halten: KARTE_DAUER }] : []),
-  ];
+  // 4 · Film: Zettel (Intro), Bild, alle Abschnitte, Konstellation (Outro), Signet; im Takt der Anschläge reihum, sonst gleichmässig über die Dauer
+  let stationen = [...vorne, ...[video?.[0] ?? messung.bild, ...ergebnisse.map((e) => e.id)].slice(0, GRENZEN.stationen - karten), ...hinten];
   const f = FILM[plan.uebergang], folge = ergebnis(projekt, einsaetze.id).daten;
-  const dauer = Math.min(DAUER, folge?.dauer ?? DAUER), n = stationen.length;
+  const dauer = Math.min(laenge, folge?.dauer ?? laenge), n = stationen.length;
   // nicht reihum: jede Station kommt einmal, darum höchstens so viele Wechsel wie Stationen, verteilt auf die stärksten Anschläge
   // reichen die Anschläge nicht für alle Stationen, läuft der Film gleichmässig, damit jedes Motiv vorkommt
   let schwelle = taktSchwelle(folge, Math.min(f.jeSekunde, (n - 1) / dauer));
@@ -208,7 +238,9 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   // im Takt hat jeder Wechsel eine feste Länge, auch der Verlauf zwischen zwei Abschnitten (ohne Takt bliebe seine Länge offen)
   if (takt) stationen = stationen.map((s) => (typeof s === "string" && uebergaenge.has(s) ? { ergebnis: s, uebergang: "verlauf" } : s));
   // ohne Takt füllt das Halten die Dauer; die Karten haben ihre eigene
-  const halten = takt ? 1 : Math.max(0, Math.min(10, Math.round(((dauer - karten * KARTE_DAUER - (n - 1) * uebergang) / Math.max(1, n - karten)) * 100) / 100));
+  const schnitte = stationen.filter((s) => s.uebergang === "schnitt").length;
+  const halten = takt ? 1 : Math.max(0, Math.min(10, Math.round(((dauer - kartenDauer - (n - 1 - schnitte) * uebergang) / Math.max(1, n - karten)) * 100) / 100));
   return { entscheidung: d, ergebnisse, klang: ton, signal: signal.id, zettel: zettel?.daten ?? null, konstellation: konstellation?.daten ?? null, karten: { zettel: zettelKarte, orna: ornaKarte },
+    signatur: zeiten ? { ...zeiten, intro, outro, signet } : null,
     plan: { stationen, art: f.art, halten, uebergang: Math.round(uebergang * 100) / 100, takt, bewegung: staerke ? { staerke, signal: signal.id } : null, lebendig, tonspur: ton, tonBeginn: beginn, dauer } };
 }
