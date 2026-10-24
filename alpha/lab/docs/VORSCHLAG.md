@@ -100,26 +100,6 @@ Christian am 24. Oktober 2026, nach dem Merge der PHORMA-III-Szenen: «phorma-ii
 - **The Fictory lebendig** (`fictory.prozess`, `lebend()`): im Film über Stationen läuft der Prozess von Zustand zu Zustand weiter statt als Standbilder zu stehen (docs/STATIONEN.md, Zeit ab dem Auftritt, Lage der Station). Darum ist der **Zerfall** zurück: als Bildeffekt `bild.zerfall` in der Zusammenstellung und als Dramaturgie `vorschlag.zerfall`, mit `verfuegbar()` (braucht die Leinwand).
 - **In der Zusammenstellung** stehen die neuen Abläufe als `bild.physarum`, `bild.tiefe`, `bild.welle`, `bild.tuch`, `bild.druck`, `bild.montage`, `bild.fragmente`, `bild.strom`, `bild.koerper`, `bild.scherben`, `bild.echo`, `bild.relief` und `bild.zerfall` im Katalog von jev (gleich in `wahl.php`); die Szenen bekommen `dauer: SZENE_DAUER` (8 s, etwas länger als ein Abschnitt). Die Bestände gehen an alle Operationen, die sie annehmen: die Konstellation an den Zerfall (Regel) und an die Szenen von PHORMA I und II, der Zettel an die Szenen (Titel). jev wählt den Effekt; die Regel wählt den Ablauf nur, wenn der Mensch die Operation von Hand mit leerem Ablauf ausführt.
 
-## Sketchory: der Satz gezeichnet (seit Lab 0.1.23)
-
-Dritte App auf dem Weg «Workflows aus allen Bild- und Video-Apps mit Zettelkasten und ORNA verbinden, visuell und operational»: **`sketchory.satz`** (operationen/sketchory.js) nimmt am Eingang `bild` das Foto einer Kritzelkarte (Fineliner auf Papier, wie in alpha/sketchory/) und macht daraus Sketchorys Film ohne Signet: die Karte zeichnet sich Strich für Strich (`zeichnen`, 4,5 s), steht, blendet aus, dann erscheint ein Satz Buchstabe für Buchstabe. `strich.js`, `ablauf.js`, `szene.js` und `signet.js` werden unverändert importiert; das Bild der App (1080 × 1440) wird ins Mass des Eingangsbilds eingepasst (`format` «bild», der Grund ringsum) oder bleibt hoch 3 : 4 («hoch»). `dauer` streckt oder rafft die ganze Szene, `bilder` Standbilder sind die Varianten, im Film über Stationen läuft die Szene auf ihrer Bühne ab dem Auftritt (docs/STATIONEN.md).
-
-- **Zettelkasten, visuell:** der Satz ist wörtlich der **Leitsatz** des Zettels am Eingang `text` (`satz` «auto»), wahlweise sein Titel. Sketchory setzt nur den Punkt (orange, `punkt`).
-- **ORNA, visuell:** ohne Zettel ist der Satz der **Gedanke** der Konstellation am Eingang `konstellation`, wahlweise ihre Frage; «keiner» lässt nur die Zeichnung.
-- **ORNA, operational:** die Operationsregel R1–R7 wählt die **Handschrift** – Strich (`stil`: gezeichnet oder gleichmässig), Schrift (`schrift`: Grotesk, Instrument Sans, Serife) und Grund (`farbe`: weiss auf Schwarz oder schwarz auf Weiss) – für jedes Feld, das der Mensch leer lässt. Die Tabelle `REGEL_HANDSCHRIFT` steht offen in der Datei, sieben verschiedene Handschriften; protokolliert als Entscheidung `gegenstand: "handschrift"` (Art «regel», `details.felder`):
-
-| Regel | Strich | Schrift | Grund |
-| --- | --- | --- | --- |
-| R1 Keine Rückkehr an dieselbe Stelle | gezeichnet (einmal gezogen, wie die Karte) | Grotesk | weiss auf Schwarz |
-| R2 Verzögerter Spiegel | gezeichnet | Serife (blickt zurück) | schwarz auf Weiss (das Spiegelbild) |
-| R3 Raster als Regel | gleichmässig (jeder Strich gleich breit) | Grotesk | weiss auf Schwarz |
-| R4 Nur Unterschiede, die Unterschiede machen | gezeichnet (die Unterschiede der Breite) | Instrument Sans | schwarz auf Weiss |
-| R5 Fortwirkende Last | gezeichnet | Serife (trägt) | weiss auf Schwarz |
-| R6 Die Leerstelle bleibt | gleichmässig | Instrument Sans | schwarz auf Weiss (viel Weiss) |
-| R7 Verflechtung | gleichmässig | Serife (greift ineinander) | weiss auf Schwarz |
-
-- **Nicht in der Zusammenstellung:** Sketchory liest Kritzelkarten, keine Fotos; aus einem Foto würden zufällige Skelettlinien. Darum steht `sketchory.satz` im Katalog von jev für die nächste Operation (alle Operationen auf Bildern stehen dort), aber nicht unter den Bildeffekten der 30 Sekunden. Für einen Film aus Karte und Zettel: die Karte als Material, `zettel.strophe` und `orna.konstellation`, dann Sketchory und «Nacheinander» – alle Stationen lebendig.
-
 ## Nur fliessende Effekte (seit Lab 0.1.20)
 
 Christian am 24. Oktober 2026: «nimm bitte vorerst die Effekte raus, die einem fliessenden Video à la PHORMA entgegenstehen». Darum stehen in der Zusammenstellung nur noch die sieben lebendigen Effekte (Feedback, Wiederholung, Farbe, Glitch, Verzerrung, Licht, Raster), und von den Dramaturgien bleiben vier (Puls, Farbwelle, Vervielfältigung, Steigerung). Komposition, Pixelsortierung, Neu setzen und der Zerfall (The Fictory) sowie die Dramaturgien Zerfall und Spiegelung ergaben Standbilder mit Kamera; sie bleiben als Operationen im Register und unter «Nebeneinander» wählbar, nur jev bekommt sie vorerst nicht mehr zur Wahl (`BILD_EFFEKTE`, `DRAMATURGIEN` in `jev/fragen.js` und `wahl.php`, `BILD_REZEPTE`, `REZEPTE`). Alte Projekte mit diesen Kennungen öffnen weiter. Wenn Pixelsortierung, Neu setzen, Komposition und Zerfall eine lebendige Fassung haben, kommen sie zurück.
