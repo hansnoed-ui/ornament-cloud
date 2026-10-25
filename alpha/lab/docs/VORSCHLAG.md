@@ -119,6 +119,17 @@ Christian am 25. Oktober 2026: «Wie ist es mit dem Ausgabeformat im Lab. Ich ve
 - `lab.format` steht auch für sich im Register (Parameter `format`, `lage` 0–1: der Ausschnitt von links/oben nach rechts/unten, moduliert über Varianten ein Schwenk) und im Katalog von jev für die nächste Operation.
 - Nicht gemacht: mehrere Formate aus einer Zusammenstellung auf einmal (etwa beim Export «Für Works»); das wäre der nächste Schritt, falls gewünscht.
 
+## Fliessend zwischen den Effekten (seit Lab 0.1.39)
+
+Christian am 25. Oktober 2026: «Beim Resultat Video gibt es zwischendurch immer wieder kurze schwarze Bilder oder das Ausgangsbild wird gezeigt. Ich möchte das etwas fliessender zwischen den Effekten.» Drei Ursachen, in einem Prüffilm nachgemessen (Kette, Schnitt, sechs Abschnitte zu 3 s):
+
+- Die Szenen von PHORMA I und II beginnen schwarz (Keime, Linien, Funken wachsen aus dem Dunkel), bis zu 1,6 s lang (Tuch); unter einer Überblendung oder Schwelle wurde der Wechsel so eine Blende ins Schwarze.
+- Die Rückkopplung (Feedback) begann an jeder Station wieder beim Eingang: im Fächer das Ausgangsbild, in der Kette das letzte Standbild des vorigen Abschnitts, alle halbe Sekunde ein Sprung.
+- An jedem Abschnittswechsel stand ein Sprung vom laufenden Bild des einen Effekts in das erste Bild des nächsten (bei Schnitt direkt; der Verlauf der Operation im Takt ging von Standbild zu Standbild).
+- Im Takt reihum kehrte die Runde beim Bild wieder, sobald die Anschläge über die Stationen hinausreichten (gleich starke Anschläge an der Schwelle): mitten im Film stand kurz das Ausgangsbild, dann der erste Abschnitt noch einmal.
+
+Die Lösung liegt im Film über Stationen (docs/STATIONEN.md, Partitur 0.6.0): jede lebendige Quelle kommt über 2 s aus dem letzten Filmbild (**Eintritt**), die Rückkopplung läuft über alle Stationen eines Abschnitts weiter, ein Verlauf in eine lebendige Station wird eine Überblendung. Dazu steht die Farbe (`bild.farbe`) auf 90° Farbdrehung, und die Lautstärke dreht von dort: vorher stand sie auf 0°, und in leisen Momenten war das Bild das Ausgangsbild mit etwas mehr Sättigung. Das Bild steht seit 0.1.39 wie eine Karte `einmal` vorn (`BILD_DAUER` = 1 s, ausserhalb der Runde, die Kamera steht still): kehrt die Runde wieder, beginnt sie beim ersten Abschnitt, nicht beim Ausgangsbild. Die übrigen Zeiten des Films (Halten, Übergänge, Takt) bleiben gleich; der Eintritt liegt auf den ersten Bildern des Abschnitts.
+
 ## Nur fliessende Effekte (seit Lab 0.1.20)
 
 Christian am 24. Oktober 2026: «nimm bitte vorerst die Effekte raus, die einem fliessenden Video à la PHORMA entgegenstehen». Darum stehen in der Zusammenstellung nur noch die sieben lebendigen Effekte (Feedback, Wiederholung, Farbe, Glitch, Verzerrung, Licht, Raster), und von den Dramaturgien bleiben vier (Puls, Farbwelle, Vervielfältigung, Steigerung). Komposition, Pixelsortierung, Neu setzen und der Zerfall (The Fictory) sowie die Dramaturgien Zerfall und Spiegelung ergaben Standbilder mit Kamera; sie bleiben als Operationen im Register und unter «Nebeneinander» wählbar, nur jev bekommt sie vorerst nicht mehr zur Wahl (`BILD_EFFEKTE`, `DRAMATURGIEN` in `jev/fragen.js` und `wahl.php`, `BILD_REZEPTE`, `REZEPTE`). Alte Projekte mit diesen Kennungen öffnen weiter. Wenn Pixelsortierung, Neu setzen, Komposition und Zerfall eine lebendige Fassung haben, kommen sie zurück.
