@@ -85,7 +85,26 @@ Ghidra und Hopper nur dann einrichten, wenn eine konkrete Untersuchung von Masch
 - **Verwendung im Lab:** Die Bibliothek ist unverändert und arbeitet nur im Speicher: Das Video entsteht als `ArrayBuffer` im Browser. Weil sie nichts hochlädt und nichts nachlädt, kann sie auch auf dem Webspace bleiben, wie sie ist.
 - **Einordnung:** Die Referenz-Matrix bleibt bei höchstens zwei REA-Fällen (Masterprompt). Fall 3 ist kein Referenzfall, sondern eine Prüfung der eigenen Abhängigkeit, und ist zugleich die erste Untersuchung nach dem Setup.
 
-## 5. Nicht untersucht (bewusst)
+## 5. Untersuchungsfall 4: Wie übersetzen die Plotter-Umwandler von Makelangelo ein Bild in Linien?
+
+- **Frage:** Nach welchen Prinzipien wandeln die rund zwanzig Umwandler von Makelangelo ein Bild in Linien für eine Zeichenmaschine um, und welche davon lassen sich als lebendige Bildoperationen im Lab umsetzen? (Wunsch von Christian, 25. Oktober 2026: mehr Effekte, die mit der Bildinformation arbeiten)
+- **Berechtigung:** Makelangelo-software, offener Quellcode auf GitHub, Lizenz **GPL-2.0**, Commit `94ff58e1a0a4f95db021564d661a58ee0826cbc4` (9. Juni 2026), mit `git clone --depth 1` geholt. Nur gelesen, nichts übernommen. Die GPL würde übernommenen Code an ihre Bedingungen binden; das Lab setzt die Prinzipien darum eigenständig um.
+- **REA-Befehle:** `npx rea-agents@6.7.0 analyze <kopie von makeart/imageconverter>` und `npx rea-agents@6.7.0 import-reference-source <dieselbe kopie> --detail summary`.
+- **Evidence:** Die JavaScript-Analyse liefert `ev_aa7dd7fce21f29bdada80c3f727ee15dc26b9a06913f17aa2808a3831b97a30d`, verarbeitet aber **0 Dateien**: REA rekonstruiert JavaScript-Anwendungen und Maschinencode, keinen Java-Quelltext. Der Import als Referenzquelle inventarisiert den Ordner: Manifest `hsm_8e8c433926f80191bf68295d85e2a9bd1602d0ce9af9cd7e7104bda90bbd9ed7`, Graph-SHA-256 `babd0711fa93ef1f52f2b1dedf16f815b3621abadd5b1ae1aa7cf87ecaafd820`, 32 Java-Dateien, 169 112 Bytes, alle gehasht, **0 Beziehungen**, Inventar `partial`.
+- **Grenze:** REA sagt über den Java-Code nur, dass er da ist und welche Bytes er hat; Aufrufe und Bedeutung erschliesst es nicht. Das Inventar ist trotzdem nützlich: Es hält fest, welche Fassung gelesen wurde.
+- **Ersatz nach Masterprompt §9 A** (offene Software: normale Werkzeuge vor REA): die 25 Umwandler im Quelltext gelesen.
+- **Verifizierte Befunde (Quelltext):**
+  - Fast alle Umwandler entsättigen zuerst und lesen dann den Ton an einer Stelle als Mittel über eine kleine Fläche (`sample(x, y, radius)`), wie ein Stift, der eine Fläche deckt.
+  - `Pulse`, `Spiral Pulse` und `Sandy` verwenden eine gemeinsame Hilfe, die eine Strecke in eine Welle verwandelt: Der Ton regelt die Höhe und, über die Schrittweite entlang der Strecke, die Frequenz. Der Träger ist eine Schar paralleler Linien, eine Spirale aus der Mitte oder Kreise um eine Ecke.
+  - `Spiral` schwingt nicht: Der Stift wird gehoben oder gesenkt, je nachdem ob der Ton eine Stufe übersteigt, die von Ring zu Ring zwischen vier Werten wechselt.
+  - `Crosshatch` und `Multipass` legen Linienscharen in mehreren Winkeln übereinander, jede ab einer eigenen Tonstufe.
+  - `Flow Field` lässt Linien einem Winkelfeld aus Perlin-Rauschen folgen, vom Rand aus oder auf einem Gitter.
+  - `Voronoi Stippling` verteilt Punkte mit gewichteter Voronoi-Relaxation über viele Durchgänge, `Voronoi Zig Zag` verbindet sie zu einem Weg.
+  - `QuadTree` viertelt rekursiv, solange das Mittel dunkler ist als eine Schwelle, die mit jeder Tiefe strenger wird, und zeichnet die Rahmen. `Truchet from Image` wählt je Kachel eine von zwei Kacheln nach dem Ton (fest bei der Hälfte). `Boxxy` und `Hexxy` zeichnen Quadrate und Sechsecke, deren Grösse dem Ton folgt.
+- **Verwendung im Lab:** fünf Operationen mit eigener Rechnung je Pixel, damit sie auch als Shader lebendig laufen: `lab.puls`, `lab.schraffur`, `lab.fluss`, `lab.punktieren`, `lab.teilung` (BILDFILTER.md, Abschnitt «Linienbilder»). Wo das Lab abweicht, steht dort.
+- **Einordnung:** wie Fall 3 kein Referenzfall der Matrix. Die REA-Befunde sind Inventar; die inhaltlichen Befunde kommen aus dem Lesen des Quelltexts.
+
+## 6. Nicht untersucht (bewusst)
 
 Proprietäre Programme (TouchDesigner, Notch, Reason, Bitwig, Resolume, Fusion, Sapphire, After Effects, Topaz) wurden **nicht** dekompiliert. Sie wurden nur über öffentliche Dokumentation gelesen (REFERENZ-MATRIX.md). Für eine berechtigte Laufzeituntersuchung bräuchte es ein rechtmässig installiertes Programm und eine klar begrenzte Frage. Kandidaten für eine nächste Runde: Bitwig Grid oder VCV Rack mit offenem Quellcode, und zwar das Modulationsrouting im Quellcode von VCV Rack (GPL-3.0), nicht als Binärdatei.
 
