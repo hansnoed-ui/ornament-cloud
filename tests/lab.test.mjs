@@ -1868,7 +1868,7 @@ test("Zusammenstellung mit den Beständen an die Szenen (0.1.22): der Zerfall be
   const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "jev", details: {} }, seed: 5 });
   assert.deepEqual(laeufe.map((l) => l.op), ["phorma.ii", "fictory.prozess", "phorma.i", "phorma.ii", "phorma.i"]);
   assert.deepEqual(laeufe.map((l) => l.ablauf), ["physarum", undefined, "fragmente", "raster", "relief"]);
-  assert.ok(laeufe.filter((l) => l.op !== "fictory.prozess").every((l) => l.dauer === Z.SZENE_DAUER));
+  assert.ok(laeufe.filter((l) => l.op !== "fictory.prozess").every((l) => l.dauer === Z.ABSCHNITT_DAUER + 1), "Szenen von PHORMA I und II in der Dauer ihres Abschnitts plus 1 s (seit 0.1.41)");
   assert.ok(laeufe.every((l) => l.konstellation === x.konstellation.regel), "jede Szene und der Zerfall bekommen die Konstellation");
   assert.ok(laeufe.filter((l) => l.op !== "fictory.prozess").every((l) => l.text === x.zettel.titel), "die Szenen bekommen den Zettel (Titel)");
   assert.equal(laeufe[1].text, null, "der Zerfall hat keinen Eingang «text»");
