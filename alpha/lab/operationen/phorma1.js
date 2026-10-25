@@ -10,6 +10,7 @@ import { zerlegen } from "../../../alpha/bildfragmentieren/fragmente.js?v=36";
 import { kette, ablaufName, EFFEKTE, ABLAEUFE as PHASEN, VERWANDLUNG } from "../../../alpha/bildfragmentieren/ablauf.js?v=36";
 import { szene, bild as filmBild, vorbereiten, FARBEN } from "../../../alpha/bildfragmentieren/szene.js?v=36";
 import { zustandsZeiten } from "./phorma.js";
+import { modulLaden } from "../kern/laden.js";
 import { imBrowser, webgl2Da, leinwand, klemm, fotoBauen, EINGAENGE, BESCHRIFTUNG, beschriftungAn, titelAus, ablaufWaehlen } from "./buehnenhilfe.js";
 
 /** die Abläufe zur Wahl: Fragmente, jeder Effekt der Verwandlung einzeln, der Relief-Flug und vier Ketten (in der festen Reihenfolge von PHORMA I) */
@@ -43,9 +44,14 @@ let raumModul = null;
 async function szeneBauen({ bild, konstellation, text }, p, kontext = {}) {
   if (!imBrowser()) throw new Error("PHORMA I braucht einen Browser (Leinwand; WebGL 2 für die Verwandlung)");
   const wahl = ablaufWaehlen(p, konstellation, REGEL_ABLAUF, "fragmente", ABLAEUFE);
-  const art = ablaufName(wahl.ablauf), raeumlich = art !== "fragmente";
+  let art = ablaufName(wahl.ablauf), raeumlich = art !== "fragmente";
   if (raeumlich && !webgl2Da()) throw new Error(`PHORMA I ${TITEL(art)} braucht WebGL 2; dieser Browser hat es nicht (Fragmente geht ohne)`);
-  if (raeumlich) raumModul ??= await import("../../../alpha/bildfragmentieren/raum.js?v=36");
+  // die Verwandlung (raum.js mit three.js) wird erst hier geladen; misslingt das auch nach drei Versuchen, läuft statt ihr der Ablauf Fragmente
+  // (Leinwand 2D, schon geladen), damit ein Film nicht an einem Abschnitt scheitert (seit Lab 0.1.42)
+  if (raeumlich && !raumModul) {
+    try { raumModul = await modulLaden(new URL("../../../alpha/bildfragmentieren/raum.js?v=36", import.meta.url).href, { titel: `PHORMA I ${TITEL(art)}`, melden: kontext.melden }); }
+    catch (f) { console.warn(f); kontext.melden?.(`PHORMA I ${TITEL(art)} liess sich nicht laden (Netz?); statt ihrer laufen die Fragmente. Neu laden der Seite bringt sie zurück.`, null); art = "fragmente"; raeumlich = false; }
+  }
   const { foto, B, H, klein } = fotoBauen(bild, Math.round(p.seite));
   kontext.melden?.("PHORMA I: das Foto wird zerlegt", null);
   const daten = zerlegen(klein.daten, klein.w, klein.h, { massstab: B / klein.w, feinheit: p.feinheit });

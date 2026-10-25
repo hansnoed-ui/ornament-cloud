@@ -11,6 +11,7 @@ import { kette, ablaufName, EFFEKTE, TITEL, KETTE } from "../../../alpha/phorma-
 import { szene, bild as filmBild } from "../../../alpha/phorma-ii/film.js?v=38";
 import { zustandsZeiten } from "./phorma.js";
 import { imBrowser, webgl2Da, leinwand, klemm, fotoBauen, EINGAENGE, BESCHRIFTUNG, beschriftungAn, titelAus, ablaufWaehlen } from "./buehnenhilfe.js";
+import { modulLaden } from "../kern/laden.js";
 
 /** die Abläufe zur Wahl: jeder Effekt einzeln und vier Ketten (in der festen Reihenfolge von PHORMA II) */
 export const ABLAEUFE = Object.freeze([
@@ -38,7 +39,7 @@ let buehneModul = null;
 async function buehneBauen({ bild, konstellation, text }, p, kontext = {}) {
   if (!imBrowser()) throw new Error("PHORMA II braucht einen Browser mit WebGL 2");
   if (!webgl2Da()) throw new Error("PHORMA II braucht WebGL 2; dieser Browser hat es nicht");
-  buehneModul ??= await import("../../../alpha/phorma-ii/buehne.js?v=38");
+  buehneModul ??= await modulLaden(new URL("../../../alpha/phorma-ii/buehne.js?v=38", import.meta.url).href, { titel: "PHORMA II", melden: kontext.melden });
   const wahl = ablaufWaehlen(p, konstellation, REGEL_ABLAUF, KETTE, ABLAEUFE);
   const ablauf = ablaufName(wahl.ablauf);
   const { foto, B, H, klein } = fotoBauen(bild, Math.round(p.seite));

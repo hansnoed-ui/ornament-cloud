@@ -2139,3 +2139,20 @@ test("Karten in der Gestaltung des Neubaus (0.1.33): Schriften und Farben der We
   const sig = readFileSync(new URL("alpha/lab/operationen/signatur.js", root), "utf8");
   assert.ok(!/#f08a5d"|#f4f1ea"|#141414"|#f2f2f0"/.test(sig), "keine alten Farben im Code"); assert.match(sig, /from "\.\.\/medien\/schriften\.js"/);
 });
+
+test("Module laden (0.1.42): nach einem Ausfall noch einmal mit neuer Adresse, danach eine Meldung zum Neuladen; die Adapter laden so", async () => {
+  const { modulLaden } = await lab("kern/laden.js");
+  const gefragt = [], meldungen = [];
+  let aus = 2;
+  const m = await modulLaden("https://x.test/raum.js?v=36", { pause: 1, melden: (t) => meldungen.push(t),
+    laden: async (u) => { gefragt.push(u); if (aus-- > 0) throw new TypeError(`Failed to fetch dynamically imported module: ${u}`); return { ok: true }; } });
+  assert.deepEqual(m, { ok: true });
+  assert.deepEqual(gefragt, ["https://x.test/raum.js?v=36", "https://x.test/raum.js?v=36&neu=2", "https://x.test/raum.js?v=36&neu=3"], "jeder Versuch eine neue Adresse (Chrome merkt sich den Fehler)");
+  assert.equal(meldungen.length, 2);
+  await assert.rejects(modulLaden("https://x.test/a.js", { titel: "PHORMA I Scherben", pause: 1, laden: async () => { throw new TypeError("weg"); } }),
+    (f) => f.name === "Modulfehler" && /PHORMA I Scherben liess sich nicht laden/.test(f.message) && /neu laden/.test(f.message));
+  for (const d of ["operationen/phorma.js", "operationen/phorma1.js", "operationen/phorma2.js", "medien/video.js"]) {
+    const q = readFileSync(new URL(`alpha/lab/${d}`, root), "utf8");
+    assert.ok(!/await import\("\.\.\/\.\.\/\.\.\/alpha\//.test(q), `${d}: Module der Apps über modulLaden`);
+  }
+});
