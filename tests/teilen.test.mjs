@@ -3,7 +3,7 @@
 //   node --experimental-strip-types --no-warnings --test tests/teilen.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, statSync, existsSync } from "node:fs";
+import { readFileSync, statSync, existsSync, readdirSync } from "node:fs";
 
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
@@ -17,6 +17,7 @@ const SEITEN = [
   { datei: "alpha/bildfragmentieren/index.html", url: "https://ornament.cloud/alpha/bildfragmentieren/", titel: "PHORMA I", bild: "alpha/bildfragmentieren/app/og-phorma-i.jpg", art: "jpg", canonical: false, erzeuger: "tools/phorma-bilder.mjs" },   // die Anwendung selbst, dasselbe Bild (17. Oktober 2026)
   { datei: "alpha/bildfragmentieren/app/index.html", url: "https://ornament.cloud/alpha/bildfragmentieren/app/", titel: "PHORMA I – die App", bild: "alpha/bildfragmentieren/app/og-phorma-i.jpg", art: "jpg", canonical: false, erzeuger: "tools/phorma-bilder.mjs" },   // PHORMA I, seit 17. Oktober 2026, Kristallansicht aus der Anwendung
   { datei: "alpha/sketchory/index.html", url: "https://ornament.cloud/alpha/sketchory/", titel: "Sketchory", bild: "alpha/sketchory/og-sketchory.jpg", art: "jpg", canonical: false, erzeuger: "tools/sketchory-og.mjs" },   // seit 12. Oktober 2026, Bild aus der Anwendung selbst
+  { datei: "alpha/lab/index.html", url: "https://ornament.cloud/alpha/lab/", titel: "ornament.lab", bild: "assets/kacheln/lab.png", art: "png", canonical: false, erzeuger: "tools/b-kacheln.mjs" },   // seit 25. Oktober 2026, nur per Direktlink, die Karte holen die Dienste trotzdem
 ];
 /** alle meta-Angaben einer Seite: property oder name → content */
 const metas = (html) => new Map([...html.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)].map((m) => [m[1], m[2]]));
@@ -89,4 +90,32 @@ test("Teilen: tools/start-og.mjs erzeugt genau diese beiden Bilder und trägt de
   assert.ok(erzeuger.includes("Das Dritte<br>Rad"), "der Titel des Rads steht im Bild");
   const readme = lies("README.md");
   assert.ok(readme.includes("tools/start-og.mjs") && readme.includes("og-ornament-cloud.png") && readme.includes("og-drittes-rad.jpg"), "README nennt Erzeuger und Bilder");
+});
+
+// Seit 24. Oktober 2026 (Frage: «Wie siehts eigentlich mit den Vorschaukarten für die ornament.cloud seiten»): jede Seite der Sitemap trägt eine
+// Vorschaukarte, und jede Karte, auf die eine Seite zeigt, gibt es auch (vorher fehlte b/kacheln/redaktion.png). Die Karten der Seiten ausserhalb von /b/
+// zeichnet tools/b-kacheln.mjs alt in der Gestaltung des Neubaus.
+const ALLE_HTML = (() => {
+  const aus = [], geh = (d) => { for (const e of readdirSync(new URL(d, root), { withFileTypes: true })) { if (e.isDirectory()) { if (!["node_modules", "vendor", ".git", "src", "tests", "tools", "docs"].includes(e.name)) geh(`${d}${e.name}/`); } else if (e.name.endsWith(".html")) aus.push(`${d}${e.name}`); } };
+  geh(""); return aus;
+})();
+
+test("Teilen: jede Seite der Sitemap hat eine Vorschaukarte mit Bild, Titel und Beschreibung", () => {
+  const locs = [...lies("sitemap.xml").matchAll(/<loc>https:\/\/ornament\.cloud\/([^<]*)<\/loc>/g)].map((m) => m[1]);
+  assert.ok(locs.length > 100);
+  const ohne = locs.filter((p) => { const m = metas(lies(`${p}index.html`)); return !(m.get("og:image") && m.get("og:title") && m.get("og:description")); });
+  assert.deepEqual(ohne, [], "Seiten ohne Vorschaukarte");
+});
+
+test("Teilen: jede Vorschaukarte, auf die eine Seite zeigt, liegt im Repo, 1200 × 630 wenn so angegeben", () => {
+  const fehlt = [], falsch = [];
+  for (const d of ALLE_HTML) {
+    const m = metas(lies(d)), bild = m.get("og:image");
+    if (!bild?.startsWith("https://ornament.cloud/")) continue;
+    const pfad = bild.slice("https://ornament.cloud/".length).split("?")[0];
+    if (!existsSync(new URL(pfad, root))) { fehlt.push(`${d} → ${pfad}`); continue; }
+    if (m.get("og:image:width") === "1200" && /\.(png|jpe?g)$/.test(pfad)) { const dm = bildmass(readFileSync(new URL(pfad, root))); if (dm.b !== 1200 || dm.h !== 630) falsch.push(`${pfad}: ${dm.b} × ${dm.h}`); }
+  }
+  assert.deepEqual(fehlt, [], "Karten, die fehlen");
+  assert.deepEqual(falsch, [], "Karten mit falschem Mass");
 });

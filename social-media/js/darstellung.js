@@ -381,15 +381,18 @@ ${einzug}  <a href="${site}" aria-current="true">Ornament Cloud</a>
 ${einzug}  <a href="${site}alpha/drittes-rad/">Das Dritte Rad</a>
 ${einzug}</nav>`;
 
+/** Vorschaukarte der Übersicht und der Register (1200 × 630, tools/b-kacheln.mjs alt, in der Gestaltung des Neubaus; seit 24. Oktober 2026) */
+const kachel = (name, titel) => ({ bild: `kacheln/${name}.png`, breite: 1200, hoehe: 630, typ: "website", alt: `Vorschaukarte «${titel}» von ornament.cloud: Titel und kurzer Satz neben dem Feld aus 49 Punkten` });
+
 /**
  * Seite: pfad ab der Wurzel («social-media/12-titel/»), titel, beschreibung, inhalt (main), kopfInhalt (Titel und Lead im Kopf);
- * og: { bild, breite, hoehe, alt }; skripte: Dateien in social-media/js/; noindex
+ * og: { bild, breite, hoehe, alt, typ }; skripte: Dateien in social-media/js/; noindex
  */
 export function seite({ pfad, titel, beschreibung, kopf, inhalt, og = null, skripte = [], noindex = false, aktuell = "true", fuss = "" }) {
   const tiefe = pfad.split("/").filter(Boolean).length, site = "../".repeat(tiefe), bereich = "../".repeat(tiefe - 1);
   const url = ADRESSE + pfad;
   const ogBlock = og ? `
-  <meta property="og:type" content="article">
+  <meta property="og:type" content="${og.typ ?? "article"}">
   <meta property="og:site_name" content="ornament.cloud">
   <meta property="og:locale" content="de_CH">
   <meta property="og:url" content="${esc(url)}">
@@ -542,7 +545,7 @@ ${zeilen.join("\n")}
       <h2>Noch keine Zettel</h2>
       <p>Hier entsteht eine Sammlung kommentierter Beiträge. Der erste Zettel ist in Arbeit.</p>
     </section>`;
-  return seite({ pfad: BEREICH, titel: "Social Media", beschreibung: "Ausgewählte Beiträge aus X, Facebook und Instagram.", kopf, inhalt, skripte: alle.length ? ["zeitleiste.js"] : [], aktuell: "page" });
+  return seite({ pfad: BEREICH, titel: "Social Media", beschreibung: "Ausgewählte Beiträge aus X, Facebook und Instagram.", kopf, inhalt, og: kachel("social-media", "Social Media"), skripte: alle.length ? ["zeitleiste.js"] : [], aktuell: "page" });
 }
 
 // ---------- Zettel (eigene Seite) ----------
@@ -645,7 +648,7 @@ ${xs.map((x) => `          <dt><a href="../?schlagwort=${esc(x.slug)}">${esc(x.w
   const kopf = `      <p class="sm-zurueck"><a href="../">Social Media</a></p>
       <h1>Schlagworte</h1>
       <p class="lead">${s.length} Schlagworte, von A bis Z, mit den Zetteln dazu.</p>`;
-  return seite({ pfad: `${BEREICH}schlagworte/`, titel: "Schlagworte", beschreibung: "Register der Schlagworte im Zettelkasten «Social Media».", kopf, inhalt });
+  return seite({ pfad: `${BEREICH}schlagworte/`, titel: "Schlagworte", beschreibung: "Register der Schlagworte im Zettelkasten «Social Media».", kopf, inhalt, og: kachel("schlagworte", "Schlagworte") });
 }
 
 export function autorinnenSeite(alle) {
@@ -664,7 +667,7 @@ ${a.filter((x) => x.plattform === p).sort((x, y) => vergleich(x.autor.name, y.au
   const kopf = `      <p class="sm-zurueck"><a href="../">Social Media</a></p>
       <h1>Autor:innen</h1>
       <p class="lead">${a.length === 1 ? "Eine Person" : `${a.length} Personen`}, deren Beiträge hier gesichert sind, nach Plattform.</p>`;
-  return seite({ pfad: `${BEREICH}autorinnen/`, titel: "Autor:innen", beschreibung: "Register der Autor:innen im Zettelkasten «Social Media».", kopf, inhalt });
+  return seite({ pfad: `${BEREICH}autorinnen/`, titel: "Autor:innen", beschreibung: "Register der Autor:innen im Zettelkasten «Social Media».", kopf, inhalt, og: kachel("autorinnen", "Autor:innen") });
 }
 
 // ---------- Feed und Sitemap ----------

@@ -6,6 +6,11 @@
 //
 //   NODE_PATH=$(npm root -g) node tools/b-kacheln.mjs               alle, beide Sprachen
 //   NODE_PATH=$(npm root -g) node tools/b-kacheln.mjs en zettel     nur Englisch, nur Pfade, die so beginnen
+//   NODE_PATH=$(npm root -g) node tools/b-kacheln.mjs alt           nur die Karten der übrigen Seiten (ALT unten)
+//
+// Seit 24. Oktober 2026 (Frage: «Wie siehts eigentlich mit den Vorschaukarten für die ornament.cloud seiten») auch die Redaktion unter /b/ und
+// die Seiten ausserhalb von /b/, die in der Sitemap stehen und bis dahin keine Karte hatten (News, Termine, Apps, Impressum, Web, Werke,
+// Social Media): dieselbe Gestaltung, geschrieben nach assets/kacheln/ bzw. social-media/kacheln/.
 import { createServer } from "node:http";
 import { readFileSync, writeFileSync, mkdirSync, statSync } from "node:fs";
 import { extname, join } from "node:path";
@@ -24,7 +29,8 @@ const ROOT = new URL("../", import.meta.url);
 const root = fileURLToPath(ROOT);
 const args = process.argv.slice(2);
 const SPRACHEN = args.filter((a) => a === "de" || a === "en");
-const filter = args.find((a) => a !== "de" && a !== "en") || "";
+const NUR_ALT = args.includes("alt");
+const filter = args.find((a) => a !== "de" && a !== "en" && a !== "alt") || "";
 const ausgabe = (sprache) => new URL(sprache === "de" ? "b/kacheln/" : `b/${sprache}/kacheln/`, ROOT);
 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const kachelName = (pfad) => (pfad.replace(/\/$/, "").replace(/\//g, "-") || "start");
@@ -67,6 +73,7 @@ const W = {
     zuletzt: ["Aus Social Media", "Zuletzt", "Beiträge, gesichert mit Beleg und Schlagworten."],
     ueber: ["Zwischen Zürich, Basel und Aarau", "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte."],
     werkstatt: ["Werkstatt", "Print on Demand", "Produkte aus dem Bestand."],
+    redaktion: ["Werkstatt · Social Media", "Redaktion", "Bildschirmfotos, Bilder und Videos zu Zetteln machen."],
   },
   en: {
     zettel: (s) => `Zettelkasten · ${s.cycle.roman} ${s.cycle.name} · Note ${s.number} of 49`, app: "App", raster: "Test grid", angebot: "Service", fuss: "ornament.cloud/b/en",
@@ -80,12 +87,12 @@ const W = {
   },
 };
 
-function seiteHtml({ lang, breite, hoehe, kicker, titel, satz, feld, fuss, serif = false, titelGroesse }) {
+function seiteHtml({ lang, breite, hoehe, kicker, titel, satz, feld, fuss, serif = false, titelGroesse, titelBreite = 14 }) {
   return `<!DOCTYPE html><html lang="${lang}"><head><meta charset="utf-8"><link rel="stylesheet" href="/vendor/fonts/fonts.css"><style>
   html, body { margin: 0; } body { width: ${breite}px; height: ${hoehe}px; background: #fff; color: #000; font-family: "Instrument Sans", system-ui, sans-serif; position: relative; overflow: hidden; }
   .links { position: absolute; left: 72px; top: 64px; right: ${feld ? 380 : 72}px; bottom: 64px; display: flex; flex-direction: column; }
   .kicker { font-size: 24px; color: #6f6f6f; margin-bottom: 18px; }
-  .titel { font-size: ${titelGroesse || 76}px; font-weight: 500; letter-spacing: -0.025em; line-height: 1; max-width: 14ch; }
+  .titel { font-size: ${titelGroesse || 76}px; font-weight: 500; letter-spacing: -0.025em; line-height: 1; max-width: ${titelBreite}ch; }
   .satz { margin-top: 26px; font-size: 34px; line-height: 1.25; max-width: 30ch; ${serif ? 'font-family: "Newsreader", Georgia, serif; font-style: italic; font-size: 40px;' : "color: #333;"} }
   .fuss { margin-top: auto; display: flex; align-items: center; gap: 14px; font-size: 26px; font-weight: 500; }
   .fuss .punkt { position: absolute; }
@@ -120,16 +127,35 @@ function karte(pfad, sprache) {
     "zuletzt/": { kicker: w.zuletzt[0], titel: w.zuletzt[1], satz: w.zuletzt[2], feld: feldSvg() },
     "ueber/": { kicker: w.ueber[0], titel: SEITE.person.name, satz: w.ueber[1], titelGroesse: 66, feld: feldSvg() },
     "werkstatt/": w.werkstatt ? { kicker: w.werkstatt[0], titel: w.werkstatt[1], satz: w.werkstatt[2], feld: feldSvg() } : null,
+    "redaktion/": w.redaktion ? { kicker: w.redaktion[0], titel: w.redaktion[1], satz: w.redaktion[2], feld: feldSvg() } : null,
   };
   return fest[pfad];
 }
+
+/** Die Seiten ausserhalb von /b/ (nur deutsch): Datei der Karte ab der Wurzel und was daraufkommt; die Meta-Angaben stehen in den Seiten selbst
+    bzw. kommen aus social-media/js/darstellung.js, tests/teilen.test.mjs hält beides zusammen */
+const ALT = [
+  { datei: "assets/kacheln/news.png", kicker: "Ornament Cloud", titel: "News", satz: "Neuigkeiten und Arbeitsstände, auch als Feed zum Abonnieren." },
+  { datei: "assets/kacheln/termine.png", kicker: "Ornament Cloud", titel: "Termine", satz: "Anlässe, Treffen und Ausstellungen." },
+  { datei: "assets/kacheln/apps.png", kicker: "Ornament Cloud", titel: "Apps", satz: "Kleine Apps zum Ausprobieren: Bild und Video, Text und Theorie, Gestaltung." },
+  { datei: "assets/kacheln/impressum.png", kicker: "Christian Strickler · Kaiserstuhl", titel: "Impressum", satz: "Impressum, Allgemeine Geschäftsbedingungen und Datenschutz." },
+  { datei: "assets/kacheln/web.png", kicker: "Ornament Cloud", titel: "Web", satz: "Sketchory, The Fictory, Das Dritte Rad, Stellenfeld, ORNA und weitere Beiträge." },
+  { datei: "assets/kacheln/web-orna-erklaervideo.png", kicker: "Web · Erklärvideo, 51 Sekunden", titel: "ORNA – Zufällige Begegnungen", titelGroesse: 66, satz: "Wie sich Künstler:innen und Theoretiker:innen auf zwei Ringen begegnen." },
+  { datei: "assets/kacheln/web-poststrukturalismus.png", kicker: "Web · Comic-Video", titel: "Liebling, ich habe den Poststrukturalismus strukturiert", titelGroesse: 54, titelBreite: 22, satz: "Zwölf Positionen, zwei Prüfraster." },
+  { datei: "assets/kacheln/werke-reentry.png", kicker: "Werke · Modell zum Drehen", titel: "Re-entry-Knoten, Helix, S/F-Band", titelGroesse: 62, satz: "Knoten, Helix und Band: eine Sequenz im Raum, zum Abspielen und Drehen." },
+  { datei: "assets/kacheln/werke-stellenfeld.png", kicker: "Werke · Sequenz in sechs Bildern", titel: "Stellenfeld", satz: "Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre." },
+  { datei: "social-media/kacheln/social-media.png", kicker: "Zettelkasten", titel: "Social Media", satz: "Ausgewählte Beiträge aus X, Facebook und Instagram." },
+  { datei: "social-media/kacheln/schlagworte.png", kicker: "Social Media · Register", titel: "Schlagworte", satz: "Die Schlagworte im Zettelkasten «Social Media»." },
+  { datei: "assets/kacheln/lab.png", kicker: "ORNAMENT LAB · Alpha", titel: "ornament.lab", satz: "Erzeugen · Beobachten · Weiterführen", serif: true, fuss: "ornament.cloud/alpha/lab", feld: feldSvg({ hier: 25, nah: [3, 13, 23, 36, 40, 46] }) },   // seit 25. Oktober 2026 (Wunsch: «Vorschaukarte für social media vom lab»)
+  { datei: "social-media/kacheln/autorinnen.png", kicker: "Social Media · Register", titel: "Autor:innen", satz: "Die Autor:innen im Zettelkasten «Social Media»." },
+];
 
 const browser = await playwright.chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
 await page.goto(base + "b/", { waitUntil: "load" });     // die Schriften laden
 let n = 0;
 const gross = [];
-for (const sprache of SPRACHEN.length ? SPRACHEN : ["de", "en"]) {
+for (const sprache of NUR_ALT ? [] : SPRACHEN.length ? SPRACHEN : ["de", "en"]) {
 const AUS = ausgabe(sprache); mkdirSync(AUS, { recursive: true });
 const liste = JSON.parse(readFileSync(new URL("liste.json", AUS), "utf8")).filter((p) => p.startsWith(filter));
 const zettelS = ladeZettel(sprache);
@@ -168,6 +194,18 @@ for (const pfad of liste) {
   }
   process.stdout.write(`${pfad || "/"} `);
 }
+}
+if (NUR_ALT || !SPRACHEN.length) {
+  process.stdout.write("\nalt: ");
+  await page.setViewportSize({ width: 1200, height: 630 });
+  for (const k of ALT.filter((a) => a.datei.includes(filter))) {
+    await page.setContent(seiteHtml({ lang: "de", breite: 1200, hoehe: 630, feld: feldSvg(), ...k }), { waitUntil: "load" });
+    await page.evaluate(() => document.fonts.ready);
+    const datei = new URL(k.datei, ROOT); mkdirSync(new URL("./", datei), { recursive: true });
+    writeFileSync(datei, await page.screenshot({ type: "png" }));
+    if (statSync(datei).size > 300 * 1024) gross.push(k.datei);
+    n++; process.stdout.write(`${k.datei} `);
+  }
 }
 await browser.close(); server.close();
 console.log(`\n${n} Karten geschrieben${gross.length ? `; über 300 KB: ${gross.join(", ")}` : ""}`);
