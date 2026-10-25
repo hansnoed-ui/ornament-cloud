@@ -26,7 +26,7 @@ import { FORMATE } from "../operationen/format.js";
 
 export { FORMATE };
 
-export const ZUSAMMENSTELLUNG_VERSION = "0.6.2";
+export const ZUSAMMENSTELLUNG_VERSION = "0.6.3";
 /** Dauer einer Karte (Zettel, ORNA) am Anfang oder Ende des Films, in Sekunden (seit 0.1.34 eine Sekunde länger, vorher 2,5) */
 export const KARTE_DAUER = 3.5;
 export const VARIANTEN_JE_ABSCHNITT = 10;   // seit Lab 0.1.16: 60 Motive in 30 s (vorher 3, also 18)
@@ -67,12 +67,15 @@ export const BILD_REZEPTE = Object.freeze({
   "bild.verzerrung": { operation: "lab.verzerrung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
   "bild.licht": { operation: "lab.licht", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
   "bild.raster": { operation: "lab.raster", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
-  // die Linienbilder (seit 0.1.36, nach den Plotter-Umwandlern von Makelangelo): lebendig auf der Grafikkarte, «lauf» bewegt sie von selbst
-  "bild.puls": { operation: "lab.puls", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
-  "bild.spirale": { operation: "lab.puls", parameter: { traeger: "spirale", abstand: 0.012, seite: 1000, bilder: 18 }, tiefe: 0.5 },
-  "bild.schraffur": { operation: "lab.schraffur", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.25 },
-  "bild.fluss": { operation: "lab.fluss", parameter: { seite: 800, bilder: 18 }, tiefe: 0.5 },
-  "bild.punktieren": { operation: "lab.punktieren", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
+  // die Linienbilder (seit 0.1.36, nach den Plotter-Umwandlern von Makelangelo): lebendig auf der Grafikkarte, «lauf» bewegt sie von selbst.
+  // In der Zusammenstellung zeichnen sie seit 0.1.41 mit den Farben des Bildes (auf Papier oder auf Nacht), nicht mit Tinte: Christian (25. Oktober
+  // 2026): «Das Video ist jetzt zum grossen Teil schwarz/weiss» – seit die Effekte rein laufen (0.1.39), stand kein buntes Ausgangsbild mehr dazwischen.
+  // Im Register bleibt «Tinte auf Papier» der Standard der Operationen.
+  "bild.puls": { operation: "lab.puls", parameter: { farbe: "papier", seite: 1000, bilder: 18 }, tiefe: 0.5 },
+  "bild.spirale": { operation: "lab.puls", parameter: { traeger: "spirale", abstand: 0.012, farbe: "nacht", seite: 1000, bilder: 18 }, tiefe: 0.5 },
+  "bild.schraffur": { operation: "lab.schraffur", parameter: { farbe: "papier", seite: 1000, bilder: 18 }, tiefe: 0.25 },
+  "bild.fluss": { operation: "lab.fluss", parameter: { farbe: "nacht", seite: 800, bilder: 18 }, tiefe: 0.5 },
+  "bild.punktieren": { operation: "lab.punktieren", parameter: { farbe: "papier", seite: 1000, bilder: 18 }, tiefe: 0.5 },
   "bild.glasfenster": { operation: "lab.punktieren", parameter: { art: "mosaik", abstand: 0.014, seite: 1000, bilder: 18 }, ziel: "abstand", tiefe: 0.3 },
   "bild.teilung": { operation: "lab.teilung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.3 },
   "bild.truchet": { operation: "lab.teilung", parameter: { fuellung: "truchet", tiefe: 5, linien: 3, seite: 1000, bilder: 18 }, ziel: "schwelle", tiefe: 0.3 },
@@ -242,10 +245,12 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
     const ziel = r.ziel === null ? null : r.ziel ?? op.moduliert ?? op.parameter.find((p) => p.art === "zahl" && p.id !== "seite")?.id;
     const routen = ziel && op.varianten === "moduliert" ? [{ ziel, tiefe: r.tiefe ?? 0.5, modulator: { quelle: "signal", ergebnis: signal.id } }] : [];
     melden(`Abschnitt ${j + 1} von ${aktiv.length}: ${BILD_EFFEKTE[b].split(":")[0]} …`, null);
-    // die Parameter des Rezepts; eigene Dauer des Abschnitts: so viele Standbilder, Szenen von PHORMA I und II etwas länger als der Abschnitt,
-    // PHORMA III über die ganze Animation (Filmzeit, mit dem Ton)
+    // die Parameter des Rezepts; eigene Dauer des Abschnitts: so viele Standbilder, PHORMA III über die ganze Animation (Filmzeit, mit dem Ton).
+    // Die Szenen von PHORMA I und II laufen in der Dauer ihres Abschnitts plus einer Sekunde (der Übergang hinaus; seit 0.1.41, vorher
+    // SZENE_DAUER = 8 s, mindestens 3 s länger als der Abschnitt): in fünf Sekunden eines Abschnitts kamen die Fragmente kaum über Linien und Formen
+    // hinaus, die Farben und das Bild am Schluss des Ablaufs fehlten im Film (Christian: «zum grossen Teil schwarz/weiss»)
     const parameter = { ...r.parameter, ...(r.parameter.bilder !== undefined ? { bilder: anzahl } : {}),
-      ...(r.parameter.dauer === SZENE_DAUER && a.dauer + 3 > SZENE_DAUER ? { dauer: Math.round(a.dauer + 3) } : {}),
+      ...(r.parameter.dauer === SZENE_DAUER ? { dauer: Math.max(3, Math.round(a.dauer + 1)) } : {}),
       ...(mitTon ? { beginn, ...(r.parameter.dauer === DAUER ? { dauer: (zeiten ? zeiten.vor : 0) + haupt } : {}) } : {}) };
     const x = await fuehreAus({ register, projekt, medien, melden, abbrechen,
       auftrag: { operation: r.operation, eingaben: { bild: video ? video[Math.min(video.length - 1, Math.floor((i * video.length) / plan.bild.length))] : plan.aufbau === "aufbau.faecher" ? grundbild : eingang, ...(mitTon ? { ton } : {}),
