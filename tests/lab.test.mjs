@@ -694,6 +694,25 @@ test("Beat aus Bild rechnen: Stereo in genau der Dauer, Tempo in der Stufe, repr
   assert.notDeepEqual(r432.spuren[0], r440.spuren[0]);
   assert.equal(B.regelPlan(m1.merkmale).plan.groove === "gerade" || B.regelPlan(m1.merkmale).plan.groove === "dnb", true);
   assert.equal(B.regelPlan({ helligkeit: "mittel", kontrast: "mittel", farbigkeit: "gedaempft", farbton: "neutral", detail: "mittel", schwerpunkt: "mitte", symmetrie: "asymmetrisch", bewegung: "still" }).plan.groove, "dnb", "ohne starke Regel: Drum and Bass");
+  // nach Christians Playlist «Lieblingssongs» (0.1.44): Drum and Bass ausser in den wilden Takten als Halftime, Jazz, Kontrabass, Hijaz, Handtrommeln
+  const takteMit = (x, f) => [...new Set(x.ausgaben[1].daten.ereignisse.filter(f).map((y) => Math.floor(y.schritt / 16)))];
+  const snareVoll = dnb.ausgaben[1].daten.ereignisse.filter((y) => y.stimme === "snare" && y.staerke === 0.8);
+  assert.ok(snareVoll.some((y) => y.schritt % 16 === 4), "wild: Snare auf zwei und vier");
+  const zartTakt = dnb.protokoll.energie.indexOf(0.7);
+  assert.ok(snareVoll.filter((y) => Math.floor(y.schritt / 16) === zartTakt).every((y) => y.schritt % 16 === 8), "zart: Halftime, Snare nur auf drei");
+  assert.ok(takteMit(dnb, (y) => y.stimme === "snare" && y.staerke === 0.8).length > 0);
+  assert.deepEqual(B.TONLEITERN.hijaz, [0, 1, 4, 5, 7, 8, 10]);
+  assert.deepEqual(B.TEMPI.mittel, [84, 96]);
+  for (const [kit, bass, tonart, melodie] of [["jazz", "kontrabass", "hijaz", "glocken"], ["hand", "kontrabass", "dorisch", "keine"]]) for (const groove of ["dnb", "schleppend"]) {
+    const x = await op.ausfuehren({ bild: b0 }, { ...std, groove, kit, bass, tonart, melodie, verlauf: "wechselnd", flaeche: "sphaere" }, { seed: 4 });
+    const s0 = x.ausgaben[0].ton.spuren;
+    assert.ok(s0.every((k) => k.every(Number.isFinite)), `${kit} ${groove}`);
+    assert.notDeepEqual(s0[0], s0[1], "Stereo (Echo im Ping-Pong)");
+    assert.match(x.ausgaben[0].titel, kit === "jazz" ? /Jazz/ : /Handtrommeln/);
+  }
+  const neutral = { helligkeit: "mittel", kontrast: "mittel", farbigkeit: "gedaempft", farbton: "neutral", detail: "mittel", schwerpunkt: "mitte", symmetrie: "asymmetrisch", bewegung: "still" };
+  assert.deepEqual(B.regelPlan(neutral).plan, { tempo: "mittel", groove: "dnb", kit: "jazz", tonart: "dorisch", bass: "kontrabass", melodie: "glocken", verlauf: "wechselnd", flaeche: "sphaere" }, "Standard nach der Playlist");
+  assert.equal(B.regelPlan({ ...neutral, farbigkeit: "bunt", helligkeit: "dunkel", bewegung: "heftig" }).plan.bass, "reese", "Reese bei dunklen, heftig bewegten Bildern");
   // Standbilder eines Videos: jedes ein Abschnitt, die Bewegung zählt
   const zweites = neuesBild(96, 72, [240, 240, 240]);
   const v = await op.ausfuehren({ bild: b0, bild2: b0, bild3: zweites }, { ...std, verlauf: "wellen" }, { seed: 9 });

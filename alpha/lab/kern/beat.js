@@ -16,7 +16,7 @@ import { euklid, pegeln } from "./klangwerk.js";
 import { BEAT_FRAGEN } from "../jev/fragen.js";
 import { zufall } from "../../../alpha/the-fictory/analyse.js?v=23";
 
-export const BEAT_VERSION = "0.2.0";
+export const BEAT_VERSION = "0.3.0";
 export const ABSCHNITTE_HOECHSTENS = 6;
 const rund = (x, s = 1000) => Math.round(x * s) / s;
 const mittel = (a) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0);
@@ -125,12 +125,19 @@ export const BEAT_REGELN = Object.freeze([
   ["kit", "metallisch", "farbton", "kalt", 0.5, "kalte Farben klingen metallisch"],
   ["kit", "weich", "kontrast", "niedrig", 1.5, "niedriger Kontrast klingt weich"],
   ["kit", "weich", "helligkeit", "hell", 0.5, "ein helles Bild klingt weich"],
+  ["kit", "jazz", "farbigkeit", "gedaempft", 1, "gedämpfte Farben klingen nach Besen und Ride"],
+  ["kit", "jazz", "helligkeit", "dunkel", 0.5, "ein dunkles Bild klingt nach einem Jazzkeller"],
+  ["kit", "hand", "farbton", "warm", 1, "warme Farben klingen nach Handtrommeln"],
+  ["kit", "hand", "schwerpunkt", "unten", 0.5, "ein Gewicht unten klingt nach tiefen Fellen"],
   ["tonart", "dur", "helligkeit", "hell", 2, "ein helles Bild steht in Dur"],
   ["tonart", "moll", "helligkeit", "dunkel", 2, "ein dunkles Bild steht in Moll"],
   ["tonart", "dorisch", "helligkeit", "mittel", 1, "mittlere Helligkeit: Moll mit einem hellen Ton"],
   ["tonart", "dur", "farbton", "warm", 0.5, "warme Farben klingen nach Dur"],
   ["tonart", "phrygisch", "farbton", "kalt", 0.75, "kalte Farben klingen fremd"],
   ["tonart", "pentatonik", "farbigkeit", "grau", 1.5, "ohne Farbe: fünf Töne, nichts reibt"],
+  ["tonart", "phrygisch", "helligkeit", "dunkel", 1, "ein dunkles Bild klingt dunkel und fremd"],
+  ["tonart", "hijaz", "farbton", "warm", 1, "warme Farben klingen nach dem Orient"],
+  ["tonart", "hijaz", "detail", "fein", 0.5, "feine Ornamente klingen nach dem Orient"],
   ["bass", "pulsierend", "schwerpunkt", "unten", 1.5, "ein Gewicht unten pulsiert im Bass"],
   ["bass", "liegend", "helligkeit", "dunkel", 1.5, "ein dunkles Bild trägt lange Basstöne"],
   ["bass", "liegend", "detail", "glatt", 0.5, "glatte Flächen tragen lange Basstöne"],
@@ -139,6 +146,9 @@ export const BEAT_REGELN = Object.freeze([
   ["bass", "keiner", "schwerpunkt", "oben", 1, "ein Gewicht oben braucht keinen Bass"],
   ["bass", "reese", "farbton", "kalt", 1, "kalte Farben schweben im Bass"],
   ["bass", "reese", "helligkeit", "dunkel", 1, "ein dunkles Bild trägt einen tiefen, schwebenden Bass"],
+  ["bass", "reese", "bewegung", "heftig", 1.5, "heftige Bewegung trägt einen schwebenden Bass wie im Drum and Bass"],
+  ["bass", "kontrabass", "farbigkeit", "gedaempft", 1, "gedämpfte Farben tragen einen gezupften Kontrabass"],
+  ["bass", "kontrabass", "farbton", "warm", 0.5, "warme Farben tragen einen Kontrabass"],
   ["flaeche", "sphaere", "kontrast", "niedrig", 1.5, "niedriger Kontrast wird zu einer weichen Fläche"],
   ["flaeche", "sphaere", "helligkeit", "dunkel", 1, "ein dunkles Bild wird zu einem weiten Raum"],
   ["flaeche", "schimmer", "helligkeit", "hell", 1.5, "ein helles Bild schimmert"],
@@ -160,10 +170,13 @@ export const BEAT_REGELN = Object.freeze([
 ]);
 /**
  * Der Standard je Stelle mit seinem Grundgewicht. Seit Christians Wunsch (24. Oktober 2026: «sphärischer, drum n bass mässiger, fein und
- * wild abwechselnd») gewinnen Drum and Bass, Reese-Bass, die sphärische Fläche und der Wechsel, solange keine Regel deutlich anders spricht.
+ * wild abwechselnd») gewinnen Drum and Bass, die sphärische Fläche und der Wechsel, solange keine Regel deutlich anders spricht. Seit
+ * Lab 0.1.44 nach seiner Playlist «Lieblingssongs» (Jazz, Boom Bap, Soul, Trip-Hop; /mnt/project-files/musik/lieblingssongs-profil.md):
+ * Schlagzeug mit Besen und Ride, Kontrabass statt Reese (der bleibt für dunkle, heftig bewegte Bilder), dorisch statt Moll, wenige Töne
+ * statt einer Melodie aus dem Bild; Drum and Bass in seinen zarten Takten als Halftime.
  */
-const STANDARD = Object.freeze({ tempo: ["mittel", 0.5], groove: ["dnb", 2], kit: ["elektronisch", 0.5], tonart: ["moll", 0.5], bass: ["reese", 1.5], melodie: ["bild", 0.5], verlauf: ["wechselnd", 2], flaeche: ["sphaere", 1.5] });
-const STANDARD_GRUND = "Christians Richtung: sphärisch, Drum and Bass, fein und wild im Wechsel";
+const STANDARD = Object.freeze({ tempo: ["mittel", 0.5], groove: ["dnb", 2], kit: ["jazz", 1], tonart: ["dorisch", 0.5], bass: ["kontrabass", 1.5], melodie: ["glocken", 0.5], verlauf: ["wechselnd", 2], flaeche: ["sphaere", 1.5] });
+const STANDARD_GRUND = "Christians Richtung: sphärisch, Drum and Bass als Halftime, Jazz, fein und wild im Wechsel";
 
 /** die Regeln anwenden: je Stelle der Wert mit dem grössten Gewicht, mit den Gründen. Gibt { plan, gruende, gewichte } zurück. */
 export function regelPlan(merkmale) {
@@ -198,9 +211,9 @@ export function planAusJev(antworten, seed = 1) {
 }
 
 // ---------- rechnen ----------
-export const TEMPI = Object.freeze({ langsam: [70, 84], mittel: [92, 108], schnell: [118, 132], rasend: [150, 170] });
-export const TONLEITERN = Object.freeze({ dur: [0, 2, 4, 5, 7, 9, 11], moll: [0, 2, 3, 5, 7, 8, 10], dorisch: [0, 2, 3, 5, 7, 9, 10], phrygisch: [0, 1, 3, 5, 7, 8, 10], pentatonik: [0, 3, 5, 7, 10] });
-const FOLGEN = Object.freeze({ dur: [0, 4, 5, 3], moll: [0, 5, 2, 6], dorisch: [0, 3, 4, 3], phrygisch: [0, 1, 0, 6], pentatonik: [0, 2, 3, 1] });
+export const TEMPI = Object.freeze({ langsam: [70, 84], mittel: [84, 96], schnell: [118, 132], rasend: [150, 170] });
+export const TONLEITERN = Object.freeze({ dur: [0, 2, 4, 5, 7, 9, 11], moll: [0, 2, 3, 5, 7, 8, 10], dorisch: [0, 2, 3, 5, 7, 9, 10], phrygisch: [0, 1, 3, 5, 7, 8, 10], pentatonik: [0, 3, 5, 7, 10], hijaz: [0, 1, 4, 5, 7, 8, 10] });
+const FOLGEN = Object.freeze({ dur: [0, 4, 5, 3], moll: [0, 5, 2, 6], dorisch: [0, 3, 4, 3], phrygisch: [0, 1, 0, 6], pentatonik: [0, 2, 3, 1], hijaz: [0, 1, 0, 6] });
 export const NOTEN = Object.freeze(["C", "Cis", "D", "Es", "E", "F", "Fis", "G", "As", "A", "B", "H"]);
 const muster = (s) => [...s].map((c) => c !== ".");
 const GROOVES = Object.freeze({
@@ -209,8 +222,9 @@ const GROOVES = Object.freeze({
   breakbeat: { kick: "x.x.......xx....", snare: "....x.......x...", geist: ".......x.x.....x", hat: "x.x.x.x.x.x.x.x.", offen: "..............x.", swing: 0.06 },
   euklidisch: { swing: 0 },
   schleppend: { kick: "x......x..x.....", snare: "....x.......x...", geist: ".....x.........x", hat: "x.x.x.x.x.x.x.x.", offen: "................", swing: 0.2 },
-  // Drum and Bass: der Two-Step (Bassdrum auf eins und auf der Zehn, Snare auf zwei und vier), Geisternoten wie im Amen-Break
-  dnb: { kick: "x.........x.....", snare: "....x.......x...", geist: ".......x.x....x.", hat: "x.x.x.x.x.x.x.x.", offen: "..............x.", swing: 0.03, wechsel: 2, tempo: [170, 176] },
+  // Drum and Bass: der Two-Step (Bassdrum auf eins und auf der Zehn, Snare auf zwei und vier), Geisternoten wie im Amen-Break;
+  // seit 0.1.44 mit mehr Swing und in den zarten Takten als Halftime (Snare nur auf drei: 172 fühlt sich an wie 86, das Tempo von Boom Bap)
+  dnb: { kick: "x.........x.....", snare: "....x.......x...", geist: ".......x.x....x.", hat: "x.x.x.x.x.x.x.x.", offen: "..............x.", swing: 0.08, wechsel: 2, tempo: [170, 176], halb: "........x......." },
 });
 /** Schlagzeug: Bassdrum (Ton mit fallender Höhe), Snare (Ton und Rauschen) oder Klatschen, Becken (Rauschen oder sechs Rechtecke wie die 808) */
 const KITS = Object.freeze({
@@ -218,6 +232,10 @@ const KITS = Object.freeze({
   elektronisch: { kick: { hoch: 120, tief: 44, fall: 0.05, ab: 0.42, klick: 0.15 }, snare: { ton: 210, rauschen: 0.8, ab: 0.16, klatschen: true }, hat: { ab: 0.045, offen: 0.22, metall: false, hell: 0.95, laut: 0.4 }, melodie: "fm", bass: 6 },
   metallisch: { kick: { hoch: 170, tief: 58, fall: 0.025, ab: 0.14, klick: 0.4 }, snare: { ton: 240, rauschen: 0.6, ab: 0.1, klatschen: false }, hat: { ab: 0.07, offen: 0.3, metall: true, hell: 0.8, laut: 0.35 }, melodie: "glocke", bass: 5 },
   weich: { kick: { hoch: 100, tief: 50, fall: 0.04, ab: 0.24, klick: 0 }, snare: { ton: 170, rauschen: 0.5, ab: 0.18, klatschen: false }, hat: { ab: 0.04, offen: 0.14, metall: false, hell: 0.6, laut: 0.25 }, melodie: "sinus", bass: 2 },
+  // Jazz (seit 0.1.44): runde Bassdrum, Besen auf der Snare (Rauschen, das langsam einsetzt), Ride statt Hi-Hat, Bläser als Melodie
+  jazz: { kick: { hoch: 95, tief: 46, fall: 0.035, ab: 0.22, klick: 0.08 }, snare: { ton: 180, rauschen: 0.9, ab: 0.2, klatschen: false, besen: true }, hat: { ab: 0.22, offen: 0.6, metall: true, hell: 0.45, laut: 0.28, ride: true }, melodie: "blaeser", bass: 3 },
+  // Handtrommeln (seit 0.1.44), nach Tabla und Zarb: die tiefe Trommel gleitet nach oben, die hohe klingt als Ton, dazu Fingerschläge
+  hand: { kick: { hoch: 70, tief: 58, fall: 0.12, ab: 0.35, klick: 0.2, gleiten: 1.35 }, snare: { ton: 410, rauschen: 0.2, ab: 0.14, klatschen: false, fell: true }, hat: { ab: 0.025, offen: 0.08, metall: false, hell: 0.7, laut: 0.35 }, melodie: "glocke", bass: 3 },
 });
 
 /** ein Mono-Bus je Stimme; addiert wird mit einer Funktion des Abstands k (in Abtastwerten) vom Anschlag */
@@ -231,7 +249,8 @@ function kick(bus, t, staerke, k) {
   let ph = 0, h = 1, fall = 1, klick = 1;
   const dh = abfall(k.ab), df = abfall(k.fall), dk = abfall(0.0015);
   spiele(bus, t, Math.min(1, k.ab * 5), (i) => {
-    ph += (k.tief + (k.hoch - k.tief) * fall) / RATE;
+    // Handtrommel: die tiefe Trommel gleitet nach dem Anschlag nach oben (der Handballen drückt auf das Fell)
+    ph += ((k.tief + (k.hoch - k.tief) * fall) * (k.gleiten ? 1 + (k.gleiten - 1) * (1 - h) : 1)) / RATE;
     // der Anschlag: ein kurzer, schnell abklingender hoher Ton statt eines harten Sprungs
     const v = staerke * (Math.sin(2 * Math.PI * ph) * h + k.klick * 0.5 * klick * Math.sin((2 * Math.PI * 2800 * i) / RATE));
     h *= dh; fall *= df; klick *= dk;
@@ -249,6 +268,33 @@ function snare(bus, t, staerke, k, rnd) {
       hpY = 0.92 * (hpY + x - hpX); hpX = x; lp += 0.35 * (hpY - lp);
       const stoss = s < 0.03 ? Math.exp(-((s % 0.01) / 0.003)) : Math.exp(-(s - 0.03) / k.ab);
       return staerke * lp * stoss * 1.6;
+    });
+    return;
+  }
+  if (k.besen) {
+    // Besen: weiches Rauschen, das in etwa 12 ms einsetzt und lang ausklingt, ohne Ton
+    let h = 1;
+    const d = abfall(k.ab), an = 0.012 * RATE;
+    spiele(bus, t, laenge, (i) => {
+      const x = rauschen(rnd);
+      hpY = 0.9 * (hpY + x - hpX); hpX = x; lp += 0.3 * (hpY - lp);
+      const v = staerke * 1.3 * lp * Math.min(1, i / an) * h; h *= d;
+      return v;
+    });
+    return;
+  }
+  if (k.fell) {
+    // die hohe Handtrommel: ein klingender Ton mit zwei Obertönen (wie bei der Tabla nahezu harmonisch) und einem kurzen Schlag
+    let h = 1, ph2 = 0, ph3 = 0;
+    const d = abfall(k.ab), dk = abfall(0.004);
+    let schlag = 1;
+    spiele(bus, t, laenge, () => {
+      ph += k.ton / RATE; ph2 += (k.ton * 2.01) / RATE; ph3 += (k.ton * 2.98) / RATE;
+      const x = rauschen(rnd);
+      hpY = 0.85 * (hpY + x - hpX); hpX = x;
+      const v = staerke * (h * (Math.sin(2 * Math.PI * ph) + 0.5 * Math.sin(2 * Math.PI * ph2) + 0.3 * Math.sin(2 * Math.PI * ph3)) * 0.6 + k.rauschen * hpY * schlag);
+      h *= d; schlag *= dk;
+      return v;
     });
     return;
   }
@@ -273,7 +319,8 @@ function hat(bus, t, staerke, k, offen, rnd) {
     if (k.metall) { x = 0; for (let j = 0; j < METALL.length; j++) x += (((ph[j] + (METALL[j] * 1.6 * i) / RATE) % 1) < 0.5 ? 1 : -1) / METALL.length; }
     else x = rauschen(rnd);
     hpY = 0.97 * (hpY + x - hpX); hpX = x; lp += k.hell * (hpY - lp);
-    const v = lp * h; h *= d;
+    // Ride: dazu die Glocke des Beckens, ein heller Ton, der länger klingt als das Rauschen
+    const v = lp * h + (k.ride ? 0.18 * h * Math.sin((2 * Math.PI * 3150 * i) / RATE) : 0); h *= d;
     return v;
   });
 }
@@ -287,6 +334,43 @@ function basston(bus, t, dauer, frequenz, staerke, teiltoene) {
     h *= i < halten ? dh : dl;
     return w;
   });
+}
+
+/** Kontrabass (seit 0.1.44): gezupft, mit kurzem Anschlag, der nach oben schnalzt, Teiltönen, die schneller verklingen als der Grundton, und
+ * darunter ein Sinus auf dem Grundton, der länger trägt (der Sub wie bei Massive Attack und James Blake) */
+function kontrabass(bus, t, dauer, f, staerke) {
+  let ph = 0, h = 1, ho = 1, ab = 1;
+  const halten = Math.round(dauer * RATE), dh = abfall(0.9), dob = abfall(0.18), dab = abfall(0.02), dl = abfall(0.025), an = 0.003 * RATE;
+  spiele(bus, t, dauer + 0.08, (i) => {
+    ph += (f * (1 + 0.02 * ab)) / RATE;
+    const o = Math.sin(4 * Math.PI * ph) / 2.5 + Math.sin(6 * Math.PI * ph) / 5 + Math.sin(8 * Math.PI * ph) / 9;
+    const v = staerke * Math.min(1, i / an) * (h * Math.sin(2 * Math.PI * ph) + ho * o * 0.9);
+    h *= i < halten ? dh : dl; ho *= i < halten ? dob : dl; ab *= dab;
+    return v;
+  });
+}
+/** Bläser (seit 0.1.44), nach Trompete und Saxofon: der Ton setzt mit dem Atem langsam ein, Vibrato kommt spät, ungerade Teiltöne gedämpft */
+function blaeser(bus, x) {
+  let ph = 0, lp = 0;
+  const n = Math.round(x.dauer * RATE), an = 0.06 * RATE, aus = 0.12 * RATE;
+  spiele(bus, x.t, x.dauer, (i) => {
+    const vib = 1 + 0.006 * Math.min(1, i / (0.35 * RATE)) * Math.sin((2 * Math.PI * 5.2 * i) / RATE);
+    ph += (x.frequenz * vib) / RATE;
+    const roh = Math.sin(2 * Math.PI * ph) + 0.45 * Math.sin(4 * Math.PI * ph) + 0.3 * Math.sin(6 * Math.PI * ph) + 0.12 * Math.sin(10 * Math.PI * ph);
+    lp += 0.25 * (roh - lp);
+    return x.staerke * 0.55 * lp * Math.min(1, i / an, Math.max(0, n - i) / aus);
+  });
+}
+/** Echo wie im Dub (seit 0.1.44): punktierte Achtel (drei Sechzehntel), Ping-Pong (die erste Wiederholung links, die zweite rechts …),
+ * jede Wiederholung dunkler und leiser */
+function echo(quelle, L, R, verzoegerung, rueck, anteil) {
+  const d = Math.max(1, Math.round(verzoegerung * RATE)), n = quelle.length, eL = new Float32Array(n), eR = new Float32Array(n);
+  let lpL = 0, lpR = 0;
+  for (let i = d; i < n; i++) {
+    lpL += 0.35 * (quelle[i - d] + rueck * eR[i - d] - lpL); eL[i] = lpL;
+    lpR += 0.35 * (rueck * eL[i - d] - lpR); eR[i] = lpR;
+    L[i] += anteil * eL[i]; R[i] += anteil * eR[i];
+  }
 }
 
 // Sägezahn aus 16 Teiltönen als Tabelle (bandbegrenzt, schnell): für den Reese-Bass und die Flächen
@@ -361,7 +445,7 @@ export function beatRechnen({ messung, plan, dauer, grundton, kammerton = 432, n
   if (plan.groove === "euklidisch") {
     const k = 3 + Math.round(fein * 4), kickM = euklid(k, 16), snareM = euklid(2, 16, 4).map((x, i) => x && !kickM[i]);
     G = { kick: kickM, snare: snareM, geist: euklid(3, 16, 2).map((x, i) => x && !kickM[i] && !snareM[i]), hat: euklid(9 + Math.round(fein * 4), 16), offen: euklid(1, 16, 14), swing: 0 };
-  } else G = { ...g, kick: muster(g.kick), snare: muster(g.snare), geist: muster(g.geist), hat: muster(g.hat), offen: muster(g.offen) };
+  } else G = { ...g, kick: muster(g.kick), snare: muster(g.snare), geist: muster(g.geist), hat: muster(g.hat), offen: muster(g.offen), halb: g.halb ? muster(g.halb) : null };
   const zeit = (takt, s) => (takt * 16 + s) * schritt + (s % 4 === 2 ? G.swing * 2 * schritt : s % 2 === 1 ? G.swing * schritt : 0);
   const kicks = [];
   const grund = (kammerton / 8) * 2 ** ((((grundton - 9) % 12) + 12) % 12 / 12), basis = grund > kammerton * 0.1875 ? grund / 2 : grund;
@@ -372,12 +456,14 @@ export function beatRechnen({ messung, plan, dauer, grundton, kammerton = 432, n
     const e = energie[takt], a = abschnitte[abschnittVon(takt)], letzter = takt === takte - 1 || abschnittVon(takt + 1) !== abschnittVon(takt);
     const dichte = Math.min(1, Math.max(0, (a.feinheit - 0.02) / 0.08)), zart = wechselnd && !wild[takt];
     const fill = (letzter || (wild[takt] && !wild[takt + 1] && takt < takte - 1)) && e >= 0.7 && takte > 1 && !zart;
+    // Drum and Bass: ausser in den wilden Takten als Halftime (seit 0.1.44)
+    const halb = G.halb && !wild[takt] ? G.halb : null;
     for (let s = 0; s < 16; s++) {
       const t = zeit(takt, s), mensch = 0.9 + 0.2 * rnd();
       if (t >= dauer) continue;   // der letzte Takt kann kürzer sein
       const extraKick = wild[takt] && !G.kick[s] && (s === 7 || s === 13) && rnd() < 0.35;
       if (e >= 0.3 && (G.kick[s] || extraKick) && !(fill && s >= 12)) { kick(bus.kick, t, mensch * (s % 4 === 0 ? 1 : 0.85) * (zart ? 0.8 : 1), kit.kick); kicks.push(t); partitur.push({ t, stimme: "bassdrum", staerke: 1, schritt: takt * 16 + s }); }
-      if (e >= 0.55 && G.snare[s] && !(fill && s >= 12)) { snare(bus.snare, t, mensch * (zart ? 0.55 : 0.9), kit.snare, rnd); partitur.push({ t, stimme: "snare", staerke: 0.8, schritt: takt * 16 + s }); }
+      if (e >= 0.55 && (halb ? halb[s] : G.snare[s]) && !(fill && s >= 12)) { snare(bus.snare, t, mensch * (zart ? 0.55 : 0.9), kit.snare, rnd); partitur.push({ t, stimme: "snare", staerke: 0.8, schritt: takt * 16 + s }); }
       // wild: am Taktende zwei Zweiunddreissigstel auf der Snare (Stottern)
       if (wild[takt] && s === 15 && !fill && rnd() < 0.5) for (const d of [0, schritt / 2]) { snare(bus.snare, t + d, 0.45 * mensch, kit.snare, rnd); partitur.push({ t: t + d, stimme: "snare", staerke: 0.4, schritt: takt * 16 + s }); }
       if (e >= 0.75 && G.geist[s] && rnd() < (wild[takt] ? 0.95 : 0.8)) { snare(bus.snare, t, 0.25 * mensch, kit.snare, rnd); partitur.push({ t, stimme: "snare", staerke: 0.25, schritt: takt * 16 + s }); }
@@ -403,6 +489,17 @@ export function beatRechnen({ messung, plan, dauer, grundton, kammerton = 432, n
         const ks = [...Array(16).keys()].filter((x) => G.kick[x]);
         if (!ks.length || ks[0] !== 0) ks.unshift(0);
         ks.forEach((s0, j) => reese(bus.bass, zeit(takt, s0), ((ks[j + 1] ?? 16) - s0) * schritt * 0.97, hoehe(r + (j === ks.length - 1 && wild[takt] && rnd() < 0.4 ? 4 : 0)), 0.8));
+      } else if (plan.bass === "kontrabass") {
+        // gezupft: im Drum and Bass auf den Bassdrums (dazu ein später Nachschlag), sonst Viertel, die zum Grundton des nächsten Akkords
+        // gehen; der letzte Ton davor ist ein Halbton darunter (Annäherung wie im Jazz)
+        const naechster = akkord(takt + 1), ziel = (q) => (q === 3 ? stufeHalbton(leiter, naechster) - 1 : stufeHalbton(leiter, r + [0, 2, 4][q]));
+        const hz = (halbtoene) => basis * 2 ** (halbtoene / 12);
+        if (plan.groove === "dnb") {
+          const ks = [...Array(16).keys()].filter((x) => G.kick[x]);
+          if (!ks.length || ks[0] !== 0) ks.unshift(0);
+          ks.forEach((s0, j) => kontrabass(bus.bass, zeit(takt, s0), ((ks[j + 1] ?? 16) - s0) * schritt * 0.9, hz(stufeHalbton(leiter, r + (j ? 4 : 0))), 0.9));
+          if (rnd() < 0.6) kontrabass(bus.bass, zeit(takt, 15), schritt * 0.9, hz(ziel(3)), 0.55);
+        } else for (let q = 0; q < 4; q++) kontrabass(bus.bass, zeit(takt, q * 4), schritt * 3.6, hz(ziel(q)), q === 0 ? 0.9 : 0.75);
       } else { const weg = [0, 2, 4, 2]; for (let q = 0; q < 4; q++) basston(bus.bass, zeit(takt, q * 4), schritt * 3.4, hoehe(r + weg[q] + (q === 3 && rnd() < 0.5 ? 1 : 0)), 0.8, kit.bass); }
     }
     if (plan.melodie === "keine" || e < 0.62) continue;
@@ -422,7 +519,8 @@ export function beatRechnen({ messung, plan, dauer, grundton, kammerton = 432, n
         const u = p.x * (ende - anfang) - (takt - anfang);
         if (u < 0 || u >= 1) continue;
         const s = Math.round(u * 15), k = r + [0, 2, 4][Math.round((1 - p.y) * 2)] + 7 * (p.y < 0.33 ? 1 : 0);
-        toene.push({ t: zeit(takt, s), frequenz: hoehe(k, 2), staerke: 0.2 + 0.4 * p.v, dauer: 1.2, glocke: true });
+        // im Jazz-Schlagzeug lange Töne von Bläsern statt Glocken, eine Oktave tiefer
+        toene.push(kit.melodie === "blaeser" ? { t: zeit(takt, s), frequenz: hoehe(k, 1), staerke: 0.25 + 0.4 * p.v, dauer: 8 * schritt } : { t: zeit(takt, s), frequenz: hoehe(k, 2), staerke: 0.2 + 0.4 * p.v, dauer: 1.2, glocke: true });
         if (toene.filter((x) => x.t >= zeit(takt, 0)).length >= 3) break;
       }
     }
@@ -448,11 +546,13 @@ export function beatRechnen({ messung, plan, dauer, grundton, kammerton = 432, n
   const pan = Math.max(-0.6, Math.min(0.6, werte.schwerpunktX * 2));
   const melodie = nachhall(bus.melodie, RATE, Math.min(0.9, hall * 1.6)), sn = nachhall(bus.snare, RATE, hall * 0.6);
   const L = new Float32Array(n), R = new Float32Array(n);
+  // Echo wie im Dub auf Snare und Melodie, so stark wie der Nachhall
+  if (hall > 0) { const quelle = new Float32Array(n); for (let i = 0; i < n; i++) quelle[i] = bus.snare[i] * 0.3 + bus.melodie[i] * 0.35; echo(quelle, L, R, 3 * schritt, 0.45, Math.min(0.9, hall * 1.6)); }
   const gl = (p) => Math.cos(((p + 1) * Math.PI) / 4), gr = (p) => Math.sin(((p + 1) * Math.PI) / 4);
   for (let i = 0; i < n; i++) {
     const mitte = bus.kick[i] * 0.6 + sn[i] * 0.45 + bus.bass[i] * 0.35;
-    L[i] = mitte + bus.hat[i] * 0.8 * gl(-pan * 0.5) + melodie[i] * 0.4 * gl(pan) + raumL[i] * 0.5;
-    R[i] = mitte + bus.hat[i] * 0.8 * gr(-pan * 0.5) + melodie[i] * 0.4 * gr(pan) + raumR[i] * 0.5;
+    L[i] += mitte + bus.hat[i] * 0.8 * gl(-pan * 0.5) + melodie[i] * 0.4 * gl(pan) + raumL[i] * 0.5;
+    R[i] += mitte + bus.hat[i] * 0.8 * gr(-pan * 0.5) + melodie[i] * 0.4 * gr(pan) + raumR[i] * 0.5;
   }
   // sanft sättigen, auf −1 dBFS bringen, Anfang und Ende 5 ms einblenden
   for (const x of [L, R]) for (let i = 0; i < n; i++) x[i] = Math.tanh(x[i]);
@@ -465,5 +565,6 @@ export function beatRechnen({ messung, plan, dauer, grundton, kammerton = 432, n
   };
 }
 function melodieTon(bus, x, kit) {
+  if (kit.melodie === "blaeser" && !x.glocke) { blaeser(bus, x); return; }
   ton(bus, RATE, { t: x.t, frequenz: x.frequenz, staerke: x.staerke }, { farbe: x.glocke ? "glocke" : kit.melodie, anschlag: 0.004, abklingen: x.glocke ? 0.5 : Math.max(0.08, x.dauer * 0.8) });
 }

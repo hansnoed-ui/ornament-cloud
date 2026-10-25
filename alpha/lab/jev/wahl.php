@@ -162,7 +162,7 @@ const BEAT_MERKMALE = [
 ];
 const BEAT_FRAGEN = [
   'tempo' => ['Welches Tempo passt?', [
-    'langsam' => 'langsam, etwa 75 Schläge je Minute', 'mittel' => 'mittel, etwa 100 Schläge je Minute', 'schnell' => 'schnell, etwa 125 Schläge je Minute', 'rasend' => 'rasend, etwa 160 Schläge je Minute']],
+    'langsam' => 'langsam, etwa 75 Schläge je Minute', 'mittel' => 'mittel, etwa 90 Schläge je Minute', 'schnell' => 'schnell, etwa 125 Schläge je Minute', 'rasend' => 'rasend, etwa 160 Schläge je Minute']],
   'groove' => ['Welcher Groove passt?', [
     'gerade' => 'gerade: Bassdrum auf jedem Viertel, Snare auf zwei und vier',
     'halftime' => 'Halftime: Bassdrum am Anfang, Snare nur auf drei, schwer und breit',
@@ -172,13 +172,16 @@ const BEAT_FRAGEN = [
     'dnb' => 'Drum and Bass: 170 bis 176 Schläge je Minute, Bassdrum auf eins und kurz vor drei, Snare auf zwei und vier, dazwischen gebrochene Schläge']],
   'kit' => ['Welche Klänge soll das Schlagzeug haben?', [
     'trocken' => 'trocken: kurze, akustisch wirkende Trommeln', 'elektronisch' => 'elektronisch: lange, tiefe Bassdrum und Klatschen wie bei einer Drum-Machine',
-    'metallisch' => 'metallisch: klirrende Becken und glockenartige Töne', 'weich' => 'weich: gedämpfte, runde Schläge ohne Härte']],
+    'metallisch' => 'metallisch: klirrende Becken und glockenartige Töne', 'weich' => 'weich: gedämpfte, runde Schläge ohne Härte',
+    'jazz' => 'Jazz: Besen auf der Snare, Ride-Becken, runde Bassdrum, Bläser als Melodie', 'hand' => 'Handtrommeln: wie Tabla und Zarb, die tiefe Trommel gleitet, die hohe klingt als Ton']],
   'tonart' => ['Welche Tonart soll der Beat haben?', [
     'dur' => 'Dur: hell und offen', 'moll' => 'Moll: dunkel und ernst', 'dorisch' => 'dorisch: Moll mit einem hellen Ton, schwebend',
-    'phrygisch' => 'phrygisch: dunkel und fremd, mit kleiner Sekunde', 'pentatonik' => 'pentatonisch: fünf Töne ohne Halbtöne, nichts reibt']],
+    'phrygisch' => 'phrygisch: dunkel und fremd, mit kleiner Sekunde', 'pentatonik' => 'pentatonisch: fünf Töne ohne Halbtöne, nichts reibt',
+    'hijaz' => 'Hijaz: kleine Sekunde und grosse Terz, wie im Orient und bei Anouar Brahem']],
   'bass' => ['Was soll der Bass tun?', [
     'keiner' => 'kein Bass', 'liegend' => 'liegend: lange Töne, je Takt einer', 'pulsierend' => 'pulsierend: Achtel auf dem Grundton, mit Oktavsprüngen', 'laufend' => 'laufend: der Bass geht in Schritten durch die Tonleiter',
-    'reese' => 'Reese: tiefer, schwebender Bass aus zwei gegeneinander verstimmten Sägezähnen, wie im Drum and Bass']],
+    'reese' => 'Reese: tiefer, schwebender Bass aus zwei gegeneinander verstimmten Sägezähnen, wie im Drum and Bass',
+    'kontrabass' => 'Kontrabass: gezupft, in Vierteln zum nächsten Akkord, darunter ein tiefer Sinus']],
   'melodie' => ['Welche Melodie soll über dem Beat liegen?', [
     'keine' => 'keine Melodie', 'bild' => 'aus dem Bild gelesen: die hellste Stelle jeder Spalte gibt den Ton, von links nach rechts',
     'arpeggio' => 'Arpeggio: die Töne des Akkords auf und ab', 'glocken' => 'Glocken: wenige Töne auf den hellsten Punkten des Bildes']],
