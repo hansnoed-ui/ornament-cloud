@@ -248,7 +248,13 @@ function zusammenstellungAnsicht(v) {
     el("div", { class: "stellen film" },
       el("label", { class: "regler schalter stelle" }, el("input", { type: "checkbox", id: "zusammenstellung-lebendig", checked: pl.lebendig !== false && gpuDa(), disabled: !gpuDa(), onchange: (ev) => { pl.lebendig = ev.target.checked; } }),
         gpuDa() ? "lebendige Effekte" : "lebendige Effekte (dieser Browser hat kein WebGL 2: Standbilder mit Kamera)"),
-      regler({ id: "zusammenstellung-bewegung", name: "Bewegung (Kamera über jedem Bild, 0 = ruhig)", art: "zahl", min: 0, max: 1, schritt: 0.05 }, pl.bewegung ?? ZS.BEWEGUNG, (v) => { pl.bewegung = v; })),
+      regler({ id: "zusammenstellung-bewegung", name: "Bewegung (Kamera über jedem Bild, 0 = ruhig)", art: "zahl", min: 0, max: 1, schritt: 0.05 }, pl.bewegung ?? ZS.BEWEGUNG, (v) => { pl.bewegung = v; }),
+      // das Format (0.1.37): das Material wird zuerst eingepasst, Abschnitte, Karten, Signatur und Film entstehen darin
+      el("label", { class: "regler stelle" }, el("span", { text: "Format" }),
+        el("select", { id: "zusammenstellung-format", onchange: (ev) => { pl.format = ev.target.value; zeigeVorschlag30(); } },
+          el("option", { value: "material", selected: !pl.format || pl.format === "material", text: "wie das Material" }),
+          ...Object.entries(ZS.FORMATE).map(([k, f]) => el("option", { value: k, selected: pl.format === k, text: f.name }))))),
+    pl.format && pl.format !== "material" ? el("small", { class: "hinweis", id: "zusammenstellung-format-hinweis", text: `Format ${ZS.FORMATE[pl.format]?.name ?? pl.format}: das Material wird mittig in das Seitenverhältnis eingepasst (Ausschnitt, kein Rand, keine Verzerrung), Abschnitte, Karten und Signatur entstehen darin; längste Seite des Films ${S.film.seite} px.` }) : null,
     el("small", { class: "hinweis", text: `Alle Effekte der Zusammenstellung sind lebendig: ${LEBENDIG.map(opName).join(", ")} rechnet die Grafikkarte in jedem der 900 Bilder neu, die Lautstärke moduliert Bild für Bild; das Gewebe von PHORMA III läuft auf seiner eigenen Bühne im Takt des Klangs weiter, die von PHORMA I und II und der Zerfall (The Fictory) ab dem Auftritt ihrer Stationen. Dieselben Schalter stehen danach unter «Nacheinander».` }),
     video ? el("small", { class: "hinweis", text: `Aus dem Video: jeder Abschnitt nimmt das Standbild seiner Zeit (${v.messung.videoBilder.length} Standbilder), so folgt der Film dem Video. Der Aufbau gilt darum nicht.` }) : null,
     el("small", { class: "hinweis", id: "zusammenstellung-plan", text: `${video ? "Abschnitte nach dem Video" : kurzname(AUFBAU[pl.aufbau])}, ${FILM_UEBERGAENGE[pl.uebergang]}. Klang: ${pl.klang.map((k) => kurzname(KLANG_EFFEKTE[k])).join(" → ")}. Bild: ${aktiv.length ? aktiv.map((a) => `${kurzname(BILD_EFFEKTE[a.b])} ${zahl(a.dauer)} s`).join(" → ") : "kein Abschnitt an"}${aus ? ` (${aus} von ${pl.bild.length} aus)` : ""}; ${zahl(haupt)} s Animation, ${aktiv.map((a) => ZS.variantenFuer(a.dauer)).reduce((x, y) => x + y, 0)} Varianten (zwei je Sekunde). ${pl.uebergang === "film.schnitt" ? "Im Takt der Anschläge bekommt ein längerer Abschnitt mehr Stationen; ohne Takt hält jede Station so lange, dass der Abschnitt seine Dauer hat." : "Ohne Takt hält jede Station so lange, dass der Abschnitt seine Dauer hat; im Takt der Anschläge bekommt ein längerer Abschnitt mehr Stationen."}` }),
@@ -277,7 +283,7 @@ function bestandStelle(pl, feld, name, wahlName, ziehenText, optionen) {
 }
 function neueZusammenstellung(antworten, jev, alt = null) {
   // neu gezogen wird, was jev oder der Zufall wählt; Bestände und Filmeinstellungen bleiben, wie der Mensch sie geschaltet hat
-  return { antworten, jev, plan: { ...ZS.zusammenstellen(antworten, neuerStartwert()), zettel: alt?.zettel ?? null, orna: alt?.orna ?? null, lebendig: alt?.lebendig ?? true, bewegung: alt?.bewegung ?? ZS.BEWEGUNG, signatur: alt?.signatur ?? true, abschnitte: alt?.abschnitte ?? ZS.standardAbschnitte() }, geaendert: new Set() };
+  return { antworten, jev, plan: { ...ZS.zusammenstellen(antworten, neuerStartwert()), zettel: alt?.zettel ?? null, orna: alt?.orna ?? null, lebendig: alt?.lebendig ?? true, bewegung: alt?.bewegung ?? ZS.BEWEGUNG, signatur: alt?.signatur ?? true, format: alt?.format ?? "material", abschnitte: alt?.abschnitte ?? ZS.standardAbschnitte() }, geaendert: new Set() };
 }
 async function zusammenstellungRechnen() {
   const v = S.vorschlag, z = v.zusammen;

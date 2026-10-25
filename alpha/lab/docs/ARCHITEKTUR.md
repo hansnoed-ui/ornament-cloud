@@ -34,7 +34,7 @@ Die zentrale Einheit ist die **Operation**, nicht die App. Vorhandene Anwendunge
 | `kern/stationen.js` | Animation über Stationen: Partitur (Reihenfolge, Halten, Übergänge, Modulation der Zeit, Takt aus Ereignisfolgen) und die Bilder des Films (docs/STATIONEN.md) | nein |
 | `kern/archiv.js` | ZIP schreiben (ZIP-Schreiber der Fictory) und lesen, mit Prüfsummen und Pfadprüfung | nein |
 | `kern/bilddaten.js` | reine Bildhilfen in ImageData-Form, Abtastung, Farbmatrix, SHA-256 | nein |
-| `operationen/*.js` | die Operationen; `index.js` trägt sie ins Register ein | nur `fictory.js` und `karte.js` (Leinwand; `verfuegbar()` sagt es) |
+| `operationen/*.js` | die Operationen (`format.js` seit 0.1.37: der Ausschnitt im Seitenverhältnis, Schritt 0 der Zusammenstellung); `index.js` trägt sie ins Register ein | nur `fictory.js` und `karte.js` (Leinwand; `verfuegbar()` sagt es) |
 | `medien/browser.js` | PNG-Kodierung, Import mit Typ-, Grössen- und Ausrichtungsprüfung, Objekt-URLs; Tondateien unverändert ablegen und mit Web Audio dekodieren (einkanalig, 44,1 kHz) | ja |
 | `medien/mp4ton.js` | Tonspur aus MP4/MOV/M4A: Kästen lesen (ohne Browser geprüft) und mit WebCodecs dekodieren, der zweite Leseweg, wenn Web Audio den Ton nicht liest (AAC auf Android) | Dekoder: ja, Lesen: nein |
 | `medien/video.js` | MP4 über WebCodecs und mp4-muxer (vendor/), seit 0.1.4 mit Tonspur, Rückfall WebM über MediaRecorder | ja |

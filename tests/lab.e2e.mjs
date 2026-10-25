@@ -46,9 +46,9 @@ async function ausfuehren(page) { await page.click("#ausfuehren"); await page.wa
 const { ctx, page, fehler, fremd } = await oeffne();
 let gespeichert = null;
 
-await check("Start: vier Bereiche, Register mit 39 Operationen, keine Fehler", async () => {
+await check("Start: vier Bereiche, Register mit 40 Operationen, keine Fehler", async () => {
   for (const id of ["material", "operationen", "experiment", "protokoll"]) assert.ok(await page.locator(`#${id}`).isVisible(), id);
-  assert.match(await page.textContent("#status"), /39 Operationen/);
+  assert.match(await page.textContent("#status"), /40 Operationen/);
   assert.deepEqual(fehler, []);
 });
 
@@ -621,7 +621,7 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   assert.deepEqual(Object.keys(ko), ["frage", "merkmale"]);
   assert.ok(Object.values(dr.merkmale).every((v) => /^[a-z]+$/.test(v)), "nur Stufen");
   assert.match(await p.textContent("#vorschlag30 .zusammenstellung legend"), /jev stellt zusammen \(jev-test\)/);
-  const stellen = await p.$$eval("#vorschlag30 .stellen select", (l) => l.map((x) => [x.dataset.frage, x.value]));
+  const stellen = await p.$$eval("#vorschlag30 .stellen select[data-frage]", (l) => l.map((x) => [x.dataset.frage, x.value]));
   assert.equal(stellen.length, 10);
   const bilder = stellen.filter(([k]) => k.startsWith("bild")).map(([, w]) => w);
   assert.ok(bilder.every((b, i) => i === 0 || b !== bilder[i - 1]), `kein Effekt zweimal hintereinander: ${bilder}`);
@@ -667,6 +667,11 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   // die Karten (bis 0.1.25): ohne Signatur; mit Signatur prüft «Signatur (0.1.26)» weiter unten
   assert.equal(await p.locator("#zusammenstellung-signatur").isChecked(), true, "Signatur vorgewählt");
   await p.locator("#zusammenstellung-signatur").uncheck();
+  // das Format (0.1.37): Standard «wie das Material»; 9:16 gewählt wird das Material zuerst eingepasst, der Film und die Karten sind hochkant
+  assert.equal(await p.locator("#zusammenstellung-format").inputValue(), "material");
+  assert.equal(await p.locator("#zusammenstellung-format-hinweis").count(), 0);
+  await p.locator("#zusammenstellung-format").selectOption("9:16");
+  assert.match(await p.textContent("#zusammenstellung-format-hinweis"), /9:16 hoch .*mittig .*eingepasst/);
   await p.click("#zusammenstellung-rechnen");
   await p.waitForTimeout(50);
   await warteFertig(p, 420000);
@@ -696,7 +701,8 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   assert.equal(z.x.partitur.folge[0].einmal, true); assert.equal(z.x.partitur.folge[0].halten, 3.5, "die Zettelkarte 3,5 s (seit 0.1.34)"); assert.equal(z.x.partitur.folge.at(-1).halten, 3.5, "die ORNA-Karte 3,5 s"); assert.equal(z.x.partitur.folge.at(-1).einmal, true);
   assert.equal(z.x.partitur.folge[0].ergebnis, z.x.stationen[0]); assert.equal(z.x.partitur.folge.at(-1).ergebnis, z.x.stationen.at(-1));
   assert.ok(z.x.partitur.lebendig, "die Zusammenstellung ist lebendig");
-  assert.equal(z.x.partitur.bewegung.staerke, 0.6, "die Kamera wie in der Zusammenstellung eingestellt"); assert.deepEqual(z.d.details.film, { lebendig: true, bewegung: 0.6, signatur: "aus" });
+  assert.equal(z.x.partitur.bewegung.staerke, 0.6, "die Kamera wie in der Zusammenstellung eingestellt"); assert.deepEqual(z.d.details.film, { lebendig: true, bewegung: 0.6, signatur: "aus", format: "9:16" });
+  assert.ok(Math.abs(z.x.breite / z.x.hoehe - 9 / 16) < 0.02, `der Film ist 9:16: ${z.x.breite} × ${z.x.hoehe}`); assert.equal(z.x.breite % 2, 0); assert.equal(z.d.gewaehlt.format, "9:16");
   assert.ok(z.x.zeitplan.some((y) => y.lebendig), `die Grafikkarte rechnet Stationen in jedem Bild neu: ${JSON.stringify(z.x.zeitplan.slice(0, 3))}`);
   assert.deepEqual(fehler2, []);
   await c.close();
