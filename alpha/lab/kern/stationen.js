@@ -345,12 +345,15 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
         soll += ue.dauer;
       }
     } else if (ue.art !== "schnitt") {
-      const b = await bild(ziel), hell = ue.art === "schwelle" ? helligkeit(b) : null;
+      // Schwelle: die Maske ist die Helligkeit im Ziel. Bei einer lebendigen Station ist das Ziel das laufende Bild, nicht ihr Standbild (seit 0.1.35):
+      // das Standbild des Outros der Signatur zeigt das Rad von ORNA mit der Konstellation, und als Maske liess es das Rad schon über den Kacheln erscheinen
+      const b = await bild(ziel), zielLebendig = Boolean(await lage(ziel)), hell = ue.art === "schwelle" && !zielLebendig ? helligkeit(b) : null;
       const m = Math.round((soll + ue.dauer) * fps) - n;
       for (let i = 1; i <= m; i++) {
         abbrechen?.throwIfAborted?.();
         const a1 = (await lebend(j, x.ergebnis, 1)) ?? a, b1 = (await lebend(j + 1, ziel, 0)) ?? b;
-        yield hell ? schwelle(a1, b1, hell, i / (m + 1)) : blende(a1, b1, i / (m + 1)); n++;
+        const maske = ue.art === "schwelle" ? hell ?? helligkeit(b1) : null;
+        yield maske ? schwelle(a1, b1, maske, i / (m + 1)) : blende(a1, b1, i / (m + 1)); n++;
       }
       soll += ue.dauer;
     }
