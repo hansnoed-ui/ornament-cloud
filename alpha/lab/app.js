@@ -9,7 +9,7 @@ import { gpuEffekte, LEBENDIG } from "./medien/gpu.js";
 import * as P from "./kern/projekt.js";
 import { fuehreAus, tonAngaben, bildfolge, regelVorschlaege, experiment, ketteAnwenden, neuerStartwert } from "./kern/ausfuehrung.js";
 import * as ST from "./kern/stationen.js";
-import { packe, entpacke, ENDUNG } from "./kern/archiv.js";
+import { packeBlob, entpacke, ENDUNG, HOECHSTENS } from "./kern/archiv.js";
 import { QUELLEN, POLARITAETEN } from "./kern/modulation.js";
 import { KLASSEN, standardParameter } from "./kern/register.js";
 import { STROPHEN_WAHL } from "./operationen/zettel.js";
@@ -82,7 +82,9 @@ const gpuDa = () => Boolean(gpu());
 function herunterladen(blob, name) {
   const a = el("a", { href: URL.createObjectURL(blob), download: name });
   document.body.append(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  // die Adresse bleibt zwei Minuten (bis Lab 0.1.37 nur 5 s): Chrome auf Android kann vor dem Herunterladen nachfragen, und eine
+  // grosse Datei liest es erst danach
+  setTimeout(() => URL.revokeObjectURL(a.href), 120000);
 }
 let letzterStatus = ["", null, false];
 function status(text = letzterStatus[0], anteil = null, fehler = false) {
@@ -1187,12 +1189,23 @@ async function ketteStarten(c) {
 }
 
 // ---------- Projekt speichern und öffnen ----------
-function speichern() {
+async function speichern() {
+  if (S.laeuft) return status("Speichern geht, sobald die laufende Rechnung fertig ist (oder abgebrochen).", null, true);
   S.projekt.titel = $("titel").value.trim() || "Ohne Titel";
-  const bytes = packe(S.projekt, S.medien.dateien);
-  herunterladen(new Blob([bytes], { type: "application/zip" }), `${slug(S.projekt.titel)}${ENDUNG}`);
-  S.ungespeichert = false;
-  status(`Gespeichert: ${slug(S.projekt.titel)}${ENDUNG} (${(bytes.length / 1e6).toFixed(1)} MB, ${S.medien.dateien.size} Mediendateien).`);
+  const name = `${slug(S.projekt.titel)}${ENDUNG}`, knopf = $("speichern");
+  knopf.disabled = true;
+  try {
+    status("Projekt wird gepackt …", 0);
+    const blob = await packeBlob(S.projekt, S.medien.dateien, { melden: (a) => status("Projekt wird gepackt …", a) });
+    herunterladen(blob, name);
+    S.ungespeichert = false;
+    const gross = blob.size > HOECHSTENS ? ` Achtung: grösser als ${HOECHSTENS / 1024 / 1024} MB, das Lab öffnet es so nicht wieder.` : "";
+    status(`Gespeichert: ${name} (${(blob.size / 1e6).toFixed(1)} MB, ${S.medien.dateien.size} Mediendateien).${gross}`, null, Boolean(gross));
+  } catch (f) {
+    // bis Lab 0.1.37 blieb ein Fehler hier still: der Knopf tat einfach nichts
+    console.error("Projekt speichern:", f);
+    status(`Das Projekt liess sich nicht speichern: ${f?.message || f?.name || f}`, null, true);
+  } finally { knopf.disabled = false; }
 }
 async function oeffnen(datei) {
   status(`${datei.name} wird geöffnet …`);
