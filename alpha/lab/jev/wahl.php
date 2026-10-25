@@ -47,6 +47,7 @@ const KATALOG = [
   'lab.fluss' => 'Fliessfeld: feine Striche folgen den Kanten des Bildes, einem Rauschen oder einem Wirbel und verdichten sich im Dunkeln (räumliche Operation)',
   'lab.punktieren' => 'Punktieren: das Dunkel wird zur Dichte gewürfelter Punkte, wahlweise Voronoi-Zellen oder ein Mosaik in Bildfarben (räumliche Operation)',
   'lab.teilung' => 'Teilung: das Bild wird geviertelt, wo es dunkel oder bewegt ist, zu Rahmen, Mosaik, Truchet-Bögen oder Quadraten (räumliche Operation)',
+  'lab.format' => 'Format: das Bild wird als Ausschnitt in ein Seitenverhältnis eingepasst, 9:16, 4:5, 1:1 oder 16:9, ohne Rand und ohne Verzerrung (räumliche Operation)',
   'phorma.gewebe' => 'PHORMA Gewebe: die Umrisse des Bildes werden zu Flächen aus feinen Linien, die ein Ton bewegt (zeitliche Operation, eigene Bühne)',
   'phorma.irrfahrt' => 'PHORMA Irrfahrt: ein Faden irrt durch einen Würfel aus Licht und quillt mit der Musik zu Rauch auf (zeitliche Operation, eigene Bühne)',
   'phorma.lichtwuerfel' => 'PHORMA Lichtwürfel: ein Faden irrt in einem festen Würfel aus Licht (zeitliche Operation, eigene Bühne)',

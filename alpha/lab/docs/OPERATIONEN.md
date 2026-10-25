@@ -31,6 +31,7 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.fluss` 0.1.0 | Fliessfeld | Räumliche Operation | neu, nach Prinzip des Plotter-Umwandlers Flow Field in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Line Integral Convolution (Cabral und Leedom 1993) | Bild → Bild | über Modulation |
 | `lab.punktieren` 0.1.0 | Punktieren | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler Voronoi Stippling und Voronoi in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Secord 2002; Punktiermanier | Bild → Bild | über Modulation |
 | `lab.teilung` 0.1.0 | Teilung | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler QuadTree, Truchet from Image und Boxxy in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Truchet-Kacheln (Sébastien Truchet 1704, Bögen nach Cyril Stanley Smith 1987) | Bild → Bild | über Modulation |
+| `lab.format` 0.1.0 | Format: Ausschnitt im Seitenverhältnis | Räumliche Operation | neu, nach die Seitenverhältnisse der Kanäle (9:16 Reels und Stories, 4:5 und 1:1 Instagram, 16:9 Video); Ausschnitt wie object-fit: cover | Bild → Bild | über Modulation |
 | `zettel.strophe` 0.1.0 | Zettel aus dem Zettelkasten | Selektionsoperation | Adapter: Zettelkasten (Zu seiner Zeit, 49 Strophen in sieben Zyklen) | – → Befund | eine |
 | `lab.karte` 0.2.0 | Textkarte | Räumliche Operation | neu, nach Titel- und Zwischentitelkarten des Films; Gestaltung des Neubaus der Website (Instrument Sans, Newsreader, Papier und Tinte, die Blaupause; die Zettelkarten aus tools/b-kacheln.mjs) | Bild (opt.) + Befund (opt.) + Konstellation (opt.) → Bild | eine |
 | `phorma.gewebe` 0.1.0 | PHORMA: Gewebe | Zeitliche Operation | Adapter: PHORMA III | Bild + Audiosignal (opt.) → Bild | erzeugt selbst mehrere |
@@ -652,6 +653,20 @@ Das Bild wird wie ein Quadtree geviertelt, wo es dunkel oder bewegt ist, und ble
 | Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
 | Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Format: Ausschnitt im Seitenverhältnis (`lab.format`)
+
+Passt das Bild in ein Seitenverhältnis ein: ein Ausschnitt ohne Rand und ohne Skalierung, mittig oder zur Seite geschoben, mit geraden Massen. Als erster Schritt einer Zusammenstellung gibt es dem ganzen Film sein Format; Karten und Signatur entstehen darin.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/format.js; Prinzip nach die Seitenverhältnisse der Kanäle (9:16 Reels und Stories, 4:5 und 1:1 Instagram, 16:9 Video); Ausschnitt wie object-fit: cover
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** sofort (Kopie des Ausschnitts); Speicher: ein Bild
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Format (`format`) | **9:16 hoch (Reels, Stories)** / 4:5 hoch (Instagram) / 1:1 quadratisch / 16:9 quer (Video) |
+| Lage des Ausschnitts (0 = links oder oben, 1 = rechts oder unten) (`lage`) | 0 … 1, Standard 0.5 |
 
 ## Zettel aus dem Zettelkasten (`zettel.strophe`)
 

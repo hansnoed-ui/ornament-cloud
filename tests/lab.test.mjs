@@ -1279,7 +1279,7 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   assert.ok(p.entscheidungen.filter((d) => d.details?.entscheidung === x.entscheidung.id).length >= 9, "jeder Schritt verweist auf die Zusammenstellung");
   assert.equal(x.plan.stationen.length, 61); assert.equal(x.plan.tonspur, x.klang); assert.equal(x.plan.tonBeginn, 0);
   assert.deepEqual(x.plan.bewegung, { staerke: Z.BEWEGUNG, signal: x.signal }, "die Kamera atmet mit dem neuen Klang");
-  assert.equal(x.plan.lebendig, true); assert.deepEqual(x.entscheidung.details.film, { lebendig: true, bewegung: Z.BEWEGUNG, signatur: "nicht verfügbar" });
+  assert.equal(x.plan.lebendig, true); assert.deepEqual(x.entscheidung.details.film, { lebendig: true, bewegung: Z.BEWEGUNG, signatur: "nicht verfügbar", format: "material" });
   assert.equal(Z.zusammenstellen(Z.gleichverteilt(), 1).lebendig, true); assert.equal(Z.zusammenstellen(Z.gleichverteilt(), 1).bewegung, Z.BEWEGUNG);
   const pt = ST.partitur(p, { ...x.plan, fps: 30 });
   assert.ok(pt.dauer > 3 && pt.dauer <= 30, `${pt.dauer}`);
@@ -1294,7 +1294,7 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   assert.ok(letzte.every((k) => k.eingaben.bild === e.id), "Fächer");
   // Filmeinstellungen des Menschen (0.1.19): ohne lebendige Effekte, Kamera ruhig
   const ruhig = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.licht", "bild.farbe", "bild.licht"], lebendig: false, bewegung: 0 }, wahl: { art: "mensch", details: {} } });
-  assert.equal(ruhig.plan.lebendig, false); assert.equal(ruhig.plan.bewegung, null); assert.deepEqual(ruhig.entscheidung.details.film, { lebendig: false, bewegung: 0, signatur: "nicht verfügbar" });
+  assert.equal(ruhig.plan.lebendig, false); assert.equal(ruhig.plan.bewegung, null); assert.deepEqual(ruhig.entscheidung.details.film, { lebendig: false, bewegung: 0, signatur: "nicht verfügbar", format: "material" });
   const halb = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.licht", "bild.farbe", "bild.licht"], bewegung: 0.5 }, wahl: { art: "mensch", details: {} } });
   assert.equal(halb.plan.bewegung.staerke, 0.5); assert.equal(halb.plan.lebendig, true);
   assert.equal(ST.partitur(p, { ...ruhig.plan, fps: 30 }).bewegung, null);
@@ -1579,6 +1579,69 @@ test("Schwelle in eine lebendige Station (0.1.35): die Maske ist das laufende Bi
   // eine Schwelle ohne lebendige Station nimmt weiter die Helligkeit des Standbilds (das Ziel wächst aus seiner eigenen Tonwertordnung)
   const still = []; for await (const b of ST.filmbilder({ register: r, projekt: p, medien: m, partitur: ST.partitur(p, { ...plan, lebendig: false }), seite: 40 })) still.push(b);
   assert.equal(still[5].data[rechts], 0, "rechts (schwarz im Ziel) erscheint das Ziel zuerst"); assert.equal(still[5].data[links], a.data[links], "links (weiss im Ziel) zuletzt");
+});
+
+test("Format (0.1.37): lab.format schneidet ein Bild mittig in ein Seitenverhältnis, gerade Masse, Lage verschiebt den Ausschnitt", async () => {
+  const { ausschnitt, formatOperation, FORMATE } = await lab("operationen/format.js");
+  assert.deepEqual(Object.keys(FORMATE), ["9:16", "4:5", "1:1", "16:9"]);
+  assert.deepEqual(ausschnitt(96, 72, "9:16"), { x: 28, y: 0, b: 40, h: 72 }, "aus 4:3 wird 9:16: die Breite wird beschnitten (40,5 → 40, gerade), mittig");
+  assert.deepEqual(ausschnitt(96, 72, "16:9"), { x: 0, y: 9, b: 96, h: 54 }, "16:9: die Höhe wird beschnitten");
+  assert.deepEqual(ausschnitt(96, 72, "1:1"), { x: 12, y: 0, b: 72, h: 72 });
+  assert.deepEqual(ausschnitt(96, 72, "4:5"), { x: 19, y: 0, b: 58, h: 72 }, "57,6 → 58 … gerade 58");
+  assert.deepEqual(ausschnitt(96, 72, "9:16", 0), { x: 0, y: 0, b: 40, h: 72 }, "Lage 0: links"); assert.deepEqual(ausschnitt(96, 72, "9:16", 1), { x: 56, y: 0, b: 40, h: 72 }, "Lage 1: rechts");
+  assert.deepEqual(ausschnitt(1080, 1920, "9:16"), { x: 0, y: 0, b: 1080, h: 1920 }, "schon im Format: alles bleibt");
+  assert.throws(() => ausschnitt(10, 10, "3:2"), /gibt es nicht/);
+  const { p, m, e, r } = mitMaterial();
+  const x = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.format", eingaben: { bild: e.id }, parameter: { format: "9:16" } } });
+  const b = await m.bild(x.ergebnisse[0]);
+  assert.equal(b.width, 40); assert.equal(b.height, 72);
+  const q = bild(), i = (36 * 96 + 28 + 5) * 4, j = (36 * 40 + 5) * 4;
+  assert.deepEqual([...b.data.subarray(j, j + 4)], [...q.data.subarray(i, i + 4)], "der Ausschnitt ist eine Kopie, nicht skaliert");
+  assert.deepEqual(x.ergebnisse[0].protokoll?.ausschnitt ?? p.knoten.at(-1).protokoll.ausschnitt, { x: 28, y: 0, b: 40, h: 72 });
+  assert.equal(formatOperation.moduliert, "lage");
+  assert.deepEqual(P.pruefeProjekt(p), []);
+});
+
+test("Zusammenstellung mit Format (0.1.37): das Material wird zuerst eingepasst, Abschnitte, Karten, Signatur und Film nehmen das Format", async () => {
+  const VS = await lab("kern/vorschlag.js");
+  const Z = await lab("kern/zusammenstellung.js");
+  const { erstelleRegister } = await lab("kern/register.js");
+  const { OPERATIONEN } = await lab("operationen/index.js");
+  const r = erstelleRegister(), laeufe = [];
+  for (const op of OPERATIONEN) {
+    if (["signatur.intro", "signatur.outro", "signatur.signet", "lab.karte"].includes(op.id)) r.registriere({ ...op, verfuegbar: () => true, async ausfuehren(ein, p) { laeufe.push({ op: op.id, bild: ein.bild ? [ein.bild.width, ein.bild.height] : null }); const b = ein.bild ?? { width: 40, height: 72 }; return { ausgaben: [{ typ: "IMAGE", titel: op.id, bild: neuesBild(b.width, b.height, [9, 9, 9]) }], protokoll: {} }; } });
+    else r.registriere(op);
+  }
+  const { p, m, e, t } = mitTon();
+  const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id });
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.schnitt", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.raster", "bild.farbe", "bild.licht"], seed: 4, zettel: { strophe: "17" }, orna: { konstellation: "" }, format: "9:16" };
+  const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "zufall" }, seed: 3 });
+  assert.equal(x.format, "9:16"); assert.equal(x.entscheidung.gewaehlt.format, "9:16"); assert.equal(x.entscheidung.details.film.format, "9:16");
+  const f = p.knoten.filter((k) => k.operation === "lab.format");
+  assert.equal(f.length, 1, "ein Format-Schritt für das Bild"); assert.equal(f[0].eingaben.bild, e.id); assert.deepEqual(f[0].parameter.format, "9:16");
+  assert.equal(x.grundbild, f[0].ausgaben[0]); assert.ok(p.knoten.indexOf(f[0]) < p.knoten.findIndex((k) => k.operation === "lab.farbe"), "der erste Schritt der Zusammenstellung (nach der Messung)");
+  const g = await m.bild(P.ergebnis(p, x.grundbild)); assert.equal(g.width, 40); assert.equal(g.height, 72);
+  assert.equal(p.knoten.find((k) => k.operation === "lab.farbe" && k.eingaben.bild === x.grundbild)?.operation, "lab.farbe", "der erste Abschnitt rechnet auf dem eingepassten Bild");
+  assert.deepEqual(laeufe.map((l) => [l.op, l.bild]), [["signatur.intro", [40, 72]], ["signatur.outro", [40, 72]], ["signatur.signet", [40, 72]]], "Intro, Outro und Signet im Format");
+  assert.equal(x.plan.stationen[1], x.grundbild, "die erste Station der Animation ist das eingepasste Bild: der Film nimmt sein Format");
+  for (const id of x.ergebnisse.map((e) => e.id)) { const b = await m.bild(P.ergebnis(p, id)); assert.equal(`${b.width}×${b.height}`, "40×72"); }
+  // aus einem Video: jedes Standbild wird eingepasst
+  const q = mitTon(); laeufe.length = 0;
+  const v = await fuehreAus({ register: r, projekt: q.p, medien: q.m, auftrag: { operation: "lab.farbe", eingaben: { bild: q.e.id }, parameter: { farbdrehung: 60 }, variation: { anzahl: 2, achse: "varianten" } } });
+  const mq = { ...(await VS.messen({ register: r, projekt: q.p, medien: q.m, bild: q.e.id, ton: q.t.id })), videoBilder: v.ergebnisse.map((y) => y.id) };
+  const y = await Z.zusammenstellungRechnen({ register: r, projekt: q.p, medien: q.m, messung: mq, plan: { ...plan, format: "1:1", signatur: false }, wahl: { art: "zufall" } });
+  const fq = q.p.knoten.filter((k) => k.operation === "lab.format");
+  assert.deepEqual(fq.map((k) => k.eingaben.bild), [q.e.id, ...mq.videoBilder], "das Bild und beide Standbilder");
+  assert.ok(q.p.knoten.filter((k) => k.operation === "lab.farbe" && k.variation?.anzahl > 2).every((k) => fq.slice(1).some((z) => z.ausgaben[0] === k.eingaben.bild)), "die Abschnitte rechnen auf den eingepassten Standbildern");
+  assert.deepEqual(laeufe.map((l) => [l.op, l.bild]), [["lab.karte", [72, 72]], ["lab.karte", [72, 72]]], "die Karten quadratisch");
+  assert.equal(y.format, "1:1");
+  // ohne Format bleibt alles, wie es ist; ein unbekanntes Format wird gemeldet
+  const w = mitTon();
+  const mw = await VS.messen({ register: r, projekt: w.p, medien: w.m, bild: w.e.id, ton: w.t.id });
+  const z = await Z.zusammenstellungRechnen({ register: r, projekt: w.p, medien: w.m, messung: mw, plan: { ...plan, format: "material" }, wahl: { art: "zufall" } });
+  assert.equal(z.format, "material"); assert.equal(z.grundbild, w.e.id); assert.ok(!w.p.knoten.some((k) => k.operation === "lab.format"));
+  await assert.rejects(Z.zusammenstellungRechnen({ register: r, projekt: w.p, medien: w.m, messung: mw, plan: { ...plan, format: "3:2" }, wahl: { art: "zufall" } }), /Format 3:2 gibt es nicht/);
+  assert.deepEqual(P.pruefeProjekt(p), []);
 });
 
 test("Zusammenstellung mit PHORMA (0.1.21): die Szene bekommt den neuen Klang als Eingang und seinen Beginn, zehn Momente als Varianten", async () => {

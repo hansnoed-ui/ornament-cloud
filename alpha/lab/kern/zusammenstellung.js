@@ -13,6 +13,8 @@
 // eröffnet ein Intro mit dem Zettel (Lichtwürfel → Raster des Zettelkastens → der Zettel mit Leitsatz und Verweisen → Scratch), ein Outro mit der
 // Konstellation schliesst ihn (Körper → Kugel → Doppelrad von ORNA → Kugel), am Schluss steht immer das Signet «ornament.lab». Die 30 Sekunden der
 // Animation bleiben; die Signatur kommt davor und danach dazu, auf einer eigenen Tonspur (der Klang läuft weiter, Scratch und Gefrickel).
+// Seit 0.1.37 hat die Zusammenstellung ein Format (plan.format, Standard «wie das Material»; Christian, 25. Oktober 2026): das Material wird zuerst mit
+// lab.format in das Seitenverhältnis eingepasst (Ausschnitt mittig), so entstehen Abschnitte, Karten, Signatur und Film in diesem Format.
 // Ohne DOM, geprüft in tests/lab.test.mjs.
 import { KOMPOSITION_FRAGEN, BILD_EFFEKTE, KLANG_EFFEKTE, ABSCHNITTE } from "../jev/fragen.js";
 import { ergebnis, entscheide, GRENZEN } from "./projekt.js";
@@ -20,8 +22,11 @@ import { fuehreAus } from "./ausfuehrung.js";
 import { taktSchwelle, DAUER } from "./vorschlag.js";
 import { zufall } from "../../../alpha/the-fictory/analyse.js?v=23";
 import { signaturZeiten, INTRO_DAUER, OUTRO_DAUER, SIGNATUR_VERSION } from "./signatur.js";
+import { FORMATE } from "../operationen/format.js";
 
-export const ZUSAMMENSTELLUNG_VERSION = "0.5.0";
+export { FORMATE };
+
+export const ZUSAMMENSTELLUNG_VERSION = "0.6.0";
 /** Dauer einer Karte (Zettel, ORNA) am Anfang oder Ende des Films, in Sekunden (seit 0.1.34 eine Sekunde länger, vorher 2,5) */
 export const KARTE_DAUER = 3.5;
 export const VARIANTEN_JE_ABSCHNITT = 10;   // seit Lab 0.1.16: 60 Motive in 30 s (vorher 3, also 18)
@@ -134,6 +139,7 @@ export function wahrscheinlichkeit(antworten, frage, wahl) {
  * plan.lebendig (Schalter, Standard an) und plan.bewegung (Stärke der Kamera 0–1, Standard BEWEGUNG) sind die Filmeinstellungen des Menschen (seit 0.1.19);
  * plan.signatur (Standard an, seit 0.1.26): Intro (mit Zettel), Outro (mit Konstellation) und Signet statt der Karten, wo der Browser zeichnen kann.
  * plan.abschnitte (seit 0.1.28): je Abschnitt { an, dauer } (oben); die Länge der Animation ist die Summe der Dauern der Abschnitte, die an sind.
+ * plan.format (seit 0.1.37): "material" (Standard) oder eine Kennung aus FORMATE; das Material wird zuerst eingepasst, alles Weitere entsteht im Format.
  * Zuerst die Klangeffekte nacheinander, dann misst ein Tonsignal den neuen Klang
  * (Takt und Steuersignal), dann sechs Abschnitte zu je zehn Varianten. Gibt { entscheidung, ergebnisse, klang, plan } zurück; plan wie bei
  * vorschlagAusfuehren(): { stationen, art, halten, uebergang, takt, bewegung, tonspur, tonBeginn, dauer }.
@@ -151,6 +157,8 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
     if (op.verfuegbar && !op.verfuegbar()) throw new Error(`${op.name} ist in diesem Browser nicht verfügbar (${op.voraussetzungen.join(", ")}); eine andere Stelle wählen`);
   }
   if (!FILM[plan.uebergang]) throw new Error(`Übergang ${plan.uebergang} gibt es nicht`);
+  const format = plan.format && plan.format !== "material" ? plan.format : null;
+  if (format && !FORMATE[format]) throw new Error(`Format ${format} gibt es nicht`);
   if (plan.zettel && !register.hat("zettel.strophe")) throw new Error("Der Zettelkasten ist nicht im Register");
   if (plan.orna && !register.hat("orna.konstellation")) throw new Error("ORNA ist nicht im Register");
   const lebendig = plan.lebendig !== false, staerke = Math.min(1, Math.max(0, Number(plan.bewegung ?? BEWEGUNG) || 0));
@@ -159,9 +167,22 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   const signatur = plan.signatur !== false && Boolean(sigOp && (sigOp.verfuegbar?.() ?? true));
   const zeiten = signatur ? signaturZeiten({ intro: Boolean(plan.zettel), outro: Boolean(plan.orna), haupt }) : null;
   const d = entscheide(projekt, { art: wahl.art, gegenstand: "zusammenstellung", optionen: [], gewaehlt: { aufbau: plan.aufbau, uebergang: plan.uebergang, klang: plan.klang, bild: plan.bild,
-      zettel: plan.zettel ? (plan.zettel.strophe || "ziehen") : null, orna: plan.orna ? (plan.orna.konstellation || "ziehen") : null, abschnitte },
-    details: { ...(wahl.details ?? {}), ...(messung.videoBilder?.length > 1 ? { video: messung.videoBilder } : {}), startwert: plan.seed, merkmale: messung.merkmale, werte: messung.werte, film: { lebendig, bewegung: staerke, signatur: zeiten ? { ...zeiten, version: SIGNATUR_VERSION } : (plan.signatur === false ? "aus" : "nicht verfügbar") }, version: ZUSAMMENSTELLUNG_VERSION } });
+      zettel: plan.zettel ? (plan.zettel.strophe || "ziehen") : null, orna: plan.orna ? (plan.orna.konstellation || "ziehen") : null, abschnitte, format: format ?? "material" },
+    details: { ...(wahl.details ?? {}), ...(messung.videoBilder?.length > 1 ? { video: messung.videoBilder } : {}), startwert: plan.seed, merkmale: messung.merkmale, werte: messung.werte, film: { lebendig, bewegung: staerke, signatur: zeiten ? { ...zeiten, version: SIGNATUR_VERSION } : (plan.signatur === false ? "aus" : "nicht verfügbar"), format: format ?? "material" }, version: ZUSAMMENSTELLUNG_VERSION } });
   const schritt = (anlass) => ({ art: wahl.art, details: { anlass, entscheidung: d.id } });
+
+  // 0 · das Format (seit 0.1.37): das Material (das Bild, aus einem Video jedes Standbild) wird mit lab.format in das Seitenverhältnis eingepasst,
+  //     bevor etwas gerechnet wird; die Abschnitte, Karten, Signatur und der Film nehmen dann dieses Format. Ohne Format bleibt alles, wie es ist
+  let grundbild = messung.bild, videoBilder = messung.videoBilder?.length > 1 ? messung.videoBilder : null;
+  if (format) {
+    melden(`Format ${format}: das Material einpassen …`, null);
+    const einpassen = async (id, anlass) => {
+      const f = await fuehreAus({ register, projekt, medien, melden, abbrechen, auftrag: { operation: "lab.format", eingaben: { bild: id }, parameter: { format }, seed, wahl: schritt(anlass) } });
+      return f.ergebnisse.find((e) => e.typ === "IMAGE").id;
+    };
+    grundbild = await einpassen(messung.bild, "Zusammenstellung, Format");
+    if (videoBilder) { const aus = []; for (const [i, id] of videoBilder.entries()) aus.push(await einpassen(id, `Zusammenstellung, Format des Standbilds ${i + 1}`)); videoBilder = aus; }
+  }
 
   // 1 · Klang: die Effekte nacheinander, jeder auf dem Ergebnis des vorigen
   let ton = messung.ton;
@@ -207,8 +228,8 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
 
   // 3 · Bild: die Abschnitte, die an sind (sechs, wenn der Mensch nichts schaltet), in der Kette auf dem vorigen, im Fächer jeweils auf dem Ausgangsbild;
   //     aus einem Video (messung.videoBilder) nimmt jeder Abschnitt das Standbild seiner Zeit (seiner Stelle unter den sechs), so folgt der Film dem Video
-  const video = messung.videoBilder?.length > 1 ? messung.videoBilder : null;
-  let eingang = video?.[0] ?? messung.bild;
+  const video = videoBilder;
+  let eingang = video?.[0] ?? grundbild;
   const ergebnisse = [], uebergaenge = new Set(), abschnittVon = new Map();
   for (const [j, a] of aktiv.entries()) {
     const b = a.bild, i = a.i, anzahl = a.anzahl;
@@ -224,7 +245,7 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
       ...(r.parameter.dauer === SZENE_DAUER && a.dauer + 3 > SZENE_DAUER ? { dauer: Math.round(a.dauer + 3) } : {}),
       ...(mitTon ? { beginn, ...(r.parameter.dauer === DAUER ? { dauer: (zeiten ? zeiten.vor : 0) + haupt } : {}) } : {}) };
     const x = await fuehreAus({ register, projekt, medien, melden, abbrechen,
-      auftrag: { operation: r.operation, eingaben: { bild: video ? video[Math.min(video.length - 1, Math.floor((i * video.length) / plan.bild.length))] : plan.aufbau === "aufbau.faecher" ? messung.bild : eingang, ...(mitTon ? { ton } : {}),
+      auftrag: { operation: r.operation, eingaben: { bild: video ? video[Math.min(video.length - 1, Math.floor((i * video.length) / plan.bild.length))] : plan.aufbau === "aufbau.faecher" ? grundbild : eingang, ...(mitTon ? { ton } : {}),
           ...(mitKonstellation ? { konstellation: konstellation.id } : {}), ...(mitText ? { text: zettel.id } : {}) },
         parameter, seed: (seed + 101 * (i + 1)) >>> 0,
         variation: { anzahl, achse: "varianten", routen }, wahl: schritt(`Zusammenstellung, Abschnitt ${j + 1} von ${aktiv.length}`) } });
@@ -243,7 +264,7 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   const karte = async (eingaben, anlass) => {
     if (!kartenMoeglich) return null;
     const k = await fuehreAus({ register, projekt, medien, melden, abbrechen,
-      auftrag: { operation: "lab.karte", eingaben: { bild: video?.[0] ?? messung.bild, ...eingaben }, parameter: {}, seed, wahl: schritt(anlass) } });
+      auftrag: { operation: "lab.karte", eingaben: { bild: video?.[0] ?? grundbild, ...eingaben }, parameter: {}, seed, wahl: schritt(anlass) } });
     return k.ergebnisse.find((e) => e.typ === "IMAGE")?.id ?? null;
   };
   // 3c · die Signatur (seit 0.1.26): Intro mit dem Zettel, Outro mit der Konstellation, Signet; je ein Standbild als Station, im Film lebendig
@@ -253,7 +274,7 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   };
   let intro = null, outro = null, signet = null;
   if (zeiten) {
-    const erstes = video?.[0] ?? messung.bild, letztes = ergebnisse.at(-1)?.id ?? erstes;
+    const erstes = video?.[0] ?? grundbild, letztes = ergebnisse.at(-1)?.id ?? erstes;
     if (zettel) { melden("Signatur: das Intro mit dem Zettel …", null); intro = await signaturSchritt("signatur.intro", { text: zettel.id, bild: erstes, ton }, { beginn: 0 }, "Zusammenstellung, Signatur: Intro"); }
     if (konstellation) { melden("Signatur: das Outro mit ORNA …", null); outro = await signaturSchritt("signatur.outro", { konstellation: konstellation.id, bild: letztes }, { dauer: OUTRO_DAUER }, "Zusammenstellung, Signatur: Outro"); }
     melden("Signatur: das Signet ornament.lab …", null);
@@ -267,7 +288,7 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   const karten = vorne.length + hinten.length, kartenDauer = [...vorne, ...hinten].reduce((s, x) => s + x.halten, 0);
 
   // 4 · Film: Zettel (Intro), Bild, alle Abschnitte, Konstellation (Outro), Signet; im Takt der Anschläge reihum, sonst gleichmässig über die Dauer
-  let stationen = [...vorne, ...[video?.[0] ?? messung.bild, ...ergebnisse.map((e) => e.id)].slice(0, GRENZEN.stationen - karten), ...hinten];
+  let stationen = [...vorne, ...[video?.[0] ?? grundbild, ...ergebnisse.map((e) => e.id)].slice(0, GRENZEN.stationen - karten), ...hinten];
   const f = FILM[plan.uebergang], folge = ergebnis(projekt, einsaetze.id).daten;
   const dauer = Math.min(laenge, folge?.dauer ?? laenge), n = stationen.length;
   // nicht reihum: jede Station kommt einmal, darum höchstens so viele Wechsel wie Stationen, verteilt auf die stärksten Anschläge
@@ -287,7 +308,7 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
     const je = (a) => Math.max(0, Math.min(10, Math.round((a.dauer / a.anzahl - (f.art === "schnitt" ? 0 : uebergang)) * 100) / 100));
     stationen = stationen.map((s) => (typeof s === "string" && abschnittVon.has(s) ? { ergebnis: s, halten: je(abschnittVon.get(s)) } : s));
   }
-  return { entscheidung: d, ergebnisse, klang: ton, signal: signal.id, zettel: zettel?.daten ?? null, konstellation: konstellation?.daten ?? null, karten: { zettel: zettelKarte, orna: ornaKarte },
+  return { entscheidung: d, ergebnisse, klang: ton, signal: signal.id, format: format ?? "material", grundbild, zettel: zettel?.daten ?? null, konstellation: konstellation?.daten ?? null, karten: { zettel: zettelKarte, orna: ornaKarte },
     signatur: zeiten ? { ...zeiten, intro, outro, signet } : null, abschnitte, haupt,
     plan: { stationen, art: f.art, halten, uebergang: Math.round(uebergang * 100) / 100, takt, bewegung: staerke ? { staerke, signal: signal.id } : null, lebendig, tonspur: ton, tonBeginn: beginn, dauer } };
 }
