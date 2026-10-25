@@ -1077,7 +1077,56 @@ test("Stationen lebendig (Lab 0.1.17): mit lebendiger Fassung rechnet der Film j
   assert.deepEqual(ohne.out.map(fingerabdruck), still.out.map(fingerabdruck));
 });
 
-const FILTER = ["lab.glitch", "lab.pixelsortierung", "lab.verzerrung", "lab.licht", "lab.raster", "lab.neusetzen"];
+const FILTER = ["lab.glitch", "lab.pixelsortierung", "lab.verzerrung", "lab.licht", "lab.raster", "lab.neusetzen", "lab.puls", "lab.schraffur", "lab.fluss", "lab.punktieren", "lab.teilung"];
+
+test("Linienbilder (0.1.35, Prinzipien der Plotter-Umwandler von Makelangelo): Ton regelt Schwingung, Lagen, Striche, Punkte und Teilung", async () => {
+  const r = labRegister(), b = bild(120, 90), hell = { width: 120, height: 90, data: new Uint8ClampedArray(120 * 90 * 4).fill(250) };
+  const p = (id, x = {}) => ({ ...standardParameter(r.hole(id)), seite: 120, ...x });
+  const dunkelAnteil = (x) => { let n = 0; for (let i = 0; i < x.data.length; i += 4) if (x.data[i] < 128) n++; return n / (x.width * x.height); };
+  for (const id of ["lab.puls", "lab.schraffur", "lab.fluss", "lab.punktieren", "lab.teilung"]) {
+    const op = r.hole(id);
+    assert.match(op.herkunft.referenz, /Makelangelo.*GPL-2\.0.*kein Code/, `${id}: Herkunft nennt Makelangelo, Lizenz und dass kein Code übernommen ist`);
+    assert.ok(op.parameter.some((q) => q.id === "lauf"), `${id}: bewegt sich im Film von selbst`);
+  }
+  // im fast weissen Bild zeichnen Schraffur, Fliessfeld und Punkte (fast) nichts; die Pulslinien bleiben als gerade Linien stehen
+  for (const id of ["lab.schraffur", "lab.fluss", "lab.punktieren"]) {
+    const x = (await r.hole(id).ausfuehren({ bild: hell }, p(id), { seed: 2 })).ausgaben[0].bild;
+    assert.ok(dunkelAnteil(x) < 0.02, `${id} im Hellen: ${dunkelAnteil(x)}`);
+  }
+  const gerade = (await r.hole("lab.puls").ausfuehren({ bild: hell }, p("lab.puls", { abstand: 0.06 }), {})).ausgaben[0].bild;
+  assert.ok(dunkelAnteil(gerade) > 0.05 && dunkelAnteil(gerade) < 0.3, `Pulslinien im Hellen: ${dunkelAnteil(gerade)}`);
+  // Kreise schliessen mit einer ganzen Zahl von Schwingungen; jede Trägerart rechnet
+  for (const traeger of ["linien", "spirale", "kreise"]) for (const welle of ["sinus", "zickzack", "rechteck", "schwelle"]) {
+    const a = await r.hole("lab.puls").ausfuehren({ bild: b }, p("lab.puls", { traeger, welle }), {});
+    assert.equal(a.protokoll.traeger, traeger); assert.ok(a.protokoll.linien > 0);
+  }
+  // Schraffur: so viele Lagen wie verlangt, Schwellen steigen; «Schwelle» verschiebt sie
+  const sch = await r.hole("lab.schraffur").ausfuehren({ bild: b }, p("lab.schraffur", { lagen: 3 }), {});
+  assert.equal(sch.protokoll.lagen, 3); assert.deepEqual(sch.protokoll.winkel, [45, 135, 90]);
+  assert.ok(sch.protokoll.schwellen[0] < sch.protokoll.schwellen[2]);
+  // Teilung: nach dem Kontrast wird anders geteilt als nach dem Dunkel; ein gleichmässiges Bild wird nach dem Kontrast nicht geteilt
+  const t1 = await r.hole("lab.teilung").ausfuehren({ bild: b }, p("lab.teilung", { schwelle: 0.1, anstieg: 0 }), {});
+  assert.ok(t1.protokoll.blaetter > 1);
+  const t2 = await r.hole("lab.teilung").ausfuehren({ bild: hell }, p("lab.teilung", { kriterium: "kontrast", schwelle: 0.05 }), {});
+  assert.equal(t2.protokoll.blaetter, 1, "ein gleichmässiges Feld hat keine verschiedenen Viertel");
+  for (const fuellung of ["rahmen", "truchet", "boxen"]) assert.ok((await r.hole("lab.teilung").ausfuehren({ bild: b }, p("lab.teilung", { fuellung }), {})).protokoll.blaetter > 0);
+  // Punktieren: im dunklen Bild mehr Punkte als im hellen; Zellen und Mosaik rechnen
+  const dunkel = { width: 120, height: 90, data: new Uint8ClampedArray(120 * 90 * 4).fill(30) };
+  const pd = await r.hole("lab.punktieren").ausfuehren({ bild: dunkel }, p("lab.punktieren"), { seed: 3 }), ph = await r.hole("lab.punktieren").ausfuehren({ bild: hell }, p("lab.punktieren"), { seed: 3 });
+  assert.ok(pd.protokoll.punkte > 10 * Math.max(1, ph.protokoll.punkte), `${pd.protokoll.punkte} gegen ${ph.protokoll.punkte}`);
+  for (const art of ["zellen", "mosaik"]) assert.equal((await r.hole("lab.punktieren").ausfuehren({ bild: b }, p("lab.punktieren", { art }), { seed: 3 })).protokoll.art, art);
+  // Fliessfeld: jedes Feld rechnet
+  for (const feld of ["kanten", "quer", "rauschen", "wirbel"]) assert.equal((await r.hole("lab.fluss").ausfuehren({ bild: b }, p("lab.fluss", { feld }), { seed: 3 })).protokoll.feld, feld);
+  // lebendig und in der Zusammenstellung
+  const { LEBENDIG } = await lab("medien/gpu.js");
+  for (const id of ["lab.puls", "lab.schraffur", "lab.fluss", "lab.punktieren", "lab.teilung"]) assert.ok(LEBENDIG.includes(id), id);
+  const Z = await lab("kern/zusammenstellung.js"), F = await lab("jev/fragen.js");
+  for (const k of ["bild.puls", "bild.spirale", "bild.schraffur", "bild.fluss", "bild.punktieren", "bild.glasfenster", "bild.teilung", "bild.truchet"]) {
+    assert.ok(F.BILD_EFFEKTE[k] && Z.BILD_REZEPTE[k], k);
+    const rz = Z.BILD_REZEPTE[k], op = r.hole(rz.operation);
+    for (const q of Object.keys(rz.parameter)) assert.ok(op.parameter.some((x) => x.id === q), `${k}: Parameter ${q}`);
+  }
+});
 
 test("Bildfilter (0.1.10): jeder verändert das Bild, ist mit demselben Startwert wiederholbar, Anteil 0 lässt den Eingang stehen", async () => {
   const r = labRegister(), b = bild();

@@ -59,6 +59,15 @@ export const BILD_REZEPTE = Object.freeze({
   "bild.verzerrung": { operation: "lab.verzerrung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
   "bild.licht": { operation: "lab.licht", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
   "bild.raster": { operation: "lab.raster", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
+  // die Linienbilder (seit 0.1.35, nach den Plotter-Umwandlern von Makelangelo): lebendig auf der Grafikkarte, «lauf» bewegt sie von selbst
+  "bild.puls": { operation: "lab.puls", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
+  "bild.spirale": { operation: "lab.puls", parameter: { traeger: "spirale", abstand: 0.012, seite: 1000, bilder: 18 }, tiefe: 0.5 },
+  "bild.schraffur": { operation: "lab.schraffur", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.25 },
+  "bild.fluss": { operation: "lab.fluss", parameter: { seite: 800, bilder: 18 }, tiefe: 0.5 },
+  "bild.punktieren": { operation: "lab.punktieren", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
+  "bild.glasfenster": { operation: "lab.punktieren", parameter: { art: "mosaik", abstand: 0.014, seite: 1000, bilder: 18 }, ziel: "abstand", tiefe: 0.3 },
+  "bild.teilung": { operation: "lab.teilung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.3 },
+  "bild.truchet": { operation: "lab.teilung", parameter: { fuellung: "truchet", tiefe: 5, linien: 3, seite: 1000, bilder: 18 }, ziel: "schwelle", tiefe: 0.3 },
   // die Szenen von PHORMA III (seit 0.1.21, operationen/phorma.js): zehn Momente der Szene als Varianten, der Film rechnet die Bühne lebendig;
   // sie bekommen den neuen Klang als Eingang «ton» und seinen Beginn (unten)
   "bild.gewebe": { operation: "phorma.gewebe", parameter: { bilder: VARIANTEN_JE_ABSCHNITT, dauer: DAUER }, ziel: null },

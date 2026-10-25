@@ -46,9 +46,9 @@ async function ausfuehren(page) { await page.click("#ausfuehren"); await page.wa
 const { ctx, page, fehler, fremd } = await oeffne();
 let gespeichert = null;
 
-await check("Start: vier Bereiche, Register mit 34 Operationen, keine Fehler", async () => {
+await check("Start: vier Bereiche, Register mit 39 Operationen, keine Fehler", async () => {
   for (const id of ["material", "operationen", "experiment", "protokoll"]) assert.ok(await page.locator(`#${id}`).isVisible(), id);
-  assert.match(await page.textContent("#status"), /34 Operationen/);
+  assert.match(await page.textContent("#status"), /39 Operationen/);
   assert.deepEqual(fehler, []);
 });
 
