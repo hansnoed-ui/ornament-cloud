@@ -14,7 +14,11 @@ const lies = (p) => readFileSync(new URL(p, P), "utf8");
 test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette", () => {
   assert.equal(A.ablaufName("tuch+physarum"), "physarum+tuch");
   assert.equal(A.ablaufName("quatsch"), A.KETTE);
-  assert.equal(A.ablaufName(null), "physarum+tiefe+tuch");
+  assert.equal(A.ablaufName(null), "physarum+tiefe+welle+tuch+raster+montage", "die ganze Kette: alle sechs (seit 25. Oktober 2026)");
+  assert.equal(A.KETTE, A.EFFEKTE.join("+"));
+  // die früheren Karten «Alle drei» und «Alle vier» (bis 25. Oktober 2026): gemerkt bleiben sie eigene Ketten
+  assert.equal(A.ablaufName("physarum+tiefe+tuch"), "physarum+tiefe+tuch");
+  assert.equal(A.ablaufName("physarum+tiefe+tuch+montage"), "physarum+tiefe+tuch+montage");
   assert.deepEqual(A.effekte("tuch+tiefe"), ["tiefe", "tuch"]);
   assert.deepEqual(A.effekte("montage+tuch+tiefe+physarum"), ["physarum", "tiefe", "tuch", "montage"]);
   // das Wachstum ist seit dem 21. Oktober 2026 weg (Wunsch: «Ich möchte wachstum weg»): eine gemerkte Kette mit ihm verliert es nur
@@ -126,8 +130,8 @@ test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappun
 });
 
 test("Kette: Physarum geht über eine Zeitfront in die Tiefe über, die Tiefe über eine kurze Front ins Tuch", () => {
-  const K = A.kette(A.KETTE);
-  assert.deepEqual(K.teile.map((t) => t.art), ["physarum", "tiefe", "tuch"], "die Karte «Alle drei» ohne die Montage");
+  const K = A.kette("physarum+tiefe+tuch");
+  assert.deepEqual(K.teile.map((t) => t.art), ["physarum", "tiefe", "tuch"], "die frühere Karte «Alle drei»");
   const [p, t, u] = K.teile;
   assert.equal(p.uebergang, "front"); assert.ok(Math.abs(t.von - (p.bis - 1.8)) < 1e-9, "die Tiefe setzt 1,8 s vor dem Ende des Netzes ein");
   assert.ok(!t.vonFoto, "die Tiefe beginnt unter der Zeitfront, nicht beim Foto");
@@ -141,12 +145,12 @@ test("Kette: Physarum geht über eine Zeitfront in die Tiefe über, die Tiefe ü
 });
 
 test("Zeitachse: Vorlauf, Kette im Tempo, Stehen und Signet; laufend gibt beim Übergang beide", () => {
-  const z = A.zeitachse({ ablauf: A.KETTE });
+  const z = A.zeitachse({ ablauf: "physarum+tiefe+tuch" });
   assert.equal(z.ab.vor[1], z.abschnitt.von);
-  assert.ok(Math.abs(z.abschnitt.bis - z.abschnitt.von - A.kette(A.KETTE).dauer) < 1e-9);
+  assert.ok(Math.abs(z.abschnitt.bis - z.abschnitt.von - A.kette("physarum+tiefe+tuch").dauer) < 1e-9);
   assert.ok(z.ab.signet && z.dauer > z.abschnitt.bis + 3.2 + A.SIGNET);
   assert.equal(z.bilder, Math.round(z.dauer * 30));
-  const ruhig = A.zeitachse({ ablauf: A.KETTE, tempo: "ruhig", signet: false });
+  const ruhig = A.zeitachse({ ablauf: "physarum+tiefe+tuch", tempo: "ruhig", signet: false });
   assert.ok(Math.abs((ruhig.abschnitt.bis - ruhig.abschnitt.von) / (z.abschnitt.bis - z.abschnitt.von) - 1.3) < 1e-9);
   assert.equal(ruhig.ab.signet, undefined);
   const [p, s] = z.teile, mitte = (s.von + p.bis) / 2, L = A.laufend(z, mitte);
@@ -263,7 +267,8 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /"three": "\.\.\/\.\.\/vendor\/three-0\.185\.1\/three\.module\.min\.js"/);
   assert.ok(!/<script[^>]+src="https?:/.test(html), "keine Skripte von aussen");
   for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
-  assert.match(html, /data-wahl="physarum\+tiefe\+tuch"/, "die ganze Kette als Karte");
+  assert.match(html, /data-wahl="physarum\+tiefe\+welle\+tuch\+raster\+montage" aria-pressed="true"><b data-t="wahl\.alle">Alle sechs als Kette/, "die ganze Kette als erste Karte");
+  assert.equal(html.match(/data-wahl="[a-z]+\+/g).length, 1, "nur eine Karte für eine Kette (die früheren «Alle drei» und «Alle vier» sind in ihr aufgegangen)");
   assert.ok(!/data-wahl="(gewebe|struktur)"|data-quelle=|id="(tondatei|videodatei|text|frickeln)"/.test(html), "kein Gewebe, kein Ton, kein Text: das ist PHORMA III");
   assert.match(html, /id="datei" accept="image\/\*,video\/\*"/, "Foto oder Video (seit Etappe 2 der Montage)");
   assert.match(html, /href="\.\.\/phorma-iii\/"/, "Hinweis auf PHORMA III");

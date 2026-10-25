@@ -94,16 +94,16 @@ const ERSATZ_ENCODER = () => {
   };
 };
 
-await check("Testfoto: wird analysiert, die Bühne steht, die Kette aller drei Effekte als Sprungknöpfe; nichts von aussen", async () => {
+await check("Testfoto: wird analysiert, die Bühne steht, die Kette aller sechs Effekte als Sprungknöpfe; nichts von aussen", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   assert.equal(await page.getAttribute('[data-format="4:5"]', "aria-pressed"), "true");
-  for (const e of ["physarum", "tiefe", "tuch"]) assert.equal(await page.getAttribute(`[data-effekt="${e}"]`, "aria-pressed"), "true", `${e} gewählt`);
+  for (const e of ["physarum", "tiefe", "welle", "tuch", "raster", "montage"]) assert.equal(await page.getAttribute(`[data-effekt="${e}"]`, "aria-pressed"), "true", `${e} gewählt`);
   await laden(page);
   await bereit(page);
   assert.match(await page.textContent("#auswertung"), /^\d+ Keime · Kanten · Tiefe/);
-  assert.equal(await page.textContent("#kette"), "Physarum → Tiefe → Tuch");
+  assert.equal(await page.textContent("#kette"), "Physarum → Tiefe → Wellenwanne → Tuch → Rasterdruck → Montage");
   const knoepfe = await page.$$eval(".phasen button", (b) => b.map((x) => x.textContent));
-  assert.deepEqual(knoepfe, ["01 Keime", "02 Netz", "03 Scan", "04 Tuch", "05 Bild"]);
+  assert.deepEqual(knoepfe, ["01 Keime", "02 Netz", "03 Scan", "04 Dünung", "05 Wellen", "06 Tuch", "07 Bild", "08 Raster", "09 Versatz", "10 Schnitte", "11 Montage", "12 Bild"]);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
@@ -112,7 +112,7 @@ await check("Effekte einzeln anwählen: eine Karte wählt genau einen Effekt, di
   const { ctx, page, fehler } = await oeffne();
   await laden(page); await bereit(page);
   const gedrueckt = () => page.$$eval("[data-wahl], [data-effekt]", (b) => b.filter((x) => x.getAttribute("aria-pressed") === "true").map((x) => x.dataset.wahl ?? `+${x.dataset.effekt}`));
-  assert.deepEqual(await gedrueckt(), ["physarum+tiefe+tuch", "+physarum", "+tiefe", "+tuch"], "am Anfang die ganze Kette");
+  assert.deepEqual(await gedrueckt(), ["physarum+tiefe+welle+tuch+raster+montage", "+physarum", "+tiefe", "+welle", "+tuch", "+raster", "+montage"], "am Anfang die ganze Kette, alle sechs");
   for (const e of ["tiefe", "physarum"]) {
     await page.click(`[data-wahl="${e}"]`);
     await page.waitForFunction((e) => window.__phorma.ablauf === e && window.__phorma.buehne && window.__phorma.sz.zeit.teile.length === 1, e, { timeout: 60_000 });
@@ -128,15 +128,15 @@ await check("Effekte einzeln anwählen: eine Karte wählt genau einen Effekt, di
   assert.deepEqual(await gedrueckt(), ["tuch", "+tuch"]);
   await page.reload(); await laden(page); await bereit(page);
   assert.equal(await page.evaluate(() => window.__phorma.ablauf), "tuch", "die Wahl bleibt nach dem Neuladen");
-  await page.click('[data-wahl="physarum+tiefe+tuch"]');
-  await page.waitForFunction(() => window.__phorma.sz.zeit.teile.length === 3);
-  assert.equal(await page.textContent("#kette"), "Physarum → Tiefe → Tuch");
+  await page.click('[data-wahl="physarum+tiefe+welle+tuch+raster+montage"]');
+  await page.waitForFunction(() => window.__phorma.sz.zeit.teile.length === 6);
+  assert.equal(await page.textContent("#kette"), "Physarum → Tiefe → Wellenwanne → Tuch → Rasterdruck → Montage");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
 
 await check("Kette: jede Phase zeigt etwas, jede etwas anderes; am Anfang dunkel, am Ende exakt das Foto, nach einem Sprung zurück dasselbe Bild", async () => {
-  const { ctx, page, fehler } = await oeffne();
+  const { ctx, page, fehler } = await oeffne({ ablauf: "physarum+tiefe+tuch" });   // die frühere Karte «Alle drei», gemerkt: lädt als eigene Kette
   await laden(page); await bereit(page);
   const { zeit } = await messe(page, 0);
   const anfang = await messe(page, 0.2);
@@ -272,7 +272,9 @@ await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am End
   assert.ok((await messe(page, zeit.abschnitt.bis - 1 / 30)).abw <= 3, "endet exakt beim Standbild");
   // seit dem 19. Oktober 2026 läuft es durch alle Effekte (Rückmeldung: «bleibt ständig ein "altes" Video in den ersten drei Schritten hängen»):
   // auch die Kette ohne Montage kommt am Ende beim Standbild an, nicht beim ersten Bild
-  await page.click('[data-wahl="physarum+tiefe+tuch"]');
+  await page.click('[data-wahl="physarum"]'); await page.waitForFunction(() => window.__phorma.ablauf === "physarum");
+  await page.click('[data-effekt="tiefe"]'); await page.waitForFunction(() => window.__phorma.ablauf === "physarum+tiefe");
+  await page.click('[data-effekt="tuch"]');
   await page.waitForFunction(() => window.__phorma.ablauf === "physarum+tiefe+tuch" && window.__phorma.buehneFertig && window.__phorma.sz?.zeit.ablauf === "physarum+tiefe+tuch", null, { timeout: 240_000 });
   const z3 = (await messe(page, 0)).zeit, d3 = z3.abschnitt.bis - z3.abschnitt.von;
   assert.equal(await nummer(page, 0, "foto"), Math.round(d3 * 30), "Standbild am Ende der Kette");

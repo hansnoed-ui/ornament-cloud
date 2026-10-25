@@ -181,7 +181,7 @@
   </style>
   <link rel="stylesheet" href="../phorma.css?v=2">
   <!-- Deutsch und Englisch (21. Oktober 2026): vor den Modulen -->
-  <script src="sprache.js?v=2"></script>
+  <script src="sprache.js?v=3"></script>
 </head>
 <body>
   <!-- Kopf der App (21. Oktober 2026, wie OMNA COLOR, ORNA, ORMA und PHORMA I): Signet mit Weg in den Neubau, der Schalter d · e, «Über die App»; auf der Bühne (?b=1) nicht -->
@@ -260,8 +260,7 @@
           <h2 data-t="schritt.effekte">Effekte</h2>
           <p data-t="effekte.text">Ein Effekt allein oder mehrere als Kette. Alle beginnen im Dunkeln und enden mit deinem Foto; in einer Kette geht jeder in den nächsten über, immer in dieser Reihenfolge.</p>
           <div class="ablaeufe" role="group" aria-label="Effekt wählen" data-t-attr="aria-label=ablaeufe.aria">
-            <button type="button" data-wahl="physarum+tiefe+tuch" aria-pressed="true"><b data-t="wahl.drei">Alle drei als Kette</b><small data-t="wahl.drei.text">Das Netz findet die Formen, eine Lichtebene tastet die Tiefe ab, das Foto weht als Tuch – bis es glatt daliegt</small></button>
-            <button type="button" data-wahl="physarum+tiefe+tuch+montage" aria-pressed="false"><b data-t="wahl.vier">Alle vier als Kette</b><small data-t="wahl.vier.text">Das Netz findet die Formen, eine Lichtebene tastet die Tiefe ab, das Foto weht als Tuch und zerfällt zuletzt in Rechtecke</small></button>
+            <button type="button" data-wahl="physarum+tiefe+welle+tuch+raster+montage" aria-pressed="true"><b data-t="wahl.alle">Alle sechs als Kette</b><small data-t="wahl.alle.text">Das Netz findet die Formen, eine Lichtebene tastet die Tiefe ab, Wellen ziehen darüber, das Foto weht als Tuch, wird zum Druck und zerfällt zuletzt in Rechtecke</small></button>
             <button type="button" data-wahl="physarum" aria-pressed="false"><b data-t="wahl.physarum">Physarum</b><small data-t="wahl.physarum.text">Hunderttausende Agenten strömen aus Keimen und bilden ein leuchtendes Netz, das die Formen deines Fotos findet</small></button>
             <button type="button" data-wahl="tiefe" aria-pressed="false"><b data-t="wahl.tiefe">Tiefe</b><small data-t="wahl.tiefe.text">Eine Lichtebene tastet das Bild von vorn nach hinten ab, im Streiflicht steht es als Relief</small></button>
             <button type="button" data-wahl="welle" aria-pressed="false"><b data-t="wahl.welle">Wellenwanne</b><small data-t="wahl.welle.text">Das Foto liegt unter ruhigem Wasser: lange Wellen ziehen langsam darüber, ab und zu läuft ein Tropfen als Ring aus, Licht bündelt sich zu hellen Linien</small></button>
@@ -273,10 +272,10 @@
           <div class="segment effekte" role="group" aria-label="Eigene Kette" data-t-attr="aria-label=effekte.aria">
             <button type="button" data-effekt="physarum" aria-pressed="true" data-t="effekt.physarum">Physarum</button>
             <button type="button" data-effekt="tiefe" aria-pressed="true" data-t="effekt.tiefe">Tiefe</button>
-            <button type="button" data-effekt="welle" aria-pressed="false" data-t="effekt.welle">Wellenwanne</button>
+            <button type="button" data-effekt="welle" aria-pressed="true" data-t="effekt.welle">Wellenwanne</button>
             <button type="button" data-effekt="tuch" aria-pressed="true" data-t="effekt.tuch">Tuch</button>
-            <button type="button" data-effekt="raster" aria-pressed="false" data-t="effekt.raster">Rasterdruck</button>
-            <button type="button" data-effekt="montage" aria-pressed="false" data-t="effekt.montage">Montage</button>
+            <button type="button" data-effekt="raster" aria-pressed="true" data-t="effekt.raster">Rasterdruck</button>
+            <button type="button" data-effekt="montage" aria-pressed="true" data-t="effekt.montage">Montage</button>
           </div>
           <p class="kette" id="kette" aria-live="polite"></p>
           <p class="ki-hinweis" data-t="phorma3.hinweis">Video oder Musik? Dafür gibt es <a href="../phorma-iii/">PHORMA III</a>: aus Klang wird Bild.</p>
@@ -356,8 +355,8 @@
       setTimeout(function () { if (!window.__phorma) zeigen("Die Anwendung ist nicht gestartet. Dieser Browser kann sie vielleicht nicht laden – bitte mit einem aktuellen Chrome, Safari oder Firefox versuchen."); }, 15000);
     })();
   </script>
-  <script type="module" src="app.js?v=51"></script>
-  <script type="module" src="pwa.js?v=51"></script>
+  <script type="module" src="app.js?v=52"></script>
+  <script type="module" src="pwa.js?v=52"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>

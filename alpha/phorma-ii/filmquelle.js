@@ -9,7 +9,7 @@
 //   Wachstum, davor stand das Bild vom Ende (Rückmeldung: «bleibt ständig ein "altes" Video in den ersten drei Schritten hängen … dieses kommt dann
 //   erst ab Wachstum»); danach stand ein kürzeres zuerst still und begann später (Rückmeldung: «beim Tuch erst in der zweiten Hälfte … ich vermute,
 //   dass es daran liegt, wenn ein Video kürzer ist als die Länge der Animation»).
-import { kette } from "./ablauf.js?v=38";
+import { kette } from "./ablauf.js?v=39";
 
 /** höchstens so lange liest PHORMA II (wie die Filmspur von PHORMA III) */
 export const HOECHSTENS = 30;

@@ -132,9 +132,9 @@ if (will("phorma-i")) {
   }] }).catch((e) => console.error("phorma-i:", e.message));
 }
 
-// PHORMA II: die Kette der App («Alle drei als Kette») mit dem Beispielfoto, Tiefe aus dem Bild (ohne Modell von aussen)
+// PHORMA II: die Kette der App («Alle sechs als Kette», seit 25. Oktober 2026) mit dem Beispielfoto, Tiefe aus dem Bild (ohne Modell von aussen)
 if (will("phorma-ii")) {
-  const KETTE = "physarum+tiefe+tuch";
+  const KETTE = "physarum+tiefe+welle+tuch+raster+montage";
   const html = readFileSync(new URL("alpha/phorma-ii/index.html", ROOT), "utf8"), v = version(html, "film.js") || version(readFileSync(new URL("alpha/phorma-ii/app.js", ROOT), "utf8"), "film.js");
   await film("phorma-ii", { poster: 0.45, teile: [{
     seite: "/alpha/phorma-ii/",

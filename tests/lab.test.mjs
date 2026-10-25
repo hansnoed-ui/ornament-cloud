@@ -1774,7 +1774,7 @@ test("Zusammenstellung mit PHORMA (0.1.21): die Szene bekommt den neuen Klang al
 test("PHORMA I und II (0.1.22): zwei Operationen mit Abläufen im Register, ORNA-Regel wählt den Ablauf, Zettel gibt den Titel, in Node nicht verfügbar", async () => {
   const r = labRegister();
   const P2 = await lab("operationen/phorma2.js"), P1 = await lab("operationen/phorma1.js"), H = await lab("operationen/buehnenhilfe.js");
-  const A2 = await import(new URL("alpha/phorma-ii/ablauf.js?v=38", root).href), A1 = await import(new URL("alpha/bildfragmentieren/ablauf.js?v=36", root).href);
+  const A2 = await import(new URL("alpha/phorma-ii/ablauf.js?v=39", root).href), A1 = await import(new URL("alpha/bildfragmentieren/ablauf.js?v=36", root).href);
   for (const [id, op] of [["phorma.ii", P2.phorma2], ["phorma.i", P1.phorma1]]) {
     assert.ok(r.hat(id), id); assert.equal(r.hole(id), op);
     assert.equal(op.verfuegbar(), false, "ohne Browser nicht verfügbar");

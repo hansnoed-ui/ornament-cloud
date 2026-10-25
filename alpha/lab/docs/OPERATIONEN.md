@@ -768,14 +768,14 @@ PHORMA III, Traube: glänzende rote Perlen in einer Kugel aus Fäden, Schnitte i
 
 PHORMA II: Physarum (ein Schleimpilz findet die Formen), Tiefe (das Foto wird Relief), Wellenwanne, Tuch (das Foto fällt als Seide), Rasterdruck, Montage (verschachtelte Rechtecke) – einzeln oder als Kette. Eine ORNA-Konstellation kann den Ablauf wählen, ein Zettel gibt den Titel.
 
-- **Herkunft:** Adapter, PHORMA II; Datei alpha/phorma-ii/buehne.js, film.js, ablauf.js, analyse.js und die Effekte (v=38, unverändert)
+- **Herkunft:** Adapter, PHORMA II; Datei alpha/phorma-ii/buehne.js, film.js, ablauf.js, analyse.js und die Effekte (v=39, unverändert)
 - **Voraussetzungen:** Browser mit WebGL 2 (three.js aus vendor/, Importmap in index.html)
 - **Ressourcen:** Aufbau einige Sekunden (Programme, beim Tuch die Stoffsimulation), dann rechnet die Grafikkarte jedes Bild; Speicher: Bühne in Rechengrösse (HalfFloat-Ziele)
 - **Reproduzierbar:** ja
 
 | Parameter | Bereich |
 |---|---|
-| Ablauf (`ablauf`) | 11 Optionen, Standard «aus der Konstellation (sonst alle drei)» |
+| Ablauf (`ablauf`) | 12 Optionen, Standard «aus der Konstellation (sonst alle sechs)» |
 | Dauer der Kette (s, 0 = eigenes Tempo) (`dauer`) | 0 … 120, Standard 0 – PHORMA II rechnet seine Effekte in eigener Zeit; eine Dauer streckt oder rafft sie |
 | Standbilder (Varianten) (`bilder`) | 1 … 12, Standard 6 – gleichmässig über die Kette |
 | Güte (`guete`) | **fein** / grob (wie am Telefon) |

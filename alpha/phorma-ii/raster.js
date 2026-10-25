@@ -10,8 +10,8 @@
 // Rückmeldung zum ersten Probefilm: «deutlicher, grössere Punkte noch grösser, weniger Schwarz, viel ruhiger» – Punkte bis 56 statt 34, die Platten
 // gleiten weit auseinander (120 Punkte), alles stetig ohne Zittern, kaum Schwarz, der Farbauftrag begrenzt.
 import * as THREE from "three";
-import { anteil, weich, quadMaterial } from "./gemeinsam.js?v=38";
-import { phase, SIGNET } from "./ablauf.js?v=38";
+import { anteil, weich, quadMaterial } from "./gemeinsam.js?v=39";
+import { phase, SIGNET } from "./ablauf.js?v=39";
 
 const ZEIGEN = /* glsl */ `
   uniform sampler2D tFoto; uniform vec2 uGroesse; uniform float uZelle, uAA, uDreh, uMisch, uSicht, uDeckung, uAufPapier;

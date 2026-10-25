@@ -33,8 +33,9 @@ export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 // «spektakulär, aber nicht zuuu viel Rechenzeit»; am selben Abend ersetzt der Rasterdruck die Pixel-Sortierung (ein gemerktes «sortierung» wird zu ihm)
 export const EFFEKTE = ["physarum", "tiefe", "welle", "tuch", "raster", "montage"];
 export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", welle: "Wellenwanne", tuch: "Tuch", raster: "Rasterdruck", montage: "Montage" };
-/** die Kette der Karte «Alle drei» (die Montage kam am 19. Oktober 2026 dazu und ist nur einzeln oder in einer eigenen Kette dabei) */
-export const KETTE = "physarum+tiefe+tuch";
+/** die Kette der Karte «Alle sechs» (seit 25. Oktober 2026, Wunsch: «alle 3 als Kette» und «alle 4 als Kette» zusammenfassen in «alle 6 als Kette»;
+ *  ein gemerktes «physarum+tiefe+tuch» oder «physarum+tiefe+tuch+montage» bleibt als eigene Kette gültig) */
+export const KETTE = EFFEKTE.join("+");
 
 /** die gewählten Effekte in fester Reihenfolge, mit «+» verbunden; Unbekanntes oder nichts (auch ein gemerktes «gewebe») ergibt die ganze Kette */
 export function ablaufName(a) {
