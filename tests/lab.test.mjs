@@ -1079,7 +1079,7 @@ test("Stationen lebendig (Lab 0.1.17): mit lebendiger Fassung rechnet der Film j
 
 const FILTER = ["lab.glitch", "lab.pixelsortierung", "lab.verzerrung", "lab.licht", "lab.raster", "lab.neusetzen", "lab.puls", "lab.schraffur", "lab.fluss", "lab.punktieren", "lab.teilung"];
 
-test("Linienbilder (0.1.35, Prinzipien der Plotter-Umwandler von Makelangelo): Ton regelt Schwingung, Lagen, Striche, Punkte und Teilung", async () => {
+test("Linienbilder (0.1.36, Prinzipien der Plotter-Umwandler von Makelangelo): Ton regelt Schwingung, Lagen, Striche, Punkte und Teilung", async () => {
   const r = labRegister(), b = bild(120, 90), hell = { width: 120, height: 90, data: new Uint8ClampedArray(120 * 90 * 4).fill(250) };
   const p = (id, x = {}) => ({ ...standardParameter(r.hole(id)), seite: 120, ...x });
   const dunkelAnteil = (x) => { let n = 0; for (let i = 0; i < x.data.length; i += 4) if (x.data[i] < 128) n++; return n / (x.width * x.height); };

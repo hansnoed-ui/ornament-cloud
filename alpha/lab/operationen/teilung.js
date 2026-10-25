@@ -1,4 +1,4 @@
-// ORNAMENT LAB – Teilung (räumliche Operation, seit Lab 0.1.35). Übertragen aus den Plotter-Umwandlern «QuadTree», «Truchet from Image»
+// ORNAMENT LAB – Teilung (räumliche Operation, seit Lab 0.1.36). Übertragen aus den Plotter-Umwandlern «QuadTree», «Truchet from Image»
 // und «Boxxy» von Makelangelo (GPL-2.0, nur das Prinzip, kein Code): Ein Quadrat wird geviertelt, solange sein Inhalt dunkel genug ist
 // (oder bewegt genug: wie verschieden seine vier Viertel sind), und mit jeder Tiefe muss er etwas dunkler sein. So wird das Bild dort fein geteilt, wo es dicht
 // ist, und bleibt im Hellen grob. Jedes Blatt der Teilung wird gefüllt: mit seinem Rahmen, mit seiner mittleren Farbe (ein Mosaik, das

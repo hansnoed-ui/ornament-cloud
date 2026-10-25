@@ -47,7 +47,7 @@ Alle Filter laufen auf der CPU in reinem JavaScript, im Browser wie in den Tests
 - **Masken:** einen Filter nur in den Segmenten der Fictory oder nach einem Steuerbild wirken lassen.
 - **Pixelsortierung schräg** und mit einem Steuerbild für die Schwellen.
 
-## Linienbilder nach den Plotter-Umwandlern von Makelangelo (Lab 0.1.35)
+## Linienbilder nach den Plotter-Umwandlern von Makelangelo (Lab 0.1.36)
 
 Stand: 25. Oktober 2026. Christian suchte Effekte, die mit der Bildinformation arbeiten, und schlug [Makelangelo](https://github.com/MarginallyClever/Makelangelo-software) vor, die Software einer Zeichenmaschine (Commit `94ff58e`, 9. Juni 2026). Sie enthält rund zwanzig Umwandler, die ein Bild in Linien für einen Stift übersetzen. Die Software steht unter der **GPL-2.0**. Darum ist kein Code übernommen: Gelesen wurden die Umwandler, um ihr Prinzip zu verstehen (Masterprompt §3), und das Lab setzt die Prinzipien eigenständig um. Wie die Untersuchung lief, steht im [REA-Protokoll](REA-PROTOKOLL.md), Fall 4.
 

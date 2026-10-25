@@ -78,7 +78,7 @@ export const BILD_EFFEKTE = Object.freeze({
   "bild.verzerrung": "Verzerrung: das Bild wird verwirbelt, gewellt oder wie durch eine Linse gesehen",
   "bild.licht": "Licht: helle Stellen glühen auf und strahlen aus",
   "bild.raster": "Raster: das Bild wird zu Punkten und Linien wie im Druck",
-  // die Linienbilder (seit Lab 0.1.35, nach den Plotter-Umwandlern von Makelangelo): lebendig, sie bewegen sich von selbst
+  // die Linienbilder (seit Lab 0.1.36, nach den Plotter-Umwandlern von Makelangelo): lebendig, sie bewegen sich von selbst
   "bild.puls": "Pulslinien: parallele Linien schwingen, wo das Bild dunkel ist, höher und dichter, wie ein Plotter mit einem einzigen Puls",
   "bild.spirale": "Spirale: eine Linie läuft als Spirale aus der Mitte und schwingt im Dunkeln, die Schwingungen wandern",
   "bild.schraffur": "Schraffur: Lagen feiner Linien in verschiedenen Winkeln, im Dunkeln liegen alle übereinander, wie im Kupferstich",

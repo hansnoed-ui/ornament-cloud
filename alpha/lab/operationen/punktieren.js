@@ -1,4 +1,4 @@
-// ORNAMENT LAB – Punktieren (räumliche Operation, seit Lab 0.1.35). Übertragen aus den Plotter-Umwandlern «Voronoi Stippling» und «Voronoi»
+// ORNAMENT LAB – Punktieren (räumliche Operation, seit Lab 0.1.36). Übertragen aus den Plotter-Umwandlern «Voronoi Stippling» und «Voronoi»
 // von Makelangelo (GPL-2.0, nur das Prinzip, kein Code) und der Punktiermanier des Kupferstichs: Der Ton wird zur Dichte der Punkte, nicht
 // zu ihrer Grösse. Makelangelo verteilt die Punkte mit gewichteter Voronoi-Relaxation, Schritt um Schritt (Secord, «Weighted Voronoi
 // Stippling», 2002); das Lab rechnet stattdessen je Pixel: In jeder Zelle eines Gitters liegt ein gewürfelter Punkt, und er bleibt nur,

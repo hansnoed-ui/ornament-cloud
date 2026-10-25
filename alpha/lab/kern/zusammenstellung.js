@@ -59,7 +59,7 @@ export const BILD_REZEPTE = Object.freeze({
   "bild.verzerrung": { operation: "lab.verzerrung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
   "bild.licht": { operation: "lab.licht", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
   "bild.raster": { operation: "lab.raster", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
-  // die Linienbilder (seit 0.1.35, nach den Plotter-Umwandlern von Makelangelo): lebendig auf der Grafikkarte, «lauf» bewegt sie von selbst
+  // die Linienbilder (seit 0.1.36, nach den Plotter-Umwandlern von Makelangelo): lebendig auf der Grafikkarte, «lauf» bewegt sie von selbst
   "bild.puls": { operation: "lab.puls", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
   "bild.spirale": { operation: "lab.puls", parameter: { traeger: "spirale", abstand: 0.012, seite: 1000, bilder: 18 }, tiefe: 0.5 },
   "bild.schraffur": { operation: "lab.schraffur", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.25 },

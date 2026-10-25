@@ -1,4 +1,4 @@
-// ORNAMENT LAB – Schraffur in Lagen (räumliche Operation, seit Lab 0.1.35). Übertragen aus den Plotter-Umwandlern «Crosshatch» und
+// ORNAMENT LAB – Schraffur in Lagen (räumliche Operation, seit Lab 0.1.36). Übertragen aus den Plotter-Umwandlern «Crosshatch» und
 // «Multipass» von Makelangelo (GPL-2.0, nur das Prinzip, kein Code) und der Kreuzschraffur des Kupferstichs: Das Dunkel wird in Stufen
 // geteilt, und jede Stufe bekommt eine eigene Lage paralleler Linien in einem eigenen Winkel. Die erste Lage liegt schon im Halbschatten,
 // jede weitere kommt erst dazu, wo das Bild dunkler wird; im tiefen Dunkel liegen alle übereinander. Innerhalb ihrer Stufe schwillt eine

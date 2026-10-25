@@ -1,4 +1,4 @@
-// ORNAMENT LAB – Fliessfeld (räumliche Operation, seit Lab 0.1.35). Übertragen aus dem Plotter-Umwandler «Flow Field» von Makelangelo
+// ORNAMENT LAB – Fliessfeld (räumliche Operation, seit Lab 0.1.36). Übertragen aus dem Plotter-Umwandler «Flow Field» von Makelangelo
 // (GPL-2.0, nur das Prinzip, kein Code: Linien folgen einem Richtungsfeld aus Rauschen) und der Faltung entlang von Feldlinien
 // (Line Integral Convolution, Cabral und Leedom, SIGGRAPH 1993). Jede Stelle folgt dem Feld ein Stück vorwärts und rückwärts und mittelt
 // dabei ein feines Korn; so verwischt das Korn zu Strichen, die dem Feld folgen. Wo das Bild dunkel ist, wird aus dem Strichmuster Tinte.

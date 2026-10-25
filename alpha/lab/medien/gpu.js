@@ -169,7 +169,7 @@ void main() {
   aus(uMischart == 1 ? 1.0 - (1.0 - q) * (1.0 - min(g, 1.0)) : uMischart == 2 ? g : q + g);
 }`;
 
-// Linienbilder (seit Lab 0.1.35, operationen/linienbild.js): der Ton aus einer gröberen Stufe der Textur (der Stift mittelt eine kleine
+// Linienbilder (seit Lab 0.1.36, operationen/linienbild.js): der Ton aus einer gröberen Stufe der Textur (der Stift mittelt eine kleine
 // Fläche), Grund und Tinte nach der Wahl «Farben», ein Würfel und Wertrauschen für Zufall und Zittern
 const LINIEN = `${KOPF}
 uniform float u_gewicht, u_umkehren, uZeit; uniform int uFarbe;
@@ -368,7 +368,7 @@ const EFFEKTE = {
   "lab.feedback": { quelle: FEEDBACK, rueckkopplung: true, uniforms: (p) => ({ uDreh: farbdrehung(p.farbdrehung), u_zoom: p.zoom, u_drehung: p.drehung, u_versatzX: p.versatzX, u_versatzY: p.versatzY,
     u_mischung: p.mischung, u_abklingen: p.abklingen, uMischart: { i: index(p.mischart, ["mischen", "heller", "differenz"]) }, uRand: { i: index(p.rand, RAND) } }) },
   "lab.licht": { licht: true },
-  // die Linienbilder (seit 0.1.35): «lauf» bewegt die Zeichnung von selbst (uZeit in Umläufen), die Modulation folgt dem Klang
+  // die Linienbilder (seit 0.1.36): «lauf» bewegt die Zeichnung von selbst (uZeit in Umläufen), die Modulation folgt dem Klang
   "lab.puls": { quelle: PULS, uniforms: (p, { t }) => ({ ...tonU(p, t), u_abstand: p.abstand, u_hub: p.hub, u_dichte: p.dichte, u_ruhe: p.ruhe, u_strich: p.strich, u_winkel: p.winkel,
     u_mitteX: p.mitteX, u_mitteY: p.mitteY, u_phase: p.phase, uTraeger: { i: index(p.traeger, ["linien", "spirale", "kreise"]) }, uWelle: { i: index(p.welle, ["sinus", "zickzack", "rechteck", "schwelle"]) } }) },
   "lab.schraffur": { quelle: SCHRAFFUR, uniforms: (p, { t }) => {

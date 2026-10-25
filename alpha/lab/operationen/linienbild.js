@@ -1,4 +1,4 @@
-// ORNAMENT LAB – gemeinsame Teile der Linienbilder (seit Lab 0.1.35): Pulslinien, Schraffur in Lagen, Fliessfeld, Punktieren, Teilung.
+// ORNAMENT LAB – gemeinsame Teile der Linienbilder (seit Lab 0.1.36): Pulslinien, Schraffur in Lagen, Fliessfeld, Punktieren, Teilung.
 // Die fünf Operationen übertragen Prinzipien der Bildumwandlung für Zeichenmaschinen (Plotter): Das Bild wird nicht gefiltert, sondern
 // gelesen, und an jeder Stelle entscheidet sein Ton, wie eine Linie, ein Punkt oder eine Zelle gezogen wird. Vorbild war die Sammlung der
 // Bildumwandler in Makelangelo (Marginally Clever Robots, GPL-2.0); übernommen ist kein Code, nur die Prinzipien, eigenständig und je Pixel

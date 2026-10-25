@@ -1,4 +1,4 @@
-// ORNAMENT LAB – Pulslinien (räumliche Operation, seit Lab 0.1.35). Übertragen aus den Plotter-Umwandlern «Pulse», «Spiral Pulse», «Sandy»
+// ORNAMENT LAB – Pulslinien (räumliche Operation, seit Lab 0.1.36). Übertragen aus den Plotter-Umwandlern «Pulse», «Spiral Pulse», «Sandy»
 // und «Spiral» von Makelangelo (GPL-2.0, nur das Prinzip, kein Code): Eine Trägerlinie läuft über das Bild, parallele Linien, eine Spirale
 // aus der Mitte oder Kreise um einen Punkt, und schwingt, wo das Bild dunkel ist. Der Ton regelt beides, den Hub (Amplitude) und die
 // Dichte der Schwingung (Frequenz), wie ein Signal, das zugleich amplituden- und frequenzmoduliert ist. «Schwelle» schwingt nicht: Der Stift
