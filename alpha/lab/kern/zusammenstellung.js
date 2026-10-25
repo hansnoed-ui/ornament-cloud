@@ -26,7 +26,7 @@ import { FORMATE } from "../operationen/format.js";
 
 export { FORMATE };
 
-export const ZUSAMMENSTELLUNG_VERSION = "0.6.0";
+export const ZUSAMMENSTELLUNG_VERSION = "0.6.1";
 /** Dauer einer Karte (Zettel, ORNA) am Anfang oder Ende des Films, in Sekunden (seit 0.1.34 eine Sekunde länger, vorher 2,5) */
 export const KARTE_DAUER = 3.5;
 export const VARIANTEN_JE_ABSCHNITT = 10;   // seit Lab 0.1.16: 60 Motive in 30 s (vorher 3, also 18)
@@ -55,11 +55,14 @@ export const abschnitteEigen = (abschnitte) => abschnitte.some((a) => !a.an || a
 
 /** Dauer eines Ablaufs von PHORMA I oder II in der Zusammenstellung (s): etwas länger als ein Abschnitt, damit er beim Wechsel noch läuft */
 export const SZENE_DAUER = 8;
+/** das Bild am Anfang des Films (s, seit 0.1.39): einmal vorn, ausserhalb der Runde im Takt */
+export const BILD_DAUER = 1;
 /** Bildeffekt → Operation: Parameter, und welcher Parameter der Lautstärke folgt (ohne Angabe: was die Operation selbst vorschlägt) */
 export const BILD_REZEPTE = Object.freeze({
   "bild.feedback": { operation: "lab.feedback", parameter: { seite: 720 }, ziel: "zoom", tiefe: 0.35 },
   "bild.wiederholung": { operation: "lab.wiederholung", parameter: { seite: 1200 }, ziel: "groesse", tiefe: 0.5 },
-  "bild.farbe": { operation: "lab.farbe", parameter: { saettigung: 1.3 }, ziel: "farbdrehung", tiefe: 1 },
+  // Farbe: die Drehung steht auf 90° und die Lautstärke dreht sie weiter (seit 0.1.39; vorher 0°: in leisen Momenten stand das Ausgangsbild)
+  "bild.farbe": { operation: "lab.farbe", parameter: { saettigung: 1.3, farbdrehung: 90 }, ziel: "farbdrehung", tiefe: 1 },
   "bild.glitch": { operation: "lab.glitch", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
   "bild.verzerrung": { operation: "lab.verzerrung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
   "bild.licht": { operation: "lab.licht", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
@@ -285,10 +288,13 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   const vorne = [...(intro ? [{ ergebnis: intro, einmal: true, halten: INTRO_DAUER, uebergang: "schnitt" }] : []), ...(zettelKarte ? [{ ergebnis: zettelKarte, einmal: true, halten: KARTE_DAUER }] : [])];
   const hinten = [...(outro ? [{ ergebnis: outro, einmal: true, halten: OUTRO_DAUER, uebergang: "schnitt", dehnen: true }] : []), ...(signet ? [{ ergebnis: signet, einmal: true, halten: zeiten.signetDauer }] : []),
     ...(ornaKarte ? [{ ergebnis: ornaKarte, einmal: true, halten: KARTE_DAUER }] : [])];
-  const karten = vorne.length + hinten.length, kartenDauer = [...vorne, ...hinten].reduce((s, x) => s + x.halten, 0);
+  // das Bild steht wie eine Karte einmal vorn (seit 0.1.39, BILD_DAUER): im Takt reihum kehrte die Runde sonst beim Bild wieder, sobald die Anschläge
+  // über die Stationen hinausreichen (gleich starke Anschläge an der Schwelle), und mitten im Film stand das Ausgangsbild
+  const bildStation = { ergebnis: video?.[0] ?? grundbild, einmal: true, halten: BILD_DAUER };
+  const karten = vorne.length + 1 + hinten.length, kartenDauer = [...vorne, bildStation, ...hinten].reduce((s, x) => s + x.halten, 0);
 
   // 4 · Film: Zettel (Intro), Bild, alle Abschnitte, Konstellation (Outro), Signet; im Takt der Anschläge reihum, sonst gleichmässig über die Dauer
-  let stationen = [...vorne, ...[video?.[0] ?? grundbild, ...ergebnisse.map((e) => e.id)].slice(0, GRENZEN.stationen - karten), ...hinten];
+  let stationen = [...vorne, bildStation, ...ergebnisse.map((e) => e.id).slice(0, GRENZEN.stationen - karten), ...hinten];
   const f = FILM[plan.uebergang], folge = ergebnis(projekt, einsaetze.id).daten;
   const dauer = Math.min(laenge, folge?.dauer ?? laenge), n = stationen.length;
   // nicht reihum: jede Station kommt einmal, darum höchstens so viele Wechsel wie Stationen, verteilt auf die stärksten Anschläge

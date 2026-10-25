@@ -12,7 +12,9 @@ import { moduliere, routeFuersProtokoll } from "./modulation.js";
 import { bildfolge, routenAufloesen, eingaengeLaden } from "./ausfuehrung.js";
 import { neuesBild, skalieren, luminanz, NACHT } from "./bilddaten.js";
 
-export const STATIONEN_VERSION = "0.5.0";
+export const STATIONEN_VERSION = "0.6.0";
+/** der Eintritt (s, seit 0.6.0 / Lab 0.1.39): eine lebendige Quelle kommt über diese Zeit aus dem letzten Filmbild, statt mit ihrem ersten Bild zu beginnen */
+export const EINTRITT = 2;
 
 export const UEBERGAENGE = Object.freeze({
   blende: "Überblendung",
@@ -284,10 +286,13 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
         const ein = await eingaengeLaden(op, projekt, medien, k.eingaben);
         eigene.set(k.id, await op.lebend(ein, e.variante?.parameter ?? k.parameter, { seed: (e.variante?.seed ?? k.seed ?? 1) >>> 0, abbrechen }));
       }
-      l = { eigen: eigene.get(k.id) };
+      l = { eigen: eigene.get(k.id), quelle: `eigen:${k.id}` };
     } else if (k && nurBild && k.eingaben.bild && mitGpu?.kann(k.operation)) {
+      // seit 0.6.0 je Knoten (nicht je Station): die Varianten eines Knotens sind dasselbe lebendige Bild zur Filmzeit, darum behält die Rückkopplung
+      // ihren Zustand über alle Stationen des Knotens (schluessel) und beginnt nicht an jeder Station wieder beim Eingang (das war das Ausgangsbild,
+      // das im Film alle halbe Sekunde aufblitzte); auch der Startwert ist der des Knotens, damit kein Rauschen springt
       const op = register.hole(k.operation), routen = routenAufloesen(projekt, k.variation?.routen ?? []), fest = e.variante?.parameter ?? k.parameter;
-      l = { operation: k.operation, eingang: k.eingaben.bild, seed: (e.variante?.seed ?? k.seed ?? 1) >>> 0,
+      l = { operation: k.operation, eingang: k.eingaben.bild, seed: (k.seed ?? e.variante?.seed ?? 1) >>> 0, schluessel: k.id, quelle: `gpu:${k.id}`,
         parameter: (t) => (routen.length ? moduliere(op, k.parameter, routen, Math.min(1, Math.max(0, t / Math.max(1e-3, pt.dauer)))) : fest) };
     }
     lagen.set(id, l);
@@ -295,6 +300,25 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
   };
   // anteil: wie weit die Station in ihrem Halten ist (0..1; beim Übergang 1 für die gehende, 0 für die kommende) – für Bühnen, die ihre Stationen
   // kennen (The Fictory läuft so von Zustand zu Zustand); eine Bühne mit zeitbasis «auftritt» zählt ihre Zeit ab dem ersten Bild ihrer Stationen
+  // der Eintritt (seit 0.6.0): das erste Bild einer lebendigen Quelle (ein Knoten auf der Grafikkarte, eine eigene Bühne) ist selten das, was vorher
+  // lief – eine Szene von PHORMA beginnt schwarz, die Rückkopplung beim Eingang, der Zerfall beim ganzen Bild, das Outro beim Standbild. Darum
+  // kommt jede Quelle über EINTRITT Sekunden aus dem letzten Filmbild vor ihrem ersten Bild (Überblendung), bei einem Schnitt wie in einem
+  // Übergang; danach läuft ihr Bild rein. Christian (25. Oktober 2026): «kurze schwarze Bilder oder das Ausgangsbild … etwas fliessender»
+  let letztes = null;   // das zuletzt ausgegebene Filmbild
+  const merk = (b) => { letztes = b; return b; };
+  const eintritte = new Map(), rohe = new Map(), je = Math.max(1, Math.round(EINTRITT * fps));
+  const eintritt = (quelle, b) => {
+    rohe.set(quelle, b);   // das reine Bild der Quelle (die Maske einer Schwelle nimmt es, nicht die Mischung)
+    let e = eintritte.get(quelle);
+    if (!e) { e = { ab: n, von: letztes }; eintritte.set(quelle, e); }
+    if (!e.von) return b;
+    const k = (n - e.ab + 1) / (je + 1);
+    if (k >= 1 || e.von.width !== b.width || e.von.height !== b.height) { e.von = null; return b; }
+    return blende(e.von, b, k);
+  };
+  const bilder = new Map();   // je Quelle das Bild dieses Filmbilds (ein Übergang zwischen zwei Stationen desselben Knotens fragt zweimal)
+  // eine Quelle loslassen, wenn ihre letzte Station vorbei ist (seit 0.6.0 je Knoten, vorher je Station): Eintritt, Bild, Zustand der Rückkopplung
+  const loslassen = async (id) => { const l = await lage(id); if (!l) return; eintritte.delete(l.quelle); bilder.delete(l.quelle); rohe.delete(l.quelle); if (l.schluessel) mitGpu?.vergiss?.(l.schluessel); };
   const lebend = async (j, id, anteil = 0) => {
     const l = await lage(id);
     if (!l) return null;
@@ -303,11 +327,15 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
       if (e.zeitbasis === "auftritt") e.auftrittBild ??= n;
       const t = (n - (e.zeitbasis === "auftritt" ? e.auftrittBild : 0)) / fps, erg = ergebnis(projekt, id);
       const b = await e.bild(t, { station: j, ergebnis: id, variante: erg?.variante ?? null, anteil: Math.min(1, Math.max(0, anteil)), halten: pt.folge[j]?.halten ?? null });
-      return b.width === W && b.height === H ? b : einpassen(b, W, H);
+      return eintritt(l.quelle, b.width === W && b.height === H ? b : einpassen(b, W, H));
     }
+    const schon = bilder.get(l.quelle);
+    if (schon?.n === n) return schon.bild;
     if (!eingaenge.has(l.eingang)) { if (eingaenge.size > 3) eingaenge.delete(eingaenge.keys().next().value); eingaenge.set(l.eingang, await roh(l.eingang)); }
     const t = n / fps;
-    return mitGpu.bild({ operation: l.operation, eingang: eingaenge.get(l.eingang), parameter: l.parameter(t), seed: l.seed, t, schritt: n, schluessel: String(j), W, H });
+    const b = eintritt(l.quelle, mitGpu.bild({ operation: l.operation, eingang: eingaenge.get(l.eingang), parameter: l.parameter(t), seed: l.seed, t, schritt: n, schluessel: l.schluessel, W, H }));
+    bilder.set(l.quelle, { n, bild: b });
+    return b;
   };
   const grenze = () => { if (n > GRENZEN.filmBilder) throw new Error(`Grenze: höchstens ${GRENZEN.filmBilder} Bilder je Film`); };
   try {
@@ -316,21 +344,26 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
     const a = await bild(x.ergebnis), ab = n;
     soll += x.halten;
     const bis = Math.max(ab + 1, Math.round(soll * fps));
-    do { yield (await lebend(j, x.ergebnis, (n - ab) / Math.max(1, bis - 1 - ab))) ?? a; n++; } while (n < Math.round(soll * fps));
+    do { yield merk((await lebend(j, x.ergebnis, (n - ab) / Math.max(1, bis - 1 - ab))) ?? a); n++; } while (n < Math.round(soll * fps));
     const ue = x.uebergang, eintrag = { ergebnis: x.ergebnis, ab: rund(ab / fps), bild: ab, uebergang: ue?.art ?? null, bilder: 0, ...((await lage(x.ergebnis)) ? { lebendig: true } : {}) };
     zeitplan.push(eintrag);
-    if (!ue) { eintrag.bilder = n - ab; break; }
+    if (!ue) { eintrag.bilder = n - ab; await loslassen(x.ergebnis); break; }
     const ziel = pt.folge[j + 1].ergebnis;
-    if (ue.art === "verlauf") {
+    // ein Verlauf in eine lebendige Station (seit 0.6.0): der Verlauf der Operation geht von Standbild zu Standbild, während davor und danach das
+    // laufende Bild steht – zwei Sprünge. Die lebendige Station entwickelt sich selbst aus ihrem Eingang (Rückkopplung, Szene), darum wird der
+    // Wechsel eine Überblendung gleicher Länge (ohne feste Länge: die des Plans), und die Quelle kommt mit ihrem Eintritt
+    let art = ue.art, dauerUe = ue.dauer;
+    if (art === "verlauf" && (await lage(ziel))) { art = "blende"; dauerUe = ue.dauer ?? pt.uebergang; eintrag.hinweis = "lebendig: Überblendung statt Verlauf"; }
+    if (art === "verlauf") {
       const folge = () => bildfolge({ register, projekt, medien, ergebnisId: ziel, abbrechen });
       if (ue.dauer === null) {   // eigene Länge: jedes Bild des Verlaufs
-        for await (const f of folge()) { yield einpassen(f, W, H); n++; grenze(); }
+        for await (const f of folge()) { yield merk(einpassen(f, W, H)); n++; grenze(); }
         soll = n / fps;
       } else if (verlaufGestreckt(register, projekt, ziel)) {   // feste Länge, die Operation kennt ihre Bildzahl: in einem Durchgang gestreckt
         const m = Math.round((soll + ue.dauer) * fps) - n;
-        let q = 0, letztes = null;
-        if (m > 0) for await (const f of bildfolge({ register, projekt, medien, ergebnisId: ziel, abbrechen, bilder: m })) { if (q >= m) break; yield (letztes = einpassen(f, W, H)); n++; q++; }
-        while (letztes && q < m) { yield letztes; n++; q++; }
+        let q = 0;
+        if (m > 0) for await (const f of bildfolge({ register, projekt, medien, ergebnisId: ziel, abbrechen, bilder: m })) { if (q >= m) break; yield merk(einpassen(f, W, H)); n++; q++; }
+        while (q > 0 && q < m) { yield letztes; n++; q++; }
         soll += ue.dauer;
       } else {   // feste Länge (Takt): die Bilder des Verlaufs gleichmässig auswählen, dafür erst zählen
         const m = Math.round((soll + ue.dauer) * fps) - n;
@@ -339,26 +372,29 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
         const stelle = (q) => (m === 1 ? N - 1 : Math.round((q * (N - 1)) / (m - 1)));   // aufsteigend: Bild q des Films zeigt Bild stelle(q) des Verlaufs
         let i = 0, q = 0;
         for await (const f of folge()) {
-          if (q < m && stelle(q) === i) { const b = einpassen(f, W, H); while (q < m && stelle(q) === i) { yield b; n++; q++; } }
+          if (q < m && stelle(q) === i) { const b = einpassen(f, W, H); while (q < m && stelle(q) === i) { yield merk(b); n++; q++; } }
           i++;
         }
         soll += ue.dauer;
       }
-    } else if (ue.art !== "schnitt") {
+    } else if (art !== "schnitt") {
       // Schwelle: die Maske ist die Helligkeit im Ziel. Bei einer lebendigen Station ist das Ziel das laufende Bild, nicht ihr Standbild (seit 0.1.35):
       // das Standbild des Outros der Signatur zeigt das Rad von ORNA mit der Konstellation, und als Maske liess es das Rad schon über den Kacheln erscheinen
-      const b = await bild(ziel), zielLebendig = Boolean(await lage(ziel)), hell = ue.art === "schwelle" && !zielLebendig ? helligkeit(b) : null;
-      const m = Math.round((soll + ue.dauer) * fps) - n;
+      const b = await bild(ziel), lz = await lage(ziel), hell = art === "schwelle" && !lz ? helligkeit(b) : null;
+      const m = Math.round((soll + dauerUe) * fps) - n;
       for (let i = 1; i <= m; i++) {
         abbrechen?.throwIfAborted?.();
-        const a1 = (await lebend(j, x.ergebnis, 1)) ?? a, b1 = (await lebend(j + 1, ziel, 0)) ?? b;
-        const maske = ue.art === "schwelle" ? hell ?? helligkeit(b1) : null;
-        yield maske ? schwelle(a1, b1, maske, i / (m + 1)) : blende(a1, b1, i / (m + 1)); n++;
+        const a1 = (await lebend(j, x.ergebnis, 1)) ?? a;
+        // im Übergang kommt die neue Quelle aus dem laufenden Bild der gehenden Station, nicht aus einem eingefrorenen (ihr Eintritt läuft weiter)
+        const ez = lz && lz.quelle !== (await lage(x.ergebnis))?.quelle ? eintritte.get(lz.quelle) : null; if (ez?.von) ez.von = a1;
+        const b1 = (await lebend(j + 1, ziel, 0)) ?? b;
+        const maske = art === "schwelle" ? hell ?? helligkeit((lz && rohe.get(lz.quelle)) || b1) : null;
+        yield merk(maske ? schwelle(a1, b1, maske, i / (m + 1)) : blende(a1, b1, i / (m + 1))); n++;
       }
-      soll += ue.dauer;
+      soll += dauerUe;
     }
     eintrag.bilder = n - ab;
-    mitGpu?.vergiss?.(String(j));
+    if ((await lage(x.ergebnis))?.quelle !== (await lage(ziel))?.quelle) await loslassen(x.ergebnis);   // die nächste Station hat eine andere Quelle
     grenze();
   }
   } finally { for (const b of eigene.values()) { try { b.entsorgen?.(); } catch { /* schon weg */ } } }
