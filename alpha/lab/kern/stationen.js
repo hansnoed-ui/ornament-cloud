@@ -12,7 +12,7 @@ import { moduliere, routeFuersProtokoll } from "./modulation.js";
 import { bildfolge, routenAufloesen, eingaengeLaden } from "./ausfuehrung.js";
 import { neuesBild, skalieren, luminanz, NACHT } from "./bilddaten.js";
 
-export const STATIONEN_VERSION = "0.6.0";
+export const STATIONEN_VERSION = "0.6.1";
 /** der Eintritt (s, seit 0.6.0 / Lab 0.1.39): eine lebendige Quelle kommt über diese Zeit aus dem letzten Filmbild, statt mit ihrem ersten Bild zu beginnen */
 export const EINTRITT = 2;
 
@@ -326,7 +326,16 @@ async function* stationsbilder({ register, projekt, medien, partitur: pt, seite 
       const e = l.eigen;
       if (e.zeitbasis === "auftritt") e.auftrittBild ??= n;
       const t = (n - (e.zeitbasis === "auftritt" ? e.auftrittBild : 0)) / fps, erg = ergebnis(projekt, id);
-      const b = await e.bild(t, { station: j, ergebnis: id, variante: erg?.variante ?? null, anteil: Math.min(1, Math.max(0, anteil)), halten: pt.folge[j]?.halten ?? null });
+      // das Folgende (seit 0.6.1): eine Bühne, die ab e.folgendAb (s ihrer Zeit) in die nächste Station führt (der Scratch des Intros), bekommt deren
+      // laufendes Bild als lage.folgend; die folgende Quelle tritt damit schon hier auf, ihr Eintritt beginnt bei ihrem eigenen Standbild (nicht bei
+      // der Bühne), und nach dem Schnitt läuft sie weiter. Christian (25. Oktober 2026): «besser, wenn der Scratch mit dem ersten Effekt einsetzt»
+      let folgend = null;
+      if (Number.isFinite(e.folgendAb) && t >= e.folgendAb && j + 1 < pt.folge.length) {
+        const zielId = pt.folge[j + 1].ergebnis, lz = await lage(zielId);
+        if (lz && !eintritte.has(lz.quelle)) eintritte.set(lz.quelle, { ab: n, von: await bild(zielId) });
+        folgend = (await lebend(j + 1, zielId, 0)) ?? (await bild(zielId));
+      }
+      const b = await e.bild(t, { station: j, ergebnis: id, variante: erg?.variante ?? null, anteil: Math.min(1, Math.max(0, anteil)), halten: pt.folge[j]?.halten ?? null, folgend });
       return eintritt(l.quelle, b.width === W && b.height === H ? b : einpassen(b, W, H));
     }
     const schon = bilder.get(l.quelle);

@@ -1391,7 +1391,7 @@ test("Partitur 0.4.0: Stationen mit «einmal» stehen als Titelkarten ausserhalb
   const [k1, k2, k3] = b.ergebnisse.map((x) => x.id);
   const plan = { stationen: [{ ergebnis: k1, einmal: true, halten: 1.2 }, e.id, k2, { ergebnis: k3, einmal: true, halten: 1.2 }], halten: 1, uebergang: 0.2, art: "blende" };
   const pt = ST.partitur(p, { ...plan, takt: { ereignisfolge: folge.id, schwelle: 0, wiederholen: true } });
-  assert.equal(pt.version, "0.6.0");
+  assert.equal(pt.version, "0.6.1");
   assert.equal(pt.folge[0].ergebnis, k1); assert.equal(pt.folge[0].einmal, true); assert.equal(pt.folge[0].halten, 1.2); assert.equal(pt.folge[0].uebergang.dauer, 0.2);
   assert.equal(pt.folge.at(-1).ergebnis, k3); assert.equal(pt.folge.at(-1).einmal, true);
   const mitte = pt.folge.slice(1, -1), nach = einsaetze.filter((z) => z > 1.4 && z <= 6 - 1.4);
@@ -1639,6 +1639,40 @@ test("Eintritt (0.1.39): eine lebendige Quelle kommt über 2 s aus dem letzten F
   assert.deepEqual(P.pruefeProjekt(p), []);
 });
 
+test("Das Folgende (0.1.40): eine Bühne mit folgendAb bekommt das laufende Bild der nächsten Station, die damit schon auftritt und aus ihrem Standbild kommt", async () => {
+  const { erstelleRegister } = await lab("kern/register.js");
+  const { OPERATIONEN } = await lab("operationen/index.js");
+  const r = erstelleRegister(), gesehen = [];
+  // ein Stellvertreter des Intros (Bühne über 2 s, ab 1 s führt sie ins Folgende und zeigt es, sonst Blau) und der PHORMA-Szene (Bühne stempelt ihre Zeit)
+  for (const op of OPERATIONEN) {
+    if (op.id === "signatur.intro") r.registriere({ ...op, verfuegbar: () => true,
+      async lebend({ bild: b }) { return { dauer: 2, zeitbasis: "auftritt", folgendAb: 1, bild(t, lage) { gesehen.push({ t, folgend: lage?.folgend ? lage.folgend.data[0] : null }); return lage?.folgend ?? neuesBild(b.width, b.height, [0, 0, 250]); }, entsorgen() {} }; },
+      async ausfuehren({ bild: b }) { return { ausgaben: [{ typ: "IMAGE", titel: "Intro", bild: neuesBild(b.width, b.height, [0, 0, 250]) }], protokoll: {} }; } });
+    else if (op.id === "phorma.gewebe") r.registriere({ ...op, verfuegbar: () => true,
+      async lebend({ bild: b }) { return { dauer: 9, zeitbasis: "auftritt", bild(t) { return neuesBild(b.width, b.height, [Math.round(t * 10) % 256, 0, 0]); }, entsorgen() {} }; },
+      async ausfuehren({ bild: b }, p) { return { ausgaben: Array.from({ length: p.bilder }, () => ({ typ: "IMAGE", titel: "Standbild", bild: neuesBild(b.width, b.height, [200, 200, 200]) })), protokoll: {} }; } });
+    else r.registriere(op);
+  }
+  const { p, m, e, t } = mitTon();
+  const z = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "zettel.strophe", eingaben: {}, parameter: { strophe: "1" } } });
+  const i = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "signatur.intro", eingaben: { text: z.ergebnisse[0].id, bild: e.id, ton: t.id }, parameter: { beginn: 0 } } });
+  const g = await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "phorma.gewebe", eingaben: { bild: e.id, ton: t.id }, parameter: { bilder: 2, dauer: 9, beginn: 0 }, seed: 1 } });
+  const plan = { stationen: [{ ergebnis: i.ergebnisse[0].id, einmal: true, halten: 2, uebergang: "schnitt" }, ...g.ergebnisse.map((y) => y.id)], art: "schnitt", halten: 2, uebergang: 0, fps: 10, lebendig: true };
+  const out = [], zeitplan = [];
+  for await (const b of ST.filmbilder({ register: r, projekt: p, medien: m, partitur: ST.partitur(p, plan), seite: 40, zeitplan, lebendig: null })) out.push(b);
+  assert.equal(out.length, 60); assert.deepEqual(zeitplan.map((x) => x.bild), [0, 20, 40]);
+  const { width: W, height: H } = out[0], mitte = ((H >> 1) * W + (W >> 1)) * 4, rot = (k) => out[k].data[mitte], blau = (k) => out[k].data[mitte + 2];
+  // vor folgendAb bekommt die Bühne nichts (Blau), ab 1 s das laufende Bild der Szene: ihre Zeit beginnt dort (Stempel 0), sie kommt aus ihrem Standbild (200)
+  assert.ok(gesehen.slice(0, 10).every((x) => x.folgend === null) && gesehen.slice(10).every((x) => x.folgend !== null), `das Folgende ab 1 s: ${JSON.stringify(gesehen.map((x) => x.folgend))}`);
+  assert.equal(blau(5), 250, "vorher die Bühne selbst");
+  assert.ok(rot(10) > 190 && rot(10) <= 200, `Bild 10: das Folgende beginnt bei seinem Standbild (200), nicht bei der Bühne: ${rot(10)}`);
+  assert.ok(rot(19) < rot(10) && rot(19) > 9, `Bild 19: unterwegs vom Standbild zur Szene: ${rot(19)}`);
+  // nach dem Schnitt läuft die Szene weiter (Zeit ab ihrem Auftritt auf der Bühne: Bild 20 ist ihre Sekunde 1), der Eintritt endet bei 2 s (Bild 30)
+  assert.ok(Math.abs(rot(20) - rot(19)) < 25, `kein Sprung am Schnitt: ${rot(19)} → ${rot(20)}`);
+  assert.equal(rot(30), 20, "Bild 30: rein die Szene, zwei Sekunden nach ihrem Auftritt im Scratch"); assert.equal(rot(59), 49);
+  assert.deepEqual(zeitplan.map((x) => Boolean(x.lebendig)), [true, true, true]);
+});
+
 test("Format (0.1.37): lab.format schneidet ein Bild mittig in ein Seitenverhältnis, gerade Masse, Lage verschiebt den Ausschnitt", async () => {
   const { ausschnitt, formatOperation, FORMATE } = await lab("operationen/format.js");
   assert.deepEqual(Object.keys(FORMATE), ["9:16", "4:5", "1:1", "16:9"]);
@@ -1681,7 +1715,7 @@ test("Zusammenstellung mit Format (0.1.37): das Material wird zuerst eingepasst,
   const g = await m.bild(P.ergebnis(p, x.grundbild)); assert.equal(g.width, 40); assert.equal(g.height, 72);
   assert.equal(p.knoten.find((k) => k.operation === "lab.farbe" && k.eingaben.bild === x.grundbild)?.operation, "lab.farbe", "der erste Abschnitt rechnet auf dem eingepassten Bild");
   assert.deepEqual(laeufe.map((l) => [l.op, l.bild]), [["signatur.intro", [40, 72]], ["signatur.outro", [40, 72]], ["signatur.signet", [40, 72]]], "Intro, Outro und Signet im Format");
-  assert.equal(x.plan.stationen[1].ergebnis, x.grundbild, "die erste Station der Animation ist das eingepasste Bild: der Film nimmt sein Format");
+  assert.equal(x.plan.stationen[1], x.ergebnisse[0].id, "nach dem Intro der erste Abschnitt (seit 0.1.40 kein Bild als Station); der Film nimmt das Format des Intros im Mass des eingepassten Bilds");
   for (const id of x.ergebnisse.map((e) => e.id)) { const b = await m.bild(P.ergebnis(p, id)); assert.equal(`${b.width}×${b.height}`, "40×72"); }
   // aus einem Video: jedes Standbild wird eingepasst
   const q = mitTon(); laeufe.length = 0;
@@ -1952,10 +1986,21 @@ test("Zusammenstellung mit Signatur (0.1.26): Intro mit dem Zettel, Outro mit de
   assert.deepEqual(x.plan.stationen[0], { ergebnis: x.signatur.intro, einmal: true, halten: G.INTRO_DAUER, uebergang: "schnitt" });
   assert.deepEqual(x.plan.stationen.at(-2), { ergebnis: x.signatur.outro, einmal: true, halten: G.OUTRO_DAUER, uebergang: "schnitt", dehnen: true });
   assert.deepEqual(x.plan.stationen.at(-1), { ergebnis: x.signatur.signet, einmal: true, halten: G.SIGNET_DAUER });
-  assert.equal(x.plan.stationen.length, 64);
+  assert.ok(x.plan.stationen.length <= 63, "Intro, bis 60 Varianten, Outro, Signet: mit dem Intro steht das Bild nicht als Station (seit 0.1.40)");
+  assert.ok(x.ergebnisse.slice(0, 10).some((e) => e.id === x.plan.stationen[1]), "nach dem Intro gleich der erste Abschnitt: der Scratch führt hinein");
   assert.equal(x.entscheidung.details.film.signatur.gesamt, z.gesamt);
   const pt = ST.partitur(p, { ...x.plan, fps: 30 });
   assert.ok(Math.abs(pt.dauer - z.gesamt) < 0.6, `der Film dauert mit Signatur ${pt.dauer} s`);
+  // seit 0.1.40 liegt die Schwelle der Anschläge im Fenster der Runde (zwischen Intro und Outro): jede der 60 Varianten kommt im Film vor
+  // (vorher über den ganzen Ton gewählt: die Anschläge des Intros und Outros fehlten der Runde, sie brach nach etwa der Hälfte ab)
+  // (der Ton des Tests schlägt alle 0,5 s: im Fenster von 28,6 s liegen etwa 57 Anschläge, darum bekommt jeder Abschnitt seinen Anteil der 60 Varianten)
+  assert.ok(x.plan.takt, "im Takt");
+  const runde = pt.folge.filter((f) => !f.einmal), abschnitt = (id) => Math.floor(x.ergebnisse.findIndex((e) => e.id === id) / 10);
+  assert.deepEqual([...new Set(runde.map((f) => abschnitt(f.ergebnis)))].sort(), [0, 1, 2, 3, 4, 5], "alle sechs Abschnitte kommen vor");
+  assert.ok(runde.length >= 50 && runde.length <= 66, `die Runde: fast alle 60 Varianten (${runde.length})`);
+  assert.ok(x.plan.stationen.length >= 55 && x.plan.stationen.length <= 63, `der Plan nimmt so viele Varianten, wie Anschläge im Fenster liegen (${x.plan.stationen.length})`);
+  for (let i = 0; i < 6; i++) assert.ok(x.plan.stationen.some((s) => (s.ergebnis ?? s) === x.ergebnisse[i * 10 + 9].id), `die letzte Variante von Abschnitt ${i + 1} bleibt (Eingang des nächsten)`);
+  assert.ok(runde[0].beginn >= G.INTRO_DAUER - 1e-9 && runde.at(-1).beginn + runde.at(-1).halten <= z.gesamt - G.OUTRO_DAUER - G.SIGNET_DAUER + 1e-6, "die Runde liegt zwischen Intro und Outro");
   // ohne ORNA: das Signet legt erst das Bild auf die Kugel; ohne Signatur bleibt es bei den Karten
   const q = mitTon(); laeufe.length = 0;
   const mq = await VS.messen({ register: r, projekt: q.p, medien: q.m, bild: q.e.id, ton: q.t.id });

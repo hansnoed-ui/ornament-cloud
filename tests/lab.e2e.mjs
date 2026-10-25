@@ -1005,10 +1005,10 @@ await check("Signatur (0.1.26): am Telefon Intro mit dem Zettel, Outro mit ORNA,
   await t.page.locator('#vorschlag30 select[data-bestand-wahl="orna"]').selectOption("tehching-hsieh__wendy-hui-kyong-chun");
   assert.equal(await t.page.locator("#zusammenstellung-signatur").isChecked(), true);
   assert.match(await t.page.textContent("#vorschlag30 .zusammenstellung"), /Lichtwürfel .* Rad von ORNA .* Signet ornament\.lab.* 56[.,]5 s/);
-  await S(t.page, () => { ornamentLab.film.seite = 480; });   // kleiner Film, damit die Prüfung in SwiftShader nicht zu lange rechnet
+  await S(t.page, () => { ornamentLab.film.seite = 360; });   // kleiner Film, damit die Prüfung in SwiftShader nicht zu lange rechnet (seit 0.1.40 kommen alle Abschnitte vor)
   await t.page.click("#zusammenstellung-rechnen");
   await t.page.waitForTimeout(50);
-  await warteFertig(t.page, 900000);
+  await warteFertig(t.page, 1500000);
   await t.page.waitForSelector("#vorschlag30 .zusammenstellung video");
   const z = await S(t.page, () => { const pr = ornamentLab.projekt, x = pr.exporte.at(-1), k = (op) => pr.knoten.filter((y) => y.operation === op);
     return { x, ops: pr.knoten.map((y) => y.operation), status: document.querySelector("#status").textContent, ton: k("signatur.ton")[0], intro: k("signatur.intro")[0], outro: k("signatur.outro")[0], signet: k("signatur.signet")[0],
