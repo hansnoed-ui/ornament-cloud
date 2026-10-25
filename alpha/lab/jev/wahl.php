@@ -83,9 +83,6 @@ const BILD_EFFEKTE = [
   'bild.licht' => 'Licht: helle Stellen glühen auf und strahlen aus',
   'bild.raster' => 'Raster: das Bild wird zu Punkten und Linien wie im Druck',
   'bild.gewebe' => 'Gewebe: die Umrisse des Bildes werden zu Flächen aus feinen Linien, die der Ton bewegt, bei kräftigen Einsätzen neue Bilder (PHORMA)',
-  'bild.irrfahrt' => 'Irrfahrt: ein Faden irrt durch einen Würfel aus Licht, quillt mit der Musik zu Rauch auf, bei Schlägen springt alles (PHORMA)',
-  'bild.lichtwuerfel' => 'Lichtwürfel: ein Faden irrt in einem festen Würfel aus Licht, ruhiger als die Irrfahrt (PHORMA)',
-  'bild.traube' => 'Traube: glänzende rote Perlen in einer Kugel aus Fäden, Schnitte im Takt, der Bass lässt sie glühen (PHORMA)',
   // PHORMA II (seit Lab 0.1.22, eine Operation mit Abläufen): die Grafikkarte rechnet jedes Bild aus der Zeit
   'bild.physarum' => 'Physarum: ein Schleimpilz wächst aus den markanten Stellen und findet die Formen des Bildes als Netz (PHORMA II)',
   'bild.tiefe' => 'Tiefe: ein Lichtscan tastet das Bild ab, es bekommt Relief und wird Raum (PHORMA II)',

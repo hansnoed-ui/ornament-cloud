@@ -59,12 +59,10 @@ export const BILD_REZEPTE = Object.freeze({
   "bild.verzerrung": { operation: "lab.verzerrung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
   "bild.licht": { operation: "lab.licht", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
   "bild.raster": { operation: "lab.raster", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
-  // die Szenen von PHORMA III (seit 0.1.21, operationen/phorma.js): zehn Momente der Szene als Varianten, der Film rechnet die Bühne lebendig;
-  // sie bekommen den neuen Klang als Eingang «ton» und seinen Beginn (unten)
+  // das Gewebe von PHORMA III (seit 0.1.21, operationen/phorma.js): zehn Momente der Szene als Varianten, der Film rechnet die Bühne lebendig;
+  // es bekommt den neuen Klang als Eingang «ton» und seinen Beginn (unten). Irrfahrt, Lichtwürfel und Traube sind seit 0.1.35 nicht mehr dabei:
+  // sie arbeiten nicht mit dem Bild (Christian, 25. Oktober 2026); das Gewebe wächst aus seinen Umrissen und kehrt zu ihm zurück
   "bild.gewebe": { operation: "phorma.gewebe", parameter: { bilder: VARIANTEN_JE_ABSCHNITT, dauer: DAUER }, ziel: null },
-  "bild.irrfahrt": { operation: "phorma.irrfahrt", parameter: { bilder: VARIANTEN_JE_ABSCHNITT, dauer: DAUER }, ziel: null },
-  "bild.lichtwuerfel": { operation: "phorma.lichtwuerfel", parameter: { bilder: VARIANTEN_JE_ABSCHNITT, dauer: DAUER }, ziel: null },
-  "bild.traube": { operation: "phorma.traube", parameter: { bilder: VARIANTEN_JE_ABSCHNITT, dauer: DAUER }, ziel: null },
   // PHORMA II und PHORMA I (seit 0.1.22, operationen/phorma2.js, phorma1.js): zehn Momente des Ablaufs als Varianten; im Film läuft der Ablauf ab dem
   // Auftritt seiner Stationen (zeitbasis «auftritt») in SZENE_DAUER Sekunden; ein Zettel oder eine Konstellation am Eingang gibt ihnen den Titel
   ...Object.fromEntries(["physarum", "tiefe", "welle", "tuch", ["druck", "raster"], "montage"].map((e) => { const [k, a] = Array.isArray(e) ? e : [e, e]; return [`bild.${k}`, { operation: "phorma.ii", parameter: { ablauf: a, bilder: VARIANTEN_JE_ABSCHNITT, dauer: SZENE_DAUER }, ziel: null }]; })),
