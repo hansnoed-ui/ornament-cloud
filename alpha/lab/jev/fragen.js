@@ -87,11 +87,10 @@ export const BILD_EFFEKTE = Object.freeze({
   "bild.glasfenster": "Glasfenster: Voronoi-Zellen in den Farben des Bildes, im Dunkeln klein, mit dunklen Fugen",
   "bild.teilung": "Teilung: das Bild wird zu Quadraten geviertelt, fein wo es dicht ist, grob im Hellen, jedes in seiner Farbe",
   "bild.truchet": "Truchet: Felder mit Viertelbögen, deren Richtung der Ton wählt, sie drehen sich einzeln",
-  // die Szenen von PHORMA III (seit Lab 0.1.21): eigene Welten aus dem Bild, die Grafikkarte rechnet jedes Bild aus der Zeit und dem Ton
+  // PHORMA III (seit Lab 0.1.21): das Gewebe wächst aus den Umrissen des Bildes, die Grafikkarte rechnet jedes Bild aus der Zeit und dem Ton. Irrfahrt,
+  // Lichtwürfel und Traube sind seit 0.1.35 nicht mehr in der Zusammenstellung (Christian, 25. Oktober 2026: «brauchts wohl nicht, weil sie nicht mit
+  // dem Bild arbeiten»); ihre Operationen bleiben im Register und im KATALOG der nächsten Operation
   "bild.gewebe": "Gewebe: die Umrisse des Bildes werden zu Flächen aus feinen Linien, die der Ton bewegt, bei kräftigen Einsätzen neue Bilder (PHORMA)",
-  "bild.irrfahrt": "Irrfahrt: ein Faden irrt durch einen Würfel aus Licht, quillt mit der Musik zu Rauch auf, bei Schlägen springt alles (PHORMA)",
-  "bild.lichtwuerfel": "Lichtwürfel: ein Faden irrt in einem festen Würfel aus Licht, ruhiger als die Irrfahrt (PHORMA)",
-  "bild.traube": "Traube: glänzende rote Perlen in einer Kugel aus Fäden, Schnitte im Takt, der Bass lässt sie glühen (PHORMA)",
   // PHORMA II (seit Lab 0.1.22, eine Operation mit Abläufen): die Grafikkarte rechnet jedes Bild aus der Zeit
   "bild.physarum": "Physarum: ein Schleimpilz wächst aus den markanten Stellen und findet die Formen des Bildes als Netz (PHORMA II)",
   "bild.tiefe": "Tiefe: ein Lichtscan tastet das Bild ab, es bekommt Relief und wird Raum (PHORMA II)",
