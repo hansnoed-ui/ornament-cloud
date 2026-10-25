@@ -46,9 +46,9 @@ async function ausfuehren(page) { await page.click("#ausfuehren"); await page.wa
 const { ctx, page, fehler, fremd } = await oeffne();
 let gespeichert = null;
 
-await check("Start: vier Bereiche, Register mit 34 Operationen, keine Fehler", async () => {
+await check("Start: vier Bereiche, Register mit 40 Operationen, keine Fehler", async () => {
   for (const id of ["material", "operationen", "experiment", "protokoll"]) assert.ok(await page.locator(`#${id}`).isVisible(), id);
-  assert.match(await page.textContent("#status"), /34 Operationen/);
+  assert.match(await page.textContent("#status"), /40 Operationen/);
   assert.deepEqual(fehler, []);
 });
 
@@ -621,7 +621,7 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   assert.deepEqual(Object.keys(ko), ["frage", "merkmale"]);
   assert.ok(Object.values(dr.merkmale).every((v) => /^[a-z]+$/.test(v)), "nur Stufen");
   assert.match(await p.textContent("#vorschlag30 .zusammenstellung legend"), /jev stellt zusammen \(jev-test\)/);
-  const stellen = await p.$$eval("#vorschlag30 .stellen select", (l) => l.map((x) => [x.dataset.frage, x.value]));
+  const stellen = await p.$$eval("#vorschlag30 .stellen select[data-frage]", (l) => l.map((x) => [x.dataset.frage, x.value]));
   assert.equal(stellen.length, 10);
   const bilder = stellen.filter(([k]) => k.startsWith("bild")).map(([, w]) => w);
   assert.ok(bilder.every((b, i) => i === 0 || b !== bilder[i - 1]), `kein Effekt zweimal hintereinander: ${bilder}`);
@@ -667,6 +667,11 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   // die Karten (bis 0.1.25): ohne Signatur; mit Signatur prüft «Signatur (0.1.26)» weiter unten
   assert.equal(await p.locator("#zusammenstellung-signatur").isChecked(), true, "Signatur vorgewählt");
   await p.locator("#zusammenstellung-signatur").uncheck();
+  // das Format (0.1.37): Standard «wie das Material»; 9:16 gewählt wird das Material zuerst eingepasst, der Film und die Karten sind hochkant
+  assert.equal(await p.locator("#zusammenstellung-format").inputValue(), "material");
+  assert.equal(await p.locator("#zusammenstellung-format-hinweis").count(), 0);
+  await p.locator("#zusammenstellung-format").selectOption("9:16");
+  assert.match(await p.textContent("#zusammenstellung-format-hinweis"), /9:16 hoch .*mittig .*eingepasst/);
   await p.click("#zusammenstellung-rechnen");
   await p.waitForTimeout(50);
   await warteFertig(p, 420000);
@@ -693,10 +698,11 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   });
   for (const f of farben) { assert.ok(f.schwarz / f.n > 0.6, `Grund Schwarz: ${JSON.stringify(f)}`); assert.ok(f.weiss > 0, "Tinte Weiss"); assert.ok(f.blau > 0, `die Blaupause: ${JSON.stringify(f)}`); assert.equal(f.orange, 0, "kein Orange"); }
   assert.equal(z.x.dramaturgie, "zusammenstellung"); assert.equal(z.x.stationen.length, 55, "Zettelkarte, Bild, 52 Varianten, ORNA-Karte"); assert.ok(z.x.ton, "mit Tonspur");
-  assert.equal(z.x.partitur.folge[0].einmal, true); assert.equal(z.x.partitur.folge[0].halten, 2.5); assert.equal(z.x.partitur.folge.at(-1).einmal, true);
+  assert.equal(z.x.partitur.folge[0].einmal, true); assert.equal(z.x.partitur.folge[0].halten, 3.5, "die Zettelkarte 3,5 s (seit 0.1.34)"); assert.equal(z.x.partitur.folge.at(-1).halten, 3.5, "die ORNA-Karte 3,5 s"); assert.equal(z.x.partitur.folge.at(-1).einmal, true);
   assert.equal(z.x.partitur.folge[0].ergebnis, z.x.stationen[0]); assert.equal(z.x.partitur.folge.at(-1).ergebnis, z.x.stationen.at(-1));
   assert.ok(z.x.partitur.lebendig, "die Zusammenstellung ist lebendig");
-  assert.equal(z.x.partitur.bewegung.staerke, 0.6, "die Kamera wie in der Zusammenstellung eingestellt"); assert.deepEqual(z.d.details.film, { lebendig: true, bewegung: 0.6, signatur: "aus" });
+  assert.equal(z.x.partitur.bewegung.staerke, 0.6, "die Kamera wie in der Zusammenstellung eingestellt"); assert.deepEqual(z.d.details.film, { lebendig: true, bewegung: 0.6, signatur: "aus", format: "9:16" });
+  assert.ok(Math.abs(z.x.breite / z.x.hoehe - 9 / 16) < 0.02, `der Film ist 9:16: ${z.x.breite} × ${z.x.hoehe}`); assert.equal(z.x.breite % 2, 0); assert.equal(z.d.gewaehlt.format, "9:16");
   assert.ok(z.x.zeitplan.some((y) => y.lebendig), `die Grafikkarte rechnet Stationen in jedem Bild neu: ${JSON.stringify(z.x.zeitplan.slice(0, 3))}`);
   assert.deepEqual(fehler2, []);
   await c.close();
@@ -998,11 +1004,11 @@ await check("Signatur (0.1.26): am Telefon Intro mit dem Zettel, Outro mit ORNA,
   await t.page.locator('#vorschlag30 [data-bestand="orna"]').check();
   await t.page.locator('#vorschlag30 select[data-bestand-wahl="orna"]').selectOption("tehching-hsieh__wendy-hui-kyong-chun");
   assert.equal(await t.page.locator("#zusammenstellung-signatur").isChecked(), true);
-  assert.match(await t.page.textContent("#vorschlag30 .zusammenstellung"), /Lichtwürfel .* Rad von ORNA .* Signet ornament\.lab.* 54[.,]5 s/);
-  await S(t.page, () => { ornamentLab.film.seite = 480; });   // kleiner Film, damit die Prüfung in SwiftShader nicht zu lange rechnet
+  assert.match(await t.page.textContent("#vorschlag30 .zusammenstellung"), /Lichtwürfel .* Rad von ORNA .* Signet ornament\.lab.* 56[.,]5 s/);
+  await S(t.page, () => { ornamentLab.film.seite = 360; });   // kleiner Film, damit die Prüfung in SwiftShader nicht zu lange rechnet (seit 0.1.40 kommen alle Abschnitte vor)
   await t.page.click("#zusammenstellung-rechnen");
   await t.page.waitForTimeout(50);
-  await warteFertig(t.page, 900000);
+  await warteFertig(t.page, 1500000);
   await t.page.waitForSelector("#vorschlag30 .zusammenstellung video");
   const z = await S(t.page, () => { const pr = ornamentLab.projekt, x = pr.exporte.at(-1), k = (op) => pr.knoten.filter((y) => y.operation === op);
     return { x, ops: pr.knoten.map((y) => y.operation), status: document.querySelector("#status").textContent, ton: k("signatur.ton")[0], intro: k("signatur.intro")[0], outro: k("signatur.outro")[0], signet: k("signatur.signet")[0],
@@ -1011,14 +1017,14 @@ await check("Signatur (0.1.26): am Telefon Intro mit dem Zettel, Outro mit ORNA,
   assert.ok(!z.ops.includes("lab.karte"), "keine Karten");
   assert.equal(z.intro.protokoll.zettel, 17); assert.equal(z.intro.protokoll.verweise, 4);
   assert.equal(z.outro.eingaben.konstellation !== undefined, true);
-  assert.equal(z.film.signatur.gesamt, 54.5);
+  assert.equal(z.film.signatur.gesamt, 56.5);
   const pt = z.x.partitur, ende = pt.folge.at(-1), outro = pt.folge.at(-2);
-  assert.equal(pt.folge[0].ergebnis, z.intro.ausgaben[0]); assert.equal(pt.folge[0].halten, 10); assert.equal(pt.folge[0].uebergang.art, "schnitt");
-  assert.equal(outro.ergebnis, z.outro.ausgaben[0]); assert.equal(outro.dehnen, true); assert.ok(outro.halten >= 8);
+  assert.equal(pt.folge[0].ergebnis, z.intro.ausgaben[0]); assert.equal(pt.folge[0].halten, 11); assert.equal(pt.folge[0].uebergang.art, "schnitt");
+  assert.equal(outro.ergebnis, z.outro.ausgaben[0]); assert.equal(outro.dehnen, true); assert.ok(outro.halten >= 9);
   assert.equal(ende.ergebnis, z.signet.ausgaben[0]); assert.equal(ende.halten, 6.5);
-  assert.ok(Math.abs(pt.dauer - 54.5) < 0.05, `${pt.dauer}`); assert.ok(Math.abs(ende.beginn - 48) < 0.05, `das Signet beginnt bei ${ende.beginn} s`);
+  assert.ok(Math.abs(pt.dauer - 56.5) < 0.05, `${pt.dauer}`); assert.ok(Math.abs(ende.beginn - 50) < 0.05, `das Signet beginnt bei ${ende.beginn} s`);
   assert.equal(z.x.tonQuelle, z.ton.ausgaben[0], "die Tonspur der Signatur"); assert.ok(z.x.ton, "mit Ton");
-  assert.ok(z.ton.protokoll.scratch && z.ton.protokoll.frickel.von === 48);
+  assert.ok(z.ton.protokoll.scratch && z.ton.protokoll.frickel.von === 50);
   assert.ok(z.x.zeitplan[0].lebendig && z.x.zeitplan.at(-1).lebendig, "Intro und Signet laufen auf ihrer eigenen Bühne");
   // einzelne Bilder: der Zettel ist hell (Papier), das Signet dunkel mit wenig Weiss
   const hell = await S(t.page, async () => {

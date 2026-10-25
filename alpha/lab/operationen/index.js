@@ -18,15 +18,22 @@ import { verzerrungOperation } from "./verzerrung.js";
 import { lichtOperation } from "./licht.js";
 import { rasterOperation } from "./raster.js";
 import { neusetzenOperation } from "./neusetzen.js";
+import { pulsOperation } from "./puls.js";
+import { schraffurOperation } from "./schraffur.js";
+import { flussOperation } from "./fluss.js";
+import { punktierenOperation } from "./punktieren.js";
+import { teilungOperation } from "./teilung.js";
 import { zettel } from "./zettel.js";
 import { karte } from "./karte.js";
+import { formatOperation } from "./format.js";
 import { PHORMA_OPERATIONEN } from "./phorma.js";
 import { phorma2 } from "./phorma2.js";
 import { phorma1 } from "./phorma1.js";
 import { SIGNATUR_OPERATIONEN } from "./signatur.js";
 
 export const OPERATIONEN = [orna, fictory, feedback, wiederholung, farbe, bildsignal, tonsignal, klang, beat, tempo, zerlegen, rhythmus, koerner, differenz, kompositionProfil, komposition,
-  glitchOperation, pixelsortierungOperation, verzerrungOperation, lichtOperation, rasterOperation, neusetzenOperation, zettel, karte, ...PHORMA_OPERATIONEN, phorma2, phorma1, ...SIGNATUR_OPERATIONEN];
+  glitchOperation, pixelsortierungOperation, verzerrungOperation, lichtOperation, rasterOperation, neusetzenOperation,
+  pulsOperation, schraffurOperation, flussOperation, punktierenOperation, teilungOperation, formatOperation, zettel, karte, ...PHORMA_OPERATIONEN, phorma2, phorma1, ...SIGNATUR_OPERATIONEN];
 
 export function labRegister() {
   const r = erstelleRegister();

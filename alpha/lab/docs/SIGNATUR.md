@@ -6,9 +6,9 @@ In der **Zusammenstellung** (Animation aus Bild und Klang) steht neben «lebendi
 
 | Bestände | Film |
 |---|---|
-| Zettel und ORNA | Intro 10 s · Animation 30 s · Outro 8 s (oder länger) · Signet 6,5 s = 54,5 s |
-| nur Zettel | Intro 10 s · Animation 30 s · Signet mit Auftakt 8,1 s = 48,1 s |
-| nur ORNA | Animation 30 s · Outro 8 s · Signet 6,5 s = 44,5 s |
+| Zettel und ORNA | Intro 11 s · Animation 30 s · Outro 9 s (oder länger) · Signet 6,5 s = 56,5 s |
+| nur Zettel | Intro 11 s · Animation 30 s · Signet mit Auftakt 8,1 s = 49,1 s |
+| nur ORNA | Animation 30 s · Outro 9 s · Signet 6,5 s = 45,5 s |
 | keiner | Animation 30 s · Signet mit Auftakt 8,1 s = 38,1 s |
 
 ## Intro (`signatur.intro`, falls ein Zettel dabei ist)
@@ -17,15 +17,15 @@ In der **Zusammenstellung** (Animation aus Bild und Klang) steht neben «lebendi
 2. **Entfalten** (3,4–5 s): seine 49 Felder lösen sich von den sechs Seiten und legen sich zum Raster des Zettelkastens, sieben Zyklen (Zeilen I–VII) zu sieben Strophen.
 3. **Das Feld leuchtet** (4,9–5,6 s) im Rot-Orange des Signets, die Zyklen stehen daneben, darunter Zyklus, Nummer und Titel.
 4. **Der Zettel wird gezogen** (5,6–6,4 s): das Feld kommt nach vorn und wird zur Karte (seit Lab 0.1.33 in der Gestaltung des Neubaus: Schwarz auf Weiss, Kopf in Grau, das Feld 7 × 7 als Punkte mit den Fäden zu den nahen Zetteln, die Blaupause als Akzent; vorher Papier `#f4f1ea` mit dem Punkt `#f08a5d`).
-5. **Der Zettel** (6,4–9,25 s): Zettelkasten · Zyklus, die Nummer mit dem kleinen Raster, der Titel (Instrument Sans), der Leitsatz (Newsreader kursiv) und die **vier Verweise** (Person, Werk, Disziplin), einer nach dem anderen.
-6. **Scratch** (9,25–10 s): wie eine Platte unter der Hand läuft der Streifen Zettel | Animation vor und zurück, an den Umkehrungen macht der Fader zu; am Ende steht das erste Bild der Animation. Im Ton derselbe Scratch (dieselbe Kurve `scratch()` in `kern/signatur.js`).
+5. **Der Zettel** (6,4–10,25 s; seit Lab 0.1.34 eine Sekunde länger): Zettelkasten · Zyklus, die Nummer mit dem kleinen Raster, der Titel (Instrument Sans), der Leitsatz (Newsreader kursiv) und die **vier Verweise** (Person, Werk, Disziplin), einer nach dem anderen.
+6. **Scratch** (10,25–11 s): wie eine Platte unter der Hand läuft der Streifen Zettel | Animation vor und zurück, an den Umkehrungen macht der Fader zu; am Ende steht das erste Bild der Animation. Im Ton derselbe Scratch (dieselbe Kurve `scratch()` in `kern/signatur.js`). Seit Lab 0.1.40 ist die Animation im Streifen das laufende Bild des ersten Abschnitts (`lage.folgend` aus dem Film über Stationen, `folgendAb` = Beginn des Scratchs): der erste Effekt setzt mit dem Scratch ein und läuft nach dem Schnitt weiter, sein Eintritt beginnt bei seinem Standbild; in der Zusammenstellung steht das Bild mit Intro darum nicht mehr als Station dazwischen (Christian, 25. Oktober 2026: «Nach dem Zettel wird während des Scratches das Anfangsbild vollständig angezeigt. Vielleicht besser, wenn der Scratch mit dem ersten Effekt einsetzt?»). Ohne Film (Standbild, Operation von Hand) bleibt es das Bild am Eingang.
 
 ## Outro (`signatur.outro`, falls eine ORNA-Konstellation dabei ist)
 
 1. **Körper** (0–1,6 s): die letzte Sequenz (das letzte Bild der Animation) zerfällt in Stücke, die sich zu einem Würfel falten.
 2. **Kugel** (1,45–2,7 s): die Stücke legen sich auf eine Kugel aus 160 Lichtpunkten.
 3. **ORNA-Rad** (2,6–5,4 s): die Punkte werden zum Doppelrad von ORNA, 20 Künstlerinnen und Künstler aussen, 20 Theoretikerinnen und Theoretiker innen, mit den 40 Zeichen aus `portfolio/nebeneinander-nacheinander/js/symbols.js` (unverändert); die Ringe drehen gegenläufig ein und bleiben mit den beiden gezogenen Personen auf der Achse stehen.
-4. **Die Konstellation** (ab 5,2 s): die Treffer leuchten, darunter (quer: daneben) «ORNA · Konstellation n», die Namen, die offene Frage und die Operationsregel. Steht die Station länger als 8 s, dehnt sich nur dieser Teil.
+4. **Die Konstellation** (ab 5,2 s, bis 7,7 s; seit Lab 0.1.34 eine Sekunde länger): die Treffer leuchten, darunter (quer: daneben) «ORNA · Konstellation n», die Namen, die offene Frage und die Operationsregel. Steht die Station länger als 8 s, dehnt sich nur dieser Teil.
 5. **Wieder Kugel** (die letzten 1,3 s): das Rad zieht sich zurück zur Kugel, in derselben Drehung, mit der das Signet beginnt.
 
 ## Signet (`signatur.signet`, immer am Schluss)
@@ -38,7 +38,7 @@ Der Klang (nach den Klangeffekten der Zusammenstellung) läuft ab «Ton ab» dur
 
 ## Film
 
-Intro, Outro und Signet sind Stationen mit `einmal` (die Kamera steht still) und eigener Bühne (`lebend()`, Zeit ab dem Auftritt), gezeichnet mit der Leinwand des Browsers (2D, eigene Perspektive, Leuchten über einen weichgezeichneten Abzug), jedes Bild nur aus der Zeit. Damit das Signet im Takt genau mit dem Ton endet, gibt die Partitur (0.5.0) die übrige Zeit der Station mit `dehnen` (dem Outro) statt der letzten; Intro und Outro gehen mit einem Schnitt weiter (ihre Bilder schliessen an). Jede Station hält höchstens 10 s.
+Intro, Outro und Signet sind Stationen mit `einmal` (die Kamera steht still) und eigener Bühne (`lebend()`, Zeit ab dem Auftritt), gezeichnet mit der Leinwand des Browsers (2D, eigene Perspektive, Leuchten über einen weichgezeichneten Abzug), jedes Bild nur aus der Zeit. Damit das Signet im Takt genau mit dem Ton endet, gibt die Partitur (0.5.0) die übrige Zeit der Station mit `dehnen` (dem Outro) statt der letzten; Intro und Outro gehen mit einem Schnitt weiter (ihre Bilder schliessen an). Jede Station hält höchstens 12 s. In das Outro führt der Übergang des Films (Schnitt, Überblendung oder Schwelle); bei der Schwelle ist die Maske seit Lab 0.1.35 das laufende Bild des Outros, nicht sein Standbild mit dem Rad (Christian, 25. Oktober 2026: «vor dieser Würfel-Animation erscheint kurz im Hintergrund das ORNA-Rad»). Seit Lab 0.1.39 kommt das Outro wie jede lebendige Quelle über den Eintritt (2 s) aus dem laufenden Bild des letzten Abschnitts, statt mit dessen Standbild zu beginnen (docs/STATIONEN.md).
 
 ## Prüfen
 

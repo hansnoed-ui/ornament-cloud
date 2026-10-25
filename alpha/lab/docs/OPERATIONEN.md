@@ -26,6 +26,12 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.licht` 0.1.0 | Licht: Glühen und Streifen | Räumliche Operation | neu, nach Bloom der Echtzeitgrafik (TouchDesigner Bloom TOP, Post-Processing in Unity und Unreal); Glow in Fusion und After Effects; anamorphotische Lichtfahnen | Bild → Bild | über Modulation |
 | `lab.raster` 0.1.0 | Raster und Linien | Räumliche Operation | neu, nach amplitudenmodulierte Rasterung des Drucks; Kupferstich und Schraffur; Bild abtasten und Formen zeichnen in Processing/p5.js; gestapelte Profillinien (Unknown Pleasures) | Bild → Bild | über Modulation |
 | `lab.neusetzen` 0.1.0 | Zerlegen und neu setzen | Räumliche Operation | neu, nach Cut-up (Brion Gysin, William S. Burroughs); Collage und Montage; Kachel-Filter der Bildbearbeitung (GIMP Puzzle, Mosaik) | Bild → Bild | über Modulation |
+| `lab.puls` 0.1.0 | Pulslinien | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler Pulse, Spiral Pulse, Sandy und Spiral in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen | Bild → Bild | über Modulation |
+| `lab.schraffur` 0.1.0 | Schraffur in Lagen | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler Crosshatch und Multipass in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Kreuzschraffur des Kupferstichs | Bild → Bild | über Modulation |
+| `lab.fluss` 0.1.0 | Fliessfeld | Räumliche Operation | neu, nach Prinzip des Plotter-Umwandlers Flow Field in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Line Integral Convolution (Cabral und Leedom 1993) | Bild → Bild | über Modulation |
+| `lab.punktieren` 0.1.0 | Punktieren | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler Voronoi Stippling und Voronoi in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Secord 2002; Punktiermanier | Bild → Bild | über Modulation |
+| `lab.teilung` 0.1.0 | Teilung | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler QuadTree, Truchet from Image und Boxxy in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Truchet-Kacheln (Sébastien Truchet 1704, Bögen nach Cyril Stanley Smith 1987) | Bild → Bild | über Modulation |
+| `lab.format` 0.1.0 | Format: Ausschnitt im Seitenverhältnis | Räumliche Operation | neu, nach die Seitenverhältnisse der Kanäle (9:16 Reels und Stories, 4:5 und 1:1 Instagram, 16:9 Video); Ausschnitt wie object-fit: cover | Bild → Bild | über Modulation |
 | `zettel.strophe` 0.1.0 | Zettel aus dem Zettelkasten | Selektionsoperation | Adapter: Zettelkasten (Zu seiner Zeit, 49 Strophen in sieben Zyklen) | – → Befund | eine |
 | `lab.karte` 0.2.0 | Textkarte | Räumliche Operation | neu, nach Titel- und Zwischentitelkarten des Films; Gestaltung des Neubaus der Website (Instrument Sans, Newsreader, Papier und Tinte, die Blaupause; die Zettelkarten aus tools/b-kacheln.mjs) | Bild (opt.) + Befund (opt.) + Konstellation (opt.) → Bild | eine |
 | `phorma.gewebe` 0.1.0 | PHORMA: Gewebe | Zeitliche Operation | Adapter: PHORMA III | Bild + Audiosignal (opt.) → Bild | erzeugt selbst mehrere |
@@ -507,6 +513,161 @@ Teilt das Bild in Kacheln oder Streifen und setzt einen Anteil davon neu: zufäl
 | Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
 
+## Pulslinien (`lab.puls`)
+
+Eine Linie läuft über das Bild, parallel, als Spirale oder in Kreisen, und schwingt, wo es dunkel ist: je dunkler, desto höher und dichter. Wie ein Plotter, der das Bild mit einem einzigen Puls zeichnet.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/puls.js; Prinzip nach Prinzip der Plotter-Umwandler Pulse, Spiral Pulse, Sandy und Spiral in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** ein Durchgang je Pixel, die Phase einmal je Linie abgetastet (1200 px: unter 1 s); Speicher: ein Ton- und drei Farbfelder, je Linie eine Tabelle
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Träger (`traeger`) | **parallele Linien** / Spirale aus der Mitte / Kreise um einen Punkt |
+| Schwingung (`welle`) | **Sinus (weich)** / Zickzack / Rechteck (Puls) / Schwelle: absetzen statt schwingen |
+| Linienabstand (`abstand`) | 0.004 … 0.06, Standard 0.014 – Anteil der längsten Seite |
+| Hub (`hub`) | 0 … 1, Standard 0.9 – Höhe der Schwingung im tiefen Dunkel, Anteil des halben Abstands |
+| Dichte der Schwingung (`dichte`) | 0.2 … 8, Standard 2.5 – Schwingungen je Linienabstand im tiefen Dunkel |
+| Grundschwingung im Hellen (`ruhe`) | 0 … 1, Standard 0.15 – Anteil der Dichte, der auch im Hellen bleibt |
+| Strichstärke (`strich`) | 0.05 … 0.6, Standard 0.16 – Anteil des Linienabstands |
+| Winkel der Linien (°) (`winkel`) | -90 … 90, Standard 0 |
+| Mitte waagrecht (Spirale, Kreise) (`mitteX`) | 0 … 1, Standard 0.5 |
+| Mitte senkrecht (Spirale, Kreise) (`mitteY`) | 0 … 1, Standard 0.5 |
+| Phase (°) (`phase`) | 0 … 360, Standard 0 – verschiebt die Schwingung entlang der Linie |
+| Lauf im Film (je Sekunde) (`lauf`) | 0 … 4, Standard 0.6 – Schwingungen je Sekunde, die im Film entlang der Linien wandern |
+| Gewicht der Tonwerte (`gewicht`) | 0.3 … 3, Standard 1 – unter 1 kräftiger, über 1 nur das tiefe Dunkel |
+| Farben (`farbe`) | **Tinte auf Papier** / Bildfarben auf Papier / Bildfarben auf Nacht |
+| Licht statt Dunkel zeichnen (`umkehren`) | ein/aus, Standard aus |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Schraffur in Lagen (`lab.schraffur`)
+
+Das Dunkel wird in Stufen geteilt, jede Stufe bekommt eine Lage paralleler Linien in eigenem Winkel: im Halbschatten eine, im tiefen Dunkel alle übereinander, leicht von Hand gezittert.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/schraffur.js; Prinzip nach Prinzip der Plotter-Umwandler Crosshatch und Multipass in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Kreuzschraffur des Kupferstichs
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** ein Durchgang je Pixel, höchstens vier Lagen (1200 px: unter 1 s); Speicher: ein Ton- und drei Farbfelder
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Lagen (`lagen`) | 1 … 4, Standard 4 |
+| Winkel der Lagen (`folge`) | **gekreuzt wie im Stich (0°, 90°, 45°, 135°)** / Fächer (gleichmässig verteilt) |
+| Grundwinkel (°) (`winkel`) | -90 … 90, Standard 45 |
+| Linienabstand (`abstand`) | 0.003 … 0.05, Standard 0.009 – Anteil der längsten Seite |
+| Strichstärke (`strich`) | 0.05 … 0.8, Standard 0.24 – Anteil des Linienabstands |
+| Schwelle verschieben (`schwelle`) | -0.5 … 0.5, Standard 0 – unter 0 kommen die Lagen früher (dunkler), über 0 später |
+| Übergang der Stufen (`weich`) | 0 … 0.3, Standard 0.05 |
+| Zittern der Hand (`zittern`) | 0 … 1, Standard 0.2 |
+| Linien schwellen mit dem Dunkel an (`anschwellen`) | ein/aus, Standard ein |
+| Lauf im Film (je Sekunde) (`lauf`) | 0 … 4, Standard 0.25 – Linienabstände je Sekunde, um die die Lagen im Film quer wandern |
+| Gewicht der Tonwerte (`gewicht`) | 0.3 … 3, Standard 1 – unter 1 kräftiger, über 1 nur das tiefe Dunkel |
+| Farben (`farbe`) | **Tinte auf Papier** / Bildfarben auf Papier / Bildfarben auf Nacht |
+| Licht statt Dunkel zeichnen (`umkehren`) | ein/aus, Standard aus |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Fliessfeld (`lab.fluss`)
+
+Feine Striche folgen einem Feld: entlang der Kanten des Bildes, quer dazu, aus Rauschen oder als Wirbel. Wo das Bild dunkel ist, verdichten sie sich zu Tinte. Im Film fliessen sie.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/fluss.js; Prinzip nach Prinzip des Plotter-Umwandlers Flow Field in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Line Integral Convolution (Cabral und Leedom 1993)
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** zwanzig Schritte entlang des Feldes je Pixel (900 px: etwa 1 s); Speicher: Ton-, Farb-, Feld- und Kornfelder
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Feld (`feld`) | **entlang der Kanten des Bildes** / quer zu den Kanten / Rauschen / Wirbel um die Mitte |
+| Strichlänge (`laenge`) | 0.005 … 0.12, Standard 0.035 – Anteil der längsten Seite, je Richtung |
+| Körnung (`koernung`) | 0.001 … 0.02, Standard 0.0035 – Feinheit der Striche, Anteil der längsten Seite |
+| Kontrast der Striche (`kontrast`) | 1 … 8, Standard 3.5 |
+| Grösse des Rauschens (`skala`) | 0.05 … 1, Standard 0.25 – Anteil der längsten Seite |
+| Drehung des Feldes (°) (`drehung`) | -180 … 180, Standard 0 |
+| Lauf im Film (je Sekunde) (`lauf`) | 0 … 4, Standard 0.5 – Wellen je Sekunde, die im Film entlang der Striche laufen |
+| Wandel des Rauschens im Film (`wandel`) | 0 … 1, Standard 0.12 – wie schnell sich das Rauschen verschiebt (je Sekunde) |
+| Gewicht der Tonwerte (`gewicht`) | 0.3 … 3, Standard 1 – unter 1 kräftiger, über 1 nur das tiefe Dunkel |
+| Farben (`farbe`) | **Tinte auf Papier** / Bildfarben auf Papier / Bildfarben auf Nacht |
+| Licht statt Dunkel zeichnen (`umkehren`) | ein/aus, Standard aus |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 900 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Punktieren (`lab.punktieren`)
+
+Das Dunkel wird zur Dichte gewürfelter Punkte. Aus denselben Punkten entstehen wahlweise Voronoi-Zellen als Linien oder als Mosaik in den Farben des Bildes, dessen Scheiben im Dunkeln klein werden.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/punktieren.js; Prinzip nach Prinzip der Plotter-Umwandler Voronoi Stippling und Voronoi in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Secord 2002; Punktiermanier
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** neun Nachbarzellen je Pixel (1200 px: unter 1 s); Speicher: ein Ton- und drei Farbfelder, ein Punkt je Zelle
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Form (`art`) | **Punkte (Stippling)** / Voronoi-Zellen (Linien) / Mosaik (Zellen in Bildfarben) |
+| Zellweite (`abstand`) | 0.004 … 0.05, Standard 0.009 – Anteil der längsten Seite; höchstens ein Punkt je Zelle |
+| Punktgrösse (`punkt`) | 0.1 … 0.7, Standard 0.36 – Radius, Anteil der Zellweite |
+| Punkte wachsen mit dem Dunkel (`wachsen`) | 0 … 1, Standard 0.4 |
+| Linienstärke der Zellen (`linie`) | 0.02 … 0.4, Standard 0.09 – Anteil der Zellweite |
+| Zufall der Lage (`zittern`) | 0 … 1, Standard 1 – 0: Gitter, 1: frei in der Zelle |
+| Lauf im Film (je Sekunde) (`lauf`) | 0 … 4, Standard 0.5 – wie stark die Punkte im Film um ihre Plätze schimmern |
+| Gewicht der Tonwerte (`gewicht`) | 0.3 … 3, Standard 1 – unter 1 kräftiger, über 1 nur das tiefe Dunkel |
+| Farben (`farbe`) | **Tinte auf Papier** / Bildfarben auf Papier / Bildfarben auf Nacht |
+| Licht statt Dunkel zeichnen (`umkehren`) | ein/aus, Standard aus |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| im Verlauf neu würfeln (Flackern) (`flackern`) | ein/aus, Standard aus |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Teilung (`lab.teilung`)
+
+Das Bild wird wie ein Quadtree geviertelt, wo es dunkel oder bewegt ist, und bleibt im Hellen grob. Die Felder werden zu Rahmen, zu einem Mosaik aus ihren Farben, zu Truchet-Bögen oder zu wachsenden Quadraten.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/teilung.js; Prinzip nach Prinzip der Plotter-Umwandler QuadTree, Truchet from Image und Boxxy in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Truchet-Kacheln (Sébastien Truchet 1704, Bögen nach Cyril Stanley Smith 1987)
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** Summentabellen, dann je Pixel höchstens neun Zugriffe (1200 px: unter 0,5 s); Speicher: bis zu vier Summentabellen in doppelter Genauigkeit
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Füllung (`fuellung`) | **Mosaik (mittlere Farbe je Feld)** / Rahmen / Truchet-Bögen / Quadrate, die mit dem Dunkel wachsen |
+| Teilen nach (`kriterium`) | **Dunkel** / Kontrast (wie verschieden die Viertel sind) |
+| Tiefe (`tiefe`) | 2 … 9, Standard 6 – so oft wird höchstens geviertelt |
+| Schwelle (`schwelle`) | 0 … 1, Standard 0.4 – geteilt wird, was darüber liegt |
+| Anstieg je Tiefe (`anstieg`) | -0.1 … 0.2, Standard 0.06 – so viel strenger wird die Schwelle mit jeder Tiefe |
+| Strichstärke (`strich`) | 0.0005 … 0.006, Standard 0.0016 – Anteil der längsten Seite |
+| Bögen je Truchet-Kachel (`linien`) | 1 … 5, Standard 2 |
+| Lauf im Film (je Sekunde) (`lauf`) | 0 … 4, Standard 0.3 – wie oft sich die Truchet-Kacheln im Film drehen |
+| Gewicht der Tonwerte (`gewicht`) | 0.3 … 3, Standard 1 – unter 1 kräftiger, über 1 nur das tiefe Dunkel |
+| Farben (`farbe`) | **Tinte auf Papier** / Bildfarben auf Papier / Bildfarben auf Nacht |
+| Licht statt Dunkel zeichnen (`umkehren`) | ein/aus, Standard aus |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Format: Ausschnitt im Seitenverhältnis (`lab.format`)
+
+Passt das Bild in ein Seitenverhältnis ein: ein Ausschnitt ohne Rand und ohne Skalierung, mittig oder zur Seite geschoben, mit geraden Massen. Als erster Schritt einer Zusammenstellung gibt es dem ganzen Film sein Format; Karten und Signatur entstehen darin.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/format.js; Prinzip nach die Seitenverhältnisse der Kanäle (9:16 Reels und Stories, 4:5 und 1:1 Instagram, 16:9 Video); Ausschnitt wie object-fit: cover
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** sofort (Kopie des Ausschnitts); Speicher: ein Bild
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Format (`format`) | **9:16 hoch (Reels, Stories)** / 4:5 hoch (Instagram) / 1:1 quadratisch / 16:9 quer (Video) |
+| Lage des Ausschnitts (0 = links oder oben, 1 = rechts oder unten) (`lage`) | 0 … 1, Standard 0.5 |
+
 ## Zettel aus dem Zettelkasten (`zettel.strophe`)
 
 Zieht eine der 49 Strophen des Zettelkastens mit dem Startwert oder nimmt die gewählte: Nummer, Zyklus, Titel, Leitsatz und Text, unverändert.
@@ -665,7 +826,7 @@ Das Bild am Eingang (die letzte Sequenz) faltet sich zu einem Körper, der Körp
 
 | Parameter | Bereich |
 |---|---|
-| Dauer (s; im Film so lange, wie die Station steht) (`dauer`) | 6 … 10, Standard 8 |
+| Dauer (s; im Film so lange, wie die Station steht) (`dauer`) | 6 … 12, Standard 9 |
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1280 |
 
 ## Signatur: Signet ornament.lab (`signatur.signet`)
@@ -696,5 +857,5 @@ Die Tonspur eines Films mit Signatur: der Klang ab «Ton ab» für die ganze Dau
 |---|---|
 | Ton ab (s) (`beginn`) | 0 … 600, Standard 0 |
 | Dauer (s) (`dauer`) | 6 … 120, Standard 52.5 |
-| Intro (s, 0 = ohne Scratch) (`vor`) | 0 … 10, Standard 10 |
+| Intro (s, 0 = ohne Scratch) (`vor`) | 0 … 12, Standard 11 |
 | Gefrickel am Schluss (s) (`frickel`) | 2 … 12, Standard 6.5 |
