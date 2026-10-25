@@ -26,7 +26,7 @@ import { FORMATE } from "../operationen/format.js";
 
 export { FORMATE };
 
-export const ZUSAMMENSTELLUNG_VERSION = "0.6.1";
+export const ZUSAMMENSTELLUNG_VERSION = "0.6.2";
 /** Dauer einer Karte (Zettel, ORNA) am Anfang oder Ende des Films, in Sekunden (seit 0.1.34 eine Sekunde länger, vorher 2,5) */
 export const KARTE_DAUER = 3.5;
 export const VARIANTEN_JE_ABSCHNITT = 10;   // seit Lab 0.1.16: 60 Motive in 30 s (vorher 3, also 18)
@@ -233,7 +233,7 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   //     aus einem Video (messung.videoBilder) nimmt jeder Abschnitt das Standbild seiner Zeit (seiner Stelle unter den sechs), so folgt der Film dem Video
   const video = videoBilder;
   let eingang = video?.[0] ?? grundbild;
-  const ergebnisse = [], uebergaenge = new Set(), abschnittVon = new Map();
+  const ergebnisse = [], uebergaenge = new Set(), abschnittVon = new Map(), abschnittVarianten = [];
   for (const [j, a] of aktiv.entries()) {
     const b = a.bild, i = a.i, anzahl = a.anzahl;
     const r = BILD_REZEPTE[b], op = register.hole(r.operation), mitTon = op.eingaenge.some((x) => x.name === "ton");
@@ -259,6 +259,7 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
     if (!video && plan.aufbau !== "aufbau.faecher" && j > 0) uebergaenge.add(eingang);
     ergebnisse.push(...genommen);
     for (const e of genommen) abschnittVon.set(e.id, a);
+    abschnittVarianten.push({ a, ids: genommen.map((e) => e.id) });
     eingang = genommen.at(-1).id;
   }
 
@@ -290,17 +291,40 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
     ...(ornaKarte ? [{ ergebnis: ornaKarte, einmal: true, halten: KARTE_DAUER }] : [])];
   // das Bild steht wie eine Karte einmal vorn (seit 0.1.39, BILD_DAUER): im Takt reihum kehrte die Runde sonst beim Bild wieder, sobald die Anschläge
   // über die Stationen hinausreichen (gleich starke Anschläge an der Schwelle), und mitten im Film stand das Ausgangsbild
-  const bildStation = { ergebnis: video?.[0] ?? grundbild, einmal: true, halten: BILD_DAUER };
-  const karten = vorne.length + 1 + hinten.length, kartenDauer = [...vorne, bildStation, ...hinten].reduce((s, x) => s + x.halten, 0);
+  // mit dem Intro der Signatur steht das Bild nicht mehr als Station (seit 0.1.40): der Scratch des Intros führt direkt in den ersten Abschnitt
+  // (lage.folgend, docs/SIGNATUR.md), ein Standbild dazwischen wäre wieder das Ausgangsbild
+  const bildStationen = intro ? [] : [{ ergebnis: video?.[0] ?? grundbild, einmal: true, halten: BILD_DAUER }];
+  const karten = vorne.length + bildStationen.length + hinten.length, kartenDauer = [...vorne, ...bildStationen, ...hinten].reduce((s, x) => s + x.halten, 0);
 
   // 4 · Film: Zettel (Intro), Bild, alle Abschnitte, Konstellation (Outro), Signet; im Takt der Anschläge reihum, sonst gleichmässig über die Dauer
-  let stationen = [...vorne, bildStation, ...ergebnisse.map((e) => e.id).slice(0, GRENZEN.stationen - karten), ...hinten];
+  let stationen = [...vorne, ...bildStationen, ...ergebnisse.map((e) => e.id).slice(0, GRENZEN.stationen - karten), ...hinten];
   const f = FILM[plan.uebergang], folge = ergebnis(projekt, einsaetze.id).daten;
   const dauer = Math.min(laenge, folge?.dauer ?? laenge), n = stationen.length;
-  // nicht reihum: jede Station kommt einmal, darum höchstens so viele Wechsel wie Stationen, verteilt auf die stärksten Anschläge
-  // reichen die Anschläge nicht für alle Stationen, läuft der Film gleichmässig, damit jedes Motiv vorkommt
-  let schwelle = taktSchwelle(folge, Math.min(f.jeSekunde, (n - 1) / dauer));
-  if (schwelle !== null && (folge?.ereignisse ?? []).filter((x) => x.t > 0 && (x.staerke ?? 1) >= schwelle).length < n - 1) schwelle = null;
+  // die Runde der Abschnitte spielt zwischen den Karten vorn und hinten (Partitur: ab dem ersten Anschlag nach den Karten vorn, bis die Karten hinten
+  // ihre Zeit vor dem Ende des Tons haben). Die Schwelle der Anschläge wird darum in diesem Fenster gewählt, so dass dort so viele Anschläge liegen,
+  // wie die Runde Wechsel hat (seit 0.1.40; vorher über den ganzen Ton: mit der Signatur lagen die Anschläge des Intros und des Outros ausserhalb,
+  // und die Runde brach nach etwa der Hälfte der Stationen ab – Christian, 25. Oktober 2026: «nur 2–3 Effekte, als hätte es eine Zeitbeschränkung
+  // zwischen Zettel und ORNA-Karte»). Jede Station kommt so einmal; reichen die Anschläge im Fenster nicht, läuft der Film gleichmässig
+  // das Fenster rechnet wie die Partitur: Karten mit Halten und Übergang (ein Schnitt braucht keinen); die Runde braucht je Station einen Anschlag,
+  // einer mehr für die Anschläge, die die Partitur zusammenfasst (näher als ein Bild); die Dichte folgt den Varianten (zwei je Sekunde), nicht der Grenze f.jeSekunde
+  const kartenZeit = (k) => k.reduce((s, x) => s + x.halten + (x.uebergang === "schnitt" ? 0 : f.uebergang), 0);
+  const runde = n - karten, fensterVon = kartenZeit([...vorne, ...bildStationen]), fensterBis = dauer - kartenZeit(hinten);
+  const imFenster = (folge?.ereignisse ?? []).filter((x) => x.t > fensterVon && x.t <= fensterBis), fenster = Math.max(1, fensterBis - fensterVon);
+  let schwelle = folge ? taktSchwelle({ ...folge, ereignisse: imFenster, dauer: fenster }, (runde + 1) / fenster) : null;
+  const anschlaege = schwelle === null ? 0 : imFenster.filter((x) => (x.staerke ?? 1) >= schwelle).length;
+  if (schwelle !== null && anschlaege < runde) {
+    // die Anschläge reichen nicht für alle Varianten: der Takt bleibt, jeder Abschnitt bekommt so viele seiner Varianten, wie ihm Anschläge zustehen
+    // (nach seiner Dauer, grösster Rest), gleichmässig aus seinen Varianten gewählt, die letzte immer dabei (sie ist der Eingang des nächsten Abschnitts)
+    if (anschlaege < Math.max(4, 2 * abschnittVarianten.length)) schwelle = null;   // zu wenige für zwei Varianten je Abschnitt: gleichmässig, alle Varianten
+    else {
+      const gesamt = abschnittVarianten.reduce((q, v) => q + v.a.dauer, 0);
+      const anteile = abschnittVarianten.map((v) => Math.max(1, Math.floor((anschlaege * v.a.dauer) / gesamt)));
+      const reste = abschnittVarianten.map((v, i) => (anschlaege * v.a.dauer) / gesamt - anteile[i]);
+      for (let frei = anschlaege - anteile.reduce((q, k) => q + k, 0); frei > 0; frei--) { const i = reste.indexOf(Math.max(...reste)); anteile[i]++; reste[i] = -1; }
+      const genommen = abschnittVarianten.flatMap((v, i) => { const k = Math.min(v.ids.length, anteile[i]); return Array.from({ length: k }, (_, q) => v.ids[Math.round(((q + 1) * v.ids.length) / k) - 1]); });
+      stationen = [...vorne, ...bildStationen, ...genommen, ...hinten];
+    }
+  }
   const takt = schwelle === null ? null : { ereignisfolge: einsaetze.id, schwelle: Math.round(schwelle * 1000) / 1000, wiederholen: true };
   const uebergang = takt ? f.uebergang : Math.min(f.uebergang, (0.5 * dauer) / Math.max(1, n - 1));
   // im Takt hat jeder Wechsel eine feste Länge, auch der Verlauf zwischen zwei Abschnitten (ohne Takt bliebe seine Länge offen)

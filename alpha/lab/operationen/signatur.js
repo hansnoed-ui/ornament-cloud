@@ -185,7 +185,7 @@ function introBuehne(B, { zettel, ziel, einsaetze, seed }) {
   const weg = irrweg((seed % 9973) + 1), WN = weg.length / 4, kanten = G.wuerfelKanten(h);
   const quer = W > H * 1.05, g = quer ? 0.2 : 0.205, dy = quer ? 0.04 : 0.02, rasterX = quer ? 0.05 : 0.06;
   const ziehen = zettel.nummer;
-  const zielC = alsLeinwand(ziel, W, H);
+  const zielStill = alsLeinwand(ziel, W, H);   // das Bild am Eingang, wo der Film kein Folgendes gibt (Standbild, Operation von Hand)
   // die Karte: Fläche im Bild, Inhalt einmal gesetzt (nur die Sichtbarkeit wechselt)
   const kw = Math.round(quer ? Math.min(0.62 * W, 0.86 * H * 1.15) : 0.86 * W), kh = Math.round(quer ? 0.86 * H : Math.min(0.82 * H, 0.86 * W * 1.42));
   const kx = Math.round((W - kw) / 2), ky = Math.round((H - kh) / 2);
@@ -293,11 +293,14 @@ function introBuehne(B, { zettel, ziel, einsaetze, seed }) {
     }
   }
 
-  function zeichne(t) {
+  function zeichne(t, lage = null) {
     const P = G.INTRO_PHASEN;
     if (t < P.scratch[0]) { szene(t); return B.daten(); }
-    // 6 · Scratch: wie eine Platte unter der Hand läuft der Streifen Karte | Animation vor und zurück, der Fader macht an den Umkehrungen zu
+    // 6 · Scratch: wie eine Platte unter der Hand läuft der Streifen Karte | Animation vor und zurück, der Fader macht an den Umkehrungen zu;
+    // die Animation ist seit Lab 0.1.40 das laufende Bild der nächsten Station (lage.folgend, kern/stationen.js), wo der Film eines gibt: so setzt
+    // der Scratch mit dem ersten Effekt ein, statt das Ausgangsbild zu zeigen (Christian, 25. Oktober 2026); sonst das Bild am Eingang
     if (!abzug) { szene(P.scratch[0]); abzug = leinwand(W, H); abzug.getContext("2d").drawImage(B.c, 0, 0); }
+    const zielC = lage?.folgend ? alsLeinwand(lage.folgend, W, H) : zielStill;
     const x = anteil(t, P.scratch[0], P.scratch[1]), sc = G.scratch(x), vor = G.scratch(Math.max(0, x - 0.03));
     const v = (sc.stelle - vor.stelle) * W * 0.6;
     B.grund();
@@ -314,7 +317,7 @@ function introBuehne(B, { zettel, ziel, einsaetze, seed }) {
     if (x >= 0.999) { ctx.drawImage(zielC, 0, 0); }
     return B.daten();
   }
-  return { bild: zeichne, dauer: G.INTRO_DAUER };
+  return { bild: zeichne, dauer: G.INTRO_DAUER, folgendAb: G.INTRO_PHASEN.scratch[0] };
 }
 
 const hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
@@ -663,7 +666,7 @@ function lebendig(baue) {
     if (!imBrowser()) throw new Error("Die Signatur braucht einen Browser (Leinwand)");
     await schriftenLaden();
     const s = await baue(eingaben, p, kontext);
-    return { dauer: s.dauer, zeitbasis: "auftritt", bild: (t, lage) => s.bild(Math.max(0, t), lage), entsorgen() {} };
+    return { dauer: s.dauer, zeitbasis: "auftritt", bild: (t, lage) => s.bild(Math.max(0, t), lage), entsorgen() {}, ...(Number.isFinite(s.folgendAb) ? { folgendAb: s.folgendAb } : {}) };
   };
 }
 
