@@ -12,7 +12,7 @@ const { kompatibel, TYPEN, KLANGFORMEN } = await lab("kern/typen.js");
 const M = await lab("kern/modulation.js");
 const P = await lab("kern/projekt.js");
 const { fuehreAus, bildfolge, regelVorschlaege, experiment, ketteAnwenden } = await lab("kern/ausfuehrung.js");
-const { packe, entpacke } = await lab("kern/archiv.js");
+const { packe, packeBlob, entpacke } = await lab("kern/archiv.js");
 const { fingerabdruck, neuesBild } = await lab("kern/bilddaten.js");
 const K = await lab("kern/komposition.js");
 const KL = await lab("kern/klang.js");
@@ -535,6 +535,22 @@ test("Archiv: speichern und wieder öffnen ergibt dasselbe Projekt und dieselben
   const kaputt = z.slice(); kaputt[60] ^= 0xff;
   await assert.rejects(entpacke(kaputt), /Prüfsumme|ungültig|JSON|beschädigt/);
   assert.throws(() => packe(p, new Map([["../ausbruch", new Uint8Array(1)]])), /unzulässiger Pfad/);
+});
+
+test("Archiv als Blob aus Teilen (0.1.38): dieselben Bytes wie packe, auch mit Dateien über 4 MB; Fortschritt bis 1", async () => {
+  const { p, m, e, r } = mitMaterial();
+  await fuehreAus({ register: r, projekt: p, medien: m, auftrag: { operation: "lab.farbe", eingaben: { bild: e.id } } });
+  const film = new Uint8Array(9 * 1024 * 1024 + 17); for (let i = 0; i < film.length; i++) film[i] = (i * 31 + (i >> 9)) & 0xff;
+  m.dateien.set("medien/x1-stationen.mp4", film);
+  const datum = new Date(2026, 9, 25, 10, 30, 12), anteile = [];
+  const blob = await packeBlob(p, m.dateien, { datum, melden: (a) => anteile.push(a) });
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  assert.equal(blob.type, "application/zip");
+  assert.deepEqual(bytes, packe(p, m.dateien, datum));
+  assert.ok(anteile.length > 3 && anteile.at(-1) === 1 && anteile.every((a, i) => i === 0 || a >= anteile[i - 1]), `Fortschritt: ${anteile}`);
+  const { medien } = await entpacke(bytes);
+  assert.deepEqual(medien.get("medien/x1-stationen.mp4"), film);
+  await assert.rejects(packeBlob(p, new Map([["../ausbruch", new Uint8Array(1)]])), /unzulässiger Pfad/);
 });
 
 test("Projektformat: Formatversion und Verweise werden geprüft", () => {
