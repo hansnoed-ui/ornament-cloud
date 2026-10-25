@@ -17,6 +17,7 @@ const SEITEN = [
   { datei: "alpha/bildfragmentieren/index.html", url: "https://ornament.cloud/alpha/bildfragmentieren/", titel: "PHORMA I", bild: "alpha/bildfragmentieren/app/og-phorma-i.jpg", art: "jpg", canonical: false, erzeuger: "tools/phorma-bilder.mjs" },   // die Anwendung selbst, dasselbe Bild (17. Oktober 2026)
   { datei: "alpha/bildfragmentieren/app/index.html", url: "https://ornament.cloud/alpha/bildfragmentieren/app/", titel: "PHORMA I – die App", bild: "alpha/bildfragmentieren/app/og-phorma-i.jpg", art: "jpg", canonical: false, erzeuger: "tools/phorma-bilder.mjs" },   // PHORMA I, seit 17. Oktober 2026, Kristallansicht aus der Anwendung
   { datei: "alpha/sketchory/index.html", url: "https://ornament.cloud/alpha/sketchory/", titel: "Sketchory", bild: "alpha/sketchory/og-sketchory.jpg", art: "jpg", canonical: false, erzeuger: "tools/sketchory-og.mjs" },   // seit 12. Oktober 2026, Bild aus der Anwendung selbst
+  { datei: "alpha/lab/index.html", url: "https://ornament.cloud/alpha/lab/", titel: "ornament.lab", bild: "assets/kacheln/lab.png", art: "png", canonical: false, erzeuger: "tools/b-kacheln.mjs" },   // seit 25. Oktober 2026, nur per Direktlink, die Karte holen die Dienste trotzdem
 ];
 /** alle meta-Angaben einer Seite: property oder name → content */
 const metas = (html) => new Map([...html.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)].map((m) => [m[1], m[2]]));

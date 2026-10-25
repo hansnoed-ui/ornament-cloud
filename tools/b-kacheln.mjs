@@ -146,6 +146,7 @@ const ALT = [
   { datei: "assets/kacheln/werke-stellenfeld.png", kicker: "Werke · Sequenz in sechs Bildern", titel: "Stellenfeld", satz: "Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre." },
   { datei: "social-media/kacheln/social-media.png", kicker: "Zettelkasten", titel: "Social Media", satz: "Ausgewählte Beiträge aus X, Facebook und Instagram." },
   { datei: "social-media/kacheln/schlagworte.png", kicker: "Social Media · Register", titel: "Schlagworte", satz: "Die Schlagworte im Zettelkasten «Social Media»." },
+  { datei: "assets/kacheln/lab.png", kicker: "ORNAMENT LAB · Alpha", titel: "ornament.lab", satz: "Erzeugen · Beobachten · Weiterführen", serif: true, fuss: "ornament.cloud/alpha/lab", feld: feldSvg({ hier: 25, nah: [3, 13, 23, 36, 40, 46] }) },   // seit 25. Oktober 2026 (Wunsch: «Vorschaukarte für social media vom lab»)
   { datei: "social-media/kacheln/autorinnen.png", kicker: "Social Media · Register", titel: "Autor:innen", satz: "Die Autor:innen im Zettelkasten «Social Media»." },
 ];
 
