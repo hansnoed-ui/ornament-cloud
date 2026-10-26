@@ -306,3 +306,19 @@ test("Strömung und Tinte: die bewegten Teile treiben den Grund an und färben i
   assert.ok(summe(z.tinte) < summe(zustaende[3].tinte), "Gegenprobe: vor Schritt 4 gelöscht");
   assert.equal(M.fw * M.fh * 3, zustaende[0].tinte.length);
 });
+
+test("Sprache: Sätze, die app.js über einen Schlüssel holt, stehen auf Deutsch und Englisch da, nie als roher Schlüssel", async () => {
+  const vm = await import("node:vm");
+  const src = readFileSync(new URL("sprache.js", dir), "utf8");
+  const app = readFileSync(new URL("app.js", dir), "utf8");
+  // analyseKurz, erzeugt und uhr fragt app.js nur auf Englisch ab (sprache.en()), auf Deutsch steht der Satz dort selbst
+  const nurEn = new Set(["analyseKurz", "erzeugt", "uhr"]);
+  const schluessel = [...new Set([...app.matchAll(/\bT\("([a-zA-Z]+)",/g)].map((m) => m[1]))];
+  assert.ok(schluessel.includes("videoLaeuft"));
+  for (const l of ["de", "en"]) {
+    const g = {};
+    vm.runInNewContext(src, { globalThis: g });
+    g.sprache.setze(l);
+    for (const k of schluessel) if (l === "en" || !nurEn.has(k)) assert.notEqual(g.sprache.t(k, 1, 2, 3, 4, 5, 6), k, `${l}: ${k}`);
+  }
+});

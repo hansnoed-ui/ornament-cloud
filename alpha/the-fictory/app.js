@@ -265,7 +265,7 @@ function vorausrechnen(L) {
   return new Promise((fertig) => {
     const hier = () => { if (S.lauf === L) zustandBei(GESAMT); fertig(); };
     let w = null;
-    try { w = new Worker(new URL("rechner.js?v=23", import.meta.url), { type: "module" }); } catch { w = null; }
+    try { w = new Worker(new URL("rechner.js?v=24", import.meta.url), { type: "module" }); } catch { w = null; }
     if (!w) { setTimeout(hier, 0); return; }
     w.onmessage = ({ data }) => {
       w.terminate();
