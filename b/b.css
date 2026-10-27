@@ -277,6 +277,7 @@ body[data-bereich] :is(.kopf, main > :first-child), body[data-bereich="angebot"]
 body[data-bereich] .kopf::after { background: transparent; }
 body[data-bereich]:not([data-bereich="zuletzt"]) main > :first-child { padding-top: clamp(24px, 3.5vw, 44px); padding-bottom: clamp(44px, 6vw, 80px); }
 body[data-bereich="angebot"] .briefing { margin-top: 48px; padding-bottom: clamp(44px, 6vw, 80px); }
+body[data-bereich="zettel"] .buehne-zettel { padding-top: clamp(48px, 7vw, 88px); }   /* das Feld nicht direkt an den Farbwechsel («etwas knapp an den farbwechsel gesetzt») */
 body[data-bereich] :is(main > :first-child, .briefing) ::selection { background: var(--tinte); color: var(--papier); }
 /* der Kopf trägt die Farbe des ersten Kapitels, die Linie darunter fällt weg; der Fuss schliesst ohne Lücke an */
 body:has(main > .kapitel-gruen:first-child) .kopf { --papier: #1f4d3a; --tinte: #ffffff; --grau: rgba(255, 255, 255, 0.8); --faden: #ffffff; --lab: #ffa3d1; background: var(--papier); color: var(--tinte); }
