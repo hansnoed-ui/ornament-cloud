@@ -25,7 +25,7 @@
   --stand: clamp(20px, 1.6vw, 24px);
   --text: 18px; --klein: 14px;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --papier: #000000; --tinte: #ffffff; --grau: #9a9a9a; --linie: #2e2e2e; --faden: #8fb0ff; --faden-hell: rgba(143, 176, 255, .18); --leer: #6f6f6f; color-scheme: dark; } }
+:root:not([data-theme="light"]) { --papier: #000000; --tinte: #ffffff; --grau: #9a9a9a; --linie: #2e2e2e; --faden: #8fb0ff; --faden-hell: rgba(143, 176, 255, .18); --leer: #6f6f6f; color-scheme: dark; }
 :root[data-theme="dark"] { --papier: #000000; --tinte: #ffffff; --grau: #9a9a9a; --linie: #2e2e2e; --faden: #8fb0ff; --faden-hell: rgba(143, 176, 255, .18); --leer: #6f6f6f; color-scheme: dark; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--papier); color: var(--tinte); font-family: var(--sans); font-size: var(--text); line-height: 1.5; -webkit-font-smoothing: antialiased; }

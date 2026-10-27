@@ -18,16 +18,16 @@
   color-scheme: light dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --papier: #111111;
-    --tinte: #e9e9e7;
-    --grau: #9a9a97;
-    --linie: #333333;
-    --leicht: #1b1b1b;
-    --hauptlink: #ffd84d;   /* im dunklen Modus ein helles Sonnengelb */
-    --menu-akzent: #f08a5d;
-  }
+/* Dunkel ist der Standard, unabhängig vom Gerät (27. Oktober 2026), wie auf der Website; data-theme="light" holt die hellen Werte zurück. */
+:root:not([data-theme="light"]) {
+  --papier: #111111;
+  --tinte: #e9e9e7;
+  --grau: #9a9a97;
+  --linie: #333333;
+  --leicht: #1b1b1b;
+  --hauptlink: #ffd84d;   /* im dunklen Modus ein helles Sonnengelb */
+  --menu-akzent: #f08a5d;
+  color-scheme: dark;
 }
 
 *, *::before, *::after { box-sizing: border-box; }

@@ -1,11 +1,11 @@
 // Neubau /b/: die Tafeln der Apps leben (20. Oktober 2026, Wunsch: «bei den Apps unter ‹Was dabei herauskommt› möchte ich tolle Animationen …
 // eine Art Vorstellungs- oder Erkläranimationen, stilisiert, stilvoll»). Jede <figure class="tafel-lebt" data-tafel="slug"> trägt das Ruhebild
 // als <picture>; mit Skript wird daraus die Zeichnung aus src/b/tafeln.mjs, die sich bewegt – nur solange sie im Bild ist, nur wenn die Seite
-// sichtbar ist, nie bei reduzierter Bewegung (dann bleibt das Ruhebild). Hell und dunkel folgen dem Gerät.
+// sichtbar ist, nie bei reduzierter Bewegung (dann bleibt das Ruhebild). Dunkel ist der Standard (27. Oktober 2026), hell nur mit data-theme="light".
 import { TAFELN, farben, W } from "./tafeln.mjs";
 
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const dunkelheit = matchMedia("(prefers-color-scheme: dark)");
+const dunkel = () => document.documentElement.dataset.theme !== "light";
 const TAKT = { "phorma-iii": 1 / 30, "phorma-i": 1 / 30 };   // die Gewebe und der Kristall rechnen viel: 30 Bilder je Sekunde genügen
 
 if (!ruhig) for (const fig of document.querySelectorAll(".tafel-lebt[data-tafel]")) beleben(fig);
@@ -18,10 +18,10 @@ function beleben(fig) {
   svg.setAttribute("role", "img");
   svg.setAttribute("aria-label", fig.querySelector("img")?.alt || tafel.alt);
   const bild = fig.querySelector("picture");
-  let zustand = tafel.neu(), c = farben(dunkelheit.matches), sichtbar = false, letzte = 0, rest = 0, raf = 0;
+  let zustand = tafel.neu(), c = farben(dunkel()), sichtbar = false, letzte = 0, rest = 0, raf = 0;
   const takt = TAKT[fig.dataset.tafel] || 0;
   const malen = () => { svg.innerHTML = tafel.svg(zustand, c); };
-  dunkelheit.addEventListener("change", () => { c = farben(dunkelheit.matches); malen(); });
+  new MutationObserver(() => { c = farben(dunkel()); malen(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
   const bild0 = () => {
     // Beginn aus dem Keim, nicht aus dem fertigen Bild, wo die Tafel einen hat: PHORMA II wächst vor den Augen, das Signet zeichnet sich; die anderen laufen von ihrem Ruhebild aus weiter

@@ -184,7 +184,7 @@ test("b/apps: die Bilder der sieben Apps sind gezeichnete Tafeln (tools/b-app-bi
       assert.ok(!/<script|<image|href=/.test(s), `${datei}: nur Zeichnung`);
     }
     assert.ok(a.bildAlt.startsWith(`${a.name}, gezeichnet:`), `${a.slug}: Alt-Text beschreibt die Zeichnung`);
-    const bild = `<picture><source srcset="/${a.bildDunkel}" media="(prefers-color-scheme: dark)"><img src="/${a.bild}" alt="${a.bildAlt}" width="1200" height="1200"`;
+    const bild = `<picture><source srcset="/${a.bildDunkel}"><img src="/${a.bild}" alt="${a.bildAlt}" width="1200" height="1200"`;
     assert.ok(lies("b/apps/index.html").includes(bild + ' loading="lazy"></picture>'), `${a.slug}: Kachel auf b/apps/`);
     const seite = lies(`b/apps/${a.slug}/index.html`);
     assert.ok(seite.includes(`<figure class="stueck-bild quadrat">${bild}></picture></figure>`), `${a.slug}: Tafel auf der App-Seite`);

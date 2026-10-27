@@ -12,13 +12,11 @@
   --post-flaeche: #fbfbf9;
   --spalte-zeit: 78px;
 }
-@media (prefers-color-scheme: dark) {
-  .sm {
-    --x-ton: #ece8e1;
-    --fb-ton: #93abdf;
-    --ig-ton: #f08ab4;
-    --post-flaeche: #1b1a17;
-  }
+:root:not([data-theme="light"]) .sm {
+  --x-ton: #ece8e1;
+  --fb-ton: #93abdf;
+  --ig-ton: #f08ab4;
+  --post-flaeche: #1b1a17;
 }
 
 .sm .nur-lesen {

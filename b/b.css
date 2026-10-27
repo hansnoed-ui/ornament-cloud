@@ -17,16 +17,16 @@
   --takt: 8px;
   color-scheme: light dark;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --papier: #000000;
-    --tinte: #ffffff;
-    --grau: #9a9a9a;
-    --linie: #2e2e2e;
-    --flaeche: #141414;
-    --faden: #8fb0ff;
-    --faden-hell: rgba(143, 176, 255, 0.22);
-  }
+/* Dunkel ist der Standard, unabhängig vom Gerät (27. Oktober 2026); data-theme="light" auf <html> holt Papier und Tinte hell zurück. */
+:root:not([data-theme="light"]) {
+  --papier: #000000;
+  --tinte: #ffffff;
+  --grau: #9a9a9a;
+  --linie: #2e2e2e;
+  --flaeche: #141414;
+  --faden: #8fb0ff;
+  --faden-hell: rgba(143, 176, 255, 0.22);
+  color-scheme: dark;
 }
 @media (min-width: 760px) { :root { --rand: 32px; } }
 

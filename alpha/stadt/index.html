@@ -22,7 +22,7 @@
   <meta name="twitter:title" content="Die Paradoxie der Stadt">
   <meta name="twitter:description" content="Ein kleines Quartier, das ohne dich lebt: Öffne eine Fahrspur, baue eine Brücke, versetze eine Bank – und folge den Folgen, auch nach der Rücknahme.">
   <meta name="twitter:image" content="https://ornament.cloud/alpha/stadt/og-stadt.jpg">
-  <link rel="stylesheet" href="../../styles.css?v=47">
+  <link rel="stylesheet" href="../../styles.css?v=48">
   <style>
     /* Farben der Stadt: gebrochenes Weiss, dunkle Konturen, Grau, Korallrot; Petrol als zweite Farbe für Vergleiche und Aufenthalt */
     :root {
@@ -30,12 +30,10 @@
       --s-strasse: #9d9990; --s-markierung: #f6f3ec; --s-weg: #c8c2b6; --s-linie: #2b2926; --s-text: #1f1d1a; --s-leise: #625d55;
       --s-koralle: #d94c55; --s-vergleich: #2b7a80; --s-auto: #4a4741; --s-bus: #d94c55; --s-figur: #22201d;
     }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --s-papier: #1c1b19; --s-block: #2b2926; --s-dach: #36332f; --s-gruen: #26301f; --s-baum: #3d4c35; --s-hof: #25231f;
-        --s-strasse: #4d4a44; --s-markierung: #8e897f; --s-weg: #4a4640; --s-linie: #d6d0c6; --s-text: #ece8e1; --s-leise: #a8a196;
-        --s-koralle: #f0767d; --s-vergleich: #63b6bc; --s-auto: #bcb6ab; --s-bus: #f0767d; --s-figur: #f2eee7;
-      }
+    :root:not([data-theme="light"]) {
+      --s-papier: #1c1b19; --s-block: #2b2926; --s-dach: #36332f; --s-gruen: #26301f; --s-baum: #3d4c35; --s-hof: #25231f;
+      --s-strasse: #4d4a44; --s-markierung: #8e897f; --s-weg: #4a4640; --s-linie: #d6d0c6; --s-text: #ece8e1; --s-leise: #a8a196;
+      --s-koralle: #f0767d; --s-vergleich: #63b6bc; --s-auto: #bcb6ab; --s-bus: #f0767d; --s-figur: #f2eee7;
     }
     .site-header { padding-bottom: 12px; }
     .site-header h1 { margin-bottom: 0.2rem; }

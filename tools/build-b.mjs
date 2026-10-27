@@ -19,7 +19,7 @@ import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 25;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 26;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -82,10 +82,10 @@ const TRENNUNG = { Beobachter: "Beob&shy;achter", Verspätung: "Ver&shy;spätung
 const weich = (titel) => esc(titel).replace(/\S+$/, (w) => `<span class="w${w.length >= 14 ? " sehr-lang" : w.length >= 11 ? " lang" : ""}">${TRENNUNG[w] || w}</span>`);
 
 /** Das Signet in Bewegung (tools/b-app-bilder.mjs schreibt das Ruhebild; b/tafeln-leben.js lässt es leben) */
-const SIGNET_TAFEL = `<figure class="tafel-lebt signet-tafel" data-tafel="signet"><picture><source srcset="/b/bilder/signet/signet-dunkel.svg" media="(prefers-color-scheme: dark)"><img src="/b/bilder/signet/signet.svg" alt="Das Signet von ornament.cloud, gezeichnet: die Re-entry-Schlaufe mit dem Punkt, der sie abläuft" width="1200" height="1200"></picture></figure>`;
+const SIGNET_TAFEL = `<figure class="tafel-lebt signet-tafel" data-tafel="signet"><picture><source srcset="/b/bilder/signet/signet-dunkel.svg"><img src="/b/bilder/signet/signet.svg" alt="Das Signet von ornament.cloud, gezeichnet: die Re-entry-Schlaufe mit dem Punkt, der sie abläuft" width="1200" height="1200"></picture></figure>`;
 /** Das Bild einer App: die gezeichnete Tafel (tools/b-app-bilder.mjs), hell oder dunkel nach dem Modus des Geräts */
 function appBild(a, extra = "") {
-  return `<picture><source srcset="/${attr(a.bildDunkel)}" media="(prefers-color-scheme: dark)"><img src="/${attr(a.bild)}" alt="${attr(a.bildAlt)}" width="1200" height="1200"${extra}></picture>`;
+  return `<picture><source srcset="/${attr(a.bildDunkel)}"><img src="/${attr(a.bild)}" alt="${attr(a.bildAlt)}" width="1200" height="1200"${extra}></picture>`;
 }
 
 const sitemapSeiten = [];   // b/… und b/en/… für die Sitemap
@@ -220,8 +220,7 @@ function bau(sprache) {
   ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${attr(url)}">`}${kopfMehr ? `\n  ${kopfMehr}` : ""}
   ${noindex || nurDe ? "" : `<link rel="alternate" hreflang="de" href="${BASIS}/b/${pfad}">\n  <link rel="alternate" hreflang="en" href="${BASIS}/b/en/${pfad}">\n  <link rel="alternate" hreflang="x-default" href="${BASIS}/b/${pfad}">`}
   <meta name="author" content="${attr(SEITE.person.name)}">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#000000">
   <link rel="icon" href="${ICON}">
   <!-- Vorschaukarte beim Teilen (Open Graph, X); Bild: tools/b-kacheln.mjs -->
   <meta property="og:type" content="${typ}">
@@ -296,8 +295,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   <title>${esc(name)} – ornament.cloud</title>
   <meta name="robots" content="noindex">
   <link rel="canonical" href="${BASIS}${B}${zurueck}">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#000000">
   <link rel="icon" href="${ICON}">
   <link rel="stylesheet" href="/vendor/fonts/fonts.css">
   <link rel="stylesheet" href="/b/b.css?v=${V}">
@@ -722,8 +720,8 @@ ${form}</div>`;
       kopfMehr: [
         `<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://api.github.com https://api.anthropic.com; object-src 'none'; base-uri 'self'; form-action 'none'">`,
         `<meta name="referrer" content="no-referrer">`,
-        `<link rel="stylesheet" href="/social-media/social.css?v=1">`,
-        `<link rel="stylesheet" href="/social-media/redaktion/redaktion.css?v=3">`,
+        `<link rel="stylesheet" href="/social-media/social.css?v=2">`,
+        `<link rel="stylesheet" href="/social-media/redaktion/redaktion.css?v=4">`,
       ].join("\n  "),
       skripte: ["/social-media/js/redaktion/app.js?v=4", "/social-media/js/redaktion/schritte.js?v=2"] });
   }

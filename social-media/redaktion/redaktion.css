@@ -11,9 +11,7 @@
   --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
   --bg-veil: rgba(255, 255, 255, 0.85);
 }
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #000000; --surface: #000000; --text: #ffffff; --muted: #9a9a9a; --border: #2e2e2e; --accent: #8fb0ff; --bg-veil: rgba(0, 0, 0, 0.85); }
-}
+:root:not([data-theme="light"]) { --bg: #000000; --surface: #000000; --text: #ffffff; --muted: #9a9a9a; --border: #2e2e2e; --accent: #8fb0ff; --bg-veil: rgba(0, 0, 0, 0.85); }
 body.rd { -webkit-font-smoothing: antialiased; }
 .seitenweg a, .menu-item { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 .rd .site-header h1 { font-family: var(--font); font-weight: 500; letter-spacing: -0.03em; line-height: 1; font-size: clamp(2.4rem, 7vw, 4rem); }

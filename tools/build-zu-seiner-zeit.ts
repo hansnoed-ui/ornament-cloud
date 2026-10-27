@@ -247,8 +247,7 @@ ${LANGS.map(l => `  <link rel="alternate" hreflang="${l}" href="${url(l)}">`).jo
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="${esc(`${m.meta.title} – ${m.meta.subtitle}. ${u.ogAlt}`)}">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#111111">
   <link rel="stylesheet" href="${site}kopfleiste.css?v=3">
   <link rel="stylesheet" href="${wurzel}zsz.css?v=${o.v}">
   <script type="module" src="${wurzel}zsz.js?v=${o.v}"></script>
