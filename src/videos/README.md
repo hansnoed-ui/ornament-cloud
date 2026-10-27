@@ -175,6 +175,28 @@ ffmpeg -i out/start-hell.mp4 -vf "scale=in_range=pc:out_range=tv:in_color_matrix
 # dunkel ebenso mit out/start-dunkel.mp4 nach ../../assets/start-animation-dunkel.mp4
 ```
 
+## «Wissen» – der Obsidian-Tresor als Netz (27. Oktober 2026)
+
+Wunsch: «ein spektakulären video, das den aktuellen stand meiner obisidian inhalte zeigt, ca 90 sekunden inklusive kleine (lab) intro und outro».
+4:5 (1080 × 1350), etwa 86 s, ohne Ton, nur als Datei (nicht auf der Website). Composition `WissenVideo`, Quellcode `src/wissen/`.
+
+- **Look des Labs** statt der Vorlage: schwarzer Grund, die Re-entry-Schlaufe mit dem blauen Punkt und «ornament.lab» als Intro und Outro (`LabSignet.tsx`,
+  wie das Intro der Landing-Page `beta/lab/`), je Bereich eine Farbe (`farben.ts`). Die Vorlage (`vorlage/`) bleibt unverändert.
+- **Daten** (`daten.mjs` → `data/wissen.json`, nicht eingecheckt) aus Christians Tresor «Wissen» (neben dem Repository unter
+  `Documents/GitHub/Wissen`, sonst Umgebungsvariable `WISSEN`): jede Notiz, jeder Link `[[…]]`, die Bereiche nach Ordnern, der Stand aus dem
+  letzten Commit des Tresors, zwei Anordnungen des Netzes aus einer Kraftsimulation mit festem Startwert. Auszüge sind der Leitsatz einer Notiz,
+  wörtlich, nur mit «[…]» gekürzt und gegen den Text geprüft. Fehlt der Tresor (Cloud-Sitzung), überspringt das Skript ihn.
+- **Szenen:** Intro mit «Wissen» und dem Stand · das Netz entsteht (Notizen und Verbindungen zählen mit) · die Bereiche · vier Werke (ORNA,
+  Formen der Zeit, Zu seiner Zeit – Zyklus I, Prüfraster – Übersicht) · drei Konzepte mit ihren Quellen (Zeit und Eigenzeit, Kontingenz und
+  Anschlussüberschuss, Zukunft als Überschuss) · die fünf meistverlinkten Notizen · das ganze Netz · Outro. Jede Station steht so lange, wie ihr
+  Auszug zum Lesen braucht (1 s je 4 Wörter, dazu 2 s).
+- «Verbindungen» im Zähler sind die Verweise (jedes `[[…]]` auf eine Notiz des Tresors); bei einer Station steht die Zahl der verknüpften Notizen.
+
+```bash
+cd src/videos && node vorbereiten.mjs
+npx remotion render WissenVideo out/wissen.mp4 --codec=h264 --crf=20 --pixel-format=yuv420p
+```
+
 ## Rendern ohne Internetzugang zu remotion.media
 
 Remotion lädt sonst einen eigenen Browser herunter; stattdessen einen vorhandenen angeben:
