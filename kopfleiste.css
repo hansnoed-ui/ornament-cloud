@@ -31,9 +31,9 @@
 
 .menu {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));   /* seit 19. Oktober 2026 fünf Kästchen (dazu «Social») */
+  grid-template-columns: repeat(6, minmax(0, 1fr));   /* seit 19. Oktober 2026 fünf Kästchen (dazu «Social»), seit 27. Oktober 2026 sechs (dazu «Lab») */
   gap: 8px;
-  width: 462px;
+  width: 554px;
   margin-top: 4px;
 }
 
@@ -84,19 +84,24 @@
 @media (max-width: 760px) {
   .topbar { display: flex; flex-direction: column; align-items: stretch; margin-bottom: 24px; }
   .topbar > .divider { margin: 10px 0 18px; }
-  .menu { width: 100%; max-width: 520px; margin-top: 0; }
+  .menu { width: 100%; max-width: 620px; margin-top: 0; }
 }
 
 /* seit 19. Oktober 2026 fünf Kästchen: schon ab 440 px Breite enger gesetzt, damit jeder Name ganz ins Kästchen passt (vorher ab 360 px) */
+/* seit 27. Oktober 2026 sechs Kästchen: knapp über 760 px steht das Menü noch neben den Hauptlinks, dort etwas schmaler, damit nichts überlappt */
+@media (min-width: 761px) and (max-width: 840px) {
+  .menu { width: 492px; gap: 6px; }
+  .menu-item { font-size: 0.8rem; }
+}
 @media (max-width: 440px) {
   .menu { gap: 6px; }
-  .menu-item { padding: 8px 1px 6px; font-size: 0.8rem; letter-spacing: 0; }
+  .menu-item { padding: 8px 1px 6px; font-size: 0.72rem; letter-spacing: 0; }   /* seit 27. Oktober 2026 sechs Kästchen: 0,72 statt 0,8 rem */
   .menu-item svg { width: 24px; height: 24px; }
 }
 @media (max-width: 370px) {
-  .menu { gap: 4px; }
-  .menu-item { font-size: 0.75rem; }
+  .menu { gap: 3px; }   /* seit 27. Oktober 2026 (sechs Kästchen) 3 statt 4 px */
+  .menu-item { font-size: 0.66rem; }
 }
 @media (max-width: 335px) {
-  .menu-item { font-size: 0.7rem; }
+  .menu-item { font-size: 0.58rem; }   /* seit 27. Oktober 2026 sechs Kästchen: «Prompts» passt auf 320 px sonst nicht */
 }
