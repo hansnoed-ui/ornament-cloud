@@ -197,6 +197,26 @@ cd src/videos && node vorbereiten.mjs
 npx remotion render WissenVideo out/wissen.mp4 --codec=h264 --crf=20 --pixel-format=yuv420p
 ```
 
+## «Fahrt» – 360°-Kamerafahrt um ein Bild als 3D-Modell (27./28. Oktober 2026)
+
+Wunsch: «eine 360 grad kamerafahrt um das portrait» (Bild aus Christians Ordner KUNST). 4:5 (1080 × 1350), 18,5 s, ohne Ton, nur als Datei.
+Composition `FahrtVideo`, Quellcode `src/fahrt/`: Lab-Intro (`wissen/LabSignet.tsx`), eine Umdrehung aus 300 Einzelbildern, Lab-Outro.
+
+- **Modell** (`modell/modell.py`, kostenlos auf Hugging Face mit dem Token aus `hf auth login`, nach `data/<verfahren>.glb`, nicht eingecheckt):
+  `trellis` (Form und Textur, weich; am besten gefallen, aber deutlich schwächer als eine Kamerafahrt aus ChatGPT/Descript),
+  `hunyuan` (nur Form, am feinsten; die Textur übersteigt die Gratis-GPU-Zeit), `sf3d` (Textur, flach wie eine Maske, hinten ein zweites Gesicht).
+- **Fahrt** (`modell/render.mjs` mit `modell/fahrt.html`): Three.js 0.185.1 in Chromium ohne Grafikkarte; Raumlicht, die Lichter fahren mit der Kamera,
+  Grund #242424 (auf Schwarz verschwinden dunkle Teile). `MATERIAL=gips` für ein Modell ohne Textur, `MATERIAL=matt` nimmt SF3D das Metall.
+- `probe` rendert erst acht Winkel zum Anschauen (`data/probe-<verfahren>/`), `fahrt` dann die 300 Bilder nach `public/fahrt-<verfahren>/`.
+
+```bash
+cd src/videos/src/fahrt/modell
+py -P modell.py trellis pfad/zum/bild.png
+THREE=…/node_modules/three NODE_PATH="$(npm root -g)" node render.mjs probe trellis
+THREE=…/node_modules/three NODE_PATH="$(npm root -g)" node render.mjs fahrt trellis 0   # Startwinkel: wo das Gesicht zur Kamera schaut
+cd ../../.. && npx remotion render FahrtVideo out/fahrt.mp4 --props='{"ordner":"fahrt-trellis"}'
+```
+
 ## Rendern ohne Internetzugang zu remotion.media
 
 Remotion lädt sonst einen eigenen Browser herunter; stattdessen einen vorhandenen angeben:
