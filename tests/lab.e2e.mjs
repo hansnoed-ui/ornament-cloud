@@ -666,6 +666,7 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   await p.locator('#vorschlag30 input[data-param="zusammenstellung-bewegung"]').fill("0.6");
   // die Karten (bis 0.1.25): ohne Signatur; mit Signatur prüft «Signatur (0.1.26)» weiter unten
   assert.equal(await p.locator("#zusammenstellung-signatur").isChecked(), true, "Signatur vorgewählt");
+  assert.equal(await p.locator("#zusammenstellung-mastering").isChecked(), true, "Tonspur fertig mischen vorgewählt (0.1.45)");
   await p.locator("#zusammenstellung-signatur").uncheck();
   // das Format (0.1.37): Standard «wie das Material»; 9:16 gewählt wird das Material zuerst eingepasst, der Film und die Karten sind hochkant
   assert.equal(await p.locator("#zusammenstellung-format").inputValue(), "material");
@@ -676,12 +677,12 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   await p.waitForTimeout(50);
   await warteFertig(p, 420000);
   await p.waitForSelector("#vorschlag30 .zusammenstellung video");
-  const z = await S(p, () => { const pr = ornamentLab.projekt; const d = pr.entscheidungen.find((y) => y.gegenstand === "zusammenstellung"); return { d, ops: pr.knoten.slice(-12).map((k) => k.operation), x: pr.exporte.at(-1), status: document.querySelector("#status").textContent, abschnitte: pr.knoten.slice(-7, -2).map((k) => k.ausgaben.length),
+  const z = await S(p, () => { const pr = ornamentLab.projekt; const d = pr.entscheidungen.find((y) => y.gegenstand === "zusammenstellung"); return { d, ops: pr.knoten.slice(-13).map((k) => k.operation), x: pr.exporte.at(-1), status: document.querySelector("#status").textContent, abschnitte: pr.knoten.slice(-7, -2).map((k) => k.ausgaben.length),
     strophe: pr.entscheidungen.find((y) => y.gegenstand === "strophe"), konstellation: pr.entscheidungen.find((y) => y.gegenstand === "konstellation"), karten: pr.knoten.filter((k) => k.operation === "lab.karte").map((k) => k.protokoll.inhalt), kartenP: pr.knoten.filter((k) => k.operation === "lab.karte").map((k) => ({ gestaltung: k.protokoll.gestaltung, schriften: k.protokoll.schriften, feld: k.protokoll.feld })), fictory: pr.knoten.find((k) => k.operation === "fictory.prozess") ?? null }; });
   assert.equal(z.d.art, "mensch", "eine Stelle geändert: die Entscheidung ist menschlich"); assert.deepEqual([...z.d.details.geaendert].sort(), ["abschnitt1", "abschnitt5", "bild6"]); assert.equal(z.d.details.vorschlag, "jev");
   assert.equal(z.d.gewaehlt.bild[5], "bild.raster"); assert.deepEqual(z.d.gewaehlt.abschnitte.map((a) => a.an), [true, true, true, true, false, true]); assert.equal(z.d.gewaehlt.abschnitte[0].dauer, 10);
   assert.deepEqual(z.abschnitte, [12, 10, 10, 10, 10], "fünf Abschnitte, der erste mit zwölf Varianten (10 s, die Grenze je Ausführung)"); assert.equal(z.d.gewaehlt.zettel, "7"); assert.equal(z.d.gewaehlt.orna, "ziehen");
-  assert.deepEqual(z.ops.slice(0, 5), ["lab.tempo", "lab.zerlegen", "lab.tonsignal", "zettel.strophe", "orna.konstellation"]);
+  assert.deepEqual(z.ops.slice(0, 6), ["lab.tempo", "lab.zerlegen", "lab.mastering", "lab.tonsignal", "zettel.strophe", "orna.konstellation"]);
   assert.deepEqual(z.ops.slice(-2), ["lab.karte", "lab.karte"], "zuletzt die zwei Karten");
   assert.equal(z.strophe.art, "mensch"); assert.equal(z.strophe.gewaehlt, 7); assert.equal(z.konstellation.art, "zufall");
   assert.equal(z.fictory, null, "seit 0.1.20 kein Zerfall in der Zusammenstellung (Standbilder)");
@@ -1011,7 +1012,7 @@ await check("Signatur (0.1.26): am Telefon Intro mit dem Zettel, Outro mit ORNA,
   await warteFertig(t.page, 1500000);
   await t.page.waitForSelector("#vorschlag30 .zusammenstellung video");
   const z = await S(t.page, () => { const pr = ornamentLab.projekt, x = pr.exporte.at(-1), k = (op) => pr.knoten.filter((y) => y.operation === op);
-    return { x, ops: pr.knoten.map((y) => y.operation), status: document.querySelector("#status").textContent, ton: k("signatur.ton")[0], intro: k("signatur.intro")[0], outro: k("signatur.outro")[0], signet: k("signatur.signet")[0],
+    return { x, ops: pr.knoten.map((y) => y.operation), status: document.querySelector("#status").textContent, ton: k("signatur.ton")[0], gemischt: k("lab.mastering").at(-1), intro: k("signatur.intro")[0], outro: k("signatur.outro")[0], signet: k("signatur.signet")[0],
       film: pr.entscheidungen.find((y) => y.gegenstand === "zusammenstellung").details.film }; });
   for (const k of ["intro", "outro", "signet", "ton"]) assert.equal(z[k]?.status, "fertig", `${k}: ${JSON.stringify(z[k]?.fehler ?? null)}`);
   assert.ok(!z.ops.includes("lab.karte"), "keine Karten");
@@ -1023,7 +1024,7 @@ await check("Signatur (0.1.26): am Telefon Intro mit dem Zettel, Outro mit ORNA,
   assert.equal(outro.ergebnis, z.outro.ausgaben[0]); assert.equal(outro.dehnen, true); assert.ok(outro.halten >= 9);
   assert.equal(ende.ergebnis, z.signet.ausgaben[0]); assert.equal(ende.halten, 6.5);
   assert.ok(Math.abs(pt.dauer - 56.5) < 0.05, `${pt.dauer}`); assert.ok(Math.abs(ende.beginn - 50) < 0.05, `das Signet beginnt bei ${ende.beginn} s`);
-  assert.equal(z.x.tonQuelle, z.ton.ausgaben[0], "die Tonspur der Signatur"); assert.ok(z.x.ton, "mit Ton");
+  assert.equal(z.gemischt.eingaben.ton, z.ton.ausgaben[0], "gemischt wird die Tonspur der Signatur"); assert.equal(z.x.tonQuelle, z.gemischt.ausgaben[0], "die gemischte Tonspur (0.1.45)"); assert.ok(z.x.ton, "mit Ton");
   assert.ok(z.ton.protokoll.scratch && z.ton.protokoll.frickel.von === 50);
   assert.ok(z.x.zeitplan[0].lebendig && z.x.zeitplan.at(-1).lebendig, "Intro und Signet laufen auf ihrer eigenen Bühne");
   // einzelne Bilder: der Zettel ist hell (Papier), das Signet dunkel mit wenig Weiss

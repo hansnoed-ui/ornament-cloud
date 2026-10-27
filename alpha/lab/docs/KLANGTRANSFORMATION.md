@@ -121,4 +121,4 @@ Mastering in einer festen Reihenfolge: Hochpass 25 Hz (Rumpeln), Wärme (Tiefenr
 - Die Einsatzerkennung ist für Schläge gebaut. In weichen Flächen findet sie wenig; dann Raster oder eine Ereignisfolge nehmen.
 - Das Tempo ist eine Schätzung. Swing und ungerade Takte (3/4, 7/8) erkennt sie nicht; das Raster der Neu-Rhythmisierung ist immer 4/4 mit frei wählbaren Schritten.
 - Lange Dateien (über einige Minuten) brauchen beim Dehnen und Umtasten einige Sekunden; die Oberfläche bleibt dabei bedienbar, ein Abbruch ist möglich.
-- Offen: Phasenvocoder für sehr starke Dehnung, Hüllkurven als Transformation, Mastering auch in der Zusammenstellung (Vorschlag für 30 s), wahrer Spitzenwert (Überabtastung) im Limiter, Spektrum als Befund (AUDIO-FORMAT.md), Rhythmus als Takt für Abtasten und Halten einer Bildmodulation.
+- Offen: Phasenvocoder für sehr starke Dehnung, Hüllkurven als Transformation, wahrer Spitzenwert (Überabtastung) im Limiter, Spektrum als Befund (AUDIO-FORMAT.md), Rhythmus als Takt für Abtasten und Halten einer Bildmodulation.

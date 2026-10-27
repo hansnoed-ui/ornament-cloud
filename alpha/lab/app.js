@@ -243,7 +243,9 @@ function zusammenstellungAnsicht(v) {
       bestandStelle(pl, "orna", "ORNA", "konstellation", "per Zufall ziehen (wie in ORNA)", KONSTELLATIONEN)),
     el("div", { class: "stellen signatur" },
       el("label", { class: "regler schalter stelle" }, el("input", { type: "checkbox", id: "zusammenstellung-signatur", checked: pl.signatur !== false, onchange: (ev) => { pl.signatur = ev.target.checked; zeigeVorschlag30(); } }),
-        "Signatur: Intro, Outro und Signet ornament.lab")),
+        "Signatur: Intro, Outro und Signet ornament.lab"),
+      el("label", { class: "regler schalter stelle" }, el("input", { type: "checkbox", id: "zusammenstellung-mastering", checked: pl.mastering !== false, onchange: (ev) => { pl.mastering = ev.target.checked; } }),
+        "Tonspur fertig mischen (−14 LUFS, Kompressor, Limiter)")),
     el("small", { class: "hinweis", text: pl.signatur !== false
       ? `Beide Bestände wahlweise, jev sieht sie nicht. Mit Signatur ${pl.zettel ? "eröffnet ein Intro den Film: ein Lichtwürfel entfaltet sich zum Raster des Zettelkastens, der Zettel wird gezogen und zeigt Leitsatz und Verweise, ein Scratch führt in die Animation" : "beginnt der Film gleich mit der Animation (mit einem Zettel käme das Intro davor)"}; ${pl.orna ? "danach faltet sich die letzte Sequenz zur Kugel, die zum Rad von ORNA wird und die Konstellation zeigt" : "ohne ORNA-Konstellation gibt es kein Outro"}; am Schluss wird aus der Kugel das Signet ornament.lab, mit Gefrickel im Ton. Die ${zahl(haupt)} Sekunden der Animation bleiben, der Film dauert ${zahl(Math.round(signaturZeiten({ intro: Boolean(pl.zettel), outro: Boolean(pl.orna), haupt }).gesamt * 10) / 10)} s. Der Zettel steht auch als Titel in den Szenen von PHORMA I und II; wählt jev den Zerfall (The Fictory), folgt er der Regel der Konstellation.`
       : "Beide wahlweise, jev sieht sie nicht: Der Zettel eröffnet den Film als Karte mit seinem Leitsatz und steht als Titel in den Szenen von PHORMA I und II. Die ORNA-Konstellation schliesst ihn als Karte mit ihrer Operationsregel; wählt jev den Zerfall (The Fictory), folgt er dieser Regel." }),

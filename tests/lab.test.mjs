@@ -1381,19 +1381,28 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.schneller", "klang.zerlegt"], bild: ["bild.glitch", "bild.farbe", "bild.licht", "bild.raster", "bild.feedback", "bild.verzerrung"], seed: 9 };
   const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "jev", details: { modell: "jev-test" } }, seed: 3 });
   const ops = p.knoten.map((k) => k.operation);
-  assert.deepEqual(ops.slice(2), ["lab.tempo", "lab.zerlegen", "lab.tonsignal", "lab.glitch", "lab.farbe", "lab.licht", "lab.raster", "lab.feedback", "lab.verzerrung"]);
-  const zerlegt = p.knoten[3];
+  assert.deepEqual(ops.slice(2), ["lab.tempo", "lab.zerlegen", "lab.mastering", "lab.tonsignal", "lab.glitch", "lab.farbe", "lab.licht", "lab.raster", "lab.feedback", "lab.verzerrung"]);
+  const zerlegt = p.knoten[3], gemischt = p.knoten[4];
   assert.equal(zerlegt.eingaben.ton, p.knoten[2].ausgaben[0], "der zweite Klangeffekt wirkt auf das Ergebnis des ersten");
-  assert.equal(x.klang, P.ergebnis(p, zerlegt.ausgaben[0]).id);
+  // seit 0.1.45 wird die Tonspur am Schluss fertig gemischt, bevor sie gemessen wird
+  assert.equal(gemischt.eingaben.ton, zerlegt.ausgaben[0]); assert.equal(gemischt.parameter.ziel, "-14");
+  assert.ok(Math.abs(gemischt.protokoll.lautheit + 14) < 0.5, `−14 LUFS: ${gemischt.protokoll.lautheit}`);
+  assert.equal(x.klang, P.ergebnis(p, gemischt.ausgaben[0]).id);
+  assert.equal(p.knoten[5].eingaben.ton, x.klang, "gemessen wird die gemischte Tonspur");
   assert.equal(x.ergebnisse.length, 60);
-  for (let i = 1; i < 6; i++) assert.equal(p.knoten[5 + i].eingaben.bild, x.ergebnisse[i * 10 - 1].id, "Kette: auf der letzten Variante des vorigen Abschnitts");
+  for (let i = 1; i < 6; i++) assert.equal(p.knoten[6 + i].eingaben.bild, x.ergebnisse[i * 10 - 1].id, "Kette: auf der letzten Variante des vorigen Abschnitts");
   assert.equal(x.entscheidung.gegenstand, "zusammenstellung"); assert.equal(x.entscheidung.art, "jev");
   assert.deepEqual(x.entscheidung.gewaehlt.bild, plan.bild);
   assert.ok(p.entscheidungen.filter((d) => d.details?.entscheidung === x.entscheidung.id).length >= 9, "jeder Schritt verweist auf die Zusammenstellung");
   assert.equal(x.plan.stationen.length, 61); assert.equal(x.plan.tonspur, x.klang); assert.equal(x.plan.tonBeginn, 0);
   assert.deepEqual(x.plan.bewegung, { staerke: Z.BEWEGUNG, signal: x.signal }, "die Kamera atmet mit dem neuen Klang");
-  assert.equal(x.plan.lebendig, true); assert.deepEqual(x.entscheidung.details.film, { lebendig: true, bewegung: Z.BEWEGUNG, signatur: "nicht verfügbar", format: "material" });
-  assert.equal(Z.zusammenstellen(Z.gleichverteilt(), 1).lebendig, true); assert.equal(Z.zusammenstellen(Z.gleichverteilt(), 1).bewegung, Z.BEWEGUNG);
+  assert.equal(x.plan.lebendig, true); assert.deepEqual(x.entscheidung.details.film, { lebendig: true, bewegung: Z.BEWEGUNG, signatur: "nicht verfügbar", mastering: "−14 LUFS", format: "material" });
+  assert.equal(Z.zusammenstellen(Z.gleichverteilt(), 1).lebendig, true); assert.equal(Z.zusammenstellen(Z.gleichverteilt(), 1).mastering, true);
+  // ohne Mastering (Schalter aus): der Klang wie bisher, gemessen ohne Zwischenschritt
+  const q = mitTon(), mq = await VS.messen({ register: r, projekt: q.p, medien: q.m, bild: q.e.id, ton: q.t.id });
+  const ohne = await Z.zusammenstellungRechnen({ register: r, projekt: q.p, medien: q.m, messung: mq, plan: { ...plan, mastering: false }, wahl: { art: "mensch" }, seed: 3 });
+  assert.ok(!q.p.knoten.some((k) => k.operation === "lab.mastering")); assert.equal(ohne.entscheidung.details.film.mastering, "aus");
+  assert.equal(ohne.klang, q.p.knoten.find((k) => k.operation === "lab.zerlegen").ausgaben[0]); assert.equal(Z.zusammenstellen(Z.gleichverteilt(), 1).bewegung, Z.BEWEGUNG);
   const pt = ST.partitur(p, { ...x.plan, fps: 30 });
   assert.ok(pt.dauer > 3 && pt.dauer <= 30, `${pt.dauer}`);
   if (x.plan.takt) assert.equal(pt.takt.ton, x.klang, "der Takt kommt aus dem bearbeiteten Klang");
@@ -1407,11 +1416,12 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   assert.ok(letzte.every((k) => k.eingaben.bild === e.id), "Fächer");
   // Filmeinstellungen des Menschen (0.1.19): ohne lebendige Effekte, Kamera ruhig
   const ruhig = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.licht", "bild.farbe", "bild.licht"], lebendig: false, bewegung: 0 }, wahl: { art: "mensch", details: {} } });
-  assert.equal(ruhig.plan.lebendig, false); assert.equal(ruhig.plan.bewegung, null); assert.deepEqual(ruhig.entscheidung.details.film, { lebendig: false, bewegung: 0, signatur: "nicht verfügbar", format: "material" });
+  assert.equal(ruhig.plan.lebendig, false); assert.equal(ruhig.plan.bewegung, null); assert.deepEqual(ruhig.entscheidung.details.film, { lebendig: false, bewegung: 0, signatur: "nicht verfügbar", mastering: "−14 LUFS", format: "material" });
   const halb = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.licht", "bild.farbe", "bild.licht"], bewegung: 0.5 }, wahl: { art: "mensch", details: {} } });
   assert.equal(halb.plan.bewegung.staerke, 0.5); assert.equal(halb.plan.lebendig, true);
   assert.equal(ST.partitur(p, { ...ruhig.plan, fps: 30 }).bewegung, null);
-  assert.equal(y.klang, t.id); assert.equal(y.plan.tonBeginn, 1);
+  const yGemischt = p.knoten.find((k) => k.operation === "lab.mastering" && k.ausgaben[0] === y.klang);
+  assert.equal(yGemischt.eingaben.ton, t.id, "ohne Klangeffekt wird der Ton selbst gemischt"); assert.equal(y.plan.tonBeginn, 1, "und sein Ausschnitt bleibt");
   await assert.rejects(Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, bild: ["bild.gibtsnicht"] }, wahl: { art: "mensch" } }), /gibt es nicht/);
   assert.deepEqual(P.pruefeProjekt(p), []);
 });
@@ -1855,7 +1865,9 @@ test("Zusammenstellung mit PHORMA (0.1.21): die Szene bekommt den neuen Klang al
   assert.ok(laeufe.every((l) => l.ton && l.beginn === 1 && l.dauer === VS.DAUER && l.bilder === 10), `der unveränderte Klang ab Sekunde 1: ${JSON.stringify(laeufe[0])}`);
   assert.equal(x.ergebnisse.length, 60); assert.equal(x.plan.stationen.length, 61); assert.equal(x.plan.lebendig, true);
   const kn = p.knoten.filter((k) => k.operation.startsWith("phorma."));
-  assert.ok(kn.every((k) => k.eingaben.ton === t.id && k.eingaben.bild), "Eingang ton ist der Klang, Eingang bild der vorige Abschnitt");
+  const gm = p.knoten.find((k) => k.operation === "lab.mastering");
+  assert.equal(gm.eingaben.ton, t.id, "gemischt wird der unveränderte Klang");
+  assert.ok(kn.every((k) => k.eingaben.ton === gm.ausgaben[0] && k.eingaben.bild), "Eingang ton ist der gemischte Klang, Eingang bild der vorige Abschnitt");
   // ein bearbeiteter Klang beginnt am Anfang: beginn 0
   laeufe.length = 0;
   const q = mitTon(), mq = await VS.messen({ register: r, projekt: q.p, medien: q.m, bild: q.e.id, ton: q.t.id, beginn: 1 });
@@ -2076,7 +2088,9 @@ test("Zusammenstellung mit Signatur (0.1.26): Intro mit dem Zettel, Outro mit de
   assert.equal(laeufe[2].p.auftakt, "kugel"); assert.equal(laeufe[2].p.beginn, z.signet, "das Signet liest das Gefrickel ab seinem Beginn");
   const ton = p.knoten.find((k) => k.operation === "signatur.ton");
   assert.ok(ton, "eine eigene Tonspur"); assert.equal(ton.parameter.dauer, z.gesamt); assert.equal(ton.parameter.vor, G.INTRO_DAUER);
-  assert.equal(x.plan.tonspur, ton.ausgaben[0]); assert.equal(x.plan.tonBeginn, 0);
+  const gemischt = p.knoten.find((k) => k.operation === "lab.mastering");
+  assert.equal(gemischt.eingaben.ton, ton.ausgaben[0], "gemischt wird die Tonspur der Signatur");
+  assert.equal(x.plan.tonspur, gemischt.ausgaben[0]); assert.equal(x.plan.tonBeginn, 0);
   const mess = p.knoten.filter((k) => k.operation === "lab.tonsignal").at(-1);
   assert.equal(mess.parameter.laenge, z.gesamt, "der ganze Film wird auf der neuen Tonspur gemessen");
   assert.deepEqual(x.plan.stationen[0], { ergebnis: x.signatur.intro, einmal: true, halten: G.INTRO_DAUER, uebergang: "schnitt" });
@@ -2129,7 +2143,7 @@ test("Zusammenstellung: Abschnitte ausschalten und ihre Dauer setzen (0.1.28): n
   const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.keine", "klang.keine"], bild, seed: 4, abschnitte, lebendig: false, bewegung: 0 };
   const vorher = p.knoten.length;
   const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "mensch", details: { geaendert: ["abschnitt1"] } }, seed: 3 });
-  const neu = p.knoten.slice(vorher).filter((k) => k.operation !== "lab.tonsignal");
+  const neu = p.knoten.slice(vorher).filter((k) => k.operation !== "lab.tonsignal" && k.operation !== "lab.mastering");
   assert.deepEqual(neu.map((k) => k.operation), ["lab.licht", "lab.farbe", "lab.glitch", "lab.farbe"], "nur die vier Abschnitte, die an sind");
   assert.deepEqual(neu.map((k) => k.ausgaben.length), [12, 10, 10, 5], "Varianten nach der Dauer");
   assert.equal(x.ergebnisse.length, 37); assert.equal(x.haupt, 22.5);

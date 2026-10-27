@@ -119,6 +119,15 @@ Christian am 25. Oktober 2026: «Wie ist es mit dem Ausgabeformat im Lab. Ich ve
 - `lab.format` steht auch für sich im Register (Parameter `format`, `lage` 0–1: der Ausschnitt von links/oben nach rechts/unten, moduliert über Varianten ein Schwenk) und im Katalog von jev für die nächste Operation.
 - Nicht gemacht: mehrere Formate aus einer Zusammenstellung auf einmal (etwa beim Export «Für Works»); das wäre der nächste Schritt, falls gewünscht.
 
+## Tonspur fertig gemischt (seit Lab 0.1.45)
+
+Wunsch vom 27. Oktober 2026: «mastering auch in den vorschlag für 30 s einbauen».
+
+- In den Einstellungen der Zusammenstellung steht neben «Signatur» der Schalter **Tonspur fertig mischen** (Standard an, `plan.mastering`). Ältere Pläne ohne den Schalter werden gemischt.
+- Die Tonspur geht als letzter Klangschritt durch `lab.mastering` (KLANGTRANSFORMATION.md): nach den Klangeffekten und nach der Tonspur der Signatur, **bevor** das Tonsignal sie misst. So folgen Takt und Kamera dem, was zu hören ist. Ziel −14 LUFS, Kompressor, Limiter auf −1 dBFS.
+- Das Mastering ändert die Länge nicht: Ohne Klangeffekt und Signatur wird der ganze Ton gemischt, und der Film beginnt wie bisher bei «Ton ab Sekunde». Die Lautheit ist dann über den ganzen Ton gemessen, nicht nur über die 30 Sekunden des Films.
+- Im Projekt: ein Knoten `lab.mastering` mit Lautheit und Spitze im Protokoll, `details.film.mastering` der Entscheidung («−14 LUFS» oder «aus»); `zusammenstellungRechnen()` gibt die gemischte Tonspur als `klang` zurück.
+
 ## Fliessend zwischen den Effekten (seit Lab 0.1.39)
 
 Christian am 25. Oktober 2026: «Beim Resultat Video gibt es zwischendurch immer wieder kurze schwarze Bilder oder das Ausgangsbild wird gezeigt. Ich möchte das etwas fliessender zwischen den Effekten.» Drei Ursachen, in einem Prüffilm nachgemessen (Kette, Schnitt, sechs Abschnitte zu 3 s):
