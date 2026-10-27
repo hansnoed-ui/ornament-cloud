@@ -106,7 +106,7 @@ await check("Rückkanal in der Spalte der Seite, bündig mit dem Fuss, nie am Fe
 });
 
 // ---------- Menü ----------
-await check("Menü: sechs Kästchen (Apps, Prompts, Zettel, Social, Art, Lab) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
+await check("Menü: sechs Kästchen (Lab, Apps, Prompts, Zettel, Social, Art) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
   const ctx = await browser.newContext();
   for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/social-media/", "/zu-seiner-zeit/", "/zu-seiner-zeit/en/strophe/17-die-person/", "/alpha/sketchory/", "/art/", "/art/harbouring/"]) {
     for (const w of [320, 360, 390, 412, 600, 768, 1024, 1280]) {
@@ -116,7 +116,7 @@ await check("Menü: sechs Kästchen (Apps, Prompts, Zettel, Social, Art, Lab) mi
       await page.goto(origin + pfad);
       const items = page.locator(".menu-item");
       assert.equal(await items.count(), 6);
-      assert.deepEqual(await items.locator("span").allTextContents(), ["Apps", "Prompts", "Zettel", "Social", "Art", "Lab"], `${pfad} ${w}: Namen`);
+      assert.deepEqual(await items.locator("span").allTextContents(), ["Lab", "Apps", "Prompts", "Zettel", "Social", "Art"], `${pfad} ${w}: Namen`);
       const bs = [];
       for (let i = 0; i < 6; i++) { assert.ok(await items.nth(i).isVisible(), `${pfad} ${w}: Kästchen ${i + 1} sichtbar`); bs.push(await box(items.nth(i))); }
       for (let i = 0; i < 6; i++) for (let j = i + 1; j < 6; j++) assert.ok(!sich(bs[i], bs[j]), `${pfad} ${w}: Kästchen ${i + 1} und ${j + 1} überlappen`);

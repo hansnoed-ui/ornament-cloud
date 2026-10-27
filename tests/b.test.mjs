@@ -314,7 +314,7 @@ test("b/en/: jede Seite auch auf Englisch (ohne die Werkstatt), lang=en, hreflan
     assert.ok(html.includes(`<link rel="alternate" hreflang="de" href="https://ornament.cloud/b/${p}">`) && html.includes(`<link rel="alternate" hreflang="en" href="https://ornament.cloud/b/en/${p}">`), `${p}: hreflang`);
     assert.ok(html.includes(`<nav class="sprache" aria-label="Language"><a href="/b/${p}" lang="de" hreflang="de" title="Deutsch">d</a><a href="/b/en/${p}" lang="en" hreflang="en" title="English" aria-current="true">e</a></nav>`), `${p}: Schalter`);
     for (const d of deutsch) assert.ok(!html.includes(d), `${p}: «${d}» ist nicht übersetzt`);
-    assert.ok(/<nav class="hauptnav"[^>]*><a href="\/b\/en\/zettel\/"[^>]*>Notes<\/a>/.test(html), `${p}: die Navigation auf Englisch unter /b/en/`);
+    assert.ok(/<nav class="hauptnav"[^>]*><a href="\/beta\/lab\/" target="_blank" rel="noopener">Lab<\/a><a href="\/b\/en\/zettel\/"[^>]*>Notes<\/a>/.test(html), `${p}: die Navigation auf Englisch unter /b/en/ (seit 27. Oktober 2026 zuerst «Lab», neues Fenster)`);
   }
   // die deutschen Seiten zeigen den Schalter mit d aktiv und verweisen auf /b/en/
   for (const p of seiten.filter((x) => x !== "werkstatt/")) {
