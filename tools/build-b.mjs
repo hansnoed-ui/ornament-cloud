@@ -19,7 +19,7 @@ import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 26;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 27;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -339,7 +339,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
     const erster = zettel[0];
     const daten = zettel.map((z) => ({ n: z.number, slug: z.slug, titel: z.title, leitsatz: z.bottom_line }));
     const body = `
-<section class="einstieg" aria-labelledby="einstieg-titel">
+<section class="einstieg kapitel kapitel-gruen" aria-labelledby="einstieg-titel">
   <div class="spalte">
     <div class="einstieg-kopf">
       <h1 class="titel" id="einstieg-titel">${esc(SEITE.titel)}<small>${esc(SEITE.lead)}</small></h1>
@@ -350,7 +350,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   </div>
 </section>
 
-<section class="buehne" data-aktuell="${erster.number}" aria-labelledby="feld-titel">
+<section class="buehne kapitel kapitel-papier" data-aktuell="${erster.number}" aria-labelledby="feld-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="feld-titel">${zeichen("zettel")}${esc(T.start.kasten)}</h2><p>${esc(T.start.kastenText)}</p><a class="weiter" href="${B}zettel/">${esc(T.start.alleZettel)}</a></div>
   </div>
@@ -366,7 +366,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   <script type="application/json" id="zettel-daten">${JSON.stringify(daten).replace(/</g, "\\u003c")}</script>
 </section>
 
-<section class="dialog" aria-labelledby="dialog-titel">
+<section class="dialog kapitel kapitel-rot" aria-labelledby="dialog-titel">
   <div class="spalte">
     <h2 id="dialog-titel">${esc(DIALOG.frage)}</h2>
     <div class="chips" role="radiogroup" aria-label="${attr(DIALOG.frage)}">
@@ -377,35 +377,35 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
 </section>
 
 <!-- Prüfraster (seit 21. Oktober 2026 statt «Denken»: die sieben Zyklen standen doppelt, der Zettelkasten hat oben seinen Abschnitt; die Raster hatten keinen Titel) -->
-<section class="abschnitt" aria-labelledby="raster-titel">
+<section class="abschnitt kapitel tinte" aria-labelledby="raster-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="raster-titel">${zeichen("raster")}${esc(T.start.raster)}</h2><p>${esc(T.start.rasterText)}</p><a class="weiter" href="${B}raster/">${esc(T.start.alleRaster)}</a></div>
     <ul class="liste-linien">${RASTER.map((r) => `<li><a href="${B}raster/${r.slug}/"><span class="n">${zeichen(r.slug)}</span><span class="name">${esc(r.name)}</span><span class="pfeil">${esc(r.stand)}</span><span class="kurz">${esc(r.kurz)}</span></a></li>`).join("")}</ul>
   </div>
 </section>
 
-<section class="abschnitt" aria-labelledby="spielen-titel">
+<section class="abschnitt kapitel kapitel-senf" aria-labelledby="spielen-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="spielen-titel">${zeichen("spielen")}${esc(T.start.spielen)}</h2><p>${esc(T.start.spielenText)}</p><a class="weiter" href="${B}apps/">${esc(T.start.alleApps)}</a></div>
     <div class="reihe zeilen">${APPS.map(appKachel).join("")}</div>
   </div>
 </section>
 
-<section class="abschnitt" aria-labelledby="werke-titel">
+<section class="abschnitt kapitel tinte" aria-labelledby="werke-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="werke-titel">${zeichen("werke")}${esc(T.start.werke)}</h2><p>${esc(echteWerke.length ? T.start.werkeText : T.start.werkeBald)}</p><a class="weiter" href="${B}werke/">${esc(echteWerke.length ? T.start.alleWerke : T.start.wasKommt)}</a></div>
     ${echteWerke.length ? `<div class="reihe zeilen">${echteWerke.map((w) => `<a class="stueck" href="${B}werke/#${w.slug}"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span><h3>${esc(w.titel)}</h3><p>${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm</p></a>`).join("")}</div>` : ""}
   </div>
 </section>
 
-<section class="abschnitt" aria-labelledby="zuletzt-titel">
+<section class="abschnitt kapitel tinte" aria-labelledby="zuletzt-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="zuletzt-titel">${zeichen("zuletzt")}${esc(T.start.zuletzt)}</h2><p>${esc(T.start.zuletztText)}${T.beitraegeDeutsch ? ` ${esc(T.beitraegeDeutsch)}` : ""}</p><a class="weiter" href="${B}zuletzt/">${esc(T.start.alleBeitraege)}</a></div>
     ${beitraege.eintraege.slice(-2).reverse().map(beitrag).join("")}
   </div>
 </section>
 
-<section class="abschnitt" aria-labelledby="liste-titel">
+<section class="abschnitt kapitel kapitel-papier" aria-labelledby="liste-titel">
   <div class="spalte">
     <div class="liste-kasten" style="margin-top:0;border-top:0;padding-top:0">
       <h2 id="liste-titel">${esc(UEBER.liste.titel)}</h2>
