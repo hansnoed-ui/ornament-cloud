@@ -71,6 +71,19 @@ p { margin: 0; max-width: 62ch; }
 .notiz { font-size: var(--klein); color: var(--grau); max-width: 30ch; }
 .abschnitt { padding-block: clamp(96px, 12vw, 200px) 0; }
 
+/* Felder (27. Oktober 2026, Wunsch: «die verschiedenen Abschnitte einen anderen bzw wechselnden hintergrund … die seite etwas besser
+   strukturieren»; Variante A nach dem Vorschlag des Skills design-taste-frontend): jeder Abschnitt ist eine ganze Fläche in den Farben des
+   Neubaus (b/b.css), fest gesetzt, unabhängig vom hellen oder dunklen Modus. Nacht für Bühne und Film, Papier zum Lesen, Fläche für die
+   Werkbank, die Blaupause einmal, am Schluss. Getrennt wird durch die Fläche, nicht durch Linien; die Abstände sind Innenabstände.
+   --hoch ist die Fläche eine Stufe heller oder dunkler (Knöpfe des Pults). */
+.feld { margin-top: 0; padding-block: clamp(88px, 10vw, 168px); background: var(--papier); color: var(--tinte); }
+.feld.nacht { --papier: #000000; --tinte: #ffffff; --grau: #9a9a9a; --linie: #2e2e2e; --faden: #8fb0ff; --faden-hell: rgba(143, 176, 255, .18); --hoch: #141414; }
+.feld.hell { --papier: #ffffff; --tinte: #000000; --grau: #6f6f6f; --linie: #dadada; --faden: #1d3fd6; --faden-hell: rgba(29, 63, 214, .14); --hoch: #f3f3f1; }
+.feld.flaeche { --papier: #f3f3f1; --tinte: #000000; --grau: #6f6f6f; --linie: #d6d6d3; --faden: #1d3fd6; --faden-hell: rgba(29, 63, 214, .14); --hoch: #ffffff; }
+.feld.blau { --papier: #1d3fd6; --tinte: #ffffff; --grau: #d4dcff; --linie: rgba(255, 255, 255, .3); --faden: #ffffff; --faden-hell: rgba(255, 255, 255, .2); --hoch: #2c4ce0; }
+/* das Titelfeld schliesst unmittelbar an das Bildband an */
+.titelfeld.feld { padding-block: clamp(40px, 5vw, 72px) clamp(88px, 10vw, 168px); }
+
 /* Kopfband: Mosaik ohne Fugen */
 .band { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); height: clamp(260px, 44svh, 520px); }
 .band > * { min-width: 0; overflow: hidden; position: relative; }
@@ -94,7 +107,7 @@ p { margin: 0; max-width: 62ch; }
 .randbild figcaption { margin-top: 10px; }
 
 /* Ganzseite: der Film */
-.ganz { margin-top: clamp(96px, 12vw, 200px); background: #000; color: #fff; padding-block: clamp(64px, 8vw, 128px); }
+.ganz { background: #000; color: #fff; }
 .ganz .seite { align-items: center; }
 .ganz blockquote { margin: 28px 0 0; font-family: var(--serif); font-style: italic; font-size: clamp(24px, 2.4vw, 36px); line-height: 1.25; max-width: 22ch; }
 .ganz .notiz { color: #9a9a9a; margin-top: 24px; }
@@ -107,10 +120,10 @@ p { margin: 0; max-width: 62ch; }
 @keyframes blink { 50% { opacity: .2; } }
 
 /* Probieren */
-.pult { position: relative; width: 100%; max-width: 520px; aspect-ratio: 1; box-shadow: inset 0 0 0 1px var(--linie); background: #fff; }
+.pult { position: relative; width: 100%; max-width: 520px; aspect-ratio: 1; background: #fff; }
 .pult canvas { width: 100%; height: 100%; }
 .wahl { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 32px; }
-.wahl button { font: 500 16px var(--sans); color: var(--tinte); background: var(--papier); border: 0; box-shadow: inset 0 0 0 1px var(--linie); border-radius: 999px; padding: 10px 18px; cursor: pointer; transition: box-shadow .2s, background .2s, color .2s, transform .2s; }
+.wahl button { font: 500 16px var(--sans); color: var(--tinte); background: var(--hoch, var(--papier)); border: 0; box-shadow: inset 0 0 0 1px var(--linie); border-radius: 999px; padding: 10px 18px; cursor: pointer; transition: box-shadow .2s, background .2s, color .2s, transform .2s; }
 .wahl button:hover { box-shadow: inset 0 0 0 1px var(--tinte); transform: translateY(-1px); }
 .wahl button[aria-pressed="true"] { background: var(--faden); color: #fff; box-shadow: none; }
 .protokoll { margin-top: 28px; display: grid; gap: 6px; font-size: 16px; }
@@ -126,7 +139,7 @@ p { margin: 0; max-width: 62ch; }
 @media (max-width: 560px) { .katalog { grid-template-columns: 1fr; } }
 
 /* Schluss */
-.schluss { margin-top: clamp(96px, 12vw, 200px); background: var(--faden); color: #fff; padding-block: clamp(72px, 9vw, 144px); }
+.schluss { background: var(--papier); color: var(--tinte); }
 .schluss a.gross { font-size: clamp(52px, 9vw, 150px); font-weight: 500; letter-spacing: -0.045em; line-height: .95; text-decoration: none; display: inline-flex; gap: .25em; align-items: baseline; }
 .schluss a.gross span { display: inline-block; transition: transform .5s cubic-bezier(.2,.7,.2,1); }
 .schluss a.gross:hover span { transform: translateX(22%); }
@@ -172,7 +185,7 @@ p { margin: 0; max-width: 62ch; }
     <figure class="auf" style="--i:5"><img src="bilder/v-teilung.jpg" alt="Dasselbe Bild als Teilung"></figure>
   </div>
 
-  <section class="titelfeld innen" aria-labelledby="titel">
+  <section class="titelfeld feld nacht innen" aria-labelledby="titel">
     <div class="seite">
       <div class="rand"><p class="notiz auf">ORNAMENT LAB 0.1, eine Werkstatt von Christian Strickler. Läuft ganz im Browser, nichts wird hochgeladen.</p></div>
       <div class="haupt">
@@ -183,7 +196,7 @@ p { margin: 0; max-width: 62ch; }
     </div>
   </section>
 
-  <section class="abschnitt innen" id="durchgang" aria-labelledby="h-durch">
+  <section class="abschnitt feld hell innen" id="durchgang" aria-labelledby="h-durch">
     <div class="seite">
       <div class="rand">
         <figure class="randbild auf" style="--i:2"><img src="bilder/v-raster.jpg" alt="Beispielbild als farbiges Raster" loading="lazy"><figcaption class="notiz">Raster: die Punkte nehmen Ton und Farbe des Bildes auf.</figcaption></figure>
@@ -201,7 +214,7 @@ p { margin: 0; max-width: 62ch; }
     </div>
   </section>
 
-  <section class="ganz innen" aria-labelledby="h-film">
+  <section class="ganz feld nacht innen" aria-labelledby="h-film">
     <div class="seite">
       <div class="rand">
         <h2 id="h-film" class="auf">Vorschlag für 30 Sekunden.</h2>
@@ -215,7 +228,7 @@ p { margin: 0; max-width: 62ch; }
     </div>
   </section>
 
-  <section class="abschnitt innen" id="probieren" aria-labelledby="h-prob">
+  <section class="abschnitt feld flaeche innen" id="probieren" aria-labelledby="h-prob">
     <div class="seite">
       <div class="rand">
         <figure class="pult auf"><canvas id="pult" width="720" height="720" role="img" aria-label="Das Beispielbild mit dem gewählten Verfahren"></canvas></figure>
@@ -234,7 +247,7 @@ p { margin: 0; max-width: 62ch; }
     </div>
   </section>
 
-  <section class="abschnitt innen" id="katalog" aria-labelledby="h-kat">
+  <section class="abschnitt feld hell innen" id="katalog" aria-labelledby="h-kat">
     <div class="seite">
       <div class="rand"><figure class="randbild auf"><img src="bilder/v-punkte.jpg" alt="Beispielbild punktiert" loading="lazy"><figcaption class="notiz">Punktieren: die Dichte folgt dem Ton des Bildes.</figcaption></figure></div>
       <div class="haupt">
@@ -253,7 +266,7 @@ p { margin: 0; max-width: 62ch; }
     </div>
   </section>
 
-  <section class="schluss innen" aria-labelledby="h-schluss">
+  <section class="schluss feld blau innen" aria-labelledby="h-schluss">
     <div class="seite">
       <div class="rand"><p class="notiz" style="color:#fff">Am besten in Chrome, auch am Handy. Bilder und Töne bleiben auf deinem Gerät.</p></div>
       <div class="haupt">
@@ -265,7 +278,7 @@ p { margin: 0; max-width: 62ch; }
   </section>
 </main>
 
-<footer class="fuss innen">
+<footer class="fuss feld nacht innen">
   <span class="marke"><svg class="signet" viewBox="0 0 34 24" aria-hidden="true"></svg><span>ornament<span class="p">.</span>lab</span></span>
   <button type="button" id="nochmal">Intro noch einmal</button>
   <span>Christian Strickler · ornament.cloud</span>
