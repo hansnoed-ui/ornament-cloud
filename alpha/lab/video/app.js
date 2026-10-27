@@ -173,7 +173,11 @@ function zeigeMedien() {
 const leinwand = $("bild"), ctx = leinwand.getContext("2d", { alpha: false });
 function passeLeinwand() {
   const b = F.FORMATE[S.p.format], s = Math.min(1, 960 / Math.max(b.w, b.h)), w = Math.round(b.w * s), h = Math.round(b.h * s);
-  if (leinwand.width !== w || leinwand.height !== h) { leinwand.width = w; leinwand.height = h; $("leinwand").style.aspectRatio = `${b.w} / ${b.h}`; }
+  if (leinwand.width !== w || leinwand.height !== h) { leinwand.width = w; leinwand.height = h; }
+  // die Anzeige: das ganze Bild, so gross es in die Breite der Vorschau und in gut die halbe Fensterhöhe passt; der Rahmen so hoch wie das Bild
+  const box = $("leinwand"), breit = box.clientWidth || 640, hoch = Math.min(innerHeight * 0.58, 640), k = Math.min(breit / b.w, hoch / b.h);
+  box.style.height = `${Math.round(b.h * k)}px`;
+  leinwand.style.width = `${Math.round(b.w * k)}px`; leinwand.style.height = `${Math.round(b.h * k)}px`;
 }
 function zeigeZeit() {
   $("zeit").textContent = `${zeitText(S.t)} / ${zeitText(F.dauer(S.p))}`;
@@ -702,6 +706,9 @@ window.addEventListener("beforeunload", (e) => { if (S.geaendert && Object.keys(
 
 schriftenLaden?.()?.then?.(() => zeichneJetzt()).catch?.(() => {});
 alles({ medien: true });
+// die Vorschau passt sich der Breite an (Fenster, Telefon gedreht)
+if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => passeLeinwand()).observe($("vorschau"));
+else addEventListener("resize", passeLeinwand);
 zustand("Bereit. Videos, Bilder und Töne laden; sie bleiben auf diesem Gerät.");
 // für die Browsertests (tests/lab-video.e2e.mjs)
 window.ornamentVideo = { S, F, get Q() { return Q; }, dateienAufnehmen, teilenJetzt, loeschenJetzt, rueckgaengig, wiederholen, speichern, oeffnen, spielen, anhalten, springe, alles, aendern };

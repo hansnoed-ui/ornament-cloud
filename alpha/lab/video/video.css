@@ -28,9 +28,9 @@
 .medium .aktionen { grid-column: 1 / -1; gap: 6px; }
 
 /* Vorschau */
-/* so hoch wie das Format es verlangt (aspect-ratio setzt app.js), höchstens gut die halbe Höhe des Fensters */
-.leinwand { position: relative; display: grid; place-items: center; background: #000; width: 100%; aspect-ratio: 16 / 9; max-height: min(58vh, 640px); }
-.leinwand canvas { max-width: 100%; max-height: 100%; display: block; background: #000; }
+/* die Grösse rechnet app.js (passeLeinwand): das ganze Bild im Format, so breit wie die Vorschau und höchstens gut halb so hoch wie das Fenster */
+.leinwand { position: relative; display: grid; place-items: center; background: #000; width: 100%; height: min(58vh, 640px); overflow: hidden; }
+.leinwand canvas { display: block; background: #000; }
 .leinwand .leer { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 12px; text-align: center; color: var(--staub); padding: 20px; font-family: var(--serif); }
 .leinwand .leer .knopf { border-color: var(--kreide); color: var(--kreide); font-family: var(--font); }
 .leinwand .leer .knopf:hover { background: var(--kreide); color: var(--nacht); }

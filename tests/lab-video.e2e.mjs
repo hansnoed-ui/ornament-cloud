@@ -126,6 +126,28 @@ await check("Vorschau: rot, dann blau, dann grün, dann das gelbe Bild", async (
   assert.ok(gruen[1] > 130 && gruen[0] < 90, `grün: ${gruen}`); assert.ok(gelb[0] > 180 && gelb[1] > 160 && gelb[2] < 90, `gelb: ${gelb}`);
 });
 
+/** die Vorschau liegt ganz in ihrem Rahmen, hat das Seitenverhältnis des Formats und ragt nicht in die Zeitleiste */
+async function vorschauPasst(page, format) {
+  await page.selectOption("#format", format);
+  await page.waitForTimeout(250);
+  const r = await S(page, () => {
+    const box = (id) => { const b = document.getElementById(id).getBoundingClientRect(); return { l: b.left, t: b.top, r: b.right, b: b.bottom, w: b.width, h: b.height }; };
+    return { bild: box("bild"), rahmen: box("leinwand"), leiste: box("zeitleiste"), vorschau: box("vorschau") };
+  });
+  const [fw, fh] = { "16:9": [16, 9], "9:16": [9, 16], "1:1": [1, 1], "4:5": [4, 5] }[format];
+  assert.ok(Math.abs(r.bild.w / r.bild.h - fw / fh) < 0.02, `${format}: Seitenverhältnis ${r.bild.w} × ${r.bild.h}`);
+  assert.ok(r.bild.l >= r.rahmen.l - 1 && r.bild.r <= r.rahmen.r + 1 && r.bild.t >= r.rahmen.t - 1 && r.bild.b <= r.rahmen.b + 1, `${format}: das Bild bleibt im Rahmen ${JSON.stringify(r)}`);
+  assert.ok(r.rahmen.b <= r.vorschau.b + 1, `${format}: der Rahmen bleibt in der Vorschau`);
+  assert.ok(r.bild.b <= r.leiste.t + 1 || r.bild.t >= r.leiste.b - 1, `${format}: nichts ragt in die Zeitleiste`);
+  assert.ok(r.bild.w > 100 && r.bild.h > 100, `${format}: nicht winzig`);
+}
+
+await check("Format wechseln: in 16:9, 9:16, 1:1 und 4:5 passt die Vorschau in ihren Rahmen, nichts ragt in die Zeitleiste", async () => {
+  for (const f of ["4:5", "9:16", "1:1", "16:9"]) await vorschauPasst(page, f);
+  await page.keyboard.press("Control+z"); await page.keyboard.press("Control+z"); await page.keyboard.press("Control+z"); await page.keyboard.press("Control+z");
+  assert.equal(await S(page, () => ornamentVideo.S.p.format), "16:9");
+});
+
 await check("Teilen mit S am Abspielkopf, Rückgängig und Wiederholen", async () => {
   await S(page, () => { ornamentVideo.S.auswahl = null; ornamentVideo.springe(2); });
   await page.locator("body").click({ position: { x: 5, y: 5 } });
@@ -270,6 +292,7 @@ await check("Telefon (390 × 844): alles untereinander, keine Seite zum Seitwär
   await t.page.setInputFiles("#dateien", [{ name: "hoch.mp4", mimeType: "video/mp4", buffer: await testvideo(t.page, { w: 180, h: 320, sekunden: 2 }) }]);
   await t.page.waitForFunction(() => ornamentVideo.S.p.folge.length === 1, null, { timeout: 30000 });
   assert.equal(await S(t.page, () => ornamentVideo.S.p.format), "9:16", "ein Hochformat-Video stellt das Format auf 9:16");
+  for (const f of ["4:5", "16:9", "9:16"]) await vorschauPasst(t.page, f);
   await S(t.page, () => ornamentVideo.springe(1)); await S(t.page, () => ornamentVideo.teilenJetzt());
   assert.equal(await S(t.page, () => ornamentVideo.S.p.folge.length), 2);
   assert.deepEqual(t.fehler, []);
