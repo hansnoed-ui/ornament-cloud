@@ -28,9 +28,9 @@
 .medium .aktionen { grid-column: 1 / -1; gap: 6px; }
 
 /* Vorschau */
-/* so hoch wie das Format es verlangt (aspect-ratio setzt app.js), höchstens gut die halbe Höhe des Fensters */
-.leinwand { position: relative; display: grid; place-items: center; background: #000; width: 100%; aspect-ratio: 16 / 9; max-height: min(58vh, 640px); }
-.leinwand canvas { max-width: 100%; max-height: 100%; display: block; background: #000; }
+/* die Grösse rechnet app.js (passeLeinwand): das ganze Bild im Format, so breit wie die Vorschau und höchstens gut halb so hoch wie das Fenster */
+.leinwand { position: relative; display: grid; place-items: center; background: #000; width: 100%; height: min(58vh, 640px); overflow: hidden; }
+.leinwand canvas { display: block; background: #000; }
 .leinwand .leer { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 12px; text-align: center; color: var(--staub); padding: 20px; font-family: var(--serif); }
 .leinwand .leer .knopf { border-color: var(--kreide); color: var(--kreide); font-family: var(--font); }
 .leinwand .leer .knopf:hover { background: var(--kreide); color: var(--nacht); }
@@ -49,6 +49,15 @@
 .lineal { position: relative; height: 26px; border-bottom: 1px solid var(--fuge); cursor: pointer; touch-action: none; }
 .lineal .strich { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--fuge); font-size: 0.7rem; color: var(--staub); padding-left: 3px; line-height: 26px; white-space: nowrap; }
 .lineal .marke { position: absolute; bottom: 0; width: 1px; height: 8px; background: #f2c14e; }
+/* Marken und Bereich (seit 0.3): Fähnchen auf dem Lineal, der Bereich als Band auf dem Lineal und hell über allen Spuren */
+.fahne { position: absolute; top: 0; height: 26px; z-index: 4; border-left: 2px solid #5ab0ff; padding: 0 5px 0 3px; font-size: 0.68rem; line-height: 14px; color: #fff; background: rgb(90 176 255 / 0.35); cursor: pointer; white-space: nowrap; max-width: 110px; overflow: hidden; text-overflow: ellipsis; touch-action: none; }
+.fahne.gewaehlt { background: #5ab0ff; color: #000; }
+.bereich-band { position: absolute; top: 14px; height: 12px; z-index: 3; background: rgb(242 193 78 / 0.85); cursor: pointer; border-radius: 2px; }
+.bereich-band.gewaehlt { box-shadow: 0 0 0 2px #fff; }
+.bereich-schleier { position: absolute; top: 26px; bottom: 0; z-index: 1; background: rgb(242 193 78 / 0.12); border-left: 1px dashed #f2c14e; border-right: 1px dashed #f2c14e; pointer-events: none; }
+.marken-linie { position: absolute; top: 26px; bottom: 0; width: 0; border-left: 1px dashed rgb(90 176 255 / 0.7); z-index: 1; pointer-events: none; }
+.liste-marken { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.liste-marken li { display: flex; gap: 8px; align-items: center; justify-content: space-between; font-size: 0.88rem; }
 .spur { position: relative; height: var(--spur); border-bottom: 1px solid var(--fuge); }
 .spur.folge { height: var(--spur-folge); }
 .spur .name { position: sticky; left: 0; z-index: 3; display: inline-block; font-size: 0.68rem; color: var(--staub); padding: 2px 6px; background: color-mix(in srgb, var(--nacht) 80%, transparent); pointer-events: none; }

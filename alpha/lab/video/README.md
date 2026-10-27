@@ -1,4 +1,4 @@
-# ornament.lab · Video 0.2
+# ornament.lab · Video 0.3
 
 Ein Video-Editor im Browser: Videos, Bilder und Töne laden, schneiden, blenden, mit Filtern, Titeln und Musik, und als MP4 ausgeben. Die Dateien bleiben auf dem Gerät, nichts wird hochgeladen.
 
@@ -21,6 +21,12 @@ Wunsch vom 27. Oktober 2026: «video hochladen, bearbeiten und allenfalls mit ti
    - Zwischen zwei Clips steht ein Zeichen für den Übergang: │ Schnitt, ◇ Überblendung, ■ Schwarzblende, □ Weissblende. Ein Klick darauf wählt ihn in den Eigenschaften, mit seiner Dauer.
    - «zwischen allen Clips» gibt allen denselben Übergang.
    - «Takt als Marken» findet die Schläge eines Tons; Ränder und Schnitte rasten dann im Takt ein.
+   - **Stellen markieren** (seit 0.3):
+     - **Marke** (Taste M) setzt eine benannte Stelle am Abspielkopf, als blaues Fähnchen auf dem Lineal. Ein Klick darauf springt hin. Dort: «Schnitt hier», «Übergang hier» (Art und Dauer), «als Bereich markieren» (bis zur nächsten Marke), umbenennen, verschieben, löschen.
+     - **Bereich ab hier** (I) und **bis hier** (O) markieren einen Abschnitt, als gelbes Band. Ihm lässt sich zuordnen: eine Effektvorlage oder ein Filter nur dort, Schnitte und ein Übergang an Anfang und Ende, ein Titel über den Bereich, oder ihn herausschneiden (die Lücke schliesst sich).
+     - Ohne Auswahl stehen alle Marken in den Eigenschaften, mit «an allen Marken schneiden» und «Übergang an allen Marken».
+     - Unter der Haube teilt der Editor die Clips an den Rändern und ordnet zu, was dazwischen liegt: jeder Schritt ist rückgängig zu machen, und der Film bleibt ein gewöhnlicher OpenFilm-Film. Liegt eine Stelle in einer Überblendung, ist dort schon eine Kante; ob ein Clip im Bereich liegt, entscheidet die Mitte der Überblendung.
+     - Marken und Bereich rasten ein und werden mit dem Projekt gespeichert.
 4. **Clip:** Zuschnitt in der Datei, Tempo (0,25–4, die Tonhöhe bleibt), Lautstärke und Bildausschnitt (füllen oder ganz zeigen, Zoom, Lage).
    - **Filter:** neun Vorlagen (Natürlich, Film, Noir, Warm, Kühl, Verblasst, Kräftig, Nacht, Traum), darüber sieben Regler: Helligkeit, Kontrast, Sättigung, Farbton, Wärme, Schwarzweiss, Unschärfe.
    - «für alle Clips» gibt allen denselben Filter.

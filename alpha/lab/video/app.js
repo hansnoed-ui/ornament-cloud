@@ -1,4 +1,4 @@
-// ORNAMENT LAB · Video 0.2 – die Oberfläche des Editors. Das Modell ist kern/folge.js (Folge, Titel, Ton), der Film ist ein OpenFilm-Film
+// ORNAMENT LAB · Video 0.3 – die Oberfläche des Editors. Das Modell ist kern/folge.js (Folge, Titel, Ton), der Film ist ein OpenFilm-Film
 // (film.html); Vorschau und Export zeichnen ihn mit medien/zeichnen.js. Alles bleibt im Browser: Dateien werden gelesen, nie hochgeladen.
 // Eigenständig: der Editor ist nicht mit dem Lab verbunden; er macht Videos (MP4), die man im Lab mit «Video wählen» als Material lädt.
 import * as F from "./kern/folge.js";
@@ -72,14 +72,14 @@ function merken(vorher) {
 function rueckgaengig() {
   if (!S.zurueck.length) return;
   S.vor.push(JSON.stringify(S.p)); S.p = F.normieren(JSON.parse(S.zurueck.pop()));
-  if (S.auswahl && !F.finde(S.p, S.auswahl)) S.auswahl = null;
+  if (S.auswahl && !auswahlDa()) S.auswahl = null;
   $("name").value = S.p.name; $("format").value = S.p.format;
   alles({ medien: true }); zustand("Rückgängig gemacht");
 }
 function wiederholen() {
   if (!S.vor.length) return;
   S.zurueck.push(JSON.stringify(S.p)); S.p = F.normieren(JSON.parse(S.vor.pop()));
-  if (S.auswahl && !F.finde(S.p, S.auswahl)) S.auswahl = null;
+  if (S.auswahl && !auswahlDa()) S.auswahl = null;
   $("name").value = S.p.name; $("format").value = S.p.format;
   alles({ medien: true }); zustand("Wiederholt");
 }
@@ -173,7 +173,11 @@ function zeigeMedien() {
 const leinwand = $("bild"), ctx = leinwand.getContext("2d", { alpha: false });
 function passeLeinwand() {
   const b = F.FORMATE[S.p.format], s = Math.min(1, 960 / Math.max(b.w, b.h)), w = Math.round(b.w * s), h = Math.round(b.h * s);
-  if (leinwand.width !== w || leinwand.height !== h) { leinwand.width = w; leinwand.height = h; $("leinwand").style.aspectRatio = `${b.w} / ${b.h}`; }
+  if (leinwand.width !== w || leinwand.height !== h) { leinwand.width = w; leinwand.height = h; }
+  // die Anzeige: das ganze Bild, so gross es in die Breite der Vorschau und in gut die halbe Fensterhöhe passt; der Rahmen so hoch wie das Bild
+  const box = $("leinwand"), breit = box.clientWidth || 640, hoch = Math.min(innerHeight * 0.58, 640), k = Math.min(breit / b.w, hoch / b.h);
+  box.style.height = `${Math.round(b.h * k)}px`;
+  leinwand.style.width = `${Math.round(b.w * k)}px`; leinwand.style.height = `${Math.round(b.h * k)}px`;
 }
 function zeigeZeit() {
   $("zeit").textContent = `${zeitText(S.t)} / ${zeitText(F.dauer(S.p))}`;
@@ -296,6 +300,16 @@ function zeigeLeiste() {
   const ton = verteilen(S.p.ton, (t) => t.at, (t) => t.at + t.aus - t.ein);
   (ton.length ? ton : [[]]).forEach((spur, i) => reihen.push(el("div", { class: "spur", dataset: { spur: "ton" } }, el("span", { class: "name", text: i ? "" : "Ton" }),
     ...spur.map((t) => clipEl({ id: t.id, bereich: "ton", art: "ton", links: t.at * px, breite: (t.aus - t.ein) * px, text: `♪ ${S.p.medien[t.medium]?.name ?? ""}` })))));
+  // der Bereich: ein Band auf dem Lineal und ein heller Schleier über allen Spuren; die Marken als Fähnchen mit einer Linie
+  const b = S.p.bereich;
+  if (b) {
+    lineal.append(el("span", { class: `bereich-band${S.auswahl === "bereich" ? " gewaehlt" : ""}`, dataset: { band: "bereich" }, style: { left: `${b.von * px}px`, width: `${(b.bis - b.von) * px}px` }, title: `Bereich ${zeitText(b.von)} – ${zeitText(b.bis)}` }));
+    reihen.push(el("div", { class: "bereich-schleier", style: { left: `${b.von * px}px`, width: `${(b.bis - b.von) * px}px` } }));
+  }
+  for (const m of S.p.stellen ?? []) {
+    lineal.append(el("span", { class: `fahne${S.auswahl === m.id ? " gewaehlt" : ""}`, dataset: { stelle: m.id }, style: { left: `${m.t * px}px` }, title: `${m.name} · ${zeitText(m.t)}`, text: m.name }));
+    reihen.push(el("div", { class: "marken-linie", style: { left: `${m.t * px}px` } }));
+  }
   reihen.push(el("div", { class: "kopf-linie", style: { left: `${S.t * px}px` } }));
   innen.replaceChildren(...reihen);
 }
@@ -318,6 +332,9 @@ leiste.addEventListener("pointerdown", (e) => {
   if (e.button > 0) return;
   const ue = e.target.closest("[data-uebergang]");
   if (ue) { waehle(ue.dataset.uebergang, { uebergang: true }); return; }
+  const fahne = e.target.closest("[data-stelle]");
+  if (fahne) { const m = S.p.stellen.find((x) => x.id === fahne.dataset.stelle); if (m) { S.auswahl = m.id; springe(m.t); zeigeLeiste(); zeigeInspektor(); } return; }
+  if (e.target.closest("[data-band]")) { S.auswahl = "bereich"; zeigeLeiste(); zeigeInspektor(); return; }
   if (e.target.closest(".lineal")) {
     Z = { art: "kopf" }; leiste.setPointerCapture(e.pointerId);
     springe(rasten(zeitBeiX(e.clientX)).t); e.preventDefault(); return;
@@ -415,7 +432,12 @@ function teilenJetzt() {
   const neu = aendern(() => F.teilen(S.p, id, S.t));
   if (neu) { S.auswahl = neu; zeigeLeiste(); zeigeInspektor(); zustand("Geteilt"); } else zustand("Zu nah am Rand des Clips");
 }
+/** gibt es das Gewählte noch (ein Clip, eine Marke oder der Bereich)? */
+const auswahlDa = () => Boolean(F.finde(S.p, S.auswahl) || S.p.stellen?.some((m) => m.id === S.auswahl) || (S.auswahl === "bereich" && S.p.bereich));
 function loeschenJetzt() {
+  const marke = S.p.stellen?.find((m) => m.id === S.auswahl);
+  if (marke) { S.auswahl = null; aendern(() => F.markeEntfernen(S.p, marke.id)); zustand(`${marke.name} gelöscht`); return; }
+  if (S.auswahl === "bereich") { S.auswahl = null; aendern(() => { S.p.bereich = null; }); zustand("Bereich aufgehoben"); return; }
   if (!S.auswahl) { zustand("Zuerst einen Clip wählen"); return; }
   const id = S.auswahl; S.auswahl = null;
   aendern(() => F.entfernen(S.p, id), { medien: true });
@@ -453,12 +475,81 @@ function regler(def, wert, setze) {
 const gruppe = (titel, ...kinder) => el("fieldset", { class: "gruppe" }, el("legend", { text: titel }), ...kinder);
 const kopf = (titel, untertitel) => el("div", {}, el("b", { text: titel }), untertitel ? el("p", { class: "hinweis", text: untertitel }) : null);
 
+// ---------- Markieren (seit 0.3): Marken und Bereich ----------
+/** ein Übergang zum Wählen und Zuordnen: Art und Dauer, dann der Knopf */
+function uebergangWahl(text, anwenden) {
+  const art = el("select", { "data-feld": "markeUebergang" }, ...Object.entries(F.UEBERGAENGE).filter(([k]) => k !== "schnitt").map(([k, n]) => el("option", { value: k, text: n })));
+  const d = el("input", { type: "number", "data-feld": "markeUebergangDauer", min: 0.1, max: 3, step: 0.05, value: 0.6 });
+  return el("div", { class: "paar" }, el("label", { class: "regler" }, el("span", { text: "Übergang" }), art), el("label", { class: "regler" }, el("span", { text: "Dauer (s)" }), d),
+    el("button", { class: "knopf klein", type: "button", "data-aktion": "uebergang", onclick: () => anwenden(art.value, Math.min(3, Math.max(0.1, Number(d.value) || 0.6))), text }));
+}
+/** Effektvorlagen und Filter als Knöpfe, die auf den Bereich wirken */
+function bereichsKnoepfe(von, bis) {
+  const zaehle = (cs, was) => zustand(cs.length ? `${was} auf ${cs.length} ${cs.length === 1 ? "Clip" : "Clips"} im Bereich ${zeitText(von)} – ${zeitText(bis)}` : "Im Bereich liegt kein Clip der Bildfolge", !cs.length);
+  return [
+    gruppe("Effekt im Bereich", el("div", { class: "vorlagen" }, ...Object.entries(EFFEKT_VORLAGEN).map(([k, v]) => el("button", { type: "button", "data-bereich-effekt": k, text: v.name,
+      onclick: () => { const cs = aendern(() => F.imBereich(S.p, von, bis, (c) => { c.effekte = { ...EFFEKT_STANDARD, ...v.werte }; if (v.filter) c.filter = { vorlage: v.filter }; })); zaehle(cs, v.name); } })))),
+    gruppe("Filter im Bereich", el("div", { class: "vorlagen" }, ...Object.entries(VORLAGEN).map(([k, v]) => el("button", { type: "button", "data-bereich-filter": k, text: v.name,
+      onclick: () => { const cs = aendern(() => F.imBereich(S.p, von, bis, (c) => { c.filter = { vorlage: k }; })); zaehle(cs, `Filter ${v.name}`); } })))),
+  ];
+}
+function zeigeMarke(m) {
+  const box = $("inspektor"), naechste = S.p.stellen.find((x) => x.t > m.t + 0.01);
+  box.replaceChildren(kopf(m.name, `Marke bei ${zeitText(m.t)}`),
+    el("div", { class: "paar" },
+      regler({ id: "name", name: "Name", art: "text" }, m.name, (v) => { m.name = v || "Marke"; }),
+      regler({ id: "t", name: "Zeit (s)", art: "zahl", min: 0, max: 36000, schritt: 0.01 }, m.t, (v) => { m.t = Math.round(v * 1000) / 1000; S.p.stellen.sort((a, b) => a.t - b.t); })),
+    gruppe("Hier",
+      el("div", { class: "aktionen" },
+        el("button", { class: "knopf klein", type: "button", "data-aktion": "schnitt", onclick: () => { const n = aendern(() => F.schneidenAn(S.p, [m.t])); zustand(n ? `Geschnitten bei ${zeitText(m.t)}` : "Hier ist schon ein Schnitt (oder kein Clip)"); }, text: "Schnitt hier" }),
+        el("button", { class: "knopf klein leise", type: "button", onclick: () => springe(m.t), text: "hinspringen" })),
+      uebergangWahl("Übergang hier", (art, d) => { const c = aendern(() => F.uebergangAn(S.p, m.t, art, d)); zustand(c ? `${F.UEBERGAENGE[art]} bei ${m.name}` : "Hier endet kein Clip vor einem nächsten", !c); })),
+    gruppe("Bis zur nächsten Marke",
+      el("p", { class: "hinweis", text: naechste ? `${m.name} bis ${naechste.name}: ${zeitText(m.t)} – ${zeitText(naechste.t)}` : `${m.name} bis zum Ende des Films` }),
+      el("button", { class: "knopf klein", type: "button", "data-aktion": "als-bereich", onclick: () => { aendern(() => F.bereichSetzen(S.p, { von: m.t, bis: naechste?.t ?? F.dauer(S.p) })); S.auswahl = "bereich"; zeigeLeiste(); zeigeInspektor(); }, text: "als Bereich markieren" })),
+    el("div", { class: "aktionen" }, el("button", { class: "knopf klein leise", type: "button", onclick: () => { S.auswahl = null; aendern(() => F.markeEntfernen(S.p, m.id)); }, text: "Marke löschen" })));
+}
+function zeigeBereich() {
+  const box = $("inspektor"), b = S.p.bereich;
+  box.replaceChildren(kopf("Bereich", `${zeitText(b.von)} – ${zeitText(b.bis)} (${kurzZeit(b.bis - b.von)})`),
+    el("div", { class: "paar" },
+      regler({ id: "von", name: "von (s)", art: "zahl", min: 0, max: 36000, schritt: 0.01 }, b.von, (v) => F.bereichSetzen(S.p, { von: v })),
+      regler({ id: "bis", name: "bis (s)", art: "zahl", min: 0, max: 36000, schritt: 0.01 }, b.bis, (v) => F.bereichSetzen(S.p, { bis: v }))),
+    ...bereichsKnoepfe(b.von, b.bis),
+    gruppe("Schnitte und Übergänge",
+      el("div", { class: "aktionen" }, el("button", { class: "knopf klein", type: "button", "data-aktion": "bereich-schneiden", onclick: () => { const n = aendern(() => F.schneidenAn(S.p, [b.von, b.bis])); zustand(`${n} ${n === 1 ? "Schnitt" : "Schnitte"} am Rand des Bereichs`); }, text: "Schnitte an Anfang und Ende" })),
+      uebergangWahl("an Anfang und Ende", (art, d) => { const r = aendern(() => [F.uebergangAn(S.p, b.von, art, d), F.uebergangAn(S.p, b.bis, art, d)]); zustand(`${F.UEBERGAENGE[art]} an ${r.filter(Boolean).length} Rändern des Bereichs`); })),
+    gruppe("Titel und Schnitt",
+      el("div", { class: "aktionen" },
+        el("button", { class: "knopf klein", type: "button", "data-aktion": "bereich-titel", onclick: () => aendern(() => { S.auswahl = F.titelHinzu(S.p, { at: b.von, dauer: b.bis - b.von, text: "Text" }); }), text: "Titel über den Bereich" }),
+        el("button", { class: "knopf klein leise", type: "button", "data-aktion": "herausschneiden", onclick: () => { const n = aendern(() => { const k = F.herausschneiden(S.p, b.von, b.bis); S.p.bereich = null; S.auswahl = null; return k; }); zustand(`${n} ${n === 1 ? "Clip" : "Clips"} herausgeschnitten; die Lücke hat sich geschlossen`); }, text: "Bereich herausschneiden" }))),
+    el("div", { class: "aktionen" },
+      el("button", { class: "knopf klein leise", type: "button", onclick: () => springe(b.von), text: "zum Anfang" }),
+      el("button", { class: "knopf klein leise", type: "button", onclick: () => { S.auswahl = null; aendern(() => { S.p.bereich = null; }); }, text: "Bereich aufheben" })));
+}
+function markeJetzt() { aendern(() => { S.auswahl = F.markeSetzen(S.p, S.t); }); zustand(`Marke bei ${zeitText(S.t)}`); }
+function bereichRand(rand) {
+  const b = S.p.bereich;
+  aendern(() => F.bereichSetzen(S.p, rand === "von" ? { von: S.t, bis: b && b.bis > S.t ? b.bis : F.dauer(S.p) } : { von: b && b.von < S.t ? b.von : 0, bis: S.t }));
+  S.auswahl = S.p.bereich ? "bereich" : null; zeigeLeiste(); zeigeInspektor();
+  zustand(S.p.bereich ? `Bereich ${zeitText(S.p.bereich.von)} – ${zeitText(S.p.bereich.bis)}` : "Der Bereich ist zu kurz", !S.p.bereich);
+}
+
 function zeigeInspektor() {
-  const box = $("inspektor"), x = S.auswahl ? F.finde(S.p, S.auswahl) : null;
+  const box = $("inspektor");
+  const marke = S.p.stellen?.find((m) => m.id === S.auswahl);
+  if (marke) { zeigeMarke(marke); return; }
+  if (S.auswahl === "bereich" && S.p.bereich) { zeigeBereich(); return; }
+  const x = S.auswahl ? F.finde(S.p, S.auswahl) : null;
   if (!x) {
-    const d = F.dauer(S.p);
+    const d = F.dauer(S.p), stellen = S.p.stellen ?? [];
     box.replaceChildren(kopf(S.p.name, `${F.FORMATE[S.p.format].name} · ${zeitText(d)} · ${S.p.folge.length} Clips in der Folge, ${S.p.titel.length} Titel, ${S.p.ton.length} Töne`),
-      el("p", { class: "hinweis", text: "Tasten: Leertaste abspielen, S teilen am Abspielkopf, Entf löschen, ← → ein Bild (mit Umschalt: eine Sekunde), Strg+Z rückgängig. Ränder eines Clips ziehen trimmt ihn, die Mitte ziehen stellt ihn um (Folge) oder verschiebt ihn (Titel, Ton). Strg + Mausrad zoomt." }),
+      gruppe("Marken",
+        stellen.length ? el("ul", { class: "liste-marken" }, ...stellen.map((m) => el("li", {}, el("button", { class: "knopf klein leise", type: "button", onclick: () => { S.auswahl = m.id; springe(m.t); zeigeLeiste(); zeigeInspektor(); }, text: m.name }), el("small", { text: zeitText(m.t) }))))
+          : el("p", { class: "hinweis", text: "Noch keine Marken. «Marke» (M) setzt eine am Abspielkopf; «Bereich ab hier» (I) und «bis hier» (O) markieren einen Abschnitt, dem sich Effekte, Filter, Übergänge und Titel zuordnen lassen." }),
+        stellen.length ? el("div", { class: "aktionen" }, el("button", { class: "knopf klein", type: "button", "data-aktion": "alle-schneiden", onclick: () => { const n = aendern(() => F.schneidenAn(S.p, stellen.map((m) => m.t))); zustand(`${n} ${n === 1 ? "Schnitt" : "Schnitte"} an den Marken`); }, text: "an allen Marken schneiden" })) : null,
+        stellen.length ? uebergangWahl("an allen Marken", (art, dd) => { const r = aendern(() => stellen.map((m) => F.uebergangAn(S.p, m.t, art, dd))); zustand(`${F.UEBERGAENGE[art]} an ${r.filter(Boolean).length} Marken`); }) : null),
+      el("p", { class: "hinweis", text: "Tasten: Leertaste abspielen, S teilen, M Marke, I und O Bereich, Entf löschen, ← → ein Bild (mit Umschalt: eine Sekunde), Strg+Z rückgängig. Ränder eines Clips ziehen trimmt ihn, die Mitte ziehen stellt ihn um (Folge) oder verschiebt ihn (Titel, Ton). Strg + Mausrad zoomt." }),
       FILTER_DA ? null : el("p", { class: "hinweis", text: "Dieser Browser zeichnet Filter ohne ctx.filter: die Farben stimmen, die Unschärfe fehlt in Vorschau und Export." }));
     return;
   }
@@ -668,6 +759,9 @@ $("wieder").addEventListener("click", wiederholen);
 $("teilen").addEventListener("click", teilenJetzt);
 $("loeschen").addEventListener("click", loeschenJetzt);
 $("takt").addEventListener("click", taktAlsMarken);
+$("marke").addEventListener("click", markeJetzt);
+$("bereich-von").addEventListener("click", () => bereichRand("von"));
+$("bereich-bis").addEventListener("click", () => bereichRand("bis"));
 $("zoom").addEventListener("input", (e) => { const mitte = (leiste.scrollLeft + leiste.clientWidth / 2) / S.zoom; S.zoom = Number(e.target.value); zeigeLeiste(); leiste.scrollLeft = Math.max(0, mitte * S.zoom - leiste.clientWidth / 2); });
 $("export-oeffnen").addEventListener("click", exportOeffnen);
 $("export-start").addEventListener("click", exportStarten);
@@ -691,6 +785,9 @@ document.addEventListener("keydown", (e) => {
   if (strg) return;
   if (e.key === " ") { e.preventDefault(); S.spielt ? anhalten() : spielen(); }
   else if (e.key === "s" || e.key === "S") teilenJetzt();
+  else if (e.key === "m" || e.key === "M") markeJetzt();
+  else if (e.key === "i" || e.key === "I") bereichRand("von");
+  else if (e.key === "o" || e.key === "O") bereichRand("bis");
   else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); loeschenJetzt(); }
   else if (e.key === "ArrowLeft") { e.preventDefault(); springe(e.shiftKey ? S.t - 1 : Math.round(S.t * FPS - 1) / FPS); }
   else if (e.key === "ArrowRight") { e.preventDefault(); springe(e.shiftKey ? S.t + 1 : Math.round(S.t * FPS + 1) / FPS); }
@@ -702,6 +799,9 @@ window.addEventListener("beforeunload", (e) => { if (S.geaendert && Object.keys(
 
 schriftenLaden?.()?.then?.(() => zeichneJetzt()).catch?.(() => {});
 alles({ medien: true });
+// die Vorschau passt sich der Breite an (Fenster, Telefon gedreht)
+if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => passeLeinwand()).observe($("vorschau"));
+else addEventListener("resize", passeLeinwand);
 zustand("Bereit. Videos, Bilder und Töne laden; sie bleiben auf diesem Gerät.");
 // für die Browsertests (tests/lab-video.e2e.mjs)
-window.ornamentVideo = { S, F, get Q() { return Q; }, dateienAufnehmen, teilenJetzt, loeschenJetzt, rueckgaengig, wiederholen, speichern, oeffnen, spielen, anhalten, springe, alles, aendern };
+window.ornamentVideo = { S, F, get Q() { return Q; }, dateienAufnehmen, markeJetzt, bereichRand, teilenJetzt, loeschenJetzt, rueckgaengig, wiederholen, speichern, oeffnen, spielen, anhalten, springe, alles, aendern };
