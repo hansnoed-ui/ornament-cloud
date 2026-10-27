@@ -229,13 +229,13 @@ a.feldchen:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px;
 /* ---------- Kapitel: jeder Bereich der Startseite ein eigenes Farbfeld (27. Oktober 2026, Wunsch: «um die startseite etwas übersichtlicher zu
    machen … die dort präsentierten kapitelbereiche … jeweils eine verschiedene hintergrundfarbe … teilweise auch reverse»). Ein Feld setzt
    Papier, Tinte, Grau, Linie und Faden für sich neu; alles darin (Knöpfe, Chips, das Feld der 49 Zettel, die Tafeln) folgt von selbst.
-   Die Felder stossen ohne Abstand aneinander; Folge: Blaupause, Papier (Umkehr), Rot, Tinte, Senf, Tinte, Papier. ---------- */
+   Die Felder stossen ohne Abstand aneinander; Folge: Tannengrün (seit 27. Oktober 2026 statt Blaupause, Wunsch: «etwas anderes … als das blau am anfang»), Papier (Umkehr), Rot, Tinte, Senf, Tinte, Papier. ---------- */
 .kapitel { padding: clamp(56px, 8vw, 104px) 0; background: var(--papier); color: var(--tinte); }
 .kapitel .abschnitt-kopf h2, .kapitel.dialog h2 { font-size: clamp(1.9rem, 4.4vw, 3.2rem); letter-spacing: -0.03em; line-height: 1.02; }
 .kapitel.tinte + .kapitel.tinte { padding-top: 0; }   /* zwei Kapitel auf Tinte nacheinander: ein Feld */
-.kapitel-blau {
-  --papier: #1d3fd6; --tinte: #ffffff; --grau: rgba(255, 255, 255, 0.8); --linie: rgba(255, 255, 255, 0.34);
-  --flaeche: #1937bd; --faden: #ffffff; --faden-hell: rgba(255, 255, 255, 0.2);
+.kapitel-gruen {
+  --papier: #1f4d3a; --tinte: #ffffff; --grau: rgba(255, 255, 255, 0.8); --linie: rgba(255, 255, 255, 0.34);
+  --flaeche: #1a4232; --faden: #ffffff; --faden-hell: rgba(255, 255, 255, 0.2);
   color-scheme: dark;
 }
 .kapitel-papier {
@@ -255,15 +255,15 @@ a.feldchen:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px;
 }
 .kapitel ::selection { background: var(--tinte); color: var(--papier); }
 /* der Kopf trägt die Farbe des ersten Kapitels, die Linie darunter fällt weg; der Fuss schliesst ohne Lücke an */
-body:has(main > .kapitel-blau:first-child) .kopf { --papier: #1d3fd6; --tinte: #ffffff; --grau: rgba(255, 255, 255, 0.8); --faden: #ffffff; background: var(--papier); color: var(--tinte); }
+body:has(main > .kapitel-gruen:first-child) .kopf { --papier: #1f4d3a; --tinte: #ffffff; --grau: rgba(255, 255, 255, 0.8); --faden: #ffffff; background: var(--papier); color: var(--tinte); }
 body:has(main > .kapitel:first-child) .kopf::after { background: transparent; }
 body:has(main > .kapitel:first-child) .kopf + main > .kapitel:first-child { padding-top: clamp(28px, 4vw, 48px); }
 main:has(> .kapitel:last-child) + .fuss { margin-top: 0; border-top: 0; padding-top: 48px; }
-/* auf Rot und Senf: was aktiv ist, wird Tinte statt Blaupause; auf Blau wird es Papier */
+/* auf Rot und Senf: was aktiv ist, wird Tinte statt Blaupause; auf Grün wird es Papier */
 .kapitel-rot .chips input:checked + .chip, .kapitel-senf .chips input:checked + .chip { color: var(--papier); }
 .kapitel .stueck .bild::after { border-color: transparent; }
 .kapitel-papier .feld a:hover, .kapitel-papier .feld a.aktiv { color: #ffffff; }
-.kapitel-blau .feld a:hover, .kapitel-blau .feld a.aktiv, .kapitel-blau .knopf.voll, .kapitel-blau .knopf:hover { color: var(--papier); }
+.kapitel-gruen .feld a:hover, .kapitel-gruen .feld a.aktiv, .kapitel-gruen .knopf.voll, .kapitel-gruen .knopf:hover { color: var(--papier); }
 .kapitel .liste-kasten h2 { font-size: clamp(1.9rem, 4.4vw, 3.2rem); letter-spacing: -0.03em; line-height: 1.02; }
 @media (max-width: 760px) { .kapitel { padding: 56px 0; } }
 

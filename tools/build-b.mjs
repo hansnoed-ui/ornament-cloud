@@ -339,7 +339,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
     const erster = zettel[0];
     const daten = zettel.map((z) => ({ n: z.number, slug: z.slug, titel: z.title, leitsatz: z.bottom_line }));
     const body = `
-<section class="einstieg kapitel kapitel-blau" aria-labelledby="einstieg-titel">
+<section class="einstieg kapitel kapitel-gruen" aria-labelledby="einstieg-titel">
   <div class="spalte">
     <div class="einstieg-kopf">
       <h1 class="titel" id="einstieg-titel">${esc(SEITE.titel)}<small>${esc(SEITE.lead)}</small></h1>
