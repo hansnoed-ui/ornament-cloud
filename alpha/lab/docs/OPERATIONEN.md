@@ -25,11 +25,11 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.komposition` 0.1.0 | Komposition verändern | Räumliche Operation | neu, nach Attenuverter (VCV Rack) auf gemessene Bildkomponenten übertragen; Kategorien von ShotDeck, FilmGrab und Flim | Bild + Befund (opt.) → Bild | über Modulation |
 | `lab.glitch` 0.1.0 | Glitch | Räumliche Operation | neu, nach Databending und Datamoshing (Rosa Menkman, The Glitch Moment(um)); RGB-Split in Resolume (Shift RGB) und After Effects (Channel Offset) | Bild → Bild | über Modulation |
 | `lab.pixelsortierung` 0.1.0 | Pixelsortierung | Räumliche Operation | neu, nach Kim Asendorf, ASDFPixelSort (Processing, 2010): Abschnitte zwischen Schwellen sortieren | Bild → Bild | über Modulation |
-| `lab.verzerrung` 0.1.0 | Optische Verzerrung | Räumliche Operation | neu, nach Verzerrungsfilter der Bildbearbeitung (Strudel, Wölben, Wellen, Versetzen in Photoshop und GIMP); TouchDesigner Displace TOP; Kaleidoskop | Bild + Bild (opt.) → Bild | über Modulation |
-| `lab.licht` 0.1.0 | Licht: Glühen und Streifen | Räumliche Operation | neu, nach Bloom der Echtzeitgrafik (TouchDesigner Bloom TOP, Post-Processing in Unity und Unreal); Glow in Fusion und After Effects; anamorphotische Lichtfahnen | Bild → Bild | über Modulation |
+| `lab.verzerrung` 0.1.0 | Optische Verzerrung (ausgemustert seit 27. Oktober 2026) | Räumliche Operation | neu, nach Verzerrungsfilter der Bildbearbeitung (Strudel, Wölben, Wellen, Versetzen in Photoshop und GIMP); TouchDesigner Displace TOP; Kaleidoskop | Bild + Bild (opt.) → Bild | über Modulation |
+| `lab.licht` 0.1.0 | Licht: Glühen und Streifen (ausgemustert seit 27. Oktober 2026) | Räumliche Operation | neu, nach Bloom der Echtzeitgrafik (TouchDesigner Bloom TOP, Post-Processing in Unity und Unreal); Glow in Fusion und After Effects; anamorphotische Lichtfahnen | Bild → Bild | über Modulation |
 | `lab.raster` 0.1.0 | Raster und Linien | Räumliche Operation | neu, nach amplitudenmodulierte Rasterung des Drucks; Kupferstich und Schraffur; Bild abtasten und Formen zeichnen in Processing/p5.js; gestapelte Profillinien (Unknown Pleasures) | Bild → Bild | über Modulation |
 | `lab.neusetzen` 0.1.0 | Zerlegen und neu setzen | Räumliche Operation | neu, nach Cut-up (Brion Gysin, William S. Burroughs); Collage und Montage; Kachel-Filter der Bildbearbeitung (GIMP Puzzle, Mosaik) | Bild → Bild | über Modulation |
-| `lab.puls` 0.1.0 | Pulslinien | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler Pulse, Spiral Pulse, Sandy und Spiral in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen | Bild → Bild | über Modulation |
+| `lab.puls` 0.1.0 | Pulslinien (ausgemustert seit 27. Oktober 2026) | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler Pulse, Spiral Pulse, Sandy und Spiral in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen | Bild → Bild | über Modulation |
 | `lab.schraffur` 0.1.0 | Schraffur in Lagen | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler Crosshatch und Multipass in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Kreuzschraffur des Kupferstichs | Bild → Bild | über Modulation |
 | `lab.fluss` 0.1.0 | Fliessfeld | Räumliche Operation | neu, nach Prinzip des Plotter-Umwandlers Flow Field in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Line Integral Convolution (Cabral und Leedom 1993) | Bild → Bild | über Modulation |
 | `lab.punktieren` 0.1.0 | Punktieren | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler Voronoi Stippling und Voronoi in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Secord 2002; Punktiermanier | Bild → Bild | über Modulation |
@@ -480,6 +480,8 @@ Sortiert in jeder Zeile oder Spalte die Abschnitte, deren Helligkeit (oder Farbt
 
 ## Optische Verzerrung (`lab.verzerrung`)
 
+**Ausgemustert seit 27. Oktober 2026:** steht nicht mehr zur Wahl (Operationen, jev, Experimentell, Vorschlag für 30 s) und bleibt im Register, damit gespeicherte Projekte aufgehen.
+
 Verzieht das Bild als Wirbel, Linse, Welle, Kaleidoskop oder versetzt es nach der Helligkeit eines Bildes: des eigenen oder eines zweiten, das dann das erste steuert.
 
 - **Herkunft:** neu im Lab; Datei alpha/lab/operationen/verzerrung.js; Prinzip nach Verzerrungsfilter der Bildbearbeitung (Strudel, Wölben, Wellen, Versetzen in Photoshop und GIMP); TouchDesigner Displace TOP; Kaleidoskop
@@ -504,6 +506,8 @@ Verzieht das Bild als Wirbel, Linse, Welle, Kaleidoskop oder versetzt es nach de
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
 
 ## Licht: Glühen und Streifen (`lab.licht`)
+
+**Ausgemustert seit 27. Oktober 2026:** steht nicht mehr zur Wahl (Operationen, jev, Experimentell, Vorschlag für 30 s) und bleibt im Register, damit gespeicherte Projekte aufgehen.
 
 Zieht heraus, was heller ist als eine Schwelle, lässt es glühen oder zu Lichtfahnen ausstreichen und legt es über das Bild, auch farblich verschoben. «nur Licht» zeigt den Auszug allein.
 
@@ -577,6 +581,8 @@ Teilt das Bild in Kacheln oder Streifen und setzt einen Anteil davon neu: zufäl
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
 
 ## Pulslinien (`lab.puls`)
+
+**Ausgemustert seit 27. Oktober 2026:** steht nicht mehr zur Wahl (Operationen, jev, Experimentell, Vorschlag für 30 s) und bleibt im Register, damit gespeicherte Projekte aufgehen.
 
 Eine Linie läuft über das Bild, parallel, als Spirale oder in Kreisen, und schwingt, wo es dunkel ist: je dunkler, desto höher und dichter. Wie ein Plotter, der das Bild mit einem einzigen Puls zeichnet.
 

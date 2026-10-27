@@ -1234,7 +1234,7 @@ test("Linienbilder (0.1.36, Prinzipien der Plotter-Umwandler von Makelangelo): T
   const { LEBENDIG } = await lab("medien/gpu.js");
   for (const id of ["lab.puls", "lab.schraffur", "lab.fluss", "lab.punktieren", "lab.teilung"]) assert.ok(LEBENDIG.includes(id), id);
   const Z = await lab("kern/zusammenstellung.js"), F = await lab("jev/fragen.js");
-  for (const k of ["bild.puls", "bild.spirale", "bild.schraffur", "bild.fluss", "bild.punktieren", "bild.glasfenster", "bild.teilung", "bild.truchet"]) {
+  for (const k of ["bild.schraffur", "bild.fluss", "bild.punktieren", "bild.glasfenster", "bild.teilung", "bild.truchet"]) {
     assert.ok(F.BILD_EFFEKTE[k] && Z.BILD_REZEPTE[k], k);
     const rz = Z.BILD_REZEPTE[k], op = r.hole(rz.operation);
     for (const q of Object.keys(rz.parameter)) assert.ok(op.parameter.some((x) => x.id === q), `${k}: Parameter ${q}`);
@@ -1378,10 +1378,10 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
   const r = labRegister();
   const { p, m, e, t } = mitTon();
   const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id });
-  const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.schneller", "klang.zerlegt"], bild: ["bild.glitch", "bild.farbe", "bild.licht", "bild.raster", "bild.feedback", "bild.verzerrung"], seed: 9 };
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.schneller", "klang.zerlegt"], bild: ["bild.glitch", "bild.farbe", "bild.raster", "bild.raster", "bild.feedback", "bild.raster"], seed: 9 };
   const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "jev", details: { modell: "jev-test" } }, seed: 3 });
   const ops = p.knoten.map((k) => k.operation);
-  assert.deepEqual(ops.slice(2), ["lab.tempo", "lab.zerlegen", "lab.mastering", "lab.tonsignal", "lab.glitch", "lab.farbe", "lab.licht", "lab.raster", "lab.feedback", "lab.verzerrung"]);
+  assert.deepEqual(ops.slice(2), ["lab.tempo", "lab.zerlegen", "lab.mastering", "lab.tonsignal", "lab.glitch", "lab.farbe", "lab.raster", "lab.raster", "lab.feedback", "lab.raster"]);
   const zerlegt = p.knoten[3], gemischt = p.knoten[4];
   assert.equal(zerlegt.eingaben.ton, p.knoten[2].ausgaben[0], "der zweite Klangeffekt wirkt auf das Ergebnis des ersten");
   // seit 0.1.45 wird die Tonspur am Schluss fertig gemischt, bevor sie gemessen wird
@@ -1411,13 +1411,13 @@ test("Zusammenstellung rechnen: zwei Klangeffekte nacheinander, sechs Abschnitte
     assert.ok(pt.folge.filter((f) => f.uebergang?.art === "verlauf").length >= 5, "die Partitur behält die Verläufe");
   }
   // Fächer: jeder Abschnitt auf dem Ausgangsbild; ohne Klangeffekt bleibt der Ton und sein Ausschnitt
-  const y = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: { ...mg, beginn: 1 }, plan: { ...plan, aufbau: "aufbau.faecher", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.wiederholung", "bild.farbe", "bild.glitch", "bild.farbe", "bild.licht"] }, wahl: { art: "zufall", details: {} } });
+  const y = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: { ...mg, beginn: 1 }, plan: { ...plan, aufbau: "aufbau.faecher", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.wiederholung", "bild.farbe", "bild.glitch", "bild.farbe", "bild.raster"] }, wahl: { art: "zufall", details: {} } });
   const letzte = p.knoten.slice(-6);
   assert.ok(letzte.every((k) => k.eingaben.bild === e.id), "Fächer");
   // Filmeinstellungen des Menschen (0.1.19): ohne lebendige Effekte, Kamera ruhig
-  const ruhig = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.licht", "bild.farbe", "bild.licht"], lebendig: false, bewegung: 0 }, wahl: { art: "mensch", details: {} } });
+  const ruhig = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.raster", "bild.farbe", "bild.raster", "bild.farbe", "bild.raster"], lebendig: false, bewegung: 0 }, wahl: { art: "mensch", details: {} } });
   assert.equal(ruhig.plan.lebendig, false); assert.equal(ruhig.plan.bewegung, null); assert.deepEqual(ruhig.entscheidung.details.film, { lebendig: false, bewegung: 0, signatur: "nicht verfügbar", mastering: "−14 LUFS", format: "material" });
-  const halb = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.licht", "bild.farbe", "bild.licht"], bewegung: 0.5 }, wahl: { art: "mensch", details: {} } });
+  const halb = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.raster", "bild.farbe", "bild.raster", "bild.farbe", "bild.raster"], bewegung: 0.5 }, wahl: { art: "mensch", details: {} } });
   assert.equal(halb.plan.bewegung.staerke, 0.5); assert.equal(halb.plan.lebendig, true);
   assert.equal(ST.partitur(p, { ...ruhig.plan, fps: 30 }).bewegung, null);
   const yGemischt = p.knoten.find((k) => k.operation === "lab.mastering" && k.ausgaben[0] === y.klang);
@@ -1434,7 +1434,7 @@ test("Zusammenstellung aus einem Video (Lab 0.1.14): jeder Abschnitt nimmt das S
   const stills = [e.id];
   for (let i = 1; i < 3; i++) { const s = P.fuegeMaterialHinzu(p, { titel: `video · ${i}`, datei: `medien/s${i}.rgba`, breite: 96, hoehe: 72, mime: "image/png", sha256: "v", herkunft: { video: { sha256: "v", zeit: i } } }); m.bilder.set(s.id, bild()); stills.push(s.id); }
   const mg = { ...(await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id })), videoBilder: stills };
-  const plan = { aufbau: "aufbau.kette", uebergang: "film.schnitt", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.raster", "bild.farbe", "bild.licht"], seed: 2 };
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.schnitt", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.raster", "bild.farbe", "bild.raster", "bild.farbe", "bild.raster"], seed: 2 };
   const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "zufall" } });
   assert.deepEqual(p.knoten.slice(-6).map((k) => k.eingaben.bild), [stills[0], stills[0], stills[1], stills[1], stills[2], stills[2]], "die Abschnitte folgen den Standbildern, auch in der Kette");
   assert.deepEqual(x.entscheidung.details.video, stills);
@@ -1539,7 +1539,7 @@ test("Zusammenstellung mit Zettelkasten und ORNA (0.1.18): beides wahlweise; der
   }
   const { p, m, e, t } = mitTon();
   const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id });
-  const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.raster", "bild.farbe", "bild.licht"], seed: 4, zettel: { strophe: "" }, orna: { konstellation: "" } };
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.raster", "bild.farbe", "bild.raster", "bild.farbe", "bild.raster"], seed: 4, zettel: { strophe: "" }, orna: { konstellation: "" } };
   const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "jev", details: { modell: "jev-test" } }, seed: 3 });
   assert.ok(x.zettel.nummer >= 1 && x.zettel.nummer <= 49 && x.zettel.leitsatz, "ein gezogener Zettel");
   assert.ok(x.konstellation.regel && x.konstellation.kuenstler, "eine gezogene Konstellation mit Regel");
@@ -1564,7 +1564,7 @@ test("Zusammenstellung mit Zettelkasten und ORNA (0.1.18): beides wahlweise; der
   // eigene Wahl: Zettel 7 und eine bestimmte Konstellation
   const q = mitTon();
   const mq = await VS.messen({ register: r, projekt: q.p, medien: q.m, bild: q.e.id, ton: q.t.id });
-  const y = await Z.zusammenstellungRechnen({ register: r, projekt: q.p, medien: q.m, messung: mq, plan: { ...plan, bild: ["bild.farbe", "bild.glitch", "bild.licht", "bild.raster", "bild.farbe", "bild.licht"], zettel: { strophe: "7" }, orna: { konstellation: KONSTELLATIONEN[2].wert } }, wahl: { art: "mensch", details: {} } });
+  const y = await Z.zusammenstellungRechnen({ register: r, projekt: q.p, medien: q.m, messung: mq, plan: { ...plan, bild: ["bild.farbe", "bild.glitch", "bild.raster", "bild.raster", "bild.farbe", "bild.raster"], zettel: { strophe: "7" }, orna: { konstellation: KONSTELLATIONEN[2].wert } }, wahl: { art: "mensch", details: {} } });
   assert.equal(y.zettel.nummer, 7); assert.equal(y.konstellation.id, KONSTELLATIONEN[2].wert);
   assert.equal(y.entscheidung.gewaehlt.zettel, "7"); assert.equal(y.entscheidung.gewaehlt.orna, KONSTELLATIONEN[2].wert);
   assert.equal(q.p.entscheidungen.find((d) => d.gegenstand === "strophe").art, "mensch"); assert.equal(q.p.entscheidungen.find((d) => d.gegenstand === "konstellation").art, "mensch");
@@ -1812,7 +1812,7 @@ test("Zusammenstellung mit Format (0.1.37): das Material wird zuerst eingepasst,
   }
   const { p, m, e, t } = mitTon();
   const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id });
-  const plan = { aufbau: "aufbau.kette", uebergang: "film.schnitt", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.raster", "bild.farbe", "bild.licht"], seed: 4, zettel: { strophe: "17" }, orna: { konstellation: "" }, format: "9:16" };
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.schnitt", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.raster", "bild.farbe", "bild.raster", "bild.farbe", "bild.raster"], seed: 4, zettel: { strophe: "17" }, orna: { konstellation: "" }, format: "9:16" };
   const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "zufall" }, seed: 3 });
   assert.equal(x.format, "9:16"); assert.equal(x.entscheidung.gewaehlt.format, "9:16"); assert.equal(x.entscheidung.details.film.format, "9:16");
   const f = p.knoten.filter((k) => k.operation === "lab.format");
@@ -1858,7 +1858,7 @@ test("Zusammenstellung mit PHORMA (0.1.21): die Szene bekommt den neuen Klang al
   }
   const { p, m, e, t } = mitTon();
   const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id, beginn: 1 });
-  const plan = { aufbau: "aufbau.kette", uebergang: "film.schnitt", klang: ["klang.keine", "klang.keine"], bild: ["bild.gewebe", "bild.farbe", "bild.gewebe", "bild.licht", "bild.gewebe", "bild.gewebe"], seed: 2 };
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.schnitt", klang: ["klang.keine", "klang.keine"], bild: ["bild.gewebe", "bild.farbe", "bild.gewebe", "bild.raster", "bild.gewebe", "bild.gewebe"], seed: 2 };
   await assert.rejects(Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan: { ...plan, bild: ["bild.traube", ...plan.bild.slice(1)] }, wahl: { art: "zufall" } }), /bild\.traube gibt es nicht/);
   const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "jev", details: {} }, seed: 5 });
   assert.deepEqual(laeufe.map((l) => l.op), ["phorma.gewebe", "phorma.gewebe", "phorma.gewebe", "phorma.gewebe"]);
@@ -1918,7 +1918,7 @@ test("PHORMA I und II (0.1.22): zwei Operationen mit Abläufen im Register, ORNA
   // die Kataloge von jev kennen die neuen Operationen und Effekte, die Dramaturgie Zerfall ist wieder da
   const F = await lab("jev/fragen.js"), Z = await lab("kern/zusammenstellung.js"), VS = await lab("kern/vorschlag.js");
   assert.ok(F.KATALOG["phorma.ii"] && F.KATALOG["phorma.i"]);
-  for (const b of ["bild.physarum", "bild.tiefe", "bild.welle", "bild.tuch", "bild.druck", "bild.montage"]) assert.equal(Z.BILD_REZEPTE[b].operation, "phorma.ii", b);
+  for (const b of ["bild.physarum", "bild.tiefe", "bild.welle", "bild.druck", "bild.montage"]) assert.equal(Z.BILD_REZEPTE[b].operation, "phorma.ii", b);
   for (const b of ["bild.fragmente", "bild.strom", "bild.koerper", "bild.scherben", "bild.echo", "bild.relief"]) assert.equal(Z.BILD_REZEPTE[b].operation, "phorma.i", b);
   assert.equal(Z.BILD_REZEPTE["bild.druck"].parameter.ablauf, "raster"); assert.equal(Z.BILD_REZEPTE["bild.zerfall"].operation, "fictory.prozess");
   assert.ok(Object.keys(F.BILD_EFFEKTE).every((b) => Z.BILD_REZEPTE[b]) && Object.keys(Z.BILD_REZEPTE).every((b) => F.BILD_EFFEKTE[b]), "Katalog und Rezepte decken sich");
@@ -2080,7 +2080,7 @@ test("Zusammenstellung mit Signatur (0.1.26): Intro mit dem Zettel, Outro mit de
   }
   const { p, m, e, t } = mitTon();
   const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id });
-  const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.licht", "bild.farbe", "bild.raster", "bild.farbe", "bild.licht"], seed: 4, zettel: { strophe: "17" }, orna: { konstellation: "" } };
+  const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.keine", "klang.keine"], bild: ["bild.farbe", "bild.raster", "bild.farbe", "bild.raster", "bild.farbe", "bild.raster"], seed: 4, zettel: { strophe: "17" }, orna: { konstellation: "" } };
   const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "zufall" }, seed: 3 });
   const z = G.signaturZeiten({ intro: true, outro: true });
   assert.deepEqual(laeufe.map((l) => l.op), ["signatur.intro", "signatur.outro", "signatur.signet"], "keine Karten");
@@ -2137,14 +2137,14 @@ test("Zusammenstellung: Abschnitte ausschalten und ihre Dauer setzen (0.1.28): n
   assert.equal(Z.abschnitteEigen(Z.standardAbschnitte()), false); assert.equal(Z.abschnitteEigen([{ an: true, dauer: 5 }, { an: false, dauer: 5 }]), true);
   const { p, m, e, t } = mitTon();
   const mg = await VS.messen({ register: r, projekt: p, medien: m, bild: e.id, ton: t.id });
-  const bild = ["bild.farbe", "bild.licht", "bild.farbe", "bild.glitch", "bild.farbe", "bild.licht"];
+  const bild = ["bild.farbe", "bild.raster", "bild.farbe", "bild.glitch", "bild.farbe", "bild.raster"];
   // Abschnitt 1 aus, Abschnitt 2 doppelt so lang (10 s → 12 Varianten, die Grenze), Abschnitt 5 kurz (2,5 s → 5 Varianten), Abschnitt 6 aus
   const abschnitte = [{ an: false }, { dauer: 10 }, {}, {}, { dauer: 2.5 }, { an: false, dauer: 7 }];
   const plan = { aufbau: "aufbau.kette", uebergang: "film.blende", klang: ["klang.keine", "klang.keine"], bild, seed: 4, abschnitte, lebendig: false, bewegung: 0 };
   const vorher = p.knoten.length;
   const x = await Z.zusammenstellungRechnen({ register: r, projekt: p, medien: m, messung: mg, plan, wahl: { art: "mensch", details: { geaendert: ["abschnitt1"] } }, seed: 3 });
   const neu = p.knoten.slice(vorher).filter((k) => k.operation !== "lab.tonsignal" && k.operation !== "lab.mastering");
-  assert.deepEqual(neu.map((k) => k.operation), ["lab.licht", "lab.farbe", "lab.glitch", "lab.farbe"], "nur die vier Abschnitte, die an sind");
+  assert.deepEqual(neu.map((k) => k.operation), ["lab.raster", "lab.farbe", "lab.glitch", "lab.farbe"], "nur die vier Abschnitte, die an sind");
   assert.deepEqual(neu.map((k) => k.ausgaben.length), [12, 10, 10, 5], "Varianten nach der Dauer");
   assert.equal(x.ergebnisse.length, 37); assert.equal(x.haupt, 22.5);
   assert.deepEqual(x.entscheidung.gewaehlt.abschnitte, [{ an: false, dauer: 5 }, { an: true, dauer: 10 }, { an: true, dauer: 5 }, { an: true, dauer: 5 }, { an: true, dauer: 2.5 }, { an: false, dauer: 7 }]);
@@ -2265,4 +2265,21 @@ test("Module laden (0.1.42): nach einem Ausfall noch einmal mit neuer Adresse, d
     const q = readFileSync(new URL(`alpha/lab/${d}`, root), "utf8");
     assert.ok(!/await import\("\.\.\/\.\.\/\.\.\/alpha\//.test(q), `${d}: Module der Apps über modulLaden`);
   }
+});
+
+// ---------- ausgemustert (27. Oktober 2026): Pulslinien (mit der Spirale), Licht und Verzerrung; Tuch nicht mehr in der Zusammenstellung ----------
+test("Pulslinien, Licht und Verzerrung sind ausgemustert, das Tuch kein Effekt mehr: nirgends zur Wahl, für gespeicherte Projekte weiter im Register", async () => {
+  const r = labRegister(), F = await lab("jev/fragen.js"), Z = await lab("kern/zusammenstellung.js");
+  for (const id of ["lab.puls", "lab.licht", "lab.verzerrung"]) {
+    assert.ok(r.hat(id) && r.hole(id).ausgemustert, `${id} bleibt im Register, als ausgemustert`);
+    assert.ok(!r.fuer("IMAGE").some((o) => o.id === id), `${id}: nicht in der Wahl der Operationen`);
+    assert.ok(!r.anwendbar(["IMAGE", "AUDIO", "CONTROL_SIGNAL"]).some((o) => o.id === id), `${id}: nicht im Experimentell-Modus`);
+    assert.equal(F.KATALOG[id], undefined, `${id}: jev schlägt sie nicht vor`);
+  }
+  for (const k of ["bild.puls", "bild.spirale", "bild.licht", "bild.verzerrung", "bild.tuch"]) { assert.equal(F.BILD_EFFEKTE[k], undefined, k); assert.equal(Z.BILD_REZEPTE[k], undefined, k); }
+  for (const rz of Object.values(Z.BILD_REZEPTE)) assert.ok(!r.hole(rz.operation).ausgemustert, `${rz.operation}: kein Rezept mit einer ausgemusterten Operation`);
+  // ein gespeicherter Schritt rechnet weiter (Ketten, Verlauf)
+  const b = { width: 40, height: 30, data: new Uint8ClampedArray(40 * 30 * 4).fill(120) };
+  const x = await r.hole("lab.licht").ausfuehren({ bild: b }, { ...standardParameter(r.hole("lab.licht")), seite: 40 }, { seed: 1 });
+  assert.equal(x.ausgaben[0].typ, "IMAGE");
 });
