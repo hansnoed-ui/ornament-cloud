@@ -10,7 +10,7 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
 
-const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"], ["Art", "art/"], ["Lab", "beta/lab/"]];   // «Lab» seit 27. Oktober 2026 (ornament.lab, öffnet in einem neuen Fenster);   // seit 19. Oktober 2026 (abends) ohne «Web» (die Seite bleibt, nur nicht im Menü), dahinter «Art»;   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
+const MENU = [["Lab", "beta/lab/"], ["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"], ["Art", "art/"]];   // «Lab» seit 27. Oktober 2026 (ornament.lab, öffnet in einem neuen Fenster), am selben Tag an die erste Stelle;   // seit 19. Oktober 2026 (abends) ohne «Web» (die Seite bleibt, nur nicht im Menü), dahinter «Art»;   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
 // Seiten mit dem Menü → Eintrag, der aktiv ist ([Ordner, aria-current]); null: keiner (die Seite hängt an keinem Menüpunkt)
 const MENUSEITEN = {   // OMNA COLOR (alpha/omna-color/, rad/) seit 20. Oktober 2026 mit dem Kopf der App statt des Menüs; ihre App-Seite app/ bleibt
   "index.html": null,
@@ -53,7 +53,7 @@ const jpegMass = (buf) => {            // Breite und Höhe aus dem ersten Rahmen
   throw new Error("kein JPEG");
 };
 
-test("Menü: sechs Kästchen mit Symbol und Namen (Apps, Prompts, Zettel, Social, Art, Lab; Lab seit 27. Oktober 2026, bis 19. Oktober 2026 mit Web statt Art) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
+test("Menü: sechs Kästchen mit Symbol und Namen (Lab, Apps, Prompts, Zettel, Social, Art; Lab seit 27. Oktober 2026 zuerst, bis 19. Oktober 2026 mit Web statt Art) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
   const mitKopf = htmlSeiten().filter((p) => lies(p).includes('<nav class="seitenweg"') && !p.startsWith("alpha/drittes-rad/")).sort();
   assert.ok(mitKopf.length > 580, `alle Seiten mit Kopf (${mitKopf.length})`);
   for (const datei of mitKopf) {
@@ -65,7 +65,7 @@ test("Menü: sechs Kästchen mit Symbol und Namen (Apps, Prompts, Zettel, Social
     assert.ok(!/data-icon|menu-sub|menu-title/.test(nav[1]), `${datei}: keine animierten Symbole, keine Untertitel`);
     const eintraege = [...nav[1].matchAll(/<a class="menu-item" href="([^"]+)"(?: aria-current="(page|true)")?( target="_blank" rel="noopener")?>(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>([^<]+)<\/span><\/a>/g)];
     assert.equal(eintraege.length, MENU.length, `${datei}: sechs Kästchen mit verborgenem Symbol und Namen`);
-    assert.deepEqual(eintraege.map((e) => e[5]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Apps, Prompts, Zettel, Social, Art, Lab (Web seit 19. Oktober 2026 nicht mehr im Menü)`);
+    assert.deepEqual(eintraege.map((e) => e[5]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Lab, Apps, Prompts, Zettel, Social, Art (Web seit 19. Oktober 2026 nicht mehr im Menü)`);
     // nur «Lab» öffnet in einem neuen Fenster (Wunsch vom 27. Oktober 2026)
     assert.deepEqual(eintraege.map((e) => !!e[3]), MENU.map((m) => m[0] === "Lab"), `${datei}: Lab in einem neuen Fenster, die anderen nicht`);
     for (const [i, e] of eintraege.entries()) {
