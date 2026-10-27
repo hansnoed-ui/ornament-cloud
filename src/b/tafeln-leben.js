@@ -6,6 +6,11 @@ import { TAFELN, farben, W } from "./tafeln.mjs";
 
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const dunkel = () => document.documentElement.dataset.theme !== "light";
+// die Farben aus dem Feld, in dem die Tafel steht (seit 27. Oktober 2026 haben die Kapitel der Startseite eigene Farben); sonst die des Modus
+const farbenHier = (el) => {
+  const s = getComputedStyle(el), v = (n) => s.getPropertyValue(n).trim();
+  return v("--papier") ? { ...farben(dunkel()), papier: v("--papier"), tinte: v("--tinte"), grau: v("--grau"), linie: v("--linie"), faden: v("--faden"), fadenHell: v("--faden-hell") } : farben(dunkel());
+};
 const TAKT = { "phorma-iii": 1 / 30, "phorma-i": 1 / 30 };   // die Gewebe und der Kristall rechnen viel: 30 Bilder je Sekunde genügen
 
 if (!ruhig) for (const fig of document.querySelectorAll(".tafel-lebt[data-tafel]")) beleben(fig);
@@ -18,10 +23,10 @@ function beleben(fig) {
   svg.setAttribute("role", "img");
   svg.setAttribute("aria-label", fig.querySelector("img")?.alt || tafel.alt);
   const bild = fig.querySelector("picture");
-  let zustand = tafel.neu(), c = farben(dunkel()), sichtbar = false, letzte = 0, rest = 0, raf = 0;
+  let zustand = tafel.neu(), c = farbenHier(fig), sichtbar = false, letzte = 0, rest = 0, raf = 0;
   const takt = TAKT[fig.dataset.tafel] || 0;
   const malen = () => { svg.innerHTML = tafel.svg(zustand, c); };
-  new MutationObserver(() => { c = farben(dunkel()); malen(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  new MutationObserver(() => { c = farbenHier(fig); malen(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
   const bild0 = () => {
     // Beginn aus dem Keim, nicht aus dem fertigen Bild, wo die Tafel einen hat: PHORMA II wächst vor den Augen, das Signet zeichnet sich; die anderen laufen von ihrem Ruhebild aus weiter
