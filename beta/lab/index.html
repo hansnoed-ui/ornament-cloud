@@ -37,7 +37,7 @@ figure { margin: 0; }
 .innen { padding-left: max(var(--rand), env(safe-area-inset-left, 0px)); padding-right: max(var(--rand), env(safe-area-inset-right, 0px)); }
 
 /* Kopf */
-.kopf { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; background: #000; color: #fff; --faden: #e0503c; --tinte: #fff; --papier: #000; --linie: #2e2e2e; }
+.kopf { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; background: #000; color: #fff; --faden: #cd4130; --tinte: #fff; --papier: #000; --linie: #2e2e2e; }
 .marke { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-size: 17px; letter-spacing: .14em; }
 .marke svg { width: 34px; height: 24px; overflow: visible; }
 .kopf .signet { animation: drehen 6s cubic-bezier(.6,0,.4,1) infinite; transform-origin: 50% 50%; }
@@ -76,7 +76,7 @@ p { margin: 0; max-width: 62ch; }
 .band > * { min-width: 0; overflow: hidden; position: relative; }
 .band img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.02); transition: transform 1.4s cubic-bezier(.2,.7,.2,1); }
 .band > figure:hover img { transform: scale(1.08); }
-.band .blau { background: #0c1a52; display: grid; place-items: center; color: #fff; }
+.band .blau { background: #000; display: grid; place-items: center; color: #fff; }
 .band .blau svg { width: 62%; height: auto; overflow: visible; }
 @media (max-width: 700px) { .band { grid-template-columns: repeat(3, minmax(0, 1fr)); height: auto; } .band > * { aspect-ratio: 3 / 4; } }
 .titelfeld { padding-block: clamp(40px, 5vw, 72px) 0; }
@@ -430,7 +430,7 @@ const PUNKT_AN = Math.round(SCHLAUFE.length * 50 / 120);
 document.querySelectorAll("svg.signet").forEach(svg => {
   const d = SCHLAUFE.map(([x, y], i) => (i ? "L" : "M") + (17 + x * 22).toFixed(2) + " " + (12 + y * 22).toFixed(2)).join("") + "Z";
   const [px, py] = SCHLAUFE[PUNKT_AN], weiss = svg.classList.contains("weiss");
-  svg.innerHTML = `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${weiss ? .55 : 1.5}" stroke-linejoin="round"/><circle cx="${17 + px * 22}" cy="${12 + py * 22}" r="${weiss ? 1.1 : 2.2}" fill="${weiss ? "#fff" : "var(--faden)"}"/>`;
+  svg.innerHTML = `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${weiss ? .55 : 1.5}" stroke-linejoin="round"/><circle cx="${17 + px * 22}" cy="${12 + py * 22}" r="${weiss ? 1.5 : 2.2}" fill="${weiss ? "#cd4130" : "var(--faden)"}"/>`;
   // im Kopf läuft der Punkt die Schlaufe entlang, während das Signet dreht
   if (svg.closest(".kopf, .blau") && !ruhig) { svg.querySelector("path").setAttribute("pathLength", 1); const c = svg.querySelector("circle"); c.setAttribute("cx", 0); c.setAttribute("cy", 0); c.innerHTML = `<animateMotion dur="3.5s" repeatCount="indefinite" path="${d}"/>`; }
 });
