@@ -1,9 +1,10 @@
-// ORNAMENT LAB · Video 0.1 – die Oberfläche des Editors. Das Modell ist kern/folge.js (Folge, Titel, Ton), der Film ist ein OpenFilm-Film
+// ORNAMENT LAB · Video 0.2 – die Oberfläche des Editors. Das Modell ist kern/folge.js (Folge, Titel, Ton), der Film ist ein OpenFilm-Film
 // (film.html); Vorschau und Export zeichnen ihn mit medien/zeichnen.js. Alles bleibt im Browser: Dateien werden gelesen, nie hochgeladen.
 // Eigenständig: der Editor ist nicht mit dem Lab verbunden; er macht Videos (MP4), die man im Lab mit «Video wählen» als Material lädt.
 import * as F from "./kern/folge.js";
 import { REGLER, VORLAGEN, werteVon } from "./kern/filter.js";
-import { LAGEN, ANIMATIONEN, BAENDER, SCHRIFTEN } from "./kern/titel.js";
+import { LAGEN, ANIMATIONEN, ABGAENGE, BAENDER, SCHRIFTEN, TITEL_VORLAGEN } from "./kern/titel.js";
+import { EFFEKT_VORLAGEN, EFFEKT_REGLER, EFFEKT_STANDARD, KENBURNS, effekteVon } from "./kern/effekte.js";
 import { taktMarken } from "./kern/ton.js";
 import { Quellen, zeichnen, suchen, bereit, FILTER_DA } from "./medien/zeichnen.js";
 import { exportieren, exportMoeglich, QUALITAETEN, tonDekodieren } from "./medien/export.js";
@@ -35,7 +36,7 @@ const FPS = 30;
 // ---------- Zustand ----------
 const S = {
   p: F.neuesProjekt(), urls: new Map(), bytes: new Map(), bilder: new Map(), tonDaten: new Map(),
-  film: null, auswahl: null, t: 0, spielt: false, zoom: 60, marken: [], zurueck: [], vor: [], geaendert: false,
+  film: null, auswahl: null, t: 0, spielt: false, zoom: 60, zurueck: [], vor: [], geaendert: false,
 };
 let Q = new Quellen(S.urls, { stumm: true });
 const toene = new Map();   // Ton-Clip-Id → <audio> für die Vorschau
@@ -276,7 +277,7 @@ function zeigeLeiste() {
   const lineal = el("div", { class: "lineal", id: "lineal" });
   const schritt = [0.1, 0.25, 0.5, 1, 2, 5, 10, 15, 30, 60, 120].find((s) => s * px >= 64) ?? 300;
   for (let t = 0; t <= ende; t += schritt) lineal.append(el("span", { class: "strich", style: { left: `${t * px}px` }, text: kurzZeit(Math.round(t * 100) / 100) }));
-  for (const m of S.marken) lineal.append(el("span", { class: "marke", style: { left: `${m * px}px` } }));
+  for (const m of S.p.marken ?? []) lineal.append(el("span", { class: "marke", style: { left: `${m * px}px` } }));
   const reihen = [lineal];
   const titel = verteilen(S.p.titel, (t) => t.at, (t) => t.at + t.dauer);
   (titel.length ? titel : [[]]).forEach((spur, i) => reihen.push(el("div", { class: "spur", dataset: { spur: "titel" } }, el("span", { class: "name", text: i ? "" : "Titel" }),
@@ -284,7 +285,7 @@ function zeigeLeiste() {
   const plan = F.zeitplan(S.p).clips, folge = el("div", { class: "spur folge", dataset: { spur: "folge" } }, el("span", { class: "name", text: "Bildfolge" }));
   for (const x of plan) {
     const m = S.p.medien[x.c.medium];
-    folge.append(clipEl({ id: x.c.id, bereich: "folge", art: m.art === "bild" ? "bild" : "video", links: x.at * px, breite: x.laenge * px, text: `${m.name}${x.c.tempo !== 1 ? ` ×${x.c.tempo}` : ""}`, bild: S.bilder.get(m.id) }));
+    folge.append(clipEl({ id: x.c.id, bereich: "folge", art: m.art === "bild" ? "bild" : "video", links: x.at * px, breite: x.laenge * px, text: `${(() => { const e = effekteVon(x.c); return e.kenburns !== "aus" || e.wackeln || e.puls || e.glitch || e.korn || e.kratzer || e.licht ? "✦ " : ""; })()}${m.name}${x.c.tempo !== 1 ? ` ×${x.c.tempo}` : ""}`, bild: S.bilder.get(m.id) }));
     const n = plan[x.i + 1];
     if (n) {
       const art = x.c.uebergang?.art ?? "schnitt", stelle = art === "blende" ? (n.at + x.at + x.laenge) / 2 : x.at + x.laenge;
@@ -306,7 +307,7 @@ const leiste = $("leiste");
 function zeitBeiX(x) { const r = $("leiste-innen").getBoundingClientRect(); return Math.max(0, (x - r.left) / S.zoom); }
 function rasten(t, ausser) {
   if (!$("einrasten").checked) return { t, gerastet: false };
-  const st = F.rastStellen(S.p, { kopf: Z?.art === "kopf" ? null : S.t, marken: S.marken, ausser }), r = F.einrasten(t, st, 9 / S.zoom);
+  const st = F.rastStellen(S.p, { kopf: Z?.art === "kopf" ? null : S.t, marken: S.p.marken ?? [], ausser }), r = F.einrasten(t, st, 9 / S.zoom);
   return { t: r, gerastet: r !== t };
 }
 function rastLinie(t) {
@@ -463,7 +464,7 @@ function zeigeInspektor() {
   }
   const c = x.c, aenderung = (fn) => (v) => fn(v);
   if (x.bereich === "folge") {
-    const m = S.p.medien[c.medium], letzter = S.p.folge.at(-1) === c, w = werteVon(c.filter);
+    const m = S.p.medien[c.medium], letzter = S.p.folge.at(-1) === c, w = werteVon(c.filter), ef = effekteVon(c);
     box.replaceChildren(
       kopf(m.name, m.art === "bild" ? "Bild in der Folge" : `Video, ${kurzZeit(m.dauer)} in der Datei`),
       gruppe("Zuschnitt",
@@ -486,6 +487,16 @@ function zeigeInspektor() {
         ...REGLER.map((r) => regler({ ...r, name: r.name }, w[r.id], (v) => { c.filter = { ...c.filter, werte: { ...(c.filter.werte ?? {}), [r.id]: v } }; })),
         el("div", { class: "aktionen" }, el("button", { class: "knopf klein leise", type: "button", onclick: () => aendern(() => { c.filter = {}; }), text: "Filter zurücksetzen" }),
           el("button", { class: "knopf klein leise", type: "button", onclick: () => { const f = structuredClone(c.filter); aendern(() => { for (const y of S.p.folge) y.filter = structuredClone(f); }); zustand("Der Filter gilt jetzt für die ganze Folge"); }, text: "für alle Clips" }))),
+      gruppe("Effekte",
+        el("div", { class: "vorlagen" }, ...Object.entries(EFFEKT_VORLAGEN).map(([k, v]) => el("button", { type: "button", "data-effektvorlage": k, text: v.name,
+          onclick: () => aendern(() => { c.effekte = { ...EFFEKT_STANDARD, ...v.werte }; if (v.filter) c.filter = { vorlage: v.filter }; }) }))),
+        el("div", { class: "paar" },
+          regler({ id: "kenburns", name: "Kamerafahrt", art: "wahl", optionen: KENBURNS }, ef.kenburns, (v) => { c.effekte = { ...ef, kenburns: v }; zeigeInspektor(); }),
+          ef.kenburns !== "aus" ? regler({ id: "kbStaerke", name: "Weite", min: 0.03, max: 0.5, schritt: 0.01 }, ef.kbStaerke, (v) => { c.effekte = { ...effekteVon(c), kbStaerke: v }; }) : el("span")),
+        ...EFFEKT_REGLER.map((r) => regler({ ...r, zeigen: (v) => (v ? `${Math.round(v * 100)} %` : "aus") }, ef[r.id], (v) => { c.effekte = { ...effekteVon(c), [r.id]: v }; })),
+        ef.puls > 0 ? regler({ id: "pulsBpm", name: "Puls: Tempo (BPM; 0 = die Takt-Marken)", art: "zahl", min: 0, max: 300, schritt: 1 }, ef.pulsBpm, (v) => { c.effekte = { ...effekteVon(c), pulsBpm: v }; }) : null,
+        ef.puls > 0 && !(S.p.marken?.length) && !ef.pulsBpm ? el("p", { class: "hinweis", text: "Der Puls braucht einen Takt: einen Ton wählen und «Takt als Marken», oder oben ein Tempo eingeben." }) : null,
+        el("div", { class: "aktionen" }, el("button", { class: "knopf klein leise", type: "button", onclick: () => { const e = structuredClone(c.effekte); aendern(() => { for (const y of S.p.folge) y.effekte = structuredClone(e); }); zustand("Die Effekte gelten jetzt für die ganze Folge"); }, text: "für alle Clips" }))),
       el("fieldset", { class: "gruppe", id: "gruppe-uebergang" }, el("legend", { text: "Übergang zum nächsten Clip" }),
         letzter ? el("p", { class: "hinweis", text: "Der letzte Clip der Folge: ein Übergang braucht einen nächsten." }) : null,
         regler({ id: "uebergang", name: "Art", art: "wahl", optionen: F.UEBERGAENGE }, c.uebergang.art, (v) => { c.uebergang = { ...c.uebergang, art: v }; zeigeInspektor(); }),
@@ -495,6 +506,8 @@ function zeigeInspektor() {
   } else if (x.bereich === "titel") {
     box.replaceChildren(
       kopf("Titel", "Text über dem Film"),
+      gruppe("Vorlagen", el("div", { class: "vorlagen" }, ...Object.entries(TITEL_VORLAGEN).map(([k, v]) => el("button", { type: "button", "data-titelvorlage": k, text: v.name,
+        onclick: () => aendern(() => { Object.assign(c, v.werte); }) })))),
       regler({ id: "text", name: "Text (Enter: neue Zeile)", art: "text", zeilen: 3 }, c.text, (v) => { c.text = v; }),
       regler({ id: "unterzeile", name: "Unterzeile", art: "text" }, c.unterzeile, (v) => { c.unterzeile = v; }),
       gruppe("Schrift",
@@ -507,9 +520,12 @@ function zeigeInspektor() {
       gruppe("Hintergrund",
         regler({ id: "band", name: "Hintergrund", art: "wahl", optionen: BAENDER }, c.band, (v) => { c.band = v; zeigeInspektor(); }),
         c.band === "band" || c.band === "voll" ? el("div", { class: "paar" }, regler({ id: "bandFarbe", name: "Farbe", art: "farbe" }, c.bandFarbe, (v) => { c.bandFarbe = v; }),
-          regler({ id: "bandDeckkraft", name: "Deckkraft", min: 0, max: 1, schritt: 0.01 }, c.bandDeckkraft, (v) => { c.bandDeckkraft = v; })) : null),
+          regler({ id: "bandDeckkraft", name: "Deckkraft", min: 0, max: 1, schritt: 0.01 }, c.bandDeckkraft, (v) => { c.bandDeckkraft = v; })) : null,
+        c.band === "linie" || c.animation === "maske" || c.abgang === "maske" ? regler({ id: "akzent", name: "Akzentfarbe (Linie, Kante)", art: "farbe" }, c.akzent, (v) => { c.akzent = v; }) : null),
       gruppe("Bewegung",
-        regler({ id: "animation", name: "Auftritt", art: "wahl", optionen: ANIMATIONEN }, c.animation, (v) => { c.animation = v; }),
+        el("div", { class: "paar" },
+          regler({ id: "animation", name: "Auftritt", art: "wahl", optionen: ANIMATIONEN }, c.animation, (v) => { c.animation = v; zeigeInspektor(); }),
+          regler({ id: "abgang", name: "Abgang", art: "wahl", optionen: ABGAENGE }, c.abgang, (v) => { c.abgang = v; zeigeInspektor(); })),
         regler({ id: "blende", name: "Ein- und Ausblenden (s)", min: 0, max: 2, schritt: 0.05 }, c.blende, (v) => { c.blende = v; })),
       gruppe("Zeit", el("div", { class: "paar" },
         regler({ id: "at", name: "Beginn (s)", art: "zahl", min: 0, max: 36000, schritt: 0.01 }, c.at, (v) => { c.at = Math.round(v * 1000) / 1000; }),
@@ -546,9 +562,9 @@ async function taktAlsMarken() {
   let d = S.tonDaten.get(t.medium);
   if (!d) { d = await tonDekodieren(S.bytes.get(t.medium)); if (d) S.tonDaten.set(t.medium, d); }
   if (!d) { zustand("Der Ton lässt sich in diesem Browser nicht lesen", true); return; }
-  S.marken = taktMarken({ at: t.at, von: t.ein, bis: t.aus, tempo: 1, laenge: t.aus - t.ein }, d);
-  zeigeLeiste();
-  zustand(`${S.marken.length} Marken im Takt von ${S.p.medien[t.medium].name}. Schnitte und Ränder rasten dort ein.`);
+  const marken = taktMarken({ at: t.at, von: t.ein, bis: t.aus, tempo: 1, laenge: t.aus - t.ein }, d);
+  aendern(() => { S.p.marken = marken; }, { inspektor: false });
+  zustand(`${marken.length} Marken im Takt von ${S.p.medien[t.medium].name}. Schnitte und Ränder rasten dort ein, und der Zoom-Puls schlägt auf ihnen.`);
 }
 
 // ---------- Projekt ----------
@@ -561,7 +577,7 @@ function verwerfen() {
 function neuesProjekt() {
   if (S.geaendert && !confirm("Das Projekt ist nicht gespeichert. Trotzdem neu anfangen?")) return;
   verwerfen();
-  Object.assign(S, { p: F.neuesProjekt({ format: $("format").value }), auswahl: null, t: 0, marken: [], zurueck: [], vor: [], geaendert: false });
+  Object.assign(S, { p: F.neuesProjekt({ format: $("format").value }), auswahl: null, t: 0, zurueck: [], vor: [], geaendert: false });
   $("name").value = S.p.name;
   alles({ medien: true }); zustand("Ein neues Projekt");
 }
@@ -585,7 +601,7 @@ async function oeffnen(datei) {
     const bytes = await dateiLesen(datei, { melden: (t) => zustand(t) });
     const r = await projektEntpacken(bytes);
     verwerfen();
-    Object.assign(S, { p: r.projekt, auswahl: null, t: 0, marken: [], zurueck: [], vor: [], geaendert: false });
+    Object.assign(S, { p: r.projekt, auswahl: null, t: 0, zurueck: [], vor: [], geaendert: false });
     for (const [id, b] of r.bytes) {
       const m = S.p.medien[id], endung = m.datei.split(".").pop();
       S.bytes.set(id, b); S.urls.set(id, URL.createObjectURL(new Blob([b], { type: MIME[endung] ?? "application/octet-stream" })));

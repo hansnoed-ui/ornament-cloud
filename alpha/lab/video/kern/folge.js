@@ -9,8 +9,9 @@
 import { readFilm, filmHtml, clipSpan, fadeGain, clipFade, kindOf } from "../../../../vendor/openfilm-0.2.6/film-doc.js";
 import { filterCss } from "./filter.js";
 import { titelSeite, TITEL_STANDARD } from "./titel.js";
+import { effekteVon, hatBewegung, bewegung, glitchBei, ueberlagerungSeite, same, EFFEKT_STANDARD } from "./effekte.js";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.2.0";
 export const FORMATE = Object.freeze({
   "16:9": { w: 1920, h: 1080, name: "16:9 quer (Video)" },
   "9:16": { w: 1080, h: 1920, name: "9:16 hoch (Reels, Stories)" },
@@ -28,7 +29,7 @@ const alleIds = (p) => new Set([...p.folge, ...p.titel, ...p.ton].map((c) => c.i
 
 /** ein leeres Projekt; «name» ist der Name des Films, «titel» sind seine Titel und Texte */
 export function neuesProjekt({ name = "Film", format = "16:9" } = {}) {
-  return { art: "ornament-video", version: VERSION, name, format, medien: {}, folge: [], titel: [], ton: [] };
+  return { art: "ornament-video", version: VERSION, name, format, medien: {}, folge: [], titel: [], ton: [], marken: [] };
 }
 
 /** ein geladenes Projekt prüfen und auf den Stand bringen; wirft mit allen Mängeln */
@@ -39,7 +40,8 @@ export function normieren(p) {
   for (const k of ["folge", "titel", "ton"]) if (!Array.isArray(p?.[k])) f.push(`${k} fehlt`);
   if (f.length) throw new Error(`Projekt: ${f.join("; ")}`);
   p.name ??= "Film";
-  for (const c of p.folge) { c.tempo ??= 1; c.lautstaerke ??= 1; c.passen ??= "fuellen"; c.zoom ??= 1; c.x ??= 0; c.y ??= 0; c.filter ??= {}; c.uebergang ??= { art: "schnitt", dauer: 0.5 }; }
+  for (const c of p.folge) { c.tempo ??= 1; c.lautstaerke ??= 1; c.passen ??= "fuellen"; c.zoom ??= 1; c.x ??= 0; c.y ??= 0; c.filter ??= {}; c.uebergang ??= { art: "schnitt", dauer: 0.5 }; c.effekte = { ...EFFEKT_STANDARD, ...(c.effekte ?? {}) }; }
+  p.marken ??= [];
   for (const t of p.titel) Object.assign(t, { ...TITEL_STANDARD, ...t });
   for (const t of p.ton) { t.lautstaerke ??= 1; t.einblenden ??= 0; t.ausblenden ??= 0; }
   return p;
@@ -100,7 +102,9 @@ export function folgeBei(p, t) {
 export function inFolge(p, medium, index = p.folge.length) {
   const m = p.medien[medium];
   if (!m || m.art === "ton") throw new Error("In die Bildfolge kommen Videos und Bilder");
-  const c = { id: neueId("clip", alleIds(p)), medium, ein: 0, aus: m.art === "bild" ? BILD_DAUER : ms(m.dauer), tempo: 1, lautstaerke: 1, passen: "fuellen", zoom: 1, x: 0, y: 0, filter: {}, uebergang: { art: "schnitt", dauer: 0.5 } };
+  const c = { id: neueId("clip", alleIds(p)), medium, ein: 0, aus: m.art === "bild" ? BILD_DAUER : ms(m.dauer), tempo: 1, lautstaerke: 1, passen: "fuellen", zoom: 1, x: 0, y: 0, filter: {}, uebergang: { art: "schnitt", dauer: 0.5 },
+    // ein Bild bekommt eine langsame Fahrt hinein (Ken Burns), damit es nicht stillsteht
+    effekte: { ...EFFEKT_STANDARD, ...(m.art === "bild" ? { kenburns: "hinein", kbStaerke: 0.12 } : {}) } };
   p.folge.splice(Math.max(0, Math.min(p.folge.length, index)), 0, c);
   return c.id;
 }
@@ -216,12 +220,20 @@ export function kasten(c, buehne) {
  */
 export function zuFilm(p) {
   const buehne = FORMATE[p.format], plan = zeitplan(p);
-  const bild = [[], []], weiss = [];
+  const bild = [[], []], weiss = [], ueber = [], seiten = {};
   const fadeOv = (f) => (f[0] > 0 || f[1] > 0 ? { overrides: [{ fade: f.map(ms) }] } : {});
   for (const x of plan.clips) {
-    const c = x.c, m = p.medien[c.medium];
+    const c = x.c, m = p.medien[c.medium], e = effekteVon(c);
     const stil = [`object-fit: ${c.passen === "einpassen" ? "contain" : "cover"}`, filterCss(c.filter)].filter(Boolean).join("; ");
-    const gemeinsam = { id: c.id, src: m.datei, at: x.at, box: kasten(c, buehne), style: stil, ...fadeOv(x.fade) };
+    // Bewegung kann film.html nicht sagen: sie steht beim Clip als data-ornament-effekte (OpenFilm behält data-*, Studio zeigt den Clip ruhig)
+    const bewegt = hatBewegung(e) ? { attrs: { "data-ornament-effekte": JSON.stringify(Object.fromEntries(["kenburns", "kbStaerke", "wackeln", "puls", "pulsBpm", "glitch"].map((k) => [k, e[k]]))) } } : {};
+    const gemeinsam = { id: c.id, src: m.datei, at: x.at, box: kasten(c, buehne), style: stil, ...fadeOv(x.fade), ...bewegt };
+    // Korn und Kratzer, Lichtlecks: Seiten über dem Clip, gemischt mit mix-blend-mode, mit denselben Blenden
+    for (const [art, an, mischung] of [["korn", e.korn > 0 || e.kratzer > 0, "overlay"], ["licht", e.licht > 0, "screen"]]) {
+      if (!an) continue;
+      seiten[`effekt/${art}-${c.id}.html`] = ueberlagerungSeite(art, { korn: e.korn, kratzer: e.kratzer, licht: e.licht, same: same(c.id) }, buehne);
+      ueber.push({ id: `${art}-${c.id}`, src: `effekt/${art}-${c.id}.html`, at: x.at, time: [0, x.laenge], style: `mix-blend-mode: ${mischung}`, ...fadeOv(x.fade) });
+    }
     bild[x.spur].push(m.art === "bild" ? { ...gemeinsam, time: [0, x.laenge] }
       : { ...gemeinsam, time: [ms(c.ein), ms(c.aus)], ...(c.tempo !== 1 ? { speed: c.tempo } : {}), ...(c.lautstaerke !== 1 ? { volume: ms(c.lautstaerke) } : {}) });
   }
@@ -230,7 +242,6 @@ export function zuFilm(p) {
     if (x.c.uebergang?.art !== "weiss" || !plan.clips[i + 1] || !x.fade[1]) return;
     weiss.push({ id: `weiss-${x.c.id}`, src: "titel/weiss.html", at: ms(x.at + x.laenge - x.fade[1]), time: [0, ms(x.fade[1] + plan.clips[i + 1].fade[0])] });
   });
-  const seiten = {};
   const titelSpuren = spurenVerteilen(p.titel, (t) => t.at, (t) => t.at + t.dauer).map((s) => ({ clips: s.map((t) => {
     seiten[`titel/${t.id}.html`] = titelSeite(t, buehne);
     return { id: t.id, src: `titel/${t.id}.html`, at: ms(t.at), time: [0, ms(t.dauer)] };
@@ -240,8 +251,10 @@ export function zuFilm(p) {
     id: t.id, src: p.medien[t.medium].datei, ...(p.medien[t.medium].art === "video" ? { sound: true } : {}), at: ms(t.at), time: [ms(t.ein), ms(t.aus)],
     ...(t.lautstaerke !== 1 ? { volume: ms(t.lautstaerke) } : {}), ...fadeOv([t.einblenden, t.ausblenden]),
   })) }));
-  // in OpenFilm liegt die erste Spur oben: Titel, Weiss (unter der Folge, darum nach ihr), die obere und die untere Spur der Folge, Ton
-  const tracks = [...titelSpuren, ...[bild[1], bild[0]].filter((s) => s.length).map((clips) => ({ clips })), ...(weiss.length ? [{ clips: weiss }] : []), ...tonSpuren];
+  // in OpenFilm liegt die erste Spur oben: Titel, Überlagerungen (Korn, Licht), die obere und die untere Spur der Folge, Weiss (unter der
+  // Folge, darum nach ihr), Ton
+  const ueberSpuren = spurenVerteilen(ueber, (u) => u.at, (u) => u.at + u.time[1]).map((clips) => ({ clips }));
+  const tracks = [...titelSpuren, ...ueberSpuren, ...[bild[1], bild[0]].filter((s) => s.length).map((clips) => ({ clips })), ...(weiss.length ? [{ clips: weiss }] : []), ...tonSpuren];
   return { value: { stage: { w: buehne.w, h: buehne.h }, tracks: tracks.length ? tracks : [{ clips: [] }] }, seiten };
 }
 
@@ -257,7 +270,7 @@ export function film(p) {
  * kasten, stil }]. Gerechnet aus dem OpenFilm-Film (clipSpan, fadeGain von film-doc.js), damit Vorschau und Export ihm genau folgen.
  */
 export function bildBei(p, doc, t) {
-  const quelleVon = new Map(Object.values(p.medien).map((m) => [m.datei, m])), titel = new Map(p.titel.map((x) => [x.id, x]));
+  const quelleVon = new Map(Object.values(p.medien).map((m) => [m.datei, m])), titel = new Map(p.titel.map((x) => [x.id, x])), folge = new Map(p.folge.map((x) => [x.id, x]));
   const out = [];
   for (const spur of [...doc.tracks].reverse()) {
     if (spur.hidden) continue;
@@ -267,8 +280,15 @@ export function bildBei(p, doc, t) {
       const m = quelleVon.get(c.src), span = clipSpan(c, m?.dauer ?? NaN, c.id), lokal = t - (c.at ?? 0);
       if (lokal < 0 || lokal >= span.length - 1e-9) continue;
       const deckkraft = fadeGain(lokal, span.length, clipFade(c));
-      if (art === "page") out.push({ art: c.src === "titel/weiss.html" ? "weiss" : "titel", clip: c, titel: titel.get(c.id) ?? null, lokal, dauer: span.length, deckkraft });
-      else out.push({ art: art === "still" ? "bild" : "video", clip: c, medium: m, quelle: span.from + lokal * span.speed, deckkraft, kasten: c.box, stil: c.style ?? "" });
+      if (art === "page" && c.src.startsWith("effekt/")) {
+        const [, wer, id] = /^effekt\/(korn|licht)-(.+)\.html$/.exec(c.src) ?? [], e = effekteVon(folge.get(id));
+        if (wer) out.push({ art: "ueberlagerung", ueber: wer, clip: c, lokal, deckkraft, mischung: wer === "licht" ? "screen" : "overlay", p: { korn: e.korn, kratzer: e.kratzer, licht: e.licht, same: same(id) } });
+      } else if (art === "page") out.push({ art: c.src === "titel/weiss.html" ? "weiss" : "titel", clip: c, titel: titel.get(c.id) ?? null, lokal, dauer: span.length, deckkraft });
+      else {
+        const e = effekteVon(folge.get(c.id)), ort = { lokal, laenge: span.length, t, marken: p.marken ?? [], id: c.id };
+        out.push({ art: art === "still" ? "bild" : "video", clip: c, medium: m, quelle: span.from + lokal * span.speed, deckkraft, kasten: c.box, stil: c.style ?? "",
+          bewegung: bewegung(e, ort), glitch: glitchBei(e, t, c.id) });
+      }
     }
   }
   return out;

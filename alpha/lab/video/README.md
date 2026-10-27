@@ -1,4 +1,4 @@
-# ornament.lab · Video 0.1
+# ornament.lab · Video 0.2
 
 Ein Video-Editor im Browser: Videos, Bilder und Töne laden, schneiden, blenden, mit Filtern, Titeln und Musik, und als MP4 ausgeben. Die Dateien bleiben auf dem Gerät, nichts wird hochgeladen.
 
@@ -24,10 +24,18 @@ Wunsch vom 27. Oktober 2026: «video hochladen, bearbeiten und allenfalls mit ti
 4. **Clip:** Zuschnitt in der Datei, Tempo (0,25–4, die Tonhöhe bleibt), Lautstärke und Bildausschnitt (füllen oder ganz zeigen, Zoom, Lage).
    - **Filter:** neun Vorlagen (Natürlich, Film, Noir, Warm, Kühl, Verblasst, Kräftig, Nacht, Traum), darüber sieben Regler: Helligkeit, Kontrast, Sättigung, Farbton, Wärme, Schwarzweiss, Unschärfe.
    - «für alle Clips» gibt allen denselben Filter.
+   - **Effekte** (seit 0.2, `kern/effekte.js`): sieben Vorlagen (Ohne, Super 8, Handkamera, Club, Glitch, Traum, Langsame Fahrt), darüber:
+     - **Kamerafahrt** (Ken Burns): hinein, heraus, nach links, rechts oder oben, mit Weite. Ein Bild, das in die Folge kommt, fährt von selbst langsam hinein.
+     - **Handkamera:** weiches Zittern, je Clip anders, leicht vergrössert, damit kein Rand sichtbar wird.
+     - **Zoom-Puls im Takt:** auf den Takt-Marken eines Tons oder in einem Tempo (BPM).
+     - **Glitch:** in Schüben zerrissene Streifen und Farbversatz.
+     - **Filmkorn**, **Kratzer und Staub**, **Lichtlecks.**
+     - In der Zeitleiste trägt ein Clip mit Effekten ein ✦; «für alle Clips» gibt allen dieselben Effekte.
 5. **Titel und Texte:** «Titel hinzufügen» legt einen Titel an den Abspielkopf.
+   - **Vorlagen** (seit 0.2): Kinotitel (aus der Unschärfe), Wort für Wort, Bauchbinde (Linie und Wischkante), Kapitel (getippt), Glitch, Buchstabenwelle, Schlusstitel (auf Schwarz). Eine Vorlage behält Text, Beginn und Dauer.
    - Text (mehrzeilig) und Unterzeile, Schrift (Instrument Sans, Newsreader, Monospace), Stärke, Grösse, Farbe und Lage.
-   - Hintergrund: Schatten, Band oder die ganze Fläche.
-   - Auftritt: einblenden, von unten, eintippen, Buchstaben laufen zusammen, heranzoomen.
+   - Hintergrund: Schatten, Band, Linie in der Akzentfarbe oder die ganze Fläche.
+   - **Auftritt und Abgang** getrennt wählbar: einblenden, von unten, Wort für Wort, Buchstabe für Buchstabe, wischen (mit Kante), aus der Unschärfe, Glitch, eintippen (mit blinkendem Strich), Buchstaben laufen zusammen, heranzoomen.
    - Titel dürfen sich überlappen.
 6. **Ton:** Töne unter dem Film mit Beginn, Zuschnitt, Lautstärke, Ein- und Ausblenden. Der Ton eines Videos lässt sich auch für sich unter den Film legen.
 7. **MP4 exportieren:** volle Grösse (1080 p) oder 720 p, 25, 30 oder 60 Bilder je Sekunde.
@@ -55,6 +63,8 @@ So wird das Projekt zu einem OpenFilm-Film:
 | Filter | CSS `filter` im Stil des Clips |
 | Bildausschnitt | `left`, `top`, `width`, `height` und `object-fit` |
 | Tempo, Lautstärke | `speed`, `volume` |
+| Filmkorn, Kratzer, Lichtlecks | Seiten mit `frame(t)` über dem Clip (`effekt/`), mit `mix-blend-mode: overlay` oder `screen` und denselben Blenden. So zeigt Studio sie auch. |
+| Kamerafahrt, Handkamera, Puls, Glitch | Eine Bewegung kann film.html nicht ausdrücken. Sie steht beim Clip als `data-ornament-effekte` und im Zustand des Editors; Studio zeigt den Clip ohne sie. |
 | Titel | Seiten mit `frame(t)`. Die Zeichenfunktion ist dieselbe wie in der Vorschau (`kern/titel.js`), so sieht Studio, was der Editor zeigt. |
 
 Fremde OpenFilm-Filme öffnet der Editor noch nicht, nur seine eigenen.
@@ -65,7 +75,8 @@ Fremde OpenFilm-Filme öffnet der Editor noch nicht, nur seine eigenen.
 |---|---|
 | `kern/folge.js` | Modell: Medien, Folge, Titel, Ton; Zeitplan der Übergänge; teilen, trimmen, umstellen, einrasten; der Film für OpenFilm; was bei t zu sehen und zu hören ist |
 | `kern/filter.js` | Vorlagen und Regler als CSS, dieselben als Farbmatrizen (W3C Filter Effects) für Browser ohne `ctx.filter` |
-| `kern/titel.js` | Titel zeichnen, die Titelseite für OpenFilm |
+| `kern/titel.js` | Titel zeichnen (Auftritte, Abgänge, Vorlagen), die Titelseite für OpenFilm |
+| `kern/effekte.js` | Effekte: Bewegung (Ken Burns, Handkamera, Puls), Glitch, Überlagerungen (Korn, Kratzer, Licht) und ihre Seiten für OpenFilm |
 | `kern/ton.js` | den Ton mischen (Tempo mit WSOLA aus dem Klangwerk des Labs), Takt als Marken (Einsätze aus dem Klangwerk) |
 | `medien/zeichnen.js` | ein Bild des Films zeichnen (Vorschau und Export), Quellen je Clip |
 | `medien/export.js` | MP4 mit WebCodecs und mp4-muxer, Ton dekodieren und kodieren |
