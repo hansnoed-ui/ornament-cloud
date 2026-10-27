@@ -478,6 +478,13 @@ main:has(> .kapitel:last-child) + .fuss { margin-top: 0; border-top: 0; padding-
 .werk img, .werk video { width: 100%; height: 100%; object-fit: cover; }
 .werk h3 { font-weight: 500; font-size: 1.15rem; }
 .werk .preis { font-variant-numeric: tabular-nums; }
+/* die drei Ankündigungen: Text immer in derselben Spalte und gleiche Abstände (28. Oktober 2026, Rückmeldung: «einen kleinen layout fehler» – ein kurzer
+   Text rutschte mit space-between nach rechts, und unter jeder Zeile lag noch der Abstand für Inhalte, die es noch nicht gibt) */
+body[data-bereich="werke"] .abschnitt-kopf { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: baseline; gap: 8px 32px; margin-bottom: 0; }
+body[data-bereich="werke"] .abschnitt-kopf p { max-width: 56ch; }
+body[data-bereich="werke"] .abschnitt-kopf + .knopfreihe { margin-top: 20px; }
+@media (min-width: 761px) { body[data-bereich="werke"] .abschnitt-kopf + .knopfreihe { margin-left: calc((100% - 32px) * 5 / 12 + 32px); } }
+@media (max-width: 760px) { body[data-bereich="werke"] .abschnitt-kopf { grid-template-columns: minmax(0, 1fr); } }
 .beitrag { display: grid; gap: 10px; padding: 18px 0; border-bottom: 1px solid var(--linie); max-width: 62ch; }
 .beitrag .wer { display: flex; gap: 10px; align-items: center; font-size: 0.92rem; color: var(--grau); }
 .beitrag .wer img { width: 28px; height: 28px; border-radius: 50%; }
