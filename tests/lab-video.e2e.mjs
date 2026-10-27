@@ -184,12 +184,35 @@ await check("Titel: hinzufügen, Text ändern; er steht im Bild und als Seite im
   assert.match(await S(page, () => Object.keys(ornamentVideo.S.film.seiten).join(",")), /titel\/titel-1\.html/);
 });
 
+await check("Effekte und Titelvorlagen (0.2): Super 8 legt Korn über den Clip, die Handkamera bewegt das Bild, der Glitch-Titel zeichnet", async () => {
+  const id = await S(page, () => ornamentVideo.S.p.folge.find((c) => c.medium === "rot-blau").id);
+  await page.locator(`.clip[data-id="${id}"]`).click({ position: { x: 30, y: 32 } });
+  await page.locator('#inspektor [data-effektvorlage="super8"]').click();
+  const e = await S(page, (id) => ornamentVideo.S.p.folge.find((c) => c.id === id).effekte, id);
+  assert.equal(e.korn, 0.7); assert.equal(e.wackeln, 0.3);
+  assert.match(await S(page, () => ornamentVideo.S.film.html), new RegExp(`effekt/korn-${id}\\.html#t=0,[\\d.]+" at="[\\d.]+" style="mix-blend-mode: overlay"`));
+  assert.match(await page.textContent(`.clip[data-id="${id}"]`), /✦/);
+  const t = await S(page, (id) => { const x = ornamentVideo.F.zeitplan(ornamentVideo.S.p).clips.find((y) => y.c.id === id); return x.at + 0.3; }, id);
+  // Korn: benachbarte Pixel einer einfarbigen Fläche unterscheiden sich
+  await S(page, (t) => ornamentVideo.springe(t), t); await page.waitForTimeout(400);
+  const streuung = await S(page, () => { const c = document.getElementById("bild"), d = c.getContext("2d").getImageData(Math.floor(c.width * 0.3), Math.floor(c.height * 0.7), 40, 1).data; let mi = 255, ma = 0; for (let i = 0; i < d.length; i += 4) { mi = Math.min(mi, d[i]); ma = Math.max(ma, d[i]); } return ma - mi; });
+  assert.ok(streuung > 6, `Korn sichtbar: ${streuung}`);
+  // Titelvorlage
+  await S(page, () => { const t = ornamentVideo.S.p.titel[0]; ornamentVideo.S.auswahl = t.id; ornamentVideo.alles(); });
+  await page.locator('#inspektor [data-titelvorlage="glitch"]').click();
+  const ti = await S(page, () => ornamentVideo.S.p.titel[0]);
+  assert.deepEqual([ti.animation, ti.abgang, ti.schrift, ti.text], ["glitch", "glitch", "mono", "Hallo Welt"], "die Vorlage behält den Text");
+  await page.locator('#inspektor [data-titelvorlage="wort"]').click();
+  assert.equal(await S(page, () => ornamentVideo.S.p.titel[0].animation), "woerter");
+  assert.deepEqual(fehler, []);
+});
+
 await check("Takt als Marken: die Schläge des Tons stehen als Marken auf dem Lineal, Ränder rasten dort ein", async () => {
   const id = await S(page, () => ornamentVideo.S.p.ton[0].id);
   await page.locator(`.clip[data-id="${id}"]`).click({ position: { x: 30, y: 20 } });
   await page.click("#takt");
-  await page.waitForFunction(() => ornamentVideo.S.marken.length >= 8, null, { timeout: 10000 });
-  const m = await S(page, () => ornamentVideo.S.marken);
+  await page.waitForFunction(() => ornamentVideo.S.p.marken.length >= 8, null, { timeout: 10000 });
+  const m = await S(page, () => ornamentVideo.S.p.marken);
   assert.ok(m.every((x) => Math.abs(x * 2 - Math.round(x * 2)) < 0.05), `alle 0,5 s: ${m}`);
   assert.ok(await page.locator(".lineal .marke").count() >= 8);
 });

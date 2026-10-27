@@ -220,3 +220,99 @@ test("Seite: Alpha (noindex), nur eigene und lokale Dateien, OpenFilm mit Lizenz
   }
   assert.ok(!/href="(?:\.\/)?video\//.test(readFileSync(new URL("alpha/lab/index.html", root), "utf8")), "das Lab verlinkt den Editor (noch) nicht");
 });
+
+// ---------- Video 0.2: Effekte in Bewegung, Titel ----------
+const E = await v("kern/effekte.js");
+/** ein Zeichenkontext, der nur mitschreibt (für Zeichenfunktionen ohne Browser) */
+function mitschreiber(ops, extra = {}) {
+  return new Proxy({ canvas: { width: 1920, height: 1080 }, measureText: (s) => ({ width: String(s).length * 20 }), letterSpacing: "0px", filter: "none", globalCompositeOperation: "", imageSmoothingEnabled: false, ...extra }, {
+    get: (o, k) => (k in o ? o[k] : typeof k === "string"
+      ? (...a) => { ops.push([k, ...a.map((x) => (typeof x === "number" ? Math.round(x * 100) / 100 : typeof x === "string" ? x : typeof x))]); return { addColorStop: (...s) => ops.push(["stop", ...s]), data: new Uint8ClampedArray((a[0] | 0) * (a[1] | 0) * 4) }; }
+      : undefined),
+    set: (o, k, val) => { o[k] = val; ops.push([`=${String(k)}`, val]); return true; },
+  });
+}
+
+test("Effekte am Bild: Ken Burns fährt, Handkamera zittert gleich je Clip, Puls schlägt auf den Marken oder im Tempo, Glitch in Schüben", () => {
+  const e = (w) => ({ ...E.EFFEKT_STANDARD, ...w });
+  const kb = (u) => E.bewegung(e({ kenburns: "hinein", kbStaerke: 0.2 }), { lokal: u * 4, laenge: 4, t: u * 4 });
+  assert.equal(kb(0).s, 1); nahe(kb(1).s, 1.2, 1e-9, "am Ende 20 % näher"); assert.ok(kb(0.5).s > 1 && kb(0.5).s < 1.2);
+  const fahrt = (u) => E.bewegung(e({ kenburns: "rechts", kbStaerke: 0.2 }), { lokal: u * 4, laenge: 4, t: 0 });
+  assert.ok(fahrt(0).x > 0 && fahrt(1).x < 0, "der Blick fährt nach rechts: das Bild wandert nach links");
+  assert.ok(Math.abs(fahrt(0).x) <= (fahrt(0).s - 1) / 2 + 1e-9, "die Fahrt bleibt im vergrösserten Bild, kein Rand");
+  const w1 = E.bewegung(e({ wackeln: 1 }), { lokal: 1, laenge: 4, t: 1.3, id: "clip-1" });
+  assert.deepEqual(w1, E.bewegung(e({ wackeln: 1 }), { lokal: 1, laenge: 4, t: 1.3, id: "clip-1" }), "derselbe Clip, dasselbe Zittern");
+  assert.notDeepEqual(w1, E.bewegung(e({ wackeln: 1 }), { lokal: 1, laenge: 4, t: 1.3, id: "clip-2" }));
+  assert.ok(Math.abs(w1.x) < 0.04 && Math.abs(w1.r) < 1 && w1.s > 1);
+  const puls = (t, w = {}) => E.bewegung(e({ puls: 1, ...w }), { lokal: t, laenge: 10, t, marken: [1, 2.5] }).s;
+  assert.equal(puls(0.5), 1, "vor dem ersten Schlag keiner"); nahe(puls(1), 1.07, 1e-9, "auf dem Schlag"); assert.ok(puls(1.4) < 1.005, "klingt schnell ab"); nahe(puls(2.5), 1.07, 1e-9, "zweiter Schlag");
+  nahe(puls(3, { pulsBpm: 120 }), 1.07, 1e-9, "im Tempo: alle 0,5 s"); assert.equal(E.letzterSchlag(3.2, [], 120), 3);
+  assert.equal(E.glitchBei(e({}), 1), null);
+  const bilder = Array.from({ length: 240 }, (_, i) => E.glitchBei(e({ glitch: 0.8 }), i / 24, "c"));
+  const an = bilder.filter(Boolean).length;
+  assert.ok(an > 40 && an < 220, `in Schüben: ${an} von 240`);
+  assert.deepEqual(E.glitchBei(e({ glitch: 0.8 }), 0.5, "c"), E.glitchBei(e({ glitch: 0.8 }), 0.5, "c"));
+  const g = bilder.find(Boolean); assert.ok(g.streifen.length >= 2 && g.streifen.every((s) => s.y >= 0 && s.y < 1 && Math.abs(s.dx) <= 0.09));
+});
+
+test("Effekte im Film: Korn und Licht als Seiten mit mix-blend-mode und denselben Blenden, Bewegung als data-ornament-effekte, OpenFilm liest es", () => {
+  const { p, a, b } = beispiel();
+  const c1 = F.inFolge(p, a), c2 = F.inFolge(p, b);
+  assert.equal(F.finde(p, c2).c.effekte.kenburns, "hinein", "ein Bild fährt von selbst langsam hinein");
+  Object.assign(F.finde(p, c1).c, { uebergang: { art: "schwarz", dauer: 1 }, effekte: { ...E.EFFEKT_STANDARD, korn: 0.6, kratzer: 0.4, licht: 0.5, wackeln: 0.3, glitch: 0.2 } });
+  const f = F.film(p), r = OF.readFilmFile(f.html);
+  assert.deepEqual(r.problems, []);
+  const clips = r.value.tracks.flatMap((t) => t.clips), korn = clips.find((c) => c.id === `korn-${c1}`), licht = clips.find((c) => c.id === `licht-${c1}`);
+  assert.equal(korn.src, `effekt/korn-${c1}.html`); assert.equal(korn.style, "mix-blend-mode: overlay"); assert.deepEqual(korn.time, [0, 10]);
+  assert.equal(licht.style, "mix-blend-mode: screen"); assert.deepEqual(OF.clipFade(korn), [0, 0.5], "dieselbe Blende wie der Clip");
+  const ti = r.value.tracks.findIndex((t) => t.clips.includes(korn)), fi = r.value.tracks.findIndex((t) => t.clips.some((c) => c.id === c1));
+  assert.ok(ti < fi, "die Überlagerung liegt über der Folge");
+  const v1 = clips.find((c) => c.id === c1);
+  assert.deepEqual(JSON.parse(v1.attrs["data-ornament-effekte"]), { kenburns: "aus", kbStaerke: 0.15, wackeln: 0.3, puls: 0, pulsBpm: 0, glitch: 0.2 });
+  assert.match(f.seiten[`effekt/korn-${c1}.html`], /function zeichneUeberlagerung\(ctx, t, art, p, w, h\)/);
+  assert.match(f.seiten[`effekt/korn-${c1}.html`], /window\.film = \{ frame\(t\)/);
+  // was die Vorschau zeichnet: zuerst der Clip (mit Bewegung), darüber die beiden Überlagerungen
+  const d = F.bildBei(p, f.doc, 2);
+  assert.deepEqual(d.map((x) => x.art), ["video", "ueberlagerung", "ueberlagerung"]);
+  assert.deepEqual(d.slice(1).map((x) => x.mischung).sort(), ["overlay", "screen"]);
+  assert.ok(d[0].bewegung.s > 1, "Handkamera vergrössert leicht");
+  // ohne Effekte bleibt film.html wie in 0.1
+  const q = beispiel(); F.inFolge(q.p, q.a);
+  assert.ok(!F.film(q.p).html.includes("data-ornament") && !F.film(q.p).html.includes("effekt/"));
+});
+
+test("Titel 0.2: alle Auftritte und Abgänge zeichnen, Vorlagen nur mit bekannten Werten, Wort für Wort und Buchstaben gestaffelt, Glitch hängt nur von t ab", () => {
+  const ops = [], ctx = mitschreiber(ops);
+  for (const anim of Object.keys(T.ANIMATIONEN)) for (const ab of ["wie", "glitch", "maske"]) for (const t of [0, 0.2, 1.5, 2.9, 3])
+    T.zeichneTitel(ctx, t, 3, { ...T.TITEL_STANDARD, text: "Am Meer\nzwei", unterzeile: "u", animation: anim, abgang: ab, band: "linie" }, 1920, 1080);
+  const saves = ops.filter((o) => o[0] === "save").length, restores = ops.filter((o) => o[0] === "restore").length;
+  assert.equal(saves, restores, "save und restore im Gleichgewicht");
+  for (const [k, vl] of Object.entries(T.TITEL_VORLAGEN)) for (const [f2, wert] of Object.entries(vl.werte)) {
+    assert.ok(f2 in T.TITEL_STANDARD, `${k}.${f2}`);
+    if (f2 === "animation") assert.ok(wert in T.ANIMATIONEN, `${k}: ${wert}`);
+    if (f2 === "abgang") assert.ok(wert in T.ABGAENGE, `${k}: ${wert}`);
+    if (f2 === "band") assert.ok(wert in T.BAENDER, `${k}: ${wert}`);
+  }
+  const texte = (t, anim) => { ops.length = 0; T.zeichneTitel(ctx, t, 4, { ...T.TITEL_STANDARD, text: "eins zwei drei vier", animation: anim, blende: 1 }, 1920, 1080); return ops.filter((o) => o[0] === "fillText").map((o) => o[1]); };
+  assert.deepEqual(texte(2, "woerter"), ["eins", "zwei", "drei", "vier"]);
+  const halb = texte(0.4, "woerter"); assert.ok(halb.includes("eins") && !halb.includes("vier"), JSON.stringify(halb));
+  assert.ok(texte(0.3, "buchstaben").length < 16 && texte(2, "buchstaben").length === 16, "Buchstabe für Buchstabe");
+  assert.deepEqual(texte(0.3, "glitch"), texte(0.3, "glitch"), "Glitch: dasselbe t, dasselbe Bild");
+  assert.ok(texte(0.3, "glitch").length > 3, "Glitch: Farbversatz und zerrissene Streifen");
+  const seite = T.titelSeite({ ...T.TITEL_STANDARD, text: "x", animation: "glitch", dauer: 2 }, { w: 1080, h: 1920 });
+  assert.match(seite, /const zufall = \(n\) =>/, "der Zufall des Glitch steht in der Seite selbst");
+  assert.equal(T.titelAusSeite(seite).abgang, "wie");
+});
+
+test("Überlagerung: Korn neutral grau mit Rauschen, Licht auf Schwarz; je Bild anders, dasselbe Bild gleich", () => {
+  const ops = [];
+  globalThis.OffscreenCanvas ??= class { constructor(w, h) { this.width = w; this.height = h; } getContext() { return mitschreiber([]); } };
+  const lauf = (t, art, p) => { ops.length = 0; E.zeichneUeberlagerung(mitschreiber(ops), t, art, p, 640, 360); return JSON.stringify(ops); };
+  const k1 = lauf(0.5, "korn", { korn: 0.6, kratzer: 0.8, same: 3 });
+  assert.match(k1, /"=fillStyle","rgb\(128,128,128\)"/, "neutrales Grau für overlay");
+  assert.match(k1, /"drawImage"/, "das Korn wird aufgetragen");
+  assert.equal(lauf(0.5, "korn", { korn: 0.6, kratzer: 0.8, same: 3 }), k1);
+  assert.notEqual(lauf(0.6, "korn", { korn: 0.6, kratzer: 0.8, same: 3 }), k1);
+  const l = lauf(1, "licht", { licht: 0.7, same: 3 });
+  assert.match(l, /"=fillStyle","#000"/); assert.match(l, /"=globalCompositeOperation","lighter"/); assert.match(l, /createRadialGradient/);
+});

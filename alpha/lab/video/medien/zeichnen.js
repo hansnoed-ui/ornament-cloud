@@ -3,6 +3,32 @@
 // Filter. Filter mit ctx.filter, wo der Browser es kann (Chrome, Edge, Firefox); sonst die Farbmatrizen aus kern/filter.js auf den Pixeln.
 import { zeichneTitel } from "../kern/titel.js";
 import { farbeAnwenden } from "../kern/filter.js";
+import { zeichneUeberlagerung } from "../kern/effekte.js";
+
+/** eine Leinwand für die Überlagerungen (gezeichnet wie ihre Seite, dann mit ihrem Mischmodus aufgetragen) */
+let lage = null;
+function ebene(w, h) {
+  lage ??= document.createElement("canvas");
+  if (lage.width !== w || lage.height !== h) { lage.width = w; lage.height = h; }
+  return lage;
+}
+
+/** Glitch auf den Pixeln eines Ausschnitts: Streifen seitlich versetzt, Rot und Blau gegeneinander verschoben */
+function glitchAnwenden(ctx, x0, y0, bw, bh, g) {
+  x0 = Math.max(0, Math.floor(x0)); y0 = Math.max(0, Math.floor(y0));
+  bw = Math.min(ctx.canvas.width - x0, Math.ceil(bw)); bh = Math.min(ctx.canvas.height - y0, Math.ceil(bh));
+  if (bw < 2 || bh < 2) return;
+  const bild = ctx.getImageData(x0, y0, bw, bh), d = bild.data, q = new Uint8ClampedArray(d);
+  const v = Math.round(g.versatz * bw);
+  for (let y = 0; y < bh; y++) {
+    const s = g.streifen.find((st) => y / bh >= st.y && y / bh < st.y + st.h), dx = s ? Math.round(s.dx * bw) : 0;
+    for (let x = 0; x < bw; x++) {
+      const i = (y * bw + x) * 4, quelle = (sx) => (y * bw + Math.min(bw - 1, Math.max(0, sx))) * 4;
+      d[i] = q[quelle(x - dx - v)]; d[i + 1] = q[quelle(x - dx) + 1]; d[i + 2] = q[quelle(x - dx + v) + 2];
+    }
+  }
+  ctx.putImageData(bild, x0, y0);
+}
 
 /** kann ctx.filter Filter (Safari bis 17 nicht)? */
 export const FILTER_DA = (() => {
@@ -73,6 +99,16 @@ export function zeichnen(ctx, w, h, buehne, dinge, quellen, filterVon = () => nu
     if (d.deckkraft <= 0) continue;
     if (d.art === "weiss") { ctx.globalAlpha = d.deckkraft; ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, buehne.w, buehne.h); continue; }
     if (d.art === "titel") { if (d.titel) { ctx.save(); zeichneTitel(ctx, d.lokal, d.dauer, d.titel, buehne.w, buehne.h); ctx.restore(); } continue; }
+    if (d.art === "ueberlagerung") {
+      const e = ebene(w, h), ec = e.getContext("2d");
+      ec.setTransform(1, 0, 0, 1, 0, 0); ec.clearRect(0, 0, w, h);
+      zeichneUeberlagerung(ec, d.lokal, d.ueber, d.p, w, h);
+      ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.globalAlpha = d.deckkraft; ctx.globalCompositeOperation = d.mischung;
+      ctx.drawImage(e, 0, 0);
+      ctx.restore();
+      continue;
+    }
     const q = d.art === "video" ? quellen.video(d.clip.id, d.medium.id) : quellen.bild(d.medium.id);
     const [sw, sh] = groesse(q);
     if (!sw || !sh || (q instanceof HTMLVideoElement && q.readyState < 2)) continue;
@@ -84,8 +120,15 @@ export function zeichnen(ctx, w, h, buehne, dinge, quellen, filterVon = () => nu
     ctx.globalAlpha = d.deckkraft;
     const css = FILTER.exec(d.stil)?.[1]?.trim();
     if (css && FILTER_DA) ctx.filter = css;
+    // die Bewegung (Ken Burns, Handkamera, Puls) um die Mitte des Kastens; der Kasten selbst schneidet zu
+    const bw2 = d.bewegung;
+    if (bw2 && (bw2.s !== 1 || bw2.x || bw2.y || bw2.r)) {
+      const cx = b.x + bw / 2, cy = b.y + bh / 2;
+      ctx.translate(cx + bw2.x * bw, cy + bw2.y * bh); ctx.rotate((bw2.r * Math.PI) / 180); ctx.scale(bw2.s, bw2.s); ctx.translate(-cx, -cy);
+    }
     ctx.drawImage(q, dx, dy, dw, dh);
     ctx.restore();
+    if (d.glitch && d.deckkraft > 0.05) glitchAnwenden(ctx, b.x * k, b.y * (h / buehne.h), bw * k, bh * (h / buehne.h), d.glitch);
     if (css && !FILTER_DA) {
       // Rückfall: die Farbmatrizen auf dem Ausschnitt (ohne Unschärfe); die Deckkraft ist dann schon gemischt, das Ergebnis ist eine Näherung
       const x0 = Math.max(0, Math.floor(Math.max(b.x, dx) * k)), y0 = Math.max(0, Math.floor(Math.max(b.y, dy) * (h / buehne.h)));
