@@ -1,0 +1,92 @@
+/* ORNAMENT LAB · Video – der Editor. Die Grundlage ist lab.css (Papier und Tinte, die Blaupause als Akzent, Pillen, Regler); hier nur
+   die Anordnung: Material, Vorschau und Eigenschaften nebeneinander, darunter die Zeitleiste. Die Vorschau und die Zeitleiste sind dunkel
+   (NACHT), damit Bilder vor ruhigem Grund stehen. */
+:root { --spur: 46px; --spur-folge: 64px; --griff: 12px; --clip: #2b3a8f; --clip-bild: #3a5a8a; --clip-titel: #6b3a7a; --clip-ton: #2f6b4a; --kopf-farbe: #ff4d3a; }
+@media (prefers-color-scheme: dark) { :root { --clip: #3349b8; --clip-bild: #4a6ea8; --clip-titel: #8a4c9c; --clip-ton: #3d8a5f; } }
+
+.schnitt { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(260px, 320px); grid-template-areas: "material vorschau eigenschaften" "zeitleiste zeitleiste zeitleiste"; }
+#material { grid-area: material; border-right: 1px solid var(--border); }
+#vorschau { grid-area: vorschau; padding: 16px 20px; border-bottom: 1px solid var(--border); min-width: 0; display: grid; gap: 10px; align-content: start; background: var(--nacht); color: var(--kreide); }
+#eigenschaften { grid-area: eigenschaften; border-left: 1px solid var(--border); max-height: calc(100vh - 290px); overflow: auto; }
+#zeitleiste { grid-area: zeitleiste; min-width: 0; }
+@media (max-width: 1100px) {
+  .schnitt { grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); grid-template-areas: "vorschau eigenschaften" "zeitleiste zeitleiste" "material material"; }
+  #material { border-right: 0; }
+}
+@media (max-width: 720px) {
+  .schnitt { grid-template-columns: minmax(0, 1fr); grid-template-areas: "vorschau" "zeitleiste" "eigenschaften" "material"; }
+  #eigenschaften { border-left: 0; max-height: none; }
+  #vorschau { padding: 10px 12px; }
+}
+
+/* Material */
+.medien { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+.medium { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 4px 10px; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.medium .vorschaubild { grid-row: span 2; width: 64px; height: 40px; background: var(--nacht) center / cover no-repeat; display: grid; place-items: center; color: var(--staub); font-size: 0.75rem; }
+.medium b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9rem; }
+.medium small { color: var(--muted); font-size: 0.78rem; }
+.medium .aktionen { grid-column: 1 / -1; gap: 6px; }
+
+/* Vorschau */
+/* so hoch wie das Format es verlangt (aspect-ratio setzt app.js), höchstens gut die halbe Höhe des Fensters */
+.leinwand { position: relative; display: grid; place-items: center; background: #000; width: 100%; aspect-ratio: 16 / 9; max-height: min(58vh, 640px); }
+.leinwand canvas { max-width: 100%; max-height: 100%; display: block; background: #000; }
+.leinwand .leer { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 12px; text-align: center; color: var(--staub); padding: 20px; font-family: var(--serif); }
+.leinwand .leer .knopf { border-color: var(--kreide); color: var(--kreide); font-family: var(--font); }
+.leinwand .leer .knopf:hover { background: var(--kreide); color: var(--nacht); }
+.transport { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.transport .knopf { border-color: var(--kreide); color: var(--kreide); }
+.transport .knopf:hover, .transport .knopf.voll { background: var(--kreide); color: var(--nacht); }
+.transport .zeit { font-variant-numeric: tabular-nums; margin-left: auto; color: var(--staub); font-size: 0.9rem; }
+
+/* Zeitleiste */
+.werkzeuge { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--border); }
+.werkzeuge .trenner { width: 1px; align-self: stretch; background: var(--border); }
+.werkzeuge label { display: inline-flex; gap: 6px; align-items: center; font-size: 0.88rem; }
+.werkzeuge input[type="range"] { width: 110px; accent-color: var(--accent); }
+.leiste { position: relative; overflow-x: auto; overflow-y: hidden; background: var(--nacht); color: var(--kreide); user-select: none; -webkit-user-select: none; touch-action: pan-x; padding-bottom: 8px; }
+.leiste-innen { position: relative; min-width: 100%; }
+.lineal { position: relative; height: 26px; border-bottom: 1px solid var(--fuge); cursor: pointer; touch-action: none; }
+.lineal .strich { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--fuge); font-size: 0.7rem; color: var(--staub); padding-left: 3px; line-height: 26px; white-space: nowrap; }
+.lineal .marke { position: absolute; bottom: 0; width: 1px; height: 8px; background: #f2c14e; }
+.spur { position: relative; height: var(--spur); border-bottom: 1px solid var(--fuge); }
+.spur.folge { height: var(--spur-folge); }
+.spur .name { position: sticky; left: 0; z-index: 3; display: inline-block; font-size: 0.68rem; color: var(--staub); padding: 2px 6px; background: color-mix(in srgb, var(--nacht) 80%, transparent); pointer-events: none; }
+.clip { position: absolute; top: 4px; bottom: 4px; background: var(--clip) left center / auto 100% repeat-x; border-radius: 3px; overflow: hidden; cursor: grab; touch-action: none; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18); }
+.clip.bild { background-color: var(--clip-bild); }
+.clip.titel { background-color: var(--clip-titel); }
+.clip.ton { background-color: var(--clip-ton); }
+.clip.gewaehlt { box-shadow: inset 0 0 0 2px #fff; z-index: 2; }
+.clip.zieht { opacity: 0.85; cursor: grabbing; z-index: 4; }
+.clip .beschriftung { position: absolute; left: 14px; right: 14px; bottom: 3px; font-size: 0.72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px #000; pointer-events: none; }
+.clip .griff { position: absolute; top: 0; bottom: 0; width: var(--griff); cursor: ew-resize; background: rgb(255 255 255 / 0.12); }
+.clip .griff.links { left: 0; } .clip .griff.rechts { right: 0; }
+.clip .griff:hover, .clip.gewaehlt .griff { background: rgb(255 255 255 / 0.35); }
+@media (pointer: coarse) { :root { --griff: 20px; } }
+/* das Zeichen des Übergangs am oberen Rand der Spur, damit es die Griffe zum Trimmen nicht verdeckt */
+.uebergang { position: absolute; top: 1px; width: 18px; height: 18px; margin: 0 0 0 -9px; border-radius: 50%; background: var(--nacht); border: 1px solid var(--kreide); color: var(--kreide); font-size: 0.7rem; display: grid; place-items: center; z-index: 3; cursor: pointer; padding: 0; }
+.uebergang.schnitt { opacity: 0.45; }
+.uebergang[aria-pressed="true"] { background: var(--kreide); color: var(--nacht); }
+.einfuegen { position: absolute; top: 0; bottom: 0; width: 2px; background: #f2c14e; z-index: 5; pointer-events: none; }
+.kopf-linie { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--kopf-farbe); z-index: 6; pointer-events: none; }
+.kopf-linie::before { content: ""; position: absolute; top: 0; left: -6px; border: 7px solid transparent; border-top-color: var(--kopf-farbe); }
+.rast-linie { position: absolute; top: 0; bottom: 0; width: 1px; background: #f2c14e; z-index: 5; pointer-events: none; }
+
+/* Eigenschaften */
+#inspektor { display: grid; gap: 12px; }
+#inspektor textarea, #inspektor input[type="text"] { width: 100%; border: 1px solid var(--border); background: var(--bg); padding: 6px; font: inherit; resize: vertical; }
+#inspektor input[type="color"] { width: 100%; height: 30px; border: 1px solid var(--border); background: var(--bg); padding: 0 2px; }
+.paar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.vorlagen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.vorlagen button { border: 1px solid var(--border); background: none; padding: 6px 4px; font-size: 0.78rem; cursor: pointer; }
+.vorlagen button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
+/* Export */
+dialog.export { border: 1px solid var(--border); background: var(--bg); color: var(--text); max-width: min(560px, calc(100vw - 32px)); width: 100%; padding: 20px 22px; }
+dialog.export::backdrop { background: rgb(0 0 0 / 0.55); }
+dialog.export h2 { font-size: 1.2rem; margin-bottom: 12px; }
+dialog.export form { display: grid; gap: 12px; }
+dialog.export video { width: 100%; max-height: 50vh; background: #000; }
+dialog.export progress { width: 100%; accent-color: var(--accent); }
+.zustand { padding: 8px 20px; font-size: 0.88rem; color: var(--muted); min-height: 34px; border-top: 1px solid var(--border); }
+.zustand.fehler { color: #c0392b; }
