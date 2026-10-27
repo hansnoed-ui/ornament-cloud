@@ -219,7 +219,7 @@ test("Audio-Operationsformat: acht Klangformen in den vorhandenen Typen, AUDIO u
   for (const f of Object.values(KLANGFORMEN)) assert.ok(TYPEN[f.typ], f.name);
   assert.ok(TYPEN.AUDIO.implementiert && TYPEN.EVENT_SEQUENCE.implementiert);
   assert.equal(KLANGFORMEN.parameterverlauf.typ, KLANGFORMEN.steuerwert.typ, "ein Klangverlauf ist dasselbe Steuersignal wie ein Bildsignal");
-  assert.deepEqual(labRegister().fuer("AUDIO").map((o) => o.id), ["lab.tonsignal", "lab.tempo", "lab.zerlegen", "lab.rhythmus", "lab.koerner", "signatur.signet", "signatur.ton"]);
+  assert.deepEqual(labRegister().fuer("AUDIO").map((o) => o.id), ["lab.tonsignal", "lab.tempo", "lab.zerlegen", "lab.rhythmus", "lab.koerner", "lab.filter", "lab.effekt", "lab.mastering", "signatur.signet", "signatur.ton"]);
   assert.ok(KLANGFORMEN.transformation.implementiert && KLANGFORMEN.rhythmus.implementiert, "seit 0.1.7");
 });
 
@@ -662,7 +662,9 @@ test("Beat aus Bild rechnen: Stereo in genau der Dauer, Tempo in der Stufe, repr
   assert.equal(t.spuren.length, 2); assert.equal(t.spuren[0].length, 6 * 44100);
   assert.ok(t.spuren[0].every(Number.isFinite));
   let spitze = 0; for (const s of t.spuren) for (const v of s) spitze = Math.max(spitze, Math.abs(v));
-  assert.ok(spitze > 0.85 && spitze <= 0.9, `−1 dBFS: ${spitze}`);
+  // seit 0.1.45 fertig gemischt: −14 LUFS, keine Spitze über −1 dBFS
+  assert.ok(spitze > 0.2 && spitze <= 0.892, `höchstens −1 dBFS: ${spitze}`);
+  assert.ok(Math.abs(knoten.protokoll.lautheit + 14) < 0.5, `−14 LUFS: ${knoten.protokoll.lautheit}`);
   const pl = knoten.protokoll.plan, [lo, hi] = pl.groove === "dnb" ? [170, 176] : (await lab("kern/beat.js")).TEMPI[pl.tempo];
   assert.ok(knoten.protokoll.bpm >= lo - 10 && knoten.protokoll.bpm <= hi + 10, `Tempo ${knoten.protokoll.bpm} in ${pl.tempo}`);
   assert.equal(folge.daten.art, "rhythmus"); assert.equal(folge.daten.raster, 16);
@@ -718,6 +720,81 @@ test("Beat aus Bild rechnen: Stereo in genau der Dauer, Tempo in der Stufe, repr
   const v = await op.ausfuehren({ bild: b0, bild2: b0, bild3: zweites }, { ...std, verlauf: "wellen" }, { seed: 9 });
   assert.equal(v.protokoll.abschnitte, 3); assert.notEqual(v.protokoll.merkmale.bewegung, "still");
   assert.ok(new Set(v.protokoll.energie).size > 1, "in Wellen: die Energie folgt der Bewegung");
+});
+
+test("Beat aus Bild (0.1.45): Oud, Rhodes, Neuro, Glitch, Maqsum, Gefrikel, Bayati mit Viertelton, Bordun; roh wie bisher", async () => {
+  const B = await lab("kern/beat.js");
+  const M = await lab("kern/mischpult.js");
+  const { p, m, e, r } = mitMaterial();
+  const op = r.hole("lab.beat"), std = { ...standardParameter(op), dauer: 6 }, b0 = m.bilder.get(e.id);
+  assert.equal(std.mischung, "fertig");
+  assert.deepEqual(B.TONLEITERN.bayati, [0, 1.5, 3, 5, 7, 8, 10], "Viertelton auf der zweiten Stufe");
+  const proben = [
+    { groove: "dnb", kit: "elektronisch", bass: "neuro", melodie: "keine", flaeche: "keine" },
+    { groove: "gefrikel", kit: "glitch", bass: "pulsierend", melodie: "arpeggio", flaeche: "keine", tempo: "schnell" },
+    { groove: "schleppend", kit: "jazz", bass: "kontrabass", melodie: "rhodes", flaeche: "keine" },
+    { groove: "maqsum", kit: "hand", bass: "kontrabass", tonart: "bayati", melodie: "oud", flaeche: "bordun" },
+    { groove: "dnb", kit: "hand", bass: "reese", tonart: "nahawand", melodie: "oud", flaeche: "bordun" },
+  ];
+  const ergebnisse = [];
+  for (const pl of proben) {
+    const x = await op.ausfuehren({ bild: b0 }, { ...std, verlauf: "wechselnd", ...pl }, { seed: 5 });
+    const sp = x.ausgaben[0].ton.spuren;
+    assert.ok(sp.every((k) => k.every(Number.isFinite)), JSON.stringify(pl));
+    assert.ok(Math.abs(M.lautheit(sp, 44100) + 14) < 0.5, `−14 LUFS: ${JSON.stringify(pl)}`);
+    assert.ok(M.spitzeDB(sp) <= -0.99, "Limiter");
+    ergebnisse.push(x);
+  }
+  assert.deepEqual(ergebnisse[1].ausgaben[0].ton.spuren[0], (await op.ausfuehren({ bild: b0 }, { ...std, verlauf: "wechselnd", ...proben[1] }, { seed: 5 })).ausgaben[0].ton.spuren[0], "reproduzierbar");
+  // Gefrikel: Ratschen machen mehr Schläge als ein Schritt je Sechzehntel
+  const ev = ergebnisse[1].ausgaben[1].daten.ereignisse, jeSchritt = new Map();
+  for (const y of ev) jeSchritt.set(`${y.stimme} ${y.schritt}`, (jeSchritt.get(`${y.stimme} ${y.schritt}`) ?? 0) + 1);
+  assert.ok([...jeSchritt.values()].some((v) => v >= 2), "Ratschen");
+  // Maqsum: Dum auf eins und drei, Tek auf den Achteln dazwischen
+  const mq = ergebnisse[3].ausgaben[1].daten.ereignisse;
+  assert.ok(mq.filter((y) => y.stimme === "bassdrum").every((y) => [0, 8, 7, 13].includes(y.schritt % 16)), "Dum");
+  assert.ok(mq.some((y) => y.stimme === "snare" && y.schritt % 16 === 2), "Tek");
+  assert.ok(ergebnisse[3].ausgaben[1].daten.melodie.length > 4, "Oud spielt");
+  // roh: wie bis 0.1.44, Spitze auf −1 dBFS
+  const roh = await op.ausfuehren({ bild: b0 }, { ...std, mischung: "roh" }, { seed: 5 });
+  nahe(M.spitzeDB(roh.ausgaben[0].ton.spuren), -1, 0.05, "roh −1 dBFS");
+  // die Regeln: warm wählt Oud und Maqsum, ohne den Standard zu verdrängen
+  const warm = { helligkeit: "mittel", kontrast: "mittel", farbigkeit: "gedaempft", farbton: "warm", detail: "mittel", schwerpunkt: "mitte", symmetrie: "asymmetrisch", bewegung: "still" };
+  assert.equal(B.regelPlan(warm).plan.melodie, "oud");
+  assert.equal(B.regelPlan({ ...warm, farbton: "neutral", detail: "fein", kontrast: "hoch" }).plan.kit, "glitch");
+});
+
+test("Mischpult (0.1.45): Lautheit nach BS.1770, Limiter, Kompressor, Filter, Effekte, Mastering", async () => {
+  const M = await lab("kern/mischpult.js");
+  const r = labRegister();
+  const rate = 48000, sin = (f, a, sek = 4) => Float32Array.from({ length: rate * sek }, (_, i) => a * Math.sin((2 * Math.PI * f * i) / rate));
+  // Kalibrierung: 1 kHz bei 0 dBFS auf einem Kanal ist −3,01 LUFS (BS.1770); zwei Kanäle −20 dBFS RMS: −17 LUFS
+  nahe(M.lautheit([sin(997, 1)], rate), -3.01, 0.1, "Kalibrierung");
+  nahe(M.lautheit([sin(997, 0.1414), sin(997, 0.1414)], rate), -17, 0.15, "Stereo");
+  assert.equal(M.lautheit([new Float32Array(rate)], rate), -Infinity);
+  // Limiter: keine Spitze über der Decke, leise Stellen bleiben
+  const laut = sin(100, 2);
+  const lim = M.begrenzen([laut], rate, { decke: -1 });
+  assert.ok(M.spitzeDB(lim.spuren) <= -0.999 && lim.reduktion > 6);
+  const leise = M.begrenzen([sin(100, 0.1)], rate, { decke: -1 });
+  nahe(M.spitzeDB(leise.spuren), M.dB(0.1), 0.01, "unter der Decke unverändert");
+  // Kompressor: über der Schwelle leiser
+  const k = M.komprimieren([sin(200, 1)], rate, { schwelle: -20, verhaeltnis: 4, knie: 0 });
+  assert.ok(k.reduktion > 12 && k.reduktion < 16, `${k.reduktion} dB`);
+  // Tiefpass: 5 kHz fast weg, 100 Hz bleibt
+  const tp = M.biquad("tiefpass", 500, rate);
+  assert.ok(M.spitzeDB([M.filtern(sin(5000, 1), tp).subarray(rate)]) < -30);
+  assert.ok(M.spitzeDB([M.filtern(sin(100, 1), tp).subarray(rate)]) > -0.5);
+  // Operationen: endlich, Mastering trifft das Ziel
+  const ton = { spuren: [sin(110, 0.3), sin(165, 0.2)], rate };
+  for (const [id, extra] of [["lab.filter", {}], ["lab.filter", { bewegung: "anschlag", art: "bandpass" }], ...["zerkleinern", "band", "roehre", "hart", "falten", "chorus", "flanger", "echo", "raum"].map((x) => ["lab.effekt", { effekt: x, bpm: 120 }]), ["lab.mastering", { ziel: "-10" }]]) {
+    const op = r.hole(id), x = await op.ausfuehren({ ton }, { ...standardParameter(op), ...extra }, { seed: 1 });
+    const sp = x.ausgaben[0].ton.spuren;
+    assert.ok(sp.every((c) => c.length === ton.spuren[0].length && c.every(Number.isFinite)), `${id} ${extra.effekt ?? ""}`);
+    if (id === "lab.mastering") { nahe(x.protokoll.lautheit, -10, 0.5, "−10 LUFS"); assert.ok(x.protokoll.spitze <= -0.95); }
+  }
+  await assert.rejects(r.hole("lab.filter").ausfuehren({ ton }, { ...standardParameter(r.hole("lab.filter")), bewegung: "signal" }), /Steuersignal/);
+  await assert.rejects(r.hole("lab.mastering").ausfuehren({ ton: { spuren: [new Float32Array(rate)], rate } }, standardParameter(r.hole("lab.mastering"))), /still/);
 });
 
 // ---------- Klangerzeuger (Lab 0.1.5): Klang ohne Tondatei ----------

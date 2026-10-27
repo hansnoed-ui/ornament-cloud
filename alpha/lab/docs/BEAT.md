@@ -40,4 +40,24 @@ Nicht gewählt, sondern abgebildet: der Farbton gibt den Grundton (Farbkreis in 
 
 Klänge: Bassdrum als Sinus mit fallender Tonhöhe, Snare aus Ton und gefiltertem Rauschen oder Klatschen aus drei Stössen, Becken aus Rauschen oder sechs Rechtecken wie bei der Roland TR-808, Bass aus zwei bis sechs Teiltönen oder als Reese (zwei verstimmte Sägezähne, wanderndes Tiefpassfilter, Sinus darunter), der Bassdrum ausweichend (Sidechain), Fläche aus vier Stimmen je Akkord (je Seite ein leicht verstimmter, weich gefilterter Sägezahn, langsam ein- und ausgeblendet, viel Nachhall; «schimmernd» mit Tönen zwei Oktaven höher), Melodie mit den Klangfarben des Klangerzeugers. Nachhall auf Snare und Melodie (`nachhall()` aus `kern/klang.js`), sanfte Sättigung, Spitze −1 dBFS.
 
+## Mehr Klangfarben und fertig gemischt (seit Lab 0.1.45)
+
+Wunsch vom 27. Oktober 2026: «mehr klangfarben und instrumente, töne besser bearbeiten und ferigerer mix … fokus ist auf drum n bass, elektro gefrikel, jazz, oriental». Neu in den Katalogen (`BEAT_FRAGEN`, gleich in `jev/wahl.php`), alle in reinem JavaScript, ohne Proben und ohne fremden Code:
+
+| Stelle | neu | wie es klingt, wie es gerechnet wird |
+|---|---|---|
+| Groove | **Maqsum** | der Grundrhythmus der arabischen Musik: Dum Tek . Tek Dum . Tek . in Achteln, dazwischen leise «Ka» |
+| Groove | **Elektro-Gefrikel** | nach IDM und Glitch: Bassdrum fünf aus sechzehn, Becken auf jedem Sechzehntel, Ratschen (ein Schlag zwei- bis viermal im Sechzehntel), in den wilden Takten mehr |
+| Schlagzeug | **Glitch** | klickende Bassdrum, knisternde Snare, winzige Becken; Snare und Becken laufen durch den Zerkleinerer (6 Bit, ein Drittel der Abtastrate). Mit Glitch ratscht auch jeder andere Groove in den wilden Takten, so stottert auch der Drum and Bass |
+| Tonart | **Bayati** | der Maqam mit dem Viertelton auf der zweiten Stufe (1,5 Halbtöne über dem Grundton) |
+| Tonart | **Nahawand** | wie harmonisch Moll, mit Leitton |
+| Bass | **Neuro** | der Reese durch ein resonantes Tiefpassfilter (Zustandsvariables Filter, `kern/mischpult.js`), das im Rhythmus auf- und zugeht, in den wilden Takten in Sechzehnteln, dann gesättigt, wie im Neurofunk |
+| Melodie | **Oud** | gezupfte Saite nach Karplus und Strong (1983); die Phrase geht schrittweise durch den Maqam wie in einem Taqsim (die Zeilen der hellsten Stellen geben die Richtung), gleitet manchmal aus dem vorigen Ton, lange Töne in den wilden Takten mit Tremolo der Risha |
+| Melodie | **Rhodes** | Akkorde mit Septime auf eins und kurz vor drei, FM wie das E-Piano des DX7 (1:1 und ein kurzer heller Anschlag bei 14:1), mit Tremolo |
+| Fläche | **Bordun** | Grundton, Quinte und Oktave liegen über die ganze Dauer, wie die Tanpura |
+
+Neue Regeln: warme Farben wählen Maqsum, Bayati, die Oud und den Bordun; feine Kanten und harte Kontraste das Glitch-Schlagzeug und das Gefrikel; heftige Bewegung und harte Kontraste den Neuro-Bass; niedriger Kontrast das Rhodes. Der Standard (Drum and Bass als Halftime, Jazz, Kontrabass, dorisch, Glocken, Wechsel, sphärisch) bleibt.
+
+**Mischung** (neuer Parameter, Standard «fertig gemischt»): der Beat läuft am Schluss durch das Mastering des Mischpults (`mastern()` in `kern/mischpult.js`): Wärme +1 dB unter 120 Hz, Glanz +1,5 dB über 8 kHz, der Bass unter 120 Hz in der Mitte, ein sanfter Bus-Kompressor, dann die Lautheit auf −14 LUFS (ITU-R BS.1770, wie bei Streaming) und ein Limiter auf −1 dBFS. «roh» rechnet wie bis 0.1.44 (Spitze auf −1 dBFS, meist etwa −11 LUFS). Das Protokoll nennt Lautheit und Spitze.
+
 Das ist eine gestalterische Abbildung, keine Deutung des Bildes.

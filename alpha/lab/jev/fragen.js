@@ -160,28 +160,37 @@ export const BEAT_FRAGEN = Object.freeze({
     breakbeat: "Breakbeat: synkopierte Bassdrum, Snare auf zwei und vier mit leisen Zwischenschlägen",
     euklidisch: "euklidisch: Schläge möglichst gleichmässig verteilt, ungerade Muster wie fünf aus sechzehn",
     schleppend: "schleppend: Groove mit Swing, die Zwischenschläge kommen spät",
-    dnb: "Drum and Bass: 170 bis 176 Schläge je Minute, Bassdrum auf eins und kurz vor drei, Snare auf zwei und vier, dazwischen gebrochene Schläge" }) },
+    dnb: "Drum and Bass: 170 bis 176 Schläge je Minute, Bassdrum auf eins und kurz vor drei, Snare auf zwei und vier, dazwischen gebrochene Schläge",
+    maqsum: "Maqsum: der Grundrhythmus der arabischen Musik, Dum Tek – Tek Dum – Tek",
+    gefrikel: "Elektro-Gefrikel: wie IDM und Glitch, Becken auf jedem Sechzehntel, Schläge, die zwei- bis viermal stottern" }) },
   kit: { text: "Welche Klänge soll das Schlagzeug haben?", katalog: Object.freeze({
     trocken: "trocken: kurze, akustisch wirkende Trommeln", elektronisch: "elektronisch: lange, tiefe Bassdrum und Klatschen wie bei einer Drum-Machine",
     metallisch: "metallisch: klirrende Becken und glockenartige Töne", weich: "weich: gedämpfte, runde Schläge ohne Härte",
-    jazz: "Jazz: Besen auf der Snare, Ride-Becken, runde Bassdrum, Bläser als Melodie", hand: "Handtrommeln: wie Tabla und Zarb, die tiefe Trommel gleitet, die hohe klingt als Ton" }) },
+    jazz: "Jazz: Besen auf der Snare, Ride-Becken, runde Bassdrum, Bläser als Melodie", hand: "Handtrommeln: wie Tabla und Zarb, die tiefe Trommel gleitet, die hohe klingt als Ton",
+    glitch: "Glitch: klickende Bassdrum, knisternde Snare, winzige Becken, zerkleinert wie kaputte Elektronik" }) },
   tonart: { text: "Welche Tonart soll der Beat haben?", katalog: Object.freeze({
     dur: "Dur: hell und offen", moll: "Moll: dunkel und ernst", dorisch: "dorisch: Moll mit einem hellen Ton, schwebend",
     phrygisch: "phrygisch: dunkel und fremd, mit kleiner Sekunde", pentatonik: "pentatonisch: fünf Töne ohne Halbtöne, nichts reibt",
-    hijaz: "Hijaz: kleine Sekunde und grosse Terz, wie im Orient und bei Anouar Brahem" }) },
+    hijaz: "Hijaz: kleine Sekunde und grosse Terz, wie im Orient und bei Anouar Brahem",
+    bayati: "Bayati: der Maqam mit dem Viertelton auf der zweiten Stufe, weich und klagend",
+    nahawand: "Nahawand: wie harmonisch Moll, mit dem Leitton unter dem Grundton" }) },
   bass: { text: "Was soll der Bass tun?", katalog: Object.freeze({
     keiner: "kein Bass", liegend: "liegend: lange Töne, je Takt einer", pulsierend: "pulsierend: Achtel auf dem Grundton, mit Oktavsprüngen", laufend: "laufend: der Bass geht in Schritten durch die Tonleiter",
     reese: "Reese: tiefer, schwebender Bass aus zwei gegeneinander verstimmten Sägezähnen, wie im Drum and Bass",
-    kontrabass: "Kontrabass: gezupft, in Vierteln zum nächsten Akkord, darunter ein tiefer Sinus" }) },
+    kontrabass: "Kontrabass: gezupft, in Vierteln zum nächsten Akkord, darunter ein tiefer Sinus",
+    neuro: "Neuro: der schwebende Bass durch ein Filter, das im Rhythmus knurrt, wie im Neurofunk" }) },
   melodie: { text: "Welche Melodie soll über dem Beat liegen?", katalog: Object.freeze({
     keine: "keine Melodie", bild: "aus dem Bild gelesen: die hellste Stelle jeder Spalte gibt den Ton, von links nach rechts",
-    arpeggio: "Arpeggio: die Töne des Akkords auf und ab", glocken: "Glocken: wenige Töne auf den hellsten Punkten des Bildes" }) },
+    arpeggio: "Arpeggio: die Töne des Akkords auf und ab", glocken: "Glocken: wenige Töne auf den hellsten Punkten des Bildes",
+    oud: "Oud: gezupfte Saite, die Melodie geht schrittweise durch den Maqam und gleitet zwischen den Tönen",
+    rhodes: "Rhodes: Akkorde mit Septime auf dem E-Piano, wie im Jazz begleitet" }) },
   verlauf: { text: "Wie soll sich der Beat über die Zeit entwickeln?", katalog: Object.freeze({
     gleich: "gleich: alles spielt von Anfang an", steigend: "steigend: die Stimmen setzen nacheinander ein, es wird dichter",
     abschwellend: "abschwellend: voll am Anfang, dann lichtet es sich", wellen: "in Wellen: dichter, wo sich das Video stark bewegt, sonst lichter",
     wechselnd: "fein und wild im Wechsel: lichte, zarte Takte wechseln mit dichten, gebrochenen" }) },
   flaeche: { text: "Soll eine Klangfläche den Beat tragen?", katalog: Object.freeze({
-    keine: "keine Fläche", sphaere: "sphärisch: lange, schwebende Akkorde mit viel Raum", schimmer: "schimmernd: sphärisch und dazu hohe, glitzernde Töne" }) },
+    keine: "keine Fläche", sphaere: "sphärisch: lange, schwebende Akkorde mit viel Raum", schimmer: "schimmernd: sphärisch und dazu hohe, glitzernde Töne",
+    bordun: "Bordun: Grundton, Quinte und Oktave liegen durchgehend, wie die Tanpura" }) },
 });
 export const FRAGE_BEAT = "In einem künstlerischen Labor entsteht aus einem Bild oder einem Video ein kurzer Beat als Soundtrack. Gemessen wurden nur die genannten Merkmale. Der Beat soll aus diesem Bild hervorgehen, statt ihm von aussen übergestülpt zu werden.";
 

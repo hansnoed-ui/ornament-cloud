@@ -60,6 +60,22 @@ Ausgabe ist neben dem Klang das **rhythmische Muster** aus dem Audio-Format (`EV
 
 Granularsynthese: ein Lesekopf wandert durch die Quelle (Geschwindigkeit −2 … 2, 0 friert ein) oder folgt einem Steuersignal. An ihm werden Körner gelesen (Grösse 5–500 ms, Überlappung 1–32), mit gestreuter Stelle, Tonhöhe, Richtung und Panorama, in der Form weich (Hann), flach oder perkussiv. Aus Mono wird mit der Stereobreite Stereo. Der Pegel wird auf −1 dBFS gebracht. Höchstens 40 000 Körner.
 
+## Mischpult (seit Lab 0.1.45)
+
+Drei weitere Operationen `AUDIO → AUDIO` färben und mischen einen Klang (`operationen/mischpult.js`, Kern `kern/mischpult.js`, reines JavaScript, kein fremder Code):
+
+### Filter in Bewegung (`lab.filter`)
+
+Ein Zustandsvariables Filter wie in analogen Synthesizern (Topologie nach V. Zavalishin, «The Art of VA Filter Design»; Hypothese: so klingen Oberheim SEM und ähnliche), Tiefpass, Hochpass, Bandpass oder Kerbe, Resonanz 0–1. Die Grenzfrequenz steht, schwingt frei (LFO) oder im Takt (Takte je Schwingung, das Tempo angegeben oder geschätzt), folgt dem Anschlag (Auto-Wah: die Hüllkurve öffnet das Filter), einem Steuersignal (ein Bild öffnet das Filter) oder öffnet sich über die Dauer. «Tiefe» sind Oktaven über der Grenzfrequenz. Für Filterfahrten im Drum and Bass und knurrende Bässe.
+
+### Effekte (`lab.effekt`)
+
+Ein Effekt mit einer «Stärke» 0–1 und einem «Anteil» (trocken/nass): **Zerkleinern** (Bitcrusher: 12 bis 2 Bit, die Abtastrate bis auf ein Zweiunddreissigstel; Glitch), **Sättigung** Band (weich, leicht unsymmetrisch) oder Röhre (stärker unsymmetrisch), **Verzerrung** (hart abgeschnitten), **Wavefolder** (was über 1 geht, klappt zurück, wie bei Buchla und Serge; Elektro), **Chorus** (eine Kopie 11–25 ms später, schwebend, links und rechts gegenläufig), **Flanger** (0,5–5 ms mit Rückkopplung), **Echo im Tempo** (punktierte Achtel, Achtel, Viertel, Sechzehntel oder Triolen; Ping-Pong, jede Wiederholung dunkler, wie im Dub) und **Raum** (der Nachhall des Klangerzeugers). Sättigung und Verzerrung bringen den Klang auf den Effektivwert der Quelle zurück, damit «lauter» nicht für «besser» gehalten wird.
+
+### Fertig mischen (`lab.mastering`)
+
+Mastering in einer festen Reihenfolge: Hochpass 25 Hz (Rumpeln), Wärme (Tiefenregal 120 Hz) und Glanz (Höhenregal 8 kHz, Biquads nach R. Bristow-Johnson), unter 120 Hz nur die Mitte (der Bass trägt auf dem Telefon und im Club), die Stereobreite darüber, ein sanfter Bus-Kompressor (weiches Knie, Anstieg 20 ms: die Anschläge bleiben), dann die Lautheit auf ein Ziel (−14, −10, −18 oder −23 LUFS) und ein Limiter mit 5 ms Vorlauf auf die höchste Spitze (Standard −1 dBFS). Die Lautheit wird nach ITU-R BS.1770-4 gemessen (K-Bewertung, Blöcke von 400 ms, Schwellen bei −70 LUFS und 10 LU unter dem Mittel; geprüft gegen die Kalibrierung: 1 kHz bei 0 dBFS auf einem Kanal ergibt −3,01 LUFS). Der Limiter kostet etwas Lautheit, darum wird bis zu dreimal nachgemessen. Die Spitze ist der höchste Abtastwert, nicht der wahre Spitzenwert zwischen den Abtastwerten (bis etwa 0,5 dB höher).
+
 ## Qualität
 
 - **Abtastrate und Kanäle der Quelle (Entscheidung):** Bis 0.1.6 wurde jeder Ton beim Lesen auf 44,1 kHz mono gebracht. `decodeAudioData` rechnet immer auf die Rate des Kontexts um, darum liest das Lab jetzt die Abtastrate aus dem Kopf der Datei (WAV, FLAC, MP3, Ogg Vorbis/Opus, MP4/M4A; sonst 48 kHz) und dekodiert in dieser Rate, mit beiden Kanälen. Für Messungen (Tonsignal) gibt es weiterhin die einkanalige Mischung.
@@ -105,4 +121,4 @@ Granularsynthese: ein Lesekopf wandert durch die Quelle (Geschwindigkeit −2 �
 - Die Einsatzerkennung ist für Schläge gebaut. In weichen Flächen findet sie wenig; dann Raster oder eine Ereignisfolge nehmen.
 - Das Tempo ist eine Schätzung. Swing und ungerade Takte (3/4, 7/8) erkennt sie nicht; das Raster der Neu-Rhythmisierung ist immer 4/4 mit frei wählbaren Schritten.
 - Lange Dateien (über einige Minuten) brauchen beim Dehnen und Umtasten einige Sekunden; die Oberfläche bleibt dabei bedienbar, ein Abbruch ist möglich.
-- Offen: Phasenvocoder für sehr starke Dehnung, Filter und Hüllkurven als Transformation, Spektrum als Befund (AUDIO-FORMAT.md), Rhythmus als Takt für Abtasten und Halten einer Bildmodulation.
+- Offen: Phasenvocoder für sehr starke Dehnung, Hüllkurven als Transformation, Mastering auch in der Zusammenstellung (Vorschlag für 30 s), wahrer Spitzenwert (Überabtastung) im Limiter, Spektrum als Befund (AUDIO-FORMAT.md), Rhythmus als Takt für Abtasten und Halten einer Bildmodulation.

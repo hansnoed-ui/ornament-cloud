@@ -23,7 +23,7 @@ Klang bringt keine eigene Welt von Typen mit. Die acht Formen aus §5 werden in 
 | **Frequenzspektrum** | `METADATA` | `daten: { art: "frequenzspektrum", baender: 32, grenzenHz: [...], je, werte: [[...32], …] }` | Analyse | vorgesehen |
 | **rhythmisches Muster** | `EVENT_SEQUENCE` | zusätzlich `bpm`, `takt` (z. B. `[4, 4]`), `raster` (Teilung), `ereignisse[].schritt` | Pattern, Sequenz | **gebaut** (`lab.rhythmus`, 0.1.7) |
 | **Klanggenerator** | `AUDIO` | eine Operation ohne `AUDIO`-Eingang mit Ausgang `AUDIO` (Klasse `zeitlich`) | Oszillator, Sonifikation eines Bildes | **gebaut** (`lab.klang`) |
-| **Klangtransformation** | `AUDIO` | eine Operation `AUDIO → AUDIO` | Tempo, Zerlegen, Granular | **gebaut** (`lab.tempo`, `lab.zerlegen`, `lab.rhythmus`, `lab.koerner`, 0.1.7, KLANGTRANSFORMATION.md) |
+| **Klangtransformation** | `AUDIO` | eine Operation `AUDIO → AUDIO` | Tempo, Zerlegen, Granular | **gebaut** (`lab.tempo`, `lab.zerlegen`, `lab.rhythmus`, `lab.koerner`, 0.1.7; Mischpult `lab.filter`, `lab.effekt`, `lab.mastering`, 0.1.45; KLANGTRANSFORMATION.md) |
 
 Generator und Transformation sind keine Datenformen, sondern Signaturen von Operationen. Sie brauchen kein neues Feld im Projekt, nur Operationen mit Beschreibung im Register. Ein Generator ohne jeden Eingang erscheint wie die ORNA-Konstellation immer in der Liste. Eine Sonifikation hätte die Signatur `IMAGE → AUDIO`, der Rückweg zu Tonsignal.
 
