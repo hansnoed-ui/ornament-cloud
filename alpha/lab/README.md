@@ -61,3 +61,4 @@ NODE_PATH=$(npm root -g) node tests/lab.e2e.mjs      # der ganze Prozess in Chro
 | [docs/AUDIO-FORMAT.md](docs/AUDIO-FORMAT.md) | Audio-Operationsformat: acht Klangformen, ihre Kopplung an Bildoperationen, Tonsignal, Klangerzeuger, Tonspur (§5) |
 | [docs/KLANGTRANSFORMATION.md](docs/KLANGTRANSFORMATION.md) | Klangtransformationen: Tempo und Tonhöhe, Dekonstruktion, Neu-Rhythmisierung, Körner; Mischpult (Filter, Effekte, Mastering); Qualität beim Lesen und Ausspielen; Referenzen (SuperCollider, Pure Data geprüft) |
 | [docs/ERWEITERUNGEN.md](docs/ERWEITERUNGEN.md) | nächste Schritte und die grosse Vision |
+| [video/README.md](video/README.md) | ornament.lab · Video (seit 27. Oktober 2026): eigener Video-Editor unter `alpha/lab/video/`, getrennt vom Lab; seine MP4 kommen mit «Video wählen» ins Lab |

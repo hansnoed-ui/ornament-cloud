@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ornament.lab · Video</title>
+<!-- Online unter /alpha/lab/video/ nur per Direktlink wie das Lab: nicht verlinkt, nicht in der Suche (27. Oktober 2026). -->
+<meta name="robots" content="noindex">
+<meta name="description" content="ORNAMENT LAB · Video: Videos schneiden, blenden, mit Filtern, Titeln und Musik, als MP4 im Browser. Die Dateien bleiben auf dem Gerät.">
+<link rel="stylesheet" href="../../../vendor/fonts/fonts.css">
+<link rel="stylesheet" href="../lab.css">
+<link rel="stylesheet" href="video.css">
+</head>
+<body>
+<header class="kopf">
+  <div class="marke">
+    <h1>ornament.lab <span class="version">Video 0.1</span></h1>
+    <p class="leitsatz">Schneiden, Blenden, Titel. Die Dateien bleiben auf dem Gerät.</p>
+  </div>
+  <div class="projekt">
+    <input type="text" id="name" aria-label="Name des Films" value="Film" maxlength="80">
+    <label class="regler" style="min-width: 12ch"><select id="format" aria-label="Format"></select></label>
+    <button class="knopf leise" type="button" id="neu">Neu</button>
+    <label class="knopf leise">Öffnen<input type="file" id="oeffnen" accept=".zip,application/zip" hidden></label>
+    <button class="knopf leise" type="button" id="speichern">Speichern</button>
+    <button class="knopf voll" type="button" id="export-oeffnen">MP4 exportieren</button>
+  </div>
+</header>
+
+<main class="schnitt">
+  <section id="material" class="bereich" aria-labelledby="h-material">
+    <h2 id="h-material"><span class="nr">1</span> Material</h2>
+    <div class="ablage" id="ablage">
+      <label class="knopf">Dateien wählen<input type="file" id="dateien" multiple accept="video/mp4,video/webm,video/quicktime,video/x-m4v,.mp4,.m4v,.mov,.webm,image/png,image/jpeg,image/webp,image/gif,image/avif,audio/wav,audio/x-wav,audio/mpeg,audio/ogg,audio/flac,audio/mp4,audio/x-m4a,audio/aac,.wav,.mp3,.ogg,.flac,.m4a,.aac" hidden></label>
+      <button class="knopf leise" type="button" id="titel-neu">Titel hinzufügen</button>
+      <p class="hinweis">Videos, Bilder und Töne hierher ziehen oder wählen. «＋ Folge» legt ein Video oder Bild ans Ende der Bildfolge, «＋ Ton» einen Ton unter den Film, an den Abspielkopf.</p>
+    </div>
+    <ul class="medien" id="medien"></ul>
+  </section>
+
+  <section id="vorschau" aria-label="Vorschau">
+    <div class="leinwand" id="leinwand">
+      <canvas id="bild" width="960" height="540"></canvas>
+      <div class="leer" id="leer">
+        <p>Noch nichts in der Folge.</p>
+        <label class="knopf">Dateien wählen<input type="file" id="dateien-leer" multiple accept="video/*,image/*,audio/*,.mp4,.m4v,.mov,.webm,.wav,.mp3,.m4a,.flac,.ogg" hidden></label>
+      </div>
+    </div>
+    <div class="transport">
+      <button class="knopf klein" type="button" id="anfang" title="zum Anfang (Pos1)" aria-label="zum Anfang">⏮</button>
+      <button class="knopf klein" type="button" id="zurueck" title="ein Bild zurück (←)" aria-label="ein Bild zurück">◀︎</button>
+      <button class="knopf voll" type="button" id="spielen" title="abspielen (Leertaste)">Abspielen</button>
+      <button class="knopf klein" type="button" id="vor" title="ein Bild weiter (→)" aria-label="ein Bild weiter">▶︎</button>
+      <span class="zeit" id="zeit">0:00.00 / 0:00.00</span>
+    </div>
+  </section>
+
+  <section id="eigenschaften" class="bereich" aria-labelledby="h-eigenschaften">
+    <h2 id="h-eigenschaften"><span class="nr">2</span> Eigenschaften</h2>
+    <div id="inspektor"><p class="hinweis">Einen Clip in der Zeitleiste wählen.</p></div>
+  </section>
+
+  <section id="zeitleiste" aria-label="Zeitleiste">
+    <div class="werkzeuge">
+      <button class="knopf klein leise" type="button" id="rueck" title="rückgängig (Strg+Z)">Rückgängig</button>
+      <button class="knopf klein leise" type="button" id="wieder" title="wiederholen (Strg+Umschalt+Z)">Wiederholen</button>
+      <span class="trenner"></span>
+      <button class="knopf klein" type="button" id="teilen" title="am Abspielkopf teilen (S)">Teilen</button>
+      <button class="knopf klein" type="button" id="loeschen" title="löschen (Entf)">Löschen</button>
+      <span class="trenner"></span>
+      <label><input type="checkbox" id="einrasten" checked> einrasten</label>
+      <button class="knopf klein leise" type="button" id="takt" title="die Einsätze des gewählten Tons als Marken: Schnitte rasten im Takt ein">Takt als Marken</button>
+      <label>Zoom <input type="range" id="zoom" min="8" max="400" value="60" step="1"></label>
+    </div>
+    <div class="leiste" id="leiste"><div class="leiste-innen" id="leiste-innen"></div></div>
+    <p class="zustand" id="zustand" role="status" aria-live="polite"></p>
+  </section>
+</main>
+
+<dialog class="export" id="export">
+  <form method="dialog" id="export-form">
+    <h2>MP4 exportieren</h2>
+    <div class="paar">
+      <label class="regler"><span>Qualität</span><select id="qualitaet"></select></label>
+      <label class="regler"><span>Bilder je Sekunde</span><select id="fps"><option value="25">25</option><option value="30" selected>30</option><option value="60">60</option></select></label>
+    </div>
+    <p class="hinweis" id="export-hinweis"></p>
+    <progress id="export-fortschritt" max="1" value="0" hidden></progress>
+    <div id="export-ergebnis" hidden></div>
+    <div class="aktionen">
+      <button class="knopf voll" type="button" id="export-start">Rechnen</button>
+      <button class="knopf leise" type="button" id="export-abbrechen" hidden>Abbrechen</button>
+      <button class="knopf leise" value="schliessen">Schliessen</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
