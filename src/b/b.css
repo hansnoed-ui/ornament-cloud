@@ -182,7 +182,9 @@ a.feldchen:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px;
 .signet-tafel { margin: 0; max-width: 300px; justify-self: end; }
 .tafel-lebt.signet-tafel picture, .tafel-lebt.signet-tafel svg { border: 0; background: none; }
 .ueber-signet { max-width: 240px; justify-self: start; margin-bottom: 28px; }
-@media (max-width: 760px) { .einstieg-kopf { grid-template-columns: minmax(0, 1fr); } .signet-tafel { max-width: 200px; justify-self: start; } }
+/* am Handy steht das Signet klein über dem Titel, damit es ganz im ersten Bild ist (27. Oktober 2026, Rückmeldung: «die Animation auf der Titelseite wieder
+   abgeschnitten» – unter Titel und Text lag es halb unter dem Bildschirmrand) */
+@media (max-width: 760px) { .einstieg-kopf { grid-template-columns: minmax(0, 1fr); gap: 12px; } .signet-tafel { order: -1; width: 128px; max-width: 128px; justify-self: start; margin-left: -12px; } }
 .angebote { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 24px; border-top: 1px solid var(--tinte); }
 .angebot { display: grid; align-content: start; gap: 10px; padding: 22px 0 26px; border-bottom: 1px solid var(--linie); text-decoration: none; color: inherit; }
 .angebot + .angebot { border-left: 0; }
