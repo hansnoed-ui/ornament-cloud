@@ -74,12 +74,13 @@ p { margin: 0; max-width: 62ch; }
 /* Felder (27. Oktober 2026, Wunsch: «die verschiedenen Abschnitte einen anderen bzw wechselnden hintergrund … die seite etwas besser
    strukturieren»; Variante A nach dem Vorschlag des Skills design-taste-frontend): jeder Abschnitt ist eine ganze Fläche in den Farben des
    Neubaus (b/b.css), fest gesetzt, unabhängig vom hellen oder dunklen Modus. Nacht für Bühne und Film, Papier zum Lesen, Fläche für die
-   Werkbank, die Blaupause einmal, am Schluss. Getrennt wird durch die Fläche, nicht durch Linien; die Abstände sind Innenabstände.
+   Werkbank, Rosa für den Katalog (Wunsch: «dort kann gern ein rosa rein»), die Blaupause einmal, am Schluss. Getrennt wird durch die Fläche, nicht durch Linien; die Abstände sind Innenabstände.
    --hoch ist die Fläche eine Stufe heller oder dunkler (Knöpfe des Pults). */
 .feld { margin-top: 0; padding-block: clamp(88px, 10vw, 168px); background: var(--papier); color: var(--tinte); }
 .feld.nacht { --papier: #000000; --tinte: #ffffff; --grau: #9a9a9a; --linie: #2e2e2e; --faden: #8fb0ff; --faden-hell: rgba(143, 176, 255, .18); --hoch: #141414; }
 .feld.hell { --papier: #ffffff; --tinte: #000000; --grau: #6f6f6f; --linie: #dadada; --faden: #1d3fd6; --faden-hell: rgba(29, 63, 214, .14); --hoch: #f3f3f1; }
 .feld.flaeche { --papier: #f3f3f1; --tinte: #000000; --grau: #6f6f6f; --linie: #d6d6d3; --faden: #1d3fd6; --faden-hell: rgba(29, 63, 214, .14); --hoch: #ffffff; }
+.feld.rosa { --papier: #f6b3c7; --tinte: #000000; --grau: #5c3a44; --linie: #e48fa8; --faden: #1d3fd6; --faden-hell: rgba(29, 63, 214, .14); --hoch: #fbd3df; }
 .feld.blau { --papier: #1d3fd6; --tinte: #ffffff; --grau: #d4dcff; --linie: rgba(255, 255, 255, .3); --faden: #ffffff; --faden-hell: rgba(255, 255, 255, .2); --hoch: #2c4ce0; }
 /* das Titelfeld schliesst unmittelbar an das Bildband an */
 .titelfeld.feld { padding-block: clamp(40px, 5vw, 72px) clamp(88px, 10vw, 168px); }
@@ -247,7 +248,7 @@ p { margin: 0; max-width: 62ch; }
     </div>
   </section>
 
-  <section class="abschnitt feld hell innen" id="katalog" aria-labelledby="h-kat">
+  <section class="abschnitt feld rosa innen" id="katalog" aria-labelledby="h-kat">
     <div class="seite">
       <div class="rand"><figure class="randbild auf"><img src="bilder/v-punkte.jpg" alt="Beispielbild punktiert" loading="lazy"><figcaption class="notiz">Punktieren: die Dichte folgt dem Ton des Bildes.</figcaption></figure></div>
       <div class="haupt">
