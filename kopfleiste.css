@@ -81,6 +81,11 @@
   outline-offset: 3px;
 }
 
+/* «Lab» führt aus der Seite weg und steht in Rosa (27. Oktober 2026); --menu-lab setzt die Seite, sonst das Rosa der Website hell */
+.menu-item[target="_blank"] { color: var(--menu-lab, #c2185b); border-color: var(--menu-lab, #c2185b); }
+.menu-item[target="_blank"]:hover svg { color: var(--menu-lab, #c2185b); }
+.menu-item[target="_blank"]:hover { box-shadow: inset 0 0 0 1px var(--menu-lab, #c2185b); }
+
 @media (max-width: 760px) {
   .topbar { display: flex; flex-direction: column; align-items: stretch; margin-bottom: 24px; }
   .topbar > .divider { margin: 10px 0 18px; }

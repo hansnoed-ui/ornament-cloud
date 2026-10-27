@@ -5,6 +5,7 @@
   --muted: #6b665e;
   --border: #e4e0d8;
   --accent: #c2410c;
+  --lab: #c2185b;   /* das Kästchen «Lab» im Menü (27. Oktober 2026, Wunsch: «in einer anderen farbe, vielleicht rosa … weil er aus der seite wegführt»); hell 5,9 : 1 auf Weiss */
   --hauptlink: #353b40;   /* die Hauptlinks oben links und die feine Linie darunter: im hellen Modus Anthrazit (Wunsch vom 2. Oktober 2026, 19:00 UTC) */
 
   --thumb-a: #e8d5c4;
@@ -33,6 +34,7 @@
   --muted: #a39d93;
   --border: #34312c;
   --accent: #f08a5d;
+  --lab: #ffa3d1;   /* dunkel ein helles Rosa */
   --hauptlink: #ffd84d;   /* im dunklen Modus ein helles Sonnengelb */
 
   --thumb-a: #4a3a2e;
@@ -449,6 +451,11 @@ h1 {
   outline: 2px solid var(--text);
   outline-offset: 3px;
 }
+
+/* «Lab» führt aus der Seite weg (öffnet ornament.lab in einem neuen Fenster) und steht deshalb in Rosa: Name, Symbol und Rand (27. Oktober 2026) */
+.menu-item[target="_blank"] { color: var(--lab); border-color: var(--lab); }
+.menu-item[target="_blank"]:hover svg { color: var(--lab); }
+.menu-item[target="_blank"]:hover { box-shadow: inset 0 0 0 1px var(--lab); }
 
 /* Linien der gezeichneten Vorschauen: Breite in Bildschirmpixeln, unabhängig von der Grösse */
 .post-anim path,
