@@ -29,7 +29,7 @@
 :root[data-theme="dark"] { --papier: #000000; --tinte: #ffffff; --grau: #9a9a9a; --linie: #2e2e2e; --faden: #8fb0ff; --faden-hell: rgba(143, 176, 255, .18); --leer: #6f6f6f; color-scheme: dark; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--papier); color: var(--tinte); font-family: var(--sans); font-size: var(--text); line-height: 1.5; -webkit-font-smoothing: antialiased; }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--papier); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: #000; }
 a { color: inherit; }
 img, canvas { display: block; max-width: 100%; }
 figure { margin: 0; }
@@ -37,9 +37,12 @@ figure { margin: 0; }
 .innen { padding-left: max(var(--rand), env(safe-area-inset-left, 0px)); padding-right: max(var(--rand), env(safe-area-inset-right, 0px)); }
 
 /* Kopf */
-.kopf { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; background: var(--papier); }
+.kopf { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; background: #000; color: #fff; --faden: #8fb0ff; --tinte: #fff; --papier: #000; --linie: #2e2e2e; }
 .marke { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-size: 17px; letter-spacing: .14em; }
 .marke svg { width: 34px; height: 24px; overflow: visible; }
+.kopf .signet { animation: drehen 7s linear infinite; transform-origin: 50% 50%; }
+@keyframes drehen { from { transform: perspective(140px) rotateX(16deg) rotateY(0deg); } to { transform: perspective(140px) rotateX(16deg) rotateY(-360deg); } }
+@media (prefers-reduced-motion: reduce) { .kopf .signet { animation: none; } }
 .p { color: var(--faden); }
 .kopf nav { display: flex; gap: 22px; align-items: center; font-size: 15px; }
 .kopf nav a { text-decoration: none; }
@@ -132,10 +135,10 @@ p { margin: 0; max-width: 62ch; }
 .js .auf.da { opacity: 1; transform: none; }
 
 /* Intro */
-#intro { position: fixed; inset: 0; z-index: 50; background: var(--papier); transition: opacity .9s ease; }
+#intro { position: fixed; inset: 0; z-index: 50; background: #000; transition: opacity .9s ease; }
 #intro canvas { width: 100%; height: 100%; display: block; }
 #intro.weg { opacity: 0; pointer-events: none; }
-#intro button { position: absolute; right: max(20px, env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); font: 500 15px var(--sans); color: var(--tinte); background: var(--papier); border: 0; box-shadow: inset 0 0 0 1px var(--linie); border-radius: 999px; padding: 10px 18px; cursor: pointer; }
+#intro button { position: absolute; right: max(20px, env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); font: 500 15px var(--sans); color: #fff; background: #000; border: 0; box-shadow: inset 0 0 0 1px #2e2e2e; border-radius: 999px; padding: 10px 18px; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { .js .auf { opacity: 1; transform: none; transition: none; } #intro { display: none; } .film figcaption i { animation: none; } }
 </style>
 </head>
@@ -156,10 +159,10 @@ p { margin: 0; max-width: 62ch; }
 <main id="start">
   <div class="band" aria-label="Ein Bild in sechs Zuständen">
     <figure class="auf"><img src="bilder/portraet.jpg" alt="Beispielbild: Porträt mit Mosaik vor Rot"></figure>
-    <figure class="auf" style="--i:1"><img src="bilder/v-puls.jpg" alt="Dasselbe Bild als Pulslinien"></figure>
+    <figure class="auf" style="--i:1"><img src="bilder/v-wirbel.jpg" alt="Dasselbe Bild verwirbelt"></figure>
     <div class="blau auf" style="--i:2"><svg class="signet weiss" viewBox="0 0 34 24" aria-hidden="true"></svg></div>
     <figure class="auf" style="--i:3"><img src="bilder/v-neu.jpg" alt="Dasselbe Bild zerlegt und neu gesetzt"></figure>
-    <figure class="auf" style="--i:4"><img src="bilder/v-raster.jpg" alt="Dasselbe Bild als Raster"></figure>
+    <figure class="auf" style="--i:4"><img src="bilder/v-kaleido.jpg" alt="Dasselbe Bild als Kaleidoskop"></figure>
     <figure class="auf" style="--i:5"><img src="bilder/v-teilung.jpg" alt="Dasselbe Bild als Teilung"></figure>
   </div>
 
@@ -177,7 +180,7 @@ p { margin: 0; max-width: 62ch; }
   <section class="abschnitt innen" id="durchgang" aria-labelledby="h-durch">
     <div class="seite">
       <div class="rand">
-        <figure class="randbild auf" style="--i:2"><img src="bilder/v-schraffur.jpg" alt="Beispielbild als Schraffur in Lagen" loading="lazy"><figcaption class="notiz">Schraffur in Lagen, nach den Prinzipien der Plotter von Makelangelo.</figcaption></figure>
+        <figure class="randbild auf" style="--i:2"><img src="bilder/v-raster.jpg" alt="Beispielbild als farbiges Raster" loading="lazy"><figcaption class="notiz">Raster: die Punkte nehmen Ton und Farbe des Bildes auf.</figcaption></figure>
       </div>
       <div class="haupt">
         <h2 id="h-durch" class="auf">Ein Durchgang in fünf Schritten.</h2>
@@ -213,11 +216,12 @@ p { margin: 0; max-width: 62ch; }
       </div>
       <div class="haupt">
         <h2 id="h-prob" class="auf">Probier es am Bild.</h2>
-        <p class="auf" style="--i:1;margin-top:24px">Sechs Verfahren aus dem Lab, hier vereinfacht und direkt im Browser gerechnet. Im Lab hat jedes seine Parameter, Varianten und einen Verlauf für den Film.</p>
+        <p class="auf" style="--i:1;margin-top:24px">Sieben Verfahren aus dem Lab, hier vereinfacht und direkt im Browser gerechnet. Im Lab hat jedes seine Parameter, Varianten und einen Verlauf für den Film.</p>
         <div class="wahl auf" style="--i:2" role="group" aria-label="Verfahren" id="wahl">
           <button type="button" data-v="puls" aria-pressed="true">Pulslinien</button>
           <button type="button" data-v="raster">Raster</button>
-          <button type="button" data-v="schraffur">Schraffur</button>
+          <button type="button" data-v="wirbel">Wirbel</button>
+          <button type="button" data-v="kaleido">Kaleidoskop</button>
           <button type="button" data-v="glitch">Glitch</button>
           <button type="button" data-v="sort">Pixelsortierung</button>
           <button type="button" data-v="neu">Neu setzen</button>
@@ -279,26 +283,32 @@ function quelle(bild, W, H) {
   const farbe = (px, py) => { const i = (Math.min(H - 1, Math.max(0, py | 0)) * W + Math.min(W - 1, Math.max(0, px | 0))) * 4; return [Q.data[i], Q.data[i + 1], Q.data[i + 2]]; };
   // Tinte: wie dunkel ein Punkt ist; die rote Fläche des Beispielbilds zählt als Papier
   const tinte = (px, py) => { const [r, g] = farbe(px, py); return r > 150 && g < 110 ? 0 : 1 - hell(px, py); };
-  return { W, H, Q, L, hell, farbe, tinte, leinwand: c };
+  // die Farbe der Fläche: Mittel des Randes
+  let gr = [0, 0, 0], gn = 0; for (let i = 0; i < W; i += 4) for (const y of [2, H - 3]) { const f = farbe(i, y); gr = gr.map((v, k) => v + f[k]); gn++; }
+  const grund = gr.map(v => Math.round(v / gn));
+  return { W, H, Q, L, hell, farbe, tinte, grund, leinwand: c };
 }
 
 const VERFAHREN = {
   puls: { name: "Pulslinien", zeichne(ctx, q, t = 0) {
-    const { W, H, tinte } = q, a = W / 540;
-    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); ctx.lineWidth = 1.2 * a;
+    // in den Farben des Bildes (wie die Linienbilder in der Zusammenstellung seit Lab 0.1.41): Grund in der Farbe der Fläche, Linien dunkler
+    const { W, H, tinte, farbe, grund } = q, a = W / 540, mix = (c, k) => `rgb(${c.map(v => Math.round(v * k)).join(",")})`;
+    ctx.fillStyle = mix(grund, .92); ctx.fillRect(0, 0, W, H); ctx.lineWidth = 1.5 * a; ctx.lineCap = "round";
     for (let y = 5 * a; y < H; y += 6.5 * a) {
-      ctx.beginPath();
-      for (let x = 0; x <= W; x += 2) { const d = tinte(x, y); ctx.lineTo(x, y + Math.sin(x * (.08 + d * .7) / a + t * 4 + y * .05) * d * 3.8 * a); }
-      ctx.strokeStyle = "#000"; ctx.stroke();
+      const yy = x => { const d = tinte(x, y); return y + Math.sin(x * (.08 + d * .7) / a + t * 4 + y * .05) * d * 3.8 * a; };
+      for (let x0 = 0; x0 < W; x0 += 12 * a) {
+        const c = farbe(x0 + 6 * a, y), rot = c[0] > 150 && c[1] < 110; ctx.strokeStyle = rot ? mix(grund, .62) : mix(c, .55);
+        ctx.beginPath(); for (let x = x0; x <= x0 + 12 * a + 2; x += 2) ctx.lineTo(x, yy(x)); ctx.stroke();
+      }
     }
   } },
   raster: { name: "Raster", zeichne(ctx, q, t = 0) {
-    const { W, H, hell, farbe } = q, g = (W / 48) * (1 + Math.sin(t * 2) * .12);
-    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+    // Punkte in der Farbe des Bildes auf dunklem Grund, gross, wo es hell ist
+    const { W, H, hell, farbe } = q, g = (W / 46) * (1 + Math.sin(t * 2) * .1);
+    ctx.fillStyle = "#170706"; ctx.fillRect(0, 0, W, H);
     for (let y = 0, r0 = 0; y < H + g; y += g * .87, r0++) for (let x = (r0 % 2) * g / 2; x < W + g; x += g) {
-      const d = 1 - hell(x, y), r = Math.pow(d, 1.1) * g * .58; if (r < .5) continue;
-      const [cr, cg, cb] = farbe(x, y); const rot = cr > 150 && cg < 110;
-      ctx.fillStyle = rot ? "#c8301e" : "#000"; ctx.beginPath(); ctx.arc(x, y, rot ? g * .42 : r, 0, 7); ctx.fill();
+      const r = Math.sqrt(hell(x, y)) * g * .6; if (r < .5) continue;
+      const [cr, cg, cb] = farbe(x, y); ctx.fillStyle = `rgb(${cr},${cg},${cb})`; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
     }
   } },
   glitch: { name: "Glitch", zeichne(ctx, q, t = 0, s = 1) {
@@ -350,9 +360,28 @@ const VERFAHREN = {
     }
   } },
   punkte: { name: "Punktieren", zeichne(ctx, q, t = 0, s = 3) {
-    const { W, H, hell, farbe } = q, r = zufall(s), a = W / 540;
-    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
-    for (let i = 0; i < W * H / 9; i++) { const x = r() * W, y = r() * H, [cr, cg] = farbe(x, y), rot = cr > 150 && cg < 110, d = rot ? .3 : 1 - hell(x, y); if (r() < d * d * .9) { ctx.fillStyle = rot ? "#c8301e" : "#000"; ctx.fillRect(x, y, 1.6 * a, 1.6 * a); } }
+    const { W, H, hell, farbe, grund } = q, r = zufall(s), a = W / 540;
+    ctx.fillStyle = `rgb(${grund.map(v => Math.round(v + (255 - v) * .82)).join(",")})`; ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < W * H / 7; i++) { const x = r() * W, y = r() * H, c = farbe(x, y), rot = c[0] > 150 && c[1] < 110, d = rot ? .55 : .25 + .75 * (1 - hell(x, y)); if (r() < d * d) { ctx.fillStyle = `rgb(${c.map(v => Math.round(v * .8)).join(",")})`; ctx.fillRect(x, y, 2 * a, 2 * a); } }
+  } },
+  wirbel: { name: "Wirbel", zeichne(ctx, q, t = 0) {
+    // optische Verzerrung: ein Wirbel um die Mitte, die Stärke atmet mit der Zeit
+    const { W, H, Q } = q, out = ctx.createImageData(W, H), d = out.data, src = Q.data, cx = W / 2, cy = H * .46, R = W * .55, k = 2.4 * (.8 + .2 * Math.sin(t * 1.3));
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const dx = x - cx, dy = y - cy, r = Math.hypot(dx, dy), w = r < R ? k * Math.pow(1 - r / R, 2) : 0, c = Math.cos(w), sn = Math.sin(w);
+      const sx = Math.min(W - 1, Math.max(0, (cx + dx * c - dy * sn) | 0)), sy = Math.min(H - 1, Math.max(0, (cy + dx * sn + dy * c) | 0)), p = (y * W + x) * 4, o = (sy * W + sx) * 4;
+      d[p] = src[o]; d[p + 1] = src[o + 1]; d[p + 2] = src[o + 2]; d[p + 3] = 255;
+    }
+    ctx.putImageData(out, 0, 0);
+  } },
+  kaleido: { name: "Kaleidoskop", zeichne(ctx, q, t = 0) {
+    const { W, H, Q } = q, out = ctx.createImageData(W, H), d = out.data, src = Q.data, cx = W / 2, cy = H / 2, sek = Math.PI / 4, dreh = t * .15;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const dx = x - cx, dy = y - cy, r = Math.hypot(dx, dy); let w = Math.atan2(dy, dx) + dreh; w = ((w % (2 * sek)) + 2 * sek) % (2 * sek); if (w > sek) w = 2 * sek - w;
+      const sx = Math.min(W - 1, Math.max(0, (W * .5 + Math.cos(w + 1.2) * r * .8) | 0)), sy = Math.min(H - 1, Math.max(0, (H * .44 + Math.sin(w + 1.2) * r * .8) | 0)), p = (y * W + x) * 4, o = (sy * W + sx) * 4;
+      d[p] = src[o]; d[p + 1] = src[o + 1]; d[p + 2] = src[o + 2]; d[p + 3] = 255;
+    }
+    ctx.putImageData(out, 0, 0);
   } },
   teilung: { name: "Teilung", zeichne(ctx, q) {
     const { W, H, farbe, hell } = q;
@@ -396,17 +425,20 @@ document.querySelectorAll("svg.signet").forEach(svg => {
   const d = SCHLAUFE.map(([x, y], i) => (i ? "L" : "M") + (17 + x * 22).toFixed(2) + " " + (12 + y * 22).toFixed(2)).join("") + "Z";
   const [px, py] = SCHLAUFE[PUNKT_AN], weiss = svg.classList.contains("weiss");
   svg.innerHTML = `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${weiss ? 1.1 : 1.5}" stroke-linejoin="round"/><circle cx="${17 + px * 22}" cy="${12 + py * 22}" r="${weiss ? 1.6 : 2.2}" fill="${weiss ? "#fff" : "var(--faden)"}"/>`;
+  // im Kopf läuft der Punkt die Schlaufe entlang, während das Signet dreht
+  if (svg.closest(".kopf") && !ruhig) { const c = svg.querySelector("circle"); c.setAttribute("cx", 0); c.setAttribute("cy", 0); c.innerHTML = `<animateMotion dur="3.5s" repeatCount="indefinite" path="${d}"/>`; }
 });
 
 /* ---------- Intro ----------
-   Punktkugel → die Punkte legen sich auf die Kanten einer Box → in der Box laufen Lichtsignale (wie der Lichtwürfel) → die Box entfaltet
+   Punktkugel → die Punkte legen sich auf die Kanten einer Box → in der Box läuft ein leuchtender Faden (wie im Lichtwürfel) → die Box entfaltet
    sich zum Feld 7 × 7 des Zettelkastens, ein Feld leuchtet, Fäden zu den nahen → die Punkte fliessen auf die Schlaufe, die mit dem
    Schriftzug im Raum dreht und von vorn zur Ruhe kommt; der Punkt läuft die Schlaufe entlang. */
 const intro = document.getElementById("intro");
 function spieleIntro() {
   if (ruhig) { intro.classList.add("weg"); intro.style.display = "none"; return; }
   intro.classList.remove("weg"); intro.style.display = "";
-  const P = farbe("--papier"), T = farbe("--tinte"), F = farbe("--faden"), L = farbe("--leer");
+  // das Intro ist immer dunkel, wie die Filme im Lab
+  const P = "#000", T = "#fff", F = "#8fb0ff", L = "#6f6f6f";
   const cv = intro.querySelector("canvas"), ctx = cv.getContext("2d");
   let W, H, D; const mass = () => { D = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * D; cv.height = H * D; }; mass(); addEventListener("resize", mass);
   const k = (a, b, t) => Math.min(1, Math.max(0, (t - a) / (b - a)));
@@ -422,12 +454,28 @@ function spieleIntro() {
   const ecken = []; for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) ecken.push([x, y, z]);
   const kanten = []; ecken.forEach((a, i) => ecken.forEach((b, j) => { if (j > i && a.filter((v, q) => v !== b[q]).length === 1) kanten.push([i, j]); }));
   const aufKante = kugel.map((_, i) => { const [a, b] = kanten[i % 12], u = (Math.floor(i / 12) + .5) / Math.ceil(N / 12); return ecken[a].map((v, q) => mix(v, ecken[b][q], u)); });
-  // Lichtsignale: Irrfahrt auf einem Gitter 4 × 4 × 4 in der Box
-  const G4 = [-.75, -.25, .25, .75], laeufer = Array.from({ length: 6 }, () => ({ p: [1, 2, 1].map(() => Math.floor(r() * 4)), spur: [] }));
-  let schrittZeit = -1;
-  // Feld 7 × 7 und die Lage im Gitter, aus der jeder Punkt kommt
+  // Licht wie im Lichtwürfel von PHORMA III: ein Irrweg (Richtung halten, an den Wänden spiegeln), ein Kopf läuft ihn ab,
+  // dahinter ein Schwanz aus einem Bündel feiner Stränge; leise ein dünner Faden, laut quillt er auf; Funken, ab und zu ein Ausbruch
+  const RAND = .47, WN = 2600, weg = [];
+  { let x = 0, y = 0, z = 0, vx = r() - .5, vy = r() - .5, vz = r() - .5;
+    for (let i = 0; i < WN; i++) {
+      const haken = r() < .025 ? 2.5 : .45; vx += (r() - .5) * haken; vy += (r() - .5) * haken; vz += (r() - .5) * haken;
+      const l = Math.hypot(vx, vy, vz) || 1; vx /= l; vy /= l; vz /= l;
+      const s = .009 * (.4 + r()) * (r() < .02 ? 6 : 1); x += vx * s; y += vy * s; z += vz * s;
+      if (Math.abs(x) > RAND) { x = Math.sign(x) * (2 * RAND - Math.abs(x)); vx = -vx; }
+      if (Math.abs(y) > RAND) { y = Math.sign(y) * (2 * RAND - Math.abs(y)); vy = -vy; }
+      if (Math.abs(z) > RAND) { z = Math.sign(z) * (2 * RAND - Math.abs(z)); vz = -vz; }
+      weg.push([x / RAND * .94, y / RAND * .94, z / RAND * .94]);
+    } }
+  const LS = 2.45, AUSBRUCH = 3.45;
+  const laut = t => .5 + .5 * Math.sin(t * 3.1) * Math.sin(t * 1.7 + 1);                       // gespielte Lautstärke
+  const ausbruch = t => t < AUSBRUCH ? 0 : Math.exp(-(t - AUSBRUCH) * 2.2) * k(AUSBRUCH, AUSBRUCH + .08, t);
+  const kopfBei = t => Math.max(0, (t - LS) * 260 + 380 * aus(k(AUSBRUCH, AUSBRUCH + .7, t)));
+  const welle = (i, s, t) => Math.sin(i * .11 + s * 1.9 + t * 2.3) * .6 + Math.sin(i * .043 - s * 2.7 + t * 1.1) * .4;   // weiches Rauschen je Strang
+  const funken = [];
+  // Feld 7 × 7 und die Orte auf dem Lichtweg, aus denen jeder Punkt kommt
   const HIER = 24, NAH = [1, 3, 7, 15, 19, 26, 28, 45, 46];
-  const gitter = Array.from({ length: 49 }, (_, i) => [G4[i % 4], G4[Math.floor(i / 4) % 4], G4[Math.floor(i / 16) % 4]]);
+  const kopf40 = Math.floor(kopfBei(4.0)), gitter = Array.from({ length: 49 }, (_, i) => weg[Math.max(0, Math.min(WN - 1, kopf40 - i * 9))]);
   // Kamera
   const proj = (p, U, cx, cy) => { const f = 3.4 / (3.4 + p[2]); return [cx + p[0] * U * f, cy + p[1] * U * f, f]; };
   const drehe = (p, g, n) => { const x = p[0] * Math.cos(g) - p[2] * Math.sin(g), z = p[0] * Math.sin(g) + p[2] * Math.cos(g); return [x, p[1] * Math.cos(n) - z * Math.sin(n), p[1] * Math.sin(n) + z * Math.cos(n)]; };
@@ -438,11 +486,9 @@ function spieleIntro() {
     if (t0 === null) t0 = ts; const t = (ts - t0) / 1000;
     ctx.setTransform(D, 0, 0, D, 0, 0); ctx.fillStyle = P; ctx.fillRect(0, 0, W, H);
     const m = Math.min(W, H), U = m * .2, cx = W / 2, cy = H * .45;
-    // Drehung der Kugel und der Box; Puls der Box auf den Schlägen
-    const g = t * .85, n = .42 + .12 * Math.sin(t * .9);
-    const schlaege = [2.7, 3.15, 3.6, 4.05];
-    let puls = 1; for (const s of schlaege) if (t >= s) puls += .07 * Math.exp(-(t - s) * 9);
-    const box = p => proj(drehe(p.map(v => v * puls), g, n), U, cx, cy);
+    // Kugel und Box drehen gleichmässig, ohne Sprung und ohne Puls
+    const g = t * .7, n = .42 + .18 * t * .1;
+    const box = p => proj(drehe(p, g, n), U, cx, cy);
 
     // 1 Kugel → 2 Kanten der Box
     const zurKante = io(k(1.5, 2.5, t)), punkteWeg = k(2.45, 2.8, t);
@@ -464,19 +510,37 @@ function spieleIntro() {
       ctx.globalAlpha = boxSicht; ctx.strokeStyle = T; ctx.lineWidth = Math.max(1.2, m * .0022); ctx.beginPath();
       kanten.forEach(([a, b]) => { const p = box(ecken[a]), q = box(ecken[b]); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); }); ctx.stroke();
     }
-    // 3 Lichtsignale in der Box
+    // 3 Licht in der Box
     const licht = k(2.45, 2.8, t) * (1 - k(4.2, 4.6, t));
     if (licht > 0) {
-      const takt = Math.floor(t / .09);
-      if (takt !== schrittZeit) { schrittZeit = takt; for (const l of laeufer) { const ach = Math.floor(r() * 3); l.p[ach] = Math.max(0, Math.min(3, l.p[ach] + (r() < .5 ? -1 : 1))); l.spur.push(l.p.slice()); if (l.spur.length > 9) l.spur.shift(); } }
-      ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.shadowColor = F; ctx.shadowBlur = m * .02;
-      for (const l of laeufer) {
-        const pts = l.spur.map(s => box(s.map(v => G4[v])));
-        for (let i = 1; i < pts.length; i++) { ctx.globalAlpha = licht * (i / pts.length); ctx.strokeStyle = F; ctx.lineWidth = Math.max(1.5, m * .005) * pts[i][2]; ctx.beginPath(); ctx.moveTo(pts[i - 1][0], pts[i - 1][1]); ctx.lineTo(pts[i][0], pts[i][1]); ctx.stroke(); }
-        const kopf = pts[pts.length - 1]; if (kopf) { ctx.globalAlpha = licht; ctx.fillStyle = F; ctx.beginPath(); ctx.arc(kopf[0], kopf[1], Math.max(3, m * .008) * kopf[2], 0, 7); ctx.fill(); }
+      const kopf = kopfBei(t), au = ausbruch(t), lt = laut(t), SL = 340 + 900 * au, ST = 7;
+      const amp = (.008 + .07 * lt ** 1.3 + .06 * au), von = Math.max(0, kopf - SL);
+      ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round"; ctx.lineJoin = "round";
+      const zug = (i, s) => { const a = Math.floor(i), b = Math.min(WN - 1, a + 1), u = i - a, w = weg[Math.min(WN - 1, a)], v = weg[b];
+        const o = amp * Math.pow((i - von) / SL, .7);
+        return box([mix(w[0], v[0], u) + o * welle(i, s, t), mix(w[1], v[1], u) + o * welle(i + 50, s + 3, t), mix(w[2], v[2], u) + o * welle(i + 90, s + 5, t)]); };
+      const TEILE = 14, schritt = Math.max(1, SL / 220);
+      for (let s = 0; s < ST; s++) {
+        for (let c = 0; c < TEILE; c++) {
+          const a = von + SL * c / TEILE, b = Math.min(kopf, von + SL * (c + 1) / TEILE); if (b <= a) continue;
+          const tief = (c + 1) / TEILE;
+          ctx.globalAlpha = licht * tief * tief * (.3 + .3 * lt + .2 * au); ctx.strokeStyle = "#fff"; ctx.lineWidth = Math.max(1, m * .0024) * (1 + 2.2 * lt * tief);
+          ctx.beginPath(); for (let i = a; i <= b + 1e-6; i += schritt) { const q = zug(Math.min(i, b), s); ctx[i === a ? "moveTo" : "lineTo"](q[0], q[1]); } ctx.stroke();
+        }
       }
-      // Gitterpunkte, die mit den Schlägen aufleuchten
-      for (let i = 0; i < 49; i++) { const [x, y, f] = box(gitter[i]); let a = .25; for (const s of schlaege) if (t >= s) a += .6 * Math.exp(-(t - s) * 6) * ((i + Math.round(s * 10)) % 3 === 0 ? 1 : .2); ctx.globalAlpha = licht * Math.min(1, a); ctx.fillStyle = F; ctx.beginPath(); ctx.arc(x, y, Math.max(1.5, m * .0035) * f, 0, 7); ctx.fill(); }
+      // Kopf mit wenig Bloom
+      const kp = zug(kopf, 0), rb = m * (.03 + .03 * lt + .05 * au) * kp[2], gr = ctx.createRadialGradient(kp[0], kp[1], 0, kp[0], kp[1], rb);
+      gr.addColorStop(0, "rgba(255,255,255,.55)"); gr.addColorStop(.35, "rgba(143,176,255,.18)"); gr.addColorStop(1, "rgba(143,176,255,0)");
+      ctx.globalAlpha = licht; ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(kp[0], kp[1], rb, 0, 7); ctx.fill();
+      // Funken, beim Ausbruch mehr
+      const neu = (.6 + 2 * lt + 10 * au) | 0;
+      for (let i = 0; i < neu; i++) { const w = weg[Math.min(WN - 1, Math.floor(kopf - r() * 40))]; funken.push({ p: w.slice(), v: [r() - .5, r() - .5, r() - .5].map(x => x * .012), l: 1 }); }
+      ctx.fillStyle = "#fff";
+      for (let i = funken.length - 1; i >= 0; i--) { const f = funken[i]; f.p = f.p.map((x, j) => x + f.v[j]); f.l -= .035; if (f.l <= 0) { funken.splice(i, 1); continue; }
+        const q = box(f.p); ctx.globalAlpha = licht * f.l * .9; ctx.fillRect(q[0] - .8, q[1] - .8, 1.6, 1.6); }
+      // die 49 Orte des Feldes zeigen sich auf dem Weg
+      const vor = k(3.75, 4.1, t);
+      if (vor > 0) for (let i = 0; i < 49; i++) { const [x, y, f] = box(gitter[i]); ctx.globalAlpha = licht * vor * .8; ctx.fillStyle = F; ctx.beginPath(); ctx.arc(x, y, Math.max(1.5, m * .0035) * f, 0, 7); ctx.fill(); }
       ctx.restore();
     }
     // 4 Feld 7 × 7, 5 Schlaufe im Raum
@@ -546,11 +610,11 @@ const beispiel = new Image(); beispiel.src = "bilder/portraet.jpg";
 beispiel.decode().then(() => {
   // Film: Stationen nacheinander, mit Überblendung, lebendige Verfahren laufen weiter
   const fc = document.getElementById("film"), fx = fc.getContext("2d"), qf = quelle(beispiel, 760, 760);
-  const STATIONEN = [["start", "Ausgangsbild"], ["puls", "Pulslinien"], ["glitch", "Glitch"], ["raster", "Raster"], ["sort", "Pixelsortierung"], ["licht", "Licht"], ["neu", "Neu setzen"], ["teilung", "Teilung"]];
+  const STATIONEN = [["start", "Ausgangsbild"], ["wirbel", "Wirbel"], ["glitch", "Glitch"], ["raster", "Raster"], ["sort", "Pixelsortierung"], ["licht", "Licht"], ["kaleido", "Kaleidoskop"], ["teilung", "Teilung"]];
   const zw = document.createElement("canvas"); zw.width = zw.height = 760; const zx = zw.getContext("2d");
   const male = (c, art, t, s) => art === "start" ? c.drawImage(qf.leinwand, 0, 0) : VERFAHREN[art].zeichne(c, qf, t, s);
   const statisch = new Map(); const stand = (art, s) => { const key = art + s; if (!statisch.has(key)) { const c = document.createElement("canvas"); c.width = c.height = 760; male(c.getContext("2d"), art, 0, s); statisch.set(key, c); if (statisch.size > 12) statisch.delete(statisch.keys().next().value); } return statisch.get(key); };
-  const lebend = a => a === "puls" || a === "raster" || a === "licht";
+  const lebend = a => a === "raster" || a === "licht";
   const schild = document.getElementById("film-station");
   let filmSicht = false; new IntersectionObserver(es => { filmSicht = es[0].isIntersecting; }).observe(fc);
   let zuletzt = -1;
@@ -569,7 +633,7 @@ beispiel.decode().then(() => {
   // Probieren: Verfahren wählen, das Protokoll schreibt mit
   const pc = document.getElementById("pult"), px = pc.getContext("2d"), qp = quelle(beispiel, 720, 720), prot = document.getElementById("protokoll");
   let wahl = "puls", samen = 11, eintraege = [];
-  const ARTEN = { puls: "Mensch", raster: "Mensch", schraffur: "Regel", glitch: "Zufall", sort: "Regel", neu: "Zufall" };
+  const ARTEN = { puls: "Mensch", raster: "Mensch", wirbel: "Regel", kaleido: "Regel", glitch: "Zufall", sort: "Regel", neu: "Zufall" };
   function schreibe(v) { eintraege.unshift([ARTEN[v], `${VERFAHREN[v].name}${ARTEN[v] === "Zufall" ? ", Startwert " + samen : ""}`]); eintraege = eintraege.slice(0, 3); prot.innerHTML = eintraege.map(([a, s]) => `<div><b>${a}</b><span>${s}</span></div>`).join(""); }
   function malePult(t = 0) { VERFAHREN[wahl].zeichne(px, qp, ruhig ? 0 : t, samen); }
   document.getElementById("wahl").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; wahl = b.dataset.v; samen++; document.querySelectorAll("#wahl button").forEach(x => x.setAttribute("aria-pressed", x === b)); malePult(performance.now() / 1000); schreibe(wahl); });
