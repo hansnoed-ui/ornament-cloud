@@ -10,6 +10,7 @@
   --flaeche: #f3f3f1;
   --faden: #1d3fd6;
   --faden-hell: rgba(29, 63, 214, 0.18);
+  --lab: #c2185b;   /* «Lab» in der Hauptnavigation führt aus der Seite weg: Rosa (27. Oktober 2026) */
   --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
   --spalte: 1120px;
@@ -26,6 +27,7 @@
   --flaeche: #141414;
   --faden: #8fb0ff;
   --faden-hell: rgba(143, 176, 255, 0.22);
+  --lab: #ffa3d1;
   color-scheme: dark;
 }
 @media (min-width: 760px) { :root { --rand: 32px; } }
@@ -73,6 +75,7 @@ ul, ol { padding: 0; list-style: none; }
 .hauptnav a { text-decoration: none; padding: 4px 0; border-bottom: 1px solid transparent; }
 .hauptnav a[aria-current] { border-bottom-color: var(--faden); color: var(--faden); }
 .hauptnav a:hover { border-bottom-color: currentColor; }
+.hauptnav a[target="_blank"] { color: var(--lab); }
 .kopf::after { content: ""; display: block; max-width: var(--spalte); margin: 18px auto 0; height: 1px; background: var(--linie); }
 @media (min-width: 760px) { .kopf::after { margin-left: auto; margin-right: auto; width: calc(100% - 2 * var(--rand)); } }
 
@@ -257,7 +260,7 @@ a.feldchen:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px;
 }
 .kapitel ::selection { background: var(--tinte); color: var(--papier); }
 /* der Kopf trägt die Farbe des ersten Kapitels, die Linie darunter fällt weg; der Fuss schliesst ohne Lücke an */
-body:has(main > .kapitel-gruen:first-child) .kopf { --papier: #1f4d3a; --tinte: #ffffff; --grau: rgba(255, 255, 255, 0.8); --faden: #ffffff; background: var(--papier); color: var(--tinte); }
+body:has(main > .kapitel-gruen:first-child) .kopf { --papier: #1f4d3a; --tinte: #ffffff; --grau: rgba(255, 255, 255, 0.8); --faden: #ffffff; --lab: #ffa3d1; background: var(--papier); color: var(--tinte); }
 body:has(main > .kapitel:first-child) .kopf::after { background: transparent; }
 body:has(main > .kapitel:first-child) .kopf + main > .kapitel:first-child { padding-top: clamp(28px, 4vw, 48px); }
 main:has(> .kapitel:last-child) + .fuss { margin-top: 0; border-top: 0; padding-top: 48px; }

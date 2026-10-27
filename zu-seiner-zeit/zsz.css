@@ -14,7 +14,7 @@
   --rand: 20px;   /* seitlicher Rand, wie auf der Website (die Hauptlinks oben links stehen auf jeder Seite an derselben Stelle) */
   --hauptlink: #353b40;   /* die Hauptlinks oben links und die feine Linie darunter: im hellen Modus Anthrazit, wie auf der Website (Wunsch vom 2. Oktober 2026, 19:00 UTC) */
   /* das Menü der Website oben rechts (kopfleiste.css, seit 18. Oktober 2026) in den Farben des Zettelkastens */
-  --menu-text: var(--tinte); --menu-flaeche: var(--papier); --menu-rand: var(--linie); --menu-schrift: var(--sans); --menu-akzent: #c2410c;
+  --menu-text: var(--tinte); --menu-flaeche: var(--papier); --menu-rand: var(--linie); --menu-schrift: var(--sans); --menu-akzent: #c2410c; --menu-lab: #c2185b;
   color-scheme: light dark;
 }
 
@@ -27,6 +27,7 @@
   --leicht: #1b1b1b;
   --hauptlink: #ffd84d;   /* im dunklen Modus ein helles Sonnengelb */
   --menu-akzent: #f08a5d;
+  --menu-lab: #ffa3d1;
   color-scheme: dark;
 }
 
