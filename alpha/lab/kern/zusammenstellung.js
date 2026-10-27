@@ -26,7 +26,7 @@ import { FORMATE } from "../operationen/format.js";
 
 export { FORMATE };
 
-export const ZUSAMMENSTELLUNG_VERSION = "0.6.3";
+export const ZUSAMMENSTELLUNG_VERSION = "0.6.4";
 /** Dauer einer Karte (Zettel, ORNA) am Anfang oder Ende des Films, in Sekunden (seit 0.1.34 eine Sekunde länger, vorher 2,5) */
 export const KARTE_DAUER = 3.5;
 export const VARIANTEN_JE_ABSCHNITT = 10;   // seit Lab 0.1.16: 60 Motive in 30 s (vorher 3, also 18)
@@ -129,7 +129,7 @@ export function zusammenstellen(antworten, seed = 1) {
   const aufbau = ziehe(antworten.aufbau, rnd), uebergang = ziehe(antworten.uebergang, rnd);
   const k1 = ziehe(antworten.klang1, rnd), k2 = ziehe(antworten.klang2, rnd, k1 === "klang.keine" ? [] : [k1]);
   for (const k of Object.keys(KOMPOSITION_FRAGEN).filter((x) => x.startsWith("bild"))) bild.push(ziehe(antworten[k], rnd, bild.slice(-1)));
-  return { aufbau, uebergang, klang: [k1, k2], bild, seed: seed >>> 0, zettel: null, orna: null, lebendig: true, bewegung: BEWEGUNG, signatur: true, abschnitte: standardAbschnitte() };
+  return { aufbau, uebergang, klang: [k1, k2], bild, seed: seed >>> 0, zettel: null, orna: null, lebendig: true, bewegung: BEWEGUNG, signatur: true, mastering: true, abschnitte: standardAbschnitte() };
 }
 
 /** die Wahrscheinlichkeit, mit der jev eine Stelle der Zusammenstellung gewählt hat (fürs Protokoll und die Anzeige) */
@@ -172,9 +172,11 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
   const sigOp = register.hat("signatur.signet") ? register.hole("signatur.signet") : null;
   const signatur = plan.signatur !== false && Boolean(sigOp && (sigOp.verfuegbar?.() ?? true));
   const zeiten = signatur ? signaturZeiten({ intro: Boolean(plan.zettel), outro: Boolean(plan.orna), haupt }) : null;
+  // fertig mischen (seit 0.1.45, Standard an): die Tonspur am Schluss auf −14 LUFS, mit Kompressor und Limiter (lab.mastering)
+  const mastering = plan.mastering !== false && register.hat("lab.mastering");
   const d = entscheide(projekt, { art: wahl.art, gegenstand: "zusammenstellung", optionen: [], gewaehlt: { aufbau: plan.aufbau, uebergang: plan.uebergang, klang: plan.klang, bild: plan.bild,
       zettel: plan.zettel ? (plan.zettel.strophe || "ziehen") : null, orna: plan.orna ? (plan.orna.konstellation || "ziehen") : null, abschnitte, format: format ?? "material" },
-    details: { ...(wahl.details ?? {}), ...(messung.videoBilder?.length > 1 ? { video: messung.videoBilder } : {}), startwert: plan.seed, merkmale: messung.merkmale, werte: messung.werte, film: { lebendig, bewegung: staerke, signatur: zeiten ? { ...zeiten, version: SIGNATUR_VERSION } : (plan.signatur === false ? "aus" : "nicht verfügbar"), format: format ?? "material" }, version: ZUSAMMENSTELLUNG_VERSION } });
+    details: { ...(wahl.details ?? {}), ...(messung.videoBilder?.length > 1 ? { video: messung.videoBilder } : {}), startwert: plan.seed, merkmale: messung.merkmale, werte: messung.werte, film: { lebendig, bewegung: staerke, signatur: zeiten ? { ...zeiten, version: SIGNATUR_VERSION } : (plan.signatur === false ? "aus" : "nicht verfügbar"), mastering: mastering ? "−14 LUFS" : "aus", format: format ?? "material" }, version: ZUSAMMENSTELLUNG_VERSION } });
   const schritt = (anlass) => ({ art: wahl.art, details: { anlass, entscheidung: d.id } });
 
   // 0 · das Format (seit 0.1.37): das Material (das Bild, aus einem Video jedes Standbild) wird mit lab.format in das Seitenverhältnis eingepasst,
@@ -209,6 +211,13 @@ export async function zusammenstellungRechnen({ register, projekt, medien, messu
     const s = await fuehreAus({ register, projekt, medien, melden, abbrechen,
       auftrag: { operation: "signatur.ton", eingaben: { ton }, parameter: { beginn, dauer: zeiten.gesamt, vor: zeiten.vor, frickel: zeiten.signetDauer }, seed: (seed + 3) >>> 0, wahl: schritt("Zusammenstellung, Tonspur der Signatur") } });
     ton = s.ergebnisse.find((e) => e.typ === "AUDIO").id; beginn = 0;
+  }
+  // die fertige Tonspur mischen, bevor sie gemessen wird: Takt und Kamera folgen dem, was zu hören ist; die Länge bleibt, also auch der Beginn
+  if (mastering) {
+    melden("Die Tonspur fertig mischen (−14 LUFS) …", null);
+    const f = await fuehreAus({ register, projekt, medien, melden, abbrechen,
+      auftrag: { operation: "lab.mastering", eingaben: { ton }, parameter: { ziel: "-14" }, seed, wahl: schritt("Zusammenstellung, fertig mischen") } });
+    ton = f.ergebnisse.find((e) => e.typ === "AUDIO").id;
   }
   const laenge = zeiten ? zeiten.gesamt : haupt;
   const t = await fuehreAus({ register, projekt, medien, melden, abbrechen,

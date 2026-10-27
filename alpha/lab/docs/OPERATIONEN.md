@@ -12,11 +12,14 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.bildsignal` 0.1.0 | Bildsignal | Kopplungsoperation | neu, nach TouchDesigner TOP to CHOP; Max/Jitter (Matrix zu Zahlen) | Bild → Steuersignal | eine |
 | `lab.tonsignal` 0.1.0 | Tonsignal | Kopplungsoperation | Adapter: PHORMA III (Tonanalyse) | Audiosignal → Steuersignal, Ereignisfolge | eine |
 | `lab.klang` 0.1.0 | Klangerzeuger | Zeitliche Operation | neu, nach ANS-Synthesizer (Murzin), UPIC (Xenakis): Bild als Partitur; Oszillator und Hüllkurve der Modularsynthese | Bild (opt.) + Steuersignal (opt.) + Konstellation (opt.) → Audiosignal, Ereignisfolge | über Modulation |
-| `lab.beat` 0.3.0 | Beat aus Bild | Zeitliche Operation | neu, nach Drum-Machine (Roland TR-808: Bassdrum mit fallender Tonhöhe, Becken aus sechs Rechtecken), euklidische Rhythmen (Toussaint), Bild als Partitur wie beim Klangerzeuger | Bild + Bild (opt.) + Bild (opt.) + Bild (opt.) + Bild (opt.) + Bild (opt.) → Audiosignal, Ereignisfolge | über Modulation |
+| `lab.beat` 0.4.0 | Beat aus Bild | Zeitliche Operation | neu, nach Drum-Machine (Roland TR-808: Bassdrum mit fallender Tonhöhe, Becken aus sechs Rechtecken), euklidische Rhythmen (Toussaint), Bild als Partitur wie beim Klangerzeuger; seit 0.1.45 gezupfte Saite nach Karplus und Strong (Oud), FM-E-Piano (Rhodes, DX7), Maqsum, Bayati mit Viertelton, Neurofunk-Bass, Glitch | Bild + Bild (opt.) + Bild (opt.) + Bild (opt.) + Bild (opt.) + Bild (opt.) → Audiosignal, Ereignisfolge | über Modulation |
 | `lab.tempo` 0.1.0 | Tempo und Tonhöhe | Zeitliche Operation | neu, nach Tonband und Sampler (Re-Pitch), REX-Schnitte in Reason und Modus «Beats» in Ableton Live, WSOLA | Audiosignal → Audiosignal | über Modulation |
 | `lab.zerlegen` 0.1.0 | Dekonstruktion | Zeitliche Operation | neu, nach Slicing (REX-Dateien in Reason, Simpler/Slice in Ableton Live), Stottern und Umkehren des Breakbeat-Schnitts | Audiosignal + Ereignisfolge (opt.) + Konstellation (opt.) → Audiosignal, Ereignisfolge | über Modulation |
 | `lab.rhythmus` 0.1.0 | Neu-Rhythmisierung | Zeitliche Operation | neu, nach Step-Sequencer und Slices (Reason Dr. Octo Rex, Bitwig, VCV), euklidische Rhythmen (Toussaint), Pattern in SuperCollider | Audiosignal + Ereignisfolge (opt.) + Steuersignal (opt.) + Konstellation (opt.) → Audiosignal, Ereignisfolge | über Modulation |
 | `lab.koerner` 0.1.0 | Körner (Granular) | Zeitliche Operation | neu, nach Granularsynthese: Warp1 und GrainBuf in SuperCollider (Lesekopf, Fenster, Überlappung); Granulatoren in Max/MSP und VCV | Audiosignal + Steuersignal (opt.) → Audiosignal | über Modulation |
+| `lab.filter` 0.1.0 | Filter in Bewegung | Zeitliche Operation | neu, nach Zustandsvariables Filter der analogen Synthesizer (Oberheim SEM; V. Zavalishin, «The Art of VA Filter Design»), Auto-Wah, Filterfahrten im Drum and Bass und in der elektronischen Musik | Audiosignal + Steuersignal (opt.) → Audiosignal | über Modulation |
+| `lab.effekt` 0.1.0 | Effekte | Zeitliche Operation | neu, nach Studioeffekte: Bitcrusher, Bandsättigung, Röhre, Wavefolder (Buchla, Serge), Chorus und Flanger (verzögerte Kopie mit LFO), Bandecho wie im Dub (Roland Space Echo), Nachhall nach Schroeder | Audiosignal → Audiosignal | über Modulation |
+| `lab.mastering` 0.1.0 | Fertig mischen (Mastering) | Zeitliche Operation | neu, nach Mastering: Bus-Kompressor (SSL), Bass in der Mitte (Elliptic EQ), Lautheit nach ITU-R BS.1770 und EBU R 128, Limiter mit Vorlauf | Audiosignal → Audiosignal | über Modulation |
 | `lab.differenz` 0.1.0 | Differenz | Beobachtungsoperation | neu, nach Difference-Komposition (Fusion Merge, After Effects, Resolume) | Bild + Bild → Bild | eine |
 | `lab.profil` 0.1.0 | Kompositorisches Profil | Beobachtungsoperation | neu, nach Kategorien von ShotDeck, FilmGrab und Flim (Bildausschnitt, Licht, Farbe, Symmetrie) als Messgrössen; Strukturtensor (Bildanalyse) | Bild → Befund | eine |
 | `lab.komposition` 0.1.0 | Komposition verändern | Räumliche Operation | neu, nach Attenuverter (VCV Rack) auf gemessene Bildkomponenten übertragen; Kategorien von ShotDeck, FilmGrab und Flim | Bild + Befund (opt.) → Bild | über Modulation |
@@ -198,7 +201,7 @@ Erzeugt Klang ohne Tondatei: liest ein Bild wie eine Partitur, macht ein Steuers
 
 Macht aus einem Bild oder den Standbildern eines Videos einen kurzen Beat mit Schlagzeug, Bass und Melodie. Farbe, Helligkeit, Feinheit, Komposition und Bewegung wählen Tempo, Groove, Klänge und Tonart, nach Regeln oder durch jev.
 
-- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/beat.js, alpha/lab/kern/beat.js; Prinzip nach Drum-Machine (Roland TR-808: Bassdrum mit fallender Tonhöhe, Becken aus sechs Rechtecken), euklidische Rhythmen (Toussaint), Bild als Partitur wie beim Klangerzeuger
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/beat.js, alpha/lab/kern/beat.js, alpha/lab/kern/mischpult.js; Prinzip nach Drum-Machine (Roland TR-808: Bassdrum mit fallender Tonhöhe, Becken aus sechs Rechtecken), euklidische Rhythmen (Toussaint), Bild als Partitur wie beim Klangerzeuger; seit 0.1.45 gezupfte Saite nach Karplus und Strong (Oud), FM-E-Piano (Rhodes, DX7), Maqsum, Bayati mit Viertelton, Neurofunk-Bass, Glitch
 - **Voraussetzungen:** keine (reines JavaScript); zum Anhören ein Browser mit <audio>
 - **Ressourcen:** Messen auf höchstens 128 Pixeln je Seite, dann je Schlag einige tausend Schritte (15 s: unter einer Sekunde); Speicher: der Beat in Stereo, 44,1 kHz, höchstens 60 s
 - **Reproduzierbar:** ja
@@ -207,16 +210,17 @@ Macht aus einem Bild oder den Standbildern eines Videos einen kurzen Beat mit Sc
 |---|---|
 | Dauer (s) (`dauer`) | 4 … 60, Standard 15 |
 | Tempo (`tempo`) | **nach Regeln aus dem Bild** / langsam, etwa 75 Schläge je Minute / mittel, etwa 90 Schläge je Minute / schnell, etwa 125 Schläge je Minute / rasend, etwa 160 Schläge je Minute |
-| Groove (`groove`) | **nach Regeln aus dem Bild** / gerade / Halftime / Breakbeat / euklidisch / schleppend / Drum and Bass |
-| Schlagzeug (`kit`) | **nach Regeln aus dem Bild** / trocken / elektronisch / metallisch / weich / Jazz / Handtrommeln |
-| Tonart (`tonart`) | **nach Regeln aus dem Bild** / Dur / Moll / dorisch / phrygisch / pentatonisch / Hijaz |
-| Bass (`bass`) | **nach Regeln aus dem Bild** / kein Bass / liegend / pulsierend / laufend / Reese / Kontrabass |
-| Melodie (`melodie`) | **nach Regeln aus dem Bild** / keine Melodie / aus dem Bild gelesen / Arpeggio / Glocken |
+| Groove (`groove`) | 9 Optionen, Standard «nach Regeln aus dem Bild» |
+| Schlagzeug (`kit`) | **nach Regeln aus dem Bild** / trocken / elektronisch / metallisch / weich / Jazz / Handtrommeln / Glitch |
+| Tonart (`tonart`) | 9 Optionen, Standard «nach Regeln aus dem Bild» |
+| Bass (`bass`) | **nach Regeln aus dem Bild** / kein Bass / liegend / pulsierend / laufend / Reese / Kontrabass / Neuro |
+| Melodie (`melodie`) | **nach Regeln aus dem Bild** / keine Melodie / aus dem Bild gelesen / Arpeggio / Glocken / Oud / Rhodes |
 | Verlauf (`verlauf`) | **nach Regeln aus dem Bild** / gleich / steigend / abschwellend / in Wellen / fein und wild im Wechsel |
-| Fläche (`flaeche`) | **nach Regeln aus dem Bild** / keine Fläche / sphärisch / schimmernd |
+| Fläche (`flaeche`) | **nach Regeln aus dem Bild** / keine Fläche / sphärisch / schimmernd / Bordun |
 | Grundton (`grundton`) | 13 Optionen, Standard «aus dem Farbton» |
 | Stimmung (Kammerton A) (`kammerton`) | **432 Hz** / 440 Hz |
 | Nachhall (`nachhall`) | 0 … 0.8, Standard 0.25 |
+| Mischung (`mischung`) | **fertig gemischt (−14 LUFS, Kompressor, Limiter)** / roh (Spitze auf −1 dBFS, wie bis 0.1.44) |
 
 ## Tempo und Tonhöhe (`lab.tempo`)
 
@@ -314,6 +318,65 @@ Löst einen Klang in kurze Körner auf und setzt sie neu zusammen: der Lesekopf 
 | Stereobreite (`breite`) | 0 … 1, Standard 0.6 |
 | Form des Korns (`fenster`) | **weich (Hann)** / flach mit kurzen Flanken / perkussiv (schnell an, abklingend) |
 | Pegel (`pegel`) | wie die Quelle (nur gegen Übersteuerung) / **auf −1 dBFS bringen** |
+
+## Filter in Bewegung (`lab.filter`)
+
+Formt die Klangfarbe mit einem Filter wie im Synthesizer: Tiefpass, Hochpass, Bandpass oder Kerbe, mit Resonanz. Die Grenzfrequenz steht, schwingt frei oder im Takt, folgt dem Anschlag (Auto-Wah), einem Steuersignal oder öffnet sich über die Dauer.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/mischpult.js, alpha/lab/kern/mischpult.js; Prinzip nach Zustandsvariables Filter der analogen Synthesizer (Oberheim SEM; V. Zavalishin, «The Art of VA Filter Design»), Auto-Wah, Filterfahrten im Drum and Bass und in der elektronischen Musik
+- **Voraussetzungen:** keine (reines JavaScript)
+- **Ressourcen:** je Abtastwert und Kanal ein Filterschritt, alle 16 Abtastwerte eine neue Grenzfrequenz; Speicher: der Klang zweimal
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Filter (`art`) | **Tiefpass (dunkler)** / Hochpass (dünner) / Bandpass (wie durch ein Telefon) / Kerbe (ein Loch im Klang) |
+| Grenzfrequenz (Hz) (`frequenz`) | 40 … 16000, Standard 800 |
+| Resonanz (`resonanz`) | 0 … 1, Standard 0.4 |
+| Bewegung (`bewegung`) | steht / schwingt (LFO, Geschwindigkeit unten) / **schwingt im Takt (Takte je Schwingung)** / folgt dem Anschlag (Auto-Wah) / folgt dem Steuersignal (Eingang) / öffnet sich über die Dauer |
+| Tiefe der Bewegung (Oktaven nach oben) (`tiefe`) | 0 … 7, Standard 3 |
+| Geschwindigkeit (Hz, beim LFO) (`lfo`) | 0.02 … 20, Standard 0.5 |
+| Takte je Schwingung (im Takt; 0,25 = je Schlag) (`takte`) | 0.25 … 16, Standard 2 |
+| Tempo der Quelle (BPM, 0 = schätzen) (`bpm`) | 0 … 300, Standard 0 |
+| Anteil (0 trocken, 1 nur Effekt) (`anteil`) | 0 … 1, Standard 1 |
+| Pegel (`pegel`) | **wie die Quelle (nur gegen Übersteuerung)** / auf −1 dBFS bringen |
+
+## Effekte (`lab.effekt`)
+
+Färbt einen Klang mit einem Studioeffekt: zerkleinert wie im Glitch, gesättigt wie auf Band oder durch eine Röhre, verzerrt oder gefaltet, verdoppelt im Chorus, im Flanger, mit einem Echo im Tempo oder in einem Raum.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/mischpult.js, alpha/lab/kern/mischpult.js; Prinzip nach Studioeffekte: Bitcrusher, Bandsättigung, Röhre, Wavefolder (Buchla, Serge), Chorus und Flanger (verzögerte Kopie mit LFO), Bandecho wie im Dub (Roland Space Echo), Nachhall nach Schroeder
+- **Voraussetzungen:** keine (reines JavaScript)
+- **Ressourcen:** je Abtastwert und Kanal wenige Rechenschritte; Echo mit geschätztem Tempo: eine Messung der Einsätze; Speicher: der Klang zwei- bis dreimal, Stereo
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Effekt (`effekt`) | 9 Optionen, Standard «Sättigung: Band, warm» |
+| Stärke (0–1: Antrieb, Zerkleinerung, Tiefe, Rückkopplung, Grösse) (`staerke`) | 0 … 1, Standard 0.5 |
+| Echo: Abstand (`teilung`) | **punktierte Achtel (Dub)** / Achtel / Viertel / Sechzehntel / Achteltriolen |
+| Echo: Tempo der Quelle (BPM, 0 = schätzen) (`bpm`) | 0 … 300, Standard 0 |
+| Chorus, Flanger: Geschwindigkeit (Hz) (`geschwindigkeit`) | 0.05 … 8, Standard 0.6 |
+| Anteil (0 trocken, 1 nur Effekt) (`anteil`) | 0 … 1, Standard 0.5 |
+| Pegel (`pegel`) | **wie die Quelle (nur gegen Übersteuerung)** / auf −1 dBFS bringen |
+
+## Fertig mischen (Mastering) (`lab.mastering`)
+
+Mischt einen Klang fertig: Wärme und Glanz, der Bass in der Mitte, ein sanfter Kompressor, der zusammenhält, und die Lautheit auf ein Ziel wie bei Streaming (−14 LUFS), mit einem Limiter, damit keine Spitze übersteuert.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/mischpult.js, alpha/lab/kern/mischpult.js; Prinzip nach Mastering: Bus-Kompressor (SSL), Bass in der Mitte (Elliptic EQ), Lautheit nach ITU-R BS.1770 und EBU R 128, Limiter mit Vorlauf
+- **Voraussetzungen:** keine (reines JavaScript)
+- **Ressourcen:** Filter, Kompressor und Limiter je Abtastwert, die Lautheit drei- bis fünfmal gemessen (60 s Stereo: etwa eine Sekunde); Speicher: der Klang vier- bis fünfmal
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Lautheit (`ziel`) | **−14 LUFS (Streaming, Instagram, YouTube)** / −10 LUFS (laut, Club) / −18 LUFS (ruhig, viel Dynamik) / −23 LUFS (Rundfunk, EBU R 128) |
+| Kompression (0 keine, 1 dicht) (`kompression`) | 0 … 1, Standard 0.5 |
+| Wärme (dB unter 120 Hz) (`waerme`) | -6 … 6, Standard 1 |
+| Glanz (dB über 8 kHz) (`glanz`) | -6 … 6, Standard 1.5 |
+| Stereobreite (1 wie die Quelle; der Bass bleibt in der Mitte) (`breite`) | 0 … 2, Standard 1.1 |
+| Höchste Spitze (dBFS) (`decke`) | -6 … -0.1, Standard -1 |
 
 ## Differenz (`lab.differenz`)
 

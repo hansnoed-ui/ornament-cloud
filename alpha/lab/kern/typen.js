@@ -31,7 +31,7 @@ export const KLANGFORMEN = Object.freeze({
   spektrum: { name: "Frequenzspektrum", typ: "METADATA", kennzeichen: "daten.art = \"frequenzspektrum\"", implementiert: false },
   rhythmus: { name: "rhythmisches Muster", typ: "EVENT_SEQUENCE", kennzeichen: "daten.bpm, daten.raster, ereignisse[].schritt", implementiert: true },   // lab.rhythmus
   generator: { name: "Klanggenerator", typ: "AUDIO", kennzeichen: "Operation ohne AUDIO-Eingang, Ausgang AUDIO", implementiert: true },   // lab.klang
-  transformation: { name: "Klangtransformation", typ: "AUDIO", kennzeichen: "Operation AUDIO → AUDIO", implementiert: true },   // lab.tempo, lab.zerlegen, lab.rhythmus, lab.koerner
+  transformation: { name: "Klangtransformation", typ: "AUDIO", kennzeichen: "Operation AUDIO → AUDIO", implementiert: true },   // lab.tempo, lab.zerlegen, lab.rhythmus, lab.koerner, lab.filter, lab.effekt, lab.mastering
 });
 
 /** Kann ein Ausgang vom Typ «von» in einen Eingang vom Typ «nach» gehen? Bewusst streng: keine stillen Umwandlungen. */
