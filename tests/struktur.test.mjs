@@ -10,7 +10,7 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
 
-const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"], ["Art", "art/"]];   // seit 19. Oktober 2026 (abends) ohne «Web» (die Seite bleibt, nur nicht im Menü), dahinter «Art»;   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
+const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"], ["Art", "art/"], ["Lab", "beta/lab/"]];   // «Lab» seit 27. Oktober 2026 (ornament.lab, öffnet in einem neuen Fenster);   // seit 19. Oktober 2026 (abends) ohne «Web» (die Seite bleibt, nur nicht im Menü), dahinter «Art»;   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
 // Seiten mit dem Menü → Eintrag, der aktiv ist ([Ordner, aria-current]); null: keiner (die Seite hängt an keinem Menüpunkt)
 const MENUSEITEN = {   // OMNA COLOR (alpha/omna-color/, rad/) seit 20. Oktober 2026 mit dem Kopf der App statt des Menüs; ihre App-Seite app/ bleibt
   "index.html": null,
@@ -53,7 +53,7 @@ const jpegMass = (buf) => {            // Breite und Höhe aus dem ersten Rahmen
   throw new Error("kein JPEG");
 };
 
-test("Menü: fünf Kästchen mit Symbol und Namen (Apps, Prompts, Zettel, Social, Art; bis 19. Oktober 2026 mit Web statt Art) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
+test("Menü: sechs Kästchen mit Symbol und Namen (Apps, Prompts, Zettel, Social, Art, Lab; Lab seit 27. Oktober 2026, bis 19. Oktober 2026 mit Web statt Art) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
   const mitKopf = htmlSeiten().filter((p) => lies(p).includes('<nav class="seitenweg"') && !p.startsWith("alpha/drittes-rad/")).sort();
   assert.ok(mitKopf.length > 580, `alle Seiten mit Kopf (${mitKopf.length})`);
   for (const datei of mitKopf) {
@@ -63,16 +63,18 @@ test("Menü: fünf Kästchen mit Symbol und Namen (Apps, Prompts, Zettel, Social
     // seit 10. Oktober 2026: die Welle direkt unter den beiden Hauptlinks, darunter das Menü
     assert.match(html, /<div class="topbar">\s*<nav class="seitenweg" aria-label="Ornament Cloud">[\s\S]*?<\/nav>\s*<svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"><\/svg>\s*<nav class="menu"/, `${datei}: Hauptlinks, Welle, Menü`);
     assert.ok(!/data-icon|menu-sub|menu-title/.test(nav[1]), `${datei}: keine animierten Symbole, keine Untertitel`);
-    const eintraege = [...nav[1].matchAll(/<a class="menu-item" href="([^"]+)"(?: aria-current="(page|true)")?>(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>([^<]+)<\/span><\/a>/g)];
-    assert.equal(eintraege.length, MENU.length, `${datei}: fünf Kästchen mit verborgenem Symbol und Namen`);
-    assert.deepEqual(eintraege.map((e) => e[4]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Apps, Prompts, Zettel, Social, Art (Web seit 19. Oktober 2026 nicht mehr im Menü, Art zuletzt)`);
+    const eintraege = [...nav[1].matchAll(/<a class="menu-item" href="([^"]+)"(?: aria-current="(page|true)")?( target="_blank" rel="noopener")?>(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>([^<]+)<\/span><\/a>/g)];
+    assert.equal(eintraege.length, MENU.length, `${datei}: sechs Kästchen mit verborgenem Symbol und Namen`);
+    assert.deepEqual(eintraege.map((e) => e[5]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Apps, Prompts, Zettel, Social, Art, Lab (Web seit 19. Oktober 2026 nicht mehr im Menü)`);
+    // nur «Lab» öffnet in einem neuen Fenster (Wunsch vom 27. Oktober 2026)
+    assert.deepEqual(eintraege.map((e) => !!e[3]), MENU.map((m) => m[0] === "Lab"), `${datei}: Lab in einem neuen Fenster, die anderen nicht`);
     for (const [i, e] of eintraege.entries()) {
       const basis = html.match(/<base href="([^"]+)"/)?.[1], ziel = new URL(e[1], new URL(basis ?? "", new URL(datei, root)));   // die Werkbank steht mit <base href="../">
       assert.equal(ziel.pathname, new URL(MENU[i][1], root).pathname, `${datei}: ${MENU[i][0]} führt nach ${MENU[i][1]}`);
       assert.ok(existsSync(new URL(MENU[i][1] + "index.html", root)), `${datei}: ${MENU[i][1]} gibt es`);
     }
     // überall dieselben Symbole
-    if (datei !== "index.html") assert.deepEqual(eintraege.map((e) => e[3]), [...lies("index.html").match(/<nav class="menu"[\s\S]*?<\/nav>/)[0].matchAll(/<svg[\s\S]*?<\/svg>/g)].map((m) => m[0]), `${datei}: dieselben Symbole wie auf der Startseite`);
+    if (datei !== "index.html") assert.deepEqual(eintraege.map((e) => e[4]), [...lies("index.html").match(/<nav class="menu"[\s\S]*?<\/nav>/)[0].matchAll(/<svg[\s\S]*?<\/svg>/g)].map((m) => m[0]), `${datei}: dieselben Symbole wie auf der Startseite`);
     // genau der Eintrag der Seite ist aktiv (page: man ist auf der Seite, true: auf einer Seite darunter), sonst keiner
     assert.deepEqual(eintraege.map((e) => e[2] ?? null), MENU.map((m) => (aktiv && m[1] === aktiv[0] ? aktiv[1] : null)), `${datei}: aktiver Eintrag`);
   }
@@ -87,12 +89,12 @@ test("Menü: fünf Kästchen mit Symbol und Namen (Apps, Prompts, Zettel, Social
     assert.equal(regel(lies("kopfleiste.css"), sel), regel(lies("styles.css"), sel), `kopfleiste.css: ${sel} wie in styles.css`);
 });
 
-test("Menü: Kästchen in der serifenlosen Schrift der Seite, fünf in einer Reihe (auch auf dem Handy), der aktive mit kräftigerem Rand", () => {
+test("Menü: Kästchen in der serifenlosen Schrift der Seite, sechs in einer Reihe (auch auf dem Handy), der aktive mit kräftigerem Rand", () => {
   const css = lies("styles.css");
   assert.ok(!/menu-icon|menu-sub|menu-text|menu-title/.test(css), "keine Regeln für das Menü vor dem 2. Oktober 2026");
   const regel = (sel) => css.match(new RegExp(`(?:^|\\n)${sel.replace(/[.[\]()*+?^$|\\]/g, "\\$&")}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
   assert.match(regel(".menu"), /display:\s*grid/);
-  assert.match(regel(".menu"), /grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/, "fünf gleich breite Spalten, auf allen Breiten (seit 19. Oktober 2026)");
+  assert.match(regel(".menu"), /grid-template-columns:\s*repeat\(6, minmax\(0, 1fr\)\)/, "sechs gleich breite Spalten, auf allen Breiten (seit 27. Oktober 2026, vorher fünf)");
   assert.match(regel(".menu-item"), /font-family:\s*var\(--font\)/, "Schrift der Seite");
   assert.doesNotMatch(regel(".menu-item"), /var\(--serif\)|Georgia|Times/, "keine Serife");
   assert.match(css, /--font:\s*system-ui[^;]*,\s*sans-serif;/, "die Schrift der Seite ist serifenlos (system-ui … sans-serif)");

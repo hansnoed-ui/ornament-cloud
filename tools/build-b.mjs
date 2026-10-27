@@ -250,7 +250,7 @@ function bau(sprache) {
   <header class="kopf">
     <div class="spalte">
       <div class="marke"><a class="signet" href="${B}"${pfad === "" ? ' aria-current="page"' : ""}>${SIGNET}<span>ornament.cloud</span></a>${sprachwahl(pfad, nurDe)}</div>
-      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}">${Object.entries(T.nav).map(([p, n]) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${n}</a>`).join("")}</nav>
+      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}">${Object.entries(T.nav).map(([p, n]) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${n}</a>`).join("")}<a href="/beta/lab/" target="_blank" rel="noopener">Lab</a></nav>
     </div>
   </header>
   <main id="inhalt">

@@ -1,10 +1,10 @@
 // Die Kopfleiste der Website als Baustein (seit 18. Oktober 2026, seit 19. Oktober 2026 hier an der Wurzel statt in tools/, damit auch Seiten im Browser sie holen können; Wunsch: «oben rechts noch das allgemeine Menü, damit man nicht ganz verloren
 // ist … das Menü müsste überall auf der Seite sichtbar sein, auch wenn man in den Beiträgen, Anwendungen etc. ist»): links die Hauptlinks
-// (seitenweg, steht in jeder Seite selbst), rechts die Kästchen des Menüs (seit 19. Oktober 2026 fünf), darunter die Welle (icons.js zeichnet sie). Dasselbe Markup wie
+// (seitenweg, steht in jeder Seite selbst), rechts die Kästchen des Menüs (seit 19. Oktober 2026 fünf, seit 27. Oktober 2026 sechs), darunter die Welle (icons.js zeichnet sie). Dasselbe Markup wie
 // von Hand auf der Startseite; die Erzeuger (tools/build-zu-seiner-zeit.ts, tools/build-alpha-texte.ts) und tools/kopfleiste-einsetzen.mjs
 // (für die Seiten, die von Hand gepflegt werden) holen es von hier. tests/struktur.test.mjs prüft, dass es überall gleich ist.
 
-/** die fünf Kästchen: [Name, Pfad ab der Wurzel der Website, Symbol]; «Social» seit dem 19. Oktober 2026 (der Zettelkasten der Beiträge aus X, Facebook und Instagram, social-media/);
+/** die sechs Kästchen: [Name, Pfad ab der Wurzel der Website, Symbol, { neuesFenster }]; «Social» seit dem 19. Oktober 2026 (der Zettelkasten der Beiträge aus X, Facebook und Instagram, social-media/);
  *  seit dem 19. Oktober 2026 (abends) ohne «Web» (die Seite web/ bleibt unter ihrer Adresse, nur nicht mehr im Menü) und dahinter als fünftes «Art» (Bilder, Prints, Apps und
  *  Gestaltung zum Kaufen, art/; Symbol: ein gerahmtes Bild, Sonne und Hügel im Passepartout). Wunsch: «Die Seite "Web" soll aus dem Menu verschwinden (nicht löschen, nur aus dem Menu)
  *  … Neu soll als 5. Menupunkt (nach: "Social") ein "Art"-Seite entstehen» */
@@ -14,6 +14,9 @@ export const MENU = [
   ["Zettel", "zu-seiner-zeit/", '<path d="M7 3.5h11.5A1.5 1.5 0 0 1 20 5v11"/><rect x="4" y="6.5" width="13" height="14" rx="1.5"/><path d="M7 10.5h7"/><path d="M7 13.5h7"/><path d="M7 16.5h4"/>'],
   ["Social", "social-media/", '<path d="M10 4.5 8 19.5"/><path d="M16 4.5l-2 15"/><path d="M5 9.25h14.5"/><path d="M4.5 14.75H19"/>'],
   ["Art", "art/", '<rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><rect x="6.5" y="6.5" width="11" height="11" rx="0.5"/><circle cx="10" cy="10" r="1.3"/><path d="M6.5 16c2-2.4 4.2-3.2 6.4-2.3 1.6.6 2.9.4 4.6-.9"/>'],
+  // seit dem 27. Oktober 2026 als sechstes «Lab» (ornament.lab, die Landing-Page beta/lab/, von dort «Lab öffnen» nach alpha/lab/); öffnet in einem neuen Fenster.
+  // Wunsch: «Nimm das Lab als Menupunkt auf die website (öffnet in einem neuen browser fenster)». Symbol: ein Laborkolben.
+  ["Lab", "beta/lab/", '<path d="M9 3.5h6"/><path d="M10.25 3.5v6.25L4.9 18.4a1.4 1.4 0 0 0 1.2 2.1h11.8a1.4 1.4 0 0 0 1.2-2.1l-5.35-8.65V3.5"/><path d="M7.4 14.5h9.2"/>', { neuesFenster: true }],
 ];
 
 /**
@@ -25,8 +28,8 @@ export function welleUndMenu(site, { aktiv = null, aktuell = "true", einzug = " 
   return [
     `${e}<svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>`,
     `${e}<nav class="menu" aria-label="Hauptmenü">`,
-    ...MENU.map(([name, pfad, symbol]) =>
-      `${e}  <a class="menu-item" href="${site}${pfad}"${name === aktiv ? ` aria-current="${aktuell}"` : ""}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${symbol}</svg><span>${name}</span></a>`),
+    ...MENU.map(([name, pfad, symbol, { neuesFenster = false } = {}]) =>
+      `${e}  <a class="menu-item" href="${site}${pfad}"${name === aktiv ? ` aria-current="${aktuell}"` : ""}${neuesFenster ? ' target="_blank" rel="noopener"' : ""}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${symbol}</svg><span>${name}</span></a>`),
     `${e}</nav>`,
   ].join("\n");
 }
