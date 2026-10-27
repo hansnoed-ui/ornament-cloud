@@ -19,7 +19,7 @@ import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 33;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 34;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };

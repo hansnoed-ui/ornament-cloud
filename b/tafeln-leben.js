@@ -2,7 +2,7 @@
 // eine Art Vorstellungs- oder Erkläranimationen, stilisiert, stilvoll»). Jede <figure class="tafel-lebt" data-tafel="slug"> trägt das Ruhebild
 // als <picture>; mit Skript wird daraus die Zeichnung aus src/b/tafeln.mjs, die sich bewegt – nur solange sie im Bild ist, nur wenn die Seite
 // sichtbar ist, nie bei reduzierter Bewegung (dann bleibt das Ruhebild). Dunkel ist der Standard (27. Oktober 2026), hell nur mit data-theme="light".
-import { TAFELN, farben, W } from "./tafeln.mjs?v=33";
+import { TAFELN, farben, W } from "./tafeln.mjs?v=34";
 
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const dunkel = () => document.documentElement.dataset.theme !== "light";

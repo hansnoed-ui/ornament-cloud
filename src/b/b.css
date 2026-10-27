@@ -75,7 +75,7 @@ ul, ol { padding: 0; list-style: none; }
 .hauptnav a { text-decoration: none; padding: 4px 0; border-bottom: 1px solid transparent; }
 .hauptnav a[aria-current] { border-bottom-color: var(--faden); color: var(--faden); }
 .hauptnav a:hover { border-bottom-color: currentColor; }
-.hauptnav a[target="_blank"] { color: var(--lab); }
+/* .hauptnav a[target="_blank"] (Lab) hatte Rosa; seit die Seiten farbige Köpfe haben, wieder wie die anderen Menüpunkte (27. Oktober 2026, Wunsch: «mach ihn wieder in die selbe farbe wie die anderen menupunkte») */
 .kopf::after { content: ""; display: block; max-width: var(--spalte); margin: 18px auto 0; height: 1px; background: var(--linie); }
 @media (min-width: 760px) { .kopf::after { margin-left: auto; margin-right: auto; width: calc(100% - 2 * var(--rand)); } }
 
