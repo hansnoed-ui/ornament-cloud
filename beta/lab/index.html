@@ -42,9 +42,13 @@ figure { margin: 0; }
 .marke svg { width: 34px; height: 24px; overflow: visible; }
 .kopf .signet { animation: drehen 6s cubic-bezier(.6,0,.4,1) infinite; transform-origin: 50% 50%; }
 .kopf .signet path { stroke-dasharray: 1 1; animation: zeichnen 6s ease-in-out infinite; }
+.blau .signet { animation: drehen-gross 12s cubic-bezier(.6,0,.4,1) infinite; }
+.blau .signet path { stroke-dasharray: 1 1; animation: zeichnen-gross 12s ease-in-out infinite; }
+@keyframes drehen-gross { from { transform: perspective(700px) rotateX(14deg) rotateY(0deg); } to { transform: perspective(700px) rotateX(14deg) rotateY(-360deg); } }
+@keyframes zeichnen-gross { 0% { stroke-dashoffset: 1; } 30%, 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1; } }
 @keyframes zeichnen { 0% { stroke-dashoffset: 1; } 45%, 70% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1; } }
 @keyframes drehen { from { transform: perspective(90px) rotateX(18deg) rotateY(0deg); } to { transform: perspective(90px) rotateX(18deg) rotateY(-360deg); } }
-@media (prefers-reduced-motion: reduce) { .kopf .signet, .kopf .signet path { animation: none; stroke-dasharray: none; } }
+@media (prefers-reduced-motion: reduce) { .kopf .signet, .kopf .signet path, .blau .signet, .blau .signet path { animation: none; stroke-dasharray: none; } }
 .p { color: var(--faden); }
 .kopf nav { display: flex; gap: 22px; align-items: center; font-size: 15px; }
 .kopf nav a { text-decoration: none; }
@@ -72,7 +76,7 @@ p { margin: 0; max-width: 62ch; }
 .band > * { min-width: 0; overflow: hidden; position: relative; }
 .band img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.02); transition: transform 1.4s cubic-bezier(.2,.7,.2,1); }
 .band > figure:hover img { transform: scale(1.08); }
-.band .blau { background: var(--faden); display: grid; place-items: center; color: #fff; }
+.band .blau { background: #0c1a52; display: grid; place-items: center; color: #fff; }
 .band .blau svg { width: 62%; height: auto; overflow: visible; }
 @media (max-width: 700px) { .band { grid-template-columns: repeat(3, minmax(0, 1fr)); height: auto; } .band > * { aspect-ratio: 3 / 4; } }
 .titelfeld { padding-block: clamp(40px, 5vw, 72px) 0; }
@@ -426,9 +430,9 @@ const PUNKT_AN = Math.round(SCHLAUFE.length * 50 / 120);
 document.querySelectorAll("svg.signet").forEach(svg => {
   const d = SCHLAUFE.map(([x, y], i) => (i ? "L" : "M") + (17 + x * 22).toFixed(2) + " " + (12 + y * 22).toFixed(2)).join("") + "Z";
   const [px, py] = SCHLAUFE[PUNKT_AN], weiss = svg.classList.contains("weiss");
-  svg.innerHTML = `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${weiss ? 1.1 : 1.5}" stroke-linejoin="round"/><circle cx="${17 + px * 22}" cy="${12 + py * 22}" r="${weiss ? 1.6 : 2.2}" fill="${weiss ? "#fff" : "var(--faden)"}"/>`;
+  svg.innerHTML = `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${weiss ? .55 : 1.5}" stroke-linejoin="round"/><circle cx="${17 + px * 22}" cy="${12 + py * 22}" r="${weiss ? 1.1 : 2.2}" fill="${weiss ? "#fff" : "var(--faden)"}"/>`;
   // im Kopf läuft der Punkt die Schlaufe entlang, während das Signet dreht
-  if (svg.closest(".kopf") && !ruhig) { svg.querySelector("path").setAttribute("pathLength", 1); const c = svg.querySelector("circle"); c.setAttribute("cx", 0); c.setAttribute("cy", 0); c.innerHTML = `<animateMotion dur="3.5s" repeatCount="indefinite" path="${d}"/>`; }
+  if (svg.closest(".kopf, .blau") && !ruhig) { svg.querySelector("path").setAttribute("pathLength", 1); const c = svg.querySelector("circle"); c.setAttribute("cx", 0); c.setAttribute("cy", 0); c.innerHTML = `<animateMotion dur="3.5s" repeatCount="indefinite" path="${d}"/>`; }
 });
 
 /* ---------- Intro ----------
