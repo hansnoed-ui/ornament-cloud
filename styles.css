@@ -24,26 +24,27 @@
   --bg-veil: rgba(248, 248, 246, 0.85); /* Schleier hinter dem Kopfbereich */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #171614;
-    --surface: #211f1c;
-    --text: #ece8e1;
-    --muted: #a39d93;
-    --border: #34312c;
-    --accent: #f08a5d;
-    --hauptlink: #ffd84d;   /* im dunklen Modus ein helles Sonnengelb */
+/* Dunkel ist der Standard (Wunsch vom 27. Oktober 2026: «ich möchte die website defaultmässig im dark mode»), unabhängig von der Einstellung des Geräts;
+   data-theme="light" auf <html> holt die hellen Werte oben zurück. */
+:root:not([data-theme="light"]) {
+  --bg: #171614;
+  --surface: #211f1c;
+  --text: #ece8e1;
+  --muted: #a39d93;
+  --border: #34312c;
+  --accent: #f08a5d;
+  --hauptlink: #ffd84d;   /* im dunklen Modus ein helles Sonnengelb */
 
-    --thumb-a: #4a3a2e;
-    --thumb-b: #2e3f4a;
-    --thumb-c: #36422c;
-    --thumb-d: #45344a;
+  --thumb-a: #4a3a2e;
+  --thumb-b: #2e3f4a;
+  --thumb-c: #36422c;
+  --thumb-d: #45344a;
 
-    --bg-line-faint: #2d2c2a;
-    --bg-line-mid: #4b4a47;
-    --bg-line-strong: #c9c6c0;
-    --bg-veil: rgba(23, 22, 20, 0.85);
-  }
+  --bg-line-faint: #2d2c2a;
+  --bg-line-mid: #4b4a47;
+  --bg-line-strong: #c9c6c0;
+  --bg-veil: rgba(23, 22, 20, 0.85);
+  color-scheme: dark;
 }
 
 *,

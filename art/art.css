@@ -9,9 +9,7 @@
   --knapp: #b8862b;           /* Punkt «reserviert», «noch wenige» */
   --vergeben: #b3304d;        /* der rote Punkt der Galerien: verkauft */
 }
-@media (prefers-color-scheme: dark) {
-  :root { --papier: #2a2824; --papier-schatten: rgba(0, 0, 0, 0.45); --frei: #6fbf83; --knapp: #e4b83c; --vergeben: #e5677f; }
-}
+:root:not([data-theme="light"]) { --papier: #2a2824; --papier-schatten: rgba(0, 0, 0, 0.45); --frei: #6fbf83; --knapp: #e4b83c; --vergeben: #e5677f; }
 
 .art-titel { font-size: clamp(2.6rem, 7vw, 4.4rem); letter-spacing: -0.01em; line-height: 1; }
 .art-fakten { margin: 18px 0 0; color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }

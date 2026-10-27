@@ -10,7 +10,7 @@ import { PLATTFORMEN, PLATTFORM_NAME, profilUrl } from "./quelle.js";
 
 export const ADRESSE = "https://ornament.cloud/";
 export const BEREICH = "social-media/";
-export const MARKE = { styles: 47, icons: 14, social: 1 };   // ?v= der eingebundenen Dateien (styles.css, icons.js, social.css/-js)
+export const MARKE = { styles: 48, icons: 14, social: 2 };   // ?v= der eingebundenen Dateien (styles.css, icons.js, social.css/-js)
 export const KENNZAHLEN = ["antworten", "reposts", "likes", "ansichten", "lesezeichen", "reaktionen", "kommentare", "teilungen"];
 /** Arten von Verweisen: [vom Zettel aus gelesen, vom Ziel aus gelesen] */
 export const VERWEIS_ARTEN = { antwort: ["Antwort auf", "Antwort darauf"], widerspruch: ["Widerspruch zu", "Widerspruch dazu"], ergaenzung: ["Ergänzung zu", "Ergänzung dazu"],
