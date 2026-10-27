@@ -316,3 +316,54 @@ test("Überlagerung: Korn neutral grau mit Rauschen, Licht auf Schwarz; je Bild 
   const l = lauf(1, "licht", { licht: 0.7, same: 3 });
   assert.match(l, /"=fillStyle","#000"/); assert.match(l, /"=globalCompositeOperation","lighter"/); assert.match(l, /createRadialGradient/);
 });
+
+// ---------- Video 0.3: Marken und Bereich ----------
+test("Markieren: Marken und Bereich gehören zum Projekt und rasten ein; Bereich ergänzt sich, zu kurz hebt ihn auf", () => {
+  const { p, a } = beispiel();
+  F.inFolge(p, a);
+  const m1 = F.markeSetzen(p, 6), m2 = F.markeSetzen(p, 2, "Einsatz");
+  assert.deepEqual(p.stellen.map((m) => [m.t, m.name]), [[2, "Einsatz"], [6, "Marke 1"]], "nach der Zeit geordnet");
+  assert.notEqual(m1, m2);
+  assert.ok(F.rastStellen(p).includes(2) && F.rastStellen(p).includes(6));
+  assert.deepEqual(F.bereichSetzen(p, { von: 7 }), { von: 7, bis: 10 }, "ohne Ende bis zum Schluss");
+  assert.deepEqual(F.bereichSetzen(p, { von: 8, bis: 3 }), { von: 3, bis: 8 }, "Ränder vertauscht");
+  assert.ok(F.rastStellen(p).includes(3) && F.rastStellen(p).includes(8));
+  assert.equal(F.bereichSetzen(p, { von: 5, bis: 5.05 }), null);
+  F.markeEntfernen(p, m2); assert.deepEqual(p.stellen.map((m) => m.id), [m1]);
+  assert.deepEqual(F.normieren({ ...F.neuesProjekt(), stellen: undefined, bereich: undefined }).stellen, [], "ältere Projekte bekommen leere Marken");
+});
+
+test("Markieren: an Marken schneiden, Effekt und Filter nur im Bereich, Übergang an einer Stelle, Bereich herausschneiden", () => {
+  const { p, a, b } = beispiel();
+  F.inFolge(p, a); F.inFolge(p, b);   // 0–10 Video, 10–14 Bild
+  const z = () => F.zeitplan(p).clips.map((x) => [x.at, x.laenge]);
+  assert.equal(F.schneidenAn(p, [3, 10, 3, 14, 20]), 1, "nur wo ein Clip die Stelle überdeckt; am Rand und doppelt nicht");
+  assert.deepEqual(z(), [[0, 3], [3, 7], [10, 4]]);
+  const cs = F.imBereich(p, 5, 12, (c) => { c.effekte = { ...E.EFFEKT_STANDARD, glitch: 0.7 }; c.filter = { vorlage: "noir" }; });
+  assert.equal(cs.length, 2, "der Teil 5–10 und das Bild 10–12");
+  assert.deepEqual(z(), [[0, 3], [3, 2], [5, 5], [10, 2], [12, 2]]);
+  assert.deepEqual(F.zeitplan(p).clips.map((x) => x.c.effekte.glitch), [0, 0, 0.7, 0.7, 0], "der Effekt genau im Bereich");
+  assert.equal(F.zeitplan(p).clips[3].c.effekte.kenburns, "aus", "eine Vorlage ersetzt die Effekte (auch die Fahrt des Bilds)");
+  assert.equal(F.zeitplan(p).clips[4].c.effekte.kenburns, "hinein", "ausserhalb bleibt die Fahrt");
+  // Übergang an einer Stelle: dort wird geschnitten, der Clip davor bekommt ihn; am Ende des Films keiner
+  const c = F.uebergangAn(p, 8, "blende", 0.6);
+  assert.equal(c.uebergang.art, "blende"); assert.equal(c.aus, 8, "der Clip endet an der Stelle");
+  assert.equal(F.uebergangAn(p, F.dauer(p), "schwarz"), null);
+  assert.throws(() => F.uebergangAn(p, 3, "zauber"), /unbekannter Übergang/);
+  // herausschneiden: die Lücke schliesst sich
+  const vorher = F.dauer(p), n = F.herausschneiden(p, 0, 3);
+  assert.equal(n, 1); nahe(F.dauer(p), vorher - 3, 1e-9, "drei Sekunden kürzer");
+  assert.deepEqual(OF.readFilmFile(F.film(p).html).problems, [], "ein gewöhnlicher Film für OpenFilm");
+});
+
+test("Markieren in einer Überblendung: dort ist schon eine Kante (kein Teilen), die Mitte der Blende entscheidet, was im Bereich liegt", () => {
+  const { p, a, b } = beispiel();
+  const c1 = F.inFolge(p, a); F.inFolge(p, b);
+  F.finde(p, c1).c.uebergang = { art: "blende", dauer: 1 };   // Video 0–10, Bild 9–13, Blende 9–10
+  assert.deepEqual(F.kerne(p).map((x) => [x.von, x.bis]), [[0, 9.5], [9.5, 13]]);
+  assert.equal(F.schneidenAn(p, [9.7]), 0, "in der Blende wird nicht geteilt");
+  const cs = F.imBereich(p, 4, 9.7, (c) => { c.effekte = { ...E.EFFEKT_STANDARD, glitch: 0.5 }; });
+  assert.equal(cs.length, 1, "der zweite Teil des Videos (4 bis zur Mitte der Blende)");
+  assert.deepEqual(F.kerne(p).map((x) => [x.von, x.bis, x.c.effekte.glitch]), [[0, 4, 0], [4, 9.5, 0.5], [9.5, 13, 0]]);
+  assert.equal(F.uebergangAn(p, 9.6, "schwarz", 0.4).id, F.kerne(p)[1].c.id, "ein Übergang in der Blende ersetzt sie");
+});

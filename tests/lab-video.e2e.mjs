@@ -229,6 +229,40 @@ await check("Effekte und Titelvorlagen (0.2): Super 8 legt Korn über den Clip, 
   assert.deepEqual(fehler, []);
 });
 
+await check("Markieren (0.3): Marke mit M, Bereich mit I und O, Glitch nur im Bereich, Überblendung an der Marke, rückgängig", async () => {
+  await S(page, () => { ornamentVideo.S.auswahl = null; ornamentVideo.alles(); ornamentVideo.springe(1); });
+  await page.locator("body").click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press("m");
+  assert.equal(await page.locator(".lineal .fahne").count(), 1);
+  assert.match(await page.textContent("#inspektor"), /Marke bei 0:01\.00/);
+  await page.locator('#inspektor select[data-feld="markeUebergang"]').selectOption("blende");
+  await page.locator('#inspektor [data-aktion="uebergang"]').click();
+  const u = await S(page, () => ornamentVideo.F.zeitplan(ornamentVideo.S.p).clips.map((x) => [x.at, x.c.uebergang.art]));
+  assert.ok(u.some(([, art]) => art === "blende"), `Überblendung an der Marke: ${JSON.stringify(u)}`);
+  // Bereich: 2 bis 3,5 s (das Ende liegt in einer Überblendung), dort Glitch
+  await S(page, () => ornamentVideo.springe(2)); await page.keyboard.press("i");
+  await S(page, () => ornamentVideo.springe(3.5)); await page.keyboard.press("o");
+  assert.deepEqual(await S(page, () => ornamentVideo.S.p.bereich), { von: 2, bis: 3.5 });
+  assert.equal(await page.locator(".bereich-band").count(), 1);
+  await page.locator('#inspektor [data-bereich-effekt="glitch"]').click();
+  const g = await S(page, () => ornamentVideo.F.kerne(ornamentVideo.S.p).map((x) => [x.von, x.bis, x.c.effekte.glitch]));
+  const mitGlitch = g.filter((x) => x[2] > 0);
+  assert.ok(mitGlitch.length >= 1 && mitGlitch.every(([a, e]) => a >= 1.98 && e <= 3.52), `Glitch nur im Bereich: ${JSON.stringify(g)}`);
+  assert.match(await page.textContent("#zustand"), /Glitch auf \d Clips? im Bereich/);
+  // rückgängig nimmt den Glitch weg, der Bereich bleibt
+  await page.locator("body").click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press("Control+z");
+  assert.ok(await S(page, () => ornamentVideo.S.p.folge.every((c) => !c.effekte.glitch)), "rückgängig");
+  assert.deepEqual(await S(page, () => ornamentVideo.S.p.bereich), { von: 2, bis: 3.5 });
+  await page.keyboard.press("Control+Shift+z");
+  // Entf hebt den gewählten Bereich auf
+  await page.locator(".bereich-band").click();
+  await page.locator("body").click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press("Delete");
+  assert.equal(await S(page, () => ornamentVideo.S.p.bereich), null);
+  assert.deepEqual(fehler, []);
+});
+
 await check("Takt als Marken: die Schläge des Tons stehen als Marken auf dem Lineal, Ränder rasten dort ein", async () => {
   const id = await S(page, () => ornamentVideo.S.p.ton[0].id);
   await page.locator(`.clip[data-id="${id}"]`).click({ position: { x: 30, y: 20 } });

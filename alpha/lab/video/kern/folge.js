@@ -11,7 +11,7 @@ import { filterCss } from "./filter.js";
 import { titelSeite, TITEL_STANDARD } from "./titel.js";
 import { effekteVon, hatBewegung, bewegung, glitchBei, ueberlagerungSeite, same, EFFEKT_STANDARD } from "./effekte.js";
 
-export const VERSION = "0.2.0";
+export const VERSION = "0.3.0";
 export const FORMATE = Object.freeze({
   "16:9": { w: 1920, h: 1080, name: "16:9 quer (Video)" },
   "9:16": { w: 1080, h: 1920, name: "9:16 hoch (Reels, Stories)" },
@@ -29,7 +29,7 @@ const alleIds = (p) => new Set([...p.folge, ...p.titel, ...p.ton].map((c) => c.i
 
 /** ein leeres Projekt; «name» ist der Name des Films, «titel» sind seine Titel und Texte */
 export function neuesProjekt({ name = "Film", format = "16:9" } = {}) {
-  return { art: "ornament-video", version: VERSION, name, format, medien: {}, folge: [], titel: [], ton: [], marken: [] };
+  return { art: "ornament-video", version: VERSION, name, format, medien: {}, folge: [], titel: [], ton: [], marken: [], stellen: [], bereich: null };
 }
 
 /** ein geladenes Projekt prüfen und auf den Stand bringen; wirft mit allen Mängeln */
@@ -41,7 +41,7 @@ export function normieren(p) {
   if (f.length) throw new Error(`Projekt: ${f.join("; ")}`);
   p.name ??= "Film";
   for (const c of p.folge) { c.tempo ??= 1; c.lautstaerke ??= 1; c.passen ??= "fuellen"; c.zoom ??= 1; c.x ??= 0; c.y ??= 0; c.filter ??= {}; c.uebergang ??= { art: "schnitt", dauer: 0.5 }; c.effekte = { ...EFFEKT_STANDARD, ...(c.effekte ?? {}) }; }
-  p.marken ??= [];
+  p.marken ??= []; p.stellen ??= []; p.bereich ??= null;
   for (const t of p.titel) Object.assign(t, { ...TITEL_STANDARD, ...t });
   for (const t of p.ton) { t.lautstaerke ??= 1; t.einblenden ??= 0; t.ausblenden ??= 0; }
   return p;
@@ -187,6 +187,8 @@ export function rastStellen(p, { kopf = null, marken = [], ausser = null } = {})
   for (const x of p.ton) if (x.id !== ausser) { s.add(x.at); s.add(ms(x.at + x.aus - x.ein)); }
   if (kopf !== null) s.add(ms(kopf));
   for (const m of marken) s.add(ms(m));
+  for (const x of p.stellen ?? []) s.add(ms(x.t));
+  if (p.bereich) { s.add(ms(p.bereich.von)); s.add(ms(p.bereich.bis)); }
   return [...s].sort((a, b) => a - b);
 }
 /** t auf die nächste Stelle ziehen, wenn sie näher als «fang» liegt */
@@ -194,6 +196,85 @@ export function einrasten(t, stellen, fang) {
   let best = t, d = fang;
   for (const s of stellen) { const e = Math.abs(s - t); if (e < d) { d = e; best = s; } }
   return best;
+}
+
+// ---------- Markieren (seit Video 0.3): Marken (Stellen) und ein Bereich ----------
+// Eine Marke ist eine benannte Stelle im Film, der Bereich ein Abschnitt von … bis. Beide gehören zum Projekt (rückgängig zu machen, gespeichert)
+// und rasten ein. Was einer Stelle oder einem Bereich zugeordnet wird (Schnitt, Übergang, Effekt, Filter, Titel), geschieht an den Clips der
+// Folge: sie werden an den Rändern geteilt, und was dazwischen liegt, bekommt die Zuordnung. So gilt sie genau dort, und der Film bleibt ein
+// gewöhnlicher Film (auch in OpenFilm).
+const EPS = 0.02;
+export function markeSetzen(p, t, name = "") {
+  p.stellen ??= [];
+  const id = neueId("marke", new Set(p.stellen.map((x) => x.id)));
+  p.stellen.push({ id, t: ms(Math.max(0, t)), name: name || `Marke ${p.stellen.length + 1}` });
+  p.stellen.sort((a, b) => a.t - b.t);
+  return id;
+}
+export function markeEntfernen(p, id) { p.stellen = (p.stellen ?? []).filter((x) => x.id !== id); }
+/** den Bereich setzen; ein Rand allein (von oder bis) ergänzt den anderen bis zum Ende oder Anfang des Films; null hebt ihn auf */
+export function bereichSetzen(p, { von = p.bereich?.von ?? 0, bis = p.bereich?.bis ?? dauer(p) } = {}) {
+  const a = ms(Math.max(0, Math.min(von, bis))), b = ms(Math.max(von, bis));
+  p.bereich = b - a >= KUERZESTE ? { von: a, bis: b } : null;
+  return p.bereich;
+}
+
+/**
+ * Die Kerne der Clips der Folge: wo jeder für sich steht. In einer Überblendung liegt die Kante in ihrer Mitte. [{ c, von, bis, at, laenge }]
+ */
+export function kerne(p) {
+  const plan = zeitplan(p).clips;
+  return plan.map((x, i) => {
+    const vor = plan[i - 1], nach = plan[i + 1], ende = x.at + x.laenge;
+    const von = vor && vor.at + vor.laenge > x.at ? (x.at + vor.at + vor.laenge) / 2 : x.at;
+    const bis = nach && nach.at < ende ? (ende + nach.at) / 2 : ende;
+    return { ...x, von: ms(von), bis: ms(bis) };
+  });
+}
+/**
+ * Die Clips der Folge an den Filmzeiten teilen: wo genau ein Clip die Zeit überdeckt und sie nicht nahe seinem Rand liegt. Liegt eine Zeit in
+ * einer Überblendung, ist dort schon eine Kante: geteilt wird nicht. Gibt die Zahl der neuen Schnitte.
+ */
+export function schneidenAn(p, zeiten) {
+  let n = 0;
+  for (const t of [...new Set(zeiten.map(ms))].sort((a, b) => a - b)) {
+    const ueber = zeitplan(p).clips.filter((y) => t > y.at - EPS && t < y.at + y.laenge + EPS);
+    if (ueber.length !== 1) continue;
+    const x = ueber[0];
+    if (t > x.at + EPS && t < x.at + x.laenge - EPS && teilen(p, x.c.id, t)) n++;
+  }
+  return n;
+}
+/** die Clips der Folge, deren Kern ganz im Abschnitt liegt (nach dem Teilen an seinen Rändern) */
+export function clipsIm(p, von, bis) {
+  return kerne(p).filter((x) => x.von >= von - EPS && x.bis <= bis + EPS).map((x) => x.c);
+}
+/** im Abschnitt: an den Rändern teilen, dann fn(clip) für jeden Clip darin; gibt die Clips */
+export function imBereich(p, von, bis, fn) {
+  schneidenAn(p, [von, bis]);
+  const cs = clipsIm(p, von, bis);
+  for (const c of cs) fn(c);
+  return cs;
+}
+/**
+ * Einen Übergang an die Filmzeit t legen: dort schneiden (falls nötig) und dem Clip, der an t endet, den Übergang geben. Gibt den Clip oder
+ * null (an t endet kein Clip, etwa am Ende des Films).
+ */
+export function uebergangAn(p, t, art, d = 0.5) {
+  if (!UEBERGAENGE[art]) throw new Error(`unbekannter Übergang ${art}`);
+  schneidenAn(p, [t]);
+  const plan = kerne(p);
+  // der Clip, dessen Kern an t endet, oder in dessen Überblendung mit dem nächsten t liegt
+  const x = plan.find((y, i) => plan[i + 1] && (Math.abs(y.bis - t) < EPS || (t >= plan[i + 1].at - EPS && t <= y.at + y.laenge + EPS)));
+  if (!x) return null;
+  x.c.uebergang = { art, dauer: ms(d) };
+  return x.c;
+}
+/** den Abschnitt aus der Folge herausschneiden (die Lücke schliesst sich); Titel und Töne bleiben, wo sie sind */
+export function herausschneiden(p, von, bis) {
+  const cs = imBereich(p, von, bis, () => {});
+  p.folge = p.folge.filter((c) => !cs.includes(c));
+  return cs.length;
 }
 
 // ---------- OpenFilm ----------
