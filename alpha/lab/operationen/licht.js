@@ -67,6 +67,9 @@ export function licht(bild, p) {
 
 export const lichtOperation = bildfilter({
   id: "lab.licht",
+  // ausgemustert (27. Oktober 2026, Wunsch: «pulslinien und licht möchte ich mal definitiv weg als effekte»): nicht mehr wählbar, bleibt im
+  // Register, damit gespeicherte Projekte mit diesem Schritt weiter aufgehen (kern/register.js)
+  ausgemustert: "27. Oktober 2026",
   name: "Licht: Glühen und Streifen",
   version: "0.1.0",
   klasse: "raeumlich",

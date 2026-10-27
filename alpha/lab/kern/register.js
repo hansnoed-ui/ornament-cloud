@@ -51,16 +51,18 @@ export function erstelleRegister() {
     },
     hat: (id) => ops.has(id),
     alle: () => [...ops.values()],
+    // Ausgemusterte Operationen (op.ausgemustert, ein Datum) bleiben im Register, damit gespeicherte Projekte mit ihnen aufgehen und ihr
+    // Verlauf sich zeigen lässt; zur Wahl stehen sie nicht mehr: anwendbar, fuer und generatoren lassen sie weg
     /** Operationen, deren Pflichteingänge sich aus den vorhandenen Typen füllen lassen */
     anwendbar(vorhandeneTypen) {
-      return [...ops.values()].filter((op) => op.eingaenge.every((e) => e.optional || vorhandeneTypen.some((t) => kompatibel(t, e.typ))));
+      return [...ops.values()].filter((op) => !op.ausgemustert && op.eingaenge.every((e) => e.optional || vorhandeneTypen.some((t) => kompatibel(t, e.typ))));
     },
     /** Operationen, die ein Ergebnis eines bestimmten Typs als Haupteingang annehmen (für Weiterverarbeitung); ohne Generatoren */
     fuer(typ) {
-      return [...ops.values()].filter((op) => op.eingaenge.length && !istGenerator(op) && kompatibel(typ, op.eingaenge[0].typ));
+      return [...ops.values()].filter((op) => !op.ausgemustert && op.eingaenge.length && !istGenerator(op) && kompatibel(typ, op.eingaenge[0].typ));
     },
     /** Generatoren: Operationen ohne Pflichteingang (ORNA, Klangerzeuger); sie stehen immer zur Wahl */
-    generatoren: () => [...ops.values()].filter(istGenerator),
+    generatoren: () => [...ops.values()].filter((op) => !op.ausgemustert && istGenerator(op)),
   };
 }
 

@@ -46,9 +46,9 @@ async function ausfuehren(page) { await page.click("#ausfuehren"); await page.wa
 const { ctx, page, fehler, fremd } = await oeffne();
 let gespeichert = null;
 
-await check("Start: vier Bereiche, Register mit 40 Operationen, keine Fehler", async () => {
+await check("Start: vier Bereiche, Register mit 40 wählbaren Operationen, 3 ausgemustert, keine Fehler", async () => {
   for (const id of ["material", "operationen", "experiment", "protokoll"]) assert.ok(await page.locator(`#${id}`).isVisible(), id);
-  assert.match(await page.textContent("#status"), /40 Operationen/);
+  assert.match(await page.textContent("#status"), /40 Operationen im Register \(3 ausgemustert\)/);
   assert.deepEqual(fehler, []);
 });
 
@@ -602,7 +602,7 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
     if (lage.frage === "komposition") return r.fulfill({ contentType: "application/json", body: JSON.stringify({ modell: "jev-test", zwischengespeichert: false, antworten: {
       aufbau: { "aufbau.kette": 0.8, "aufbau.faecher": 0.2 }, uebergang: { "film.schnitt": 0.1, "film.blende": 0.8, "film.schwelle": 0.1 },
       klang1: { "klang.schneller": 1 }, klang2: { "klang.zerlegt": 1 },
-      ...Object.fromEntries([1, 2, 3, 4, 5, 6].map((i) => [`bild${i}`, { "bild.glitch": 0.9, "bild.farbe": 0.05, "bild.licht": 0.05 }])) } }) });
+      ...Object.fromEntries([1, 2, 3, 4, 5, 6].map((i) => [`bild${i}`, { "bild.glitch": 0.9, "bild.farbe": 0.05, "bild.raster": 0.05 }])) } }) });
     return r.fulfill({ contentType: "application/json", body: JSON.stringify({ wahrscheinlichkeiten: Object.fromEntries(lage.optionen.map((o) => [o, o === "vorschlag.farbwelle" ? 0.7 : 0.05])), modell: "jev-test", zwischengespeichert: false }) });
   });
   await p.goto(base);
@@ -702,7 +702,7 @@ await check("Vorschlag für 30 s: Bild und Ton wählen, jev (vorgetäuscht) beko
   assert.equal(z.x.partitur.folge[0].einmal, true); assert.equal(z.x.partitur.folge[0].halten, 3.5, "die Zettelkarte 3,5 s (seit 0.1.34)"); assert.equal(z.x.partitur.folge.at(-1).halten, 3.5, "die ORNA-Karte 3,5 s"); assert.equal(z.x.partitur.folge.at(-1).einmal, true);
   assert.equal(z.x.partitur.folge[0].ergebnis, z.x.stationen[0]); assert.equal(z.x.partitur.folge.at(-1).ergebnis, z.x.stationen.at(-1));
   assert.ok(z.x.partitur.lebendig, "die Zusammenstellung ist lebendig");
-  assert.equal(z.x.partitur.bewegung.staerke, 0.6, "die Kamera wie in der Zusammenstellung eingestellt"); assert.deepEqual(z.d.details.film, { lebendig: true, bewegung: 0.6, signatur: "aus", format: "9:16" });
+  assert.equal(z.x.partitur.bewegung.staerke, 0.6, "die Kamera wie in der Zusammenstellung eingestellt"); assert.deepEqual(z.d.details.film, { lebendig: true, bewegung: 0.6, signatur: "aus", mastering: "−14 LUFS", format: "9:16" });
   assert.ok(Math.abs(z.x.breite / z.x.hoehe - 9 / 16) < 0.02, `der Film ist 9:16: ${z.x.breite} × ${z.x.hoehe}`); assert.equal(z.x.breite % 2, 0); assert.equal(z.d.gewaehlt.format, "9:16");
   assert.ok(z.x.zeitplan.some((y) => y.lebendig), `die Grafikkarte rechnet Stationen in jedem Bild neu: ${JSON.stringify(z.x.zeitplan.slice(0, 3))}`);
   assert.deepEqual(fehler2, []);
@@ -735,7 +735,7 @@ await check("Video als Eingang: Standbilder und Tonspur werden Material, die Zus
   await p.waitForSelector("#vorschlag30 .zusammenstellung");
   await warteFertig(p);
   assert.match(await p.textContent("#vorschlag30 .zusammenstellung"), /Aus dem Video: jeder Abschnitt nimmt das Standbild seiner Zeit \(6 Standbilder\)/);
-  for (const [i, w] of ["bild.farbe", "bild.licht", "bild.raster", "bild.farbe", "bild.glitch", "bild.licht"].entries()) await p.locator(`#vorschlag30 select[data-frage="bild${i + 1}"]`).selectOption(w);
+  for (const [i, w] of ["bild.farbe", "bild.raster", "bild.raster", "bild.farbe", "bild.glitch", "bild.raster"].entries()) await p.locator(`#vorschlag30 select[data-frage="bild${i + 1}"]`).selectOption(w);
   await p.click("#zusammenstellung-rechnen"); await p.waitForTimeout(50);
   await warteFertig(p, 300000);
   await p.waitForSelector("#vorschlag30 .zusammenstellung video");

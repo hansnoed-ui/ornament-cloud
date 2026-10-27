@@ -94,6 +94,8 @@ export function puls(bild, p) {
 
 export const pulsOperation = bildfilter({
   id: "lab.puls",
+  // ausgemustert (27. Oktober 2026, mit der Spirale): nicht mehr wählbar, bleibt im Register für gespeicherte Projekte (kern/register.js)
+  ausgemustert: "27. Oktober 2026",
   name: "Pulslinien",
   version: "0.1.0",
   klasse: "raeumlich",

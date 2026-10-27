@@ -64,15 +64,11 @@ export const BILD_REZEPTE = Object.freeze({
   // Farbe: die Drehung steht auf 90° und die Lautstärke dreht sie weiter (seit 0.1.39; vorher 0°: in leisen Momenten stand das Ausgangsbild)
   "bild.farbe": { operation: "lab.farbe", parameter: { saettigung: 1.3, farbdrehung: 90 }, ziel: "farbdrehung", tiefe: 1 },
   "bild.glitch": { operation: "lab.glitch", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
-  "bild.verzerrung": { operation: "lab.verzerrung", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.6 },
-  "bild.licht": { operation: "lab.licht", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
   "bild.raster": { operation: "lab.raster", parameter: { seite: 1000, bilder: 18 }, tiefe: 0.5 },
   // die Linienbilder (seit 0.1.36, nach den Plotter-Umwandlern von Makelangelo): lebendig auf der Grafikkarte, «lauf» bewegt sie von selbst.
   // In der Zusammenstellung zeichnen sie seit 0.1.41 mit den Farben des Bildes (auf Papier oder auf Nacht), nicht mit Tinte: Christian (25. Oktober
   // 2026): «Das Video ist jetzt zum grossen Teil schwarz/weiss» – seit die Effekte rein laufen (0.1.39), stand kein buntes Ausgangsbild mehr dazwischen.
   // Im Register bleibt «Tinte auf Papier» der Standard der Operationen.
-  "bild.puls": { operation: "lab.puls", parameter: { farbe: "papier", seite: 1000, bilder: 18 }, tiefe: 0.5 },
-  "bild.spirale": { operation: "lab.puls", parameter: { traeger: "spirale", abstand: 0.012, farbe: "nacht", seite: 1000, bilder: 18 }, tiefe: 0.5 },
   "bild.schraffur": { operation: "lab.schraffur", parameter: { farbe: "papier", seite: 1000, bilder: 18 }, tiefe: 0.25 },
   "bild.fluss": { operation: "lab.fluss", parameter: { farbe: "nacht", seite: 800, bilder: 18 }, tiefe: 0.5 },
   "bild.punktieren": { operation: "lab.punktieren", parameter: { farbe: "papier", seite: 1000, bilder: 18 }, tiefe: 0.5 },
@@ -85,7 +81,7 @@ export const BILD_REZEPTE = Object.freeze({
   "bild.gewebe": { operation: "phorma.gewebe", parameter: { bilder: VARIANTEN_JE_ABSCHNITT, dauer: DAUER }, ziel: null },
   // PHORMA II und PHORMA I (seit 0.1.22, operationen/phorma2.js, phorma1.js): zehn Momente des Ablaufs als Varianten; im Film läuft der Ablauf ab dem
   // Auftritt seiner Stationen (zeitbasis «auftritt») in SZENE_DAUER Sekunden; ein Zettel oder eine Konstellation am Eingang gibt ihnen den Titel
-  ...Object.fromEntries(["physarum", "tiefe", "welle", "tuch", ["druck", "raster"], "montage"].map((e) => { const [k, a] = Array.isArray(e) ? e : [e, e]; return [`bild.${k}`, { operation: "phorma.ii", parameter: { ablauf: a, bilder: VARIANTEN_JE_ABSCHNITT, dauer: SZENE_DAUER }, ziel: null }]; })),
+  ...Object.fromEntries(["physarum", "tiefe", "welle", ["druck", "raster"], "montage"].map((e) => { const [k, a] = Array.isArray(e) ? e : [e, e]; return [`bild.${k}`, { operation: "phorma.ii", parameter: { ablauf: a, bilder: VARIANTEN_JE_ABSCHNITT, dauer: SZENE_DAUER }, ziel: null }]; })),
   ...Object.fromEntries(["fragmente", "strom", "koerper", "scherben", "echo", "relief"].map((a) => [`bild.${a}`, { operation: "phorma.i", parameter: { ablauf: a, bilder: VARIANTEN_JE_ABSCHNITT, dauer: SZENE_DAUER }, ziel: null }])),
   // The Fictory (seit 0.1.22 wieder, lebendig): die sechs Zustände als Varianten, im Film läuft der Prozess von Zustand zu Zustand; die Konstellation gibt die Regel
   "bild.zerfall": { operation: "fictory.prozess", parameter: { seite: 1000 }, ziel: null },

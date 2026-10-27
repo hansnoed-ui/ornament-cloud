@@ -165,10 +165,10 @@ p { margin: 0; max-width: 62ch; }
 <main id="start">
   <div class="band" aria-label="Ein Bild in sechs Zuständen">
     <figure class="auf"><img src="bilder/portraet.jpg" alt="Beispielbild: Porträt mit Mosaik vor Rot"></figure>
-    <figure class="auf" style="--i:1"><img src="bilder/v-wirbel.jpg" alt="Dasselbe Bild verwirbelt"></figure>
+    <figure class="auf" style="--i:1"><img src="bilder/v-glitch.jpg" alt="Dasselbe Bild im Glitch"></figure>
     <div class="blau auf" style="--i:2"><svg class="signet weiss" viewBox="0 0 34 24" aria-hidden="true"></svg></div>
     <figure class="auf" style="--i:3"><img src="bilder/v-neu.jpg" alt="Dasselbe Bild zerlegt und neu gesetzt"></figure>
-    <figure class="auf" style="--i:4"><img src="bilder/v-kaleido.jpg" alt="Dasselbe Bild als Kaleidoskop"></figure>
+    <figure class="auf" style="--i:4"><img src="bilder/v-raster.jpg" alt="Dasselbe Bild als Raster"></figure>
     <figure class="auf" style="--i:5"><img src="bilder/v-teilung.jpg" alt="Dasselbe Bild als Teilung"></figure>
   </div>
 
@@ -207,7 +207,7 @@ p { margin: 0; max-width: 62ch; }
         <h2 id="h-film" class="auf">Vorschlag für 30 Sekunden.</h2>
         <blockquote class="auf" style="--i:1"><p>Mit Bild und Ton schlägt das Lab einen Film vor. Du übernimmst ihn oder wählst neu.</p></blockquote>
         <p class="notiz auf" style="--i:2">Sechs Abschnitte, zwei Klänge, vier Dramaturgien, ein Format von 9:16 bis 16:9. Am Schluss das Signet.</p>
-        <div class="mini auf" style="--i:3"><img src="bilder/v-glitch.jpg" alt="Abschnitt Glitch" loading="lazy"><img src="bilder/v-sort.jpg" alt="Abschnitt Pixelsortierung" loading="lazy"><img src="bilder/v-licht.jpg" alt="Abschnitt Licht" loading="lazy"></div>
+        <div class="mini auf" style="--i:3"><img src="bilder/v-glitch.jpg" alt="Abschnitt Glitch" loading="lazy"><img src="bilder/v-sort.jpg" alt="Abschnitt Pixelsortierung" loading="lazy"><img src="bilder/v-teilung.jpg" alt="Abschnitt Teilung" loading="lazy"></div>
       </div>
       <div class="haupt">
         <figure class="film auf" style="--i:1"><canvas id="film" width="760" height="760" role="img" aria-label="Das Beispielbild läuft durch die Stationen eines Films"></canvas><figcaption><i></i><span id="film-station">Station 1 · Ausgangsbild</span></figcaption></figure>
@@ -222,12 +222,9 @@ p { margin: 0; max-width: 62ch; }
       </div>
       <div class="haupt">
         <h2 id="h-prob" class="auf">Probier es am Bild.</h2>
-        <p class="auf" style="--i:1;margin-top:24px">Sieben Verfahren aus dem Lab, hier vereinfacht und direkt im Browser gerechnet. Im Lab hat jedes seine Parameter, Varianten und einen Verlauf für den Film.</p>
+        <p class="auf" style="--i:1;margin-top:24px">Vier Verfahren aus dem Lab, hier vereinfacht und direkt im Browser gerechnet. Im Lab hat jedes seine Parameter, Varianten und einen Verlauf für den Film.</p>
         <div class="wahl auf" style="--i:2" role="group" aria-label="Verfahren" id="wahl">
-          <button type="button" data-v="puls" aria-pressed="true">Pulslinien</button>
-          <button type="button" data-v="raster">Raster</button>
-          <button type="button" data-v="wirbel">Wirbel</button>
-          <button type="button" data-v="kaleido">Kaleidoskop</button>
+          <button type="button" data-v="raster" aria-pressed="true">Raster</button>
           <button type="button" data-v="glitch">Glitch</button>
           <button type="button" data-v="sort">Pixelsortierung</button>
           <button type="button" data-v="neu">Neu setzen</button>
@@ -243,8 +240,8 @@ p { margin: 0; max-width: 62ch; }
       <div class="haupt">
         <h2 id="h-kat" class="auf">Was im Lab steht.</h2>
         <div class="katalog">
-          <div class="auf"><b>Bildfilter</b><span>Glitch, Pixelsortierung, Verzerrung, Licht, Raster, Zerlegen und neu setzen.</span></div>
-          <div class="auf" style="--i:1"><b>Linienbilder</b><span>Pulslinien, Schraffur in Lagen, Fliessfeld, Punktieren, Teilung.</span></div>
+          <div class="auf"><b>Bildfilter</b><span>Glitch, Pixelsortierung, Raster, Zerlegen und neu setzen.</span></div>
+          <div class="auf" style="--i:1"><b>Linienbilder</b><span>Schraffur in Lagen, Fliessfeld, Punktieren, Teilung.</span></div>
           <div class="auf" style="--i:2"><b>Beat und Klang</b><span>Beat aus Bild, Klangerzeuger, Tempo, Dekonstruktion, Körner, Filter, Fertig mischen.</span></div>
           <div class="auf" style="--i:3"><b>Stationen</b><span>Zustände werden Stationen, mit Halten, Übergang und Takt.</span></div>
           <div class="auf" style="--i:4"><b>Modulation</b><span>Sinus, Rampe, gehaltener Zufall oder ein Steuersignal aus Bild oder Ton.</span></div>
@@ -296,18 +293,6 @@ function quelle(bild, W, H) {
 }
 
 const VERFAHREN = {
-  puls: { name: "Pulslinien", zeichne(ctx, q, t = 0) {
-    // in den Farben des Bildes (wie die Linienbilder in der Zusammenstellung seit Lab 0.1.41): Grund in der Farbe der Fläche, Linien dunkler
-    const { W, H, tinte, farbe, grund } = q, a = W / 540, mix = (c, k) => `rgb(${c.map(v => Math.round(v * k)).join(",")})`;
-    ctx.fillStyle = mix(grund, .92); ctx.fillRect(0, 0, W, H); ctx.lineWidth = 1.5 * a; ctx.lineCap = "round";
-    for (let y = 5 * a; y < H; y += 6.5 * a) {
-      const yy = x => { const d = tinte(x, y); return y + Math.sin(x * (.08 + d * .7) / a + t * 4 + y * .05) * d * 3.8 * a; };
-      for (let x0 = 0; x0 < W; x0 += 12 * a) {
-        const c = farbe(x0 + 6 * a, y), rot = c[0] > 150 && c[1] < 110; ctx.strokeStyle = rot ? mix(grund, .62) : mix(c, .55);
-        ctx.beginPath(); for (let x = x0; x <= x0 + 12 * a + 2; x += 2) ctx.lineTo(x, yy(x)); ctx.stroke();
-      }
-    }
-  } },
   raster: { name: "Raster", zeichne(ctx, q, t = 0) {
     // Punkte in der Farbe des Bildes auf dunklem Grund, gross, wo es hell ist
     const { W, H, hell, farbe } = q, g = (W / 46) * (1 + Math.sin(t * 2) * .1);
@@ -345,12 +330,6 @@ const VERFAHREN = {
     ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
     z.forEach((k, i) => ctx.drawImage(leinwand, (k % nx) * w, Math.floor(k / nx) * h, w, h, (i % nx) * w + 1, Math.floor(i / nx) * h + 1, w - 2, h - 2));
   } },
-  licht: { name: "Licht", zeichne(ctx, q, t = 0) {
-    const { W, H, leinwand } = q;
-    ctx.drawImage(leinwand, 0, 0); ctx.save(); ctx.globalCompositeOperation = "screen";
-    ctx.filter = `blur(${W / 40}px) brightness(1.1)`; ctx.globalAlpha = .55 + .15 * Math.sin(t * 3); ctx.drawImage(leinwand, 0, 0);
-    ctx.filter = `blur(${W / 120}px)`; ctx.globalAlpha = .5; ctx.drawImage(leinwand, 0, 0); ctx.restore();
-  } },
   schraffur: { name: "Schraffur in Lagen", zeichne(ctx, q) {
     const { W, H, tinte } = q, a = W / 540, abst = 5 * a;
     ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); ctx.strokeStyle = "#000"; ctx.lineWidth = .9 * a;
@@ -369,25 +348,6 @@ const VERFAHREN = {
     const { W, H, hell, farbe, grund } = q, r = zufall(s), a = W / 540;
     ctx.fillStyle = `rgb(${grund.map(v => Math.round(v + (255 - v) * .82)).join(",")})`; ctx.fillRect(0, 0, W, H);
     for (let i = 0; i < W * H / 7; i++) { const x = r() * W, y = r() * H, c = farbe(x, y), rot = c[0] > 150 && c[1] < 110, d = rot ? .55 : .25 + .75 * (1 - hell(x, y)); if (r() < d * d) { ctx.fillStyle = `rgb(${c.map(v => Math.round(v * .8)).join(",")})`; ctx.fillRect(x, y, 2 * a, 2 * a); } }
-  } },
-  wirbel: { name: "Wirbel", zeichne(ctx, q, t = 0) {
-    // optische Verzerrung: ein Wirbel um die Mitte, die Stärke atmet mit der Zeit
-    const { W, H, Q } = q, out = ctx.createImageData(W, H), d = out.data, src = Q.data, cx = W / 2, cy = H * .46, R = W * .55, k = 2.4 * (.8 + .2 * Math.sin(t * 1.3));
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const dx = x - cx, dy = y - cy, r = Math.hypot(dx, dy), w = r < R ? k * Math.pow(1 - r / R, 2) : 0, c = Math.cos(w), sn = Math.sin(w);
-      const sx = Math.min(W - 1, Math.max(0, (cx + dx * c - dy * sn) | 0)), sy = Math.min(H - 1, Math.max(0, (cy + dx * sn + dy * c) | 0)), p = (y * W + x) * 4, o = (sy * W + sx) * 4;
-      d[p] = src[o]; d[p + 1] = src[o + 1]; d[p + 2] = src[o + 2]; d[p + 3] = 255;
-    }
-    ctx.putImageData(out, 0, 0);
-  } },
-  kaleido: { name: "Kaleidoskop", zeichne(ctx, q, t = 0) {
-    const { W, H, Q } = q, out = ctx.createImageData(W, H), d = out.data, src = Q.data, cx = W / 2, cy = H / 2, sek = Math.PI / 4, dreh = t * .15;
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const dx = x - cx, dy = y - cy, r = Math.hypot(dx, dy); let w = Math.atan2(dy, dx) + dreh; w = ((w % (2 * sek)) + 2 * sek) % (2 * sek); if (w > sek) w = 2 * sek - w;
-      const sx = Math.min(W - 1, Math.max(0, (W * .5 + Math.cos(w + 1.2) * r * .8) | 0)), sy = Math.min(H - 1, Math.max(0, (H * .44 + Math.sin(w + 1.2) * r * .8) | 0)), p = (y * W + x) * 4, o = (sy * W + sx) * 4;
-      d[p] = src[o]; d[p + 1] = src[o + 1]; d[p + 2] = src[o + 2]; d[p + 3] = 255;
-    }
-    ctx.putImageData(out, 0, 0);
   } },
   teilung: { name: "Teilung", zeichne(ctx, q) {
     const { W, H, farbe, hell } = q;
@@ -616,11 +576,11 @@ const beispiel = new Image(); beispiel.src = "bilder/portraet.jpg";
 beispiel.decode().then(() => {
   // Film: Stationen nacheinander, mit Überblendung, lebendige Verfahren laufen weiter
   const fc = document.getElementById("film"), fx = fc.getContext("2d"), qf = quelle(beispiel, 760, 760);
-  const STATIONEN = [["start", "Ausgangsbild"], ["wirbel", "Wirbel"], ["glitch", "Glitch"], ["raster", "Raster"], ["sort", "Pixelsortierung"], ["licht", "Licht"], ["kaleido", "Kaleidoskop"], ["teilung", "Teilung"]];
+  const STATIONEN = [["start", "Ausgangsbild"], ["glitch", "Glitch"], ["raster", "Raster"], ["sort", "Pixelsortierung"], ["teilung", "Teilung"]];
   const zw = document.createElement("canvas"); zw.width = zw.height = 760; const zx = zw.getContext("2d");
   const male = (c, art, t, s) => art === "start" ? c.drawImage(qf.leinwand, 0, 0) : VERFAHREN[art].zeichne(c, qf, t, s);
   const statisch = new Map(); const stand = (art, s) => { const key = art + s; if (!statisch.has(key)) { const c = document.createElement("canvas"); c.width = c.height = 760; male(c.getContext("2d"), art, 0, s); statisch.set(key, c); if (statisch.size > 12) statisch.delete(statisch.keys().next().value); } return statisch.get(key); };
-  const lebend = a => a === "raster" || a === "licht";
+  const lebend = a => a === "raster";
   const schild = document.getElementById("film-station");
   let filmSicht = false; new IntersectionObserver(es => { filmSicht = es[0].isIntersecting; }).observe(fc);
   let zuletzt = -1;
@@ -638,14 +598,14 @@ beispiel.decode().then(() => {
 
   // Probieren: Verfahren wählen, das Protokoll schreibt mit
   const pc = document.getElementById("pult"), px = pc.getContext("2d"), qp = quelle(beispiel, 720, 720), prot = document.getElementById("protokoll");
-  let wahl = "puls", samen = 11, eintraege = [];
-  const ARTEN = { puls: "Mensch", raster: "Mensch", wirbel: "Regel", kaleido: "Regel", glitch: "Zufall", sort: "Regel", neu: "Zufall" };
+  let wahl = "raster", samen = 11, eintraege = [];
+  const ARTEN = { raster: "Mensch", glitch: "Zufall", sort: "Regel", neu: "Zufall" };
   function schreibe(v) { eintraege.unshift([ARTEN[v], `${VERFAHREN[v].name}${ARTEN[v] === "Zufall" ? ", Startwert " + samen : ""}`]); eintraege = eintraege.slice(0, 3); prot.innerHTML = eintraege.map(([a, s]) => `<div><b>${a}</b><span>${s}</span></div>`).join(""); }
   function malePult(t = 0) { VERFAHREN[wahl].zeichne(px, qp, ruhig ? 0 : t, samen); }
   document.getElementById("wahl").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; wahl = b.dataset.v; samen++; document.querySelectorAll("#wahl button").forEach(x => x.setAttribute("aria-pressed", x === b)); malePult(performance.now() / 1000); schreibe(wahl); });
-  malePult(0); schreibe("puls");
+  malePult(0); schreibe("raster");
   let pultSicht = false; new IntersectionObserver(es => { pultSicht = es[0].isIntersecting; }).observe(pc);
-  (function lauf(ts) { if (pultSicht && !ruhig && (wahl === "puls" || wahl === "raster")) malePult(ts / 1000); requestAnimationFrame(lauf); })(0);
+  (function lauf(ts) { if (pultSicht && !ruhig && (wahl === "raster")) malePult(ts / 1000); requestAnimationFrame(lauf); })(0);
 });
 </script>
 </body>
