@@ -244,7 +244,7 @@ function bau(sprache) {
   <link rel="stylesheet" href="/b/b.css?v=${V}">
   <script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\\u003c")}</script>
 </head>
-<body>
+<body${aktiv ? ` data-bereich="${aktiv.replace(/\/$/, "")}"` : ""}>
   <a class="sprung" href="#inhalt">${esc(T.sprung)}</a>
   <header class="kopf">
     <div class="spalte">
