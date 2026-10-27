@@ -6,6 +6,7 @@ import { DoppelpruefungVideo, T as TDoppelpruefung } from "./doppelpruefung/Vide
 import { DreiervergleichVideo, T as TDreiervergleich } from "./dreiervergleich/Video";
 import { MenschVideo, T as TMensch, zeitplan as zeitplanMensch } from "./mensch/Video";
 import { StartAnimation, TStart, WachstumVideo, T as TWachstum } from "./wachstum/Video";
+import { WissenVideo, T as TWissen } from "./wissen/Video";
 // neue Videos: Import
 
 export const RemotionRoot: React.FC = () => (
@@ -25,6 +26,8 @@ export const RemotionRoot: React.FC = () => (
     {/* Startanimation der Website: nur die Zeichen (11 s), ohne Signet, hell und dunkel (9. Oktober 2026) */}
     <Composition id="StartAnimation" component={StartAnimation} durationInFrames={TStart.ende} fps={FPS} width={BREITE} height={1080} />
     <Composition id="StartAnimationDunkel" component={StartAnimation} durationInFrames={TStart.ende} fps={FPS} width={BREITE} height={1080} defaultProps={{ dunkel: true }} />
+    {/* «Wissen»: der Obsidian-Tresor als Netz, 4:5, im Look des Labs (27. Oktober 2026) */}
+    <Composition id="WissenVideo" component={WissenVideo} durationInFrames={TWissen.ende} fps={FPS} width={BREITE} height={1350} />
     {/* neue Videos: Composition */}
   </>
 );
