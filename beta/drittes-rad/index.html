@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Das Dritte Rad – ornament.cloud · Beta</title>
+  <!-- Beta: «Das Dritte Rad» neu gestaltet (28. Oktober 2026, Wunsch: «weniger dunkelviolett, weniger Gold, moderner, mehr Flächen statt Kästchen, eventuell eine
+       moderne Bewegung des Hintergrunds beim Drehen»). Richtung «Farbfeld» aus dem Skill design-taste-frontend (loud-flat-poster), Christians Wahl: A, flache Ringe.
+       Idee: Goethes Farbenkreis, der innerste Ring des Rads, wird der Grund der Seite. Beim Drehen kreisen seine sieben Farben als grosse Flächen hinter dem Rad mit
+       (gekoppelt an den Farbring), wenn das Rad steht, füllt die gezogene Farbe die Bühne. Die drei Stücke liegen als randlose Flächen untereinander, ohne Kästchen.
+       Inhalte und Logik wie in alpha/drittes-rad/ (Alpha bleibt unverändert): engine.js, kacheln.js, daten.js, jev.js werden von dort geladen, mit derselben Versionsmarke
+       (?v=, gesetzt von tools/build-drittes-rad.ts). Die Adressen der Engine zeigen auf die Alpha-Seite; hier werden sie auf diese Seite umgeschrieben (lokal()).
+       Das Rad ohne Tierkreis, Sterne und Siegel: drei flache Ringe (Zeit schwarz mit den sieben Zeichen, Form weiss mit den vierzig Zeichen von ORNA, Farbe in den sieben Farben). -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Das Dritte Rad: Zeit, Form und Farbe drehen gegeneinander, die Treffer öffnen Stücke aus Zettelkasten, ORNA und OMNA COLOR, und von jedem aus geht es weiter.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ornament.cloud">
+  <meta property="og:locale" content="de_CH">
+  <meta property="og:url" content="https://ornament.cloud/beta/drittes-rad/">
+  <meta property="og:title" content="Das Dritte Rad">
+  <meta property="og:description" content="Zeit, Form und Farbe drehen gegeneinander, die Treffer öffnen Stücke aus Zettelkasten, ORNA und OMNA COLOR, und von jedem aus geht es weiter.">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <style>
+:root {
+  --papier: #ffffff; --tinte: #000000; --grau: #dedede; --leise: #555555; --minze: #a7ff9c;
+  --rand: clamp(16px, 3vw, 32px);
+  --sans: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --feld: var(--papier); --feld-tinte: var(--tinte);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--papier); }
+body { margin: 0; color: var(--tinte); font: 400 18px/1.55 var(--sans); -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-underline-offset: 4px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+/* ---- Leiste ---- */
+/* die Leiste liegt über der Bühne, ohne eigenen Grund: beim Drehen kreisen die Farben bis an den oberen Rand */
+.leiste { position: absolute; top: 0; left: 0; right: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px var(--rand); color: var(--feld-tinte); transition: color .9s ease; }
+.leiste .heim { font-weight: 500; text-decoration: none; letter-spacing: -.01em; }
+.leiste .heim:hover { text-decoration: underline; }
+.leiste nav { display: flex; gap: 22px; font-size: 16px; }
+.leiste nav a { text-decoration: none; }
+.leiste nav a:hover { text-decoration: underline; }
+@media (max-width: 700px) { .leiste nav { display: none; } }
+
+/* ---- Bühne: das Feld in der gezogenen Farbe, dahinter beim Drehen der Farbenkreis ---- */
+.buehne { position: relative; isolation: isolate; overflow: hidden; background: var(--feld); color: var(--feld-tinte); transition: background-color .9s ease, color .9s ease;
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: 24px var(--rand); padding: calc(60px + clamp(8px, 3vh, 40px)) var(--rand) clamp(32px, 6vh, 72px);
+  min-height: 100svh; }
+body.offen .buehne { min-height: 0; }
+.text { display: grid; gap: 28px; align-content: center; max-width: 620px; }
+h1 { margin: 0; font: 500 clamp(3.6rem, 9vw, 9.5rem)/.88 var(--sans); letter-spacing: -.045em; }
+h1 span { display: block; }
+.sagt { margin: 0; font-size: clamp(1.15rem, 1.5vw, 1.35rem); line-height: 1.45; max-width: 30ch; }
+.knoepfe { display: flex; flex-wrap: wrap; gap: 12px; }
+.knopf { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 30px; border: 0; border-radius: 999px; background: var(--feld-tinte); color: var(--feld); font-weight: 500; font-size: 1.05rem; transition: transform .2s cubic-bezier(.2,.7,.2,1), background-color .9s ease, color .9s ease; }
+.knopf.zweit { background: transparent; color: var(--feld-tinte); box-shadow: inset 0 0 0 2px var(--feld-tinte); }
+.knopf:hover:not(:disabled) { transform: translateY(-2px); }
+.knopf:active:not(:disabled) { transform: scale(.97); }
+.knopf:disabled { opacity: .45; cursor: default; }
+.radplatz { position: relative; display: grid; place-items: center; }
+#farbkreis { position: absolute; left: 50%; top: 50%; width: 320vmax; height: 320vmax; margin: -160vmax 0 0 -160vmax; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .5s ease; }
+#farbkreis g { transition-property: transform; transition-timing-function: cubic-bezier(.3, .05, .15, 1); }
+body.dreht #farbkreis { opacity: 1; }
+.wheel { width: min(100%, 640px, calc(100svh - 160px)); min-width: 260px; aspect-ratio: 1; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; border-radius: 50%; }
+.wheel.zieht { cursor: grabbing; }
+.wheel svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.spin { transition-property: transform, opacity; transition-timing-function: cubic-bezier(.3, .05, .15, 1); }
+.zeit-seg { fill: var(--tinte); }
+.form-disc { fill: var(--papier); }
+.zeichen { fill: none; stroke: var(--papier); stroke-width: .75; stroke-linecap: round; stroke-linejoin: round; }
+.zeichen-punkt { fill: var(--papier); }
+.sym-line { fill: none; stroke: var(--tinte); stroke-width: .13; stroke-linecap: round; }
+.sym-dot { fill: var(--tinte); }
+.sym-ghost { opacity: .4; }
+.kern { fill: var(--tinte); }
+.kern-punkt { fill: var(--papier); }
+.zeiger { fill: var(--feld-tinte); transition: fill .9s ease; }
+.wheel[data-fokus="zeit"] :is(#form, #farbe), .wheel[data-fokus="form"] :is(#zeit, #farbe), .wheel[data-fokus="farbe"] :is(#zeit, #form) { opacity: .3; }
+
+/* ---- die drei Stücke als randlose Flächen ---- */
+.stuecke { display: grid; scroll-margin-top: 0; }
+.notiz { margin: 0; padding: 22px var(--rand); background: var(--minze); color: var(--tinte); font-size: 1.15rem; }
+.flaeche { position: relative; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px var(--rand); padding: clamp(40px, 7vw, 96px) var(--rand); background: var(--f-grund); color: var(--f-tinte); }
+.flaeche.zeit { --f-grund: var(--tinte); --f-tinte: var(--papier); }
+.flaeche.form { --f-grund: var(--grau); --f-tinte: var(--tinte); }
+.flaeche.farbe { --f-grund: var(--thema); --f-tinte: var(--thema-tinte); }
+.flaeche .wo { margin: 0 0 14px; font-size: 1rem; opacity: .75; }
+.flaeche h2 { margin: 0; font: 500 clamp(2rem, 4.2vw, 4rem)/1 var(--sans); letter-spacing: -.035em; text-wrap: balance; }
+.flaeche h2 a { text-decoration: none; }
+.flaeche h2 a::after { content: ""; position: absolute; inset: 0; }   /* die ganze Fläche ist der Link */
+.flaeche h2 a:focus-visible { outline: none; }
+.flaeche:focus-within { outline: 3px solid var(--f-tinte); outline-offset: -10px; }
+.flaeche .rechts { display: grid; gap: 14px; align-content: start; max-width: 62ch; }
+.flaeche p { margin: 0; }
+.flaeche .lead { font-size: clamp(1.15rem, 1.6vw, 1.45rem); line-height: 1.4; }
+.flaeche .meta { font-size: 1rem; opacity: .8; }
+.flaeche .frage { font-size: 1.15rem; font-weight: 500; }
+.flaeche .weiter { font-weight: 500; }
+.flaeche .weiter::after { content: " →"; display: inline-block; transition: transform .25s ease; }
+.flaeche:hover .weiter::after { transform: translateX(6px); }
+.flaeche .zeichen-gross { width: clamp(96px, 12vw, 168px); height: auto; margin-top: 28px; display: block; }
+.flaeche .zeichen-gross .sym-line { stroke-width: .07; }
+.schritte { margin: 0; padding-left: 1.3em; }
+.schritte li { margin: 0 0 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { padding: 4px 14px; border-radius: 999px; background: color-mix(in srgb, var(--f-tinte) 14%, transparent); font-size: 1rem; }
+.unten { display: flex; flex-wrap: wrap; gap: 12px 28px; padding: 22px var(--rand); background: var(--papier); }
+.leise { background: none; border: 0; padding: 6px 0; font-size: 1rem; text-decoration: underline; text-underline-offset: 4px; }
+.leise:disabled { opacity: .4; cursor: default; }
+
+/* ---- Wie geht es weiter? vier Flächen nebeneinander ---- */
+.wege { display: grid; gap: 0; scroll-margin-top: 0; }
+.wege > h2 { margin: 0; padding: 28px var(--rand) 18px; font: 500 clamp(1.5rem, 2.4vw, 2.1rem)/1.1 var(--sans); letter-spacing: -.02em; }
+.drad-kacheln { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.drad-kacheln li { display: grid; }
+.drad-kachel { display: grid; align-content: start; gap: 6px; min-height: 180px; padding: 22px var(--rand) 26px; text-decoration: none; background: var(--k-grund); color: var(--k-tinte); transition: transform .25s cubic-bezier(.2,.7,.2,1); }
+.drad-kachel.rad { --k-grund: var(--minze); --k-tinte: var(--tinte); }
+.drad-kachel.zeit { --k-grund: var(--tinte); --k-tinte: var(--papier); }
+.drad-kachel.form { --k-grund: var(--grau); --k-tinte: var(--tinte); }
+.drad-kachel.farbe { --k-grund: var(--thema); --k-tinte: var(--thema-tinte); }
+.drad-kachel small { font-size: 1rem; opacity: .75; }
+.drad-kachel.hier small::after { content: " · hier weiter"; }
+.drad-kachel b { font-weight: 500; font-size: 1.3rem; line-height: 1.2; overflow-wrap: anywhere; }
+.drad-kachel em { font-style: normal; font-size: 1rem; opacity: .8; }
+.drad-kachel:hover { transform: translateY(-4px); }
+.drad-kachel:focus-visible { outline: 3px solid var(--k-tinte); outline-offset: -8px; }
+@media (max-width: 900px) { .drad-kacheln { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---- das offene Stück, ganz ---- */
+.lese { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 28px var(--rand); padding: clamp(40px, 6vw, 88px) var(--rand) clamp(56px, 8vw, 120px); background: var(--f-grund); color: var(--f-tinte); }
+.lese[data-fokus="zeit"] { --f-grund: var(--tinte); --f-tinte: var(--papier); }
+.lese[data-fokus="form"] { --f-grund: var(--grau); --f-tinte: var(--tinte); }
+.lese[data-fokus="farbe"] { --f-grund: var(--thema); --f-tinte: var(--thema-tinte); }
+.lese .kopf { display: grid; gap: 16px; align-content: start; }
+@media (min-width: 901px) { .lese .kopf { position: sticky; top: 24px; } }
+.lese .wo { margin: 0; font-size: 1rem; opacity: .75; }
+.lese h2 { margin: 0; font: 500 clamp(2rem, 4vw, 3.6rem)/1.02 var(--sans); letter-spacing: -.035em; text-wrap: balance; }
+.lese h2:focus { outline: none; }
+.lese .lead { margin: 0; font-size: 1.3rem; line-height: 1.4; }
+.lese .koerper { display: grid; gap: 18px; max-width: 66ch; }
+.lese .koerper p { margin: 0; }
+.lese .text { font-size: 1.12rem; line-height: 1.65; }
+.lese h3 { margin: 22px 0 0; font: 500 1.35rem/1.2 var(--sans); }
+.lese ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.lese li { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
+.lese li b { font-weight: 500; }
+.lese li .meta, .lese .meta { opacity: .8; font-size: 1rem; }
+.lese .frage { font-size: 1.2rem; font-weight: 500; }
+.lese .frage small { display: block; font-size: 1rem; font-weight: 400; opacity: .75; }
+.lese .zeichen-paar { display: flex; flex-wrap: wrap; gap: 24px; }
+.lese .zeichen-paar figure { margin: 0; display: grid; gap: 6px; justify-items: start; font-size: 1rem; }
+.lese .zeichen-paar svg { width: 72px; height: 72px; }
+.lese .zeichen-paar .am-rad figcaption { font-weight: 500; text-decoration: underline; text-underline-offset: 4px; }
+.lese .zeichen-paar .sym-line { stroke-width: .08; }
+
+/* ---- Schluss ---- */
+.schluss { display: grid; gap: 28px; padding: clamp(56px, 8vw, 120px) var(--rand) 32px; background: var(--tinte); color: var(--papier); }
+.schluss .name { margin: 0; font: 500 clamp(3rem, 12vw, 12rem)/.85 var(--sans); letter-spacing: -.05em; }
+.schluss nav { display: flex; flex-wrap: wrap; gap: 10px 28px; }
+.schluss nav a { text-decoration: none; }
+.schluss nav a:hover { text-decoration: underline; }
+
+/* ---- Telefon ---- */
+@media (max-width: 900px) {
+  .buehne { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-top: 68px; }
+  .wheel { width: min(100%, 520px); min-width: 0; }
+  .flaeche, .lese { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---- Bewegung ---- */
+@keyframes steigen { from { opacity: 0; transform: translateY(28px); } }
+.js h1 span { animation: steigen .9s cubic-bezier(.2,.7,.2,1) both; }
+.js h1 span + span { animation-delay: .11s; }
+.js .sagt { animation: steigen .9s .22s cubic-bezier(.2,.7,.2,1) both; }
+.js .knoepfe { animation: steigen .9s .3s cubic-bezier(.2,.7,.2,1) both; }
+.js .wheel { animation: steigen 1.1s .15s cubic-bezier(.2,.7,.2,1) both; }
+.erscheint > * { animation: steigen .7s cubic-bezier(.2,.7,.2,1) both; }
+.erscheint > :nth-child(2) { animation-delay: .08s; }
+.erscheint > :nth-child(3) { animation-delay: .16s; }
+.erscheint > :nth-child(4) { animation-delay: .24s; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; }
+  .spin, #farbkreis g { transition-duration: .01s !important; }
+  #farbkreis { display: none; }
+  .buehne, .leiste, .knopf, .zeiger { transition: none; }
+}
+  </style>
+</head>
+<body>
+<script>document.body.classList.add("js");</script>
+<header class="leiste">
+  <a class="heim" href="../../">← ornament.cloud</a>
+  <nav aria-label="Die drei Bereiche">
+    <a href="../../zu-seiner-zeit/">Zettelkasten</a>
+    <a href="../../portfolio/nebeneinander-nacheinander/">ORNA</a>
+    <a href="../../alpha/omna-color/">OMNA COLOR</a>
+  </nav>
+</header>
+<main>
+  <section class="buehne" id="buehne" aria-labelledby="titel">
+    <div class="text">
+      <h1 id="titel"><span>Das Dritte</span><span>Rad</span></h1>
+      <p class="sagt">Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht eine Strophe aus dem Zettelkasten, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.</p>
+      <div class="knoepfe"><button class="knopf" id="go" type="button">Drehen</button><button class="knopf zweit" id="bridge" type="button" aria-label="Brücke schlagen">Brücke schlagen</button></div>
+      <p class="notiz" id="ladefehler" role="alert" hidden>Das Rad konnte nicht geladen werden. Das passiert manchmal kurz nach einer Aktualisierung der Seite. Bitte lade sie neu, am besten mit Strg+Umschalt+R (am Mac Cmd+Umschalt+R).</p>
+    </div>
+    <div class="radplatz">
+      <svg id="farbkreis" viewBox="-100 -100 200 200" aria-hidden="true"><g id="farbkreis-ring"></g></svg>
+      <div class="wheel" id="wheel" role="button" tabindex="0" aria-label="Drehen. Aussen Zeit, mittig Form, innen Farbe.">
+        <svg viewBox="-100 -100 200 200" id="svg">
+          <g id="zeit" class="spin"></g>
+          <g id="form" class="spin"></g>
+          <g id="farbe" class="spin"></g>
+          <circle class="kern" r="15"></circle><circle class="kern-punkt" r="3.2"></circle>
+          <path class="zeiger" d="M 0 -91 L 6 -100 L -6 -100 Z"></path>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <nav class="wege" id="wege" aria-label="Wie geht es weiter?" hidden></nav>
+  <section class="stuecke" id="result" aria-live="polite" aria-label="Gezogen" hidden>
+    <p class="notiz" id="note" hidden></p>
+    <article class="flaeche zeit" id="cZeit"></article>
+    <article class="flaeche form" id="cForm"></article>
+    <article class="flaeche farbe" id="cFarbe"></article>
+    <div class="unten">
+      <button class="leise" id="again" type="button">Noch einmal drehen</button>
+      <button class="leise" id="copy" type="button">Karte kopieren</button>
+    </div>
+  </section>
+  <article class="lese" id="lese" hidden></article>
+</main>
+<footer class="schluss">
+  <p class="name">Das Dritte Rad</p>
+  <nav aria-label="Weiter auf ornament.cloud">
+    <a href="../../">ornament.cloud</a>
+    <a href="../../zu-seiner-zeit/">Zettelkasten</a>
+    <a href="../../portfolio/nebeneinander-nacheinander/">ORNA</a>
+    <a href="../../alpha/omna-color/">OMNA COLOR</a>
+    <a href="../../alpha/drittes-rad/">Die erste Fassung des Rads</a>
+  </nav>
+</footer>
+
+<script>
+// Startet das Rad nicht (etwa weil der Browser kurz nach einer Aktualisierung noch alte Dateien hält), steht das auf der Seite statt eines stillen, leeren Rads.
+addEventListener("load", function () { setTimeout(function () { if (!window.radGeladen) document.getElementById("ladefehler").hidden = false; }, 2500); });
+</script>
+<script type="module">
+import { symbolMarkup, SYMBOL_COUNT } from "../../portfolio/nebeneinander-nacheinander/js/symbols.js";
+import { planRing, positionAt } from "../../portfolio/nebeneinander-nacheinander/js/lib/spin.js";   // Auslaufkurve des Doppelrads (ORNA)
+import { ZYKLEN, THEMEN, STROPHEN, PERSONEN, nameVon, nrVon, ziehung, bruecke, adresse, strophe, paar, uebung, paareVon, wegeImSpiel, rueckkehr } from "../../alpha/drittes-rad/engine.js?v=6e41759c";
+import { kachelnBauen } from "../../alpha/drittes-rad/kacheln.js?v=6e41759c";
+
+const GOETHE = ["schön", "edel", "gut", "nützlich", "gemein", "Phantasie", "unnötig"];   // Goethe 1809: Eigenschaften je Farbe (Rot bis Violett)
+// Sieben Zeichen für die sieben Zyklen (nach den alten Planetenzeichen), wie in der ersten Fassung
+const PLANETEN = [
+  { d: "M-4,0 A4,4 0 1 0 4,0 A4,4 0 1 0 -4,0", punkt: true },
+  { d: "M1.2,-4.6 A4.8,4.8 0 1 0 1.2,4.6 A3.6,3.6 0 1 1 1.2,-4.6 Z" },
+  { d: "M-2.4,-5.6 A2.4,2.4 0 0 0 2.4,-5.6 M-2,-1.8 A2,2 0 1 0 2,-1.8 A2,2 0 1 0 -2,-1.8 M0,0.2 V5 M-1.9,3.2 H1.9" },
+  { d: "M-2.3,-2.8 A2.3,2.3 0 1 0 2.3,-2.8 A2.3,2.3 0 1 0 -2.3,-2.8 M0,-0.5 V5 M-1.9,2.6 H1.9" },
+  { d: "M-3.6,1.2 A2.6,2.6 0 1 0 1.6,1.2 A2.6,2.6 0 1 0 -3.6,1.2 M0.84,-0.64 L4.6,-4.4 M1.8,-4.4 H4.6 V-1.6" },
+  { d: "M-4,-3.2 C-2.6,-5.6 1.4,-5 1.4,-2 C1.4,0.2 -2.4,2 -4,3.8 H4.2 M2,-5.2 V4.8" },
+  { d: "M-1.4,-5.2 V3 M-3.6,-3.2 H0.8 M-1.4,-0.4 C0.4,-2.2 3.6,-1.6 3.6,0.8 C3.6,3.2 1.8,4.4 0.4,5.2" },
+];
+
+const $ = (id) => document.getElementById(id);
+const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+const pt = (r, d) => { const a = d * Math.PI / 180; return [+(r * Math.sin(a)).toFixed(3), +(-r * Math.cos(a)).toFixed(3)]; };
+const sector = (r1, r2, a0, a1) => { const [x1, y1] = pt(r2, a0), [x2, y2] = pt(r2, a1), [x3, y3] = pt(r1, a1), [x4, y4] = pt(r1, a0); return `M${x1} ${y1} A${r2} ${r2} 0 0 1 ${x2} ${y2} L${x3} ${y3} A${r1} ${r1} 0 0 0 ${x4} ${y4} Z`; };
+const NZ = ZYKLEN.length, NF = SYMBOL_COUNT, NC = THEMEN.length;
+const SZ = 360 / NZ, SF = 360 / NF, SC = 360 / NC;
+const h = (t, a = {}, ...k) => { const e = document.createElement(t); for (const [n, v] of Object.entries(a)) n === "class" ? (e.className = v) : n === "text" ? (e.textContent = v) : e.setAttribute(n, v); e.append(...k.filter((x) => x != null)); return e; };
+const svgVon = (i, box = "-1.2 -1.2 2.4 2.4", klasse = "") => { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", box); s.setAttribute("aria-hidden", "true"); if (klasse) s.setAttribute("class", klasse); s.innerHTML = symbolMarkup(i, 1); return s; };
+
+// Die Engine baut Adressen der ersten Fassung (alpha/drittes-rad/); hier bleiben sie auf dieser Seite
+const ALPHA = adresse.start, HIER = new URL("./", location.href).href;
+const lokal = (u) => u.split(ALPHA).join(HIER);
+
+// Schrift auf einer Farbe: Schwarz oder Weiss, je nachdem was mehr Kontrast hat (WCAG)
+const leucht = (hex) => { const k = [1, 3, 5].map((i) => { const c = parseInt(hex.slice(i, i + 2), 16) / 255; return c <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; }); return .2126 * k[0] + .7152 * k[1] + .0722 * k[2]; };
+const tinteAuf = (hex) => { const L = leucht(hex); return (L + .05) / .05 >= 1.05 / (L + .05) ? "#000000" : "#ffffff"; };
+const root = document.documentElement.style;
+/** Feld der Bühne und Thema der Flächen: ic = Index der Farbe, null = Papier */
+function feld(ic) {
+  const c = ic == null ? "#ffffff" : THEMEN[ic][1], t = ic == null ? "#000000" : tinteAuf(c);
+  root.setProperty("--feld", c); root.setProperty("--feld-tinte", t);
+  if (ic != null) { root.setProperty("--thema", c); root.setProperty("--thema-tinte", t); }
+}
+
+// ---- das Rad: drei flache Ringe ----
+$("zeit").innerHTML = ZYKLEN.map((_, i) => { const [tx, ty] = pt(82, (i + .5) * SZ), g = PLANETEN[i];
+  return `<path class="zeit-seg" d="${sector(70, 94, i * SZ + .6, (i + 1) * SZ - .6)}"/><g transform="translate(${tx} ${ty}) rotate(${((i + .5) * SZ).toFixed(2)})"><path class="zeichen" d="${g.d}"/>${g.punkt ? '<circle class="zeichen-punkt" r="1"/>' : ""}</g>`; }).join("");
+$("form").innerHTML = `<circle class="form-disc" r="68.6"/>` +
+  Array.from({ length: NF }, (_, i) => { const [x, y] = pt(56, (i + .5) * SF); return `<g transform="translate(${x} ${y})">${symbolMarkup(i, 4.2)}</g>`; }).join("");
+$("farbe").innerHTML = THEMEN.map(([, c], i) => `<path d="${sector(17, 42, i * SC + .8, (i + 1) * SC - .8)}" style="fill:${c}"/>`).join("");
+// der Farbenkreis hinter dem Rad: dieselben sieben Farben, so gross, dass sie die Bühne füllen
+$("farbkreis-ring").innerHTML = THEMEN.map(([, c], i) => { const [x1, y1] = pt(100, i * SC), [x2, y2] = pt(100, (i + 1) * SC); return `<path d="M0 0 L${x1} ${y1} A100 100 0 0 1 ${x2} ${y2} Z" style="fill:${c}"/>`; }).join("");
+
+// ---- Zustand: cur = { iz, i_f, ic, s, c, e, note, fokus } ----
+let busy = false, dz = 0, df = 0, dc = 0, cur = null, timer = 0, raf = 0, griff = null;
+const m = (x) => ((x % 360) + 360) % 360;
+const land = (deg, idx, step, up) => { const t = -(idx + .2 + Math.random() * .6) * step; return up ? deg + 720 + m(t - deg) : deg - 720 - m(deg - t); };
+const rest = (idx, step) => -(idx + .5) * step;
+const kurz = (ziel, jetzt) => jetzt + m(ziel - jetzt + 180) - 180;
+const apply = (ms) => {
+  [["zeit", dz, ms[0]], ["form", df, ms[1]], ["farbe", dc, ms[2]], ["farbkreis-ring", dc, ms[2]]].forEach(([id, d, t]) => { const g = $(id); g.style.transitionDuration = t + "ms"; g.style.transform = `rotate(${d}deg)`; });
+};
+const sperre = (an) => { busy = an; $("go").disabled = an; $("bridge").disabled = an; };
+const dreht = (an) => document.body.classList.toggle("dreht", an && !reduce());
+const alsZiel = () => ({ strophe: cur.s, paar: cur.c, uebung: cur.e, person: PERSONEN[cur.i_f].id });
+const FOKUS = ["zeit", "form", "farbe"];
+const V_MIN = 220, V_MAX = 2600;
+const KOPPLUNG = [[1, -.8, .64], [-.8, 1, -.8], [.64, -.8, 1]];
+
+function spin(ziel, push = false, geste = null) {
+  if (busy) return; sperre(true);
+  const iz = ziel ? ZYKLEN.findIndex((c) => c[0] === ziel.strophe.c) : Math.floor(Math.random() * NZ);
+  const i_f = ziel ? nrVon(ziel.person) : Math.floor(Math.random() * NF);
+  const ic = ziel ? THEMEN.findIndex((t) => t[0] === ziel.uebung.t) : Math.floor(Math.random() * NC);
+  const z = ziel || ziehung(iz, i_f, ic);
+  $("result").hidden = true; $("lese").hidden = true; $("wege").hidden = true; $("wheel").dataset.fokus = ""; document.body.classList.remove("offen");
+  dreht(true);
+  const fertig = () => { cur = { iz, i_f, ic, s: z.strophe, c: z.paar, e: z.uebung, note: z.notiz || "", fokus: null }; feld(ic); dreht(false); zeige({ scroll: true, schreibe: push ? "push" : "replace" }); sperre(false); };
+  if (geste && !ziel && !reduce()) return anwerfen(geste, [iz, i_f, ic], fertig);
+  dz = land(dz, iz, SZ, false); df = land(df, i_f, SF, true); dc = land(dc, ic, SC, false);
+  apply([3200, 4400, 5600]);
+  timer = setTimeout(fertig, reduce() ? 50 : 5700);
+}
+function anwerfen({ v, ring }, ziele, fertig) {
+  const stark = Math.min(1, Math.max(0, (Math.abs(v) - 240) / 1800)), basis = 2.6 + 2.6 * stark;
+  const von = [dz, df, dc], schritt = [SZ, SF, SC];
+  const plaene = ziele.map((idx, i) => planRing({
+    from: von[i], velocity: v * KOPPLUNG[ring][i] * (i === ring ? 1 : .9 + .2 * Math.random()), target: m(-(idx + .2 + Math.random() * .6) * schritt[i]),
+    prefDuration: basis + .8 * i, n: i === ring ? [2.2, 3, 4.2] : [1.8, 2.4, 3.6] }));
+  const dauer = Math.max(...plaene.map((p) => p.T)), t0 = performance.now();
+  const lauf = (jetzt) => {
+    const t = (jetzt - t0) / 1000;
+    [dz, df, dc] = plaene.map((p) => positionAt(p, t));
+    apply([0, 0, 0]);
+    if (t < dauer) raf = requestAnimationFrame(lauf); else fertig();
+  };
+  raf = requestAnimationFrame(lauf);
+}
+const abbrechen = () => { clearTimeout(timer); cancelAnimationFrame(raf); griff = null; $("wheel").classList.remove("zieht"); dreht(false); };
+
+// ---- Adressen wie in der ersten Fassung: ?t=<Strophe>~<Konstellation>~<Übung>~<Farbe>~<Zeichen> (+ &f=<offenes Stück>), ?von=<Art>~<Nr> ----
+function adresseLesen(search) {
+  const q = new URLSearchParams(search), raw = q.get("t"), v = q.get("von");
+  if (raw) {
+    const [sl, pid, eid, ic, i_f] = raw.split("~");
+    const s = strophe(sl), c = paar(pid), e = uebung(eid), iz = s ? ZYKLEN.findIndex((x) => x[0] === s.c) : -1;
+    if (s && c && e && /^\d+$/.test(ic) && /^\d+$/.test(i_f) && +ic < NC && +i_f < NF && THEMEN[+ic][0] === e.t) {
+      const f = q.get("f");
+      return { art: "stand", cur: { iz, i_f: +i_f, ic: +ic, s, c, e, note: "", fokus: FOKUS.includes(f) ? f : null } };
+    }
+  }
+  if (v) { const [art, id] = v.split("~"); return { art: "von", ziel: rueckkehr({ art, slug: id, id }) }; }
+  return { art: "start" };
+}
+const adresseVon = () => "?t=" + encodeURIComponent([cur.s.s, cur.c.id, cur.e.id, cur.ic, cur.i_f].join("~")) + (cur.fokus ? "&f=" + cur.fokus : "");
+function schreibe(wie) { if (!wie) return; try { history[wie === "push" ? "pushState" : "replaceState"](history.state, "", adresseVon()); } catch { /* eingebettete Ansicht */ } }
+
+function geheZu(search, { anim = "keine", push = false, scroll = false } = {}) {
+  abbrechen(); if (busy) sperre(false);
+  const r = adresseLesen(search);
+  if (r.art === "stand") {
+    cur = r.cur; feld(cur.ic);
+    dz = kurz(rest(cur.iz, SZ), dz); df = kurz(rest(cur.i_f, SF), df); dc = kurz(rest(cur.ic, SC), dc);
+    apply(anim === "keine" || reduce() ? [0, 0, 0] : [1300, 1300, 1300]);
+    zeige({ scroll, schreibe: push ? "push" : null, fokussiere: scroll || anim !== "keine" });
+  } else if (r.art === "von") {
+    if (push) { try { history.pushState(history.state, "", search); } catch { /* eingebettete Ansicht */ } }
+    setTimeout(() => spin(r.ziel || undefined), reduce() ? 0 : 450);
+  } else {
+    nullstellung(push);
+  }
+}
+function nullstellung(push) {
+  cur = null; dz = df = dc = 0; apply(reduce() ? [0, 0, 0] : [1300, 1300, 1300]); feld(null);
+  for (const id of ["result", "lese", "wege"]) $(id).hidden = true;
+  $("wheel").dataset.fokus = ""; document.body.classList.remove("offen");
+  if (push) { try { history.pushState(history.state, "", location.pathname); } catch { /* eingebettete Ansicht */ } }
+}
+
+// ---- Ansichten ----
+const ersterSatz = (t) => t.split(/(?<=[.!?])\s+/)[0];
+const lnk = (text, url, anim = "schnell") => h("a", { href: lokal(url), "data-anim": anim, text });
+const ziel = (f) => lokal(adresse.spiel(alsZiel(), f));
+const erscheinen = (el) => { el.classList.remove("erscheint"); void el.offsetWidth; el.classList.add("erscheint"); };
+
+function zeige({ scroll = false, schreibe: wie = null, fokussiere = false } = {}) {
+  const { fokus } = cur;
+  $("wheel").dataset.fokus = fokus || "";
+  document.body.classList.add("offen");
+  $("result").hidden = !!fokus; $("lese").hidden = !fokus; $("wege").hidden = !fokus;
+  if (fokus) lese(); else uebersicht();
+  schreibe(wie);
+  const z = fokus ? $("wege") : $("result");
+  if (scroll || fokussiere) z.scrollIntoView({ behavior: reduce() ? "auto" : "smooth", block: "start" });
+  if (fokussiere && fokus) $("lese").querySelector("h2")?.focus({ preventScroll: true });
+}
+
+function uebersicht() {
+  const { iz, i_f, ic, s, c, e } = cur;
+  const verweise = [...new Set(s.r.map((r) => r.p))];
+  $("cZeit").replaceChildren(
+    h("div", {}, h("p", { class: "wo", text: `Zeit · Zettelkasten · Zyklus ${ZYKLEN[iz][0]}, ${ZYKLEN[iz][1]}` }),
+      h("h2", {}, h("a", { href: ziel("zeit"), "data-anim": "keine", text: `${s.n} · ${s.t}` }))),
+    h("div", { class: "rechts" }, h("p", { class: "lead", text: s.b }), h("p", { class: "meta", text: "Verweise: " + verweise.join(" · ") }), h("span", { class: "weiter", text: "Den ganzen Text lesen" })));
+  const titel = h("a", { href: ziel("form"), "data-anim": "keine" });
+  [c.artistId, c.theoristId].forEach((id, k) => { if (k) titel.append(" × "); titel.append(h("span", { text: nameVon(id) })); });
+  $("cForm").replaceChildren(
+    h("div", {}, h("p", { class: "wo", text: `Form · ORNA · das Rad zeigt ${PERSONEN[i_f].name}` }), h("h2", {}, titel), svgVon(i_f, "-1.2 -1.2 2.4 2.4", "zeichen-gross")),
+    h("div", { class: "rechts" }, h("p", { class: "lead", text: ersterSatz(c.text) }), h("p", { class: "frage", text: c.question }), h("span", { class: "weiter", text: "Die ganze Begegnung" })));
+  $("cFarbe").replaceChildren(
+    h("div", {}, h("p", { class: "wo", text: `Farbe · OMNA COLOR · ${THEMEN[ic][0]}` }), h("h2", {}, h("a", { href: ziel("farbe"), "data-anim": "keine", text: e.n }))),
+    h("div", { class: "rechts" },
+      h("div", { class: "chips" }, h("span", { class: "chip", text: `Goethe 1809: ${GOETHE[ic]}` }), h("span", { class: "chip", text: `${e.d} Min.` })),
+      h("p", { class: "meta", text: "Material: " + e.m }),
+      h("ol", { class: "schritte" }, ...e.a.map((t) => h("li", { text: t }))),
+      h("span", { class: "weiter", text: "Die ganze Übung" })));
+  $("note").hidden = !cur.note; $("note").textContent = cur.note || "";
+  for (const id of ["cZeit", "cForm", "cFarbe"]) erscheinen($(id));
+}
+
+function lese() {
+  const { fokus, s, c, e, iz, i_f } = cur, kopf = [], k = [];
+  if (fokus === "zeit") {
+    kopf.push(h("p", { class: "wo", text: `Zettelkasten · Zyklus ${ZYKLEN[iz][0]}, ${ZYKLEN[iz][1]}` }), h("h2", { tabindex: "-1", text: `${s.n} · ${s.t}` }), h("p", { class: "lead", text: s.b }));
+    for (const t of s.x.split(/\n{2,}/)) k.push(h("p", { class: "text", text: t }));
+    k.push(h("h3", { text: "Verweise" }), h("ul", {}, ...s.r.map((r) => {
+      const li = h("li", {}, h("b", { text: r.p }), h("span", { class: "meta", text: [r.w, r.d].filter(Boolean).join(" · ") }), h("span", { text: r.n }));
+      if (nrVon(r.s) !== undefined) li.append(lnk("→ in ORNA", adresse.spiel(rueckkehr({ art: "strophe", slug: s.s }, Math.random, { person: r.s }), "form")));
+      return li; })));
+    const an = (s.v || []).map((id) => STROPHEN.find((x) => x.n === id)).filter(Boolean);
+    if (an.length) k.push(h("h3", { text: "Anklänge" }), h("ul", {}, ...an.map((x) => h("li", {}, lnk(`${x.n} · ${x.t}`, adresse.spiel(rueckkehr({ art: "strophe", slug: x.s }), "zeit")), h("span", { class: "meta", text: x.b })))));
+  } else if (fokus === "form") {
+    const ids = [c.artistId, c.theoristId];
+    kopf.push(h("p", { class: "wo", text: "ORNA · Begegnung" }), h("h2", { tabindex: "-1", text: ids.map(nameVon).join(" × ") }),
+      h("div", { class: "zeichen-paar" }, ...ids.map((id) => h("figure", { class: nrVon(id) === i_f ? "am-rad" : "" }, svgVon(nrVon(id)), h("figcaption", { text: nameVon(id) })))));
+    k.push(h("p", { class: "text", text: c.text }), h("p", { class: "frage" }, h("small", { text: "Frage" }), c.question));
+    k.push(h("h3", { text: "Weitere Begegnungen" }), h("ul", {}, ...ids.map((id) => {
+      const li = h("li", {}, h("b", { text: nameVon(id) }));
+      for (const x of paareVon(nrVon(id)).filter((x) => x !== c).slice(0, 4)) li.append(lnk(`mit ${nameVon(x.artistId === id ? x.theoristId : x.artistId)}`, adresse.spiel(rueckkehr({ art: "paar", id: x.id }, Math.random, { person: id }), "form")));
+      return li; })));
+    const imZ = ids.flatMap((id) => STROPHEN.filter((x) => x.r.some((r) => r.s === id)).slice(0, 3).map((x) => [id, x]));
+    if (imZ.length) k.push(h("h3", { text: "Im Zettelkasten" }), h("ul", {}, ...imZ.map(([id, x]) => h("li", {}, h("b", { text: nameVon(id) }), lnk(`${x.n} · ${x.t}`, adresse.spiel(rueckkehr({ art: "strophe", slug: x.s }, Math.random, { person: id, paar: c }), "zeit"))))));
+  } else {
+    const chip = (name) => h("span", { class: "chip", text: name });
+    kopf.push(h("p", { class: "wo", text: `OMNA COLOR · Übung ${e.id}` }), h("h2", { tabindex: "-1", text: e.n }),
+      h("div", { class: "chips" }, chip(`Thema ${e.t}`), ...(e.nb || []).map((n) => chip(`Nachbar ${n}`)), chip(`${e.d} Min.`), chip(`Goethe 1809: ${GOETHE[cur.ic]}`)));
+    k.push(h("p", { class: "meta", text: "Material: " + e.m }), h("ol", { class: "schritte text" }, ...e.a.map((t) => h("li", { text: t }))), h("p", { class: "frage" }, h("small", { text: "Zum Schluss" }), e.f));
+  }
+  $("lese").dataset.fokus = fokus;
+  $("lese").replaceChildren(h("div", { class: "kopf" }, ...kopf), h("div", { class: "koerper" }, ...k));
+  const kacheln = kachelnBauen(wegeImSpiel(alsZiel(), fokus), { breit: true });
+  for (const a of kacheln.querySelectorAll("a")) a.href = lokal(a.href);
+  $("wege").replaceChildren(h("h2", { text: "Wie geht es weiter?" }), kacheln);
+  erscheinen($("lese"));
+}
+
+// ---- Bedienung ----
+$("go").addEventListener("click", () => spin(undefined, !!cur));
+$("bridge").addEventListener("click", () => spin(bruecke(), !!cur));
+$("again").addEventListener("click", () => { $("buehne").scrollIntoView({ behavior: reduce() ? "auto" : "smooth" }); spin(undefined, true); });
+$("wheel").addEventListener("click", () => spin(undefined, !!cur));
+$("wheel").addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); spin(undefined, !!cur); } });
+// Mit Finger oder Maus: der angefasste Ring folgt der Geste (aussen Zeit, Mitte Form, innen Farbe), nach dem Loslassen läuft das Rad mit ihrem Schwung aus
+{
+  const rad = $("wheel");
+  const mitte = () => { const b = rad.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2, einheit: b.width / 200 }; };   // viewBox 200
+  const winkel = (ev, c) => Math.atan2(ev.clientX - c.x, -(ev.clientY - c.y)) * 180 / Math.PI;
+  rad.addEventListener("pointerdown", (ev) => {
+    if (!ev.isPrimary || ev.button) return;
+    const c = mitte(), r = Math.hypot(ev.clientX - c.x, ev.clientY - c.y) / c.einheit;
+    if (r > 100) { if (ev.pointerType === "touch") griff = { id: ev.pointerId, blaettern: true, y: ev.clientY }; return; }
+    if (busy) return;
+    try { rad.setPointerCapture(ev.pointerId); } catch { /* Zeiger schon weg */ }
+    apply([0, 0, 0]);
+    rad.classList.add("zieht");
+    griff = { id: ev.pointerId, ring: r > 69 ? 0 : r > 43 ? 1 : 2, letzter: winkel(ev, c), summe: 0, t0: ev.timeStamp, x0: ev.clientX, y0: ev.clientY, proben: [{ t: ev.timeStamp, d: 0 }] };
+  });
+  rad.addEventListener("pointermove", (ev) => {
+    if (!griff || ev.pointerId !== griff.id) return;
+    if (griff.blaettern) { scrollBy(0, griff.y - ev.clientY); griff.y = ev.clientY; return; }
+    const a = winkel(ev, mitte()), d = ((a - griff.letzter + 540) % 360) - 180, k = KOPPLUNG[griff.ring];
+    griff.letzter = a; griff.summe += d;
+    if (Math.abs(griff.summe) > 4) dreht(true);
+    dz += d * k[0]; df += d * k[1]; dc += d * k[2]; apply([0, 0, 0]);
+    griff.proben.push({ t: ev.timeStamp, d });
+    while (griff.proben.length > 2 && ev.timeStamp - griff.proben[0].t > 100) griff.proben.shift();
+  });
+  const loslassen = (ev) => {
+    if (!griff || ev.pointerId !== griff.id) return;
+    const g = griff; griff = null; rad.classList.remove("zieht");
+    if (g.blaettern || (Math.hypot(ev.clientX - g.x0, ev.clientY - g.y0) < 6 && ev.timeStamp - g.t0 < 350)) { if (!busy) dreht(false); return; }
+    const jetzt = ev.timeStamp, letzte = g.proben.filter((p) => jetzt - p.t <= 100), ende = letzte.length ? letzte[letzte.length - 1].t : jetzt;
+    const dauer = letzte.length > 1 ? (ende - letzte[0].t) / 1000 : 0;
+    let v = dauer > .008 ? letzte.slice(1).reduce((s, p) => s + p.d, 0) / dauer * Math.exp(-Math.max(0, jetzt - ende - 40) / 50) : 0;
+    v = Math.abs(v) < V_MIN ? V_MIN * (Math.sign(v) || Math.sign(g.summe) || 1) : Math.max(-V_MAX, Math.min(V_MAX, v));
+    spin(undefined, !!cur, { v, ring: g.ring });
+  };
+  rad.addEventListener("pointerup", loslassen);
+  rad.addEventListener("pointercancel", loslassen);
+}
+// Links innerhalb der Seite (Flächen, Wege, Verknüpfungen) bleiben im Spiel: kein Neuladen, der Verlauf stimmt
+document.addEventListener("click", (ev) => {
+  const a = ev.target.closest && ev.target.closest("a[href]");
+  if (!a || ev.defaultPrevented || ev.button || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey || a.target === "_blank") return;
+  const u = new URL(a.href, location.href);
+  if (u.origin !== location.origin || u.pathname !== location.pathname) return;
+  ev.preventDefault();
+  geheZu(u.search, { anim: a.dataset.anim || "schnell", push: true, scroll: true });
+});
+addEventListener("popstate", () => geheZu(location.search, { anim: "schnell" }));
+geheZu(location.search, { anim: "keine" });
+
+$("copy").addEventListener("click", async () => {
+  if (!cur) return;
+  const txt = ["Das Dritte Rad", `Zeit: ${cur.s.n} · ${cur.s.t}`, `Form: ${nameVon(cur.c.artistId)} × ${nameVon(cur.c.theoristId)}`, `Farbe: ${cur.e.n} (${THEMEN[cur.ic][0]})`].join("\n");
+  try { await navigator.clipboard.writeText(txt); $("copy").textContent = "Kopiert"; setTimeout(() => ($("copy").textContent = "Karte kopieren"), 1800); } catch { $("copy").textContent = "Kopieren nicht möglich"; }
+});
+window.radGeladen = true;   // letzte Zeile: das Rad ist gestartet
+</script>
+
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+</body>
+</html>
