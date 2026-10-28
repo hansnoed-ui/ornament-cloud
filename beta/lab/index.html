@@ -70,7 +70,10 @@ figure { margin: 0; }
 .knopf { display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px; border-radius: 999px; background: var(--tinte); color: var(--papier); text-decoration: none; font: 500 16px var(--sans); border: 0; cursor: pointer; transition: transform .25s cubic-bezier(.2,.7,.2,1), background .25s, color .25s; }
 .knopf:hover { transform: translateY(-2px); background: var(--faden); color: #fff; }
 .knopf:active { transform: scale(.97); }
-@media (max-width: 640px) { .kopf nav a:not(.knopf) { display: none; } }
+/* der Weg zurück zu ornament.cloud: umrandete Pille, auch auf dem Telefon sichtbar */
+.kopf nav a.heim { padding: 8px 16px; border-radius: 999px; box-shadow: inset 0 0 0 1px #fff; white-space: nowrap; }
+.kopf nav a.heim:hover { background: #fff; color: #000; text-decoration: none; }
+@media (max-width: 640px) { .kopf { flex-wrap: wrap; row-gap: 10px; } .kopf nav { flex-basis: 100%; justify-content: space-between; gap: 10px; } .kopf nav a:not(.knopf, .heim) { display: none; } }
 
 /* Achse */
 .seite { display: grid; grid-template-columns: var(--achse) minmax(0, 1fr); column-gap: clamp(20px, 3vw, 48px); }
@@ -183,6 +186,7 @@ p { margin: 0; max-width: 62ch; }
 <header class="kopf innen">
   <a class="marke" href="#start" aria-label="ornament.lab, zum Anfang"><svg class="signet" viewBox="0 0 34 24" aria-hidden="true"></svg><span>ornament<span class="p">.</span>lab</span></a>
   <nav aria-label="Seiten">
+    <a class="heim" href="../../">ornament<span class="p">.</span>cloud <span aria-hidden="true">↗</span></a>
     <a href="#durchgang">Durchgang</a>
     <a href="#probieren">Probieren</a>
     <a href="#katalog">Katalog</a>
