@@ -207,7 +207,9 @@ body.dreht #farbkreis { opacity: 1; }
    die Fläche, der Zeiger fällt, der Name steigt auf. Gut 3,5 s, einmal je Sitzung, nur auf der leeren Startseite, nie bei «weniger Bewegung». */
 #intro { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; overflow: hidden; background: var(--feld); color: var(--feld-tinte); transition: opacity .6s ease; cursor: pointer; }
 #intro.weg { opacity: 0; pointer-events: none; }
-#intro .i-feld { position: absolute; left: 50%; top: 50%; width: 260vmax; height: 260vmax; margin: -130vmax 0 0 -130vmax; opacity: 0; animation: i-feld 1.9s 1.15s cubic-bezier(.3,.05,.15,1) both; }
+/* der Farbenkreis dreht genau mit dem Farbring (dieselbe Bewegung, wie in der Anwendung; Rückmeldung: «im intro drehen die farben im rad nicht gleich wie die farben im bildschirm hintergrund»)
+   und hält mit der Startfarbe unter dem Zeiger, in die er sich dann auflöst (--ende setzt das Skript) */
+#intro .i-feld { position: absolute; left: 50%; top: 50%; width: 260vmax; height: 260vmax; margin: -130vmax 0 0 -130vmax; opacity: 0; animation: i-dreh-farbe 1.7s 1.35s cubic-bezier(.3,.05,.15,1) both, i-feld 1.95s 1.15s ease both; }
 #intro .i-mitte { position: relative; display: grid; justify-items: center; gap: 22px; }
 #intro .i-zeichen { width: min(56vmin, 360px); height: auto; overflow: visible; }
 #intro .i-zeichen * { transform-box: view-box; transform-origin: 0 0; }
@@ -225,8 +227,8 @@ body.dreht #farbkreis { opacity: 1; }
 @keyframes i-scheibe { from { transform: scale(0); } }
 @keyframes i-feldchen { from { transform: rotate(-24deg) scale(.86); opacity: 0; } }
 @keyframes i-dreh-zeit { to { transform: rotate(-154deg); } }
-@keyframes i-dreh-farbe { to { transform: rotate(257deg); } }
-@keyframes i-feld { 0% { opacity: 0; transform: rotate(-40deg); } 25% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; transform: rotate(220deg); } }
+@keyframes i-dreh-farbe { to { transform: rotate(var(--ende, 257deg)); } }
+@keyframes i-feld { 0% { opacity: 0; } 15% { opacity: 1; } 78% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes i-zeiger { from { transform: translateY(-14px); opacity: 0; } }
 @keyframes i-name { from { transform: translateY(24px); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { #intro { display: none; } }
@@ -277,6 +279,8 @@ document.body.classList.add("js");
     k += '<path style="fill:' + F[i] + '" d="M0 0 L' + a + " A100 100 0 0 1 " + b + ' Z"/>';
   }
   intro.querySelector(".i-zeit").innerHTML = z; intro.querySelector(".i-farbe").innerHTML = f; intro.querySelector(".i-feld").innerHTML = k;
+  // Endwinkel: die Startfarbe (window.drStart) steht unter dem Zeiger, nach gut einer Umdrehung
+  intro.style.setProperty("--ende", (720 - ((window.drStart || 0) + .5) * S).toFixed(2) + "deg");
   intro.hidden = false;
   var fertig = false, ende = function () { if (fertig) return; fertig = true; intro.classList.add("weg"); setTimeout(function () { intro.remove(); }, 700); };
   intro.addEventListener("click", ende);
