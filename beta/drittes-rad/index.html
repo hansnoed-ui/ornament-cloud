@@ -19,6 +19,15 @@
   <meta property="og:url" content="https://ornament.cloud/beta/drittes-rad/">
   <meta property="og:title" content="Das Dritte Rad">
   <meta property="og:description" content="Zeit, Form und Farbe drehen gegeneinander, die Treffer öffnen Stücke aus Zettelkasten, ORNA und OMNA COLOR, und von jedem aus geht es weiter.">
+  <!-- Vorschaukarte zum Teilen (28. Oktober 2026): die Bühne mit dem Rad auf Orange, erzeugt mit tools/beta-drittes-rad-og.mjs -->
+  <meta property="og:image" content="https://ornament.cloud/beta/drittes-rad/og-drittes-rad.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Das Dritte Rad: links der Titel und ein Satz zur Seite, rechts das Rad mit drei Ringen in Schwarz, Weiss und den sieben Farben, auf orangem Grund.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Das Dritte Rad">
+  <meta name="twitter:description" content="Zeit, Form und Farbe drehen gegeneinander, die Treffer öffnen Stücke aus Zettelkasten, ORNA und OMNA COLOR, und von jedem aus geht es weiter.">
+  <meta name="twitter:image" content="https://ornament.cloud/beta/drittes-rad/og-drittes-rad.jpg">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
   <style>
 :root {
@@ -192,10 +201,80 @@ body.dreht #farbkreis { opacity: 1; }
   #farbkreis { display: none; }
   .buehne, .leiste, .knopf, .zeiger { transition: none; }
 }
+
+/* ---- Intro (28. Oktober 2026, Wunsch: «ein kurzes intro mit neuer logo animation, die dazu passt»): das Zeichen des Rads baut sich auf –
+   die sieben Farben, die weisse Scheibe, die sieben schwarzen Felder –, die Ringe drehen gegeneinander, dahinter fegt der Farbenkreis über
+   die Fläche, der Zeiger fällt, der Name steigt auf. Gut 3,5 s, einmal je Sitzung, nur auf der leeren Startseite, nie bei «weniger Bewegung». */
+#intro { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; overflow: hidden; background: var(--papier); color: var(--tinte); transition: opacity .6s ease; cursor: pointer; }
+#intro.weg { opacity: 0; pointer-events: none; }
+#intro .i-feld { position: absolute; left: 50%; top: 50%; width: 260vmax; height: 260vmax; margin: -130vmax 0 0 -130vmax; opacity: 0; animation: i-feld 1.9s 1.15s cubic-bezier(.3,.05,.15,1) both; }
+#intro .i-mitte { position: relative; display: grid; justify-items: center; gap: 22px; }
+#intro .i-zeichen { width: min(56vmin, 360px); height: auto; overflow: visible; }
+#intro .i-zeichen * { transform-box: view-box; transform-origin: 0 0; }
+#intro .i-farbe path { animation: i-auf .7s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i) * 60ms); }
+#intro .i-form { fill: var(--papier); animation: i-scheibe .6s .45s cubic-bezier(.2,.7,.2,1) both; }
+#intro .i-zeit path { fill: var(--tinte); animation: i-feldchen .55s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(.75s + var(--i) * 70ms); }
+#intro .i-ring-zeit { animation: i-dreh-zeit 1.5s 1.35s cubic-bezier(.3,.05,.15,1) both; }
+#intro .i-ring-farbe { animation: i-dreh-farbe 1.7s 1.35s cubic-bezier(.3,.05,.15,1) both; }
+#intro .i-kern { fill: var(--tinte); animation: i-scheibe .5s .35s cubic-bezier(.2,.7,.2,1) both; }
+#intro .i-kern-punkt { fill: var(--papier); animation: i-scheibe .4s .6s both; }
+#intro .i-zeiger { fill: var(--tinte); animation: i-zeiger .5s 2.55s cubic-bezier(.2,.7,.2,1) both; }
+#intro .i-name { margin: 0; font: 500 clamp(2rem, 6vw, 3.6rem)/1 var(--sans); letter-spacing: -.04em; animation: i-name .8s 2.65s cubic-bezier(.2,.7,.2,1) both; }
+#intro button { position: absolute; right: max(20px, env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); border: 0; border-radius: 999px; padding: 10px 18px; background: var(--tinte); color: var(--papier); font: 500 15px var(--sans); }
+@keyframes i-auf { from { transform: scale(0) rotate(-70deg); opacity: 0; } }
+@keyframes i-scheibe { from { transform: scale(0); } }
+@keyframes i-feldchen { from { transform: rotate(-24deg) scale(.86); opacity: 0; } }
+@keyframes i-dreh-zeit { to { transform: rotate(-154deg); } }
+@keyframes i-dreh-farbe { to { transform: rotate(257deg); } }
+@keyframes i-feld { 0% { opacity: 0; transform: rotate(-40deg); } 25% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; transform: rotate(220deg); } }
+@keyframes i-zeiger { from { transform: translateY(-14px); opacity: 0; } }
+@keyframes i-name { from { transform: translateY(24px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { #intro { display: none; } }
   </style>
 </head>
 <body>
 <script>document.body.classList.add("js");</script>
+<div id="intro" aria-hidden="true" hidden>
+  <svg class="i-feld" viewBox="-100 -100 200 200"></svg>
+  <div class="i-mitte">
+    <svg class="i-zeichen" viewBox="-100 -100 200 200">
+      <g class="i-ring-zeit"><g class="i-zeit"></g></g>
+      <circle class="i-form" r="70.6"></circle>
+      <g class="i-ring-farbe"><g class="i-farbe"></g></g>
+      <circle class="i-kern" r="15"></circle><circle class="i-kern-punkt" r="3.2"></circle>
+      <path class="i-zeiger" d="M 0 -91 L 6 -100 L -6 -100 Z"></path>
+    </svg>
+    <p class="i-name">Das Dritte Rad</p>
+  </div>
+  <button type="button" tabindex="-1">Intro überspringen</button>
+</div>
+<script>
+// Das Intro läuft sofort (ohne auf die Module zu warten): einmal je Sitzung, nur auf der leeren Startseite (oder mit ?intro), nie bei «weniger Bewegung».
+(function () {
+  var intro = document.getElementById("intro"), q = location.search;
+  var gesehen = false; try { gesehen = sessionStorage.getItem("drad-intro") === "1"; } catch (e) {}
+  var ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (ruhig || !(/[?&]intro/.test(q) || (!q && !gesehen))) { intro.remove(); return; }
+  try { sessionStorage.setItem("drad-intro", "1"); } catch (e) {}
+  // dieselben sieben Farben wie THEMEN in alpha/drittes-rad/daten.js (OMNA COLOR)
+  var F = ["#b3304d", "#d9782d", "#e4b83c", "#4f8a5b", "#3f6ba8", "#4e4a94", "#85508f"];
+  var pt = function (r, d) { var a = d * Math.PI / 180; return [(r * Math.sin(a)).toFixed(3), (-r * Math.cos(a)).toFixed(3)]; };
+  var sektor = function (r1, r2, a0, a1) { var p1 = pt(r2, a0), p2 = pt(r2, a1), p3 = pt(r1, a1), p4 = pt(r1, a0); return "M" + p1 + " A" + r2 + " " + r2 + " 0 0 1 " + p2 + " L" + p3 + " A" + r1 + " " + r1 + " 0 0 0 " + p4 + " Z"; };
+  var S = 360 / 7, z = "", f = "", k = "";
+  for (var i = 0; i < 7; i++) {
+    z += '<path style="--i:' + i + '" d="' + sektor(72, 94, i * S + .6, (i + 1) * S - .6) + '"/>';
+    f += '<path style="--i:' + i + ';fill:' + F[i] + '" d="' + sektor(17, 36, i * S + .8, (i + 1) * S - .8) + '"/>';
+    var a = pt(100, i * S), b = pt(100, (i + 1) * S);
+    k += '<path style="fill:' + F[i] + '" d="M0 0 L' + a + " A100 100 0 0 1 " + b + ' Z"/>';
+  }
+  intro.querySelector(".i-zeit").innerHTML = z; intro.querySelector(".i-farbe").innerHTML = f; intro.querySelector(".i-feld").innerHTML = k;
+  intro.hidden = false;
+  var fertig = false, ende = function () { if (fertig) return; fertig = true; intro.classList.add("weg"); setTimeout(function () { intro.remove(); }, 700); };
+  intro.addEventListener("click", ende);
+  addEventListener("keydown", function (e) { if (e.key === "Escape" || e.key === "Enter" || e.key === " ") ende(); });
+  setTimeout(ende, 3700);
+})();
+</script>
 <header class="leiste">
   <a class="heim" href="../../">← ornament.cloud</a>
   <nav aria-label="Die drei Bereiche">
