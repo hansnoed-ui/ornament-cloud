@@ -73,7 +73,7 @@ body.dreht #farbkreis { opacity: 1; }
 .form-disc { fill: var(--papier); }
 .zeichen { fill: none; stroke: var(--papier); stroke-width: .75; stroke-linecap: round; stroke-linejoin: round; }
 .zeichen-punkt { fill: var(--papier); }
-.sym-line { fill: none; stroke: var(--tinte); stroke-width: .13; stroke-linecap: round; }
+.sym-line { fill: none; stroke: var(--tinte); stroke-width: .15; stroke-linecap: round; }
 .sym-dot { fill: var(--tinte); }
 .sym-ghost { opacity: .4; }
 .kern { fill: var(--tinte); }
@@ -178,7 +178,8 @@ body.dreht #farbkreis { opacity: 1; }
 .js .sagt { animation: steigen .9s .22s cubic-bezier(.2,.7,.2,1) both; }
 .js .knoepfe { animation: steigen .9s .3s cubic-bezier(.2,.7,.2,1) both; }
 .js .wheel { animation: steigen 1.1s .15s cubic-bezier(.2,.7,.2,1) both; }
-.erscheint > * { animation: steigen .7s cubic-bezier(.2,.7,.2,1) both; }
+/* nur «backwards»: eine Animation, die ihren Endstand hält, macht die Spalte zum Bezugsrahmen, und die Klickfläche der ganzen Fläche (h2 a::after) schrumpft auf die linke Spalte */
+.erscheint > * { animation: steigen .7s cubic-bezier(.2,.7,.2,1) backwards; }
 .erscheint > :nth-child(2) { animation-delay: .08s; }
 .erscheint > :nth-child(3) { animation-delay: .16s; }
 .erscheint > :nth-child(4) { animation-delay: .24s; }
@@ -293,11 +294,12 @@ function feld(ic) {
 }
 
 // ---- das Rad: drei flache Ringe ----
-$("zeit").innerHTML = ZYKLEN.map((_, i) => { const [tx, ty] = pt(82, (i + .5) * SZ), g = PLANETEN[i];
-  return `<path class="zeit-seg" d="${sector(70, 94, i * SZ + .6, (i + 1) * SZ - .6)}"/><g transform="translate(${tx} ${ty}) rotate(${((i + .5) * SZ).toFixed(2)})"><path class="zeichen" d="${g.d}"/>${g.punkt ? '<circle class="zeichen-punkt" r="1"/>' : ""}</g>`; }).join("");
-$("form").innerHTML = `<circle class="form-disc" r="68.6"/>` +
-  Array.from({ length: NF }, (_, i) => { const [x, y] = pt(56, (i + .5) * SF); return `<g transform="translate(${x} ${y})">${symbolMarkup(i, 4.2)}</g>`; }).join("");
-$("farbe").innerHTML = THEMEN.map(([, c], i) => `<path d="${sector(17, 42, i * SC + .8, (i + 1) * SC - .8)}" style="fill:${c}"/>`).join("");
+$("zeit").innerHTML = ZYKLEN.map((_, i) => { const [tx, ty] = pt(83, (i + .5) * SZ), g = PLANETEN[i];
+  return `<path class="zeit-seg" d="${sector(72, 94, i * SZ + .6, (i + 1) * SZ - .6)}"/><g transform="translate(${tx} ${ty}) rotate(${((i + .5) * SZ).toFixed(2)})"><path class="zeichen" d="${g.d}"/>${g.punkt ? '<circle class="zeichen-punkt" r="1"/>' : ""}</g>`; }).join("");
+// vierzig Zeichen auf zwei Bahnen im Wechsel (aussen, innen), damit jedes Platz hat
+$("form").innerHTML = `<circle class="form-disc" r="70.6"/>` +
+  Array.from({ length: NF }, (_, i) => { const [x, y] = pt(i % 2 ? 47.5 : 61.5, (i + .5) * SF); return `<g transform="translate(${x} ${y})">${symbolMarkup(i, 3.6)}</g>`; }).join("");
+$("farbe").innerHTML = THEMEN.map(([, c], i) => `<path d="${sector(17, 36, i * SC + .8, (i + 1) * SC - .8)}" style="fill:${c}"/>`).join("");
 // der Farbenkreis hinter dem Rad: dieselben sieben Farben, so gross, dass sie die Bühne füllen
 $("farbkreis-ring").innerHTML = THEMEN.map(([, c], i) => { const [x1, y1] = pt(100, i * SC), [x2, y2] = pt(100, (i + 1) * SC); return `<path d="M0 0 L${x1} ${y1} A100 100 0 0 1 ${x2} ${y2} Z" style="fill:${c}"/>`; }).join("");
 
@@ -483,7 +485,7 @@ $("wheel").addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.ke
     try { rad.setPointerCapture(ev.pointerId); } catch { /* Zeiger schon weg */ }
     apply([0, 0, 0]);
     rad.classList.add("zieht");
-    griff = { id: ev.pointerId, ring: r > 69 ? 0 : r > 43 ? 1 : 2, letzter: winkel(ev, c), summe: 0, t0: ev.timeStamp, x0: ev.clientX, y0: ev.clientY, proben: [{ t: ev.timeStamp, d: 0 }] };
+    griff = { id: ev.pointerId, ring: r > 71 ? 0 : r > 36.5 ? 1 : 2, letzter: winkel(ev, c), summe: 0, t0: ev.timeStamp, x0: ev.clientX, y0: ev.clientY, proben: [{ t: ev.timeStamp, d: 0 }] };
   });
   rad.addEventListener("pointermove", (ev) => {
     if (!griff || ev.pointerId !== griff.id) return;
