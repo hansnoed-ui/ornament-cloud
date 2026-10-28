@@ -126,7 +126,7 @@ body.dreht #farbkreis { opacity: 1; }
 .wege > h2 { margin: 0; padding: 28px var(--rand) 18px; font: 500 clamp(1.5rem, 2.4vw, 2.1rem)/1.1 var(--sans); letter-spacing: -.02em; }
 .drad-kacheln { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .drad-kacheln li { display: grid; }
-.drad-kachel { display: grid; align-content: start; gap: 6px; min-height: 180px; padding: 22px var(--rand) 26px; text-decoration: none; background: var(--k-grund); color: var(--k-tinte); transition: transform .25s cubic-bezier(.2,.7,.2,1); }
+.drad-kachel { display: grid; align-content: start; gap: 6px; min-height: 150px; padding: 22px var(--rand) 26px; text-decoration: none; background: var(--k-grund); color: var(--k-tinte); transition: transform .25s cubic-bezier(.2,.7,.2,1); }
 .drad-kachel.rad { --k-grund: var(--minze); --k-tinte: var(--tinte); }
 .drad-kachel.zeit { --k-grund: var(--tinte); --k-tinte: var(--papier); }
 .drad-kachel.form { --k-grund: var(--grau); --k-tinte: var(--tinte); }
@@ -137,7 +137,7 @@ body.dreht #farbkreis { opacity: 1; }
 .drad-kachel em { font-style: normal; font-size: 1rem; opacity: .8; }
 .drad-kachel:hover { transform: translateY(-4px); }
 .drad-kachel:focus-visible { outline: 3px solid var(--k-tinte); outline-offset: -8px; }
-@media (max-width: 900px) { .drad-kacheln { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 900px) { .drad-kacheln { grid-template-columns: repeat(2, minmax(0, 1fr)); } .drad-kachel { min-height: 0; padding-block: 18px 20px; } }
 
 /* ---- das offene Stück, ganz ---- */
 .lese { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 28px var(--rand); padding: clamp(40px, 6vw, 88px) var(--rand) clamp(48px, 6vw, 88px); background: var(--f-grund); color: var(--f-tinte); }
@@ -179,6 +179,17 @@ body.dreht #farbkreis { opacity: 1; }
 /* ---- Telefon ---- */
 @media (max-width: 900px) {
   .buehne { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-top: 68px; }
+  /* Telefon (Rückmeldung: «auf dem smartphone ist das rad zu anfang abgeschnitten, zuerst verdrängt es der einstiegstext»): der Titel einzeilig oben,
+     darunter das ganze Rad, gleich darunter die Knöpfe, erst dann der Satz – so steht das Rad beim Laden ganz im Bild */
+  .buehne { row-gap: 18px; }
+  .text { display: contents; }
+  h1 { order: 1; font-size: clamp(2.4rem, 11.5vw, 3.4rem); }
+  h1 span { display: inline; }
+  .radplatz { order: 2; }
+  .knoepfe { order: 3; justify-content: center; }
+  .sagt { order: 4; }
+  #ladefehler { order: 5; }
+  .wheel { width: min(100%, 520px, calc(100svh - 250px)); min-width: 240px; }
   .wheel { width: min(100%, 520px); min-width: 0; }
   .flaeche, .lese { grid-template-columns: minmax(0, 1fr); }
 }
@@ -299,7 +310,7 @@ document.body.classList.add("js");
 <main>
   <section class="buehne" id="buehne" aria-labelledby="titel">
     <div class="text">
-      <h1 id="titel"><span>Das Dritte</span><span>Rad</span></h1>
+      <h1 id="titel"><span>Das Dritte</span> <span>Rad</span></h1>
       <p class="sagt">Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht eine Strophe aus dem Zettelkasten, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.</p>
       <div class="knoepfe"><button class="knopf" id="go" type="button">Drehen</button><button class="knopf zweit" id="bridge" type="button" aria-label="Brücke schlagen">Brücke schlagen</button></div>
       <p class="notiz" id="ladefehler" role="alert" hidden>Das Rad konnte nicht geladen werden. Das passiert manchmal kurz nach einer Aktualisierung der Seite. Bitte lade sie neu, am besten mit Strg+Umschalt+R (am Mac Cmd+Umschalt+R).</p>
@@ -318,7 +329,6 @@ document.body.classList.add("js");
     </div>
   </section>
 
-  <nav class="wege" id="wege" aria-label="Wie geht es weiter?" hidden></nav>
   <section class="stuecke" id="result" aria-live="polite" aria-label="Gezogen" hidden>
     <p class="notiz" id="note" hidden></p>
     <article class="flaeche zeit" id="cZeit"></article>
@@ -330,6 +340,8 @@ document.body.classList.add("js");
     </div>
   </section>
   <article class="lese" id="lese" hidden></article>
+  <!-- die vier Wege stehen nach dem Text (Rückmeldung: «bei "die ganze begegnung zeigen" zeigt es die 4 auswahlen und nicht den text»): man liest zuerst, dann geht es weiter -->
+  <nav class="wege" id="wege" aria-label="Wie geht es weiter?" hidden></nav>
 </main>
 <footer class="schluss">
   <p class="name">Das Dritte Rad</p>
@@ -499,7 +511,7 @@ function zeige({ scroll = false, schreibe: wie = null, fokussiere = false } = {}
   $("result").hidden = !!fokus; $("lese").hidden = !fokus; $("wege").hidden = !fokus;
   if (fokus) lese(); else uebersicht();
   schreibe(wie);
-  const z = fokus ? $("wege") : $("result");
+  const z = fokus ? $("lese") : $("result");   // beim offenen Stück der Text selbst, die Wege folgen darunter
   if (scroll || fokussiere) z.scrollIntoView({ behavior: reduce() ? "auto" : "smooth", block: "start" });
   if (fokussiere && fokus) $("lese").querySelector("h2")?.focus({ preventScroll: true });
 }
