@@ -196,5 +196,7 @@ document.querySelectorAll(".teilen-knopf").forEach(teilen);
 document.querySelectorAll("form.brief").forEach(briefing);
 
 /* ---------- «Beta» in der Hauptnavigation: schliesst bei einem Klick daneben und mit Escape (28. Oktober 2026) ---------- */
+// am Telefon öffnet die Beta-Liste zur freien Bildschirmhälfte hin (b.css .nach-rechts)
+for (const d of document.querySelectorAll("details.beta")) d.addEventListener("toggle", () => { if (!d.open) return; const r = d.getBoundingClientRect(); d.classList.toggle("nach-rechts", r.left + r.width / 2 < innerWidth / 2); });
 document.addEventListener("click", (e) => { for (const d of document.querySelectorAll("details.beta[open]")) if (!d.contains(e.target)) d.open = false; });
 document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; const d = document.querySelector("details.beta[open]"); if (d) { d.open = false; d.querySelector("summary").focus(); } });
