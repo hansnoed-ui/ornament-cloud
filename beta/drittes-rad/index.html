@@ -70,7 +70,7 @@ body.dreht #farbkreis { opacity: 1; }
 .wheel svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .spin { transition-property: transform, opacity; transition-timing-function: cubic-bezier(.3, .05, .15, 1); }
 .zeit-seg { fill: var(--tinte); }
-.form-disc { fill: var(--papier); }
+.form-disc { fill: var(--papier); fill-opacity: .5; }   /* halb durchsichtig: das Feld (und beim Drehen der Farbenkreis) scheint durch */
 .zeichen { fill: none; stroke: var(--papier); stroke-width: .75; stroke-linecap: round; stroke-linejoin: round; }
 .zeichen-punkt { fill: var(--papier); }
 .sym-line { fill: none; stroke: var(--tinte); stroke-width: .15; stroke-linecap: round; }
@@ -89,7 +89,7 @@ body.dreht #farbkreis { opacity: 1; }
 .flaeche.form { --f-grund: var(--grau); --f-tinte: var(--tinte); }
 .flaeche.farbe { --f-grund: var(--thema); --f-tinte: var(--thema-tinte); }
 .flaeche .wo { margin: 0 0 14px; font-size: 1rem; opacity: .75; }
-.flaeche h2 { margin: 0; font: 500 clamp(2rem, 4.2vw, 4rem)/1 var(--sans); letter-spacing: -.035em; text-wrap: balance; }
+.flaeche h2 { margin: 0; font: 500 clamp(2rem, 4.2vw, 4rem)/1 var(--sans); letter-spacing: -.035em; text-wrap: balance; overflow-wrap: break-word; }
 .flaeche h2 a { text-decoration: none; }
 .flaeche h2 a::after { content: ""; position: absolute; inset: 0; }   /* die ganze Fläche ist der Link */
 .flaeche h2 a:focus-visible { outline: none; }
@@ -131,14 +131,14 @@ body.dreht #farbkreis { opacity: 1; }
 @media (max-width: 900px) { .drad-kacheln { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* ---- das offene Stück, ganz ---- */
-.lese { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 28px var(--rand); padding: clamp(40px, 6vw, 88px) var(--rand) clamp(56px, 8vw, 120px); background: var(--f-grund); color: var(--f-tinte); }
+.lese { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 28px var(--rand); padding: clamp(40px, 6vw, 88px) var(--rand) clamp(48px, 6vw, 88px); background: var(--f-grund); color: var(--f-tinte); }
 .lese[data-fokus="zeit"] { --f-grund: var(--tinte); --f-tinte: var(--papier); }
 .lese[data-fokus="form"] { --f-grund: var(--grau); --f-tinte: var(--tinte); }
 .lese[data-fokus="farbe"] { --f-grund: var(--thema); --f-tinte: var(--thema-tinte); }
 .lese .kopf { display: grid; gap: 16px; align-content: start; }
 @media (min-width: 901px) { .lese .kopf { position: sticky; top: 24px; } }
 .lese .wo { margin: 0; font-size: 1rem; opacity: .75; }
-.lese h2 { margin: 0; font: 500 clamp(2rem, 4vw, 3.6rem)/1.02 var(--sans); letter-spacing: -.035em; text-wrap: balance; }
+.lese h2 { margin: 0; font: 500 clamp(2rem, 4vw, 3.6rem)/1.02 var(--sans); letter-spacing: -.035em; text-wrap: balance; overflow-wrap: break-word; }
 .lese h2:focus { outline: none; }
 .lese .lead { margin: 0; font-size: 1.3rem; line-height: 1.4; }
 .lese .koerper { display: grid; gap: 18px; max-width: 66ch; }
@@ -146,7 +146,10 @@ body.dreht #farbkreis { opacity: 1; }
 .lese .text { font-size: 1.12rem; line-height: 1.65; }
 .lese h3 { margin: 22px 0 0; font: 500 1.35rem/1.2 var(--sans); }
 .lese ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-.lese li { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
+.lese ul li { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }   /* nur die Listen (Verweise, Begegnungen), nicht die nummerierten Schritte einer Übung */
+.lese ol.schritte { display: grid; gap: 10px; padding-left: 1.4em; }
+.lese ol.schritte li { margin: 0; padding-left: 4px; }
+.lese ol.schritte li::marker { font-weight: 500; }
 .lese li b { font-weight: 500; }
 .lese li .meta, .lese .meta { opacity: .8; font-size: 1rem; }
 .lese .frage { font-size: 1.2rem; font-weight: 500; }
