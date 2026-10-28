@@ -194,3 +194,7 @@ const start = document.querySelector(".buehne");
 if (start) buehne(start); else document.querySelectorAll(".feld-rahmen").forEach(feld);
 document.querySelectorAll(".teilen-knopf").forEach(teilen);
 document.querySelectorAll("form.brief").forEach(briefing);
+
+/* ---------- «Beta» in der Hauptnavigation: schliesst bei einem Klick daneben und mit Escape (28. Oktober 2026) ---------- */
+document.addEventListener("click", (e) => { for (const d of document.querySelectorAll("details.beta[open]")) if (!d.contains(e.target)) d.open = false; });
+document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; const d = document.querySelector("details.beta[open]"); if (d) { d.open = false; d.querySelector("summary").focus(); } });

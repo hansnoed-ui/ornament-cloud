@@ -185,7 +185,7 @@ export function seite(r: Raster, md: string, prompt?: string, vorschlag?: string
        Erzeugt mit tools/build-alpha-texte.ts aus src/alpha/${r.datei} – nicht von Hand bearbeiten. -->
   <meta name="robots" content="noindex">
   <meta name="description" content="${esc(r.beschreibung)}">
-  <link rel="stylesheet" href="../../styles.css?v=49">
+  <link rel="stylesheet" href="../../styles.css?v=50">
   <style>
     .at-arbeit { display: inline-block; margin: 1.25rem 0 0; padding: 6px 14px; border: 1.5px solid var(--accent); border-radius: 999px;
       color: var(--accent); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -272,7 +272,7 @@ ${vorschlag === undefined ? "" : vorschlagBlock(vorschlag)}  </main>
     </div>
   </footer>
 ${prompt === undefined ? "" : PROMPT_SKRIPT}  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
-  <script src="../../icons.js?v=14" defer></script>
+  <script src="../../icons.js?v=15" defer></script>
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
 </body>
 </html>

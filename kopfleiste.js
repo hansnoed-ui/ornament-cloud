@@ -11,7 +11,10 @@
 export const MENU = [
   // seit dem 27. Oktober 2026 «Lab», seit demselben Tag (Nachmittag) an erster Stelle (Wunsch: «ich möchte das Lab an der ersten Stelle im Menu haben - vor Zettel») (ornament.lab, die Landing-Page beta/lab/, von dort «Lab öffnen» nach alpha/lab/); öffnet in einem neuen Fenster.
   // Wunsch: «Nimm das Lab als Menupunkt auf die website (öffnet in einem neuen browser fenster)». Symbol: ein Laborkolben.
-  ["Lab", "beta/lab/", '<path d="M9 3.5h6"/><path d="M10.25 3.5v6.25L4.9 18.4a1.4 1.4 0 0 0 1.2 2.1h11.8a1.4 1.4 0 0 0 1.2-2.1l-5.35-8.65V3.5"/><path d="M7.4 14.5h9.2"/>', { neuesFenster: true }],
+  // seit dem 28. Oktober 2026 «Beta» statt «Lab», aufklappbar (Wunsch: «anstatt den menu punkt "lab" den menupunkt "beta", aufklappbar und darin "lab" und "das 3. rad"»);
+  // beide öffnen weiter in einem neuen Fenster. Ein <details> ohne Skript, icons.js schliesst es bei einem Klick daneben und mit Escape.
+  ["Beta", null, '<path d="M9 3.5h6"/><path d="M10.25 3.5v6.25L4.9 18.4a1.4 1.4 0 0 0 1.2 2.1h11.8a1.4 1.4 0 0 0 1.2-2.1l-5.35-8.65V3.5"/><path d="M7.4 14.5h9.2"/>',
+    { unter: [["Lab", "beta/lab/"], ["Das 3. Rad", "beta/drittes-rad/"]] }],
   ["Apps", "apps/", '<rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/>'],
   ["Prompts", "masterprompts/", '<path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-7.5L7 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M7.5 8.5l3 2.25-3 2.25"/><path d="M12.5 13h4"/>'],
   ["Zettel", "zu-seiner-zeit/", '<path d="M7 3.5h11.5A1.5 1.5 0 0 1 20 5v11"/><rect x="4" y="6.5" width="13" height="14" rx="1.5"/><path d="M7 10.5h7"/><path d="M7 13.5h7"/><path d="M7 16.5h4"/>'],
@@ -28,8 +31,9 @@ export function welleUndMenu(site, { aktiv = null, aktuell = "true", einzug = " 
   return [
     `${e}<svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>`,
     `${e}<nav class="menu" aria-label="Hauptmenü">`,
-    ...MENU.map(([name, pfad, symbol, { neuesFenster = false } = {}]) =>
-      `${e}  <a class="menu-item" href="${site}${pfad}"${name === aktiv ? ` aria-current="${aktuell}"` : ""}${neuesFenster ? ' target="_blank" rel="noopener"' : ""}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${symbol}</svg><span>${name}</span></a>`),
+    ...MENU.map(([name, pfad, symbol, { neuesFenster = false, unter = null } = {}]) => unter
+      ? `${e}  <details class="menu-auf"><summary class="menu-item"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${symbol}</svg><span>${name}</span></summary><span class="menu-liste">${unter.map(([n, p]) => `<a href="${site}${p}" target="_blank" rel="noopener">${n}</a>`).join("")}</span></details>`
+      : `${e}  <a class="menu-item" href="${site}${pfad}"${name === aktiv ? ` aria-current="${aktuell}"` : ""}${neuesFenster ? ' target="_blank" rel="noopener"' : ""}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${symbol}</svg><span>${name}</span></a>`),
     `${e}</nav>`,
   ].join("\n");
 }
