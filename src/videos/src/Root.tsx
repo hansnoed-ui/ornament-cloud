@@ -8,6 +8,7 @@ import { MenschVideo, T as TMensch, zeitplan as zeitplanMensch } from "./mensch/
 import { StartAnimation, TStart, WachstumVideo, T as TWachstum } from "./wachstum/Video";
 import { WissenVideo, T as TWissen } from "./wissen/Video";
 import { FahrtVideo, T as TFahrt } from "./fahrt/Video";
+import { ReiseVideo, MASSE as MReise, T as TReise } from "./reise/Video";
 // neue Videos: Import
 
 export const RemotionRoot: React.FC = () => (
@@ -31,6 +32,10 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="WissenVideo" component={WissenVideo} durationInFrames={TWissen.ende} fps={FPS} width={BREITE} height={1350} />
     {/* «Fahrt»: 360°-Kamerafahrt um ein 3D-Modell aus einem Bild, 4:5, Lab-Intro und -Outro (27. Oktober 2026) */}
     <Composition id="FahrtVideo" component={FahrtVideo} durationInFrames={TFahrt.ende} fps={FPS} width={BREITE} height={1350} defaultProps={{ ordner: "fahrt-trellis" }} />
+    {/* «Reise»: Kamerafahrt durch den Zettelkasten und ORNA im Stil der Graphansicht von Obsidian, 9:16, 4:5, 16:9 (28. Oktober 2026) */}
+    <Composition id="ReiseHoch" component={ReiseVideo} durationInFrames={TReise.ende} fps={FPS} width={MReise.hoch.w} height={MReise.hoch.h} defaultProps={{ format: "hoch" as const }} />
+    <Composition id="ReiseVideo" component={ReiseVideo} durationInFrames={TReise.ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const }} />
+    <Composition id="ReiseQuer" component={ReiseVideo} durationInFrames={TReise.ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const }} />
     {/* neue Videos: Composition */}
   </>
 );
