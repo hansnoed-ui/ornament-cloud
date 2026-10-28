@@ -380,6 +380,7 @@ function geheZu(search, { anim = "keine", push = false, scroll = false } = {}) {
     zeige({ scroll, schreibe: push ? "push" : null, fokussiere: scroll || anim !== "keine" });
   } else if (r.art === "von") {
     if (push) { try { history.pushState(history.state, "", search); } catch { /* eingebettete Ansicht */ } }
+    scrollTo({ top: 0, behavior: reduce() ? "auto" : "smooth" });   // «Zurück ins Rad»: ganz nach oben, das Rad ganz im Bild, während es dreht
     setTimeout(() => spin(r.ziel || undefined), reduce() ? 0 : 450);
   } else {
     nullstellung(push);
@@ -387,6 +388,7 @@ function geheZu(search, { anim = "keine", push = false, scroll = false } = {}) {
 }
 function nullstellung(push) {
   cur = null; dz = df = dc = 0; apply(reduce() ? [0, 0, 0] : [1300, 1300, 1300]); feld(null);
+  scrollTo({ top: 0, behavior: reduce() ? "auto" : "smooth" });
   for (const id of ["result", "lese", "wege"]) $(id).hidden = true;
   $("wheel").dataset.fokus = ""; document.body.classList.remove("offen");
   if (push) { try { history.pushState(history.state, "", location.pathname); } catch { /* eingebettete Ansicht */ } }
