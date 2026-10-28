@@ -12,7 +12,7 @@ const lies = (p) => readFileSync(new URL(p, root), "utf8");
 
 // seit 28. Oktober 2026 «Beta» statt «Lab»: aufklappbar (<details>), darin «Lab» und «Das 3. Rad», beide in einem neuen Fenster
 const BETA = [["Lab", "beta/lab/"], ["Das 3. Rad", "beta/drittes-rad/"]];
-const MENU = [["Beta", null], ["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"], ["Art", "art/"]];   // «Lab» seit 27. Oktober 2026 (ornament.lab, öffnet in einem neuen Fenster), am selben Tag an die erste Stelle;   // seit 19. Oktober 2026 (abends) ohne «Web» (die Seite bleibt, nur nicht im Menü), dahinter «Art»;   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
+const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"], ["Art", "art/"], ["Beta", null]];   // «Beta» seit dem Abend des 28. Oktober 2026 ganz rechts   // «Lab» seit 27. Oktober 2026 (ornament.lab, öffnet in einem neuen Fenster), am selben Tag an die erste Stelle;   // seit 19. Oktober 2026 (abends) ohne «Web» (die Seite bleibt, nur nicht im Menü), dahinter «Art»;   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
 // Seiten mit dem Menü → Eintrag, der aktiv ist ([Ordner, aria-current]); null: keiner (die Seite hängt an keinem Menüpunkt)
 const MENUSEITEN = {   // OMNA COLOR (alpha/omna-color/, rad/) seit 20. Oktober 2026 mit dem Kopf der App statt des Menüs; ihre App-Seite app/ bleibt
   "index.html": null,
@@ -66,9 +66,9 @@ test("Menü: sechs Kästchen mit Symbol und Namen (Lab, Apps, Prompts, Zettel, S
     assert.match(html, /<div class="topbar">\s*<nav class="seitenweg" aria-label="Ornament Cloud">[\s\S]*?<\/nav>\s*<svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"><\/svg>\s*<nav class="menu"/, `${datei}: Hauptlinks, Welle, Menü`);
     assert.ok(!/data-icon|menu-sub|menu-title/.test(nav[1]), `${datei}: keine animierten Symbole, keine Untertitel`);
     const basis = html.match(/<base href="([^"]+)"/)?.[1], zielVon = (href) => new URL(href, new URL(basis ?? "", new URL(datei, root)));   // die Werkbank steht mit <base href="../">
-    // zuerst «Beta» (aufklappbar), darin «Lab» und «Das 3. Rad», beide in einem neuen Fenster
-    const beta = nav[1].match(/^\s*<details class="menu-auf"><summary class="menu-item">(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>Beta<\/span><\/summary><span class="menu-liste">([\s\S]*?)<\/span><\/details>/);
-    assert.ok(beta, `${datei}: zuerst «Beta» zum Aufklappen`);
+    // zuletzt «Beta» (aufklappbar), darin «Lab» und «Das 3. Rad», beide in einem neuen Fenster
+    const beta = nav[1].match(/<details class="menu-auf"><summary class="menu-item">(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>Beta<\/span><\/summary><span class="menu-liste">([\s\S]*?)<\/span><\/details>\s*$/);
+    assert.ok(beta, `${datei}: zuletzt «Beta» zum Aufklappen`);
     const unter = [...beta[2].matchAll(/<a href="([^"]+)" target="_blank" rel="noopener">([^<]+)<\/a>/g)];
     assert.deepEqual(unter.map((u) => u[2]), BETA.map((b) => b[0]), `${datei}: unter «Beta» Lab und Das 3. Rad`);
     for (const [i, u] of unter.entries()) {
@@ -76,16 +76,16 @@ test("Menü: sechs Kästchen mit Symbol und Namen (Lab, Apps, Prompts, Zettel, S
       assert.ok(existsSync(new URL(BETA[i][1] + "index.html", root)), `${datei}: ${BETA[i][1]} gibt es`);
     }
     const eintraege = [...nav[1].matchAll(/<a class="menu-item" href="([^"]+)"(?: aria-current="(page|true)")?( target="_blank" rel="noopener")?>(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>([^<]+)<\/span><\/a>/g)];
-    const rest = MENU.slice(1);
-    assert.equal(eintraege.length, rest.length, `${datei}: dahinter fünf Kästchen mit verborgenem Symbol und Namen`);
-    assert.deepEqual(eintraege.map((e) => e[5]), rest.map((m) => m[0]), `${datei}: Reihenfolge Beta, Apps, Prompts, Zettel, Social, Art (Web seit 19. Oktober 2026 nicht mehr im Menü)`);
+    const rest = MENU.slice(0, -1);
+    assert.equal(eintraege.length, rest.length, `${datei}: davor fünf Kästchen mit verborgenem Symbol und Namen`);
+    assert.deepEqual(eintraege.map((e) => e[5]), rest.map((m) => m[0]), `${datei}: Reihenfolge Apps, Prompts, Zettel, Social, Art, Beta (Web seit 19. Oktober 2026 nicht mehr im Menü)`);
     assert.ok(eintraege.every((e) => !e[3]), `${datei}: nur die Einträge unter «Beta» öffnen ein neues Fenster`);
     for (const [i, e] of eintraege.entries()) {
       assert.equal(zielVon(e[1]).pathname, new URL(rest[i][1], root).pathname, `${datei}: ${rest[i][0]} führt nach ${rest[i][1]}`);
       assert.ok(existsSync(new URL(rest[i][1] + "index.html", root)), `${datei}: ${rest[i][1]} gibt es`);
     }
     // überall dieselben Symbole
-    if (datei !== "index.html") assert.deepEqual([beta[1], ...eintraege.map((e) => e[4])], [...lies("index.html").match(/<nav class="menu"[\s\S]*?<\/nav>/)[0].matchAll(/<svg[\s\S]*?<\/svg>/g)].map((m) => m[0]), `${datei}: dieselben Symbole wie auf der Startseite`);
+    if (datei !== "index.html") assert.deepEqual([...eintraege.map((e) => e[4]), beta[1]], [...lies("index.html").match(/<nav class="menu"[\s\S]*?<\/nav>/)[0].matchAll(/<svg[\s\S]*?<\/svg>/g)].map((m) => m[0]), `${datei}: dieselben Symbole wie auf der Startseite`);
     // genau der Eintrag der Seite ist aktiv (page: man ist auf der Seite, true: auf einer Seite darunter), sonst keiner
     assert.deepEqual(eintraege.map((e) => e[2] ?? null), rest.map((m) => (aktiv && m[1] === aktiv[0] ? aktiv[1] : null)), `${datei}: aktiver Eintrag`);
   }

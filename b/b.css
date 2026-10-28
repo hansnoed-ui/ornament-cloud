@@ -83,7 +83,7 @@ ul, ol { padding: 0; list-style: none; }
 .hauptnav .beta > summary:hover, .hauptnav .beta[open] > summary { border-bottom-color: currentColor; }
 .hauptnav .beta > summary:focus-visible { outline: 2px solid var(--faden); outline-offset: 3px; }
 /* umgekehrt gesetzt (Rückmeldung: «sieht noch nicht gut aus, weil es genau die selbe farbe wie der seitenhintergrund hat»): Fläche in der Schriftfarbe des Kopfs, Schrift in seiner Grundfarbe – auf dem grünen Kopf weiss mit Grün, auf hellen Seiten schwarz mit Weiss */
-.beta-liste { position: absolute; top: calc(100% + 8px); left: -14px; z-index: 30; display: grid; min-width: 190px; padding: 6px 0; background: var(--tinte); color: var(--papier); }
+.beta-liste { position: absolute; top: calc(100% + 8px); right: -14px; z-index: 30; display: grid; min-width: 190px; padding: 6px 0; background: var(--tinte); color: var(--papier); }
 .hauptnav .beta-liste a { padding: 8px 14px; border-bottom: 0; white-space: nowrap; }
 .hauptnav .beta-liste a::after { content: " ↗"; opacity: 0.7; }
 .hauptnav .beta-liste a { color: var(--papier); }
