@@ -366,3 +366,16 @@
   icons.forEach(function (ic) { ic.update(0, 0); });
   requestAnimationFrame(frame);
 })();
+
+// «Beta» im Menü (28. Oktober 2026): ein <details>, das sich ohne Skript öffnet und schliesst; hier schliesst es zusätzlich bei einem Klick daneben und mit Escape
+(function () {
+  function zu(ausser) {
+    document.querySelectorAll('details.menu-auf[open]').forEach(function (d) { if (d !== ausser) d.open = false; });
+  }
+  document.addEventListener('click', function (e) { zu(e.target.closest && e.target.closest('details.menu-auf')); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    var d = document.querySelector('details.menu-auf[open]');
+    if (d) { d.open = false; d.querySelector('summary').focus(); }
+  });
+})();

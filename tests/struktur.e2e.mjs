@@ -116,7 +116,7 @@ await check("Menü: sechs Kästchen (Lab, Apps, Prompts, Zettel, Social, Art) mi
       await page.goto(origin + pfad);
       const items = page.locator(".menu-item");
       assert.equal(await items.count(), 6);
-      assert.deepEqual(await items.locator("span").allTextContents(), ["Lab", "Apps", "Prompts", "Zettel", "Social", "Art"], `${pfad} ${w}: Namen`);
+      assert.deepEqual(await items.locator("span").allTextContents(), ["Beta", "Apps", "Prompts", "Zettel", "Social", "Art"], `${pfad} ${w}: Namen`);
       const bs = [];
       for (let i = 0; i < 6; i++) { assert.ok(await items.nth(i).isVisible(), `${pfad} ${w}: Kästchen ${i + 1} sichtbar`); bs.push(await box(items.nth(i))); }
       for (let i = 0; i < 6; i++) for (let j = i + 1; j < 6; j++) assert.ok(!sich(bs[i], bs[j]), `${pfad} ${w}: Kästchen ${i + 1} und ${j + 1} überlappen`);

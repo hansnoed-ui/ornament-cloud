@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 import { kopfleiste } from "./kopfleiste.mjs";
 
 const ROOT = new URL("../", import.meta.url);
-const CSS = "styles.css?v=49", ART_CSS = "art/art.css?v=7", ART_JS = "art/art.js?v=1";
+const CSS = "styles.css?v=50", ART_CSS = "art/art.css?v=7", ART_JS = "art/art.js?v=1";
 
 export const ARTEN = { original: ["Original", "Originale"], print: ["Print", "Prints"], dienstleistung: ["Dienstleistung", "Dienstleistungen"] };
 const SERIEN_TEXT = {
@@ -96,7 +96,7 @@ ${nachher}
     </div>
   </footer>
   <script type="module" src="${site}${ART_JS}"></script>
-  <script src="${site}icons.js?v=14" defer></script>
+  <script src="${site}icons.js?v=15" defer></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="${site}vendor/goatcounter/count.js"></script>
 </body>

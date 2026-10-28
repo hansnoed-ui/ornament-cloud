@@ -19,7 +19,7 @@ export function einsetzen(html, datei, { aktiv = null } = {}) {
   let aus = html.replace(alt, kopfleiste(neu, site, { aktiv, einzug: `${einzug}  ` }));
   if (!/icons\.js\?v=\d+/.test(aus)) {
     const zaehler = aus.match(/\n([ \t]*)<script data-goatcounter=/);
-    const tag = `<script src="${site}icons.js?v=14" defer></script>`;
+    const tag = `<script src="${site}icons.js?v=15" defer></script>`;
     aus = zaehler ? aus.replace(zaehler[0], `\n${zaehler[1]}${tag}${zaehler[0]}`) : aus.replace("</body>", `  ${tag}\n</body>`);
   }
   return aus;

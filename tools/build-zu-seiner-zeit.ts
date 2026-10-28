@@ -248,7 +248,7 @@ ${LANGS.map(l => `  <link rel="alternate" hreflang="${l}" href="${url(l)}">`).jo
   <meta property="og:image:alt" content="${esc(`${m.meta.title} – ${m.meta.subtitle}. ${u.ogAlt}`)}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#111111">
-  <link rel="stylesheet" href="${site}kopfleiste.css?v=4">
+  <link rel="stylesheet" href="${site}kopfleiste.css?v=5">
   <link rel="stylesheet" href="${wurzel}zsz.css?v=${o.v}">
   <script type="module" src="${wurzel}zsz.js?v=${o.v}"></script>
 </head>
@@ -282,7 +282,7 @@ ${o.body}
     <p>${u.kontakt}: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
     <p><a href="${site}impressum/" hreflang="de">${u.impressum}</a></p>
   </footer>
-  <script src="${site}icons.js?v=14" defer></script>
+  <script src="${site}icons.js?v=15" defer></script>
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="${site}vendor/goatcounter/count.js"></script>
 </body>
 </html>

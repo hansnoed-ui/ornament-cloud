@@ -7,8 +7,8 @@
 // <!-- APP:START -->
 const VERSION = "9f5f78fa0fd5";
 const PRECACHE = [
-  "../../icons.js?v=14",
-  "../../styles.css?v=49",
+  "../../icons.js?v=15",
+  "../../styles.css?v=50",
   "../../vendor/fonts/fonts.css",
   "../../vendor/goatcounter/count.js",
   "./",

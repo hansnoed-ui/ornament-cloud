@@ -19,7 +19,7 @@ import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 35;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 36;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -249,7 +249,7 @@ function bau(sprache) {
   <header class="kopf">
     <div class="spalte">
       <div class="marke"><a class="signet" href="${B}"${pfad === "" ? ' aria-current="page"' : ""}>${SIGNET}<span>ornament.cloud</span></a>${sprachwahl(pfad, nurDe)}</div>
-      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}"><a href="/beta/lab/" target="_blank" rel="noopener">Lab</a>${Object.entries(T.nav).map(([p, n]) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${n}</a>`).join("")}</nav>
+      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}"><details class="beta"><summary>Beta</summary><span class="beta-liste"><a href="/beta/lab/" target="_blank" rel="noopener">Lab</a><a href="/beta/drittes-rad/" target="_blank" rel="noopener">Das 3. Rad</a></span></details>${Object.entries(T.nav).map(([p, n]) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${n}</a>`).join("")}</nav>
     </div>
   </header>
   <main id="inhalt">
