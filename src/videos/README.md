@@ -217,6 +217,27 @@ THREE=…/node_modules/three NODE_PATH="$(npm root -g)" node render.mjs fahrt tr
 cd ../../.. && npx remotion render FahrtVideo out/fahrt.mp4 --props='{"ordner":"fahrt-trellis"}'
 ```
 
+## «Reise» – durch den Zettelkasten und ORNA (28. Oktober 2026)
+
+Wunsch: «eine weitere obsidian animation als video: diesmal eine reise durch orna und den zettelkasten: mit begriffen, verweise, quellen und namen»,
+«in der obsidian ästhetik mit viel bewegung, aber auch lesbarkeit», ohne den eigenen Namen. Etwa 94 s, ohne Ton, nur als Datei.
+Drei Formate aus derselben Zeitachse: `ReiseHoch` (9:16, 1080 × 1920), `ReiseVideo` (4:5, 1080 × 1350), `ReiseQuer` (16:9, 1920 × 1080). Quellcode `src/reise/`.
+
+- **Look** der Graphansicht von Obsidian: dunkler Grund, ruhende Punkte gedämpft, Beschriftung unter dem Punkt, die aktive Notiz und ihre Nachbarn leuchten,
+  alles atmet leise. Farben aus der Palette des Neubaus: Strophen weiss, Werke Senf, Namen Blaupause, ORNA Rosa, Zyklen Tannengrün, die Spur Rot.
+  Intro und Outro wie bei «Wissen» (`wissen/LabSignet.tsx`, im Querformat verkleinert).
+- **Daten** (`daten.mjs` → `data/reise.json`): Zyklen, Strophen, Kernsätze und Verweise («Name, Werk») aus `src/data/zu-seiner-zeit.json`, die Personen aus
+  `zu-seiner-zeit/zsz-daten.json`, ORNA aus `portfolio/nebeneinander-nacheinander/js/data/`. Knoten Zyklus, Strophe, Werk, Name; ein Name aus beiden Werken ist
+  ein Knoten (19 Brücken). Anordnung aus einer Kraftsimulation mit festem Startwert, ORNA als Doppelrad daneben.
+- **Spur**: sieben Stationen, jede über echte Kanten (das Skript prüft sie): 1 Die Brücke → über das Werk von Karen Barad → 28 Die Koppelung → über Karen Barad →
+  Mona Hatoum × Karen Barad → über Mona Hatoum → 22 Die Grenze → über Susan Leigh Star → On Kawara × Susan Leigh Star → über On Kawara → 2 Das Ereignis →
+  über das Werk von Whitehead → 49 Die Zukunft. Bei einer Strophe stehen Begriff, Kernsatz und die vier Verweise, bei einer Konstellation die Frage und die Strophen des Brückennamens.
+
+```bash
+cd src/videos && WISSEN=… node vorbereiten.mjs   # ohne Tresor fehlt data/wissen.json, und Root.tsx lässt sich nicht bündeln
+npx remotion render ReiseHoch out/reise-9x16.mp4 --codec=h264 --crf=20 --pixel-format=yuv420p   # ebenso ReiseVideo (4:5) und ReiseQuer (16:9)
+```
+
 ## Rendern ohne Internetzugang zu remotion.media
 
 Remotion lädt sonst einen eigenen Browser herunter; stattdessen einen vorhandenen angeben:
