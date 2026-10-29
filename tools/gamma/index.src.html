@@ -13,7 +13,7 @@
   --faden: #8fb0ff; --blau: #1d3fd6;
   --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --serif: Newsreader, "Iowan Old Style", "Times New Roman", serif;
-  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --mono: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;   /* Beschriftungen: gleiche Schrift auf allen Geräten */
   color-scheme: dark;
 }
 @media (prefers-color-scheme: light) {
@@ -22,6 +22,7 @@
 :root[data-theme="light"] { --nacht: #ececea; --text: #000000; --leise: rgba(0, 0, 0, .62); --strich: rgba(0, 0, 0, .5); --fein: rgba(0, 0, 0, .12); --faden: #1d3fd6; color-scheme: light; }
 
 * { box-sizing: border-box; }
+b, strong { font-weight: 500; }   /* Instrument Sans gibt es nur in 400 und 500: nichts künstlich verdicken */
 body { margin: 0; background: var(--nacht); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.45; overflow-x: hidden; }
 a { color: inherit; }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--faden); outline-offset: 3px; }
@@ -34,13 +35,13 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 /* Kopf: immer schwarz, wie beim Lab */
 .kopf { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 20; height: 48px; display: flex; align-items: center; gap: 14px;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); background: #000; color: #fff; font-size: 13px; }
-.kopf .marke { display: flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; }
+.kopf .marke { display: flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 500; letter-spacing: -.01em; white-space: nowrap; }
 .kopf .marke img { width: 24px; height: 24px; display: block; }
 .kopf .ausgabe { color: rgba(255, 255, 255, .55); font-weight: 400; }
 .kopf nav { display: flex; gap: 16px; margin-left: 10px; }
 .kopf nav a { text-decoration: none; color: rgba(255, 255, 255, .78); }
 .kopf nav a:hover { color: #fff; }
-.kopf .pille { margin-left: auto; background: #fff; color: #000; text-decoration: none; padding: 6px 13px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
+.kopf .pille { margin-left: auto; background: #fff; color: #000; text-decoration: none; padding: 6px 13px; border-radius: 99px; font-weight: 500; white-space: nowrap; }
 @media (max-width: 900px) { .kopf nav { display: none; } }
 @media (max-width: 420px) { .kopf .ausgabe { display: none; } }
 
@@ -50,7 +51,7 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 .szene { position: absolute; inset: 0; transform-origin: 50% 100%; will-change: transform; }
 .intro-text { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px));
   display: flex; justify-content: space-between; align-items: end; gap: 20px; color: #fff; }
-.intro-text h1 { margin: 0; font-size: clamp(34px, 6vw, 84px); font-weight: 600; letter-spacing: -.04em; line-height: .95; text-wrap: balance; max-width: 13ch; }
+.intro-text h1 { margin: 0; font-size: clamp(34px, 6vw, 84px); font-weight: 500; letter-spacing: -.04em; line-height: .95; text-wrap: balance; max-width: 13ch; }
 .intro-text p { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 255, 255, .62); text-align: right; }
 .etiketten .st { font-size: 10.5px; color: rgba(255, 255, 255, .78); transition: opacity .4s; }
 .etiketten .st b { font-weight: 400; color: rgba(255, 255, 255, .45); margin-right: 6px; }
@@ -59,14 +60,14 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 .zeile q { font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.3vw, 28px); line-height: 1.25; quotes: "«" "»"; text-wrap: balance; }
 .etiketten span { position: absolute; left: 0; top: 0; font-family: var(--mono); font-size: 11px; color: #fff; white-space: nowrap; will-change: transform; text-shadow: 0 0 8px #000; }
 .tafel { position: absolute; top: 48px; bottom: 0; left: 0; width: 0; background: var(--blau); color: #fff; overflow: hidden; display: flex; pointer-events: auto; }
-.tafel .wort { flex: none; writing-mode: vertical-rl; transform: rotate(180deg); font-weight: 600; letter-spacing: -.045em; line-height: .8;
+.tafel .wort { flex: none; writing-mode: vertical-rl; transform: rotate(180deg); font-weight: 500; letter-spacing: -.045em; line-height: .8;
   font-size: min(calc((100svh - 70px) / 6.2), 28vw); margin: 0; padding: 14px 6px 14px 4px; white-space: nowrap; }
-.tafel .spalte { flex: 1; min-width: 0; padding: 18px 16px 18px 6px; display: flex; flex-direction: column; gap: 14px; opacity: 0; }
-.tafel ol { list-style: none; margin: 0; padding: 0; font-family: var(--mono); font-size: 11px; line-height: 1.6; }
+.tafel .spalte { flex: 1; min-width: 0; padding: 18px 18px 18px 26px; display: flex; flex-direction: column; gap: 14px; opacity: 0; }
+.tafel ol { list-style: none; margin: 0; padding: 0; font-family: var(--mono); font-size: 12px; line-height: 1.75; letter-spacing: .01em; }
 .tafel ol li { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, .22); }
 .tafel ol span { font-variant-numeric: tabular-nums; opacity: .7; }
 .tafel .zahl { border-top: 1px solid rgba(255, 255, 255, .4); padding-top: 8px; font-family: var(--mono); font-size: 11px; line-height: 1.5; }
-.tafel .zahl b { display: block; font-family: var(--sans); font-size: clamp(26px, 3vw, 40px); font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+.tafel .zahl b { display: block; font-family: var(--sans); font-size: clamp(26px, 3vw, 40px); font-weight: 500; letter-spacing: -.03em; line-height: 1; }
 .tafel .satz { font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.3; margin: 0; }
 .tafel .satz small { display: block; font-family: var(--mono); font-style: normal; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; opacity: .75; margin-bottom: 6px; }
 .etiketten .st.gezogen { font-size: 13px; color: #fff; }
@@ -74,10 +75,11 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 @media (max-width: 760px) {
   .tafel { top: auto; height: 46svh; }
   .tafel .wort { font-size: min(calc(46svh / 6.4), 16vw); }
+  .tafel .spalte { padding-left: 20px; }
   .tafel .zahl:nth-of-type(n+3) { display: none; }
 }
 .tip { position: fixed; z-index: 5; max-width: 260px; padding: 8px 10px; background: #000; color: #fff; border: 1px solid rgba(255, 255, 255, .5); font-size: 13px; pointer-events: none; }
-.tip b { display: block; font-weight: 600; }
+.tip b { display: block; font-weight: 500; }
 .tip i { font-family: var(--serif); color: rgba(255, 255, 255, .7); }
 
 /* ---------- Bahn ---------- */
@@ -86,52 +88,127 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 body.flach .raum-platz { display: none; }
 .bahn { display: none; }
 body.flach .bahn { display: block; pointer-events: auto; width: min(980px, 100%); margin: 0 auto; padding-top: 64px; }
-.kapitel { position: relative; padding-block: 56px 80px; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); background: var(--k); color: var(--kt); scroll-margin-top: 48px; }
-.kapitel h2 { margin: 0; font-size: clamp(52px, 9vw, 116px); font-weight: 600; letter-spacing: -.045em; line-height: .9; }
+/* ---------- Kapitel: je ein eigenes Layout, Haarlinien statt Kisten (wie der Neubau /b/).
+   Das Band im Raum zeichnet genau diese Seiten nach; Grössen in cqi, damit Band und flache Seite gleich umbrechen. ---------- */
+.kapitel { container-type: inline-size; position: relative; background: var(--k); color: var(--kt); scroll-margin-top: 48px; }
+.k-innen { padding: clamp(40px, 8cqi, 68px) max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)) clamp(52px, 9cqi, 84px) max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-left, 0px)); }
+.kapitel a { color: inherit; text-decoration: none; }
+.kapitel img { display: block; }
+.kapitel h2 { margin: 0; font-size: clamp(58px, 15.5cqi, 132px); font-weight: 500; letter-spacing: -.045em; line-height: .86; }
 .kapitel h2 .bst { display: inline-block; white-space: pre; }
+.marke-k, .kapitel .label { font: 500 11px/1.25 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--kg); }
+.marke-k { display: block; margin-bottom: clamp(16px, 3cqi, 26px); text-align: right; }   /* rechts: im Raum steht der Titel davor auf */
+.kapitel .leit { margin: clamp(18px, 3cqi, 28px) 0 clamp(30px, 6cqi, 52px); font-family: var(--serif); font-style: italic; font-size: clamp(20px, 3.4cqi, 30px); line-height: 1.2; max-width: 24ch; text-wrap: balance; }
+.kapitel .weiter { display: inline-flex; align-items: center; margin-top: clamp(30px, 6cqi, 48px); padding: 12px 20px; border-radius: 999px; background: var(--kt); color: var(--k); font-weight: 500; font-size: 15px; }
+.kapitel .weiter:hover { background: var(--ka); }
 /* Beim Wechsel des Kapitels in der flachen Ansicht: ein kurzes Netz über dem Kopf */
 .k-netz { position: absolute; left: 0; top: 0; width: 100%; pointer-events: none; color: var(--kt); overflow: visible; }
 .k-netz line { stroke: currentColor; stroke-width: 1; opacity: .5; }
 .k-netz rect { fill: currentColor; }
 .k-netz .etikett rect { fill: var(--kt); }
-.k-netz .etikett text { fill: var(--k); font: 10px var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+.k-netz .etikett text { fill: var(--k); font: 500 10px var(--sans); letter-spacing: .08em; text-transform: uppercase; }
 body.flach.nach-intro.wechsel #welt { visibility: visible; }
-.kapitel .leit { margin: 20px 0 34px; font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.2vw, 26px); line-height: 1.25; max-width: 30ch; text-wrap: balance; }
-.kapitel .marke-k { position: absolute; top: 18px; right: max(18px, env(safe-area-inset-right, 0px)); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
-.raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 14px; }
-.karte { min-width: 0; display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--kl); background: var(--kc); text-decoration: none; }
-.karte:hover { border-color: var(--kt); }
-.karte img { width: 100%; max-width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
-.karte b { font-weight: 600; font-size: 17px; letter-spacing: -.01em; }
-.karte span { font-size: 13.5px; line-height: 1.4; opacity: .82; }
-.weiter { display: inline-flex; margin-top: 26px; padding: 9px 16px; border-radius: 99px; background: var(--kt); color: var(--k); text-decoration: none; font-weight: 600; }
-@media (max-width: 760px) { .raster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .karte b { font-size: 15px; } .karte span { font-size: 12.5px; } }
 
-/* Kapitelfarben (b/b.css .kapitel-*), --kc ist die Kartenfläche */
-.k-lab { --k: #c2185b; --kc: #cc3a74; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); }
-.k-apps { --k: #e6b117; --kc: #ebc040; --kt: #000000; --kl: rgba(0, 0, 0, .24); }
-.k-prompts { --k: #e0503c; --kc: #e6695a; --kt: #000000; --kl: rgba(0, 0, 0, .26); }
-.k-zettel { --k: #ffffff; --kc: #f4f4f2; --kt: #000000; --kl: #d6d6d6; }
-.k-social { --k: #1d3fd6; --kc: #3a58dc; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); }
-.k-art { --k: #f2b2c0; --kc: #f6c6d1; --kt: #000000; --kl: rgba(0, 0, 0, .24); }
-.k-rad { --k: #a7ff9c; --kc: #bbffb2; --kt: #000000; --kl: rgba(0, 0, 0, .22); }
-.k-angebot { --k: #1f4d3a; --kc: #2f5e4a; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); }
+/* Farben: Lab Karmin, 3. Rad Blaupause, Apps Senf, Prompts Rot, Zettel Papier, Social Tinte, Art Rosa, Angebot Tannengrün */
+.k-lab { --k: #7a1235; --kt: #ffffff; --kg: rgba(255, 255, 255, .72); --kl: rgba(255, 255, 255, .26); --ka: #ffa3d1; }
+.k-rad { --k: #1d3fd6; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .3); --ka: #ecb98f; }
+.k-apps { --k: #e6b117; --kt: #000000; --kg: rgba(0, 0, 0, .68); --kl: rgba(0, 0, 0, .22); --ka: #ffffff; }
+.k-prompts { --k: #e0503c; --kt: #000000; --kg: rgba(0, 0, 0, .7); --kl: rgba(0, 0, 0, .24); --ka: #ffffff; }
+.k-zettel { --k: #ffffff; --kt: #000000; --kg: #5f5f5f; --kl: #d6d6d6; --ka: #1d3fd6; }
+.k-social { --k: #101010; --kt: #ffffff; --kg: rgba(255, 255, 255, .62); --kl: rgba(255, 255, 255, .22); --ka: #8fb0ff; }
+.k-art { --k: #f2b2c0; --kt: #000000; --kg: rgba(0, 0, 0, .66); --kl: rgba(0, 0, 0, .2); --ka: #ffffff; }
+.k-angebot { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .74); --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 
-/* Zettel: sieben Zyklen à sieben Strophen */
-.zyklen { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
-.zyklus { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
-.zyklus small { font-family: var(--mono); font-size: 10px; letter-spacing: .04em; text-transform: uppercase; opacity: .7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.zyklus button { aspect-ratio: 4 / 3; width: 100%; border: 1px solid var(--kl); background: transparent; cursor: pointer; padding: 0; font: 600 11px var(--mono); color: var(--kt); }
-.zyklus button:hover, .zyklus button[aria-pressed="true"] { background: #000; color: #fff; }
-.strophe { margin-top: 26px; border-top: 1px solid var(--kl); padding-top: 16px; display: grid; gap: 6px; min-height: 150px; }
-.strophe small { font-family: var(--mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; opacity: .7; }
-.strophe b { font-size: clamp(24px, 3vw, 34px); font-weight: 600; letter-spacing: -.03em; line-height: 1.05; }
-.strophe q { font-family: var(--serif); font-style: italic; font-size: clamp(18px, 2vw, 23px); line-height: 1.3; max-width: 46ch; quotes: "«" "»"; }
+/* 01 Lab: ein grosses Bild, die sechs Verfahren als Liste, darunter die übrigen Ergebnisse als Kontaktbogen */
+.lab-werk { display: grid; gap: 22px; }
+.lab-gross img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
+.liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--kt); }
+.liste li { display: grid; grid-template-columns: 38px minmax(0, 1fr); padding: 11px 0 13px; border-bottom: 1px solid var(--kl); }
+.liste .nr { grid-row: span 2; font: 500 11px/22px var(--sans); letter-spacing: .08em; color: var(--ka); }
+.liste b { font-weight: 500; font-size: clamp(17px, 2.6cqi, 21px); letter-spacing: -.01em; line-height: 1.2; }
+.liste li > span:last-child { margin-top: 3px; font-size: 13.5px; line-height: 1.4; color: var(--kg); }
+.kontakt { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: clamp(6px, 1.4cqi, 12px); margin-top: clamp(16px, 3cqi, 28px); }
+.kontakt figure { margin: 0; }
+.kontakt img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.kontakt figcaption { margin-top: 7px; font: 500 10.5px/1 var(--sans); letter-spacing: .08em; color: var(--kg); }
+@container (min-width: 640px) { .lab-werk { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 34px; align-items: start; } }
+
+/* 02 Das 3. Rad: drei Scheiben nebeneinander */
+.raeder { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 3.4cqi, 30px); }
+.rad { display: grid; align-content: start; gap: 6px; }
+.scheibe { position: relative; display: block; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: #ffffff; margin-bottom: 12px; }
+.scheibe img { width: 100%; height: 100%; object-fit: cover; }
+.scheibe.ausschnitt { background: #000000; }
+.scheibe.ausschnitt img { position: absolute; left: -130.8%; top: -9.6%; width: 230.8%; height: auto; max-width: none; }
+.rad b { font-weight: 500; font-size: clamp(18px, 3cqi, 24px); letter-spacing: -.015em; line-height: 1.15; }
+.rad > span:last-child { font-size: clamp(12px, 1.9cqi, 14px); line-height: 1.4; color: var(--kg); }
+
+/* 03 Apps: Index mit grosser Zahl */
+.index { display: grid; gap: 18px; }
+.gross-zahl { margin: 0; font-size: clamp(130px, 32cqi, 240px); font-weight: 400; letter-spacing: -.07em; line-height: .76; }
+.gross-zahl .label { display: block; margin-top: 18px; max-width: 16ch; line-height: 1.5; color: var(--kt); }
+.app-liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--kt); }
+.app-liste a { display: grid; grid-template-columns: clamp(44px, 8cqi, 60px) minmax(0, 1fr) auto; gap: clamp(12px, 2.4cqi, 18px); align-items: center; padding: 9px 0; border-bottom: 1px solid var(--kl); }
+.app-liste img { width: 100%; aspect-ratio: 1; mix-blend-mode: multiply; }
+.app-liste b { display: block; font-weight: 500; font-size: clamp(16px, 2.6cqi, 20px); letter-spacing: -.01em; }
+.app-liste a > span > span { display: block; margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--kg); }
+.app-liste i { font-style: normal; font-size: 18px; padding-right: 2px; }
+@container (min-width: 640px) { .index { grid-template-columns: 190px minmax(0, 1fr); gap: 34px; align-items: start; } }
+
+/* 04 Prompts: Matrix aus vier Feldern, wie die Quadranten auf der Website */
+.matrix { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--kt); border-left: 1px solid var(--kt); }
+.matrix a { display: grid; align-content: start; gap: 6px; padding: clamp(12px, 2.6cqi, 22px); border-right: 1px solid var(--kt); border-bottom: 1px solid var(--kt); }
+.matrix img { width: 74%; aspect-ratio: 1; margin: 2px auto 10px; mix-blend-mode: multiply; }
+.matrix b { font-weight: 500; font-size: clamp(15px, 2.5cqi, 20px); letter-spacing: -.01em; line-height: 1.2; }
+.matrix a > span:last-child { font-size: clamp(12px, 1.9cqi, 13.5px); line-height: 1.4; color: var(--kg); }
+
+/* 05 Zettel: sieben Zyklen à sieben Strophen, die gezogene in Blaupause */
+.zettel-feld { display: grid; gap: 26px; }
+.zyklen { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: clamp(3px, .8cqi, 6px); }
+.zyklus { min-width: 0; display: grid; gap: clamp(3px, .8cqi, 6px); align-content: start; }
+.zyklus small { font: 500 10px/1.4 var(--sans); letter-spacing: .08em; color: var(--kg); text-align: center; }
+.zyklus button { aspect-ratio: 1; width: 100%; border: 1px solid var(--kl); background: transparent; cursor: pointer; padding: 0; font: 500 clamp(9px, 1.6cqi, 11.5px)/1 var(--sans); color: var(--kt); }
+.zyklus button:hover { border-color: var(--kt); }
+.zyklus button[aria-pressed="true"] { background: var(--ka); border-color: var(--ka); color: #ffffff; }
+.strophe { border-top: 1px solid var(--kt); padding-top: 14px; display: grid; gap: 12px; align-content: start; }
+.strophe b { font-size: clamp(26px, 4.6cqi, 40px); font-weight: 500; letter-spacing: -.03em; line-height: 1.04; }
+.strophe p { margin: 0; font-family: var(--serif); font-style: italic; font-size: clamp(19px, 3.1cqi, 26px); line-height: 1.28; text-wrap: pretty; }
+@container (min-width: 640px) { .zettel-feld { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 38px; align-items: start; } }
+
+/* 06 Social: drei Zettel, leicht versetzt, je mit kleinem Feld */
+.kanaele { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 2cqi, 18px); align-items: start; }
+.kanal { display: grid; gap: 8px; padding: clamp(10px, 2.2cqi, 18px); border: 1px solid var(--kl); }
+.kanal:nth-child(2) { margin-top: clamp(18px, 5cqi, 44px); }
+.kanal:nth-child(3) { margin-top: clamp(8px, 2cqi, 18px); }
+.kanal:hover { border-color: var(--kt); }
+.kanal .label { font-size: clamp(9px, 1.6cqi, 11px); }
+.kanal b { margin-top: clamp(12px, 3cqi, 30px); font-weight: 500; font-size: clamp(18px, 4.6cqi, 40px); letter-spacing: -.03em; line-height: 1; }
+.kanal .satz { font-family: var(--serif); font-style: italic; font-size: clamp(13px, 2.2cqi, 17px); line-height: 1.3; color: var(--kg); }
+.feldchen { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; width: clamp(48px, 11cqi, 84px); justify-self: end; margin-top: clamp(10px, 2.4cqi, 22px); }
+.feldchen i { aspect-ratio: 1; border: 1px solid var(--kl); }
+.feldchen i.an { background: var(--ka); border-color: var(--ka); }
+
+/* 07 Art: Liste und ein grosses Werk */
+.werk { display: grid; gap: 24px; }
+.werk-liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--kt); }
+.werk-liste li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 13px 0 15px; border-bottom: 1px solid var(--kl); font-size: clamp(22px, 4cqi, 32px); font-weight: 500; letter-spacing: -.025em; line-height: 1.1; }
+.werk figure { margin: 0; order: -1; }
+.werk img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
+.werk figcaption { margin-top: 10px; font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--kg); }
+@container (min-width: 640px) { .werk { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 36px; align-items: end; } .werk figure { order: 0; } }
+
+/* 08 Angebot: vier Leistungen mit grossen Ziffern */
+.angebot-liste { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--kt); }
+.angebot-liste a { display: grid; grid-template-columns: clamp(52px, 10cqi, 84px) minmax(0, 1fr); padding: 16px 0 18px; border-bottom: 1px solid var(--kl); }
+.angebot-liste .nr { grid-row: span 2; font-size: clamp(34px, 7cqi, 58px); font-weight: 400; letter-spacing: -.05em; line-height: .9; color: var(--ka); }
+.angebot-liste b { font-weight: 500; font-size: clamp(18px, 3cqi, 23px); letter-spacing: -.015em; line-height: 1.2; }
+.angebot-liste a > span:last-child { margin-top: 4px; font-size: 13.5px; line-height: 1.4; color: var(--kg); }
+@container (min-width: 640px) { .angebot-liste { grid-template-columns: 1fr 1fr; column-gap: 34px; } }
 
 /* Steuerung unten links und Kapitelzeiger links */
 .steuer { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; opacity: 0; pointer-events: none; transition: opacity .3s; }
 .steuer.da { opacity: 1; pointer-events: auto; }
-.steuer button { font: 600 13px var(--sans); padding: 9px 15px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .5); background: #000; color: #fff; cursor: pointer; }
+.steuer button { font: 500 13px var(--sans); padding: 9px 15px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .5); background: #000; color: #fff; cursor: pointer; }
 .zeiger { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); top: 50%; transform: translateY(-50%); list-style: none; margin: 0; padding: 0;
   font-family: var(--mono); font-size: 11px; line-height: 1.9; opacity: 0; pointer-events: none; transition: opacity .3s; }
 .zeiger.da { opacity: 1; pointer-events: auto; }
@@ -145,9 +222,9 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 /* Schluss */
 .schluss { position: relative; z-index: 2; background: var(--nacht); padding-block: 90px 60px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .schluss .innen { max-width: 1100px; margin: 0 auto; }
-.schluss h2 { margin: 0 0 26px; font-size: clamp(36px, 6vw, 80px); font-weight: 600; letter-spacing: -.04em; line-height: .95; text-wrap: balance; }
+.schluss h2 { margin: 0 0 26px; font-size: clamp(36px, 6vw, 80px); font-weight: 500; letter-spacing: -.04em; line-height: .95; text-wrap: balance; }
 .schluss ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr)); gap: 0; border-top: 1px solid var(--strich); }
-.schluss li a { display: flex; justify-content: space-between; align-items: center; padding: 14px 4px; border-bottom: 1px solid var(--fein); text-decoration: none; font-size: 19px; font-weight: 600; }
+.schluss li a { display: flex; justify-content: space-between; align-items: center; padding: 14px 4px; border-bottom: 1px solid var(--fein); text-decoration: none; font-size: 19px; font-weight: 500; }
 .schluss li a i { width: 12px; height: 12px; background: var(--k); border: 1px solid var(--strich); }
 .schluss p { margin: 34px 0 0; font-family: var(--mono); font-size: 11px; color: var(--leise); letter-spacing: .04em; }
 </style>
@@ -189,105 +266,125 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 <section id="bahn-abschnitt" aria-label="Bereiche der Website">
   <div class="raum-platz" id="raum-platz"></div>
   <div class="bahn" id="bahn">
-      <article class="kapitel k-lab" id="k-lab" data-name="Lab">
+      <article class="kapitel k-lab" id="k-lab" data-name="Lab"><div class="k-innen">
         <span class="marke-k">01 · ornament.lab</span>
         <h2>Lab</h2>
         <p class="leit">Ein Bild wird Material.</p>
-        <div class="raster">
-          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-glitch.jpg" alt="" loading="lazy"><b>Glitch</b><span>Zeilen verrutschen, Kanäle trennen sich.</span></a>
-          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-sort.jpg" alt="" loading="lazy"><b>Pixelsortierung</b><span>Helligkeit ordnet die Pixel neu.</span></a>
-          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-teilung.jpg" alt="" loading="lazy"><b>Teilung</b><span>Linienbilder nach Makelangelo, in den Farben des Bildes.</span></a>
-          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-raster.jpg" alt="" loading="lazy"><b>Raster</b><span>Das Bild als gedrucktes Raster.</span></a>
-          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-punkte.jpg" alt="" loading="lazy"><b>Punkte</b><span>Punktieren statt zeichnen.</span></a>
-          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-neu.jpg" alt="" loading="lazy"><b>Neusetzen</b><span>Teile ordnen sich zu einem neuen Bild.</span></a>
+        <div class="lab-werk">
+          <a class="lab-gross" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-glitch.jpg" alt="Porträt, Zeilen und Farbkanäle verschoben" loading="lazy"></a>
+          <ol class="liste">
+            <li data-rand="Glitch"><span class="nr">01</span><b>Glitch</b><span>Zeilen verrutschen, Kanäle trennen sich.</span></li>
+            <li><span class="nr">02</span><b>Pixelsortierung</b><span>Helligkeit ordnet die Pixel neu.</span></li>
+            <li><span class="nr">03</span><b>Teilung</b><span>Linienbilder nach Makelangelo, in den Farben des Bildes.</span></li>
+            <li><span class="nr">04</span><b>Raster</b><span>Das Bild als gedrucktes Raster.</span></li>
+            <li><span class="nr">05</span><b>Punkte</b><span>Punktieren statt zeichnen.</span></li>
+            <li data-rand="Neusetzen"><span class="nr">06</span><b>Neusetzen</b><span>Teile ordnen sich zu einem neuen Bild.</span></li>
+          </ol>
         </div>
-        <a class="weiter" href="{{LINK}}beta/lab/">Lab ansehen</a>
-      </article>
+        <div class="kontakt">
+          <figure><img src="{{BILD}}beta/lab/bilder/v-sort.jpg" alt="" loading="lazy"><figcaption>02</figcaption></figure>
+          <figure><img src="{{BILD}}beta/lab/bilder/v-teilung.jpg" alt="" loading="lazy"><figcaption>03</figcaption></figure>
+          <figure><img src="{{BILD}}beta/lab/bilder/v-raster.jpg" alt="" loading="lazy"><figcaption>04</figcaption></figure>
+          <figure><img src="{{BILD}}beta/lab/bilder/v-punkte.jpg" alt="" loading="lazy"><figcaption>05</figcaption></figure>
+          <figure><img src="{{BILD}}beta/lab/bilder/v-neu.jpg" alt="" loading="lazy"><figcaption>06</figcaption></figure>
+        </div>
+        <a class="weiter" href="{{LINK}}beta/lab/">Lab ansehen →</a>
+      </div></article>
 
-      <article class="kapitel k-rad" id="k-rad" data-name="Das 3. Rad">
+      <article class="kapitel k-rad" id="k-rad" data-name="Das 3. Rad"><div class="k-innen">
         <span class="marke-k">02 · Beta</span>
         <h2>Das 3. Rad</h2>
         <p class="leit">Zeit, Form und Farbe drehen gegeneinander.</p>
-        <div class="raster">
-          <a class="karte" href="{{LINK}}beta/drittes-rad/"><img src="{{BILD}}beta/drittes-rad/og-drittes-rad.jpg" alt="" loading="lazy"><b>Drehen</b><span>Jede Drehung zieht eine Strophe aus dem Zettelkasten, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.</span></a>
-          <a class="karte" href="{{LINK}}beta/drittes-rad/"><img class="svg" src="{{BILD}}b/bilder/apps/orna.svg" alt="" loading="lazy"><b>Begegnung</b><span>Künstler:innen treffen Theoretiker:innen, wie auf den Ringen von ORNA.</span></a>
-          <a class="karte" href="{{LINK}}beta/drittes-rad/"><img class="svg" src="{{BILD}}b/bilder/apps/omna-color.svg" alt="" loading="lazy"><b>Übung</b><span>Eine Gestaltungsübung aus OMNA COLOR, und von jedem Treffer aus geht es weiter.</span></a>
+        <div class="raeder">
+          <a class="rad" href="{{LINK}}beta/drittes-rad/" data-rand="Strophe"><span class="scheibe ausschnitt"><img src="{{BILD}}beta/drittes-rad/og-drittes-rad.jpg" alt="" loading="lazy"></span><span class="label">Zettelkasten</span><b>Strophe</b><span>Jede Drehung zieht eine Strophe aus «Zu seiner Zeit».</span></a>
+          <a class="rad" href="{{LINK}}beta/drittes-rad/"><span class="scheibe"><img src="{{BILD}}b/bilder/apps/orna.svg" alt="" loading="lazy"></span><span class="label">ORNA</span><b>Begegnung</b><span>Künstler:innen treffen Theoretiker:innen.</span></a>
+          <a class="rad" href="{{LINK}}beta/drittes-rad/" data-rand="Übung"><span class="scheibe"><img src="{{BILD}}b/bilder/apps/omna-color.svg" alt="" loading="lazy"></span><span class="label">OMNA COLOR</span><b>Übung</b><span>Eine Gestaltungsübung, und von jedem Treffer geht es weiter.</span></a>
         </div>
-        <a class="weiter" href="{{LINK}}beta/drittes-rad/">Rad drehen</a>
-      </article>
+        <a class="weiter" href="{{LINK}}beta/drittes-rad/">Rad drehen →</a>
+      </div></article>
 
-      <article class="kapitel k-apps" id="k-apps" data-name="Apps">
+      <article class="kapitel k-apps" id="k-apps" data-name="Apps"><div class="k-innen">
         <span class="marke-k">03 · sieben Apps</span>
         <h2>Apps</h2>
         <p class="leit">Kleine Werkzeuge zum Ausprobieren. Alles bleibt auf dem Gerät.</p>
-        <div class="raster">
-          <a class="karte" href="{{LINK}}b/apps/phorma-iii/"><img class="svg" src="{{BILD}}b/bilder/apps/phorma-iii.svg" alt="" loading="lazy"><b>PHORMA III</b><span>Aus Klang wird Bild: Gewebe aus Linien, Perlen in einer Kugel aus Fäden.</span></a>
-          <a class="karte" href="{{LINK}}b/apps/phorma-ii/"><img class="svg" src="{{BILD}}b/bilder/apps/phorma-ii.svg" alt="" loading="lazy"><b>PHORMA II</b><span>Ein Schleimpilz findet seine Formen, das Bild weht als Seidentuch.</span></a>
-          <a class="karte" href="{{LINK}}b/apps/phorma-i/"><img class="svg" src="{{BILD}}b/bilder/apps/phorma-i.svg" alt="" loading="lazy"><b>PHORMA I</b><span>Ein Foto zerfällt in Funken, Glas, Scherben und Gebirge.</span></a>
-          <a class="karte" href="{{LINK}}b/apps/the-fictory/"><img class="svg" src="{{BILD}}b/bilder/apps/the-fictory.svg" alt="" loading="lazy"><b>The Fictory</b><span>Ein Bild auf der Werkbank zerfällt und setzt sich neu zusammen.</span></a>
-          <a class="karte" href="{{LINK}}b/apps/orma/"><img class="svg" src="{{BILD}}b/bilder/apps/orma.svg" alt="" loading="lazy"><b>ORMA</b><span>Ein Rad bringt Kunst und Theorie zusammen. Zehn Minuten zu zweit.</span></a>
-          <a class="karte" href="{{LINK}}b/apps/orna/"><img class="svg" src="{{BILD}}b/bilder/apps/orna.svg" alt="" loading="lazy"><b>ORNA</b><span>Zwei gegenläufige Ringe, eine Drehung, eine Begegnung.</span></a>
-          <a class="karte" href="{{LINK}}b/apps/omna-color/"><img class="svg" src="{{BILD}}b/bilder/apps/omna-color.svg" alt="" loading="lazy"><b>OMNA COLOR</b><span>Zwei Farbräder ziehen aus 180 Gestaltungsübungen.</span></a>
+        <div class="index">
+          <p class="gross-zahl">7<span class="label">Apps, die auf dem Gerät bleiben</span></p>
+          <ul class="app-liste">
+            <li><a href="{{LINK}}b/apps/phorma-iii/" data-rand="PHORMA III"><img src="{{BILD}}b/bilder/apps/phorma-iii.svg" alt="" loading="lazy"><span><b>PHORMA III</b><span>Aus Klang wird Bild: Gewebe aus Linien, Perlen in einer Kugel aus Fäden.</span></span><i>→</i></a></li>
+            <li><a href="{{LINK}}b/apps/phorma-ii/"><img src="{{BILD}}b/bilder/apps/phorma-ii.svg" alt="" loading="lazy"><span><b>PHORMA II</b><span>Ein Schleimpilz findet seine Formen, das Bild weht als Seidentuch.</span></span><i>→</i></a></li>
+            <li><a href="{{LINK}}b/apps/phorma-i/"><img src="{{BILD}}b/bilder/apps/phorma-i.svg" alt="" loading="lazy"><span><b>PHORMA I</b><span>Ein Foto zerfällt in Funken, Glas, Scherben und Gebirge.</span></span><i>→</i></a></li>
+            <li><a href="{{LINK}}b/apps/the-fictory/" data-rand="The Fictory"><img src="{{BILD}}b/bilder/apps/the-fictory.svg" alt="" loading="lazy"><span><b>The Fictory</b><span>Ein Bild auf der Werkbank zerfällt und setzt sich neu zusammen.</span></span><i>→</i></a></li>
+            <li><a href="{{LINK}}b/apps/orma/"><img src="{{BILD}}b/bilder/apps/orma.svg" alt="" loading="lazy"><span><b>ORMA</b><span>Ein Rad bringt Kunst und Theorie zusammen. Zehn Minuten zu zweit.</span></span><i>→</i></a></li>
+            <li><a href="{{LINK}}b/apps/orna/"><img src="{{BILD}}b/bilder/apps/orna.svg" alt="" loading="lazy"><span><b>ORNA</b><span>Zwei gegenläufige Ringe, eine Drehung, eine Begegnung.</span></span><i>→</i></a></li>
+            <li><a href="{{LINK}}b/apps/omna-color/" data-rand="OMNA COLOR"><img src="{{BILD}}b/bilder/apps/omna-color.svg" alt="" loading="lazy"><span><b>OMNA COLOR</b><span>Zwei Farbräder ziehen aus 180 Gestaltungsübungen.</span></span><i>→</i></a></li>
+          </ul>
         </div>
-        <a class="weiter" href="{{LINK}}b/apps/">Alle Apps</a>
-      </article>
+        <a class="weiter" href="{{LINK}}b/apps/">Alle Apps →</a>
+      </div></article>
 
-      <article class="kapitel k-prompts" id="k-prompts" data-name="Prompts">
+      <article class="kapitel k-prompts" id="k-prompts" data-name="Prompts"><div class="k-innen">
         <span class="marke-k">04 · vier Prüfraster</span>
         <h2>Prompts</h2>
         <p class="leit">Vier Prüfraster zum genaueren Hinsehen, je mit Grundlagenpapier und Anwendungsprompt.</p>
-        <div class="raster">
-          <a class="karte" href="{{LINK}}b/raster/nebeneinander-nacheinander/"><img class="svg" src="{{BILD}}b/bilder/raster/nebeneinander-nacheinander.svg" alt="" loading="lazy"><b>Nebeneinander und Nacheinander</b><span>Verräumlichung und Verzeitlichung als Achsen für die Ordnung von Theorien und Kunstpraxen.</span></a>
-          <a class="karte" href="{{LINK}}b/raster/verteilapparat/"><img class="svg" src="{{BILD}}b/bilder/raster/verteilapparat.svg" alt="" loading="lazy"><b>Der Verteilapparat des Körpers</b><span>Wessen Körperereignis kommt wie weit, unter welcher Beschreibung?</span></a>
-          <a class="karte" href="{{LINK}}b/raster/gesellschaftskonzepte/"><img class="svg" src="{{BILD}}b/bilder/raster/gesellschaftskonzepte.svg" alt="" loading="lazy"><b>Gesellschaftskonzepte</b><span>Einheit · Operation · Vermittlung. Vorprüfung von Gesellschaftsdiagnosen.</span></a>
-          <a class="karte" href="{{LINK}}b/raster/journalistische-texte/"><img class="svg" src="{{BILD}}b/bilder/raster/journalistische-texte.svg" alt="" loading="lazy"><b>Journalistische Texte</b><span>Ereignis · Kontext · Übergang · Gegenprobe · Systembezüge.</span></a>
+        <div class="matrix">
+          <a href="{{LINK}}b/raster/nebeneinander-nacheinander/" data-rand="Nebeneinander und Nacheinander"><span class="label">I</span><img src="{{BILD}}b/bilder/raster/nebeneinander-nacheinander.svg" alt="" loading="lazy"><b>Nebeneinander und Nacheinander</b><span>Verräumlichung und Verzeitlichung als Achsen für Theorien und Kunstpraxen.</span></a>
+          <a href="{{LINK}}b/raster/verteilapparat/" data-rand="Verteilapparat"><span class="label">II</span><img src="{{BILD}}b/bilder/raster/verteilapparat.svg" alt="" loading="lazy"><b>Der Verteilapparat des Körpers</b><span>Wessen Körperereignis kommt wie weit, unter welcher Beschreibung?</span></a>
+          <a href="{{LINK}}b/raster/gesellschaftskonzepte/"><span class="label">III</span><img src="{{BILD}}b/bilder/raster/gesellschaftskonzepte.svg" alt="" loading="lazy"><b>Gesellschaftskonzepte</b><span>Einheit · Operation · Vermittlung. Vorprüfung von Gesellschaftsdiagnosen.</span></a>
+          <a href="{{LINK}}b/raster/journalistische-texte/"><span class="label">IV</span><img src="{{BILD}}b/bilder/raster/journalistische-texte.svg" alt="" loading="lazy"><b>Journalistische Texte</b><span>Ereignis · Kontext · Übergang · Gegenprobe · Systembezüge.</span></a>
         </div>
-        <a class="weiter" href="{{LINK}}b/raster/">Zu den Prompts</a>
-      </article>
+        <a class="weiter" href="{{LINK}}b/raster/">Zu den Prompts →</a>
+      </div></article>
 
-      <article class="kapitel k-zettel" id="k-zettel" data-name="Zettel">
+      <article class="kapitel k-zettel" id="k-zettel" data-name="Zettel"><div class="k-innen">
         <span class="marke-k">05 · Zu seiner Zeit</span>
         <h2>Zettel</h2>
         <p class="leit">Plateaus zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation.</p>
-        <div class="zyklen" id="zyklen"></div>
-        <div class="strophe" id="strophe" aria-live="polite"></div>
-        <a class="weiter" href="{{LINK}}b/zettel/">Zum Zettelkasten</a>
-      </article>
+        <div class="zettel-feld">
+          <div class="zyklen" id="zyklen"></div>
+          <div class="strophe" id="strophe" aria-live="polite"></div>
+        </div>
+        <a class="weiter" href="{{LINK}}b/zettel/">Zum Zettelkasten →</a>
+      </div></article>
 
-      <article class="kapitel k-social" id="k-social" data-name="Social">
+      <article class="kapitel k-social" id="k-social" data-name="Social"><div class="k-innen">
         <span class="marke-k">06 · jede Woche</span>
         <h2>Social</h2>
         <p class="leit">Ausgewählte Beiträge aus X, Facebook und Instagram, wöchentlich als Zettel gesammelt.</p>
-        <div class="raster">
-          <a class="karte" href="{{LINK}}b/zuletzt/"><b>X</b><span>Beiträge von X, als Zettel abgelegt.</span></a>
-          <a class="karte" href="{{LINK}}b/zuletzt/"><b>Facebook</b><span>Beiträge von Facebook, als Zettel abgelegt.</span></a>
-          <a class="karte" href="{{LINK}}b/zuletzt/"><b>Instagram</b><span>Beiträge von Instagram, als Zettel abgelegt.</span></a>
+        <div class="kanaele">
+          <a class="kanal" href="{{LINK}}b/zuletzt/" data-rand="X"><span class="label">Zettel · Kanal</span><b>X</b><span class="satz">Beiträge, als Zettel abgelegt.</span><span class="feldchen" aria-hidden="true"></span></a>
+          <a class="kanal" href="{{LINK}}b/zuletzt/"><span class="label">Zettel · Kanal</span><b>Facebook</b><span class="satz">Beiträge, als Zettel abgelegt.</span><span class="feldchen" aria-hidden="true"></span></a>
+          <a class="kanal" href="{{LINK}}b/zuletzt/" data-rand="Instagram"><span class="label">Zettel · Kanal</span><b>Instagram</b><span class="satz">Beiträge, als Zettel abgelegt.</span><span class="feldchen" aria-hidden="true"></span></a>
         </div>
-        <a class="weiter" href="{{LINK}}b/zuletzt/">Zu den Beiträgen</a>
-      </article>
+        <a class="weiter" href="{{LINK}}b/zuletzt/">Zu den Beiträgen →</a>
+      </div></article>
 
-      <article class="kapitel k-art" id="k-art" data-name="Art">
+      <article class="kapitel k-art" id="k-art" data-name="Art"><div class="k-innen">
         <span class="marke-k">07 · Werke</span>
         <h2>Art</h2>
         <p class="leit">Originale, Prints und Arbeiten im Raum.</p>
-        <div class="raster">
-          <a class="karte" href="{{LINK}}b/werke/"><img src="{{BILD}}beta/lab/bilder/portraet.jpg" alt="Porträt als Mosaik vor Rot" loading="lazy"><b>Originale und Prints</b><span>Arbeiten auf Papier und Leinwand, Editionen und Drucke.</span></a>
+        <div class="werk">
+          <ul class="werk-liste">
+            <li data-rand="Originale">Originale<span class="label">Papier · Leinwand</span></li>
+            <li>Prints<span class="label">Editionen · Drucke</span></li>
+            <li data-rand="Arbeiten im Raum">Arbeiten im Raum<span class="label">Raum</span></li>
+          </ul>
+          <figure><a href="{{LINK}}b/werke/"><img src="{{BILD}}beta/lab/bilder/portraet.jpg" alt="Porträt als Mosaik vor Rot" loading="lazy"></a><figcaption>Porträt als Mosaik vor Rot</figcaption></figure>
         </div>
-        <a class="weiter" href="{{LINK}}b/werke/">Zu den Werken</a>
-      </article>
+        <a class="weiter" href="{{LINK}}b/werke/">Zu den Werken →</a>
+      </div></article>
 
-      <article class="kapitel k-angebot" id="k-angebot" data-name="Angebot">
+      <article class="kapitel k-angebot" id="k-angebot" data-name="Angebot"><div class="k-innen">
         <span class="marke-k">08 · vier Leistungen</span>
         <h2>Angebot</h2>
         <p class="leit">Webdesign, Vermittlung, Kuration und Produkte. Jede Leistung beginnt mit einem Gespräch.</p>
-        <div class="raster">
-          <a class="karte" href="{{LINK}}b/angebot/webdesign/"><b>Webdesign</b><span>Websites und Apps: schnell, eigenständig, ohne Dienste von aussen.</span></a>
-          <a class="karte" href="{{LINK}}b/angebot/vermittlung/"><b>Vermittlung und Beratung</b><span>Seminare, Workshops, Projekte mit Schulen und Teams; Beratung für Institutionen.</span></a>
-          <a class="karte" href="{{LINK}}b/angebot/kuration/"><b>Kuratorische Projekte</b><span>Ausstellungen denken, ordnen, hängen.</span></a>
-          <a class="karte" href="{{LINK}}b/angebot/produkte/"><b>Produkte</b><span>Werke, Prints, Editionen und Auftragsarbeiten, klassisch und digital.</span></a>
-        </div>
-        <a class="weiter" href="{{LINK}}b/angebot/">Zum Angebot</a>
-      </article>
+        <ol class="angebot-liste">
+          <li><a href="{{LINK}}b/angebot/webdesign/" data-rand="Webdesign"><span class="nr">01</span><b>Webdesign</b><span>Websites und Apps: schnell, eigenständig, ohne Dienste von aussen.</span></a></li>
+          <li><a href="{{LINK}}b/angebot/vermittlung/" data-rand="Vermittlung"><span class="nr">02</span><b>Vermittlung und Beratung</b><span>Seminare, Workshops, Projekte mit Schulen und Teams; Beratung für Institutionen.</span></a></li>
+          <li><a href="{{LINK}}b/angebot/kuration/"><span class="nr">03</span><b>Kuratorische Projekte</b><span>Ausstellungen denken, ordnen, hängen.</span></a></li>
+          <li><a href="{{LINK}}b/angebot/produkte/"><span class="nr">04</span><b>Produkte</b><span>Werke, Prints, Editionen und Auftragsarbeiten, klassisch und digital.</span></a></li>
+        </ol>
+        <a class="weiter" href="{{LINK}}b/angebot/">Zum Angebot →</a>
+      </div></article>
   </div>
 </section>
 
@@ -332,8 +429,8 @@ const ZUG = (() => {
 })();
 const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
 const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
-const KAPITELFARBEN = ["#c2185b", "#a7ff9c", "#e6b117", "#e0503c", "#ffffff", "#1d3fd6", "#f2b2c0", "#1f4d3a"];
-const LEUCHTFARBEN = ["#ff3d8b", "#a7ff9c", "#ffc21a", "#ff5a3c", "#9fb8ff", "#4f78ff", "#ff9fb8", "#2fd08a"];   // für das Leuchten im Raum etwas satter
+const KAPITELFARBEN = ["#c2185b", "#1d3fd6", "#e6b117", "#e0503c", "#ffffff", "#8fb0ff", "#f2b2c0", "#2f7a58"];   // Quadrate im Intro: auf Schwarz sichtbar
+const LEUCHTFARBEN = ["#ff5c95", "#6f8cff", "#ffc21a", "#ff5a3c", "#d6dbe4", "#9aa6bd", "#ff9fb8", "#5fcf95"];   // Kanten und Marken im Raum
 const ZYKLUSFARBEN = ["#ff5c9a", "#ffc21a", "#ff5a3c", "#ffffff", "#8fb0ff", "#3fd08e", "#ffa3d1"];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const klemm = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -374,12 +471,12 @@ function zeigeStrophe(s, knopf) {
   st.innerHTML = "";
   const sm = document.createElement("small"); sm.textContent = `Strophe ${s[0]} · Zyklus ${ROEM[s[1]]} ${ZYKLEN[s[1]]} · ${s[4].length} Personen`;
   const b = document.createElement("b"); b.textContent = s[2];
-  const q = document.createElement("q"); q.textContent = s[3];
+  const q = document.createElement("p"); q.textContent = "«" + s[3] + "»";
   st.append(sm, b, q);
 }
 ZYKLEN.forEach((n, i) => {
   const sp = document.createElement("div"); sp.className = "zyklus";
-  const k = document.createElement("small"); k.textContent = ROEM[i] + " " + n; sp.append(k);
+  const k = document.createElement("small"); k.textContent = ROEM[i]; k.title = ROEM[i] + " " + n; sp.append(k);
   DATEN.z.filter(s => s[1] === i).forEach(s => {
     const b = document.createElement("button"); b.type = "button"; b.textContent = s[0]; b.title = s[2]; b.setAttribute("aria-pressed", "false");
     b.addEventListener("click", () => zeigeStrophe(s, b)); sp.append(b);
@@ -387,92 +484,87 @@ ZYKLEN.forEach((n, i) => {
   zy.append(sp);
 });
 zeigeStrophe(ZUG, [...zy.querySelectorAll("button")].find(b => b.textContent === String(ZUG[0])));
+// Social: je Zettel ein kleines Feld 7×7 wie auf den Zettelkarten der Website
+document.querySelectorAll(".feldchen").forEach((f, j) => { for (let n = 0; n < 49; n++) { const i = document.createElement("i"); if (n === [11, 30, 44][j % 3]) i.className = "an"; f.append(i); } });
 kapitel.forEach(k => { const li = document.createElement("li"), a = document.createElement("a"); a.href = "#" + k.id; a.textContent = k.dataset.name; li.append(a); zeiger.append(li); });
 
 /* ---------- Bahn-Bilder: jedes Kapitel wird aus seinem HTML auf eine Leinwand gezeichnet ---------- */
-function bildLaden(src) { return new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; }); }
-function umbrechen(cx, text, breite) {
-  const woerter = text.split(/\s+/), zeilen = []; let z = "";
-  for (const w of woerter) { const t = z ? z + " " + w : w; if (cx.measureText(t).width > breite && z) { zeilen.push(z); z = w; } else z = t; }
-  if (z) zeilen.push(z); return zeilen;
-}
+/* ---------- Kapitel als Bild: das Kapitel wird in fester Breite gesetzt und Element für Element auf eine Leinwand gezeichnet.
+   So zeigt das Band im Raum genau die flache Seite; nur der Titel steht als eigene Fläche im Raum. ---------- */
 async function kapitelZeichnen(k, i, LW) {
-  const cs = getComputedStyle(k), farbe = cs.getPropertyValue("--k").trim(), tinte = cs.getPropertyValue("--kt").trim(), flaeche = cs.getPropertyValue("--kc").trim(), linie = cs.getPropertyValue("--kl").trim();
-  const eng = LW < 600, pad = eng ? 22 : 44, innen = LW - pad * 2;
-  const karten = [...k.querySelectorAll(".karte")].map(a => ({ src: a.querySelector("img")?.getAttribute("src"), titel: a.querySelector("b").textContent, text: a.querySelector("span").textContent }));
-  const bilder = await Promise.all(karten.map(c => c.src ? bildLaden(c.src) : null));
-  const spalten = eng ? 2 : 3, gap = eng ? 10 : 14, kb = (innen - gap * (spalten - 1)) / spalten;
-  const SANS = '"Instrument Sans", system-ui, sans-serif', SERIF = 'Newsreader, Georgia, serif', MONO = 'ui-monospace, Menlo, monospace';
-  const titelGr = eng ? 64 : 118, leitGr = eng ? 20 : 27, kTitel = eng ? 15 : 18, kText = eng ? 12.5 : 14;
-  // Erst messen, dann zeichnen: dieselbe Routine läuft zweimal. Der Titel steht als eigene Fläche schräg im Raum.
-  const lage = { titel: null, karten: [] };
-  const durchgang = (cx, zeichnen) => {
-    let y = pad + 10;
-    if (zeichnen) { cx.fillStyle = farbe; cx.fillRect(0, 0, LW, 1e5); }
-    cx.fillStyle = tinte; cx.textBaseline = "alphabetic";
-    cx.font = `11px ${MONO}`; cx.globalAlpha = .7; cx.textAlign = "right";
-    if (zeichnen) cx.fillText(k.querySelector(".marke-k").textContent.toUpperCase(), LW - pad, 26);
-    cx.textAlign = "left"; cx.globalAlpha = 1;
-    cx.font = `600 ${titelGr}px ${SANS}`; if ("letterSpacing" in cx) cx.letterSpacing = (-titelGr * .045) + "px";
-    y += titelGr * .82; if (!zeichnen) lage.titel = { text: k.querySelector("h2").textContent, x: pad - 4, grund: y, gr: titelGr, farbe: tinte };
-    if ("letterSpacing" in cx) cx.letterSpacing = "0px";
-    cx.font = `italic ${leitGr}px ${SERIF}`; y += leitGr * 1.05;
-    for (const z of umbrechen(cx, k.querySelector(".leit").textContent, Math.min(innen, leitGr * 17))) { y += leitGr * 1.22; if (zeichnen) cx.fillText(z, pad, y); }
-    y += eng ? 22 : 34;
-    if (karten.length) {
-      for (let r = 0; r < karten.length; r += spalten) {
-        const reihe = karten.slice(r, r + spalten);
-        const hoehen = reihe.map(c => {
-          cx.font = `600 ${kTitel}px ${SANS}`; const tz = umbrechen(cx, c.titel, kb - 20).length;
-          cx.font = `${kText}px ${SANS}`; const sz = umbrechen(cx, c.text, kb - 20).length;
-          return 10 + (c.src ? kb - 20 + 10 : 0) + tz * kTitel * 1.2 + 6 + sz * kText * 1.4 + 12;
-        });
-        const h = Math.max(...hoehen);
-        reihe.forEach((c, j) => {
-          const x = pad + j * (kb + gap); let yy = y + 10;
-          if (!zeichnen) { lage.karten.push({ titel: c.titel, x, y, b: kb, h, spalte: j, spalten }); return; }
-          cx.fillStyle = flaeche; cx.fillRect(x, y, kb, h);
-          cx.strokeStyle = linie; cx.lineWidth = 1; cx.strokeRect(x + .5, y + .5, kb - 1, h - 1);
-          const bild = bilder[r + j];
-          if (bild) { const q = Math.min(bild.naturalWidth || bild.width, bild.naturalHeight || bild.height), bw = bild.naturalWidth || bild.width, bh = bild.naturalHeight || bild.height; cx.drawImage(bild, (bw - q) / 2, (bh - q) / 2, q, q, x + 10, yy, kb - 20, kb - 20); yy += kb - 20 + 10; }
-          cx.fillStyle = tinte; cx.font = `600 ${kTitel}px ${SANS}`;
-          for (const z of umbrechen(cx, c.titel, kb - 20)) { yy += kTitel * 1.2; cx.fillText(z, x + 10, yy - 3); }
-          yy += 6; cx.font = `${kText}px ${SANS}`; cx.globalAlpha = .82;
-          for (const z of umbrechen(cx, c.text, kb - 20)) { yy += kText * 1.4; cx.fillText(z, x + 10, yy - 3); }
-          cx.globalAlpha = 1;
-        });
-        y += h + gap;
-      }
-    }
-    if (k.id === "k-zettel") {
-      const zw = (innen - 6 * (eng ? 4 : 8)) / 7, zh = zw * .75;
-      cx.font = `600 ${eng ? 9 : 11}px ${MONO}`;
-      for (let c = 0; c < 7; c++) for (let n = 0; n < 7; n++) {
-        const x = pad + c * (zw + (eng ? 4 : 8)), yy = y + n * (zh + 6), nr = c * 7 + n + 1;
-        if (!zeichnen) continue;
-        cx.strokeStyle = linie; cx.strokeRect(x + .5, yy + .5, zw - 1, zh - 1);
-        if (nr === ZUG[0]) { cx.fillStyle = "#000"; cx.fillRect(x, yy, zw, zh); cx.fillStyle = "#fff"; } else cx.fillStyle = tinte;
-        cx.textAlign = "center"; cx.fillText(String(nr), x + zw / 2, yy + zh / 2 + 4); cx.textAlign = "left";
-      }
-      y += 7 * (zh + 6) + 18;
-      const s = ZUG;
-      cx.fillStyle = tinte; cx.font = `600 ${eng ? 24 : 34}px ${SANS}`; y += eng ? 26 : 36; if (zeichnen) cx.fillText(s[2], pad, y);
-      cx.font = `italic ${eng ? 18 : 23}px ${SERIF}`;
-      for (const z of umbrechen(cx, "«" + s[3] + "»", Math.min(innen, 620))) { y += eng ? 24 : 30; if (zeichnen) cx.fillText(z, pad, y); }
-      y += 10;
-    }
-    // Knopf
-    const w = k.querySelector(".weiter").textContent; cx.font = `600 16px ${SANS}`;
-    const bw = cx.measureText(w).width + 32; y += 20;
-    if (zeichnen) { cx.fillStyle = tinte; cx.beginPath(); cx.roundRect(pad, y, bw, 40, 20); cx.fill(); cx.fillStyle = farbe; cx.fillText(w, pad + 16, y + 26); }
-    return y + 40 + (eng ? 60 : 90);
-  };
-  const mess = document.createElement("canvas").getContext("2d");
-  const LH = Math.ceil(durchgang(mess, false));
-  // Scharf auch nah vor der Kamera: rund dreifache Auflösung; lange Kapitel werden später in Kacheln geteilt
-  const skala = eng ? 3 : 2.5;
+  const skala = LW < 600 ? 3 : 2.5;
+  const huelle = document.createElement("div");
+  huelle.setAttribute("aria-hidden", "true");
+  huelle.style.cssText = `position:absolute;left:${-LW - 400}px;top:0;width:${LW}px;pointer-events:none;`;
+  const kl = k.cloneNode(true);
+  [kl, ...kl.querySelectorAll("[id]")].forEach(e => e.removeAttribute("id"));
+  kl.querySelectorAll("img").forEach(im => { im.loading = "eager"; });
+  kl.querySelectorAll(".k-netz").forEach(e => e.remove());
+  huelle.append(kl); document.body.append(huelle);
+  await Promise.all([...kl.querySelectorAll("img")].map(im => im.decode().catch(() => {})));
+  const r0 = kl.getBoundingClientRect(), LH = Math.ceil(r0.height);
   const cv = document.createElement("canvas"); cv.width = Math.round(LW * skala); cv.height = Math.round(LH * skala);
-  const cx = cv.getContext("2d"); cx.scale(skala, skala); durchgang(cx, true);
+  const cx = cv.getContext("2d"); cx.scale(skala, skala);
+  const lage = { titel: null, rand: [] }, range = document.createRange();
+  const leer = c => !c || c === "transparent" || /rgba?\(.*,\s*0\)$/.test(c);
+  const schrift = cs => `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const oberlaenge = () => { const m = cx.measureText("Hg"); return m.fontBoundingBoxAscent ?? m.actualBoundingBoxAscent * 1.12; };
+  const radius = (cs, b, h) => { const v = cs.borderTopLeftRadius; const n = parseFloat(v) || 0; return Math.min(v.endsWith("%") ? Math.min(b, h) * n / 100 : n, b / 2, h / 2); };
+  function bild(im, cs, x, y, b, h) {
+    const iw = im.naturalWidth, ih = im.naturalHeight; if (!iw || !ih) return;
+    const [px, py] = cs.objectPosition.split(" ").map(v => v.endsWith("%") ? parseFloat(v) / 100 : .5);
+    let sx = 0, sy = 0, sw = iw, sh = ih, dx = x, dy = y, dw = b, dh = h;
+    if (cs.objectFit === "cover") { const s = Math.max(b / iw, h / ih); sw = b / s; sh = h / s; sx = (iw - sw) * px; sy = (ih - sh) * py; }
+    else if (cs.objectFit === "contain") { const s = Math.min(b / iw, h / ih); dw = iw * s; dh = ih * s; dx = x + (b - dw) * px; dy = y + (h - dh) * py; }
+    cx.drawImage(im, sx, sy, sw, sh, dx, dy, dw, dh);
+  }
+  function text(t, cs, a) {
+    const s = t.textContent; if (!s.trim()) return;
+    cx.globalAlpha = a; cx.fillStyle = cs.color; cx.font = schrift(cs); cx.textBaseline = "alphabetic";
+    if ("letterSpacing" in cx) cx.letterSpacing = cs.letterSpacing === "normal" ? "0px" : cs.letterSpacing;
+    const asc = oberlaenge(), gross = cs.textTransform === "uppercase", re = /\S+/g;
+    for (let m; (m = re.exec(s));) {
+      range.setStart(t, m.index); range.setEnd(t, m.index + m[0].length);
+      const rr = range.getClientRects()[0]; if (!rr) continue;
+      cx.fillText(gross ? m[0].toUpperCase() : m[0], rr.left - r0.left, rr.top - r0.top + asc);
+    }
+  }
+  function element(el, alpha) {
+    const cs = getComputedStyle(el);
+    if (cs.display === "none" || cs.visibility === "hidden") return;
+    const a = alpha * parseFloat(cs.opacity); if (a < .002) return;
+    const r = el.getBoundingClientRect(), x = r.left - r0.left, y = r.top - r0.top, b = r.width, h = r.height;
+    if (el.tagName === "H2") {
+      // Der Titel steht im Raum: Lage, Schrift und Grundlinie merken, nicht ins Band zeichnen
+      range.selectNodeContents(el); const rr = range.getClientRects()[0] || r;
+      cx.font = schrift(cs);
+      lage.titel = { text: el.textContent, x: rr.left - r0.left, grund: rr.top - r0.top + oberlaenge(), gr: parseFloat(cs.fontSize), font: schrift(cs), abstand: parseFloat(cs.letterSpacing) || 0, farbe: cs.color };
+      return;
+    }
+    if (el.dataset && el.dataset.rand) lage.rand.push({ text: el.dataset.rand, x, y, b, h });
+    cx.save(); cx.globalAlpha = a;
+    if (cs.mixBlendMode && cs.mixBlendMode !== "normal") cx.globalCompositeOperation = cs.mixBlendMode;
+    const rad = radius(cs, b, h);
+    const pfad = () => { cx.beginPath(); if (rad > 0) cx.roundRect(x, y, b, h, rad); else cx.rect(x, y, b, h); };
+    if (!leer(cs.backgroundColor)) { cx.fillStyle = cs.backgroundColor; pfad(); cx.fill(); }
+    // Ränder: eine Haarlinie je Seite, bei Rundung als Umriss
+    const bw = ["Top", "Right", "Bottom", "Left"].map(s => cs[`border${s}Style`] === "none" ? 0 : parseFloat(cs[`border${s}Width`]) || 0);
+    if (bw.some(Boolean)) {
+      if (rad > 0) { cx.strokeStyle = cs.borderTopColor; cx.lineWidth = bw[0]; cx.beginPath(); cx.roundRect(x + bw[0] / 2, y + bw[0] / 2, b - bw[0], h - bw[0], Math.max(0, rad - bw[0] / 2)); cx.stroke(); }
+      else {
+        if (bw[0] && !leer(cs.borderTopColor)) { cx.fillStyle = cs.borderTopColor; cx.fillRect(x, y, b, bw[0]); }
+        if (bw[1] && !leer(cs.borderRightColor)) { cx.fillStyle = cs.borderRightColor; cx.fillRect(x + b - bw[1], y, bw[1], h); }
+        if (bw[2] && !leer(cs.borderBottomColor)) { cx.fillStyle = cs.borderBottomColor; cx.fillRect(x, y + h - bw[2], b, bw[2]); }
+        if (bw[3] && !leer(cs.borderLeftColor)) { cx.fillStyle = cs.borderLeftColor; cx.fillRect(x, y, bw[3], h); }
+      }
+    }
+    if (cs.overflowX !== "visible" || cs.overflowY !== "visible") { pfad(); cx.clip(); }
+    if (el.tagName === "IMG") bild(el, cs, x, y, b, h);
+    for (const n of el.childNodes) { if (n.nodeType === 3) text(n, cs, a); else if (n.nodeType === 1) element(n, a); }
+    cx.restore();
+  }
+  element(kl, 1);
+  huelle.remove();
   return { cv, LH, lage };
 }
 
@@ -614,7 +706,7 @@ async function bahnBauen() {
   const mg = new THREE.BufferGeometry(); mg.setAttribute("position", new THREE.Float32BufferAttribute(mp, 3)); mg.setAttribute("color", new THREE.Float32BufferAttribute(mc, 3));
   g.add(new THREE.LineSegments(mg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, toneMapped: false })));
   // Titel: an der Unterkante auf der Bahn eingehängt und schräg in den Raum geneigt, mit weichem Schatten
-  const SANS = '"Instrument Sans", system-ui, sans-serif', MONO = 'ui-monospace, Menlo, monospace';
+  const SANS = '"Instrument Sans", system-ui, sans-serif';
   const textFlaeche = (text, font, farbe, gr, sk, rand, abstand = 0, unschaerfe = 0) => {
     const m = document.createElement("canvas").getContext("2d"); m.font = font; if ("letterSpacing" in m) m.letterSpacing = abstand + "px";
     const b = Math.ceil(m.measureText(text).width + rand * 2), h = Math.ceil(gr * 1.16 + rand);
@@ -636,9 +728,9 @@ async function bahnBauen() {
   bahn.titel = [];
   bilder.forEach((b, i) => {
     const t = b.lage.titel; if (!t) return;
-    const abstand = -t.gr * .045, font = `600 ${t.gr}px ${SANS}`, rand = Math.round(t.gr * .14);
-    const f = textFlaeche(t.text, font, t.farbe, t.gr, eng ? 3 : 2.5, rand, abstand);
-    const sch = textFlaeche(t.text, font, "#000", t.gr, 1, rand, abstand, t.gr * .05);
+    const rand = Math.round(t.gr * .14);
+    const f = textFlaeche(t.text, t.font, t.farbe, t.gr, eng ? 3 : 2.5, rand, t.abstand);
+    const sch = textFlaeche(t.text, t.font, "#000", t.gr, 1, rand, t.abstand, t.gr * .05);
     const unten = t.grund - t.gr * .88 - rand / 2 + f.h;   // Unterkante der Fläche im Kapitel
     const sH = bahn.kapitel[i].s0 + unten * bahn.k, quer = RAUM.w / 2 - (t.x - rand) * bahn.k;
     const piv = basis(sH, quer);
@@ -654,7 +746,7 @@ async function bahnBauen() {
   if (marken.length) {
     const zb = 64, zh = 16, sp = 8, sk = 4, reihen = Math.ceil(marken.length / sp), kl = bahn.k * 1.3;
     const atlas = document.createElement("canvas"); atlas.width = zb * sp * sk; atlas.height = reihen * zh * sk;
-    const ax = atlas.getContext("2d"); ax.scale(sk, sk); ax.font = `11px ${MONO}`; ax.fillStyle = "#fff"; ax.textBaseline = "middle"; ax.textAlign = "right";
+    const ax = atlas.getContext("2d"); ax.scale(sk, sk); ax.font = `500 10.5px ${SANS}`; if ("letterSpacing" in ax) ax.letterSpacing = ".8px"; ax.fillStyle = "#fff"; ax.textBaseline = "middle"; ax.textAlign = "right";
     const ap = [], au = [], ai = [];
     marken.forEach((m, j) => {
       const x0 = (j % sp) * zb, y0 = Math.floor(j / sp) * zh; ax.fillText(m + " m", x0 + zb - 2, y0 + zh / 2 + 1);
@@ -671,12 +763,12 @@ async function bahnBauen() {
   // Am Desktop: die Karten am Rand beschriftet, mit einer feinen Linie zur Karte
   if (!eng) {
     const hp = [], kl = .0105;
-    bilder.forEach((b, i) => b.lage.karten.forEach(c => {
-      const links = c.spalte === 0, rechts = c.spalte === c.spalten - 1; if (!links && !rechts) return;
-      const seite = links ? 1 : -1, sj = bahn.kapitel[i].s0 + (c.y + 18) * bahn.k;
+    bilder.forEach((b, i) => b.lage.rand.forEach(c => {
+      const mitte = c.x + c.b / 2; if (Math.abs(mitte - LW / 2) < LW * .12) return;
+      const links = mitte < LW / 2, seite = links ? 1 : -1, sj = bahn.kapitel[i].s0 + (c.y + Math.min(c.h / 2, 20)) * bahn.k;
       const A = bahnPunkt(sj, RAUM.w / 2 - (links ? c.x : c.x + c.b) * bahn.k, .004), B = bahnPunkt(sj - .25, seite * (RAUM.w / 2 + 1.05), .42);
       hp.push(...A.toArray(), ...B.toArray());
-      const f = textFlaeche(c.titel, `600 13px ${SANS}`, "#fff", 13, 4, 3);
+      const f = textFlaeche(c.text, `500 13px ${SANS}`, "#fff", 13, 4, 3);
       const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: f.tex, transparent: true, depthWrite: false }));
       sp.center.set(links ? 1 : 0, .15); sp.scale.set(f.b * kl, f.h * kl, 1); sp.position.copy(B); g.add(sp);
     }));
