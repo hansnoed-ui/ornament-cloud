@@ -5,7 +5,8 @@
   3. raster.py: Mikrofongeräusche ausserhalb des Drum-Musters
   4. zweiter Demucs-Durchgang auf Drums und Rest, erkannte Stimm-/Bassreste abziehen
   5. raum.py: Hall auf dem Rest (Standard «weit»: 40 %, 2,6 s)
-  6. Master ohne Stimme (beat-master) und mit Stimme (song-master), Matchering
+  6. Stimme fürs Song-Master: mehr Druck, Weite (Doppelung), wenig Hall
+  7. Master ohne Stimme (beat-master) und mit Stimme (song-master), Matchering
      nach Vorbild (Standard: Spellbound), -14 LUFS
 
 Aufruf (im venv mit demucs, matchering, noisereduce, pyloudnorm):
@@ -23,6 +24,7 @@ import matchering as mg
 import numpy as np
 import pyloudnorm as pyln
 import soundfile as sf
+from scipy.signal import butter, fftconvolve, sosfilt
 
 HIER = Path(__file__).parent
 # Vorbilder liegen nicht im Repo (fremde Aufnahmen), sondern im Projektordner
@@ -31,6 +33,10 @@ VORBILD = REFERENZEN / "spellbound-instrumental.wav"   # für den Beat
 VORBILD_SONG = REFERENZEN / "spellbound.wav"            # mit Stimme
 ZIEL_LUFS = -14.0
 RAUM_ANTEIL, RAUM_NACHHALL = 0.4, 2.6   # Christians Wahl 2026-10-29: «Raum weit»
+# Stimme im Song-Master (Christian 2026-10-29: «mehr Druck, Weite und wenig Hall»)
+STIMME_DB = 1.5          # etwas lauter im Mix
+STIMME_DOPPEL = 0.6     # Anteil der Doppelung links/rechts (±8 Cent, 11/17 ms)
+STIMME_HALL = 0.12       # kurzer heller Raum, 1,1 s
 
 
 def run(*cmd):
@@ -101,6 +107,44 @@ def stimme_putzen(quelle, aus):
         "-c:a", "pcm_f32le", aus)
 
 
+def stimme_formen(quelle, aus, tmp):
+    """Druck: Präsenz-EQ und parallele Kompression. Weite: leicht verstimmte, verzögerte
+    Doppelung nach links und rechts, die Mitte bleibt trocken. Dazu wenig kurzer Hall."""
+    run("ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", quelle, "-af",
+        "equalizer=f=280:t=q:w=1:g=-2,equalizer=f=3200:t=q:w=1.2:g=2.5,"
+        "highshelf=f=9000:g=1.5", "-c:a", "pcm_f32le", tmp / "st-eq.wav")
+    run("ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", tmp / "st-eq.wav", "-af",
+        "acompressor=threshold=0.04:ratio=8:attack=3:release=60:makeup=4:knee=2",
+        "-c:a", "pcm_f32le", tmp / "st-hart.wav")
+    x, sr = sf.read(tmp / "st-eq.wav", always_2d=True)
+    h, _ = sf.read(tmp / "st-hart.wav", always_2d=True)
+    m, seite = x.mean(1), (x[:, 0] - x[:, -1]) / 2      # vorhandene Breite bleibt erhalten
+    hm = h.mean(1)
+    m = m + 0.8 * hm * np.sqrt((m ** 2).mean() / ((hm ** 2).mean() + 1e-12))   # parallel
+    sf.write(tmp / "st-mitte.wav", m, sr, subtype="FLOAT")
+    seiten = []
+    for cent, ms in ((8, 11), (-8, 17)):
+        run("ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", tmp / "st-mitte.wav", "-af",
+            f"rubberband=pitch={2 ** (cent / 1200)},adelay={ms},highpass=f=200",
+            "-c:a", "pcm_f32le", tmp / "st-seite.wav")
+        y, _ = sf.read(tmp / "st-seite.wav")
+        seiten.append(np.pad(y, (0, max(0, len(m) - len(y))))[: len(m)])
+    out = np.stack([m + seite + STIMME_DOPPEL * seiten[0], m - seite + STIMME_DOPPEL * seiten[1]], 1)
+    # wenig Hall: erzeugte Raumantwort, 25 ms Vorverzögerung, nur 300–7000 Hz
+    rng = np.random.default_rng(7)
+    n = int(1.1 * sr)
+    t = np.arange(n) / sr
+    band = butter(2, [300, 7000], "bandpass", fs=sr, output="sos")
+    for k in range(2):
+        ir = rng.standard_normal(n) * np.exp(-6.9 * t / 1.1)
+        ir[: int(0.025 * sr)] = 0
+        ir /= np.sqrt((ir ** 2).sum())
+        nass = fftconvolve(sosfilt(band, out[:, k]), ir)[: len(out)]
+        out[:, k] += STIMME_HALL * nass * np.sqrt((out[:, k] ** 2).mean() / ((nass ** 2).mean() + 1e-12))
+    out *= np.sqrt((x ** 2).mean() / ((out ** 2).mean() + 1e-12)) * 10 ** (STIMME_DB / 20)
+    sf.write(aus, out, sr, subtype="FLOAT")
+
+
 def mastern_nach(eingang, vorbild, aus, tmp):
     mg.process(target=str(eingang), reference=str(vorbild), results=[mg.pcm24(str(tmp / "match.wav"))])
     x, sr = sf.read(tmp / "match.wav", always_2d=True)
@@ -117,7 +161,8 @@ def mastern_nach(eingang, vorbild, aus, tmp):
 def mastern(ziel, tmp, drums_ab=0.0, bass_db=0.0):
     anpassen(ziel / "drums.wav", tmp / "drums.wav", ab=drums_ab)
     anpassen(ziel / "bass.wav", tmp / "bass.wav", gain_db=bass_db)
-    stimme_putzen(ziel / "stimme.wav", tmp / "stimme.wav")
+    stimme_putzen(ziel / "stimme.wav", tmp / "stimme-geputzt.wav")
+    stimme_formen(tmp / "stimme-geputzt.wav", tmp / "stimme.wav", tmp)
     beat = [tmp / "drums.wav", tmp / "bass.wav", ziel / "rest-raum.wav"]
     summe(beat, ziel / "beat-ohne-stimme.wav")
     summe(beat + [tmp / "stimme.wav"], ziel / "song.wav")
