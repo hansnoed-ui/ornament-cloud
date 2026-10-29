@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stimme – Ornament Cloud · Alpha</title>
+  <!-- Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14). Nur per Direktlink, nur mit Passwort (29. Oktober 2026). -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="ornament.studio: Texte in Christians geklonter Stimme sprechen lassen und als WAV (48 kHz, 24 bit) oder MP3 herunterladen. Nur mit Passwort.">
+  <link rel="stylesheet" href="../../styles.css?v=52">
+  <style>
+    .site-header { padding-bottom: 12px; }
+    .stimme { display: grid; gap: 22px; padding-bottom: 48px; }
+    .stimme section { display: grid; gap: 12px; }
+    .stimme h2 { margin: 0; font-family: var(--serif); font-weight: 500; font-size: 1.35rem; }
+    .stand { margin: 0; color: var(--muted); }
+    .stand.fehler { color: var(--accent); }
+    .zeile { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .knopf {
+      min-height: 44px; padding: 8px 18px; border: 1px solid var(--text); border-radius: 999px; background: none; color: var(--text);
+      font: inherit; font-size: 0.95rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .knopf:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .knopf:disabled { opacity: 0.45; cursor: default; }
+    .knopf.haupt { background: var(--text); color: var(--bg); font-weight: 600; }
+    .knopf.haupt:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 85%, var(--bg)); }
+    .knopf:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    input[type="password"] { flex: 1 1 220px; min-width: 0; min-height: 44px; padding: 8px 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); font: inherit; }
+    textarea { width: 100%; box-sizing: border-box; min-height: 14rem; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font: inherit; line-height: 1.55; resize: vertical; }
+    .wahl { display: flex; flex-wrap: wrap; gap: 8px; border: 0; margin: 0; padding: 0; }
+    .wahl legend { padding: 0; margin-bottom: 6px; color: var(--muted); font-size: 0.9rem; }
+    .wahl label { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 6px 14px; border: 1px solid var(--border); border-radius: 999px; cursor: pointer; }
+    .wahl label:has(input:checked) { border-color: var(--text); background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .klein { color: var(--muted); font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+    .aufnahmen { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .aufnahmen li { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); min-width: 0; }
+    .aufnahmen .anfang { margin: 0; overflow-wrap: anywhere; }
+    .aufnahmen audio { width: 100%; }
+    .marke { display: inline-block; padding: 1px 10px; border-radius: 999px; border: 1px solid var(--border); font-size: 0.8rem; }
+    .marke.fertig { border-color: var(--text); }
+    .marke.fehler { border-color: var(--accent); color: var(--accent); }
+    .hinweise { margin: 0; padding-left: 1.2em; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <div class="topbar">
+        <nav class="seitenweg" aria-label="Ornament Cloud">
+          <a href="../../" aria-current="true">Ornament Cloud</a>
+          <a href="../drittes-rad/">Das Dritte Rad</a>
+        </nav>
+        <svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"></svg>
+        <nav class="menu" aria-label="Hauptmenü">
+          <a class="menu-item" href="../../apps/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg><span>Apps</span></a>
+          <a class="menu-item" href="../../masterprompts/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-7.5L7 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M7.5 8.5l3 2.25-3 2.25"/><path d="M12.5 13h4"/></svg><span>Prompts</span></a>
+          <a class="menu-item" href="../../zu-seiner-zeit/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h11.5A1.5 1.5 0 0 1 20 5v11"/><rect x="4" y="6.5" width="13" height="14" rx="1.5"/><path d="M7 10.5h7"/><path d="M7 13.5h7"/><path d="M7 16.5h4"/></svg><span>Zettel</span></a>
+          <a class="menu-item" href="../../social-media/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10 4.5 8 19.5"/><path d="M16 4.5l-2 15"/><path d="M5 9.25h14.5"/><path d="M4.5 14.75H19"/></svg><span>Social</span></a>
+          <a class="menu-item" href="../../art/"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><rect x="6.5" y="6.5" width="11" height="11" rx="0.5"/><circle cx="10" cy="10" r="1.3"/><path d="M6.5 16c2-2.4 4.2-3.2 6.4-2.3 1.6.6 2.9.4 4.6-.9"/></svg><span>Art</span></a>
+          <details class="menu-auf"><summary class="menu-item"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3.5h6"/><path d="M10.25 3.5v6.25L4.9 18.4a1.4 1.4 0 0 0 1.2 2.1h11.8a1.4 1.4 0 0 0 1.2-2.1l-5.35-8.65V3.5"/><path d="M7.4 14.5h9.2"/></svg><span>Beta</span></summary><span class="menu-liste"><a href="../../beta/lab/" target="_blank" rel="noopener">Lab</a><a href="../../beta/drittes-rad/" target="_blank" rel="noopener">Das 3. Rad</a></span></details>
+        </nav>
+      </div>
+      <h1>Stimme</h1>
+      <p class="lead">Texte in meiner Stimme sprechen lassen. ornament.studio, nur mit Passwort.</p>
+    </div>
+  </header>
+
+    <main class="wrap stimme" id="stimme">
+    <p class="stand" id="stand" role="status">Ich sehe nach, ob die Stimme bereit ist …</p>
+
+    <section id="anmeldung" hidden>
+      <h2>Anmelden</h2>
+      <form class="zeile" id="anmeldeform">
+        <label class="klein" for="passwort" hidden>Passwort</label>
+        <input type="password" id="passwort" autocomplete="current-password" placeholder="Passwort" required>
+        <button class="knopf haupt" type="submit">Anmelden</button>
+      </form>
+    </section>
+
+    <section id="arbeit" hidden>
+      <h2>Text</h2>
+      <textarea id="text" maxlength="5000" placeholder="Text hier eingeben oder unten eine Textdatei laden. Leerzeilen werden zu längeren Pausen."></textarea>
+      <div class="zeile">
+        <span class="klein" id="zaehler">0 / 5000 Zeichen</span>
+        <label class="knopf" for="datei">Textdatei laden</label>
+        <input type="file" id="datei" accept=".txt,.md,text/plain,text/markdown" hidden>
+      </div>
+      <fieldset class="wahl">
+        <legend>Sprechweise</legend>
+        <label><input type="radio" name="stil" value="b" checked> Lebhaft (B)</label>
+        <label><input type="radio" name="stil" value="g"> Ruhig (G)</label>
+      </fieldset>
+      <div class="zeile">
+        <button class="knopf haupt" id="sprechen" type="button">Sprechen</button>
+        <span class="klein" id="schaetzung"></span>
+      </div>
+    </section>
+
+    <section id="liste" hidden>
+      <h2>Aufnahmen</h2>
+      <ul class="aufnahmen" id="aufnahmen"></ul>
+      <div class="zeile"><button class="knopf" id="abmelden" type="button">Abmelden</button></div>
+    </section>
+
+    <ul class="hinweise">
+      <li>Gerechnet wird in einem privaten Repository bei GitHub. Der Start dauert zwei bis drei Minuten, danach etwa eine Viertelminute Rechnen je Sekunde Sprache. Die Seite darf zu bleiben: die Aufnahme wartet hier.</li>
+      <li>Download als WAV (48 kHz, 24 bit, Stereo mit Raum) und MP3 (320 kbit/s). Das Modell selbst spricht mit 24 kHz.</li>
+      <li>Fremde Namen und Schreibweisen wie «Orna-ment» kommen aus einem Aussprache-Wörterbuch. Zahlen werden ausgeschrieben, Links weggelassen.</li>
+      <li>Jede Aufnahme trägt ein unhörbares Wasserzeichen (Perth), das sie als KI-erzeugt kennzeichnet.</li>
+    </ul>
+  </main>
+
+  <!-- Kontakt (seit 5. Oktober 2026 auf allen Seiten) -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
+      <p><a href="../../impressum/">Impressum</a></p>
+    </div>
+  </footer>
+  <script type="module" src="voice.js"></script>
+  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
+  <script src="../../icons.js?v=15" defer></script>
+  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../../vendor/goatcounter/count.js"></script>
+</body>
+</html>
