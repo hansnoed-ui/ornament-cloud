@@ -43,7 +43,7 @@ const LAYOUT: Record<Format, Lay> = {
 export const MASSE = Object.fromEntries(Object.entries(LAYOUT).map(([k, l]) => [k, { w: l.w, h: l.h }])) as Record<Format, { w: number; h: number }>;
 
 // ---------- Zeitplan (Bilder bei 30 fps), je Suchauftrag ----------
-export type Auftrag = "reise" | "profil";
+export type Auftrag = "reise" | "profil" | "koerper";
 type Station = (typeof daten.spuren.profil)[number] & { praxis?: string };
 const FLUG = 60;
 const woerter = (s: string) => s.split(/\s+/).length;
@@ -61,7 +61,7 @@ const planVon = (auftrag: Auftrag) => {
   return { auftrag, SPUR, T: { intro, aufbau, spur, start, ganz, outro, ende } };
 };
 type Plan = ReturnType<typeof planVon>;
-const PLAENE: Record<Auftrag, Plan> = { reise: planVon("reise"), profil: planVon("profil") };
+const PLAENE: Record<Auftrag, Plan> = { reise: planVon("reise"), profil: planVon("profil"), koerper: planVon("koerper") };
 /** Zeitplan eines Auftrags (für Root.tsx); T ist der der ersten Reise */
 export const zeitplan = (a: Auftrag) => PLAENE[a].T;
 export const T = PLAENE.reise.T;
@@ -96,7 +96,7 @@ const auftrittVon = (T: Plan["T"]) => {
   // die Brücken (in beiden) leuchten erst, wenn ORNA erscheint
   return a as number[];
 };
-const AUFTRITTE: Record<Auftrag, number[]> = { reise: auftrittVon(PLAENE.reise.T), profil: auftrittVon(PLAENE.profil.T) };
+const AUFTRITTE: Record<Auftrag, number[]> = { reise: auftrittVon(PLAENE.reise.T), profil: auftrittVon(PLAENE.profil.T), koerper: auftrittVon(PLAENE.koerper.T) };
 
 // ---------- die Spur: Wege aus echten Kanten ----------
 /** Punkte eines Wegs zur Zeit f: von der Mitte der vorigen Station über die Knoten des Wegs zur Mitte der neuen */

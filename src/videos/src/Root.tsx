@@ -39,6 +39,9 @@ export const RemotionRoot: React.FC = () => (
     {/* Suchauftrag 1 «Vom Profil zum Feed zur Plattform» (29. Oktober 2026): 4:5 und 16:9, mit dem Zettelkasten-Intro */}
     <Composition id="ProfilVideo" component={ReiseVideo} durationInFrames={zeitplanReise("profil").ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const, auftrag: "profil" as const }} />
     <Composition id="ProfilQuer" component={ReiseVideo} durationInFrames={zeitplanReise("profil").ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const, auftrag: "profil" as const }} />
+    {/* Suchauftrag 2 «Vom Körper zum blinden Fleck zum Material zur Kunst» (29. Oktober 2026): 4:5 und 16:9 */}
+    <Composition id="KoerperVideo" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const, auftrag: "koerper" as const }} />
+    <Composition id="KoerperQuer" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const, auftrag: "koerper" as const }} />
     {/* neue Videos: Composition */}
   </>
 );

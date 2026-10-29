@@ -148,7 +148,7 @@ export const ZettelIntro: React.FC<{ f: number; L: Lay; auftrag: Auftrag; route:
           <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: L.text, lineHeight: 1.25, color: "#e4e4e4", marginTop: 14, ...auf(5.9) }}>{auftrag.umweg}</div>
           <div style={{ fontFamily: SANS, fontSize: L.klein, lineHeight: 1.45, marginTop: 22 }}>
             <div style={auf(6.1)}><span style={{ color: C.rot, fontWeight: 600 }}>Ziele </span><span style={{ color: C.tinte }}>{auftrag.ziele.map((z) => `${z.nummer} ${z.titel}`).join(" · ")}</span></div>
-            <div style={auf(6.5)}><span style={{ color: C.tinte, fontWeight: 600 }}>Umwege </span><span style={{ color: "#cfcfcf" }}>{auftrag.umwege.map((z) => `${z.nummer} ${z.titel}`).join(" · ")}</span></div>
+            {auftrag.umwege.length ? <div style={auf(6.5)}><span style={{ color: C.tinte, fontWeight: 600 }}>Umwege </span><span style={{ color: "#cfcfcf" }}>{auftrag.umwege.map((z) => `${z.nummer} ${z.titel}`).join(" · ")}</span></div> : null}
             <div style={{ ...auf(7.0), color: C.grau }}>dazu Begegnungen aus ORNA, Werke und Praxen</div>
           </div>
         </div>
