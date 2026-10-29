@@ -12,31 +12,33 @@
 </head>
 <body>
 <style>
-/* ornament.cloud/gamma – Landing-Page nach einer Videovorlage (29. Oktober 2026). Aufbau: zuerst ein Netz aus den 49 Strophen von «Zu seiner
-   Zeit» und ihren 133 Personen, das zu einer Blaupause-Tafel mit dem Wort «Anschluss» wird; danach fliegt man über eine Bahn im Raum, auf der
-   jeder Bereich der Website ein eigenes Farbfeld ist (Farben der Startseite /b/). Ringsum Nacht mit Strichfiguren und Weg-Marken.
-   Ein Tipp auf einen Bereich oder «Flach» legt die Bahn hin zum Lesen. Schriften und Farben des Neubaus (b/b.css), keine fremde Palette. */
+/* ornament.cloud/gamma – Landing-Page nach einer Videovorlage (29. Oktober 2026), Entwurf 3. Ein WebGL-Raum (three.js, vendor/three-0.185.1):
+   zuerst ein leuchtendes Netz aus den 49 Strophen von «Zu seiner Zeit» und ihren 133 Personen, durch das die Kamera fliegt; eine Tafel
+   «Anschluss» fegt in den Farben der Bereiche durchs Bild und kippt weg; dann liegt die Website als Bahn in einer runden Trommel: Lab, Apps,
+   Prompts, Zettel, Social und Art als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
+   Die Bahn-Bilder zeichnet das Skript aus dem HTML der Kapitel unten; «Flach lesen» zeigt genau dieses HTML. Schriften und Farben des Neubaus. */
 :root {
   --nacht: #000000; --text: #ffffff; --leise: rgba(255, 255, 255, .62); --strich: rgba(255, 255, 255, .5); --fein: rgba(255, 255, 255, .14);
-  --faden: #8fb0ff; --blau: #1d3fd6; --knoten: #ffffff; --dunst: rgba(29, 63, 214, .28);
+  --faden: #8fb0ff; --blau: #1d3fd6;
   --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --serif: Newsreader, "Iowan Old Style", "Times New Roman", serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  --kipp: 54deg;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) { --nacht: #ececea; --text: #000000; --leise: rgba(0, 0, 0, .62); --strich: rgba(0, 0, 0, .5); --fein: rgba(0, 0, 0, .12); --faden: #1d3fd6; --knoten: #000000; --dunst: rgba(29, 63, 214, .12); color-scheme: light; }
+  :root:not([data-theme="dark"]) { --nacht: #ececea; --text: #000000; --leise: rgba(0, 0, 0, .62); --strich: rgba(0, 0, 0, .5); --fein: rgba(0, 0, 0, .12); --faden: #1d3fd6; color-scheme: light; }
 }
-:root[data-theme="light"] { --nacht: #ececea; --text: #000000; --leise: rgba(0, 0, 0, .62); --strich: rgba(0, 0, 0, .5); --fein: rgba(0, 0, 0, .12); --faden: #1d3fd6; --knoten: #000000; --dunst: rgba(29, 63, 214, .12); color-scheme: light; }
-@media (max-width: 760px) { :root { --kipp: 44deg; } }
+:root[data-theme="light"] { --nacht: #ececea; --text: #000000; --leise: rgba(0, 0, 0, .62); --strich: rgba(0, 0, 0, .5); --fein: rgba(0, 0, 0, .12); --faden: #1d3fd6; color-scheme: light; }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: auto; }
 body { margin: 0; background: var(--nacht); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.45; overflow-x: hidden; }
 a { color: inherit; }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--faden); outline-offset: 3px; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: #000; }
+
+/* Der Raum liegt fest hinter allem und ist immer Nacht, auch im hellen Modus */
+#welt { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; background: #000; touch-action: pan-y; }
+body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 
 /* Kopf: immer schwarz, wie beim Lab */
 .kopf { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 20; height: 48px; display: flex; align-items: center; gap: 14px;
@@ -51,20 +53,19 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 @media (max-width: 900px) { .kopf nav { display: none; } }
 @media (max-width: 420px) { .kopf .ausgabe { display: none; } }
 
-/* ---------- Intro: Netz → Tafel ---------- */
-#intro { position: relative; height: 460vh; pointer-events: none; }
-.intro-buehne > .szene { pointer-events: auto; }
+/* ---------- Intro: Text, Beschriftungen und Tafel über dem Raum ---------- */
+#intro { position: relative; z-index: 1; height: 460vh; pointer-events: none; }
 .intro-buehne { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; perspective: 900px; }
 .szene { position: absolute; inset: 0; transform-origin: 50% 100%; will-change: transform; }
-#netz { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .intro-text { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px));
-  display: flex; justify-content: space-between; align-items: end; gap: 20px; pointer-events: none; opacity: calc(1 - var(--t, 0) * 4); }
-.intro-text h1 { margin: 0; font-size: clamp(30px, 5vw, 64px); font-weight: 600; letter-spacing: -.035em; line-height: .98; text-wrap: balance; max-width: 14ch; }
-.intro-text p { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--leise); text-align: right; }
-.tafel { position: absolute; top: 48px; bottom: 0; left: 0; width: 0; background: var(--blau); color: #fff; overflow: hidden; display: flex; }
+  display: flex; justify-content: space-between; align-items: end; gap: 20px; color: #fff; }
+.intro-text h1 { margin: 0; font-size: clamp(34px, 6vw, 84px); font-weight: 600; letter-spacing: -.04em; line-height: .95; text-wrap: balance; max-width: 13ch; }
+.intro-text p { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 255, 255, .62); text-align: right; }
+.etiketten span { position: absolute; left: 0; top: 0; font-family: var(--mono); font-size: 11px; color: #fff; white-space: nowrap; will-change: transform; text-shadow: 0 0 8px #000; }
+.tafel { position: absolute; top: 48px; bottom: 0; left: 0; width: 0; background: var(--blau); color: #fff; overflow: hidden; display: flex; pointer-events: auto; }
 .tafel .wort { flex: none; writing-mode: vertical-rl; transform: rotate(180deg); font-weight: 600; letter-spacing: -.045em; line-height: .8;
-  font-size: min(calc((100svh - 70px) / 6.2), 28vw); margin: 0; transform-origin: 50% 50%; padding: 14px 6px 14px 4px; white-space: nowrap; }
-.tafel .spalte { flex: 1; min-width: 0; padding: 18px 16px 18px 6px; display: flex; flex-direction: column; gap: 14px; opacity: var(--spalte, 0); }
+  font-size: min(calc((100svh - 70px) / 6.2), 28vw); margin: 0; padding: 14px 6px 14px 4px; white-space: nowrap; }
+.tafel .spalte { flex: 1; min-width: 0; padding: 18px 16px 18px 6px; display: flex; flex-direction: column; gap: 14px; opacity: 0; }
 .tafel ol { list-style: none; margin: 0; padding: 0; font-family: var(--mono); font-size: 11px; line-height: 1.6; }
 .tafel ol li { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, .22); }
 .tafel ol span { font-variant-numeric: tabular-nums; opacity: .7; }
@@ -76,60 +77,36 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   .tafel .wort { font-size: min(calc(46svh / 6.4), 16vw); }
   .tafel .zahl:nth-of-type(n+3) { display: none; }
 }
-.tip { position: absolute; z-index: 5; max-width: 260px; padding: 8px 10px; background: var(--nacht); border: 1px solid var(--strich); font-size: 13px; pointer-events: none; }
+.tip { position: fixed; z-index: 5; max-width: 260px; padding: 8px 10px; background: #000; color: #fff; border: 1px solid rgba(255, 255, 255, .5); font-size: 13px; pointer-events: none; }
 .tip b { display: block; font-weight: 600; }
-.tip i { font-family: var(--serif); color: var(--leise); }
+.tip i { font-family: var(--serif); color: rgba(255, 255, 255, .7); }
 
-/* ---------- Bahn im Raum ---------- */
-#bahn-abschnitt { position: relative; z-index: 1; margin-top: -200vh; }
-#intro { z-index: 2; }
-.bahn-buehne { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; perspective: 1000px; perspective-origin: 50% 18%;
-  background: radial-gradient(120% 70% at 50% 10%, var(--dunst), transparent 70%), var(--nacht); }
-.bahn { position: absolute; top: 30%; left: 50%; width: min(820px, 84vw); transform-style: preserve-3d; transform-origin: 50% 0;
-  transform: translateX(-50%) rotateX(var(--kipp)); transition: top .7s, width .7s; will-change: transform; }
-body.flach .bahn { top: 64px; width: min(980px, 100vw); }
-body.flach .koerper, body.flach .boden, body.flach .puls { opacity: 0; }
-body.flach .figur, body.flach .seite { opacity: 0; }
-
-.kapitel { position: relative; transform-style: preserve-3d; padding: 56px clamp(18px, 4vw, 52px) 80px; min-height: 980px; background: var(--k); color: var(--kt); }
-.kapitel h2 { margin: 0; font-size: clamp(52px, 9vw, 116px); font-weight: 600; letter-spacing: -.045em; line-height: .9; cursor: pointer; }
+/* ---------- Bahn ---------- */
+#bahn-abschnitt { position: relative; z-index: 1; pointer-events: none; }
+.raum-platz { height: 600vh; }
+body.flach .raum-platz { display: none; }
+.bahn { display: none; }
+body.flach .bahn { display: block; pointer-events: auto; width: min(980px, 100%); margin: 0 auto; padding-top: 64px; }
+.kapitel { position: relative; padding-block: 56px 80px; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); background: var(--k); color: var(--kt); scroll-margin-top: 48px; }
+.kapitel h2 { margin: 0; font-size: clamp(52px, 9vw, 116px); font-weight: 600; letter-spacing: -.045em; line-height: .9; }
 .kapitel .leit { margin: 10px 0 34px; font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.2vw, 26px); line-height: 1.25; max-width: 30ch; text-wrap: balance; }
-.kapitel .marke-k { position: absolute; top: 18px; right: clamp(18px, 4vw, 52px); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
-.raster { transform-style: preserve-3d; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 14px; }
-.karte { min-width: 0; display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--kl); text-decoration: none; background: var(--kc);
-  transform: translateZ(var(--z, 26px)); box-shadow: 0 34px 44px -18px rgba(0, 0, 0, .55); transition: transform .35s cubic-bezier(.2, .7, .2, 1); }
-.karte:nth-child(3n+2) { --z: 52px; } .karte:nth-child(3n) { --z: 38px; }
-.karte:hover { --z: 90px; }
-body.flach .karte { transform: none; box-shadow: none; }
-.karte img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: var(--kh); }
-.karte img.svg { object-fit: contain; }
+.kapitel .marke-k { position: absolute; top: 18px; right: max(18px, env(safe-area-inset-right, 0px)); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
+.raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 14px; }
+.karte { min-width: 0; display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--kl); background: var(--kc); text-decoration: none; }
+.karte:hover { border-color: var(--kt); }
+.karte img { width: 100%; max-width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
 .karte b { font-weight: 600; font-size: 17px; letter-spacing: -.01em; }
 .karte span { font-size: 13.5px; line-height: 1.4; opacity: .82; }
 .weiter { display: inline-flex; margin-top: 26px; padding: 9px 16px; border-radius: 99px; background: var(--kt); color: var(--k); text-decoration: none; font-weight: 600; }
+@media (max-width: 760px) { .raster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .karte b { font-size: 15px; } .karte span { font-size: 12.5px; } }
 
-/* Kapitelfarben (b/b.css .kapitel-*) */
-.k-lab { --kc: color-mix(in srgb, #c2185b 86%, #ffffff); --k: #c2185b; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); --kh: rgba(255, 255, 255, .1); }
-.k-apps { --kc: color-mix(in srgb, #e6b117 82%, #ffffff); --k: #e6b117; --kt: #000000; --kl: rgba(0, 0, 0, .24); --kh: rgba(0, 0, 0, .07); }
-.k-prompts { --kc: color-mix(in srgb, #e0503c 84%, #ffffff); --k: #e0503c; --kt: #000000; --kl: rgba(0, 0, 0, .26); --kh: rgba(0, 0, 0, .07); }
-.k-zettel { --kc: #f6f6f4; --k: #ffffff; --kt: #000000; --kl: #d6d6d6; --kh: #f1f1ef; }
-.k-social { --kc: color-mix(in srgb, #1d3fd6 84%, #ffffff); --k: #1d3fd6; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); --kh: rgba(255, 255, 255, .1); }
-.k-art { --kc: color-mix(in srgb, #1f4d3a 84%, #ffffff); --k: #1f4d3a; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); --kh: rgba(255, 255, 255, .08); }
-
-/* Seitenbeschriftung und Strichfiguren stehen neben der Bahn auf dem Boden auf */
-.seite { position: absolute; width: 190px; font-size: 15px; font-weight: 600; line-height: 1.15; color: var(--text); transform-origin: 50% 100%;
-  transform: rotateX(calc(var(--k, 54deg) * -1)); transition: opacity .5s; }
-.seite::after { content: ""; display: block; height: 1px; margin-top: 8px; background: var(--strich); }
-.seite.l { right: calc(100% + 26px); text-align: right; }
-.seite.r { left: calc(100% + 26px); }
-.figur { position: absolute; width: 230px; height: 230px; transform-origin: 50% 100%; transform: rotateX(calc(var(--k, 54deg) * -1)); transition: opacity .5s; }
-.figur.l { right: calc(100% + 40px); }
-.figur.r { left: calc(100% + 40px); }
-.figur svg { width: 100%; height: 100%; overflow: visible; fill: none; stroke: var(--strich); stroke-width: 1; }
-.marken { position: absolute; top: 0; bottom: 0; width: 64px; font-family: var(--mono); font-size: 10px; color: var(--leise); pointer-events: none; }
-.marken.l { right: calc(100% + 4px); text-align: right; }
-.marken.r { left: calc(100% + 4px); }
-.marken i { position: absolute; left: 0; right: 0; font-style: normal; border-top: 1px solid var(--fein); padding-top: 2px; }
-@media (max-width: 760px) { .seite, .figur.l, .figur.r, .marken { display: none; } .raster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .karte { padding: 8px; } .karte b { font-size: 15px; } .karte span { font-size: 12.5px; } }
+/* Kapitelfarben (b/b.css .kapitel-*), --kc ist die Kartenfläche */
+.k-lab { --k: #c2185b; --kc: #cc3a74; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); }
+.k-apps { --k: #e6b117; --kc: #ebc040; --kt: #000000; --kl: rgba(0, 0, 0, .24); }
+.k-prompts { --k: #e0503c; --kc: #e6695a; --kt: #000000; --kl: rgba(0, 0, 0, .26); }
+.k-zettel { --k: #ffffff; --kc: #f4f4f2; --kt: #000000; --kl: #d6d6d6; }
+.k-social { --k: #1d3fd6; --kc: #3a58dc; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); }
+.k-art { --k: #1f4d3a; --kc: #2f5e4a; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); }
 
 /* Zettel: sieben Zyklen à sieben Strophen */
 .zyklen { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
@@ -145,14 +122,15 @@ body.flach .karte { transform: none; box-shadow: none; }
 /* Steuerung unten links und Kapitelzeiger links */
 .steuer { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; opacity: 0; pointer-events: none; transition: opacity .3s; }
 .steuer.da { opacity: 1; pointer-events: auto; }
-.steuer button { font: 600 13px var(--sans); padding: 8px 14px; border-radius: 99px; border: 1px solid var(--strich); background: var(--nacht); color: var(--text); cursor: pointer; }
+.steuer button { font: 600 13px var(--sans); padding: 9px 15px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .5); background: #000; color: #fff; cursor: pointer; }
 .zeiger { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); top: 50%; transform: translateY(-50%); list-style: none; margin: 0; padding: 0;
   font-family: var(--mono); font-size: 11px; line-height: 1.9; opacity: 0; pointer-events: none; transition: opacity .3s; }
 .zeiger.da { opacity: 1; pointer-events: auto; }
-.zeiger a { text-decoration: none; color: var(--leise); display: flex; align-items: center; gap: 8px; }
+.zeiger a { text-decoration: none; color: rgba(255, 255, 255, .6); display: flex; align-items: center; gap: 8px; }
 .zeiger a::before { content: ""; width: 6px; height: 6px; border: 1px solid currentColor; }
-.zeiger a.aktiv { color: var(--text); }
+.zeiger a.aktiv { color: #fff; }
 .zeiger a.aktiv::before { background: currentColor; }
+body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color: var(--text); }
 @media (max-width: 1100px) { .zeiger { display: none; } }
 
 /* Schluss */
@@ -163,25 +141,12 @@ body.flach .karte { transform: none; box-shadow: none; }
 .schluss li a { display: flex; justify-content: space-between; align-items: center; padding: 14px 4px; border-bottom: 1px solid var(--fein); text-decoration: none; font-size: 19px; font-weight: 600; }
 .schluss li a i { width: 12px; height: 12px; background: var(--k); border: 1px solid var(--strich); }
 .schluss p { margin: 34px 0 0; font-family: var(--mono); font-size: 11px; color: var(--leise); letter-spacing: .04em; }
-
-/* Raum: Boden, Drahtkörper, Lichtimpulse (von JS eingesetzt) */
-.boden { position: absolute; left: 50%; top: calc(30% - 140vh); width: 340vw; height: 260vh; transform-origin: 50% 140vh; pointer-events: none; transition: opacity .5s;
-  background-image: linear-gradient(var(--fein) 1px, transparent 1px), linear-gradient(90deg, var(--fein) 1px, transparent 1px); background-size: 120px 120px; }
-.koerper { position: absolute; width: 200px; height: 200px; transform-style: preserve-3d; transform-origin: 50% 100%; pointer-events: none; transition: opacity .5s;
-  transform: rotateX(calc(var(--k, 54deg) * -1)); }
-.koerper.l { right: calc(100% + 70px); } .koerper.r { left: calc(100% + 70px); }
-.koerper .dreh { position: absolute; inset: 0; transform-style: preserve-3d; animation: dreh 16s linear infinite; }
-.koerper i { position: absolute; inset: 0; border: 1px solid var(--strich); }
-.koerper.kugel i { border-radius: 50%; }
-.koerper.ring i { border-radius: 50%; border-color: var(--kfarbe, var(--strich)); }
-@keyframes dreh { from { transform: rotateY(0deg) rotateX(12deg); } to { transform: rotateY(360deg) rotateX(12deg); } }
-.puls { position: absolute; top: 0; width: 4px; height: 70px; background: linear-gradient(transparent, var(--k)); box-shadow: 0 0 18px 2px var(--k); border-radius: 2px;
-  transform: translateZ(2px); animation: puls 3.2s linear infinite; pointer-events: none; transition: opacity .5s; }
-@keyframes puls { from { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } to { top: calc(100% - 70px); opacity: 0; } }
-@media (max-width: 760px) { .koerper { display: none; } .karte { box-shadow: 0 22px 26px -14px rgba(0, 0, 0, .5); } }
-@media (prefers-reduced-motion: reduce) { .koerper .dreh, .puls { animation: none; } }
 </style>
+<script type="importmap">
+{ "imports": { "three": "../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../vendor/three-0.185.1/addons/" } }
+</script>
 
+<canvas id="welt" aria-label="Raum mit dem Netz der Strophen und der Bahn der Bereiche"></canvas>
 <header class="kopf">
   <a class="marke" href="../b/"><img src="../b/bilder/signet/signet-dunkel.svg" alt="">ornament.cloud <span class="ausgabe">Gamma · Herbst 2026</span></a>
   <nav aria-label="Bereiche">
@@ -192,8 +157,8 @@ body.flach .karte { transform: none; box-shadow: none; }
 
 <section id="intro" aria-label="Einstieg">
   <div class="intro-buehne"><div class="szene" id="szene">
-    <canvas id="netz" aria-label="Netz aus 49 Strophen und 133 Personen in sieben Zyklen"></canvas>
-    <div class="tafel" aria-hidden="false">
+    <div class="etiketten" id="etiketten" aria-hidden="true"></div>
+    <div class="tafel">
       <p class="wort">Anschluss</p>
       <div class="spalte">
         <ol id="zyklen-liste"></ol>
@@ -203,18 +168,17 @@ body.flach .karte { transform: none; box-shadow: none; }
         <p class="satz">«Der Anschluss erfindet die Welt, die ihn im Nachhinein notwendig erscheinen lässt.»</p>
       </div>
     </div>
-    <div class="intro-text">
+    <div class="intro-text" id="intro-text">
       <h1>Sechs Bereiche, ein Netz.</h1>
       <p>Lab · Apps · Prompts · Zettel · Social · Art<br>Weiter nach unten</p>
     </div>
-    <div class="tip" id="tip" hidden></div>
   </div></div>
 </section>
+<div class="tip" id="tip" hidden></div>
 
 <section id="bahn-abschnitt" aria-label="Bereiche der Website">
-  <div class="bahn-buehne">
-    <div class="bahn" id="bahn">
-
+  <div class="raum-platz" id="raum-platz"></div>
+  <div class="bahn" id="bahn">
       <article class="kapitel k-lab" id="k-lab" data-name="Lab">
         <span class="marke-k">01 · ornament.lab</span>
         <h2>Lab</h2>
@@ -228,10 +192,6 @@ body.flach .karte { transform: none; box-shadow: none; }
           <a class="karte" href="../beta/lab/"><img src="../beta/lab/bilder/v-neu.jpg" alt="" loading="lazy"><b>Neusetzen</b><span>Teile ordnen sich zu einem neuen Bild.</span></a>
         </div>
         <a class="weiter" href="../beta/lab/">Lab ansehen</a>
-        <p class="seite l" style="top: 230px">Stationen bis zum Film</p>
-        <p class="seite r" style="top: 520px">Beat aus Bild oder Video</p>
-        <div class="figur l" style="top: 560px"><svg viewBox="0 0 100 100"><path d="M40 8h20M43 8v30L18 86q-3 6 4 6h56q7 0 4-6L57 38V8"/><path d="M28 70h44"/><path d="M33 62q17 6 34 0"/><circle cx="46" cy="78" r="3"/><circle cx="58" cy="72" r="2"/></svg></div>
-        <div class="figur r" style="top: 40px"><svg viewBox="0 0 100 100"><path d="M20 30l30-15 30 15v40L50 85 20 70z"/><path d="M20 30l30 15 30-15M50 45v40"/><path d="M28 54l14 7M58 62l14-7M35 40l15 7 15-7" stroke-dasharray="2 3"/></svg></div>
       </article>
 
       <article class="kapitel k-apps" id="k-apps" data-name="Apps">
@@ -248,10 +208,6 @@ body.flach .karte { transform: none; box-shadow: none; }
           <a class="karte" href="../apps/"><img class="svg" src="../b/bilder/apps/omna-color.svg" alt="" loading="lazy"><b>OMNA COLOR</b><span>Zwei Farbräder ziehen aus 180 Gestaltungsübungen.</span></a>
         </div>
         <a class="weiter" href="../apps/">Alle Apps</a>
-        <p class="seite l" style="top: 300px">Läuft auch ohne Netz</p>
-        <p class="seite r" style="top: 640px">Auf dem Startbildschirm installieren</p>
-        <div class="figur r" style="top: 120px"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38"/><circle cx="50" cy="50" r="24"/><path d="M50 12v14M50 74v14M12 50h14M74 50h14M23 23l10 10M67 67l10 10M77 23L67 33M33 67L23 77"/><circle cx="50" cy="26" r="3"/></svg></div>
-        <div class="figur l" style="top: 620px"><svg viewBox="0 0 100 100"><rect x="30" y="8" width="40" height="84" rx="6"/><path d="M44 14h12"/><rect x="36" y="24" width="12" height="12"/><rect x="52" y="24" width="12" height="12"/><rect x="36" y="40" width="12" height="12"/><rect x="52" y="40" width="12" height="12"/></svg></div>
       </article>
 
       <article class="kapitel k-prompts" id="k-prompts" data-name="Prompts">
@@ -265,8 +221,6 @@ body.flach .karte { transform: none; box-shadow: none; }
           <a class="karte" href="../masterprompts/"><img class="svg" src="../b/bilder/raster/journalistische-texte.svg" alt="" loading="lazy"><b>Journalistische Texte</b><span>Ereignis · Kontext · Übergang · Gegenprobe · Systembezüge.</span></a>
         </div>
         <a class="weiter" href="../masterprompts/">Zu den Prompts</a>
-        <p class="seite r" style="top: 250px">Anwendungsprompt für einen KI-Assistenten</p>
-        <div class="figur l" style="top: 340px"><svg viewBox="0 0 100 100"><rect x="14" y="14" width="72" height="72"/><path d="M14 38h72M14 62h72M38 14v72M62 14v72"/><circle cx="26" cy="26" r="4"/><circle cx="50" cy="50" r="4"/><circle cx="74" cy="74" r="4"/></svg></div>
       </article>
 
       <article class="kapitel k-zettel" id="k-zettel" data-name="Zettel">
@@ -276,10 +230,6 @@ body.flach .karte { transform: none; box-shadow: none; }
         <div class="zyklen" id="zyklen"></div>
         <div class="strophe" id="strophe" aria-live="polite"></div>
         <a class="weiter" href="../zu-seiner-zeit/">Zum Zettelkasten</a>
-        <p class="seite l" style="top: 200px">Sieben Zyklen, je sieben Strophen</p>
-        <p class="seite r" style="top: 480px">Jede Strophe mit ihren Personen verknüpft</p>
-        <div class="figur r" style="top: 40px"><svg viewBox="0 0 100 100"><rect x="18" y="30" width="52" height="60"/><path d="M26 22h52v60M34 14h52v60"/><path d="M26 44h36M26 54h36M26 64h22"/></svg></div>
-        <div class="figur l" style="top: 560px"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/><ellipse cx="50" cy="50" rx="40" ry="14"/><ellipse cx="50" cy="50" rx="14" ry="40"/><ellipse cx="50" cy="50" rx="28" ry="40" transform="rotate(35 50 50)"/><ellipse cx="50" cy="50" rx="28" ry="40" transform="rotate(-35 50 50)"/></svg></div>
       </article>
 
       <article class="kapitel k-social" id="k-social" data-name="Social">
@@ -292,8 +242,6 @@ body.flach .karte { transform: none; box-shadow: none; }
           <a class="karte" href="../social-media/"><b>Instagram</b><span>Beiträge von Instagram, als Zettel abgelegt.</span></a>
         </div>
         <a class="weiter" href="../social-media/">Zu den Beiträgen</a>
-        <p class="seite l" style="top: 260px">Woche für Woche ein Zettel</p>
-        <div class="figur r" style="top: 300px"><svg viewBox="0 0 100 100"><path d="M10 50h80"/><path d="M14 50v-8M26 50v-20M38 50v-12M50 50v-30M62 50v-16M74 50v-24M86 50v-10"/><path d="M14 50v8M26 50v16M38 50v10M50 50v26M62 50v14M74 50v20M86 50v6" stroke-dasharray="2 2"/></svg></div>
       </article>
 
       <article class="kapitel k-art" id="k-art" data-name="Art">
@@ -305,11 +253,7 @@ body.flach .karte { transform: none; box-shadow: none; }
           <a class="karte" href="../art/"><img class="svg" src="../b/bilder/signet/signet-dunkel.svg" alt="" loading="lazy"><b>Websites und Apps</b><span>Websites und Apps im Auftrag.</span></a>
         </div>
         <a class="weiter" href="../art/">Zu Art</a>
-        <p class="seite r" style="top: 220px">Demnächst mehr</p>
-        <div class="figur l" style="top: 160px"><svg viewBox="0 0 100 100"><rect x="16" y="10" width="68" height="80"/><rect x="26" y="20" width="48" height="60"/><path d="M26 66q12-14 24-6t24-10"/><circle cx="40" cy="38" r="5"/></svg></div>
       </article>
-
-    </div>
   </div>
 </section>
 
@@ -331,164 +275,36 @@ body.flach .karte { transform: none; box-shadow: none; }
 <div class="steuer" id="steuer"><button type="button" id="flach">Flach lesen</button></div>
 <ol class="zeiger" id="zeiger"></ol>
 
-<script>
+<script type="module">
+import * as THREE from "three";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+
 const DATEN = {"z":[[1,0,"Die Brücke","Nicht die Welt begründet den Anschluss – der Anschluss erfindet die Welt, die ihn im Nachhinein notwendig erscheinen lässt.",[0,1,2,3]],[2,0,"Das Ereignis","Was geschehen ist, ist geschehen; seine Geschichte verändert sich mit jedem Anschluss.",[4,5,6,7]],[3,0,"Der Anschluss","Kontinuität ist kein Zustand – sie ist die unwahrscheinlichste aller Operationen.",[0,8,9,10]],[4,0,"Der Beobachter","Der Beobachter kann die Unterscheidung seines gegenwärtigen Beobachtens erst später beobachten.",[11,12,13,14]],[5,0,"Der blinde Fleck","Der blinde Fleck ist nicht das Ende der Erkenntnis – er ist ihr Anfang.",[15,16,17,10]],[6,0,"Die Verspätung","Gegenwart ist die Kunst, ihre eigene Verspätung zu übersehen.",[4,18,19,20]],[7,0,"Die Zeit","Zeit ist die Bedingung, dass auf eine Operation auch anderes folgen kann als ihre Wiederholung.",[0,21,22,7]],[8,1,"Der Speicher","Speicherung hält etwas verfügbar; Wiederaufnahme gibt ihm eine neue Gegenwart.",[15,23,24,25]],[9,1,"Das Gedächtnis","Gedächtnis macht Vergangenes in veränderten Praktiken erneut wirksam.",[26,27,28,29]],[10,1,"Die Erinnerung","Erinnerung gibt Geschehenem eine gegenwärtige, überprüfbare Gestalt.",[30,31,32,20]],[11,1,"Die Spur","Die Spur hält eine vergangene Wirkung materiell fest, ohne ihre Bedeutung festzulegen.",[33,8,34,35]],[12,1,"Das Vergessen","Vergessen verändert, was für wen noch erreichbar bleibt.",[15,36,28,14]],[13,1,"Das Archiv","Das Archiv bewahrt und ordnet, was künftig wiedergefunden werden kann.",[33,37,38,39]],[14,1,"Die Geschichte","Geschichte deutet Vergangenes neu und bleibt an seine Spuren gebunden.",[30,31,40,35]],[15,2,"Die Adresse","Die Adresse macht soziale Zurechnung über Abwesenheit hinweg möglich.",[0,41,32,42]],[16,2,"Der Name","Der Name macht Abwesenheit adressierbar.",[43,41,44,45]],[17,2,"Die Person","Die Person ist das Gedächtnis einer Adresse.",[46,47,24,3]],[18,2,"Die Rolle","Die Rolle macht Erwartungen von Personen unabhängig.",[48,47,49,50]],[19,2,"Die Erwartung","Erwartungen ordnen, was an einer Adresse künftig überraschen kann.",[15,51,52,53]],[20,2,"Die Verantwortung","Verantwortung bindet Folgen an eine Adresse.",[54,55,56,57]],[21,2,"Die Anerkennung","Anerkennung verleiht einer Adresse soziale Geltung.",[58,59,60,61]],[22,3,"Die Grenze","Nur was getrennt bleibt, kann sich berühren.",[62,63,2,3]],[23,3,"Die Berührung","Berührung ist die Grenze in Ereignisform.",[64,65,9,66]],[24,3,"Die Irritation","Irritation ist Fremdwirkung in Eigenform.",[0,21,67,53]],[25,3,"Der Körper","Der Körper verwandelt Fremdwirkung in Empfindlichkeit.",[68,69,70,3]],[26,3,"Die Wahrnehmung","Wahrnehmung lässt die Grenze zwischen Körper und Bewusstsein fraglich werden.",[0,69,67,71]],[27,3,"Die Übersetzung","Übersetzung ist Wiederholung ohne Identität.",[62,27,72,73]],[28,3,"Die Koppelung","Koppelung stabilisiert Wirkungen an Grenzen, deren Entstehung selbst fraglich bleibt.",[0,1,74,75]],[29,4,"Das Material","Material ist der Widerstand, durch den Form möglich wird.",[68,76,77,78]],[30,4,"Die Form","Form macht Differenz wiederverwendbar.",[79,27,80,81]],[31,4,"Das Werk","Ein Werk bleibt als bestimmte Form erkennbar; eine künstlerische Adresse kann mehrere Werke tragen.",[82,83,84,85]],[32,4,"Der Stil","Stil ist die Wiederkehr einer Differenz als Erwartung.",[86,87,88,89]],[33,4,"Das Publikum","Das Publikum kultiviert die Empfindlichkeit getrennter Wahrnehmungen.",[90,83,9,42]],[34,4,"Die Ausstellung","Die Ausstellung ordnet Beziehungen, bevor sie Bedeutungen ordnet.",[91,92,93,94]],[35,4,"Die Kunst","Kunst hält Wahrnehmung gesellschaftlich wiederverwendbar, indem sie ihre Differenz offenhält.",[95,96,19,97]],[36,5,"Das Profil","Das Profil verwandelt adressierbare Spuren in berechenbare Wiedererkennbarkeit.",[15,27,32,14]],[37,5,"Die Information","Information entsteht, wenn ein Unterschied in einer bestimmten Ordnung Folgen hat.",[98,1,19,99]],[38,5,"Die Wahrscheinlichkeit","Wahrscheinlichkeit verwandelt offene Kontingenz in ungleich gewichtete Zukunft.",[4,100,101,102]],[39,5,"Der Algorithmus","Algorithmisches Ranking verteilt ungleiche Chancen auf den nächsten Anschluss.",[103,104,105,106]],[40,5,"Die Empfehlung","Die Empfehlung gibt berechnete Wahrscheinlichkeit als mögliche nächste Welt zurück.",[107,108,109,110]],[41,5,"Der Feed","Der Feed macht Prognose zur gegenwärtigen Umwelt ihrer nächsten Überprüfung.",[111,112,22,113]],[42,5,"Die Plattform","Die Plattform gibt berechnete Möglichkeiten als Umwelt zurück und verarbeitet deren Folgen.",[114,115,116,117]],[43,6,"Die Identität","Identität macht Veränderung intertemporal zurechenbar.",[118,119,49,7]],[44,6,"Die Möglichkeit","Möglichkeit ist die gegenwärtige Erreichbarkeit eines noch nicht aktualisierten Anschlusses.",[120,121,52,122]],[45,6,"Die Kontingenz","Kontingenz wird zur Zukunftschance, wo Alternativen erreichbar und Strukturen revidierbar bleiben.",[0,47,2,123]],[46,6,"Die Unterbrechung","Eine Unterbrechung öffnet Zukunft erst, wenn nach ihr etwas anders anschliessen kann.",[124,31,28,53]],[47,6,"Das Neue","Neu ist, was verändert, was anschliessend möglich ist.",[125,126,9,25]],[48,6,"Die Freiheit","Freiheit ist die Fähigkeit, strukturierte Kontingenz aufzunehmen, zurückzuweisen oder umzuformen.",[43,127,128,129]],[49,6,"Die Zukunft","Zukunft ist der erhaltene Spielraum, anders weiterzugehen, als bereits erwartet wird.",[130,5,131,132]]],"p":["Niklas Luhmann","Karen Barad","Mona Hatoum","Franz Kafka","Barbara Adam","Alfred North Whitehead","On Kawara","Virginia Woolf","Jacques Derrida","Lygia Clark","Clarice Lispector","Heinz von Foerster","Donna Haraway","Cindy Sherman","Jorge Luis Borges","Elena Esposito","George Spencer-Brown","René Magritte","Edmund Husserl","Hito Steyerl","Marcel Proust","Isabelle Stengers","Christian Marclay","Henri Bergson","Christian Boltanski","Ursula K. Le Guin","Paul Connerton","Gilles Deleuze","Doris Salcedo","Toni Morrison","Maurice Halbwachs","Hannah Arendt","Sophie Calle","Aleida Assmann","Rachel Whiteread","W. G. Sebald","Friedrich Nietzsche","Michel Foucault","Walid Raad","Anne Carson","Susan Hiller","Adriana Cavarero","Italo Calvino","Pierre Bourdieu","Lubaina Himid","Paul Auster","Cornelia Bohn","Judith Butler","Erving Goffman","Gillian Wearing","Luigi Pirandello","Reinhart Koselleck","Yoko Ono","Samuel Beckett","Marilyn Strathern (Hg.)","Emmanuel Levinas","Teresa Margolles","J. M. Coetzee","Michèle Lamont","Axel Honneth","Kerry James Marshall","Bernardine Evaristo","Susan Leigh Star","Georg Simmel","Eva Illouz","Jean-Luc Nancy","Ocean Vuong","Ann Veronica Janssens","Annemarie Mol","Maurice Merleau-Ponty","Ana Mendieta","Olga Tokarczuk","Shilpa Gupta","Walter Benjamin","Pierre Huyghe","Daisy Hildyard","Jane Bennett","Richard Serra","Francis Ponge","Caroline Levine","Constantin Brâncuși","Maggie Nelson","Shannon Jackson","Juliane Rebentisch","Bazon Brock","Enrique Vila-Matas","Marielle Macé","Nelson Goodman","Hanne Darboven","Ben Lerner","Antoine Hennion","Tony Bennett","Mieke Bal","Fred Wilson","Olivia Laing","Nathalie Heinich","Jacques Rancière","Michel Houellebecq","Klaus Kusanowsky","Stanisław Lem","Ian Hacking","Vera Molnár","Thomas Pynchon","Tarleton Gillespie","Yuk Hui","Anna Ridler","Patricia Lockwood","Taina Bucher","Bernard Stiegler","Amalia Ulman","Dave Eggers","José van Dijck","Byung-Chul Han","Jenny Offill","David Beer","Luciana Parisi","Rafael Lozano-Hemmer","Jennifer Egan","Anselm Strauss","Paul Ricœur","Ann Mische","Ernst Bloch","Robert Musil","Milan Kundera","Harold Garfinkel","Michel Callon","Gilbert Simondon","Simone de Beauvoir","Tania Bruguera","Ralph Ellison","Helga Nowotny","Katie Paterson","Ted Chiang"]};
 const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
 const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
 const KAPITELFARBEN = ["#c2185b", "#e6b117", "#e0503c", "#ffffff", "#1d3fd6", "#1f4d3a"];
-const ZYKLUSFARBEN = ["#ff5c9a", "#e6b117", "#e0503c", "#ffffff", "#8fb0ff", "#3fbf86", "#ffa3d1"];
+const LEUCHTFARBEN = ["#ff3d8b", "#ffc21a", "#ff5a3c", "#9fb8ff", "#4f78ff", "#2fd08a"];   // für das Leuchten im Raum etwas satter
+const ZYKLUSFARBEN = ["#ff5c9a", "#ffc21a", "#ff5a3c", "#ffffff", "#8fb0ff", "#3fd08e", "#ffa3d1"];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const klemm = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const weich = (a, b, x) => { const t = klemm((x - a) / (b - a)); return t * t * (3 - 2 * t); };
 const misch = (a, b, t) => a + (b - a) * t;
+const hdr = (hex, f) => new THREE.Color(hex).multiplyScalar(f);
 
-/* ---------- Netz im Raum: Zyklen, Strophen, Personen als 3D-Punkte ---------- */
-const netz = (() => {
-  let saat = 11;
-  const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647 - .5;
-  const knoten = [], kanten = [];
-  ZYKLEN.forEach((n, i) => { const w = i * Math.PI * 2 / 7; knoten.push({ art: "zyklus", i, x: Math.cos(w), y: Math.sin(w * 2) * .18, z: Math.sin(w), name: ROEM[i] + " " + n, farbe: ZYKLUSFARBEN[i] }); });
-  DATEN.z.forEach(s => { const h = knoten[s[1]]; const k = { art: "strophe", s, x: h.x + z() * .5, y: h.y + z() * .5, z: h.z + z() * .5, farbe: ZYKLUSFARBEN[s[1]] }; knoten.push(k); kanten.push([h, k, 1]); });
-  const pk = DATEN.p.map(name => ({ art: "person", name, x: 0, y: 0, z: 0, n: 0 }));
-  DATEN.z.forEach((s, j) => { const sk = knoten[7 + j]; s[4].forEach(pi => { const p = pk[pi]; p.x += sk.x; p.y += sk.y; p.z += sk.z; p.n++; kanten.push([sk, p, 0]); }); });
-  pk.forEach(p => { const f = p.n > 1 ? .7 / p.n : 1.45; p.x = p.x * f + z() * .3; p.y = p.y * f + z() * .9; p.z = p.z * f + z() * .3; knoten.push(p); });
-  for (let it = 0; it < 40; it++) for (let a = 7; a < knoten.length; a++) for (let b = a + 1; b < knoten.length; b++) {
-    const A = knoten[a], B = knoten[b], dx = B.x - A.x, dy = B.y - A.y, dz = B.z - A.z, d2 = dx * dx + dy * dy + dz * dz + 1e-6;
-    if (d2 < .012) { const f = (.012 - d2) / d2 * .06; A.x -= dx * f; A.y -= dy * f; A.z -= dz * f; B.x += dx * f; B.y += dy * f; B.z += dz * f; }
-  }
-  // Lichtimpulse laufen vom Zyklus über die Strophe zur Person
-  const impulse = Array.from({ length: 160 }, (_, i) => ({ kante: kanten[(i * 37) % kanten.length], phase: (i * .618) % 1, tempo: .25 + ((i * 13) % 10) / 22, farbe: KAPITELFARBEN[i % 6] === "#ffffff" ? "#ffffff" : ZYKLUSFARBEN[i % 7] }));
-  return { knoten, kanten, impulse };
-})();
+const intro = document.getElementById("intro"), szene = document.getElementById("szene"), tip = document.getElementById("tip");
+const tafel = szene.querySelector(".tafel"), wort = tafel.querySelector(".wort"), spalte = tafel.querySelector(".spalte"), introText = document.getElementById("intro-text");
+const abschnitt = document.getElementById("bahn-abschnitt"), platz = document.getElementById("raum-platz"), bahnDom = document.getElementById("bahn");
+const steuer = document.getElementById("steuer"), flachKnopf = document.getElementById("flach"), zeiger = document.getElementById("zeiger");
+const kapitel = [...bahnDom.querySelectorAll(".kapitel")];
+const schmal = () => innerWidth < 760;
 
-const cv = document.getElementById("netz"), cx = cv.getContext("2d"), intro = document.getElementById("intro"), szene = document.getElementById("szene"), tip = document.getElementById("tip");
-const tafel = szene.querySelector(".tafel"), wort = tafel.querySelector(".wort"), spalte = tafel.querySelector(".spalte");
-let farben = {}, B = 0, H = 0, dpr = 1, tIntro = 0, maus = null, zeiger3d = { x: 0, y: 0 }, hell = false;
-function farbenLesen() { const s = getComputedStyle(document.documentElement); ["--nacht", "--text", "--faden", "--knoten", "--leise"].forEach(n => farben[n] = s.getPropertyValue(n).trim()); hell = farben["--nacht"] !== "#000000"; }
-function groesse() { dpr = Math.min(2, devicePixelRatio || 1); B = cv.clientWidth; H = cv.clientHeight; cv.width = B * dpr; cv.height = H * dpr; }
-addEventListener("pointermove", e => { zeiger3d.x = e.clientX / innerWidth - .5; zeiger3d.y = e.clientY / innerHeight - .5; }, { passive: true });
-
-function kamera(t, zeit) {
-  const schmal = B < 760;
-  const tf = weich(.6, .72, t) - weich(.72, .8, t) * (schmal ? .55 : .62);   // Tafelbreite 0 → 1 → Rest
-  // Flug: weit weg → mitten hinein → wieder hinaus neben die Tafel
-  const nah = weich(.22, .5, t), raus = weich(.5, .66, t);
-  const dist = misch(misch(5.2, .55, nah), schmal ? 3.4 : 2.7, raus);
-  const winkel = (ruhig ? 0 : zeit * .00008) + t * 4.2 + zeiger3d.x * .5;
-  const neig = .32 + zeiger3d.y * .25 - nah * .15 + raus * .1;
-  const mx = schmal ? B / 2 : B * (.5 + klemm(tf) * .2), my = schmal ? H * (.5 - raus * .2) + 24 : H * .5 + 24;
-  return { dist, winkel, neig, mx, my, f: Math.min(B, H) * .95, tf };
-}
-function projiziere(k, cam) {
-  const c = Math.cos(cam.winkel), s = Math.sin(cam.winkel);
-  let x = k.x * c - k.z * s, z = k.x * s + k.z * c, y = k.y;
-  const cn = Math.cos(cam.neig), sn = Math.sin(cam.neig);
-  const y2 = y * cn - z * sn; z = y * sn + z * cn;
-  const zc = z + cam.dist;
-  if (zc < .08) return null;
-  const m = cam.f / zc;
-  return [cam.mx + x * m, cam.my + y2 * m, m, zc];
-}
-function zeichneNetz(zeit) {
-  const t = tIntro, cam = kamera(t, zeit);
-  cx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  cx.globalCompositeOperation = "source-over"; cx.globalAlpha = 1;
-  cx.fillStyle = farben["--nacht"]; cx.fillRect(0, 0, B, H);
-  const netzA = weich(.06, .24, t);
-  // Phase A: sechs Bereiche kreisen im Raum und fliegen dann zu ihren Zyklen
-  const zuHub = weich(.08, .24, t);
-  if (zuHub < 1) {
-    for (let i = 0; i < 6; i++) {
-      const w = i * 1.047 + (ruhig ? 0 : zeit * .0003);
-      const orbit = { x: Math.cos(w) * .62, y: Math.sin(w * 1.5 + 1) * .22, z: Math.sin(w) * .62 };
-      const h = netz.knoten[i], k = { x: misch(orbit.x, h.x, zuHub), y: misch(orbit.y, h.y, zuHub), z: misch(orbit.z, h.z, zuHub) };
-      const camA = { ...cam, dist: misch(2.4, cam.dist, zuHub), winkel: misch(0, cam.winkel, zuHub) };
-      const p = projiziere(k, camA), m0 = projiziere({ x: 0, y: 0, z: 0 }, camA); if (!p) continue;
-      cx.globalAlpha = 1 - zuHub;
-      cx.strokeStyle = farben["--faden"]; cx.lineWidth = 1; cx.beginPath(); cx.moveTo(m0[0], m0[1]); cx.lineTo(p[0], p[1]); cx.stroke();
-      const g = p[2] * .07; cx.fillStyle = KAPITELFARBEN[i]; cx.fillRect(p[0] - g / 2, p[1] - g / 2, g, g);
-    }
-  }
-  if (netzA <= 0) return;
-  const P = new Map();
-  for (const k of netz.knoten) { const p = projiziere(k, cam); P.set(k, p); k.sx = p ? p[0] : -1e4; k.sy = p ? p[1] : -1e4; }
-  const nebel = zc => klemm(1.9 / zc, 0, 1) * klemm((zc - .1) * 3);
-  // Kanten
-  cx.lineWidth = .7;
-  for (const [a, b, stark] of netz.kanten) {
-    const p = P.get(a), q = P.get(b); if (!p || !q) continue;
-    cx.globalAlpha = netzA * (stark ? .5 : .2) * nebel((p[3] + q[3]) / 2);
-    cx.strokeStyle = stark ? a.farbe : farben["--faden"];
-    cx.beginPath(); cx.moveTo(p[0], p[1]); cx.lineTo(q[0], q[1]); cx.stroke();
-  }
-  // Lichtimpulse
-  cx.globalCompositeOperation = hell ? "source-over" : "lighter";
-  for (const im of netz.impulse) {
-    const ph = ruhig ? im.phase : (im.phase + zeit * .0004 * im.tempo) % 1;
-    const [a, b] = im.kante, p = P.get(a), q = P.get(b); if (!p || !q) continue;
-    const x = misch(p[0], q[0], ph), y = misch(p[1], q[1], ph), m = misch(p[2], q[2], ph), zc = misch(p[3], q[3], ph);
-    const g = Math.max(1.5, m * .012);
-    cx.globalAlpha = netzA * nebel(zc) * Math.sin(ph * Math.PI);
-    cx.fillStyle = im.farbe; cx.fillRect(x - g / 2, y - g / 2, g, g);
-    if (!hell) { cx.globalAlpha *= .22; cx.fillRect(x - g * 2, y - g * 2, g * 4, g * 4); }
-  }
-  cx.globalCompositeOperation = "source-over";
-  // Knoten, hinten zuerst
-  const reihe = netz.knoten.filter(k => P.get(k)).sort((a, b) => P.get(b)[3] - P.get(a)[3]);
-  cx.font = "11px " + getComputedStyle(document.body).getPropertyValue("--mono");
-  for (const k of reihe) {
-    const [x, y, m, zc] = P.get(k), a = netzA * nebel(zc);
-    if (a < .02) continue;
-    cx.globalAlpha = a;
-    if (k.art === "person") { const g = Math.max(1.2, m * .006); cx.fillStyle = farben["--faden"]; cx.fillRect(x - g / 2, y - g / 2, g, g); }
-    else if (k.art === "strophe") {
-      const g = Math.max(3, m * .022); cx.fillStyle = k.farbe === "#ffffff" ? farben["--knoten"] : k.farbe; cx.fillRect(x - g / 2, y - g / 2, g, g);
-      if (k === maus) { cx.strokeStyle = farben["--knoten"]; cx.strokeRect(x - g, y - g, g * 2, g * 2); }
-      if (zc < .9 && g > 18) { cx.fillStyle = farben["--text"]; cx.globalAlpha = a * klemm((g - 18) / 20); cx.fillText(k.s[0] + " " + k.s[2], x + g * .7, y + 4); }
-    } else {
-      const r = Math.max(4, m * .02); cx.strokeStyle = k.farbe; cx.lineWidth = 1.2; cx.beginPath(); cx.arc(x, y, r, 0, 7); cx.stroke(); cx.lineWidth = .7;
-      cx.fillStyle = farben["--text"]; cx.fillText(k.name, x + r + 6, y - r);
-    }
-  }
-  cx.globalAlpha = 1;
-}
-function introStand() {
-  const r = intro.getBoundingClientRect(), weg = intro.offsetHeight - innerHeight;
-  tIntro = ruhig ? .84 : klemm(-r.top / weg);
-  const t = tIntro, schmal = innerWidth < 760;
-  intro.style.setProperty("--t", t);
-  // Tafel: fegt über die ganze Breite, wechselt dabei durch die Farben der Bereiche, bleibt dann als Spalte in Blaupause
-  const auf = weich(.6, .7, t), zu = weich(.72, .8, t);
-  const voll = innerWidth, rest = schmal ? innerWidth : Math.min(innerWidth * .4, 560);
-  tafel.style.width = (auf * misch(voll, rest, zu)) + "px";
-  const schnitt = auf > 0 && zu < 1 ? Math.floor(t * 120) % 6 : -1;
-  tafel.style.background = schnitt >= 0 && auf > .15 ? KAPITELFARBEN[schnitt] : "var(--blau)";
-  tafel.style.color = schnitt === 1 || schnitt === 2 || schnitt === 3 ? "#000" : "#fff";
-  wort.style.transform = `rotate(180deg) scale(${misch(1.5, 1, zu)})`;
-  spalte.style.opacity = weich(.76, .84, t);
-  // Am Ende kippt die ganze Bühne nach hinten und wird zur Bahn
-  const fall = ruhig ? 0 : weich(.86, 1, t);
-  szene.style.transform = `translateY(${-fall * 22}%) rotateX(${fall * 62}deg) scale(${1 - fall * .25})`;
-  szene.style.opacity = 1 - weich(.93, 1, t);
-  szene.style.visibility = t >= 1 ? "hidden" : "visible";
-}
-cv.addEventListener("pointermove", e => {
-  if (tIntro < .25) return;
-  const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-  let best = null, bd = 16 * 16;
-  for (const k of netz.knoten) if (k.art === "strophe") { const d = (k.sx - x) ** 2 + (k.sy - y) ** 2; if (d < bd) { bd = d; best = k; } }
-  maus = best;
-  if (best) { tip.hidden = false; tip.innerHTML = ""; const b = document.createElement("b"); b.textContent = best.s[0] + " · " + best.s[2]; const i = document.createElement("i"); i.textContent = best.s[3]; tip.append(b, i);
-    tip.style.left = Math.min(x + 14, B - 270) + "px"; tip.style.top = Math.max(56, y - 20) + "px"; }
-  else tip.hidden = true;
-});
-cv.addEventListener("pointerleave", () => { maus = null; tip.hidden = true; });
-
-/* Zyklen-Liste auf der Tafel */
+/* ---------- DOM: Zyklen-Liste, Zettel-Feld, Kapitelzeiger ---------- */
 const zl = document.getElementById("zyklen-liste");
 ZYKLEN.forEach((n, i) => { const li = document.createElement("li"); li.innerHTML = `<b></b><span>${String(i * 7 + 1).padStart(2, "0")}–${String(i * 7 + 7).padStart(2, "0")}</span>`; li.querySelector("b").textContent = ROEM[i] + " " + n; zl.append(li); });
-
-/* ---------- Zettel-Kapitel: 7 × 7 Strophen ---------- */
 const zy = document.getElementById("zyklen"), st = document.getElementById("strophe");
 function zeigeStrophe(s, knopf) {
   zy.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b === knopf)));
@@ -503,83 +319,457 @@ ZYKLEN.forEach((n, i) => {
   const k = document.createElement("small"); k.textContent = ROEM[i] + " " + n; sp.append(k);
   DATEN.z.filter(s => s[1] === i).forEach(s => {
     const b = document.createElement("button"); b.type = "button"; b.textContent = s[0]; b.title = s[2]; b.setAttribute("aria-pressed", "false");
-    b.addEventListener("click", ev => { ev.stopPropagation(); zeigeStrophe(s, b); }); sp.append(b);
+    b.addEventListener("click", () => zeigeStrophe(s, b)); sp.append(b);
   });
   zy.append(sp);
 });
 zeigeStrophe(DATEN.z[0], zy.querySelector("button"));
+kapitel.forEach(k => { const li = document.createElement("li"), a = document.createElement("a"); a.href = "#" + k.id; a.textContent = k.dataset.name; li.append(a); zeiger.append(li); });
 
-/* ---------- Bahn im Raum ---------- */
-const abschnitt = document.getElementById("bahn-abschnitt"), bahn = document.getElementById("bahn"), steuer = document.getElementById("steuer"), flachKnopf = document.getElementById("flach"), zeiger = document.getElementById("zeiger");
-const kapitel = [...bahn.querySelectorAll(".kapitel")];
-let flach = ruhig, bahnH = 0, kIst = 54, rollIst = 0, letzteY = scrollY, tempo = 0;
+/* ---------- Bahn-Bilder: jedes Kapitel wird aus seinem HTML auf eine Leinwand gezeichnet ---------- */
+function bildLaden(src) { return new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; }); }
+function umbrechen(cx, text, breite) {
+  const woerter = text.split(/\s+/), zeilen = []; let z = "";
+  for (const w of woerter) { const t = z ? z + " " + w : w; if (cx.measureText(t).width > breite && z) { zeilen.push(z); z = w; } else z = t; }
+  if (z) zeilen.push(z); return zeilen;
+}
+async function kapitelZeichnen(k, i, LW) {
+  const cs = getComputedStyle(k), farbe = cs.getPropertyValue("--k").trim(), tinte = cs.getPropertyValue("--kt").trim(), flaeche = cs.getPropertyValue("--kc").trim(), linie = cs.getPropertyValue("--kl").trim();
+  const eng = LW < 600, pad = eng ? 22 : 44, innen = LW - pad * 2;
+  const karten = [...k.querySelectorAll(".karte")].map(a => ({ src: a.querySelector("img")?.getAttribute("src"), titel: a.querySelector("b").textContent, text: a.querySelector("span").textContent }));
+  const bilder = await Promise.all(karten.map(c => c.src ? bildLaden(c.src) : null));
+  const spalten = eng ? 2 : 3, gap = eng ? 10 : 14, kb = (innen - gap * (spalten - 1)) / spalten;
+  const SANS = '"Instrument Sans", system-ui, sans-serif', SERIF = 'Newsreader, Georgia, serif', MONO = 'ui-monospace, Menlo, monospace';
+  const titelGr = eng ? 64 : 118, leitGr = eng ? 20 : 27, kTitel = eng ? 15 : 18, kText = eng ? 12.5 : 14;
+  // Erst messen, dann zeichnen: dieselbe Routine läuft zweimal
+  const durchgang = (cx, zeichnen) => {
+    let y = pad + 10;
+    if (zeichnen) { cx.fillStyle = farbe; cx.fillRect(0, 0, LW, 1e5); }
+    cx.fillStyle = tinte; cx.textBaseline = "alphabetic";
+    cx.font = `11px ${MONO}`; cx.globalAlpha = .7; cx.textAlign = "right";
+    if (zeichnen) cx.fillText(k.querySelector(".marke-k").textContent.toUpperCase(), LW - pad, 26);
+    cx.textAlign = "left"; cx.globalAlpha = 1;
+    cx.font = `600 ${titelGr}px ${SANS}`; if ("letterSpacing" in cx) cx.letterSpacing = (-titelGr * .045) + "px";
+    y += titelGr * .82; if (zeichnen) cx.fillText(k.querySelector("h2").textContent, pad - 4, y);
+    if ("letterSpacing" in cx) cx.letterSpacing = "0px";
+    cx.font = `italic ${leitGr}px ${SERIF}`; y += leitGr * .5;
+    for (const z of umbrechen(cx, k.querySelector(".leit").textContent, Math.min(innen, leitGr * 17))) { y += leitGr * 1.22; if (zeichnen) cx.fillText(z, pad, y); }
+    y += eng ? 22 : 34;
+    if (karten.length) {
+      for (let r = 0; r < karten.length; r += spalten) {
+        const reihe = karten.slice(r, r + spalten);
+        const hoehen = reihe.map(c => {
+          cx.font = `600 ${kTitel}px ${SANS}`; const tz = umbrechen(cx, c.titel, kb - 20).length;
+          cx.font = `${kText}px ${SANS}`; const sz = umbrechen(cx, c.text, kb - 20).length;
+          return 10 + (c.src ? kb - 20 + 10 : 0) + tz * kTitel * 1.2 + 6 + sz * kText * 1.4 + 12;
+        });
+        const h = Math.max(...hoehen);
+        reihe.forEach((c, j) => {
+          if (!zeichnen) return;
+          const x = pad + j * (kb + gap); let yy = y + 10;
+          cx.fillStyle = flaeche; cx.fillRect(x, y, kb, h);
+          cx.strokeStyle = linie; cx.lineWidth = 1; cx.strokeRect(x + .5, y + .5, kb - 1, h - 1);
+          const bild = bilder[r + j];
+          if (bild) { cx.drawImage(bild, x + 10, yy, kb - 20, kb - 20); yy += kb - 20 + 10; }
+          cx.fillStyle = tinte; cx.font = `600 ${kTitel}px ${SANS}`;
+          for (const z of umbrechen(cx, c.titel, kb - 20)) { yy += kTitel * 1.2; cx.fillText(z, x + 10, yy - 3); }
+          yy += 6; cx.font = `${kText}px ${SANS}`; cx.globalAlpha = .82;
+          for (const z of umbrechen(cx, c.text, kb - 20)) { yy += kText * 1.4; cx.fillText(z, x + 10, yy - 3); }
+          cx.globalAlpha = 1;
+        });
+        y += h + gap;
+      }
+    }
+    if (k.id === "k-zettel") {
+      const zw = (innen - 6 * (eng ? 4 : 8)) / 7, zh = zw * .75;
+      cx.font = `600 ${eng ? 9 : 11}px ${MONO}`;
+      for (let c = 0; c < 7; c++) for (let n = 0; n < 7; n++) {
+        const x = pad + c * (zw + (eng ? 4 : 8)), yy = y + n * (zh + 6), nr = c * 7 + n + 1;
+        if (!zeichnen) continue;
+        cx.strokeStyle = linie; cx.strokeRect(x + .5, yy + .5, zw - 1, zh - 1);
+        if (nr === 1) { cx.fillStyle = "#000"; cx.fillRect(x, yy, zw, zh); cx.fillStyle = "#fff"; } else cx.fillStyle = tinte;
+        cx.textAlign = "center"; cx.fillText(String(nr), x + zw / 2, yy + zh / 2 + 4); cx.textAlign = "left";
+      }
+      y += 7 * (zh + 6) + 18;
+      const s = DATEN.z[0];
+      cx.fillStyle = tinte; cx.font = `600 ${eng ? 24 : 34}px ${SANS}`; y += eng ? 26 : 36; if (zeichnen) cx.fillText(s[2], pad, y);
+      cx.font = `italic ${eng ? 18 : 23}px ${SERIF}`;
+      for (const z of umbrechen(cx, "«" + s[3] + "»", Math.min(innen, 620))) { y += eng ? 24 : 30; if (zeichnen) cx.fillText(z, pad, y); }
+      y += 10;
+    }
+    // Knopf
+    const w = k.querySelector(".weiter").textContent; cx.font = `600 16px ${SANS}`;
+    const bw = cx.measureText(w).width + 32; y += 20;
+    if (zeichnen) { cx.fillStyle = tinte; cx.beginPath(); cx.roundRect(pad, y, bw, 40, 20); cx.fill(); cx.fillStyle = farbe; cx.fillText(w, pad + 16, y + 26); }
+    return y + 40 + (eng ? 60 : 90);
+  };
+  const mess = document.createElement("canvas").getContext("2d");
+  const LH = Math.ceil(durchgang(mess, false));
+  const skala = Math.min((eng ? 900 : 1400) / LW, 4096 / LH);
+  const cv = document.createElement("canvas"); cv.width = Math.round(LW * skala); cv.height = Math.round(LH * skala);
+  const cx = cv.getContext("2d"); cx.scale(skala, skala); durchgang(cx, true);
+  return { cv, LH };
+}
+
+/* ---------- Raum ---------- */
+let renderer, composer, bloom, farbsaum, kamera, welt, ok3d = true;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("welt"), antialias: true, powerPreference: "high-performance" });
+} catch (e) { ok3d = false; }
+let flach = ruhig || !ok3d;
 document.body.classList.toggle("flach", flach);
-const boden = document.createElement("div"); boden.className = "boden"; bahn.before(boden);
-const KOERPER = ["kugel", "wuerfel", "ring", "kugel", "wuerfel", "ring"];
-kapitel.forEach((k, i) => {
-  const li = document.createElement("li"), a = document.createElement("a"); a.href = "#" + k.id; a.textContent = k.dataset.name; li.append(a); zeiger.append(li);
-  ["l", "r"].forEach(seite => { const m = document.createElement("div"); m.className = "marken " + seite; k.append(m); });
-  // Lichtimpulse an den Rändern
-  [["-14px", 0], ["calc(100% + 10px)", 1.1], ["-14px", 1.9], ["calc(100% + 10px)", 2.6]].forEach(([x, v]) => { const p = document.createElement("i"); p.className = "puls"; p.style.left = x; p.style.animationDelay = v + "s"; k.append(p); });
-  // Drahtkörper, der sich dreht
-  const art = KOERPER[i], kp = document.createElement("div"); kp.className = `koerper ${art} ${i % 2 ? "l" : "r"}`; kp.style.top = (380 + (i % 3) * 120) + "px";
-  kp.style.setProperty("--kfarbe", KAPITELFARBEN[i] === "#ffffff" ? "var(--strich)" : KAPITELFARBEN[i]);
-  const dreh = document.createElement("div"); dreh.className = "dreh"; kp.append(dreh);
-  const flaeche = tr => { const f = document.createElement("i"); f.style.transform = tr; dreh.append(f); };
-  if (art === "kugel") { for (let j = 0; j < 8; j++) flaeche(`rotateY(${j * 22.5}deg)`); for (const y of [-.7, 0, .7]) { const s = Math.sqrt(1 - y * y); flaeche(`translateY(${y * 100}px) rotateX(90deg) scale(${s})`); } }
-  else if (art === "wuerfel") { ["rotateY(0deg)", "rotateY(90deg)", "rotateY(180deg)", "rotateY(-90deg)", "rotateX(90deg)", "rotateX(-90deg)"].forEach(r => flaeche(`${r} translateZ(100px) scale(.7)`)); for (let j = 0; j < 3; j++) flaeche(`rotateY(${j * 30 + 15}deg) translateZ(${-40 + j * 40}px) scale(.35)`); }
-  else { for (let j = 0; j < 6; j++) flaeche(`rotateX(${70 + j * 4}deg) rotateY(${j * 30}deg) scale(${1 - j * .09})`); }
-  k.append(kp);
-});
-function marken() {
-  let start = 0;
-  kapitel.forEach(k => {
-    k.querySelectorAll(".marken").forEach(m => { m.innerHTML = ""; for (let y = 0; y < k.offsetHeight; y += 200) { const i = document.createElement("i"); i.style.top = y + "px"; i.textContent = ((start + y) / 100).toFixed(1) + " m"; m.append(i); } });
-    start += k.offsetHeight;
+if (!ok3d) document.body.classList.add("ohne-3d");
+
+// Die Bahn liegt innen in einer Trommel mit Radius R und wandert pro Umlauf seitlich weiter, damit sie sich nicht selbst trifft
+const RAUM = { R: 10, w: 6, drift: 0 };
+function bahnPunkt(s, quer = 0, hoch = 0, ziel = new THREE.Vector3()) {
+  const th = s / RAUM.R, c = Math.cos(th), sn = Math.sin(th);
+  // Mittellinie, Normale (zur Achse), Tangente, Seite
+  const px = RAUM.drift * s, py = RAUM.R - RAUM.R * c, pz = -RAUM.R * sn;
+  const nx = 0, ny = c, nz = sn;
+  let tx = RAUM.drift, ty = sn, tz = -c; const tl = Math.hypot(tx, ty, tz); tx /= tl; ty /= tl; tz /= tl;
+  let sx = ty * nz - tz * ny, sy = tz * nx - tx * nz, sz = tx * ny - ty * nx; const sl = Math.hypot(sx, sy, sz); sx /= sl; sy /= sl; sz /= sl;
+  return ziel.set(px + sx * quer + nx * hoch, py + sy * quer + ny * hoch, pz + sz * quer + nz * hoch);
+}
+const normale = (s, v = new THREE.Vector3()) => { const th = s / RAUM.R; return v.set(0, Math.cos(th), Math.sin(th)); };
+
+const bahn = { stuecke: [], L: 0, k: 0, bereit: false, gruppe: null, kanten: null, funken: null, koerper: [] };
+const netz = { gruppe: null, impulse: null, quadrate: null, knoten: [], etiketten: [] };
+let sterne;
+
+function netzBauen() {
+  let saat = 11; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647 - .5;
+  const kn = [], kanten = [];
+  ZYKLEN.forEach((n, i) => { const w = i * Math.PI * 2 / 7; kn.push({ art: "zyklus", i, p: new THREE.Vector3(Math.cos(w), Math.sin(w * 2) * .18, Math.sin(w)), farbe: ZYKLUSFARBEN[i], name: ROEM[i] + " " + n }); });
+  DATEN.z.forEach(s => { const h = kn[s[1]]; const k = { art: "strophe", s, p: h.p.clone().add(new THREE.Vector3(z() * .5, z() * .5, z() * .5)), farbe: ZYKLUSFARBEN[s[1]] }; kn.push(k); kanten.push([h, k, 1]); });
+  const pk = DATEN.p.map(name => ({ art: "person", name, p: new THREE.Vector3(), n: 0 }));
+  DATEN.z.forEach((s, j) => { const sk = kn[7 + j]; s[4].forEach(pi => { pk[pi].p.add(sk.p); pk[pi].n++; kanten.push([sk, pk[pi], 0]); }); });
+  pk.forEach(p => { p.p.multiplyScalar(p.n > 1 ? .7 / p.n : 1.45).add(new THREE.Vector3(z() * .3, z() * .9, z() * .3)); kn.push(p); });
+  for (let it = 0; it < 30; it++) for (let a = 7; a < kn.length; a++) for (let b = a + 1; b < kn.length; b++) {
+    const d = kn[b].p.clone().sub(kn[a].p), d2 = d.lengthSq() + 1e-6;
+    if (d2 < .012) { d.multiplyScalar((.012 - d2) / d2 * .06); kn[a].p.sub(d); kn[b].p.add(d); }
+  }
+  netz.knoten = kn;
+  const g = new THREE.Group();
+  // Linien
+  const lp = [], lc = [];
+  for (const [a, b, stark] of kanten) { lp.push(...a.p.toArray(), ...b.p.toArray()); const c = stark ? hdr(a.farbe, .9) : hdr("#8fb0ff", .45); lc.push(c.r, c.g, c.b, c.r, c.g, c.b); }
+  const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); lg.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
+  g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: .55, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false })));
+  // Punkte je Art
+  const punkte = (liste, groesse, farbe) => {
+    const pos = [], col = []; liste.forEach(k => { pos.push(...k.p.toArray()); const c = farbe(k); col.push(c.r, c.g, c.b); });
+    const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+    const m = new THREE.Points(geo, new THREE.PointsMaterial({ size: groesse, vertexColors: true, sizeAttenuation: true, transparent: true, depthWrite: false, toneMapped: false })); g.add(m); return m;
+  };
+  punkte(kn.filter(k => k.art === "person"), .035, () => hdr("#8fb0ff", 1.1));
+  punkte(kn.filter(k => k.art === "strophe"), .085, k => hdr(k.farbe, 1.5));
+  punkte(kn.filter(k => k.art === "zyklus"), .16, k => hdr(k.farbe, 2.4));
+  // Lichtimpulse
+  netz.impulse = Array.from({ length: 220 }, (_, i) => ({ kante: kanten[(i * 37) % kanten.length], phase: (i * .618) % 1, tempo: .3 + ((i * 13) % 10) / 18, farbe: ZYKLUSFARBEN[i % 7] }));
+  const ip = new Float32Array(netz.impulse.length * 3), ic = new Float32Array(netz.impulse.length * 3);
+  netz.impulse.forEach((im, i) => { const c = hdr(im.farbe, 3.2); ic.set([c.r, c.g, c.b], i * 3); });
+  const ig = new THREE.BufferGeometry(); ig.setAttribute("position", new THREE.BufferAttribute(ip, 3)); ig.setAttribute("color", new THREE.BufferAttribute(ic, 3));
+  netz.impulsPunkte = new THREE.Points(ig, new THREE.PointsMaterial({ size: .07, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+  g.add(netz.impulsPunkte);
+  // Sechs Bereiche als grosse Quadrate (Phase A)
+  const qp = new Float32Array(18), qc = new Float32Array(18);
+  KAPITELFARBEN.forEach((f, i) => { const c = hdr(f, 1.6); qc.set([c.r, c.g, c.b], i * 3); });
+  const qg = new THREE.BufferGeometry(); qg.setAttribute("position", new THREE.BufferAttribute(qp, 3)); qg.setAttribute("color", new THREE.BufferAttribute(qc, 3));
+  netz.quadrate = new THREE.Points(qg, new THREE.PointsMaterial({ size: .32, vertexColors: true, transparent: true, depthWrite: false, toneMapped: false }));
+  g.add(netz.quadrate);
+  g.scale.setScalar(3);
+  // Das Netz schwebt dort, wo die Bahn beginnt
+  g.position.copy(bahnPunkt(-7, 0, 3.4));
+  welt.add(g); netz.gruppe = g;
+  const et = document.getElementById("etiketten");
+  netz.etiketten = kn.filter(k => k.art === "zyklus").map(k => { const s = document.createElement("span"); s.textContent = k.name; et.append(s); return { k, el: s }; });
+}
+
+function sterneBauen() {
+  const n = 1600, p = new Float32Array(n * 3), c = new Float32Array(n * 3);
+  let saat = 5; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < n; i++) {
+    const u = z() * 2 - 1, w = z() * Math.PI * 2, r = 90 + z() * 60, q = Math.sqrt(1 - u * u);
+    p.set([Math.cos(w) * q * r, u * r, Math.sin(w) * q * r], i * 3);
+    const f = .25 + z() * .6; c.set([f, f, f * 1.15], i * 3);
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(p, 3)); g.setAttribute("color", new THREE.BufferAttribute(c, 3));
+  sterne = new THREE.Points(g, new THREE.PointsMaterial({ size: .5, vertexColors: true, sizeAttenuation: true, depthWrite: false, fog: false }));
+  welt.add(sterne);
+}
+
+async function bahnBauen() {
+  if (bahn.gruppe) { welt.remove(bahn.gruppe); bahn.gruppe.traverse(o => { o.geometry?.dispose(); o.material?.map?.dispose(); o.material?.dispose(); }); }
+  bahn.bereit = false;
+  const eng = schmal(), LW = eng ? 430 : 820;
+  RAUM.w = eng ? 4.2 : 6; RAUM.R = eng ? 8 : 10; RAUM.drift = 1.6 * RAUM.w / (2 * Math.PI * RAUM.R);
+  bahn.k = RAUM.w / LW;
+  // Platzhalter, bis die Bilder gezeichnet sind: Kapitel in ihrer Farbe mit geschätzter Länge
+  const bilder = [];
+  for (let i = 0; i < kapitel.length; i++) bilder.push(await kapitelZeichnen(kapitel[i], i, LW));
+  const g = new THREE.Group(); let s = 0;
+  bahn.stuecke = [];
+  bilder.forEach((b, i) => {
+    const laenge = b.LH * bahn.k, schritte = Math.max(8, Math.ceil(laenge / .12));
+    const pos = [], uv = [], idx = [];
+    for (let j = 0; j <= schritte; j++) {
+      const v = j / schritte, sj = s + v * laenge;
+      const a = bahnPunkt(sj, -RAUM.w / 2), bb = bahnPunkt(sj, RAUM.w / 2);
+      pos.push(a.x, a.y, a.z, bb.x, bb.y, bb.z); uv.push(1, 1 - v, 0, 1 - v);
+      if (j < schritte) { const o = j * 2; idx.push(o, o + 2, o + 1, o + 1, o + 2, o + 3); }
+    }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx);
+    const tex = new THREE.CanvasTexture(b.cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy(); tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter;
+    const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, color: 0xe6e6e6, fog: true }));
+    mesh.userData.kapitel = i; g.add(mesh);
+    bahn.stuecke.push({ s0: s, s1: s + laenge, mesh });
+    s += laenge;
   });
+  bahn.L = s;
+  // Leuchtende Kanten in den Farben der Bereiche
+  const kp = [], kc = [], ki = []; let o = 0;
+  for (const seite of [-1, 1]) {
+    const n = Math.ceil(bahn.L / .1);
+    for (let j = 0; j <= n; j++) {
+      const sj = j / n * bahn.L, a = bahnPunkt(sj, seite * (RAUM.w / 2 + .03), .01), b = bahnPunkt(sj, seite * (RAUM.w / 2 + .11), .01);
+      const st = bahn.stuecke.findIndex(x => sj <= x.s1 + 1e-6), c = hdr(LEUCHTFARBEN[Math.max(0, st)], 2.6);
+      kp.push(a.x, a.y, a.z, b.x, b.y, b.z); kc.push(c.r, c.g, c.b, c.r, c.g, c.b);
+      if (j < n) ki.push(o, o + 2, o + 1, o + 1, o + 2, o + 3);
+      o += 2;
+    }
+  }
+  const kg = new THREE.BufferGeometry(); kg.setAttribute("position", new THREE.Float32BufferAttribute(kp, 3)); kg.setAttribute("color", new THREE.Float32BufferAttribute(kc, 3)); kg.setIndex(ki);
+  g.add(new THREE.Mesh(kg, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, toneMapped: false })));
+  // Querlinien alle 2 Einheiten wie Weg-Marken
+  const mp = [];
+  for (let sj = 0; sj <= bahn.L; sj += 2) { const a = bahnPunkt(sj, -RAUM.w / 2 - .6, .01), b = bahnPunkt(sj, -RAUM.w / 2 - .15, .01), c = bahnPunkt(sj, RAUM.w / 2 + .15, .01), d = bahnPunkt(sj, RAUM.w / 2 + .6, .01); mp.push(...a.toArray(), ...b.toArray(), ...c.toArray(), ...d.toArray()); }
+  const mg = new THREE.BufferGeometry(); mg.setAttribute("position", new THREE.Float32BufferAttribute(mp, 3));
+  g.add(new THREE.LineSegments(mg, new THREE.LineBasicMaterial({ color: 0x5a6aa0 })));
+  // Funken, die in der Trommel treiben
+  const n = eng ? 900 : 1700; bahn.funkenDaten = [];
+  const fp = new Float32Array(n * 3), fc = new Float32Array(n * 3);
+  let saat = 3; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < n; i++) {
+    const seite = z() < .5 ? -1 : 1, quer = seite * (RAUM.w / 2 + .25 + z() * 3.5) * (z() < .15 ? .2 : 1), hoch = .15 + z() * z() * 6;
+    bahn.funkenDaten.push({ s: z() * (bahn.L + 20) - 10, quer, hoch, tempo: .4 + z() * 1.2 });
+  }
+  const fg = new THREE.BufferGeometry(); fg.setAttribute("position", new THREE.BufferAttribute(fp, 3)); fg.setAttribute("color", new THREE.BufferAttribute(fc, 3));
+  bahn.funken = new THREE.Points(fg, new THREE.PointsMaterial({ size: .045, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+  g.add(bahn.funken);
+  // Drahtkörper neben der Bahn, einer je Bereich
+  const formen = [new THREE.IcosahedronGeometry(1, 1), new THREE.TorusKnotGeometry(.7, .22, 90, 10), new THREE.OctahedronGeometry(1.1, 0), new THREE.DodecahedronGeometry(1, 0), new THREE.TorusGeometry(.8, .3, 12, 40), new THREE.IcosahedronGeometry(1.1, 0)];
+  bahn.koerper = bahn.stuecke.map((x, i) => {
+    const m = new THREE.Mesh(formen[i], new THREE.MeshBasicMaterial({ color: hdr(LEUCHTFARBEN[i], 1.8), wireframe: true, toneMapped: false, transparent: true, opacity: .9 }));
+    const sm = (x.s0 + x.s1) / 2; m.position.copy(bahnPunkt(sm, (i % 2 ? -1 : 1) * (RAUM.w / 2 + (eng ? 1.6 : 2.6)), eng ? 1.4 : 1.8)); m.scale.setScalar(eng ? .6 : .9);
+    g.add(m); return m;
+  });
+  welt.add(g); bahn.gruppe = g;
+  bahn.bereit = true;
+  platzMessen();
 }
-// Der Abschnitt beginnt zwei Bildschirme früher unter dem Intro (margin-top: -200vh); der erste Bildschirm davon zählt noch nicht als Weg
-function bahnMessen() { bahnH = bahn.offsetHeight; abschnitt.style.height = (bahnH + innerHeight * 1.4) + "px"; marken(); }
-function bahnStand() {
-  const r = abschnitt.getBoundingClientRect(), max = abschnitt.offsetHeight - innerHeight * 2;
-  const p = klemm(-r.top - innerHeight, 0, max);
-  const weg = p / Math.max(1, max) * Math.max(0, bahnH - innerHeight * .45);
-  const drin = -r.top > innerHeight && r.bottom > innerHeight * .5;
-  steuer.classList.toggle("da", drin); zeiger.classList.toggle("da", drin);
-  let akt = 0; kapitel.forEach((k, i) => { if (k.offsetTop <= weg + 40) akt = i; });
+
+function platzMessen() { if (bahn.L) platz.style.height = Math.round(bahn.L / bahn.k - innerHeight * .45) + "px"; }
+
+/* ---------- Kamera und Zeitachse ---------- */
+const zustand = { tZiel: 0, t: 0, sZiel: 0, s: 0, v: 0, maus: { x: 0, y: 0 } };
+const S_START = () => (schmal() ? 4.8 : 4.2);   // so weit hinter dem Anfang steht die Kamera, wenn die Bahn erscheint
+function zeitachse() {
+  const weg = intro.offsetHeight - innerHeight, r = intro.getBoundingClientRect();
+  zustand.tZiel = ruhig ? .84 : klemm(-r.top / weg);
+  const p = Math.max(0, scrollY - (intro.offsetTop + weg));
+  zustand.sZiel = S_START() + (flach ? 0 : p * bahn.k);
+}
+addEventListener("pointermove", e => { zustand.maus.x = e.clientX / innerWidth - .5; zustand.maus.y = e.clientY / innerHeight - .5; }, { passive: true });
+
+const tmp = { a: new THREE.Vector3(), b: new THREE.Vector3(), c: new THREE.Vector3(), d: new THREE.Vector3(), up: new THREE.Vector3() };
+function kameraSetzen(zeit) {
+  const t = zustand.t, eng = schmal();
+  // Intro: um das Netz herum, hinein, wieder hinaus
+  const nah = weich(.22, .5, t), raus = weich(.5, .66, t);
+  const dist = misch(misch(16, 1.8, nah), eng ? 10.5 : 8.5, raus);
+  const winkel = (ruhig ? 0 : zeit * .00008) + t * 4.2 + zustand.maus.x * .5, neig = .32 + zustand.maus.y * .2 - nah * .15 + raus * .1;
+  const C = netz.gruppe.position;
+  const iPos = tmp.a.set(Math.sin(winkel) * Math.cos(neig) * dist, Math.sin(neig) * dist, Math.cos(winkel) * Math.cos(neig) * dist).add(C);
+  const iBlick = tmp.b.copy(C);
+  // Seitlich versetzen, solange die Tafel links steht
+  const tf = weich(.6, .72, t) * (1 - weich(.86, .95, t));
+  // Bahn: hinter dem Punkt s, über der Bahn, Blick zurück auf das, was gerade gelesen wird
+  const s = zustand.s, hoch = eng ? 5.4 : 2.7, hinten = eng ? 2.4 : 1.4, voraus = eng ? 5.4 : 4.6;
+  const bPos = bahnPunkt(s + hinten, 0, hoch, tmp.c);
+  const bBlick = bahnPunkt(s - voraus, 0, .2, tmp.d);
+  const ueber = ruhig ? 1 : weich(.86, 1, t);
+  kamera.position.lerpVectors(iPos, bPos, ueber);
+  const blick = iBlick.lerp(bBlick, ueber);
+  const up = tmp.up.set(0, 1, 0).lerp(normale(s + hinten), ueber).normalize();
+  kamera.up.copy(up);
+  kamera.lookAt(blick);
+  if (tf > 0 && !eng) { kamera.setViewOffset(innerWidth, innerHeight, -innerWidth * .18 * tf, 0, innerWidth, innerHeight); } else kamera.clearViewOffset();
+  // Warp: schnelles Scrollen weitet den Blick
+  const tempo = Math.min(1, Math.abs(zustand.v) * (eng ? .5 : .35));
+  kamera.fov = (eng ? 72 : 58) + tempo * 16;
+  kamera.updateProjectionMatrix();
+  return tempo;
+}
+
+/* ---------- Tafel und Intro-Text ---------- */
+function introDom(t) {
+  const eng = schmal();
+  introText.style.opacity = 1 - weich(.03, .14, t);
+  const auf = weich(.6, .7, t), zu = weich(.72, .8, t);
+  tafel.style.width = (auf * misch(innerWidth, eng ? innerWidth : Math.min(innerWidth * .4, 560), zu)) + "px";
+  const schnitt = auf > .15 && zu < 1 ? Math.floor(t * 140) % 6 : -1;
+  tafel.style.background = schnitt >= 0 ? KAPITELFARBEN[schnitt] : "var(--blau)";
+  tafel.style.color = schnitt === 1 || schnitt === 2 || schnitt === 3 ? "#000" : "#fff";
+  wort.style.transform = `rotate(180deg) scale(${misch(1.5, 1, zu)})`;
+  spalte.style.opacity = weich(.76, .84, t);
+  const fall = ruhig ? 0 : weich(.86, 1, t);
+  szene.style.transform = `translateY(${-fall * 22}%) rotateX(${fall * 62}deg) scale(${1 - fall * .25})`;
+  szene.style.opacity = 1 - weich(.92, 1, t);
+  szene.style.visibility = t >= .999 ? "hidden" : "visible";
+}
+
+/* ---------- Ein Bild ---------- */
+let letzte = performance.now();
+function bild(zeit) {
+  const dt = Math.min(.05, (zeit - letzte) / 1000); letzte = zeit;
+  zeitachse();
+  // Gedämpft: Scrollen zieht die Kamera nach, statt sie zu springen
+  const daempf = ruhig ? 1 : 1 - Math.exp(-dt * 5.5);
+  zustand.t = misch(zustand.t, zustand.tZiel, daempf);
+  const sAlt = zustand.s; zustand.s = misch(zustand.s, zustand.sZiel, daempf);
+  zustand.v = misch(zustand.v, (zustand.s - sAlt) / Math.max(dt, 1e-3), .2);
+  introDom(zustand.t);
+  const imRaum = !flach || intro.getBoundingClientRect().bottom > 0;
+  document.body.classList.toggle("nach-intro", intro.getBoundingClientRect().bottom <= innerHeight * .2);
+  const r = abschnitt.getBoundingClientRect(), drin = r.top < innerHeight * .3 && r.bottom > innerHeight * .5;
+  steuer.classList.toggle("da", drin || (!flach && zustand.t > .97 && r.bottom > innerHeight * .5));
+  zeiger.classList.toggle("da", drin);
+  // aktives Kapitel
+  let akt = 0;
+  if (flach) kapitel.forEach((k, i) => { if (k.getBoundingClientRect().top < innerHeight * .4) akt = i; });
+  else bahn.stuecke.forEach((x, i) => { if (zustand.s - (schmal() ? 5.4 : 4.6) >= x.s0 - .5) akt = i; });
   zeiger.querySelectorAll("a").forEach((a, i) => a.classList.toggle("aktiv", i === akt));
-  // Kamera: am Anfang jedes Bereichs steil (das Tor im Blick), in der Mitte flacher; beim schnellen Scrollen neigt sie sich zur Seite
-  const kb = kapitel[akt], f = klemm((weg - kb.offsetTop) / kb.offsetHeight);
-  const basis = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--kipp")) || 54;
-  const kSoll = flach ? 0 : basis + 8 - Math.sin(f * Math.PI) * 14;
-  const v = scrollY - letzteY; letzteY = scrollY; tempo = misch(tempo, v, .15);
-  kIst = misch(kIst, kSoll, ruhig ? 1 : .09);
-  rollIst = misch(rollIst, flach || ruhig ? 0 : klemm(tempo * .05, -4, 4), .1);
-  bahn.style.setProperty("--k", kIst.toFixed(2) + "deg");
-  boden.style.transform = `translateX(-50%) rotateX(${kIst.toFixed(2)}deg) rotateZ(${rollIst.toFixed(2)}deg)`;
-  boden.style.backgroundPosition = `0 ${(-weg % 120).toFixed(1)}px`;
-  bahn.style.transform = `translateX(-50%) rotateX(${kIst.toFixed(2)}deg) rotateZ(${rollIst.toFixed(2)}deg) translateY(${(-weg).toFixed(1)}px)`;
+  if (ok3d && imRaum && netz.gruppe) {
+    const tempo = kameraSetzen(zeit);
+    const t = zustand.t;
+    // Netz
+    netz.gruppe.rotation.y = ruhig ? 0 : zeit * .00005;
+    const netzA = weich(.05, .22, t) * (1 - .55 * weich(.88, 1, t));
+    netz.gruppe.children.forEach(o => { if (o.material && o !== netz.quadrate) o.material.opacity = netzA * (o.isLineSegments ? .55 : 1); });
+    const ip = netz.impulsPunkte.geometry.attributes.position;
+    netz.impulse.forEach((im, i) => { const ph = (im.phase + zeit * .00035 * im.tempo) % 1; const [a, b] = im.kante; tmp.a.lerpVectors(a.p, b.p, ph); ip.setXYZ(i, tmp.a.x, tmp.a.y, tmp.a.z); });
+    ip.needsUpdate = true;
+    const zuHub = weich(.06, .22, t), qp = netz.quadrate.geometry.attributes.position;
+    for (let i = 0; i < 6; i++) { const w = i * 1.047 + zeit * .0003; const h = netz.knoten[i].p; qp.setXYZ(i, misch(Math.cos(w) * .55, h.x, zuHub), misch(Math.sin(w * 1.5 + 1) * .2, h.y, zuHub), misch(Math.sin(w) * .55, h.z, zuHub)); }
+    qp.needsUpdate = true; netz.quadrate.material.opacity = 1 - zuHub;
+    // Beschriftungen der Zyklen
+    netz.etiketten.forEach(({ k, el }) => {
+      tmp.b.copy(k.p).applyMatrix4(netz.gruppe.matrixWorld).project(kamera);
+      const sichtbar = tmp.b.z < 1 && netzA > .3 && t < .86;
+      el.style.opacity = sichtbar ? netzA : 0;
+      if (sichtbar) el.style.transform = `translate(${((tmp.b.x + 1) / 2 * innerWidth + 10).toFixed(1)}px, ${((1 - tmp.b.y) / 2 * innerHeight - 14).toFixed(1)}px)`;
+    });
+    // Bahn
+    if (bahn.bereit) {
+      const fp = bahn.funken.geometry.attributes.position, fc = bahn.funken.geometry.attributes.color;
+      const zug = (ruhig ? 0 : dt) * (.4 + Math.abs(zustand.v) * 1.6);
+      bahn.funkenDaten.forEach((f, i) => {
+        f.s -= zug * f.tempo; if (f.s < -10) f.s += bahn.L + 20;
+        bahnPunkt(f.s, f.quer, f.hoch, tmp.a); fp.setXYZ(i, tmp.a.x, tmp.a.y, tmp.a.z);
+        const st = bahn.stuecke.findIndex(x => f.s <= x.s1); const c = hdr(LEUCHTFARBEN[st < 0 ? 5 : st], 1.5); fc.setXYZ(i, c.r, c.g, c.b);
+      });
+      fp.needsUpdate = true; fc.needsUpdate = true;
+      bahn.funken.material.size = (schmal() ? .042 : .036) * (1 + tempo * 1.5);
+      bahn.koerper.forEach((m, i) => { m.rotation.x = zeit * .00031 * (1 + i * .1); m.rotation.y = zeit * .00047; });
+      bahn.gruppe.visible = zustand.t > .8;
+      // Hintergrund nimmt ganz leise die Farbe des Bereichs an
+      const ziel = new THREE.Color(LEUCHTFARBEN[akt]).multiplyScalar(.03);
+      welt.background.lerp(zustand.t > .9 ? ziel : new THREE.Color(0), .05); welt.fog.color.copy(welt.background);
+    }
+    farbsaum.uniforms.staerke.value = .0015 + tempo * .012;
+    bloom.strength = .9 + tempo * .6;
+    composer.render();
+  }
+  requestAnimationFrame(bild);
 }
+
+/* ---------- Wechsel zwischen Raum und flacher Ansicht ---------- */
 function zuKapitel(id) {
   const k = document.getElementById(id); if (!k) return;
-  const max = abschnitt.offsetHeight - innerHeight * 2, ziel = Math.max(0, bahnH - innerHeight * .45);
-  const p = ziel ? k.offsetTop / ziel * max : 0;
-  scrollTo({ top: abschnitt.offsetTop + innerHeight + p + 1, behavior: ruhig ? "auto" : "smooth" });
+  if (flach) { k.scrollIntoView({ behavior: ruhig ? "auto" : "smooth" }); return; }
+  const i = kapitel.indexOf(k), x = bahn.stuecke[i]; if (!x) return;
+  const weg = intro.offsetHeight - innerHeight;
+  scrollTo({ top: intro.offsetTop + weg + x.s0 / bahn.k + 2, behavior: "smooth" });
 }
-function setzeFlach(f) { flach = f; document.body.classList.toggle("flach", f); flachKnopf.textContent = f ? "Zurück in den Raum" : "Flach lesen"; }
+function setzeFlach(f, id) {
+  const akt = id || zeiger.querySelector("a.aktiv")?.getAttribute("href").slice(1);
+  flach = f; document.body.classList.toggle("flach", f); flachKnopf.textContent = f ? "Zurück in den Raum" : "Flach lesen";
+  requestAnimationFrame(() => { if (akt) zuKapitel(akt); });
+}
 flachKnopf.addEventListener("click", () => setzeFlach(!flach));
-kapitel.forEach(k => k.querySelector("h2").addEventListener("click", () => { setzeFlach(true); zuKapitel(k.id); }));
 document.querySelectorAll('a[href^="#k-"]').forEach(a => a.addEventListener("click", e => { e.preventDefault(); zuKapitel(a.getAttribute("href").slice(1)); }));
 
-/* ---------- Schleife ---------- */
-function schleife(zeit) { introStand(); bahnStand(); if (intro.getBoundingClientRect().bottom > 0) zeichneNetz(zeit); requestAnimationFrame(schleife); }
-addEventListener("resize", () => { groesse(); bahnMessen(); });
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", farbenLesen);
-new MutationObserver(farbenLesen).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-farbenLesen(); groesse(); bahnMessen();
-if (document.fonts) document.fonts.ready.then(bahnMessen);
-addEventListener("load", bahnMessen);
-requestAnimationFrame(schleife);
+/* ---------- Tippen und Zeigen im Raum ---------- */
+const strahl = new THREE.Raycaster(), ndc = new THREE.Vector2();
+let druck = null;
+const cvWelt = document.getElementById("welt");
+addEventListener("pointerdown", e => { druck = { x: e.clientX, y: e.clientY }; });
+addEventListener("pointerup", e => {
+  if (!druck || flach || !bahn.bereit || zustand.t < .97) return;
+  if (Math.hypot(e.clientX - druck.x, e.clientY - druck.y) > 8 || e.target.closest("a, button, .tafel")) return;
+  ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); strahl.setFromCamera(ndc, kamera);
+  const hit = strahl.intersectObjects(bahn.stuecke.map(x => x.mesh))[0];
+  if (hit) setzeFlach(true, kapitel[hit.object.userData.kapitel].id);
+});
+addEventListener("pointermove", e => {
+  if (!netz.knoten.length || zustand.t < .25 || zustand.t > .86 || e.pointerType === "touch") { tip.hidden = true; return; }
+  let best = null, bd = 16 * 16;
+  for (const k of netz.knoten) if (k.art === "strophe") {
+    tmp.b.copy(k.p).applyMatrix4(netz.gruppe.matrixWorld).project(kamera); if (tmp.b.z > 1) continue;
+    const x = (tmp.b.x + 1) / 2 * innerWidth, y = (1 - tmp.b.y) / 2 * innerHeight, d = (x - e.clientX) ** 2 + (y - e.clientY) ** 2;
+    if (d < bd) { bd = d; best = k; }
+  }
+  if (best) { tip.hidden = false; tip.innerHTML = ""; const b = document.createElement("b"); b.textContent = best.s[0] + " · " + best.s[2]; const i = document.createElement("i"); i.textContent = best.s[3]; tip.append(b, i);
+    tip.style.left = Math.min(e.clientX + 14, innerWidth - 280) + "px"; tip.style.top = Math.max(56, e.clientY - 20) + "px"; }
+  else tip.hidden = true;
+}, { passive: true });
+
+/* ---------- Start ---------- */
+function groesse() {
+  if (!ok3d) return;
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, schmal() ? 1.5 : 1.75));
+  renderer.setSize(innerWidth, innerHeight, false);
+  composer.setSize(innerWidth, innerHeight);
+  kamera.aspect = innerWidth / innerHeight; kamera.updateProjectionMatrix();
+}
+if (ok3d) {
+  welt = new THREE.Scene(); welt.background = new THREE.Color(0); welt.fog = new THREE.FogExp2(0x000000, .028);
+  kamera = new THREE.PerspectiveCamera(58, innerWidth / innerHeight, .05, 400);
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(welt, kamera));
+  bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), .9, .5, .96); composer.addPass(bloom);
+  farbsaum = new ShaderPass({
+    uniforms: { tDiffuse: { value: null }, staerke: { value: .0015 } },
+    vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+    fragmentShader: "uniform sampler2D tDiffuse; uniform float staerke; varying vec2 vUv; void main() { vec2 d = (vUv - .5) * staerke * length(vUv - .5) * 4.0; gl_FragColor = vec4(texture2D(tDiffuse, vUv + d).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - d).b, 1.0); }"
+  });
+  composer.addPass(farbsaum);
+  composer.addPass(new OutputPass());
+  groesse();
+  RAUM.R = schmal() ? 8 : 10; RAUM.w = schmal() ? 4.2 : 6; RAUM.drift = 1.6 * RAUM.w / (2 * Math.PI * RAUM.R);
+  netzBauen(); sterneBauen();
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => bahnBauen()).catch(() => { flach = true; document.body.classList.add("flach"); });
+} else {
+  platz.style.height = "0px";
+}
+let breiteAlt = innerWidth;
+addEventListener("resize", () => {
+  groesse();
+  if (ok3d && schmal() !== (breiteAlt < 760)) { netz.gruppe.position.copy(bahnPunkt(-7, 0, 3.4)); bahnBauen(); }
+  breiteAlt = innerWidth; platzMessen();
+});
+requestAnimationFrame(bild);
 </script>
 
 </body>

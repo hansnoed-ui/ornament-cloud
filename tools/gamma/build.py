@@ -19,11 +19,11 @@ KOPF = """<!doctype html>
 <meta name="robots" content="noindex">
 <link rel="icon" href="../b/bilder/signet/signet.svg">"""
 web = html.replace("<!--KOPF-->", KOPF).replace("<!--SCHRIFTEN-->", '<link rel="stylesheet" href="../vendor/fonts/fonts.css">\n</head>\n<body>')
-web = web.replace("{{BILD}}", "../").replace("{{LINK}}", "../") + "\n</body>\n</html>\n"
+web = web.replace("{{BILD}}", "../").replace("{{LINK}}", "../").replace("{{VENDOR}}", "../vendor/") + "\n</body>\n</html>\n"
 (WURZEL / "gamma").mkdir(exist_ok=True)
 (WURZEL / "gamma/index.html").write_text(web)
 
 if len(sys.argv) > 1:
     gf = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,wght@0,400;1,400&display=swap">'
-    v = html.replace("<!--KOPF-->", "").replace("<!--SCHRIFTEN-->", gf).replace("{{BILD}}", "").replace("{{LINK}}", "https://ornament.cloud/")
+    v = html.replace("<!--KOPF-->", "").replace("<!--SCHRIFTEN-->", gf).replace("{{BILD}}", "").replace("{{LINK}}", "https://ornament.cloud/").replace("{{VENDOR}}", "vendor/")
     pathlib.Path(sys.argv[1]).write_text(v)
