@@ -1,0 +1,814 @@
+<!--KOPF-->
+<title>ornament.cloud Gamma</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!--SCHRIFTEN-->
+<style>
+/* ornament.cloud/gamma – Landing-Page nach einer Videovorlage (29. Oktober 2026), Entwurf 3. Ein WebGL-Raum (three.js, vendor/three-0.185.1):
+   zuerst ein leuchtendes Netz aus den 49 Strophen von «Zu seiner Zeit» und ihren 133 Personen, durch das die Kamera fliegt; eine Tafel
+   «Anschluss» fegt in den Farben der Bereiche durchs Bild und kippt weg; dann liegt die Website als Bahn in einer runden Trommel: Lab, Apps,
+   Prompts, Zettel, Social und Art als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
+   Die Bahn-Bilder zeichnet das Skript aus dem HTML der Kapitel unten; «Flach lesen» zeigt genau dieses HTML. Schriften und Farben des Neubaus. */
+:root {
+  --nacht: #000000; --text: #ffffff; --leise: rgba(255, 255, 255, .62); --strich: rgba(255, 255, 255, .5); --fein: rgba(255, 255, 255, .14);
+  --faden: #8fb0ff; --blau: #1d3fd6;
+  --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif: Newsreader, "Iowan Old Style", "Times New Roman", serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { --nacht: #ececea; --text: #000000; --leise: rgba(0, 0, 0, .62); --strich: rgba(0, 0, 0, .5); --fein: rgba(0, 0, 0, .12); --faden: #1d3fd6; color-scheme: light; }
+}
+:root[data-theme="light"] { --nacht: #ececea; --text: #000000; --leise: rgba(0, 0, 0, .62); --strich: rgba(0, 0, 0, .5); --fein: rgba(0, 0, 0, .12); --faden: #1d3fd6; color-scheme: light; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--nacht); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.45; overflow-x: hidden; }
+a { color: inherit; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--faden); outline-offset: 3px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: #000; }
+
+/* Der Raum liegt fest hinter allem und ist immer Nacht, auch im hellen Modus */
+#welt { position: fixed; left: 0; top: 0; width: 100%; height: 100vh; height: 100lvh; display: block; z-index: 0; background: #000; touch-action: pan-y; }
+body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
+
+/* Kopf: immer schwarz, wie beim Lab */
+.kopf { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 20; height: 48px; display: flex; align-items: center; gap: 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); background: #000; color: #fff; font-size: 13px; }
+.kopf .marke { display: flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; }
+.kopf .marke img { width: 24px; height: 24px; display: block; }
+.kopf .ausgabe { color: rgba(255, 255, 255, .55); font-weight: 400; }
+.kopf nav { display: flex; gap: 16px; margin-left: 10px; }
+.kopf nav a { text-decoration: none; color: rgba(255, 255, 255, .78); }
+.kopf nav a:hover { color: #fff; }
+.kopf .pille { margin-left: auto; background: #fff; color: #000; text-decoration: none; padding: 6px 13px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
+@media (max-width: 900px) { .kopf nav { display: none; } }
+@media (max-width: 420px) { .kopf .ausgabe { display: none; } }
+
+/* ---------- Intro: Text, Beschriftungen und Tafel über dem Raum ---------- */
+#intro { position: relative; z-index: 1; height: 460vh; pointer-events: none; }
+.intro-buehne { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; perspective: 900px; }
+.szene { position: absolute; inset: 0; transform-origin: 50% 100%; will-change: transform; }
+.intro-text { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  display: flex; justify-content: space-between; align-items: end; gap: 20px; color: #fff; }
+.intro-text h1 { margin: 0; font-size: clamp(34px, 6vw, 84px); font-weight: 600; letter-spacing: -.04em; line-height: .95; text-wrap: balance; max-width: 13ch; }
+.intro-text p { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 255, 255, .62); text-align: right; }
+.etiketten .st { font-size: 10.5px; color: rgba(255, 255, 255, .78); transition: opacity .4s; }
+.etiketten .st b { font-weight: 400; color: rgba(255, 255, 255, .45); margin-right: 6px; }
+.zeile { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(30px + env(safe-area-inset-bottom, 0px)); max-width: min(560px, calc(100% - 32px)); color: #fff; opacity: 0; transition: opacity .6s; pointer-events: none; }
+.zeile small { display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 255, 255, .55); margin-bottom: 6px; }
+.zeile q { font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.3vw, 28px); line-height: 1.25; quotes: "«" "»"; text-wrap: balance; }
+.etiketten span { position: absolute; left: 0; top: 0; font-family: var(--mono); font-size: 11px; color: #fff; white-space: nowrap; will-change: transform; text-shadow: 0 0 8px #000; }
+.tafel { position: absolute; top: 48px; bottom: 0; left: 0; width: 0; background: var(--blau); color: #fff; overflow: hidden; display: flex; pointer-events: auto; }
+.tafel .wort { flex: none; writing-mode: vertical-rl; transform: rotate(180deg); font-weight: 600; letter-spacing: -.045em; line-height: .8;
+  font-size: min(calc((100svh - 70px) / 6.2), 28vw); margin: 0; padding: 14px 6px 14px 4px; white-space: nowrap; }
+.tafel .spalte { flex: 1; min-width: 0; padding: 18px 16px 18px 6px; display: flex; flex-direction: column; gap: 14px; opacity: 0; }
+.tafel ol { list-style: none; margin: 0; padding: 0; font-family: var(--mono); font-size: 11px; line-height: 1.6; }
+.tafel ol li { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, .22); }
+.tafel ol span { font-variant-numeric: tabular-nums; opacity: .7; }
+.tafel .zahl { border-top: 1px solid rgba(255, 255, 255, .4); padding-top: 8px; font-family: var(--mono); font-size: 11px; line-height: 1.5; }
+.tafel .zahl b { display: block; font-family: var(--sans); font-size: clamp(26px, 3vw, 40px); font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+.tafel .satz { font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.3; margin: 0; }
+@media (max-width: 760px) {
+  .tafel { top: auto; height: 46svh; }
+  .tafel .wort { font-size: min(calc(46svh / 6.4), 16vw); }
+  .tafel .zahl:nth-of-type(n+3) { display: none; }
+}
+.tip { position: fixed; z-index: 5; max-width: 260px; padding: 8px 10px; background: #000; color: #fff; border: 1px solid rgba(255, 255, 255, .5); font-size: 13px; pointer-events: none; }
+.tip b { display: block; font-weight: 600; }
+.tip i { font-family: var(--serif); color: rgba(255, 255, 255, .7); }
+
+/* ---------- Bahn ---------- */
+#bahn-abschnitt { position: relative; z-index: 1; pointer-events: none; }
+.raum-platz { height: 600vh; }
+body.flach .raum-platz { display: none; }
+.bahn { display: none; }
+body.flach .bahn { display: block; pointer-events: auto; width: min(980px, 100%); margin: 0 auto; padding-top: 64px; }
+.kapitel { position: relative; padding-block: 56px 80px; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); background: var(--k); color: var(--kt); scroll-margin-top: 48px; }
+.kapitel h2 { margin: 0; font-size: clamp(52px, 9vw, 116px); font-weight: 600; letter-spacing: -.045em; line-height: .9; }
+.kapitel .leit { margin: 10px 0 34px; font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.2vw, 26px); line-height: 1.25; max-width: 30ch; text-wrap: balance; }
+.kapitel .marke-k { position: absolute; top: 18px; right: max(18px, env(safe-area-inset-right, 0px)); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
+.raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 14px; }
+.karte { min-width: 0; display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--kl); background: var(--kc); text-decoration: none; }
+.karte:hover { border-color: var(--kt); }
+.karte img { width: 100%; max-width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+.karte b { font-weight: 600; font-size: 17px; letter-spacing: -.01em; }
+.karte span { font-size: 13.5px; line-height: 1.4; opacity: .82; }
+.weiter { display: inline-flex; margin-top: 26px; padding: 9px 16px; border-radius: 99px; background: var(--kt); color: var(--k); text-decoration: none; font-weight: 600; }
+@media (max-width: 760px) { .raster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .karte b { font-size: 15px; } .karte span { font-size: 12.5px; } }
+
+/* Kapitelfarben (b/b.css .kapitel-*), --kc ist die Kartenfläche */
+.k-lab { --k: #c2185b; --kc: #cc3a74; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); }
+.k-apps { --k: #e6b117; --kc: #ebc040; --kt: #000000; --kl: rgba(0, 0, 0, .24); }
+.k-prompts { --k: #e0503c; --kc: #e6695a; --kt: #000000; --kl: rgba(0, 0, 0, .26); }
+.k-zettel { --k: #ffffff; --kc: #f4f4f2; --kt: #000000; --kl: #d6d6d6; }
+.k-social { --k: #1d3fd6; --kc: #3a58dc; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); }
+.k-art { --k: #1f4d3a; --kc: #2f5e4a; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); }
+
+/* Zettel: sieben Zyklen à sieben Strophen */
+.zyklen { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.zyklus { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.zyklus small { font-family: var(--mono); font-size: 10px; letter-spacing: .04em; text-transform: uppercase; opacity: .7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.zyklus button { aspect-ratio: 4 / 3; width: 100%; border: 1px solid var(--kl); background: transparent; cursor: pointer; padding: 0; font: 600 11px var(--mono); color: var(--kt); }
+.zyklus button:hover, .zyklus button[aria-pressed="true"] { background: #000; color: #fff; }
+.strophe { margin-top: 26px; border-top: 1px solid var(--kl); padding-top: 16px; display: grid; gap: 6px; min-height: 150px; }
+.strophe small { font-family: var(--mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; opacity: .7; }
+.strophe b { font-size: clamp(24px, 3vw, 34px); font-weight: 600; letter-spacing: -.03em; line-height: 1.05; }
+.strophe q { font-family: var(--serif); font-style: italic; font-size: clamp(18px, 2vw, 23px); line-height: 1.3; max-width: 46ch; quotes: "«" "»"; }
+
+/* Steuerung unten links und Kapitelzeiger links */
+.steuer { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; opacity: 0; pointer-events: none; transition: opacity .3s; }
+.steuer.da { opacity: 1; pointer-events: auto; }
+.steuer button { font: 600 13px var(--sans); padding: 9px 15px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .5); background: #000; color: #fff; cursor: pointer; }
+.zeiger { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); top: 50%; transform: translateY(-50%); list-style: none; margin: 0; padding: 0;
+  font-family: var(--mono); font-size: 11px; line-height: 1.9; opacity: 0; pointer-events: none; transition: opacity .3s; }
+.zeiger.da { opacity: 1; pointer-events: auto; }
+.zeiger a { text-decoration: none; color: rgba(255, 255, 255, .6); display: flex; align-items: center; gap: 8px; }
+.zeiger a::before { content: ""; width: 6px; height: 6px; border: 1px solid currentColor; }
+.zeiger a.aktiv { color: #fff; }
+.zeiger a.aktiv::before { background: currentColor; }
+body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color: var(--text); }
+@media (max-width: 1100px) { .zeiger { display: none; } }
+
+/* Schluss */
+.schluss { position: relative; z-index: 2; background: var(--nacht); padding-block: 90px 60px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.schluss .innen { max-width: 1100px; margin: 0 auto; }
+.schluss h2 { margin: 0 0 26px; font-size: clamp(36px, 6vw, 80px); font-weight: 600; letter-spacing: -.04em; line-height: .95; text-wrap: balance; }
+.schluss ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr)); gap: 0; border-top: 1px solid var(--strich); }
+.schluss li a { display: flex; justify-content: space-between; align-items: center; padding: 14px 4px; border-bottom: 1px solid var(--fein); text-decoration: none; font-size: 19px; font-weight: 600; }
+.schluss li a i { width: 12px; height: 12px; background: var(--k); border: 1px solid var(--strich); }
+.schluss p { margin: 34px 0 0; font-family: var(--mono); font-size: 11px; color: var(--leise); letter-spacing: .04em; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "{{VENDOR}}three-0.185.1/three.module.min.js", "three/addons/": "{{VENDOR}}three-0.185.1/addons/" } }
+</script>
+
+<canvas id="welt" aria-label="Raum mit dem Netz der Strophen und der Bahn der Bereiche"></canvas>
+<header class="kopf">
+  <a class="marke" href="{{LINK}}b/"><img src="{{BILD}}b/bilder/signet/signet-dunkel.svg" alt="">ornament.cloud <span class="ausgabe">Gamma · Herbst 2026</span></a>
+  <nav aria-label="Bereiche">
+    <a href="#k-lab">Lab</a><a href="#k-apps">Apps</a><a href="#k-prompts">Prompts</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a><a href="#k-art">Art</a>
+  </nav>
+  <a class="pille" href="{{LINK}}b/">Zur Website</a>
+</header>
+
+<section id="intro" aria-label="Einstieg">
+  <div class="intro-buehne"><div class="szene" id="szene">
+    <div class="etiketten" id="etiketten" aria-hidden="true"></div>
+    <p class="zeile" id="zeile" aria-live="off"><small></small><q></q></p>
+    <div class="tafel">
+      <p class="wort">Anschluss</p>
+      <div class="spalte">
+        <ol id="zyklen-liste"></ol>
+        <div class="zahl"><b>49</b>Strophen in sieben Zyklen</div>
+        <div class="zahl"><b>133</b>Personen aus Kunst, Theorie und Wissenschaft</div>
+        <div class="zahl"><b>7</b>Apps, die auf dem Gerät bleiben</div>
+        <p class="satz">«Der Anschluss erfindet die Welt, die ihn im Nachhinein notwendig erscheinen lässt.»</p>
+      </div>
+    </div>
+    <div class="intro-text" id="intro-text">
+      <h1>Sechs Bereiche, ein Netz.</h1>
+      <p>Lab · Apps · Prompts · Zettel · Social · Art<br>Weiter nach unten</p>
+    </div>
+  </div></div>
+</section>
+<div class="tip" id="tip" hidden></div>
+
+<section id="bahn-abschnitt" aria-label="Bereiche der Website">
+  <div class="raum-platz" id="raum-platz"></div>
+  <div class="bahn" id="bahn">
+      <article class="kapitel k-lab" id="k-lab" data-name="Lab">
+        <span class="marke-k">01 · ornament.lab</span>
+        <h2>Lab</h2>
+        <p class="leit">Ein Bild wird Material.</p>
+        <div class="raster">
+          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-glitch.jpg" alt="" loading="lazy"><b>Glitch</b><span>Zeilen verrutschen, Kanäle trennen sich.</span></a>
+          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-sort.jpg" alt="" loading="lazy"><b>Pixelsortierung</b><span>Helligkeit ordnet die Pixel neu.</span></a>
+          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-teilung.jpg" alt="" loading="lazy"><b>Teilung</b><span>Linienbilder nach Makelangelo, in den Farben des Bildes.</span></a>
+          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-raster.jpg" alt="" loading="lazy"><b>Raster</b><span>Das Bild als gedrucktes Raster.</span></a>
+          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-punkte.jpg" alt="" loading="lazy"><b>Punkte</b><span>Punktieren statt zeichnen.</span></a>
+          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-neu.jpg" alt="" loading="lazy"><b>Neusetzen</b><span>Teile ordnen sich zu einem neuen Bild.</span></a>
+        </div>
+        <a class="weiter" href="{{LINK}}beta/lab/">Lab ansehen</a>
+      </article>
+
+      <article class="kapitel k-apps" id="k-apps" data-name="Apps">
+        <span class="marke-k">02 · sieben Apps</span>
+        <h2>Apps</h2>
+        <p class="leit">Kleine Werkzeuge zum Ausprobieren. Alles bleibt auf dem Gerät.</p>
+        <div class="raster">
+          <a class="karte" href="{{LINK}}b/apps/phorma-iii/"><img class="svg" src="{{BILD}}b/bilder/apps/phorma-iii.svg" alt="" loading="lazy"><b>PHORMA III</b><span>Aus Klang wird Bild: Gewebe aus Linien, Perlen in einer Kugel aus Fäden.</span></a>
+          <a class="karte" href="{{LINK}}b/apps/phorma-ii/"><img class="svg" src="{{BILD}}b/bilder/apps/phorma-ii.svg" alt="" loading="lazy"><b>PHORMA II</b><span>Ein Schleimpilz findet seine Formen, das Bild weht als Seidentuch.</span></a>
+          <a class="karte" href="{{LINK}}b/apps/phorma-i/"><img class="svg" src="{{BILD}}b/bilder/apps/phorma-i.svg" alt="" loading="lazy"><b>PHORMA I</b><span>Ein Foto zerfällt in Funken, Glas, Scherben und Gebirge.</span></a>
+          <a class="karte" href="{{LINK}}b/apps/the-fictory/"><img class="svg" src="{{BILD}}b/bilder/apps/the-fictory.svg" alt="" loading="lazy"><b>The Fictory</b><span>Ein Bild auf der Werkbank zerfällt und setzt sich neu zusammen.</span></a>
+          <a class="karte" href="{{LINK}}b/apps/orma/"><img class="svg" src="{{BILD}}b/bilder/apps/orma.svg" alt="" loading="lazy"><b>ORMA</b><span>Ein Rad bringt Kunst und Theorie zusammen. Zehn Minuten zu zweit.</span></a>
+          <a class="karte" href="{{LINK}}b/apps/orna/"><img class="svg" src="{{BILD}}b/bilder/apps/orna.svg" alt="" loading="lazy"><b>ORNA</b><span>Zwei gegenläufige Ringe, eine Drehung, eine Begegnung.</span></a>
+          <a class="karte" href="{{LINK}}b/apps/omna-color/"><img class="svg" src="{{BILD}}b/bilder/apps/omna-color.svg" alt="" loading="lazy"><b>OMNA COLOR</b><span>Zwei Farbräder ziehen aus 180 Gestaltungsübungen.</span></a>
+        </div>
+        <a class="weiter" href="{{LINK}}b/apps/">Alle Apps</a>
+      </article>
+
+      <article class="kapitel k-prompts" id="k-prompts" data-name="Prompts">
+        <span class="marke-k">03 · vier Prüfraster</span>
+        <h2>Prompts</h2>
+        <p class="leit">Vier Prüfraster zum genaueren Hinsehen, je mit Grundlagenpapier und Anwendungsprompt.</p>
+        <div class="raster">
+          <a class="karte" href="{{LINK}}b/raster/nebeneinander-nacheinander/"><img class="svg" src="{{BILD}}b/bilder/raster/nebeneinander-nacheinander.svg" alt="" loading="lazy"><b>Nebeneinander und Nacheinander</b><span>Verräumlichung und Verzeitlichung als Achsen für die Ordnung von Theorien und Kunstpraxen.</span></a>
+          <a class="karte" href="{{LINK}}b/raster/verteilapparat/"><img class="svg" src="{{BILD}}b/bilder/raster/verteilapparat.svg" alt="" loading="lazy"><b>Der Verteilapparat des Körpers</b><span>Wessen Körperereignis kommt wie weit, unter welcher Beschreibung?</span></a>
+          <a class="karte" href="{{LINK}}b/raster/gesellschaftskonzepte/"><img class="svg" src="{{BILD}}b/bilder/raster/gesellschaftskonzepte.svg" alt="" loading="lazy"><b>Gesellschaftskonzepte</b><span>Einheit · Operation · Vermittlung. Vorprüfung von Gesellschaftsdiagnosen.</span></a>
+          <a class="karte" href="{{LINK}}b/raster/journalistische-texte/"><img class="svg" src="{{BILD}}b/bilder/raster/journalistische-texte.svg" alt="" loading="lazy"><b>Journalistische Texte</b><span>Ereignis · Kontext · Übergang · Gegenprobe · Systembezüge.</span></a>
+        </div>
+        <a class="weiter" href="{{LINK}}b/raster/">Zu den Prompts</a>
+      </article>
+
+      <article class="kapitel k-zettel" id="k-zettel" data-name="Zettel">
+        <span class="marke-k">04 · Zu seiner Zeit</span>
+        <h2>Zettel</h2>
+        <p class="leit">Plateaus zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation.</p>
+        <div class="zyklen" id="zyklen"></div>
+        <div class="strophe" id="strophe" aria-live="polite"></div>
+        <a class="weiter" href="{{LINK}}b/zettel/">Zum Zettelkasten</a>
+      </article>
+
+      <article class="kapitel k-social" id="k-social" data-name="Social">
+        <span class="marke-k">05 · jede Woche</span>
+        <h2>Social</h2>
+        <p class="leit">Ausgewählte Beiträge aus X, Facebook und Instagram, wöchentlich als Zettel gesammelt.</p>
+        <div class="raster">
+          <a class="karte" href="{{LINK}}b/zuletzt/"><b>X</b><span>Beiträge von X, als Zettel abgelegt.</span></a>
+          <a class="karte" href="{{LINK}}b/zuletzt/"><b>Facebook</b><span>Beiträge von Facebook, als Zettel abgelegt.</span></a>
+          <a class="karte" href="{{LINK}}b/zuletzt/"><b>Instagram</b><span>Beiträge von Instagram, als Zettel abgelegt.</span></a>
+        </div>
+        <a class="weiter" href="{{LINK}}b/zuletzt/">Zu den Beiträgen</a>
+      </article>
+
+      <article class="kapitel k-art" id="k-art" data-name="Art">
+        <span class="marke-k">06 · im Auftrag</span>
+        <h2>Art</h2>
+        <p class="leit">Websites und Apps im Auftrag, dazu Originale und Prints.</p>
+        <div class="raster">
+          <a class="karte" href="{{LINK}}b/werke/"><img src="{{BILD}}beta/lab/bilder/portraet.jpg" alt="Porträt als Mosaik vor Rot" loading="lazy"><b>Originale und Prints</b><span>Originale und Prints. Demnächst mehr.</span></a>
+          <a class="karte" href="{{LINK}}b/angebot/"><img class="svg" src="{{BILD}}b/bilder/signet/signet-dunkel.svg" alt="" loading="lazy"><b>Websites und Apps</b><span>Websites und Apps im Auftrag.</span></a>
+        </div>
+        <a class="weiter" href="{{LINK}}b/werke/">Zu Art</a>
+      </article>
+  </div>
+</section>
+
+<section class="schluss" aria-label="Weiter">
+  <div class="innen">
+    <h2>Wohin als Nächstes?</h2>
+    <ul>
+      <li class="k-lab"><a href="{{LINK}}beta/lab/">Lab <i></i></a></li>
+      <li class="k-apps"><a href="{{LINK}}b/apps/">Apps <i></i></a></li>
+      <li class="k-prompts"><a href="{{LINK}}b/raster/">Prompts <i></i></a></li>
+      <li class="k-zettel"><a href="{{LINK}}b/zettel/">Zettel <i></i></a></li>
+      <li class="k-social"><a href="{{LINK}}b/zuletzt/">Social <i></i></a></li>
+      <li class="k-art"><a href="{{LINK}}b/werke/">Art <i></i></a></li>
+    </ul>
+    <p>ornament.cloud · Christian Strickler · Gamma, Herbst 2026</p>
+  </div>
+</section>
+
+<div class="steuer" id="steuer"><button type="button" id="flach">Flach lesen</button></div>
+<ol class="zeiger" id="zeiger"></ol>
+
+<script>
+// Rückfall: Lädt der Raum nicht (Bibliothek gesperrt, kein Modul-Support), zeigt die Seite nach 6 s die flache Fassung
+setTimeout(() => { if (!window.gammaRaumLaeuft) { document.body.classList.add("flach", "ohne-3d"); const p = document.getElementById("raum-platz"); if (p) p.style.height = "0px"; const z = document.getElementById("szene"); if (z) { z.querySelector(".tafel").style.width = "100%"; z.querySelector(".spalte").style.opacity = 1; } } }, 6000);
+</script>
+<script type="module">
+import * as THREE from "three";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+
+const DATEN = /*DATEN*/null;
+const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
+const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
+const KAPITELFARBEN = ["#c2185b", "#e6b117", "#e0503c", "#ffffff", "#1d3fd6", "#1f4d3a"];
+const LEUCHTFARBEN = ["#ff3d8b", "#ffc21a", "#ff5a3c", "#9fb8ff", "#4f78ff", "#2fd08a"];   // für das Leuchten im Raum etwas satter
+const ZYKLUSFARBEN = ["#ff5c9a", "#ffc21a", "#ff5a3c", "#ffffff", "#8fb0ff", "#3fd08e", "#ffa3d1"];
+const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const klemm = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const weich = (a, b, x) => { const t = klemm((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+const misch = (a, b, t) => a + (b - a) * t;
+const hdr = (hex, f) => new THREE.Color(hex).multiplyScalar(f);
+function deckeln(m, px) {
+  m.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace("#include <fog_vertex>", `gl_PointSize = min(gl_PointSize, ${px.toFixed(1)} * ${Math.min(devicePixelRatio || 1, 2).toFixed(1)});\n#include <fog_vertex>`); };
+  return m;
+}
+
+const intro = document.getElementById("intro"), szene = document.getElementById("szene"), tip = document.getElementById("tip");
+const tafel = szene.querySelector(".tafel"), wort = tafel.querySelector(".wort"), spalte = tafel.querySelector(".spalte"), introText = document.getElementById("intro-text");
+const abschnitt = document.getElementById("bahn-abschnitt"), platz = document.getElementById("raum-platz"), bahnDom = document.getElementById("bahn");
+const steuer = document.getElementById("steuer"), flachKnopf = document.getElementById("flach"), zeiger = document.getElementById("zeiger");
+const kapitel = [...bahnDom.querySelectorAll(".kapitel")];
+const schmal = () => innerWidth < 760;
+
+/* ---------- DOM: Zyklen-Liste, Zettel-Feld, Kapitelzeiger ---------- */
+const zl = document.getElementById("zyklen-liste");
+ZYKLEN.forEach((n, i) => { const li = document.createElement("li"); li.innerHTML = `<b></b><span>${String(i * 7 + 1).padStart(2, "0")}–${String(i * 7 + 7).padStart(2, "0")}</span>`; li.querySelector("b").textContent = ROEM[i] + " " + n; zl.append(li); });
+const zy = document.getElementById("zyklen"), st = document.getElementById("strophe");
+function zeigeStrophe(s, knopf) {
+  zy.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b === knopf)));
+  st.innerHTML = "";
+  const sm = document.createElement("small"); sm.textContent = `Strophe ${s[0]} · Zyklus ${ROEM[s[1]]} ${ZYKLEN[s[1]]} · ${s[4].length} Personen`;
+  const b = document.createElement("b"); b.textContent = s[2];
+  const q = document.createElement("q"); q.textContent = s[3];
+  st.append(sm, b, q);
+}
+ZYKLEN.forEach((n, i) => {
+  const sp = document.createElement("div"); sp.className = "zyklus";
+  const k = document.createElement("small"); k.textContent = ROEM[i] + " " + n; sp.append(k);
+  DATEN.z.filter(s => s[1] === i).forEach(s => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = s[0]; b.title = s[2]; b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", () => zeigeStrophe(s, b)); sp.append(b);
+  });
+  zy.append(sp);
+});
+zeigeStrophe(DATEN.z[0], zy.querySelector("button"));
+kapitel.forEach(k => { const li = document.createElement("li"), a = document.createElement("a"); a.href = "#" + k.id; a.textContent = k.dataset.name; li.append(a); zeiger.append(li); });
+
+/* ---------- Bahn-Bilder: jedes Kapitel wird aus seinem HTML auf eine Leinwand gezeichnet ---------- */
+function bildLaden(src) { return new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; }); }
+function umbrechen(cx, text, breite) {
+  const woerter = text.split(/\s+/), zeilen = []; let z = "";
+  for (const w of woerter) { const t = z ? z + " " + w : w; if (cx.measureText(t).width > breite && z) { zeilen.push(z); z = w; } else z = t; }
+  if (z) zeilen.push(z); return zeilen;
+}
+async function kapitelZeichnen(k, i, LW) {
+  const cs = getComputedStyle(k), farbe = cs.getPropertyValue("--k").trim(), tinte = cs.getPropertyValue("--kt").trim(), flaeche = cs.getPropertyValue("--kc").trim(), linie = cs.getPropertyValue("--kl").trim();
+  const eng = LW < 600, pad = eng ? 22 : 44, innen = LW - pad * 2;
+  const karten = [...k.querySelectorAll(".karte")].map(a => ({ src: a.querySelector("img")?.getAttribute("src"), titel: a.querySelector("b").textContent, text: a.querySelector("span").textContent }));
+  const bilder = await Promise.all(karten.map(c => c.src ? bildLaden(c.src) : null));
+  const spalten = eng ? 2 : 3, gap = eng ? 10 : 14, kb = (innen - gap * (spalten - 1)) / spalten;
+  const SANS = '"Instrument Sans", system-ui, sans-serif', SERIF = 'Newsreader, Georgia, serif', MONO = 'ui-monospace, Menlo, monospace';
+  const titelGr = eng ? 64 : 118, leitGr = eng ? 20 : 27, kTitel = eng ? 15 : 18, kText = eng ? 12.5 : 14;
+  // Erst messen, dann zeichnen: dieselbe Routine läuft zweimal
+  const durchgang = (cx, zeichnen) => {
+    let y = pad + 10;
+    if (zeichnen) { cx.fillStyle = farbe; cx.fillRect(0, 0, LW, 1e5); }
+    cx.fillStyle = tinte; cx.textBaseline = "alphabetic";
+    cx.font = `11px ${MONO}`; cx.globalAlpha = .7; cx.textAlign = "right";
+    if (zeichnen) cx.fillText(k.querySelector(".marke-k").textContent.toUpperCase(), LW - pad, 26);
+    cx.textAlign = "left"; cx.globalAlpha = 1;
+    cx.font = `600 ${titelGr}px ${SANS}`; if ("letterSpacing" in cx) cx.letterSpacing = (-titelGr * .045) + "px";
+    y += titelGr * .82; if (zeichnen) cx.fillText(k.querySelector("h2").textContent, pad - 4, y);
+    if ("letterSpacing" in cx) cx.letterSpacing = "0px";
+    cx.font = `italic ${leitGr}px ${SERIF}`; y += leitGr * .5;
+    for (const z of umbrechen(cx, k.querySelector(".leit").textContent, Math.min(innen, leitGr * 17))) { y += leitGr * 1.22; if (zeichnen) cx.fillText(z, pad, y); }
+    y += eng ? 22 : 34;
+    if (karten.length) {
+      for (let r = 0; r < karten.length; r += spalten) {
+        const reihe = karten.slice(r, r + spalten);
+        const hoehen = reihe.map(c => {
+          cx.font = `600 ${kTitel}px ${SANS}`; const tz = umbrechen(cx, c.titel, kb - 20).length;
+          cx.font = `${kText}px ${SANS}`; const sz = umbrechen(cx, c.text, kb - 20).length;
+          return 10 + (c.src ? kb - 20 + 10 : 0) + tz * kTitel * 1.2 + 6 + sz * kText * 1.4 + 12;
+        });
+        const h = Math.max(...hoehen);
+        reihe.forEach((c, j) => {
+          if (!zeichnen) return;
+          const x = pad + j * (kb + gap); let yy = y + 10;
+          cx.fillStyle = flaeche; cx.fillRect(x, y, kb, h);
+          cx.strokeStyle = linie; cx.lineWidth = 1; cx.strokeRect(x + .5, y + .5, kb - 1, h - 1);
+          const bild = bilder[r + j];
+          if (bild) { cx.drawImage(bild, x + 10, yy, kb - 20, kb - 20); yy += kb - 20 + 10; }
+          cx.fillStyle = tinte; cx.font = `600 ${kTitel}px ${SANS}`;
+          for (const z of umbrechen(cx, c.titel, kb - 20)) { yy += kTitel * 1.2; cx.fillText(z, x + 10, yy - 3); }
+          yy += 6; cx.font = `${kText}px ${SANS}`; cx.globalAlpha = .82;
+          for (const z of umbrechen(cx, c.text, kb - 20)) { yy += kText * 1.4; cx.fillText(z, x + 10, yy - 3); }
+          cx.globalAlpha = 1;
+        });
+        y += h + gap;
+      }
+    }
+    if (k.id === "k-zettel") {
+      const zw = (innen - 6 * (eng ? 4 : 8)) / 7, zh = zw * .75;
+      cx.font = `600 ${eng ? 9 : 11}px ${MONO}`;
+      for (let c = 0; c < 7; c++) for (let n = 0; n < 7; n++) {
+        const x = pad + c * (zw + (eng ? 4 : 8)), yy = y + n * (zh + 6), nr = c * 7 + n + 1;
+        if (!zeichnen) continue;
+        cx.strokeStyle = linie; cx.strokeRect(x + .5, yy + .5, zw - 1, zh - 1);
+        if (nr === 1) { cx.fillStyle = "#000"; cx.fillRect(x, yy, zw, zh); cx.fillStyle = "#fff"; } else cx.fillStyle = tinte;
+        cx.textAlign = "center"; cx.fillText(String(nr), x + zw / 2, yy + zh / 2 + 4); cx.textAlign = "left";
+      }
+      y += 7 * (zh + 6) + 18;
+      const s = DATEN.z[0];
+      cx.fillStyle = tinte; cx.font = `600 ${eng ? 24 : 34}px ${SANS}`; y += eng ? 26 : 36; if (zeichnen) cx.fillText(s[2], pad, y);
+      cx.font = `italic ${eng ? 18 : 23}px ${SERIF}`;
+      for (const z of umbrechen(cx, "«" + s[3] + "»", Math.min(innen, 620))) { y += eng ? 24 : 30; if (zeichnen) cx.fillText(z, pad, y); }
+      y += 10;
+    }
+    // Knopf
+    const w = k.querySelector(".weiter").textContent; cx.font = `600 16px ${SANS}`;
+    const bw = cx.measureText(w).width + 32; y += 20;
+    if (zeichnen) { cx.fillStyle = tinte; cx.beginPath(); cx.roundRect(pad, y, bw, 40, 20); cx.fill(); cx.fillStyle = farbe; cx.fillText(w, pad + 16, y + 26); }
+    return y + 40 + (eng ? 60 : 90);
+  };
+  const mess = document.createElement("canvas").getContext("2d");
+  const LH = Math.ceil(durchgang(mess, false));
+  // Scharf auch nah vor der Kamera: rund dreifache Auflösung; lange Kapitel werden später in Kacheln geteilt
+  const skala = eng ? 3 : 2.5;
+  const cv = document.createElement("canvas"); cv.width = Math.round(LW * skala); cv.height = Math.round(LH * skala);
+  const cx = cv.getContext("2d"); cx.scale(skala, skala); durchgang(cx, true);
+  return { cv, LH };
+}
+
+/* ---------- Raum ---------- */
+let renderer, composer, bloom, kamera, welt, ok3d = true;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("welt"), antialias: true, powerPreference: "high-performance" });
+} catch (e) { ok3d = false; }
+let flach = ruhig || !ok3d;
+document.body.classList.toggle("flach", flach);
+if (!ok3d) document.body.classList.add("ohne-3d");
+
+// Die Bahn liegt innen in einer Trommel mit Radius R und wandert pro Umlauf seitlich weiter, damit sie sich nicht selbst trifft
+const RAUM = { R: 10, w: 6, drift: 0 };
+function bahnPunkt(s, quer = 0, hoch = 0, ziel = new THREE.Vector3()) {
+  const th = s / RAUM.R, c = Math.cos(th), sn = Math.sin(th);
+  // Mittellinie, Normale (zur Achse), Tangente, Seite
+  const px = RAUM.drift * s, py = RAUM.R - RAUM.R * c, pz = -RAUM.R * sn;
+  const nx = 0, ny = c, nz = sn;
+  let tx = RAUM.drift, ty = sn, tz = -c; const tl = Math.hypot(tx, ty, tz); tx /= tl; ty /= tl; tz /= tl;
+  let sx = ty * nz - tz * ny, sy = tz * nx - tx * nz, sz = tx * ny - ty * nx; const sl = Math.hypot(sx, sy, sz); sx /= sl; sy /= sl; sz /= sl;
+  return ziel.set(px + sx * quer + nx * hoch, py + sy * quer + ny * hoch, pz + sz * quer + nz * hoch);
+}
+const normale = (s, v = new THREE.Vector3()) => { const th = s / RAUM.R; return v.set(0, Math.cos(th), Math.sin(th)); };
+
+const bahn = { stuecke: [], L: 0, k: 0, bereit: false, gruppe: null, kanten: null, funken: null, koerper: [] };
+const netz = { gruppe: null, impulse: null, quadrate: null, knoten: [], etiketten: [] };
+let sterne;
+
+function netzBauen() {
+  let saat = 11; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647 - .5;
+  const kn = [], kanten = [];
+  ZYKLEN.forEach((n, i) => { const w = i * Math.PI * 2 / 7; kn.push({ art: "zyklus", i, p: new THREE.Vector3(Math.cos(w), Math.sin(w * 2) * .18, Math.sin(w)), farbe: ZYKLUSFARBEN[i], name: ROEM[i] + " " + n }); });
+  DATEN.z.forEach(s => { const h = kn[s[1]]; const k = { art: "strophe", s, p: h.p.clone().add(new THREE.Vector3(z() * .5, z() * .5, z() * .5)), farbe: ZYKLUSFARBEN[s[1]] }; kn.push(k); kanten.push([h, k, 1]); });
+  const pk = DATEN.p.map(name => ({ art: "person", name, p: new THREE.Vector3(), n: 0 }));
+  DATEN.z.forEach((s, j) => { const sk = kn[7 + j]; s[4].forEach(pi => { pk[pi].p.add(sk.p); pk[pi].n++; kanten.push([sk, pk[pi], 0]); }); });
+  pk.forEach(p => { p.p.multiplyScalar(p.n > 1 ? .7 / p.n : 1.45).add(new THREE.Vector3(z() * .3, z() * .9, z() * .3)); kn.push(p); });
+  for (let it = 0; it < 30; it++) for (let a = 7; a < kn.length; a++) for (let b = a + 1; b < kn.length; b++) {
+    const d = kn[b].p.clone().sub(kn[a].p), d2 = d.lengthSq() + 1e-6;
+    if (d2 < .012) { d.multiplyScalar((.012 - d2) / d2 * .06); kn[a].p.sub(d); kn[b].p.add(d); }
+  }
+  netz.knoten = kn;
+  const g = new THREE.Group();
+  // Linien
+  const lp = [], lc = [];
+  for (const [a, b, stark] of kanten) { lp.push(...a.p.toArray(), ...b.p.toArray()); const c = stark ? hdr(a.farbe, .55) : hdr("#8fb0ff", .3); lc.push(c.r, c.g, c.b, c.r, c.g, c.b); }
+  const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); lg.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
+  g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: .45, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false })));
+  // Punkte je Art
+  const punkte = (liste, groesse, farbe) => {
+    const pos = [], col = []; liste.forEach(k => { pos.push(...k.p.toArray()); const c = farbe(k); col.push(c.r, c.g, c.b); });
+    const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+    const m = new THREE.Points(geo, deckeln(new THREE.PointsMaterial({ size: groesse, vertexColors: true, sizeAttenuation: true, transparent: true, depthWrite: false, toneMapped: false }), groesse > .06 ? 9 : 6)); g.add(m); return m;
+  };
+  punkte(kn.filter(k => k.art === "person"), .022, () => hdr("#8fb0ff", .8));
+  punkte(kn.filter(k => k.art === "strophe"), .05, k => hdr(k.farbe, .95));
+  punkte(kn.filter(k => k.art === "zyklus"), .08, k => hdr(k.farbe, 1.2));
+  // Lichtimpulse
+  netz.impulse = Array.from({ length: 120 }, (_, i) => ({ kante: kanten[(i * 37) % kanten.length], phase: (i * .618) % 1, tempo: .3 + ((i * 13) % 10) / 18, farbe: ZYKLUSFARBEN[i % 7] }));
+  const ip = new Float32Array(netz.impulse.length * 3), ic = new Float32Array(netz.impulse.length * 3);
+  netz.impulse.forEach((im, i) => { const c = hdr(im.farbe, 1.3); ic.set([c.r, c.g, c.b], i * 3); });
+  const ig = new THREE.BufferGeometry(); ig.setAttribute("position", new THREE.BufferAttribute(ip, 3)); ig.setAttribute("color", new THREE.BufferAttribute(ic, 3));
+  netz.impulsPunkte = new THREE.Points(ig, deckeln(new THREE.PointsMaterial({ size: .035, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }), 5));
+  g.add(netz.impulsPunkte);
+  // Sechs Bereiche als grosse Quadrate (Phase A)
+  const qp = new Float32Array(18), qc = new Float32Array(18);
+  KAPITELFARBEN.forEach((f, i) => { const c = hdr(f, 1); qc.set([c.r, c.g, c.b], i * 3); });
+  const qg = new THREE.BufferGeometry(); qg.setAttribute("position", new THREE.BufferAttribute(qp, 3)); qg.setAttribute("color", new THREE.BufferAttribute(qc, 3));
+  netz.quadrate = new THREE.Points(qg, deckeln(new THREE.PointsMaterial({ size: .12, vertexColors: true, transparent: true, depthWrite: false, toneMapped: false }), 22));
+  g.add(netz.quadrate);
+  g.scale.setScalar(3);
+  // Das Netz schwebt dort, wo die Bahn beginnt
+  g.position.copy(bahnPunkt(-7, 0, 3.4));
+  welt.add(g); netz.gruppe = g;
+  const et = document.getElementById("etiketten");
+  netz.etiketten = kn.filter(k => k.art === "zyklus").map(k => { const s = document.createElement("span"); s.textContent = k.name; et.append(s); return { k, el: s }; });
+  netz.stEt = Array.from({ length: 7 }, () => { const s = document.createElement("span"); s.className = "st"; s.style.opacity = 0; et.append(s); return s; });
+}
+
+function sterneBauen() {
+  const n = 1600, p = new Float32Array(n * 3), c = new Float32Array(n * 3);
+  let saat = 5; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < n; i++) {
+    const u = z() * 2 - 1, w = z() * Math.PI * 2, r = 90 + z() * 60, q = Math.sqrt(1 - u * u);
+    p.set([Math.cos(w) * q * r, u * r, Math.sin(w) * q * r], i * 3);
+    const f = .25 + z() * .6; c.set([f, f, f * 1.15], i * 3);
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(p, 3)); g.setAttribute("color", new THREE.BufferAttribute(c, 3));
+  sterne = new THREE.Points(g, new THREE.PointsMaterial({ size: .28, vertexColors: true, sizeAttenuation: true, depthWrite: false, fog: false }));
+  welt.add(sterne);
+}
+
+async function bahnBauen() {
+  if (bahn.gruppe) { welt.remove(bahn.gruppe); bahn.gruppe.traverse(o => { o.geometry?.dispose(); o.material?.map?.dispose(); o.material?.dispose(); }); }
+  bahn.bereit = false;
+  const eng = schmal(), LW = eng ? 430 : 820;
+  RAUM.w = eng ? 4.2 : 6; RAUM.R = eng ? 8 : 10; RAUM.drift = 1.6 * RAUM.w / (2 * Math.PI * RAUM.R);
+  bahn.k = RAUM.w / LW;
+  // Platzhalter, bis die Bilder gezeichnet sind: Kapitel in ihrer Farbe mit geschätzter Länge
+  const bilder = [];
+  for (let i = 0; i < kapitel.length; i++) bilder.push(await kapitelZeichnen(kapitel[i], i, LW));
+  const g = new THREE.Group(); let s = 0;
+  bahn.stuecke = [];
+  const kachelH = Math.min(renderer.capabilities.maxTextureSize, 4096);
+  bilder.forEach((b, i) => {
+    const laenge = b.LH * bahn.k, s0 = s;
+    // Ein Kapitel kann höher sein als die grösste Textur: dann in Kacheln übereinander
+    for (let y0 = 0; y0 < b.cv.height; y0 += kachelH) {
+      const y1 = Math.min(b.cv.height, y0 + kachelH), ta = s0 + y0 / b.cv.height * laenge, tb = s0 + y1 / b.cv.height * laenge;
+      let quelle = b.cv;
+      if (y0 > 0 || y1 < b.cv.height) { quelle = document.createElement("canvas"); quelle.width = b.cv.width; quelle.height = y1 - y0; quelle.getContext("2d").drawImage(b.cv, 0, -y0); }
+      const schritte = Math.max(8, Math.ceil((tb - ta) / .12)), pos = [], uv = [], idx = [];
+      for (let j = 0; j <= schritte; j++) {
+        const v = j / schritte, sj = ta + v * (tb - ta);
+        const a = bahnPunkt(sj, -RAUM.w / 2), bb = bahnPunkt(sj, RAUM.w / 2);
+        pos.push(a.x, a.y, a.z, bb.x, bb.y, bb.z); uv.push(1, 1 - v, 0, 1 - v);
+        if (j < schritte) { const o = j * 2; idx.push(o, o + 2, o + 1, o + 1, o + 2, o + 3); }
+      }
+      const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx);
+      const tex = new THREE.CanvasTexture(quelle); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy(); tex.minFilter = THREE.LinearMipmapLinearFilter;
+      const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, color: 0xe6e6e6, fog: true }));
+      mesh.userData.kapitel = i; g.add(mesh);
+      bahn.stuecke.push({ s0: ta, s1: tb, mesh, kapitel: i });
+    }
+    if (b.cv.height > kachelH) b.cv.width = b.cv.height = 0;   // nur die geteilte Vorlage freigeben, die Kacheln sind eigene Leinwände
+    s += laenge;
+  });
+  bahn.L = s;
+  bahn.kapitel = kapitel.map((_, i) => { const t = bahn.stuecke.filter(x => x.kapitel === i); return { s0: t[0].s0, s1: t[t.length - 1].s1 }; });
+  // Leuchtende Kanten in den Farben der Bereiche
+  const kp = [], kc = [], ki = []; let o = 0;
+  for (const seite of [-1, 1]) {
+    const n = Math.ceil(bahn.L / .1);
+    for (let j = 0; j <= n; j++) {
+      const sj = j / n * bahn.L, a = bahnPunkt(sj, seite * (RAUM.w / 2 + .01), .01), b = bahnPunkt(sj, seite * (RAUM.w / 2 + .022), .01);
+      const st = bahn.kapitel.findIndex(x => sj <= x.s1 + 1e-6), c = hdr(LEUCHTFARBEN[Math.max(0, st)], .55);
+      kp.push(a.x, a.y, a.z, b.x, b.y, b.z); kc.push(c.r, c.g, c.b, c.r, c.g, c.b);
+      if (j < n) ki.push(o, o + 2, o + 1, o + 1, o + 2, o + 3);
+      o += 2;
+    }
+  }
+  const kg = new THREE.BufferGeometry(); kg.setAttribute("position", new THREE.Float32BufferAttribute(kp, 3)); kg.setAttribute("color", new THREE.Float32BufferAttribute(kc, 3)); kg.setIndex(ki);
+  g.add(new THREE.Mesh(kg, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, toneMapped: false })));
+  // Querlinien alle 2 Einheiten wie Weg-Marken
+  const mp = [];
+  for (let sj = 0; sj <= bahn.L; sj += 2) { const a = bahnPunkt(sj, -RAUM.w / 2 - .6, .01), b = bahnPunkt(sj, -RAUM.w / 2 - .15, .01), c = bahnPunkt(sj, RAUM.w / 2 + .15, .01), d = bahnPunkt(sj, RAUM.w / 2 + .6, .01); mp.push(...a.toArray(), ...b.toArray(), ...c.toArray(), ...d.toArray()); }
+  const mg = new THREE.BufferGeometry(); mg.setAttribute("position", new THREE.Float32BufferAttribute(mp, 3));
+  g.add(new THREE.LineSegments(mg, new THREE.LineBasicMaterial({ color: 0x8fb0ff, transparent: true, opacity: .35 })));
+  // Haarlinien: die Trommel als feines Gitter um die Bahn
+  const hp = [];
+  for (let sj = -8; sj <= bahn.L + 8; sj += .8) for (const q of [-1, 1]) { for (let j = 0; j < 14; j++) { const a = bahnPunkt(sj, q * (RAUM.w / 2 + .9 + j * .55), .02), b = bahnPunkt(sj + .8, q * (RAUM.w / 2 + .9 + j * .55), .02); hp.push(...a.toArray(), ...b.toArray()); } }
+  for (let j = 0; j <= 28; j++) { const q = -RAUM.w / 2 - 8.5 + j * ((RAUM.w + 17) / 28); if (Math.abs(q) < RAUM.w / 2 + .5) continue; for (let sj = -8; sj <= bahn.L + 8; sj += 2.4) { const a = bahnPunkt(sj, q, .02), b = bahnPunkt(sj, q + (RAUM.w + 17) / 28, .02); hp.push(...a.toArray(), ...b.toArray()); } }
+  const hg = new THREE.BufferGeometry(); hg.setAttribute("position", new THREE.Float32BufferAttribute(hp, 3));
+  g.add(new THREE.LineSegments(hg, new THREE.LineBasicMaterial({ color: 0x8fb0ff, transparent: true, opacity: .1, depthWrite: false })));
+  // Funken, die in der Trommel treiben
+  const n = eng ? 500 : 900; bahn.funkenDaten = [];
+  const fp = new Float32Array(n * 3), fc = new Float32Array(n * 3);
+  let saat = 3; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < n; i++) {
+    const seite = z() < .5 ? -1 : 1, quer = seite * (RAUM.w / 2 + .25 + z() * 3.5) * (z() < .15 ? .2 : 1), hoch = .15 + z() * z() * 6;
+    bahn.funkenDaten.push({ s: z() * (bahn.L + 20) - 10, quer, hoch, tempo: .15 + z() * .35 });
+  }
+  const fg = new THREE.BufferGeometry(); fg.setAttribute("position", new THREE.BufferAttribute(fp, 3)); fg.setAttribute("color", new THREE.BufferAttribute(fc, 3));
+  bahn.funken = new THREE.Points(fg, deckeln(new THREE.PointsMaterial({ size: .045, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }), 4));
+  g.add(bahn.funken);
+  // Drahtkörper neben der Bahn, einer je Bereich
+  const formen = [new THREE.IcosahedronGeometry(1, 2), new THREE.TorusKnotGeometry(.7, .2, 160, 14), new THREE.OctahedronGeometry(1.1, 2), new THREE.SphereGeometry(1, 28, 18), new THREE.TorusGeometry(.8, .28, 20, 72), new THREE.IcosahedronGeometry(1.1, 3)];
+  bahn.koerper = bahn.kapitel.map((x, i) => {
+    const m = new THREE.Mesh(formen[i], new THREE.MeshBasicMaterial({ color: hdr(LEUCHTFARBEN[i], .9), wireframe: true, toneMapped: false, transparent: true, opacity: .32, depthWrite: false }));
+    const sm = (x.s0 + x.s1) / 2; m.position.copy(bahnPunkt(sm, (i % 2 ? -1 : 1) * (RAUM.w / 2 + (eng ? 1.6 : 2.6)), eng ? 1.4 : 1.8)); m.scale.setScalar(eng ? .6 : .9);
+    g.add(m); return m;
+  });
+  welt.add(g); bahn.gruppe = g;
+  bahn.bereit = true;
+  platzMessen();
+}
+
+function platzMessen() { if (bahn.L) platz.style.height = Math.round(bahn.L / bahn.k - innerHeight * .45) + "px"; }
+
+/* ---------- Kamera und Zeitachse ---------- */
+const zustand = { tZiel: 0, t: 0, sZiel: 0, s: 0, v: 0, maus: { x: 0, y: 0 } };
+const S_START = () => (schmal() ? 4.8 : 4.2);   // so weit hinter dem Anfang steht die Kamera, wenn die Bahn erscheint
+function zeitachse() {
+  const weg = intro.offsetHeight - innerHeight, r = intro.getBoundingClientRect();
+  zustand.tZiel = ruhig ? .84 : klemm(-r.top / weg);
+  const p = Math.max(0, scrollY - (intro.offsetTop + weg));
+  zustand.sZiel = S_START() + (flach ? 0 : p * bahn.k);
+}
+addEventListener("pointermove", e => { zustand.maus.x = e.clientX / innerWidth - .5; zustand.maus.y = e.clientY / innerHeight - .5; }, { passive: true });
+
+const tmp = { a: new THREE.Vector3(), b: new THREE.Vector3(), c: new THREE.Vector3(), d: new THREE.Vector3(), up: new THREE.Vector3() };
+function kameraSetzen(zeit) {
+  const t = zustand.t, eng = schmal();
+  // Intro: um das Netz herum, hinein, wieder hinaus
+  const nah = weich(.22, .5, t), raus = weich(.5, .66, t);
+  const dist = misch(misch(16, 1.8, nah), eng ? 10.5 : 8.5, raus);
+  const winkel = (ruhig ? 0 : zeit * .00008) + t * 1.8 + zustand.maus.x * .25, neig = .32 + zustand.maus.y * .2 - nah * .15 + raus * .1;
+  const C = netz.gruppe.position;
+  const iPos = tmp.a.set(Math.sin(winkel) * Math.cos(neig) * dist, Math.sin(neig) * dist, Math.cos(winkel) * Math.cos(neig) * dist).add(C);
+  const iBlick = tmp.b.copy(C);
+  // Seitlich versetzen, solange die Tafel links steht
+  const tf = weich(.6, .76, t) * (1 - weich(.86, .95, t));
+  // Bahn: hinter dem Punkt s, über der Bahn, Blick zurück auf das, was gerade gelesen wird
+  const s = zustand.s, hoch = eng ? 5.4 : 2.7, hinten = eng ? 2.4 : 1.4, voraus = eng ? 5.4 : 4.6;
+  const bPos = bahnPunkt(s + hinten, 0, hoch, tmp.c);
+  const bBlick = bahnPunkt(s - voraus, 0, .2, tmp.d);
+  const ueber = ruhig ? 1 : weich(.86, .97, t);
+  kamera.position.lerpVectors(iPos, bPos, ueber);
+  const blick = iBlick.lerp(bBlick, ueber);
+  const up = tmp.up.set(0, 1, 0).lerp(normale(s + hinten), ueber).normalize();
+  kamera.up.copy(up);
+  kamera.lookAt(blick);
+  if (tf > 0 && !eng) { kamera.setViewOffset(innerWidth, innerHeight, -innerWidth * .18 * tf, 0, innerWidth, innerHeight); } else kamera.clearViewOffset();
+  kamera.fov = eng ? 72 : 58;
+  kamera.updateProjectionMatrix();
+  return 0;
+}
+
+/* ---------- Tafel und Intro-Text ---------- */
+function introDom(t) {
+  const eng = schmal();
+  introText.style.opacity = 1 - weich(.03, .14, t);
+  // Die Tafel gleitet ruhig in Blaupause herein, ohne Farbschnitte
+  const auf = weich(.6, .76, t);
+  tafel.style.width = (auf * (eng ? innerWidth : Math.min(innerWidth * .4, 560))) + "px";
+  spalte.style.opacity = weich(.72, .82, t);
+  const fall = ruhig ? 0 : weich(.86, 1, t);
+  szene.style.transform = `translateY(${-fall * 22}%) rotateX(${fall * 62}deg) scale(${1 - fall * .25})`;
+  szene.style.opacity = 1 - weich(.92, 1, t);
+  szene.style.visibility = t >= .999 ? "hidden" : "visible";
+}
+
+/* ---------- Strophen im Flug ---------- */
+const zeile = document.getElementById("zeile"); let zeileNr = -1, zeileZeit = 0;
+function stropheZeigen(t) {
+  const an = weich(.24, .32, t) * (1 - weich(.52, .58, t));
+  const kandidaten = [];
+  if (an > 0) for (const k of netz.knoten) {
+    if (k.art !== "strophe") continue;
+    tmp.b.copy(k.p).applyMatrix4(netz.gruppe.matrixWorld);
+    const d = tmp.b.distanceTo(kamera.position); tmp.b.project(kamera);
+    if (tmp.b.z > 1 || Math.abs(tmp.b.x) > .85 || tmp.b.y > .8 || tmp.b.y < -.6) continue;
+    kandidaten.push({ k, d, x: (tmp.b.x + 1) / 2 * innerWidth, y: (1 - tmp.b.y) / 2 * innerHeight });
+  }
+  kandidaten.sort((a, b) => a.d - b.d);
+  netz.stEt.forEach((el, i) => {
+    const c = kandidaten[i];
+    if (!c) { el.style.opacity = 0; return; }
+    if (el.dataset.nr !== String(c.k.s[0])) { el.dataset.nr = c.k.s[0]; el.innerHTML = ""; const b = document.createElement("b"); b.textContent = c.k.s[0]; el.append(b, c.k.s[2]); }
+    el.style.opacity = an * (1 - i * .1);
+    el.style.transform = `translate(${(c.x + 8).toFixed(1)}px, ${(c.y - 6).toFixed(1)}px)`;
+  });
+  const erste = kandidaten[0];
+  if (erste && an > .5) {
+    if (erste.k.s[0] !== zeileNr && performance.now() - zeileZeit > 1800) { zeileZeit = performance.now(); zeileNr = erste.k.s[0]; zeile.querySelector("small").textContent = `Strophe ${erste.k.s[0]} · ${ROEM[erste.k.s[1]]} ${ZYKLEN[erste.k.s[1]]} · ${erste.k.s[2]}`; zeile.querySelector("q").textContent = erste.k.s[3]; }
+    zeile.style.opacity = an;
+  } else zeile.style.opacity = 0;
+}
+
+/* ---------- Ein Bild ---------- */
+let letzte = performance.now();
+function bild(zeit) {
+  const dt = Math.min(.25, (zeit - letzte) / 1000); letzte = zeit;
+  zeitachse();
+  // Leicht gedämpft: das Intro gleitet, die Bahn folgt dem Finger fast unmittelbar und läuft nicht nach
+  const daempf = ruhig ? 1 : 1 - Math.exp(-dt * 4);
+  zustand.t = misch(zustand.t, zustand.tZiel, daempf); if (Math.abs(zustand.tZiel - zustand.t) < .003) zustand.t = zustand.tZiel;
+  const sAlt = zustand.s; zustand.s = misch(zustand.s, zustand.sZiel, ruhig ? 1 : 1 - Math.exp(-dt * 14));
+  zustand.v = misch(zustand.v, (zustand.s - sAlt) / Math.max(dt, 1e-3), .2);
+  introDom(zustand.t);
+  const imRaum = !flach || intro.getBoundingClientRect().bottom > 0;
+  document.body.classList.toggle("nach-intro", intro.getBoundingClientRect().bottom <= innerHeight * .2);
+  const r = abschnitt.getBoundingClientRect(), drin = r.top < innerHeight * .3 && r.bottom > innerHeight * .5;
+  steuer.classList.toggle("da", drin || (!flach && zustand.t > .97 && r.bottom > innerHeight * .5));
+  zeiger.classList.toggle("da", drin);
+  // aktives Kapitel
+  let akt = 0;
+  if (flach) kapitel.forEach((k, i) => { if (k.getBoundingClientRect().top < innerHeight * .4) akt = i; });
+  else (bahn.kapitel || []).forEach((x, i) => { if (zustand.s - (schmal() ? 5.4 : 4.6) >= x.s0 - .5) akt = i; });
+  zeiger.querySelectorAll("a").forEach((a, i) => a.classList.toggle("aktiv", i === akt));
+  if (ok3d && imRaum && netz.gruppe) {
+    const tempo = kameraSetzen(zeit);
+    const t = zustand.t;
+    // Netz
+    netz.gruppe.rotation.y = ruhig ? 0 : zeit * .00002;
+    const netzA = weich(.05, .22, t) * (1 - .55 * weich(.88, 1, t));
+    netz.gruppe.children.forEach(o => { if (o.material && o !== netz.quadrate) o.material.opacity = netzA * (o.isLineSegments ? .55 : 1); });
+    const ip = netz.impulsPunkte.geometry.attributes.position;
+    netz.impulse.forEach((im, i) => { const ph = (im.phase + zeit * .00014 * im.tempo) % 1; const [a, b] = im.kante; tmp.a.lerpVectors(a.p, b.p, ph); ip.setXYZ(i, tmp.a.x, tmp.a.y, tmp.a.z); });
+    ip.needsUpdate = true;
+    const zuHub = weich(.06, .22, t), qp = netz.quadrate.geometry.attributes.position;
+    for (let i = 0; i < 6; i++) { const w = i * 1.047 + zeit * .00012; const h = netz.knoten[i].p; qp.setXYZ(i, misch(Math.cos(w) * .55, h.x, zuHub), misch(Math.sin(w * 1.5 + 1) * .2, h.y, zuHub), misch(Math.sin(w) * .55, h.z, zuHub)); }
+    qp.needsUpdate = true; netz.quadrate.material.opacity = 1 - zuHub;
+    // Beschriftungen der Zyklen
+    netz.etiketten.forEach(({ k, el }) => {
+      tmp.b.copy(k.p).applyMatrix4(netz.gruppe.matrixWorld).project(kamera);
+      const sichtbar = tmp.b.z < 1 && netzA > .3 && t < .86;
+      el.style.opacity = sichtbar ? netzA : 0;
+      if (sichtbar) el.style.transform = `translate(${((tmp.b.x + 1) / 2 * innerWidth + 10).toFixed(1)}px, ${((1 - tmp.b.y) / 2 * innerHeight - 14).toFixed(1)}px)`;
+    });
+    // Beim Flug durchs Netz: die nächsten Strophen mit Titel, die nächste mit ihrer Schlusszeile
+    stropheZeigen(t);
+    // Bahn
+    if (bahn.bereit) {
+      const fp = bahn.funken.geometry.attributes.position, fc = bahn.funken.geometry.attributes.color;
+      const zug = (ruhig ? 0 : dt) * .25;
+      bahn.funkenDaten.forEach((f, i) => {
+        f.s -= zug * f.tempo; if (f.s < -10) f.s += bahn.L + 20;
+        bahnPunkt(f.s, f.quer, f.hoch, tmp.a); fp.setXYZ(i, tmp.a.x, tmp.a.y, tmp.a.z);
+        const st = bahn.kapitel.findIndex(x => f.s <= x.s1); const c = hdr(LEUCHTFARBEN[st < 0 ? 5 : st], .8); fc.setXYZ(i, c.r, c.g, c.b);
+      });
+      fp.needsUpdate = true; fc.needsUpdate = true;
+      bahn.funken.material.size = schmal() ? .026 : .022;
+      bahn.koerper.forEach((m, i) => { m.rotation.x = zeit * .00009 * (1 + i * .1); m.rotation.y = zeit * .00014; });
+      bahn.gruppe.visible = zustand.t > .8;
+    }
+    bloom.strength = .38;
+    composer.render();
+  }
+  requestAnimationFrame(bild);
+}
+
+/* ---------- Wechsel zwischen Raum und flacher Ansicht ---------- */
+function zuKapitel(id) {
+  const k = document.getElementById(id); if (!k) return;
+  if (flach) { k.scrollIntoView({ behavior: ruhig ? "auto" : "smooth" }); return; }
+  const i = kapitel.indexOf(k), x = bahn.kapitel && bahn.kapitel[i]; if (!x) return;
+  const weg = intro.offsetHeight - innerHeight;
+  scrollTo({ top: intro.offsetTop + weg + x.s0 / bahn.k + 2, behavior: "smooth" });
+}
+function setzeFlach(f, id) {
+  const akt = id || zeiger.querySelector("a.aktiv")?.getAttribute("href").slice(1);
+  flach = f; document.body.classList.toggle("flach", f); flachKnopf.textContent = f ? "Zurück in den Raum" : "Flach lesen";
+  requestAnimationFrame(() => { if (akt) zuKapitel(akt); });
+}
+flachKnopf.addEventListener("click", () => setzeFlach(!flach));
+document.querySelectorAll('a[href^="#k-"]').forEach(a => a.addEventListener("click", e => { e.preventDefault(); zuKapitel(a.getAttribute("href").slice(1)); }));
+
+/* ---------- Tippen und Zeigen im Raum ---------- */
+const strahl = new THREE.Raycaster(), ndc = new THREE.Vector2();
+let druck = null;
+const cvWelt = document.getElementById("welt");
+addEventListener("pointerdown", e => { druck = { x: e.clientX, y: e.clientY }; });
+addEventListener("pointerup", e => {
+  if (!druck || flach || !bahn.bereit || zustand.t < .97) return;
+  if (Math.hypot(e.clientX - druck.x, e.clientY - druck.y) > 8 || e.target.closest("a, button, .tafel")) return;
+  ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); strahl.setFromCamera(ndc, kamera);
+  const hit = strahl.intersectObjects(bahn.stuecke.map(x => x.mesh))[0];
+  if (hit) setzeFlach(true, kapitel[hit.object.userData.kapitel].id);
+});
+addEventListener("pointermove", e => {
+  if (!netz.knoten.length || zustand.t < .25 || zustand.t > .86 || e.pointerType === "touch") { tip.hidden = true; return; }
+  let best = null, bd = 16 * 16;
+  for (const k of netz.knoten) if (k.art === "strophe") {
+    tmp.b.copy(k.p).applyMatrix4(netz.gruppe.matrixWorld).project(kamera); if (tmp.b.z > 1) continue;
+    const x = (tmp.b.x + 1) / 2 * innerWidth, y = (1 - tmp.b.y) / 2 * innerHeight, d = (x - e.clientX) ** 2 + (y - e.clientY) ** 2;
+    if (d < bd) { bd = d; best = k; }
+  }
+  if (best) { tip.hidden = false; tip.innerHTML = ""; const b = document.createElement("b"); b.textContent = best.s[0] + " · " + best.s[2]; const i = document.createElement("i"); i.textContent = best.s[3]; tip.append(b, i);
+    tip.style.left = Math.min(e.clientX + 14, innerWidth - 280) + "px"; tip.style.top = Math.max(56, e.clientY - 20) + "px"; }
+  else tip.hidden = true;
+}, { passive: true });
+
+/* ---------- Start ---------- */
+let mass = { b: 0, h: 0 };
+function groesse() {
+  if (!ok3d) return;
+  // Die Leinwand ist 100lvh hoch: die Adressleiste am Handy ändert ihre Grösse beim Scrollen nicht, das Bild zoomt nicht
+  const cv = renderer.domElement, b = cv.clientWidth, h = cv.clientHeight;
+  if (b === mass.b && h === mass.h) return;
+  mass = { b, h };
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.setSize(b, h, false);
+  composer.setSize(b, h);
+  kamera.aspect = b / h; kamera.updateProjectionMatrix();
+}
+if (ok3d) {
+  welt = new THREE.Scene(); welt.background = new THREE.Color(0); welt.fog = new THREE.FogExp2(0x000000, .028);
+  kamera = new THREE.PerspectiveCamera(58, innerWidth / innerHeight, .05, 400);
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(welt, kamera));
+  bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), .38, .35, .96); composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+  groesse();
+  RAUM.R = schmal() ? 8 : 10; RAUM.w = schmal() ? 4.2 : 6; RAUM.drift = 1.6 * RAUM.w / (2 * Math.PI * RAUM.R);
+  netzBauen(); sterneBauen();
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => bahnBauen()).catch(() => { flach = true; document.body.classList.add("flach"); });
+} else {
+  platz.style.height = "0px";
+}
+let breiteAlt = innerWidth;
+addEventListener("resize", () => {
+  groesse();
+  if (ok3d && schmal() !== (breiteAlt < 760)) { netz.gruppe.position.copy(bahnPunkt(-7, 0, 3.4)); bahnBauen(); }
+  breiteAlt = innerWidth; platzMessen();
+});
+window.gammaRaumLaeuft = true;
+requestAnimationFrame(bild);
+</script>
