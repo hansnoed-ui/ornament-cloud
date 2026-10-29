@@ -6,3 +6,4 @@ scipy
 noisereduce
 matchering
 pyloudnorm
+librosa
