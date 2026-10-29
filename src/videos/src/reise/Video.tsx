@@ -3,13 +3,17 @@
 // «in der obsidian ästhetik mit viel bewegung, aber auch lesbarkeit», ohne den eigenen Namen im Bild.
 // Knoten, Kanten, Begriffe, Kernsätze, Werke, Namen und Fragen liest daten.mjs aus der Website (data/reise.json); nichts ist von Hand abgetippt.
 // Drei Formate aus derselben Zeitachse: 9:16 (ReiseHoch), 4:5 (ReiseVideo), 16:9 (ReiseQuer).
-//   0 Lab-Intro · 1 das Netz entsteht (Zyklen, Strophen, Werke, Namen, ORNA) · 2 die Spur: sieben Stationen über Werke und Namen
+//   0 Intro · 1 das Netz entsteht (Zyklen, Strophen, Werke, Namen, ORNA) · 2 die Spur: Stationen über Werke und Namen
 //   3 das ganze Netz mit der Spur · 4 Lab-Outro
+// Seit dem 29. Oktober 2026 mehrere Suchaufträge (auftrag: reise | profil, Spuren aus daten.mjs). Die Aufträge haben statt des Lab-Signets mit Titel
+// (Rückmeldung: «gar nicht gefallen hat mir die Titelsequenz mit der Schrift von "Die Reise"») das Zettelkasten-Intro (ZettelIntro.tsx):
+// Punktkugel, Box mit Lichtweg, Raster 7 × 7 der 49 Strophen, darin der Suchauftrag.
 import React from "react";
 import { AbsoluteFill, Easing, Sequence, continueRender, delayRender, interpolate, useCurrentFrame } from "remotion";
 import { SANS, SERIF, schriften } from "../vorlage/stil";
 import { LabSignet } from "../wissen/LabSignet";
 import daten from "./data/reise.json";
+import { ZettelIntro, INTRO_DAUER } from "./ZettelIntro";
 
 type Punkt = [number, number, number];
 const klemm = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
@@ -30,7 +34,7 @@ const daempfe = (hex: string, u: number) => {
 
 // ---------- Formate ----------
 export type Format = "hoch" | "vier" | "quer";
-type Lay = { w: number; h: number; cx: number; cy: number; brenn: number; feld: { left: number; top: number; width: number }; titel: number; text: number; klein: number; kopf: number; zahl: number };
+export type Lay = { w: number; h: number; cx: number; cy: number; brenn: number; feld: { left: number; top: number; width: number }; titel: number; text: number; klein: number; kopf: number; zahl: number };
 const LAYOUT: Record<Format, Lay> = {
   hoch: { w: 1080, h: 1920, cx: 540, cy: 720, brenn: 1050, feld: { left: 90, top: 1300, width: 900 }, titel: 76, text: 46, klein: 28, kopf: 30, zahl: 64 },
   vier: { w: 1080, h: 1350, cx: 540, cy: 450, brenn: 960, feld: { left: 90, top: 860, width: 900 }, titel: 64, text: 40, klein: 25, kopf: 27, zahl: 56 },
@@ -38,22 +42,30 @@ const LAYOUT: Record<Format, Lay> = {
 };
 export const MASSE = Object.fromEntries(Object.entries(LAYOUT).map(([k, l]) => [k, { w: l.w, h: l.h }])) as Record<Format, { w: number; h: number }>;
 
-// ---------- Zeitplan (Bilder bei 30 fps) ----------
+// ---------- Zeitplan (Bilder bei 30 fps), je Suchauftrag ----------
+export type Auftrag = "reise" | "profil";
+type Station = (typeof daten.spuren.profil)[number] & { praxis?: string };
 const FLUG = 60;
 const woerter = (s: string) => s.split(/\s+/).length;
-/** Lesezeit einer Station: Titel und Satz, mindestens 1 s je 3 Wörter, dazu die Verweise */
-const lesen = (s: (typeof daten.spur)[number]) =>
-  Math.max(170, Math.ceil(((woerter(s.titel) + woerter(s.text)) / 3) * 30) + (s.verweise.length ? 50 : 40));
-const SPUR = daten.spur.map((s) => ({ ...s, dauer: FLUG + lesen(s) }));
-const T = (() => {
-  const intro = 0, aufbau = 112, spur = 430;
+/** Lesezeit einer Station: Titel, Satz und Praxis, mindestens 1 s je 3 Wörter, dazu die Verweise */
+const lesen = (s: Station) =>
+  Math.max(170, Math.ceil(((woerter(s.titel) + woerter(s.text) + (s.praxis ? woerter(s.praxis) : 0)) / 3) * 30) + (s.verweise.length ? 50 : 40));
+const planVon = (auftrag: Auftrag) => {
+  const SPUR = (daten.spuren[auftrag] as Station[]).map((s) => ({ ...s, dauer: FLUG + lesen(s) }));
+  // die Reise beginnt mit dem Lab-Signet (112 Bilder), die Suchaufträge mit dem Zettelkasten-Intro
+  // für die Suchaufträge (90–120 s gewünscht) Aufbau und Schlussbild etwas knapper
+  const reise = auftrag === "reise", intro = 0, aufbau = reise ? 112 : INTRO_DAUER, spur = aufbau + (reise ? 318 : 300);
   let t = spur;
   const start = SPUR.map((s) => { const a = t; t += s.dauer; return a; });
-  const ganz = t, outro = ganz + 330, ende = outro + 180;
-  return { intro, aufbau, spur, start, ganz, outro, ende };
-})();
-export { T };
-const stationBei = (f: number) => { let j = -1; T.start.forEach((s, n) => { if (s <= f) j = n; }); return j; };
+  const ganz = t, outro = ganz + (reise ? 330 : 300), ende = outro + 180;
+  return { auftrag, SPUR, T: { intro, aufbau, spur, start, ganz, outro, ende } };
+};
+type Plan = ReturnType<typeof planVon>;
+const PLAENE: Record<Auftrag, Plan> = { reise: planVon("reise"), profil: planVon("profil") };
+/** Zeitplan eines Auftrags (für Root.tsx); T ist der der ersten Reise */
+export const zeitplan = (a: Auftrag) => PLAENE[a].T;
+export const T = PLAENE.reise.T;
+const stationBei = (P: Plan, f: number) => { let j = -1; P.T.start.forEach((s, n) => { if (s <= f) j = n; }); return j; };
 
 // ---------- das Netz ----------
 const K = daten.knoten;
@@ -73,7 +85,7 @@ const mitte = (ids: number[], f: number): Punkt => {
 const MITTE_ALLES = mitte(K.map((_, i) => i), 0);
 
 /** wann ein Knoten im Aufbau erscheint: Zyklen, Strophen, Werke, Namen des Zettelkastens, dann ORNA */
-const AUFTRITT = (() => {
+const auftrittVon = (T: Plan["T"]) => {
   const reihe = (art: (k: (typeof K)[number]) => boolean) => K.map((k, i) => [k, i] as const).filter(([k]) => art(k)).map(([, i]) => i);
   const gruppen: [number[], number, number][] = [
     [reihe((k) => k.art === "zyklus"), 10, 30], [reihe((k) => k.art === "strophe"), 30, 80], [reihe((k) => k.art === "werk"), 70, 140],
@@ -83,15 +95,13 @@ const AUFTRITT = (() => {
   for (const [ids, von, bis] of gruppen) ids.forEach((i, n) => { a[i] = T.aufbau + von + ((bis - von) * n) / ids.length; });
   // die Brücken (in beiden) leuchten erst, wenn ORNA erscheint
   return a as number[];
-})();
-const sicht = (i: number, f: number) => interpolate(f, [AUFTRITT[i], AUFTRITT[i] + 12], [0, 1], klemm);
-/** ORNA-Kanten ziehen sich nach den Ringen */
-const kanteAb = (a: number, b: number, art: number) => (art === 3 ? T.aufbau + 205 + ((a * 7 + b * 13) % 40) : Math.max(AUFTRITT[a], AUFTRITT[b]) + 4);
+};
+const AUFTRITTE: Record<Auftrag, number[]> = { reise: auftrittVon(PLAENE.reise.T), profil: auftrittVon(PLAENE.profil.T) };
 
 // ---------- die Spur: Wege aus echten Kanten ----------
 /** Punkte eines Wegs zur Zeit f: von der Mitte der vorigen Station über die Knoten des Wegs zur Mitte der neuen */
-const wegPunkte = (j: number, f: number): Punkt[] => {
-  const s = SPUR[j], von = j ? mitte(SPUR[j - 1].ziel, f) : null;
+const wegPunkte = (P: Plan, j: number, f: number): Punkt[] => {
+  const SPUR = P.SPUR, s = SPUR[j], von = j ? mitte(SPUR[j - 1].ziel, f) : null;
   const p = s.weg.map((i) => ort(i, f));
   return [...(von ? [von] : []), ...p, mitte(s.ziel, f)];
 };
@@ -107,23 +117,24 @@ const aufWeg = (ps: Punkt[], u: number) => {
   }
   return { q: ps[ps.length - 1], bis };
 };
-const flugU = (j: number, f: number) => interpolate(f, [T.start[j], T.start[j] + FLUG], [0, 1], { ...klemm, easing: fahrt });
+const flugU = (P: Plan, j: number, f: number) => interpolate(f, [P.T.start[j], P.T.start[j] + FLUG], [0, 1], { ...klemm, easing: fahrt });
 
 // ---------- Kamera ----------
 type Kamera = { ziel: Punkt; abstand: number; gier: number; neigung: number };
 /** Abstand an einer Station: nah an einer Strophe; bei einer Konstellation so weit, dass beide Namen im Bild sind */
-const nahVon = (j: number, f: number) => {
-  const s = SPUR[j];
+const nahVon = (P: Plan, j: number, f: number) => {
+  const s = P.SPUR[j];
   if (s.art !== "orna") return 400;
   const [a, b] = s.ziel.map((i) => ort(i, f));
   return Math.max(560, Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) * 1.45);
 };
-function kamera(f: number): Kamera {
+function kamera(P: Plan, f: number): Kamera {
+  const { T, SPUR } = P;
   // dreht stetig um die Hochachse; jeder Flug schwenkt zusätzlich, das Ende dreht weit
   const fluege = T.start.reduce((s, a) => s + interpolate(f, [a, a + FLUG], [0, 0.55], { ...klemm, easing: fahrt }), 0);
   const gier = 0.6 + f * 0.0022 + fluege + interpolate(f, [T.ganz, T.outro], [0, 1.5], { ...klemm, easing: fahrt });
   const neigung = 0.34 + Math.sin(f / 170) * 0.12;
-  const j = stationBei(f);
+  const j = stationBei(P, f);
   if (j < 0) {
     const abstand = interpolate(f, [T.aufbau, T.aufbau + 220, T.spur], [1900, 1050, 980], { ...klemm, easing: weich });
     return { ziel: MITTE_ALLES, abstand, gier, neigung };
@@ -132,11 +143,11 @@ function kamera(f: number): Kamera {
     const u = interpolate(f, [T.ganz, T.ganz + 90], [0, 1], { ...klemm, easing: fahrt });
     return { ziel: mix(mitte(SPUR[SPUR.length - 1].ziel, f), MITTE_ALLES, u), abstand: interpolate(f, [T.ganz, T.ganz + 90, T.outro], [440, 1000, 1150], { ...klemm, easing: fahrt }), gier, neigung };
   }
-  const s = SPUR[j], u = flugU(j, f), nah = nahVon(j, f);
+  const s = SPUR[j], u = flugU(P, j, f), nah = nahVon(P, j, f);
   if (u >= 1) return { ziel: mitte(s.ziel, f), abstand: nah - Math.min(40, (f - T.start[j] - FLUG) * 0.25), gier, neigung };
   // im Flug folgt die Kamera dem Läufer und hebt sich in der Mitte des Wegs
-  const { q } = aufWeg(wegPunkte(j, f), u);
-  const vorher = j ? nahVon(j - 1, f) : 980;
+  const { q } = aufWeg(wegPunkte(P, j, f), u);
+  const vorher = j ? nahVon(P, j - 1, f) : 980;
   const hub = j ? Math.sin(u * Math.PI) * 280 : 0;
   return { ziel: j ? q : mix(MITTE_ALLES, q, u), abstand: interpolate(u, [0, 1], [vorher, nah]) + hub, gier, neigung };
 }
@@ -150,10 +161,14 @@ function projiziere(p: Punkt, k: Kamera, L: Lay) {
 }
 
 // ---------- Bild des Netzes ----------
-const Netz: React.FC<{ f: number; L: Lay }> = ({ f, L }) => {
-  const k = kamera(f);
+const Netz: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
+  const { T, SPUR } = plan, AUFTRITT = AUFTRITTE[plan.auftrag];
+  const sicht = (i: number, f: number) => interpolate(f, [AUFTRITT[i], AUFTRITT[i] + 12], [0, 1], klemm);
+  /** ORNA-Kanten ziehen sich nach den Ringen */
+  const kanteAb = (a: number, b: number, art: number) => (art === 3 ? T.aufbau + 205 + ((a * 7 + b * 13) % 40) : Math.max(AUFTRITT[a], AUFTRITT[b]) + 4);
+  const k = kamera(plan, f);
   const P = K.map((_, i) => projiziere(ort(i, f), k, L));
-  const j = stationBei(f), s = j >= 0 && f < T.ganz ? SPUR[j] : null;
+  const j = stationBei(plan, f), s = j >= 0 && f < T.ganz ? SPUR[j] : null;
   const angekommen = s ? interpolate(f, [T.start[j] + FLUG - 14, T.start[j] + FLUG + 10], [0, 1], klemm) : 0;
   // wer leuchtet: die Station, ihre Nachbarn (Werke, Namen, Zyklus) und bei einer Strophe die Namen hinter den Werken
   const hell = new Map<number, number>();
@@ -188,9 +203,9 @@ const Netz: React.FC<{ f: number; L: Lay }> = ({ f, L }) => {
   const bis = f >= T.ganz ? SPUR.length - 1 : j;
   for (let n = 0; n <= bis; n++) {
     if (n < 0) break;
-    const u = n === j && f < T.ganz ? flugU(n, f) : 1;
+    const u = n === j && f < T.ganz ? flugU(plan, n, f) : 1;
     if (u <= 0) continue;
-    const { q, bis: punkte } = aufWeg(wegPunkte(n, f), u);
+    const { q, bis: punkte } = aufWeg(wegPunkte(plan, n, f), u);
     const pp = punkte.map((p) => projiziere(p, k, L));
     spurPfade.push(pp.map((p, m) => `${m ? "L" : "M"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(""));
     if (n === j && u < 1) { const p = projiziere(q, k, L); laeufer = { x: p.x, y: p.y }; }
@@ -271,8 +286,8 @@ const Schleier: React.FC<{ L: Lay }> = ({ L }) =>
     <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: L.feld.top - 170, background: `linear-gradient(180deg, ${F.grund}00 0%, ${F.grund}e6 26%, ${F.grund} 50%)` }} />
   );
 
-const Aufbau: React.FC<{ f: number; L: Lay }> = ({ f, L }) => {
-  const z = daten.zaehle;
+const Aufbau: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
+  const z = daten.zaehle, T = plan.T;
   const zeilen: [number, string, string, string][] = [
     [T.aufbau + 20, zahl(z.zyklen), "Zyklen", "#6fb894"], [T.aufbau + 40, zahl(z.strophen), "Strophen · Begriffe", F.strophe],
     [T.aufbau + 80, zahl(z.werke), "Werke · Quellen", F.werk], [T.aufbau + 120, zahl(z.namen), "Namen", F.name],
@@ -305,8 +320,8 @@ const Aufbau: React.FC<{ f: number; L: Lay }> = ({ f, L }) => {
   );
 };
 
-const Station: React.FC<{ f: number; L: Lay }> = ({ f, L }) => {
-  const j = stationBei(f);
+const Station: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
+  const { T, SPUR } = plan, j = stationBei(plan, f);
   if (j < 0 || f >= T.ganz) return null;
   const s = SPUR[j], a = T.start[j], ankunft = a + FLUG - 6, o = blendeIn(f, ankunft, a + s.dauer, 16);
   const flug = j > 0 && s.ueber ? blendeIn(f, a + 2, a + FLUG + 4, 10) : 0;
@@ -324,6 +339,11 @@ const Station: React.FC<{ f: number; L: Lay }> = ({ f, L }) => {
       <Feld L={L} o={o}>
         <div style={{ fontFamily: SANS, fontSize: L.kopf, fontWeight: 600, color: s.art === "orna" ? F.orna : "#6fb894" }}>{s.kopf}</div>
         <div style={{ fontFamily: SERIF, fontSize: L.titel, lineHeight: 1.04, color: F.tinte, marginTop: 10, letterSpacing: "-0.01em" }}>{s.titel}</div>
+        {s.praxis ? (
+          <div style={{ fontFamily: SANS, fontSize: L.klein * 1.08, lineHeight: 1.34, color: "#cfcfcf", marginTop: 16, opacity: dazu(0) }}>
+            <span style={{ color: F.orna, fontWeight: 600 }}>Praxis · </span>{s.praxis}
+          </div>
+        ) : null}
         <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: L.text, lineHeight: 1.28, color: "#e4e4e4", marginTop: 18 }}>{s.text}</div>
         {s.verweise.length ? (
           <div style={{ marginTop: 22, fontFamily: SANS, fontSize: L.klein, lineHeight: 1.32 }}>
@@ -348,16 +368,17 @@ const Station: React.FC<{ f: number; L: Lay }> = ({ f, L }) => {
   );
 };
 
-const Ganz: React.FC<{ f: number; L: Lay }> = ({ f, L }) => {
-  const z = daten.zaehle, o = blendeIn(f, T.ganz + 80, T.outro + 6, 20);
+const Ganz: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
+  const { T, SPUR } = plan, z = daten.zaehle, o = blendeIn(f, T.ganz + 80, T.outro + 6, 20);
+  const a = plan.auftrag === "reise" ? null : daten.auftraege[plan.auftrag];
   return (
     <Feld L={L} o={o}>
-      <div style={{ fontFamily: SANS, fontSize: L.kopf, fontWeight: 600, color: F.spur }}>Die Spur · {SPUR.length} Stationen</div>
+      <div style={{ fontFamily: SANS, fontSize: L.kopf, fontWeight: 600, color: F.spur }}>{a ? `${a.titel} · ` : "Die Spur · "}{SPUR.length} Stationen</div>
       <div style={{ fontFamily: SERIF, fontSize: L.text * 1.05, lineHeight: 1.3, color: F.tinte, marginTop: 14 }}>
         {SPUR.map((s) => (s.art === "orna" ? s.titel : s.titel)).join(" → ")}
       </div>
       <div style={{ fontFamily: SANS, fontSize: L.klein, color: F.leise, marginTop: 22, lineHeight: 1.4 }}>
-        {zahl(z.strophen)} Strophen · {zahl(z.werke)} Werke · {zahl(z.namen)} Namen · ORNA {zahl(z.konstellationen)} Konstellationen
+        {a ? `${a.frauen} von ${a.namen} Adressen weiblich · ` : ""}{zahl(z.strophen)} Strophen · {zahl(z.werke)} Werke · {zahl(z.namen)} Namen · ORNA {zahl(z.konstellationen)} Konstellationen
       </div>
     </Feld>
   );
@@ -372,22 +393,27 @@ const Signet: React.FC<{ L: Lay; children: React.ReactNode }> = ({ L, children }
   return <div style={{ position: "absolute", width: 1080, height: 1350, left: (L.w - 1080 * m) / 2, top: (L.h - 1350 * m) / 2, transform: `scale(${m})`, transformOrigin: "0 0" }}>{children}</div>;
 };
 
-export const ReiseVideo: React.FC<{ format?: Format }> = ({ format = "vier" }) => {
-  const f = useCurrentFrame(), L = LAYOUT[format];
+export const ReiseVideo: React.FC<{ format?: Format; auftrag?: Auftrag }> = ({ format = "vier", auftrag = "reise" }) => {
+  const f = useCurrentFrame(), L = LAYOUT[format], plan = PLAENE[auftrag], T = plan.T;
   const [handle] = React.useState(() => delayRender("Schriften"));
   React.useEffect(() => { schriften.then(() => continueRender(handle)); }, [handle]);
   return (
     <AbsoluteFill style={{ backgroundColor: "#000", overflow: "hidden" }}>
       {f >= T.aufbau - 12 && f < T.outro + 14 ? (
         <AbsoluteFill style={{ backgroundColor: F.grund, opacity: interpolate(f, [T.aufbau - 12, T.aufbau + 8, T.outro - 10, T.outro + 14], [0, 1, 1, 0], klemm) }}>
-          <Netz f={f} L={L} />
+          <Netz f={f} L={L} plan={plan} />
           <Schleier L={L} />
-          <Aufbau f={f} L={L} />
-          <Station f={f} L={L} />
-          <Ganz f={f} L={L} />
+          <Aufbau f={f} L={L} plan={plan} />
+          <Station f={f} L={L} plan={plan} />
+          <Ganz f={f} L={L} plan={plan} />
         </AbsoluteFill>
       ) : null}
-      {f < T.aufbau + 4 ? <Signet L={L}><LabSignet dauer={T.aufbau + 4} kopf={{ titel: "Reise", unter: "durch den Zettelkasten und ORNA" }} /></Signet> : null}
+      {auftrag === "reise" && f < T.aufbau + 4 ? <Signet L={L}><LabSignet dauer={T.aufbau + 4} kopf={{ titel: "Reise", unter: "durch den Zettelkasten und ORNA" }} /></Signet> : null}
+      {auftrag !== "reise" && f < T.aufbau + 24 ? (
+        <AbsoluteFill style={{ opacity: interpolate(f, [T.aufbau - 4, T.aufbau + 24], [1, 0], klemm) }}>
+          <ZettelIntro f={f} L={L} auftrag={daten.auftraege[auftrag]} route={plan.SPUR.filter((x) => x.art === "strophe").map((x) => Number(x.kopf.match(/\d+/)?.[0]))} />
+        </AbsoluteFill>
+      ) : null}
       {f >= T.outro ? (
         <AbsoluteFill style={{ opacity: interpolate(f, [T.outro, T.outro + 14], [0, 1], klemm) }}>
           <Signet L={L}><Versetzt von={T.outro}><LabSignet dauer={T.ende - T.outro + 40} /></Versetzt></Signet>

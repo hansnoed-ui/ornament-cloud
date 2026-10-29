@@ -107,11 +107,14 @@ const stropheStation = (n, weg, ueber) => {
 };
 /** eine Konstellation von ORNA als Station: das Paar, seine Frage und die Strophen, in denen der Name der Brücke auch steht */
 const ornaStation = (kunst, theorie, bruecke, weg, ueber) => {
-  const c = K(kunst, theorie), p = Object.values(personen.persons).find((x) => x.name === bruecke);
+  const c = K(kunst, theorie);
+  // die Brücke: der Name (oder die Namen) des Paars, die auch im Zettelkasten stehen, mit ihren Strophen
+  const namen = bruecke ? [bruecke] : [kunst, theorie];
+  const p = namen.map((n) => Object.values(personen.persons).find((x) => x.name === n)).find(Boolean);
   return { art: "orna", ziel: [N(kunst), N(theorie)], weg, ueber, kopf: "ORNA · Konstellation", titel: `${kunst} × ${theorie}`, text: c.question, verweise: [],
-    bruecke: { name: bruecke, strophen: p.stanzas.map((n) => ({ nummer: n, titel: zsz.stanzas.find((x) => x.number === n).title, i: S(n) })) } };
+    bruecke: p ? { name: p.name, strophen: p.stanzas.map((n) => ({ nummer: n, titel: zsz.stanzas.find((x) => x.number === n).title, i: S(n) })) } : null };
 };
-const spur = [
+const spurReise = [
   stropheStation(1, [S(1)], null),
   stropheStation(28, [S(1), W(zitat(1, "Karen Barad")), S(28)], "über Karen Barad · dasselbe Werk"),
   ornaStation("Mona Hatoum", "Karen Barad", "Karen Barad", [S(28), W(zitat(28, "Karen Barad")), N("Karen Barad"), N("Mona Hatoum")], "über Karen Barad"),
@@ -120,8 +123,82 @@ const spur = [
   stropheStation(2, [N("On Kawara"), W(zitat(2, "On Kawara")), S(2)], "über On Kawara"),
   stropheStation(49, [S(2), W(zitat(2, "Alfred North Whitehead")), S(49)], "über Alfred North Whitehead · dasselbe Werk"),
 ];
+// ---------- weitere Suchaufträge (29. Oktober 2026): die Stationen von Hand, die Wege dazwischen sucht das Skript ----------
+// Wunsch: «weitere "Reisen" durch den Zettelkasten und ORNA … den jeweiligen "Suchauftrag" … mit Zetteln, ORNA-Begegnungen, Namen, Werken, Verbindungen».
+// Der Weg ist der kürzeste über echte Kanten (Breitensuche, ohne die Zyklen), von einem Ziel der vorigen Station zur neuen.
+const NACHBARN = knoten.map(() => []), MIT_ZYKLEN = knoten.map(() => []);
+for (const [a, b, art] of liste) { MIT_ZYKLEN[a].push(b); MIT_ZYKLEN[b].push(a); if (art !== "zyklus") { NACHBARN[a].push(b); NACHBARN[b].push(a); } }
+// steht eine Strophe nur mit eigenen Namen da (z. B. 42 Die Plattform), führt der Weg über ihren Zyklus
+const suche = (von, nach) => { try { return suche_(von, nach, NACHBARN); } catch { return suche_(von, nach, MIT_ZYKLEN); } };
+const suche_ = (von, nach, NACHBARN) => {
+  const vor = new Map(von.map((v) => [v, -1])), schlange = [...von];
+  while (schlange.length) {
+    const a = schlange.shift();
+    if (nach.includes(a)) { const w = [a]; let x = a; while (vor.get(x) !== -1) { x = vor.get(x); w.unshift(x); } return w; }
+    for (const b of NACHBARN[a]) if (!vor.has(b)) { vor.set(b, a); schlange.push(b); }
+  }
+  throw new Error(`reise: kein Weg von ${von.map((i) => knoten[i].titel)} nach ${nach.map((i) => knoten[i].titel)}`);
+};
+/** wie die Spur weitergeht, in Worten: die Namen und Strophen dazwischen; ein Werk zwischen zwei Strophen heisst «dasselbe Werk» */
+const ueberVon = (w) => {
+  const teile = [];
+  for (let n = 1; n < w.length - 1; n++) {
+    const k = knoten[w[n]];
+    if (k.art === "name") teile.push(k.titel);
+    else if (k.art === "strophe") teile.push(`${k.nummer} ${k.titel}`);
+    else if (k.art === "zyklus") teile.push(`Zyklus ${k.titel}`);
+    else if (k.art === "werk" && knoten[w[n - 1]].art === "strophe" && knoten[w[n + 1]].art === "strophe") teile.push(`${k.von} · dasselbe Werk`);
+  }
+  return teile.length ? `über ${[...new Set(teile)].join(" · ")}` : null;
+};
+const ersterSatz = (t) => t.split(/(?<=[.!?])\s+/)[0];
+/** baut eine Spur aus Stationen: { strophe: n } oder { orna: [Künstler:in, Theoretiker:in] } */
+const spurAus = (stationen) => {
+  const spur = [];
+  for (const st of stationen) {
+    const vorher = spur.length ? spur[spur.length - 1].ziel : null;
+    if (st.strophe) {
+      const weg = vorher ? suche(vorher, [S(st.strophe)]) : [S(st.strophe)];
+      spur.push(stropheStation(st.strophe, weg, vorher ? ueberVon(weg) : null));
+    } else {
+      const [kunst, theorie] = st.orna, ziele = [N(kunst), N(theorie)];
+      let weg = vorher ? suche(vorher, ziele) : [ziele[0]];
+      const andere = ziele.find((z) => z !== weg[weg.length - 1]);
+      weg = [...weg, andere];
+      const station = ornaStation(kunst, theorie, null, weg, vorher ? ueberVon(weg.slice(0, -1).concat([weg[weg.length - 2]])) : null);
+      station.praxis = ersterSatz(K(kunst, theorie).text);
+      spur.push(station);
+    }
+  }
+  return spur;
+};
+export const AUFTRAEGE = {
+  // 1. Suchauftrag (29. Oktober 2026): «Vom Profil zum Feed zur Plattform (aber gerne mit Umwegen über ganz andere Zettel wie Ereignis, Person und Archiv)
+  // plus eben: ORNA Begegnungen, Verweise auf Werke und Praxen. Weibliche Adressen mindestens 50%» – die Paare von ORNA sind darum Künstlerin × Theoretikerin
+  profil: {
+    titel: "Vom Profil zum Feed zur Plattform", umweg: "mit Umwegen über Ereignis, Person und Archiv",
+    ziele: [36, 41, 42], umwege: [2, 17, 13],
+    stationen: [
+      { strophe: 36 }, { orna: ["Hanne Darboven", "Elena Esposito"] }, { strophe: 2 }, { strophe: 17 }, { orna: ["Louise Bourgeois", "Judith Butler"] },
+      { strophe: 13 }, { strophe: 41 }, { orna: ["Marina Abramović", "Wendy Hui Kyong Chun"] }, { strophe: 42 },
+    ],
+  },
+};
+// die Adressen einer Spur (die Namen der Verweise und der Paare): für «weibliche Adressen mindestens 50%» geprüft; jeder Name muss hier eingeordnet sein
+const FRAUEN = new Set(["Elena Esposito", "Sophie Calle", "Barbara Adam", "Virginia Woolf", "Cornelia Bohn", "Judith Butler", "Aleida Assmann", "Anne Carson", "José van Dijck",
+  "Jenny Offill", "Luciana Parisi", "Jennifer Egan", "Hanne Darboven", "Louise Bourgeois", "Marina Abramović", "Wendy Hui Kyong Chun"]);
+const MAENNER = new Set(["Gilles Deleuze", "Jorge Luis Borges", "Alfred North Whitehead", "On Kawara", "Christian Boltanski", "Franz Kafka", "Michel Foucault", "Walid Raad",
+  "Byung-Chul Han", "Christian Marclay", "David Beer", "Rafael Lozano-Hemmer"]);
+const adressen = (spur) => [...new Set(spur.flatMap((s) => (s.art === "orna" ? s.ziel.map((i) => knoten[i].titel) : s.verweise.map((v) => v.name))))];
+const spuren = { reise: spurReise, ...Object.fromEntries(Object.entries(AUFTRAEGE).map(([k, a]) => [k, spurAus(a.stationen)])) };
+for (const [k, a] of Object.entries(AUFTRAEGE)) {
+  const namen = adressen(spuren[k]), unbekannt = namen.filter((n) => !FRAUEN.has(n) && !MAENNER.has(n));
+  if (unbekannt.length) throw new Error(`reise ${k}: nicht eingeordnet: ${unbekannt.join(", ")}`);
+  a.frauen = namen.filter((n) => FRAUEN.has(n)).length; a.namen = namen.length;
+  if (a.frauen * 2 < a.namen) throw new Error(`reise ${k}: nur ${a.frauen} von ${a.namen} Adressen weiblich`);
+}
 // jeder Schritt eines Wegs muss eine Kante sein
-for (const st of spur) for (let j = 1; j < st.weg.length; j++) {
+for (const spur of Object.values(spuren)) for (const st of spur) for (let j = 1; j < st.weg.length; j++) {
   const [a, b] = [st.weg[j - 1], st.weg[j]];
   if (!kanten.has(a < b ? `${a}-${b}` : `${b}-${a}`)) throw new Error(`reise: keine Kante ${knoten[a].titel} – ${knoten[b].titel}`);
 }
@@ -137,6 +214,8 @@ writeFileSync(hier("data/reise.json"), JSON.stringify({
   zaehle,
   knoten: knoten.map((k, i) => ({ art: k.art, titel: k.titel, orna: k.orna ?? null, zsz: !!k.zsz, grad: grad[i], p: P[i].map((v) => Math.round(v * 10) / 10) })),
   kanten: liste.map(([a, b, art]) => [a, b, ["zyklus", "werk", "name", "orna"].indexOf(art)]),
-  spur,
+  spur: spurReise, spuren,
+  auftraege: Object.fromEntries(Object.entries(AUFTRAEGE).map(([k, a]) => [k, { titel: a.titel, umweg: a.umweg, frauen: a.frauen, namen: a.namen,
+    ziele: a.ziele.map((n) => ({ nummer: n, titel: zsz.stanzas.find((x) => x.number === n).title })), umwege: a.umwege.map((n) => ({ nummer: n, titel: zsz.stanzas.find((x) => x.number === n).title })) }])),
 }));
-console.log(`reise: ${knoten.length} Knoten, ${liste.length} Kanten, ${zaehle.beide} Namen in beiden, ${spur.length} Stationen`);
+console.log(`reise: ${knoten.length} Knoten, ${liste.length} Kanten, ${zaehle.beide} Namen in beiden, ${Object.entries(spuren).map(([k, v]) => `${k} ${v.length}`).join(", ")} Stationen`);

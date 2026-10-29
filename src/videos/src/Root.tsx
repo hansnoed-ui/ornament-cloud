@@ -8,7 +8,7 @@ import { MenschVideo, T as TMensch, zeitplan as zeitplanMensch } from "./mensch/
 import { StartAnimation, TStart, WachstumVideo, T as TWachstum } from "./wachstum/Video";
 import { WissenVideo, T as TWissen } from "./wissen/Video";
 import { FahrtVideo, T as TFahrt } from "./fahrt/Video";
-import { ReiseVideo, MASSE as MReise, T as TReise } from "./reise/Video";
+import { ReiseVideo, MASSE as MReise, T as TReise, zeitplan as zeitplanReise } from "./reise/Video";
 // neue Videos: Import
 
 export const RemotionRoot: React.FC = () => (
@@ -36,6 +36,9 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="ReiseHoch" component={ReiseVideo} durationInFrames={TReise.ende} fps={FPS} width={MReise.hoch.w} height={MReise.hoch.h} defaultProps={{ format: "hoch" as const }} />
     <Composition id="ReiseVideo" component={ReiseVideo} durationInFrames={TReise.ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const }} />
     <Composition id="ReiseQuer" component={ReiseVideo} durationInFrames={TReise.ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const }} />
+    {/* Suchauftrag 1 «Vom Profil zum Feed zur Plattform» (29. Oktober 2026): 4:5 und 16:9, mit dem Zettelkasten-Intro */}
+    <Composition id="ProfilVideo" component={ReiseVideo} durationInFrames={zeitplanReise("profil").ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const, auftrag: "profil" as const }} />
+    <Composition id="ProfilQuer" component={ReiseVideo} durationInFrames={zeitplanReise("profil").ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const, auftrag: "profil" as const }} />
     {/* neue Videos: Composition */}
   </>
 );
