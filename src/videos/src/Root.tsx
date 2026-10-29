@@ -42,6 +42,12 @@ export const RemotionRoot: React.FC = () => (
     {/* Suchauftrag 2 «Vom Körper zum blinden Fleck zum Material zur Kunst» (29. Oktober 2026): 4:5 und 16:9 */}
     <Composition id="KoerperVideo" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const, auftrag: "koerper" as const }} />
     <Composition id="KoerperQuer" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const, auftrag: "koerper" as const }} />
+    {/* Test «organisch» (29. Oktober 2026): gebogene Verbindungen, weiche Spur, ohne Aufzählungen */}
+    <Composition id="KoerperOrganisch" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const, auftrag: "koerper" as const, organisch: true }} />
+    <Composition id="KoerperOrganischQuer" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const, auftrag: "koerper" as const, organisch: true }} />
+    {/* Test «Gewebe» (29. Oktober 2026): die Verbindungen als Bänder aus Seidenfasern (WebGL 2, Gewebe.tsx); rendern mit --gl=angle */}
+    <Composition id="KoerperGewebe" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const, auftrag: "koerper" as const, organisch: true, gewebe: true }} />
+    <Composition id="KoerperGewebeQuer" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const, auftrag: "koerper" as const, organisch: true, gewebe: true }} />
     {/* neue Videos: Composition */}
   </>
 );

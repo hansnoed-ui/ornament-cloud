@@ -4,7 +4,7 @@
 // des Auftrags (Rot, wie die Spur) und die Umwege (Weiss), und die Spur zieht sie in der Reihenfolge der Reise zusammen.
 import React from "react";
 import { interpolate } from "remotion";
-import { SANS, SERIF } from "../vorlage/stil";
+import { SchriftKontext } from "./schrift";
 import type { Lay } from "./Video";
 
 export const INTRO_DAUER = 280;   // gut 9 s, danach blendet das Netz herein
@@ -55,7 +55,8 @@ const drehe = (p: P3, g: number, n: number): P3 => {
 /** Mitte und Grösse des Felds je Format: im Hochformat oben, im Querformat rechts (links steht der Auftrag) */
 const buehne = (L: Lay) => (L.w > L.h ? { cx: 1310, cy: 540, GA: 300 } : L.h > 1500 ? { cx: 540, cy: 660, GA: 330 } : { cx: 540, cy: 430, GA: 255 });
 
-export const ZettelIntro: React.FC<{ f: number; L: Lay; auftrag: Auftrag; route: number[] }> = ({ f, L, auftrag, route }) => {
+export const ZettelIntro: React.FC<{ f: number; L: Lay; auftrag: Auftrag; route: number[]; ohneListen?: boolean }> = ({ f, L, auftrag, route, ohneListen = false }) => {
+  const Sx = React.useContext(SchriftKontext);
   const t = f / 30, { cx, cy, GA } = buehne(L), U = GA * 1.05, m = Math.min(L.w, L.h);
   const g = t * 0.7, n = 0.42 + 0.018 * t;
   const box = (p: P3) => { const q = drehe(p, g, n), s = 3.4 / (3.4 + q[2]); return [cx + q[0] * U * s, cy + q[1] * U * s, s] as const; };
@@ -108,7 +109,7 @@ export const ZettelIntro: React.FC<{ f: number; L: Lay; auftrag: Auftrag; route:
     // die Zyklen am Rand
     const zy = k(5.0, 5.5, t);
     if (zy > 0) ROEMISCH.forEach((z, r) => teile.push(
-      <text key={`z${r}`} x={cx - GA - GA * 0.28} y={cy + ((r - 3) / 3) * GA} textAnchor="end" dominantBaseline="central" fontFamily={SERIF} fontSize={GA * 0.1} fill={C.grau} opacity={zy}>{z}</text>));
+      <text key={`z${r}`} x={cx - GA - GA * 0.28} y={cy + ((r - 3) / 3) * GA} textAnchor="end" dominantBaseline="central" fontFamily={Sx.serif} fontSize={GA * 0.1} fill={C.grau} opacity={zy}>{z}</text>));
     // die Spur des Auftrags durch das Feld, in der Reihenfolge der Reise
     const spurU = io(k(6.6, 8.6, t));
     if (spurU > 0) {
@@ -125,7 +126,7 @@ export const ZettelIntro: React.FC<{ f: number; L: Lay; auftrag: Auftrag; route:
       teile.push(<circle key={`f${i}`} cx={x} cy={y} r={r0} fill="none" stroke={C.leise} strokeWidth={1.6} opacity={feldAuf * (1 - an)} />);
       if (an > 0) {
         teile.push(<circle key={`a${i}`} cx={x} cy={y} r={r} fill={ziel ? C.rot : C.tinte} opacity={an} />);
-        teile.push(<text key={`n${i}`} x={x} y={y + 0.5} textAnchor="middle" dominantBaseline="central" fontFamily={SANS} fontWeight={600} fontSize={r * 0.95} fill={ziel ? C.tinte : C.grund} opacity={an}>{nr}</text>);
+        teile.push(<text key={`n${i}`} x={x} y={y + 0.5} textAnchor="middle" dominantBaseline="central" fontFamily={Sx.sans} fontWeight={600} fontSize={r * 0.95} fill={ziel ? C.tinte : C.grund} opacity={an}>{nr}</text>);
       }
     }
   }
@@ -143,10 +144,10 @@ export const ZettelIntro: React.FC<{ f: number; L: Lay; auftrag: Auftrag; route:
       </svg>
       <div style={{ position: "absolute", left: L.feld.left, width: L.feld.width, ...(quer ? { top: 0, bottom: 0, display: "flex", flexDirection: "column", justifyContent: "center" } : { top: L.h > 1500 ? 1120 : 800 }) }}>
         <div>
-          <div style={{ fontFamily: SANS, fontSize: L.kopf, fontWeight: 600, color: C.blau, ...auf(5.2) }}>Suchauftrag · Zettelkasten und ORNA</div>
-          <div style={{ fontFamily: SERIF, fontSize: L.titel, lineHeight: 1.04, color: C.tinte, marginTop: 12, letterSpacing: "-0.01em", ...auf(5.4) }}>{auftrag.titel}</div>
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: L.text, lineHeight: 1.25, color: "#e4e4e4", marginTop: 14, ...auf(5.9) }}>{auftrag.umweg}</div>
-          <div style={{ fontFamily: SANS, fontSize: L.klein, lineHeight: 1.45, marginTop: 22 }}>
+          <div style={{ fontFamily: Sx.sans, fontSize: L.kopf, fontWeight: 600, color: C.blau, ...auf(5.2) }}>Suchauftrag · Zettelkasten und ORNA</div>
+          <div style={{ fontFamily: Sx.serif, fontSize: L.titel, lineHeight: 1.04, color: C.tinte, marginTop: 12, letterSpacing: "-0.01em", ...auf(5.4) }}>{auftrag.titel}</div>
+          <div style={{ fontFamily: Sx.serif, fontStyle: Sx.kursiv, fontSize: L.text, lineHeight: 1.25, color: "#e4e4e4", marginTop: 14, ...auf(5.9) }}>{auftrag.umweg}</div>
+          <div style={{ fontFamily: Sx.sans, fontSize: L.klein, lineHeight: 1.45, marginTop: 22, display: ohneListen ? "none" : "block" }}>
             <div style={auf(6.1)}><span style={{ color: C.rot, fontWeight: 600 }}>Ziele </span><span style={{ color: C.tinte }}>{auftrag.ziele.map((z) => `${z.nummer} ${z.titel}`).join(" · ")}</span></div>
             {auftrag.umwege.length ? <div style={auf(6.5)}><span style={{ color: C.tinte, fontWeight: 600 }}>Umwege </span><span style={{ color: "#cfcfcf" }}>{auftrag.umwege.map((z) => `${z.nummer} ${z.titel}`).join(" · ")}</span></div> : null}
             <div style={{ ...auf(7.0), color: C.grau }}>dazu Begegnungen aus ORNA, Werke und Praxen</div>

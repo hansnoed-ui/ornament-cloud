@@ -3,7 +3,7 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 
 const hier = (p) => new URL(p, import.meta.url);
-const SCHRIFTEN = ["newsreader-normal-latin.woff2", "newsreader-italic-latin.woff2", "instrument-sans-normal-latin.woff2"];
+const SCHRIFTEN = ["newsreader-normal-latin.woff2", "newsreader-italic-latin.woff2", "instrument-sans-normal-latin.woff2", "inter-display-500-latin.woff2", "inter-display-600-latin.woff2"];   // Inter Display: Reise «Gewebe»
 
 mkdirSync(hier("public/"), { recursive: true });
 for (const s of SCHRIFTEN) copyFileSync(hier(`../../vendor/fonts/${s}`), hier(`public/${s}`));
