@@ -40,6 +40,7 @@ test.before(async () => {
       const json = (s, d) => { res.writeHead(s, { "content-type": "application/json" }); res.end(JSON.stringify(d)); };
       if (req.method === "POST" && req.url === "/repos/hansnoed-ui/ornament-studio/actions/workflows/stimme.yml/dispatches") { res.writeHead(204); return res.end(); }
       if (req.url.startsWith("/repos/hansnoed-ui/ornament-studio/actions/workflows/stimme.yml/runs")) return json(200, { workflow_runs: gh.lauf ? [{ id: 4711, display_title: "Stimme andere" }, gh.lauf] : [] });
+      if (req.method === "POST" && req.url === "/repos/hansnoed-ui/ornament-studio/actions/runs/4711/cancel") { res.writeHead(202); return res.end("{}"); }
       if (req.url === "/repos/hansnoed-ui/ornament-studio/actions/runs/4711/artifacts") return json(200, { artifacts: [{ id: 99, name: gh.lauf.display_title.replace("Stimme ", "stimme-") }] });
       // wie GitHub: das ZIP liegt hinter einer Weiterleitung auf einem anderen Server, dorthin darf der Schlüssel nicht mit
       if (req.url === "/repos/hansnoed-ui/ornament-studio/actions/artifacts/99/zip") { res.writeHead(302, { location: `http://localhost:${ghPort}/blob/a.zip` }); return res.end(); }
@@ -139,6 +140,32 @@ test("stimme.php: Auftrag geht als workflow_dispatch ans private Repository, Sta
   assert.equal((await holen("?laden=../../stimme")).status, 400, "nur echte Kennungen");
 });
 
+test("stimme.php: derselbe Text zweimal startet nur einen Lauf; Stoppen bricht bei GitHub ab, auch wenn der Lauf erst später sichtbar wird", { skip: ohnePhp && "kein php" }, async () => {
+  gh.lauf = null;
+  const erst = await schicken({ aktion: "sprechen", text: "Dritter Text.", stil: "b" });
+  const vorher = gesendet.length;
+  const nochmal = await schicken({ aktion: "sprechen", text: "Dritter Text.", stil: "b" });
+  assert.deepEqual(nochmal.json, { id: erst.json.id, doppelt: true });
+  assert.equal(gesendet.filter((g) => g.pfad.endsWith("/dispatches")).length, gesendet.slice(0, vorher).filter((g) => g.pfad.endsWith("/dispatches")).length, "kein zweiter Lauf");
+  const id = erst.json.id;
+  assert.deepEqual((await schicken({ aktion: "abbrechen", id })).json, { id, status: "abgebrochen" });
+  assert.ok(!gesendet.some((g) => g.pfad.endsWith("/cancel")), "noch kein Lauf sichtbar");
+  gh.lauf = { id: 4711, display_title: `Stimme ${id}`, status: "queued", conclusion: null };
+  assert.equal((await holen(`?auftrag=${id}`).then((x) => x.json())).status, "abgebrochen");
+  assert.equal(gesendet.filter((g) => g.methode === "POST" && g.pfad === "/repos/hansnoed-ui/ornament-studio/actions/runs/4711/cancel").length, 1, "nachgeholt");
+  assert.equal((await schicken({ aktion: "abbrechen", id })).status, 409, "schon abgebrochen");
+  assert.equal((await schicken({ aktion: "abbrechen", id: "../x" })).status, 400);
+
+  const zweit = await schicken({ aktion: "sprechen", text: "Vierter Text.", stil: "g" });
+  gh.lauf = { id: 4711, display_title: `Stimme ${zweit.json.id}`, status: "in_progress", conclusion: null };
+  assert.deepEqual((await schicken({ aktion: "abbrechen", id: zweit.json.id })).json, { id: zweit.json.id, status: "abgebrochen" });
+  assert.equal(gesendet.filter((g) => g.pfad.endsWith("/runs/4711/cancel")).length, 2);
+  // bei GitHub von Hand abgebrochen
+  const dritt = await schicken({ aktion: "sprechen", text: "Fünfter Text.", stil: "b" });
+  gh.lauf = { id: 4711, display_title: `Stimme ${dritt.json.id}`, status: "completed", conclusion: "cancelled" };
+  assert.equal((await holen(`?auftrag=${dritt.json.id}`).then((x) => x.json())).status, "abgebrochen");
+});
+
 test("stimme.php: fehlgeschlagener Lauf wird zu «fehler»; abmelden schliesst die Sitzung", { skip: ohnePhp && "kein php" }, async () => {
   const { json } = await schicken({ aktion: "sprechen", text: "Zweiter Text.", stil: "b" });
   gh.lauf = { id: 4711, display_title: `Stimme ${json.id}`, status: "completed", conclusion: "failure" };
@@ -153,6 +180,7 @@ test("Seite und Workflow passen zusammen: Formular, Download-Formate, Zugang aus
   assert.match(html, /<meta name="robots" content="noindex">/);
   const js = readFileSync(new URL("alpha/voice/voice.js", root), "utf8");
   assert.ok(js.includes('format=${f}') && js.includes('"wav"') && js.includes('"mp3"'));
+  assert.ok(js.includes('aktion: "abbrechen"') && js.includes("Stoppen"), "Stopp-Knopf");
   const wf = readFileSync(new URL(".github/workflows/hostpoint.yml", root), "utf8");
   for (const s of ["secrets.STIMME_PASSWORT", "secrets.STIMME_GITHUB_TOKEN", "vars.STIMME_REPO", "run: tools/hostpoint/stimme-zugang.sh"]) assert.ok(wf.includes(s), s);
   const sh = readFileSync(new URL("tools/hostpoint/stimme-zugang.sh", root), "utf8");
