@@ -5,8 +5,8 @@
 <style>
 /* ornament.cloud/gamma – Landing-Page nach einer Videovorlage (29. Oktober 2026), Entwurf 3. Ein WebGL-Raum (three.js, vendor/three-0.185.1):
    zuerst ein leuchtendes Netz aus den 49 Strophen von «Zu seiner Zeit» und ihren 133 Personen, durch das die Kamera fliegt; eine Tafel
-   mit dem Wort des gezogenen Zettels gleitet herein und kippt weg (bei jedem Besuch ein anderer Zettel, #zettel-12 zieht einen bestimmten); dann liegt die Website als Bahn in einer runden Trommel: Lab, Apps,
-   Prompts, Zettel, Social und Art als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
+   mit dem Wort des gezogenen Zettels gleitet herein und kippt weg (bei jedem Besuch ein anderer Zettel, #zettel-12 zieht einen bestimmten); dann liegt die Website als Bahn in einer runden Trommel: Lab, Das 3. Rad,
+   Apps, Prompts, Zettel, Social, Art und Angebot als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
    Die Bahn-Bilder zeichnet das Skript aus dem HTML der Kapitel unten; «Flach lesen» zeigt genau dieses HTML. Schriften und Farben des Neubaus. */
 :root {
   --nacht: #000000; --text: #ffffff; --leise: rgba(255, 255, 255, .62); --strich: rgba(255, 255, 255, .5); --fein: rgba(255, 255, 255, .14);
@@ -88,7 +88,15 @@ body.flach .raum-platz { display: none; }
 body.flach .bahn { display: block; pointer-events: auto; width: min(980px, 100%); margin: 0 auto; padding-top: 64px; }
 .kapitel { position: relative; padding-block: 56px 80px; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); background: var(--k); color: var(--kt); scroll-margin-top: 48px; }
 .kapitel h2 { margin: 0; font-size: clamp(52px, 9vw, 116px); font-weight: 600; letter-spacing: -.045em; line-height: .9; }
-.kapitel .leit { margin: 10px 0 34px; font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.2vw, 26px); line-height: 1.25; max-width: 30ch; text-wrap: balance; }
+.kapitel h2 .bst { display: inline-block; white-space: pre; }
+/* Beim Wechsel des Kapitels in der flachen Ansicht: ein kurzes Netz über dem Kopf */
+.k-netz { position: absolute; left: 0; top: 0; width: 100%; pointer-events: none; color: var(--kt); overflow: visible; }
+.k-netz line { stroke: currentColor; stroke-width: 1; opacity: .5; }
+.k-netz rect { fill: currentColor; }
+.k-netz .etikett rect { fill: var(--kt); }
+.k-netz .etikett text { fill: var(--k); font: 10px var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+body.flach.nach-intro.wechsel #welt { visibility: visible; }
+.kapitel .leit { margin: 20px 0 34px; font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.2vw, 26px); line-height: 1.25; max-width: 30ch; text-wrap: balance; }
 .kapitel .marke-k { position: absolute; top: 18px; right: max(18px, env(safe-area-inset-right, 0px)); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
 .raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 14px; }
 .karte { min-width: 0; display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--kl); background: var(--kc); text-decoration: none; }
@@ -105,7 +113,9 @@ body.flach .bahn { display: block; pointer-events: auto; width: min(980px, 100%)
 .k-prompts { --k: #e0503c; --kc: #e6695a; --kt: #000000; --kl: rgba(0, 0, 0, .26); }
 .k-zettel { --k: #ffffff; --kc: #f4f4f2; --kt: #000000; --kl: #d6d6d6; }
 .k-social { --k: #1d3fd6; --kc: #3a58dc; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); }
-.k-art { --k: #1f4d3a; --kc: #2f5e4a; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); }
+.k-art { --k: #f2b2c0; --kc: #f6c6d1; --kt: #000000; --kl: rgba(0, 0, 0, .24); }
+.k-rad { --k: #a7ff9c; --kc: #bbffb2; --kt: #000000; --kl: rgba(0, 0, 0, .22); }
+.k-angebot { --k: #1f4d3a; --kc: #2f5e4a; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); }
 
 /* Zettel: sieben Zyklen à sieben Strophen */
 .zyklen { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
@@ -149,7 +159,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 <header class="kopf">
   <a class="marke" href="{{LINK}}b/"><img src="{{BILD}}b/bilder/signet/signet-dunkel.svg" alt="">ornament.cloud <span class="ausgabe">Gamma · Herbst 2026</span></a>
   <nav aria-label="Bereiche">
-    <a href="#k-lab">Lab</a><a href="#k-apps">Apps</a><a href="#k-prompts">Prompts</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a><a href="#k-art">Art</a>
+    <a href="#k-lab">Lab</a><a href="#k-rad">3. Rad</a><a href="#k-apps">Apps</a><a href="#k-prompts">Prompts</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a><a href="#k-art">Art</a><a href="#k-angebot">Angebot</a>
   </nav>
   <a class="pille" href="{{LINK}}b/">Zur Website</a>
 </header>
@@ -169,8 +179,8 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div>
     </div>
     <div class="intro-text" id="intro-text">
-      <h1>Sechs Bereiche, ein Netz.</h1>
-      <p>Lab · Apps · Prompts · Zettel · Social · Art<br><span id="zug-hinweis">Weiter nach unten</span></p>
+      <h1>Acht Bereiche, ein Netz.</h1>
+      <p>Lab · 3. Rad · Apps · Prompts · Zettel · Social · Art · Angebot<br><span id="zug-hinweis">Weiter nach unten</span></p>
     </div>
   </div></div>
 </section>
@@ -194,8 +204,20 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <a class="weiter" href="{{LINK}}beta/lab/">Lab ansehen</a>
       </article>
 
+      <article class="kapitel k-rad" id="k-rad" data-name="Das 3. Rad">
+        <span class="marke-k">02 · Beta</span>
+        <h2>Das 3. Rad</h2>
+        <p class="leit">Zeit, Form und Farbe drehen gegeneinander.</p>
+        <div class="raster">
+          <a class="karte" href="{{LINK}}beta/drittes-rad/"><img src="{{BILD}}beta/drittes-rad/og-drittes-rad.jpg" alt="" loading="lazy"><b>Drehen</b><span>Jede Drehung zieht eine Strophe aus dem Zettelkasten, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.</span></a>
+          <a class="karte" href="{{LINK}}beta/drittes-rad/"><img class="svg" src="{{BILD}}b/bilder/apps/orna.svg" alt="" loading="lazy"><b>Begegnung</b><span>Künstler:innen treffen Theoretiker:innen, wie auf den Ringen von ORNA.</span></a>
+          <a class="karte" href="{{LINK}}beta/drittes-rad/"><img class="svg" src="{{BILD}}b/bilder/apps/omna-color.svg" alt="" loading="lazy"><b>Übung</b><span>Eine Gestaltungsübung aus OMNA COLOR, und von jedem Treffer aus geht es weiter.</span></a>
+        </div>
+        <a class="weiter" href="{{LINK}}beta/drittes-rad/">Rad drehen</a>
+      </article>
+
       <article class="kapitel k-apps" id="k-apps" data-name="Apps">
-        <span class="marke-k">02 · sieben Apps</span>
+        <span class="marke-k">03 · sieben Apps</span>
         <h2>Apps</h2>
         <p class="leit">Kleine Werkzeuge zum Ausprobieren. Alles bleibt auf dem Gerät.</p>
         <div class="raster">
@@ -211,7 +233,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </article>
 
       <article class="kapitel k-prompts" id="k-prompts" data-name="Prompts">
-        <span class="marke-k">03 · vier Prüfraster</span>
+        <span class="marke-k">04 · vier Prüfraster</span>
         <h2>Prompts</h2>
         <p class="leit">Vier Prüfraster zum genaueren Hinsehen, je mit Grundlagenpapier und Anwendungsprompt.</p>
         <div class="raster">
@@ -224,7 +246,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </article>
 
       <article class="kapitel k-zettel" id="k-zettel" data-name="Zettel">
-        <span class="marke-k">04 · Zu seiner Zeit</span>
+        <span class="marke-k">05 · Zu seiner Zeit</span>
         <h2>Zettel</h2>
         <p class="leit">Plateaus zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation.</p>
         <div class="zyklen" id="zyklen"></div>
@@ -233,7 +255,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </article>
 
       <article class="kapitel k-social" id="k-social" data-name="Social">
-        <span class="marke-k">05 · jede Woche</span>
+        <span class="marke-k">06 · jede Woche</span>
         <h2>Social</h2>
         <p class="leit">Ausgewählte Beiträge aus X, Facebook und Instagram, wöchentlich als Zettel gesammelt.</p>
         <div class="raster">
@@ -245,14 +267,26 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </article>
 
       <article class="kapitel k-art" id="k-art" data-name="Art">
-        <span class="marke-k">06 · im Auftrag</span>
+        <span class="marke-k">07 · Werke</span>
         <h2>Art</h2>
-        <p class="leit">Websites und Apps im Auftrag, dazu Originale und Prints.</p>
+        <p class="leit">Originale, Prints und Arbeiten im Raum.</p>
         <div class="raster">
-          <a class="karte" href="{{LINK}}b/werke/"><img src="{{BILD}}beta/lab/bilder/portraet.jpg" alt="Porträt als Mosaik vor Rot" loading="lazy"><b>Originale und Prints</b><span>Originale und Prints. Demnächst mehr.</span></a>
-          <a class="karte" href="{{LINK}}b/angebot/"><img class="svg" src="{{BILD}}b/bilder/signet/signet-dunkel.svg" alt="" loading="lazy"><b>Websites und Apps</b><span>Websites und Apps im Auftrag.</span></a>
+          <a class="karte" href="{{LINK}}b/werke/"><img src="{{BILD}}beta/lab/bilder/portraet.jpg" alt="Porträt als Mosaik vor Rot" loading="lazy"><b>Originale und Prints</b><span>Arbeiten auf Papier und Leinwand, Editionen und Drucke.</span></a>
         </div>
-        <a class="weiter" href="{{LINK}}b/werke/">Zu Art</a>
+        <a class="weiter" href="{{LINK}}b/werke/">Zu den Werken</a>
+      </article>
+
+      <article class="kapitel k-angebot" id="k-angebot" data-name="Angebot">
+        <span class="marke-k">08 · vier Leistungen</span>
+        <h2>Angebot</h2>
+        <p class="leit">Webdesign, Vermittlung, Kuration und Produkte. Jede Leistung beginnt mit einem Gespräch.</p>
+        <div class="raster">
+          <a class="karte" href="{{LINK}}b/angebot/webdesign/"><b>Webdesign</b><span>Websites und Apps: schnell, eigenständig, ohne Dienste von aussen.</span></a>
+          <a class="karte" href="{{LINK}}b/angebot/vermittlung/"><b>Vermittlung und Beratung</b><span>Seminare, Workshops, Projekte mit Schulen und Teams; Beratung für Institutionen.</span></a>
+          <a class="karte" href="{{LINK}}b/angebot/kuration/"><b>Kuratorische Projekte</b><span>Ausstellungen denken, ordnen, hängen.</span></a>
+          <a class="karte" href="{{LINK}}b/angebot/produkte/"><b>Produkte</b><span>Werke, Prints, Editionen und Auftragsarbeiten, klassisch und digital.</span></a>
+        </div>
+        <a class="weiter" href="{{LINK}}b/angebot/">Zum Angebot</a>
       </article>
   </div>
 </section>
@@ -262,11 +296,13 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
     <h2>Wohin als Nächstes?</h2>
     <ul>
       <li class="k-lab"><a href="{{LINK}}beta/lab/">Lab <i></i></a></li>
+      <li class="k-rad"><a href="{{LINK}}beta/drittes-rad/">Das 3. Rad <i></i></a></li>
       <li class="k-apps"><a href="{{LINK}}b/apps/">Apps <i></i></a></li>
       <li class="k-prompts"><a href="{{LINK}}b/raster/">Prompts <i></i></a></li>
       <li class="k-zettel"><a href="{{LINK}}b/zettel/">Zettel <i></i></a></li>
       <li class="k-social"><a href="{{LINK}}b/zuletzt/">Social <i></i></a></li>
       <li class="k-art"><a href="{{LINK}}b/werke/">Art <i></i></a></li>
+      <li class="k-angebot"><a href="{{LINK}}b/angebot/">Angebot <i></i></a></li>
     </ul>
     <p>ornament.cloud · Christian Strickler · Gamma, Herbst 2026</p>
   </div>
@@ -296,8 +332,8 @@ const ZUG = (() => {
 })();
 const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
 const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
-const KAPITELFARBEN = ["#c2185b", "#e6b117", "#e0503c", "#ffffff", "#1d3fd6", "#1f4d3a"];
-const LEUCHTFARBEN = ["#ff3d8b", "#ffc21a", "#ff5a3c", "#9fb8ff", "#4f78ff", "#2fd08a"];   // für das Leuchten im Raum etwas satter
+const KAPITELFARBEN = ["#c2185b", "#a7ff9c", "#e6b117", "#e0503c", "#ffffff", "#1d3fd6", "#f2b2c0", "#1f4d3a"];
+const LEUCHTFARBEN = ["#ff3d8b", "#a7ff9c", "#ffc21a", "#ff5a3c", "#9fb8ff", "#4f78ff", "#ff9fb8", "#2fd08a"];   // für das Leuchten im Raum etwas satter
 const ZYKLUSFARBEN = ["#ff5c9a", "#ffc21a", "#ff5a3c", "#ffffff", "#8fb0ff", "#3fd08e", "#ffa3d1"];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const klemm = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -368,7 +404,8 @@ async function kapitelZeichnen(k, i, LW) {
   const spalten = eng ? 2 : 3, gap = eng ? 10 : 14, kb = (innen - gap * (spalten - 1)) / spalten;
   const SANS = '"Instrument Sans", system-ui, sans-serif', SERIF = 'Newsreader, Georgia, serif', MONO = 'ui-monospace, Menlo, monospace';
   const titelGr = eng ? 64 : 118, leitGr = eng ? 20 : 27, kTitel = eng ? 15 : 18, kText = eng ? 12.5 : 14;
-  // Erst messen, dann zeichnen: dieselbe Routine läuft zweimal
+  // Erst messen, dann zeichnen: dieselbe Routine läuft zweimal. Der Titel steht als eigene Fläche schräg im Raum.
+  const lage = { titel: null, karten: [] };
   const durchgang = (cx, zeichnen) => {
     let y = pad + 10;
     if (zeichnen) { cx.fillStyle = farbe; cx.fillRect(0, 0, LW, 1e5); }
@@ -377,9 +414,9 @@ async function kapitelZeichnen(k, i, LW) {
     if (zeichnen) cx.fillText(k.querySelector(".marke-k").textContent.toUpperCase(), LW - pad, 26);
     cx.textAlign = "left"; cx.globalAlpha = 1;
     cx.font = `600 ${titelGr}px ${SANS}`; if ("letterSpacing" in cx) cx.letterSpacing = (-titelGr * .045) + "px";
-    y += titelGr * .82; if (zeichnen) cx.fillText(k.querySelector("h2").textContent, pad - 4, y);
+    y += titelGr * .82; if (!zeichnen) lage.titel = { text: k.querySelector("h2").textContent, x: pad - 4, grund: y, gr: titelGr, farbe: tinte };
     if ("letterSpacing" in cx) cx.letterSpacing = "0px";
-    cx.font = `italic ${leitGr}px ${SERIF}`; y += leitGr * .5;
+    cx.font = `italic ${leitGr}px ${SERIF}`; y += leitGr * 1.05;
     for (const z of umbrechen(cx, k.querySelector(".leit").textContent, Math.min(innen, leitGr * 17))) { y += leitGr * 1.22; if (zeichnen) cx.fillText(z, pad, y); }
     y += eng ? 22 : 34;
     if (karten.length) {
@@ -392,12 +429,12 @@ async function kapitelZeichnen(k, i, LW) {
         });
         const h = Math.max(...hoehen);
         reihe.forEach((c, j) => {
-          if (!zeichnen) return;
           const x = pad + j * (kb + gap); let yy = y + 10;
+          if (!zeichnen) { lage.karten.push({ titel: c.titel, x, y, b: kb, h, spalte: j, spalten }); return; }
           cx.fillStyle = flaeche; cx.fillRect(x, y, kb, h);
           cx.strokeStyle = linie; cx.lineWidth = 1; cx.strokeRect(x + .5, y + .5, kb - 1, h - 1);
           const bild = bilder[r + j];
-          if (bild) { cx.drawImage(bild, x + 10, yy, kb - 20, kb - 20); yy += kb - 20 + 10; }
+          if (bild) { const q = Math.min(bild.naturalWidth || bild.width, bild.naturalHeight || bild.height), bw = bild.naturalWidth || bild.width, bh = bild.naturalHeight || bild.height; cx.drawImage(bild, (bw - q) / 2, (bh - q) / 2, q, q, x + 10, yy, kb - 20, kb - 20); yy += kb - 20 + 10; }
           cx.fillStyle = tinte; cx.font = `600 ${kTitel}px ${SANS}`;
           for (const z of umbrechen(cx, c.titel, kb - 20)) { yy += kTitel * 1.2; cx.fillText(z, x + 10, yy - 3); }
           yy += 6; cx.font = `${kText}px ${SANS}`; cx.globalAlpha = .82;
@@ -436,7 +473,7 @@ async function kapitelZeichnen(k, i, LW) {
   const skala = eng ? 3 : 2.5;
   const cv = document.createElement("canvas"); cv.width = Math.round(LW * skala); cv.height = Math.round(LH * skala);
   const cx = cv.getContext("2d"); cx.scale(skala, skala); durchgang(cx, true);
-  return { cv, LH };
+  return { cv, LH, lage };
 }
 
 /* ---------- Raum ---------- */
@@ -461,9 +498,8 @@ function bahnPunkt(s, quer = 0, hoch = 0, ziel = new THREE.Vector3()) {
 }
 const normale = (s, v = new THREE.Vector3()) => { const th = s / RAUM.R; return v.set(0, Math.cos(th), Math.sin(th)); };
 
-const bahn = { stuecke: [], L: 0, k: 0, bereit: false, gruppe: null, kanten: null, funken: null, koerper: [] };
+const bahn = { stuecke: [], L: 0, k: 0, bereit: false, gruppe: null, materialien: [] };
 const netz = { gruppe: null, impulse: null, quadrate: null, knoten: [], etiketten: [] };
-let sterne;
 
 function netzBauen() {
   let saat = 11; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647 - .5;
@@ -493,15 +529,8 @@ function netzBauen() {
   punkte(kn.filter(k => k.art === "person"), .022, () => hdr("#8fb0ff", .8));
   punkte(kn.filter(k => k.art === "strophe"), .05, k => hdr(k.farbe, .95));
   punkte(kn.filter(k => k.art === "zyklus"), .08, k => hdr(k.farbe, 1.2));
-  // Lichtimpulse
-  netz.impulse = Array.from({ length: 120 }, (_, i) => ({ kante: kanten[(i * 37) % kanten.length], phase: (i * .618) % 1, tempo: .3 + ((i * 13) % 10) / 18, farbe: ZYKLUSFARBEN[i % 7] }));
-  const ip = new Float32Array(netz.impulse.length * 3), ic = new Float32Array(netz.impulse.length * 3);
-  netz.impulse.forEach((im, i) => { const c = hdr(im.farbe, 1.3); ic.set([c.r, c.g, c.b], i * 3); });
-  const ig = new THREE.BufferGeometry(); ig.setAttribute("position", new THREE.BufferAttribute(ip, 3)); ig.setAttribute("color", new THREE.BufferAttribute(ic, 3));
-  netz.impulsPunkte = new THREE.Points(ig, deckeln(new THREE.PointsMaterial({ size: .035, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }), 5));
-  g.add(netz.impulsPunkte);
-  // Sechs Bereiche als grosse Quadrate (Phase A)
-  const qp = new Float32Array(18), qc = new Float32Array(18);
+  // Die Bereiche als Quadrate (Phase A)
+  const qp = new Float32Array(KAPITELFARBEN.length * 3), qc = new Float32Array(KAPITELFARBEN.length * 3);
   KAPITELFARBEN.forEach((f, i) => { const c = hdr(f, 1); qc.set([c.r, c.g, c.b], i * 3); });
   const qg = new THREE.BufferGeometry(); qg.setAttribute("position", new THREE.BufferAttribute(qp, 3)); qg.setAttribute("color", new THREE.BufferAttribute(qc, 3));
   netz.quadrate = new THREE.Points(qg, deckeln(new THREE.PointsMaterial({ size: .12, vertexColors: true, transparent: true, depthWrite: false, toneMapped: false }), 22));
@@ -513,19 +542,6 @@ function netzBauen() {
   const et = document.getElementById("etiketten");
   netz.etiketten = kn.filter(k => k.art === "zyklus").map(k => { const s = document.createElement("span"); s.textContent = k.name; et.append(s); return { k, el: s }; });
   netz.stEt = Array.from({ length: 7 }, () => { const s = document.createElement("span"); s.className = "st"; s.style.opacity = 0; et.append(s); return s; });
-}
-
-function sterneBauen() {
-  const n = 1600, p = new Float32Array(n * 3), c = new Float32Array(n * 3);
-  let saat = 5; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
-  for (let i = 0; i < n; i++) {
-    const u = z() * 2 - 1, w = z() * Math.PI * 2, r = 90 + z() * 60, q = Math.sqrt(1 - u * u);
-    p.set([Math.cos(w) * q * r, u * r, Math.sin(w) * q * r], i * 3);
-    const f = .25 + z() * .6; c.set([f, f, f * 1.15], i * 3);
-  }
-  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(p, 3)); g.setAttribute("color", new THREE.BufferAttribute(c, 3));
-  sterne = new THREE.Points(g, new THREE.PointsMaterial({ size: .28, vertexColors: true, sizeAttenuation: true, depthWrite: false, fog: false }));
-  welt.add(sterne);
 }
 
 async function bahnBauen() {
@@ -556,7 +572,7 @@ async function bahnBauen() {
       }
       const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx);
       const tex = new THREE.CanvasTexture(quelle); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy(); tex.minFilter = THREE.LinearMipmapLinearFilter;
-      const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, color: 0xe6e6e6, fog: true }));
+      const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, color: 0xffffff, fog: true, transparent: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }));   // volle Farbe: Senf, Rosa und Rot wie auf der Website
       mesh.userData.kapitel = i; g.add(mesh);
       bahn.stuecke.push({ s0: ta, s1: tb, mesh, kapitel: i });
     }
@@ -565,49 +581,111 @@ async function bahnBauen() {
   });
   bahn.L = s;
   bahn.kapitel = kapitel.map((_, i) => { const t = bahn.stuecke.filter(x => x.kapitel === i); return { s0: t[0].s0, s1: t[t.length - 1].s1 }; });
-  // Leuchtende Kanten in den Farben der Bereiche
-  const kp = [], kc = [], ki = []; let o = 0;
+  // Kanten als Haarlinie in der Farbe des Bereichs, genau am Rand des Bandes
+  const kp = [], kc = [];
+  const kfarbe = sj => { const st = bahn.kapitel.findIndex(x => sj <= x.s1 + 1e-6); return hdr(LEUCHTFARBEN[Math.max(0, st)], .7); };
   for (const seite of [-1, 1]) {
-    const n = Math.ceil(bahn.L / .1);
-    for (let j = 0; j <= n; j++) {
-      const sj = j / n * bahn.L, a = bahnPunkt(sj, seite * (RAUM.w / 2 + .01), .01), b = bahnPunkt(sj, seite * (RAUM.w / 2 + .022), .01);
-      const st = bahn.kapitel.findIndex(x => sj <= x.s1 + 1e-6), c = hdr(LEUCHTFARBEN[Math.max(0, st)], .55);
+    const n = Math.ceil(bahn.L / .08);
+    for (let j = 0; j < n; j++) {
+      const s1 = j / n * bahn.L, s2 = (j + 1) / n * bahn.L, a = bahnPunkt(s1, seite * RAUM.w / 2, .004), b = bahnPunkt(s2, seite * RAUM.w / 2, .004), c = kfarbe((s1 + s2) / 2);
       kp.push(a.x, a.y, a.z, b.x, b.y, b.z); kc.push(c.r, c.g, c.b, c.r, c.g, c.b);
-      if (j < n) ki.push(o, o + 2, o + 1, o + 1, o + 2, o + 3);
-      o += 2;
     }
   }
-  const kg = new THREE.BufferGeometry(); kg.setAttribute("position", new THREE.Float32BufferAttribute(kp, 3)); kg.setAttribute("color", new THREE.Float32BufferAttribute(kc, 3)); kg.setIndex(ki);
-  g.add(new THREE.Mesh(kg, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, toneMapped: false })));
-  // Querlinien alle 2 Einheiten wie Weg-Marken
-  const mp = [];
-  for (let sj = 0; sj <= bahn.L; sj += 2) { const a = bahnPunkt(sj, -RAUM.w / 2 - .6, .01), b = bahnPunkt(sj, -RAUM.w / 2 - .15, .01), c = bahnPunkt(sj, RAUM.w / 2 + .15, .01), d = bahnPunkt(sj, RAUM.w / 2 + .6, .01); mp.push(...a.toArray(), ...b.toArray(), ...c.toArray(), ...d.toArray()); }
-  const mg = new THREE.BufferGeometry(); mg.setAttribute("position", new THREE.Float32BufferAttribute(mp, 3));
-  g.add(new THREE.LineSegments(mg, new THREE.LineBasicMaterial({ color: 0x8fb0ff, transparent: true, opacity: .35 })));
-  // Haarlinien: die Trommel als feines Gitter um die Bahn
-  const hp = [];
-  for (let sj = -8; sj <= bahn.L + 8; sj += .8) for (const q of [-1, 1]) { for (let j = 0; j < 14; j++) { const a = bahnPunkt(sj, q * (RAUM.w / 2 + .9 + j * .55), .02), b = bahnPunkt(sj + .8, q * (RAUM.w / 2 + .9 + j * .55), .02); hp.push(...a.toArray(), ...b.toArray()); } }
-  for (let j = 0; j <= 28; j++) { const q = -RAUM.w / 2 - 8.5 + j * ((RAUM.w + 17) / 28); if (Math.abs(q) < RAUM.w / 2 + .5) continue; for (let sj = -8; sj <= bahn.L + 8; sj += 2.4) { const a = bahnPunkt(sj, q, .02), b = bahnPunkt(sj, q + (RAUM.w + 17) / 28, .02); hp.push(...a.toArray(), ...b.toArray()); } }
-  const hg = new THREE.BufferGeometry(); hg.setAttribute("position", new THREE.Float32BufferAttribute(hp, 3));
-  g.add(new THREE.LineSegments(hg, new THREE.LineBasicMaterial({ color: 0x8fb0ff, transparent: true, opacity: .1, depthWrite: false })));
-  // Funken, die in der Trommel treiben
-  const n = eng ? 500 : 900; bahn.funkenDaten = [];
-  const fp = new Float32Array(n * 3), fc = new Float32Array(n * 3);
-  let saat = 3; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
-  for (let i = 0; i < n; i++) {
-    const seite = z() < .5 ? -1 : 1, quer = seite * (RAUM.w / 2 + .25 + z() * 3.5) * (z() < .15 ? .2 : 1), hoch = .15 + z() * z() * 6;
-    bahn.funkenDaten.push({ s: z() * (bahn.L + 20) - 10, quer, hoch, tempo: .15 + z() * .35 });
+  const kg = new THREE.BufferGeometry(); kg.setAttribute("position", new THREE.Float32BufferAttribute(kp, 3)); kg.setAttribute("color", new THREE.Float32BufferAttribute(kc, 3));
+  g.add(new THREE.LineSegments(kg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, toneMapped: false })));
+  // Zwischen den Umläufen nur wenige feine Linien: drei Längslinien, Marken jeden Meter, an jedem Bereich ein Strich in seiner Farbe.
+  // Rechts liegt jede Linie genau dort, wo links vom nächsten Umlauf dieselbe Linie läge; links braucht es sie nur im ersten Umlauf.
+  const umlauf = 2 * Math.PI * RAUM.R, luecke = 1.6 * RAUM.w - RAUM.w, lp = [], lc = [];
+  const linie = (a, b, hell) => { lp.push(...a.toArray(), ...b.toArray()); lc.push(hell, hell, hell * 1.06, hell, hell, hell * 1.06); };
+  for (const [f, hell] of [[.2, .2], [.5, .12], [.8, .2]]) {
+    for (const seite of [-1, 1]) {
+      const bis = seite < 0 ? Math.min(bahn.L, umlauf) : bahn.L + 4;
+      for (let sj = -4; sj < bis; sj += .25) linie(bahnPunkt(sj, seite * (RAUM.w / 2 + luecke * f), .003), bahnPunkt(sj + .25, seite * (RAUM.w / 2 + luecke * f), .003), hell);
+    }
   }
-  const fg = new THREE.BufferGeometry(); fg.setAttribute("position", new THREE.BufferAttribute(fp, 3)); fg.setAttribute("color", new THREE.BufferAttribute(fc, 3));
-  bahn.funken = new THREE.Points(fg, deckeln(new THREE.PointsMaterial({ size: .045, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }), 4));
-  g.add(bahn.funken);
-  // Drahtkörper neben der Bahn, einer je Bereich
-  const formen = [new THREE.IcosahedronGeometry(1, 2), new THREE.TorusKnotGeometry(.7, .2, 160, 14), new THREE.OctahedronGeometry(1.1, 2), new THREE.SphereGeometry(1, 28, 18), new THREE.TorusGeometry(.8, .28, 20, 72), new THREE.IcosahedronGeometry(1.1, 3)];
-  bahn.koerper = bahn.kapitel.map((x, i) => {
-    const m = new THREE.Mesh(formen[i], new THREE.MeshBasicMaterial({ color: hdr(LEUCHTFARBEN[i], .9), wireframe: true, toneMapped: false, transparent: true, opacity: .32, depthWrite: false }));
-    const sm = (x.s0 + x.s1) / 2; m.position.copy(bahnPunkt(sm, (i % 2 ? -1 : 1) * (RAUM.w / 2 + (eng ? 1.6 : 2.6)), eng ? 1.4 : 1.8)); m.scale.setScalar(eng ? .6 : .9);
-    g.add(m); return m;
+  for (let m = 0; m <= bahn.L; m++) {
+    const lang = m % 5 === 0, q = RAUM.w / 2 + .06;
+    for (const seite of [-1, 1]) linie(bahnPunkt(m, seite * q, .003), bahnPunkt(m, seite * (q + (lang ? .28 : .12)), .003), lang ? .34 : .2);
+  }
+  const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); lg.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
+  g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
+  const mp = [], mc = [];
+  bahn.kapitel.forEach((x, i) => { const c = hdr(LEUCHTFARBEN[i], .5); for (const seite of [-1, 1]) { const a = bahnPunkt(x.s0, seite * (RAUM.w / 2 + .06), .003), b = bahnPunkt(x.s0, seite * (RAUM.w / 2 + .7), .003); mp.push(...a.toArray(), ...b.toArray()); mc.push(c.r, c.g, c.b, c.r, c.g, c.b); } });
+  const mg = new THREE.BufferGeometry(); mg.setAttribute("position", new THREE.Float32BufferAttribute(mp, 3)); mg.setAttribute("color", new THREE.Float32BufferAttribute(mc, 3));
+  g.add(new THREE.LineSegments(mg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, toneMapped: false })));
+  // Titel: an der Unterkante auf der Bahn eingehängt und schräg in den Raum geneigt, mit weichem Schatten
+  const SANS = '"Instrument Sans", system-ui, sans-serif', MONO = 'ui-monospace, Menlo, monospace';
+  const textFlaeche = (text, font, farbe, gr, sk, rand, abstand = 0, unschaerfe = 0) => {
+    const m = document.createElement("canvas").getContext("2d"); m.font = font; if ("letterSpacing" in m) m.letterSpacing = abstand + "px";
+    const b = Math.ceil(m.measureText(text).width + rand * 2), h = Math.ceil(gr * 1.16 + rand);
+    const cv = document.createElement("canvas"); cv.width = Math.ceil(b * sk); cv.height = Math.ceil(h * sk);
+    const cx = cv.getContext("2d"); cx.scale(sk, sk); cx.font = font; if ("letterSpacing" in cx) cx.letterSpacing = abstand + "px";
+    if (unschaerfe) cx.filter = `blur(${unschaerfe}px)`;
+    cx.fillStyle = farbe; cx.textBaseline = "alphabetic"; cx.fillText(text, rand, gr * .88 + rand / 2);
+    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    return { tex, b, h };
+  };
+  // Ein Bezugssystem auf der Bahn: x wie die Schrift nach rechts, y wie die Schrift nach oben, z aus der Bahn heraus
+  const basis = (sj, quer) => {
+    const T = bahnPunkt(sj + .01).sub(bahnPunkt(sj - .01)).normalize(), N = normale(sj);
+    const X = new THREE.Vector3().crossVectors(T, N).normalize().negate(), Y = T.negate();
+    const piv = new THREE.Group(); piv.matrixAutoUpdate = false;
+    piv.matrix.makeBasis(X, Y, new THREE.Vector3().crossVectors(X, Y)).setPosition(bahnPunkt(sj, quer, .004));
+    return piv;
+  };
+  bahn.titel = [];
+  bilder.forEach((b, i) => {
+    const t = b.lage.titel; if (!t) return;
+    const abstand = -t.gr * .045, font = `600 ${t.gr}px ${SANS}`, rand = Math.round(t.gr * .14);
+    const f = textFlaeche(t.text, font, t.farbe, t.gr, eng ? 3 : 2.5, rand, abstand);
+    const sch = textFlaeche(t.text, font, "#000", t.gr, 1, rand, abstand, t.gr * .05);
+    const unten = t.grund - t.gr * .88 - rand / 2 + f.h;   // Unterkante der Fläche im Kapitel
+    const sH = bahn.kapitel[i].s0 + unten * bahn.k, quer = RAUM.w / 2 - (t.x - rand) * bahn.k;
+    const piv = basis(sH, quer);
+    const geo = new THREE.PlaneGeometry(f.b * bahn.k, f.h * bahn.k).translate(f.b * bahn.k / 2, f.h * bahn.k / 2, 0);
+    const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: f.tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    const schatten = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: sch.tex, transparent: true, depthWrite: false }));
+    schatten.material.userData.a = .3; schatten.position.z = .002; schatten.renderOrder = 1; mesh.renderOrder = 2;
+    piv.add(schatten, mesh); g.add(piv);
+    bahn.titel.push({ sH, mesh, schatten });
   });
+  // Metermarken: alle fünf Meter eine Zahl in Mono am linken Rand
+  const marken = []; for (let m = 5; m <= bahn.L; m += 5) marken.push(m);
+  if (marken.length) {
+    const zb = 64, zh = 16, sp = 8, sk = 4, reihen = Math.ceil(marken.length / sp), kl = bahn.k * 1.3;
+    const atlas = document.createElement("canvas"); atlas.width = zb * sp * sk; atlas.height = reihen * zh * sk;
+    const ax = atlas.getContext("2d"); ax.scale(sk, sk); ax.font = `11px ${MONO}`; ax.fillStyle = "#fff"; ax.textBaseline = "middle"; ax.textAlign = "right";
+    const ap = [], au = [], ai = [];
+    marken.forEach((m, j) => {
+      const x0 = (j % sp) * zb, y0 = Math.floor(j / sp) * zh; ax.fillText(m + " m", x0 + zb - 2, y0 + zh / 2 + 1);
+      const qR = RAUM.w / 2 + .4, qL = qR + zb * kl, hh = zh * kl / 2, o = ap.length / 3;
+      for (const [sj, q] of [[m - hh, qL], [m - hh, qR], [m + hh, qL], [m + hh, qR]]) ap.push(...bahnPunkt(sj, q, .003).toArray());
+      const u0 = x0 / (zb * sp), u1 = (x0 + zb) / (zb * sp), v0 = 1 - y0 / (reihen * zh), v1 = 1 - (y0 + zh) / (reihen * zh);
+      au.push(u0, v0, u1, v0, u0, v1, u1, v1); ai.push(o, o + 2, o + 1, o + 1, o + 2, o + 3);
+    });
+    const at = new THREE.CanvasTexture(atlas); at.colorSpace = THREE.SRGBColorSpace; at.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    const ag = new THREE.BufferGeometry(); ag.setAttribute("position", new THREE.Float32BufferAttribute(ap, 3)); ag.setAttribute("uv", new THREE.Float32BufferAttribute(au, 2)); ag.setIndex(ai);
+    const am = new THREE.Mesh(ag, new THREE.MeshBasicMaterial({ map: at, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    am.material.userData.a = .5; g.add(am);
+  }
+  // Am Desktop: die Karten am Rand beschriftet, mit einer feinen Linie zur Karte
+  if (!eng) {
+    const hp = [], kl = .0105;
+    bilder.forEach((b, i) => b.lage.karten.forEach(c => {
+      const links = c.spalte === 0, rechts = c.spalte === c.spalten - 1; if (!links && !rechts) return;
+      const seite = links ? 1 : -1, sj = bahn.kapitel[i].s0 + (c.y + 18) * bahn.k;
+      const A = bahnPunkt(sj, RAUM.w / 2 - (links ? c.x : c.x + c.b) * bahn.k, .004), B = bahnPunkt(sj - .25, seite * (RAUM.w / 2 + 1.05), .42);
+      hp.push(...A.toArray(), ...B.toArray());
+      const f = textFlaeche(c.titel, `600 13px ${SANS}`, "#fff", 13, 4, 3);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: f.tex, transparent: true, depthWrite: false }));
+      sp.center.set(links ? 1 : 0, .15); sp.scale.set(f.b * kl, f.h * kl, 1); sp.position.copy(B); g.add(sp);
+    }));
+    if (hp.length) {
+      const hg = new THREE.BufferGeometry(); hg.setAttribute("position", new THREE.Float32BufferAttribute(hp, 3));
+      const hl = new THREE.LineSegments(hg, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false })); hl.material.userData.a = .4; g.add(hl);
+    }
+  }
+  bahn.materialien = []; g.traverse(o => { if (o.material) bahn.materialien.push(o.material); });
   welt.add(g); bahn.gruppe = g;
   bahn.bereit = true;
   platzMessen();
@@ -616,56 +694,84 @@ async function bahnBauen() {
 function platzMessen() { if (bahn.L) platz.style.height = Math.round(bahn.L / bahn.k - innerHeight * .45) + "px"; }
 
 /* ---------- Kamera und Zeitachse ---------- */
-const zustand = { tZiel: 0, t: 0, sZiel: 0, s: 0, v: 0, maus: { x: 0, y: 0 } };
+const zustand = { y: null, yZiel: 0, t: 0, s: 0, v: 0, dreh: 0, maus: { x: 0, y: 0 } };
 const S_START = () => (schmal() ? 4.8 : 4.2);   // so weit hinter dem Anfang steht die Kamera, wenn die Bahn erscheint
-function zeitachse() {
-  const weg = intro.offsetHeight - innerHeight, r = intro.getBoundingClientRect();
-  zustand.tZiel = ruhig ? .84 : klemm(-r.top / weg);
-  const p = Math.max(0, scrollY - (intro.offsetTop + weg));
-  zustand.sZiel = S_START() + (flach ? 0 : p * bahn.k);
+// Höhe des Fensters nur bei neuer Breite übernehmen: die Adressleiste am Handy verschiebt so nichts
+let hoeheStabil = innerHeight, breiteStabil = innerWidth;
+addEventListener("resize", () => { if (innerWidth !== breiteStabil) { breiteStabil = innerWidth; hoeheStabil = innerHeight; } });
+// Intro und Bahn hängen am selben gedämpften Scrollwert: kein Nachlaufen des einen, während das andere schon fährt
+function zeitachse(dt) {
+  zustand.yZiel = scrollY;
+  const weg = intro.offsetHeight - hoeheStabil, ende = intro.offsetTop + weg;
+  if (zustand.y === null || ruhig) zustand.y = zustand.yZiel;
+  else {
+    const rate = zustand.y < ende - 1 ? 5 : 14;
+    zustand.y = misch(zustand.y, zustand.yZiel, 1 - Math.exp(-dt * rate));
+    if (Math.abs(zustand.yZiel - zustand.y) < .5) zustand.y = zustand.yZiel;
+  }
+  zustand.t = ruhig ? .84 : klemm((zustand.y - intro.offsetTop) / weg);
+  zustand.s = S_START() + (flach ? 0 : Math.max(0, zustand.y - ende) * bahn.k);
 }
 addEventListener("pointermove", e => { zustand.maus.x = e.clientX / innerWidth - .5; zustand.maus.y = e.clientY / innerHeight - .5; }, { passive: true });
 
-const tmp = { a: new THREE.Vector3(), b: new THREE.Vector3(), c: new THREE.Vector3(), d: new THREE.Vector3(), up: new THREE.Vector3() };
-function kameraSetzen(zeit) {
+const tmp = { a: new THREE.Vector3(), b: new THREE.Vector3(), c: new THREE.Vector3(), d: new THREE.Vector3(), e: new THREE.Vector3(), f: new THREE.Vector3(), g: new THREE.Vector3(), up: new THREE.Vector3() };
+// Beim Wechsel zur flachen Seite kippt die Kamera über das Kapitel, bis die Bahn wie eine Seite daliegt, und zurück
+const kipp = { von: 0, nach: 0, t0: 0, dauer: 1, kap: 0, wert: 0 };
+function kippen(nach, dauer, kap) { kipp.von = kipp.wert; kipp.nach = nach; kipp.t0 = performance.now(); kipp.dauer = dauer; if (kap != null) kipp.kap = kap; }
+function kippStand(zeit) { const p = klemm((zeit - kipp.t0) / kipp.dauer), e = p < .5 ? 4 * p * p * p : 1 - Math.pow(2 - 2 * p, 3) / 2; kipp.wert = misch(kipp.von, kipp.nach, e); }
+function kameraSetzen() {
   const t = zustand.t, eng = schmal();
+  const s = zustand.s, hoch = eng ? 5.4 : 2.7, hinten = eng ? 2.4 : 1.4, voraus = eng ? 5.4 : 4.6;
   // Intro: um das Netz herum, hinein, wieder hinaus
   const nah = weich(.22, .5, t), raus = weich(.5, .66, t);
-  const dist = misch(misch(16, 1.8, nah), eng ? 10.5 : 8.5, raus);
-  const winkel = (ruhig ? 0 : zeit * .00008) + t * 1.8 + zustand.maus.x * .25, neig = .32 + zustand.maus.y * .2 - nah * .15 + raus * .1;
+  let dist = misch(misch(16, 1.8, nah), eng ? 10.5 : 8.5, raus);
+  let winkel = zustand.dreh + t * 1.8 + zustand.maus.x * .25, neig = .32 + zustand.maus.y * .2 - nah * .15 + raus * .1;
   // Beim Hineinfliegen wandert die Mitte vom Netz zum gezogenen Zettel
   const C = tmp.b.copy(netz.zug.p).applyMatrix4(netz.gruppe.matrixWorld).lerp(netz.gruppe.position, 1 - nah * (1 - raus));
+  // Neben der Tafel gleitet die Kamera um das Netz herum genau über den Anfang der Bahn.
+  // Von dort ist der Übergang nur noch ein Senken des Blicks und ein kleiner Schritt zurück.
+  const hin = ruhig ? 1 : weich(.64, .84, t);
+  if (hin > 0) {
+    const d = bahnPunkt(S_START() + hinten, 0, hoch, tmp.c).sub(netz.gruppe.position), dl = d.length();
+    const ref = zustand.dreh + .64 * 1.8;   // ab der Tafel fest, darum springt das Ziel nicht
+    let dw = Math.atan2(d.x, d.z) - ref; dw -= Math.round(dw / (Math.PI * 2)) * Math.PI * 2;
+    winkel = misch(winkel, ref + dw, hin); neig = misch(neig, Math.asin(d.y / dl), hin); dist = misch(dist, dl - .9, hin);
+  }
   const iPos = tmp.a.set(Math.sin(winkel) * Math.cos(neig) * dist, Math.sin(neig) * dist, Math.cos(winkel) * Math.cos(neig) * dist).add(C);
   const iBlick = C;
   // Seitlich versetzen, solange die Tafel links steht
-  const tf = weich(.6, .76, t) * (1 - weich(.86, .95, t));
+  const tf = weich(.6, .76, t) * (1 - weich(.86, .96, t));
   // Bahn: hinter dem Punkt s, über der Bahn, Blick zurück auf das, was gerade gelesen wird
-  const s = zustand.s, hoch = eng ? 5.4 : 2.7, hinten = eng ? 2.4 : 1.4, voraus = eng ? 5.4 : 4.6;
   const bPos = bahnPunkt(s + hinten, 0, hoch, tmp.c);
   const bBlick = bahnPunkt(s - voraus, 0, .2, tmp.d);
-  const ueber = ruhig ? 1 : weich(.86, .97, t);
+  const ueber = ruhig ? 1 : weich(.86, .98, t);
   kamera.position.lerpVectors(iPos, bPos, ueber);
   const blick = iBlick.lerp(bBlick, ueber);
   const up = tmp.up.set(0, 1, 0).lerp(normale(s + hinten), ueber).normalize();
+  if (kipp.wert > 0 && bahn.kapitel) {
+    // Senkrecht über dem Kapitel, so hoch, dass die Bahn so breit erscheint wie die flache Seite
+    const x = bahn.kapitel[kipp.kap], fov = (eng ? 72 : 58) * Math.PI / 180;
+    const sichtB = RAUM.w * innerWidth / Math.min(980, innerWidth), sichtH = sichtB * innerHeight / innerWidth, abst = sichtH / (2 * Math.tan(fov / 2));
+    const sC = x.s0 + sichtH * (.5 - 48 / innerHeight);
+    const tBlick = bahnPunkt(sC, 0, 0, tmp.f), tPos = bahnPunkt(sC, 0, abst, tmp.e), tUp = bahnPunkt(sC - .05, 0, 0, tmp.g).sub(tBlick).normalize();
+    kamera.position.lerp(tPos, kipp.wert); blick.lerp(tBlick, kipp.wert); up.lerp(tUp, kipp.wert).normalize();
+  }
   kamera.up.copy(up);
   kamera.lookAt(blick);
   if (tf > 0 && !eng) { kamera.setViewOffset(innerWidth, innerHeight, -innerWidth * .18 * tf, 0, innerWidth, innerHeight); } else kamera.clearViewOffset();
   kamera.fov = eng ? 72 : 58;
   kamera.updateProjectionMatrix();
-  return 0;
 }
 
 /* ---------- Tafel und Intro-Text ---------- */
 function introDom(t) {
   const eng = schmal();
   introText.style.opacity = 1 - weich(.03, .14, t);
-  // Die Tafel gleitet ruhig in Blaupause herein, ohne Farbschnitte
-  const auf = weich(.6, .76, t);
+  // Die Tafel gleitet ruhig in Blaupause herein, ohne Farbschnitte,
+  // und geht am Ende auf demselben Weg wieder, während sich der Blick auf die Bahn senkt
+  const auf = weich(.6, .76, t) * (1 - weich(.86, .96, t));
   tafel.style.width = (auf * (eng ? innerWidth : Math.min(innerWidth * .4, 560))) + "px";
-  spalte.style.opacity = weich(.72, .82, t);
-  const fall = ruhig ? 0 : weich(.86, 1, t);
-  szene.style.transform = `translateY(${-fall * 22}%) rotateX(${fall * 62}deg) scale(${1 - fall * .25})`;
-  szene.style.opacity = 1 - weich(.92, 1, t);
+  spalte.style.opacity = weich(.72, .82, t) * (1 - weich(.84, .89, t));
   szene.style.visibility = t >= .999 ? "hidden" : "visible";
 }
 
@@ -703,14 +809,14 @@ function stropheZeigen(t) {
 let letzte = performance.now();
 function bild(zeit) {
   const dt = Math.min(.25, (zeit - letzte) / 1000); letzte = zeit;
-  zeitachse();
   // Leicht gedämpft: das Intro gleitet, die Bahn folgt dem Finger fast unmittelbar und läuft nicht nach
-  const daempf = ruhig ? 1 : 1 - Math.exp(-dt * 4);
-  zustand.t = misch(zustand.t, zustand.tZiel, daempf); if (Math.abs(zustand.tZiel - zustand.t) < .003) zustand.t = zustand.tZiel;
-  const sAlt = zustand.s; zustand.s = misch(zustand.s, zustand.sZiel, ruhig ? 1 : 1 - Math.exp(-dt * 14));
+  const sAlt = zustand.s; zeitachse(dt); kippStand(zeit);
+  // Das Netz dreht sich nur, solange man es betrachtet; ab der Tafel steht es still
+  if (!ruhig) zustand.dreh += dt * .08 * (1 - weich(.5, .6, zustand.t));
   zustand.v = misch(zustand.v, (zustand.s - sAlt) / Math.max(dt, 1e-3), .2);
   introDom(zustand.t);
-  const imRaum = !flach || intro.getBoundingClientRect().bottom > 0;
+  // Während des Wechsels zur flachen Seite läuft das Bild weiter, die Seite blendet darüber
+  const imRaum = !flach || document.body.classList.contains("wechsel") || intro.getBoundingClientRect().bottom > 0;
   document.body.classList.toggle("nach-intro", intro.getBoundingClientRect().bottom <= innerHeight * .2);
   const r = abschnitt.getBoundingClientRect(), drin = r.top < innerHeight * .3 && r.bottom > innerHeight * .5;
   steuer.classList.toggle("da", drin || (!flach && zustand.t > .97 && r.bottom > innerHeight * .5));
@@ -721,17 +827,15 @@ function bild(zeit) {
   else (bahn.kapitel || []).forEach((x, i) => { if (zustand.s - (schmal() ? 5.4 : 4.6) >= x.s0 - .5) akt = i; });
   zeiger.querySelectorAll("a").forEach((a, i) => a.classList.toggle("aktiv", i === akt));
   if (ok3d && imRaum && netz.gruppe) {
-    const tempo = kameraSetzen(zeit);
+    kameraSetzen();
     const t = zustand.t;
     // Netz
     netz.gruppe.rotation.y = ruhig ? 0 : zeit * .00002;
-    const netzA = weich(.05, .22, t) * (1 - .55 * weich(.88, 1, t));
+    const netzA = weich(.05, .22, t) * (1 - weich(.86, .98, t));
+    netz.gruppe.visible = netzA > 0;
     netz.gruppe.children.forEach(o => { if (o.material && o !== netz.quadrate) o.material.opacity = netzA * (o.isLineSegments ? .55 : 1); });
-    const ip = netz.impulsPunkte.geometry.attributes.position;
-    netz.impulse.forEach((im, i) => { const ph = (im.phase + zeit * .00014 * im.tempo) % 1; const [a, b] = im.kante; tmp.a.lerpVectors(a.p, b.p, ph); ip.setXYZ(i, tmp.a.x, tmp.a.y, tmp.a.z); });
-    ip.needsUpdate = true;
     const zuHub = weich(.06, .22, t), qp = netz.quadrate.geometry.attributes.position;
-    for (let i = 0; i < 6; i++) { const w = i * 1.047 + zeit * .00012; const h = netz.knoten[i].p; qp.setXYZ(i, misch(Math.cos(w) * .55, h.x, zuHub), misch(Math.sin(w * 1.5 + 1) * .2, h.y, zuHub), misch(Math.sin(w) * .55, h.z, zuHub)); }
+    for (let i = 0; i < KAPITELFARBEN.length; i++) { const w = i * Math.PI * 2 / KAPITELFARBEN.length + zeit * .00012; const h = netz.knoten[i % 7].p; qp.setXYZ(i, misch(Math.cos(w) * .55, h.x, zuHub), misch(Math.sin(w * 1.5 + 1) * .2, h.y, zuHub), misch(Math.sin(w) * .55, h.z, zuHub)); }
     qp.needsUpdate = true; netz.quadrate.material.opacity = 1 - zuHub;
     // Beschriftungen der Zyklen
     netz.etiketten.forEach(({ k, el }) => {
@@ -744,17 +848,13 @@ function bild(zeit) {
     stropheZeigen(t);
     // Bahn
     if (bahn.bereit) {
-      const fp = bahn.funken.geometry.attributes.position, fc = bahn.funken.geometry.attributes.color;
-      const zug = (ruhig ? 0 : dt) * .25;
-      bahn.funkenDaten.forEach((f, i) => {
-        f.s -= zug * f.tempo; if (f.s < -10) f.s += bahn.L + 20;
-        bahnPunkt(f.s, f.quer, f.hoch, tmp.a); fp.setXYZ(i, tmp.a.x, tmp.a.y, tmp.a.z);
-        const st = bahn.kapitel.findIndex(x => f.s <= x.s1); const c = hdr(LEUCHTFARBEN[st < 0 ? 5 : st], .8); fc.setXYZ(i, c.r, c.g, c.b);
-      });
-      fp.needsUpdate = true; fc.needsUpdate = true;
-      bahn.funken.material.size = schmal() ? .026 : .022;
-      bahn.koerper.forEach((m, i) => { m.rotation.x = zeit * .00009 * (1 + i * .1); m.rotation.y = zeit * .00014; });
-      bahn.gruppe.visible = zustand.t > .8;
+      // Die Bahn blendet ein, während die Tafel geht; danach undurchsichtig
+      const auf = ruhig ? 1 : weich(.8, .93, t);
+      bahn.gruppe.visible = auf > 0;
+      bahn.materialien.forEach(m => { m.opacity = auf * (m.userData.a ?? 1); });
+      // Titel liegen flacher, solange sie nah sind, und richten sich auf, während sie davonziehen
+      const fuss = zustand.s + (schmal() ? 2.4 : 1.4);
+      bahn.titel.forEach(x => { const a = ruhig ? 1.05 : misch(.35, 1.3, weich(-2, 16, fuss - x.sH)); x.mesh.rotation.x = a; x.schatten.scale.y = .15 + .85 * Math.cos(a); });
     }
     bloom.strength = .38;
     composer.render();
@@ -763,17 +863,93 @@ function bild(zeit) {
 }
 
 /* ---------- Wechsel zwischen Raum und flacher Ansicht ---------- */
-function zuKapitel(id) {
+function zuKapitel(id, sofort) {
   const k = document.getElementById(id); if (!k) return;
-  if (flach) { k.scrollIntoView({ behavior: ruhig ? "auto" : "smooth" }); return; }
+  if (flach) { k.scrollIntoView({ behavior: ruhig || sofort ? "auto" : "smooth" }); return; }
   const i = kapitel.indexOf(k), x = bahn.kapitel && bahn.kapitel[i]; if (!x) return;
-  const weg = intro.offsetHeight - innerHeight;
-  scrollTo({ top: intro.offsetTop + weg + x.s0 / bahn.k + 2, behavior: "smooth" });
+  const weg = intro.offsetHeight - hoeheStabil;
+  scrollTo({ top: intro.offsetTop + weg + x.s0 / bahn.k + 2, behavior: sofort ? "auto" : "smooth" });
 }
+// In die flache Seite: die Kamera kippt über das Kapitel, dann blendet die Seite darüber auf.
+// Zurück: die Seite blendet ab, die Bahn liegt zuerst flach da und kippt in den Raum zurück.
+let wechselt = false, letzterEffekt = null;
 function setzeFlach(f, id) {
+  if (wechselt) return;
   const akt = id || zeiger.querySelector("a.aktiv")?.getAttribute("href").slice(1);
+  const i = Math.max(0, kapitel.findIndex(k => k.id === akt));
+  const animiert = !ruhig && ok3d && bahn.bereit && zustand.t >= .97;
+  if (!animiert) { flachSetzen(f, akt); return; }
+  wechselt = true;
+  if (f) { kippen(1, 700, i); setTimeout(() => { flachSetzen(true, akt, true); wechselt = false; }, 720); return; }
+  // Hinter der abblendenden Seite liegt schon die Bahn flach unter der Kamera
+  kipp.wert = kipp.von = kipp.nach = 1; kipp.kap = i; document.body.classList.add("wechsel");
+  bahnDom.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 320, easing: "ease-in", fill: "forwards" }).finished.then(() => {
+    flachSetzen(false, akt);
+    bahnDom.getAnimations().forEach(a => a.cancel());
+    document.body.classList.remove("wechsel");
+    kippen(0, 1100, i);
+    wechselt = false;
+  });
+}
+function flachSetzen(f, akt, effekt) {
   flach = f; document.body.classList.toggle("flach", f); flachKnopf.textContent = f ? "Zurück in den Raum" : "Flach lesen";
-  requestAnimationFrame(() => { if (akt) zuKapitel(akt); });
+  if (f && !effekt) kipp.wert = kipp.von = kipp.nach = 0;
+  const k = akt && document.getElementById(akt);
+  if (k) { if (f) k.scrollIntoView({ behavior: "auto" }); else zuKapitel(akt, true); }
+  zustand.y = null;   // den Scrollwert neu fassen statt hinüberzugleiten
+  if (f && effekt && k) {
+    // Die Seite blendet über dem letzten Bild der Bahn auf
+    document.body.classList.add("wechsel");
+    bahnDom.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420, easing: "ease-out" }).finished.then(() => { document.body.classList.remove("wechsel"); kipp.wert = kipp.von = kipp.nach = 0; });
+    letzterEffekt = k; kapitelEffekt(k);
+  }
+}
+
+/* ---------- Flache Seiten: beim Wechsel des Kapitels ein kurzes Netz, der Titel Buchstabe für Buchstabe ---------- */
+const NS = "http://www.w3.org/2000/svg";
+function titelZerlegen(h2) {
+  if (!h2.dataset.zerlegt) {
+    const text = h2.textContent; h2.setAttribute("aria-label", text); h2.textContent = "";
+    for (const c of text) { const b = document.createElement("span"); b.className = "bst"; b.setAttribute("aria-hidden", "true"); b.textContent = c; h2.append(b); }
+    h2.dataset.zerlegt = "1";
+  }
+  return [...h2.children];
+}
+function kapitelEffekt(k) {
+  if (ruhig || !k || !k.animate) return;
+  const h2 = k.querySelector("h2"), bst = titelZerlegen(h2);
+  bst.forEach((b, j) => b.animate([{ opacity: 0, transform: "translateY(.2em)", filter: "blur(8px)" }, { opacity: 1, transform: "none", filter: "blur(0px)" }],
+    { duration: 560, delay: 80 + (bst.length - 1 - j) * 55, easing: "cubic-bezier(.2,.7,.2,1)", fill: "backwards" }));
+  k.querySelector(".k-netz")?.remove();
+  const b = k.clientWidth, h = Math.min(k.clientHeight, 440), letzte = bst[bst.length - 1];
+  const hx = Math.min(b - 70, letzte.offsetLeft + letzte.offsetWidth + 46), hy = h2.offsetTop + h2.offsetHeight * .5;
+  const svg = document.createElementNS(NS, "svg"); svg.setAttribute("class", "k-netz"); svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("viewBox", `0 0 ${b} ${h}`); svg.style.height = h + "px";
+  const el = (name, attr) => { const e = document.createElementNS(NS, name); for (const n in attr) e.setAttribute(n, attr[n]); return e; };
+  let saat = (Date.now() % 9973) + 1; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
+  const n = schmal() ? 5 : 7;
+  for (let j = 0; j < n; j++) {
+    const w = -2.6 + j / (n - 1) * 5.2 + (z() - .5) * .5, r = 50 + z() * Math.min(240, b * .32);
+    const x = klemm(hx + Math.cos(w) * r * 1.4, 8, b - 8), y = klemm(hy + Math.sin(w) * r * .75, 8, h - 8), len = Math.hypot(x - hx, y - hy);
+    const l = el("line", { x1: hx, y1: hy, x2: x.toFixed(1), y2: y.toFixed(1) }); l.style.strokeDasharray = len.toFixed(1);
+    const q = el("rect", { x: (x - 2.5).toFixed(1), y: (y - 2.5).toFixed(1), width: 5, height: 5 });
+    svg.append(l, q);
+    l.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: 640, delay: 140 + j * 60, easing: "cubic-bezier(.3,.6,.2,1)", fill: "both" });
+    q.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, delay: 140 + j * 60 + 560, fill: "both" });
+  }
+  const name = k.dataset.name || h2.textContent, eb = name.length * 6.6 + 14;
+  const etikett = el("g", { class: "etikett" }); etikett.append(el("rect", { x: hx + 9, y: hy - 9, width: eb.toFixed(1), height: 18 }), Object.assign(el("text", { x: hx + 16, y: hy + 3.5 }), { textContent: name }));
+  svg.append(el("rect", { x: hx - 4, y: hy - 4, width: 8, height: 8 }), etikett);
+  etikett.animate([{ opacity: 0, transform: "translateX(-6px)" }, { opacity: 1, transform: "none" }], { duration: 380, delay: 220, easing: "ease-out", fill: "both" });
+  k.append(svg);
+  svg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 900, delay: 2000, easing: "ease-in", fill: "forwards" }).finished.then(() => svg.remove());
+}
+if ("IntersectionObserver" in window) {
+  const beobachter = new IntersectionObserver(eintraege => {
+    if (!flach || wechselt) return;
+    for (const e of eintraege) if (e.isIntersecting && e.target !== letzterEffekt) { letzterEffekt = e.target; kapitelEffekt(e.target); }
+  }, { rootMargin: "-45% 0px -45% 0px" });
+  kapitel.forEach(k => beobachter.observe(k));
 }
 flachKnopf.addEventListener("click", () => setzeFlach(!flach));
 document.querySelectorAll('a[href^="#k-"]').forEach(a => a.addEventListener("click", e => { e.preventDefault(); zuKapitel(a.getAttribute("href").slice(1)); }));
@@ -813,19 +989,21 @@ function groesse() {
   mass = { b, h };
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
   renderer.setSize(b, h, false);
+  composer.setPixelRatio(renderer.getPixelRatio());
   composer.setSize(b, h);
   kamera.aspect = b / h; kamera.updateProjectionMatrix();
 }
 if (ok3d) {
-  welt = new THREE.Scene(); welt.background = new THREE.Color(0); welt.fog = new THREE.FogExp2(0x000000, .028);
+  welt = new THREE.Scene(); welt.background = new THREE.Color(0); welt.fog = new THREE.FogExp2(0x000000, .02);
   kamera = new THREE.PerspectiveCamera(58, innerWidth / innerHeight, .05, 400);
-  composer = new EffectComposer(renderer);
+  // Ohne eigenes Zwischenbild mit Mehrfachabtastung wären die Ränder des Bandes treppig
+  composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(innerWidth, innerHeight, { type: THREE.HalfFloatType, samples: 4 }));
   composer.addPass(new RenderPass(welt, kamera));
-  bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), .38, .35, .96); composer.addPass(bloom);
+  bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), .38, .35, 1.0); composer.addPass(bloom);
   composer.addPass(new OutputPass());
   groesse();
   RAUM.R = schmal() ? 8 : 10; RAUM.w = schmal() ? 4.2 : 6; RAUM.drift = 1.6 * RAUM.w / (2 * Math.PI * RAUM.R);
-  netzBauen(); sterneBauen();
+  netzBauen();
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => bahnBauen()).catch(() => { flach = true; document.body.classList.add("flach"); });
 } else {
   platz.style.height = "0px";
