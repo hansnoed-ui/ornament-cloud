@@ -14,7 +14,7 @@
 <style>
 /* ornament.cloud/gamma – Landing-Page nach einer Videovorlage (29. Oktober 2026), Entwurf 3. Ein WebGL-Raum (three.js, vendor/three-0.185.1):
    zuerst ein leuchtendes Netz aus den 49 Strophen von «Zu seiner Zeit» und ihren 133 Personen, durch das die Kamera fliegt; eine Tafel
-   «Anschluss» fegt in den Farben der Bereiche durchs Bild und kippt weg; dann liegt die Website als Bahn in einer runden Trommel: Lab, Apps,
+   mit dem Wort des gezogenen Zettels gleitet herein und kippt weg (bei jedem Besuch ein anderer Zettel, #zettel-12 zieht einen bestimmten); dann liegt die Website als Bahn in einer runden Trommel: Lab, Apps,
    Prompts, Zettel, Social und Art als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
    Die Bahn-Bilder zeichnet das Skript aus dem HTML der Kapitel unten; «Flach lesen» zeigt genau dieses HTML. Schriften und Farben des Neubaus. */
 :root {
@@ -77,6 +77,9 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 .tafel .zahl { border-top: 1px solid rgba(255, 255, 255, .4); padding-top: 8px; font-family: var(--mono); font-size: 11px; line-height: 1.5; }
 .tafel .zahl b { display: block; font-family: var(--sans); font-size: clamp(26px, 3vw, 40px); font-weight: 600; letter-spacing: -.03em; line-height: 1; }
 .tafel .satz { font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.3; margin: 0; }
+.tafel .satz small { display: block; font-family: var(--mono); font-style: normal; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; opacity: .75; margin-bottom: 6px; }
+.etiketten .st.gezogen { font-size: 13px; color: #fff; }
+.etiketten .st.gezogen b { color: #fff; }
 @media (max-width: 760px) {
   .tafel { top: auto; height: 46svh; }
   .tafel .wort { font-size: min(calc(46svh / 6.4), 16vw); }
@@ -165,18 +168,18 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
     <div class="etiketten" id="etiketten" aria-hidden="true"></div>
     <p class="zeile" id="zeile" aria-live="off"><small></small><q></q></p>
     <div class="tafel">
-      <p class="wort">Anschluss</p>
+      <p class="wort" id="zug-wort">Anschluss</p>
       <div class="spalte">
         <ol id="zyklen-liste"></ol>
         <div class="zahl"><b>49</b>Strophen in sieben Zyklen</div>
         <div class="zahl"><b>133</b>Personen aus Kunst, Theorie und Wissenschaft</div>
         <div class="zahl"><b>7</b>Apps, die auf dem Gerät bleiben</div>
-        <p class="satz">«Der Anschluss erfindet die Welt, die ihn im Nachhinein notwendig erscheinen lässt.»</p>
+        <p class="satz"><small id="zug-kopf">Gezogen</small><span id="zug-satz">«Der Anschluss erfindet die Welt, die ihn im Nachhinein notwendig erscheinen lässt.»</span></p>
       </div>
     </div>
     <div class="intro-text" id="intro-text">
       <h1>Sechs Bereiche, ein Netz.</h1>
-      <p>Lab · Apps · Prompts · Zettel · Social · Art<br>Weiter nach unten</p>
+      <p>Lab · Apps · Prompts · Zettel · Social · Art<br><span id="zug-hinweis">Weiter nach unten</span></p>
     </div>
   </div></div>
 </section>
@@ -293,6 +296,13 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
 const DATEN = {"z":[[1,0,"Die Brücke","Nicht die Welt begründet den Anschluss – der Anschluss erfindet die Welt, die ihn im Nachhinein notwendig erscheinen lässt.",[0,1,2,3]],[2,0,"Das Ereignis","Was geschehen ist, ist geschehen; seine Geschichte verändert sich mit jedem Anschluss.",[4,5,6,7]],[3,0,"Der Anschluss","Kontinuität ist kein Zustand – sie ist die unwahrscheinlichste aller Operationen.",[0,8,9,10]],[4,0,"Der Beobachter","Der Beobachter kann die Unterscheidung seines gegenwärtigen Beobachtens erst später beobachten.",[11,12,13,14]],[5,0,"Der blinde Fleck","Der blinde Fleck ist nicht das Ende der Erkenntnis – er ist ihr Anfang.",[15,16,17,10]],[6,0,"Die Verspätung","Gegenwart ist die Kunst, ihre eigene Verspätung zu übersehen.",[4,18,19,20]],[7,0,"Die Zeit","Zeit ist die Bedingung, dass auf eine Operation auch anderes folgen kann als ihre Wiederholung.",[0,21,22,7]],[8,1,"Der Speicher","Speicherung hält etwas verfügbar; Wiederaufnahme gibt ihm eine neue Gegenwart.",[15,23,24,25]],[9,1,"Das Gedächtnis","Gedächtnis macht Vergangenes in veränderten Praktiken erneut wirksam.",[26,27,28,29]],[10,1,"Die Erinnerung","Erinnerung gibt Geschehenem eine gegenwärtige, überprüfbare Gestalt.",[30,31,32,20]],[11,1,"Die Spur","Die Spur hält eine vergangene Wirkung materiell fest, ohne ihre Bedeutung festzulegen.",[33,8,34,35]],[12,1,"Das Vergessen","Vergessen verändert, was für wen noch erreichbar bleibt.",[15,36,28,14]],[13,1,"Das Archiv","Das Archiv bewahrt und ordnet, was künftig wiedergefunden werden kann.",[33,37,38,39]],[14,1,"Die Geschichte","Geschichte deutet Vergangenes neu und bleibt an seine Spuren gebunden.",[30,31,40,35]],[15,2,"Die Adresse","Die Adresse macht soziale Zurechnung über Abwesenheit hinweg möglich.",[0,41,32,42]],[16,2,"Der Name","Der Name macht Abwesenheit adressierbar.",[43,41,44,45]],[17,2,"Die Person","Die Person ist das Gedächtnis einer Adresse.",[46,47,24,3]],[18,2,"Die Rolle","Die Rolle macht Erwartungen von Personen unabhängig.",[48,47,49,50]],[19,2,"Die Erwartung","Erwartungen ordnen, was an einer Adresse künftig überraschen kann.",[15,51,52,53]],[20,2,"Die Verantwortung","Verantwortung bindet Folgen an eine Adresse.",[54,55,56,57]],[21,2,"Die Anerkennung","Anerkennung verleiht einer Adresse soziale Geltung.",[58,59,60,61]],[22,3,"Die Grenze","Nur was getrennt bleibt, kann sich berühren.",[62,63,2,3]],[23,3,"Die Berührung","Berührung ist die Grenze in Ereignisform.",[64,65,9,66]],[24,3,"Die Irritation","Irritation ist Fremdwirkung in Eigenform.",[0,21,67,53]],[25,3,"Der Körper","Der Körper verwandelt Fremdwirkung in Empfindlichkeit.",[68,69,70,3]],[26,3,"Die Wahrnehmung","Wahrnehmung lässt die Grenze zwischen Körper und Bewusstsein fraglich werden.",[0,69,67,71]],[27,3,"Die Übersetzung","Übersetzung ist Wiederholung ohne Identität.",[62,27,72,73]],[28,3,"Die Koppelung","Koppelung stabilisiert Wirkungen an Grenzen, deren Entstehung selbst fraglich bleibt.",[0,1,74,75]],[29,4,"Das Material","Material ist der Widerstand, durch den Form möglich wird.",[68,76,77,78]],[30,4,"Die Form","Form macht Differenz wiederverwendbar.",[79,27,80,81]],[31,4,"Das Werk","Ein Werk bleibt als bestimmte Form erkennbar; eine künstlerische Adresse kann mehrere Werke tragen.",[82,83,84,85]],[32,4,"Der Stil","Stil ist die Wiederkehr einer Differenz als Erwartung.",[86,87,88,89]],[33,4,"Das Publikum","Das Publikum kultiviert die Empfindlichkeit getrennter Wahrnehmungen.",[90,83,9,42]],[34,4,"Die Ausstellung","Die Ausstellung ordnet Beziehungen, bevor sie Bedeutungen ordnet.",[91,92,93,94]],[35,4,"Die Kunst","Kunst hält Wahrnehmung gesellschaftlich wiederverwendbar, indem sie ihre Differenz offenhält.",[95,96,19,97]],[36,5,"Das Profil","Das Profil verwandelt adressierbare Spuren in berechenbare Wiedererkennbarkeit.",[15,27,32,14]],[37,5,"Die Information","Information entsteht, wenn ein Unterschied in einer bestimmten Ordnung Folgen hat.",[98,1,19,99]],[38,5,"Die Wahrscheinlichkeit","Wahrscheinlichkeit verwandelt offene Kontingenz in ungleich gewichtete Zukunft.",[4,100,101,102]],[39,5,"Der Algorithmus","Algorithmisches Ranking verteilt ungleiche Chancen auf den nächsten Anschluss.",[103,104,105,106]],[40,5,"Die Empfehlung","Die Empfehlung gibt berechnete Wahrscheinlichkeit als mögliche nächste Welt zurück.",[107,108,109,110]],[41,5,"Der Feed","Der Feed macht Prognose zur gegenwärtigen Umwelt ihrer nächsten Überprüfung.",[111,112,22,113]],[42,5,"Die Plattform","Die Plattform gibt berechnete Möglichkeiten als Umwelt zurück und verarbeitet deren Folgen.",[114,115,116,117]],[43,6,"Die Identität","Identität macht Veränderung intertemporal zurechenbar.",[118,119,49,7]],[44,6,"Die Möglichkeit","Möglichkeit ist die gegenwärtige Erreichbarkeit eines noch nicht aktualisierten Anschlusses.",[120,121,52,122]],[45,6,"Die Kontingenz","Kontingenz wird zur Zukunftschance, wo Alternativen erreichbar und Strukturen revidierbar bleiben.",[0,47,2,123]],[46,6,"Die Unterbrechung","Eine Unterbrechung öffnet Zukunft erst, wenn nach ihr etwas anders anschliessen kann.",[124,31,28,53]],[47,6,"Das Neue","Neu ist, was verändert, was anschliessend möglich ist.",[125,126,9,25]],[48,6,"Die Freiheit","Freiheit ist die Fähigkeit, strukturierte Kontingenz aufzunehmen, zurückzuweisen oder umzuformen.",[43,127,128,129]],[49,6,"Die Zukunft","Zukunft ist der erhaltene Spielraum, anders weiterzugehen, als bereits erwartet wird.",[130,5,131,132]]],"p":["Niklas Luhmann","Karen Barad","Mona Hatoum","Franz Kafka","Barbara Adam","Alfred North Whitehead","On Kawara","Virginia Woolf","Jacques Derrida","Lygia Clark","Clarice Lispector","Heinz von Foerster","Donna Haraway","Cindy Sherman","Jorge Luis Borges","Elena Esposito","George Spencer-Brown","René Magritte","Edmund Husserl","Hito Steyerl","Marcel Proust","Isabelle Stengers","Christian Marclay","Henri Bergson","Christian Boltanski","Ursula K. Le Guin","Paul Connerton","Gilles Deleuze","Doris Salcedo","Toni Morrison","Maurice Halbwachs","Hannah Arendt","Sophie Calle","Aleida Assmann","Rachel Whiteread","W. G. Sebald","Friedrich Nietzsche","Michel Foucault","Walid Raad","Anne Carson","Susan Hiller","Adriana Cavarero","Italo Calvino","Pierre Bourdieu","Lubaina Himid","Paul Auster","Cornelia Bohn","Judith Butler","Erving Goffman","Gillian Wearing","Luigi Pirandello","Reinhart Koselleck","Yoko Ono","Samuel Beckett","Marilyn Strathern (Hg.)","Emmanuel Levinas","Teresa Margolles","J. M. Coetzee","Michèle Lamont","Axel Honneth","Kerry James Marshall","Bernardine Evaristo","Susan Leigh Star","Georg Simmel","Eva Illouz","Jean-Luc Nancy","Ocean Vuong","Ann Veronica Janssens","Annemarie Mol","Maurice Merleau-Ponty","Ana Mendieta","Olga Tokarczuk","Shilpa Gupta","Walter Benjamin","Pierre Huyghe","Daisy Hildyard","Jane Bennett","Richard Serra","Francis Ponge","Caroline Levine","Constantin Brâncuși","Maggie Nelson","Shannon Jackson","Juliane Rebentisch","Bazon Brock","Enrique Vila-Matas","Marielle Macé","Nelson Goodman","Hanne Darboven","Ben Lerner","Antoine Hennion","Tony Bennett","Mieke Bal","Fred Wilson","Olivia Laing","Nathalie Heinich","Jacques Rancière","Michel Houellebecq","Klaus Kusanowsky","Stanisław Lem","Ian Hacking","Vera Molnár","Thomas Pynchon","Tarleton Gillespie","Yuk Hui","Anna Ridler","Patricia Lockwood","Taina Bucher","Bernard Stiegler","Amalia Ulman","Dave Eggers","José van Dijck","Byung-Chul Han","Jenny Offill","David Beer","Luciana Parisi","Rafael Lozano-Hemmer","Jennifer Egan","Anselm Strauss","Paul Ricœur","Ann Mische","Ernst Bloch","Robert Musil","Milan Kundera","Harold Garfinkel","Michel Callon","Gilbert Simondon","Simone de Beauvoir","Tania Bruguera","Ralph Ellison","Helga Nowotny","Katie Paterson","Ted Chiang"]};
+// Bei jedem Besuch ein anderer Zettel; #zettel-12 zieht einen bestimmten
+const ZUG = (() => {
+  const m = location.hash.match(/^#zettel-(\d+)$/), n = m ? +m[1] : 0;
+  if (n >= 1 && n <= DATEN.z.length) return DATEN.z[n - 1];
+  const r = new Uint32Array(1); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(r) : (r[0] = Math.random() * 4e9);
+  return DATEN.z[r[0] % DATEN.z.length];
+})();
 const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
 const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
 const KAPITELFARBEN = ["#c2185b", "#e6b117", "#e0503c", "#ffffff", "#1d3fd6", "#1f4d3a"];
@@ -316,6 +326,19 @@ const kapitel = [...bahnDom.querySelectorAll(".kapitel")];
 const schmal = () => innerWidth < 760;
 
 /* ---------- DOM: Zyklen-Liste, Zettel-Feld, Kapitelzeiger ---------- */
+const zugWort = document.getElementById("zug-wort");
+zugWort.textContent = ZUG[2] === "Der blinde Fleck" ? "Blinder Fleck" : ZUG[2].replace(/^(Der|Die|Das) /, "");
+document.getElementById("zug-kopf").textContent = `Gezogen: Strophe ${ZUG[0]} · ${ROEM[ZUG[1]]} ${ZYKLEN[ZUG[1]]}`;
+document.getElementById("zug-satz").textContent = "«" + ZUG[3] + "»";
+document.getElementById("zug-hinweis").textContent = `Gezogen: Zettel ${ZUG[0]}, ${ZUG[2]}`;
+// Das Wort füllt die Höhe der Tafel, ob kurz («Name») oder lang («Wahrscheinlichkeit»)
+function wortGroesse() {
+  zugWort.style.fontSize = "100px";
+  const verfuegbar = tafel.clientHeight - 28, laenge = zugWort.scrollHeight - 20;
+  if (laenge > 0 && verfuegbar > 0) zugWort.style.fontSize = Math.min(schmal() ? innerWidth * .16 : 190, 100 * verfuegbar / laenge) + "px";
+}
+addEventListener("resize", wortGroesse);
+wortGroesse(); if (document.fonts) document.fonts.ready.then(wortGroesse);
 const zl = document.getElementById("zyklen-liste");
 ZYKLEN.forEach((n, i) => { const li = document.createElement("li"); li.innerHTML = `<b></b><span>${String(i * 7 + 1).padStart(2, "0")}–${String(i * 7 + 7).padStart(2, "0")}</span>`; li.querySelector("b").textContent = ROEM[i] + " " + n; zl.append(li); });
 const zy = document.getElementById("zyklen"), st = document.getElementById("strophe");
@@ -336,7 +359,7 @@ ZYKLEN.forEach((n, i) => {
   });
   zy.append(sp);
 });
-zeigeStrophe(DATEN.z[0], zy.querySelector("button"));
+zeigeStrophe(ZUG, [...zy.querySelectorAll("button")].find(b => b.textContent === String(ZUG[0])));
 kapitel.forEach(k => { const li = document.createElement("li"), a = document.createElement("a"); a.href = "#" + k.id; a.textContent = k.dataset.name; li.append(a); zeiger.append(li); });
 
 /* ---------- Bahn-Bilder: jedes Kapitel wird aus seinem HTML auf eine Leinwand gezeichnet ---------- */
@@ -400,11 +423,11 @@ async function kapitelZeichnen(k, i, LW) {
         const x = pad + c * (zw + (eng ? 4 : 8)), yy = y + n * (zh + 6), nr = c * 7 + n + 1;
         if (!zeichnen) continue;
         cx.strokeStyle = linie; cx.strokeRect(x + .5, yy + .5, zw - 1, zh - 1);
-        if (nr === 1) { cx.fillStyle = "#000"; cx.fillRect(x, yy, zw, zh); cx.fillStyle = "#fff"; } else cx.fillStyle = tinte;
+        if (nr === ZUG[0]) { cx.fillStyle = "#000"; cx.fillRect(x, yy, zw, zh); cx.fillStyle = "#fff"; } else cx.fillStyle = tinte;
         cx.textAlign = "center"; cx.fillText(String(nr), x + zw / 2, yy + zh / 2 + 4); cx.textAlign = "left";
       }
       y += 7 * (zh + 6) + 18;
-      const s = DATEN.z[0];
+      const s = ZUG;
       cx.fillStyle = tinte; cx.font = `600 ${eng ? 24 : 34}px ${SANS}`; y += eng ? 26 : 36; if (zeichnen) cx.fillText(s[2], pad, y);
       cx.font = `italic ${eng ? 18 : 23}px ${SERIF}`;
       for (const z of umbrechen(cx, "«" + s[3] + "»", Math.min(innen, 620))) { y += eng ? 24 : 30; if (zeichnen) cx.fillText(z, pad, y); }
@@ -463,7 +486,7 @@ function netzBauen() {
     const d = kn[b].p.clone().sub(kn[a].p), d2 = d.lengthSq() + 1e-6;
     if (d2 < .012) { d.multiplyScalar((.012 - d2) / d2 * .06); kn[a].p.sub(d); kn[b].p.add(d); }
   }
-  netz.knoten = kn;
+  netz.knoten = kn; netz.zug = kn.find(k => k.art === "strophe" && k.s === ZUG);
   const g = new THREE.Group();
   // Linien
   const lp = [], lc = [];
@@ -619,9 +642,10 @@ function kameraSetzen(zeit) {
   const nah = weich(.22, .5, t), raus = weich(.5, .66, t);
   const dist = misch(misch(16, 1.8, nah), eng ? 10.5 : 8.5, raus);
   const winkel = (ruhig ? 0 : zeit * .00008) + t * 1.8 + zustand.maus.x * .25, neig = .32 + zustand.maus.y * .2 - nah * .15 + raus * .1;
-  const C = netz.gruppe.position;
+  // Beim Hineinfliegen wandert die Mitte vom Netz zum gezogenen Zettel
+  const C = tmp.b.copy(netz.zug.p).applyMatrix4(netz.gruppe.matrixWorld).lerp(netz.gruppe.position, 1 - nah * (1 - raus));
   const iPos = tmp.a.set(Math.sin(winkel) * Math.cos(neig) * dist, Math.sin(neig) * dist, Math.cos(winkel) * Math.cos(neig) * dist).add(C);
-  const iBlick = tmp.b.copy(C);
+  const iBlick = C;
   // Seitlich versetzen, solange die Tafel links steht
   const tf = weich(.6, .76, t) * (1 - weich(.86, .95, t));
   // Bahn: hinter dem Punkt s, über der Bahn, Blick zurück auf das, was gerade gelesen wird
@@ -667,16 +691,19 @@ function stropheZeigen(t) {
     kandidaten.push({ k, d, x: (tmp.b.x + 1) / 2 * innerWidth, y: (1 - tmp.b.y) / 2 * innerHeight });
   }
   kandidaten.sort((a, b) => a.d - b.d);
+  const beimZug = weich(.4, .48, t) * (1 - weich(.5, .54, t)) > .5;
+  if (beimZug) { const i = kandidaten.findIndex(c => c.k.s === ZUG); if (i > 0) kandidaten.unshift(kandidaten.splice(i, 1)[0]); }
   netz.stEt.forEach((el, i) => {
     const c = kandidaten[i];
     if (!c) { el.style.opacity = 0; return; }
     if (el.dataset.nr !== String(c.k.s[0])) { el.dataset.nr = c.k.s[0]; el.innerHTML = ""; const b = document.createElement("b"); b.textContent = c.k.s[0]; el.append(b, c.k.s[2]); }
-    el.style.opacity = an * (1 - i * .1);
+    el.classList.toggle("gezogen", c.k.s === ZUG);
+    el.style.opacity = an * (c.k.s === ZUG ? 1 : 1 - i * .1);
     el.style.transform = `translate(${(c.x + 8).toFixed(1)}px, ${(c.y - 6).toFixed(1)}px)`;
   });
   const erste = kandidaten[0];
   if (erste && an > .5) {
-    if (erste.k.s[0] !== zeileNr && performance.now() - zeileZeit > 1800) { zeileZeit = performance.now(); zeileNr = erste.k.s[0]; zeile.querySelector("small").textContent = `Strophe ${erste.k.s[0]} · ${ROEM[erste.k.s[1]]} ${ZYKLEN[erste.k.s[1]]} · ${erste.k.s[2]}`; zeile.querySelector("q").textContent = erste.k.s[3]; }
+    if (erste.k.s[0] !== zeileNr && (performance.now() - zeileZeit > 1800 || (beimZug && erste.k.s === ZUG))) { zeileZeit = performance.now(); zeileNr = erste.k.s[0]; zeile.querySelector("small").textContent = `Strophe ${erste.k.s[0]} · ${ROEM[erste.k.s[1]]} ${ZYKLEN[erste.k.s[1]]} · ${erste.k.s[2]}`; zeile.querySelector("q").textContent = erste.k.s[3]; }
     zeile.style.opacity = an;
   } else zeile.style.opacity = 0;
 }
