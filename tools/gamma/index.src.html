@@ -1,0 +1,489 @@
+<!--KOPF-->
+<title>ornament.cloud Gamma</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!--SCHRIFTEN-->
+<style>
+/* ornament.cloud/gamma – Landing-Page nach einer Videovorlage (29. Oktober 2026). Aufbau: zuerst ein Netz aus den 49 Strophen von «Zu seiner
+   Zeit» und ihren 133 Personen, das zu einer Blaupause-Tafel mit dem Wort «Anschluss» wird; danach fliegt man über eine Bahn im Raum, auf der
+   jeder Bereich der Website ein eigenes Farbfeld ist (Farben der Startseite /b/). Ringsum Nacht mit Strichfiguren und Weg-Marken.
+   Ein Tipp auf einen Bereich oder «Flach» legt die Bahn hin zum Lesen. Schriften und Farben des Neubaus (b/b.css), keine fremde Palette. */
+:root {
+  --nacht: #000000; --text: #ffffff; --leise: rgba(255, 255, 255, .62); --strich: rgba(255, 255, 255, .5); --fein: rgba(255, 255, 255, .14);
+  --faden: #8fb0ff; --blau: #1d3fd6; --knoten: #ffffff;
+  --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif: Newsreader, "Iowan Old Style", "Times New Roman", serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --kipp: 54deg;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { --nacht: #ececea; --text: #000000; --leise: rgba(0, 0, 0, .62); --strich: rgba(0, 0, 0, .5); --fein: rgba(0, 0, 0, .12); --faden: #1d3fd6; --knoten: #000000; color-scheme: light; }
+}
+:root[data-theme="light"] { --nacht: #ececea; --text: #000000; --leise: rgba(0, 0, 0, .62); --strich: rgba(0, 0, 0, .5); --fein: rgba(0, 0, 0, .12); --faden: #1d3fd6; --knoten: #000000; color-scheme: light; }
+@media (max-width: 760px) { :root { --kipp: 44deg; } }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: auto; }
+body { margin: 0; background: var(--nacht); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.45; overflow-x: hidden; }
+a { color: inherit; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--faden); outline-offset: 3px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: #000; }
+
+/* Kopf: immer schwarz, wie beim Lab */
+.kopf { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 20; height: 48px; display: flex; align-items: center; gap: 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); background: #000; color: #fff; font-size: 13px; }
+.kopf .marke { display: flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; }
+.kopf .marke img { width: 24px; height: 24px; display: block; }
+.kopf .ausgabe { color: rgba(255, 255, 255, .55); font-weight: 400; }
+.kopf nav { display: flex; gap: 16px; margin-left: 10px; }
+.kopf nav a { text-decoration: none; color: rgba(255, 255, 255, .78); }
+.kopf nav a:hover { color: #fff; }
+.kopf .pille { margin-left: auto; background: #fff; color: #000; text-decoration: none; padding: 6px 13px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
+@media (max-width: 900px) { .kopf nav { display: none; } }
+@media (max-width: 420px) { .kopf .ausgabe { display: none; } }
+
+/* ---------- Intro: Netz → Tafel ---------- */
+#intro { position: relative; height: 330vh; }
+.intro-buehne { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+#netz { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.intro-text { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  display: flex; justify-content: space-between; align-items: end; gap: 20px; pointer-events: none; opacity: calc(1 - var(--t, 0) * 4); }
+.intro-text h1 { margin: 0; font-size: clamp(30px, 5vw, 64px); font-weight: 600; letter-spacing: -.035em; line-height: .98; text-wrap: balance; max-width: 14ch; }
+.intro-text p { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--leise); text-align: right; }
+.tafel { position: absolute; top: 48px; bottom: 0; left: 0; width: calc(var(--tafel, 0) * min(40vw, 560px)); background: var(--blau); color: #fff; overflow: hidden; display: flex; }
+.tafel .wort { flex: none; writing-mode: vertical-rl; transform: rotate(180deg); font-weight: 600; letter-spacing: -.045em; line-height: .8;
+  font-size: min(calc((100svh - 70px) / 6.2), 28vw); margin: 0; padding: 14px 6px 14px 4px; white-space: nowrap; }
+.tafel .spalte { flex: 1; min-width: 0; padding: 18px 16px 18px 6px; display: flex; flex-direction: column; gap: 14px; opacity: var(--spalte, 0); }
+.tafel ol { list-style: none; margin: 0; padding: 0; font-family: var(--mono); font-size: 11px; line-height: 1.6; }
+.tafel ol li { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, .22); }
+.tafel ol span { font-variant-numeric: tabular-nums; opacity: .7; }
+.tafel .zahl { border-top: 1px solid rgba(255, 255, 255, .4); padding-top: 8px; font-family: var(--mono); font-size: 11px; line-height: 1.5; }
+.tafel .zahl b { display: block; font-family: var(--sans); font-size: clamp(26px, 3vw, 40px); font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+.tafel .satz { font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.3; margin: 0; }
+@media (max-width: 760px) {
+  .tafel { width: calc(var(--tafel, 0) * 100vw); top: auto; height: 46svh; }
+  .tafel .wort { font-size: min(calc(46svh / 6.4), 16vw); }
+  .tafel .zahl:nth-of-type(n+3) { display: none; }
+}
+.tip { position: absolute; z-index: 5; max-width: 260px; padding: 8px 10px; background: var(--nacht); border: 1px solid var(--strich); font-size: 13px; pointer-events: none; }
+.tip b { display: block; font-weight: 600; }
+.tip i { font-family: var(--serif); color: var(--leise); }
+
+/* ---------- Bahn im Raum ---------- */
+#bahn-abschnitt { position: relative; }
+.bahn-buehne { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; perspective: 1000px; perspective-origin: 50% 18%;
+  background-image: linear-gradient(var(--fein) 1px, transparent 1px), linear-gradient(90deg, var(--fein) 1px, transparent 1px); background-size: 100% 25vh, 12.5vw 100%; background-position: 0 48px, 0 0; }
+.bahn { position: absolute; top: 30%; left: 50%; width: min(820px, 84vw); transform-style: preserve-3d; transform-origin: 50% 0;
+  transform: translateX(-50%) rotateX(var(--kipp)) translateY(calc(var(--weg, 0) * -1px)); transition: transform .8s cubic-bezier(.2, .7, .2, 1); }
+.bahn.zieht { transition: none; }
+body.flach { --kipp: 0deg; }
+body.flach .bahn { top: 64px; width: min(980px, 100vw); }
+body.flach .figur, body.flach .seite { opacity: 0; }
+
+.kapitel { position: relative; transform-style: preserve-3d; padding: 56px clamp(18px, 4vw, 52px) 80px; min-height: 980px; background: var(--k); color: var(--kt); }
+.kapitel h2 { margin: 0; font-size: clamp(52px, 9vw, 116px); font-weight: 600; letter-spacing: -.045em; line-height: .9; cursor: pointer; }
+.kapitel .leit { margin: 10px 0 34px; font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.2vw, 26px); line-height: 1.25; max-width: 30ch; text-wrap: balance; }
+.kapitel .marke-k { position: absolute; top: 18px; right: clamp(18px, 4vw, 52px); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
+.raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 14px; }
+.karte { min-width: 0; display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--kl); text-decoration: none; }
+.karte:hover { background: var(--kh); }
+.karte img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: var(--kh); }
+.karte img.svg { object-fit: contain; }
+.karte b { font-weight: 600; font-size: 17px; letter-spacing: -.01em; }
+.karte span { font-size: 13.5px; line-height: 1.4; opacity: .82; }
+.weiter { display: inline-flex; margin-top: 26px; padding: 9px 16px; border-radius: 99px; background: var(--kt); color: var(--k); text-decoration: none; font-weight: 600; }
+
+/* Kapitelfarben (b/b.css .kapitel-*) */
+.k-lab { --k: #c2185b; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); --kh: rgba(255, 255, 255, .1); }
+.k-apps { --k: #e6b117; --kt: #000000; --kl: rgba(0, 0, 0, .24); --kh: rgba(0, 0, 0, .07); }
+.k-prompts { --k: #e0503c; --kt: #000000; --kl: rgba(0, 0, 0, .26); --kh: rgba(0, 0, 0, .07); }
+.k-zettel { --k: #ffffff; --kt: #000000; --kl: #d6d6d6; --kh: #f1f1ef; }
+.k-social { --k: #1d3fd6; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); --kh: rgba(255, 255, 255, .1); }
+.k-art { --k: #1f4d3a; --kt: #ffffff; --kl: rgba(255, 255, 255, .34); --kh: rgba(255, 255, 255, .08); }
+
+/* Seitenbeschriftung und Strichfiguren stehen neben der Bahn auf dem Boden auf */
+.seite { position: absolute; width: 190px; font-size: 15px; font-weight: 600; line-height: 1.15; color: var(--text); transform-origin: 50% 100%;
+  transform: rotateX(calc(var(--kipp) * -1)); transition: opacity .5s; }
+.seite::after { content: ""; display: block; height: 1px; margin-top: 8px; background: var(--strich); }
+.seite.l { right: calc(100% + 26px); text-align: right; }
+.seite.r { left: calc(100% + 26px); }
+.figur { position: absolute; width: 230px; height: 230px; transform-origin: 50% 100%; transform: rotateX(calc(var(--kipp) * -1)); transition: opacity .5s; }
+.figur.l { right: calc(100% + 40px); }
+.figur.r { left: calc(100% + 40px); }
+.figur svg { width: 100%; height: 100%; overflow: visible; fill: none; stroke: var(--strich); stroke-width: 1; }
+.marken { position: absolute; top: 0; bottom: 0; width: 64px; font-family: var(--mono); font-size: 10px; color: var(--leise); pointer-events: none; }
+.marken.l { right: calc(100% + 4px); text-align: right; }
+.marken.r { left: calc(100% + 4px); }
+.marken i { position: absolute; left: 0; right: 0; font-style: normal; border-top: 1px solid var(--fein); padding-top: 2px; }
+@media (max-width: 760px) { .seite, .figur.l, .figur.r, .marken { display: none; } .raster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .karte { padding: 8px; } .karte b { font-size: 15px; } .karte span { font-size: 12.5px; } }
+
+/* Zettel: sieben Zyklen à sieben Strophen */
+.zyklen { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.zyklus { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.zyklus small { font-family: var(--mono); font-size: 10px; letter-spacing: .04em; text-transform: uppercase; opacity: .7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.zyklus button { aspect-ratio: 4 / 3; width: 100%; border: 1px solid var(--kl); background: transparent; cursor: pointer; padding: 0; font: 600 11px var(--mono); color: var(--kt); }
+.zyklus button:hover, .zyklus button[aria-pressed="true"] { background: #000; color: #fff; }
+.strophe { margin-top: 26px; border-top: 1px solid var(--kl); padding-top: 16px; display: grid; gap: 6px; min-height: 150px; }
+.strophe small { font-family: var(--mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; opacity: .7; }
+.strophe b { font-size: clamp(24px, 3vw, 34px); font-weight: 600; letter-spacing: -.03em; line-height: 1.05; }
+.strophe q { font-family: var(--serif); font-style: italic; font-size: clamp(18px, 2vw, 23px); line-height: 1.3; max-width: 46ch; quotes: "«" "»"; }
+
+/* Steuerung unten links und Kapitelzeiger links */
+.steuer { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; opacity: 0; pointer-events: none; transition: opacity .3s; }
+.steuer.da { opacity: 1; pointer-events: auto; }
+.steuer button { font: 600 13px var(--sans); padding: 8px 14px; border-radius: 99px; border: 1px solid var(--strich); background: var(--nacht); color: var(--text); cursor: pointer; }
+.zeiger { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); top: 50%; transform: translateY(-50%); list-style: none; margin: 0; padding: 0;
+  font-family: var(--mono); font-size: 11px; line-height: 1.9; opacity: 0; pointer-events: none; transition: opacity .3s; }
+.zeiger.da { opacity: 1; pointer-events: auto; }
+.zeiger a { text-decoration: none; color: var(--leise); display: flex; align-items: center; gap: 8px; }
+.zeiger a::before { content: ""; width: 6px; height: 6px; border: 1px solid currentColor; }
+.zeiger a.aktiv { color: var(--text); }
+.zeiger a.aktiv::before { background: currentColor; }
+@media (max-width: 1100px) { .zeiger { display: none; } }
+
+/* Schluss */
+.schluss { position: relative; z-index: 2; background: var(--nacht); padding-block: 90px 60px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.schluss .innen { max-width: 1100px; margin: 0 auto; }
+.schluss h2 { margin: 0 0 26px; font-size: clamp(36px, 6vw, 80px); font-weight: 600; letter-spacing: -.04em; line-height: .95; text-wrap: balance; }
+.schluss ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr)); gap: 0; border-top: 1px solid var(--strich); }
+.schluss li a { display: flex; justify-content: space-between; align-items: center; padding: 14px 4px; border-bottom: 1px solid var(--fein); text-decoration: none; font-size: 19px; font-weight: 600; }
+.schluss li a i { width: 12px; height: 12px; background: var(--k); border: 1px solid var(--strich); }
+.schluss p { margin: 34px 0 0; font-family: var(--mono); font-size: 11px; color: var(--leise); letter-spacing: .04em; }
+
+@media (prefers-reduced-motion: reduce) { .bahn { transition: none; } }
+</style>
+
+<header class="kopf">
+  <a class="marke" href="{{LINK}}b/"><img src="{{BILD}}b/bilder/signet/signet-dunkel.svg" alt="">ornament.cloud <span class="ausgabe">Gamma · Herbst 2026</span></a>
+  <nav aria-label="Bereiche">
+    <a href="#k-lab">Lab</a><a href="#k-apps">Apps</a><a href="#k-prompts">Prompts</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a><a href="#k-art">Art</a>
+  </nav>
+  <a class="pille" href="{{LINK}}b/">Zur Website</a>
+</header>
+
+<section id="intro" aria-label="Einstieg">
+  <div class="intro-buehne">
+    <canvas id="netz" aria-label="Netz aus 49 Strophen und 133 Personen in sieben Zyklen"></canvas>
+    <div class="tafel" aria-hidden="false">
+      <p class="wort">Anschluss</p>
+      <div class="spalte">
+        <ol id="zyklen-liste"></ol>
+        <div class="zahl"><b>49</b>Strophen in sieben Zyklen</div>
+        <div class="zahl"><b>133</b>Personen aus Kunst, Theorie und Wissenschaft</div>
+        <div class="zahl"><b>7</b>Apps, die auf dem Gerät bleiben</div>
+        <p class="satz">«Der Anschluss erfindet die Welt, die ihn im Nachhinein notwendig erscheinen lässt.»</p>
+      </div>
+    </div>
+    <div class="intro-text">
+      <h1>Sechs Bereiche, ein Netz.</h1>
+      <p>Lab · Apps · Prompts · Zettel · Social · Art<br>Weiter nach unten</p>
+    </div>
+    <div class="tip" id="tip" hidden></div>
+  </div>
+</section>
+
+<section id="bahn-abschnitt" aria-label="Bereiche der Website">
+  <div class="bahn-buehne">
+    <div class="bahn" id="bahn">
+
+      <article class="kapitel k-lab" id="k-lab" data-name="Lab">
+        <span class="marke-k">01 · ornament.lab</span>
+        <h2>Lab</h2>
+        <p class="leit">Ein Bild wird Material.</p>
+        <div class="raster">
+          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-glitch.jpg" alt="" loading="lazy"><b>Glitch</b><span>Zeilen verrutschen, Kanäle trennen sich.</span></a>
+          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-sort.jpg" alt="" loading="lazy"><b>Pixelsortierung</b><span>Helligkeit ordnet die Pixel neu.</span></a>
+          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-teilung.jpg" alt="" loading="lazy"><b>Teilung</b><span>Linienbilder nach Makelangelo, in den Farben des Bildes.</span></a>
+          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-raster.jpg" alt="" loading="lazy"><b>Raster</b><span>Das Bild als gedrucktes Raster.</span></a>
+          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-punkte.jpg" alt="" loading="lazy"><b>Punkte</b><span>Punktieren statt zeichnen.</span></a>
+          <a class="karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-neu.jpg" alt="" loading="lazy"><b>Neusetzen</b><span>Teile ordnen sich zu einem neuen Bild.</span></a>
+        </div>
+        <a class="weiter" href="{{LINK}}beta/lab/">Lab ansehen</a>
+        <p class="seite l" style="top: 230px">Stationen bis zum Film</p>
+        <p class="seite r" style="top: 520px">Beat aus Bild oder Video</p>
+        <div class="figur l" style="top: 560px"><svg viewBox="0 0 100 100"><path d="M40 8h20M43 8v30L18 86q-3 6 4 6h56q7 0 4-6L57 38V8"/><path d="M28 70h44"/><path d="M33 62q17 6 34 0"/><circle cx="46" cy="78" r="3"/><circle cx="58" cy="72" r="2"/></svg></div>
+        <div class="figur r" style="top: 40px"><svg viewBox="0 0 100 100"><path d="M20 30l30-15 30 15v40L50 85 20 70z"/><path d="M20 30l30 15 30-15M50 45v40"/><path d="M28 54l14 7M58 62l14-7M35 40l15 7 15-7" stroke-dasharray="2 3"/></svg></div>
+      </article>
+
+      <article class="kapitel k-apps" id="k-apps" data-name="Apps">
+        <span class="marke-k">02 · sieben Apps</span>
+        <h2>Apps</h2>
+        <p class="leit">Kleine Werkzeuge zum Ausprobieren. Alles bleibt auf dem Gerät.</p>
+        <div class="raster">
+          <a class="karte" href="{{LINK}}alpha/phorma-iii/"><img class="svg" src="{{BILD}}b/bilder/apps/phorma-iii.svg" alt="" loading="lazy"><b>PHORMA III</b><span>Aus Klang wird Bild: Gewebe aus Linien, Perlen in einer Kugel aus Fäden.</span></a>
+          <a class="karte" href="{{LINK}}alpha/phorma-ii/"><img class="svg" src="{{BILD}}b/bilder/apps/phorma-ii.svg" alt="" loading="lazy"><b>PHORMA II</b><span>Ein Schleimpilz findet seine Formen, das Bild weht als Seidentuch.</span></a>
+          <a class="karte" href="{{LINK}}alpha/phorma-i/"><img class="svg" src="{{BILD}}b/bilder/apps/phorma-i.svg" alt="" loading="lazy"><b>PHORMA I</b><span>Ein Foto zerfällt in Funken, Glas, Scherben und Gebirge.</span></a>
+          <a class="karte" href="{{LINK}}alpha/the-fictory/"><img class="svg" src="{{BILD}}b/bilder/apps/the-fictory.svg" alt="" loading="lazy"><b>The Fictory</b><span>Ein Bild auf der Werkbank zerfällt und setzt sich neu zusammen.</span></a>
+          <a class="karte" href="{{LINK}}apps/"><img class="svg" src="{{BILD}}b/bilder/apps/orma.svg" alt="" loading="lazy"><b>ORMA</b><span>Ein Rad bringt Kunst und Theorie zusammen. Zehn Minuten zu zweit.</span></a>
+          <a class="karte" href="{{LINK}}apps/"><img class="svg" src="{{BILD}}b/bilder/apps/orna.svg" alt="" loading="lazy"><b>ORNA</b><span>Zwei gegenläufige Ringe, eine Drehung, eine Begegnung.</span></a>
+          <a class="karte" href="{{LINK}}apps/"><img class="svg" src="{{BILD}}b/bilder/apps/omna-color.svg" alt="" loading="lazy"><b>OMNA COLOR</b><span>Zwei Farbräder ziehen aus 180 Gestaltungsübungen.</span></a>
+        </div>
+        <a class="weiter" href="{{LINK}}apps/">Alle Apps</a>
+        <p class="seite l" style="top: 300px">Läuft auch ohne Netz</p>
+        <p class="seite r" style="top: 640px">Auf dem Startbildschirm installieren</p>
+        <div class="figur r" style="top: 120px"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38"/><circle cx="50" cy="50" r="24"/><path d="M50 12v14M50 74v14M12 50h14M74 50h14M23 23l10 10M67 67l10 10M77 23L67 33M33 67L23 77"/><circle cx="50" cy="26" r="3"/></svg></div>
+        <div class="figur l" style="top: 620px"><svg viewBox="0 0 100 100"><rect x="30" y="8" width="40" height="84" rx="6"/><path d="M44 14h12"/><rect x="36" y="24" width="12" height="12"/><rect x="52" y="24" width="12" height="12"/><rect x="36" y="40" width="12" height="12"/><rect x="52" y="40" width="12" height="12"/></svg></div>
+      </article>
+
+      <article class="kapitel k-prompts" id="k-prompts" data-name="Prompts">
+        <span class="marke-k">03 · vier Prüfraster</span>
+        <h2>Prompts</h2>
+        <p class="leit">Vier Prüfraster zum genaueren Hinsehen, je mit Grundlagenpapier und Anwendungsprompt.</p>
+        <div class="raster">
+          <a class="karte" href="{{LINK}}masterprompts/"><img class="svg" src="{{BILD}}b/bilder/raster/nebeneinander-nacheinander.svg" alt="" loading="lazy"><b>Nebeneinander und Nacheinander</b><span>Verräumlichung und Verzeitlichung als Achsen für die Ordnung von Theorien und Kunstpraxen.</span></a>
+          <a class="karte" href="{{LINK}}masterprompts/"><img class="svg" src="{{BILD}}b/bilder/raster/verteilapparat.svg" alt="" loading="lazy"><b>Der Verteilapparat des Körpers</b><span>Wessen Körperereignis kommt wie weit, unter welcher Beschreibung?</span></a>
+          <a class="karte" href="{{LINK}}masterprompts/"><img class="svg" src="{{BILD}}b/bilder/raster/gesellschaftskonzepte.svg" alt="" loading="lazy"><b>Gesellschaftskonzepte</b><span>Einheit · Operation · Vermittlung. Vorprüfung von Gesellschaftsdiagnosen.</span></a>
+          <a class="karte" href="{{LINK}}masterprompts/"><img class="svg" src="{{BILD}}b/bilder/raster/journalistische-texte.svg" alt="" loading="lazy"><b>Journalistische Texte</b><span>Ereignis · Kontext · Übergang · Gegenprobe · Systembezüge.</span></a>
+        </div>
+        <a class="weiter" href="{{LINK}}masterprompts/">Zu den Prompts</a>
+        <p class="seite r" style="top: 250px">Anwendungsprompt für einen KI-Assistenten</p>
+        <div class="figur l" style="top: 340px"><svg viewBox="0 0 100 100"><rect x="14" y="14" width="72" height="72"/><path d="M14 38h72M14 62h72M38 14v72M62 14v72"/><circle cx="26" cy="26" r="4"/><circle cx="50" cy="50" r="4"/><circle cx="74" cy="74" r="4"/></svg></div>
+      </article>
+
+      <article class="kapitel k-zettel" id="k-zettel" data-name="Zettel">
+        <span class="marke-k">04 · Zu seiner Zeit</span>
+        <h2>Zettel</h2>
+        <p class="leit">Plateaus zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation.</p>
+        <div class="zyklen" id="zyklen"></div>
+        <div class="strophe" id="strophe" aria-live="polite"></div>
+        <a class="weiter" href="{{LINK}}zu-seiner-zeit/">Zum Zettelkasten</a>
+        <p class="seite l" style="top: 200px">Sieben Zyklen, je sieben Strophen</p>
+        <p class="seite r" style="top: 480px">Jede Strophe mit ihren Personen verknüpft</p>
+        <div class="figur r" style="top: 40px"><svg viewBox="0 0 100 100"><rect x="18" y="30" width="52" height="60"/><path d="M26 22h52v60M34 14h52v60"/><path d="M26 44h36M26 54h36M26 64h22"/></svg></div>
+        <div class="figur l" style="top: 560px"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/><ellipse cx="50" cy="50" rx="40" ry="14"/><ellipse cx="50" cy="50" rx="14" ry="40"/><ellipse cx="50" cy="50" rx="28" ry="40" transform="rotate(35 50 50)"/><ellipse cx="50" cy="50" rx="28" ry="40" transform="rotate(-35 50 50)"/></svg></div>
+      </article>
+
+      <article class="kapitel k-social" id="k-social" data-name="Social">
+        <span class="marke-k">05 · jede Woche</span>
+        <h2>Social</h2>
+        <p class="leit">Ausgewählte Beiträge aus X, Facebook und Instagram, wöchentlich als Zettel gesammelt.</p>
+        <div class="raster">
+          <a class="karte" href="{{LINK}}social-media/"><b>X</b><span>Beiträge von X, als Zettel abgelegt.</span></a>
+          <a class="karte" href="{{LINK}}social-media/"><b>Facebook</b><span>Beiträge von Facebook, als Zettel abgelegt.</span></a>
+          <a class="karte" href="{{LINK}}social-media/"><b>Instagram</b><span>Beiträge von Instagram, als Zettel abgelegt.</span></a>
+        </div>
+        <a class="weiter" href="{{LINK}}social-media/">Zu den Beiträgen</a>
+        <p class="seite l" style="top: 260px">Woche für Woche ein Zettel</p>
+        <div class="figur r" style="top: 300px"><svg viewBox="0 0 100 100"><path d="M10 50h80"/><path d="M14 50v-8M26 50v-20M38 50v-12M50 50v-30M62 50v-16M74 50v-24M86 50v-10"/><path d="M14 50v8M26 50v16M38 50v10M50 50v26M62 50v14M74 50v20M86 50v6" stroke-dasharray="2 2"/></svg></div>
+      </article>
+
+      <article class="kapitel k-art" id="k-art" data-name="Art">
+        <span class="marke-k">06 · im Auftrag</span>
+        <h2>Art</h2>
+        <p class="leit">Websites und Apps im Auftrag, dazu Originale und Prints.</p>
+        <div class="raster">
+          <a class="karte" href="{{LINK}}art/"><img src="{{BILD}}beta/lab/bilder/portraet.jpg" alt="Porträt als Mosaik vor Rot" loading="lazy"><b>Originale und Prints</b><span>Originale und Prints. Demnächst mehr.</span></a>
+          <a class="karte" href="{{LINK}}art/"><img class="svg" src="{{BILD}}b/bilder/signet/signet-dunkel.svg" alt="" loading="lazy"><b>Websites und Apps</b><span>Websites und Apps im Auftrag.</span></a>
+        </div>
+        <a class="weiter" href="{{LINK}}art/">Zu Art</a>
+        <p class="seite r" style="top: 220px">Demnächst mehr</p>
+        <div class="figur l" style="top: 160px"><svg viewBox="0 0 100 100"><rect x="16" y="10" width="68" height="80"/><rect x="26" y="20" width="48" height="60"/><path d="M26 66q12-14 24-6t24-10"/><circle cx="40" cy="38" r="5"/></svg></div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section class="schluss" aria-label="Weiter">
+  <div class="innen">
+    <h2>Wohin als Nächstes?</h2>
+    <ul>
+      <li class="k-lab"><a href="{{LINK}}beta/lab/">Lab <i></i></a></li>
+      <li class="k-apps"><a href="{{LINK}}apps/">Apps <i></i></a></li>
+      <li class="k-prompts"><a href="{{LINK}}masterprompts/">Prompts <i></i></a></li>
+      <li class="k-zettel"><a href="{{LINK}}zu-seiner-zeit/">Zettel <i></i></a></li>
+      <li class="k-social"><a href="{{LINK}}social-media/">Social <i></i></a></li>
+      <li class="k-art"><a href="{{LINK}}art/">Art <i></i></a></li>
+    </ul>
+    <p>ornament.cloud · Christian Strickler · Gamma, Herbst 2026</p>
+  </div>
+</section>
+
+<div class="steuer" id="steuer"><button type="button" id="flach">Flach lesen</button></div>
+<ol class="zeiger" id="zeiger"></ol>
+
+<script>
+const DATEN = /*DATEN*/null;
+const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
+const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
+const KAPITELFARBEN = ["#c2185b", "#e6b117", "#e0503c", "#ffffff", "#1d3fd6", "#1f4d3a"];
+const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const klemm = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const weich = (a, b, x) => { const t = klemm((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+
+/* ---------- Netz: Zyklen (Knoten), Strophen (Quadrate), Personen (Punkte) ---------- */
+const netz = (() => {
+  const zs = DATEN.z, ps = DATEN.p;
+  const knoten = [];
+  ZYKLEN.forEach((n, i) => { const w = -Math.PI / 2 + i * Math.PI * 2 / 7; knoten.push({ art: "zyklus", i, x: Math.cos(w) * 0.62, y: Math.sin(w) * 0.62, name: ROEM[i] + " " + n }); });
+  zs.forEach((s, j) => {
+    const h = knoten[s[1]], w = (j % 7) / 7 * Math.PI * 2 + s[1];
+    knoten.push({ art: "strophe", s, x: h.x + Math.cos(w) * 0.2, y: h.y + Math.sin(w) * 0.2 });
+  });
+  const pk = ps.map((name, i) => ({ art: "person", name, x: 0, y: 0, n: 0 }));
+  const kanten = [];
+  zs.forEach((s, j) => { const sk = knoten[7 + j]; kanten.push([knoten[s[1]], sk, 1]); s[4].forEach(pi => { pk[pi].x += sk.x; pk[pi].y += sk.y; pk[pi].n++; kanten.push([sk, pk[pi], 0]); }); });
+  let saat = 7;
+  const zufall = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
+  pk.forEach(p => { p.x = p.x / Math.max(1, p.n) * (p.n > 1 ? 0.55 : 1.25) + (zufall() - .5) * .16; p.y = p.y / Math.max(1, p.n) * (p.n > 1 ? 0.55 : 1.25) + (zufall() - .5) * .16; knoten.push(p); });
+  for (let it = 0; it < 60; it++) for (let a = 7; a < knoten.length; a++) for (let b = a + 1; b < knoten.length; b++) {
+    const A = knoten[a], B = knoten[b], dx = B.x - A.x, dy = B.y - A.y, d2 = dx * dx + dy * dy + 1e-6;
+    if (d2 < 0.006) { const f = (0.006 - d2) / d2 * 0.08; A.x -= dx * f; A.y -= dy * f; B.x += dx * f; B.y += dy * f; }
+  }
+  knoten.forEach((k, i) => { k.ord = Math.hypot(k.x, k.y) + (k.art === "person" ? .25 : 0); });
+  return { knoten, kanten };
+})();
+
+const cv = document.getElementById("netz"), cx = cv.getContext("2d"), intro = document.getElementById("intro"), tip = document.getElementById("tip");
+let farben = {}, B = 0, H = 0, dpr = 1, tIntro = 0, maus = null;
+function farbenLesen() { const s = getComputedStyle(document.documentElement); ["--nacht", "--text", "--faden", "--knoten", "--leise"].forEach(n => farben[n] = s.getPropertyValue(n).trim()); }
+function groesse() { dpr = Math.min(2, devicePixelRatio || 1); B = cv.clientWidth; H = cv.clientHeight; cv.width = B * dpr; cv.height = H * dpr; }
+function zeichneNetz(zeit) {
+  const t = tIntro;
+  cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cx.fillStyle = farben["--nacht"]; cx.fillRect(0, 0, B, H);
+  const schmal = B < 760;
+  const tafel = weich(.55, .85, t);
+  const mx = schmal ? B / 2 : B * (.5 + tafel * .2), my = schmal ? H * (.5 - tafel * .2) + 24 : H * .5 + 24;
+  const masz = Math.min(B * (schmal ? .46 : .36), H * .4) * (2.3 - weich(.1, .55, t) * 1.3) * (1 - tafel * (schmal ? .25 : .12));
+  const dreh = ruhig ? 0 : zeit * 0.00003;
+  const pos = k => { const c = Math.cos(dreh), s = Math.sin(dreh); return [mx + (k.x * c - k.y * s) * masz, my + (k.x * s + k.y * c) * masz]; };
+  const wachs = weich(.12, .5, t);
+  // Phase A: sechs Bereiche als farbige Quadrate um einen Mittelpunkt
+  const a = 1 - weich(.12, .3, t);
+  if (a > 0) {
+    cx.globalAlpha = a;
+    cx.strokeStyle = farben["--faden"]; cx.lineWidth = 1;
+    for (let i = 0; i < 6; i++) {
+      const w = i * 1.047 + (ruhig ? 0 : zeit * 0.00012), r = Math.min(B, H) * (.17 + .05 * Math.sin(i * 2.1 + (ruhig ? 0 : zeit * 0.0006)));
+      const x = B / 2 + Math.cos(w) * r, y = H * .44 + Math.sin(w) * r * .8, g = 18 + (i % 3) * 7;
+      cx.beginPath(); cx.moveTo(B / 2, H * .44); cx.lineTo(x, y); cx.stroke();
+      cx.fillStyle = KAPITELFARBEN[i]; cx.fillRect(x - g / 2, y - g / 2, g, g);
+    }
+    cx.beginPath(); cx.arc(B / 2, H * .44, 5, 0, 7); cx.stroke();
+  }
+  // Phase B/C: das Netz
+  if (wachs > 0) {
+    const grenze = wachs * 2.2;
+    cx.globalAlpha = 1;
+    for (const [p, q, stark] of netz.kanten) {
+      if (q.ord > grenze) continue;
+      const [x1, y1] = pos(p), [x2, y2] = pos(q);
+      cx.strokeStyle = farben["--faden"]; cx.globalAlpha = (stark ? .55 : .22) * wachs; cx.lineWidth = stark ? .9 : .6;
+      cx.beginPath(); cx.moveTo(x1, y1); cx.lineTo(x2, y2); cx.stroke();
+    }
+    cx.globalAlpha = wachs;
+    for (const k of netz.knoten) {
+      if (k.ord > grenze) continue;
+      const [x, y] = pos(k);
+      if (k.art === "person") { cx.fillStyle = farben["--faden"]; cx.fillRect(x - 1.2, y - 1.2, 2.4, 2.4); }
+      else if (k.art === "strophe") { cx.fillStyle = farben["--knoten"]; cx.fillRect(x - 3.5, y - 3.5, 7, 7); if (k === maus) { cx.strokeStyle = farben["--knoten"]; cx.strokeRect(x - 7, y - 7, 14, 14); } }
+      else { cx.strokeStyle = farben["--knoten"]; cx.beginPath(); cx.arc(x, y, 4, 0, 7); cx.stroke();
+        cx.fillStyle = farben["--leise"]; cx.font = "11px " + getComputedStyle(document.body).getPropertyValue("--mono"); cx.fillText(k.name, x + 8, y - 7); }
+    }
+    cx.globalAlpha = 1;
+  }
+}
+function introStand() {
+  const r = intro.getBoundingClientRect(), weg = intro.offsetHeight - innerHeight;
+  tIntro = ruhig ? 1 : klemm(-r.top / weg);
+  intro.style.setProperty("--t", tIntro);
+  intro.style.setProperty("--tafel", weich(.55, .85, tIntro));
+  intro.style.setProperty("--spalte", weich(.78, .95, tIntro));
+}
+cv.addEventListener("pointermove", e => {
+  if (tIntro < .3) return;
+  const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  // Treffer neu rechnen mit derselben Abbildung wie beim Zeichnen
+  let best = null, bd = 14 * 14;
+  const schmal = B < 760, tafel = weich(.55, .85, tIntro);
+  const mx = schmal ? B / 2 : B * (.5 + tafel * .2), my = schmal ? H * (.5 - tafel * .2) + 24 : H * .5 + 24;
+  const masz = Math.min(B * (schmal ? .46 : .36), H * .4) * (2.3 - weich(.1, .55, tIntro) * 1.3) * (1 - tafel * (schmal ? .25 : .12));
+  const dreh = ruhig ? 0 : performance.now() * 0.00003, c = Math.cos(dreh), s = Math.sin(dreh);
+  for (const k of netz.knoten) if (k.art === "strophe") {
+    const kx = mx + (k.x * c - k.y * s) * masz, ky = my + (k.x * s + k.y * c) * masz, d = (kx - x) ** 2 + (ky - y) ** 2;
+    if (d < bd) { bd = d; best = k; }
+  }
+  maus = best;
+  if (best) { tip.hidden = false; tip.innerHTML = ""; const b = document.createElement("b"); b.textContent = best.s[0] + " · " + best.s[2]; const i = document.createElement("i"); i.textContent = best.s[3]; tip.append(b, i);
+    tip.style.left = Math.min(x + 14, B - 270) + "px"; tip.style.top = Math.max(56, y - 20) + "px"; }
+  else tip.hidden = true;
+});
+cv.addEventListener("pointerleave", () => { maus = null; tip.hidden = true; });
+
+/* Zyklen-Liste auf der Tafel */
+const zl = document.getElementById("zyklen-liste");
+ZYKLEN.forEach((n, i) => { const li = document.createElement("li"); li.innerHTML = `<b></b><span>${String(i * 7 + 1).padStart(2, "0")}–${String(i * 7 + 7).padStart(2, "0")}</span>`; li.querySelector("b").textContent = ROEM[i] + " " + n; zl.append(li); });
+
+/* ---------- Zettel-Kapitel: 7 × 7 Strophen ---------- */
+const zy = document.getElementById("zyklen"), st = document.getElementById("strophe");
+function zeigeStrophe(s, knopf) {
+  zy.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b === knopf)));
+  st.innerHTML = "";
+  const sm = document.createElement("small"); sm.textContent = `Strophe ${s[0]} · Zyklus ${ROEM[s[1]]} ${ZYKLEN[s[1]]} · ${s[4].length} Personen`;
+  const b = document.createElement("b"); b.textContent = s[2];
+  const q = document.createElement("q"); q.textContent = s[3];
+  st.append(sm, b, q);
+}
+ZYKLEN.forEach((n, i) => {
+  const sp = document.createElement("div"); sp.className = "zyklus";
+  const k = document.createElement("small"); k.textContent = ROEM[i] + " " + n; sp.append(k);
+  DATEN.z.filter(s => s[1] === i).forEach(s => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = s[0]; b.title = s[2]; b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", ev => { ev.stopPropagation(); zeigeStrophe(s, b); }); sp.append(b);
+  });
+  zy.append(sp);
+});
+zeigeStrophe(DATEN.z[0], zy.querySelector("button"));
+
+/* ---------- Bahn ---------- */
+const abschnitt = document.getElementById("bahn-abschnitt"), bahn = document.getElementById("bahn"), steuer = document.getElementById("steuer"), flachKnopf = document.getElementById("flach"), zeiger = document.getElementById("zeiger");
+const kapitel = [...bahn.querySelectorAll(".kapitel")];
+let flach = ruhig, bahnH = 0;
+document.body.classList.toggle("flach", flach);
+kapitel.forEach(k => {
+  const li = document.createElement("li"), a = document.createElement("a"); a.href = "#" + k.id; a.textContent = k.dataset.name; li.append(a); zeiger.append(li);
+  // Weg-Marken an beiden Rändern, alle 200 px eine
+  ["l", "r"].forEach(seite => { const m = document.createElement("div"); m.className = "marken " + seite; k.append(m); });
+});
+function marken() {
+  let start = 0;
+  kapitel.forEach(k => {
+    k.querySelectorAll(".marken").forEach(m => { m.innerHTML = ""; for (let y = 0; y < k.offsetHeight; y += 200) { const i = document.createElement("i"); i.style.top = y + "px"; i.textContent = ((start + y) / 100).toFixed(1) + " m"; m.append(i); } });
+    start += k.offsetHeight;
+  });
+}
+function bahnMessen() { bahnH = bahn.offsetHeight; abschnitt.style.height = (bahnH + innerHeight * .4) + "px"; marken(); }
+function bahnStand() {
+  const r = abschnitt.getBoundingClientRect(), max = abschnitt.offsetHeight - innerHeight;
+  const p = klemm(-r.top, 0, max);
+  const weg = p / Math.max(1, max) * Math.max(0, bahnH - innerHeight * .45);
+  bahn.style.setProperty("--weg", weg.toFixed(1));
+  const drin = r.top < innerHeight * .5 && r.bottom > innerHeight * .5;
+  steuer.classList.toggle("da", drin); zeiger.classList.toggle("da", drin);
+  let akt = 0; kapitel.forEach((k, i) => { if (k.offsetTop <= weg + 40) akt = i; });
+  zeiger.querySelectorAll("a").forEach((a, i) => a.classList.toggle("aktiv", i === akt));
+}
+function zuKapitel(id) {
+  const k = document.getElementById(id); if (!k) return;
+  const max = abschnitt.offsetHeight - innerHeight, ziel = Math.max(0, bahnH - innerHeight * .45);
+  const p = ziel ? k.offsetTop / ziel * max : 0;
+  scrollTo({ top: abschnitt.offsetTop + p + 1, behavior: ruhig ? "auto" : "smooth" });
+}
+function setzeFlach(f) { flach = f; document.body.classList.toggle("flach", f); flachKnopf.textContent = f ? "Zurück in den Raum" : "Flach lesen"; }
+flachKnopf.addEventListener("click", () => setzeFlach(!flach));
+kapitel.forEach(k => k.querySelector("h2").addEventListener("click", () => { setzeFlach(true); zuKapitel(k.id); }));
+document.querySelectorAll('a[href^="#k-"]').forEach(a => a.addEventListener("click", e => { e.preventDefault(); zuKapitel(a.getAttribute("href").slice(1)); }));
+
+/* ---------- Schleife ---------- */
+let zieht = null;
+addEventListener("scroll", () => { bahn.classList.add("zieht"); clearTimeout(zieht); zieht = setTimeout(() => bahn.classList.remove("zieht"), 120); }, { passive: true });
+function schleife(zeit) { introStand(); bahnStand(); if (intro.getBoundingClientRect().bottom > 0) zeichneNetz(zeit); requestAnimationFrame(schleife); }
+addEventListener("resize", () => { groesse(); bahnMessen(); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", farbenLesen);
+new MutationObserver(farbenLesen).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+farbenLesen(); groesse(); bahnMessen();
+if (document.fonts) document.fonts.ready.then(bahnMessen);
+addEventListener("load", bahnMessen);
+requestAnimationFrame(schleife);
+</script>
