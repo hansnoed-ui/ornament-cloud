@@ -264,6 +264,20 @@ cd src/videos && node src/reise/daten.mjs
 npx remotion render ProfilVideo out/profil-4x5.mp4    # ebenso ProfilQuer (16:9)
 ```
 
+### Fassungen «organisch» und «Gewebe» (Tests vom 29. Oktober 2026, noch nicht der Standard)
+
+Wunsch: «wie die verbindungen noch etwas organischer wirken könnten … das ganze video darf gerne eine art digitales kunstwerk sein», dann «etwas neuronales»
+und «ein viel organischeres netzwerk … mehr ein gewebe, nicht einfach pünktchen … differenzierter als beim PHORMA III effekte». Schalter am Video: `organisch`, `gewebe`.
+
+- **organisch** (`KoerperOrganisch`, `KoerperOrganischQuer`): Verbindungen als langsam schwingende Kurven, die Spur als weicher, leuchtender Bogen, Lichtpunkte an der
+  Station; neuronal: spontane Impulse auf jeder dritten Verbindung, an der Station eine Welle über zwei Schritte mit Blitz an den Knoten. Ohne Zahlen und Listen
+  in Intro, Aufbau und Schluss.
+- **Gewebe** (`KoerperGewebe`, `KoerperGewebeQuer`, `src/reise/Gewebe.tsx`): WebGL 2 ohne Bibliothek, darüber das SVG (Beschriftung, Spur) mit derselben Projektion.
+  Jede Verbindung ein Band aus 4–16 Fasern, an den Enden zu Knoten gezogen, in der Mitte offen, verdreht und flatternd; die Farbe läuft entlang der Faser,
+  die Leuchtkraft je Faser sehr verschieden; an der Station spannt sich das Band, Impulse laufen als Licht durch die Fasern. An der Station treten die übrigen
+  Namen zurück, die gewählten stehen gross und zuoberst. Schrift Inter Display (`src/reise/schrift.ts`, im Stil von Helvetica Now; `vorbereiten.mjs` kopiert sie).
+  Rendern mit `--gl=angle`, etwa 4 Minuten je 40 s.
+
 ## Rendern ohne Internetzugang zu remotion.media
 
 Remotion lädt sonst einen eigenen Browser herunter; stattdessen einen vorhandenen angeben:
