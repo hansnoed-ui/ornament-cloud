@@ -1,0 +1,8 @@
+demucs==4.1.0
+torch
+torchaudio
+soundfile
+scipy
+noisereduce
+matchering
+pyloudnorm
