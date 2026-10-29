@@ -5,7 +5,7 @@
 <style>
 /* ornament.cloud/gamma – Landing-Page nach einer Videovorlage (29. Oktober 2026), Entwurf 3. Ein WebGL-Raum (three.js, vendor/three-0.185.1):
    zuerst ein leuchtendes Netz aus den 49 Strophen von «Zu seiner Zeit» und ihren 133 Personen, durch das die Kamera fliegt; eine Tafel
-   «Anschluss» fegt in den Farben der Bereiche durchs Bild und kippt weg; dann liegt die Website als Bahn in einer runden Trommel: Lab, Apps,
+   mit dem Wort des gezogenen Zettels gleitet herein und kippt weg (bei jedem Besuch ein anderer Zettel, #zettel-12 zieht einen bestimmten); dann liegt die Website als Bahn in einer runden Trommel: Lab, Apps,
    Prompts, Zettel, Social und Art als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
    Die Bahn-Bilder zeichnet das Skript aus dem HTML der Kapitel unten; «Flach lesen» zeigt genau dieses HTML. Schriften und Farben des Neubaus. */
 :root {
@@ -68,6 +68,9 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 .tafel .zahl { border-top: 1px solid rgba(255, 255, 255, .4); padding-top: 8px; font-family: var(--mono); font-size: 11px; line-height: 1.5; }
 .tafel .zahl b { display: block; font-family: var(--sans); font-size: clamp(26px, 3vw, 40px); font-weight: 600; letter-spacing: -.03em; line-height: 1; }
 .tafel .satz { font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.3; margin: 0; }
+.tafel .satz small { display: block; font-family: var(--mono); font-style: normal; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; opacity: .75; margin-bottom: 6px; }
+.etiketten .st.gezogen { font-size: 13px; color: #fff; }
+.etiketten .st.gezogen b { color: #fff; }
 @media (max-width: 760px) {
   .tafel { top: auto; height: 46svh; }
   .tafel .wort { font-size: min(calc(46svh / 6.4), 16vw); }
@@ -156,18 +159,18 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
     <div class="etiketten" id="etiketten" aria-hidden="true"></div>
     <p class="zeile" id="zeile" aria-live="off"><small></small><q></q></p>
     <div class="tafel">
-      <p class="wort">Anschluss</p>
+      <p class="wort" id="zug-wort">Anschluss</p>
       <div class="spalte">
         <ol id="zyklen-liste"></ol>
         <div class="zahl"><b>49</b>Strophen in sieben Zyklen</div>
         <div class="zahl"><b>133</b>Personen aus Kunst, Theorie und Wissenschaft</div>
         <div class="zahl"><b>7</b>Apps, die auf dem Gerät bleiben</div>
-        <p class="satz">«Der Anschluss erfindet die Welt, die ihn im Nachhinein notwendig erscheinen lässt.»</p>
+        <p class="satz"><small id="zug-kopf">Gezogen</small><span id="zug-satz">«Der Anschluss erfindet die Welt, die ihn im Nachhinein notwendig erscheinen lässt.»</span></p>
       </div>
     </div>
     <div class="intro-text" id="intro-text">
       <h1>Sechs Bereiche, ein Netz.</h1>
-      <p>Lab · Apps · Prompts · Zettel · Social · Art<br>Weiter nach unten</p>
+      <p>Lab · Apps · Prompts · Zettel · Social · Art<br><span id="zug-hinweis">Weiter nach unten</span></p>
     </div>
   </div></div>
 </section>
@@ -284,6 +287,13 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
 const DATEN = /*DATEN*/null;
+// Bei jedem Besuch ein anderer Zettel; #zettel-12 zieht einen bestimmten
+const ZUG = (() => {
+  const m = location.hash.match(/^#zettel-(\d+)$/), n = m ? +m[1] : 0;
+  if (n >= 1 && n <= DATEN.z.length) return DATEN.z[n - 1];
+  const r = new Uint32Array(1); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(r) : (r[0] = Math.random() * 4e9);
+  return DATEN.z[r[0] % DATEN.z.length];
+})();
 const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
 const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
 const KAPITELFARBEN = ["#c2185b", "#e6b117", "#e0503c", "#ffffff", "#1d3fd6", "#1f4d3a"];
@@ -307,6 +317,19 @@ const kapitel = [...bahnDom.querySelectorAll(".kapitel")];
 const schmal = () => innerWidth < 760;
 
 /* ---------- DOM: Zyklen-Liste, Zettel-Feld, Kapitelzeiger ---------- */
+const zugWort = document.getElementById("zug-wort");
+zugWort.textContent = ZUG[2] === "Der blinde Fleck" ? "Blinder Fleck" : ZUG[2].replace(/^(Der|Die|Das) /, "");
+document.getElementById("zug-kopf").textContent = `Gezogen: Strophe ${ZUG[0]} · ${ROEM[ZUG[1]]} ${ZYKLEN[ZUG[1]]}`;
+document.getElementById("zug-satz").textContent = "«" + ZUG[3] + "»";
+document.getElementById("zug-hinweis").textContent = `Gezogen: Zettel ${ZUG[0]}, ${ZUG[2]}`;
+// Das Wort füllt die Höhe der Tafel, ob kurz («Name») oder lang («Wahrscheinlichkeit»)
+function wortGroesse() {
+  zugWort.style.fontSize = "100px";
+  const verfuegbar = tafel.clientHeight - 28, laenge = zugWort.scrollHeight - 20;
+  if (laenge > 0 && verfuegbar > 0) zugWort.style.fontSize = Math.min(schmal() ? innerWidth * .16 : 190, 100 * verfuegbar / laenge) + "px";
+}
+addEventListener("resize", wortGroesse);
+wortGroesse(); if (document.fonts) document.fonts.ready.then(wortGroesse);
 const zl = document.getElementById("zyklen-liste");
 ZYKLEN.forEach((n, i) => { const li = document.createElement("li"); li.innerHTML = `<b></b><span>${String(i * 7 + 1).padStart(2, "0")}–${String(i * 7 + 7).padStart(2, "0")}</span>`; li.querySelector("b").textContent = ROEM[i] + " " + n; zl.append(li); });
 const zy = document.getElementById("zyklen"), st = document.getElementById("strophe");
@@ -327,7 +350,7 @@ ZYKLEN.forEach((n, i) => {
   });
   zy.append(sp);
 });
-zeigeStrophe(DATEN.z[0], zy.querySelector("button"));
+zeigeStrophe(ZUG, [...zy.querySelectorAll("button")].find(b => b.textContent === String(ZUG[0])));
 kapitel.forEach(k => { const li = document.createElement("li"), a = document.createElement("a"); a.href = "#" + k.id; a.textContent = k.dataset.name; li.append(a); zeiger.append(li); });
 
 /* ---------- Bahn-Bilder: jedes Kapitel wird aus seinem HTML auf eine Leinwand gezeichnet ---------- */
@@ -391,11 +414,11 @@ async function kapitelZeichnen(k, i, LW) {
         const x = pad + c * (zw + (eng ? 4 : 8)), yy = y + n * (zh + 6), nr = c * 7 + n + 1;
         if (!zeichnen) continue;
         cx.strokeStyle = linie; cx.strokeRect(x + .5, yy + .5, zw - 1, zh - 1);
-        if (nr === 1) { cx.fillStyle = "#000"; cx.fillRect(x, yy, zw, zh); cx.fillStyle = "#fff"; } else cx.fillStyle = tinte;
+        if (nr === ZUG[0]) { cx.fillStyle = "#000"; cx.fillRect(x, yy, zw, zh); cx.fillStyle = "#fff"; } else cx.fillStyle = tinte;
         cx.textAlign = "center"; cx.fillText(String(nr), x + zw / 2, yy + zh / 2 + 4); cx.textAlign = "left";
       }
       y += 7 * (zh + 6) + 18;
-      const s = DATEN.z[0];
+      const s = ZUG;
       cx.fillStyle = tinte; cx.font = `600 ${eng ? 24 : 34}px ${SANS}`; y += eng ? 26 : 36; if (zeichnen) cx.fillText(s[2], pad, y);
       cx.font = `italic ${eng ? 18 : 23}px ${SERIF}`;
       for (const z of umbrechen(cx, "«" + s[3] + "»", Math.min(innen, 620))) { y += eng ? 24 : 30; if (zeichnen) cx.fillText(z, pad, y); }
@@ -454,7 +477,7 @@ function netzBauen() {
     const d = kn[b].p.clone().sub(kn[a].p), d2 = d.lengthSq() + 1e-6;
     if (d2 < .012) { d.multiplyScalar((.012 - d2) / d2 * .06); kn[a].p.sub(d); kn[b].p.add(d); }
   }
-  netz.knoten = kn;
+  netz.knoten = kn; netz.zug = kn.find(k => k.art === "strophe" && k.s === ZUG);
   const g = new THREE.Group();
   // Linien
   const lp = [], lc = [];
@@ -610,9 +633,10 @@ function kameraSetzen(zeit) {
   const nah = weich(.22, .5, t), raus = weich(.5, .66, t);
   const dist = misch(misch(16, 1.8, nah), eng ? 10.5 : 8.5, raus);
   const winkel = (ruhig ? 0 : zeit * .00008) + t * 1.8 + zustand.maus.x * .25, neig = .32 + zustand.maus.y * .2 - nah * .15 + raus * .1;
-  const C = netz.gruppe.position;
+  // Beim Hineinfliegen wandert die Mitte vom Netz zum gezogenen Zettel
+  const C = tmp.b.copy(netz.zug.p).applyMatrix4(netz.gruppe.matrixWorld).lerp(netz.gruppe.position, 1 - nah * (1 - raus));
   const iPos = tmp.a.set(Math.sin(winkel) * Math.cos(neig) * dist, Math.sin(neig) * dist, Math.cos(winkel) * Math.cos(neig) * dist).add(C);
-  const iBlick = tmp.b.copy(C);
+  const iBlick = C;
   // Seitlich versetzen, solange die Tafel links steht
   const tf = weich(.6, .76, t) * (1 - weich(.86, .95, t));
   // Bahn: hinter dem Punkt s, über der Bahn, Blick zurück auf das, was gerade gelesen wird
@@ -658,16 +682,19 @@ function stropheZeigen(t) {
     kandidaten.push({ k, d, x: (tmp.b.x + 1) / 2 * innerWidth, y: (1 - tmp.b.y) / 2 * innerHeight });
   }
   kandidaten.sort((a, b) => a.d - b.d);
+  const beimZug = weich(.4, .48, t) * (1 - weich(.5, .54, t)) > .5;
+  if (beimZug) { const i = kandidaten.findIndex(c => c.k.s === ZUG); if (i > 0) kandidaten.unshift(kandidaten.splice(i, 1)[0]); }
   netz.stEt.forEach((el, i) => {
     const c = kandidaten[i];
     if (!c) { el.style.opacity = 0; return; }
     if (el.dataset.nr !== String(c.k.s[0])) { el.dataset.nr = c.k.s[0]; el.innerHTML = ""; const b = document.createElement("b"); b.textContent = c.k.s[0]; el.append(b, c.k.s[2]); }
-    el.style.opacity = an * (1 - i * .1);
+    el.classList.toggle("gezogen", c.k.s === ZUG);
+    el.style.opacity = an * (c.k.s === ZUG ? 1 : 1 - i * .1);
     el.style.transform = `translate(${(c.x + 8).toFixed(1)}px, ${(c.y - 6).toFixed(1)}px)`;
   });
   const erste = kandidaten[0];
   if (erste && an > .5) {
-    if (erste.k.s[0] !== zeileNr && performance.now() - zeileZeit > 1800) { zeileZeit = performance.now(); zeileNr = erste.k.s[0]; zeile.querySelector("small").textContent = `Strophe ${erste.k.s[0]} · ${ROEM[erste.k.s[1]]} ${ZYKLEN[erste.k.s[1]]} · ${erste.k.s[2]}`; zeile.querySelector("q").textContent = erste.k.s[3]; }
+    if (erste.k.s[0] !== zeileNr && (performance.now() - zeileZeit > 1800 || (beimZug && erste.k.s === ZUG))) { zeileZeit = performance.now(); zeileNr = erste.k.s[0]; zeile.querySelector("small").textContent = `Strophe ${erste.k.s[0]} · ${ROEM[erste.k.s[1]]} ${ZYKLEN[erste.k.s[1]]} · ${erste.k.s[2]}`; zeile.querySelector("q").textContent = erste.k.s[3]; }
     zeile.style.opacity = an;
   } else zeile.style.opacity = 0;
 }
