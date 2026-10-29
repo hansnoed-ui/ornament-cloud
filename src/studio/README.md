@@ -15,7 +15,9 @@ auf die Website hochgeladen.
    werden abgezogen (die Modellausgabe selbst verliert bei manchen Tracks Pegel)
 5. `raum.py`: Faltungshall auf dem Rest (Samples), Standard «weit»: 40 %, 2,6 s,
    Hall nur 250–6500 Hz
-6. Zwei Master nach Vorbild (Matchering), −14 LUFS, Spitze −1 dBFS:
+6. Stimme fürs Song-Master: Präsenz-EQ und parallele Kompression (Druck), leicht
+   verstimmte Doppelung links und rechts (Weite), wenig kurzer Hall (1,1 s)
+7. Zwei Master nach Vorbild (Matchering), −14 LUFS, Spitze −1 dBFS:
    `beat-master` (ohne Stimme, Vorbild = Instrumental von Spellbound) und
    `song-master` (mit Stimme, Vorbild = Spellbound)
 

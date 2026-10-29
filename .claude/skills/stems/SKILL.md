@@ -35,7 +35,11 @@ die Domain in den Projekteinstellungen → Cloud environment → Zahnrad → All
 
 - Stimme muss für die Beats nicht sauber sein, die Beat-Bausteine schon.
 - Profil: «Spellbound, nachgeputzt + Raum weit» (Hall 40 %, 2,6 s auf den Samples), −14 LUFS.
-- Pro Track zwei Master für ihn selbst: mit und ohne Stimme.
+- Pro Track zwei Master für ihn selbst: mit und ohne Stimme. Stimme im Song-Master mit
+  «mehr Druck, Weite und wenig Hall» (2026-10-29, `stimme_formen` in ablauf.py).
+- Er hat fast keine Einzelspuren und will gerade fertige Tracks zerlegen und neu
+  zusammensetzen. Für Umbauten ganze Takte der Stems nutzen, keine einzeln
+  geschnittenen Schläge oder Töne (klingen übersteuert). Kein Jungle.
 - Mikrofongeräusche (Stimm-Mikro offen) landen oft in der Drumspur, besonders vor dem Beat.
 
 Jede Abschlussmeldung endet mit «So nutzt du es» (wo tippen, welche Datei).
