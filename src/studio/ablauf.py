@@ -33,10 +33,11 @@ VORBILD = REFERENZEN / "spellbound-instrumental.wav"   # für den Beat
 VORBILD_SONG = REFERENZEN / "spellbound.wav"            # mit Stimme
 ZIEL_LUFS = -14.0
 RAUM_ANTEIL, RAUM_NACHHALL = 0.4, 2.6   # Christians Wahl 2026-10-29: «Raum weit»
-# Stimme im Song-Master (Christian 2026-10-29: «mehr Druck, Weite und wenig Hall»)
+# Stimme im Song-Master (Christian 2026-10-29: «mehr Druck, Weite und wenig Hall»;
+# gewählt hat er danach die Fassung «nur Druck», Doppelung und Hall sind darum aus)
 STIMME_DB = 1.5          # etwas lauter im Mix
-STIMME_DOPPEL = 0.6     # Anteil der Doppelung links/rechts (±8 Cent, 11/17 ms)
-STIMME_HALL = 0.12       # kurzer heller Raum, 1,1 s
+STIMME_DOPPEL = 0.0     # Anteil der Doppelung links/rechts (±8 Cent, 11/17 ms)
+STIMME_HALL = 0.0        # kurzer heller Raum, 1,1 s
 
 
 def run(*cmd):
