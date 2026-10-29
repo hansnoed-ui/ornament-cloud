@@ -238,6 +238,27 @@ cd src/videos && WISSEN=… node vorbereiten.mjs   # ohne Tresor fehlt data/wiss
 npx remotion render ReiseHoch out/reise-9x16.mp4 --codec=h264 --crf=20 --pixel-format=yuv420p   # ebenso ReiseVideo (4:5) und ReiseQuer (16:9)
 ```
 
+## Suchaufträge – weitere Reisen durch Zettelkasten und ORNA (seit 29. Oktober 2026)
+
+Wunsch: «weitere "Reisen" durch den Zettelkasten und ORNA im Obsidian-Stil … statt der Titelsequenz eine Animation des Zettelkastens (Punktkugel, Gitter, Raster)
+wie im ersten Teil des Intros des ornament lab, danach den jeweiligen "Suchauftrag" … 90–120 Sekunden, 4:5 und 16:9».
+Dasselbe Video wie «Reise» (`src/reise/Video.tsx`) mit dem Parameter `auftrag`; die Aufträge stehen in `AUFTRAEGE` in `src/reise/daten.mjs`.
+
+- **Stationen von Hand, Wege vom Skript:** Eine Station ist eine Strophe (`{ strophe: 36 }`) oder ein ORNA-Paar (`{ orna: [Künstler:in, Theoretiker:in] }`).
+  Den Weg dazwischen sucht `daten.mjs` als kürzesten über echte Kanten (Werke, Namen, Konstellationen; erst wenn es keinen gibt, über den Zyklus) und
+  beschreibt ihn («über On Kawara · Judith Butler»). ORNA-Stationen zeigen die Praxis (den ersten Satz der Konstellation) und die Frage.
+- **Adressen:** `FRAUEN` und `MAENNER` ordnen jeden Namen einer Spur ein; das Skript bricht ab, wenn ein Name fehlt oder weniger als die Hälfte weiblich ist.
+- **Intro** (`src/reise/ZettelIntro.tsx`, 280 Bilder): Punktkugel → Box mit Lichtweg → Feld 7 × 7 aus dem Intro von `beta/lab/`, als Funktion der Zeit.
+  Das Feld sind die 49 Strophen (Zeilen = Zyklen); die Ziele leuchten rot, die Umwege weiss, die Spur verbindet sie in der Reihenfolge der Reise.
+- **1. Auftrag `profil`** «Vom Profil zum Feed zur Plattform», mit Umwegen über Ereignis, Person und Archiv: 36 Das Profil · Hanne Darboven × Elena Esposito ·
+  2 Das Ereignis · 17 Die Person · Louise Bourgeois × Judith Butler · 13 Das Archiv · 41 Der Feed · Marina Abramović × Wendy Hui Kyong Chun · 42 Die Plattform.
+  16 von 28 Adressen weiblich, 119,7 s. Compositions `ProfilVideo` (4:5) und `ProfilQuer` (16:9).
+
+```bash
+cd src/videos && node src/reise/daten.mjs
+npx remotion render ProfilVideo out/profil-4x5.mp4    # ebenso ProfilQuer (16:9)
+```
+
 ## Rendern ohne Internetzugang zu remotion.media
 
 Remotion lädt sonst einen eigenen Browser herunter; stattdessen einen vorhandenen angeben:
