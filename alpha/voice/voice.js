@@ -19,7 +19,7 @@ export function schaetzen(text) {
   return { woerter, sprache, rechnen };
 }
 
-const STATUS = { wartet: "wartet", laeuft: "wird gesprochen", fertig: "fertig", fehler: "Fehler" };
+const STATUS = { wartet: "wartet", laeuft: "wird gesprochen", fertig: "fertig", fehler: "Fehler", abgebrochen: "abgebrochen" };
 const zeit = (s) => new Date(s * 1000).toLocaleString("de-CH", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" });
 const sek = (d) => d >= 60 ? `${Math.floor(d / 60)} min ${Math.round(d % 60)} s` : `${Math.round(d)} s`;
 
@@ -32,6 +32,11 @@ function eintrag(a) {
   kopf.append(marke, info);
   const anfang = document.createElement("p"); anfang.className = "anfang"; anfang.textContent = a.anfang + (a.anfang.length >= 80 ? " …" : "");
   li.append(kopf, anfang);
+  if (a.status === "wartet" || a.status === "laeuft") {
+    const halt = document.createElement("button"); halt.type = "button"; halt.className = "knopf"; halt.textContent = "Stoppen";
+    halt.addEventListener("click", () => stoppen(a.id, halt));
+    kopf.append(halt);
+  }
   if (a.status === "fertig") {
     const ton = document.createElement("audio"); ton.controls = true; ton.preload = "none"; ton.src = `${API}?laden=${a.id}&format=mp3&hoeren=1`;
     const knoepfe = document.createElement("div"); knoepfe.className = "zeile";
@@ -42,6 +47,14 @@ function eintrag(a) {
     li.append(ton, knoepfe);
   }
   return li;
+}
+
+async function stoppen(id, knopf) {
+  knopf.disabled = true;
+  const r = await schicken({ aktion: "abbrechen", id });
+  if (r.status === 401) return anmelden();
+  zeige(r.status === 200 ? "Auftrag gestoppt, bei GitHub wird nicht weiter gerechnet." : (r.json.fehler ?? "Stoppen ging nicht."), r.status !== 200 && r.status !== 409);
+  liste();
 }
 
 async function liste() {
@@ -105,7 +118,7 @@ $("sprechen")?.addEventListener("click", async () => {
   const r = await schicken({ aktion: "sprechen", text: $("text").value, stil });
   if (r.status === 401) return anmelden();
   if (r.status !== 200) { zeige(r.json.fehler ?? "Der Auftrag ging nicht durch.", true); knopf.disabled = false; return; }
-  zeige(`Auftrag ist unterwegs. ${$("schaetzung").textContent}. Du kannst die Seite schliessen.`);
+  zeige(r.json.doppelt ? "Dieser Text ist schon unterwegs, siehe unten." : `Auftrag ist unterwegs. ${$("schaetzung").textContent}. Du kannst die Seite schliessen.`);
   knopf.disabled = false;
   liste();
 });

@@ -8,8 +8,9 @@
 //   GET  stimme.php                                → { bereit, angemeldet, grund? }
 //   POST stimme.php  { aktion: "anmelden", passwort } → { angemeldet: true }      (Sitzungs-Cookie, 5 Fehlversuche je Viertelstunde und Adresse)
 //   POST stimme.php  { aktion: "abmelden" }
-//   POST stimme.php  { aktion: "sprechen", text, stil: "b"|"g" } → { id }           (startet den Workflow)
-//   GET  stimme.php?auftrag=ID                     → { status: "wartet"|"laeuft"|"fertig"|"fehler", dauer? }  (holt das Ergebnis beim ersten «fertig»)
+//   POST stimme.php  { aktion: "sprechen", text, stil: "b"|"g" } → { id, doppelt? }  (startet den Workflow; derselbe Text noch unterwegs → dessen id)
+//   POST stimme.php  { aktion: "abbrechen", id }   → { id, status: "abgebrochen" }  (bricht den Lauf bei GitHub ab)
+//   GET  stimme.php?auftrag=ID                     → { status: "wartet"|"laeuft"|"fertig"|"fehler"|"abgebrochen", dauer? }  (holt das Ergebnis beim ersten «fertig»)
 //   GET  stimme.php?liste                          → { auftraege: [{ id, zeit, stil, anfang, status, dauer? }] }
 //   GET  stimme.php?laden=ID&format=wav|mp3        → die Datei als Download
 declare(strict_types=1);
@@ -20,6 +21,7 @@ const MAX_TEXT = 5000;
 const FEHLVERSUCHE = 5;
 const SPERRE = 900;
 const JE_TAG = 40;
+const DOPPELT = 600;   // derselbe Text mit derselben Sprechweise innert zehn Minuten, solange er unterwegs ist: kein zweiter Lauf
 const GITHUB_API = 'https://api.github.com';
 
 $test = PHP_SAPI === 'cli-server';   // die Umgebungsvariablen gelten nur für die Tests (php -S), nie auf dem Webspace
@@ -74,18 +76,36 @@ function auftragsdatei(string $ordner, string $id): string {
   return "$ordner/auftraege/$id.json";
 }
 
+/** der Workflow-Lauf zu einem Auftrag (run-name «Stimme <id>»), null solange GitHub ihn noch nicht zeigt */
+function lauf(string $api, array $z, string $id): ?array {
+  [$s, $runs] = github($api, $z, 'GET', '/actions/workflows/stimme.yml/runs?event=workflow_dispatch&per_page=30');
+  if ($s !== 200) return null;
+  foreach ($runs['workflow_runs'] ?? [] as $r) if (($r['display_title'] ?? '') === "Stimme $id") return $r;
+  return null;
+}
+
+/** Lauf bei GitHub abbrechen; true, wenn er abgebrochen ist oder nichts mehr zu tun bleibt */
+function abbrechen(string $api, array $z, array $lauf): bool {
+  if (($lauf['status'] ?? '') === 'completed') return true;
+  [$s] = github($api, $z, 'POST', '/actions/runs/' . (int)$lauf['id'] . '/cancel');
+  return $s === 202 || $s === 409;
+}
+
 /** Stand eines Auftrags: erst die eigene Notiz, dann der Workflow-Lauf; beim ersten Erfolg Artefakt laden und auspacken */
 function stand(string $ordner, string $api, array $z, string $id): array {
   $f = auftragsdatei($ordner, $id);
   $a = lesen($f);
   if (!$a) antwort(404, ['fehler' => 'Unbekannter Auftrag']);
-  if (in_array($a['status'] ?? '', ['fertig', 'fehler'], true)) return $a;
-  [$s, $runs] = github($api, $z, 'GET', '/actions/workflows/stimme.yml/runs?event=workflow_dispatch&per_page=30');
-  if ($s !== 200) return $a;
-  $lauf = null;
-  foreach ($runs['workflow_runs'] ?? [] as $r) if (($r['display_title'] ?? '') === "Stimme $id") { $lauf = $r; break; }
+  if (($a['status'] ?? '') === 'abgebrochen' && !empty($a['abbruch_offen'])) {
+    // beim Abbrechen war der Lauf noch nicht sichtbar: jetzt nachholen
+    $lauf = lauf($api, $z, $id);
+    if ($lauf && abbrechen($api, $z, $lauf)) { unset($a['abbruch_offen']); schreiben($f, $a); }
+  }
+  if (in_array($a['status'] ?? '', ['fertig', 'fehler', 'abgebrochen'], true)) return $a;
+  $lauf = lauf($api, $z, $id);
   if (!$lauf) return $a;
   if (($lauf['status'] ?? '') !== 'completed') { $a['status'] = $lauf['status'] === 'in_progress' ? 'laeuft' : 'wartet'; schreiben($f, $a); return $a; }
+  if (($lauf['conclusion'] ?? '') === 'cancelled') { $a['status'] = 'abgebrochen'; schreiben($f, $a); return $a; }
   if (($lauf['conclusion'] ?? '') !== 'success') { $a['status'] = 'fehler'; schreiben($f, $a); return $a; }
   [$s, $arts] = github($api, $z, 'GET', '/actions/runs/' . (int)$lauf['id'] . '/artifacts');
   $art = null;
@@ -182,6 +202,11 @@ switch ($b['aktion'] ?? '') {
     if ($text === '') antwort(400, ['fehler' => 'Kein Text']);
     if (mb_strlen($text) > MAX_TEXT) antwort(400, ['fehler' => 'Höchstens ' . MAX_TEXT . ' Zeichen']);
     if (!in_array($stil, ['b', 'g'], true)) antwort(400, ['fehler' => 'Stil b oder g']);
+    foreach (glob("$ordner/auftraege/*.json") ?: [] as $f) {
+      $alt = lesen($f);
+      if (($alt['text'] ?? '') === $text && ($alt['stil'] ?? '') === $stil && ($alt['zeit'] ?? 0) > time() - DOPPELT && in_array($alt['status'] ?? '', ['wartet', 'laeuft'], true))
+        antwort(200, ['id' => $alt['id'], 'doppelt' => true]);
+    }
     $heute = array_filter(glob("$ordner/auftraege/*.json") ?: [], fn($f) => filemtime($f) > time() - 86400);
     if (count($heute) >= JE_TAG) antwort(429, ['fehler' => 'Für heute sind es genug Aufträge']);
     $id = bin2hex(random_bytes(8));
@@ -189,6 +214,21 @@ switch ($b['aktion'] ?? '') {
     if ($s !== 204) antwort(502, ['fehler' => "GitHub nimmt den Auftrag nicht an ($s)"]);
     schreiben("$ordner/auftraege/$id.json", ['id' => $id, 'zeit' => time(), 'stil' => $stil, 'text' => $text, 'status' => 'wartet']);
     antwort(200, ['id' => $id]);
+  case 'abbrechen':
+    if (!$angemeldet) antwort(401, ['fehler' => 'Bitte anmelden']);
+    session_write_close();
+    $id = (string)($b['id'] ?? '');
+    $f = auftragsdatei($ordner, $id);
+    $a = lesen($f);
+    if (!$a) antwort(404, ['fehler' => 'Unbekannter Auftrag']);
+    if (!in_array($a['status'] ?? '', ['wartet', 'laeuft'], true)) antwort(409, ['fehler' => 'Der Auftrag läuft nicht mehr', 'status' => $a['status'] ?? '']);
+    $lauf = lauf($api, $z, $id);
+    if ($lauf && ($lauf['status'] ?? '') === 'completed' && ($lauf['conclusion'] ?? '') === 'success') antwort(409, ['fehler' => 'Schon fertig', 'status' => 'fertig']);
+    if ($lauf && !abbrechen($api, $z, $lauf)) antwort(502, ['fehler' => 'GitHub bricht den Lauf nicht ab']);
+    $a['status'] = 'abgebrochen';
+    if (!$lauf) $a['abbruch_offen'] = true;
+    schreiben($f, $a);
+    antwort(200, ['id' => $id, 'status' => 'abgebrochen']);
   default:
     antwort(400, ['fehler' => 'Unbekannte Aktion']);
 }

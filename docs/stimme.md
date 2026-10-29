@@ -36,6 +36,8 @@ Seite alpha/voice/ ──► alpha/voice/stimme.php (Hostpoint) ──► GitHub
 - Ein privates Repository hat 2000 Gratis-Minuten Actions im Monat, die Rechner dort haben 2 Kerne: Start 2–3 Minuten (Einrichten, Modelle
   aus dem Zwischenspeicher), dann grob 15 Sekunden Rechnen je Sekunde Sprache. Höchstens 5000 Zeichen je Auftrag, 40 Aufträge am Tag.
 - Anmelden: 5 Fehlversuche je Viertelstunde und Adresse (Adressen nur als Prüfsumme, täglich neu).
+- «Stoppen» bei einem wartenden oder laufenden Auftrag bricht den Lauf bei GitHub ab (auch wenn GitHub ihn erst nach dem Tippen zeigt). Ein bei GitHub
+  von Hand abgebrochener Lauf erscheint ebenfalls als «abgebrochen». Derselbe Text mit derselben Sprechweise startet innert zehn Minuten keinen zweiten Lauf.
 - Das Modell spricht mit 24 kHz; die WAV-Datei ist auf 48 kHz, 24 bit umgerechnet. Jede Aufnahme trägt das unhörbare Perth-Wasserzeichen.
 - Artefakte bleiben 7 Tage bei GitHub; abgeholte Aufnahmen bleiben auf dem Webspace unter `~/ornament-geheim/stimme/fertig/`.
 
