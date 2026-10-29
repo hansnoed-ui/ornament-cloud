@@ -253,6 +253,11 @@ Dasselbe Video wie «Reise» (`src/reise/Video.tsx`) mit dem Parameter `auftrag`
 - **1. Auftrag `profil`** «Vom Profil zum Feed zur Plattform», mit Umwegen über Ereignis, Person und Archiv: 36 Das Profil · Hanne Darboven × Elena Esposito ·
   2 Das Ereignis · 17 Die Person · Louise Bourgeois × Judith Butler · 13 Das Archiv · 41 Der Feed · Marina Abramović × Wendy Hui Kyong Chun · 42 Die Plattform.
   16 von 28 Adressen weiblich, 119,7 s. Compositions `ProfilVideo` (4:5) und `ProfilQuer` (16:9).
+- **2. Auftrag `koerper`** «Vom Körper zum blinden Fleck zum Material zur Kunst», ORNA frei gewählt, **nicht über dasselbe Werk** (`gleichesWerk: false`):
+  25 Der Körper · Mona Hatoum × Susan Leigh Star · 5 Der blinde Fleck · Agnes Martin × George Spencer-Brown · Eva Hesse × Karen Barad · 29 Das Material ·
+  Doris Salcedo × Hannah Arendt · 35 Die Kunst. 14 von 22 Adressen weiblich, 114,7 s. Compositions `KoerperVideo` (4:5) und `KoerperQuer` (16:9).
+  Die Suche ohne dasselbe Werk (`ohneGleichesWerk`) verbietet Strophe → Werk → Strophe und Werk → Name → Werk mit demselben Titel (dasselbe Werk, anders
+  zitiert); ein Schritt über den Zyklus kostet 2, alle anderen 1.
 
 ```bash
 cd src/videos && node src/reise/daten.mjs

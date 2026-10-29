@@ -129,13 +129,44 @@ const spurReise = [
 const NACHBARN = knoten.map(() => []), MIT_ZYKLEN = knoten.map(() => []);
 for (const [a, b, art] of liste) { MIT_ZYKLEN[a].push(b); MIT_ZYKLEN[b].push(a); if (art !== "zyklus") { NACHBARN[a].push(b); NACHBARN[b].push(a); } }
 // steht eine Strophe nur mit eigenen Namen da (z. B. 42 Die Plattform), führt der Weg über ihren Zyklus
-const suche = (von, nach) => { try { return suche_(von, nach, NACHBARN); } catch { return suche_(von, nach, MIT_ZYKLEN); } };
-const suche_ = (von, nach, NACHBARN) => {
-  const vor = new Map(von.map((v) => [v, -1])), schlange = [...von];
+// gleichesWerk: false (Wunsch vom 29. Oktober 2026: «nicht über "gleiches Werk" verbinden»): eine eigene, gewichtete Suche (ohneGleichesWerk)
+const suche = (von, nach, gleichesWerk = true) => {
+  if (!gleichesWerk) return ohneGleichesWerk(von, nach);
+  try { return suche_(von, nach, NACHBARN, gleichesWerk); } catch { return suche_(von, nach, MIT_ZYKLEN, gleichesWerk); }
+};
+/** kürzester Weg ohne «dasselbe Werk»: verboten sind Strophe → Werk → Strophe und Werk → Name → Werk mit demselben Titel (dasselbe Werk, anders zitiert);
+ *  ein Schritt über den Zyklus kostet 2, alle anderen 1 (so führt der Weg lieber über einen Zyklus als über weite Umwege) */
+const ohneGleichesWerk = (von, nach) => {
+  const kosten = new Map(), vor = new Map(), offen = [];
+  const schl = (i, v) => `${i}|${v}`;
+  for (const v of von) { kosten.set(schl(v, -1), 0); vor.set(schl(v, -1), null); offen.push([0, v, -1]); }
+  while (offen.length) {
+    offen.sort((a, b) => a[0] - b[0]);
+    const [d, a, v] = offen.shift();
+    if (d > kosten.get(schl(a, v))) continue;
+    if (nach.includes(a)) { const w = []; let x = schl(a, v); while (x) { w.unshift(Number(x.split("|")[0])); x = vor.get(x); } return w; }
+    for (const b of MIT_ZYKLEN[a]) {
+      if (v >= 0 && knoten[a].art === "werk" && knoten[v].art === "strophe" && knoten[b].art === "strophe") continue;
+      if (v >= 0 && knoten[a].art === "name" && knoten[v].art === "werk" && knoten[b].art === "werk" && knoten[v].titel === knoten[b].titel) continue;
+      if (b === v) continue;
+      const z = schl(b, a), nd = d + (knoten[a].art === "zyklus" || knoten[b].art === "zyklus" ? 2 : 1);
+      if (!kosten.has(z) || nd < kosten.get(z)) { kosten.set(z, nd); vor.set(z, schl(a, v)); offen.push([nd, b, a]); }
+    }
+  }
+  throw new Error(`reise: kein Weg ohne dasselbe Werk von ${von.map((i) => knoten[i].titel)} nach ${nach.map((i) => knoten[i].titel)}`);
+};
+const suche_ = (von, nach, NACHBARN, gleichesWerk) => {
+  // Zustand: Knoten und ob der Schritt davor von einer Strophe kam (nur für ein Werk von Belang)
+  const schl = (i, ausStrophe) => `${i}|${ausStrophe ? 1 : 0}`;
+  const vor = new Map(von.map((v) => [schl(v, false), null])), schlange = von.map((v) => [v, false]);
   while (schlange.length) {
-    const a = schlange.shift();
-    if (nach.includes(a)) { const w = [a]; let x = a; while (vor.get(x) !== -1) { x = vor.get(x); w.unshift(x); } return w; }
-    for (const b of NACHBARN[a]) if (!vor.has(b)) { vor.set(b, a); schlange.push(b); }
+    const [a, ausStrophe] = schlange.shift();
+    if (nach.includes(a)) { const w = [a]; let x = schl(a, ausStrophe); while (vor.get(x)) { x = vor.get(x); w.unshift(Number(x.split("|")[0])); } return w; }
+    for (const b of NACHBARN[a]) {
+      if (!gleichesWerk && knoten[a].art === "werk" && ausStrophe && knoten[b].art === "strophe") continue;
+      const z = schl(b, knoten[a].art === "strophe");
+      if (!vor.has(z)) { vor.set(z, schl(a, ausStrophe)); schlange.push([b, knoten[a].art === "strophe"]); }
+    }
   }
   throw new Error(`reise: kein Weg von ${von.map((i) => knoten[i].titel)} nach ${nach.map((i) => knoten[i].titel)}`);
 };
@@ -153,16 +184,16 @@ const ueberVon = (w) => {
 };
 const ersterSatz = (t) => t.split(/(?<=[.!?])\s+/)[0];
 /** baut eine Spur aus Stationen: { strophe: n } oder { orna: [Künstler:in, Theoretiker:in] } */
-const spurAus = (stationen) => {
+const spurAus = (stationen, gleichesWerk = true) => {
   const spur = [];
   for (const st of stationen) {
     const vorher = spur.length ? spur[spur.length - 1].ziel : null;
     if (st.strophe) {
-      const weg = vorher ? suche(vorher, [S(st.strophe)]) : [S(st.strophe)];
+      const weg = vorher ? suche(vorher, [S(st.strophe)], gleichesWerk) : [S(st.strophe)];
       spur.push(stropheStation(st.strophe, weg, vorher ? ueberVon(weg) : null));
     } else {
       const [kunst, theorie] = st.orna, ziele = [N(kunst), N(theorie)];
-      let weg = vorher ? suche(vorher, ziele) : [ziele[0]];
+      let weg = vorher ? suche(vorher, ziele, gleichesWerk) : [ziele[0]];
       const andere = ziele.find((z) => z !== weg[weg.length - 1]);
       weg = [...weg, andere];
       const station = ornaStation(kunst, theorie, null, weg, vorher ? ueberVon(weg.slice(0, -1).concat([weg[weg.length - 2]])) : null);
@@ -183,14 +214,28 @@ export const AUFTRAEGE = {
       { strophe: 13 }, { strophe: 41 }, { orna: ["Marina Abramović", "Wendy Hui Kyong Chun"] }, { strophe: 42 },
     ],
   },
+  // 2. Suchauftrag (29. Oktober 2026): «vom Körper zum Blinden Fleck zum Material zur Kunst. Begegnungen möglichst breit, ORNA frei entscheiden …
+  // nicht über "gleiches Werk" verbinden, mind. 50% weiblich». Die Paare reichen vom unsicher gewordenen Vertrauten (Hatoum × Star) über Linie und Grenze
+  // (Martin × Spencer-Brown) und Form und Material (Hesse × Barad) bis zur gemeinsamen Erinnerung (Salcedo × Arendt).
+  koerper: {
+    titel: "Vom Körper zum blinden Fleck zum Material zur Kunst", umweg: "mit Begegnungen quer durch ORNA, ohne Abkürzung über dasselbe Werk",
+    ziele: [25, 5, 29, 35], umwege: [], gleichesWerk: false,
+    stationen: [
+      { strophe: 25 }, { orna: ["Mona Hatoum", "Susan Leigh Star"] }, { strophe: 5 }, { orna: ["Agnes Martin", "George Spencer-Brown"] },
+      { orna: ["Eva Hesse", "Karen Barad"] }, { strophe: 29 }, { orna: ["Doris Salcedo", "Hannah Arendt"] }, { strophe: 35 },
+    ],
+  },
 };
 // die Adressen einer Spur (die Namen der Verweise und der Paare): für «weibliche Adressen mindestens 50%» geprüft; jeder Name muss hier eingeordnet sein
 const FRAUEN = new Set(["Elena Esposito", "Sophie Calle", "Barbara Adam", "Virginia Woolf", "Cornelia Bohn", "Judith Butler", "Aleida Assmann", "Anne Carson", "José van Dijck",
-  "Jenny Offill", "Luciana Parisi", "Jennifer Egan", "Hanne Darboven", "Louise Bourgeois", "Marina Abramović", "Wendy Hui Kyong Chun"]);
+  "Jenny Offill", "Luciana Parisi", "Jennifer Egan", "Hanne Darboven", "Louise Bourgeois", "Marina Abramović", "Wendy Hui Kyong Chun",
+  "Annemarie Mol", "Ana Mendieta", "Clarice Lispector", "Jane Bennett", "Nathalie Heinich", "Hito Steyerl", "Mona Hatoum", "Susan Leigh Star", "Agnes Martin",
+  "Eva Hesse", "Karen Barad", "Doris Salcedo", "Hannah Arendt"]);
 const MAENNER = new Set(["Gilles Deleuze", "Jorge Luis Borges", "Alfred North Whitehead", "On Kawara", "Christian Boltanski", "Franz Kafka", "Michel Foucault", "Walid Raad",
-  "Byung-Chul Han", "Christian Marclay", "David Beer", "Rafael Lozano-Hemmer"]);
+  "Byung-Chul Han", "Christian Marclay", "David Beer", "Rafael Lozano-Hemmer", "Maurice Merleau-Ponty", "George Spencer-Brown", "René Magritte",
+  "Richard Serra", "Francis Ponge", "Jacques Rancière", "Michel Houellebecq"]);
 const adressen = (spur) => [...new Set(spur.flatMap((s) => (s.art === "orna" ? s.ziel.map((i) => knoten[i].titel) : s.verweise.map((v) => v.name))))];
-const spuren = { reise: spurReise, ...Object.fromEntries(Object.entries(AUFTRAEGE).map(([k, a]) => [k, spurAus(a.stationen)])) };
+const spuren = { reise: spurReise, ...Object.fromEntries(Object.entries(AUFTRAEGE).map(([k, a]) => [k, spurAus(a.stationen, a.gleichesWerk ?? true)])) };
 for (const [k, a] of Object.entries(AUFTRAEGE)) {
   const namen = adressen(spuren[k]), unbekannt = namen.filter((n) => !FRAUEN.has(n) && !MAENNER.has(n));
   if (unbekannt.length) throw new Error(`reise ${k}: nicht eingeordnet: ${unbekannt.join(", ")}`);
