@@ -275,6 +275,10 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 <div class="steuer" id="steuer"><button type="button" id="flach">Flach lesen</button></div>
 <ol class="zeiger" id="zeiger"></ol>
 
+<script>
+// Rückfall: Lädt der Raum nicht (Bibliothek gesperrt, kein Modul-Support), zeigt die Seite nach 6 s die flache Fassung
+setTimeout(() => { if (!window.gammaRaumLaeuft) { document.body.classList.add("flach", "ohne-3d"); const p = document.getElementById("raum-platz"); if (p) p.style.height = "0px"; const z = document.getElementById("szene"); if (z) { z.querySelector(".tafel").style.width = "100%"; z.querySelector(".spalte").style.opacity = 1; } } }, 6000);
+</script>
 <script type="module">
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -769,6 +773,7 @@ addEventListener("resize", () => {
   if (ok3d && schmal() !== (breiteAlt < 760)) { netz.gruppe.position.copy(bahnPunkt(-7, 0, 3.4)); bahnBauen(); }
   breiteAlt = innerWidth; platzMessen();
 });
+window.gammaRaumLaeuft = true;
 requestAnimationFrame(bild);
 </script>
 
