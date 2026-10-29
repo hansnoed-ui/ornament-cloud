@@ -31,6 +31,18 @@ schon getrennten Spuren im Ziel-Ordner neu gemastert (Minuten statt halbe Stunde
 `mastern.py` ist ein Stem-Mastering ohne Vorbild (Ketten je Spur, Bus-Kompressor,
 Limiter, Ziel-LUFS), für Fälle ohne passende Referenz.
 
+## Remix «Jungle-Halftime» (`jungle.py`)
+
+```
+python jungle.py <stems-ordner> ziel.wav [172]
+```
+
+Misst Tempo und Schläge der Drums, dehnt Drums, Bass und Rest (mit Raum) per
+Rubberband auf das halbe Zieltempo und legt einen Jungle-Break darüber, gebaut aus
+eigenen Kick-, Snare- und Hi-Hat-Schlägen. Der Break hängt an den gemessenen
+Schlägen (ein Original-Schlag = acht Sechzehntel), driftet also nicht. Danach mit
+`ablauf.mastern_nach` nach Vorbild mastern.
+
 ## Ergebnis im Ziel-Ordner
 
 | Datei | Inhalt |
