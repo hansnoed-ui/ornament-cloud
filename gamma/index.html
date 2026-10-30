@@ -149,9 +149,10 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 
 /* 01 Webseiten: oben der Titel und rechts die drei Begriffe, mittig das Signet auf einer ruhigen, einfarbigen Bühne, darunter drei Flächen mit ihrem Titel.
    Flach wird das Signet zur Punktkugel, zum Würfel und zum Raster der neun Themen; eine Fläche zeigt ihren Inhalt auf der Bühne. */
-/* Der Kopf wie bei Apps: links gross der Titel, darunter der Satz; rechts oben auf der Höhe des Titels die drei Begriffe,
-   je auf einer Zeile und klein geschrieben, ohne Marke darüber: so beziehen sie sich direkt auf «Webseiten» */
-.k-web .marke-k { position: absolute; top: clamp(40px, 8cqi, 68px); right: max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)); margin: 0; }
+/* Der Kopf wie bei Apps: links gross der Titel, darunter der Satz; rechts die drei Begriffe, je auf einer Zeile, klein und ohne Satzzeichen,
+   ohne Marke darüber: so beziehen sie sich direkt auf «Webseiten». Ihre Mitte steht auf der Mitte des Titels
+   (Innenabstand oben + halbe Zeile des Titels − halbe Höhe der drei Zeilen) */
+.k-web .marke-k { position: absolute; top: calc(clamp(40px, 8cqi, 68px) + .43 * clamp(42px, 9cqi, 80px) - 1.68 * clamp(17px, 2.5cqi, 23px)); right: max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)); margin: 0; }
 .k-web .marke-k .zl { display: block; }
 .k-web .marke-k .begriff { font: 500 clamp(17px, 2.5cqi, 23px)/1.12 var(--sans); letter-spacing: -.01em; text-transform: none; color: var(--kt); }
 .k-web .leit { font-family: var(--sans); font-style: normal; font-weight: 400; font-size: clamp(19px, 3cqi, 26px); letter-spacing: -.015em; }   /* nüchtern statt kursiv */
@@ -365,7 +366,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
   <div class="raum-platz" id="raum-platz"></div>
   <div class="bahn" id="bahn">
       <article class="kapitel k-web" id="k-web" data-name="Webseiten"><div class="k-innen">
-        <span class="marke-k"><span class="zl begriff">entwickeln,</span><span class="zl begriff">gestalten,</span><span class="zl begriff">vernetzen.</span></span>
+        <span class="marke-k"><span class="zl begriff">entwickeln</span><span class="zl begriff">gestalten</span><span class="zl begriff">vernetzen</span></span>
         <h2>Webseiten</h2>
         <p class="leit">schnell &amp; praktisch</p>
         <div class="buehne">
